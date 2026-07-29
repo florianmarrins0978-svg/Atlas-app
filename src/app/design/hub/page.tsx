@@ -1,6 +1,5 @@
 import { mockChantiers, ChantierStatut } from "@/lib/mock-data";
-import { colors, font, smallCaps, cardShadow } from "@/lib/design-tokens";
-import StatusIcon from "@/components/atlas/StatusIcon";
+import { colors, font, smallCaps } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import AtlasBottomNav from "@/components/atlas/AtlasBottomNav";
 

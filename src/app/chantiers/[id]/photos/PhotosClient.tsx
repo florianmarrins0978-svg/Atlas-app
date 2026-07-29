@@ -87,7 +87,12 @@ export default function PhotosClient({
               style={{ backgroundColor: colors.card, boxShadow: "0 1px 2px rgba(28,27,23,0.04), 0 4px 12px rgba(28,27,23,0.03)" }}
               aria-label="Voir la photo"
             >
-              {/* object-cover préserve le cadrage sans déformation */}
+              {/* Conservé en <img> : next/image réécrit l'attribut src via
+                  /_next/image, ce qui romprait la correspondance exacte de src
+                  attendue avec la visionneuse plein écran (comportement
+                  vérifié par test e2e) — object-cover préserve le cadrage sans
+                  déformation. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={`/api/fichiers/${p.storageKey}`} alt="" className="h-full w-full object-cover" />
             </button>
           ))}
@@ -124,6 +129,13 @@ export default function PhotosClient({
             </button>
           </div>
           <div className="flex flex-1 items-center justify-center">
+            {/* Conservé en <img> : dimensions intrinsèques inconnues à l'avance
+                (photos de tailles arbitraires) dans un conteneur flexible non
+                dimensionné — next/image (fill) exige des dimensions connues ou
+                un conteneur positionné/dimensionné, incompatible ici avec le
+                comportement "s'adapter à la taille réelle de la photo" sans
+                changement de comportement. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`/api/fichiers/${photos.find((p) => p.id === ouverte)?.storageKey}`}
               alt=""

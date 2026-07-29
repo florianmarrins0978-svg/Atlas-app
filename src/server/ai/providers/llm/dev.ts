@@ -1,7 +1,7 @@
 import type { FournisseurLLM, ResultatLLM, ResultatLLMAvecOutils, MessageConversation, DefinitionOutil } from "./interface";
 import { erreurIA } from "../../errors";
 import { NOM_OUTIL_PROPOSITION } from "../../propositions";
-import { analyserDemandeTexte, REGEX_DUREE, REGEX_EQUIPE } from "../../../orchestrateur/analyse-demande";
+import { analyserDemandeTexte } from "../../../orchestrateur/analyse-demande";
 import {
   construirePropositionDevis,
   type CorrespondanceTarif,

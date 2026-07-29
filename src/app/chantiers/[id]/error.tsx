@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 
@@ -7,7 +8,7 @@ export default function Erreur({ reset }: { error: Error & { digest?: string }; 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="px-6 pt-8">
-        <a
+        <Link
           href="/"
           aria-label="Retour"
           className="flex h-10 w-10 items-center justify-center rounded-full"
@@ -16,7 +17,7 @@ export default function Erreur({ reset }: { error: Error & { digest?: string }; 
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
             <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-        </a>
+        </Link>
       </div>
       <div className="px-6 pt-5">
         <span className={smallCaps} style={{ color: colors.rust }}>

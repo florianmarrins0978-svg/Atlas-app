@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 
@@ -22,7 +23,7 @@ export default function NouveauChantierMockup() {
       <div className="mx-auto max-w-md pb-16">
         {/* Retour discret — cohérent avec la fiche chantier, aucune concurrence avec l'action principale */}
         <div className="px-6 pt-8">
-          <a
+          <Link
             href="/"
             aria-label="Retour à la liste des chantiers"
             className="flex h-10 w-10 items-center justify-center rounded-full"
@@ -31,7 +32,7 @@ export default function NouveauChantierMockup() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
               <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          </a>
+          </Link>
         </div>
 
         <div className="px-6 pt-5">

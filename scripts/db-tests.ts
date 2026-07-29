@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { Pool } from "pg";
+import { Pool, type QueryResult } from "pg";
 
 // Suite de tests de la couche de données, exécutée directement contre
 // PostgreSQL (atlas_test) — indépendante de Drizzle, pour tester les mécanismes
@@ -77,7 +77,7 @@ async function creerEntrepriseComplete(nom: string) {
 }
 
 // Exécute fn dans une transaction avec le contexte RLS fixé sur entrepriseId (ou aucun si null).
-async function avecContexte<T>(entrepriseId: string | null, fn: (query: (text: string, params?: unknown[]) => Promise<any>) => Promise<T>): Promise<T> {
+async function avecContexte<T>(entrepriseId: string | null, fn: (query: (text: string, params?: unknown[]) => Promise<QueryResult>) => Promise<T>): Promise<T> {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -102,7 +102,7 @@ async function main() {
   // 1. INTÉGRITÉ — contraintes CHECK et clés étrangères composites
   // ===================================================================
 
-  const { entrepriseId: A, utilisateurId: userA } = await creerEntrepriseComplete("Entreprise A");
+  const { entrepriseId: A } = await creerEntrepriseComplete("Entreprise A");
   const { entrepriseId: B } = await creerEntrepriseComplete("Entreprise B");
 
   await test("CHECK : un tarif négatif est rejeté", async () => {
@@ -179,8 +179,8 @@ async function main() {
 
   await test("Isolation lecture : le contexte A ne voit aucun chantier de B", async () => {
     const { rows } = await avecContexte(A, (q) => q(`SELECT nom FROM chantiers`));
-    assert.ok(rows.every((r: any) => r.nom !== "Visible par B seulement"), "Une ligne de B a fuité vers A");
-    assert.ok(rows.some((r: any) => r.nom === "Visible par A seulement"), "A ne voit même pas ses propres données");
+    assert.ok(rows.every((r: { nom: string }) => r.nom !== "Visible par B seulement"), "Une ligne de B a fuité vers A");
+    assert.ok(rows.some((r: { nom: string }) => r.nom === "Visible par A seulement"), "A ne voit même pas ses propres données");
   });
 
   await test("Isolation écriture (WITH CHECK) : impossible d'insérer un tarif pour B sous le contexte A", async () => {

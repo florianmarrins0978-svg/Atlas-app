@@ -56,7 +56,6 @@ async function main() {
     await supprimerObjet("test/photos/inexistant.jpg");
   });
 
-  let photoId: string;
   await test("ajouterPhoto persiste les métadonnées réelles", async () => {
     const objet = await enregistrerObjet(`chantiers/${chantier.id}/photos`, Buffer.from("abc"), ".jpg");
     const photo = await photosRepo.ajouterPhoto(A, chantier.id, {
@@ -65,7 +64,7 @@ async function main() {
       tailleOctets: objet.tailleOctets,
       checksum: objet.checksum,
     });
-    photoId = photo.id;
+    assert.ok(photo.id);
     const liste = await photosRepo.listerPhotos(A, chantier.id);
     assert.equal(liste.length, 1);
     assert.equal(liste[0].storageKey, objet.storageKey);

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import {
   statutLabel,
   getStatutAffiche,
@@ -35,7 +36,7 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
       <div className="pb-10">
         {/* Retour seul en haut */}
         <div className="px-6 pt-8">
-          <a
+          <Link
             href="/"
             aria-label="Retour"
             className="flex h-10 w-10 items-center justify-center rounded-full"
@@ -44,7 +45,7 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
               <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          </a>
+          </Link>
         </div>
 
         {/* Ordre de lecture : statut → nom → client */}

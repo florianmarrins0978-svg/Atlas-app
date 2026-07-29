@@ -36,12 +36,11 @@ async function main() {
   // 1-2. entreprises : création atomique (entreprise + adhésion + compteur)
   // ===================================================================
 
-  let A: { entrepriseId: string; utilisateurId: string };
   const { entreprise: entrepriseA, utilisateurId: userA } = await entreprisesRepo.creerEntreprise(
     { nom: "Entreprise Repo2 A" },
     { email: "repo2-a@test.local", nom: "Propriétaire A" }
   );
-  A = { entrepriseId: entrepriseA.id, utilisateurId: userA };
+  const A: { entrepriseId: string; utilisateurId: string } = { entrepriseId: entrepriseA.id, utilisateurId: userA };
 
   await test("creerEntreprise provisionne entreprise + adhésion + compteur atomiquement", async () => {
     const client = await pool.connect();
