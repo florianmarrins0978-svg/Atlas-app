@@ -25,10 +25,22 @@ function cheminPour(storageKey: string): string {
   return path.join(RACINE_STOCKAGE, storageKey);
 }
 
+// mimeType : imposé par le contrat partagé avec l'adaptateur S3
+// (src/server/storage/s3-storage.ts), où il sert de Content-Type réel envoyé
+// au fournisseur objet. Le dispatcher (src/server/storage/index.ts) assigne
+// indifféremment l'une ou l'autre implémentation à enregistrerObjet : les
+// deux signatures doivent rester identiques pour que ce remplacement reste
+// transparent pour tous les appelants. Le stockage local sur disque n'a pas
+// de notion de Content-Type (aucun fichier de métadonnées n'existe dans ce
+// contrat — le mimeType réel est déjà persisté séparément par les
+// repositories appelants, ex. photos/notes vocales) : l'utiliser ici
+// nécessiterait d'inventer une fonctionnalité absente du contrat actuel,
+// hors périmètre d'une correction de lint.
 export async function enregistrerObjet(
   dossier: string,
   octets: Buffer,
   extension: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _mimeType?: string
 ): Promise<ObjetStocke> {
   const storageKey = `${dossier}/${randomUUID()}${extension}`;
