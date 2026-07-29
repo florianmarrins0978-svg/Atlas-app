@@ -1,0 +1,55 @@
+// Nom de l'outil réservé par lequel le LLM signale une proposition de
+// modification — reconnu par l'orchestrateur (services/assistant-service.ts)
+// et simulé par le fournisseur de développement (providers/llm/dev.ts).
+// N'exécute jamais rien : décrit uniquement l'intention.
+export const NOM_OUTIL_PROPOSITION = "ProposerModifications";
+
+// Structure métier d'une proposition de modification. Le LLM ne fait que
+// PROPOSER — jamais exécuter. L'exécution passe systématiquement par les
+// Server Actions existantes, après confirmation explicite de l'utilisateur.
+
+export type TypeActionProposee =
+  | "ajouter_prestation"
+  | "supprimer_prestation"
+  | "modifier_prestation"
+  | "ajouter_materiel"
+  | "supprimer_materiel"
+  | "modifier_materiel"
+  | "modifier_duree"
+  | "modifier_equipe"
+  | "ajouter_ligne_prix";
+
+export type ActionProposee = {
+  type: TypeActionProposee;
+  description: string; // résumé lisible affiché à l'utilisateur (ex. "Ajouter prestation : Élagage chêne")
+  donnees: Record<string, unknown>; // ex. { id, libelle } ou { nouvelleValeur }
+};
+
+// Statut d'une proposition dans son cycle de vie.
+export type StatutProposition = "proposee" | "confirmee" | "executee" | "rejetee";
+
+// Catégorie de conflit — distingue une donnée invalide, un conflit métier
+// légitime (élément disparu), un refus d'accès et une panne technique.
+// Le message affiché à l'utilisateur reste générique et sûr dans tous les
+// cas ; la catégorie sert au diagnostic (logs), jamais exposée telle quelle.
+export type CategorieConflit = "donnee_invalide" | "conflit_metier" | "acces_refuse" | "technique" | "deja_appliquee" | "introuvable";
+
+// Résultat de l'application d'une proposition après confirmation. Référence
+// l'identité serveur de la proposition (jamais son contenu réémis par le
+// client) — voir repositories/propositions-ia.ts.
+export type ResultatApplicationProposition = {
+  propositionId: string;
+  type: TypeActionProposee | string;
+  description: string;
+  statut: "appliquee" | "conflit";
+  categorie?: CategorieConflit;
+  message?: string; // raison du conflit, affichée à l'utilisateur (jamais de détail technique)
+};
+
+// Résultat global d'une confirmation — sépare les résultats par proposition
+// d'un éventuel avertissement post-traitement (ex. régénération du devis en
+// échec) qui ne doit jamais être présenté comme un succès sans réserve.
+export type ResultatConfirmation = {
+  resultats: ResultatApplicationProposition[];
+  avertissement?: string;
+};

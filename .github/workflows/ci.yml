@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: atlas_owner
+          POSTGRES_PASSWORD: atlas_owner_ci_pw
+          POSTGRES_DB: atlas_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test
+      AUTH_SECRET: ci-secret-not-a-real-production-value-000000000000
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Vérification des types
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Appliquer les migrations
+        run: npm run db:migrate
+
+      - name: Suite de tests (base de données)
+        run: npm test
+
+      - name: Build de production (vérification structurelle)
+        env:
+          STORAGE_PROVIDER: s3
+          STORAGE_S3_BUCKET: ci-placeholder-bucket
+          STORAGE_S3_ACCESS_KEY_ID: ci-placeholder-key
+          STORAGE_S3_SECRET_ACCESS_KEY: ci-placeholder-secret
+          CRON_SECRET: ci-placeholder-cron-secret-0000000000
+          NODE_ENV: production
+        run: npm run build
+
+      - name: Installer le navigateur Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Tests de bout en bout
+        run: npm run test:e2e

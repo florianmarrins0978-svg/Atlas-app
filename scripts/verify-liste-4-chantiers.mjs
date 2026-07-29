@@ -1,0 +1,11 @@
+import { chromium } from "playwright";
+import assert from "node:assert";
+const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome" });
+const page = await (await browser.newContext()).newPage();
+await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
+const texte = await page.locator("text=/\\d+ chantiers en cours/").textContent();
+console.log("Compteur affiché:", texte);
+assert.ok(texte.includes("4 chantiers en cours"), `Attendu 4 chantiers, obtenu: ${texte}`);
+assert.equal(await page.locator("text=Peinture façade").count(), 0, "Peinture façade ne doit plus exister");
+await browser.close();
+console.log("OK : la liste des chantiers est revenue à son état validé (4 chantiers).");

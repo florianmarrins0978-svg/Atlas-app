@@ -1,0 +1,10 @@
+{
+  "name": "Atlas",
+  "short_name": "Atlas",
+  "description": "Dictée de chantier, vérification et préparation de devis pour artisans.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ecebe7",
+  "theme_color": "#1c1b19",
+  "icons": []
+}

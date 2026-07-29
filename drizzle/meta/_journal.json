@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1785175543580,
+      "tag": "0000_young_korath",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785184142132,
+      "tag": "0004_chantiers_duree_equipe",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785270000000,
+      "tag": "0005_lignes_prix_quantite_prix_unitaire",
+      "breakpoints": true
+    }
+  ]
+}
