@@ -70,7 +70,7 @@ async function main() {
   // Le contenu transcrit alimente des champs éditables : c'est leur valeur
   // qu'il faut lire, pas le texte de la page.
   assert.match(
-    await page.getByLabel("Prestations 1").inputValue(),
+    await page.getByLabel("Prestations 1", { exact: true }).inputValue(),
     /simulée/,
     "Le brouillon doit reprendre le contenu réellement transcrit"
   );
