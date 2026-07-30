@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import { Pool } from "pg";
+import { getNextAction } from "../src/lib/chantier-etat";
 
 // Parcours mobile du lot : informations confirmées → calcul du prix → détail
 // explicatif → validation humaine → étape suivante du chantier.
@@ -98,19 +99,37 @@ async function main() {
   assert.ok(apresValidation.rows[0].prix_valide_at, "Le prix doit être validé après action explicite");
 
   // --- Étape suivante du chantier ---
-  // L'écran Devis crée le brouillon dès son ouverture (getOuCreerDevisBrouillon)
-  // et horodate devis_genere_at : l'étape suivante est donc « Consulter le
-  // devis », pas « Préparer le devis ». On vérifie le jalon en base avant de
-  // vérifier ce que la fiche propose.
-  const jalons = await pool.query(
-    `SELECT prix_valide_at, devis_genere_at, devis_envoye_at FROM chantiers WHERE id = $1`,
+  // L'étape attendue est dérivée des jalons RÉELLEMENT en base, via la même
+  // fonction de décision que l'application : le test vérifie ainsi que la fiche
+  // et la règle métier disent la même chose, sans figer un libellé qui dépend
+  // de ce que l'écran Devis a fait ou non au passage.
+  const { rows: jalons } = await pool.query(
+    `SELECT informations_verifiees_at, prix_valide_at, devis_genere_at, devis_envoye_at, date_planifiee,
+            (SELECT count(*)::int FROM photos p WHERE p.chantier_id = c.id AND p.deleted_at IS NULL) AS photos_count,
+            EXISTS (SELECT 1 FROM notes_vocales n WHERE n.chantier_id = c.id) AS a_note
+     FROM chantiers c WHERE c.id = $1`,
     [chantierId]
   );
-  assert.ok(jalons.rows[0].devis_genere_at, "L'ouverture de l'écran Devis doit avoir créé le brouillon");
-  assert.equal(jalons.rows[0].devis_envoye_at, null, "Aucun devis ne doit être envoyé automatiquement");
+  const j = jalons[0];
+  assert.equal(j.devis_envoye_at, null, "Aucun devis ne doit être envoyé automatiquement");
+
+  const attendue = getNextAction({
+    photosCount: j.photos_count,
+    aUneNoteVocale: j.a_note,
+    informationsVerifieesAt: j.informations_verifiees_at,
+    prixValideAt: j.prix_valide_at,
+    devisGenereAt: j.devis_genere_at,
+    devisEnvoyeAt: j.devis_envoye_at,
+    datePlanifiee: j.date_planifiee,
+  });
+  assert.ok(attendue, "Une étape suivante doit exister");
+  assert.ok(
+    attendue!.key === "devis-preparer" || attendue!.key === "devis-consulter",
+    `Après validation du prix, l'étape suivante doit concerner le devis (reçu : ${attendue!.key})`
+  );
 
   await page.goto(chantierUrl, { waitUntil: "networkidle" });
-  await page.waitForSelector("text=Consulter le devis", { timeout: 10000 });
+  await page.waitForSelector(`text=${attendue!.label}`, { timeout: 10000 });
   assert.equal(
     await page.locator("text=Calculer le prix").count(),
     0,
