@@ -14,7 +14,13 @@
     "test": "tsx scripts/run-all-tests.ts",
     "test:e2e": "tsx scripts/run-e2e-tests.ts",
     "db:migrate": "tsx scripts/run-migrations.ts",
-    "db:seed": "tsx src/server/db/seed.ts"
+    "db:seed": "tsx src/server/db/seed.ts",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d",
+    "dev:setup": "npm run db:migrate:local && npm run db:seed:local",
+    "db:migrate:local": "tsx --env-file=.env scripts/run-migrations.ts",
+    "db:seed:local": "tsx --env-file=.env src/server/db/seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1097.0",

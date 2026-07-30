@@ -1,0 +1,43 @@
+# Environnement de développement local d'Atlas.
+#
+#   docker compose up -d     démarre PostgreSQL et Redis
+#   docker compose down      arrête, en conservant les données
+#   docker compose down -v   arrête ET efface les données (repart de zéro)
+#
+# Les images et versions sont celles de la CI (postgres:16, redis:7) : ce qui
+# passe en local doit passer en intégration, et inversement.
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: atlas-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_dev_pw
+      POSTGRES_DB: atlas_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - atlas-pgdata:/var/lib/postgresql/data
+      # Joué une seule fois, à la création du volume : crée atlas_owner et
+      # atlas_app avec les mêmes restrictions qu'en production.
+      - ./docker/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d atlas_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    container_name: atlas-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  atlas-pgdata:
