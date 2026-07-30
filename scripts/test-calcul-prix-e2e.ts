@@ -129,10 +129,16 @@ async function main() {
   );
 
   await page.goto(chantierUrl, { waitUntil: "networkidle" });
-  await page.waitForSelector(`text=${attendue!.label}`, { timeout: 10000 });
-  assert.equal(
-    await page.locator("text=Calculer le prix").count(),
-    0,
+  // Lecture du texte réellement rendu : plus robuste que le moteur `text=` face
+  // au libellé découpé en deux nœuds (`{label} →`), et le contenu obtenu sert
+  // directement de diagnostic en cas d'écart.
+  const texteFiche = await page.locator("body").innerText();
+  assert.ok(
+    texteFiche.includes(attendue!.label),
+    `Étape attendue « ${attendue!.label} » absente de la fiche. Contenu rendu : ${texteFiche.replace(/\s+/g, " ").slice(0, 500)}`
+  );
+  assert.ok(
+    !texteFiche.includes("Calculer le prix"),
     "Le prix étant validé, le chantier ne doit plus proposer de le calculer"
   );
 
