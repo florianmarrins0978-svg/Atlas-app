@@ -3,6 +3,7 @@ import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { listerLignesPrix } from "@/server/repositories/lignes-prix";
+import { preparerPropositionPrix } from "@/server/chiffrage/proposition-prix";
 import PrixClient from "./PrixClient";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,13 @@ export default async function PrixPage({ params }: { params: Promise<{ id: strin
   const chantier = await getChantier(ctx, id);
   if (!chantier) notFound();
 
-  const lignes = await listerLignesPrix(ctx, id);
+  // La proposition est recalculée à chaque affichage, jamais mémorisée : elle
+  // ne peut donc pas se désynchroniser des données qui la fondent. L'afficher
+  // ne vaut aucune validation — rien n'est écrit tant que le patron n'a pas agi.
+  const [lignes, proposition] = await Promise.all([
+    listerLignesPrix(ctx, id),
+    preparerPropositionPrix(ctx, id),
+  ]);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -44,6 +51,7 @@ export default async function PrixPage({ params }: { params: Promise<{ id: strin
         <PrixClient
           chantierId={id}
           initialLignes={lignes.map((l) => ({ id: l.id, libelle: l.libelle, montant: l.montant }))}
+          propositionInitiale={proposition}
         />
       </div>
     </div>

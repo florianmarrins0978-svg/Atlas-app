@@ -6,6 +6,7 @@ import { listerPrestations } from "@/server/repositories/prestations";
 import { listerMateriel } from "@/server/repositories/materiel";
 import { getBrouillon } from "@/server/repositories/brouillons-informations";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
+import { evaluerFraicheurBrouillon } from "@/lib/brouillon-etat";
 import InformationsClient from "./InformationsClient";
 
 export const dynamic = "force-dynamic";
@@ -70,6 +71,11 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
                   contenu: brouillon.contenu,
                   statut: brouillon.statut,
                   modifieParHumain: brouillon.modifieParHumain,
+                  fraicheur: evaluerFraicheurBrouillon({
+                    sourceTranscription: brouillon.sourceTranscription,
+                    transcriptionActuelle:
+                      note?.transcriptionStatut === "reussie" ? (note.transcription ?? null) : null,
+                  }),
                 }
               : null
           }

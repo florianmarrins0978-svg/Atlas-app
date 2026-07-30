@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { colors, smallCaps, font } from "@/lib/design-tokens";
 import type { PropositionExtraction, LigneExtraite } from "@/server/ai/schemas/extraction";
+import type { EtatFraicheurBrouillon } from "@/lib/brouillon-etat";
 import {
   genererBrouillonAction,
   enregistrerBrouillonAction,
@@ -13,6 +14,7 @@ export type BrouillonInitial = {
   contenu: PropositionExtraction;
   statut: "brouillon" | "confirme";
   modifieParHumain: boolean;
+  fraicheur: EtatFraicheurBrouillon;
 } | null;
 
 type Props = {
@@ -159,6 +161,16 @@ export default function BrouillonSection({
             {enCours ? "Analyse en cours…" : "Générer le brouillon"}
           </button>
         </>
+      )}
+
+      {/* Brouillon issu d'une transcription qui n'est plus celle du chantier :
+          signalé, jamais supprimé — il peut porter des corrections humaines. */}
+      {contenu && brouillonInitial?.fraicheur.obsolete && (
+        <div className="rounded-2xl px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
+          <p className="text-[13px]" style={{ color: colors.rust }}>
+            {brouillonInitial.fraicheur.message}
+          </p>
+        </div>
       )}
 
       {contenu && (

@@ -3,6 +3,8 @@
 import { getCurrentCtx } from "@/server/session-ctx";
 import { ajouterLignePrix, modifierLignePrix, supprimerLignePrix } from "@/server/repositories/lignes-prix";
 import { marquerPrixValide } from "@/server/repositories/chantiers";
+import { getTarif } from "@/server/repositories/tarifs";
+import { preparerPropositionPrix } from "@/server/chiffrage/proposition-prix";
 
 export async function ajouterLignePrixAction(chantierId: string) {
   const ctx = await getCurrentCtx();
@@ -35,4 +37,53 @@ export async function supprimerLignePrixAction(id: string) {
 export async function validerPrixAction(chantierId: string) {
   const ctx = await getCurrentCtx();
   return marquerPrixValide(ctx, chantierId);
+}
+
+// --- Proposition de prix -------------------------------------------------
+
+// Recalcule la proposition côté serveur, à la demande. N'écrit rien : afficher
+// un prix n'est pas le retenir.
+export async function calculerPropositionPrixAction(chantierId: string) {
+  const ctx = await getCurrentCtx();
+  return preparerPropositionPrix(ctx, chantierId);
+}
+
+// Ajoute la proposition au détail du chantier, sur action explicite.
+//
+// Le montant n'est JAMAIS repris de ce que le navigateur affiche : la
+// proposition est recalculée ici, à partir des données en base, et c'est ce
+// résultat-là qui est écrit. Un détail falsifié côté client n'a donc aucun effet.
+export async function appliquerPropositionPrixAction(
+  chantierId: string,
+  tarifIdChoisi?: string
+): Promise<{ succes: true; ligne: { id: string; libelle: string; montant: string } } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  const proposition = await preparerPropositionPrix(ctx, chantierId);
+  if (!proposition) return { succes: false, erreur: "Chantier introuvable." };
+
+  // Cas ambigu : le patron a tranché en désignant un tarif. On relit le prix
+  // ACTUEL de ce tarif en base, et on vérifie qu'il faisait bien partie des
+  // candidats — un id transmis au hasard ne doit rien pouvoir appliquer.
+  if (proposition.origine === "tarifs_ambigus") {
+    if (!tarifIdChoisi) {
+      return { succes: false, erreur: "Plusieurs tarifs correspondent : choisissez celui à appliquer." };
+    }
+    const candidat = proposition.tarifsCandidats.find((c) => c.tarifId === tarifIdChoisi);
+    if (!candidat) {
+      return { succes: false, erreur: "Ce tarif ne fait pas partie des tarifs proposés pour ce chantier." };
+    }
+    const tarifActuel = await getTarif(ctx, candidat.tarifId);
+    if (!tarifActuel) {
+      return { succes: false, erreur: "Ce tarif n'existe plus." };
+    }
+    const ligne = await ajouterLignePrix(ctx, chantierId, tarifActuel.intitule, tarifActuel.prix);
+    return { succes: true, ligne: { id: ligne.id, libelle: ligne.libelle, montant: ligne.montant } };
+  }
+
+  if (proposition.prixPropose === null || !proposition.libelle) {
+    return { succes: false, erreur: "Aucun prix ne peut être proposé en l'état." };
+  }
+
+  const ligne = await ajouterLignePrix(ctx, chantierId, proposition.libelle, proposition.prixPropose);
+  return { succes: true, ligne: { id: ligne.id, libelle: ligne.libelle, montant: ligne.montant } };
 }

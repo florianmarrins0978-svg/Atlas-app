@@ -13,12 +13,22 @@ import {
   supprimerLignePrixAction,
   validerPrixAction,
 } from "./actions";
+import PropositionPrixSection from "./PropositionPrixSection";
+import type { PropositionPrix } from "@/server/chiffrage/proposition-prix";
 
 type Ligne = { id: string; libelle: string; montant: string };
 
 const formatEuros = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 
-export default function PrixClient({ chantierId, initialLignes }: { chantierId: string; initialLignes: Ligne[] }) {
+export default function PrixClient({
+  chantierId,
+  initialLignes,
+  propositionInitiale,
+}: {
+  chantierId: string;
+  initialLignes: Ligne[];
+  propositionInitiale: PropositionPrix | null;
+}) {
   const router = useRouter();
   const [lignes, setLignes] = useState<Ligne[]>(initialLignes);
   const [leavingIds, setLeavingIds] = useState<Set<string>>(new Set());
@@ -106,9 +116,15 @@ export default function PrixClient({ chantierId, initialLignes }: { chantierId: 
           {formatEuros.format(Number(total))}
         </p>
         <p className="mt-2 text-[12px]" style={{ color: colors.muted }}>
-          Calculé à partir des tarifs de l&apos;entreprise — modifiable ci-dessous.
+          Somme des lignes du détail. C&apos;est cette valeur qui sera reprise dans le devis.
         </p>
       </div>
+
+      <PropositionPrixSection
+        chantierId={chantierId}
+        propositionInitiale={propositionInitiale}
+        onLigneAjoutee={(ligne) => setLignes((cur) => [...cur, ligne])}
+      />
 
       <form
         className="mt-7 flex flex-col gap-2 px-6"

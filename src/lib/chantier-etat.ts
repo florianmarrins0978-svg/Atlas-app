@@ -45,13 +45,18 @@ export type EtatChantierPourAction = {
 };
 
 export function getNextAction(c: EtatChantierPourAction): NextAction | null {
-  if (c.photosCount === 0 && !c.aUneNoteVocale) {
-    return { key: "photos", label: "Ajouter des photos" };
-  }
-  if (!c.aUneNoteVocale) {
-    return { key: "note-vocale", label: "Enregistrer une note vocale" };
-  }
+  // La progression métier prime sur la présence des pièces d'entrée. Une fois
+  // les informations vérifiées, supprimer la note vocale ne doit jamais
+  // ramener le chantier à « Enregistrer une note vocale » : le travail de
+  // saisie est fait, et redemander une dictée donnerait l'impression d'avoir
+  // tout perdu. Les étapes amont restent accessibles via getSecondarySteps.
   if (!c.informationsVerifieesAt) {
+    if (c.photosCount === 0 && !c.aUneNoteVocale) {
+      return { key: "photos", label: "Ajouter des photos" };
+    }
+    if (!c.aUneNoteVocale) {
+      return { key: "note-vocale", label: "Enregistrer une note vocale" };
+    }
     return { key: "informations", label: "Vérifier les informations" };
   }
   if (!c.prixValideAt) {
