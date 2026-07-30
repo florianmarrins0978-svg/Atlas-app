@@ -3,6 +3,9 @@ import { spawnSync, spawn } from "node:child_process";
 import path from "node:path";
 
 const DOSSIER = path.join(__dirname);
+const NODE = process.execPath;
+const TSX = path.join(__dirname, "..", "node_modules", "tsx", "dist", "cli.mjs");
+const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
 
 function attendre(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -21,12 +24,38 @@ async function attendreServeurPret(url: string, tentativesMax = 30): Promise<boo
   return false;
 }
 
+if (process.argv.includes("--list")) {
+  const fichiers = readdirSync(DOSSIER)
+    .filter((f) => f.endsWith("-e2e.ts") || f === "test-health.ts" || f === "test-cron-purge.ts")
+    .sort();
+  console.log("Suites e2e découvertes :");
+  for (const fichier of fichiers) {
+    console.log(fichier);
+  }
+  process.exit(0);
+}
+
 async function main() {
   console.log("Seed de la base de développement...");
-  spawnSync("npx", ["tsx", "src/server/db/seed.ts"], { stdio: "inherit", env: process.env });
+  const seedResult = spawnSync(NODE, [TSX, "src/server/db/seed.ts"], {
+    stdio: "inherit",
+    env: process.env,
+  });
+  if (seedResult.error) {
+    console.error(`❌ Impossible de lancer le seed de la base de développement (spawn error: ${seedResult.error.message}).`);
+    process.exit(1);
+  }
+  if (seedResult.signal) {
+    console.error(`❌ Impossible de lancer le seed de la base de développement (signal: ${seedResult.signal}).`);
+    process.exit(1);
+  }
+  if (seedResult.status !== 0) {
+    console.error(`❌ Impossible de lancer le seed de la base de développement (code: ${seedResult.status}).`);
+    process.exit(1);
+  }
 
   console.log("Démarrage du serveur (mode développement)...");
-  const serveur = spawn("npm", ["run", "dev", "--", "-p", "3000"], {
+  const serveur = spawn(NPM, ["run", "dev", "--", "-p", "3000"], {
     env: process.env,
     stdio: ["ignore", "pipe", "pipe"],
     detached: true,
@@ -43,14 +72,35 @@ async function main() {
     .filter((f) => f.endsWith("-e2e.ts") || f === "test-health.ts" || f === "test-cron-purge.ts")
     .sort();
 
+  if (process.argv.includes("--list")) {
+    console.log("Suites e2e découvertes :");
+    for (const fichier of fichiers) {
+      console.log(fichier);
+    }
+    process.exit(0);
+  }
+
   console.log(`\nExécution de ${fichiers.length} suites dépendant du serveur...\n`);
   let echecs = 0;
   for (const fichier of fichiers) {
     console.log(`=== ${fichier} ===`);
-    const resultat = spawnSync("npx", ["tsx", path.join(DOSSIER, fichier)], { stdio: "inherit", env: process.env });
+    const resultat = spawnSync(NODE, [TSX, path.join(DOSSIER, fichier)], {
+      stdio: "inherit",
+      env: process.env,
+    });
+    if (resultat.error) {
+      echecs++;
+      console.error(`❌ ${fichier} a échoué (spawn error: ${resultat.error.message})`);
+      continue;
+    }
+    if (resultat.signal) {
+      echecs++;
+      console.error(`❌ ${fichier} a échoué (signal: ${resultat.signal})`);
+      continue;
+    }
     if (resultat.status !== 0) {
       echecs++;
-      console.error(`❌ ${fichier} a échoué`);
+      console.error(`❌ ${fichier} a échoué (code: ${resultat.status})`);
     }
   }
 
