@@ -51,15 +51,15 @@ jobs:
         env:
           PGPASSWORD: postgres_ci_pw
         run: |
-          psql -v ON_ERROR_STOP=1 -U postgres -d atlas_test -f scripts/bootstrap-postgres-ci.sql
+          psql -h localhost -p 5432 -v ON_ERROR_STOP=1 -U postgres -d atlas_test -f scripts/bootstrap-postgres-ci.sql
 
       - name: Vérifier les rôles Postgres
         env:
           PGPASSWORD: postgres_ci_pw
         run: |
           set -e
-          psql -X -A -t -U postgres -d atlas_test -c "SELECT rolname, rolsuper, rolbypassrls, rolcreaterole, rolcreatedb, rolcanlogin FROM pg_roles WHERE rolname IN ('postgres','atlas_owner','atlas_app');"
-          if [ -n "$(psql -X -A -t -U postgres -d atlas_test -c \"SELECT rolname FROM pg_roles WHERE rolname IN ('atlas_owner','atlas_app') AND (rolsuper OR rolbypassrls);\")" ]; then
+          psql -h localhost -p 5432 -X -A -t -U postgres -d atlas_test -c "SELECT rolname, rolsuper, rolbypassrls, rolcreaterole, rolcreatedb, rolcanlogin FROM pg_roles WHERE rolname IN ('postgres','atlas_owner','atlas_app');"
+          if [ -n "$(psql -h localhost -p 5432 -X -A -t -U postgres -d atlas_test -c \"SELECT rolname FROM pg_roles WHERE rolname IN ('atlas_owner','atlas_app') AND (rolsuper OR rolbypassrls);\")" ]; then
             echo "ERROR: atlas_owner or atlas_app is SUPERUSER/BYPASSRLS"
             exit 1
           fi
@@ -74,7 +74,7 @@ jobs:
           PGPASSWORD: postgres_ci_pw
         run: |
           set -e
-          psql -X -A -U postgres -d atlas_test -c "SELECT n.nspname, c.relname, c.relrowsecurity, c.relforcerowsecurity, pg_get_userbyid(c.relowner) AS owner FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relkind = 'r' ORDER BY c.relname;"
+          psql -h localhost -p 5432 -X -A -U postgres -d atlas_test -c "SELECT n.nspname, c.relname, c.relrowsecurity, c.relforcerowsecurity, pg_get_userbyid(c.relowner) AS owner FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relkind = 'r' ORDER BY c.relname;"
 
       - name: Suite de tests (base de données)
         env:
