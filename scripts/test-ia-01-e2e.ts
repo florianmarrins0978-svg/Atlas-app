@@ -67,8 +67,11 @@ async function main() {
   await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });
   await page.click("text=Générer le brouillon");
   await page.waitForSelector("text=Confirmer et ajouter au chantier", { timeout: 10000 });
-  assert.ok(
-    await page.locator("text=/simulée/").first().isVisible(),
+  // Le contenu transcrit alimente des champs éditables : c'est leur valeur
+  // qu'il faut lire, pas le texte de la page.
+  assert.match(
+    await page.getByLabel("Prestations 1").inputValue(),
+    /simulée/,
     "Le brouillon doit reprendre le contenu réellement transcrit"
   );
 
