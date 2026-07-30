@@ -10,9 +10,19 @@ import type { NextConfig } from "next";
 // erreurs au navigateur Sentry lorsque SENTRY_DSN est configuré (voir
 // src/server/logger.ts) — sans DSN, ces hôtes ne sont simplement jamais
 // contactés, la directive reste inoffensive.
+// React a besoin d'eval() en mode développement (reconstruction des piles
+// d'appel). Sans cette exception, le navigateur signale une erreur permanente
+// et l'indicateur d'anomalie de Next recouvre la barre de navigation pendant
+// les essais. Strictement limitée au développement : la politique de production
+// reste inchangée, et React n'utilise jamais eval() en production.
+const SCRIPT_SRC =
+  process.env.NODE_ENV === "development"
+    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+    : "script-src 'self' 'unsafe-inline'";
+
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  SCRIPT_SRC,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "media-src 'self' blob:",
