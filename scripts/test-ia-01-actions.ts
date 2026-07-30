@@ -8,6 +8,7 @@ import * as materielRepo from "../src/server/repositories/materiel";
 import { enregistrerObjet } from "../src/server/storage/local-storage";
 import { lancerTranscriptionAction } from "../src/app/chantiers/[id]/note-vocale/actions";
 import { extraireInformationsAction, appliquerExtractionAction } from "../src/app/chantiers/[id]/informations/actions";
+import { nettoyerBase } from "./_test-db";
 
 let passed = 0;
 let failed = 0;
@@ -24,13 +25,7 @@ async function test(nom: string, fn: () => Promise<void>) {
 }
 
 async function main() {
-  await pool.query(`
-    TRUNCATE TABLE
-      lignes_devis, devis, lignes_prix, photos, notes_vocales, fichiers_a_purger,
-      materiel, prestations, chantiers, clients, tarifs,
-      entreprise_compteurs, membres_entreprise, entreprises, users
-    RESTART IDENTITY CASCADE
-  `);
+  await nettoyerBase();
 
   const { entreprise, utilisateurId } = await entreprisesRepo.creerEntreprise(
     { nom: "Entreprise IA Actions" },

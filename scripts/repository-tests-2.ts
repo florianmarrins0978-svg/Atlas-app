@@ -6,6 +6,7 @@ import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as photosRepo from "../src/server/repositories/photos";
 import * as notesRepo from "../src/server/repositories/notes-vocales";
 import { purgerFichiersEnAttente } from "../src/server/repositories/fichiers";
+import { nettoyerBase } from "./_test-db";
 
 // Lancer : DATABASE_URL=postgresql://atlas_owner:...@127.0.0.1:5432/atlas_test npx tsx scripts/repository-tests-2.ts
 
@@ -24,13 +25,7 @@ async function test(nom: string, fn: () => Promise<void>) {
 }
 
 async function main() {
-  await pool.query(`
-    TRUNCATE TABLE
-      lignes_devis, devis, lignes_prix, photos, notes_vocales, fichiers_a_purger,
-      materiel, prestations, chantiers, clients, tarifs,
-      entreprise_compteurs, membres_entreprise, entreprises, users
-    RESTART IDENTITY CASCADE
-  `);
+  await nettoyerBase();
 
   // ===================================================================
   // 1-2. entreprises : création atomique (entreprise + adhésion + compteur)

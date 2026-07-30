@@ -4,6 +4,7 @@ import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as lignesPrixRepo from "../src/server/repositories/lignes-prix";
+import { nettoyerBase } from "./_test-db";
 
 let passed = 0;
 let failed = 0;
@@ -20,13 +21,7 @@ async function test(nom: string, fn: () => Promise<void>) {
 }
 
 async function main() {
-  await pool.query(`
-    TRUNCATE TABLE
-      lignes_devis, devis, lignes_prix, photos, notes_vocales, fichiers_a_purger,
-      materiel, prestations, chantiers, clients, tarifs,
-      entreprise_compteurs, membres_entreprise, entreprises, users
-    RESTART IDENTITY CASCADE
-  `);
+  await nettoyerBase();
 
   const { entreprise: entA, utilisateurId: userA } = await entreprisesRepo.creerEntreprise(
     { nom: "Entreprise Prix A" },

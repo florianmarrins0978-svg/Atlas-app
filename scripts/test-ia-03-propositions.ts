@@ -9,6 +9,7 @@ import { appliquerPropositionsAction } from "../src/app/chantiers/[id]/informati
 import { enregistrerPropositions } from "../src/server/repositories/propositions-ia";
 import type { ActionProposee } from "../src/server/ai/propositions";
 import type { Ctx } from "../src/server/repositories/context";
+import { nettoyerBase } from "./_test-db";
 
 // Remédiation bugs 2/3 : la confirmation ne prend plus des objets de
 // proposition en clair, mais des identifiants de propositions déjà
@@ -34,13 +35,7 @@ async function test(nom: string, fn: () => Promise<void>) {
 }
 
 async function main() {
-  await pool.query(`
-    TRUNCATE TABLE
-      lignes_devis, devis, lignes_prix, photos, notes_vocales, fichiers_a_purger,
-      materiel, prestations, chantiers, clients, tarifs,
-      entreprise_compteurs, membres_entreprise, entreprises, users
-    RESTART IDENTITY CASCADE
-  `);
+  await nettoyerBase();
 
   const { entreprise: entA, utilisateurId: userA } = await entreprisesRepo.creerEntreprise(
     { nom: "Entreprise Propositions A" },

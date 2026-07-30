@@ -10,6 +10,7 @@ import { ingererDevis, ingererTranscription, ingererPhotosMetadonnees } from "..
 import { decouperTexte } from "../src/server/documents/chunking";
 import { poserQuestion } from "../src/server/ai/services/assistant-service";
 import { enregistrerNoteVocale } from "../src/server/repositories/notes-vocales";
+import { nettoyerBase } from "./_test-db";
 
 let passed = 0;
 let failed = 0;
@@ -26,14 +27,7 @@ async function test(nom: string, fn: () => Promise<void>) {
 }
 
 async function main() {
-  await pool.query(`
-    TRUNCATE TABLE
-      fragments_documents, documents,
-      lignes_devis, devis, lignes_prix, photos, notes_vocales, fichiers_a_purger,
-      materiel, prestations, chantiers, clients, tarifs, parametres_chiffrage,
-      entreprise_compteurs, membres_entreprise, entreprises, users
-    RESTART IDENTITY CASCADE
-  `);
+  await nettoyerBase();
 
   const { entreprise: entA, utilisateurId: userA } = await entreprisesRepo.creerEntreprise(
     { nom: "Entreprise Documents A" },

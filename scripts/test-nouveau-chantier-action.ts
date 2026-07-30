@@ -2,6 +2,7 @@ import assert from "node:assert";
 import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import { getChantier } from "../src/server/repositories/chantiers";
+import { nettoyerBase } from "./_test-db";
 
 // Teste directement la logique utilisée par la Server Action (mêmes repositories),
 // sans dépendre du runtime Next.js — creerChantierAction() délègue entièrement à
@@ -23,13 +24,7 @@ async function test(nom: string, fn: () => Promise<void>) {
 }
 
 async function main() {
-  await pool.query(`
-    TRUNCATE TABLE
-      lignes_devis, devis, lignes_prix, photos, notes_vocales, fichiers_a_purger,
-      materiel, prestations, chantiers, clients, tarifs,
-      entreprise_compteurs, membres_entreprise, entreprises, users
-    RESTART IDENTITY CASCADE
-  `);
+  await nettoyerBase();
 
   const { entreprise, utilisateurId } = await entreprisesRepo.creerEntreprise(
     { nom: "Entreprise Nouveau Chantier" },

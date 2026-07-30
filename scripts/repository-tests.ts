@@ -5,6 +5,7 @@ import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as clientsRepo from "../src/server/repositories/clients";
 import * as tarifsRepo from "../src/server/repositories/tarifs";
 import * as devisRepo from "../src/server/repositories/devis";
+import { nettoyerBase } from "./_test-db";
 
 // Lancer : DATABASE_URL=postgresql://atlas_owner:...@127.0.0.1:5432/atlas_test npx tsx scripts/repository-tests.ts
 
@@ -47,13 +48,7 @@ async function creerEntrepriseComplete(nom: string) {
 }
 
 async function main() {
-  await pool.query(`
-    TRUNCATE TABLE
-      lignes_devis, devis, lignes_prix, photos, notes_vocales,
-      materiel, prestations, chantiers, clients, tarifs,
-      entreprise_compteurs, membres_entreprise, entreprises, users
-    RESTART IDENTITY CASCADE
-  `);
+  await nettoyerBase();
 
   const A = await creerEntrepriseComplete("Repo A");
   const B = await creerEntrepriseComplete("Repo B");

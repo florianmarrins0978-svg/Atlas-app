@@ -1,5 +1,6 @@
 import assert from "node:assert";
 import { Pool, type QueryResult } from "pg";
+import { nettoyerBase } from "./_test-db";
 
 // Suite de tests de la couche de données, exécutée directement contre
 // PostgreSQL (atlas_test) — indépendante de Drizzle, pour tester les mécanismes
@@ -38,13 +39,7 @@ async function assertRejects(promise: Promise<unknown>, motifAttendu?: RegExp) {
 }
 
 async function nettoyer() {
-  await pool.query(`
-    TRUNCATE TABLE
-      lignes_devis, devis, lignes_prix, photos, notes_vocales,
-      materiel, prestations, chantiers, clients, tarifs,
-      entreprise_compteurs, membres_entreprise, entreprises, users
-    RESTART IDENTITY CASCADE
-  `);
+  await nettoyerBase();
 }
 
 // Crée une entreprise + utilisateur + adhésion, retourne leurs id.

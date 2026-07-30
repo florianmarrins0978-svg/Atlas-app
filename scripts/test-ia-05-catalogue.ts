@@ -6,6 +6,7 @@ import * as cataloguePrestationsRepo from "../src/server/repositories/catalogue-
 import * as catalogueMaterielsRepo from "../src/server/repositories/catalogue-materiels";
 import * as historiquePrixRepo from "../src/server/repositories/historique-prix";
 import { poserQuestion } from "../src/server/ai/services/assistant-service";
+import { nettoyerBase } from "./_test-db";
 
 let passed = 0;
 let failed = 0;
@@ -22,18 +23,9 @@ async function test(nom: string, fn: () => Promise<void>) {
 }
 
 async function main() {
-  // Nettoyage ciblé : le catalogue est global (jamais tronqué par les autres
-  // tests), on nettoie donc explicitement les entrées créées par CE fichier.
-  await pool.query(`DELETE FROM historique_prix`);
-  await pool.query(`DELETE FROM catalogue_prestations WHERE nom_canonique LIKE 'Test IA-05%'`);
-  await pool.query(`DELETE FROM catalogue_materiels WHERE nom_canonique LIKE 'Test IA-05%'`);
-  await pool.query(`
-    TRUNCATE TABLE
-      lignes_devis, devis, lignes_prix, photos, notes_vocales, fichiers_a_purger,
-      materiel, prestations, chantiers, clients, tarifs,
-      entreprise_compteurs, membres_entreprise, entreprises, users
-    RESTART IDENTITY CASCADE
-  `);
+  // Le catalogue est global (aucun rattachement à entreprises, donc hors
+  // portée du CASCADE) : nettoyerBase le tronque explicitement.
+  await nettoyerBase();
 
   const { entreprise: entA, utilisateurId: userA } = await entreprisesRepo.creerEntreprise(
     { nom: "Entreprise Catalogue A" },

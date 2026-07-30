@@ -8,6 +8,7 @@ import * as cataloguePrestationsRepo from "../src/server/repositories/catalogue-
 import { calculerChiffrage, calculerVariantes } from "../src/server/chiffrage/moteur";
 import { chiffrerChantier } from "../src/server/chiffrage/service";
 import { poserQuestion } from "../src/server/ai/services/assistant-service";
+import { nettoyerBase } from "./_test-db";
 
 let passed = 0;
 let failed = 0;
@@ -24,15 +25,7 @@ async function test(nom: string, fn: () => Promise<void>) {
 }
 
 async function main() {
-  await pool.query(`DELETE FROM historique_prix`);
-  await pool.query(`DELETE FROM catalogue_prestations WHERE nom_canonique LIKE 'Test IA-06%'`);
-  await pool.query(`
-    TRUNCATE TABLE
-      lignes_devis, devis, lignes_prix, photos, notes_vocales, fichiers_a_purger,
-      materiel, prestations, chantiers, clients, tarifs, parametres_chiffrage,
-      entreprise_compteurs, membres_entreprise, entreprises, users
-    RESTART IDENTITY CASCADE
-  `);
+  await nettoyerBase();
 
   const { entreprise: entA, utilisateurId: userA } = await entreprisesRepo.creerEntreprise(
     { nom: "Entreprise Chiffrage A" },
