@@ -107,14 +107,6 @@ END $$;
 -- 4. PRIVILÈGES DU RÔLE APPLICATIF
 -- =====================================================================
 -- atlas_app : lecture/écriture sur les données, jamais de DDL, jamais BYPASSRLS
--- (déjà garanti à la création du rôle — vérifié également par les tests).
-
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'atlas_app') THEN
-    CREATE ROLE atlas_app NOINHERIT NOLOGIN NOCREATEDB NOCREATEROLE NOREPLICATION;
-  END IF;
-  ALTER ROLE atlas_app NOINHERIT NOLOGIN NOCREATEDB NOCREATEROLE NOREPLICATION;
-END $$;
+-- Le rôle applicatif est créé avant les migrations par le bootstrap administratif CI.
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO atlas_app;

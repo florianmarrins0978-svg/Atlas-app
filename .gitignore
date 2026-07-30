@@ -42,6 +42,9 @@ yarn-error.log*
 next-env.d.ts
 .storage/
 
+# local editor settings
+.vscode/
+
 # captures d'écran de vérification de développement (Playwright) — artefacts
 # de construction, pas du code source ; ne doivent jamais gonfler l'historique
 # du dépôt
