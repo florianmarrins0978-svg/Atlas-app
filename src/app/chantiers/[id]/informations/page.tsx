@@ -63,9 +63,12 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
             suit vient d'une analyse. */}
         <div className="mx-6 mt-5 rounded-2xl px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
           <p className="text-[13px]" style={{ color: colors.rust }}>
+            {/* Sans dictée, ne pas répéter l'invitation déjà portée par la
+                section Brouillon juste en dessous : dire simplement d'où
+                viennent les informations affichées. */}
             {transcriptionDisponible
               ? "Proposé à partir de votre dictée — à vérifier avant de continuer."
-              : "Saisissez les informations du chantier, ou enregistrez une note vocale pour en obtenir un brouillon."}
+              : "Aucune dictée n'a encore alimenté cet écran : les informations ci-dessous sont celles que vous saisissez."}
           </p>
         </div>
 
