@@ -1,6 +1,7 @@
 import { readdirSync } from "node:fs";
 import { spawnSync, spawn } from "node:child_process";
 import path from "node:path";
+import { SUITES_SERVEUR } from "./_suites-serveur";
 
 const DOSSIER = path.join(__dirname);
 const NODE = process.execPath;
@@ -26,7 +27,7 @@ async function attendreServeurPret(url: string, tentativesMax = 30): Promise<boo
 
 if (process.argv.includes("--list")) {
   const fichiers = readdirSync(DOSSIER)
-    .filter((f) => f.endsWith("-e2e.ts") || f === "test-health.ts" || f === "test-cron-purge.ts")
+    .filter((f) => f.endsWith("-e2e.ts") || SUITES_SERVEUR.includes(f))
     .sort();
   console.log("Suites e2e découvertes :");
   for (const fichier of fichiers) {
@@ -69,7 +70,7 @@ async function main() {
   }
 
   const fichiers = readdirSync(DOSSIER)
-    .filter((f) => f.endsWith("-e2e.ts") || f === "test-health.ts" || f === "test-cron-purge.ts")
+    .filter((f) => f.endsWith("-e2e.ts") || SUITES_SERVEUR.includes(f))
     .sort();
 
   if (process.argv.includes("--list")) {

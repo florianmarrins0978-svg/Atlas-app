@@ -206,7 +206,7 @@ async function main() {
     await chantiersRepo.mettreAJourDureeEquipe(A, chantier.id, { dureePrevue: "2 jours", tailleEquipe: "2 hommes" });
     const demandeOriginale = "Traite cette demande de bout en bout : élagage d'un sapin08, deux jours, deux hommes.";
     const reponse1 = await poserQuestion(A, chantier.id, [], demandeOriginale);
-    assert.equal(reponse1.succes, true);
+    assert.equal(reponse1.succes, true, reponse1.succes ? "" : `workflow initial en échec : ${reponse1.erreur}`);
     if (!reponse1.succes) return;
 
     const historiquePourSuite = [
@@ -214,8 +214,13 @@ async function main() {
       { role: "assistant" as const, contenu: reponse1.texte },
     ];
     const reponsePourquoi = await poserQuestion(A, chantier.id, historiquePourSuite, "Pourquoi proposes-tu ce prix ?");
-    assert.equal(reponsePourquoi.succes, true);
-    if (reponsePourquoi.succes) assert.ok(reponsePourquoi.texte.toLowerCase().includes("chiffrage"));
+    assert.equal(reponsePourquoi.succes, true, reponsePourquoi.succes ? "" : `question de suivi en échec : ${reponsePourquoi.erreur}`);
+    if (reponsePourquoi.succes) {
+      assert.ok(
+        reponsePourquoi.texte.toLowerCase().includes("chiffrage"),
+        `explication attendue via le chiffrage, obtenu : ${reponsePourquoi.texte}`
+      );
+    }
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

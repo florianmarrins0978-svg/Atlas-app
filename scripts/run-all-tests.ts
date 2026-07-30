@@ -1,14 +1,14 @@
 import { readdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
+import { SUITES_SERVEUR } from "./_suites-serveur";
 
 const DOSSIER = path.join(__dirname);
 const NODE = process.execPath;
 const TSX = path.join(__dirname, "..", "node_modules", "tsx", "dist", "cli.mjs");
-const EXCLUS_SERVEUR = ["test-health.ts", "test-cron-purge.ts"];
 const fichiers = readdirSync(DOSSIER)
   .filter((f) => (f.startsWith("test-") || f.endsWith("-tests.ts") || f.endsWith("-tests-2.ts") || f.endsWith("-tests-3.ts")) && f.endsWith(".ts"))
-  .filter((f) => !f.endsWith("-e2e.ts") && !EXCLUS_SERVEUR.includes(f) && f !== "run-all-tests.ts" && f !== "run-e2e-tests.ts")
+  .filter((f) => !f.endsWith("-e2e.ts") && !SUITES_SERVEUR.includes(f) && f !== "run-all-tests.ts" && f !== "run-e2e-tests.ts")
   .sort();
 
 if (process.argv.includes("--list")) {
