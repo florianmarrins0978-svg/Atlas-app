@@ -314,9 +314,13 @@ export default function BrouillonSection({
   );
 }
 
+// `gap-3` et non `gap-2` : les listes de l'écran principal sont repérées par
+// `div.flex.flex-col.gap-2`, y compris par les tests de bout en bout. Un
+// conteneur du brouillon portant la même signature rendrait ce repère ambigu —
+// et ferait passer une proposition pour une donnée validée.
 function Carte({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-2 rounded-2xl p-4" style={{ backgroundColor: colors.card }}>
+    <div className="flex flex-col gap-3 rounded-2xl p-4" style={{ backgroundColor: colors.card }}>
       {children}
     </div>
   );
@@ -373,7 +377,9 @@ function ListeLignes({
   onRetirer: (index: number) => void;
 }) {
   return (
-    <div className="flex flex-col gap-2">
+    // gap-3 : même raison que dans Carte — ne jamais imiter la signature des
+    // listes de données validées.
+    <div className="flex flex-col gap-3">
       <span className={smallCaps} style={{ color: colors.muted }}>
         {titre}
       </span>

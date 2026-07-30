@@ -2,9 +2,18 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { Page, Locator } from "playwright";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FAKE_MIC = path.join(__dirname, "fixtures", "fake-mic.wav");
+
+// Repère les listes de données validées de l'écran Informations. Les
+// conteneurs du brouillon n'utilisent volontairement pas cette signature de
+// classes, pour qu'une proposition ne puisse jamais être prise pour une
+// donnée confirmée.
+function section(page: Page, label: string): Locator {
+  return page.locator("div.flex.flex-col.gap-2", { has: page.locator("span", { hasText: label }) });
+}
 
 async function main() {
   const browser = await lancerNavigateur({
@@ -52,34 +61,36 @@ async function main() {
   await page.goto(`${chantierUrl}/transcription`, { waitUntil: "networkidle" });
   assert.ok(await page.locator("text=/simulée/").isVisible(), "Le texte transcrit réel (fournisseur dev) doit s'afficher");
 
-  // --- Extraction depuis un texte libre, sans audio ---
+  // --- Brouillon structuré, produit depuis la transcription réelle ---
+  // Le texte analysé n'est plus saisi à la main : c'est bien la dictée
+  // enregistrée ci-dessus, transcrite, qui alimente le brouillon.
   await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });
-  await page.fill(
-    "textarea",
-    "Chantier Dupont, deux jours, deux hommes, dix plaques de BA13, poser la cloison, évacuation des déchets"
+  await page.click("text=Générer le brouillon");
+  await page.waitForSelector("text=Confirmer et ajouter au chantier", { timeout: 10000 });
+  assert.ok(
+    await page.locator("text=/simulée/").first().isVisible(),
+    "Le brouillon doit reprendre le contenu réellement transcrit"
   );
-  await page.click('button:has-text("Analyser")');
-  await page.waitForSelector("text=Informations détectées", { timeout: 10000 });
-  assert.ok(await page.locator("text=/plaques/i").first().isVisible(), "Le matériel détecté doit être affiché pour revue");
+
+  assert.equal(
+    await section(page, "Prestations").locator("input").count(),
+    0,
+    "Aucune prestation réelle ne doit exister tant que le brouillon n'est pas confirmé"
+  );
 
   // --- Confirmation explicite : application via repositories ---
-  await page.click('button:has-text("Confirmer et appliquer")');
-  await page.waitForTimeout(500);
-
+  await page.click('button:has-text("Confirmer et ajouter au chantier")');
+  await page.waitForTimeout(800);
   assert.ok(
-    !(await page.locator("text=Informations détectées").isVisible()),
-    "La proposition doit disparaître une fois appliquée"
-  );
-  assert.ok(
-    await page.locator('input[value="poser la cloison"]').isVisible(),
-    "La prestation confirmée doit apparaître comme une vraie ligne persistée"
+    (await section(page, "Prestations").locator("input").count()) > 0,
+    "La confirmation doit créer de vraies prestations persistées"
   );
 
   // --- Persistance après rechargement ---
   await page.reload({ waitUntil: "networkidle" });
   assert.ok(
-    await page.locator('input[value="poser la cloison"]').isVisible(),
-    "La prestation appliquée doit persister après rechargement"
+    (await section(page, "Prestations").locator("input").count()) > 0,
+    "Les prestations appliquées doivent persister après rechargement"
   );
 
   await browser.close();
