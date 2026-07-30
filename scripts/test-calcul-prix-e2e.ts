@@ -63,16 +63,13 @@ async function main() {
   assert.ok(apresInfos.rows[0].informations_verifiees_at, "Les informations doivent être marquées vérifiées");
 
   // --- Origine du prix annoncée, détail consultable ---
-  assert.ok(
-    await page.locator("text=Calculé depuis vos paramètres").isVisible(),
-    "L'origine du prix doit être annoncée explicitement"
-  );
+  // waitForURL rend la main dès que l'URL change : le contenu rendu côté
+  // serveur peut ne pas encore être peint. On attend donc l'élément lui-même.
+  await page.waitForLoadState("networkidle");
+  await page.waitForSelector("text=Calculé depuis vos paramètres", { timeout: 10000 });
+
   await page.click("text=Voir le détail");
-  await page.waitForTimeout(300);
-  assert.ok(
-    await page.locator("text=Main-d'œuvre").first().isVisible(),
-    "Le détail doit exposer les postes du calcul"
-  );
+  await page.waitForSelector("text=Main-d'œuvre", { timeout: 5000 });
 
   // --- Rien n'est appliqué tant que le patron n'a pas agi ---
   const avant = await pool.query(`SELECT count(*) FROM lignes_prix WHERE chantier_id = $1`, [chantierId]);
@@ -102,10 +99,7 @@ async function main() {
 
   // --- Étape suivante du chantier ---
   await page.goto(chantierUrl, { waitUntil: "networkidle" });
-  assert.ok(
-    await page.locator("text=Préparer le devis").first().isVisible(),
-    "Une fois le prix validé, l'action principale doit devenir « Préparer le devis »"
-  );
+  await page.waitForSelector("text=Préparer le devis", { timeout: 10000 });
 
   await browser.close();
   await pool.end();
