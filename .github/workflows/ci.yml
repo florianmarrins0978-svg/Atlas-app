@@ -59,10 +59,12 @@ jobs:
         run: |
           set -e
           psql -h localhost -p 5432 -X -A -t -U postgres -d atlas_test -c "SELECT rolname, rolsuper, rolbypassrls, rolcreaterole, rolcreatedb, rolcanlogin FROM pg_roles WHERE rolname IN ('postgres','atlas_owner','atlas_app');"
-          if [ -n "$(psql -h localhost -p 5432 -X -A -t -U postgres -d atlas_test -c \"SELECT rolname FROM pg_roles WHERE rolname IN ('atlas_owner','atlas_app') AND (rolsuper OR rolbypassrls);\")" ]; then
-            echo "ERROR: atlas_owner or atlas_app is SUPERUSER/BYPASSRLS"
+          INVALID_ROLES=$(psql -h localhost -p 5432 -X -A -t -U postgres -d atlas_test -c "SELECT rolname FROM pg_roles WHERE rolname IN ('atlas_owner','atlas_app') AND (rolsuper OR rolbypassrls);")
+          if [ -n "$INVALID_ROLES" ]; then
+            echo "Erreur : rôle PostgreSQL trop privilégié : $INVALID_ROLES"
             exit 1
           fi
+          echo "Rôles PostgreSQL applicatifs correctement restreints."
 
       - name: Appliquer les migrations
         env:
