@@ -27,6 +27,13 @@ async function main() {
     "Le texte réel de la transcription du seed doit s'afficher"
   );
 
+  // La transcription n'est pas une impasse : elle doit proposer la suite du
+  // parcours plutôt que d'obliger à repasser par la fiche du chantier.
+  assert.ok(
+    await page.locator("text=Continuer vers les informations").isVisible(),
+    "Une transcription disponible doit proposer de continuer vers les informations"
+  );
+
   // --- Persistance après rechargement ---
   await page.reload({ waitUntil: "networkidle" });
   assert.ok(await page.locator("text=/Alors pour la salle de bain/").isVisible());

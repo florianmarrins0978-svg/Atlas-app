@@ -139,9 +139,12 @@ export default function NouveauChantierPage() {
             </PrimaryButton>
           </div>
           <p className="text-center text-[13px]" style={{ color: erreur ? colors.alert : colors.muted }}>
+            {/* Ne promet plus une modification ultérieure du client : aucun
+                écran ne le permet aujourd'hui. Mieux vaut inviter à renseigner
+                maintenant ce qui est connu. */}
             {erreur ??
               (nomChantier.trim().length > 0
-                ? "Vous pourrez compléter les informations manquantes depuis la fiche du chantier."
+                ? "Renseignez dès maintenant ce que vous savez du client : ces informations ne sont plus modifiables ensuite."
                 : "Le nom du chantier est nécessaire pour continuer.")}
           </p>
         </form>

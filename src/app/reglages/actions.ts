@@ -10,7 +10,7 @@ export async function creerTarifAction(intitule: string, prix: string) {
   return creerTarif(ctx, { intitule, prix });
 }
 
-export async function modifierTarifAction(id: string, data: { intitule?: string; prix?: string }) {
+export async function modifierTarifAction(id: string, data: { intitule?: string; prix?: string; unite?: string }) {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "modifier un tarif");
   return modifierTarif(ctx, id, data);

@@ -301,13 +301,25 @@ export default function NoteVocaleClient({
                 Transcription en cours…
               </p>
             )}
+            {/* Une fois la transcription obtenue, la suite du parcours est
+                l'écran Informations : la proposer ici évite de repasser par la
+                fiche du chantier pour la retrouver. */}
             {statutTranscription === "reussie" && (
-              <p className="text-center text-[13px]" style={{ color: colors.muted }}>
-                Transcription disponible —{" "}
-                <a href={`/chantiers/${chantierId}/transcription`} className="font-medium" style={{ color: colors.rust }}>
-                  voir le texte
+              <>
+                <a
+                  href={`/chantiers/${chantierId}/informations`}
+                  className="block w-full rounded-2xl py-3.5 text-center text-[16px] font-medium text-white"
+                  style={{ backgroundColor: colors.rust }}
+                >
+                  Continuer vers les informations →
                 </a>
-              </p>
+                <p className="mt-3 text-center text-[13px]" style={{ color: colors.muted }}>
+                  Transcription disponible —{" "}
+                  <a href={`/chantiers/${chantierId}/transcription`} className="font-medium" style={{ color: colors.rust }}>
+                    voir le texte
+                  </a>
+                </p>
+              </>
             )}
             {statutTranscription === "echouee" && (
               <div className="text-center">

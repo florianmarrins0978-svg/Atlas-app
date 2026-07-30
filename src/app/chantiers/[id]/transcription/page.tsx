@@ -1,14 +1,12 @@
 import { notFound } from "next/navigation";
-import ScreenHeader from "@/components/ScreenHeader";
+import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
 
-// Intégration réelle. Affiche l'état réel de la transcription (lot IA-01) :
-// non demandée / en cours / réussie / échouée. Le lancement/relancement de la
-// transcription se fait depuis l'écran Note vocale (pas de contrôle dupliqué
-// ici) — cet écran reste une consultation, conforme au modèle existant qui ne
-// porte qu'une seule transcription par chantier (jamais d'historique).
+// Consultation seule : le lancement et la relance de la transcription vivent sur
+// l'écran Note vocale, jamais en double ici. Le modèle ne porte qu'une
+// transcription par chantier — aucun historique n'est affiché.
 export const dynamic = "force-dynamic";
 
 export default async function TranscriptionPage({ params }: { params: Promise<{ id: string }> }) {
@@ -19,27 +17,77 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
   if (!chantier) notFound();
 
   const note = await getNoteVocale(ctx, id);
+  const disponible = note?.transcriptionStatut === "reussie" && !!note.transcription;
 
   function contenu() {
     if (!note) return "Aucune note vocale pour ce chantier.";
-    if (note.transcriptionStatut === "reussie" && note.transcription) return note.transcription;
+    if (disponible) return note!.transcription!;
     if (note.transcriptionStatut === "en_cours") return "Transcription en cours…";
     if (note.transcriptionStatut === "echouee") {
-      return `Échec de la transcription : ${note.transcriptionErreur ?? "erreur inconnue"}. Le fichier audio original reste disponible sur l'écran Note vocale.`;
+      return `La transcription a échoué : ${note.transcriptionErreur ?? "erreur inconnue"}. Votre enregistrement est intact — vous pouvez relancer depuis l'écran Note vocale.`;
     }
-    return "Cette note vocale n'a pas encore de transcription. Lancez-la depuis l'écran Note vocale.";
+    return "Cette note vocale n'a pas encore été transcrite.";
   }
 
-  const disponible = note?.transcriptionStatut === "reussie" && !!note.transcription;
-
   return (
-    <div>
-      <ScreenHeader title="Transcription" backHref={`/chantiers/${id}/informations`} />
-      <div className="p-4">
-        <p className="mb-3 text-xs text-ink/40">Texte brut de la note vocale, non modifié.</p>
-        <div className="ticket p-4">
-          <p className={`text-sm leading-relaxed ${disponible ? "text-ink/80" : "text-ink/40"}`}>{contenu()}</p>
+    <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
+      <div className="pb-16">
+        <div className="px-6 pt-8">
+          <a
+            href={`/chantiers/${id}`}
+            aria-label="Retour à la fiche du chantier"
+            className="flex h-10 w-10 items-center justify-center rounded-full"
+            style={{ backgroundColor: colors.rustTint }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
+              <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </a>
         </div>
+
+        <div className="px-6 pt-5">
+          <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
+            {chantier.nom}
+          </p>
+          <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
+            Transcription
+          </h1>
+        </div>
+
+        <p className="px-6 pt-4 text-[13px]" style={{ color: colors.muted }}>
+          Texte brut de votre dictée, tel qu&apos;il a été transcrit — jamais retouché.
+        </p>
+
+        <div className="mx-6 mt-3 rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
+          <p
+            className="whitespace-pre-wrap text-[15px] leading-relaxed"
+            style={{ color: disponible ? colors.ink : colors.muted }}
+          >
+            {contenu()}
+          </p>
+        </div>
+
+        {/* Suite naturelle du parcours : la transcription n'est pas une fin en
+            soi, elle alimente les informations du chantier. */}
+        {disponible && (
+          <a
+            href={`/chantiers/${id}/informations`}
+            className="mt-5 block px-6 text-center text-[14px] font-medium"
+            style={{ color: colors.rust }}
+          >
+            Continuer vers les informations →
+          </a>
+        )}
+
+        {note && !disponible && note.transcriptionStatut !== "en_cours" && (
+          <a
+            href={`/chantiers/${id}/note-vocale`}
+            className="mt-5 block px-6 text-center text-[14px] font-medium"
+            style={{ color: colors.rust }}
+          >
+            Aller à la note vocale →
+          </a>
+        )}
       </div>
     </div>
   );

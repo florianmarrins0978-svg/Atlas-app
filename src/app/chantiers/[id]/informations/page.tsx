@@ -25,6 +25,8 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
     getNoteVocale(ctx, id),
   ]);
 
+  const transcriptionDisponible = note?.transcriptionStatut === "reussie" && !!note.transcription;
+
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-16">
@@ -39,9 +41,12 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
               <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </a>
-          <a href={`/chantiers/${id}/transcription`} className="text-[14px] font-medium" style={{ color: colors.rust }}>
-            Voir la transcription
-          </a>
+          {/* Lien masqué sans transcription : il ne mènerait qu'à un écran vide. */}
+          {transcriptionDisponible && (
+            <a href={`/chantiers/${id}/transcription`} className="text-[14px] font-medium" style={{ color: colors.rust }}>
+              Voir la transcription
+            </a>
+          )}
         </div>
 
         <div className="px-6 pt-5">
@@ -53,9 +58,14 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
           </h1>
         </div>
 
+        {/* Le bandeau n'a de sens que si une dictée a réellement alimenté cet
+            écran : l'afficher sans transcription laisserait croire que ce qui
+            suit vient d'une analyse. */}
         <div className="mx-6 mt-5 rounded-2xl px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
           <p className="text-[13px]" style={{ color: colors.rust }}>
-            Proposé à partir de la dictée — à vérifier avant de continuer.
+            {transcriptionDisponible
+              ? "Proposé à partir de votre dictée — à vérifier avant de continuer."
+              : "Saisissez les informations du chantier, ou enregistrez une note vocale pour en obtenir un brouillon."}
           </p>
         </div>
 
@@ -79,7 +89,7 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
                 }
               : null
           }
-          transcriptionDisponible={note?.transcriptionStatut === "reussie" && !!note.transcription}
+          transcriptionDisponible={transcriptionDisponible}
         />
       </div>
     </div>

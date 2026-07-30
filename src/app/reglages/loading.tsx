@@ -1,11 +1,12 @@
-import ScreenHeader from "@/components/ScreenHeader";
+import { colors, font, smallCaps } from "@/lib/design-tokens";
 
 export default function Chargement() {
   return (
-    <div>
-      <ScreenHeader title="Tarifs" />
-      <div className="p-4">
-        <p className="text-xs text-ink/40">Chargement…</p>
+    <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
+      <div className="px-6 pt-8">
+        <span className={smallCaps} style={{ color: colors.muted }}>
+          Chargement…
+        </span>
       </div>
     </div>
   );

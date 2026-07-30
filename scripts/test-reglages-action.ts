@@ -43,6 +43,15 @@ async function main() {
     assert.equal(liste.find((t) => t.id === tarifId)?.prix, "40.00");
   });
 
+  // L'unité conditionne la multiplication par une quantité confirmée lors du
+  // calcul du prix (proposition-prix.ts) : elle doit réellement être
+  // enregistrable depuis l'écran Tarifs, qui l'expose désormais.
+  await test("modifierTarifAction enregistre l'unité, utilisée par le calcul du prix", async () => {
+    await modifierTarifAction(tarifId, { unite: "m²" });
+    const liste = await tarifsRepo.listerTarifs(ctx);
+    assert.equal(liste.find((t) => t.id === tarifId)?.unite, "m²");
+  });
+
   await test("supprimerTarifAction retire le tarif (suppression douce)", async () => {
     await supprimerTarifAction(tarifId);
     const liste = await tarifsRepo.listerTarifs(ctx);
