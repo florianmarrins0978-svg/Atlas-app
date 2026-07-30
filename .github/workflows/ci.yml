@@ -78,6 +78,28 @@ jobs:
           set -e
           psql -h localhost -p 5432 -X -A -U postgres -d atlas_test -c "SELECT n.nspname, c.relname, c.relrowsecurity, c.relforcerowsecurity, pg_get_userbyid(c.relowner) AS owner FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relkind = 'r' ORDER BY c.relname;"
 
+      - name: Diagnostic privilèges atlas_app
+        env:
+          PGPASSWORD: postgres_ci_pw
+        run: |
+          set -e
+          echo '=== current_user/session_user (postgres) ==='
+          psql -h localhost -p 5432 -U postgres -d atlas_test -c "SELECT current_user, session_user;"
+          echo '=== current_user/session_user (atlas_owner) ==='
+          PGPASSWORD=atlas_owner_ci_pw psql -h localhost -p 5432 -U atlas_owner -d atlas_test -c "SELECT current_user, session_user;"
+          echo '=== current_user/session_user (atlas_app) ==='
+          PGPASSWORD=atlas_app_ci_pw psql -h localhost -p 5432 -U atlas_app -d atlas_test -c "SELECT current_user, session_user;"
+          echo '=== has_table_privilege for atlas_app ==='
+          psql -h localhost -p 5432 -U postgres -d atlas_test -c "SELECT c.relname, pg_get_userbyid(c.relowner) AS owner, has_table_privilege('atlas_app', c.oid, 'SELECT') AS can_select, has_table_privilege('atlas_app', c.oid, 'INSERT') AS can_insert, has_table_privilege('atlas_app', c.oid, 'UPDATE') AS can_update, has_table_privilege('atlas_app', c.oid, 'DELETE') AS can_delete FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relname IN ('lignes_devis','fragments_documents','propositions_ia') ORDER BY c.relname;"
+          echo '=== relacl raw data ==='
+          psql -h localhost -p 5432 -U postgres -d atlas_test -c "SELECT c.relname, pg_get_userbyid(c.relowner) AS owner, c.relacl FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relname IN ('lignes_devis','fragments_documents','propositions_ia') ORDER BY c.relname;"
+          echo '=== information_schema.role_table_grants ==='
+          psql -h localhost -p 5432 -U postgres -d atlas_test -c "SELECT grantee, table_name, privilege_type FROM information_schema.role_table_grants WHERE grantee = 'atlas_app' AND table_name IN ('lignes_devis','fragments_documents','propositions_ia') ORDER BY table_name, privilege_type;"
+          echo '=== pg_default_acl ==='
+          psql -h localhost -p 5432 -U postgres -d atlas_test -c "SELECT defaclrole::regrole AS owner_role, defaclnamespace::regnamespace AS schema_name, defaclobjtype, defaclacl FROM pg_default_acl ORDER BY 1, 2, 3;"
+          echo '=== atlas_app simple selects ==='
+          PGPASSWORD=atlas_app_ci_pw psql -h localhost -p 5432 -U atlas_app -d atlas_test -c "SELECT current_user; SELECT count(*) FROM lignes_devis; SELECT count(*) FROM fragments_documents; SELECT count(*) FROM propositions_ia;"
+
       - name: Suite de tests (base de données)
         env:
           DATABASE_URL: postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test
