@@ -94,6 +94,9 @@ async function main() {
   // --- Validation humaine explicite ---
   await page.click("text=Préparer le devis");
   await page.waitForURL(/\/export$/, { timeout: 10000 });
+  // L'écran Devis crée le brouillon et horodate devis_genere_at pendant son
+  // rendu : lire les jalons avant la fin de ce rendu donnerait un état périmé.
+  await page.waitForLoadState("networkidle");
 
   const apresValidation = await pool.query(`SELECT prix_valide_at FROM chantiers WHERE id = $1`, [chantierId]);
   assert.ok(apresValidation.rows[0].prix_valide_at, "Le prix doit être validé après action explicite");
