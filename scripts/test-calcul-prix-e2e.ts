@@ -98,8 +98,24 @@ async function main() {
   assert.ok(apresValidation.rows[0].prix_valide_at, "Le prix doit être validé après action explicite");
 
   // --- Étape suivante du chantier ---
+  // L'écran Devis crée le brouillon dès son ouverture (getOuCreerDevisBrouillon)
+  // et horodate devis_genere_at : l'étape suivante est donc « Consulter le
+  // devis », pas « Préparer le devis ». On vérifie le jalon en base avant de
+  // vérifier ce que la fiche propose.
+  const jalons = await pool.query(
+    `SELECT prix_valide_at, devis_genere_at, devis_envoye_at FROM chantiers WHERE id = $1`,
+    [chantierId]
+  );
+  assert.ok(jalons.rows[0].devis_genere_at, "L'ouverture de l'écran Devis doit avoir créé le brouillon");
+  assert.equal(jalons.rows[0].devis_envoye_at, null, "Aucun devis ne doit être envoyé automatiquement");
+
   await page.goto(chantierUrl, { waitUntil: "networkidle" });
-  await page.waitForSelector("text=Préparer le devis", { timeout: 10000 });
+  await page.waitForSelector("text=Consulter le devis", { timeout: 10000 });
+  assert.equal(
+    await page.locator("text=Calculer le prix").count(),
+    0,
+    "Le prix étant validé, le chantier ne doit plus proposer de le calculer"
+  );
 
   await browser.close();
   await pool.end();
