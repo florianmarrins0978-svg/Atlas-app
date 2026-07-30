@@ -119,4 +119,13 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Tests de bout en bout
+        env:
+          # Sans CRON_SECRET, la route de purge répond 503 (« non configuré »)
+          # au lieu de 401 : test-cron-purge.ts vérifie précisément le rejet
+          # d'un appel non authentifié, ce qui suppose un secret configuré.
+          CRON_SECRET: ci-placeholder-cron-secret-0000000000
+          # Adosse la limitation de débit à Redis plutôt qu'à la mémoire du
+          # serveur, pour que le runner puisse remettre à zéro le compteur de
+          # connexion entre deux suites (cf. scripts/run-e2e-tests.ts).
+          REDIS_URL: redis://localhost:6379
         run: npm run test:e2e

@@ -1,6 +1,7 @@
 import { readdirSync } from "node:fs";
 import { spawnSync, spawn } from "node:child_process";
 import path from "node:path";
+import Redis from "ioredis";
 import { SUITES_SERVEUR } from "./_suites-serveur";
 
 const DOSSIER = path.join(__dirname);
@@ -10,6 +11,33 @@ const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
 
 function attendre(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Chaque suite ouvre sa propre session avec le compte de démonstration, alors
+// que la connexion est limitée à 5 tentatives par email et par fenêtre de 15
+// minutes (LIMITES.connexion) : passé la cinquième suite, toutes les
+// connexions échouaient, et l'échec se présentait comme un banal dépassement de
+// délai sur la redirection post-login.
+//
+// Le compteur est donc remis à zéro entre deux suites — qui sont indépendantes
+// et représentent chacune une session distincte. Le contrôle reste entier à
+// l'intérieur d'une suite, et sa logique propre est couverte par
+// test-rate-limit.ts et test-rate-limit-redis-real.ts.
+//
+// Suppose REDIS_URL : avec l'adaptateur mémoire, le compteur vit dans le
+// processus serveur et reste hors d'atteinte.
+async function reinitialiserLimiteConnexion() {
+  const url = process.env.REDIS_URL;
+  if (!url) return;
+  const redis = new Redis(url, { lazyConnect: true, maxRetriesPerRequest: 1 });
+  try {
+    const cles = await redis.keys("ratelimit:connexion:*");
+    if (cles.length > 0) await redis.del(...cles);
+  } catch (err) {
+    console.warn(`⚠ Réinitialisation de la limite de connexion impossible : ${err instanceof Error ? err.message : err}`);
+  } finally {
+    await redis.quit();
+  }
 }
 
 async function attendreServeurPret(url: string, tentativesMax = 30): Promise<boolean> {
@@ -85,6 +113,7 @@ async function main() {
   let echecs = 0;
   for (const fichier of fichiers) {
     console.log(`=== ${fichier} ===`);
+    await reinitialiserLimiteConnexion();
     const resultat = spawnSync(NODE, [TSX, path.join(DOSSIER, fichier)], {
       stdio: "inherit",
       env: process.env,
