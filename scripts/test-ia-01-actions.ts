@@ -83,8 +83,8 @@ async function main() {
     if (!resultat.succes) return;
 
     const { prestationsCreees, materielCree } = await appliquerExtractionAction(chantier.id, {
-      prestations: resultat.proposition.prestations,
-      materiel: resultat.proposition.materiel,
+      prestations: resultat.proposition.prestations.map((p) => p.libelle),
+      materiel: resultat.proposition.materiel.map((m) => m.libelle),
       dureePrevue: resultat.proposition.dureePrevue ?? undefined,
       tailleEquipe: resultat.proposition.tailleEquipe ?? undefined,
     });

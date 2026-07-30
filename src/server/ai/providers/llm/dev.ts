@@ -1,7 +1,7 @@
 import type { FournisseurLLM, ResultatLLM, ResultatLLMAvecOutils, MessageConversation, DefinitionOutil } from "./interface";
 import { erreurIA } from "../../errors";
 import { NOM_OUTIL_PROPOSITION } from "../../propositions";
-import { analyserDemandeTexte } from "../../../orchestrateur/analyse-demande";
+import { analyserDemandeTexte, MOTS_AMBIGUS } from "../../../orchestrateur/analyse-demande";
 import {
   construirePropositionDevis,
   type CorrespondanceTarif,
@@ -17,6 +17,28 @@ import type { ResultatWorkflow } from "../../../orchestrateur/types";
 // jour où un second cas d'usage LLM apparaîtra (voir Lot IA-01.5).
 // L'analyse de texte elle-même (analyserDemandeTexte) est partagée avec
 // l'orchestrateur (lot IA-08) — jamais dupliquée.
+const MOTS_DECHETS = /d[ée]chet|branchage|bois|[ée]vacuation|benne|gravat|d[ée]blai/i;
+const MOTS_ACCES = /acc[èe]s|portail|[ée]chafaudage|[ée]tage|stationnement|ruelle|cour|passage étroit/i;
+
+// Quantité explicitement écrite dans le texte, avec son unité. Uniquement ce
+// qui est réellement présent : sans nombre ET unité reconnaissables, les deux
+// champs restent nuls — le fournisseur de développement n'extrapole jamais une
+// quantité à partir d'un pluriel ou d'un contexte.
+const REGEX_QUANTITE = /(\d+(?:[.,]\d+)?)\s*(m²|m2|ml|m³|m3|cm|mm|m|kg|t|litres?|l|sacs?|plaques?|rouleaux?|palettes?|unit[ée]s?|heures?|h)\b/i;
+
+function enLigneExtraite(segment: string) {
+  const m = segment.match(REGEX_QUANTITE);
+  return {
+    libelle: segment,
+    // Le segment brut sert déjà de libellé : aucune description séparée n'est
+    // inventée ici. Un vrai fournisseur, lui, peut en produire une.
+    description: null,
+    quantite: m ? m[1] : null,
+    unite: m ? m[2] : null,
+    aConfirmer: MOTS_AMBIGUS.test(segment),
+  };
+}
+
 export const fournisseurLLMDev: FournisseurLLM = {
   nom: "dev",
   async genererTexte(_systeme: string, message: string): Promise<ResultatLLM> {
@@ -26,15 +48,24 @@ export const fournisseurLLMDev: FournisseurLLM = {
 
     const { prestations, materiel, ambiguites, dureeTexte, equipeTexte } = analyserDemandeTexte(message);
 
+    // Les segments parlant de déchets ou d'accès sont retirés des prestations :
+    // ce sont des informations de chantier, pas des travaux à chiffrer.
+    const dechets = prestations.filter((s) => MOTS_DECHETS.test(s));
+    const acces = prestations.filter((s) => !MOTS_DECHETS.test(s) && MOTS_ACCES.test(s));
+    const travaux = prestations.filter((s) => !MOTS_DECHETS.test(s) && !MOTS_ACCES.test(s));
+
     const informationsManquantes: string[] = [];
     if (!dureeTexte) informationsManquantes.push("Durée prévue non détectée");
     if (!equipeTexte) informationsManquantes.push("Taille d'équipe non détectée");
+    if (dechets.length === 0) informationsManquantes.push("Gestion des déchets non précisée");
 
     const proposition = {
-      prestations,
+      prestations: travaux.map(enLigneExtraite),
+      materiel: materiel.map(enLigneExtraite),
       dureePrevue: dureeTexte,
       tailleEquipe: equipeTexte,
-      materiel,
+      gestionDechets: dechets.length > 0 ? dechets.join(" ; ") : null,
+      contraintesAcces: acces.length > 0 ? acces.join(" ; ") : null,
       remarques: null,
       ambiguites,
       informationsManquantes,

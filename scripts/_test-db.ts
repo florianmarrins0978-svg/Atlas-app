@@ -21,6 +21,7 @@ const TABLES = [
   "fragments_documents",
   "documents",
   "propositions_ia",
+  "brouillons_informations",
   "lignes_devis",
   "devis",
   "lignes_prix",

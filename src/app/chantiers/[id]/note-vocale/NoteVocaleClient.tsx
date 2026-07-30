@@ -3,9 +3,18 @@
 import { useEffect, useRef, useState } from "react";
 import { colors, font } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
-import { enregistrerNoteVocaleAction, lancerTranscriptionAction } from "./actions";
+import { ACCEPT_AUDIO } from "@/server/upload-limits";
+import {
+  enregistrerNoteVocaleAction,
+  lancerTranscriptionAction,
+  supprimerNoteVocaleAction,
+} from "./actions";
 
 type Etat = "vide" | "enregistrement" | "note" | "confirmation";
+// Le remplacement conserve la note tant qu'une nouvelle n'est pas enregistrée ;
+// la suppression, elle, retire la note immédiatement. Deux gestes distincts,
+// donc deux confirmations distinctes.
+type ModeConfirmation = "remplacer" | "supprimer";
 
 type StatutTranscription = "non_demandee" | "en_cours" | "reussie" | "echouee";
 
@@ -38,8 +47,10 @@ export default function NoteVocaleClient({
   const [erreurTranscription, setErreurTranscription] = useState<string | null>(
     noteInitiale?.transcriptionErreur ?? null
   );
+  const [modeConfirmation, setModeConfirmation] = useState<ModeConfirmation>("remplacer");
 
   const audioRef = useRef<HTMLAudioElement>(null);
+  const fichierRef = useRef<HTMLInputElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -110,6 +121,54 @@ export default function NoteVocaleClient({
     setFraichementEnregistree(false);
   }
 
+  async function confirmerSuppression() {
+    setEnCours(true);
+    setErreur(null);
+    try {
+      await supprimerNoteVocaleAction(chantierId);
+      setStorageKey(null);
+      setDureeNote(0);
+      setLecture(false);
+      setProgression(0);
+      setFraichementEnregistree(false);
+      setStatutTranscription("non_demandee");
+      setErreurTranscription(null);
+      setEtat("vide");
+    } catch {
+      setErreur("La note n'a pas pu être supprimée. Réessayez.");
+      setEtat("note");
+    } finally {
+      setEnCours(false);
+    }
+  }
+
+  // Import d'un fichier déjà présent sur le téléphone. Le format est filtré ici
+  // par confort, mais c'est le serveur qui décide (verifierTypeAudio).
+  async function importerFichier(fichier: File) {
+    setErreur(null);
+    setEnCours(true);
+    try {
+      const fd = new FormData();
+      fd.set("fichier", fichier);
+      const note = await enregistrerNoteVocaleAction(chantierId, fd);
+      setStorageKey(note.storageKey);
+      setDureeNote(note.dureeSecondes ?? 0);
+      setLecture(false);
+      setProgression(0);
+      setFraichementEnregistree(true);
+      setStatutTranscription("non_demandee");
+      setErreurTranscription(null);
+      setEtat("note");
+    } catch (err) {
+      // Le message du serveur (taille, format) est plus précis que tout libellé
+      // générique : on le montre tel quel quand il existe.
+      setErreur(err instanceof Error && err.message ? err.message : "Ce fichier n'a pas pu être ajouté.");
+    } finally {
+      setEnCours(false);
+      if (fichierRef.current) fichierRef.current.value = "";
+    }
+  }
+
   async function lancerTranscription() {
     setStatutTranscription("en_cours");
     setErreurTranscription(null);
@@ -144,6 +203,26 @@ export default function NoteVocaleClient({
           <PrimaryButton onClick={demarrer} disabled={enCours}>
             <MicIcon /> Enregistrer une note vocale
           </PrimaryButton>
+          <input
+            ref={fichierRef}
+            type="file"
+            accept={ACCEPT_AUDIO}
+            aria-label="Ajouter un fichier audio"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) importerFichier(f);
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => fichierRef.current?.click()}
+            disabled={enCours}
+            className="mt-3 block w-full text-center text-[14px] font-medium disabled:opacity-40"
+            style={{ color: colors.rust }}
+          >
+            {enCours ? "Ajout en cours…" : "Ajouter un fichier audio"}
+          </button>
           <p className="mt-4 text-center text-[14px]" style={{ color: erreur ? colors.alert : colors.muted }}>
             {erreur ?? "Décrivez les prestations, la durée, l'équipe et le matériel nécessaire."}
           </p>
@@ -246,12 +325,31 @@ export default function NoteVocaleClient({
             )}
           </div>
 
+          {erreur && (
+            <p className="mt-4 text-center text-[13px]" style={{ color: colors.alert }}>
+              {erreur}
+            </p>
+          )}
+
           <button
-            onClick={() => setEtat("confirmation")}
+            onClick={() => {
+              setModeConfirmation("remplacer");
+              setEtat("confirmation");
+            }}
             className="mt-4 block w-full text-center text-[14px] font-medium"
             style={{ color: colors.rust }}
           >
             Remplacer la note
+          </button>
+          <button
+            onClick={() => {
+              setModeConfirmation("supprimer");
+              setEtat("confirmation");
+            }}
+            className="mt-3 block w-full text-center text-[14px] font-medium"
+            style={{ color: colors.muted }}
+          >
+            Supprimer la note
           </button>
         </>
       )}
@@ -261,10 +359,12 @@ export default function NoteVocaleClient({
           <div className="w-full rounded-t-[26px] px-6 pb-9 pt-3" style={{ backgroundColor: colors.cream }}>
             <div className="mx-auto mb-5 h-1 w-10 rounded-full" style={{ backgroundColor: colors.line }} />
             <p className="mb-1 text-center text-[16px]" style={{ color: colors.ink, fontFamily: font.display }}>
-              Remplacer cette note vocale ?
+              {modeConfirmation === "remplacer" ? "Remplacer cette note vocale ?" : "Supprimer cette note vocale ?"}
             </p>
             <p className="mb-5 text-center text-[13px]" style={{ color: colors.muted }}>
-              La note actuelle sera définitivement supprimée.
+              {modeConfirmation === "remplacer"
+                ? "La note actuelle sera conservée jusqu'à l'enregistrement de la nouvelle."
+                : "La note et sa transcription seront retirées de ce chantier."}
             </p>
             <div className="flex flex-col gap-2.5">
               <button
@@ -275,11 +375,12 @@ export default function NoteVocaleClient({
                 Annuler
               </button>
               <button
-                onClick={confirmerRemplacement}
-                className="rounded-2xl py-3.5 text-[15px] font-medium"
+                onClick={modeConfirmation === "remplacer" ? confirmerRemplacement : confirmerSuppression}
+                disabled={enCours}
+                className="rounded-2xl py-3.5 text-[15px] font-medium disabled:opacity-40"
                 style={{ color: colors.alert }}
               >
-                Remplacer
+                {modeConfirmation === "remplacer" ? "Remplacer" : "Supprimer"}
               </button>
             </div>
           </div>

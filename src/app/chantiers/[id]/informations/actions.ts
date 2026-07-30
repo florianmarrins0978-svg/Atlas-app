@@ -14,7 +14,17 @@ import { getTarif } from "@/server/repositories/tarifs";
 import { ajouterLignePrixDirectAction } from "@/app/chantiers/[id]/prix/actions";
 import { chargerDevisAction } from "@/app/chantiers/[id]/export/actions";
 import { extraire } from "@/server/ai/services/extraction-service";
-import type { PropositionExtraction } from "@/server/ai/schemas/extraction";
+import { genererBrouillon } from "@/server/ai/services/brouillon-service";
+import {
+  getBrouillon,
+  enregistrerCorrectionHumaine,
+  marquerConfirme,
+} from "@/server/repositories/brouillons-informations";
+import {
+  PropositionExtractionSchema,
+  type PropositionExtraction,
+  type LigneExtraite,
+} from "@/server/ai/schemas/extraction";
 import type { ResultatApplicationProposition, ResultatConfirmation, CategorieConflit } from "@/server/ai/propositions";
 import { reclamerProposition } from "@/server/repositories/propositions-ia";
 import { AccesRefuseError } from "@/server/db/with-entreprise";
@@ -99,6 +109,85 @@ export async function appliquerExtractionAction(
     });
   }
   return { prestationsCreees, materielCree };
+}
+
+// --- Brouillon structuré issu de la dictée -------------------------------
+// Le brouillon vit côté serveur : il survit au rechargement, et son contenu
+// n'est jamais repris depuis le navigateur au moment de l'appliquer.
+
+export async function chargerBrouillonAction(chantierId: string) {
+  const ctx = await getCurrentCtx();
+  return getBrouillon(ctx, chantierId);
+}
+
+// Génère (ou régénère) le brouillon depuis la transcription enregistrée.
+// `remplacer` n'est transmis que lorsque le patron a explicitement accepté
+// d'écraser ses propres corrections, après avoir vu le conflit.
+export async function genererBrouillonAction(chantierId: string, remplacer = false) {
+  const ctx = await getCurrentCtx();
+  const resultat = await genererBrouillon(ctx, chantierId, { remplacer });
+
+  // Le conflit ne traverse pas la frontière client tel quel : seul ce qui est
+  // nécessaire à l'affichage du choix est transmis.
+  if (resultat.statut === "conflit") {
+    return { statut: "conflit" as const, propositionNouvelle: resultat.propositionNouvelle };
+  }
+  return resultat;
+}
+
+// Correction humaine du brouillon. Valide la forme reçue avant écriture : le
+// client ne peut pas déposer une structure arbitraire dans la base.
+export async function enregistrerBrouillonAction(chantierId: string, contenu: unknown) {
+  const ctx = await getCurrentCtx();
+  const analyse = PropositionExtractionSchema.safeParse(contenu);
+  if (!analyse.success) {
+    return { succes: false as const, erreur: "Brouillon invalide." };
+  }
+  const brouillon = await enregistrerCorrectionHumaine(ctx, chantierId, analyse.data);
+  if (!brouillon) return { succes: false as const, erreur: "Aucun brouillon à modifier." };
+  return { succes: true as const, brouillon };
+}
+
+// Confirmation explicite : reprend le contenu DEPUIS LA BASE (jamais depuis le
+// client) et le déverse dans les données métier via les repositories existants.
+// Idempotent au sens utile : un brouillon déjà confirmé n'est pas réappliqué.
+export async function confirmerBrouillonAction(chantierId: string) {
+  const ctx = await getCurrentCtx();
+  const brouillon = await getBrouillon(ctx, chantierId);
+  if (!brouillon) return { succes: false as const, erreur: "Aucun brouillon à confirmer." };
+  if (brouillon.statut === "confirme") {
+    return { succes: false as const, erreur: "Ce brouillon a déjà été confirmé." };
+  }
+
+  const contenu = brouillon.contenu;
+  const prestationsCreees = [];
+  for (const ligne of contenu.prestations) {
+    const libelle = libelleAvecQuantite(ligne);
+    if (libelle) prestationsCreees.push(await ajouterPrestation(ctx, chantierId, libelle));
+  }
+  const materielCree = [];
+  for (const ligne of contenu.materiel) {
+    const libelle = libelleAvecQuantite(ligne);
+    if (libelle) materielCree.push(await ajouterMateriel(ctx, chantierId, libelle));
+  }
+  if (contenu.dureePrevue || contenu.tailleEquipe) {
+    await mettreAJourDureeEquipe(ctx, chantierId, {
+      dureePrevue: contenu.dureePrevue ?? undefined,
+      tailleEquipe: contenu.tailleEquipe ?? undefined,
+    });
+  }
+
+  await marquerConfirme(ctx, chantierId);
+  return { succes: true as const, prestationsCreees, materielCree };
+}
+
+// Recompose un libellé lisible à partir de la ligne structurée. N'ajoute
+// jamais de quantité absente : sans quantité ET unité, le libellé est repris tel quel.
+function libelleAvecQuantite(ligne: LigneExtraite): string {
+  const base = ligne.libelle.trim();
+  if (!base) return "";
+  if (ligne.quantite && ligne.unite) return `${base} (${ligne.quantite} ${ligne.unite})`;
+  return base;
 }
 
 // Applique les propositions confirmées par l'utilisateur (assistant, lot

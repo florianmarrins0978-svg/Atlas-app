@@ -59,7 +59,7 @@ async function main() {
     if (resultat.succes) {
       assert.match(resultat.proposition.dureePrevue ?? "", /jour/);
       assert.match(resultat.proposition.tailleEquipe ?? "", /homme/);
-      assert.ok(resultat.proposition.materiel.some((m) => /plaque/i.test(m)));
+      assert.ok(resultat.proposition.materiel.some((m) => /plaque/i.test(m.libelle)));
       assert.ok(resultat.proposition.prestations.length > 0);
     }
   });

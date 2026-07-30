@@ -4,6 +4,8 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { listerPrestations } from "@/server/repositories/prestations";
 import { listerMateriel } from "@/server/repositories/materiel";
+import { getBrouillon } from "@/server/repositories/brouillons-informations";
+import { getNoteVocale } from "@/server/repositories/notes-vocales";
 import InformationsClient from "./InformationsClient";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +17,12 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
   const chantier = await getChantier(ctx, id);
   if (!chantier) notFound();
 
-  const [prestations, materiel] = await Promise.all([listerPrestations(ctx, id), listerMateriel(ctx, id)]);
+  const [prestations, materiel, brouillon, note] = await Promise.all([
+    listerPrestations(ctx, id),
+    listerMateriel(ctx, id),
+    getBrouillon(ctx, id),
+    getNoteVocale(ctx, id),
+  ]);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -57,6 +64,16 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
           initialMateriel={materiel.map((m) => ({ id: m.id, libelle: m.libelle }))}
           initialDuree={chantier.dureePrevue ?? ""}
           initialEquipe={chantier.tailleEquipe ?? ""}
+          brouillonInitial={
+            brouillon
+              ? {
+                  contenu: brouillon.contenu,
+                  statut: brouillon.statut,
+                  modifieParHumain: brouillon.modifieParHumain,
+                }
+              : null
+          }
+          transcriptionDisponible={note?.transcriptionStatut === "reussie" && !!note.transcription}
         />
       </div>
     </div>

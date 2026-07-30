@@ -545,6 +545,39 @@ export const fragmentsDocuments = pgTable(
 // Le passage 'proposee' -> 'appliquee' est la seule transition permise et sert
 // de verrou d'idempotence (claim atomique via UPDATE ... WHERE statut =
 // 'proposee' ... RETURNING).
+// Brouillon d'informations structurées issu de la dictée — jamais une donnée
+// métier. Reste séparé des prestations/materiel validés tant que le patron ne
+// l'a pas confirmé, et de la transcription d'origine, qui vit dans
+// notes_vocales et demeure consultable telle quelle.
+export const brouillonsInformations = pgTable(
+  "brouillons_informations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id").notNull(),
+    contenu: jsonb("contenu").notNull(),
+    statut: text("statut", { enum: ["brouillon", "confirme"] })
+      .notNull()
+      .default("brouillon"),
+    modifieParHumain: boolean("modifie_par_humain").notNull().default(false),
+    sourceTranscription: text("source_transcription"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    confirmeAt: timestamp("confirme_at", { withTimezone: true }),
+  },
+  (t) => [
+    unique("brouillons_informations_chantier_uk").on(t.chantierId),
+    index("brouillons_informations_entreprise_idx").on(t.entrepriseId),
+    foreignKey({
+      columns: [t.chantierId, t.entrepriseId],
+      foreignColumns: [chantiers.id, chantiers.entrepriseId],
+      name: "brouillons_informations_chantier_entreprise_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
 export const propositionsIa = pgTable(
   "propositions_ia",
   {
