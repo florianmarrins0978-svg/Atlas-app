@@ -2,7 +2,9 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import { Pool } from "pg";
 
-const pool = new Pool({ connectionString: "postgresql://atlas_owner:atlas_owner_dev_pw@127.0.0.1:5432/atlas_dev" });
+// DATABASE_URL, jamais une base codée en dur : la suite doit viser la même base
+// que le serveur qu'elle pilote (atlas_dev en local, atlas_test en CI).
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function main() {
   const browser = await lancerNavigateur();
