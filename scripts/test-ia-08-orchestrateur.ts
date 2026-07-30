@@ -201,11 +201,15 @@ async function main() {
     if (reponseSources.succes) assert.ok(reponseSources.texte.includes("RechercherPrestation"));
   });
 
+  // Entreprise B, et non A : A possède le tarif « Test IA-08 Élagage », qui
+  // serait retenu tel quel (sourcePrix = "tarif") et court-circuiterait le
+  // chiffrage. B partage le même catalogue — global — mais n'a aucun tarif :
+  // c'est exactement le cas où le prix est calculé, seul cas que ce test vise.
   await test("Assistant : question de suivi 'pourquoi ce prix' explique via le chiffrage de la même conversation", async () => {
-    const chantier = await chantiersRepo.creerChantier(A, { nom: "Chantier assistant suivi prix" });
-    await chantiersRepo.mettreAJourDureeEquipe(A, chantier.id, { dureePrevue: "2 jours", tailleEquipe: "2 hommes" });
+    const chantier = await chantiersRepo.creerChantier(B, { nom: "Chantier assistant suivi prix" });
+    await chantiersRepo.mettreAJourDureeEquipe(B, chantier.id, { dureePrevue: "2 jours", tailleEquipe: "2 hommes" });
     const demandeOriginale = "Traite cette demande de bout en bout : élagage d'un sapin08, deux jours, deux hommes.";
-    const reponse1 = await poserQuestion(A, chantier.id, [], demandeOriginale);
+    const reponse1 = await poserQuestion(B, chantier.id, [], demandeOriginale);
     assert.equal(reponse1.succes, true, reponse1.succes ? "" : `workflow initial en échec : ${reponse1.erreur}`);
     if (!reponse1.succes) return;
 
@@ -213,7 +217,7 @@ async function main() {
       { role: "user" as const, contenu: demandeOriginale },
       { role: "assistant" as const, contenu: reponse1.texte },
     ];
-    const reponsePourquoi = await poserQuestion(A, chantier.id, historiquePourSuite, "Pourquoi proposes-tu ce prix ?");
+    const reponsePourquoi = await poserQuestion(B, chantier.id, historiquePourSuite, "Pourquoi proposes-tu ce prix ?");
     assert.equal(reponsePourquoi.succes, true, reponsePourquoi.succes ? "" : `question de suivi en échec : ${reponsePourquoi.erreur}`);
     if (reponsePourquoi.succes) {
       assert.ok(
