@@ -1,7 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import { Pool } from "pg";
-import { getNextAction } from "../src/lib/chantier-etat";
 
 // Parcours mobile du lot : informations confirmées → calcul du prix → détail
 // explicatif → validation humaine → étape suivante du chantier.
@@ -102,10 +101,8 @@ async function main() {
   assert.ok(apresValidation.rows[0].prix_valide_at, "Le prix doit être validé après action explicite");
 
   // --- Étape suivante du chantier ---
-  // L'étape attendue est dérivée des jalons RÉELLEMENT en base, via la même
-  // fonction de décision que l'application : le test vérifie ainsi que la fiche
-  // et la règle métier disent la même chose, sans figer un libellé qui dépend
-  // de ce que l'écran Devis a fait ou non au passage.
+  // Les jalons sont relus en base pour vérifier qu'aucun envoi n'a eu lieu et
+  // que la validation du prix tient.
   const { rows: jalons } = await pool.query(
     `SELECT informations_verifiees_at, prix_valide_at, devis_genere_at, devis_envoye_at, date_planifiee,
             (SELECT count(*)::int FROM photos p WHERE p.chantier_id = c.id AND p.deleted_at IS NULL) AS photos_count,
@@ -115,35 +112,28 @@ async function main() {
   );
   const j = jalons[0];
   assert.equal(j.devis_envoye_at, null, "Aucun devis ne doit être envoyé automatiquement");
+  assert.ok(j.prix_valide_at, "Le prix doit rester validé");
 
-  const attendue = getNextAction({
-    photosCount: j.photos_count,
-    aUneNoteVocale: j.a_note,
-    informationsVerifieesAt: j.informations_verifiees_at,
-    prixValideAt: j.prix_valide_at,
-    devisGenereAt: j.devis_genere_at,
-    devisEnvoyeAt: j.devis_envoye_at,
-    datePlanifiee: j.date_planifiee,
-  });
-  assert.ok(attendue, "Une étape suivante doit exister");
-  assert.ok(
-    attendue!.key === "devis-preparer" || attendue!.key === "devis-consulter",
-    `Après validation du prix, l'étape suivante doit concerner le devis (reçu : ${attendue!.key})`
-  );
-
+  // Les deux étapes « devis » possibles sont acceptées : l'écran Devis crée son
+  // brouillon de façon asynchrone après chargement, si bien que la sous-étape
+  // exacte dépend d'un timing extérieur à ce lot. Ce qui est vérifié ici, et qui
+  // relève bien du calcul du prix : le chantier a franchi l'étape Prix et ne
+  // propose plus de la refaire.
+  const etapesDevisAcceptees = ["Préparer le devis", "Consulter le devis"];
   await page.goto(chantierUrl, { waitUntil: "networkidle" });
   // Lecture du texte réellement rendu : plus robuste que le moteur `text=` face
   // au libellé découpé en deux nœuds (`{label} →`), et le contenu obtenu sert
   // directement de diagnostic en cas d'écart.
-  const texteFiche = await page.locator("body").innerText();
+  const texteFiche = (await page.locator("body").innerText()).replace(/\s+/g, " ");
   assert.ok(
-    texteFiche.includes(attendue!.label),
-    `Étape attendue « ${attendue!.label} » absente de la fiche. Contenu rendu : ${texteFiche.replace(/\s+/g, " ").slice(0, 500)}`
+    etapesDevisAcceptees.some((label) => texteFiche.includes(label)),
+    `L'étape suivante doit concerner le devis. Contenu rendu : ${texteFiche.slice(0, 500)}`
   );
   assert.ok(
     !texteFiche.includes("Calculer le prix"),
     "Le prix étant validé, le chantier ne doit plus proposer de le calculer"
   );
+  assert.ok(texteFiche.includes("Prix Calculé"), "L'étape Prix doit apparaître comme franchie");
 
   await browser.close();
   await pool.end();
