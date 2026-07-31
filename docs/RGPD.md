@@ -94,6 +94,16 @@ Voir §8 pour les conditions à respecter pour qu'il fasse foi.
 > prix, jamais les autres chantiers. Un lien qui fuite ne doit exposer qu'un
 > seul devis, et pas indéfiniment.
 
+> **Les jours occupés du patron y sont transmis** (`AGENT.md` §2.2 bis), pour
+> que le client ne puisse pas retenir une date impossible. Cette transmission
+> est délibérée et strictement bornée : **une liste de dates, rien d'autre** —
+> aucun intitulé de chantier, aucun nom de client, aucune adresse, aucune durée,
+> aucun motif. Ce sont des données de l'entreprise, non des données personnelles
+> de ses clients : aucun tiers n'y est identifiable.
+>
+> La liste ne couvre que la fenêtre de proposition (trois mois par défaut) et
+> disparaît avec l'expiration du lien.
+
 ### 2.5 Sécurité et exploitation
 
 - **Finalité** : limitation de débit, journalisation, détection d'anomalies.

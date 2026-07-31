@@ -149,9 +149,23 @@ et rend une date sans ambiguïté. Un champ de **précision facultatif** l'accom
 pour ce qui n'est pas une date — « plutôt le matin », « pas avant 9 h » — sans
 jamais servir à exprimer la date elle-même.
 
-**Le calendrier du patron n'est jamais montré.** Ni ses disponibilités, ni ses
-autres chantiers : afficher les créneaux occupés révélerait son activité à un
-tiers. Le client propose à l'aveugle ; c'est l'agent qui confronte ensuite.
+**Le sélecteur ne propose que des dates réellement libres.** Les jours déjà
+occupés par un chantier sont désactivés : le client ne peut pas les choisir.
+C'est ce qui supprime l'aller-retour — proposer une date impossible, c'est
+relancer l'échange qu'on cherchait justement à éviter.
+
+> **Ce qui sort de l'entreprise, et ce qui n'en sort pas.** La page reçoit une
+> liste de **dates**, rien d'autre. Aucun intitulé de chantier, aucun nom de
+> client, aucune adresse, aucune durée, aucun motif. Le client apprend que le
+> patron n'est pas libre le 24 — exactement ce qu'il aurait appris en
+> téléphonant. Il n'apprend ni chez qui, ni pour quoi.
+>
+> La liste est **bornée à la fenêtre de proposition** (par défaut trois mois) :
+> au-delà, elle n'aurait aucune utilité et ne ferait qu'exposer davantage.
+
+**Un jour est occupé s'il porte un chantier**, sans finesse de demi-journée pour
+l'instant. Un artisan qui pose une demi-journée sait la gérer ; un client qui se
+voit proposer un créneau déjà pris, non.
 
 **Le devis est accepté, la date reste ouverte.** C'est la règle qui compte : une
 contre-proposition de date **ne remet pas le prix en cause**. Le client a dit
@@ -159,17 +173,22 @@ oui au devis — c'est l'événement commercialement décisif, il est enregistr�
 comme tel. Seule la date reste à convenir. Confondre les deux ferait perdre des
 chantiers acceptés pour une question de calendrier.
 
-Ce que fait l'agent à réception :
+**Le patron n'a rien à confirmer.** Puisque le client n'a pu retenir qu'un jour
+libre, lui redemander son accord serait un arrêt qui ne peut mener qu'à « oui » —
+soit précisément la formalité écartée plus haut. Le chantier est planifié, et le
+patron **prévenu**, pas interrogé.
 
-- il vérifie la disponibilité dans l'agenda ;
-- il prévient le patron : *« Mme Martin accepte le devis et propose le 3 avril
-  — vous êtes libre ce jour-là. Confirmer ? »* ou *« …vous avez déjà un chantier
-  ce jour-là. »* ;
-- **le patron confirme d'un appui**, ou propose autre chose.
-
-Ce n'est pas un arrêt de plus au sens des deux arrêts du parcours : le patron ne
-revalide rien de ce qu'il a déjà décidé. C'est une **information nouvelle** qui
-arrive et appelle une réponse — un jour de travail ne s'engage pas sans lui.
+> **La disponibilité affichée est un instantané.** Entre l'affichage de la page
+> et le clic, il peut se passer des heures — le patron a pu prendre ce jour, ou
+> un autre client a pu le retenir. La disponibilité est donc **revérifiée au
+> moment de la validation**, côté serveur, jamais sur la seule foi de ce que la
+> page affichait.
+>
+> Si le jour vient d'être pris : on ne bloque pas le client, on lui dit — « cette
+> date vient d'être retenue, en voici d'autres » — et **son acceptation du devis
+> reste acquise** (le prix ne dépend pas du calendrier). Sans cette
+> revérification, deux clients pourraient retenir le même jour, et l'aller-retour
+> qu'on voulait supprimer reviendrait, en pire : après coup.
 
 La case de démarrage anticipé n'apparaît que **lorsqu'elle est nécessaire** :
 si toutes les dates proposées tombent après le délai de quatorze jours, elle
@@ -229,10 +248,9 @@ exact, horodatage, adresse IP, canal utilisé, et le code SMS validé le cas
 **Réponse positive** → le chantier est débloqué et planifié à la date retenue,
 qui est inscrite à l'agenda.
 
-**Réponse positive avec une autre date** → le devis est **accepté** (le prix est
-acquis), mais la date reste à convenir : l'agent confronte la proposition à
-l'agenda et demande au patron de confirmer d'un appui. Voir la
-contre-proposition ci-dessous.
+**Réponse positive avec une autre date** → le client n'ayant pu retenir qu'un
+jour libre, le chantier est planifié directement et le patron **prévenu**. Voir
+la contre-proposition ci-dessous.
 
 **Réponse négative** → le patron est notifié dans l'application : *devis
 retourné*. Le chantier reste accessible pour être repris, corrigé et renvoyé.
@@ -345,8 +363,9 @@ structurées, prix, export, planning, catalogue, réglages tarifs.
 | Page de réponse du client | à faire | **Seule surface publique du produit** : devis + choix de date sur le même écran, lien non devinable, expiration, lecture seule limitée au devis |
 | Acceptation tracée valant signature | à faire | Empreinte du PDF, horodatage, adresse, canal — et code SMS en renfort |
 | Demande de démarrage anticipé | à faire | Case distincte liée au délai de rétractation de 14 jours (§2.2 ter) |
-| Contre-proposition de date par le client | à faire | Sélecteur de date + précision facultative ; devis accepté, date à convenir |
-| Confirmation d'une date proposée | à faire | L'agent confronte à l'agenda, le patron confirme d'un appui |
+| Contre-proposition de date par le client | à faire | Sélecteur limité aux jours libres ; devis accepté, date retenue directement |
+| Liste des jours occupés transmise à la page | à faire | **Des dates, rien d'autre** : ni intitulé, ni client, ni durée ; bornée à la fenêtre de proposition |
+| Revérification de la disponibilité à la validation | à faire | L'affichage est un instantané : deux clients pourraient viser le même jour |
 | État « en attente de réponse » | à faire | Le chantier est bloqué : ni planifié, ni facturable |
 | Notification « devis retourné » | à faire | Le patron est prévenu d'un refus, et peut reprendre le devis |
 | Relance et caducité | à faire | Sans quoi les chantiers sans réponse s'accumulent invisibles |
