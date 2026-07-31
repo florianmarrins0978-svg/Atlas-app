@@ -44,14 +44,100 @@ perdu, et une date proposée sur un prix faux est pire qu'inutile.
    │  Rien ne part sans ce geste.                         │
    └──────────────────────────────────────────────────────┘
 
-4. Envoi au client. Le chantier entre au planning.
-5. Chantier terminé → l'agent prépare la facture et l'écriture de TVA,
-   et les transmet à l'outil comptable (§6).
+4. Envoi au client, par le canal convenu avec lui (§2.1).
+   Le chantier passe EN ATTENTE DE RÉPONSE — il est bloqué, rien
+   ne bouge tant que le client n'a pas répondu (§2.2).
+
+   Réponse positive  → le chantier est planifié à la date retenue.
+   Réponse négative  → le patron est notifié : « devis retourné ».
+
+5. Chantier réalisé → onglet CHANTIERS TERMINÉS, bouton « Fin de
+   chantier » (§2.3). La facture est construite à partir du devis,
+   envoyée au client, et les données partent au relevé de TVA.
 ```
 
 Chaque arrêt doit être franchissable en quelques secondes quand tout est juste.
 Un arrêt qui demande dix minutes de vérification est un arrêt raté : c'est le
 signe que l'agent n'a pas assez préparé.
+
+### 2.1 Le canal de communication, convenu à l'avance
+
+Avant tout envoi, le patron enregistre avec le client **par quel canal** le
+devis lui parviendra : **SMS** ou **e-mail**. C'est un choix du client, pas une
+préférence de l'application — un artisan sait que certains de ses clients ne
+lisent jamais leurs mails.
+
+Ce canal se règle à la création de la fiche client, et reste modifiable. Sans
+canal renseigné, l'envoi est simplement impossible : mieux vaut bloquer que
+d'envoyer dans le vide.
+
+> **Conséquences à ne pas oublier.** Le SMS suppose un fournisseur d'envoi, donc
+> un coût par message et un **sous-traitant supplémentaire** à inscrire au
+> document `RGPD.md`. L'e-mail suppose un service d'envoi authentifié, faute de
+> quoi les messages finissent en indésirables.
+
+### 2.2 La réponse du client, et l'attente
+
+Une fois le devis parti, **le chantier est bloqué**. Il n'entre pas au planning,
+il n'est pas facturable, il attend. C'est un état à part entière, pas un devis
+« en cours » perdu dans une liste.
+
+**Le patron choisit la forme de sa proposition de date**, au moment de l'envoi :
+
+- **une date ferme** — « intervention le 12 mars » ;
+- **deux dates au choix** — le client retient celle qui l'arrange.
+
+Le second cas évite un aller-retour quand l'agenda le permet. Le premier
+convient quand le planning est contraint. C'est au patron de trancher, chantier
+par chantier — l'agent propose les créneaux libres, il ne choisit pas la forme.
+
+**Le client répond depuis une page qui lui est destinée.** Le SMS ou l'e-mail
+porte un lien vers une page où il consulte le devis et répond : il accepte (en
+retenant une date si deux lui sont proposées), ou il refuse.
+
+> Cette page est une **surface publique**, la seule du produit. Elle impose :
+> un lien impossible à deviner, une **expiration**, un accès en lecture seule
+> limité au strict nécessaire — jamais la fiche client complète, jamais
+> l'historique des prix, jamais les autres chantiers. C'est le point à traiter
+> avec le plus de soin de tout le parcours.
+
+**Réponse positive** → le chantier est débloqué et planifié à la date retenue,
+qui est inscrite à l'agenda.
+
+**Réponse négative** → le patron est notifié dans l'application : *devis
+retourné*. Le chantier reste accessible pour être repris, corrigé et renvoyé.
+Un refus n'est pas une fin : c'est souvent une négociation qui commence.
+
+**Sans réponse** → il faut prévoir une relance, et un délai au bout duquel le
+devis est considéré comme caduc. À défaut, les chantiers en attente
+s'accumulent sans que personne ne les voie.
+
+### 2.3 Fin de chantier, facture et TVA
+
+Le patron retrouve ses chantiers réalisés dans un onglet **« Chantiers
+terminés »**, où les devis sont **rangés par date**. En tête de chaque devis, un
+bouton **« Fin de chantier »**.
+
+Un appui déclenche, en une seule action :
+
+1. la **construction de la facture** à partir des informations du devis ;
+2. son **envoi au client**, par le canal convenu ;
+3. l'**inscription des données au relevé de TVA collectée**.
+
+> **Réserve à trancher.** Un chantier finit rarement exactement comme il a été
+> devisé : travaux en plus, journée en moins, matériel non utilisé. Si la
+> facture se construit sur le devis et part dans la foulée, tout écart part faux
+> chez le client — et une facture fausse se corrige par un avoir, pas par une
+> modification.
+>
+> Proposition : le bouton ouvre la facture pré-remplie avec les montants du
+> devis et une seule question — « rien n'a changé ? ». Un appui pour confirmer.
+> Le geste reste unique, l'écart est rattrapé.
+>
+> Cette réserve reste **ouverte** : le patron peut décider de l'envoi direct.
+
+Rappel de §6 : Atlas **prépare** la facture et le relevé de TVA, il ne les
+**émet** pas au sens légal. L'émission conforme revient à l'outil comptable.
 
 ## 3. Ce que l'agent ne fait jamais
 
@@ -114,8 +200,15 @@ structurées, prix, export, planning, catalogue, réglages tarifs.
 | Brique | État | Remarque |
 |---|---|---|
 | Agenda Google | à faire | Connexion du compte, lecture des disponibilités, proposition de créneau, écriture de l'intervention après validation |
-| Envoi au client | à faire | Rédaction du message, PDF joint, envoi par e-mail, trace de ce qui est parti et quand |
-| Réponse du client | à faire | Devis accepté / refusé / date renégociée, et ce que l'agent en fait |
+| Canal de communication du client | à faire | Champ SMS / e-mail sur la fiche client ; envoi impossible sans |
+| Envoi au client | à faire | Message, PDF joint, envoi SMS **et** e-mail, trace de ce qui est parti et quand |
+| Proposition de date : ferme ou au choix | à faire | Le patron tranche à l'envoi ; une date, ou deux entre lesquelles le client retient |
+| Page de réponse du client | à faire | **Seule surface publique du produit** : lien non devinable, expiration, lecture seule limitée au devis |
+| État « en attente de réponse » | à faire | Le chantier est bloqué : ni planifié, ni facturable |
+| Notification « devis retourné » | à faire | Le patron est prévenu d'un refus, et peut reprendre le devis |
+| Relance et caducité | à faire | Sans quoi les chantiers sans réponse s'accumulent invisibles |
+| Onglet « Chantiers terminés » | à faire | Devis rangés par date, bouton « Fin de chantier » en tête |
+| Fin de chantier → facture + TVA | à faire | Un appui : facture construite depuis le devis, envoyée, données portées au relevé de TVA (réserve §2.3) |
 | Factures | à brancher | Voir §6 — ne pas recoder |
 | TVA | à brancher | Voir §6 — ne pas recoder |
 | Enchaînement complet | à faire | Aujourd'hui l'agent répond et propose ; il ne pilote pas encore le parcours de bout en bout avec ses points d'arrêt |

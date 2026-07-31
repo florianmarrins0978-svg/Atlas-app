@@ -71,7 +71,22 @@ Voir §8 pour les conditions à respecter pour qu'il fasse foi.
   l'adresse du client — l'application est faite pour qu'on les dicte.
 - **Destinataires** : voir §3. C'est le point le plus exposé du produit.
 
-### 2.4 Sécurité et exploitation
+### 2.4 Consultation du devis par le client de l'artisan
+
+- **Finalité** : permettre au client de consulter son devis, de l'accepter ou
+  de le refuser, et de retenir une date d'intervention.
+- **Données** : le devis et son montant, la ou les dates proposées, la réponse
+  et son horodatage.
+- **Notre rôle** : sous-traitant.
+
+> **La seule surface publique du produit.** Cette page est accessible sans
+> compte, depuis un lien reçu par SMS ou e-mail. Elle impose : un identifiant
+> impossible à deviner, une **expiration**, et un contenu strictement limité au
+> devis concerné — jamais la fiche client complète, jamais l'historique des
+> prix, jamais les autres chantiers. Un lien qui fuite ne doit exposer qu'un
+> seul devis, et pas indéfiniment.
+
+### 2.5 Sécurité et exploitation
 
 - **Finalité** : limitation de débit, journalisation, détection d'anomalies.
 - **Données** : identifiants de session, adresses IP, identifiants de requête,
@@ -98,6 +113,12 @@ contrat doit refléter ce choix.
 | Base de données | Hébergeur à choisir | L'ensemble des données | Région UE, chiffrement au repos |
 | Limitation de débit | Redis | Identifiants de session, IP | Région UE |
 | Supervision des erreurs | Sentry (optionnel) | Contextes d'erreur — **peuvent contenir des données personnelles** | Filtrer les contextes, ou renoncer à Sentry |
+| Envoi de SMS | à choisir | Numéro de téléphone du client, lien vers son devis | Région UE, durée de rétention des messages chez le fournisseur |
+| Envoi d'e-mails | à choisir | Adresse du client, devis et facture en pièce jointe | Idem |
+
+Les deux dernières lignes découlent du parcours décidé dans `AGENT.md` §2.1 :
+le devis part par **SMS ou e-mail**, selon ce que le client a choisi. Chaque
+canal ajoute un sous-traitant à autoriser et à lister.
 
 **Le mode `dev` ne transmet rien.** `LLM_PROVIDER=dev` et
 `TRANSCRIPTION_PROVIDER=dev` sont déterministes et n'effectuent aucun appel
