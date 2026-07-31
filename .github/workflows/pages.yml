@@ -74,6 +74,8 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -92,3 +94,91 @@ jobs:
       - name: Déployer sur GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # Vérification de ce qui est RÉELLEMENT servi au public, une fois la
+  # publication faite. Le job « tests » ci-dessus exerce les fichiers du dépôt
+  # avant qu'ils partent ; celui-ci exerce le site en ligne, à son adresse
+  # publique, tel qu'un artisan l'ouvrira depuis son téléphone. Les deux ne
+  # prouvent pas la même chose : entre les deux se glissent le découpage de
+  # l'artefact, la propagation, le chemin de sous-dossier /Atlas-app/ et le
+  # passage en HTTPS.
+  #
+  # C'est aussi ce qui rend la vérification autonome : le résultat de ce job se
+  # lit par l'API GitHub, sans dépendre d'un accès direct au site.
+  verification:
+    name: Vérification du site en ligne
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: appli/package-lock.json
+
+      - name: Installer les dépendances
+        working-directory: appli
+        run: npm ci
+
+      - name: Installer le navigateur Playwright
+        working-directory: appli
+        run: npx playwright install --with-deps chromium
+
+      # La toute première publication, et parfois les suivantes, mettent un
+      # moment à se propager. On attend une vraie réponse plutôt que d'échouer
+      # sur un site simplement pas encore prêt.
+      - name: Attendre que le site réponde
+        env:
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+        run: |
+          set -e
+          BASE="${PAGE_URL%/}"
+          echo "Adresse publiée : $BASE"
+          for tentative in $(seq 1 40); do
+            if curl -sfL --max-time 10 "$BASE/app.html" >/dev/null; then
+              echo "Le site répond après $tentative tentative(s)."
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "Le site n'a pas répondu après 10 minutes."
+          exit 1
+
+      # Chaque écran doit être servi, pas seulement l'accueil : une erreur de
+      # chemin ou un fichier oublié dans l'artefact ne se voit pas autrement.
+      - name: Vérifier que chaque écran est servi
+        env:
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+        run: |
+          set -e
+          BASE="${PAGE_URL%/}"
+          for f in index.html app.html devis-vocal.html devis-modele.html \
+                   facture-modele.html tva-modele.html mes-tarifs.html nav.js; do
+            code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
+            echo "$code  $f"
+            [ "$code" = "200" ] || { echo "Écran manquant ou en erreur : $f"; exit 1; }
+          done
+
+      # La racine ne doit pas tomber sur une page vide : le site vitrine n'étant
+      # pas repris, elle doit mener à l'accueil de l'appli.
+      - name: Vérifier que la racine mène à l'appli
+        env:
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+        run: |
+          set -e
+          BASE="${PAGE_URL%/}"
+          racine=$(curl -sfL --max-time 20 "$BASE/")
+          echo "$racine" | grep -q 'app\.html' || {
+            echo "La racine ne renvoie pas vers app.html."; exit 1; }
+          echo "La racine pointe bien vers l'accueil de l'appli."
+
+      # Le point d'orgue : toute la batterie rejouée contre le site public.
+      - name: Batterie de tests contre le site en ligne
+        working-directory: appli
+        env:
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+        run: |
+          set -e
+          BASE_URL="${PAGE_URL%/}" npm run test:e2e

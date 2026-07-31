@@ -52,9 +52,20 @@ Sortie attendue : `✅ PASS: 52   ❌ FAIL: 0`.
 ## Publier
 
 Tout `push` sur `main` touchant à `appli/` déclenche
-[`.github/workflows/pages.yml`](../.github/workflows/pages.yml) : les tests
-tournent d'abord, et le dossier n'est publié que s'ils passent tous. L'appli
-est servie à la racine du site projet.
+[`.github/workflows/pages.yml`](../.github/workflows/pages.yml), en trois temps :
+
+1. **Tests** — la batterie tourne sur les fichiers du dépôt. S'il en manque un
+   seul, rien n'est publié et la version en ligne reste celle d'avant.
+2. **Publication** — `appli/` est envoyé sur GitHub Pages et servi à la racine
+   du site projet.
+3. **Vérification du site en ligne** — chaque écran est demandé à l'adresse
+   publique, on contrôle que la racine mène bien à l'appli, puis **toute la
+   batterie est rejouée contre le site réel**.
+
+L'étape 3 n'est pas un doublon de l'étape 1 : entre les deux se glissent le
+découpage de l'artefact, la propagation, le chemin de sous-dossier et le passage
+en HTTPS. Elle vérifie ce que l'artisan ouvrira vraiment, pas ce que contient le
+dépôt.
 
 ## Applications iOS & Android
 
