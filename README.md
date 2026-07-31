@@ -42,6 +42,7 @@ qu'il ne fera jamais seul — est cadrée dans [`docs/AGENT.md`](docs/AGENT.md).
 
 ## Documentation opérationnelle
 
+- [`docs/RGPD.md`](docs/RGPD.md) — registre des traitements, sous-traitants, conservation, violations
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — déploiement, health checks, rollback
 - [`docs/INCIDENT_RESPONSE.md`](docs/INCIDENT_RESPONSE.md) — réponse aux incidents
 - [`docs/PRODUCTION_BACKUP_RESTORE.md`](docs/PRODUCTION_BACKUP_RESTORE.md) — sauvegarde/restauration, stratégie de migration
