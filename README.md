@@ -37,6 +37,9 @@ npm run dev
 | `npm run db:migrate` | Applique les migrations non encore appliquées |
 | `npm run db:seed` | Données de démonstration |
 
+La direction du produit — l'agent qui prépare devis, créneaux et envois, et ce
+qu'il ne fera jamais seul — est cadrée dans [`docs/AGENT.md`](docs/AGENT.md).
+
 ## Documentation opérationnelle
 
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — déploiement, health checks, rollback
