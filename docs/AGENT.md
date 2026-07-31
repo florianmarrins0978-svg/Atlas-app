@@ -122,6 +122,9 @@ même endroit, le devis et le choix de la date :
    │                                             │
    │  ( ) Lundi 23 mars                          │
    │  ( ) Jeudi 27 mars                          │
+   │  ( ) Aucune des deux — je propose :         │
+   │      [ 📅  jj/mm/aaaa ]                     │
+   │      [ précision (facultatif) ............ ]│
    ├─────────────────────────────────────────────┤
    │  ☐ Je demande que les travaux commencent    │
    │    avant la fin de mon délai de             │
@@ -132,6 +135,41 @@ même endroit, le devis et le choix de la date :
    │  [      Je ne donne pas suite       ]       │
    └─────────────────────────────────────────────┘
 ```
+
+#### La contre-proposition de date
+
+Les deux dates proposées ne conviennent pas toujours. Sans troisième voie, le
+client doit téléphoner — et tout le gain du parcours disparaît dans un
+aller-retour.
+
+**Un sélecteur de date, pas un champ libre.** Un champ de texte produit « le
+23 », « fin mars », « après mes congés » : des réponses qu'il faut interpréter,
+donc deviner. Le sélecteur natif du téléphone ouvre le calendrier de l'appareil
+et rend une date sans ambiguïté. Un champ de **précision facultatif** l'accompagne
+pour ce qui n'est pas une date — « plutôt le matin », « pas avant 9 h » — sans
+jamais servir à exprimer la date elle-même.
+
+**Le calendrier du patron n'est jamais montré.** Ni ses disponibilités, ni ses
+autres chantiers : afficher les créneaux occupés révélerait son activité à un
+tiers. Le client propose à l'aveugle ; c'est l'agent qui confronte ensuite.
+
+**Le devis est accepté, la date reste ouverte.** C'est la règle qui compte : une
+contre-proposition de date **ne remet pas le prix en cause**. Le client a dit
+oui au devis — c'est l'événement commercialement décisif, il est enregistré
+comme tel. Seule la date reste à convenir. Confondre les deux ferait perdre des
+chantiers acceptés pour une question de calendrier.
+
+Ce que fait l'agent à réception :
+
+- il vérifie la disponibilité dans l'agenda ;
+- il prévient le patron : *« Mme Martin accepte le devis et propose le 3 avril
+  — vous êtes libre ce jour-là. Confirmer ? »* ou *« …vous avez déjà un chantier
+  ce jour-là. »* ;
+- **le patron confirme d'un appui**, ou propose autre chose.
+
+Ce n'est pas un arrêt de plus au sens des deux arrêts du parcours : le patron ne
+revalide rien de ce qu'il a déjà décidé. C'est une **information nouvelle** qui
+arrive et appelle une réponse — un jour de travail ne s'engage pas sans lui.
 
 La case de démarrage anticipé n'apparaît que **lorsqu'elle est nécessaire** :
 si toutes les dates proposées tombent après le délai de quatorze jours, elle
@@ -190,6 +228,11 @@ exact, horodatage, adresse IP, canal utilisé, et le code SMS validé le cas
 
 **Réponse positive** → le chantier est débloqué et planifié à la date retenue,
 qui est inscrite à l'agenda.
+
+**Réponse positive avec une autre date** → le devis est **accepté** (le prix est
+acquis), mais la date reste à convenir : l'agent confronte la proposition à
+l'agenda et demande au patron de confirmer d'un appui. Voir la
+contre-proposition ci-dessous.
 
 **Réponse négative** → le patron est notifié dans l'application : *devis
 retourné*. Le chantier reste accessible pour être repris, corrigé et renvoyé.
@@ -302,6 +345,8 @@ structurées, prix, export, planning, catalogue, réglages tarifs.
 | Page de réponse du client | à faire | **Seule surface publique du produit** : devis + choix de date sur le même écran, lien non devinable, expiration, lecture seule limitée au devis |
 | Acceptation tracée valant signature | à faire | Empreinte du PDF, horodatage, adresse, canal — et code SMS en renfort |
 | Demande de démarrage anticipé | à faire | Case distincte liée au délai de rétractation de 14 jours (§2.2 ter) |
+| Contre-proposition de date par le client | à faire | Sélecteur de date + précision facultative ; devis accepté, date à convenir |
+| Confirmation d'une date proposée | à faire | L'agent confronte à l'agenda, le patron confirme d'un appui |
 | État « en attente de réponse » | à faire | Le chantier est bloqué : ni planifié, ni facturable |
 | Notification « devis retourné » | à faire | Le patron est prévenu d'un refus, et peut reprendre le devis |
 | Relance et caducité | à faire | Sans quoi les chantiers sans réponse s'accumulent invisibles |
