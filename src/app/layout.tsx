@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import AtlasBottomNav from "@/components/atlas/AtlasBottomNav";
 import AssistantSidebar from "@/components/atlas/AssistantSidebar";
+import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
 
 export const metadata: Metadata = {
   title: "Atlas",
@@ -29,6 +30,10 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className="font-body antialiased">
+        {/* Redirige vers l'écran d'acceptation tant qu'un document requis n'a
+            pas été accepté. Rendu avant le contenu : la redirection intervient
+            donc avant que quoi que ce soit d'utilisable soit affiché. */}
+        <GardeDocumentsLegaux />
         <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-paper">
           <main className="flex-1 pb-20">{children}</main>
           <AtlasBottomNav />
