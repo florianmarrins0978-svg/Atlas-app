@@ -25,6 +25,10 @@ Le principe directeur : **l'agent s'arrête et attend, il ne file pas jusqu'au
 bout.** Chercher un créneau pour un devis qui va être réécrit est du travail
 perdu, et une date proposée sur un prix faux est pire qu'inutile.
 
+Trois arrêts jalonnent le parcours : **avant l'envoi du devis**, **avant son
+départ chez le client**, et **avant le départ de la facture**. Ce sont les trois
+moments où quelque chose quitte l'entreprise ou engage le patron.
+
 ```
 1. Le patron dicte sa note sur le chantier.
 2. L'agent transcrit, structure, cherche les tarifs, RÉDIGE LE DEVIS.
@@ -52,8 +56,14 @@ perdu, et une date proposée sur un prix faux est pire qu'inutile.
    Réponse négative  → le patron est notifié : « devis retourné ».
 
 5. Chantier réalisé → onglet CHANTIERS TERMINÉS, bouton « Fin de
-   chantier » (§2.3). La facture est construite à partir du devis,
-   envoyée au client, et les données partent au relevé de TVA.
+   chantier » (§2.3). La facture s'ouvre, pré-remplie sur le devis.
+
+   ┌──────────────────────────────────────────────────────┐
+   │  ARRÊT 3 — le patron confirme le départ de la        │
+   │  facture. « Rien n'a changé ? » — un appui.          │
+   └──────────────────────────────────────────────────────┘
+
+   Puis : envoi au client, et données portées au relevé de TVA.
 ```
 
 Chaque arrêt doit être franchissable en quelques secondes quand tout est juste.
@@ -118,23 +128,32 @@ Le patron retrouve ses chantiers réalisés dans un onglet **« Chantiers
 terminés »**, où les devis sont **rangés par date**. En tête de chaque devis, un
 bouton **« Fin de chantier »**.
 
-Un appui déclenche, en une seule action :
+Un appui **ouvre la facture, pré-remplie avec les montants du devis**, et pose
+une seule question : *rien n'a changé ?*
 
-1. la **construction de la facture** à partir des informations du devis ;
+```
+   ┌──────────────────────────────────────────────────────┐
+   │  ARRÊT 3 — le patron confirme le départ de la        │
+   │  facture. Un appui si tout est conforme au devis.    │
+   └──────────────────────────────────────────────────────┘
+```
+
+Ce troisième arrêt est **décidé**, pas optionnel. Un chantier finit rarement
+exactement comme il a été devisé : travaux en plus, journée en moins, matériel
+non utilisé. Une facture construite sur le devis et partie dans la foulée fait
+arriver tout écart chez le client — et une facture fausse ne se modifie pas,
+elle se corrige par un **avoir**. Le coût d'un appui est sans commune mesure
+avec celui d'un avoir.
+
+L'écran doit rester franchissable en un geste quand rien n'a bougé : les
+montants du devis sont déjà là, il n'y a rien à saisir. C'est un contrôle, pas
+une ressaisie.
+
+La confirmation déclenche alors, en une seule fois :
+
+1. l'**arrêt de la facture** sur les montants confirmés ;
 2. son **envoi au client**, par le canal convenu ;
 3. l'**inscription des données au relevé de TVA collectée**.
-
-> **Réserve à trancher.** Un chantier finit rarement exactement comme il a été
-> devisé : travaux en plus, journée en moins, matériel non utilisé. Si la
-> facture se construit sur le devis et part dans la foulée, tout écart part faux
-> chez le client — et une facture fausse se corrige par un avoir, pas par une
-> modification.
->
-> Proposition : le bouton ouvre la facture pré-remplie avec les montants du
-> devis et une seule question — « rien n'a changé ? ». Un appui pour confirmer.
-> Le geste reste unique, l'écart est rattrapé.
->
-> Cette réserve reste **ouverte** : le patron peut décider de l'envoi direct.
 
 Rappel de §6 : Atlas **prépare** la facture et le relevé de TVA, il ne les
 **émet** pas au sens légal. L'émission conforme revient à l'outil comptable.
@@ -236,9 +255,9 @@ Les écrans `facture-modele.html` et `tva-modele.html` de `appli/` restent ce
 qu'ils sont : des maquettes, utiles pour montrer l'intention, destinées à être
 remplacées par ce branchement.
 
-> `docs/MVP.md` exclut aujourd'hui la TVA et la facturation du périmètre. Les
-> y ramener — même sous cette forme « préparer et transmettre » — est une
-> extension du périmètre, à acter explicitement dans ce document.
+> **Acté le 2026-07-31.** `docs/MVP.md` excluait la TVA et la facturation du
+> périmètre ; l'extension y est désormais inscrite, et l'**émission légale**
+> reste explicitement hors périmètre — définitivement, pas « pas encore ».
 
 ## 7. Où ça tourne
 
@@ -260,7 +279,15 @@ arbitrage à faire, pas une évidence technique.
 Ils ne sont pas techniques. Ils engagent le produit et la responsabilité du
 patron — je ne les prends pas à sa place.
 
-### Arbitrage A — Où vivent les données des clients du patron ?
+### Arbitrage A — Où vivent les données des clients du patron ? — TRANCHÉ
+
+> **Décision du 2026-07-31 : oui, les données vivent sur nos serveurs.**
+> `appli/PRINCIPES.md` porte désormais cette précision, et `docs/RGPD.md` en
+> tire les conséquences. Restent à honorer, dans cet ordre : hébergement en
+> Union européenne, contrat de sous-traitance, durées de conservation, et la
+> promesse réécrite envers les artisans.
+>
+> Le raisonnement qui a conduit à trancher est conservé ci-dessous.
 
 Contradiction réelle entre les deux codes :
 
@@ -281,15 +308,15 @@ Europe, chiffrement, durée de conservation, sortie des données, RGPD). Ce n'es
 pas une formalité : c'est ce qu'un artisan lira avant de confier son fichier
 clients.
 
-### Arbitrage B — Le périmètre s'étend, il faut l'écrire
+### Arbitrage B — Le périmètre s'étend, il faut l'écrire — TRANCHÉ
 
-`docs/MVP.md` dit aujourd'hui : « Atlas MVP n'est pas un ERP. Il ne remplace ni
-la facturation, ni la comptabilité », et la V1 s'arrête à l'export vers un
-système de devis existant.
+> **Acté le 2026-07-31 dans `docs/MVP.md`.** L'extension — agenda, envoi au
+> client, préparation de la facture et de la TVA — y est inscrite, avec la
+> limite qui la rend tenable : l'**émission légale** des factures reste hors
+> périmètre définitivement.
 
-La vision décrite va plus loin : agenda, envoi, facturation, TVA. C'est
-légitime, mais cela doit être **acté dans `MVP.md`**, sans quoi les deux
-documents se contredisent et la prochaine décision se prendra dans le flou.
+Le parcours socle décrit au §3 de `MVP.md` reste la référence de ce qui existe
+et fonctionne. `AGENT.md` fait autorité sur la direction.
 
 ## 9. Ce que je propose de faire ensuite
 

@@ -6,7 +6,11 @@ Ce document est la spécification détaillée officielle du projet. Toute évolu
 
 Livrer une application mobile (PWA) réellement utilisable par un artisan en moins d'un mois, couvrant un seul parcours : dictée sur chantier → vérification humaine → calcul du prix → préparation du devis → planning simple.
 
-Atlas MVP n'est pas un ERP. Il ne remplace ni la facturation, ni la comptabilité, ni la gestion de stock, ni la paie. Ces briques existent déjà ailleurs et ne sont pas recréées.
+Atlas MVP n'est pas un ERP. Il ne remplace ni la comptabilité, ni la gestion de stock, ni la paie. Ces briques existent déjà ailleurs et ne sont pas recréées.
+
+> **Extension de périmètre actée (2026-07-31).** Le produit visé dépasse désormais ce seul parcours : un agent qui prépare aussi l'envoi du devis au client, la proposition de date depuis l'agenda, puis la facture et le relevé de TVA en fin de chantier. Le cadrage complet est dans [`AGENT.md`](AGENT.md), qui fait autorité sur la direction du produit ; le présent document reste la référence du parcours socle décrit ci-dessous.
+>
+> **Cette extension ne fait pas d'Atlas un logiciel de facturation.** L'agent *prépare* la facture et le relevé de TVA ; l'émission légale conforme — numérotation inviolable, archivage, Factur-X, obligations 2026/2027 — revient à un outil comptable existant auquel on se branche par interface. Voir `AGENT.md` §6.
 
 ## 2. Principe fondamental
 
@@ -42,7 +46,11 @@ Le patron reste l'unique expert du chantier. L'IA ne décide jamais : elle trans
 
 ## 5. Hors périmètre (rappel)
 
-Comptabilité, TVA, facturation complète, paiement en ligne, stocks, paie, RH, suivi GPS, WhatsApp, analyse vidéo, analyse automatique de photos, reconnaissance d'objets/arbres, optimisation de tournées, microservices, statistiques avancées, tableau de bord complexe.
+Comptabilité, paiement en ligne, stocks, paie, RH, suivi GPS, WhatsApp, analyse vidéo, analyse automatique de photos, reconnaissance d'objets/arbres, optimisation de tournées, microservices, statistiques avancées, tableau de bord complexe.
+
+**Émission légale des factures** : hors périmètre définitivement, quel que soit le stade. Atlas prépare les données, un outil comptable conforme émet le document. Ce n'est pas un « pas encore » : c'est un risque juridique qu'on ne prend pas.
+
+**Facturation et TVA au sens de la préparation** : ces briques sortent du hors-périmètre depuis l'extension du 2026-07-31 (voir §1). Elles restent hors du parcours socle décrit en §3, et sont cadrées dans [`AGENT.md`](AGENT.md).
 
 ## 6. Stack technique
 
