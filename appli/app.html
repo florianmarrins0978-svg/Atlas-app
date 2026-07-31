@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="only light">
+<title>Arborea — Espace pro</title>
+<meta name="description" content="L'atelier à devis d'Arborea : dictez votre chantier, l'appli prépare le devis à partir de vos tarifs.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Arborea Pro">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1; --paper-warm:#e2ded3;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --pine-light:#4f5f4c; --sage:#7d9a6d; --sage-light:#9fbd82;
+    --line:rgba(28,28,26,0.12); --line-soft:rgba(28,28,26,0.07);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bone);color:var(--charcoal);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-weight:500;color:var(--charcoal);letter-spacing:-0.01em;}
+  a{color:inherit;text-decoration:none;}
+
+  main{max-width:760px;margin:0 auto;padding:clamp(2.4rem,5vw,3.6rem) 1.4rem 6rem;}
+  .eyebrow{font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--muted);font-weight:600;display:block;margin-bottom:0.9rem;}
+  .hero h1{font-size:clamp(2.2rem,6vw,3.1rem);line-height:1.08;margin-bottom:0.9rem;}
+  .hero p{color:var(--charcoal-soft);font-size:1.04rem;max-width:500px;}
+
+  /* Action principale */
+  .primary{display:flex;align-items:center;gap:1.2rem;margin:2.4rem 0 1.6rem;
+    background:var(--pine);color:var(--bone);border-radius:20px;padding:1.5rem 1.6rem;
+    box-shadow:0 16px 36px rgba(47,59,47,0.22);transition:transform .15s ease, box-shadow .2s ease;}
+  .primary:hover{transform:translateY(-2px);box-shadow:0 20px 44px rgba(47,59,47,0.28);}
+  .primary .ico{flex:0 0 auto;width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.13);
+    display:flex;align-items:center;justify-content:center;}
+  .primary .ico svg{width:28px;height:28px;stroke:var(--bone);}
+  .primary .txt{flex:1;}
+  .primary .txt strong{display:block;font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:1.35rem;margin-bottom:0.15rem;}
+  .primary .txt span{font-size:0.9rem;color:rgba(245,243,238,0.82);}
+  .primary .arrow{flex:0 0 auto;font-size:1.4rem;opacity:0.85;}
+
+  /* Grille d'outils */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:0.9rem;margin-top:0.6rem;}
+  .tile{background:var(--cream);border:1px solid var(--line-soft);border-radius:16px;padding:1.3rem 1.3rem;
+    display:flex;flex-direction:column;gap:0.5rem;transition:border-color .18s ease, transform .15s ease, box-shadow .2s ease;}
+  .tile:hover{border-color:var(--sage);transform:translateY(-2px);box-shadow:0 12px 26px rgba(47,59,47,0.08);}
+  .tile .ico{width:38px;height:38px;border-radius:11px;background:var(--paper);display:flex;align-items:center;justify-content:center;margin-bottom:0.2rem;}
+  .tile .ico svg{width:20px;height:20px;stroke:var(--pine);}
+  .tile h3{font-size:1.08rem;font-family:'Inter',system-ui,sans-serif;font-weight:600;letter-spacing:0;}
+  .tile p{font-size:0.85rem;color:var(--muted);line-height:1.5;}
+
+  .setup{margin-top:1.8rem;background:rgba(125,154,109,0.10);border:1px solid rgba(125,154,109,0.28);
+    border-radius:14px;padding:1rem 1.2rem;font-size:0.9rem;color:var(--pine-light);display:flex;gap:0.7rem;align-items:flex-start;}
+  .setup a{color:var(--pine);font-weight:600;text-decoration:underline;text-underline-offset:3px;}
+
+  .footer-note{margin-top:2.6rem;text-align:center;font-size:0.8rem;color:var(--muted);line-height:1.7;}
+
+  @media (max-width:520px){
+    .grid{grid-template-columns:1fr;}
+    .primary{flex-wrap:nowrap;}
+  }
+</style>
+</head>
+<body>
+
+<main>
+  <header class="hero">
+    <span class="eyebrow">Espace professionnel</span>
+    <h1>Votre atelier à devis.</h1>
+    <p>Dictez le chantier, l'appli prépare le devis à partir de vos tarifs. Vous vérifiez, vous envoyez. C'est tout.</p>
+  </header>
+
+  <!-- Action principale -->
+  <a class="primary" href="devis-vocal.html">
+    <span class="ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+        <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path><line x1="12" y1="18" x2="12" y2="22"></line>
+      </svg>
+    </span>
+    <span class="txt"><strong>Nouveau devis</strong><span>Dictez votre chantier sur place</span></span>
+    <span class="arrow">→</span>
+  </a>
+
+  <!-- Outils -->
+  <div class="grid">
+    <a class="tile" href="mes-tarifs.html">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="4" x2="8" y2="20"></line><line x1="16" y1="4" x2="14" y2="20"></line></svg></span>
+      <h3>Mes tarifs</h3>
+      <p>Vos prix, renseignés une fois. Le socle de tous vos devis.</p>
+    </a>
+    <a class="tile" href="devis-modele.html">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"></path><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="13" y2="17"></line></svg></span>
+      <h3>Devis</h3>
+      <p>Rédiger ou reprendre un devis, l'exporter en PDF.</p>
+    </a>
+    <a class="tile" href="facture-modele.html">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"></path><line x1="9" y1="8" x2="12" y2="8"></line><line x1="9" y1="12" x2="15" y2="12"></line><line x1="9" y1="16" x2="15" y2="16"></line></svg></span>
+      <h3>Factures</h3>
+      <p>Transformer un devis validé en facture.</p>
+    </a>
+    <a class="tile" href="tva-modele.html">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="7.5" cy="7.5" r="2.5"></circle><circle cx="16.5" cy="16.5" r="2.5"></circle></svg></span>
+      <h3>TVA déductible</h3>
+      <p>Scanner vos factures d'achat pour suivre la TVA.</p>
+    </a>
+  </div>
+
+  <div class="setup">
+    <span aria-hidden="true">🔒</span>
+    <span>Première utilisation&nbsp;? Commencez par <a href="mes-tarifs.html">renseigner vos tarifs</a>. Tout reste sur votre appareil — vos prix et vos clients ne sont jamais envoyés ailleurs.</span>
+  </div>
+
+  <p class="footer-note">Arborea — espace professionnel. Application distincte de votre site vitrine.</p>
+</main>
+
+<script src="nav.js"></script>
+
+</body>
+</html>

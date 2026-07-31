@@ -9,6 +9,11 @@ L'architecture de données est décrite dans
 [corrections v2.1](docs/ARCHITECTURE_DONNEES_v2.1_corrections.md) (document le
 plus récent, faisant autorité).
 
+Le dossier [`appli/`](appli/README.md) héberge par ailleurs l'application
+Arborea (écrans statiques + coque Capacitor + tests), copiée depuis le dépôt
+`Arborea-` et publiée sur GitHub Pages. C'est un projet distinct de
+l'application Next.js décrite ci-dessous, avec son propre outillage.
+
 ## Démarrage en développement
 
 ```bash

@@ -1,0 +1,12 @@
+{
+  "appId": "com.arborea.app",
+  "appName": "Arborea",
+  "webDir": "www",
+  "backgroundColor": "#f5f3ee",
+  "ios": {
+    "contentInset": "always"
+  },
+  "android": {
+    "backgroundColor": "#f5f3ee"
+  }
+}

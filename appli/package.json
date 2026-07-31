@@ -1,0 +1,20 @@
+{
+  "name": "arborea-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Arborea — espace pro (devis vocaux). App web + coque Capacitor iOS/Android depuis un seul code.",
+  "scripts": {
+    "build:www": "node scripts/build-www.mjs",
+    "test:e2e": "node tests/e2e.js",
+    "cap:sync": "npm run build:www && cap sync"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0",
+    "playwright": "^1.62.0"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/ios": "^6.2.0"
+  }
+}

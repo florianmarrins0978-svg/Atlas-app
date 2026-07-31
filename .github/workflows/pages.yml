@@ -1,0 +1,94 @@
+name: Publication de l'appli sur GitHub Pages
+
+# Publie le contenu de `appli/` (les écrans copiés depuis Arborea, sans le site
+# vitrine) à la racine du site projet : https://<compte>.github.io/Atlas-app/
+#
+# L'application Next.js à la racine du dépôt n'est pas concernée : elle a besoin
+# d'un serveur (base de données, routes API) et ne peut pas être servie par
+# Pages, qui est purement statique.
+#
+# La batterie de tests est un préalable au déploiement, conformément à
+# `appli/tests/README.md` (« à lancer avant chaque mise en ligne ») : si un test
+# échoue, rien n'est publié et la version en ligne reste celle d'avant.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "appli/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests de bout en bout
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: appli/package-lock.json
+
+      - name: Installer les dépendances
+        working-directory: appli
+        run: npm ci
+
+      - name: Installer le navigateur Playwright
+        working-directory: appli
+        run: npx playwright install --with-deps chromium
+
+      # Les écrans sont des fichiers statiques : un serveur de fichiers suffit,
+      # et c'est exactement ce que GitHub Pages fera en production. Le serveur
+      # est démarré et arrêté dans la même étape que les tests, pour qu'aucun
+      # processus ne survive à un échec.
+      - name: Tests de bout en bout
+        working-directory: appli
+        run: |
+          set -e
+          python3 -m http.server 8080 --bind 127.0.0.1 >/dev/null 2>&1 &
+          SERVEUR=$!
+          trap 'kill $SERVEUR 2>/dev/null || true' EXIT
+          for _ in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8080/app.html >/dev/null && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8080/app.html >/dev/null
+          BASE_URL=http://127.0.0.1:8080 npm run test:e2e
+
+  deploy:
+    name: Déploiement
+    needs: tests
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurer Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      # Seul `appli/` est publié : le reste du dépôt (code serveur Next.js,
+      # migrations, scripts d'exploitation) n'a rien à faire sur un site public.
+      - name: Préparer l'artefact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: appli
+
+      - name: Déployer sur GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
