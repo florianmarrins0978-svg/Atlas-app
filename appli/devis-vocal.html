@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="only light">
+<title>Arborea — Nouveau devis vocal</title>
+<meta name="description" content="Dictez votre chantier sur place. Arborea prépare le devis à partir de votre grille de tarifs, sans jamais inventer un prix.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1; --paper-warm:#e2ded3;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --pine-light:#4f5f4c; --sage:#7d9a6d; --sage-light:#9fbd82;
+    --clay:#b5562a;
+    --line:rgba(28,28,26,0.12); --line-soft:rgba(28,28,26,0.07);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bone);color:var(--charcoal);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-weight:500;color:var(--charcoal);letter-spacing:-0.01em;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:1.5px solid var(--pine);outline-offset:3px;}
+
+  main{max-width:720px;margin:0 auto;padding:clamp(2.2rem,5vw,3.6rem) 1.4rem 6rem;}
+  .eyebrow{font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);font-weight:600;display:block;margin-bottom:0.9rem;}
+  .hero h1{font-size:clamp(2rem,5vw,2.8rem);line-height:1.1;margin-bottom:0.9rem;}
+  .hero p{color:var(--charcoal-soft);font-size:1.02rem;max-width:520px;}
+
+  .steps-nav{display:flex;gap:0.5rem;margin:2.2rem 0 2rem;flex-wrap:wrap;}
+  .steps-nav .s{display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--muted);}
+  .steps-nav .s .num{width:1.5rem;height:1.5rem;border-radius:50%;border:1.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-weight:600;font-size:0.78rem;}
+  .steps-nav .s.active{color:var(--charcoal);}
+  .steps-nav .s.active .num{background:var(--pine);color:var(--bone);border-color:var(--pine);}
+  .steps-nav .s.done .num{background:var(--sage);color:var(--bone);border-color:var(--sage);}
+  .steps-nav .sep{flex:1;min-width:14px;height:1.5px;background:var(--line-soft);align-self:center;}
+
+  .card{background:var(--cream);border:1px solid var(--line-soft);border-radius:18px;padding:clamp(1.4rem,3.5vw,2rem);margin-bottom:1.4rem;}
+
+  /* --- Dictée --- */
+  .mic-wrap{display:flex;flex-direction:column;align-items:center;gap:1.1rem;padding:1rem 0 0.4rem;}
+  .mic{width:96px;height:96px;border-radius:50%;border:none;background:var(--pine);color:var(--bone);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px rgba(47,59,47,0.25);
+    transition:transform .15s ease, background .2s ease;}
+  .mic:hover{transform:translateY(-2px);}
+  .mic svg{width:38px;height:38px;}
+  .mic.recording{background:var(--clay);animation:pulse 1.4s ease-out infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(181,86,42,0.35);}70%{box-shadow:0 0 0 22px rgba(181,86,42,0);}100%{box-shadow:0 0 0 0 rgba(181,86,42,0);}}
+  .mic-label{font-size:0.9rem;color:var(--charcoal-soft);text-align:center;min-height:1.3em;}
+  .mic-hint{font-size:0.8rem;color:var(--muted);text-align:center;max-width:360px;}
+
+  .transcript{width:100%;min-height:130px;margin-top:1.2rem;resize:vertical;
+    font-family:inherit;font-size:1rem;line-height:1.6;color:var(--charcoal);
+    padding:1rem 1.1rem;border:1.5px solid var(--paper-warm);border-radius:12px;background:var(--bone);}
+  .transcript:focus{outline:none;border-color:var(--sage);}
+  .transcript::placeholder{color:var(--muted);}
+  .transcript.interim{color:var(--muted);}
+
+  .actions{display:flex;gap:0.8rem;flex-wrap:wrap;margin-top:1.3rem;}
+  .btn{border:none;border-radius:30px;padding:0.9rem 1.7rem;font-weight:600;font-size:0.92rem;letter-spacing:0.01em;transition:transform .15s ease, background .2s ease, opacity .2s ease;}
+  .btn-primary{background:var(--pine);color:var(--bone);box-shadow:0 8px 20px rgba(47,59,47,0.18);}
+  .btn-primary:hover{transform:translateY(-1px);background:var(--pine-light);}
+  .btn-primary:disabled{opacity:0.45;cursor:default;transform:none;box-shadow:none;}
+  .btn-ghost{background:transparent;color:var(--pine);border:1.5px solid var(--line);}
+  .btn-ghost:hover{background:var(--paper);}
+
+  .warn{margin-top:1rem;font-size:0.85rem;color:var(--clay);background:rgba(181,86,42,0.08);
+    border:1px solid rgba(181,86,42,0.22);border-radius:10px;padding:0.7rem 0.9rem;display:none;}
+  .warn.show{display:block;}
+
+  /* --- Aperçu structuré --- */
+  #reviewSection{display:none;}
+  .review-head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-bottom:1.1rem;flex-wrap:wrap;}
+  .review-head h2{font-size:1.4rem;}
+  .review-head .count{font-size:0.82rem;color:var(--muted);}
+
+  .rline{display:grid;grid-template-columns:1fr auto;gap:0.4rem 1rem;align-items:center;
+    padding:0.85rem 0;border-bottom:1px solid var(--line-soft);}
+  .rline:last-child{border-bottom:none;}
+  .rline .desc{font-weight:500;color:var(--charcoal);font-size:0.98rem;}
+  .rline .meta{font-size:0.8rem;color:var(--muted);grid-column:1;}
+  .rline .amount{font-weight:600;color:var(--pine);white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .rline.flag .amount{color:var(--clay);}
+  .rline .flagtag{display:inline-block;font-size:0.68rem;letter-spacing:0.04em;text-transform:uppercase;
+    color:var(--clay);border:1px solid rgba(181,86,42,0.4);border-radius:20px;padding:0.05rem 0.5rem;margin-left:0.5rem;}
+
+  .rtotal{display:flex;justify-content:space-between;align-items:baseline;margin-top:1.1rem;padding-top:1rem;border-top:1.5px solid var(--line);}
+  .rtotal .lbl{font-size:0.9rem;color:var(--charcoal-soft);}
+  .rtotal .val{font-family:'Playfair Display',Georgia,serif;font-size:1.35rem;color:var(--charcoal);font-variant-numeric:tabular-nums;}
+
+  .client-detected{margin-top:1.2rem;font-size:0.88rem;color:var(--charcoal-soft);}
+  .client-detected b{color:var(--charcoal);}
+  .empty-note{color:var(--muted);font-size:0.9rem;padding:0.6rem 0;}
+
+  .principle-note{margin-top:1.3rem;font-size:0.82rem;color:var(--muted);line-height:1.6;
+    border-left:3px solid var(--sage);padding:0.4rem 0 0.4rem 0.9rem;}
+
+  .footer-note{margin-top:2.4rem;text-align:center;font-size:0.8rem;color:var(--muted);line-height:1.7;}
+  .footer-note a{color:var(--pine-light);}
+
+  @media (max-width:560px){
+    .actions .btn{flex:1;text-align:center;}
+  }
+</style>
+</head>
+<body>
+
+<main>
+  <header class="hero">
+    <span class="eyebrow">Chantier → Devis</span>
+    <h1>Nouveau devis vocal</h1>
+    <p>Sur place, dictez votre chantier comme vous le raconteriez. Arborea prépare le devis à partir de votre grille de tarifs — vous vérifiez en 30&nbsp;secondes.</p>
+  </header>
+
+  <div class="steps-nav">
+    <div class="s active" id="stepChip1"><span class="num">1</span> Dicter</div>
+    <span class="sep"></span>
+    <div class="s" id="stepChip2"><span class="num">2</span> Vérifier</div>
+    <span class="sep"></span>
+    <div class="s" id="stepChip3"><span class="num">3</span> Devis</div>
+  </div>
+
+  <!-- Étape 1 : dictée -->
+  <section class="card" id="dictateSection">
+    <div class="mic-wrap">
+      <button class="mic" id="micBtn" type="button" aria-label="Démarrer la dictée">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+          <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path><line x1="12" y1="18" x2="12" y2="22"></line>
+        </svg>
+      </button>
+      <div class="mic-label" id="micLabel">Touchez le micro et décrivez le chantier</div>
+      <div class="mic-hint" id="micHint">Ex. : « Chez M. Dupont, 12 rue des Tilleuls. Un chêne mort à démonter, deux jours, deux hommes, avec broyeur et camion. »</div>
+    </div>
+
+    <textarea class="transcript" id="transcript" placeholder="Le texte de votre dictée apparaîtra ici. Vous pouvez aussi taper ou coller votre note directement."></textarea>
+
+    <div class="warn" id="speechWarn">La dictée vocale n'est pas disponible sur ce navigateur. Vous pouvez taper ou coller votre note ci-dessus, puis lancer l'analyse.</div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="analyzeBtn" type="button" disabled>Analyser le chantier</button>
+      <button class="btn btn-ghost" id="clearBtn" type="button">Effacer</button>
+    </div>
+  </section>
+
+  <!-- Étape 2 : aperçu structuré -->
+  <section class="card" id="reviewSection">
+    <div class="review-head">
+      <h2>Ce que j'ai compris</h2>
+      <span class="count" id="reviewCount"></span>
+    </div>
+    <div id="reviewLines"></div>
+    <div class="rtotal"><span class="lbl">Total HT estimé</span><span class="val" id="reviewTotal">0,00 €</span></div>
+    <div class="client-detected" id="clientDetected"></div>
+    <div class="principle-note" id="principleNote"></div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="toDevisBtn" type="button">Créer le devis →</button>
+      <button class="btn btn-ghost" id="backBtn" type="button">Reprendre la dictée</button>
+    </div>
+  </section>
+
+  <p class="footer-note">
+    Transcription réalisée sur votre appareil. Vos notes et vos clients ne quittent pas votre téléphone.<br>
+    Besoin de renseigner vos prix&nbsp;? <a href="mes-tarifs.html">Mes tarifs →</a>
+  </p>
+</main>
+
+<script>
+  /* =====================================================================
+     Nouveau devis vocal.
+     1) Transcription in-browser (Web Speech API) — gratuite, sans clé.
+     2) Extraction rule-based : on rapproche la note de la grille « Mes
+        tarifs ». On n'invente JAMAIS un prix — un moyen absent de la grille
+        est signalé, pas chiffré.
+     3) Passage au devis pré-rempli (devis-modele.html).
+
+     NB : l'extraction fine (comprendre le langage naturel) gagnera beaucoup
+     à passer par un vrai modèle (Claude) via un petit backend. La fonction
+     extractDevis() est le point de branchement prévu pour ça.
+     ===================================================================== */
+
+  const TARIFS_KEY = 'arborea_tarifs';
+  const VOICE_KEY = 'arborea_voice_devis';
+  const UNITE_LABELS = {
+    'jour':'jour','demi-journee':'½ journée','heure':'heure','forfait':'forfait',
+    'm2':'m²','ml':'ml','m3':'m³','unite':'u','tonne':'t'
+  };
+  const STOPWORDS = new Set(['de','des','du','la','le','les','un','une','et','ou','pour','par','avec','sur','au','aux','en','plus']);
+
+  const $ = id => document.getElementById(id);
+  const transcriptEl = $('transcript');
+  const analyzeBtn = $('analyzeBtn');
+
+  function readTarifs(){
+    try{ return JSON.parse(localStorage.getItem(TARIFS_KEY) || 'null'); }
+    catch(e){ return null; }
+  }
+  function normalize(s){
+    return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();
+  }
+  function formatEUR(v){ return (v||0).toLocaleString('fr-FR', { style:'currency', currency:'EUR' }); }
+
+  /* ---------- Moteur d'extraction (transparent, sans clé) ---------- */
+  function extractDevis(rawText){
+    const text = normalize(rawText);
+    const tarifs = readTarifs();
+    const ressources = (tarifs && Array.isArray(tarifs.ressources)) ? tarifs.ressources.filter(r => r && (r.libelle||'').trim()) : [];
+    const forfaits = (tarifs && Array.isArray(tarifs.forfaits)) ? tarifs.forfaits.filter(r => r && (r.libelle||'').trim()) : [];
+
+    // Quantités globales détectées (l'utilisateur ajuste ensuite).
+    const nbJours = matchCount(text, 'jours?|journees?|journee') ||
+                    (/\bdemi[-\s]?journee\b/.test(text) ? 0.5 : 0);
+    const nbHommes = matchCount(text, 'hommes?|gars|personnes?|ouvriers?|mecs?|equipiers?');
+
+    const lines = [];
+    const usedForfaitWords = [];
+
+    // 1) Forfaits d'abord (plus spécifiques).
+    forfaits.forEach(f => {
+      if (mentions(text, f.libelle)){
+        const qty = nbJours > 0 ? nbJours : 1;
+        lines.push(makeLine(f, qty));
+        usedForfaitWords.push(...keywords(f.libelle));
+      }
+    });
+
+    // 2) Ressources — en évitant de doubler ce qui est déjà dans un forfait retenu.
+    ressources.forEach(r => {
+      if (!mentions(text, r.libelle)) return;
+      if (keywords(r.libelle).some(k => usedForfaitWords.includes(k))) return; // déjà couvert par un forfait
+      let qty = 1;
+      const cat = normalize(r.categorie || '');
+      const isJour = r.unite === 'jour';
+      const isLabour = cat.indexOf('main') !== -1;
+      if (isJour){
+        if (isLabour) qty = Math.max(1, (nbHommes || 1) * (nbJours || 1));
+        else qty = nbJours || 1;
+      }
+      lines.push(makeLine(r, qty));
+    });
+
+    // Client (détecté sur le texte d'origine, jamais inventé).
+    const client = detectClient(rawText);
+
+    return { lines, client, rawText: (rawText || '').trim() };
+  }
+
+  function makeLine(entry, qty){
+    const prix = (entry.prix != null && !isNaN(parseFloat(entry.prix))) ? parseFloat(entry.prix) : null;
+    return {
+      desc: entry.libelle || '',
+      unite: entry.unite || '',
+      qty: qty,
+      price: prix != null ? prix : 0,
+      flagged: prix == null // prix absent de la grille → à définir
+    };
+  }
+
+  function keywords(libelle){
+    return normalize(libelle).split(/[^a-z0-9]+/).filter(w => w.length >= 4 && !STOPWORDS.has(w));
+  }
+  function mentions(text, libelle){
+    const ks = keywords(libelle);
+    if (!ks.length) return false;
+    return ks.some(k => text.indexOf(k) !== -1);
+  }
+  const NUM_WORDS = { un:1, une:1, deux:2, trois:3, quatre:4, cinq:5, six:6, sept:7, huit:8, neuf:9, dix:10 };
+  function matchCount(text, unitAlternation){
+    // Accepte les chiffres ET les nombres écrits (« 2 jours » ou « deux jours »).
+    const re = new RegExp('(\\d+|un|une|deux|trois|quatre|cinq|six|sept|huit|neuf|dix)\\s*(?:' + unitAlternation + ')');
+    const m = text.match(re);
+    if (!m) return 0;
+    return /^\d+$/.test(m[1]) ? parseInt(m[1], 10) : (NUM_WORDS[m[1]] || 0);
+  }
+  function detectClient(raw){
+    const client = {};
+    // Nom : "chez M. Dupont" / "chez Madame Martin"
+    const nameRe = /[Cc]hez\s+(?:[Mm]\.?|[Mm]r|[Mm]me|[Mm]adame|[Mm]onsieur)?\s*([A-ZÀ-Ÿ][A-Za-zÀ-ÿ'’-]+(?:\s+[A-ZÀ-Ÿ][A-Za-zÀ-ÿ'’-]+)?)/;
+    const nm = raw.match(nameRe);
+    if (nm) client.nom = nm[1].trim();
+    // Adresse : "12 rue des Tilleuls"
+    const addrRe = /(\d{1,4}\s+(?:rue|avenue|impasse|chemin|route|all[ée]e|boulevard|bd|place|lotissement)\s+[A-Za-zÀ-ÿ'’\-\s]{2,40})/i;
+    const am = raw.match(addrRe);
+    if (am) client.adresse = am[1].replace(/\s+/g,' ').trim();
+    return client;
+  }
+
+  /* ---------- Web Speech API (transcription) ---------- */
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recog = null, recording = false, finalText = '';
+
+  function refreshAnalyzeState(){
+    analyzeBtn.disabled = transcriptEl.value.trim().length < 3;
+  }
+
+  if (SR){
+    recog = new SR();
+    recog.lang = 'fr-FR';
+    recog.continuous = true;
+    recog.interimResults = true;
+
+    recog.onresult = (e) => {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++){
+        const chunk = e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalText += chunk + ' ';
+        else interim += chunk;
+      }
+      transcriptEl.value = (finalText + interim).replace(/\s+/g,' ').trimStart();
+      transcriptEl.classList.toggle('interim', interim.length > 0 && !finalText);
+      refreshAnalyzeState();
+    };
+    recog.onerror = (e) => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed'){ stopRec(); $('micLabel').textContent = "Micro refusé — autorisez l'accès, ou tapez votre note."; } };
+    recog.onend = () => { if (recording){ try{ recog.start(); }catch(_){} } };
+  } else {
+    $('speechWarn').classList.add('show');
+    $('micBtn').style.display = 'none';
+    $('micHint').style.display = 'none';
+    $('micLabel').textContent = 'Tapez ou collez votre note ci-dessous.';
+  }
+
+  function startRec(){
+    finalText = transcriptEl.value ? transcriptEl.value.trim() + ' ' : '';
+    try{ recog.start(); }catch(_){}
+    recording = true;
+    $('micBtn').classList.add('recording');
+    $('micBtn').setAttribute('aria-label', 'Arrêter la dictée');
+    $('micLabel').textContent = 'À l’écoute… touchez pour arrêter';
+  }
+  function stopRec(){
+    recording = false;
+    try{ recog && recog.stop(); }catch(_){}
+    $('micBtn').classList.remove('recording');
+    $('micBtn').setAttribute('aria-label', 'Démarrer la dictée');
+    $('micLabel').textContent = 'Touchez le micro pour reprendre';
+    transcriptEl.classList.remove('interim');
+  }
+
+  if (SR){
+    $('micBtn').addEventListener('click', () => recording ? stopRec() : startRec());
+  }
+  transcriptEl.addEventListener('input', refreshAnalyzeState);
+
+  $('clearBtn').addEventListener('click', () => {
+    finalText = ''; transcriptEl.value = ''; refreshAnalyzeState();
+    if (recording) stopRec();
+    showStep(1);
+  });
+
+  /* ---------- Rendu de l'aperçu ---------- */
+  function renderReview(result){
+    const box = $('reviewLines');
+    box.innerHTML = '';
+    let total = 0, flags = 0;
+
+    if (!result.lines.length){
+      box.innerHTML = '<div class="empty-note">Aucun poste de votre grille n’a été reconnu dans la note. ' +
+        'Vous pourrez ajouter les lignes à la main sur le devis, ou compléter votre grille.</div>';
+    } else {
+      result.lines.forEach(l => {
+        const lineTotal = (l.qty || 0) * (l.price || 0);
+        if (!l.flagged) total += lineTotal; else flags++;
+        const unite = UNITE_LABELS[l.unite] || l.unite || '';
+        const row = document.createElement('div');
+        row.className = 'rline' + (l.flagged ? ' flag' : '');
+        row.innerHTML =
+          '<div class="desc">' + escapeHtml(l.desc) +
+            (l.flagged ? '<span class="flagtag">prix à définir</span>' : '') + '</div>' +
+          '<div class="amount">' + (l.flagged ? '—' : formatEUR(lineTotal)) + '</div>' +
+          '<div class="meta">' + fmtQty(l.qty) + (unite ? ' × ' + unite : '') +
+            (!l.flagged ? ' · ' + formatEUR(l.price) + (unite ? '/' + unite : '') : '') + '</div>';
+        box.appendChild(row);
+      });
+    }
+    $('reviewTotal').textContent = formatEUR(total);
+    $('reviewCount').textContent = result.lines.length
+      ? (result.lines.length + ' poste' + (result.lines.length > 1 ? 's' : '') + (flags ? ' · ' + flags + ' à compléter' : ''))
+      : '';
+
+    // Client
+    const c = result.client || {};
+    if (c.nom || c.adresse){
+      $('clientDetected').innerHTML = 'Client détecté : <b>' + escapeHtml(c.nom || '—') + '</b>' +
+        (c.adresse ? ' · ' + escapeHtml(c.adresse) : '');
+    } else {
+      $('clientDetected').innerHTML = '<span class="empty-note">Aucun client détecté dans la note — à renseigner sur le devis.</span>';
+    }
+
+    $('principleNote').textContent = flags
+      ? 'Les postes « prix à définir » ne figurent pas dans votre grille : ils ne sont jamais chiffrés au hasard. Ajoutez-les une fois dans « Mes tarifs » et ils seront reconnus la prochaine fois.'
+      : 'Rien n’a été inventé : chaque montant vient de votre grille. Vous ajustez les quantités sur le devis.';
+  }
+
+  function fmtQty(q){ return Number.isInteger(q) ? String(q) : q.toLocaleString('fr-FR'); }
+  function escapeHtml(s){ return (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  /* ---------- Navigation entre étapes ---------- */
+  let lastResult = null;
+  function showStep(n){
+    $('dictateSection').style.display = n === 1 ? '' : 'none';
+    $('reviewSection').style.display = n === 2 ? 'block' : 'none';
+    $('stepChip1').className = 's ' + (n > 1 ? 'done' : 'active');
+    $('stepChip2').className = 's ' + (n === 2 ? 'active' : (n > 2 ? 'done' : ''));
+    $('stepChip3').className = 's';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  analyzeBtn.addEventListener('click', () => {
+    if (recording) stopRec();
+    lastResult = extractDevis(transcriptEl.value);
+    renderReview(lastResult);
+    showStep(2);
+  });
+  $('backBtn').addEventListener('click', () => showStep(1));
+
+  $('toDevisBtn').addEventListener('click', () => {
+    if (!lastResult) return;
+    const payload = {
+      client: lastResult.client || {},
+      lines: lastResult.lines.map(l => ({ desc: l.desc, qty: l.qty, price: l.price })),
+      note: lastResult.rawText
+    };
+    try{ localStorage.setItem(VOICE_KEY, JSON.stringify(payload)); }catch(e){}
+    window.location.href = 'devis-modele.html';
+  });
+
+  refreshAnalyzeState();
+</script>
+<script src="nav.js"></script>
+
+</body>
+</html>

@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/appli/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -44,6 +45,13 @@ next-env.d.ts
 
 # local editor settings
 .vscode/
+
+# appli/ — artefacts régénérés par Capacitor (voir appli/CAPACITOR.md) :
+# bundle web produit par `npm run build:www` et projets natifs produits par
+# `npx cap add ios|android`. Jamais versionnés.
+/appli/www/
+/appli/ios/
+/appli/android/
 
 # captures d'écran de vérification de développement (Playwright) — artefacts
 # de construction, pas du code source ; ne doivent jamais gonfler l'historique

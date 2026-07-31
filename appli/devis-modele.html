@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arborea — Modèle de devis</title>
+<meta name="color-scheme" content="only light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  :root{
+    /* Palette alignée sur l'identité Arborea : os / charbon / pin */
+    --cream:#faf9f5; --paper:#efece4; --paper-warm:#e2ded3;
+    --forest-deep:#1c1c1a; --forest:#2f3b2f; --forest-mid:#4f5f4c;
+    --sage:#7d9a6d; --sage-light:#9fbd82;
+    --clay:#2f3b2f; --clay-light:#4f5f4c;
+    --ink:#1c1c1a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:#e7e3da;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.6;
+    padding:3rem 1.5rem 6rem;
+  }
+  h1,h2,h3{font-family:'Playfair Display',serif;font-weight:500;color:var(--forest-deep);}
+
+  .toolbar{
+    max-width:900px;margin:0 auto 1.5rem;display:flex;justify-content:space-between;align-items:center;
+    flex-wrap:wrap;gap:1rem;
+  }
+  .toolbar .brand-mini{font-family:'Playfair Display',serif;font-weight:600;color:var(--forest-deep);font-size:1.1rem;}
+  .btn-print{
+    background:var(--clay);color:var(--cream);border:none;border-radius:30px;
+    padding:0.85rem 1.8rem;font-weight:600;font-size:0.9rem;letter-spacing:0.02em;cursor:pointer;
+    box-shadow:0 8px 20px rgba(31,42,31,0.18);transition:background .2s ease, transform .2s ease;
+  }
+  .btn-print:hover{background:var(--clay-light);transform:translateY(-1px);}
+  .btn-secondary{
+    background:transparent;color:var(--forest-deep);border:1.5px solid var(--forest-deep);border-radius:30px;
+    padding:0.83rem 1.8rem;font-weight:600;font-size:0.9rem;letter-spacing:0.02em;cursor:pointer;
+    transition:background .2s ease, color .2s ease;
+  }
+  .btn-secondary:hover{background:var(--forest-deep);color:var(--cream);}
+  .btn-secondary:disabled{opacity:0.6;cursor:default;}
+  .toolbar-actions{display:flex;gap:0.9rem;flex-wrap:wrap;}
+
+  /* État temporaire pendant la génération du PDF : masque les contrôles interactifs */
+  body.exporting-pdf .no-print,
+  body.exporting-pdf .remove-row,
+  body.exporting-pdf .btn-add{display:none !important;}
+  body.exporting-pdf .page{box-shadow:none;}
+
+  .page{
+    max-width:900px;margin:0 auto;background:var(--cream);border-radius:18px;
+    box-shadow:0 20px 60px rgba(21,38,25,0.12);padding:clamp(2rem,5vw,4rem);
+    opacity:0;transform:translateY(18px);animation:rise .7s ease-out forwards;
+  }
+  @keyframes rise{to{opacity:1;transform:translateY(0);}}
+
+  .doc-header{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:2rem;flex-wrap:wrap;
+    padding-bottom:2rem;border-bottom:2px solid var(--forest-deep);margin-bottom:2.5rem;
+  }
+  .brand-name{
+    font-size:2rem;letter-spacing:0.01em;
+    background-image:linear-gradient(100deg, var(--forest-deep) 0%, var(--forest-mid) 25%, var(--sage-light) 50%, var(--forest-mid) 75%, var(--forest-deep) 100%);
+    background-size:250% auto;background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    animation:shine 3s ease-out 1;
+  }
+  @keyframes shine{0%{background-position:0% center;}100%{background-position:250% center;}}
+  .brand-tagline{display:block;font-size:0.82rem;color:#5a5a4c;margin-top:0.3rem;}
+  .doc-meta{display:grid;gap:0.7rem;min-width:220px;}
+  .doc-meta .meta-row{display:flex;justify-content:space-between;align-items:center;gap:1rem;font-size:0.88rem;}
+  .doc-meta label{color:#6b6b5c;font-weight:600;letter-spacing:0.02em;}
+  .doc-meta input{
+    text-align:right;border:none;border-bottom:1px solid var(--paper-warm);background:transparent;
+    font-family:'Inter',sans-serif;font-size:0.92rem;color:var(--forest-deep);padding:0.2rem 0;width:130px;
+  }
+  .doc-title{text-align:center;margin-bottom:2.5rem;}
+  .doc-title h1{font-size:1.6rem;letter-spacing:0.06em;text-transform:uppercase;}
+
+  .parties{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2.5rem;}
+  .party h3{font-size:0.76rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--clay);margin-bottom:0.9rem;}
+  .party p{font-size:0.94rem;color:var(--forest-deep);line-height:1.7;}
+  .party.editable{display:grid;gap:0.6rem;}
+  .party.editable input{
+    width:100%;font-family:'Inter',sans-serif;font-size:0.94rem;padding:0.6rem 0.8rem;
+    border:1.5px solid var(--paper-warm);border-radius:8px;background:var(--paper);color:var(--forest-deep);
+  }
+  .party.editable input:focus{outline:none;border-color:var(--sage);}
+  .party.editable .row{display:grid;grid-template-columns:1fr 2fr;gap:0.6rem;}
+  .party.editable .field-hint{font-size:0.7rem;color:#8a8a78;margin-top:-0.2rem;}
+
+  .lines{margin-bottom:1.5rem;}
+  table{width:100%;border-collapse:collapse;}
+  thead th{
+    text-align:left;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:#6b6b5c;
+    padding:0 0.6rem 0.7rem;border-bottom:1.5px solid var(--forest-deep);
+  }
+  thead th.num{text-align:right;}
+  tbody td{padding:0.6rem;vertical-align:top;border-bottom:1px solid var(--paper-warm);}
+  tbody input,tbody textarea{
+    width:100%;font-family:'Inter',sans-serif;font-size:0.92rem;padding:0.55rem 0.6rem;
+    border:1.5px solid var(--paper-warm);border-radius:8px;background:var(--paper);color:var(--forest-deep);
+    box-sizing:border-box;
+  }
+  tbody input:focus,tbody textarea:focus{outline:none;border-color:var(--sage);}
+  /* Textarea instead of input for description: long lines wrap instead of clipping */
+  textarea.desc{resize:vertical;min-height:2.5rem;line-height:1.4;overflow:hidden;}
+  td.qty-cell input, td.price-cell input{text-align:right;}
+  td.line-total{text-align:right;font-weight:600;color:var(--forest-deep);white-space:nowrap;padding-top:0.9rem;}
+  td.remove-cell{text-align:center;padding-top:0.6rem;}
+  .cell-label{display:none;}
+  .remove-row{
+    background:none;border:none;color:#a89f8a;font-size:1.1rem;cursor:pointer;line-height:1;padding:0.3rem;
+  }
+  .remove-row:hover{color:var(--clay);}
+  .btn-add{
+    margin-top:1rem;background:none;border:1.5px dashed var(--sage);color:var(--forest);
+    border-radius:8px;padding:0.7rem 1.2rem;font-size:0.86rem;font-weight:600;cursor:pointer;
+  }
+  .btn-add:hover{background:var(--paper);}
+
+  .totals{margin-left:auto;max-width:340px;margin-top:1.5rem;display:grid;gap:0.7rem;}
+  .totals-row{display:flex;justify-content:space-between;align-items:center;font-size:0.94rem;color:var(--forest-deep);}
+  .totals-row input{
+    width:55px;text-align:center;border:1.5px solid var(--paper-warm);border-radius:6px;
+    background:var(--paper);font-family:inherit;font-size:0.88rem;padding:0.2rem;color:var(--forest-deep);
+  }
+  .total-final{
+    font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:600;color:var(--forest-deep);
+    border-top:2px solid var(--forest-deep);padding-top:0.8rem;margin-top:0.4rem;
+  }
+
+  .notes{margin-top:2.5rem;}
+  .notes label{display:block;font-size:0.76rem;letter-spacing:0.08em;text-transform:uppercase;color:#6b6b5c;margin-bottom:0.6rem;}
+  .notes textarea{
+    width:100%;min-height:90px;resize:vertical;font-family:'Inter',sans-serif;font-size:0.92rem;
+    padding:0.9rem 1rem;border:1.5px solid var(--paper-warm);border-radius:10px;background:var(--paper);color:var(--forest-deep);
+  }
+  .notes textarea:focus{outline:none;border-color:var(--sage);}
+
+  .doc-footer{
+    margin-top:3rem;padding-top:2rem;border-top:1px solid var(--paper-warm);
+    display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:2rem;
+  }
+  .doc-footer .legal{font-size:0.78rem;color:#7a7a6a;max-width:380px;}
+  .signature{text-align:center;min-width:220px;}
+  .signature .sign-box{
+    height:70px;border:1.5px dashed var(--paper-warm);border-radius:10px;margin-bottom:0.6rem;
+  }
+  .signature p{font-size:0.78rem;color:#6b6b5c;letter-spacing:0.02em;}
+
+  @media (max-width:700px){
+    body{padding:1.5rem 0.8rem 4rem;}
+    .parties{grid-template-columns:1fr;}
+    .doc-header{flex-direction:column;}
+    .doc-meta{width:100%;}
+    .doc-meta input{width:auto;flex:1;min-width:0;}
+
+    table,thead,tbody,tr{display:block;width:100%;}
+    thead{position:absolute;left:-9999px;top:auto;}
+    tbody#linesBody tr{
+      display:grid;grid-template-columns:1fr 1fr;gap:0.7rem 0.8rem;
+      padding:1rem 0;border-bottom:1px solid var(--paper-warm);
+    }
+    tbody#linesBody td{display:block;padding:0;border:none;vertical-align:top;}
+    td.desc-cell{grid-column:1 / -1;}
+    td.qty-cell,td.price-cell{display:block;}
+    td.line-total{grid-column:1;text-align:left;padding-top:0;}
+    td.remove-cell{grid-column:2;text-align:right;padding-top:0;align-self:end;}
+    .cell-label{
+      display:block;font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;
+      color:#8a8a78;margin-bottom:0.3rem;
+    }
+    td.qty-cell input,td.price-cell input{text-align:left;}
+    td.line-total .line-total-value{font-family:'Inter',sans-serif;font-size:1rem;}
+
+    .totals{max-width:100%;}
+  }
+
+  @media print{
+    html{font-size:14px;}
+    body{background:#fff;padding:0;}
+    .toolbar,.no-print{display:none !important;}
+    .page{
+      box-shadow:none;border-radius:0;max-width:100%;animation:none;opacity:1;transform:none;padding:0;
+    }
+    .brand-name{animation:none;}
+    .remove-row,.btn-add{display:none !important;}
+    td.remove-cell{display:none !important;}
+
+    /* Force the desktop two-column layout regardless of the device used to print */
+    .doc-header{flex-direction:row !important;padding-bottom:1rem;margin-bottom:1rem;}
+    .doc-meta{width:auto !important;min-width:200px;}
+    .doc-meta input{width:120px !important;}
+
+    .parties{grid-template-columns:1fr 1fr !important;gap:1.5rem;margin-bottom:1.2rem;}
+
+    table,thead,tbody,tr{display:revert !important;width:100% !important;}
+    thead{position:static !important;left:auto !important;}
+    tbody#linesBody tr{display:table-row !important;padding:0 !important;}
+    tbody#linesBody td{display:table-cell !important;padding:0.4rem 0.5rem !important;border:none !important;vertical-align:top;}
+    td.desc-cell{grid-column:auto !important;}
+    td.qty-cell,td.price-cell{display:table-cell !important;}
+    td.qty-cell input,td.price-cell input{text-align:right !important;}
+    td.line-total{grid-column:auto !important;text-align:right !important;padding-top:0.4rem !important;}
+    .cell-label{display:none !important;}
+
+    .totals{max-width:340px !important;margin-top:0.8rem;}
+
+    .notes{margin-top:0.9rem;}
+    .notes label{margin-bottom:0.3rem;}
+    .notes textarea,td.desc-cell textarea{overflow:visible;min-height:0 !important;padding:0.4rem 0.6rem;resize:none;}
+
+    tbody input,tbody textarea,.party.editable input,.notes textarea,.doc-meta input,.totals-row input{
+      border:none;background:transparent;padding:0.2rem 0;
+    }
+
+    .doc-footer{margin-top:1.2rem;padding-top:1rem;}
+    .signature .sign-box{height:45px;}
+
+    @page{size:A4;margin:1.1cm;}
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <span class="brand-mini">Arborea — Modèle de devis</span>
+  <div class="toolbar-actions">
+    <button class="btn-secondary" id="createFactureBtn" type="button">Valider → Créer la facture</button>
+    <button class="btn-secondary" id="printBtn" type="button">Imprimer</button>
+    <button class="btn-secondary" id="savePdfBtn" type="button">Enregistrer en PDF</button>
+    <button class="btn-print" id="sendClientBtn" type="button">Envoyer au client</button>
+  </div>
+</div>
+
+<div class="page" id="quotePage">
+  <div class="doc-header">
+    <div>
+      <span class="brand-name">Arborea</span>
+      <span class="brand-tagline">Arboriculture · Paysagisme · Île-de-France<br>06 79 98 45 14 — arboreapro@outlook.com</span>
+    </div>
+    <div class="doc-meta">
+      <div class="meta-row"><label for="devisNum">Devis n°</label><input id="devisNum" value="2026-001"></div>
+      <div class="meta-row"><label for="devisDate">Date</label><input id="devisDate" type="date"></div>
+      <div class="meta-row"><label for="devisValidite">Validité</label><input id="devisValidite" value="30 jours"></div>
+    </div>
+  </div>
+
+  <div class="doc-title"><h1>Devis</h1></div>
+
+  <div class="parties">
+    <div class="party editable" id="issuerParty">
+      <h3>Émetteur</h3>
+      <input id="issuerName" value="Arborea" aria-label="Nom ou raison sociale de l'entreprise">
+      <input id="issuerAddress" placeholder="Adresse du siège social" aria-label="Adresse du siège social">
+      <input id="issuerPhone" value="06 79 98 45 14" aria-label="Téléphone">
+      <input id="issuerEmail" value="arboreapro@outlook.com" aria-label="Email">
+      <input id="issuerSiret" placeholder="N° SIREN / SIRET" aria-label="Numéro SIREN ou SIRET">
+      <input id="issuerRcsRm" placeholder="RCS ou RM — ville d'immatriculation" aria-label="RCS ou RM et ville d'immatriculation">
+      <p class="field-hint no-print">RCS si commerçant, RM (Répertoire des métiers) si artisan.</p>
+    </div>
+    <div class="party editable">
+      <h3>Client</h3>
+      <input id="clientNom" placeholder="Nom complet" aria-label="Nom du client">
+      <input id="clientAdresse" placeholder="Adresse" aria-label="Adresse du client">
+      <div class="row">
+        <input id="clientCodePostal" placeholder="Code postal" aria-label="Code postal">
+        <input id="clientVille" placeholder="Ville" aria-label="Ville">
+      </div>
+      <input id="clientTelephone" placeholder="Téléphone" aria-label="Téléphone du client">
+      <input id="clientEmail" placeholder="Email" aria-label="Email du client">
+    </div>
+  </div>
+
+  <div class="lines">
+    <table id="linesTable">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th class="num">Qté</th>
+          <th class="num">Prix unitaire HT</th>
+          <th class="num">Total HT</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="linesBody">
+        <tr>
+          <td class="desc-cell"><span class="cell-label">Description</span><textarea rows="1" placeholder="Ex : Élagage d'un tilleul — taille architecturée" class="desc"></textarea></td>
+          <td class="qty-cell"><span class="cell-label">Qté</span><input type="number" class="qty" value="1" min="0" step="1"></td>
+          <td class="price-cell"><span class="cell-label">Prix unitaire HT</span><input type="number" class="price" value="0" min="0" step="0.01"></td>
+          <td class="line-total"><span class="cell-label">Total HT</span><span class="line-total-value">0,00 €</span></td>
+          <td class="remove-cell"><button class="remove-row" type="button" aria-label="Supprimer la ligne">×</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <button class="btn-add" id="addRow" type="button">+ Ajouter une ligne</button>
+  </div>
+
+  <div class="totals">
+    <div class="totals-row"><span>Total HT</span><span id="totalHT">0,00 €</span></div>
+    <div class="totals-row"><span>TVA (<input id="tvaRate" type="number" value="10" min="0" max="100" step="0.1"> %)</span><span id="totalTVA">0,00 €</span></div>
+    <div class="totals-row total-final"><span>Total TTC</span><span id="totalTTC">0,00 €</span></div>
+  </div>
+
+  <div class="notes">
+    <label for="notesField">Notes / conditions</label>
+    <textarea id="notesField" placeholder="Acompte de 30% à la signature, solde à réception des travaux. Devis gratuit et sans engagement.">Acompte de 30% à la signature, solde à réception des travaux.</textarea>
+  </div>
+
+  <div class="notes">
+    <label for="paymentField">Modalités de paiement</label>
+    <textarea id="paymentField">Paiement par virement bancaire
+IBAN : FR76 3123 3123 4500 2348 1091 175</textarea>
+  </div>
+
+  <div class="doc-footer">
+    <p class="legal">Devis établi par Arborea, valable selon la durée indiquée ci-dessus. Bon pour accord précédé de la mention manuscrite, daté et signé par le client.</p>
+    <div class="signature">
+      <div class="sign-box"></div>
+      <p>Bon pour accord — signature du client</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const linesBody = document.getElementById('linesBody');
+  const addRowBtn = document.getElementById('addRow');
+  const totalHTEl = document.getElementById('totalHT');
+  const totalTVAEl = document.getElementById('totalTVA');
+  const totalTTCEl = document.getElementById('totalTTC');
+  const tvaRateInput = document.getElementById('tvaRate');
+  const devisDateInput = document.getElementById('devisDate');
+
+  devisDateInput.valueAsDate = new Date();
+
+  /* ---------- Mémorisation des informations de l'émetteur ---------- */
+  const issuerFieldIds = ['issuerName','issuerAddress','issuerPhone','issuerEmail','issuerSiret','issuerRcsRm','paymentField'];
+  const ISSUER_STORAGE_KEY = 'arborea_devis_issuer';
+
+  function loadIssuerInfo(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(ISSUER_STORAGE_KEY) || '{}');
+      issuerFieldIds.forEach(id => {
+        if (saved[id]) document.getElementById(id).value = saved[id];
+      });
+    } catch(e){ /* ignore corrupted storage */ }
+  }
+
+  function saveIssuerInfo(){
+    const data = {};
+    issuerFieldIds.forEach(id => { data[id] = document.getElementById(id).value; });
+    try{ localStorage.setItem(ISSUER_STORAGE_KEY, JSON.stringify(data)); } catch(e){ /* storage unavailable */ }
+  }
+
+  loadIssuerInfo();
+  issuerFieldIds.forEach(id => {
+    document.getElementById(id).addEventListener('input', saveIssuerInfo);
+  });
+
+  function formatEUR(value){
+    return value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
+  }
+
+  function computeTotals(){
+    let totalHT = 0;
+    linesBody.querySelectorAll('tr').forEach(row => {
+      const qty = parseFloat(row.querySelector('.qty').value) || 0;
+      const price = parseFloat(row.querySelector('.price').value) || 0;
+      const lineTotal = qty * price;
+      row.querySelector('.line-total-value').textContent = formatEUR(lineTotal);
+      totalHT += lineTotal;
+    });
+    const tvaRate = parseFloat(tvaRateInput.value) || 0;
+    const totalTVA = totalHT * (tvaRate / 100);
+    const totalTTC = totalHT + totalTVA;
+    totalHTEl.textContent = formatEUR(totalHT);
+    totalTVAEl.textContent = formatEUR(totalTVA);
+    totalTTCEl.textContent = formatEUR(totalTTC);
+  }
+
+  function createRow(values){
+    values = values || {};
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="desc-cell"><span class="cell-label">Description</span><textarea rows="1" placeholder="Description de la prestation" class="desc"></textarea></td>
+      <td class="qty-cell"><span class="cell-label">Qté</span><input type="number" class="qty" value="1" min="0" step="1"></td>
+      <td class="price-cell"><span class="cell-label">Prix unitaire HT</span><input type="number" class="price" value="0" min="0" step="0.01"></td>
+      <td class="line-total"><span class="cell-label">Total HT</span><span class="line-total-value">0,00 €</span></td>
+      <td class="remove-cell"><button class="remove-row" type="button" aria-label="Supprimer la ligne">×</button></td>
+    `;
+    if (values.desc !== undefined) tr.querySelector('.desc').value = values.desc;
+    if (values.qty !== undefined) tr.querySelector('.qty').value = values.qty;
+    if (values.price !== undefined) tr.querySelector('.price').value = values.price;
+    return tr;
+  }
+
+  function bindRow(row){
+    row.querySelectorAll('.qty, .price').forEach(input => {
+      input.addEventListener('input', computeTotals);
+    });
+    row.querySelector('.remove-row').addEventListener('click', () => {
+      if (linesBody.querySelectorAll('tr').length > 1){
+        row.remove();
+        computeTotals();
+      }
+    });
+    const descField = row.querySelector('.desc');
+    const autosizeDesc = () => {
+      descField.style.height = 'auto';
+      descField.style.height = (descField.scrollHeight + 4) + 'px';
+    };
+    descField.addEventListener('input', autosizeDesc);
+    autosizeDesc();
+  }
+
+  linesBody.querySelectorAll('tr').forEach(bindRow);
+
+  addRowBtn.addEventListener('click', () => {
+    const row = createRow();
+    linesBody.appendChild(row);
+    bindRow(row);
+    row.querySelector('.desc').focus();
+    computeTotals();
+  });
+
+  tvaRateInput.addEventListener('input', computeTotals);
+
+  computeTotals();
+
+  /* ---------- Éviter que les zones de texte soient coupées à l'impression / l'export ---------- */
+  function growNotesTextareas(){
+    document.querySelectorAll('.notes textarea, td.desc-cell textarea').forEach(t => {
+      t.dataset.previousHeight = t.style.height;
+      t.style.height = 'auto';
+      t.style.height = (t.scrollHeight + 4) + 'px';
+    });
+  }
+  function restoreNotesTextareas(){
+    document.querySelectorAll('.notes textarea, td.desc-cell textarea').forEach(t => {
+      t.style.height = t.dataset.previousHeight || '';
+    });
+  }
+  window.addEventListener('beforeprint', growNotesTextareas);
+  window.addEventListener('afterprint', restoreNotesTextareas);
+
+  /* ---------- Bouton Imprimer ---------- */
+  document.getElementById('printBtn').addEventListener('click', () => {
+    window.print();
+  });
+
+  /* ---------- Génération du PDF (partagée entre « Enregistrer » et « Envoyer ») ---------- */
+  function currentPdfFilename(){
+    const num = (document.getElementById('devisNum') || {}).value || 'Arborea';
+    return `Devis-${num}.pdf`.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  }
+  async function generatePdfBlob(){
+    growNotesTextareas();
+    document.body.classList.add('exporting-pdf');
+    const opts = {
+      margin: 8,
+      filename: currentPdfFilename(),
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all'] }
+    };
+    try{
+      const pageEl = document.getElementById('quotePage');
+      return await html2pdf().set(opts).from(pageEl).outputPdf('blob');
+    } finally {
+      document.body.classList.remove('exporting-pdf');
+      restoreNotesTextareas();
+    }
+  }
+  function downloadBlob(blob, filename){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  /* ---------- Bouton Enregistrer en PDF ---------- */
+  const savePdfBtn = document.getElementById('savePdfBtn');
+  savePdfBtn.addEventListener('click', async () => {
+    savePdfBtn.disabled = true;
+    const originalLabel = savePdfBtn.textContent;
+    savePdfBtn.textContent = 'Génération du PDF...';
+    const filename = currentPdfFilename();
+    try{
+      const blob = await generatePdfBlob();
+      if (window.showSaveFilePicker){
+        try{
+          const handle = await window.showSaveFilePicker({
+            suggestedName: filename,
+            types: [{ description: 'Fichier PDF', accept: { 'application/pdf': ['.pdf'] } }]
+          });
+          const writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+        } catch(pickerErr){
+          if (pickerErr.name !== 'AbortError') throw pickerErr;
+        }
+      } else {
+        downloadBlob(blob, filename);
+      }
+    } catch(err){
+      alert("Une erreur est survenue lors de la génération du PDF. Vous pouvez utiliser le bouton \"Imprimer\" puis choisir \"Enregistrer en PDF\" comme imprimante.");
+    } finally {
+      savePdfBtn.disabled = false;
+      savePdfBtn.textContent = originalLabel;
+    }
+  });
+
+  /* ---------- Bouton Envoyer au client ---------- */
+  function buildMailDraft(){
+    const nom = (document.getElementById('clientNom').value || '').trim();
+    const num = (document.getElementById('devisNum').value || '').trim();
+    const totalTxt = (totalTTCEl.textContent || '').trim();
+    const issuer = (document.getElementById('issuerName').value || 'Arborea').trim();
+    const subject = 'Devis ' + issuer + (num ? ' n° ' + num : '');
+    const body = [
+      'Bonjour' + (nom ? ' ' + nom : '') + ',',
+      '',
+      'Vous trouverez ci-joint votre devis' + (num ? ' n° ' + num : '') +
+        (totalTxt && totalTxt !== '0,00 €' ? ", d'un montant de " + totalTxt + ' TTC' : '') + '.',
+      '',
+      'Je reste à votre disposition pour toute question.',
+      '',
+      'Cordialement,',
+      issuer
+    ].join('\n');
+    return { to: (document.getElementById('clientEmail').value || '').trim(), subject, body };
+  }
+
+  const sendClientBtn = document.getElementById('sendClientBtn');
+  sendClientBtn.addEventListener('click', async () => {
+    sendClientBtn.disabled = true;
+    const originalLabel = sendClientBtn.textContent;
+    sendClientBtn.textContent = 'Préparation...';
+    const filename = currentPdfFilename();
+    const draft = buildMailDraft();
+    try{
+      const blob = await generatePdfBlob();
+      const file = new File([blob], filename, { type: 'application/pdf' });
+
+      // Mobile : partage natif avec le PDF joint (Mail, WhatsApp, Messages…).
+      if (navigator.canShare && navigator.canShare({ files: [file] })){
+        try{
+          await navigator.share({ files: [file], title: draft.subject, text: draft.body });
+        } catch(shareErr){
+          if (shareErr.name !== 'AbortError') throw shareErr;
+        }
+      } else {
+        // Ordinateur : téléchargement du PDF + brouillon d'email pré-rempli à joindre.
+        downloadBlob(blob, filename);
+        const mailto = 'mailto:' + encodeURIComponent(draft.to) +
+          '?subject=' + encodeURIComponent(draft.subject) +
+          '&body=' + encodeURIComponent(draft.body + '\n\n(Pensez à joindre le PDF « ' + filename + ' » qui vient d\'être téléchargé.)');
+        window.location.href = mailto;
+      }
+    } catch(err){
+      alert("L'envoi n'a pas pu être préparé. Vous pouvez enregistrer le PDF, puis l'envoyer manuellement au client.");
+    } finally {
+      sendClientBtn.disabled = false;
+      sendClientBtn.textContent = originalLabel;
+    }
+  });
+
+  /* ---------- Pré-remplissage depuis une demande de devis du site ---------- */
+  function loadFromClientRequest(){
+    const params = new URLSearchParams(window.location.search);
+    if (![...params.keys()].length) return;
+
+    const nom = params.get('nom') || '';
+    const prenom = params.get('prenom') || '';
+    const fullName = (prenom + ' ' + nom).trim();
+    if (fullName) document.getElementById('clientNom').value = fullName;
+    if (params.get('adresse')) document.getElementById('clientAdresse').value = params.get('adresse');
+    if (params.get('codepostal')) document.getElementById('clientCodePostal').value = params.get('codepostal');
+    if (params.get('ville')) document.getElementById('clientVille').value = params.get('ville');
+    if (params.get('telephone')) document.getElementById('clientTelephone').value = params.get('telephone');
+    if (params.get('email')) document.getElementById('clientEmail').value = params.get('email');
+
+    const prestation = params.get('prestation') || '';
+    const description = params.get('description') || '';
+    const descLines = description.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+    if (prestation || descLines.length){
+      linesBody.innerHTML = '';
+      if (descLines.length === 0){
+        const row = createRow({ desc: prestation });
+        linesBody.appendChild(row);
+        bindRow(row);
+      } else {
+        descLines.forEach((line, idx) => {
+          const desc = (idx === 0 && prestation) ? `${prestation} — ${line}` : line;
+          const row = createRow({ desc });
+          linesBody.appendChild(row);
+          bindRow(row);
+        });
+      }
+    }
+
+    computeTotals();
+  }
+
+  loadFromClientRequest();
+
+  /* ---------- Pré-remplissage depuis un devis vocal ---------- */
+  function loadFromVoice(){
+    let payload = null;
+    try{ payload = JSON.parse(localStorage.getItem('arborea_voice_devis') || 'null'); }catch(e){}
+    if (!payload) return;
+    try{ localStorage.removeItem('arborea_voice_devis'); }catch(e){}
+
+    const c = payload.client || {};
+    const setIf = (id, val) => { if (val) document.getElementById(id).value = val; };
+    setIf('clientNom', c.nom);
+    setIf('clientAdresse', c.adresse);
+    setIf('clientCodePostal', c.codePostal);
+    setIf('clientVille', c.ville);
+    setIf('clientTelephone', c.telephone);
+    setIf('clientEmail', c.email);
+
+    if (Array.isArray(payload.lines) && payload.lines.length){
+      linesBody.innerHTML = '';
+      payload.lines.forEach(l => {
+        const row = createRow({ desc: l.desc || '', qty: l.qty != null ? l.qty : 1, price: l.price != null ? l.price : 0 });
+        linesBody.appendChild(row);
+        bindRow(row);
+      });
+      computeTotals();
+    }
+  }
+  loadFromVoice();
+
+  /* ---------- Transfert automatique vers la facture ---------- */
+  const createFactureBtn = document.getElementById('createFactureBtn');
+  const DEVIS_TO_FACTURE_KEY = 'arborea_devis_to_facture';
+
+  createFactureBtn.addEventListener('click', () => {
+    const lines = [];
+    linesBody.querySelectorAll('tr').forEach(row => {
+      lines.push({
+        desc: row.querySelector('.desc').value,
+        qty: row.querySelector('.qty').value,
+        price: row.querySelector('.price').value
+      });
+    });
+
+    const data = {
+      devisNum: document.getElementById('devisNum').value,
+      devisDate: document.getElementById('devisDate').value,
+      client: {
+        nom: document.getElementById('clientNom').value,
+        adresse: document.getElementById('clientAdresse').value,
+        codePostal: document.getElementById('clientCodePostal').value,
+        ville: document.getElementById('clientVille').value,
+        telephone: document.getElementById('clientTelephone').value,
+        email: document.getElementById('clientEmail').value
+      },
+      lines: lines,
+      tvaRate: tvaRateInput.value,
+      notes: document.getElementById('notesField').value
+    };
+
+    try{
+      localStorage.setItem(DEVIS_TO_FACTURE_KEY, JSON.stringify(data));
+    } catch(e){ /* storage unavailable */ }
+
+    window.location.href = 'facture-modele.html';
+  });
+
+  /* ---------- Insertion de lignes depuis la grille « Mes tarifs » ----------
+     Les prix viennent UNIQUEMENT de la grille du patron. Si un poste n'a pas
+     de prix, la ligne est ajoutée à 0 (à compléter) — jamais un prix inventé. */
+  (function(){
+    const TARIFS_KEY = 'arborea_tarifs';
+    const UNITE_LABELS = {
+      'jour':'jour','demi-journee':'½ journée','heure':'heure','forfait':'forfait',
+      'm2':'m²','ml':'ml','m3':'m³','unite':'u','tonne':'t'
+    };
+
+    function readTarifs(){
+      try{ return JSON.parse(localStorage.getItem(TARIFS_KEY) || 'null'); }
+      catch(e){ return null; }
+    }
+
+    /* TVA par défaut issue de la grille (si absente, on ne touche à rien). */
+    const tarifs = readTarifs();
+    if (tarifs && tarifs.tvaDefault != null && !isNaN(parseFloat(tarifs.tvaDefault))){
+      tvaRateInput.value = parseFloat(tarifs.tvaDefault);
+      computeTotals();
+    }
+
+    /* Styles du sélecteur. */
+    const css = `
+      .btn-from-tarifs{border-style:solid;border-color:var(--forest);color:var(--forest-deep);background:var(--paper);}
+      .btn-from-tarifs:hover{background:var(--paper-warm);}
+      .tarif-overlay{position:fixed;inset:0;z-index:300;background:rgba(21,38,25,0.45);
+        display:flex;align-items:center;justify-content:center;padding:1.2rem;}
+      .tarif-overlay[hidden]{display:none;}
+      .tarif-box{background:var(--cream);border-radius:16px;width:100%;max-width:520px;max-height:82vh;
+        display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(21,38,25,0.35);overflow:hidden;}
+      .tarif-head{display:flex;align-items:center;justify-content:space-between;padding:1.3rem 1.5rem 0.6rem;}
+      .tarif-head h3{font-size:1.3rem;}
+      .tarif-x{background:none;border:none;font-size:1.5rem;color:#a89f8a;cursor:pointer;line-height:1;padding:0.2rem;}
+      .tarif-x:hover{color:var(--clay);}
+      .tarif-sub{padding:0 1.5rem 1rem;font-size:0.85rem;color:#6b6b5c;}
+      .tarif-body{overflow-y:auto;padding:0 1.2rem 1.2rem;display:flex;flex-direction:column;gap:0.5rem;}
+      .tarif-item{display:flex;align-items:center;justify-content:space-between;gap:1rem;text-align:left;
+        background:var(--paper);border:1.5px solid var(--paper-warm);border-radius:10px;padding:0.8rem 1rem;
+        cursor:pointer;font-family:inherit;transition:border-color .15s ease,background .15s ease,transform .1s ease;}
+      .tarif-item:hover{border-color:var(--sage);background:#fff;}
+      .tarif-item.added{border-color:var(--sage-light);background:#eef3e6;transform:scale(0.99);}
+      .ti-lib{font-weight:500;color:var(--forest-deep);font-size:0.95rem;}
+      .ti-meta{display:flex;align-items:center;gap:0.6rem;white-space:nowrap;}
+      .ti-tag{font-size:0.64rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--clay);
+        border:1px solid var(--clay-light);border-radius:20px;padding:0.1rem 0.5rem;}
+      .ti-prix{font-weight:600;color:var(--forest);font-size:0.9rem;}
+      .tarif-empty{text-align:center;padding:2rem 1rem;color:#6b6b5c;line-height:1.8;}
+      .tarif-empty a{color:var(--forest);font-weight:600;}
+    `;
+    const style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
+
+    /* Bouton "Depuis mes tarifs" placé avant "+ Ajouter une ligne". */
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-add btn-from-tarifs no-print';
+    btn.id = 'addFromTarifs';
+    btn.style.marginRight = '0.6rem';
+    btn.textContent = '＋ Depuis mes tarifs';
+    addRowBtn.parentNode.insertBefore(btn, addRowBtn);
+
+    /* Modale de sélection. */
+    const overlay = document.createElement('div');
+    overlay.className = 'tarif-overlay no-print';
+    overlay.hidden = true;
+    overlay.innerHTML = `
+      <div class="tarif-box" role="dialog" aria-modal="true" aria-labelledby="tarifTitle">
+        <div class="tarif-head">
+          <h3 id="tarifTitle">Depuis mes tarifs</h3>
+          <button type="button" class="tarif-x" aria-label="Fermer">×</button>
+        </div>
+        <p class="tarif-sub">Cliquez un poste pour l'ajouter au devis. Le prix vient de votre grille — ajustez ensuite la quantité (jours, heures…) sur la ligne.</p>
+        <div class="tarif-body"></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const listBox = overlay.querySelector('.tarif-body');
+
+    function itemButton(item, kindLabel){
+      const prix = (item.prix != null && !isNaN(parseFloat(item.prix))) ? parseFloat(item.prix) : null;
+      const unite = UNITE_LABELS[item.unite] || item.unite || '';
+      const prixTxt = prix != null
+        ? prix.toLocaleString('fr-FR', { style:'currency', currency:'EUR' }) + (unite ? ' / ' + unite : '')
+        : 'prix à définir';
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'tarif-item';
+      const tag = kindLabel ? '<span class="ti-tag">' + kindLabel + '</span>' : '';
+      el.innerHTML = '<span class="ti-lib">' + (item.libelle || '(sans nom)') + '</span>' +
+                     '<span class="ti-meta">' + tag + '<span class="ti-prix">' + prixTxt + '</span></span>';
+      el.addEventListener('click', () => {
+        const row = createRow({ desc: item.libelle || '', qty: 1, price: prix != null ? prix : 0 });
+        linesBody.appendChild(row);
+        bindRow(row);
+        computeTotals();
+        el.classList.add('added');
+        setTimeout(() => el.classList.remove('added'), 700);
+      });
+      return el;
+    }
+
+    function onKey(e){ if (e.key === 'Escape') closeModal(); }
+    function closeModal(){ overlay.hidden = true; document.removeEventListener('keydown', onKey); }
+    function openModal(){
+      const t = readTarifs();
+      listBox.innerHTML = '';
+      const res = (t && Array.isArray(t.ressources)) ? t.ressources.filter(r => r && (r.libelle||'').trim()) : [];
+      const forf = (t && Array.isArray(t.forfaits)) ? t.forfaits.filter(r => r && (r.libelle||'').trim()) : [];
+      if (!res.length && !forf.length){
+        listBox.innerHTML = '<div class="tarif-empty">Votre grille de tarifs est vide.<br>' +
+          '<a href="mes-tarifs.html">Renseigner mes tarifs →</a></div>';
+      } else {
+        res.forEach(r => listBox.appendChild(itemButton(r, '')));
+        forf.forEach(f => listBox.appendChild(itemButton(f, 'forfait')));
+      }
+      overlay.hidden = false;
+      document.addEventListener('keydown', onKey);
+    }
+
+    btn.addEventListener('click', openModal);
+    overlay.querySelector('.tarif-x').addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  })();
+</script>
+
+<script src="nav.js"></script>
+
+</body>
+</html>

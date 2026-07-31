@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // appli/ est un projet distinct (HTML/JS statique navigateur + scripts
+    // Node, sans React ni TypeScript) : les règles Next.js n'y ont pas de sens
+    // et rejetteraient par exemple le `require()` de sa batterie de tests.
+    // Il a son propre outillage, décrit dans appli/README.md.
+    "appli/**",
   ]),
 ]);
 

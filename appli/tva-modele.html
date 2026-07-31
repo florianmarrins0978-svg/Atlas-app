@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arborea — Calcul de TVA</title>
+<meta name="color-scheme" content="only light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js"></script>
+<style>
+  :root{
+    /* Palette alignée sur l'identité Arborea : os / charbon / pin */
+    --cream:#faf9f5; --paper:#efece4; --paper-warm:#e2ded3;
+    --forest-deep:#1c1c1a; --forest:#2f3b2f; --forest-mid:#4f5f4c;
+    --sage:#7d9a6d; --sage-light:#9fbd82;
+    --clay:#2f3b2f; --clay-light:#4f5f4c;
+    --ink:#1c1c1a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:#e7e3da;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.6;
+    padding:3rem 1.5rem 6rem;
+  }
+  h1,h2,h3{font-family:'Playfair Display',serif;font-weight:500;color:var(--forest-deep);}
+
+  .toolbar{
+    max-width:960px;margin:0 auto 1.5rem;display:flex;justify-content:space-between;align-items:center;
+    flex-wrap:wrap;gap:1rem;
+  }
+  .toolbar .brand-mini{font-family:'Playfair Display',serif;font-weight:600;color:var(--forest-deep);font-size:1.1rem;}
+  .btn-print{
+    background:var(--clay);color:var(--cream);border:none;border-radius:30px;
+    padding:0.85rem 1.8rem;font-weight:600;font-size:0.9rem;letter-spacing:0.02em;cursor:pointer;
+    box-shadow:0 8px 20px rgba(31,42,31,0.18);transition:background .2s ease, transform .2s ease;
+  }
+  .btn-print:hover{background:var(--clay-light);transform:translateY(-1px);}
+  .btn-secondary{
+    background:transparent;color:var(--forest-deep);border:1.5px solid var(--forest-deep);border-radius:30px;
+    padding:0.83rem 1.8rem;font-weight:600;font-size:0.9rem;letter-spacing:0.02em;cursor:pointer;
+    transition:background .2s ease, color .2s ease;
+  }
+  .btn-secondary:hover{background:var(--forest-deep);color:var(--cream);}
+  .btn-secondary:disabled,.btn-print:disabled{opacity:0.6;cursor:default;}
+  .toolbar-actions{display:flex;gap:0.9rem;flex-wrap:wrap;}
+
+  .page{
+    max-width:960px;margin:0 auto;background:var(--cream);border-radius:18px;
+    box-shadow:0 20px 60px rgba(21,38,25,0.12);padding:clamp(2rem,5vw,4rem);
+    opacity:0;transform:translateY(18px);animation:rise .7s ease-out forwards;
+  }
+  @keyframes rise{to{opacity:1;transform:translateY(0);}}
+
+  .doc-header{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:2rem;flex-wrap:wrap;
+    padding-bottom:2rem;border-bottom:2px solid var(--forest-deep);margin-bottom:1.5rem;
+  }
+  .brand-name{
+    font-size:2rem;letter-spacing:0.01em;color:var(--forest-deep);
+  }
+  .brand-tagline{display:block;font-size:0.82rem;color:#5a5a4c;margin-top:0.3rem;}
+
+  .period-picker{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;}
+  .period-field{display:flex;flex-direction:column;gap:0.4rem;}
+  .period-field label{font-size:0.72rem;letter-spacing:0.06em;text-transform:uppercase;color:#6b6b5c;font-weight:600;}
+  .period-field input{
+    font-family:'Inter',sans-serif;font-size:0.94rem;padding:0.6rem 0.8rem;
+    border:1.5px solid var(--paper-warm);border-radius:8px;background:var(--paper);color:var(--forest-deep);
+  }
+  .period-field input:focus{outline:none;border-color:var(--sage);}
+
+  .doc-title{text-align:center;margin-bottom:1.5rem;}
+  .doc-title h1{font-size:1.6rem;letter-spacing:0.06em;text-transform:uppercase;}
+
+  .disclaimer{
+    background:var(--paper);border-left:4px solid var(--clay);border-radius:0 10px 10px 0;
+    padding:1.1rem 1.4rem;font-size:0.86rem;color:var(--forest-deep);line-height:1.6;margin-bottom:2.5rem;
+  }
+  .disclaimer strong{color:var(--clay);}
+
+  .section-block{margin-bottom:2.5rem;}
+  .section-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1.2rem;flex-wrap:wrap;gap:0.6rem;}
+  .section-head h2{font-size:1.25rem;}
+  .section-head .section-total{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:600;color:var(--forest-deep);}
+  .eyebrow{
+    font-size:0.72rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--clay);font-weight:600;display:block;
+  }
+
+  table{width:100%;border-collapse:collapse;margin-bottom:1rem;}
+  thead th{
+    text-align:left;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:#6b6b5c;
+    padding:0 0.5rem 0.6rem;border-bottom:1.5px solid var(--forest-deep);
+  }
+  thead th.num{text-align:right;}
+  tbody td{padding:0.55rem 0.5rem;font-size:0.9rem;border-bottom:1px solid var(--paper-warm);vertical-align:middle;}
+  tbody td.num{text-align:right;white-space:nowrap;}
+  .empty-row td{color:#9a9584;font-style:italic;text-align:center;padding:1.2rem;}
+  .remove-entry{
+    background:none;border:none;color:#a89f8a;font-size:1.05rem;cursor:pointer;line-height:1;padding:0.2rem;
+  }
+  .remove-entry:hover{color:var(--clay);}
+
+  .ocr-panel{
+    background:var(--paper);border-radius:14px;padding:1.6rem;margin-bottom:1.5rem;
+  }
+  .ocr-upload-row{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+  .file-label{
+    display:inline-flex;align-items:center;gap:0.6rem;background:var(--cream);border:1.5px dashed var(--sage);
+    border-radius:8px;padding:0.7rem 1.1rem;font-size:0.86rem;font-weight:600;color:var(--forest);cursor:pointer;
+  }
+  .file-label:hover{background:#fff;}
+  .file-label input{display:none;}
+  .ocr-status{font-size:0.85rem;color:var(--forest);font-style:italic;}
+  .ocr-preview{max-width:120px;border-radius:8px;display:none;}
+  .ocr-preview.show{display:block;}
+
+  .ocr-buttons{display:flex;gap:0.9rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+  .btn-scan{
+    display:inline-flex;align-items:center;gap:0.6rem;background:var(--forest-deep);color:var(--cream);
+    border:none;border-radius:8px;padding:0.75rem 1.2rem;font-size:0.86rem;font-weight:600;cursor:pointer;
+    transition:background .2s ease;
+  }
+  .btn-scan:hover{background:var(--forest-mid);}
+  .live-scan-overlay{
+    position:fixed;inset:0;background:rgba(21,38,25,0.92);z-index:999;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;padding:1.5rem;
+  }
+  .live-scan-overlay[hidden]{display:none;}
+  .live-scan-overlay video{
+    width:100%;max-width:480px;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,0.4);
+    border:2px solid var(--sage-light);cursor:pointer;
+  }
+  .live-scan-hint{
+    color:rgba(251,248,240,0.6);font-size:0.8rem;text-align:center;max-width:380px;margin-top:-0.6rem;
+  }
+  .live-scan-status{
+    color:var(--cream);font-size:0.95rem;font-weight:500;text-align:center;max-width:420px;
+  }
+  .live-scan-status.detecting::before{
+    content:'';display:inline-block;width:0.5rem;height:0.5rem;border-radius:50%;background:var(--clay-light);
+    margin-right:0.5rem;animation:pulse-dot 1s ease-in-out infinite;
+  }
+  @keyframes pulse-dot{0%,100%{opacity:0.3;}50%{opacity:1;}}
+  .btn-scan-stop{
+    background:transparent;color:var(--cream);border:1.5px solid var(--cream);border-radius:30px;
+    padding:0.7rem 1.6rem;font-weight:600;font-size:0.86rem;cursor:pointer;
+  }
+  .btn-scan-stop:hover{background:var(--cream);color:var(--forest-deep);}
+
+  .achat-form{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:1rem;margin-bottom:1rem;}
+  .achat-form .form-row{display:flex;flex-direction:column;gap:0.4rem;}
+  .achat-form label{font-size:0.7rem;letter-spacing:0.05em;text-transform:uppercase;color:#6b6b5c;font-weight:600;}
+  .achat-form input{
+    font-family:'Inter',sans-serif;font-size:0.92rem;padding:0.6rem 0.7rem;
+    border:1.5px solid var(--paper-warm);border-radius:8px;background:var(--cream);color:var(--forest-deep);
+  }
+  .achat-form input:focus{outline:none;border-color:var(--sage);}
+
+  .totals-recap{
+    display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.2rem;margin-top:1rem;
+  }
+  .recap-card{
+    background:var(--paper);border-radius:14px;padding:1.4rem 1.6rem;text-align:center;
+  }
+  .recap-card.due{background:var(--forest-deep);color:var(--cream);}
+  .recap-card .recap-label{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:#6b6b5c;}
+  .recap-card.due .recap-label{color:rgba(251,248,240,0.65);}
+  .recap-card .recap-value{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:600;margin-top:0.4rem;color:var(--forest-deep);}
+  .recap-card.due .recap-value{color:var(--cream);}
+
+  .doc-footer{
+    margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--paper-warm);
+    font-size:0.78rem;color:#7a7a6a;line-height:1.6;
+  }
+
+  @media (max-width:700px){
+    body{padding:1.5rem 0.8rem 4rem;}
+    .doc-header{flex-direction:column;}
+    .achat-form{grid-template-columns:1fr 1fr;}
+    .totals-recap{grid-template-columns:1fr;}
+    table,thead,tbody,tr{display:block;width:100%;}
+    thead{position:absolute;left:-9999px;}
+    tbody tr{
+      display:grid;grid-template-columns:1fr 1fr;gap:0.4rem 0.8rem;padding:0.8rem 0;border-bottom:1px solid var(--paper-warm);
+    }
+    tbody tr.empty-row{display:block;}
+    tbody td{border:none;padding:0;display:block;}
+    tbody td::before{content:attr(data-label);display:block;font-size:0.65rem;letter-spacing:0.05em;text-transform:uppercase;color:#8a8a78;margin-bottom:0.15rem;}
+  }
+
+  @media print{
+    html{font-size:14px;}
+    body{background:#fff;padding:0;}
+    .toolbar,.no-print{display:none !important;}
+    .page{box-shadow:none;border-radius:0;max-width:100%;animation:none;opacity:1;transform:none;padding:0;}
+    .ocr-panel{display:none !important;}
+    .remove-entry{display:none !important;}
+    table,thead,tbody,tr{display:revert !important;width:100% !important;}
+    thead{position:static !important;left:auto !important;}
+    tbody tr{display:table-row !important;}
+    tbody td{display:table-cell !important;}
+    tbody td::before{content:none !important;}
+    .totals-recap{grid-template-columns:1fr 1fr 1fr !important;}
+    @page{size:A4;margin:1.1cm;}
+  }
+
+  body.exporting-pdf .no-print,
+  body.exporting-pdf .ocr-panel,
+  body.exporting-pdf .remove-entry{display:none !important;}
+  body.exporting-pdf .page{box-shadow:none;}
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <span class="brand-mini">Arborea — Calcul de TVA</span>
+  <div class="toolbar-actions">
+    <button class="btn-secondary" id="printBtn" type="button">Imprimer</button>
+    <button class="btn-print" id="savePdfBtn" type="button">Enregistrer en PDF</button>
+  </div>
+</div>
+
+<div class="page" id="tvaPage">
+  <div class="doc-header">
+    <div>
+      <span class="brand-name">Arborea</span>
+      <span class="brand-tagline">Arboriculture · Paysagisme · Île-de-France</span>
+    </div>
+    <div class="period-picker no-print">
+      <div class="period-field">
+        <label for="periodStart">Début de période</label>
+        <input type="date" id="periodStart">
+      </div>
+      <div class="period-field">
+        <label for="periodEnd">Fin de période</label>
+        <input type="date" id="periodEnd">
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-title"><h1>Récapitulatif de TVA</h1></div>
+
+  <p class="disclaimer">
+    <strong>Ce document est un outil de préparation, pas une déclaration officielle.</strong>
+    Il calcule automatiquement la TVA collectée (à partir de vos factures) et la TVA déductible
+    (à partir des achats renseignés) pour la période choisie. Reportez ensuite ces montants
+    vous-même sur votre espace professionnel <strong>impots.gouv.fr</strong>, ou transmettez ce
+    récapitulatif à votre expert-comptable pour validation avant toute déclaration.
+  </p>
+
+  <div class="section-block">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">TVA collectée</span>
+        <h2>Factures émises sur la période</h2>
+      </div>
+      <span class="section-total" id="collecteeTotal">0,00 €</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Facture</th><th>Date</th><th>Client</th><th class="num">Total HT</th><th class="num">TVA</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="collecteeBody">
+        <tr class="empty-row"><td colspan="6">Aucune facture enregistrée sur cette période.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-block">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">TVA déductible</span>
+        <h2>Achats et frais professionnels</h2>
+      </div>
+      <span class="section-total" id="deductibleTotal">0,00 €</span>
+    </div>
+
+    <div class="ocr-panel no-print">
+      <div class="ocr-buttons">
+        <button type="button" class="btn-scan" id="startLiveScanBtn">📷 Scanner en direct</button>
+        <label class="file-label">
+          Importer une photo
+          <input type="file" id="receiptInput" accept="image/*" capture="environment">
+        </label>
+      </div>
+      <div class="ocr-upload-row">
+        <span class="ocr-status" id="ocrStatus"></span>
+        <img class="ocr-preview" id="ocrPreview" alt="Aperçu du justificatif">
+      </div>
+      <p class="form-hint" style="font-size:0.8rem;color:#7a7a6a;margin-bottom:1rem;">
+        Avec « Scanner en direct », il suffit de pointer la caméra sur le justificatif : les montants sont détectés et remplis automatiquement dès qu'ils sont lisibles — vérifiez-les toujours avant d'ajouter l'achat, la lecture peut se tromper.
+      </p>
+
+      <div class="live-scan-overlay no-print" id="liveScanOverlay" hidden>
+        <video id="liveScanVideo" autoplay muted playsinline></video>
+        <canvas id="liveScanCanvas" hidden></canvas>
+        <p class="live-scan-status" id="liveScanStatus">Pointez la caméra sur le justificatif…</p>
+        <p class="live-scan-hint">Si l'image reste floue, touchez-la pour refaire la mise au point.</p>
+        <button type="button" class="btn-scan-stop" id="stopLiveScanBtn">Arrêter le scan</button>
+      </div>
+      <div class="achat-form">
+        <div class="form-row">
+          <label for="achatFournisseur">Fournisseur / description</label>
+          <input type="text" id="achatFournisseur" placeholder="Ex : Point Vert — matériel">
+        </div>
+        <div class="form-row">
+          <label for="achatDate">Date</label>
+          <input type="date" id="achatDate">
+        </div>
+        <div class="form-row">
+          <label for="achatHT">Montant HT</label>
+          <input type="number" id="achatHT" step="0.01" min="0">
+        </div>
+        <div class="form-row">
+          <label for="achatTVA">TVA</label>
+          <input type="number" id="achatTVA" step="0.01" min="0">
+        </div>
+      </div>
+      <button class="btn-secondary" id="addAchatBtn" type="button">+ Ajouter cet achat</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Fournisseur</th><th>Date</th><th class="num">Total HT</th><th class="num">TVA</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="deductibleBody">
+        <tr class="empty-row"><td colspan="5">Aucun achat enregistré sur cette période.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="totals-recap">
+    <div class="recap-card">
+      <div class="recap-label">TVA collectée</div>
+      <div class="recap-value" id="recapCollectee">0,00 €</div>
+    </div>
+    <div class="recap-card">
+      <div class="recap-label">TVA déductible</div>
+      <div class="recap-value" id="recapDeductible">0,00 €</div>
+    </div>
+    <div class="recap-card due">
+      <div class="recap-label" id="recapNetLabel">TVA nette à payer</div>
+      <div class="recap-value" id="recapNet">0,00 €</div>
+    </div>
+  </div>
+
+  <div class="doc-footer">
+    Récapitulatif généré le <span id="generatedDate"></span> par l'outil interne Arborea. Les montants de TVA collectée proviennent des factures enregistrées via le modèle de facture Arborea sur cet appareil ; les montants d'achats sont ceux renseignés manuellement ou via lecture automatique ci-dessus. Vérifiez toujours ces données avant toute démarche fiscale.
+  </div>
+</div>
+
+<script>
+  const FACTURES_LOG_KEY = 'arborea_factures_log';
+  const ACHATS_LOG_KEY = 'arborea_achats_log';
+
+  const periodStartInput = document.getElementById('periodStart');
+  const periodEndInput = document.getElementById('periodEnd');
+  const collecteeBody = document.getElementById('collecteeBody');
+  const deductibleBody = document.getElementById('deductibleBody');
+  const collecteeTotalEl = document.getElementById('collecteeTotal');
+  const deductibleTotalEl = document.getElementById('deductibleTotal');
+  const recapCollecteeEl = document.getElementById('recapCollectee');
+  const recapDeductibleEl = document.getElementById('recapDeductible');
+  const recapNetEl = document.getElementById('recapNet');
+  const recapNetLabelEl = document.getElementById('recapNetLabel');
+
+  function formatEUR(value){
+    return value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
+  }
+  function formatDateFr(value){
+    if (!value) return '';
+    const d = new Date(value);
+    if (isNaN(d)) return value;
+    return d.toLocaleDateString('fr-FR');
+  }
+
+  /* ---------- Période par défaut : mois en cours ---------- */
+  const today = new Date();
+  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  periodStartInput.valueAsDate = firstOfMonth;
+  periodEndInput.valueAsDate = lastOfMonth;
+  document.getElementById('generatedDate').textContent = today.toLocaleDateString('fr-FR');
+
+  function readLog(key){
+    try{ return JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){ return []; }
+  }
+  function writeLog(key, log){
+    try{ localStorage.setItem(key, JSON.stringify(log)); } catch(e){ /* storage unavailable */ }
+  }
+  function inPeriod(dateStr){
+    if (!dateStr) return false;
+    const start = periodStartInput.value;
+    const end = periodEndInput.value;
+    if (start && dateStr < start) return false;
+    if (end && dateStr > end) return false;
+    return true;
+  }
+
+  function renderCollectee(){
+    const log = readLog(FACTURES_LOG_KEY);
+    const filtered = log.filter(r => inPeriod(r.date));
+    collecteeBody.innerHTML = '';
+    let total = 0;
+    if (!filtered.length){
+      collecteeBody.innerHTML = '<tr class="empty-row"><td colspan="6">Aucune facture enregistrée sur cette période.</td></tr>';
+    } else {
+      filtered.forEach(r => {
+        total += (r.totalTVA || 0);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td data-label="Facture">${r.factureNum || ''}</td>
+          <td data-label="Date">${formatDateFr(r.date)}</td>
+          <td data-label="Client">${r.clientNom || ''}</td>
+          <td class="num" data-label="Total HT">${formatEUR(r.totalHT || 0)}</td>
+          <td class="num" data-label="TVA">${formatEUR(r.totalTVA || 0)}</td>
+          <td class="no-print"><button class="remove-entry" data-num="${r.factureNum}" aria-label="Retirer">×</button></td>
+        `;
+        collecteeBody.appendChild(tr);
+      });
+      collecteeBody.querySelectorAll('.remove-entry').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const num = btn.dataset.num;
+          const updated = readLog(FACTURES_LOG_KEY).filter(r => r.factureNum !== num);
+          writeLog(FACTURES_LOG_KEY, updated);
+          renderAll();
+        });
+      });
+    }
+    collecteeTotalEl.textContent = formatEUR(total);
+    return total;
+  }
+
+  function renderDeductible(){
+    const log = readLog(ACHATS_LOG_KEY);
+    const filtered = log.filter(r => inPeriod(r.date));
+    deductibleBody.innerHTML = '';
+    let total = 0;
+    if (!filtered.length){
+      deductibleBody.innerHTML = '<tr class="empty-row"><td colspan="5">Aucun achat enregistré sur cette période.</td></tr>';
+    } else {
+      filtered.forEach(r => {
+        total += (r.totalTVA || 0);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td data-label="Fournisseur">${r.fournisseur || ''}</td>
+          <td data-label="Date">${formatDateFr(r.date)}</td>
+          <td class="num" data-label="Total HT">${formatEUR(r.totalHT || 0)}</td>
+          <td class="num" data-label="TVA">${formatEUR(r.totalTVA || 0)}</td>
+          <td class="no-print"><button class="remove-entry" data-id="${r.id}" aria-label="Retirer">×</button></td>
+        `;
+        deductibleBody.appendChild(tr);
+      });
+      deductibleBody.querySelectorAll('.remove-entry').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.id;
+          const updated = readLog(ACHATS_LOG_KEY).filter(r => String(r.id) !== id);
+          writeLog(ACHATS_LOG_KEY, updated);
+          renderAll();
+        });
+      });
+    }
+    deductibleTotalEl.textContent = formatEUR(total);
+    return total;
+  }
+
+  function renderAll(){
+    const collectee = renderCollectee();
+    const deductible = renderDeductible();
+    const net = collectee - deductible;
+    recapCollecteeEl.textContent = formatEUR(collectee);
+    recapDeductibleEl.textContent = formatEUR(deductible);
+    recapNetEl.textContent = formatEUR(Math.abs(net));
+    recapNetLabelEl.textContent = net >= 0 ? 'TVA nette à payer' : 'Crédit de TVA';
+  }
+
+  periodStartInput.addEventListener('change', renderAll);
+  periodEndInput.addEventListener('change', renderAll);
+  renderAll();
+
+  /* ---------- Ajout manuel d'un achat ---------- */
+  const achatFournisseurInput = document.getElementById('achatFournisseur');
+  const achatDateInput = document.getElementById('achatDate');
+  const achatHTInput = document.getElementById('achatHT');
+  const achatTVAInput = document.getElementById('achatTVA');
+  achatDateInput.valueAsDate = new Date();
+
+  document.getElementById('addAchatBtn').addEventListener('click', () => {
+    if (typeof liveScanActive !== 'undefined' && liveScanActive) stopLiveScan();
+    const ht = parseFloat(achatHTInput.value) || 0;
+    const tva = parseFloat(achatTVAInput.value) || 0;
+    if (!achatFournisseurInput.value && !ht && !tva) return;
+
+    const log = readLog(ACHATS_LOG_KEY);
+    log.push({
+      id: Date.now(),
+      fournisseur: achatFournisseurInput.value,
+      date: achatDateInput.value,
+      totalHT: ht,
+      totalTVA: tva,
+      totalTTC: ht + tva
+    });
+    writeLog(ACHATS_LOG_KEY, log);
+
+    achatFournisseurInput.value = '';
+    achatHTInput.value = '';
+    achatTVAInput.value = '';
+    achatDateInput.valueAsDate = new Date();
+    document.getElementById('ocrPreview').classList.remove('show');
+    document.getElementById('ocrStatus').textContent = '';
+
+    renderAll();
+  });
+
+  /* ---------- OCR sur justificatif photographié ---------- */
+  const receiptInput = document.getElementById('receiptInput');
+  const ocrStatus = document.getElementById('ocrStatus');
+  const ocrPreview = document.getElementById('ocrPreview');
+
+  function parseReceiptText(text){
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    let ttc = null, ht = null, tvaAmount = null, rate = null;
+
+    const amountPattern = /(\d{1,6}[.,]\d{2})(?!\s*%)/;
+    const ratePattern = /(\d{1,2}(?:[.,]\d{1,2})?)\s*%/;
+
+    for (const line of lines){
+      // accents normalises (e/a/a...) pour reconnaitre aussi bien les tickets
+      // francais ("Total TTC") que portugais ("Total Factura", "Total IVA").
+      const lower = line.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      const isTaxOrDiscountLine = /(iva|tva|promo|desconto)/.test(lower);
+
+      if (ttc === null && !isTaxOrDiscountLine &&
+          /(total\s*ttc|net\s*a\s*payer|montant\s*ttc|total\s*a\s*(payer|regler)|total\s*fact(ura)?|^total\b)/.test(lower)){
+        const m = line.match(amountPattern);
+        if (m) ttc = parseFloat(m[1].replace(',', '.'));
+      }
+      if (ht === null && /(total\s*ht|montant\s*ht|base\s*tributavel)/.test(lower)){
+        const m = line.match(amountPattern);
+        if (m) ht = parseFloat(m[1].replace(',', '.'));
+      }
+      if (tvaAmount === null && /(total\s*iva|total\s*tva|montant\s*tva)/.test(lower)){
+        const m = line.match(amountPattern);
+        if (m) tvaAmount = parseFloat(m[1].replace(',', '.'));
+      }
+      if (rate === null && (lower.includes('tva') || lower.includes('iva'))){
+        const m = line.match(ratePattern);
+        if (m) rate = parseFloat(m[1].replace(',', '.'));
+      }
+    }
+
+    if (ttc === null){
+      // dernier recours : plus grand montant detecte dans tout le texte
+      const all = [...text.matchAll(new RegExp(amountPattern, 'g'))].map(m => parseFloat(m[1].replace(',', '.')));
+      if (all.length) ttc = Math.max(...all);
+    }
+    if (rate === null) rate = 20;
+
+    if (ttc === null && tvaAmount === null){
+      return { ht: '', tva: '', fournisseur: lines[0] || '' };
+    }
+
+    let computedHT = ht;
+    let computedTVA = tvaAmount;
+    if (computedTVA !== null){
+      if (computedHT === null && ttc !== null) computedHT = ttc - computedTVA;
+      if (ttc === null && computedHT !== null) ttc = computedHT + computedTVA;
+    } else if (computedHT !== null){
+      computedTVA = ttc - computedHT;
+    } else {
+      computedHT = ttc / (1 + rate / 100);
+      computedTVA = ttc - computedHT;
+    }
+
+    return {
+      ht: computedHT !== null ? Math.round(computedHT * 100) / 100 : '',
+      tva: computedTVA !== null ? Math.round(computedTVA * 100) / 100 : '',
+      fournisseur: lines[0] || ''
+    };
+  }
+
+  receiptInput.addEventListener('change', async () => {
+    const file = receiptInput.files[0];
+    if (!file) return;
+
+    const previewUrl = URL.createObjectURL(file);
+    ocrPreview.src = previewUrl;
+    ocrPreview.classList.add('show');
+
+    if (typeof Tesseract === 'undefined'){
+      ocrStatus.textContent = "Lecture automatique indisponible — merci de saisir les montants manuellement.";
+      return;
+    }
+
+    ocrStatus.textContent = 'Lecture du justificatif en cours...';
+    try{
+      const { data } = await Tesseract.recognize(file, 'fra', {
+        logger: m => {
+          if (m.status === 'recognizing text'){
+            ocrStatus.textContent = `Lecture en cours... ${Math.round((m.progress || 0) * 100)}%`;
+          }
+        }
+      });
+      const parsed = parseReceiptText(data.text || '');
+      if (parsed.fournisseur) achatFournisseurInput.value = parsed.fournisseur.slice(0, 60);
+      if (parsed.ht !== '') achatHTInput.value = parsed.ht;
+      if (parsed.tva !== '') achatTVAInput.value = parsed.tva;
+      ocrStatus.textContent = 'Montants détectés — vérifiez-les avant d\'ajouter l\'achat.';
+    } catch(err){
+      ocrStatus.textContent = "La lecture automatique a échoué — merci de saisir les montants manuellement.";
+    }
+  });
+
+  /* ---------- Scan en direct via la caméra ---------- */
+  const startLiveScanBtn = document.getElementById('startLiveScanBtn');
+  const stopLiveScanBtn = document.getElementById('stopLiveScanBtn');
+  const liveScanOverlay = document.getElementById('liveScanOverlay');
+  const liveScanVideo = document.getElementById('liveScanVideo');
+  const liveScanCanvas = document.getElementById('liveScanCanvas');
+  const liveScanStatus = document.getElementById('liveScanStatus');
+
+  let liveScanActive = false;
+  let liveScanStream = null;
+  let liveScanWorker = null;
+
+  async function startLiveScan(){
+    if (typeof Tesseract === 'undefined'){
+      ocrStatus.textContent = "Lecture automatique indisponible — merci de saisir les montants manuellement.";
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      ocrStatus.textContent = "Caméra non disponible sur cet appareil — utilisez \"Importer une photo\".";
+      return;
+    }
+    try{
+      liveScanStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      });
+    } catch(err){
+      ocrStatus.textContent = "Impossible d'accéder à la caméra — vérifiez les autorisations, ou utilisez \"Importer une photo\".";
+      return;
+    }
+
+    liveScanVideo.srcObject = liveScanStream;
+    liveScanOverlay.hidden = false;
+    liveScanStatus.textContent = 'Pointez la caméra sur le justificatif…';
+    liveScanStatus.classList.remove('detecting');
+    ocrStatus.textContent = '';
+    liveScanActive = true;
+
+    try{
+      liveScanWorker = await Tesseract.createWorker('fra');
+    } catch(err){
+      stopLiveScan("Lecture automatique indisponible — merci de saisir les montants manuellement.");
+      return;
+    }
+
+    liveScanLoop();
+  }
+
+  liveScanVideo.addEventListener('click', () => {
+    if (!liveScanActive || !liveScanStream) return;
+    const track = liveScanStream.getVideoTracks()[0];
+    if (!track || !track.getCapabilities || !track.applyConstraints) return;
+    let capabilities;
+    try{ capabilities = track.getCapabilities(); } catch(err){ return; }
+    if (!capabilities.focusMode || !capabilities.focusMode.includes('single-shot')) return;
+    // Ne touche jamais au zoom : uniquement une nouvelle mise au point, déclenchée
+    // par l'utilisateur une fois la caméra déjà pointée sur le justificatif.
+    track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] }).catch(() => {});
+  });
+
+  function stopLiveScan(message){
+    liveScanActive = false;
+    if (liveScanStream){
+      liveScanStream.getTracks().forEach(t => t.stop());
+      liveScanStream = null;
+    }
+    liveScanOverlay.hidden = true;
+    if (liveScanWorker){
+      const worker = liveScanWorker;
+      liveScanWorker = null;
+      worker.terminate().catch(() => {});
+    }
+    if (message) ocrStatus.textContent = message;
+  }
+
+  async function liveScanLoop(){
+    const STABLE_READS_NEEDED = 2;
+    let lastCandidate = null;
+    let stableCount = 0;
+
+    while (liveScanActive){
+      await new Promise(r => setTimeout(r, 350));
+      if (!liveScanActive) break;
+      if (!liveScanVideo.videoWidth) continue;
+
+      liveScanCanvas.width = liveScanVideo.videoWidth;
+      liveScanCanvas.height = liveScanVideo.videoHeight;
+      liveScanCanvas.getContext('2d').drawImage(liveScanVideo, 0, 0, liveScanCanvas.width, liveScanCanvas.height);
+
+      const blob = await new Promise(resolve => liveScanCanvas.toBlob(resolve, 'image/jpeg', 0.85));
+      if (!liveScanActive || !blob || !liveScanWorker) break;
+
+      liveScanStatus.textContent = 'Analyse en cours…';
+      liveScanStatus.classList.add('detecting');
+      try{
+        const { data } = await liveScanWorker.recognize(blob);
+        if (!liveScanActive) break;
+        const parsed = parseReceiptText(data.text || '');
+        if (parsed.ht !== '' && parsed.tva !== ''){
+          const candidateKey = parsed.ht + '|' + parsed.tva;
+          if (candidateKey === lastCandidate){
+            stableCount++;
+          } else {
+            lastCandidate = candidateKey;
+            stableCount = 1;
+          }
+          if (stableCount >= STABLE_READS_NEEDED){
+            if (parsed.fournisseur) achatFournisseurInput.value = parsed.fournisseur.slice(0, 60);
+            achatHTInput.value = parsed.ht;
+            achatTVAInput.value = parsed.tva;
+            ocrPreview.classList.remove('show');
+            stopLiveScan("Montants détectés — vérifiez-les avant d'ajouter l'achat.");
+            break;
+          } else {
+            liveScanStatus.textContent = 'Montant repéré, confirmation…';
+            liveScanStatus.classList.remove('detecting');
+          }
+        } else {
+          lastCandidate = null;
+          stableCount = 0;
+          liveScanStatus.textContent = 'Recherche des montants… rapprochez et stabilisez la caméra.';
+          liveScanStatus.classList.remove('detecting');
+        }
+      } catch(err){
+        lastCandidate = null;
+        stableCount = 0;
+        liveScanStatus.textContent = 'Recherche des montants…';
+        liveScanStatus.classList.remove('detecting');
+      }
+    }
+  }
+
+  startLiveScanBtn.addEventListener('click', startLiveScan);
+  stopLiveScanBtn.addEventListener('click', () => stopLiveScan());
+  window.addEventListener('pagehide', () => stopLiveScan());
+
+  /* ---------- Impression et export PDF ---------- */
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+  const savePdfBtn = document.getElementById('savePdfBtn');
+  savePdfBtn.addEventListener('click', async () => {
+    savePdfBtn.disabled = true;
+    const originalLabel = savePdfBtn.textContent;
+    savePdfBtn.textContent = 'Génération du PDF...';
+    document.body.classList.add('exporting-pdf');
+
+    const filename = `TVA-${periodStartInput.value || ''}_${periodEndInput.value || ''}.pdf`.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    const pageEl = document.getElementById('tvaPage');
+    const opts = {
+      margin: 8,
+      filename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css'] }
+    };
+
+    try{
+      const blob = await html2pdf().set(opts).from(pageEl).outputPdf('blob');
+      if (window.showSaveFilePicker){
+        try{
+          const handle = await window.showSaveFilePicker({
+            suggestedName: filename,
+            types: [{ description: 'Fichier PDF', accept: { 'application/pdf': ['.pdf'] } }]
+          });
+          const writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+        } catch(pickerErr){
+          if (pickerErr.name !== 'AbortError') throw pickerErr;
+        }
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+    } catch(err){
+      alert("Une erreur est survenue lors de la génération du PDF. Vous pouvez utiliser le bouton \"Imprimer\" puis choisir \"Enregistrer en PDF\" comme imprimante.");
+    } finally {
+      document.body.classList.remove('exporting-pdf');
+      savePdfBtn.disabled = false;
+      savePdfBtn.textContent = originalLabel;
+    }
+  });
+</script>
+
+<script src="nav.js"></script>
+
+</body>
+</html>

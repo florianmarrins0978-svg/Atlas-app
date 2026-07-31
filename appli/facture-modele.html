@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arborea — Modèle de facture</title>
+<meta name="color-scheme" content="only light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  :root{
+    /* Palette alignée sur l'identité Arborea : os / charbon / pin */
+    --cream:#faf9f5; --paper:#efece4; --paper-warm:#e2ded3;
+    --forest-deep:#1c1c1a; --forest:#2f3b2f; --forest-mid:#4f5f4c;
+    --sage:#7d9a6d; --sage-light:#9fbd82;
+    --clay:#2f3b2f; --clay-light:#4f5f4c;
+    --ink:#1c1c1a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:#e7e3da;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.6;
+    padding:3rem 1.5rem 6rem;
+  }
+  h1,h2,h3{font-family:'Playfair Display',serif;font-weight:500;color:var(--forest-deep);}
+
+  .toolbar{
+    max-width:900px;margin:0 auto 1.5rem;display:flex;justify-content:space-between;align-items:center;
+    flex-wrap:wrap;gap:1rem;
+  }
+  .toolbar .brand-mini{font-family:'Playfair Display',serif;font-weight:600;color:var(--forest-deep);font-size:1.1rem;}
+  .btn-print{
+    background:var(--clay);color:var(--cream);border:none;border-radius:30px;
+    padding:0.85rem 1.8rem;font-weight:600;font-size:0.9rem;letter-spacing:0.02em;cursor:pointer;
+    box-shadow:0 8px 20px rgba(31,42,31,0.18);transition:background .2s ease, transform .2s ease;
+  }
+  .btn-print:hover{background:var(--clay-light);transform:translateY(-1px);}
+  .btn-secondary{
+    background:transparent;color:var(--forest-deep);border:1.5px solid var(--forest-deep);border-radius:30px;
+    padding:0.83rem 1.8rem;font-weight:600;font-size:0.9rem;letter-spacing:0.02em;cursor:pointer;
+    transition:background .2s ease, color .2s ease;
+  }
+  .btn-secondary:hover{background:var(--forest-deep);color:var(--cream);}
+  .btn-secondary:disabled{opacity:0.6;cursor:default;}
+  .toolbar-actions{display:flex;gap:0.9rem;flex-wrap:wrap;}
+
+  /* État temporaire pendant la génération du PDF : masque les contrôles interactifs */
+  body.exporting-pdf .no-print,
+  body.exporting-pdf .remove-row,
+  body.exporting-pdf .btn-add{display:none !important;}
+  body.exporting-pdf .page{box-shadow:none;}
+
+  .page{
+    max-width:900px;margin:0 auto;background:var(--cream);border-radius:18px;
+    box-shadow:0 20px 60px rgba(21,38,25,0.12);padding:clamp(2rem,5vw,4rem);
+    opacity:0;transform:translateY(18px);animation:rise .7s ease-out forwards;
+  }
+  @keyframes rise{to{opacity:1;transform:translateY(0);}}
+
+  .doc-header{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:2rem;flex-wrap:wrap;
+    padding-bottom:2rem;border-bottom:2px solid var(--forest-deep);margin-bottom:1.2rem;
+  }
+  .brand-name{
+    font-size:2rem;letter-spacing:0.01em;
+    background-image:linear-gradient(100deg, var(--forest-deep) 0%, var(--forest-mid) 25%, var(--sage-light) 50%, var(--forest-mid) 75%, var(--forest-deep) 100%);
+    background-size:250% auto;background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    animation:shine 3s ease-out 1;
+  }
+  @keyframes shine{0%{background-position:0% center;}100%{background-position:250% center;}}
+  .brand-tagline{display:block;font-size:0.82rem;color:#5a5a4c;margin-top:0.3rem;}
+  .doc-meta{display:grid;gap:0.7rem;min-width:220px;}
+  .doc-meta .meta-row{display:flex;justify-content:space-between;align-items:center;gap:1rem;font-size:0.88rem;}
+  .doc-meta label{color:#6b6b5c;font-weight:600;letter-spacing:0.02em;}
+  .doc-meta input{
+    text-align:right;border:none;border-bottom:1px solid var(--paper-warm);background:transparent;
+    font-family:'Inter',sans-serif;font-size:0.92rem;color:var(--forest-deep);padding:0.2rem 0;width:130px;
+  }
+
+  .devis-ref{
+    text-align:center;font-size:0.85rem;color:var(--clay);margin-bottom:2rem;
+    display:none;
+  }
+  .devis-ref.show{display:block;}
+
+  .doc-title{text-align:center;margin-bottom:2.5rem;}
+  .doc-title h1{font-size:1.6rem;letter-spacing:0.06em;text-transform:uppercase;}
+
+  .parties{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2.5rem;}
+  .party h3{font-size:0.76rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--clay);margin-bottom:0.9rem;}
+  .party p{font-size:0.94rem;color:var(--forest-deep);line-height:1.7;}
+  .party.editable{display:grid;gap:0.6rem;}
+  .party.editable input{
+    width:100%;font-family:'Inter',sans-serif;font-size:0.94rem;padding:0.6rem 0.8rem;
+    border:1.5px solid var(--paper-warm);border-radius:8px;background:var(--paper);color:var(--forest-deep);
+  }
+  .party.editable input:focus{outline:none;border-color:var(--sage);}
+  .party.editable .row{display:grid;grid-template-columns:1fr 2fr;gap:0.6rem;}
+  .party.editable .field-hint{font-size:0.7rem;color:#8a8a78;margin-top:-0.2rem;}
+
+  .lines{margin-bottom:1.5rem;}
+  table{width:100%;border-collapse:collapse;}
+  thead th{
+    text-align:left;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:#6b6b5c;
+    padding:0 0.6rem 0.7rem;border-bottom:1.5px solid var(--forest-deep);
+  }
+  thead th.num{text-align:right;}
+  tbody td{padding:0.6rem;vertical-align:top;border-bottom:1px solid var(--paper-warm);}
+  tbody input,tbody textarea{
+    width:100%;font-family:'Inter',sans-serif;font-size:0.92rem;padding:0.55rem 0.6rem;
+    border:1.5px solid var(--paper-warm);border-radius:8px;background:var(--paper);color:var(--forest-deep);
+    box-sizing:border-box;
+  }
+  tbody input:focus,tbody textarea:focus{outline:none;border-color:var(--sage);}
+  /* Textarea instead of input for description: long lines wrap instead of clipping */
+  textarea.desc{resize:vertical;min-height:2.5rem;line-height:1.4;overflow:hidden;}
+  td.qty-cell input, td.price-cell input{text-align:right;}
+  td.line-total{text-align:right;font-weight:600;color:var(--forest-deep);white-space:nowrap;padding-top:0.9rem;}
+  td.remove-cell{text-align:center;padding-top:0.6rem;}
+  .cell-label{display:none;}
+  .remove-row{
+    background:none;border:none;color:#a89f8a;font-size:1.1rem;cursor:pointer;line-height:1;padding:0.3rem;
+  }
+  .remove-row:hover{color:var(--clay);}
+  .btn-add{
+    margin-top:1rem;background:none;border:1.5px dashed var(--sage);color:var(--forest);
+    border-radius:8px;padding:0.7rem 1.2rem;font-size:0.86rem;font-weight:600;cursor:pointer;
+  }
+  .btn-add:hover{background:var(--paper);}
+
+  .totals{margin-left:auto;max-width:340px;margin-top:1.5rem;display:grid;gap:0.7rem;}
+  .totals-row{display:flex;justify-content:space-between;align-items:center;font-size:0.94rem;color:var(--forest-deep);}
+  .totals-row input{
+    width:55px;text-align:center;border:1.5px solid var(--paper-warm);border-radius:6px;
+    background:var(--paper);font-family:inherit;font-size:0.88rem;padding:0.2rem;color:var(--forest-deep);
+  }
+  .total-final{
+    font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:600;color:var(--forest-deep);
+    border-top:2px solid var(--forest-deep);padding-top:0.8rem;margin-top:0.4rem;
+  }
+
+  .notes{margin-top:2.5rem;}
+  .notes label{display:block;font-size:0.76rem;letter-spacing:0.08em;text-transform:uppercase;color:#6b6b5c;margin-bottom:0.6rem;}
+  .notes textarea{
+    width:100%;min-height:90px;resize:vertical;font-family:'Inter',sans-serif;font-size:0.92rem;
+    padding:0.9rem 1rem;border:1.5px solid var(--paper-warm);border-radius:10px;background:var(--paper);color:var(--forest-deep);
+  }
+  .notes textarea:focus{outline:none;border-color:var(--sage);}
+
+  .doc-footer{
+    margin-top:3rem;padding-top:2rem;border-top:1px solid var(--paper-warm);
+  }
+  .doc-footer .legal{font-size:0.78rem;color:#7a7a6a;line-height:1.6;}
+
+  @media (max-width:700px){
+    body{padding:1.5rem 0.8rem 4rem;}
+    .parties{grid-template-columns:1fr;}
+    .doc-header{flex-direction:column;}
+    .doc-meta{width:100%;}
+    .doc-meta input{width:auto;flex:1;min-width:0;}
+
+    table,thead,tbody,tr{display:block;width:100%;}
+    thead{position:absolute;left:-9999px;top:auto;}
+    tbody#linesBody tr{
+      display:grid;grid-template-columns:1fr 1fr;gap:0.7rem 0.8rem;
+      padding:1rem 0;border-bottom:1px solid var(--paper-warm);
+    }
+    tbody#linesBody td{display:block;padding:0;border:none;vertical-align:top;}
+    td.desc-cell{grid-column:1 / -1;}
+    td.qty-cell,td.price-cell{display:block;}
+    td.line-total{grid-column:1;text-align:left;padding-top:0;}
+    td.remove-cell{grid-column:2;text-align:right;padding-top:0;align-self:end;}
+    .cell-label{
+      display:block;font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;
+      color:#8a8a78;margin-bottom:0.3rem;
+    }
+    td.qty-cell input,td.price-cell input{text-align:left;}
+    td.line-total .line-total-value{font-family:'Inter',sans-serif;font-size:1rem;}
+
+    .totals{max-width:100%;}
+  }
+
+  @media print{
+    html{font-size:14px;}
+    body{background:#fff;padding:0;}
+    .toolbar,.no-print{display:none !important;}
+    .page{
+      box-shadow:none;border-radius:0;max-width:100%;animation:none;opacity:1;transform:none;padding:0;
+    }
+    .brand-name{animation:none;}
+    .remove-row,.btn-add{display:none !important;}
+    td.remove-cell{display:none !important;}
+
+    /* Force the desktop two-column layout regardless of the device used to print */
+    .doc-header{flex-direction:row !important;padding-bottom:1rem;margin-bottom:1rem;}
+    .doc-meta{width:auto !important;min-width:200px;}
+    .doc-meta input{width:120px !important;}
+
+    .parties{grid-template-columns:1fr 1fr !important;gap:1.5rem;margin-bottom:1.2rem;}
+
+    table,thead,tbody,tr{display:revert !important;width:100% !important;}
+    thead{position:static !important;left:auto !important;}
+    tbody#linesBody tr{display:table-row !important;padding:0 !important;}
+    tbody#linesBody td{display:table-cell !important;padding:0.4rem 0.5rem !important;border:none !important;vertical-align:top;}
+    td.desc-cell{grid-column:auto !important;}
+    td.qty-cell,td.price-cell{display:table-cell !important;}
+    td.qty-cell input,td.price-cell input{text-align:right !important;}
+    td.line-total{grid-column:auto !important;text-align:right !important;padding-top:0.4rem !important;}
+    .cell-label{display:none !important;}
+
+    .totals{max-width:340px !important;margin-top:0.8rem;}
+
+    .notes{margin-top:0.9rem;}
+    .notes label{margin-bottom:0.3rem;}
+    .notes textarea,td.desc-cell textarea{overflow:visible;min-height:0 !important;padding:0.4rem 0.6rem;resize:none;}
+
+    tbody input,tbody textarea,.party.editable input,.notes textarea,.doc-meta input,.totals-row input{
+      border:none;background:transparent;padding:0.2rem 0;
+    }
+
+    .doc-footer{margin-top:1.2rem;padding-top:1rem;}
+
+    @page{size:A4;margin:1.1cm;}
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <span class="brand-mini">Arborea — Modèle de facture</span>
+  <div class="toolbar-actions">
+    <button class="btn-secondary" id="printBtn" type="button">Imprimer</button>
+    <button class="btn-print" id="savePdfBtn" type="button">Enregistrer en PDF</button>
+  </div>
+</div>
+
+<div class="page" id="invoicePage">
+  <div class="doc-header">
+    <div>
+      <span class="brand-name">Arborea</span>
+      <span class="brand-tagline">Arboriculture · Paysagisme · Île-de-France<br>06 79 98 45 14 — arboreapro@outlook.com</span>
+    </div>
+    <div class="doc-meta">
+      <div class="meta-row"><label for="factureNum">Facture n°</label><input id="factureNum" value="F-2026-001"></div>
+      <div class="meta-row"><label for="factureDate">Date d'émission</label><input id="factureDate" type="date"></div>
+      <div class="meta-row"><label for="factureEcheance">Date d'échéance</label><input id="factureEcheance" type="date"></div>
+    </div>
+  </div>
+
+  <p class="devis-ref" id="devisRef"></p>
+
+  <div class="doc-title"><h1>Facture</h1></div>
+
+  <div class="parties">
+    <div class="party editable" id="issuerParty">
+      <h3>Émetteur</h3>
+      <input id="issuerName" value="Arborea" aria-label="Nom ou raison sociale de l'entreprise">
+      <input id="issuerAddress" placeholder="Adresse du siège social" aria-label="Adresse du siège social">
+      <input id="issuerPhone" value="06 79 98 45 14" aria-label="Téléphone">
+      <input id="issuerEmail" value="arboreapro@outlook.com" aria-label="Email">
+      <input id="issuerSiret" placeholder="N° SIREN / SIRET" aria-label="Numéro SIREN ou SIRET">
+      <input id="issuerRcsRm" placeholder="RCS ou RM — ville d'immatriculation" aria-label="RCS ou RM et ville d'immatriculation">
+      <p class="field-hint no-print">RCS si commerçant, RM (Répertoire des métiers) si artisan.</p>
+    </div>
+    <div class="party editable">
+      <h3>Client</h3>
+      <input id="clientNom" placeholder="Nom complet" aria-label="Nom du client">
+      <input id="clientAdresse" placeholder="Adresse" aria-label="Adresse du client">
+      <div class="row">
+        <input id="clientCodePostal" placeholder="Code postal" aria-label="Code postal">
+        <input id="clientVille" placeholder="Ville" aria-label="Ville">
+      </div>
+      <input id="clientTelephone" placeholder="Téléphone" aria-label="Téléphone du client">
+      <input id="clientEmail" placeholder="Email" aria-label="Email du client">
+    </div>
+  </div>
+
+  <div class="lines">
+    <table id="linesTable">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th class="num">Qté</th>
+          <th class="num">Prix unitaire HT</th>
+          <th class="num">Total HT</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="linesBody">
+        <tr>
+          <td class="desc-cell"><span class="cell-label">Description</span><textarea rows="1" placeholder="Ex : Élagage d'un tilleul — taille architecturée" class="desc"></textarea></td>
+          <td class="qty-cell"><span class="cell-label">Qté</span><input type="number" class="qty" value="1" min="0" step="1"></td>
+          <td class="price-cell"><span class="cell-label">Prix unitaire HT</span><input type="number" class="price" value="0" min="0" step="0.01"></td>
+          <td class="line-total"><span class="cell-label">Total HT</span><span class="line-total-value">0,00 €</span></td>
+          <td class="remove-cell"><button class="remove-row" type="button" aria-label="Supprimer la ligne">×</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <button class="btn-add" id="addRow" type="button">+ Ajouter une ligne</button>
+  </div>
+
+  <div class="totals">
+    <div class="totals-row"><span>Total HT</span><span id="totalHT">0,00 €</span></div>
+    <div class="totals-row"><span>TVA (<input id="tvaRate" type="number" value="10" min="0" max="100" step="0.1"> %)</span><span id="totalTVA">0,00 €</span></div>
+    <div class="totals-row total-final"><span>Total TTC</span><span id="totalTTC">0,00 €</span></div>
+  </div>
+
+  <div class="notes">
+    <label for="notesField">Notes</label>
+    <textarea id="notesField" placeholder="Merci de votre confiance."></textarea>
+  </div>
+
+  <div class="notes">
+    <label for="paymentField">Modalités de paiement</label>
+    <textarea id="paymentField">Paiement par virement bancaire
+IBAN : FR76 3123 3123 4500 2348 1091 175</textarea>
+  </div>
+
+  <div class="doc-footer">
+    <p class="legal">
+      En cas de retard de paiement, une pénalité au taux de trois fois le taux d'intérêt légal est exigible, ainsi qu'une indemnité forfaitaire pour frais de recouvrement de 40 €. Pas d'escompte pour paiement anticipé. TVA non applicable, art. 293 B du CGI (à retirer si vous êtes assujetti à la TVA).
+    </p>
+  </div>
+</div>
+
+<script>
+  const linesBody = document.getElementById('linesBody');
+  const addRowBtn = document.getElementById('addRow');
+  const totalHTEl = document.getElementById('totalHT');
+  const totalTVAEl = document.getElementById('totalTVA');
+  const totalTTCEl = document.getElementById('totalTTC');
+  const tvaRateInput = document.getElementById('tvaRate');
+  const factureDateInput = document.getElementById('factureDate');
+  const factureEcheanceInput = document.getElementById('factureEcheance');
+
+  function addDays(date, days){
+    const d = new Date(date);
+    d.setDate(d.getDate() + days);
+    return d;
+  }
+
+  factureDateInput.valueAsDate = new Date();
+  factureEcheanceInput.valueAsDate = addDays(new Date(), 30);
+
+  /* ---------- Mémorisation des informations de l'émetteur (partagée avec le devis) ---------- */
+  const issuerFieldIds = ['issuerName','issuerAddress','issuerPhone','issuerEmail','issuerSiret','issuerRcsRm','paymentField'];
+  const ISSUER_STORAGE_KEY = 'arborea_devis_issuer';
+
+  function loadIssuerInfo(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(ISSUER_STORAGE_KEY) || '{}');
+      issuerFieldIds.forEach(id => {
+        if (saved[id]) document.getElementById(id).value = saved[id];
+      });
+    } catch(e){ /* ignore corrupted storage */ }
+  }
+
+  function saveIssuerInfo(){
+    const data = {};
+    issuerFieldIds.forEach(id => { data[id] = document.getElementById(id).value; });
+    try{ localStorage.setItem(ISSUER_STORAGE_KEY, JSON.stringify(data)); } catch(e){ /* storage unavailable */ }
+  }
+
+  loadIssuerInfo();
+  issuerFieldIds.forEach(id => {
+    document.getElementById(id).addEventListener('input', saveIssuerInfo);
+  });
+
+  function formatEUR(value){
+    return value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
+  }
+
+  function computeTotals(){
+    let totalHT = 0;
+    linesBody.querySelectorAll('tr').forEach(row => {
+      const qty = parseFloat(row.querySelector('.qty').value) || 0;
+      const price = parseFloat(row.querySelector('.price').value) || 0;
+      const lineTotal = qty * price;
+      row.querySelector('.line-total-value').textContent = formatEUR(lineTotal);
+      totalHT += lineTotal;
+    });
+    const tvaRate = parseFloat(tvaRateInput.value) || 0;
+    const totalTVA = totalHT * (tvaRate / 100);
+    const totalTTC = totalHT + totalTVA;
+    totalHTEl.textContent = formatEUR(totalHT);
+    totalTVAEl.textContent = formatEUR(totalTVA);
+    totalTTCEl.textContent = formatEUR(totalTTC);
+    window.currentInvoiceTotals = { totalHT, totalTVA, totalTTC, tvaRate };
+  }
+
+  function createRow(values){
+    values = values || {};
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="desc-cell"><span class="cell-label">Description</span><textarea rows="1" placeholder="Description de la prestation" class="desc"></textarea></td>
+      <td class="qty-cell"><span class="cell-label">Qté</span><input type="number" class="qty" value="1" min="0" step="1"></td>
+      <td class="price-cell"><span class="cell-label">Prix unitaire HT</span><input type="number" class="price" value="0" min="0" step="0.01"></td>
+      <td class="line-total"><span class="cell-label">Total HT</span><span class="line-total-value">0,00 €</span></td>
+      <td class="remove-cell"><button class="remove-row" type="button" aria-label="Supprimer la ligne">×</button></td>
+    `;
+    if (values.desc !== undefined) tr.querySelector('.desc').value = values.desc;
+    if (values.qty !== undefined) tr.querySelector('.qty').value = values.qty;
+    if (values.price !== undefined) tr.querySelector('.price').value = values.price;
+    return tr;
+  }
+
+  function bindRow(row){
+    row.querySelectorAll('.qty, .price').forEach(input => {
+      input.addEventListener('input', computeTotals);
+    });
+    row.querySelector('.remove-row').addEventListener('click', () => {
+      if (linesBody.querySelectorAll('tr').length > 1){
+        row.remove();
+        computeTotals();
+      }
+    });
+    const descField = row.querySelector('.desc');
+    const autosizeDesc = () => {
+      descField.style.height = 'auto';
+      descField.style.height = (descField.scrollHeight + 4) + 'px';
+    };
+    descField.addEventListener('input', autosizeDesc);
+    autosizeDesc();
+  }
+
+  linesBody.querySelectorAll('tr').forEach(bindRow);
+
+  addRowBtn.addEventListener('click', () => {
+    const row = createRow();
+    linesBody.appendChild(row);
+    bindRow(row);
+    row.querySelector('.desc').focus();
+    computeTotals();
+  });
+
+  tvaRateInput.addEventListener('input', computeTotals);
+
+  /* ---------- Éviter que les zones de texte soient coupées à l'impression / l'export ---------- */
+  function growNotesTextareas(){
+    document.querySelectorAll('.notes textarea, td.desc-cell textarea').forEach(t => {
+      t.dataset.previousHeight = t.style.height;
+      t.style.height = 'auto';
+      t.style.height = (t.scrollHeight + 4) + 'px';
+    });
+  }
+  function restoreNotesTextareas(){
+    document.querySelectorAll('.notes textarea, td.desc-cell textarea').forEach(t => {
+      t.style.height = t.dataset.previousHeight || '';
+    });
+  }
+  window.addEventListener('beforeprint', growNotesTextareas);
+  window.addEventListener('afterprint', restoreNotesTextareas);
+
+  /* ---------- Historique des factures (pour le calcul de TVA) ---------- */
+  const FACTURES_LOG_KEY = 'arborea_factures_log';
+
+  function logInvoiceToHistory(){
+    computeTotals();
+    const totals = window.currentInvoiceTotals || { totalHT: 0, totalTVA: 0, totalTTC: 0, tvaRate: 0 };
+    const record = {
+      factureNum: document.getElementById('factureNum').value || '',
+      date: document.getElementById('factureDate').value || '',
+      clientNom: document.getElementById('clientNom').value || '',
+      totalHT: totals.totalHT,
+      totalTVA: totals.totalTVA,
+      totalTTC: totals.totalTTC,
+      tvaRate: totals.tvaRate
+    };
+    if (!record.factureNum) return;
+
+    let log = [];
+    try{ log = JSON.parse(localStorage.getItem(FACTURES_LOG_KEY) || '[]'); } catch(e){ log = []; }
+    const existingIndex = log.findIndex(r => r.factureNum === record.factureNum);
+    if (existingIndex >= 0){
+      log[existingIndex] = record;
+    } else {
+      log.push(record);
+    }
+    try{ localStorage.setItem(FACTURES_LOG_KEY, JSON.stringify(log)); } catch(e){ /* storage unavailable */ }
+  }
+
+  /* ---------- Bouton Imprimer ---------- */
+  document.getElementById('printBtn').addEventListener('click', () => {
+    logInvoiceToHistory();
+    window.print();
+  });
+
+  /* ---------- Bouton Enregistrer en PDF ---------- */
+  const savePdfBtn = document.getElementById('savePdfBtn');
+  savePdfBtn.addEventListener('click', async () => {
+    logInvoiceToHistory();
+    savePdfBtn.disabled = true;
+    const originalLabel = savePdfBtn.textContent;
+    savePdfBtn.textContent = 'Génération du PDF...';
+
+    growNotesTextareas();
+    document.body.classList.add('exporting-pdf');
+
+    const num = (document.getElementById('factureNum') || {}).value || 'Arborea';
+    const filename = `Facture-${num}.pdf`.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    const pageEl = document.getElementById('invoicePage');
+
+    const opts = {
+      margin: 8,
+      filename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all'] }
+    };
+
+    try{
+      const blob = await html2pdf().set(opts).from(pageEl).outputPdf('blob');
+
+      if (window.showSaveFilePicker){
+        try{
+          const handle = await window.showSaveFilePicker({
+            suggestedName: filename,
+            types: [{ description: 'Fichier PDF', accept: { 'application/pdf': ['.pdf'] } }]
+          });
+          const writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+        } catch(pickerErr){
+          if (pickerErr.name !== 'AbortError') throw pickerErr;
+        }
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+    } catch(err){
+      alert("Une erreur est survenue lors de la génération du PDF. Vous pouvez utiliser le bouton \"Imprimer\" puis choisir \"Enregistrer en PDF\" comme imprimante.");
+    } finally {
+      document.body.classList.remove('exporting-pdf');
+      restoreNotesTextareas();
+      savePdfBtn.disabled = false;
+      savePdfBtn.textContent = originalLabel;
+    }
+  });
+
+  /* ---------- Récupération automatique des données du devis ---------- */
+  const DEVIS_TO_FACTURE_KEY = 'arborea_devis_to_facture';
+
+  function loadFromDevis(){
+    let data;
+    try{
+      data = JSON.parse(localStorage.getItem(DEVIS_TO_FACTURE_KEY) || 'null');
+    } catch(e){ data = null; }
+    if (!data) return;
+
+    if (data.client){
+      document.getElementById('clientNom').value = data.client.nom || '';
+      document.getElementById('clientAdresse').value = data.client.adresse || '';
+      document.getElementById('clientCodePostal').value = data.client.codePostal || '';
+      document.getElementById('clientVille').value = data.client.ville || '';
+      document.getElementById('clientTelephone').value = data.client.telephone || '';
+      document.getElementById('clientEmail').value = data.client.email || '';
+    }
+
+    if (Array.isArray(data.lines) && data.lines.length){
+      linesBody.innerHTML = '';
+      data.lines.forEach(line => {
+        const row = createRow(line);
+        linesBody.appendChild(row);
+        bindRow(row);
+      });
+    }
+
+    if (data.tvaRate !== undefined) tvaRateInput.value = data.tvaRate;
+    if (data.notes) document.getElementById('notesField').value = data.notes;
+
+    if (data.devisNum){
+      const factureNumInput = document.getElementById('factureNum');
+      factureNumInput.value = 'F-' + data.devisNum;
+      const refEl = document.getElementById('devisRef');
+      const dateTxt = data.devisDate ? new Date(data.devisDate).toLocaleDateString('fr-FR') : '';
+      refEl.textContent = `Établie à partir du devis n° ${data.devisNum}${dateTxt ? ' du ' + dateTxt : ''}`;
+      refEl.classList.add('show');
+    }
+
+    try{ localStorage.removeItem(DEVIS_TO_FACTURE_KEY); } catch(e){ /* ignore */ }
+    computeTotals();
+  }
+
+  loadFromDevis();
+  computeTotals();
+</script>
+
+<script src="nav.js"></script>
+
+</body>
+</html>
