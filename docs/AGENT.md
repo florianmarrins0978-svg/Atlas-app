@@ -25,9 +25,17 @@ Le principe directeur : **l'agent s'arrête et attend, il ne file pas jusqu'au
 bout.** Chercher un créneau pour un devis qui va être réécrit est du travail
 perdu, et une date proposée sur un prix faux est pire qu'inutile.
 
-Trois arrêts jalonnent le parcours : **avant l'envoi du devis**, **avant son
-départ chez le client**, et **avant le départ de la facture**. Ce sont les trois
-moments où quelque chose quitte l'entreprise ou engage le patron.
+**Deux arrêts**, pas plus : **avant l'envoi du devis**, et **avant le départ de
+la facture**. Ce sont les deux seuls moments où le patron engage sa parole et
+son argent.
+
+> **Un arrêt intermédiaire a été retiré.** Une première version faisait valider
+> le devis, puis re-valider l'envoi. C'était un écran de trop : valider un devis
+> *est* l'ordre de l'envoyer. On ne redemande pas à quelqu'un s'il est sûr de ce
+> qu'il vient de décider — un arrêt qui ne peut mener qu'à « oui » n'est pas un
+> contrôle, c'est une formalité. Le choix du nombre de dates, lui, n'est pas un
+> contrôle mais un **réglage de l'envoi** : il se pose dans la foulée de la
+> validation, pas dans un second temps.
 
 ```
 1. Le patron dicte sa note sur le chantier.
@@ -35,18 +43,12 @@ moments où quelque chose quitte l'entreprise ou engage le patron.
 
    ┌──────────────────────────────────────────────────────┐
    │  ARRÊT 1 — le patron vérifie et valide le devis.     │
-   │  Rien ne continue tant qu'il n'a pas tranché.        │
+   │  Une question dans la foulée : une date, ou deux ?   │
+   │  Sa réponse déclenche l'envoi. Rien d'autre à faire. │
    └──────────────────────────────────────────────────────┘
 
-3. Une fois le devis validé, et seulement alors, l'agent :
-     — lit l'agenda et propose un créneau d'intervention,
-     — rédige le message au client,
-     — prépare le PDF et l'envoi.
-
-   ┌──────────────────────────────────────────────────────┐
-   │  ARRÊT 2 — le patron valide l'envoi.                 │
-   │  Rien ne part sans ce geste.                         │
-   └──────────────────────────────────────────────────────┘
+3. L'agent fait tout seul : il retient dans l'agenda la ou les
+   dates libres, rédige le message, prépare le devis et l'envoie.
 
 4. Envoi au client, par le canal convenu avec lui (§2.1).
    Le chantier passe EN ATTENTE DE RÉPONSE — il est bloqué, rien
@@ -59,7 +61,7 @@ moments où quelque chose quitte l'entreprise ou engage le patron.
    chantier » (§2.3). La facture s'ouvre, pré-remplie sur le devis.
 
    ┌──────────────────────────────────────────────────────┐
-   │  ARRÊT 3 — le patron confirme le départ de la        │
+   │  ARRÊT 2 — le patron confirme le départ de la        │
    │  facture. « Rien n'a changé ? » — un appui.          │
    └──────────────────────────────────────────────────────┘
 
@@ -92,7 +94,8 @@ Une fois le devis parti, **le chantier est bloqué**. Il n'entre pas au planning
 il n'est pas facturable, il attend. C'est un état à part entière, pas un devis
 « en cours » perdu dans une liste.
 
-**Le patron choisit la forme de sa proposition de date**, au moment de l'envoi :
+**Une seule question au patron, dans la foulée de sa validation** : une date, ou
+deux ?
 
 - **une date ferme** — « intervention le 12 mars » ;
 - **deux dates au choix** — le client retient celle qui l'arrange.
@@ -101,15 +104,73 @@ Le second cas évite un aller-retour quand l'agenda le permet. Le premier
 convient quand le planning est contraint. C'est au patron de trancher, chantier
 par chantier — l'agent propose les créneaux libres, il ne choisit pas la forme.
 
-**Le client répond depuis une page qui lui est destinée.** Le SMS ou l'e-mail
-porte un lien vers une page où il consulte le devis et répond : il accepte (en
-retenant une date si deux lui sont proposées), ou il refuse.
+Sa réponse déclenche tout le reste : l'agent retient les créneaux dans l'agenda,
+rédige le message et envoie. **Le patron n'a plus rien à faire.**
+
+### 2.2 bis La page du client : devis et dates sur le même écran
+
+Le SMS ou l'e-mail porte **un lien**. Il ouvre une page où le client trouve, au
+même endroit, le devis et le choix de la date :
+
+```
+   ┌─────────────────────────────────┐
+   │  Devis n° 2026-042              │
+   │  Élagage — 2 jours     1 240 €  │
+   │  [ Voir le devis complet PDF ]  │
+   ├─────────────────────────────────┤
+   │  Quelle date vous arrange ?     │
+   │                                 │
+   │  ( ) Lundi 23 mars              │
+   │  ( ) Jeudi 27 mars              │
+   │                                 │
+   │  [    J'accepte ce devis    ]   │
+   │  [   Je ne donne pas suite  ]   │
+   └─────────────────────────────────┘
+```
+
+**Une page, pas un fichier interactif.** Un PDF à remplir suppose de
+l'enregistrer, l'ouvrir ailleurs, le remplir, le renvoyer : sur dix clients, la
+plupart abandonnent en route. La page se répond d'un doigt, et le patron est
+prévenu dans la seconde. Le PDF reste téléchargeable pour qui le veut — il n'est
+simplement plus le chemin obligé.
 
 > Cette page est une **surface publique**, la seule du produit. Elle impose :
 > un lien impossible à deviner, une **expiration**, un accès en lecture seule
 > limité au strict nécessaire — jamais la fiche client complète, jamais
 > l'historique des prix, jamais les autres chantiers. C'est le point à traiter
 > avec le plus de soin de tout le parcours.
+
+### 2.2 ter La signature : un clic tracé, pas un PDF renvoyé
+
+**Ne pas demander au client de renvoyer le devis signé.** C'est contre-intuitif
+mais mieux fondé :
+
+- La **signature électronique** est reconnue par le Code civil (art. 1366-1367).
+  C'est le mécanisme qu'emploient tous les logiciels de devis du marché.
+- Ce qui fait la valeur de preuve n'est pas un tracé au doigt sur un PDF, mais
+  la **trace du consentement** : qui a cliqué, quand, depuis quelle adresse, sur
+  **quelle version exacte** du devis — dont on conserve l'empreinte.
+- Un PDF renvoyé par courriel a en pratique *moins* de force probante qu'un clic
+  correctement tracé : rien n'y atteste qui l'a signé ni quand.
+
+**Renforcement recommandé, et peu coûteux** : un **code à quatre chiffres envoyé
+par SMS**, à saisir avant de valider. Le client démontre qu'il détient le
+téléphone enregistré au dossier. Le canal SMS existant (§2.1) suffit.
+
+À conserver pour chaque acceptation : identifiant du devis, empreinte du PDF
+exact, horodatage, adresse IP, canal utilisé, et le code SMS validé le cas
+échéant.
+
+> **Délai de rétractation — à confirmer par le juriste.** Un particulier qui
+> accepte un devis **à distance** dispose d'un délai de rétractation de
+> **14 jours**, et les travaux ne peuvent en principe pas débuter avant son
+> terme, sauf **demande expresse** de sa part.
+>
+> Cela touche directement le parcours : une date proposée à moins de quatorze
+> jours tombe dans ce délai. La page du client doit donc porter une case
+> distincte — « je demande que les travaux commencent avant la fin du délai de
+> rétractation » — et cette demande doit être conservée avec l'acceptation.
+> C'est peu de code ; c'est la formulation qui doit être validée.
 
 **Réponse positive** → le chantier est débloqué et planifié à la date retenue,
 qui est inscrite à l'agenda.
@@ -221,8 +282,10 @@ structurées, prix, export, planning, catalogue, réglages tarifs.
 | Agenda Google | à faire | Connexion du compte, lecture des disponibilités, proposition de créneau, écriture de l'intervention après validation |
 | Canal de communication du client | à faire | Champ SMS / e-mail sur la fiche client ; envoi impossible sans |
 | Envoi au client | à faire | Message, PDF joint, envoi SMS **et** e-mail, trace de ce qui est parti et quand |
-| Proposition de date : ferme ou au choix | à faire | Le patron tranche à l'envoi ; une date, ou deux entre lesquelles le client retient |
-| Page de réponse du client | à faire | **Seule surface publique du produit** : lien non devinable, expiration, lecture seule limitée au devis |
+| Proposition de date : ferme ou au choix | à faire | Une question au patron dans la foulée de sa validation ; sa réponse déclenche l'envoi |
+| Page de réponse du client | à faire | **Seule surface publique du produit** : devis + choix de date sur le même écran, lien non devinable, expiration, lecture seule limitée au devis |
+| Acceptation tracée valant signature | à faire | Empreinte du PDF, horodatage, adresse, canal — et code SMS en renfort |
+| Demande de démarrage anticipé | à faire | Case distincte liée au délai de rétractation de 14 jours (§2.2 ter) |
 | État « en attente de réponse » | à faire | Le chantier est bloqué : ni planifié, ni facturable |
 | Notification « devis retourné » | à faire | Le patron est prévenu d'un refus, et peut reprendre le devis |
 | Relance et caducité | à faire | Sans quoi les chantiers sans réponse s'accumulent invisibles |

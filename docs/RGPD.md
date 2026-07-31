@@ -76,8 +76,16 @@ Voir §8 pour les conditions à respecter pour qu'il fasse foi.
 - **Finalité** : permettre au client de consulter son devis, de l'accepter ou
   de le refuser, et de retenir une date d'intervention.
 - **Données** : le devis et son montant, la ou les dates proposées, la réponse
-  et son horodatage.
+  et son horodatage, ainsi que la **preuve d'acceptation** — empreinte du PDF
+  accepté, adresse IP, canal utilisé, et validation du code SMS le cas échéant.
+- **Base légale** : exécution du contrat, pour la réponse elle-même ; obligation
+  légale et intérêt légitime (preuve) pour la trace d'acceptation.
 - **Notre rôle** : sous-traitant.
+
+> La trace d'acceptation vaut **signature électronique** (`AGENT.md` §2.2 ter).
+> Elle doit donc être conservée aussi longtemps que le contrat peut être
+> contesté — c'est-à-dire nettement plus longtemps que le reste, et c'est
+> voulu. Une preuve purgée trop tôt ne prouve plus rien.
 
 > **La seule surface publique du produit.** Cette page est accessible sans
 > compte, depuis un lien reçu par SMS ou e-mail. Elle impose : un identifiant
