@@ -113,20 +113,36 @@ Le SMS ou l'e-mail porte **un lien**. Il ouvre une page où le client trouve, au
 même endroit, le devis et le choix de la date :
 
 ```
-   ┌─────────────────────────────────┐
-   │  Devis n° 2026-042              │
-   │  Élagage — 2 jours     1 240 €  │
-   │  [ Voir le devis complet PDF ]  │
-   ├─────────────────────────────────┤
-   │  Quelle date vous arrange ?     │
-   │                                 │
-   │  ( ) Lundi 23 mars              │
-   │  ( ) Jeudi 27 mars              │
-   │                                 │
-   │  [    J'accepte ce devis    ]   │
-   │  [   Je ne donne pas suite  ]   │
-   └─────────────────────────────────┘
+   ┌─────────────────────────────────────────────┐
+   │  Devis n° 2026-042                          │
+   │  Élagage — 2 jours              1 240 €     │
+   │  [ Voir le devis complet PDF ]              │
+   ├─────────────────────────────────────────────┤
+   │  Quelle date vous arrange ?                 │
+   │                                             │
+   │  ( ) Lundi 23 mars                          │
+   │  ( ) Jeudi 27 mars                          │
+   ├─────────────────────────────────────────────┤
+   │  ☐ Je demande que les travaux commencent    │
+   │    avant la fin de mon délai de             │
+   │    rétractation de 14 jours.                │
+   │    (formulation à faire valider)            │
+   ├─────────────────────────────────────────────┤
+   │  [        J'accepte ce devis        ]       │
+   │  [      Je ne donne pas suite       ]       │
+   └─────────────────────────────────────────────┘
 ```
+
+La case de démarrage anticipé n'apparaît que **lorsqu'elle est nécessaire** :
+si toutes les dates proposées tombent après le délai de quatorze jours, elle
+n'a aucun objet et encombrerait l'écran. Elle est **jamais pré-cochée** — comme
+toute case qui recueille un consentement (même principe que `RGPD.md` §8) — et
+son état est conservé avec l'acceptation, puisque c'est elle qui autorise le
+patron à intervenir plus tôt.
+
+Si le client retient une date proche **sans** cocher, il ne faut ni bloquer
+l'acceptation ni intervenir quand même : le devis est accepté, et le patron est
+prévenu que la date demande son accord explicite.
 
 **Une page, pas un fichier interactif.** Un PDF à remplir suppose de
 l'enregistrer, l'ouvrir ailleurs, le remplir, le renvoyer : sur dix clients, la
