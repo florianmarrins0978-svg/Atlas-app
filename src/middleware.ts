@@ -16,8 +16,12 @@ const CHEMINS_PUBLICS = ["/login", "/api/auth", "/api/cron"];
 // côté serveur et ne parvient jamais au navigateur.
 const ENTETE_CHEMIN = "x-atlas-pathname";
 
-function suivantAvecChemin(pathname: string) {
-  const entetes = new Headers();
+// Les en-têtes passés ici REMPLACENT ceux de la requête : il faut donc partir
+// d'une copie de l'existant, jamais d'un objet vide. Un `new Headers()` nu
+// effacerait le cookie de session, et toute l'application se retrouverait
+// déconnectée — sans la moindre erreur, ce qui rend la panne difficile à lire.
+function suivantAvecChemin(request: { headers: Headers }, pathname: string) {
+  const entetes = new Headers(request.headers);
   entetes.set(ENTETE_CHEMIN, pathname);
   return NextResponse.next({ request: { headers: entetes } });
 }
@@ -25,7 +29,7 @@ function suivantAvecChemin(pathname: string) {
 export default auth((request) => {
   const { pathname } = request.nextUrl;
   const estPublic = CHEMINS_PUBLICS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-  if (estPublic) return suivantAvecChemin(pathname);
+  if (estPublic) return suivantAvecChemin(request, pathname);
 
   if (!request.auth) {
     // Redirection strictement interne (pas de callbackUrl construit à partir
@@ -34,7 +38,7 @@ export default auth((request) => {
     return NextResponse.redirect(urlConnexion);
   }
 
-  return suivantAvecChemin(pathname);
+  return suivantAvecChemin(request, pathname);
 });
 
 export const config = {
