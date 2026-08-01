@@ -214,3 +214,29 @@ suites en échec accusant chacune un écran différent alors qu'aucune n'avait p
 charger la page de connexion. Puis un contrôle **trop impatient** (dix secondes),
 qui a déclaré mort un serveur simplement occupé à compiler et a fait échouer un
 passage entier. Un contrôle impatient fait pire que pas de contrôle.
+
+## 15. Ce qui n'est pas éprouvable ici est éprouvé par une machine
+
+**Décidé.** Deux workflows vérifient ce que l'environnement de développement ne
+peut pas atteindre : `pages.yml` interroge le site publié à son adresse réelle,
+`banc-essai.yml` monte l'espace de travail complet et s'en sert.
+
+**Ce qui l'a imposé :** l'environnement de l'agent n'a ni démon Docker, ni
+GitHub CLI, et son mandataire réseau refuse `github.io` et la documentation
+GitHub. Le banc d'essai y était donc invérifiable — et il a été livré trois
+fois de suite avec un défaut que seul le patron rencontrait : un script
+manquant, une application pas encore prête, un port fermé.
+
+**Écarté :** contourner le mandataire, ou se contenter d'un contrôle de syntaxe
+en déclarant l'ensemble vérifié. Le premier est interdit ; le second revient à
+faire porter le test par le patron, ce qui est arrivé et ne doit pas se
+reproduire.
+
+**Ce que le contrôle éprouve, et pourquoi :** la base montée, les rôles restés
+bridés — un banc d'essai en superutilisateur contournerait la RLS sans le dire —
+le compte de démonstration, l'acceptation des documents légaux sans laquelle
+chaque écran renvoie vers la garde, et enfin `/login` plutôt que la page de
+santé, qui ne touche ni la base ni le rendu.
+
+**Un contrôle qui ne sait pas échouer ne vaut rien.** Celui-ci a été confronté à
+une base vide et à une base migrée mais non amorcée avant d'être acté.
