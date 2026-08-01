@@ -21,6 +21,8 @@ export default function NouveauChantierPage() {
   const [nomChantier, setNomChantier] = useState("");
   const [nomClient, setNomClient] = useState("");
   const [telephone, setTelephone] = useState("");
+  const [email, setEmail] = useState("");
+  const [canalChoisi, setCanalChoisi] = useState<"sms" | "email" | null>(null);
   const [adresseChantier, setAdresseChantier] = useState("");
   const [adresseClient, setAdresseClient] = useState("");
   const [adresseClientVisible, setAdresseClientVisible] = useState(false);
@@ -28,6 +30,13 @@ export default function NouveauChantierPage() {
   const [erreur, setErreur] = useState<string | null>(null);
 
   const peutCreer = nomChantier.trim().length > 0 && !enCours;
+
+  // Le canal se devine dans la plupart des cas : une seule coordonnée renseignée
+  // ne laisse pas d'ambiguïté. Le choix explicite du patron prime toujours —
+  // c'est un accord passé avec son client, pas une déduction de l'application.
+  const aTelephone = telephone.trim().length > 0;
+  const aEmail = email.trim().length > 0;
+  const canal = canalChoisi ?? (aTelephone ? "sms" : aEmail ? "email" : null);
 
   async function handleCreer() {
     if (nomChantier.trim().length === 0) return; // jamais de création sans nom
@@ -38,6 +47,8 @@ export default function NouveauChantierPage() {
         nomChantier,
         nomClient,
         telephone,
+        email,
+        canal: canal ?? undefined,
         adresseChantier,
         adresseClient,
       });
@@ -105,7 +116,40 @@ export default function NouveauChantierPage() {
             value={telephone}
             onChange={setTelephone}
           />
-          {/* 4 — Adresse du chantier : facultative */}
+          {/* 4 — E-mail : facultatif */}
+          <Field
+            label="E-mail (facultatif)"
+            placeholder="bernard@exemple.fr"
+            type="email"
+            value={email}
+            onChange={setEmail}
+          />
+
+          {/* 5 — Canal d'envoi. N'apparaît qu'une fois une coordonnée saisie :
+              poser la question avant serait sans objet. */}
+          {(aTelephone || aEmail) && (
+            <fieldset className="flex flex-col gap-1.5">
+              <legend className={smallCaps} style={{ color: colors.muted }}>
+                Comment lui envoyer son devis ?
+              </legend>
+              <div className="flex gap-2">
+                <ChoixCanal
+                  libelle="Par SMS"
+                  actif={canal === "sms"}
+                  disponible={aTelephone}
+                  onClick={() => setCanalChoisi("sms")}
+                />
+                <ChoixCanal
+                  libelle="Par e-mail"
+                  actif={canal === "email"}
+                  disponible={aEmail}
+                  onClick={() => setCanalChoisi("email")}
+                />
+              </div>
+            </fieldset>
+          )}
+
+          {/* 6 — Adresse du chantier : facultative */}
           <Field
             label="Adresse du chantier (facultatif)"
             placeholder="12 rue des Lilas, Nantes"
@@ -113,7 +157,7 @@ export default function NouveauChantierPage() {
             onChange={setAdresseChantier}
           />
 
-          {/* 5 — Adresse client, masquée par défaut */}
+          {/* 7 — Adresse client, masquée par défaut */}
           {!adresseClientVisible ? (
             <button
               type="button"
@@ -132,7 +176,7 @@ export default function NouveauChantierPage() {
             />
           )}
 
-          {/* 6 — Action principale */}
+          {/* 8 — Action principale */}
           <div className="pt-4">
             <PrimaryButton disabled={!peutCreer} onClick={handleCreer}>
               {enCours ? "Création…" : "Créer le chantier →"}
@@ -150,6 +194,36 @@ export default function NouveauChantierPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+// Un canal sans sa coordonnée est proposé mais inerte : le masquer laisserait
+// le patron chercher pourquoi le choix qu'il attend n'est pas là.
+function ChoixCanal({
+  libelle,
+  actif,
+  disponible,
+  onClick,
+}: {
+  libelle: string;
+  actif: boolean;
+  disponible: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!disponible}
+      aria-pressed={actif}
+      className="flex-1 rounded-2xl py-3.5 text-[15px] font-medium disabled:opacity-40"
+      style={{
+        backgroundColor: actif ? colors.rustTint : colors.card,
+        color: actif ? colors.rust : colors.ink,
+      }}
+    >
+      {libelle}
+    </button>
   );
 }
 

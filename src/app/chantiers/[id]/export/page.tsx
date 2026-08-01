@@ -47,6 +47,7 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
         </div>
 
         <ExportClient
+          chantierId={id}
           devisId={devisRow.id}
           chantierNom={chantier.nom}
           adresseChantier={chantier.adresseChantier ?? "Adresse non renseignée"}

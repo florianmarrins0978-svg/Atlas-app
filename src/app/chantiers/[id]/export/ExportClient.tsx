@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
-import BottomSheet from "@/components/atlas/BottomSheet";
-import { envoyerDevisAction } from "./actions";
+import EnvoiAuClient from "./EnvoiAuClient";
 
 const formatEuros = new Intl.NumberFormat("fr-FR", {
   style: "currency",
@@ -14,6 +13,7 @@ const formatEuros = new Intl.NumberFormat("fr-FR", {
 });
 
 export default function ExportClient({
+  chantierId,
   devisId,
   chantierNom,
   adresseChantier,
@@ -23,6 +23,7 @@ export default function ExportClient({
   totalTtc,
   initialEnvoye,
 }: {
+  chantierId: string;
   devisId: string;
   chantierNom: string;
   adresseChantier: string;
@@ -34,19 +35,14 @@ export default function ExportClient({
 }) {
   const [confirmationVisible, setConfirmationVisible] = useState(false);
   const [envoye, setEnvoye] = useState(initialEnvoye);
-  const [envoiEnCours, setEnvoiEnCours] = useState(false);
+  // Aucun fournisseur de SMS ni d'e-mail n'étant branché (docs/AGENT.md §5), le
+  // lien est rendu au patron pour qu'il le transmette lui-même — ce qui vaut
+  // mieux qu'un envoi qui échouerait en silence.
+  const [lienClient, setLienClient] = useState<string | null>(null);
+  const [copie, setCopie] = useState(false);
 
-  async function confirmerEnvoi() {
-    setEnvoiEnCours(true);
-    try {
-      await envoyerDevisAction(devisId);
-      setConfirmationVisible(false);
-      setEnvoye(true);
-    } catch {
-      setConfirmationVisible(false);
-    } finally {
-      setEnvoiEnCours(false);
-    }
+  function lienComplet(chemin: string) {
+    return typeof window === "undefined" ? chemin : `${window.location.origin}${chemin}`;
   }
 
   return (
@@ -92,45 +88,60 @@ export default function ExportClient({
           {envoye ? "Télécharger le PDF" : "Aperçu du PDF"}
         </a>
 
-        {envoye ? (
-          <div className="rounded-2xl px-5 py-4 text-center" style={{ backgroundColor: colors.card }}>
-            <p className="text-[14px]" style={{ color: colors.muted }}>
-              Devis envoyé à {clientNom}.
+        {envoye || lienClient ? (
+          <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: colors.card }}>
+            <p className="text-center text-[14px]" style={{ color: colors.muted }}>
+              Devis prêt pour {clientNom}.
             </p>
+            {lienClient && (
+              <>
+                <p className="mt-3 text-center text-[13px]" style={{ color: colors.ink }}>
+                  Transmettez-lui ce lien : il y verra le devis et choisira sa date.
+                </p>
+                <p
+                  className="mt-2 break-all rounded-xl px-3 py-2 text-center text-[12px]"
+                  style={{ backgroundColor: colors.cream, color: colors.muted }}
+                >
+                  {lienComplet(lienClient)}
+                </p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(lienComplet(lienClient));
+                      setCopie(true);
+                    } catch {
+                      // Presse-papier refusé : le lien reste lisible et
+                      // sélectionnable au-dessus, rien n'est perdu.
+                    }
+                  }}
+                  className="mt-3 block w-full text-center text-[14px] font-medium"
+                  style={{ color: colors.rust }}
+                >
+                  {copie ? "Lien copié" : "Copier le lien"}
+                </button>
+              </>
+            )}
           </div>
         ) : (
           <PrimaryButton onClick={() => setConfirmationVisible(true)}>
-            Envoyer vers le système de devis →
+            Envoyer au client →
           </PrimaryButton>
         )}
       </div>
 
-      {/* Confirmation d'action positive (patron n°2) : action principale = bouton fort, Annuler discret */}
-      <BottomSheet open={confirmationVisible} onBackdropClick={() => setConfirmationVisible(false)}>
-        <p className="mb-1 text-center text-[16px]" style={{ color: colors.ink, fontFamily: font.display }}>
-          Envoyer ce devis ?
-        </p>
-        <p className="mb-5 text-center text-[13px]" style={{ color: colors.muted }}>
-          {clientNom} recevra ce devis pour {formatEuros.format(Number(totalTtc))}.
-        </p>
-        <div className="flex flex-col gap-2.5">
-          <button
-            onClick={confirmerEnvoi}
-            disabled={envoiEnCours}
-            className="rounded-2xl py-3.5 text-[16px] font-medium text-white"
-            style={{ backgroundColor: colors.rust }}
-          >
-            {envoiEnCours ? "Envoi…" : "Envoyer"}
-          </button>
-          <button
-            onClick={() => setConfirmationVisible(false)}
-            className="rounded-2xl py-3.5 text-[15px] font-medium"
-            style={{ color: colors.muted }}
-          >
-            Annuler
-          </button>
-        </div>
-      </BottomSheet>
+      <EnvoiAuClient
+        chantierId={chantierId}
+        devisId={devisId}
+        clientNom={clientNom}
+        ouvert={confirmationVisible}
+        onFermer={() => setConfirmationVisible(false)}
+        onEnvoye={(lien) => {
+          setConfirmationVisible(false);
+          setEnvoye(true);
+          setLienClient(lien);
+        }}
+      />
     </>
   );
 }
