@@ -69,6 +69,7 @@
 <li><a href="#2-faire-rédiger-le-contrat-de-sous-traitance">Faire rédiger le contrat de sous-traitance</a></li>
 <li><a href="#3-choisir-un-hébergement">Choisir un hébergement</a></li>
 <li><a href="#4-constituer-une-société-et-sassurer">Constituer une société et s'assurer</a></li>
+<li><a href="#5-brancher-un-fournisseur-sms-et-e-mail">Brancher un fournisseur SMS et e-mail</a></li>
 </ol>
 <hr>
 <h2 id="1-choisir-les-fournisseurs-dia-définitifs">1. Choisir les fournisseurs d'IA définitifs</h2>
@@ -135,6 +136,40 @@
 <p><strong>Une société plutôt qu'une entreprise individuelle.</strong> C'est ce qui sépare votre patrimoine personnel de celui de l'activité. En cas de fuite de données, la différence n'est pas théorique : les sanctions peuvent atteindre des montants qu'un particulier n'absorbe pas.</p>
 <p><strong>Une assurance cyber / responsabilité civile professionnelle.</strong> Quelques centaines d'euros par an, et elle absorbe l'essentiel du coût financier d'un incident.</p>
 <p>Ces deux points sont les moins chers et les plus efficaces de toute la liste. Voir <a href="QUESTIONS.md" target="_blank" rel="noopener"><code>QUESTIONS.md</code></a> question 4 pour le détail de ce qui est encouru.</p>
+<hr>
+<h2 id="5-brancher-un-fournisseur-sms-et-e-mail">5. Brancher un fournisseur SMS et e-mail</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Qui : le patron</strong>, pour le choix et l'abonnement. Le branchement lui-même est du code, et je peux le faire en une fois.</p>
+<h3 id="pourquoi-cest-bloquant">Pourquoi c'est bloquant</h3>
+<p>C'est le dernier mètre du parcours, et il n'existe pas. Tout le reste est construit : le devis part avec une ou deux dates au choix, le client répond sur son calendrier, le chantier se planifie, la facture se prépare. Mais <strong>rien ne quitte l'application</strong>. Le lien du devis vous est remis à l'écran, à charge pour vous de le recopier dans un SMS. La facture attend le même branchement.</p>
+<p>Autrement dit : l'agent fait tout le travail, sauf l'envoyer. Sur dix chantiers par semaine, c'est vingt gestes manuels — exactement ceux que l'application est censée vous épargner.</p>
+<h3 id="ce-quil-faut-choisir">Ce qu'il faut choisir</h3>
+<p>Deux abonnements distincts, un par canal :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Canal</th>
+<th>Ce que ça coûte, en ordre de grandeur</th>
+<th>Remarque</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>SMS</strong></td>
+<td>quelques centimes par message</td>
+<td>Le canal que la plupart de vos clients liront. Un numéro d'expéditeur au nom de votre entreprise se demande à part</td>
+</tr>
+<tr>
+<td><strong>E-mail</strong></td>
+<td>quelques euros par mois jusqu'à plusieurs milliers d'envois</td>
+<td>Suppose un nom de domaine à vous, et sa configuration anti-usurpation — sans quoi vos devis finissent en indésirables</td>
+</tr>
+</tbody></table></div>
+<h3 id="deux-points-à-vérifier-du-même-ordre-que-pour-lia">Deux points à vérifier, du même ordre que pour l'IA</h3>
+<ul>
+<li><strong>Où sont leurs serveurs.</strong> Le message porte le nom du client et le lien vers son devis : c'est une donnée personnelle qui transite. Un prestataire européen évite tout encadrement supplémentaire.</li>
+<li><strong>Ce qu'ils conservent.</strong> Les journaux d'envoi gardent souvent le destinataire plusieurs mois. À faire figurer dans <a href="RGPD.md" target="_blank" rel="noopener"><code>RGPD.md</code></a> §3 comme les autres sous-traitants.</li>
+</ul>
+<h3 id="ce-que-je-fais-une-fois-décidé">Ce que je fais une fois décidé</h3>
+<p>L'envoi, la trace de ce qui est parti et quand, la relance d'un devis resté sans réponse, et le départ automatique de la facture après votre confirmation. Le canal de chaque client est <strong>déjà enregistré</strong> dans l'application, et l'écran d'envoi refuse déjà de partir sans lui — il ne manque que le fournisseur au bout.</p>
+<h3 id="en-attendant">En attendant</h3>
+<p>Rien n'est perdu ni bloqué : le lien affiché à l'écran est le même que celui qui partirait par SMS, et la page du client fonctionne à l'identique. Seul le geste d'envoi vous revient.</p>
 </main>
 </body>
 </html>

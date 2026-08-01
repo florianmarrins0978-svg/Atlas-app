@@ -25,6 +25,7 @@ qui ne se résoudra pas en codant.
 2. [Faire rédiger le contrat de sous-traitance](#2-faire-rédiger-le-contrat-de-sous-traitance)
 3. [Choisir un hébergement](#3-choisir-un-hébergement)
 4. [Constituer une société et s'assurer](#4-constituer-une-société-et-sassurer)
+5. [Brancher un fournisseur SMS et e-mail](#5-brancher-un-fournisseur-sms-et-e-mail)
 
 ---
 
@@ -125,3 +126,53 @@ incident.
 Ces deux points sont les moins chers et les plus efficaces de toute la liste.
 Voir [`QUESTIONS.md`](QUESTIONS.md) question 4 pour le détail de ce qui est
 encouru.
+
+---
+
+## 5. Brancher un fournisseur SMS et e-mail
+
+**Qui : le patron**, pour le choix et l'abonnement. Le branchement lui-même est
+du code, et je peux le faire en une fois.
+
+### Pourquoi c'est bloquant
+
+C'est le dernier mètre du parcours, et il n'existe pas. Tout le reste est
+construit : le devis part avec une ou deux dates au choix, le client répond sur
+son calendrier, le chantier se planifie, la facture se prépare. Mais **rien ne
+quitte l'application**. Le lien du devis vous est remis à l'écran, à charge pour
+vous de le recopier dans un SMS. La facture attend le même branchement.
+
+Autrement dit : l'agent fait tout le travail, sauf l'envoyer. Sur dix chantiers
+par semaine, c'est vingt gestes manuels — exactement ceux que l'application est
+censée vous épargner.
+
+### Ce qu'il faut choisir
+
+Deux abonnements distincts, un par canal :
+
+| Canal | Ce que ça coûte, en ordre de grandeur | Remarque |
+|---|---|---|
+| **SMS** | quelques centimes par message | Le canal que la plupart de vos clients liront. Un numéro d'expéditeur au nom de votre entreprise se demande à part |
+| **E-mail** | quelques euros par mois jusqu'à plusieurs milliers d'envois | Suppose un nom de domaine à vous, et sa configuration anti-usurpation — sans quoi vos devis finissent en indésirables |
+
+### Deux points à vérifier, du même ordre que pour l'IA
+
+- **Où sont leurs serveurs.** Le message porte le nom du client et le lien vers
+  son devis : c'est une donnée personnelle qui transite. Un prestataire européen
+  évite tout encadrement supplémentaire.
+- **Ce qu'ils conservent.** Les journaux d'envoi gardent souvent le destinataire
+  plusieurs mois. À faire figurer dans [`RGPD.md`](RGPD.md) §3 comme les autres
+  sous-traitants.
+
+### Ce que je fais une fois décidé
+
+L'envoi, la trace de ce qui est parti et quand, la relance d'un devis resté sans
+réponse, et le départ automatique de la facture après votre confirmation. Le
+canal de chaque client est **déjà enregistré** dans l'application, et l'écran
+d'envoi refuse déjà de partir sans lui — il ne manque que le fournisseur au bout.
+
+### En attendant
+
+Rien n'est perdu ni bloqué : le lien affiché à l'écran est le même que celui qui
+partirait par SMS, et la page du client fonctionne à l'identique. Seul le geste
+d'envoi vous revient.
