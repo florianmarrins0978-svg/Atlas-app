@@ -79,7 +79,11 @@ lui-même s'y était trompé, ce qui était prévisible et entièrement de notre
 faute.
 
 L'application Next.js, elle, **n'est hébergée nulle part** — voir « Ce qui
-bloque ».
+bloque ». Mais elle est **essayable en entier dès maintenant**, y compris depuis
+un téléphone, via l'espace de travail décrit dans
+[`docs/ESSAYER.md`](docs/ESSAYER.md). Distinguer les deux importe : l'essai ne
+demande aucune décision, aucun compte et aucun budget ; seule la mise en
+production les demande.
 
 ---
 

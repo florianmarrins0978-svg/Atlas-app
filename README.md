@@ -3,6 +3,10 @@
 Application mobile (PWA) pour artisans : dictée sur chantier → vérification
 humaine → calcul du prix → préparation du devis → planning simple.
 
+> **Vous voulez essayer l'application ?** Suivez
+> [`docs/ESSAYER.md`](docs/ESSAYER.md) — l'application entière s'ouvre depuis un
+> navigateur, y compris sur téléphone, sans rien installer.
+>
 > **Vous reprenez le projet ?** Commencez par [`HANDOVER.md`](HANDOVER.md), puis
 > [`PROJECT_STATE.md`](PROJECT_STATE.md) et [`TODO.md`](TODO.md). Le dépôt est la
 > source de vérité : tout ce qu'il faut pour continuer y est écrit, sans dépendre

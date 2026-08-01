@@ -1,0 +1,66 @@
+# Environnement d'essai complet, prêt à l'emploi (GitHub Codespaces ou
+# Dev Containers en local).
+#
+# Reprend les services de `docker-compose.yml` à la racine — mêmes images,
+# mêmes rôles PostgreSQL restreints — et y ajoute le conteneur qui fait
+# tourner l'application. C'est ce qui permet d'ouvrir l'application entière
+# depuis un téléphone, sans installer quoi que ce soit ni ouvrir de compte
+# chez qui que ce soit.
+#
+# Les mots de passe sont ceux du développement local, en clair et versionnés :
+# ces services ne sont joignables que depuis l'intérieur du conteneur, jamais
+# depuis l'extérieur. Y mettre de vrais secrets donnerait l'illusion d'une
+# sécurité que ce montage n'a pas — et n'a pas à avoir.
+
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/typescript-node:22
+    volumes:
+      - ../..:/workspaces:cached
+    command: sleep infinity
+    environment:
+      DATABASE_URL: postgresql://atlas_app:atlas_app_dev_pw@postgres:5432/atlas_dev
+      DATABASE_ADMIN_URL: postgresql://atlas_owner:atlas_owner_dev_pw@postgres:5432/atlas_dev
+      DATABASE_SUPER_URL: postgresql://postgres:postgres_dev_pw@postgres:5432/atlas_dev
+      REDIS_URL: redis://redis:6379
+      AUTH_SECRET: essai-local-non-utilise-en-production-0000
+      CRON_SECRET: essai-local-cron-secret-0000000000
+      # L'assistant et la transcription tournent en mode déterministe : aucun
+      # appel réseau, aucune clé, et surtout aucune donnée d'essai envoyée à un
+      # prestataire qui ne figure encore dans aucun contrat (docs/A-FAIRE.md §1).
+      LLM_PROVIDER: dev
+      TRANSCRIPTION_PROVIDER: dev
+      STORAGE_PROVIDER: local
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_dev_pw
+      POSTGRES_DB: atlas_dev
+    volumes:
+      - atlas-pgdata:/var/lib/postgresql/data
+      - ../docker/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d atlas_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  atlas-pgdata:

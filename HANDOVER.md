@@ -75,7 +75,17 @@ node scripts/md-en-page.mjs docs/A-FAIRE.md
 
 ---
 
-## Monter l'environnement
+## Voir l'application tourner, sans rien monter
+
+Le plus court chemin est [`docs/ESSAYER.md`](docs/ESSAYER.md) : un espace de
+travail GitHub monte la base, applique le schéma, insère les données de
+démonstration et ouvre l'application — accessible depuis un téléphone. Tout est
+dans `.devcontainer/`.
+
+C'est aussi ce qu'il faut donner au patron quand il demande à essayer : le site
+publié ne montre que des maquettes.
+
+## Monter l'environnement à la main
 
 PostgreSQL 16 et Redis doivent tourner. Les rôles attendus sont créés par
 `scripts/bootstrap-postgres-ci.sql`.
