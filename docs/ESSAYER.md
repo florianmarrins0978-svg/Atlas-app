@@ -42,13 +42,24 @@ véritables décisions d'hébergement restent entières
 ### 1. Ouvrir l'espace de travail
 
 Sur `github.com/florianmarrins0978-svg/Atlas-app` : bouton vert **« Code »**,
-onglet **« Codespaces »**, puis **« Create codespace »**.
+onglet **« Codespaces »**, puis **« Create codespace on main »**.
 
 Un ordinateur se monte pour vous dans le navigateur. **Comptez cinq à dix
 minutes la première fois** : il installe la base de données, applique le schéma
 et insère les données de démonstration. Les fois suivantes, quelques secondes.
 
 Vous saurez que c'est prêt quand le terminal affiche **« Atlas est prêt »**.
+
+> **Un espace de travail est figé à sa création.** Il garde la version du dépôt
+> qu'il avait ce jour-là, y compris sa base de données. Quand du travail neuf
+> arrive sur `main`, un ancien espace ne le voit pas — et échoue de façon
+> déroutante, par exemple sur `Missing script: "essai"`.
+>
+> **Le réflexe : en créer un neuf**, plutôt que de rattraper l'ancien. Un
+> `git pull` ramènerait les fichiers mais pas la base, qui n'est montée qu'à la
+> création — et l'erreur suivante serait plus obscure que la première.
+>
+> Supprimer l'ancien : `github.com/codespaces`, menu **⋯** → **Delete**.
 
 ### 2. Démarrer l'application
 
@@ -142,6 +153,13 @@ Le compte gratuit inclut 60 heures par mois, largement de quoi essayer.
 ---
 
 ## Si quelque chose ne va pas
+
+**`Missing script: "essai"`, ou des fichiers manquent dans la liste de gauche
+(`.devcontainer`, `HANDOVER.md`, `TODO.md`…).** L'espace de travail a été créé
+avant que ce travail n'arrive sur `main` : il est resté à la version de ce
+jour-là. Supprimez-le et recréez-en un — voir l'encadré du geste 1. C'est le
+cas le plus fréquent, et le plus déroutant, parce que l'erreur ne dit pas que
+le problème est l'ancienneté de l'espace.
 
 **Le terminal affiche une erreur pendant la préparation.** Elle s'arrête à la
 première anomalie plutôt que de continuer à moitié — le message dit laquelle.

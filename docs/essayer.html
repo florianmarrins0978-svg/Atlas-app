@@ -105,9 +105,10 @@
 <h2 id="en-cinq-gestes">En cinq gestes</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <h3 id="1-ouvrir-lespace-de-travail">1. Ouvrir l'espace de travail</h3>
-<p>Sur <code>github.com/florianmarrins0978-svg/Atlas-app</code> : bouton vert <strong>« Code »</strong>, onglet <strong>« Codespaces »</strong>, puis <strong>« Create codespace »</strong>.</p>
+<p>Sur <code>github.com/florianmarrins0978-svg/Atlas-app</code> : bouton vert <strong>« Code »</strong>, onglet <strong>« Codespaces »</strong>, puis <strong>« Create codespace on main »</strong>.</p>
 <p>Un ordinateur se monte pour vous dans le navigateur. <strong>Comptez cinq à dix minutes la première fois</strong> : il installe la base de données, applique le schéma et insère les données de démonstration. Les fois suivantes, quelques secondes.</p>
 <p>Vous saurez que c'est prêt quand le terminal affiche <strong>« Atlas est prêt »</strong>.</p>
+<blockquote><strong>Un espace de travail est figé à sa création.</strong> Il garde la version du dépôt qu'il avait ce jour-là, y compris sa base de données. Quand du travail neuf arrive sur <code>main</code>, un ancien espace ne le voit pas — et échoue de façon déroutante, par exemple sur <code>Missing script: "essai"</code>.  <strong>Le réflexe : en créer un neuf</strong>, plutôt que de rattraper l'ancien. Un <code>git pull</code> ramènerait les fichiers mais pas la base, qui n'est montée qu'à la création — et l'erreur suivante serait plus obscure que la première.  Supprimer l'ancien : <code>github.com/codespaces</code>, menu <strong>⋯</strong> → <strong>Delete</strong>.</blockquote>
 <h3 id="2-démarrer-lapplication">2. Démarrer l'application</h3>
 <p>Dans le terminal, en bas de l'écran :</p>
 <p>``<code> npm run essai </code>``</p>
@@ -155,6 +156,7 @@
 <hr>
 <h2 id="si-quelque-chose-ne-va-pas">Si quelque chose ne va pas</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong><code>Missing script: "essai"</code>, ou des fichiers manquent dans la liste de gauche (<code>.devcontainer</code>, <code>HANDOVER.md</code>, <code>TODO.md</code>…).</strong> L'espace de travail a été créé avant que ce travail n'arrive sur <code>main</code> : il est resté à la version de ce jour-là. Supprimez-le et recréez-en un — voir l'encadré du geste 1. C'est le cas le plus fréquent, et le plus déroutant, parce que l'erreur ne dit pas que le problème est l'ancienneté de l'espace.</p>
 <p><strong>Le terminal affiche une erreur pendant la préparation.</strong> Elle s'arrête à la première anomalie plutôt que de continuer à moitié — le message dit laquelle. Relancez <code>bash .devcontainer/preparer.sh</code>.</p>
 <p><strong>Une action ne fait rien</strong> (créer un chantier, envoyer un devis). C'est le symptôme d'une origine refusée par Next.js derrière le proxy. Le dépôt gère ce cas (<code>next.config.ts</code>, <code>allowedOrigins</code>) ; si cela se reproduit, le nom de l'espace a changé — arrêtez puis relancez <code>npm run essai</code>.</p>
 <p><strong>Le port 3000 est déjà pris.</strong> Un serveur tourne encore. Fermez-le avec <code>Ctrl+C</code> dans son terminal.</p>

@@ -31,6 +31,11 @@ services:
       LLM_PROVIDER: dev
       TRANSCRIPTION_PROVIDER: dev
       STORAGE_PROVIDER: local
+      # L'installation des dépendances télécharge sinon les navigateurs de
+      # Playwright — plusieurs centaines de mégaoctets et quelques minutes, pour
+      # des suites de tests dont on n'a pas l'usage ici. Celui qui voudrait les
+      # jouer dans cet environnement lance `npx playwright install chromium`.
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
     depends_on:
       postgres:
         condition: service_healthy
