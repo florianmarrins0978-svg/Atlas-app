@@ -187,6 +187,57 @@ function ok(name, cond){ if (cond) pass++; else { fail++; fails.push(name); } }
     await cShare.close();
   }
 
+  // 8) Envoi mobile : le partage natif n'a pas de champ destinataire (limite
+  //    d'iOS/Android, pas du code). L'adresse du client doit donc être copiée
+  //    dans le presse-papier et rappelée à l'écran, sans quoi le patron doit la
+  //    retrouver lui-même au moment de composer son message.
+  {
+    const cDest = await browser.newContext({ permissions: ['clipboard-read', 'clipboard-write'] });
+    await cDest.route(/googleapis|gstatic|cloudflare|jsdelivr/i, r => r.abort());
+    // Simulations posées sur le CONTEXTE : les deux pages de ce bloc en ont
+    // besoin, et les attacher page par page laisse la seconde sans stub —
+    // l'échec ressemble alors à un défaut du code plutôt qu'à un oubli du test.
+    await cDest.addInitScript(() => {
+      window.__copie = null;
+      const fakeBlob = new Blob(['%PDF-1.4'], { type: 'application/pdf' });
+      window.html2pdf = () => ({ set: () => ({ from: () => ({ outputPdf: async () => fakeBlob }) }) });
+      Object.defineProperty(navigator, 'canShare', { configurable: true, value: d => !!(d && d.files) });
+      Object.defineProperty(navigator, 'share', { configurable: true, value: async () => {} });
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: { writeText: async t => { window.__copie = t; } }
+      });
+    });
+
+    const page = await cDest.newPage();
+    const errs = []; page.on('pageerror', e => errs.push('destinataire: ' + e.message));
+    await page.goto(`${B}/devis-modele.html`, { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(150);
+
+    await page.fill('#clientNom', 'Merlot');
+    await page.fill('#clientEmail', 'merlot@example.test');
+    await page.fill('#devisNum', '2026-001');
+    await page.click('#sendClientBtn'); await page.waitForTimeout(400);
+
+    ok('envoi : adresse du client copiée dans le presse-papier',
+      (await page.evaluate(() => window.__copie)) === 'merlot@example.test');
+    const statut = await page.$eval('#sendStatus', el => ({ visible: !el.hidden, texte: el.textContent }));
+    ok('envoi : l’adresse est rappelée à l’écran', statut.visible && /merlot@example\.test/.test(statut.texte));
+    ok('envoi : l’objet suggéré est rappelé', /2026-001/.test(statut.texte));
+    ok('envoi : aucune erreur JS (destinataire)', errs.length === 0);
+    if (errs.length) fails.push(...errs);
+
+    // Sans e-mail renseigné, le patron doit être averti plutôt que de découvrir
+    // un champ « À : » vide une fois dans son application de messagerie.
+    const page2 = await cDest.newPage();
+    await page2.goto(`${B}/devis-modele.html`, { waitUntil: 'domcontentloaded' }); await page2.waitForTimeout(150);
+    await page2.fill('#clientNom', 'Sans Mail');
+    await page2.click('#sendClientBtn'); await page2.waitForTimeout(400);
+    const statut2 = await page2.$eval('#sendStatus', el => ({ visible: !el.hidden, texte: el.textContent }));
+    ok('envoi : absence d’e-mail signalée', statut2.visible && /Aucun e-mail/.test(statut2.texte));
+
+    await cDest.close();
+  }
+
   await browser.close();
   console.log(`\n✅ PASS: ${pass}   ❌ FAIL: ${fail}`);
   if (fails.length){ console.log('\nÉchecs :'); fails.forEach(f => console.log('  - ' + f)); }
