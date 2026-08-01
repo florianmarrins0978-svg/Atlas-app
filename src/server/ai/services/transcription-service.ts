@@ -21,6 +21,17 @@ export async function lancerTranscription(ctx: Ctx, chantierId: string) {
     throw new Error("Aucune note vocale pour ce chantier.");
   }
 
+  // L'audio a pu être purgé une fois la transcription obtenue (docs/RGPD.md
+  // §4). Retranscrire n'a alors plus de source, et il faut le dire clairement
+  // plutôt que de laisser échouer la lecture du fichier sur un message vague.
+  if (!note.storageKey) {
+    return enregistrerEchecTranscription(
+      ctx,
+      chantierId,
+      "L'enregistrement a été effacé après transcription : il ne peut plus être retranscrit."
+    );
+  }
+
   await marquerTranscriptionEnCours(ctx, chantierId);
 
   let octets: Buffer;

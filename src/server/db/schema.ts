@@ -128,6 +128,11 @@ export const clients = pgTable(
     // Canal convenu avec le client pour l'envoi du devis (docs/AGENT.md §2.1).
     // Sans lui, l'envoi est impossible : mieux vaut bloquer qu'envoyer dans le vide.
     canalCommunication: text("canal_communication", { enum: ["sms", "email"] }),
+    // Effacement à la demande (docs/RGPD.md §5). Un client effacé n'est pas une
+    // ligne supprimée : ce que la loi impose de conserver subsiste, et le motif
+    // dit quoi et pourquoi.
+    effaceLe: timestamp("efface_le", { withTimezone: true }),
+    conservationMotif: text("conservation_motif"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -239,13 +244,16 @@ export const notesVocales = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     entrepriseId: uuid("entreprise_id").notNull(),
     chantierId: uuid("chantier_id").notNull(),
-    storageKey: text("storage_key").notNull(),
+    // Annulable : l'audio est purgé une fois la transcription obtenue, et la
+    // note vocale lui survit (docs/RGPD.md §4). NULL = enregistrement effacé.
+    storageKey: text("storage_key"),
     mimeType: text("mime_type").notNull(),
     tailleOctets: integer("taille_octets").notNull(),
     nomOriginal: text("nom_original"),
     checksum: text("checksum").notNull(),
     dureeSecondes: integer("duree_secondes"),
     transcription: text("transcription"),
+    audioPurgeLe: timestamp("audio_purge_le", { withTimezone: true }),
     transcriptionStatut: text("transcription_statut", {
       enum: ["non_demandee", "en_cours", "reussie", "echouee"],
     })
@@ -699,5 +707,32 @@ export const envoisDevis = pgTable(
       foreignColumns: [devis.id, devis.entrepriseId],
       name: "envois_devis_devis_entreprise_fk",
     }).onDelete("cascade"),
+  ]
+);
+
+// File de purge des audios transcrits (voir docs/RGPD.md §4).
+//
+// Sans politique d'isolation, comme `fichiers_a_purger` : c'est une file de
+// maintenance, sans donnée personnelle. Elle porte l'entreprise concernée pour
+// que le planificateur — qui n'a le contexte d'aucune — puisse adopter celui de
+// chacune avant d'écrire dans notes_vocales, sans jamais contourner
+// l'isolation.
+export const audiosAPurger = pgTable(
+  "audios_a_purger",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    noteId: uuid("note_id")
+      .notNull()
+      .references(() => notesVocales.id, { onDelete: "cascade" }),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    storageKey: text("storage_key").notNull(),
+    purgerLe: timestamp("purger_le", { withTimezone: true }).notNull(),
+    misEnFileLe: timestamp("mis_en_file_le", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("audios_a_purger_note_uk").on(t.noteId),
+    index("audios_a_purger_echeance_idx").on(t.purgerLe),
   ]
 );
