@@ -51,26 +51,7 @@ point 5 ci-dessus**.
 ### 3. Relance automatique d'un devis sans réponse
 
 L'état « à relancer » existe, s'affiche, et le lien reste proposé pour un renvoi
-manuel. L'automatiser suppose là encore un fournisseur d'envoi.
-
-Ce qui est codable dès maintenant sans lui : une **caducité effective** — passé
-l'expiration, proposer au patron de reprendre le devis en une nouvelle version
-plutôt que de le laisser dans un état mort. Aujourd'hui l'écran le signale mais
-c'est au patron d'y penser.
-
-### 4. Compteur de l'accueil
-
-« N chantiers en cours » compte aujourd'hui **tous** les chantiers, y compris les
-terminés et les facturés. Le libellé ment doucement. À reprendre avec la même
-fonction d'état que le reste, jamais avec un second calcul.
-
-### 5. Maquettes `/design/*` divergentes
-
-Les pages de `src/app/design/` reproduisent une version antérieure de l'écran
-devis (« Envoyer vers le système de devis », « Devis envoyé à »). Elles sont des
-maquettes assumées, mais leur écart avec l'écran réel finira par tromper
-quelqu'un. À trancher : les mettre à jour, ou les marquer explicitement comme
-gelées.
+manuel. **L'automatiser suppose un fournisseur d'envoi** — point 5 ci-dessus.
 
 ---
 
@@ -86,3 +67,6 @@ gelées.
 - ~~Onglet « Terminés », fin de chantier, facture, relevé de TVA~~ — 2026-08-01
 - ~~Suivi du devis parti : cinq états, notification, reprise~~ — 2026-08-01
 - ~~Mémoire permanente du dépôt (ces fichiers)~~ — 2026-08-01
+- ~~Caducité distincte du refus, et remontée à l'accueil~~ — 2026-08-01
+- ~~Compteur d'accueil : ne plus compter les chantiers facturés~~ — 2026-08-01
+- ~~Découpler les maquettes `/design/*` du type de statut vivant~~ — 2026-08-01

@@ -50,6 +50,8 @@ export async function listerChantiersPourAffichage(ctx: Ctx) {
         informationsVerifieesAt: chantiers.informationsVerifieesAt,
         devisEnvoyeAt: chantiers.devisEnvoyeAt,
         datePlanifiee: chantiers.datePlanifiee,
+        termineAt: chantiers.termineAt,
+        factureEnvoyeeAt: chantiers.factureEnvoyeeAt,
         photosCount: sql<number>`(
           SELECT COUNT(*)::int FROM photos p
           WHERE p.chantier_id = ${chantiers.id} AND p.deleted_at IS NULL

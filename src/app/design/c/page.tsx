@@ -9,9 +9,6 @@ const statusColor: Record<ChantierStatut, string> = {
   a_verifier: "text-[#C7551A]",
   verifie: "text-[#3D7A55]",
   devis_envoye: "text-[#8A6A2F]",
-  en_attente_client: "text-[#8A6A2F]",
-  a_relancer: "text-[#C7551A]",
-  devis_retourne: "text-[#C7551A]",
   planifie: "text-[#9A948C]",
 };
 
@@ -20,13 +17,10 @@ const label: Record<ChantierStatut, string> = {
   a_verifier: "À vérifier",
   verifie: "Vérifié",
   devis_envoye: "Envoyé",
-  en_attente_client: "En attente",
-  a_relancer: "À relancer",
-  devis_retourne: "Retourné",
   planifie: "Planifié",
 };
 
-const needsAttention: ChantierStatut[] = ["a_verifier", "a_relancer", "devis_retourne"];
+const needsAttention: ChantierStatut[] = ["a_verifier"];
 
 export default function DesignCPage() {
   return (

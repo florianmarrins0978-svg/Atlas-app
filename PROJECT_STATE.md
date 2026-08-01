@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-01 · branche `claude/migrate-app-atlas-zz31ac`
-· dernier commit `07fa28c` · dernière migration `drizzle/0018_factures.sql`
+· dernier commit `d553147` · dernière migration `drizzle/0018_factures.sql`
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
@@ -47,6 +47,7 @@ seule avec quinze outils.
 | Page publique de réponse du client (sans session) | `src/app/devis/[jeton]/` |
 | Cycle d'envoi, jeton, expiration, réponse | `src/server/repositories/envois-devis.ts` |
 | Suivi de ce que devient le devis (5 états) | `src/lib/etat-envoi.ts` |
+| Statut affiché d'un chantier, de brouillon à facturé | `src/lib/chantier-etat.ts` |
 | Notification « devis retourné » à l'accueil | `src/app/Notifications.tsx` |
 | Reprise d'un devis retourné en nouvelle version | `src/app/chantiers/[id]/export/actions.ts` |
 | Onglet « Terminés » et fin de chantier | `src/app/termines/` |
@@ -83,8 +84,8 @@ Voir `TODO.md` pour le détail et l'ordre.
   codable.
 - **Code SMS en renfort de l'acceptation** — l'empreinte, l'horodatage et
   l'adresse sont déjà conservés.
-- **Relance automatique** — l'état « à relancer » existe et s'affiche ; le geste
-  reste manuel faute de fournisseur d'envoi.
+- **Relance automatique** — l'état « à relancer » existe et s'affiche, le lien
+  reste proposé pour un renvoi ; l'automatiser suppose un fournisseur d'envoi.
 
 ---
 

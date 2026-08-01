@@ -472,7 +472,56 @@ export async function notificationsPatron(ctx: Ctx): Promise<NotificationPatron[
   });
 }
 
-/** Marque une réponse comme lue par le patron. */
+export type EnvoiCaduc = {
+  envoiId: string;
+  chantierId: string;
+  chantierNom: string;
+  envoyeAt: Date;
+  expireAt: Date;
+};
+
+/**
+ * Les devis dont le lien a expiré sans que le client dise quoi que ce soit.
+ *
+ * Ni oui, ni non : juste le temps qui a passé. Sans cette liste, le patron ne
+ * l'apprend qu'en ouvrant la fiche du chantier — c'est-à-dire jamais, puisque
+ * rien ne l'y ramène. Le devis dort, et le chantier avec lui.
+ */
+export async function envoisCaducs(
+  ctx: Ctx,
+  maintenant: Date = new Date()
+): Promise<EnvoiCaduc[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
+    tx
+      .select({
+        envoiId: envoisDevis.id,
+        chantierId: envoisDevis.chantierId,
+        chantierNom: chantiers.nom,
+        envoyeAt: envoisDevis.envoyeAt,
+        expireAt: envoisDevis.expireAt,
+      })
+      .from(envoisDevis)
+      .innerJoin(chantiers, eq(envoisDevis.chantierId, chantiers.id))
+      .where(
+        and(
+          eq(envoisDevis.entrepriseId, ctx.entrepriseId),
+          isNull(envoisDevis.reponse),
+          isNull(envoisDevis.vuParPatronAt),
+          isNull(chantiers.deletedAt),
+          lte(envoisDevis.expireAt, maintenant)
+        )
+      )
+      .orderBy(asc(envoisDevis.expireAt))
+  );
+}
+
+/**
+ * Marque l'issue d'un envoi comme connue du patron.
+ *
+ * Sert aux réponses du client comme aux liens expirés : dans les deux cas, ce
+ * qu'on note est que le patron a pris connaissance de ce qu'est devenu son
+ * devis. Le nom de la colonne (`vu_par_patron_at`) dit exactement cela.
+ */
 export async function marquerReponseVue(ctx: Ctx, envoiId: string, maintenant: Date = new Date()) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     await tx

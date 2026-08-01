@@ -1,10 +1,31 @@
 // Données fictives uniquement — aucune connexion à un service réel à ce stade.
 // Sert à visualiser le parcours de navigation avant tout développement métier.
 // Écrans réels : ce fichier n'est plus utilisé que par les maquettes /design/*.
+//
+// --- Pourquoi un type de statut PROPRE aux maquettes ---
+//
+// Les maquettes de `/design/*` sont **gelées** : elles montrent une étape du
+// travail de conception, pas l'application d'aujourd'hui. Elles étaient
+// pourtant typées sur le `ChantierStatut` vivant, si bien que chaque nouvel
+// état du produit — « en attente de réponse », « à relancer », « facturé » —
+// cassait cinq fichiers que personne ne consulte, et tentait d'aller élargir
+// des tables de correspondance décoratives au lieu d'avancer.
+//
+// Pire : cette contrainte pousse insidieusement à ne PAS ajouter d'état au
+// produit pour s'éviter la corvée. Un outil de conception ne doit jamais peser
+// sur les décisions du produit.
+//
+// Le lien est donc coupé. Ce type-ci ne bougera plus.
 
-import type { ChantierStatut } from "@/lib/chantier-etat";
-export type { ChantierStatut } from "@/lib/chantier-etat";
-export { statutLabel } from "@/lib/chantier-etat";
+export type ChantierStatut = "brouillon" | "a_verifier" | "verifie" | "devis_envoye" | "planifie";
+
+export const statutLabel: Record<ChantierStatut, string> = {
+  brouillon: "Brouillon",
+  a_verifier: "À vérifier",
+  verifie: "Vérifié",
+  devis_envoye: "Devis envoyé",
+  planifie: "Planifié",
+};
 
 export type Chantier = {
   id: string;

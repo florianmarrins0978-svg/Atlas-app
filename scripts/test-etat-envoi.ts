@@ -8,6 +8,7 @@ import {
   enregistrerReponse,
   dernierEnvoi,
   notificationsPatron,
+  envoisCaducs,
   marquerReponseVue,
   VALIDITE_LIEN_JOURS,
 } from "../src/server/repositories/envois-devis";
@@ -17,7 +18,7 @@ import {
   demandeUneAction,
   RELANCE_APRES_JOURS,
 } from "../src/lib/etat-envoi";
-import { getStatutAffiche, getPlanificationEtat } from "../src/lib/chantier-etat";
+import { getStatutAffiche, getPlanificationEtat, chantierEnCours } from "../src/lib/chantier-etat";
 import { versJourIso, ajouterJours } from "../src/server/disponibilites";
 import { nettoyerBase } from "./_test-db";
 
@@ -132,6 +133,46 @@ async function main() {
     assert.strictEqual(statut(ilYA(1), null), "en_attente_client");
     assert.strictEqual(statut(ilYA(RELANCE_APRES_JOURS + 1), null), "a_relancer");
     assert.strictEqual(statut(ilYA(1), "refusee"), "devis_retourne");
+  });
+
+  await test("un lien périmé n'est pas un refus, et ne se présente pas comme tel", async () => {
+    // Dans un cas le client a dit non, dans l'autre il n'a rien dit du tout.
+    // Les confondre ferait croire à un refus qui n'a jamais eu lieu.
+    const s = getStatutAffiche(
+      {
+        photosCount: 0,
+        aUneNoteVocale: false,
+        informationsVerifieesAt: ilYA(20),
+        devisEnvoyeAt: ilYA(60),
+        datePlanifiee: null,
+        envoiEnvoyeAt: ilYA(60),
+        envoiExpireAt: ilYA(1),
+        envoiReponse: null,
+      },
+      MAINTENANT
+    );
+    assert.strictEqual(s, "devis_caduc");
+  });
+
+  await test("un chantier facturé n'est plus en cours", async () => {
+    const base = {
+      photosCount: 0,
+      aUneNoteVocale: false,
+      informationsVerifieesAt: ilYA(40),
+      devisEnvoyeAt: ilYA(30),
+      datePlanifiee: "2026-02-20",
+    };
+    // Le jalon de fin l'emporte sur la planification : un chantier réalisé et
+    // facturé restait affiché « planifié », et gonflait le compteur d'accueil.
+    assert.strictEqual(getStatutAffiche({ ...base, termineAt: ilYA(2) }, MAINTENANT), "termine");
+    assert.strictEqual(
+      getStatutAffiche({ ...base, termineAt: ilYA(2), factureEnvoyeeAt: ilYA(1) }, MAINTENANT),
+      "facture"
+    );
+
+    assert.strictEqual(chantierEnCours("facture"), false);
+    assert.strictEqual(chantierEnCours("termine"), true, "il reste la facture à envoyer");
+    assert.strictEqual(chantierEnCours("planifie"), true);
   });
 
   await test("un chantier planifié reste planifié, quoi qu'ait dit l'envoi", async () => {
@@ -305,6 +346,52 @@ async function main() {
     const notifs = await notificationsPatron(ctx);
     await marquerReponseVue(ctx, notifs[0].envoiId, MAINTENANT);
     assert.strictEqual((await notificationsPatron(ctx)).length, 0);
+  });
+
+  await test("un lien expiré sans réponse remonte au patron", async () => {
+    const { ctx, chantierId, devisId } = await contexteAvecDevis("caducnotif");
+    await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
+      ilYA(VALIDITE_LIEN_JOURS + 1)
+    );
+
+    // Personne n'a rien fait : sans cette liste, le devis dort et le chantier
+    // avec lui, puisque rien ne ramène le patron sur sa fiche.
+    const caducs = await envoisCaducs(ctx, MAINTENANT);
+    assert.strictEqual(caducs.length, 1);
+    assert.strictEqual(caducs[0].chantierNom, "Élagage du tilleul");
+
+    // Marquer l'issue connue vaut aussi pour un silence : c'est bien la même
+    // chose qu'on note — que le patron sait ce qu'est devenu son devis.
+    await marquerReponseVue(ctx, caducs[0].envoiId, MAINTENANT);
+    assert.strictEqual((await envoisCaducs(ctx, MAINTENANT)).length, 0);
+  });
+
+  await test("un lien encore valable ne remonte pas comme caduc", async () => {
+    const { ctx, chantierId, devisId } = await contexteAvecDevis("pascaduc");
+    await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
+      ilYA(2)
+    );
+    assert.strictEqual((await envoisCaducs(ctx, MAINTENANT)).length, 0);
+  });
+
+  await test("un devis répondu n'est jamais caduc, même passé l'échéance", async () => {
+    const { ctx, chantierId, devisId } = await contexteAvecDevis("reponducaduc");
+    const envoi = await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
+      ilYA(VALIDITE_LIEN_JOURS + 5)
+    );
+    await enregistrerReponse(envoi.jeton, { accepte: false }, ilYA(VALIDITE_LIEN_JOURS + 4));
+
+    assert.strictEqual(
+      (await envoisCaducs(ctx, MAINTENANT)).length,
+      0,
+      "un refus annoncé deux fois, une fois comme refus et une fois comme silence"
+    );
   });
 
   await test("les nouvelles d'une entreprise ne parviennent pas à l'autre", async () => {

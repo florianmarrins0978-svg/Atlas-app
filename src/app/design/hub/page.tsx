@@ -12,9 +12,6 @@ const label: Record<ChantierStatut, string> = {
   a_verifier: "À vérifier",
   verifie: "Vérifié",
   devis_envoye: "Devis envoyé",
-  en_attente_client: "En attente de réponse",
-  a_relancer: "À relancer",
-  devis_retourne: "Devis retourné",
   planifie: "Planifié",
 };
 

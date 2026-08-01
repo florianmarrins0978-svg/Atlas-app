@@ -9,6 +9,28 @@ Format : le plus récent en tête.
 
 ## 2026-08-01
 
+### Caducité, compteur d'accueil, maquettes découplées
+
+**Un lien périmé n'est pas un refus.** L'écran affichait « Devis retourné » dans
+les deux cas — laissant croire à un refus qui n'avait jamais eu lieu, ce qui
+décourage précisément de relancer. Les deux situations ont désormais leur état,
+leur icône et leur phrase. Et un devis périmé **remonte à l'accueil** : sans
+cela, le patron ne l'apprenait qu'en ouvrant la fiche du chantier, c'est-à-dire
+jamais, puisque rien ne l'y ramenait.
+
+**Le compteur d'accueil mentait doucement.** « N chantiers en cours » comptait
+tout, y compris les chantiers réalisés et facturés — qui restaient d'ailleurs
+affichés « planifié », un état qu'ils avaient quitté depuis longtemps. Deux
+jalons de fin (`termine`, `facture`) et un compteur qui les exclut.
+
+**Les maquettes `/design/*` sont découplées du produit.** Elles étaient typées
+sur le `ChantierStatut` vivant : chaque nouvel état cassait cinq fichiers que
+personne ne consulte. Pire, cette contrainte poussait insidieusement à ne pas
+ajouter d'état pour s'éviter la corvée — un outil de conception ne doit jamais
+peser sur les décisions du produit. Elles ont maintenant leur propre type, gelé.
+`StatusIcon`, lui, est un vrai composant : il tire désormais son type de la
+source vivante, dont il dépendait par accident via les données fictives.
+
 ### Suivi du devis parti — `07fa28c`
 
 Le parcours savait tout et ne montrait rien. Un devis envoyé restait « devis

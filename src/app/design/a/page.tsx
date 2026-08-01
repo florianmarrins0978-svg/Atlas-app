@@ -8,9 +8,6 @@ const dot: Record<ChantierStatut, string> = {
   a_verifier: "bg-[#D2571C]",
   verifie: "bg-[#2FA867]",
   devis_envoye: "bg-[#0A7AFF]",
-  en_attente_client: "bg-[#0A7AFF]",
-  a_relancer: "bg-[#D2571C]",
-  devis_retourne: "bg-[#D2571C]",
   planifie: "bg-[#8E8E93]",
 };
 
@@ -19,9 +16,6 @@ const label: Record<ChantierStatut, string> = {
   a_verifier: "À vérifier",
   verifie: "Vérifié",
   devis_envoye: "Devis envoyé",
-  en_attente_client: "En attente de réponse",
-  a_relancer: "À relancer",
-  devis_retourne: "Devis retourné",
   planifie: "Planifié",
 };
 

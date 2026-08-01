@@ -9,9 +9,6 @@ function StatusRing({ statut }: { statut: ChantierStatut }) {
     a_verifier: 0.35,
     verifie: 0.7,
     devis_envoye: 1,
-    en_attente_client: 1,
-    a_relancer: 1,
-    devis_retourne: 1,
     planifie: 1,
   };
   const p = progress[statut];
@@ -40,9 +37,6 @@ const label: Record<ChantierStatut, string> = {
   a_verifier: "À vérifier",
   verifie: "Vérifié",
   devis_envoye: "Devis envoyé",
-  en_attente_client: "En attente de réponse",
-  a_relancer: "À relancer",
-  devis_retourne: "Devis retourné",
   planifie: "Planifié",
 };
 

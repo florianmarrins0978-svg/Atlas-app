@@ -11,7 +11,10 @@ export type ChantierStatut =
   | "en_attente_client"
   | "a_relancer"
   | "devis_retourne"
-  | "planifie";
+  | "devis_caduc"
+  | "planifie"
+  | "termine"
+  | "facture";
 
 export const statutLabel: Record<ChantierStatut, string> = {
   brouillon: "Brouillon",
@@ -21,7 +24,10 @@ export const statutLabel: Record<ChantierStatut, string> = {
   en_attente_client: "En attente de réponse",
   a_relancer: "À relancer",
   devis_retourne: "Devis retourné",
+  devis_caduc: "Devis caduc",
   planifie: "Planifié",
+  termine: "À facturer",
+  facture: "Facturé",
 };
 
 // Détermine l'unique action principale à proposer sur la fiche chantier.
@@ -237,9 +243,18 @@ export type EtatPourStatutAffiche = {
   envoiEnvoyeAt?: Date | string | null;
   envoiExpireAt?: Date | string | null;
   envoiReponse?: "acceptee" | "refusee" | null;
+  // Jalons de fin. Absents des anciens appels, comme ceux de l'envoi.
+  termineAt?: Date | string | null;
+  factureEnvoyeeAt?: Date | string | null;
 };
 
 export function getStatutAffiche(c: EtatPourStatutAffiche, maintenant: Date = new Date()): ChantierStatut {
+  // La fin l'emporte sur tout le reste. Un chantier réalisé et facturé restait
+  // affiché « planifié » — un état qu'il a quitté depuis longtemps, et qui le
+  // faisait compter parmi les chantiers en cours.
+  if (c.factureEnvoyeeAt) return "facture";
+  if (c.termineAt) return "termine";
+
   if (c.datePlanifiee) return "planifie";
 
   // Ce que devient un devis parti dépend du client, pas de nous. « Devis
@@ -252,7 +267,11 @@ export function getStatutAffiche(c: EtatPourStatutAffiche, maintenant: Date = ne
       : { envoyeAt: c.envoiEnvoyeAt, expireAt: c.envoiExpireAt ?? null, reponse: c.envoiReponse ?? null },
     maintenant
   );
-  if (etat === "retourne" || etat === "caduc") return "devis_retourne";
+  // Un refus et un lien périmé n'ont rien à voir : dans un cas le client a dit
+  // non, dans l'autre il n'a rien dit du tout. Les confondre ferait croire à un
+  // refus qui n'a jamais eu lieu, et découragerait de relancer.
+  if (etat === "retourne") return "devis_retourne";
+  if (etat === "caduc") return "devis_caduc";
   if (etat === "a_relancer") return "a_relancer";
   if (etat === "en_attente") return "en_attente_client";
 
@@ -260,6 +279,17 @@ export function getStatutAffiche(c: EtatPourStatutAffiche, maintenant: Date = ne
   if (c.informationsVerifieesAt) return "verifie";
   if (c.aUneNoteVocale || c.photosCount > 0) return "a_verifier";
   return "brouillon";
+}
+
+/**
+ * Le chantier compte-t-il parmi ceux « en cours » ?
+ *
+ * Un chantier facturé est fini : le compter encore gonfle un chiffre que le
+ * patron lit en premier, et qui perd alors tout sens. Ceux qui restent à
+ * facturer, eux, comptent — le travail sur eux n'est pas terminé.
+ */
+export function chantierEnCours(statut: ChantierStatut): boolean {
+  return statut !== "facture";
 }
 
 // Tri chronologique des chantiers planifiés — fonction pure, testable
