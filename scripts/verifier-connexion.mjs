@@ -1,4 +1,5 @@
 import { chromium } from "playwright";
+import { existsSync, readdirSync } from "node:fs";
 
 // Se connecte réellement à Atlas, dans un vrai navigateur, EN SE FAISANT PASSER
 // pour le proxy de Codespaces.
@@ -27,9 +28,20 @@ const ORIGINE_ETRANGERE = "https://banc-essai-fictif-3000.app.github.dev";
 
 const IDENTIFIANTS = { email: "demo@atlas.local", motDePasse: "demo1234" };
 
-/** Playwright ne trouve pas toujours seul le navigateur pré-installé. */
+/**
+ * Playwright ne trouve pas toujours seul un navigateur installé hors de son
+ * cache habituel. Résolu ICI plutôt que par l'appelant : ce contrôle a échoué
+ * une fois pour cette seule raison, et son message accusait alors la connexion
+ * — exactement le « mauvais coupable » que ce dépôt s'interdit.
+ */
 function cheminNavigateur() {
-  return process.env.CHROMIUM_PATH || undefined;
+  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
+  const racine = process.env.PLAYWRIGHT_BROWSERS_PATH;
+  if (!racine || !existsSync(racine)) return undefined;
+  const dossier = readdirSync(racine).find((d) => /^chromium-\d+$/.test(d));
+  if (!dossier) return undefined;
+  const chemin = `${racine}/${dossier}/chrome-linux/chrome`;
+  return existsSync(chemin) ? chemin : undefined;
 }
 
 function echec(message, detail) {
