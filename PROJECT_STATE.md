@@ -70,6 +70,14 @@ L'application-coque statique (`appli/`) est publiée sur GitHub Pages à
 `https://florianmarrins0978-svg.github.io/Atlas-app/`. Le workflow `.github/workflows/pages.yml`
 vérifie le site **à son adresse publique** après déploiement.
 
+**Ce site n'est PAS le produit.** Ce sont cinq maquettes reprises d'Arborea —
+Nouveau devis, Devis, Factures, TVA déductible, Mes tarifs — sans base ni
+serveur, et qui portent encore le nom d'Arborea. Elles ne montrent ni les
+chantiers, ni le planning, ni l'envoi au client, ni la facture, ni la TVA
+collectée. Un bandeau le dit désormais en tête de chaque écran : le patron
+lui-même s'y était trompé, ce qui était prévisible et entièrement de notre
+faute.
+
 L'application Next.js, elle, **n'est hébergée nulle part** — voir « Ce qui
 bloque ».
 

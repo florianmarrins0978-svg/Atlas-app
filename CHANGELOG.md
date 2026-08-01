@@ -9,6 +9,23 @@ Format : le plus récent en tête.
 
 ## 2026-08-01
 
+### Le site public dit enfin ce qu'il est
+
+Le patron a ouvert l'adresse publiée et demandé où étaient passées les autres
+rubriques. Réponse : elles n'y ont jamais été. Ce site est la coque statique
+reprise d'Arborea — cinq maquettes sans base ni serveur — et il en porte encore
+le nom, tandis que l'application réelle n'est hébergée nulle part.
+
+Un bandeau en tête de chaque écran le dit maintenant. Ce n'est pas un détail de
+présentation : un site public qui se présente mal ne trompe pas les inconnus, il
+trompe d'abord ceux qui savent ce qu'il devrait être — ici, celui qui le
+finance.
+
+La batterie de la coque accepte par ailleurs `PLAYWRIGHT_EXECUTABLE_PATH`, comme
+le fait déjà `scripts/e2e-browser.ts` : elle était injouable dans les
+environnements où le navigateur ne vit pas là où Playwright l'attend, ce qui
+revenait à ne pas la jouer du tout.
+
 ### Caducité, compteur d'accueil, maquettes découplées
 
 **Un lien périmé n'est pas un refus.** L'écran affichait « Devis retourné » dans

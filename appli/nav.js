@@ -29,7 +29,16 @@
     '.arborea-appnav .link:hover{color:#f5f3ee;background:rgba(255,255,255,0.09);}' +
     '.arborea-appnav .link.active{color:#1c1c1a;background:#f5f3ee;font-weight:600;}' +
     '.arborea-appnav .link:focus-visible{outline:1.5px solid #9fbd82;outline-offset:2px;}' +
-    '@media print{.arborea-appnav{display:none !important;}}';
+    '@media print{.arborea-appnav{display:none !important;}}' +
+    /* Bandeau d'avertissement — voir le commentaire à sa construction. */
+    /* Volontairement NON collant, contrairement à la nav : deux bandeaux
+       collés au même bord se superposeraient au défilement. On lit
+       l'avertissement une fois, la navigation sert en permanence. */
+    '.arborea-avis{padding:0.6rem clamp(1rem,4vw,2rem);' +
+    'background:#c0621f;color:#fff;font-family:"Inter",sans-serif;font-size:0.82rem;' +
+    'line-height:1.45;letter-spacing:0.01em;}' +
+    '.arborea-avis strong{font-weight:600;}' +
+    '@media print{.arborea-avis{display:none !important;}}';
 
   var style = document.createElement('style');
   style.textContent = css;
@@ -50,11 +59,37 @@
 
   document.body.insertBefore(nav, document.body.firstChild);
 
+  /* Ces cinq écrans sont des MAQUETTES : rien n'y est enregistré, et ils ne
+     montrent pas le produit d'aujourd'hui. L'application réelle — chantiers,
+     planning, réponse du client, facture, TVA collectée — vit dans le projet
+     Next.js et n'est hébergée nulle part (voir docs/A-FAIRE.md, point 3).
+
+     Sans ce bandeau, quiconque ouvre cette adresse en conclut que le produit
+     s'arrête à ces cinq rubriques. C'est arrivé, et à celui qui le construit.
+     Un site public qui se présente mal ne trompe pas les autres : il trompe
+     d'abord ceux qui savent ce qu'il devrait être. */
+  var avis = document.createElement('p');
+  avis.className = 'arborea-avis';
+  avis.setAttribute('role', 'note');
+  avis.innerHTML =
+    '<strong>Maquette de démonstration.</strong> Ces écrans montrent l\'intention, ' +
+    'rien n\'y est enregistré. L\'application complète — chantiers, planning, envoi ' +
+    'du devis au client, facture et TVA — attend son hébergement.';
+
+  document.body.insertBefore(avis, nav);
+
   /* Les écrans ont chacun leurs propres marges internes (padding du body).
      On neutralise ces marges pour la nav afin qu'elle soit pleine largeur et
-     collée en haut, tout en restituant l'espacement d'origine sous la barre. */
+     collée en haut, tout en restituant l'espacement d'origine sous la barre.
+     C'est le bandeau, désormais premier élément, qui remonte contre le haut de
+     la page ; la nav se contente de le suivre. */
   var cs = getComputedStyle(document.body);
-  nav.style.marginTop = '-' + cs.paddingTop;
+  avis.style.marginTop = '-' + cs.paddingTop;
+  avis.style.marginLeft = '-' + cs.paddingLeft;
+  avis.style.marginRight = '-' + cs.paddingRight;
+  avis.style.marginBottom = '0';
+
+  nav.style.marginTop = '0';
   nav.style.marginLeft = '-' + cs.paddingLeft;
   nav.style.marginRight = '-' + cs.paddingRight;
   nav.style.marginBottom = cs.paddingTop;

@@ -15,8 +15,15 @@ const B = process.env.BASE_URL || 'http://127.0.0.1:8080';
 let pass = 0, fail = 0; const fails = [];
 function ok(name, cond){ if (cond) pass++; else { fail++; fails.push(name); } }
 
+/* Chemin du navigateur, quand il ne vit pas là où Playwright l'attend.
+   Sur un runner CI (npx playwright install), la variable est absente et
+   Playwright utilise le navigateur qu'il a lui-même installé — rien ne change.
+   Ailleurs, elle évite d'avoir à réinstaller un navigateur déjà présent.
+   Même mécanisme que scripts/e2e-browser.ts, côté application Next.js. */
+const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
+
 (async () => {
-  const browser = await chromium.launch();
+  const browser = await chromium.launch(EXE ? { executablePath: EXE } : {});
   const ctx = await browser.newContext();
   // Coupe les ressources externes (polices/CDN) : tests hors-ligne, rapides et déterministes.
   await ctx.route(/googleapis|gstatic|cloudflare|jsdelivr/i, r => r.abort());
