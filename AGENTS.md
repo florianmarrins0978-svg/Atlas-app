@@ -4,6 +4,22 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+# La mémoire du dépôt
+
+**Le dépôt est la source de vérité, pas la conversation.** Six fichiers portent
+tout ce qu'il faut pour reprendre le travail à froid, et se tiennent à jour
+**sans qu'on le demande** : `CLAUDE.md`, `PROJECT_STATE.md`, `ARCHITECTURE.md`,
+`HANDOVER.md`, `CHANGELOG.md`, `TODO.md`.
+
+Le protocole complet — quoi lire en arrivant, quoi écrire après chaque lot — est
+dans **`CLAUDE.md`**, §1 et §2. Il s'applique à chaque conversation, y compris
+celle-ci.
+
+Règle qui prime sur toutes les autres : **si une information apparue dans la
+conversation n'existe nulle part dans le dépôt, l'écrire avant de poursuivre.**
+Le critère n'est pas « est-ce intéressant » mais : *une nouvelle conversation
+prendrait-elle une mauvaise décision faute de le savoir ?*
+
 # Les deux documents tenus pour le patron
 
 Ce dépôt tient deux documents en langage courant, alimentés au fil des

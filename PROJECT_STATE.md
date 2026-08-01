@@ -1,0 +1,128 @@
+# État du projet
+
+**Dernière mise à jour :** 2026-08-01 · branche `claude/migrate-app-atlas-zz31ac`
+· dernier commit `07fa28c` · dernière migration `drizzle/0018_factures.sql`
+
+Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
+ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## Ce qu'est Atlas
+
+Un agent au service de l'artisan patron, « comme un comptable » : il prépare les
+devis, les envoie au client avec une proposition de date, recueille la réponse,
+planifie le chantier, construit la facture à la fin, et tient le relevé de TVA
+collectée.
+
+Le parcours complet et ses points d'arrêt sont décrits dans **`docs/AGENT.md`** —
+c'est le document de référence du produit.
+
+**Trois arrêts, décidés et non négociables :**
+
+1. Avant l'envoi du devis — une seule question : *une date, ou deux au choix du
+   client ?*
+2. À la réponse du client — le chantier se planifie, ou revient au patron.
+3. Avant le départ de la facture — *rien n'a changé depuis le devis ?*
+
+---
+
+## Terminé et vérifié
+
+### Le socle (antérieur à cette série de travaux)
+
+Chantiers, photos, note vocale, transcription, informations structurées, calcul
+du prix, devis PDF, planning, catalogue, réglages tarifs. Authentification
+(Auth.js), isolation par entreprise (RLS `FORCE`), stockage de fichiers,
+limitation de débit, purge planifiée, journalisation. Assistant IA en lecture
+seule avec quinze outils.
+
+### Le parcours devis → facture
+
+| Brique | Où c'est |
+|---|---|
+| Envoi du devis au client, une ou deux dates | `src/app/chantiers/[id]/export/EnvoiAuClient.tsx` |
+| Canal de communication recueilli à la création du chantier | `src/app/chantiers/nouveau/` |
+| Jours libres du patron, calculés une seule fois pour tous les usages | `src/server/disponibilites.ts` |
+| Page publique de réponse du client (sans session) | `src/app/devis/[jeton]/` |
+| Cycle d'envoi, jeton, expiration, réponse | `src/server/repositories/envois-devis.ts` |
+| Suivi de ce que devient le devis (5 états) | `src/lib/etat-envoi.ts` |
+| Notification « devis retourné » à l'accueil | `src/app/Notifications.tsx` |
+| Reprise d'un devis retourné en nouvelle version | `src/app/chantiers/[id]/export/actions.ts` |
+| Onglet « Terminés » et fin de chantier | `src/app/termines/` |
+| Facture bâtie depuis le devis, arrêt 3 | `src/app/chantiers/[id]/facture/` |
+| Relevé de TVA collectée, par trimestre | `src/app/termines/tva/` + `src/server/trimestre.ts` |
+
+### Conformité RGPD
+
+| Brique | Où c'est |
+|---|---|
+| Registre des traitements, sous-traitants, conservation | `docs/RGPD.md` |
+| Acceptation des documents légaux, avec empreinte | `src/app/documents-legaux/` |
+| Purge de l'audio après transcription réussie | `src/server/retention.ts` |
+| Export des données d'un client | `src/server/repositories/donnees-client.ts` |
+| Effacement d'un client, respectant la conservation légale | idem |
+
+### Mise en ligne
+
+L'application-coque statique (`appli/`) est publiée sur GitHub Pages à
+`https://florianmarrins0978-svg.github.io/Atlas-app/`. Le workflow `.github/workflows/pages.yml`
+vérifie le site **à son adresse publique** après déploiement.
+
+L'application Next.js, elle, **n'est hébergée nulle part** — voir « Ce qui
+bloque ».
+
+---
+
+## Ce qui reste, et que je peux faire seul
+
+Voir `TODO.md` pour le détail et l'ordre.
+
+- **Agenda Google** — la connexion du compte demande des identifiants que je n'ai
+  pas ; le reste (lecture des disponibilités, écriture de l'intervention) est
+  codable.
+- **Code SMS en renfort de l'acceptation** — l'empreinte, l'horodatage et
+  l'adresse sont déjà conservés.
+- **Relance automatique** — l'état « à relancer » existe et s'affiche ; le geste
+  reste manuel faute de fournisseur d'envoi.
+
+---
+
+## Ce qui bloque, et qui n'avancera pas en codant
+
+Cinq points, tous dans **`docs/A-FAIRE.md`**, tous en attente d'une décision du
+patron :
+
+1. Choisir les deux fournisseurs d'IA définitifs (transcription, raisonnement).
+2. Faire rédiger le contrat de sous-traitance par un juriste.
+3. Choisir un hébergement européen — **sans lui, personne ne peut se servir de
+   l'application Next.js**.
+4. Constituer une société et souscrire une assurance cyber.
+5. Brancher un fournisseur SMS et e-mail — **sans lui, rien ne quitte
+   l'application** : le lien du devis est remis au patron, qui le transmet
+   lui-même, et la facture attend le même branchement.
+
+---
+
+## Réserves assumées, à ne pas « corriger » par erreur
+
+- **Atlas prépare, il n'émet pas.** La facture et le relevé de TVA sont
+  préparés ; l'émission légale et la déclaration reviennent à l'outil comptable
+  (`docs/AGENT.md` §6). Ce n'est pas « pas encore » : c'est définitif, et la
+  réserve est affichée à l'écran du relevé.
+- **Le dépôt est public**, décision du patron du 2026-08-01. `docs/RGPD.md` y
+  compris. Voir `docs/QUESTIONS.md` §6 et §7.
+- **La signature des commits est impossible** dans l'environnement d'exécution :
+  la clé SSH configurée est un fichier vide sans partie privée. Signalé une fois,
+  non contourné.
+
+---
+
+## Vérifications au dernier point
+
+| | |
+|---|---|
+| Suites base de données | 43/43 |
+| Suites navigateur (bout en bout) | 23/23 |
+| Types, lint | propres |
+| CI GitHub | verte au commit `78c746a` ; `07fa28c` en cours au moment d'écrire |

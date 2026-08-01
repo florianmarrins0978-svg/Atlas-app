@@ -60,6 +60,13 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # La documentation de reprise (CLAUDE.md §2) n'a de valeur que si ses
+      # chemins existent encore. Un fichier renommé sans elle envoie le lecteur
+      # suivant vers une porte fermée — et c'est précisément quelqu'un qui
+      # arrive sans contexte.
+      - name: Vérifier la mémoire du dépôt
+        run: npm run verifier:memoire
+
       - name: Bootstrap PostgreSQL CI
         env:
           PGPASSWORD: postgres_ci_pw

@@ -1,0 +1,216 @@
+# Décisions d'architecture, et pourquoi
+
+Chaque entrée dit **ce qui a été décidé**, **ce qui a été écarté**, et **ce que
+ça coûterait de revenir en arrière**. Une décision sans son pourquoi se repose
+trois mois plus tard, et se tranche différemment.
+
+Documents voisins, plus détaillés :
+`docs/ARCHITECTURE_DONNEES.md`, `docs/ARCHITECTURE_DONNEES_v2.1_corrections.md`,
+`docs/AGENT.md`, `docs/RGPD.md`.
+
+---
+
+## Socle technique
+
+Next.js 16.2 (App Router, Turbopack), React 19.2, TypeScript, Tailwind.
+Drizzle ORM sur PostgreSQL 16. Auth.js. Redis pour la limitation de débit.
+Stockage de fichiers abstrait (`src/server/storage`), S3 ou disque local.
+
+L'application-coque mobile est un jeu de pages statiques (`appli/`) empaquetées
+par Capacitor. Elle est **distincte** de l'application Next.js — même produit,
+deux cibles.
+
+---
+
+## 1. Isolation par entreprise : la RLS, jamais le code applicatif
+
+**Décidé.** Chaque table métier porte `entreprise_id`, avec
+`ENABLE` + `FORCE ROW LEVEL SECURITY`. Le contexte est posé par transaction via
+`set_config('app.entreprise_id', …, true)`. Tout passe par
+`withEntreprise(utilisateurId, entrepriseId, fn)`, qui **revalide l'adhésion à
+chaque appel** — même quand l'identifiant vient d'un jeton signé, une adhésion a
+pu être révoquée entre-temps.
+
+**Écarté :** filtrer par `WHERE entreprise_id = …` dans le code. Un seul oubli
+dans une seule requête expose les données d'un autre artisan, et rien ne le
+signale.
+
+**Le piège à connaître :** une requête faite hors de ce cadre ne renvoie pas une
+erreur — elle renvoie **zéro ligne, silencieusement**. Un traitement qui ne
+trouve rien à faire paraît fonctionner. C'est exactement ce qui est arrivé à la
+purge d'audio (voir §5).
+
+**Coût du retour arrière :** total. Toute la posture de sécurité, et ce que la CI
+vérifie (`NOBYPASSRLS`, rôles applicatifs restreints), repose là-dessus.
+
+## 2. Rôles PostgreSQL séparés
+
+**Décidé.** `atlas_owner` possède le schéma et applique les migrations.
+`atlas_app` est le rôle applicatif : `SELECT/INSERT/UPDATE/DELETE` seulement,
+`NOBYPASSRLS`, jamais de DDL, pas de `TRUNCATE`. La CI **vérifie** qu'aucun des
+deux n'est superutilisateur ni `BYPASSRLS`.
+
+**Conséquence à retenir :** le nettoyage entre suites de tests emprunte
+`DATABASE_ADMIN_URL` (le propriétaire), tandis que les tests eux-mêmes tournent
+en `atlas_app` — c'est précisément ce qu'ils cherchent à démontrer.
+
+## 3. La page publique du client : une politique RLS supplémentaire, pas une brèche
+
+**Décidé.** Le client répond **sans session**, donc sans `entreprise_id` connu.
+Deux politiques `PERMISSIVE` supplémentaires sur `envois_devis` autorisent la
+lecture et l'écriture de la réponse **pour un jeton exact**, posé par le code
+juste avant la requête (`app.jeton_envoi`).
+
+**Pourquoi ça tient :** les politiques permissives se combinent en `OR` — celle-ci
+s'ajoute, elle n'affaiblit pas l'isolation par entreprise. Sans le jeton, aucune
+ligne. Le jeton porte 256 bits d'aléa et **n'est jamais dérivé d'un identifiant
+existant** : sinon un seul lien reçu rendrait tous les autres devinables.
+
+**Écarté :** une route serveur qui contournerait la RLS après avoir vérifié le
+jeton en code. Ça marche, jusqu'au jour où quelqu'un ajoute une requête dans
+cette route sans repenser à la vérification.
+
+## 4. Les règles métier sont des fonctions pures, dans `src/lib/`
+
+**Décidé.** `src/lib/etat-envoi.ts`, `src/lib/chantier-etat.ts`, `src/lib/jour.ts`,
+`src/server/disponibilites.ts`, `src/server/trimestre.ts` : aucune n'accède à la base. Elles se testent sans monter un
+chantier.
+
+**Le cas qui l'a imposé :** l'état d'un devis parti est lu par trois écrans — la
+liste, la fiche devis, le planning. Trois déductions séparées auraient fini par
+se contredire, et c'est sur cet état que le patron décide s'il relance ou
+replanifie.
+
+**Corollaire :** la **même** fonction sert à construire un écran et à revalider
+ce qu'il renvoie. `dateRetenable()` borne le calendrier du client *et* revérifie
+la date au moment de la soumission — l'affichage n'est qu'un instantané, deux
+clients peuvent viser le même jour.
+
+## 5. Les traitements de maintenance passent par une file, jamais par un contournement
+
+**Décidé.** La purge de l'audio transcrit lit `audios_a_purger`, une file
+alimentée **au moment où la transcription réussit**, dans le contexte de
+l'entreprise. Chaque entrée porte son `entreprise_id`, que le planificateur
+adopte successivement.
+
+**Ce qui a failli être livré :** un balayage direct de `notes_vocales`. Il aurait
+purgé **zéro** ligne — le planificateur n'a le contexte d'aucune entreprise — et
+la purge aurait paru fonctionner indéfiniment.
+
+**Écarté :** donner `BYPASSRLS` au planificateur. Ça résout le symptôme en
+ouvrant une porte permanente.
+
+## 6. Les pièces qui engagent sont immuables, verrouillées en base
+
+**Décidé.** Un devis `envoye` et une facture `emise` ne peuvent plus être
+modifiés ni supprimés — par **trigger PostgreSQL**, pas par convention de code.
+La transition initiale reste autorisée (`OLD.statut` vaut encore l'état
+précédent à cet instant).
+
+**Pourquoi en base :** une règle applicative se contourne par une migration
+oubliée, un script d'exploitation, une correction « rapide ». Un trigger, non.
+
+## 7. Le relevé de TVA n'est pas une table
+
+**Décidé.** Il se **calcule** à partir des factures émises, à chaque affichage.
+
+**Écarté :** une table de TVA alimentée à l'émission. Deux écritures pour une
+même vérité finissent par diverger, et c'est exactement l'écart qu'un contrôle
+cherche.
+
+**Ce qui rend le calcul stable :** l'immuabilité d'une facture émise (§6). Sans
+elle, le relevé changerait sous les pieds du patron après sa déclaration. Le lien
+entre les deux décisions est réel — casser §6 casse §7.
+
+## 8. L'effacement d'un client trie, il ne supprime pas
+
+**Décidé.** Le droit à l'effacement cède devant l'obligation légale de
+conservation (RGPD art. 17(3)(b), Code de commerce L123-22 : dix ans). Alors :
+
+- **Ce qui part** : chantiers, photos, notes vocales et leur audio,
+  transcriptions, brouillons, prestations, matériel, lignes de prix, propositions
+  de l'assistant, envois de devis, et sur la fiche client tout ce qui sert à
+  recontacter.
+- **Ce qui reste** : les devis **acceptés**, et le nom du client — sans lequel la
+  pièce ne vaut plus rien.
+- **Toujours détruit** : le lien public du devis. Un lien qui survivrait à un
+  effacement rouvrirait l'accès aux données qu'on vient de retirer.
+
+Le rapport d'effacement dit ce qui a été conservé et jusqu'à quand.
+
+## 9. La facture naît du devis, et rien ne part sans un appui
+
+**Décidé.** « Fin de chantier » bâtit une facture **en brouillon** depuis le
+dernier devis envoyé : mêmes lignes, mêmes montants. L'opération est
+**idempotente** — un double appui redonne la facture déjà bâtie.
+
+**Pourquoi l'idempotence n'est pas un luxe :** deux factures pour un chantier
+doubleraient la TVA collectée, et un double appui est le geste le plus banal qui
+soit sur un téléphone. Contrainte `UNIQUE (chantier_id)` en renfort.
+
+**À l'émission, les totaux sont recalculés depuis les lignes**, jamais recopiés :
+le patron a pu corriger une ligne à l'écran de confirmation, et un total qui ne
+correspond pas à son détail ne se rattrape que par un avoir.
+
+## 10. Un envoi par envoi, jamais un par devis
+
+**Décidé.** `envois_devis` porte une ligne par **envoi**. Un devis refusé, puis
+corrigé et renvoyé, produit un nouvel envoi avec un nouveau jeton.
+
+**Pourquoi :** l'ancien reste comme trace de ce qui avait été proposé et de la
+réponse obtenue. Un refus est une information de négociation, pas un déchet.
+
+**Conséquence de lecture :** partout où l'on veut savoir « où en est ce devis »,
+c'est le **dernier** envoi qui compte — d'où les sous-requêtes corrélées dans
+`src/server/repositories/chantiers.ts` plutôt qu'une jointure, qui dupliquerait la ligne du chantier.
+
+## 11. Les dates sont des jours, jamais des instants
+
+**Décidé.** `src/lib/jour.ts` formate une date `AAAA-MM-JJ` **sans jamais passer
+par `new Date(iso)`**. `src/server/trimestre.ts` calcule en UTC de bout en bout.
+
+**Ce que ça évite :** un chantier calé le lundi 23 s'affichait « dimanche 22 »
+chez une partie des clients — sur un devis, l'erreur est fatale à la confiance.
+Et le 1er janvier bascule au 31 décembre pour tout l'ouest de Greenwich, rangeant
+une facture dans le mauvais trimestre.
+
+## 12. Le lien public est composé côté serveur
+
+**Décidé.** L'adresse complète du lien remis au patron est bâtie dans le
+composant serveur, depuis les en-têtes de la requête (`x-forwarded-host`, puis
+`host`).
+
+**Ce que ça évite :** composée depuis `window.location.origin`, elle diffère de
+ce que le serveur a rendu — React détecte l'écart et régénère tout l'arbre. Le
+défaut était invisible à l'œil et faisait échouer les tests par un chemin
+détourné.
+
+**Réserve honnête :** l'en-tête `Host` n'est pas une source de vérité absolue. Ici
+il ne sert qu'à afficher un lien au patron authentifié ; le jour où l'application
+sera hébergée, une variable d'environnement d'origine publique serait plus sûre.
+
+## 13. Aucun fournisseur d'envoi n'est branché — et on le dit
+
+**Décidé.** Faute de fournisseur SMS ou e-mail, le lien du devis est **remis au
+patron** à l'écran, avec un bouton de copie.
+
+**Écarté :** un envoi qui échouerait en silence, ou un `mailto:` — essayé, puis
+abandonné à la demande du patron (commit `5e59131`), parce qu'il ne peut pas
+joindre de pièce et que l'API de partage mobile et `mailto:` sont mutuellement
+exclusifs.
+
+**Quand ça change :** point 5 de `docs/A-FAIRE.md`. Le canal de chaque client est
+déjà enregistré, et l'écran d'envoi refuse déjà de partir sans lui. Il ne manque
+que le fournisseur au bout.
+
+## 14. Le lanceur de tests doit dire quand le serveur meurt
+
+**Décidé.** `scripts/run-e2e-tests.ts` conserve la sortie du serveur de
+développement, vérifie qu'il répond avant chaque suite, et s'arrête net s'il ne
+répond plus — après **six tentatives réparties sur une minute**.
+
+**Les deux erreurs qui ont mené là :** d'abord un lanceur muet, qui a produit cinq
+suites en échec accusant chacune un écran différent alors qu'aucune n'avait pu
+charger la page de connexion. Puis un contrôle **trop impatient** (dix secondes),
+qui a déclaré mort un serveur simplement occupé à compiler et a fait échouer un
+passage entier. Un contrôle impatient fait pire que pas de contrôle.

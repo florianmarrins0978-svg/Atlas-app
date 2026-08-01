@@ -3,6 +3,11 @@
 Application mobile (PWA) pour artisans : dictée sur chantier → vérification
 humaine → calcul du prix → préparation du devis → planning simple.
 
+> **Vous reprenez le projet ?** Commencez par [`HANDOVER.md`](HANDOVER.md), puis
+> [`PROJECT_STATE.md`](PROJECT_STATE.md) et [`TODO.md`](TODO.md). Le dépôt est la
+> source de vérité : tout ce qu'il faut pour continuer y est écrit, sans dépendre
+> d'une conversation passée.
+
 La spécification fonctionnelle officielle est [`docs/MVP.md`](docs/MVP.md).
 L'architecture de données est décrite dans
 [`docs/ARCHITECTURE_DONNEES.md`](docs/ARCHITECTURE_DONNEES.md) et ses
@@ -39,6 +44,19 @@ npm run dev
 
 La direction du produit — l'agent qui prépare devis, créneaux et envois, et ce
 qu'il ne fera jamais seul — est cadrée dans [`docs/AGENT.md`](docs/AGENT.md).
+
+## La mémoire du dépôt
+
+Tenue à jour après chaque lot de travail, pour que le projet se transmette sans
+perte d'une conversation à l'autre. Protocole dans [`CLAUDE.md`](CLAUDE.md).
+
+- [`HANDOVER.md`](HANDOVER.md) — de quoi reprendre le travail à froid
+- [`PROJECT_STATE.md`](PROJECT_STATE.md) — ce qui est fait, ce qui reste, ce qui bloque
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — les décisions structurantes et leur pourquoi
+- [`TODO.md`](TODO.md) — les prochaines tâches, par priorité
+- [`CHANGELOG.md`](CHANGELOG.md) — l'historique des changements qui comptent
+- [`CLAUDE.md`](CLAUDE.md) — les règles permanentes et les conventions
+- [`docs/AGENT.md`](docs/AGENT.md) — le parcours du produit et ses points d'arrêt
 
 ## Documentation opérationnelle
 
