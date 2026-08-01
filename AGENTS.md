@@ -14,6 +14,23 @@ Trois fois de suite, un banc d'essai a été livré « prêt » et c'est le patr
 a trouvé le défaut : un script absent, une application pas encore prête, un port
 fermé. À chaque fois le code était juste ; c'est le parcours qui ne l'était pas.
 
+**Et cela veut dire : essayer soi-même AVANT de lui demander d'essayer.** Vingt
+échanges ont été consommés à lui faire ouvrir une application qui refusait sa
+connexion — « Invalid Server Actions request. ». Chaque fois les voyants étaient
+verts, parce qu'aucun contrôle ne parcourait ce que lui parcourait. Il a fait
+vingt fois le test à ma place.
+
+La commande existe, et se joue **avant chaque livraison** :
+
+```bash
+npm run verifier:avant-livraison
+```
+
+Elle enchaîne types, lint, mémoire, suites base, suites navigateur, et surtout
+une **connexion réelle dans un vrai navigateur derrière une origine étrangère**
+— le seul contrôle qui aurait vu le défaut. Tant qu'elle n'est pas au vert, on
+ne demande rien au patron.
+
 Ce que cela exige concrètement, à chaque lot :
 
 - **Parcourir en entier ce qu'on transmet.** Un mode d'emploi, une commande, une

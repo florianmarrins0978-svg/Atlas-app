@@ -48,8 +48,14 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les cinq pièges de ce dépôt
+### Les six pièges de ce dépôt
 
+0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
+   à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
+   rejetée — connexion comprise — avec pour seul message « Invalid Server
+   Actions request. ». Aucune suite ne le voit : elles interrogent toutes
+   `127.0.0.1`, où les deux coïncident. C'est le rôle de
+   `scripts/verifier-connexion.mjs`, qui pose exprès une origine étrangère.
 1. **Une requête hors `withEntreprise()` ne renvoie rien, silencieusement.** Pas
    d'erreur : zéro ligne. Un traitement qui ne trouve rien à faire paraît
    fonctionner. C'est déjà arrivé une fois (la purge d'audio).
@@ -88,8 +94,14 @@ node scripts/md-en-page.mjs docs/A-FAIRE.md
 
 Le plus court chemin est [`docs/ESSAYER.md`](docs/ESSAYER.md) : un espace de
 travail GitHub monte la base, applique le schéma, insère les données de
-démonstration et ouvre l'application — accessible depuis un téléphone. Tout est
-dans `.devcontainer/`.
+démonstration, **démarre l'application tout seul** et l'expose sur une adresse
+publique ouvrable depuis un téléphone. Tout est dans `.devcontainer/`.
+
+**Ne jamais y remettre une commande à taper.** Quatre échecs d'ouverture
+d'affilée l'ont été sur le terminal, aucun sur l'application : le patron essaie
+Atlas depuis un téléphone, où viser un curseur et faire un `Ctrl+C` n'existent
+pas. `demarrer.sh` (joué par `postStartCommand`) est la réponse, et
+`verifier.sh` contrôle en CI que l'application répond **sans commande**.
 
 C'est aussi ce qu'il faut donner au patron quand il demande à essayer : le site
 publié ne montre que des maquettes.
@@ -125,6 +137,12 @@ DATABASE_URL=postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test \
 
 **Deux pièges d'exécution :**
 
+- **Ne jamais donner `REDIS_URL` à `npm test`.** La suite des propositions IA
+  ouvre alors une connexion qui n'est jamais refermée : le processus ne se
+  termine plus, et la série entière reste bloquée **sans le moindre message**.
+  Isolé : code 124 avec la variable, code 0 sans. La CI ne la fournit qu'aux
+  suites navigateur, qui en ont besoin pour remettre à zéro la limitation de
+  débit. `verifier-avant-livraison.ts` la retire explicitement.
 - `npm test` **efface la base** entre les suites : le compte de démonstration
   disparaît. Réamorcer avant de relancer les suites navigateur.
 - Un serveur de développement déjà en écoute sur le port 3000 fait échouer

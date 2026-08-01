@@ -130,10 +130,12 @@ vous voyez à l'écran** :
 adresse permanente, des utilisateurs autres que vous, et le droit de confier de
 vraies données. Rien de plus, rien de moins.
 
-*Astuce* : dans l'espace de travail, le port peut être basculé en **Visibilité
-publique**. Une vraie personne peut alors ouvrir le lien du devis depuis son
-propre téléphone — de quoi éprouver la page du client pour de bon. À remettre
-en privé aussitôt après : publique, l'adresse est ouverte à qui la possède.
+*Astuce* : dans l'espace de travail, l'adresse est **publique dès la création** —
+plus rien à régler. Une vraie personne peut donc ouvrir le lien du devis depuis
+son propre téléphone, de quoi éprouver la page du client pour de bon. En
+contrepartie, l'adresse est ouverte à qui la possède et le mot de passe de
+démonstration est écrit dans le dépôt : **n'y saisissez que des données
+inventées**.
 
 ### Les quatre briques nécessaires
 

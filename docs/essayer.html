@@ -109,17 +109,18 @@
 <p>Un ordinateur se monte pour vous dans le navigateur. <strong>Comptez cinq à dix minutes la première fois</strong> : il installe la base de données, applique le schéma et insère les données de démonstration. Les fois suivantes, quelques secondes.</p>
 <p>Vous saurez que c'est prêt quand le terminal affiche <strong>« Atlas est prêt »</strong>.</p>
 <blockquote><strong>Un espace de travail est figé à sa création.</strong> Il garde la version du dépôt qu'il avait ce jour-là, y compris sa base de données. Quand du travail neuf arrive sur <code>main</code>, un ancien espace ne le voit pas — et échoue de façon déroutante, par exemple sur <code>Missing script: "essai"</code>.  <strong>Le réflexe : en créer un neuf</strong>, plutôt que de rattraper l'ancien. Un <code>git pull</code> ramènerait les fichiers mais pas la base, qui n'est montée qu'à la création — et l'erreur suivante serait plus obscure que la première.  Supprimer l'ancien : <code>github.com/codespaces</code>, menu <strong>⋯</strong> → <strong>Delete</strong>.</blockquote>
-<h3 id="2-démarrer-lapplication">2. Démarrer l'application</h3>
-<p>Dans le terminal, en bas de l'écran :</p>
-<p>``<code> npm run essai </code>``</p>
+<h3 id="2-ne-rien-faire">2. Ne rien faire</h3>
+<p><strong>L'application démarre toute seule</strong>, à chaque allumage de l'espace de travail — y compris après la mise en veille. Il n'y a aucune commande à taper.</p>
+<p>C'est délibéré : ce banc d'essai sert d'abord à essayer Atlas <strong>depuis un téléphone</strong>. Y piloter un terminal suppose de viser un curseur au doigt et de disposer d'une touche <code>Ctrl</code> qui n'existe pas. Quatre tentatives ont échoué là-dessus — jamais sur l'application.</p>
 <h3 id="3-louvrir">3. L'ouvrir</h3>
-<p><strong>Attendez que le terminal affiche « L'application répond »</strong> — il donne alors l'adresse exacte à ouvrir. Ne l'ouvrez pas avant : le serveur annonce qu'il est prêt un moment avant de pouvoir servir le premier écran, et l'adresse ouverte trop tôt reste blanche.</p>
-<p>Un message apparaît aussi, proposant d'ouvrir le port <strong>3000</strong>. Acceptez.</p>
-<p>Sinon : onglet <strong>« Ports »</strong> à côté du terminal, ligne <strong>3000</strong>, icône en forme de globe.</p>
+<p>Comptez <strong>une à deux minutes</strong> après « Atlas est prêt » : le premier écran doit se compiler. Un message apparaît alors, proposant d'ouvrir le port <strong>3000</strong> — acceptez.</p>
+<p>L'adresse se devine aussi toute seule : c'est le nom de l'espace, visible dans la barre d'adresse de l'éditeur, suivi de <code>-3000.app.github.dev</code>.</p>
+<p>``<code> https://&lt;nom-de-l-espace&gt;-3000.app.github.dev </code>``</p>
+<p><strong>Si la page reste blanche, rechargez-la.</strong> L'application a probablement été ouverte pendant sa compilation. Elle est aussi écrite noir sur blanc dans le fichier <code>/tmp/essai.log</code>, après la ligne « L'application répond ».</p>
 <h3 id="4-se-connecter">4. Se connecter</h3>
 <p>``<code> demo@atlas.local demo1234 </code>``</p>
 <h3 id="5-depuis-votre-téléphone">5. Depuis votre téléphone</h3>
-<p>Copiez l'adresse affichée à l'étape 3 — elle ressemble à <code>https://quelque-chose-3000.app.github.dev</code> — et ouvrez-la sur votre téléphone.</p>
+<p>Ouvrez cette même adresse sur votre téléphone : c'est tout.</p>
 <p>Rien d'autre à faire : l'adresse est ouverte dès la création de l'espace. C'est aussi ce qui permet de faire ouvrir un lien de devis à une vraie personne, sur son propre téléphone — la seule façon d'éprouver pour de bon le seul écran que vos clients verront.</p>
 <blockquote><strong>N'y mettez que des données inventées.</strong> L'adresse est ouvrable par qui la possède, et le mot de passe de démonstration est écrit dans ce dépôt public. L'application garde son écran de connexion : ce qui est joignable, c'est la porte, pas le contenu — mais la clé de cette porte est publique.  Pour refermer l'accès, une commande dans le terminal : <code>gh codespace ports visibility 3000:private -c $CODESPACE_NAME</code></blockquote>
 <hr>
@@ -160,15 +161,11 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><strong>La page reste blanche depuis le téléphone.</strong> Blanche, pas crème : ce n'est pas un écran de l'application qui s'affiche mal, c'est qu'aucune page n'arrive. Trois causes, dans l'ordre de fréquence :</p>
 <ol>
-<li><strong>L'application n'est pas encore prête.</strong> <code>npm run essai</code> affiche « L'application répond » suivi de l'adresse à ouvrir — <strong>attendez cette ligne</strong>. Le message « ready » de Next.js, lui, arrive avant que le premier écran soit compilable.</li>
-<li><strong>Le serveur s'est arrêté.</strong> Regardez le terminal : s'il est revenu à l'invite, relancez <code>npm run essai</code>.</li>
-<li><strong>Le port est privé.</strong> Il est public dès la création — mais un espace créé avant le 2026-08-01 ne le sait pas, ce réglage étant lu à la création.</li>
+<li><strong>L'application n'est pas encore prête.</strong> C'est de loin la cause la plus fréquente. Le premier écran met une à deux minutes à se compiler après l'allumage. <strong>Attendez, puis rechargez la page</strong> — ne concluez rien avant.</li>
+<li><strong>L'espace de travail s'est endormi.</strong> Il se met en veille tout seul après trente minutes sans activité, et l'adresse ne mène alors nulle part. Rouvrez-le depuis <code>github.com/codespaces</code> : l'application redémarre seule, et vos données sont intactes.</li>
+<li><strong>L'espace est trop ancien.</strong> Le démarrage automatique et le port public sont lus <strong>à la création</strong> de l'espace. Un espace né avant le 2026-08-01 les ignore, quoi qu'on fasse ensuite — un <code>git pull</code> n'y change rien.</li>
 </ol>
-<p><strong>La solution sûre : supprimer cet espace et en créer un neuf</strong> (encadré du geste 1). Le port y sera public d'emblée, sans rien régler. C'est plus long de cinq minutes, mais c'est le seul chemin qui ne demande de viser aucun bouton sur un écran de téléphone.</p>
-<p>Si vous préférez rattraper l'espace en cours, une commande dans le terminal que vous avez déjà sous les yeux :</p>
-<p>``<code> gh codespace ports visibility 3000:public -c $CODESPACE_NAME </code>``</p>
-<p>&gt; Cette commande n'a <strong>pas pu être vérifiée</strong> : l'environnement où ce dépôt &gt; est développé n'a pas l'outil <code>gh</code>, et la documentation de GitHub y est &gt; inaccessible. Si elle refuse, ne cherchez pas : recréez l'espace.</p>
-<p>À la souris, l'onglet <strong>« Ports »</strong> à côté du terminal fait la même chose. Sur téléphone, le panneau s'ouvre depuis la barre bleue du bas, par un appui <strong>bref</strong> sur l'icône d'antenne suivie d'un chiffre — un appui long ouvre le menu de la barre elle-même, qui n'a rien à voir.</p>
+<p><strong>Supprimez-le et créez-en un neuf</strong> (encadré du geste 1). C'est le seul chemin qui ne demande de viser aucun bouton sur un écran de téléphone.</p>
 <p><strong><code>Missing script: "essai"</code>, ou des fichiers manquent dans la liste de gauche (<code>.devcontainer</code>, <code>HANDOVER.md</code>, <code>TODO.md</code>…).</strong> L'espace de travail a été créé avant que ce travail n'arrive sur <code>main</code> : il est resté à la version de ce jour-là. Supprimez-le et recréez-en un — voir l'encadré du geste 1. C'est le cas le plus fréquent, et le plus déroutant, parce que l'erreur ne dit pas que le problème est l'ancienneté de l'espace.</p>
 <p><strong>Le terminal affiche une erreur pendant la préparation.</strong> Elle s'arrête à la première anomalie plutôt que de continuer à moitié — le message dit laquelle. Relancez <code>bash .devcontainer/preparer.sh</code>.</p>
 <p><strong>Une action ne fait rien</strong> (créer un chantier, envoyer un devis). C'est le symptôme d'une origine refusée par Next.js derrière le proxy. Le dépôt gère ce cas (<code>next.config.ts</code>, <code>allowedOrigins</code>) ; si cela se reproduit, le nom de l'espace a changé — arrêtez puis relancez <code>npm run essai</code>.</p>

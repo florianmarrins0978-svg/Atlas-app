@@ -36,6 +36,19 @@ services:
       # des suites de tests dont on n'a pas l'usage ici. Celui qui voudrait les
       # jouer dans cet environnement lance `npx playwright install chromium`.
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      # Reprises de l'environnement de Codespaces, qui n'entre PAS tout seul
+      # dans un conteneur décrit par docker-compose : la liste ci-dessus est
+      # explicite, et ce qui n'y figure pas n'existe pas à l'intérieur.
+      #
+      # Leur absence a coûté une demi-journée : sans `CODESPACE_NAME`,
+      # `allowedOrigins` restait vide (next.config.ts) et Next.js refusait
+      # toute action serveur — donc la connexion elle-même, avec pour seul
+      # message « Invalid Server Actions request. ». L'application démarrait
+      # parfaitement ; elle refusait simplement d'ouvrir sa porte.
+      #
+      # `npm run essai` s'en sert aussi pour annoncer l'adresse exacte à ouvrir.
+      CODESPACE_NAME: ${CODESPACE_NAME:-}
+      GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN: ${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-app.github.dev}
     depends_on:
       postgres:
         condition: service_healthy
