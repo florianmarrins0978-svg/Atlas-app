@@ -559,25 +559,6 @@ IBAN : FR76 3123 3123 4500 2348 1091 175</textarea>
     sendStatus.hidden = false;
   }
 
-  /* Le partage natif d'iOS et d'Android n'a PAS de champ destinataire : il vise
-     aussi bien Mail que WhatsApp ou Messages, où « À : » n'aurait pas de sens.
-     Le nom du client et l'objet restent donc à saisir, et c'est inévitable tant
-     qu'on veut joindre le PDF automatiquement — l'alternative (mailto) remplit
-     le destinataire mais interdit toute pièce jointe, ce qui obligerait à
-     attacher le devis à la main.
-     On copie donc l'adresse dans le presse-papier : il ne reste qu'à la coller.
-     L'écriture doit avoir lieu DANS le geste de l'utilisateur, avant toute
-     attente — après un `await`, Safari refuse l'accès au presse-papier. */
-  function copierDestinataire(adresse){
-    if (!adresse || !navigator.clipboard || !navigator.clipboard.writeText) return false;
-    try{
-      navigator.clipboard.writeText(adresse).catch(function(){ /* refus silencieux */ });
-      return true;
-    } catch(e){
-      return false;
-    }
-  }
-
   const sendClientBtn = document.getElementById('sendClientBtn');
   sendClientBtn.addEventListener('click', async () => {
     sendClientBtn.disabled = true;
@@ -586,37 +567,46 @@ IBAN : FR76 3123 3123 4500 2348 1091 175</textarea>
     const filename = currentPdfFilename();
     const draft = buildMailDraft();
 
-    // Prédiction de la voie empruntée. Le test exact (avec le vrai fichier) a
-    // lieu plus bas ; ici on veut seulement savoir s'il faut prévenir
-    // l'utilisateur AVANT que la feuille de partage ne prenne l'écran.
-    const partageNatif =
-      typeof navigator.canShare === 'function' && typeof navigator.share === 'function';
-
-    // Copie immédiate, tant que le geste est encore « chaud ».
-    const adresseCopiee = partageNatif && copierDestinataire(draft.to);
-
-    if (partageNatif){
-      if (draft.to){
-        afficherStatut(
-          'Adresse du client' + (adresseCopiee ? ' <strong>copiée</strong>' : '') +
-          ' : <strong>' + draft.to + '</strong>' +
-          (adresseCopiee ? ' — collez-la dans « À : ».' : ' — recopiez-la dans « À : ».') +
-          '<br>Objet suggéré : <strong>' + draft.subject + '</strong>'
-        );
-      } else {
-        afficherStatut(
-          'Aucun e-mail renseigné pour ce client : le champ « À : » restera vide. ' +
-          'Ajoutez-le dans la fiche client ci-dessous pour qu\'il soit copié automatiquement.',
-          true
-        );
-      }
-    }
-
     try{
       const blob = await generatePdfBlob();
-      const file = new File([blob], filename, { type: 'application/pdf' });
 
-      // Mobile : partage natif avec le PDF joint (Mail, WhatsApp, Messages…).
+      /* Deux voies possibles, et elles s'excluent :
+
+         - `mailto:` remplit destinataire, objet et message, mais n'accepte
+           AUCUNE pièce jointe : le devis doit être joint à la main.
+         - le partage natif joint le PDF tout seul, mais n'a pas de champ
+           destinataire (il vise aussi bien Messages que WhatsApp).
+
+         Choix retenu : dès qu'une adresse est connue, on privilégie le mail
+         pré-rempli — c'est ce qui est demandé, et une adresse mal recopiée
+         part chez le mauvais client, ce qu'une pièce jointe oubliée ne fait
+         pas. Le PDF est enregistré juste avant, pour être joignable en deux
+         gestes depuis les fichiers de l'appareil. */
+      if (draft.to){
+        downloadBlob(blob, filename);
+        afficherStatut(
+          'Message pré-rempli pour <strong>' + draft.to + '</strong>.<br>' +
+          'Le devis <strong>' + filename + '</strong> vient d\'être enregistré dans vos fichiers : ' +
+          'joignez-le au message avant de l\'envoyer.'
+        );
+        // Léger décalage : sur iOS, ouvrir la messagerie dans la foulée
+        // interrompt parfois l'enregistrement du fichier.
+        const mailto = 'mailto:' + encodeURIComponent(draft.to) +
+          '?subject=' + encodeURIComponent(draft.subject) +
+          '&body=' + encodeURIComponent(draft.body);
+        setTimeout(function(){ window.location.href = mailto; }, 400);
+        return;
+      }
+
+      /* Sans adresse, `mailto:` n'apporte rien : on repasse au partage natif,
+         qui joint au moins le PDF, et on signale ce qu'il manque. */
+      afficherStatut(
+        'Aucun e-mail renseigné pour ce client : le destinataire ne peut pas être rempli. ' +
+        'Ajoutez son adresse dans la fiche client ci-dessous.',
+        true
+      );
+
+      const file = new File([blob], filename, { type: 'application/pdf' });
       if (navigator.canShare && navigator.canShare({ files: [file] })){
         try{
           await navigator.share({ files: [file], title: draft.subject, text: draft.body });
@@ -624,15 +614,13 @@ IBAN : FR76 3123 3123 4500 2348 1091 175</textarea>
           if (shareErr.name !== 'AbortError') throw shareErr;
         }
       } else {
-        // Ordinateur : téléchargement du PDF + brouillon d'email pré-rempli à joindre.
         downloadBlob(blob, filename);
-        const mailto = 'mailto:' + encodeURIComponent(draft.to) +
-          '?subject=' + encodeURIComponent(draft.subject) +
-          '&body=' + encodeURIComponent(draft.body + '\n\n(Pensez à joindre le PDF « ' + filename + ' » qui vient d\'être téléchargé.)');
-        window.location.href = mailto;
       }
     } catch(err){
-      alert("L'envoi n'a pas pu être préparé. Vous pouvez enregistrer le PDF, puis l'envoyer manuellement au client.");
+      afficherStatut(
+        "L'envoi n'a pas pu être préparé. Enregistrez le PDF, puis envoyez-le manuellement au client.",
+        true
+      );
     } finally {
       sendClientBtn.disabled = false;
       sendClientBtn.textContent = originalLabel;
