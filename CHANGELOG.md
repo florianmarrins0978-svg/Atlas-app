@@ -9,6 +9,26 @@ Format : le plus récent en tête.
 
 ## 2026-08-01
 
+### L'application démarre seule : plus rien à taper
+
+Quatre tentatives d'ouverture ont échoué d'affilée, **toutes sur le terminal, et
+aucune sur l'application** : une commande tapée deux fois, un serveur arrêté
+sans qu'on le sache, un espace endormi, un `Ctrl+C` demandé à quelqu'un qui n'a
+pas de touche `Ctrl`. Le banc d'essai sert à essayer Atlas depuis un téléphone —
+et on y faisait piloter un terminal au doigt.
+
+`postStartCommand` lance désormais l'application à chaque allumage de l'espace,
+veille comprise. Le patron n'a plus qu'une adresse à ouvrir.
+
+Le contrôle du banc d'essai ne démarre plus rien de lui-même : il vérifie que
+l'application répond **sans qu'aucune commande ait été tapée**. S'il échoue,
+c'est qu'il resterait un geste à faire — précisément ce qu'on ne veut plus.
+
+Un défaut trouvé en le lançant, pas en le relisant : `pkill -f "next dev"`
+compare la ligne de commande entière de chaque processus, y compris celle du
+shell qui joue le script. Le motif se trouvait lui-même et le script se tuait
+avant d'avoir rien démarré. Les crochets de `[n]ext dev` l'évitent.
+
 ### Rien n'est acté valide sans avoir été éprouvé
 
 Règle posée par le patron après trois bancs d'essai livrés « prêts » qui ont

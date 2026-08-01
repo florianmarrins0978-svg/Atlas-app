@@ -5,8 +5,15 @@
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
   // Monté une seule fois, à la création : dépendances, migrations, données de
-  // démonstration. Ensuite, `npm run essai` suffit.
+  // démonstration.
   "postCreateCommand": "bash .devcontainer/preparer.sh",
+
+  // Démarré à CHAQUE allumage, y compris après la mise en veille de trente
+  // minutes. Le patron essaie Atlas depuis un téléphone : lui faire lancer une
+  // commande, c'est lui faire viser un curseur au doigt, sans touche Ctrl pour
+  // arrêter ce qui tourne déjà. Quatre tentatives ont échoué là-dessus, jamais
+  // sur l'application. Il ne lui reste donc qu'à ouvrir l'adresse.
+  "postStartCommand": "bash .devcontainer/demarrer.sh",
 
   // Ouvert automatiquement, annoncé, et PUBLIC.
   //

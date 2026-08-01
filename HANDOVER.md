@@ -88,8 +88,14 @@ node scripts/md-en-page.mjs docs/A-FAIRE.md
 
 Le plus court chemin est [`docs/ESSAYER.md`](docs/ESSAYER.md) : un espace de
 travail GitHub monte la base, applique le schéma, insère les données de
-démonstration et ouvre l'application — accessible depuis un téléphone. Tout est
-dans `.devcontainer/`.
+démonstration, **démarre l'application tout seul** et l'expose sur une adresse
+publique ouvrable depuis un téléphone. Tout est dans `.devcontainer/`.
+
+**Ne jamais y remettre une commande à taper.** Quatre échecs d'ouverture
+d'affilée l'ont été sur le terminal, aucun sur l'application : le patron essaie
+Atlas depuis un téléphone, où viser un curseur et faire un `Ctrl+C` n'existent
+pas. `demarrer.sh` (joué par `postStartCommand`) est la réponse, et
+`verifier.sh` contrôle en CI que l'application répond **sans commande**.
 
 C'est aussi ce qu'il faut donner au patron quand il demande à essayer : le site
 publié ne montre que des maquettes.
