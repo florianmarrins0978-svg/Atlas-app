@@ -27,6 +27,7 @@ relues à chaque session) :
 3. [Pourquoi l'adresse du client ne se met pas toute seule dans le mail ?](#3-pourquoi-ladresse-du-client-ne-se-met-pas-toute-seule-dans-le-mail-)
 4. [Si l'application se fait pirater, qu'est-ce que je risque ?](#4-si-lapplication-se-fait-pirater-quest-ce-que-je-risque-)
 5. [Comment faire signer un contrat à tous les utilisateurs ?](#5-comment-faire-signer-un-contrat-à-tous-les-utilisateurs-)
+6. [Le dépôt est public : n'importe qui peut-il voler notre travail ?](#6-le-dépôt-est-public--nimporte-qui-peut-il-voler-notre-travail-)
 
 ---
 
@@ -201,3 +202,46 @@ Trois conditions pour que ça tienne :
 
 Dernier point : quand vous changerez de fournisseur d'IA, vous devrez **prévenir
 les artisans à l'avance** et leur laisser la possibilité de s'y opposer.
+
+---
+
+## 6. Le dépôt est public : n'importe qui peut-il voler notre travail ?
+
+### Ce que ça n'autorise pas
+
+**Le code est protégé par le droit d'auteur dès son écriture.** Aucun dépôt à
+faire, aucune formalité : il est à vous automatiquement.
+
+Public ne veut pas dire libre de droits. Sans licence — et il n'y en a aucune
+dans le dépôt aujourd'hui — personne n'a le droit de reprendre ce code, de le
+modifier ou de le vendre. C'est « tous droits réservés » par défaut.
+
+### Ce que ça permet quand même
+
+**Lire, et copier dans les faits.** Un dépôt public peut être forké par
+n'importe quel utilisateur GitHub — c'est accepté en le rendant public.
+
+Surtout : la loi protège, mais elle ne défend pas toute seule. Poursuivre
+quelqu'un qui copie coûte cher, prend des mois, et suppose de le retrouver.
+
+### Ce qui compte vraiment
+
+**La valeur n'est pas dans le code.** Un concurrent qui copierait tout n'aurait
+ni les artisans, ni leurs grilles de tarifs, ni leur confiance, ni le service
+qui va avec. Le code est reproductible ; la relation ne l'est pas.
+
+**Le vrai risque du public n'est pas le vol, c'est la sécurité.** Un attaquant
+peut étudier le code à loisir pour y chercher une faille : comment les jetons
+sont fabriqués, où sont les vérifications, ce qui n'est pas contrôlé. Ça, c'est
+concret.
+
+### Les deux options, le jour où
+
+| Option | Coût | Ce que ça règle |
+|---|---|---|
+| **Fichier LICENSE** « tous droits réservés » | 0 | Rend la position explicite au lieu d'implicite. Ne change pas qui peut lire |
+| **GitHub Pro** | ~4 $/mois | Dépôt privé **et** site toujours en ligne : règle d'un coup le code, l'analyse RGPD et les documents internes |
+
+> **Décision au 2026-08-01 : on laisse public.** Rien n'est déplacé, aucune
+> licence ajoutée. À rouvrir si l'exposition devient gênante — l'option GitHub
+> Pro reste de loin la moins chère.
