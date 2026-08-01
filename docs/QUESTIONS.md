@@ -8,8 +8,15 @@ tout redécouvrir.
 Une réponse qui a vieilli vaut moins que pas de réponse du tout : si un prix ou
 une règle change, rayez l'ancienne plutôt que de la laisser traîner.
 
-Chaque nouvelle question est ajoutée après validation explicite — elle n'y entre
-jamais toute seule.
+**Comment ce document est tenu** (règles inscrites dans `AGENTS.md`, donc
+relues à chaque session) :
+
+- Une question déjà traitée ici reçoit **le passage existant, cité tel quel** —
+  pas une réponse reformulée de mémoire, qui risquerait de dire autre chose que
+  la première fois.
+- Une nouvelle question n'est ajoutée **qu'après accord explicite**. Elle n'y
+  entre jamais toute seule.
+- Si une réponse a changé, elle est corrigée ici et le changement est signalé.
 
 ---
 
