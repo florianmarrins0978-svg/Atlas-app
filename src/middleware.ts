@@ -20,6 +20,48 @@ const CHEMINS_PUBLICS = ["/login", "/api/auth", "/api/cron", "/devis"];
 // côté serveur et ne parvient jamais au navigateur.
 const ENTETE_CHEMIN = "x-atlas-pathname";
 
+// Uniquement sur le banc d'essai, jamais ailleurs : la variable n'est posée que
+// par .devcontainer/docker-compose.yml.
+const BANC_ESSAI = process.env.ATLAS_BANC_ESSAI === "1";
+
+// Domaines de redirection de GitHub Codespaces. Rien d'autre n'est accepté.
+const DOMAINES_BANC_ESSAI = [".app.github.dev", ".github.dev"];
+
+// Fait voir à Next.js le même hôte que celui de la barre d'adresse.
+//
+// Pourquoi : Next.js refuse une action serveur quand l'en-tête `Origin` ne
+// correspond pas à l'hôte — c'est sa protection contre le CSRF. Derrière le
+// proxy de Codespaces, le navigateur annonce `xxx-3000.app.github.dev` tandis
+// que le serveur reçoit `localhost:3000`. Résultat : « Invalid Server Actions
+// request. » à la connexion, et le patron ne peut pas entrer. Cela lui a coûté
+// une journée.
+//
+// `allowedOrigins` (next.config.ts) est censé couvrir ce cas et le fait en
+// local. Il ne suffisait pourtant pas dans un vrai Codespace, sans qu'on
+// puisse le reproduire ailleurs. Plutôt que d'ajouter une hypothèse de plus,
+// on supprime l'écart à la source : l'hôte transmis devient celui de l'origine.
+//
+// Ce que cela n'affaiblit PAS : la protection reste entière partout ailleurs.
+// Elle n'est levée que si `ATLAS_BANC_ESSAI` vaut 1 — posé par le seul
+// docker-compose du banc d'essai, jamais en production — et seulement pour un
+// domaine de Codespaces. Sur ce banc, le mot de passe est public et l'adresse
+// ouverte : il n'y a rien que le CSRF protégerait encore.
+function alignerHoteSurOrigine(entetes: Headers) {
+  if (!BANC_ESSAI) return;
+  const origine = entetes.get("origin");
+  if (!origine) return;
+
+  let hote: string;
+  try {
+    hote = new URL(origine).host;
+  } catch {
+    return;
+  }
+
+  if (!DOMAINES_BANC_ESSAI.some((d) => hote.endsWith(d))) return;
+  entetes.set("x-forwarded-host", hote);
+}
+
 // Les en-têtes passés ici REMPLACENT ceux de la requête : il faut donc partir
 // d'une copie de l'existant, jamais d'un objet vide. Un `new Headers()` nu
 // effacerait le cookie de session, et toute l'application se retrouverait
@@ -27,6 +69,7 @@ const ENTETE_CHEMIN = "x-atlas-pathname";
 function suivantAvecChemin(request: { headers: Headers }, pathname: string) {
   const entetes = new Headers(request.headers);
   entetes.set(ENTETE_CHEMIN, pathname);
+  alignerHoteSurOrigine(entetes);
   return NextResponse.next({ request: { headers: entetes } });
 }
 

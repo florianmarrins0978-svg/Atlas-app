@@ -47,6 +47,11 @@ services:
       # parfaitement ; elle refusait simplement d'ouvrir sa porte.
       #
       # `npm run essai` s'en sert aussi pour annoncer l'adresse exacte à ouvrir.
+      # Autorise le middleware à aligner l'hôte vu par Next.js sur l'origine du
+      # navigateur (src/middleware.ts). Sans cela, la connexion est refusée
+      # derrière le proxy de Codespaces. Posée ICI et nulle part ailleurs :
+      # aucune configuration de production ne la contient.
+      ATLAS_BANC_ESSAI: "1"
       CODESPACE_NAME: ${CODESPACE_NAME:-}
       GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN: ${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-app.github.dev}
     depends_on:

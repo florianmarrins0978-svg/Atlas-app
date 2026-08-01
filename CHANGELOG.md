@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-01
 
+### La connexion refusée : supprimer l'écart au lieu de l'autoriser
+
+`allowedOrigins` ne suffisait pas. Le patron a recréé un espace de travail avec
+tout le correctif précédent et a retrouvé « Invalid Server Actions request. »
+mot pour mot — c'était sa vingtième tentative de la journée.
+
+La configuration est pourtant correcte : l'algorithme de comparaison de Next a
+été relu ligne à ligne dans `node_modules`, le joker `*.app.github.dev` couvre
+bien l'adresse, et le contrôle passe en local. Il ne passait pas dans un vrai
+Codespace, sans qu'on puisse reproduire pourquoi.
+
+**Plutôt que d'ajouter une hypothèse de plus, l'écart est supprimé à la
+source.** Le middleware aligne l'hôte vu par Next sur l'origine du navigateur :
+il n'y a plus de désaccord à autoriser. Cela ne s'applique que si
+`ATLAS_BANC_ESSAI` vaut 1 — posé par le seul docker-compose du banc d'essai,
+jamais en production — et seulement pour un domaine de Codespaces.
+
+Éprouvé en reproduisant la panne à volonté : `allowedOrigins` neutralisé, le
+contrôle affiche « Invalid Server Actions request » ; avec le correctif, la
+connexion passe. La cause est donc rattrapée quelle qu'elle soit.
+
+**Et une page pour ne plus chercher à l'aveugle.** `/api/health/diagnostic`
+affiche ce que le serveur voit réellement — origine, hôte, hôte transmis,
+origines autorisées, variables d'environnement — et conclut par oui ou non sur
+la possibilité de se connecter. Accessible sans session, à dessein : c'est quand
+on n'arrive pas à entrer qu'on en a besoin. Une journée a été perdue faute de
+pouvoir lire ces trois valeurs depuis un téléphone.
+
 ### La connexion était refusée derrière le proxy — et rien ne le voyait
 
 **Invalid Server Actions request.** Voilà ce que le patron avait sous les yeux
