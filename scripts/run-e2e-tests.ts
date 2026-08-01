@@ -41,19 +41,27 @@ async function reinitialiserLimiteConnexion() {
 }
 
 /**
- * Le serveur répond-il, maintenant ?
+ * Le serveur est-il encore vivant ?
  *
- * Délai court et volontairement borné : la question n'est pas « finira-t-il par
- * répondre » mais « est-il encore là », et un serveur qui met dix secondes à
- * servir sa page de santé ne tiendra de toute façon aucune suite.
+ * Généreux à dessein. En mode développement, le serveur compile les routes à la
+ * demande et peut rester sourd plusieurs dizaines de secondes sur une machine
+ * chargée — sans être mort pour autant. Un contrôle impatient ferait pire que
+ * l'absence de contrôle : il arrêterait une exécution parfaitement valable.
+ *
+ * On ne conclut donc à la mort qu'après plusieurs tentatives infructueuses
+ * réparties sur une minute.
  */
-async function serveurRepond(url: string, delaiMs = 10_000): Promise<boolean> {
-  try {
-    const r = await fetch(url, { signal: AbortSignal.timeout(delaiMs) });
-    return r.status === 200;
-  } catch {
-    return false;
+async function serveurVivant(url: string, tentatives = 6, delaiMs = 10_000): Promise<boolean> {
+  for (let i = 0; i < tentatives; i++) {
+    try {
+      const r = await fetch(url, { signal: AbortSignal.timeout(delaiMs) });
+      if (r.status === 200) return true;
+    } catch {
+      // Occupé, ou parti — la suite des tentatives tranchera.
+    }
+    if (i < tentatives - 1) await attendre(1000);
   }
+  return false;
 }
 
 async function attendreServeurPret(url: string, tentativesMax = 30): Promise<boolean> {
@@ -159,10 +167,10 @@ async function main() {
     // Un serveur mort ne se répare pas en lui envoyant vingt suites de plus :
     // il produit vingt échecs qui accusent chacun un écran différent. On
     // s'arrête au premier, en disant ce qui s'est réellement passé.
-    if (!(await serveurRepond("http://localhost:3000/api/health/live"))) {
+    if (!(await serveurVivant("http://localhost:3000/api/health/live"))) {
       console.error(
         `❌ Le serveur ne répond plus avant ${fichier}` +
-          (serveurTermine ? ` — il s'est arrêté (${serveurTermine}).` : " — il est bloqué.")
+          (serveurTermine ? ` — il s'est arrêté (${serveurTermine}).` : " — il est resté sourd une minute.")
       );
       console.error("   Les suites restantes ne sont pas jouées : elles échoueraient toutes sur ce même point.");
       montrerJournalServeur();
