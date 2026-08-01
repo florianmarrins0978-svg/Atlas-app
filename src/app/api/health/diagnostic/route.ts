@@ -52,11 +52,22 @@ export async function GET(requete: Request) {
   // Next.js retient `x-forwarded-host` s'il existe, sinon `host`.
   const hoteRetenu = hoteTransmis?.split(",")[0]?.trim() ?? hote ?? null;
 
-  // L'origine réelle du navigateur n'est pas envoyée sur une simple visite de
-  // page : on la reconstitue depuis le référent, sinon depuis l'hôte transmis.
+  // Next.js ne compare que le NOM D'HÔTE de l'origine, jamais l'URL entière :
+  // afficher `https://…` ici donnerait une valeur qui ne correspond à rien de
+  // ce que le serveur compare, et enverrait chercher au mauvais endroit.
+  const hoteDe = (url: string | null): string | null => {
+    if (!url) return null;
+    try {
+      return new URL(url).host;
+    } catch {
+      return url;
+    }
+  };
+
+  // L'en-tête `Origin` n'est pas envoyé sur une simple visite de page : on le
+  // reconstitue depuis le référent, sinon depuis l'hôte transmis.
   const referent = entetes.get("referer");
-  const origineProbable =
-    origine ?? (referent ? new URL(referent).host : null) ?? hoteTransmis ?? hote;
+  const origineProbable = hoteDe(origine) ?? hoteDe(referent) ?? hoteTransmis ?? hote;
 
   const autorisees = originesAutorisees();
   const couverte = origineProbable
