@@ -71,7 +71,12 @@ npm run essai
 
 ### 3. L'ouvrir
 
-Un message apparaît, proposant d'ouvrir le port **3000**. Acceptez.
+**Attendez que le terminal affiche « L'application répond »** — il donne alors
+l'adresse exacte à ouvrir. Ne l'ouvrez pas avant : le serveur annonce qu'il est
+prêt un moment avant de pouvoir servir le premier écran, et l'adresse ouverte
+trop tôt reste blanche.
+
+Un message apparaît aussi, proposant d'ouvrir le port **3000**. Acceptez.
 
 Sinon : onglet **« Ports »** à côté du terminal, ligne **3000**, icône en forme
 de globe.
@@ -85,12 +90,22 @@ demo1234
 
 ### 5. Depuis votre téléphone
 
-Copiez l'adresse ouverte à l'étape 3 — elle ressemble à
+Copiez l'adresse affichée à l'étape 3 — elle ressemble à
 `https://quelque-chose-3000.app.github.dev` — et ouvrez-la sur votre téléphone.
 
-Connectez-vous à GitHub une fois si on vous le demande : **cette adresse
-n'est accessible qu'à vous**, c'est voulu. Vos essais ne sont pas sur la place
-publique.
+**Un geste indispensable avant :** le port est privé par défaut. Depuis
+l'ordinateur, vous êtes déjà authentifié et tout marche ; depuis le téléphone,
+non — et la page reste **blanche**, sans rien qui l'explique.
+
+Onglet **« Ports »** → clic droit sur **3000** → **Visibilité** → **Public**.
+
+> Publique, l'adresse est ouvrable par qui la possède. C'est acceptable pour
+> quelques heures d'essais avec des données inventées, pas pour y laisser dormir
+> quoi que ce soit. **Remettez-la en privé après.**
+>
+> C'est aussi ce qui permet de faire ouvrir le lien du devis à une vraie
+> personne, sur son propre téléphone — la seule façon d'éprouver pour de bon le
+> seul écran que vos clients verront.
 
 ---
 
@@ -153,6 +168,23 @@ Le compte gratuit inclut 60 heures par mois, largement de quoi essayer.
 ---
 
 ## Si quelque chose ne va pas
+
+**La page reste blanche depuis le téléphone.** Blanche, pas crème : ce n'est pas
+un écran de l'application qui s'affiche mal, c'est qu'aucune page n'arrive.
+Trois causes, dans l'ordre de fréquence :
+
+1. **Le port est en visibilité privée.** C'est le cas par défaut, et de loin la
+   cause la plus fréquente. Depuis l'onglet de l'espace de travail vous êtes
+   déjà authentifié, donc tout marche ; depuis le téléphone, non. Onglet
+   **« Ports »** → clic droit sur **3000** → **Visibilité** → **Public**.
+   Remettez-le en privé après vos essais.
+2. **L'application n'est pas encore prête.** `npm run essai` affiche
+   « L'application répond » suivi de l'adresse à ouvrir — **attendez cette
+   ligne**. Le message « ready » de Next.js, lui, arrive avant que le premier
+   écran soit compilable.
+3. **Le serveur s'est arrêté.** Regardez le terminal : s'il est revenu à
+   l'invite, relancez `npm run essai`.
+
 
 **`Missing script: "essai"`, ou des fichiers manquent dans la liste de gauche
 (`.devcontainer`, `HANDOVER.md`, `TODO.md`…).** L'espace de travail a été créé

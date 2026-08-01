@@ -113,13 +113,16 @@
 <p>Dans le terminal, en bas de l'écran :</p>
 <p>``<code> npm run essai </code>``</p>
 <h3 id="3-louvrir">3. L'ouvrir</h3>
-<p>Un message apparaît, proposant d'ouvrir le port <strong>3000</strong>. Acceptez.</p>
+<p><strong>Attendez que le terminal affiche « L'application répond »</strong> — il donne alors l'adresse exacte à ouvrir. Ne l'ouvrez pas avant : le serveur annonce qu'il est prêt un moment avant de pouvoir servir le premier écran, et l'adresse ouverte trop tôt reste blanche.</p>
+<p>Un message apparaît aussi, proposant d'ouvrir le port <strong>3000</strong>. Acceptez.</p>
 <p>Sinon : onglet <strong>« Ports »</strong> à côté du terminal, ligne <strong>3000</strong>, icône en forme de globe.</p>
 <h3 id="4-se-connecter">4. Se connecter</h3>
 <p>``<code> demo@atlas.local demo1234 </code>``</p>
 <h3 id="5-depuis-votre-téléphone">5. Depuis votre téléphone</h3>
-<p>Copiez l'adresse ouverte à l'étape 3 — elle ressemble à <code>https://quelque-chose-3000.app.github.dev</code> — et ouvrez-la sur votre téléphone.</p>
-<p>Connectez-vous à GitHub une fois si on vous le demande : <strong>cette adresse n'est accessible qu'à vous</strong>, c'est voulu. Vos essais ne sont pas sur la place publique.</p>
+<p>Copiez l'adresse affichée à l'étape 3 — elle ressemble à <code>https://quelque-chose-3000.app.github.dev</code> — et ouvrez-la sur votre téléphone.</p>
+<p><strong>Un geste indispensable avant :</strong> le port est privé par défaut. Depuis l'ordinateur, vous êtes déjà authentifié et tout marche ; depuis le téléphone, non — et la page reste <strong>blanche</strong>, sans rien qui l'explique.</p>
+<p>Onglet <strong>« Ports »</strong> → clic droit sur <strong>3000</strong> → <strong>Visibilité</strong> → <strong>Public</strong>.</p>
+<blockquote>Publique, l'adresse est ouvrable par qui la possède. C'est acceptable pour quelques heures d'essais avec des données inventées, pas pour y laisser dormir quoi que ce soit. <strong>Remettez-la en privé après.</strong>  C'est aussi ce qui permet de faire ouvrir le lien du devis à une vraie personne, sur son propre téléphone — la seule façon d'éprouver pour de bon le seul écran que vos clients verront.</blockquote>
 <hr>
 <h2 id="ce-que-vous-pouvez-essayer-du-début-à-la-fin">Ce que vous pouvez essayer, du début à la fin</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -156,6 +159,12 @@
 <hr>
 <h2 id="si-quelque-chose-ne-va-pas">Si quelque chose ne va pas</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>La page reste blanche depuis le téléphone.</strong> Blanche, pas crème : ce n'est pas un écran de l'application qui s'affiche mal, c'est qu'aucune page n'arrive. Trois causes, dans l'ordre de fréquence :</p>
+<ol>
+<li><strong>Le port est en visibilité privée.</strong> C'est le cas par défaut, et de loin la cause la plus fréquente. Depuis l'onglet de l'espace de travail vous êtes déjà authentifié, donc tout marche ; depuis le téléphone, non. Onglet <strong>« Ports »</strong> → clic droit sur <strong>3000</strong> → <strong>Visibilité</strong> → <strong>Public</strong>. Remettez-le en privé après vos essais.</li>
+<li><strong>L'application n'est pas encore prête.</strong> <code>npm run essai</code> affiche « L'application répond » suivi de l'adresse à ouvrir — <strong>attendez cette ligne</strong>. Le message « ready » de Next.js, lui, arrive avant que le premier écran soit compilable.</li>
+<li><strong>Le serveur s'est arrêté.</strong> Regardez le terminal : s'il est revenu à l'invite, relancez <code>npm run essai</code>.</li>
+</ol>
 <p><strong><code>Missing script: "essai"</code>, ou des fichiers manquent dans la liste de gauche (<code>.devcontainer</code>, <code>HANDOVER.md</code>, <code>TODO.md</code>…).</strong> L'espace de travail a été créé avant que ce travail n'arrive sur <code>main</code> : il est resté à la version de ce jour-là. Supprimez-le et recréez-en un — voir l'encadré du geste 1. C'est le cas le plus fréquent, et le plus déroutant, parce que l'erreur ne dit pas que le problème est l'ancienneté de l'espace.</p>
 <p><strong>Le terminal affiche une erreur pendant la préparation.</strong> Elle s'arrête à la première anomalie plutôt que de continuer à moitié — le message dit laquelle. Relancez <code>bash .devcontainer/preparer.sh</code>.</p>
 <p><strong>Une action ne fait rien</strong> (créer un chantier, envoyer un devis). C'est le symptôme d'une origine refusée par Next.js derrière le proxy. Le dépôt gère ce cas (<code>next.config.ts</code>, <code>allowedOrigins</code>) ; si cela se reproduit, le nom de l'espace a changé — arrêtez puis relancez <code>npm run essai</code>.</p>

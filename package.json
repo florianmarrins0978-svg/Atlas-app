@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "essai": "next dev -H 0.0.0.0 -p 3000",
+    "essai": "node scripts/essai.mjs",
     "essai:reinitialiser": "tsx src/server/db/seed.ts",
     "build": "next build",
     "start": "next start",
