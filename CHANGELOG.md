@@ -9,6 +9,28 @@ Format : le plus récent en tête.
 
 ## 2026-08-01
 
+### Rien n'est acté valide sans avoir été éprouvé
+
+Règle posée par le patron après trois bancs d'essai livrés « prêts » qui ont
+échoué chez lui — script absent, application pas encore prête, port fermé. À
+chaque fois le code était juste ; c'est le parcours qui ne l'était pas, et c'est
+lui qui a fait le test.
+
+Elle est désormais en tête d'`AGENTS.md`, lu à chaque conversation, et rappelée
+dans `HANDOVER.md` — pas seulement dans `CLAUDE.md` §5, qu'on atteint après avoir
+déjà commencé à travailler.
+
+Appliquée à elle-même : le contrôle du banc d'essai a été confronté aux deux
+états dégradés qu'il prétend détecter — base vide, puis schéma appliqué sans
+données. Il échoue dans les deux cas, sort en erreur, et nomme la bonne cause.
+Un contrôle qui n'a jamais échoué ne prouve rien.
+
+Corrigé au passage : le message de fin de préparation promettait encore une
+adresse joignable « tant que vous êtes connecté au même compte GitHub ». Le port
+est public depuis, et cette phrase envoyait chercher un problème de compte là où
+il n'y en avait plus. Il dit maintenant d'attendre la ligne « L'application
+répond », et pourquoi n'y saisir que des données inventées.
+
 ### Installable sur un téléphone, et correcte une fois installée
 
 Le patron a demandé si ce qu'il voyait pendant ses essais serait le design

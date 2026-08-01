@@ -26,13 +26,14 @@ cat <<'FIN'
 
      npm run essai        démarre l'application
 
-   Puis ouvrez le port 3000 (onglet « Ports » de l'éditeur) et
-   connectez-vous avec :
+   Attendez la ligne « L'application répond » : elle donne
+   l'adresse exacte à ouvrir. Puis connectez-vous avec :
 
      demo@atlas.local  /  demo1234
 
-   L'adresse du port fonctionne aussi depuis un téléphone, tant
-   que vous êtes connecté au même compte GitHub.
+   Cette adresse s'ouvre aussi depuis un téléphone, sans rien
+   régler. Elle est donc ouvrable par qui la possède, et ce mot
+   de passe est public : n'y saisissez que des données inventées.
   ─────────────────────────────────────────────────────────────
 
 FIN

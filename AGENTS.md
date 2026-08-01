@@ -4,6 +4,36 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+# Rien n'est acté valide sans avoir été éprouvé
+
+**Règle posée par le patron, et qui prime sur l'envie d'avancer :** avant de dire
+qu'une chose fonctionne, l'avoir essayée soi-même — pas relue, pas compilée :
+essayée.
+
+Trois fois de suite, un banc d'essai a été livré « prêt » et c'est le patron qui
+a trouvé le défaut : un script absent, une application pas encore prête, un port
+fermé. À chaque fois le code était juste ; c'est le parcours qui ne l'était pas.
+
+Ce que cela exige concrètement, à chaque lot :
+
+- **Parcourir en entier ce qu'on transmet.** Un mode d'emploi, une commande, une
+  adresse : du premier geste au dernier, dans les conditions du patron. Compiler
+  n'est pas fonctionner, et « ça devrait marcher » n'est pas un test.
+- **Un contrôle doit savoir échouer.** Le confronter à l'état dégradé qu'il
+  prétend détecter. Un contrôle qui n'a jamais échoué ne prouve rien. **Et son
+  message doit désigner le bon coupable** : une erreur qui envoie chercher au
+  mauvais endroit coûte plus cher que pas d'erreur du tout.
+- **Ne jamais transmettre une commande non vérifiée sans le dire.** Si elle ne
+  peut pas l'être ici, l'écrire noir sur blanc plutôt que de la présenter comme
+  sûre.
+- **Ce qui ne peut pas être éprouvé ici doit l'être ailleurs.** Cet environnement
+  n'a ni démon Docker, ni GitHub CLI, et son mandataire réseau refuse `github.io`,
+  `api.github.com` et la documentation GitHub. Ne pas contourner : déplacer la
+  vérification vers une machine — c'est ce que font `pages.yml` pour le site
+  publié et `banc-essai.yml` pour l'espace de travail.
+
+Le détail des commandes est dans `CLAUDE.md` §5.
+
 # La mémoire du dépôt
 
 **Le dépôt est la source de vérité, pas la conversation.** Six fichiers portent

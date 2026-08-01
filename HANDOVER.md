@@ -39,6 +39,15 @@ reposer au patron : ils sont écrits, avec leur coût et leur propriétaire.
 
 ## Ce qu'il faut savoir avant de toucher au code
 
+### La règle qui prime : éprouver avant d'acter
+
+Rien ne se déclare valide sans avoir été parcouru en entier, dans les conditions
+du patron. Trois bancs d'essai livrés « prêts » ont échoué chez lui alors que le
+code était juste. Le détail est dans `AGENTS.md`, en tête — et il est lu à chaque
+conversation. Ce qui ne peut pas être éprouvé ici part en CI :
+`banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
+site publié à son adresse réelle.
+
 ### Les cinq pièges de ce dépôt
 
 1. **Une requête hors `withEntreprise()` ne renvoie rien, silencieusement.** Pas
