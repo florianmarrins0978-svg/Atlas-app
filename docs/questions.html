@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Mes questions</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="mes-questions">Mes questions</h1>
+<p>Les questions posées en cours de route, avec leur réponse. Écrit en langage courant, pas en jargon — c'est fait pour être relu dans six mois sans avoir à tout redécouvrir.</p>
+<p><strong>Document modifiable.</strong> Corrigez, complétez, supprimez ce qui ne sert plus. Une réponse qui a vieilli vaut moins que pas de réponse du tout : si un prix ou une règle change, rayez l'ancienne plutôt que de la laisser traîner.</p>
+<p><strong>Comment ce document est tenu</strong> (règles inscrites dans <code>AGENTS.md</code>, donc relues à chaque session) :</p>
+<ul>
+<li>Une question déjà traitée ici reçoit <strong>le passage existant, cité tel quel</strong> — pas une réponse reformulée de mémoire, qui risquerait de dire autre chose que la première fois.</li>
+<li>Une nouvelle question n'est ajoutée <strong>qu'après accord explicite</strong>. Elle n'y entre jamais toute seule.</li>
+<li>Si une réponse a changé, elle est corrigée ici et le changement est signalé.</li>
+</ul>
+<hr>
+<h2 id="sommaire">Sommaire</h2>
+<ol>
+<li><a href="#1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">Le compte développeur Apple : qui paie, et combien de temps ?</a></li>
+<li><a href="#2-faut-il-une-clé-api-pour-que-le-mail-du-client-se-remplisse-">Faut-il une clé API pour que l'e-mail du client se remplisse ?</a></li>
+<li><a href="#3-pourquoi-ladresse-du-client-ne-se-met-pas-toute-seule-dans-le-mail-">Pourquoi l'adresse du client ne se met pas toute seule dans le mail ?</a></li>
+<li><a href="#4-si-lapplication-se-fait-pirater-quest-ce-que-je-risque-">Si l'application se fait pirater, qu'est-ce que je risque ?</a></li>
+<li><a href="#5-comment-faire-signer-un-contrat-à-tous-les-utilisateurs-">Comment faire signer un contrat à tous les utilisateurs ?</a></li>
+</ol>
+<hr>
+<h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="qui-a-besoin-du-compte-">Qui a besoin du compte ?</h3>
+<p><strong>Vous seul.</strong> Une seule fois, pour votre entreprise.</p>
+<p>Vos artisans ne paient rien et n'ont aucun compte à créer. Ils vont sur l'App Store, ils téléchargent Atlas, ils s'en servent — exactement comme ils téléchargent WhatsApp.</p>
+<p>Le compte développeur, c'est <strong>le droit de déposer une application sur l'App Store</strong>. Rien d'autre. Il ne concerne que celui qui publie.</p>
+<h3 id="une-fois-ou-tout-le-temps-">Une fois, ou tout le temps ?</h3>
+<p><strong>Tout le temps — 99 $ par an.</strong></p>
+<p>Ce n'est pas un achat, c'est un abonnement. Tant que vous le payez, votre application reste sur l'App Store et vous pouvez la mettre à jour. <strong>Si vous arrêtez de payer, elle est retirée du magasin.</strong> Ceux qui l'ont déjà installée la gardent, mais plus personne ne peut la télécharger.</p>
+<p>Pour Android, c'est plus simple : <strong>25 $ une seule fois</strong>, à vie.</p>
+<h3 id="et-lautomatisation-du-mail-elle-coûte-quoi-">Et l'automatisation du mail, elle coûte quoi ?</h3>
+<p><strong>Rien de plus.</strong> Elle utilise l'application Mail déjà présente sur l'iPhone de l'artisan.</p>
+<p>Le web n'a pas le droit d'y toucher ; une vraie application, si. Le problème disparaît parce qu'on n'est plus dans un navigateur, pas parce qu'on paie quelque chose.</p>
+<h3 id="en-résumé">En résumé</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui paie</th>
+<th>Combien</th>
+<th>Quand</th>
+</tr></thead><tbody>
+<tr>
+<td>Compte Apple</td>
+<td>Vous</td>
+<td>99 $</td>
+<td>Chaque année</td>
+</tr>
+<tr>
+<td>Compte Google</td>
+<td>Vous</td>
+<td>25 $</td>
+<td>Une seule fois</td>
+</tr>
+<tr>
+<td>Vos artisans</td>
+<td>Personne</td>
+<td>0</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Le mail pré-rempli</td>
+<td>Personne</td>
+<td>0</td>
+<td>—</td>
+</tr>
+</tbody></table></div>
+<p><strong>À prévoir en plus : un Mac.</strong> Apple n'autorise la publication iOS que depuis un Mac, et personne ne peut le faire à votre place — c'est votre compte et votre identité qui engagent l'application.</p>
+<hr>
+<h2 id="2-faut-il-une-clé-api-pour-que-le-mail-du-client-se-remplisse-">2. Faut-il une clé API pour que l'e-mail du client se remplisse ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Non</strong>, pas pour ce problème-là. Une clé ne peut pas remplir un champ qui n'existe pas dans la fonction employée.</p>
+<p>Il y a trois niveaux, et deux règlent la question sans rien payer :</p>
+<p><strong>Aujourd'hui, sur le web — gratuit.</strong> Le PDF est joint automatiquement, et l'adresse du client est copiée dans le presse-papier : il ne reste qu'à la coller dans « À : ».</p>
+<p><strong>Dans l'application iOS/Android — gratuit aussi.</strong> Le composeur de mail natif accepte destinataire, objet *et* pièce jointe. Tout serait rempli d'un coup. Aucune clé, aucun serveur : juste un module natif à ajouter au moment du vrai build (voir question 1 pour le compte développeur).</p>
+<p><strong>L'envoi vraiment automatique — là, oui.</strong> Si le devis doit partir sans que personne ne touche à rien, il faut un service d'envoi (Brevo, Postmark, Resend…), donc une clé API, un compte, et un serveur pour garder cette clé au secret. Une clé placée dans une page publique est une clé perdue.</p>
+<hr>
+<h2 id="3-pourquoi-ladresse-du-client-ne-se-met-pas-toute-seule-dans-le-mail-">3. Pourquoi l'adresse du client ne se met pas toute seule dans le mail ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Parce que <strong>le partage d'iOS n'a pas de champ destinataire</strong>. Ce n'est pas une erreur de programmation : ce partage peut envoyer vers Mail, WhatsApp ou Messages, où « À : » n'aurait aucun sens. C'est aussi pour ça que l'objet reste vide.</p>
+<p>Sur ordinateur, l'adresse *est* remplie automatiquement — parce qu'on y emprunte une autre voie.</p>
+<h3 id="le-choix-quil-a-fallu-faire">Le choix qu'il a fallu faire</h3>
+<p>Les deux voies s'excluent, et aucune ne fait les deux :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Destinataire rempli</th>
+<th>PDF joint</th>
+</tr></thead><tbody>
+<tr>
+<td>Partage natif</td>
+<td>non</td>
+<td><strong>oui</strong></td>
+</tr>
+<tr>
+<td>Lien <code>mailto:</code></td>
+<td><strong>oui</strong></td>
+<td>non</td>
+</tr>
+</tbody></table></div>
+<p><strong>Version retenue : le partage natif</strong>, donc le PDF joint d'office, avec l'adresse copiée dans le presse-papier pour n'avoir qu'à la coller.</p>
+<blockquote>Une version « mail pré-rempli » a été essayée puis abandonnée : elle obligeait à joindre le devis à la main, ce qui est plus pénible sur un téléphone que de coller une adresse.</blockquote>
+<p>Ce compromis disparaît dans l'application native (question 2).</p>
+<hr>
+<h2 id="4-si-lapplication-se-fait-pirater-quest-ce-que-je-risque-">4. Si l'application se fait pirater, qu'est-ce que je risque ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote>Ce qui suit n'est pas un avis juridique. Le détail est dans <a href="RGPD.md" target="_blank" rel="noopener"><code>RGPD.md</code></a>, et le contrat doit être écrit par un juriste.</blockquote>
+<h3 id="dabord--détenir-ces-données-est-légal">D'abord : détenir ces données est légal</h3>
+<p>Ce n'est pas interdit, c'est <strong>encadré</strong>. Le problème n'est jamais de détenir — c'est de détenir sans le cadre.</p>
+<h3 id="votre-position-exacte">Votre position exacte</h3>
+<ul>
+<li>Pour <strong>vos abonnés artisans</strong> → vous êtes responsable de traitement.</li>
+<li>Pour <strong>les clients de vos artisans</strong> → vous êtes <strong>sous-traitant</strong>, et l'artisan est le responsable.</li>
+</ul>
+<p>Cette seconde relation impose un <strong>contrat</strong> (article 28 du RGPD). Sans lui, vous êtes en tort *avant même* tout piratage.</p>
+<h3 id="ce-que-vous-encourez-en-cas-de-fuite">Ce que vous encourez en cas de fuite</h3>
+<ul>
+<li><strong>Amende administrative (CNIL)</strong> : jusqu'à 10 M€ ou 2 % du chiffre d'affaires mondial. En pratique, la CNIL commence souvent par une mise en demeure — mais l'absence totale de documentation fait basculer vers la sanction.</li>
+<li><strong>Pénal</strong> : l'article 226-17 du Code pénal punit le défaut de sécurité de 5 ans de prison et 300 000 € d'amende. Pour une société, le montant est quintuplé (1,5 M€). C'est le point que la plupart des gens ignorent.</li>
+<li><strong>Civil</strong> : les personnes concernées peuvent réclamer des dommages.</li>
+<li><strong>Contractuel</strong> : vos artisans peuvent se retourner contre vous.</li>
+<li><strong>Obligation immédiate</strong> : vous devez alerter l'artisan <strong>sans délai</strong>. C'est *lui* qui a ensuite 72 heures pour prévenir la CNIL. Réagir en trois jours lui fait manquer son délai.</li>
+</ul>
+<h3 id="ce-qui-réduit-vraiment-le-risque">Ce qui réduit vraiment le risque</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Levier</th>
+<th>Effet</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Créer une société</strong> plutôt qu'exercer en nom propre</td>
+<td>Sépare votre patrimoine personnel. Le plus gros levier, et le moins cher</td>
+</tr>
+<tr>
+<td><strong>Assurance cyber / RC pro</strong></td>
+<td>Absorbe l'essentiel du coût d'une fuite</td>
+</tr>
+<tr>
+<td><strong>Contrat de sous-traitance</strong></td>
+<td>Obligatoire, et répartit les responsabilités</td>
+</tr>
+<tr>
+<td><strong>Hébergement en Europe, chiffrement</strong></td>
+<td>Réduit la faute retenue contre vous</td>
+</tr>
+<tr>
+<td><strong>Ne pas garder ce qui ne sert plus</strong></td>
+<td>Ce qu'on ne détient pas ne peut pas fuir</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="5-comment-faire-signer-un-contrat-à-tous-les-utilisateurs-">5. Comment faire signer un contrat à tous les utilisateurs ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Les conditions générales suffisent.</strong> L'article 28.9 accepte l'écrit « y compris sous forme électronique » : pas de signature manuscrite, pas de papier. Une case cochée en ligne est valable — c'est ce que font tous les services de ce type.</p>
+<p>Trois conditions pour que ça tienne :</p>
+<ol>
+<li><strong>Un document distinct</strong>, annexé aux conditions générales et non dilué dedans. Noyé dans vingt pages, un contrôleur peut estimer que l'artisan n'en a jamais eu vraiment connaissance.</li>
+<li><strong>Une case non pré-cochée</strong>, distincte de celle des conditions générales, avec le texte accessible <strong>avant</strong> de cocher.</li>
+<li><strong>Une preuve conservée</strong> : qui, quand, quelle version. C'est le point qu'on oublie — sans cette trace, l'acceptation est invérifiable le jour exact où elle compte.</li>
+</ol>
+<blockquote><strong>Déjà construit.</strong> Le mécanisme existe dans l'application : documents versionnés, cases jamais pré-cochées, et preuve conservée jusqu'à l'empreinte du texte exact accepté. <strong>Les textes juridiques, eux, restent à écrire par un juriste</strong> — ce sont des canevas sans valeur en l'état.</blockquote>
+<p>Dernier point : quand vous changerez de fournisseur d'IA, vous devrez <strong>prévenir les artisans à l'avance</strong> et leur laisser la possibilité de s'y opposer.</p>
+</main>
+</body>
+</html>
