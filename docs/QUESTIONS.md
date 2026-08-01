@@ -349,10 +349,13 @@ client, les deux dates au maximum, le refus de facturer un devis jamais envoyé,
 la reprise d'un devis retourné.
 
 **Y compris la page du client, sur un vrai téléphone.** Dans l'espace de
-travail, le port peut être basculé en visibilité **publique** : le lien du devis
-devient ouvrable par n'importe qui. Vous l'envoyez à un proche, il choisit sa
-date depuis son téléphone, et vous voyez le chantier se planifier. **À remettre
-en privé aussitôt après** — publique, l'adresse est ouverte à qui la possède.
+travail, l'adresse est **publique dès la création** : le lien du devis est
+ouvrable par n'importe qui. Vous l'envoyez à un proche, il choisit sa date depuis
+son téléphone, et vous voyez le chantier se planifier. C'était auparavant un
+réglage à faire à la main, impossible à viser sur un écran de téléphone — d'où
+trois pages blanches d'affilée le 2026-08-01. **En contrepartie, n'y saisissez
+que des données inventées** : l'adresse est ouverte à qui la possède, et le mot
+de passe de démonstration est écrit dans ce dépôt public.
 
 C'est là que se fait l'essentiel du travail de finition. Les six défauts trouvés
 le 2026-08-01 l'ont tous été en regardant des écrans, jamais par un test vert.
