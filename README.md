@@ -42,6 +42,7 @@ qu'il ne fera jamais seul — est cadrée dans [`docs/AGENT.md`](docs/AGENT.md).
 
 ## Documentation opérationnelle
 
+- [`docs/A-FAIRE.md`](docs/A-FAIRE.md) — ce qui doit être réglé avant de servir de vrais artisans
 - [`docs/QUESTIONS.md`](docs/QUESTIONS.md) — les questions posées en cours de route et leurs réponses, en langage courant
 - [`docs/RGPD.md`](docs/RGPD.md) — registre des traitements, sous-traitants, conservation, violations
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — déploiement, health checks, rollback

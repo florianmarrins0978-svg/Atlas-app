@@ -1,5 +1,5 @@
 /* =======================================================================
-   Rend `docs/QUESTIONS.md` en une page consultable, au sommaire cliquable.
+   Rend un document Markdown en une page consultable, au sommaire cliquable.
 
    Pourquoi un générateur plutôt qu'une seconde version écrite à la main :
    le document vit et s'enrichit à chaque question. Deux versions tenues
@@ -12,13 +12,25 @@
    dont on maîtrise la forme.
 
    Usage :
-     node scripts/questions-en-page.mjs [chemin/de/sortie.html]
+     node scripts/md-en-page.mjs docs/QUESTIONS.md [sortie.html]
+     node scripts/md-en-page.mjs docs/A-FAIRE.md
    ======================================================================= */
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-const SOURCE = path.join(import.meta.dirname, "..", "docs", "QUESTIONS.md");
-const SORTIE = process.argv[2] ?? path.join(import.meta.dirname, "..", "docs", "questions.html");
+const SOURCE = process.argv[2];
+if (!SOURCE) {
+  console.error("Usage : node scripts/md-en-page.mjs <source.md> [sortie.html]");
+  process.exit(1);
+}
+// Par défaut, la page prend le nom du document, en minuscules et en .html —
+// docs/A-FAIRE.md donne docs/a-faire.html.
+const SORTIE =
+  process.argv[3] ??
+  path.join(
+    path.dirname(SOURCE),
+    path.basename(SOURCE, ".md").toLowerCase() + ".html"
+  );
 
 const echapper = (s) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -176,14 +188,18 @@ function convertir(markdown) {
   return { corps: sortie.join("\n"), sections };
 }
 
-const { corps } = convertir(readFileSync(SOURCE, "utf8"));
+const markdown = readFileSync(SOURCE, "utf8");
+const { corps } = convertir(markdown);
+// Le titre de l'onglet reprend le titre du document plutôt qu'une constante :
+// deux pages nommées « Atlas » seraient indiscernables dans les onglets.
+const titrePage = (markdown.match(/^#\s+(.*)$/m)?.[1] ?? path.basename(SOURCE)).trim();
 
 const page = `<!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — Mes questions</title>
+<title>Atlas — ${titrePage}</title>
 <style>
   :root{
     --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
