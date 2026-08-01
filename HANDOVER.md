@@ -137,6 +137,12 @@ DATABASE_URL=postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test \
 
 **Deux pièges d'exécution :**
 
+- **Ne jamais donner `REDIS_URL` à `npm test`.** La suite des propositions IA
+  ouvre alors une connexion qui n'est jamais refermée : le processus ne se
+  termine plus, et la série entière reste bloquée **sans le moindre message**.
+  Isolé : code 124 avec la variable, code 0 sans. La CI ne la fournit qu'aux
+  suites navigateur, qui en ont besoin pour remettre à zéro la limitation de
+  débit. `verifier-avant-livraison.ts` la retire explicitement.
 - `npm test` **efface la base** entre les suites : le compte de démonstration
   disparaît. Réamorcer avant de relancer les suites navigateur.
 - Un serveur de développement déjà en écoute sur le port 3000 fait échouer
