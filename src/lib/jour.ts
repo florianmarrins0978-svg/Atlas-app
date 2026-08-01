@@ -12,12 +12,14 @@ const MOIS = [
   "juillet", "août", "septembre", "octobre", "novembre", "décembre",
 ];
 
-/** « lundi 23 mars » */
+/** « lundi 23 mars », « samedi 1er août » */
 export function jourLisible(iso: string): string {
   const [a, m, j] = iso.split("-").map(Number);
   if (!a || !m || !j) return iso;
   const jourSemaine = JOURS[new Date(Date.UTC(a, m - 1, j)).getUTCDay()];
-  return `${jourSemaine} ${j} ${MOIS[m - 1]}`;
+  // Le premier du mois est le seul ordinal en français : « 1er août », jamais
+  // « 1 août ». Sur un devis, cette faute se remarque.
+  return `${jourSemaine} ${j === 1 ? "1er" : j} ${MOIS[m - 1]}`;
 }
 
 /** Délai légal de rétractation pour une acceptation à distance. */

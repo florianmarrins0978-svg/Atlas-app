@@ -40,7 +40,7 @@ async function main() {
     console.log("Nettoyage des données de démonstration existantes...");
     await tx.execute(sql`
       TRUNCATE TABLE
-        lignes_devis, devis, lignes_prix, photos, notes_vocales,
+        lignes_facture, factures, lignes_devis, devis, lignes_prix, photos, notes_vocales,
         materiel, prestations, chantiers, clients, tarifs,
         entreprise_compteurs, membres_entreprise, entreprises, users
       RESTART IDENTITY CASCADE

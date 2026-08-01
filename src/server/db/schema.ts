@@ -93,6 +93,9 @@ export const entrepriseCompteurs = pgTable("entreprise_compteurs", {
     .primaryKey()
     .references(() => entreprises.id, { onDelete: "cascade" }),
   prochainNumeroDevis: integer("prochain_numero_devis").notNull().default(1),
+  // Suite distincte de celle des devis : mêler les deux rendrait illisible
+  // la numérotation continue qu'attend un contrôle fiscal.
+  prochainNumeroFacture: integer("prochain_numero_facture").notNull().default(1),
 });
 
 // Correction v2.1 §1 : remplace le lien direct utilisateur → entreprise.
@@ -734,5 +737,95 @@ export const audiosAPurger = pgTable(
   (t) => [
     unique("audios_a_purger_note_uk").on(t.noteId),
     index("audios_a_purger_echeance_idx").on(t.purgerLe),
+  ]
+);
+
+// --- Factures et TVA collectée (docs/AGENT.md §2.3) ------------------------
+//
+// Bâtie en brouillon quand le patron déclare la fin du chantier, figée à
+// l'émission. Le relevé de TVA n'a pas de table : il se calcule à partir des
+// factures émises, ce qui le rend incapable de diverger de ce qui a été
+// facturé. Cette garantie repose sur l'immuabilité d'une facture émise, posée
+// par trigger dans 0018_factures.sql.
+
+export const factures = pgTable(
+  "factures",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    chantierId: uuid("chantier_id").notNull(),
+    devisId: uuid("devis_id").notNull(),
+
+    numeroCommercial: text("numero_commercial").notNull(),
+    statut: text("statut", { enum: ["brouillon", "emise"] }).notNull().default("brouillon"),
+
+    // Instantané figé — même principe que le devis.
+    entrepriseNom: text("entreprise_nom").notNull(),
+    entrepriseAdresse: text("entreprise_adresse"),
+    entrepriseSiret: text("entreprise_siret"),
+    entrepriseEmail: text("entreprise_email"),
+    entrepriseTelephone: text("entreprise_telephone"),
+    entrepriseIban: text("entreprise_iban"),
+
+    clientNom: text("client_nom"),
+    clientAdresse: text("client_adresse"),
+    clientTelephone: text("client_telephone"),
+    clientEmail: text("client_email"),
+
+    adresseChantier: text("adresse_chantier"),
+
+    dateEmission: date("date_emission").notNull(),
+    dateEcheance: date("date_echeance"),
+    conditionsPaiement: text("conditions_paiement"),
+    devise: char("devise", { length: 3 }).notNull().default("EUR"),
+
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }).notNull().default("20.00"),
+    totalHt: numeric("total_ht", { precision: 10, scale: 2 }).notNull(),
+    totalTva: numeric("total_tva", { precision: 10, scale: 2 }).notNull(),
+    totalTtc: numeric("total_ttc", { precision: 10, scale: 2 }).notNull(),
+
+    pdfStorageKey: text("pdf_storage_key"),
+    pdfChecksum: text("pdf_checksum"),
+
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdBy: uuid("created_by").references(() => users.id),
+    emiseLe: timestamp("emise_le", { withTimezone: true }),
+  },
+  (t) => [
+    unique("factures_chantier_uk").on(t.chantierId),
+    unique("factures_id_entreprise_uk").on(t.id, t.entrepriseId),
+    unique("factures_entreprise_numero_uk").on(t.entrepriseId, t.numeroCommercial),
+    foreignKey({
+      columns: [t.chantierId, t.entrepriseId],
+      foreignColumns: [chantiers.id, chantiers.entrepriseId],
+      name: "factures_chantier_entreprise_fk",
+    }).onDelete("restrict"),
+    foreignKey({
+      columns: [t.devisId, t.entrepriseId],
+      foreignColumns: [devis.id, devis.entrepriseId],
+      name: "factures_devis_entreprise_fk",
+    }).onDelete("restrict"),
+  ]
+);
+
+export const lignesFacture = pgTable(
+  "lignes_facture",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    factureId: uuid("facture_id").notNull(),
+    libelle: text("libelle").notNull(),
+    quantite: numeric("quantite", { precision: 10, scale: 2 }).notNull().default("1"),
+    prixUnitaire: numeric("prix_unitaire", { precision: 10, scale: 2 }).notNull(),
+    montant: numeric("montant", { precision: 10, scale: 2 }).notNull(),
+    ordre: integer("ordre").notNull().default(0),
+  },
+  (t) => [
+    index("lignes_facture_facture_idx").on(t.factureId),
+    foreignKey({
+      columns: [t.factureId, t.entrepriseId],
+      foreignColumns: [factures.id, factures.entrepriseId],
+      name: "lignes_facture_facture_entreprise_fk",
+    }).onDelete("cascade"),
   ]
 );

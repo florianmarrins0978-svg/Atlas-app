@@ -93,7 +93,7 @@ async function main() {
   // --- Vérifie que le devis n'a pas été envoyé ni facturé ---
   await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
   assert.ok(
-    await page.locator("text=Envoyer vers le système de devis").isVisible(),
+    await page.locator("text=Envoyer au client").isVisible(),
     "Le devis ne doit jamais être envoyé automatiquement"
   );
 

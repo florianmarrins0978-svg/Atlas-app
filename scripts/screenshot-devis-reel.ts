@@ -38,11 +38,11 @@ async function main() {
   const reponse = await page.request.get(`http://localhost:3000${apercuHref}`);
   writeFileSync(`${OUT}/apercu-devis.pdf`, await reponse.body());
 
-  await page.click("text=Envoyer vers le système de devis");
-  await page.waitForSelector("text=Envoyer ce devis ?");
+  await page.click("text=Envoyer au client");
+  await page.waitForSelector("text=Une date, ou deux au choix du client ?");
   await page.screenshot({ path: `${OUT}/02-confirmation-envoi.png`, fullPage: true });
-  await page.getByRole("button", { name: "Envoyer", exact: true }).click();
-  await page.waitForSelector("text=Devis envoyé à");
+  await page.getByRole("button", { name: "Envoyer le devis" }).click();
+  await page.waitForSelector("text=Devis prêt pour");
   await page.screenshot({ path: `${OUT}/03-apres-envoi.png`, fullPage: true });
 
   const telechargementHref = await page.locator("text=Télécharger le PDF").getAttribute("href");

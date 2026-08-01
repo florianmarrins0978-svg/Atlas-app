@@ -21,6 +21,7 @@ import {
   versJourIso,
   ajouterJours,
 } from "../src/server/disponibilites";
+import { jourLisible } from "../src/lib/jour";
 import { nettoyerBase } from "./_test-db";
 
 let passed = 0;
@@ -56,6 +57,21 @@ async function contexteAvecDevis(email: string) {
 
 async function main() {
   await nettoyerBase();
+
+  // ---- Écriture des dates : ce que le client lit sur son devis.
+  await test("une date est écrite en toutes lettres, sans décalage de fuseau", async () => {
+    assert.strictEqual(jourLisible("2026-03-23"), "lundi 23 mars");
+    assert.strictEqual(jourLisible("2026-12-31"), "jeudi 31 décembre");
+    // Le premier du mois est le seul ordinal du français.
+    assert.strictEqual(jourLisible("2026-08-01"), "samedi 1er août");
+    // Un jour est un jour, pas un instant : minuit ne doit jamais reculer
+    // d'une case selon le fuseau du lecteur.
+    assert.strictEqual(jourLisible("2026-01-01"), "jeudi 1er janvier");
+  });
+
+  await test("une date illisible est rendue telle quelle, jamais devinée", async () => {
+    assert.strictEqual(jourLisible("pas-une-date"), "pas-une-date");
+  });
 
   // ---- Règles pures : la même fonction sert l'affichage et la revérification.
   await test("la fenêtre exclut aujourd'hui et demain", async () => {
