@@ -164,8 +164,10 @@
 <li><strong>Le serveur s'est arrêté.</strong> Regardez le terminal : s'il est revenu à l'invite, relancez <code>npm run essai</code>.</li>
 <li><strong>Le port est privé.</strong> Il est public dès la création — mais un espace créé avant le 2026-08-01 ne le sait pas, ce réglage étant lu à la création.</li>
 </ol>
-<p><strong>Le plus simple, y compris sur un téléphone</strong>, est une commande dans le terminal que vous avez déjà sous les yeux :</p>
+<p><strong>La solution sûre : supprimer cet espace et en créer un neuf</strong> (encadré du geste 1). Le port y sera public d'emblée, sans rien régler. C'est plus long de cinq minutes, mais c'est le seul chemin qui ne demande de viser aucun bouton sur un écran de téléphone.</p>
+<p>Si vous préférez rattraper l'espace en cours, une commande dans le terminal que vous avez déjà sous les yeux :</p>
 <p>``<code> gh codespace ports visibility 3000:public -c $CODESPACE_NAME </code>``</p>
+<p>&gt; Cette commande n'a <strong>pas pu être vérifiée</strong> : l'environnement où ce dépôt &gt; est développé n'a pas l'outil <code>gh</code>, et la documentation de GitHub y est &gt; inaccessible. Si elle refuse, ne cherchez pas : recréez l'espace.</p>
 <p>À la souris, l'onglet <strong>« Ports »</strong> à côté du terminal fait la même chose. Sur téléphone, le panneau s'ouvre depuis la barre bleue du bas, par un appui <strong>bref</strong> sur l'icône d'antenne suivie d'un chiffre — un appui long ouvre le menu de la barre elle-même, qui n'a rien à voir.</p>
 <p><strong><code>Missing script: "essai"</code>, ou des fichiers manquent dans la liste de gauche (<code>.devcontainer</code>, <code>HANDOVER.md</code>, <code>TODO.md</code>…).</strong> L'espace de travail a été créé avant que ce travail n'arrive sur <code>main</code> : il est resté à la version de ce jour-là. Supprimez-le et recréez-en un — voir l'encadré du geste 1. C'est le cas le plus fréquent, et le plus déroutant, parce que l'erreur ne dit pas que le problème est l'ancienneté de l'espace.</p>
 <p><strong>Le terminal affiche une erreur pendant la préparation.</strong> Elle s'arrête à la première anomalie plutôt que de continuer à moitié — le message dit laquelle. Relancez <code>bash .devcontainer/preparer.sh</code>.</p>
