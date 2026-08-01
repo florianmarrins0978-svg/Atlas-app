@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-01 · branche `claude/migrate-app-atlas-zz31ac`
-· dernier commit `d553147` · dernière migration `drizzle/0018_factures.sql`
+· dernier commit `dad467d` · dernière migration `drizzle/0018_factures.sql`
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
@@ -52,6 +52,7 @@ seule avec quinze outils.
 | Reprise d'un devis retourné en nouvelle version | `src/app/chantiers/[id]/export/actions.ts` |
 | Onglet « Terminés » et fin de chantier | `src/app/termines/` |
 | Facture bâtie depuis le devis, arrêt 3 | `src/app/chantiers/[id]/facture/` |
+| Installation sur téléphone : icône, plein écran, marges de sécurité | `src/app/layout.tsx`, `src/app/globals.css`, `scripts/generer-icones.mjs` |
 | Relevé de TVA collectée, par trimestre | `src/app/termines/tva/` + `src/server/trimestre.ts` |
 
 ### Conformité RGPD
@@ -108,8 +109,10 @@ patron :
 
 1. Choisir les deux fournisseurs d'IA définitifs (transcription, raisonnement).
 2. Faire rédiger le contrat de sous-traitance par un juriste.
-3. Choisir un hébergement européen — **sans lui, personne ne peut se servir de
-   l'application Next.js**.
+3. Choisir un hébergement européen — **sans lui, personne d'autre que le patron
+   ne peut se servir de l'application**. N'empêche NI d'essayer NI de finir le
+   produit : voir `docs/ESSAYER.md`. La marche à suivre, les fournisseurs
+   candidats et le partage des tâches sont détaillés dans `docs/A-FAIRE.md` §3.
 4. Constituer une société et souscrire une assurance cyber.
 5. Brancher un fournisseur SMS et e-mail — **sans lui, rien ne quitte
    l'application** : le lien du devis est remis au patron, qui le transmet

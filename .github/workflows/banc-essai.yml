@@ -1,0 +1,57 @@
+name: Banc d'essai
+
+# Monte l'espace de travail complet et s'en sert, comme le ferait le patron.
+#
+# Pourquoi ce workflow existe : l'environnement de développement de l'agent n'a
+# ni démon Docker, ni GitHub CLI. Le banc d'essai y est donc invérifiable — et
+# il a été livré trois fois de suite avec un défaut que seul le patron
+# rencontrait : un script manquant, une application pas encore prête, un port
+# fermé. À chaque fois, c'est lui qui a fait le test.
+#
+# Ce qui ne peut pas être éprouvé là où on développe doit l'être ailleurs, par
+# une machine. C'est la même réponse que pour le site publié, que le workflow
+# `pages.yml` vérifie à son adresse réelle.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".devcontainer/**"
+      - "docker/init/**"
+      - "scripts/essai.mjs"
+      - "src/server/db/seed.ts"
+      - "drizzle/**"
+      - "package.json"
+      - ".github/workflows/banc-essai.yml"
+  pull_request:
+    paths:
+      - ".devcontainer/**"
+      - "docker/init/**"
+      - "scripts/essai.mjs"
+      - "src/server/db/seed.ts"
+      - "drizzle/**"
+      - "package.json"
+      - ".github/workflows/banc-essai.yml"
+  # Déclenchable à la main : utile après une panne signalée par le patron.
+  workflow_dispatch:
+
+jobs:
+  monter-et-utiliser:
+    name: Monter le banc d'essai et s'en servir
+    runs-on: ubuntu-latest
+    # Généreux : la première construction télécharge les images, installe les
+    # dépendances, applique dix-neuf migrations et compile le premier écran.
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # Construit l'espace de travail à partir de .devcontainer/, services
+      # compris — PostgreSQL avec ses rôles restreints, Redis — puis joue
+      # `preparer.sh`, exactement comme à la création d'un Codespace.
+      - name: Monter l'espace et l'éprouver
+        uses: devcontainers/ci@v0.3
+        with:
+          configFile: .devcontainer/devcontainer.json
+          push: never
+          runCmd: bash .devcontainer/verifier.sh

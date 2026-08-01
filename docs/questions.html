@@ -76,6 +76,8 @@
 <li><a href="#5-comment-faire-signer-un-contrat-à-tous-les-utilisateurs-">Comment faire signer un contrat à tous les utilisateurs ?</a></li>
 <li><a href="#6-le-dépôt-est-public--nimporte-qui-peut-il-voler-notre-travail-">Le dépôt est public : n'importe qui peut-il voler notre travail ?</a></li>
 <li><a href="#7-concrètement-quels-problèmes-pose-le-dépôt-public-">Concrètement, quels problèmes pose le dépôt public ?</a></li>
+<li><a href="#8-faut-il-héberger-lapplication-pour-pouvoir-lessayer-en-entier-">Faut-il héberger l'application pour pouvoir l'essayer en entier ?</a></li>
+<li><a href="#9-ce-que-je-vois-là-est-ce-le-design-final-">Ce que je vois là, est-ce le design final ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -300,6 +302,113 @@
 <li><strong>La nuance.</strong> Le document dit aussi ce qui est déjà solide et ce qui est en cours. Celui qui tombe dessus retient trois mots.</li>
 </ul>
 <p><strong>C'est temporaire.</strong> Quand les trois écarts seront comblés, le document dira le contraire et la gêne disparaîtra d'elle-même. La question n'est donc pas « faut-il cacher quelque chose », mais « faut-il laisser ça lisible par tout le monde pendant les quelques semaines où c'est encore vrai ».</p>
+<hr>
+<h2 id="8-faut-il-héberger-lapplication-pour-pouvoir-lessayer-en-entier-">8. Faut-il héberger l'application pour pouvoir l'essayer en entier ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>*Posée le 2026-08-01.*</p>
+<p><strong>Non.</strong> Vous pouvez essayer l'application entière, et la finir, sans l'héberger nulle part. L'hébergement sert à <strong>sortir</strong> le produit, pas à le terminer.</p>
+<h3 id="la-confusion-à-dissiper-dabord">La confusion à dissiper d'abord</h3>
+<p>Deux choses portent le même mot et n'ont rien à voir :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce que c'est</th>
+<th>Ce qu'il faut</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Un banc d'essai</strong></td>
+<td>Un ordinateur qui monte pour vous dans le navigateur, le temps de vos essais</td>
+<td>Votre compte GitHub, rien d'autre</td>
+</tr>
+<tr>
+<td><strong>Un hébergement</strong></td>
+<td>Une adresse permanente, ouverte à d'autres que vous</td>
+<td>Un fournisseur, un contrat, 30 à 50 € par mois</td>
+</tr>
+</tbody></table></div>
+<p>Le premier s'ouvre en cinq gestes — voir <a href="ESSAYER.md" target="_blank" rel="noopener"><code>ESSAYER.md</code></a>. Le second est le point 3 du document <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a>.</p>
+<h3 id="ce-que-vous-pouvez-éprouver-sans-rien-héberger">Ce que vous pouvez éprouver sans rien héberger</h3>
+<p>Tout ce qui fait le produit : le parcours du début à la fin, chaque écran, chaque mot, chaque bouton, et les règles métier — les jours libres proposés au client, les deux dates au maximum, le refus de facturer un devis jamais envoyé, la reprise d'un devis retourné.</p>
+<p><strong>Y compris la page du client, sur un vrai téléphone.</strong> Dans l'espace de travail, le port peut être basculé en visibilité <strong>publique</strong> : le lien du devis devient ouvrable par n'importe qui. Vous l'envoyez à un proche, il choisit sa date depuis son téléphone, et vous voyez le chantier se planifier. <strong>À remettre en privé aussitôt après</strong> — publique, l'adresse est ouverte à qui la possède.</p>
+<p>C'est là que se fait l'essentiel du travail de finition. Les six défauts trouvés le 2026-08-01 l'ont tous été en regardant des écrans, jamais par un test vert.</p>
+<h3 id="les-quatre-choses-qui-échappent-au-banc-dessai">Les quatre choses qui échappent au banc d'essai</h3>
+<p>Aucune ne change ce que vous voyez à l'écran. Elles décident si le produit tient dans la durée, pas s'il est juste.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Pourquoi cela ne se voit qu'hébergé</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>La durabilité des fichiers</strong></td>
+<td>Photos et enregistrements vont sur le disque du banc d'essai. En production ce mode est refusé au démarrage : c'est un autre code qui s'exécute</td>
+</tr>
+<tr>
+<td><strong>Plusieurs machines à la fois</strong></td>
+<td>La limite de connexions est partagée entre elles précisément pour cela. Avec une seule machine, le défaut ne peut pas apparaître</td>
+</tr>
+<tr>
+<td><strong>Sauvegardes et restauration</strong></td>
+<td>Ce sont des fonctions du fournisseur de base de données</td>
+</tr>
+<tr>
+<td><strong>La charge réelle</strong></td>
+<td>Un banc d'essai ne dit rien de dix artisans en même temps</td>
+</tr>
+</tbody></table></div>
+<h3 id="ce-que-lhébergement-apporte-vraiment">Ce que l'hébergement apporte vraiment</h3>
+<p>Trois choses, et aucune ne s'appelle « essayer » :</p>
+<ol>
+<li><strong>Une adresse permanente</strong> — le banc d'essai s'arrête après trente minutes sans activité.</li>
+<li><strong>D'autres utilisateurs que vous</strong> — un artisan n'ouvrira pas un espace de développement.</li>
+<li><strong>Le droit de confier de vraies données</strong> — chiffrement, sauvegardes, et un contrat qui les garantit.</li>
+</ol>
+<h3 id="dans-quel-ordre-sy-prendre">Dans quel ordre s'y prendre</h3>
+<p>D'abord essayer, longuement. Il en sortira une liste de corrections — cela a été le cas à chaque fois. Les traiter. Recommencer.</p>
+<p>Quand plus rien ne gêne, l'hébergement devient utile : il ne servira plus à finir le produit, mais à le sortir.</p>
+<h3 id="la-réserve-qui-vaut-dans-les-deux-cas">La réserve qui vaut dans les deux cas</h3>
+<p><strong>Rien ne part réellement chez le client</strong>, ni depuis le banc d'essai ni depuis un hébergement : aucun fournisseur de SMS ni d'e-mail n'est branché. C'est le point 5 de <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a>, et il ne se règle pas en hébergeant.</p>
+<hr>
+<h2 id="9-ce-que-je-vois-là-est-ce-le-design-final-">9. Ce que je vois là, est-ce le design final ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>*Posée le 2026-08-01.*</p>
+<p><strong>Oui.</strong> Même code, mêmes écrans, mêmes couleurs, mêmes polices. Ce que vous avez sous les yeux n'est pas une approximation : c'est l'application. Rien ne sera redessiné pour la publication.</p>
+<h3 id="trois-choses-changeront-toutes-en-mieux">Trois choses changeront, toutes en mieux</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Pendant les essais</th>
+<th>Une fois installée</th>
+</tr></thead><tbody>
+<tr>
+<td>La barre d'adresse du navigateur</td>
+<td>Présente, en haut</td>
+<td><strong>Disparue</strong> — plein écran</td>
+</tr>
+<tr>
+<td>La vitesse</td>
+<td>Chaque écran se compile à la volée</td>
+<td>Instantané</td>
+</tr>
+<tr>
+<td>Le badge noir « N » en bas à gauche</td>
+<td>Présent</td>
+<td>Disparu — c'est un outil de développement</td>
+</tr>
+</tbody></table></div>
+<h3 id="la-partie-inattendue--deux-chemins-pas-un">La partie inattendue : deux chemins, pas un</h3>
+<p>Ce qui était relié à l'outil de fabrication iOS, c'étaient <strong>les cinq maquettes d'Arborea</strong>, pas l'application. Publier en l'état aurait mis les maquettes sur l'App Store. Le chemin existe, mais il restait à construire.</p>
+<p><strong>Chemin A — l'App Store.</strong> Une coque native qui affiche l'application hébergée. Environ une journée de travail, mais elle suppose l'hébergement d'abord, plus le compte Apple à 99 $ par an, plus un Mac, plus la validation d'Apple à chaque mise à jour (voir question 1).</p>
+<p><strong>Chemin B — sans App Store.</strong> L'artisan ouvre l'adresse dans Safari, puis « Ajouter à l'écran d'accueil ». Une icône apparaît, et l'application s'ouvre <strong>en plein écran, sans barre d'adresse — visuellement identique à une application téléchargée</strong>.</p>
+<p>Coût : <strong>zéro</strong>. Pas de compte Apple, pas de Mac, pas de validation, et vos corrections arrivent chez l'artisan immédiatement au lieu d'attendre Apple.</p>
+<p>Ce que vous perdez : la vitrine de l'App Store. Pour un outil vendu par abonnement à des artisans que vous démarchez, ce n'est pas là qu'ils vous trouveront.</p>
+<p><strong>Le chemin B est prêt</strong> depuis le 2026-08-01 : icône, nom, ouverture en plein écran. Il ne manque que l'hébergement, qui sert les deux chemins.</p>
+<h3 id="deux-défauts-corrigés-à-cette-occasion">Deux défauts corrigés à cette occasion</h3>
+<p>Ils ne se voyaient <strong>que</strong> sur un téléphone, une fois l'application installée — jamais dans un navigateur d'ordinateur, jamais dans un test :</p>
+<ul>
+<li><strong>La barre d'état recouvrait le haut du contenu.</strong> Le titre « VOS CHANTIERS » passait sous l'heure et la batterie.</li>
+<li><strong>L'indicateur d'accueil mangeait le bas de la navigation.</strong> Les libellés « Chantiers / Planning / Terminés / Tarifs » se retrouvaient dessous.</li>
+</ul>
+<p>Vérifiés en simulant un iPhone à encoche, pas en relisant le code.</p>
+<h3 id="licône-est-provisoire">L'icône est provisoire</h3>
+<p>Un « A » en forme de chevron de charpente, dans les couleurs de l'application. Volontairement simple : une icône provisoire qui chercherait à bien faire donne l'illusion d'une décision prise, et personne ne la remplace jamais.</p>
+<p>Pour la changer : remplacer <code>public/icone-source.svg</code> et lancer <code>npm run icones</code>. Toutes les tailles se régénèrent d'un trait — un jeu d'icônes retouché taille par taille finit toujours par diverger.</p>
 </main>
 </body>
 </html>

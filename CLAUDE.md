@@ -107,6 +107,44 @@ une pile de notifications qui repoussait tout le contenu hors de l'écran — on
 été trouvés en regardant une capture, jamais par un test vert. Prendre une
 capture des écrans touchés fait partie du travail, pas de la finition.
 
+### Parcourir soi-même ce qu'on transmet
+
+Un mode d'emploi, une commande, un environnement : **rien ne se donne au patron
+sans avoir été parcouru en entier**, du premier geste au dernier. Compiler n'est
+pas fonctionner ; « le script ne plante pas » ne dit rien de l'expérience de
+celui qui le suit.
+
+Trois échecs d'affilée l'ont montré, tous sur l'outillage et jamais sur le
+produit : un mode d'emploi décrivant du code encore sur une branche, une adresse
+ouverte avant que le serveur puisse servir, un port fermé qui rendait la page
+blanche depuis un téléphone. À chaque fois, c'est **le patron** qui a fait le
+test — et trois fois de suite, c'est trois fois de trop.
+
+**Un contrôle doit savoir échouer.** Le vérifier en le confrontant à l'état
+dégradé qu'il prétend détecter : une base vide, un fichier absent, un service
+arrêté. Un contrôle jamais vu rouge ne prouve rien.
+
+**Et son message doit désigner le bon coupable.** « relation "users" does not
+exist » quand c'est la base entière qui n'est pas montée envoie chercher au
+mauvais endroit — une erreur qui accuse à tort coûte plus cher que pas d'erreur
+du tout.
+
+### Ce qui ne peut pas être éprouvé ici doit l'être ailleurs
+
+Cet environnement n'a **ni démon Docker, ni GitHub CLI**, et son mandataire
+réseau refuse `github.io`, `api.github.com` et la documentation GitHub. Ne pas
+contourner : déplacer la vérification là où elle est possible.
+
+Deux précédents, à imiter plutôt qu'à réinventer :
+
+- `.github/workflows/pages.yml` interroge le site **à son adresse publique**
+  après déploiement, puisque l'agent ne peut pas la joindre.
+- `.github/workflows/banc-essai.yml` monte l'espace de travail complet et s'en
+  sert, puisque l'agent n'a pas Docker.
+
+Quand ni l'un ni l'autre n'est possible, **le dire** plutôt que de laisser croire
+à une vérification qui n'a pas eu lieu.
+
 ## 6. Git
 
 - Branche de développement : `claude/migrate-app-atlas-zz31ac`.

@@ -36,6 +36,37 @@ html, body {
   overscroll-behavior-y: none;
 }
 
+/* --- Bords de l'écran, une fois installée sur un téléphone ---------------
+ *
+ * Ajoutée à l'écran d'accueil, l'application s'ouvre en plein écran : plus de
+ * barre d'adresse, mais plus de marges non plus. La barre d'état (heure,
+ * batterie) recouvre alors le haut du contenu, et l'indicateur d'accueil
+ * mange le bas de la barre de navigation.
+ *
+ * `env(safe-area-inset-*)` donne la hauteur réelle de ces zones, et vaut zéro
+ * partout ailleurs : la même règle sert le navigateur, l'ordinateur et le
+ * téléphone, sans condition.
+ *
+ * Posé sur `body` plutôt que sur un écran précis, pour que la page publique du
+ * client — qui ne passe pas par la même mise en page — en bénéficie aussi. */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* La barre de navigation est en position fixe : les marges du body ne
+ * l'atteignent pas. Elle porte donc la sienne. */
+.atlas-nav-basse {
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+}
+
+/* Et le contenu doit réserver la hauteur de la barre AINSI grandie, sinon la
+ * dernière carte de chaque liste passe dessous. */
+.atlas-contenu {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+}
+
 /* Ticket / work-order card signature: dashed perforation edge */
 .ticket {
   background: var(--card);

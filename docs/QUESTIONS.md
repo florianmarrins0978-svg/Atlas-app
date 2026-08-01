@@ -29,6 +29,8 @@ relues à chaque session) :
 5. [Comment faire signer un contrat à tous les utilisateurs ?](#5-comment-faire-signer-un-contrat-à-tous-les-utilisateurs-)
 6. [Le dépôt est public : n'importe qui peut-il voler notre travail ?](#6-le-dépôt-est-public--nimporte-qui-peut-il-voler-notre-travail-)
 7. [Concrètement, quels problèmes pose le dépôt public ?](#7-concrètement-quels-problèmes-pose-le-dépôt-public-)
+8. [Faut-il héberger l'application pour pouvoir l'essayer en entier ?](#8-faut-il-héberger-lapplication-pour-pouvoir-lessayer-en-entier-)
+9. [Ce que je vois là, est-ce le design final ?](#9-ce-que-je-vois-là-est-ce-le-design-final-)
 
 ---
 
@@ -317,3 +319,143 @@ Trois choses échappent alors :
 contraire et la gêne disparaîtra d'elle-même. La question n'est donc pas
 « faut-il cacher quelque chose », mais « faut-il laisser ça lisible par tout le
 monde pendant les quelques semaines où c'est encore vrai ».
+
+---
+
+## 8. Faut-il héberger l'application pour pouvoir l'essayer en entier ?
+
+*Posée le 2026-08-01.*
+
+**Non.** Vous pouvez essayer l'application entière, et la finir, sans l'héberger
+nulle part. L'hébergement sert à **sortir** le produit, pas à le terminer.
+
+### La confusion à dissiper d'abord
+
+Deux choses portent le même mot et n'ont rien à voir :
+
+| | Ce que c'est | Ce qu'il faut |
+|---|---|---|
+| **Un banc d'essai** | Un ordinateur qui monte pour vous dans le navigateur, le temps de vos essais | Votre compte GitHub, rien d'autre |
+| **Un hébergement** | Une adresse permanente, ouverte à d'autres que vous | Un fournisseur, un contrat, 30 à 50 € par mois |
+
+Le premier s'ouvre en cinq gestes — voir [`ESSAYER.md`](ESSAYER.md). Le second
+est le point 3 du document [`A-FAIRE.md`](A-FAIRE.md).
+
+### Ce que vous pouvez éprouver sans rien héberger
+
+Tout ce qui fait le produit : le parcours du début à la fin, chaque écran,
+chaque mot, chaque bouton, et les règles métier — les jours libres proposés au
+client, les deux dates au maximum, le refus de facturer un devis jamais envoyé,
+la reprise d'un devis retourné.
+
+**Y compris la page du client, sur un vrai téléphone.** Dans l'espace de
+travail, le port peut être basculé en visibilité **publique** : le lien du devis
+devient ouvrable par n'importe qui. Vous l'envoyez à un proche, il choisit sa
+date depuis son téléphone, et vous voyez le chantier se planifier. **À remettre
+en privé aussitôt après** — publique, l'adresse est ouverte à qui la possède.
+
+C'est là que se fait l'essentiel du travail de finition. Les six défauts trouvés
+le 2026-08-01 l'ont tous été en regardant des écrans, jamais par un test vert.
+
+### Les quatre choses qui échappent au banc d'essai
+
+Aucune ne change ce que vous voyez à l'écran. Elles décident si le produit tient
+dans la durée, pas s'il est juste.
+
+| | Pourquoi cela ne se voit qu'hébergé |
+|---|---|
+| **La durabilité des fichiers** | Photos et enregistrements vont sur le disque du banc d'essai. En production ce mode est refusé au démarrage : c'est un autre code qui s'exécute |
+| **Plusieurs machines à la fois** | La limite de connexions est partagée entre elles précisément pour cela. Avec une seule machine, le défaut ne peut pas apparaître |
+| **Sauvegardes et restauration** | Ce sont des fonctions du fournisseur de base de données |
+| **La charge réelle** | Un banc d'essai ne dit rien de dix artisans en même temps |
+
+### Ce que l'hébergement apporte vraiment
+
+Trois choses, et aucune ne s'appelle « essayer » :
+
+1. **Une adresse permanente** — le banc d'essai s'arrête après trente minutes
+   sans activité.
+2. **D'autres utilisateurs que vous** — un artisan n'ouvrira pas un espace de
+   développement.
+3. **Le droit de confier de vraies données** — chiffrement, sauvegardes, et un
+   contrat qui les garantit.
+
+### Dans quel ordre s'y prendre
+
+D'abord essayer, longuement. Il en sortira une liste de corrections — cela a été
+le cas à chaque fois. Les traiter. Recommencer.
+
+Quand plus rien ne gêne, l'hébergement devient utile : il ne servira plus à
+finir le produit, mais à le sortir.
+
+### La réserve qui vaut dans les deux cas
+
+**Rien ne part réellement chez le client**, ni depuis le banc d'essai ni depuis
+un hébergement : aucun fournisseur de SMS ni d'e-mail n'est branché. C'est le
+point 5 de [`A-FAIRE.md`](A-FAIRE.md), et il ne se règle pas en hébergeant.
+
+---
+
+## 9. Ce que je vois là, est-ce le design final ?
+
+*Posée le 2026-08-01.*
+
+**Oui.** Même code, mêmes écrans, mêmes couleurs, mêmes polices. Ce que vous
+avez sous les yeux n'est pas une approximation : c'est l'application. Rien ne
+sera redessiné pour la publication.
+
+### Trois choses changeront, toutes en mieux
+
+| | Pendant les essais | Une fois installée |
+|---|---|---|
+| La barre d'adresse du navigateur | Présente, en haut | **Disparue** — plein écran |
+| La vitesse | Chaque écran se compile à la volée | Instantané |
+| Le badge noir « N » en bas à gauche | Présent | Disparu — c'est un outil de développement |
+
+### La partie inattendue : deux chemins, pas un
+
+Ce qui était relié à l'outil de fabrication iOS, c'étaient **les cinq maquettes
+d'Arborea**, pas l'application. Publier en l'état aurait mis les maquettes sur
+l'App Store. Le chemin existe, mais il restait à construire.
+
+**Chemin A — l'App Store.** Une coque native qui affiche l'application
+hébergée. Environ une journée de travail, mais elle suppose l'hébergement
+d'abord, plus le compte Apple à 99 $ par an, plus un Mac, plus la validation
+d'Apple à chaque mise à jour (voir question 1).
+
+**Chemin B — sans App Store.** L'artisan ouvre l'adresse dans Safari, puis
+« Ajouter à l'écran d'accueil ». Une icône apparaît, et l'application s'ouvre
+**en plein écran, sans barre d'adresse — visuellement identique à une
+application téléchargée**.
+
+Coût : **zéro**. Pas de compte Apple, pas de Mac, pas de validation, et vos
+corrections arrivent chez l'artisan immédiatement au lieu d'attendre Apple.
+
+Ce que vous perdez : la vitrine de l'App Store. Pour un outil vendu par
+abonnement à des artisans que vous démarchez, ce n'est pas là qu'ils vous
+trouveront.
+
+**Le chemin B est prêt** depuis le 2026-08-01 : icône, nom, ouverture en plein
+écran. Il ne manque que l'hébergement, qui sert les deux chemins.
+
+### Deux défauts corrigés à cette occasion
+
+Ils ne se voyaient **que** sur un téléphone, une fois l'application installée —
+jamais dans un navigateur d'ordinateur, jamais dans un test :
+
+- **La barre d'état recouvrait le haut du contenu.** Le titre « VOS CHANTIERS »
+  passait sous l'heure et la batterie.
+- **L'indicateur d'accueil mangeait le bas de la navigation.** Les libellés
+  « Chantiers / Planning / Terminés / Tarifs » se retrouvaient dessous.
+
+Vérifiés en simulant un iPhone à encoche, pas en relisant le code.
+
+### L'icône est provisoire
+
+Un « A » en forme de chevron de charpente, dans les couleurs de l'application.
+Volontairement simple : une icône provisoire qui chercherait à bien faire donne
+l'illusion d'une décision prise, et personne ne la remplace jamais.
+
+Pour la changer : remplacer `public/icone-source.svg` et lancer `npm run icones`.
+Toutes les tailles se régénèrent d'un trait — un jeu d'icônes retouché taille
+par taille finit toujours par diverger.

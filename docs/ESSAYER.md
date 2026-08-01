@@ -42,13 +42,24 @@ véritables décisions d'hébergement restent entières
 ### 1. Ouvrir l'espace de travail
 
 Sur `github.com/florianmarrins0978-svg/Atlas-app` : bouton vert **« Code »**,
-onglet **« Codespaces »**, puis **« Create codespace »**.
+onglet **« Codespaces »**, puis **« Create codespace on main »**.
 
 Un ordinateur se monte pour vous dans le navigateur. **Comptez cinq à dix
 minutes la première fois** : il installe la base de données, applique le schéma
 et insère les données de démonstration. Les fois suivantes, quelques secondes.
 
 Vous saurez que c'est prêt quand le terminal affiche **« Atlas est prêt »**.
+
+> **Un espace de travail est figé à sa création.** Il garde la version du dépôt
+> qu'il avait ce jour-là, y compris sa base de données. Quand du travail neuf
+> arrive sur `main`, un ancien espace ne le voit pas — et échoue de façon
+> déroutante, par exemple sur `Missing script: "essai"`.
+>
+> **Le réflexe : en créer un neuf**, plutôt que de rattraper l'ancien. Un
+> `git pull` ramènerait les fichiers mais pas la base, qui n'est montée qu'à la
+> création — et l'erreur suivante serait plus obscure que la première.
+>
+> Supprimer l'ancien : `github.com/codespaces`, menu **⋯** → **Delete**.
 
 ### 2. Démarrer l'application
 
@@ -60,7 +71,12 @@ npm run essai
 
 ### 3. L'ouvrir
 
-Un message apparaît, proposant d'ouvrir le port **3000**. Acceptez.
+**Attendez que le terminal affiche « L'application répond »** — il donne alors
+l'adresse exacte à ouvrir. Ne l'ouvrez pas avant : le serveur annonce qu'il est
+prêt un moment avant de pouvoir servir le premier écran, et l'adresse ouverte
+trop tôt reste blanche.
+
+Un message apparaît aussi, proposant d'ouvrir le port **3000**. Acceptez.
 
 Sinon : onglet **« Ports »** à côté du terminal, ligne **3000**, icône en forme
 de globe.
@@ -74,12 +90,21 @@ demo1234
 
 ### 5. Depuis votre téléphone
 
-Copiez l'adresse ouverte à l'étape 3 — elle ressemble à
+Copiez l'adresse affichée à l'étape 3 — elle ressemble à
 `https://quelque-chose-3000.app.github.dev` — et ouvrez-la sur votre téléphone.
 
-Connectez-vous à GitHub une fois si on vous le demande : **cette adresse
-n'est accessible qu'à vous**, c'est voulu. Vos essais ne sont pas sur la place
-publique.
+Rien d'autre à faire : l'adresse est ouverte dès la création de l'espace. C'est
+aussi ce qui permet de faire ouvrir un lien de devis à une vraie personne, sur
+son propre téléphone — la seule façon d'éprouver pour de bon le seul écran que
+vos clients verront.
+
+> **N'y mettez que des données inventées.** L'adresse est ouvrable par qui la
+> possède, et le mot de passe de démonstration est écrit dans ce dépôt public.
+> L'application garde son écran de connexion : ce qui est joignable, c'est la
+> porte, pas le contenu — mais la clé de cette porte est publique.
+>
+> Pour refermer l'accès, une commande dans le terminal :
+> `gh codespace ports visibility 3000:private -c $CODESPACE_NAME`
 
 ---
 
@@ -142,6 +167,48 @@ Le compte gratuit inclut 60 heures par mois, largement de quoi essayer.
 ---
 
 ## Si quelque chose ne va pas
+
+**La page reste blanche depuis le téléphone.** Blanche, pas crème : ce n'est pas
+un écran de l'application qui s'affiche mal, c'est qu'aucune page n'arrive.
+Trois causes, dans l'ordre de fréquence :
+
+1. **L'application n'est pas encore prête.** `npm run essai` affiche
+   « L'application répond » suivi de l'adresse à ouvrir — **attendez cette
+   ligne**. Le message « ready » de Next.js, lui, arrive avant que le premier
+   écran soit compilable.
+2. **Le serveur s'est arrêté.** Regardez le terminal : s'il est revenu à
+   l'invite, relancez `npm run essai`.
+3. **Le port est privé.** Il est public dès la création — mais un espace créé
+   avant le 2026-08-01 ne le sait pas, ce réglage étant lu à la création.
+
+   **La solution sûre : supprimer cet espace et en créer un neuf** (encadré du
+   geste 1). Le port y sera public d'emblée, sans rien régler. C'est plus long
+   de cinq minutes, mais c'est le seul chemin qui ne demande de viser aucun
+   bouton sur un écran de téléphone.
+
+   Si vous préférez rattraper l'espace en cours, une commande dans le terminal
+   que vous avez déjà sous les yeux :
+
+   ```
+   gh codespace ports visibility 3000:public -c $CODESPACE_NAME
+   ```
+
+   > Cette commande n'a **pas pu être vérifiée** : l'environnement où ce dépôt
+   > est développé n'a pas l'outil `gh`, et la documentation de GitHub y est
+   > inaccessible. Si elle refuse, ne cherchez pas : recréez l'espace.
+
+   À la souris, l'onglet **« Ports »** à côté du terminal fait la même chose.
+   Sur téléphone, le panneau s'ouvre depuis la barre bleue du bas, par un appui
+   **bref** sur l'icône d'antenne suivie d'un chiffre — un appui long ouvre le
+   menu de la barre elle-même, qui n'a rien à voir.
+
+
+**`Missing script: "essai"`, ou des fichiers manquent dans la liste de gauche
+(`.devcontainer`, `HANDOVER.md`, `TODO.md`…).** L'espace de travail a été créé
+avant que ce travail n'arrive sur `main` : il est resté à la version de ce
+jour-là. Supprimez-le et recréez-en un — voir l'encadré du geste 1. C'est le
+cas le plus fréquent, et le plus déroutant, parce que l'erreur ne dit pas que
+le problème est l'ancienneté de l'espace.
 
 **Le terminal affiche une erreur pendant la préparation.** Elle s'arrête à la
 première anomalie plutôt que de continuer à moitié — le message dit laquelle.
