@@ -28,6 +28,7 @@ relues à chaque session) :
 4. [Si l'application se fait pirater, qu'est-ce que je risque ?](#4-si-lapplication-se-fait-pirater-quest-ce-que-je-risque-)
 5. [Comment faire signer un contrat à tous les utilisateurs ?](#5-comment-faire-signer-un-contrat-à-tous-les-utilisateurs-)
 6. [Le dépôt est public : n'importe qui peut-il voler notre travail ?](#6-le-dépôt-est-public--nimporte-qui-peut-il-voler-notre-travail-)
+7. [Concrètement, quels problèmes pose le dépôt public ?](#7-concrètement-quels-problèmes-pose-le-dépôt-public-)
 
 ---
 
@@ -245,3 +246,74 @@ concret.
 > **Décision au 2026-08-01 : on laisse public.** Rien n'est déplacé, aucune
 > licence ajoutée. À rouvrir si l'exposition devient gênante — l'option GitHub
 > Pro reste de loin la moins chère.
+
+---
+
+## 7. Concrètement, quels problèmes pose le dépôt public ?
+
+Complément de la question 6, qui répondait « le vol n'est pas le vrai risque »
+sans dire lequel l'est.
+
+### Les trois problèmes
+
+**1. Le code serveur est lisible par tous.** Le plus concret. Un attaquant peut
+l'étudier tranquillement pour chercher une faille : comment les jetons sont
+fabriqués, où sont les vérifications, ce qui n'est *pas* contrôlé. Il n'a pas à
+deviner, il lit.
+
+**2. L'analyse RGPD est publique** — détaillée plus bas, c'est le point le moins
+évident.
+
+**3. Les documents internes sont publics.** Les coûts, l'exposition juridique,
+les arbitrages. Et `AGENT.md`, qui expose la stratégie produit : ce qui est
+construit, ce qui manque, où l'on va. Un concurrent y trouve une feuille de
+route toute faite.
+
+S'y ajoutent la configuration d'intégration continue et `.env.example`, qui
+révèle quels fournisseurs sont utilisés.
+
+### Ce qu'un dépôt privé ne protégerait PAS
+
+Précision importante : dire que le privé « règle le code » est inexact.
+
+L'appli statique publiée sur `github.io/Atlas-app/` est un site web. Son HTML et
+son JavaScript sont lisibles par quiconque l'ouvre, dépôt privé ou non. C'est
+inhérent au web, et aucun abonnement n'y change quoi que ce soit.
+
+| | Dépôt public | Dépôt privé |
+|---|---|---|
+| Site en ligne | oui | **oui, même adresse** |
+| Code serveur Next.js | lisible | **privé** |
+| Documents internes | lisibles | **privés** |
+| Analyse RGPD | lisible | **privée** |
+| Appli statique dans le navigateur | lisible | lisible *(inévitable)* |
+
+### Pourquoi l'analyse RGPD publique est gênante
+
+`docs/RGPD.md` relève trois manques et l'écrit tel quel : **« État actuel : non
+conforme »**.
+
+**Avoir écrit ça est une bonne chose.** Devant la CNIL, un dossier qui recense
+ses propres manques et le plan pour les combler vaut bien mieux que rien : ça
+prouve une démarche, et c'est ce que le règlement attend. L'effacer serait une
+erreur.
+
+Le problème n'est pas le document, c'est sa visibilité. Comparaison : un carnet
+d'entretien de camion où l'on note honnêtement « plaquettes à changer », c'est
+exactement ce qu'il faut faire — mais on ne le scotche pas sur le pare-brise.
+
+Trois choses échappent alors :
+
+- **La maîtrise du moment.** Ce document se présente normalement quand on le
+  demande, avec les corrections déjà en cours. Public, il se trouve à n'importe
+  quel moment, y compris le pire.
+- **Le choix du lecteur.** Pas seulement un contrôleur : un artisan qui hésite à
+  confier son fichier clients, un concurrent qui cherche un argument, un client
+  mécontent qui cherche un levier.
+- **La nuance.** Le document dit aussi ce qui est déjà solide et ce qui est en
+  cours. Celui qui tombe dessus retient trois mots.
+
+**C'est temporaire.** Quand les trois écarts seront comblés, le document dira le
+contraire et la gêne disparaîtra d'elle-même. La question n'est donc pas
+« faut-il cacher quelque chose », mais « faut-il laisser ça lisible par tout le
+monde pendant les quelques semaines où c'est encore vrai ».

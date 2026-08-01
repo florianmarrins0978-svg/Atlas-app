@@ -75,6 +75,7 @@
 <li><a href="#4-si-lapplication-se-fait-pirater-quest-ce-que-je-risque-">Si l'application se fait pirater, qu'est-ce que je risque ?</a></li>
 <li><a href="#5-comment-faire-signer-un-contrat-à-tous-les-utilisateurs-">Comment faire signer un contrat à tous les utilisateurs ?</a></li>
 <li><a href="#6-le-dépôt-est-public--nimporte-qui-peut-il-voler-notre-travail-">Le dépôt est public : n'importe qui peut-il voler notre travail ?</a></li>
+<li><a href="#7-concrètement-quels-problèmes-pose-le-dépôt-public-">Concrètement, quels problèmes pose le dépôt public ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -245,6 +246,60 @@
 </tr>
 </tbody></table></div>
 <blockquote><strong>Décision au 2026-08-01 : on laisse public.</strong> Rien n'est déplacé, aucune licence ajoutée. À rouvrir si l'exposition devient gênante — l'option GitHub Pro reste de loin la moins chère.</blockquote>
+<hr>
+<h2 id="7-concrètement-quels-problèmes-pose-le-dépôt-public-">7. Concrètement, quels problèmes pose le dépôt public ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Complément de la question 6, qui répondait « le vol n'est pas le vrai risque » sans dire lequel l'est.</p>
+<h3 id="les-trois-problèmes">Les trois problèmes</h3>
+<p><strong>1. Le code serveur est lisible par tous.</strong> Le plus concret. Un attaquant peut l'étudier tranquillement pour chercher une faille : comment les jetons sont fabriqués, où sont les vérifications, ce qui n'est *pas* contrôlé. Il n'a pas à deviner, il lit.</p>
+<p><strong>2. L'analyse RGPD est publique</strong> — détaillée plus bas, c'est le point le moins évident.</p>
+<p><strong>3. Les documents internes sont publics.</strong> Les coûts, l'exposition juridique, les arbitrages. Et <code>AGENT.md</code>, qui expose la stratégie produit : ce qui est construit, ce qui manque, où l'on va. Un concurrent y trouve une feuille de route toute faite.</p>
+<p>S'y ajoutent la configuration d'intégration continue et <code>.env.example</code>, qui révèle quels fournisseurs sont utilisés.</p>
+<h3 id="ce-quun-dépôt-privé-ne-protégerait-pas">Ce qu'un dépôt privé ne protégerait PAS</h3>
+<p>Précision importante : dire que le privé « règle le code » est inexact.</p>
+<p>L'appli statique publiée sur <code>github.io/Atlas-app/</code> est un site web. Son HTML et son JavaScript sont lisibles par quiconque l'ouvre, dépôt privé ou non. C'est inhérent au web, et aucun abonnement n'y change quoi que ce soit.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Dépôt public</th>
+<th>Dépôt privé</th>
+</tr></thead><tbody>
+<tr>
+<td>Site en ligne</td>
+<td>oui</td>
+<td><strong>oui, même adresse</strong></td>
+</tr>
+<tr>
+<td>Code serveur Next.js</td>
+<td>lisible</td>
+<td><strong>privé</strong></td>
+</tr>
+<tr>
+<td>Documents internes</td>
+<td>lisibles</td>
+<td><strong>privés</strong></td>
+</tr>
+<tr>
+<td>Analyse RGPD</td>
+<td>lisible</td>
+<td><strong>privée</strong></td>
+</tr>
+<tr>
+<td>Appli statique dans le navigateur</td>
+<td>lisible</td>
+<td>lisible *(inévitable)*</td>
+</tr>
+</tbody></table></div>
+<h3 id="pourquoi-lanalyse-rgpd-publique-est-gênante">Pourquoi l'analyse RGPD publique est gênante</h3>
+<p><code>docs/RGPD.md</code> relève trois manques et l'écrit tel quel : <strong>« État actuel : non conforme »</strong>.</p>
+<p><strong>Avoir écrit ça est une bonne chose.</strong> Devant la CNIL, un dossier qui recense ses propres manques et le plan pour les combler vaut bien mieux que rien : ça prouve une démarche, et c'est ce que le règlement attend. L'effacer serait une erreur.</p>
+<p>Le problème n'est pas le document, c'est sa visibilité. Comparaison : un carnet d'entretien de camion où l'on note honnêtement « plaquettes à changer », c'est exactement ce qu'il faut faire — mais on ne le scotche pas sur le pare-brise.</p>
+<p>Trois choses échappent alors :</p>
+<ul>
+<li><strong>La maîtrise du moment.</strong> Ce document se présente normalement quand on le demande, avec les corrections déjà en cours. Public, il se trouve à n'importe quel moment, y compris le pire.</li>
+<li><strong>Le choix du lecteur.</strong> Pas seulement un contrôleur : un artisan qui hésite à confier son fichier clients, un concurrent qui cherche un argument, un client mécontent qui cherche un levier.</li>
+<li><strong>La nuance.</strong> Le document dit aussi ce qui est déjà solide et ce qui est en cours. Celui qui tombe dessus retient trois mots.</li>
+</ul>
+<p><strong>C'est temporaire.</strong> Quand les trois écarts seront comblés, le document dira le contraire et la gêne disparaîtra d'elle-même. La question n'est donc pas « faut-il cacher quelque chose », mais « faut-il laisser ça lisible par tout le monde pendant les quelques semaines où c'est encore vrai ».</p>
 </main>
 </body>
 </html>
