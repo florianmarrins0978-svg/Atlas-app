@@ -19,7 +19,9 @@ type ModeConfirmation = "remplacer" | "supprimer";
 type StatutTranscription = "non_demandee" | "en_cours" | "reussie" | "echouee";
 
 type NoteInitiale = {
-  storageKey: string;
+  // Annulable : l'audio est purgé une fois la transcription obtenue
+  // (docs/RGPD.md §4). La note vocale lui survit, avec son texte.
+  storageKey: string | null;
   dureeSecondes: number | null;
   transcriptionStatut: StatutTranscription;
   transcriptionErreur: string | null;
@@ -246,8 +248,25 @@ export default function NoteVocaleClient({
         </>
       )}
 
-      {(etat === "note" || etat === "confirmation") && storageKey && (
+      {(etat === "note" || etat === "confirmation") && (
         <>
+          {/* L'audio est purgé une fois la transcription obtenue
+              (docs/RGPD.md §4). Seul le lecteur disparaît alors : la
+              transcription et la suite du parcours restent accessibles, sans
+              quoi l'artisan croirait avoir tout perdu. */}
+          {!storageKey && (
+            <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: colors.card }}>
+              <p className="text-[15px] font-medium" style={{ color: colors.ink }}>
+                Enregistrement effacé
+              </p>
+              <p className="mt-1 text-[13px]" style={{ color: colors.muted }}>
+                L&apos;audio est supprimé une fois la transcription obtenue. Le texte,
+                lui, est conservé.
+              </p>
+            </div>
+          )}
+          {storageKey && (
+          <>
           <audio
             ref={audioRef}
             src={`/api/fichiers/${storageKey}`}
@@ -285,6 +304,8 @@ export default function NoteVocaleClient({
               </div>
             </div>
           </div>
+          </>
+          )}
 
           <div className="mt-4">
             {statutTranscription === "non_demandee" && (

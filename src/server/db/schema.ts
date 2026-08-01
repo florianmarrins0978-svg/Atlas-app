@@ -93,6 +93,9 @@ export const entrepriseCompteurs = pgTable("entreprise_compteurs", {
     .primaryKey()
     .references(() => entreprises.id, { onDelete: "cascade" }),
   prochainNumeroDevis: integer("prochain_numero_devis").notNull().default(1),
+  // Suite distincte de celle des devis : mêler les deux rendrait illisible
+  // la numérotation continue qu'attend un contrôle fiscal.
+  prochainNumeroFacture: integer("prochain_numero_facture").notNull().default(1),
 });
 
 // Correction v2.1 §1 : remplace le lien direct utilisateur → entreprise.
@@ -125,6 +128,14 @@ export const clients = pgTable(
     telephone: text("telephone"),
     adresse: text("adresse"),
     email: text("email"),
+    // Canal convenu avec le client pour l'envoi du devis (docs/AGENT.md §2.1).
+    // Sans lui, l'envoi est impossible : mieux vaut bloquer qu'envoyer dans le vide.
+    canalCommunication: text("canal_communication", { enum: ["sms", "email"] }),
+    // Effacement à la demande (docs/RGPD.md §5). Un client effacé n'est pas une
+    // ligne supprimée : ce que la loi impose de conserver subsiste, et le motif
+    // dit quoi et pourquoi.
+    effaceLe: timestamp("efface_le", { withTimezone: true }),
+    conservationMotif: text("conservation_motif"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -157,6 +168,9 @@ export const chantiers = pgTable(
     devisEnvoyeAt: timestamp("devis_envoye_at", { withTimezone: true }),
     datePlanifiee: date("date_planifiee"), // non-null = "planifié"
     dureePrevue: text("duree_prevue"),
+    // Jalons de fin de chantier (docs/AGENT.md §2.3).
+    termineAt: timestamp("termine_at", { withTimezone: true }),
+    factureEnvoyeeAt: timestamp("facture_envoyee_at", { withTimezone: true }),
     tailleEquipe: text("taille_equipe"),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -233,13 +247,16 @@ export const notesVocales = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     entrepriseId: uuid("entreprise_id").notNull(),
     chantierId: uuid("chantier_id").notNull(),
-    storageKey: text("storage_key").notNull(),
+    // Annulable : l'audio est purgé une fois la transcription obtenue, et la
+    // note vocale lui survit (docs/RGPD.md §4). NULL = enregistrement effacé.
+    storageKey: text("storage_key"),
     mimeType: text("mime_type").notNull(),
     tailleOctets: integer("taille_octets").notNull(),
     nomOriginal: text("nom_original"),
     checksum: text("checksum").notNull(),
     dureeSecondes: integer("duree_secondes"),
     transcription: text("transcription"),
+    audioPurgeLe: timestamp("audio_purge_le", { withTimezone: true }),
     transcriptionStatut: text("transcription_statut", {
       enum: ["non_demandee", "en_cours", "reussie", "echouee"],
     })
@@ -641,5 +658,174 @@ export const acceptationsDocuments = pgTable(
   (t) => [
     unique("acceptations_documents_uk").on(t.utilisateurId, t.documentId),
     index("acceptations_documents_utilisateur_idx").on(t.utilisateurId),
+  ]
+);
+
+// --- Envoi du devis au client et réponse (voir docs/AGENT.md §2.1 à §2.3) ---
+
+// Une ligne par ENVOI, jamais par devis : un devis refusé puis corrigé et
+// renvoyé donne un nouvel envoi, avec un nouveau jeton. L'ancien reste comme
+// trace de ce qui avait été proposé — un refus est une information de
+// négociation, il ne s'efface pas.
+export const envoisDevis = pgTable(
+  "envois_devis",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id").notNull(),
+    devisId: uuid("devis_id").notNull(),
+
+    // Seule clé d'accès à la page publique : imprévisible, jamais dérivée d'un
+    // identifiant existant.
+    jeton: text("jeton").notNull(),
+    expireAt: timestamp("expire_at", { withTimezone: true }).notNull(),
+    canal: text("canal", { enum: ["sms", "email"] }).notNull(),
+    datesProposees: date("dates_proposees").array().notNull(),
+    empreinteDevis: char("empreinte_devis", { length: 64 }).notNull(),
+    envoyeAt: timestamp("envoye_at", { withTimezone: true }).notNull().defaultNow(),
+
+    reponse: text("reponse", { enum: ["acceptee", "refusee"] }),
+    responduAt: timestamp("repondu_at", { withTimezone: true }),
+    dateRetenue: date("date_retenue"),
+    dateContreProposee: boolean("date_contre_proposee").notNull().default(false),
+    precisionClient: text("precision_client"),
+    demarrageAnticipe: boolean("demarrage_anticipe").notNull().default(false),
+
+    adresseIp: text("adresse_ip"),
+    agentUtilisateur: text("agent_utilisateur"),
+    vuParPatronAt: timestamp("vu_par_patron_at", { withTimezone: true }),
+  },
+  (t) => [
+    unique("envois_devis_jeton_uk").on(t.jeton),
+    index("envois_devis_entreprise_chantier_idx").on(t.entrepriseId, t.chantierId),
+    foreignKey({
+      columns: [t.chantierId, t.entrepriseId],
+      foreignColumns: [chantiers.id, chantiers.entrepriseId],
+      name: "envois_devis_chantier_entreprise_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [t.devisId, t.entrepriseId],
+      foreignColumns: [devis.id, devis.entrepriseId],
+      name: "envois_devis_devis_entreprise_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
+// File de purge des audios transcrits (voir docs/RGPD.md §4).
+//
+// Sans politique d'isolation, comme `fichiers_a_purger` : c'est une file de
+// maintenance, sans donnée personnelle. Elle porte l'entreprise concernée pour
+// que le planificateur — qui n'a le contexte d'aucune — puisse adopter celui de
+// chacune avant d'écrire dans notes_vocales, sans jamais contourner
+// l'isolation.
+export const audiosAPurger = pgTable(
+  "audios_a_purger",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    noteId: uuid("note_id")
+      .notNull()
+      .references(() => notesVocales.id, { onDelete: "cascade" }),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    storageKey: text("storage_key").notNull(),
+    purgerLe: timestamp("purger_le", { withTimezone: true }).notNull(),
+    misEnFileLe: timestamp("mis_en_file_le", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("audios_a_purger_note_uk").on(t.noteId),
+    index("audios_a_purger_echeance_idx").on(t.purgerLe),
+  ]
+);
+
+// --- Factures et TVA collectée (docs/AGENT.md §2.3) ------------------------
+//
+// Bâtie en brouillon quand le patron déclare la fin du chantier, figée à
+// l'émission. Le relevé de TVA n'a pas de table : il se calcule à partir des
+// factures émises, ce qui le rend incapable de diverger de ce qui a été
+// facturé. Cette garantie repose sur l'immuabilité d'une facture émise, posée
+// par trigger dans 0018_factures.sql.
+
+export const factures = pgTable(
+  "factures",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    chantierId: uuid("chantier_id").notNull(),
+    devisId: uuid("devis_id").notNull(),
+
+    numeroCommercial: text("numero_commercial").notNull(),
+    statut: text("statut", { enum: ["brouillon", "emise"] }).notNull().default("brouillon"),
+
+    // Instantané figé — même principe que le devis.
+    entrepriseNom: text("entreprise_nom").notNull(),
+    entrepriseAdresse: text("entreprise_adresse"),
+    entrepriseSiret: text("entreprise_siret"),
+    entrepriseEmail: text("entreprise_email"),
+    entrepriseTelephone: text("entreprise_telephone"),
+    entrepriseIban: text("entreprise_iban"),
+
+    clientNom: text("client_nom"),
+    clientAdresse: text("client_adresse"),
+    clientTelephone: text("client_telephone"),
+    clientEmail: text("client_email"),
+
+    adresseChantier: text("adresse_chantier"),
+
+    dateEmission: date("date_emission").notNull(),
+    dateEcheance: date("date_echeance"),
+    conditionsPaiement: text("conditions_paiement"),
+    devise: char("devise", { length: 3 }).notNull().default("EUR"),
+
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }).notNull().default("20.00"),
+    totalHt: numeric("total_ht", { precision: 10, scale: 2 }).notNull(),
+    totalTva: numeric("total_tva", { precision: 10, scale: 2 }).notNull(),
+    totalTtc: numeric("total_ttc", { precision: 10, scale: 2 }).notNull(),
+
+    pdfStorageKey: text("pdf_storage_key"),
+    pdfChecksum: text("pdf_checksum"),
+
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdBy: uuid("created_by").references(() => users.id),
+    emiseLe: timestamp("emise_le", { withTimezone: true }),
+  },
+  (t) => [
+    unique("factures_chantier_uk").on(t.chantierId),
+    unique("factures_id_entreprise_uk").on(t.id, t.entrepriseId),
+    unique("factures_entreprise_numero_uk").on(t.entrepriseId, t.numeroCommercial),
+    foreignKey({
+      columns: [t.chantierId, t.entrepriseId],
+      foreignColumns: [chantiers.id, chantiers.entrepriseId],
+      name: "factures_chantier_entreprise_fk",
+    }).onDelete("restrict"),
+    foreignKey({
+      columns: [t.devisId, t.entrepriseId],
+      foreignColumns: [devis.id, devis.entrepriseId],
+      name: "factures_devis_entreprise_fk",
+    }).onDelete("restrict"),
+  ]
+);
+
+export const lignesFacture = pgTable(
+  "lignes_facture",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    factureId: uuid("facture_id").notNull(),
+    libelle: text("libelle").notNull(),
+    quantite: numeric("quantite", { precision: 10, scale: 2 }).notNull().default("1"),
+    prixUnitaire: numeric("prix_unitaire", { precision: 10, scale: 2 }).notNull(),
+    montant: numeric("montant", { precision: 10, scale: 2 }).notNull(),
+    ordre: integer("ordre").notNull().default(0),
+  },
+  (t) => [
+    index("lignes_facture_facture_idx").on(t.factureId),
+    foreignKey({
+      columns: [t.factureId, t.entrepriseId],
+      foreignColumns: [factures.id, factures.entrepriseId],
+      name: "lignes_facture_facture_entreprise_fk",
+    }).onDelete("cascade"),
   ]
 );

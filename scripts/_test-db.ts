@@ -22,6 +22,8 @@ const TABLES = [
   "documents",
   "propositions_ia",
   "brouillons_informations",
+  "lignes_facture",
+  "factures",
   "lignes_devis",
   "devis",
   "lignes_prix",

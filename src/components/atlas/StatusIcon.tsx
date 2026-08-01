@@ -1,4 +1,7 @@
-import { ChantierStatut } from "@/lib/mock-data";
+// Composant réel : son type vient de la source vivante, jamais des données
+// fictives des maquettes — celles-ci sont gelées (voir src/lib/mock-data.ts) et
+// ne connaissent pas les états ajoutés depuis.
+import { ChantierStatut } from "@/lib/chantier-etat";
 import { colors } from "@/lib/design-tokens";
 
 export default function StatusIcon({
@@ -43,10 +46,55 @@ export default function StatusIcon({
           <circle cx="12" cy="12" r="7" strokeDasharray="1.5 4" strokeLinecap="round" />
         </svg>
       )}
+      {/* Le devis est parti, la balle est chez le client : un sablier, parce que
+          la seule chose à faire est d'attendre. */}
+      {statut === "en_attente_client" && (
+        <svg {...common}>
+          <path d="M7 3h10M7 21h10" strokeLinecap="round" />
+          <path d="M8 3v3.5L12 12l-4 5.5V21M16 3v3.5L12 12l4 5.5V21" strokeLinejoin="round" />
+        </svg>
+      )}
+      {/* Silence trop long, et refus : deux situations distinctes, mais toutes
+          deux appellent un geste. D'où deux dessins qui alertent. */}
+      {statut === "a_relancer" && (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="8" />
+          <path d="M12 8v4.5l3 2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+      {/* Le lien a expiré sans que le client dise quoi que ce soit : ni oui, ni
+          non — juste le temps qui a passé. */}
+      {statut === "devis_caduc" && (
+        <svg {...common}>
+          <path d="M7 3h10M7 21h10" strokeLinecap="round" />
+          <path d="M8 3v3.5L12 12l-4 5.5V21M16 3v3.5L12 12l4 5.5V21" strokeLinejoin="round" />
+          <path d="M4 4l16 16" strokeLinecap="round" />
+        </svg>
+      )}
+      {statut === "devis_retourne" && (
+        <svg {...common}>
+          <path d="M20 12H6" strokeLinecap="round" />
+          <path d="M11 7l-5 5 5 5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
       {statut === "planifie" && (
         <svg {...common}>
           <rect x="4" y="5" width="16" height="15" rx="2" />
           <path d="M4 10h16M8 3v4M16 3v4" strokeLinecap="round" />
+        </svg>
+      )}
+      {/* Réalisé mais pas encore facturé : il reste un geste à faire. */}
+      {statut === "termine" && (
+        <svg {...common}>
+          <path d="M4 7h12M4 12h12M4 17h8" strokeLinecap="round" />
+          <path d="M17 15.5l1.8 1.8 3.2-3.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+      {/* Facturé : le chantier est clos, plus rien n'est attendu. */}
+      {statut === "facture" && (
+        <svg {...common}>
+          <path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z" strokeLinejoin="round" />
+          <path d="M9.5 8h5M9.5 12h5" strokeLinecap="round" />
         </svg>
       )}
     </span>

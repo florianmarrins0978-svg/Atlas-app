@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { notesVocales, fichiersAPurger } from "../db/schema";
+import { notesVocales, fichiersAPurger, audiosAPurger } from "../db/schema";
 import type { Ctx } from "./context";
+import { RETENTION } from "../retention";
 
 type FichierAudio = {
   storageKey: string;
@@ -42,7 +43,12 @@ export async function enregistrerNoteVocale(ctx: Ctx, chantierId: string, fichie
         })
         .where(eq(notesVocales.id, existante.id))
         .returning();
-      await tx.insert(fichiersAPurger).values({ storageKey: existante.storageKey });
+      // L'audio précédent a pu déjà être purgé après transcription : il n'y a
+      // alors plus rien à mettre en file, et l'y pousser créerait une entrée
+      // pointant vers un objet inexistant.
+      if (existante.storageKey) {
+        await tx.insert(fichiersAPurger).values({ storageKey: existante.storageKey });
+      }
       return row;
     }
 
@@ -62,7 +68,10 @@ export async function supprimerNoteVocale(ctx: Ctx, chantierId: string) {
     const [existante] = await tx.select().from(notesVocales).where(eq(notesVocales.chantierId, chantierId)).limit(1);
     if (!existante) return null;
     await tx.delete(notesVocales).where(eq(notesVocales.id, existante.id));
-    await tx.insert(fichiersAPurger).values({ storageKey: existante.storageKey });
+    // Rien à mettre en file si l'audio a déjà été purgé après transcription.
+    if (existante.storageKey) {
+      await tx.insert(fichiersAPurger).values({ storageKey: existante.storageKey });
+    }
     return existante;
   });
 }
@@ -89,6 +98,33 @@ export async function enregistrerSuccesTranscription(ctx: Ctx, chantierId: strin
       .set({ transcription: texte, transcriptionStatut: "reussie", transcriptionErreur: null, updatedAt: new Date() })
       .where(eq(notesVocales.chantierId, chantierId))
       .returning();
+
+    // Le texte obtenu, l'audio n'a plus de raison de vivre indéfiniment : on
+    // programme sa purge (docs/RGPD.md §4). Le faire ICI plutôt que par un
+    // balayage ultérieur est la seule façon de rester dans le contexte de
+    // l'entreprise — le planificateur, lui, n'en a aucun.
+    //
+    // Le délai laisse le temps de reprendre une transcription contestée depuis
+    // sa source. `onConflictDoUpdate` couvre la retranscription : l'échéance
+    // repart de la dernière réussite, jamais de la première.
+    if (row?.storageKey) {
+      await tx
+        .insert(audiosAPurger)
+        .values({
+          noteId: row.id,
+          entrepriseId: ctx.entrepriseId,
+          storageKey: row.storageKey,
+          purgerLe: new Date(Date.now() + RETENTION.audioApresTranscriptionJours * 86_400_000),
+        })
+        .onConflictDoUpdate({
+          target: audiosAPurger.noteId,
+          set: {
+            storageKey: row.storageKey,
+            purgerLe: new Date(Date.now() + RETENTION.audioApresTranscriptionJours * 86_400_000),
+          },
+        });
+    }
+
     return row;
   });
 }

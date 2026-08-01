@@ -52,6 +52,8 @@ async function main() {
       checksum: objet.checksum,
       dureeSecondes: 42,
     });
+    // La note vient d'être créée : son audio est forcément présent.
+    assert.ok(note.storageKey, "une note fraîchement créée doit porter son audio");
     ancienneCle = note.storageKey;
     assert.equal(note.dureeSecondes, 42);
   });

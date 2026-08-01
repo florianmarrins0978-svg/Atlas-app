@@ -1,14 +1,33 @@
+import { attendLeClient, etatEnvoi } from "./etat-envoi";
+
 // Statut d'un chantier et libellés associés — définis ici (pas dans
 // mock-data.ts) car utilisés par les écrans réels ; réexportés depuis
 // mock-data.ts pour ne pas casser les maquettes /design/* qui les référencent.
-export type ChantierStatut = "brouillon" | "a_verifier" | "verifie" | "devis_envoye" | "planifie";
+export type ChantierStatut =
+  | "brouillon"
+  | "a_verifier"
+  | "verifie"
+  | "devis_envoye"
+  | "en_attente_client"
+  | "a_relancer"
+  | "devis_retourne"
+  | "devis_caduc"
+  | "planifie"
+  | "termine"
+  | "facture";
 
 export const statutLabel: Record<ChantierStatut, string> = {
   brouillon: "Brouillon",
   a_verifier: "À vérifier",
   verifie: "Vérifié",
   devis_envoye: "Devis envoyé",
+  en_attente_client: "En attente de réponse",
+  a_relancer: "À relancer",
+  devis_retourne: "Devis retourné",
+  devis_caduc: "Devis caduc",
   planifie: "Planifié",
+  termine: "À facturer",
+  facture: "Facturé",
 };
 
 // Détermine l'unique action principale à proposer sur la fiche chantier.
@@ -175,15 +194,34 @@ export function getSecondarySteps(
 // change demain (acceptation client, acompte reçu...), seule cette fonction
 // est à modifier — pas l'écran Planning.
 
-export type PlanificationEtat = "a_planifier" | "planifie" | "non_concerne";
+export type PlanificationEtat = "a_planifier" | "planifie" | "attente_client" | "non_concerne";
 
 export type EtatPourPlanification = {
   devisEnvoyeAt: Date | string | null;
   datePlanifiee: string | null;
+  envoiEnvoyeAt?: Date | string | null;
+  envoiExpireAt?: Date | string | null;
+  envoiReponse?: "acceptee" | "refusee" | null;
 };
 
-export function getPlanificationEtat(c: EtatPourPlanification): PlanificationEtat {
+export function getPlanificationEtat(
+  c: EtatPourPlanification,
+  maintenant: Date = new Date()
+): PlanificationEtat {
   if (c.datePlanifiee) return "planifie";
+
+  // Un chantier dont le client est en train de choisir sa date n'est PAS « à
+  // planifier » : le patron qui le planifierait lui-même poserait une date que
+  // le client s'apprête peut-être à contredire, et se retrouverait avec deux
+  // engagements sur le même jour. Il attend, et l'écran le dit.
+  const etat = etatEnvoi(
+    c.envoiEnvoyeAt === undefined
+      ? null
+      : { envoyeAt: c.envoiEnvoyeAt, expireAt: c.envoiExpireAt ?? null, reponse: c.envoiReponse ?? null },
+    maintenant
+  );
+  if (attendLeClient(etat)) return "attente_client";
+
   if (c.devisEnvoyeAt) return "a_planifier";
   return "non_concerne";
 }
@@ -200,14 +238,58 @@ export type EtatPourStatutAffiche = {
   informationsVerifieesAt: Date | string | null;
   devisEnvoyeAt: Date | string | null;
   datePlanifiee: string | null;
+  // Le dernier envoi, quand il existe. Absent des anciens appels : le statut
+  // reste alors celui d'avant, sans jamais mentir sur ce qu'il ignore.
+  envoiEnvoyeAt?: Date | string | null;
+  envoiExpireAt?: Date | string | null;
+  envoiReponse?: "acceptee" | "refusee" | null;
+  // Jalons de fin. Absents des anciens appels, comme ceux de l'envoi.
+  termineAt?: Date | string | null;
+  factureEnvoyeeAt?: Date | string | null;
 };
 
-export function getStatutAffiche(c: EtatPourStatutAffiche): ChantierStatut {
+export function getStatutAffiche(c: EtatPourStatutAffiche, maintenant: Date = new Date()): ChantierStatut {
+  // La fin l'emporte sur tout le reste. Un chantier réalisé et facturé restait
+  // affiché « planifié » — un état qu'il a quitté depuis longtemps, et qui le
+  // faisait compter parmi les chantiers en cours.
+  if (c.factureEnvoyeeAt) return "facture";
+  if (c.termineAt) return "termine";
+
   if (c.datePlanifiee) return "planifie";
+
+  // Ce que devient un devis parti dépend du client, pas de nous. « Devis
+  // envoyé » ne le disait pas : le patron voyait la même chose qu'il attende
+  // une réponse depuis une heure ou qu'on lui ait dit non trois semaines plus
+  // tôt.
+  const etat = etatEnvoi(
+    c.envoiEnvoyeAt === undefined
+      ? null
+      : { envoyeAt: c.envoiEnvoyeAt, expireAt: c.envoiExpireAt ?? null, reponse: c.envoiReponse ?? null },
+    maintenant
+  );
+  // Un refus et un lien périmé n'ont rien à voir : dans un cas le client a dit
+  // non, dans l'autre il n'a rien dit du tout. Les confondre ferait croire à un
+  // refus qui n'a jamais eu lieu, et découragerait de relancer.
+  if (etat === "retourne") return "devis_retourne";
+  if (etat === "caduc") return "devis_caduc";
+  if (etat === "a_relancer") return "a_relancer";
+  if (etat === "en_attente") return "en_attente_client";
+
   if (c.devisEnvoyeAt) return "devis_envoye";
   if (c.informationsVerifieesAt) return "verifie";
   if (c.aUneNoteVocale || c.photosCount > 0) return "a_verifier";
   return "brouillon";
+}
+
+/**
+ * Le chantier compte-t-il parmi ceux « en cours » ?
+ *
+ * Un chantier facturé est fini : le compter encore gonfle un chiffre que le
+ * patron lit en premier, et qui perd alors tout sens. Ceux qui restent à
+ * facturer, eux, comptent — le travail sur eux n'est pas terminé.
+ */
+export function chantierEnCours(statut: ChantierStatut): boolean {
+  return statut !== "facture";
 }
 
 // Tri chronologique des chantiers planifiés — fonction pure, testable

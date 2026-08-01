@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
-import BottomSheet from "@/components/atlas/BottomSheet";
-import { envoyerDevisAction } from "./actions";
+import { etatEnvoiExplication, etatEnvoiLabel, type EtatEnvoi } from "@/lib/etat-envoi";
+import { reprendreDevisAction } from "./actions";
+import EnvoiAuClient from "./EnvoiAuClient";
 
 const formatEuros = new Intl.NumberFormat("fr-FR", {
   style: "currency",
@@ -14,6 +16,7 @@ const formatEuros = new Intl.NumberFormat("fr-FR", {
 });
 
 export default function ExportClient({
+  chantierId,
   devisId,
   chantierNom,
   adresseChantier,
@@ -22,7 +25,11 @@ export default function ExportClient({
   prestations,
   totalTtc,
   initialEnvoye,
+  etatEnvoi,
+  lienEnvoi,
+  origine,
 }: {
+  chantierId: string;
   devisId: string;
   chantierNom: string;
   adresseChantier: string;
@@ -31,21 +38,44 @@ export default function ExportClient({
   prestations: string[];
   totalTtc: string;
   initialEnvoye: boolean;
+  etatEnvoi: EtatEnvoi;
+  /** Le lien encore actif, tant que le client n'a pas répondu. */
+  lienEnvoi: string | null;
+  /** Origine du site, calculée côté serveur — voir le commentaire dans page.tsx. */
+  origine: string;
 }) {
+  const router = useRouter();
   const [confirmationVisible, setConfirmationVisible] = useState(false);
-  const [envoye, setEnvoye] = useState(initialEnvoye);
-  const [envoiEnCours, setEnvoiEnCours] = useState(false);
+  const [reprise, setReprise] = useState(false);
+  // Aucun fournisseur de SMS ni d'e-mail n'étant branché (docs/AGENT.md §5), le
+  // lien est rendu au patron pour qu'il le transmette lui-même — ce qui vaut
+  // mieux qu'un envoi qui échouerait en silence.
+  const [lienClient, setLienClient] = useState<string | null>(null);
+  const [copie, setCopie] = useState(false);
 
-  async function confirmerEnvoi() {
-    setEnvoiEnCours(true);
+  function lienComplet(chemin: string) {
+    return `${origine}${chemin}`;
+  }
+
+  // Déduit des props, jamais gardé en état : une reprise de devis rafraîchit
+  // l'écran, et un état figé à l'ouverture continuerait d'annoncer un devis
+  // parti alors qu'une nouvelle version attend d'être envoyée.
+  const envoye = initialEnvoye || lienClient !== null;
+
+  // Un refus, ou un lien périmé : le devis peut repartir, dans une nouvelle
+  // version. Sans ce chemin, un chantier retourné l'était définitivement.
+  const peutReprendre = etatEnvoi === "retourne" || etatEnvoi === "caduc";
+  const lienAMontrer = lienClient ?? lienEnvoi;
+
+  async function reprendre() {
+    setReprise(true);
     try {
-      await envoyerDevisAction(devisId);
-      setConfirmationVisible(false);
-      setEnvoye(true);
-    } catch {
-      setConfirmationVisible(false);
+      await reprendreDevisAction(chantierId);
+      // L'écran est relu : la nouvelle version, ses lignes et ses totaux
+      // viennent du serveur, jamais d'une copie reconstituée ici.
+      router.refresh();
     } finally {
-      setEnvoiEnCours(false);
+      setReprise(false);
     }
   }
 
@@ -92,45 +122,79 @@ export default function ExportClient({
           {envoye ? "Télécharger le PDF" : "Aperçu du PDF"}
         </a>
 
-        {envoye ? (
-          <div className="rounded-2xl px-5 py-4 text-center" style={{ backgroundColor: colors.card }}>
-            <p className="text-[14px]" style={{ color: colors.muted }}>
-              Devis envoyé à {clientNom}.
+        {envoye || lienClient ? (
+          <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: colors.card }}>
+            {/* L'état d'abord, l'explication ensuite. « Devis envoyé » ne disait
+                pas si le client réfléchissait ou s'il avait dit non. */}
+            <p className={smallCaps} style={{ color: colors.rust, marginBottom: 6, textAlign: "center" }}>
+              {lienClient ? "Devis prêt" : etatEnvoiLabel[etatEnvoi]}
             </p>
+            <p className="text-center text-[14px]" style={{ color: colors.muted }}>
+              {lienClient ? `Devis prêt pour ${clientNom}.` : etatEnvoiExplication[etatEnvoi]}
+            </p>
+
+            {lienAMontrer && (
+              <>
+                <p className="mt-3 text-center text-[13px]" style={{ color: colors.ink }}>
+                  {lienClient
+                    ? "Transmettez-lui ce lien : il y verra le devis et choisira sa date."
+                    : "Le lien est toujours actif — renvoyez-le tel quel pour relancer."}
+                </p>
+                <p
+                  className="mt-2 break-all rounded-xl px-3 py-2 text-center text-[12px]"
+                  style={{ backgroundColor: colors.cream, color: colors.muted }}
+                >
+                  {lienComplet(lienAMontrer)}
+                </p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(lienComplet(lienAMontrer));
+                      setCopie(true);
+                    } catch {
+                      // Presse-papier refusé : le lien reste lisible et
+                      // sélectionnable au-dessus, rien n'est perdu.
+                    }
+                  }}
+                  className="mt-3 block w-full text-center text-[14px] font-medium"
+                  style={{ color: colors.rust }}
+                >
+                  {copie ? "Lien copié" : "Copier le lien"}
+                </button>
+              </>
+            )}
+
+            {peutReprendre && (
+              <button
+                type="button"
+                onClick={reprendre}
+                disabled={reprise}
+                className="mt-4 block w-full rounded-2xl py-3 text-[15px] font-medium text-white disabled:opacity-50"
+                style={{ backgroundColor: colors.rust }}
+              >
+                {reprise ? "Reprise…" : "Reprendre le devis"}
+              </button>
+            )}
           </div>
         ) : (
           <PrimaryButton onClick={() => setConfirmationVisible(true)}>
-            Envoyer vers le système de devis →
+            Envoyer au client →
           </PrimaryButton>
         )}
       </div>
 
-      {/* Confirmation d'action positive (patron n°2) : action principale = bouton fort, Annuler discret */}
-      <BottomSheet open={confirmationVisible} onBackdropClick={() => setConfirmationVisible(false)}>
-        <p className="mb-1 text-center text-[16px]" style={{ color: colors.ink, fontFamily: font.display }}>
-          Envoyer ce devis ?
-        </p>
-        <p className="mb-5 text-center text-[13px]" style={{ color: colors.muted }}>
-          {clientNom} recevra ce devis pour {formatEuros.format(Number(totalTtc))}.
-        </p>
-        <div className="flex flex-col gap-2.5">
-          <button
-            onClick={confirmerEnvoi}
-            disabled={envoiEnCours}
-            className="rounded-2xl py-3.5 text-[16px] font-medium text-white"
-            style={{ backgroundColor: colors.rust }}
-          >
-            {envoiEnCours ? "Envoi…" : "Envoyer"}
-          </button>
-          <button
-            onClick={() => setConfirmationVisible(false)}
-            className="rounded-2xl py-3.5 text-[15px] font-medium"
-            style={{ color: colors.muted }}
-          >
-            Annuler
-          </button>
-        </div>
-      </BottomSheet>
+      <EnvoiAuClient
+        chantierId={chantierId}
+        devisId={devisId}
+        clientNom={clientNom}
+        ouvert={confirmationVisible}
+        onFermer={() => setConfirmationVisible(false)}
+        onEnvoye={(lien) => {
+          setConfirmationVisible(false);
+          setLienClient(lien);
+        }}
+      />
     </>
   );
 }

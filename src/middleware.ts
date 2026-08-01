@@ -6,7 +6,11 @@ const { auth } = NextAuth(authConfig);
 
 // Routes publiques : la page de connexion elle-même, la route Auth.js, et les
 // assets Next.js. Tout le reste de l'application exige une session valide.
-const CHEMINS_PUBLICS = ["/login", "/api/auth", "/api/cron"];
+// `/devis` est la page de réponse du client : consultée sans compte, depuis un
+// lien reçu par SMS ou e-mail. Elle n'est pas « ouverte » pour autant — son
+// seul accès est un jeton imprévisible, contrôlé en base par une politique
+// dédiée (migration 0015). Sans jeton exact, aucune ligne n'est lisible.
+const CHEMINS_PUBLICS = ["/login", "/api/auth", "/api/cron", "/devis"];
 
 // Le chemin courant n'est pas accessible depuis un layout ou une page (seuls
 // les paramètres de route le sont). Le middleware le transmet donc en en-tête,

@@ -58,6 +58,21 @@ const nextConfig: NextConfig = {
       // vocal de quelques minutes ; voir src/server/upload-limits.ts pour la
       // valeur centralisée réutilisée côté validation applicative.
       bodySizeLimit: "15mb",
+
+      // Origines autorisées à poster une action serveur. Next.js compare
+      // l'en-tête Origin à l'hôte : derrière le proxy d'un environnement
+      // d'essai (GitHub Codespaces), les deux diffèrent, et TOUTE action est
+      // refusée — créer un chantier, envoyer un devis, confirmer une facture.
+      // L'écran se fige sans rien dire d'utile.
+      //
+      // La liste est vide hors environnement d'essai : la protection reste
+      // entière partout ailleurs, production comprise. Elle ne s'ouvre que
+      // pour les domaines de prévisualisation, jamais pour « tout ».
+      allowedOrigins: process.env.CODESPACE_NAME
+        ? [
+            `${process.env.CODESPACE_NAME}-3000.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN ?? "app.github.dev"}`,
+          ]
+        : [],
     },
   },
 };

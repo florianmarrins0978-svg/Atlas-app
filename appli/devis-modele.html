@@ -226,6 +226,14 @@
 
     @page{size:A4;margin:1.1cm;}
   }
+  /* Message d'accompagnement de l'envoi. Discret et non bloquant : une alerte
+     modale au moment de partager couperait le geste en deux. */
+  .send-status{
+    flex-basis:100%;margin:0.55rem 0 0;font-size:0.82rem;line-height:1.45;
+    color:#4a4a44;
+  }
+  .send-status strong{color:#1c1c1a;}
+  .send-status.warn{color:#8f3f1c;}
 </style>
 </head>
 <body>
@@ -238,6 +246,7 @@
     <button class="btn-secondary" id="savePdfBtn" type="button">Enregistrer en PDF</button>
     <button class="btn-print" id="sendClientBtn" type="button">Envoyer au client</button>
   </div>
+  <p class="send-status no-print" id="sendStatus" role="status" aria-live="polite" hidden></p>
 </div>
 
 <div class="page" id="quotePage">
@@ -543,6 +552,32 @@ IBAN : FR76 3123 3123 4500 2348 1091 175</textarea>
     return { to: (document.getElementById('clientEmail').value || '').trim(), subject, body };
   }
 
+  const sendStatus = document.getElementById('sendStatus');
+  function afficherStatut(html, warn){
+    sendStatus.innerHTML = html;
+    sendStatus.classList.toggle('warn', !!warn);
+    sendStatus.hidden = false;
+  }
+
+  /* Le partage natif d'iOS et d'Android n'a PAS de champ destinataire : il vise
+     aussi bien Mail que WhatsApp ou Messages, où « À : » n'aurait pas de sens.
+     Le nom du client et l'objet restent donc à saisir, et c'est inévitable tant
+     qu'on veut joindre le PDF automatiquement — l'alternative (mailto) remplit
+     le destinataire mais interdit toute pièce jointe, ce qui obligerait à
+     attacher le devis à la main.
+     On copie donc l'adresse dans le presse-papier : il ne reste qu'à la coller.
+     L'écriture doit avoir lieu DANS le geste de l'utilisateur, avant toute
+     attente — après un `await`, Safari refuse l'accès au presse-papier. */
+  function copierDestinataire(adresse){
+    if (!adresse || !navigator.clipboard || !navigator.clipboard.writeText) return false;
+    try{
+      navigator.clipboard.writeText(adresse).catch(function(){ /* refus silencieux */ });
+      return true;
+    } catch(e){
+      return false;
+    }
+  }
+
   const sendClientBtn = document.getElementById('sendClientBtn');
   sendClientBtn.addEventListener('click', async () => {
     sendClientBtn.disabled = true;
@@ -550,6 +585,33 @@ IBAN : FR76 3123 3123 4500 2348 1091 175</textarea>
     sendClientBtn.textContent = 'Préparation...';
     const filename = currentPdfFilename();
     const draft = buildMailDraft();
+
+    // Prédiction de la voie empruntée. Le test exact (avec le vrai fichier) a
+    // lieu plus bas ; ici on veut seulement savoir s'il faut prévenir
+    // l'utilisateur AVANT que la feuille de partage ne prenne l'écran.
+    const partageNatif =
+      typeof navigator.canShare === 'function' && typeof navigator.share === 'function';
+
+    // Copie immédiate, tant que le geste est encore « chaud ».
+    const adresseCopiee = partageNatif && copierDestinataire(draft.to);
+
+    if (partageNatif){
+      if (draft.to){
+        afficherStatut(
+          'Adresse du client' + (adresseCopiee ? ' <strong>copiée</strong>' : '') +
+          ' : <strong>' + draft.to + '</strong>' +
+          (adresseCopiee ? ' — collez-la dans « À : ».' : ' — recopiez-la dans « À : ».') +
+          '<br>Objet suggéré : <strong>' + draft.subject + '</strong>'
+        );
+      } else {
+        afficherStatut(
+          'Aucun e-mail renseigné pour ce client : le champ « À : » restera vide. ' +
+          'Ajoutez-le dans la fiche client ci-dessous pour qu\'il soit copié automatiquement.',
+          true
+        );
+      }
+    }
+
     try{
       const blob = await generatePdfBlob();
       const file = new File([blob], filename, { type: 'application/pdf' });

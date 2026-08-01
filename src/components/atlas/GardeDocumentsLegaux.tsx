@@ -17,7 +17,10 @@ import { logger } from "@/server/logger";
 
 // Chemins où la garde ne s'applique pas, sous peine de boucle de redirection
 // ou de blocage de la connexion elle-même.
-const CHEMINS_EXEMPTS = ["/login", "/documents-legaux", "/api"];
+// `/devis` est la page de réponse du client : il n'a pas de compte, et n'a
+// évidemment aucun document à accepter. L'y renvoyer le laisserait devant un
+// écran qui ne le concerne pas.
+const CHEMINS_EXEMPTS = ["/login", "/documents-legaux", "/api", "/devis"];
 
 export default async function GardeDocumentsLegaux() {
   const entetes = await headers();

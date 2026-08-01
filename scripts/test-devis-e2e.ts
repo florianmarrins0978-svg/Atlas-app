@@ -17,6 +17,10 @@ async function main() {
   const nomUnique = `Chantier devis e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Rénovation salle de bain"]', nomUnique);
+  // Client et coordonnée : sans canal d'envoi convenu, l'écran devis refuse
+  // — à juste titre — de partir chez le client.
+  await page.fill('input[placeholder="M. Bernard"]', "M. Bernard");
+  await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const chantierUrl = page.url();
@@ -46,17 +50,22 @@ async function main() {
   // Le total TTC doit refléter 1000 HT + 20% TVA = 1200,00 €.
   assert.ok(await page.locator("text=/1\\s?200,00\\s?€/").isVisible(), "Le total TTC doit être exact (1 200,00 €)");
 
-  // --- Envoi ---
-  await page.click("text=Envoyer vers le système de devis");
-  await page.waitForSelector("text=Envoyer ce devis ?", { timeout: 5000 });
-  await page.getByRole("button", { name: "Envoyer", exact: true }).click();
-  await page.waitForSelector(`text=Devis envoyé à`, { timeout: 5000 });
+  // --- Envoi au client ---
+  await page.click("text=Envoyer au client");
+  await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+  await page.getByRole("button", { name: "Envoyer le devis" }).click();
+  await page.waitForSelector("text=Devis prêt pour", { timeout: 10000 });
 
   // --- Persistance après rechargement : reste "envoyé" ---
+  // L'écran ne répète plus « devis prêt » : rechargé, il dit où en est le devis
+  // parti — ici, en attente de la réponse du client.
   await page.reload({ waitUntil: "networkidle" });
-  assert.ok(await page.locator("text=Devis envoyé à").isVisible(), "L'état envoyé doit persister après rechargement");
+  assert.ok(
+    await page.locator('p:text-is("En attente de réponse")').isVisible(),
+    "L'état envoyé doit persister après rechargement"
+  );
   assert.ok(await page.locator("text=Télécharger le PDF").isVisible());
-  assert.ok(!(await page.locator("text=Envoyer vers le système de devis").isVisible()));
+  assert.ok(!(await page.locator("text=Envoyer au client").isVisible()));
 
   // --- Le PDF téléchargé (envoyé) est un vrai PDF avec les bonnes données ---
   const telechargementHref = await page.locator("text=Télécharger le PDF").getAttribute("href");

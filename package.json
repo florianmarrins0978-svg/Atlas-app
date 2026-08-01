@@ -7,10 +7,13 @@
   },
   "scripts": {
     "dev": "next dev",
+    "essai": "next dev -H 0.0.0.0 -p 3000",
+    "essai:reinitialiser": "tsx src/server/db/seed.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "verifier:memoire": "node scripts/verifier-memoire.mjs",
     "test": "tsx scripts/run-all-tests.ts",
     "test:e2e": "tsx scripts/run-e2e-tests.ts",
     "db:migrate": "tsx scripts/run-migrations.ts",

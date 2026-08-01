@@ -357,22 +357,22 @@ structurées, prix, export, planning, catalogue, réglages tarifs.
 | Brique | État | Remarque |
 |---|---|---|
 | Agenda Google | à faire | Connexion du compte, lecture des disponibilités, proposition de créneau, écriture de l'intervention après validation |
-| Canal de communication du client | à faire | Champ SMS / e-mail sur la fiche client ; envoi impossible sans |
-| Envoi au client | à faire | Message, PDF joint, envoi SMS **et** e-mail, trace de ce qui est parti et quand |
-| Proposition de date : ferme ou au choix | à faire | Une question au patron dans la foulée de sa validation ; sa réponse déclenche l'envoi |
-| Page de réponse du client | à faire | **Seule surface publique du produit** : devis + choix de date sur le même écran, lien non devinable, expiration, lecture seule limitée au devis |
-| Acceptation tracée valant signature | à faire | Empreinte du PDF, horodatage, adresse, canal — et code SMS en renfort |
-| Demande de démarrage anticipé | à faire | Case distincte liée au délai de rétractation de 14 jours (§2.2 ter) |
-| Contre-proposition de date par le client | à faire | Sélecteur limité aux jours libres ; devis accepté, date retenue directement |
-| Liste des jours occupés transmise à la page | à faire | **Des dates, rien d'autre** : ni intitulé, ni client, ni durée ; bornée à la fenêtre de proposition |
-| Revérification de la disponibilité à la validation | à faire | L'affichage est un instantané : deux clients pourraient viser le même jour |
-| État « en attente de réponse » | à faire | Le chantier est bloqué : ni planifié, ni facturable |
-| Notification « devis retourné » | à faire | Le patron est prévenu d'un refus, et peut reprendre le devis |
-| Relance et caducité | à faire | Sans quoi les chantiers sans réponse s'accumulent invisibles |
-| Onglet « Chantiers terminés » | à faire | Devis rangés par date, bouton « Fin de chantier » en tête |
-| Fin de chantier → facture + TVA | à faire | Un appui : facture construite depuis le devis, envoyée, données portées au relevé de TVA (réserve §2.3) |
-| Factures | à brancher | Voir §6 — ne pas recoder |
-| TVA | à brancher | Voir §6 — ne pas recoder |
+| Canal de communication du client | fait | Recueilli à la création du chantier, déduit quand une seule coordonnée est donnée ; envoi impossible sans |
+| Envoi au client | partiel | Le lien et la trace existent ; **aucun fournisseur de SMS ni d'e-mail n'est branché** — le lien est remis au patron, qui le transmet lui-même |
+| Proposition de date : ferme ou au choix | fait | Une question au patron dans la foulée de sa validation ; sa réponse déclenche l'envoi |
+| Page de réponse du client | fait | **Seule surface publique du produit** : devis + choix de date sur le même écran, lien non devinable, expiration, lecture seule limitée au devis |
+| Acceptation tracée valant signature | partiel | Empreinte du PDF, horodatage, adresse et canal sont conservés ; le code SMS en renfort reste à faire |
+| Demande de démarrage anticipé | fait | Case distincte liée au délai de rétractation de 14 jours (§2.2 ter) |
+| Contre-proposition de date par le client | fait | Sélecteur limité aux jours libres ; devis accepté, date retenue directement |
+| Liste des jours occupés transmise à la page | fait | **Des dates, rien d'autre** : ni intitulé, ni client, ni durée ; bornée à la fenêtre de proposition |
+| Revérification de la disponibilité à la validation | fait | L'affichage est un instantané : deux clients pourraient viser le même jour |
+| État « en attente de réponse » | fait | Annoncé dans la liste, sur la fiche devis et au planning — où le chantier n'est plus proposé à la planification tant que le client choisit |
+| Notification « devis retourné » | fait | Annoncée à l'accueil, avec le nom du chantier ; « Reprendre le devis » ouvre une nouvelle version sans toucher à celle qui est partie |
+| Relance et caducité | partiel | Un devis sans réponse passe à « À relancer » au bout de 7 jours, puis « caduc » à l'expiration du lien, et son lien reste affiché pour le renvoyer. **La relance elle-même reste manuelle** faute de fournisseur d'envoi |
+| Onglet « Chantiers terminés » | fait | Chantiers dont la date d'intervention est passée, rangés par date, bouton « Fin de chantier » en tête |
+| Fin de chantier → facture + TVA | partiel | Facture construite depuis le devis, arrêt 3, relevé de TVA calculé à partir des factures émises. **Son envoi au client attend le même fournisseur que le devis** (réserve §2.3) |
+| Émission légale des factures | à brancher | Voir §6 — préparées ici, **jamais émises** ici ; branchement API sur l'outil comptable |
+| Déclaration de TVA | à brancher | Voir §6 — le relevé est préparé, la déclaration reste à l'outil comptable |
 | Enchaînement complet | à faire | Aujourd'hui l'agent répond et propose ; il ne pilote pas encore le parcours de bout en bout avec ses points d'arrêt |
 | Mise en ligne | à faire | L'application Next.js n'est hébergée nulle part (§7) |
 

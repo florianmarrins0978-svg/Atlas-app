@@ -5,6 +5,29 @@ import type { Ctx } from "./context";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// Le dernier envoi d'un chantier, en sous-requêtes corrélées plutôt qu'en
+// jointure : un chantier refusé puis renvoyé porte plusieurs envois, et une
+// jointure les remonterait tous, dupliquant la ligne du chantier. Seul le
+// dernier décrit où en est le devis aujourd'hui — les précédents sont de
+// l'histoire.
+const DERNIER_ENVOI = {
+  envoiEnvoyeAt: sql<Date | null>`(
+    SELECT e.envoye_at FROM envois_devis e
+    WHERE e.chantier_id = ${chantiers.id}
+    ORDER BY e.envoye_at DESC LIMIT 1
+  )`,
+  envoiExpireAt: sql<Date | null>`(
+    SELECT e.expire_at FROM envois_devis e
+    WHERE e.chantier_id = ${chantiers.id}
+    ORDER BY e.envoye_at DESC LIMIT 1
+  )`,
+  envoiReponse: sql<"acceptee" | "refusee" | null>`(
+    SELECT e.reponse FROM envois_devis e
+    WHERE e.chantier_id = ${chantiers.id}
+    ORDER BY e.envoye_at DESC LIMIT 1
+  )`,
+} as const;
+
 export async function listerChantiers(ctx: Ctx) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
     tx.select().from(chantiers).where(isNull(chantiers.deletedAt))
@@ -27,6 +50,8 @@ export async function listerChantiersPourAffichage(ctx: Ctx) {
         informationsVerifieesAt: chantiers.informationsVerifieesAt,
         devisEnvoyeAt: chantiers.devisEnvoyeAt,
         datePlanifiee: chantiers.datePlanifiee,
+        termineAt: chantiers.termineAt,
+        factureEnvoyeeAt: chantiers.factureEnvoyeeAt,
         photosCount: sql<number>`(
           SELECT COUNT(*)::int FROM photos p
           WHERE p.chantier_id = ${chantiers.id} AND p.deleted_at IS NULL
@@ -34,6 +59,7 @@ export async function listerChantiersPourAffichage(ctx: Ctx) {
         aUneNoteVocale: sql<boolean>`EXISTS (
           SELECT 1 FROM notes_vocales n WHERE n.chantier_id = ${chantiers.id}
         )`,
+        ...DERNIER_ENVOI,
       })
       .from(chantiers)
       .leftJoin(clients, eq(chantiers.clientId, clients.id))
@@ -80,6 +106,7 @@ export async function getChantierPourHub(ctx: Ctx, id: string) {
         aUneNoteVocale: sql<boolean>`EXISTS (
           SELECT 1 FROM notes_vocales n WHERE n.chantier_id = ${chantiers.id}
         )`,
+        ...DERNIER_ENVOI,
       })
       .from(chantiers)
       .leftJoin(clients, eq(chantiers.clientId, clients.id))
@@ -160,6 +187,7 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
         clientNom: clients.nom,
         devisEnvoyeAt: chantiers.devisEnvoyeAt,
         datePlanifiee: chantiers.datePlanifiee,
+        ...DERNIER_ENVOI,
       })
       .from(chantiers)
       .leftJoin(clients, eq(chantiers.clientId, clients.id))

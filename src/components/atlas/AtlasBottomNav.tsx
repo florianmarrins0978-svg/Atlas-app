@@ -7,6 +7,7 @@ import { colors } from "@/lib/design-tokens";
 const tabs = [
   { href: "/", label: "Chantiers", icon: "home" as const },
   { href: "/planning", label: "Planning", icon: "calendar" as const },
+  { href: "/termines", label: "Terminés", icon: "check" as const },
   { href: "/reglages", label: "Tarifs", icon: "tag" as const },
 ];
 
@@ -36,9 +37,16 @@ export default function AtlasBottomNav() {
   );
 }
 
-function NavIcon({ icon, active }: { icon: "home" | "calendar" | "tag"; active: boolean }) {
+function NavIcon({ icon, active }: { icon: "home" | "calendar" | "check" | "tag"; active: boolean }) {
   const color = active ? colors.rust : colors.muted;
   const common = { width: 22, height: 22, viewBox: "0 0 24 24", fill: "none", stroke: color, strokeWidth: 1.8 };
+  if (icon === "check")
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="9" />
+        <path d="m8.5 12 2.5 2.5 4.5-5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
   if (icon === "calendar")
     return (
       <svg {...common}>

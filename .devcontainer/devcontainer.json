@@ -1,0 +1,25 @@
+{
+  "name": "Atlas — application complète",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  // Monté une seule fois, à la création : dépendances, migrations, données de
+  // démonstration. Ensuite, `npm run essai` suffit.
+  "postCreateCommand": "bash .devcontainer/preparer.sh",
+
+  // Ouvert automatiquement, et annoncé — sans quoi il faut savoir qu'il existe.
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Atlas",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+    }
+  }
+}

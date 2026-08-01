@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { getStatutAffiche, statutLabel } from "@/lib/chantier-etat";
+import { chantierEnCours, getStatutAffiche, statutLabel } from "@/lib/chantier-etat";
 import { colors, font, smallCaps, cardShadow } from "@/lib/design-tokens";
 import StatusIcon from "@/components/atlas/StatusIcon";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
+import { notificationsPatron, envoisCaducs } from "@/server/repositories/envois-devis";
+import Notifications from "./Notifications";
 
 // Données réelles, propres à l'entreprise courante : jamais de pré-rendu statique.
 export const dynamic = "force-dynamic";
@@ -34,7 +36,16 @@ function MetaIcon({ kind }: { kind: "photo" | "mic" }) {
 
 export default async function ChantiersPage() {
   const ctx = await getCurrentCtx();
-  const chantiers = await listerChantiersPourAffichage(ctx);
+  const [chantiers, notifications, caducs] = await Promise.all([
+    listerChantiersPourAffichage(ctx),
+    notificationsPatron(ctx),
+    envoisCaducs(ctx),
+  ]);
+
+  // Le statut est calculé une seule fois, ici : le compteur et la carte doivent
+  // dire la même chose, et deux appels séparés finiraient par diverger.
+  const avecStatut = chantiers.map((c) => ({ ...c, statut: getStatutAffiche(c) }));
+  const enCours = avecStatut.filter((c) => chantierEnCours(c.statut)).length;
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -48,7 +59,7 @@ export default async function ChantiersPage() {
               Chantiers
             </h1>
             <p className="mt-2 text-[14px]" style={{ color: colors.muted }}>
-              {chantiers.length} chantier{chantiers.length > 1 ? "s" : ""} en cours
+              {enCours} chantier{enCours > 1 ? "s" : ""} en cours
             </p>
           </div>
           <button
@@ -61,6 +72,8 @@ export default async function ChantiersPage() {
             </svg>
           </button>
         </div>
+
+        <Notifications initiales={notifications} caducs={caducs} />
 
         <div className="px-6 pt-6">
           <PrimaryButton href="/chantiers/nouveau">
@@ -78,8 +91,7 @@ export default async function ChantiersPage() {
           </div>
         ) : (
           <div className="mt-8 flex flex-col gap-4 px-6">
-            {chantiers.map((c) => {
-              const statut = getStatutAffiche(c);
+            {avecStatut.map(({ statut, ...c }) => {
               return (
                 <Link
                   key={c.id}
