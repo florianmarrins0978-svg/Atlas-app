@@ -9,6 +9,38 @@ Format : le plus récent en tête.
 
 ## 2026-08-01
 
+### La connexion était refusée derrière le proxy — et rien ne le voyait
+
+**Invalid Server Actions request.** Voilà ce que le patron avait sous les yeux
+en essayant de se connecter, une demi-journée durant. L'application démarrait
+parfaitement ; elle refusait simplement d'ouvrir sa porte.
+
+Next.js compare l'en-tête `Origin` à l'hôte avant d'accepter une action serveur.
+Derrière le proxy de Codespaces les deux diffèrent, et `allowedOrigins` doit
+donc être rempli. Il l'était — à partir de `CODESPACE_NAME`.
+
+Sauf que le conteneur de l'application est décrit par un **docker-compose avec
+une liste d'environnement explicite**, et que `CODESPACE_NAME` n'y figurait pas.
+Une variable ne traverse pas cette frontière toute seule. À l'intérieur, elle
+n'existait pas ; `allowedOrigins` restait vide ; toute action était refusée, à
+commencer par le formulaire de connexion.
+
+Deux corrections, parce qu'une seule ne suffit pas :
+
+- La variable est désormais transmise au conteneur.
+- **Et la connexion n'en dépend plus** : en développement, `allowedOrigins`
+  accepte le domaine de redirection de façon générique. Le domaine de Codespaces
+  varie, et une variable manquante ne doit plus pouvoir tout bloquer. En
+  production, la liste reste vide — la protection est entière.
+
+**Pourquoi aucune suite ne l'a vu.** Elles interrogent toutes `127.0.0.1`, où
+l'origine et l'hôte coïncident : le défaut n'existait que derrière un autre nom
+de domaine, c'est-à-dire uniquement chez le patron. `verifier-connexion.mjs`
+comble ce trou — il se connecte dans un vrai navigateur en posant délibérément
+une origine étrangère, et sans `CODESPACE_NAME`, l'état exact du conteneur en
+panne. Éprouvé contre le défaut avant d'être ajouté : il échoue avec l'ancienne
+configuration, il passe avec la nouvelle.
+
 ### L'application démarre seule : plus rien à taper
 
 Quatre tentatives d'ouverture ont échoué d'affilée, **toutes sur le terminal, et

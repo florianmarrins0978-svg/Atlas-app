@@ -62,17 +62,38 @@ const nextConfig: NextConfig = {
       // Origines autorisées à poster une action serveur. Next.js compare
       // l'en-tête Origin à l'hôte : derrière le proxy d'un environnement
       // d'essai (GitHub Codespaces), les deux diffèrent, et TOUTE action est
-      // refusée — créer un chantier, envoyer un devis, confirmer une facture.
-      // L'écran se fige sans rien dire d'utile.
+      // refusée — à commencer par la connexion, puis créer un chantier,
+      // envoyer un devis, confirmer une facture.
       //
-      // La liste est vide hors environnement d'essai : la protection reste
-      // entière partout ailleurs, production comprise. Elle ne s'ouvre que
-      // pour les domaines de prévisualisation, jamais pour « tout ».
-      allowedOrigins: process.env.CODESPACE_NAME
-        ? [
-            `${process.env.CODESPACE_NAME}-3000.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN ?? "app.github.dev"}`,
-          ]
-        : [],
+      // Ce que ça donnait à l'écran : « Invalid Server Actions request. » Le
+      // patron a passé une demi-journée à croire que l'application ne
+      // démarrait pas, alors qu'elle démarrait très bien et refusait sa
+      // connexion.
+      //
+      // La cause était plus bête encore : le conteneur de l'application est
+      // décrit par un docker-compose avec une liste d'environnement EXPLICITE,
+      // et `CODESPACE_NAME` n'y était pas repris. À l'intérieur, la variable
+      // n'existait pas, la liste ci-dessous restait vide, et rien ne
+      // fonctionnait. Elle est désormais transmise (.devcontainer/docker-
+      // compose.yml) — mais on ne fait plus reposer la connexion là-dessus.
+      //
+      // D'où le caractère générique EN DÉVELOPPEMENT SEULEMENT : le domaine de
+      // redirection de Codespaces varie (`app.github.dev`, parfois un domaine
+      // régional), et une seule variable d'environnement manquante suffisait à
+      // tout bloquer. En production, la liste reste vide : la protection est
+      // entière, et ce banc d'essai ne tourne jamais en production.
+      allowedOrigins:
+        process.env.NODE_ENV === "production"
+          ? []
+          : [
+              "*.app.github.dev",
+              "*.github.dev",
+              ...(process.env.CODESPACE_NAME
+                ? [
+                    `${process.env.CODESPACE_NAME}-3000.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN ?? "app.github.dev"}`,
+                  ]
+                : []),
+            ],
     },
   },
 };

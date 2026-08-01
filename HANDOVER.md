@@ -48,8 +48,14 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les cinq pièges de ce dépôt
+### Les six pièges de ce dépôt
 
+0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
+   à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
+   rejetée — connexion comprise — avec pour seul message « Invalid Server
+   Actions request. ». Aucune suite ne le voit : elles interrogent toutes
+   `127.0.0.1`, où les deux coïncident. C'est le rôle de
+   `scripts/verifier-connexion.mjs`, qui pose exprès une origine étrangère.
 1. **Une requête hors `withEntreprise()` ne renvoie rien, silencieusement.** Pas
    d'erreur : zéro ligne. Un traitement qui ne trouve rien à faire paraît
    fonctionner. C'est déjà arrivé une fois (la purge d'audio).

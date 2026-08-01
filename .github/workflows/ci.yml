@@ -136,3 +136,36 @@ jobs:
           # connexion entre deux suites (cf. scripts/run-e2e-tests.ts).
           REDIS_URL: redis://localhost:6379
         run: npm run test:e2e
+
+      # Se connecte pour de vrai, DEPUIS UNE ORIGINE ÉTRANGÈRE.
+      #
+      # Pourquoi une étape de plus alors que les suites de bout en bout
+      # existent : elles interrogent toutes `127.0.0.1`, où l'en-tête Origin
+      # et l'hôte coïncident. Or Next.js refuse une action serveur quand ils
+      # diffèrent — ce qui est le cas derrière le proxy de Codespaces, et
+      # seulement là. Le patron s'est retrouvé devant « Invalid Server Actions
+      # request. » à la connexion, une demi-journée durant, alors que toutes
+      # les suites étaient vertes.
+      #
+      # CODESPACE_NAME n'est délibérément PAS défini : c'est l'état exact de
+      # son conteneur. Si la connexion passe quand même, c'est qu'elle ne
+      # dépend plus de cette variable.
+      - name: Se connecter réellement, derrière un proxy
+        env:
+          CRON_SECRET: ci-placeholder-cron-secret-0000000000
+          REDIS_URL: redis://localhost:6379
+        run: |
+          # Les suites précédentes vident la base : le compte de démonstration
+          # doit être recréé, sinon l'échec accuserait l'origine alors que
+          # c'est le compte qui manque.
+          npx tsx src/server/db/seed.ts
+          npm run essai > /tmp/essai-connexion.log 2>&1 &
+          for _ in $(seq 1 90); do
+            curl -sf -o /dev/null http://127.0.0.1:3000/api/health/live && break
+            sleep 2
+          done
+          node scripts/verifier-connexion.mjs || {
+            echo "--- journal du serveur ---"
+            tail -40 /tmp/essai-connexion.log
+            exit 1
+          }
