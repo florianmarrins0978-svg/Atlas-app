@@ -57,8 +57,13 @@ async function main() {
   await page.waitForSelector("text=Devis prêt pour", { timeout: 10000 });
 
   // --- Persistance après rechargement : reste "envoyé" ---
+  // L'écran ne répète plus « devis prêt » : rechargé, il dit où en est le devis
+  // parti — ici, en attente de la réponse du client.
   await page.reload({ waitUntil: "networkidle" });
-  assert.ok(await page.locator("text=Devis prêt pour").isVisible(), "L'état envoyé doit persister après rechargement");
+  assert.ok(
+    await page.locator('p:text-is("En attente de réponse")').isVisible(),
+    "L'état envoyé doit persister après rechargement"
+  );
   assert.ok(await page.locator("text=Télécharger le PDF").isVisible());
   assert.ok(!(await page.locator("text=Envoyer au client").isVisible()));
 

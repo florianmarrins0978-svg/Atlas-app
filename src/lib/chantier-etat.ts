@@ -1,13 +1,26 @@
+import { attendLeClient, etatEnvoi } from "./etat-envoi";
+
 // Statut d'un chantier et libellés associés — définis ici (pas dans
 // mock-data.ts) car utilisés par les écrans réels ; réexportés depuis
 // mock-data.ts pour ne pas casser les maquettes /design/* qui les référencent.
-export type ChantierStatut = "brouillon" | "a_verifier" | "verifie" | "devis_envoye" | "planifie";
+export type ChantierStatut =
+  | "brouillon"
+  | "a_verifier"
+  | "verifie"
+  | "devis_envoye"
+  | "en_attente_client"
+  | "a_relancer"
+  | "devis_retourne"
+  | "planifie";
 
 export const statutLabel: Record<ChantierStatut, string> = {
   brouillon: "Brouillon",
   a_verifier: "À vérifier",
   verifie: "Vérifié",
   devis_envoye: "Devis envoyé",
+  en_attente_client: "En attente de réponse",
+  a_relancer: "À relancer",
+  devis_retourne: "Devis retourné",
   planifie: "Planifié",
 };
 
@@ -175,15 +188,34 @@ export function getSecondarySteps(
 // change demain (acceptation client, acompte reçu...), seule cette fonction
 // est à modifier — pas l'écran Planning.
 
-export type PlanificationEtat = "a_planifier" | "planifie" | "non_concerne";
+export type PlanificationEtat = "a_planifier" | "planifie" | "attente_client" | "non_concerne";
 
 export type EtatPourPlanification = {
   devisEnvoyeAt: Date | string | null;
   datePlanifiee: string | null;
+  envoiEnvoyeAt?: Date | string | null;
+  envoiExpireAt?: Date | string | null;
+  envoiReponse?: "acceptee" | "refusee" | null;
 };
 
-export function getPlanificationEtat(c: EtatPourPlanification): PlanificationEtat {
+export function getPlanificationEtat(
+  c: EtatPourPlanification,
+  maintenant: Date = new Date()
+): PlanificationEtat {
   if (c.datePlanifiee) return "planifie";
+
+  // Un chantier dont le client est en train de choisir sa date n'est PAS « à
+  // planifier » : le patron qui le planifierait lui-même poserait une date que
+  // le client s'apprête peut-être à contredire, et se retrouverait avec deux
+  // engagements sur le même jour. Il attend, et l'écran le dit.
+  const etat = etatEnvoi(
+    c.envoiEnvoyeAt === undefined
+      ? null
+      : { envoyeAt: c.envoiEnvoyeAt, expireAt: c.envoiExpireAt ?? null, reponse: c.envoiReponse ?? null },
+    maintenant
+  );
+  if (attendLeClient(etat)) return "attente_client";
+
   if (c.devisEnvoyeAt) return "a_planifier";
   return "non_concerne";
 }
@@ -200,10 +232,30 @@ export type EtatPourStatutAffiche = {
   informationsVerifieesAt: Date | string | null;
   devisEnvoyeAt: Date | string | null;
   datePlanifiee: string | null;
+  // Le dernier envoi, quand il existe. Absent des anciens appels : le statut
+  // reste alors celui d'avant, sans jamais mentir sur ce qu'il ignore.
+  envoiEnvoyeAt?: Date | string | null;
+  envoiExpireAt?: Date | string | null;
+  envoiReponse?: "acceptee" | "refusee" | null;
 };
 
-export function getStatutAffiche(c: EtatPourStatutAffiche): ChantierStatut {
+export function getStatutAffiche(c: EtatPourStatutAffiche, maintenant: Date = new Date()): ChantierStatut {
   if (c.datePlanifiee) return "planifie";
+
+  // Ce que devient un devis parti dépend du client, pas de nous. « Devis
+  // envoyé » ne le disait pas : le patron voyait la même chose qu'il attende
+  // une réponse depuis une heure ou qu'on lui ait dit non trois semaines plus
+  // tôt.
+  const etat = etatEnvoi(
+    c.envoiEnvoyeAt === undefined
+      ? null
+      : { envoyeAt: c.envoiEnvoyeAt, expireAt: c.envoiExpireAt ?? null, reponse: c.envoiReponse ?? null },
+    maintenant
+  );
+  if (etat === "retourne" || etat === "caduc") return "devis_retourne";
+  if (etat === "a_relancer") return "a_relancer";
+  if (etat === "en_attente") return "en_attente_client";
+
   if (c.devisEnvoyeAt) return "devis_envoye";
   if (c.informationsVerifieesAt) return "verifie";
   if (c.aUneNoteVocale || c.photosCount > 0) return "a_verifier";

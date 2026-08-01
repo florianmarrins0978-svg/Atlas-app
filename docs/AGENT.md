@@ -366,9 +366,9 @@ structurées, prix, export, planning, catalogue, réglages tarifs.
 | Contre-proposition de date par le client | fait | Sélecteur limité aux jours libres ; devis accepté, date retenue directement |
 | Liste des jours occupés transmise à la page | fait | **Des dates, rien d'autre** : ni intitulé, ni client, ni durée ; bornée à la fenêtre de proposition |
 | Revérification de la disponibilité à la validation | fait | L'affichage est un instantané : deux clients pourraient viser le même jour |
-| État « en attente de réponse » | à faire | Le chantier est bloqué : ni planifié, ni facturable |
-| Notification « devis retourné » | à faire | Le patron est prévenu d'un refus, et peut reprendre le devis |
-| Relance et caducité | à faire | Sans quoi les chantiers sans réponse s'accumulent invisibles |
+| État « en attente de réponse » | fait | Annoncé dans la liste, sur la fiche devis et au planning — où le chantier n'est plus proposé à la planification tant que le client choisit |
+| Notification « devis retourné » | fait | Annoncée à l'accueil, avec le nom du chantier ; « Reprendre le devis » ouvre une nouvelle version sans toucher à celle qui est partie |
+| Relance et caducité | partiel | Un devis sans réponse passe à « À relancer » au bout de 7 jours, puis « caduc » à l'expiration du lien, et son lien reste affiché pour le renvoyer. **La relance elle-même reste manuelle** faute de fournisseur d'envoi |
 | Onglet « Chantiers terminés » | fait | Chantiers dont la date d'intervention est passée, rangés par date, bouton « Fin de chantier » en tête |
 | Fin de chantier → facture + TVA | partiel | Facture construite depuis le devis, arrêt 3, relevé de TVA calculé à partir des factures émises. **Son envoi au client attend le même fournisseur que le devis** (réserve §2.3) |
 | Émission légale des factures | à brancher | Voir §6 — préparées ici, **jamais émises** ici ; branchement API sur l'outil comptable |

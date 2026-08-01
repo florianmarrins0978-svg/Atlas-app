@@ -20,6 +20,9 @@ type ChantierPlanning = {
   clientNom: string | null;
   devisEnvoyeAt: Date | string | null;
   datePlanifiee: string | null;
+  envoiEnvoyeAt: Date | string | null;
+  envoiExpireAt: Date | string | null;
+  envoiReponse: "acceptee" | "refusee" | null;
 };
 
 function formatDateFr(iso: string) {
@@ -35,6 +38,7 @@ export default function PlanningClient({ initialChantiers }: { initialChantiers:
 
   const aPlanifier = chantiers.filter((c) => getPlanificationEtat(c) === "a_planifier");
   const planifies = trierParDatePlanifiee(chantiers.filter((c) => getPlanificationEtat(c) === "planifie"));
+  const attenteClient = chantiers.filter((c) => getPlanificationEtat(c) === "attente_client");
 
   function ouvrirSheet(c: ChantierPlanning) {
     setDateChoisie(c.datePlanifiee ?? "");
@@ -80,15 +84,24 @@ export default function PlanningClient({ initialChantiers }: { initialChantiers:
                   className="flex items-center justify-between rounded-2xl px-5 py-4 text-left"
                   style={{ backgroundColor: colors.card }}
                 >
-                  <span>
-                    <span className="block text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
+                  <span className="min-w-0 flex-1">
+                    <span
+                      className="block truncate text-[16px]"
+                      style={{ fontFamily: font.display, color: colors.ink }}
+                    >
                       {c.nom}
                     </span>
-                    <span className="block text-[13px]" style={{ color: colors.muted }}>
+                    <span className="block truncate text-[13px]" style={{ color: colors.muted }}>
                       {c.clientNom ?? "Client non renseigné"}
                     </span>
                   </span>
-                  <span className="text-[14px] font-medium" style={{ color: colors.rust }}>
+                  {/* Ne se coupe jamais en deux lignes : un nom de chantier un
+                      peu long faisait passer l'action à la ligne, et l'action
+                      est ce que le patron vient chercher. */}
+                  <span
+                    className="ml-4 flex-shrink-0 whitespace-nowrap text-[14px] font-medium"
+                    style={{ color: colors.rust }}
+                  >
                     Choisir une date
                   </span>
                 </button>
@@ -96,6 +109,38 @@ export default function PlanningClient({ initialChantiers }: { initialChantiers:
             </div>
           )}
         </div>
+
+        {/* En attente du client — ni planifiables ni oubliables.
+            Ces chantiers ne sont pas proposés à la planification : leur date se
+            décide chez le client. Les taire les ferait disparaître entre deux
+            listes, alors que ce sont précisément ceux dont le patron se demande
+            où ils en sont. */}
+        {attenteClient.length > 0 && (
+          <div className="mt-8 px-6">
+            <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
+              En attente du client
+            </p>
+            <div className="flex flex-col gap-2">
+              {attenteClient.map((c) => (
+                <div
+                  key={c.id}
+                  className="rounded-2xl px-5 py-4"
+                  style={{ backgroundColor: colors.card }}
+                >
+                  <span
+                    className="block truncate text-[16px]"
+                    style={{ fontFamily: font.display, color: colors.ink }}
+                  >
+                    {c.nom}
+                  </span>
+                  <span className="block truncate text-[13px]" style={{ color: colors.muted }}>
+                    {c.clientNom ?? "Client non renseigné"} — il choisit sa date
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Planifiés */}
         <div className="mt-8 px-6">

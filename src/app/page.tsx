@@ -5,6 +5,8 @@ import StatusIcon from "@/components/atlas/StatusIcon";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
+import { notificationsPatron } from "@/server/repositories/envois-devis";
+import Notifications from "./Notifications";
 
 // Données réelles, propres à l'entreprise courante : jamais de pré-rendu statique.
 export const dynamic = "force-dynamic";
@@ -34,7 +36,10 @@ function MetaIcon({ kind }: { kind: "photo" | "mic" }) {
 
 export default async function ChantiersPage() {
   const ctx = await getCurrentCtx();
-  const chantiers = await listerChantiersPourAffichage(ctx);
+  const [chantiers, notifications] = await Promise.all([
+    listerChantiersPourAffichage(ctx),
+    notificationsPatron(ctx),
+  ]);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -61,6 +66,8 @@ export default async function ChantiersPage() {
             </svg>
           </button>
         </div>
+
+        <Notifications initiales={notifications} />
 
         <div className="px-6 pt-6">
           <PrimaryButton href="/chantiers/nouveau">

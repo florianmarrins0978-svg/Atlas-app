@@ -27,6 +27,23 @@ export async function envoyerDevisAction(devisId: string) {
   return resultat;
 }
 
+/**
+ * Rouvre un devis pour le corriger et le renvoyer.
+ *
+ * Un refus n'est pas une fin : c'est souvent une négociation qui commence
+ * (docs/AGENT.md §2.2). Sans ce chemin, un devis retourné restait retourné pour
+ * toujours, et le chantier avec lui.
+ *
+ * La nouvelle version reprend le numéro commercial et les lignes de prix
+ * courantes — corriger un prix se fait donc à l'écran Prix, comme d'habitude,
+ * et non ici.
+ */
+export async function reprendreDevisAction(chantierId: string) {
+  const ctx = await getCurrentCtx();
+  const devis = await getOuCreerDevisBrouillon(ctx, chantierId);
+  return { devisId: devis.id, numeroVersion: devis.numeroVersion };
+}
+
 // --- Envoi au client : la seule question posée au patron (docs/AGENT.md §2.2) ---
 
 export async function preparerEnvoiAction(chantierId: string) {

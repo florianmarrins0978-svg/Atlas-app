@@ -43,6 +43,28 @@ export default function StatusIcon({
           <circle cx="12" cy="12" r="7" strokeDasharray="1.5 4" strokeLinecap="round" />
         </svg>
       )}
+      {/* Le devis est parti, la balle est chez le client : un sablier, parce que
+          la seule chose à faire est d'attendre. */}
+      {statut === "en_attente_client" && (
+        <svg {...common}>
+          <path d="M7 3h10M7 21h10" strokeLinecap="round" />
+          <path d="M8 3v3.5L12 12l-4 5.5V21M16 3v3.5L12 12l4 5.5V21" strokeLinejoin="round" />
+        </svg>
+      )}
+      {/* Silence trop long, et refus : deux situations distinctes, mais toutes
+          deux appellent un geste. D'où deux dessins qui alertent. */}
+      {statut === "a_relancer" && (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="8" />
+          <path d="M12 8v4.5l3 2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+      {statut === "devis_retourne" && (
+        <svg {...common}>
+          <path d="M20 12H6" strokeLinecap="round" />
+          <path d="M11 7l-5 5 5 5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
       {statut === "planifie" && (
         <svg {...common}>
           <rect x="4" y="5" width="16" height="15" rx="2" />

@@ -397,6 +397,81 @@ export async function reponsesNonVues(ctx: Ctx) {
   );
 }
 
+/**
+ * Le dernier envoi d'un chantier, ou `null` s'il n'en a jamais eu.
+ *
+ * Le dernier, et lui seul : un devis refusé puis corrigé et renvoyé laisse
+ * plusieurs envois derrière lui. Les précédents racontent la négociation ; c'est
+ * le dernier qui dit où en est le devis aujourd'hui.
+ */
+export async function dernierEnvoi(ctx: Ctx, chantierId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [row] = await tx
+      .select()
+      .from(envoisDevis)
+      .where(
+        and(eq(envoisDevis.chantierId, chantierId), eq(envoisDevis.entrepriseId, ctx.entrepriseId))
+      )
+      .orderBy(desc(envoisDevis.envoyeAt))
+      .limit(1);
+    return row ?? null;
+  });
+}
+
+export type NotificationPatron = {
+  envoiId: string;
+  chantierId: string;
+  chantierNom: string;
+  reponse: "acceptee" | "refusee";
+  responduAt: Date | null;
+  dateRetenue: string | null;
+  dateContreProposee: boolean;
+};
+
+/**
+ * Ce que le patron doit apprendre, avec de quoi le lui dire.
+ *
+ * `reponsesNonVues` ne renvoie que des envois : un identifiant de chantier ne
+ * fait pas une notification lisible. On y joint le nom, parce qu'une alerte qui
+ * oblige à ouvrir une fiche pour savoir de quoi elle parle ne sera pas lue.
+ *
+ * Deux nouvelles y passent : un refus — le devis est retourné, il peut être
+ * repris — et une acceptation sur une date que le client a proposée lui-même.
+ * La seconde n'est pas un problème, mais elle change l'agenda du patron sans
+ * qu'il ait rien décidé : il doit le savoir.
+ */
+export async function notificationsPatron(ctx: Ctx): Promise<NotificationPatron[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const rows = await tx
+      .select({
+        envoiId: envoisDevis.id,
+        chantierId: envoisDevis.chantierId,
+        chantierNom: chantiers.nom,
+        reponse: envoisDevis.reponse,
+        responduAt: envoisDevis.responduAt,
+        dateRetenue: envoisDevis.dateRetenue,
+        dateContreProposee: envoisDevis.dateContreProposee,
+      })
+      .from(envoisDevis)
+      .innerJoin(chantiers, eq(envoisDevis.chantierId, chantiers.id))
+      .where(
+        and(
+          eq(envoisDevis.entrepriseId, ctx.entrepriseId),
+          isNull(envoisDevis.vuParPatronAt),
+          isNull(chantiers.deletedAt),
+          sql`${envoisDevis.reponse} IS NOT NULL`,
+          // Une acceptation sur l'une des dates proposées ne surprend personne :
+          // c'est le déroulement attendu. La signaler noierait les deux nouvelles
+          // qui, elles, appellent quelque chose.
+          sql`(${envoisDevis.reponse} = 'refusee' OR ${envoisDevis.dateContreProposee})`
+        )
+      )
+      .orderBy(desc(envoisDevis.responduAt));
+
+    return rows.map((r) => ({ ...r, reponse: r.reponse as "acceptee" | "refusee" }));
+  });
+}
+
 /** Marque une réponse comme lue par le patron. */
 export async function marquerReponseVue(ctx: Ctx, envoiId: string, maintenant: Date = new Date()) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {

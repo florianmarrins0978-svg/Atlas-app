@@ -1,9 +1,12 @@
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getOuCreerDevisBrouillon, chargerDevisPourEcran } from "@/server/repositories/devis";
 import { listerPrestations } from "@/server/repositories/prestations";
+import { dernierEnvoi } from "@/server/repositories/envois-devis";
+import { etatEnvoi } from "@/lib/etat-envoi";
 import ExportClient from "./ExportClient";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +23,21 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
   // Sinon, le brouillon est créé ou régénéré depuis les lignes de prix courantes.
   const devisRow = (await chargerDevisPourEcran(ctx, id)) ?? (await getOuCreerDevisBrouillon(ctx, id));
   const prestations = await listerPrestations(ctx, id);
+
+  // Où en est le devis parti, s'il est parti. C'est ce qui distingue « le
+  // client réfléchit » de « le client a dit non » — deux situations que l'écran
+  // présentait jusqu'ici de la même façon.
+  const envoi = await dernierEnvoi(ctx, id);
+  const etat = etatEnvoi(envoi);
+
+  // L'adresse complète du lien est bâtie ICI, côté serveur, et non depuis
+  // `window` : composée dans le navigateur, elle diffère de ce que le serveur a
+  // rendu, et React régénère alors tout l'arbre. Le patron doit pouvoir copier
+  // une adresse entière — un chemin seul ne s'ouvre nulle part.
+  const entetes = await headers();
+  const hote = entetes.get("x-forwarded-host") ?? entetes.get("host") ?? "";
+  const protocole = entetes.get("x-forwarded-proto") ?? (hote.startsWith("localhost") ? "http" : "https");
+  const origine = hote ? `${protocole}://${hote}` : "";
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -56,6 +74,9 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
           prestations={prestations.map((p) => p.libelle)}
           totalTtc={devisRow.totalTtc}
           initialEnvoye={devisRow.statut === "envoye"}
+          etatEnvoi={etat}
+          lienEnvoi={envoi && !envoi.reponse ? `/devis/${envoi.jeton}` : null}
+          origine={origine}
         />
       </div>
     </div>

@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
+import { etatEnvoiExplication, etatEnvoiLabel, type EtatEnvoi } from "@/lib/etat-envoi";
+import { reprendreDevisAction } from "./actions";
 import EnvoiAuClient from "./EnvoiAuClient";
 
 const formatEuros = new Intl.NumberFormat("fr-FR", {
@@ -22,6 +25,9 @@ export default function ExportClient({
   prestations,
   totalTtc,
   initialEnvoye,
+  etatEnvoi,
+  lienEnvoi,
+  origine,
 }: {
   chantierId: string;
   devisId: string;
@@ -32,9 +38,15 @@ export default function ExportClient({
   prestations: string[];
   totalTtc: string;
   initialEnvoye: boolean;
+  etatEnvoi: EtatEnvoi;
+  /** Le lien encore actif, tant que le client n'a pas répondu. */
+  lienEnvoi: string | null;
+  /** Origine du site, calculée côté serveur — voir le commentaire dans page.tsx. */
+  origine: string;
 }) {
+  const router = useRouter();
   const [confirmationVisible, setConfirmationVisible] = useState(false);
-  const [envoye, setEnvoye] = useState(initialEnvoye);
+  const [reprise, setReprise] = useState(false);
   // Aucun fournisseur de SMS ni d'e-mail n'étant branché (docs/AGENT.md §5), le
   // lien est rendu au patron pour qu'il le transmette lui-même — ce qui vaut
   // mieux qu'un envoi qui échouerait en silence.
@@ -42,7 +54,29 @@ export default function ExportClient({
   const [copie, setCopie] = useState(false);
 
   function lienComplet(chemin: string) {
-    return typeof window === "undefined" ? chemin : `${window.location.origin}${chemin}`;
+    return `${origine}${chemin}`;
+  }
+
+  // Déduit des props, jamais gardé en état : une reprise de devis rafraîchit
+  // l'écran, et un état figé à l'ouverture continuerait d'annoncer un devis
+  // parti alors qu'une nouvelle version attend d'être envoyée.
+  const envoye = initialEnvoye || lienClient !== null;
+
+  // Un refus, ou un lien périmé : le devis peut repartir, dans une nouvelle
+  // version. Sans ce chemin, un chantier retourné l'était définitivement.
+  const peutReprendre = etatEnvoi === "retourne" || etatEnvoi === "caduc";
+  const lienAMontrer = lienClient ?? lienEnvoi;
+
+  async function reprendre() {
+    setReprise(true);
+    try {
+      await reprendreDevisAction(chantierId);
+      // L'écran est relu : la nouvelle version, ses lignes et ses totaux
+      // viennent du serveur, jamais d'une copie reconstituée ici.
+      router.refresh();
+    } finally {
+      setReprise(false);
+    }
   }
 
   return (
@@ -90,25 +124,33 @@ export default function ExportClient({
 
         {envoye || lienClient ? (
           <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: colors.card }}>
-            <p className="text-center text-[14px]" style={{ color: colors.muted }}>
-              Devis prêt pour {clientNom}.
+            {/* L'état d'abord, l'explication ensuite. « Devis envoyé » ne disait
+                pas si le client réfléchissait ou s'il avait dit non. */}
+            <p className={smallCaps} style={{ color: colors.rust, marginBottom: 6, textAlign: "center" }}>
+              {lienClient ? "Devis prêt" : etatEnvoiLabel[etatEnvoi]}
             </p>
-            {lienClient && (
+            <p className="text-center text-[14px]" style={{ color: colors.muted }}>
+              {lienClient ? `Devis prêt pour ${clientNom}.` : etatEnvoiExplication[etatEnvoi]}
+            </p>
+
+            {lienAMontrer && (
               <>
                 <p className="mt-3 text-center text-[13px]" style={{ color: colors.ink }}>
-                  Transmettez-lui ce lien : il y verra le devis et choisira sa date.
+                  {lienClient
+                    ? "Transmettez-lui ce lien : il y verra le devis et choisira sa date."
+                    : "Le lien est toujours actif — renvoyez-le tel quel pour relancer."}
                 </p>
                 <p
                   className="mt-2 break-all rounded-xl px-3 py-2 text-center text-[12px]"
                   style={{ backgroundColor: colors.cream, color: colors.muted }}
                 >
-                  {lienComplet(lienClient)}
+                  {lienComplet(lienAMontrer)}
                 </p>
                 <button
                   type="button"
                   onClick={async () => {
                     try {
-                      await navigator.clipboard.writeText(lienComplet(lienClient));
+                      await navigator.clipboard.writeText(lienComplet(lienAMontrer));
                       setCopie(true);
                     } catch {
                       // Presse-papier refusé : le lien reste lisible et
@@ -121,6 +163,18 @@ export default function ExportClient({
                   {copie ? "Lien copié" : "Copier le lien"}
                 </button>
               </>
+            )}
+
+            {peutReprendre && (
+              <button
+                type="button"
+                onClick={reprendre}
+                disabled={reprise}
+                className="mt-4 block w-full rounded-2xl py-3 text-[15px] font-medium text-white disabled:opacity-50"
+                style={{ backgroundColor: colors.rust }}
+              >
+                {reprise ? "Reprise…" : "Reprendre le devis"}
+              </button>
             )}
           </div>
         ) : (
@@ -138,7 +192,6 @@ export default function ExportClient({
         onFermer={() => setConfirmationVisible(false)}
         onEnvoye={(lien) => {
           setConfirmationVisible(false);
-          setEnvoye(true);
           setLienClient(lien);
         }}
       />
