@@ -597,3 +597,49 @@ export const propositionsIa = pgTable(
   },
   (t) => [index("propositions_ia_entreprise_chantier_idx").on(t.entrepriseId, t.chantierId)]
 );
+
+// --- Documents légaux et preuve de leur acceptation (voir docs/RGPD.md §8) ---
+
+// Une version publiée est immuable : corriger un texte, c'est publier une
+// nouvelle version. Les acceptations déjà recueillies continuent ainsi de
+// désigner exactement ce qui a été accepté.
+export const documentsLegaux = pgTable(
+  "documents_legaux",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    type: text("type", { enum: ["cgu", "sous_traitance", "confidentialite"] }).notNull(),
+    version: text("version").notNull(),
+    titre: text("titre").notNull(),
+    contenu: text("contenu").notNull(),
+    // SHA-256 hexadécimal du contenu, calculée à la publication.
+    empreinte: char("empreinte", { length: 64 }).notNull(),
+    acceptationRequise: boolean("acceptation_requise").notNull().default(true),
+    publieAt: timestamp("publie_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("documents_legaux_type_version_uk").on(t.type, t.version),
+    index("documents_legaux_type_publie_idx").on(t.type, t.publieAt),
+  ]
+);
+
+// La preuve, au sens de docs/RGPD.md §8 condition 3. Sans elle, une case cochée
+// est invérifiable le jour exact où elle compte.
+export const acceptationsDocuments = pgTable(
+  "acceptations_documents",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    utilisateurId: uuid("utilisateur_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    documentId: uuid("document_id")
+      .notNull()
+      .references(() => documentsLegaux.id, { onDelete: "restrict" }),
+    accepteAt: timestamp("accepte_at", { withTimezone: true }).notNull().defaultNow(),
+    adresseIp: text("adresse_ip"),
+    agentUtilisateur: text("agent_utilisateur"),
+  },
+  (t) => [
+    unique("acceptations_documents_uk").on(t.utilisateurId, t.documentId),
+    index("acceptations_documents_utilisateur_idx").on(t.utilisateurId),
+  ]
+);

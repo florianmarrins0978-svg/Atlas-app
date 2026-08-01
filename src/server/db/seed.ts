@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { hashSync } from "bcryptjs";
 import { pool, db } from "./client";
@@ -18,6 +18,8 @@ import {
   photos,
   tarifs,
   lignesPrix,
+  documentsLegaux,
+  acceptationsDocuments,
   devis,
   lignesDevis,
 } from "./schema";
@@ -84,6 +86,36 @@ async function main() {
       .insert(entrepriseCompteurs)
       .values({ entrepriseId: entreprise.id, prochainNumeroDevis: 1 })
       .onConflictDoNothing();
+
+    // Le compte de démonstration accepte d'emblée les documents légaux en
+    // vigueur, sans quoi la garde du layout redirigerait chaque écran vers
+    // l'écran d'acceptation — et aucun parcours de démonstration ni de test de
+    // bout en bout ne pourrait aboutir.
+    //
+    // Ce raccourci ne vaut QUE pour ce compte fictif, créé par ce script : un
+    // vrai utilisateur passe toujours par l'écran d'acceptation, et c'est ce
+    // que vérifie test-documents-legaux.ts. La preuve est marquée comme
+    // provenant du seed, pour qu'on ne la confonde jamais avec un consentement
+    // réellement recueilli.
+    const documentsRequis = await tx
+      .select({ id: documentsLegaux.id })
+      .from(documentsLegaux)
+      .where(eq(documentsLegaux.acceptationRequise, true));
+
+    if (documentsRequis.length > 0) {
+      await tx.execute(sql`SELECT set_config('app.utilisateur_id', ${utilisateur.id}, true)`);
+      await tx
+        .insert(acceptationsDocuments)
+        .values(
+          documentsRequis.map((d) => ({
+            utilisateurId: utilisateur.id,
+            documentId: d.id,
+            adresseIp: null,
+            agentUtilisateur: "seed de démonstration — consentement fictif",
+          }))
+        )
+        .onConflictDoNothing();
+    }
 
     console.log("Insertion des tarifs...");
     await tx.insert(tarifs).values([

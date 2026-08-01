@@ -55,8 +55,22 @@ marqué « à compléter », pas complété.
 
 ### 2. Cloisonnement des données
 
-- L'app est **local-first** : la grille de tarifs et les données des clients du
-  patron restent sur son appareil (`localStorage`), jamais sur nos serveurs.
+- **Cette application-ci** (les écrans statiques de `appli/`) est **local-first**
+  au sens strict : la grille de tarifs et les données des clients du patron
+  restent sur son appareil (`localStorage`), jamais sur nos serveurs.
+
+> **Le produit visé, lui, n'est plus local-first — décision du 2026-07-31.**
+> L'application Next.js à la racine du dépôt conserve chantiers, clients et
+> devis dans une base de données sur serveur. C'est inévitable : l'agenda
+> partagé, l'envoi au client et l'historique des prix ne peuvent pas fonctionner
+> depuis le seul appareil du patron.
+>
+> Ce que cela engage — rôle de sous-traitant, contrat au titre de l'article 28,
+> sous-traitants ultérieurs, durées de conservation, procédure en cas de
+> violation — est traité dans [`docs/RGPD.md`](../docs/RGPD.md). La promesse
+> faite aux artisans doit être réécrite en conséquence : ce n'est plus « rien ne
+> sort de votre téléphone », c'est « voici où vivent vos données, qui y accède,
+> et combien de temps elles sont gardées ».
 - **Le vendeur (nous) n'accède jamais aux clients de ses patrons.** Nous ne
   connaissons que nos abonnés (les patrons).
 - Le futur backend « voix → JSON » sera **sans mémoire** : il traite l'audio,
