@@ -30,6 +30,7 @@ relues à chaque session) :
 6. [Le dépôt est public : n'importe qui peut-il voler notre travail ?](#6-le-dépôt-est-public--nimporte-qui-peut-il-voler-notre-travail-)
 7. [Concrètement, quels problèmes pose le dépôt public ?](#7-concrètement-quels-problèmes-pose-le-dépôt-public-)
 8. [Faut-il héberger l'application pour pouvoir l'essayer en entier ?](#8-faut-il-héberger-lapplication-pour-pouvoir-lessayer-en-entier-)
+9. [Ce que je vois là, est-ce le design final ?](#9-ce-que-je-vois-là-est-ce-le-design-final-)
 
 ---
 
@@ -392,3 +393,69 @@ finir le produit, mais à le sortir.
 **Rien ne part réellement chez le client**, ni depuis le banc d'essai ni depuis
 un hébergement : aucun fournisseur de SMS ni d'e-mail n'est branché. C'est le
 point 5 de [`A-FAIRE.md`](A-FAIRE.md), et il ne se règle pas en hébergeant.
+
+---
+
+## 9. Ce que je vois là, est-ce le design final ?
+
+*Posée le 2026-08-01.*
+
+**Oui.** Même code, mêmes écrans, mêmes couleurs, mêmes polices. Ce que vous
+avez sous les yeux n'est pas une approximation : c'est l'application. Rien ne
+sera redessiné pour la publication.
+
+### Trois choses changeront, toutes en mieux
+
+| | Pendant les essais | Une fois installée |
+|---|---|---|
+| La barre d'adresse du navigateur | Présente, en haut | **Disparue** — plein écran |
+| La vitesse | Chaque écran se compile à la volée | Instantané |
+| Le badge noir « N » en bas à gauche | Présent | Disparu — c'est un outil de développement |
+
+### La partie inattendue : deux chemins, pas un
+
+Ce qui était relié à l'outil de fabrication iOS, c'étaient **les cinq maquettes
+d'Arborea**, pas l'application. Publier en l'état aurait mis les maquettes sur
+l'App Store. Le chemin existe, mais il restait à construire.
+
+**Chemin A — l'App Store.** Une coque native qui affiche l'application
+hébergée. Environ une journée de travail, mais elle suppose l'hébergement
+d'abord, plus le compte Apple à 99 $ par an, plus un Mac, plus la validation
+d'Apple à chaque mise à jour (voir question 1).
+
+**Chemin B — sans App Store.** L'artisan ouvre l'adresse dans Safari, puis
+« Ajouter à l'écran d'accueil ». Une icône apparaît, et l'application s'ouvre
+**en plein écran, sans barre d'adresse — visuellement identique à une
+application téléchargée**.
+
+Coût : **zéro**. Pas de compte Apple, pas de Mac, pas de validation, et vos
+corrections arrivent chez l'artisan immédiatement au lieu d'attendre Apple.
+
+Ce que vous perdez : la vitrine de l'App Store. Pour un outil vendu par
+abonnement à des artisans que vous démarchez, ce n'est pas là qu'ils vous
+trouveront.
+
+**Le chemin B est prêt** depuis le 2026-08-01 : icône, nom, ouverture en plein
+écran. Il ne manque que l'hébergement, qui sert les deux chemins.
+
+### Deux défauts corrigés à cette occasion
+
+Ils ne se voyaient **que** sur un téléphone, une fois l'application installée —
+jamais dans un navigateur d'ordinateur, jamais dans un test :
+
+- **La barre d'état recouvrait le haut du contenu.** Le titre « VOS CHANTIERS »
+  passait sous l'heure et la batterie.
+- **L'indicateur d'accueil mangeait le bas de la navigation.** Les libellés
+  « Chantiers / Planning / Terminés / Tarifs » se retrouvaient dessous.
+
+Vérifiés en simulant un iPhone à encoche, pas en relisant le code.
+
+### L'icône est provisoire
+
+Un « A » en forme de chevron de charpente, dans les couleurs de l'application.
+Volontairement simple : une icône provisoire qui chercherait à bien faire donne
+l'illusion d'une décision prise, et personne ne la remplace jamais.
+
+Pour la changer : remplacer `public/icone-source.svg` et lancer `npm run icones`.
+Toutes les tailles se régénèrent d'un trait — un jeu d'icônes retouché taille
+par taille finit toujours par diverger.

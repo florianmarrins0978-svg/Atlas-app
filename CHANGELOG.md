@@ -9,6 +9,33 @@ Format : le plus récent en tête.
 
 ## 2026-08-01
 
+### Installable sur un téléphone, et correcte une fois installée
+
+Le patron a demandé si ce qu'il voyait pendant ses essais serait le design
+final. Oui — même code, mêmes écrans. Mais la question a mis au jour deux
+défauts et un manque, tous invisibles depuis un navigateur d'ordinateur.
+
+**Les bords de l'écran.** Ajoutée à l'écran d'accueil, l'application s'ouvre en
+plein écran : plus de barre d'adresse, mais plus de marges non plus. La barre
+d'état recouvrait le titre « VOS CHANTIERS », et l'indicateur d'accueil mangeait
+les libellés de la navigation. `viewport-fit=cover` et `env(safe-area-inset-*)`
+règlent les deux ; posés sur `body`, ils servent aussi la page publique du
+client, qui ne passe pas par la même mise en page. Vérifiés en simulant un
+iPhone à encoche, pas en relisant le code.
+
+**L'icône n'existait pas** — `"icons": []`. Un artisan qui aurait installé
+l'application aurait vu une vignette grise. Elle est provisoire et assumée comme
+telle : une icône provisoire qui cherche à bien faire donne l'illusion d'une
+décision prise, et personne ne la remplace jamais. Toutes les tailles se
+régénèrent d'un trait depuis une source unique (`npm run icones`) — un jeu
+d'icônes retouché taille par taille finit toujours par diverger, et c'est la
+moins regardée qui se retrouve fausse.
+
+**Ce qui était relié à l'outil de fabrication iOS, c'étaient les maquettes
+d'Arborea**, pas l'application. Le chemin « Ajouter à l'écran d'accueil » est
+désormais prêt : il donne le même rendu qu'une application téléchargée, sans
+compte Apple, sans Mac et sans validation. Il ne manque que l'hébergement.
+
 ### Le site public dit enfin ce qu'il est
 
 Le patron a ouvert l'adresse publiée et demandé où étaient passées les autres

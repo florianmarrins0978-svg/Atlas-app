@@ -9,6 +9,16 @@ export const metadata: Metadata = {
   title: "Atlas",
   description: "Atlas — dictée de chantier, vérification et préparation de devis.",
   manifest: "/manifest.json",
+  // iOS ne lit pas les icônes du manifeste : il cherche `apple-touch-icon`.
+  // L'oublier donne, sur l'écran d'accueil, une vignette de la page au lieu
+  // d'un logo — et c'est la première chose que voit l'artisan.
+  icons: {
+    icon: [
+      { url: "/icones/icone-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icones/icone-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icones/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -21,6 +31,11 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  // Sans quoi `env(safe-area-inset-*)` vaut toujours zéro et la page reste
+  // cantonnée entre des bandes blanches, encoche comprise. C'est cette valeur
+  // qui autorise l'application à occuper l'écran entier — les marges de
+  // sécurité étant alors rendues par globals.css.
+  viewportFit: "cover",
 };
 
 // Écrans qui ne font pas partie de l'espace de travail du patron et ne doivent
@@ -60,9 +75,10 @@ export default async function RootLayout({
           <main>{children}</main>
         ) : (
           <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-paper">
-            {/* pb-20 réserve la hauteur de la barre : sans navigation, cette
+            {/* `atlas-contenu` réserve la hauteur de la barre, indicateur
+                d'accueil compris (voir globals.css) : sans navigation, cette
                 marge laisserait un vide en bas de page. */}
-            <main className="flex-1 pb-20">{children}</main>
+            <main className="atlas-contenu flex-1">{children}</main>
             <AtlasBottomNav />
             <AssistantSidebar />
           </div>

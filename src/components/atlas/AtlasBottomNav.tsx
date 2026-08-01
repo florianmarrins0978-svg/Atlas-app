@@ -15,7 +15,7 @@ export default function AtlasBottomNav() {
   const pathname = usePathname();
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-20 mx-auto flex max-w-md justify-around border-t py-3 backdrop-blur"
+      className="atlas-nav-basse fixed inset-x-0 bottom-0 z-20 mx-auto flex max-w-md justify-around border-t pt-3 backdrop-blur"
       style={{ borderColor: colors.line, backgroundColor: `${colors.cream}F2` }}
       aria-label="Navigation principale"
     >
