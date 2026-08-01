@@ -125,6 +125,9 @@ export const clients = pgTable(
     telephone: text("telephone"),
     adresse: text("adresse"),
     email: text("email"),
+    // Canal convenu avec le client pour l'envoi du devis (docs/AGENT.md §2.1).
+    // Sans lui, l'envoi est impossible : mieux vaut bloquer qu'envoyer dans le vide.
+    canalCommunication: text("canal_communication", { enum: ["sms", "email"] }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -157,6 +160,9 @@ export const chantiers = pgTable(
     devisEnvoyeAt: timestamp("devis_envoye_at", { withTimezone: true }),
     datePlanifiee: date("date_planifiee"), // non-null = "planifié"
     dureePrevue: text("duree_prevue"),
+    // Jalons de fin de chantier (docs/AGENT.md §2.3).
+    termineAt: timestamp("termine_at", { withTimezone: true }),
+    factureEnvoyeeAt: timestamp("facture_envoyee_at", { withTimezone: true }),
     tailleEquipe: text("taille_equipe"),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -641,5 +647,57 @@ export const acceptationsDocuments = pgTable(
   (t) => [
     unique("acceptations_documents_uk").on(t.utilisateurId, t.documentId),
     index("acceptations_documents_utilisateur_idx").on(t.utilisateurId),
+  ]
+);
+
+// --- Envoi du devis au client et réponse (voir docs/AGENT.md §2.1 à §2.3) ---
+
+// Une ligne par ENVOI, jamais par devis : un devis refusé puis corrigé et
+// renvoyé donne un nouvel envoi, avec un nouveau jeton. L'ancien reste comme
+// trace de ce qui avait été proposé — un refus est une information de
+// négociation, il ne s'efface pas.
+export const envoisDevis = pgTable(
+  "envois_devis",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id").notNull(),
+    devisId: uuid("devis_id").notNull(),
+
+    // Seule clé d'accès à la page publique : imprévisible, jamais dérivée d'un
+    // identifiant existant.
+    jeton: text("jeton").notNull(),
+    expireAt: timestamp("expire_at", { withTimezone: true }).notNull(),
+    canal: text("canal", { enum: ["sms", "email"] }).notNull(),
+    datesProposees: date("dates_proposees").array().notNull(),
+    empreinteDevis: char("empreinte_devis", { length: 64 }).notNull(),
+    envoyeAt: timestamp("envoye_at", { withTimezone: true }).notNull().defaultNow(),
+
+    reponse: text("reponse", { enum: ["acceptee", "refusee"] }),
+    responduAt: timestamp("repondu_at", { withTimezone: true }),
+    dateRetenue: date("date_retenue"),
+    dateContreProposee: boolean("date_contre_proposee").notNull().default(false),
+    precisionClient: text("precision_client"),
+    demarrageAnticipe: boolean("demarrage_anticipe").notNull().default(false),
+
+    adresseIp: text("adresse_ip"),
+    agentUtilisateur: text("agent_utilisateur"),
+    vuParPatronAt: timestamp("vu_par_patron_at", { withTimezone: true }),
+  },
+  (t) => [
+    unique("envois_devis_jeton_uk").on(t.jeton),
+    index("envois_devis_entreprise_chantier_idx").on(t.entrepriseId, t.chantierId),
+    foreignKey({
+      columns: [t.chantierId, t.entrepriseId],
+      foreignColumns: [chantiers.id, chantiers.entrepriseId],
+      name: "envois_devis_chantier_entreprise_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [t.devisId, t.entrepriseId],
+      foreignColumns: [devis.id, devis.entrepriseId],
+      name: "envois_devis_devis_entreprise_fk",
+    }).onDelete("cascade"),
   ]
 );
