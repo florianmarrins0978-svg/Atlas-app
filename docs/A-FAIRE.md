@@ -11,6 +11,12 @@ quand, évite de le rouvrir.
 Chaque point indique **qui peut le faire** — c'est souvent là que ça bloque. Un
 point marqué « le patron » n'avancera jamais tout seul.
 
+**Comment ce document est tenu** (règle inscrite dans `AGENTS.md`, donc relue à
+chaque session) : dès qu'un point bloquant apparaît dans une conversation, il
+est signalé et son ajout **proposé**. Rien n'y entre sans accord explicite, et
+les tâches de développement ordinaires n'y figurent pas — ce document sert ce
+qui ne se résoudra pas en codant.
+
 ---
 
 ## Sommaire
