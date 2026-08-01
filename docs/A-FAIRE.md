@@ -4,6 +4,12 @@ Ce qui doit être réglé avant qu'Atlas serve de vrais artisans avec de vrais
 clients. Ce ne sont pas des idées d'amélioration : ce sont des points bloquants,
 ou des risques qu'on ne peut pas laisser courir.
 
+**Ce qu'ils ne bloquent pas.** Aucun de ces points n'empêche d'essayer
+l'application ni de la finir : le parcours entier s'éprouve dès aujourd'hui
+depuis un navigateur, téléphone compris — voir [`ESSAYER.md`](ESSAYER.md). Ils
+bloquent le fait de la **confier à quelqu'un d'autre**, ce qui n'est pas la même
+chose et vient plus tard.
+
 **Document modifiable.** Rayez ce qui est fait, ajoutez ce qui manque. Un point
 terminé se barre plutôt qu'il ne se supprime : savoir qu'il a été traité, et
 quand, évite de le rouvrir.
@@ -93,20 +99,120 @@ Sans ce contrat, le manquement existe **avant même** tout incident.
 
 ## 3. Choisir un hébergement
 
-**Qui : le patron**, pour la décision et le budget.
+**Qui : le patron**, pour la décision, le budget et la signature.
 
 L'application Next.js — celle qui porte l'agent, la page du client et le
-calendrier — n'est hébergée nulle part. **Personne ne peut s'en servir.**
+calendrier — n'est hébergée nulle part. **Personne d'autre que vous ne peut
+s'en servir.**
 
-Il faut un serveur, une base de données PostgreSQL et un Redis. Comptez quelques
-dizaines d'euros par mois.
+### Ce que l'hébergement ne bloque PAS
 
-Deux exigences qui ne sont pas négociables :
+Point établi le 2026-08-01, et à ne pas réoublier : **vous n'avez pas besoin
+d'héberger pour essayer l'application, ni pour la finir.**
 
-- **en Union européenne** — base et stockage de fichiers compris ;
-- **chiffrement au repos** de la base.
+Un banc d'essai s'ouvre en un geste depuis un navigateur, téléphone compris,
+sans compte à créer ni budget — voir [`ESSAYER.md`](ESSAYER.md). Le parcours
+entier s'y éprouve : dictée, prix, devis, envoi, réponse du client sur son
+calendrier, planification, fin de chantier, facture, relevé de TVA. C'est là
+que se fait l'essentiel du travail de finition.
 
-Tant que ce point n'est pas réglé, tout ce qui est construit reste inaccessible.
+Quatre choses seulement échappent au banc d'essai, et **aucune ne change ce que
+vous voyez à l'écran** :
+
+| | Pourquoi cela ne se voit qu'hébergé |
+|---|---|
+| La durabilité des fichiers | Photos et enregistrements vont sur le disque du banc d'essai. En production ce mode est refusé au démarrage : c'est un autre code qui s'exécute |
+| Plusieurs machines à la fois | La limite de connexions est partagée par Redis précisément pour cela. Avec une seule machine, le défaut ne peut pas apparaître |
+| Sauvegardes et restauration | Ce sont des fonctions du fournisseur de base de données |
+| La charge réelle | Un banc d'essai ne dit rien de dix artisans simultanés |
+
+**L'hébergement sert à sortir le produit, pas à le finir.** Il apporte une
+adresse permanente, des utilisateurs autres que vous, et le droit de confier de
+vraies données. Rien de plus, rien de moins.
+
+*Astuce* : dans l'espace de travail, le port peut être basculé en **Visibilité
+publique**. Une vraie personne peut alors ouvrir le lien du devis depuis son
+propre téléphone — de quoi éprouver la page du client pour de bon. À remettre
+en privé aussitôt après : publique, l'adresse est ouverte à qui la possède.
+
+### Les quatre briques nécessaires
+
+| Brique | À quoi elle sert | Ce qui se passe sans elle |
+|---|---|---|
+| **Un serveur** | Faire tourner l'application | Rien ne s'ouvre |
+| **PostgreSQL** | Chantiers, devis, factures | Rien n'est enregistré |
+| **Redis** | Empêcher les essais de mots de passe en série | L'application **refuse de démarrer** en production |
+| **Stockage de fichiers** (S3) | Photos, enregistrements, PDF | L'application **refuse de démarrer** en production |
+
+Les deux refus sont volontaires (`src/server/env.ts`) : sans Redis, la limite de
+connexions ne tient pas entre plusieurs machines ; sans stockage externe, les
+photos disparaissent à chaque redéploiement. Un refus franc vaut mieux qu'une
+perte silencieuse.
+
+### Deux façons de s'y prendre
+
+**Une seule machine louée** — 10 à 20 € par mois. Tout tourne dessus. Le moins
+cher, mais les mises à jour de sécurité, les sauvegardes et la surveillance
+deviennent votre travail. Et le jour d'un contrôle, c'est à vous de prouver que
+la base est chiffrée.
+
+**Des services gérés** — 30 à 50 € par mois. Chaque brique est maintenue par son
+fournisseur, avec **sauvegardes automatiques et chiffrement au repos inclus au
+contrat**.
+
+**Recommandation : les services gérés.** Pas pour des raisons techniques. Vous
+traitez les données des clients de vos artisans : le chiffrement au repos et les
+sauvegardes ne sont pas du confort, ce sont des obligations que vous devrez
+démontrer. Les acheter coûte moins cher que les construire et les prouver.
+
+### Le point qui allège le reste
+
+**Prendre les quatre briques chez un seul fournisseur français.**
+
+Chaque fournisseur est un sous-traitant au sens du RGPD : à nommer, à
+contractualiser, à vérifier. Quatre fournisseurs, c'est quatre fois ce travail —
+et quatre fois pour le juriste du point 2. Un seul, c'est **un contrat, une
+facture, un interlocuteur**. Le point 3 allège alors le point 2 au lieu de
+l'alourdir.
+
+Deux candidats qui couvrent les quatre briques :
+
+| | Où | Remarque |
+|---|---|---|
+| **Scaleway** | Paris | Le plus complet, le plus économique |
+| **Clever Cloud** | Nantes | Plus simple à prendre en main, un peu plus cher |
+
+Exigences non négociables dans les deux cas : **région européenne** pour la base
+comme pour le stockage de fichiers, et **chiffrement au repos**.
+
+### Qui fait quoi
+
+**Vous — une heure environ, une seule fois :**
+
+1. Créer le compte, au nom de la société si elle existe (point 4).
+2. Créer les quatre services, **tous en région Paris**.
+3. Transmettre les identifiants **par le gestionnaire de secrets de GitHub**,
+   jamais par message.
+4. Télécharger le contrat de sous-traitance du fournisseur — c'est lui qui ira
+   chez le juriste du point 2.
+
+**Moi, ensuite :** appliquer le schéma, vérifier que l'isolation entre
+entreprises tient en conditions réelles, brancher le déploiement automatique,
+activer la purge planifiée, et contrôler le site à son adresse publique — comme
+cela existe déjà pour le site de maquettes.
+
+**Puis vous, avant d'ouvrir à quiconque :** tout reprendre depuis votre
+téléphone, sur la vraie adresse.
+
+### Ce que je ne peux pas faire à votre place
+
+Créer le compte et accepter les conditions : cela engage juridiquement.
+
+### Réserve
+
+Même hébergée, **l'application ne pourra pas encore envoyer un devis toute
+seule** : le point 5 reste entier. Vous pourrez vous en servir, la montrer, la
+faire essayer — mais le dernier mètre jusqu'au client passera toujours par vous.
 
 ---
 
