@@ -181,12 +181,21 @@ Trois causes, dans l'ordre de fréquence :
 3. **Le port est privé.** Il est public dès la création — mais un espace créé
    avant le 2026-08-01 ne le sait pas, ce réglage étant lu à la création.
 
-   **Le plus simple, y compris sur un téléphone**, est une commande dans le
-   terminal que vous avez déjà sous les yeux :
+   **La solution sûre : supprimer cet espace et en créer un neuf** (encadré du
+   geste 1). Le port y sera public d'emblée, sans rien régler. C'est plus long
+   de cinq minutes, mais c'est le seul chemin qui ne demande de viser aucun
+   bouton sur un écran de téléphone.
+
+   Si vous préférez rattraper l'espace en cours, une commande dans le terminal
+   que vous avez déjà sous les yeux :
 
    ```
    gh codespace ports visibility 3000:public -c $CODESPACE_NAME
    ```
+
+   > Cette commande n'a **pas pu être vérifiée** : l'environnement où ce dépôt
+   > est développé n'a pas l'outil `gh`, et la documentation de GitHub y est
+   > inaccessible. Si elle refuse, ne cherchez pas : recréez l'espace.
 
    À la souris, l'onglet **« Ports »** à côté du terminal fait la même chose.
    Sur téléphone, le panneau s'ouvre depuis la barre bleue du bas, par un appui
