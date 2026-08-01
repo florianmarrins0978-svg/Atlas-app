@@ -40,6 +40,22 @@ async function reinitialiserLimiteConnexion() {
   }
 }
 
+/**
+ * Le serveur répond-il, maintenant ?
+ *
+ * Délai court et volontairement borné : la question n'est pas « finira-t-il par
+ * répondre » mais « est-il encore là », et un serveur qui met dix secondes à
+ * servir sa page de santé ne tiendra de toute façon aucune suite.
+ */
+async function serveurRepond(url: string, delaiMs = 10_000): Promise<boolean> {
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(delaiMs) });
+    return r.status === 200;
+  } catch {
+    return false;
+  }
+}
+
 async function attendreServeurPret(url: string, tentativesMax = 30): Promise<boolean> {
   for (let i = 0; i < tentativesMax; i++) {
     try {
@@ -90,9 +106,35 @@ async function main() {
     detached: true,
   });
 
+  // La sortie du serveur était jusqu'ici jetée. Quand il meurt en cours de
+  // route, les suites suivantes échouent toutes sur un banal dépassement de
+  // délai à /login, et rien n'indique la cause réelle. On garde donc ses
+  // dernières lignes pour pouvoir les montrer au moment où ça compte.
+  const journalServeur: string[] = [];
+  const retenir = (donnees: Buffer) => {
+    for (const ligne of donnees.toString().split("\n")) {
+      if (ligne.trim()) journalServeur.push(ligne);
+    }
+    if (journalServeur.length > 200) journalServeur.splice(0, journalServeur.length - 200);
+  };
+  serveur.stdout?.on("data", retenir);
+  serveur.stderr?.on("data", retenir);
+
+  let serveurTermine: string | null = null;
+  serveur.on("exit", (code, signal) => {
+    serveurTermine = signal ? `signal ${signal}` : `code ${code}`;
+  });
+
+  function montrerJournalServeur() {
+    console.error("\n--- Dernières lignes du serveur de développement ---");
+    for (const ligne of journalServeur.slice(-60)) console.error(`  ${ligne}`);
+    console.error("---------------------------------------------------\n");
+  }
+
   const pret = await attendreServeurPret("http://localhost:3000/api/health/live");
   if (!pret) {
     console.error("❌ Le serveur n'a jamais répondu — abandon.");
+    montrerJournalServeur();
     process.kill(-serveur.pid!);
     process.exit(1);
   }
@@ -113,6 +155,21 @@ async function main() {
   let echecs = 0;
   for (const fichier of fichiers) {
     console.log(`=== ${fichier} ===`);
+
+    // Un serveur mort ne se répare pas en lui envoyant vingt suites de plus :
+    // il produit vingt échecs qui accusent chacun un écran différent. On
+    // s'arrête au premier, en disant ce qui s'est réellement passé.
+    if (!(await serveurRepond("http://localhost:3000/api/health/live"))) {
+      console.error(
+        `❌ Le serveur ne répond plus avant ${fichier}` +
+          (serveurTermine ? ` — il s'est arrêté (${serveurTermine}).` : " — il est bloqué.")
+      );
+      console.error("   Les suites restantes ne sont pas jouées : elles échoueraient toutes sur ce même point.");
+      montrerJournalServeur();
+      echecs += fichiers.length - fichiers.indexOf(fichier);
+      break;
+    }
+
     await reinitialiserLimiteConnexion();
     const resultat = spawnSync(NODE, [TSX, path.join(DOSSIER, fichier)], {
       stdio: "inherit",
@@ -134,7 +191,13 @@ async function main() {
     }
   }
 
-  process.kill(-serveur.pid!);
+  // Le serveur a pu mourir de lui-même : le tuer alors lève ESRCH et masque le
+  // bilan, qui est la seule ligne que quiconque va lire.
+  try {
+    process.kill(-serveur.pid!);
+  } catch {
+    // Déjà parti — rien à faire, et surtout rien à cacher.
+  }
   console.log(`\n${fichiers.length - echecs}/${fichiers.length} suites réussies.`);
   if (echecs > 0) process.exit(1);
 }
