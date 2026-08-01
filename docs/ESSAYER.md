@@ -93,19 +93,19 @@ demo1234
 Copiez l'adresse affichée à l'étape 3 — elle ressemble à
 `https://quelque-chose-3000.app.github.dev` — et ouvrez-la sur votre téléphone.
 
-**Un geste indispensable avant :** le port est privé par défaut. Depuis
-l'ordinateur, vous êtes déjà authentifié et tout marche ; depuis le téléphone,
-non — et la page reste **blanche**, sans rien qui l'explique.
+Rien d'autre à faire : l'adresse est ouverte dès la création de l'espace. C'est
+aussi ce qui permet de faire ouvrir un lien de devis à une vraie personne, sur
+son propre téléphone — la seule façon d'éprouver pour de bon le seul écran que
+vos clients verront.
 
-Onglet **« Ports »** → clic droit sur **3000** → **Visibilité** → **Public**.
-
-> Publique, l'adresse est ouvrable par qui la possède. C'est acceptable pour
-> quelques heures d'essais avec des données inventées, pas pour y laisser dormir
-> quoi que ce soit. **Remettez-la en privé après.**
+> **N'y mettez que des données inventées.** L'adresse est ouvrable par qui la
+> possède, et le mot de passe de démonstration est écrit dans ce dépôt public.
+> L'application garde son écran de connexion : ce qui est joignable, c'est la
+> porte, pas le contenu — mais la clé de cette porte est publique.
 >
-> C'est aussi ce qui permet de faire ouvrir le lien du devis à une vraie
-> personne, sur son propre téléphone — la seule façon d'éprouver pour de bon le
-> seul écran que vos clients verront.
+> Pour fermer : onglet **« Ports »** → **3000** → **Visibilité** → **Privé**.
+> Sur téléphone, le panneau des ports s'ouvre depuis la barre bleue du bas, sur
+> l'icône d'antenne suivie du chiffre **1**.
 
 ---
 
@@ -173,17 +173,19 @@ Le compte gratuit inclut 60 heures par mois, largement de quoi essayer.
 un écran de l'application qui s'affiche mal, c'est qu'aucune page n'arrive.
 Trois causes, dans l'ordre de fréquence :
 
-1. **Le port est en visibilité privée.** C'est le cas par défaut, et de loin la
-   cause la plus fréquente. Depuis l'onglet de l'espace de travail vous êtes
-   déjà authentifié, donc tout marche ; depuis le téléphone, non. Onglet
-   **« Ports »** → clic droit sur **3000** → **Visibilité** → **Public**.
-   Remettez-le en privé après vos essais.
-2. **L'application n'est pas encore prête.** `npm run essai` affiche
+1. **L'application n'est pas encore prête.** `npm run essai` affiche
    « L'application répond » suivi de l'adresse à ouvrir — **attendez cette
    ligne**. Le message « ready » de Next.js, lui, arrive avant que le premier
    écran soit compilable.
-3. **Le serveur s'est arrêté.** Regardez le terminal : s'il est revenu à
+2. **Le serveur s'est arrêté.** Regardez le terminal : s'il est revenu à
    l'invite, relancez `npm run essai`.
+3. **Le port est repassé en privé.** Il est public dès la création, mais s'il a
+   été changé : barre bleue du bas → icône d'antenne suivie du chiffre **1** →
+   ligne **3000** → **Visibilité**. Depuis un ordinateur, l'onglet
+   **« Ports »** à côté du terminal fait la même chose.
+
+> **Un espace créé avant le 2026-08-01 a un port privé**, et ne le saura jamais :
+> ce réglage est lu à la création. Le plus simple est d'en créer un neuf.
 
 
 **`Missing script: "essai"`, ou des fichiers manquent dans la liste de gauche

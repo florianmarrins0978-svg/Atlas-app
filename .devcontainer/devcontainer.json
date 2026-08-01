@@ -8,12 +8,26 @@
   // démonstration. Ensuite, `npm run essai` suffit.
   "postCreateCommand": "bash .devcontainer/preparer.sh",
 
-  // Ouvert automatiquement, et annoncé — sans quoi il faut savoir qu'il existe.
+  // Ouvert automatiquement, annoncé, et PUBLIC.
+  //
+  // Public par défaut, parce que l'usage premier de ce banc d'essai est de se
+  // servir de l'application depuis un téléphone. Un port privé n'est joignable
+  // que depuis la session authentifiée de l'éditeur : depuis le téléphone, la
+  // page reste blanche, sans le moindre message. Le rendre public à la main
+  // suppose de trouver un panneau minuscule sur un écran de six pouces — c'est
+  // exactement ce qui s'est produit.
+  //
+  // Ce que cela expose, et ce que cela n'expose pas : l'application garde son
+  // écran de connexion, et la page du client reste protégée par un jeton
+  // imprévisible. Ce qui devient joignable, c'est la porte, pas le contenu.
+  // Le mot de passe de démonstration étant public (`demo1234`), ce banc d'essai
+  // ne doit contenir que des données inventées — c'est dit dans docs/ESSAYER.md.
   "forwardPorts": [3000],
   "portsAttributes": {
     "3000": {
       "label": "Atlas",
-      "onAutoForward": "notify"
+      "onAutoForward": "notify",
+      "visibility": "public"
     }
   },
 

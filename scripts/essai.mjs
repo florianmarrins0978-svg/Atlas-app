@@ -79,9 +79,9 @@ if (!pret) {
       "   L'application répond.\n\n" +
       (adresse
         ? `     ${adresse}\n\n` +
-          "   Ouvrez cette adresse. Si elle reste blanche depuis un\n" +
-          "   téléphone, c'est que le port est en visibilité privée :\n" +
-          "   onglet « Ports » → clic droit sur 3000 → Visibilité.\n\n"
+          "   Ouvrable depuis un téléphone, telle quelle.\n" +
+          "   N'y mettez que des données inventées : cette adresse est\n" +
+          "   publique, et le mot de passe ci-dessous aussi.\n\n"
         : `     http://localhost:${PORT}\n\n`) +
       "     demo@atlas.local  /  demo1234\n" +
       "  ─────────────────────────────────────────────────────────────\n"
