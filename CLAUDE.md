@@ -80,12 +80,44 @@ langage. Rien n'y entre sans son accord explicite (voir `AGENTS.md`).
 
 ## 5. Vérifier : ce qui compte comme « fait »
 
-Rien n'est terminé sans, dans cet ordre :
+Rien n'est terminé sans **la batterie complète**, en une commande :
+
+```bash
+npm run verifier:avant-livraison
+```
+
+Elle enchaîne, dans cet ordre — les contrôles rapides d'abord :
+
+| Étape | Ce qu'elle attrape |
+|---|---|
+| `typecheck`, `lint` | un appel qui ne correspond plus à sa signature |
+| `verifier:memoire` | une documentation qui décrit une version disparue |
+| `npm test` | isolation entre entreprises, règles métier, RLS |
+| `npm run test:e2e` | le parcours complet, du devis à la facture |
+| `verifier:connexion` | **« Invalid Server Actions request. »** |
+
+Elle ne s'arrête pas à la première erreur : savoir que trois choses cassent, et
+lesquelles, vaut mieux que de les découvrir une par une.
+
+**La dernière étape mérite son existence.** Toutes les autres interrogent
+`127.0.0.1`, où l'en-tête `Origin` et l'hôte coïncident. Le patron, lui, passe
+par un proxy où ils diffèrent — et Next.js refuse alors toute action serveur, à
+commencer par la connexion. Le défaut était donc invisible partout sauf chez
+lui, et il a essayé vingt fois une application qui ne pouvait pas le laisser
+entrer. `verifier-connexion.mjs` se connecte pour de bon, dans un navigateur, en
+posant délibérément une origine étrangère.
+
+**Ne rien demander au patron tant qu'elle n'est pas au vert.** C'est sa règle,
+posée après ces vingt échanges : *« tu essayes, tu fais des batteries de tests
+avant de me demander de le faire »*.
+
+Les étapes séparées restent disponibles pour un diagnostic rapide :
 
 ```bash
 npx tsc --noEmit && npm run lint
-npm test          # suites base de données
-npm run test:e2e  # suites navigateur (démarre son propre serveur)
+npm test              # suites base de données
+npm run test:e2e      # suites navigateur (démarre son propre serveur)
+npm run verifier:connexion  # connexion réelle derrière un proxy
 ```
 
 Variables nécessaires en local (identiques à la CI, voir
