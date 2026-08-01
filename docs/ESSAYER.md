@@ -103,9 +103,8 @@ vos clients verront.
 > L'application garde son écran de connexion : ce qui est joignable, c'est la
 > porte, pas le contenu — mais la clé de cette porte est publique.
 >
-> Pour fermer : onglet **« Ports »** → **3000** → **Visibilité** → **Privé**.
-> Sur téléphone, le panneau des ports s'ouvre depuis la barre bleue du bas, sur
-> l'icône d'antenne suivie du chiffre **1**.
+> Pour refermer l'accès, une commande dans le terminal :
+> `gh codespace ports visibility 3000:private -c $CODESPACE_NAME`
 
 ---
 
@@ -179,13 +178,20 @@ Trois causes, dans l'ordre de fréquence :
    écran soit compilable.
 2. **Le serveur s'est arrêté.** Regardez le terminal : s'il est revenu à
    l'invite, relancez `npm run essai`.
-3. **Le port est repassé en privé.** Il est public dès la création, mais s'il a
-   été changé : barre bleue du bas → icône d'antenne suivie du chiffre **1** →
-   ligne **3000** → **Visibilité**. Depuis un ordinateur, l'onglet
-   **« Ports »** à côté du terminal fait la même chose.
+3. **Le port est privé.** Il est public dès la création — mais un espace créé
+   avant le 2026-08-01 ne le sait pas, ce réglage étant lu à la création.
 
-> **Un espace créé avant le 2026-08-01 a un port privé**, et ne le saura jamais :
-> ce réglage est lu à la création. Le plus simple est d'en créer un neuf.
+   **Le plus simple, y compris sur un téléphone**, est une commande dans le
+   terminal que vous avez déjà sous les yeux :
+
+   ```
+   gh codespace ports visibility 3000:public -c $CODESPACE_NAME
+   ```
+
+   À la souris, l'onglet **« Ports »** à côté du terminal fait la même chose.
+   Sur téléphone, le panneau s'ouvre depuis la barre bleue du bas, par un appui
+   **bref** sur l'icône d'antenne suivie d'un chiffre — un appui long ouvre le
+   menu de la barre elle-même, qui n'a rien à voir.
 
 
 **`Missing script: "essai"`, ou des fichiers manquent dans la liste de gauche

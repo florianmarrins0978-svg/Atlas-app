@@ -121,7 +121,7 @@
 <h3 id="5-depuis-votre-téléphone">5. Depuis votre téléphone</h3>
 <p>Copiez l'adresse affichée à l'étape 3 — elle ressemble à <code>https://quelque-chose-3000.app.github.dev</code> — et ouvrez-la sur votre téléphone.</p>
 <p>Rien d'autre à faire : l'adresse est ouverte dès la création de l'espace. C'est aussi ce qui permet de faire ouvrir un lien de devis à une vraie personne, sur son propre téléphone — la seule façon d'éprouver pour de bon le seul écran que vos clients verront.</p>
-<blockquote><strong>N'y mettez que des données inventées.</strong> L'adresse est ouvrable par qui la possède, et le mot de passe de démonstration est écrit dans ce dépôt public. L'application garde son écran de connexion : ce qui est joignable, c'est la porte, pas le contenu — mais la clé de cette porte est publique.  Pour fermer : onglet <strong>« Ports »</strong> → <strong>3000</strong> → <strong>Visibilité</strong> → <strong>Privé</strong>. Sur téléphone, le panneau des ports s'ouvre depuis la barre bleue du bas, sur l'icône d'antenne suivie du chiffre <strong>1</strong>.</blockquote>
+<blockquote><strong>N'y mettez que des données inventées.</strong> L'adresse est ouvrable par qui la possède, et le mot de passe de démonstration est écrit dans ce dépôt public. L'application garde son écran de connexion : ce qui est joignable, c'est la porte, pas le contenu — mais la clé de cette porte est publique.  Pour refermer l'accès, une commande dans le terminal : <code>gh codespace ports visibility 3000:private -c $CODESPACE_NAME</code></blockquote>
 <hr>
 <h2 id="ce-que-vous-pouvez-essayer-du-début-à-la-fin">Ce que vous pouvez essayer, du début à la fin</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -162,9 +162,11 @@
 <ol>
 <li><strong>L'application n'est pas encore prête.</strong> <code>npm run essai</code> affiche « L'application répond » suivi de l'adresse à ouvrir — <strong>attendez cette ligne</strong>. Le message « ready » de Next.js, lui, arrive avant que le premier écran soit compilable.</li>
 <li><strong>Le serveur s'est arrêté.</strong> Regardez le terminal : s'il est revenu à l'invite, relancez <code>npm run essai</code>.</li>
-<li><strong>Le port est repassé en privé.</strong> Il est public dès la création, mais s'il a été changé : barre bleue du bas → icône d'antenne suivie du chiffre <strong>1</strong> → ligne <strong>3000</strong> → <strong>Visibilité</strong>. Depuis un ordinateur, l'onglet <strong>« Ports »</strong> à côté du terminal fait la même chose.</li>
+<li><strong>Le port est privé.</strong> Il est public dès la création — mais un espace créé avant le 2026-08-01 ne le sait pas, ce réglage étant lu à la création.</li>
 </ol>
-<blockquote><strong>Un espace créé avant le 2026-08-01 a un port privé</strong>, et ne le saura jamais : ce réglage est lu à la création. Le plus simple est d'en créer un neuf.</blockquote>
+<p><strong>Le plus simple, y compris sur un téléphone</strong>, est une commande dans le terminal que vous avez déjà sous les yeux :</p>
+<p>``<code> gh codespace ports visibility 3000:public -c $CODESPACE_NAME </code>``</p>
+<p>À la souris, l'onglet <strong>« Ports »</strong> à côté du terminal fait la même chose. Sur téléphone, le panneau s'ouvre depuis la barre bleue du bas, par un appui <strong>bref</strong> sur l'icône d'antenne suivie d'un chiffre — un appui long ouvre le menu de la barre elle-même, qui n'a rien à voir.</p>
 <p><strong><code>Missing script: "essai"</code>, ou des fichiers manquent dans la liste de gauche (<code>.devcontainer</code>, <code>HANDOVER.md</code>, <code>TODO.md</code>…).</strong> L'espace de travail a été créé avant que ce travail n'arrive sur <code>main</code> : il est resté à la version de ce jour-là. Supprimez-le et recréez-en un — voir l'encadré du geste 1. C'est le cas le plus fréquent, et le plus déroutant, parce que l'erreur ne dit pas que le problème est l'ancienneté de l'espace.</p>
 <p><strong>Le terminal affiche une erreur pendant la préparation.</strong> Elle s'arrête à la première anomalie plutôt que de continuer à moitié — le message dit laquelle. Relancez <code>bash .devcontainer/preparer.sh</code>.</p>
 <p><strong>Une action ne fait rien</strong> (créer un chantier, envoyer un devis). C'est le symptôme d'une origine refusée par Next.js derrière le proxy. Le dépôt gère ce cas (<code>next.config.ts</code>, <code>allowedOrigins</code>) ; si cela se reproduit, le nom de l'espace a changé — arrêtez puis relancez <code>npm run essai</code>.</p>
