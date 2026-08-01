@@ -97,7 +97,7 @@ const ETAPES: Etape[] = [
   {
     nom: "Connexion derrière un proxy",
     commande: "npx",
-    args: ["tsx", "scripts/verifier-connexion-avec-serveur.ts"],
+    args: ["tsx", "scripts/verifier-connexion-avec-serveur.mts"],
     env: { DATABASE_URL: SUPER, ...AUTH, ...CRON, ...REDIS },
     ceQueCaAttrape:
       "« Invalid Server Actions request. » — le défaut qui a coûté une demi-journée au patron,\n" +
