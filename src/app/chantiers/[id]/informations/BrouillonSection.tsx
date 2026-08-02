@@ -21,6 +21,8 @@ type Props = {
   chantierId: string;
   brouillonInitial: BrouillonInitial;
   transcriptionDisponible: boolean;
+  /** Une note vocale existe, mais elle n'a pas été transcrite (aucun prestataire). */
+  dicteeNonTranscrite: boolean;
   onApplique: (prestations: { id: string; libelle: string }[], materiel: { id: string; libelle: string }[]) => void;
 };
 
@@ -31,6 +33,7 @@ export default function BrouillonSection({
   chantierId,
   brouillonInitial,
   transcriptionDisponible,
+  dicteeNonTranscrite,
   onApplique,
 }: Props) {
   const [contenu, setContenu] = useState<PropositionExtraction | null>(brouillonInitial?.contenu ?? null);
@@ -52,6 +55,16 @@ export default function BrouillonSection({
       }
       if (resultat.statut === "transcription_absente") {
         setErreur("Aucune transcription disponible pour ce chantier.");
+        return;
+      }
+      // Dire la vérité plutôt que de proposer du vide : votre dictée n'a pas
+      // été écoutée, et aucune prestation ne sera fabriquée à partir de rien.
+      if (resultat.statut === "transcription_simulee") {
+        setErreur(
+          "Votre dictée n'a pas été transcrite : aucun prestataire de transcription " +
+            "n'est encore raccordé (voir le document « à faire », point 1). Rien n'a donc " +
+            "pu en être extrait. Vous pouvez saisir les prestations à la main ci-dessous."
+        );
         return;
       }
       if (resultat.statut === "echec") {
@@ -118,6 +131,27 @@ export default function BrouillonSection({
   }
 
   if (!transcriptionDisponible && !contenu) {
+    // Renvoyer vers la note vocale quand elle a DÉJÀ été enregistrée et
+    // transcrite envoie le patron refaire ce qu'il vient de faire — et lui
+    // laisse croire qu'il s'y est mal pris. C'est la transcription qui manque,
+    // pas la dictée.
+    if (dicteeNonTranscrite) {
+      return (
+        <Carte>
+          <span className={smallCaps} style={{ color: colors.muted }}>
+            Brouillon
+          </span>
+          <p className="text-[13px]" style={{ color: colors.muted }}>
+            Votre dictée est bien enregistrée, mais elle n&apos;a pas été transcrite :
+            aucun prestataire de transcription n&apos;est encore raccordé. Rien n&apos;a donc
+            pu en être extrait — et rien ne sera inventé.
+          </p>
+          <a href={`/chantiers/${chantierId}/transcription`} className="self-start text-[14px] font-medium" style={{ color: colors.rust }}>
+            Écrire ce que vous avez dit
+          </a>
+        </Carte>
+      );
+    }
     return (
       <Carte>
         <span className={smallCaps} style={{ color: colors.muted }}>

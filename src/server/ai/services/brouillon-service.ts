@@ -6,6 +6,7 @@ import {
   type Brouillon,
 } from "../../repositories/brouillons-informations";
 import { extraire } from "./extraction-service";
+import { estTranscriptionSimulee } from "../providers/transcription/dev";
 import type { PropositionExtraction } from "../schemas/extraction";
 
 export type ResultatGeneration =
@@ -14,6 +15,9 @@ export type ResultatGeneration =
   // proposition est renvoyée pour que le patron tranche lui-même.
   | { statut: "conflit"; brouillonActuel: Brouillon; propositionNouvelle: PropositionExtraction }
   | { statut: "transcription_absente" }
+  // Aucun prestataire de transcription n'est configuré : la dictée n'a pas été
+  // écoutée. Rien ne peut en être extrait, et surtout rien ne doit l'être.
+  | { statut: "transcription_simulee" }
   | { statut: "echec"; erreur: string };
 
 // Produit le brouillon structuré à partir de la transcription du chantier.
@@ -27,6 +31,7 @@ export type ResultatGeneration =
 //    si le brouillon a été retouché, la fonction refuse d'écrire et renvoie la
 //    nouvelle proposition à côté de l'existant. Seul `remplacer: true`,
 //    c'est-à-dire un choix explicite du patron, autorise l'écrasement.
+// 3. Rien n'est extrait d'une transcription qui n'en est pas une.
 export async function genererBrouillon(
   ctx: Ctx,
   chantierId: string,
@@ -36,6 +41,16 @@ export async function genererBrouillon(
   const transcription = note?.transcription?.trim();
   if (!transcription) {
     return { statut: "transcription_absente" };
+  }
+
+  // Sans prestataire raccordé, la dictée n'a jamais été écoutée : ce qui est
+  // enregistré est notre texte de remplacement. En extraire quoi que ce soit
+  // reviendrait à fabriquer des prestations à partir de rien — ce qui s'est
+  // produit, et que le patron a retrouvé dans son devis. La reconnaissance
+  // porte sur CE texte précis, jamais sur la configuration : une transcription
+  // légitime doit continuer à être analysée normalement.
+  if (estTranscriptionSimulee(transcription)) {
+    return { statut: "transcription_simulee" };
   }
 
   const existant = await getBrouillon(ctx, chantierId);

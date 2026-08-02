@@ -7,6 +7,46 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-02
+
+### Le devis se remplissait de prestations que personne n'avait dictées
+
+Le patron a dicté une note vocale et retrouvé ceci dans son devis :
+
+```
+[Transcription simulée — fournisseu
+1137980 octets reçus]
+```
+
+Deux prestations, fabriquées de toutes pièces. Et au-dessus, l'écran affirmait
+« Proposé à partir de votre dictée » — d'où sa conclusion : *elle ne comprend
+pas ce que je dis*. En réalité elle ne l'avait pas entendu.
+
+**La chaîne complète.** Aucun prestataire de transcription n'étant raccordé
+(point 1 de `docs/A-FAIRE.md`), le fournisseur de développement renvoie un texte
+de remplacement. Ce texte était enregistré comme une transcription ordinaire,
+puis découpé en segments par l'extraction — et chaque segment devenait une
+prestation.
+
+C'est l'interdit le plus net de ce dépôt (`CLAUDE.md` §4) : **ne jamais inventer
+une prestation**. Il a fallu qu'un artisan le voie dans son devis pour qu'on
+s'en aperçoive.
+
+**Ce qui change.** Le texte de remplacement porte désormais un préfixe constant,
+exporté et importé là où il faut le reconnaître — jamais une heuristique sur du
+texte quelconque. La génération refuse alors de s'exécuter et n'écrit rien.
+L'écran dit la vérité : la dictée est enregistrée mais n'a pas été transcrite,
+et les prestations sont à saisir à la main.
+
+**La garde est resserrée sur le texte, pas sur la configuration.** Une première
+version testait le prestataire configuré : elle aurait bloqué aussi une
+transcription légitime, et cassé les suites existantes. Une garde qui protège
+trop large est un bouchon, pas une protection.
+
+Cinq contrôles de non-régression, dont **un qui constate le défaut** — sans lui,
+rien ne prouverait que la garde sert à quelque chose — et un qui vérifie qu'une
+vraie dictée continue d'être analysée normalement.
+
 ## 2026-08-01
 
 ### L'écart d'origine allait dans l'autre sens — trois correctifs pour rien

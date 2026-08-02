@@ -167,6 +167,11 @@
 </ol>
 <p><strong>Supprimez-le et créez-en un neuf</strong> (encadré du geste 1). C'est le seul chemin qui ne demande de viser aucun bouton sur un écran de téléphone.</p>
 <p><strong><code>Missing script: "essai"</code>, ou des fichiers manquent dans la liste de gauche (<code>.devcontainer</code>, <code>HANDOVER.md</code>, <code>TODO.md</code>…).</strong> L'espace de travail a été créé avant que ce travail n'arrive sur <code>main</code> : il est resté à la version de ce jour-là. Supprimez-le et recréez-en un — voir l'encadré du geste 1. C'est le cas le plus fréquent, et le plus déroutant, parce que l'erreur ne dit pas que le problème est l'ancienneté de l'espace.</p>
+<p><strong><code>EADDRINUSE: address already in use 0.0.0.0:3000</code>.</strong> L'application tourne déjà — elle démarre toute seule à l'allumage de l'espace. Ce n'est pas une panne.</p>
+<p><strong>Mais un <code>git pull</code> ne suffit jamais à appliquer un correctif.</strong> Le serveur charge le code une fois, au démarrage : tant qu'il n'est pas relancé, il continue de servir l'ancienne version. Un correctif fusionné, récupéré, et pourtant sans effet — c'est exactement ce qui s'est produit le 2026-08-02.</p>
+<p>Une seule ligne fait tout, dans l'ordre :</p>
+<p>``<code> git pull; pkill -f "[n]ext dev"; sleep 3; npm run essai </code>``</p>
+<blockquote><strong>Les crochets autour du <code>n</code> sont indispensables.</strong> <code>pkill -f</code> compare la ligne de commande entière de chaque processus, y compris celle du terminal qui joue la commande : sans eux, le motif se trouve lui-même et tue la commande avant qu'elle n'ait rien fait.</blockquote>
 <p><strong>Le terminal affiche une erreur pendant la préparation.</strong> Elle s'arrête à la première anomalie plutôt que de continuer à moitié — le message dit laquelle. Relancez <code>bash .devcontainer/preparer.sh</code>.</p>
 <p><strong>Une action ne fait rien</strong> (créer un chantier, envoyer un devis). C'est le symptôme d'une origine refusée par Next.js derrière le proxy. Le dépôt gère ce cas (<code>next.config.ts</code>, <code>allowedOrigins</code>) ; si cela se reproduit, le nom de l'espace a changé — arrêtez puis relancez <code>npm run essai</code>.</p>
 <p><strong>Le port 3000 est déjà pris.</strong> Un serveur tourne encore. Fermez-le avec <code>Ctrl+C</code> dans son terminal.</p>
