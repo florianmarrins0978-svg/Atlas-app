@@ -9,6 +9,60 @@ Format : le plus récent en tête.
 
 ## 2026-08-02
 
+### Le dernier mètre existe : le message s'ouvre tout prêt
+
+Le patron a demandé pourquoi le site Arborea réussissait à envoyer des e-mails
+sans hébergeur ni nom de domaine, alors qu'Atlas n'y arrive pas. La réponse
+était dans son propre code (`appli/devis-modele.html`) : **Arborea n'envoyait
+rien**. Il ouvrait la boîte mail du patron avec le message pré-rempli, et c'est
+lui qui appuyait sur Envoyer. Cette possibilité ne lui avait jamais été
+présentée — une omission.
+
+Elle est reprise : « Ouvrir le message tout prêt » sur l'écran du devis. Sur
+téléphone, le menu de partage laisse choisir SMS, e-mail ou messagerie ; sur
+ordinateur, l'application par défaut s'ouvre.
+
+**Ce que ça débloque, et c'est le patron qui l'a vu :** la réponse du client ne
+passe pas par l'e-mail — il répond sur la page web, et Atlas la voit en base.
+Acceptation, planification, fin de chantier, facture et relevé de TVA sont donc
+éprouvables dès aujourd'hui, sans abonnement ni nom de domaine.
+
+Ce que ça ne donne pas, et qui reste au point 5 : Atlas ignore que le message
+est parti, donc pas de relance automatique à sept jours.
+
+Le message est une fonction pure (`src/lib/message-client.ts`), éprouvée par
+sept contrôles : aucun montant n'y est répété — le prix vit dans le devis, et
+deux endroits finiraient par se contredire le jour d'une reprise.
+
+### La démonstration se contredisait à l'écran
+
+« Devis non envoyé — le client n'a rien reçu », affiché sur un devis marqué
+comme émis. L'écran ne mentait pas : la donnée de démonstration marquait le
+devis envoyé sans jamais créer l'envoi. Deux notions se télescopaient — le
+document émis, immuable, et le fait de l'avoir transmis.
+
+Elle porte désormais un vrai envoi en attente de réponse, avec un lien client
+ouvrable : le parcours de réponse s'éprouve dès l'ouverture, sans monter un
+chantier complet d'abord.
+
+### Un contrôle qui sait voir un élément recouvert — après deux fausses pistes
+
+`isVisible()` de Playwright considère visible un élément caché derrière un
+autre. C'est le trou par lequel sont passés trois défauts de ce projet, tous
+trouvés en regardant une capture.
+
+Les deux premières versions du contrôle accusaient à tort : l'une mesurait un
+élément hors champ, l'autre l'amenait au bord de la fenêtre — c'est-à-dire
+exactement sous la barre de navigation. La mise en page n'avait rien.
+
+La version retenue ne dépend plus du défilement : reste-t-il, sous cet élément,
+au moins la hauteur de la barre ? Sinon, aucun défilement ne le dégagera, et le
+message dit combien de pixels manquent.
+
+**La leçon, encore la même :** un contrôle qui échoue sur le mauvais motif ne
+vaut pas mieux qu'un contrôle qui n'échoue jamais. Il a fallu deux corrections
+pour qu'il dise vrai — et sans elles, un écran aurait été rembourré pour rien.
+
 ### Le devis se remplissait de prestations que personne n'avait dictées
 
 Le patron a dicté une note vocale et retrouvé ceci dans son devis :
