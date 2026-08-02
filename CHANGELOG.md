@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-08-01
 
+### L'écart d'origine allait dans l'autre sens — trois correctifs pour rien
+
+Le patron a fini par lancer `npm run essai` lui-même et par coller la ligne que
+le serveur écrivait depuis le début :
+
+```
+x-forwarded-host … 'xxx-3000.app.github.dev' does not match
+origin header with value 'localhost:3000'
+```
+
+**C'est l'HÔTE qui porte l'adresse publique, et l'ORIGINE qui vaut
+`localhost:3000`.** L'inverse de ce qu'on suppose spontanément — et de ce qui a
+été supposé trois fois.
+
+Conséquence : chaque correctif autorisait `*.app.github.dev` *en tant
+qu'origine*, et l'alignement du middleware ne s'activait que pour ce domaine. Or
+l'origine du patron est `localhost:3000` : la fonction ressortait à sa première
+ligne, sans rien faire, dans tous les environnements.
+
+**Et les épreuves simulaient la panne à l'envers de la vraie.** Elles passaient
+au vert en corrigeant un défaut qui n'existait pas. C'est là que le temps a été
+perdu : pas dans le code, mais dans un contrôle qui prouvait autre chose que ce
+qu'il prétendait.
+
+Ce qui change : l'alignement ne présume plus rien — ni du domaine, ni du sens de
+l'écart. Hors production, l'hôte vu par Next devient celui qu'annonce le
+navigateur, point. Et `verifier-connexion.mjs` rejoue exactement la combinaison
+réelle : `x-forwarded-host` public, `Origin: localhost:3000`. Éprouvé dans les
+deux sens — il échoue correctif désactivé, il passe correctif actif.
+
+**La leçon, au-delà de ce défaut :** un contrôle éprouvé contre une panne
+*imaginée* ne vaut rien, même s'il sait échouer. Ce qu'il faut reproduire, c'est
+le message du serveur — pas l'idée qu'on s'en fait. Ici, il suffisait de le lire.
+
 ### Le correctif ne dépend plus d'aucun fichier de configuration
 
 Troisième tentative sur le même défaut, et la leçon est là : **deux correctifs

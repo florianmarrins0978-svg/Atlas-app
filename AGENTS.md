@@ -40,6 +40,12 @@ Ce que cela exige concrètement, à chaque lot :
   prétend détecter. Un contrôle qui n'a jamais échoué ne prouve rien. **Et son
   message doit désigner le bon coupable** : une erreur qui envoie chercher au
   mauvais endroit coûte plus cher que pas d'erreur du tout.
+- **Reproduire le message du serveur, jamais l'idée qu'on s'en fait.** Trois
+  correctifs de suite sont passés au vert en réparant une panne *imaginée* :
+  l'écart d'origine avait été supposé dans un sens, il allait dans l'autre. Les
+  contrôles savaient échouer — sur le mauvais défaut. **Avant de corriger, aller
+  chercher la ligne exacte que le serveur écrit.** Une demi-journée de plus a été
+  perdue faute de l'avoir lue.
 - **Ne jamais transmettre une commande non vérifiée sans le dire.** Si elle ne
   peut pas l'être ici, l'écrire noir sur blanc plutôt que de la présenter comme
   sûre.
