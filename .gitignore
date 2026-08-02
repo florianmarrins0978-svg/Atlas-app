@@ -57,3 +57,10 @@ next-env.d.ts
 # de construction, pas du code source ; ne doivent jamais gonfler l'historique
 # du dépôt
 /artifacts/
+
+# Scripts jetables de vérification, écrits pendant une session pour regarder un
+# écran dans un navigateur. Ils vivent à la racine parce que Playwright doit s'y
+# résoudre, mais ils ne décrivent aucun comportement du produit : ce qui mérite
+# de rester devient une suite dans scripts/.
+/.voir-*.mjs
+/.essai-*.mts

@@ -133,6 +133,50 @@ async function main() {
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
 
+    // Le dernier mètre : sans ce bouton, le lien reste à recopier à la main
+    // dans un SMS. C'est le geste que l'application doit épargner, et il a
+    // manqué jusqu'ici (docs/A-FAIRE.md §5).
+    assert.ok(
+      await page.getByRole("button", { name: /Ouvrir le (message|SMS) tout prêt/ }).isVisible(),
+      "le bouton qui ouvre le message tout prêt doit apparaître dès que le lien existe"
+    );
+    // Dire qui envoie, pour que le patron n'attende pas un départ automatique
+    // qui n'aura pas lieu tant qu'aucun prestataire n'est raccordé.
+    //
+    // `isVisible()` ne suffit PAS : Playwright considère visible un élément
+    // recouvert par un autre. Or la barre de navigation est fixée en bas de
+    // l'écran, et tout ce qui finit dessous disparaît pour le patron sans que
+    // rien ne le signale. C'est ce qu'on vérifie ici, pour de bon.
+    // La barre de navigation est fixée en bas de l'écran. Un élément placé si
+    // près du bas du document qu'aucun défilement ne peut le dégager reste
+    // invisible pour le patron, quoi qu'il fasse — et `isVisible()` ne le voit
+    // pas : Playwright considère visible un élément recouvert.
+    //
+    // La mesure porte donc sur la GÉOMÉTRIE DU DOCUMENT, pas sur la position
+    // du défilement au moment du test : « reste-t-il, sous cet élément, au
+    // moins la hauteur de la barre ? » Une première version amenait l'élément
+    // au bord de la fenêtre — c'est-à-dire exactement sous la barre — et
+    // accusait donc toujours, y compris à tort.
+    for (const texte of ["Ouvrir le SMS tout prêt", "c'est vous qui l'envoyez"]) {
+      const cible = page.locator(`text=${texte}`).first();
+      assert.ok(await cible.isVisible(), `« ${texte} » doit être présent à l'écran`);
+
+      const marge = await cible.evaluate((el) => {
+        const barre = document.querySelector(".atlas-nav-basse");
+        const hauteurBarre = barre ? barre.getBoundingClientRect().height : 0;
+        const bas = el.getBoundingClientRect().bottom + window.scrollY;
+        const hauteurDocument = document.documentElement.scrollHeight;
+        return Math.round(hauteurDocument - bas - hauteurBarre);
+      });
+
+      assert.ok(
+        marge >= 0,
+        `« ${texte} » finit sous la barre de navigation : il manque ${-marge}px que ` +
+          `le patron ne pourra jamais faire défiler`
+      );
+    }
+    await page.screenshot({ path: "/tmp/atlas-devis-pret.png", fullPage: true });
+
     const lien = await page.locator("text=/\\/devis\\/[A-Za-z0-9_-]+/").first().innerText();
     const chemin = lien.slice(lien.indexOf("/devis/"));
     assert.ok(chemin.startsWith("/devis/"), `lien inattendu : ${lien}`);

@@ -2,6 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { hashSync } from "bcryptjs";
 import { pool, db } from "./client";
+import { createHash } from "node:crypto";
 import { attribuerNumeroDevis } from "../repositories/devis";
 import { creerPrestationCatalogue } from "../repositories/catalogue-prestations";
 import { creerMaterielCatalogue } from "../repositories/catalogue-materiels";
@@ -21,6 +22,7 @@ import {
   documentsLegaux,
   acceptationsDocuments,
   devis,
+  envoisDevis,
   lignesDevis,
 } from "./schema";
 
@@ -337,6 +339,34 @@ async function main() {
 
     // Transition brouillon -> envoye, autorisée par le trigger d'immuabilité.
     await tx.update(devis).set({ statut: "envoye", envoyeLe: new Date() }).where(sql`id = ${d.id}`);
+
+    // Et l'envoi qui va avec.
+    //
+    // Sans lui, la démonstration se contredisait à l'écran : le devis était
+    // marqué envoyé, mais l'écran affichait « Devis non envoyé — le client n'a
+    // rien reçu », faute de trouver un envoi. Deux notions distinctes se
+    // télescopaient : le document émis (immuable) et le fait de l'avoir
+    // transmis. Dans l'usage réel, l'un ne va jamais sans l'autre — c'est
+    // l'envoi au client qui bascule le devis en « envoyé ».
+    //
+    // Le jeton est fixe et sans surprise : c'est une donnée de démonstration,
+    // et pouvoir ouvrir la page du client d'un lien connu vaut mieux qu'un
+    // secret inutile sur un banc d'essai dont le mot de passe est public.
+    const dansTroisJours = new Date(Date.now() + 3 * 86400_000).toISOString().slice(0, 10);
+    await tx.insert(envoisDevis).values({
+      entrepriseId: entreprise.id,
+      chantierId: idToiture,
+      devisId: d.id,
+      canal: "sms",
+      jeton: "demonstration-reprise-toiture",
+      datesProposees: [dansTroisJours],
+      // L'empreinte fige le devis tel qu'il est parti : le client ne peut pas
+      // se voir opposer une version modifiée après coup.
+      empreinteDevis: createHash("sha256")
+        .update("Reprise de toiture — devis de démonstration")
+        .digest("hex"),
+      expireAt: new Date(Date.now() + 14 * 86400_000),
+    });
 
     console.log("Seed terminé.");
     console.log(`  entreprise: ${entreprise.id} (${entreprise.nom})`);
