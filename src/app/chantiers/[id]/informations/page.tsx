@@ -6,6 +6,7 @@ import { listerPrestations } from "@/server/repositories/prestations";
 import { listerMateriel } from "@/server/repositories/materiel";
 import { getBrouillon } from "@/server/repositories/brouillons-informations";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
+import { estTranscriptionSimulee } from "@/server/ai/providers/transcription/dev";
 import { evaluerFraicheurBrouillon } from "@/lib/brouillon-etat";
 import InformationsClient from "./InformationsClient";
 
@@ -25,7 +26,14 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
     getNoteVocale(ctx, id),
   ]);
 
-  const transcriptionDisponible = note?.transcriptionStatut === "reussie" && !!note.transcription;
+  // Une transcription « réussie » sans prestataire raccordé n'est pas une
+  // transcription : c'est un texte de remplacement. La traiter comme telle
+  // faisait afficher « Proposé à partir de votre dictée » au-dessus de
+  // prestations fabriquées à partir de ce texte — le patron les a retrouvées
+  // dans son devis.
+  const simulee = estTranscriptionSimulee(note?.transcription);
+  const transcriptionDisponible =
+    !simulee && note?.transcriptionStatut === "reussie" && !!note.transcription;
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -68,7 +76,9 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
                 viennent les informations affichées. */}
             {transcriptionDisponible
               ? "Proposé à partir de votre dictée — à vérifier avant de continuer."
-              : "Aucune dictée n'a encore alimenté cet écran : les informations ci-dessous sont celles que vous saisissez."}
+              : simulee && note
+                ? "Votre dictée est enregistrée mais n'a pas été transcrite : aucun prestataire de transcription n'est encore raccordé. Les informations ci-dessous sont celles que vous saisissez."
+                : "Aucune dictée n'a encore alimenté cet écran : les informations ci-dessous sont celles que vous saisissez."}
           </p>
         </div>
 

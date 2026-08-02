@@ -54,6 +54,16 @@ export default function BrouillonSection({
         setErreur("Aucune transcription disponible pour ce chantier.");
         return;
       }
+      // Dire la vérité plutôt que de proposer du vide : votre dictée n'a pas
+      // été écoutée, et aucune prestation ne sera fabriquée à partir de rien.
+      if (resultat.statut === "transcription_simulee") {
+        setErreur(
+          "Votre dictée n'a pas été transcrite : aucun prestataire de transcription " +
+            "n'est encore raccordé (voir le document « à faire », point 1). Rien n'a donc " +
+            "pu en être extrait. Vous pouvez saisir les prestations à la main ci-dessous."
+        );
+        return;
+      }
       if (resultat.statut === "echec") {
         setErreur(resultat.erreur);
         return;
