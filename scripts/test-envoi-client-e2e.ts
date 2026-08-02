@@ -150,12 +150,28 @@ async function main() {
     for (const texte of ["Ouvrir le SMS tout prêt", "c'est vous qui l'envoyez"]) {
       const cible = page.locator(`text=${texte}`).first();
       assert.ok(await cible.isVisible(), `« ${texte} » doit être présent à l'écran`);
-      const recouvert = await cible.evaluate((el) => {
+
+      // Amener l'élément dans la fenêtre AVANT de mesurer : hors champ, le
+      // navigateur ne trouve rien au point demandé et le contrôle conclurait
+      // « recouvert » pour un élément simplement plus bas. Un contrôle qui
+      // accuse à tort coûte plus cher que pas de contrôle du tout.
+      await cible.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(150);
+
+      const verdict = await cible.evaluate((el) => {
         const r = el.getBoundingClientRect();
-        const dessus = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-        return !dessus || !(el.contains(dessus) || dessus.contains(el));
+        const x = r.left + r.width / 2;
+        const y = r.top + r.height / 2;
+        if (y < 0 || y > window.innerHeight) return "hors-champ";
+        const dessus = document.elementFromPoint(x, y);
+        if (!dessus) return "hors-champ";
+        return el.contains(dessus) || dessus.contains(el) ? "visible" : "recouvert";
       });
-      assert.equal(recouvert, false, `« ${texte} » est recouvert par un autre élément (barre de navigation ?)`);
+      assert.notEqual(
+        verdict,
+        "recouvert",
+        `« ${texte} » est recouvert par un autre élément (barre de navigation ?)`
+      );
     }
     await page.screenshot({ path: "/tmp/atlas-devis-pret.png", fullPage: true });
 
