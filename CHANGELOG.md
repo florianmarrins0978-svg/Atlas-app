@@ -9,6 +9,61 @@ Format : le plus récent en tête.
 
 ## 2026-08-01
 
+### L'écart d'origine allait dans l'autre sens — trois correctifs pour rien
+
+Le patron a fini par lancer `npm run essai` lui-même et par coller la ligne que
+le serveur écrivait depuis le début :
+
+```
+x-forwarded-host … 'xxx-3000.app.github.dev' does not match
+origin header with value 'localhost:3000'
+```
+
+**C'est l'HÔTE qui porte l'adresse publique, et l'ORIGINE qui vaut
+`localhost:3000`.** L'inverse de ce qu'on suppose spontanément — et de ce qui a
+été supposé trois fois.
+
+Conséquence : chaque correctif autorisait `*.app.github.dev` *en tant
+qu'origine*, et l'alignement du middleware ne s'activait que pour ce domaine. Or
+l'origine du patron est `localhost:3000` : la fonction ressortait à sa première
+ligne, sans rien faire, dans tous les environnements.
+
+**Et les épreuves simulaient la panne à l'envers de la vraie.** Elles passaient
+au vert en corrigeant un défaut qui n'existait pas. C'est là que le temps a été
+perdu : pas dans le code, mais dans un contrôle qui prouvait autre chose que ce
+qu'il prétendait.
+
+Ce qui change : l'alignement ne présume plus rien — ni du domaine, ni du sens de
+l'écart. Hors production, l'hôte vu par Next devient celui qu'annonce le
+navigateur, point. Et `verifier-connexion.mjs` rejoue exactement la combinaison
+réelle : `x-forwarded-host` public, `Origin: localhost:3000`. Éprouvé dans les
+deux sens — il échoue correctif désactivé, il passe correctif actif.
+
+**La leçon, au-delà de ce défaut :** un contrôle éprouvé contre une panne
+*imaginée* ne vaut rien, même s'il sait échouer. Ce qu'il faut reproduire, c'est
+le message du serveur — pas l'idée qu'on s'en fait. Ici, il suffisait de le lire.
+
+### Le correctif ne dépend plus d'aucun fichier de configuration
+
+Troisième tentative sur le même défaut, et la leçon est là : **deux correctifs
+de suite ont échoué parce qu'ils reposaient sur une variable déclarée dans
+`.devcontainer/docker-compose.yml`.** Une variable écrite là n'existe pas dans un
+espace de travail créé avant qu'elle n'y soit — et le correctif reste alors
+inerte, sans le moindre message. C'est ce qui était arrivé à `CODESPACE_NAME`,
+puis à `ATLAS_BANC_ESSAI`.
+
+La condition ne tient plus qu'à `NODE_ENV`, que `next dev` pose lui-même. Aucun
+fichier du dépôt n'a besoin d'être à jour pour que la connexion passe.
+
+Éprouvé en retirant tous les filets : `allowedOrigins` vidé, `ATLAS_BANC_ESSAI`
+absent. Rien d'autre que le correctif ne pouvait faire passer cette connexion —
+et elle passe.
+
+**Le contrôle distingue désormais deux causes qu'il confondait** : « l'origine
+est refusée » et « la base n'est pas amorcée » n'ont rien à voir, et le second
+cas s'est présenté en cours de route sous le premier message. Une épreuve a
+failli être lue comme un échec du correctif alors qu'il venait de fonctionner.
+
 ### La connexion refusée : supprimer l'écart au lieu de l'autoriser
 
 `allowedOrigins` ne suffisait pas. Le patron a recréé un espace de travail avec

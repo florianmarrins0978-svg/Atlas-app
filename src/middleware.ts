@@ -20,34 +20,50 @@ const CHEMINS_PUBLICS = ["/login", "/api/auth", "/api/cron", "/devis"];
 // côté serveur et ne parvient jamais au navigateur.
 const ENTETE_CHEMIN = "x-atlas-pathname";
 
-// Uniquement sur le banc d'essai, jamais ailleurs : la variable n'est posée que
-// par .devcontainer/docker-compose.yml.
-const BANC_ESSAI = process.env.ATLAS_BANC_ESSAI === "1";
+// Jamais en production, et c'est la SEULE condition.
+//
+// La version précédente exigeait `ATLAS_BANC_ESSAI=1`, posé dans
+// `.devcontainer/docker-compose.yml`. C'est précisément le fichier qui avait
+// déjà avalé `CODESPACE_NAME` : une variable déclarée là n'existe pas dans un
+// espace de travail créé avant qu'elle n'y soit écrite, et le correctif restait
+// alors inerte — sans le moindre message. Deux correctifs de suite ont échoué
+// chez le patron pour ce motif.
+//
+// `NODE_ENV` ne dépend d'aucun fichier du dépôt : `next dev` le pose lui-même.
+const HORS_PRODUCTION = process.env.NODE_ENV !== "production";
 
-// Domaines de redirection de GitHub Codespaces. Rien d'autre n'est accepté.
-const DOMAINES_BANC_ESSAI = [".app.github.dev", ".github.dev"];
-
-// Fait voir à Next.js le même hôte que celui de la barre d'adresse.
+// Fait voir à Next.js le même hôte que celui annoncé par le navigateur.
 //
 // Pourquoi : Next.js refuse une action serveur quand l'en-tête `Origin` ne
 // correspond pas à l'hôte — c'est sa protection contre le CSRF. Derrière le
-// proxy de Codespaces, le navigateur annonce `xxx-3000.app.github.dev` tandis
-// que le serveur reçoit `localhost:3000`. Résultat : « Invalid Server Actions
-// request. » à la connexion, et le patron ne peut pas entrer. Cela lui a coûté
-// une journée.
+// proxy d'un espace de travail distant, les deux diffèrent, et TOUTE action est
+// refusée : « Invalid Server Actions request. » à la connexion, sans que rien
+// n'indique pourquoi. Le patron a perdu une journée entière là-dessus.
 //
-// `allowedOrigins` (next.config.ts) est censé couvrir ce cas et le fait en
-// local. Il ne suffisait pourtant pas dans un vrai Codespace, sans qu'on
-// puisse le reproduire ailleurs. Plutôt que d'ajouter une hypothèse de plus,
-// on supprime l'écart à la source : l'hôte transmis devient celui de l'origine.
+// **L'écart va dans le sens qu'on n'attend pas**, et c'est ce qui a coûté trois
+// correctifs successifs. Le message du serveur, une fois lu, est sans ambiguïté :
 //
-// Ce que cela n'affaiblit PAS : la protection reste entière partout ailleurs.
-// Elle n'est levée que si `ATLAS_BANC_ESSAI` vaut 1 — posé par le seul
-// docker-compose du banc d'essai, jamais en production — et seulement pour un
-// domaine de Codespaces. Sur ce banc, le mot de passe est public et l'adresse
-// ouverte : il n'y a rien que le CSRF protégerait encore.
+//   x-forwarded-host … 'xxx-3000.app.github.dev' does not match
+//   origin header with value 'localhost:3000'
+//
+// C'est l'HÔTE qui porte l'adresse publique, et l'ORIGINE qui vaut
+// `localhost:3000`. Les correctifs précédents autorisaient `*.app.github.dev`
+// en tant qu'origine et ne s'appliquaient qu'à ce domaine : ils ressortaient
+// donc immédiatement, sans effet, quel que soit l'environnement. Ils ont été
+// éprouvés contre une panne simulée à l'envers de la vraie.
+//
+// D'où l'alignement inconditionnel hors production : on ne présume plus de
+// quel côté vient l'écart, ni de quel domaine il s'agit. Le seul fait qui
+// compte est que le navigateur a annoncé une origine — c'est elle qui fait foi.
+//
+// Ce que cela n'affaiblit PAS : en production, `NODE_ENV` vaut `production` et
+// rien de tout ceci ne s'exécute — la protection CSRF est entière. Hors
+// production, il s'agit d'un serveur de développement, dont le mot de passe de
+// démonstration est public et l'adresse ouverte : il n'y a rien que cette
+// protection défendrait encore.
 function alignerHoteSurOrigine(entetes: Headers) {
-  if (!BANC_ESSAI) return;
+  if (!HORS_PRODUCTION) return;
+
   const origine = entetes.get("origin");
   if (!origine) return;
 
@@ -57,8 +73,8 @@ function alignerHoteSurOrigine(entetes: Headers) {
   } catch {
     return;
   }
+  if (!hote) return;
 
-  if (!DOMAINES_BANC_ESSAI.some((d) => hote.endsWith(d))) return;
   entetes.set("x-forwarded-host", hote);
 }
 

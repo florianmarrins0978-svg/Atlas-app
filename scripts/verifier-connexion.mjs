@@ -22,9 +22,17 @@ import { existsSync, readdirSync } from "node:fs";
 
 const BASE = process.env.BASE_ESSAI ?? "http://127.0.0.1:3000";
 
-// Une origine qui ne peut jamais coïncider avec l'hôte interrogé : c'est tout
-// l'intérêt. Elle imite la forme réelle d'une adresse Codespaces.
-const ORIGINE_ETRANGERE = "https://banc-essai-fictif-3000.app.github.dev";
+// Reproduit l'écart RÉEL observé chez le patron, dans le bon sens :
+//
+//   x-forwarded-host … 'xxx-3000.app.github.dev' does not match
+//   origin header with value 'localhost:3000'
+//
+// C'est l'HÔTE qui porte l'adresse publique et l'ORIGINE qui vaut
+// `localhost:3000` — l'inverse de ce qu'on suppose spontanément. Trois
+// correctifs ont été éprouvés contre une panne simulée à l'envers, et sont donc
+// passés au vert sans jamais rien corriger chez lui.
+const ORIGINE_NAVIGATEUR = "http://localhost:3000";
+const HOTE_PUBLIC = "banc-essai-fictif-3000.app.github.dev";
 
 const IDENTIFIANTS = { email: "demo@atlas.local", motDePasse: "demo1234" };
 
@@ -53,9 +61,14 @@ function echec(message, detail) {
 const nav = await chromium.launch({ executablePath: cheminNavigateur() });
 const page = await nav.newPage({ viewport: { width: 390, height: 844 } });
 
-// Toutes les requêtes porteront cette origine, y compris le POST de l'action
-// de connexion — c'est celui-là qui était refusé.
-await page.setExtraHTTPHeaders({ Origin: ORIGINE_ETRANGERE });
+// Le proxy de l'espace de travail ajoute `x-forwarded-host` avec l'adresse
+// publique, tandis que le navigateur annonce `localhost:3000` comme origine.
+// On rejoue exactement cette combinaison sur toutes les requêtes, POST de
+// l'action de connexion compris — c'est celui-là qui était refusé.
+await page.setExtraHTTPHeaders({
+  Origin: ORIGINE_NAVIGATEUR,
+  "x-forwarded-host": HOTE_PUBLIC,
+});
 
 const erreurs = [];
 page.on("pageerror", (e) => erreurs.push(String(e)));
@@ -76,7 +89,7 @@ try {
     echec("l'action de connexion est refusée : allowedOrigins ne couvre pas l'origine du proxy");
   }
 
-  console.log(`   ✅ Connexion réussie depuis une origine étrangère (${ORIGINE_ETRANGERE})`);
+  console.log(`   ✅ Connexion réussie : origine ${ORIGINE_NAVIGATEUR}, hôte transmis ${HOTE_PUBLIC}`);
   console.log("   ✅ L'écran des chantiers s'affiche");
 } catch (e) {
   const texte = await page
@@ -87,9 +100,22 @@ try {
   if (texte.includes("Invalid Server Actions request")) {
     echec(
       "l'action de connexion est REFUSÉE derrière un proxy.",
-      "     Next.js compare Origin à l'hôte. Voir `allowedOrigins` dans next.config.ts\n" +
-        "     et la reprise de CODESPACE_NAME dans .devcontainer/docker-compose.yml.\n" +
+      "     Next.js compare Origin à l'hôte. Voir `alignerHoteSurOrigine` dans\n" +
+        "     src/middleware.ts, et `allowedOrigins` dans next.config.ts.\n" +
         "     C'est ce que le patron voyait : « Invalid Server Actions request. »"
+    );
+  }
+
+  // Le formulaire a répondu : l'origine n'est donc PAS en cause. C'est la base
+  // qui n'a pas le compte. Distinguer les deux est essentiel — une fois, ce
+  // message a fait croire à une origine refusée alors que `npm test` avait
+  // simplement vidé la base juste avant.
+  if (texte.includes("Email ou mot de passe incorrect")) {
+    echec(
+      "le compte de démonstration est absent : la base n'est pas amorcée.",
+      "     L'origine n'est PAS en cause — l'action serveur a bien été acceptée,\n" +
+        "     c'est le compte qui manque. Rejouer :\n" +
+        "       npx tsx src/server/db/seed.ts"
     );
   }
 
