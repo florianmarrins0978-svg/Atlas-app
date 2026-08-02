@@ -133,6 +133,21 @@ async function main() {
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
 
+    // Le dernier mètre : sans ce bouton, le lien reste à recopier à la main
+    // dans un SMS. C'est le geste que l'application doit épargner, et il a
+    // manqué jusqu'ici (docs/A-FAIRE.md §5).
+    assert.ok(
+      await page.getByRole("button", { name: /Ouvrir le (message|SMS) tout prêt/ }).isVisible(),
+      "le bouton qui ouvre le message tout prêt doit apparaître dès que le lien existe"
+    );
+    // Dire qui envoie, pour que le patron n'attende pas un départ automatique
+    // qui n'aura pas lieu tant qu'aucun prestataire n'est raccordé.
+    assert.ok(
+      await page.locator("text=c'est vous qui l'envoyez").isVisible(),
+      "l'écran doit dire que le message part de la boîte du patron, pas d'Atlas"
+    );
+    await page.screenshot({ path: "/tmp/atlas-devis-pret.png", fullPage: true });
+
     const lien = await page.locator("text=/\\/devis\\/[A-Za-z0-9_-]+/").first().innerText();
     const chemin = lien.slice(lien.indexOf("/devis/"));
     assert.ok(chemin.startsWith("/devis/"), `lien inattendu : ${lien}`);
