@@ -3,6 +3,8 @@ import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
+import { estTranscriptionSimulee } from "@/server/ai/providers/transcription/dev";
+import TexteDicte from "./TexteDicte";
 
 // Consultation seule : le lancement et la relance de la transcription vivent sur
 // l'écran Note vocale, jamais en double ici. Le modèle ne porte qu'une
@@ -17,11 +19,18 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
   if (!chantier) notFound();
 
   const note = await getNoteVocale(ctx, id);
-  const disponible = note?.transcriptionStatut === "reussie" && !!note.transcription;
+  // Un texte de remplacement n'est pas une transcription : l'afficher comme
+  // telle a fait croire au patron que sa dictée était comprise de travers,
+  // alors qu'elle n'avait pas été écoutée.
+  const simulee = estTranscriptionSimulee(note?.transcription);
+  const disponible = !simulee && note?.transcriptionStatut === "reussie" && !!note.transcription;
 
   function contenu() {
     if (!note) return "Aucune note vocale pour ce chantier.";
     if (disponible) return note!.transcription!;
+    if (simulee) {
+      return "Votre dictée est enregistrée, mais elle n'a pas été transcrite : aucun prestataire de transcription n'est encore raccordé. Écrivez ci-dessous ce que vous avez dit.";
+    }
     if (note.transcriptionStatut === "en_cours") return "Transcription en cours…";
     if (note.transcriptionStatut === "echouee") {
       return `La transcription a échoué : ${note.transcriptionErreur ?? "erreur inconnue"}. Votre enregistrement est intact — vous pouvez relancer depuis l'écran Note vocale.`;
@@ -66,6 +75,12 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
             {contenu()}
           </p>
         </div>
+
+        {/* La dictée reste le but ; écrire est le filet — quand elle n'est pas
+            transcrite, ou quand elle l'est de travers. */}
+        {note && (
+          <TexteDicte chantierId={id} texteActuel={note.transcription ?? ""} simulee={simulee} />
+        )}
 
         {/* Suite naturelle du parcours : la transcription n'est pas une fin en
             soi, elle alimente les informations du chantier. */}

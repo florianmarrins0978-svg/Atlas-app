@@ -15,6 +15,11 @@ function section(page: Page, label: string): Locator {
   return page.locator("div.flex.flex-col.gap-2", { has: page.locator("span", { hasText: label }) });
 }
 
+// Ce que le patron aurait dicté, écrit à la main : ses mots de métier, pas un
+// exemple choisi par nous.
+const DICTEE_ECRITE =
+  "Élagage du grand chêne au fond du jardin, rabattre les branches côté rue, deux jours à deux hommes, broyage sur place";
+
 async function main() {
   const browser = await lancerNavigateur({
     args: [
@@ -57,13 +62,35 @@ async function main() {
   await page.click("text=Lancer la transcription");
   await page.waitForSelector("text=Transcription disponible", { timeout: 10000 });
 
-  // --- Non-régression : l'écran Transcription affiche le résultat réel ---
+  // --- Non-régression : un texte de remplacement n'est JAMAIS présenté comme
+  //     une transcription ---
+  //
+  // Cette suite exigeait auparavant l'inverse : elle vérifiait que le brouillon
+  // reprenait bien le texte « simulée ». Elle consacrait donc le défaut — le
+  // devis du patron s'est rempli de deux prestations qu'il n'avait jamais
+  // dictées, et tous les voyants étaient au vert.
   await page.goto(`${chantierUrl}/transcription`, { waitUntil: "networkidle" });
-  assert.ok(await page.locator("text=/simulée/").isVisible(), "Le texte transcrit réel (fournisseur dev) doit s'afficher");
+  assert.ok(
+    await page.locator("text=/n'a pas été transcrite/").isVisible(),
+    "L'écran doit dire que la dictée n'a pas été transcrite, jamais afficher le texte de remplacement comme une transcription"
+  );
 
-  // --- Brouillon structuré, produit depuis la transcription réelle ---
-  // Le texte analysé n'est plus saisi à la main : c'est bien la dictée
-  // enregistrée ci-dessus, transcrite, qui alimente le brouillon.
+  // --- La génération refuse, et ne fabrique rien ---
+  await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });
+  await page.click("text=Générer le brouillon");
+  await page.waitForSelector("text=/n'a pas été transcrite/", { timeout: 10000 });
+  assert.equal(
+    await page.locator('button:has-text("Confirmer et ajouter au chantier")').count(),
+    0,
+    "Aucun brouillon ne doit être proposé à partir d'un texte de remplacement"
+  );
+
+  // --- Le patron écrit ce qu'il a dit : tout le reste s'enchaîne ---
+  await page.goto(`${chantierUrl}/transcription`, { waitUntil: "networkidle" });
+  await page.fill("#texte-dicte", DICTEE_ECRITE);
+  await page.click('button:has-text("Enregistrer le texte")');
+  await page.waitForSelector("text=Texte enregistré", { timeout: 10000 });
+
   await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });
   await page.click("text=Générer le brouillon");
   await page.waitForSelector("text=Confirmer et ajouter au chantier", { timeout: 10000 });
@@ -71,8 +98,8 @@ async function main() {
   // qu'il faut lire, pas le texte de la page.
   assert.match(
     await page.getByLabel("Prestations 1", { exact: true }).inputValue(),
-    /simulée/,
-    "Le brouillon doit reprendre le contenu réellement transcrit"
+    /[Éé]lagage/,
+    "Le brouillon doit reprendre ce que le patron a réellement écrit"
   );
 
   assert.equal(
