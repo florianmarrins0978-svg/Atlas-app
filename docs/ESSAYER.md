@@ -200,6 +200,26 @@ jour-là. Supprimez-le et recréez-en un — voir l'encadré du geste 1. C'est l
 cas le plus fréquent, et le plus déroutant, parce que l'erreur ne dit pas que
 le problème est l'ancienneté de l'espace.
 
+**`EADDRINUSE: address already in use 0.0.0.0:3000`.** L'application tourne
+déjà — elle démarre toute seule à l'allumage de l'espace. Ce n'est pas une
+panne.
+
+**Mais un `git pull` ne suffit jamais à appliquer un correctif.** Le serveur
+charge le code une fois, au démarrage : tant qu'il n'est pas relancé, il
+continue de servir l'ancienne version. Un correctif fusionné, récupéré, et
+pourtant sans effet — c'est exactement ce qui s'est produit le 2026-08-02.
+
+Une seule ligne fait tout, dans l'ordre :
+
+```
+git pull; pkill -f "[n]ext dev"; sleep 3; npm run essai
+```
+
+> **Les crochets autour du `n` sont indispensables.** `pkill -f` compare la
+> ligne de commande entière de chaque processus, y compris celle du terminal qui
+> joue la commande : sans eux, le motif se trouve lui-même et tue la commande
+> avant qu'elle n'ait rien fait.
+
 **Le terminal affiche une erreur pendant la préparation.** Elle s'arrête à la
 première anomalie plutôt que de continuer à moitié — le message dit laquelle.
 Relancez `bash .devcontainer/preparer.sh`.
