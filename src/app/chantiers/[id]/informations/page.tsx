@@ -103,6 +103,7 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
               : null
           }
           transcriptionDisponible={transcriptionDisponible}
+          dicteeNonTranscrite={simulee && !!note}
         />
       </div>
     </div>

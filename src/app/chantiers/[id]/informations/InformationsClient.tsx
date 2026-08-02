@@ -29,6 +29,7 @@ export default function InformationsClient({
   initialEquipe,
   brouillonInitial,
   transcriptionDisponible,
+  dicteeNonTranscrite,
 }: {
   chantierId: string;
   initialPrestations: Ligne[];
@@ -37,6 +38,7 @@ export default function InformationsClient({
   initialEquipe: string;
   brouillonInitial: BrouillonInitial;
   transcriptionDisponible: boolean;
+  dicteeNonTranscrite: boolean;
 }) {
   const router = useRouter();
   const [prestations, setPrestations] = useState<Ligne[]>(initialPrestations);
@@ -136,6 +138,7 @@ export default function InformationsClient({
           chantierId={chantierId}
           brouillonInitial={brouillonInitial}
           transcriptionDisponible={transcriptionDisponible}
+          dicteeNonTranscrite={dicteeNonTranscrite}
           onApplique={integrerBrouillonApplique}
         />
 

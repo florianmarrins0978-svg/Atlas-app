@@ -69,11 +69,13 @@ export default function TexteDicte({ chantierId, texteActuel, simulee }: Props) 
         Écrire ce que vous avez dit
       </p>
 
+      {/* La raison est déjà donnée juste au-dessus, dans le bloc d'état : la
+          répéter ici en ferait deux fois le même paragraphe à l'écran. Ne
+          rester que sur ce que le patron doit faire. */}
       {simulee && (
         <p className="mb-3 text-[13px] leading-relaxed" style={{ color: colors.muted }}>
-          Votre dictée est enregistrée mais n&apos;a pas été transcrite : aucun prestataire
-          de transcription n&apos;est encore raccordé. Écrivez ce que vous avez dit — tout
-          le reste du parcours s&apos;enchaînera normalement.
+          Écrivez-le ici, avec vos mots : tout le reste du parcours s&apos;enchaînera
+          normalement.
         </p>
       )}
 

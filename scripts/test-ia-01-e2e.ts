@@ -71,18 +71,28 @@ async function main() {
   // dictées, et tous les voyants étaient au vert.
   await page.goto(`${chantierUrl}/transcription`, { waitUntil: "networkidle" });
   assert.ok(
-    await page.locator("text=/n'a pas été transcrite/").isVisible(),
+    await page.locator("text=/n'a pas été transcrite/").first().isVisible(),
     "L'écran doit dire que la dictée n'a pas été transcrite, jamais afficher le texte de remplacement comme une transcription"
   );
 
-  // --- La génération refuse, et ne fabrique rien ---
+  // --- L'écran des informations ne propose RIEN, et dit pourquoi ---
+  //
+  // Il renvoyait auparavant vers « Aller à la note vocale » — c'est-à-dire
+  // refaire ce que le patron venait de faire, en lui laissant croire qu'il s'y
+  // était mal pris. C'est la transcription qui manque, pas la dictée.
   await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });
-  await page.click("text=Générer le brouillon");
-  await page.waitForSelector("text=/n'a pas été transcrite/", { timeout: 10000 });
+  assert.ok(
+    await page.locator("text=/n'a pas été transcrite/").first().isVisible(),
+    "L'écran doit expliquer que la dictée n'a pas été transcrite"
+  );
   assert.equal(
     await page.locator('button:has-text("Confirmer et ajouter au chantier")').count(),
     0,
     "Aucun brouillon ne doit être proposé à partir d'un texte de remplacement"
+  );
+  assert.ok(
+    await page.locator("text=Écrire ce que vous avez dit").isVisible(),
+    "L'écran doit proposer la seule action utile : écrire ce qui a été dit"
   );
 
   // --- Le patron écrit ce qu'il a dit : tout le reste s'enchaîne ---
