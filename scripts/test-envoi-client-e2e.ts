@@ -147,30 +147,32 @@ async function main() {
     // recouvert par un autre. Or la barre de navigation est fixée en bas de
     // l'écran, et tout ce qui finit dessous disparaît pour le patron sans que
     // rien ne le signale. C'est ce qu'on vérifie ici, pour de bon.
+    // La barre de navigation est fixée en bas de l'écran. Un élément placé si
+    // près du bas du document qu'aucun défilement ne peut le dégager reste
+    // invisible pour le patron, quoi qu'il fasse — et `isVisible()` ne le voit
+    // pas : Playwright considère visible un élément recouvert.
+    //
+    // La mesure porte donc sur la GÉOMÉTRIE DU DOCUMENT, pas sur la position
+    // du défilement au moment du test : « reste-t-il, sous cet élément, au
+    // moins la hauteur de la barre ? » Une première version amenait l'élément
+    // au bord de la fenêtre — c'est-à-dire exactement sous la barre — et
+    // accusait donc toujours, y compris à tort.
     for (const texte of ["Ouvrir le SMS tout prêt", "c'est vous qui l'envoyez"]) {
       const cible = page.locator(`text=${texte}`).first();
       assert.ok(await cible.isVisible(), `« ${texte} » doit être présent à l'écran`);
 
-      // Amener l'élément dans la fenêtre AVANT de mesurer : hors champ, le
-      // navigateur ne trouve rien au point demandé et le contrôle conclurait
-      // « recouvert » pour un élément simplement plus bas. Un contrôle qui
-      // accuse à tort coûte plus cher que pas de contrôle du tout.
-      await cible.scrollIntoViewIfNeeded();
-      await page.waitForTimeout(150);
-
-      const verdict = await cible.evaluate((el) => {
-        const r = el.getBoundingClientRect();
-        const x = r.left + r.width / 2;
-        const y = r.top + r.height / 2;
-        if (y < 0 || y > window.innerHeight) return "hors-champ";
-        const dessus = document.elementFromPoint(x, y);
-        if (!dessus) return "hors-champ";
-        return el.contains(dessus) || dessus.contains(el) ? "visible" : "recouvert";
+      const marge = await cible.evaluate((el) => {
+        const barre = document.querySelector(".atlas-nav-basse");
+        const hauteurBarre = barre ? barre.getBoundingClientRect().height : 0;
+        const bas = el.getBoundingClientRect().bottom + window.scrollY;
+        const hauteurDocument = document.documentElement.scrollHeight;
+        return Math.round(hauteurDocument - bas - hauteurBarre);
       });
-      assert.notEqual(
-        verdict,
-        "recouvert",
-        `« ${texte} » est recouvert par un autre élément (barre de navigation ?)`
+
+      assert.ok(
+        marge >= 0,
+        `« ${texte} » finit sous la barre de navigation : il manque ${-marge}px que ` +
+          `le patron ne pourra jamais faire défiler`
       );
     }
     await page.screenshot({ path: "/tmp/atlas-devis-pret.png", fullPage: true });
