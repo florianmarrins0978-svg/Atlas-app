@@ -20,9 +20,17 @@ const CHEMINS_PUBLICS = ["/login", "/api/auth", "/api/cron", "/devis"];
 // côté serveur et ne parvient jamais au navigateur.
 const ENTETE_CHEMIN = "x-atlas-pathname";
 
-// Uniquement sur le banc d'essai, jamais ailleurs : la variable n'est posée que
-// par .devcontainer/docker-compose.yml.
-const BANC_ESSAI = process.env.ATLAS_BANC_ESSAI === "1";
+// Jamais en production, et c'est la SEULE condition.
+//
+// La version précédente exigeait `ATLAS_BANC_ESSAI=1`, posé dans
+// `.devcontainer/docker-compose.yml`. C'est précisément le fichier qui avait
+// déjà avalé `CODESPACE_NAME` : une variable déclarée là n'existe pas dans un
+// espace de travail créé avant qu'elle n'y soit écrite, et le correctif restait
+// alors inerte — sans le moindre message. Deux correctifs de suite ont échoué
+// chez le patron pour ce motif.
+//
+// `NODE_ENV` ne dépend d'aucun fichier du dépôt : `next dev` le pose lui-même.
+const HORS_PRODUCTION = process.env.NODE_ENV !== "production";
 
 // Domaines de redirection de GitHub Codespaces. Rien d'autre n'est accepté.
 const DOMAINES_BANC_ESSAI = [".app.github.dev", ".github.dev"];
@@ -41,13 +49,13 @@ const DOMAINES_BANC_ESSAI = [".app.github.dev", ".github.dev"];
 // puisse le reproduire ailleurs. Plutôt que d'ajouter une hypothèse de plus,
 // on supprime l'écart à la source : l'hôte transmis devient celui de l'origine.
 //
-// Ce que cela n'affaiblit PAS : la protection reste entière partout ailleurs.
-// Elle n'est levée que si `ATLAS_BANC_ESSAI` vaut 1 — posé par le seul
-// docker-compose du banc d'essai, jamais en production — et seulement pour un
-// domaine de Codespaces. Sur ce banc, le mot de passe est public et l'adresse
-// ouverte : il n'y a rien que le CSRF protégerait encore.
+// Ce que cela n'affaiblit PAS : en production, `NODE_ENV` vaut `production` et
+// rien de tout ceci ne s'exécute — la protection est entière. Hors production,
+// seul un domaine de GitHub Codespaces est concerné : aucune autre origine ne
+// peut en profiter. Et sur ce banc d'essai, le mot de passe est public et
+// l'adresse ouverte : il n'y a rien que le CSRF protégerait encore.
 function alignerHoteSurOrigine(entetes: Headers) {
-  if (!BANC_ESSAI) return;
+  if (!HORS_PRODUCTION) return;
   const origine = entetes.get("origin");
   if (!origine) return;
 

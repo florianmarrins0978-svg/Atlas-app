@@ -87,9 +87,22 @@ try {
   if (texte.includes("Invalid Server Actions request")) {
     echec(
       "l'action de connexion est REFUSÉE derrière un proxy.",
-      "     Next.js compare Origin à l'hôte. Voir `allowedOrigins` dans next.config.ts\n" +
-        "     et la reprise de CODESPACE_NAME dans .devcontainer/docker-compose.yml.\n" +
+      "     Next.js compare Origin à l'hôte. Voir `alignerHoteSurOrigine` dans\n" +
+        "     src/middleware.ts, et `allowedOrigins` dans next.config.ts.\n" +
         "     C'est ce que le patron voyait : « Invalid Server Actions request. »"
+    );
+  }
+
+  // Le formulaire a répondu : l'origine n'est donc PAS en cause. C'est la base
+  // qui n'a pas le compte. Distinguer les deux est essentiel — une fois, ce
+  // message a fait croire à une origine refusée alors que `npm test` avait
+  // simplement vidé la base juste avant.
+  if (texte.includes("Email ou mot de passe incorrect")) {
+    echec(
+      "le compte de démonstration est absent : la base n'est pas amorcée.",
+      "     L'origine n'est PAS en cause — l'action serveur a bien été acceptée,\n" +
+        "     c'est le compte qui manque. Rejouer :\n" +
+        "       npx tsx src/server/db/seed.ts"
     );
   }
 

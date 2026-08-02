@@ -9,6 +9,27 @@ Format : le plus récent en tête.
 
 ## 2026-08-01
 
+### Le correctif ne dépend plus d'aucun fichier de configuration
+
+Troisième tentative sur le même défaut, et la leçon est là : **deux correctifs
+de suite ont échoué parce qu'ils reposaient sur une variable déclarée dans
+`.devcontainer/docker-compose.yml`.** Une variable écrite là n'existe pas dans un
+espace de travail créé avant qu'elle n'y soit — et le correctif reste alors
+inerte, sans le moindre message. C'est ce qui était arrivé à `CODESPACE_NAME`,
+puis à `ATLAS_BANC_ESSAI`.
+
+La condition ne tient plus qu'à `NODE_ENV`, que `next dev` pose lui-même. Aucun
+fichier du dépôt n'a besoin d'être à jour pour que la connexion passe.
+
+Éprouvé en retirant tous les filets : `allowedOrigins` vidé, `ATLAS_BANC_ESSAI`
+absent. Rien d'autre que le correctif ne pouvait faire passer cette connexion —
+et elle passe.
+
+**Le contrôle distingue désormais deux causes qu'il confondait** : « l'origine
+est refusée » et « la base n'est pas amorcée » n'ont rien à voir, et le second
+cas s'est présenté en cours de route sous le premier message. Une épreuve a
+failli être lue comme un échec du correctif alors qu'il venait de fonctionner.
+
 ### La connexion refusée : supprimer l'écart au lieu de l'autoriser
 
 `allowedOrigins` ne suffisait pas. Le patron a recréé un espace de travail avec
