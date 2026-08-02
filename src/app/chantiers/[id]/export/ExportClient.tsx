@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
+import TransmettreAuClient from "./TransmettreAuClient";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { etatEnvoiExplication, etatEnvoiLabel, type EtatEnvoi } from "@/lib/etat-envoi";
 import { reprendreDevisAction } from "./actions";
@@ -22,6 +23,9 @@ export default function ExportClient({
   adresseChantier,
   clientNom,
   clientTelephone,
+  clientEmail,
+  entrepriseNom,
+  canalClient,
   prestations,
   totalTtc,
   initialEnvoye,
@@ -35,6 +39,9 @@ export default function ExportClient({
   adresseChantier: string;
   clientNom: string;
   clientTelephone: string;
+  clientEmail: string;
+  entrepriseNom: string;
+  canalClient: "sms" | "email";
   prestations: string[];
   totalTtc: string;
   initialEnvoye: boolean;
@@ -162,6 +169,17 @@ export default function ExportClient({
                 >
                   {copie ? "Lien copié" : "Copier le lien"}
                 </button>
+
+                {/* Le dernier mètre : Atlas prépare le message, le patron
+                    l'expédie depuis sa propre boîte. Voir TransmettreAuClient
+                    pour ce que ce chemin donne et ce qu'il ne donne pas. */}
+                <TransmettreAuClient
+                  clientNom={clientNom}
+                  entrepriseNom={entrepriseNom}
+                  canal={canalClient}
+                  destinataire={canalClient === "email" ? clientEmail : clientTelephone}
+                  lien={lienComplet(lienAMontrer)}
+                />
               </>
             )}
 

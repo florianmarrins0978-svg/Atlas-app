@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
+import { getClient } from "@/server/repositories/clients";
 import { getOuCreerDevisBrouillon, chargerDevisPourEcran } from "@/server/repositories/devis";
 import { listerPrestations } from "@/server/repositories/prestations";
 import { dernierEnvoi } from "@/server/repositories/envois-devis";
@@ -22,6 +23,12 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
   // seule — consulter cet écran ne déclenche jamais de nouvelle révision.
   // Sinon, le brouillon est créé ou régénéré depuis les lignes de prix courantes.
   const devisRow = (await chargerDevisPourEcran(ctx, id)) ?? (await getOuCreerDevisBrouillon(ctx, id));
+
+  // Le canal convenu vit sur la fiche du client, pas sur le devis : c'est un
+  // accord avec la personne, pas une caractéristique du document. Un devis
+  // repris six mois plus tard doit partir par le canal du client d'aujourd'hui.
+  const client = chantier.clientId ? await getClient(ctx, chantier.clientId) : null;
+  const canalClient = client?.canalCommunication ?? "sms";
   const prestations = await listerPrestations(ctx, id);
 
   // Où en est le devis parti, s'il est parti. C'est ce qui distingue « le
@@ -71,6 +78,9 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
           adresseChantier={chantier.adresseChantier ?? "Adresse non renseignée"}
           clientNom={devisRow.clientNom ?? "Client non renseigné"}
           clientTelephone={devisRow.clientTelephone ?? ""}
+          clientEmail={devisRow.clientEmail ?? ""}
+          entrepriseNom={devisRow.entrepriseNom ?? "Votre entreprise"}
+          canalClient={canalClient}
           prestations={prestations.map((p) => p.libelle)}
           totalTtc={devisRow.totalTtc}
           initialEnvoye={devisRow.statut === "envoye"}
