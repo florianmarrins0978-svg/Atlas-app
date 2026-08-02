@@ -142,10 +142,21 @@ async function main() {
     );
     // Dire qui envoie, pour que le patron n'attende pas un départ automatique
     // qui n'aura pas lieu tant qu'aucun prestataire n'est raccordé.
-    assert.ok(
-      await page.locator("text=c'est vous qui l'envoyez").isVisible(),
-      "l'écran doit dire que le message part de la boîte du patron, pas d'Atlas"
-    );
+    //
+    // `isVisible()` ne suffit PAS : Playwright considère visible un élément
+    // recouvert par un autre. Or la barre de navigation est fixée en bas de
+    // l'écran, et tout ce qui finit dessous disparaît pour le patron sans que
+    // rien ne le signale. C'est ce qu'on vérifie ici, pour de bon.
+    for (const texte of ["Ouvrir le SMS tout prêt", "c'est vous qui l'envoyez"]) {
+      const cible = page.locator(`text=${texte}`).first();
+      assert.ok(await cible.isVisible(), `« ${texte} » doit être présent à l'écran`);
+      const recouvert = await cible.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        const dessus = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return !dessus || !(el.contains(dessus) || dessus.contains(el));
+      });
+      assert.equal(recouvert, false, `« ${texte} » est recouvert par un autre élément (barre de navigation ?)`);
+    }
     await page.screenshot({ path: "/tmp/atlas-devis-pret.png", fullPage: true });
 
     const lien = await page.locator("text=/\\/devis\\/[A-Za-z0-9_-]+/").first().innerText();
