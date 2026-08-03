@@ -9,12 +9,58 @@ Format : le plus récent en tête.
 
 ## 2026-08-03
 
+### La production refuse enfin de démarrer avec l'IA simulée
+
+`src/server/env.ts` refusait déjà le stockage local, un `CRON_SECRET` faible et
+l'absence de Redis en production — au nom de la règle inscrite dans son propre
+en-tête : jamais de repli silencieux vers un comportement de développement.
+L'IA simulée était le seul oubli qui passait en silence.
+
+Trois chemins y menaient, tous muets : laisser `LLM_PROVIDER` /
+`TRANSCRIPTION_PROVIDER` à leur défaut, écrire « dev » explicitement, ou faire
+une **faute de frappe** dans le nom du fournisseur — les fabriques retombent sur
+`dev` par leur `default:`. Un quatrième cas restait ouvert : un fournisseur réel
+sans sa clé, qui ne se découvrait qu'à la première dictée.
+
+L'application refuse désormais de démarrer dans les quatre cas, avec un message
+qui nomme la variable en cause et renvoie à `docs/A-FAIRE.md` §1. Ce que ça
+évite : le patron dictant sur un vrai chantier et recevant
+« [Transcription simulée — 48000 octets reçus] » au lieu de ses mots. En
+développement et sur le banc d'essai, rien ne change : le mode simulé y reste le
+fonctionnement normal, et un test le garde.
+
+Le contrôle a été confronté à ce qu'il prétend détecter : les six tests de
+`scripts/test-env.ts` qui le couvrent virent au rouge quand on retire le
+garde-fou.
+
+### Les tarifs d'IA se relèvent maintenant à leur source
+
+`docs/TRANSCRIPTION.md` ne portait aucun chiffre, et le disait : le mandataire
+réseau de l'environnement de développement répond `403 Forbidden` sur les pages
+tarifaires de tous les prestataires. À la question « combien ça me coûterait ? »,
+la seule réponse honnête était « je ne peux pas savoir ».
+
+`.github/workflows/relever-tarifs-ia.yml` déplace la mesure vers une machine qui
+a le réseau — le même remède que `pages.yml` pour le site publié,
+`banc-essai.yml` pour l'espace de travail et `relever-palette.yml` pour les
+modèles du patron. Le script ne devine rien : une page injoignable est rapportée
+comme telle avec son adresse, et il sort en échec si aucune source n'a pu être
+lue.
+
+Deux sources passent déjà depuis l'environnement de développement (Anthropic via
+`docs.claude.com` — la page commerciale, elle, reste refusée ; et Google Speech-
+to-Text). De quoi chiffrer un mois d'Atlas au volume du patron : **2 à 8 $**,
+transcription comprise. Le prix ne décidera donc pas — ce sont les trois
+questions RGPD qui décident, et `TRANSCRIPTION.md` §7 le dit maintenant avec des
+chiffres à l'appui plutôt qu'en s'en excusant.
+
 ### Le tableau des prestataires de transcription disait vrai pour un seul
 
 `docs/TRANSCRIPTION.md` annonçait trois prestataires « déjà écrits et prêts à
 être activés » : OpenAI, Deepgram, Google. En réalité seul OpenAI l'est.
-`providers/transcription/deepgram.ts` et `google.ts` sont des coquilles de
-quatorze lignes qui répondent « fournisseur non implémenté » à chaque appel.
+`src/server/ai/providers/transcription/deepgram.ts` et son voisin `google.ts`
+sont des coquilles de quatorze lignes qui répondent « fournisseur non
+implémenté » à chaque appel.
 
 Ce que ça évitait : le patron doit choisir un prestataire, ouvrir un compte et
 faire rédiger un contrat de sous-traitance avant de brancher quoi que ce soit

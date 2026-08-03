@@ -29,6 +29,13 @@ Arborea. C'est le seul document que son client reçoit, et ce n'était pas le si
 Voir `ARCHITECTURE.md` §16 pour les choix, dont la trace qui rend la mise en page
 vérifiable.
 
+**Et, tout juste, l'IA.** La production refuse désormais de démarrer sur l'IA
+simulée — c'était le dernier repli silencieux vers un comportement de
+développement que `src/server/env.ts` laissait passer. Au passage, les tarifs
+des fournisseurs se relèvent maintenant à leur source depuis une machine GitHub
+(`relever-tarifs-ia.yml`), le réseau de l'agent les refusant : un mois d'Atlas
+au volume du patron coûterait **2 à 8 $**, transcription comprise.
+
 Détail dans `CHANGELOG.md`, état complet dans `PROJECT_STATE.md`.
 
 ## Où reprendre
@@ -62,6 +69,12 @@ site publié à son adresse réelle.
    Actions request. ». Aucune suite ne le voit : elles interrogent toutes
    `127.0.0.1`, où les deux coïncident. C'est le rôle de
    `scripts/verifier-connexion.mjs`, qui pose exprès une origine étrangère.
+0 bis. **Les fabriques d'IA retombent sur `dev` par leur `default:`.** Une faute
+   de frappe dans `LLM_PROVIDER` ou `TRANSCRIPTION_PROVIDER` donnait donc l'IA
+   simulée, sans un mot, et la dictée rendait « [Transcription simulée — … ] ».
+   `src/server/env.ts` refuse maintenant de démarrer en production sur un nom
+   inconnu, sur « dev », ou sur un fournisseur privé de sa clé. En développement
+   rien ne change : le mode simulé y est le fonctionnement normal.
 1. **Une requête hors `withEntreprise()` ne renvoie rien, silencieusement.** Pas
    d'erreur : zéro ligne. Un traitement qui ne trouve rien à faire paraît
    fonctionner. C'est déjà arrivé une fois (la purge d'audio).

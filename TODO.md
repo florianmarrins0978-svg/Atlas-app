@@ -16,7 +16,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 | | Ce qui débloque | Ce que je fais alors |
 |---|---|---|
-| 1 | Deux fournisseurs d'IA retenus | Verrouiller la configuration sur eux, tenir `docs/RGPD.md` §3 à jour |
+| 1 | Deux fournisseurs d'IA retenus | Écrire le raccordement si ce n'est ni `anthropic` ni `openai` (les quatre autres sont des coquilles vides), verrouiller la configuration sur eux, tenir `docs/RGPD.md` §3 à jour |
 | 2 | Contrat de sous-traitance rédigé | Remplacer les canevas sans valeur par les textes réels |
 | 3 | Hébergement européen choisi | Déployer — **sans quoi personne ne peut se servir de l'application** |
 | 4 | Société constituée, assurance souscrite | Rien côté code |
