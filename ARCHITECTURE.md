@@ -298,9 +298,19 @@ commit** — elle n'a jamais été modifiée. Et il n'existe aucune page de devi
 la racine du site du patron : le relevé y reçoit un 404. Sa version terre cuite
 n'est donc plus en ligne nulle part.
 
-La capture vient de son Arborea d'origine, dont la copie s'était écartée **avant
-même d'entrer ici**. **Quand la référence n'est plus joignable, on le dit**, au
-lieu de laisser croire qu'on l'a vérifiée.
+Il avait alors été supposé que la capture venait de son Arborea d'origine, dont
+la copie se serait écartée avant d'entrer ici. **Cette explication-là est fausse
+elle aussi.** Le patron a fourni l'adresse manquante — `…/Arborea-/`, un dépôt
+distinct — et le relevé a comparé les deux sites : ils sont **identiques**,
+variable par variable. `--clay` vaut `#2f3b2f` des deux côtés. Rien n'a divergé
+entre Arborea et sa copie.
+
+**L'origine de la terre cuite de sa capture reste inexpliquée.** Aucune teinte
+chaude n'existe dans `appli/`, ni sur l'un ni sur l'autre site publié. Le seul
+`#B25A2E` du projet est l'accent d'Atlas lui-même
+(`src/lib/design-tokens.ts`). On l'écrit sans le résoudre plutôt que d'inventer
+une troisième explication : **deux ont déjà été affirmées puis démenties, chacune
+parce qu'elle allait au-delà de ce qui avait été mesuré.**
 
 **Le patron a tranché, les deux versions sous les yeux.** Le 3 août 2026, les
 deux devis lui ont été rendus côte à côte — même contenu, seule la teinte
@@ -347,6 +357,16 @@ que le patron regarde.
 soit s'il ne la trouve pas. Une mesure prise sur la mauvaise page serait pire
 que pas de mesure : elle donnerait une réponse fausse avec l'autorité d'un
 chiffre.
+
+**Deux sites comparés valent mieux qu'un relevé isolé.** Tant qu'une seule page
+était relevée, chaque écart appelait une hypothèse. Mises côte à côte, les pages
+d'Arborea et d'Atlas se sont révélées identiques — ce qu'aucune mesure isolée
+n'aurait pu établir, et ce qui a démenti l'hypothèse en cours.
+
+**Attention à ce que compare le rapport.** Il met en regard toutes les pages
+qu'on lui donne, y compris de types différents : une variable propre au devis
+apparaît « absente » sur un écran d'application, et se compte à tort comme un
+écart. Comparer page à page de même nature, jamais le total.
 
 **Ce qu'il a rapporté du premier coup, et qui n'était pas vérifiable autrement :**
 la moitié basse du devis, que la capture du patron ne montrait pas — mention
