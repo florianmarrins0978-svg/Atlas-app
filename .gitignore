@@ -64,3 +64,6 @@ next-env.d.ts
 # de rester devient une suite dans scripts/.
 /.voir-*.mjs
 /.essai-*.mts
+
+# Instantané de Redis, écrit par le service local lancé pour les suites.
+dump.rdb

@@ -240,3 +240,49 @@ santé, qui ne touche ni la base ni le rendu.
 
 **Un contrôle qui ne sait pas échouer ne vaut rien.** Celui-ci a été confronté à
 une base vide et à une base migrée mais non amorcée avant d'être acté.
+
+---
+
+## 16. Le devis reproduit le modèle du patron, et sa mise en page se teste
+
+**Décidé.** `src/server/pdf/devis-pdf.ts` reproduit `appli/devis-modele.html` —
+le modèle que le patron avait construit lui-même pour Arborea. En-tête,
+titre centré, colonnes émetteur/client, tableau réglé, bloc de totaux, notes,
+modalités de paiement, mention légale et cadre de signature : même ordre, mêmes
+libellés, mêmes montants à la française (« 1 400,00 € »).
+
+**Ce qui l'a imposé :** le patron a ouvert le PDF d'Atlas à côté du sien —
+« le devis n'a rien à voir avec celui qu'on a fait pour arborea ». C'est le seul
+document que son client reçoit ; il porte son sérieux, et il n'était pas le sien.
+
+**Ce qui diffère du modèle, et pourquoi :** le nom vient de l'entreprise et
+jamais « Arborea » en dur, car Atlas sert n'importe quel artisan. Les polices
+sont Times et Helvetica : le modèle charge Playfair Display et Inter depuis le
+web, aucune police n'est embarquée dans le dépôt, et un PDF ne va pas les
+chercher. La répartition est respectée — serif là où le modèle met Playfair (le
+titre, les intertitres « Émetteur »/« Client » qui sont des `h3`, le total TTC),
+sans ailleurs, **y compris le nom de l'entreprise** : `.brand-name` est un
+`span`, hors de la règle `h1,h2,h3`.
+
+**Le devis peut tenir sur plusieurs pages.** Le modèle est une page web que le
+navigateur découpe seul ; ici c'est à nous de le faire. Sans cela un devis d'une
+vingtaine de lignes — un chantier sur plusieurs arbres, rien d'extravagant —
+écrivait par-dessus la mention légale et le cadre de signature. Chaque page du
+tableau reporte son en-tête de colonnes, et la numérotation n'apparaît qu'à
+partir de deux pages : le modèle n'en porte pas, mais un devis papier peut
+perdre une feuille sans que personne ne s'en aperçoive.
+
+**Chaque geste est consigné dans une trace** (`composerDevisPdf` renvoie le PDF
+*et* ce qu'il a déposé : textes, traits, cadres, avec leurs coordonnées et leur
+page). C'est ce qui rend la mise en page vérifiable : un PDF ne se relit pas, et
+un intertitre écrit lettre par lettre — le modèle espace les siennes, pdf-lib ne
+sait pas le faire autrement — ne se retrouverait même pas dans le flux.
+`scripts/test-devis-pdf.ts` interroge cette trace, y compris pour la seule chose
+qu'un coup d'œil sur la première page ne voit jamais : qu'aucune ligne ne
+descend sur le cadre de signature.
+
+**Un contrôle qui ne sait pas échouer ne vaut rien.** Chacun de ces contrôles a
+été confronté au défaut qu'il prétend détecter — accent raboté, montant en
+« 1400.00 EUR », pagination retirée, nom d'entreprise figé — et chacun a rougi
+en désignant le bon coupable. Le premier jet cherchait « EUR » n'importe où dans
+le document : il accusait « ÉMETTEUR », qui se termine par ces trois lettres.

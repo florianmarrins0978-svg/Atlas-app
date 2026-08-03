@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-01 · `claude/migrate-app-atlas-zz31ac` · `07fa28c`
+**Point de reprise :** 2026-08-03 · `claude/migrate-app-atlas-zz31ac` · `0eb2ec7`
 
 ---
 
@@ -22,6 +22,12 @@ Next.js avec PostgreSQL, isolée par entreprise via *row level security*.
 Le parcours **devis → réponse du client → chantier → facture → TVA**, de bout en
 bout, avec ses trois points d'arrêt. Plus le suivi de ce que devient un devis une
 fois parti : en attente, à relancer, caduc, retourné, accepté.
+
+Et, en dernier lieu, **le devis PDF** : il reproduit désormais
+`appli/devis-modele.html`, le modèle que le patron avait construit lui-même pour
+Arborea. C'est le seul document que son client reçoit, et ce n'était pas le sien.
+Voir `ARCHITECTURE.md` §16 pour les choix, dont la trace qui rend la mise en page
+vérifiable.
 
 Détail dans `CHANGELOG.md`, état complet dans `PROJECT_STATE.md`.
 
@@ -48,7 +54,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les six pièges de ce dépôt
+### Les huit pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -69,6 +75,16 @@ site publié à son adresse réelle.
 5. **Les suites de bout en bout tournent sous un rôle qui traverse la RLS** parce
    qu'elles inspectent la base. Les suites de dépôt, non — c'est ce qu'elles
    démontrent.
+6. **Une suite `scripts/test-*.ts` s'exécute en CommonJS** : pas d'`await` au
+   premier niveau, sinon esbuild refuse le fichier entier. Envelopper dans
+   `async function main()` puis `main().catch(...)`, comme les suites voisines.
+   Un script de mise au point qui a besoin de l'`await` de premier niveau prend
+   l'extension `.mts` — et n'est alors plus découvert par le lanceur.
+7. **Un PDF ne connaît que WinAnsi.** Les polices standard de pdf-lib refusent
+   tout caractère hors de cet encodage, et l'appel échoue sur la ligne entière.
+   L'espace fine insécable (U+202F) que `toLocaleString('fr-FR')` glisse dans
+   « 1 400,00 € » en fait partie : utiliser l'insécable ordinaire (U+00A0), qui,
+   elle, existe. Le symbole € passe, les accents aussi.
 
 ### Le vocabulaire
 

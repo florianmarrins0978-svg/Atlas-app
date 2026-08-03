@@ -7,6 +7,46 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-03
+
+### Le devis est enfin celui du patron
+
+Le patron a ouvert le PDF d'Atlas à côté de celui qu'il avait construit
+lui-même pour Arborea : « le devis n'a rien à voir avec celui qu'on a fait pour
+arborea, je veux exactement le même, et même à l'impression ce n'est pas le
+même ». Il avait raison — Atlas alignait quelques lignes de texte là où son
+modèle portait un en-tête, un titre centré, deux colonnes émetteur/client, un
+tableau réglé, un bloc de totaux, ses conditions de paiement et un cadre de
+signature.
+
+`src/server/pdf/devis-pdf.ts` reproduit désormais `appli/devis-modele.html` :
+même ordre, mêmes libellés, mêmes montants à la française — « 1 400,00 € » et
+non « 1400.00 EUR ». Les accents ont été rendus aux intertitres (« ÉMETTEUR »,
+« QTÉ », « MODALITÉS DE PAIEMENT ») et à la mention légale, qui reprend mot pour
+mot celle du modèle. Les petites capitales sont espacées comme en CSS, lettre
+par lettre : pdf-lib ne sait pas le faire autrement, et sans cela le document
+perdait exactement ce qui le rendait reconnaissable.
+
+**Le détail qui n'était pas demandé, et qu'il fallait quand même régler :** un
+devis d'une vingtaine de lignes — un chantier sur plusieurs arbres, rien
+d'extravagant — écrivait par-dessus la mention légale et le cadre de signature.
+Le devis se pagine, chaque page du tableau reporte son en-tête de colonnes, et
+la numérotation n'apparaît qu'à partir de deux pages : le modèle n'en porte pas,
+mais une feuille de devis peut se perdre.
+
+**Ce que ça a demandé pour être vérifiable.** Un PDF ne se relit pas, et un
+intertitre écrit lettre par lettre ne se retrouve même pas dans son flux.
+`composerDevisPdf` renvoie donc le PDF *et* la trace de ce qu'il a déposé —
+textes, traits, cadres, avec leurs coordonnées et leur page.
+`scripts/test-devis-pdf.ts` l'interroge, dix contrôles, dont celui qu'aucun coup
+d'œil sur la première page ne remplace : aucune ligne ne descend sur le cadre de
+signature. Chacun a été confronté au défaut qu'il prétend détecter avant d'être
+acté ; le premier jet cherchait « EUR » n'importe où et accusait « ÉMETTEUR ».
+
+Détail des choix dans `ARCHITECTURE.md` §16.
+
+---
+
 ## 2026-08-02
 
 ### Le dernier mètre existe : le message s'ouvre tout prêt
