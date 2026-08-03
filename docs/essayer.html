@@ -159,6 +159,19 @@
 <hr>
 <h2 id="si-quelque-chose-ne-va-pas">Si quelque chose ne va pas</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>L'éditeur affiche « The workbench failed to connect to the server », « An unexpected error occurred that requires a reload of this page », ou « Déconnecté de codespace » en bas de l'écran.</strong> Ce n'est pas Atlas : c'est <strong>l'éditeur</strong> qui n'a pas réussi à joindre l'espace de travail. L'application, elle, n'est pas concernée — elle tourne dans l'espace, pas dans l'éditeur.</p>
+<p>C'est le cas typique du téléphone : l'espace s'était endormi, l'éditeur a voulu se reconnecter, et il a renoncé avant que le réveil ne soit terminé (« deadline exceeded » = *j'ai attendu trop longtemps*).</p>
+<p>Dans l'ordre :</p>
+<ol>
+<li><strong>Touchez « Reload ».</strong> Neuf fois sur dix l'espace a fini de se réveiller entre-temps.</li>
+<li>Si le message revient : rouvrez l'espace depuis <code>github.com/codespaces</code> (cela redémarre un espace arrêté, ce qu'un simple rechargement ne fait pas).</li>
+<li><strong>Surtout : n'attendez pas l'éditeur pour vous servir d'Atlas.</strong> L'application démarre toute seule à chaque allumage et son adresse est ouverte — allez-y directement :</li>
+</ol>
+<p>``<code> https://&lt;nom-de-l-espace&gt;-3000.app.github.dev </code>``</p>
+<p>C'est le même nom que dans la barre d'adresse de l'éditeur, avec <code>-3000</code> ajouté et <code>.app.github.dev</code> à la place de <code>.github.dev</code>.</p>
+<ol>
+<li>Si l'espace date d'avant le 2026-08-01, supprimez-le et créez-en un neuf : le démarrage automatique et le port ouvert sont lus <strong>à la création</strong> (encadré du geste 1).</li>
+</ol>
 <p><strong>La page reste blanche depuis le téléphone.</strong> Blanche, pas crème : ce n'est pas un écran de l'application qui s'affiche mal, c'est qu'aucune page n'arrive. Trois causes, dans l'ordre de fréquence :</p>
 <ol>
 <li><strong>L'application n'est pas encore prête.</strong> C'est de loin la cause la plus fréquente. Le premier écran met une à deux minutes à se compiler après l'allumage. <strong>Attendez, puis rechargez la page</strong> — ne concluez rien avant.</li>

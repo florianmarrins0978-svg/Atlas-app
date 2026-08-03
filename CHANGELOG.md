@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-08-03
 
+### « Déconnecté de codespace » ne veut pas dire « Atlas est en panne »
+
+Le patron a envoyé une capture de son téléphone : *The workbench failed to
+connect to the server (Error: deadline exceeded)*, et en bas **« Déconnecté de
+codespace »**. Un seul mot avec : « Problème ».
+
+Ce n'était pas Atlas — c'était l'éditeur qui n'avait pas réussi à joindre
+l'espace de travail réveillé de sa veille. Mais rien dans `docs/ESSAYER.md` ne
+le disait : la section de dépannage couvrait la page blanche, `Missing script`,
+`EADDRINUSE`, le port pris — jamais l'éditeur lui-même. Le patron n'avait donc
+aucun moyen de savoir que **l'éditeur ne lui sert à rien pour ouvrir Atlas** :
+l'application démarre seule à chaque allumage, et son adresse est ouverte.
+
+Le cas est écrit, en tête de la section de dépannage puisque c'est la première
+chose qu'il voit : recharger, rouvrir depuis `github.com/codespaces`, et surtout
+aller droit à `https://<nom-de-l-espace>-3000.app.github.dev` sans attendre
+l'éditeur.
+
 ### Le devis est enfin celui du patron
 
 Le patron a ouvert le PDF d'Atlas à côté de celui qu'il avait construit

@@ -174,6 +174,36 @@ Le compte gratuit inclut 60 heures par mois, largement de quoi essayer.
 
 ## Si quelque chose ne va pas
 
+**L'éditeur affiche « The workbench failed to connect to the server », « An
+unexpected error occurred that requires a reload of this page », ou « Déconnecté
+de codespace » en bas de l'écran.** Ce n'est pas Atlas : c'est **l'éditeur** qui
+n'a pas réussi à joindre l'espace de travail. L'application, elle, n'est pas
+concernée — elle tourne dans l'espace, pas dans l'éditeur.
+
+C'est le cas typique du téléphone : l'espace s'était endormi, l'éditeur a voulu
+se reconnecter, et il a renoncé avant que le réveil ne soit terminé
+(« deadline exceeded » = *j'ai attendu trop longtemps*).
+
+Dans l'ordre :
+
+1. **Touchez « Reload ».** Neuf fois sur dix l'espace a fini de se réveiller
+   entre-temps.
+2. Si le message revient : rouvrez l'espace depuis `github.com/codespaces`
+   (cela redémarre un espace arrêté, ce qu'un simple rechargement ne fait pas).
+3. **Surtout : n'attendez pas l'éditeur pour vous servir d'Atlas.** L'application
+   démarre toute seule à chaque allumage et son adresse est ouverte — allez-y
+   directement :
+
+   ```
+   https://<nom-de-l-espace>-3000.app.github.dev
+   ```
+
+   C'est le même nom que dans la barre d'adresse de l'éditeur, avec `-3000`
+   ajouté et `.app.github.dev` à la place de `.github.dev`.
+4. Si l'espace date d'avant le 2026-08-01, supprimez-le et créez-en un neuf :
+   le démarrage automatique et le port ouvert sont lus **à la création**
+   (encadré du geste 1).
+
 **La page reste blanche depuis le téléphone.** Blanche, pas crème : ce n'est pas
 un écran de l'application qui s'affiche mal, c'est qu'aucune page n'arrive.
 Trois causes, dans l'ordre de fréquence :
