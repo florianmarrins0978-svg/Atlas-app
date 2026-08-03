@@ -55,11 +55,28 @@ peut seulement **choisir à qui**, et **combien de temps ça reste chez eux**.
 
 ### Ce qu'il faut décider
 
-Le code accepte aujourd'hui **six fournisseurs interchangeables**. Il en faut
-**deux** :
+Il faut **deux** prestataires :
 
 - un pour la **transcription** (l'audio → du texte) ;
 - un pour le **raisonnement** (le texte → des informations structurées).
+
+Le code sait en accueillir six, mais **deux seulement sont écrits** aujourd'hui —
+un par besoin :
+
+| Besoin | Écrit et prêt | Simples coquilles |
+|---|---|---|
+| Transcription | **OpenAI** (Whisper) | Deepgram, Google |
+| Raisonnement | **Anthropic** (Claude) | OpenAI, Gemini |
+
+Une coquille répond « fournisseur non implémenté » à chaque appel : l'activer
+mettrait la dictée en panne. Compter **une demi-journée** pour en finir une, le
+jour où votre choix tombe dessus. Ce n'est pas ce qui doit décider — mais mieux
+vaut le savoir avant d'ouvrir un compte et de payer un contrat.
+
+> Ce paragraphe annonçait « six fournisseurs interchangeables ». C'était faux, et
+> corrigé le 3 août 2026 : deux d'entre eux seulement fonctionnent.
+> [`TRANSCRIPTION.md`](TRANSCRIPTION.md) porte le même détail, candidat par
+> candidat.
 
 ### Les trois points à vérifier chez chacun
 
