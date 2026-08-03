@@ -1,180 +1,166 @@
 import { chromium } from "playwright";
 
-// Relève les couleurs et les polices **calculées** sur le devis d'origine.
+// Relève les couleurs et les polices **calculées** sur une ou plusieurs pages
+// publiées, et les met en regard.
 //
 // Lancé par `.github/workflows/relever-palette.yml`, sur une machine qui a
-// accès au site publié — ce que l'environnement de développement n'a pas.
+// accès aux sites publiés — ce que l'environnement de développement n'a pas
+// (`403 à CONNECT — policy denial` sur `github.io`).
 //
-// Deux partis pris qui comptent :
+// Trois partis pris qui comptent :
 //
 // - **On lit ce que le navigateur calcule, pas ce que le CSS déclare.** Une
 //   variable surchargée, une règle plus spécifique, une feuille distante :
 //   toutes changeraient la couleur sans toucher au `:root`. C'est la couleur à
 //   l'écran qui fait foi, puisque c'est elle que le patron regarde.
-// - **On cherche la page plutôt que de la supposer.** L'adresse exacte du devis
-//   n'est pas connue : on essaie les chemins plausibles, puis on suit les liens
-//   de l'accueil. Un relevé fait sur la mauvaise page serait pire que pas de
-//   relevé — il donnerait une réponse fausse avec l'autorité d'une mesure.
+// - **On récolte TOUTES les variables déclarées, sans en connaître les noms.**
+//   Une première version interrogeait une liste écrite à la main : elle aurait
+//   manqué en silence toute variable absente de cette liste — c'est-à-dire
+//   précisément celle qui explique un écart qu'on ne comprend pas.
+// - **On compare plusieurs pages dans une même exécution.** Deux sites publiés
+//   côte à côte se répondent : c'est le seul moyen de dire *ce qui* diffère,
+//   au lieu de constater que quelque chose diffère.
 
-const BASE = (process.env.BASE || "https://florianmarrins0978-svg.github.io").replace(/\/+$/, "");
+const PAGES = (process.env.PAGES || "")
+  .split(",")
+  .map((u) => u.trim())
+  .filter(Boolean);
 
-/** Les éléments dont la teinte a compté, et ceux qui pourraient compter ensuite. */
-const CIBLES = [
-  { nom: "intertitre de partie (ÉMETTEUR / CLIENT)", selecteur: ".party h3" },
-  { nom: "nom de l'entreprise", selecteur: ".brand-name" },
-  { nom: "sous-titre de l'entreprise", selecteur: ".brand-tagline" },
-  { nom: "titre du document (DEVIS)", selecteur: ".doc-title h1" },
-  { nom: "étiquette des références (Devis n°)", selecteur: ".doc-meta label" },
-  { nom: "en-tête de colonne (DESCRIPTION)", selecteur: "thead th" },
-  { nom: "intertitre de bloc (NOTES / CONDITIONS)", selecteur: ".notes label" },
-  { nom: "total final (Total TTC)", selecteur: ".total-final" },
-  { nom: "mention légale", selecteur: ".doc-footer .legal" },
-  { nom: "légende de signature", selecteur: ".signature p" },
-  { nom: "papier", selecteur: ".page" },
-  { nom: "texte saisi", selecteur: ".party.editable input" },
-  { nom: "fond d'un champ", selecteur: ".party.editable input" },
-];
+if (PAGES.length === 0) {
+  console.error("❌ Aucune page à relever : renseigner PAGES (adresses séparées par des virgules).");
+  process.exit(1);
+}
 
 /** `rgb(178, 90, 46)` → `#b25a2e`, pour que la comparaison soit lisible. */
 function enHexa(couleur) {
   const m = String(couleur).match(/rgba?\(([^)]+)\)/);
-  if (!m) return couleur;
+  if (!m) return String(couleur);
   const [r, v, b] = m[1].split(",").map((n) => Math.round(parseFloat(n)));
   return `#${[r, v, b].map((n) => n.toString(16).padStart(2, "0")).join("")}`;
 }
 
 const navigateur = await chromium.launch();
-const page = await navigateur.newPage();
+const releves = [];
 
-// ─── Trouver le devis ───────────────────────────────────────────────────────
-const candidats = [
-  `${BASE}/devis-modele.html`,
-  `${BASE}/devis.html`,
-  `${BASE}/Atlas-app/devis-modele.html`,
-  `${BASE}/`,
-];
-
-let trouvee = null;
-const journal = [];
-
-for (const url of candidats) {
+for (const url of PAGES) {
+  const page = await navigateur.newPage();
+  const releve = { url };
   try {
-    const reponse = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
-    const code = reponse ? reponse.status() : 0;
-    // La bonne page est celle qui porte les deux colonnes du devis. Un simple
-    // 200 ne suffit pas : un site sans page 404 renvoie 200 sur n'importe quoi.
-    const estDevis = (await page.locator(".party h3").count()) > 0;
-    journal.push(`${code}  ${estDevis ? "devis" : "autre"}  ${url}`);
-    if (code === 200 && estDevis) {
-      trouvee = url;
-      break;
+    const reponse = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 40000 });
+    releve.code = reponse ? reponse.status() : 0;
+    if (releve.code !== 200) {
+      releves.push(releve);
+      await page.close();
+      continue;
     }
-  } catch (e) {
-    journal.push(`err       ${url} — ${e.message.split("\n")[0]}`);
-  }
-}
 
-// Rien parmi les chemins essayés : suivre les liens de l'accueil.
-if (!trouvee) {
-  try {
-    await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded", timeout: 30000 });
-    const liens = await page.evaluate(() =>
-      [...document.querySelectorAll("a[href]")].map((a) => a.href).filter((h) => /devis/i.test(h))
-    );
-    journal.push(`liens « devis » trouvés sur l'accueil : ${liens.length ? liens.join(", ") : "aucun"}`);
-    for (const lien of liens) {
-      await page.goto(lien, { waitUntil: "domcontentloaded", timeout: 30000 });
-      if ((await page.locator(".party h3").count()) > 0) {
-        trouvee = lien;
-        break;
+    // Les polices web s'affichent le temps de se charger : sans cette attente,
+    // on relèverait la police de repli et non celle de la page.
+    await page.waitForLoadState("networkidle").catch(() => {});
+    await page.evaluate(() => document.fonts.ready).catch(() => {});
+
+    // Toutes les variables déclarées, quels que soient leurs noms. On lit les
+    // feuilles de style plutôt que d'interroger des noms devinés.
+    releve.variables = await page.evaluate(() => {
+      const trouvees = {};
+      for (const feuille of document.styleSheets) {
+        let regles;
+        try {
+          regles = feuille.cssRules;
+        } catch {
+          continue; // feuille distante non lisible : on passe, sans mentir dessus
+        }
+        for (const regle of regles) {
+          if (!regle.style || !regle.selectorText) continue;
+          for (const propriete of regle.style) {
+            if (propriete.startsWith("--")) {
+              trouvees[propriete] = regle.style.getPropertyValue(propriete).trim();
+            }
+          }
+        }
       }
-    }
+      return trouvees;
+    });
+
+    releve.titre = await page.title();
+
+    // Ce que la page montre réellement, sur ce qu'elle contient.
+    releve.elements = await page.evaluate(() => {
+      const CIBLES = [
+        ["fond de page", "body"],
+        ["carte / feuille", ".page, .card, main"],
+        ["premier titre", "h1"],
+        ["intertitre de partie", ".party h3"],
+        ["en-tête de colonne", "thead th"],
+        ["bouton principal", "button, .btn-print, .btn"],
+        ["lien", "a"],
+      ];
+      return CIBLES.map(([nom, selecteur]) => {
+        const el = document.querySelector(selecteur);
+        if (!el) return { nom, absent: true };
+        const s = getComputedStyle(el);
+        return {
+          nom,
+          couleur: s.color,
+          fond: s.backgroundColor,
+          police: s.fontFamily,
+          corps: s.fontSize,
+        };
+      });
+    });
   } catch (e) {
-    journal.push(`accueil injoignable — ${e.message.split("\n")[0]}`);
+    releve.erreur = e.message.split("\n")[0];
   }
+  releves.push(releve);
+  await page.close();
 }
-
-console.log("=== Ce qui a été essayé ===");
-for (const l of journal) console.log(`  ${l}`);
-
-if (!trouvee) {
-  console.error("\n❌ Aucune page de devis trouvée sous " + BASE);
-  console.error("   Rien n'est relevé : mieux vaut pas de mesure qu'une mesure prise ailleurs.");
-  await navigateur.close();
-  process.exit(1);
-}
-
-console.log(`\n=== Page relevée ===\n  ${trouvee}\n`);
-
-// Les polices s'affichent le temps de se charger : sans cette attente, on
-// relèverait la police de repli et non celle du modèle.
-await page.waitForLoadState("networkidle").catch(() => {});
-try {
-  await page.evaluate(() => document.fonts.ready);
-} catch {
-  /* navigateur sans l'API : on relève quand même le reste */
-}
-
-// ─── Ce que le navigateur calcule ───────────────────────────────────────────
-const releve = await page.evaluate((cibles) => {
-  return cibles.map(({ nom, selecteur }) => {
-    const el = document.querySelector(selecteur);
-    if (!el) return { nom, selecteur, absent: true };
-    const s = getComputedStyle(el);
-    return {
-      nom,
-      selecteur,
-      couleur: s.color,
-      fond: s.backgroundColor,
-      police: s.fontFamily,
-      graisse: s.fontWeight,
-      corps: s.fontSize,
-      approche: s.letterSpacing,
-      casse: s.textTransform,
-    };
-  });
-}, CIBLES);
-
-console.log("=== Couleurs et polices calculées ===");
-for (const r of releve) {
-  if (r.absent) {
-    console.log(`  ${r.nom}\n      absent de la page (${r.selecteur})`);
-    continue;
-  }
-  console.log(`  ${r.nom}  [${r.selecteur}]`);
-  console.log(`      texte   ${enHexa(r.couleur)}   fond ${enHexa(r.fond)}`);
-  console.log(
-    `      police  ${r.police}  ${r.graisse}  ${r.corps}  approche ${r.approche}  casse ${r.casse}`
-  );
-}
-
-// ─── Les variables déclarées, pour comparer avec la copie du dépôt ──────────
-const variables = await page.evaluate(() => {
-  const s = getComputedStyle(document.documentElement);
-  const noms = [
-    "--cream", "--paper", "--paper-warm", "--forest-deep", "--forest", "--forest-mid",
-    "--sage", "--sage-light", "--clay", "--clay-light", "--ink", "--rust",
-  ];
-  const trouvees = {};
-  for (const n of noms) {
-    const v = s.getPropertyValue(n).trim();
-    if (v) trouvees[n] = v;
-  }
-  return trouvees;
-});
-
-console.log("\n=== Variables déclarées sur :root ===");
-const entrees = Object.entries(variables);
-if (entrees.length === 0) console.log("  aucune");
-for (const [n, v] of entrees) console.log(`  ${n.padEnd(16)} ${v}`);
-
-// Le titre et l'ordre des blocs : de quoi voir si la structure elle-même
-// diffère de la copie, et pas seulement ses couleurs.
-const structure = await page.evaluate(() =>
-  [...document.querySelectorAll(".page > *")].map((el) => el.className || el.tagName.toLowerCase())
-);
-console.log("\n=== Blocs de la page, dans l'ordre ===");
-for (const b of structure) console.log(`  ${b}`);
 
 await navigateur.close();
+
+// ─── Rapport ────────────────────────────────────────────────────────────────
+for (const r of releves) {
+  console.log(`\n${"═".repeat(76)}`);
+  console.log(`  ${r.url}`);
+  if (r.erreur) {
+    console.log(`  ❌ injoignable — ${r.erreur}`);
+    continue;
+  }
+  if (r.code !== 200) {
+    console.log(`  ❌ code HTTP ${r.code} — rien relevé`);
+    continue;
+  }
+  console.log(`  « ${r.titre} »`);
+  console.log(`${"═".repeat(76)}`);
+
+  console.log("\n  Variables déclarées");
+  const noms = Object.keys(r.variables).sort();
+  if (noms.length === 0) console.log("    aucune");
+  for (const n of noms) console.log(`    ${n.padEnd(20)} ${r.variables[n]}`);
+
+  console.log("\n  Ce que la page affiche");
+  for (const e of r.elements) {
+    if (e.absent) continue;
+    console.log(`    ${e.nom.padEnd(24)} texte ${enHexa(e.couleur)}  fond ${enHexa(e.fond)}  ${e.police}`);
+  }
+}
+
+// ─── Ce qui diffère, nommément ──────────────────────────────────────────────
+const lisibles = releves.filter((r) => r.variables);
+if (lisibles.length >= 2) {
+  console.log(`\n${"═".repeat(76)}`);
+  console.log("  CE QUI DIFFÈRE ENTRE LES DEUX PAGES");
+  console.log(`${"═".repeat(76)}\n`);
+  const tous = [...new Set(lisibles.flatMap((r) => Object.keys(r.variables)))].sort();
+  let ecarts = 0;
+  for (const n of tous) {
+    const valeurs = lisibles.map((r) => r.variables[n] ?? "(absente)");
+    if (new Set(valeurs).size > 1) {
+      ecarts++;
+      console.log(`  ${n}`);
+      lisibles.forEach((r, i) => console.log(`      ${valeurs[i].padEnd(14)} ${r.url}`));
+    }
+  }
+  console.log(ecarts === 0 ? "  Aucun écart de variable." : `\n  ${ecarts} variable(s) divergente(s).`);
+}
+
 console.log("\n✅ Relevé terminé.");

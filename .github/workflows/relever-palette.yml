@@ -25,10 +25,10 @@ name: Relever la palette du devis d'origine
 on:
   workflow_dispatch:
     inputs:
-      base:
-        description: "Adresse du site à relever"
+      pages:
+        description: "Adresses à relever, séparées par des virgules"
         required: false
-        default: "https://florianmarrins0978-svg.github.io"
+        default: "https://florianmarrins0978-svg.github.io/Arborea-/devis-modele.html,https://florianmarrins0978-svg.github.io/Atlas-app/devis-modele.html,https://florianmarrins0978-svg.github.io/Arborea-/app.html,https://florianmarrins0978-svg.github.io/Atlas-app/app.html"
   push:
     paths:
       - ".github/workflows/relever-palette.yml"
@@ -58,5 +58,5 @@ jobs:
 
       - name: Relever
         env:
-          BASE: ${{ github.event.inputs.base || 'https://florianmarrins0978-svg.github.io' }}
+          PAGES: ${{ github.event.inputs.pages || 'https://florianmarrins0978-svg.github.io/Arborea-/devis-modele.html,https://florianmarrins0978-svg.github.io/Atlas-app/devis-modele.html,https://florianmarrins0978-svg.github.io/Arborea-/app.html,https://florianmarrins0978-svg.github.io/Atlas-app/app.html'
         run: node scripts/relever-palette.mjs
