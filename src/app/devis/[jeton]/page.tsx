@@ -83,22 +83,6 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
           {d.clientNom && <p className="mt-1 text-[14px] text-ink/70">Pour {d.clientNom}</p>}
           {d.adresseChantier && <p className="text-[13px] text-ink/50">{d.adresseChantier}</p>}
 
-          <table className="mt-4 w-full text-[14px]">
-            <tbody>
-              {d.lignes.map((l, i) => (
-                <tr key={i} className="border-b border-black/5 last:border-0">
-                  <td className="py-1.5 pr-2 text-ink/80">{l.libelle}</td>
-                  <td className="py-1.5 text-right tabular-nums text-ink/60 whitespace-nowrap">
-                    {Number(l.quantite)} × {euros(l.prixUnitaire)}
-                  </td>
-                  <td className="py-1.5 pl-2 text-right tabular-nums text-ink whitespace-nowrap">
-                    {euros(l.montant)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
           <dl className="mt-4 flex flex-col gap-1 border-t border-black/10 pt-3 text-[14px]">
             <div className="flex justify-between text-ink/60">
               <dt>Total HT</dt>
@@ -113,6 +97,24 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
               <dd className="tabular-nums">{euros(d.totalTtc)}</dd>
             </div>
           </dl>
+
+          {/* Le détail des prestations a quitté cette page, à la demande du
+              patron. Il vit dans le PDF, et ce lien y mène : sans lui, le
+              client accepterait un total sans pouvoir consulter ce qu'il paie
+              — son accord porte pourtant sur le contenu exact, et un devis de
+              travaux doit détailler chaque prestation.
+
+              Le patron pensait le PDF joint au mail. Il ne l'est pas : le
+              partage n'envoie que du texte, et un `mailto:` ne peut porter
+              aucune pièce. Le client ne reçoit qu'un lien — celui-ci. */}
+          <a
+            href={`/devis/${envoi.jeton}/pdf`}
+            target="_blank"
+            rel="noopener"
+            className="mt-3 block text-[13px] text-ink/50 underline underline-offset-4"
+          >
+            Voir le devis complet (PDF)
+          </a>
         </header>
 
         <FormulaireReponse envoi={envoi} aujourdHui={aujourdHuiIso()} />

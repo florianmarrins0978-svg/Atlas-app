@@ -4,6 +4,8 @@ import { hashSync } from "bcryptjs";
 import { pool, db } from "./client";
 import { createHash } from "node:crypto";
 import { attribuerNumeroDevis } from "../repositories/devis";
+import { genererPdfDevis } from "../pdf/devis-pdf";
+import { enregistrerObjet } from "../storage";
 import { creerPrestationCatalogue } from "../repositories/catalogue-prestations";
 import { creerMaterielCatalogue } from "../repositories/catalogue-materiels";
 import {
@@ -338,7 +340,56 @@ async function main() {
     );
 
     // Transition brouillon -> envoye, autorisée par le trigger d'immuabilité.
-    await tx.update(devis).set({ statut: "envoye", envoyeLe: new Date() }).where(sql`id = ${d.id}`);
+    //
+    // Le PDF est archivé dans le même geste, comme le fait `envoyerDevis` en
+    // vrai. Sans lui, le devis était marqué envoyé mais aucun document n'existait
+    // : le lien « Voir le devis complet » que le client ouvre depuis sa page
+    // renvoyait un 404 sur le banc d'essai. Une démonstration qui se contredit
+    // fait perdre plus de temps qu'elle n'en gagne — c'est déjà arrivé une fois
+    // sur ce même devis.
+    const pdfDemo = await genererPdfDevis({
+      numeroCommercial: d.numeroCommercial,
+      numeroVersion: d.numeroVersion,
+      statut: "envoye",
+      dateEmission: d.dateEmission,
+      entrepriseNom: d.entrepriseNom,
+      entrepriseAdresse: d.entrepriseAdresse,
+      entrepriseSiret: d.entrepriseSiret,
+      entrepriseTelephone: d.entrepriseTelephone,
+      entrepriseEmail: d.entrepriseEmail,
+      entrepriseIban: d.entrepriseIban,
+      clientNom: d.clientNom,
+      clientAdresse: d.clientAdresse,
+      clientTelephone: d.clientTelephone,
+      adresseChantier: d.adresseChantier,
+      conditionsPaiement: d.conditionsPaiement,
+      devise: d.devise,
+      tauxTva: d.tauxTva,
+      totalHt: d.totalHt,
+      totalTva: d.totalTva,
+      totalTtc: d.totalTtc,
+      lignes: lignesToiture.map((l) => ({
+        libelle: l.libelle,
+        quantite: "1",
+        prixUnitaire: l.montant,
+        montant: l.montant,
+      })),
+    });
+    const objetDemo = await enregistrerObjet(
+      `chantiers/${d.chantierId}/devis`,
+      Buffer.from(pdfDemo),
+      ".pdf"
+    );
+
+    await tx
+      .update(devis)
+      .set({
+        statut: "envoye",
+        envoyeLe: new Date(),
+        pdfStorageKey: objetDemo.storageKey,
+        pdfChecksum: objetDemo.checksum,
+      })
+      .where(sql`id = ${d.id}`);
 
     // Et l'envoi qui va avec.
     //
