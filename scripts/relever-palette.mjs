@@ -21,15 +21,23 @@ import { chromium } from "playwright";
 //   côte à côte se répondent : c'est le seul moyen de dire *ce qui* diffère,
 //   au lieu de constater que quelque chose diffère.
 
-const PAGES = (process.env.PAGES || "")
+// Les deux sites à mettre en regard. Ils vivent ici, et non dans le workflow :
+// une longue valeur par défaut dans un `workflow_dispatch` a fait refuser le
+// fichier au démarrage, sans qu'aucun job ne soit créé ni aucun journal écrit.
+// La liste appartient de toute façon à la logique de comparaison.
+const PAR_DEFAUT = [
+  "https://florianmarrins0978-svg.github.io/Arborea-/devis-modele.html",
+  "https://florianmarrins0978-svg.github.io/Atlas-app/devis-modele.html",
+  "https://florianmarrins0978-svg.github.io/Arborea-/app.html",
+  "https://florianmarrins0978-svg.github.io/Atlas-app/app.html",
+];
+
+const demandees = (process.env.PAGES || "")
   .split(",")
   .map((u) => u.trim())
   .filter(Boolean);
 
-if (PAGES.length === 0) {
-  console.error("❌ Aucune page à relever : renseigner PAGES (adresses séparées par des virgules).");
-  process.exit(1);
-}
+const PAGES = demandees.length > 0 ? demandees : PAR_DEFAUT;
 
 /** `rgb(178, 90, 46)` → `#b25a2e`, pour que la comparaison soit lisible. */
 function enHexa(couleur) {

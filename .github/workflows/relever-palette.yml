@@ -26,9 +26,9 @@ on:
   workflow_dispatch:
     inputs:
       pages:
-        description: "Adresses à relever, séparées par des virgules"
+        description: "Adresses à relever, séparées par des virgules (vide = la liste du script)"
         required: false
-        default: "https://florianmarrins0978-svg.github.io/Arborea-/devis-modele.html,https://florianmarrins0978-svg.github.io/Atlas-app/devis-modele.html,https://florianmarrins0978-svg.github.io/Arborea-/app.html,https://florianmarrins0978-svg.github.io/Atlas-app/app.html"
+        default: ""
   push:
     paths:
       - ".github/workflows/relever-palette.yml"
@@ -58,5 +58,5 @@ jobs:
 
       - name: Relever
         env:
-          PAGES: ${{ github.event.inputs.pages || 'https://florianmarrins0978-svg.github.io/Arborea-/devis-modele.html,https://florianmarrins0978-svg.github.io/Atlas-app/devis-modele.html,https://florianmarrins0978-svg.github.io/Arborea-/app.html,https://florianmarrins0978-svg.github.io/Atlas-app/app.html'
+          PAGES: ${{ github.event.inputs.pages }}
         run: node scripts/relever-palette.mjs
