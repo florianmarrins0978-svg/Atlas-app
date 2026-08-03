@@ -43,6 +43,35 @@ d'œil sur la première page ne remplace : aucune ligne ne descend sur le cadre 
 signature. Chacun a été confronté au défaut qu'il prétend détecter avant d'être
 acté ; le premier jet cherchait « EUR » n'importe où et accusait « ÉMETTEUR ».
 
+### La facture a enfin son document
+
+Le devis produisait un PDF ; la facture, non — seulement un écran de
+confirmation. Le patron validait donc un montant sans avoir jamais vu la pièce
+que son client recevrait, alors que c'est précisément ce que l'arrêt 3 lui
+demande de vérifier.
+
+La facture a maintenant son PDF, sur le modèle `appli/facture-modele.html` :
+numéro, date d'émission, date d'échéance, rappel du devis d'origine, mentions
+légales de retard de paiement — et **aucun cadre de signature**, une facture se
+règle. Un lien « Voir la facture en PDF » l'ouvre depuis l'écran.
+
+**Une seule mise en page pour les deux pièces.** Plutôt que de copier cinq cents
+lignes, le moteur a été extrait dans `document-commun.ts`. La refonte a été
+prouvée sans effet : le devis rendu avant et après est identique **au pixel
+près**.
+
+**Un piège évité, et il aurait été coûteux :** le modèle porte la mention « TVA
+non applicable, art. 293 B du CGI » avec la consigne « à retirer si vous êtes
+assujetti ». Elle ne s'imprime désormais que si le taux appliqué est nul — une
+facture qui annonce « TVA (10 %) » et la franchise dans la même page est une
+facture fausse.
+
+Onze contrôles, chacun confronté au défaut qu'il prétend détecter : cadre de
+signature ajouté, échéance inventée, franchise annoncée à tort, rappel du devis
+retiré, mention de pénalité amputée. Chacun a rougi en désignant le bon coupable.
+
+Détail dans `ARCHITECTURE.md` §19.
+
 ### L'application reprend la charte d'Arborea
 
 Le patron a fourni l'adresse de son Arborea d'origine et posé la bonne

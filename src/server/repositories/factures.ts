@@ -11,6 +11,8 @@ import {
   lignesFacture,
 } from "../db/schema";
 import type { Ctx } from "./context";
+import { genererPdfFacture, type FacturePdfData } from "../pdf/facture-pdf";
+import { enregistrerObjet } from "../storage";
 
 // Fin de chantier, facture et TVA — docs/AGENT.md §2.3.
 //
@@ -190,6 +192,75 @@ export class FactureDejaEmiseError extends Error {
  * ne correspondrait pas à son détail est le genre d'erreur qu'on ne rattrape
  * que par un avoir.
  */
+/**
+ * Rassemble ce que la facture imprime.
+ *
+ * Une seule construction pour l'aperçu et pour l'émission : deux finiraient par
+ * ne plus décrire la même pièce, et l'écart n'apparaîtrait que chez le client.
+ */
+function donneesFacture(
+  f: typeof factures.$inferSelect,
+  lignes: (typeof lignesFacture.$inferSelect)[],
+  numeroDevis: string | null
+): FacturePdfData {
+  return {
+    numeroCommercial: f.numeroCommercial,
+    statut: f.statut as "brouillon" | "emise",
+    dateEmission: f.dateEmission,
+    dateEcheance: f.dateEcheance,
+    numeroDevis,
+    entrepriseNom: f.entrepriseNom,
+    entrepriseAdresse: f.entrepriseAdresse,
+    entrepriseSiret: f.entrepriseSiret,
+    entrepriseTelephone: f.entrepriseTelephone,
+    entrepriseEmail: f.entrepriseEmail,
+    entrepriseIban: f.entrepriseIban,
+    clientNom: f.clientNom,
+    clientAdresse: f.clientAdresse,
+    clientTelephone: f.clientTelephone,
+    adresseChantier: f.adresseChantier,
+    conditionsPaiement: f.conditionsPaiement,
+    devise: f.devise,
+    tauxTva: f.tauxTva,
+    totalHt: f.totalHt,
+    totalTva: f.totalTva,
+    totalTtc: f.totalTtc,
+    lignes: lignes
+      .slice()
+      .sort((a, b) => a.ordre - b.ordre)
+      .map((l) => ({
+        libelle: l.libelle,
+        quantite: l.quantite,
+        prixUnitaire: l.prixUnitaire,
+        montant: l.montant,
+      })),
+  };
+}
+
+/**
+ * Le PDF d'une facture non encore émise, à la demande et jamais conservé.
+ *
+ * Comme pour le devis : seule la pièce réellement émise est archivée, et c'est
+ * celle-là qui fait foi. Un brouillon régénéré à chaque ouverture ne peut pas
+ * être pris pour la facture officielle.
+ */
+export async function genererPdfFacturePourApercu(ctx: Ctx, factureId: string): Promise<Uint8Array> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [f] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
+    if (!f) throw new Error("Facture introuvable");
+    const lignes = await tx
+      .select()
+      .from(lignesFacture)
+      .where(eq(lignesFacture.factureId, factureId));
+    const [d] = await tx
+      .select({ numero: devis.numeroCommercial })
+      .from(devis)
+      .where(eq(devis.id, f.devisId))
+      .limit(1);
+    return genererPdfFacture(donneesFacture(f, lignes, d?.numero ?? null));
+  });
+}
+
 export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Date = new Date()) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [avant] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
@@ -205,6 +276,35 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     const totalTva = totalHt.times(new Decimal(avant.tauxTva)).dividedBy(100);
     const totalTtc = totalHt.plus(totalTva);
 
+    // La pièce est figée au moment de l'émission, jamais régénérée ensuite :
+    // une facture émise est immuable (trigger PostgreSQL), et un PDF reconstruit
+    // depuis les données du jour ne serait plus celui que le client a reçu.
+    const [d] = await tx
+      .select({ numero: devis.numeroCommercial })
+      .from(devis)
+      .where(eq(devis.id, avant.devisId))
+      .limit(1);
+
+    const pdfBytes = await genererPdfFacture(
+      donneesFacture(
+        {
+          ...avant,
+          statut: "emise",
+          totalHt: totalHt.toFixed(2),
+          totalTva: totalTva.toFixed(2),
+          totalTtc: totalTtc.toFixed(2),
+        },
+        lignes,
+        d?.numero ?? null
+      )
+    );
+
+    const objet = await enregistrerObjet(
+      `chantiers/${avant.chantierId}/factures`,
+      Buffer.from(pdfBytes),
+      ".pdf"
+    );
+
     const [facture] = await tx
       .update(factures)
       .set({
@@ -213,6 +313,8 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
         totalHt: totalHt.toFixed(2),
         totalTva: totalTva.toFixed(2),
         totalTtc: totalTtc.toFixed(2),
+        pdfStorageKey: objet.storageKey,
+        pdfChecksum: objet.checksum,
       })
       .where(eq(factures.id, factureId))
       .returning();

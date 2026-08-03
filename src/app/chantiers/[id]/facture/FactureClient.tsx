@@ -157,6 +157,20 @@ export default function FactureClient({
             {formatEuros.format(Number(initialFacture.totalTtc))}
           </p>
         </div>
+
+        {/* Sans ce lien, la facture existe sans que personne puisse la
+            regarder : le patron valide un montant sans avoir vu la pièce que
+            son client recevra. C'est justement ce que l'arrêt 3 lui demande de
+            vérifier (docs/AGENT.md §2.3). */}
+        <a
+          href={`/api/factures/${initialFacture.id}/pdf`}
+          target="_blank"
+          rel="noopener"
+          className="mt-4 block text-center text-[14px] font-medium"
+          style={{ color: colors.rust }}
+        >
+          Voir la facture en PDF →
+        </a>
       </div>
 
       {erreur && (

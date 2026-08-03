@@ -415,3 +415,42 @@ téléphone, c'est-à-dire pas Arborea.
 portant son nom ; Atlas par une barre basse, pensée pour le pouce et pour une
 application installée sur l'écran d'accueil. Remplacer l'une par l'autre est une
 décision d'usage, pas de couleur : elle n'a pas été prise seule. Voir `TODO.md`.
+
+
+---
+
+## 19. Devis et facture partagent une seule mise en page
+
+**Décidé.** `src/server/pdf/document-commun.ts` dessine les deux pièces ;
+`devis-pdf.ts` et `facture-pdf.ts` ne portent que ce qui les distingue.
+
+**Ce qui l'a imposé :** le modèle du patron donne au devis et à la facture
+exactement la même feuille. Les copier aurait produit deux implémentations qui
+divergent — ce que `CLAUDE.md` §3 interdit — et l'écart ne se serait vu que sur
+les pièces déjà envoyées au client.
+
+**Ce que le moteur ne décide pas**, et qui passe par `OptionsDocument` : le
+titre, les références d'en-tête, l'intertitre des notes, la mention légale, le
+cadre de signature, et le rappel du devis d'origine.
+
+**Ce qui distingue une facture, et n'est pas cosmétique :**
+
+- **Trois références au lieu d'une validité** : numéro, date d'émission, date
+  d'échéance — c'est l'échéance qui fait courir les pénalités, et son absence
+  rendrait la mention légale creuse. Absente, sa ligne reste vide (`CLAUDE.md` §4).
+- **Aucun cadre de signature.** Une facture ne se signe pas, elle se règle. En
+  proposer un inviterait le client à croire qu'il lui reste à accepter.
+- **La franchise de l'article 293 B ne s'imprime que si le taux est nul.** Le
+  modèle du patron porte la consigne « à retirer si vous êtes assujetti » : on
+  ne peut pas laisser cette décision à l'impression. Une facture qui affiche
+  « TVA (10 %) » **et** « TVA non applicable » est fausse.
+
+**La pièce est figée à l'émission**, archivée dans le même geste que le
+changement de statut — comme le devis à l'envoi, et pour la même raison : une
+facture émise est immuable (trigger PostgreSQL), et un PDF reconstruit depuis
+les données du jour ne serait plus celui que le client a reçu.
+
+**La refonte a été prouvée sans effet sur le devis** : le PDF rendu avant et
+après extraction du moteur est identique **au pixel près** (même empreinte
+SHA-256 de l'image). Un moteur partagé qui déplace un trait de deux points
+abîmerait une pièce déjà éprouvée sans qu'aucun test ne le dise.
