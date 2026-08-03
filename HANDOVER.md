@@ -4,7 +4,8 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-03 · `claude/migrate-app-atlas-zz31ac` · `0eb2ec7`
+**Point de reprise :** 2026-08-03 · `claude/migrate-app-atlas-zz31ac`
+(l'historique fait foi : `git log --oneline -20`)
 
 ---
 
@@ -54,7 +55,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les dix pièges de ce dépôt
+### Les onze pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -102,6 +103,13 @@ site publié à son adresse réelle.
    défaut. Corollaire éprouvé : dans ces expressions rationnelles, les
    frontières de mot ne sont pas décoratives — sans `\b`, `jours?` se déclenche
    à l'intérieur de « journée » et ampute le segment.
+10. **Un état d'écriture qui vit dans le navigateur ment au premier retour
+    arrière.** « Ajouté au détail » était un `useState` : il mourait à chaque
+    navigation, l'écran reproposait une ligne déjà écrite, et un seul appui
+    doublait le devis du patron (1 674 € → 3 348 € HT). La règle : **tout ce qui
+    dit « c'est déjà fait » se déduit des données, jamais d'un drapeau local** —
+    et le serveur applique la même fonction, parce qu'un écran ne protège rien.
+    Motif à réutiliser : `src/lib/proposition-au-detail.ts`.
 
 ### Le vocabulaire
 

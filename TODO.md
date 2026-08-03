@@ -60,7 +60,43 @@ Interrogé « Comment a été envoyé le devis ? », il a répondu :
 Le patron n'a pas à lire du JSON. L'assistant doit répondre en français, ou dire
 qu'il ne sait pas — et jamais recracher la sortie d'un outil telle quelle.
 
-### 5. Rien ne mène le patron d'un écran au suivant
+### 5. Planifier autrement qu'en journées entières — à trancher avec le patron
+
+**Sa question du 3 août 2026**, en deux morceaux :
+
+> « J'ai déjà un chantier le 6 août, donc pour mon nouveau client on ne propose
+> pas le 6 août. Mais si mon 1er chantier du 6 ne dure que le matin, je ne peux
+> pas caler une autre demi-journée l'après-midi. »
+> « Si j'ai deux équipes dans ma boîte, je peux avoir deux chantiers, voire plus,
+> le 6 août. »
+
+**Où en est le code.** `chantiers.date_planifiee` est **une seule date**, et
+`joursOccupes()` (`src/server/repositories/envois-devis.ts`) déclare un jour pris
+dès qu'un chantier y est posé. Occupation binaire, une équipe implicite.
+
+**Un troisième défaut, du même sang, que personne n'a signalé :** la durée
+prévue (« 2 jours ») est saisie dans les informations mais **n'entre nulle part
+dans la planification** — `duree_prevue` n'est lu que par le chiffrage. Un
+chantier de deux jours calé le 6 laisse donc le 7 proposable au client suivant.
+
+Trois pistes, du plus petit au plus complet — **aucune n'est engagée : c'est au
+patron de choisir** (voir `docs/QUESTIONS.md` si le point y a été porté).
+
+| | Piste | Ce que ça change | Ce que ça coûte |
+|---|---|---|---|
+| a | Un **créneau** par chantier (`matin` / `après-midi` / `journée`) | Le 6 après-midi redevient proposable | Une colonne, une question de plus à la planification |
+| b | Une **durée en demi-journées** posée à partir du créneau de départ | Règle aussi le chantier de 2 jours qui n'en bloque qu'un | (a) + le moteur de disponibilité à revoir |
+| c | Des **heures réelles** | Le plus fin | Une vraie vue calendrier — disproportionné pour l'instant |
+
+Et pour les équipes :
+
+| | Piste | Ce que ça change | Ce que ça coûte |
+|---|---|---|---|
+| a | Un **nombre d'équipes** dans les réglages (défaut 1) | Le jour n'est pris qu'une fois ce nombre atteint | Une ligne de réglage, rien à l'écran |
+| b | Des **équipes nommées** (`equipes` + `chantiers.equipe_id`) | On sait qui va où, le planning se lit par colonne | Une table, un écran, un choix par chantier |
+| c | Une **capacité en hommes** (réutilise `taille_equipe`) | Le plus juste économiquement | La donnée est du texte libre : à fiabiliser d'abord |
+
+### 6. Rien ne mène le patron d'un écran au suivant
 
 Après « Enregistrer le texte », rien n'indique qu'il faut ensuite générer le
 brouillon, puis le confirmer pour l'ajouter au chantier. Le lien « Continuer vers
@@ -92,3 +128,5 @@ application en panne — c'est déjà arrivé.
 - ~~Navigation : la barre du bas reste (décidé) ; l'action principale prend la carte d'Arborea~~ — 2026-08-03
 - ~~La dictée arrivait amputée à l'écran : découpage, durée, vocabulaire, déchets~~ — 2026-08-03
 - ~~Écrire le devis soi-même depuis l'écran Informations~~ — 2026-08-03
+- ~~Le devis doublait au retour arrière du navigateur (4 017,60 € au lieu de 2 008,80 €)~~ — 2026-08-03
+- ~~« Fin de chantier » injoignable sur un chantier planifié~~ — 2026-08-03

@@ -143,6 +143,7 @@ export default function PrixClient({
         <PropositionPrixSection
           chantierId={chantierId}
           propositionInitiale={propositionInitiale}
+          lignesDetail={lignes}
           onLigneAjoutee={(ligne) => setLignes((cur) => [...cur, ligne])}
         />
       ) : (

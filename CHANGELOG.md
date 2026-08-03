@@ -9,6 +9,54 @@ Format : le plus récent en tête.
 
 ## 2026-08-03
 
+### Le devis qui doublait tout seul
+
+Le patron : « lorsque je clique sur la touche retour de mon navigateur et que je
+reviens sur la page, ça me compte deux prestations, donc le prix du devis a fait
+×2 tout seul ». Sa capture : **4 017,60 € TTC**, soit 3 348 € HT — deux fois
+1 674 €.
+
+Reproduit à l'identique, au centime près. La cause n'était pas un calcul faux,
+c'était **un bouton sans mémoire** : « Ajouté au détail » vivait dans le
+navigateur. Un retour arrière, un rechargement, un onglet rouvert, et l'écran
+réaffichait « Ajouter au détail » alors que la ligne était déjà là. Un seul
+appui suffisait. L'application avait invité l'erreur, puis l'avait exécutée sans
+un mot — pire qu'un calcul faux, parce que rien ne le signale : le total paraît
+simplement plus élevé que prévu, et ce total part au client.
+
+L'état vient désormais **du détail lui-même** (`src/lib/proposition-au-detail.ts`),
+plus du navigateur : le bouton dit « Déjà au détail », il est inerte, et une
+phrase indique la sortie — modifier la ligne existante. Le serveur applique la
+**même fonction** et refuse de son côté : une page laissée ouverte, deux appuis
+pendant que le premier voyage, et l'écran ne protège plus rien.
+
+Trois contrôles, à trois hauteurs : la règle (`test-proposition-au-detail.ts`),
+le refus serveur (`test-prix-doublon-serveur.ts`), et **le geste exact du
+patron rejoué dans un navigateur** (`test-devis-doublon-e2e.ts`). Les deux
+premiers ont été confrontés au défaut d'origine : ils virent au rouge.
+
+### « Fin de chantier » était injoignable sur un chantier planifié
+
+« Le chantier est planifié mais je dois pouvoir retourner dessus une fois
+terminé pour cliquer sur chantier fini — pourquoi n'y ai-je pas accès ??? »
+
+Parce que la clôture n'existait que dans l'onglet **Terminés**, où un chantier
+n'entre qu'une fois sa **date d'intervention passée**. Le sien était prévu deux
+jours plus tard : la facture était donc réellement injoignable, et sa fiche
+disait « rien à faire pour l'instant » sans indiquer ni où ni quand cela
+changerait.
+
+La fiche du chantier porte maintenant, en haut à droite comme il l'a demandé,
+un bouton **« Fin de chantier → »** dès que le chantier est planifié. Aucune
+barrière de date, délibérément : un chantier se finit parfois plus tôt, et c'est
+le patron qui sait quand il est fait. Le geste reste sans danger — la fonction
+appelée est idempotente, exige un devis réellement envoyé, et n'émet rien : elle
+bâtit la facture qu'il vérifiera (arrêt 3). L'émission, elle, reste son geste,
+et c'est elle qui alimente le relevé de TVA.
+
+Le message d'attente dit enfin quelque chose d'utile : la date prévue, et le
+geste suivant.
+
 ### La dictée arrive entière à l'écran
 
 Le patron a écrit trois lignes et photographié ce qu'Atlas en avait fait :

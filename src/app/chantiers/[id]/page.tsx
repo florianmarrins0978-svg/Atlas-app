@@ -11,6 +11,7 @@ import { colors, font, smallCaps } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantierPourHub } from "@/server/repositories/chantiers";
+import { jourLisible } from "@/lib/jour";
 
 // Écran connecté à la base réelle. Charge le chantier uniquement dans le
 // contexte de l'entreprise active (withEntreprise, via le repository) — un
@@ -34,8 +35,8 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-10">
-        {/* Retour seul en haut */}
-        <div className="px-6 pt-8">
+        {/* Retour à gauche ; à droite, la sortie du chantier planifié. */}
+        <div className="flex items-center justify-between px-6 pt-8">
           <Link
             href="/"
             aria-label="Retour"
@@ -46,6 +47,28 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
               <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
+
+          {/* « Pourquoi n'y ai-je pas accès ??? » — sa question du 3 août 2026.
+              La clôture n'existait que dans l'onglet Terminés, où un chantier
+              n'entre qu'une fois sa date d'intervention passée. Le sien était
+              prévu dans deux jours : la facture était donc injoignable, sans
+              que rien ne dise ni où ni quand elle le deviendrait.
+
+              Aucune barrière de date ici, et c'est délibéré : un chantier se
+              finit parfois plus tôt que prévu, et c'est le patron qui sait
+              quand il est fait, pas le calendrier. Le geste reste sans danger —
+              `terminerChantier` est idempotente, exige un devis réellement
+              envoyé, et n'émet rien : elle bâtit la facture qu'il vérifiera
+              (arrêt 3, `docs/AGENT.md` §2.3). */}
+          {chantier.datePlanifiee && (
+            <Link
+              href={`/chantiers/${chantier.id}/facture`}
+              className="rounded-full px-4 py-2 text-[14px] font-medium"
+              style={{ backgroundColor: colors.rustTint, color: colors.rust }}
+            >
+              Fin de chantier →
+            </Link>
+          )}
         </div>
 
         {/* Ordre de lecture : statut → nom → client */}
@@ -67,8 +90,18 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
             <PrimaryButton href={getNextActionHref(chantier.id, nextAction)}>{nextAction.label} →</PrimaryButton>
           ) : (
             <div className="rounded-2xl px-5 py-4 text-center" style={{ backgroundColor: colors.card }}>
+              {/* « Rien à faire pour l'instant » était vrai et inutile : il ne
+                  disait ni quand, ni quoi ensuite. Un écran qui ne dit pas où
+                  l'on va se lit comme une application en panne. */}
               <p className="text-[14px]" style={{ color: colors.muted }}>
-                Ce chantier est planifié — rien à faire pour l&apos;instant.
+                {chantier.datePlanifiee
+                  ? `Intervention prévue le ${jourLisible(chantier.datePlanifiee)}.`
+                  : "Ce chantier est planifié."}
+              </p>
+              <p className="mt-1 text-[13px]" style={{ color: colors.muted }}>
+                Une fois le chantier fait, touchez{" "}
+                <strong style={{ color: colors.rust }}>Fin de chantier</strong>, en haut : vous vérifierez la
+                facture avant qu&apos;elle n&apos;existe pour votre client.
               </p>
             </div>
           )}
