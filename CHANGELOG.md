@@ -43,6 +43,29 @@ d'œil sur la première page ne remplace : aucune ligne ne descend sur le cadre 
 signature. Chacun a été confronté au défaut qu'il prétend détecter avant d'être
 acté ; le premier jet cherchait « EUR » n'importe où et accusait « ÉMETTEUR ».
 
+### Le détail quitte la page du client, et le PDF devient accessible
+
+Le patron a confirmé : plus de détail sur la page, « de toute façon le client
+aura le détail dans le PDF joint au mail ». Le tableau est retiré — sa page
+montre le numéro, le client, l'adresse et les trois totaux.
+
+**Sa prémisse ne tenait pas, et c'était le point qui comptait.** Rien n'est
+joint au message : le partage n'envoie que le titre et le texte
+(`navigator.share` sans `files`), et un `mailto:` ne peut porter aucune pièce.
+Le client ne reçoit qu'un **lien**. Retirer le détail sans rien d'autre l'aurait
+laissé accepter un total sans pouvoir consulter ce qu'il paie nulle part.
+
+Le devis complet est donc servi par son jeton — `/devis/<jeton>/pdf`, mêmes
+garanties que la page : contexte RLS posé par le jeton, lien expiré sans effet,
+et **seul le PDF archivé à l'envoi** est rendu, jamais une reconstruction. Un
+jeton inconnu et un jeton expiré donnent le même 404.
+
+**Un défaut du banc d'essai trouvé en parcourant le lien** : le devis de
+démonstration était marqué « envoyé » sans qu'aucun PDF n'ait été archivé — le
+lien renvoyait 404. Le seed archive désormais la pièce comme le fait `envoyerDevis`
+en vrai. C'est la deuxième fois que ce même devis de démonstration se contredit ;
+il fallait le corriger à la source plutôt que de l'expliquer.
+
 ### La page du client montre les totaux, le détail se déplie
 
 Le patron a demandé de retirer le détail du devis pour n'afficher que Total HT,

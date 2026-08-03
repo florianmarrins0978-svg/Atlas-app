@@ -4,6 +4,7 @@ import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { chantiers, devis, envoisDevis, lignesDevis } from "../db/schema";
 import type { Ctx } from "./context";
+import { lireObjet } from "../storage";
 import {
   dateRetenable,
   fenetreProposition,
@@ -251,6 +252,54 @@ export async function lireParJeton(
       },
     };
   });
+}
+
+/**
+ * Le PDF du devis, servi au client par son jeton — sans compte.
+ *
+ * **Pourquoi cette fonction existe.** Le patron a demandé que sa page ne montre
+ * que les trois totaux, « de toute façon le client aura le détail dans le PDF
+ * joint au mail ». Or rien n'est joint : le partage n'envoie que du texte, et un
+ * `mailto:` ne peut porter aucune pièce. Le client ne reçoit qu'un **lien**.
+ *
+ * Sans ce chemin, retirer le détail de la page l'aurait laissé accepter un
+ * total sans pouvoir consulter ce qu'il paie nulle part — alors que son accord
+ * porte sur le contenu exact, et qu'un devis de travaux doit détailler chaque
+ * prestation (arrêté du 2 mars 1990).
+ *
+ * **Mêmes garanties que la page** : le jeton pose le contexte RLS, un lien
+ * expiré ne rend rien, et seul le PDF **archivé à l'envoi** est servi — jamais
+ * une reconstruction, qui pourrait ne plus être la pièce acceptée.
+ */
+export async function pdfDevisParJeton(
+  jeton: string,
+  maintenant: Date = new Date()
+): Promise<{ octets: Buffer; nom: string } | null> {
+  if (!jeton) return null;
+
+  const cle = await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.jeton_envoi', ${jeton}, true)`);
+    const [envoi] = await tx
+      .select()
+      .from(envoisDevis)
+      .where(eq(envoisDevis.jeton, jeton))
+      .limit(1);
+    if (!envoi) return null;
+    if (envoi.expireAt.getTime() <= maintenant.getTime()) return null;
+
+    const [d] = await tx.select().from(devis).where(eq(devis.id, envoi.devisId)).limit(1);
+    if (!d?.pdfStorageKey) return null;
+    return { storageKey: d.pdfStorageKey, numero: d.numeroCommercial };
+  });
+
+  if (!cle) return null;
+  try {
+    return { octets: await lireObjet(cle.storageKey), nom: `devis-${cle.numero}.pdf` };
+  } catch {
+    // Le fichier a disparu du stockage : on le dit par un 404, sans reconstruire
+    // un document qui ne serait plus celui que le client a reçu.
+    return null;
+  }
 }
 
 export type ReponseClient = {
