@@ -43,6 +43,27 @@ d'œil sur la première page ne remplace : aucune ligne ne descend sur le cadre 
 signature. Chacun a été confronté au défaut qu'il prétend détecter avant d'être
 acté ; le premier jet cherchait « EUR » n'importe où et accusait « ÉMETTEUR ».
 
+### La page du client montre les totaux, le détail se déplie
+
+Le patron a demandé de retirer le détail du devis pour n'afficher que Total HT,
+TVA et Total TTC. C'est fait **sur la page que son client ouvre** : elle tient
+désormais sur un écran, les trois totaux au premier regard.
+
+**Le détail n'est pas supprimé, il est replié** derrière « Voir le détail des
+prestations » — un `<details>` natif, qui s'ouvre sans JavaScript. Deux raisons,
+et elles ne sont pas décoratives :
+
+- Le client engage son accord sur **le contenu exact** : la mention au bas de la
+  page le dit, et l'acceptation conserve l'empreinte du document. Lui demander
+  d'accepter un total sans pouvoir consulter ce qu'il paie retournerait contre
+  le patron le jour d'un litige.
+- Un devis de travaux doit porter le **décompte détaillé** de chaque prestation,
+  en quantité et prix unitaire (arrêté du 2 mars 1990). **Le PDF n'a donc pas
+  été touché** — c'est lui, la pièce qui engage.
+
+Le patron a été informé de cette limite avant que le travail ne soit fait, et
+il peut demander la suppression complète en connaissance de cause.
+
 ### « Aucune des deux » quand il n'y en avait qu'une
 
 Trouvé en sortant, à la demande du patron, le visuel de la page que son client

@@ -83,21 +83,35 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
           {d.clientNom && <p className="mt-1 text-[14px] text-ink/70">Pour {d.clientNom}</p>}
           {d.adresseChantier && <p className="text-[13px] text-ink/50">{d.adresseChantier}</p>}
 
-          <table className="mt-4 w-full text-[14px]">
-            <tbody>
-              {d.lignes.map((l, i) => (
-                <tr key={i} className="border-b border-black/5 last:border-0">
-                  <td className="py-1.5 pr-2 text-ink/80">{l.libelle}</td>
-                  <td className="py-1.5 text-right tabular-nums text-ink/60 whitespace-nowrap">
-                    {Number(l.quantite)} × {euros(l.prixUnitaire)}
-                  </td>
-                  <td className="py-1.5 pl-2 text-right tabular-nums text-ink whitespace-nowrap">
-                    {euros(l.montant)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {/* Le détail est replié : le patron veut une page qui montre les
+              trois totaux, pas un tableau. Il n'est pas supprimé pour autant,
+              et c'est délibéré — le client engage son accord sur « le contenu
+              exact », et un décompte détaillé est ce qu'un devis de travaux
+              doit porter (arrêté du 2 mars 1990). Une page qui ne montrerait
+              qu'un total demanderait au client d'accepter à l'aveugle.
+
+              `<details>` natif : il s'ouvre sans JavaScript, donc même si la
+              page échoue à s'animer sur un vieux téléphone. */}
+          <details className="mt-4 text-[14px]">
+            <summary className="cursor-pointer list-none text-[13px] text-ink/50 underline underline-offset-4">
+              Voir le détail des prestations
+            </summary>
+            <table className="mt-2 w-full">
+              <tbody>
+                {d.lignes.map((l, i) => (
+                  <tr key={i} className="border-b border-black/5 last:border-0">
+                    <td className="py-1.5 pr-2 text-ink/80">{l.libelle}</td>
+                    <td className="py-1.5 text-right tabular-nums text-ink/60 whitespace-nowrap">
+                      {Number(l.quantite)} × {euros(l.prixUnitaire)}
+                    </td>
+                    <td className="py-1.5 pl-2 text-right tabular-nums text-ink whitespace-nowrap">
+                      {euros(l.montant)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </details>
 
           <dl className="mt-4 flex flex-col gap-1 border-t border-black/10 pt-3 text-[14px]">
             <div className="flex justify-between text-ink/60">
