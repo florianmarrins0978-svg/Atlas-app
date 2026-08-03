@@ -58,18 +58,33 @@ export type DevisPdfData = {
 
 // ─── Palette ────────────────────────────────────────────────────────────────
 //
-// Prise sur la page du patron, pas sur le fichier de ce dépôt.
+// Prise sur la capture du patron, et **pas** sur une page encore en ligne.
+// Cette nuance a coûté une affirmation fausse : elle est écrite ici pour que
+// personne ne la reprenne à son compte.
 //
-// `appli/devis-modele.html` donne aux intertitres « Émetteur » et « Client » un
-// vert foncé (`--clay:#2f3b2f`). Le patron a envoyé une capture de son devis
-// tel qu'il le voit en ligne : ces mêmes intertitres y sont **terre cuite**.
-// Mesure faite sur ses pixels — `#a95c35`, à l'antialiasing près le `rust`
-// `#B25A2E` de `src/lib/design-tokens.ts`, l'accent unique d'Atlas. La copie
-// versée dans `appli/` avait donc déjà divergé de son original ; reproduire ce
-// fichier fidèlement revenait à reproduire fidèlement un écart.
+// Ce qui est établi, et comment :
+//
+// - `appli/devis-modele.html` donne aux intertitres « Émetteur » et « Client »
+//   un vert foncé (`--clay:#2f3b2f`), et ce **depuis le tout premier commit**
+//   (`45b6d97`) — la copie de ce dépôt n'a jamais été modifiée sur ce point.
+// - La page publiée le confirme : `relever-palette.yml` l'a ouverte dans un
+//   navigateur, à son adresse réelle, et y calcule bien `#2f3b2f`.
+// - La capture envoyée par le patron, elle, montre **terre cuite** : `#a95c35`
+//   mesuré sur plus de mille pixels, sur toute la hauteur des glyphes. Ce n'est
+//   ni du bruit ni une dérive d'écran — aucun profil ne transforme un vert
+//   sombre en une terre cuite claire.
+// - Et il n'existe **aucune page de devis** à la racine de son site : le relevé
+//   y reçoit un 404. Sa version terre cuite n'est donc plus en ligne nulle part.
+//
+// Conclusion : la capture vient de son Arborea d'origine, dont la copie versée
+// ici s'était déjà écartée avant même d'y entrer. C'est bien cette teinte-là
+// qu'il désigne en disant « voilà mon devis », et c'est — à l'antialiasing
+// près — le `rust` `#B25A2E` de `src/lib/design-tokens.ts`, l'accent unique
+// d'Atlas. Le devis s'y tient.
 //
 // La règle qui en sort : **la référence est ce que le patron a sous les yeux**,
-// jamais notre copie de sa référence.
+// jamais notre copie de sa référence. Mais quand cette référence n'est plus
+// joignable, on le dit — au lieu de laisser croire qu'on l'a vérifiée.
 
 function couleurHexa(hexa: string): RGB {
   const n = parseInt(hexa.slice(1), 16);

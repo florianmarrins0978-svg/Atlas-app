@@ -43,6 +43,42 @@ d'œil sur la première page ne remplace : aucune ligne ne descend sur le cadre 
 signature. Chacun a été confronté au défaut qu'il prétend détecter avant d'être
 acté ; le premier jet cherchait « EUR » n'importe où et accusait « ÉMETTEUR ».
 
+### La cause annoncée était fausse : correction
+
+J'avais écrit que « la copie versée dans `appli/` avait divergé de son
+original ». C'est faux, et je l'ai vérifié plutôt que de le supposer une
+seconde fois.
+
+Un relevé automatisé (`relever-palette.yml`) ouvre le devis publié dans un vrai
+navigateur et rapporte ce qu'il calcule. Il dit trois choses :
+
+| Ce qui a été vérifié | Résultat |
+|---|---|
+| La page publiée, `…/Atlas-app/devis-modele.html` | intertitres en **vert** `#2f3b2f` |
+| La copie du dépôt, depuis son premier commit | **le même vert**, jamais modifiée |
+| Une page de devis à la racine du site du patron | **404** — il n'y en a pas |
+
+Donc : la copie n'a pas dérivé ici. C'est la capture du patron qui montre une
+version **qui n'est plus en ligne nulle part** — son Arborea d'origine, dont la
+copie s'était écartée avant même d'entrer dans ce dépôt.
+
+**Le choix de couleur reste le bon** : la terre cuite est bien celle qu'il
+désigne en disant « voilà mon devis », et c'est l'accent qu'Atlas emploie
+partout ailleurs. Ce qui change, c'est ce qu'on a le droit d'en dire : elle
+repose sur sa capture, pas sur une page vérifiable. Quand la référence n'est
+plus joignable, on l'écrit.
+
+**Ce que le relevé a rapporté en prime**, et qui n'était vérifiable d'aucune
+autre façon : la moitié basse du devis, que la capture ne montrait pas. Mention
+légale, légende de signature, total final, en-têtes de colonnes — le devis
+d'Atlas s'y conformait déjà.
+
+Le mandataire de l'environnement de développement refuse `github.io`
+(`403 à CONNECT — policy denial`, essayé et non supposé) et la fenêtre
+d'autorisation ne s'affiche pas chez le patron. C'est pourquoi la mesure est
+faite par une machine qui, elle, a accès — comme `pages.yml` et
+`banc-essai.yml` avant elle. Détail dans `ARCHITECTURE.md` §17.
+
 ### Et la couleur n'était pas la bonne — la copie avait divergé
 
 Le patron a renvoyé une capture de son devis tel qu'il le voit en ligne :

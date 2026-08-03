@@ -284,14 +284,25 @@ descend sur le cadre de signature.
 **La référence est ce que le patron a sous les yeux, jamais notre copie de sa
 référence.** Le premier jet reproduisait fidèlement `appli/devis-modele.html`,
 qui donne aux intertitres « Émetteur » et « Client » un vert foncé
-(`--clay:#2f3b2f`). Le patron a envoyé une capture de son devis en ligne : ces
-mêmes intertitres y sont **terre cuite**. Mesure faite sur ses pixels —
-`#a95c35`, soit à l'antialiasing près le `rust` `#B25A2E` de
-`src/lib/design-tokens.ts`, l'accent unique d'Atlas. La copie versée dans
-`appli/` avait donc déjà divergé de son original, et la reproduire fidèlement
-revenait à reproduire fidèlement un écart. La palette du devis est désormais
-tenue à cet accent-là, et un contrôle le constate — deux valeurs pour un seul
-accent finissent toujours par se contredire.
+(`--clay:#2f3b2f`). Le patron a envoyé une capture de son devis : ces mêmes
+intertitres y sont **terre cuite**, `#a95c35` mesuré sur plus de mille pixels.
+C'est à l'antialiasing près le `rust` `#B25A2E` de `src/lib/design-tokens.ts`,
+l'accent unique d'Atlas. Le devis s'y tient, et un contrôle le constate — deux
+valeurs pour un seul accent finissent toujours par se contredire.
+
+**Une affirmation fausse a été poussée en chemin, et sa correction vaut d'être
+lue.** Il avait été écrit que « la copie versée dans `appli/` avait divergé de
+son original ». Le relevé automatisé (§17) a montré l'inverse : la page publiée
+calcule bien `#2f3b2f`, et la copie porte ce vert **depuis son tout premier
+commit** — elle n'a jamais été modifiée. Et il n'existe aucune page de devis à
+la racine du site du patron : le relevé y reçoit un 404. Sa version terre cuite
+n'est donc plus en ligne nulle part.
+
+La capture vient de son Arborea d'origine, dont la copie s'était écartée **avant
+même d'entrer ici**. Le choix de couleur reste le bon — c'est bien cette teinte
+qu'il désigne en disant « voilà mon devis » — mais il repose sur sa capture, non
+sur une page vérifiable. **Quand la référence n'est plus joignable, on le dit**,
+au lieu de laisser croire qu'on l'a vérifiée.
 
 **Le papier est crème (`#faf9f5`), pas blanc.** C'est celui du modèle. Un
 navigateur n'imprime pas les fonds sans qu'on le lui demande ; un PDF, lui, les
@@ -307,3 +318,34 @@ test et de dériver avec elle.
 « 1400.00 EUR », pagination retirée, nom d'entreprise figé — et chacun a rougi
 en désignant le bon coupable. Le premier jet cherchait « EUR » n'importe où dans
 le document : il accusait « ÉMETTEUR », qui se termine par ces trois lettres.
+
+
+---
+
+## 17. Ce qui n'est pas joignable d'ici se fait relever par une machine
+
+**Décidé.** `.github/workflows/relever-palette.yml` ouvre le devis d'origine
+**à son adresse publique**, dans un vrai navigateur, et rapporte les couleurs et
+les polices que celui-ci **calcule**. Le rapport se lit par l'API GitHub.
+
+**Ce qui l'a imposé :** le mandataire réseau de l'environnement de développement
+répond `403 à CONNECT — policy denial` sur `github.io` (essayé, pas supposé), et
+la fenêtre d'autorisation qui donnerait accès au dépôt du site ne s'affiche pas
+chez le patron. Sans ce relevé, la seule source restait une capture d'écran — et
+c'est en raisonnant sur elle seule qu'une conclusion fausse a été tirée (§16).
+
+**Pourquoi lire le calculé et non le déclaré :** une variable surchargée, une
+règle plus spécifique ou une feuille distante changeraient la couleur sans
+toucher au `:root`. C'est la couleur à l'écran qui fait foi, puisque c'est elle
+que le patron regarde.
+
+**Il cherche la page au lieu de la supposer**, et refuse de relever quoi que ce
+soit s'il ne la trouve pas. Une mesure prise sur la mauvaise page serait pire
+que pas de mesure : elle donnerait une réponse fausse avec l'autorité d'un
+chiffre.
+
+**Ce qu'il a rapporté du premier coup, et qui n'était pas vérifiable autrement :**
+la moitié basse du devis, que la capture du patron ne montrait pas — mention
+légale `#7a7a6a`, légende de signature `#6b6b5c`, total final en Playfair 600,
+en-têtes de colonnes `#6b6b5c` en Inter 700. Le devis d'Atlas s'y conformait
+déjà. Et le 404 à la racine, qui a permis de dater l'écart de couleur.
