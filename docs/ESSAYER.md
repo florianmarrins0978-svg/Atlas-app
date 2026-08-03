@@ -15,9 +15,10 @@ votre compte GitHub, que vous avez déjà.
 2. [En cinq gestes](#en-cinq-gestes)
 3. [Ce que vous pouvez essayer, du début à la fin](#ce-que-vous-pouvez-essayer-du-début-à-la-fin)
 4. [Ce qui ne marchera pas, et pourquoi](#ce-qui-ne-marchera-pas-et-pourquoi)
-5. [Repartir de zéro](#repartir-de-zéro)
-6. [Fermer proprement](#fermer-proprement)
-7. [Si quelque chose ne va pas](#si-quelque-chose-ne-va-pas)
+5. [Brancher une vraie IA sur vos essais](#brancher-une-vraie-ia-sur-vos-essais)
+6. [Repartir de zéro](#repartir-de-zéro)
+7. [Fermer proprement](#fermer-proprement)
+8. [Si quelque chose ne va pas](#si-quelque-chose-ne-va-pas)
 
 ---
 
@@ -143,12 +144,63 @@ une date proche : il y apparaît le jour venu.
 - **Rien ne part réellement chez le client** — ni SMS, ni e-mail. Le lien vous
   est remis à l'écran, à vous de le transmettre. C'est le point 5 de
   [`A-FAIRE.md`](A-FAIRE.md), et cela vaut aussi bien ici qu'en production.
-- **L'assistant et la transcription tournent en mode déterministe** : ils
-  répondent sans appeler aucun prestataire. C'est délibéré — envoyer des données
-  d'essai à un fournisseur qui ne figure dans aucun contrat serait précisément
-  l'écart décrit au point 1 de `A-FAIRE.md`.
+- **L'assistant et la transcription tournent en mode déterministe** *par
+  défaut* : ils répondent sans appeler aucun prestataire. C'est délibéré —
+  envoyer des données d'essai à un fournisseur qui ne figure dans aucun contrat
+  serait précisément l'écart décrit au point 1 de `A-FAIRE.md`.
+  **Vous pouvez le brancher pour vos propres essais** : voir juste en dessous.
 - **Les fichiers sont stockés sur le disque du banc d'essai.** Ils disparaissent
   avec lui. En production, ce mode est refusé au démarrage.
+
+---
+
+## Brancher une vraie IA sur vos essais
+
+Vous n'êtes pas obligé d'attendre le contrat du point 2 pour **vos** essais :
+ce sont vos chantiers, vos clients, votre décision. Le contrat devient
+obligatoire le jour où Atlas sert **quelqu'un d'autre**.
+
+Comptez une vingtaine de minutes, et **entre 2 et 7 € par mois** à votre volume
+(le détail est dans [`TRANSCRIPTION.md`](TRANSCRIPTION.md) §7).
+
+### 1. Ouvrir les deux comptes
+
+| | Où | Ce qu'il faut y faire |
+|---|---|---|
+| **Rédaction** | `console.anthropic.com` | Créer un compte, y mettre 5 € de crédit, générer une clé API |
+| **Transcription** | `platform.openai.com` | Idem. **Puis, dans les réglages de l'organisation, refuser le partage de données pour l'entraînement** — ce n'est pas coché par défaut |
+
+Ce second geste est le plus important des deux, et celui qu'on oublie. C'est la
+question 3 de `TRANSCRIPTION.md`.
+
+### 2. Poser les clés dans les secrets du dépôt
+
+Sur GitHub : **Settings → Secrets and variables → Codespaces → New repository
+secret**. Quatre secrets à créer :
+
+| Nom | Valeur |
+|---|---|
+| `LLM_PROVIDER` | `anthropic` |
+| `ANTHROPIC_API_KEY` | la clé générée chez Anthropic |
+| `TRANSCRIPTION_PROVIDER` | `openai` |
+| `OPENAI_API_KEY` | la clé générée chez OpenAI |
+
+**Ne collez jamais une clé dans un fichier du dépôt, ni dans une conversation.**
+Un secret posé ici ne se relit pas, y compris par vous — c'est voulu.
+
+### 3. Recréer l'espace de travail
+
+Un espace déjà ouvert **ne voit pas** un secret créé après lui. Il faut en
+ouvrir un neuf : `github.com/codespaces`, supprimer l'ancien, relancer.
+
+### 4. Vérifier que c'est bien branché
+
+Dictez une note vocale et regardez ce qui revient. Si vous lisez
+« **[Transcription simulée — … octets reçus]** », c'est que le mode
+déterministe tourne encore : le secret n'est pas arrivé jusqu'au conteneur, le
+plus souvent parce que l'espace de travail est l'ancien.
+
+Vos mots à l'écran : c'est branché.
 
 ---
 

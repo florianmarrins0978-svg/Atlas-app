@@ -67,6 +67,7 @@
 <li><a href="#en-cinq-gestes">En cinq gestes</a></li>
 <li><a href="#ce-que-vous-pouvez-essayer-du-début-à-la-fin">Ce que vous pouvez essayer, du début à la fin</a></li>
 <li><a href="#ce-qui-ne-marchera-pas-et-pourquoi">Ce qui ne marchera pas, et pourquoi</a></li>
+<li><a href="#brancher-une-vraie-ia-sur-vos-essais">Brancher une vraie IA sur vos essais</a></li>
 <li><a href="#repartir-de-zéro">Repartir de zéro</a></li>
 <li><a href="#fermer-proprement">Fermer proprement</a></li>
 <li><a href="#si-quelque-chose-ne-va-pas">Si quelque chose ne va pas</a></li>
@@ -143,9 +144,61 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ul>
 <li><strong>Rien ne part réellement chez le client</strong> — ni SMS, ni e-mail. Le lien vous est remis à l'écran, à vous de le transmettre. C'est le point 5 de <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a>, et cela vaut aussi bien ici qu'en production.</li>
-<li><strong>L'assistant et la transcription tournent en mode déterministe</strong> : ils répondent sans appeler aucun prestataire. C'est délibéré — envoyer des données d'essai à un fournisseur qui ne figure dans aucun contrat serait précisément l'écart décrit au point 1 de <code>A-FAIRE.md</code>.</li>
+<li><strong>L'assistant et la transcription tournent en mode déterministe</strong> *par défaut* : ils répondent sans appeler aucun prestataire. C'est délibéré — envoyer des données d'essai à un fournisseur qui ne figure dans aucun contrat serait précisément l'écart décrit au point 1 de <code>A-FAIRE.md</code>. <strong>Vous pouvez le brancher pour vos propres essais</strong> : voir juste en dessous.</li>
 <li><strong>Les fichiers sont stockés sur le disque du banc d'essai.</strong> Ils disparaissent avec lui. En production, ce mode est refusé au démarrage.</li>
 </ul>
+<hr>
+<h2 id="brancher-une-vraie-ia-sur-vos-essais">Brancher une vraie IA sur vos essais</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Vous n'êtes pas obligé d'attendre le contrat du point 2 pour <strong>vos</strong> essais : ce sont vos chantiers, vos clients, votre décision. Le contrat devient obligatoire le jour où Atlas sert <strong>quelqu'un d'autre</strong>.</p>
+<p>Comptez une vingtaine de minutes, et <strong>entre 2 et 7 € par mois</strong> à votre volume (le détail est dans <a href="TRANSCRIPTION.md" target="_blank" rel="noopener"><code>TRANSCRIPTION.md</code></a> §7).</p>
+<h3 id="1-ouvrir-les-deux-comptes">1. Ouvrir les deux comptes</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Où</th>
+<th>Ce qu'il faut y faire</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Rédaction</strong></td>
+<td><code>console.anthropic.com</code></td>
+<td>Créer un compte, y mettre 5 € de crédit, générer une clé API</td>
+</tr>
+<tr>
+<td><strong>Transcription</strong></td>
+<td><code>platform.openai.com</code></td>
+<td>Idem. <strong>Puis, dans les réglages de l'organisation, refuser le partage de données pour l'entraînement</strong> — ce n'est pas coché par défaut</td>
+</tr>
+</tbody></table></div>
+<p>Ce second geste est le plus important des deux, et celui qu'on oublie. C'est la question 3 de <code>TRANSCRIPTION.md</code>.</p>
+<h3 id="2-poser-les-clés-dans-les-secrets-du-dépôt">2. Poser les clés dans les secrets du dépôt</h3>
+<p>Sur GitHub : <strong>Settings → Secrets and variables → Codespaces → New repository secret</strong>. Quatre secrets à créer :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Nom</th>
+<th>Valeur</th>
+</tr></thead><tbody>
+<tr>
+<td><code>LLM_PROVIDER</code></td>
+<td><code>anthropic</code></td>
+</tr>
+<tr>
+<td><code>ANTHROPIC_API_KEY</code></td>
+<td>la clé générée chez Anthropic</td>
+</tr>
+<tr>
+<td><code>TRANSCRIPTION_PROVIDER</code></td>
+<td><code>openai</code></td>
+</tr>
+<tr>
+<td><code>OPENAI_API_KEY</code></td>
+<td>la clé générée chez OpenAI</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ne collez jamais une clé dans un fichier du dépôt, ni dans une conversation.</strong> Un secret posé ici ne se relit pas, y compris par vous — c'est voulu.</p>
+<h3 id="3-recréer-lespace-de-travail">3. Recréer l'espace de travail</h3>
+<p>Un espace déjà ouvert <strong>ne voit pas</strong> un secret créé après lui. Il faut en ouvrir un neuf : <code>github.com/codespaces</code>, supprimer l'ancien, relancer.</p>
+<h3 id="4-vérifier-que-cest-bien-branché">4. Vérifier que c'est bien branché</h3>
+<p>Dictez une note vocale et regardez ce qui revient. Si vous lisez « <strong>[Transcription simulée — … octets reçus]</strong> », c'est que le mode déterministe tourne encore : le secret n'est pas arrivé jusqu'au conteneur, le plus souvent parce que l'espace de travail est l'ancien.</p>
+<p>Vos mots à l'écran : c'est branché.</p>
 <hr>
 <h2 id="repartir-de-zéro">Repartir de zéro</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
