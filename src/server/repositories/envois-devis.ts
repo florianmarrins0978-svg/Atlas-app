@@ -1,16 +1,22 @@
 import { randomBytes, createHash } from "node:crypto";
 import { and, asc, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
-import { db } from "../db/client";
+import { db, type DbOrTx } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
-import { chantiers, devis, envoisDevis, lignesDevis } from "../db/schema";
+import { chantiers, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
 import type { Ctx } from "./context";
 import { lireObjet } from "../storage";
 import {
-  dateRetenable,
+  compterOccupation,
+  departPossible,
+  dureeEnDemiJournees,
   fenetreProposition,
-  motifRefusDate,
+  jourRetenable,
+  DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   versJourIso,
+  type ChantierPlanifie,
+  type FenetreProposition,
   type JourIso,
+  type Moment,
   type MotifRefusDate,
 } from "../disponibilites";
 
@@ -65,6 +71,58 @@ export async function joursOccupes(
   });
 }
 
+/**
+ * Ce que les chantiers déjà posés occupent, à la demi-journée près, et de
+ * combien d'équipes dispose l'entreprise.
+ *
+ * Une seule requête pour les trois chemins qui doivent dire la même chose :
+ * l'écran d'envoi, la création de l'envoi, et la revérification de la réponse
+ * du client. `exclureChantierId` évite qu'un chantier se refuse sa propre date
+ * lors d'un renvoi.
+ *
+ * `tx` est passé de l'extérieur parce que deux de ces chemins n'ont pas de
+ * session : la page du client pose son contexte par jeton (voir `lireParJeton`).
+ */
+async function contrainteDuPlanning(
+  tx: DbOrTx,
+  entrepriseId: string,
+  fenetre: FenetreProposition,
+  exclureChantierId?: string
+): Promise<{ occupation: Map<string, number>; nombreEquipes: number }> {
+  const lignes = await tx
+    .select({
+      id: chantiers.id,
+      jour: chantiers.datePlanifiee,
+      moment: chantiers.creneauDebut,
+      duree: chantiers.dureeDemiJournees,
+    })
+    .from(chantiers)
+    .where(
+      and(
+        eq(chantiers.entrepriseId, entrepriseId),
+        isNull(chantiers.deletedAt),
+        gte(chantiers.datePlanifiee, fenetre.debut),
+        lte(chantiers.datePlanifiee, fenetre.fin)
+      )
+    );
+
+  const planifies: ChantierPlanifie[] = lignes
+    .filter((l) => l.jour !== null && l.id !== exclureChantierId)
+    .map((l) => ({
+      jour: l.jour as JourIso,
+      moment: l.moment === "matin" || l.moment === "apres_midi" ? l.moment : null,
+      dureeDemiJournees: l.duree,
+    }));
+
+  const [entreprise] = await tx
+    .select({ nombreEquipes: entreprises.nombreEquipes })
+    .from(entreprises)
+    .where(eq(entreprises.id, entrepriseId))
+    .limit(1);
+
+  return { occupation: compterOccupation(planifies), nombreEquipes: entreprise?.nombreEquipes ?? 1 };
+}
+
 export type CreationEnvoi = {
   chantierId: string;
   devisId: string;
@@ -72,6 +130,11 @@ export type CreationEnvoi = {
   /** Une ou deux dates — la forme est tranchée par le patron à la validation. */
   datesProposees: JourIso[];
   contenuDevis: string;
+  /**
+   * Durée à réserver, en demi-journées. Absente : elle se déduit de la dictée,
+   * et à défaut vaut une journée entière.
+   */
+  dureeDemiJournees?: number;
 };
 
 export class DatesProposeesInvalidesError extends Error {
@@ -98,14 +161,39 @@ export async function creerEnvoi(
   }
 
   const fenetre = fenetreProposition(maintenant);
-  const occupes = await joursOccupes(ctx, fenetre.debut, fenetre.fin);
-
-  const motifs = creation.datesProposees
-    .map((date) => ({ date, motif: motifRefusDate(date, occupes, fenetre) }))
-    .filter((m): m is { date: JourIso; motif: MotifRefusDate } => m.motif !== null);
-  if (motifs.length > 0) throw new DatesProposeesInvalidesError(motifs);
 
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const { occupation, nombreEquipes } = await contrainteDuPlanning(
+      tx,
+      ctx.entrepriseId,
+      fenetre,
+      creation.chantierId
+    );
+
+    // La durée que ce chantier réservera. Le patron a pu la corriger à l'écran ;
+    // sinon elle se déduit de sa dictée, et à défaut vaut une journée.
+    const [chantier] = await tx
+      .select({ dureePrevue: chantiers.dureePrevue })
+      .from(chantiers)
+      .where(and(eq(chantiers.id, creation.chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId)))
+      .limit(1);
+    const duree =
+      creation.dureeDemiJournees ??
+      dureeEnDemiJournees(chantier?.dureePrevue ?? null) ??
+      DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+
+    const motifs = creation.datesProposees
+      .map((date) => ({
+        date,
+        motif: jourRetenable(date, duree, occupation, nombreEquipes, fenetre)
+          ? null
+          : date < fenetre.debut || date > fenetre.fin
+            ? ("hors_fenetre" as const)
+            : ("jour_occupe" as const),
+      }))
+      .filter((m): m is { date: JourIso; motif: MotifRefusDate } => m.motif !== null);
+    if (motifs.length > 0) throw new DatesProposeesInvalidesError(motifs);
+
     const expireAt = new Date(maintenant.getTime() + VALIDITE_LIEN_JOURS * 86400_000);
     const [envoi] = await tx
       .insert(envoisDevis)
@@ -122,9 +210,13 @@ export async function creerEnvoi(
       .returning();
 
     // Le chantier passe « en attente de réponse » : ni planifié, ni facturable.
+    // La durée réservée est écrite maintenant : c'est elle qui servira à poser
+    // le créneau quand le client aura choisi sa date, et elle doit être celle
+    // sur laquelle les dates proposées ont été calculées — pas celle qu'une
+    // dictée modifiée entre-temps donnerait.
     await tx
       .update(chantiers)
-      .set({ devisEnvoyeAt: maintenant, updatedAt: maintenant })
+      .set({ devisEnvoyeAt: maintenant, dureeDemiJournees: duree, updatedAt: maintenant })
       .where(and(eq(chantiers.id, creation.chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId)));
 
     return envoi;
@@ -195,17 +287,35 @@ export async function lireParJeton(
     // Les jours occupés sont lus ici, dans le contexte de l'entreprise
     // propriétaire de l'envoi — jamais depuis une entrée du client.
     await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
-    const lignes = await tx
-      .select({ jour: chantiers.datePlanifiee })
+    const { occupation, nombreEquipes } = await contrainteDuPlanning(
+      tx,
+      envoi.entrepriseId,
+      fenetre,
+      envoi.chantierId
+    );
+    const [chantierRow] = await tx
+      .select({ duree: chantiers.dureeDemiJournees, dureePrevue: chantiers.dureePrevue })
       .from(chantiers)
-      .where(
-        and(
-          eq(chantiers.entrepriseId, envoi.entrepriseId),
-          isNull(chantiers.deletedAt),
-          gte(chantiers.datePlanifiee, fenetre.debut),
-          lte(chantiers.datePlanifiee, fenetre.fin)
-        )
-      );
+      .where(eq(chantiers.id, envoi.chantierId))
+      .limit(1);
+    const dureeReservee =
+      chantierRow?.duree ??
+      dureeEnDemiJournees(chantierRow?.dureePrevue ?? null) ??
+      DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+
+    // Les jours où CE chantier ne tient pas — des dates, et rien d'autre.
+    // Le client ne saura jamais qu'un 6 août refusé l'est parce que le matin est
+    // pris, ni qu'un autre l'est parce que les deux équipes sont sorties : c'est
+    // la consigne du patron, et c'est aussi ce qu'il apprendrait au téléphone.
+    const joursSansPlace: JourIso[] = [];
+    for (let d = 0; ; d++) {
+      const jour = versJourIso(new Date(maintenant.getTime() + d * 86_400_000));
+      if (jour > fenetre.fin) break;
+      if (jour < fenetre.debut) continue;
+      if (!jourRetenable(jour, dureeReservee, occupation, nombreEquipes, fenetre)) {
+        joursSansPlace.push(jour);
+      }
+    }
 
     const [d] = await tx.select().from(devis).where(eq(devis.id, envoi.devisId)).limit(1);
     if (!d) return null;
@@ -228,7 +338,7 @@ export async function lireParJeton(
       devisId: envoi.devisId,
       chantierId: envoi.chantierId,
       datesProposees: envoi.datesProposees,
-      joursOccupes: lignes.map((l) => l.jour).filter((j): j is string => j !== null),
+      joursOccupes: joursSansPlace,
       fenetre,
       reponse: envoi.reponse,
       dateRetenue: envoi.dateRetenue,
@@ -372,22 +482,31 @@ export async function enregistrerReponse(
     // Revérification côté serveur — la seule qui fasse foi.
     await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
     const fenetre = fenetreProposition(maintenant);
-    const lignes = await tx
-      .select({ jour: chantiers.datePlanifiee })
-      .from(chantiers)
-      .where(
-        and(
-          eq(chantiers.entrepriseId, envoi.entrepriseId),
-          isNull(chantiers.deletedAt),
-          gte(chantiers.datePlanifiee, fenetre.debut),
-          lte(chantiers.datePlanifiee, fenetre.fin)
-        )
-      );
-    const occupes = lignes.map((l) => l.jour).filter((j): j is string => j !== null);
+    const { occupation, nombreEquipes } = await contrainteDuPlanning(
+      tx,
+      envoi.entrepriseId,
+      fenetre,
+      envoi.chantierId
+    );
 
-    if (!dateRetenable(date, occupes, fenetre)) {
+    const [chantierRow] = await tx
+      .select({ duree: chantiers.dureeDemiJournees, dureePrevue: chantiers.dureePrevue })
+      .from(chantiers)
+      .where(eq(chantiers.id, envoi.chantierId))
+      .limit(1);
+    const duree =
+      chantierRow?.duree ??
+      dureeEnDemiJournees(chantierRow?.dureePrevue ?? null) ??
+      DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+
+    if (!jourRetenable(date, duree, occupation, nombreEquipes, fenetre)) {
       return { succes: false, motif: "date_indisponible" as const };
     }
+
+    // Le créneau est décidé ici, jamais par le client : il choisit un jour, le
+    // planning choisit la demi-journée. C'est la consigne du patron — « mon
+    // client ne doit pas être informé de la demi-journée ».
+    const moment: Moment = departPossible(date, duree, occupation, nombreEquipes) ?? "matin";
 
     await tx
       .update(envoisDevis)
@@ -403,10 +522,11 @@ export async function enregistrerReponse(
       })
       .where(eq(envoisDevis.jeton, jeton));
 
-    // Le chantier est débloqué et planifié à la date retenue.
+    // Le chantier est débloqué et planifié à la date retenue, sur le créneau
+    // que le planning vient de lui trouver.
     await tx
       .update(chantiers)
-      .set({ datePlanifiee: date, updatedAt: maintenant })
+      .set({ datePlanifiee: date, creneauDebut: moment, dureeDemiJournees: duree, updatedAt: maintenant })
       .where(
         and(eq(chantiers.id, envoi.chantierId), eq(chantiers.entrepriseId, envoi.entrepriseId))
       );

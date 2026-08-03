@@ -16,8 +16,8 @@ import {
 } from "../src/server/repositories/envois-devis";
 import {
   fenetreProposition,
-  dateRetenable,
-  motifRefusDate,
+  jourRetenable,
+  compterOccupation,
   versJourIso,
   ajouterJours,
 } from "../src/server/disponibilites";
@@ -81,17 +81,21 @@ async function main() {
   });
 
   await test("un jour occupé n'est pas retenable", async () => {
+    // Depuis les créneaux (migration 0019), la règle raisonne en demi-journées :
+    // un jour n'est plein que si le chantier visé n'y tient plus. Le détail est
+    // éprouvé par `test-creneaux.ts` ; ici on vérifie que la règle est bien
+    // celle qu'emploie tout ce fichier.
     const f = fenetreProposition(MAINTENANT);
-    assert.strictEqual(dateRetenable(dans(10), [dans(10)], f), false);
-    assert.strictEqual(dateRetenable(dans(10), [dans(11)], f), true);
+    const UNE_JOURNEE = 2;
+    const pris = compterOccupation([{ jour: dans(10), moment: "matin", dureeDemiJournees: UNE_JOURNEE }]);
+    assert.strictEqual(jourRetenable(dans(10), UNE_JOURNEE, pris, 1, f), false);
+    assert.strictEqual(jourRetenable(dans(11), UNE_JOURNEE, pris, 1, f), true);
   });
 
-  await test("le motif du refus est explicite", async () => {
+  await test("hors fenêtre, un jour libre reste refusé", async () => {
     const f = fenetreProposition(MAINTENANT);
-    assert.strictEqual(motifRefusDate(dans(200), [], f), "hors_fenetre");
-    assert.strictEqual(motifRefusDate(dans(0), [], f), "hors_fenetre");
-    assert.strictEqual(motifRefusDate(dans(10), [dans(10)], f), "jour_occupe");
-    assert.strictEqual(motifRefusDate(dans(10), [], f), null);
+    assert.strictEqual(jourRetenable(dans(200), 2, new Map(), 1, f), false, "borne haute");
+    assert.strictEqual(jourRetenable(dans(0), 2, new Map(), 1, f), false, "délai minimal");
   });
 
   await test("deux jetons ne se ressemblent jamais", async () => {

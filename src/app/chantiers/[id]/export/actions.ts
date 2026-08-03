@@ -46,9 +46,15 @@ export async function reprendreDevisAction(chantierId: string) {
 
 // --- Envoi au client : la seule question posée au patron (docs/AGENT.md §2.2) ---
 
-export async function preparerEnvoiAction(chantierId: string) {
+/**
+ * `dureeDemiJournees` : la durée que le patron a éventuellement corrigée à
+ * l'écran. Elle commande les jours proposables — une demi-journée tient là où
+ * une journée entière ne tient plus — donc l'écran rappelle cette action à
+ * chaque changement.
+ */
+export async function preparerEnvoiAction(chantierId: string, dureeDemiJournees?: number) {
   const ctx = await getCurrentCtx();
-  return preparerEnvoi(ctx, chantierId);
+  return preparerEnvoi(ctx, chantierId, new Date(), dureeDemiJournees);
 }
 
 export type ResultatEnvoiClient =
@@ -67,11 +73,12 @@ export type ResultatEnvoiClient =
 export async function envoyerAuClientAction(
   chantierId: string,
   devisId: string,
-  datesProposees: string[]
+  datesProposees: string[],
+  dureeDemiJournees?: number
 ): Promise<ResultatEnvoiClient> {
   const ctx = await getCurrentCtx();
 
-  const preparation = await preparerEnvoi(ctx, chantierId);
+  const preparation = await preparerEnvoi(ctx, chantierId, new Date(), dureeDemiJournees);
   if (preparation.blocage === "canal_absent") {
     return {
       succes: false,
@@ -106,6 +113,10 @@ export async function envoyerAuClientAction(
       canal: preparation.canal,
       datesProposees,
       contenuDevis: `${devisEnvoye.numeroCommercial}|${devisEnvoye.numeroVersion}|${devisEnvoye.totalTtc}`,
+      // La durée réellement retenue, telle que l'écran l'a affichée : c'est sur
+      // elle que les dates proposables ont été calculées, et c'est elle qui sera
+      // réservée quand le client aura choisi.
+      dureeDemiJournees: preparation.dureeDemiJournees,
     });
     return {
       succes: true,

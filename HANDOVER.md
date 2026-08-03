@@ -55,7 +55,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les onze pièges de ce dépôt
+### Les douze pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -110,6 +110,15 @@ site publié à son adresse réelle.
     dit « c'est déjà fait » se déduit des données, jamais d'un drapeau local** —
     et le serveur applique la même fonction, parce qu'un écran ne protège rien.
     Motif à réutiliser : `src/lib/proposition-au-detail.ts`.
+
+11. **Le planning ne se lit plus en jours pleins.** Un jour porte deux
+    demi-journées, chacune tenant autant de chantiers que l'entreprise a
+    d'équipes (`ARCHITECTURE.md` §22). Deux conséquences à ne pas défaire : un
+    chantier planifié **avant** la migration 0019 n'a ni créneau ni durée et
+    doit continuer d'occuper la journée entière — le relâcher rendrait
+    proposables des après-midis déjà pris ; et le **week-end reste retenable**,
+    il n'est qu'exclu des jours *suggérés*, parce qu'un client peut demander un
+    samedi. Avoir confondu les deux a cassé deux suites d'un coup.
 
 ### Le vocabulaire
 

@@ -9,6 +9,51 @@ Format : le plus récent en tête.
 
 ## 2026-08-03
 
+### Le planning compte en demi-journées, et le patron peut avoir plusieurs équipes
+
+Sa question :
+
+> « J'ai déjà un chantier le 6 août, donc pour mon nouveau client on ne propose
+> pas le 6 août. Mais si mon 1er chantier du 6 ne dure que le matin, je ne peux
+> pas caler une autre demi-journée l'après-midi. »
+> « Si j'ai deux équipes dans ma boîte, je peux avoir deux chantiers, voire plus,
+> le 6 août. »
+
+Trois pistes lui ont été présentées pour chaque moitié du problème. Il a retenu
+la durée en demi-journées (« la demi-journée suffit ») et le compteur d'équipes,
+et il a écarté les heures réelles. Le détail des choix est dans
+`ARCHITECTURE.md` §22 — pour que personne ne rouvre le débat dans trois mois.
+
+**Ce qui change.** Un jour porte deux demi-journées ; chacune tient autant de
+chantiers que l'entreprise a d'équipes (réglable dans Réglages, une par défaut).
+Un chantier occupe une suite de demi-journées à partir d'un départ que le
+planning choisit — matin de préférence, après-midi sinon. L'écran d'envoi porte
+désormais la durée du chantier, reprise de la dictée et corrigible d'un doigt :
+elle commande les jours proposables.
+
+**Un troisième défaut, que personne n'avait signalé.** La durée dictée
+(« 2 jours ») n'entrait **nulle part** dans la planification : seul le chiffrage
+la lisait. Un chantier de deux jours calé le 6 laissait donc le 7 proposable au
+client suivant. Il bloque maintenant les deux.
+
+**Ce que le client voit n'a pas bougé d'un iota**, et c'était sa consigne :
+« mon client ne doit pas être informé de la demi-journée, seulement moi ; lui
+verra le 6 août ». La page publique ne reçoit toujours que des dates. Un
+contrôle inspecte le contenu sérialisé et échoue si « matin », « après-midi »,
+« créneau » ou « durée » y apparaît.
+
+**Le piège de la migration, et comment il est fermé.** Les chantiers déjà
+planifiés n'ont ni créneau ni durée. Les lire comme « rien de réservé » aurait
+libéré, du jour au lendemain, des après-midis déjà pris — et le patron se serait
+retrouvé avec deux clients au même endroit. Ils sont donc traités comme une
+journée entière, exactement ce qu'ils étaient.
+
+**Ce que j'ai cassé en cours de route, et que la batterie a vu.** J'avais rendu
+les samedis non retenables, alors que les autoriser était un choix délibéré :
+on ne *propose* jamais le week-end, mais un client qui en demande un doit
+pouvoir l'obtenir. Deux suites sans rapport ont viré au rouge sur des dates qui
+tombaient un samedi. Corrigé, et écrit noir sur blanc dans le code.
+
 ### Le devis qui doublait tout seul
 
 Le patron : « lorsque je clique sur la touche retour de mon navigateur et que je

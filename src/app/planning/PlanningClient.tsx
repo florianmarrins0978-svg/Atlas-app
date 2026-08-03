@@ -4,6 +4,7 @@ import { useState } from "react";
 import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
+import { LIBELLE_MOMENT, libelleDuree } from "@/server/disponibilites";
 import { planifierChantierAction } from "./actions";
 
 // Intégration réelle — connectée à la base (docs/ARCHITECTURE_DONNEES.md).
@@ -20,6 +21,8 @@ type ChantierPlanning = {
   clientNom: string | null;
   devisEnvoyeAt: Date | string | null;
   datePlanifiee: string | null;
+  creneauDebut: string | null;
+  dureeDemiJournees: number | null;
   envoiEnvoyeAt: Date | string | null;
   envoiExpireAt: Date | string | null;
   envoiReponse: "acceptee" | "refusee" | null;
@@ -28,6 +31,21 @@ type ChantierPlanning = {
 function formatDateFr(iso: string) {
   const d = new Date(iso + "T00:00:00");
   return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+}
+
+/**
+ * « après-midi », « matin — 2 jours »… — pour le patron, jamais pour le client.
+ *
+ * Muet quand le chantier n'a pas de créneau : ce sont ceux planifiés avant la
+ * migration 0019, et écrire « matin » sur eux serait affirmer une chose que
+ * personne n'a décidée.
+ */
+function creneauLisible(c: { creneauDebut: string | null; dureeDemiJournees: number | null }): string | null {
+  if (c.creneauDebut !== "matin" && c.creneauDebut !== "apres_midi") return null;
+  const moment = LIBELLE_MOMENT[c.creneauDebut];
+  if (!c.dureeDemiJournees || c.dureeDemiJournees === 2) return moment;
+  if (c.dureeDemiJournees === 1) return moment;
+  return `${moment}, ${libelleDuree(c.dureeDemiJournees)}`;
 }
 
 export default function PlanningClient({ initialChantiers }: { initialChantiers: ChantierPlanning[] }) {
@@ -177,6 +195,7 @@ export default function PlanningClient({ initialChantiers }: { initialChantiers:
                     </span>
                     <span className="block text-[13px]" style={{ color: colors.muted }}>
                       {c.clientNom ?? "Client non renseigné"}
+                      {creneauLisible(c) && ` — ${creneauLisible(c)}`}
                     </span>
                   </span>
                 </button>
