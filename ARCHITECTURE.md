@@ -454,3 +454,35 @@ les données du jour ne serait plus celui que le client a reçu.
 après extraction du moteur est identique **au pixel près** (même empreinte
 SHA-256 de l'image). Un moteur partagé qui déplace un trait de deux points
 abîmerait une pièce déjà éprouvée sans qu'aucun test ne le dise.
+
+
+---
+
+## 20. Les copies de `appli/` sont conformes à leur source, et c'est vérifié
+
+**Constaté le 3 août 2026** par `scripts/comparer-modeles.mjs`, qui télécharge
+les six modèles publiés sur `…github.io/Arborea-/` et les compare octet par
+octet aux fichiers de `appli/`.
+
+| Modèle | Verdict |
+|---|---|
+| `facture-modele.html` | **identique** — 26 445 octets |
+| `tva-modele.html` | identique — 34 531 octets |
+| `mes-tarifs.html` | identique — 18 775 octets |
+| `app.html` | identique — 7 409 octets |
+| `devis-vocal.html` | identique — 21 005 octets |
+| `devis-modele.html` | **en avance** — 39 864 ici contre 37 147 en ligne |
+
+**Le seul écart est une avance, pas une dérive.** Les 2 717 octets
+supplémentaires du modèle de devis sont le message d'accompagnement de l'envoi
+(`.send-status`, `copierDestinataire`) — un ajout fait ici à dessein, absent du
+site du patron. Reprendre le fichier en ligne le supprimerait.
+
+**Ce que cela clôt.** Deux explications d'un écart de couleur ont été affirmées
+puis démenties, toutes deux parce qu'elles raisonnaient sur la copie sans
+jamais consulter l'original. La question ne se pose plus par hypothèse : elle se
+mesure, et le contrôle se rejoue.
+
+**Ce que cela ne dit pas.** Le PDF n'est pas le modèle : c'est sa transposition.
+Les polices diffèrent (§16), un PDF n'ayant pas accès à Playfair Display ni à
+Inter. La conformité porte sur la source, pas sur le rendu.

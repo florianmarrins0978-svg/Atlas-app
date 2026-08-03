@@ -43,6 +43,25 @@ d'œil sur la première page ne remplace : aucune ligne ne descend sur le cadre 
 signature. Chacun a été confronté au défaut qu'il prétend détecter avant d'être
 acté ; le premier jet cherchait « EUR » n'importe où et accusait « ÉMETTEUR ».
 
+### Les modèles du dépôt sont bien ceux du patron — vérifié, pas supposé
+
+Le patron a demandé de récupérer exactement le modèle qui se trouve sur son
+site Arborea-, plutôt qu'une reproduction. Avant de reprendre quoi que ce soit,
+un contrôle est allé chercher les six fichiers publiés et les a comparés octet
+par octet à ceux de `appli/`.
+
+**Le modèle de facture est identique** — 26 445 octets de part et d'autre.
+Celui dont le PDF vient d'être bâti est donc déjà exactement le sien : il n'y
+avait rien à récupérer. Quatre autres modèles sont identiques eux aussi.
+
+Le seul écart concerne le modèle de devis, et c'est une **avance** : la copie
+d'ici contient 2 717 octets de plus, le message d'accompagnement de l'envoi
+ajouté à dessein. Le reprendre en ligne le supprimerait.
+
+Cela clôt une question qui a coûté deux explications fausses : elle se mesure
+désormais au lieu de se supposer, et le contrôle se rejoue
+(`ARCHITECTURE.md` §20).
+
 ### La facture a enfin son document
 
 Le devis produisait un PDF ; la facture, non — seulement un écran de
