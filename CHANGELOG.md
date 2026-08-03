@@ -9,6 +9,25 @@ Format : le plus récent en tête.
 
 ## 2026-08-03
 
+### L'adresse d'Atlas est écrite par la machine, plus recomposée par le patron
+
+Le mode d'emploi lui donnait `https://<nom-de-l-espace>-3000.app.github.dev`.
+Il a répondu : « Je comprends pas ce que je dois faire avec ça ». Il avait
+raison — on lui demandait de deviner un morceau d'adresse, au doigt, sur six
+pouces, alors que l'espace de travail connaît son propre nom.
+
+`.devcontainer/demarrer.sh` compose désormais l'adresse complète à partir de
+`CODESPACE_NAME` et `GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN`, l'affiche dans
+un cadre au démarrage et la dépose dans `/tmp/adresse-atlas.txt` — le terminal
+défile, pas le fichier. Hors Codespace, où ces variables n'existent pas, le
+script n'annonce rien plutôt que d'inventer une adresse fausse ; les deux cas
+ont été joués.
+
+Le mode d'emploi ne porte plus aucun gabarit à remplir : une adresse
+d'exemple complète, la consigne de la mettre en favori dès la première fois, et
+— pour qui ne l'a pas fait — un tableau qui montre les deux caractères à ajouter
+à l'adresse de l'éditeur, plutôt qu'une phrase à interpréter.
+
 ### « Déconnecté de codespace » ne veut pas dire « Atlas est en panne »
 
 Le patron a envoyé une capture de son téléphone : *The workbench failed to

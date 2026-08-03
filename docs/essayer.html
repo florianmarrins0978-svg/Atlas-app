@@ -114,8 +114,10 @@
 <p>C'est délibéré : ce banc d'essai sert d'abord à essayer Atlas <strong>depuis un téléphone</strong>. Y piloter un terminal suppose de viser un curseur au doigt et de disposer d'une touche <code>Ctrl</code> qui n'existe pas. Quatre tentatives ont échoué là-dessus — jamais sur l'application.</p>
 <h3 id="3-louvrir">3. L'ouvrir</h3>
 <p>Comptez <strong>une à deux minutes</strong> après « Atlas est prêt » : le premier écran doit se compiler. Un message apparaît alors, proposant d'ouvrir le port <strong>3000</strong> — acceptez.</p>
-<p>L'adresse se devine aussi toute seule : c'est le nom de l'espace, visible dans la barre d'adresse de l'éditeur, suivi de <code>-3000.app.github.dev</code>.</p>
-<p>``<code> https://&lt;nom-de-l-espace&gt;-3000.app.github.dev </code>``</p>
+<p><strong>Votre adresse est écrite en toutes lettres au démarrage</strong>, dans un cadre, au milieu du texte qui défile quand l'espace s'allume. Elle ressemble à ceci — le début change d'un espace à l'autre, c'est le nom que GitHub a donné au vôtre :</p>
+<p>``<code> https://fluffy-space-guide-g6477547xp266jj-3000.app.github.dev </code>``</p>
+<p><strong>Mettez-la en favori la première fois.</strong> Elle ne change plus tant que cet espace existe, et elle s'ouvre sans passer par l'éditeur — c'est ce qui vous sauvera le jour où l'éditeur refusera de se connecter.</p>
+<p>Si le texte du démarrage a défilé trop vite, l'adresse est aussi déposée dans le fichier <code>/tmp/adresse-atlas.txt</code>.</p>
 <p><strong>Si la page reste blanche, rechargez-la.</strong> L'application a probablement été ouverte pendant sa compilation. Elle est aussi écrite noir sur blanc dans le fichier <code>/tmp/essai.log</code>, après la ligne « L'application répond ».</p>
 <h3 id="4-se-connecter">4. Se connecter</h3>
 <p>``<code> demo@atlas.local demo1234 </code>``</p>
@@ -165,10 +167,11 @@
 <ol>
 <li><strong>Touchez « Reload ».</strong> Neuf fois sur dix l'espace a fini de se réveiller entre-temps.</li>
 <li>Si le message revient : rouvrez l'espace depuis <code>github.com/codespaces</code> (cela redémarre un espace arrêté, ce qu'un simple rechargement ne fait pas).</li>
-<li><strong>Surtout : n'attendez pas l'éditeur pour vous servir d'Atlas.</strong> L'application démarre toute seule à chaque allumage et son adresse est ouverte — allez-y directement :</li>
+<li><strong>Surtout : n'attendez pas l'éditeur pour vous servir d'Atlas.</strong> L'application démarre toute seule à chaque allumage et son adresse est ouverte — ouvrez <strong>le favori</strong> que vous avez enregistré au geste 3.</li>
 </ol>
-<p>``<code> https://&lt;nom-de-l-espace&gt;-3000.app.github.dev </code>``</p>
-<p>C'est le même nom que dans la barre d'adresse de l'éditeur, avec <code>-3000</code> ajouté et <code>.app.github.dev</code> à la place de <code>.github.dev</code>.</p>
+<p>Si vous ne l'avez pas encore enregistré, l'adresse se recompose à partir de celle de l'éditeur, en deux modifications :</p>
+<p>| | | |---|---| | l'éditeur | <code>https://fluffy-space-guide-g6477547xp266jj.github.dev</code> | | Atlas | <code>https://fluffy-space-guide-g6477547xp266jj</code><strong><code>-3000.app</code></strong><code>.github.dev</code> |</p>
+<p>Autrement dit : <strong>ajoutez <code>-3000</code> juste avant le premier point</strong>, et <strong><code>app.</code> juste après</strong>. Le début — le nom que GitHub a donné à votre espace — ne se touche pas : recopiez-le tel qu'il est chez vous.</p>
 <ol>
 <li>Si l'espace date d'avant le 2026-08-01, supprimez-le et créez-en un neuf : le démarrage automatique et le port ouvert sont lus <strong>à la création</strong> (encadré du geste 1).</li>
 </ol>
