@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-08-03
 
+### Le tableau des prestataires de transcription disait vrai pour un seul
+
+`docs/TRANSCRIPTION.md` annonçait trois prestataires « déjà écrits et prêts à
+être activés » : OpenAI, Deepgram, Google. En réalité seul OpenAI l'est.
+`providers/transcription/deepgram.ts` et `google.ts` sont des coquilles de
+quatorze lignes qui répondent « fournisseur non implémenté » à chaque appel.
+
+Ce que ça évitait : le patron doit choisir un prestataire, ouvrir un compte et
+faire rédiger un contrat de sous-traitance avant de brancher quoi que ce soit
+(point 1 de `docs/A-FAIRE.md`). Un tableau qui coche Deepgram lui aurait fait
+dépenser cet argent et ce temps pour découvrir la panne au premier essai — après
+la signature, pas avant.
+
+Le tableau dit maintenant lequel est écrit et lesquels ne le sont pas, avec la
+demi-journée que coûte chacun des autres. La même correction vaut pour la liste
+d'étapes du jour où il tranche : écrire le raccordement est devenu l'étape 1,
+sautée seulement si le choix tombe sur OpenAI.
+
 ### Le devis est enfin celui du patron
 
 Le patron a ouvert le PDF d'Atlas à côté de celui qu'il avait construit

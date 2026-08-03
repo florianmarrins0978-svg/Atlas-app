@@ -152,7 +152,7 @@
 <hr>
 <h2 id="les-candidats-et-où-ils-en-sont-dans-le-code">Les candidats, et où ils en sont dans le code</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>Trois sont déjà écrits et prêts à être activés.</strong> Le jour où vous tranchez, c'est une variable d'environnement — pas du développement.</p>
+<p><strong>Un seul est réellement écrit.</strong> Le jour où vous le retenez, c'est une variable d'environnement — pas du développement. Pour les autres, il reste du travail.</p>
 <div class="tablewrap"><table><thead><tr>
 <th>Prestataire</th>
 <th>Dans le code</th>
@@ -160,21 +160,22 @@
 </tr></thead><tbody>
 <tr>
 <td><strong>OpenAI</strong> (Whisper)</td>
-<td>✅ <code>providers/transcription/openai.ts</code></td>
+<td>✅ écrit et complet — <code>providers/transcription/openai.ts</code></td>
 <td>Le plus connu ; serveurs hors d'Europe sauf offre spécifique</td>
 </tr>
 <tr>
 <td><strong>Deepgram</strong></td>
-<td>✅ <code>providers/transcription/deepgram.ts</code></td>
-<td>Réputé rapide ; lexique personnalisable</td>
+<td>⚠️ <strong>coquille vide</strong> — <code>providers/transcription/deepgram.ts</code></td>
+<td>L'activer aujourd'hui renvoie « fournisseur non implémenté » sur chaque dictée. Réputé rapide ; lexique personnalisable</td>
 </tr>
 <tr>
 <td><strong>Google</strong> (Speech-to-Text)</td>
-<td>✅ <code>providers/transcription/google.ts</code></td>
-<td>Offre des régions européennes</td>
+<td>⚠️ <strong>coquille vide</strong> — <code>providers/transcription/google.ts</code></td>
+<td>Même chose. Offre des régions européennes</td>
 </tr>
 </tbody></table></div>
-<p><strong>Deux méritent d'être regardés, et ne sont pas encore écrits</strong> — compter une demi-journée pour en ajouter un :</p>
+<blockquote><strong>Pourquoi cette ligne a changé.</strong> Ce tableau annonçait trois prestataires « prêts à être activés ». C'était faux : deux d'entre eux ne contiennent qu'un refus poli, et la dictée serait tombée en panne au premier essai. Vous auriez pu ouvrir un compte et signer un contrat pour rien. Compter une demi-journée par prestataire pour les finir — le jour où vous en retenez un.</blockquote>
+<p><strong>Deux autres méritent d'être regardés, et ne sont pas écrits non plus</strong> — même demi-journée :</p>
 <div class="tablewrap"><table><thead><tr>
 <th>Prestataire</th>
 <th>Pourquoi le regarder</th>
@@ -260,6 +261,7 @@
 <h2 id="ce-que-je-fais-le-jour-où-vous-tranchez">Ce que je fais le jour où vous tranchez</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ol>
+<li><strong>Écrire le raccordement</strong>, si ce n'est pas OpenAI — une demi-journée. Si c'est OpenAI, il est déjà écrit et l'étape saute.</li>
 <li><strong>Activer le prestataire retenu</strong> — une variable, quelques minutes.</li>
 <li><strong>Verrouiller les autres</strong>, pour qu'aucun ne puisse être activé par inadvertance.</li>
 <li><strong>L'inscrire dans <a href="RGPD.md" target="_blank" rel="noopener"><code>RGPD.md</code></a> §3</strong> comme sous-traitant ultérieur, avec sa localisation et sa durée de conservation.</li>

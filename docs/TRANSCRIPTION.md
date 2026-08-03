@@ -127,17 +127,23 @@ vous n'avez rien dicté.
 
 ## Les candidats, et où ils en sont dans le code
 
-**Trois sont déjà écrits et prêts à être activés.** Le jour où vous tranchez,
-c'est une variable d'environnement — pas du développement.
+**Un seul est réellement écrit.** Le jour où vous le retenez, c'est une variable
+d'environnement — pas du développement. Pour les autres, il reste du travail.
 
 | Prestataire | Dans le code | Remarque |
 |---|---|---|
-| **OpenAI** (Whisper) | ✅ `providers/transcription/openai.ts` | Le plus connu ; serveurs hors d'Europe sauf offre spécifique |
-| **Deepgram** | ✅ `providers/transcription/deepgram.ts` | Réputé rapide ; lexique personnalisable |
-| **Google** (Speech-to-Text) | ✅ `providers/transcription/google.ts` | Offre des régions européennes |
+| **OpenAI** (Whisper) | ✅ écrit et complet — `providers/transcription/openai.ts` | Le plus connu ; serveurs hors d'Europe sauf offre spécifique |
+| **Deepgram** | ⚠️ **coquille vide** — `providers/transcription/deepgram.ts` | L'activer aujourd'hui renvoie « fournisseur non implémenté » sur chaque dictée. Réputé rapide ; lexique personnalisable |
+| **Google** (Speech-to-Text) | ⚠️ **coquille vide** — `providers/transcription/google.ts` | Même chose. Offre des régions européennes |
 
-**Deux méritent d'être regardés, et ne sont pas encore écrits** — compter une
-demi-journée pour en ajouter un :
+> **Pourquoi cette ligne a changé.** Ce tableau annonçait trois prestataires
+> « prêts à être activés ». C'était faux : deux d'entre eux ne contiennent qu'un
+> refus poli, et la dictée serait tombée en panne au premier essai. Vous auriez
+> pu ouvrir un compte et signer un contrat pour rien. Compter une demi-journée
+> par prestataire pour les finir — le jour où vous en retenez un.
+
+**Deux autres méritent d'être regardés, et ne sont pas écrits non plus** — même
+demi-journée :
 
 | Prestataire | Pourquoi le regarder |
 |---|---|
@@ -192,15 +198,17 @@ Ne choisissez pas au prix. Choisissez à la réponse écrite sur ces trois point
 
 ## Ce que je fais le jour où vous tranchez
 
-1. **Activer le prestataire retenu** — une variable, quelques minutes.
-2. **Verrouiller les autres**, pour qu'aucun ne puisse être activé par
+1. **Écrire le raccordement**, si ce n'est pas OpenAI — une demi-journée. Si
+   c'est OpenAI, il est déjà écrit et l'étape saute.
+2. **Activer le prestataire retenu** — une variable, quelques minutes.
+3. **Verrouiller les autres**, pour qu'aucun ne puisse être activé par
    inadvertance.
-3. **L'inscrire dans [`RGPD.md`](RGPD.md) §3** comme sous-traitant ultérieur,
+4. **L'inscrire dans [`RGPD.md`](RGPD.md) §3** comme sous-traitant ultérieur,
    avec sa localisation et sa durée de conservation.
-4. **Éprouver la vraie chaîne** : dicter, transcrire, extraire, chiffrer, et
+5. **Éprouver la vraie chaîne** : dicter, transcrire, extraire, chiffrer, et
    regarder ce que ça donne sur votre vocabulaire d'élagueur. C'est là que les
    surprises apparaissent, pas dans la documentation du prestataire.
-5. **Vérifier que l'échec est visible** : couper le réseau, envoyer un audio
+6. **Vérifier que l'échec est visible** : couper le réseau, envoyer un audio
    vide, et s'assurer que l'écran le dit clairement.
 
 ---
