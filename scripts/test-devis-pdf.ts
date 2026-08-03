@@ -170,12 +170,12 @@ async function main() {
     );
   });
 
-  await cas("le devis est sur le papier crème du modèle, pas sur du blanc", async () => {
-    const { trace } = await composerDevisPdf(DEVIS);
+  await cas("le devis est sur le papier crème du modèle, sur toutes ses pages", async () => {
     assert.equal(PALETTE_DEVIS.papier.toLowerCase(), "#faf9f5", "Le papier n'est plus celui du modèle.");
-    // Le fond est posé avant tout le reste, sur chaque page — une page
-    // supplémentaire restée blanche se verrait immédiatement.
-    const { trace: longue } = await composerDevisPdf({
+
+    // Un devis qui déborde : c'est la page supplémentaire qui risque de rester
+    // blanche, puisqu'elle naît ailleurs dans le code que la première.
+    const { trace } = await composerDevisPdf({
       ...DEVIS,
       lignes: Array.from({ length: 25 }, (_, i) => ({
         libelle: `Prestation ${i + 1}`,
@@ -184,7 +184,19 @@ async function main() {
         montant: "180.00",
       })),
     });
-    assert.ok(longue.pages > 1, "Ce devis devrait déborder, sinon le contrôle ne prouve rien.");
+    assert.ok(trace.pages > 1, "Ce devis devrait déborder, sinon le contrôle ne prouve rien.");
+
+    const pagesAvecFond = new Set(trace.fonds.map((f) => f.page));
+    for (let page = 1; page <= trace.pages; page++) {
+      assert.ok(pagesAvecFond.has(page), `La page ${page} est restée sur du blanc.`);
+    }
+    for (const fond of trace.fonds) {
+      assert.equal(
+        fond.couleur.toLowerCase(),
+        PALETTE_DEVIS.papier.toLowerCase(),
+        `La page ${fond.page} n'a pas le papier du modèle.`
+      );
+    }
   });
 
   await cas("le nom affiché est celui de l'entreprise, jamais Arborea", async () => {

@@ -167,6 +167,8 @@ export type TraceDevis = {
   textes: TexteTrace[];
   traits: TraitTrace[];
   cadres: CadreTrace[];
+  /** Le fond posé, une entrée par page — une page restée blanche se verrait. */
+  fonds: { page: number; couleur: string }[];
 };
 
 type Contexte = {
@@ -292,16 +294,17 @@ function ecrireEspaceADroite(
  * cette teinte partira donc sur sa feuille. C'est le prix du « exactement le
  * même », et il est assumé ici plutôt que découvert à la première cartouche.
  */
-function poserPapier(page: PDFPage) {
-  page.drawRectangle({ x: 0, y: 0, width: LARGEUR, height: HAUTEUR, color: PAPIER });
+function poserPapier(ctx: Contexte) {
+  ctx.page.drawRectangle({ x: 0, y: 0, width: LARGEUR, height: HAUTEUR, color: PAPIER });
+  ctx.trace.fonds.push({ page: ctx.numeroPage, couleur: PALETTE.papier });
 }
 
 /** Ouvre une page de plus et rend l'ordonnée où reprendre le contenu. */
 function pageSuivante(ctx: Contexte): number {
   ctx.page = ctx.pdfDoc.addPage([LARGEUR, HAUTEUR]);
-  poserPapier(ctx.page);
   ctx.numeroPage += 1;
   ctx.trace.pages = ctx.numeroPage;
+  poserPapier(ctx);
   return HAUTEUR - MARGE - 20;
 }
 
@@ -317,9 +320,9 @@ export async function composerDevisPdf(
     sansGras: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
     serif: await pdfDoc.embedFont(StandardFonts.TimesRoman),
     serifGras: await pdfDoc.embedFont(StandardFonts.TimesRomanBold),
-    trace: { pages: 1, textes: [], traits: [], cadres: [] },
+    trace: { pages: 1, textes: [], traits: [], cadres: [], fonds: [] },
   };
-  poserPapier(ctx.page);
+  poserPapier(ctx);
 
   let y = HAUTEUR - MARGE - 22;
 

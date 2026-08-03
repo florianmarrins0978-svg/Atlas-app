@@ -1,0 +1,62 @@
+name: Relever la palette du devis d'origine
+
+# Va lire le devis d'Arborea **à son adresse publique**, et rapporte les
+# couleurs et les polices que le navigateur calcule réellement dessus.
+#
+# Pourquoi ce workflow existe. Le devis d'Atlas a été construit d'après
+# `appli/devis-modele.html`, la copie versée dans ce dépôt. Le patron a envoyé
+# une capture de son devis en ligne : ses intertitres y sont terre cuite, quand
+# la copie leur donne un vert. **La copie avait divergé de l'original**, et la
+# reproduire fidèlement revenait à reproduire fidèlement un écart.
+#
+# L'environnement où Atlas est développé ne peut pas aller vérifier : son
+# mandataire réseau répond « 403 à CONNECT — policy denial » sur `github.io`.
+# Et la fenêtre d'autorisation qui donnerait accès au dépôt du site ne s'affiche
+# pas chez le patron. Restait la voie que ce dépôt emprunte déjà deux fois
+# (`pages.yml` pour le site publié, `banc-essai.yml` pour l'espace de travail) :
+# faire faire la mesure par une machine qui, elle, a accès — et lire son
+# rapport par l'API.
+#
+# Ce qu'il rapporte est ce que le navigateur **calcule**, pas ce que le CSS
+# déclare : une variable surchargée, une règle plus spécifique ou une feuille
+# distante changeraient la couleur sans changer le `:root`. C'est la couleur à
+# l'écran qui fait foi, puisque c'est elle que le patron regarde.
+
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: "Adresse du site à relever"
+        required: false
+        default: "https://florianmarrins0978-svg.github.io"
+  push:
+    paths:
+      - ".github/workflows/relever-palette.yml"
+      - "scripts/relever-palette.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  relever:
+    name: Relever la palette à la source
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Playwright seul, sans le reste des dépendances du dépôt : ce travail
+      # n'a besoin que d'un navigateur.
+      - name: Installer un navigateur
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright@1.49.1
+          npx playwright install --with-deps chromium
+
+      - name: Relever
+        env:
+          BASE: ${{ github.event.inputs.base || 'https://florianmarrins0978-svg.github.io' }}
+        run: node scripts/relever-palette.mjs
