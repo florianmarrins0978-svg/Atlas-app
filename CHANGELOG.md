@@ -43,6 +43,23 @@ d'œil sur la première page ne remplace : aucune ligne ne descend sur le cadre 
 signature. Chacun a été confronté au défaut qu'il prétend détecter avant d'être
 acté ; le premier jet cherchait « EUR » n'importe où et accusait « ÉMETTEUR ».
 
+### L'accueil prend la carte d'Arborea, la barre du bas reste
+
+Les deux formes ont été rendues au patron en photos, côte à côte, avec ce que
+chacune coûte. Sa réponse : **la barre du bas reste** (elle se touche d'une main
+sur un chantier, quand celle d'Arborea défile et sort de l'écran), et **l'action
+principale prend la carte** — rond d'icône, titre en Playfair, sous-ligne,
+flèche.
+
+Le refus est écrit au même titre que le changement (`ARCHITECTURE.md` §21) :
+sans cela, une prochaine conversation verrait une incohérence avec la charte
+d'Arborea et « corrigerait » la barre, en défaisant un choix délibéré.
+
+Deux écarts assumés avec le modèle : la sous-ligne décrit le parcours réel — « Le
+client, l'adresse, puis la dictée sur place » — et l'icône est un `+`, pas un
+micro. Chez Arborea la carte ouvre l'écran de dictée ; ici elle ouvre un
+formulaire, et un micro y serait une petite tromperie répétée à chaque ouverture.
+
 ### Le devis à 0 € ne part plus, et l'écran dit par où sortir
 
 Quand aucun tarif ne correspondait, l'écran Prix affichait « Aucun prix

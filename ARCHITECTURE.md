@@ -486,3 +486,35 @@ mesure, et le contrôle se rejoue.
 **Ce que cela ne dit pas.** Le PDF n'est pas le modèle : c'est sa transposition.
 Les polices diffèrent (§16), un PDF n'ayant pas accès à Playfair Display ni à
 Inter. La conformité porte sur la source, pas sur le rendu.
+
+
+---
+
+## 21. La barre de navigation reste en bas — décidé, pas subi
+
+**Décidé le 3 août 2026 par le patron**, les deux formes sous les yeux :
+Atlas garde sa barre basse à quatre onglets, là où Arborea navigue par une
+barre haute portant son nom.
+
+**Pourquoi c'est écrit alors que rien ne change.** Le reste de l'application a
+repris la charte d'Arborea (§18). Sans cette ligne, la prochaine conversation
+verrait une incohérence et « corrigerait » la barre pour aligner — en défaisant
+un choix délibéré. Une décision de ne rien faire se perd plus vite qu'une autre.
+
+**Le motif, dans ses mots :** la barre basse se touche d'une main, sur un
+chantier, sans lâcher le téléphone ni remonter la page. La barre haute d'Arborea
+défile avec le contenu et sort de l'écran. Atlas est une application installée
+sur un écran d'accueil, pas un site que l'on parcourt.
+
+**L'action principale, elle, prend la forme d'Arborea** : carte vert pin, rond
+d'icône, titre en Playfair, sous-ligne et flèche
+(`src/components/atlas/ActionPrincipale.tsx`).
+
+Deux écarts assumés avec le modèle, et notés dans le composant :
+
+- **La sous-ligne décrit le parcours réel** — « Le client, l'adresse, puis la
+  dictée sur place » — au lieu du « Dictez votre chantier sur place » d'Arborea.
+  Chez lui la carte ouvre l'écran de dictée ; ici elle ouvre un formulaire, et
+  la dictée vient un écran plus tard.
+- **L'icône est un `+`, pas un micro**, pour la même raison. Un micro qui ouvre
+  un formulaire serait une petite tromperie, répétée à chaque ouverture.
