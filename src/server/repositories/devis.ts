@@ -194,6 +194,9 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
       entrepriseSiret: d.entrepriseSiret,
       entrepriseTelephone: d.entrepriseTelephone,
       entrepriseEmail: d.entrepriseEmail,
+      // Le modèle d'Arborea imprime les modalités de virement : sans l'IBAN,
+      // le client reçoit un devis qu'il ne peut pas payer.
+      entrepriseIban: d.entrepriseIban,
       clientNom: d.clientNom,
       clientAdresse: d.clientAdresse,
       clientTelephone: d.clientTelephone,
@@ -235,6 +238,7 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
       entrepriseSiret: avant.entrepriseSiret,
       entrepriseTelephone: avant.entrepriseTelephone,
       entrepriseEmail: avant.entrepriseEmail,
+      entrepriseIban: avant.entrepriseIban,
       clientNom: avant.clientNom,
       clientAdresse: avant.clientAdresse,
       clientTelephone: avant.clientTelephone,

@@ -53,6 +53,39 @@ point 5 ci-dessus**.
 L'état « à relancer » existe, s'affiche, et le lien reste proposé pour un renvoi
 manuel. **L'automatiser suppose un fournisseur d'envoi** — point 5 ci-dessus.
 
+### 4. L'assistant répond en JSON brut
+
+Interrogé « Comment a été envoyé le devis ? », il a répondu :
+`D'après LireDevis, voici ce que j'ai trouvé : {"existe":true,"numeroCommercial":"2026-0003",…}`.
+Le patron n'a pas à lire du JSON. L'assistant doit répondre en français, ou dire
+qu'il ne sait pas — et jamais recracher la sortie d'un outil telle quelle.
+
+### 5. Un devis à 0 € reste proposable
+
+Sur l'écran Prix, sans aucune ligne et avec « Aucun prix proposable » affiché,
+le bouton « Préparer le devis → » est quand même offert. Il ne devrait pas
+l'être, et l'écran devrait dire quoi faire — ajouter un tarif, ou ajouter une
+ligne — plutôt que de se contenter de constater l'échec.
+
+### 4 bis. `test-reglages-e2e.ts` échoue par intermittence
+
+Vu une fois pendant une batterie chargée : `'0.00' == '42.50'`, puis vert seul
+et vert en rejouant la suite entière. La cause est dans le contrôle, pas dans le
+produit : il saisit un prix, sort du champ, attend **400 ms en dur**, puis
+recharge. Quand la machine est occupée, l'enregistrement n'a pas eu le temps de
+partir, et le contrôle accuse le tarif alors que rien n'est cassé.
+
+À remplacer par une attente de la valeur elle-même plutôt que d'un délai. Un
+contrôle qui rougit au hasard est pire qu'absent : il apprend à ignorer le rouge.
+
+### 6. Rien ne mène le patron d'un écran au suivant
+
+Après « Enregistrer le texte », rien n'indique qu'il faut ensuite générer le
+brouillon, puis le confirmer pour l'ajouter au chantier. Le lien « Continuer vers
+les informations → » a été ajouté à la transcription ; les autres marches du
+parcours n'en ont pas. Un écran qui ne dit pas où l'on va se lit comme une
+application en panne — c'est déjà arrivé.
+
 ---
 
 ## Terminé
@@ -70,3 +103,4 @@ manuel. **L'automatiser suppose un fournisseur d'envoi** — point 5 ci-dessus.
 - ~~Caducité distincte du refus, et remontée à l'accueil~~ — 2026-08-01
 - ~~Compteur d'accueil : ne plus compter les chantiers facturés~~ — 2026-08-01
 - ~~Découpler les maquettes `/design/*` du type de statut vivant~~ — 2026-08-01
+- ~~Le devis PDF reprend le modèle d'Arborea, et se pagine~~ — 2026-08-03

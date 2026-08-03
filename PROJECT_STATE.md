@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-01 · branche `claude/migrate-app-atlas-zz31ac`
-· dernier commit `dad467d` · dernière migration `drizzle/0018_factures.sql`
+**Dernière mise à jour :** 2026-08-03 · branche `claude/migrate-app-atlas-zz31ac`
+· dernier commit `0eb2ec7` · dernière migration `drizzle/0018_factures.sql`
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
@@ -54,6 +54,7 @@ seule avec quinze outils.
 | Facture bâtie depuis le devis, arrêt 3 | `src/app/chantiers/[id]/facture/` |
 | Installation sur téléphone : icône, plein écran, marges de sécurité | `src/app/layout.tsx`, `src/app/globals.css`, `scripts/generer-icones.mjs` |
 | Relevé de TVA collectée, par trimestre | `src/app/termines/tva/` + `src/server/trimestre.ts` |
+| Devis PDF reprenant le modèle du patron, sur autant de pages qu'il faut | `src/server/pdf/devis-pdf.ts` |
 
 ### Conformité RGPD
 
@@ -138,7 +139,7 @@ patron :
 
 | | |
 |---|---|
-| Suites base de données | 43/43 |
+| Suites base de données | 44/44 |
 | Suites navigateur (bout en bout) | 23/23 |
 | Types, lint | propres |
 | CI GitHub | verte au commit `78c746a` ; `07fa28c` en cours au moment d'écrire |

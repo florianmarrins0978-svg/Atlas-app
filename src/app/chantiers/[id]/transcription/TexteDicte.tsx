@@ -82,6 +82,10 @@ export default function TexteDicte({ chantierId, texteActuel, simulee }: Props) 
       <label htmlFor="texte-dicte" className="sr-only">
         Texte de la dictée
       </label>
+      {/* L'exemple porte « Exemple : » en tête, et c'est délibéré : un texte de
+          remplacement qui ressemble à une vraie phrase se prend pour du contenu
+          déjà saisi. Le patron a cru le champ rempli, a appuyé sur un bouton
+          grisé, et en a conclu que l'application ne marchait pas. */}
       <textarea
         id="texte-dicte"
         value={texte}
@@ -90,7 +94,7 @@ export default function TexteDicte({ chantierId, texteActuel, simulee }: Props) 
           setEnregistre(false);
         }}
         rows={6}
-        placeholder="Élagage du grand chêne au fond du jardin, rabattre les branches côté rue, deux jours à deux, broyage sur place…"
+        placeholder="Exemple : élagage du grand chêne au fond du jardin, deux jours à deux, broyage sur place…"
         className="w-full rounded-xl px-3 py-3 text-[15px] leading-relaxed"
         style={{ backgroundColor: colors.cream, color: colors.ink, border: `1px solid ${colors.rustTint}` }}
       />
@@ -101,8 +105,26 @@ export default function TexteDicte({ chantierId, texteActuel, simulee }: Props) 
         </p>
       )}
       {enregistre && !erreur && (
+        <>
+          <p className="mt-2 text-[13px]" style={{ color: colors.muted }}>
+            Texte enregistré.
+          </p>
+          {/* Sans ce lien, le patron reste sur cet écran sans savoir que la
+              suite l'attend ailleurs — et conclut qu'il ne s'est rien passé. */}
+          <a
+            href={`/chantiers/${chantierId}/informations`}
+            className="mt-1 block text-[14px] font-medium"
+            style={{ color: colors.rust }}
+          >
+            Continuer vers les informations →
+          </a>
+        </>
+      )}
+
+      {/* Un bouton grisé sans explication ressemble à un bouton en panne. */}
+      {texte.trim().length === 0 && (
         <p className="mt-2 text-[13px]" style={{ color: colors.muted }}>
-          Texte enregistré. Vous pouvez continuer vers les informations.
+          Écrivez d&apos;abord votre texte ci-dessus — le bouton s&apos;activera.
         </p>
       )}
 
