@@ -9,6 +9,66 @@ Format : le plus récent en tête.
 
 ## 2026-08-03
 
+### La dictée arrive entière à l'écran
+
+Le patron a écrit trois lignes et photographié ce qu'Atlas en avait fait :
+
+    Taille de haie laurier 20 m linéaires
+    Abattage chêne mort, couper le bois en 50 cm fendre laisser sur place
+    Estimation 2 jours 2 hommes broyeur plus camion plus fendeuse
+
+L'écran lui rendait **une** prestation au libellé collé (« Taille de haie
+laurier 20 m linéaires⏎Abattage chêne mort »), « Rien de détecté dans la
+dictée » en face du matériel, et « Non mentionné » en face des déchets. Son
+verdict : « ça n'a rien à voir ».
+
+Quatre fautes, toutes silencieuses :
+
+1. **le découpage ignorait les retours à la ligne.** Une dictée met un élément
+   par ligne ; deux prestations se retrouvaient dans un seul libellé ;
+2. **un segment contenant la durée ou l'équipe était jeté en entier.** Sa
+   troisième ligne portait tout son matériel — broyeur, camion, fendeuse — et
+   elle a disparu sans laisser de trace ;
+3. **le vocabulaire du matériel était celui d'un plaquiste** (plaque, rail,
+   colle, enduit) dans une application faite pour un élagueur. Les unités (m²,
+   kg) y figuraient aussi : « 20 m² de débroussaillage » finissait classé en
+   matériel ;
+4. **« bois » comptait comme un déchet.** Pour un élagueur, le bois est sa
+   matière : « couper le bois en 50 cm, fendre, laisser sur place » — du travail
+   facturable — basculait tout entier en gestion des déchets.
+
+Les quatre sont corrigées. La même dictée rend maintenant trois prestations,
+trois matériels, « laisser sur place » en gestion des déchets, la durée et
+l'équipe — et ne réclame plus une information qu'il avait donnée.
+
+**Ce qui empêchera la rechute.** Une heuristique ne comprendra jamais un
+chantier ; ce qu'on peut exiger d'elle, c'est de ne rien perdre.
+`scripts/test-analyse-dictee.ts` tient donc un invariant mot à mot : **aucun mot
+dicté ne disparaît**, avec la liste explicite des mots de liaison qu'on
+s'autorise à absorber. Il a été confronté aux deux défauts d'origine, qu'il
+rattrape ; il en a aussi trouvé un troisième que personne ne cherchait —
+`jours?` se déclenchait à l'intérieur de « journée », et « Une journée » laissait
+une prestation nommée « née ».
+
+**Ce que cela ne règle pas, et qu'il faut dire.** Ce découpage reste une
+heuristique : il ne comprend rien, il se contente de ne rien jeter. La vraie
+lecture d'une dictée demande un modèle de langage, et donc le choix de
+prestataire qui attend le patron dans `docs/A-FAIRE.md`.
+
+### Écrire le devis soi-même, depuis l'écran Informations
+
+Demandé dans le même message : « je dois pouvoir cliquer sur mon devis et
+pouvoir le remplir manuellement si je le souhaite ». L'écran Informations n'avait
+qu'une sortie — « Valider et calculer le prix → » — qui passe par la proposition
+automatique. Après une extraction ratée, c'était le seul chemin, et il menait au
+même endroit.
+
+Un second lien, « Ou écrire le devis moi-même → », mène directement à l'écran
+Prix, qui **est** le devis en cours de rédaction. Il ne marque pas les
+informations comme vérifiées — le patron quitte cet écran sans le trancher, et
+la fiche du chantier ne doit pas prétendre le contraire. La proposition de prix
+y arrive repliée, jamais supprimée : un lien la rappelle s'il change d'avis.
+
 ### L'adresse d'Atlas est écrite par la machine, plus recomposée par le patron
 
 Le mode d'emploi lui donnait `https://<nom-de-l-espace>-3000.app.github.dev`.

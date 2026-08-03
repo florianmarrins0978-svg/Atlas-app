@@ -54,7 +54,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les neuf pièges de ce dépôt
+### Les dix pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -91,6 +91,17 @@ site publié à son adresse réelle.
    L'espace fine insécable (U+202F) que `toLocaleString('fr-FR')` glisse dans
    « 1 400,00 € » en fait partie : utiliser l'insécable ordinaire (U+00A0), qui,
    elle, existe. Le symbole € passe, les accents aussi.
+9. **L'analyse d'une dictée jette ce qu'elle ne sait pas classer, sans le dire.**
+   `src/server/orchestrateur/analyse-demande.ts` ne comprend rien : il découpe.
+   Un segment mal découpé ne produit pas d'erreur — il produit un écran plus
+   court, que personne ne peut distinguer d'une dictée pauvre. Le patron y a
+   perdu une prestation et trois machines d'un coup. D'où l'invariant que tient
+   `scripts/test-analyse-dictee.ts` : **aucun mot dicté ne disparaît**, et la
+   liste des mots qu'on s'autorise à absorber est écrite en toutes lettres dans
+   la suite. Toucher au découpage sans relancer cette suite, c'est refaire le
+   défaut. Corollaire éprouvé : dans ces expressions rationnelles, les
+   frontières de mot ne sont pas décoratives — sans `\b`, `jours?` se déclenche
+   à l'intérieur de « journée » et ampute le segment.
 
 ### Le vocabulaire
 

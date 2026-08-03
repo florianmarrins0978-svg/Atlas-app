@@ -16,7 +16,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 | | Ce qui débloque | Ce que je fais alors |
 |---|---|---|
-| 1 | Deux fournisseurs d'IA retenus | Verrouiller la configuration sur eux, tenir `docs/RGPD.md` §3 à jour |
+| 1 | Deux fournisseurs d'IA retenus | Verrouiller la configuration sur eux, tenir `docs/RGPD.md` §3 à jour — et **enfin lire vraiment la dictée** : sans modèle, `analyse-demande.ts` découpe sans comprendre (il ne perd plus rien, c'est tout ce qu'on peut lui demander) |
 | 2 | Contrat de sous-traitance rédigé | Remplacer les canevas sans valeur par les textes réels |
 | 3 | Hébergement européen choisi | Déployer — **sans quoi personne ne peut se servir de l'application** |
 | 4 | Société constituée, assurance souscrite | Rien côté code |
@@ -90,3 +90,5 @@ application en panne — c'est déjà arrivé.
 - ~~Document PDF pour la facture, sur le moteur partagé avec le devis~~ — 2026-08-03
 - ~~Le devis à 0 € : bouton grisé, marche à suivre, et refus côté serveur~~ — 2026-08-03
 - ~~Navigation : la barre du bas reste (décidé) ; l'action principale prend la carte d'Arborea~~ — 2026-08-03
+- ~~La dictée arrivait amputée à l'écran : découpage, durée, vocabulaire, déchets~~ — 2026-08-03
+- ~~Écrire le devis soi-même depuis l'écran Informations~~ — 2026-08-03

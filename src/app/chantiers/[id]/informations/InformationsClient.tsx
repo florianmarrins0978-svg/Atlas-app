@@ -181,9 +181,39 @@ export default function InformationsClient({
           onRemove={(id) => retirer("materiel", id)}
         />
 
-        <PrimaryButton onClick={valider} disabled={validationEnCours}>
-          {validationEnCours ? "Validation…" : "Valider et calculer le prix →"}
-        </PrimaryButton>
+        <div className="flex flex-col gap-3">
+          <PrimaryButton onClick={valider} disabled={validationEnCours}>
+            {validationEnCours ? "Validation…" : "Valider et calculer le prix →"}
+          </PrimaryButton>
+
+          {/* La sortie de secours, demandée par le patron le 3 août 2026 après
+              qu'une dictée eut été mal découpée : « je dois pouvoir cliquer sur
+              mon devis et le remplir manuellement si je le souhaite ».
+
+              Elle ne valide pas les informations, et c'est délibéré : il quitte
+              cet écran sans le trancher. Le marquer vérifié afficherait sur la
+              fiche du chantier une étape franchie qui ne l'a pas été.
+
+              Le lien vise l'écran Prix, qui EST le devis en cours de rédaction :
+              ses lignes et ses montants sont ce que le client recevra. `saisie=
+              manuelle` y replie la proposition automatique — sans la supprimer,
+              car il doit pouvoir la rappeler. */}
+          <a
+            href={`/chantiers/${chantierId}/prix?saisie=manuelle`}
+            className="text-center text-[14px] font-medium"
+            style={{ color: colors.rust }}
+          >
+            Ou écrire le devis moi-même →
+          </a>
+          {/* La marge basse n'est pas cosmétique : la bulle de l'assistant est
+              fixée en bas à droite, et sans elle cette phrase finit dessous une
+              fois la page déroulée à fond. Une pile de notifications avait déjà
+              poussé du contenu hors de l'écran — trouvé sur une capture, pas
+              par un test. */}
+          <p className="-mt-1 pb-10 text-center text-[12px] leading-relaxed" style={{ color: colors.muted }}>
+            Vous saisissez chaque ligne et son montant, sans passer par la proposition de prix.
+          </p>
+        </div>
       </form>
 
       <UndoToast open={toastVisible} message={toastMessage} onUndo={annulerSuppression} onDismiss={() => setToast(null)} />
