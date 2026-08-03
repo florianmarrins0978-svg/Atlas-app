@@ -1,5 +1,6 @@
 import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb, RGB } from "pdf-lib";
 import Decimal from "decimal.js";
+import { couleursDocument } from "@/lib/design-tokens";
 
 // Le devis, à l'image du modèle d'Arborea (`appli/devis-modele.html`).
 //
@@ -95,14 +96,19 @@ function couleurHexa(hexa: string): RGB {
   return rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
 }
 
+// Les teintes du document viennent de `couleursDocument`, et non de `colors` :
+// l'application a repris la charte d'Arborea (vert pin) tandis que le devis et
+// la facture gardent la terre cuite. Les tenir au même endroit rendait le devis
+// solidaire d'un changement d'écran — c'est exactement ce qui vient d'arriver,
+// et c'est le contrôle des couleurs qui l'a arrêté.
 const PALETTE = {
-  encre: "#1c1c1a", // --forest-deep
-  etiquette: "#6b6b5c", // en-têtes de colonnes, intertitres de bloc
-  titrePartie: "#B25A2E", // « ÉMETTEUR » / « CLIENT » — le rust mesuré chez le patron
+  encre: couleursDocument.encre,
+  etiquette: couleursDocument.etiquette, // en-têtes de colonnes, intertitres de bloc
+  titrePartie: couleursDocument.accent, // « ÉMETTEUR » / « CLIENT »
   coordonnees: "#5a5a4c", // .brand-tagline
   traitClair: "#e2ded3", // --paper-warm
   legal: "#7a7a6a",
-  papier: "#faf9f5", // --cream : le devis n'est pas sur du blanc
+  papier: couleursDocument.papier, // le devis n'est pas sur du blanc
 } as const;
 
 const ENCRE = couleurHexa(PALETTE.encre);

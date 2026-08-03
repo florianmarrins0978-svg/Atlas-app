@@ -1,13 +1,15 @@
 @import "tailwindcss";
 
+/* La charte d'Arborea, relevée sur le site publié du patron plutôt
+   qu'approchée à l'œil — voir src/lib/design-tokens.ts. */
 :root {
-  --ink: #1c1b19;
-  --paper: #ecebe7;
-  --card: #f7f6f3;
-  --accent: #e8630c;
-  --accent-deep: #b84a08;
-  --line: #d8d5ce;
-  --ok: #2f7d4f;
+  --ink: #1c1c1a;          /* --charcoal */
+  --paper: #f5f3ee;        /* --bone : fond de page */
+  --card: #faf9f5;         /* --cream : cartes et tuiles */
+  --accent: #2f3b2f;       /* --pine : l'accent unique */
+  --accent-deep: #4f5f4c;  /* --pine-light */
+  --line: rgba(28, 28, 26, 0.12);
+  --ok: #7d9a6d;           /* --sage */
   --warn: #b8860b;
 }
 
@@ -20,14 +22,31 @@
   --color-line: var(--line);
   --color-ok: var(--ok);
   --color-warn: var(--warn);
-  --font-display: "Arial Narrow", "Roboto Condensed", ui-sans-serif, system-ui, sans-serif;
-  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Les deux polices d'Arborea. `next/font` les rapatrie au build et les sert
+     depuis notre propre origine : indispensable ici, où la politique de
+     sécurité (`default-src 'self'`) interdirait de les charger chez Google. */
+  --font-display: var(--police-titres), Georgia, "Times New Roman", serif;
+  --font-body: var(--police-texte), system-ui, -apple-system, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", "IBM Plex Mono", Menlo, Consolas, monospace;
 }
 
+/* Arborea resserre ses titres au lieu de les condenser : Playfair Display n'a
+   pas de graisse étroite, et `font-stretch:condensed` la ferait synthétiser par
+   le navigateur — un faux gras large et mou. */
 .font-display {
-  font-stretch: condensed;
-  letter-spacing: 0.01em;
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* Le corps du texte, et les titres, comme sur les écrans du patron. */
+body {
+  font-family: var(--font-body);
+}
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 html, body {

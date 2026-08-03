@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font, smallCaps, couleursDocument } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { jourLisible } from "@/lib/jour";
 import { terminerChantierAction, emettreFactureAction } from "./actions";
@@ -93,7 +93,7 @@ export default function FactureClient({
           </p>
         </div>
         {erreur && (
-          <p role="alert" className="text-center text-[13px]" style={{ color: colors.rust }}>
+          <p role="alert" className="text-center text-[13px]" style={{ color: colors.alert }}>
             {erreur}
           </p>
         )}
@@ -149,7 +149,10 @@ export default function FactureClient({
           </p>
           <p
             className="text-[32px] font-semibold leading-none"
-            style={{ fontFamily: font.display, color: colors.rust }}
+            // Le montant que le client verra sur sa facture porte la teinte
+            // des documents, pas l'accent de l'application : le patron a
+            // demandé « terre cuite pour le devis, idem pour la facture ».
+            style={{ fontFamily: font.display, color: couleursDocument.accent }}
           >
             {formatEuros.format(Number(initialFacture.totalTtc))}
           </p>
@@ -157,7 +160,7 @@ export default function FactureClient({
       </div>
 
       {erreur && (
-        <p role="alert" className="text-center text-[13px]" style={{ color: colors.rust }}>
+        <p role="alert" className="text-center text-[13px]" style={{ color: colors.alert }}>
           {erreur}
         </p>
       )}

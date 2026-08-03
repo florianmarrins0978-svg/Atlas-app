@@ -373,3 +373,45 @@ la moitié basse du devis, que la capture du patron ne montrait pas — mention
 légale `#7a7a6a`, légende de signature `#6b6b5c`, total final en Playfair 600,
 en-têtes de colonnes `#6b6b5c` en Inter 700. Le devis d'Atlas s'y conformait
 déjà. Et le 404 à la racine, qui a permis de dater l'écart de couleur.
+
+
+---
+
+## 18. Une seule charte pour l'application : celle d'Arborea
+
+**Décidé le 3 août 2026, par le patron.** L'application reprend l'identité
+visuelle d'Arborea — vert pin `#2f3b2f`, fond os `#f5f3ee`, Playfair Display
+pour les titres, Inter pour le texte. **Les documents font exception** : devis et
+facture gardent la terre cuite `#B25A2E`.
+
+**Ce qui l'a imposé.** Deux chartes coexistaient sans que personne l'ait décidé.
+Atlas s'était donné en chemin un accent terre cuite et les polices du système ;
+les maquettes reprises d'Arborea gardaient le vert pin, Playfair et Inter. Le
+patron a fini par le voir : « le style graphique et les couleurs qui apparaissent
+sur ce site ne correspondent en rien à l'application ». Il avait raison, et le
+choix ne lui avait jamais été soumis.
+
+**Les valeurs ne sont pas approchées à l'œil.** Elles ont été relevées sur
+`…github.io/Arborea-/app.html` par un navigateur (§17), variable par variable.
+
+**Pourquoi le jeton s'appelle encore `rust` alors qu'il vaut un vert.**
+Soixante-quatre fichiers l'importent. Le renommer dans le même lot aurait mêlé un
+changement d'identité à un changement mécanique de grande ampleur, chacun
+masquant les erreurs de l'autre. Le nom sera corrigé seul, plus tard. En
+attendant, le commentaire du jeton le dit.
+
+**Pourquoi les documents gardent la terre cuite.** Un devis n'est pas un écran :
+c'est la pièce que le client garde, imprime et signe. Le patron a choisi cette
+teinte les deux versions sous les yeux, puis l'a maintenue en demandant que le
+reste reprenne Arborea. `couleursDocument` porte cette exception, séparément de
+`colors`, pour qu'elle ne se dilue pas au prochain ajustement.
+
+**Les polices sont rapatriées au build** par `next/font`, et servies depuis notre
+origine. Les charger chez Google serait bloqué par la politique de sécurité
+(`default-src 'self'`) — l'artisan verrait alors les polices de repli de son
+téléphone, c'est-à-dire pas Arborea.
+
+**Ce qui n'a pas été aligné, et pourquoi.** Arborea navigue par une barre haute
+portant son nom ; Atlas par une barre basse, pensée pour le pouce et pour une
+application installée sur l'écran d'accueil. Remplacer l'une par l'autre est une
+décision d'usage, pas de couleur : elle n'a pas été prise seule. Voir `TODO.md`.

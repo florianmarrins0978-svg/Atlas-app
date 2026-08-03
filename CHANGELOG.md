@@ -43,6 +43,32 @@ d'œil sur la première page ne remplace : aucune ligne ne descend sur le cadre 
 signature. Chacun a été confronté au défaut qu'il prétend détecter avant d'être
 acté ; le premier jet cherchait « EUR » n'importe où et accusait « ÉMETTEUR ».
 
+### L'application reprend la charte d'Arborea
+
+Le patron a fourni l'adresse de son Arborea d'origine et posé la bonne
+question : pourquoi le style de ce site ne correspond-il en rien à
+l'application ? Réponse mesurée : deux chartes coexistaient sans que personne
+l'ait décidé. Atlas s'était donné un accent terre cuite et les polices du
+système ; les maquettes gardaient le vert pin, Playfair Display et Inter.
+
+Sa décision : **l'application reprend Arborea, les documents gardent la terre
+cuite.**
+
+| | Avant | Après |
+|---|---|---|
+| Accent | terre cuite `#B25A2E` | **vert pin `#2f3b2f`** |
+| Fond | `#F6F1E6` | `#f5f3ee` |
+| Titres | Arial Narrow | **Playfair Display** |
+| Texte | polices système | **Inter** |
+| Devis, facture | terre cuite | **terre cuite, inchangée** |
+
+Les valeurs viennent du relevé automatisé sur son site publié, pas d'une
+approximation à l'œil. Les polices sont rapatriées au build : les charger chez
+Google serait bloqué par la politique de sécurité, et l'artisan verrait les
+polices de repli de son téléphone.
+
+Détail des choix, et de ce qui n'a **pas** été aligné, dans `ARCHITECTURE.md` §18.
+
 ### Terre cuite : le patron a choisi, les deux versions sous les yeux
 
 Les deux devis lui ont été rendus côte à côte, même contenu, seule la teinte des
