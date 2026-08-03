@@ -698,7 +698,10 @@ export const envoisDevis = pgTable(
     empreinteDevis: char("empreinte_devis", { length: 64 }).notNull(),
     envoyeAt: timestamp("envoye_at", { withTimezone: true }).notNull().defaultNow(),
 
-    reponse: text("reponse", { enum: ["acceptee", "refusee"] }),
+    // « correction » : le client veut le même devis, corrigé. Ni un oui, ni un
+    // non — la troisième issue qui manquait, et sans laquelle une coquille se
+    // présentait au patron comme un refus (migration 0020).
+    reponse: text("reponse", { enum: ["acceptee", "refusee", "correction"] }),
     responduAt: timestamp("repondu_at", { withTimezone: true }),
     dateRetenue: date("date_retenue"),
     dateContreProposee: boolean("date_contre_proposee").notNull().default(false),

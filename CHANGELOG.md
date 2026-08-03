@@ -9,6 +9,56 @@ Format : le plus récent en tête.
 
 ## 2026-08-03
 
+### Le message du client arrivait dans le vide — et il n'avait que deux boutons
+
+Le patron : « si le client remarque une faute, il doit pouvoir avoir une ligne
+pour écrire et renvoyer le devis pour correction ».
+
+**Deux défauts, dont un invisible.**
+
+1. Le client n'avait que deux issues : accepter, ou ne pas donner suite. Celui
+   qui repère une coquille ne veut ni l'une ni l'autre. Il touchait donc « Je ne
+   donne pas suite », et le patron lisait « Le client n'a pas donné suite » — un
+   chantier perdu pour une faute de frappe.
+2. **Le champ pour écrire existait déjà**, intitulé « Une précision ?
+   (facultatif) ». Le client y écrivait — la capture du patron montre « Le devis
+   comprend une fautes » — c'était enregistré dans `precision_client`… et
+   **aucun écran ne l'affichait jamais**. Le message partait dans le vide. C'est
+   le plus coûteux des deux, parce que rien ne le signale.
+
+**Ce qui change.** Une troisième issue, « Une correction avant d'accepter »,
+inactive tant que rien n'est écrit — une demande muette obligerait le patron à
+rappeler, c'est-à-dire à refaire l'aller-retour que ce parcours supprime. Le
+champ devient une zone de texte, s'intitule « Une erreur, une question, une
+précision ? » et annonce que l'artisan lira le message tel quel.
+
+**Et le message arrive.** Il s'affiche entre guillemets, dans la carte de
+l'accueil et sur l'écran Devis — pas derrière une pastille : c'est la seule
+chose qui dise au patron quoi faire, et un geste de plus pour la lire serait un
+geste de trop. Il accompagne aussi les refus (« trop cher ») et les
+acceptations (« plutôt le matin ») ; une acceptation muette sur une date
+proposée, elle, continue de ne déranger personne.
+
+Nouvel état `Correction demandée`, distinct de `Devis retourné` : le chantier
+est presque acquis, il ne tient qu'à une reprise. Le bouton dit alors
+« Corriger et renvoyer ».
+
+La base tient sa part : une correction sans message y est refusée par contrainte
+(migration 0020), indépendamment du code.
+
+### La durée du chantier se choisit à la molette, jusqu'à 100 jours
+
+Sa demande : « au lieu de rajouter des jours à chaque fois, mettre une bande
+déroulante qui fait défiler le nombre de jours (100 max) — si un chantier dure
+20 jours ce sera plus simple et prendra moins de place ».
+
+Les quatre boutons deviennent une liste déroulante : ½ journée, puis 1 à
+100 jours. Sur son téléphone, c'est exactement la molette qu'il décrit, elle
+occupe une seule ligne, et elle répond au lecteur d'écran — ce qu'une bande
+écrite à la main n'aurait pas fait. Au-delà de trois jours, une phrase annonce
+combien de jours ouvrés seront réservés : un chantier long bloque beaucoup de
+jours d'affilée, c'est juste mais invisible.
+
 ### Le planning compte en demi-journées, et le patron peut avoir plusieurs équipes
 
 Sa question :

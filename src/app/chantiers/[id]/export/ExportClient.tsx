@@ -30,6 +30,7 @@ export default function ExportClient({
   totalTtc,
   initialEnvoye,
   etatEnvoi,
+  messageClient,
   lienEnvoi,
   origine,
 }: {
@@ -46,6 +47,8 @@ export default function ExportClient({
   totalTtc: string;
   initialEnvoye: boolean;
   etatEnvoi: EtatEnvoi;
+  /** Ce que le client a écrit, mot pour mot. Vide s'il n'a rien dit. */
+  messageClient: string | null;
   /** Le lien encore actif, tant que le client n'a pas répondu. */
   lienEnvoi: string | null;
   /** Origine du site, calculée côté serveur — voir le commentaire dans page.tsx. */
@@ -71,7 +74,10 @@ export default function ExportClient({
 
   // Un refus, ou un lien périmé : le devis peut repartir, dans une nouvelle
   // version. Sans ce chemin, un chantier retourné l'était définitivement.
-  const peutReprendre = etatEnvoi === "retourne" || etatEnvoi === "caduc";
+  // Une correction demandée se reprend comme un refus : c'est la même mécanique
+  // — une nouvelle version, corrigée, renvoyée — mais avec bien plus de chances
+  // d'aboutir, puisque le client a déjà dit ce qu'il voulait.
+  const peutReprendre = etatEnvoi === "retourne" || etatEnvoi === "a_corriger" || etatEnvoi === "caduc";
   const lienAMontrer = lienClient ?? lienEnvoi;
 
   async function reprendre() {
@@ -140,6 +146,19 @@ export default function ExportClient({
               {lienClient ? `Devis prêt pour ${clientNom}.` : etatEnvoiExplication[etatEnvoi]}
             </p>
 
+            {/* Le message du client, tel qu'il l'a écrit. C'est ici que le
+                patron vient corriger : le lui faire chercher ailleurs, ou le
+                résumer, reviendrait à lui demander de deviner ce qu'il doit
+                changer. */}
+            {messageClient && (
+              <blockquote
+                className="mt-3 whitespace-pre-wrap pl-3 text-[14px] leading-relaxed"
+                style={{ borderLeft: `2px solid ${colors.rust}`, color: colors.ink }}
+              >
+                « {messageClient} »
+              </blockquote>
+            )}
+
             {lienAMontrer && (
               <>
                 <p className="mt-3 text-center text-[13px]" style={{ color: colors.ink }}>
@@ -191,7 +210,11 @@ export default function ExportClient({
                 className="mt-4 block w-full rounded-2xl py-3 text-[15px] font-medium text-white disabled:opacity-50"
                 style={{ backgroundColor: colors.rust }}
               >
-                {reprise ? "Reprise…" : "Reprendre le devis"}
+                {reprise
+                  ? "Reprise…"
+                  : etatEnvoi === "a_corriger"
+                    ? "Corriger et renvoyer"
+                    : "Reprendre le devis"}
               </button>
             )}
           </div>

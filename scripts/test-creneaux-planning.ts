@@ -75,7 +75,7 @@ async function main() {
       { chantierId: a.chantierId, devisId: a.devisId, canal: "email", datesProposees: [dans(7)], contenuDevis: "A" },
       MARDI
     );
-    const reponseA = await enregistrerReponse(envoiA.jeton, { accepte: true, dateRetenue: dans(7) }, MARDI);
+    const reponseA = await enregistrerReponse(envoiA.jeton, { decision: "accepte" as const, dateRetenue: dans(7) }, MARDI);
     assert.equal(reponseA.succes, true, "Le premier chantier n'a pas pu être planifié.");
 
     // Second chantier, une demi-journée lui aussi : le même jour doit rester
@@ -101,7 +101,7 @@ async function main() {
         { chantierId: c.chantierId, devisId: c.devisId, canal: "email", datesProposees: [jour], contenuDevis: nom },
         MARDI
       );
-      const r = await enregistrerReponse(e.jeton, { accepte: true, dateRetenue: jour }, MARDI);
+      const r = await enregistrerReponse(e.jeton, { decision: "accepte" as const, dateRetenue: jour }, MARDI);
       assert.equal(r.succes, true, `${nom} n'a pas pu être planifié.`);
     }
 
@@ -124,7 +124,7 @@ async function main() {
       { chantierId: a.chantierId, devisId: a.devisId, canal: "email", datesProposees: [dans(7)], contenuDevis: "A" },
       MARDI
     );
-    await enregistrerReponse(envoiA.jeton, { accepte: true, dateRetenue: dans(7) }, MARDI);
+    await enregistrerReponse(envoiA.jeton, { decision: "accepte" as const, dateRetenue: dans(7) }, MARDI);
 
     const b = await chantierPretAEnvoyer(ctx, "Chantier équipe 2", "1 jour");
     const preparation = await preparerEnvoi(ctx, b.chantierId, MARDI);
@@ -145,7 +145,7 @@ async function main() {
       { chantierId: a.chantierId, devisId: a.devisId, canal: "email", datesProposees: [dans(7)], contenuDevis: "A" },
       MARDI
     );
-    await enregistrerReponse(envoiA.jeton, { accepte: true, dateRetenue: dans(7) }, MARDI);
+    await enregistrerReponse(envoiA.jeton, { decision: "accepte" as const, dateRetenue: dans(7) }, MARDI);
 
     const b = await chantierPretAEnvoyer(ctx, "Chantier suivant", "1 jour");
     const preparation = await preparerEnvoi(ctx, b.chantierId, MARDI);
@@ -163,7 +163,7 @@ async function main() {
       { chantierId: a.chantierId, devisId: a.devisId, canal: "email", datesProposees: [dans(7)], contenuDevis: "A" },
       MARDI
     );
-    const r = await enregistrerReponse(envoiA.jeton, { accepte: true, dateRetenue: dans(7) }, MARDI);
+    const r = await enregistrerReponse(envoiA.jeton, { decision: "accepte" as const, dateRetenue: dans(7) }, MARDI);
     assert.equal(r.succes, true);
 
     const b = await chantierPretAEnvoyer(ctx, "Chantier suivant", "1 jour");
@@ -183,7 +183,7 @@ async function main() {
       { chantierId: a.chantierId, devisId: a.devisId, canal: "email", datesProposees: [dans(7)], contenuDevis: "A" },
       MARDI
     );
-    await enregistrerReponse(envoiA.jeton, { accepte: true, dateRetenue: dans(7) }, MARDI);
+    await enregistrerReponse(envoiA.jeton, { decision: "accepte" as const, dateRetenue: dans(7) }, MARDI);
     const premier = await chantiersRepo.getChantier(ctx, a.chantierId);
     assert.equal(premier?.creneauDebut, "matin", "Le premier chantier n'a pas pris le matin.");
 
@@ -193,7 +193,7 @@ async function main() {
       { chantierId: b.chantierId, devisId: b.devisId, canal: "email", datesProposees: [dans(7)], contenuDevis: "B" },
       MARDI
     );
-    await enregistrerReponse(envoiB.jeton, { accepte: true, dateRetenue: dans(7) }, MARDI);
+    await enregistrerReponse(envoiB.jeton, { decision: "accepte" as const, dateRetenue: dans(7) }, MARDI);
     const second = await chantiersRepo.getChantier(ctx, b.chantierId);
     assert.equal(second?.creneauDebut, "apres_midi", "Le second chantier n'a pas basculé l'après-midi.");
     assert.equal(second?.datePlanifiee, dans(7), "Les deux chantiers doivent bien tomber le même jour.");
@@ -208,7 +208,7 @@ async function main() {
       { chantierId: a.chantierId, devisId: a.devisId, canal: "email", datesProposees: [dans(7)], contenuDevis: "A" },
       MARDI
     );
-    await enregistrerReponse(envoiA.jeton, { accepte: true, dateRetenue: dans(7) }, MARDI);
+    await enregistrerReponse(envoiA.jeton, { decision: "accepte" as const, dateRetenue: dans(7) }, MARDI);
 
     const b = await chantierPretAEnvoyer(ctx, "Second chantier", "une demi-journée");
     const envoiB = await creerEnvoi(
@@ -270,8 +270,8 @@ async function main() {
       MARDI
     );
 
-    assert.equal((await enregistrerReponse(envoiA.jeton, { accepte: true, dateRetenue: dans(7) }, MARDI)).succes, true);
-    const second = await enregistrerReponse(envoiB.jeton, { accepte: true, dateRetenue: dans(7) }, MARDI);
+    assert.equal((await enregistrerReponse(envoiA.jeton, { decision: "accepte" as const, dateRetenue: dans(7) }, MARDI)).succes, true);
+    const second = await enregistrerReponse(envoiB.jeton, { decision: "accepte" as const, dateRetenue: dans(7) }, MARDI);
     assert.equal(second.succes, false, "Deux chantiers pleins ont été acceptés le même jour avec une seule équipe.");
     if (!second.succes) assert.equal(second.motif, "date_indisponible");
   });

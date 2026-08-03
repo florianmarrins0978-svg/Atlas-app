@@ -16,16 +16,31 @@ import type { PreparationEnvoi } from "@/server/repositories/preparation-envoi";
 // réponse déclenche tout le reste.
 
 /**
- * Les durées que le patron rencontre réellement. Au-delà de trois jours, un
- * chantier se planifie en le disant de vive voix : proposer dix boutons pour un
- * cas qui n'arrive pas encombrerait celui qui arrive tous les jours.
+ * Les durées proposées : la demi-journée, puis 1 à 100 jours.
+ *
+ * **Pourquoi une liste déroulante et non des boutons.** Quatre boutons
+ * couvraient jusqu'à trois jours ; au-delà il aurait fallu en ajouter, et un
+ * chantier de vingt jours en aurait demandé vingt. Le patron l'a dit : « une
+ * bande déroulante qui fait défiler le nombre de jours, 100 max — ça prendra
+ * moins de place ».
+ *
+ * **Et pourquoi un `<select>` natif plutôt qu'une bande faite maison.** Sur son
+ * téléphone, c'est exactement la molette qu'il décrit : elle s'ouvre au bas de
+ * l'écran, se fait défiler au pouce, et occupe une seule ligne au repos. Une
+ * bande écrite à la main aurait le même aspect en moins fiable — et ne
+ * répondrait pas au lecteur d'écran.
+ *
+ * La demi-journée reste la première entrée : c'est le cas qui lui a manqué.
  */
-const DUREES = [
+const DUREE_MAX_JOURS = 100;
+
+const DUREES: { demiJournees: number; libelle: string }[] = [
   { demiJournees: 1, libelle: "½ journée" },
-  { demiJournees: 2, libelle: "1 jour" },
-  { demiJournees: 4, libelle: "2 jours" },
-  { demiJournees: 6, libelle: "3 jours" },
-] as const;
+  ...Array.from({ length: DUREE_MAX_JOURS }, (_, i) => ({
+    demiJournees: (i + 1) * 2,
+    libelle: i === 0 ? "1 jour" : `${i + 1} jours`,
+  })),
+];
 
 const MESSAGES_BLOCAGE: Record<string, string> = {
   canal_absent:
@@ -161,38 +176,28 @@ function Contenu({
           <p className={smallCaps} style={{ color: colors.muted, marginBottom: 6 }}>
             Ce chantier prend
           </p>
-          {/* Un choix unique parmi quatre, donc un groupe de boutons radio — et
-              non quatre bascules. `aria-pressed` aurait annoncé « appuyé /
-              relâché » à un lecteur d'écran là où il faut « coché parmi ». Il
-              aurait aussi confondu ces boutons avec ceux des dates, qui sont de
-              vraies bascules : la suite bout en bout, qui vise `aria-pressed`
-              pour cocher une seconde date, a coché une durée à la place. */}
-          <div role="radiogroup" aria-label="Durée du chantier" className="mb-1 flex gap-1.5">
-            {DUREES.map((d) => {
-              const actif = preparation.dureeDemiJournees === d.demiJournees;
-              return (
-                <button
-                  key={d.demiJournees}
-                  type="button"
-                  role="radio"
-                  onClick={() => setDureeChoisie(d.demiJournees)}
-                  aria-checked={actif}
-                  className="flex-1 rounded-xl px-2 py-2.5 text-[14px]"
-                  style={{
-                    backgroundColor: actif ? colors.rustTint : colors.card,
-                    color: actif ? colors.rust : colors.ink,
-                    fontWeight: actif ? 500 : 400,
-                  }}
-                >
-                  {d.libelle}
-                </button>
-              );
-            })}
-          </div>
-          <p className="mb-4 text-[12px]" style={{ color: colors.muted }}>
+          <select
+            aria-label="Durée du chantier"
+            value={preparation.dureeDemiJournees}
+            onChange={(e) => setDureeChoisie(Number(e.target.value))}
+            className="mb-1 w-full rounded-xl px-4 py-3 outline-none"
+            style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
+          >
+            {DUREES.map((d) => (
+              <option key={d.demiJournees} value={d.demiJournees}>
+                {d.libelle}
+              </option>
+            ))}
+          </select>
+          <p className="mb-4 text-[12px] leading-relaxed" style={{ color: colors.muted }}>
             {preparation.dureeDeduiteDeLaDictee
               ? "Repris de votre dictée. Corrigez-le si besoin — cela change les jours proposables."
               : "Votre client ne verra que la date, jamais la demi-journée."}
+            {/* Un chantier long réserve beaucoup de jours d'affilée. C'est
+                juste, mais invisible : sans cette phrase, le patron
+                s'étonnerait de ne plus rien pouvoir proposer pendant un mois. */}
+            {preparation.dureeDemiJournees > 6 &&
+              ` ${preparation.dureeDemiJournees / 2} jours ouvrés d'affilée seront réservés à partir de la date retenue.`}
           </p>
 
           <p className={smallCaps} style={{ color: colors.muted, marginBottom: 8 }}>

@@ -107,4 +107,6 @@ application en panne — c'est déjà arrivé.
 - ~~Le devis doublait au retour arrière du navigateur (4 017,60 € au lieu de 2 008,80 €)~~ — 2026-08-03
 - ~~« Fin de chantier » injoignable sur un chantier planifié~~ — 2026-08-03
 - ~~Planifier en demi-journées, et compter les équipes (le client ne voit que la date)~~ — 2026-08-03
+- ~~Le client peut demander une correction, et son message parvient au patron~~ — 2026-08-03
+- ~~La durée du chantier se choisit à la molette (½ journée à 100 jours)~~ — 2026-08-03
 - ~~La durée dictée n'entrait pas dans la planification : un chantier de 2 jours n'en bloquait qu'un~~ — 2026-08-03

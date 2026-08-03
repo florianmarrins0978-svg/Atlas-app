@@ -183,7 +183,19 @@ async function main() {
     await page.click("text=Envoyer au client");
     await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+    try {
+      await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+    } catch (e) {
+      // Ce contrôle a échoué une fois dans la batterie complète, jamais seul :
+      // l'attente expirait sans qu'on sache pourquoi. Un délai dépassé ne
+      // désigne aucun coupable — l'écran, lui, porte le message de refus.
+      // Sans cette capture, la prochaine occurrence coûterait la même enquête.
+      console.error(
+        "L'envoi n'a pas abouti. Ce que la feuille affichait :\n" +
+          (await page.locator("body").innerText()).slice(0, 1500)
+      );
+      throw e;
+    }
 
     const envois = await inspecter("SELECT count(*)::int AS n FROM envois_devis WHERE chantier_id = $1", [
       chantierId,

@@ -55,7 +55,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les douze pièges de ce dépôt
+### Les treize pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -119,6 +119,15 @@ site publié à son adresse réelle.
     proposables des après-midis déjà pris ; et le **week-end reste retenable**,
     il n'est qu'exclu des jours *suggérés*, parce qu'un client peut demander un
     samedi. Avoir confondu les deux a cassé deux suites d'un coup.
+
+12. **Une donnée enregistrée n'est pas une donnée montrée.** `precision_client`
+    existait depuis le premier jour, le client y écrivait, et **aucun écran ne
+    l'affichait**. Le patron lisait « le client n'a pas donné suite » sans jamais
+    savoir qu'on lui avait écrit « le devis comprend une faute ». Rien ne le
+    signalait — ni erreur, ni test : le champ était simplement absent de toutes
+    les requêtes. Avant d'ajouter un champ que l'utilisateur remplit, écrire le
+    contrôle qui vérifie qu'il **ressort** quelque part
+    (`scripts/test-correction-devis.ts`).
 
 ### Le vocabulaire
 

@@ -27,6 +27,7 @@ const MESSAGES: Record<string, string> = {
   date_indisponible:
     "Cette date vient d'être retenue par ailleurs. Choisissez-en une autre — votre accord sur le devis reste valable.",
   date_manquante: "Choisissez une date d'intervention avant de valider.",
+  message_manquant: "Dites en un mot ce qui doit être corrigé : sans cela, votre artisan ne saura pas quoi reprendre.",
 };
 
 export async function repondreAction(
@@ -36,7 +37,7 @@ export async function repondreAction(
   const jeton = String(formData.get("jeton") ?? "");
   const decision = String(formData.get("decision") ?? "");
 
-  if (decision !== "accepte" && decision !== "refuse") {
+  if (decision !== "accepte" && decision !== "refuse" && decision !== "correction") {
     return { erreur: "Indiquez si vous acceptez ce devis." };
   }
 
@@ -46,8 +47,23 @@ export async function repondreAction(
     agentUtilisateur: entetes.get("user-agent"),
   };
 
+  // Le message du client, borné pour ne pas transformer une précision en
+  // réceptacle. Lu avant la décision : une demande de correction sans message
+  // ne dit rien au patron, et c'est le dépôt qui la refusera.
+  const precisionBrute = String(formData.get("precision") ?? "").trim();
+  const precision = precisionBrute ? precisionBrute.slice(0, 500) : null;
+
+  if (decision === "correction") {
+    const r = await enregistrerReponse(jeton, { decision: "correction" as const, precision, ...preuve });
+    if (!r.succes) return { erreur: MESSAGES[r.motif] ?? "Impossible d'enregistrer votre demande." };
+    logger.info("Correction demandée par le client");
+    return {
+      succes: "Votre demande est transmise. Votre artisan corrigera le devis et vous le renverra.",
+    };
+  }
+
   if (decision === "refuse") {
-    const r = await enregistrerReponse(jeton, { accepte: false, ...preuve });
+    const r = await enregistrerReponse(jeton, { decision: "refuse" as const, precision, ...preuve });
     if (!r.succes) return { erreur: MESSAGES[r.motif] ?? "Impossible d'enregistrer votre réponse." };
     logger.info("Devis refusé par le client");
     // Pas de revalidatePath ici : re-rendre la page la ferait basculer sur
@@ -64,13 +80,10 @@ export async function repondreAction(
   const dateRetenue = choix === "autre" ? String(formData.get("dateAutre") ?? "") : choix;
   if (!dateRetenue) return { erreur: MESSAGES.date_manquante };
 
-  const precisionBrute = String(formData.get("precision") ?? "").trim();
-
   const r = await enregistrerReponse(jeton, {
-    accepte: true,
+    decision: "accepte" as const,
     dateRetenue,
-    // Champ libre : borné pour ne pas transformer une précision en réceptacle.
-    precision: precisionBrute ? precisionBrute.slice(0, 500) : null,
+    precision,
     demarrageAnticipe: formData.get("demarrageAnticipe") === "oui",
     ...preuve,
   });

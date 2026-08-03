@@ -198,7 +198,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { accepte: true, dateRetenue: dans(14), adresseIp: "203.0.113.9", agentUtilisateur: "Test" },
+      { decision: "accepte" as const, dateRetenue: dans(14), adresseIp: "203.0.113.9", agentUtilisateur: "Test" },
       MAINTENANT
     );
     assert.deepStrictEqual(r, { succes: true, dateRetenue: dans(14), contreProposee: false });
@@ -216,7 +216,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { accepte: true, dateRetenue: dans(30), precision: "plutôt le matin", demarrageAnticipe: true },
+      { decision: "accepte" as const, dateRetenue: dans(30), precision: "plutôt le matin", demarrageAnticipe: true },
       MAINTENANT
     );
     assert.strictEqual(r.succes, true);
@@ -240,7 +240,7 @@ async function main() {
 
     const r = await enregistrerReponse(
       envoi.jeton,
-      { accepte: true, dateRetenue: dans(10) },
+      { decision: "accepte" as const, dateRetenue: dans(10) },
       MAINTENANT
     );
     assert.deepStrictEqual(r, { succes: false, motif: "date_indisponible" });
@@ -259,7 +259,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { accepte: true, dateRetenue: dans(300) },
+      { decision: "accepte" as const, dateRetenue: dans(300) },
       MAINTENANT
     );
     assert.deepStrictEqual(r, { succes: false, motif: "date_indisponible" });
@@ -274,7 +274,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { accepte: false, precision: "trop cher pour l'instant" },
+      { decision: "refuse" as const, precision: "trop cher pour l'instant" },
       MAINTENANT
     );
     assert.deepStrictEqual(r, { succes: true, dateRetenue: null, contreProposee: false });
@@ -297,10 +297,10 @@ async function main() {
       { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
       MAINTENANT
     );
-    await enregistrerReponse(envoi.jeton, { accepte: true, dateRetenue: dans(10) }, MAINTENANT);
+    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, dateRetenue: dans(10) }, MAINTENANT);
     const seconde = await enregistrerReponse(
       envoi.jeton,
-      { accepte: false },
+      { decision: "refuse" as const },
       MAINTENANT
     );
     assert.deepStrictEqual(seconde, { succes: false, motif: "deja_repondu" });
@@ -315,7 +315,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { accepte: true, dateRetenue: dans(10) },
+      { decision: "accepte" as const, dateRetenue: dans(10) },
       ajouterJours(MAINTENANT, 60)
     );
     assert.deepStrictEqual(r, { succes: false, motif: "expire" });
@@ -328,7 +328,7 @@ async function main() {
       { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
       MAINTENANT
     );
-    const r = await enregistrerReponse(envoi.jeton, { accepte: true }, MAINTENANT);
+    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte" as const }, MAINTENANT);
     assert.deepStrictEqual(r, { succes: false, motif: "date_manquante" });
   });
 

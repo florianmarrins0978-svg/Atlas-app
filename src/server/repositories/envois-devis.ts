@@ -240,7 +240,7 @@ export type EnvoiPourClient = {
   /** Jours indisponibles dans la fenêtre — des dates, rien d'autre. */
   joursOccupes: JourIso[];
   fenetre: { debut: JourIso; fin: JourIso };
-  reponse: "acceptee" | "refusee" | null;
+  reponse: "acceptee" | "refusee" | "correction" | null;
   dateRetenue: JourIso | null;
   expire: boolean;
   devis: {
@@ -413,7 +413,14 @@ export async function pdfDevisParJeton(
 }
 
 export type ReponseClient = {
-  accepte: boolean;
+  /**
+   * Ce que le client a décidé.
+   *
+   * `correction` est la troisième issue, celle qui manquait : il veut le même
+   * devis, corrigé. Sans elle, un client qui repère une coquille touche
+   * « Je ne donne pas suite », et le patron lit un refus.
+   */
+  decision: "accepte" | "refuse" | "correction";
   /** Requise si accepte : l'une des dates proposées, ou une contre-proposition. */
   dateRetenue?: JourIso;
   precision?: string | null;
@@ -424,7 +431,16 @@ export type ReponseClient = {
 
 export type ResultatReponse =
   | { succes: true; dateRetenue: JourIso | null; contreProposee: boolean }
-  | { succes: false; motif: "introuvable" | "expire" | "deja_repondu" | "date_indisponible" | "date_manquante" };
+  | {
+      succes: false;
+      motif:
+        | "introuvable"
+        | "expire"
+        | "deja_repondu"
+        | "date_indisponible"
+        | "date_manquante"
+        | "message_manquant";
+    };
 
 /**
  * Enregistre la réponse du client.
@@ -460,13 +476,22 @@ export async function enregistrerReponse(
       return { succes: false, motif: "expire" as const };
     }
 
-    if (!reponse.accepte) {
+    // Une correction demandée sans message ne dit rien au patron : il saurait
+    // qu'il y a un problème sans savoir lequel, et devrait rappeler son client —
+    // exactement l'aller-retour que ce parcours supprime. La base le refuse
+    // aussi (contrainte 0020) ; ici on le dit avec des mots.
+    const precision = reponse.precision?.trim() || null;
+    if (reponse.decision === "correction" && !precision) {
+      return { succes: false, motif: "message_manquant" as const };
+    }
+
+    if (reponse.decision !== "accepte") {
       await tx
         .update(envoisDevis)
         .set({
-          reponse: "refusee",
+          reponse: reponse.decision === "correction" ? "correction" : "refusee",
           responduAt: maintenant,
-          precisionClient: reponse.precision ?? null,
+          precisionClient: precision,
           adresseIp: reponse.adresseIp ?? null,
           agentUtilisateur: reponse.agentUtilisateur ?? null,
         })
@@ -515,7 +540,7 @@ export async function enregistrerReponse(
         responduAt: maintenant,
         dateRetenue: date,
         dateContreProposee: contreProposee,
-        precisionClient: reponse.precision ?? null,
+        precisionClient: precision,
         demarrageAnticipe: reponse.demarrageAnticipe ?? false,
         adresseIp: reponse.adresseIp ?? null,
         agentUtilisateur: reponse.agentUtilisateur ?? null,
@@ -591,10 +616,16 @@ export type NotificationPatron = {
   envoiId: string;
   chantierId: string;
   chantierNom: string;
-  reponse: "acceptee" | "refusee";
+  reponse: "acceptee" | "refusee" | "correction";
   responduAt: Date | null;
   dateRetenue: string | null;
   dateContreProposee: boolean;
+  /**
+   * Ce que le client a écrit. Il était enregistré depuis le début et
+   * **n'apparaissait sur aucun écran** : le patron voyait « le client n'a pas
+   * donné suite » sans jamais lire pourquoi.
+   */
+  precisionClient: string | null;
 };
 
 /**
@@ -620,6 +651,7 @@ export async function notificationsPatron(ctx: Ctx): Promise<NotificationPatron[
         responduAt: envoisDevis.responduAt,
         dateRetenue: envoisDevis.dateRetenue,
         dateContreProposee: envoisDevis.dateContreProposee,
+        precisionClient: envoisDevis.precisionClient,
       })
       .from(envoisDevis)
       .innerJoin(chantiers, eq(envoisDevis.chantierId, chantiers.id))
@@ -632,12 +664,13 @@ export async function notificationsPatron(ctx: Ctx): Promise<NotificationPatron[
           // Une acceptation sur l'une des dates proposées ne surprend personne :
           // c'est le déroulement attendu. La signaler noierait les deux nouvelles
           // qui, elles, appellent quelque chose.
-          sql`(${envoisDevis.reponse} = 'refusee' OR ${envoisDevis.dateContreProposee})`
+          sql`(${envoisDevis.reponse} IN ('refusee', 'correction') OR ${envoisDevis.dateContreProposee}
+               OR ${envoisDevis.precisionClient} IS NOT NULL)`
         )
       )
       .orderBy(desc(envoisDevis.responduAt));
 
-    return rows.map((r) => ({ ...r, reponse: r.reponse as "acceptee" | "refusee" }));
+    return rows.map((r) => ({ ...r, reponse: r.reponse as "acceptee" | "refusee" | "correction" }));
   });
 }
 
