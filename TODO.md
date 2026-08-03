@@ -60,21 +60,14 @@ Interrogé « Comment a été envoyé le devis ? », il a répondu :
 Le patron n'a pas à lire du JSON. L'assistant doit répondre en français, ou dire
 qu'il ne sait pas — et jamais recracher la sortie d'un outil telle quelle.
 
-### 5. Un devis à 0 € reste proposable
-
-Sur l'écran Prix, sans aucune ligne et avec « Aucun prix proposable » affiché,
-le bouton « Préparer le devis → » est quand même offert. Il ne devrait pas
-l'être, et l'écran devrait dire quoi faire — ajouter un tarif, ou ajouter une
-ligne — plutôt que de se contenter de constater l'échec.
-
-### 7. Barre de navigation : haute comme Arborea, ou basse comme aujourd'hui ?
+### 5. Barre de navigation : haute comme Arborea, ou basse comme aujourd'hui ?
 
 Arborea navigue par une barre haute portant son nom ; Atlas par une barre basse,
 pensée pour le pouce et pour une application installée sur l'écran d'accueil.
 La charte a été alignée, pas la navigation : c'est une décision d'usage, et elle
 n'a pas été prise seule. À trancher avec le patron.
 
-### 8. L'action principale n'a pas la forme d'Arborea
+### 6. L'action principale n'a pas la forme d'Arborea
 
 Chez Arborea, « Nouveau devis » est une carte vert pin avec une icône ronde, un
 titre en Playfair, un sous-titre et une flèche. Dans Atlas c'est un bouton plat.
@@ -108,3 +101,4 @@ application en panne — c'est déjà arrivé.
 - ~~Le devis PDF reprend le modèle d'Arborea, et se pagine~~ — 2026-08-03
 - ~~`test-reglages-e2e.ts` : attendre l'enregistrement, pas un délai fixe~~ — 2026-08-03
 - ~~Document PDF pour la facture, sur le moteur partagé avec le devis~~ — 2026-08-03
+- ~~Le devis à 0 € : bouton grisé, marche à suivre, et refus côté serveur~~ — 2026-08-03

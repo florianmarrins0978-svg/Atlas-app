@@ -54,7 +54,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les huit pièges de ce dépôt
+### Les neuf pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -80,7 +80,13 @@ site publié à son adresse réelle.
    `async function main()` puis `main().catch(...)`, comme les suites voisines.
    Un script de mise au point qui a besoin de l'`await` de premier niveau prend
    l'extension `.mts` — et n'est alors plus découvert par le lanceur.
-7. **Un PDF ne connaît que WinAnsi.** Les polices standard de pdf-lib refusent
+7. **Un fichier `"use server"` n'exporte que des fonctions asynchrones.** Y
+   exporter une classe, une constante ou un type annule **tous** les exports du
+   module : l'application entière répond 500, et **ni `tsc` ni `eslint` ne le
+   voient**. Le message ne parle même pas du coupable — il dit qu'un autre
+   fichier importe une action « qui n'existe pas ». Les règles métier et les
+   classes d'erreur vivent dans `src/lib/`, jamais dans un fichier d'actions.
+8. **Un PDF ne connaît que WinAnsi.** Les polices standard de pdf-lib refusent
    tout caractère hors de cet encodage, et l'appel échoue sur la ligne entière.
    L'espace fine insécable (U+202F) que `toLocaleString('fr-FR')` glisse dans
    « 1 400,00 € » en fait partie : utiliser l'insécable ordinaire (U+00A0), qui,

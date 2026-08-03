@@ -43,6 +43,29 @@ d'œil sur la première page ne remplace : aucune ligne ne descend sur le cadre 
 signature. Chacun a été confronté au défaut qu'il prétend détecter avant d'être
 acté ; le premier jet cherchait « EUR » n'importe où et accusait « ÉMETTEUR ».
 
+### Le devis à 0 € ne part plus, et l'écran dit par où sortir
+
+Quand aucun tarif ne correspondait, l'écran Prix affichait « Aucun prix
+proposable » puis « Aucune ligne pour l'instant » — et laissait « Préparer le
+devis → » actif. Le patron pouvait valider un prix inexistant, arriver sur un
+devis à **0,00 €** et l'envoyer à son client. Aucun garde-fou nulle part. Un
+devis accepté étant immuable, le corriger aurait demandé une nouvelle version.
+
+Le bouton est désormais grisé, et surtout **l'écran dit quoi faire** : ajouter
+une ligne avec son montant, ou enregistrer un tarif — avec un lien direct vers
+Réglages. Un bouton grisé sans explication se lit comme une panne, et le patron
+l'avait déjà conclu sur l'écran de dictée.
+
+La règle est une **fonction pure** employée par l'écran *et* par l'action
+serveur (`CLAUDE.md` §3) : un écran ne protège rien seul, et une seconde
+implémentation de la même règle aurait fini par diverger. Elle attrape aussi le
+cas plus sournois des lignes qui existent mais totalisent zéro.
+
+**Un défaut trouvé en lançant l'application, que types et lint ne voyaient
+pas :** la classe d'erreur avait été exportée depuis un fichier `"use server"`,
+ce qui annule **tous** les exports du module — l'application entière renvoyait
+500. Consigné comme piège n° 7 dans `HANDOVER.md`.
+
 ### Les modèles du dépôt sont bien ceux du patron — vérifié, pas supposé
 
 Le patron a demandé de récupérer exactement le modèle qui se trouve sur son
