@@ -56,13 +56,43 @@ export type DevisPdfData = {
   lignes: LigneDevisPdf[];
 };
 
-/** Palette d'Arborea, reprise telle quelle. */
-const ENCRE = rgb(0.11, 0.11, 0.102); // --forest-deep #1c1c1a
-const ETIQUETTE = rgb(0.42, 0.42, 0.361); // #6b6b5c
-const TITRE_PARTIE = rgb(0.184, 0.231, 0.184); // --clay #2f3b2f
-const COORDONNEES = rgb(0.353, 0.353, 0.298); // .brand-tagline #5a5a4c
-const TRAIT_CLAIR = rgb(0.886, 0.871, 0.827); // --paper-warm #e2ded3
-const LEGAL = rgb(0.478, 0.478, 0.416); // #7a7a6a
+// ─── Palette ────────────────────────────────────────────────────────────────
+//
+// Prise sur la page du patron, pas sur le fichier de ce dépôt.
+//
+// `appli/devis-modele.html` donne aux intertitres « Émetteur » et « Client » un
+// vert foncé (`--clay:#2f3b2f`). Le patron a envoyé une capture de son devis
+// tel qu'il le voit en ligne : ces mêmes intertitres y sont **terre cuite**.
+// Mesure faite sur ses pixels — `#a95c35`, à l'antialiasing près le `rust`
+// `#B25A2E` de `src/lib/design-tokens.ts`, l'accent unique d'Atlas. La copie
+// versée dans `appli/` avait donc déjà divergé de son original ; reproduire ce
+// fichier fidèlement revenait à reproduire fidèlement un écart.
+//
+// La règle qui en sort : **la référence est ce que le patron a sous les yeux**,
+// jamais notre copie de sa référence.
+
+function couleurHexa(hexa: string): RGB {
+  const n = parseInt(hexa.slice(1), 16);
+  return rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
+}
+
+const PALETTE = {
+  encre: "#1c1c1a", // --forest-deep
+  etiquette: "#6b6b5c", // en-têtes de colonnes, intertitres de bloc
+  titrePartie: "#B25A2E", // « ÉMETTEUR » / « CLIENT » — le rust mesuré chez le patron
+  coordonnees: "#5a5a4c", // .brand-tagline
+  traitClair: "#e2ded3", // --paper-warm
+  legal: "#7a7a6a",
+  papier: "#faf9f5", // --cream : le devis n'est pas sur du blanc
+} as const;
+
+const ENCRE = couleurHexa(PALETTE.encre);
+const ETIQUETTE = couleurHexa(PALETTE.etiquette);
+const TITRE_PARTIE = couleurHexa(PALETTE.titrePartie);
+const COORDONNEES = couleurHexa(PALETTE.coordonnees);
+const TRAIT_CLAIR = couleurHexa(PALETTE.traitClair);
+const LEGAL = couleurHexa(PALETTE.legal);
+const PAPIER = couleurHexa(PALETTE.papier);
 
 /** A4, et la marge de `@page{margin:1.1cm}` du modèle. */
 const LARGEUR = 595.28;
@@ -121,7 +151,15 @@ function enLignes(texte: string, police: PDFFont, taille: number, largeur: numbe
 // interrogent — pour savoir qu'une mention est bien là, et surtout qu'aucune
 // ligne n'est descendue sur le cadre de signature.
 
-export type TexteTrace = { contenu: string; x: number; y: number; taille: number; page: number };
+export type TexteTrace = {
+  contenu: string;
+  x: number;
+  y: number;
+  taille: number;
+  page: number;
+  /** En hexadécimal, pour qu'un contrôle puisse constater une teinte qui dérive. */
+  couleur: string;
+};
 export type TraitTrace = { y: number; de: number; a: number; epaisseur: number; page: number };
 export type CadreTrace = { x: number; y: number; largeur: number; hauteur: number; page: number };
 export type TraceDevis = {
@@ -143,6 +181,12 @@ type Contexte = {
 };
 type Style = { taille?: number; police?: PDFFont; couleur?: RGB };
 
+/** Retrouve le nom hexadécimal d'une couleur posée, pour la consigner. */
+function enHexa(couleur: RGB): string {
+  const octet = (v: number) => Math.round(v * 255).toString(16).padStart(2, "0");
+  return `#${octet(couleur.red)}${octet(couleur.green)}${octet(couleur.blue)}`;
+}
+
 /** Pose l'encre, sans rien consigner — les fonctions publiques s'en chargent. */
 function poser(ctx: Contexte, contenu: string, x: number, y: number, style: Style) {
   ctx.page.drawText(contenu, {
@@ -156,7 +200,14 @@ function poser(ctx: Contexte, contenu: string, x: number, y: number, style: Styl
 
 function ecrire(ctx: Contexte, contenu: string, x: number, y: number, style: Style = {}) {
   poser(ctx, contenu, x, y, style);
-  ctx.trace.textes.push({ contenu, x, y, taille: style.taille ?? 9.5, page: ctx.numeroPage });
+  ctx.trace.textes.push({
+    contenu,
+    x,
+    y,
+    taille: style.taille ?? 9.5,
+    page: ctx.numeroPage,
+    couleur: enHexa(style.couleur ?? ENCRE),
+  });
 }
 
 /** Texte calé sur son bord droit — colonnes de chiffres et bloc de totaux. */
@@ -207,7 +258,14 @@ function ecrireEspace(
   }
   // Consigné d'un bloc, et non lettre par lettre : c'est la mention qu'on veut
   // pouvoir retrouver, pas les vingt caractères qui la composent.
-  ctx.trace.textes.push({ contenu, x, y, taille, page: ctx.numeroPage });
+  ctx.trace.textes.push({
+    contenu,
+    x,
+    y,
+    taille,
+    page: ctx.numeroPage,
+    couleur: enHexa(style.couleur ?? ENCRE),
+  });
 }
 
 /** Même chose, calée sur le bord droit — en-têtes des colonnes de chiffres. */
@@ -226,9 +284,22 @@ function ecrireEspaceADroite(
   ecrireEspace(ctx, contenu, droite - largeurEspacee(contenu, police, taille, approche), y, approche, style);
 }
 
+/**
+ * Le papier crème du modèle, posé avant tout le reste.
+ *
+ * Le patron ne voit pas son devis sur du blanc. À l'impression, un navigateur
+ * ne sort les fonds que si on le lui demande — un PDF, lui, les sort toujours :
+ * cette teinte partira donc sur sa feuille. C'est le prix du « exactement le
+ * même », et il est assumé ici plutôt que découvert à la première cartouche.
+ */
+function poserPapier(page: PDFPage) {
+  page.drawRectangle({ x: 0, y: 0, width: LARGEUR, height: HAUTEUR, color: PAPIER });
+}
+
 /** Ouvre une page de plus et rend l'ordonnée où reprendre le contenu. */
 function pageSuivante(ctx: Contexte): number {
   ctx.page = ctx.pdfDoc.addPage([LARGEUR, HAUTEUR]);
+  poserPapier(ctx.page);
   ctx.numeroPage += 1;
   ctx.trace.pages = ctx.numeroPage;
   return HAUTEUR - MARGE - 20;
@@ -248,6 +319,7 @@ export async function composerDevisPdf(
     serifGras: await pdfDoc.embedFont(StandardFonts.TimesRomanBold),
     trace: { pages: 1, textes: [], traits: [], cadres: [] },
   };
+  poserPapier(ctx.page);
 
   let y = HAUTEUR - MARGE - 22;
 
@@ -488,7 +560,14 @@ export async function composerDevisPdf(
         font: ctx.sans,
         color: LEGAL,
       });
-      ctx.trace.textes.push({ contenu: numero, x: (LARGEUR - largeurNumero) / 2, y: MARGE, taille: 7.5, page: i + 1 });
+      ctx.trace.textes.push({
+        contenu: numero,
+        x: (LARGEUR - largeurNumero) / 2,
+        y: MARGE,
+        taille: 7.5,
+        page: i + 1,
+        couleur: PALETTE.legal,
+      });
     });
   }
 
@@ -501,3 +580,6 @@ export async function genererPdfDevis(data: DevisPdfData): Promise<Uint8Array> {
 
 /** Le bas réservé au pied de page, pour que les tests parlent des mêmes chiffres. */
 export const PIED_DEVIS = { plancher: PLANCHER, marge: MARGE, hauteurPage: HAUTEUR };
+
+/** Exposée pour qu'un contrôle constate la teinte, au lieu de la répéter. */
+export const PALETTE_DEVIS = PALETTE;

@@ -281,6 +281,27 @@ sait pas le faire autrement — ne se retrouverait même pas dans le flux.
 qu'un coup d'œil sur la première page ne voit jamais : qu'aucune ligne ne
 descend sur le cadre de signature.
 
+**La référence est ce que le patron a sous les yeux, jamais notre copie de sa
+référence.** Le premier jet reproduisait fidèlement `appli/devis-modele.html`,
+qui donne aux intertitres « Émetteur » et « Client » un vert foncé
+(`--clay:#2f3b2f`). Le patron a envoyé une capture de son devis en ligne : ces
+mêmes intertitres y sont **terre cuite**. Mesure faite sur ses pixels —
+`#a95c35`, soit à l'antialiasing près le `rust` `#B25A2E` de
+`src/lib/design-tokens.ts`, l'accent unique d'Atlas. La copie versée dans
+`appli/` avait donc déjà divergé de son original, et la reproduire fidèlement
+revenait à reproduire fidèlement un écart. La palette du devis est désormais
+tenue à cet accent-là, et un contrôle le constate — deux valeurs pour un seul
+accent finissent toujours par se contredire.
+
+**Le papier est crème (`#faf9f5`), pas blanc.** C'est celui du modèle. Un
+navigateur n'imprime pas les fonds sans qu'on le lui demande ; un PDF, lui, les
+imprime toujours — cette teinte partira donc sur la feuille du client. C'est le
+prix du « exactement le même », assumé plutôt que découvert à la cartouche.
+
+**Les couleurs posées sont consignées dans la trace**, en hexadécimal : c'est ce
+qui permet à un contrôle de constater une teinte, au lieu de la répéter dans le
+test et de dériver avec elle.
+
 **Un contrôle qui ne sait pas échouer ne vaut rien.** Chacun de ces contrôles a
 été confronté au défaut qu'il prétend détecter — accent raboté, montant en
 « 1400.00 EUR », pagination retirée, nom d'entreprise figé — et chacun a rougi

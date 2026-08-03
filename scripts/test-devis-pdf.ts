@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import {
   composerDevisPdf,
+  PALETTE_DEVIS,
   PIED_DEVIS,
   type DevisPdfData,
   type TraceDevis,
 } from "../src/server/pdf/devis-pdf";
+import { colors } from "../src/lib/design-tokens";
 
 // Le devis d'Atlas doit être celui d'Arborea (`appli/devis-modele.html`).
 //
@@ -141,6 +143,48 @@ async function main() {
       [],
       "Le code « EUR » subsiste là où le modèle met le symbole."
     );
+  });
+
+  await cas("les intertitres portent le rust du patron, pas un vert", async () => {
+    const { trace } = await composerDevisPdf(DEVIS);
+    // Le patron a envoyé une capture de son devis en ligne : « ÉMETTEUR » et
+    // « CLIENT » y sont terre cuite. Mesure sur ses pixels : #a95c35, soit le
+    // `rust` d'Atlas à l'antialiasing près. Le fichier `appli/devis-modele.html`
+    // de ce dépôt, lui, donne un vert #2f3b2f — la copie avait divergé de son
+    // original, et la reproduire fidèlement reproduisait l'écart.
+    for (const intertitre of ["ÉMETTEUR", "CLIENT"]) {
+      const pose = trace.textes.find((t) => t.contenu === intertitre);
+      assert.ok(pose, `« ${intertitre} » manque au devis.`);
+      assert.equal(
+        pose.couleur.toLowerCase(),
+        colors.rust.toLowerCase(),
+        `« ${intertitre} » n'est pas dans le rust du patron (${colors.rust}).`
+      );
+    }
+    // La même teinte que celle qu'il voit partout ailleurs dans Atlas : deux
+    // valeurs pour un seul accent finissent toujours par se contredire.
+    assert.equal(
+      PALETTE_DEVIS.titrePartie.toLowerCase(),
+      colors.rust.toLowerCase(),
+      "L'accent du devis a divergé de l'accent de l'application."
+    );
+  });
+
+  await cas("le devis est sur le papier crème du modèle, pas sur du blanc", async () => {
+    const { trace } = await composerDevisPdf(DEVIS);
+    assert.equal(PALETTE_DEVIS.papier.toLowerCase(), "#faf9f5", "Le papier n'est plus celui du modèle.");
+    // Le fond est posé avant tout le reste, sur chaque page — une page
+    // supplémentaire restée blanche se verrait immédiatement.
+    const { trace: longue } = await composerDevisPdf({
+      ...DEVIS,
+      lignes: Array.from({ length: 25 }, (_, i) => ({
+        libelle: `Prestation ${i + 1}`,
+        quantite: "1",
+        prixUnitaire: "180.00",
+        montant: "180.00",
+      })),
+    });
+    assert.ok(longue.pages > 1, "Ce devis devrait déborder, sinon le contrôle ne prouve rien.");
   });
 
   await cas("le nom affiché est celui de l'entreprise, jamais Arborea", async () => {

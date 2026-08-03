@@ -43,6 +43,23 @@ d'œil sur la première page ne remplace : aucune ligne ne descend sur le cadre 
 signature. Chacun a été confronté au défaut qu'il prétend détecter avant d'être
 acté ; le premier jet cherchait « EUR » n'importe où et accusait « ÉMETTEUR ».
 
+### Et la couleur n'était pas la bonne — la copie avait divergé
+
+Le patron a renvoyé une capture de son devis tel qu'il le voit en ligne :
+« ce n'est pas le style du devis ». Mesure faite sur ses pixels plutôt que sur
+une impression d'œil — ses intertitres « ÉMETTEUR » et « CLIENT » sont en
+`#a95c35`, une terre cuite, quand `appli/devis-modele.html` de ce dépôt leur
+donne un vert `#2f3b2f`. **La copie prise chez Arborea avait déjà divergé de
+l'original**, et je l'avais reproduite fidèlement — écart compris.
+
+Cette terre cuite est, à l'antialiasing près, le `rust` `#B25A2E` que toute
+l'application Atlas emploie déjà. Le devis s'y aligne, et son papier redevient
+crème (`#faf9f5`) plutôt que blanc. Les couleurs posées entrent dans la trace :
+un contrôle les constate désormais, au lieu qu'on les répète.
+
+**La règle qui en sort, et elle vaut au-delà du devis :** la référence est ce que
+le patron a sous les yeux, jamais notre copie de sa référence.
+
 Détail des choix dans `ARCHITECTURE.md` §16.
 
 ---
