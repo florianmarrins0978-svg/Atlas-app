@@ -1,4 +1,4 @@
-name: Relever la palette du devis d'origine
+name: Relever les modèles du patron à leur source
 
 # Va lire le devis d'Arborea **à son adresse publique**, et rapporte les
 # couleurs et les polices que le navigateur calcule réellement dessus.
@@ -33,6 +33,7 @@ on:
     paths:
       - ".github/workflows/relever-palette.yml"
       - "scripts/relever-palette.mjs"
+      - "scripts/comparer-modeles.mjs"
 
 permissions:
   contents: read
@@ -60,3 +61,11 @@ jobs:
         env:
           PAGES: ${{ github.event.inputs.pages }}
         run: node scripts/relever-palette.mjs
+
+      # Le fichier lui-même, et pas seulement ses couleurs : une copie ne prouve
+      # rien sur son original, et c'est en raisonnant sur la copie que deux
+      # explications successives d'un écart ont été affirmées puis démenties.
+      - name: Comparer les modèles publiés aux copies du dépôt
+        env:
+          SITE: https://florianmarrins0978-svg.github.io/Arborea-
+        run: node scripts/comparer-modeles.mjs
