@@ -43,6 +43,22 @@ d'œil sur la première page ne remplace : aucune ligne ne descend sur le cadre 
 signature. Chacun a été confronté au défaut qu'il prétend détecter avant d'être
 acté ; le premier jet cherchait « EUR » n'importe où et accusait « ÉMETTEUR ».
 
+### « Aucune des deux » quand il n'y en avait qu'une
+
+Trouvé en sortant, à la demande du patron, le visuel de la page que son client
+ouvre. La question des dates y proposait toujours « Aucune des deux — je
+propose : », que le patron ait envoyé une date ou deux. Le libellé était écrit
+en dur.
+
+Or c'est exactement le choix qu'il fait avant l'envoi — l'arrêt 1 de
+`docs/AGENT.md`, sa seule question avant que le devis parte. Avec une seule
+date, son client lisait donc une phrase qui ne correspondait pas à ce qu'il
+avait sous les yeux, sur la **seule** page qu'il voit.
+
+Le libellé s'accorde désormais : une date, deux, davantage, ou aucune. La règle
+est une fonction pure dans `src/lib/` — l'importer depuis l'écran entraînait
+toute la chaîne de connexion à la base, ce qui la rendait intestable.
+
 ### L'accueil prend la carte d'Arborea, la barre du bas reste
 
 Les deux formes ont été rendues au patron en photos, côte à côte, avec ce que
