@@ -5,7 +5,14 @@ import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as clientsRepo from "../src/server/repositories/clients";
 import * as devisRepo from "../src/server/repositories/devis";
 import { preparerEnvoi, premiersJoursLibres } from "../src/server/repositories/preparation-envoi";
-import { versJourIso, ajouterJours, fenetreProposition } from "../src/server/disponibilites";
+import { versJourIso, ajouterJours, fenetreProposition, compterOccupation } from "../src/server/disponibilites";
+
+// Depuis les créneaux (migration 0019), la disponibilité dépend du chantier
+// qu'on cherche à caler : une demi-journée tient là où une journée entière ne
+// tient plus. Ces contrôles-ci raisonnent donc sur une journée entière, la
+// durée par défaut — c'est-à-dire exactement leur hypothèse d'origine.
+const UNE_JOURNEE = 2;
+const RIEN_DE_PLANIFIE = { occupation: compterOccupation([]), nombreEquipes: 1, dureeDemiJournees: UNE_JOURNEE };
 import { nettoyerBase } from "./_test-db";
 
 let passed = 0;
@@ -38,7 +45,7 @@ async function main() {
   await nettoyerBase();
 
   await test("les jours suggérés sautent samedis et dimanches", async () => {
-    const libres = premiersJoursLibres(LUNDI, [], 6);
+    const libres = premiersJoursLibres(LUNDI, RIEN_DE_PLANIFIE, 6);
     for (const j of libres) {
       const jour = new Date(`${j}T00:00:00Z`).getUTCDay();
       assert.notStrictEqual(jour, 0, `${j} est un dimanche`);
@@ -49,15 +56,23 @@ async function main() {
 
   await test("les jours suggérés respectent le délai minimal", async () => {
     const fenetre = fenetreProposition(LUNDI);
-    for (const j of premiersJoursLibres(LUNDI, [], 6)) {
+    for (const j of premiersJoursLibres(LUNDI, RIEN_DE_PLANIFIE, 6)) {
       assert.ok(j >= fenetre.debut, `${j} tombe avant le délai minimal`);
     }
   });
 
   await test("un jour occupé n'est jamais suggéré", async () => {
-    const libres = premiersJoursLibres(LUNDI, [], 6);
+    const libres = premiersJoursLibres(LUNDI, RIEN_DE_PLANIFIE, 6);
     const aOccuper = libres[0];
-    const apres = premiersJoursLibres(LUNDI, [aOccuper], 6);
+    const apres = premiersJoursLibres(
+      LUNDI,
+      {
+        occupation: compterOccupation([{ jour: aOccuper, moment: "matin", dureeDemiJournees: UNE_JOURNEE }]),
+        nombreEquipes: 1,
+        dureeDemiJournees: UNE_JOURNEE,
+      },
+      6
+    );
     assert.ok(!apres.includes(aOccuper), "le jour occupé est encore suggéré");
     assert.strictEqual(apres.length, 6, "la liste doit rester complète");
   });

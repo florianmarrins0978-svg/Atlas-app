@@ -33,6 +33,39 @@ cd "$CD" || exit 0
 # jamais.
 setsid nohup npm run essai > "$JOURNAL" 2>&1 < /dev/null &
 
-echo "→ Atlas démarre tout seul. L'adresse s'ouvrira dans une minute ou deux."
-echo "   Journal : $JOURNAL"
+# L'adresse exacte, écrite par la machine plutôt que devinée par le patron.
+#
+# Pourquoi : le mode d'emploi donnait « https://<nom-de-l-espace>-3000.app.github.dev »
+# et il a répondu « je comprends pas ce que je dois faire avec ça ». Il avait
+# raison — on lui demandait de recomposer une adresse à partir d'un modèle, au
+# doigt, sur six pouces, alors que l'espace connaît son propre nom. Un mode
+# d'emploi qui laisse un blanc à remplir n'est pas un mode d'emploi.
+#
+# Les deux variables sont posées par Codespaces. Absentes ailleurs (essai en
+# local, autre machine) : on ne raconte alors rien plutôt que d'inventer une
+# adresse fausse.
+ADRESSE=""
+if [ -n "${CODESPACE_NAME:-}" ] && [ -n "${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-}" ]; then
+  ADRESSE="https://${CODESPACE_NAME}-3000.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+  # Déposée dans un fichier aussi : le terminal défile et se perd, ce fichier
+  # non. `docs/ESSAYER.md` y renvoie.
+  printf '%s\n' "$ADRESSE" > /tmp/adresse-atlas.txt 2>/dev/null || true
+fi
+
+echo
+echo "──────────────────────────────────────────────"
+if [ -n "$ADRESSE" ]; then
+  echo "  Atlas démarre tout seul. Votre adresse :"
+  echo
+  echo "  $ADRESSE"
+  echo
+  echo "  Mettez-la en favori : elle ne change pas tant"
+  echo "  que cet espace de travail existe, et elle"
+  echo "  s'ouvre sans passer par cet éditeur."
+else
+  echo "  Atlas démarre tout seul, sur le port 3000."
+fi
+echo "──────────────────────────────────────────────"
+echo "  Ça prend une minute ou deux. Journal : $JOURNAL"
+echo
 exit 0

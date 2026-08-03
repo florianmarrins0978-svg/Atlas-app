@@ -1,7 +1,11 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-03 · branche `claude/migrate-app-atlas-zz31ac`
-· dernier commit `0eb2ec7` · dernière migration `drizzle/0018_factures.sql`
+· dernière migration `drizzle/0020_correction_demandee.sql`
+
+*(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
+suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
+--oneline -20` le dit sans risque de se tromper.)*
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
@@ -55,6 +59,10 @@ seule avec quinze outils.
 | Installation sur téléphone : icône, plein écran, marges de sécurité | `src/app/layout.tsx`, `src/app/globals.css`, `scripts/generer-icones.mjs` |
 | Relevé de TVA collectée, par trimestre | `src/app/termines/tva/` + `src/server/trimestre.ts` |
 | Devis PDF reprenant le modèle du patron, sur autant de pages qu'il faut | `src/server/pdf/devis-pdf.ts` |
+| Découpage de la dictée en prestations, matériel, déchets, durée, équipe | `src/server/orchestrateur/analyse-demande.ts` |
+| Planning en demi-journées et nombre d'équipes (le client ne voit que la date) | `src/server/disponibilites.ts` + `drizzle/0019_creneaux_et_equipes.sql` |
+| Correction demandée par le client, avec son message porté au patron | `src/app/devis/[jeton]/formulaire.tsx` + `src/lib/etat-envoi.ts` |
+| Écrire le devis soi-même, sans passer par la proposition de prix | `src/app/chantiers/[id]/informations/InformationsClient.tsx` → `prix?saisie=manuelle` |
 
 ### Conformité RGPD
 
@@ -109,6 +117,10 @@ Cinq points, tous dans **`docs/A-FAIRE.md`**, tous en attente d'une décision du
 patron :
 
 1. Choisir les deux fournisseurs d'IA définitifs (transcription, raisonnement).
+   **Ce point a un effet visible tous les jours** : sans modèle, la dictée est
+   seulement *découpée*, jamais comprise. Le découpage ne perd plus rien (voir
+   `scripts/test-analyse-dictee.ts`), mais il ne sait pas qu'un chêne mort
+   s'abat et qu'une haie se taille.
 2. Faire rédiger le contrat de sous-traitance par un juriste.
 3. Choisir un hébergement européen — **sans lui, personne d'autre que le patron
    ne peut se servir de l'application**. N'empêche NI d'essayer NI de finir le
@@ -139,7 +151,7 @@ patron :
 
 | | |
 |---|---|
-| Suites base de données | 44/44 |
-| Suites navigateur (bout en bout) | 23/23 |
+| Suites base de données | 55/55 |
+| Suites navigateur (bout en bout) | 24/24 |
 | Types, lint | propres |
 | CI GitHub | verte au commit `78c746a` ; `07fa28c` en cours au moment d'écrire |

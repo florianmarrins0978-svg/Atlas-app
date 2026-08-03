@@ -22,6 +22,12 @@ export type EtatEnvoi =
   | "caduc"
   /** Le client a dit non. Souvent le début d'une négociation, pas une fin. */
   | "retourne"
+  /**
+   * Le client veut le même devis, corrigé — une coquille, un oubli, un prix à
+   * revoir. Ni un oui, ni un non : distinguer les deux est tout l'intérêt.
+   * Le confondre avec un refus décourageait le patron pour une faute de frappe.
+   */
+  | "a_corriger"
   /** Le client a dit oui : le chantier porte sa date. */
   | "accepte";
 
@@ -31,6 +37,7 @@ export const etatEnvoiLabel: Record<EtatEnvoi, string> = {
   a_relancer: "À relancer",
   caduc: "Devis caduc",
   retourne: "Devis retourné",
+  a_corriger: "Correction demandée",
   accepte: "Devis accepté",
 };
 
@@ -46,6 +53,7 @@ export const etatEnvoiExplication: Record<EtatEnvoi, string> = {
   a_relancer: "Sans nouvelles depuis une semaine. Un appel vaut mieux qu'un devis oublié.",
   caduc: "Le lien a expiré sans réponse. Il faut renvoyer le devis pour le remettre en jeu.",
   retourne: "Le client n'a pas donné suite. Le devis peut être repris et renvoyé.",
+  a_corriger: "Le client a signalé quelque chose à corriger. Son message est ci-dessous.",
   accepte: "Le client a accepté. La date est retenue.",
 };
 
@@ -53,7 +61,7 @@ export type EnvoiPourEtat = {
   /** `null` si aucun envoi n'existe pour ce chantier. */
   envoyeAt: Date | string | null;
   expireAt: Date | string | null;
-  reponse: "acceptee" | "refusee" | null;
+  reponse: "acceptee" | "refusee" | "correction" | null;
 };
 
 function versDate(v: Date | string | null): Date | null {
@@ -74,6 +82,7 @@ export function etatEnvoi(envoi: EnvoiPourEtat | null, maintenant: Date = new Da
 
   if (envoi.reponse === "acceptee") return "accepte";
   if (envoi.reponse === "refusee") return "retourne";
+  if (envoi.reponse === "correction") return "a_corriger";
 
   const expire = versDate(envoi.expireAt);
   if (expire && expire <= maintenant) return "caduc";
@@ -105,5 +114,5 @@ export function attendLeClient(etat: EtatEnvoi): boolean {
  * la pastille de l'écran d'accueil.
  */
 export function demandeUneAction(etat: EtatEnvoi): boolean {
-  return etat === "retourne" || etat === "a_relancer" || etat === "caduc";
+  return etat === "retourne" || etat === "a_corriger" || etat === "a_relancer" || etat === "caduc";
 }

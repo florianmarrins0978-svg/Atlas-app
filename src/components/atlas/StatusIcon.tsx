@@ -77,6 +77,14 @@ export default function StatusIcon({
           <path d="M11 7l-5 5 5 5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       )}
+      {/* Une correction demandée : un crayon, pas une flèche de retour. Le
+          client n'a pas renvoyé le devis — il a écrit dessus. */}
+      {statut === "devis_a_corriger" && (
+        <svg {...common}>
+          <path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z" strokeLinejoin="round" />
+          <path d="M14.5 6.5l3 3" strokeLinecap="round" />
+        </svg>
+      )}
       {statut === "planifie" && (
         <svg {...common}>
           <rect x="4" y="5" width="16" height="15" rx="2" />

@@ -8,8 +8,20 @@ import PrixClient from "./PrixClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function PrixPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PrixPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ saisie?: string }>;
+}) {
   const { id } = await params;
+
+  // Arrivée par « Ou écrire le devis moi-même → » depuis l'écran Informations.
+  // La proposition de prix est alors repliée : le patron a demandé cette voie
+  // parce qu'il veut écrire lui-même, pas discuter une suggestion. Elle reste à
+  // un geste de distance — la replier n'est pas la supprimer.
+  const saisieManuelle = (await searchParams).saisie === "manuelle";
 
   const ctx = await getCurrentCtx();
   const chantier = await getChantier(ctx, id);
@@ -52,6 +64,7 @@ export default async function PrixPage({ params }: { params: Promise<{ id: strin
           chantierId={id}
           initialLignes={lignes.map((l) => ({ id: l.id, libelle: l.libelle, montant: l.montant }))}
           propositionInitiale={proposition}
+          saisieManuelle={saisieManuelle}
         />
       </div>
     </div>

@@ -16,7 +16,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 | | Ce qui débloque | Ce que je fais alors |
 |---|---|---|
-| 1 | Deux fournisseurs d'IA retenus | Verrouiller la configuration sur eux, tenir `docs/RGPD.md` §3 à jour |
+| 1 | Deux fournisseurs d'IA retenus | Verrouiller la configuration sur eux, tenir `docs/RGPD.md` §3 à jour — et **enfin lire vraiment la dictée** : sans modèle, `analyse-demande.ts` découpe sans comprendre (il ne perd plus rien, c'est tout ce qu'on peut lui demander) |
 | 2 | Contrat de sous-traitance rédigé | Remplacer les canevas sans valeur par les textes réels |
 | 3 | Hébergement européen choisi | Déployer — **sans quoi personne ne peut se servir de l'application** |
 | 4 | Société constituée, assurance souscrite | Rien côté code |
@@ -60,7 +60,19 @@ Interrogé « Comment a été envoyé le devis ? », il a répondu :
 Le patron n'a pas à lire du JSON. L'assistant doit répondre en français, ou dire
 qu'il ne sait pas — et jamais recracher la sortie d'un outil telle quelle.
 
-### 5. Rien ne mène le patron d'un écran au suivant
+### 5. Les équipes nommées, si l'entreprise grandit
+
+Le patron a retenu un **compteur** d'équipes (Réglages), pas des équipes
+nommées : il sait combien de chantiers il mène de front, pas encore qui va où.
+Le jour où il aura deux vraies équipes distinctes, la suite est une table
+`equipes` + `chantiers.equipe_id`, et un planning qui se lit par colonne.
+
+Écarté aussi, et volontairement : les **heures réelles** (« la demi-journée
+suffit ») et la **capacité en hommes** — `taille_equipe` est du texte libre, il
+faudrait le fiabiliser avant d'en faire une contrainte. Voir `ARCHITECTURE.md`
+§22 pour les arbitrages.
+
+### 6. Rien ne mène le patron d'un écran au suivant
 
 Après « Enregistrer le texte », rien n'indique qu'il faut ensuite générer le
 brouillon, puis le confirmer pour l'ajouter au chantier. Le lien « Continuer vers
@@ -90,3 +102,11 @@ application en panne — c'est déjà arrivé.
 - ~~Document PDF pour la facture, sur le moteur partagé avec le devis~~ — 2026-08-03
 - ~~Le devis à 0 € : bouton grisé, marche à suivre, et refus côté serveur~~ — 2026-08-03
 - ~~Navigation : la barre du bas reste (décidé) ; l'action principale prend la carte d'Arborea~~ — 2026-08-03
+- ~~La dictée arrivait amputée à l'écran : découpage, durée, vocabulaire, déchets~~ — 2026-08-03
+- ~~Écrire le devis soi-même depuis l'écran Informations~~ — 2026-08-03
+- ~~Le devis doublait au retour arrière du navigateur (4 017,60 € au lieu de 2 008,80 €)~~ — 2026-08-03
+- ~~« Fin de chantier » injoignable sur un chantier planifié~~ — 2026-08-03
+- ~~Planifier en demi-journées, et compter les équipes (le client ne voit que la date)~~ — 2026-08-03
+- ~~Le client peut demander une correction, et son message parvient au patron~~ — 2026-08-03
+- ~~La durée du chantier se choisit à la molette (½ journée à 100 jours)~~ — 2026-08-03
+- ~~La durée dictée n'entrait pas dans la planification : un chantier de 2 jours n'en bloquait qu'un~~ — 2026-08-03

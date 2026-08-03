@@ -23,6 +23,17 @@ type Carte = {
   urgent: boolean;
   titre: string;
   texte: string;
+  /**
+   * Ce que le client a écrit, mot pour mot.
+   *
+   * Il était enregistré depuis le premier jour et **n'apparaissait sur aucun
+   * écran**. Le patron lisait « le client n'a pas donné suite » sans jamais
+   * savoir qu'il avait écrit « le devis comprend une faute ». Le message est
+   * donc DANS la carte, pas derrière une pastille : c'est la seule chose qui
+   * lui dise quoi faire, et un geste de plus pour la lire, c'est un geste de
+   * trop.
+   */
+  messageClient?: string | null;
 };
 
 /**
@@ -36,17 +47,27 @@ const VISIBLES_PAR_DEFAUT = 2;
 
 function versCarte(n: NotificationPatron): Carte {
   const refus = n.reponse === "refusee";
+  const correction = n.reponse === "correction";
+
+  const titre = correction ? "Correction demandée" : refus ? "Devis retourné" : "Autre date proposée";
+  const texte = correction
+    ? "Le client veut ce devis corrigé avant de l'accepter."
+    : refus
+      ? "Le client n'a pas donné suite. Le devis peut être repris et renvoyé."
+      : n.dateRetenue
+        ? `Le client a accepté, et retenu le ${jourLisible(n.dateRetenue)}.`
+        : "Le client a accepté sur une date qu'il a proposée lui-même.";
+
   return {
     envoiId: n.envoiId,
     chantierId: n.chantierId,
     chantierNom: n.chantierNom,
-    urgent: refus,
-    titre: refus ? "Devis retourné" : "Autre date proposée",
-    texte: refus
-      ? "Le client n'a pas donné suite. Le devis peut être repris et renvoyé."
-      : n.dateRetenue
-        ? `Le client a accepté, et retenu le ${jourLisible(n.dateRetenue)}.`
-        : "Le client a accepté sur une date qu'il a proposée lui-même.",
+    // Une correction attend un geste autant qu'un refus — davantage, même :
+    // le chantier est presque acquis, il ne tient qu'à une reprise.
+    urgent: refus || correction,
+    titre,
+    texte,
+    messageClient: n.precisionClient,
   };
 }
 
@@ -109,6 +130,18 @@ export default function Notifications({
             <p className="mt-1 text-[13px]" style={{ color: colors.muted }}>
               {n.texte}
             </p>
+
+            {/* Le message du client, tel qu'il l'a écrit — jamais résumé, jamais
+                reformulé. C'est une citation : les guillemets et le filet de
+                gauche disent que ces mots ne sont pas ceux de l'application. */}
+            {n.messageClient && (
+              <blockquote
+                className="mt-3 whitespace-pre-wrap pl-3 text-[14px] leading-relaxed"
+                style={{ borderLeft: `2px solid ${colors.rust}`, color: colors.ink }}
+              >
+                « {n.messageClient} »
+              </blockquote>
+            )}
 
             <div className="mt-3 flex items-center gap-4">
               <Link

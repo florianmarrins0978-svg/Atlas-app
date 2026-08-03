@@ -1,6 +1,12 @@
 import { and, eq, isNull, isNotNull, sql, desc } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { chantiers, clients } from "../db/schema";
+import { chantiers, clients, entreprises } from "../db/schema";
+import {
+  compterOccupation,
+  departPossible,
+  dureeEnDemiJournees,
+  DUREE_PAR_DEFAUT_DEMI_JOURNEES,
+} from "../disponibilites";
 import type { Ctx } from "./context";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -152,11 +158,73 @@ export const marquerInformationsVerifiees = (ctx: Ctx, chantierId: string) =>
 
 export const marquerPrixValide = (ctx: Ctx, chantierId: string) => marquerJalon(ctx, chantierId, "prixValideAt");
 
+/**
+ * Pose une date à la main, depuis l'écran Planning.
+ *
+ * **Le créneau est choisi ici, comme il l'est quand un client répond.** Sans
+ * cela, un chantier planifié à la main n'aurait ni moment ni durée, donc
+ * occuperait la journée entière — et le patron, qui vient justement de gagner
+ * la demi-journée, la reperdrait dès qu'il cale un chantier lui-même.
+ *
+ * Aucun refus ici, délibérément : le patron peut surcharger sa journée s'il le
+ * décide. Ce sont ses clients qu'on protège d'une date impossible, pas lui de
+ * lui-même. Le créneau retombe alors sur le matin, faute de place.
+ */
 export async function planifierChantier(ctx: Ctx, chantierId: string, datePlanifiee: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const autres = await tx
+      .select({
+        id: chantiers.id,
+        jour: chantiers.datePlanifiee,
+        moment: chantiers.creneauDebut,
+        duree: chantiers.dureeDemiJournees,
+      })
+      .from(chantiers)
+      .where(
+        and(
+          eq(chantiers.entrepriseId, ctx.entrepriseId),
+          isNull(chantiers.deletedAt),
+          isNotNull(chantiers.datePlanifiee)
+        )
+      );
+
+    const [entreprise] = await tx
+      .select({ nombreEquipes: entreprises.nombreEquipes })
+      .from(entreprises)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .limit(1);
+
+    const [courant] = await tx
+      .select({ duree: chantiers.dureeDemiJournees, dureePrevue: chantiers.dureePrevue })
+      .from(chantiers)
+      .where(eq(chantiers.id, chantierId))
+      .limit(1);
+    const duree =
+      courant?.duree ??
+      dureeEnDemiJournees(courant?.dureePrevue ?? null) ??
+      DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+
+    const occupation = compterOccupation(
+      autres
+        .filter((a) => a.id !== chantierId && a.jour !== null)
+        .map((a) => ({
+          jour: a.jour as string,
+          moment: a.moment === "matin" || a.moment === "apres_midi" ? a.moment : null,
+          dureeDemiJournees: a.duree,
+        }))
+    );
+    const creneauDebut =
+      departPossible(datePlanifiee, duree, occupation, entreprise?.nombreEquipes ?? 1) ?? "matin";
+
     const [row] = await tx
       .update(chantiers)
-      .set({ datePlanifiee, updatedBy: ctx.utilisateurId, updatedAt: new Date() })
+      .set({
+        datePlanifiee,
+        creneauDebut,
+        dureeDemiJournees: duree,
+        updatedBy: ctx.utilisateurId,
+        updatedAt: new Date(),
+      })
       .where(eq(chantiers.id, chantierId))
       .returning();
     return row;
@@ -187,6 +255,11 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
         clientNom: clients.nom,
         devisEnvoyeAt: chantiers.devisEnvoyeAt,
         datePlanifiee: chantiers.datePlanifiee,
+        // Le créneau et la durée réservée : lisibles par le patron seul. Deux
+        // chantiers peuvent désormais tomber le même jour, et sans cette
+        // précision son planning ne lui dirait plus lequel passe en premier.
+        creneauDebut: chantiers.creneauDebut,
+        dureeDemiJournees: chantiers.dureeDemiJournees,
         ...DERNIER_ENVOI,
       })
       .from(chantiers)

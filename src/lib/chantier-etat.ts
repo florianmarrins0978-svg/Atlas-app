@@ -11,6 +11,7 @@ export type ChantierStatut =
   | "en_attente_client"
   | "a_relancer"
   | "devis_retourne"
+  | "devis_a_corriger"
   | "devis_caduc"
   | "planifie"
   | "termine"
@@ -24,6 +25,7 @@ export const statutLabel: Record<ChantierStatut, string> = {
   en_attente_client: "En attente de réponse",
   a_relancer: "À relancer",
   devis_retourne: "Devis retourné",
+  devis_a_corriger: "Correction demandée",
   devis_caduc: "Devis caduc",
   planifie: "Planifié",
   termine: "À facturer",
@@ -201,7 +203,7 @@ export type EtatPourPlanification = {
   datePlanifiee: string | null;
   envoiEnvoyeAt?: Date | string | null;
   envoiExpireAt?: Date | string | null;
-  envoiReponse?: "acceptee" | "refusee" | null;
+  envoiReponse?: "acceptee" | "refusee" | "correction" | null;
 };
 
 export function getPlanificationEtat(
@@ -242,7 +244,7 @@ export type EtatPourStatutAffiche = {
   // reste alors celui d'avant, sans jamais mentir sur ce qu'il ignore.
   envoiEnvoyeAt?: Date | string | null;
   envoiExpireAt?: Date | string | null;
-  envoiReponse?: "acceptee" | "refusee" | null;
+  envoiReponse?: "acceptee" | "refusee" | "correction" | null;
   // Jalons de fin. Absents des anciens appels, comme ceux de l'envoi.
   termineAt?: Date | string | null;
   factureEnvoyeeAt?: Date | string | null;
@@ -271,6 +273,10 @@ export function getStatutAffiche(c: EtatPourStatutAffiche, maintenant: Date = ne
   // non, dans l'autre il n'a rien dit du tout. Les confondre ferait croire à un
   // refus qui n'a jamais eu lieu, et découragerait de relancer.
   if (etat === "retourne") return "devis_retourne";
+  // Une correction demandée n'est pas un refus : le chantier est presque
+  // acquis, il ne tient qu'à une reprise. Les confondre découragerait le patron
+  // pour une faute de frappe.
+  if (etat === "a_corriger") return "devis_a_corriger";
   if (etat === "caduc") return "devis_caduc";
   if (etat === "a_relancer") return "a_relancer";
   if (etat === "en_attente") return "en_attente_client";

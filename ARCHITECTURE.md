@@ -518,3 +518,77 @@ Deux écarts assumés avec le modèle, et notés dans le composant :
   la dictée vient un écran plus tard.
 - **L'icône est un `+`, pas un micro**, pour la même raison. Un micro qui ouvre
   un formulaire serait une petite tromperie, répétée à chaque ouverture.
+
+---
+
+## 22. Le planning compte en demi-journées, et le client n'en sait rien
+
+**La demande, dans ses mots** (2026-08-03) :
+
+> « J'ai déjà un chantier le 6 août, donc pour mon nouveau client on ne propose
+> pas le 6 août. Mais si mon 1er chantier du 6 ne dure que le matin, je ne peux
+> pas caler une autre demi-journée l'après-midi. »
+> « Si j'ai deux équipes dans ma boîte, je peux avoir deux chantiers, voire plus,
+> le 6 août. »
+
+Et, sur la forme, une consigne qui commande tout le reste :
+
+> « Mon client ne doit pas être informé de la demi-journée, seulement moi ; lui
+> verra le 6 août. »
+
+### Le modèle retenu
+
+Un jour porte **deux demi-journées**. Chacune tient autant de chantiers que
+l'entreprise déclare d'**équipes** (`entreprises.nombre_equipes`, 1 par défaut).
+Un chantier occupe une suite de demi-journées à partir d'un départ
+(`chantiers.creneau_debut`) et pour une durée réservée
+(`chantiers.duree_demi_journees`). Migration `0019_creneaux_et_equipes.sql`.
+
+**Trois pistes avaient été présentées au patron** — un simple créneau, une durée
+en demi-journées, des heures réelles. Il a retenu la deuxième et écarté les
+heures : « la demi-journée suffit ». Le noter évite de rouvrir le débat, et
+surtout évite qu'une prochaine conversation prenne les heures pour un oubli.
+
+### Le troisième défaut, que personne n'avait signalé
+
+La durée dictée (« 2 jours ») **n'entrait nulle part dans la planification** :
+seule `duree_prevue`, un texte libre, la portait, et seul le chiffrage la lisait.
+Un chantier de deux jours calé le 6 laissait donc le 7 proposable au client
+suivant. `duree_demi_journees` est la donnée calculable, distincte du texte :
+faire dépendre un planning d'une chaîne de caractères, c'est le rendre faux au
+premier mot mal orthographié.
+
+### Une seule règle, quatre chemins
+
+`src/server/disponibilites.ts` porte tout le calcul, sans base. Quatre chemins
+l'emploient — l'écran d'envoi, la création de l'envoi, la revérification de la
+réponse du client, et la planification à la main. Quatre calculs distincts
+finiraient par diverger, et c'est le client qui découvrirait l'écart.
+
+Le créneau est **choisi par le planning, jamais par le client** : il retient un
+jour, `departPossible()` lui trouve la demi-journée — le matin de préférence,
+l'après-midi sinon.
+
+### Ce que le client reçoit, et ce qu'il ne reçoit pas
+
+La page publique continue de ne recevoir que des **dates**. La nuance introduite
+est ailleurs : la liste des jours indisponibles n'est plus « les jours où un
+chantier est posé » mais « les jours où **ce** chantier ne tient pas » — elle
+dépend donc de sa durée. `test-creneaux-planning.ts` vérifie sur le contenu
+sérialisé qu'aucun « matin », « après-midi », « créneau » ni « durée » ne
+traverse la frontière.
+
+### Le piège de la migration, et comment il est fermé
+
+Les chantiers planifiés **avant** cette migration n'ont ni créneau ni durée. Les
+lire comme « rien de réservé » aurait libéré, du jour au lendemain, des
+après-midis déjà pris — et le patron se serait retrouvé avec deux clients au même
+endroit. `compterOccupation()` les traite donc comme **une journée entière à
+partir du matin**, c'est-à-dire exactement ce qu'ils étaient. Un contrôle dédié
+le vérifie sur une ligne remise à l'état d'avant.
+
+### Ce qui reste ouvert
+
+Les **équipes nommées** (qui va où) et la **capacité en hommes** n'ont pas été
+retenues : le patron a choisi le compteur. Elles restent dans `TODO.md` si son
+entreprise grandit.

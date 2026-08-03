@@ -96,7 +96,7 @@ async function main() {
   await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
 
   await page.goto("http://localhost:3000/reglages", { waitUntil: "networkidle" });
-  assert.ok(await page.locator("text=Tarifs").first().isVisible());
+  assert.ok(await page.locator("text=Réglages").first().isVisible());
 
   const libelleUnique = `Tarif e2e ${Date.now()}`;
 

@@ -80,6 +80,9 @@ export const entreprises = pgTable("entreprises", {
   telephone: text("telephone"),
   email: text("email"),
   iban: text("iban"),
+  // Combien de chantiers menés de front. 1 par défaut — le comportement d'avant
+  // la migration 0019, où une seule équipe était supposée sans le dire.
+  nombreEquipes: integer("nombre_equipes").notNull().default(1),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -167,6 +170,15 @@ export const chantiers = pgTable(
     devisGenereAt: timestamp("devis_genere_at", { withTimezone: true }),
     devisEnvoyeAt: timestamp("devis_envoye_at", { withTimezone: true }),
     datePlanifiee: date("date_planifiee"), // non-null = "planifié"
+    // Le moment où l'intervention commence, et sa durée réservée en
+    // demi-journées. NULL sur tout chantier planifié avant la migration 0019 :
+    // il est alors lu comme « journée entière à partir du matin », c'est-à-dire
+    // exactement ce qu'il était. Voir src/server/disponibilites.ts.
+    creneauDebut: text("creneau_debut"),
+    dureeDemiJournees: integer("duree_demi_journees"),
+    // Le texte dicté (« 2 jours »), distinct de la durée réservée ci-dessus :
+    // faire dépendre le planning d'une chaîne de caractères serait le rendre
+    // faux au premier mot mal orthographié.
     dureePrevue: text("duree_prevue"),
     // Jalons de fin de chantier (docs/AGENT.md §2.3).
     termineAt: timestamp("termine_at", { withTimezone: true }),
@@ -686,7 +698,10 @@ export const envoisDevis = pgTable(
     empreinteDevis: char("empreinte_devis", { length: 64 }).notNull(),
     envoyeAt: timestamp("envoye_at", { withTimezone: true }).notNull().defaultNow(),
 
-    reponse: text("reponse", { enum: ["acceptee", "refusee"] }),
+    // « correction » : le client veut le même devis, corrigé. Ni un oui, ni un
+    // non — la troisième issue qui manquait, et sans laquelle une coquille se
+    // présentait au patron comme un refus (migration 0020).
+    reponse: text("reponse", { enum: ["acceptee", "refusee", "correction"] }),
     responduAt: timestamp("repondu_at", { withTimezone: true }),
     dateRetenue: date("date_retenue"),
     dateContreProposee: boolean("date_contre_proposee").notNull().default(false),

@@ -17,8 +17,38 @@ import type { ResultatWorkflow } from "../../../orchestrateur/types";
 // jour où un second cas d'usage LLM apparaîtra (voir Lot IA-01.5).
 // L'analyse de texte elle-même (analyserDemandeTexte) est partagée avec
 // l'orchestrateur (lot IA-08) — jamais dupliquée.
-const MOTS_DECHETS = /d[ée]chet|branchage|bois|[ée]vacuation|benne|gravat|d[ée]blai/i;
-const MOTS_ACCES = /acc[èe]s|portail|[ée]chafaudage|[ée]tage|stationnement|ruelle|cour|passage étroit/i;
+// Ce qui parle du **devenir des déchets**, et non du travail lui-même.
+//
+// « bois » en faisait partie. Pour un élagueur, le bois est sa matière, pas son
+// rebut : « couper le bois en 50 cm, fendre, laisser sur place » — deux heures
+// de travail facturable — était intégralement reclassé en gestion des déchets,
+// donc retiré des prestations. Le patron a vu son abattage disparaître.
+const MOTS_DECHETS =
+  /d[ée]chets?|branchages?|[ée]vacuations?|[ée]vacuer|benne|d[ée]ch[eè]terie|gravats?|d[ée]blais?|(?:laisser?|laiss[ée]s?|reste[nr]?|rest[ea]nt)\s+sur\s+place|emport(?:er|e)|br[ûu]l(?:er|age)/i;
+const MOTS_ACCES =
+  /acc[èe]s|portail|[ée]chafaudage|[ée]tage|stationnement|ruelle|cour\b|passage [ée]troit|chemin [ée]troit|terrain en pente/i;
+
+/**
+ * Sépare, dans un segment, ce qui relève du travail et ce qui relève du devenir
+ * des déchets (ou d'une contrainte d'accès).
+ *
+ * Le segment entier basculait dans une seule case. « Couper le bois en 50 cm
+ * fendre laisser sur place » partait donc tout entier en gestion des déchets, à
+ * cause des trois derniers mots — et la prestation n'existait plus nulle part.
+ *
+ * Ici l'expression détectée est retirée : ce qui reste redevient une prestation.
+ * Sauf si le reste parle encore de déchets (« évacuation des déchets ») ou ne
+ * porte plus rien : le segment est alors bien, en entier, une information de
+ * chantier.
+ */
+function separer(segment: string, motif: RegExp): { travail: string | null; information: string | null } {
+  const trouve = segment.match(motif);
+  if (!trouve) return { travail: segment, information: null };
+
+  const reste = segment.replace(trouve[0], " ").replace(/\s+/g, " ").trim();
+  if (reste.length < 4 || motif.test(reste)) return { travail: null, information: segment };
+  return { travail: reste, information: trouve[0] };
+}
 
 // Quantité explicitement écrite dans le texte, avec son unité. Uniquement ce
 // qui est réellement présent : sans nombre ET unité reconnaissables, les deux
@@ -48,11 +78,21 @@ export const fournisseurLLMDev: FournisseurLLM = {
 
     const { prestations, materiel, ambiguites, dureeTexte, equipeTexte } = analyserDemandeTexte(message);
 
-    // Les segments parlant de déchets ou d'accès sont retirés des prestations :
-    // ce sont des informations de chantier, pas des travaux à chiffrer.
-    const dechets = prestations.filter((s) => MOTS_DECHETS.test(s));
-    const acces = prestations.filter((s) => !MOTS_DECHETS.test(s) && MOTS_ACCES.test(s));
-    const travaux = prestations.filter((s) => !MOTS_DECHETS.test(s) && !MOTS_ACCES.test(s));
+    // Ce qui parle de déchets ou d'accès est une information de chantier, pas un
+    // travail à chiffrer — mais on n'en retire du segment que la partie
+    // concernée, jamais le segment entier (voir `separer`).
+    const dechets: string[] = [];
+    const acces: string[] = [];
+    const travaux: string[] = [];
+    for (const segment of prestations) {
+      const surDechets = separer(segment, MOTS_DECHETS);
+      if (surDechets.information) dechets.push(surDechets.information);
+      if (!surDechets.travail) continue;
+
+      const surAcces = separer(surDechets.travail, MOTS_ACCES);
+      if (surAcces.information) acces.push(surAcces.information);
+      if (surAcces.travail) travaux.push(surAcces.travail);
+    }
 
     const informationsManquantes: string[] = [];
     if (!dureeTexte) informationsManquantes.push("Durée prévue non détectée");

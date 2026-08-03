@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { jourLisible } from "@/lib/jour";
+import { libelleDuree } from "@/server/disponibilites";
 import { preparerEnvoiAction, envoyerAuClientAction } from "./actions";
 import type { PreparationEnvoi } from "@/server/repositories/preparation-envoi";
 
@@ -13,6 +14,33 @@ import type { PreparationEnvoi } from "@/server/repositories/preparation-envoi";
 //
 // La seule question posée est un RÉGLAGE de l'envoi : une date, ou deux ? Sa
 // réponse déclenche tout le reste.
+
+/**
+ * Les durées proposées : la demi-journée, puis 1 à 100 jours.
+ *
+ * **Pourquoi une liste déroulante et non des boutons.** Quatre boutons
+ * couvraient jusqu'à trois jours ; au-delà il aurait fallu en ajouter, et un
+ * chantier de vingt jours en aurait demandé vingt. Le patron l'a dit : « une
+ * bande déroulante qui fait défiler le nombre de jours, 100 max — ça prendra
+ * moins de place ».
+ *
+ * **Et pourquoi un `<select>` natif plutôt qu'une bande faite maison.** Sur son
+ * téléphone, c'est exactement la molette qu'il décrit : elle s'ouvre au bas de
+ * l'écran, se fait défiler au pouce, et occupe une seule ligne au repos. Une
+ * bande écrite à la main aurait le même aspect en moins fiable — et ne
+ * répondrait pas au lecteur d'écran.
+ *
+ * La demi-journée reste la première entrée : c'est le cas qui lui a manqué.
+ */
+const DUREE_MAX_JOURS = 100;
+
+const DUREES: { demiJournees: number; libelle: string }[] = [
+  { demiJournees: 1, libelle: "½ journée" },
+  ...Array.from({ length: DUREE_MAX_JOURS }, (_, i) => ({
+    demiJournees: (i + 1) * 2,
+    libelle: i === 0 ? "1 jour" : `${i + 1} jours`,
+  })),
+];
 
 const MESSAGES_BLOCAGE: Record<string, string> = {
   canal_absent:
@@ -52,15 +80,20 @@ function Contenu({
   const [selection, setSelection] = useState<string[]>([]);
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+  // `undefined` tant que le patron n'a rien corrigé : le serveur déduit alors
+  // la durée de la dictée. Une valeur ici veut dire « c'est lui qui a tranché ».
+  const [dureeChoisie, setDureeChoisie] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     let annule = false;
-    preparerEnvoiAction(chantierId)
+    preparerEnvoiAction(chantierId, dureeChoisie)
       .then((p) => {
         if (annule) return;
         setPreparation(p);
         // Pré-sélection du premier jour libre : dans la majorité des cas c'est
         // celui que le patron retiendra, et il reste libre de le décocher.
+        // Recalculée à chaque changement de durée : garder une date qui ne tient
+        // plus l'aurait fait refuser à l'envoi, sans qu'il comprenne pourquoi.
         setSelection(p.joursLibres.slice(0, 1));
       })
       .catch(() => {
@@ -69,7 +102,7 @@ function Contenu({
     return () => {
       annule = true;
     };
-  }, [chantierId]);
+  }, [chantierId, dureeChoisie]);
 
   function basculerJour(jour: string) {
     setSelection((actuelle) => {
@@ -88,7 +121,12 @@ function Contenu({
     setEnCours(true);
     setErreur(null);
     try {
-      const r = await envoyerAuClientAction(chantierId, devisId, [...selection].sort());
+      const r = await envoyerAuClientAction(
+        chantierId,
+        devisId,
+        [...selection].sort(),
+        preparation?.dureeDemiJournees
+      );
       if (!r.succes) {
         setErreur(r.erreur);
         return;
@@ -128,6 +166,40 @@ function Contenu({
             {preparation.destinataire ? ` au ${preparation.destinataire}` : ""}
           </p>
 
+          {/* La durée n'est pas une seconde question — c'est le réglage qui
+              décide quels jours sont proposables. Une demi-journée tient là où
+              une journée entière ne tient plus, et le patron le sait mieux que
+              sa dictée. Elle reste chez lui : son client ne verra qu'une date.
+
+              L'arrêt reste unique (`docs/AGENT.md` §2.2) : la question posée est
+              toujours « une date, ou deux ? ». Ceci en est le préalable. */}
+          <p className={smallCaps} style={{ color: colors.muted, marginBottom: 6 }}>
+            Ce chantier prend
+          </p>
+          <select
+            aria-label="Durée du chantier"
+            value={preparation.dureeDemiJournees}
+            onChange={(e) => setDureeChoisie(Number(e.target.value))}
+            className="mb-1 w-full rounded-xl px-4 py-3 outline-none"
+            style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
+          >
+            {DUREES.map((d) => (
+              <option key={d.demiJournees} value={d.demiJournees}>
+                {d.libelle}
+              </option>
+            ))}
+          </select>
+          <p className="mb-4 text-[12px] leading-relaxed" style={{ color: colors.muted }}>
+            {preparation.dureeDeduiteDeLaDictee
+              ? "Repris de votre dictée. Corrigez-le si besoin — cela change les jours proposables."
+              : "Votre client ne verra que la date, jamais la demi-journée."}
+            {/* Un chantier long réserve beaucoup de jours d'affilée. C'est
+                juste, mais invisible : sans cette phrase, le patron
+                s'étonnerait de ne plus rien pouvoir proposer pendant un mois. */}
+            {preparation.dureeDemiJournees > 6 &&
+              ` ${preparation.dureeDemiJournees / 2} jours ouvrés d'affilée seront réservés à partir de la date retenue.`}
+          </p>
+
           <p className={smallCaps} style={{ color: colors.muted, marginBottom: 8 }}>
             Une date, ou deux au choix du client ?
           </p>
@@ -160,7 +232,8 @@ function Contenu({
 
           {preparation.joursLibres.length === 0 && (
             <p className="mb-4 text-center text-[13px]" style={{ color: colors.rust }}>
-              Aucun jour libre dans les trois prochains mois.
+              Aucun jour ne peut accueillir {libelleDuree(preparation.dureeDemiJournees)} dans les trois prochains
+              mois. Essayez une durée plus courte, ou ajoutez une équipe dans vos réglages.
             </p>
           )}
 

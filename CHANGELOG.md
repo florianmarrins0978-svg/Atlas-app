@@ -9,6 +9,246 @@ Format : le plus récent en tête.
 
 ## 2026-08-03
 
+### Le message du client arrivait dans le vide — et il n'avait que deux boutons
+
+Le patron : « si le client remarque une faute, il doit pouvoir avoir une ligne
+pour écrire et renvoyer le devis pour correction ».
+
+**Deux défauts, dont un invisible.**
+
+1. Le client n'avait que deux issues : accepter, ou ne pas donner suite. Celui
+   qui repère une coquille ne veut ni l'une ni l'autre. Il touchait donc « Je ne
+   donne pas suite », et le patron lisait « Le client n'a pas donné suite » — un
+   chantier perdu pour une faute de frappe.
+2. **Le champ pour écrire existait déjà**, intitulé « Une précision ?
+   (facultatif) ». Le client y écrivait — la capture du patron montre « Le devis
+   comprend une fautes » — c'était enregistré dans `precision_client`… et
+   **aucun écran ne l'affichait jamais**. Le message partait dans le vide. C'est
+   le plus coûteux des deux, parce que rien ne le signale.
+
+**Ce qui change.** Une troisième issue, « Une correction avant d'accepter »,
+inactive tant que rien n'est écrit — une demande muette obligerait le patron à
+rappeler, c'est-à-dire à refaire l'aller-retour que ce parcours supprime. Le
+champ devient une zone de texte, s'intitule « Une erreur, une question, une
+précision ? » et annonce que l'artisan lira le message tel quel.
+
+**Et le message arrive.** Il s'affiche entre guillemets, dans la carte de
+l'accueil et sur l'écran Devis — pas derrière une pastille : c'est la seule
+chose qui dise au patron quoi faire, et un geste de plus pour la lire serait un
+geste de trop. Il accompagne aussi les refus (« trop cher ») et les
+acceptations (« plutôt le matin ») ; une acceptation muette sur une date
+proposée, elle, continue de ne déranger personne.
+
+Nouvel état `Correction demandée`, distinct de `Devis retourné` : le chantier
+est presque acquis, il ne tient qu'à une reprise. Le bouton dit alors
+« Corriger et renvoyer ».
+
+La base tient sa part : une correction sans message y est refusée par contrainte
+(migration 0020), indépendamment du code.
+
+### La durée du chantier se choisit à la molette, jusqu'à 100 jours
+
+Sa demande : « au lieu de rajouter des jours à chaque fois, mettre une bande
+déroulante qui fait défiler le nombre de jours (100 max) — si un chantier dure
+20 jours ce sera plus simple et prendra moins de place ».
+
+Les quatre boutons deviennent une liste déroulante : ½ journée, puis 1 à
+100 jours. Sur son téléphone, c'est exactement la molette qu'il décrit, elle
+occupe une seule ligne, et elle répond au lecteur d'écran — ce qu'une bande
+écrite à la main n'aurait pas fait. Au-delà de trois jours, une phrase annonce
+combien de jours ouvrés seront réservés : un chantier long bloque beaucoup de
+jours d'affilée, c'est juste mais invisible.
+
+### Le planning compte en demi-journées, et le patron peut avoir plusieurs équipes
+
+Sa question :
+
+> « J'ai déjà un chantier le 6 août, donc pour mon nouveau client on ne propose
+> pas le 6 août. Mais si mon 1er chantier du 6 ne dure que le matin, je ne peux
+> pas caler une autre demi-journée l'après-midi. »
+> « Si j'ai deux équipes dans ma boîte, je peux avoir deux chantiers, voire plus,
+> le 6 août. »
+
+Trois pistes lui ont été présentées pour chaque moitié du problème. Il a retenu
+la durée en demi-journées (« la demi-journée suffit ») et le compteur d'équipes,
+et il a écarté les heures réelles. Le détail des choix est dans
+`ARCHITECTURE.md` §22 — pour que personne ne rouvre le débat dans trois mois.
+
+**Ce qui change.** Un jour porte deux demi-journées ; chacune tient autant de
+chantiers que l'entreprise a d'équipes (réglable dans Réglages, une par défaut).
+Un chantier occupe une suite de demi-journées à partir d'un départ que le
+planning choisit — matin de préférence, après-midi sinon. L'écran d'envoi porte
+désormais la durée du chantier, reprise de la dictée et corrigible d'un doigt :
+elle commande les jours proposables.
+
+**Un troisième défaut, que personne n'avait signalé.** La durée dictée
+(« 2 jours ») n'entrait **nulle part** dans la planification : seul le chiffrage
+la lisait. Un chantier de deux jours calé le 6 laissait donc le 7 proposable au
+client suivant. Il bloque maintenant les deux.
+
+**Ce que le client voit n'a pas bougé d'un iota**, et c'était sa consigne :
+« mon client ne doit pas être informé de la demi-journée, seulement moi ; lui
+verra le 6 août ». La page publique ne reçoit toujours que des dates. Un
+contrôle inspecte le contenu sérialisé et échoue si « matin », « après-midi »,
+« créneau » ou « durée » y apparaît.
+
+**Le piège de la migration, et comment il est fermé.** Les chantiers déjà
+planifiés n'ont ni créneau ni durée. Les lire comme « rien de réservé » aurait
+libéré, du jour au lendemain, des après-midis déjà pris — et le patron se serait
+retrouvé avec deux clients au même endroit. Ils sont donc traités comme une
+journée entière, exactement ce qu'ils étaient.
+
+**Ce que j'ai cassé en cours de route, et que la batterie a vu.** J'avais rendu
+les samedis non retenables, alors que les autoriser était un choix délibéré :
+on ne *propose* jamais le week-end, mais un client qui en demande un doit
+pouvoir l'obtenir. Deux suites sans rapport ont viré au rouge sur des dates qui
+tombaient un samedi. Corrigé, et écrit noir sur blanc dans le code.
+
+### Le devis qui doublait tout seul
+
+Le patron : « lorsque je clique sur la touche retour de mon navigateur et que je
+reviens sur la page, ça me compte deux prestations, donc le prix du devis a fait
+×2 tout seul ». Sa capture : **4 017,60 € TTC**, soit 3 348 € HT — deux fois
+1 674 €.
+
+Reproduit à l'identique, au centime près. La cause n'était pas un calcul faux,
+c'était **un bouton sans mémoire** : « Ajouté au détail » vivait dans le
+navigateur. Un retour arrière, un rechargement, un onglet rouvert, et l'écran
+réaffichait « Ajouter au détail » alors que la ligne était déjà là. Un seul
+appui suffisait. L'application avait invité l'erreur, puis l'avait exécutée sans
+un mot — pire qu'un calcul faux, parce que rien ne le signale : le total paraît
+simplement plus élevé que prévu, et ce total part au client.
+
+L'état vient désormais **du détail lui-même** (`src/lib/proposition-au-detail.ts`),
+plus du navigateur : le bouton dit « Déjà au détail », il est inerte, et une
+phrase indique la sortie — modifier la ligne existante. Le serveur applique la
+**même fonction** et refuse de son côté : une page laissée ouverte, deux appuis
+pendant que le premier voyage, et l'écran ne protège plus rien.
+
+Trois contrôles, à trois hauteurs : la règle (`test-proposition-au-detail.ts`),
+le refus serveur (`test-prix-doublon-serveur.ts`), et **le geste exact du
+patron rejoué dans un navigateur** (`test-devis-doublon-e2e.ts`). Les deux
+premiers ont été confrontés au défaut d'origine : ils virent au rouge.
+
+### « Fin de chantier » était injoignable sur un chantier planifié
+
+« Le chantier est planifié mais je dois pouvoir retourner dessus une fois
+terminé pour cliquer sur chantier fini — pourquoi n'y ai-je pas accès ??? »
+
+Parce que la clôture n'existait que dans l'onglet **Terminés**, où un chantier
+n'entre qu'une fois sa **date d'intervention passée**. Le sien était prévu deux
+jours plus tard : la facture était donc réellement injoignable, et sa fiche
+disait « rien à faire pour l'instant » sans indiquer ni où ni quand cela
+changerait.
+
+La fiche du chantier porte maintenant, en haut à droite comme il l'a demandé,
+un bouton **« Fin de chantier → »** dès que le chantier est planifié. Aucune
+barrière de date, délibérément : un chantier se finit parfois plus tôt, et c'est
+le patron qui sait quand il est fait. Le geste reste sans danger — la fonction
+appelée est idempotente, exige un devis réellement envoyé, et n'émet rien : elle
+bâtit la facture qu'il vérifiera (arrêt 3). L'émission, elle, reste son geste,
+et c'est elle qui alimente le relevé de TVA.
+
+Le message d'attente dit enfin quelque chose d'utile : la date prévue, et le
+geste suivant.
+
+### La dictée arrive entière à l'écran
+
+Le patron a écrit trois lignes et photographié ce qu'Atlas en avait fait :
+
+    Taille de haie laurier 20 m linéaires
+    Abattage chêne mort, couper le bois en 50 cm fendre laisser sur place
+    Estimation 2 jours 2 hommes broyeur plus camion plus fendeuse
+
+L'écran lui rendait **une** prestation au libellé collé (« Taille de haie
+laurier 20 m linéaires⏎Abattage chêne mort »), « Rien de détecté dans la
+dictée » en face du matériel, et « Non mentionné » en face des déchets. Son
+verdict : « ça n'a rien à voir ».
+
+Quatre fautes, toutes silencieuses :
+
+1. **le découpage ignorait les retours à la ligne.** Une dictée met un élément
+   par ligne ; deux prestations se retrouvaient dans un seul libellé ;
+2. **un segment contenant la durée ou l'équipe était jeté en entier.** Sa
+   troisième ligne portait tout son matériel — broyeur, camion, fendeuse — et
+   elle a disparu sans laisser de trace ;
+3. **le vocabulaire du matériel était celui d'un plaquiste** (plaque, rail,
+   colle, enduit) dans une application faite pour un élagueur. Les unités (m²,
+   kg) y figuraient aussi : « 20 m² de débroussaillage » finissait classé en
+   matériel ;
+4. **« bois » comptait comme un déchet.** Pour un élagueur, le bois est sa
+   matière : « couper le bois en 50 cm, fendre, laisser sur place » — du travail
+   facturable — basculait tout entier en gestion des déchets.
+
+Les quatre sont corrigées. La même dictée rend maintenant trois prestations,
+trois matériels, « laisser sur place » en gestion des déchets, la durée et
+l'équipe — et ne réclame plus une information qu'il avait donnée.
+
+**Ce qui empêchera la rechute.** Une heuristique ne comprendra jamais un
+chantier ; ce qu'on peut exiger d'elle, c'est de ne rien perdre.
+`scripts/test-analyse-dictee.ts` tient donc un invariant mot à mot : **aucun mot
+dicté ne disparaît**, avec la liste explicite des mots de liaison qu'on
+s'autorise à absorber. Il a été confronté aux deux défauts d'origine, qu'il
+rattrape ; il en a aussi trouvé un troisième que personne ne cherchait —
+`jours?` se déclenchait à l'intérieur de « journée », et « Une journée » laissait
+une prestation nommée « née ».
+
+**Ce que cela ne règle pas, et qu'il faut dire.** Ce découpage reste une
+heuristique : il ne comprend rien, il se contente de ne rien jeter. La vraie
+lecture d'une dictée demande un modèle de langage, et donc le choix de
+prestataire qui attend le patron dans `docs/A-FAIRE.md`.
+
+### Écrire le devis soi-même, depuis l'écran Informations
+
+Demandé dans le même message : « je dois pouvoir cliquer sur mon devis et
+pouvoir le remplir manuellement si je le souhaite ». L'écran Informations n'avait
+qu'une sortie — « Valider et calculer le prix → » — qui passe par la proposition
+automatique. Après une extraction ratée, c'était le seul chemin, et il menait au
+même endroit.
+
+Un second lien, « Ou écrire le devis moi-même → », mène directement à l'écran
+Prix, qui **est** le devis en cours de rédaction. Il ne marque pas les
+informations comme vérifiées — le patron quitte cet écran sans le trancher, et
+la fiche du chantier ne doit pas prétendre le contraire. La proposition de prix
+y arrive repliée, jamais supprimée : un lien la rappelle s'il change d'avis.
+
+### L'adresse d'Atlas est écrite par la machine, plus recomposée par le patron
+
+Le mode d'emploi lui donnait `https://<nom-de-l-espace>-3000.app.github.dev`.
+Il a répondu : « Je comprends pas ce que je dois faire avec ça ». Il avait
+raison — on lui demandait de deviner un morceau d'adresse, au doigt, sur six
+pouces, alors que l'espace de travail connaît son propre nom.
+
+`.devcontainer/demarrer.sh` compose désormais l'adresse complète à partir de
+`CODESPACE_NAME` et `GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN`, l'affiche dans
+un cadre au démarrage et la dépose dans `/tmp/adresse-atlas.txt` — le terminal
+défile, pas le fichier. Hors Codespace, où ces variables n'existent pas, le
+script n'annonce rien plutôt que d'inventer une adresse fausse ; les deux cas
+ont été joués.
+
+Le mode d'emploi ne porte plus aucun gabarit à remplir : une adresse
+d'exemple complète, la consigne de la mettre en favori dès la première fois, et
+— pour qui ne l'a pas fait — un tableau qui montre les deux caractères à ajouter
+à l'adresse de l'éditeur, plutôt qu'une phrase à interpréter.
+
+### « Déconnecté de codespace » ne veut pas dire « Atlas est en panne »
+
+Le patron a envoyé une capture de son téléphone : *The workbench failed to
+connect to the server (Error: deadline exceeded)*, et en bas **« Déconnecté de
+codespace »**. Un seul mot avec : « Problème ».
+
+Ce n'était pas Atlas — c'était l'éditeur qui n'avait pas réussi à joindre
+l'espace de travail réveillé de sa veille. Mais rien dans `docs/ESSAYER.md` ne
+le disait : la section de dépannage couvrait la page blanche, `Missing script`,
+`EADDRINUSE`, le port pris — jamais l'éditeur lui-même. Le patron n'avait donc
+aucun moyen de savoir que **l'éditeur ne lui sert à rien pour ouvrir Atlas** :
+l'application démarre seule à chaque allumage, et son adresse est ouverte.
+
+Le cas est écrit, en tête de la section de dépannage puisque c'est la première
+chose qu'il voit : recharger, rouvrir depuis `github.com/codespaces`, et surtout
+aller droit à `https://<nom-de-l-espace>-3000.app.github.dev` sans attendre
+l'éditeur.
+
 ### Le devis est enfin celui du patron
 
 Le patron a ouvert le PDF d'Atlas à côté de celui qu'il avait construit

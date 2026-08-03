@@ -4,7 +4,8 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-03 · `claude/migrate-app-atlas-zz31ac` · `0eb2ec7`
+**Point de reprise :** 2026-08-03 · `claude/migrate-app-atlas-zz31ac`
+(l'historique fait foi : `git log --oneline -20`)
 
 ---
 
@@ -54,7 +55,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les neuf pièges de ce dépôt
+### Les treize pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -91,6 +92,42 @@ site publié à son adresse réelle.
    L'espace fine insécable (U+202F) que `toLocaleString('fr-FR')` glisse dans
    « 1 400,00 € » en fait partie : utiliser l'insécable ordinaire (U+00A0), qui,
    elle, existe. Le symbole € passe, les accents aussi.
+9. **L'analyse d'une dictée jette ce qu'elle ne sait pas classer, sans le dire.**
+   `src/server/orchestrateur/analyse-demande.ts` ne comprend rien : il découpe.
+   Un segment mal découpé ne produit pas d'erreur — il produit un écran plus
+   court, que personne ne peut distinguer d'une dictée pauvre. Le patron y a
+   perdu une prestation et trois machines d'un coup. D'où l'invariant que tient
+   `scripts/test-analyse-dictee.ts` : **aucun mot dicté ne disparaît**, et la
+   liste des mots qu'on s'autorise à absorber est écrite en toutes lettres dans
+   la suite. Toucher au découpage sans relancer cette suite, c'est refaire le
+   défaut. Corollaire éprouvé : dans ces expressions rationnelles, les
+   frontières de mot ne sont pas décoratives — sans `\b`, `jours?` se déclenche
+   à l'intérieur de « journée » et ampute le segment.
+10. **Un état d'écriture qui vit dans le navigateur ment au premier retour
+    arrière.** « Ajouté au détail » était un `useState` : il mourait à chaque
+    navigation, l'écran reproposait une ligne déjà écrite, et un seul appui
+    doublait le devis du patron (1 674 € → 3 348 € HT). La règle : **tout ce qui
+    dit « c'est déjà fait » se déduit des données, jamais d'un drapeau local** —
+    et le serveur applique la même fonction, parce qu'un écran ne protège rien.
+    Motif à réutiliser : `src/lib/proposition-au-detail.ts`.
+
+11. **Le planning ne se lit plus en jours pleins.** Un jour porte deux
+    demi-journées, chacune tenant autant de chantiers que l'entreprise a
+    d'équipes (`ARCHITECTURE.md` §22). Deux conséquences à ne pas défaire : un
+    chantier planifié **avant** la migration 0019 n'a ni créneau ni durée et
+    doit continuer d'occuper la journée entière — le relâcher rendrait
+    proposables des après-midis déjà pris ; et le **week-end reste retenable**,
+    il n'est qu'exclu des jours *suggérés*, parce qu'un client peut demander un
+    samedi. Avoir confondu les deux a cassé deux suites d'un coup.
+
+12. **Une donnée enregistrée n'est pas une donnée montrée.** `precision_client`
+    existait depuis le premier jour, le client y écrivait, et **aucun écran ne
+    l'affichait**. Le patron lisait « le client n'a pas donné suite » sans jamais
+    savoir qu'on lui avait écrit « le devis comprend une faute ». Rien ne le
+    signalait — ni erreur, ni test : le champ était simplement absent de toutes
+    les requêtes. Avant d'ajouter un champ que l'utilisateur remplit, écrire le
+    contrôle qui vérifie qu'il **ressort** quelque part
+    (`scripts/test-correction-devis.ts`).
 
 ### Le vocabulaire
 

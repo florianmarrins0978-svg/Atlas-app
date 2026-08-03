@@ -66,6 +66,17 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
       />
     );
   }
+  // Le client qui revient sur son lien doit retrouver où en est SA demande.
+  // Sans cet écran, il verrait « ce lien n'est plus valable » ou un formulaire
+  // à remplir de nouveau, et croirait sa correction perdue.
+  if (envoi.reponse === "correction") {
+    return (
+      <Cadre
+        titre="Correction demandée"
+        texte="Votre artisan a reçu votre message. Il corrigera le devis et vous en enverra une nouvelle version."
+      />
+    );
+  }
 
   const d = envoi.devis;
 

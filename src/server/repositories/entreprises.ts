@@ -1,6 +1,8 @@
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "../db/client";
+import { withEntreprise } from "../db/with-entreprise";
 import { entreprises, entrepriseCompteurs, users, membresEntreprise } from "../db/schema";
+import type { Ctx } from "./context";
 
 // Cas particulier : à la création, l'entreprise n'existe pas encore, donc
 // withEntreprise() (qui exige une adhésion préexistante) ne peut pas s'appliquer.
@@ -36,5 +38,39 @@ export async function creerEntreprise(
     await tx.insert(entrepriseCompteurs).values({ entrepriseId: entreprise.id }).onConflictDoNothing();
 
     return { entreprise, utilisateurId };
+  });
+}
+
+/** L'entreprise active, telle que ses écrans de réglages la lisent. */
+export async function getEntreprise(ctx: Ctx) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [e] = await tx.select().from(entreprises).where(eq(entreprises.id, ctx.entrepriseId)).limit(1);
+    return e ?? null;
+  });
+}
+
+/**
+ * Met à jour les réglages de l'entreprise.
+ *
+ * Le nombre d'équipes est borné ici en plus de la contrainte de base (migration
+ * 0019) : zéro équipe rendrait tout jour indisponible et le patron ne pourrait
+ * plus rien envoyer, sans qu'aucun écran ne lui dise pourquoi.
+ */
+export async function mettreAJourEntreprise(
+  ctx: Ctx,
+  data: { nom?: string; nombreEquipes?: number }
+) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const valeurs: { nom?: string; nombreEquipes?: number; updatedAt: Date } = { updatedAt: new Date() };
+    if (data.nom !== undefined) valeurs.nom = data.nom;
+    if (data.nombreEquipes !== undefined) {
+      valeurs.nombreEquipes = Math.min(20, Math.max(1, Math.trunc(data.nombreEquipes)));
+    }
+    const [e] = await tx
+      .update(entreprises)
+      .set(valeurs)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .returning();
+    return e ?? null;
   });
 }

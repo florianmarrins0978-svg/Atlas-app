@@ -77,12 +77,20 @@ Comptez **une à deux minutes** après « Atlas est prêt » : le premier écran
 se compiler. Un message apparaît alors, proposant d'ouvrir le port **3000** —
 acceptez.
 
-L'adresse se devine aussi toute seule : c'est le nom de l'espace, visible dans
-la barre d'adresse de l'éditeur, suivi de `-3000.app.github.dev`.
+**Votre adresse est écrite en toutes lettres au démarrage**, dans un cadre, au
+milieu du texte qui défile quand l'espace s'allume. Elle ressemble à ceci — le
+début change d'un espace à l'autre, c'est le nom que GitHub a donné au vôtre :
 
 ```
-https://<nom-de-l-espace>-3000.app.github.dev
+https://fluffy-space-guide-g6477547xp266jj-3000.app.github.dev
 ```
+
+**Mettez-la en favori la première fois.** Elle ne change plus tant que cet
+espace existe, et elle s'ouvre sans passer par l'éditeur — c'est ce qui vous
+sauvera le jour où l'éditeur refusera de se connecter.
+
+Si le texte du démarrage a défilé trop vite, l'adresse est aussi déposée dans le
+fichier `/tmp/adresse-atlas.txt`.
 
 **Si la page reste blanche, rechargez-la.** L'application a probablement été
 ouverte pendant sa compilation. Elle est aussi écrite noir sur blanc dans le
@@ -173,6 +181,41 @@ Le compte gratuit inclut 60 heures par mois, largement de quoi essayer.
 ---
 
 ## Si quelque chose ne va pas
+
+**L'éditeur affiche « The workbench failed to connect to the server », « An
+unexpected error occurred that requires a reload of this page », ou « Déconnecté
+de codespace » en bas de l'écran.** Ce n'est pas Atlas : c'est **l'éditeur** qui
+n'a pas réussi à joindre l'espace de travail. L'application, elle, n'est pas
+concernée — elle tourne dans l'espace, pas dans l'éditeur.
+
+C'est le cas typique du téléphone : l'espace s'était endormi, l'éditeur a voulu
+se reconnecter, et il a renoncé avant que le réveil ne soit terminé
+(« deadline exceeded » = *j'ai attendu trop longtemps*).
+
+Dans l'ordre :
+
+1. **Touchez « Reload ».** Neuf fois sur dix l'espace a fini de se réveiller
+   entre-temps.
+2. Si le message revient : rouvrez l'espace depuis `github.com/codespaces`
+   (cela redémarre un espace arrêté, ce qu'un simple rechargement ne fait pas).
+3. **Surtout : n'attendez pas l'éditeur pour vous servir d'Atlas.** L'application
+   démarre toute seule à chaque allumage et son adresse est ouverte — ouvrez
+   **le favori** que vous avez enregistré au geste 3.
+
+   Si vous ne l'avez pas encore enregistré, l'adresse se recompose à partir de
+   celle de l'éditeur, en deux modifications :
+
+   | | |
+   |---|---|
+   | l'éditeur | `https://fluffy-space-guide-g6477547xp266jj.github.dev` |
+   | Atlas | `https://fluffy-space-guide-g6477547xp266jj`**`-3000.app`**`.github.dev` |
+
+   Autrement dit : **ajoutez `-3000` juste avant le premier point**, et
+   **`app.` juste après**. Le début — le nom que GitHub a donné à votre espace —
+   ne se touche pas : recopiez-le tel qu'il est chez vous.
+4. Si l'espace date d'avant le 2026-08-01, supprimez-le et créez-en un neuf :
+   le démarrage automatique et le port ouvert sont lus **à la création**
+   (encadré du geste 1).
 
 **La page reste blanche depuis le téléphone.** Blanche, pas crème : ce n'est pas
 un écran de l'application qui s'affiche mal, c'est qu'aucune page n'arrive.
