@@ -69,6 +69,24 @@ Le code accepte aujourd'hui **six fournisseurs interchangeables**. Il en faut
 | **Combien de temps ils conservent** ce qu'on leur envoie | Certains gardent 30 jours « pour la sécurité ». C'est autant de temps où l'audio d'un client vit ailleurs que chez vous |
 | **S'ils s'en servent pour entraîner leurs modèles** | Le point le plus important, et celui qu'on oublie. Cela se refuse contractuellement — mais il faut le demander explicitement |
 
+### La grille de décision est prête
+
+**[`TRANSCRIPTION.md`](TRANSCRIPTION.md)** reprend ces trois points, en ajoute
+deux apparus en construisant l'application — la reconnaissance du vocabulaire de
+métier, et ce que fait le prestataire quand il échoue — et donne un tableau à
+remplir candidat par candidat.
+
+Il ne contient **aucun tarif** : le réseau de l'environnement de développement
+refuse les pages tarifaires de tous les prestataires. Un chiffre inventé ferait
+choisir de travers, et ne se découvrirait qu'à la première facture.
+
+Ce qu'il dit aussi, et qui compte plus que le prix : à raison d'une heure et
+demie d'audio par mois, **ce n'est pas le tarif qui décide**, mais les réponses
+écrites sur ces trois points.
+
+**En attendant, la dictée fonctionne déjà** avec le micro du clavier du
+téléphone — sans prestataire, sans contrat, et sans qu'aucune donnée ne parte.
+
 ### Ce que je peux faire une fois décidé
 
 Verrouiller la configuration sur les deux fournisseurs retenus, pour qu'aucun
