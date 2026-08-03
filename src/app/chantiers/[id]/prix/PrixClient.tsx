@@ -15,6 +15,7 @@ import {
 } from "./actions";
 import PropositionPrixSection from "./PropositionPrixSection";
 import type { PropositionPrix } from "@/server/chiffrage/proposition-prix";
+import { peutPreparerDevis } from "@/lib/preparation-devis";
 
 type Ligne = { id: string; libelle: string; montant: string };
 
@@ -34,12 +35,17 @@ export default function PrixClient({
   const [leavingIds, setLeavingIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<{ item: Ligne; index: number } | null>(null);
   const [validationEnCours, setValidationEnCours] = useState(false);
+  const [erreurValidation, setErreurValidation] = useState<string | null>(null);
 
   // Total exact — jamais de somme via `number`/parseFloat, même côté client
   // pour l'affichage en direct pendant la saisie.
   const total = lignes
     .reduce((acc, l) => acc.plus(new Decimal(l.montant || "0")), new Decimal(0))
     .toFixed(2);
+
+  // La même règle que celle appliquée côté serveur : un écran plus permissif
+  // que le serveur laisse le patron devant un bouton qui échoue sans raison.
+  const verdict = peutPreparerDevis(lignes);
 
   async function ajouter() {
     const nouvelle = await ajouterLignePrixAction(chantierId);
@@ -97,10 +103,17 @@ export default function PrixClient({
 
   async function valider() {
     setValidationEnCours(true);
+    setErreurValidation(null);
     try {
       await validerPrixAction(chantierId);
       router.push(`/chantiers/${chantierId}/export`);
     } catch {
+      // Sans ce message, un refus du serveur ne laissait rien à l'écran : le
+      // bouton se réactivait, la page ne bougeait pas, et le patron ne pouvait
+      // qu'en conclure que l'application était cassée.
+      setErreurValidation(
+        "Le devis n'a pas pu être préparé. Vérifiez que chaque ligne porte un montant, puis réessayez."
+      );
       setValidationEnCours(false);
     }
   }
@@ -173,9 +186,37 @@ export default function PrixClient({
         )}
 
         <div className="pt-5">
-          <PrimaryButton onClick={valider} disabled={validationEnCours}>
+          {/* Un bouton grisé sans explication se lit comme une panne : le
+              patron l'a déjà conclu sur l'écran de dictée. On dit donc ce qui
+              bloque, et surtout par où sortir. */}
+          {!verdict.possible && (
+            <div
+              className="mb-3 rounded-2xl px-4 py-3"
+              style={{ backgroundColor: colors.card }}
+            >
+              <p className="text-[14px]" style={{ color: colors.ink }}>
+                {verdict.probleme}
+              </p>
+              <p className="mt-1 text-[13px] leading-relaxed" style={{ color: colors.muted }}>
+                {verdict.marcheASuivre}
+              </p>
+              <a
+                href="/reglages"
+                className="mt-2 inline-block text-[14px] font-medium"
+                style={{ color: colors.rust }}
+              >
+                Ouvrir mes tarifs →
+              </a>
+            </div>
+          )}
+          <PrimaryButton onClick={valider} disabled={validationEnCours || !verdict.possible}>
             {validationEnCours ? "Validation…" : "Préparer le devis →"}
           </PrimaryButton>
+          {erreurValidation && (
+            <p role="alert" className="mt-2 text-[13px]" style={{ color: colors.alert }}>
+              {erreurValidation}
+            </p>
+          )}
         </div>
       </form>
 

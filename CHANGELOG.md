@@ -43,6 +43,62 @@ d'œil sur la première page ne remplace : aucune ligne ne descend sur le cadre 
 signature. Chacun a été confronté au défaut qu'il prétend détecter avant d'être
 acté ; le premier jet cherchait « EUR » n'importe où et accusait « ÉMETTEUR ».
 
+### « Aucune des deux » quand il n'y en avait qu'une
+
+Trouvé en sortant, à la demande du patron, le visuel de la page que son client
+ouvre. La question des dates y proposait toujours « Aucune des deux — je
+propose : », que le patron ait envoyé une date ou deux. Le libellé était écrit
+en dur.
+
+Or c'est exactement le choix qu'il fait avant l'envoi — l'arrêt 1 de
+`docs/AGENT.md`, sa seule question avant que le devis parte. Avec une seule
+date, son client lisait donc une phrase qui ne correspondait pas à ce qu'il
+avait sous les yeux, sur la **seule** page qu'il voit.
+
+Le libellé s'accorde désormais : une date, deux, davantage, ou aucune. La règle
+est une fonction pure dans `src/lib/` — l'importer depuis l'écran entraînait
+toute la chaîne de connexion à la base, ce qui la rendait intestable.
+
+### L'accueil prend la carte d'Arborea, la barre du bas reste
+
+Les deux formes ont été rendues au patron en photos, côte à côte, avec ce que
+chacune coûte. Sa réponse : **la barre du bas reste** (elle se touche d'une main
+sur un chantier, quand celle d'Arborea défile et sort de l'écran), et **l'action
+principale prend la carte** — rond d'icône, titre en Playfair, sous-ligne,
+flèche.
+
+Le refus est écrit au même titre que le changement (`ARCHITECTURE.md` §21) :
+sans cela, une prochaine conversation verrait une incohérence avec la charte
+d'Arborea et « corrigerait » la barre, en défaisant un choix délibéré.
+
+Deux écarts assumés avec le modèle : la sous-ligne décrit le parcours réel — « Le
+client, l'adresse, puis la dictée sur place » — et l'icône est un `+`, pas un
+micro. Chez Arborea la carte ouvre l'écran de dictée ; ici elle ouvre un
+formulaire, et un micro y serait une petite tromperie répétée à chaque ouverture.
+
+### Le devis à 0 € ne part plus, et l'écran dit par où sortir
+
+Quand aucun tarif ne correspondait, l'écran Prix affichait « Aucun prix
+proposable » puis « Aucune ligne pour l'instant » — et laissait « Préparer le
+devis → » actif. Le patron pouvait valider un prix inexistant, arriver sur un
+devis à **0,00 €** et l'envoyer à son client. Aucun garde-fou nulle part. Un
+devis accepté étant immuable, le corriger aurait demandé une nouvelle version.
+
+Le bouton est désormais grisé, et surtout **l'écran dit quoi faire** : ajouter
+une ligne avec son montant, ou enregistrer un tarif — avec un lien direct vers
+Réglages. Un bouton grisé sans explication se lit comme une panne, et le patron
+l'avait déjà conclu sur l'écran de dictée.
+
+La règle est une **fonction pure** employée par l'écran *et* par l'action
+serveur (`CLAUDE.md` §3) : un écran ne protège rien seul, et une seconde
+implémentation de la même règle aurait fini par diverger. Elle attrape aussi le
+cas plus sournois des lignes qui existent mais totalisent zéro.
+
+**Un défaut trouvé en lançant l'application, que types et lint ne voyaient
+pas :** la classe d'erreur avait été exportée depuis un fichier `"use server"`,
+ce qui annule **tous** les exports du module — l'application entière renvoyait
+500. Consigné comme piège n° 7 dans `HANDOVER.md`.
+
 ### Les modèles du dépôt sont bien ceux du patron — vérifié, pas supposé
 
 Le patron a demandé de récupérer exactement le modèle qui se trouve sur son

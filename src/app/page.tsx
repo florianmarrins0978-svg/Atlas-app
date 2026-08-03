@@ -2,7 +2,7 @@ import Link from "next/link";
 import { chantierEnCours, getStatutAffiche, statutLabel } from "@/lib/chantier-etat";
 import { colors, font, smallCaps, cardShadow } from "@/lib/design-tokens";
 import StatusIcon from "@/components/atlas/StatusIcon";
-import PrimaryButton from "@/components/atlas/PrimaryButton";
+import ActionPrincipale from "@/components/atlas/ActionPrincipale";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
 import { notificationsPatron, envoisCaducs } from "@/server/repositories/envois-devis";
@@ -76,9 +76,18 @@ export default async function ChantiersPage() {
         <Notifications initiales={notifications} caducs={caducs} />
 
         <div className="px-6 pt-6">
-          <PrimaryButton href="/chantiers/nouveau">
-            <span className="text-lg leading-none">+</span> Nouveau chantier
-          </PrimaryButton>
+          {/* « Nouveau chantier » reste le libellé exact : c'est ce que les
+              suites de bout en bout cherchent, et ce que le patron lit. */}
+          <ActionPrincipale
+            href="/chantiers/nouveau"
+            titre="Nouveau chantier"
+            sousTitre="Le client, l'adresse, puis la dictée sur place."
+            icone={
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={colors.cream} strokeWidth="2">
+                <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+              </svg>
+            }
+          />
         </div>
 
         {chantiers.length === 0 ? (

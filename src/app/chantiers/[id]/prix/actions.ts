@@ -1,10 +1,11 @@
 "use server";
 
 import { getCurrentCtx } from "@/server/session-ctx";
-import { ajouterLignePrix, modifierLignePrix, supprimerLignePrix } from "@/server/repositories/lignes-prix";
+import { ajouterLignePrix, listerLignesPrix, modifierLignePrix, supprimerLignePrix } from "@/server/repositories/lignes-prix";
 import { marquerPrixValide } from "@/server/repositories/chantiers";
 import { getTarif } from "@/server/repositories/tarifs";
 import { preparerPropositionPrix } from "@/server/chiffrage/proposition-prix";
+import { peutPreparerDevis, PrixNonPreparableError } from "@/lib/preparation-devis";
 
 export async function ajouterLignePrixAction(chantierId: string) {
   const ctx = await getCurrentCtx();
@@ -36,6 +37,18 @@ export async function supprimerLignePrixAction(id: string) {
 // champ du chantier.
 export async function validerPrixAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+
+  // L'écran grise déjà le bouton, mais un écran ne protège rien : une page
+  // restée ouverte pendant qu'on supprime la dernière ligne ailleurs, ou un
+  // second appui, suffiraient à valider un prix inexistant. On relit les
+  // lignes en base et on applique **la même fonction** que l'écran
+  // (`CLAUDE.md` §3) — jamais une seconde version de la règle.
+  const lignes = await listerLignesPrix(ctx, chantierId);
+  const verdict = peutPreparerDevis(lignes);
+  if (!verdict.possible) {
+    throw new PrixNonPreparableError(`${verdict.probleme} ${verdict.marcheASuivre}`);
+  }
+
   return marquerPrixValide(ctx, chantierId);
 }
 

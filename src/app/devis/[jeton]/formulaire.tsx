@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { repondreAction } from "./actions";
 import type { EnvoiPourClient } from "@/server/repositories/envois-devis";
 import { jourLisible, dansDelaiRetractation } from "@/lib/jour";
+import { libelleAutreDate } from "@/lib/libelle-dates";
 
 export default function FormulaireReponse({
   envoi,
@@ -59,7 +60,7 @@ export default function FormulaireReponse({
               onChange={(e) => setChoixDate(e.target.value)}
               className="h-5 w-5"
             />
-            <span>Aucune des deux — je propose&nbsp;:</span>
+            <span>{libelleAutreDate(envoi.datesProposees.length)}</span>
           </label>
 
           {choixDate === "autre" && (
