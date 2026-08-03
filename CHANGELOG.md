@@ -43,6 +43,127 @@ d'œil sur la première page ne remplace : aucune ligne ne descend sur le cadre 
 signature. Chacun a été confronté au défaut qu'il prétend détecter avant d'être
 acté ; le premier jet cherchait « EUR » n'importe où et accusait « ÉMETTEUR ».
 
+### Les modèles du dépôt sont bien ceux du patron — vérifié, pas supposé
+
+Le patron a demandé de récupérer exactement le modèle qui se trouve sur son
+site Arborea-, plutôt qu'une reproduction. Avant de reprendre quoi que ce soit,
+un contrôle est allé chercher les six fichiers publiés et les a comparés octet
+par octet à ceux de `appli/`.
+
+**Le modèle de facture est identique** — 26 445 octets de part et d'autre.
+Celui dont le PDF vient d'être bâti est donc déjà exactement le sien : il n'y
+avait rien à récupérer. Quatre autres modèles sont identiques eux aussi.
+
+Le seul écart concerne le modèle de devis, et c'est une **avance** : la copie
+d'ici contient 2 717 octets de plus, le message d'accompagnement de l'envoi
+ajouté à dessein. Le reprendre en ligne le supprimerait.
+
+Cela clôt une question qui a coûté deux explications fausses : elle se mesure
+désormais au lieu de se supposer, et le contrôle se rejoue
+(`ARCHITECTURE.md` §20).
+
+### La facture a enfin son document
+
+Le devis produisait un PDF ; la facture, non — seulement un écran de
+confirmation. Le patron validait donc un montant sans avoir jamais vu la pièce
+que son client recevrait, alors que c'est précisément ce que l'arrêt 3 lui
+demande de vérifier.
+
+La facture a maintenant son PDF, sur le modèle `appli/facture-modele.html` :
+numéro, date d'émission, date d'échéance, rappel du devis d'origine, mentions
+légales de retard de paiement — et **aucun cadre de signature**, une facture se
+règle. Un lien « Voir la facture en PDF » l'ouvre depuis l'écran.
+
+**Une seule mise en page pour les deux pièces.** Plutôt que de copier cinq cents
+lignes, le moteur a été extrait dans `document-commun.ts`. La refonte a été
+prouvée sans effet : le devis rendu avant et après est identique **au pixel
+près**.
+
+**Un piège évité, et il aurait été coûteux :** le modèle porte la mention « TVA
+non applicable, art. 293 B du CGI » avec la consigne « à retirer si vous êtes
+assujetti ». Elle ne s'imprime désormais que si le taux appliqué est nul — une
+facture qui annonce « TVA (10 %) » et la franchise dans la même page est une
+facture fausse.
+
+Onze contrôles, chacun confronté au défaut qu'il prétend détecter : cadre de
+signature ajouté, échéance inventée, franchise annoncée à tort, rappel du devis
+retiré, mention de pénalité amputée. Chacun a rougi en désignant le bon coupable.
+
+Détail dans `ARCHITECTURE.md` §19.
+
+### L'application reprend la charte d'Arborea
+
+Le patron a fourni l'adresse de son Arborea d'origine et posé la bonne
+question : pourquoi le style de ce site ne correspond-il en rien à
+l'application ? Réponse mesurée : deux chartes coexistaient sans que personne
+l'ait décidé. Atlas s'était donné un accent terre cuite et les polices du
+système ; les maquettes gardaient le vert pin, Playfair Display et Inter.
+
+Sa décision : **l'application reprend Arborea, les documents gardent la terre
+cuite.**
+
+| | Avant | Après |
+|---|---|---|
+| Accent | terre cuite `#B25A2E` | **vert pin `#2f3b2f`** |
+| Fond | `#F6F1E6` | `#f5f3ee` |
+| Titres | Arial Narrow | **Playfair Display** |
+| Texte | polices système | **Inter** |
+| Devis, facture | terre cuite | **terre cuite, inchangée** |
+
+Les valeurs viennent du relevé automatisé sur son site publié, pas d'une
+approximation à l'œil. Les polices sont rapatriées au build : les charger chez
+Google serait bloqué par la politique de sécurité, et l'artisan verrait les
+polices de repli de son téléphone.
+
+Détail des choix, et de ce qui n'a **pas** été aligné, dans `ARCHITECTURE.md` §18.
+
+### Terre cuite : le patron a choisi, les deux versions sous les yeux
+
+Les deux devis lui ont été rendus côte à côte, même contenu, seule la teinte des
+intertitres changeant, avec l'origine de chacune — terre cuite de son Arborea
+d'origine, vert de la page encore en ligne. Réponse : « je veux terre cuite ».
+
+Rien à changer dans le code, c'était déjà en place. Mais la couleur cesse d'être
+une déduction tirée d'une capture pour devenir une décision, et elle est écrite
+comme telle : une prochaine conversation qui découvrirait le vert en ligne
+n'aura pas à la reposer.
+
+### La cause annoncée était fausse : correction
+
+J'avais écrit que « la copie versée dans `appli/` avait divergé de son
+original ». C'est faux, et je l'ai vérifié plutôt que de le supposer une
+seconde fois.
+
+Un relevé automatisé (`relever-palette.yml`) ouvre le devis publié dans un vrai
+navigateur et rapporte ce qu'il calcule. Il dit trois choses :
+
+| Ce qui a été vérifié | Résultat |
+|---|---|
+| La page publiée, `…/Atlas-app/devis-modele.html` | intertitres en **vert** `#2f3b2f` |
+| La copie du dépôt, depuis son premier commit | **le même vert**, jamais modifiée |
+| Une page de devis à la racine du site du patron | **404** — il n'y en a pas |
+
+Donc : la copie n'a pas dérivé ici. C'est la capture du patron qui montre une
+version **qui n'est plus en ligne nulle part** — son Arborea d'origine, dont la
+copie s'était écartée avant même d'entrer dans ce dépôt.
+
+**Le choix de couleur reste le bon** : la terre cuite est bien celle qu'il
+désigne en disant « voilà mon devis », et c'est l'accent qu'Atlas emploie
+partout ailleurs. Ce qui change, c'est ce qu'on a le droit d'en dire : elle
+repose sur sa capture, pas sur une page vérifiable. Quand la référence n'est
+plus joignable, on l'écrit.
+
+**Ce que le relevé a rapporté en prime**, et qui n'était vérifiable d'aucune
+autre façon : la moitié basse du devis, que la capture ne montrait pas. Mention
+légale, légende de signature, total final, en-têtes de colonnes — le devis
+d'Atlas s'y conformait déjà.
+
+Le mandataire de l'environnement de développement refuse `github.io`
+(`403 à CONNECT — policy denial`, essayé et non supposé) et la fenêtre
+d'autorisation ne s'affiche pas chez le patron. C'est pourquoi la mesure est
+faite par une machine qui, elle, a accès — comme `pages.yml` et
+`banc-essai.yml` avant elle. Détail dans `ARCHITECTURE.md` §17.
+
 ### Et la couleur n'était pas la bonne — la copie avait divergé
 
 Le patron a renvoyé une capture de son devis tel qu'il le voit en ligne :

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font, smallCaps, couleursDocument } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { jourLisible } from "@/lib/jour";
 import { terminerChantierAction, emettreFactureAction } from "./actions";
@@ -93,7 +93,7 @@ export default function FactureClient({
           </p>
         </div>
         {erreur && (
-          <p role="alert" className="text-center text-[13px]" style={{ color: colors.rust }}>
+          <p role="alert" className="text-center text-[13px]" style={{ color: colors.alert }}>
             {erreur}
           </p>
         )}
@@ -149,15 +149,32 @@ export default function FactureClient({
           </p>
           <p
             className="text-[32px] font-semibold leading-none"
-            style={{ fontFamily: font.display, color: colors.rust }}
+            // Le montant que le client verra sur sa facture porte la teinte
+            // des documents, pas l'accent de l'application : le patron a
+            // demandé « terre cuite pour le devis, idem pour la facture ».
+            style={{ fontFamily: font.display, color: couleursDocument.accent }}
           >
             {formatEuros.format(Number(initialFacture.totalTtc))}
           </p>
         </div>
+
+        {/* Sans ce lien, la facture existe sans que personne puisse la
+            regarder : le patron valide un montant sans avoir vu la pièce que
+            son client recevra. C'est justement ce que l'arrêt 3 lui demande de
+            vérifier (docs/AGENT.md §2.3). */}
+        <a
+          href={`/api/factures/${initialFacture.id}/pdf`}
+          target="_blank"
+          rel="noopener"
+          className="mt-4 block text-center text-[14px] font-medium"
+          style={{ color: colors.rust }}
+        >
+          Voir la facture en PDF →
+        </a>
       </div>
 
       {erreur && (
-        <p role="alert" className="text-center text-[13px]" style={{ color: colors.rust }}>
+        <p role="alert" className="text-center text-[13px]" style={{ color: colors.alert }}>
           {erreur}
         </p>
       )}

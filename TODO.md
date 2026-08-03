@@ -67,16 +67,18 @@ le bouton « Préparer le devis → » est quand même offert. Il ne devrait pas
 l'être, et l'écran devrait dire quoi faire — ajouter un tarif, ou ajouter une
 ligne — plutôt que de se contenter de constater l'échec.
 
-### 4 bis. `test-reglages-e2e.ts` échoue par intermittence
+### 7. Barre de navigation : haute comme Arborea, ou basse comme aujourd'hui ?
 
-Vu une fois pendant une batterie chargée : `'0.00' == '42.50'`, puis vert seul
-et vert en rejouant la suite entière. La cause est dans le contrôle, pas dans le
-produit : il saisit un prix, sort du champ, attend **400 ms en dur**, puis
-recharge. Quand la machine est occupée, l'enregistrement n'a pas eu le temps de
-partir, et le contrôle accuse le tarif alors que rien n'est cassé.
+Arborea navigue par une barre haute portant son nom ; Atlas par une barre basse,
+pensée pour le pouce et pour une application installée sur l'écran d'accueil.
+La charte a été alignée, pas la navigation : c'est une décision d'usage, et elle
+n'a pas été prise seule. À trancher avec le patron.
 
-À remplacer par une attente de la valeur elle-même plutôt que d'un délai. Un
-contrôle qui rougit au hasard est pire qu'absent : il apprend à ignorer le rouge.
+### 8. L'action principale n'a pas la forme d'Arborea
+
+Chez Arborea, « Nouveau devis » est une carte vert pin avec une icône ronde, un
+titre en Playfair, un sous-titre et une flèche. Dans Atlas c'est un bouton plat.
+Cosmétique, mais c'est le premier élément de l'écran d'accueil.
 
 ### 6. Rien ne mène le patron d'un écran au suivant
 
@@ -104,3 +106,5 @@ application en panne — c'est déjà arrivé.
 - ~~Compteur d'accueil : ne plus compter les chantiers facturés~~ — 2026-08-01
 - ~~Découpler les maquettes `/design/*` du type de statut vivant~~ — 2026-08-01
 - ~~Le devis PDF reprend le modèle d'Arborea, et se pagine~~ — 2026-08-03
+- ~~`test-reglages-e2e.ts` : attendre l'enregistrement, pas un délai fixe~~ — 2026-08-03
+- ~~Document PDF pour la facture, sur le moteur partagé avec le devis~~ — 2026-08-03

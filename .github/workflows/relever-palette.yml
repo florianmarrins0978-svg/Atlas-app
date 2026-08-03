@@ -1,0 +1,71 @@
+name: Relever les modèles du patron à leur source
+
+# Va lire les modèles du patron **à leur adresse publique** et rapporte deux
+# choses : les couleurs et les polices que le navigateur calcule dessus, puis
+# l'écart, ligne à ligne, entre les fichiers publiés et les copies de `appli/`.
+#
+# **Pourquoi ce workflow existe.** Le devis d'Atlas a été construit d'après la
+# copie versée dans ce dépôt. Le patron a envoyé une capture de son devis où les
+# intertitres sont terre cuite, quand la copie leur donne un vert — et deux
+# explications de cet écart ont été affirmées puis démenties, toutes deux parce
+# qu'elles raisonnaient sur la copie sans jamais consulter l'original.
+#
+# L'environnement de développement ne peut pas le consulter : son mandataire
+# répond `403 à CONNECT — policy denial` sur `github.io`, et l'autorisation
+# d'ouvrir le dépôt du site ne s'affiche pas chez le patron. La mesure est donc
+# faite par une machine qui, elle, a accès, et son rapport se lit par l'API —
+# comme `pages.yml` pour le site publié et `banc-essai.yml` pour l'espace de
+# travail.
+#
+# Ce qu'il rapporte est ce que le navigateur **calcule**, pas ce que le CSS
+# déclare : une variable surchargée, une règle plus spécifique ou une feuille
+# distante changeraient la couleur sans changer le `:root`. C'est la couleur à
+# l'écran qui fait foi, puisque c'est elle que le patron regarde.
+
+on:
+  workflow_dispatch:
+    inputs:
+      pages:
+        description: "Adresses à relever, séparées par des virgules (vide = la liste du script)"
+        required: false
+        default: ""
+  push:
+    paths:
+      - ".github/workflows/relever-palette.yml"
+      - "scripts/relever-palette.mjs"
+      - "scripts/comparer-modeles.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  relever:
+    name: Relever la palette à la source
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Playwright seul, sans le reste des dépendances du dépôt : ce travail
+      # n'a besoin que d'un navigateur.
+      - name: Installer un navigateur
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright@1.49.1
+          npx playwright install --with-deps chromium
+
+      - name: Relever
+        env:
+          PAGES: ${{ github.event.inputs.pages }}
+        run: node scripts/relever-palette.mjs
+
+      # Le fichier lui-même, et pas seulement ses couleurs : une copie ne prouve
+      # rien sur son original, et c'est en raisonnant sur la copie que deux
+      # explications successives d'un écart ont été affirmées puis démenties.
+      - name: Comparer les modèles publiés aux copies du dépôt
+        env:
+          SITE: https://florianmarrins0978-svg.github.io/Arborea-
+        run: node scripts/comparer-modeles.mjs

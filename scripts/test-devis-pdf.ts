@@ -6,7 +6,7 @@ import {
   type DevisPdfData,
   type TraceDevis,
 } from "../src/server/pdf/devis-pdf";
-import { colors } from "../src/lib/design-tokens";
+import { couleursDocument } from "../src/lib/design-tokens";
 
 // Le devis d'Atlas doit être celui d'Arborea (`appli/devis-modele.html`).
 //
@@ -145,37 +145,41 @@ async function main() {
     );
   });
 
-  await cas("les intertitres portent le rust du patron, pas un vert", async () => {
+  await cas("les intertitres portent la terre cuite des documents", async () => {
     const { trace } = await composerDevisPdf(DEVIS);
-    // Le patron a envoyé une capture de son devis en ligne : « ÉMETTEUR » et
-    // « CLIENT » y sont terre cuite. Mesure sur ses pixels : #a95c35, soit le
-    // `rust` d'Atlas à l'antialiasing près. Le fichier `appli/devis-modele.html`
-    // de ce dépôt, lui, donne un vert #2f3b2f — la copie avait divergé de son
-    // original, et la reproduire fidèlement reproduisait l'écart.
+    // Le patron a comparé les deux devis côte à côte le 3 août 2026 et choisi la
+    // terre cuite. C'est une décision, pas une déduction : ne pas la rouvrir au
+    // motif que la page encore en ligne, elle, est verte.
+    //
+    // On constate la teinte des DOCUMENTS, pas l'accent de l'application.
+    // La première version comparait à `colors.rust` : le jour où l'application
+    // a repris le vert d'Arborea, ce contrôle a rougi — et il avait raison, le
+    // devis suivait un jeton qui ne le concernait plus.
     for (const intertitre of ["ÉMETTEUR", "CLIENT"]) {
       const pose = trace.textes.find((t) => t.contenu === intertitre);
       assert.ok(pose, `« ${intertitre} » manque au devis.`);
       assert.equal(
         pose.couleur.toLowerCase(),
-        colors.rust.toLowerCase(),
-        `« ${intertitre} » n'est pas dans le rust du patron (${colors.rust}).`
+        couleursDocument.accent.toLowerCase(),
+        `« ${intertitre} » n'est pas dans la terre cuite des documents (${couleursDocument.accent}).`
       );
     }
-    // La même teinte que celle qu'il voit partout ailleurs dans Atlas : deux
-    // valeurs pour un seul accent finissent toujours par se contredire.
+    // Une seule source pour cette teinte : `couleursDocument`. Le devis l'a
+    // un temps dupliquée en dur, et c'est ainsi qu'il s'est retrouvé solidaire
+    // d'un jeton d'écran qui ne le concernait pas.
     assert.equal(
       PALETTE_DEVIS.titrePartie.toLowerCase(),
-      colors.rust.toLowerCase(),
-      "L'accent du devis a divergé de l'accent de l'application."
+      couleursDocument.accent.toLowerCase(),
+      "Le devis a cessé de suivre la teinte des documents."
     );
   });
 
-  await cas("le devis est sur le papier crème du modèle, pas sur du blanc", async () => {
-    const { trace } = await composerDevisPdf(DEVIS);
+  await cas("le devis est sur le papier crème du modèle, sur toutes ses pages", async () => {
     assert.equal(PALETTE_DEVIS.papier.toLowerCase(), "#faf9f5", "Le papier n'est plus celui du modèle.");
-    // Le fond est posé avant tout le reste, sur chaque page — une page
-    // supplémentaire restée blanche se verrait immédiatement.
-    const { trace: longue } = await composerDevisPdf({
+
+    // Un devis qui déborde : c'est la page supplémentaire qui risque de rester
+    // blanche, puisqu'elle naît ailleurs dans le code que la première.
+    const { trace } = await composerDevisPdf({
       ...DEVIS,
       lignes: Array.from({ length: 25 }, (_, i) => ({
         libelle: `Prestation ${i + 1}`,
@@ -184,7 +188,19 @@ async function main() {
         montant: "180.00",
       })),
     });
-    assert.ok(longue.pages > 1, "Ce devis devrait déborder, sinon le contrôle ne prouve rien.");
+    assert.ok(trace.pages > 1, "Ce devis devrait déborder, sinon le contrôle ne prouve rien.");
+
+    const pagesAvecFond = new Set(trace.fonds.map((f) => f.page));
+    for (let page = 1; page <= trace.pages; page++) {
+      assert.ok(pagesAvecFond.has(page), `La page ${page} est restée sur du blanc.`);
+    }
+    for (const fond of trace.fonds) {
+      assert.equal(
+        fond.couleur.toLowerCase(),
+        PALETTE_DEVIS.papier.toLowerCase(),
+        `La page ${fond.page} n'a pas le papier du modèle.`
+      );
+    }
   });
 
   await cas("le nom affiché est celui de l'entreprise, jamais Arborea", async () => {

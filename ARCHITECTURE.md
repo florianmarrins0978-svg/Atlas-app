@@ -284,14 +284,39 @@ descend sur le cadre de signature.
 **La référence est ce que le patron a sous les yeux, jamais notre copie de sa
 référence.** Le premier jet reproduisait fidèlement `appli/devis-modele.html`,
 qui donne aux intertitres « Émetteur » et « Client » un vert foncé
-(`--clay:#2f3b2f`). Le patron a envoyé une capture de son devis en ligne : ces
-mêmes intertitres y sont **terre cuite**. Mesure faite sur ses pixels —
-`#a95c35`, soit à l'antialiasing près le `rust` `#B25A2E` de
-`src/lib/design-tokens.ts`, l'accent unique d'Atlas. La copie versée dans
-`appli/` avait donc déjà divergé de son original, et la reproduire fidèlement
-revenait à reproduire fidèlement un écart. La palette du devis est désormais
-tenue à cet accent-là, et un contrôle le constate — deux valeurs pour un seul
-accent finissent toujours par se contredire.
+(`--clay:#2f3b2f`). Le patron a envoyé une capture de son devis : ces mêmes
+intertitres y sont **terre cuite**, `#a95c35` mesuré sur plus de mille pixels.
+C'est à l'antialiasing près le `rust` `#B25A2E` de `src/lib/design-tokens.ts`,
+l'accent unique d'Atlas. Le devis s'y tient, et un contrôle le constate — deux
+valeurs pour un seul accent finissent toujours par se contredire.
+
+**Une affirmation fausse a été poussée en chemin, et sa correction vaut d'être
+lue.** Il avait été écrit que « la copie versée dans `appli/` avait divergé de
+son original ». Le relevé automatisé (§17) a montré l'inverse : la page publiée
+calcule bien `#2f3b2f`, et la copie porte ce vert **depuis son tout premier
+commit** — elle n'a jamais été modifiée. Et il n'existe aucune page de devis à
+la racine du site du patron : le relevé y reçoit un 404. Sa version terre cuite
+n'est donc plus en ligne nulle part.
+
+Il avait alors été supposé que la capture venait de son Arborea d'origine, dont
+la copie se serait écartée avant d'entrer ici. **Cette explication-là est fausse
+elle aussi.** Le patron a fourni l'adresse manquante — `…/Arborea-/`, un dépôt
+distinct — et le relevé a comparé les deux sites : ils sont **identiques**,
+variable par variable. `--clay` vaut `#2f3b2f` des deux côtés. Rien n'a divergé
+entre Arborea et sa copie.
+
+**L'origine de la terre cuite de sa capture reste inexpliquée.** Aucune teinte
+chaude n'existe dans `appli/`, ni sur l'un ni sur l'autre site publié. Le seul
+`#B25A2E` du projet est l'accent d'Atlas lui-même
+(`src/lib/design-tokens.ts`). On l'écrit sans le résoudre plutôt que d'inventer
+une troisième explication : **deux ont déjà été affirmées puis démenties, chacune
+parce qu'elle allait au-delà de ce qui avait été mesuré.**
+
+**Le patron a tranché, les deux versions sous les yeux.** Le 3 août 2026, les
+deux devis lui ont été rendus côte à côte — même contenu, seule la teinte
+changeant — avec l'origine de chacune : « je veux terre cuite ». La couleur du
+devis n'est donc plus une déduction tirée d'une capture, c'est une décision. Ne
+pas la rouvrir au motif que la page encore en ligne, elle, est verte.
 
 **Le papier est crème (`#faf9f5`), pas blanc.** C'est celui du modèle. Un
 navigateur n'imprime pas les fonds sans qu'on le lui demande ; un PDF, lui, les
@@ -307,3 +332,157 @@ test et de dériver avec elle.
 « 1400.00 EUR », pagination retirée, nom d'entreprise figé — et chacun a rougi
 en désignant le bon coupable. Le premier jet cherchait « EUR » n'importe où dans
 le document : il accusait « ÉMETTEUR », qui se termine par ces trois lettres.
+
+
+---
+
+## 17. Ce qui n'est pas joignable d'ici se fait relever par une machine
+
+**Décidé.** `.github/workflows/relever-palette.yml` ouvre le devis d'origine
+**à son adresse publique**, dans un vrai navigateur, et rapporte les couleurs et
+les polices que celui-ci **calcule**. Le rapport se lit par l'API GitHub.
+
+**Ce qui l'a imposé :** le mandataire réseau de l'environnement de développement
+répond `403 à CONNECT — policy denial` sur `github.io` (essayé, pas supposé), et
+la fenêtre d'autorisation qui donnerait accès au dépôt du site ne s'affiche pas
+chez le patron. Sans ce relevé, la seule source restait une capture d'écran — et
+c'est en raisonnant sur elle seule qu'une conclusion fausse a été tirée (§16).
+
+**Pourquoi lire le calculé et non le déclaré :** une variable surchargée, une
+règle plus spécifique ou une feuille distante changeraient la couleur sans
+toucher au `:root`. C'est la couleur à l'écran qui fait foi, puisque c'est elle
+que le patron regarde.
+
+**Il cherche la page au lieu de la supposer**, et refuse de relever quoi que ce
+soit s'il ne la trouve pas. Une mesure prise sur la mauvaise page serait pire
+que pas de mesure : elle donnerait une réponse fausse avec l'autorité d'un
+chiffre.
+
+**Deux sites comparés valent mieux qu'un relevé isolé.** Tant qu'une seule page
+était relevée, chaque écart appelait une hypothèse. Mises côte à côte, les pages
+d'Arborea et d'Atlas se sont révélées identiques — ce qu'aucune mesure isolée
+n'aurait pu établir, et ce qui a démenti l'hypothèse en cours.
+
+**Attention à ce que compare le rapport.** Il met en regard toutes les pages
+qu'on lui donne, y compris de types différents : une variable propre au devis
+apparaît « absente » sur un écran d'application, et se compte à tort comme un
+écart. Comparer page à page de même nature, jamais le total.
+
+**Ce qu'il a rapporté du premier coup, et qui n'était pas vérifiable autrement :**
+la moitié basse du devis, que la capture du patron ne montrait pas — mention
+légale `#7a7a6a`, légende de signature `#6b6b5c`, total final en Playfair 600,
+en-têtes de colonnes `#6b6b5c` en Inter 700. Le devis d'Atlas s'y conformait
+déjà. Et le 404 à la racine, qui a permis de dater l'écart de couleur.
+
+
+---
+
+## 18. Une seule charte pour l'application : celle d'Arborea
+
+**Décidé le 3 août 2026, par le patron.** L'application reprend l'identité
+visuelle d'Arborea — vert pin `#2f3b2f`, fond os `#f5f3ee`, Playfair Display
+pour les titres, Inter pour le texte. **Les documents font exception** : devis et
+facture gardent la terre cuite `#B25A2E`.
+
+**Ce qui l'a imposé.** Deux chartes coexistaient sans que personne l'ait décidé.
+Atlas s'était donné en chemin un accent terre cuite et les polices du système ;
+les maquettes reprises d'Arborea gardaient le vert pin, Playfair et Inter. Le
+patron a fini par le voir : « le style graphique et les couleurs qui apparaissent
+sur ce site ne correspondent en rien à l'application ». Il avait raison, et le
+choix ne lui avait jamais été soumis.
+
+**Les valeurs ne sont pas approchées à l'œil.** Elles ont été relevées sur
+`…github.io/Arborea-/app.html` par un navigateur (§17), variable par variable.
+
+**Pourquoi le jeton s'appelle encore `rust` alors qu'il vaut un vert.**
+Soixante-quatre fichiers l'importent. Le renommer dans le même lot aurait mêlé un
+changement d'identité à un changement mécanique de grande ampleur, chacun
+masquant les erreurs de l'autre. Le nom sera corrigé seul, plus tard. En
+attendant, le commentaire du jeton le dit.
+
+**Pourquoi les documents gardent la terre cuite.** Un devis n'est pas un écran :
+c'est la pièce que le client garde, imprime et signe. Le patron a choisi cette
+teinte les deux versions sous les yeux, puis l'a maintenue en demandant que le
+reste reprenne Arborea. `couleursDocument` porte cette exception, séparément de
+`colors`, pour qu'elle ne se dilue pas au prochain ajustement.
+
+**Les polices sont rapatriées au build** par `next/font`, et servies depuis notre
+origine. Les charger chez Google serait bloqué par la politique de sécurité
+(`default-src 'self'`) — l'artisan verrait alors les polices de repli de son
+téléphone, c'est-à-dire pas Arborea.
+
+**Ce qui n'a pas été aligné, et pourquoi.** Arborea navigue par une barre haute
+portant son nom ; Atlas par une barre basse, pensée pour le pouce et pour une
+application installée sur l'écran d'accueil. Remplacer l'une par l'autre est une
+décision d'usage, pas de couleur : elle n'a pas été prise seule. Voir `TODO.md`.
+
+
+---
+
+## 19. Devis et facture partagent une seule mise en page
+
+**Décidé.** `src/server/pdf/document-commun.ts` dessine les deux pièces ;
+`devis-pdf.ts` et `facture-pdf.ts` ne portent que ce qui les distingue.
+
+**Ce qui l'a imposé :** le modèle du patron donne au devis et à la facture
+exactement la même feuille. Les copier aurait produit deux implémentations qui
+divergent — ce que `CLAUDE.md` §3 interdit — et l'écart ne se serait vu que sur
+les pièces déjà envoyées au client.
+
+**Ce que le moteur ne décide pas**, et qui passe par `OptionsDocument` : le
+titre, les références d'en-tête, l'intertitre des notes, la mention légale, le
+cadre de signature, et le rappel du devis d'origine.
+
+**Ce qui distingue une facture, et n'est pas cosmétique :**
+
+- **Trois références au lieu d'une validité** : numéro, date d'émission, date
+  d'échéance — c'est l'échéance qui fait courir les pénalités, et son absence
+  rendrait la mention légale creuse. Absente, sa ligne reste vide (`CLAUDE.md` §4).
+- **Aucun cadre de signature.** Une facture ne se signe pas, elle se règle. En
+  proposer un inviterait le client à croire qu'il lui reste à accepter.
+- **La franchise de l'article 293 B ne s'imprime que si le taux est nul.** Le
+  modèle du patron porte la consigne « à retirer si vous êtes assujetti » : on
+  ne peut pas laisser cette décision à l'impression. Une facture qui affiche
+  « TVA (10 %) » **et** « TVA non applicable » est fausse.
+
+**La pièce est figée à l'émission**, archivée dans le même geste que le
+changement de statut — comme le devis à l'envoi, et pour la même raison : une
+facture émise est immuable (trigger PostgreSQL), et un PDF reconstruit depuis
+les données du jour ne serait plus celui que le client a reçu.
+
+**La refonte a été prouvée sans effet sur le devis** : le PDF rendu avant et
+après extraction du moteur est identique **au pixel près** (même empreinte
+SHA-256 de l'image). Un moteur partagé qui déplace un trait de deux points
+abîmerait une pièce déjà éprouvée sans qu'aucun test ne le dise.
+
+
+---
+
+## 20. Les copies de `appli/` sont conformes à leur source, et c'est vérifié
+
+**Constaté le 3 août 2026** par `scripts/comparer-modeles.mjs`, qui télécharge
+les six modèles publiés sur `…github.io/Arborea-/` et les compare octet par
+octet aux fichiers de `appli/`.
+
+| Modèle | Verdict |
+|---|---|
+| `facture-modele.html` | **identique** — 26 445 octets |
+| `tva-modele.html` | identique — 34 531 octets |
+| `mes-tarifs.html` | identique — 18 775 octets |
+| `app.html` | identique — 7 409 octets |
+| `devis-vocal.html` | identique — 21 005 octets |
+| `devis-modele.html` | **en avance** — 39 864 ici contre 37 147 en ligne |
+
+**Le seul écart est une avance, pas une dérive.** Les 2 717 octets
+supplémentaires du modèle de devis sont le message d'accompagnement de l'envoi
+(`.send-status`, `copierDestinataire`) — un ajout fait ici à dessein, absent du
+site du patron. Reprendre le fichier en ligne le supprimerait.
+
+**Ce que cela clôt.** Deux explications d'un écart de couleur ont été affirmées
+puis démenties, toutes deux parce qu'elles raisonnaient sur la copie sans
+jamais consulter l'original. La question ne se pose plus par hypothèse : elle se
+mesure, et le contrôle se rejoue.
+
+**Ce que cela ne dit pas.** Le PDF n'est pas le modèle : c'est sa transposition.
+Les polices diffèrent (§16), un PDF n'ayant pas accès à Playfair Display ni à
+Inter. La conformité porte sur la source, pas sur le rendu.
