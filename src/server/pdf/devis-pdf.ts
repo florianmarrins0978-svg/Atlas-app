@@ -77,10 +77,14 @@ export type DevisPdfData = {
 //   y reçoit un 404. Sa version terre cuite n'est donc plus en ligne nulle part.
 //
 // Conclusion : la capture vient de son Arborea d'origine, dont la copie versée
-// ici s'était déjà écartée avant même d'y entrer. C'est bien cette teinte-là
-// qu'il désigne en disant « voilà mon devis », et c'est — à l'antialiasing
-// près — le `rust` `#B25A2E` de `src/lib/design-tokens.ts`, l'accent unique
-// d'Atlas. Le devis s'y tient.
+// ici s'était déjà écartée avant même d'y entrer. C'est — à l'antialiasing près
+// — le `rust` `#B25A2E` de `src/lib/design-tokens.ts`, l'accent unique d'Atlas.
+//
+// **Et c'est le patron qui a tranché, les deux versions sous les yeux.** Le
+// 3 août 2026, les deux devis lui ont été montrés côte à côte, même contenu,
+// seule la teinte changeant : « je veux terre cuite ». Ce n'est donc plus une
+// déduction à partir d'une capture, c'est un choix. Ne pas le rouvrir au motif
+// que la page encore en ligne, elle, est verte.
 //
 // La règle qui en sort : **la référence est ce que le patron a sous les yeux**,
 // jamais notre copie de sa référence. Mais quand cette référence n'est plus

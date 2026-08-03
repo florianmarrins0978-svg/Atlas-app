@@ -1,5 +1,86 @@
 import { lancerNavigateur } from "./e2e-browser";
+import type { Page } from "playwright";
 import assert from "node:assert";
+
+// Le cycle complet d'un tarif : ajout, persistance, modification, suppression.
+//
+// **Pourquoi ce fichier n'attend plus de délais fixes.** Il a rougi deux fois
+// pendant une batterie chargée — une fois « '0.00' == '42.50' », une fois un
+// dépassement de délai — puis il repassait au vert joué seul. Le produit
+// n'était pas en cause : le prix part dans une action serveur au moment où l'on
+// quitte le champ, sans le moindre signal à l'écran, et le test rechargeait la
+// page après 400 ms en dur. Quand la machine est occupée, l'enregistrement
+// n'est pas encore arrivé.
+//
+// On attend donc **le résultat, pas le chrono** : la valeur est relue jusqu'à ce
+// qu'elle soit celle qu'on a saisie, dans une limite de temps généreuse. Ce qui
+// est affirmé devient « le tarif finit par être enregistré », qui est la vraie
+// promesse faite au patron — et non « il est enregistré en moins de 400 ms »,
+// qui n'en est pas une.
+//
+// Le contrôle sait toujours échouer : si rien n'est enregistré, la boucle
+// s'épuise et dit ce qu'elle attendait, ce qu'elle a vu, et pendant combien de
+// temps.
+
+const LIMITE_MS = 20000;
+const PAUSE_MS = 500;
+
+/**
+ * Joue un geste qui déclenche un enregistrement, et attend que le serveur ait
+ * répondu avant de rendre la main.
+ *
+ * **Ce sans quoi le contrôle se ment à lui-même.** Recharger la page juste
+ * après avoir quitté le champ *annule* l'action serveur encore en vol : la
+ * valeur n'est jamais enregistrée, et le contrôle accuse ensuite le produit
+ * pour un tort qu'il a lui-même commis. C'est ce qui s'est passé à la première
+ * réécriture de ce fichier — trois relectures montrant « 0,00 » sur un
+ * enregistrement que le test venait d'interrompre.
+ */
+async function enregistrer(page: Page, geste: () => Promise<void>): Promise<void> {
+  const reponse = page.waitForResponse(
+    (r) => r.request().method() === "POST" && r.url().includes("/reglages"),
+    { timeout: 15000 }
+  );
+  await geste();
+  await reponse;
+}
+
+/** Recharge la page jusqu'à ce que le champ porte la valeur attendue. */
+async function attendreValeurPersistee(
+  page: Page,
+  libelleUnique: string,
+  indexChamp: number,
+  attendu: string
+): Promise<void> {
+  const debut = Date.now();
+  let derniereVue = "(ligne absente)";
+  while (Date.now() - debut < LIMITE_MS) {
+    await page.reload({ waitUntil: "networkidle" });
+    const ligne = page.locator("li", { has: page.locator(`input[value="${libelleUnique}"]`) });
+    if ((await ligne.count()) > 0) {
+      derniereVue = await ligne.locator("input").nth(indexChamp).inputValue();
+      if (derniereVue === attendu) return;
+    }
+    await page.waitForTimeout(PAUSE_MS);
+  }
+  throw new Error(
+    `Le tarif « ${libelleUnique} » n'a jamais porté « ${attendu} » : vu « ${derniereVue} » ` +
+      `après ${LIMITE_MS} ms de relectures. L'enregistrement n'arrive pas.`
+  );
+}
+
+/** Recharge la page jusqu'à ce que le tarif ait disparu. */
+async function attendreDisparition(page: Page, libelleUnique: string): Promise<void> {
+  const debut = Date.now();
+  while (Date.now() - debut < LIMITE_MS) {
+    await page.reload({ waitUntil: "networkidle" });
+    if ((await page.locator(`input[value="${libelleUnique}"]`).count()) === 0) return;
+    await page.waitForTimeout(PAUSE_MS);
+  }
+  throw new Error(
+    `Le tarif « ${libelleUnique} » est toujours là après ${LIMITE_MS} ms : la suppression n'a pas pris.`
+  );
+}
 
 async function main() {
   const browser = await lancerNavigateur();
@@ -20,37 +101,42 @@ async function main() {
   const libelleUnique = `Tarif e2e ${Date.now()}`;
 
   // --- Ajout ---
-  await page.click("text=Ajouter un tarif");
-  await page.waitForTimeout(300);
+  // Le compte se prend **avant** le clic : le prendre après reviendrait à
+  // attendre un seuil déjà franchi, c'est-à-dire à n'attendre rien du tout.
   const lignes = page.locator("li");
+  const nbInitial = await lignes.count();
+  await page.click("text=Ajouter un tarif");
+  // La ligne naît d'une action serveur : on l'attend elle, pas une durée.
+  await page.waitForFunction(
+    (attendu) => document.querySelectorAll("li").length > attendu,
+    nbInitial,
+    { timeout: 15000 }
+  );
   const derniereLigne = lignes.last();
   const inputs = derniereLigne.locator("input");
   await inputs.nth(0).fill(libelleUnique);
   await inputs.nth(1).fill("42.50");
-  await inputs.nth(1).blur();
-  await page.waitForTimeout(400);
+  await enregistrer(page, () => inputs.nth(1).blur());
 
   // --- Persistance après rechargement ---
-  await page.reload({ waitUntil: "networkidle" });
-  const ligneApresReload = page.locator("li", { has: page.locator(`input[value="${libelleUnique}"]`) });
-  assert.equal(await ligneApresReload.locator("input").nth(1).inputValue(), "42.50");
+  await attendreValeurPersistee(page, libelleUnique, 1, "42.50");
 
   // --- Modification ---
-  await ligneApresReload.locator("input").nth(1).fill("50.00");
-  await ligneApresReload.locator("input").nth(1).blur();
-  await page.waitForTimeout(400);
-  await page.reload({ waitUntil: "networkidle" });
-  const ligneApresModif = page.locator("li", { has: page.locator(`input[value="${libelleUnique}"]`) });
-  assert.equal(await ligneApresModif.locator("input").nth(1).inputValue(), "50.00");
+  const ligneAModifier = page.locator("li", { has: page.locator(`input[value="${libelleUnique}"]`) });
+  await ligneAModifier.locator("input").nth(1).fill("50.00");
+  await enregistrer(page, () => ligneAModifier.locator("input").nth(1).blur());
+  await attendreValeurPersistee(page, libelleUnique, 1, "50.00");
 
   // --- Suppression ---
   const nbAvant = await page.locator("li").count();
-  await ligneApresModif.locator('button[aria-label="Supprimer ce tarif"]').click();
-  await page.waitForTimeout(400);
-  await page.reload({ waitUntil: "networkidle" });
+  const ligneASupprimer = page.locator("li", { has: page.locator(`input[value="${libelleUnique}"]`) });
+  await enregistrer(page, () =>
+    ligneASupprimer.locator('button[aria-label="Supprimer ce tarif"]').click()
+  );
+  await attendreDisparition(page, libelleUnique);
+
   const nbApres = await page.locator("li").count();
   assert.equal(nbApres, nbAvant - 1, "Le tarif supprimé ne doit plus apparaître après rechargement");
-  assert.equal(await page.locator(`input[value="${libelleUnique}"]`).count(), 0);
 
   await browser.close();
   console.log("✅ Test bout-en-bout Tarifs réussi.");

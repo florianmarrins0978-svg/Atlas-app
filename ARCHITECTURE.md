@@ -299,10 +299,14 @@ la racine du site du patron : le relevé y reçoit un 404. Sa version terre cuit
 n'est donc plus en ligne nulle part.
 
 La capture vient de son Arborea d'origine, dont la copie s'était écartée **avant
-même d'entrer ici**. Le choix de couleur reste le bon — c'est bien cette teinte
-qu'il désigne en disant « voilà mon devis » — mais il repose sur sa capture, non
-sur une page vérifiable. **Quand la référence n'est plus joignable, on le dit**,
-au lieu de laisser croire qu'on l'a vérifiée.
+même d'entrer ici**. **Quand la référence n'est plus joignable, on le dit**, au
+lieu de laisser croire qu'on l'a vérifiée.
+
+**Le patron a tranché, les deux versions sous les yeux.** Le 3 août 2026, les
+deux devis lui ont été rendus côte à côte — même contenu, seule la teinte
+changeant — avec l'origine de chacune : « je veux terre cuite ». La couleur du
+devis n'est donc plus une déduction tirée d'une capture, c'est une décision. Ne
+pas la rouvrir au motif que la page encore en ligne, elle, est verte.
 
 **Le papier est crème (`#faf9f5`), pas blanc.** C'est celui du modèle. Un
 navigateur n'imprime pas les fonds sans qu'on le lui demande ; un PDF, lui, les

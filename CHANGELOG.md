@@ -43,6 +43,17 @@ d'œil sur la première page ne remplace : aucune ligne ne descend sur le cadre 
 signature. Chacun a été confronté au défaut qu'il prétend détecter avant d'être
 acté ; le premier jet cherchait « EUR » n'importe où et accusait « ÉMETTEUR ».
 
+### Terre cuite : le patron a choisi, les deux versions sous les yeux
+
+Les deux devis lui ont été rendus côte à côte, même contenu, seule la teinte des
+intertitres changeant, avec l'origine de chacune — terre cuite de son Arborea
+d'origine, vert de la page encore en ligne. Réponse : « je veux terre cuite ».
+
+Rien à changer dans le code, c'était déjà en place. Mais la couleur cesse d'être
+une déduction tirée d'une capture pour devenir une décision, et elle est écrite
+comme telle : une prochaine conversation qui découvrirait le vert en ligne
+n'aura pas à la reposer.
+
 ### La cause annoncée était fausse : correction
 
 J'avais écrit que « la copie versée dans `appli/` avait divergé de son
