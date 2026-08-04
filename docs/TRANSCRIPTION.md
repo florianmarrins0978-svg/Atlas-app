@@ -165,16 +165,21 @@ demi-journée :
 
 Posez les cinq questions à deux ou trois candidats, et remplissez :
 
-| | Candidat A | Candidat B | Candidat C |
+| | **OpenAI** *(retenu pour les essais)* | Candidat B | Candidat C |
 |---|---|---|---|
-| Nom | | | |
-| Serveurs en Europe ? | | | |
-| Durée de conservation | | | |
-| Entraînement refusé par écrit ? | | | |
-| Lexique métier possible ? | | | |
-| Prix pour 60 min d'audio | | | |
-| Prix pour 10 h d'audio | | | |
-| Contrat de sous-traitance fourni ? | | | |
+| Nom | OpenAI (Whisper) | | |
+| Serveurs en Europe ? | **Non** — encadrement contractuel requis | | |
+| Durée de conservation | Journalisation coupée côté organisation. Côté fournisseur, ~30 jours pour la surveillance des abus — **à confirmer** | | |
+| Entraînement refusé par écrit ? | **Oui** — les trois réglages *Data controls → Sharing* sur `Disabled`, le 3 août 2026 | | |
+| Lexique métier possible ? | *non vérifié* | | |
+| Prix pour 60 min d'audio | *non lu — page refusée à l'agent* | | |
+| Prix pour 10 h d'audio | *non lu* | | |
+| Contrat de sous-traitance fourni ? | *à demander* | | |
+
+> **Première colonne remplie le 3 août 2026**, en ouvrant le compte pour les
+> essais du patron. Ce n'est pas un choix définitif : c'est un candidat éprouvé,
+> avec ce qu'on sait et ce qu'on ne sait pas encore. Les cases *non vérifié* et
+> *à confirmer* sont laissées telles quelles plutôt que remplies au jugé.
 
 **Les deux lignes de prix comptent ensemble.** Certains sont bon marché en
 petite quantité et chers ensuite, d'autres l'inverse. Estimez votre volume
