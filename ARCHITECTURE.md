@@ -624,3 +624,64 @@ le vérifie sur une ligne remise à l'état d'avant.
 Les **équipes nommées** (qui va où) et la **capacité en hommes** n'ont pas été
 retenues : le patron a choisi le compteur. Elles restent dans `TODO.md` si son
 entreprise grandit.
+
+## 23. De la dictée au devis : un seul geste, et rien n'est jamais mort
+
+**Décidé le 2026-08-04**, après : « toujours pas de devis créé tout seul à partir
+de la note vocale ! Problème qui traîne. »
+
+### Ce qui était en cause, et ce qui ne l'était pas
+
+Le message affiché — « Réponse du fournisseur non conforme (JSON invalide). » —
+n'était que le symptôme du jour. Le fond était ailleurs : **chaque maillon
+existait, aucun ne menait au suivant.** Brouillon, confirmation, chiffrage,
+ligne de prix, devis : cinq gestes sur quatre écrans, tous éprouvés
+séparément, et aucune suite ne les parcourait à la file. Un contrôle par maillon
+peut rester vert pendant que le parcours ne mène nulle part.
+
+`docs/AGENT.md` §2 décrivait pourtant l'agent qui « transcrit, structure, cherche
+les tarifs, **rédige le devis** », avec **un seul arrêt**. Ce lot construit
+l'enchaînement décrit ; il n'invente aucune règle.
+
+### Deux principes, tenus dans le code
+
+**1. Aucun chemin ne laisse le patron devant rien.**
+`extraction-service.ts` ne renvoie plus d'échec sur une réponse de fournisseur :
+il tolère l'emballage (`lireObjetJson` — bloc de code, prose autour), et si rien
+n'est exploitable — réponse à côté, hors schéma, clé absente, quota, panne — il
+**lit la dictée mot à mot** (`lecture-litterale.ts`), sans réseau ni clé.
+
+Le découpage littéral a quitté le fournisseur de développement pour vivre seul :
+les deux s'en servent, et deux copies auraient fini par diverger — c'est le
+chemin de secours, le moins souvent relu, qui serait resté en arrière.
+
+Cette lecture **recopie, elle ne comprend pas** : elle ignore qu'un chêne mort
+s'abat et qu'une haie se taille. Le brouillon porte donc `lecture = 'litterale'`
+(migration 0021, persistée pour survivre au rechargement), et les écrans le
+disent. Une recopie présentée comme une analyse serait un mensonge sur ce que le
+patron relit.
+
+**2. Un raccourci n'est pas une dispense.**
+`preparerDevisDepuisDictee()` enchaîne tout, mais :
+
+| Ce qu'il fait | Ce qu'il ne fera jamais |
+|---|---|
+| Écrit prestations, matériel, durée, équipe | Envoyer quoi que ce soit — l'arrêt avant l'envoi est intact |
+| Applique un tarif, ou un chiffrage calculé | Inventer un prix : sans tarif ni durée/équipe, aucune ligne, et le rapport dit pourquoi |
+| Trancher entre deux tarifs concurrents | Non — le choix reste au patron, comme sur l'écran Prix |
+| S'arrêter si le brouillon a été corrigé à la main | Écraser une correction humaine |
+
+Il n'implémente rien de neuf : `confirmerBrouillon()` et
+`appliquerPropositionPrix()` ont été **sortis des actions d'écran vers des
+services**, précisément pour que les deux chemins appliquent la même règle
+(`CLAUDE.md` §3). Sans cela, le raccourci aurait rouvert le devis doublé du
+3 août sur la voie la moins relue.
+
+### Ce que les contrôles tiennent
+
+- `test-lecture-dictee.ts` : le fournisseur est **injectable**, donc une réponse
+  mal formée est fabricable — sans quoi le défaut du patron restait
+  intestable. Réponse encadrée, prose, hors schéma, panne, quota : à chaque fois
+  la dictée ressort.
+- `test-devis-depuis-dictee-e2e.ts` : un appui, un devis chiffré, **zéro envoi**,
+  et rejouer le geste n'ajoute pas une seconde ligne de prix.

@@ -64,6 +64,8 @@ seule avec quinze outils.
 | Correction demandée par le client, avec son message porté au patron | `src/app/devis/[jeton]/formulaire.tsx` + `src/lib/etat-envoi.ts` |
 | Écrire le devis soi-même, sans passer par la proposition de prix | `src/app/chantiers/[id]/informations/InformationsClient.tsx` → `prix?saisie=manuelle` |
 | Transmission au client : messagerie ouverte **au bon destinataire**, canal changeable, coordonnée saisissable sur place | `src/app/chantiers/[id]/export/TransmettreAuClient.tsx` |
+| **De la dictée au devis en un seul geste** : prestations, durée, équipe, prix, devis | `src/server/services/devis-depuis-dictee.ts` + `src/app/chantiers/[id]/DevisDepuisDictee.tsx` |
+| La dictée est lue mot à mot quand aucun modèle ne répond — et l'écran le dit | `src/server/ai/lecture-litterale.ts` + `drizzle/0021_lecture_dictee.sql` |
 
 ### Conformité RGPD
 
@@ -119,9 +121,10 @@ patron :
 
 1. Choisir les deux fournisseurs d'IA définitifs (transcription, raisonnement).
    **Ce point a un effet visible tous les jours** : sans modèle, la dictée est
-   seulement *découpée*, jamais comprise. Le découpage ne perd plus rien (voir
-   `scripts/test-analyse-dictee.ts`), mais il ne sait pas qu'un chêne mort
-   s'abat et qu'une haie se taille.
+   seulement *recopiée*, jamais comprise. La recopie ne perd plus rien (voir
+   `scripts/test-analyse-dictee.ts`) et elle mène désormais jusqu'au devis
+   chiffré, mais elle ne sait pas qu'un chêne mort s'abat et qu'une haie se
+   taille — et l'écran l'annonce plutôt que de la faire passer pour une analyse.
 2. Faire rédiger le contrat de sous-traitance par un juriste.
 3. Choisir un hébergement européen — **sans lui, personne d'autre que le patron
    ne peut se servir de l'application**. N'empêche NI d'essayer NI de finir le

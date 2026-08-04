@@ -16,10 +16,10 @@ import {
 import PropositionPrixSection from "./PropositionPrixSection";
 import type { PropositionPrix } from "@/server/chiffrage/proposition-prix";
 import { peutPreparerDevis } from "@/lib/preparation-devis";
+import { enEuros } from "@/lib/euros";
 
 type Ligne = { id: string; libelle: string; montant: string };
 
-const formatEuros = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 
 export default function PrixClient({
   chantierId,
@@ -130,7 +130,7 @@ export default function PrixClient({
           Total
         </p>
         <p className="text-[40px] font-semibold leading-none" style={{ fontFamily: font.display, color: colors.rust }}>
-          {formatEuros.format(Number(total))}
+          {enEuros(total)}
         </p>
         <p className="mt-2 text-[12px]" style={{ color: colors.muted }}>
           Somme des lignes du détail. C&apos;est cette valeur qui sera reprise dans le devis.

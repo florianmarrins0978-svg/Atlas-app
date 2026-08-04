@@ -5,6 +5,7 @@ import { getChantier } from "@/server/repositories/chantiers";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
 import { estTranscriptionSimulee } from "@/server/ai/providers/transcription/dev";
 import TexteDicte from "./TexteDicte";
+import DevisDepuisDictee from "../DevisDepuisDictee";
 
 // Consultation seule : le lancement et la relance de la transcription vivent sur
 // l'écran Note vocale, jamais en double ici. Le modèle ne porte qu'une
@@ -82,16 +83,21 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
           <TexteDicte chantierId={id} texteActuel={note.transcription ?? ""} simulee={simulee} />
         )}
 
-        {/* Suite naturelle du parcours : la transcription n'est pas une fin en
-            soi, elle alimente les informations du chantier. */}
+        {/* La suite du parcours, et non un simple lien vers l'écran suivant.
+            Une dictée transcrite contient déjà tout ce qu'il faut pour écrire
+            le devis : la lui faire re-saisir écran par écran était le « problème
+            qui traîne » du 4 août. */}
         {disponible && (
-          <a
-            href={`/chantiers/${id}/informations`}
-            className="mt-5 block px-6 text-center text-[14px] font-medium"
-            style={{ color: colors.rust }}
-          >
-            Continuer vers les informations →
-          </a>
+          <div className="mt-6 px-6">
+            <DevisDepuisDictee chantierId={id} transcriptionDisponible />
+            <a
+              href={`/chantiers/${id}/informations`}
+              className="mt-4 block text-center text-[14px] font-medium"
+              style={{ color: colors.muted }}
+            >
+              Ou vérifier les informations une par une →
+            </a>
+          </div>
         )}
 
         {note && !disponible && note.transcriptionStatut !== "en_cours" && (

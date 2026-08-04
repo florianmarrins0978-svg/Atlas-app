@@ -591,6 +591,12 @@ export const brouillonsInformations = pgTable(
       .notNull()
       .default("brouillon"),
     modifieParHumain: boolean("modifie_par_humain").notNull().default(false),
+    // Comprise par un modèle, ou recopiée mot à mot faute de fournisseur
+    // exploitable. Persistée pour que la mention affichée au patron survive au
+    // rechargement — sinon il relit une recopie en la croyant analysée.
+    lecture: text("lecture", { enum: ["modele", "litterale"] })
+      .notNull()
+      .default("modele"),
     sourceTranscription: text("source_transcription"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

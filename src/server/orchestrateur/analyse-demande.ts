@@ -71,7 +71,14 @@ const SEPARATEURS = /\r?\n|;|(?<!\d)[,.]|[,.](?!\d)|\s+(?:plus|et)\s+/i;
 
 // Amorces de dictée qui n'appartiennent à aucune prestation : « Estimation 2
 // jours 2 hommes… » commence par un mot qui annonce, pas par un travail.
-const AMORCES = /^(?:estimation|estim[ée]e?|estime|pr[ée]voir|[àa] pr[ée]voir|pr[ée]vu[e]?|compter|il faut)\b\s*:?\s*/i;
+//
+// La phrase entière est avalée, pas seulement le verbe. « J'estime le temps de
+// travaux à 2 jours » laissait sinon « j'estime le temps de travaux à » —
+// et cette bribe se retrouvait **imprimée comme une prestation sur le devis du
+// client**. Ce qui est annoncé (« 2 jours ») est retenu par ailleurs, dans la
+// durée : rien de ce qui compte ne se perd ici.
+const AMORCES =
+  /^(?:j['’]\s*)?(?:estimation|estim[ée]e?s?|estime|pr[ée]voir|[àa] pr[ée]voir|pr[ée]vu[e]?s?|compter|il faut)\b(?:\s+(?:le|la|les|de|du|des|[àa]|en|temps|dur[ée]e|travaux|travail|intervention|main[- ]d['’]œuvre))*\s*:?\s*/i;
 
 // Ce qui, resté seul après nettoyage, ne constitue pas un élément : mots de
 // liaison, articles, restes de ponctuation. Le seuil de longueur ne suffit pas
@@ -84,6 +91,16 @@ export type AnalyseDemande = {
   ambiguites: string[];
   dureeTexte: string | null;
   equipeTexte: string | null;
+  /**
+   * Ce qui a été retiré des prestations parce que cela **annonce** au lieu de
+   * décrire un travail : « j'estime le temps de travaux à ».
+   *
+   * Rendu à l'appelant, et non jeté : l'invariant de `test-analyse-dictee.ts`
+   * est que rien de ce qui a été dicté ne disparaisse. Ces phrases finissent en
+   * remarque du brouillon — visibles par le patron, absentes du devis du
+   * client, qui n'a que faire de lire « j'estime le temps de travaux à ».
+   */
+  annonces: string[];
 };
 
 function nettoyer(texte: string): string {
@@ -102,6 +119,7 @@ export function analyserDemandeTexte(texte: string): AnalyseDemande {
   const prestations: string[] = [];
   const materiel: string[] = [];
   const ambiguites: string[] = [];
+  const annonces: string[] = [];
 
   for (const segment of segments) {
     // L'ambiguïté se signale, elle ne fait plus disparaître le segment. « Environ
@@ -115,9 +133,16 @@ export function analyserDemandeTexte(texte: string): AnalyseDemande {
     let reste = segment;
     if (dureeMatch) reste = reste.replace(dureeMatch[0], " ");
     if (equipeMatch) reste = reste.replace(equipeMatch[0], " ");
-    reste = nettoyer(nettoyer(reste).replace(AMORCES, ""));
+    const avantAmorce = nettoyer(reste);
+    reste = nettoyer(avantAmorce.replace(AMORCES, ""));
 
-    if (!reste || RESIDU_SANS_CONTENU.test(reste)) continue;
+    if (!reste || RESIDU_SANS_CONTENU.test(reste)) {
+      // La phrase annonçait quelque chose ; ce quelque chose est retenu
+      // ailleurs (durée, équipe). On garde tout de même sa trace : rien de ce
+      // qui a été dicté ne disparaît sans laisser d'adresse.
+      if (avantAmorce && !RESIDU_SANS_CONTENU.test(avantAmorce)) annonces.push(avantAmorce);
+      continue;
+    }
 
     if (MOTS_MATERIEL.test(reste)) materiel.push(reste);
     else prestations.push(reste);
@@ -129,5 +154,6 @@ export function analyserDemandeTexte(texte: string): AnalyseDemande {
     ambiguites,
     dureeTexte: dureeMatch?.[0] ?? null,
     equipeTexte: equipeMatch?.[0] ?? null,
+    annonces,
   };
 }

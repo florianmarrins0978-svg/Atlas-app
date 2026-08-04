@@ -5,8 +5,8 @@ import { colors, smallCaps } from "@/lib/design-tokens";
 import type { PropositionPrix, OriginePrix } from "@/server/chiffrage/proposition-prix";
 import { ligneDejaAuDetail, type LigneDetail } from "@/lib/proposition-au-detail";
 import { calculerPropositionPrixAction, appliquerPropositionPrixAction } from "./actions";
+import { enEuros } from "@/lib/euros";
 
-const formatEuros = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 
 // Libellé court de l'origine. Aucune formulation ne doit laisser croire que
 // l'application décide du prix : elle retrouve un tarif, ou calcule à partir de
@@ -100,7 +100,7 @@ export default function PropositionPrixSection({
 
       {proposition.prixPropose !== null && (
         <p className="text-[28px] font-semibold leading-none" style={{ color: colors.ink }}>
-          {formatEuros.format(Number(proposition.prixPropose))}
+          {enEuros(proposition.prixPropose)}
           <span className="ml-2 text-[13px] font-normal" style={{ color: colors.muted }}>
             HT
           </span>
@@ -187,7 +187,7 @@ export default function PropositionPrixSection({
           empêche le devis de doubler. */}
       {dejaAuDetail && (
         <p className="text-[13px]" style={{ color: colors.muted }}>
-          Déjà au détail : « {dejaAuDetail.libelle} » à {formatEuros.format(Number(dejaAuDetail.montant))}.
+          Déjà au détail : « {dejaAuDetail.libelle} » à {enEuros(dejaAuDetail.montant)}.
           Pour la changer, modifiez la ligne ci-dessous plutôt que d&apos;en ajouter une seconde.
         </p>
       )}

@@ -94,6 +94,7 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
                   contenu: brouillon.contenu,
                   statut: brouillon.statut,
                   modifieParHumain: brouillon.modifieParHumain,
+                  lecture: brouillon.lecture,
                   fraicheur: evaluerFraicheurBrouillon({
                     sourceTranscription: brouillon.sourceTranscription,
                     transcriptionActuelle:

@@ -55,7 +55,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les quatorze pièges de ce dépôt
+### Les quinze pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -141,6 +141,28 @@ site publié à son adresse réelle.
     lisait la coordonnée dans **l'instantané figé du devis**, si bien qu'une
     adresse tout juste saisie n'apparaissait jamais. Une donnée que
     l'utilisateur vient d'écrire se relit sur la **fiche vivante**.
+
+14. **Des maillons tous verts ne font pas une chaîne.** Brouillon,
+    confirmation, chiffrage, ligne de prix, devis : chacun avait sa suite, et
+    chacune passait. Aucune ne les parcourait **à la file** — et le parcours, lui,
+    ne menait nulle part : cinq gestes sur quatre écrans, dont aucun ne menait au
+    suivant, avec un devis à 0,00 € au bout si l'un était oublié. Le patron l'a
+    dit deux fois avant qu'on l'entende. Quand un lot ajoute une étape à un
+    parcours, la suite qui compte est celle qui va **du premier écran au
+    dernier** (`test-devis-depuis-dictee-e2e.ts`). Corollaire de conception :
+    quand deux chemins font la même chose, la règle sort dans un service et les
+    deux l'appellent — `confirmerBrouillon()`, `appliquerPropositionPrix()` — car
+    c'est le chemin le moins relu qui garde le vieux défaut.
+
+15. **Un service qui ne sait pas échouer proprement bloque tout le reste.**
+    `JSON.parse(reponseDuModele)` sans filet : une réponse encadrée en
+    ```` ```json ```` suffisait à afficher « Réponse du fournisseur non conforme
+    (JSON invalide). » et à arrêter net le chantier du patron. Deux règles en
+    sont sorties : **tolérer l'emballage, jamais le fond** (le schéma reste seul
+    juge), et **ne jamais laisser l'utilisateur devant rien** — ici, la dictée est
+    relue mot à mot, sans réseau ni clé. Un repli doit se **dire** : le brouillon
+    porte `lecture = 'litterale'` et l'écran l'annonce, sans quoi le patron relit
+    une recopie en la croyant analysée.
 
 ### Le vocabulaire
 
