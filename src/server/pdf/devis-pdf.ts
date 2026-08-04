@@ -6,6 +6,7 @@ import {
   type LigneDocument,
   type TraceDocument,
 } from "./document-commun";
+import { jourNumerique } from "../../lib/jour";
 
 // Le devis, à l'image du modèle d'Arborea (`appli/devis-modele.html`).
 //
@@ -43,7 +44,9 @@ export async function composerDevisPdf(
         "Devis n°",
         data.numeroCommercial + (data.numeroVersion > 1 ? ` — v${data.numeroVersion}` : ""),
       ],
-      ["Date", data.dateEmission],
+      // Jour/mois/année : personne, en France, ne lit « 2026-08-04 » sur un
+      // devis. Le format ISO reste celui de la base, jamais celui du papier.
+      ["Date", jourNumerique(data.dateEmission)],
       ["Validité", VALIDITE],
     ],
     titreNotes: "NOTES / CONDITIONS",

@@ -112,3 +112,7 @@ et c'est déjà arrivé.
 - ~~La durée dictée n'entrait pas dans la planification : un chantier de 2 jours n'en bloquait qu'un~~ — 2026-08-03
 - ~~Le SMS s'ouvrait sans destinataire ; le canal se change désormais, et la coordonnée manquante se saisit sur place~~ — 2026-08-04
 - ~~De la dictée au devis en un seul geste, et plus aucun écran mort quand le fournisseur répond à côté~~ — 2026-08-04
+- ~~L'espace d'essai récupère le code neuf à chaque allumage, et l'application annonce sa version~~ — 2026-08-04
+- ~~La date des documents s'écrit jour/mois/année~~ — 2026-08-04
+- ~~La bande des durées est aussi sur l'écran Informations, là où il la cherchait~~ — 2026-08-04
+- ~~Rédiger le devis entièrement à la main, depuis la fiche du chantier~~ — 2026-08-04

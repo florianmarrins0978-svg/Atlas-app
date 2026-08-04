@@ -63,15 +63,21 @@ async function main() {
   );
 
   // --- Durée et équipe ---
-  const dureeInput = page.locator("label", { hasText: "Durée" }).locator("input");
-  await dureeInput.fill("3 jours");
-  await dureeInput.blur();
+  //
+  // La durée se choisit désormais à la molette, ici comme sur l'écran d'envoi :
+  // le patron l'y cherchait (« elle a disparu !!!! », le 2026-08-04) et ne la
+  // trouvait qu'au bout du parcours. Ce qui est enregistré reste du texte —
+  // « 3 jours » — lu par le chiffrage et par la planification.
+  const duree = page.getByLabel("Durée du chantier");
+  await duree.selectOption({ label: "3 jours" });
   const equipeInput = page.locator("label", { hasText: "Équipe" }).locator("input");
   await equipeInput.fill("2 hommes");
   await equipeInput.blur();
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(700);
   await page.reload({ waitUntil: "networkidle" });
-  assert.equal(await page.locator("label", { hasText: "Durée" }).locator("input").inputValue(), "3 jours");
+  // 6 demi-journées = 3 jours : la bande relit le texte enregistré, elle ne
+  // garde aucun état à elle.
+  assert.equal(await page.getByLabel("Durée du chantier").inputValue(), "6");
   assert.equal(await page.locator("label", { hasText: "Équipe" }).locator("input").inputValue(), "2 hommes");
 
   // --- Modification d'une prestation ---

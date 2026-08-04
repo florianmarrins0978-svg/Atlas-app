@@ -4,6 +4,7 @@ import {
   type LigneDocument,
   type TraceDocument,
 } from "./document-commun";
+import { jourNumerique } from "../../lib/jour";
 
 // La facture, sur le modèle du patron (`appli/facture-modele.html`).
 //
@@ -61,11 +62,13 @@ export async function composerFacturePdf(
 ): Promise<{ pdf: Uint8Array; trace: TraceDocument }> {
   const references: [string, string][] = [
     ["Facture n°", data.numeroCommercial],
-    ["Date d'émission", data.dateEmission],
+    // Jour/mois/année, comme sur le devis : la facture est la pièce la plus
+    // lue des deux, et une date à l'envers y fait douter du reste.
+    ["Date d'émission", jourNumerique(data.dateEmission)],
   ];
   // Une échéance absente laisse sa ligne vide plutôt que d'afficher une date
   // plausible : c'est elle qui fait courir les pénalités (CLAUDE.md §4).
-  if (data.dateEcheance) references.push(["Date d'échéance", data.dateEcheance]);
+  if (data.dateEcheance) references.push(["Date d'échéance", jourNumerique(data.dateEcheance)]);
 
   return composerDocument(data, {
     // Une facture non émise qui ne le signale pas peut partir par erreur, et

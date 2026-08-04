@@ -685,3 +685,54 @@ services**, précisément pour que les deux chemins appliquent la même règle
   la dictée ressort.
 - `test-devis-depuis-dictee-e2e.ts` : un appui, un devis chiffré, **zéro envoi**,
   et rejouer le geste n'ajoute pas une seconde ligne de prix.
+
+## 24. L'espace d'essai se met à jour, et l'application dit sa version
+
+**Décidé le 2026-08-04**, après le défaut le plus coûteux de la série — et il
+n'était pas dans l'application.
+
+### Ce qui s'est passé
+
+Le patron signale deux correctifs qui « ne marchent toujours pas » : la bande de
+durées « a disparu », le numéro du client « ne se met toujours pas ». Les deux
+étaient corrigés, éprouvés, fusionnés la veille. Son espace de travail gardait
+le code du jour de sa création : **un espace ne récupère jamais rien tout seul.**
+Rien à l'écran ne le lui disait. Trois échanges perdus à chercher des défauts
+déjà réparés.
+
+### Ce qui est décidé
+
+**1. L'espace se met à jour à chaque allumage.** `.devcontainer/mettre-a-jour.sh`,
+appelé par `demarrer.sh`, puis `npm ci` et les migrations si quelque chose a
+bougé — un code neuf sur une base ancienne serait une panne, pas un correctif.
+
+Trois prudences, dans cet ordre, et aucune n'est négociable :
+
+| Situation | Ce qui se passe |
+|---|---|
+| Travail non enregistré | on ne touche à rien, et on le dit |
+| Historique divergent | refus — jamais de `--force` |
+| Distant injoignable | refus explicite, le démarrage continue |
+
+*Écraser le travail du patron pour lui livrer une mise à jour serait un remède
+pire que le mal.*
+
+**2. Le script vit dans son propre fichier.** Non par goût du découpage : ainsi
+il est **éprouvable**. `scripts/test-mise-a-jour-espace.ts` monte de vrais
+dépôts git et le confronte aux quatre états qu'il prétend distinguer. Enfoui
+dans `demarrer.sh`, il n'aurait jamais été vu échouer — et c'est exactement ce
+que `AGENTS.md` interdit.
+
+**3. L'application annonce la version qu'elle exécute** (Réglages, en bas) :
+`ATLAS_VERSION`, posée par `demarrer.sh`, affichée telle quelle. Hors banc
+d'essai elle est absente, et l'écran dit « inconnue » plutôt que d'inventer.
+
+C'est le contrôle le moins spectaculaire du dépôt et l'un des plus utiles : une
+capture d'écran répond désormais à « quelle version essayez-vous ? » sans qu'il
+faille poser la question.
+
+### Ce que ça ne résout pas
+
+Un espace créé sur une branche qui n'existe plus, ou dont l'historique a été
+réécrit, reste en arrière — le script refuse d'avancer, à raison. Il le dit ;
+c'est alors un nouvel espace qu'il faut, pas une mise à jour.

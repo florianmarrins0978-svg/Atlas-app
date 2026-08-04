@@ -149,18 +149,22 @@ export function getSecondarySteps(
     {
       key: "informations",
       label: "Informations",
+      // « En attente de la note vocale » se lisait comme un verrou : le patron
+      // en a conclu qu'il ne pouvait pas rédiger son devis à la main. Rien n'est
+      // verrouillé — ces écrans ont toujours été ouverts. Le libellé dit
+      // désormais ce qui MANQUE, pas ce qu'il faudrait attendre.
       meta: c.informationsVerifieesAt
         ? "Vérifiées"
         : c.aUneNoteVocale
           ? "À vérifier"
-          : "En attente de la note vocale",
+          : "À remplir, ou à dicter",
       done: !!c.informationsVerifieesAt,
       href: `/chantiers/${id}/informations`,
     },
     {
       key: "prix",
       label: "Prix",
-      meta: c.prixValideAt ? "Calculé" : c.informationsVerifieesAt ? "À calculer" : "En attente des informations",
+      meta: c.prixValideAt ? "Calculé" : c.informationsVerifieesAt ? "À calculer" : "À calculer, ou à écrire à la main",
       done: !!c.prixValideAt,
       href: `/chantiers/${id}/prix`,
     },
@@ -173,7 +177,7 @@ export function getSecondarySteps(
           ? "Généré, non envoyé"
           : c.prixValideAt
             ? "À préparer"
-            : "En attente du prix",
+            : "À préparer une fois le prix posé",
       done: !!c.devisEnvoyeAt,
       href: `/chantiers/${id}/export`,
     },

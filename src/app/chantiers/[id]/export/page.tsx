@@ -4,7 +4,7 @@ import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getClient } from "@/server/repositories/clients";
-import { getOuCreerDevisBrouillon, chargerDevisPourEcran } from "@/server/repositories/devis";
+import { getOuCreerDevisBrouillon, chargerDevisPourEcran, getLignesDevis } from "@/server/repositories/devis";
 import { listerPrestations } from "@/server/repositories/prestations";
 import { dernierEnvoi } from "@/server/repositories/envois-devis";
 import { etatEnvoi } from "@/lib/etat-envoi";
@@ -29,6 +29,17 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
   // repris six mois plus tard doit partir par le canal du client d'aujourd'hui.
   const client = chantier.clientId ? await getClient(ctx, chantier.clientId) : null;
   const canalClient = client?.canalCommunication ?? "sms";
+  // **Ce que l'écran doit montrer, c'est le devis — pas le chantier.**
+  //
+  // Il listait les *prestations* du chantier, qui les décrivent. Un devis écrit
+  // entièrement à la main n'en a aucune : le patron voyait alors un total et
+  // rien d'autre, sans savoir ce qui partirait chez son client. Ce sont les
+  // LIGNES du devis, avec leurs montants, qui font foi — ce sont elles qui sont
+  // imprimées sur le PDF, et elles seules.
+  //
+  // Les prestations restent en complément quand elles existent : elles disent
+  // le travail, là où les lignes disent le prix.
+  const lignesDuDevis = await getLignesDevis(ctx, devisRow.id);
   const prestations = await listerPrestations(ctx, id);
 
   // Où en est le devis parti, s'il est parti. C'est ce qui distingue « le
@@ -91,6 +102,7 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
           entrepriseNom={devisRow.entrepriseNom ?? "Votre entreprise"}
           canalClient={canalClient}
           prestations={prestations.map((p) => p.libelle)}
+          lignes={lignesDuDevis.map((l) => ({ libelle: l.libelle, montant: l.montant }))}
           totalTtc={devisRow.totalTtc}
           initialEnvoye={devisRow.statut === "envoye"}
           etatEnvoi={etat}

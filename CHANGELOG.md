@@ -7,6 +7,70 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-04 (soir)
+
+### Il éprouvait le code de la veille — et rien ne le lui disait
+
+**Le défaut le plus coûteux de toute la série, et il n'était pas dans
+l'application.** Le patron signale deux correctifs qui « ne marchent toujours
+pas » : la bande déroulante des durées « a disparu !!!! », le numéro du client
+« ne se met toujours pas ». Les deux étaient corrigés, éprouvés et fusionnés la
+veille.
+
+Un espace de travail garde le code qu'il avait **le jour de sa création**. Il ne
+récupère jamais rien tout seul. Trois échanges ont été perdus à chercher des
+défauts déjà réparés.
+
+Deux réponses :
+
+- **L'espace se met à jour à chaque allumage** (`.devcontainer/mettre-a-jour.sh`),
+  puis réinstalle les dépendances et joue les migrations — un code neuf sur une
+  base ancienne serait une panne au lieu d'un correctif. Il ne touche à rien si
+  du travail n'est pas enregistré, n'avance qu'en ligne droite, et **dit
+  toujours ce qu'il a fait**. Éprouvé contre les quatre états qu'il distingue :
+  à jour, en retard, sale, divergent (`scripts/test-mise-a-jour-espace.ts`).
+- **L'application annonce sa version** (Réglages, en bas) : « 04/08/2026 21:12 ·
+  b05e282 ». Une capture d'écran répond désormais à « quelle version
+  essayez-vous ? » sans qu'il ait à se le demander.
+
+### « La date est à l'envers » sur le devis
+
+Le PDF imprimait `2026-08-04`, tel que la date est stockée. Ce format est
+parfait en base — il se trie tout seul — et illisible sur une pièce présentée à
+un client. Devis et facture écrivent maintenant **04/08/2026**, échéance
+comprise.
+
+### La bande déroulante des durées, là où il la cherchait
+
+Elle n'avait pas disparu : elle n'existait que sur l'écran d'envoi, au bout du
+parcours, alors que c'est sur l'écran Informations qu'on décrit le chantier.
+Elle y est désormais aussi, avec **la même liste** — ½ journée, puis 1 à 100
+jours. Une seule source, parce que deux molettes qui divergent, c'est le patron
+qui fixe deux durées pour le même chantier sans savoir laquelle compte.
+
+Elle affiche « Non précisé » tant que rien n'a été dit : montrer « 1 journée »
+par défaut ferait entrer un chiffre que personne n'a donné, et il ressortirait
+dans un prix.
+
+### « Je ne peux toujours pas rédiger mon devis seulement à la main »
+
+Il le pouvait — par un lien au bas de l'écran Informations, c'est-à-dire après
+avoir traversé photos et dictée. Et sa fiche annonçait « Prix — en attente des
+informations », qui se lit comme un verrou alors que rien n'a jamais été
+verrouillé. **Un chemin qu'on ne trouve pas n'existe pas.**
+
+- « Ou rédiger le devis à la main → », sous l'action principale de la fiche.
+- Les étapes disent ce qui manque, plus ce qu'il faudrait attendre : « À
+  remplir, ou à dicter », « À calculer, ou à écrire à la main ».
+
+**Et un défaut trouvé en éprouvant ce chemin :** l'écran Devis listait les
+*prestations* du chantier. Un devis écrit entièrement à la main n'en a aucune —
+le patron y voyait un total, et rien qui dise ce qui partirait chez son client.
+Il montre maintenant **les lignes du devis**, avec leurs montants : ce sont
+elles qui sont imprimées, et elles seules.
+
+---
+
 ## 2026-08-04
 
 ### « Toujours pas de devis créé tout seul à partir de la note vocale »

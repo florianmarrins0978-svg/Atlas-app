@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-04 · `claude/migrate-app-atlas-zz31ac`
+**Point de reprise :** 2026-08-04 (soir) · `claude/migrate-app-atlas-zz31ac`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -55,7 +55,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les quinze pièges de ce dépôt
+### Les seize pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -163,6 +163,15 @@ site publié à son adresse réelle.
     relue mot à mot, sans réseau ni clé. Un repli doit se **dire** : le brouillon
     porte `lecture = 'litterale'` et l'écran l'annonce, sans quoi le patron relit
     une recopie en la croyant analysée.
+
+16. **Un espace de travail ne récupère jamais le code neuf tout seul.** Le
+    patron a réessayé, un jour plus tard, des correctifs livrés la veille, et
+    conclu qu'ils ne marchaient pas. Trois échanges perdus sur des défauts déjà
+    réparés. Depuis : `.devcontainer/mettre-a-jour.sh` avance à chaque allumage
+    (jamais en écrasant du travail non enregistré, jamais en forçant), et
+    **l'application affiche sa version dans les Réglages**. Règle générale :
+    avant de chercher un défaut qu'un correctif devait fermer, **demander la
+    version** — une capture de l'écran Réglages y répond.
 
 ### Le vocabulaire
 
