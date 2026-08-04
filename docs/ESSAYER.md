@@ -168,10 +168,18 @@ Comptez une vingtaine de minutes, et **entre 2 et 7 € par mois** à votre volu
 | | Où | Ce qu'il faut y faire |
 |---|---|---|
 | **Rédaction** | `console.anthropic.com` | Créer un compte, y mettre 5 € de crédit, générer une clé API |
-| **Transcription** | `platform.openai.com` | Idem. **Puis, dans les réglages de l'organisation, refuser le partage de données pour l'entraînement** — ce n'est pas coché par défaut |
+| **Transcription** | `platform.openai.com` | Idem. **Puis vérifier, dans les réglages de l'organisation, que le partage de données pour l'entraînement est bien refusé** |
 
 Ce second geste est le plus important des deux, et celui qu'on oublie. C'est la
 question 3 de `TRANSCRIPTION.md`.
+
+> **Ce que je ne sais pas, et que vous verrez à l'écran.** Je ne peux pas lire
+> les pages d'OpenAI depuis l'environnement de développement — elles me
+> répondent `403`. Je ne sais donc pas si ce réglage est déjà au bon endroit
+> chez eux ou s'il faut le changer : **regardez-le, ne le supposez pas.** Le
+> réglage porte un nom du genre *data controls* ou *sharing for model
+> improvement*. S'il n'existe pas, ou si le libellé ne dit rien de clair,
+> écrivez-leur avant d'envoyer la voix d'un client.
 
 ### 2. Poser les clés dans les secrets du dépôt
 
@@ -188,10 +196,18 @@ secret**. Quatre secrets à créer :
 **Ne collez jamais une clé dans un fichier du dépôt, ni dans une conversation.**
 Un secret posé ici ne se relit pas, y compris par vous — c'est voulu.
 
-### 3. Recréer l'espace de travail
+### 3. Recréer l'espace de travail — **sur la bonne branche**
 
-Un espace déjà ouvert **ne voit pas** un secret créé après lui. Il faut en
-ouvrir un neuf : `github.com/codespaces`, supprimer l'ancien, relancer.
+Deux pièges d'un coup, et ils donnent le même symptôme :
+
+- Un espace **déjà ouvert** ne voit pas un secret créé après lui.
+- Un espace créé depuis **`main`** ne verra jamais vos clés non plus : c'est la
+  branche `claude/dictee-mode-essai-qqhcsn` qui porte le passage des secrets
+  jusqu'au conteneur. Tant qu'elle n'est pas fusionnée, `main` fige encore
+  `LLM_PROVIDER: dev` en dur.
+
+Donc : `github.com/codespaces`, supprimer l'ancien espace, puis en créer un neuf
+**en choisissant cette branche** dans le sélecteur.
 
 ### 4. Vérifier que c'est bien branché
 

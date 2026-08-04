@@ -166,10 +166,11 @@
 <tr>
 <td><strong>Transcription</strong></td>
 <td><code>platform.openai.com</code></td>
-<td>Idem. <strong>Puis, dans les réglages de l'organisation, refuser le partage de données pour l'entraînement</strong> — ce n'est pas coché par défaut</td>
+<td>Idem. <strong>Puis vérifier, dans les réglages de l'organisation, que le partage de données pour l'entraînement est bien refusé</strong></td>
 </tr>
 </tbody></table></div>
 <p>Ce second geste est le plus important des deux, et celui qu'on oublie. C'est la question 3 de <code>TRANSCRIPTION.md</code>.</p>
+<blockquote><strong>Ce que je ne sais pas, et que vous verrez à l'écran.</strong> Je ne peux pas lire les pages d'OpenAI depuis l'environnement de développement — elles me répondent <code>403</code>. Je ne sais donc pas si ce réglage est déjà au bon endroit chez eux ou s'il faut le changer : <strong>regardez-le, ne le supposez pas.</strong> Le réglage porte un nom du genre *data controls* ou *sharing for model improvement*. S'il n'existe pas, ou si le libellé ne dit rien de clair, écrivez-leur avant d'envoyer la voix d'un client.</blockquote>
 <h3 id="2-poser-les-clés-dans-les-secrets-du-dépôt">2. Poser les clés dans les secrets du dépôt</h3>
 <p>Sur GitHub : <strong>Settings → Secrets and variables → Codespaces → New repository secret</strong>. Quatre secrets à créer :</p>
 <div class="tablewrap"><table><thead><tr>
@@ -194,8 +195,13 @@
 </tr>
 </tbody></table></div>
 <p><strong>Ne collez jamais une clé dans un fichier du dépôt, ni dans une conversation.</strong> Un secret posé ici ne se relit pas, y compris par vous — c'est voulu.</p>
-<h3 id="3-recréer-lespace-de-travail">3. Recréer l'espace de travail</h3>
-<p>Un espace déjà ouvert <strong>ne voit pas</strong> un secret créé après lui. Il faut en ouvrir un neuf : <code>github.com/codespaces</code>, supprimer l'ancien, relancer.</p>
+<h3 id="3-recréer-lespace-de-travail--sur-la-bonne-branche">3. Recréer l'espace de travail — <strong>sur la bonne branche</strong></h3>
+<p>Deux pièges d'un coup, et ils donnent le même symptôme :</p>
+<ul>
+<li>Un espace <strong>déjà ouvert</strong> ne voit pas un secret créé après lui.</li>
+<li>Un espace créé depuis <strong><code>main</code></strong> ne verra jamais vos clés non plus : c'est la branche <code>claude/dictee-mode-essai-qqhcsn</code> qui porte le passage des secrets jusqu'au conteneur. Tant qu'elle n'est pas fusionnée, <code>main</code> fige encore <code>LLM_PROVIDER: dev</code> en dur.</li>
+</ul>
+<p>Donc : <code>github.com/codespaces</code>, supprimer l'ancien espace, puis en créer un neuf <strong>en choisissant cette branche</strong> dans le sélecteur.</p>
 <h3 id="4-vérifier-que-cest-bien-branché">4. Vérifier que c'est bien branché</h3>
 <p>Dictez une note vocale et regardez ce qui revient. Si vous lisez « <strong>[Transcription simulée — … octets reçus]</strong> », c'est que le mode déterministe tourne encore : le secret n'est pas arrivé jusqu'au conteneur, le plus souvent parce que l'espace de travail est l'ancien.</p>
 <p>Vos mots à l'écran : c'est branché.</p>
