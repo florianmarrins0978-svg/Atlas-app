@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-03 · `claude/migrate-app-atlas-zz31ac`
+**Point de reprise :** 2026-08-04 · `claude/migrate-app-atlas-zz31ac`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -55,7 +55,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les treize pièges de ce dépôt
+### Les quatorze pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -128,6 +128,19 @@ site publié à son adresse réelle.
     les requêtes. Avant d'ajouter un champ que l'utilisateur remplit, écrire le
     contrôle qui vérifie qu'il **ressort** quelque part
     (`scripts/test-correction-devis.ts`).
+
+13. **Une règle juste que l'écran n'applique pas ne protège personne.**
+    `lienTransmission()` composait `sms:0679…` correctement, et sa suite était
+    verte ; l'écran, lui, passait par `navigator.share`, qui sur iPhone ne
+    transmet **qu'un texte** — le patron ouvrait Messages avec un champ « À : »
+    vide. Deux leçons à ne pas défaire : ce que la page **propose réellement**
+    se contrôle à l'endroit où le patron appuie (`test-transmission-e2e.ts`), et
+    une adresse portée par un `href` est **lisible dans la page**, donc
+    vérifiable — c'est pour cela que c'est un `<a>` et non un
+    `window.location.href`. Corollaire trouvé par ce contrôle neuf : l'écran
+    lisait la coordonnée dans **l'instantané figé du devis**, si bien qu'une
+    adresse tout juste saisie n'apparaissait jamais. Une donnée que
+    l'utilisateur vient d'écrire se relit sur la **fiche vivante**.
 
 ### Le vocabulaire
 

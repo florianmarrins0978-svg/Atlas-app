@@ -136,9 +136,14 @@ async function main() {
     // Le dernier mètre : sans ce bouton, le lien reste à recopier à la main
     // dans un SMS. C'est le geste que l'application doit épargner, et il a
     // manqué jusqu'ici (docs/A-FAIRE.md §5).
+    //
+    // C'est un LIEN, et non un bouton, depuis le 4 août 2026 : l'adresse
+    // `sms:` doit être portée par un attribut `href` pour être lisible dans la
+    // page. Le défaut d'avant — un message ouvert sans destinataire — ne se
+    // voyait que dans la messagerie du patron, c'est-à-dire trop tard.
     assert.ok(
-      await page.getByRole("button", { name: /Ouvrir le (message|SMS) tout prêt/ }).isVisible(),
-      "le bouton qui ouvre le message tout prêt doit apparaître dès que le lien existe"
+      await page.getByRole("link", { name: /Ouvrir le (message|SMS|e-mail) tout prêt/ }).isVisible(),
+      "le lien qui ouvre le message tout prêt doit apparaître dès que le lien existe"
     );
     // Dire qui envoie, pour que le patron n'attende pas un départ automatique
     // qui n'aura pas lieu tant qu'aucun prestataire n'est raccordé.

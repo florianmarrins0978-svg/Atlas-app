@@ -194,14 +194,46 @@ sera hébergée, une variable d'environnement d'origine publique serait plus sû
 **Décidé.** Faute de fournisseur SMS ou e-mail, le lien du devis est **remis au
 patron** à l'écran, avec un bouton de copie.
 
-**Écarté :** un envoi qui échouerait en silence, ou un `mailto:` — essayé, puis
-abandonné à la demande du patron (commit `5e59131`), parce qu'il ne peut pas
-joindre de pièce et que l'API de partage mobile et `mailto:` sont mutuellement
-exclusifs.
+**Écarté :** un envoi qui échouerait en silence.
+
+**Révisé le 2026-08-04, et c'est une inversion assumée.** Le partage mobile
+(`navigator.share`) était le chemin principal ; il ne l'est plus. Sur iPhone, la
+feuille de partage transmet un **texte** — et rien d'autre : ni numéro, ni
+adresse. Le patron ouvrait donc Messages avec le message tout écrit et un champ
+« À : » vide, alors qu'Atlas connaissait le numéro. Sa phrase : « l'ajout
+automatique du numéro ne fonctionne pas ».
+
+Le chemin principal est désormais une adresse `sms:` ou `mailto:` **portée par
+un `<a href>`**, qui elle emporte le destinataire. Deux raisons au lien plutôt
+qu'à un `window.location.href` :
+
+1. l'adresse devient **lisible dans la page**, donc vérifiable par une suite ;
+   le défaut ci-dessus ne se voyait que dans la messagerie du patron, c'est-à-dire
+   trop tard ;
+2. le navigateur gère lui-même l'appui long, la copie, le retour arrière.
+
+L'objection de 2026-08-01 — « `mailto:` ne peut pas joindre de pièce, et le
+partage l'exclut » — ne tient plus : le message ne porte pas le PDF mais **le
+lien** vers la page du client, qui donne accès au devis complet ; et les deux
+voies coexistent, le partage restant offert en second pour WhatsApp ou Signal.
+
+**Le canal se choisit au dernier moment.** Celui de la fiche du client n'est
+qu'un défaut : le patron change d'avis en envoyant, pas en créant le chantier.
+Si la coordonnée manque, elle se saisit sur cet écran et est conservée sur la
+fiche — c'est le seul endroit de l'application qui permet de la renseigner, et
+renvoyer le patron « sur la fiche du client » l'enverrait vers une porte qui
+n'existe pas.
+
+**Une coordonnée se relit toujours sur la fiche vivante**, jamais dans
+l'instantané figé du devis : l'écran lisait `devis.clientEmail`, si bien qu'une
+adresse tout juste enregistrée n'apparaissait pas. Éprouvé par
+`scripts/test-transmission-e2e.ts`.
 
 **Quand ça change :** point 5 de `docs/A-FAIRE.md`. Le canal de chaque client est
 déjà enregistré, et l'écran d'envoi refuse déjà de partir sans lui. Il ne manque
-que le fournisseur au bout.
+que le fournisseur au bout — et avec lui la seule chose que ce montage ne donne
+pas : Atlas ne sait pas que le message est parti, donc pas de relance
+automatique.
 
 ## 14. Le lanceur de tests doit dire quand le serveur meurt
 

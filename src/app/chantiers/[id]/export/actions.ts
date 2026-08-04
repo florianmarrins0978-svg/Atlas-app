@@ -6,6 +6,7 @@ import { listerPrestations } from "@/server/repositories/prestations";
 import { ingererDevis } from "@/server/documents/ingestion";
 import { preparerEnvoi } from "@/server/repositories/preparation-envoi";
 import { creerEnvoi, DatesProposeesInvalidesError } from "@/server/repositories/envois-devis";
+import { mettreAJourClient } from "@/server/repositories/clients";
 
 export async function chargerDevisAction(chantierId: string) {
   const ctx = await getCurrentCtx();
@@ -133,4 +134,31 @@ export async function envoyerAuClientAction(
     }
     throw err;
   }
+}
+
+/**
+ * Enregistre la coordonnée manquante d'un client, depuis l'écran Devis.
+ *
+ * **Pourquoi ici.** Il n'existe aucun écran de fiche client : le téléphone et
+ * l'e-mail ne se saisissent qu'à la création du chantier. Un patron qui veut
+ * envoyer par e-mail un devis dont le client n'a qu'un numéro était donc
+ * bloqué, sans issue nulle part. La coordonnée est conservée sur la fiche —
+ * pas seulement pour cet envoi — pour ne pas la redemander au chantier suivant.
+ *
+ * Le canal convenu est mis à jour du même geste : c'est bien par là que le
+ * patron a choisi de le joindre.
+ */
+export async function enregistrerCoordonneeClientAction(
+  clientId: string,
+  canal: "sms" | "email",
+  valeur: string
+) {
+  const ctx = await getCurrentCtx();
+  const propre = valeur.trim().slice(0, 200);
+  if (!propre) return { succes: false as const };
+  await mettreAJourClient(ctx, clientId, {
+    canalCommunication: canal,
+    ...(canal === "sms" ? { telephone: propre } : { email: propre }),
+  });
+  return { succes: true as const };
 }
