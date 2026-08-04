@@ -267,6 +267,10 @@ export function dureeEnDemiJournees(texte: string | null | undefined): number | 
 export function libelleDuree(demiJournees: number): string {
   if (demiJournees === 1) return "une demi-journée";
   if (demiJournees === 2) return "une journée";
+  // « une journée et demie », pas « 1 jours et demi » : le cas d'une journée
+  // et demie tombait dans la règle du pluriel et produisait une faute
+  // d'accord, à côté d'un « 1 » qui n'a rien à faire là.
+  if (demiJournees === 3) return "une journée et demie";
   if (demiJournees % 2 === 0) return `${demiJournees / 2} jours`;
   return `${Math.floor(demiJournees / 2)} jours et demi`;
 }

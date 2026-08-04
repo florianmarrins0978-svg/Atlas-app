@@ -7,6 +7,20 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-04
+
+### « 1 journée », pas « 1 jour »
+
+Le patron, sur capture : « ce chantier va durer **1 journée**, pas jour ». Il a
+raison — on dit « ça prend une journée », jamais « ça prend un jour ». La
+première entrée de la liste des durées est corrigée.
+
+Une seconde faute dormait à côté, jamais vue à l'écran parce qu'elle ne
+s'affiche que sur une journée et demie : `libelleDuree(3)` rendait « 1 jours et
+demi » — deux fautes en trois mots. Elle dit maintenant « une journée et demie ».
+
+---
+
 ## 2026-08-03
 
 ### Le message du client arrivait dans le vide — et il n'avait que deux boutons
