@@ -50,6 +50,42 @@ Une seconde faute dormait à côté, jamais vue à l'écran parce qu'elle ne
 s'affiche que sur une journée et demie : `libelleDuree(3)` rendait « 1 jours et
 demi » — deux fautes en trois mots. Elle dit maintenant « une journée et demie ».
 
+### Le même défaut survivait sur un numéro tel qu'il est saisi
+
+Corriger l'écran ne suffisait pas. La fiche du client enregistre le numéro **tel
+qu'il est écrit** — « 06 12 34 56 78 », espaces compris, puisque c'est la forme
+que propose le champ. Ces espaces partaient tels quels dans l'adresse `sms:`, où
+ils deviennent `%20` : l'application de messagerie n'y reconnaissait plus un
+numéro et rouvrait un message **sans destinataire**, exactement le défaut qu'on
+venait de traiter.
+
+Aucun contrôle ne pouvait le voir, ni les anciens ni le neuf : tous employaient
+un numéro collé (« 0679984514 »), sur lequel il est invisible. Les nouveaux cas
+emploient la forme réelle — espaces, points, tirets — et ont été confrontés au
+défaut réintroduit pour vérifier qu'ils savent échouer.
+
+*La leçon, à côté de celle du jour :* un contrôle qui n'emploie pas la donnée
+**sous la forme où l'utilisateur la saisit** ne prouve rien de ce qui lui
+arrive.
+
+### Il n'y aura pas de fournisseur SMS ni d'e-mail — décision du patron
+
+Ses mots : *« ça sera plus rassurant, même pour les patrons, de passer par leur
+e-mail et par leur numéro de téléphone. »* Ce n'est donc plus un pis-aller en
+attendant un prestataire : c'est le chemin retenu.
+
+Le point 5 de `docs/A-FAIRE.md` cesse de bloquer — ne restent que des conforts
+(relance automatique, accusé de réception, code SMS) — et la décision **allège**
+les points 2 et 3 : aucune donnée de client ne transitant chez un tiers, il n'y
+a aucun sous-traitant de plus à autoriser ni à faire contractualiser.
+
+Écartée du même coup, et pour de bon : **joindre le PDF au message**. Ni `sms:`
+ni `mailto:` ne portent de pièce jointe, et l'API de partage qui le peut n'a pas
+de destinataire. Surtout, ce serait nuisible — chez Atlas le devis est **la
+page**, pas le PDF : un client qui répond sur la pièce jointe ne choisit pas sa
+date et ne laisse aucune trace d'acceptation. Voir `ARCHITECTURE.md` §13.
+
+
 ---
 
 ## 2026-08-03

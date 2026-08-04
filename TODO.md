@@ -20,7 +20,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 | 2 | Contrat de sous-traitance rédigé | Remplacer les canevas sans valeur par les textes réels |
 | 3 | Hébergement européen choisi | Déployer — **sans quoi personne ne peut se servir de l'application** |
 | 4 | Société constituée, assurance souscrite | Rien côté code |
-| 5 | Fournisseur SMS et e-mail | L'envoi, la trace, la relance automatique, le départ de la facture |
+| 5 | ~~Fournisseur SMS et e-mail~~ — **tranché le 2026-08-04 : il n'y en aura pas** | Rien de bloqué. Le devis part de la messagerie du patron (`ARCHITECTURE.md` §13). Ne restent suspendus qu'aux conforts : relance automatique, accusé de réception, code SMS |
 
 ---
 
@@ -45,13 +45,17 @@ acceptation.
 
 L'acceptation conserve déjà l'empreinte du PDF, l'horodatage, l'adresse IP et le
 canal (`docs/AGENT.md` §5, ligne « Acceptation tracée »). Ce qui manque est un
-code à usage unique envoyé au client au moment où il accepte — ce qui **dépend du
-point 5 ci-dessus**.
+code à usage unique envoyé au client au moment où il accepte.
+
+**Sans objet en l'état** : le patron a écarté tout fournisseur d'envoi
+(`ARCHITECTURE.md` §13), et un code qu'il devrait transmettre lui-même
+n'apporterait rien. À rouvrir seulement si un fournisseur est un jour souscrit.
 
 ### 3. Relance automatique d'un devis sans réponse
 
 L'état « à relancer » existe, s'affiche, et le lien reste proposé pour un renvoi
-manuel. **L'automatiser suppose un fournisseur d'envoi** — point 5 ci-dessus.
+manuel. **Sans objet en l'état**, pour la même raison qu'au point 2 : la relance
+part de la messagerie du patron, comme l'envoi.
 
 ### 4. L'assistant répond en JSON brut
 
