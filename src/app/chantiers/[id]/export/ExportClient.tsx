@@ -19,6 +19,7 @@ const formatEuros = new Intl.NumberFormat("fr-FR", {
 export default function ExportClient({
   chantierId,
   devisId,
+  clientId,
   chantierNom,
   adresseChantier,
   clientNom,
@@ -36,6 +37,8 @@ export default function ExportClient({
 }: {
   chantierId: string;
   devisId: string;
+  /** Nécessaire pour compléter une coordonnée manquante depuis cet écran. */
+  clientId: string | null;
   chantierNom: string;
   adresseChantier: string;
   clientNom: string;
@@ -193,10 +196,12 @@ export default function ExportClient({
                     l'expédie depuis sa propre boîte. Voir TransmettreAuClient
                     pour ce que ce chemin donne et ce qu'il ne donne pas. */}
                 <TransmettreAuClient
+                  clientId={clientId}
                   clientNom={clientNom}
                   entrepriseNom={entrepriseNom}
                   canal={canalClient}
-                  destinataire={canalClient === "email" ? clientEmail : clientTelephone}
+                  telephone={clientTelephone}
+                  email={clientEmail}
                   lien={lienComplet(lienAMontrer)}
                 />
               </>

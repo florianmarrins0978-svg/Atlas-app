@@ -74,11 +74,20 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
         <ExportClient
           chantierId={id}
           devisId={devisRow.id}
+          clientId={chantier.clientId ?? null}
           chantierNom={chantier.nom}
           adresseChantier={chantier.adresseChantier ?? "Adresse non renseignée"}
           clientNom={devisRow.clientNom ?? "Client non renseigné"}
-          clientTelephone={devisRow.clientTelephone ?? ""}
-          clientEmail={devisRow.clientEmail ?? ""}
+          // Les coordonnées VIVANTES, pas l'instantané figé dans le devis.
+          //
+          // Le devis garde volontairement celles du jour où il a été établi :
+          // c'est un document, il doit dire ce qui a été proposé. Mais cet
+          // écran sert à JOINDRE le client aujourd'hui. Confondre les deux
+          // faisait qu'une adresse ajoutée après coup n'apparaissait jamais —
+          // le patron la saisissait, elle était bien enregistrée, et l'écran
+          // continuait d'afficher le vide. Trouvé par `test-transmission-e2e`.
+          clientTelephone={client?.telephone ?? devisRow.clientTelephone ?? ""}
+          clientEmail={client?.email ?? devisRow.clientEmail ?? ""}
           entrepriseNom={devisRow.entrepriseNom ?? "Votre entreprise"}
           canalClient={canalClient}
           prestations={prestations.map((p) => p.libelle)}

@@ -211,7 +211,10 @@ cas("les durées se disent en français", () => {
   assert.equal(libelleDuree(1), "une demi-journée");
   assert.equal(libelleDuree(2), "une journée");
   assert.equal(libelleDuree(4), "2 jours");
-  assert.equal(libelleDuree(3), "1 jours et demi");
+  // « une journée et demie » : le pluriel générique produisait « 1 jours et
+  // demi », deux fautes dans trois mots.
+  assert.equal(libelleDuree(3), "une journée et demie");
+  assert.equal(libelleDuree(5), "2 jours et demi");
 });
 
 if (echecs > 0) {

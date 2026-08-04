@@ -7,6 +7,51 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-04
+
+### Le SMS partait sans destinataire, et le canal ne se rediscutait plus
+
+Le patron, sur deux captures : « l'ajout automatique du numéro ne fonctionne
+pas », et « si je change d'avis et que je veux l'envoyer par e-mail, je ne peux
+pas revenir au choix SMS/e-mail ».
+
+**Le premier défaut ne pouvait être vu par aucun contrôle existant.** Le bouton
+« Ouvrir le SMS tout prêt » passait par `navigator.share`. Sur iPhone, la
+feuille de partage transmet un **texte** — et rien d'autre : ni numéro, ni
+adresse. Le patron arrivait donc dans Messages avec le message tout écrit et un
+champ « À : » vide, à retaper un numéro qu'Atlas connaissait. La fonction qui
+compose `sms:0679…` était juste et éprouvée ; c'est l'écran qui ne s'en servait
+pas. *Une règle juste que personne n'applique ne protège personne.*
+
+L'adresse est désormais portée par un **vrai lien** (`<a href="sms:…">`), donc
+lisible dans la page — c'est ce qui la rend vérifiable, et c'est le seul moyen
+qu'un contrôle voie ce que la messagerie du patron voyait seule, trop tard. Le
+partage reste offert à part, pour WhatsApp ou Signal.
+
+**Le second se corrige au même endroit.** Le canal venait de la fiche du client
+et ne se rediscutait plus au moment d'envoyer. Les deux voies sont maintenant
+offertes sur l'écran « Devis prêt », et si la coordonnée manque, elle **se
+saisit sur place** puis est conservée sur la fiche : aucun autre écran ne
+permet de la renseigner, et renvoyer le patron « sur la fiche du client »
+l'enverrait vers une porte qui n'existe pas.
+
+**Un troisième défaut est tombé au passage**, trouvé par le contrôle neuf :
+l'écran lisait la coordonnée dans **l'instantané figé du devis**, si bien
+qu'une adresse tout juste enregistrée n'apparaissait jamais. Il lit maintenant
+la fiche vivante du client.
+
+### « 1 journée », pas « 1 jour »
+
+Le patron, sur capture : « ce chantier va durer **1 journée**, pas jour ». Il a
+raison — on dit « ça prend une journée », jamais « ça prend un jour ». La
+première entrée de la liste des durées est corrigée.
+
+Une seconde faute dormait à côté, jamais vue à l'écran parce qu'elle ne
+s'affiche que sur une journée et demie : `libelleDuree(3)` rendait « 1 jours et
+demi » — deux fautes en trois mots. Elle dit maintenant « une journée et demie ».
+
+---
+
 ## 2026-08-03
 
 ### Le message du client arrivait dans le vide — et il n'avait que deux boutons

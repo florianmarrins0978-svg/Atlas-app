@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-03 · branche `claude/migrate-app-atlas-zz31ac`
+**Dernière mise à jour :** 2026-08-04 · branche `claude/migrate-app-atlas-zz31ac`
 · dernière migration `drizzle/0020_correction_demandee.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -63,6 +63,7 @@ seule avec quinze outils.
 | Planning en demi-journées et nombre d'équipes (le client ne voit que la date) | `src/server/disponibilites.ts` + `drizzle/0019_creneaux_et_equipes.sql` |
 | Correction demandée par le client, avec son message porté au patron | `src/app/devis/[jeton]/formulaire.tsx` + `src/lib/etat-envoi.ts` |
 | Écrire le devis soi-même, sans passer par la proposition de prix | `src/app/chantiers/[id]/informations/InformationsClient.tsx` → `prix?saisie=manuelle` |
+| Transmission au client : messagerie ouverte **au bon destinataire**, canal changeable, coordonnée saisissable sur place | `src/app/chantiers/[id]/export/TransmettreAuClient.tsx` |
 
 ### Conformité RGPD
 
@@ -128,8 +129,11 @@ patron :
    candidats et le partage des tâches sont détaillés dans `docs/A-FAIRE.md` §3.
 4. Constituer une société et souscrire une assurance cyber.
 5. Brancher un fournisseur SMS et e-mail — **sans lui, rien ne quitte
-   l'application** : le lien du devis est remis au patron, qui le transmet
-   lui-même, et la facture attend le même branchement.
+   l'application** : le patron ouvre lui-même sa messagerie, message et
+   destinataire déjà remplis, et appuie sur envoyer. Le geste manuel est réduit
+   à celui-là, mais il reste ; et comme Atlas ignore que le message est parti,
+   la relance à sept jours ne peut pas s'automatiser. La facture attend le même
+   branchement.
 
 ---
 

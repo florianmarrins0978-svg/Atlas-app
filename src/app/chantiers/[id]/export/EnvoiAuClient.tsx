@@ -38,7 +38,10 @@ const DUREES: { demiJournees: number; libelle: string }[] = [
   { demiJournees: 1, libelle: "½ journée" },
   ...Array.from({ length: DUREE_MAX_JOURS }, (_, i) => ({
     demiJournees: (i + 1) * 2,
-    libelle: i === 0 ? "1 jour" : `${i + 1} jours`,
+    // « 1 journée », pas « 1 jour » : c'est ainsi qu'on dit la durée d'un
+    // chantier — « ça prend une journée », jamais « ça prend un jour ».
+    // Correction demandée par le patron le 2026-08-04, sur capture.
+    libelle: i === 0 ? "1 journée" : `${i + 1} jours`,
   })),
 ];
 
