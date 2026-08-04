@@ -128,12 +128,14 @@ patron :
    produit : voir `docs/ESSAYER.md`. La marche à suivre, les fournisseurs
    candidats et le partage des tâches sont détaillés dans `docs/A-FAIRE.md` §3.
 4. Constituer une société et souscrire une assurance cyber.
-5. Brancher un fournisseur SMS et e-mail — **sans lui, rien ne quitte
-   l'application** : le patron ouvre lui-même sa messagerie, message et
-   destinataire déjà remplis, et appuie sur envoyer. Le geste manuel est réduit
-   à celui-là, mais il reste ; et comme Atlas ignore que le message est parti,
-   la relance à sept jours ne peut pas s'automatiser. La facture attend le même
-   branchement.
+5. ~~Brancher un fournisseur SMS et e-mail~~ — **tranché le 2026-08-04 : il n'y
+   en aura pas** (`ARCHITECTURE.md` §13). Le patron ouvre lui-même sa
+   messagerie, message et destinataire déjà remplis, et appuie sur envoyer.
+   Ce point ne bloque donc plus, et il **allège** les points 2 et 3 : aucune
+   donnée de client ne transitant chez un tiers, il n'y a aucun sous-traitant de
+   plus à autoriser. Restent hors de portée, en conforts et non en blocages :
+   relance automatique à sept jours, départ automatique de la facture, accusé de
+   réception, code SMS à l'acceptation.
 
 ---
 

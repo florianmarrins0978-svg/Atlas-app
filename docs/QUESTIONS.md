@@ -133,6 +133,21 @@ l'adresse copiée dans le presse-papier pour n'avoir qu'à la coller.
 
 Ce compromis disparaît dans l'application native (question 2).
 
+### Mise à jour du 2026-08-03 : dans Atlas, l'arbitrage s'inverse
+
+Ce qui précède valait pour le site Arborea, où **le PDF était la livraison**.
+Dans Atlas, la livraison est **la page du client** — c'est là qu'il choisit sa
+date, et ce choix fait tourner la planification et la facture.
+
+Le tableau ci-dessus reste exact, mais la case qui compte a changé : **c'est le
+destinataire prérempli qu'on garde**, et le PDF voyage au bout du lien. Le
+patron a tranché en ce sens : *« il faut que ça préremplisse automatiquement
+soit le numéro de téléphone du client, soit l'adresse e-mail. »*
+
+Et joindre le PDF serait désormais **nuisible** : le client le lirait et
+répondrait « c'est bon » par retour de message, sans ouvrir la page — donc sans
+date choisie et sans trace d'acceptation. Détail dans `ARCHITECTURE.md` §13.
+
 ---
 
 ## 4. Si l'application se fait pirater, qu'est-ce que je risque ?
@@ -393,9 +408,11 @@ finir le produit, mais à le sortir.
 
 ### La réserve qui vaut dans les deux cas
 
-**Rien ne part réellement chez le client**, ni depuis le banc d'essai ni depuis
-un hébergement : aucun fournisseur de SMS ni d'e-mail n'est branché. C'est le
-point 5 de [`A-FAIRE.md`](A-FAIRE.md), et il ne se règle pas en hébergeant.
+**Le devis part de votre messagerie, pas de l'application** — ni depuis le banc
+d'essai ni depuis un hébergement. Le bouton ouvre votre SMS ou votre e-mail avec
+le destinataire et le texte déjà remplis, et vous appuyez sur Envoyer. Décidé le
+2026-08-03 ; le détail est au point 5 de [`A-FAIRE.md`](A-FAIRE.md), et cela ne
+se règle pas non plus en hébergeant.
 
 ---
 

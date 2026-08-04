@@ -38,9 +38,16 @@ Détail dans `CHANGELOG.md`, état complet dans `PROJECT_STATE.md`.
 l'**agenda Google** — et encore, partiellement : la connexion du compte demande
 des identifiants que le patron doit fournir.
 
-**Avant de proposer autre chose,** lire `docs/A-FAIRE.md` : cinq points bloquent
-un usage réel et **aucun ne s'avance en codant**. Ne pas les redécouvrir ni les
-reposer au patron : ils sont écrits, avec leur coût et leur propriétaire.
+**Avant de proposer autre chose,** lire `docs/A-FAIRE.md` : **quatre** points
+bloquent un usage réel et **aucun ne s'avance en codant**. Ne pas les
+redécouvrir ni les reposer au patron : ils sont écrits, avec leur coût et leur
+propriétaire.
+
+Le cinquième — brancher un fournisseur SMS et e-mail — a été **tranché le
+2026-08-04 : il n'y en aura pas.** Le devis part de la messagerie du patron.
+Lire `ARCHITECTURE.md` §13 avant de proposer quoi que ce soit sur l'envoi : deux
+choses y sont écartées **pour de bon**, un prestataire d'envoi et la pièce
+jointe au message. Les reproposer serait rouvrir un débat déjà clos.
 
 ---
 
