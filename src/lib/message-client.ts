@@ -76,8 +76,16 @@ export function lienTransmission(params: {
   const cible = destinataire?.trim() ?? "";
 
   if (canal === "sms") {
-    // L'objet n'existe pas en SMS : tout tient dans le corps.
-    return `sms:${cible}?&body=${encodeURIComponent(message.corps)}`;
+    // Le numéro est saisi à la main sur la fiche du client, donc espacé :
+    // « 06 12 34 56 78 » — c'est même la forme que propose le champ. Laissé
+    // tel quel, chaque espace part en %20 dans l'adresse et l'application de
+    // messagerie n'y reconnaît plus un numéro : elle ouvre un message SANS
+    // destinataire, sans rien signaler. Le patron le découvre dans Messages,
+    // c'est-à-dire trop tard.
+    //
+    // L'objet, lui, n'existe pas en SMS : tout tient dans le corps.
+    const numero = cible.replace(/[\s.()-]/g, "");
+    return `sms:${numero}?&body=${encodeURIComponent(message.corps)}`;
   }
 
   return (

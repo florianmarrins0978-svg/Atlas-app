@@ -229,11 +229,49 @@ l'instantané figé du devis : l'écran lisait `devis.clientEmail`, si bien qu'u
 adresse tout juste enregistrée n'apparaissait pas. Éprouvé par
 `scripts/test-transmission-e2e.ts`.
 
-**Quand ça change :** point 5 de `docs/A-FAIRE.md`. Le canal de chaque client est
-déjà enregistré, et l'écran d'envoi refuse déjà de partir sans lui. Il ne manque
-que le fournisseur au bout — et avec lui la seule chose que ce montage ne donne
-pas : Atlas ne sait pas que le message est parti, donc pas de relance
-automatique.
+**Le numéro est compacté avant d'entrer dans l'adresse.** La fiche enregistre
+« 06 12 34 56 78 » — c'est la forme que propose le champ de saisie. Laissés tels
+quels, ces espaces deviennent `%20` et l'application de messagerie n'y reconnaît
+plus un numéro : elle rouvre un message **sans destinataire**, c'est-à-dire
+exactement le défaut ci-dessus, après l'avoir corrigé à l'écran. Aucun contrôle
+ne le voyait, tous employant un numéro collé. Éprouvé par
+`scripts/test-message-client.ts`, sur la forme réelle — espaces, points, tirets.
+
+> *Corollaire, valable au-delà de ce cas :* un contrôle qui n'emploie pas la
+> donnée **sous la forme où l'utilisateur la saisit** ne prouve rien de ce qui
+> lui arrive.
+
+**Et il n'y aura pas de fournisseur d'envoi. Décidé par le patron le
+2026-08-04**, contre ce qui était prévu jusque-là : *« ça sera plus rassurant,
+même pour les patrons, de passer par leur e-mail et par leur numéro de
+téléphone. »* Ce montage n'est donc plus un pis-aller en attendant un
+prestataire — c'est le chemin retenu. Quatre raisons, dans l'ordre où elles
+pèsent :
+
+- le client **reconnaît l'expéditeur** et peut répondre directement ; un
+  expéditeur commercial se lit comme de la publicité ;
+- **aucune donnée de client ne transite chez un tiers** : pas de sous-traitant
+  ultérieur à autoriser, à lister dans `docs/RGPD.md` §3, ni à faire relire par
+  le juriste du point 2 de `docs/A-FAIRE.md`. Cette décision **allège** deux
+  autres points bloquants ;
+- ni abonnement, ni nom de domaine, ni configuration anti-usurpation ;
+- rien ne part sans un geste du patron, ce qui est déjà la règle du produit.
+
+**Écarté du même coup, et pour de bon : joindre le PDF au message.** Impossible
+d'abord — ni `sms:` ni `mailto:` ne portent de pièce jointe, et l'API de partage
+qui, elle, le peut n'a pas de destinataire (`docs/QUESTIONS.md` §3). Indésirable
+ensuite, et c'est la vraie raison : **chez Atlas le devis est la page, pas le
+PDF**. Le client qui reçoit une pièce jointe la lit et répond « d'accord » par
+retour de message, sans jamais ouvrir la page — donc sans choisir sa date, sans
+empreinte du devis accepté, sans horodatage ni adresse IP. Tout l'aval du
+parcours retombe à la saisie manuelle. La pièce jointe ne complète pas le lien :
+elle lui fait concurrence.
+
+**Ce qui reste au point 5 de `docs/A-FAIRE.md`, qui ne bloque plus :** Atlas ne
+sait pas que le message est parti, ni s'il a été délivré. Donc pas de relance
+automatique à sept jours, pas de départ automatique de la facture, pas de code
+SMS à usage unique à l'acceptation. Ce sont des conforts, à rouvrir seulement si
+le volume les justifie un jour.
 
 ## 14. Le lanceur de tests doit dire quand le serveur meurt
 
