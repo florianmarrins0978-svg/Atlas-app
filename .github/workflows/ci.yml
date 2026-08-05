@@ -5,6 +5,22 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Lancement à la main, sur n'importe quelle branche.
+  #
+  # Pourquoi : une *pull request* ouverte par un agent ne déclenche PAS les
+  # workflows — GitHub refuse de chaîner un événement produit par un jeton
+  # d'automatisation. Constaté sur la PR #19, restée sans la moindre exécution
+  # alors que les autres PR du dépôt étaient vertes. La batterie qui ne peut pas
+  # tourner dans l'environnement de l'agent (ni PostgreSQL, ni Redis, ni Docker)
+  # ne tournait donc nulle part, et « c'est la CI qui vérifiera » était faux.
+  #
+  # Onglet Actions → CI → « Run workflow » → choisir la branche.
+  workflow_dispatch:
+    inputs:
+      branche:
+        description: "Pour mémoire — la branche se choisit dans le menu au-dessus"
+        required: false
+        default: ""
 
 jobs:
   ci:
