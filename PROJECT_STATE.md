@@ -111,16 +111,20 @@ Voir `TODO.md` pour le détail et l'ordre.
   pas ; le reste (lecture des disponibilités, écriture de l'intervention) est
   codable.
 - **Code SMS en renfort de l'acceptation** — l'empreinte, l'horodatage et
-  l'adresse sont déjà conservés.
+  l'adresse sont déjà conservés. **Sans objet en l'état**, pour la même raison.
 - **Relance automatique** — l'état « à relancer » existe et s'affiche, le lien
-  reste proposé pour un renvoi ; l'automatiser suppose un fournisseur d'envoi.
+  reste proposé pour un renvoi. **Sans objet en l'état** : aucun fournisseur
+  d'envoi ne sera branché (`ARCHITECTURE.md` §13), la relance part de la
+  messagerie du patron comme l'envoi.
 
 ---
 
 ## Ce qui bloque, et qui n'avancera pas en codant
 
-Cinq points, tous dans **`docs/A-FAIRE.md`**, tous en attente d'une décision du
-patron :
+**Quatre** points, tous dans **`docs/A-FAIRE.md`**, tous en attente d'une
+décision du patron. Le cinquième — le fournisseur d'envoi — a été tranché le
+2026-08-04 : il n'y en aura pas, et il est laissé barré ci-dessous pour éviter
+qu'on le rouvre.
 
 1. Choisir les deux fournisseurs d'IA définitifs (transcription, raisonnement).
    **Ce point a un effet visible tous les jours** : sans modèle, la dictée est
