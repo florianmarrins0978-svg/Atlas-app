@@ -14,12 +14,11 @@ async function main() {
   await page.click('button[type="submit"]');
   await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
 
-  const nomUnique = `Chantier devis e2e ${Date.now()}`;
+  const client = `M. Bernard ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="Rénovation salle de bain"]', nomUnique);
   // Client et coordonnée : sans canal d'envoi convenu, l'écran devis refuse
   // — à juste titre — de partir chez le client.
-  await page.fill('input[placeholder="M. Bernard"]', "M. Bernard");
+  await page.fill('input[placeholder="M. Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });

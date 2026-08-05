@@ -39,6 +39,17 @@ export function jourNumerique(iso: string): string {
   return `${j}/${m}/${a}`;
 }
 
+/**
+ * Le jour d'un instant, au format « AAAA-MM-JJ » (UTC).
+ *
+ * Une seule définition pour tout le dépôt : les dates d'émission, d'échéance et
+ * de création doivent toutes désigner le même jour, sans quoi une facture
+ * pourrait porter une date et le relevé de TVA en compter une autre.
+ */
+export function jourIso(instant: Date): string {
+  return instant.toISOString().slice(0, 10);
+}
+
 /** Délai légal de rétractation pour une acceptation à distance. */
 export const DELAI_RETRACTATION_JOURS = 14;
 

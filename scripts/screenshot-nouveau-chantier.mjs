@@ -19,7 +19,7 @@ await page.goto("http://localhost:3000/design/nouveau-chantier", { waitUntil: "n
 await page.screenshot({ path: `${OUT}/01-nom-vide-bouton-desactive.png` });
 
 // État 2 — nom renseigné, bouton actif
-await page.fill('input[placeholder="Rénovation salle de bain"]', "Rénovation salle de bain");
+await page.fill('input[placeholder="M. Bernard"]', "Rénovation salle de bain");
 await page.waitForTimeout(400); // laisse la transition CSS du bouton se stabiliser
 await page.screenshot({ path: `${OUT}/02-nom-rempli-bouton-actif.png` });
 

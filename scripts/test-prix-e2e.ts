@@ -21,7 +21,7 @@ async function main() {
 
   const nomUnique = `Chantier prix e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="Rénovation salle de bain"]', nomUnique);
+  await page.fill('input[placeholder="M. Bernard"]', nomUnique);
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const prixUrl = `${page.url()}/prix`;

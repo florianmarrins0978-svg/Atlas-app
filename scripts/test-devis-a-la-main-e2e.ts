@@ -35,10 +35,9 @@ async function main() {
   await page.click('button[type="submit"]');
   await page.waitForURL(`${BASE}/`, { timeout: 15000 });
 
-  const nom = `Devis à la main ${Date.now()}`;
+  const client = `M. Durand ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="Rénovation salle de bain"]', nom);
-  await page.fill('input[placeholder="M. Bernard"]', "M. Durand");
+  await page.fill('input[placeholder="M. Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });

@@ -63,7 +63,6 @@ async function seConnecter(context: BrowserContext): Promise<Page> {
 async function chantierRealise(page: Page, suffixe: string) {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   const nom = `Facture e2e ${suffixe} ${Date.now()}`;
-  await page.fill('input[placeholder="Rénovation salle de bain"]', nom);
   await page.fill('input[placeholder="M. Bernard"]', "M. Bernard");
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
   await page.click('button:has-text("Créer le chantier")');

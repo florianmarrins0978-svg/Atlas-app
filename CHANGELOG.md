@@ -7,6 +7,40 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-05
+
+### La case « Nom du chantier » a disparu
+
+Sa demande, en une phrase : « dans la catégorie chantier, retire la case nom du
+chantier ». C'était **le seul champ obligatoire** de la création, et le seul qui
+lui demandait d'inventer quelque chose. Un élagueur ne baptise pas ses
+chantiers : il dit « chez M. Bernard » ou « rue des Lilas ». Lui faire trouver
+un titre avant de pouvoir commencer, c'était une porte fermée à clé devant une
+maison ouverte.
+
+**Plus rien n'est obligatoire.** Le nom se déduit de ce qu'il a donné, dans
+l'ordre où il en parle :
+
+| Ce qu'il saisit | Le chantier s'appelle |
+|---|---|
+| Un client | « Chez M. Bernard » |
+| Une adresse seule | « 12 rue des Lilas, Nantes » |
+| Rien du tout | « Chantier du mercredi 5 août » |
+
+**Ce n'est pas inventer une donnée** (`CLAUDE.md` §4) : rien n'est fabriqué,
+tout est repris de sa saisie — et la date, à défaut, reste vraie. Ce nom est une
+**étiquette** (ce qui s'affiche en tête de la fiche et dans la liste), jamais
+une information sur le chantier ; il ne figure pas sur le devis du client, qui
+porte l'adresse. Un contrôle tient l'invariant : *aucun mot du nom qui n'ait été
+saisi*.
+
+La règle vit dans une fonction pure appliquée **côté serveur**, pour qu'un appel
+direct produise le même nom que le formulaire. Les 32 suites qui remplissaient
+ce champ ont été reprises : elles identifient désormais leur chantier par son
+client.
+
+---
+
 ## 2026-08-04 (soir)
 
 ### Il éprouvait le code de la veille — et rien ne le lui disait

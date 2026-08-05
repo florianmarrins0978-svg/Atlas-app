@@ -27,7 +27,7 @@ async function main() {
   // --- Crée un nouveau chantier réel et vérifie que l'indicateur se met à jour ---
   const nomUnique = `Chantier dashboard e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="Rénovation salle de bain"]', nomUnique);
+  await page.fill('input[placeholder="M. Bernard"]', nomUnique);
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
 

@@ -45,7 +45,6 @@ async function creerChantierFacturable(
   }
 ) {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="Rénovation salle de bain"]', `Envoi e2e ${suffixe} ${Date.now()}`);
   if (client.nom) await page.fill('input[placeholder="M. Bernard"]', client.nom);
   if (client.telephone) await page.fill('input[placeholder="06 12 34 56 78"]', client.telephone);
   if (client.email) await page.fill('input[placeholder="bernard@exemple.fr"]', client.email);

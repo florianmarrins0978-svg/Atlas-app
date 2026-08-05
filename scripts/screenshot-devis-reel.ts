@@ -12,7 +12,6 @@ async function main() {
   const page = await context.newPage();
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="Rénovation salle de bain"]', `Chantier capture devis ${Date.now()}`);
   await page.fill('input[placeholder="M. Bernard"]', "M. Capture");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
