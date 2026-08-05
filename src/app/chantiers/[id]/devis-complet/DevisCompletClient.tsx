@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import { jourNumerique } from "@/lib/jour";
 import {
@@ -14,28 +14,27 @@ import {
   majEnTeteDevisAction,
 } from "./actions";
 
-// **Le devis, en entier.**
+// **Le devis, seul sur sa page — et à l'image du papier.**
 //
-// Le patron, le 5 août 2026 : « je veux que lorsqu'on clique sur rédiger à la
-// main, ça ouvre le fichier devis, le vrai ! Le fichier en entier, pas juste
-// les lignes pour remplir les infos et les prix. »
+// Le patron, le 5 août 2026 : « une page où il n'y a QUE le devis, celui
+// d'Arborea. C'est pour les patrons qui auront envie de le remplir à la main,
+// qui n'ont pas envie d'utiliser la note vocale. »
 //
-// Il avait raison sur le fond : l'écran Prix ne montrait que des lignes et des
-// montants. Or ce qu'il envoie à son client, c'est un **document** — son
-// en-tête, ses coordonnées, celles du client, le tableau, les totaux, ses
-// conditions, le cadre de signature. Écrire un devis à la main, c'est écrire ce
-// document-là, pas remplir un tableur.
+// La mise en page reprend `appli/devis-modele.html`, qu'il avait construit
+// lui-même : en-tête avec les références à droite, titre, émetteur et client
+// côte à côte, tableau avec ses colonnes, totaux alignés à droite, conditions,
+// cadre de signature. C'est aussi ce que le PDF imprime (`ARCHITECTURE.md`
+// §16) — ce qui est à l'écran est ce que son client recevra.
 //
-// Cette page reprend `appli/devis-modele.html` — le modèle qu'il avait
-// construit lui-même pour Arborea — champ pour champ et dans le même ordre.
-// C'est aussi celui que reproduit le PDF (`ARCHITECTURE.md` §16) : ce qu'il
-// voit ici est ce que son client recevra.
+// **Une feuille, pas un formulaire.** Les champs n'ont ni cadre ni fond tant
+// qu'on n'y touche pas : ils se soulignent au survol et à la saisie. Un devis
+// couvert de boîtes grises ressemble à un écran de saisie, et c'est
+// précisément ce qu'il ne voulait plus.
 //
-// **Ce qui change par rapport au modèle d'origine.** Celui-ci gardait tout dans
-// le navigateur (`localStorage`). Ici chaque champ part vers SA source — son
-// entreprise, la fiche du client, le chantier, les lignes de prix — de sorte
-// que la facture de fin de chantier et le relevé de TVA continuent d'en
-// découler. Un beau document dont Atlas ne saurait rien serait une impasse.
+// **Ce qui change par rapport au fichier d'origine** : celui-ci gardait tout
+// dans le navigateur (`localStorage`). Ici chaque champ part vers SA source —
+// l'entreprise, la fiche du client, le chantier, les lignes de prix — pour que
+// la facture de fin de chantier et le relevé de TVA continuent d'en découler.
 
 type Ligne = { id: string; libelle: string; quantite: string; prixUnitaire: string; montant: string };
 
@@ -61,8 +60,10 @@ export default function DevisCompletClient(props: Props) {
   const [emetteur, setEmetteur] = useState(props.emetteur);
   const [client, setClient] = useState(props.client);
   const [adresseChantier, setAdresseChantier] = useState(props.adresseChantier);
-  const [lignes, setLignes] = useState<Ligne[]>(props.lignesInitiales);
-  const [tauxTva, setTauxTva] = useState(props.tauxTva);
+  const [lignes, setLignes] = useState<Ligne[]>(
+    props.lignesInitiales.map((l) => ({ ...l, quantite: sansZerosInutiles(l.quantite), prixUnitaire: sansZerosInutiles(l.prixUnitaire) }))
+  );
+  const [tauxTva, setTauxTva] = useState(sansZerosInutiles(props.tauxTva));
   const [conditions, setConditions] = useState(props.conditionsPaiement);
 
   // Les totaux se recalculent sous ses yeux, à chaque frappe : un devis dont le
@@ -84,10 +85,7 @@ export default function DevisCompletClient(props: Props) {
 
   async function ajouter() {
     const creee = await ajouterLigneAction(props.chantierId);
-    setLignes((cur) => [
-      ...cur,
-      { id: creee.id, libelle: "", quantite: "1", prixUnitaire: "0.00", montant: "0.00" },
-    ]);
+    setLignes((cur) => [...cur, { id: creee.id, libelle: "", quantite: "1", prixUnitaire: "", montant: "0.00" }]);
   }
 
   async function retirer(id: string) {
@@ -96,247 +94,302 @@ export default function DevisCompletClient(props: Props) {
   }
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6 px-5 pb-24 pt-6">
+    <article
+      className="mx-auto w-full max-w-[820px] rounded-[10px] px-5 py-7 sm:px-12 sm:py-12"
+      style={{ backgroundColor: colors.card, boxShadow: "0 12px 40px rgba(28,28,26,0.10)" }}
+    >
       {fige && (
-        <p className="rounded-2xl px-4 py-3 text-[13px]" style={{ backgroundColor: colors.rustTint, color: colors.rust }}>
+        <p className="mb-6 rounded-lg px-4 py-3 text-[13px]" style={{ backgroundColor: colors.rustTint, color: colors.rust }}>
           Ce devis est parti chez votre client : il ne se modifie plus. Pour le corriger, ouvrez l&apos;écran Devis et
-          choisissez « Corriger et renvoyer » — votre client recevra une nouvelle version, et l&apos;ancienne reste
-          comme trace de ce qui avait été proposé.
+          choisissez « Corriger et renvoyer ».
         </p>
       )}
 
-      {/* --- En-tête : l'émetteur et les références, comme sur le papier --- */}
-      <section className="rounded-2xl p-5" style={{ backgroundColor: colors.card }}>
-        <div className="flex flex-col gap-4">
-          <div>
-            <span className={smallCaps} style={{ color: colors.muted }}>
-              Émetteur
-            </span>
-            <Champ label="Nom de l'entreprise" valeur={emetteur.nom} fige={fige}
-              onChange={(v) => setEmetteur({ ...emetteur, nom: v })}
-              onFini={() => majEmetteurAction({ nom: emetteur.nom })} />
-            <Champ label="Adresse" valeur={emetteur.adresse} fige={fige} placeholder="Adresse du siège social"
-              onChange={(v) => setEmetteur({ ...emetteur, adresse: v })}
-              onFini={() => majEmetteurAction({ adresse: emetteur.adresse })} />
-            <Champ label="Téléphone" valeur={emetteur.telephone} fige={fige} placeholder="06 12 34 56 78"
-              onChange={(v) => setEmetteur({ ...emetteur, telephone: v })}
-              onFini={() => majEmetteurAction({ telephone: emetteur.telephone })} />
-            <Champ label="E-mail" valeur={emetteur.email} fige={fige} placeholder="contact@exemple.fr"
-              onChange={(v) => setEmetteur({ ...emetteur, email: v })}
-              onFini={() => majEmetteurAction({ email: emetteur.email })} />
-            <Champ label="SIREN / SIRET" valeur={emetteur.siret} fige={fige} placeholder="N° SIREN / SIRET"
-              onChange={(v) => setEmetteur({ ...emetteur, siret: v })}
-              onFini={() => majEmetteurAction({ siret: emetteur.siret })} />
-            {/* Sans IBAN, le client reçoit un devis qu'il ne peut pas payer :
-                le modèle du patron l'imprime, et aucun écran ne le demandait. */}
-            <Champ label="IBAN" valeur={emetteur.iban} fige={fige} placeholder="FR76 …"
-              onChange={(v) => setEmetteur({ ...emetteur, iban: v })}
-              onFini={() => majEmetteurAction({ iban: emetteur.iban })} />
-          </div>
-
-          <div style={{ borderTop: `1px solid ${colors.line}` }} className="pt-4">
-            <Reference libelle="Devis n°" valeur={props.numeroCommercial} />
-            <Reference libelle="Date" valeur={jourNumerique(props.dateEmission)} />
-            <Reference libelle="Validité" valeur={props.validite} />
-          </div>
+      {/* --- En-tête : l'entreprise à gauche, les références à droite -------- */}
+      <header className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <ChampNu
+            valeur={emetteur.nom}
+            fige={fige}
+            placeholder="Votre entreprise"
+            aria="Nom de l'entreprise"
+            grand
+            onChange={(v) => setEmetteur({ ...emetteur, nom: v })}
+            onFini={() => majEmetteurAction({ nom: emetteur.nom })}
+          />
+          <ChampNu valeur={emetteur.telephone} fige={fige} placeholder="Téléphone" aria="Téléphone de l'entreprise"
+            onChange={(v) => setEmetteur({ ...emetteur, telephone: v })}
+            onFini={() => majEmetteurAction({ telephone: emetteur.telephone })} />
+          <ChampNu valeur={emetteur.email} fige={fige} placeholder="E-mail" aria="E-mail de l'entreprise"
+            onChange={(v) => setEmetteur({ ...emetteur, email: v })}
+            onFini={() => majEmetteurAction({ email: emetteur.email })} />
         </div>
-      </section>
 
-      <h1 className="text-center text-[28px]" style={{ fontFamily: font.display }}>
-        Devis
+        <div className="w-full sm:w-[280px] sm:shrink-0">
+          <Reference libelle="Devis n°" valeur={props.numeroCommercial} />
+          <Reference libelle="Date" valeur={jourNumerique(props.dateEmission)} />
+          <Reference libelle="Validité" valeur={props.validite} />
+        </div>
+      </header>
+
+      <div className="my-6" style={{ borderTop: `2px solid ${colors.ink}` }} />
+
+      <h1 className="mb-8 text-center text-[26px] tracking-[0.14em] sm:text-[30px]" style={{ fontFamily: font.display }}>
+        DEVIS
       </h1>
 
-      {/* --- Le client, et où se fait le chantier --- */}
-      <section className="rounded-2xl p-5" style={{ backgroundColor: colors.card }}>
-        <span className={smallCaps} style={{ color: colors.muted }}>
-          Client
-        </span>
-        {props.clientId ? (
-          <>
-            <Champ label="Nom complet" valeur={client.nom} fige={fige} placeholder="M. Bernard"
-              onChange={(v) => setClient({ ...client, nom: v })}
-              onFini={() => majClientDuDevisAction(props.clientId!, { nom: client.nom })} />
-            <Champ label="Adresse" valeur={client.adresse} fige={fige} placeholder="12 rue des Lilas, Nantes"
-              onChange={(v) => setClient({ ...client, adresse: v })}
-              onFini={() => majClientDuDevisAction(props.clientId!, { adresse: client.adresse })} />
-            <Champ label="Téléphone" valeur={client.telephone} fige={fige} placeholder="06 12 34 56 78"
-              onChange={(v) => setClient({ ...client, telephone: v })}
-              onFini={() => majClientDuDevisAction(props.clientId!, { telephone: client.telephone })} />
-            <Champ label="E-mail" valeur={client.email} fige={fige} placeholder="client@exemple.fr"
-              onChange={(v) => setClient({ ...client, email: v })}
-              onFini={() => majClientDuDevisAction(props.clientId!, { email: client.email })} />
-          </>
-        ) : (
-          <p className="mt-2 text-[13px]" style={{ color: colors.muted }}>
-            Aucun client n&apos;est rattaché à ce chantier. Le devis peut s&apos;écrire quand même, mais il partira
-            sans destinataire.
-          </p>
-        )}
-        <Champ label="Adresse du chantier" valeur={adresseChantier} fige={fige} placeholder="Si différente"
-          onChange={setAdresseChantier}
-          onFini={() => majAdresseChantierAction(props.chantierId, adresseChantier)} />
-      </section>
-
-      {/* --- Le tableau : description, quantité, prix unitaire, total --- */}
-      <section className="rounded-2xl p-5" style={{ backgroundColor: colors.card }}>
-        <span className={smallCaps} style={{ color: colors.muted }}>
-          Détail des prestations
-        </span>
-
-        <div className="mt-3 flex flex-col gap-4">
-          {lignes.length === 0 && (
-            <p className="text-[13px]" style={{ color: colors.muted }}>
-              Aucune ligne : ce devis partirait à 0,00 €.
-            </p>
-          )}
-          {lignes.map((l, i) => (
-            <div key={l.id} className="flex flex-col gap-2 rounded-xl p-3" style={{ backgroundColor: colors.cream }}>
-              <textarea
-                value={l.libelle}
-                readOnly={fige}
-                rows={2}
-                aria-label={`Description ${i + 1}`}
-                placeholder="Ex : Élagage d'un tilleul — taille architecturée"
-                onChange={(e) => majLigneLocale(l.id, "libelle", e.target.value)}
-                onBlur={() => persisterLigne(l)}
-                className="w-full resize-none rounded-lg border-0 px-3 py-2 outline-none"
-                style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
-              />
-              {/* Deux colonnes, pas trois : sur un écran de six pouces,
-                  « Prix unitaire HT » passait à la ligne et décalait son champ
-                  d'un cran par rapport à « Qté ». Le total de la ligne prend sa
-                  propre ligne, aligné à droite comme sur le papier. */}
-              <div className="grid grid-cols-2 gap-2">
-                <PetitChamp label="Qté" valeur={l.quantite} fige={fige} aria={`Quantité ${i + 1}`}
-                  onChange={(v) => majLigneLocale(l.id, "quantite", v)} onFini={() => persisterLigne(l)} />
-                <PetitChamp label="Prix unitaire HT" valeur={l.prixUnitaire} fige={fige} aria={`Prix unitaire ${i + 1}`}
-                  onChange={(v) => majLigneLocale(l.id, "prixUnitaire", v)} onFini={() => persisterLigne(l)} />
-              </div>
-              <div className="flex items-baseline justify-between">
-                <span className={smallCaps} style={{ color: colors.muted }}>
-                  Total HT
-                </span>
-                <span className="text-[16px]" style={{ color: colors.ink }}>
-                  {enEuros(montantDeLaLigne(l))}
-                </span>
-              </div>
-              {!fige && (
-                <button
-                  type="button"
-                  onClick={() => retirer(l.id)}
-                  aria-label={`Supprimer la ligne ${i + 1}`}
-                  className="self-end text-[13px]"
-                  style={{ color: colors.muted }}
-                >
-                  Supprimer
-                </button>
-              )}
-            </div>
-          ))}
+      {/* --- Émetteur et client, côte à côte comme sur le papier ------------- */}
+      <section className="grid gap-7 sm:grid-cols-2">
+        <div>
+          <Intertitre>Émetteur</Intertitre>
+          <ChampNu valeur={emetteur.adresse} fige={fige} placeholder="Adresse du siège social" aria="Adresse de l'entreprise"
+            onChange={(v) => setEmetteur({ ...emetteur, adresse: v })}
+            onFini={() => majEmetteurAction({ adresse: emetteur.adresse })} />
+          <ChampNu valeur={emetteur.siret} fige={fige} placeholder="N° SIREN / SIRET" aria="SIREN / SIRET"
+            onChange={(v) => setEmetteur({ ...emetteur, siret: v })}
+            onFini={() => majEmetteurAction({ siret: emetteur.siret })} />
         </div>
 
+        <div>
+          <Intertitre>Client</Intertitre>
+          {props.clientId ? (
+            <>
+              <ChampNu valeur={client.nom} fige={fige} placeholder="Nom complet" aria="Nom du client"
+                onChange={(v) => setClient({ ...client, nom: v })}
+                onFini={() => majClientDuDevisAction(props.clientId!, { nom: client.nom })} />
+              <ChampNu valeur={client.adresse} fige={fige} placeholder="Adresse" aria="Adresse du client"
+                onChange={(v) => setClient({ ...client, adresse: v })}
+                onFini={() => majClientDuDevisAction(props.clientId!, { adresse: client.adresse })} />
+              <ChampNu valeur={client.telephone} fige={fige} placeholder="Téléphone" aria="Téléphone du client"
+                onChange={(v) => setClient({ ...client, telephone: v })}
+                onFini={() => majClientDuDevisAction(props.clientId!, { telephone: client.telephone })} />
+              <ChampNu valeur={client.email} fige={fige} placeholder="E-mail" aria="E-mail du client"
+                onChange={(v) => setClient({ ...client, email: v })}
+                onFini={() => majClientDuDevisAction(props.clientId!, { email: client.email })} />
+            </>
+          ) : (
+            <p className="text-[13px]" style={{ color: colors.muted }}>
+              Aucun client rattaché à ce chantier.
+            </p>
+          )}
+          <ChampNu valeur={adresseChantier} fige={fige} placeholder="Chantier : adresse des travaux" aria="Adresse du chantier"
+            onChange={setAdresseChantier}
+            onFini={() => majAdresseChantierAction(props.chantierId, adresseChantier)} />
+        </div>
+      </section>
+
+      {/* --- Le tableau ------------------------------------------------------ */}
+      <section className="mt-9">
+        {/* Les en-têtes de colonnes n'apparaissent qu'à partir du format
+            tablette : sur six pouces, chaque cellule porte son propre libellé,
+            comme le fait le modèle d'origine. */}
+        <div
+          className="hidden pb-2 sm:grid sm:grid-cols-[1fr_70px_130px_130px_28px] sm:gap-3"
+          style={{ borderBottom: `1px solid ${colors.ink}` }}
+        >
+          <Colonne>Description</Colonne>
+          <Colonne droite>Qté</Colonne>
+          <Colonne droite>Prix unitaire HT</Colonne>
+          <Colonne droite>Total HT</Colonne>
+          <span />
+        </div>
+
+        {lignes.length === 0 && (
+          <p className="py-4 text-[13px]" style={{ color: colors.muted }}>
+            Aucune ligne pour l&apos;instant.
+          </p>
+        )}
+
+        {lignes.map((l, i) => (
+          <div
+            key={l.id}
+            className="grid gap-2 py-3 sm:grid-cols-[1fr_70px_130px_130px_28px] sm:items-start sm:gap-3"
+            style={{ borderBottom: `1px solid ${colors.lineSoft}` }}
+          >
+            <textarea
+              value={l.libelle}
+              readOnly={fige}
+              rows={2}
+              aria-label={`Description ${i + 1}`}
+              placeholder="Ex : Élagage d'un tilleul — taille architecturée"
+              onChange={(e) => majLigneLocale(l.id, "libelle", e.target.value)}
+              onBlur={() => persisterLigne(l)}
+              className="w-full resize-none border-0 bg-transparent p-0 outline-none focus:bg-[rgba(0,0,0,0.03)]"
+              style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.45 }}
+            />
+
+            <Cellule libelle="Qté">
+              <input
+                value={l.quantite}
+                readOnly={fige}
+                inputMode="decimal"
+                aria-label={`Quantité ${i + 1}`}
+                onChange={(e) => majLigneLocale(l.id, "quantite", e.target.value)}
+                onBlur={() => persisterLigne(l)}
+                className="w-16 border-0 bg-transparent p-0 text-right outline-none focus:bg-[rgba(0,0,0,0.03)] sm:w-full"
+                style={{ color: colors.ink, fontSize: "16px" }}
+              />
+            </Cellule>
+
+            <Cellule libelle="Prix unitaire HT">
+              <input
+                value={l.prixUnitaire}
+                readOnly={fige}
+                inputMode="decimal"
+                aria-label={`Prix unitaire ${i + 1}`}
+                onChange={(e) => majLigneLocale(l.id, "prixUnitaire", e.target.value)}
+                onBlur={() => persisterLigne(l)}
+                className="w-24 border-0 bg-transparent p-0 text-right outline-none focus:bg-[rgba(0,0,0,0.03)] sm:w-full"
+                style={{ color: colors.ink, fontSize: "16px" }}
+              />
+            </Cellule>
+
+            <Cellule libelle="Total HT">
+              <span className="text-[16px]">{enEuros(montantDeLaLigne(l))}</span>
+            </Cellule>
+
+            {!fige && (
+              <button
+                type="button"
+                onClick={() => retirer(l.id)}
+                aria-label={`Supprimer la ligne ${i + 1}`}
+                className="justify-self-end text-[18px] leading-none"
+                style={{ color: colors.muted }}
+              >
+                ×
+              </button>
+            )}
+          </div>
+        ))}
+
         {!fige && (
-          <button type="button" onClick={ajouter} className="mt-3 text-[14px] font-medium" style={{ color: colors.rust }}>
+          <button type="button" onClick={ajouter} className="mt-4 text-[14px] font-medium" style={{ color: colors.rust }}>
             + Ajouter une ligne
           </button>
         )}
       </section>
 
-      {/* --- Les totaux, avec le taux de TVA que le patron décide --- */}
-      <section className="rounded-2xl p-5" style={{ backgroundColor: colors.card }}>
-        <LigneTotal libelle="Total HT" valeur={enEuros(totalHt)} />
-        <div className="flex items-center justify-between py-2">
-          <span className="flex items-center gap-2 text-[15px]">
-            TVA
-            <input
-              value={tauxTva}
-              readOnly={fige}
-              inputMode="decimal"
-              aria-label="Taux de TVA"
-              onChange={(e) => setTauxTva(e.target.value)}
-              onBlur={() => majEnTeteDevisAction(props.devisId, { tauxTva: tauxTva })}
-              className="w-16 rounded-lg border-0 px-2 py-1 text-center outline-none"
-              style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
-            />
-            %
-          </span>
-          <span className="text-[15px]">{enEuros(totalTva)}</span>
-        </div>
-        <div style={{ borderTop: `1px solid ${colors.line}` }} className="pt-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[16px] font-medium">Total TTC</span>
-            <span className="text-[22px]" style={{ fontFamily: font.display, color: colors.rust }}>
+      {/* --- Les totaux, alignés à droite comme sur le papier ---------------- */}
+      <section className="mt-8 flex justify-end">
+        <div className="w-full sm:w-[320px]">
+          <div className="flex items-center justify-between py-1.5">
+            <span className="text-[15px]">Total HT</span>
+            <span className="text-[15px]">{enEuros(totalHt)}</span>
+          </div>
+          <div className="flex items-center justify-between py-1.5">
+            <span className="flex items-center gap-1 text-[15px]">
+              TVA (
+              <input
+                value={tauxTva}
+                readOnly={fige}
+                inputMode="decimal"
+                aria-label="Taux de TVA"
+                onChange={(e) => setTauxTva(e.target.value)}
+                onBlur={() => majEnTeteDevisAction(props.devisId, { tauxTva })}
+                // Collé au « ( » : aligné à droite dans une boîte fixe, le taux
+                // laissait un blanc et se lisait « TVA (    20 %) ».
+                className="w-9 border-0 bg-transparent p-0 text-left outline-none focus:bg-[rgba(0,0,0,0.03)]"
+                style={{ color: colors.ink, fontSize: "16px" }}
+              />
+              %)
+            </span>
+            <span className="text-[15px]">{enEuros(totalTva)}</span>
+          </div>
+          <div className="mt-1 flex items-center justify-between pt-2.5" style={{ borderTop: `2px solid ${colors.ink}` }}>
+            <span className="text-[17px] font-semibold">Total TTC</span>
+            <span className="text-[20px] font-semibold" style={{ fontFamily: font.display }}>
               {enEuros(totalHt + totalTva)}
             </span>
           </div>
         </div>
       </section>
 
-      {/* --- Notes et conditions, imprimées au bas du document --- */}
-      <section className="rounded-2xl p-5" style={{ backgroundColor: colors.card }}>
-        <span className={smallCaps} style={{ color: colors.muted }}>
-          Notes / conditions
-        </span>
+      {/* --- Notes, modalités --------------------------------------------- */}
+      <section className="mt-9">
+        <Intertitre>Notes / conditions</Intertitre>
         <textarea
           value={conditions}
           readOnly={fige}
-          rows={3}
+          rows={2}
           aria-label="Notes et conditions"
           placeholder="Acompte de 30 % à la signature, solde à réception des travaux. Devis gratuit et sans engagement."
           onChange={(e) => setConditions(e.target.value)}
           onBlur={() => majEnTeteDevisAction(props.devisId, { conditionsPaiement: conditions })}
-          className="mt-2 w-full resize-none rounded-xl border-0 px-3 py-2 outline-none"
-          style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
+          className="w-full resize-none border-0 bg-transparent p-0 outline-none focus:bg-[rgba(0,0,0,0.03)]"
+          style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.5 }}
         />
-        <p className="mt-2 text-[12px]" style={{ color: colors.muted }}>
-          Vos modalités de paiement sont reprises de votre IBAN, ci-dessus.
-        </p>
       </section>
 
-      {/* --- Le pied du document, tel qu'il s'imprime --- */}
-      <section className="rounded-2xl p-5" style={{ backgroundColor: colors.card }}>
-        <p className="text-[12px] leading-relaxed" style={{ color: colors.muted }}>
-          Devis établi par {emetteur.nom || "votre entreprise"}, valable {props.validite}. Bon pour accord précédé de
-          la mention manuscrite, daté et signé par le client.
-        </p>
-        <div
-          className="mt-4 h-20 rounded-lg"
-          style={{ border: `1px dashed ${colors.line}` }}
-          aria-hidden="true"
+      <section className="mt-7">
+        <Intertitre>Modalités de paiement</Intertitre>
+        <p className="text-[15px]">Paiement par virement bancaire</p>
+        <ChampNu
+          valeur={emetteur.iban}
+          fige={fige}
+          placeholder="IBAN : FR76 …"
+          aria="IBAN"
+          onChange={(v) => setEmetteur({ ...emetteur, iban: v })}
+          onFini={() => majEmetteurAction({ iban: emetteur.iban })}
         />
-        <p className="mt-2 text-center text-[12px]" style={{ color: colors.muted }}>
-          Bon pour accord — signature du client
-        </p>
       </section>
 
-      <div className="flex flex-col gap-3">
+      {/* --- Le pied du document ------------------------------------------- */}
+      <footer className="mt-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <p className="max-w-[46ch] text-[12px] leading-relaxed" style={{ color: colors.muted }}>
+          Devis établi par {emetteur.nom || "votre entreprise"}, valable {props.validite}. Bon pour accord précédé de la
+          mention manuscrite, daté et signé par le client.
+        </p>
+        <div className="sm:w-[300px]">
+          <div className="h-24 rounded" style={{ border: `1px dashed ${colors.line}` }} aria-hidden="true" />
+          <p className="mt-1.5 text-center text-[12px]" style={{ color: colors.muted }}>
+            Bon pour accord — signature du client
+          </p>
+        </div>
+      </footer>
+
+      {/* Les seules actions de la page, discrètes, sous le document. */}
+      <div className="mt-10 flex flex-col items-center gap-3" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
         <a
           href={`/api/devis/${props.devisId}/pdf`}
           target="_blank"
           rel="noopener noreferrer"
-          className="block text-center text-[14px] font-medium"
+          className="pt-6 text-[14px] font-medium"
           style={{ color: colors.rust }}
         >
           Aperçu du PDF
         </a>
         <a
           href={`/chantiers/${props.chantierId}/export`}
-          className="block w-full rounded-2xl py-3.5 text-center text-[15px] font-medium text-white"
-          style={{ backgroundColor: colors.rust }}
+          className="text-[14px] font-medium"
+          style={{ color: colors.rust }}
         >
-          Terminé — aller à l&apos;envoi
+          Envoyer au client →
         </a>
-        <p className="text-center text-[12px]" style={{ color: colors.muted }}>
-          Tout est enregistré au fur et à mesure. Rien ne part au client avant que vous ne le décidiez.
+        <p className="pb-1 text-center text-[12px]" style={{ color: colors.muted }}>
+          Tout s&apos;enregistre au fur et à mesure. Rien ne part avant que vous ne le décidiez.
         </p>
       </div>
-    </div>
+    </article>
   );
 }
 
 /** Le montant d'une ligne — quantité × prix unitaire, comme sur le modèle. */
 function montantDeLaLigne(l: { quantite: string; prixUnitaire: string }): number {
   return nombre(l.quantite) * nombre(l.prixUnitaire);
+}
+
+/**
+ * « 3.00 » s'écrit « 3 », « 250.00 » s'écrit « 250 ».
+ *
+ * La base stocke deux décimales — c'est juste pour de l'argent, et illisible
+ * sur un devis : personne n'écrit « 3,00 tilleuls ». Le patron voit donc le
+ * nombre tel qu'il l'aurait écrit, et reste libre de taper « 1,5 ».
+ */
+function sansZerosInutiles(valeur: string): string {
+  if (!valeur) return "";
+  const n = Number(String(valeur).replace(",", "."));
+  if (!Number.isFinite(n)) return valeur;
+  return String(n).replace(".", ",");
 }
 
 /** Lit un nombre saisi à la française (« 1,5 ») comme à l'anglaise (« 1.5 »). */
@@ -351,90 +404,93 @@ function normaliser(valeur: string, defaut: string): string {
   return valeur.trim() === "" ? defaut : String(n);
 }
 
-function Champ({
-  label,
+/**
+ * Un champ sans cadre : le devis reste une feuille, pas un formulaire.
+ * Il ne se signale qu'au moment où on écrit dedans.
+ */
+function ChampNu({
   valeur,
   onChange,
   onFini,
   placeholder,
+  aria,
   fige,
+  grand,
 }: {
-  label: string;
   valeur: string;
   onChange: (v: string) => void;
   onFini: () => void;
-  placeholder?: string;
+  placeholder: string;
+  aria: string;
   fige: boolean;
+  grand?: boolean;
 }) {
   return (
-    <label className="mt-3 flex flex-col gap-1">
-      <span className={smallCaps} style={{ color: colors.muted }}>
-        {label}
-      </span>
-      <input
-        value={valeur}
-        readOnly={fige}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onFini}
-        className="rounded-xl border-0 px-3 py-2.5 outline-none"
-        // 16 px : en dessous, iOS agrandit la page au premier appui dans le champ.
-        style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
-      />
-    </label>
+    <input
+      value={valeur}
+      readOnly={fige}
+      placeholder={placeholder}
+      aria-label={aria}
+      onChange={(e) => onChange(e.target.value)}
+      onBlur={onFini}
+      className="block w-full border-0 bg-transparent p-0 py-0.5 outline-none focus:bg-[rgba(0,0,0,0.03)]"
+      style={{
+        color: colors.ink,
+        // 16 px au minimum : en dessous, iOS agrandit la page au premier appui.
+        fontSize: grand ? "22px" : "16px",
+        fontFamily: grand ? font.display : undefined,
+      }}
+    />
   );
 }
 
-function PetitChamp({
-  label,
-  valeur,
-  onChange,
-  onFini,
-  aria,
-  fige,
-}: {
-  label: string;
-  valeur: string;
-  onChange: (v: string) => void;
-  onFini: () => void;
-  aria: string;
-  fige: boolean;
-}) {
+function Intertitre({ children }: { children: React.ReactNode }) {
   return (
-    <label className="flex flex-col gap-1">
-      <span className={smallCaps} style={{ color: colors.muted }}>
-        {label}
+    <p
+      className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em]"
+      style={{ color: colors.rust }}
+    >
+      {children}
+    </p>
+  );
+}
+
+function Colonne({ children, droite }: { children: React.ReactNode; droite?: boolean }) {
+  return (
+    <span
+      className={`text-[11px] font-semibold uppercase tracking-[0.1em] ${droite ? "text-right" : ""}`}
+      style={{ color: colors.muted }}
+    >
+      {children}
+    </span>
+  );
+}
+
+/** Sur téléphone, chaque cellule porte son libellé — comme le modèle d'origine. */
+function Cellule({ libelle, children }: { libelle: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 sm:block sm:text-right">
+      <span
+        className="text-[11px] font-semibold uppercase tracking-[0.1em] sm:hidden"
+        style={{ color: colors.muted }}
+      >
+        {libelle}
       </span>
-      <input
-        value={valeur}
-        readOnly={fige}
-        inputMode="decimal"
-        aria-label={aria}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onFini}
-        className="rounded-lg border-0 px-2 py-2 outline-none"
-        style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
-      />
-    </label>
+      {children}
+    </div>
   );
 }
 
 function Reference({ libelle, valeur }: { libelle: string; valeur: string }) {
   return (
-    <div className="flex items-baseline justify-between py-1">
-      <span className="text-[13px]" style={{ color: colors.muted }}>
+    <div
+      className="flex items-baseline justify-between gap-4 py-1"
+      style={{ borderBottom: `1px solid ${colors.lineSoft}` }}
+    >
+      <span className="text-[12px] font-semibold uppercase tracking-[0.08em]" style={{ color: colors.muted }}>
         {libelle}
       </span>
       <span className="text-[14px]">{valeur}</span>
-    </div>
-  );
-}
-
-function LigneTotal({ libelle, valeur }: { libelle: string; valeur: string }) {
-  return (
-    <div className="flex items-center justify-between py-2">
-      <span className="text-[15px]">{libelle}</span>
-      <span className="text-[15px]">{valeur}</span>
     </div>
   );
 }

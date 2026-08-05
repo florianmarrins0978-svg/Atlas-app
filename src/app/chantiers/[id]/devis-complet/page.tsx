@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getClient } from "@/server/repositories/clients";
@@ -8,12 +8,26 @@ import { listerLignesPrix } from "@/server/repositories/lignes-prix";
 import { getOuCreerDevisBrouillon, chargerDevisPourEcran } from "@/server/repositories/devis";
 import DevisCompletClient from "./DevisCompletClient";
 
-// Le devis écrit à la main, en entier.
+// **Une page où il n'y a que le devis.**
 //
-// Le patron : « ça ouvre le fichier devis, le vrai ! Le fichier en entier, pas
-// juste les lignes pour remplir les infos et les prix. » Cette page reprend
-// `appli/devis-modele.html` champ pour champ — c'est aussi ce que reproduit le
-// PDF (`ARCHITECTURE.md` §16), donc ce que son client recevra.
+// Le patron, le 5 août 2026 : « je veux pouvoir cliquer sur un lien qui ouvre
+// une page où, dans cette page, il n'y a QUE le devis — celui que je t'ai
+// envoyé, celui d'Arborea. C'est pour les patrons qui auront envie de le
+// remplir à la main, qui n'ont pas envie d'utiliser la note vocale. »
+//
+// D'où deux règles qui gouvernent cet écran, et qu'il ne faut pas défaire :
+//
+// 1. **Aucun décor d'application.** Pas de barre d'onglets (voir
+//    `estEcranSansNavigation` dans `src/app/layout.tsx`), pas de titre d'écran,
+//    pas de phrase d'explication. Une feuille de devis entourée d'onglets
+//    redevient un écran d'application — exactement ce qu'elle ne doit pas être.
+//    Seul subsiste un retour discret : une page sans sortie est un piège sur un
+//    téléphone.
+// 2. **La mise en page du papier**, reprise de `appli/devis-modele.html` : en-tête
+//    avec les références à droite, titre, émetteur et client côte à côte,
+//    tableau avec ses colonnes, totaux alignés à droite, conditions, cadre de
+//    signature. C'est aussi ce que le PDF imprime (`ARCHITECTURE.md` §16) : ce
+//    qui est à l'écran est ce que le client recevra.
 export const dynamic = "force-dynamic";
 
 // Reprise telle quelle du PDF : une validité affichée qui différerait de celle
@@ -38,32 +52,22 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
   ]);
 
   return (
-    <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
-      <div className="px-6 pt-8">
-        <a
-          href={`/chantiers/${id}`}
-          aria-label="Retour à la fiche du chantier"
-          className="flex h-10 w-10 items-center justify-center rounded-full"
-          style={{ backgroundColor: colors.rustTint }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
-            <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </a>
-      </div>
-
-      <div className="px-6 pt-5">
-        <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-          {chantier.nom}
-        </p>
-        <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
-          Le devis, en entier
-        </h1>
-        <p className="pt-3 text-[13px]" style={{ color: colors.muted }}>
-          Le document tel que votre client le recevra. Tout se modifie ici, et tout s&apos;enregistre au fur et à
-          mesure.
-        </p>
-      </div>
+    <div
+      style={{ backgroundColor: colors.rustTint, color: colors.ink, fontFamily: font.body, minHeight: "100dvh" }}
+      className="px-3 py-4 sm:px-6 sm:py-8"
+    >
+      {/* Le seul élément qui n'appartient pas au devis, et il est minuscule :
+          sans lui, la page n'a pas de sortie sur un téléphone. */}
+      <a
+        href={`/chantiers/${id}`}
+        aria-label="Revenir au chantier"
+        className="mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-full sm:mb-4"
+        style={{ backgroundColor: colors.rustTint, marginLeft: 0 }}
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
+          <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </a>
 
       <DevisCompletClient
         chantierId={id}
