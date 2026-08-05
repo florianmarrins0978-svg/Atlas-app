@@ -9,6 +9,42 @@ Format : le plus récent en tête.
 
 ## 2026-08-05
 
+### « Le fichier devis, le vrai ! Le document entier »
+
+Sa demande : « je veux que lorsqu'on clique sur rédiger à la main, ça ouvre le
+fichier devis, le vrai ! Celui qui se trouve dans modèle de devis, le fichier en
+entier, pas juste les lignes pour remplir les infos et les prix. »
+
+Il avait raison sur le fond. « Rédiger à la main » ouvrait l'écran Prix : des
+lignes et des montants. Or ce qu'il envoie à son client est un **document** —
+son en-tête, ses coordonnées, celles du client, le tableau, les totaux, ses
+conditions, le cadre de signature.
+
+**Le document entier, dans l'ordre de son modèle** (`appli/devis-modele.html`,
+celui qu'il avait construit lui-même pour Arborea, et que le PDF reproduit
+déjà) : émetteur — nom, adresse, téléphone, e-mail, SIRET, **IBAN** —, numéro,
+date, validité, client, adresse du chantier, tableau avec quantité et prix
+unitaire, totaux avec **le taux de TVA qu'il fixe**, notes et conditions, cadre
+de signature.
+
+**Pourquoi pas le fichier d'origine tel quel.** Il garde tout dans le navigateur
+(`localStorage`) : ce qu'il y écrirait n'existerait pas pour Atlas — ni facture
+de fin de chantier, ni TVA, ni suivi de l'envoi. Ici chaque champ part vers **sa
+source** (l'entreprise, la fiche du client, le chantier, les lignes de prix), et
+le devis se reconstruit à partir d'elles. Aucune seconde vérité.
+
+**Deux choses qui manquaient, révélées en le construisant :**
+
+- **Aucun écran ne demandait l'IBAN ni le SIRET.** Le modèle les imprime ; sans
+  IBAN, le client reçoit un devis qu'il ne peut pas payer.
+- **Modifier une quantité ou un prix unitaire ne recalculait pas le montant.**
+  Trois tilleuls à 250 € affichaient 750 € à l'écran et **0,00 € en base** —
+  donc un devis à zéro chez le client. L'invariant `montant = quantité × prix
+  unitaire` ne tenait que dans un sens ; il tient maintenant dans les deux.
+
+Et le taux de TVA appartient désormais au document : une ligne ajoutée n'efface
+plus le 10 % choisi la veille.
+
 ### La case « Nom du chantier » a disparu
 
 Sa demande, en une phrase : « dans la catégorie chantier, retire la case nom du

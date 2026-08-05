@@ -38,7 +38,10 @@ async function main() {
   const texteCompteurApres = await page.locator("text=/chantiers? en cours/").innerText();
   const nombreApres = parseInt(texteCompteurApres, 10);
   assert.equal(nombreApres, nbAvant + 1, "L'indicateur doit refléter le nouveau total réel");
-  assert.ok(await page.locator(`text=${nomUnique}`).isVisible(), "Le nouveau chantier doit apparaître dans la liste");
+  assert.ok(
+    await page.locator(`text=${nomUnique}`).first().isVisible(),
+    "Le nouveau chantier doit apparaître dans la liste"
+  );
 
   // --- Persistance après rechargement ---
   await page.reload({ waitUntil: "networkidle" });

@@ -56,13 +56,34 @@ export async function getEntreprise(ctx: Ctx) {
  * 0019) : zéro équipe rendrait tout jour indisponible et le patron ne pourrait
  * plus rien envoyer, sans qu'aucun écran ne lui dise pourquoi.
  */
+/**
+ * Met à jour l'identité de l'entreprise.
+ *
+ * Les coordonnées (adresse, SIRET, téléphone, e-mail, IBAN) se saisissent
+ * depuis l'en-tête du devis : c'est là que le patron les voit imprimées, donc
+ * là qu'il remarque qu'elles manquent. Sans IBAN, son client reçoit un devis
+ * qu'il ne peut pas payer — et jusqu'ici aucun écran ne les demandait.
+ */
 export async function mettreAJourEntreprise(
   ctx: Ctx,
-  data: { nom?: string; nombreEquipes?: number }
+  data: {
+    nom?: string;
+    nombreEquipes?: number;
+    adresse?: string | null;
+    siret?: string | null;
+    telephone?: string | null;
+    email?: string | null;
+    iban?: string | null;
+  }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const valeurs: { nom?: string; nombreEquipes?: number; updatedAt: Date } = { updatedAt: new Date() };
+    const valeurs: Record<string, unknown> & { updatedAt: Date } = { updatedAt: new Date() };
     if (data.nom !== undefined) valeurs.nom = data.nom;
+    for (const champ of ["adresse", "siret", "telephone", "email", "iban"] as const) {
+      // Une chaîne vide vaut « effacé », pas « inchangé » : le patron doit
+      // pouvoir retirer un SIRET saisi de travers.
+      if (data[champ] !== undefined) valeurs[champ] = data[champ]?.trim() || null;
+    }
     if (data.nombreEquipes !== undefined) {
       valeurs.nombreEquipes = Math.min(20, Math.max(1, Math.trunc(data.nombreEquipes)));
     }

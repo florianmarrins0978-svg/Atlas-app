@@ -98,7 +98,7 @@ async function main() {
     const { nom } = await devisParti(page, "attente");
 
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
-    const carte = page.locator(`text=${nom}`).locator("xpath=ancestor::a[1]");
+    const carte = page.locator(`text=${nom}`).first().locator("xpath=ancestor::a[1]");
     assert.ok(
       (await carte.locator("text=En attente de réponse").count()) > 0,
       "la liste ne dit pas que le chantier attend le client"

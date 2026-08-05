@@ -99,7 +99,7 @@ async function main() {
     const { nom } = await chantierRealise(page, "onglet");
     await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
 
-    assert.ok(await page.locator(`text=${nom}`).isVisible(), "le chantier n'apparaît pas");
+    assert.ok(await page.locator(`text=${nom}`).first().isVisible(), "le chantier n'apparaît pas");
     assert.ok(
       await page.locator("text=Fin de chantier").first().isVisible(),
       "le bouton de clôture est absent"
