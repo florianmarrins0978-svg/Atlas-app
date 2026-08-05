@@ -282,3 +282,21 @@ export async function mettreAJourDureeEquipe(
     return row;
   });
 }
+
+/**
+ * L'adresse du chantier, corrigée depuis le devis.
+ *
+ * C'est la seule adresse que le client lit sur son devis — et jusqu'ici elle ne
+ * se saisissait qu'à la création, une fois pour toutes. Un chiffre de rue faux
+ * ne se rattrapait plus.
+ */
+export async function mettreAJourAdresseChantier(ctx: Ctx, chantierId: string, adresse: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [row] = await tx
+      .update(chantiers)
+      .set({ adresseChantier: adresse.trim() || null, updatedAt: new Date() })
+      .where(eq(chantiers.id, chantierId))
+      .returning();
+    return row ?? null;
+  });
+}

@@ -50,9 +50,12 @@ async function seConnecter(context: BrowserContext): Promise<Page> {
 /** Un chantier dont le devis vient de partir chez le client. */
 async function devisParti(page: Page, suffixe: string) {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  const nom = `Suivi e2e ${suffixe} ${Date.now()}`;
-  await page.fill('input[placeholder="Rénovation salle de bain"]', nom);
-  await page.fill('input[placeholder="M. Bernard"]', "M. Bernard");
+  // Le chantier n'a plus de nom saisi : il prend celui de son client
+  // (« Chez … », voir `src/lib/nom-chantier.ts`). C'est donc le client qui
+  // porte la marque unique, et le repère suit.
+  const client = `M. Bernard ${suffixe} ${Date.now()}`;
+  const nom = `Chez ${client}`;
+  await page.fill('input[placeholder="M. Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
@@ -99,7 +102,7 @@ async function main() {
     const { nom } = await devisParti(page, "attente");
 
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
-    const carte = page.locator(`text=${nom}`).locator("xpath=ancestor::a[1]");
+    const carte = page.locator(`text=${nom}`).first().locator("xpath=ancestor::a[1]");
     assert.ok(
       (await carte.locator("text=En attente de réponse").count()) > 0,
       "la liste ne dit pas que le chantier attend le client"

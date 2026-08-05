@@ -7,6 +7,108 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-05
+
+### La dictée mène droit au devis, et le devis est seul sur sa page
+
+Le patron, en précisant : « une fois qu'on valide la note vocale, cette page
+s'ouvre — la page où il n'y a que le devis — et là je fais mes modifications
+s'il y a besoin. **Je ne veux pas tous les autres trucs intermédiaires.** Et
+sous la note vocale, un petit lien pour y accéder directement : si je n'ai pas
+envie de dicter, que je puisse le rédiger à la main. »
+
+**Ce qui change au parcours :**
+
+- La dictée validée ouvre **le devis lui-même**. Le compte rendu qui
+  s'affichait — ce qui a été retenu, à combien — était un écran de plus entre
+  sa dictée et son devis. Ce qu'il disait se lit maintenant sur le document :
+  les lignes y sont, le total aussi, et la mention « recopiée mot à mot »
+  s'affiche en tête quand aucun modèle n'a compris la dictée.
+- Sous l'enregistreur, **« Ou rédiger le devis à la main → »**, quel que soit
+  l'état de la dictée.
+- La page du devis ne porte plus **aucun décor d'application** : ni barre
+  d'onglets, ni titre d'écran, ni phrase d'explication. Une feuille, pas un
+  formulaire — les champs n'ont ni cadre ni fond tant qu'on n'y écrit pas.
+
+**Deux défauts trouvés en le construisant, tous deux sur le devis du client :**
+
+- La ligne de prix s'appelait **« Prestation (prix calculé) »**. C'est ce que le
+  client lisait, et cela ne lui disait rien du travail. Elle nomme désormais ce
+  qui a été dicté. Le prix, lui, reste global : il se calcule sur la durée et
+  l'équipe, pas prestation par prestation.
+- **Rejouer la dictée dupliquait les prestations** — la même taille de haie deux
+  fois, et le prix calculé qui la comptait double. C'est le défaut du 3 août
+  sous un autre visage : ce qui est déjà au chantier n'y entre plus une seconde
+  fois, et la règle se lit dans les données (`ARCHITECTURE.md` §10).
+
+### « Le fichier devis, le vrai ! Le document entier »
+
+Sa demande : « je veux que lorsqu'on clique sur rédiger à la main, ça ouvre le
+fichier devis, le vrai ! Celui qui se trouve dans modèle de devis, le fichier en
+entier, pas juste les lignes pour remplir les infos et les prix. »
+
+Il avait raison sur le fond. « Rédiger à la main » ouvrait l'écran Prix : des
+lignes et des montants. Or ce qu'il envoie à son client est un **document** —
+son en-tête, ses coordonnées, celles du client, le tableau, les totaux, ses
+conditions, le cadre de signature.
+
+**Le document entier, dans l'ordre de son modèle** (`appli/devis-modele.html`,
+celui qu'il avait construit lui-même pour Arborea, et que le PDF reproduit
+déjà) : émetteur — nom, adresse, téléphone, e-mail, SIRET, **IBAN** —, numéro,
+date, validité, client, adresse du chantier, tableau avec quantité et prix
+unitaire, totaux avec **le taux de TVA qu'il fixe**, notes et conditions, cadre
+de signature.
+
+**Pourquoi pas le fichier d'origine tel quel.** Il garde tout dans le navigateur
+(`localStorage`) : ce qu'il y écrirait n'existerait pas pour Atlas — ni facture
+de fin de chantier, ni TVA, ni suivi de l'envoi. Ici chaque champ part vers **sa
+source** (l'entreprise, la fiche du client, le chantier, les lignes de prix), et
+le devis se reconstruit à partir d'elles. Aucune seconde vérité.
+
+**Deux choses qui manquaient, révélées en le construisant :**
+
+- **Aucun écran ne demandait l'IBAN ni le SIRET.** Le modèle les imprime ; sans
+  IBAN, le client reçoit un devis qu'il ne peut pas payer.
+- **Modifier une quantité ou un prix unitaire ne recalculait pas le montant.**
+  Trois tilleuls à 250 € affichaient 750 € à l'écran et **0,00 € en base** —
+  donc un devis à zéro chez le client. L'invariant `montant = quantité × prix
+  unitaire` ne tenait que dans un sens ; il tient maintenant dans les deux.
+
+Et le taux de TVA appartient désormais au document : une ligne ajoutée n'efface
+plus le 10 % choisi la veille.
+
+### La case « Nom du chantier » a disparu
+
+Sa demande, en une phrase : « dans la catégorie chantier, retire la case nom du
+chantier ». C'était **le seul champ obligatoire** de la création, et le seul qui
+lui demandait d'inventer quelque chose. Un élagueur ne baptise pas ses
+chantiers : il dit « chez M. Bernard » ou « rue des Lilas ». Lui faire trouver
+un titre avant de pouvoir commencer, c'était une porte fermée à clé devant une
+maison ouverte.
+
+**Plus rien n'est obligatoire.** Le nom se déduit de ce qu'il a donné, dans
+l'ordre où il en parle :
+
+| Ce qu'il saisit | Le chantier s'appelle |
+|---|---|
+| Un client | « Chez M. Bernard » |
+| Une adresse seule | « 12 rue des Lilas, Nantes » |
+| Rien du tout | « Chantier du mercredi 5 août » |
+
+**Ce n'est pas inventer une donnée** (`CLAUDE.md` §4) : rien n'est fabriqué,
+tout est repris de sa saisie — et la date, à défaut, reste vraie. Ce nom est une
+**étiquette** (ce qui s'affiche en tête de la fiche et dans la liste), jamais
+une information sur le chantier ; il ne figure pas sur le devis du client, qui
+porte l'adresse. Un contrôle tient l'invariant : *aucun mot du nom qui n'ait été
+saisi*.
+
+La règle vit dans une fonction pure appliquée **côté serveur**, pour qu'un appel
+direct produise le même nom que le formulaire. Les 32 suites qui remplissaient
+ce champ ont été reprises : elles identifient désormais leur chantier par son
+client.
+
+---
+
 ## 2026-08-04 (soir)
 
 ### Il éprouvait le code de la veille — et rien ne le lui disait

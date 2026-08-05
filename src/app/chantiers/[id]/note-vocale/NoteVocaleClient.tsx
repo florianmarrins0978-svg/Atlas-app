@@ -9,6 +9,7 @@ import {
   lancerTranscriptionAction,
   supprimerNoteVocaleAction,
 } from "./actions";
+import DevisDepuisDictee from "../DevisDepuisDictee";
 
 type Etat = "vide" | "enregistrement" | "note" | "confirmation";
 // Le remplacement conserve la note tant qu'une nouvelle n'est pas enregistrée ;
@@ -322,18 +323,18 @@ export default function NoteVocaleClient({
                 Transcription en cours…
               </p>
             )}
-            {/* Une fois la transcription obtenue, la suite du parcours est
-                l'écran Informations : la proposer ici évite de repasser par la
-                fiche du chantier pour la retrouver. */}
+            {/* **La dictée mène au devis, directement.**
+                Le patron, le 5 août 2026 : « une fois qu'on valide la note
+                vocale, cette page s'ouvre — la page où il n'y a que le devis —
+                et là je fais mes modifications s'il y a besoin. Je ne veux pas
+                tous les autres trucs intermédiaires. »
+
+                Ce bouton menait vers l'écran Informations, puis le prix, puis
+                le devis. Il ouvre maintenant le devis lui-même, écrit à partir
+                de ce qu'il vient de dire. */}
             {statutTranscription === "reussie" && (
               <>
-                <a
-                  href={`/chantiers/${chantierId}/informations`}
-                  className="block w-full rounded-2xl py-3.5 text-center text-[16px] font-medium text-white"
-                  style={{ backgroundColor: colors.rust }}
-                >
-                  Continuer vers les informations →
-                </a>
+                <DevisDepuisDictee chantierId={chantierId} transcriptionDisponible />
                 <p className="mt-3 text-center text-[13px]" style={{ color: colors.muted }}>
                   Transcription disponible —{" "}
                   <a href={`/chantiers/${chantierId}/transcription`} className="font-medium" style={{ color: colors.rust }}>
@@ -342,6 +343,18 @@ export default function NoteVocaleClient({
                 </p>
               </>
             )}
+
+            {/* Et pour celui qui ne veut pas dicter du tout : l'accès direct au
+                devis, sous l'enregistreur, quel que soit l'état de la dictée.
+                « Si je n'ai pas envie de dicter mon devis, que je puisse le
+                rédiger à la main. » */}
+            <a
+              href={`/chantiers/${chantierId}/devis-complet`}
+              className="mt-4 block text-center text-[14px] font-medium"
+              style={{ color: colors.rust }}
+            >
+              Ou rédiger le devis à la main →
+            </a>
             {statutTranscription === "echouee" && (
               <div className="text-center">
                 <p className="text-[13px]" style={{ color: colors.alert }}>

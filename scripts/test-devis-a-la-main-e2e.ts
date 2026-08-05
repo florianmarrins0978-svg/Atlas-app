@@ -35,10 +35,9 @@ async function main() {
   await page.click('button[type="submit"]');
   await page.waitForURL(`${BASE}/`, { timeout: 15000 });
 
-  const nom = `Devis à la main ${Date.now()}`;
+  const client = `M. Durand ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="Rénovation salle de bain"]', nom);
-  await page.fill('input[placeholder="M. Bernard"]', "M. Durand");
+  await page.fill('input[placeholder="M. Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
@@ -62,17 +61,21 @@ async function main() {
   );
 
   await versLaMain.click();
-  await page.waitForURL(/\/prix\?saisie=manuelle$/, { timeout: 10000 });
-  await page.waitForSelector("text=Vous écrivez ce devis vous-même", { timeout: 10000 });
+  // Depuis le 5 août 2026, le lien ouvre le DEVIS ENTIER, seul sur sa page —
+  // « une page où il n'y a que le devis ». Le détail de ce document est éprouvé
+  // par `test-devis-complet-e2e.ts` ; ici on vérifie seulement que le chemin y
+  // mène et qu'une ligne écrite à la main aboutit au devis.
+  await page.waitForURL(/\/devis-complet$/, { timeout: 10000 });
+  await page.waitForSelector("text=DEVIS", { timeout: 10000 });
   console.log("  ✓ la fiche mène au devis écrit à la main, en un lien");
 
-  // Une ligne, son montant — c'est tout ce que le patron veut faire.
+  // Une ligne, son prix — c'est tout ce que le patron veut faire.
   await page.click("text=+ Ajouter une ligne");
-  await page.waitForTimeout(400);
-  const champs = page.locator("form input");
-  await champs.nth(0).fill("Abattage d'un chêne mort");
-  await champs.nth(1).fill("1250.00");
-  await champs.nth(1).blur();
+  await page.waitForTimeout(500);
+  await page.getByLabel("Description 1").fill("Abattage d'un chêne mort");
+  await page.getByLabel("Description 1").blur();
+  await page.getByLabel("Prix unitaire 1").fill("1250");
+  await page.getByLabel("Prix unitaire 1").blur();
   await page.waitForTimeout(900);
 
   const lignes = await pool.query(`SELECT libelle, montant FROM lignes_prix WHERE chantier_id = $1`, [chantierId]);

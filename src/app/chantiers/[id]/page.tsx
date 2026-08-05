@@ -102,7 +102,7 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
                   par « Corriger et renvoyer ». */}
               {!chantier.devisEnvoyeAt && (
                 <a
-                  href={`/chantiers/${chantier.id}/prix?saisie=manuelle`}
+                  href={`/chantiers/${chantier.id}/devis-complet`}
                   className="mt-3 block text-center text-[14px] font-medium"
                   style={{ color: colors.rust }}
                 >

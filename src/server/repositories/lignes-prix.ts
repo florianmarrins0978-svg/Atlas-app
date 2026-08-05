@@ -48,13 +48,27 @@ export async function modifierLignePrix(
   data: { libelle?: string; montant?: string; quantite?: string; prixUnitaire?: string; unite?: string }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    // Si le montant change sans que quantite/prixUnitaire soient fournis
-    // explicitement, on maintient l'invariant quantite=1 / prixUnitaire=montant
-    // (seul champ éditable dans l'interface actuelle).
+    // **Les deux sens de l'invariant `montant = quantité × prix unitaire`.**
+    //
+    // De bas en haut : un montant modifié seul (écran Prix, où c'est le seul
+    // champ) donne quantité 1 et prix unitaire égal au montant.
+    //
+    // De haut en bas : une quantité ou un prix unitaire modifié (le devis
+    // écrit à la main) recalcule le montant. **Ce sens manquait** — trois
+    // tilleuls à 250 € donnaient un montant resté à 0,00 €, donc un devis à
+    // zéro alors que l'écran affichait 750 €. Une ligne dont le total ne
+    // correspond pas à son détail ne se rattrape que par un avoir.
     const patch: typeof data = { ...data };
     if (data.montant !== undefined && data.prixUnitaire === undefined && data.quantite === undefined) {
       patch.prixUnitaire = data.montant;
       patch.quantite = "1";
+    } else if (data.montant === undefined && (data.prixUnitaire !== undefined || data.quantite !== undefined)) {
+      const [avant] = await tx.select().from(lignesPrix).where(eq(lignesPrix.id, id)).limit(1);
+      if (avant) {
+        const q = new Decimal(patch.quantite ?? avant.quantite);
+        const pu = new Decimal(patch.prixUnitaire ?? avant.prixUnitaire);
+        patch.montant = q.times(pu).toFixed(2);
+      }
     }
     const [row] = await tx
       .update(lignesPrix)

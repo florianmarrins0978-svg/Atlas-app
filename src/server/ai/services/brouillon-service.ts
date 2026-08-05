@@ -6,8 +6,8 @@ import {
   marquerConfirme,
   type Brouillon,
 } from "../../repositories/brouillons-informations";
-import { ajouterPrestation } from "../../repositories/prestations";
-import { ajouterMateriel } from "../../repositories/materiel";
+import { ajouterPrestation, listerPrestations } from "../../repositories/prestations";
+import { ajouterMateriel, listerMateriel } from "../../repositories/materiel";
 import { mettreAJourDureeEquipe } from "../../repositories/chantiers";
 import { extraire } from "./extraction-service";
 import { estTranscriptionSimulee } from "../providers/transcription/dev";
@@ -99,15 +99,36 @@ export async function confirmerBrouillon(ctx: Ctx, chantierId: string): Promise<
   }
 
   const contenu = brouillon.contenu;
+
+  // **Ce qui est déjà au chantier n'y entre pas deux fois.**
+  //
+  // Rejouer l'enchaînement depuis la dictée — un second appui, un retour
+  // arrière — recréait les mêmes prestations. Le devis affichait alors la
+  // même taille de haie deux fois, et son prix calculé la comptait double.
+  // C'est le défaut du 3 août sous un autre visage (`ARCHITECTURE.md` §10) :
+  // **ce qui dit « c'est déjà fait » se lit dans les données, jamais ailleurs.**
+  const [dejaPrestations, dejaMateriel] = await Promise.all([
+    listerPrestations(ctx, chantierId),
+    listerMateriel(ctx, chantierId),
+  ]);
+  const connus = (lignes: { libelle: string }[]) =>
+    new Set(lignes.map((l) => l.libelle.trim().toLowerCase()).filter(Boolean));
+  const prestationsConnues = connus(dejaPrestations);
+  const materielConnu = connus(dejaMateriel);
+
   const prestationsCreees = [];
   for (const ligne of contenu.prestations) {
     const libelle = libelleAvecQuantite(ligne);
-    if (libelle) prestationsCreees.push(await ajouterPrestation(ctx, chantierId, libelle));
+    if (!libelle || prestationsConnues.has(libelle.toLowerCase())) continue;
+    prestationsConnues.add(libelle.toLowerCase());
+    prestationsCreees.push(await ajouterPrestation(ctx, chantierId, libelle));
   }
   const materielCree = [];
   for (const ligne of contenu.materiel) {
     const libelle = libelleAvecQuantite(ligne);
-    if (libelle) materielCree.push(await ajouterMateriel(ctx, chantierId, libelle));
+    if (!libelle || materielConnu.has(libelle.toLowerCase())) continue;
+    materielConnu.add(libelle.toLowerCase());
+    materielCree.push(await ajouterMateriel(ctx, chantierId, libelle));
   }
   if (contenu.dureePrevue || contenu.tailleEquipe) {
     await mettreAJourDureeEquipe(ctx, chantierId, {

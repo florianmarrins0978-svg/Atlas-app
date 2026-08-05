@@ -27,7 +27,7 @@ async function main() {
   // --- Crée un nouveau chantier réel et vérifie que l'indicateur se met à jour ---
   const nomUnique = `Chantier dashboard e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="Rénovation salle de bain"]', nomUnique);
+  await page.fill('input[placeholder="M. Bernard"]', nomUnique);
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
 
@@ -38,7 +38,10 @@ async function main() {
   const texteCompteurApres = await page.locator("text=/chantiers? en cours/").innerText();
   const nombreApres = parseInt(texteCompteurApres, 10);
   assert.equal(nombreApres, nbAvant + 1, "L'indicateur doit refléter le nouveau total réel");
-  assert.ok(await page.locator(`text=${nomUnique}`).isVisible(), "Le nouveau chantier doit apparaître dans la liste");
+  assert.ok(
+    await page.locator(`text=${nomUnique}`).first().isVisible(),
+    "Le nouveau chantier doit apparaître dans la liste"
+  );
 
   // --- Persistance après rechargement ---
   await page.reload({ waitUntil: "networkidle" });

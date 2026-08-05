@@ -1,6 +1,19 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 
+// Créer un chantier, et ce que cela demande au patron.
+//
+// **Le 5 août 2026 : « dans la catégorie chantier, retire la case nom du
+// chantier ».** C'était le seul champ obligatoire, et le seul qui lui demandait
+// d'inventer quelque chose : un élagueur ne baptise pas ses chantiers, il dit
+// « chez M. Bernard ». Lui faire trouver un titre avant de pouvoir commencer,
+// c'était une porte fermée à clé devant une maison ouverte.
+//
+// Ce que cette suite tient désormais :
+//   1. le champ n'existe plus, et **plus rien n'est obligatoire** ;
+//   2. le chantier porte quand même un nom, déduit de ce qu'il a donné ;
+//   3. ce nom le suit — sur la fiche comme dans la liste.
+
 async function main() {
   const browser = await lancerNavigateur();
   const context = await browser.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 3 });
@@ -14,11 +27,24 @@ async function main() {
   await page.click('button[type="submit"]');
   await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
 
-  const nomUnique = `Chantier e2e ${Date.now()}`;
+  const client = `M. E2E ${Date.now()}`;
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="Rénovation salle de bain"]', nomUnique);
-  await page.fill('input[placeholder="M. Bernard"]', "M. E2E");
+
+  // Le champ retiré ne doit pas revenir par une autre porte.
+  assert.equal(
+    await page.locator('input[placeholder="Rénovation salle de bain"]').count(),
+    0,
+    "La case « Nom du chantier » est de retour : le patron a demandé qu'elle disparaisse."
+  );
+
+  // Et rien n'est obligatoire : le bouton est actif sur un formulaire vierge.
+  assert.ok(
+    await page.getByRole("button", { name: /Créer le chantier/ }).isEnabled(),
+    "Le bouton reste inactif sur un formulaire vide : quelque chose est encore exigé."
+  );
+
+  await page.fill('input[placeholder="M. Bernard"]', client);
   await page.click('button:has-text("Créer le chantier")');
 
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
@@ -28,14 +54,35 @@ async function main() {
 
   // La page hub relit le chantier depuis la base — si ces valeurs s'affichent,
   // la création a bien été persistée (pas de simulation restante).
-  await page.waitForSelector(`text=${nomUnique}`, { timeout: 5000 });
-  assert.ok(await page.locator(`text=${nomUnique}`).isVisible(), "Le nom du chantier créé doit apparaître sur le hub");
-  assert.ok(await page.locator("text=M. E2E").isVisible(), "Le client créé doit apparaître");
+  //
+  // Le nom attendu est celui que déduit `src/lib/nom-chantier.ts` : « Chez
+  // <client> ». C'est la phrase de l'artisan, pas celle d'un logiciel.
+  await page.waitForSelector(`text=Chez ${client}`, { timeout: 5000 });
+  assert.ok(
+    await page.locator(`text=Chez ${client}`).isVisible(),
+    "Le chantier n'a pas pris le nom de son client : il est devenu impossible à reconnaître."
+  );
   assert.ok(await page.locator("text=Ajouter des photos").isVisible(), "Un chantier neuf doit proposer 'Ajouter des photos'");
 
   // Revérifie via la liste (autre écran, autre requête) que le chantier y figure aussi.
   await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
-  assert.ok(await page.locator(`text=${nomUnique}`).isVisible(), "Le nouveau chantier doit apparaître dans la liste");
+  assert.ok(
+    await page.locator(`text=Chez ${client}`).isVisible(),
+    "Le nouveau chantier doit apparaître dans la liste, sous son nom déduit"
+  );
+
+  // --- Sans rien du tout ---------------------------------------------------
+  // Le cas qui rendait le champ obligatoire. Un chantier sans client ni adresse
+  // doit exister quand même, et rester reconnaissable : la date est la seule
+  // chose vraie qui reste, et elle vaut mieux qu'un « Sans titre ».
+  await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
+  await page.click('button:has-text("Créer le chantier")');
+  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
+  const titre = await page.locator("h1").first().innerText();
+  assert.ok(
+    /^Chantier du /.test(titre.trim()),
+    `Un chantier créé sans rien n'a pas de nom lisible : « ${titre} »`
+  );
 
   await browser.close();
   console.log("✅ Test bout-en-bout de création réussi.");

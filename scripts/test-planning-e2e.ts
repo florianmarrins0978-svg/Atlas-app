@@ -21,7 +21,7 @@ async function main() {
 
   const nomUnique = `Chantier planning e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="Rénovation salle de bain"]', nomUnique);
+  await page.fill('input[placeholder="M. Bernard"]', nomUnique);
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const chantierId = page.url().split("/").pop()!;
@@ -44,10 +44,13 @@ async function main() {
 
   // --- Le chantier apparaît en "À planifier" ---
   await page.goto("http://localhost:3000/planning", { waitUntil: "networkidle" });
-  assert.ok(await page.locator(`text=${nomUnique}`).isVisible(), "Le chantier doit apparaître en 'À planifier'");
+  assert.ok(
+    await page.locator(`text=${nomUnique}`).first().isVisible(),
+    "Le chantier doit apparaître en 'À planifier'"
+  );
 
   // --- Planification (création d'une intervention) ---
-  await page.click(`text=${nomUnique}`);
+  await page.locator(`text=${nomUnique}`).first().click();
   await page.waitForSelector('input[type="date"]', { timeout: 5000 });
   await page.fill('input[type="date"]', "2026-12-10");
   await page.click("text=Confirmer la planification");
@@ -56,11 +59,14 @@ async function main() {
 
   // --- Persistance après rechargement ---
   await page.reload({ waitUntil: "networkidle" });
-  assert.ok(await page.locator(`text=${nomUnique}`).isVisible(), "Le chantier planifié doit réapparaître après rechargement");
+  assert.ok(
+    await page.locator(`text=${nomUnique}`).first().isVisible(),
+    "Le chantier planifié doit réapparaître après rechargement"
+  );
   assert.ok(await page.locator("text=DÉC").isVisible(), "Le mois (décembre) doit être affiché sur la vignette de date");
 
   // --- Modification de la date (même sheet réutilisée) ---
-  await page.click(`text=${nomUnique}`);
+  await page.locator(`text=${nomUnique}`).first().click();
   await page.waitForSelector('input[type="date"]', { timeout: 5000 });
   const valeurActuelle = await page.locator('input[type="date"]').inputValue();
   assert.equal(valeurActuelle, "2026-12-10", "La sheet doit préremplir la date déjà enregistrée");

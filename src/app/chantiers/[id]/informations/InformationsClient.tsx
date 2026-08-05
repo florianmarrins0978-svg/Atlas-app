@@ -223,7 +223,7 @@ export default function InformationsClient({
               manuelle` y replie la proposition automatique — sans la supprimer,
               car il doit pouvoir la rappeler. */}
           <a
-            href={`/chantiers/${chantierId}/prix?saisie=manuelle`}
+            href={`/chantiers/${chantierId}/devis-complet`}
             className="text-center text-[14px] font-medium"
             style={{ color: colors.rust }}
           >

@@ -13,6 +13,7 @@ import {
 import type { Ctx } from "./context";
 import { genererPdfFacture, type FacturePdfData } from "../pdf/facture-pdf";
 import { enregistrerObjet } from "../storage";
+import { jourIso } from "../../lib/jour";
 
 // Fin de chantier, facture et TVA — docs/AGENT.md §2.3.
 //
@@ -37,10 +38,6 @@ export async function attribuerNumeroFacture(tx: DbOrTx, entrepriseId: string): 
   `);
   const numero = (result as { rows: { numero: number }[] }).rows[0].numero;
   return `F2026-${String(numero).padStart(4, "0")}`;
-}
-
-function jourIso(d: Date) {
-  return d.toISOString().slice(0, 10);
 }
 
 export class FinChantierImpossibleError extends Error {

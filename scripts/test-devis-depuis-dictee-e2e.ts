@@ -37,10 +37,9 @@ async function main() {
   await page.click('button[type="submit"]');
   await page.waitForURL(`${BASE}/`, { timeout: 15000 });
 
-  const nom = `Dictée vers devis ${Date.now()}`;
+  const nomDuClient = `M. Dupont ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="Rénovation salle de bain"]', nom);
-  await page.fill('input[placeholder="M. Bernard"]', "M. Dupont");
+  await page.fill('input[placeholder="M. Bernard"]', nomDuClient);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
@@ -77,19 +76,33 @@ async function main() {
     "L'écran de la dictée ne propose pas d'aller au devis : le patron repart pour cinq boutons."
   );
   await bouton.click();
-  await page.waitForSelector("text=Devis préparé", { timeout: 30000 });
-  console.log("  ✓ un seul appui suffit, depuis l'écran de la dictée");
+  // **Il atterrit sur le devis lui-même.** Le 5 août 2026 : « une fois qu'on
+  // valide la note vocale, cette page s'ouvre — la page où il n'y a que le
+  // devis — et là je fais mes modifications. Je ne veux pas tous les autres
+  // trucs intermédiaires. » Le compte rendu qui s'affichait ici était l'un de
+  // ces intermédiaires.
+  await page.waitForURL(/\/devis-complet$/, { timeout: 30000 });
+  // La navigation commence avant que la page soit rendue : sans cette attente,
+  // on lirait un écran encore vide et l'on conclurait à tort que le devis ne
+  // porte rien.
+  await page.waitForSelector("text=Total TTC", { timeout: 20000 });
+  console.log("  ✓ un seul appui mène droit au devis, depuis l'écran de la dictée");
 
-  const rapport = await page.locator("body").innerText();
+  // Les lignes du devis sont des champs de saisie : leur contenu n'est PAS dans
+  // `innerText`. Le lire là aurait fait conclure à un devis vide alors qu'il
+  // était rempli — un contrôle qui accuse à tort coûte plus cher que pas de
+  // contrôle du tout.
+  const premiereLigne = await page.getByLabel("Description 1").inputValue();
   assert.ok(
-    /taille de haie/i.test(rapport),
-    "Le rapport ne montre pas ce qui a été retenu : le patron ne peut pas juger sur pièce."
+    /taille de haie/i.test(premiereLigne),
+    `Le devis ne porte pas ce qui a été dicté : « ${premiereLigne} »`
   );
+  const devisEcrit = await page.locator("body").innerText();
   assert.ok(
-    !/0,00\s*€/.test(rapport),
-    `Le devis est chiffré à zéro — c'est le devis vide d'avant. Rapport : ${rapport.slice(0, 400)}`
+    !/Total TTC\s*0,00\s*€/i.test(devisEcrit),
+    `Le devis est chiffré à zéro — c'est le devis vide d'avant : ${devisEcrit.slice(0, 400)}`
   );
-  console.log("  ✓ le rapport montre les prestations dictées et un montant");
+  console.log("  ✓ le devis porte les prestations dictées et un montant");
 
   // --- Ce qui est réellement en base --------------------------------------
   const enBase = await pool.query(
@@ -110,9 +123,8 @@ async function main() {
   assert.equal(Number(envois), 0, "Un devis est parti au client sans que le patron l'ait décidé.");
   console.log("  ✓ rien n'est parti au client");
 
-  // --- Le devis, tel que le patron le voit --------------------------------
-  await page.getByRole("link", { name: "Voir le devis" }).click();
-  await page.waitForURL(/\/export$/, { timeout: 15000 });
+  // --- Le devis, tel qu'il partira au client ------------------------------
+  await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Envoyer au client", { timeout: 15000 });
   const ecranDevis = await page.locator("body").innerText();
   assert.ok(/taille de haie/i.test(ecranDevis), "Le devis ne porte pas la prestation dictée.");
@@ -129,7 +141,7 @@ async function main() {
   const rejouable = page.getByRole("button", { name: "Créer le devis à partir de ma dictée" });
   if (await rejouable.count()) {
     await rejouable.click();
-    await page.waitForSelector("text=Devis préparé", { timeout: 30000 });
+    await page.waitForURL(/\/devis-complet$/, { timeout: 30000 });
     const apres = await pool.query(`SELECT count(*) FROM lignes_prix WHERE chantier_id = $1`, [chantierId]);
     assert.equal(
       Number(apres.rows[0].count),

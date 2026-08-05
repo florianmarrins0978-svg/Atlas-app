@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
-import { enEuros } from "@/lib/euros";
-import type { RapportDevisDepuisDictee } from "@/server/services/devis-depuis-dictee";
+import { useRouter } from "next/navigation";
+import { colors } from "@/lib/design-tokens";
 import { preparerDevisDepuisDicteeAction } from "./informations/actions";
 
 // Le geste unique : de la dictée au devis.
@@ -31,18 +30,31 @@ type Props = {
 type Etat =
   | { type: "repos" }
   | { type: "encours" }
-  | { type: "fait"; rapport: RapportDevisDepuisDictee }
   | { type: "conflit" }
   | { type: "message"; texte: string };
 
 export default function DevisDepuisDictee({ chantierId, transcriptionDisponible, variante = "principal" }: Props) {
+  const router = useRouter();
   const [etat, setEtat] = useState<Etat>({ type: "repos" });
 
   async function lancer(remplacer = false) {
     setEtat({ type: "encours" });
     try {
       const r = await preparerDevisDepuisDicteeAction(chantierId, remplacer);
-      if (r.statut === "prepare") return setEtat({ type: "fait", rapport: r.rapport });
+      if (r.statut === "prepare") {
+        // **On l'emmène droit au devis.** Il l'a demandé le 5 août 2026 : « une
+        // fois qu'on valide la note vocale, cette page s'ouvre, j'ai accès à la
+        // page où il n'y a que le devis, et là je fais mes modifications. Je ne
+        // veux pas tous les autres trucs intermédiaires. »
+        //
+        // Le compte rendu qui s'affichait ici — ce qui a été retenu, à
+        // combien — était un écran de plus entre sa dictée et son devis. Ce
+        // qu'il devait dire se lit maintenant sur le devis lui-même : les
+        // lignes y sont, le total aussi, et la mention « recopiée mot à mot »
+        // s'affiche là-bas quand aucun modèle n'a compris la dictée.
+        router.push(`/chantiers/${chantierId}/devis-complet`);
+        return;
+      }
       if (r.statut === "conflit") return setEtat({ type: "conflit" });
       if (r.statut === "transcription_absente") {
         return setEtat({ type: "message", texte: "Aucune dictée transcrite sur ce chantier : il n'y a rien à reprendre." });
@@ -62,8 +74,6 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
   }
 
   if (!transcriptionDisponible) return null;
-
-  if (etat.type === "fait") return <Rapport chantierId={chantierId} rapport={etat.rapport} />;
 
   return (
     <div className="flex flex-col gap-2">
@@ -126,87 +136,6 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-// Ce que le patron doit voir tout de suite : ce qui a été retenu, à combien, et
-// ce qui reste à regarder. Pas un « c'est fait » sans contenu — il n'aurait
-// aucun moyen de savoir si Atlas a compris sa dictée ou l'a massacrée.
-function Rapport({ chantierId, rapport }: { chantierId: string; rapport: RapportDevisDepuisDictee }) {
-  const lignes = [
-    ...rapport.prestations.map((p) => ({ cle: `p-${p}`, texte: p })),
-    ...rapport.materiel.map((m) => ({ cle: `m-${m}`, texte: m })),
-  ];
-
-  return (
-    <div className="flex flex-col gap-3 rounded-2xl p-4" style={{ backgroundColor: colors.card }}>
-      <span className={smallCaps} style={{ color: colors.muted }}>
-        Devis préparé
-      </span>
-
-      {rapport.lecture === "litterale" && (
-        <p className="text-[13px]" style={{ color: colors.rust }}>
-          Votre dictée a été recopiée mot à mot : aucun modèle n&apos;était disponible pour la comprendre.
-          Relisez les lignes de près.
-        </p>
-      )}
-
-      <p className="text-[26px]" style={{ fontFamily: font.display }}>
-        {enEuros(rapport.totalHt)} HT
-      </p>
-
-      {rapport.prix ? (
-        <p className="text-[13px]" style={{ color: colors.muted }}>
-          {rapport.prix.origine === "tarif"
-            ? `Repris de votre tarif « ${rapport.prix.libelle} ».`
-            : `Calculé depuis vos paramètres : ${rapport.prix.libelle}.`}
-        </p>
-      ) : (
-        <p className="text-[13px]" style={{ color: colors.alert }}>
-          {rapport.prixImpossible ?? "Aucun prix n'a pu être proposé."}
-        </p>
-      )}
-
-      {lignes.length > 0 && (
-        <div className="flex flex-col gap-1">
-          {lignes.map((l) => (
-            <p key={l.cle} className="text-[14px]">
-              {l.texte}
-            </p>
-          ))}
-        </div>
-      )}
-
-      {(rapport.dureePrevue || rapport.tailleEquipe) && (
-        <p className="text-[13px]" style={{ color: colors.muted }}>
-          {[rapport.dureePrevue, rapport.tailleEquipe].filter(Boolean).join(" · ")}
-        </p>
-      )}
-
-      {rapport.aVerifier.length > 0 && (
-        <div>
-          <span className={smallCaps} style={{ color: colors.muted }}>
-            À regarder
-          </span>
-          {rapport.aVerifier.map((a, i) => (
-            <p key={i} className="text-[13px]" style={{ color: colors.muted }}>
-              {a}
-            </p>
-          ))}
-        </div>
-      )}
-
-      <a
-        href={`/chantiers/${chantierId}/export`}
-        className="mt-1 block w-full rounded-2xl py-3 text-center text-[15px] font-medium text-white"
-        style={{ backgroundColor: colors.rust }}
-      >
-        Voir le devis
-      </a>
-      <p className="text-center text-[12px]" style={{ color: colors.muted }}>
-        Rien n&apos;est parti : c&apos;est vous qui décidez de l&apos;envoyer.
-      </p>
     </div>
   );
 }

@@ -62,9 +62,12 @@ async function seConnecter(context: BrowserContext): Promise<Page> {
  */
 async function chantierRealise(page: Page, suffixe: string) {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  const nom = `Facture e2e ${suffixe} ${Date.now()}`;
-  await page.fill('input[placeholder="Rénovation salle de bain"]', nom);
-  await page.fill('input[placeholder="M. Bernard"]', "M. Bernard");
+  // Le chantier n'a plus de nom saisi : il prend celui de son client
+  // (« Chez … », voir `src/lib/nom-chantier.ts`). C'est donc le client qui
+  // porte la marque unique, et le repère suit.
+  const client = `M. Bernard ${suffixe} ${Date.now()}`;
+  const nom = `Chez ${client}`;
+  await page.fill('input[placeholder="M. Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
@@ -100,7 +103,7 @@ async function main() {
     const { nom } = await chantierRealise(page, "onglet");
     await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
 
-    assert.ok(await page.locator(`text=${nom}`).isVisible(), "le chantier n'apparaît pas");
+    assert.ok(await page.locator(`text=${nom}`).first().isVisible(), "le chantier n'apparaît pas");
     assert.ok(
       await page.locator("text=Fin de chantier").first().isVisible(),
       "le bouton de clôture est absent"

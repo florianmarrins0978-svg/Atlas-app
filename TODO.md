@@ -120,3 +120,5 @@ et c'est déjà arrivé.
 - ~~La date des documents s'écrit jour/mois/année~~ — 2026-08-04
 - ~~La bande des durées est aussi sur l'écran Informations, là où il la cherchait~~ — 2026-08-04
 - ~~Rédiger le devis entièrement à la main, depuis la fiche du chantier~~ — 2026-08-04
+- ~~Retirer la case « Nom du chantier » : plus rien n'est obligatoire à la création~~ — 2026-08-05
+- ~~« Rédiger à la main » ouvre le devis ENTIER, à l'image du modèle, et il reste dans Atlas~~ — 2026-08-05

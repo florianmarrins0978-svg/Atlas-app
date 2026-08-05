@@ -18,7 +18,6 @@ import { creerChantierAction } from "./actions";
 
 export default function NouveauChantierPage() {
   const router = useRouter();
-  const [nomChantier, setNomChantier] = useState("");
   const [nomClient, setNomClient] = useState("");
   const [telephone, setTelephone] = useState("");
   const [email, setEmail] = useState("");
@@ -29,7 +28,9 @@ export default function NouveauChantierPage() {
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
-  const peutCreer = nomChantier.trim().length > 0 && !enCours;
+  // Plus rien n'est obligatoire : le chantier prend le nom de ce qui a été
+  // donné, et la date s'il n'y a rien (`src/lib/nom-chantier.ts`).
+  const peutCreer = !enCours;
 
   // Le canal se devine dans la plupart des cas : une seule coordonnée renseignée
   // ne laisse pas d'ambiguïté. Le choix explicite du patron prime toujours —
@@ -39,12 +40,11 @@ export default function NouveauChantierPage() {
   const canal = canalChoisi ?? (aTelephone ? "sms" : aEmail ? "email" : null);
 
   async function handleCreer() {
-    if (nomChantier.trim().length === 0) return; // jamais de création sans nom
+    if (enCours) return;
     setEnCours(true);
     setErreur(null);
     try {
       const { id } = await creerChantierAction({
-        nomChantier,
         nomClient,
         telephone,
         email,
@@ -92,19 +92,18 @@ export default function NouveauChantierPage() {
             handleCreer();
           }}
         >
-          {/* 1 — Nom du chantier : seul champ obligatoire */}
-          <Field
-            label="Nom du chantier"
-            placeholder="Rénovation salle de bain"
-            big
-            value={nomChantier}
-            onChange={setNomChantier}
-            required
-          />
-          {/* 2 — Nom du client : facultatif */}
+          {/* 1 — Nom du client.
+              Le champ « Nom du chantier » a été retiré le 2026-08-05, à la
+              demande du patron. C'était le seul champ obligatoire, et le seul
+              qui lui demandait d'inventer quelque chose : un élagueur ne
+              baptise pas ses chantiers, il dit « chez M. Bernard ». Le nom se
+              déduit désormais du client, sinon de l'adresse, sinon de la date
+              (`src/lib/nom-chantier.ts`). Rien n'est fabriqué : c'est une
+              étiquette, pas une donnée sur le chantier. */}
           <Field
             label="Nom du client (facultatif)"
             placeholder="M. Bernard"
+            big
             value={nomClient}
             onChange={setNomClient}
           />
@@ -187,9 +186,7 @@ export default function NouveauChantierPage() {
                 écran ne le permet aujourd'hui. Mieux vaut inviter à renseigner
                 maintenant ce qui est connu. */}
             {erreur ??
-              (nomChantier.trim().length > 0
-                ? "Renseignez dès maintenant ce que vous savez du client : ces informations ne sont plus modifiables ensuite."
-                : "Le nom du chantier est nécessaire pour continuer.")}
+              "Renseignez dès maintenant ce que vous savez du client : ces informations ne sont plus modifiables ensuite."}
           </p>
         </form>
       </div>
