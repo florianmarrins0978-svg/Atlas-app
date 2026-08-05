@@ -302,8 +302,24 @@ Ces règles viennent de `PRINCIPES.md` et de `docs/MVP.md`. Elles ne sont pas
 négociables au cas par cas — les changer suppose de changer ces documents.
 
 - **Il n'invente jamais un prix.** Les prix viennent de la grille du patron, de
-  l'historique, ou de nulle part. Un poste sans tarif fiable reste **vide et
-  signalé**, jamais deviné, jamais « estimé ».
+  l'historique, **ou d'une estimation explicitement marquée comme telle** — ou
+  de nulle part. Un poste sans source reste **vide et signalé**, jamais deviné
+  en silence.
+
+  > **Assoupli le 5 août 2026, par le patron.** La règle disait « jamais
+  > estimé », ce qui fermait la porte à ce qu'il attend de l'agent : *« à force
+  > de comparer les photos des arbres et les devis, il devra être capable de
+  > proposer un prix juste. »*
+  >
+  > Sa raison, dans ses mots : **« rien ne sera jamais envoyé sans vérification
+  > du patron, ça restera qu'une proposition. »** C'est l'ARRÊT 1 qui porte la
+  > garantie, pas l'interdiction d'estimer.
+  >
+  > Ce que l'assouplissement n'autorise pas, et qui ne bouge pas d'un pouce :
+  > une estimation **non signalée**. Tout prix qui ne vient ni de la grille ni
+  > de l'historique est affiché comme estimation, avec ce sur quoi il se fonde,
+  > et se distingue à l'œil d'un prix ferme. Un prix estimé qui aurait l'air
+  > d'un prix sûr serait pire que pas de prix du tout.
 - **Il n'invente jamais une donnée client.** Nom, adresse, téléphone :
   uniquement ce qui a été dit ou déjà enregistré. Un champ absent reste vide.
 - **Il n'invente jamais une prestation.** En cas d'ambiguïté, il signale au lieu

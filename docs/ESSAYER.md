@@ -151,6 +151,13 @@ une date proche : il y apparaît le jour venu.
   **Vous pouvez le brancher pour vos propres essais** : voir juste en dessous.
 - **Les fichiers sont stockés sur le disque du banc d'essai.** Ils disparaissent
   avec lui. En production, ce mode est refusé au démarrage.
+- **Vos données d'essai vivent dans l'espace de travail, pas ailleurs.**
+  L'application a bien une mémoire — une base de données qui survit aux
+  redémarrages et à la mise en veille de trente minutes. Mais **elle meurt avec
+  l'espace de travail** : le supprimer efface vos chantiers, et les données de
+  démonstration repartent à zéro. Un banc d'essai est jetable par construction ;
+  c'est l'hébergement (point 3 de [`A-FAIRE.md`](A-FAIRE.md)) qui donnera à
+  Atlas une mémoire qui dure.
 
 ---
 
@@ -196,18 +203,29 @@ secret**. Quatre secrets à créer :
 **Ne collez jamais une clé dans un fichier du dépôt, ni dans une conversation.**
 Un secret posé ici ne se relit pas, y compris par vous — c'est voulu.
 
-### 3. Recréer l'espace de travail — **sur la bonne branche**
+### 3. Redémarrer l'espace de travail — **et non le supprimer**
 
-Deux pièges d'un coup, et ils donnent le même symptôme :
+> ⚠️ **Supprimer un espace de travail efface toutes vos données d'essai.**
+> Chantiers, devis, factures : tout part avec lui, et les données de
+> démonstration sont réinstallées à neuf. Ne le supprimez que si vous y tenez.
 
-- Un espace **déjà ouvert** ne voit pas un secret créé après lui.
-- Un espace créé depuis **`main`** ne verra jamais vos clés non plus : c'est la
-  branche `claude/dictee-mode-essai-qqhcsn` qui porte le passage des secrets
-  jusqu'au conteneur. Tant qu'elle n'est pas fusionnée, `main` fige encore
-  `LLM_PROVIDER: dev` en dur.
+Un espace **déjà allumé** ne voit pas un secret créé après lui — mais un
+**redémarrage** suffit à le lui faire lire, sans rien perdre.
 
-Donc : `github.com/codespaces`, supprimer l'ancien espace, puis en créer un neuf
-**en choisissant cette branche** dans le sélecteur.
+Sur `github.com/codespaces`, menu **⋯** → **Stop codespace**, puis rouvrez-le.
+
+> **Ce que je n'ai pas pu vérifier.** Je n'ai pas de Docker dans mon
+> environnement : je n'ai jamais vu un secret traverser jusqu'à l'application.
+> Le redémarrage *devrait* suffire. **La façon de le savoir en dix secondes :**
+> ouvrez **Réglages** et lisez le bloc « Ce que l'application utilise ». S'il
+> nomme OpenAI et Anthropic, c'est bon. S'il dit « mode déterministe », le
+> secret n'est pas arrivé — et là seulement, recréez l'espace.
+
+**Le second piège, lui, impose bien une recréation** : un espace créé depuis
+`main` ne verra jamais vos clés, parce que c'est la branche
+`claude/dictee-mode-essai-qqhcsn` qui porte le passage des secrets jusqu'au
+conteneur. Tant qu'elle n'est pas fusionnée, `main` fige `LLM_PROVIDER: dev` en
+dur. Une fois la fusion faite, la question ne se pose plus.
 
 ### 4. Vérifier que c'est bien branché
 

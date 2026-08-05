@@ -38,11 +38,20 @@ l'ordre décidé avec le patron le 5 août 2026 :
 | c | **Écart devis / facture.** Les données existent déjà des deux côtés. | La meilleure leçon qui soit : ce qui avait été mal estimé s'y voit tout seul. |
 | d | **Photos ↔ prix.** Conserver le lien entre les photos d'un chantier et le devis qui a suivi. | Objectif du patron : « à force de comparer les photos des arbres et les devis, il devra proposer un prix juste ». Impossible aujourd'hui — mais **l'accumulation doit commencer maintenant**, sinon dans six mois il n'y aura toujours rien à apprendre. |
 
-**Réserve à trancher avant (d).** Un prix déduit d'une photo est une
-*estimation*, ce que `docs/AGENT.md` §3 interdit aujourd'hui (« jamais deviné,
-jamais estimé »). Il faudra soit assouplir la règle, soit poser qu'un tel prix
-est toujours marqué et jamais envoyé sans validation. Signalé au patron le
-5 août 2026, non tranché.
+**Réserve levée le 5 août 2026.** Un prix déduit d'une photo est une estimation,
+ce que `docs/AGENT.md` §3 interdisait. Le patron a tranché : *« rien ne sera
+jamais envoyé sans vérification du patron, ça restera qu'une proposition. »* La
+règle est assouplie — l'estimation est permise **à condition d'être signalée
+comme telle**, et c'est l'arrêt 1 qui porte la garantie. Voir `AGENT.md` §3.
+
+**Et une contrainte de fond, soulevée par le patron le même jour :** *« si
+l'appli n'a aucune mémoire, comment l'IA va enregistrer et se souvenir ? »* Il a
+raison, et ça conditionne (a) à (d). L'application a bien une mémoire — une base
+PostgreSQL sur volume persistant — mais **celle du banc d'essai meurt avec
+l'espace de travail**, qui est jetable par construction. Tout ce qui s'apprend
+ne sera durable qu'une fois l'hébergement choisi (point 3 de `A-FAIRE.md`).
+Construire l'apprentissage sur le banc reste utile pour l'éprouver ; ce qui s'y
+accumule ne doit pas être présenté comme conservé.
 
 
 ### 1. Agenda Google — lecture des disponibilités
