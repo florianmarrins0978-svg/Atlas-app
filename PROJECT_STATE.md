@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-04 · branche `claude/migrate-app-atlas-zz31ac`
-· dernière migration `drizzle/0020_correction_demandee.sql`
+**Dernière mise à jour :** 2026-08-04 (soir) · branche `claude/migrate-app-atlas-zz31ac`
+· dernière migration `drizzle/0021_lecture_dictee.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -64,6 +64,11 @@ seule avec quinze outils.
 | Correction demandée par le client, avec son message porté au patron | `src/app/devis/[jeton]/formulaire.tsx` + `src/lib/etat-envoi.ts` |
 | Écrire le devis soi-même, sans passer par la proposition de prix | `src/app/chantiers/[id]/informations/InformationsClient.tsx` → `prix?saisie=manuelle` |
 | Transmission au client : messagerie ouverte **au bon destinataire**, canal changeable, coordonnée saisissable sur place | `src/app/chantiers/[id]/export/TransmettreAuClient.tsx` |
+| **De la dictée au devis en un seul geste** : prestations, durée, équipe, prix, devis | `src/server/services/devis-depuis-dictee.ts` + `src/app/chantiers/[id]/DevisDepuisDictee.tsx` |
+| La dictée est lue mot à mot quand aucun modèle ne répond — et l'écran le dit | `src/server/ai/lecture-litterale.ts` + `drizzle/0021_lecture_dictee.sql` |
+| Rédiger le devis **entièrement à la main**, depuis la fiche du chantier | `src/app/chantiers/[id]/page.tsx` → `prix?saisie=manuelle` |
+| Durée du chantier à la molette (½ journée → 100 jours), sur les deux écrans | `src/lib/durees-chantier.ts` + `src/app/chantiers/[id]/BandeDuree.tsx` |
+| L'espace d'essai se met à jour seul, et l'application annonce sa version | `.devcontainer/mettre-a-jour.sh` + Réglages |
 
 ### Conformité RGPD
 
@@ -106,22 +111,27 @@ Voir `TODO.md` pour le détail et l'ordre.
   pas ; le reste (lecture des disponibilités, écriture de l'intervention) est
   codable.
 - **Code SMS en renfort de l'acceptation** — l'empreinte, l'horodatage et
-  l'adresse sont déjà conservés.
+  l'adresse sont déjà conservés. **Sans objet en l'état**, pour la même raison.
 - **Relance automatique** — l'état « à relancer » existe et s'affiche, le lien
-  reste proposé pour un renvoi ; l'automatiser suppose un fournisseur d'envoi.
+  reste proposé pour un renvoi. **Sans objet en l'état** : aucun fournisseur
+  d'envoi ne sera branché (`ARCHITECTURE.md` §13), la relance part de la
+  messagerie du patron comme l'envoi.
 
 ---
 
 ## Ce qui bloque, et qui n'avancera pas en codant
 
-Cinq points, tous dans **`docs/A-FAIRE.md`**, tous en attente d'une décision du
-patron :
+**Quatre** points, tous dans **`docs/A-FAIRE.md`**, tous en attente d'une
+décision du patron. Le cinquième — le fournisseur d'envoi — a été tranché le
+2026-08-04 : il n'y en aura pas, et il est laissé barré ci-dessous pour éviter
+qu'on le rouvre.
 
 1. Choisir les deux fournisseurs d'IA définitifs (transcription, raisonnement).
    **Ce point a un effet visible tous les jours** : sans modèle, la dictée est
-   seulement *découpée*, jamais comprise. Le découpage ne perd plus rien (voir
-   `scripts/test-analyse-dictee.ts`), mais il ne sait pas qu'un chêne mort
-   s'abat et qu'une haie se taille.
+   seulement *recopiée*, jamais comprise. La recopie ne perd plus rien (voir
+   `scripts/test-analyse-dictee.ts`) et elle mène désormais jusqu'au devis
+   chiffré, mais elle ne sait pas qu'un chêne mort s'abat et qu'une haie se
+   taille — et l'écran l'annonce plutôt que de la faire passer pour une analyse.
 2. Faire rédiger le contrat de sous-traitance par un juriste.
 3. Choisir un hébergement européen — **sans lui, personne d'autre que le patron
    ne peut se servir de l'application**. N'empêche NI d'essayer NI de finir le

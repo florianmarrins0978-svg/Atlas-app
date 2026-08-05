@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { brouillonsInformations } from "../db/schema";
-import { PropositionExtractionSchema, type PropositionExtraction } from "../ai/schemas/extraction";
+import { PropositionExtractionSchema, type PropositionExtraction, type LectureDictee } from "../ai/schemas/extraction";
 import type { Ctx } from "./context";
 
 export type Brouillon = {
@@ -10,6 +10,8 @@ export type Brouillon = {
   contenu: PropositionExtraction;
   statut: "brouillon" | "confirme";
   modifieParHumain: boolean;
+  /** Comprise par un modèle, ou recopiée mot à mot — voir LectureDictee. */
+  lecture: LectureDictee;
   sourceTranscription: string | null;
   confirmeAt: Date | null;
   updatedAt: Date;
@@ -27,6 +29,7 @@ function versBrouillon(row: typeof brouillonsInformations.$inferSelect): Brouill
     contenu: analyse.success ? analyse.data : PropositionExtractionSchema.parse({}),
     statut: row.statut,
     modifieParHumain: row.modifieParHumain,
+    lecture: row.lecture,
     sourceTranscription: row.sourceTranscription,
     confirmeAt: row.confirmeAt,
     updatedAt: row.updatedAt,
@@ -53,7 +56,8 @@ export async function enregistrerGeneration(
   ctx: Ctx,
   chantierId: string,
   contenu: PropositionExtraction,
-  sourceTranscription: string | null
+  sourceTranscription: string | null,
+  lecture: LectureDictee = "modele"
 ): Promise<Brouillon> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [existant] = await tx
@@ -68,6 +72,7 @@ export async function enregistrerGeneration(
         .set({
           contenu,
           sourceTranscription,
+          lecture,
           statut: "brouillon",
           modifieParHumain: false,
           confirmeAt: null,
@@ -80,7 +85,7 @@ export async function enregistrerGeneration(
 
     const [row] = await tx
       .insert(brouillonsInformations)
-      .values({ entrepriseId: ctx.entrepriseId, chantierId, contenu, sourceTranscription })
+      .values({ entrepriseId: ctx.entrepriseId, chantierId, contenu, sourceTranscription, lecture })
       .returning();
     return versBrouillon(row);
   });

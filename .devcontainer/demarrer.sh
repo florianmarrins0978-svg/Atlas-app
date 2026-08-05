@@ -28,6 +28,25 @@ pkill -f "[n]ext dev" 2>/dev/null || true
 
 cd "$CD" || exit 0
 
+# Récupérer le code neuf, à chaque allumage. La logique — et ses prudences —
+# vit dans `mettre-a-jour.sh`, qui est éprouvé par
+# `scripts/test-mise-a-jour-espace.ts` : enfouie ici, elle n'aurait jamais été
+# vue échouer.
+MISE_A_JOUR="$(bash "$(dirname "$0")/mettre-a-jour.sh" "$CD")"
+
+# Les dépendances et la base doivent suivre le code, sinon la mise à jour
+# produit une panne au lieu d'un correctif : un écran qui plante sur une colonne
+# absente est pire que l'ancienne version.
+if [ "$MISE_A_JOUR" = "faite" ]; then
+  npm ci --silent >> "$JOURNAL" 2>&1 || npm install --silent >> "$JOURNAL" 2>&1 || true
+  npm run db:migrate --silent >> "$JOURNAL" 2>&1 || true
+fi
+
+# La version exécutée, transmise à l'application pour qu'elle l'affiche.
+# Le format est fait pour être lu sur une capture d'écran, pas par une machine.
+ATLAS_VERSION="$(git log -1 --date=format:'%d/%m/%Y %H:%M' --format='%cd · %h' 2>/dev/null || echo 'inconnue')"
+export ATLAS_VERSION
+
 # `setsid` détache le serveur du processus de démarrage : sans cela, l'éditeur
 # le tue en même temps que la commande de démarrage, et l'adresse ne répond
 # jamais.
@@ -65,6 +84,13 @@ if [ -n "$ADRESSE" ]; then
 else
   echo "  Atlas démarre tout seul, sur le port 3000."
 fi
+echo "──────────────────────────────────────────────"
+echo "  Version exécutée : $ATLAS_VERSION"
+case "$MISE_A_JOUR" in
+  faite) echo "  Le code a été mis à jour au démarrage." ;;
+  impossible*) echo "  ⚠ MISE À JOUR $MISE_A_JOUR" ;;
+  *) echo "  Déjà à jour." ;;
+esac
 echo "──────────────────────────────────────────────"
 echo "  Ça prend une minute ou deux. Journal : $JOURNAL"
 echo

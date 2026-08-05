@@ -3,11 +3,15 @@ import { getNoteVocale } from "../../repositories/notes-vocales";
 import {
   getBrouillon,
   enregistrerGeneration,
+  marquerConfirme,
   type Brouillon,
 } from "../../repositories/brouillons-informations";
+import { ajouterPrestation } from "../../repositories/prestations";
+import { ajouterMateriel } from "../../repositories/materiel";
+import { mettreAJourDureeEquipe } from "../../repositories/chantiers";
 import { extraire } from "./extraction-service";
 import { estTranscriptionSimulee } from "../providers/transcription/dev";
-import type { PropositionExtraction } from "../schemas/extraction";
+import type { PropositionExtraction, LigneExtraite } from "../schemas/extraction";
 
 export type ResultatGeneration =
   | { statut: "genere"; brouillon: Brouillon }
@@ -64,6 +68,63 @@ export async function genererBrouillon(
     return { statut: "conflit", brouillonActuel: existant, propositionNouvelle: resultat.proposition };
   }
 
-  const brouillon = await enregistrerGeneration(ctx, chantierId, resultat.proposition, transcription);
+  const brouillon = await enregistrerGeneration(ctx, chantierId, resultat.proposition, transcription, resultat.lecture);
   return { statut: "genere", brouillon };
+}
+
+// --- Confirmation : la proposition devient une donnée du chantier ---------
+
+export type ResultatConfirmationBrouillon =
+  | { succes: true; prestationsCreees: { id: string; libelle: string }[]; materielCree: { id: string; libelle: string }[] }
+  | { succes: false; erreur: string };
+
+/**
+ * Déverse le brouillon dans les données métier du chantier.
+ *
+ * Le contenu est relu **depuis la base**, jamais repris du navigateur : ce qui
+ * entre dans le chantier est exactement ce que le patron a sous les yeux et a
+ * corrigé, pas ce qu'une page restée ouverte prétend afficher.
+ *
+ * Vit ici, et non dans l'action de l'écran Informations, parce que deux chemins
+ * l'appellent désormais : le bouton « Confirmer », et l'enchaînement complet
+ * depuis la dictée. Deux implémentations auraient fini par diverger, et c'est
+ * l'enchaînement — le moins souvent relu — qui serait resté en arrière
+ * (`CLAUDE.md` §3).
+ */
+export async function confirmerBrouillon(ctx: Ctx, chantierId: string): Promise<ResultatConfirmationBrouillon> {
+  const brouillon = await getBrouillon(ctx, chantierId);
+  if (!brouillon) return { succes: false, erreur: "Aucun brouillon à confirmer." };
+  if (brouillon.statut === "confirme") {
+    return { succes: false, erreur: "Ce brouillon a déjà été confirmé." };
+  }
+
+  const contenu = brouillon.contenu;
+  const prestationsCreees = [];
+  for (const ligne of contenu.prestations) {
+    const libelle = libelleAvecQuantite(ligne);
+    if (libelle) prestationsCreees.push(await ajouterPrestation(ctx, chantierId, libelle));
+  }
+  const materielCree = [];
+  for (const ligne of contenu.materiel) {
+    const libelle = libelleAvecQuantite(ligne);
+    if (libelle) materielCree.push(await ajouterMateriel(ctx, chantierId, libelle));
+  }
+  if (contenu.dureePrevue || contenu.tailleEquipe) {
+    await mettreAJourDureeEquipe(ctx, chantierId, {
+      dureePrevue: contenu.dureePrevue ?? undefined,
+      tailleEquipe: contenu.tailleEquipe ?? undefined,
+    });
+  }
+
+  await marquerConfirme(ctx, chantierId);
+  return { succes: true, prestationsCreees, materielCree };
+}
+
+// Recompose un libellé lisible à partir de la ligne structurée. N'ajoute
+// jamais de quantité absente : sans quantité ET unité, le libellé est repris tel quel.
+function libelleAvecQuantite(ligne: LigneExtraite): string {
+  const base = ligne.libelle.trim();
+  if (!base) return "";
+  if (ligne.quantite && ligne.unite) return `${base} (${ligne.quantite} ${ligne.unite})`;
+  return base;
 }

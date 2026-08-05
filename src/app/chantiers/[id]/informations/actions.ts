@@ -1,6 +1,8 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { preparerDevisDepuisDictee } from "@/server/services/devis-depuis-dictee";
 import {
   ajouterPrestation,
   modifierPrestation,
@@ -14,17 +16,9 @@ import { getTarif } from "@/server/repositories/tarifs";
 import { ajouterLignePrixDirectAction } from "@/app/chantiers/[id]/prix/actions";
 import { chargerDevisAction } from "@/app/chantiers/[id]/export/actions";
 import { extraire } from "@/server/ai/services/extraction-service";
-import { genererBrouillon } from "@/server/ai/services/brouillon-service";
-import {
-  getBrouillon,
-  enregistrerCorrectionHumaine,
-  marquerConfirme,
-} from "@/server/repositories/brouillons-informations";
-import {
-  PropositionExtractionSchema,
-  type PropositionExtraction,
-  type LigneExtraite,
-} from "@/server/ai/schemas/extraction";
+import { genererBrouillon, confirmerBrouillon } from "@/server/ai/services/brouillon-service";
+import { getBrouillon, enregistrerCorrectionHumaine } from "@/server/repositories/brouillons-informations";
+import { PropositionExtractionSchema, type PropositionExtraction } from "@/server/ai/schemas/extraction";
 import type { ResultatApplicationProposition, ResultatConfirmation, CategorieConflit } from "@/server/ai/propositions";
 import { reclamerProposition } from "@/server/repositories/propositions-ia";
 import { AccesRefuseError } from "@/server/db/with-entreprise";
@@ -153,41 +147,9 @@ export async function enregistrerBrouillonAction(chantierId: string, contenu: un
 // Idempotent au sens utile : un brouillon déjà confirmé n'est pas réappliqué.
 export async function confirmerBrouillonAction(chantierId: string) {
   const ctx = await getCurrentCtx();
-  const brouillon = await getBrouillon(ctx, chantierId);
-  if (!brouillon) return { succes: false as const, erreur: "Aucun brouillon à confirmer." };
-  if (brouillon.statut === "confirme") {
-    return { succes: false as const, erreur: "Ce brouillon a déjà été confirmé." };
-  }
-
-  const contenu = brouillon.contenu;
-  const prestationsCreees = [];
-  for (const ligne of contenu.prestations) {
-    const libelle = libelleAvecQuantite(ligne);
-    if (libelle) prestationsCreees.push(await ajouterPrestation(ctx, chantierId, libelle));
-  }
-  const materielCree = [];
-  for (const ligne of contenu.materiel) {
-    const libelle = libelleAvecQuantite(ligne);
-    if (libelle) materielCree.push(await ajouterMateriel(ctx, chantierId, libelle));
-  }
-  if (contenu.dureePrevue || contenu.tailleEquipe) {
-    await mettreAJourDureeEquipe(ctx, chantierId, {
-      dureePrevue: contenu.dureePrevue ?? undefined,
-      tailleEquipe: contenu.tailleEquipe ?? undefined,
-    });
-  }
-
-  await marquerConfirme(ctx, chantierId);
-  return { succes: true as const, prestationsCreees, materielCree };
-}
-
-// Recompose un libellé lisible à partir de la ligne structurée. N'ajoute
-// jamais de quantité absente : sans quantité ET unité, le libellé est repris tel quel.
-function libelleAvecQuantite(ligne: LigneExtraite): string {
-  const base = ligne.libelle.trim();
-  if (!base) return "";
-  if (ligne.quantite && ligne.unite) return `${base} (${ligne.quantite} ${ligne.unite})`;
-  return base;
+  const resultat = await confirmerBrouillon(ctx, chantierId);
+  if (!resultat.succes) return { succes: false as const, erreur: resultat.erreur };
+  return { succes: true as const, prestationsCreees: resultat.prestationsCreees, materielCree: resultat.materielCree };
 }
 
 // Applique les propositions confirmées par l'utilisateur (assistant, lot
@@ -436,4 +398,36 @@ export async function appliquerPropositionsAction(chantierId: string, propositio
   }
 
   return { resultats, avertissement };
+}
+
+// --- De la dictée au devis, en un seul geste ------------------------------
+
+/**
+ * Enchaîne tout ce que le patron enchaînait à la main : brouillon,
+ * prestations, matériel, durée, équipe, prix, devis.
+ *
+ * La règle vit dans `src/server/services/devis-depuis-dictee.ts` — cette action
+ * ne fait que lui donner le contexte de session et rafraîchir les écrans
+ * touchés. Elle n'envoie rien : l'arrêt avant l'envoi reste entier.
+ */
+export async function preparerDevisDepuisDicteeAction(chantierId: string, remplacer = false) {
+  const ctx = await getCurrentCtx();
+  const resultat = await preparerDevisDepuisDictee(ctx, chantierId, { remplacer });
+
+  if (resultat.statut === "prepare") {
+    // Les quatre écrans que l'enchaînement vient de modifier. Sans cela, le
+    // patron revient sur « Informations » et y trouve la page d'avant : il
+    // croirait que rien ne s'est passé.
+    revalidatePath(`/chantiers/${chantierId}`);
+    revalidatePath(`/chantiers/${chantierId}/informations`);
+    revalidatePath(`/chantiers/${chantierId}/prix`);
+    revalidatePath(`/chantiers/${chantierId}/export`);
+  }
+
+  // Le conflit ne traverse pas la frontière client tel quel : seul ce qui sert
+  // à afficher le choix est transmis.
+  if (resultat.statut === "conflit") {
+    return { statut: "conflit" as const, propositionNouvelle: resultat.propositionNouvelle };
+  }
+  return resultat;
 }

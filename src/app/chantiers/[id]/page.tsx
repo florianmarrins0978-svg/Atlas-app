@@ -87,7 +87,29 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
         {/* Action principale unique, ou message calme si rien n'est requis */}
         <div className="px-6 pt-7">
           {nextAction ? (
-            <PrimaryButton href={getNextActionHref(chantier.id, nextAction)}>{nextAction.label} →</PrimaryButton>
+            <>
+              <PrimaryButton href={getNextActionHref(chantier.id, nextAction)}>{nextAction.label} →</PrimaryButton>
+              {/* La sortie de secours, à hauteur de la fiche.
+                  Le patron, le 4 août : « je ne peux toujours pas rédiger mon
+                  devis seulement à la main si je le souhaite ». Elle existait —
+                  mais uniquement au bas de l'écran Informations, c'est-à-dire
+                  après avoir traversé photos et dictée. Et les étapes affichaient
+                  « Prix — en attente des informations », qui se lit comme un
+                  verrou alors que rien n'est verrouillé.
+
+                  Elle disparaît une fois le devis parti : rédiger à la main un
+                  devis déjà chez le client n'a plus de sens, et le rouvrir passe
+                  par « Corriger et renvoyer ». */}
+              {!chantier.devisEnvoyeAt && (
+                <a
+                  href={`/chantiers/${chantier.id}/prix?saisie=manuelle`}
+                  className="mt-3 block text-center text-[14px] font-medium"
+                  style={{ color: colors.rust }}
+                >
+                  Ou rédiger le devis à la main →
+                </a>
+              )}
+            </>
           ) : (
             <div className="rounded-2xl px-5 py-4 text-center" style={{ backgroundColor: colors.card }}>
               {/* « Rien à faire pour l'instant » était vrai et inutile : il ne

@@ -16,7 +16,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 | | Ce qui débloque | Ce que je fais alors |
 |---|---|---|
-| 1 | Deux fournisseurs d'IA retenus | Verrouiller la configuration sur eux, tenir `docs/RGPD.md` §3 à jour — et **enfin lire vraiment la dictée** : sans modèle, `analyse-demande.ts` découpe sans comprendre (il ne perd plus rien, c'est tout ce qu'on peut lui demander) |
+| 1 | Deux fournisseurs d'IA retenus | Verrouiller la configuration sur eux, tenir `docs/RGPD.md` §3 à jour — et **enfin comprendre la dictée** : sans modèle, elle est recopiée mot à mot (`lecture-litterale.ts`). Elle va jusqu'au devis chiffré, mais elle ignore qu'un chêne mort s'abat et qu'une haie se taille |
 | 2 | Contrat de sous-traitance rédigé | Remplacer les canevas sans valeur par les textes réels |
 | 3 | Hébergement européen choisi | Déployer — **sans quoi personne ne peut se servir de l'application** |
 | 4 | Société constituée, assurance souscrite | Rien côté code |
@@ -78,11 +78,11 @@ faudrait le fiabiliser avant d'en faire une contrainte. Voir `ARCHITECTURE.md`
 
 ### 6. Rien ne mène le patron d'un écran au suivant
 
-Après « Enregistrer le texte », rien n'indique qu'il faut ensuite générer le
-brouillon, puis le confirmer pour l'ajouter au chantier. Le lien « Continuer vers
-les informations → » a été ajouté à la transcription ; les autres marches du
-parcours n'en ont pas. Un écran qui ne dit pas où l'on va se lit comme une
-application en panne — c'est déjà arrivé.
+**Le tronçon principal est réglé** (2026-08-04) : depuis la transcription, un
+seul appui va jusqu'au devis chiffré. Restent les marches d'à côté — après une
+photo, après un tarif enregistré, après une facture émise, rien n'indique où
+l'on va. Un écran qui ne dit pas la suite se lit comme une application en panne,
+et c'est déjà arrivé.
 
 ---
 
@@ -115,3 +115,8 @@ application en panne — c'est déjà arrivé.
 - ~~La durée du chantier se choisit à la molette (½ journée à 100 jours)~~ — 2026-08-03
 - ~~La durée dictée n'entrait pas dans la planification : un chantier de 2 jours n'en bloquait qu'un~~ — 2026-08-03
 - ~~Le SMS s'ouvrait sans destinataire ; le canal se change désormais, et la coordonnée manquante se saisit sur place~~ — 2026-08-04
+- ~~De la dictée au devis en un seul geste, et plus aucun écran mort quand le fournisseur répond à côté~~ — 2026-08-04
+- ~~L'espace d'essai récupère le code neuf à chaque allumage, et l'application annonce sa version~~ — 2026-08-04
+- ~~La date des documents s'écrit jour/mois/année~~ — 2026-08-04
+- ~~La bande des durées est aussi sur l'écran Informations, là où il la cherchait~~ — 2026-08-04
+- ~~Rédiger le devis entièrement à la main, depuis la fiche du chantier~~ — 2026-08-04

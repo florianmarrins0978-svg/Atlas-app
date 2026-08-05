@@ -662,3 +662,115 @@ le vérifie sur une ligne remise à l'état d'avant.
 Les **équipes nommées** (qui va où) et la **capacité en hommes** n'ont pas été
 retenues : le patron a choisi le compteur. Elles restent dans `TODO.md` si son
 entreprise grandit.
+
+## 23. De la dictée au devis : un seul geste, et rien n'est jamais mort
+
+**Décidé le 2026-08-04**, après : « toujours pas de devis créé tout seul à partir
+de la note vocale ! Problème qui traîne. »
+
+### Ce qui était en cause, et ce qui ne l'était pas
+
+Le message affiché — « Réponse du fournisseur non conforme (JSON invalide). » —
+n'était que le symptôme du jour. Le fond était ailleurs : **chaque maillon
+existait, aucun ne menait au suivant.** Brouillon, confirmation, chiffrage,
+ligne de prix, devis : cinq gestes sur quatre écrans, tous éprouvés
+séparément, et aucune suite ne les parcourait à la file. Un contrôle par maillon
+peut rester vert pendant que le parcours ne mène nulle part.
+
+`docs/AGENT.md` §2 décrivait pourtant l'agent qui « transcrit, structure, cherche
+les tarifs, **rédige le devis** », avec **un seul arrêt**. Ce lot construit
+l'enchaînement décrit ; il n'invente aucune règle.
+
+### Deux principes, tenus dans le code
+
+**1. Aucun chemin ne laisse le patron devant rien.**
+`extraction-service.ts` ne renvoie plus d'échec sur une réponse de fournisseur :
+il tolère l'emballage (`lireObjetJson` — bloc de code, prose autour), et si rien
+n'est exploitable — réponse à côté, hors schéma, clé absente, quota, panne — il
+**lit la dictée mot à mot** (`lecture-litterale.ts`), sans réseau ni clé.
+
+Le découpage littéral a quitté le fournisseur de développement pour vivre seul :
+les deux s'en servent, et deux copies auraient fini par diverger — c'est le
+chemin de secours, le moins souvent relu, qui serait resté en arrière.
+
+Cette lecture **recopie, elle ne comprend pas** : elle ignore qu'un chêne mort
+s'abat et qu'une haie se taille. Le brouillon porte donc `lecture = 'litterale'`
+(migration 0021, persistée pour survivre au rechargement), et les écrans le
+disent. Une recopie présentée comme une analyse serait un mensonge sur ce que le
+patron relit.
+
+**2. Un raccourci n'est pas une dispense.**
+`preparerDevisDepuisDictee()` enchaîne tout, mais :
+
+| Ce qu'il fait | Ce qu'il ne fera jamais |
+|---|---|
+| Écrit prestations, matériel, durée, équipe | Envoyer quoi que ce soit — l'arrêt avant l'envoi est intact |
+| Applique un tarif, ou un chiffrage calculé | Inventer un prix : sans tarif ni durée/équipe, aucune ligne, et le rapport dit pourquoi |
+| Trancher entre deux tarifs concurrents | Non — le choix reste au patron, comme sur l'écran Prix |
+| S'arrêter si le brouillon a été corrigé à la main | Écraser une correction humaine |
+
+Il n'implémente rien de neuf : `confirmerBrouillon()` et
+`appliquerPropositionPrix()` ont été **sortis des actions d'écran vers des
+services**, précisément pour que les deux chemins appliquent la même règle
+(`CLAUDE.md` §3). Sans cela, le raccourci aurait rouvert le devis doublé du
+3 août sur la voie la moins relue.
+
+### Ce que les contrôles tiennent
+
+- `test-lecture-dictee.ts` : le fournisseur est **injectable**, donc une réponse
+  mal formée est fabricable — sans quoi le défaut du patron restait
+  intestable. Réponse encadrée, prose, hors schéma, panne, quota : à chaque fois
+  la dictée ressort.
+- `test-devis-depuis-dictee-e2e.ts` : un appui, un devis chiffré, **zéro envoi**,
+  et rejouer le geste n'ajoute pas une seconde ligne de prix.
+
+## 24. L'espace d'essai se met à jour, et l'application dit sa version
+
+**Décidé le 2026-08-04**, après le défaut le plus coûteux de la série — et il
+n'était pas dans l'application.
+
+### Ce qui s'est passé
+
+Le patron signale deux correctifs qui « ne marchent toujours pas » : la bande de
+durées « a disparu », le numéro du client « ne se met toujours pas ». Les deux
+étaient corrigés, éprouvés, fusionnés la veille. Son espace de travail gardait
+le code du jour de sa création : **un espace ne récupère jamais rien tout seul.**
+Rien à l'écran ne le lui disait. Trois échanges perdus à chercher des défauts
+déjà réparés.
+
+### Ce qui est décidé
+
+**1. L'espace se met à jour à chaque allumage.** `.devcontainer/mettre-a-jour.sh`,
+appelé par `demarrer.sh`, puis `npm ci` et les migrations si quelque chose a
+bougé — un code neuf sur une base ancienne serait une panne, pas un correctif.
+
+Trois prudences, dans cet ordre, et aucune n'est négociable :
+
+| Situation | Ce qui se passe |
+|---|---|
+| Travail non enregistré | on ne touche à rien, et on le dit |
+| Historique divergent | refus — jamais de `--force` |
+| Distant injoignable | refus explicite, le démarrage continue |
+
+*Écraser le travail du patron pour lui livrer une mise à jour serait un remède
+pire que le mal.*
+
+**2. Le script vit dans son propre fichier.** Non par goût du découpage : ainsi
+il est **éprouvable**. `scripts/test-mise-a-jour-espace.ts` monte de vrais
+dépôts git et le confronte aux quatre états qu'il prétend distinguer. Enfoui
+dans `demarrer.sh`, il n'aurait jamais été vu échouer — et c'est exactement ce
+que `AGENTS.md` interdit.
+
+**3. L'application annonce la version qu'elle exécute** (Réglages, en bas) :
+`ATLAS_VERSION`, posée par `demarrer.sh`, affichée telle quelle. Hors banc
+d'essai elle est absente, et l'écran dit « inconnue » plutôt que d'inventer.
+
+C'est le contrôle le moins spectaculaire du dépôt et l'un des plus utiles : une
+capture d'écran répond désormais à « quelle version essayez-vous ? » sans qu'il
+faille poser la question.
+
+### Ce que ça ne résout pas
+
+Un espace créé sur une branche qui n'existe plus, ou dont l'historique a été
+réécrit, reste en arrière — le script refuse d'avancer, à raison. Il le dit ;
+c'est alors un nouvel espace qu'il faut, pas une mise à jour.

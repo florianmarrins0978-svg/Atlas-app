@@ -8,13 +8,8 @@ import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { etatEnvoiExplication, etatEnvoiLabel, type EtatEnvoi } from "@/lib/etat-envoi";
 import { reprendreDevisAction } from "./actions";
 import EnvoiAuClient from "./EnvoiAuClient";
+import { enEuros } from "@/lib/euros";
 
-const formatEuros = new Intl.NumberFormat("fr-FR", {
-  style: "currency",
-  currency: "EUR",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
 
 export default function ExportClient({
   chantierId,
@@ -28,6 +23,7 @@ export default function ExportClient({
   entrepriseNom,
   canalClient,
   prestations,
+  lignes,
   totalTtc,
   initialEnvoye,
   etatEnvoi,
@@ -47,6 +43,8 @@ export default function ExportClient({
   entrepriseNom: string;
   canalClient: "sms" | "email";
   prestations: string[];
+  /** Les lignes du devis lui-même : libellé et montant, telles qu'imprimées. */
+  lignes: { libelle: string; montant: string }[];
   totalTtc: string;
   initialEnvoye: boolean;
   etatEnvoi: EtatEnvoi;
@@ -104,6 +102,29 @@ export default function ExportClient({
           <Row label="Client" value={`${clientNom} — ${clientTelephone}`} last />
         </div>
 
+        {/* Le devis lui-même : ce qui sera imprimé, avec les montants.
+            L'écran ne montrait que les *prestations* du chantier — un devis
+            écrit entièrement à la main n'en a aucune, et le patron n'y voyait
+            qu'un total, sans savoir ce qui partirait chez son client. */}
+        {lignes.length > 0 && (
+          <div className="rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
+            <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
+              Lignes du devis
+            </p>
+            <ul className="flex flex-col gap-2">
+              {lignes.map((l, i) => (
+                <li key={i} className="flex items-baseline justify-between gap-3 text-[15px]" style={{ color: colors.ink }}>
+                  <span className="min-w-0 flex-1">{l.libelle || "Ligne sans libellé"}</span>
+                  <span style={{ color: colors.muted }}>{enEuros(l.montant)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Les prestations restent en complément : elles disent le travail, là
+            où les lignes disent le prix. Elles ne sont plus la seule chose
+            affichée. */}
         {prestations.length > 0 && (
           <div className="rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
             <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
@@ -124,7 +145,7 @@ export default function ExportClient({
             Total
           </p>
           <p className="text-[32px] font-semibold leading-none" style={{ fontFamily: font.display, color: colors.rust }}>
-            {formatEuros.format(Number(totalTtc))}
+            {enEuros(totalTtc)}
           </p>
         </div>
 

@@ -29,9 +29,17 @@ async function main() {
 
   // La transcription n'est pas une impasse : elle doit proposer la suite du
   // parcours plutôt que d'obliger à repasser par la fiche du chantier.
+  //
+  // Deux suites, depuis le 4 août 2026, et les deux comptent : la voie directe
+  // — un appui, un devis chiffré — parce que c'est ce que le patron réclamait ;
+  // et la voie détaillée, parce qu'un chantier douteux se relit ligne à ligne.
   assert.ok(
-    await page.locator("text=Continuer vers les informations").isVisible(),
-    "Une transcription disponible doit proposer de continuer vers les informations"
+    await page.getByRole("button", { name: "Créer le devis à partir de ma dictée" }).isVisible(),
+    "Une transcription disponible doit mener au devis en un seul geste"
+  );
+  assert.ok(
+    await page.locator("text=vérifier les informations une par une").isVisible(),
+    "La voie détaillée doit rester offerte à côté du raccourci"
   );
 
   // --- Persistance après rechargement ---

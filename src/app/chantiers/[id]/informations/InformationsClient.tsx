@@ -17,6 +17,8 @@ import {
   validerInformationsAction,
 } from "./actions";
 import BrouillonSection, { type BrouillonInitial } from "./BrouillonSection";
+import BandeDuree from "../BandeDuree";
+import { dureeEnDemiJournees, libelleDuree } from "@/server/disponibilites";
 
 type Ligne = { id: string; libelle: string };
 type NomListe = "prestations" | "materiel";
@@ -44,6 +46,14 @@ export default function InformationsClient({
   const [prestations, setPrestations] = useState<Ligne[]>(initialPrestations);
   const [materiel, setMateriel] = useState<Ligne[]>(initialMateriel);
   const [duree, setDuree] = useState(initialDuree);
+  // La bande ne connaît que des demi-journées ; la donnée, elle, reste du texte.
+  // `dureeEnDemiJournees` est la MÊME lecture que celle du planning : deux
+  // interprétations d'« 1,5 jour » finiraient par se contredire.
+  //
+  // `null` quand rien n'a été dit : la bande affiche « non précisé ». Y montrer
+  // une durée par défaut ferait entrer un chiffre que personne n'a donné, et il
+  // ressortirait dans le prix.
+  const dureeDemiJournees = dureeEnDemiJournees(duree);
   const [equipe, setEquipe] = useState(initialEquipe);
   const [leavingIds, setLeavingIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<{ liste: NomListe; item: Ligne; index: number } | null>(null);
@@ -154,20 +164,34 @@ export default function InformationsClient({
           onRemove={(id) => retirer("prestations", id)}
         />
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field
-            label="Durée"
-            value={duree}
-            onChange={setDuree}
-            onBlurCommit={() => mettreAJourDureeEquipeAction(chantierId, { dureePrevue: duree })}
-          />
-          <Field
-            label="Équipe"
-            value={equipe}
-            onChange={setEquipe}
-            onBlurCommit={() => mettreAJourDureeEquipeAction(chantierId, { tailleEquipe: equipe })}
-          />
-        </div>
+        {/* La durée se choisit à la molette, ici comme à l'envoi.
+            Le patron, le 4 août : « la durée du chantier, ½ journée plus bande
+            déroulante max 100 jours, elle a disparu !!!! » Elle n'avait pas
+            disparu — elle n'était que sur l'écran d'envoi, c'est-à-dire au bout
+            du parcours, alors que c'est ici qu'on décrit le chantier.
+
+            Ce qui est enregistré reste du TEXTE (« 2 jours »), lu par le
+            chiffrage et par la planification : la molette ne change pas la
+            donnée, seulement la façon de la saisir. Une durée écrite à la main
+            par une version antérieure — ou dictée — continue donc d'être
+            comprise, et se retrouve sélectionnée dans la bande. */}
+        <BandeDuree
+          label="Ce chantier prend"
+          valeur={dureeDemiJournees}
+          onChange={(dj) => {
+            const texte = libelleDuree(dj);
+            setDuree(texte);
+            void mettreAJourDureeEquipeAction(chantierId, { dureePrevue: texte });
+          }}
+          aide="Sert à calculer le prix, et à savoir quels jours vous pouvez proposer au client."
+        />
+
+        <Field
+          label="Équipe"
+          value={equipe}
+          onChange={setEquipe}
+          onBlurCommit={() => mettreAJourDureeEquipeAction(chantierId, { tailleEquipe: equipe })}
+        />
 
         <ListeTextes
           label="Matériel"

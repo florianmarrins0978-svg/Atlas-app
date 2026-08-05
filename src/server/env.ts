@@ -29,6 +29,13 @@ export type Env = {
   sentryDsn?: string;
   sentryEnvironment: string;
   releaseVersion?: string;
+  /**
+   * Version affichée au patron (« 04/08/2026 21:12 · b05e282 »), posée par
+   * `.devcontainer/demarrer.sh`. Faite pour être lue sur une capture d'écran :
+   * elle répond à « quelle version essayez-vous ? » sans avoir à la poser.
+   * Absente hors banc d'essai — on dit alors « inconnue » plutôt que d'inventer.
+   */
+  versionAffichee?: string;
   logLevel: string;
 };
 
@@ -124,6 +131,7 @@ function construireEnv(): Env {
     sentryDsn: process.env.SENTRY_DSN,
     sentryEnvironment: process.env.SENTRY_ENVIRONMENT ?? nodeEnv,
     releaseVersion: process.env.RELEASE_VERSION,
+    versionAffichee: process.env.ATLAS_VERSION ?? process.env.RELEASE_VERSION,
     logLevel: process.env.LOG_LEVEL ?? (estProduction ? "info" : "debug"),
   };
 }

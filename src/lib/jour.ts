@@ -22,6 +22,23 @@ export function jourLisible(iso: string): string {
   return `${jourSemaine} ${j === 1 ? "1er" : j} ${MOIS[m - 1]}`;
 }
 
+/**
+ * « 04/08/2026 » — le format des documents français.
+ *
+ * Le patron, sur son devis : « la date est à l'envers ! C'est jour/mois/année ».
+ * Le PDF imprimait la date telle qu'elle est stockée, `2026-08-04`. Ce format
+ * est parfait en base — il se trie tout seul — et illisible sur une pièce que
+ * l'on présente à un client : personne, en France, n'écrit une date ainsi.
+ *
+ * Même précaution que `jourLisible` : aucun `new Date(iso)`, qui décalerait le
+ * jour selon le fuseau du lecteur.
+ */
+export function jourNumerique(iso: string): string {
+  const [a, m, j] = iso.split("-");
+  if (!a || !m || !j) return iso;
+  return `${j}/${m}/${a}`;
+}
+
 /** Délai légal de rétractation pour une acceptation à distance. */
 export const DELAI_RETRACTATION_JOURS = 14;
 

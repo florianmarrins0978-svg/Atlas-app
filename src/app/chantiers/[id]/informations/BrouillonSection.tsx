@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { colors, smallCaps, font } from "@/lib/design-tokens";
-import type { PropositionExtraction, LigneExtraite } from "@/server/ai/schemas/extraction";
+import type { PropositionExtraction, LigneExtraite, LectureDictee } from "@/server/ai/schemas/extraction";
 import type { EtatFraicheurBrouillon } from "@/lib/brouillon-etat";
+import DevisDepuisDictee from "../DevisDepuisDictee";
 import {
   genererBrouillonAction,
   enregistrerBrouillonAction,
@@ -14,8 +15,16 @@ export type BrouillonInitial = {
   contenu: PropositionExtraction;
   statut: "brouillon" | "confirme";
   modifieParHumain: boolean;
+  lecture: LectureDictee;
   fraicheur: EtatFraicheurBrouillon;
 } | null;
+
+// Ce que le patron doit lire quand personne n'a compris sa dictée. Dire
+// « recopiée » plutôt que rien : il corrigera de lui-même ce qui doit l'être,
+// au lieu de faire confiance à une analyse qui n'a pas eu lieu.
+const MENTION_LITTERALE =
+  "Votre dictée a été recopiée mot à mot : aucun modèle n'était disponible pour la comprendre. " +
+  "Chaque phrase est donc reprise telle quelle — relisez-la de près avant de confirmer.";
 
 type Props = {
   chantierId: string;
@@ -38,6 +47,7 @@ export default function BrouillonSection({
 }: Props) {
   const [contenu, setContenu] = useState<PropositionExtraction | null>(brouillonInitial?.contenu ?? null);
   const [statut, setStatut] = useState<"brouillon" | "confirme" | null>(brouillonInitial?.statut ?? null);
+  const [lecture, setLecture] = useState<LectureDictee>(brouillonInitial?.lecture ?? "modele");
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   // Proposition concurrente : le brouillon a été corrigé à la main, une
@@ -73,6 +83,7 @@ export default function BrouillonSection({
       }
       setContenu(resultat.brouillon.contenu);
       setStatut(resultat.brouillon.statut);
+      setLecture(resultat.brouillon.lecture);
       setConflit(null);
     } catch {
       setErreur("Impossible de générer le brouillon pour l'instant. Réessayez.");
@@ -194,7 +205,19 @@ export default function BrouillonSection({
           >
             {enCours ? "Analyse en cours…" : "Générer le brouillon"}
           </button>
+          {/* Le chemin court, à côté du chemin détaillé : le patron pressé ne
+              doit pas avoir à traverser quatre écrans pour obtenir son devis. */}
+          <DevisDepuisDictee chantierId={chantierId} transcriptionDisponible variante="secondaire" />
         </>
+      )}
+
+      {/* Recopie, et non analyse : le patron doit savoir ce qu'il relit. */}
+      {contenu && lecture === "litterale" && (
+        <div className="rounded-2xl px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
+          <p className="text-[13px]" style={{ color: colors.rust }}>
+            {MENTION_LITTERALE}
+          </p>
+        </div>
       )}
 
       {/* Brouillon issu d'une transcription qui n'est plus celle du chantier :

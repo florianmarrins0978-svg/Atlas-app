@@ -33,7 +33,21 @@ export const PropositionExtractionSchema = z.object({
 
 export type PropositionExtraction = z.infer<typeof PropositionExtractionSchema>;
 
-export type ResultatExtraction = { succes: true; proposition: PropositionExtraction } | { succes: false; erreur: ErreurIA };
+/**
+ * D'où vient la proposition.
+ *
+ * `"modele"` : un modèle de langage a lu la dictée et l'a comprise.
+ * `"litterale"` : personne ne l'a comprise — elle a été **recopiée** segment par
+ * segment, faute de fournisseur disponible ou exploitable. Le résultat reste
+ * fidèle à ce qui a été dit, mais il ignore qu'un chêne mort s'abat et qu'une
+ * haie se taille. Les écrans doivent le dire au patron : présenter une
+ * recopie comme une analyse serait lui mentir sur ce qu'il relit.
+ */
+export type LectureDictee = "modele" | "litterale";
+
+export type ResultatExtraction =
+  | { succes: true; proposition: PropositionExtraction; lecture: LectureDictee; motifRepli?: string }
+  | { succes: false; erreur: ErreurIA };
 
 // Brouillon vide — état de départ explicite, jamais un objet partiellement
 // rempli. Utilisé quand aucune analyse n'a encore eu lieu.

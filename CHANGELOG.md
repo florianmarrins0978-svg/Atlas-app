@@ -7,7 +7,134 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-04 (soir)
+
+### Il éprouvait le code de la veille — et rien ne le lui disait
+
+**Le défaut le plus coûteux de toute la série, et il n'était pas dans
+l'application.** Le patron signale deux correctifs qui « ne marchent toujours
+pas » : la bande déroulante des durées « a disparu !!!! », le numéro du client
+« ne se met toujours pas ». Les deux étaient corrigés, éprouvés et fusionnés la
+veille.
+
+Un espace de travail garde le code qu'il avait **le jour de sa création**. Il ne
+récupère jamais rien tout seul. Trois échanges ont été perdus à chercher des
+défauts déjà réparés.
+
+Deux réponses :
+
+- **L'espace se met à jour à chaque allumage** (`.devcontainer/mettre-a-jour.sh`),
+  puis réinstalle les dépendances et joue les migrations — un code neuf sur une
+  base ancienne serait une panne au lieu d'un correctif. Il ne touche à rien si
+  du travail n'est pas enregistré, n'avance qu'en ligne droite, et **dit
+  toujours ce qu'il a fait**. Éprouvé contre les quatre états qu'il distingue :
+  à jour, en retard, sale, divergent (`scripts/test-mise-a-jour-espace.ts`).
+- **L'application annonce sa version** (Réglages, en bas) : « 04/08/2026 21:12 ·
+  b05e282 ». Une capture d'écran répond désormais à « quelle version
+  essayez-vous ? » sans qu'il ait à se le demander.
+
+### « La date est à l'envers » sur le devis
+
+Le PDF imprimait `2026-08-04`, tel que la date est stockée. Ce format est
+parfait en base — il se trie tout seul — et illisible sur une pièce présentée à
+un client. Devis et facture écrivent maintenant **04/08/2026**, échéance
+comprise.
+
+### La bande déroulante des durées, là où il la cherchait
+
+Elle n'avait pas disparu : elle n'existait que sur l'écran d'envoi, au bout du
+parcours, alors que c'est sur l'écran Informations qu'on décrit le chantier.
+Elle y est désormais aussi, avec **la même liste** — ½ journée, puis 1 à 100
+jours. Une seule source, parce que deux molettes qui divergent, c'est le patron
+qui fixe deux durées pour le même chantier sans savoir laquelle compte.
+
+Elle affiche « Non précisé » tant que rien n'a été dit : montrer « 1 journée »
+par défaut ferait entrer un chiffre que personne n'a donné, et il ressortirait
+dans un prix.
+
+### « Je ne peux toujours pas rédiger mon devis seulement à la main »
+
+Il le pouvait — par un lien au bas de l'écran Informations, c'est-à-dire après
+avoir traversé photos et dictée. Et sa fiche annonçait « Prix — en attente des
+informations », qui se lit comme un verrou alors que rien n'a jamais été
+verrouillé. **Un chemin qu'on ne trouve pas n'existe pas.**
+
+- « Ou rédiger le devis à la main → », sous l'action principale de la fiche.
+- Les étapes disent ce qui manque, plus ce qu'il faudrait attendre : « À
+  remplir, ou à dicter », « À calculer, ou à écrire à la main ».
+
+**Et un défaut trouvé en éprouvant ce chemin :** l'écran Devis listait les
+*prestations* du chantier. Un devis écrit entièrement à la main n'en a aucune —
+le patron y voyait un total, et rien qui dise ce qui partirait chez son client.
+Il montre maintenant **les lignes du devis**, avec leurs montants : ce sont
+elles qui sont imprimées, et elles seules.
+
+---
+
 ## 2026-08-04
+
+### « Toujours pas de devis créé tout seul à partir de la note vocale »
+
+Sa phrase, avec sa capture : sous « Générer le brouillon », en rouge, **« Réponse
+du fournisseur non conforme (JSON invalide). »** Et rien d'autre — pas de
+brouillon, pas de prestations, pas de prix, pas de devis. « Problème qui traîne.
+Je veux vraiment que tu te consacres à fond pour régler ce problème une bonne
+fois pour toutes. »
+
+**Deux défauts, de nature différente.**
+
+#### 1. Une réponse mal emballée arrêtait tout
+
+Le service faisait `JSON.parse(reponse)` sans filet. Un modèle qui encadre sa
+réponse en ```` ```json ````, ou qui écrit « Voici : { … } », suffisait à tout
+bloquer. Et quand plus rien ne répond — pas de clé, quota dépassé, réseau coupé
+— le patron n'avait pas davantage : un écran mort, alors que sa dictée était là,
+sous ses yeux.
+
+Trois changements :
+
+- **L'emballage est toléré, le fond ne l'est pas.** `lireObjetJson` isole le
+  premier objet équilibré ; le schéma strict reste seul juge du contenu.
+- **On dit ce qui s'est passé.** Le nom du fournisseur et le début de sa réponse
+  partent au journal. L'incident du patron était indiagnosticable : rien, nulle
+  part, ne disait qui avait mal répondu.
+- **Il n'existe plus un seul chemin où il se retrouve sans rien.** Quoi que
+  réponde le fournisseur, la dictée est au minimum lue **mot à mot** — sans
+  réseau, sans clé, sans jamais rien inventer. Le brouillon porte alors la
+  mention « recopiée mot à mot », persistée en base (migration 0021) pour
+  qu'elle survive au rechargement : présenter une recopie comme une analyse
+  serait lui mentir sur ce qu'il relit.
+
+#### 2. Et surtout : la chaîne n'existait pas
+
+Le vrai « problème qui traîne » n'était pas le message d'erreur. Même tout vert,
+Atlas s'arrêtait au brouillon. Le patron devait ensuite enchaîner **« Confirmer »,
+« Valider et calculer le prix », « Ajouter au détail », « Préparer le devis »** —
+cinq gestes sur quatre écrans, dont aucun ne menait au suivant. S'il en oubliait
+un, un devis à **0,00 €** l'attendait au bout.
+
+Or `docs/AGENT.md` §2 décrit depuis le début l'agent qui « transcrit, structure,
+cherche les tarifs, **rédige le devis** », avec **un seul arrêt** : le patron
+vérifie et valide. Chaque maillon existait et était éprouvé ; c'est
+l'enchaînement qui manquait, et aucun contrôle ne le parcourait à la file.
+
+**Un bouton, sur l'écran de la dictée : « Créer le devis à partir de ma
+dictée ».** Il fait tout — prestations, matériel, durée, équipe, tarif ou
+chiffrage, ligne de prix, devis — puis montre ce qui a été retenu, à combien, et
+ce qui reste à regarder. Sur la dictée du patron : **1 674,00 € HT**, ses six
+lignes, « 2 jours · 2 hommes ».
+
+**Ce qu'il ne fait pas :** envoyer. L'arrêt avant l'envoi est intact, et une
+suite le vérifie explicitement. Il n'invente pas non plus de prix : sans tarif
+correspondant et sans durée ni équipe, aucune ligne n'est écrite, et le rapport
+dit pourquoi et quoi faire.
+
+#### Au passage
+
+« J'estime le temps de travaux à 2 jours » laissait la bribe « j'estime le temps
+de travaux à » — **imprimée comme une prestation sur le devis du client**. La
+phrase d'annonce est maintenant reconnue entière ; elle passe en remarque, donc
+elle n'est pas perdue, mais elle ne va plus sur le devis.
 
 ### Le SMS partait sans destinataire, et le canal ne se rediscutait plus
 
