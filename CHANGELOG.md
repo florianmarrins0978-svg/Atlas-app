@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-05
 
+### De la dictée au devis, d'un seul geste
+
+Le patron a dit ce qu'il attend, et c'était plus net que tout ce qui était écrit
+jusque-là : *« une IA qui comprend ce qu'il y a à faire à partir de la note
+vocale et rédige le devis tout seul »*. Puis, en découvrant l'état réel : *« j'ai
+l'impression qu'on en est loin »*.
+
+On n'en était pas loin. **Toutes les briques existaient** — transcription,
+extraction, rapprochement du catalogue, historique des prix, chiffrage, devis —
+et rien ne les enchaînait. `docs/AGENT.md` §5 nommait déjà le manque, dans sa
+dernière ligne : « Enchaînement complet — à faire ». Le patron passait d'écran
+en écran à la main, et lisait ça comme une application qui ne fait pas ce qu'on
+lui a promis.
+
+`src/server/orchestrateur/tapis-roulant.ts` enchaîne les quatre maillons et
+s'arrête au devis en brouillon — **jamais un pas au-delà** : ni prix validé, ni
+date, ni envoi. C'est l'ARRÊT 1 de `AGENT.md` §2, le moment où le patron engage
+sa parole, et un tapis qui le franchirait ne serait plus un assistant.
+
+Un bouton **« Préparer le devis »** sur l'écran Transcription, et ce qu'il
+affiche en retour : les étapes franchies, et surtout **les trous**. Le patron a
+choisi de voir le devis avec ses manques signalés plutôt qu'un aller-retour de
+questions ; les informations manquantes, les ambiguïtés, les prix absents et les
+arbitrages à rendre remontent donc tels quels, jamais comblés.
+
+**Deux règles ont quitté leurs fichiers d'actions** pour que le tapis et les
+écrans appellent la même : la confirmation du brouillon
+(`brouillon-service.ts`) et l'application de la proposition de prix
+(`proposition-prix.ts`). Ce sont elles qui décident ce qui entre dans un devis —
+deux implémentations auraient fini par diverger.
+
 ### L'écran Réglages dit enfin qui écoute et qui rédige
 
 Le patron a ouvert deux comptes, payé, posé quatre clés — puis dicté, et

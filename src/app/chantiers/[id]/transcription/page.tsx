@@ -5,6 +5,7 @@ import { getChantier } from "@/server/repositories/chantiers";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
 import { estTranscriptionSimulee } from "@/server/ai/providers/transcription/dev";
 import TexteDicte from "./TexteDicte";
+import PreparerDevis from "./PreparerDevis";
 
 // Consultation seule : le lancement et la relance de la transcription vivent sur
 // l'écran Note vocale, jamais en double ici. Le modèle ne porte qu'une
@@ -82,15 +83,19 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
           <TexteDicte chantierId={id} texteActuel={note.transcription ?? ""} simulee={simulee} />
         )}
 
-        {/* Suite naturelle du parcours : la transcription n'est pas une fin en
-            soi, elle alimente les informations du chantier. */}
+        {/* Le geste principal de cet écran : la dictée n'est pas une fin en
+            soi, elle doit produire un devis. Tout le parcours d'écrans reste
+            disponible pour qui veut avancer pas à pas — mais il n'est plus le
+            chemin normal. */}
+        <PreparerDevis chantierId={id} actif={disponible} />
+
         {disponible && (
           <a
             href={`/chantiers/${id}/informations`}
             className="mt-5 block px-6 text-center text-[14px] font-medium"
-            style={{ color: colors.rust }}
+            style={{ color: colors.muted }}
           >
-            Continuer vers les informations →
+            Ou avancer écran par écran →
           </a>
         )}
 

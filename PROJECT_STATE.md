@@ -55,6 +55,7 @@ seule avec quinze outils.
 | Installation sur téléphone : icône, plein écran, marges de sécurité | `src/app/layout.tsx`, `src/app/globals.css`, `scripts/generer-icones.mjs` |
 | Relevé de TVA collectée, par trimestre | `src/app/termines/tva/` + `src/server/trimestre.ts` |
 | Devis PDF reprenant le modèle du patron, sur autant de pages qu'il faut | `src/server/pdf/devis-pdf.ts` |
+| **De la dictée au devis d'un seul geste**, arrêt 1 compris | `src/server/orchestrateur/tapis-roulant.ts` |
 
 ### Conformité RGPD
 

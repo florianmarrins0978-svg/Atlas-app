@@ -3,11 +3,15 @@ import { getNoteVocale } from "../../repositories/notes-vocales";
 import {
   getBrouillon,
   enregistrerGeneration,
+  marquerConfirme,
   type Brouillon,
 } from "../../repositories/brouillons-informations";
+import { ajouterPrestation } from "../../repositories/prestations";
+import { ajouterMateriel } from "../../repositories/materiel";
+import { mettreAJourDureeEquipe } from "../../repositories/chantiers";
 import { extraire } from "./extraction-service";
 import { estTranscriptionSimulee } from "../providers/transcription/dev";
-import type { PropositionExtraction } from "../schemas/extraction";
+import type { PropositionExtraction, LigneExtraite } from "../schemas/extraction";
 
 export type ResultatGeneration =
   | { statut: "genere"; brouillon: Brouillon }
@@ -66,4 +70,71 @@ export async function genererBrouillon(
 
   const brouillon = await enregistrerGeneration(ctx, chantierId, resultat.proposition, transcription);
   return { statut: "genere", brouillon };
+}
+
+// Recompose un libellé lisible à partir de la ligne structurée. N'ajoute
+// jamais de quantité absente : sans quantité ET unité, le libellé est repris
+// tel quel — c'est la règle « ne déduis jamais une quantité d'un pluriel »,
+// appliquée au moment de l'écriture.
+export function libelleAvecQuantite(ligne: LigneExtraite): string {
+  const base = ligne.libelle.trim();
+  if (!base) return "";
+  if (ligne.quantite && ligne.unite) return `${base} (${ligne.quantite} ${ligne.unite})`;
+  return base;
+}
+
+/** Ce qui a réellement été écrit — l'écran s'en sert pour compléter sa liste
+ *  sans recharger la page, et le tapis roulant pour dire ce qu'il a produit. */
+export type LigneCreee = { id: string; libelle: string };
+
+export type ResultatConfirmationBrouillon =
+  | { statut: "confirme"; prestationsCreees: LigneCreee[]; materielCree: LigneCreee[] }
+  | { statut: "absent" }
+  | { statut: "deja_confirme" };
+
+// Déverse le brouillon dans les données métier du chantier.
+//
+// **Vit ici, et non dans un fichier d'actions, parce que deux appelants en ont
+// besoin** : l'écran Informations, quand le patron confirme lui-même, et le
+// tapis roulant, qui enchaîne la dictée jusqu'au devis sans lui. Deux
+// implémentations de cette règle finiraient par diverger — et c'est celle qui
+// décide ce qui entre dans un devis.
+//
+// Le contenu est TOUJOURS relu depuis la base, jamais reçu du navigateur : ce
+// qui est appliqué est ce que l'extraction a réellement produit, pas ce qu'une
+// page prétend qu'elle a produit.
+export async function confirmerBrouillon(ctx: Ctx, chantierId: string): Promise<ResultatConfirmationBrouillon> {
+  const brouillon = await getBrouillon(ctx, chantierId);
+  if (!brouillon) return { statut: "absent" };
+  if (brouillon.statut === "confirme") return { statut: "deja_confirme" };
+
+  const contenu = brouillon.contenu;
+
+  const prestationsCreees: LigneCreee[] = [];
+  for (const ligne of contenu.prestations) {
+    const libelle = libelleAvecQuantite(ligne);
+    if (libelle) {
+      const creee = await ajouterPrestation(ctx, chantierId, libelle);
+      prestationsCreees.push({ id: creee.id, libelle: creee.libelle });
+    }
+  }
+
+  const materielCree: LigneCreee[] = [];
+  for (const ligne of contenu.materiel) {
+    const libelle = libelleAvecQuantite(ligne);
+    if (libelle) {
+      const cree = await ajouterMateriel(ctx, chantierId, libelle);
+      materielCree.push({ id: cree.id, libelle: cree.libelle });
+    }
+  }
+
+  if (contenu.dureePrevue || contenu.tailleEquipe) {
+    await mettreAJourDureeEquipe(ctx, chantierId, {
+      dureePrevue: contenu.dureePrevue ?? undefined,
+      tailleEquipe: contenu.tailleEquipe ?? undefined,
+    });
+  }
+
+  await marquerConfirme(ctx, chantierId);
+  return { statut: "confirme", prestationsCreees, materielCree };
 }

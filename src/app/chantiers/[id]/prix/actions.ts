@@ -3,8 +3,7 @@
 import { getCurrentCtx } from "@/server/session-ctx";
 import { ajouterLignePrix, listerLignesPrix, modifierLignePrix, supprimerLignePrix } from "@/server/repositories/lignes-prix";
 import { marquerPrixValide } from "@/server/repositories/chantiers";
-import { getTarif } from "@/server/repositories/tarifs";
-import { preparerPropositionPrix } from "@/server/chiffrage/proposition-prix";
+import { preparerPropositionPrix, appliquerProposition } from "@/server/chiffrage/proposition-prix";
 import { peutPreparerDevis, PrixNonPreparableError } from "@/lib/preparation-devis";
 
 export async function ajouterLignePrixAction(chantierId: string) {
@@ -71,32 +70,9 @@ export async function appliquerPropositionPrixAction(
   tarifIdChoisi?: string
 ): Promise<{ succes: true; ligne: { id: string; libelle: string; montant: string } } | { succes: false; erreur: string }> {
   const ctx = await getCurrentCtx();
-  const proposition = await preparerPropositionPrix(ctx, chantierId);
-  if (!proposition) return { succes: false, erreur: "Chantier introuvable." };
-
-  // Cas ambigu : le patron a tranché en désignant un tarif. On relit le prix
-  // ACTUEL de ce tarif en base, et on vérifie qu'il faisait bien partie des
-  // candidats — un id transmis au hasard ne doit rien pouvoir appliquer.
-  if (proposition.origine === "tarifs_ambigus") {
-    if (!tarifIdChoisi) {
-      return { succes: false, erreur: "Plusieurs tarifs correspondent : choisissez celui à appliquer." };
-    }
-    const candidat = proposition.tarifsCandidats.find((c) => c.tarifId === tarifIdChoisi);
-    if (!candidat) {
-      return { succes: false, erreur: "Ce tarif ne fait pas partie des tarifs proposés pour ce chantier." };
-    }
-    const tarifActuel = await getTarif(ctx, candidat.tarifId);
-    if (!tarifActuel) {
-      return { succes: false, erreur: "Ce tarif n'existe plus." };
-    }
-    const ligne = await ajouterLignePrix(ctx, chantierId, tarifActuel.intitule, tarifActuel.prix);
-    return { succes: true, ligne: { id: ligne.id, libelle: ligne.libelle, montant: ligne.montant } };
-  }
-
-  if (proposition.prixPropose === null || !proposition.libelle) {
-    return { succes: false, erreur: "Aucun prix ne peut être proposé en l'état." };
-  }
-
-  const ligne = await ajouterLignePrix(ctx, chantierId, proposition.libelle, proposition.prixPropose);
-  return { succes: true, ligne: { id: ligne.id, libelle: ligne.libelle, montant: ligne.montant } };
+  const resultat = await appliquerProposition(ctx, chantierId, tarifIdChoisi);
+  // `ambigu` sert au tapis roulant pour savoir qu'il doit s'arrêter et
+  // demander ; l'écran, lui, n'a besoin que du message.
+  if (!resultat.succes) return { succes: false, erreur: resultat.erreur };
+  return resultat;
 }

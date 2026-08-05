@@ -14,17 +14,9 @@ import { getTarif } from "@/server/repositories/tarifs";
 import { ajouterLignePrixDirectAction } from "@/app/chantiers/[id]/prix/actions";
 import { chargerDevisAction } from "@/app/chantiers/[id]/export/actions";
 import { extraire } from "@/server/ai/services/extraction-service";
-import { genererBrouillon } from "@/server/ai/services/brouillon-service";
-import {
-  getBrouillon,
-  enregistrerCorrectionHumaine,
-  marquerConfirme,
-} from "@/server/repositories/brouillons-informations";
-import {
-  PropositionExtractionSchema,
-  type PropositionExtraction,
-  type LigneExtraite,
-} from "@/server/ai/schemas/extraction";
+import { genererBrouillon, confirmerBrouillon } from "@/server/ai/services/brouillon-service";
+import { getBrouillon, enregistrerCorrectionHumaine } from "@/server/repositories/brouillons-informations";
+import { PropositionExtractionSchema, type PropositionExtraction } from "@/server/ai/schemas/extraction";
 import type { ResultatApplicationProposition, ResultatConfirmation, CategorieConflit } from "@/server/ai/propositions";
 import { reclamerProposition } from "@/server/repositories/propositions-ia";
 import { AccesRefuseError } from "@/server/db/with-entreprise";
@@ -151,43 +143,25 @@ export async function enregistrerBrouillonAction(chantierId: string, contenu: un
 // Confirmation explicite : reprend le contenu DEPUIS LA BASE (jamais depuis le
 // client) et le déverse dans les données métier via les repositories existants.
 // Idempotent au sens utile : un brouillon déjà confirmé n'est pas réappliqué.
+// La règle vit dans `brouillon-service.ts`, parce que le tapis roulant en a
+// besoin aussi et qu'une seconde implémentation finirait par diverger de
+// celle-ci — or c'est elle qui décide ce qui entre dans un devis.
 export async function confirmerBrouillonAction(chantierId: string) {
   const ctx = await getCurrentCtx();
-  const brouillon = await getBrouillon(ctx, chantierId);
-  if (!brouillon) return { succes: false as const, erreur: "Aucun brouillon à confirmer." };
-  if (brouillon.statut === "confirme") {
+  const resultat = await confirmerBrouillon(ctx, chantierId);
+
+  if (resultat.statut === "absent") {
+    return { succes: false as const, erreur: "Aucun brouillon à confirmer." };
+  }
+  if (resultat.statut === "deja_confirme") {
     return { succes: false as const, erreur: "Ce brouillon a déjà été confirmé." };
   }
 
-  const contenu = brouillon.contenu;
-  const prestationsCreees = [];
-  for (const ligne of contenu.prestations) {
-    const libelle = libelleAvecQuantite(ligne);
-    if (libelle) prestationsCreees.push(await ajouterPrestation(ctx, chantierId, libelle));
-  }
-  const materielCree = [];
-  for (const ligne of contenu.materiel) {
-    const libelle = libelleAvecQuantite(ligne);
-    if (libelle) materielCree.push(await ajouterMateriel(ctx, chantierId, libelle));
-  }
-  if (contenu.dureePrevue || contenu.tailleEquipe) {
-    await mettreAJourDureeEquipe(ctx, chantierId, {
-      dureePrevue: contenu.dureePrevue ?? undefined,
-      tailleEquipe: contenu.tailleEquipe ?? undefined,
-    });
-  }
-
-  await marquerConfirme(ctx, chantierId);
-  return { succes: true as const, prestationsCreees, materielCree };
-}
-
-// Recompose un libellé lisible à partir de la ligne structurée. N'ajoute
-// jamais de quantité absente : sans quantité ET unité, le libellé est repris tel quel.
-function libelleAvecQuantite(ligne: LigneExtraite): string {
-  const base = ligne.libelle.trim();
-  if (!base) return "";
-  if (ligne.quantite && ligne.unite) return `${base} (${ligne.quantite} ${ligne.unite})`;
-  return base;
+  return {
+    succes: true as const,
+    prestationsCreees: resultat.prestationsCreees,
+    materielCree: resultat.materielCree,
+  };
 }
 
 // Applique les propositions confirmées par l'utilisateur (assistant, lot

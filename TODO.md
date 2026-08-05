@@ -26,6 +26,25 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0. L'agent qui apprend — le vrai sujet
+
+Le tapis roulant (dictée → devis, d'un seul geste) est en place. La suite, dans
+l'ordre décidé avec le patron le 5 août 2026 :
+
+| | Quoi | Pourquoi maintenant |
+|---|---|---|
+| a | **Mémoire des corrections.** Ce que le patron change à l'arrêt 1 devient une leçon qu'il valide. | Rien ne retient ses corrections aujourd'hui : chaque devis repart de zéro. C'est le début du « s'auto-alimente » qu'il demande. |
+| b | **Entretien de départ.** Il n'a aucun ancien devis à donner en référence — c'est donc l'agent qui l'interroge une fois et écrit ses règles. | Sans ça, l'agent démarre en ne sachant rien et apprend aux frais du patron. |
+| c | **Écart devis / facture.** Les données existent déjà des deux côtés. | La meilleure leçon qui soit : ce qui avait été mal estimé s'y voit tout seul. |
+| d | **Photos ↔ prix.** Conserver le lien entre les photos d'un chantier et le devis qui a suivi. | Objectif du patron : « à force de comparer les photos des arbres et les devis, il devra proposer un prix juste ». Impossible aujourd'hui — mais **l'accumulation doit commencer maintenant**, sinon dans six mois il n'y aura toujours rien à apprendre. |
+
+**Réserve à trancher avant (d).** Un prix déduit d'une photo est une
+*estimation*, ce que `docs/AGENT.md` §3 interdit aujourd'hui (« jamais deviné,
+jamais estimé »). Il faudra soit assouplir la règle, soit poser qu'un tel prix
+est toujours marqué et jamais envoyé sans validation. Signalé au patron le
+5 août 2026, non tranché.
+
+
 ### 1. Agenda Google — lecture des disponibilités
 
 **Partiellement bloqué.** La connexion du compte demande des identifiants OAuth
