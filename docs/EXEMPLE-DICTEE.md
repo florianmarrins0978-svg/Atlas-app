@@ -137,19 +137,74 @@ savoir, et le prix en dépend.** L'agent ne doit donc ni supposer, ni choisir. I
 signale — et pour un arbre **mort**, où le démontage est fréquent, la question
 mérite d'être posée systématiquement plutôt que laissée dans un coin.
 
-### Les montants
+### Les montants — donnés par le patron le 5 août 2026
 
-> **Reste à remplir par le patron.** La forme du devis est connue ; ses chiffres
-> ne le sont pas. Sans eux, on sait juger si l'agent *comprend*, pas s'il
-> *chiffre juste* — et le chiffrage est le cœur.
+**Le devis compte trois lignes, pas quatre :** le billonnage est *compris dans
+l'abattage*. L'agent ne doit donc pas créer cette ligne, alors même que la
+dictée mentionne la coupe en 50 cm.
 
-| # | Ligne | Prix |
+| # | Ligne | Prix HT |
 |---|---|---|
-| 1 | Taille de haie de laurier, 20 ml | |
-| 2 | Abattage du chêne mort, 20 m | |
-| 3 | Coupe du bois en 50 cm | |
-| 4 | Fendage du bois | |
-| | **Total HT** | |
+| 1 | Taille de haie de laurier, 20 ml | **350 €** — soit 17,50 €/ml |
+| 2 | Abattage du chêne mort | **selon la technique, voir ci-dessous** |
+| 3 | Fendage du bois | **300 €** |
+
+### La règle de difficulté technique, enfin chiffrée
+
+Le patron n'arrivait pas à la formuler ; ses trois prix la disent pour lui. Même
+arbre, **diamètre 70 cm** :
+
+| Technique | Prix HT | Rapport à l'abattage au pied |
+|---|---|---|
+| Abattage au pied | **600 €** | × 1 |
+| Démontage | **1 000 €** | **× 1,67** |
+| Démontage avec rétention (corde) | **1 400 €** | **× 2,33** |
+
+**C'est la règle la plus utile obtenue jusqu'ici.** Elle ne se devine pas : elle
+se demande une fois, et elle se réutilise ensuite sur chaque arbre.
+
+> **Ce qui reste à confirmer avant d'en faire une règle générale :** ces
+> rapports valent-ils pour tout arbre, ou ces trois chiffres sont-ils propres à
+> un chêne de 70 cm ? Non demandé, donc non supposé.
+
+### Les totaux, et la vérification que le patron fait lui-même
+
+| Cas | Total HT | Par jour-homme (4 jours-hommes) |
+|---|---|---|
+| Au pied | 1 250 € | 312 € |
+| Démontage | 1 650 € | 412 € |
+| Démontage avec rétention | 2 050 € | 512 € |
+
+C'est exactement le contrôle qu'il décrit : *« deux jours deux hommes, ça me
+sert à vérifier mon prix. »* Rapporter le total aux jours-hommes donne son taux
+réel — **et l'agent peut faire ce calcul tout seul, sur chaque devis passé.**
+
+---
+
+## 6. Ce que cet exemple a révélé, et qui change la conception
+
+**La dictée ne contient pas ce qui détermine la plus grosse ligne du devis.**
+
+Le prix de l'abattage varie de **600 à 1 400 €** — plus du double — selon deux
+paramètres :
+
+| Paramètre | Dit dans la dictée ? |
+|---|---|
+| **La technique** (au pied / démontage / rétention) | **Non** |
+| **Le diamètre** du tronc | **Non** — la dictée donne la hauteur (20 m), pas le diamètre (70 cm) |
+
+La dictée dit « un chêne mort à abattre, de vingt mètres de haut ». La hauteur
+est là ; **ni la technique ni le diamètre n'y sont**, et ce sont eux qui font le
+prix.
+
+**Conséquence, et elle est nette :** sur un arbre, l'agent ne peut pas chiffrer
+sans poser deux questions. Ce n'est pas un trou à signaler parmi d'autres —
+c'est **la** question, et elle porte à elle seule 800 € d'écart sur ce devis.
+
+C'est le seul endroit du parcours où l'aller-retour se justifie, alors que le
+patron a par ailleurs choisi « le devis avec les trous signalés ». Deux
+questions fermées, avant de chiffrer, valent mieux qu'un devis faux du simple au
+double.
 
 ---
 
