@@ -326,3 +326,17 @@ différence, même s'il ne saurait pas la nommer.
 
 **L'arrondi s'applique au montant HT de la ligne**, avant TVA — jamais au total
 TTC, qui doit rester la somme exacte de ses lignes.
+
+**Toujours à la dizaine, quel que soit le montant** (confirmé le 5 août 2026) :
+350 €, 420 €, 1 000 €, 14 980 €. Une seule règle, pas de palier à retenir.
+
+### c. Quand la mémoire est vide
+
+Aucun rapport n'a encore été observé, donc aucun multiplicateur ne s'applique.
+L'agent **propose alors le dernier prix comparable** — « la dernière fois, un
+chêne en démontage : 1 000 € » — présenté comme un **rappel**, jamais comme un
+calcul. Le patron valide ou corrige d'un geste.
+
+La nuance porte tout : un rappel dit *d'où il vient* et se vérifie en un coup
+d'œil ; un calcul non sourcé demande qu'on lui fasse confiance. C'est aussi ce
+qui satisfait `AGENT.md` §3 — un prix estimé, mais signalé comme tel.

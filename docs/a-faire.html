@@ -177,13 +177,35 @@
 <li><strong>Il n'existe aujourd'hui aucune commande simple</strong> pour que le patron exporte ses données depuis son téléphone. La procédure suppose un terminal.</li>
 <li><strong>Rien n'est perdu à ce jour</strong> : la mémoire d'apprentissage n'existe pas encore, c'est le premier point de <code>TODO.md</code>. Il reste donc le temps de bien faire.</li>
 </ul>
-<p><strong>Trois façons d'en sortir, à trancher :</strong> héberger avant de commencer à nourrir ; nourrir maintenant avec un export à construire d'abord ; ou nourrir en acceptant de repartir de zéro.</p>
+<p><strong>Tranché le 5 août 2026 : construire l'export d'abord</strong>, puis nourrir sans risque.</p>
+<h3 id="lobstacle-de-la-sauvegarde-automatique">L'obstacle de la sauvegarde automatique</h3>
+<p>Le patron a demandé une <strong>sauvegarde automatique</strong> plutôt qu'un bouton. C'est le bon réflexe — elle ne dépend pas de sa mémoire — mais elle bute sur une condition qu'il n'a pas encore :</p>
+<p><strong>une sauvegarde automatique doit déposer son fichier quelque part.</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Destination</th>
+<th>Verdict</th>
+</tr></thead><tbody>
+<tr>
+<td>Le dépôt lui-même</td>
+<td><strong>Jamais.</strong> Le dépôt est public (décision du 1ᵉʳ août) : y déposer une base contenant des noms et adresses de clients serait une fuite, pas une sauvegarde</td>
+</tr>
+<tr>
+<td>Un stockage objet (S3, R2)</td>
+<td>Possible, mais demande un compte et une carte — une décision de plus</td>
+</tr>
+<tr>
+<td>L'hébergement, une fois choisi</td>
+<td><strong>La bonne réponse</strong> : un hébergeur managé sauvegarde tout seul, c'est déjà ce que décrit <code>PRODUCTION_BACKUP_RESTORE.md</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui est donc fait en attendant : le bouton.</strong> « Télécharger mes données » dans Réglages, un fichier sur son téléphone, aucun terminal, aucun compte, aucune dépendance. Il fonctionne le jour où il est écrit.</p>
+<p><strong>L'automatique suit</strong> dès qu'une destination existe — c'est-à-dire dès le point 3. Une raison de plus de le trancher.</p>
 <h3 id="ce-qui-reste-à-décider-pour-la-commercialisation">Ce qui reste à décider pour la commercialisation</h3>
 <p>Le patron a choisi <strong>« un socle commun, puis chacun ajuste »</strong> : un nouvel artisan reçoit une base de départ plutôt que rien. Trois questions en découlent, aucune tranchée :</p>
 <ol>
-<li><strong>Le socle, c'est quoi ?</strong> Les prix du patron tels quels, ou une moyenne anonymisée de plusieurs artisans ? Ce n'est pas la même chose du tout.</li>
+<li>~~<strong>Le socle, c'est quoi ?</strong>~~ <strong>Tranché le 5 août 2026 :</strong> les prix du patron, <strong>anonymisés</strong>, servis <strong>dès le deuxième artisan</strong>. Réserve à garder en tête : à deux, l'anonymat est mince — le second saura vraisemblablement d'où viennent ces prix.</li>
 <li><strong>Ses prix sortiraient alors de chez lui.</strong> L'application isole aujourd'hui hermétiquement chaque entreprise. Un socle commun est une <strong>dérogation volontaire</strong> à ce principe : elle se construit exprès, jamais par accident.</li>
-<li><strong>Un artisan qui ajuste doit-il nourrir le socle en retour ?</strong> Si oui, c'est un autre produit, et un autre contrat.</li>
+<li>~~<strong>Un artisan qui ajuste doit-il nourrir le socle en retour ?</strong>~~ <strong>Tranché le 5 août 2026 : non.</strong> Le socle est un cadeau de départ, figé. Simple à expliquer, simple à contractualiser, et personne n'a à s'inquiéter de ce que deviennent ses prix.</li>
 </ol>
 <p><strong>En attendant, la mémoire se construit strictement privée</strong> — le seul choix qui n'interdit rien. Ouvrir plus tard restera possible ; reprendre ce qui a été partagé, non.</p>
 <hr>

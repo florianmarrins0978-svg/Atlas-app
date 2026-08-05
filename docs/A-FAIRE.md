@@ -160,9 +160,29 @@ Ce qui est vrai, en revanche :
   encore, c'est le premier point de `TODO.md`. Il reste donc le temps de bien
   faire.
 
-**Trois façons d'en sortir, à trancher :** héberger avant de commencer à
-nourrir ; nourrir maintenant avec un export à construire d'abord ; ou nourrir
-en acceptant de repartir de zéro.
+**Tranché le 5 août 2026 : construire l'export d'abord**, puis nourrir sans
+risque.
+
+### L'obstacle de la sauvegarde automatique
+
+Le patron a demandé une **sauvegarde automatique** plutôt qu'un bouton. C'est le
+bon réflexe — elle ne dépend pas de sa mémoire — mais elle bute sur une
+condition qu'il n'a pas encore :
+
+**une sauvegarde automatique doit déposer son fichier quelque part.**
+
+| Destination | Verdict |
+|---|---|
+| Le dépôt lui-même | **Jamais.** Le dépôt est public (décision du 1ᵉʳ août) : y déposer une base contenant des noms et adresses de clients serait une fuite, pas une sauvegarde |
+| Un stockage objet (S3, R2) | Possible, mais demande un compte et une carte — une décision de plus |
+| L'hébergement, une fois choisi | **La bonne réponse** : un hébergeur managé sauvegarde tout seul, c'est déjà ce que décrit `PRODUCTION_BACKUP_RESTORE.md` |
+
+**Ce qui est donc fait en attendant : le bouton.** « Télécharger mes données »
+dans Réglages, un fichier sur son téléphone, aucun terminal, aucun compte, aucune
+dépendance. Il fonctionne le jour où il est écrit.
+
+**L'automatique suit** dès qu'une destination existe — c'est-à-dire dès le
+point 3. Une raison de plus de le trancher.
 
 ### Ce qui reste à décider pour la commercialisation
 
@@ -170,13 +190,17 @@ Le patron a choisi **« un socle commun, puis chacun ajuste »** : un nouvel
 artisan reçoit une base de départ plutôt que rien. Trois questions en découlent,
 aucune tranchée :
 
-1. **Le socle, c'est quoi ?** Les prix du patron tels quels, ou une moyenne
-   anonymisée de plusieurs artisans ? Ce n'est pas la même chose du tout.
+1. ~~**Le socle, c'est quoi ?**~~ **Tranché le 5 août 2026 :** les prix du
+   patron, **anonymisés**, servis **dès le deuxième artisan**. Réserve à garder
+   en tête : à deux, l'anonymat est mince — le second saura vraisemblablement
+   d'où viennent ces prix.
 2. **Ses prix sortiraient alors de chez lui.** L'application isole aujourd'hui
    hermétiquement chaque entreprise. Un socle commun est une **dérogation
    volontaire** à ce principe : elle se construit exprès, jamais par accident.
-3. **Un artisan qui ajuste doit-il nourrir le socle en retour ?** Si oui, c'est
-   un autre produit, et un autre contrat.
+3. ~~**Un artisan qui ajuste doit-il nourrir le socle en retour ?**~~ **Tranché
+   le 5 août 2026 : non.** Le socle est un cadeau de départ, figé. Simple à
+   expliquer, simple à contractualiser, et personne n'a à s'inquiéter de ce que
+   deviennent ses prix.
 
 **En attendant, la mémoire se construit strictement privée** — le seul choix qui
 n'interdit rien. Ouvrir plus tard restera possible ; reprendre ce qui a été
