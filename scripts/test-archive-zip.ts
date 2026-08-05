@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { ArchiveTropVolumineuseError, crc32, ecrireArchiveZip, type EntreeArchive } from "../src/lib/archive-zip";
@@ -83,12 +83,32 @@ async function main() {
     }
   });
 
-  await cas("un nom accentué ressort accentué", async () => {
+  await cas("un nom accentué est stocké en UTF-8 et annoncé comme tel", async () => {
+    // **Ce que ce contrôle vérifie, et ce qu'il a d'abord vérifié à tort.**
+    //
+    // Écrit d'abord en relisant `sortie/fichiers/chêne-mort.txt` sur le disque,
+    // il passait ici et rougissait en CI : le runner tourne en locale C, où
+    // `unzip` translittère le nom en le sortant. L'archive était juste ; c'est
+    // l'attente qui dépendait de la machine — un contrôle qui accuse le
+    // produit pour un tort qu'il n'a pas commis coûte plus cher que pas de
+    // contrôle du tout.
+    //
+    // La propriété qu'on maîtrise réellement, et celle qui fait qu'un
+    // téléphone ou un Windows affiche « chêne », est *dans l'archive* : les
+    // octets du nom sont de l'UTF-8, et le drapeau qui l'annonce est levé.
     const archive = await construire([{ nom: "fichiers/chêne-mort.txt", contenu: Buffer.from("ok") }]);
+
+    assert.ok(archive.includes(Buffer.from("fichiers/chêne-mort.txt", "utf8")), "le nom n'est pas stocké en UTF-8");
+    // Drapeaux de l'en-tête local : deux octets à l'offset 6.
+    assert.equal(archive.readUInt16LE(6) & 0x0800, 0x0800, "le drapeau « nom en UTF-8 » n'est pas levé");
+
+    // Et le contenu ressort bien, quel que soit le nom que le système d'accueil
+    // décide d'écrire sur son disque.
     const { dossier, nettoyer } = extraire(archive);
     try {
-      const relu = readFileSync(path.join(dossier, "sortie", "fichiers", "chêne-mort.txt"), "utf8");
-      assert.equal(relu, "ok");
+      const sortis = readdirSync(path.join(dossier, "sortie", "fichiers"));
+      assert.equal(sortis.length, 1, `attendu un seul fichier extrait, vu : ${sortis.join(", ")}`);
+      assert.equal(readFileSync(path.join(dossier, "sortie", "fichiers", sortis[0]!), "utf8"), "ok");
     } finally {
       nettoyer();
     }

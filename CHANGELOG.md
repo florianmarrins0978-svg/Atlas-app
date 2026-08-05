@@ -53,6 +53,23 @@ le choix d'un hébergeur, faute de destination extérieure — ni le dépôt (pu
 ni le disque de l'espace de travail (c'est précisément ce dont on se protège).
 Écrit dans `TODO.md` §0(b), et redit à l'écran sous le bouton.
 
+### Un contrôle qui accusait le produit pour un tort de la machine
+
+`test-archive-zip.ts` vérifiait qu'un nom accentué ressortait accentué **en
+relisant le disque après `unzip`**. Vert ici, rouge en CI — le runner tourne en
+locale C, où `unzip` translittère le nom en l'extrayant. L'archive était juste ;
+c'est l'attente qui dépendait de la machine.
+
+Le contrôle porte désormais sur la propriété qu'on maîtrise vraiment, et qui est
+*dans l'archive* : les octets du nom sont de l'UTF-8, et le drapeau qui l'annonce
+est levé — c'est ce qui fait qu'un téléphone ou un Windows affiche « chêne ». Le
+contenu, lui, est relu quel que soit le nom que le système d'accueil écrit.
+
+Rejoué en forçant `LC_ALL=C`, la condition du runner, plutôt qu'en supposant
+qu'elle est réglée. **Un contrôle qui accuse à tort coûte plus cher que pas de
+contrôle du tout** — la règle était écrite, elle s'applique aussi aux contrôles
+que j'écris moi-même.
+
 ### Cet environnement peut faire tourner PostgreSQL et Redis
 
 **Correction d'une croyance qui coûtait cher.** `CLAUDE.md` §5 et `AGENTS.md`
