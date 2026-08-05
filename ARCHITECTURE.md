@@ -194,14 +194,84 @@ sera hébergée, une variable d'environnement d'origine publique serait plus sû
 **Décidé.** Faute de fournisseur SMS ou e-mail, le lien du devis est **remis au
 patron** à l'écran, avec un bouton de copie.
 
-**Écarté :** un envoi qui échouerait en silence, ou un `mailto:` — essayé, puis
-abandonné à la demande du patron (commit `5e59131`), parce qu'il ne peut pas
-joindre de pièce et que l'API de partage mobile et `mailto:` sont mutuellement
-exclusifs.
+**Écarté :** un envoi qui échouerait en silence.
 
-**Quand ça change :** point 5 de `docs/A-FAIRE.md`. Le canal de chaque client est
-déjà enregistré, et l'écran d'envoi refuse déjà de partir sans lui. Il ne manque
-que le fournisseur au bout.
+**Révisé le 2026-08-04, et c'est une inversion assumée.** Le partage mobile
+(`navigator.share`) était le chemin principal ; il ne l'est plus. Sur iPhone, la
+feuille de partage transmet un **texte** — et rien d'autre : ni numéro, ni
+adresse. Le patron ouvrait donc Messages avec le message tout écrit et un champ
+« À : » vide, alors qu'Atlas connaissait le numéro. Sa phrase : « l'ajout
+automatique du numéro ne fonctionne pas ».
+
+Le chemin principal est désormais une adresse `sms:` ou `mailto:` **portée par
+un `<a href>`**, qui elle emporte le destinataire. Deux raisons au lien plutôt
+qu'à un `window.location.href` :
+
+1. l'adresse devient **lisible dans la page**, donc vérifiable par une suite ;
+   le défaut ci-dessus ne se voyait que dans la messagerie du patron, c'est-à-dire
+   trop tard ;
+2. le navigateur gère lui-même l'appui long, la copie, le retour arrière.
+
+L'objection de 2026-08-01 — « `mailto:` ne peut pas joindre de pièce, et le
+partage l'exclut » — ne tient plus : le message ne porte pas le PDF mais **le
+lien** vers la page du client, qui donne accès au devis complet ; et les deux
+voies coexistent, le partage restant offert en second pour WhatsApp ou Signal.
+
+**Le canal se choisit au dernier moment.** Celui de la fiche du client n'est
+qu'un défaut : le patron change d'avis en envoyant, pas en créant le chantier.
+Si la coordonnée manque, elle se saisit sur cet écran et est conservée sur la
+fiche — c'est le seul endroit de l'application qui permet de la renseigner, et
+renvoyer le patron « sur la fiche du client » l'enverrait vers une porte qui
+n'existe pas.
+
+**Une coordonnée se relit toujours sur la fiche vivante**, jamais dans
+l'instantané figé du devis : l'écran lisait `devis.clientEmail`, si bien qu'une
+adresse tout juste enregistrée n'apparaissait pas. Éprouvé par
+`scripts/test-transmission-e2e.ts`.
+
+**Le numéro est compacté avant d'entrer dans l'adresse.** La fiche enregistre
+« 06 12 34 56 78 » — c'est la forme que propose le champ de saisie. Laissés tels
+quels, ces espaces deviennent `%20` et l'application de messagerie n'y reconnaît
+plus un numéro : elle rouvre un message **sans destinataire**, c'est-à-dire
+exactement le défaut ci-dessus, après l'avoir corrigé à l'écran. Aucun contrôle
+ne le voyait, tous employant un numéro collé. Éprouvé par
+`scripts/test-message-client.ts`, sur la forme réelle — espaces, points, tirets.
+
+> *Corollaire, valable au-delà de ce cas :* un contrôle qui n'emploie pas la
+> donnée **sous la forme où l'utilisateur la saisit** ne prouve rien de ce qui
+> lui arrive.
+
+**Et il n'y aura pas de fournisseur d'envoi. Décidé par le patron le
+2026-08-04**, contre ce qui était prévu jusque-là : *« ça sera plus rassurant,
+même pour les patrons, de passer par leur e-mail et par leur numéro de
+téléphone. »* Ce montage n'est donc plus un pis-aller en attendant un
+prestataire — c'est le chemin retenu. Quatre raisons, dans l'ordre où elles
+pèsent :
+
+- le client **reconnaît l'expéditeur** et peut répondre directement ; un
+  expéditeur commercial se lit comme de la publicité ;
+- **aucune donnée de client ne transite chez un tiers** : pas de sous-traitant
+  ultérieur à autoriser, à lister dans `docs/RGPD.md` §3, ni à faire relire par
+  le juriste du point 2 de `docs/A-FAIRE.md`. Cette décision **allège** deux
+  autres points bloquants ;
+- ni abonnement, ni nom de domaine, ni configuration anti-usurpation ;
+- rien ne part sans un geste du patron, ce qui est déjà la règle du produit.
+
+**Écarté du même coup, et pour de bon : joindre le PDF au message.** Impossible
+d'abord — ni `sms:` ni `mailto:` ne portent de pièce jointe, et l'API de partage
+qui, elle, le peut n'a pas de destinataire (`docs/QUESTIONS.md` §3). Indésirable
+ensuite, et c'est la vraie raison : **chez Atlas le devis est la page, pas le
+PDF**. Le client qui reçoit une pièce jointe la lit et répond « d'accord » par
+retour de message, sans jamais ouvrir la page — donc sans choisir sa date, sans
+empreinte du devis accepté, sans horodatage ni adresse IP. Tout l'aval du
+parcours retombe à la saisie manuelle. La pièce jointe ne complète pas le lien :
+elle lui fait concurrence.
+
+**Ce qui reste au point 5 de `docs/A-FAIRE.md`, qui ne bloque plus :** Atlas ne
+sait pas que le message est parti, ni s'il a été délivré. Donc pas de relance
+automatique à sept jours, pas de départ automatique de la facture, pas de code
+SMS à usage unique à l'acceptation. Ce sont des conforts, à rouvrir seulement si
+le volume les justifie un jour.
 
 ## 14. Le lanceur de tests doit dire quand le serveur meurt
 
@@ -518,3 +588,189 @@ Deux écarts assumés avec le modèle, et notés dans le composant :
   la dictée vient un écran plus tard.
 - **L'icône est un `+`, pas un micro**, pour la même raison. Un micro qui ouvre
   un formulaire serait une petite tromperie, répétée à chaque ouverture.
+
+---
+
+## 22. Le planning compte en demi-journées, et le client n'en sait rien
+
+**La demande, dans ses mots** (2026-08-03) :
+
+> « J'ai déjà un chantier le 6 août, donc pour mon nouveau client on ne propose
+> pas le 6 août. Mais si mon 1er chantier du 6 ne dure que le matin, je ne peux
+> pas caler une autre demi-journée l'après-midi. »
+> « Si j'ai deux équipes dans ma boîte, je peux avoir deux chantiers, voire plus,
+> le 6 août. »
+
+Et, sur la forme, une consigne qui commande tout le reste :
+
+> « Mon client ne doit pas être informé de la demi-journée, seulement moi ; lui
+> verra le 6 août. »
+
+### Le modèle retenu
+
+Un jour porte **deux demi-journées**. Chacune tient autant de chantiers que
+l'entreprise déclare d'**équipes** (`entreprises.nombre_equipes`, 1 par défaut).
+Un chantier occupe une suite de demi-journées à partir d'un départ
+(`chantiers.creneau_debut`) et pour une durée réservée
+(`chantiers.duree_demi_journees`). Migration `0019_creneaux_et_equipes.sql`.
+
+**Trois pistes avaient été présentées au patron** — un simple créneau, une durée
+en demi-journées, des heures réelles. Il a retenu la deuxième et écarté les
+heures : « la demi-journée suffit ». Le noter évite de rouvrir le débat, et
+surtout évite qu'une prochaine conversation prenne les heures pour un oubli.
+
+### Le troisième défaut, que personne n'avait signalé
+
+La durée dictée (« 2 jours ») **n'entrait nulle part dans la planification** :
+seule `duree_prevue`, un texte libre, la portait, et seul le chiffrage la lisait.
+Un chantier de deux jours calé le 6 laissait donc le 7 proposable au client
+suivant. `duree_demi_journees` est la donnée calculable, distincte du texte :
+faire dépendre un planning d'une chaîne de caractères, c'est le rendre faux au
+premier mot mal orthographié.
+
+### Une seule règle, quatre chemins
+
+`src/server/disponibilites.ts` porte tout le calcul, sans base. Quatre chemins
+l'emploient — l'écran d'envoi, la création de l'envoi, la revérification de la
+réponse du client, et la planification à la main. Quatre calculs distincts
+finiraient par diverger, et c'est le client qui découvrirait l'écart.
+
+Le créneau est **choisi par le planning, jamais par le client** : il retient un
+jour, `departPossible()` lui trouve la demi-journée — le matin de préférence,
+l'après-midi sinon.
+
+### Ce que le client reçoit, et ce qu'il ne reçoit pas
+
+La page publique continue de ne recevoir que des **dates**. La nuance introduite
+est ailleurs : la liste des jours indisponibles n'est plus « les jours où un
+chantier est posé » mais « les jours où **ce** chantier ne tient pas » — elle
+dépend donc de sa durée. `test-creneaux-planning.ts` vérifie sur le contenu
+sérialisé qu'aucun « matin », « après-midi », « créneau » ni « durée » ne
+traverse la frontière.
+
+### Le piège de la migration, et comment il est fermé
+
+Les chantiers planifiés **avant** cette migration n'ont ni créneau ni durée. Les
+lire comme « rien de réservé » aurait libéré, du jour au lendemain, des
+après-midis déjà pris — et le patron se serait retrouvé avec deux clients au même
+endroit. `compterOccupation()` les traite donc comme **une journée entière à
+partir du matin**, c'est-à-dire exactement ce qu'ils étaient. Un contrôle dédié
+le vérifie sur une ligne remise à l'état d'avant.
+
+### Ce qui reste ouvert
+
+Les **équipes nommées** (qui va où) et la **capacité en hommes** n'ont pas été
+retenues : le patron a choisi le compteur. Elles restent dans `TODO.md` si son
+entreprise grandit.
+
+## 23. De la dictée au devis : un seul geste, et rien n'est jamais mort
+
+**Décidé le 2026-08-04**, après : « toujours pas de devis créé tout seul à partir
+de la note vocale ! Problème qui traîne. »
+
+### Ce qui était en cause, et ce qui ne l'était pas
+
+Le message affiché — « Réponse du fournisseur non conforme (JSON invalide). » —
+n'était que le symptôme du jour. Le fond était ailleurs : **chaque maillon
+existait, aucun ne menait au suivant.** Brouillon, confirmation, chiffrage,
+ligne de prix, devis : cinq gestes sur quatre écrans, tous éprouvés
+séparément, et aucune suite ne les parcourait à la file. Un contrôle par maillon
+peut rester vert pendant que le parcours ne mène nulle part.
+
+`docs/AGENT.md` §2 décrivait pourtant l'agent qui « transcrit, structure, cherche
+les tarifs, **rédige le devis** », avec **un seul arrêt**. Ce lot construit
+l'enchaînement décrit ; il n'invente aucune règle.
+
+### Deux principes, tenus dans le code
+
+**1. Aucun chemin ne laisse le patron devant rien.**
+`extraction-service.ts` ne renvoie plus d'échec sur une réponse de fournisseur :
+il tolère l'emballage (`lireObjetJson` — bloc de code, prose autour), et si rien
+n'est exploitable — réponse à côté, hors schéma, clé absente, quota, panne — il
+**lit la dictée mot à mot** (`lecture-litterale.ts`), sans réseau ni clé.
+
+Le découpage littéral a quitté le fournisseur de développement pour vivre seul :
+les deux s'en servent, et deux copies auraient fini par diverger — c'est le
+chemin de secours, le moins souvent relu, qui serait resté en arrière.
+
+Cette lecture **recopie, elle ne comprend pas** : elle ignore qu'un chêne mort
+s'abat et qu'une haie se taille. Le brouillon porte donc `lecture = 'litterale'`
+(migration 0021, persistée pour survivre au rechargement), et les écrans le
+disent. Une recopie présentée comme une analyse serait un mensonge sur ce que le
+patron relit.
+
+**2. Un raccourci n'est pas une dispense.**
+`preparerDevisDepuisDictee()` enchaîne tout, mais :
+
+| Ce qu'il fait | Ce qu'il ne fera jamais |
+|---|---|
+| Écrit prestations, matériel, durée, équipe | Envoyer quoi que ce soit — l'arrêt avant l'envoi est intact |
+| Applique un tarif, ou un chiffrage calculé | Inventer un prix : sans tarif ni durée/équipe, aucune ligne, et le rapport dit pourquoi |
+| Trancher entre deux tarifs concurrents | Non — le choix reste au patron, comme sur l'écran Prix |
+| S'arrêter si le brouillon a été corrigé à la main | Écraser une correction humaine |
+
+Il n'implémente rien de neuf : `confirmerBrouillon()` et
+`appliquerPropositionPrix()` ont été **sortis des actions d'écran vers des
+services**, précisément pour que les deux chemins appliquent la même règle
+(`CLAUDE.md` §3). Sans cela, le raccourci aurait rouvert le devis doublé du
+3 août sur la voie la moins relue.
+
+### Ce que les contrôles tiennent
+
+- `test-lecture-dictee.ts` : le fournisseur est **injectable**, donc une réponse
+  mal formée est fabricable — sans quoi le défaut du patron restait
+  intestable. Réponse encadrée, prose, hors schéma, panne, quota : à chaque fois
+  la dictée ressort.
+- `test-devis-depuis-dictee-e2e.ts` : un appui, un devis chiffré, **zéro envoi**,
+  et rejouer le geste n'ajoute pas une seconde ligne de prix.
+
+## 24. L'espace d'essai se met à jour, et l'application dit sa version
+
+**Décidé le 2026-08-04**, après le défaut le plus coûteux de la série — et il
+n'était pas dans l'application.
+
+### Ce qui s'est passé
+
+Le patron signale deux correctifs qui « ne marchent toujours pas » : la bande de
+durées « a disparu », le numéro du client « ne se met toujours pas ». Les deux
+étaient corrigés, éprouvés, fusionnés la veille. Son espace de travail gardait
+le code du jour de sa création : **un espace ne récupère jamais rien tout seul.**
+Rien à l'écran ne le lui disait. Trois échanges perdus à chercher des défauts
+déjà réparés.
+
+### Ce qui est décidé
+
+**1. L'espace se met à jour à chaque allumage.** `.devcontainer/mettre-a-jour.sh`,
+appelé par `demarrer.sh`, puis `npm ci` et les migrations si quelque chose a
+bougé — un code neuf sur une base ancienne serait une panne, pas un correctif.
+
+Trois prudences, dans cet ordre, et aucune n'est négociable :
+
+| Situation | Ce qui se passe |
+|---|---|
+| Travail non enregistré | on ne touche à rien, et on le dit |
+| Historique divergent | refus — jamais de `--force` |
+| Distant injoignable | refus explicite, le démarrage continue |
+
+*Écraser le travail du patron pour lui livrer une mise à jour serait un remède
+pire que le mal.*
+
+**2. Le script vit dans son propre fichier.** Non par goût du découpage : ainsi
+il est **éprouvable**. `scripts/test-mise-a-jour-espace.ts` monte de vrais
+dépôts git et le confronte aux quatre états qu'il prétend distinguer. Enfoui
+dans `demarrer.sh`, il n'aurait jamais été vu échouer — et c'est exactement ce
+que `AGENTS.md` interdit.
+
+**3. L'application annonce la version qu'elle exécute** (Réglages, en bas) :
+`ATLAS_VERSION`, posée par `demarrer.sh`, affichée telle quelle. Hors banc
+d'essai elle est absente, et l'écran dit « inconnue » plutôt que d'inventer.
+
+C'est le contrôle le moins spectaculaire du dépôt et l'un des plus utiles : une
+capture d'écran répond désormais à « quelle version essayez-vous ? » sans qu'il
+faille poser la question.
+
+### Ce que ça ne résout pas
+
+Un espace créé sur une branche qui n'existe plus, ou dont l'historique a été
+réécrit, reste en arrière — le script refuse d'avancer, à raison. Il le dit ;
+c'est alors un nouvel espace qu'il faut, pas une mise à jour.

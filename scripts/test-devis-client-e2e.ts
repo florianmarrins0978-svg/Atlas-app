@@ -99,7 +99,7 @@ async function main() {
     // La barre « Chantiers / Planning / Tarifs » appartient à l'espace de
     // travail du patron. Chez le client, ses liens ne mèneraient qu'à une page
     // de connexion : une navigation inopérante est pire qu'absente.
-    for (const libelle of ["Chantiers", "Planning", "Tarifs"]) {
+    for (const libelle of ["Chantiers", "Planning", "Réglages"]) {
       assert.strictEqual(
         await page.locator(`nav >> text=${libelle}`).count(),
         0,

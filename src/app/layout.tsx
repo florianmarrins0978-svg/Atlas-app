@@ -66,10 +66,15 @@ export const viewport: Viewport = {
 //   inopérante est pire qu'absente.
 // - `/login` et `/documents-legaux` précèdent l'entrée dans l'application :
 //   naviguer ailleurs n'y a pas de sens.
+// - `…/devis-complet` est le devis lui-même, seul sur sa page. Le patron l'a
+//   demandé ainsi : « une page où il n'y a que le devis ». Une barre d'onglets
+//   au bas d'une feuille de devis la fait ressembler à un écran d'application,
+//   et c'est précisément ce qu'elle ne doit pas être.
 const CHEMINS_SANS_NAVIGATION = ["/devis", "/login", "/documents-legaux"];
 
 function estEcranSansNavigation(chemin: string | null): boolean {
   if (!chemin) return false;
+  if (chemin.endsWith("/devis-complet")) return true;
   return CHEMINS_SANS_NAVIGATION.some((p) => chemin === p || chemin.startsWith(`${p}/`));
 }
 

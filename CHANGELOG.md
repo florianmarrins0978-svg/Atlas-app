@@ -9,36 +9,22 @@ Format : le plus récent en tête.
 
 ## 2026-08-05
 
-### De la dictée au devis, d'un seul geste
+### Une leçon : j'ai reconstruit ce qui existait déjà
 
-Le patron a dit ce qu'il attend, et c'était plus net que tout ce qui était écrit
-jusque-là : *« une IA qui comprend ce qu'il y a à faire à partir de la note
-vocale et rédige le devis tout seul »*. Puis, en découvrant l'état réel : *« j'ai
-l'impression qu'on en est loin »*.
+J'ai écrit un « tapis roulant » qui enchaînait la dictée jusqu'au devis — et
+`main` le portait déjà, livré le matin même par la PR #18 sous le nom
+`devis-depuis-dictee.ts`. Le doublon a été supprimé au moment de la fusion ;
+c'est la version de `main` qui reste.
 
-On n'en était pas loin. **Toutes les briques existaient** — transcription,
-extraction, rapprochement du catalogue, historique des prix, chiffrage, devis —
-et rien ne les enchaînait. `docs/AGENT.md` §5 nommait déjà le manque, dans sa
-dernière ligne : « Enchaînement complet — à faire ». Le patron passait d'écran
-en écran à la main, et lisait ça comme une application qui ne fait pas ce qu'on
-lui a promis.
+**Comment c'est arrivé, parce que la cause est plus utile que l'excuse.** Ma
+branche datait de cinq commits en arrière. J'y ai lu `docs/AGENT.md` §5, qui
+disait « Enchaînement complet — à faire », et j'ai construit d'après cette
+phrase. Sur `main`, la même ligne était déjà corrigée.
 
-`src/server/orchestrateur/tapis-roulant.ts` enchaîne les quatre maillons et
-s'arrête au devis en brouillon — **jamais un pas au-delà** : ni prix validé, ni
-date, ni envoi. C'est l'ARRÊT 1 de `AGENT.md` §2, le moment où le patron engage
-sa parole, et un tapis qui le franchirait ne serait plus un assistant.
-
-Un bouton **« Préparer le devis »** sur l'écran Transcription, et ce qu'il
-affiche en retour : les étapes franchies, et surtout **les trous**. Le patron a
-choisi de voir le devis avec ses manques signalés plutôt qu'un aller-retour de
-questions ; les informations manquantes, les ambiguïtés, les prix absents et les
-arbitrages à rendre remontent donc tels quels, jamais comblés.
-
-**Deux règles ont quitté leurs fichiers d'actions** pour que le tapis et les
-écrans appellent la même : la confirmation du brouillon
-(`brouillon-service.ts`) et l'application de la proposition de prix
-(`proposition-prix.ts`). Ce sont elles qui décident ce qui entre dans un devis —
-deux implémentations auraient fini par diverger.
+C'est exactement le défaut que j'avais diagnostiqué deux heures plus tôt chez
+une autre conversation : *le dépôt est la source de vérité, pas la
+conversation* — encore faut-il lire le dépôt à jour. **Avant de construire :
+`git fetch origin main` et vérifier ce que la branche n'a pas.**
 
 ### L'écran Réglages dit enfin qui écoute et qui rédige
 
@@ -70,6 +56,311 @@ la même phrase aux deux rôles : la carte « Rédaction » annonçait donc des
 transcriptions simulées, ce qui n'est pas son sujet. Les onze tests passaient au
 vert. C'est une capture des trois états qui l'a montré — le quatrième défaut de
 ce projet trouvé de cette façon.
+### La dictée mène droit au devis, et le devis est seul sur sa page
+
+Le patron, en précisant : « une fois qu'on valide la note vocale, cette page
+s'ouvre — la page où il n'y a que le devis — et là je fais mes modifications
+s'il y a besoin. **Je ne veux pas tous les autres trucs intermédiaires.** Et
+sous la note vocale, un petit lien pour y accéder directement : si je n'ai pas
+envie de dicter, que je puisse le rédiger à la main. »
+
+**Ce qui change au parcours :**
+
+- La dictée validée ouvre **le devis lui-même**. Le compte rendu qui
+  s'affichait — ce qui a été retenu, à combien — était un écran de plus entre
+  sa dictée et son devis. Ce qu'il disait se lit maintenant sur le document :
+  les lignes y sont, le total aussi, et la mention « recopiée mot à mot »
+  s'affiche en tête quand aucun modèle n'a compris la dictée.
+- Sous l'enregistreur, **« Ou rédiger le devis à la main → »**, quel que soit
+  l'état de la dictée.
+- La page du devis ne porte plus **aucun décor d'application** : ni barre
+  d'onglets, ni titre d'écran, ni phrase d'explication. Une feuille, pas un
+  formulaire — les champs n'ont ni cadre ni fond tant qu'on n'y écrit pas.
+
+**Deux défauts trouvés en le construisant, tous deux sur le devis du client :**
+
+- La ligne de prix s'appelait **« Prestation (prix calculé) »**. C'est ce que le
+  client lisait, et cela ne lui disait rien du travail. Elle nomme désormais ce
+  qui a été dicté. Le prix, lui, reste global : il se calcule sur la durée et
+  l'équipe, pas prestation par prestation.
+- **Rejouer la dictée dupliquait les prestations** — la même taille de haie deux
+  fois, et le prix calculé qui la comptait double. C'est le défaut du 3 août
+  sous un autre visage : ce qui est déjà au chantier n'y entre plus une seconde
+  fois, et la règle se lit dans les données (`ARCHITECTURE.md` §10).
+
+### « Le fichier devis, le vrai ! Le document entier »
+
+Sa demande : « je veux que lorsqu'on clique sur rédiger à la main, ça ouvre le
+fichier devis, le vrai ! Celui qui se trouve dans modèle de devis, le fichier en
+entier, pas juste les lignes pour remplir les infos et les prix. »
+
+Il avait raison sur le fond. « Rédiger à la main » ouvrait l'écran Prix : des
+lignes et des montants. Or ce qu'il envoie à son client est un **document** —
+son en-tête, ses coordonnées, celles du client, le tableau, les totaux, ses
+conditions, le cadre de signature.
+
+**Le document entier, dans l'ordre de son modèle** (`appli/devis-modele.html`,
+celui qu'il avait construit lui-même pour Arborea, et que le PDF reproduit
+déjà) : émetteur — nom, adresse, téléphone, e-mail, SIRET, **IBAN** —, numéro,
+date, validité, client, adresse du chantier, tableau avec quantité et prix
+unitaire, totaux avec **le taux de TVA qu'il fixe**, notes et conditions, cadre
+de signature.
+
+**Pourquoi pas le fichier d'origine tel quel.** Il garde tout dans le navigateur
+(`localStorage`) : ce qu'il y écrirait n'existerait pas pour Atlas — ni facture
+de fin de chantier, ni TVA, ni suivi de l'envoi. Ici chaque champ part vers **sa
+source** (l'entreprise, la fiche du client, le chantier, les lignes de prix), et
+le devis se reconstruit à partir d'elles. Aucune seconde vérité.
+
+**Deux choses qui manquaient, révélées en le construisant :**
+
+- **Aucun écran ne demandait l'IBAN ni le SIRET.** Le modèle les imprime ; sans
+  IBAN, le client reçoit un devis qu'il ne peut pas payer.
+- **Modifier une quantité ou un prix unitaire ne recalculait pas le montant.**
+  Trois tilleuls à 250 € affichaient 750 € à l'écran et **0,00 € en base** —
+  donc un devis à zéro chez le client. L'invariant `montant = quantité × prix
+  unitaire` ne tenait que dans un sens ; il tient maintenant dans les deux.
+
+Et le taux de TVA appartient désormais au document : une ligne ajoutée n'efface
+plus le 10 % choisi la veille.
+
+### La case « Nom du chantier » a disparu
+
+Sa demande, en une phrase : « dans la catégorie chantier, retire la case nom du
+chantier ». C'était **le seul champ obligatoire** de la création, et le seul qui
+lui demandait d'inventer quelque chose. Un élagueur ne baptise pas ses
+chantiers : il dit « chez M. Bernard » ou « rue des Lilas ». Lui faire trouver
+un titre avant de pouvoir commencer, c'était une porte fermée à clé devant une
+maison ouverte.
+
+**Plus rien n'est obligatoire.** Le nom se déduit de ce qu'il a donné, dans
+l'ordre où il en parle :
+
+| Ce qu'il saisit | Le chantier s'appelle |
+|---|---|
+| Un client | « Chez M. Bernard » |
+| Une adresse seule | « 12 rue des Lilas, Nantes » |
+| Rien du tout | « Chantier du mercredi 5 août » |
+
+**Ce n'est pas inventer une donnée** (`CLAUDE.md` §4) : rien n'est fabriqué,
+tout est repris de sa saisie — et la date, à défaut, reste vraie. Ce nom est une
+**étiquette** (ce qui s'affiche en tête de la fiche et dans la liste), jamais
+une information sur le chantier ; il ne figure pas sur le devis du client, qui
+porte l'adresse. Un contrôle tient l'invariant : *aucun mot du nom qui n'ait été
+saisi*.
+
+La règle vit dans une fonction pure appliquée **côté serveur**, pour qu'un appel
+direct produise le même nom que le formulaire. Les 32 suites qui remplissaient
+ce champ ont été reprises : elles identifient désormais leur chantier par son
+client.
+
+---
+
+## 2026-08-04 (soir)
+
+### Il éprouvait le code de la veille — et rien ne le lui disait
+
+**Le défaut le plus coûteux de toute la série, et il n'était pas dans
+l'application.** Le patron signale deux correctifs qui « ne marchent toujours
+pas » : la bande déroulante des durées « a disparu !!!! », le numéro du client
+« ne se met toujours pas ». Les deux étaient corrigés, éprouvés et fusionnés la
+veille.
+
+Un espace de travail garde le code qu'il avait **le jour de sa création**. Il ne
+récupère jamais rien tout seul. Trois échanges ont été perdus à chercher des
+défauts déjà réparés.
+
+Deux réponses :
+
+- **L'espace se met à jour à chaque allumage** (`.devcontainer/mettre-a-jour.sh`),
+  puis réinstalle les dépendances et joue les migrations — un code neuf sur une
+  base ancienne serait une panne au lieu d'un correctif. Il ne touche à rien si
+  du travail n'est pas enregistré, n'avance qu'en ligne droite, et **dit
+  toujours ce qu'il a fait**. Éprouvé contre les quatre états qu'il distingue :
+  à jour, en retard, sale, divergent (`scripts/test-mise-a-jour-espace.ts`).
+- **L'application annonce sa version** (Réglages, en bas) : « 04/08/2026 21:12 ·
+  b05e282 ». Une capture d'écran répond désormais à « quelle version
+  essayez-vous ? » sans qu'il ait à se le demander.
+
+### « La date est à l'envers » sur le devis
+
+Le PDF imprimait `2026-08-04`, tel que la date est stockée. Ce format est
+parfait en base — il se trie tout seul — et illisible sur une pièce présentée à
+un client. Devis et facture écrivent maintenant **04/08/2026**, échéance
+comprise.
+
+### La bande déroulante des durées, là où il la cherchait
+
+Elle n'avait pas disparu : elle n'existait que sur l'écran d'envoi, au bout du
+parcours, alors que c'est sur l'écran Informations qu'on décrit le chantier.
+Elle y est désormais aussi, avec **la même liste** — ½ journée, puis 1 à 100
+jours. Une seule source, parce que deux molettes qui divergent, c'est le patron
+qui fixe deux durées pour le même chantier sans savoir laquelle compte.
+
+Elle affiche « Non précisé » tant que rien n'a été dit : montrer « 1 journée »
+par défaut ferait entrer un chiffre que personne n'a donné, et il ressortirait
+dans un prix.
+
+### « Je ne peux toujours pas rédiger mon devis seulement à la main »
+
+Il le pouvait — par un lien au bas de l'écran Informations, c'est-à-dire après
+avoir traversé photos et dictée. Et sa fiche annonçait « Prix — en attente des
+informations », qui se lit comme un verrou alors que rien n'a jamais été
+verrouillé. **Un chemin qu'on ne trouve pas n'existe pas.**
+
+- « Ou rédiger le devis à la main → », sous l'action principale de la fiche.
+- Les étapes disent ce qui manque, plus ce qu'il faudrait attendre : « À
+  remplir, ou à dicter », « À calculer, ou à écrire à la main ».
+
+**Et un défaut trouvé en éprouvant ce chemin :** l'écran Devis listait les
+*prestations* du chantier. Un devis écrit entièrement à la main n'en a aucune —
+le patron y voyait un total, et rien qui dise ce qui partirait chez son client.
+Il montre maintenant **les lignes du devis**, avec leurs montants : ce sont
+elles qui sont imprimées, et elles seules.
+
+---
+
+## 2026-08-04
+
+### « Toujours pas de devis créé tout seul à partir de la note vocale »
+
+Sa phrase, avec sa capture : sous « Générer le brouillon », en rouge, **« Réponse
+du fournisseur non conforme (JSON invalide). »** Et rien d'autre — pas de
+brouillon, pas de prestations, pas de prix, pas de devis. « Problème qui traîne.
+Je veux vraiment que tu te consacres à fond pour régler ce problème une bonne
+fois pour toutes. »
+
+**Deux défauts, de nature différente.**
+
+#### 1. Une réponse mal emballée arrêtait tout
+
+Le service faisait `JSON.parse(reponse)` sans filet. Un modèle qui encadre sa
+réponse en ```` ```json ````, ou qui écrit « Voici : { … } », suffisait à tout
+bloquer. Et quand plus rien ne répond — pas de clé, quota dépassé, réseau coupé
+— le patron n'avait pas davantage : un écran mort, alors que sa dictée était là,
+sous ses yeux.
+
+Trois changements :
+
+- **L'emballage est toléré, le fond ne l'est pas.** `lireObjetJson` isole le
+  premier objet équilibré ; le schéma strict reste seul juge du contenu.
+- **On dit ce qui s'est passé.** Le nom du fournisseur et le début de sa réponse
+  partent au journal. L'incident du patron était indiagnosticable : rien, nulle
+  part, ne disait qui avait mal répondu.
+- **Il n'existe plus un seul chemin où il se retrouve sans rien.** Quoi que
+  réponde le fournisseur, la dictée est au minimum lue **mot à mot** — sans
+  réseau, sans clé, sans jamais rien inventer. Le brouillon porte alors la
+  mention « recopiée mot à mot », persistée en base (migration 0021) pour
+  qu'elle survive au rechargement : présenter une recopie comme une analyse
+  serait lui mentir sur ce qu'il relit.
+
+#### 2. Et surtout : la chaîne n'existait pas
+
+Le vrai « problème qui traîne » n'était pas le message d'erreur. Même tout vert,
+Atlas s'arrêtait au brouillon. Le patron devait ensuite enchaîner **« Confirmer »,
+« Valider et calculer le prix », « Ajouter au détail », « Préparer le devis »** —
+cinq gestes sur quatre écrans, dont aucun ne menait au suivant. S'il en oubliait
+un, un devis à **0,00 €** l'attendait au bout.
+
+Or `docs/AGENT.md` §2 décrit depuis le début l'agent qui « transcrit, structure,
+cherche les tarifs, **rédige le devis** », avec **un seul arrêt** : le patron
+vérifie et valide. Chaque maillon existait et était éprouvé ; c'est
+l'enchaînement qui manquait, et aucun contrôle ne le parcourait à la file.
+
+**Un bouton, sur l'écran de la dictée : « Créer le devis à partir de ma
+dictée ».** Il fait tout — prestations, matériel, durée, équipe, tarif ou
+chiffrage, ligne de prix, devis — puis montre ce qui a été retenu, à combien, et
+ce qui reste à regarder. Sur la dictée du patron : **1 674,00 € HT**, ses six
+lignes, « 2 jours · 2 hommes ».
+
+**Ce qu'il ne fait pas :** envoyer. L'arrêt avant l'envoi est intact, et une
+suite le vérifie explicitement. Il n'invente pas non plus de prix : sans tarif
+correspondant et sans durée ni équipe, aucune ligne n'est écrite, et le rapport
+dit pourquoi et quoi faire.
+
+#### Au passage
+
+« J'estime le temps de travaux à 2 jours » laissait la bribe « j'estime le temps
+de travaux à » — **imprimée comme une prestation sur le devis du client**. La
+phrase d'annonce est maintenant reconnue entière ; elle passe en remarque, donc
+elle n'est pas perdue, mais elle ne va plus sur le devis.
+
+### Le SMS partait sans destinataire, et le canal ne se rediscutait plus
+
+Le patron, sur deux captures : « l'ajout automatique du numéro ne fonctionne
+pas », et « si je change d'avis et que je veux l'envoyer par e-mail, je ne peux
+pas revenir au choix SMS/e-mail ».
+
+**Le premier défaut ne pouvait être vu par aucun contrôle existant.** Le bouton
+« Ouvrir le SMS tout prêt » passait par `navigator.share`. Sur iPhone, la
+feuille de partage transmet un **texte** — et rien d'autre : ni numéro, ni
+adresse. Le patron arrivait donc dans Messages avec le message tout écrit et un
+champ « À : » vide, à retaper un numéro qu'Atlas connaissait. La fonction qui
+compose `sms:0679…` était juste et éprouvée ; c'est l'écran qui ne s'en servait
+pas. *Une règle juste que personne n'applique ne protège personne.*
+
+L'adresse est désormais portée par un **vrai lien** (`<a href="sms:…">`), donc
+lisible dans la page — c'est ce qui la rend vérifiable, et c'est le seul moyen
+qu'un contrôle voie ce que la messagerie du patron voyait seule, trop tard. Le
+partage reste offert à part, pour WhatsApp ou Signal.
+
+**Le second se corrige au même endroit.** Le canal venait de la fiche du client
+et ne se rediscutait plus au moment d'envoyer. Les deux voies sont maintenant
+offertes sur l'écran « Devis prêt », et si la coordonnée manque, elle **se
+saisit sur place** puis est conservée sur la fiche : aucun autre écran ne
+permet de la renseigner, et renvoyer le patron « sur la fiche du client »
+l'enverrait vers une porte qui n'existe pas.
+
+**Un troisième défaut est tombé au passage**, trouvé par le contrôle neuf :
+l'écran lisait la coordonnée dans **l'instantané figé du devis**, si bien
+qu'une adresse tout juste enregistrée n'apparaissait jamais. Il lit maintenant
+la fiche vivante du client.
+
+### « 1 journée », pas « 1 jour »
+
+Le patron, sur capture : « ce chantier va durer **1 journée**, pas jour ». Il a
+raison — on dit « ça prend une journée », jamais « ça prend un jour ». La
+première entrée de la liste des durées est corrigée.
+
+Une seconde faute dormait à côté, jamais vue à l'écran parce qu'elle ne
+s'affiche que sur une journée et demie : `libelleDuree(3)` rendait « 1 jours et
+demi » — deux fautes en trois mots. Elle dit maintenant « une journée et demie ».
+
+### Le même défaut survivait sur un numéro tel qu'il est saisi
+
+Corriger l'écran ne suffisait pas. La fiche du client enregistre le numéro **tel
+qu'il est écrit** — « 06 12 34 56 78 », espaces compris, puisque c'est la forme
+que propose le champ. Ces espaces partaient tels quels dans l'adresse `sms:`, où
+ils deviennent `%20` : l'application de messagerie n'y reconnaissait plus un
+numéro et rouvrait un message **sans destinataire**, exactement le défaut qu'on
+venait de traiter.
+
+Aucun contrôle ne pouvait le voir, ni les anciens ni le neuf : tous employaient
+un numéro collé (« 0679984514 »), sur lequel il est invisible. Les nouveaux cas
+emploient la forme réelle — espaces, points, tirets — et ont été confrontés au
+défaut réintroduit pour vérifier qu'ils savent échouer.
+
+*La leçon, à côté de celle du jour :* un contrôle qui n'emploie pas la donnée
+**sous la forme où l'utilisateur la saisit** ne prouve rien de ce qui lui
+arrive.
+
+### Il n'y aura pas de fournisseur SMS ni d'e-mail — décision du patron
+
+Ses mots : *« ça sera plus rassurant, même pour les patrons, de passer par leur
+e-mail et par leur numéro de téléphone. »* Ce n'est donc plus un pis-aller en
+attendant un prestataire : c'est le chemin retenu.
+
+Le point 5 de `docs/A-FAIRE.md` cesse de bloquer — ne restent que des conforts
+(relance automatique, accusé de réception, code SMS) — et la décision **allège**
+les points 2 et 3 : aucune donnée de client ne transitant chez un tiers, il n'y
+a aucun sous-traitant de plus à autoriser ni à faire contractualiser.
+
+Écartée du même coup, et pour de bon : **joindre le PDF au message**. Ni `sms:`
+ni `mailto:` ne portent de pièce jointe, et l'API de partage qui le peut n'a pas
+de destinataire. Surtout, ce serait nuisible — chez Atlas le devis est **la
+page**, pas le PDF : un client qui répond sur la pièce jointe ne choisit pas sa
+date et ne laisse aucune trace d'acceptation. Voir `ARCHITECTURE.md` §13.
+
 
 ---
 
@@ -138,6 +429,245 @@ Le tableau dit maintenant lequel est écrit et lesquels ne le sont pas, avec la
 demi-journée que coûte chacun des autres. La même correction vaut pour la liste
 d'étapes du jour où il tranche : écrire le raccordement est devenu l'étape 1,
 sautée seulement si le choix tombe sur OpenAI.
+### Le message du client arrivait dans le vide — et il n'avait que deux boutons
+
+Le patron : « si le client remarque une faute, il doit pouvoir avoir une ligne
+pour écrire et renvoyer le devis pour correction ».
+
+**Deux défauts, dont un invisible.**
+
+1. Le client n'avait que deux issues : accepter, ou ne pas donner suite. Celui
+   qui repère une coquille ne veut ni l'une ni l'autre. Il touchait donc « Je ne
+   donne pas suite », et le patron lisait « Le client n'a pas donné suite » — un
+   chantier perdu pour une faute de frappe.
+2. **Le champ pour écrire existait déjà**, intitulé « Une précision ?
+   (facultatif) ». Le client y écrivait — la capture du patron montre « Le devis
+   comprend une fautes » — c'était enregistré dans `precision_client`… et
+   **aucun écran ne l'affichait jamais**. Le message partait dans le vide. C'est
+   le plus coûteux des deux, parce que rien ne le signale.
+
+**Ce qui change.** Une troisième issue, « Une correction avant d'accepter »,
+inactive tant que rien n'est écrit — une demande muette obligerait le patron à
+rappeler, c'est-à-dire à refaire l'aller-retour que ce parcours supprime. Le
+champ devient une zone de texte, s'intitule « Une erreur, une question, une
+précision ? » et annonce que l'artisan lira le message tel quel.
+
+**Et le message arrive.** Il s'affiche entre guillemets, dans la carte de
+l'accueil et sur l'écran Devis — pas derrière une pastille : c'est la seule
+chose qui dise au patron quoi faire, et un geste de plus pour la lire serait un
+geste de trop. Il accompagne aussi les refus (« trop cher ») et les
+acceptations (« plutôt le matin ») ; une acceptation muette sur une date
+proposée, elle, continue de ne déranger personne.
+
+Nouvel état `Correction demandée`, distinct de `Devis retourné` : le chantier
+est presque acquis, il ne tient qu'à une reprise. Le bouton dit alors
+« Corriger et renvoyer ».
+
+La base tient sa part : une correction sans message y est refusée par contrainte
+(migration 0020), indépendamment du code.
+
+### La durée du chantier se choisit à la molette, jusqu'à 100 jours
+
+Sa demande : « au lieu de rajouter des jours à chaque fois, mettre une bande
+déroulante qui fait défiler le nombre de jours (100 max) — si un chantier dure
+20 jours ce sera plus simple et prendra moins de place ».
+
+Les quatre boutons deviennent une liste déroulante : ½ journée, puis 1 à
+100 jours. Sur son téléphone, c'est exactement la molette qu'il décrit, elle
+occupe une seule ligne, et elle répond au lecteur d'écran — ce qu'une bande
+écrite à la main n'aurait pas fait. Au-delà de trois jours, une phrase annonce
+combien de jours ouvrés seront réservés : un chantier long bloque beaucoup de
+jours d'affilée, c'est juste mais invisible.
+
+### Le planning compte en demi-journées, et le patron peut avoir plusieurs équipes
+
+Sa question :
+
+> « J'ai déjà un chantier le 6 août, donc pour mon nouveau client on ne propose
+> pas le 6 août. Mais si mon 1er chantier du 6 ne dure que le matin, je ne peux
+> pas caler une autre demi-journée l'après-midi. »
+> « Si j'ai deux équipes dans ma boîte, je peux avoir deux chantiers, voire plus,
+> le 6 août. »
+
+Trois pistes lui ont été présentées pour chaque moitié du problème. Il a retenu
+la durée en demi-journées (« la demi-journée suffit ») et le compteur d'équipes,
+et il a écarté les heures réelles. Le détail des choix est dans
+`ARCHITECTURE.md` §22 — pour que personne ne rouvre le débat dans trois mois.
+
+**Ce qui change.** Un jour porte deux demi-journées ; chacune tient autant de
+chantiers que l'entreprise a d'équipes (réglable dans Réglages, une par défaut).
+Un chantier occupe une suite de demi-journées à partir d'un départ que le
+planning choisit — matin de préférence, après-midi sinon. L'écran d'envoi porte
+désormais la durée du chantier, reprise de la dictée et corrigible d'un doigt :
+elle commande les jours proposables.
+
+**Un troisième défaut, que personne n'avait signalé.** La durée dictée
+(« 2 jours ») n'entrait **nulle part** dans la planification : seul le chiffrage
+la lisait. Un chantier de deux jours calé le 6 laissait donc le 7 proposable au
+client suivant. Il bloque maintenant les deux.
+
+**Ce que le client voit n'a pas bougé d'un iota**, et c'était sa consigne :
+« mon client ne doit pas être informé de la demi-journée, seulement moi ; lui
+verra le 6 août ». La page publique ne reçoit toujours que des dates. Un
+contrôle inspecte le contenu sérialisé et échoue si « matin », « après-midi »,
+« créneau » ou « durée » y apparaît.
+
+**Le piège de la migration, et comment il est fermé.** Les chantiers déjà
+planifiés n'ont ni créneau ni durée. Les lire comme « rien de réservé » aurait
+libéré, du jour au lendemain, des après-midis déjà pris — et le patron se serait
+retrouvé avec deux clients au même endroit. Ils sont donc traités comme une
+journée entière, exactement ce qu'ils étaient.
+
+**Ce que j'ai cassé en cours de route, et que la batterie a vu.** J'avais rendu
+les samedis non retenables, alors que les autoriser était un choix délibéré :
+on ne *propose* jamais le week-end, mais un client qui en demande un doit
+pouvoir l'obtenir. Deux suites sans rapport ont viré au rouge sur des dates qui
+tombaient un samedi. Corrigé, et écrit noir sur blanc dans le code.
+
+### Le devis qui doublait tout seul
+
+Le patron : « lorsque je clique sur la touche retour de mon navigateur et que je
+reviens sur la page, ça me compte deux prestations, donc le prix du devis a fait
+×2 tout seul ». Sa capture : **4 017,60 € TTC**, soit 3 348 € HT — deux fois
+1 674 €.
+
+Reproduit à l'identique, au centime près. La cause n'était pas un calcul faux,
+c'était **un bouton sans mémoire** : « Ajouté au détail » vivait dans le
+navigateur. Un retour arrière, un rechargement, un onglet rouvert, et l'écran
+réaffichait « Ajouter au détail » alors que la ligne était déjà là. Un seul
+appui suffisait. L'application avait invité l'erreur, puis l'avait exécutée sans
+un mot — pire qu'un calcul faux, parce que rien ne le signale : le total paraît
+simplement plus élevé que prévu, et ce total part au client.
+
+L'état vient désormais **du détail lui-même** (`src/lib/proposition-au-detail.ts`),
+plus du navigateur : le bouton dit « Déjà au détail », il est inerte, et une
+phrase indique la sortie — modifier la ligne existante. Le serveur applique la
+**même fonction** et refuse de son côté : une page laissée ouverte, deux appuis
+pendant que le premier voyage, et l'écran ne protège plus rien.
+
+Trois contrôles, à trois hauteurs : la règle (`test-proposition-au-detail.ts`),
+le refus serveur (`test-prix-doublon-serveur.ts`), et **le geste exact du
+patron rejoué dans un navigateur** (`test-devis-doublon-e2e.ts`). Les deux
+premiers ont été confrontés au défaut d'origine : ils virent au rouge.
+
+### « Fin de chantier » était injoignable sur un chantier planifié
+
+« Le chantier est planifié mais je dois pouvoir retourner dessus une fois
+terminé pour cliquer sur chantier fini — pourquoi n'y ai-je pas accès ??? »
+
+Parce que la clôture n'existait que dans l'onglet **Terminés**, où un chantier
+n'entre qu'une fois sa **date d'intervention passée**. Le sien était prévu deux
+jours plus tard : la facture était donc réellement injoignable, et sa fiche
+disait « rien à faire pour l'instant » sans indiquer ni où ni quand cela
+changerait.
+
+La fiche du chantier porte maintenant, en haut à droite comme il l'a demandé,
+un bouton **« Fin de chantier → »** dès que le chantier est planifié. Aucune
+barrière de date, délibérément : un chantier se finit parfois plus tôt, et c'est
+le patron qui sait quand il est fait. Le geste reste sans danger — la fonction
+appelée est idempotente, exige un devis réellement envoyé, et n'émet rien : elle
+bâtit la facture qu'il vérifiera (arrêt 3). L'émission, elle, reste son geste,
+et c'est elle qui alimente le relevé de TVA.
+
+Le message d'attente dit enfin quelque chose d'utile : la date prévue, et le
+geste suivant.
+
+### La dictée arrive entière à l'écran
+
+Le patron a écrit trois lignes et photographié ce qu'Atlas en avait fait :
+
+    Taille de haie laurier 20 m linéaires
+    Abattage chêne mort, couper le bois en 50 cm fendre laisser sur place
+    Estimation 2 jours 2 hommes broyeur plus camion plus fendeuse
+
+L'écran lui rendait **une** prestation au libellé collé (« Taille de haie
+laurier 20 m linéaires⏎Abattage chêne mort »), « Rien de détecté dans la
+dictée » en face du matériel, et « Non mentionné » en face des déchets. Son
+verdict : « ça n'a rien à voir ».
+
+Quatre fautes, toutes silencieuses :
+
+1. **le découpage ignorait les retours à la ligne.** Une dictée met un élément
+   par ligne ; deux prestations se retrouvaient dans un seul libellé ;
+2. **un segment contenant la durée ou l'équipe était jeté en entier.** Sa
+   troisième ligne portait tout son matériel — broyeur, camion, fendeuse — et
+   elle a disparu sans laisser de trace ;
+3. **le vocabulaire du matériel était celui d'un plaquiste** (plaque, rail,
+   colle, enduit) dans une application faite pour un élagueur. Les unités (m²,
+   kg) y figuraient aussi : « 20 m² de débroussaillage » finissait classé en
+   matériel ;
+4. **« bois » comptait comme un déchet.** Pour un élagueur, le bois est sa
+   matière : « couper le bois en 50 cm, fendre, laisser sur place » — du travail
+   facturable — basculait tout entier en gestion des déchets.
+
+Les quatre sont corrigées. La même dictée rend maintenant trois prestations,
+trois matériels, « laisser sur place » en gestion des déchets, la durée et
+l'équipe — et ne réclame plus une information qu'il avait donnée.
+
+**Ce qui empêchera la rechute.** Une heuristique ne comprendra jamais un
+chantier ; ce qu'on peut exiger d'elle, c'est de ne rien perdre.
+`scripts/test-analyse-dictee.ts` tient donc un invariant mot à mot : **aucun mot
+dicté ne disparaît**, avec la liste explicite des mots de liaison qu'on
+s'autorise à absorber. Il a été confronté aux deux défauts d'origine, qu'il
+rattrape ; il en a aussi trouvé un troisième que personne ne cherchait —
+`jours?` se déclenchait à l'intérieur de « journée », et « Une journée » laissait
+une prestation nommée « née ».
+
+**Ce que cela ne règle pas, et qu'il faut dire.** Ce découpage reste une
+heuristique : il ne comprend rien, il se contente de ne rien jeter. La vraie
+lecture d'une dictée demande un modèle de langage, et donc le choix de
+prestataire qui attend le patron dans `docs/A-FAIRE.md`.
+
+### Écrire le devis soi-même, depuis l'écran Informations
+
+Demandé dans le même message : « je dois pouvoir cliquer sur mon devis et
+pouvoir le remplir manuellement si je le souhaite ». L'écran Informations n'avait
+qu'une sortie — « Valider et calculer le prix → » — qui passe par la proposition
+automatique. Après une extraction ratée, c'était le seul chemin, et il menait au
+même endroit.
+
+Un second lien, « Ou écrire le devis moi-même → », mène directement à l'écran
+Prix, qui **est** le devis en cours de rédaction. Il ne marque pas les
+informations comme vérifiées — le patron quitte cet écran sans le trancher, et
+la fiche du chantier ne doit pas prétendre le contraire. La proposition de prix
+y arrive repliée, jamais supprimée : un lien la rappelle s'il change d'avis.
+
+### L'adresse d'Atlas est écrite par la machine, plus recomposée par le patron
+
+Le mode d'emploi lui donnait `https://<nom-de-l-espace>-3000.app.github.dev`.
+Il a répondu : « Je comprends pas ce que je dois faire avec ça ». Il avait
+raison — on lui demandait de deviner un morceau d'adresse, au doigt, sur six
+pouces, alors que l'espace de travail connaît son propre nom.
+
+`.devcontainer/demarrer.sh` compose désormais l'adresse complète à partir de
+`CODESPACE_NAME` et `GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN`, l'affiche dans
+un cadre au démarrage et la dépose dans `/tmp/adresse-atlas.txt` — le terminal
+défile, pas le fichier. Hors Codespace, où ces variables n'existent pas, le
+script n'annonce rien plutôt que d'inventer une adresse fausse ; les deux cas
+ont été joués.
+
+Le mode d'emploi ne porte plus aucun gabarit à remplir : une adresse
+d'exemple complète, la consigne de la mettre en favori dès la première fois, et
+— pour qui ne l'a pas fait — un tableau qui montre les deux caractères à ajouter
+à l'adresse de l'éditeur, plutôt qu'une phrase à interpréter.
+
+### « Déconnecté de codespace » ne veut pas dire « Atlas est en panne »
+
+Le patron a envoyé une capture de son téléphone : *The workbench failed to
+connect to the server (Error: deadline exceeded)*, et en bas **« Déconnecté de
+codespace »**. Un seul mot avec : « Problème ».
+
+Ce n'était pas Atlas — c'était l'éditeur qui n'avait pas réussi à joindre
+l'espace de travail réveillé de sa veille. Mais rien dans `docs/ESSAYER.md` ne
+le disait : la section de dépannage couvrait la page blanche, `Missing script`,
+`EADDRINUSE`, le port pris — jamais l'éditeur lui-même. Le patron n'avait donc
+aucun moyen de savoir que **l'éditeur ne lui sert à rien pour ouvrir Atlas** :
+l'application démarre seule à chaque allumage, et son adresse est ouverte.
+
+Le cas est écrit, en tête de la section de dépannage puisque c'est la première
+chose qu'il voit : recharger, rouvrir depuis `github.com/codespaces`, et surtout
+aller droit à `https://<nom-de-l-espace>-3000.app.github.dev` sans attendre
+l'éditeur.
 
 ### Le devis est enfin celui du patron
 

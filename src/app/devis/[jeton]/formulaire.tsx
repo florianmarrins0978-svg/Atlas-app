@@ -16,6 +16,7 @@ export default function FormulaireReponse({
   const [etat, action, enCours] = useActionState(repondreAction, undefined);
   const [choixDate, setChoixDate] = useState<string>("");
   const [dateAutre, setDateAutre] = useState<string>("");
+  const [precision, setPrecision] = useState<string>("");
 
   const dateEffective = choixDate === "autre" ? dateAutre : choixDate;
   const montrerRetractation = dateEffective !== "" && dansDelaiRetractation(dateEffective, aujourdHui);
@@ -109,17 +110,32 @@ export default function FormulaireReponse({
         </section>
       )}
 
+      {/* Le champ de message.
+          Il existait déjà, intitulé « Une précision ? (facultatif) », et le
+          client y écrivait — « Le devis comprend une fautes ». Deux défauts s'y
+          cachaient : son intitulé ne laissait pas deviner qu'on pouvait y
+          signaler une erreur, et surtout **rien ne l'affichait jamais** au
+          patron. Le message partait dans le vide.
+
+          Devenu une zone de texte : une faute se décrit rarement en une ligne,
+          et un champ d'une ligne dissuade d'écrire. */}
       <section className="rounded-2xl bg-white p-5 shadow-sm">
         <label className="block text-[13px] font-medium text-ink/60" htmlFor="precision">
-          Une précision&nbsp;? (facultatif)
+          Une erreur, une question, une précision&nbsp;?
         </label>
-        <input
+        <textarea
           id="precision"
           name="precision"
+          rows={3}
           maxLength={500}
-          placeholder="« plutôt le matin »"
-          className="mt-2 w-full rounded-xl border border-black/10 px-3 py-2 text-[15px]"
+          value={precision}
+          onChange={(e) => setPrecision(e.target.value)}
+          placeholder="« Mon nom est mal écrit », « plutôt le matin », « il manque le broyage »…"
+          className="mt-2 w-full resize-y rounded-xl border border-black/10 px-3 py-2 text-[15px]"
         />
+        <p className="mt-1.5 text-[12px] text-ink/50">
+          Votre artisan lira ce message tel quel.
+        </p>
       </section>
 
       {etat && "erreur" in etat && (
@@ -128,6 +144,17 @@ export default function FormulaireReponse({
         </p>
       )}
 
+      {/* Trois issues, et non deux.
+          Un client qui repère une faute ne veut ni accepter ni renoncer : il
+          veut le même devis, corrigé. Sans cette voie, il touchait « Je ne
+          donne pas suite » — et le patron lisait un refus là où il n'y avait
+          qu'une coquille. C'est un chantier perdu pour une faute de frappe.
+
+          Le bouton reste discret, au milieu : la voie normale est d'accepter,
+          et un client hésitant ne doit pas être poussé vers la correction.
+          Il est désactivé tant que rien n'est écrit — une demande de correction
+          sans message obligerait le patron à rappeler, c'est-à-dire à refaire
+          l'aller-retour que tout ce parcours supprime. */}
       <div className="flex flex-col gap-2">
         <button
           type="submit"
@@ -138,6 +165,21 @@ export default function FormulaireReponse({
         >
           {enCours ? "Envoi…" : "J'accepte ce devis"}
         </button>
+        <button
+          type="submit"
+          name="decision"
+          value="correction"
+          disabled={enCours || precision.trim() === ""}
+          title={precision.trim() === "" ? "Écrivez d'abord ce qui doit être corrigé." : undefined}
+          className="rounded-xl border border-[#2F3B2F]/30 py-3 text-[15px] font-medium text-[#2F3B2F] disabled:opacity-40"
+        >
+          Une correction avant d&apos;accepter
+        </button>
+        {precision.trim() === "" && (
+          <p className="-mt-1 text-center text-[12px] text-ink/45">
+            Écrivez ci-dessus ce qui doit être corrigé pour activer ce bouton.
+          </p>
+        )}
         <button
           type="submit"
           name="decision"

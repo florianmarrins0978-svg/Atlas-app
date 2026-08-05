@@ -86,7 +86,6 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       : null;
 
     const lignesPrixActuelles = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
-    const totaux = calculerTotaux(lignesPrixActuelles, TAUX_TVA_DEFAUT);
 
     const [dernier] = await tx
       .select()
@@ -108,6 +107,12 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       clientEmail: client?.email,
       adresseChantier: chantier.adresseChantier,
     };
+
+    // Le taux de TVA appartient au DOCUMENT : le patron peut l'avoir corrigé
+    // sur son devis (10 % en rénovation, 20 % en neuf). Recalculer au taux par
+    // défaut effacerait sa correction à la première ligne ajoutée.
+    const taux = dernier && dernier.statut === "brouillon" ? dernier.tauxTva : TAUX_TVA_DEFAUT;
+    const totaux = calculerTotaux(lignesPrixActuelles, taux);
 
     if (dernier && dernier.statut === "brouillon") {
       // Régénération : remplace les lignes et recalcule les totaux, ne change
@@ -280,5 +285,47 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
       .where(eq(chantiers.id, d.chantierId));
 
     return d;
+  });
+}
+
+/**
+ * Ce qui appartient au DOCUMENT, et non à ses sources : le taux de TVA et les
+ * conditions imprimées au bas de la page.
+ *
+ * Ces deux champs ne figurent pas dans `snapshotEnTete` : ils survivent donc
+ * aux régénérations du brouillon, ce qui est exactement le comportement voulu —
+ * une ligne de prix ajoutée ne doit pas effacer les conditions écrites la
+ * veille.
+ *
+ * Un devis déjà envoyé est refusé : il est immuable (trigger PostgreSQL), et le
+ * corriger passe par une nouvelle version.
+ */
+export async function mettreAJourEnTeteDevis(
+  ctx: Ctx,
+  devisId: string,
+  data: { tauxTva?: string; conditionsPaiement?: string }
+) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [avant] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!avant || avant.statut === "envoye") return null;
+
+    const valeurs: { tauxTva?: string; conditionsPaiement?: string; updatedAt: Date } = { updatedAt: new Date() };
+    if (data.tauxTva !== undefined) {
+      // Borné : un taux négatif ou à trois chiffres produirait un total que le
+      // patron ne comprendrait pas, et qu'aucun client n'accepterait.
+      const taux = Math.min(100, Math.max(0, Number(data.tauxTva.replace(",", "."))));
+      if (Number.isFinite(taux)) valeurs.tauxTva = taux.toFixed(2);
+    }
+    if (data.conditionsPaiement !== undefined) valeurs.conditionsPaiement = data.conditionsPaiement;
+
+    const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId));
+    const totaux = calculerTotaux(lignes, valeurs.tauxTva ?? avant.tauxTva);
+
+    const [row] = await tx
+      .update(devis)
+      .set({ ...valeurs, ...totaux })
+      .where(eq(devis.id, devisId))
+      .returning();
+    return row ?? null;
   });
 }

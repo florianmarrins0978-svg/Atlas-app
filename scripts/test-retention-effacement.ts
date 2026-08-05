@@ -241,7 +241,7 @@ async function main() {
     );
     await enregistrerReponse(
       envoi.jeton,
-      { accepte: true, dateRetenue: versJourIso(ajouterJours(MAINTENANT, 10)) },
+      { decision: "accepte" as const, dateRetenue: versJourIso(ajouterJours(MAINTENANT, 10)) },
       MAINTENANT
     );
 
@@ -276,7 +276,7 @@ async function main() {
     );
     await enregistrerReponse(
       envoi.jeton,
-      { accepte: true, dateRetenue: versJourIso(ajouterJours(MAINTENANT, 12)) },
+      { decision: "accepte" as const, dateRetenue: versJourIso(ajouterJours(MAINTENANT, 12)) },
       MAINTENANT
     );
 

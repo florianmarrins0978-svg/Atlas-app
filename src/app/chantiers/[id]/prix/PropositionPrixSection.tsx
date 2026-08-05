@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { colors, smallCaps } from "@/lib/design-tokens";
 import type { PropositionPrix, OriginePrix } from "@/server/chiffrage/proposition-prix";
+import { ligneDejaAuDetail, type LigneDetail } from "@/lib/proposition-au-detail";
 import { calculerPropositionPrixAction, appliquerPropositionPrixAction } from "./actions";
+import { enEuros } from "@/lib/euros";
 
-const formatEuros = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 
 // Libellé court de l'origine. Aucune formulation ne doit laisser croire que
 // l'application décide du prix : elle retrouve un tarif, ou calcule à partir de
@@ -20,17 +21,19 @@ const LIBELLE_ORIGINE: Record<OriginePrix, string> = {
 export default function PropositionPrixSection({
   chantierId,
   propositionInitiale,
+  lignesDetail,
   onLigneAjoutee,
 }: {
   chantierId: string;
   propositionInitiale: PropositionPrix | null;
+  /** Le détail courant du devis — d'où l'on déduit si la proposition y est déjà. */
+  lignesDetail: readonly LigneDetail[];
   onLigneAjoutee: (ligne: { id: string; libelle: string; montant: string }) => void;
 }) {
   const [proposition, setProposition] = useState<PropositionPrix | null>(propositionInitiale);
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [tarifChoisi, setTarifChoisi] = useState<string | null>(null);
-  const [appliquee, setAppliquee] = useState(false);
   const [detailOuvert, setDetailOuvert] = useState(false);
 
   async function recalculer() {
@@ -39,7 +42,6 @@ export default function PropositionPrixSection({
     try {
       const maj = await calculerPropositionPrixAction(chantierId);
       setProposition(maj);
-      setAppliquee(false);
       setTarifChoisi(null);
     } catch {
       setErreur("Le calcul n'a pas pu être relancé. Réessayez.");
@@ -58,7 +60,6 @@ export default function PropositionPrixSection({
         return;
       }
       onLigneAjoutee(r.ligne);
-      setAppliquee(true);
     } catch {
       setErreur("Cette proposition n'a pas pu être ajoutée. Réessayez.");
     } finally {
@@ -69,6 +70,20 @@ export default function PropositionPrixSection({
   if (!proposition) return null;
 
   const { explication, origine } = proposition;
+
+  // Déduit du détail, jamais mémorisé dans le navigateur. L'ancien drapeau
+  // `appliquee` mourait au premier retour arrière : l'écran reproposait alors
+  // une ligne déjà là, et un seul appui doublait le devis (voir
+  // `src/lib/proposition-au-detail.ts`).
+  //
+  // Pour un choix entre plusieurs tarifs, c'est le tarif désigné qu'on cherche
+  // dans le détail : les autres candidats restent proposables.
+  const libelleVise =
+    origine === "tarifs_ambigus"
+      ? (proposition.tarifsCandidats.find((c) => c.tarifId === tarifChoisi)?.intitule ?? null)
+      : proposition.libelle;
+  const dejaAuDetail = ligneDejaAuDetail(libelleVise, lignesDetail);
+
   const peutAppliquer =
     origine === "tarif" || origine === "chiffrage" || (origine === "tarifs_ambigus" && tarifChoisi !== null);
 
@@ -85,7 +100,7 @@ export default function PropositionPrixSection({
 
       {proposition.prixPropose !== null && (
         <p className="text-[28px] font-semibold leading-none" style={{ color: colors.ink }}>
-          {formatEuros.format(Number(proposition.prixPropose))}
+          {enEuros(proposition.prixPropose)}
           <span className="ml-2 text-[13px] font-normal" style={{ color: colors.muted }}>
             HT
           </span>
@@ -167,16 +182,26 @@ export default function PropositionPrixSection({
         </p>
       )}
 
+      {/* Dire pourquoi le bouton ne répond plus. Un bouton grisé sans phrase se
+          lit comme une panne — et ici, c'est au contraire la seule chose qui
+          empêche le devis de doubler. */}
+      {dejaAuDetail && (
+        <p className="text-[13px]" style={{ color: colors.muted }}>
+          Déjà au détail : « {dejaAuDetail.libelle} » à {enEuros(dejaAuDetail.montant)}.
+          Pour la changer, modifiez la ligne ci-dessous plutôt que d&apos;en ajouter une seconde.
+        </p>
+      )}
+
       <div className="flex flex-col gap-2">
         {origine !== "aucun" && (
           <button
             type="button"
             onClick={appliquer}
-            disabled={enCours || appliquee || !peutAppliquer}
+            disabled={enCours || dejaAuDetail !== null || !peutAppliquer}
             className="rounded-2xl py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
             style={{ backgroundColor: colors.rust }}
           >
-            {appliquee ? "Ajouté au détail" : enCours ? "Ajout…" : "Ajouter au détail"}
+            {dejaAuDetail ? "Déjà au détail" : enCours ? "Ajout…" : "Ajouter au détail"}
           </button>
         )}
         <button

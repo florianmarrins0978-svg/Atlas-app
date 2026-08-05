@@ -3,7 +3,8 @@
 import { getCurrentCtx } from "@/server/session-ctx";
 import { ajouterLignePrix, listerLignesPrix, modifierLignePrix, supprimerLignePrix } from "@/server/repositories/lignes-prix";
 import { marquerPrixValide } from "@/server/repositories/chantiers";
-import { preparerPropositionPrix, appliquerProposition } from "@/server/chiffrage/proposition-prix";
+import { preparerPropositionPrix } from "@/server/chiffrage/proposition-prix";
+import { appliquerPropositionPrix } from "@/server/chiffrage/appliquer-proposition";
 import { peutPreparerDevis, PrixNonPreparableError } from "@/lib/preparation-devis";
 
 export async function ajouterLignePrixAction(chantierId: string) {
@@ -62,17 +63,13 @@ export async function calculerPropositionPrixAction(chantierId: string) {
 
 // Ajoute la proposition au détail du chantier, sur action explicite.
 //
-// Le montant n'est JAMAIS repris de ce que le navigateur affiche : la
-// proposition est recalculée ici, à partir des données en base, et c'est ce
-// résultat-là qui est écrit. Un détail falsifié côté client n'a donc aucun effet.
+// La règle elle-même vit dans `src/server/chiffrage/appliquer-proposition.ts` :
+// l'enchaînement complet depuis la dictée l'emprunte aussi, et deux copies
+// auraient fini par diverger — voir `CLAUDE.md` §3.
 export async function appliquerPropositionPrixAction(
   chantierId: string,
   tarifIdChoisi?: string
 ): Promise<{ succes: true; ligne: { id: string; libelle: string; montant: string } } | { succes: false; erreur: string }> {
   const ctx = await getCurrentCtx();
-  const resultat = await appliquerProposition(ctx, chantierId, tarifIdChoisi);
-  // `ambigu` sert au tapis roulant pour savoir qu'il doit s'arrêter et
-  // demander ; l'écran, lui, n'a besoin que du message.
-  if (!resultat.succes) return { succes: false, erreur: resultat.erreur };
-  return resultat;
+  return appliquerPropositionPrix(ctx, chantierId, tarifIdChoisi);
 }

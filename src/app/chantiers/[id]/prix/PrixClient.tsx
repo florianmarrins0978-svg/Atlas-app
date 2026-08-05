@@ -16,21 +16,25 @@ import {
 import PropositionPrixSection from "./PropositionPrixSection";
 import type { PropositionPrix } from "@/server/chiffrage/proposition-prix";
 import { peutPreparerDevis } from "@/lib/preparation-devis";
+import { enEuros } from "@/lib/euros";
 
 type Ligne = { id: string; libelle: string; montant: string };
 
-const formatEuros = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 
 export default function PrixClient({
   chantierId,
   initialLignes,
   propositionInitiale,
+  saisieManuelle = false,
 }: {
   chantierId: string;
   initialLignes: Ligne[];
   propositionInitiale: PropositionPrix | null;
+  /** Arrivée par « Ou écrire le devis moi-même → » : la proposition part repliée. */
+  saisieManuelle?: boolean;
 }) {
   const router = useRouter();
+  const [propositionVisible, setPropositionVisible] = useState(!saisieManuelle);
   const [lignes, setLignes] = useState<Ligne[]>(initialLignes);
   const [leavingIds, setLeavingIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<{ item: Ligne; index: number } | null>(null);
@@ -126,18 +130,32 @@ export default function PrixClient({
           Total
         </p>
         <p className="text-[40px] font-semibold leading-none" style={{ fontFamily: font.display, color: colors.rust }}>
-          {formatEuros.format(Number(total))}
+          {enEuros(total)}
         </p>
         <p className="mt-2 text-[12px]" style={{ color: colors.muted }}>
           Somme des lignes du détail. C&apos;est cette valeur qui sera reprise dans le devis.
         </p>
       </div>
 
-      <PropositionPrixSection
-        chantierId={chantierId}
-        propositionInitiale={propositionInitiale}
-        onLigneAjoutee={(ligne) => setLignes((cur) => [...cur, ligne])}
-      />
+      {/* Repliée, jamais retirée : le patron qui a choisi d'écrire lui-même doit
+          pouvoir changer d'avis sans revenir en arrière. */}
+      {propositionVisible ? (
+        <PropositionPrixSection
+          chantierId={chantierId}
+          propositionInitiale={propositionInitiale}
+          lignesDetail={lignes}
+          onLigneAjoutee={(ligne) => setLignes((cur) => [...cur, ligne])}
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => setPropositionVisible(true)}
+          className="mx-6 mt-6 self-start text-[14px] font-medium"
+          style={{ color: colors.rust }}
+        >
+          Voir la proposition de prix →
+        </button>
+      )}
 
       <form
         className="mt-7 flex flex-col gap-2 px-6"
@@ -149,6 +167,12 @@ export default function PrixClient({
         <span className={smallCaps} style={{ color: colors.muted }}>
           Détail
         </span>
+        {saisieManuelle && (
+          <p className="-mt-1 mb-1 text-[13px] leading-relaxed" style={{ color: colors.muted }}>
+            Vous écrivez ce devis vous-même. Chaque ligne ci-dessous, avec son montant, est ce que
+            votre client recevra.
+          </p>
+        )}
 
         {lignes.map((ligne) => (
           <AnimatedRow key={ligne.id} leaving={leavingIds.has(ligne.id)} onRemove={() => retirer(ligne.id)}>

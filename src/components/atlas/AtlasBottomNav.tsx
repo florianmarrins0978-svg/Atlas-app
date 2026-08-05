@@ -8,7 +8,9 @@ const tabs = [
   { href: "/", label: "Chantiers", icon: "home" as const },
   { href: "/planning", label: "Planning", icon: "calendar" as const },
   { href: "/termines", label: "Terminés", icon: "check" as const },
-  { href: "/reglages", label: "Tarifs", icon: "tag" as const },
+  // « Réglages » depuis que cet écran porte aussi le nombre d'équipes : un
+  // onglet nommé « Tarifs » cacherait le réglage qui commande le planning.
+  { href: "/reglages", label: "Réglages", icon: "tag" as const },
 ];
 
 export default function AtlasBottomNav() {

@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { jourLisible } from "@/lib/jour";
+import { libelleDuree } from "@/server/disponibilites";
 import { preparerEnvoiAction, envoyerAuClientAction } from "./actions";
 import type { PreparationEnvoi } from "@/server/repositories/preparation-envoi";
+import BandeDuree from "../BandeDuree";
 
 // L'unique arrêt avant l'envoi (docs/AGENT.md §2.2). Le patron vient de valider
 // son devis : on ne lui redemande pas s'il est sûr — un arrêt qui ne peut mener
@@ -52,15 +54,20 @@ function Contenu({
   const [selection, setSelection] = useState<string[]>([]);
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+  // `undefined` tant que le patron n'a rien corrigé : le serveur déduit alors
+  // la durée de la dictée. Une valeur ici veut dire « c'est lui qui a tranché ».
+  const [dureeChoisie, setDureeChoisie] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     let annule = false;
-    preparerEnvoiAction(chantierId)
+    preparerEnvoiAction(chantierId, dureeChoisie)
       .then((p) => {
         if (annule) return;
         setPreparation(p);
         // Pré-sélection du premier jour libre : dans la majorité des cas c'est
         // celui que le patron retiendra, et il reste libre de le décocher.
+        // Recalculée à chaque changement de durée : garder une date qui ne tient
+        // plus l'aurait fait refuser à l'envoi, sans qu'il comprenne pourquoi.
         setSelection(p.joursLibres.slice(0, 1));
       })
       .catch(() => {
@@ -69,7 +76,7 @@ function Contenu({
     return () => {
       annule = true;
     };
-  }, [chantierId]);
+  }, [chantierId, dureeChoisie]);
 
   function basculerJour(jour: string) {
     setSelection((actuelle) => {
@@ -88,7 +95,12 @@ function Contenu({
     setEnCours(true);
     setErreur(null);
     try {
-      const r = await envoyerAuClientAction(chantierId, devisId, [...selection].sort());
+      const r = await envoyerAuClientAction(
+        chantierId,
+        devisId,
+        [...selection].sort(),
+        preparation?.dureeDemiJournees
+      );
       if (!r.succes) {
         setErreur(r.erreur);
         return;
@@ -128,6 +140,32 @@ function Contenu({
             {preparation.destinataire ? ` au ${preparation.destinataire}` : ""}
           </p>
 
+          {/* La durée n'est pas une seconde question — c'est le réglage qui
+              décide quels jours sont proposables. Une demi-journée tient là où
+              une journée entière ne tient plus, et le patron le sait mieux que
+              sa dictée. Elle reste chez lui : son client ne verra qu'une date.
+
+              L'arrêt reste unique (`docs/AGENT.md` §2.2) : la question posée est
+              toujours « une date, ou deux ? ». Ceci en est le préalable. */}
+          <div className="mb-4">
+            <BandeDuree
+              label="Ce chantier prend"
+              valeur={preparation.dureeDemiJournees}
+              onChange={setDureeChoisie}
+              aide={
+                (preparation.dureeDeduiteDeLaDictee
+                  ? "Repris de votre dictée. Corrigez-le si besoin — cela change les jours proposables."
+                  : "Votre client ne verra que la date, jamais la demi-journée.") +
+                /* Un chantier long réserve beaucoup de jours d'affilée. C'est
+                   juste, mais invisible : sans cette phrase, le patron
+                   s'étonnerait de ne plus rien pouvoir proposer pendant un mois. */
+                (preparation.dureeDemiJournees > 6
+                  ? ` ${preparation.dureeDemiJournees / 2} jours ouvrés d'affilée seront réservés à partir de la date retenue.`
+                  : "")
+              }
+            />
+          </div>
+
           <p className={smallCaps} style={{ color: colors.muted, marginBottom: 8 }}>
             Une date, ou deux au choix du client ?
           </p>
@@ -160,7 +198,8 @@ function Contenu({
 
           {preparation.joursLibres.length === 0 && (
             <p className="mb-4 text-center text-[13px]" style={{ color: colors.rust }}>
-              Aucun jour libre dans les trois prochains mois.
+              Aucun jour ne peut accueillir {libelleDuree(preparation.dureeDemiJournees)} dans les trois prochains
+              mois. Essayez une durée plus courte, ou ajoutez une équipe dans vos réglages.
             </p>
           )}
 

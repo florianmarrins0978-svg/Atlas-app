@@ -3,9 +3,10 @@
 import { getCurrentCtx } from "@/server/session-ctx";
 import { creerChantier } from "@/server/repositories/chantiers";
 import { creerClient, type CanalClient } from "@/server/repositories/clients";
+import { nomDuChantier } from "@/lib/nom-chantier";
+import { jourIso } from "@/lib/jour";
 
 export type CreerChantierInput = {
-  nomChantier: string;
   nomClient?: string;
   telephone?: string;
   email?: string;
@@ -18,11 +19,6 @@ export type CreerChantierInput = {
 // Ne redirige pas elle-même (garde le comportement de navigation côté client,
 // comme avant) — retourne l'id du chantier créé, ou lève une erreur explicite.
 export async function creerChantierAction(data: CreerChantierInput): Promise<{ id: string }> {
-  const nom = data.nomChantier.trim();
-  if (!nom) {
-    throw new Error("Le nom du chantier est requis.");
-  }
-
   const ctx = await getCurrentCtx();
 
   let clientId: string | undefined;
@@ -51,8 +47,16 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
     clientId = client.id;
   }
 
+  // Le nom se DÉDUIT de ce que le patron a donné : il n'a plus à en trouver un.
+  // La règle vit dans `src/lib/nom-chantier.ts` et s'applique ici, côté serveur —
+  // un écran ne décide de rien, et un appel direct à l'action doit produire le
+  // même nom que le formulaire.
   const chantier = await creerChantier(ctx, {
-    nom,
+    nom: nomDuChantier({
+      nomClient,
+      adresseChantier: data.adresseChantier,
+      jour: jourIso(new Date()),
+    }),
     adresseChantier: data.adresseChantier?.trim() || undefined,
     clientId,
   });

@@ -4,13 +4,16 @@ import { decrireEtatIA } from "@/lib/etat-ia";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getConfigIA } from "@/server/ai/config";
 import { listerTarifs } from "@/server/repositories/tarifs";
+import { getEntreprise } from "@/server/repositories/entreprises";
+import { getEnv } from "@/server/env";
 import ReglagesClient from "./ReglagesClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReglagesPage() {
   const ctx = await getCurrentCtx();
-  const tarifs = await listerTarifs(ctx);
+  const [tarifs, entreprise] = await Promise.all([listerTarifs(ctx), getEntreprise(ctx)]);
+  const version = getEnv().versionAffichee;
 
   // Seuls les NOMS des fournisseurs traversent jusqu'à l'écran — jamais les
   // clés, qui n'ont rien à faire dans du HTML rendu.
@@ -25,12 +28,13 @@ export default async function ReglagesPage() {
             Mon entreprise
           </p>
           <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
-            Tarifs
+            Réglages
           </h1>
         </div>
 
         <ReglagesClient
           initialTarifs={tarifs.map((t) => ({ id: t.id, intitule: t.intitule, prix: t.prix, unite: t.unite }))}
+          initialNombreEquipes={entreprise?.nombreEquipes ?? 1}
         />
 
         <div className="px-6 pt-8">
@@ -86,6 +90,20 @@ export default async function ReglagesPage() {
             seule présence d&apos;une clé. Mode d&apos;emploi : <code>docs/ESSAYER.md</code>.
           </p>
         </section>
+        {/* La version exécutée, en bas et discrète.
+            Elle existe pour une raison précise : le patron a réessayé, un jour
+            plus tard, des correctifs livrés la veille, sur un espace de travail
+            qui n'avait jamais récupéré le code neuf. Rien à l'écran ne le lui
+            disait, et trois échanges ont été perdus à chercher un défaut déjà
+            corrigé. Une capture de cet écran répond désormais à la question. */}
+        <div className="px-6 pt-10">
+          <p className={smallCaps} style={{ color: colors.muted, marginBottom: 4 }}>
+            Version
+          </p>
+          <p className="text-[13px]" style={{ color: colors.muted }}>
+            {version ?? "inconnue — cette installation n'annonce pas sa version."}
+          </p>
+        </div>
       </div>
     </div>
   );

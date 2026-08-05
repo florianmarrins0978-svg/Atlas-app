@@ -13,10 +13,8 @@ import PrimaryButton from "@/components/atlas/PrimaryButton";
 // formulaire natif.
 
 export default function NouveauChantierMockup() {
-  const [nomChantier, setNomChantier] = useState("");
+  const [nomClient, setNomClient] = useState("");
   const [adresseClientVisible, setAdresseClientVisible] = useState(false);
-
-  const peutCreer = nomChantier.trim().length > 0;
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100dvh" }}>
@@ -45,16 +43,18 @@ export default function NouveauChantierMockup() {
         </div>
 
         <form className="mt-7 flex flex-col gap-4 px-6" onSubmit={(e) => e.preventDefault()}>
-          {/* 1 — Nom du chantier : seul champ obligatoire, priorité visuelle la plus haute */}
+          {/* 1 — Nom du client. La case « Nom du chantier » a été retirée le
+              2026-08-05 : plus rien n'est obligatoire, le nom se déduit du
+              client, sinon de l'adresse, sinon de la date. La maquette suit
+              l'écran réel — une maquette qui montre un champ disparu induit en
+              erreur plus sûrement qu'une maquette absente. */}
           <Field
-            label="Nom du chantier"
-            placeholder="Rénovation salle de bain"
+            label="Nom du client (facultatif)"
+            placeholder="M. Bernard"
             big
-            value={nomChantier}
-            onChange={setNomChantier}
+            value={nomClient}
+            onChange={setNomClient}
           />
-          {/* 2 — Nom du client : facultatif */}
-          <Field label="Nom du client (facultatif)" placeholder="M. Bernard" />
           {/* 3 — Téléphone : facultatif */}
           <Field label="Téléphone (facultatif)" placeholder="06 12 34 56 78" type="tel" />
           {/* 4 — Adresse du chantier : facultative, libellé explicite pour éviter toute ambiguïté avec l'adresse du client */}
@@ -74,14 +74,12 @@ export default function NouveauChantierMockup() {
             <Field label="Adresse du client (facultatif)" placeholder="Si différente de l'adresse du chantier" />
           )}
 
-          {/* 6 — Action principale, désactivée tant que le nom du chantier est vide */}
+          {/* 6 — Action principale, toujours active : plus rien n'est exigé */}
           <div className="pt-4">
-            <PrimaryButton disabled={!peutCreer}>Créer le chantier →</PrimaryButton>
+            <PrimaryButton>Créer le chantier →</PrimaryButton>
           </div>
           <p className="text-center text-[13px]" style={{ color: colors.muted }}>
-            {peutCreer
-              ? "Vous pourrez compléter les informations manquantes depuis la fiche du chantier."
-              : "Le nom du chantier est nécessaire pour continuer."}
+            Vous pourrez compléter les informations manquantes depuis la fiche du chantier.
           </p>
         </form>
       </div>

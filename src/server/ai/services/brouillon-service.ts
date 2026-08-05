@@ -6,8 +6,8 @@ import {
   marquerConfirme,
   type Brouillon,
 } from "../../repositories/brouillons-informations";
-import { ajouterPrestation } from "../../repositories/prestations";
-import { ajouterMateriel } from "../../repositories/materiel";
+import { ajouterPrestation, listerPrestations } from "../../repositories/prestations";
+import { ajouterMateriel, listerMateriel } from "../../repositories/materiel";
 import { mettreAJourDureeEquipe } from "../../repositories/chantiers";
 import { extraire } from "./extraction-service";
 import { estTranscriptionSimulee } from "../providers/transcription/dev";
@@ -68,66 +68,68 @@ export async function genererBrouillon(
     return { statut: "conflit", brouillonActuel: existant, propositionNouvelle: resultat.proposition };
   }
 
-  const brouillon = await enregistrerGeneration(ctx, chantierId, resultat.proposition, transcription);
+  const brouillon = await enregistrerGeneration(ctx, chantierId, resultat.proposition, transcription, resultat.lecture);
   return { statut: "genere", brouillon };
 }
 
-// Recompose un libellé lisible à partir de la ligne structurée. N'ajoute
-// jamais de quantité absente : sans quantité ET unité, le libellé est repris
-// tel quel — c'est la règle « ne déduis jamais une quantité d'un pluriel »,
-// appliquée au moment de l'écriture.
-export function libelleAvecQuantite(ligne: LigneExtraite): string {
-  const base = ligne.libelle.trim();
-  if (!base) return "";
-  if (ligne.quantite && ligne.unite) return `${base} (${ligne.quantite} ${ligne.unite})`;
-  return base;
-}
-
-/** Ce qui a réellement été écrit — l'écran s'en sert pour compléter sa liste
- *  sans recharger la page, et le tapis roulant pour dire ce qu'il a produit. */
-export type LigneCreee = { id: string; libelle: string };
+// --- Confirmation : la proposition devient une donnée du chantier ---------
 
 export type ResultatConfirmationBrouillon =
-  | { statut: "confirme"; prestationsCreees: LigneCreee[]; materielCree: LigneCreee[] }
-  | { statut: "absent" }
-  | { statut: "deja_confirme" };
+  | { succes: true; prestationsCreees: { id: string; libelle: string }[]; materielCree: { id: string; libelle: string }[] }
+  | { succes: false; erreur: string };
 
-// Déverse le brouillon dans les données métier du chantier.
-//
-// **Vit ici, et non dans un fichier d'actions, parce que deux appelants en ont
-// besoin** : l'écran Informations, quand le patron confirme lui-même, et le
-// tapis roulant, qui enchaîne la dictée jusqu'au devis sans lui. Deux
-// implémentations de cette règle finiraient par diverger — et c'est celle qui
-// décide ce qui entre dans un devis.
-//
-// Le contenu est TOUJOURS relu depuis la base, jamais reçu du navigateur : ce
-// qui est appliqué est ce que l'extraction a réellement produit, pas ce qu'une
-// page prétend qu'elle a produit.
+/**
+ * Déverse le brouillon dans les données métier du chantier.
+ *
+ * Le contenu est relu **depuis la base**, jamais repris du navigateur : ce qui
+ * entre dans le chantier est exactement ce que le patron a sous les yeux et a
+ * corrigé, pas ce qu'une page restée ouverte prétend afficher.
+ *
+ * Vit ici, et non dans l'action de l'écran Informations, parce que deux chemins
+ * l'appellent désormais : le bouton « Confirmer », et l'enchaînement complet
+ * depuis la dictée. Deux implémentations auraient fini par diverger, et c'est
+ * l'enchaînement — le moins souvent relu — qui serait resté en arrière
+ * (`CLAUDE.md` §3).
+ */
 export async function confirmerBrouillon(ctx: Ctx, chantierId: string): Promise<ResultatConfirmationBrouillon> {
   const brouillon = await getBrouillon(ctx, chantierId);
-  if (!brouillon) return { statut: "absent" };
-  if (brouillon.statut === "confirme") return { statut: "deja_confirme" };
+  if (!brouillon) return { succes: false, erreur: "Aucun brouillon à confirmer." };
+  if (brouillon.statut === "confirme") {
+    return { succes: false, erreur: "Ce brouillon a déjà été confirmé." };
+  }
 
   const contenu = brouillon.contenu;
 
-  const prestationsCreees: LigneCreee[] = [];
+  // **Ce qui est déjà au chantier n'y entre pas deux fois.**
+  //
+  // Rejouer l'enchaînement depuis la dictée — un second appui, un retour
+  // arrière — recréait les mêmes prestations. Le devis affichait alors la
+  // même taille de haie deux fois, et son prix calculé la comptait double.
+  // C'est le défaut du 3 août sous un autre visage (`ARCHITECTURE.md` §10) :
+  // **ce qui dit « c'est déjà fait » se lit dans les données, jamais ailleurs.**
+  const [dejaPrestations, dejaMateriel] = await Promise.all([
+    listerPrestations(ctx, chantierId),
+    listerMateriel(ctx, chantierId),
+  ]);
+  const connus = (lignes: { libelle: string }[]) =>
+    new Set(lignes.map((l) => l.libelle.trim().toLowerCase()).filter(Boolean));
+  const prestationsConnues = connus(dejaPrestations);
+  const materielConnu = connus(dejaMateriel);
+
+  const prestationsCreees = [];
   for (const ligne of contenu.prestations) {
     const libelle = libelleAvecQuantite(ligne);
-    if (libelle) {
-      const creee = await ajouterPrestation(ctx, chantierId, libelle);
-      prestationsCreees.push({ id: creee.id, libelle: creee.libelle });
-    }
+    if (!libelle || prestationsConnues.has(libelle.toLowerCase())) continue;
+    prestationsConnues.add(libelle.toLowerCase());
+    prestationsCreees.push(await ajouterPrestation(ctx, chantierId, libelle));
   }
-
-  const materielCree: LigneCreee[] = [];
+  const materielCree = [];
   for (const ligne of contenu.materiel) {
     const libelle = libelleAvecQuantite(ligne);
-    if (libelle) {
-      const cree = await ajouterMateriel(ctx, chantierId, libelle);
-      materielCree.push({ id: cree.id, libelle: cree.libelle });
-    }
+    if (!libelle || materielConnu.has(libelle.toLowerCase())) continue;
+    materielConnu.add(libelle.toLowerCase());
+    materielCree.push(await ajouterMateriel(ctx, chantierId, libelle));
   }
-
   if (contenu.dureePrevue || contenu.tailleEquipe) {
     await mettreAJourDureeEquipe(ctx, chantierId, {
       dureePrevue: contenu.dureePrevue ?? undefined,
@@ -136,5 +138,14 @@ export async function confirmerBrouillon(ctx: Ctx, chantierId: string): Promise<
   }
 
   await marquerConfirme(ctx, chantierId);
-  return { statut: "confirme", prestationsCreees, materielCree };
+  return { succes: true, prestationsCreees, materielCree };
+}
+
+// Recompose un libellé lisible à partir de la ligne structurée. N'ajoute
+// jamais de quantité absente : sans quantité ET unité, le libellé est repris tel quel.
+function libelleAvecQuantite(ligne: LigneExtraite): string {
+  const base = ligne.libelle.trim();
+  if (!base) return "";
+  if (ligne.quantite && ligne.unite) return `${base} (${ligne.quantite} ${ligne.unite})`;
+  return base;
 }

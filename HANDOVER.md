@@ -4,7 +4,8 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-03 · `claude/migrate-app-atlas-zz31ac` · `0eb2ec7`
+**Point de reprise :** 2026-08-05 · `claude/migrate-app-atlas-zz31ac`
+(l'historique fait foi : `git log --oneline -20`)
 
 ---
 
@@ -44,9 +45,16 @@ Détail dans `CHANGELOG.md`, état complet dans `PROJECT_STATE.md`.
 l'**agenda Google** — et encore, partiellement : la connexion du compte demande
 des identifiants que le patron doit fournir.
 
-**Avant de proposer autre chose,** lire `docs/A-FAIRE.md` : cinq points bloquent
-un usage réel et **aucun ne s'avance en codant**. Ne pas les redécouvrir ni les
-reposer au patron : ils sont écrits, avec leur coût et leur propriétaire.
+**Avant de proposer autre chose,** lire `docs/A-FAIRE.md` : **quatre** points
+bloquent un usage réel et **aucun ne s'avance en codant**. Ne pas les
+redécouvrir ni les reposer au patron : ils sont écrits, avec leur coût et leur
+propriétaire.
+
+Le cinquième — brancher un fournisseur SMS et e-mail — a été **tranché le
+2026-08-04 : il n'y en aura pas.** Le devis part de la messagerie du patron.
+Lire `ARCHITECTURE.md` §13 avant de proposer quoi que ce soit sur l'envoi : deux
+choses y sont écartées **pour de bon**, un prestataire d'envoi et la pièce
+jointe au message. Les reproposer serait rouvrir un débat déjà clos.
 
 ---
 
@@ -61,7 +69,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les neuf pièges de ce dépôt
+### Les seize pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -106,6 +114,86 @@ site publié à son adresse réelle.
    L'espace fine insécable (U+202F) que `toLocaleString('fr-FR')` glisse dans
    « 1 400,00 € » en fait partie : utiliser l'insécable ordinaire (U+00A0), qui,
    elle, existe. Le symbole € passe, les accents aussi.
+9. **L'analyse d'une dictée jette ce qu'elle ne sait pas classer, sans le dire.**
+   `src/server/orchestrateur/analyse-demande.ts` ne comprend rien : il découpe.
+   Un segment mal découpé ne produit pas d'erreur — il produit un écran plus
+   court, que personne ne peut distinguer d'une dictée pauvre. Le patron y a
+   perdu une prestation et trois machines d'un coup. D'où l'invariant que tient
+   `scripts/test-analyse-dictee.ts` : **aucun mot dicté ne disparaît**, et la
+   liste des mots qu'on s'autorise à absorber est écrite en toutes lettres dans
+   la suite. Toucher au découpage sans relancer cette suite, c'est refaire le
+   défaut. Corollaire éprouvé : dans ces expressions rationnelles, les
+   frontières de mot ne sont pas décoratives — sans `\b`, `jours?` se déclenche
+   à l'intérieur de « journée » et ampute le segment.
+10. **Un état d'écriture qui vit dans le navigateur ment au premier retour
+    arrière.** « Ajouté au détail » était un `useState` : il mourait à chaque
+    navigation, l'écran reproposait une ligne déjà écrite, et un seul appui
+    doublait le devis du patron (1 674 € → 3 348 € HT). La règle : **tout ce qui
+    dit « c'est déjà fait » se déduit des données, jamais d'un drapeau local** —
+    et le serveur applique la même fonction, parce qu'un écran ne protège rien.
+    Motif à réutiliser : `src/lib/proposition-au-detail.ts`.
+
+11. **Le planning ne se lit plus en jours pleins.** Un jour porte deux
+    demi-journées, chacune tenant autant de chantiers que l'entreprise a
+    d'équipes (`ARCHITECTURE.md` §22). Deux conséquences à ne pas défaire : un
+    chantier planifié **avant** la migration 0019 n'a ni créneau ni durée et
+    doit continuer d'occuper la journée entière — le relâcher rendrait
+    proposables des après-midis déjà pris ; et le **week-end reste retenable**,
+    il n'est qu'exclu des jours *suggérés*, parce qu'un client peut demander un
+    samedi. Avoir confondu les deux a cassé deux suites d'un coup.
+
+12. **Une donnée enregistrée n'est pas une donnée montrée.** `precision_client`
+    existait depuis le premier jour, le client y écrivait, et **aucun écran ne
+    l'affichait**. Le patron lisait « le client n'a pas donné suite » sans jamais
+    savoir qu'on lui avait écrit « le devis comprend une faute ». Rien ne le
+    signalait — ni erreur, ni test : le champ était simplement absent de toutes
+    les requêtes. Avant d'ajouter un champ que l'utilisateur remplit, écrire le
+    contrôle qui vérifie qu'il **ressort** quelque part
+    (`scripts/test-correction-devis.ts`).
+
+13. **Une règle juste que l'écran n'applique pas ne protège personne.**
+    `lienTransmission()` composait `sms:0679…` correctement, et sa suite était
+    verte ; l'écran, lui, passait par `navigator.share`, qui sur iPhone ne
+    transmet **qu'un texte** — le patron ouvrait Messages avec un champ « À : »
+    vide. Deux leçons à ne pas défaire : ce que la page **propose réellement**
+    se contrôle à l'endroit où le patron appuie (`test-transmission-e2e.ts`), et
+    une adresse portée par un `href` est **lisible dans la page**, donc
+    vérifiable — c'est pour cela que c'est un `<a>` et non un
+    `window.location.href`. Corollaire trouvé par ce contrôle neuf : l'écran
+    lisait la coordonnée dans **l'instantané figé du devis**, si bien qu'une
+    adresse tout juste saisie n'apparaissait jamais. Une donnée que
+    l'utilisateur vient d'écrire se relit sur la **fiche vivante**.
+
+14. **Des maillons tous verts ne font pas une chaîne.** Brouillon,
+    confirmation, chiffrage, ligne de prix, devis : chacun avait sa suite, et
+    chacune passait. Aucune ne les parcourait **à la file** — et le parcours, lui,
+    ne menait nulle part : cinq gestes sur quatre écrans, dont aucun ne menait au
+    suivant, avec un devis à 0,00 € au bout si l'un était oublié. Le patron l'a
+    dit deux fois avant qu'on l'entende. Quand un lot ajoute une étape à un
+    parcours, la suite qui compte est celle qui va **du premier écran au
+    dernier** (`test-devis-depuis-dictee-e2e.ts`). Corollaire de conception :
+    quand deux chemins font la même chose, la règle sort dans un service et les
+    deux l'appellent — `confirmerBrouillon()`, `appliquerPropositionPrix()` — car
+    c'est le chemin le moins relu qui garde le vieux défaut.
+
+15. **Un service qui ne sait pas échouer proprement bloque tout le reste.**
+    `JSON.parse(reponseDuModele)` sans filet : une réponse encadrée en
+    ```` ```json ```` suffisait à afficher « Réponse du fournisseur non conforme
+    (JSON invalide). » et à arrêter net le chantier du patron. Deux règles en
+    sont sorties : **tolérer l'emballage, jamais le fond** (le schéma reste seul
+    juge), et **ne jamais laisser l'utilisateur devant rien** — ici, la dictée est
+    relue mot à mot, sans réseau ni clé. Un repli doit se **dire** : le brouillon
+    porte `lecture = 'litterale'` et l'écran l'annonce, sans quoi le patron relit
+    une recopie en la croyant analysée.
+
+16. **Un espace de travail ne récupère jamais le code neuf tout seul.** Le
+    patron a réessayé, un jour plus tard, des correctifs livrés la veille, et
+    conclu qu'ils ne marchaient pas. Trois échanges perdus sur des défauts déjà
+    réparés. Depuis : `.devcontainer/mettre-a-jour.sh` avance à chaque allumage
+    (jamais en écrasant du travail non enregistré, jamais en forçant), et
+    **l'application affiche sa version dans les Réglages**. Règle générale :
+    avant de chercher un défaut qu'un correctif devait fermer, **demander la
+    version** — une capture de l'écran Réglages y répond.
 
 ### Le vocabulaire
 

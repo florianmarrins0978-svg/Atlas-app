@@ -72,7 +72,12 @@ async function main() {
       assert.ok(textes.includes(attendu), `« ${attendu} » manque à la facture.`);
     }
     assert.ok(textes.includes("F-2026-0004"), "Le numéro de facture n'est pas imprimé.");
-    assert.ok(textes.includes("2026-09-02"), "La date d'échéance n'est pas imprimée.");
+    // Jour/mois/année, comme sur le devis : « la date est à l'envers ! C'est
+    // jour/mois/année » (le patron, sur capture, le 2026-08-04). La facture est
+    // la pièce la plus lue des deux — une date à l'envers y fait douter du reste.
+    assert.ok(textes.includes("02/09/2026"), `L'échéance n'est pas au format français : ${JSON.stringify(textes.slice(0, 12))}`);
+    assert.ok(textes.includes("03/08/2026"), "La date d'émission n'est pas au format français.");
+    assert.ok(!textes.includes("2026-09-02"), "La date brute de la base est imprimée telle quelle sur la facture.");
   });
 
   await cas("une échéance absente laisse sa ligne vide, sans en inventer une", async () => {

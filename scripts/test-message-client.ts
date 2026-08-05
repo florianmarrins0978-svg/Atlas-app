@@ -62,6 +62,33 @@ test("SMS : le corps passe, et la forme accepte iOS comme Android", () => {
   assert.ok(url.includes(encodeURIComponent(LIEN)));
 });
 
+// Le numéro tel qu'il est RÉELLEMENT saisi sur la fiche du client — avec ses
+// espaces, puisque c'est la forme que le champ propose. Un test qui n'emploie
+// qu'un numéro collé « 0612345678 » reste vert sur un défaut que le patron
+// rencontre à chaque envoi.
+test("Un numéro espacé sur la fiche ouvre quand même le bon destinataire", () => {
+  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN });
+  const url = lienTransmission({ canal: "sms", destinataire: "06 12 34 56 78", message: m });
+  assert.ok(
+    url.startsWith("sms:0612345678?"),
+    `un espace encodé en %20 fait perdre le destinataire — obtenu : ${url.slice(0, 40)}`
+  );
+});
+
+test("Un numéro pointé ou tireté est accepté de la même façon", () => {
+  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN });
+  assert.ok(
+    lienTransmission({ canal: "sms", destinataire: "06.12.34.56.78", message: m }).startsWith(
+      "sms:0612345678?"
+    )
+  );
+  assert.ok(
+    lienTransmission({ canal: "sms", destinataire: "06-12-34-56-78", message: m }).startsWith(
+      "sms:0612345678?"
+    )
+  );
+});
+
 // Ne pas s'ouvrir du tout serait pire : le patron connaît son client et peut
 // compléter le destinataire lui-même.
 test("Destinataire absent : le message s'ouvre quand même", () => {

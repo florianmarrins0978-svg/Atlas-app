@@ -8,17 +8,13 @@ import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { etatEnvoiExplication, etatEnvoiLabel, type EtatEnvoi } from "@/lib/etat-envoi";
 import { reprendreDevisAction } from "./actions";
 import EnvoiAuClient from "./EnvoiAuClient";
+import { enEuros } from "@/lib/euros";
 
-const formatEuros = new Intl.NumberFormat("fr-FR", {
-  style: "currency",
-  currency: "EUR",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
 
 export default function ExportClient({
   chantierId,
   devisId,
+  clientId,
   chantierNom,
   adresseChantier,
   clientNom,
@@ -27,14 +23,18 @@ export default function ExportClient({
   entrepriseNom,
   canalClient,
   prestations,
+  lignes,
   totalTtc,
   initialEnvoye,
   etatEnvoi,
+  messageClient,
   lienEnvoi,
   origine,
 }: {
   chantierId: string;
   devisId: string;
+  /** Nécessaire pour compléter une coordonnée manquante depuis cet écran. */
+  clientId: string | null;
   chantierNom: string;
   adresseChantier: string;
   clientNom: string;
@@ -43,9 +43,13 @@ export default function ExportClient({
   entrepriseNom: string;
   canalClient: "sms" | "email";
   prestations: string[];
+  /** Les lignes du devis lui-même : libellé et montant, telles qu'imprimées. */
+  lignes: { libelle: string; montant: string }[];
   totalTtc: string;
   initialEnvoye: boolean;
   etatEnvoi: EtatEnvoi;
+  /** Ce que le client a écrit, mot pour mot. Vide s'il n'a rien dit. */
+  messageClient: string | null;
   /** Le lien encore actif, tant que le client n'a pas répondu. */
   lienEnvoi: string | null;
   /** Origine du site, calculée côté serveur — voir le commentaire dans page.tsx. */
@@ -71,7 +75,10 @@ export default function ExportClient({
 
   // Un refus, ou un lien périmé : le devis peut repartir, dans une nouvelle
   // version. Sans ce chemin, un chantier retourné l'était définitivement.
-  const peutReprendre = etatEnvoi === "retourne" || etatEnvoi === "caduc";
+  // Une correction demandée se reprend comme un refus : c'est la même mécanique
+  // — une nouvelle version, corrigée, renvoyée — mais avec bien plus de chances
+  // d'aboutir, puisque le client a déjà dit ce qu'il voulait.
+  const peutReprendre = etatEnvoi === "retourne" || etatEnvoi === "a_corriger" || etatEnvoi === "caduc";
   const lienAMontrer = lienClient ?? lienEnvoi;
 
   async function reprendre() {
@@ -95,6 +102,29 @@ export default function ExportClient({
           <Row label="Client" value={`${clientNom} — ${clientTelephone}`} last />
         </div>
 
+        {/* Le devis lui-même : ce qui sera imprimé, avec les montants.
+            L'écran ne montrait que les *prestations* du chantier — un devis
+            écrit entièrement à la main n'en a aucune, et le patron n'y voyait
+            qu'un total, sans savoir ce qui partirait chez son client. */}
+        {lignes.length > 0 && (
+          <div className="rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
+            <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
+              Lignes du devis
+            </p>
+            <ul className="flex flex-col gap-2">
+              {lignes.map((l, i) => (
+                <li key={i} className="flex items-baseline justify-between gap-3 text-[15px]" style={{ color: colors.ink }}>
+                  <span className="min-w-0 flex-1">{l.libelle || "Ligne sans libellé"}</span>
+                  <span style={{ color: colors.muted }}>{enEuros(l.montant)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Les prestations restent en complément : elles disent le travail, là
+            où les lignes disent le prix. Elles ne sont plus la seule chose
+            affichée. */}
         {prestations.length > 0 && (
           <div className="rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
             <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
@@ -115,7 +145,7 @@ export default function ExportClient({
             Total
           </p>
           <p className="text-[32px] font-semibold leading-none" style={{ fontFamily: font.display, color: colors.rust }}>
-            {formatEuros.format(Number(totalTtc))}
+            {enEuros(totalTtc)}
           </p>
         </div>
 
@@ -139,6 +169,19 @@ export default function ExportClient({
             <p className="text-center text-[14px]" style={{ color: colors.muted }}>
               {lienClient ? `Devis prêt pour ${clientNom}.` : etatEnvoiExplication[etatEnvoi]}
             </p>
+
+            {/* Le message du client, tel qu'il l'a écrit. C'est ici que le
+                patron vient corriger : le lui faire chercher ailleurs, ou le
+                résumer, reviendrait à lui demander de deviner ce qu'il doit
+                changer. */}
+            {messageClient && (
+              <blockquote
+                className="mt-3 whitespace-pre-wrap pl-3 text-[14px] leading-relaxed"
+                style={{ borderLeft: `2px solid ${colors.rust}`, color: colors.ink }}
+              >
+                « {messageClient} »
+              </blockquote>
+            )}
 
             {lienAMontrer && (
               <>
@@ -174,10 +217,12 @@ export default function ExportClient({
                     l'expédie depuis sa propre boîte. Voir TransmettreAuClient
                     pour ce que ce chemin donne et ce qu'il ne donne pas. */}
                 <TransmettreAuClient
+                  clientId={clientId}
                   clientNom={clientNom}
                   entrepriseNom={entrepriseNom}
                   canal={canalClient}
-                  destinataire={canalClient === "email" ? clientEmail : clientTelephone}
+                  telephone={clientTelephone}
+                  email={clientEmail}
                   lien={lienComplet(lienAMontrer)}
                 />
               </>
@@ -191,7 +236,11 @@ export default function ExportClient({
                 className="mt-4 block w-full rounded-2xl py-3 text-[15px] font-medium text-white disabled:opacity-50"
                 style={{ backgroundColor: colors.rust }}
               >
-                {reprise ? "Reprise…" : "Reprendre le devis"}
+                {reprise
+                  ? "Reprise…"
+                  : etatEnvoi === "a_corriger"
+                    ? "Corriger et renvoyer"
+                    : "Reprendre le devis"}
               </button>
             )}
           </div>

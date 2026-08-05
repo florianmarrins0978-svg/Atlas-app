@@ -251,7 +251,7 @@ async function main() {
       { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "v1" },
       ilYA(20)
     );
-    await enregistrerReponse(premier.jeton, { accepte: false }, ilYA(19));
+    await enregistrerReponse(premier.jeton, { decision: "refuse" as const }, ilYA(19));
 
     const second = await creerEnvoi(
       ctx,
@@ -289,7 +289,7 @@ async function main() {
       { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
       ilYA(2)
     );
-    await enregistrerReponse(envoi.jeton, { accepte: false }, ilYA(1));
+    await enregistrerReponse(envoi.jeton, { decision: "refuse" as const }, ilYA(1));
 
     const notifs = await notificationsPatron(ctx);
     assert.strictEqual(notifs.length, 1);
@@ -308,7 +308,7 @@ async function main() {
       { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
       ilYA(2)
     );
-    await enregistrerReponse(envoi.jeton, { accepte: true, dateRetenue: dans(10) }, ilYA(1));
+    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, dateRetenue: dans(10) }, ilYA(1));
 
     assert.strictEqual(
       (await notificationsPatron(ctx)).length,
@@ -326,7 +326,7 @@ async function main() {
     );
     // Le client retient un autre jour libre : l'agenda du patron change sans
     // qu'il ait rien décidé.
-    await enregistrerReponse(envoi.jeton, { accepte: true, dateRetenue: dans(15) }, ilYA(1));
+    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, dateRetenue: dans(15) }, ilYA(1));
 
     const notifs = await notificationsPatron(ctx);
     assert.strictEqual(notifs.length, 1);
@@ -341,7 +341,7 @@ async function main() {
       { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
       ilYA(2)
     );
-    await enregistrerReponse(envoi.jeton, { accepte: false }, ilYA(1));
+    await enregistrerReponse(envoi.jeton, { decision: "refuse" as const }, ilYA(1));
 
     const notifs = await notificationsPatron(ctx);
     await marquerReponseVue(ctx, notifs[0].envoiId, MAINTENANT);
@@ -385,7 +385,7 @@ async function main() {
       { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
       ilYA(VALIDITE_LIEN_JOURS + 5)
     );
-    await enregistrerReponse(envoi.jeton, { accepte: false }, ilYA(VALIDITE_LIEN_JOURS + 4));
+    await enregistrerReponse(envoi.jeton, { decision: "refuse" as const }, ilYA(VALIDITE_LIEN_JOURS + 4));
 
     assert.strictEqual(
       (await envoisCaducs(ctx, MAINTENANT)).length,
@@ -402,7 +402,7 @@ async function main() {
       { chantierId: a.chantierId, devisId: a.devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
       ilYA(2)
     );
-    await enregistrerReponse(envoi.jeton, { accepte: false }, ilYA(1));
+    await enregistrerReponse(envoi.jeton, { decision: "refuse" as const }, ilYA(1));
 
     assert.strictEqual((await notificationsPatron(b.ctx)).length, 0);
     assert.strictEqual(await dernierEnvoi(b.ctx, a.chantierId), null);

@@ -77,6 +77,17 @@ function cas(nom: string, verifier: () => void | Promise<void>) {
 async function main() {
   console.log("=== Le devis reprend le modèle d'Arborea ===");
 
+  await cas("la date s'écrit jour/mois/année, jamais à l'endroit de la base", async () => {
+    // Le patron, sur capture le 2026-08-04 : « la date est à l'envers ! C'est
+    // jour/mois/année ». Le PDF imprimait `2026-08-03`, tel qu'il est stocké.
+    // Le format ISO est parfait en base — il se trie tout seul — et illisible
+    // sur une pièce présentée à un client.
+    const { trace } = await composerDevisPdf(DEVIS);
+    const textes = contenus(trace);
+    assert.ok(textes.includes("03/08/2026"), `La date n'est pas au format français : ${JSON.stringify(textes.slice(0, 12))}`);
+    assert.ok(!textes.includes("2026-08-03"), "La date brute de la base est imprimée telle quelle sur le devis.");
+  });
+
   await cas("la structure du modèle est là, dans son ordre", async () => {
     const { trace } = await composerDevisPdf(DEVIS);
     const textes = contenus(trace);
