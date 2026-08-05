@@ -109,12 +109,47 @@ C'est le premier cas à vérifier sur tout fournisseur retenu.
 
 ## 4. Le devis que le patron aurait écrit
 
-> **À remplir par le patron.** C'est la seconde moitié de l'étalon, et sans elle
-> on sait juger la compréhension mais pas le chiffrage.
+### Sa forme — répondu le 5 août 2026
 
-| Ligne | Quantité | Prix |
+**Une ligne par prestation.** Pour cette note, quatre lignes :
+
+| # | Ligne | Quantité |
 |---|---|---|
-| | | |
+| 1 | Taille de haie de laurier | 20 ml |
+| 2 | Abattage du chêne mort | 1 |
+| 3 | Coupe du bois en billons de 50 cm | — |
+| 4 | Fendage du bois | — |
+
+**Ce qui ne figure PAS sur le devis, et pourquoi ça compte quand même :**
+
+| | Sur le devis ? | Ce que l'agent doit en faire |
+|---|---|---|
+| **2 jours × 2 hommes** | Non | *« Ça me sert à vérifier mon prix. »* Donc l'agent ne l'écrit pas, mais **il peut en déduire le taux réel du patron** en rapprochant le total des jours-hommes. C'est un des meilleurs signaux d'apprentissage disponibles, et il est déjà dans chaque dictée. |
+| **Camion, broyeur, fendeuse** | Non | *« Ça change le prix. »* Invisible pour le client, mais un chantier qui demande une fendeuse ne vaut pas un chantier qui n'en demande pas. **Règle à apprendre du patron**, pas à deviner. |
+
+### Le chêne : la question que l'agent DOIT poser
+
+À « votre prix suppose un démontage en corde ou un abattage au pied ? », la
+réponse est **« l'un ou l'autre »**.
+
+C'est la conclusion la plus utile de cet exemple : **la note ne permet pas de le
+savoir, et le prix en dépend.** L'agent ne doit donc ni supposer, ni choisir. Il
+signale — et pour un arbre **mort**, où le démontage est fréquent, la question
+mérite d'être posée systématiquement plutôt que laissée dans un coin.
+
+### Les montants
+
+> **Reste à remplir par le patron.** La forme du devis est connue ; ses chiffres
+> ne le sont pas. Sans eux, on sait juger si l'agent *comprend*, pas s'il
+> *chiffre juste* — et le chiffrage est le cœur.
+
+| # | Ligne | Prix |
+|---|---|---|
+| 1 | Taille de haie de laurier, 20 ml | |
+| 2 | Abattage du chêne mort, 20 m | |
+| 3 | Coupe du bois en 50 cm | |
+| 4 | Fendage du bois | |
+| | **Total HT** | |
 
 ---
 
