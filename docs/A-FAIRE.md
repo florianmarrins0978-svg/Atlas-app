@@ -28,6 +28,7 @@ qui ne se résoudra pas en codant.
 ## Sommaire
 
 1. [Choisir les fournisseurs d'IA définitifs](#1-choisir-les-fournisseurs-dia-définitifs)
+1 bis. [La mémoire de l'agent : où elle vit, et ce qu'elle devient](#1-bis-la-mémoire-de-lagent--où-elle-vit-et-ce-quelle-devient)
 2. [Faire rédiger le contrat de sous-traitance](#2-faire-rédiger-le-contrat-de-sous-traitance)
 3. [Choisir un hébergement](#3-choisir-un-hébergement)
 4. [Constituer une société et s'assurer](#4-constituer-une-société-et-sassurer)
@@ -109,6 +110,77 @@ téléphone — sans prestataire, sans contrat, et sans qu'aucune donnée ne par
 Verrouiller la configuration sur les deux fournisseurs retenus, pour qu'aucun
 autre ne puisse être activé par inadvertance, et tenir la liste à jour dans
 [`RGPD.md`](RGPD.md) §3.
+
+---
+
+## 1 bis. La mémoire de l'agent : où elle vit, et ce qu'elle devient
+
+**Qui : le patron**, pour les trois arbitrages. Le reste se code.
+
+### Ce qui est acquis
+
+Le patron veut que l'agent **s'améliore jour après jour** à partir de ce qu'il
+lui apprend : cette photo, cette prestation, ce prix. Et il a été clair sur le
+« où » :
+
+> *« Je n'ai pas envie que la mémoire aille chez Anthropic. Je veux que ça reste
+> dans l'application. »*
+
+C'est aussi le bon choix techniquement. Deux choses très différentes s'appellent
+« entraîner l'IA » :
+
+| | Entraîner le modèle | La mémoire de l'application |
+|---|---|---|
+| Où vivent vos prix | Chez le prestataire | **Chez vous, en base** |
+| Vous pouvez les relire, les corriger | Non | **Oui** |
+| Si vous changez de prestataire | Tout est perdu | **La mémoire suit** |
+| Effet | Après des centaines d'exemples | **Dès le premier** |
+
+**C'est la seconde qui se construit.** Rien de ce que le patron apprend à
+l'agent ne part chez un prestataire.
+
+### La vraie question : le passage en ligne
+
+> *« Le jour où je vais mettre ça en ligne, est-ce que je vais perdre toute la
+> mémoire qui sert à l'agent à s'améliorer ? »*
+
+**Non — mais seulement si on agit avant.** La base du banc d'essai vit dans
+l'espace de travail ; l'hébergement en aura une autre. Le transfert d'une base à
+l'autre est une procédure connue, documentée dans
+[`PRODUCTION_BACKUP_RESTORE.md`](PRODUCTION_BACKUP_RESTORE.md), et **elle a déjà
+été exécutée avec succès le 29 juillet 2026** sur la base de développement.
+
+Ce qui est vrai, en revanche :
+
+- **Rien ne se transfère tout seul.** Sans geste, la mémoire meurt avec l'espace
+  de travail — et un espace inutilisé finit par être supprimé sans prévenir.
+- **Il n'existe aujourd'hui aucune commande simple** pour que le patron exporte
+  ses données depuis son téléphone. La procédure suppose un terminal.
+- **Rien n'est perdu à ce jour** : la mémoire d'apprentissage n'existe pas
+  encore, c'est le premier point de `TODO.md`. Il reste donc le temps de bien
+  faire.
+
+**Trois façons d'en sortir, à trancher :** héberger avant de commencer à
+nourrir ; nourrir maintenant avec un export à construire d'abord ; ou nourrir
+en acceptant de repartir de zéro.
+
+### Ce qui reste à décider pour la commercialisation
+
+Le patron a choisi **« un socle commun, puis chacun ajuste »** : un nouvel
+artisan reçoit une base de départ plutôt que rien. Trois questions en découlent,
+aucune tranchée :
+
+1. **Le socle, c'est quoi ?** Les prix du patron tels quels, ou une moyenne
+   anonymisée de plusieurs artisans ? Ce n'est pas la même chose du tout.
+2. **Ses prix sortiraient alors de chez lui.** L'application isole aujourd'hui
+   hermétiquement chaque entreprise. Un socle commun est une **dérogation
+   volontaire** à ce principe : elle se construit exprès, jamais par accident.
+3. **Un artisan qui ajuste doit-il nourrir le socle en retour ?** Si oui, c'est
+   un autre produit, et un autre contrat.
+
+**En attendant, la mémoire se construit strictement privée** — le seul choix qui
+n'interdit rien. Ouvrir plus tard restera possible ; reprendre ce qui a été
+partagé, non.
 
 ---
 

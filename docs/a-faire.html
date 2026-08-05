@@ -67,6 +67,9 @@
 <h2 id="sommaire">Sommaire</h2>
 <ol>
 <li><a href="#1-choisir-les-fournisseurs-dia-définitifs">Choisir les fournisseurs d'IA définitifs</a></li>
+</ol>
+<p>1 bis. <a href="#1-bis-la-mémoire-de-lagent--où-elle-vit-et-ce-quelle-devient">La mémoire de l'agent : où elle vit, et ce qu'elle devient</a></p>
+<ol>
 <li><a href="#2-faire-rédiger-le-contrat-de-sous-traitance">Faire rédiger le contrat de sous-traitance</a></li>
 <li><a href="#3-choisir-un-hébergement">Choisir un hébergement</a></li>
 <li><a href="#4-constituer-une-société-et-sassurer">Constituer une société et s'assurer</a></li>
@@ -130,6 +133,59 @@
 <p><strong>En attendant, la dictée fonctionne déjà</strong> avec le micro du clavier du téléphone — sans prestataire, sans contrat, et sans qu'aucune donnée ne parte.</p>
 <h3 id="ce-que-je-peux-faire-une-fois-décidé">Ce que je peux faire une fois décidé</h3>
 <p>Verrouiller la configuration sur les deux fournisseurs retenus, pour qu'aucun autre ne puisse être activé par inadvertance, et tenir la liste à jour dans <a href="RGPD.md" target="_blank" rel="noopener"><code>RGPD.md</code></a> §3.</p>
+<hr>
+<h2 id="1-bis-la-mémoire-de-lagent--où-elle-vit-et-ce-quelle-devient">1 bis. La mémoire de l'agent : où elle vit, et ce qu'elle devient</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Qui : le patron</strong>, pour les trois arbitrages. Le reste se code.</p>
+<h3 id="ce-qui-est-acquis">Ce qui est acquis</h3>
+<p>Le patron veut que l'agent <strong>s'améliore jour après jour</strong> à partir de ce qu'il lui apprend : cette photo, cette prestation, ce prix. Et il a été clair sur le « où » :</p>
+<blockquote>*« Je n'ai pas envie que la mémoire aille chez Anthropic. Je veux que ça reste dans l'application. »*</blockquote>
+<p>C'est aussi le bon choix techniquement. Deux choses très différentes s'appellent « entraîner l'IA » :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Entraîner le modèle</th>
+<th>La mémoire de l'application</th>
+</tr></thead><tbody>
+<tr>
+<td>Où vivent vos prix</td>
+<td>Chez le prestataire</td>
+<td><strong>Chez vous, en base</strong></td>
+</tr>
+<tr>
+<td>Vous pouvez les relire, les corriger</td>
+<td>Non</td>
+<td><strong>Oui</strong></td>
+</tr>
+<tr>
+<td>Si vous changez de prestataire</td>
+<td>Tout est perdu</td>
+<td><strong>La mémoire suit</strong></td>
+</tr>
+<tr>
+<td>Effet</td>
+<td>Après des centaines d'exemples</td>
+<td><strong>Dès le premier</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>C'est la seconde qui se construit.</strong> Rien de ce que le patron apprend à l'agent ne part chez un prestataire.</p>
+<h3 id="la-vraie-question--le-passage-en-ligne">La vraie question : le passage en ligne</h3>
+<blockquote>*« Le jour où je vais mettre ça en ligne, est-ce que je vais perdre toute la mémoire qui sert à l'agent à s'améliorer ? »*</blockquote>
+<p><strong>Non — mais seulement si on agit avant.</strong> La base du banc d'essai vit dans l'espace de travail ; l'hébergement en aura une autre. Le transfert d'une base à l'autre est une procédure connue, documentée dans <a href="PRODUCTION_BACKUP_RESTORE.md" target="_blank" rel="noopener"><code>PRODUCTION_BACKUP_RESTORE.md</code></a>, et <strong>elle a déjà été exécutée avec succès le 29 juillet 2026</strong> sur la base de développement.</p>
+<p>Ce qui est vrai, en revanche :</p>
+<ul>
+<li><strong>Rien ne se transfère tout seul.</strong> Sans geste, la mémoire meurt avec l'espace de travail — et un espace inutilisé finit par être supprimé sans prévenir.</li>
+<li><strong>Il n'existe aujourd'hui aucune commande simple</strong> pour que le patron exporte ses données depuis son téléphone. La procédure suppose un terminal.</li>
+<li><strong>Rien n'est perdu à ce jour</strong> : la mémoire d'apprentissage n'existe pas encore, c'est le premier point de <code>TODO.md</code>. Il reste donc le temps de bien faire.</li>
+</ul>
+<p><strong>Trois façons d'en sortir, à trancher :</strong> héberger avant de commencer à nourrir ; nourrir maintenant avec un export à construire d'abord ; ou nourrir en acceptant de repartir de zéro.</p>
+<h3 id="ce-qui-reste-à-décider-pour-la-commercialisation">Ce qui reste à décider pour la commercialisation</h3>
+<p>Le patron a choisi <strong>« un socle commun, puis chacun ajuste »</strong> : un nouvel artisan reçoit une base de départ plutôt que rien. Trois questions en découlent, aucune tranchée :</p>
+<ol>
+<li><strong>Le socle, c'est quoi ?</strong> Les prix du patron tels quels, ou une moyenne anonymisée de plusieurs artisans ? Ce n'est pas la même chose du tout.</li>
+<li><strong>Ses prix sortiraient alors de chez lui.</strong> L'application isole aujourd'hui hermétiquement chaque entreprise. Un socle commun est une <strong>dérogation volontaire</strong> à ce principe : elle se construit exprès, jamais par accident.</li>
+<li><strong>Un artisan qui ajuste doit-il nourrir le socle en retour ?</strong> Si oui, c'est un autre produit, et un autre contrat.</li>
+</ol>
+<p><strong>En attendant, la mémoire se construit strictement privée</strong> — le seul choix qui n'interdit rien. Ouvrir plus tard restera possible ; reprendre ce qui a été partagé, non.</p>
 <hr>
 <h2 id="2-faire-rédiger-le-contrat-de-sous-traitance">2. Faire rédiger le contrat de sous-traitance</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
