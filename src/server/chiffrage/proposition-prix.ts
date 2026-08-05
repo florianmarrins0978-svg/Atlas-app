@@ -263,10 +263,25 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
     };
   }
 
+  // **Le libellé nomme ce qui a été dicté.**
+  //
+  // « Prestation (prix calculé) » était juste et inutilisable : c'est la ligne
+  // que le CLIENT lit sur son devis, et elle ne lui disait rien du travail. Le
+  // patron, arrivant sur son devis après une dictée, n'y reconnaissait pas
+  // davantage ce qu'il venait de dire.
+  //
+  // Le prix, lui, reste global — il est calculé sur la durée et l'équipe, pas
+  // prestation par prestation. Une seule ligne, donc, mais qui les nomme
+  // toutes : c'est la vérité de ce qui est chiffré, et rien n'est inventé.
+  const travauxDictes = prestations
+    .map((p) => p.libelle.trim())
+    .filter(Boolean)
+    .join(" ; ");
+
   return {
     origine: "chiffrage",
     prixPropose: standard.prixConseille,
-    libelle: "Prestation (prix calculé)",
+    libelle: travauxDictes || "Prestation (prix calculé)",
     tarifId: null,
     tarifsCandidats: [],
     explication: {

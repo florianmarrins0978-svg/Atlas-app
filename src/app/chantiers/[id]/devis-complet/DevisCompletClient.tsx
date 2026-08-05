@@ -52,6 +52,8 @@ type Props = {
   lignesInitiales: Ligne[];
   tauxTva: string;
   conditionsPaiement: string;
+  /** La dictée n'a pas été comprise, seulement recopiée — voir `lecture-litterale.ts`. */
+  lectureLitterale?: boolean;
 };
 
 export default function DevisCompletClient(props: Props) {
@@ -98,6 +100,13 @@ export default function DevisCompletClient(props: Props) {
       className="mx-auto w-full max-w-[820px] rounded-[10px] px-5 py-7 sm:px-12 sm:py-12"
       style={{ backgroundColor: colors.card, boxShadow: "0 12px 40px rgba(28,28,26,0.10)" }}
     >
+      {props.lectureLitterale && !fige && (
+        <p className="mb-6 rounded-lg px-4 py-3 text-[13px]" style={{ backgroundColor: colors.rustTint, color: colors.rust }}>
+          Votre dictée a été recopiée mot à mot : aucun modèle n&apos;était disponible pour la comprendre. Relisez les
+          lignes de près avant d&apos;envoyer.
+        </p>
+      )}
+
       {fige && (
         <p className="mb-6 rounded-lg px-4 py-3 text-[13px]" style={{ backgroundColor: colors.rustTint, color: colors.rust }}>
           Ce devis est parti chez votre client : il ne se modifie plus. Pour le corriger, ouvrez l&apos;écran Devis et

@@ -9,6 +9,38 @@ Format : le plus récent en tête.
 
 ## 2026-08-05
 
+### La dictée mène droit au devis, et le devis est seul sur sa page
+
+Le patron, en précisant : « une fois qu'on valide la note vocale, cette page
+s'ouvre — la page où il n'y a que le devis — et là je fais mes modifications
+s'il y a besoin. **Je ne veux pas tous les autres trucs intermédiaires.** Et
+sous la note vocale, un petit lien pour y accéder directement : si je n'ai pas
+envie de dicter, que je puisse le rédiger à la main. »
+
+**Ce qui change au parcours :**
+
+- La dictée validée ouvre **le devis lui-même**. Le compte rendu qui
+  s'affichait — ce qui a été retenu, à combien — était un écran de plus entre
+  sa dictée et son devis. Ce qu'il disait se lit maintenant sur le document :
+  les lignes y sont, le total aussi, et la mention « recopiée mot à mot »
+  s'affiche en tête quand aucun modèle n'a compris la dictée.
+- Sous l'enregistreur, **« Ou rédiger le devis à la main → »**, quel que soit
+  l'état de la dictée.
+- La page du devis ne porte plus **aucun décor d'application** : ni barre
+  d'onglets, ni titre d'écran, ni phrase d'explication. Une feuille, pas un
+  formulaire — les champs n'ont ni cadre ni fond tant qu'on n'y écrit pas.
+
+**Deux défauts trouvés en le construisant, tous deux sur le devis du client :**
+
+- La ligne de prix s'appelait **« Prestation (prix calculé) »**. C'est ce que le
+  client lisait, et cela ne lui disait rien du travail. Elle nomme désormais ce
+  qui a été dicté. Le prix, lui, reste global : il se calcule sur la durée et
+  l'équipe, pas prestation par prestation.
+- **Rejouer la dictée dupliquait les prestations** — la même taille de haie deux
+  fois, et le prix calculé qui la comptait double. C'est le défaut du 3 août
+  sous un autre visage : ce qui est déjà au chantier n'y entre plus une seconde
+  fois, et la règle se lit dans les données (`ARCHITECTURE.md` §10).
+
 ### « Le fichier devis, le vrai ! Le document entier »
 
 Sa demande : « je veux que lorsqu'on clique sur rédiger à la main, ça ouvre le

@@ -6,6 +6,7 @@ import { getClient } from "@/server/repositories/clients";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerLignesPrix } from "@/server/repositories/lignes-prix";
 import { getOuCreerDevisBrouillon, chargerDevisPourEcran } from "@/server/repositories/devis";
+import { getBrouillon } from "@/server/repositories/brouillons-informations";
 import DevisCompletClient from "./DevisCompletClient";
 
 // **Une page où il n'y a que le devis.**
@@ -45,10 +46,11 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
   // lecture seule — le consulter ne doit jamais ouvrir une nouvelle version.
   const devisRow = (await chargerDevisPourEcran(ctx, id)) ?? (await getOuCreerDevisBrouillon(ctx, id));
 
-  const [entreprise, client, lignes] = await Promise.all([
+  const [entreprise, client, lignes, brouillon] = await Promise.all([
     getEntreprise(ctx),
     chantier.clientId ? getClient(ctx, chantier.clientId) : Promise.resolve(null),
     listerLignesPrix(ctx, id),
+    getBrouillon(ctx, id),
   ]);
 
   return (
@@ -101,6 +103,10 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
         }))}
         tauxTva={devisRow.tauxTva}
         conditionsPaiement={devisRow.conditionsPaiement ?? ""}
+        /* La dictée a-t-elle été comprise, ou seulement recopiée ? L'avis vivait
+           sur le compte rendu, qui a disparu du parcours : il se dit désormais
+           sur le devis, c'est-à-dire là où le patron relit les lignes. */
+        lectureLitterale={brouillon?.lecture === "litterale"}
       />
     </div>
   );
