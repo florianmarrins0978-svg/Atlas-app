@@ -46,20 +46,33 @@ async function main() {
   // --- 1. Le lien mène au document entier --------------------------------
   await page.getByRole("link", { name: /rédiger le devis à la main/i }).click();
   await page.waitForURL(/\/devis-complet$/, { timeout: 10000 });
-  await page.waitForSelector("text=Le devis, en entier", { timeout: 10000 });
+  // Le titre du DOCUMENT, et non un titre d'écran : la page ne porte plus que
+  // le devis (« une page où il n'y a que le devis », le 5 août 2026).
+  await page.waitForSelector("text=DEVIS", { timeout: 10000 });
 
-  // Toutes les parties du modèle, dans l'ordre où il les connaît.
+  // Et rien d'autre : ni barre d'onglets, ni titre d'application. Une feuille
+  // de devis entourée d'onglets redevient un écran, ce qu'il ne voulait plus.
+  assert.equal(
+    await page.locator(".atlas-nav-basse").count(),
+    0,
+    "La barre d'onglets est revenue sur la page du devis."
+  );
+
+  // Toutes les parties du modèle, sur un devis encore vierge : ce sont celles
+  // qui doivent être là AVANT même qu'une ligne soit écrite. Les libellés du
+  // tableau, eux, n'apparaissent qu'avec une ligne (sur téléphone) ou en
+  // en-têtes de colonnes (sur grand écran) — vérifiés juste après.
   const document = await page.locator("body").innerText();
   for (const partie of [
     "Émetteur",
     "Devis n°",
     "Validité",
     "Client",
-    "Détail des prestations",
     "Total HT",
     "TVA",
     "Total TTC",
     "Notes / conditions",
+    "Modalités de paiement",
     "signature du client",
   ]) {
     assert.ok(
@@ -68,6 +81,27 @@ async function main() {
     );
   }
   console.log("  ✓ le document entier s'ouvre, avec toutes ses parties");
+
+  // Les en-têtes de colonnes n'apparaissent qu'à partir du format tablette : sur
+  // six pouces, chaque cellule porte son libellé, comme le modèle d'origine. On
+  // les vérifie donc là où ils existent, plutôt que de les croire absents.
+  const large = await navigateur.newContext({ viewport: { width: 1024, height: 900 } });
+  const pageLarge = await large.newPage();
+  await pageLarge.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await pageLarge.fill('input[name="email"]', "demo@atlas.local");
+  await pageLarge.fill('input[name="password"]', "demo1234");
+  await pageLarge.click('button[type="submit"]');
+  await pageLarge.waitForURL(`${BASE}/`, { timeout: 15000 });
+  await pageLarge.goto(`${chantierUrl}/devis-complet`, { waitUntil: "networkidle" });
+  const surGrandEcran = await pageLarge.locator("body").innerText();
+  for (const colonne of ["Description", "Qté", "Prix unitaire HT", "Total HT"]) {
+    assert.ok(
+      surGrandEcran.toLowerCase().includes(colonne.toLowerCase()),
+      `La colonne « ${colonne} » manque au tableau sur grand écran.`
+    );
+  }
+  await large.close();
+  console.log("  ✓ le tableau porte ses colonnes, comme sur le papier");
 
   // --- 2. Ce qui s'y écrit part vers la bonne source ----------------------
   // L'IBAN : sans lui, le client reçoit un devis qu'il ne peut pas payer, et
