@@ -163,9 +163,14 @@ arbre, **diamètre 70 cm** :
 **C'est la règle la plus utile obtenue jusqu'ici.** Elle ne se devine pas : elle
 se demande une fois, et elle se réutilise ensuite sur chaque arbre.
 
-> **Ce qui reste à confirmer avant d'en faire une règle générale :** ces
-> rapports valent-ils pour tout arbre, ou ces trois chiffres sont-ils propres à
-> un chêne de 70 cm ? Non demandé, donc non supposé.
+> **Confirmé le 5 août 2026 : le rapport tient, la base varie.** Les
+> multiplicateurs valent pour tout arbre ; c'est le prix de départ qui change
+> avec le diamètre et l'essence.
+>
+> C'est la meilleure forme possible pour l'agent : **une seule règle à
+> retenir**, appliquée par-dessus un prix de base qui, lui, vient du catalogue
+> ou de l'historique. L'agent n'a donc jamais à inventer un multiplicateur — il
+> a juste besoin de savoir quelle technique, et de connaître la base.
 
 ### Les totaux, et la vérification que le patron fait lui-même
 
@@ -219,3 +224,59 @@ double.
 Ce document se relit quand l'invite d'extraction change
 (`src/server/ai/services/extraction-service.ts`) : une invite qui régresse ici
 régressera chez le patron.
+
+---
+
+## 7. Comment l'agent obtient ce qui manque — et un changement de cap
+
+Interrogé sur la façon d'obtenir la technique et le diamètre, le patron a
+répondu, le 5 août 2026 :
+
+> **« Il faut qu'il me pose toutes les questions dont il a besoin pour faire le
+> devis le plus justement possible. »**
+
+**C'est l'inverse de ce qu'il avait choisi une heure plus tôt**, où il préférait
+« le devis avec les trous signalés » à un aller-retour de questions. Les deux
+réponses sont notées telles quelles : les écraser l'une par l'autre ferait
+perdre l'information que la position a bougé, et pourquoi.
+
+**Lecture retenue, et à confirmer par lui :** les deux ne portent pas sur la
+même chose.
+
+| Ce dont il s'agit | Comportement |
+|---|---|
+| Une information **qui change le prix** — technique, diamètre, hauteur de haie | **L'agent demande avant de chiffrer.** Un devis faux du simple au double ne se rattrape pas par un signalement. |
+| Une ambiguïté **qui ne change pas le prix** — que broie-t-on, accès non précisé | **Signalée sur le devis**, sans interrompre. |
+
+Cette lecture réconcilie les deux réponses et respecte `AGENT.md` §2 (« l'arrêt
+doit être franchissable en quelques secondes ») : on ne pose pas dix questions,
+on pose celles qui portent de l'argent.
+
+**Ce qui reste à trancher :** combien de questions au maximum avant que l'arrêt
+cesse d'être un arrêt. Non demandé.
+
+---
+
+## 8. Ce que la mémoire devient à la commercialisation
+
+Question du patron, le 5 août 2026 : *« est-ce que cette mémoire sera gardée
+quand je publierai l'application et que je la commercialiserai ? »*
+
+Sa réponse sur le partage : **« un socle commun, puis chacun ajuste »** — les
+nouveaux artisans reçoivent une base de départ plutôt que de partir de rien.
+
+**Ce que ça implique, et qui n'est pas encore décidé :**
+
+1. **Le socle, c'est quoi ?** Les prix du patron tels quels, ou une moyenne
+   anonymisée de plusieurs artisans ? Les deux options étaient dans la question ;
+   il n'a pas départagé.
+2. **Ses prix deviennent alors une donnée qui sort de chez lui.** L'isolation par
+   entreprise (RLS) empêche aujourd'hui toute fuite entre artisans — un socle
+   commun est une *dérogation volontaire* à ce principe, à construire
+   explicitement, jamais à laisser advenir.
+3. **Un artisan qui ajuste doit-il nourrir le socle en retour ?** Si oui,
+   c'est un tout autre produit — et un tout autre contrat.
+
+Aucun de ces trois points ne se code avant d'être tranché. **En attendant, la
+mémoire se construit strictement privée** : c'est le seul choix qui n'interdit
+rien. Ouvrir plus tard restera possible ; reprendre ce qui a été partagé, non.
