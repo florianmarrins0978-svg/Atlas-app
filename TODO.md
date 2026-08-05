@@ -26,7 +26,37 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0. L'agent qui apprend — le vrai sujet
+### 0. La sauvegarde des données — À FAIRE, dans cet ordre
+
+**Décidé avec le patron le 5 août 2026.** Il a demandé explicitement que ce
+point soit écrit : *« oublie pas de le faire, note-le, enregistre-le ! »*
+
+| | Quoi | Quand | État |
+|---|---|---|---|
+| **a** | **Bouton « Télécharger mes données »** dans Réglages. Un fichier arrive sur son téléphone. Aucun terminal, aucun compte, aucune dépendance. | **Maintenant** — c'est le préalable à tout apprentissage | à faire |
+| **b** | **Sauvegarde automatique**, sans qu'il ait à y penser. | **Dès que l'hébergement est choisi** (point 3 de `docs/A-FAIRE.md`) | bloqué |
+
+**Pourquoi (b) ne peut pas se faire maintenant, et il faut le redire à chaque
+fois que la question revient :** une sauvegarde automatique doit déposer son
+fichier quelque part.
+
+- **Pas dans le dépôt** : il est public. Y écrire une base contenant les noms et
+  adresses des clients serait une fuite, pas une sauvegarde.
+- **Pas sur le disque de l'espace de travail** : c'est précisément ce dont on
+  cherche à se protéger, puisqu'il disparaît avec l'espace.
+- **Il faut donc une destination extérieure** — celle de l'hébergeur, ou un
+  stockage objet que le patron n'a pas encore.
+
+**Ce que (a) débloque :** il pourra nourrir la mémoire de l'agent sans craindre
+de tout perdre au passage en ligne. C'est la condition qu'il a posée lui-même
+pour commencer — voir `docs/A-FAIRE.md` §1 bis.
+
+**Ne pas confondre avec l'export RGPD existant.**
+`src/server/repositories/donnees-client.ts` exporte les données **d'un client**,
+pour répondre à une demande d'accès. Ce qu'il faut ici est l'inverse : **toutes
+les données de l'entreprise**, pour les emporter ailleurs.
+
+### 0 bis. L'agent qui apprend — le vrai sujet
 
 Le tapis roulant (dictée → devis, d'un seul geste) est en place. La suite, dans
 l'ordre décidé avec le patron le 5 août 2026 :
