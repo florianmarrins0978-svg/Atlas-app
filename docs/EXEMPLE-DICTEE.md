@@ -280,3 +280,49 @@ nouveaux artisans reçoivent une base de départ plutôt que de partir de rien.
 Aucun de ces trois points ne se code avant d'être tranché. **En attendant, la
 mémoire se construit strictement privée** : c'est le seul choix qui n'interdit
 rien. Ouvrir plus tard restera possible ; reprendre ce qui a été partagé, non.
+
+---
+
+## 9. Deux règles de chiffrage, données le 5 août 2026
+
+### a. Le multiplicateur se recalcule, il ne se fige pas
+
+> *« Il faut que le calcul ×1,67 ×2,33 soit recalculé à chaque fois, en faisant
+> la moyenne des prix, qui change. »*
+
+**C'est une correction de conception, pas un détail.** Ces deux nombres ne sont
+pas un barème à inscrire en dur : ce sont une **moyenne mobile**, calculée sur
+les devis réellement faits, et qui se déplace à mesure que le patron chiffre.
+
+| Fixé en dur | Recalculé (ce qu'il demande) |
+|---|---|
+| Vieillit dès que les prix bougent | **Suit le métier tout seul** |
+| Il faut penser à le corriger | **Personne n'a rien à corriger** |
+| Une règle de plus à tenir | **La mémoire fait le travail** |
+
+C'est exactement le « s'auto-alimente » qu'il demandait, appliqué à la seule
+règle qu'on ait réussi à formuler. Le rapport se déduit des couples
+(technique, prix) déjà enregistrés — donc il n'existe **qu'à partir du moment où
+la mémoire existe**, et il est d'autant plus juste qu'elle est fournie.
+
+> *Note : le patron cite « ×1,47 » de mémoire ; ses propres chiffres donnent
+> 1 000 / 600 = 1,67. L'écart n'a aucune importance — c'est précisément
+> l'argument de la moyenne mobile : personne n'a à retenir ce nombre.*
+
+**Tant que la mémoire est vide**, aucun multiplicateur n'est appliqué : l'agent
+demande le prix plutôt que d'en fabriquer un depuis un rapport qu'il n'a pas
+encore observé.
+
+### b. Les prix sortent ronds, en HT
+
+> *« En HT on fait des prix ronds : 350, 400, 420, 560, etc. »*
+
+Un prix calculé ne se présente jamais tel quel. **Arrondi au dizaine d'euros HT
+la plus proche** — c'est ce que montrent ses exemples, tous multiples de dix.
+
+Un devis à « 1 002,53 € HT » signale un prix calculé par une machine ; un devis
+à « 1 000 € HT » se lit comme un prix décidé par un artisan. Le client voit la
+différence, même s'il ne saurait pas la nommer.
+
+**L'arrondi s'applique au montant HT de la ligne**, avant TVA — jamais au total
+TTC, qui doit rester la somme exacte de ses lignes.
