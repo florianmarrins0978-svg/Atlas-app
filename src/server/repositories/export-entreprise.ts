@@ -1,0 +1,212 @@
+import { eq } from "drizzle-orm";
+import { withEntreprise } from "../db/with-entreprise";
+import {
+  audiosAPurger,
+  brouillonsInformations,
+  chantiers,
+  clients,
+  devis,
+  documents,
+  entrepriseCompteurs,
+  entreprises,
+  envoisDevis,
+  factures,
+  fragmentsDocuments,
+  historiquePrix,
+  lignesDevis,
+  lignesFacture,
+  lignesPrix,
+  materiel,
+  membresEntreprise,
+  notesVocales,
+  parametresChiffrage,
+  photos,
+  prestations,
+  propositionsIa,
+  tarifs,
+} from "../db/schema";
+import type { Ctx } from "./context";
+
+// Emporter ses données, sans demander la permission à personne.
+//
+// **Ce n'est pas l'export RGPD.** `donnees-client.ts` sort les données D'UN
+// CLIENT pour répondre à une demande d'accès. Ici c'est l'inverse : TOUT ce que
+// l'entreprise possède, pour que le patron puisse le remettre ailleurs — chez
+// un hébergeur, sur une autre machine, ou simplement le garder.
+//
+// **Pourquoi ce n'est pas un `pg_dump`.** Un `pg_dump` exige le rôle
+// propriétaire de la base, un terminal, et la connaissance de la commande. Le
+// patron n'a ni l'un ni les autres, et n'a pas à les avoir : il a un téléphone.
+// Cette fonction passe par `withEntreprise`, donc par l'isolation ordinaire —
+// aucun privilège en plus, aucune brèche ouverte pour faire une sauvegarde.
+//
+// **Conséquence à assumer :** l'export ne contient que ce que l'isolation
+// laisse voir. C'est exactement ce qu'on veut ici — mais cela veut dire qu'il
+// ne remplace pas une sauvegarde d'administration pour restaurer la base
+// entière, plusieurs entreprises comprises (voir PRODUCTION_BACKUP_RESTORE.md).
+
+/** Version du format écrite dans le fichier — un relecteur futur saura quoi attendre. */
+export const VERSION_FORMAT_EXPORT = 1;
+
+export type ExportEntreprise = {
+  versionFormat: number;
+  exporteLe: string;
+  entrepriseId: string;
+  /** Une clé par table, dans l'ordre des dépendances (parents avant enfants). */
+  tables: Record<string, Record<string, unknown>[]>;
+  /** Nombre de lignes par table — se lit d'un coup d'œil sans dérouler le fichier. */
+  compte: Record<string, number>;
+  /** Fichiers rattachés, à joindre à l'archive. */
+  fichiers: FichierAJoindre[];
+};
+
+export type FichierAJoindre = {
+  storageKey: string;
+  /** D'où vient ce fichier, pour le retrouver dans les données. */
+  origine: "photo" | "note-vocale" | "devis-pdf" | "facture-pdf";
+};
+
+/**
+ * Toutes les données de l'entreprise, plus la liste des fichiers à joindre.
+ *
+ * Les octets des photos et des PDF ne sont PAS lus ici : les tenir tous en
+ * mémoire ferait tomber le serveur sur un compte un peu fourni. La route qui
+ * appelle cette fonction les lit un par un, au fil de l'écriture de l'archive.
+ */
+export async function exporterEntreprise(
+  ctx: Ctx,
+  maintenant: Date = new Date()
+): Promise<ExportEntreprise> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // L'isolation filtre déjà par entreprise. Le filtre explicite est répété
+    // parce qu'une table dont la politique serait un jour oubliée renverrait
+    // alors les données des autres — et un export est précisément l'endroit où
+    // cela ne se verrait pas.
+    const e = ctx.entrepriseId;
+
+    const [
+      entreprise,
+      compteurs,
+      membres,
+      lesClients,
+      lesChantiers,
+      lesPrestations,
+      leMateriel,
+      lesNotes,
+      lesPhotos,
+      lesTarifs,
+      lesLignesPrix,
+      lesDevis,
+      lesLignesDevis,
+      lHistorique,
+      lesParametres,
+      lesDocuments,
+      lesFragments,
+      lesBrouillons,
+      lesPropositions,
+      lesEnvois,
+      lesAudiosAPurger,
+      lesFactures,
+      lesLignesFacture,
+    ] = await Promise.all([
+      tx.select().from(entreprises).where(eq(entreprises.id, e)),
+      tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
+      tx.select().from(membresEntreprise).where(eq(membresEntreprise.entrepriseId, e)),
+      tx.select().from(clients).where(eq(clients.entrepriseId, e)),
+      tx.select().from(chantiers).where(eq(chantiers.entrepriseId, e)),
+      tx.select().from(prestations).where(eq(prestations.entrepriseId, e)),
+      tx.select().from(materiel).where(eq(materiel.entrepriseId, e)),
+      tx.select().from(notesVocales).where(eq(notesVocales.entrepriseId, e)),
+      tx.select().from(photos).where(eq(photos.entrepriseId, e)),
+      tx.select().from(tarifs).where(eq(tarifs.entrepriseId, e)),
+      tx.select().from(lignesPrix).where(eq(lignesPrix.entrepriseId, e)),
+      tx.select().from(devis).where(eq(devis.entrepriseId, e)),
+      tx.select().from(lignesDevis).where(eq(lignesDevis.entrepriseId, e)),
+      tx.select().from(historiquePrix).where(eq(historiquePrix.entrepriseId, e)),
+      tx.select().from(parametresChiffrage).where(eq(parametresChiffrage.entrepriseId, e)),
+      tx.select().from(documents).where(eq(documents.entrepriseId, e)),
+      tx.select().from(fragmentsDocuments).where(eq(fragmentsDocuments.entrepriseId, e)),
+      tx.select().from(brouillonsInformations).where(eq(brouillonsInformations.entrepriseId, e)),
+      tx.select().from(propositionsIa).where(eq(propositionsIa.entrepriseId, e)),
+      tx.select().from(envoisDevis).where(eq(envoisDevis.entrepriseId, e)),
+      tx.select().from(audiosAPurger).where(eq(audiosAPurger.entrepriseId, e)),
+      tx.select().from(factures).where(eq(factures.entrepriseId, e)),
+      tx.select().from(lignesFacture).where(eq(lignesFacture.entrepriseId, e)),
+    ]);
+
+    // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
+    // fichier ligne à ligne n'aurait alors aucune contrainte à désactiver.
+    const tables: Record<string, Record<string, unknown>[]> = {
+      entreprises: entreprise,
+      entreprise_compteurs: compteurs,
+      membres_entreprise: membres,
+      clients: lesClients,
+      chantiers: lesChantiers,
+      prestations: lesPrestations,
+      materiel: leMateriel,
+      notes_vocales: lesNotes,
+      photos: lesPhotos,
+      tarifs: lesTarifs,
+      lignes_prix: lesLignesPrix,
+      devis: lesDevis,
+      lignes_devis: lesLignesDevis,
+      historique_prix: lHistorique,
+      parametres_chiffrage: lesParametres,
+      documents: lesDocuments,
+      fragments_documents: lesFragments,
+      brouillons_informations: lesBrouillons,
+      propositions_ia: lesPropositions,
+      envois_devis: lesEnvois,
+      audios_a_purger: lesAudiosAPurger,
+      factures: lesFactures,
+      lignes_facture: lesLignesFacture,
+    };
+
+    const compte: Record<string, number> = {};
+    for (const [nom, lignes] of Object.entries(tables)) compte[nom] = lignes.length;
+
+    // Les fichiers, dédoublonnés : un même PDF peut être référencé deux fois,
+    // et l'écrire deux fois dans l'archive produirait un doublon que certains
+    // décompresseurs refusent d'extraire.
+    const vus = new Set<string>();
+    const fichiers: FichierAJoindre[] = [];
+    const ajouter = (cle: string | null, origine: FichierAJoindre["origine"]) => {
+      if (!cle || vus.has(cle)) return;
+      vus.add(cle);
+      fichiers.push({ storageKey: cle, origine });
+    };
+    for (const p of lesPhotos) ajouter(p.storageKey as string | null, "photo");
+    for (const n of lesNotes) ajouter(n.storageKey as string | null, "note-vocale");
+    for (const d of lesDevis) ajouter(d.pdfStorageKey as string | null, "devis-pdf");
+    for (const f of lesFactures) ajouter(f.pdfStorageKey as string | null, "facture-pdf");
+
+    return {
+      versionFormat: VERSION_FORMAT_EXPORT,
+      exporteLe: maintenant.toISOString(),
+      entrepriseId: e,
+      tables,
+      compte,
+      fichiers,
+    };
+  });
+}
+
+// Le jeton d'`envois_devis` est exporté, en connaissance de cause. C'est une clé
+// d'accès vivante à une page publique — mais l'écarter reviendrait à produire une
+// sauvegarde d'où les envois ne pourraient pas être remis en place, pour protéger
+// un secret qui expire de lui-même. Le mode d'emploi joint à l'archive le dit en
+// toutes lettres, plutôt que de retirer la donnée en silence.
+//
+// Ce que l'export NE contient PAS, et pourquoi — écrit ici plutôt que dans un
+// document, pour être relu par celui qui modifiera la liste ci-dessus :
+//
+// - `users`, `accounts`, `verification_tokens` : ce sont des identifiants de
+//   connexion, pas des données d'entreprise. Les recopier dans un fichier
+//   téléchargeable transformerait une sauvegarde en fuite de comptes.
+// - `catalogue_prestations`, `catalogue_materiels`, `documents_legaux` : données
+//   de référence, partagées par toutes les sociétés. Elles n'appartiennent pas
+//   au patron et se retrouvent identiques sur n'importe quelle installation.
+// - `acceptations_documents` : rattachée à l'utilisateur, pas à l'entreprise —
+//   et sans valeur hors de l'installation qui l'a recueillie.
+// - `fichiers_a_purger` : file de maintenance, sans donnée ni rattachement à
+//   une entreprise.

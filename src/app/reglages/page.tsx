@@ -90,6 +90,47 @@ export default async function ReglagesPage() {
             seule présence d&apos;une clé. Mode d&apos;emploi : <code>docs/ESSAYER.md</code>.
           </p>
         </section>
+        {/*
+          Emporter ses données, en un appui.
+
+          Le patron a perdu ses chantiers une fois, en supprimant l'espace de
+          travail — sur mon conseil, deux fois donné. Il a ensuite posé la
+          question qui compte avant de nourrir l'agent : « le jour où je mets ça
+          en ligne, est-ce que je perds toute la mémoire ? » Tant qu'il ne peut
+          pas récupérer ses données lui-même, la réponse honnête reste « peut-
+          être », et il a raison de ne rien vouloir saisir. Ce lien est la
+          réponse : un fichier, sur son téléphone, sans terminal ni compte.
+
+          Un lien et non un bouton : un téléchargement n'a pas à passer par une
+          action serveur (voir la route, et CLAUDE.md §5).
+        */}
+        <section className="px-6 pt-10">
+          <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
+            Mes données
+          </p>
+          <h2 className="text-[22px] leading-tight" style={{ fontFamily: font.display, marginBottom: 12 }}>
+            En garder une copie
+          </h2>
+
+          <a
+            href="/api/mes-donnees"
+            download
+            className="inline-block rounded-xl px-5 py-3 text-[15px] font-medium"
+            style={{ backgroundColor: colors.rust, color: colors.cream }}
+          >
+            Télécharger mes données
+          </a>
+
+          <p className="text-[13px] leading-snug" style={{ color: colors.inkSoft, marginTop: 10 }}>
+            Un seul fichier, qui contient vos clients, vos chantiers, vos devis, vos factures, vos photos et vos
+            enregistrements. Il s&apos;ouvre sans Atlas.
+          </p>
+          <p className="text-[12px] leading-snug" style={{ color: colors.muted, marginTop: 8 }}>
+            Il contient les coordonnées de vos clients : à ranger comme un dossier client. La sauvegarde automatique,
+            elle, attend le choix d&apos;un hébergement — sans destination extérieure, elle ne protégerait de rien.
+          </p>
+        </section>
+
         {/* La version exécutée, en bas et discrète.
             Elle existe pour une raison précise : le patron a réessayé, un jour
             plus tard, des correctifs livrés la veille, sur un espace de travail

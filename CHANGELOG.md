@@ -9,6 +9,63 @@ Format : le plus récent en tête.
 
 ## 2026-08-05
 
+### Le patron peut emporter ses données, en un appui
+
+**Ce qui l'exigeait.** Il a perdu ses chantiers une fois, en supprimant l'espace
+de travail — sur mon conseil, donné deux fois. Puis il a posé la question qui
+commande tout le reste : *« le jour où je mets ça en ligne, est-ce que je perds
+toute la mémoire ? »* Tant que la réponse honnête restait « peut-être », il avait
+raison de ne rien vouloir saisir. Sa consigne, mot pour mot : *« oublie pas de le
+faire, note-le, enregistre-le ! »*
+
+Réglages porte désormais **« Télécharger mes données »** : un fichier ZIP, sur
+son téléphone, sans terminal ni compte. Dedans, `donnees.json` (les vingt-trois
+tables de son entreprise), ses photos, ses enregistrements, ses PDF, et un mode
+d'emploi qui dit ce que le fichier contient de sensible.
+
+**Trois décisions, et leur pourquoi** (détail dans `ARCHITECTURE.md` §25) :
+
+- **Ni `pg_dump`, ni privilège en plus.** L'export passe par `withEntreprise`,
+  comme n'importe quelle lecture. Une sauvegarde n'est pas une raison d'ouvrir
+  une brèche dans l'isolation — et c'est l'endroit où une fuite ne se verrait
+  pas, personne ne relisant trois mille lignes de JSON.
+- **Le ZIP est écrit à la main**, sans bibliothèque, méthode « stockage ». Le
+  format est figé depuis 1989 ; une dépendance coûterait plus cher que les
+  quatre-vingts lignes. Photos et PDF étant déjà compressés, la compression ne
+  gagnerait que quelques pour cent contre un chemin de code capable de se
+  tromper en silence.
+- **Un fichier manquant n'interrompt pas la sauvegarde.** L'audio est purgé
+  après transcription : l'absence est le cas *normal*. `fichiers-absents.txt`
+  liste ce qui manque et dit lequel des deux cas s'applique — une photo absente,
+  elle, signale un espace de travail supprimé.
+
+**Ce qui le vérifie.** Une suite ouvre l'archive avec l'`unzip` du système, pas
+avec notre propre lecteur : un décalage d'un octet ou un CRC faux ne se verraient
+nulle part ailleurs. Une autre interroge `information_schema` et **échoue si une
+table portant un `entreprise_id` n'est pas dans l'export** — une table ajoutée
+demain et oubliée disparaîtrait sinon des sauvegardes sans un bruit. Et une
+troisième appuie sur le bouton dans un vrai navigateur, récupère le fichier,
+l'ouvre, et vérifie qu'aucun compte de connexion ni empreinte de mot de passe
+n'y figure.
+
+**Ce que ça ne fait pas** : la sauvegarde *automatique*. Elle reste bloquée sur
+le choix d'un hébergeur, faute de destination extérieure — ni le dépôt (public),
+ni le disque de l'espace de travail (c'est précisément ce dont on se protège).
+Écrit dans `TODO.md` §0(b), et redit à l'écran sous le bouton.
+
+### Cet environnement peut faire tourner PostgreSQL et Redis
+
+**Correction d'une croyance qui coûtait cher.** `CLAUDE.md` §5 et `AGENTS.md`
+affirmaient que la batterie base de données ne pouvait pas tourner ici, faute de
+Docker. C'est vrai pour Docker, et faux pour la conclusion : les binaires
+PostgreSQL 16 (`/usr/lib/postgresql/16/bin`) et `redis-server` sont installés.
+Un `initdb` sous l'utilisateur `postgres` — `root` ne peut pas — suffit.
+
+La conséquence était réelle : « c'est la CI qui vérifiera » a été dit trois fois
+alors que la CI n'avait jamais tourné, et les suites base restaient éprouvées
+nulle part. `scripts/monter-base-locale.sh` monte désormais le tout en une
+commande. À utiliser **avant** de livrer, pas à la place de la CI.
+
 ### Une leçon : j'ai reconstruit ce qui existait déjà
 
 J'ai écrit un « tapis roulant » qui enchaînait la dictée jusqu'au devis — et

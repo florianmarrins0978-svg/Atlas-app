@@ -774,3 +774,84 @@ faille poser la question.
 Un espace créé sur une branche qui n'existe plus, ou dont l'historique a été
 réécrit, reste en arrière — le script refuse d'avancer, à raison. Il le dit ;
 c'est alors un nouvel espace qu'il faut, pas une mise à jour.
+
+---
+
+## 25. Emporter ses données passe par l'isolation, jamais à côté
+
+Le patron a perdu ses chantiers une fois, en supprimant l'espace de travail. Il
+a ensuite posé la question qui commande la suite du produit : *« le jour où je
+mets ça en ligne, est-ce que je perds toute la mémoire de l'agent ? »* Tant que
+la réponse honnête restait « peut-être », il avait raison de ne rien vouloir
+saisir — et l'agent qui apprend ne pouvait pas commencer.
+
+`Réglages → Télécharger mes données` répond : un fichier, sur son téléphone.
+
+### Ce qui a été écarté, et pourquoi
+
+**`pg_dump`.** C'est la réponse évidente, et elle est mauvaise ici. Elle exige
+le rôle propriétaire de la base, un terminal, et la connaissance de la commande
+— trois choses que le patron n'a pas et n'a pas à avoir. Elle exporterait de
+surcroît *toutes* les entreprises, ce qui est un contresens pour un bouton
+placé dans les réglages d'une seule.
+
+**Un privilège d'export.** Tentant, puisque « c'est pour sauvegarder ». Refusé :
+`CLAUDE.md` §4 interdit d'affaiblir la RLS pour se simplifier la vie, et l'export
+est justement l'endroit où une fuite ne se verrait pas — personne ne relit trois
+mille lignes de JSON pour vérifier qu'aucun client d'une autre société n'y est.
+`exporterEntreprise` passe donc par `withEntreprise`, comme une lecture
+ordinaire.
+
+**Conséquence assumée :** ce fichier ne restaure pas une base entière, plusieurs
+sociétés comprises. Ce n'est pas son objet — `PRODUCTION_BACKUP_RESTORE.md`
+garde le sien.
+
+**Une bibliothèque d'archivage.** Le format ZIP est publié depuis 1989 et figé.
+`src/lib/archive-zip.ts` l'écrit en quatre-vingts lignes, méthode « stockage » :
+photos et PDF sont déjà compressés, la compression ne gagnerait que quelques
+pour cent — contre un chemin de code capable de se tromper en silence, dans le
+seul fichier dont l'unique qualité qui compte est de se relire.
+
+### Trois propriétés tenues par le code, pas par la vigilance
+
+**1. L'export est exhaustif, et ça s'éprouve.** `test-export-entreprise.ts`
+interroge `information_schema` : toute table portant un `entreprise_id` doit
+figurer dans l'export, sans quoi la suite rougit. Une table ajoutée demain et
+oubliée disparaîtrait autrement des sauvegardes sans un bruit — et le trou ne se
+découvrirait que le jour où l'on en aurait besoin. Le contrôle inverse existe
+aussi : une exclusion qui ne correspond plus à aucune table est signalée, car
+une dispense périmée couvre la prochaine omission.
+
+**2. L'archive s'ouvre avec l'outil du système, pas avec le nôtre.** Un format
+écrit à la main ne se prouve pas en se relisant : la suite écrit l'archive sur
+disque et la donne à `unzip`. Un décalage d'un octet, un CRC faux, un catalogue
+mal placé s'y voient — et ne se verraient nulle part ailleurs.
+
+**3. Un fichier absent n'interrompt pas la sauvegarde.** L'audio est purgé après
+transcription (`docs/RGPD.md` §4) : l'absence est le cas *normal*. Faire échouer
+l'export dessus reviendrait à interdire toute sauvegarde à qui a laissé tourner
+la purge une fois. `fichiers-absents.txt` liste ce qui manque **et dit lequel
+des deux cas s'applique** — une photo absente, elle, signale un espace de
+travail supprimé puis recréé.
+
+### Un lien, pas une action serveur
+
+Le téléchargement est un `GET` sur `/api/mes-donnees`, atteint par une simple
+balise `<a download>`. Rien à voir avec un choix esthétique : une action serveur
+aurait rouvert la porte du défaut qui a coûté vingt échanges au patron —
+« Invalid Server Actions request. » derrière un proxy (`CLAUDE.md` §5). Un
+téléchargement n'a aucune raison de traverser ce mécanisme.
+
+L'archive est produite **au fil de l'eau** : une seule entrée est tenue en
+mémoire à la fois. Tout construire d'un bloc ferait tomber le serveur au moment
+précis où le patron essaie de sauver ses données.
+
+### Ce que ça ne fait pas
+
+**La sauvegarde automatique.** Elle reste bloquée, et pas par manque de code :
+elle doit déposer son fichier quelque part. Pas dans le dépôt, qui est public —
+y écrire les noms et adresses des clients serait une fuite, pas une sauvegarde.
+Pas sur le disque de l'espace de travail, qui est précisément ce dont on se
+protège. Il faut une destination extérieure, donc l'hébergeur, donc le point 3
+de `docs/A-FAIRE.md`. Écrit dans `TODO.md` §0(b), et redit à l'écran sous le
+bouton pour que la question ne se repose pas à chaque fois.

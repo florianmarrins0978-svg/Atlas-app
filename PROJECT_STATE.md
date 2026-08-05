@@ -71,6 +71,7 @@ seule avec quinze outils.
 | L'espace d'essai se met à jour seul, et l'application annonce sa version | `.devcontainer/mettre-a-jour.sh` + Réglages |
 | Créer un chantier sans rien saisir : son nom se déduit du client, de l'adresse, ou de la date | `src/lib/nom-chantier.ts` |
 | **Le devis écrit à la main, document entier** : émetteur, IBAN, client, quantités, prix unitaires, TVA, conditions | `src/app/chantiers/[id]/devis-complet/` |
+| **Emporter toutes ses données**, en un appui : un ZIP avec les 23 tables, les photos, les enregistrements et les PDF | `src/server/repositories/export-entreprise.ts` + `src/app/api/mes-donnees/` + `src/lib/archive-zip.ts` |
 
 ### Conformité RGPD
 
@@ -166,6 +167,29 @@ qu'on le rouvre.
 - **La signature des commits est impossible** dans l'environnement d'exécution :
   la clé SSH configurée est un fichier vide sans partie privée. Signalé une fois,
   non contourné.
+- **La sauvegarde *automatique* n'existe pas, et c'est un blocage réel** — pas
+  un oubli. Elle exige une destination extérieure, donc l'hébergeur (point 3
+  ci-dessus). Le bouton « Télécharger mes données » couvre l'essentiel en
+  attendant. Voir `ARCHITECTURE.md` §25 et `TODO.md` §0.
+
+---
+
+## Éprouver ici : PostgreSQL et Redis tournent, sans Docker
+
+**Corrigé le 2026-08-05, contre ce que le dépôt affirmait.** Docker manque bien,
+mais les binaires PostgreSQL 16 et `redis-server` sont installés dans
+l'environnement d'exécution de l'agent. Une commande monte le tout :
+
+```bash
+source scripts/monter-base-locale.sh   # cluster, rôles, Redis, migrations
+npm test
+```
+
+La croyance inverse coûtait cher : « c'est la CI qui vérifiera » a été dit trois
+fois alors que la CI n'avait jamais tourné, et les suites base n'étaient donc
+éprouvées nulle part. **Cela ne remplace pas la CI** — le mandataire réseau et
+l'absence de Docker restent réels pour le reste (voir `ARCHITECTURE.md` §15
+et §17).
 
 ---
 
@@ -173,7 +197,7 @@ qu'on le rouvre.
 
 | | |
 |---|---|
-| Suites base de données | 55/55 |
-| Suites navigateur (bout en bout) | 24/24 |
+| Suites base de données | **61/61**, jouées dans l'environnement de l'agent |
+| Suites navigateur (bout en bout) | 25/25 |
 | Types, lint | propres |
 | CI GitHub | verte au commit `78c746a` ; `07fa28c` en cours au moment d'écrire |

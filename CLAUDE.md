@@ -161,6 +161,23 @@ exist » quand c'est la base entière qui n'est pas montée envoie chercher au
 mauvais endroit — une erreur qui accuse à tort coûte plus cher que pas d'erreur
 du tout.
 
+### Monter la base ici : une commande
+
+```bash
+source scripts/monter-base-locale.sh   # cluster, rôles, Redis, migrations
+npm test
+```
+
+**Corrigé le 2026-08-05, contre ce que le dépôt affirmait.** Docker manque bien,
+mais les binaires PostgreSQL 16 (`/usr/lib/postgresql/16/bin`) et `redis-server`
+sont installés. `initdb` refuse de tourner en `root` — le script emprunte le
+compte `postgres` du système. Les migrations tournent sous le rôle
+**propriétaire** : `atlas_app` n'a aucun droit de DDL, et l'oublier produit un
+« permission denied for schema public » qui envoie chercher au mauvais endroit.
+
+Croire l'inverse a coûté cher : « c'est la CI qui vérifiera » a été dit trois
+fois alors que la CI n'avait jamais tourné.
+
 ### Ce qui ne peut pas être éprouvé ici doit l'être ailleurs
 
 Cet environnement n'a **ni démon Docker, ni GitHub CLI**, et son mandataire

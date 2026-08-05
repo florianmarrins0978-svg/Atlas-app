@@ -33,8 +33,20 @@ point soit écrit : *« oublie pas de le faire, note-le, enregistre-le ! »*
 
 | | Quoi | Quand | État |
 |---|---|---|---|
-| **a** | **Bouton « Télécharger mes données »** dans Réglages. Un fichier arrive sur son téléphone. Aucun terminal, aucun compte, aucune dépendance. | **Maintenant** — c'est le préalable à tout apprentissage | à faire |
+| **a** | ~~**Bouton « Télécharger mes données »** dans Réglages. Un fichier arrive sur son téléphone. Aucun terminal, aucun compte, aucune dépendance.~~ | | **fait le 2026-08-05** |
 | **b** | **Sauvegarde automatique**, sans qu'il ait à y penser. | **Dès que l'hébergement est choisi** (point 3 de `docs/A-FAIRE.md`) | bloqué |
+
+**(a) est livré.** Un ZIP contenant les vingt-trois tables de l'entreprise, ses
+photos, ses enregistrements et ses PDF, plus un mode d'emploi qui dit ce que le
+fichier contient de sensible. Les choix et ce qu'ils écartent sont dans
+`ARCHITECTURE.md` §25 ; le code dans `src/server/repositories/export-entreprise.ts`,
+`src/app/api/mes-donnees/route.ts` et `src/lib/archive-zip.ts`.
+
+**Ce qui le garde honnête, et qu'il ne faut pas défaire :**
+`test-export-entreprise.ts` interroge `information_schema` et **échoue si une
+table portant un `entreprise_id` n'est pas exportée**. Une table ajoutée demain
+et oubliée disparaîtrait sinon des sauvegardes sans un bruit. En ajouter une
+sans l'exporter fera rougir la batterie — c'est voulu.
 
 **Pourquoi (b) ne peut pas se faire maintenant, et il faut le redire à chaque
 fois que la question revient :** une sauvegarde automatique doit déposer son

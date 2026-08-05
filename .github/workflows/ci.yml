@@ -10,9 +10,15 @@ on:
   # Pourquoi : une *pull request* ouverte par un agent ne déclenche PAS les
   # workflows — GitHub refuse de chaîner un événement produit par un jeton
   # d'automatisation. Constaté sur la PR #19, restée sans la moindre exécution
-  # alors que les autres PR du dépôt étaient vertes. La batterie qui ne peut pas
-  # tourner dans l'environnement de l'agent (ni PostgreSQL, ni Redis, ni Docker)
-  # ne tournait donc nulle part, et « c'est la CI qui vérifiera » était faux.
+  # alors que les autres PR du dépôt étaient vertes. La batterie ne tournait donc
+  # nulle part, et « c'est la CI qui vérifiera » était faux.
+  #
+  # Correction du 2026-08-05 : cette ligne affirmait que PostgreSQL et Redis ne
+  # pouvaient pas tourner chez l'agent. C'était faux — seul Docker manque, les
+  # binaires sont installés, et `scripts/monter-base-locale.sh` monte le tout.
+  # Les suites base peuvent donc être jouées AVANT de livrer. La CI reste
+  # nécessaire pour ce qui n'est vraiment pas joignable d'ici (voir
+  # ARCHITECTURE.md §15 et §17).
   #
   # Onglet Actions → CI → « Run workflow » → choisir la branche.
   workflow_dispatch:
