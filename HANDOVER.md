@@ -74,7 +74,9 @@ site publié à son adresse réelle.
    simulée, sans un mot, et la dictée rendait « [Transcription simulée — … ] ».
    `src/server/env.ts` refuse maintenant de démarrer en production sur un nom
    inconnu, sur « dev », ou sur un fournisseur privé de sa clé. En développement
-   rien ne change : le mode simulé y est le fonctionnement normal.
+   rien ne change : le mode simulé y est le fonctionnement normal — mais l'écran
+   `Réglages` dit désormais lequel des trois états s'applique (`src/lib/etat-ia.ts`),
+   parce qu'un refus muet vaut moins qu'un refus qui s'explique.
 1. **Une requête hors `withEntreprise()` ne renvoie rien, silencieusement.** Pas
    d'erreur : zéro ligne. Un traitement qui ne trouve rien à faire paraît
    fonctionner. C'est déjà arrivé une fois (la purge d'audio).

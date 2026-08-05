@@ -64,6 +64,7 @@ seule avec quinze outils.
 | Grille de choix des fournisseurs d'IA, et leurs tarifs relevés | `docs/TRANSCRIPTION.md` |
 | Relevé des tarifs d'IA à leur source (le réseau de l'agent les refuse) | `.github/workflows/relever-tarifs-ia.yml` |
 | Refus de démarrer en production avec l'IA simulée | `src/server/env.ts` |
+| Ce que l'application utilise vraiment, dit à l'écran | `src/lib/etat-ia.ts`, `src/app/reglages/` |
 | Acceptation des documents légaux, avec empreinte | `src/app/documents-legaux/` |
 | Purge de l'audio après transcription réussie | `src/server/retention.ts` |
 | Export des données d'un client | `src/server/repositories/donnees-client.ts` |

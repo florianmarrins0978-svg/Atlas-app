@@ -7,6 +7,41 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-05
+
+### L'écran Réglages dit enfin qui écoute et qui rédige
+
+Le patron a ouvert deux comptes, payé, posé quatre clés — puis dicté, et
+l'application a continué à fabriquer ses réponses **sans rien dire**. Il a fallu
+qu'il pose la question dans une autre conversation pour l'apprendre.
+
+Le garde-fou ajouté deux jours plus tôt refuse ce mode en production, mais reste
+muet sur le banc d'essai, où c'est justement le mode normal. Il manquait la
+moitié de la règle du dépôt : *un contrôle doit savoir échouer, et son message
+doit désigner le bon coupable.* Ici il n'y avait aucun message du tout.
+
+`src/lib/etat-ia.ts` décrit l'état réel à partir des deux seules variables qui
+décident — jamais de la présence d'une clé, qui n'a jamais rien choisi. L'écran
+`Réglages` l'affiche. Trois états, et le troisième est celui qui coûtait le plus
+cher :
+
+- **branché** : le prestataire est nommé, et l'écran dit ce qui part chez lui ;
+- **déterministe** : rien ne part, avec une explication propre à chaque rôle ;
+- **nom non reconnu** : une faute de frappe donnait le mode simulé, exactement
+  comme une configuration absente, et rien ne distinguait les deux à l'écran.
+
+Un quatrième cas est signalé au passage : un fournisseur reconnu mais dont le
+raccordement n'est pas écrit (Deepgram, Google, Gemini) affiche « raccordement
+non écrit » plutôt qu'un nom rassurant suivi d'une panne à chaque dictée.
+
+**Un défaut trouvé en regardant, pas en testant.** La première version servait
+la même phrase aux deux rôles : la carte « Rédaction » annonçait donc des
+transcriptions simulées, ce qui n'est pas son sujet. Les onze tests passaient au
+vert. C'est une capture des trois états qui l'a montré — le quatrième défaut de
+ce projet trouvé de cette façon.
+
+---
+
 ## 2026-08-03
 
 ### La production refuse enfin de démarrer avec l'IA simulée
