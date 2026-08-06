@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { colors, font } from "@/lib/design-tokens";
+import { memeAdresse } from "@/lib/adresses";
 import { enEuros } from "@/lib/euros";
 import { jourNumerique } from "@/lib/jour";
 import {
@@ -78,6 +79,12 @@ export default function DevisCompletClient(props: Props) {
   );
   const [tauxTva, setTauxTva] = useState(sansZerosInutiles(props.tauxTva));
   const [conditions, setConditions] = useState(props.conditionsPaiement);
+
+  // Deux adresses identiques ne s'impriment pas deux fois. Comparaison
+  // indulgente : ce sont deux champs saisis à la main, à deux moments
+  // différents — une majuscule ou un espace de plus ne font pas une seconde
+  // adresse.
+  const adressesConfondues = memeAdresse(client.adresse, adresseChantier);
 
   // Les totaux se recalculent sous ses yeux, à chaque frappe : un devis dont le
   // total n'apparaît qu'après enregistrement se relit deux fois.
@@ -179,7 +186,7 @@ export default function DevisCompletClient(props: Props) {
       <section className="grid gap-7 sm:grid-cols-2">
         <div>
           <Intertitre>Émetteur</Intertitre>
-          <ChampNu valeur={emetteur.adresse} fige={fige} placeholder="Adresse du siège social" aria="Adresse de l'entreprise"
+          <ChampNu long valeur={emetteur.adresse} fige={fige} placeholder="Adresse du siège social" aria="Adresse de l'entreprise"
             onChange={(v) => setEmetteur({ ...emetteur, adresse: v })}
             onFini={() => majEmetteurAction({ adresse: emetteur.adresse })} />
           <ChampNu valeur={emetteur.siret} fige={fige} placeholder="N° SIREN / SIRET" aria="SIREN / SIRET"
@@ -194,24 +201,40 @@ export default function DevisCompletClient(props: Props) {
               <ChampNu valeur={client.nom} fige={fige} placeholder="Nom complet" aria="Nom du client"
                 onChange={(v) => setClient({ ...client, nom: v })}
                 onFini={() => majClientDuDevisAction(props.clientId!, { nom: client.nom })} />
-              <ChampNu valeur={client.adresse} fige={fige} placeholder="Adresse" aria="Adresse du client"
+              {/* **L'ordre est celui d'une lettre, et le patron l'a demandé
+                  ainsi le 6 août 2026 : « le numéro de téléphone devrait être
+                  en dernier ».** C'est aussi l'ordre du modèle d'Arborea — on
+                  lit d'abord à qui on écrit et où il habite, la façon de le
+                  joindre vient après. */}
+              <ChampNu long valeur={client.adresse} fige={fige} placeholder="Adresse" aria="Adresse du client"
                 onChange={(v) => setClient({ ...client, adresse: v })}
                 onFini={() => majClientDuDevisAction(props.clientId!, { adresse: client.adresse })} />
-              <ChampNu valeur={client.telephone} fige={fige} placeholder="Téléphone" aria="Téléphone du client"
-                onChange={(v) => setClient({ ...client, telephone: v })}
-                onFini={() => majClientDuDevisAction(props.clientId!, { telephone: client.telephone })} />
               <ChampNu valeur={client.email} fige={fige} placeholder="E-mail" aria="E-mail du client"
                 onChange={(v) => setClient({ ...client, email: v })}
                 onFini={() => majClientDuDevisAction(props.clientId!, { email: client.email })} />
+              <ChampNu valeur={client.telephone} fige={fige} placeholder="Téléphone" aria="Téléphone du client"
+                onChange={(v) => setClient({ ...client, telephone: v })}
+                onFini={() => majClientDuDevisAction(props.clientId!, { telephone: client.telephone })} />
             </>
           ) : (
             <p className="text-[13px]" style={{ color: colors.muted }}>
               Aucun client rattaché à ce chantier.
             </p>
           )}
-          <ChampNu valeur={adresseChantier} fige={fige} placeholder="Chantier : adresse des travaux" aria="Adresse du chantier"
-            onChange={setAdresseChantier}
-            onFini={() => majAdresseChantierAction(props.chantierId, adresseChantier)} />
+          {/* **L'adresse des travaux ne s'affiche que si elle diffère.**
+              Sinon elle réapparaissait plus bas, sans étiquette, comme une
+              seconde adresse surgie de nulle part — c'est ce que le patron a
+              vu : « l'adresse n'est pas au bon endroit ». Quand elle diffère,
+              elle porte son titre, parce qu'une adresse nue sur un devis ne
+              dit pas de quoi elle est l'adresse. */}
+          {(!adressesConfondues || !props.clientId) && (
+            <div style={{ marginTop: props.clientId ? 14 : 0 }}>
+              <Intertitre>Chantier</Intertitre>
+              <ChampNu long valeur={adresseChantier} fige={fige} placeholder="Adresse des travaux" aria="Adresse du chantier"
+                onChange={setAdresseChantier}
+                onFini={() => majAdresseChantierAction(props.chantierId, adresseChantier)} />
+            </div>
+          )}
         </div>
       </section>
 
@@ -256,28 +279,24 @@ export default function DevisCompletClient(props: Props) {
             />
 
             <Cellule libelle="Qté">
-              <input
-                value={l.quantite}
-                readOnly={fige}
-                inputMode="decimal"
-                aria-label={`Quantité ${i + 1}`}
-                onChange={(e) => majLigneLocale(l.id, "quantite", e.target.value)}
-                onBlur={() => persisterLigne(l)}
-                className="w-16 border-0 bg-transparent p-0 text-right outline-none focus:bg-[rgba(0,0,0,0.03)] sm:w-full"
-                style={{ color: colors.ink, fontSize: "16px" }}
+              <ChiffreSaisi
+                valeur={l.quantite}
+                fige={fige}
+                aria={`Quantité ${i + 1}`}
+                placeholder="1"
+                onChange={(v) => majLigneLocale(l.id, "quantite", v)}
+                onFini={() => persisterLigne(l)}
               />
             </Cellule>
 
             <Cellule libelle="Prix unitaire HT">
-              <input
-                value={l.prixUnitaire}
-                readOnly={fige}
-                inputMode="decimal"
-                aria-label={`Prix unitaire ${i + 1}`}
-                onChange={(e) => majLigneLocale(l.id, "prixUnitaire", e.target.value)}
-                onBlur={() => persisterLigne(l)}
-                className="w-24 border-0 bg-transparent p-0 text-right outline-none focus:bg-[rgba(0,0,0,0.03)] sm:w-full"
-                style={{ color: colors.ink, fontSize: "16px" }}
+              <ChiffreSaisi
+                valeur={l.prixUnitaire}
+                fige={fige}
+                aria={`Prix unitaire ${i + 1}`}
+                placeholder="0,00"
+                onChange={(v) => majLigneLocale(l.id, "prixUnitaire", v)}
+                onFini={() => persisterLigne(l)}
               />
             </Cellule>
 
@@ -472,6 +491,7 @@ function ChampNu({
   aria,
   fige,
   grand,
+  long,
 }: {
   valeur: string;
   onChange: (v: string) => void;
@@ -480,7 +500,30 @@ function ChampNu({
   aria: string;
   fige: boolean;
   grand?: boolean;
+  /**
+   * Passe à plusieurs lignes plutôt que de couper. Réservé aux adresses : dans
+   * un `<input>`, « 10 rue Denfert-Rochereau 78200 Mantes-la-Jolie » s'arrête
+   * au bord de l'écran, et le patron lit une adresse amputée sur son propre
+   * devis. Le PDF, lui, la reporte à la ligne depuis toujours — l'écran devait
+   * dire la même chose que le papier.
+   */
+  long?: boolean;
 }) {
+  if (long) {
+    return (
+      <textarea
+        value={valeur}
+        readOnly={fige}
+        placeholder={placeholder}
+        aria-label={aria}
+        rows={Math.max(1, Math.ceil(valeur.length / 34))}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={onFini}
+        className="block w-full resize-none border-0 bg-transparent p-0 py-0.5 outline-none focus:bg-[rgba(0,0,0,0.03)]"
+        style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.4 }}
+      />
+    );
+  }
   return (
     <input
       value={valeur}
@@ -523,6 +566,57 @@ function Colonne({ children, droite }: { children: React.ReactNode; droite?: boo
 }
 
 /** Sur téléphone, chaque cellule porte son libellé — comme le modèle d'origine. */
+/**
+ * Un chiffre qu'on saisit — et qu'on VOIT qu'on peut saisir.
+ *
+ * Le 6 août 2026, le patron : « quand j'essaye de cliquer pour mettre un prix,
+ * ce n'est pas cliquable ». Il l'était pourtant. Mais le champ était vide, sans
+ * repère, sans placeholder, et haut de 24 pixels dans un coin de l'écran —
+ * mesuré : 96 × 24. Apple recommande 44 pixels pour une cible tactile, et un
+ * champ invisible n'invite personne à le toucher. Un contrôle automatique
+ * répondait « éditable : oui » et n'y voyait donc rien.
+ *
+ * D'où les trois changements, tous nécessaires ensemble : une hauteur de doigt,
+ * un trait sous le champ tant qu'il est vide, et un exemple en gris. Le trait
+ * disparaît dès qu'un chiffre est écrit — sur le papier, un devis rempli n'a
+ * pas de cases.
+ */
+function ChiffreSaisi({
+  valeur,
+  onChange,
+  onFini,
+  placeholder,
+  aria,
+  fige,
+}: {
+  valeur: string;
+  onChange: (v: string) => void;
+  onFini: () => void;
+  placeholder: string;
+  aria: string;
+  fige: boolean;
+}) {
+  const vide = valeur.trim() === "";
+  return (
+    <input
+      value={valeur}
+      readOnly={fige}
+      inputMode="decimal"
+      placeholder={placeholder}
+      aria-label={aria}
+      onChange={(e) => onChange(e.target.value)}
+      onBlur={onFini}
+      className="w-24 border-0 bg-transparent px-1 text-right outline-none focus:bg-[rgba(0,0,0,0.03)] sm:w-full"
+      style={{
+        color: colors.ink,
+        fontSize: "16px",
+        minHeight: 44,
+        borderBottom: vide && !fige ? `1px solid ${colors.lineSoft}` : "1px solid transparent",
+      }}
+    />
+  );
+}
+
 function Cellule({ libelle, children }: { libelle: string; children: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-3 sm:block sm:text-right">

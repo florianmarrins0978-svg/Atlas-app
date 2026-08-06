@@ -42,7 +42,17 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
       telephone,
       email,
       canalCommunication: canal,
-      adresse: data.adresseClient?.trim() || undefined,
+      // **« Si différente de l'adresse du chantier » — alors identique par
+      // défaut.** C'est ce que l'écran promet en toutes lettres sous ce champ,
+      // et le patron l'a lu ainsi : il a rempli l'adresse du chantier, laissé
+      // celle du client vide, et retrouvé sur son devis un client sans adresse
+      // et une adresse orpheline en bas de page.
+      //
+      // Ce n'est pas une donnée inventée (`CLAUDE.md` §4) : elle est reprise
+      // mot pour mot de ce qu'il a saisi, sous une règle qu'il a lue avant de
+      // laisser le champ vide. Il la corrige d'un geste sur le devis si les
+      // deux diffèrent.
+      adresse: data.adresseClient?.trim() || data.adresseChantier?.trim() || undefined,
     });
     clientId = client.id;
   }
