@@ -96,6 +96,45 @@ existe deux devis d'abattage avec leur technique, le rapport se calcule et le
 montant peut se proposer — arrondi à la dizaine d'euros HT (`§9b`), et présenté
 comme un **rappel** de la dernière fois, jamais comme un calcul non sourcé.
 
+### 0 quater. La mémoire des corrections — ~~à faire~~ **faite le 6 août 2026**
+
+**Choisi par le patron le 6 août 2026**, devant l'entretien de départ et les
+photos. Ce qu'il chiffre sur un devis est désormais retenu, et lui revient sur
+le chantier comparable suivant.
+
+**Ce que ça a révélé :** `historique_prix` existait, était lue par le chiffrage
+— et **n'était jamais écrite par l'application**. Seuls les tests l'alimentaient.
+Une mémoire que personne ne remplit n'est pas une mémoire.
+
+| Où | Quoi |
+|---|---|
+| `src/lib/lecons-prix.ts` | Ce qui se rapproche, ce qui ne se rapproche **pas**, et le rappel |
+| `src/lib/arrondi-prix.ts` | « En HT on fait des prix ronds » (§9b), enfin appliqué |
+| `drizzle/0023_lecons_prix.sql` | Une leçon par ligne de devis, jamais une de plus |
+| `devis-complet` | Le rappel sous la ligne, et « Reprendre ce prix » |
+
+**Pourquoi une table de plus plutôt qu'`historique_prix`.** Celle-ci s'appuie
+sur `catalogue_prestations`, catalogue **partagé** repéré par nom canonique :
+elle ne sait pas distinguer un abattage au pied d'un démontage avec rétention —
+les deux seules choses qui font passer le même chêne de 600 à 1 400 €. Une
+mémoire aveugle à cette distinction rappellerait un prix faux de 800 € avec
+l'autorité de l'expérience.
+
+**Trois garde-fous à ne pas défaire :**
+
+- **Un rappel, jamais un calcul** (`EXEMPLE-DICTEE.md` §9c). La phrase dit d'où
+  vient le chiffre et de quel chantier. Rien ne s'applique tout seul.
+- **Le rapprochement se trompe dans le bon sens.** Les diamètres sont groupés
+  par tranche de dix centimètres, au plus proche ; une frontière subsiste, et
+  elle fait **manquer** un rappel, jamais en fabriquer un faux. Élargir le
+  rapprochement échangerait un manque contre une erreur.
+- **L'apprentissage ne gêne jamais le travail.** Une ligne dont on ne sait rien
+  tirer s'enregistre quand même.
+
+**Ce qui reste ouvert :** le rapport entre techniques (×1,67, ×2,33 — §9a),
+qui demande plusieurs devis comparables. La mémoire l'accumule désormais ; la
+règle se calculera quand il y aura de quoi.
+
 ### 0 bis. L'agent qui apprend — le vrai sujet
 
 Le tapis roulant (dictée → devis, d'un seul geste) est en place, et l'arrêt
@@ -104,7 +143,7 @@ le 5 août 2026 :
 
 | | Quoi | Pourquoi maintenant |
 |---|---|---|
-| a | **Mémoire des corrections.** Ce que le patron change à l'arrêt 1 devient une leçon qu'il valide. | Rien ne retient ses corrections aujourd'hui : chaque devis repart de zéro. C'est le début du « s'auto-alimente » qu'il demande. **Et c'est ce qui rendra les réponses du §0 ter capables de porter un prix.** |
+| a | ~~**Mémoire des corrections.**~~ **Fait le 6 août 2026** — voir §0 quater. | |
 | b | **Entretien de départ.** Il n'a aucun ancien devis à donner en référence — c'est donc l'agent qui l'interroge une fois et écrit ses règles. | Sans ça, l'agent démarre en ne sachant rien et apprend aux frais du patron. |
 | c | **Écart devis / facture.** Les données existent déjà des deux côtés. | La meilleure leçon qui soit : ce qui avait été mal estimé s'y voit tout seul. |
 | d | **Photos ↔ prix.** Conserver le lien entre les photos d'un chantier et le devis qui a suivi. | Objectif du patron : « à force de comparer les photos des arbres et les devis, il devra proposer un prix juste ». Impossible aujourd'hui — mais **l'accumulation doit commencer maintenant**, sinon dans six mois il n'y aura toujours rien à apprendre. |

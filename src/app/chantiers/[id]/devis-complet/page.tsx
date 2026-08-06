@@ -7,6 +7,8 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerLignesPrix } from "@/server/repositories/lignes-prix";
 import { getOuCreerDevisBrouillon, chargerDevisPourEcran } from "@/server/repositories/devis";
 import { getBrouillon } from "@/server/repositories/brouillons-informations";
+import { leconsComparables } from "@/server/repositories/lecons-prix";
+import { rappelDePrix } from "@/lib/lecons-prix";
 import DevisCompletClient from "./DevisCompletClient";
 
 // **Une page où il n'y a que le devis.**
@@ -52,6 +54,21 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
     listerLignesPrix(ctx, id),
     getBrouillon(ctx, id),
   ]);
+
+  // **Ce que l'agent a retenu de ses devis passés.**
+  //
+  // Calculé ici, côté serveur, et non dans l'écran : le rappel se déduit de la
+  // mémoire de l'entreprise, qui ne traverse jamais jusqu'au navigateur — seule
+  // la phrase à lire le fait.
+  //
+  // Le chantier en cours est exclu de sa propre mémoire : afficher « la
+  // dernière fois : 1 400 € » juste sous une ligne à 1 400 € n'apprend rien et
+  // donne l'impression d'un agent qui radote.
+  const rappels: Record<string, { prix: string; phrase: string }> = {};
+  for (const ligne of lignes) {
+    const rappel = rappelDePrix(await leconsComparables(ctx, ligne.libelle, { chantierExclu: id }));
+    if (rappel) rappels[ligne.id] = { prix: rappel.prix, phrase: rappel.phrase };
+  }
 
   return (
     <div
@@ -107,6 +124,7 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
            sur le compte rendu, qui a disparu du parcours : il se dit désormais
            sur le devis, c'est-à-dire là où le patron relit les lignes. */
         lectureLitterale={brouillon?.lecture === "litterale"}
+        rappels={rappels}
       />
     </div>
   );

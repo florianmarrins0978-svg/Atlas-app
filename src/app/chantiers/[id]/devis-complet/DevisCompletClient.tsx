@@ -53,6 +53,17 @@ type Props = {
   tauxTva: string;
   conditionsPaiement: string;
   /** La dictée n'a pas été comprise, seulement recopiée — voir `lecture-litterale.ts`. */
+  /**
+   * Ce que l'agent a retenu des devis passés, par ligne.
+   *
+   * **Un rappel, jamais un calcul.** `docs/EXEMPLE-DICTEE.md` §9c : l'agent
+   * propose le dernier prix comparable en disant d'où il vient, et le patron
+   * valide ou corrige d'un geste. La nuance porte tout — un rappel se vérifie
+   * d'un coup d'œil, un calcul non sourcé demande qu'on lui fasse confiance.
+   *
+   * Rien n'est jamais appliqué tout seul : c'est lui qui appuie.
+   */
+  rappels?: Record<string, { prix: string; phrase: string }>;
   lectureLitterale?: boolean;
 };
 
@@ -82,6 +93,23 @@ export default function DevisCompletClient(props: Props) {
       libelle: l.libelle,
       quantite: normaliser(l.quantite, "1"),
       prixUnitaire: normaliser(l.prixUnitaire, "0"),
+    });
+  }
+
+  /**
+   * Reprend le prix rappelé — d'un geste, et sans rien décider à sa place.
+   *
+   * L'état local est mis à jour **avant** l'enregistrement pour que le chiffre
+   * apparaisse à l'instant où il appuie : sur un téléphone, une valeur qui met
+   * une seconde à s'afficher se lit comme un bouton qui n'a pas marché, et il
+   * appuie une seconde fois.
+   */
+  async function reprendreRappel(l: Ligne, prix: string) {
+    majLigneLocale(l.id, "prixUnitaire", prix);
+    await majLigneAction(l.id, {
+      libelle: l.libelle,
+      quantite: normaliser(l.quantite, "1"),
+      prixUnitaire: prix,
     });
   }
 
@@ -256,6 +284,25 @@ export default function DevisCompletClient(props: Props) {
             <Cellule libelle="Total HT">
               <span className="text-[16px]">{enEuros(montantDeLaLigne(l))}</span>
             </Cellule>
+
+            {/* Ce que l'agent a retenu la dernière fois, sur un travail
+                comparable. Discret et sous la ligne : c'est un rappel, pas une
+                consigne — il regarde s'il veut, il ignore s'il sait mieux. */}
+            {!fige && props.rappels?.[l.id] && (
+              <div className="sm:col-span-5" style={{ marginTop: -4, marginBottom: 6 }}>
+                <span className="text-[12px] leading-snug" style={{ color: colors.muted }}>
+                  {props.rappels[l.id]!.phrase}{" "}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => reprendreRappel(l, props.rappels![l.id]!.prix)}
+                  className="text-[12px] font-medium underline"
+                  style={{ color: colors.rust }}
+                >
+                  Reprendre ce prix
+                </button>
+              </div>
+            )}
 
             {!fige && (
               <button
