@@ -9,6 +9,57 @@ Format : le plus récent en tête.
 
 ## 2026-08-06
 
+### L'agent retient ce que le patron chiffre, et le lui rappelle
+
+*« Si l'appli n'a aucune mémoire, comment l'IA va enregistrer et se souvenir ?
+Pour s'améliorer elle a besoin de mémoire. »* Il avait raison, et le dépôt lui
+donnait raison plus qu'on ne le croyait.
+
+**Ce que ça a révélé.** `historique_prix` existe depuis des mois, elle est lue
+par le chiffrage, affichée au catalogue — et **jamais écrite par
+l'application**. Seuls les tests l'alimentaient. Une mémoire que personne ne
+remplit n'est pas une mémoire ; c'est une table.
+
+Désormais : il chiffre une ligne de devis, l'agent retient. Sur le chantier
+comparable suivant, il lit sous la ligne *« La dernière fois — « Abattage d'un
+chêne mort — démontage avec rétention, ⌀ 70 cm », le 6 août — vous aviez retenu
+1 400 € HT »*, et un lien reprend ce prix.
+
+**Pourquoi une table neuve plutôt qu'`historique_prix`.** Celle-ci s'appuie sur
+`catalogue_prestations`, catalogue **partagé** repéré par nom canonique. Elle ne
+sait pas distinguer un abattage au pied d'un démontage avec rétention — les deux
+seules choses qui font passer le même chêne de 600 à 1 400 €. Une mémoire
+aveugle à cette distinction rappellerait un prix faux de 800 € **avec l'autorité
+de l'expérience**. `lecons_prix` porte donc une signature de métier
+(`abattage|retention|d70`) construite par une fonction pure.
+
+**Quatre décisions, et leur pourquoi :**
+
+- **Un rappel, jamais un calcul** (`docs/EXEMPLE-DICTEE.md` §9c). La phrase dit
+  d'où vient le chiffre et de quel chantier. Rien ne s'applique tout seul : le
+  patron appuie, ou ignore.
+- **Une leçon par ligne de devis, jamais une de plus.** Il tape son prix chiffre
+  par chiffre, et chaque champ quitté déclenche un enregistrement : compter
+  chacun emplirait la mémoire de 1, puis 14, puis 140 en allant vers 1 400.
+  Seule sa dernière décision subsiste.
+- **Le rapprochement se trompe dans le bon sens.** Les diamètres sont groupés
+  par tranche de dix centimètres — 68 et 70 cm sont le même arbre. Une frontière
+  subsiste (64 contre 66), et elle fait **manquer** un rappel, jamais en
+  fabriquer un faux. C'est écrit noir sur blanc, avec un contrôle qui interdit
+  de l'« améliorer » en élargissant : ce serait échanger un manque contre une
+  erreur.
+- **L'apprentissage ne gêne jamais le travail.** Une ligne dont on ne sait rien
+  tirer — « Déplacement », « Acompte » — s'enregistre quand même. Faire échouer
+  son devis parce qu'on n'a pas su en tirer une leçon serait le comble.
+
+Au passage, `src/lib/arrondi-prix.ts` applique enfin sa règle : *« en HT on fait
+des prix ronds : 350, 400, 420, 560 »*. Un devis à 1 002,53 € trahit la machine.
+
+**Un défaut de conception trouvé par un test**, et pas en relisant : découper
+les diamètres en tronquant mettait 68 cm et 70 cm dans deux tranches distinctes
+— la frontière tombait pile entre deux valeurs voisines et courantes, et le
+rappel ne se serait affiché qu'au hasard. Arrondi au plus proche depuis.
+
 ### Trouvé en vérifiant : les clés du patron n'entraient jamais dans son espace d'essai
 
 Le patron a demandé de vérifier moi-même si Atlas était branché à un fournisseur.

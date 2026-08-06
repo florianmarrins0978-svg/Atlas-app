@@ -13,6 +13,7 @@ import {
   factures,
   fragmentsDocuments,
   historiquePrix,
+  leconsPrix,
   lignesDevis,
   lignesFacture,
   lignesPrix,
@@ -100,6 +101,7 @@ export async function exporterEntreprise(
       lesDevis,
       lesLignesDevis,
       lHistorique,
+      lesLecons,
       lesParametres,
       lesDocuments,
       lesFragments,
@@ -125,6 +127,7 @@ export async function exporterEntreprise(
       tx.select().from(devis).where(eq(devis.entrepriseId, e)),
       tx.select().from(lignesDevis).where(eq(lignesDevis.entrepriseId, e)),
       tx.select().from(historiquePrix).where(eq(historiquePrix.entrepriseId, e)),
+      tx.select().from(leconsPrix).where(eq(leconsPrix.entrepriseId, e)),
       tx.select().from(parametresChiffrage).where(eq(parametresChiffrage.entrepriseId, e)),
       tx.select().from(documents).where(eq(documents.entrepriseId, e)),
       tx.select().from(fragmentsDocuments).where(eq(fragmentsDocuments.entrepriseId, e)),
@@ -154,6 +157,9 @@ export async function exporterEntreprise(
       devis: lesDevis,
       lignes_devis: lesLignesDevis,
       historique_prix: lHistorique,
+      // La mémoire des corrections du patron. C'est ce qu'Atlas a appris de lui
+      // — la perdre lui ferait recommencer son apprentissage à zéro.
+      lecons_prix: lesLecons,
       parametres_chiffrage: lesParametres,
       documents: lesDocuments,
       fragments_documents: lesFragments,
