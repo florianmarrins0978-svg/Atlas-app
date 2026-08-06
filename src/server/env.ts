@@ -36,6 +36,8 @@ export type Env = {
     accessKeyId: string;
     secretAccessKey: string;
   };
+  /** Connexions simultanées à PostgreSQL, par instance. Voir `db/client.ts`. */
+  poolMax: number;
   redisUrl?: string;
   cronSecret?: string;
   sentryDsn?: string;
@@ -243,6 +245,11 @@ function construireEnv(): Env {
     openaiBaseUrl: optionnel("OPENAI_BASE_URL") ?? "https://api.openai.com",
     stockageProvider,
     s3,
+    // 10 par défaut : la valeur qui existait en dur, pour qu'une installation
+    // qui ne dit rien ne change pas de comportement. Une valeur illisible est
+    // ignorée plutôt que de rendre le pool absurde — un `max: NaN` ouvrirait
+    // une connexion et une seule, sans le moindre message.
+    poolMax: Math.max(1, Number(optionnel("DATABASE_POOL_MAX")) || 10),
     redisUrl: process.env.REDIS_URL,
     cronSecret,
     sentryDsn: process.env.SENTRY_DSN,
