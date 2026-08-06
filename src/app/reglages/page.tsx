@@ -7,6 +7,7 @@ import { listerTarifs } from "@/server/repositories/tarifs";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { getEnv } from "@/server/env";
 import ReglagesClient from "./ReglagesClient";
+import BoutonMiseAJour from "./BoutonMiseAJour";
 
 export const dynamic = "force-dynamic";
 
@@ -158,6 +159,9 @@ export default async function ReglagesPage() {
           <p className="text-[13px]" style={{ color: colors.muted }}>
             {version ?? "inconnue — cette installation n'annonce pas sa version."}
           </p>
+          {/* Sur le banc d'essai seulement : une application déployée ne va pas
+              chercher son propre code, ce serait une porte d'entrée. */}
+          {process.env.ATLAS_BANC_ESSAI === "1" && <BoutonMiseAJour />}
         </div>
       </div>
     </div>

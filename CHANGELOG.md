@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-06
 
+### Aller chercher les corrections sans quitter l'application
+
+**Trois soirées perdues sur le même malentendu.** Le patron essaie des
+correctifs livrés une heure plus tôt, ne voit rien changer, et conclut — à
+raison, de son point de vue — que rien n'a été corrigé. Le 6 août au soir :
+« en fait tu as corrigé aucun problème, ou alors j'ai quelque chose à faire pour
+que le terminal ouvre la dernière mise à jour ? »
+
+La question était juste, et la réponse était **oui** : l'espace de travail ne
+récupère le code neuf qu'au DÉMARRAGE. Recharger la page du navigateur ne
+redémarre pas l'espace, et rien ne le disait. Trois signes le prouvaient sur ses
+captures — l'adresse encore mal placée, l'appareil photo sans accès à la
+bibliothèque, un défaut réparé la veille toujours présent.
+
+L'écran Réglages porte donc un bouton **« Chercher les dernières corrections »**,
+qui va chercher le code, applique les migrations, et le dit. Banc d'essai
+uniquement (`ATLAS_BANC_ESSAI`) : une application déployée qui tire son propre
+code serait une porte d'entrée. Les prudences restent celles de
+`mettre-a-jour.sh`, déjà éprouvé — jamais par-dessus du travail non enregistré,
+jamais en forçant.
+
+### La note vocale ne fait plus planter l'application
+
+« Runtime NotSupportedError », en pleine page, en touchant « écouter ». Deux
+fautes cumulées : `audio.play()` rend une promesse qui peut être rejetée — non
+interceptée, elle remonte en erreur d'exécution et l'application entière paraît
+cassée ; et la cause du rejet est presque toujours la même, Safari sur iPhone ne
+sait pas décoder le WebM. L'écran dit maintenant, en français, que le téléphone
+ne sait pas lire ce format — le fichier est intact et la transcription, elle,
+n'en dépend pas.
+
 ### Ce qui tient à dix mille utilisateurs, et ce qui ne tiendra pas
 
 Le patron : « l'application doit pouvoir supporter dix mille, voire cent mille

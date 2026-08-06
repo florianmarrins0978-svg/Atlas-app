@@ -40,6 +40,7 @@ export default function NoteVocaleClient({
   const [storageKey, setStorageKey] = useState<string | null>(noteInitiale?.storageKey ?? null);
   const [dureeNote, setDureeNote] = useState(noteInitiale?.dureeSecondes ?? 0);
   const [lecture, setLecture] = useState(false);
+  const [erreurLecture, setErreurLecture] = useState<string | null>(null);
   const [progression, setProgression] = useState(0);
   const [fraichementEnregistree, setFraichementEnregistree] = useState(false);
   const [enCours, setEnCours] = useState(false);
@@ -185,15 +186,42 @@ export default function NoteVocaleClient({
     }
   }
 
-  function togglerLecture() {
+  /**
+   * Lit l'enregistrement — et sait ne pas y arriver.
+   *
+   * Le 6 août 2026, le patron touche « écouter » sur son iPhone et reçoit une
+   * page d'erreur en pleine figure : « Runtime NotSupportedError ». Deux fautes
+   * cumulées :
+   *
+   * 1. `audio.play()` rend une promesse qui peut être **rejetée**. Non
+   *    interceptée, elle remonte en erreur d'exécution — l'application entière
+   *    paraît cassée alors qu'un seul fichier ne se lit pas ;
+   * 2. la cause du rejet est presque toujours la même : Safari, sur iPhone, ne
+   *    sait pas décoder le WebM. Un enregistrement fait sur un autre appareil,
+   *    ou par un navigateur qui produit ce format, s'écoute partout **sauf**
+   *    sur son téléphone.
+   *
+   * Ce qu'on peut faire ici : ne jamais planter, et dire ce qui se passe. Le
+   * fichier reste intact, et la transcription — qui ne dépend pas du lecteur du
+   * téléphone — continue de fonctionner.
+   */
+  async function togglerLecture() {
     const audio = audioRef.current;
     if (!audio) return;
     if (lecture) {
       audio.pause();
       setLecture(false);
-    } else {
-      audio.play();
+      return;
+    }
+    setErreurLecture(null);
+    try {
+      await audio.play();
       setLecture(true);
+    } catch {
+      setLecture(false);
+      setErreurLecture(
+        "Votre téléphone ne sait pas lire ce format d'enregistrement. Le fichier est bien conservé, et la transcription fonctionne."
+      );
     }
   }
 
@@ -279,8 +307,22 @@ export default function NoteVocaleClient({
               setLecture(false);
               setProgression(0);
             }}
+            // Le navigateur peut aussi refuser APRÈS avoir accepté de charger :
+            // le bouton doit alors revenir à « écouter », jamais rester figé
+            // sur pause devant un silence.
+            onError={() => {
+              setLecture(false);
+              setErreurLecture(
+                "Votre téléphone ne sait pas lire ce format d'enregistrement. Le fichier est bien conservé, et la transcription fonctionne."
+              );
+            }}
             hidden
           />
+          {erreurLecture && (
+            <p role="alert" className="mb-3 text-[13px]" style={{ color: colors.rust }}>
+              {erreurLecture}
+            </p>
+          )}
           <div className="flex items-center gap-4 rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
             <button
               onClick={togglerLecture}
