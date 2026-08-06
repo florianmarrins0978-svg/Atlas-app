@@ -92,6 +92,23 @@ MISE_A_JOUR="$(bash "$(dirname "$0")/mettre-a-jour.sh" "$CD")"
 if [ "$MISE_A_JOUR" = "faite" ]; then
   npm ci --silent >> "$JOURNAL" 2>&1 || npm install --silent >> "$JOURNAL" 2>&1 || true
   npm run db:migrate --silent >> "$JOURNAL" 2>&1 || true
+
+  # **Rejouer ce script dans sa version neuve.**
+  #
+  # Sans cela, un démarrage qui récupère du code neuf continue d'exécuter
+  # l'ANCIEN script : le correctif n'entre en vigueur qu'au démarrage suivant.
+  # Le patron aurait dû redémarrer deux fois pour voir un changement livré une
+  # fois — et n'aurait eu aucun moyen de le deviner. C'est la même famille de
+  # défaut que « l'espace ne se met pas à jour tout seul » (`ARCHITECTURE.md`
+  # §24), déplacée d'un cran.
+  #
+  # Le garde-fou n'est pas optionnel : sans lui, un script qui se relance
+  # pourrait le faire sans fin. Au second passage la mise à jour répond « à
+  # jour », mais on ne s'en remet pas à cela — on s'en remet à la variable.
+  if [ "${ATLAS_DEMARRAGE_RELANCE:-}" != "1" ]; then
+    export ATLAS_DEMARRAGE_RELANCE=1
+    exec bash "$0" "$@"
+  fi
 fi
 
 # La version exécutée, transmise à l'application pour qu'elle l'affiche.

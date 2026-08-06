@@ -68,6 +68,12 @@ un téléphone. `.devcontainer/reglage-ia.sh` distingue « `dev` parce qu'on l'a
 voulu » de « `dev` parce qu'un vieux fichier l'écrivait », et neutralise le
 second. Éprouvé sur les quatre états par `scripts/test-reglage-ia-espace.ts`.
 
+**Et un défaut de démarrage, découvert en préparant la livraison :** l'espace
+récupère bien le code neuf, mais `demarrer.sh` continuait ensuite dans sa
+version ancienne — le correctif du jour n'entrait en vigueur qu'au démarrage
+suivant. Le script se rejoue désormais dans sa version neuve, une fois et une
+seule.
+
 **Ce que cela change pour les données.** La protection ne repose plus sur une
 valeur par défaut mais sur **l'absence de clé** — voir `docs/RGPD.md` §3. La
 batterie de contrôles retire donc les clés d'IA de toute étape qui exécute le

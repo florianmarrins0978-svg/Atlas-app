@@ -843,6 +843,15 @@ rien de vide n'est exporté, ce qui existe déjà l'emporte — et `demarrer.sh`
 comme `verifier:ia` l'appellent tous les deux plutôt que d'en réécrire une
 variante.
 
+**7. Un correctif livré une fois ne demande pas deux redémarrages.**
+`demarrer.sh` récupère le code neuf puis continuait de s'exécuter dans sa
+version ancienne : tout ce qu'un lot change au démarrage n'entrait en vigueur
+qu'au démarrage suivant. Le patron aurait redémarré, n'aurait rien vu changer,
+et conclu — encore une fois — que le correctif ne marche pas. Après une mise à
+jour effective, le script se rejoue donc dans sa version neuve, **une fois et
+une seule** (`ATLAS_DEMARRAGE_RELANCE`). Éprouvé sur de vrais dépôts git par
+`scripts/test-relance-demarrage.ts`, garde-fou anti-boucle compris.
+
 ### Ce que ça ne prouve pas
 
 Qu'une **vraie** clé fonctionne chez le vrai fournisseur. Cela ne s'éprouve
