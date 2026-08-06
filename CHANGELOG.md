@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-06
 
+### La connexion refusait les bons identifiants, et trois écrans se marchaient dessus
+
+**Ses parents ne pouvaient pas entrer.** Il leur donne l'adresse de
+l'application ; ils saisissent les bons identifiants et lisent « Email ou mot de
+passe incorrect ». Ils recommencent — ce que le message leur dit de faire — et
+s'enfoncent. Deux causes cumulées :
+
+- le compteur de tentatives était tenu **par email**, or le banc d'essai partage
+  un compte unique : cinq essais en quinze minutes, tous visiteurs confondus, et
+  tout le monde était bloqué, y compris ceux qui tapaient juste. Il est
+  désormais tenu par email **et adresse IP** ;
+- **le message mentait.** On taisait le blocage pour ne pas révéler qu'un email
+  existe : protection dérisoire — celui qui martèle un compte le sait déjà —
+  payée d'un prix total, puisque l'utilisateur légitime n'avait aucun moyen de
+  comprendre. On lit maintenant « trop de tentatives, réessayez dans N minutes ».
+
+**Un chantier n'apparaît plus que dans un seul onglet.** « Chez Martins »,
+marqué FACTURÉ, figurait dans la liste des chantiers **et**, planifié le 12 août,
+dans le planning. Désormais : planifié → au planning ; facturé, terminé, ou date
+dépassée → aux terminés ; tout le reste → aux chantiers. Règle unique et
+partagée (`src/lib/onglet-chantier.ts`), sans quoi elle se serait remise à
+diverger d'un écran à l'autre.
+
+**Un chantier planifié se supprime d'un glissement.** Vers la gauche, une
+corbeille rouge se découvre ; un appui dessus, et il disparaît. Deux gestes,
+jamais un — un bouton toujours visible finirait par être touché avec des gants.
+Suppression douce (les traces restent), et **refusée dès qu'une facture est
+émise** : une pièce comptable numérotée ne s'efface pas d'un mouvement du doigt,
+elle se corrige par un avoir.
+
 ### Quatre points relevés en se servant vraiment de l'application
 
 **Le PDF disait « Chantier : » là où on attend une adresse.** Le client

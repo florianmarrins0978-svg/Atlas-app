@@ -1,6 +1,6 @@
 import { and, eq, isNull, isNotNull, sql, desc } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { chantiers, clients, entreprises } from "../db/schema";
+import { chantiers, clients, entreprises, factures } from "../db/schema";
 import {
   compterOccupation,
   departPossible,
@@ -298,5 +298,51 @@ export async function mettreAJourAdresseChantier(ctx: Ctx, chantierId: string, a
       .where(eq(chantiers.id, chantierId))
       .returning();
     return row ?? null;
+  });
+}
+
+/**
+ * Retire un chantier de la vue du patron — sans effacer quoi que ce soit.
+ *
+ * Le patron, le 6 août 2026 : « je veux pouvoir supprimer un chantier mis au
+ * planning ». Un essai raté, un doublon, un client qui se désiste : sans ce
+ * geste, sa liste se remplit de choses mortes qu'il ne peut plus enlever.
+ *
+ * **Suppression douce**, comme pour les photos : `deleted_at` est posé, les
+ * lignes restent. Une suppression physique emporterait le devis, ses envois et
+ * la réponse du client — des traces qui ont valeur de preuve.
+ *
+ * **Refusée dès qu'une facture est émise.** Une facture est une pièce
+ * comptable numérotée : elle figure au relevé de TVA, et rien ne doit pouvoir
+ * la faire disparaître d'un glissement du doigt. La correction passe par un
+ * avoir, jamais par un effacement (`docs/AGENT.md` §2.3).
+ */
+export class SuppressionChantierRefusee extends Error {
+  constructor(readonly motif: "facture_emise" | "introuvable") {
+    super(motif);
+    this.name = "SuppressionChantierRefusee";
+  }
+}
+
+export async function supprimerChantier(ctx: Ctx, chantierId: string): Promise<void> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [chantier] = await tx
+      .select()
+      .from(chantiers)
+      .where(and(eq(chantiers.id, chantierId), isNull(chantiers.deletedAt)))
+      .limit(1);
+    if (!chantier) throw new SuppressionChantierRefusee("introuvable");
+
+    const [factureEmise] = await tx
+      .select({ id: factures.id })
+      .from(factures)
+      .where(and(eq(factures.chantierId, chantierId), eq(factures.statut, "emise")))
+      .limit(1);
+    if (factureEmise) throw new SuppressionChantierRefusee("facture_emise");
+
+    await tx
+      .update(chantiers)
+      .set({ deletedAt: new Date(), updatedBy: ctx.utilisateurId, updatedAt: new Date() })
+      .where(eq(chantiers.id, chantierId));
   });
 }
