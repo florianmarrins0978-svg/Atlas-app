@@ -155,7 +155,16 @@ export async function enregistrerPrecisionsEtReprendre(
 ): Promise<ResultatDevisDepuisDictee> {
   await enregistrerPrecisions(ctx, chantierId, reponses);
   await ecrirePrecisionsSurLesPrestations(ctx, chantierId);
-  return reprendreDevisApresPrecisions(ctx, chantierId);
+
+  // **On poursuit même s'il reste des questions sans réponse.** L'arrêt est une
+  // offre, jamais une barrière : appuyer sur « Continuer » EST sa décision, et
+  // il connaît son métier mieux que ces règles.
+  //
+  // La première version reposait la question au lieu de chiffrer. L'écran
+  // l'emmenait alors au devis quand même — un devis SANS AUCUNE LIGNE, parce
+  // que le chiffrage n'avait jamais tourné. Passer outre l'arrêt lui coûtait
+  // son devis : le pire des deux mondes, et invisible depuis le code seul.
+  return poursuivreJusquAuDevis(ctx, chantierId);
 }
 
 /**
@@ -200,17 +209,20 @@ async function ecrirePrecisionsSurLesPrestations(ctx: Ctx, chantierId: string): 
   }
 }
 
-export async function reprendreDevisApresPrecisions(
+async function poursuivreJusquAuDevis(
   ctx: Ctx,
   chantierId: string
 ): Promise<ResultatDevisDepuisDictee> {
   const brouillon = await getBrouillon(ctx, chantierId);
   const contenu = brouillon?.contenu;
 
-  const questions = await questionsRestantes(ctx, chantierId, contenu?.prestations ?? []);
-  if (questions.length > 0) return { statut: "questions", questions };
+  // Ce qu'il a laissé sans réponse ressort sur le devis plutôt que de
+  // disparaître : c'est la seconde moitié de sa règle — ce qui n'a pas été
+  // demandé, ou pas obtenu, se **signale**.
+  const sansReponse = await questionsRestantes(ctx, chantierId, contenu?.prestations ?? []);
 
   return chiffrerEtPreparer(ctx, chantierId, {
+    aSignaler: sansReponse.map((q) => `${q.libellePrestation} : ${q.question.toLowerCase()} — sans réponse`),
     contenu,
     lecture: brouillon?.lecture ?? "modele",
     prestations: contenu?.prestations.map((l) => l.libelle) ?? [],
@@ -226,6 +238,8 @@ async function chiffrerEtPreparer(
     lecture: LectureDictee;
     prestations: string[];
     materiel: string[];
+    /** Questions de prix laissées sans réponse — portées au devis, pas oubliées. */
+    aSignaler?: string[];
   }
 ): Promise<ResultatDevisDepuisDictee> {
   const { contenu, prestations, materiel } = vues;
@@ -275,7 +289,11 @@ async function chiffrerEtPreparer(
   }
   const devis = await getOuCreerDevisBrouillon(ctx, chantierId);
 
-  const aVerifier = [...(contenu?.ambiguites ?? []), ...(contenu?.informationsManquantes ?? [])];
+  const aVerifier = [
+    ...(vues.aSignaler ?? []),
+    ...(contenu?.ambiguites ?? []),
+    ...(contenu?.informationsManquantes ?? []),
+  ];
 
   return {
     statut: "prepare",

@@ -204,13 +204,10 @@ function QuestionsChiffrage({
             lisible: precisionLisible(q, reponses[q.id]!.trim()),
           }))
       );
+      // Répondu ou non, la chaîne va jusqu'au devis : appuyer sur ce bouton
+      // EST sa décision. Ce qu'il a laissé de côté ressort signalé sur le
+      // devis, jamais oublié en silence.
       if (r.statut === "prepare") return onPrepare();
-      if (r.statut === "questions") {
-        // Il reste des questions : il en a passé une. On ne le bloque pas —
-        // il décide, et le devis se fera sans la précision manquante.
-        setEnvoi(false);
-        return onPrepare();
-      }
       onEchec("statut" in r && r.statut === "echec" ? r.erreur : "La préparation n'a pas abouti. Réessayez.");
     } catch {
       onEchec("Vos réponses n'ont pas pu être enregistrées. Réessayez.");

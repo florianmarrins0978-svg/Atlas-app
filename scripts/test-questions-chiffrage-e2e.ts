@@ -16,33 +16,42 @@ import { lancerNavigateur } from "./e2e-browser";
 const DICTEE = `Alors il y a une taille de haie de laurier, vingt mètres de long, un chêne mort à abattre, de vingt mètres de haut. On coupe le bois en cinquante centimètres, on le laisse sur place, on le fend. Pour ce faire, on aura besoin d'un camion, un broyeur et une fendeuse. J'estime le temps de travail à deux jours deux hommes.`;
 
 /**
- * Pose la dictée de référence sur un chantier de démonstration.
+ * Crée un chantier **à elle** et y pose la dictée de référence.
  *
- * Passe par la base plutôt que par l'écran : enregistrer une vraie note vocale
- * demanderait un micro, et ce n'est pas ce que cette suite éprouve.
+ * **Pourquoi pas le chantier de démonstration** — la première version le
+ * reprenait, et elle a rougi deux suites qui n'avaient rien demandé : le
+ * lanceur sème la base UNE fois pour les trente suites, et récrire la dictée du
+ * seed retirait à `test-transcription-e2e` le texte qu'elle vérifie. Le défaut
+ * ne se voyait pas ici, où chaque suite est jouée seule ; il se voyait en CI,
+ * sur une suite qui n'était pas la mienne.
+ *
+ * Une suite qui abîme les données d'une autre est pire qu'une suite absente :
+ * elle accuse un code innocent.
  */
 async function preparerChantier(): Promise<string> {
   const client = new Client({ connectionString: process.env.DATABASE_URL });
   await client.connect();
   try {
-    const { rows } = await client.query(
-      `SELECT n.id AS note, n.chantier_id AS chantier
-         FROM notes_vocales n
-     ORDER BY n.created_at, n.id
-        LIMIT 1`
+    const { rows: e } = await client.query(
+      `SELECT id FROM entreprises ORDER BY created_at LIMIT 1`
     );
-    assert.ok(rows[0], "Le jeu de démonstration ne porte aucune note vocale : rien à enchaîner.");
+    assert.ok(e[0], "Aucune entreprise en base : le jeu de démonstration n'a pas été semé.");
+    const entrepriseId = e[0].id as string;
+
+    await client.query(`SELECT set_config('app.entreprise_id', $1, false)`, [entrepriseId]);
+    const { rows: ch } = await client.query(
+      `INSERT INTO chantiers (entreprise_id, nom) VALUES ($1, $2) RETURNING id`,
+      [entrepriseId, `Essai questions ${process.pid}`]
+    );
+    const chantierId = ch[0].id as string;
+
     await client.query(
-      `UPDATE notes_vocales SET transcription = $1, transcription_statut = 'reussie' WHERE id = $2`,
-      [DICTEE, rows[0].note]
+      `INSERT INTO notes_vocales (entreprise_id, chantier_id, storage_key, mime_type, taille_octets, checksum, transcription, transcription_statut)
+       VALUES ($1, $2, NULL, 'audio/webm', 0, 'essai', $3, 'reussie')`,
+      [entrepriseId, chantierId, DICTEE]
     );
-    // Table rase : un brouillon ou des réponses d'un essai précédent feraient
-    // passer l'arrêt sans qu'on le voie, et la suite serait verte pour rien.
-    await client.query(`DELETE FROM brouillons_informations WHERE chantier_id = $1`, [rows[0].chantier]);
-    await client.query(`DELETE FROM precisions_chantier WHERE chantier_id = $1`, [rows[0].chantier]);
-    await client.query(`DELETE FROM prestations WHERE chantier_id = $1`, [rows[0].chantier]);
-    console.log(`   chantier d'essai : ${rows[0].chantier}`);
-    return rows[0].chantier as string;
+    console.log(`   chantier d'essai : ${chantierId}`);
+    return chantierId;
   } finally {
     await client.end();
   }

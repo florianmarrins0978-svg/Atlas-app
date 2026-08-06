@@ -83,8 +83,19 @@ function construireEnv(): Env {
     google: "GOOGLE_API_KEY",
   };
 
-  const llmProvider = process.env.LLM_PROVIDER ?? "dev";
-  const transcriptionProvider = process.env.TRANSCRIPTION_PROVIDER ?? "dev";
+  // `?.trim() ||` et non `??` : une variable **vide** doit valoir « absente ».
+  //
+  // Ce n'est pas de la coquetterie défensive. Un passage de variable qui vaut
+  // la chaîne vide est le cas ORDINAIRE quand une valeur ne traverse pas :
+  // `${LLM_PROVIDER:-dev}` dans docker-compose, `${localEnv:LLM_PROVIDER}` dans
+  // devcontainer.json, un secret non défini — tous produisent `""`, jamais
+  // `undefined`. Avec `??`, cette chaîne vide passait pour un nom de
+  // fournisseur : l'écran Réglages annonçait « le nom "" n'est pas reconnu »
+  // et la production refusait de démarrer sur « n'est pas un fournisseur
+  // reconnu » — deux messages qui envoient chercher une faute de frappe là où
+  // il n'y a qu'une variable non transmise.
+  const llmProvider = process.env.LLM_PROVIDER?.trim() || "dev";
+  const transcriptionProvider = process.env.TRANSCRIPTION_PROVIDER?.trim() || "dev";
 
   // Trois façons de se retrouver en production avec l'IA simulée, et les trois
   // passaient sans un mot : laisser la valeur par défaut, écrire « dev »

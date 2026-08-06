@@ -9,6 +9,62 @@ Format : le plus récent en tête.
 
 ## 2026-08-06
 
+### Trouvé en vérifiant : les clés du patron n'entraient jamais dans son espace d'essai
+
+Le patron a demandé de vérifier moi-même si Atlas était branché à un fournisseur.
+La réponse est **non**, et la cause n'était pas chez lui.
+
+Sur `main`, `.devcontainer/docker-compose.yml` **fige** `LLM_PROVIDER: dev` et
+`TRANSCRIPTION_PROVIDER: dev`, et ne transmet **aucune clé d'API**. Un espace de
+travail créé depuis la branche par défaut écrase donc tout ce que les secrets de
+Codespaces peuvent contenir : il a ouvert deux comptes, payé, posé quatre
+secrets — et le conteneur les ignorait par construction.
+
+Le correctif (`${VAR:-dev}` et les cinq clés) existe depuis le 5 août sur la
+branche de travail. Il n'a simplement **jamais atteint `main`** : tant que la PR
+n'est pas fusionnée, son espace reste en mode déterministe quoi qu'il fasse.
+
+**Deux corrections apportées au passage, sur des défauts réels du correctif
+lui-même :**
+
+1. **Un second chemin pour les secrets** (`remoteEnv` dans `devcontainer.json`).
+   L'interpolation `${VAR:-dev}` est faite par docker-compose au moment de bâtir
+   le conteneur, et ne lit que ce que l'hôte lui présente alors — rien ne
+   garantit qu'un secret de Codespaces y soit déjà. `remoteEnv` est appliqué à
+   l'intérieur, là où les secrets sont posés. Deux chemins pour la même valeur,
+   parce que le coût de l'échec est asymétrique : s'ils échouent tous les deux,
+   il dicte et reçoit un texte fabriqué sans que rien ne le lui dise.
+2. **Une variable vide vaut « absente »** (`src/server/env.ts`). C'est le cas
+   ORDINAIRE quand une valeur ne traverse pas : `${VAR:-dev}` comme
+   `${localEnv:VAR}` produisent la chaîne vide, jamais `undefined`. Avec `??`,
+   cette chaîne passait pour un nom de fournisseur, et le message annonçait « le
+   nom "" n'est pas reconnu » — il aurait cherché une faute de frappe là où il
+   n'y avait qu'une variable non transmise. Une erreur qui accuse à tort coûte
+   plus cher que pas d'erreur du tout.
+
+Les deux contrôles ont été **confrontés à l'état dégradé** : en annulant le
+correctif, ils rougissent tous les deux.
+
+### Passer outre l'arrêt donnait un devis vide — réparé
+
+Trouvé par la CI, sur une suite qui n'était pas la mienne. L'arrêt d'ajout de la
+veille avait un défaut que le code seul ne montrait pas : **quand le patron
+passait outre sans répondre, le chiffrage ne tournait jamais.** L'écran
+l'emmenait bien au devis — un devis sans la moindre ligne.
+
+Le pire des deux mondes : il choisissait de ne pas répondre, et cela lui coûtait
+son devis.
+
+**L'arrêt est une offre, jamais une barrière.** Appuyer sur « Continuer » EST sa
+décision : la chaîne va désormais jusqu'au bout, répondu ou non. Et ce qu'il
+laisse de côté **ressort signalé sur le devis** plutôt que de disparaître — la
+seconde moitié de sa propre règle du 6 août.
+
+**Et une suite qui abîmait les données d'une autre.** `test-questions-chiffrage-e2e`
+récrivait la dictée du jeu de démonstration, dont `test-transcription-e2e`
+vérifie le texte. Invisible ici, où chaque suite est jouée seule ; visible en CI,
+sur une suite innocente. Elle crée maintenant son propre chantier.
+
 ### L'agent s'arrête et demande ce qui coûte de l'argent
 
 **Choisi par le patron en QCM**, devant la mémoire des corrections et

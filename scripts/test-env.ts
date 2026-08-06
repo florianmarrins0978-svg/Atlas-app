@@ -121,6 +121,33 @@ function main() {
     });
   });
 
+  // Le cas ordinaire d'une valeur qui ne traverse pas : `${VAR:-dev}` dans
+  // docker-compose et `${localEnv:VAR}` dans devcontainer.json produisent la
+  // chaîne VIDE, jamais `undefined`. Elle doit valoir « absente », faute de quoi
+  // le message accuse une faute de frappe là où il n'y a qu'une variable non
+  // transmise — et envoie chercher au mauvais endroit.
+  test("Production avec LLM_PROVIDER vide : rejeté comme 'dev', pas comme un nom inconnu", () => {
+    avecEnv({ ...PRODUCTION_VALIDE, LLM_PROVIDER: "" }, () => {
+      assert.throws(
+        () => getEnv(),
+        (e: Error) => {
+          assert.ok(e instanceof ErreurConfiguration, `type inattendu : ${e.name}`);
+          assert.match(e.message, /vaut « dev »/, `message trompeur : ${e.message}`);
+          assert.doesNotMatch(e.message, /n'est pas un fournisseur reconnu/);
+          return true;
+        }
+      );
+    });
+  });
+
+  test("Développement avec TRANSCRIPTION_PROVIDER vide : retombe sur 'dev', sans bruit", () => {
+    avecEnv({ NODE_ENV: "development", DATABASE_URL: "postgresql://x", TRANSCRIPTION_PROVIDER: "  ", LLM_PROVIDER: "" }, () => {
+      const env = getEnv();
+      assert.equal(env.transcriptionProvider, "dev");
+      assert.equal(env.llmProvider, "dev");
+    });
+  });
+
   test("Production avec TRANSCRIPTION_PROVIDER='dev' explicite : rejet explicite", () => {
     avecEnv({ ...PRODUCTION_VALIDE, TRANSCRIPTION_PROVIDER: "dev" }, () => {
       assert.throws(() => getEnv(), ErreurConfiguration);
