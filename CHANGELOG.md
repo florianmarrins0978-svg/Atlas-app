@@ -9,6 +9,39 @@ Format : le plus récent en tête.
 
 ## 2026-08-06
 
+### Quatre points relevés en se servant vraiment de l'application
+
+**Le PDF disait « Chantier : » là où on attend une adresse.** Le client
+apparaissait sans adresse, et la rue des travaux figurait en dessous sous une
+étiquette technique. Désormais : l'adresse du client — ou, à défaut, celle du
+chantier — s'imprime nue, à sa place ; la ligne « Chantier : … » ne subsiste que
+si les travaux ont lieu ailleurs, cas où l'étiquette est indispensable. Écran et
+papier partagent la même fonction (`src/lib/adresses.ts`).
+
+**Les photos : l'appareil photo, et rien d'autre.** « J'ai besoin de pouvoir
+accéder aux photos que j'ai déjà prises. Il faut bien évidemment pouvoir faire
+les deux. » L'attribut `capture` d'un champ de fichier n'est pas une
+préférence : sur un iPhone, il **impose** l'appareil et retire l'accès à la
+pellicule. Un artisan qui a photographié le chantier le matin ne pouvait rien
+joindre l'après-midi. Deux champs, deux boutons : « Prendre une photo » et
+« Choisir dans mes photos ».
+
+**Le client recevait du JSON.** En touchant « voir le devis en PDF » depuis son
+lien, il tombait sur `{"error":"Ce lien n'est plus valable"}` en pleine page.
+Un client qui lit cela n'y comprend rien et appelle son artisan — quand il n'en
+conclut pas que le devis est un piège. Il est renvoyé vers la page du devis, qui
+sait s'expliquer en français.
+
+**« La facture s'affiche partie, mais le client ne la reçoit pas. »** Exact au
+mot près : l'écran annonçait « facture arrêtée » — vrai comptablement — et
+**rien** ne portait la facture jusqu'au client. Le devis avait tout cela depuis
+des semaines ; la facture, rien. Elle a désormais son lien public à jeton
+(migration `0024_envois_factures.sql`), sa page client, son PDF archivé servi
+tel quel, et le message tout prêt qui s'ouvre dans la messagerie du patron —
+puisque aucun prestataire n'envoie à sa place (`docs/A-FAIRE.md` §5). L'écran ne
+dit plus « arrêtée » sans ajouter « votre client ne l'a pas encore reçue », et
+c'est l'envoi, non l'arrêt comptable, qui pose le jalon `facture_envoyee_at`.
+
 ### Le premier devis écrit à la main : trois défauts, trouvés par le patron
 
 Il crée un chantier, saisit son client, ouvre « rédiger le devis à la main », et

@@ -944,3 +944,46 @@ qu'avec une clé : `npm run verifier:ia -- --reseau`. Ce qui a été vérifié i
 sans clé, c'est que l'appel part réellement chez Anthropic et que son refus est
 correctement interprété — `api.openai.com` est, lui, injoignable depuis cet
 environnement, et cette moitié-là n'a été éprouvée que contre un serveur local.
+
+---
+
+## 27. La facture parvient au client, par le même chemin que le devis
+
+**Décidé le 2026-08-06**, sur un constat du patron : « la facture s'affiche
+partie, mais le client ne la reçoit pas ».
+
+### Ce qui s'est passé
+
+Il arrête sa facture. L'écran répond « Facture F2026-0001 arrêtée » — exact
+comptablement — puis ne dit plus rien. **Rien ne portait la facture jusqu'au
+client** : ni lien, ni message, ni moyen. Le devis avait ce chemin depuis des
+semaines ; la facture n'en avait aucun, et l'écran laissait croire le contraire.
+
+### Ce qui est décidé
+
+**1. Le même mécanisme que le devis, en plus simple.** Une table
+`envois_factures` (migration `0024`), un jeton de 256 bits, une lecture RLS
+limitée à ce jeton exact, une page publique `/factures/[jeton]` et le PDF
+**archivé** servi tel quel. Pas de dates proposées, pas de réponse, pas
+d'acceptation à tracer : une facture ne se négocie pas.
+
+**2. Une page, pas un PDF nu.** Un lien qui ouvre directement un PDF sur un
+téléphone ne dit ni de qui il vient, ni ce qu'il faut en faire — et un lien
+périmé y répond par une erreur brute. Le client reconnaît d'abord sa facture,
+puis la télécharge.
+
+**3. « Arrêtée » n'est pas « partie », et l'écran le dit.** Tant que rien n'a été
+transmis, la facture annonce « votre client ne l'a pas encore reçue ». Le jalon
+`facture_envoyee_at` suit l'ENVOI, jamais l'arrêt comptable — c'est la
+distinction que le patron avait relevée.
+
+**4. Atlas prépare, le patron expédie.** Aucun prestataire de SMS ni d'e-mail
+n'est raccordé, et il a été tranché qu'il n'y en aurait pas (`docs/A-FAIRE.md`
+§5). Le message part de sa messagerie, comme pour le devis, et rien ne quitte
+l'application sans son geste.
+
+### Ce que ça ne résout pas
+
+Atlas ne sait pas que le message est parti, ni quand : il sait seulement qu'un
+lien a été préparé. Pas de relance automatique à échéance, donc — la même limite
+que pour le devis, et pour la même raison.

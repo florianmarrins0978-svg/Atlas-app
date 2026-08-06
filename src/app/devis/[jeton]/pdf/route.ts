@@ -16,7 +16,18 @@ export async function GET(_req: Request, { params }: { params: Promise<{ jeton: 
   const fichier = await pdfDevisParJeton(jeton);
 
   if (!fichier) {
-    return NextResponse.json({ error: "Ce lien n'est plus valable" }, { status: 404 });
+    // **Jamais de JSON brut à un client.**
+    //
+    // Le 6 août 2026, le client du patron a touché « voir le devis en PDF » et
+    // reçu, en pleine page : {"error":"Ce lien n'est plus valable"}. Un client
+    // qui lit cela ne comprend rien, ne sait pas quoi faire, et appelle
+    // l'artisan — quand il n'en conclut pas que le devis est un piège.
+    //
+    // La page du devis, elle, sait déjà expliquer un lien mort en français et
+    // dire quoi faire. On l'y renvoie. Un lien inconnu et un lien expiré y
+    // rendent le même message : distinguer les deux apprendrait à un visiteur
+    // au hasard qu'un jeton a existé.
+    return NextResponse.redirect(new URL(`/devis/${encodeURIComponent(jeton)}`, _req.url), 303);
   }
 
   return new NextResponse(new Uint8Array(fichier.octets), {

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { colors, font, smallCaps, couleursDocument } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { jourLisible } from "@/lib/jour";
-import { terminerChantierAction, emettreFactureAction } from "./actions";
+import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
+import { terminerChantierAction, emettreFactureAction, preparerLienFactureAction } from "./actions";
 
 // Arrêt 3 (docs/AGENT.md §2.3). Cet écran EST le contrôle : les montants du
 // devis sont déjà là, il n'y a rien à saisir. Franchissable en un geste quand
@@ -34,14 +35,65 @@ export type FacturePourEcran = {
 export default function FactureClient({
   chantierId,
   initialFacture,
+  origine,
+  entrepriseNom,
+  clientTelephone,
+  clientEmail,
+  canalClient,
 }: {
   chantierId: string;
   initialFacture: FacturePourEcran | null;
+  /** Adresse complète du site, bâtie côté serveur : un chemin seul ne s'ouvre nulle part. */
+  origine: string;
+  entrepriseNom: string;
+  clientTelephone: string | null;
+  clientEmail: string | null;
+  canalClient: CanalClient | null;
 }) {
   const router = useRouter();
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [emise, setEmise] = useState(initialFacture?.statut === "emise");
+  const [jetonFacture, setJetonFacture] = useState<string | null>(null);
+
+  // Le canal convenu avec le client ; à défaut, celui dont on a la coordonnée.
+  // Jamais deviné au hasard : sans coordonnée, le bouton s'ouvrirait sur un
+  // destinataire vide et le patron enverrait dans le vide sans le voir.
+  const canal: CanalClient = canalClient ?? (clientTelephone ? "sms" : "email");
+  const destinataire = canal === "sms" ? clientTelephone : clientEmail;
+
+  const lienFacture = jetonFacture ? `${origine}/factures/${jetonFacture}` : null;
+  const adresseMessagerie = lienFacture
+    ? lienTransmission({
+        canal,
+        destinataire,
+        message: composerMessageFacture({
+          clientNom: initialFacture?.clientNom ?? "",
+          entrepriseNom,
+          numeroFacture: initialFacture?.numeroCommercial ?? "",
+          echeanceLisible: initialFacture?.dateEcheance ? jourLisible(initialFacture.dateEcheance) : null,
+          lien: lienFacture,
+        }),
+      })
+    : "";
+
+  async function preparerLien() {
+    if (!initialFacture) return;
+    setEnCours(true);
+    setErreur(null);
+    try {
+      const r = await preparerLienFactureAction(initialFacture.id, canal);
+      if (!r.succes) {
+        setErreur(r.erreur);
+        return;
+      }
+      setJetonFacture(r.jeton);
+    } catch {
+      setErreur("Le lien de la facture n'a pas pu être préparé.");
+    } finally {
+      setEnCours(false);
+    }
+  }
 
   async function terminer() {
     setEnCours(true);
@@ -188,6 +240,40 @@ export default function FactureClient({
             Elle figure au relevé de TVA collectée et ne peut plus être modifiée
             — une correction passerait par un avoir.
           </p>
+
+          {/* **« Arrêtée » n'est pas « partie ».**
+              Le patron a lu « facture arrêtée » et compris que son client
+              l'avait reçue. Rien ne la portait jusqu'à lui. Ce qui suit est le
+              seul départ réel : Atlas prépare le message, le patron l'expédie
+              depuis sa propre messagerie (`docs/A-FAIRE.md` §5). */}
+          <div className="mt-5" style={{ borderTop: `1px solid ${colors.lineSoft}`, paddingTop: 16 }}>
+            {lienFacture ? (
+              <>
+                <a
+                  href={adresseMessagerie}
+                  className="block rounded-2xl py-3 text-center text-[15px] font-medium"
+                  style={{ backgroundColor: colors.rust, color: colors.cream }}
+                >
+                  Ouvrir le {canal === "sms" ? "SMS" : "e-mail"} tout prêt →
+                </a>
+                <p className="mt-3 break-all text-center text-[12px]" style={{ color: colors.muted }}>
+                  {lienFacture}
+                </p>
+                <p className="mt-2 text-center text-[12px]" style={{ color: colors.muted }}>
+                  Le message s&apos;ouvre dans votre messagerie. Rien ne part tant que vous ne l&apos;envoyez pas.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="mb-3 text-center text-[13px]" style={{ color: colors.muted }}>
+                  Votre client ne l&apos;a pas encore reçue.
+                </p>
+                <PrimaryButton disabled={enCours} onClick={preparerLien}>
+                  {enCours ? "Préparation…" : "Envoyer la facture au client →"}
+                </PrimaryButton>
+              </>
+            )}
+          </div>
         </div>
       ) : (
         <>

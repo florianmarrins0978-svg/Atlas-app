@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { colors, font } from "@/lib/design-tokens";
-import { memeAdresse } from "@/lib/adresses";
+import { adressesDuDocument } from "@/lib/adresses";
 import { enEuros } from "@/lib/euros";
 import { jourNumerique } from "@/lib/jour";
 import {
@@ -84,7 +84,7 @@ export default function DevisCompletClient(props: Props) {
   // indulgente : ce sont deux champs saisis à la main, à deux moments
   // différents — une majuscule ou un espace de plus ne font pas une seconde
   // adresse.
-  const adressesConfondues = memeAdresse(client.adresse, adresseChantier);
+  const { chantierSepare } = adressesDuDocument({ clientAdresse: client.adresse, adresseChantier });
 
   // Les totaux se recalculent sous ses yeux, à chaque frappe : un devis dont le
   // total n'apparaît qu'après enregistrement se relit deux fois.
@@ -227,7 +227,7 @@ export default function DevisCompletClient(props: Props) {
               vu : « l'adresse n'est pas au bon endroit ». Quand elle diffère,
               elle porte son titre, parce qu'une adresse nue sur un devis ne
               dit pas de quoi elle est l'adresse. */}
-          {(!adressesConfondues || !props.clientId) && (
+          {(chantierSepare !== null || !props.clientId) && (
             <div style={{ marginTop: props.clientId ? 14 : 0 }}>
               <Intertitre>Chantier</Intertitre>
               <ChampNu long valeur={adresseChantier} fige={fige} placeholder="Adresse des travaux" aria="Adresse du chantier"

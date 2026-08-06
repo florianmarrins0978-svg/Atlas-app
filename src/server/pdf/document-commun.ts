@@ -1,4 +1,4 @@
-import { memeAdresse } from "../../lib/adresses";
+import { adressesDuDocument } from "../../lib/adresses";
 import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb, RGB } from "pdf-lib";
 import Decimal from "decimal.js";
 import { couleursDocument } from "@/lib/design-tokens";
@@ -395,13 +395,14 @@ export async function composerDocument(
 
   const client = [
     data.clientNom,
-    data.clientAdresse,
+    // L'adresse du client — ou, à défaut, celle du chantier, sans étiquette.
+    // La ligne « Chantier : … » ne subsiste que si les travaux ont lieu
+    // ailleurs. Même fonction qu'à l'écran (`src/lib/adresses.ts`) : deux
+    // règles recopiées auraient fini par diverger, et c'est le papier — ce que
+    // le client garde — qui serait resté faux.
+    adressesDuDocument(data).adresseClient,
     data.clientTelephone,
-    // Même règle qu'à l'écran, et même fonction : une adresse de chantier
-    // identique à celle du client ne s'imprime pas une seconde fois.
-    data.adresseChantier && !memeAdresse(data.adresseChantier, data.clientAdresse)
-      ? `Chantier : ${data.adresseChantier}`
-      : null,
+    adressesDuDocument(data).chantierSepare ? `Chantier : ${adressesDuDocument(data).chantierSepare}` : null,
   ]
     .filter((l): l is string => !!l)
     .flatMap((l) => enLignes(l, ctx.sans, 9, largeurColonne));

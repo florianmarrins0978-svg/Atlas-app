@@ -57,6 +57,39 @@ export function composerMessageClient(params: {
 }
 
 /**
+ * Compose le message remettant la FACTURE au client.
+ *
+ * Même sobriété que pour le devis, et pour la même raison : ce texte part au
+ * nom du patron. Le montant n'y est pas répété — il est sur la facture, et deux
+ * endroits finiraient par se contredire. L'échéance, si — c'est la seule chose
+ * que le client doit savoir sans ouvrir la pièce jointe.
+ */
+export function composerMessageFacture(params: {
+  clientNom: string;
+  entrepriseNom: string;
+  numeroFacture: string;
+  echeanceLisible?: string | null;
+  lien: string;
+}): MessageClient {
+  const { clientNom, entrepriseNom, numeroFacture, echeanceLisible, lien } = params;
+  const bonjour = clientNom.trim() ? `Bonjour ${clientNom.trim()},` : "Bonjour,";
+
+  return {
+    objet: `Votre facture ${numeroFacture} — ${entrepriseNom}`,
+    corps: [
+      bonjour,
+      "",
+      `Voici votre facture ${numeroFacture}. Vous pouvez la consulter et la télécharger ici :`,
+      lien,
+      ...(echeanceLisible ? ["", `Elle est à régler avant le ${echeanceLisible}.`] : []),
+      "",
+      "Bien à vous,",
+      entrepriseNom,
+    ].join("\n"),
+  };
+}
+
+/**
  * Adresse `mailto:` ou `sms:` ouvrant l'application du patron, message prêt.
  *
  * Le destinataire peut manquer : le message s'ouvre alors sans lui plutôt que

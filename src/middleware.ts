@@ -10,7 +10,12 @@ const { auth } = NextAuth(authConfig);
 // lien reçu par SMS ou e-mail. Elle n'est pas « ouverte » pour autant — son
 // seul accès est un jeton imprévisible, contrôlé en base par une politique
 // dédiée (migration 0015). Sans jeton exact, aucune ligne n'est lisible.
-const CHEMINS_PUBLICS = ["/login", "/api/auth", "/api/cron", "/devis"];
+//
+// `/factures` suit exactement la même logique depuis le 6 août 2026 : le
+// patron a constaté que sa facture arrêtée ne parvenait jamais à son client,
+// faute de tout chemin vers lui. Même garde-fou, migration 0024 — le jeton est
+// la seule clé, et il est imprévisible.
+const CHEMINS_PUBLICS = ["/login", "/api/auth", "/api/cron", "/devis", "/factures"];
 
 // Le chemin courant n'est pas accessible depuis un layout ou une page (seuls
 // les paramètres de route le sont). Le middleware le transmet donc en en-tête,

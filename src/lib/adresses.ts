@@ -34,3 +34,34 @@ function normaliser(a?: string | null): string {
     .replace(/[.,;]/g, " ")
     .replace(/\s+/g, " ");
 }
+
+/**
+ * Les deux lignes d'adresse d'un devis ou d'une facture.
+ *
+ * Le patron, le 6 août 2026, devant son PDF : « il y a écrit chantier deux
+ * points. Retire-moi le "Chantier :" et fais en sorte que l'adresse s'affiche
+ * correctement. » Ce qu'il voyait : son client sans adresse, et en dessous
+ * « Chantier : 10 rue Denfert… » — une étiquette technique là où on attend
+ * simplement l'adresse de la personne à qui l'on écrit.
+ *
+ * La règle, la même pour l'écran et pour le papier :
+ *
+ * - **l'adresse du client, ou à défaut celle du chantier**, sans étiquette. Un
+ *   client dont on connaît l'adresse des travaux n'est pas un client sans
+ *   adresse : c'est la même, tant qu'il n'a pas dit le contraire (le formulaire
+ *   de création annonce « si différente de l'adresse du chantier ») ;
+ * - **une ligne « Chantier » séparée uniquement si les travaux ont lieu
+ *   ailleurs** — là, l'étiquette est indispensable, sans quoi le document
+ *   porterait deux adresses sans dire laquelle est laquelle.
+ */
+export function adressesDuDocument(a: {
+  clientAdresse?: string | null;
+  adresseChantier?: string | null;
+}): { adresseClient: string | null; chantierSepare: string | null } {
+  const client = (a.clientAdresse ?? "").trim();
+  const chantier = (a.adresseChantier ?? "").trim();
+
+  if (!client) return { adresseClient: chantier || null, chantierSepare: null };
+  if (!chantier || memeAdresse(client, chantier)) return { adresseClient: client, chantierSepare: null };
+  return { adresseClient: client, chantierSepare: chantier };
+}

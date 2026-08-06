@@ -1,8 +1,11 @@
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getFacturePourChantier } from "@/server/repositories/factures";
+import { getClient } from "@/server/repositories/clients";
+import { getEntreprise } from "@/server/repositories/entreprises";
 import FactureClient from "./FactureClient";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +20,20 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
   // La facture n'est PAS bâtie à l'ouverture de l'écran : consulter n'est pas
   // clôturer. Elle naît de l'appui sur « Fin de chantier », jamais d'un regard.
   const existante = await getFacturePourChantier(ctx, id);
+
+  const [entreprise, client] = await Promise.all([
+    getEntreprise(ctx),
+    chantier.clientId ? getClient(ctx, chantier.clientId) : Promise.resolve(null),
+  ]);
+
+  // L'adresse complète est bâtie ICI, côté serveur, et non depuis `window` :
+  // composée dans le navigateur, elle diffère de ce que le serveur a rendu, et
+  // React régénère alors tout l'arbre. Le patron doit pouvoir copier une
+  // adresse entière — un chemin seul ne s'ouvre nulle part.
+  const entetes = await headers();
+  const hote = entetes.get("x-forwarded-host") ?? entetes.get("host") ?? "";
+  const protocole = entetes.get("x-forwarded-proto") ?? (hote.startsWith("localhost") ? "http" : "https");
+  const origine = hote ? `${protocole}://${hote}` : "";
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -45,6 +62,11 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
 
         <FactureClient
           chantierId={id}
+          origine={origine}
+          entrepriseNom={entreprise?.nom ?? ""}
+          clientTelephone={client?.telephone ?? null}
+          clientEmail={client?.email ?? null}
+          canalClient={(client?.canalCommunication as "sms" | "email" | null) ?? null}
           initialFacture={
             existante
               ? {

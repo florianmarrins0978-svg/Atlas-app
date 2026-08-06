@@ -920,3 +920,38 @@ export const lignesFacture = pgTable(
     }).onDelete("cascade"),
   ]
 );
+
+/**
+ * Transmission de la facture au client — le pendant d'`envoisDevis`, en plus
+ * simple : une facture ne se négocie pas.
+ *
+ * Elle existe parce que le patron a vu « facture arrêtée » et compris « facture
+ * partie », alors que rien ne la portait jusqu'à son client (6 août 2026).
+ * Aucun prestataire n'envoie à sa place (`docs/A-FAIRE.md` §5) : la facture
+ * part de sa messagerie, et le lien qu'il transmet est celui-ci.
+ */
+export const envoisFactures = pgTable(
+  "envois_factures",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    factureId: uuid("facture_id").notNull(),
+
+    // Seule clé d'accès au document : imprévisible, jamais dérivée d'un
+    // identifiant existant.
+    jeton: text("jeton").notNull(),
+    expireAt: timestamp("expire_at", { withTimezone: true }).notNull(),
+    canal: text("canal", { enum: ["sms", "email"] }).notNull(),
+    envoyeAt: timestamp("envoye_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("envois_factures_jeton_uk").on(t.jeton),
+    foreignKey({
+      columns: [t.factureId, t.entrepriseId],
+      foreignColumns: [factures.id, factures.entrepriseId],
+      name: "envois_factures_facture_entreprise_fk",
+    }).onDelete("cascade"),
+  ]
+);
