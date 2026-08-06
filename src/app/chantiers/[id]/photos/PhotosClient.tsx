@@ -3,6 +3,7 @@
 import { useRef, useState, type ChangeEvent } from "react";
 import { colors, font } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
+import BottomSheet from "@/components/atlas/BottomSheet";
 import { ajouterPhotoAction, supprimerPhotoAction } from "./actions";
 
 type Photo = { id: string; storageKey: string };
@@ -18,7 +19,17 @@ export default function PhotosClient({
   const [ouverte, setOuverte] = useState<string | null>(null);
   const [confirmationVisible, setConfirmationVisible] = useState(false);
   const [enCours, setEnCours] = useState(false);
-  // **Deux entrées, et c'est délibéré.**
+  const [choixOuvert, setChoixOuvert] = useState(false);
+  // **Un seul bouton, et le choix au moment d'appuyer.**
+  //
+  // Première version : deux boutons côte à côte. Le patron, le 6 août 2026 :
+  // « ça fait trop de boutons. Ou alors tu mets juste une case "ajouter des
+  // photos" et quand on clique dessus, il y a un message qui demande si on veut
+  // prendre une photo ou aller chercher dans la bibliothèque. » Un écran de
+  // chantier doit se lire d'un coup d'œil : deux boutons pour une seule
+  // intention, c'est une décision qu'on impose avant même qu'elle se pose.
+  //
+  // **Deux entrées restent nécessaires en dessous, et c'est délibéré.**
   //
   // Le patron, le 6 août 2026 : « lorsque je clique sur ajouter des photos, je
   // peux simplement prendre une photo. J'ai besoin de pouvoir accéder aux
@@ -69,6 +80,14 @@ export default function PhotosClient({
     }
   }
 
+  function choisir(champ: React.RefObject<HTMLInputElement | null>) {
+    // La feuille se referme AVANT d'ouvrir le sélecteur : sur iPhone, elle
+    // resterait sinon affichée derrière l'appareil photo, et se retrouverait au
+    // premier plan au retour, par-dessus la photo qu'on vient de prendre.
+    setChoixOuvert(false);
+    champ.current?.click();
+  }
+
   return (
     <>
       <p className="px-6 text-[14px]" style={{ marginTop: "6px", color: colors.muted }}>
@@ -97,18 +116,9 @@ export default function PhotosClient({
           aria-label="Choisir dans mes photos"
           onChange={onFichiersChoisis}
         />
-        <PrimaryButton onClick={() => champAppareilPhoto.current?.click()} disabled={enCours}>
-          <CameraIcon /> {enCours ? "Ajout en cours…" : "Prendre une photo"}
+        <PrimaryButton onClick={() => setChoixOuvert(true)} disabled={enCours}>
+          <CameraIcon /> {enCours ? "Ajout en cours…" : "Ajouter une photo"}
         </PrimaryButton>
-        <button
-          type="button"
-          onClick={() => champPellicule.current?.click()}
-          disabled={enCours}
-          className="mt-3 w-full rounded-2xl py-3 text-[15px] font-medium"
-          style={{ backgroundColor: colors.card, color: colors.ink }}
-        >
-          Choisir dans mes photos
-        </button>
       </div>
 
       {photos.length > 0 ? (
@@ -206,6 +216,42 @@ export default function PhotosClient({
           )}
         </div>
       )}
+
+      {/* Le choix, au moment où il se pose — et pas avant. */}
+      <BottomSheet open={choixOuvert} onBackdropClick={() => setChoixOuvert(false)}>
+        <p className="mb-1 text-center text-[16px]" style={{ color: colors.ink, fontFamily: font.display }}>
+          Ajouter une photo
+        </p>
+        <p className="mb-5 text-center text-[13px]" style={{ color: colors.muted }}>
+          Prise maintenant, ou déjà dans votre téléphone.
+        </p>
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => choisir(champAppareilPhoto)}
+            className="rounded-2xl py-3.5 text-[15px] font-medium"
+            style={{ backgroundColor: colors.rust, color: colors.cream }}
+          >
+            Prendre une photo
+          </button>
+          <button
+            type="button"
+            onClick={() => choisir(champPellicule)}
+            className="rounded-2xl py-3.5 text-[15px] font-medium"
+            style={{ backgroundColor: colors.card, color: colors.ink }}
+          >
+            Choisir dans ma bibliothèque
+          </button>
+          <button
+            type="button"
+            onClick={() => setChoixOuvert(false)}
+            className="rounded-2xl py-3.5 text-[15px]"
+            style={{ color: colors.muted }}
+          >
+            Annuler
+          </button>
+        </div>
+      </BottomSheet>
     </>
   );
 }
