@@ -9,6 +9,43 @@ Format : le plus récent en tête.
 
 ## 2026-08-06
 
+### Le premier devis écrit à la main : trois défauts, trouvés par le patron
+
+Il crée un chantier, saisit son client, ouvre « rédiger le devis à la main », et
+rapporte trois choses. Toutes vraies, toutes reproduites avant correction.
+
+**1. L'adresse au mauvais endroit, le téléphone au mauvais rang.** Il avait
+rempli « adresse du chantier » et laissé vide « adresse du client — *si
+différente de l'adresse du chantier* ». Le devis affichait donc un client sans
+adresse, et la rue resurgissait tout en bas, nue, sans étiquette. Laissée vide,
+l'adresse du client **est** celle du chantier : c'est ce que l'écran promet, ce
+n'est donc pas une donnée inventée. Le bloc se lit désormais comme une lettre —
+nom, adresse, e-mail, **puis** téléphone —, la même rue ne s'imprime pas deux
+fois, et l'adresse des travaux ne réapparaît que si elle diffère, sous son
+titre. Écran et PDF appliquent la **même** fonction (`src/lib/adresses.ts`).
+
+**2. « Quand j'essaye de cliquer pour mettre un prix, ce n'est pas
+cliquable. »** Il l'était. Mais vide, sans exemple, sans repère, et haut de
+**24 pixels** — mesuré. Apple recommande 44. Un contrôle automatique répondait
+« éditable : oui » et n'y voyait rien : c'est l'œil qui l'a vu, pas le test.
+Le champ a maintenant la hauteur d'un doigt, un trait tant qu'il est vide, et
+un exemple en gris.
+
+**3. « Quand je fais aperçu en PDF, rien n'a été enregistré. »** Le plus grave,
+et le mieux caché : ses lignes étaient bien en base — dans `lignes_prix`, celles
+qu'il modifie — pendant que le PDF imprimait `lignes_devis`, l'instantané du
+document, rafraîchi seulement au **chargement de la page**, donc avant qu'il
+n'écrive quoi que ce soit. Deux lectures d'une même chose qui divergent, ce que
+`CLAUDE.md` §3 interdit. L'instantané est désormais rafraîchi à l'instant de
+l'impression. Un aperçu qui montre autre chose que l'écran fait douter de tout
+ce qu'on vient de saisir.
+
+`scripts/test-devis-papier-e2e.ts` parcourt son chemin exact sur un écran de six
+pouces. Éprouvé en remettant chacun des trois défauts : chacun rougit le sien.
+Piège rencontré en l'écrivant : `innerText` **ignore le contenu des champs de
+saisie** — un contrôle qui l'interroge ne voit ni le nom, ni l'adresse, ni le
+téléphone, et conclut à tort.
+
 ### Poser une clé suffit à brancher l'IA — elle ne l'était pas
 
 Le patron : « J'ai déjà mis Anthropic et OpenAI. Les clés sont mises, je ne

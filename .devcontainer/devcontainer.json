@@ -50,6 +50,16 @@
   // suppose de trouver un panneau minuscule sur un écran de six pouces — c'est
   // exactement ce qui s'est produit.
   //
+  // **Réessayé par le patron le 6 août 2026, et ça ne marche toujours pas.**
+  // Il a basculé le port en privé depuis l'onglet Ports, puis rouvert l'adresse
+  // sur son téléphone : rien. Ne pas retenter au nom de la sécurité — le gain
+  // serait nul et la perte totale, puisque le banc d'essai n'existe que pour
+  // être ouvert depuis un téléphone.
+  //
+  // La bonne parade au mot de passe public n'est donc PAS le port privé : ce
+  // serait de faire venir `demo1234` d'un secret du compte plutôt que du dépôt.
+  // Proposé au patron le 6 août 2026 ; il n'a pas tranché, donc rien n'est fait.
+  //
   // Ce que cela expose, et ce que cela n'expose pas : l'application garde son
   // écran de connexion, et la page du client reste protégée par un jeton
   // imprévisible. Ce qui devient joignable, c'est la porte, pas le contenu.

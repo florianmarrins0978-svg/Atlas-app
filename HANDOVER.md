@@ -94,7 +94,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les dix-sept pièges de ce dépôt
+### Les dix-huit pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -252,6 +252,23 @@ site publié à son adresse réelle.
     secrets de la plateforme — le correctif recréait le défaut. Une seule règle
     de chargement, dans `.devcontainer/charger-cles.sh` : rien de vide n'est
     exporté, et ce qui existe déjà l'emporte toujours sur le fichier.
+
+18. **Un aperçu qui n'imprime pas ce que montre l'écran.** Le devis à la main
+    modifie `lignes_prix` ; le PDF imprime `lignes_devis`, l'instantané du
+    document. Cet instantané n'était rafraîchi qu'au **chargement de la page** —
+    le patron écrivait ses lignes, touchait « Aperçu du PDF », et recevait un
+    document vide : « rien n'a été enregistré ». Ses lignes étaient pourtant
+    bien là. Règle qui en sort : **partout où l'on imprime, on rafraîchit
+    d'abord** (`src/app/api/devis/[id]/pdf/route.ts`), et toute règle d'affichage
+    partagée entre l'écran et le papier vit dans une fonction commune —
+    `src/lib/adresses.ts` en est née.
+
+    *Deux corollaires trouvés le même jour, tous deux invisibles aux tests :* un
+    champ de saisie **vide, sans repère et haut de 24 px** se lit comme « pas
+    cliquable » alors qu'un contrôle répond « éditable : oui » — la taille d'une
+    cible tactile se mesure (44 px), elle ne se déduit pas. Et `innerText`
+    **n'inclut pas le contenu des champs** : un contrôle qui l'interroge pour
+    vérifier l'ordre d'un formulaire ne voit rien du tout.
 
 ### Le vocabulaire
 

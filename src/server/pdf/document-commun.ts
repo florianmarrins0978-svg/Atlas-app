@@ -1,3 +1,4 @@
+import { memeAdresse } from "../../lib/adresses";
 import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb, RGB } from "pdf-lib";
 import Decimal from "decimal.js";
 import { couleursDocument } from "@/lib/design-tokens";
@@ -396,7 +397,11 @@ export async function composerDocument(
     data.clientNom,
     data.clientAdresse,
     data.clientTelephone,
-    data.adresseChantier ? `Chantier : ${data.adresseChantier}` : null,
+    // Même règle qu'à l'écran, et même fonction : une adresse de chantier
+    // identique à celle du client ne s'imprime pas une seconde fois.
+    data.adresseChantier && !memeAdresse(data.adresseChantier, data.clientAdresse)
+      ? `Chantier : ${data.adresseChantier}`
+      : null,
   ]
     .filter((l): l is string => !!l)
     .flatMap((l) => enLignes(l, ctx.sans, 9, largeurColonne));
