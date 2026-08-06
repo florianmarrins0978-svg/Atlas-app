@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { decrireEtatIA, aFaireIA } from "@/lib/etat-ia";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { getConfigIA } from "@/server/ai/config";
 import { listerTarifs } from "@/server/repositories/tarifs";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { getEnv } from "@/server/env";
-import { etatIA } from "@/server/ai/diagnostic";
 import ReglagesClient from "./ReglagesClient";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +14,20 @@ export default async function ReglagesPage() {
   const ctx = await getCurrentCtx();
   const [tarifs, entreprise] = await Promise.all([listerTarifs(ctx), getEntreprise(ctx)]);
   const version = getEnv().versionAffichee;
-  const ia = etatIA();
+
+  // Seuls les NOMS des fournisseurs traversent jusqu'à l'écran — jamais les
+  // clés, qui n'ont rien à faire dans du HTML rendu.
+  // Seuls les NOMS des variables renseignées traversent — jamais leurs valeurs.
+  const config = getConfigIA();
+  const clesPresentes = [
+    config.anthropicApiKey ? "ANTHROPIC_API_KEY" : "",
+    config.openaiApiKey ? "OPENAI_API_KEY" : "",
+    config.geminiApiKey ? "GEMINI_API_KEY" : "",
+    config.deepgramApiKey ? "DEEPGRAM_API_KEY" : "",
+    config.googleApiKey ? "GOOGLE_API_KEY" : "",
+  ].filter(Boolean);
+  const etatsIA = decrireEtatIA(config.transcriptionProvider, config.llmProvider, clesPresentes);
+  const aFaire = aFaireIA(etatsIA);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -38,37 +52,98 @@ export default async function ReglagesPage() {
           </Link>
         </div>
 
-        {/* **L'IA est-elle branchée ?** Écrit ici pour la même raison que la
-            version juste en dessous : la question s'est posée, et il a fallu
-            lire quatre fichiers du dépôt pour y répondre. Le patron avait posé
-            ses clés, l'application n'en tenait aucun compte, et rien à l'écran
-            ne le disait. Une capture de cet écran tranche désormais. */}
-        <div className="px-6 pt-10">
-          <p className={smallCaps} style={{ color: colors.muted, marginBottom: 4 }}>
+        {/*
+          Qui écoute et qui rédige, dit à l'écran.
+
+          Le patron a payé deux comptes, posé quatre clés, puis dicté — et
+          l'application a continué à fabriquer ses réponses sans rien dire. Il a
+          fallu qu'il pose la question pour l'apprendre. Un bloc que personne ne
+          regarde tant que tout va bien, et qui répond en deux secondes le jour
+          où l'on doute.
+        */}
+        <section className="px-6 pt-10">
+          <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
             Intelligence artificielle
           </p>
-          <p className="text-[13px]" style={{ color: ia.toutBranche ? colors.ink : colors.rust }}>
-            {ia.resume}
-          </p>
-          {/* Ce qui manque, nommément — mais une seule fois. Répéter « aucune
-              clé n'est configurée » pour chacun des deux rôles était exact et
-              inutile : c'est le geste à faire qui manquait. Les motifs par rôle
-              ne reparaissent donc que lorsqu'ils désignent quelque chose de
-              précis : une variable absente, un nom fautif, une ébauche. */}
-          {ia.aFaire ? (
-            <p className="text-[12px]" style={{ color: colors.muted, marginTop: 4 }}>
-              {ia.aFaire}
-            </p>
-          ) : (
-            [ia.transcription, ia.redaction]
-              .filter((r) => !r.branche && r.motif)
-              .map((r) => (
-                <p key={r.role} className="text-[12px]" style={{ color: colors.muted, marginTop: 4 }}>
-                  {r.role === "transcription" ? "Transcription" : "Rédaction"} — {r.motif}
+          <h2 className="text-[22px] leading-tight" style={{ fontFamily: font.display, marginBottom: 12 }}>
+            Ce que l&apos;application utilise
+          </h2>
+
+          <div className="flex flex-col gap-3">
+            {etatsIA.map((etat) => (
+              <div
+                key={etat.role}
+                className="rounded-xl p-4"
+                style={{
+                  backgroundColor: colors.card,
+                  // Un liseré n'apparaît que si quelque chose ne fait pas ce
+                  // qu'on croit : tout va bien doit rester discret.
+                  borderLeft: etat.nature === "reel" ? "none" : `3px solid ${colors.rust}`,
+                }}
+              >
+                <p className="text-[13px]" style={{ color: colors.muted, marginBottom: 2 }}>
+                  {etat.role}
                 </p>
-              ))
-          )}
-        </div>
+                <p className="text-[15px] font-medium" style={{ color: colors.ink }}>
+                  {etat.libelle}
+                </p>
+                <p className="text-[13px] leading-snug" style={{ color: colors.inkSoft, marginTop: 6 }}>
+                  {etat.explication}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Cette phrase disait l'inverse jusqu'au 6 août 2026 : « jamais par
+              la seule présence d'une clé ». C'est précisément là que le patron
+              s'est arrêté deux fois — clés posées, IA débranchée, et aucune
+              raison affichée. Poser une clé suffit désormais ; les variables ne
+              servent qu'à aller CONTRE (`ARCHITECTURE.md` §26). */}
+          <p className="text-[12px] leading-snug" style={{ color: colors.muted, marginTop: 10 }}>
+            {aFaire ??
+              "Poser une clé suffit à brancher le fournisseur correspondant. Les variables TRANSCRIPTION_PROVIDER et LLM_PROVIDER ne servent qu'à forcer un autre choix — par exemple « dev » pour couper l'IA sans retirer les clés."}
+          </p>
+        </section>
+        {/*
+          Emporter ses données, en un appui.
+
+          Le patron a perdu ses chantiers une fois, en supprimant l'espace de
+          travail — sur mon conseil, deux fois donné. Il a ensuite posé la
+          question qui compte avant de nourrir l'agent : « le jour où je mets ça
+          en ligne, est-ce que je perds toute la mémoire ? » Tant qu'il ne peut
+          pas récupérer ses données lui-même, la réponse honnête reste « peut-
+          être », et il a raison de ne rien vouloir saisir. Ce lien est la
+          réponse : un fichier, sur son téléphone, sans terminal ni compte.
+
+          Un lien et non un bouton : un téléchargement n'a pas à passer par une
+          action serveur (voir la route, et CLAUDE.md §5).
+        */}
+        <section className="px-6 pt-10">
+          <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
+            Mes données
+          </p>
+          <h2 className="text-[22px] leading-tight" style={{ fontFamily: font.display, marginBottom: 12 }}>
+            En garder une copie
+          </h2>
+
+          <a
+            href="/api/mes-donnees"
+            download
+            className="inline-block rounded-xl px-5 py-3 text-[15px] font-medium"
+            style={{ backgroundColor: colors.rust, color: colors.cream }}
+          >
+            Télécharger mes données
+          </a>
+
+          <p className="text-[13px] leading-snug" style={{ color: colors.inkSoft, marginTop: 10 }}>
+            Un seul fichier, qui contient vos clients, vos chantiers, vos devis, vos factures, vos photos et vos
+            enregistrements. Il s&apos;ouvre sans Atlas.
+          </p>
+          <p className="text-[12px] leading-snug" style={{ color: colors.muted, marginTop: 8 }}>
+            Il contient les coordonnées de vos clients : à ranger comme un dossier client. La sauvegarde automatique,
+            elle, attend le choix d&apos;un hébergement — sans destination extérieure, elle ne protégerait de rien.
+          </p>
+        </section>
 
         {/* La version exécutée, en bas et discrète.
             Elle existe pour une raison précise : le patron a réessayé, un jour

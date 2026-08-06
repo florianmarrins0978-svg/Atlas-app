@@ -302,8 +302,24 @@ Ces règles viennent de `PRINCIPES.md` et de `docs/MVP.md`. Elles ne sont pas
 négociables au cas par cas — les changer suppose de changer ces documents.
 
 - **Il n'invente jamais un prix.** Les prix viennent de la grille du patron, de
-  l'historique, ou de nulle part. Un poste sans tarif fiable reste **vide et
-  signalé**, jamais deviné, jamais « estimé ».
+  l'historique, **ou d'une estimation explicitement marquée comme telle** — ou
+  de nulle part. Un poste sans source reste **vide et signalé**, jamais deviné
+  en silence.
+
+  > **Assoupli le 5 août 2026, par le patron.** La règle disait « jamais
+  > estimé », ce qui fermait la porte à ce qu'il attend de l'agent : *« à force
+  > de comparer les photos des arbres et les devis, il devra être capable de
+  > proposer un prix juste. »*
+  >
+  > Sa raison, dans ses mots : **« rien ne sera jamais envoyé sans vérification
+  > du patron, ça restera qu'une proposition. »** C'est l'ARRÊT 1 qui porte la
+  > garantie, pas l'interdiction d'estimer.
+  >
+  > Ce que l'assouplissement n'autorise pas, et qui ne bouge pas d'un pouce :
+  > une estimation **non signalée**. Tout prix qui ne vient ni de la grille ni
+  > de l'historique est affiché comme estimation, avec ce sur quoi il se fonde,
+  > et se distingue à l'œil d'un prix ferme. Un prix estimé qui aurait l'air
+  > d'un prix sûr serait pire que pas de prix du tout.
 - **Il n'invente jamais une donnée client.** Nom, adresse, téléphone :
   uniquement ce qui a été dit ou déjà enregistré. Un champ absent reste vide.
 - **Il n'invente jamais une prestation.** En cas d'ambiguïté, il signale au lieu
@@ -373,7 +389,7 @@ structurées, prix, export, planning, catalogue, réglages tarifs.
 | Fin de chantier → facture + TVA | partiel | Facture construite depuis le devis, arrêt 3, relevé de TVA calculé à partir des factures émises. **Son envoi au client attend le même fournisseur que le devis** (réserve §2.3) |
 | Émission légale des factures | à brancher | Voir §6 — préparées ici, **jamais émises** ici ; branchement API sur l'outil comptable |
 | Déclaration de TVA | à brancher | Voir §6 — le relevé est préparé, la déclaration reste à l'outil comptable |
-| Enchaînement complet | à faire | Aujourd'hui l'agent répond et propose ; il ne pilote pas encore le parcours de bout en bout avec ses points d'arrêt |
+| Enchaînement complet | partiel | **Le tapis roulant existe** (`src/server/orchestrateur/tapis-roulant.ts`) : de la dictée au devis en brouillon, d'un seul geste, depuis l'écran Transcription. Il s'arrête à l'ARRÊT 1 et ne valide ni n'envoie rien. Restent à enchaîner : la suite de l'arrêt 1 (dates, envoi), qui attend le fournisseur d'envoi |
 | Mise en ligne | à faire | L'application Next.js n'est hébergée nulle part (§7) |
 
 ## 6. Facturation et TVA : on ne les recode pas

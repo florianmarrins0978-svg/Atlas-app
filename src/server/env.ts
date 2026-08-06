@@ -103,30 +103,93 @@ function construireEnv(): Env {
   const deepgramApiKey = optionnel("DEEPGRAM_API_KEY");
   const googleApiKey = optionnel("GOOGLE_API_KEY");
 
+  // Quel nom est reconnu, et quelle clé il exige. Cette table est la seule
+  // source — les fabriques (`providers/*/fabrique.ts`) doivent en accepter
+  // exactement les mêmes noms.
+  const CLES_LLM: Record<string, string | undefined> = {
+    anthropic: anthropicApiKey,
+    openai: openaiApiKey,
+    gemini: geminiApiKey,
+  };
+  const CLES_TRANSCRIPTION: Record<string, string | undefined> = {
+    openai: openaiApiKey,
+    deepgram: deepgramApiKey,
+    google: googleApiKey,
+  };
+  const NOM_VARIABLE: Record<string, string> = {
+    anthropic: "ANTHROPIC_API_KEY",
+    openai: "OPENAI_API_KEY",
+    gemini: "GEMINI_API_KEY",
+    deepgram: "DEEPGRAM_API_KEY",
+    google: "GOOGLE_API_KEY",
+  };
+
   // **Poser une clé suffit à brancher l'IA.**
   //
-  // Avant : `LLM_PROVIDER` valait `dev` par défaut, et rien d'autre ne le
-  // changeait. Le patron avait renseigné ses deux clés et voyait une
-  // application toujours déterministe — la dictée recopiée mot à mot, jamais
-  // comprise. Aucun écran ne disait pourquoi, et la seule variable qui aurait
-  // tout expliqué ne s'affichait nulle part.
+  // Le patron, le 6 août 2026 : « J'ai déjà mis Anthropic et OpenAI. Les clés
+  // sont mises, je ne comprends pas pourquoi l'IA n'est toujours pas branchée.
+  // Elle est censée l'être. » Elle ne l'était pas : `LLM_PROVIDER` valait `dev`
+  // par défaut, et il fallait le poser à la main EN PLUS des clés. Deux fois de
+  // suite, c'est là qu'il s'est arrêté — et rien ne le lui disait.
   //
-  // Désormais : la variable explicite l'emporte toujours (une installation qui
-  // veut rester déterministe pose `LLM_PROVIDER=dev`), et **à défaut, la
-  // présence d'une clé décide**. Sans clé, rien ne change : `dev`, aucun appel
-  // réseau, aucune donnée qui sort — c'est l'état des tests et de la CI, et il
-  // doit le rester.
+  // La variable explicite reste souveraine : `LLM_PROVIDER=dev` coupe l'IA sans
+  // qu'il faille retirer les clés, ce dont on a besoin pour rejouer un parcours
+  // sans qu'une donnée d'essai ne sorte. À défaut seulement, la présence d'une
+  // clé décide. Sans clé, rien ne change — `dev`, aucun appel réseau, aucune
+  // donnée qui sort : c'est l'état des tests et de la CI, et il doit le rester.
   //
-  // Le couple naturel des deux clés du patron : Anthropic rédige (seul
-  // fournisseur LLM éprouvé de bout en bout ici), OpenAI transcrit — Anthropic
-  // ne prend pas d'audio.
+  // **Ce que cela déplace, et qu'il faut avoir en tête** (`docs/RGPD.md` §3) :
+  // la protection ne tient plus à une valeur par défaut, mais à l'absence de
+  // clé. Une clé posée quelque part suffit à faire partir l'audio et le texte
+  // dicté chez un tiers.
+  //
+  // Le couple naturel de ses deux clés : Anthropic rédige, OpenAI transcrit —
+  // Anthropic ne prend pas d'audio.
   //
   // Le nom est ramené en minuscules : `LLM_PROVIDER=Anthropic` tombait sinon
-  // dans le cas par défaut de la fabrique — c'est-à-dire en mode déterministe,
+  // dans le cas par défaut de la fabrique, c'est-à-dire en mode déterministe,
   // sans un mot. Une majuscule ne doit pas décider du produit.
   const llmProvider =
     optionnel("LLM_PROVIDER")?.toLowerCase() ?? (anthropicApiKey ? "anthropic" : openaiApiKey ? "openai" : "dev");
   const transcriptionProvider = optionnel("TRANSCRIPTION_PROVIDER")?.toLowerCase() ?? (openaiApiKey ? "openai" : "dev");
+
+  // Trois façons de se retrouver en production avec l'IA simulée, et les trois
+  // passaient sans un mot : laisser la valeur par défaut, écrire « dev »
+  // explicitement, ou faire une faute de frappe dans le nom du fournisseur —
+  // les fabriques retombent sur `dev` par leur `default:`. Le patron l'aurait
+  // découvert en dictant sur un chantier : la transcription lui aurait rendu
+  // « [Transcription simulée — … ] » au lieu de ses mots.
+  //
+  // Ce fichier refuse déjà le stockage local, un CRON_SECRET faible et
+  // l'absence de Redis pour exactement la même raison — voir son en-tête : en
+  // production, jamais de repli silencieux vers un comportement de
+  // développement. L'IA simulée était le seul oubli qui passait en silence.
+  if (estProduction) {
+    for (const [variable, valeur, cles] of [
+      ["LLM_PROVIDER", llmProvider, CLES_LLM],
+      ["TRANSCRIPTION_PROVIDER", transcriptionProvider, CLES_TRANSCRIPTION],
+    ] as const) {
+      if (valeur === "dev") {
+        throw new ErreurConfiguration(
+          `${variable} vaut « dev » en production : l'IA simulée répond sans appeler personne, ` +
+            `et servirait de faux textes à de vrais chantiers. Choisir un fournisseur parmi ` +
+            `${Object.keys(cles).join(", ")} et renseigner sa clé (voir docs/A-FAIRE.md §1).`
+        );
+      }
+      if (!(valeur in cles)) {
+        throw new ErreurConfiguration(
+          `${variable}="${valeur}" n'est pas un fournisseur reconnu. Valeurs acceptées en production : ` +
+            `${Object.keys(cles).join(", ")}. Sans cela l'application retomberait silencieusement sur l'IA simulée.`
+        );
+      }
+      if (!cles[valeur]) {
+        throw new ErreurConfiguration(
+          `${variable}="${valeur}" exige ${NOM_VARIABLE[valeur]}, qui est absente. ` +
+            `Sans clé, chaque dictée échouerait une fois l'application déployée, jamais au démarrage.`
+        );
+      }
+    }
+  }
 
   // Le stockage local ne doit JAMAIS être utilisé en production (fichiers
   // éphémères / non partagés entre instances) — échec explicite au démarrage.

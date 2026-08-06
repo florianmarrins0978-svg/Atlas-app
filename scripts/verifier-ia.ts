@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { etatIA } from "../src/server/ai/diagnostic";
+import { decrireEtatIA, aFaireIA, type EtatFournisseur } from "../src/lib/etat-ia";
 import { getConfigIA } from "../src/server/ai/config";
 import { getFournisseurLLM } from "../src/server/ai/providers/llm/fabrique";
 
@@ -46,22 +46,36 @@ try {
   // d'essai, et ce n'est pas une anomalie.
 }
 
-function ligne(titre: string, etat: ReturnType<typeof etatIA>["redaction"]) {
-  const marque = etat.branche ? "✅" : etat.fournisseur === "dev" && !etat.motif?.includes("que l'application ne connaît pas") ? "○" : "❌";
-  console.log(`  ${marque} ${titre} : ${etat.nomLisible}`);
-  if (etat.motif) console.log(`       ${etat.motif}`);
-  if (etat.variableManquante) {
-    console.log(`       À poser dans les secrets de l'espace de travail : ${etat.variableManquante}`);
-  }
+// L'état vient de `src/lib/etat-ia.ts` — le MÊME que celui affiché à l'écran
+// Réglages. Deux descriptions de la même configuration auraient fini par se
+// contredire, et c'est celle qu'on relit le moins qui serait restée fausse
+// (`CLAUDE.md` §3).
+function etatComplet(): EtatFournisseur[] {
+  const config = getConfigIA();
+  const cles = [
+    config.anthropicApiKey ? "ANTHROPIC_API_KEY" : "",
+    config.openaiApiKey ? "OPENAI_API_KEY" : "",
+    config.geminiApiKey ? "GEMINI_API_KEY" : "",
+    config.deepgramApiKey ? "DEEPGRAM_API_KEY" : "",
+    config.googleApiKey ? "GOOGLE_API_KEY" : "",
+  ].filter(Boolean);
+  return decrireEtatIA(config.transcriptionProvider, config.llmProvider, cles);
 }
 
-async function appelReel(): Promise<boolean> {
+function ligne(etat: EtatFournisseur) {
+  const marque = etat.nature === "reel" ? "✅" : etat.nature === "simule" ? "○" : "❌";
+  console.log(`  ${marque} ${etat.role.padEnd(13)} : ${etat.libelle}`);
+  console.log(`       ${etat.explication}`);
+}
+
+async function appelReel(etats: EtatFournisseur[]): Promise<boolean> {
   let toutVaBien = true;
   const config = getConfigIA();
-  const etat = etatIA();
+  const [transcription] = etats;
+  const redaction = etats[1];
 
-  if (etat.redaction.branche) {
-    process.stdout.write(`  … appel réel à ${etat.redaction.nomLisible} `);
+  if (redaction.nature === "reel") {
+    process.stdout.write(`  … appel réel à ${redaction.libelle} `);
     const resultat = await getFournisseurLLM().genererTexte(
       "Réponds exactement le mot OK, sans rien d'autre.",
       "Dis OK."
@@ -77,8 +91,8 @@ async function appelReel(): Promise<boolean> {
   // La transcription ne s'éprouve pas sans un fichier audio, et un faux audio
   // ne prouverait rien. On vérifie donc ce qui compte et se vérifie vraiment :
   // que la clé est acceptée par le fournisseur.
-  if (etat.transcription.branche && etat.transcription.fournisseur === "openai") {
-    process.stdout.write(`  … clé acceptée par ${etat.transcription.nomLisible} `);
+  if (transcription.nature === "reel" && config.transcriptionProvider.toLowerCase() === "openai") {
+    process.stdout.write(`  … clé acceptée par ${transcription.libelle} `);
     try {
       const reponse = await fetch(`${config.openaiBaseUrl}/v1/models`, {
         headers: { Authorization: `Bearer ${config.openaiApiKey}` },
@@ -99,17 +113,19 @@ async function appelReel(): Promise<boolean> {
 }
 
 async function main() {
-  const etat = etatIA();
+  const etats = etatComplet();
+  const [transcription] = etats;
 
   console.log("\n── Fournisseurs d'IA d'Atlas ──────────────────\n");
-  ligne("Transcription de la dictée", etat.transcription);
-  ligne("Rédaction du devis        ", etat.redaction);
-  console.log(`\n  ${etat.resume}\n`);
+  for (const etat of etats) ligne(etat);
+  const conseil = aFaireIA(etats);
+  if (conseil) console.log(`\n  ${conseil}`);
+  console.log();
 
   // Choisi mais inutilisable : c'est une panne, pas un choix. Le mode
   // déterministe assumé (aucune clé, aucun fournisseur nommé) n'en est pas une.
-  const enPanne = [etat.transcription, etat.redaction].filter(
-    (r) => !r.branche && (r.variableManquante || r.motif?.includes("non implémenté") || r.motif?.includes("ne connaît pas"))
+  const enPanne = etats.filter(
+    (e) => e.nature === "cle_absente" || e.nature === "non_raccorde" || e.libelle.includes("n'est pas reconnu")
   );
 
   // **Un rôle branché suffit à déclencher l'appel réel.** La première version
@@ -117,11 +133,11 @@ async function main() {
   // annonçait « aucun fournisseur n'est utilisable » alors que la rédaction
   // partait bel et bien chez un tiers. Trouvé en la lançant, pas en la
   // relisant.
-  const auMoinsUn = etat.redaction.branche || etat.transcription.branche;
+  const auMoinsUn = etats.some((e) => e.nature === "reel");
   let reseauOk = true;
   if (AVEC_RESEAU && auMoinsUn) {
     console.log("── Appels réels ───────────────────────────────\n");
-    reseauOk = await appelReel();
+    reseauOk = await appelReel(etats);
     console.log();
   } else if (AVEC_RESEAU) {
     console.log("  (aucun appel réel : aucun fournisseur n'est utilisable)\n");
@@ -140,11 +156,11 @@ async function main() {
   // fournisseur sur deux était branché : dire cela d'une application qui
   // envoie le nom et l'adresse d'un client chez un tiers serait un mensonge,
   // et c'est précisément ce qu'on demande à cette commande de trancher.
-  if (etat.toutBranche) {
+  if (etats.every((e) => e.nature === "reel")) {
     console.log("✅ L'IA est branchée.");
   } else if (auMoinsUn) {
     console.log(
-      `⚠ À moitié branchée : ${etat.transcription.branche ? "la transcription part" : "la rédaction part"} chez un tiers, l'autre reste déterministe.`
+      `⚠ À moitié branchée : ${transcription.nature === "reel" ? "la transcription part" : "la rédaction part"} chez un tiers, l'autre reste déterministe.`
     );
   } else {
     console.log("○ Mode déterministe assumé : aucune clé posée, aucune donnée ne sort.");

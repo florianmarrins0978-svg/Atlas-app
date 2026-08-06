@@ -359,6 +359,9 @@ export const lignesPrix = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
+    // Permet aux leçons de prix (migration 0023) de désigner une ligne SANS
+    // pouvoir viser celle d'une autre société.
+    unique("lignes_prix_id_entreprise_uk").on(t.id, t.entrepriseId),
     index("lignes_prix_entreprise_chantier_idx").on(t.entrepriseId, t.chantierId),
     foreignKey({
       columns: [t.chantierId, t.entrepriseId],
@@ -369,6 +372,41 @@ export const lignesPrix = pgTable(
 );
 
 // --- Devis : versionné, instantané immuable après envoi (correction v2 §5, v2.1 §5/6) ---
+
+// La mémoire des corrections du patron (migration 0023) : ce qu'il a RETENU
+// comme prix, rapproché par une signature de métier (`src/lib/lecons-prix.ts`).
+// Distincte d'`historique_prix`, qui s'appuie sur le catalogue partagé et ne
+// sait pas distinguer un abattage au pied d'un démontage avec rétention.
+export const leconsPrix = pgTable(
+  "lecons_prix",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    lignePrixId: uuid("ligne_prix_id").notNull(),
+    /** Clé de rapprochement : `abattage|retention|d70`. */
+    signature: text("signature").notNull(),
+    libelle: text("libelle").notNull(),
+    prix: numeric("prix", { precision: 10, scale: 2 }).notNull(),
+    chantierId: uuid("chantier_id").notNull(),
+    constateLe: timestamp("constate_le", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("lecons_prix_ligne_uk").on(t.lignePrixId),
+    index("lecons_prix_recherche_idx").on(t.entrepriseId, t.signature, t.constateLe),
+    foreignKey({
+      columns: [t.lignePrixId, t.entrepriseId],
+      foreignColumns: [lignesPrix.id, lignesPrix.entrepriseId],
+      name: "lecons_prix_ligne_entreprise_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [t.chantierId, t.entrepriseId],
+      foreignColumns: [chantiers.id, chantiers.entrepriseId],
+      name: "lecons_prix_chantier_entreprise_fk",
+    }).onDelete("cascade"),
+  ]
+);
 
 export const devis = pgTable(
   "devis",
@@ -609,6 +647,38 @@ export const brouillonsInformations = pgTable(
       columns: [t.chantierId, t.entrepriseId],
       foreignColumns: [chantiers.id, chantiers.entrepriseId],
       name: "brouillons_informations_chantier_entreprise_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
+// Ce que le patron a répondu quand l'agent l'a arrêté avant de chiffrer
+// (migration 0022). Table distincte du brouillon **à dessein** : le brouillon
+// se régénère à chaque relecture de la dictée, ces réponses-là ne viennent pas
+// de la dictée mais de lui, et les y ranger reviendrait à le questionner deux
+// fois sur le même arbre.
+export const precisionsChantier = pgTable(
+  "precisions_chantier",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id").notNull(),
+    /** Identifiant stable de la question — `abattage.technique#1`. */
+    sujet: text("sujet").notNull(),
+    libellePrestation: text("libelle_prestation").notNull(),
+    valeur: text("valeur").notNull(),
+    /** Figé à la réponse : un devis émis ne doit pas changer de texte. */
+    lisible: text("lisible").notNull(),
+    responduAt: timestamp("repondu_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("precisions_chantier_uk").on(t.chantierId, t.sujet),
+    index("precisions_chantier_entreprise_chantier_idx").on(t.entrepriseId, t.chantierId),
+    foreignKey({
+      columns: [t.chantierId, t.entrepriseId],
+      foreignColumns: [chantiers.id, chantiers.entrepriseId],
+      name: "precisions_chantier_chantier_entreprise_fk",
     }).onDelete("cascade"),
   ]
 );

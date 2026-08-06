@@ -1,0 +1,69 @@
+name: Relever les tarifs d'IA à leur source
+
+# Va lire les tarifs des fournisseurs d'IA **à leur adresse publique**, et
+# calcule ce que coûterait un mois d'Atlas au volume réel du patron.
+#
+# **Pourquoi ce workflow existe.** Le patron a demandé « combien ça me
+# coûterait ? ». Depuis l'environnement de développement, la réponse honnête
+# était « je ne peux pas savoir » : le mandataire réseau répond `403 Forbidden`
+# sur les pages tarifaires de presque tous les prestataires. C'est pour cette
+# raison que `docs/TRANSCRIPTION.md` ne contient aucun chiffre — un tarif
+# inventé ferait choisir de travers et ne se découvrirait qu'à la première
+# facture.
+#
+# La mesure est donc faite par une machine qui, elle, a accès, et son rapport se
+# lit dans l'onglet des exécutions — comme `pages.yml` pour le site publié,
+# `banc-essai.yml` pour l'espace de travail et `relever-palette.yml` pour les
+# modèles du patron.
+#
+# **Ce qu'il ne fait pas : deviner.** Une page injoignable, ou dont il ne
+# reconnaît pas les tarifs, est rapportée comme telle avec son adresse à lire à
+# la main. Il sort en échec si aucune source n'a pu être lue — un relevé qui ne
+# relève rien ne doit pas passer pour un succès.
+#
+# **À relancer avant toute décision.** Les tarifs de ce métier changent
+# plusieurs fois par an ; le mensuel n'est là que pour que le chiffre ne
+# vieillisse pas en silence entre deux questions.
+
+on:
+  workflow_dispatch:
+    inputs:
+      minutes_audio:
+        description: "Minutes d'audio par mois (défaut : 90, soit 10 chantiers/semaine × 2 min)"
+        required: false
+        default: "90"
+      chantiers_par_mois:
+        description: "Chantiers par mois (défaut : 43)"
+        required: false
+        default: "43"
+  schedule:
+    # Le 1er de chaque mois, 6 h UTC. Assez rare pour ne rien coûter, assez
+    # régulier pour qu'un tarif qui double se voie avant la facture.
+    - cron: "0 6 1 * *"
+  push:
+    paths:
+      - ".github/workflows/relever-tarifs-ia.yml"
+      - "scripts/relever-tarifs-ia.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  relever:
+    name: Relever les tarifs à la source
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Aucune dépendance : le script n'utilise que `fetch`, natif depuis
+      # Node 18. Rien à installer, donc rien qui puisse casser le relevé pour
+      # une raison étrangère aux tarifs.
+      - name: Relever
+        env:
+          MINUTES_AUDIO: ${{ github.event.inputs.minutes_audio }}
+          CHANTIERS_PAR_MOIS: ${{ github.event.inputs.chantiers_par_mois }}
+        run: node scripts/relever-tarifs-ia.mjs

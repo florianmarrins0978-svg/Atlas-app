@@ -5,6 +5,28 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Lancement à la main, sur n'importe quelle branche.
+  #
+  # Pourquoi : une *pull request* ouverte par un agent ne déclenche PAS les
+  # workflows — GitHub refuse de chaîner un événement produit par un jeton
+  # d'automatisation. Constaté sur la PR #19, restée sans la moindre exécution
+  # alors que les autres PR du dépôt étaient vertes. La batterie ne tournait donc
+  # nulle part, et « c'est la CI qui vérifiera » était faux.
+  #
+  # Correction du 2026-08-05 : cette ligne affirmait que PostgreSQL et Redis ne
+  # pouvaient pas tourner chez l'agent. C'était faux — seul Docker manque, les
+  # binaires sont installés, et `scripts/monter-base-locale.sh` monte le tout.
+  # Les suites base peuvent donc être jouées AVANT de livrer. La CI reste
+  # nécessaire pour ce qui n'est vraiment pas joignable d'ici (voir
+  # ARCHITECTURE.md §15 et §17).
+  #
+  # Onglet Actions → CI → « Run workflow » → choisir la branche.
+  workflow_dispatch:
+    inputs:
+      branche:
+        description: "Pour mémoire — la branche se choisit dans le menu au-dessus"
+        required: false
+        default: ""
 
 jobs:
   ci:
@@ -119,6 +141,15 @@ jobs:
           # production : le build collecte les données de page et instancie donc
           # cette configuration. On pointe le service Redis du job.
           REDIS_URL: redis://localhost:6379
+          # Même raison que REDIS_URL ci-dessus : env.ts refuse en production
+          # l'IA simulée, un fournisseur inconnu, ou un fournisseur privé de sa
+          # clé — et le build instancie cette configuration. Ces valeurs ne
+          # servent qu'à la faire passer ; aucun appel réseau n'a lieu pendant
+          # un build.
+          LLM_PROVIDER: anthropic
+          ANTHROPIC_API_KEY: ci-placeholder-anthropic-key
+          TRANSCRIPTION_PROVIDER: openai
+          OPENAI_API_KEY: ci-placeholder-openai-key
           NODE_ENV: production
         run: npm run build
 

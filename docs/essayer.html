@@ -67,6 +67,7 @@
 <li><a href="#en-cinq-gestes">En cinq gestes</a></li>
 <li><a href="#ce-que-vous-pouvez-essayer-du-début-à-la-fin">Ce que vous pouvez essayer, du début à la fin</a></li>
 <li><a href="#ce-qui-ne-marchera-pas-et-pourquoi">Ce qui ne marchera pas, et pourquoi</a></li>
+<li><a href="#brancher-une-vraie-ia-sur-vos-essais">Brancher une vraie IA sur vos essais</a></li>
 <li><a href="#repartir-de-zéro">Repartir de zéro</a></li>
 <li><a href="#fermer-proprement">Fermer proprement</a></li>
 <li><a href="#si-quelque-chose-ne-va-pas">Si quelque chose ne va pas</a></li>
@@ -145,9 +146,67 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ul>
 <li><strong>Rien ne part réellement chez le client</strong> — ni SMS, ni e-mail. Le lien vous est remis à l'écran, à vous de le transmettre. C'est le point 5 de <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a>, et cela vaut aussi bien ici qu'en production.</li>
-<li><strong>L'assistant et la transcription tournent en mode déterministe</strong> : ils répondent sans appeler aucun prestataire. C'est délibéré — envoyer des données d'essai à un fournisseur qui ne figure dans aucun contrat serait précisément l'écart décrit au point 1 de <code>A-FAIRE.md</code>.</li>
+<li><strong>L'assistant et la transcription tournent en mode déterministe</strong> *par défaut* : ils répondent sans appeler aucun prestataire. C'est délibéré — envoyer des données d'essai à un fournisseur qui ne figure dans aucun contrat serait précisément l'écart décrit au point 1 de <code>A-FAIRE.md</code>. <strong>Vous pouvez le brancher pour vos propres essais</strong> : voir juste en dessous.</li>
 <li><strong>Les fichiers sont stockés sur le disque du banc d'essai.</strong> Ils disparaissent avec lui. En production, ce mode est refusé au démarrage.</li>
+<li><strong>Vos données d'essai vivent dans l'espace de travail, pas ailleurs.</strong> L'application a bien une mémoire — une base de données qui survit aux redémarrages et à la mise en veille de trente minutes. Mais <strong>elle meurt avec l'espace de travail</strong> : le supprimer efface vos chantiers, et les données de démonstration repartent à zéro. Un banc d'essai est jetable par construction ; c'est l'hébergement (point 3 de <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a>) qui donnera à Atlas une mémoire qui dure.</li>
 </ul>
+<hr>
+<h2 id="brancher-une-vraie-ia-sur-vos-essais">Brancher une vraie IA sur vos essais</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Vous n'êtes pas obligé d'attendre le contrat du point 2 pour <strong>vos</strong> essais : ce sont vos chantiers, vos clients, votre décision. Le contrat devient obligatoire le jour où Atlas sert <strong>quelqu'un d'autre</strong>.</p>
+<p>Comptez une vingtaine de minutes, et <strong>entre 2 et 7 € par mois</strong> à votre volume (le détail est dans <a href="TRANSCRIPTION.md" target="_blank" rel="noopener"><code>TRANSCRIPTION.md</code></a> §7).</p>
+<h3 id="1-ouvrir-les-deux-comptes">1. Ouvrir les deux comptes</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Où</th>
+<th>Ce qu'il faut y faire</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Rédaction</strong></td>
+<td><code>console.anthropic.com</code></td>
+<td>Créer un compte, y mettre 5 € de crédit, générer une clé API</td>
+</tr>
+<tr>
+<td><strong>Transcription</strong></td>
+<td><code>platform.openai.com</code></td>
+<td>Idem. <strong>Puis vérifier, dans les réglages de l'organisation, que le partage de données pour l'entraînement est bien refusé</strong></td>
+</tr>
+</tbody></table></div>
+<p>Ce second geste est le plus important des deux, et celui qu'on oublie. C'est la question 3 de <code>TRANSCRIPTION.md</code>.</p>
+<blockquote><strong>Ce que je ne sais pas, et que vous verrez à l'écran.</strong> Je ne peux pas lire les pages d'OpenAI depuis l'environnement de développement — elles me répondent <code>403</code>. Je ne sais donc pas si ce réglage est déjà au bon endroit chez eux ou s'il faut le changer : <strong>regardez-le, ne le supposez pas.</strong> Le réglage porte un nom du genre *data controls* ou *sharing for model improvement*. S'il n'existe pas, ou si le libellé ne dit rien de clair, écrivez-leur avant d'envoyer la voix d'un client.</blockquote>
+<h3 id="2-poser-les-clés-dans-les-secrets-du-dépôt">2. Poser les clés dans les secrets du dépôt</h3>
+<p>Sur GitHub : <strong>Settings → Secrets and variables → Codespaces → New repository secret</strong>. Quatre secrets à créer :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Nom</th>
+<th>Valeur</th>
+</tr></thead><tbody>
+<tr>
+<td><code>LLM_PROVIDER</code></td>
+<td><code>anthropic</code></td>
+</tr>
+<tr>
+<td><code>ANTHROPIC_API_KEY</code></td>
+<td>la clé générée chez Anthropic</td>
+</tr>
+<tr>
+<td><code>TRANSCRIPTION_PROVIDER</code></td>
+<td><code>openai</code></td>
+</tr>
+<tr>
+<td><code>OPENAI_API_KEY</code></td>
+<td>la clé générée chez OpenAI</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ne collez jamais une clé dans un fichier du dépôt, ni dans une conversation.</strong> Un secret posé ici ne se relit pas, y compris par vous — c'est voulu.</p>
+<h3 id="3-redémarrer-lespace-de-travail--et-non-le-supprimer">3. Redémarrer l'espace de travail — <strong>et non le supprimer</strong></h3>
+<blockquote>⚠️ <strong>Supprimer un espace de travail efface toutes vos données d'essai.</strong> Chantiers, devis, factures : tout part avec lui, et les données de démonstration sont réinstallées à neuf. Ne le supprimez que si vous y tenez.</blockquote>
+<p>Un espace <strong>déjà allumé</strong> ne voit pas un secret créé après lui — mais un <strong>redémarrage</strong> suffit à le lui faire lire, sans rien perdre.</p>
+<p>Sur <code>github.com/codespaces</code>, menu <strong>⋯</strong> → <strong>Stop codespace</strong>, puis rouvrez-le.</p>
+<blockquote><strong>Ce que je n'ai pas pu vérifier.</strong> Je n'ai pas de Docker dans mon environnement : je n'ai jamais vu un secret traverser jusqu'à l'application. Le redémarrage *devrait* suffire. <strong>La façon de le savoir en dix secondes :</strong> ouvrez <strong>Réglages</strong> et lisez le bloc « Ce que l'application utilise ». S'il nomme OpenAI et Anthropic, c'est bon. S'il dit « mode déterministe », le secret n'est pas arrivé — et là seulement, recréez l'espace.</blockquote>
+<p><strong>Le second piège, lui, impose bien une recréation</strong> : un espace créé depuis <code>main</code> ne verra jamais vos clés, parce que c'est la branche <code>claude/dictee-mode-essai-qqhcsn</code> qui porte le passage des secrets jusqu'au conteneur. Tant qu'elle n'est pas fusionnée, <code>main</code> fige <code>LLM_PROVIDER: dev</code> en dur. Une fois la fusion faite, la question ne se pose plus.</p>
+<h3 id="4-vérifier-que-cest-bien-branché">4. Vérifier que c'est bien branché</h3>
+<p>Dictez une note vocale et regardez ce qui revient. Si vous lisez « <strong>[Transcription simulée — … octets reçus]</strong> », c'est que le mode déterministe tourne encore : le secret n'est pas arrivé jusqu'au conteneur, le plus souvent parce que l'espace de travail est l'ancien.</p>
+<p>Vos mots à l'écran : c'est branché.</p>
 <hr>
 <h2 id="repartir-de-zéro">Repartir de zéro</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>

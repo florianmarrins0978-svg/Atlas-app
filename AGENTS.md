@@ -54,6 +54,10 @@ Ce que cela exige concrètement, à chaque lot :
   `api.github.com` et la documentation GitHub. Ne pas contourner : déplacer la
   vérification vers une machine — c'est ce que font `pages.yml` pour le site
   publié et `banc-essai.yml` pour l'espace de travail.
+- **Mais la base, elle, tourne ici** — corrigé le 2026-08-05 contre ce que le
+  dépôt affirmait. `source scripts/monter-base-locale.sh` monte PostgreSQL,
+  Redis, les rôles et les migrations en une commande, sans Docker. Il n'y a donc
+  plus d'excuse à livrer sans avoir joué `npm test`.
 
 Le détail des commandes est dans `CLAUDE.md` §5.
 

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { _reinitialiserEnvPourTests } from "../src/server/env";
-import { etatIA } from "../src/server/ai/diagnostic";
+import { getConfigIA } from "../src/server/ai/config";
+import { decrireEtatIA } from "../src/lib/etat-ia";
 import { getFournisseurLLM } from "../src/server/ai/providers/llm/fabrique";
 import { getFournisseurTranscription } from "../src/server/ai/providers/transcription/fabrique";
 
@@ -20,8 +21,9 @@ import { getFournisseurTranscription } from "../src/server/ai/providers/transcri
 // Cette suite tient les trois, et deux pièges voisins : un nom de fournisseur
 // mal capitalisé, et une ébauche qui se ferait passer pour un fournisseur.
 //
-// Elle est PURE : aucune base, aucun réseau. Ce qu'elle éprouve est le choix,
-// pas l'appel — l'appel a sa propre suite (`test-appel-fournisseurs-ia.ts`).
+// Elle est PURE : aucune base, aucun réseau. Ce qu'elle éprouve est le CHOIX
+// du fournisseur — l'appel a sa propre suite (`test-appel-fournisseurs-ia.ts`),
+// et la description affichée à l'écran la sienne (`test-etat-ia.ts`).
 
 let echecs = 0;
 function cas(nom: string, verifier: () => void) {
@@ -32,6 +34,19 @@ function cas(nom: string, verifier: () => void) {
     echecs++;
     console.error(`  ✗ ${nom}\n    ${(e as Error).message}`);
   }
+}
+
+function etatIA() {
+  const config = getConfigIA();
+  const cles = [
+    config.anthropicApiKey ? "ANTHROPIC_API_KEY" : "",
+    config.openaiApiKey ? "OPENAI_API_KEY" : "",
+    config.geminiApiKey ? "GEMINI_API_KEY" : "",
+    config.deepgramApiKey ? "DEEPGRAM_API_KEY" : "",
+    config.googleApiKey ? "GOOGLE_API_KEY" : "",
+  ].filter(Boolean);
+  const [transcription, redaction] = decrireEtatIA(config.transcriptionProvider, config.llmProvider, cles);
+  return { transcription, redaction, toutBranche: transcription.nature === "reel" && redaction.nature === "reel" };
 }
 
 const CLES = [
@@ -59,8 +74,7 @@ cas("les deux clés du patron : OpenAI transcrit, Anthropic rédige", () => {
   avec({ ANTHROPIC_API_KEY: "sk-ant-essai", OPENAI_API_KEY: "sk-essai" });
   assert.equal(getFournisseurTranscription().nom, "openai");
   assert.equal(getFournisseurLLM().nom, "anthropic");
-  const etat = etatIA();
-  assert.equal(etat.toutBranche, true, `Devrait être branché : ${etat.resume}`);
+  assert.equal(etatIA().toutBranche, true);
 });
 
 cas("la seule clé Anthropic branche la rédaction, pas la transcription", () => {
@@ -112,20 +126,20 @@ cas("une majuscule ne décide pas du produit", () => {
   // mode déterministe, sans un mot.
   avec({ LLM_PROVIDER: "Anthropic", ANTHROPIC_API_KEY: "sk-ant-essai" });
   assert.equal(getFournisseurLLM().nom, "anthropic");
-  assert.equal(etatIA().redaction.branche, true);
+  assert.equal(etatIA().redaction.nature, "reel");
 });
 
 cas("un nom inconnu est dénoncé, pas avalé", () => {
   avec({ LLM_PROVIDER: "antropic", ANTHROPIC_API_KEY: "sk-ant-essai" });
   const etat = etatIA();
-  assert.equal(etat.redaction.branche, false);
-  assert.match(etat.redaction.motif ?? "", /antropic/, "Le motif doit citer la valeur fautive.");
+  assert.notEqual(etat.redaction.nature, "reel");
+  assert.match(etat.redaction.libelle, /antropic/, "Le libellé doit citer la valeur fautive.");
 });
 
 cas("un fournisseur choisi sans sa clé nomme la variable qui manque", () => {
   avec({ LLM_PROVIDER: "anthropic" });
   const etat = etatIA();
-  assert.equal(etat.redaction.branche, false);
+  assert.equal(etat.redaction.nature, "cle_absente");
   assert.equal(etat.redaction.variableManquante, "ANTHROPIC_API_KEY");
 });
 
@@ -133,9 +147,7 @@ cas("une ébauche ne se fait pas passer pour un fournisseur", () => {
   // Gemini n'est pas implémenté : le dire à la configuration, et non au
   // premier appui du patron sur un bouton.
   avec({ LLM_PROVIDER: "gemini", GEMINI_API_KEY: "essai" });
-  const etat = etatIA();
-  assert.equal(etat.redaction.branche, false);
-  assert.match(etat.redaction.motif ?? "", /pas implémenté/);
+  assert.equal(etatIA().redaction.nature, "non_raccorde");
 });
 
 console.log("\n=== Ce qui s'affiche à l'écran Réglages ===");
@@ -147,11 +159,12 @@ cas("aucune clé de valeur ne sort du diagnostic", () => {
   assert.ok(!tout.includes("SECRET"), `Une valeur de clé a fui dans le diagnostic : ${tout}`);
 });
 
-cas("le résumé dit la vérité quand un seul rôle est branché", () => {
+cas("l'écran dit la vérité quand un seul rôle est branché", () => {
   avec({ ANTHROPIC_API_KEY: "sk-ant-essai" });
-  const resume = etatIA().resume;
-  assert.match(resume, /déterministe/, `Doit signaler la moitié déterministe : « ${resume} »`);
-  assert.match(resume, /Anthropic/, `Doit nommer le fournisseur branché : « ${resume} »`);
+  const etat = etatIA();
+  assert.equal(etat.redaction.nature, "reel", "La rédaction devrait être branchée.");
+  assert.equal(etat.transcription.nature, "simule", "La transcription devrait rester déterministe.");
+  assert.match(etat.transcription.explication, /Rien ne part chez personne/);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Branchement de l'IA — ${echecs} échec(s).`);

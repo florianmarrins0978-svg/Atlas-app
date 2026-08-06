@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { retenirLecon } from "@/server/repositories/lecons-prix";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { mettreAJourClient } from "@/server/repositories/clients";
 import { modifierLignePrix, supprimerLignePrix, ajouterLignePrix } from "@/server/repositories/lignes-prix";
@@ -46,7 +47,19 @@ export async function majLigneAction(
   data: { libelle?: string; quantite?: string; prixUnitaire?: string }
 ) {
   const ctx = await getCurrentCtx();
-  return modifierLignePrix(ctx, id, data);
+  const ligne = await modifierLignePrix(ctx, id, data);
+
+  // **C'est ici que l'agent apprend.** Ce que le patron écrit sur son devis est
+  // sa décision — pas notre proposition, pas une moyenne, pas un calcul. Rien
+  // ne la retenait jusqu'ici : chaque devis repartait de zéro, et il l'avait
+  // dit — « si l'appli n'a aucune mémoire, comment l'IA va se souvenir ? »
+  //
+  // Volontairement APRÈS l'enregistrement, et sans jamais le faire échouer :
+  // ne pas savoir tirer une leçon d'une ligne ne doit pas empêcher d'écrire
+  // cette ligne. L'apprentissage ne gêne pas le travail.
+  await retenirLecon(ctx, id);
+
+  return ligne;
 }
 
 export async function ajouterLigneAction(chantierId: string) {

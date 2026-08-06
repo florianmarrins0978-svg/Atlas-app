@@ -74,9 +74,10 @@
 <hr>
 <h2 id="ce-que-je-nai-pas-pu-vérifier">Ce que je n'ai pas pu vérifier</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>Aucun tarif de ce document n'a été lu à la source.</strong> L'environnement où Atlas est développé passe par un mandataire réseau qui refuse les pages tarifaires de tous les prestataires interrogés — Deepgram, OpenAI, Google, Gladia, Scaleway, Mistral ont tous répondu <code>403 Forbidden</code>.</p>
-<p>Je ne vous donne donc <strong>aucun chiffre</strong>. Ce document est une grille de décision : les bonnes questions, les bons candidats, et un tableau à remplir avec ce que vous lirez chez eux. Un tarif inventé vous ferait choisir de travers, et vous ne le découvririez qu'à la première facture.</p>
-<p>Les tarifs de ce métier changent plusieurs fois par an. Même vérifiés aujourd'hui, ils seraient à revérifier avant de signer.</p>
+<p><strong>Deux tarifs sur six ont été lus à la source ; les quatre autres, non.</strong> L'environnement où Atlas est développé passe par un mandataire réseau qui refuse la plupart des pages tarifaires — OpenAI, Deepgram, Mistral et Gladia répondent <code>403 Forbidden</code>.</p>
+<p>Ce qui a changé : ces pages se lisent désormais <strong>depuis une machine de GitHub</strong>, qui a le réseau que l'environnement de développement n'a pas. Le relevé se relance à la demande, et §7 porte ce qu'il a rapporté.</p>
+<p><strong>Aucun chiffre de ce document n'est supposé.</strong> Ce qui n'a pas été lu est marqué « non lu » plutôt qu'estimé : un tarif inventé vous ferait choisir de travers, et vous ne le découvririez qu'à la première facture.</p>
+<p>Les tarifs de ce métier changent plusieurs fois par an. Même relevés aujourd'hui, ils sont à relancer avant de signer — c'est une commande, pas une enquête.</p>
 <hr>
 <h2 id="ce-qui-marche-déjà-sans-rien-acheter">Ce qui marche déjà, sans rien acheter</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -152,7 +153,7 @@
 <hr>
 <h2 id="les-candidats-et-où-ils-en-sont-dans-le-code">Les candidats, et où ils en sont dans le code</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>Trois sont déjà écrits et prêts à être activés.</strong> Le jour où vous tranchez, c'est une variable d'environnement — pas du développement.</p>
+<p><strong>Un seul est réellement écrit.</strong> Le jour où vous le retenez, c'est une variable d'environnement — pas du développement. Pour les autres, il reste du travail.</p>
 <div class="tablewrap"><table><thead><tr>
 <th>Prestataire</th>
 <th>Dans le code</th>
@@ -160,21 +161,22 @@
 </tr></thead><tbody>
 <tr>
 <td><strong>OpenAI</strong> (Whisper)</td>
-<td>✅ <code>providers/transcription/openai.ts</code></td>
+<td>✅ écrit et complet — <code>providers/transcription/openai.ts</code></td>
 <td>Le plus connu ; serveurs hors d'Europe sauf offre spécifique</td>
 </tr>
 <tr>
 <td><strong>Deepgram</strong></td>
-<td>✅ <code>providers/transcription/deepgram.ts</code></td>
-<td>Réputé rapide ; lexique personnalisable</td>
+<td>⚠️ <strong>coquille vide</strong> — <code>providers/transcription/deepgram.ts</code></td>
+<td>L'activer aujourd'hui renvoie « fournisseur non implémenté » sur chaque dictée. Réputé rapide ; lexique personnalisable</td>
 </tr>
 <tr>
 <td><strong>Google</strong> (Speech-to-Text)</td>
-<td>✅ <code>providers/transcription/google.ts</code></td>
-<td>Offre des régions européennes</td>
+<td>⚠️ <strong>coquille vide</strong> — <code>providers/transcription/google.ts</code></td>
+<td>Même chose. Offre des régions européennes</td>
 </tr>
 </tbody></table></div>
-<p><strong>Deux méritent d'être regardés, et ne sont pas encore écrits</strong> — compter une demi-journée pour en ajouter un :</p>
+<blockquote><strong>Pourquoi cette ligne a changé.</strong> Ce tableau annonçait trois prestataires « prêts à être activés ». C'était faux : deux d'entre eux ne contiennent qu'un refus poli, et la dictée serait tombée en panne au premier essai. Vous auriez pu ouvrir un compte et signer un contrat pour rien. Compter une demi-journée par prestataire pour les finir — le jour où vous en retenez un.</blockquote>
+<p><strong>Deux autres méritent d'être regardés, et ne sont pas écrits non plus</strong> — même demi-journée :</p>
 <div class="tablewrap"><table><thead><tr>
 <th>Prestataire</th>
 <th>Pourquoi le regarder</th>
@@ -195,71 +197,151 @@
 <p>Posez les cinq questions à deux ou trois candidats, et remplissez :</p>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
-<th>Candidat A</th>
+<th><strong>OpenAI</strong> *(retenu pour les essais)*</th>
 <th>Candidat B</th>
 <th>Candidat C</th>
 </tr></thead><tbody>
 <tr>
 <td>Nom</td>
-<td></td>
+<td>OpenAI (Whisper)</td>
 <td></td>
 <td></td>
 </tr>
 <tr>
 <td>Serveurs en Europe ?</td>
-<td></td>
+<td><strong>Non</strong> — encadrement contractuel requis</td>
 <td></td>
 <td></td>
 </tr>
 <tr>
 <td>Durée de conservation</td>
-<td></td>
+<td>Journalisation coupée côté organisation. Côté fournisseur, ~30 jours pour la surveillance des abus — <strong>à confirmer</strong></td>
 <td></td>
 <td></td>
 </tr>
 <tr>
 <td>Entraînement refusé par écrit ?</td>
-<td></td>
+<td><strong>Oui</strong> — les trois réglages *Data controls → Sharing* sur <code>Disabled</code>, le 3 août 2026</td>
 <td></td>
 <td></td>
 </tr>
 <tr>
 <td>Lexique métier possible ?</td>
-<td></td>
+<td>*non vérifié*</td>
 <td></td>
 <td></td>
 </tr>
 <tr>
 <td>Prix pour 60 min d'audio</td>
-<td></td>
+<td>*non lu — page refusée à l'agent*</td>
 <td></td>
 <td></td>
 </tr>
 <tr>
 <td>Prix pour 10 h d'audio</td>
-<td></td>
+<td>*non lu*</td>
 <td></td>
 <td></td>
 </tr>
 <tr>
 <td>Contrat de sous-traitance fourni ?</td>
-<td></td>
+<td>*à demander*</td>
 <td></td>
 <td></td>
 </tr>
 </tbody></table></div>
+<blockquote><strong>Première colonne remplie le 3 août 2026</strong>, en ouvrant le compte pour les essais du patron. Ce n'est pas un choix définitif : c'est un candidat éprouvé, avec ce qu'on sait et ce qu'on ne sait pas encore. Les cases *non vérifié* et *à confirmer* sont laissées telles quelles plutôt que remplies au jugé.</blockquote>
 <p><strong>Les deux lignes de prix comptent ensemble.</strong> Certains sont bon marché en petite quantité et chers ensuite, d'autres l'inverse. Estimez votre volume réel : *nombre de chantiers par semaine × durée moyenne d'une dictée*.</p>
 <p>Pour dix chantiers par semaine et deux minutes de dictée chacun, cela fait <strong>environ 1 h 30 d'audio par mois</strong> — un volume faible, où le prix au menu compte moins que les conditions.</p>
 <hr>
 <h2 id="combien-ça-coûte-en-ordre-de-grandeur">Combien ça coûte, en ordre de grandeur</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>Je ne peux pas vous le dire honnêtement.</strong> Aucune page tarifaire n'a été accessible.</p>
-<p>Ce que je peux dire sans risque : à ce volume-là — une heure et demie d'audio par mois — <strong>le coût de la transcription ne sera pas ce qui décide</strong>. Ce qui décide, ce sont les questions 1 à 3 : où vivent les données de vos clients, combien de temps, et si quelqu'un s'en sert.</p>
+<p>Ce document a longtemps répondu « je ne peux pas vous le dire » : aucune page tarifaire n'était accessible depuis l'environnement de développement. Deux le sont maintenant, et <strong>le relevé se refait à la demande</strong> :</p>
+<blockquote>Onglet <strong>Actions</strong> du dépôt → <strong>Relever les tarifs d'IA à leur source</strong> → *Run workflow*. Le rapport s'affiche dans l'exécution.</blockquote>
+<p>C'est une machine de GitHub qui va lire les pages, parce qu'elle a le réseau que l'environnement de développement n'a pas. Elle ne devine rien : une page qu'elle n'a pas pu lire est signalée comme telle, avec son adresse à consulter à la main.</p>
+<h3 id="ce-qui-a-été-lu-le-3-août-2026">Ce qui a été lu le 3 août 2026</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Poste</th>
+<th>Tarif relevé</th>
+<th>Source</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Raisonnement — Claude Haiku 4.5</strong></td>
+<td>1 $ / million de jetons en entrée, 5 $ en sortie</td>
+<td>lu à la source</td>
+</tr>
+<tr>
+<td><strong>Raisonnement — Claude Sonnet 5</strong></td>
+<td>2 $ / 10 $ (tarif de lancement jusqu'au 31 août 2026, puis 3 $ / 15 $)</td>
+<td>lu à la source</td>
+</tr>
+<tr>
+<td><strong>Raisonnement — Claude Opus 5</strong></td>
+<td>5 $ / 25 $</td>
+<td>lu à la source</td>
+</tr>
+<tr>
+<td><strong>Transcription — Google</strong></td>
+<td>0,016 $ la minute, <strong>les 60 premières minutes par mois gratuites</strong></td>
+<td>lu à la source</td>
+</tr>
+<tr>
+<td><strong>Transcription — OpenAI, Deepgram, Mistral, Gladia</strong></td>
+<td>*non lu* — pages refusées à l'environnement de développement</td>
+<td>à relever depuis GitHub</td>
+</tr>
+</tbody></table></div>
+<h3 id="ce-que-ça-ferait-par-mois-chez-vous">Ce que ça ferait par mois, chez vous</h3>
+<p>Au volume estimé plus haut — 43 chantiers, 1 h 30 d'audio :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Par mois</th>
+</tr></thead><tbody>
+<tr>
+<td>Transcription (Google, 60 min gratuites + 30 min payantes)</td>
+<td><strong>≈ 0,50 $</strong></td>
+</tr>
+<tr>
+<td>Raisonnement, au moins cher (Haiku 4.5)</td>
+<td><strong>≈ 1,50 $</strong></td>
+</tr>
+<tr>
+<td>Raisonnement, au plus cher (Opus 5)</td>
+<td><strong>≈ 7,50 $</strong></td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>entre 2 et 8 $, soit environ 2 à 7 €</strong></td>
+</tr>
+</tbody></table></div>
+<blockquote><strong>D'où sortent ces jetons.</strong> Le calcul part de la taille réelle des textes qu'Atlas envoie — ses consignes, votre dictée, les allers-retours de l'assistant — mesurée dans le code, puis arrondie largement vers le haut. Le vrai chiffre sera plus bas que celui-ci, pas plus haut.</blockquote>
+<p><strong>Ce que ça veut dire.</strong> Le prix ne décide pas. Un abonnement téléphonique coûte dix fois ça. Ce qui décide, ce sont les questions 1 à 3 : où vivent les données de vos clients, combien de temps, et si quelqu'un s'en sert.</p>
 <p>Ne choisissez pas au prix. Choisissez à la réponse écrite sur ces trois points.</p>
+<h3 id="et-si-ça-ne-coûtait-rien-du-tout-">Et si ça ne coûtait rien du tout ?</h3>
+<p>Trois façons de ne rien payer, et ce que chacune coûte ailleurs :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Façon</th>
+<th>Ce que ça coûte vraiment</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Le micro de votre clavier</strong></td>
+<td>Rien. Fonctionne déjà, aucun contrat, aucune donnée qui part. Mais pas de note vocale enregistrée : il faut être devant l'écran</td>
+</tr>
+<tr>
+<td><strong>Les 60 minutes gratuites de Google</strong></td>
+<td>Rien jusqu'aux deux tiers de votre volume. Mais Google reste un sous-traitant à inscrire au contrat : gratuit ne veut pas dire sans obligation</td>
+</tr>
+<tr>
+<td><strong>Les offres gratuites d'autres prestataires</strong></td>
+<td><strong>Vos données.</strong> Le gratuit s'y paie en autorisation d'entraîner leurs modèles sur ce que vous envoyez — exactement ce que la question 3 vous dit de refuser</td>
+</tr>
+</tbody></table></div>
+<p>La troisième est la seule vraie fausse bonne affaire, et c'est la plus tentante.</p>
 <hr>
 <h2 id="ce-que-je-fais-le-jour-où-vous-tranchez">Ce que je fais le jour où vous tranchez</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ol>
+<li><strong>Écrire le raccordement</strong>, si ce n'est pas OpenAI — une demi-journée. Si c'est OpenAI, il est déjà écrit et l'étape saute.</li>
 <li><strong>Activer le prestataire retenu</strong> — une variable, quelques minutes.</li>
 <li><strong>Verrouiller les autres</strong>, pour qu'aucun ne puisse être activé par inadvertance.</li>
 <li><strong>L'inscrire dans <a href="RGPD.md" target="_blank" rel="noopener"><code>RGPD.md</code></a> §3</strong> comme sous-traitant ultérieur, avec sa localisation et sa durée de conservation.</li>

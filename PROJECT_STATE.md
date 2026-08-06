@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-06 · branche `claude/migrate-app-atlas-zz31ac`
-· dernière migration `drizzle/0021_lecture_dictee.sql`
+· dernière migration `drizzle/0023_lecons_prix.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -71,12 +71,19 @@ seule avec quinze outils.
 | L'espace d'essai se met à jour seul, et l'application annonce sa version | `.devcontainer/mettre-a-jour.sh` + Réglages |
 | Créer un chantier sans rien saisir : son nom se déduit du client, de l'adresse, ou de la date | `src/lib/nom-chantier.ts` |
 | **Le devis écrit à la main, document entier** : émetteur, IBAN, client, quantités, prix unitaires, TVA, conditions | `src/app/chantiers/[id]/devis-complet/` |
+| **Emporter toutes ses données**, en un appui : un ZIP avec les 26 tables, les photos, les enregistrements et les PDF | `src/server/repositories/export-entreprise.ts` + `src/app/api/mes-donnees/` + `src/lib/archive-zip.ts` |
+| **L'agent s'arrête et demande ce qui fait le prix** (technique, diamètre), et se tait sur le reste | `src/lib/questions-chiffrage.ts` + `drizzle/0022_precisions_chantier.sql` |
+| **Il retient ce que le patron chiffre**, et le lui rappelle sur le chantier comparable suivant | `src/lib/lecons-prix.ts` + `drizzle/0023_lecons_prix.sql` |
 
 ### Conformité RGPD
 
 | Brique | Où c'est |
 |---|---|
 | Registre des traitements, sous-traitants, conservation | `docs/RGPD.md` |
+| Grille de choix des fournisseurs d'IA, et leurs tarifs relevés | `docs/TRANSCRIPTION.md` |
+| Relevé des tarifs d'IA à leur source (le réseau de l'agent les refuse) | `.github/workflows/relever-tarifs-ia.yml` |
+| Refus de démarrer en production avec l'IA simulée | `src/server/env.ts` |
+| Ce que l'application utilise vraiment, dit à l'écran | `src/lib/etat-ia.ts`, `src/app/reglages/` |
 | Acceptation des documents légaux, avec empreinte | `src/app/documents-legaux/` |
 | Purge de l'audio après transcription réussie | `src/server/retention.ts` |
 | Export des données d'un client | `src/server/repositories/donnees-client.ts` |
@@ -162,6 +169,33 @@ qu'on le rouvre.
 - **La signature des commits est impossible** dans l'environnement d'exécution :
   la clé SSH configurée est un fichier vide sans partie privée. Signalé une fois,
   non contourné.
+- **Une réponse à l'arrêt d'avant-chiffrage ne change pas encore le montant.**
+  Ce n'est pas un oubli : `docs/EXEMPLE-DICTEE.md` §9c l'exige tant qu'aucun
+  rapport n'a été observé entre les techniques et les prix. Ce qui manque est la
+  mémoire (`TODO.md` §0 bis a et c), pas la question.
+- **La sauvegarde *automatique* n'existe pas, et c'est un blocage réel** — pas
+  un oubli. Elle exige une destination extérieure, donc l'hébergeur (point 3
+  ci-dessus). Le bouton « Télécharger mes données » couvre l'essentiel en
+  attendant. Voir `ARCHITECTURE.md` §25 et `TODO.md` §0.
+
+---
+
+## Éprouver ici : PostgreSQL et Redis tournent, sans Docker
+
+**Corrigé le 2026-08-05, contre ce que le dépôt affirmait.** Docker manque bien,
+mais les binaires PostgreSQL 16 et `redis-server` sont installés dans
+l'environnement d'exécution de l'agent. Une commande monte le tout :
+
+```bash
+source scripts/monter-base-locale.sh   # cluster, rôles, Redis, migrations
+npm test
+```
+
+La croyance inverse coûtait cher : « c'est la CI qui vérifiera » a été dit trois
+fois alors que la CI n'avait jamais tourné, et les suites base n'étaient donc
+éprouvées nulle part. **Cela ne remplace pas la CI** — le mandataire réseau et
+l'absence de Docker restent réels pour le reste (voir `ARCHITECTURE.md` §15
+et §17).
 
 ---
 
@@ -169,7 +203,7 @@ qu'on le rouvre.
 
 | | |
 |---|---|
-| Suites base de données | 55/55 |
-| Suites navigateur (bout en bout) | 24/24 |
+| Suites base de données | **61/61**, jouées dans l'environnement de l'agent |
+| Suites navigateur (bout en bout) | 25/25 |
 | Types, lint | propres |
 | CI GitHub | verte au commit `78c746a` ; `07fa28c` en cours au moment d'écrire |

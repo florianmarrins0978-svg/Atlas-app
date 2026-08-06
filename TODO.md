@@ -16,7 +16,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 | | Ce qui débloque | Ce que je fais alors |
 |---|---|---|
-| 1 | Deux fournisseurs d'IA retenus | **Le code n'attend plus rien** depuis le 2026-08-06 : poser `ANTHROPIC_API_KEY` et `OPENAI_API_KEY` suffit à brancher l'IA (`ARCHITECTURE.md` §25), et `npm run verifier:ia` dit l'état réel. Ce qui reste bloqué est le **contrat**, pas la technique : sans lui, seules des données inventées peuvent être dictées. Sans clé, la dictée est recopiée mot à mot (`src/server/ai/lecture-litterale.ts`) — elle va jusqu'au devis chiffré, mais elle ignore qu'un chêne mort s'abat et qu'une haie se taille |
+| 1 | Deux fournisseurs d'IA retenus | **Le code n'attend plus rien pour Anthropic et OpenAI** depuis le 2026-08-06 : poser `ANTHROPIC_API_KEY` ou `OPENAI_API_KEY` suffit à brancher l'IA (`ARCHITECTURE.md` §26), et `npm run verifier:ia` dit l'état réel. Les quatre autres noms restent des coquilles vides : leur raccordement serait à écrire. Ce qui bloque n'est donc plus la technique mais le **contrat** — sans lui, seules des données inventées peuvent être dictées. Sans clé, la dictée est recopiée mot à mot (`src/server/ai/lecture-litterale.ts`) : elle va jusqu'au devis chiffré, mais elle ignore qu'un chêne mort s'abat et qu'une haie se taille |
 | 2 | Contrat de sous-traitance rédigé | Remplacer les canevas sans valeur par les textes réels |
 | 3 | Hébergement européen choisi | Déployer — **sans quoi personne ne peut se servir de l'application** |
 | 4 | Société constituée, assurance souscrite | Rien côté code |
@@ -25,6 +25,144 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 ---
 
 ## Ce que je peux faire seul
+
+### 0. La sauvegarde des données — À FAIRE, dans cet ordre
+
+**Décidé avec le patron le 5 août 2026.** Il a demandé explicitement que ce
+point soit écrit : *« oublie pas de le faire, note-le, enregistre-le ! »*
+
+| | Quoi | Quand | État |
+|---|---|---|---|
+| **a** | ~~**Bouton « Télécharger mes données »** dans Réglages. Un fichier arrive sur son téléphone. Aucun terminal, aucun compte, aucune dépendance.~~ | | **fait le 2026-08-05** |
+| **b** | **Sauvegarde automatique**, sans qu'il ait à y penser. | **Dès que l'hébergement est choisi** (point 3 de `docs/A-FAIRE.md`) | bloqué |
+
+**(a) est livré.** Un ZIP contenant les vingt-trois tables de l'entreprise, ses
+photos, ses enregistrements et ses PDF, plus un mode d'emploi qui dit ce que le
+fichier contient de sensible. Les choix et ce qu'ils écartent sont dans
+`ARCHITECTURE.md` §26 ; le code dans `src/server/repositories/export-entreprise.ts`,
+`src/app/api/mes-donnees/route.ts` et `src/lib/archive-zip.ts`.
+
+**Ce qui le garde honnête, et qu'il ne faut pas défaire :**
+`test-export-entreprise.ts` interroge `information_schema` et **échoue si une
+table portant un `entreprise_id` n'est pas exportée**. Une table ajoutée demain
+et oubliée disparaîtrait sinon des sauvegardes sans un bruit. En ajouter une
+sans l'exporter fera rougir la batterie — c'est voulu.
+
+**Pourquoi (b) ne peut pas se faire maintenant, et il faut le redire à chaque
+fois que la question revient :** une sauvegarde automatique doit déposer son
+fichier quelque part.
+
+- **Pas dans le dépôt** : il est public. Y écrire une base contenant les noms et
+  adresses des clients serait une fuite, pas une sauvegarde.
+- **Pas sur le disque de l'espace de travail** : c'est précisément ce dont on
+  cherche à se protéger, puisqu'il disparaît avec l'espace.
+- **Il faut donc une destination extérieure** — celle de l'hébergeur, ou un
+  stockage objet que le patron n'a pas encore.
+
+**Ce que (a) débloque :** il pourra nourrir la mémoire de l'agent sans craindre
+de tout perdre au passage en ligne. C'est la condition qu'il a posée lui-même
+pour commencer — voir `docs/A-FAIRE.md` §1 bis.
+
+**Ne pas confondre avec l'export RGPD existant.**
+`src/server/repositories/donnees-client.ts` exporte les données **d'un client**,
+pour répondre à une demande d'accès. Ce qu'il faut ici est l'inverse : **toutes
+les données de l'entreprise**, pour les emporter ailleurs.
+
+### 0 ter. L'agent demande ce qui coûte de l'argent — ~~à faire~~ **fait le 6 août 2026**
+
+**Choisi par le patron en QCM le 6 août 2026**, devant la mémoire des
+corrections et l'entretien de départ : *« Les questions qui coûtent de
+l'argent. »* Et la règle, confirmée le même jour : *« il demande si ça change le
+prix, il signale sinon »* (`docs/EXEMPLE-DICTEE.md` §7).
+
+L'agent s'arrête désormais **avant de chiffrer** quand il manque ce qui fait le
+prix. Sur la dictée du chêne mort : la technique et le diamètre, absents de la
+note, et qui font passer l'abattage de 600 à 1 400 €.
+
+| Où | Quoi |
+|---|---|
+| `src/lib/questions-chiffrage.ts` | Les règles du métier, pures — ce qu'on demande **et ce qu'on tait** |
+| `drizzle/0022_precisions_chantier.sql` | Ses réponses, qui survivent à une relecture de la dictée |
+| `src/server/services/devis-depuis-dictee.ts` | L'arrêt, et la reprise **sans rappeler le modèle** |
+
+**Ce que ça ne fait PAS — à ne pas croire acquis.** La réponse est enregistrée
+et s'écrit sur la prestation ; **elle ne change pas encore le montant**. C'est la
+règle du patron lui-même (`EXEMPLE-DICTEE.md` §9c) : tant qu'aucun rapport n'a
+été observé entre les techniques et les prix, l'agent demande le prix plutôt que
+d'en fabriquer un. Il manque la mémoire, pas la question.
+
+**Ce qui le débloquerait**, dans l'ordre : (a) puis (c) ci-dessous. Dès qu'il
+existe deux devis d'abattage avec leur technique, le rapport se calcule et le
+montant peut se proposer — arrondi à la dizaine d'euros HT (`§9b`), et présenté
+comme un **rappel** de la dernière fois, jamais comme un calcul non sourcé.
+
+### 0 quater. La mémoire des corrections — ~~à faire~~ **faite le 6 août 2026**
+
+**Choisi par le patron le 6 août 2026**, devant l'entretien de départ et les
+photos. Ce qu'il chiffre sur un devis est désormais retenu, et lui revient sur
+le chantier comparable suivant.
+
+**Ce que ça a révélé :** `historique_prix` existait, était lue par le chiffrage
+— et **n'était jamais écrite par l'application**. Seuls les tests l'alimentaient.
+Une mémoire que personne ne remplit n'est pas une mémoire.
+
+| Où | Quoi |
+|---|---|
+| `src/lib/lecons-prix.ts` | Ce qui se rapproche, ce qui ne se rapproche **pas**, et le rappel |
+| `src/lib/arrondi-prix.ts` | « En HT on fait des prix ronds » (§9b), enfin appliqué |
+| `drizzle/0023_lecons_prix.sql` | Une leçon par ligne de devis, jamais une de plus |
+| `devis-complet` | Le rappel sous la ligne, et « Reprendre ce prix » |
+
+**Pourquoi une table de plus plutôt qu'`historique_prix`.** Celle-ci s'appuie
+sur `catalogue_prestations`, catalogue **partagé** repéré par nom canonique :
+elle ne sait pas distinguer un abattage au pied d'un démontage avec rétention —
+les deux seules choses qui font passer le même chêne de 600 à 1 400 €. Une
+mémoire aveugle à cette distinction rappellerait un prix faux de 800 € avec
+l'autorité de l'expérience.
+
+**Trois garde-fous à ne pas défaire :**
+
+- **Un rappel, jamais un calcul** (`EXEMPLE-DICTEE.md` §9c). La phrase dit d'où
+  vient le chiffre et de quel chantier. Rien ne s'applique tout seul.
+- **Le rapprochement se trompe dans le bon sens.** Les diamètres sont groupés
+  par tranche de dix centimètres, au plus proche ; une frontière subsiste, et
+  elle fait **manquer** un rappel, jamais en fabriquer un faux. Élargir le
+  rapprochement échangerait un manque contre une erreur.
+- **L'apprentissage ne gêne jamais le travail.** Une ligne dont on ne sait rien
+  tirer s'enregistre quand même.
+
+**Ce qui reste ouvert :** le rapport entre techniques (×1,67, ×2,33 — §9a),
+qui demande plusieurs devis comparables. La mémoire l'accumule désormais ; la
+règle se calculera quand il y aura de quoi.
+
+### 0 bis. L'agent qui apprend — le vrai sujet
+
+Le tapis roulant (dictée → devis, d'un seul geste) est en place, et l'arrêt
+d'avant-chiffrage aussi (§0 ter). La suite, dans l'ordre décidé avec le patron
+le 5 août 2026 :
+
+| | Quoi | Pourquoi maintenant |
+|---|---|---|
+| a | ~~**Mémoire des corrections.**~~ **Fait le 6 août 2026** — voir §0 quater. | |
+| b | **Entretien de départ.** Il n'a aucun ancien devis à donner en référence — c'est donc l'agent qui l'interroge une fois et écrit ses règles. | Sans ça, l'agent démarre en ne sachant rien et apprend aux frais du patron. |
+| c | **Écart devis / facture.** Les données existent déjà des deux côtés. | La meilleure leçon qui soit : ce qui avait été mal estimé s'y voit tout seul. |
+| d | **Photos ↔ prix.** Conserver le lien entre les photos d'un chantier et le devis qui a suivi. | Objectif du patron : « à force de comparer les photos des arbres et les devis, il devra proposer un prix juste ». Impossible aujourd'hui — mais **l'accumulation doit commencer maintenant**, sinon dans six mois il n'y aura toujours rien à apprendre. |
+
+**Réserve levée le 5 août 2026.** Un prix déduit d'une photo est une estimation,
+ce que `docs/AGENT.md` §3 interdisait. Le patron a tranché : *« rien ne sera
+jamais envoyé sans vérification du patron, ça restera qu'une proposition. »* La
+règle est assouplie — l'estimation est permise **à condition d'être signalée
+comme telle**, et c'est l'arrêt 1 qui porte la garantie. Voir `AGENT.md` §3.
+
+**Et une contrainte de fond, soulevée par le patron le même jour :** *« si
+l'appli n'a aucune mémoire, comment l'IA va enregistrer et se souvenir ? »* Il a
+raison, et ça conditionne (a) à (d). L'application a bien une mémoire — une base
+PostgreSQL sur volume persistant — mais **celle du banc d'essai meurt avec
+l'espace de travail**, qui est jetable par construction. Tout ce qui s'apprend
+ne sera durable qu'une fois l'hébergement choisi (point 3 de `A-FAIRE.md`).
+Construire l'apprentissage sur le banc reste utile pour l'éprouver ; ce qui s'y
+accumule ne doit pas être présenté comme conservé.
+
 
 ### 1. Agenda Google — lecture des disponibilités
 

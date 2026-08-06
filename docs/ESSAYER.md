@@ -15,7 +15,7 @@ votre compte GitHub, que vous avez déjà.
 2. [En cinq gestes](#en-cinq-gestes)
 3. [Ce que vous pouvez essayer, du début à la fin](#ce-que-vous-pouvez-essayer-du-début-à-la-fin)
 4. [Ce qui ne marchera pas, et pourquoi](#ce-qui-ne-marchera-pas-et-pourquoi)
-5. [Brancher l'IA, si vous le voulez](#brancher-lia-si-vous-le-voulez)
+5. [Brancher une vraie IA sur vos essais](#brancher-une-vraie-ia-sur-vos-essais)
 6. [Repartir de zéro](#repartir-de-zéro)
 7. [Fermer proprement](#fermer-proprement)
 8. [Si quelque chose ne va pas](#si-quelque-chose-ne-va-pas)
@@ -156,56 +156,107 @@ une date proche : il y apparaît le jour venu.
   qu'aucune clé d'IA n'est posée : ils répondent sans appeler aucun prestataire.
   Envoyer des données d'essai à un fournisseur qui ne figure dans aucun contrat
   serait l'écart décrit au point 1 de `A-FAIRE.md` — d'où la règle du banc
-  d'essai : **des données inventées, uniquement**. Pour brancher l'IA malgré
-  tout, voir juste en dessous.
+  d'essai : **des données inventées, uniquement**.
+  **Vous pouvez le brancher pour vos propres essais** : voir juste en dessous.
 - **Les fichiers sont stockés sur le disque du banc d'essai.** Ils disparaissent
   avec lui. En production, ce mode est refusé au démarrage.
+- **Vos données d'essai vivent dans l'espace de travail, pas ailleurs.**
+  L'application a bien une mémoire — une base de données qui survit aux
+  redémarrages et à la mise en veille de trente minutes. Mais **elle meurt avec
+  l'espace de travail** : le supprimer efface vos chantiers, et les données de
+  démonstration repartent à zéro. Un banc d'essai est jetable par construction ;
+  c'est l'hébergement (point 3 de [`A-FAIRE.md`](A-FAIRE.md)) qui donnera à
+  Atlas une mémoire qui dure.
 
 ---
 
-## Brancher l'IA, si vous le voulez
+## Brancher une vraie IA sur vos essais
+
+Vous n'êtes pas obligé d'attendre le contrat du point 2 pour **vos** essais :
+ce sont vos chantiers, vos clients, votre décision. Le contrat devient
+obligatoire le jour où Atlas sert **quelqu'un d'autre**.
+
+Comptez une vingtaine de minutes, et **entre 2 et 7 € par mois** à votre volume
+(le détail est dans [`TRANSCRIPTION.md`](TRANSCRIPTION.md) §7).
 
 Sans clé, Atlas ne comprend pas votre dictée : il la **recopie mot à mot**, et
-le devis porte les phrases telles que vous les avez dites. C'est voulu, et
-c'est ce qui protège vos données tant qu'aucun contrat n'existe.
-
-Pour qu'il la comprenne vraiment, deux clés — la première suffit à commencer :
+le devis porte vos phrases telles que vous les avez dites.
 
 | Clé | Ce qu'elle change |
 |---|---|
 | `OPENAI_API_KEY` | votre voix devient du texte (sans elle, rien n'est écouté) |
-| `ANTHROPIC_API_KEY` | le texte devient un devis structuré, prestations séparées |
+| `ANTHROPIC_API_KEY` | ce texte devient un devis structuré, prestations séparées |
 
-**Le plus simple, et le plus rapide :** créez un fichier nommé `.env.local` à la
-racine du projet, avec une ligne par clé :
+**Poser la clé suffit.** Il n'y a rien d'autre à régler : depuis le 6 août 2026,
+Atlas choisit le fournisseur d'après la clé qu'il trouve.
+
+### 1. Ouvrir les deux comptes
+
+| | Où | Ce qu'il faut y faire |
+|---|---|---|
+| **Rédaction** | `console.anthropic.com` | Créer un compte, y mettre 5 € de crédit, générer une clé API |
+| **Transcription** | `platform.openai.com` | Idem. **Puis vérifier, dans les réglages de l'organisation, que le partage de données pour l'entraînement est bien refusé** |
+
+Ce second geste est le plus important des deux, et celui qu'on oublie. C'est la
+question 3 de `TRANSCRIPTION.md`.
+
+> **Ce que je ne sais pas, et que vous verrez à l'écran.** Je ne peux pas lire
+> les pages d'OpenAI depuis l'environnement de développement — elles me
+> répondent `403`. Je ne sais donc pas si ce réglage est déjà au bon endroit
+> chez eux ou s'il faut le changer : **regardez-le, ne le supposez pas.** Le
+> réglage porte un nom du genre *data controls* ou *sharing for model
+> improvement*. S'il n'existe pas, ou si le libellé ne dit rien de clair,
+> écrivez-leur avant d'envoyer la voix d'un client.
+
+### 2. Coller les clés — le chemin le plus court
+
+À la racine du projet se trouve un fichier **`.env.local`**, créé pour vous au
+démarrage de l'espace. Ouvrez-le : il contient déjà les deux lignes, vides.
 
 ```
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
 ```
 
-Puis rechargez la page de l'éditeur : l'application redémarre et les prend en
-compte. Ce fichier n'est jamais versionné (`.gitignore`).
+Collez chaque clé **juste après le signe égal**, sans espace ni guillemets,
+enregistrez, puis rechargez la page de l'éditeur. C'est tout : l'application
+redémarre et les prend en compte.
 
-**Par les secrets de l'espace de travail** (`github.com/settings/codespaces`),
-c'est possible aussi — mais un secret ajouté à un espace **déjà créé** n'y entre
-qu'après une reconstruction du conteneur (*Rebuild Container*). C'est le piège
-qui a fait croire, le 6 août 2026, que les clés étaient posées alors qu'elles
-n'arrivaient jamais jusqu'à l'application.
+Ce fichier n'est jamais envoyé sur GitHub — il est ignoré par git, exprès.
 
-**Pour savoir où vous en êtes**, sans deviner : l'écran **Réglages** affiche en
-bas quels fournisseurs sont réellement actifs, et ce qui manque le cas échéant.
-Le bandeau de démarrage le dit aussi. En ligne de commande :
+### 3. Ou par les secrets du dépôt, si vous préférez
 
-```
-npm run verifier:ia
-```
+Sur GitHub : **Settings → Secrets and variables → Codespaces → New repository
+secret**. Deux secrets suffisent : `ANTHROPIC_API_KEY` et `OPENAI_API_KEY`.
+
+Un secret posé là ne se relit pas, y compris par vous — c'est voulu. En
+revanche, un espace **déjà allumé** ne le voit pas : il faut le redémarrer.
+
+> ⚠️ **Redémarrer, pas supprimer.** Supprimer un espace de travail efface
+> toutes vos données d'essai — chantiers, devis, factures. Sur
+> `github.com/codespaces`, menu **⋯** → **Stop codespace**, puis rouvrez-le.
+
+### 4. Vérifier que c'est bien branché
+
+Trois façons, de la plus rapide à la plus sûre :
+
+1. **Le bandeau au démarrage** de l'espace dit en une ligne ce qui tourne.
+2. **L'écran Réglages**, bloc « Ce que l'application utilise » : s'il nomme
+   OpenAI et Anthropic, c'est branché. S'il dit « mode déterministe », les clés
+   ne sont pas arrivées.
+3. **La commande** `npm run verifier:ia`, qui nomme aussi ce qui manque.
+   Avec `npm run verifier:ia -- --reseau`, elle appelle réellement les
+   fournisseurs et vous dit si vos clés sont acceptées.
+
+Et à l'usage : dictez une note vocale. Si vous lisez
+« **[Transcription simulée — … octets reçus]** », le mode déterministe tourne
+encore. Vos mots à l'écran : c'est branché.
 
 **Ce que cela implique.** Dès qu'une clé est posée, ce que vous dictez — nom du
 client, adresse, prestations — part chez le fournisseur concerné. Anthropic et
-OpenAI n'entraînent pas leurs modèles sur les données reçues par leur API, mais
-elles y transitent et y sont conservées un temps. Tant que le contrat de
-sous-traitance n'existe pas (point 1 de [`A-FAIRE.md`](A-FAIRE.md)), **ne
+OpenAI n'entraînent pas leurs modèles sur ce que reçoit leur API, mais les
+données y transitent et y sont conservées un temps. Tant que le contrat de
+sous-traitance n'existe pas (point 2 de [`A-FAIRE.md`](A-FAIRE.md)), **ne
 dictez que des données inventées**.
 
 ---

@@ -80,10 +80,301 @@ batterie de contrôles retire donc les clés d'IA de toute étape qui exécute l
 produit : une suite lancée dans l'espace du patron enverrait sinon les dictées
 d'essai chez les fournisseurs, et les lui ferait payer.
 
+### L'agent retient ce que le patron chiffre, et le lui rappelle
+
+*« Si l'appli n'a aucune mémoire, comment l'IA va enregistrer et se souvenir ?
+Pour s'améliorer elle a besoin de mémoire. »* Il avait raison, et le dépôt lui
+donnait raison plus qu'on ne le croyait.
+
+**Ce que ça a révélé.** `historique_prix` existe depuis des mois, elle est lue
+par le chiffrage, affichée au catalogue — et **jamais écrite par
+l'application**. Seuls les tests l'alimentaient. Une mémoire que personne ne
+remplit n'est pas une mémoire ; c'est une table.
+
+Désormais : il chiffre une ligne de devis, l'agent retient. Sur le chantier
+comparable suivant, il lit sous la ligne *« La dernière fois — « Abattage d'un
+chêne mort — démontage avec rétention, ⌀ 70 cm », le 6 août — vous aviez retenu
+1 400 € HT »*, et un lien reprend ce prix.
+
+**Pourquoi une table neuve plutôt qu'`historique_prix`.** Celle-ci s'appuie sur
+`catalogue_prestations`, catalogue **partagé** repéré par nom canonique. Elle ne
+sait pas distinguer un abattage au pied d'un démontage avec rétention — les deux
+seules choses qui font passer le même chêne de 600 à 1 400 €. Une mémoire
+aveugle à cette distinction rappellerait un prix faux de 800 € **avec l'autorité
+de l'expérience**. `lecons_prix` porte donc une signature de métier
+(`abattage|retention|d70`) construite par une fonction pure.
+
+**Quatre décisions, et leur pourquoi :**
+
+- **Un rappel, jamais un calcul** (`docs/EXEMPLE-DICTEE.md` §9c). La phrase dit
+  d'où vient le chiffre et de quel chantier. Rien ne s'applique tout seul : le
+  patron appuie, ou ignore.
+- **Une leçon par ligne de devis, jamais une de plus.** Il tape son prix chiffre
+  par chiffre, et chaque champ quitté déclenche un enregistrement : compter
+  chacun emplirait la mémoire de 1, puis 14, puis 140 en allant vers 1 400.
+  Seule sa dernière décision subsiste.
+- **Le rapprochement se trompe dans le bon sens.** Les diamètres sont groupés
+  par tranche de dix centimètres — 68 et 70 cm sont le même arbre. Une frontière
+  subsiste (64 contre 66), et elle fait **manquer** un rappel, jamais en
+  fabriquer un faux. C'est écrit noir sur blanc, avec un contrôle qui interdit
+  de l'« améliorer » en élargissant : ce serait échanger un manque contre une
+  erreur.
+- **L'apprentissage ne gêne jamais le travail.** Une ligne dont on ne sait rien
+  tirer — « Déplacement », « Acompte » — s'enregistre quand même. Faire échouer
+  son devis parce qu'on n'a pas su en tirer une leçon serait le comble.
+
+Au passage, `src/lib/arrondi-prix.ts` applique enfin sa règle : *« en HT on fait
+des prix ronds : 350, 400, 420, 560 »*. Un devis à 1 002,53 € trahit la machine.
+
+**Un défaut de conception trouvé par un test**, et pas en relisant : découper
+les diamètres en tronquant mettait 68 cm et 70 cm dans deux tranches distinctes
+— la frontière tombait pile entre deux valeurs voisines et courantes, et le
+rappel ne se serait affiché qu'au hasard. Arrondi au plus proche depuis.
+
+### Trouvé en vérifiant : les clés du patron n'entraient jamais dans son espace d'essai
+
+Le patron a demandé de vérifier moi-même si Atlas était branché à un fournisseur.
+La réponse est **non**, et la cause n'était pas chez lui.
+
+Sur `main`, `.devcontainer/docker-compose.yml` **fige** `LLM_PROVIDER: dev` et
+`TRANSCRIPTION_PROVIDER: dev`, et ne transmet **aucune clé d'API**. Un espace de
+travail créé depuis la branche par défaut écrase donc tout ce que les secrets de
+Codespaces peuvent contenir : il a ouvert deux comptes, payé, posé quatre
+secrets — et le conteneur les ignorait par construction.
+
+Le correctif (`${VAR:-dev}` et les cinq clés) existe depuis le 5 août sur la
+branche de travail. Il n'a simplement **jamais atteint `main`** : tant que la PR
+n'est pas fusionnée, son espace reste en mode déterministe quoi qu'il fasse.
+
+**Deux corrections apportées au passage, sur des défauts réels du correctif
+lui-même :**
+
+1. **Un second chemin pour les secrets** (`remoteEnv` dans `devcontainer.json`).
+   L'interpolation `${VAR:-dev}` est faite par docker-compose au moment de bâtir
+   le conteneur, et ne lit que ce que l'hôte lui présente alors — rien ne
+   garantit qu'un secret de Codespaces y soit déjà. `remoteEnv` est appliqué à
+   l'intérieur, là où les secrets sont posés. Deux chemins pour la même valeur,
+   parce que le coût de l'échec est asymétrique : s'ils échouent tous les deux,
+   il dicte et reçoit un texte fabriqué sans que rien ne le lui dise.
+2. **Une variable vide vaut « absente »** (`src/server/env.ts`). C'est le cas
+   ORDINAIRE quand une valeur ne traverse pas : `${VAR:-dev}` comme
+   `${localEnv:VAR}` produisent la chaîne vide, jamais `undefined`. Avec `??`,
+   cette chaîne passait pour un nom de fournisseur, et le message annonçait « le
+   nom "" n'est pas reconnu » — il aurait cherché une faute de frappe là où il
+   n'y avait qu'une variable non transmise. Une erreur qui accuse à tort coûte
+   plus cher que pas d'erreur du tout.
+
+Les deux contrôles ont été **confrontés à l'état dégradé** : en annulant le
+correctif, ils rougissent tous les deux.
+
+### Passer outre l'arrêt donnait un devis vide — réparé
+
+Trouvé par la CI, sur une suite qui n'était pas la mienne. L'arrêt d'ajout de la
+veille avait un défaut que le code seul ne montrait pas : **quand le patron
+passait outre sans répondre, le chiffrage ne tournait jamais.** L'écran
+l'emmenait bien au devis — un devis sans la moindre ligne.
+
+Le pire des deux mondes : il choisissait de ne pas répondre, et cela lui coûtait
+son devis.
+
+**L'arrêt est une offre, jamais une barrière.** Appuyer sur « Continuer » EST sa
+décision : la chaîne va désormais jusqu'au bout, répondu ou non. Et ce qu'il
+laisse de côté **ressort signalé sur le devis** plutôt que de disparaître — la
+seconde moitié de sa propre règle du 6 août.
+
+**Et une suite qui abîmait les données d'une autre.** `test-questions-chiffrage-e2e`
+récrivait la dictée du jeu de démonstration, dont `test-transcription-e2e`
+vérifie le texte. Invisible ici, où chaque suite est jouée seule ; visible en CI,
+sur une suite innocente. Elle crée maintenant son propre chantier.
+
+### L'agent s'arrête et demande ce qui coûte de l'argent
+
+**Choisi par le patron en QCM**, devant la mémoire des corrections et
+l'entretien de départ. Et sa règle, confirmée le même jour : *« il demande si ça
+change le prix, il signale sinon »* — ce qui réconcilie deux réponses qu'il avait
+données à une heure d'intervalle, et qui ne portaient pas sur la même chose.
+
+**Ce que ça évite, chiffré.** Il a dicté « un chêne mort à abattre, de vingt
+mètres de haut ». Chez lui, l'abattage vaut 600 € au pied, 1 000 € en démontage,
+1 400 € avec rétention. Ce qui décide, c'est la **technique** et le **diamètre du
+tronc** : sa dictée donne la *hauteur*, qui ne décide de rien, et tait les deux
+autres. L'agent chiffrait donc à l'aveugle, avec 800 € d'écart possible.
+
+Il pose maintenant deux questions, boutons au pouce, et repart.
+
+**Et il se tait partout ailleurs**, ce qui compte autant. `AGENT.md` §2 exige un
+arrêt « franchissable en quelques secondes » : un arrêt devenu formulaire est un
+arrêt contourné, et le contournement ici c'est le devis faux. Le billonnage, le
+fendage, le matériel ne déclenchent rien. Une suite l'éprouve en comptant les
+questions, pas seulement en vérifiant qu'elles sont là.
+
+**Trois décisions de conception :**
+
+- **Les réponses vivent dans leur propre table** (`precisions_chantier`), pas
+  dans le brouillon. Le brouillon se régénère à chaque relecture de la dictée ;
+  ses réponses, elles, ne viennent pas de la dictée. Rangées là, elles seraient
+  effacées à chaque relecture et il serait questionné deux fois sur le même
+  arbre — la meilleure façon de lui faire abandonner l'arrêt.
+- **La reprise ne rappelle pas le modèle.** Repasser par la lecture de la dictée
+  lui ferait payer une seconde analyse, et pourrait renuméroter les questions
+  auxquelles il vient de répondre.
+- **« Vingt mètres » n'est jamais cherché dans la transcription brute.** Le mot
+  figure deux fois dans cette dictée, pour la haie et pour la hauteur du chêne
+  (`docs/EXEMPLE-DICTEE.md` §3). Un filtre qui lirait le texte entier prendrait
+  l'un pour l'autre et tairait une question qui vaut 800 €.
+
+**Ce que ça ne fait pas, et qu'il ne faut pas croire acquis :** la réponse
+n'change pas encore le *montant*. Par sa propre règle (§9c) : tant qu'aucun
+rapport n'a été observé entre techniques et prix, l'agent demande le prix plutôt
+que d'en fabriquer un. Il manque la mémoire, pas la question. `TODO.md` §0 ter
+dit ce qui la débloque.
+
+### Trois défauts de mes propres contrôles, trouvés en regardant l'écran
+
+Aucun n'était dans le produit ; tous auraient laissé passer un vrai défaut.
+
+1. **« Abattage » était pris pour une technique.** Le premier filtre cherchait le
+   premier mot de chaque option — dont « Abattage ». « Abattage d'un chêne mort »
+   comptait donc comme technique déclarée, et la question qui vaut 800 € n'était
+   jamais posée : le défaut que ce module existe pour empêcher, dans le module
+   lui-même. « Abattage » est le mot générique du métier ; la technique, c'est ce
+   qui suit.
+2. **La suite navigateur cliquait un paragraphe.** « démontage avec rétention »
+   figure aussi dans la phrase qui explique la question. Le contrôle visait le
+   texte, cliquait l'explication, aucune option n'était retenue — et il passait
+   quand même. Vert sur une réponse jamais donnée.
+3. **Elle lisait le texte de la page là où les prestations sont des champs de
+   saisie.** `innerText` n'en rend pas la valeur : le contrôle accusait le
+   produit d'un tort qui n'était qu'un mauvais sélecteur.
+
+Aucun des trois ne se voyait en relisant le code. Les trois se sont vus en
+ouvrant l'écran et en regardant la base.
+
 ---
 
 ## 2026-08-05
 
+### Le patron peut emporter ses données, en un appui
+
+**Ce qui l'exigeait.** Il a perdu ses chantiers une fois, en supprimant l'espace
+de travail — sur mon conseil, donné deux fois. Puis il a posé la question qui
+commande tout le reste : *« le jour où je mets ça en ligne, est-ce que je perds
+toute la mémoire ? »* Tant que la réponse honnête restait « peut-être », il avait
+raison de ne rien vouloir saisir. Sa consigne, mot pour mot : *« oublie pas de le
+faire, note-le, enregistre-le ! »*
+
+Réglages porte désormais **« Télécharger mes données »** : un fichier ZIP, sur
+son téléphone, sans terminal ni compte. Dedans, `donnees.json` (les vingt-trois
+tables de son entreprise), ses photos, ses enregistrements, ses PDF, et un mode
+d'emploi qui dit ce que le fichier contient de sensible.
+
+**Trois décisions, et leur pourquoi** (détail dans `ARCHITECTURE.md` §26) :
+
+- **Ni `pg_dump`, ni privilège en plus.** L'export passe par `withEntreprise`,
+  comme n'importe quelle lecture. Une sauvegarde n'est pas une raison d'ouvrir
+  une brèche dans l'isolation — et c'est l'endroit où une fuite ne se verrait
+  pas, personne ne relisant trois mille lignes de JSON.
+- **Le ZIP est écrit à la main**, sans bibliothèque, méthode « stockage ». Le
+  format est figé depuis 1989 ; une dépendance coûterait plus cher que les
+  quatre-vingts lignes. Photos et PDF étant déjà compressés, la compression ne
+  gagnerait que quelques pour cent contre un chemin de code capable de se
+  tromper en silence.
+- **Un fichier manquant n'interrompt pas la sauvegarde.** L'audio est purgé
+  après transcription : l'absence est le cas *normal*. `fichiers-absents.txt`
+  liste ce qui manque et dit lequel des deux cas s'applique — une photo absente,
+  elle, signale un espace de travail supprimé.
+
+**Ce qui le vérifie.** Une suite ouvre l'archive avec l'`unzip` du système, pas
+avec notre propre lecteur : un décalage d'un octet ou un CRC faux ne se verraient
+nulle part ailleurs. Une autre interroge `information_schema` et **échoue si une
+table portant un `entreprise_id` n'est pas dans l'export** — une table ajoutée
+demain et oubliée disparaîtrait sinon des sauvegardes sans un bruit. Et une
+troisième appuie sur le bouton dans un vrai navigateur, récupère le fichier,
+l'ouvre, et vérifie qu'aucun compte de connexion ni empreinte de mot de passe
+n'y figure.
+
+**Ce que ça ne fait pas** : la sauvegarde *automatique*. Elle reste bloquée sur
+le choix d'un hébergeur, faute de destination extérieure — ni le dépôt (public),
+ni le disque de l'espace de travail (c'est précisément ce dont on se protège).
+Écrit dans `TODO.md` §0(b), et redit à l'écran sous le bouton.
+
+### Un contrôle qui accusait le produit pour un tort de la machine
+
+`test-archive-zip.ts` vérifiait qu'un nom accentué ressortait accentué **en
+relisant le disque après `unzip`**. Vert ici, rouge en CI — le runner tourne en
+locale C, où `unzip` translittère le nom en l'extrayant. L'archive était juste ;
+c'est l'attente qui dépendait de la machine.
+
+Le contrôle porte désormais sur la propriété qu'on maîtrise vraiment, et qui est
+*dans l'archive* : les octets du nom sont de l'UTF-8, et le drapeau qui l'annonce
+est levé — c'est ce qui fait qu'un téléphone ou un Windows affiche « chêne ». Le
+contenu, lui, est relu quel que soit le nom que le système d'accueil écrit.
+
+Rejoué en forçant `LC_ALL=C`, la condition du runner, plutôt qu'en supposant
+qu'elle est réglée. **Un contrôle qui accuse à tort coûte plus cher que pas de
+contrôle du tout** — la règle était écrite, elle s'applique aussi aux contrôles
+que j'écris moi-même.
+
+### Cet environnement peut faire tourner PostgreSQL et Redis
+
+**Correction d'une croyance qui coûtait cher.** `CLAUDE.md` §5 et `AGENTS.md`
+affirmaient que la batterie base de données ne pouvait pas tourner ici, faute de
+Docker. C'est vrai pour Docker, et faux pour la conclusion : les binaires
+PostgreSQL 16 (`/usr/lib/postgresql/16/bin`) et `redis-server` sont installés.
+Un `initdb` sous l'utilisateur `postgres` — `root` ne peut pas — suffit.
+
+La conséquence était réelle : « c'est la CI qui vérifiera » a été dit trois fois
+alors que la CI n'avait jamais tourné, et les suites base restaient éprouvées
+nulle part. `scripts/monter-base-locale.sh` monte désormais le tout en une
+commande. À utiliser **avant** de livrer, pas à la place de la CI.
+
+### Une leçon : j'ai reconstruit ce qui existait déjà
+
+J'ai écrit un « tapis roulant » qui enchaînait la dictée jusqu'au devis — et
+`main` le portait déjà, livré le matin même par la PR #18 sous le nom
+`devis-depuis-dictee.ts`. Le doublon a été supprimé au moment de la fusion ;
+c'est la version de `main` qui reste.
+
+**Comment c'est arrivé, parce que la cause est plus utile que l'excuse.** Ma
+branche datait de cinq commits en arrière. J'y ai lu `docs/AGENT.md` §5, qui
+disait « Enchaînement complet — à faire », et j'ai construit d'après cette
+phrase. Sur `main`, la même ligne était déjà corrigée.
+
+C'est exactement le défaut que j'avais diagnostiqué deux heures plus tôt chez
+une autre conversation : *le dépôt est la source de vérité, pas la
+conversation* — encore faut-il lire le dépôt à jour. **Avant de construire :
+`git fetch origin main` et vérifier ce que la branche n'a pas.**
+
+### L'écran Réglages dit enfin qui écoute et qui rédige
+
+Le patron a ouvert deux comptes, payé, posé quatre clés — puis dicté, et
+l'application a continué à fabriquer ses réponses **sans rien dire**. Il a fallu
+qu'il pose la question dans une autre conversation pour l'apprendre.
+
+Le garde-fou ajouté deux jours plus tôt refuse ce mode en production, mais reste
+muet sur le banc d'essai, où c'est justement le mode normal. Il manquait la
+moitié de la règle du dépôt : *un contrôle doit savoir échouer, et son message
+doit désigner le bon coupable.* Ici il n'y avait aucun message du tout.
+
+`src/lib/etat-ia.ts` décrit l'état réel à partir des deux seules variables qui
+décident — jamais de la présence d'une clé, qui n'a jamais rien choisi. L'écran
+`Réglages` l'affiche. Trois états, et le troisième est celui qui coûtait le plus
+cher :
+
+- **branché** : le prestataire est nommé, et l'écran dit ce qui part chez lui ;
+- **déterministe** : rien ne part, avec une explication propre à chaque rôle ;
+- **nom non reconnu** : une faute de frappe donnait le mode simulé, exactement
+  comme une configuration absente, et rien ne distinguait les deux à l'écran.
+
+Un quatrième cas est signalé au passage : un fournisseur reconnu mais dont le
+raccordement n'est pas écrit (Deepgram, Google, Gemini) affiche « raccordement
+non écrit » plutôt qu'un nom rassurant suivi d'une panne à chaque dictée.
+
+**Un défaut trouvé en regardant, pas en testant.** La première version servait
+la même phrase aux deux rôles : la carte « Rédaction » annonçait donc des
+transcriptions simulées, ce qui n'est pas son sujet. Les onze tests passaient au
+vert. C'est une capture des trois états qui l'a montré — le quatrième défaut de
+ce projet trouvé de cette façon.
 ### La dictée mène droit au devis, et le devis est seul sur sa page
 
 Le patron, en précisant : « une fois qu'on valide la note vocale, cette page
@@ -394,6 +685,69 @@ date et ne laisse aucune trace d'acceptation. Voir `ARCHITECTURE.md` §13.
 
 ## 2026-08-03
 
+### La production refuse enfin de démarrer avec l'IA simulée
+
+`src/server/env.ts` refusait déjà le stockage local, un `CRON_SECRET` faible et
+l'absence de Redis en production — au nom de la règle inscrite dans son propre
+en-tête : jamais de repli silencieux vers un comportement de développement.
+L'IA simulée était le seul oubli qui passait en silence.
+
+Trois chemins y menaient, tous muets : laisser `LLM_PROVIDER` /
+`TRANSCRIPTION_PROVIDER` à leur défaut, écrire « dev » explicitement, ou faire
+une **faute de frappe** dans le nom du fournisseur — les fabriques retombent sur
+`dev` par leur `default:`. Un quatrième cas restait ouvert : un fournisseur réel
+sans sa clé, qui ne se découvrait qu'à la première dictée.
+
+L'application refuse désormais de démarrer dans les quatre cas, avec un message
+qui nomme la variable en cause et renvoie à `docs/A-FAIRE.md` §1. Ce que ça
+évite : le patron dictant sur un vrai chantier et recevant
+« [Transcription simulée — 48000 octets reçus] » au lieu de ses mots. En
+développement et sur le banc d'essai, rien ne change : le mode simulé y reste le
+fonctionnement normal, et un test le garde.
+
+Le contrôle a été confronté à ce qu'il prétend détecter : les six tests de
+`scripts/test-env.ts` qui le couvrent virent au rouge quand on retire le
+garde-fou.
+
+### Les tarifs d'IA se relèvent maintenant à leur source
+
+`docs/TRANSCRIPTION.md` ne portait aucun chiffre, et le disait : le mandataire
+réseau de l'environnement de développement répond `403 Forbidden` sur les pages
+tarifaires de tous les prestataires. À la question « combien ça me coûterait ? »,
+la seule réponse honnête était « je ne peux pas savoir ».
+
+`.github/workflows/relever-tarifs-ia.yml` déplace la mesure vers une machine qui
+a le réseau — le même remède que `pages.yml` pour le site publié,
+`banc-essai.yml` pour l'espace de travail et `relever-palette.yml` pour les
+modèles du patron. Le script ne devine rien : une page injoignable est rapportée
+comme telle avec son adresse, et il sort en échec si aucune source n'a pu être
+lue.
+
+Deux sources passent déjà depuis l'environnement de développement (Anthropic via
+`docs.claude.com` — la page commerciale, elle, reste refusée ; et Google Speech-
+to-Text). De quoi chiffrer un mois d'Atlas au volume du patron : **2 à 8 $**,
+transcription comprise. Le prix ne décidera donc pas — ce sont les trois
+questions RGPD qui décident, et `TRANSCRIPTION.md` §7 le dit maintenant avec des
+chiffres à l'appui plutôt qu'en s'en excusant.
+
+### Le tableau des prestataires de transcription disait vrai pour un seul
+
+`docs/TRANSCRIPTION.md` annonçait trois prestataires « déjà écrits et prêts à
+être activés » : OpenAI, Deepgram, Google. En réalité seul OpenAI l'est.
+`src/server/ai/providers/transcription/deepgram.ts` et son voisin `google.ts`
+sont des coquilles de quatorze lignes qui répondent « fournisseur non
+implémenté » à chaque appel.
+
+Ce que ça évitait : le patron doit choisir un prestataire, ouvrir un compte et
+faire rédiger un contrat de sous-traitance avant de brancher quoi que ce soit
+(point 1 de `docs/A-FAIRE.md`). Un tableau qui coche Deepgram lui aurait fait
+dépenser cet argent et ce temps pour découvrir la panne au premier essai — après
+la signature, pas avant.
+
+Le tableau dit maintenant lequel est écrit et lesquels ne le sont pas, avec la
+demi-journée que coûte chacun des autres. La même correction vaut pour la liste
+d'étapes du jour où il tranche : écrire le raccordement est devenu l'étape 1,
+sautée seulement si le choix tombe sur OpenAI.
 ### Le message du client arrivait dans le vide — et il n'avait que deux boutons
 
 Le patron : « si le client remarque une faute, il doit pouvoir avoir une ligne
