@@ -15,7 +15,18 @@ declare global {
 function creerPool(): Pool {
   const pool = new Pool({
     connectionString: getEnv().databaseUrl,
-    max: 10,
+    // **Le nombre de connexions simultanées à la base, et c'est un plafond.**
+    //
+    // Écrit en dur à 10, il tenait tant qu'une seule machine servait un seul
+    // artisan. À dix mille, ce chiffre se règle : trop bas, les requêtes font
+    // la queue alors que la base s'ennuie ; trop haut, c'est PostgreSQL qui
+    // s'écroule, chaque connexion lui coûtant de la mémoire.
+    //
+    // La règle habituelle : (nombre d'instances × max) doit rester sous la
+    // limite de connexions de la base, et au-delà de quelques dizaines
+    // d'instances, on met un répartiteur (PgBouncer) devant plutôt que
+    // d'augmenter ce nombre.
+    max: getEnv().poolMax,
   });
 
   // Remédiation (robustesse) : sans ce gestionnaire, une erreur sur un client

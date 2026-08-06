@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-06
 
+### Ce qui tient à dix mille utilisateurs, et ce qui ne tiendra pas
+
+Le patron : « l'application doit pouvoir supporter dix mille, voire cent mille
+utilisateurs. Il ne faut pas qu'il y ait de problème si dix personnes rentrent
+des mots de passe en même temps, créent des devis en même temps, font des
+factures en même temps. »
+
+**Éprouvé pour de vrai** (`scripts/test-concurrence.ts`) : trente numéros de
+devis et trente numéros de facture demandés à la même seconde, deux entreprises
+qui facturent en parallèle, vingt chantiers créés d'un coup, et quarante
+lectures entrelacées entre deux entreprises.
+
+**Ce qui tient :** la numérotation est atomique (`UPDATE … RETURNING`), aucun
+doublon, aucun trou ; chaque entreprise garde sa propre suite ; et l'isolation
+ne fuit pas sous charge — quarante lectures simultanées, aucune ligne d'une
+entreprise vue par l'autre. Contrôle éprouvé en remplaçant la numérotation par
+la version naïve (lire puis écrire) : **25 factures sur 30 portaient alors le
+même numéro**. C'est exactement le défaut que ce contrôle existe pour attraper.
+
+**Ce qui devient réglable :** le nombre de connexions à la base était écrit en
+dur à 10 par instance. `DATABASE_POOL_MAX` permet de l'ajuster — au-delà de
+quelques dizaines d'instances, c'est un répartiteur (PgBouncer) qu'il faudra,
+pas un chiffre plus grand.
+
+**Ce qui ne tiendra pas, mesuré :** la vérification d'un mot de passe prend
+**80 ms** et ne se parallélise pas — dix connexions simultanées = 785 ms,
+cinquante = 3,9 s, pendant lesquelles l'instance ne sert rien d'autre. La cause
+est `bcryptjs`, une implémentation en JavaScript pur. Le remède est connu (une
+implémentation native, qui rend la main entre deux calculs) mais engage une
+dépendance compilée : soumis au patron avant d'être fait.
+
 ### La connexion refusait les bons identifiants, et trois écrans se marchaient dessus
 
 **Ses parents ne pouvaient pas entrer.** Il leur donne l'adresse de
