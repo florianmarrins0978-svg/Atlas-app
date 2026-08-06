@@ -34,9 +34,12 @@ async function main() {
   // --- Ajout réel d'une photo ---
   const [fileChooser] = await Promise.all([
     page.waitForEvent("filechooser"),
-    // Renommé le 6 août 2026 : deux boutons désormais, chacun disant ce qu'il
-    // fait. Celui-ci ouvre l'appareil photo.
-    page.click('button:has-text("Prendre une photo")'),
+    // Un seul bouton depuis le 6 août 2026 : il ouvre une feuille où le choix
+    // se pose. « Ajouter une photo » puis « Prendre une photo ».
+    (async () => {
+      await page.click('button:has-text("Ajouter une photo")');
+      await page.click('button:has-text("Prendre une photo")');
+    })(),
   ]);
   await fileChooser.setFiles(FIXTURE);
   await page.waitForSelector("text=1 photo", { timeout: 5000 });
@@ -78,17 +81,35 @@ async function main() {
   assert.equal(
     await pellicule.count(),
     1,
-    "Aucun champ sans `capture` : la pellicule du téléphone reste inaccessible."
+    "Aucun champ sans `capture` : la bibliothèque du téléphone reste inaccessible."
   );
-  assert.ok(
-    await page.getByRole("button", { name: /Choisir dans mes photos/i }).isVisible(),
-    "Rien ne propose d'aller chercher une photo déjà prise."
+
+  // **Un seul bouton visible.** Le patron, le 6 août 2026 : « ça fait trop de
+  // boutons ». Le choix ne s'affiche qu'après l'appui, dans une feuille.
+  const boutonsVisibles = await page.locator("button:visible", { hasText: /photo/i }).count();
+  assert.equal(
+    boutonsVisibles,
+    1,
+    `L'écran propose ${boutonsVisibles} boutons de photo : un seul doit être visible au repos.`
   );
+
+  await page.click('button:has-text("Ajouter une photo")');
   assert.ok(
     await page.getByRole("button", { name: /Prendre une photo/i }).isVisible(),
-    "Le bouton de prise de vue doit rester, et dire ce qu'il fait."
+    "La feuille doit proposer de prendre une photo."
   );
-  console.log("  ✓ prendre une photo ET en choisir une déjà prise");
+  assert.ok(
+    await page.getByRole("button", { name: /Choisir dans ma bibliothèque/i }).isVisible(),
+    "La feuille doit proposer d'aller chercher une photo déjà prise."
+  );
+  // Une feuille sans sortie est un piège : on doit pouvoir renoncer.
+  await page.click('button:has-text("Annuler")');
+  assert.equal(
+    await page.getByRole("button", { name: /Choisir dans ma bibliothèque/i }).count(),
+    0,
+    "La feuille ne se referme pas."
+  );
+  console.log("  ✓ un seul bouton, et le choix des deux chemins à l'appui");
 
   await browser.close();
   console.log("✅ Test bout-en-bout Photos réussi.");

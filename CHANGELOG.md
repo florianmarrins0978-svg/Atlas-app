@@ -48,6 +48,12 @@ chantier — s'imprime nue, à sa place ; la ligne « Chantier : … » ne subsi
 si les travaux ont lieu ailleurs, cas où l'étiquette est indispensable. Écran et
 papier partagent la même fonction (`src/lib/adresses.ts`).
 
+**Un seul bouton pour les photos, et le choix à l'appui.** Première version : deux
+boutons côte à côte. « Ça fait trop de boutons » — il a raison, c'est une
+décision imposée avant même qu'elle se pose. L'écran ne montre plus que
+« Ajouter une photo » ; une feuille demande alors *prendre une photo* ou
+*choisir dans ma bibliothèque*, et sait se refermer sans rien faire.
+
 **Les photos : l'appareil photo, et rien d'autre.** « J'ai besoin de pouvoir
 accéder aux photos que j'ai déjà prises. Il faut bien évidemment pouvoir faire
 les deux. » L'attribut `capture` d'un champ de fichier n'est pas une
