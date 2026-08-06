@@ -37,3 +37,64 @@ export async function mettreAJourNombreEquipesAction(nombreEquipes: number) {
   const e = await mettreAJourEntreprise(ctx, { nombreEquipes });
   return { nombreEquipes: e?.nombreEquipes ?? 1 };
 }
+
+/**
+ * Va chercher le code neuf, sans quitter l'application.
+ *
+ * **Pourquoi ce bouton existe, et pourquoi il vaut son risque.** Trois soirées
+ * ont été perdues sur le même malentendu : le patron essaie des correctifs
+ * livrés une heure plus tôt, ne voit aucun changement, et conclut — légitimement
+ * — que rien n'a été corrigé. L'espace de travail ne récupère le code neuf
+ * qu'au DÉMARRAGE (`postStartCommand`) ; recharger la page du navigateur ne le
+ * redémarre pas, et rien ne le disait.
+ *
+ * Le 6 août 2026, au troisième signalement : « tu as corrigé aucun problème, ou
+ * alors j'ai quelque chose à faire pour que le terminal ouvre la dernière mise
+ * à jour ? » La question était juste, et la réponse était oui — ce qui est une
+ * mauvaise réponse. Elle n'a plus lieu d'être.
+ *
+ * **Banc d'essai uniquement.** Une application déployée ne se met pas à jour
+ * elle-même en tirant du code : ce serait une porte d'entrée. La garde est
+ * `ATLAS_BANC_ESSAI`, posée dans le seul `.devcontainer/docker-compose.yml`.
+ *
+ * La prudence vit dans `mettre-a-jour.sh`, déjà éprouvé : jamais par-dessus du
+ * travail non enregistré, jamais en forçant, jamais sur un dépôt injoignable.
+ */
+export type ResultatMiseAJour = { succes: true; etat: string; message: string } | { succes: false; erreur: string };
+
+export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour> {
+  await getCurrentCtx(); // Réservé à quelqu'un de connecté, comme le reste de l'écran.
+
+  if (process.env.ATLAS_BANC_ESSAI !== "1") {
+    return { succes: false, erreur: "La mise à jour depuis l'écran n'existe que sur le banc d'essai." };
+  }
+
+  const { execFile } = await import("node:child_process");
+  const { promisify } = await import("node:util");
+  const executer = promisify(execFile);
+  const racine = process.cwd();
+
+  try {
+    const { stdout } = await executer("bash", [`${racine}/.devcontainer/mettre-a-jour.sh`, racine], {
+      timeout: 120_000,
+    });
+    const etat = stdout.trim().split("\n").pop() ?? "";
+
+    if (etat === "faite") {
+      // Le code neuf peut attendre une base neuve : servir l'un sans l'autre
+      // produit une panne, pas un correctif.
+      await executer("npm", ["run", "db:migrate", "--silent"], { cwd: racine, timeout: 180_000 }).catch(() => undefined);
+      return {
+        succes: true,
+        etat,
+        message: "Mise à jour récupérée. Rechargez la page dans quelques secondes : l'application se recompile.",
+      };
+    }
+    if (etat.startsWith("impossible")) {
+      return { succes: false, erreur: `Mise à jour ${etat}` };
+    }
+    return { succes: true, etat, message: "Vous étiez déjà à jour." };
+  } catch (e) {
+    return { succes: false, erreur: e instanceof Error ? e.message.slice(0, 200) : "La mise à jour a échoué." };
+  }
+}
