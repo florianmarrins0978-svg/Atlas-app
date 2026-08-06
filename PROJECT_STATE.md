@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-06 · branche `claude/migrate-app-atlas-zz31ac`
-· dernière migration `drizzle/0023_lecons_prix.sql`
+· dernière migration `drizzle/0024_envois_factures.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log

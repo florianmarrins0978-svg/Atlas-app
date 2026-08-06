@@ -10,6 +10,7 @@ import {
   entrepriseCompteurs,
   entreprises,
   envoisDevis,
+  envoisFactures,
   factures,
   fragmentsDocuments,
   historiquePrix,
@@ -112,6 +113,7 @@ export async function exporterEntreprise(
       lesAudiosAPurger,
       lesFactures,
       lesLignesFacture,
+      lesEnvoisFactures,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -138,6 +140,7 @@ export async function exporterEntreprise(
       tx.select().from(audiosAPurger).where(eq(audiosAPurger.entrepriseId, e)),
       tx.select().from(factures).where(eq(factures.entrepriseId, e)),
       tx.select().from(lignesFacture).where(eq(lignesFacture.entrepriseId, e)),
+      tx.select().from(envoisFactures).where(eq(envoisFactures.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -173,6 +176,9 @@ export async function exporterEntreprise(
       audios_a_purger: lesAudiosAPurger,
       factures: lesFactures,
       lignes_facture: lesLignesFacture,
+      // Les liens de facture remis aux clients : sans eux, une sauvegarde ne
+      // dirait plus quelle facture est réellement partie, ni quand.
+      envois_factures: lesEnvoisFactures,
     };
 
     const compte: Record<string, number> = {};

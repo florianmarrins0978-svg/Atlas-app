@@ -18,11 +18,24 @@ export default function PhotosClient({
   const [ouverte, setOuverte] = useState<string | null>(null);
   const [confirmationVisible, setConfirmationVisible] = useState(false);
   const [enCours, setEnCours] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  function declencherAjout() {
-    fileInputRef.current?.click();
-  }
+  // **Deux entrées, et c'est délibéré.**
+  //
+  // Le patron, le 6 août 2026 : « lorsque je clique sur ajouter des photos, je
+  // peux simplement prendre une photo. J'ai besoin de pouvoir accéder aux
+  // photos que j'ai déjà prises. Il faut bien évidemment pouvoir faire les
+  // deux. »
+  //
+  // L'attribut `capture` d'un champ de fichier n'est pas une préférence : sur
+  // un iPhone, il **impose** l'appareil photo et retire purement et simplement
+  // l'accès à la pellicule. Un artisan qui a photographié le chantier le matin
+  // ne pouvait donc rien joindre l'après-midi.
+  //
+  // Le retirer tout court aurait échangé un défaut contre l'autre : le
+  // sélecteur de fichiers s'ouvre alors sur la photothèque, et prendre une
+  // photo demande deux appuis de plus, sur un chantier, avec des gants. D'où
+  // deux champs distincts, et deux boutons qui disent lequel fait quoi.
+  const champAppareilPhoto = useRef<HTMLInputElement>(null);
+  const champPellicule = useRef<HTMLInputElement>(null);
 
   async function onFichiersChoisis(e: ChangeEvent<HTMLInputElement>) {
     const fichiers = Array.from(e.target.files ?? []);
@@ -64,17 +77,38 @@ export default function PhotosClient({
 
       <div className="px-6 pt-6">
         <input
-          ref={fileInputRef}
+          ref={champAppareilPhoto}
           type="file"
           accept="image/*"
           capture="environment"
           multiple
           hidden
+          aria-label="Prendre une photo"
           onChange={onFichiersChoisis}
         />
-        <PrimaryButton onClick={declencherAjout} disabled={enCours}>
-          <CameraIcon /> {enCours ? "Ajout en cours…" : "Ajouter une photo"}
+        {/* Sans `capture`, et c'est tout ce qui les distingue : ce champ-ci
+            ouvre la photothèque du téléphone. */}
+        <input
+          ref={champPellicule}
+          type="file"
+          accept="image/*"
+          multiple
+          hidden
+          aria-label="Choisir dans mes photos"
+          onChange={onFichiersChoisis}
+        />
+        <PrimaryButton onClick={() => champAppareilPhoto.current?.click()} disabled={enCours}>
+          <CameraIcon /> {enCours ? "Ajout en cours…" : "Prendre une photo"}
         </PrimaryButton>
+        <button
+          type="button"
+          onClick={() => champPellicule.current?.click()}
+          disabled={enCours}
+          className="mt-3 w-full rounded-2xl py-3 text-[15px] font-medium"
+          style={{ backgroundColor: colors.card, color: colors.ink }}
+        >
+          Choisir dans mes photos
+        </button>
       </div>
 
       {photos.length > 0 ? (
