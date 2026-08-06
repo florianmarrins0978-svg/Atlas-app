@@ -109,15 +109,31 @@ function main() {
   // simulée — … ] » à un artisan qui dicte devant un vrai client. Aucun de ces
   // cinq cas ne se signalait avant : l'application démarrait normalement.
 
-  test("Production sans LLM_PROVIDER du tout (défaut 'dev') : rejet explicite", () => {
-    avecEnv({ ...PRODUCTION_VALIDE, LLM_PROVIDER: undefined }, () => {
+  // **Ni variable ni clé : c'est le mode simulé, et il est refusé.** Depuis le
+  // 6 août 2026, l'absence de variable ne suffit plus à conclure : une clé
+  // présente choisit le fournisseur (`ARCHITECTURE.md` §26). Ces deux cas
+  // retirent donc aussi les clés — sans quoi ils éprouveraient l'inverse de ce
+  // qu'ils annoncent.
+  test("Production sans LLM_PROVIDER ni clé (défaut 'dev') : rejet explicite", () => {
+    avecEnv({ ...PRODUCTION_VALIDE, LLM_PROVIDER: undefined, ANTHROPIC_API_KEY: undefined, OPENAI_API_KEY: undefined }, () => {
       assert.throws(() => getEnv(), ErreurConfiguration);
     });
   });
 
-  test("Production sans TRANSCRIPTION_PROVIDER du tout (défaut 'dev') : rejet explicite", () => {
-    avecEnv({ ...PRODUCTION_VALIDE, TRANSCRIPTION_PROVIDER: undefined }, () => {
+  test("Production sans TRANSCRIPTION_PROVIDER ni clé (défaut 'dev') : rejet explicite", () => {
+    avecEnv({ ...PRODUCTION_VALIDE, TRANSCRIPTION_PROVIDER: undefined, OPENAI_API_KEY: undefined }, () => {
       assert.throws(() => getEnv(), ErreurConfiguration);
+    });
+  });
+
+  // L'autre moitié de la même règle : une clé posée SUFFIT, y compris en
+  // production. C'est ce que le patron attendait — « les clés sont mises, je ne
+  // comprends pas pourquoi l'IA n'est toujours pas branchée ».
+  test("Production sans variable mais AVEC les clés : accepté, et le bon fournisseur est choisi", () => {
+    avecEnv({ ...PRODUCTION_VALIDE, LLM_PROVIDER: undefined, TRANSCRIPTION_PROVIDER: undefined }, () => {
+      const env = getEnv();
+      assert.equal(env.llmProvider, "anthropic");
+      assert.equal(env.transcriptionProvider, "openai");
     });
   });
 
@@ -126,8 +142,8 @@ function main() {
   // chaîne VIDE, jamais `undefined`. Elle doit valoir « absente », faute de quoi
   // le message accuse une faute de frappe là où il n'y a qu'une variable non
   // transmise — et envoie chercher au mauvais endroit.
-  test("Production avec LLM_PROVIDER vide : rejeté comme 'dev', pas comme un nom inconnu", () => {
-    avecEnv({ ...PRODUCTION_VALIDE, LLM_PROVIDER: "" }, () => {
+  test("Production avec LLM_PROVIDER vide et sans clé : rejeté comme 'dev', pas comme un nom inconnu", () => {
+    avecEnv({ ...PRODUCTION_VALIDE, LLM_PROVIDER: "", ANTHROPIC_API_KEY: undefined, OPENAI_API_KEY: undefined }, () => {
       assert.throws(
         () => getEnv(),
         (e: Error) => {

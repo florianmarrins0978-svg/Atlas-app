@@ -41,6 +41,17 @@ qui ne se résoudra pas en codant.
 **Qui : le patron.** Personne d'autre ne peut trancher — cela engage un contrat
 et des données de tiers.
 
+> **Mise à jour du 6 août 2026.** Vous avez pris vos clés chez **Anthropic** et
+> **OpenAI**, et l'application sait maintenant s'en servir : poser une clé suffit
+> à la brancher, l'écran Réglages dit lequel tourne, et `npm run verifier:ia`
+> répond en une commande. **Le code ne bloque donc plus rien.**
+>
+> Ce qui reste bloquant est ailleurs, et n'a pas bougé : **aucun de ces deux
+> prestataires ne figure encore dans un contrat**, et rien n'a été signé avec
+> eux sur ce qu'ils font de ce qu'on leur envoie. Tant que c'est le cas, ne
+> dictez que des données inventées — pas un vrai nom de client, pas une vraie
+> adresse. Voir le point 2, qui devient le vrai verrou.
+
 ### Pourquoi c'est bloquant
 
 L'audio de la note vocale et le texte dicté partent chez un prestataire. Ils
@@ -107,9 +118,17 @@ téléphone — sans prestataire, sans contrat, et sans qu'aucune donnée ne par
 
 ### Ce que je peux faire une fois décidé
 
-Verrouiller la configuration sur les deux fournisseurs retenus, pour qu'aucun
-autre ne puisse être activé par inadvertance, et tenir la liste à jour dans
-[`RGPD.md`](RGPD.md) §3.
+**Fait le 6 août 2026, pour Anthropic et OpenAI :** ils sont raccordés, éprouvés,
+et la liste est tenue à jour dans [`RGPD.md`](RGPD.md) §3.
+
+Reste, le jour où le choix est définitif : **verrouiller** la configuration sur
+ces deux-là, pour qu'aucun autre ne puisse être activé par inadvertance.
+
+Un point à connaître, parce qu'il change la nature de la protection : jusqu'ici,
+rien ne sortait parce que le réglage par défaut l'interdisait. Désormais, **rien
+ne sort parce qu'aucune clé n'est posée**. Une clé posée quelque part suffit à
+faire partir l'audio et le texte dicté. C'est plus simple à utiliser, et cela
+demande de savoir où sont ses clés.
 
 ---
 

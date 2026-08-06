@@ -79,6 +79,7 @@
 <h2 id="1-choisir-les-fournisseurs-dia-définitifs">1. Choisir les fournisseurs d'IA définitifs</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><strong>Qui : le patron.</strong> Personne d'autre ne peut trancher — cela engage un contrat et des données de tiers.</p>
+<blockquote><strong>Mise à jour du 6 août 2026.</strong> Vous avez pris vos clés chez <strong>Anthropic</strong> et <strong>OpenAI</strong>, et l'application sait maintenant s'en servir : poser une clé suffit à la brancher, l'écran Réglages dit lequel tourne, et <code>npm run verifier:ia</code> répond en une commande. <strong>Le code ne bloque donc plus rien.</strong>  Ce qui reste bloquant est ailleurs, et n'a pas bougé : <strong>aucun de ces deux prestataires ne figure encore dans un contrat</strong>, et rien n'a été signé avec eux sur ce qu'ils font de ce qu'on leur envoie. Tant que c'est le cas, ne dictez que des données inventées — pas un vrai nom de client, pas une vraie adresse. Voir le point 2, qui devient le vrai verrou.</blockquote>
 <h3 id="pourquoi-cest-bloquant">Pourquoi c'est bloquant</h3>
 <p>L'audio de la note vocale et le texte dicté partent chez un prestataire. Ils contiennent, par construction, <strong>le nom et l'adresse du client de l'artisan</strong> — l'application est faite pour qu'on les dicte.</p>
 <p>Ces prestataires sont donc des <strong>sous-traitants ultérieurs</strong> au sens du RGPD : ils doivent être autorisés par l'artisan, nommés dans le contrat, et leurs transferts hors d'Europe encadrés. Aujourd'hui, aucun ne figure nulle part.</p>
@@ -132,7 +133,9 @@
 <p>Ce qu'il dit aussi, et qui compte plus que le prix : à raison d'une heure et demie d'audio par mois, <strong>ce n'est pas le tarif qui décide</strong>, mais les réponses écrites sur ces trois points.</p>
 <p><strong>En attendant, la dictée fonctionne déjà</strong> avec le micro du clavier du téléphone — sans prestataire, sans contrat, et sans qu'aucune donnée ne parte.</p>
 <h3 id="ce-que-je-peux-faire-une-fois-décidé">Ce que je peux faire une fois décidé</h3>
-<p>Verrouiller la configuration sur les deux fournisseurs retenus, pour qu'aucun autre ne puisse être activé par inadvertance, et tenir la liste à jour dans <a href="RGPD.md" target="_blank" rel="noopener"><code>RGPD.md</code></a> §3.</p>
+<p><strong>Fait le 6 août 2026, pour Anthropic et OpenAI :</strong> ils sont raccordés, éprouvés, et la liste est tenue à jour dans <a href="RGPD.md" target="_blank" rel="noopener"><code>RGPD.md</code></a> §3.</p>
+<p>Reste, le jour où le choix est définitif : <strong>verrouiller</strong> la configuration sur ces deux-là, pour qu'aucun autre ne puisse être activé par inadvertance.</p>
+<p>Un point à connaître, parce qu'il change la nature de la protection : jusqu'ici, rien ne sortait parce que le réglage par défaut l'interdisait. Désormais, <strong>rien ne sort parce qu'aucune clé n'est posée</strong>. Une clé posée quelque part suffit à faire partir l'audio et le texte dicté. C'est plus simple à utiliser, et cela demande de savoir où sont ses clés.</p>
 <hr>
 <h2 id="1-bis-la-mémoire-de-lagent--où-elle-vit-et-ce-quelle-devient">1 bis. La mémoire de l'agent : où elle vit, et ce qu'elle devient</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>

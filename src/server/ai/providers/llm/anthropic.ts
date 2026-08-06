@@ -7,6 +7,7 @@ import type {
 } from "./interface";
 import { erreurIA } from "../../errors";
 import { getConfigIA } from "../../config";
+import { schemaJsonDeLOutil } from "./schema-outils";
 
 type BlocContenuAnthropic =
   | { type: "text"; text: string }
@@ -52,7 +53,7 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 30_000);
-      const reponse = await fetch("https://api.anthropic.com/v1/messages", {
+      const reponse = await fetch(`${getConfigIA().anthropicBaseUrl}/v1/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -69,6 +70,12 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
       });
       clearTimeout(timeout);
 
+      if (reponse.status === 401 || reponse.status === 403) {
+        return {
+          succes: false,
+          erreur: erreurIA("cle_api_refusee", "ANTHROPIC_API_KEY est refusée par Anthropic (HTTP " + reponse.status + ")."),
+        };
+      }
       if (reponse.status === 429) {
         return { succes: false, erreur: erreurIA("quota_depasse", "Quota Anthropic dépassé.") };
       }
@@ -108,7 +115,7 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 30_000);
-      const reponse = await fetch("https://api.anthropic.com/v1/messages", {
+      const reponse = await fetch(`${getConfigIA().anthropicBaseUrl}/v1/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -123,34 +130,19 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
           tools: outils.map((o) => ({
             name: o.nom,
             description: o.description,
-            input_schema:
-              o.nom === "ProposerModifications"
-                ? {
-                    type: "object",
-                    properties: {
-                      texteIntroduction: { type: "string" },
-                      propositions: {
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            type: { type: "string" },
-                            description: { type: "string" },
-                            donnees: { type: "object" },
-                          },
-                          required: ["type", "description"],
-                        },
-                      },
-                    },
-                    required: ["texteIntroduction", "propositions"],
-                  }
-                : { type: "object", properties: {}, required: [] },
+            input_schema: schemaJsonDeLOutil(o),
           })),
         }),
         signal: controller.signal,
       });
       clearTimeout(timeout);
 
+      if (reponse.status === 401 || reponse.status === 403) {
+        return {
+          succes: false,
+          erreur: erreurIA("cle_api_refusee", "ANTHROPIC_API_KEY est refusée par Anthropic (HTTP " + reponse.status + ")."),
+        };
+      }
       if (reponse.status === 429) {
         return { succes: false, erreur: erreurIA("quota_depasse", "Quota Anthropic dépassé.") };
       }

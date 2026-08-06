@@ -28,6 +28,58 @@ pkill -f "[n]ext dev" 2>/dev/null || true
 
 cd "$CD" || exit 0
 
+# **Le chemin de secours pour les clés d'IA — et il est créé d'avance.**
+#
+# Un secret d'espace de travail n'entre dans le conteneur qu'après une
+# reconstruction : geste introuvable sur un téléphone. Un fichier `.env.local`
+# à la racine, lui, est pris en compte au prochain allumage, sans rien
+# reconstruire.
+#
+# Il est **écrit ici, vide, dès le premier démarrage**, parce que « créez un
+# fichier nommé .env.local à la racine du projet » n'a pas été compris — et
+# c'était une consigne mal posée : demander de créer un fichier caché, au bon
+# endroit, avec le bon nom, sur six pouces. Le fichier existe donc déjà ; il
+# n'y a qu'à coller une clé après le signe égal.
+#
+# Jamais réécrit s'il existe : une clé déjà collée ne doit pas disparaître à
+# l'allumage suivant. Ignoré par git (`.gitignore` : `.env*`) — une clé ne se
+# versionne pas.
+if [ ! -f "$CD/.env.local" ]; then
+  cat > "$CD/.env.local" <<'MODELE'
+# Collez vos clés après le signe = , puis rechargez la page de l'éditeur.
+# Rien d'autre à faire : Atlas les prend en compte au démarrage suivant.
+#
+# Sans clé, la dictée est recopiée mot à mot au lieu d'être comprise.
+# Ce fichier n'est jamais envoyé sur GitHub.
+
+# Pour que votre voix devienne du texte :
+OPENAI_API_KEY=
+
+# Pour que ce texte devienne un devis structuré :
+ANTHROPIC_API_KEY=
+MODELE
+fi
+
+# Chargé ICI plutôt que laissé à Next.js seul : le bandeau ci-dessous et
+# `npm run verifier:ia` doivent voir exactement ce que voit l'application.
+#
+# **Jamais par `. .env.local`**, qui aurait écrasé avec du vide les clés déjà
+# présentes dans le conteneur — le modèle écrit juste au-dessus aurait alors
+# causé la panne qu'il répare. Le tri vit dans `charger-cles.sh`, éprouvé par
+# `scripts/test-charger-cles.ts`.
+while IFS= read -r ligne; do
+  [ -n "$ligne" ] && export "${ligne?}"
+done < <(bash "$(dirname "$0")/charger-cles.sh" "$CD/.env.local")
+
+# **Un conteneur ancien ne doit pas annuler des clés fraîchement posées.**
+# La décision — et la raison pour laquelle ce n'est pas une entorse à la règle
+# « la variable explicite l'emporte » — vit dans `reglage-ia.sh`, qui est
+# éprouvé par `scripts/test-reglage-ia-espace.ts`.
+ETAT_IA="$(bash "$(dirname "$0")/reglage-ia.sh")"
+if [ "$ETAT_IA" = "neutralise" ]; then
+  unset LLM_PROVIDER TRANSCRIPTION_PROVIDER
+fi
+
 # Récupérer le code neuf, à chaque allumage. La logique — et ses prudences —
 # vit dans `mettre-a-jour.sh`, qui est éprouvé par
 # `scripts/test-mise-a-jour-espace.ts` : enfouie ici, elle n'aurait jamais été
@@ -40,6 +92,23 @@ MISE_A_JOUR="$(bash "$(dirname "$0")/mettre-a-jour.sh" "$CD")"
 if [ "$MISE_A_JOUR" = "faite" ]; then
   npm ci --silent >> "$JOURNAL" 2>&1 || npm install --silent >> "$JOURNAL" 2>&1 || true
   npm run db:migrate --silent >> "$JOURNAL" 2>&1 || true
+
+  # **Rejouer ce script dans sa version neuve.**
+  #
+  # Sans cela, un démarrage qui récupère du code neuf continue d'exécuter
+  # l'ANCIEN script : le correctif n'entre en vigueur qu'au démarrage suivant.
+  # Le patron aurait dû redémarrer deux fois pour voir un changement livré une
+  # fois — et n'aurait eu aucun moyen de le deviner. C'est la même famille de
+  # défaut que « l'espace ne se met pas à jour tout seul » (`ARCHITECTURE.md`
+  # §24), déplacée d'un cran.
+  #
+  # Le garde-fou n'est pas optionnel : sans lui, un script qui se relance
+  # pourrait le faire sans fin. Au second passage la mise à jour répond « à
+  # jour », mais on ne s'en remet pas à cela — on s'en remet à la variable.
+  if [ "${ATLAS_DEMARRAGE_RELANCE:-}" != "1" ]; then
+    export ATLAS_DEMARRAGE_RELANCE=1
+    exec bash "$0" "$@"
+  fi
 fi
 
 # La version exécutée, transmise à l'application pour qu'elle l'affiche.
@@ -86,6 +155,36 @@ else
 fi
 echo "──────────────────────────────────────────────"
 echo "  Version exécutée : $ATLAS_VERSION"
+
+# **L'IA est-elle branchée ?** Écrit ici parce que la question s'est posée un
+# jour où rien ne pouvait y répondre : les clés étaient enregistrées, elles
+# n'entraient pas dans le conteneur, et le seul symptôme était un devis recopié
+# mot à mot. Lu au démarrage, ce constat évite d'aller chercher ailleurs.
+#
+# Volontairement en shell, à partir des variables réellement présentes DANS le
+# conteneur : c'est exactement ce que l'application lira. Un contrôle qui
+# interrogerait autre chose ne prouverait rien.
+case "$ETAT_IA" in
+  sans-cle)
+    echo "  IA : mode déterministe — votre dictée sera recopiée mot à mot."
+    echo "       Pour la brancher : ouvrez le fichier .env.local à la racine,"
+    echo "       collez vos clés après le signe = , et rechargez cette page."
+    ;;
+  coupee)
+    echo "  IA : coupée volontairement (LLM_PROVIDER=dev), clés en place."
+    ;;
+  *)
+    if [ -n "${ANTHROPIC_API_KEY:-}" ] && [ -n "${OPENAI_API_KEY:-}" ]; then
+      echo "  IA : branchée — OpenAI écoute la dictée, Anthropic écrit le devis."
+    elif [ -n "${ANTHROPIC_API_KEY:-}" ]; then
+      echo "  IA : Anthropic écrit le devis ; la dictée n'est PAS écoutée."
+      echo "       Il manque OPENAI_API_KEY pour cela."
+    else
+      echo "  IA : branchée sur OpenAI (écoute la dictée et écrit le devis)."
+    fi
+    [ "$ETAT_IA" = "neutralise" ] && echo "       (réglage figé d'un ancien conteneur neutralisé)"
+    ;;
+esac
 case "$MISE_A_JOUR" in
   faite) echo "  Le code a été mis à jour au démarrage." ;;
   impossible*) echo "  ⚠ MISE À JOUR $MISE_A_JOUR" ;;

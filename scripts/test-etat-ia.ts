@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { decrireEtatIA, auMoinsUnEnDefaut } from "../src/lib/etat-ia";
+import { decrireEtatIA, auMoinsUnEnDefaut, aFaireIA } from "../src/lib/etat-ia";
 
 let passed = 0;
 let failed = 0;
@@ -15,8 +15,11 @@ function test(nom: string, fn: () => void) {
   }
 }
 
-const transcription = (t: string, l = "dev") => decrireEtatIA(t, l)[0];
-const redaction = (l: string, t = "dev") => decrireEtatIA(t, l)[1];
+// Toutes les clés posées par défaut : ces cas éprouvent la description des
+// fournisseurs, pas l'absence de clé — qui a ses propres cas plus bas.
+const TOUTES = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "DEEPGRAM_API_KEY", "GOOGLE_API_KEY"];
+const transcription = (t: string, l = "dev", cles = TOUTES) => decrireEtatIA(t, l, cles)[0];
+const redaction = (l: string, t = "dev", cles = TOUTES) => decrireEtatIA(t, l, cles)[1];
 
 function main() {
   test("Le mode par défaut se nomme, et dit que rien ne part", () => {
@@ -76,9 +79,8 @@ function main() {
       assert.match(e.libelle, /non écrit/, nom);
       assert.match(e.explication, /échouera/, nom);
     }
-    for (const nom of ["openai", "gemini"]) {
-      assert.equal(redaction(nom).nature, "non_raccorde", nom);
-    }
+    // `openai` en rédaction a quitté cette liste le 6 août 2026 : il est écrit.
+    assert.equal(redaction("gemini").nature, "non_raccorde");
   });
 
   test("La casse et les espaces ne changent rien", () => {
@@ -87,7 +89,7 @@ function main() {
   });
 
   test("Les deux rôles sont décrits, dans l'ordre, sans se mélanger", () => {
-    const etats = decrireEtatIA("openai", "anthropic");
+    const etats = decrireEtatIA("openai", "anthropic", TOUTES);
     assert.equal(etats.length, 2);
     assert.equal(etats[0].role, "Transcription");
     assert.equal(etats[1].role, "Rédaction");
@@ -96,20 +98,56 @@ function main() {
   });
 
   test("Tout branché : rien n'est signalé", () => {
-    assert.equal(auMoinsUnEnDefaut(decrireEtatIA("openai", "anthropic")), false);
+    assert.equal(auMoinsUnEnDefaut(decrireEtatIA("openai", "anthropic", TOUTES)), false);
   });
 
   test("Un seul des deux en défaut suffit à le signaler", () => {
-    assert.equal(auMoinsUnEnDefaut(decrireEtatIA("openai", "dev")), true);
-    assert.equal(auMoinsUnEnDefaut(decrireEtatIA("dev", "anthropic")), true);
+    assert.equal(auMoinsUnEnDefaut(decrireEtatIA("openai", "dev", TOUTES)), true);
+    assert.equal(auMoinsUnEnDefaut(decrireEtatIA("dev", "anthropic", TOUTES)), true);
+  });
+
+  // Ajouté le 6 août 2026. Le patron avait choisi ses fournisseurs et payé ses
+  // comptes ; il manquait la clé, et l'écran affichait un prestataire réel
+  // comme si tout allait bien. Un « clé absente » se corrige en collant une
+  // clé, un « non raccordé » en écrivant du code : les confondre fait perdre
+  // une journée.
+  test("Choisi sans sa clé : le dire, et nommer la variable", () => {
+    const e = redaction("anthropic", "dev", []);
+    assert.equal(e.nature, "cle_absente");
+    assert.match(e.libelle, /clé absente/);
+    assert.equal(e.variableManquante, "ANTHROPIC_API_KEY");
+    assert.match(e.explication, /ANTHROPIC_API_KEY/);
+    assert.match(e.explication, /Rien ne part chez personne/);
+  });
+
+  test("La clé d'un autre fournisseur ne branche pas celui-ci", () => {
+    assert.equal(redaction("anthropic", "dev", ["OPENAI_API_KEY"]).nature, "cle_absente");
+    assert.equal(redaction("openai", "dev", ["OPENAI_API_KEY"]).nature, "reel");
+  });
+
+  test("OpenAI rédige pour de bon depuis le 6 août 2026", () => {
+    const e = redaction("openai", "dev", ["OPENAI_API_KEY"]);
+    assert.equal(e.nature, "reel");
+    assert.match(e.libelle, /OpenAI/);
+  });
+
+  // Deux constats identiques valent moins qu'un geste à faire.
+  test("Tout déterministe : l'écran dit quoi faire, et une seule fois", () => {
+    const conseil = aFaireIA(decrireEtatIA("dev", "dev"));
+    assert.match(conseil ?? "", /OPENAI_API_KEY/);
+    assert.match(conseil ?? "", /ANTHROPIC_API_KEY/);
+    // Dès qu'un fournisseur est branché, ce conseil n'a plus lieu d'être.
+    assert.equal(aFaireIA(decrireEtatIA("openai", "anthropic", TOUTES)), undefined);
+    // Une faute de frappe porte déjà son propre message : ne pas la noyer.
+    assert.equal(aFaireIA(decrireEtatIA("dev", "antropic")), undefined);
   });
 
   // Une clé n'a rien à faire dans du HTML rendu, et la fonction ne la reçoit
   // même pas — ce test verrouille le fait qu'elle ne puisse pas fuir par ici.
   test("Aucune clé ne peut transiter par cette fonction", () => {
-    const rendu = JSON.stringify(decrireEtatIA("openai", "anthropic"));
+    // Les NOMS des variables entrent ; leurs valeurs, jamais.
+    const rendu = JSON.stringify(decrireEtatIA("openai", "anthropic", TOUTES));
     assert.doesNotMatch(rendu, /sk-/);
-    assert.equal(decrireEtatIA.length, 2); // deux noms, et rien d'autre
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

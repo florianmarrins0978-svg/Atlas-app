@@ -35,7 +35,7 @@ mes données` produit un ZIP : les vingt-trois tables de son entreprise, ses
 photos, ses enregistrements, ses PDF, et un mode d'emploi. Ce n'est pas un
 confort — c'est la condition qu'il a posée lui-même avant de nourrir la mémoire
 de l'agent : *« le jour où je mets ça en ligne, est-ce que je perds toute la
-mémoire ? »* Voir `ARCHITECTURE.md` §25 pour les choix, dont ce qui a été
+mémoire ? »* Voir `ARCHITECTURE.md` §26 pour les choix, dont ce qui a été
 écarté (`pg_dump`, un privilège d'export, une bibliothèque d'archivage).
 
 La sauvegarde **automatique**, elle, reste bloquée sur le choix d'un hébergeur :
@@ -94,7 +94,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les seize pièges de ce dépôt
+### Les dix-sept pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -219,6 +219,39 @@ site publié à son adresse réelle.
     **l'application affiche sa version dans les Réglages**. Règle générale :
     avant de chercher un défaut qu'un correctif devait fermer, **demander la
     version** — une capture de l'écran Réglages y répond.
+
+17. **Une configuration par défaut qui ignore ce qu'on lui donne.** Le patron
+    avait posé ses clés Anthropic et OpenAI ; l'IA restait débranchée, et rien
+    ne disait pourquoi. `LLM_PROVIDER` valait `dev` par défaut, le conteneur
+    d'essai écrivait `dev` en dur sans transmettre les clés, et le fournisseur
+    OpenAI n'était qu'une ébauche répondant « non implémenté » — trois causes
+    cumulées, aucune visible. Trois règles en sont sorties, à ne pas défaire :
+    **une variable vide vaut une variable absente** (`?? défaut` ne rattrape pas
+    la chaîne vide, et un conteneur transmet volontiers `${X:-}`) ; **ce qui ne
+    figure pas dans `.devcontainer/docker-compose.yml` n'existe pas dans le
+    conteneur**, secrets compris ; et **une ébauche ne se fait jamais passer
+    pour un fournisseur** — elle est refusée à la configuration, pas au premier
+    appui du patron. L'état réel se lit désormais à l'écran Réglages, au
+    démarrage, et par `npm run verifier:ia` (`ARCHITECTURE.md` §26).
+
+    *Corollaire sur les données :* la protection ne tient plus à une valeur par
+    défaut mais à **l'absence de clé**. C'est pourquoi la batterie retire les
+    clés d'IA de toute étape qui exécute le produit — **et pose
+    `LLM_PROVIDER=dev` explicitement** : retirer les variables ne suffit pas,
+    Next.js charge `.env.local` de lui-même, et c'est justement là que le patron
+    est invité à coller les siennes.
+
+    *Corollaire sur l'espace d'essai :* un conteneur construit avant le
+    correctif garde l'ancien réglage figé. `.devcontainer/reglage-ia.sh` le
+    neutralise plutôt que d'exiger une reconstruction — introuvable sur un
+    téléphone.
+
+    *Et le piège du remède :* `.env.local` est désormais écrit d'avance, **vide**,
+    pour que le patron n'ait qu'à coller ses clés. Le charger naïvement
+    (`set -a ; . .env.local`) écrase alors avec du vide les clés venues des
+    secrets de la plateforme — le correctif recréait le défaut. Une seule règle
+    de chargement, dans `.devcontainer/charger-cles.sh` : rien de vide n'est
+    exporté, et ce qui existe déjà l'emporte toujours sur le fichier.
 
 ### Le vocabulaire
 

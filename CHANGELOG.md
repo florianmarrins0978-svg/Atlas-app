@@ -9,6 +9,77 @@ Format : le plus récent en tête.
 
 ## 2026-08-06
 
+### Poser une clé suffit à brancher l'IA — elle ne l'était pas
+
+Le patron : « J'ai déjà mis Anthropic et OpenAI. Les clés sont mises, je ne
+comprends pas pourquoi l'IA n'est toujours pas branchée. Elle est censée
+l'être. »
+
+Elle ne l'était pas, et **trois causes se cumulaient** — chacune suffisant à
+tout bloquer, aucune visible nulle part :
+
+1. **`LLM_PROVIDER` valait `dev` par défaut**, et rien d'autre ne le changeait.
+   Poser une clé ne branchait strictement rien. Désormais la présence d'une clé
+   décide : Anthropic rédige, OpenAI transcrit. La variable explicite reste
+   souveraine — `LLM_PROVIDER=dev` coupe l'IA sans retirer les clés.
+2. **Le conteneur d'essai écrivait `dev` en dur et ne transmettait aucune clé.**
+   Un secret d'espace de travail vit côté hôte ; ce qui ne figure pas dans
+   `.devcontainer/docker-compose.yml` n'existe pas à l'intérieur. Le même piège
+   avait déjà coûté une demi-journée avec `CODESPACE_NAME`.
+3. **`src/server/ai/providers/llm/openai.ts` n'était qu'une ébauche** répondant
+   « non implémenté » — une phrase que personne ne voyait jamais, puisqu'elle
+   ressortait sous la forme d'un devis recopié mot à mot. Elle est maintenant
+   implémentée pour de bon, appels d'outils compris.
+
+**Deux pièges voisins, refermés au passage.** Une variable transmise à vide
+(`${ANTHROPIC_API_KEY:-}`) passait pour renseignée : `?? défaut` ne rattrape
+pas la chaîne vide. Et `LLM_PROVIDER=Anthropic`, avec sa majuscule, retombait
+en mode déterministe sans un mot.
+
+**Pour que la question ne se repose jamais sans réponse :**
+
+- l'écran **Réglages** affiche les fournisseurs réellement actifs, et nomme la
+  variable qui manque le cas échéant ;
+- le bandeau de démarrage de l'espace d'essai le dit aussi ;
+- `npm run verifier:ia` répond en une commande, et `-- --reseau` appelle
+  réellement les fournisseurs. Ce contrôle **sait échouer** : clé absente, nom
+  inconnu, ébauche déguisée en fournisseur, clé refusée.
+
+**Un message qui accusait à tort.** Un HTTP 401 se traduisait par « fournisseur
+indisponible » — soit une panne du prestataire, alors que la clé était
+simplement mauvaise. Nouveau type d'erreur `cle_api_refusee`, qui nomme la
+variable à corriger.
+
+**Et pour qu'il n'ait rien à comprendre.** « Créez un fichier `.env.local` à la
+racine du projet » n'a pas été compris — consigne mal posée : créer un fichier
+caché, au bon endroit, avec le bon nom, sur six pouces. Le fichier est donc
+**créé d'avance et vide** au premier démarrage de l'espace, avec une ligne par
+clé et la marche à suivre en français. Il n'y a qu'à coller après le signe égal.
+
+*Piège refermé en le construisant, et il aurait été grave :* charger ce fichier
+naïvement aurait **écrasé avec du vide** des clés déjà présentes dans le
+conteneur — le remède aurait causé la panne qu'il répare.
+`.devcontainer/charger-cles.sh` ne ressort que ce qui apporte quelque chose, et
+`scripts/test-charger-cles.ts` tient ce cas précis.
+
+**Un espace de travail construit avant ce correctif garde l'ancien réglage**, et
+aucune clé n'y servirait tant qu'il n'est pas reconstruit — geste introuvable sur
+un téléphone. `.devcontainer/reglage-ia.sh` distingue « `dev` parce qu'on l'a
+voulu » de « `dev` parce qu'un vieux fichier l'écrivait », et neutralise le
+second. Éprouvé sur les quatre états par `scripts/test-reglage-ia-espace.ts`.
+
+**Et un défaut de démarrage, découvert en préparant la livraison :** l'espace
+récupère bien le code neuf, mais `demarrer.sh` continuait ensuite dans sa
+version ancienne — le correctif du jour n'entrait en vigueur qu'au démarrage
+suivant. Le script se rejoue désormais dans sa version neuve, une fois et une
+seule.
+
+**Ce que cela change pour les données.** La protection ne repose plus sur une
+valeur par défaut mais sur **l'absence de clé** — voir `docs/RGPD.md` §3. La
+batterie de contrôles retire donc les clés d'IA de toute étape qui exécute le
+produit : une suite lancée dans l'espace du patron enverrait sinon les dictées
+d'essai chez les fournisseurs, et les lui ferait payer.
+
 ### L'agent retient ce que le patron chiffre, et le lui rappelle
 
 *« Si l'appli n'a aucune mémoire, comment l'IA va enregistrer et se souvenir ?
@@ -197,7 +268,7 @@ son téléphone, sans terminal ni compte. Dedans, `donnees.json` (les vingt-troi
 tables de son entreprise), ses photos, ses enregistrements, ses PDF, et un mode
 d'emploi qui dit ce que le fichier contient de sensible.
 
-**Trois décisions, et leur pourquoi** (détail dans `ARCHITECTURE.md` §25) :
+**Trois décisions, et leur pourquoi** (détail dans `ARCHITECTURE.md` §26) :
 
 - **Ni `pg_dump`, ni privilège en plus.** L'export passe par `withEntreprise`,
   comme n'importe quelle lecture. Une sauvegarde n'est pas une raison d'ouvrir

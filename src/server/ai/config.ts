@@ -13,5 +13,7 @@ export function getConfigIA() {
     geminiApiKey: env.geminiApiKey,
     deepgramApiKey: env.deepgramApiKey,
     googleApiKey: env.googleApiKey,
+    anthropicBaseUrl: env.anthropicBaseUrl,
+    openaiBaseUrl: env.openaiBaseUrl,
   } as const;
 }

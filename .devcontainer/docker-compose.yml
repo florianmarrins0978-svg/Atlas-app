@@ -25,27 +25,43 @@ services:
       REDIS_URL: redis://redis:6379
       AUTH_SECRET: essai-local-non-utilise-en-production-0000
       CRON_SECRET: essai-local-cron-secret-0000000000
-      # L'assistant et la transcription tournent en mode déterministe PAR
-      # DÉFAUT : aucun appel réseau, aucune clé, et surtout aucune donnée
-      # d'essai envoyée à un prestataire qui ne figure encore dans aucun
-      # contrat (docs/A-FAIRE.md §1).
+      # --- IA -------------------------------------------------------------
       #
-      # Mais le patron doit pouvoir brancher une vraie IA sur SES essais sans
-      # éditer ce fichier. D'où le repli `:-` : une variable posée dans les
-      # secrets de Codespaces (Settings → Codespaces → Repository secrets)
-      # traverse jusqu'ici ; absente, on retombe sur le mode déterministe.
+      # **Ce bloc porte deux correctifs du 6 août 2026, et il ne faut défaire
+      # ni l'un ni l'autre.**
       #
-      # Sans cette forme, la valeur était figée en dur et un secret Codespaces
-      # n'atteignait JAMAIS le conteneur — comme `CODESPACE_NAME` plus bas, dont
-      # l'absence a coûté une demi-journée. Ce qui ne figure pas dans cette
-      # liste n'existe pas à l'intérieur, y compris ce qu'on croit évident.
-      LLM_PROVIDER: ${LLM_PROVIDER:-dev}
-      TRANSCRIPTION_PROVIDER: ${TRANSCRIPTION_PROVIDER:-dev}
+      # Le premier : un secret d'espace de travail existe côté hôte, pas à
+      # l'intérieur d'un conteneur décrit par docker-compose. La liste ci-
+      # dessous est explicite, et **ce qui n'y figure pas n'existe pas** — c'est
+      # déjà ce qui avait coûté une demi-journée avec `CODESPACE_NAME` (voir
+      # plus bas). D'où le repli `:-` : un secret posé dans Codespaces
+      # (Settings → Codespaces → Repository secrets) traverse jusqu'ici.
+      #
+      # Le second : `LLM_PROVIDER` valait `dev` **en dur**, puis par défaut.
+      # Le patron avait posé ses clés et son application restait déterministe,
+      # parce qu'il fallait AUSSI nommer le fournisseur — deux fois de suite,
+      # c'est là qu'il s'est arrêté. Ces deux lignes restent donc VIDES : la
+      # présence d'une clé décide (`src/server/env.ts`), et les renseigner ne
+      # sert qu'à forcer un choix contraire — typiquement `LLM_PROVIDER=dev`
+      # pour couper l'IA sans retirer les clés.
+      #
+      # Une variable vide vaut une variable absente (`optionnel()`) : sans clé,
+      # rien ne sort, et c'est l'état par défaut du banc d'essai — aucune donnée
+      # d'essai envoyée à un prestataire qui ne figure dans aucun contrat
+      # (docs/A-FAIRE.md §1).
+      LLM_PROVIDER: ${LLM_PROVIDER:-}
+      TRANSCRIPTION_PROVIDER: ${TRANSCRIPTION_PROVIDER:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       DEEPGRAM_API_KEY: ${DEEPGRAM_API_KEY:-}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      # Marque un conteneur construit APRÈS le correctif du 6 août 2026. Sa
+      # présence signifie : « ce que tu lis dans les deux lignes de fournisseur
+      # a été voulu ». Son absence signale un espace plus ancien, où `dev` était
+      # écrit en dur — et où `reglage-ia.sh` neutralise donc ce réglage figé
+      # plutôt que d'exiger une reconstruction introuvable sur un téléphone.
+      ATLAS_CONTENEUR: "2"
       STORAGE_PROVIDER: local
       # L'installation des dépendances télécharge sinon les navigateurs de
       # Playwright — plusieurs centaines de mégaoctets et quelques minutes, pour

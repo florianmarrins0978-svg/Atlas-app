@@ -152,10 +152,11 @@ une date proche : il y apparaît le jour venu.
 - **Rien ne part réellement chez le client** — ni SMS, ni e-mail. Le lien vous
   est remis à l'écran, à vous de le transmettre. C'est le point 5 de
   [`A-FAIRE.md`](A-FAIRE.md), et cela vaut aussi bien ici qu'en production.
-- **L'assistant et la transcription tournent en mode déterministe** *par
-  défaut* : ils répondent sans appeler aucun prestataire. C'est délibéré —
-  envoyer des données d'essai à un fournisseur qui ne figure dans aucun contrat
-  serait précisément l'écart décrit au point 1 de `A-FAIRE.md`.
+- **L'assistant et la transcription tournent en mode déterministe** tant
+  qu'aucune clé d'IA n'est posée : ils répondent sans appeler aucun prestataire.
+  Envoyer des données d'essai à un fournisseur qui ne figure dans aucun contrat
+  serait l'écart décrit au point 1 de `A-FAIRE.md` — d'où la règle du banc
+  d'essai : **des données inventées, uniquement**.
   **Vous pouvez le brancher pour vos propres essais** : voir juste en dessous.
 - **Les fichiers sont stockés sur le disque du banc d'essai.** Ils disparaissent
   avec lui. En production, ce mode est refusé au démarrage.
@@ -178,6 +179,17 @@ obligatoire le jour où Atlas sert **quelqu'un d'autre**.
 Comptez une vingtaine de minutes, et **entre 2 et 7 € par mois** à votre volume
 (le détail est dans [`TRANSCRIPTION.md`](TRANSCRIPTION.md) §7).
 
+Sans clé, Atlas ne comprend pas votre dictée : il la **recopie mot à mot**, et
+le devis porte vos phrases telles que vous les avez dites.
+
+| Clé | Ce qu'elle change |
+|---|---|
+| `OPENAI_API_KEY` | votre voix devient du texte (sans elle, rien n'est écouté) |
+| `ANTHROPIC_API_KEY` | ce texte devient un devis structuré, prestations séparées |
+
+**Poser la clé suffit.** Il n'y a rien d'autre à régler : depuis le 6 août 2026,
+Atlas choisit le fournisseur d'après la clé qu'il trouve.
+
 ### 1. Ouvrir les deux comptes
 
 | | Où | Ce qu'il faut y faire |
@@ -196,53 +208,56 @@ question 3 de `TRANSCRIPTION.md`.
 > improvement*. S'il n'existe pas, ou si le libellé ne dit rien de clair,
 > écrivez-leur avant d'envoyer la voix d'un client.
 
-### 2. Poser les clés dans les secrets du dépôt
+### 2. Coller les clés — le chemin le plus court
+
+À la racine du projet se trouve un fichier **`.env.local`**, créé pour vous au
+démarrage de l'espace. Ouvrez-le : il contient déjà les deux lignes, vides.
+
+```
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+```
+
+Collez chaque clé **juste après le signe égal**, sans espace ni guillemets,
+enregistrez, puis rechargez la page de l'éditeur. C'est tout : l'application
+redémarre et les prend en compte.
+
+Ce fichier n'est jamais envoyé sur GitHub — il est ignoré par git, exprès.
+
+### 3. Ou par les secrets du dépôt, si vous préférez
 
 Sur GitHub : **Settings → Secrets and variables → Codespaces → New repository
-secret**. Quatre secrets à créer :
+secret**. Deux secrets suffisent : `ANTHROPIC_API_KEY` et `OPENAI_API_KEY`.
 
-| Nom | Valeur |
-|---|---|
-| `LLM_PROVIDER` | `anthropic` |
-| `ANTHROPIC_API_KEY` | la clé générée chez Anthropic |
-| `TRANSCRIPTION_PROVIDER` | `openai` |
-| `OPENAI_API_KEY` | la clé générée chez OpenAI |
+Un secret posé là ne se relit pas, y compris par vous — c'est voulu. En
+revanche, un espace **déjà allumé** ne le voit pas : il faut le redémarrer.
 
-**Ne collez jamais une clé dans un fichier du dépôt, ni dans une conversation.**
-Un secret posé ici ne se relit pas, y compris par vous — c'est voulu.
-
-### 3. Redémarrer l'espace de travail — **et non le supprimer**
-
-> ⚠️ **Supprimer un espace de travail efface toutes vos données d'essai.**
-> Chantiers, devis, factures : tout part avec lui, et les données de
-> démonstration sont réinstallées à neuf. Ne le supprimez que si vous y tenez.
-
-Un espace **déjà allumé** ne voit pas un secret créé après lui — mais un
-**redémarrage** suffit à le lui faire lire, sans rien perdre.
-
-Sur `github.com/codespaces`, menu **⋯** → **Stop codespace**, puis rouvrez-le.
-
-> **Ce que je n'ai pas pu vérifier.** Je n'ai pas de Docker dans mon
-> environnement : je n'ai jamais vu un secret traverser jusqu'à l'application.
-> Le redémarrage *devrait* suffire. **La façon de le savoir en dix secondes :**
-> ouvrez **Réglages** et lisez le bloc « Ce que l'application utilise ». S'il
-> nomme OpenAI et Anthropic, c'est bon. S'il dit « mode déterministe », le
-> secret n'est pas arrivé — et là seulement, recréez l'espace.
-
-**Le second piège, lui, impose bien une recréation** : un espace créé depuis
-`main` ne verra jamais vos clés, parce que c'est la branche
-`claude/dictee-mode-essai-qqhcsn` qui porte le passage des secrets jusqu'au
-conteneur. Tant qu'elle n'est pas fusionnée, `main` fige `LLM_PROVIDER: dev` en
-dur. Une fois la fusion faite, la question ne se pose plus.
+> ⚠️ **Redémarrer, pas supprimer.** Supprimer un espace de travail efface
+> toutes vos données d'essai — chantiers, devis, factures. Sur
+> `github.com/codespaces`, menu **⋯** → **Stop codespace**, puis rouvrez-le.
 
 ### 4. Vérifier que c'est bien branché
 
-Dictez une note vocale et regardez ce qui revient. Si vous lisez
-« **[Transcription simulée — … octets reçus]** », c'est que le mode
-déterministe tourne encore : le secret n'est pas arrivé jusqu'au conteneur, le
-plus souvent parce que l'espace de travail est l'ancien.
+Trois façons, de la plus rapide à la plus sûre :
 
-Vos mots à l'écran : c'est branché.
+1. **Le bandeau au démarrage** de l'espace dit en une ligne ce qui tourne.
+2. **L'écran Réglages**, bloc « Ce que l'application utilise » : s'il nomme
+   OpenAI et Anthropic, c'est branché. S'il dit « mode déterministe », les clés
+   ne sont pas arrivées.
+3. **La commande** `npm run verifier:ia`, qui nomme aussi ce qui manque.
+   Avec `npm run verifier:ia -- --reseau`, elle appelle réellement les
+   fournisseurs et vous dit si vos clés sont acceptées.
+
+Et à l'usage : dictez une note vocale. Si vous lisez
+« **[Transcription simulée — … octets reçus]** », le mode déterministe tourne
+encore. Vos mots à l'écran : c'est branché.
+
+**Ce que cela implique.** Dès qu'une clé est posée, ce que vous dictez — nom du
+client, adresse, prestations — part chez le fournisseur concerné. Anthropic et
+OpenAI n'entraînent pas leurs modèles sur ce que reçoit leur API, mais les
+données y transitent et y sont conservées un temps. Tant que le contrat de
+sous-traitance n'existe pas (point 2 de [`A-FAIRE.md`](A-FAIRE.md)), **ne
+dictez que des données inventées**.
 
 ---
 

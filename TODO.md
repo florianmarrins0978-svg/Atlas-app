@@ -16,7 +16,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 | | Ce qui débloque | Ce que je fais alors |
 |---|---|---|
-| 1 | Deux fournisseurs d'IA retenus | **Écrire le raccordement** si le choix n'est ni `anthropic` ni `openai` — les quatre autres noms sont des coquilles vides. Puis verrouiller la configuration sur eux, tenir `docs/RGPD.md` §3 à jour — et **enfin comprendre la dictée** : sans modèle, elle est recopiée mot à mot (`lecture-litterale.ts`). Elle va jusqu'au devis chiffré, mais elle ignore qu'un chêne mort s'abat et qu'une haie se taille |
+| 1 | Deux fournisseurs d'IA retenus | **Le code n'attend plus rien pour Anthropic et OpenAI** depuis le 2026-08-06 : poser `ANTHROPIC_API_KEY` ou `OPENAI_API_KEY` suffit à brancher l'IA (`ARCHITECTURE.md` §26), et `npm run verifier:ia` dit l'état réel. Les quatre autres noms restent des coquilles vides : leur raccordement serait à écrire. Ce qui bloque n'est donc plus la technique mais le **contrat** — sans lui, seules des données inventées peuvent être dictées. Sans clé, la dictée est recopiée mot à mot (`src/server/ai/lecture-litterale.ts`) : elle va jusqu'au devis chiffré, mais elle ignore qu'un chêne mort s'abat et qu'une haie se taille |
 | 2 | Contrat de sous-traitance rédigé | Remplacer les canevas sans valeur par les textes réels |
 | 3 | Hébergement européen choisi | Déployer — **sans quoi personne ne peut se servir de l'application** |
 | 4 | Société constituée, assurance souscrite | Rien côté code |
@@ -39,7 +39,7 @@ point soit écrit : *« oublie pas de le faire, note-le, enregistre-le ! »*
 **(a) est livré.** Un ZIP contenant les vingt-trois tables de l'entreprise, ses
 photos, ses enregistrements et ses PDF, plus un mode d'emploi qui dit ce que le
 fichier contient de sensible. Les choix et ce qu'ils écartent sont dans
-`ARCHITECTURE.md` §25 ; le code dans `src/server/repositories/export-entreprise.ts`,
+`ARCHITECTURE.md` §26 ; le code dans `src/server/repositories/export-entreprise.ts`,
 `src/app/api/mes-donnees/route.ts` et `src/lib/archive-zip.ts`.
 
 **Ce qui le garde honnête, et qu'il ne faut pas défaire :**

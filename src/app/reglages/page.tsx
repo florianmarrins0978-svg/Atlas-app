@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
-import { decrireEtatIA } from "@/lib/etat-ia";
+import { decrireEtatIA, aFaireIA } from "@/lib/etat-ia";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getConfigIA } from "@/server/ai/config";
 import { listerTarifs } from "@/server/repositories/tarifs";
@@ -17,8 +17,17 @@ export default async function ReglagesPage() {
 
   // Seuls les NOMS des fournisseurs traversent jusqu'à l'écran — jamais les
   // clés, qui n'ont rien à faire dans du HTML rendu.
+  // Seuls les NOMS des variables renseignées traversent — jamais leurs valeurs.
   const config = getConfigIA();
-  const etatsIA = decrireEtatIA(config.transcriptionProvider, config.llmProvider);
+  const clesPresentes = [
+    config.anthropicApiKey ? "ANTHROPIC_API_KEY" : "",
+    config.openaiApiKey ? "OPENAI_API_KEY" : "",
+    config.geminiApiKey ? "GEMINI_API_KEY" : "",
+    config.deepgramApiKey ? "DEEPGRAM_API_KEY" : "",
+    config.googleApiKey ? "GOOGLE_API_KEY" : "",
+  ].filter(Boolean);
+  const etatsIA = decrireEtatIA(config.transcriptionProvider, config.llmProvider, clesPresentes);
+  const aFaire = aFaireIA(etatsIA);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -85,9 +94,14 @@ export default async function ReglagesPage() {
             ))}
           </div>
 
+          {/* Cette phrase disait l'inverse jusqu'au 6 août 2026 : « jamais par
+              la seule présence d'une clé ». C'est précisément là que le patron
+              s'est arrêté deux fois — clés posées, IA débranchée, et aucune
+              raison affichée. Poser une clé suffit désormais ; les variables ne
+              servent qu'à aller CONTRE (`ARCHITECTURE.md` §26). */}
           <p className="text-[12px] leading-snug" style={{ color: colors.muted, marginTop: 10 }}>
-            Se règle par les variables <code>TRANSCRIPTION_PROVIDER</code> et <code>LLM_PROVIDER</code>, jamais par la
-            seule présence d&apos;une clé. Mode d&apos;emploi : <code>docs/ESSAYER.md</code>.
+            {aFaire ??
+              "Poser une clé suffit à brancher le fournisseur correspondant. Les variables TRANSCRIPTION_PROVIDER et LLM_PROVIDER ne servent qu'à forcer un autre choix — par exemple « dev » pour couper l'IA sans retirer les clés."}
           </p>
         </section>
         {/*

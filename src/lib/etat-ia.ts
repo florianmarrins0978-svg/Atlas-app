@@ -25,7 +25,13 @@ export type NatureFournisseur =
    * écrit : chaque appel échouera. Le dire ici évite de le découvrir en
    * dictant — voir `docs/TRANSCRIPTION.md`, « Les candidats ».
    */
-  | "non_raccorde";
+  | "non_raccorde"
+  /**
+   * Un prestataire réel est choisi, mais sa clé n'est pas là : chaque appel
+   * échouera. Distinct de `non_raccorde`, et la distinction se paie en temps —
+   * l'un se corrige en écrivant du code, l'autre en collant une clé.
+   */
+  | "cle_absente";
 
 export type EtatFournisseur = {
   role: "Transcription" | "Rédaction";
@@ -34,23 +40,28 @@ export type EtatFournisseur = {
   libelle: string;
   /** Une phrase qui dit ce que ça implique pour les données du client. */
   explication: string;
+  /** La variable exacte à renseigner, quand c'est elle qui manque. */
+  variableManquante?: string;
 };
 
-type Fiche = { libelle: string; nature: NatureFournisseur };
+type Fiche = { libelle: string; nature: NatureFournisseur; variable?: string };
 
 // Les noms acceptés par `src/server/env.ts`, et ce qu'ils valent réellement.
 // `non_raccorde` reflète l'état du code, pas une opinion : ces adaptateurs
 // répondent « fournisseur non implémenté » à chaque appel.
 const TRANSCRIPTION: Record<string, Fiche> = {
-  openai: { libelle: "OpenAI (Whisper)", nature: "reel" },
-  deepgram: { libelle: "Deepgram", nature: "non_raccorde" },
-  google: { libelle: "Google Speech-to-Text", nature: "non_raccorde" },
+  openai: { libelle: "OpenAI (Whisper)", nature: "reel", variable: "OPENAI_API_KEY" },
+  deepgram: { libelle: "Deepgram", nature: "non_raccorde", variable: "DEEPGRAM_API_KEY" },
+  google: { libelle: "Google Speech-to-Text", nature: "non_raccorde", variable: "GOOGLE_API_KEY" },
 };
 
 const REDACTION: Record<string, Fiche> = {
-  anthropic: { libelle: "Anthropic (Claude)", nature: "reel" },
-  openai: { libelle: "OpenAI", nature: "non_raccorde" },
-  gemini: { libelle: "Google Gemini", nature: "non_raccorde" },
+  anthropic: { libelle: "Anthropic (Claude)", nature: "reel", variable: "ANTHROPIC_API_KEY" },
+  // Écrit pour de bon le 6 août 2026 : le patron avait posé une clé OpenAI, et
+  // l'adaptateur répondait « non implémenté » — phrase que personne ne voyait,
+  // puisqu'elle ressortait sous la forme d'un devis recopié mot à mot.
+  openai: { libelle: "OpenAI (GPT)", nature: "reel", variable: "OPENAI_API_KEY" },
+  gemini: { libelle: "Google Gemini", nature: "non_raccorde", variable: "GEMINI_API_KEY" },
 };
 
 const CE_QUI_PART = {
@@ -69,7 +80,12 @@ const CE_QUI_REMPLACE = {
     "Les informations du chantier sont déduites par de simples règles d'écriture, sans aucun modèle de langage derrière.",
 } as const;
 
-function decrire(role: EtatFournisseur["role"], valeur: string, connus: Record<string, Fiche>): EtatFournisseur {
+function decrire(
+  role: EtatFournisseur["role"],
+  valeur: string,
+  connus: Record<string, Fiche>,
+  clesPresentes: ReadonlySet<string>
+): EtatFournisseur {
   const nom = valeur.trim().toLowerCase();
 
   if (nom === "" || nom === "dev") {
@@ -104,6 +120,20 @@ function decrire(role: EtatFournisseur["role"], valeur: string, connus: Record<s
     };
   }
 
+  // Choisi, écrit, mais sans sa clé : chaque appel échouera. Le dire ICI, à la
+  // configuration, plutôt que de le laisser découvrir au premier appui sur un
+  // bouton — et nommer la variable, faute de quoi on cherche au mauvais
+  // endroit.
+  if (fiche.variable && !clesPresentes.has(fiche.variable)) {
+    return {
+      role,
+      nature: "cle_absente",
+      libelle: `${fiche.libelle} — clé absente`,
+      explication: `Ce prestataire est choisi, mais ${fiche.variable} n'est pas renseignée : chaque tentative échouera. Rien ne part chez personne pour autant.`,
+      variableManquante: fiche.variable,
+    };
+  }
+
   return {
     role,
     nature: "reel",
@@ -112,12 +142,37 @@ function decrire(role: EtatFournisseur["role"], valeur: string, connus: Record<s
   };
 }
 
-/** Décrit les deux fournisseurs à partir des seules variables qui les choisissent. */
-export function decrireEtatIA(transcriptionProvider: string, llmProvider: string): EtatFournisseur[] {
+/**
+ * Décrit les deux fournisseurs.
+ *
+ * `clesPresentes` porte les NOMS des variables renseignées — jamais leurs
+ * valeurs. Cette fonction alimente un écran et une commande de diagnostic :
+ * une clé qui entrerait ici finirait dans du HTML rendu et dans des captures.
+ * L'omettre revient à dire « aucune clé », ce qui est le comportement sûr.
+ */
+export function decrireEtatIA(
+  transcriptionProvider: string,
+  llmProvider: string,
+  clesPresentes: Iterable<string> = []
+): EtatFournisseur[] {
+  const cles = new Set(clesPresentes);
   return [
-    decrire("Transcription", transcriptionProvider, TRANSCRIPTION),
-    decrire("Rédaction", llmProvider, REDACTION),
+    decrire("Transcription", transcriptionProvider, TRANSCRIPTION, cles),
+    decrire("Rédaction", llmProvider, REDACTION, cles),
   ];
+}
+
+/**
+ * Le geste qui débloquerait la situation, quand tout est déterministe.
+ *
+ * Sans lui, l'écran répétait deux constats identiques — « rien ne part chez
+ * personne », deux fois — sans jamais dire quoi faire. Un constat qui ne dit
+ * pas quoi faire renvoie chercher ailleurs.
+ */
+export function aFaireIA(etats: EtatFournisseur[]): string | undefined {
+  const toutSimule = etats.every((e) => e.nature === "simule" && !e.libelle.includes("n'est pas reconnu"));
+  if (!toutSimule) return undefined;
+  return "Posez OPENAI_API_KEY (pour écouter la dictée) et ANTHROPIC_API_KEY (pour en écrire le devis) — voir docs/ESSAYER.md.";
 }
 
 /** Vrai si au moins un des deux ne fait pas ce qu'on croit — sert à colorer l'écran. */

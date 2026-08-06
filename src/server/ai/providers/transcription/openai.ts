@@ -24,7 +24,7 @@ export const fournisseurTranscriptionOpenAI: FournisseurTranscription = {
 
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 30_000);
-      const reponse = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+      const reponse = await fetch(`${getConfigIA().openaiBaseUrl}/v1/audio/transcriptions`, {
         method: "POST",
         headers: { Authorization: `Bearer ${cle}` },
         body: formData,
@@ -32,6 +32,12 @@ export const fournisseurTranscriptionOpenAI: FournisseurTranscription = {
       });
       clearTimeout(timeout);
 
+      if (reponse.status === 401 || reponse.status === 403) {
+        return {
+          succes: false,
+          erreur: erreurIA("cle_api_refusee", "OPENAI_API_KEY est refusée par OpenAI (HTTP " + reponse.status + ")."),
+        };
+      }
       if (reponse.status === 429) {
         return { succes: false, erreur: erreurIA("quota_depasse", "Quota OpenAI dépassé.") };
       }

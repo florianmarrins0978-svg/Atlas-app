@@ -138,6 +138,28 @@ async function main() {
   const nbApres = await page.locator("li").count();
   assert.equal(nbApres, nbAvant - 1, "Le tarif supprimé ne doit plus apparaître après rechargement");
 
+  // --- L'IA est-elle branchée ? La réponse doit être À L'ÉCRAN --------------
+  //
+  // Le 6 août 2026, le patron avait posé ses clés et voyait une application
+  // inchangée. La question « quel fournisseur tourne réellement ? » n'avait
+  // aucune réponse consultable : il a fallu lire quatre fichiers du dépôt pour
+  // la reconstituer. Elle se lit maintenant sur cet écran, donc sur une
+  // capture — et cette suite tient qu'elle y reste.
+  const ecran = await page.locator("body").innerText();
+  assert.match(
+    ecran,
+    /Intelligence artificielle/i,
+    "L'écran Réglages ne dit plus quels fournisseurs d'IA tournent."
+  );
+  // La batterie retire délibérément les clés d'IA de cette étape : l'état
+  // attendu ici est donc le mode déterministe, annoncé sans détour.
+  assert.match(
+    ecran,
+    /déterministe/i,
+    `Sans clé, l'écran doit annoncer le mode déterministe. Écran : ${ecran.slice(-400)}`
+  );
+  console.log("  ✓ l'écran dit quels fournisseurs d'IA tournent réellement");
+
   await browser.close();
   console.log("✅ Test bout-en-bout Tarifs réussi.");
 }

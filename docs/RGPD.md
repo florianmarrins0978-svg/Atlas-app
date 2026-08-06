@@ -138,10 +138,23 @@ Les deux dernières lignes découlent du parcours décidé dans `AGENT.md` §2.1
 le devis part par **SMS ou e-mail**, selon ce que le client a choisi. Chaque
 canal ajoute un sous-traitant à autoriser et à lister.
 
-**Le mode `dev` ne transmet rien.** `LLM_PROVIDER=dev` et
-`TRANSCRIPTION_PROVIDER=dev` sont déterministes et n'effectuent aucun appel
-réseau. C'est la configuration à privilégier en développement et en test : elle
-supprime la question à la racine.
+**Le mode `dev` ne transmet rien.** Les fournisseurs `dev` sont déterministes
+et n'effectuent aucun appel réseau. C'est la configuration à privilégier en
+développement et en test : elle supprime la question à la racine.
+
+**Ce qui déclenche le mode `dev`, depuis le 6 août 2026 : l'absence de clé.**
+Auparavant, `LLM_PROVIDER` valait `dev` par défaut et rien d'autre ne le
+changeait — poser une clé d'API ne branchait rien, ce qui a fait perdre une
+journée. Désormais **une clé présente suffit à brancher le fournisseur
+correspondant**, et il faut poser `LLM_PROVIDER=dev` explicitement pour couper
+l'IA tout en gardant la clé en place.
+
+Cette inversion mérite d'être comprise pour ce qu'elle est : **la protection ne
+repose plus sur une valeur par défaut, mais sur l'absence de clé.** Une clé
+posée quelque part — secret d'espace de travail, `.env.local`, variable
+d'hébergeur — suffit à faire sortir l'audio et le texte dicté. Pour savoir ce
+qu'il en est réellement sur une installation donnée : `npm run verifier:ia`, et
+l'écran Réglages, qui l'affiche en clair.
 
 > **État actuel : non conforme.** Aucun de ces fournisseurs n'est aujourd'hui
 > listé dans un contrat, ni autorisé par un artisan. Cette liste doit être
