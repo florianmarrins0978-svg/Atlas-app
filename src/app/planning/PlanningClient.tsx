@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat";
+import { jourIso } from "@/lib/jour";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { LIBELLE_MOMENT, libelleDuree } from "@/server/disponibilites";
-import { planifierChantierAction } from "./actions";
+import CarteGlissante from "@/components/atlas/CarteGlissante";
+import { planifierChantierAction, supprimerChantierAction } from "./actions";
 
 // Intégration réelle — connectée à la base (docs/ARCHITECTURE_DONNEES.md).
 // Cet écran ne connaît toujours aucune règle métier : il affiche uniquement le
@@ -54,9 +56,37 @@ export default function PlanningClient({ initialChantiers }: { initialChantiers:
   const [dateChoisie, setDateChoisie] = useState("");
   const [enCours, setEnCours] = useState(false);
 
-  const aPlanifier = chantiers.filter((c) => getPlanificationEtat(c) === "a_planifier");
-  const planifies = trierParDatePlanifiee(chantiers.filter((c) => getPlanificationEtat(c) === "planifie"));
-  const attenteClient = chantiers.filter((c) => getPlanificationEtat(c) === "attente_client");
+  const aujourdHui = jourIso(new Date());
+  const [supprimes, setSupprimes] = useState<string[]>([]);
+  const [erreurSuppression, setErreurSuppression] = useState<string | null>(null);
+
+  /**
+   * Le chantier disparaît de l'écran AVANT la réponse du serveur : sur un
+   * téléphone, une carte qui reste une seconde après l'appui se lit comme un
+   * bouton qui n'a pas marché, et l'on appuie une seconde fois. En cas de
+   * refus — une facture émise —, elle revient, et la raison s'affiche.
+   */
+  async function supprimer(id: string) {
+    setErreurSuppression(null);
+    setSupprimes((s) => [...s, id]);
+    const r = await supprimerChantierAction(id);
+    if (!r.succes) {
+      setSupprimes((s) => s.filter((x) => x !== id));
+      setErreurSuppression(r.erreur);
+    }
+  }
+  const visibles = chantiers.filter((c) => !supprimes.includes(c.id));
+  const aPlanifier = visibles.filter((c) => getPlanificationEtat(c) === "a_planifier");
+  // **Le planning ne montre que ce qui est à venir.** Un chantier dont la date
+  // est passée a eu lieu : il encombrerait ici ce qui reste à faire, et le
+  // patron le retrouve dans « Terminés », d'où il le clôture (règle unique,
+  // `src/lib/onglet-chantier.ts`).
+  const planifies = trierParDatePlanifiee(
+    visibles.filter(
+      (c) => getPlanificationEtat(c) === "planifie" && !(c.datePlanifiee && c.datePlanifiee < aujourdHui)
+    )
+  );
+  const attenteClient = visibles.filter((c) => getPlanificationEtat(c) === "attente_client");
 
   function ouvrirSheet(c: ChantierPlanning) {
     setDateChoisie(c.datePlanifiee ?? "");
@@ -160,6 +190,12 @@ export default function PlanningClient({ initialChantiers }: { initialChantiers:
           </div>
         )}
 
+        {erreurSuppression && (
+          <p role="alert" className="mt-6 px-6 text-[13px]" style={{ color: colors.alert }}>
+            {erreurSuppression}
+          </p>
+        )}
+
         {/* Planifiés */}
         <div className="mt-8 px-6">
           <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
@@ -172,10 +208,14 @@ export default function PlanningClient({ initialChantiers }: { initialChantiers:
           ) : (
             <div className="flex flex-col gap-2">
               {planifies.map((c) => (
-                <button
+                <CarteGlissante
                   key={c.id}
+                  libelleSuppression={`Supprimer le chantier ${c.nom}`}
+                  onSupprimer={() => supprimer(c.id)}
+                >
+                <button
                   onClick={() => ouvrirSheet(c)}
-                  className="flex items-center gap-3 rounded-2xl px-5 py-4 text-left"
+                  className="flex w-full items-center gap-3 rounded-2xl px-5 py-4 text-left"
                   style={{ backgroundColor: colors.card }}
                 >
                   <div
@@ -199,6 +239,7 @@ export default function PlanningClient({ initialChantiers }: { initialChantiers:
                     </span>
                   </span>
                 </button>
+                </CarteGlissante>
               ))}
             </div>
           )}

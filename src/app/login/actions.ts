@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
@@ -7,6 +8,44 @@ import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { logger } from "@/server/logger";
 
 const MESSAGE_GENERIQUE = "Email ou mot de passe incorrect.";
+
+/**
+ * **Ne jamais répondre « mot de passe incorrect » à quelqu'un dont le mot de
+ * passe est bon.**
+ *
+ * Le 6 août 2026, le patron donne l'adresse de l'application à ses parents pour
+ * qu'ils l'essaient. Ils saisissent les bons identifiants et lisent « Email ou
+ * mot de passe incorrect ». Ils recommencent, évidemment — ce que dit le
+ * message —, et s'enfoncent : chaque tentative rallonge le blocage.
+ *
+ * Deux causes, et les deux sont réparées ici :
+ *
+ * 1. le compteur était tenu **par email**, alors que le banc d'essai partage un
+ *    compte unique : les essais des uns bloquaient les autres. Il est désormais
+ *    tenu par email **et adresse IP** — un visiteur ne peut plus verrouiller
+ *    son voisin ;
+ * 2. le message mentait. On préférait taire le blocage pour ne pas révéler
+ *    qu'un email existe — protection dérisoire (celui qui martèle un compte le
+ *    sait déjà) payée d'un prix total : l'utilisateur légitime n'a aucun moyen
+ *    de comprendre, et conclut que l'application est cassée.
+ */
+function messageAttente(secondes: number): string {
+  const minutes = Math.max(1, Math.ceil(secondes / 60));
+  return `Trop de tentatives depuis cet appareil. Réessayez dans ${minutes} minute${minutes > 1 ? "s" : ""}.`;
+}
+
+/**
+ * L'adresse du visiteur, telle que la voit le serveur.
+ *
+ * Derrière le proxy de Codespaces comme derrière un hébergeur, l'adresse réelle
+ * n'arrive que par `x-forwarded-for`. Absente, on retombe sur une clé commune :
+ * le comptage redevient alors celui d'avant, jamais plus permissif.
+ */
+async function adresseVisiteur(): Promise<string> {
+  const entetes = await headers();
+  const transmise = entetes.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return transmise || entetes.get("x-real-ip") || "inconnue";
+}
 
 export async function connexionAction(
   _etatPrecedent: { erreur?: string } | undefined,
@@ -17,13 +56,28 @@ export async function connexionAction(
     .toLowerCase();
   const password = String(formData.get("password") ?? "");
 
-  // Limité par email : ne révèle jamais si l'email existe (même message que
-  // pour un mot de passe invalide), n'entraîne jamais un blocage permanent
-  // (fenêtre glissante de 15 minutes).
-  const limite = await verifierLimite(`connexion:${email}`, LIMITES.connexion);
-  if (!limite.autorise) {
-    logger.warn("Limite de tentatives de connexion atteinte", { email });
-    return { erreur: MESSAGE_GENERIQUE };
+  // Par visiteur d'abord — c'est ce seuil qui protège du martèlement, et lui
+  // seul peut bloquer quelqu'un de bonne foi, d'où un message qui le dit.
+  const ip = await adresseVisiteur();
+  const parVisiteur = await verifierLimite(`connexion:${email}:${ip}`, LIMITES.connexion);
+  if (!parVisiteur.autorise) {
+    logger.warn("Limite de tentatives de connexion atteinte (visiteur)", { email });
+    return { erreur: messageAttente(parVisiteur.retryAfterSecondes) };
+  }
+
+  // Puis par compte, très large : inoffensif à l'usage, il freine une attaque
+  // répartie sur beaucoup d'adresses IP que le seuil précédent laisserait
+  // passer. Message identique — un attaquant n'apprend rien de plus.
+  //
+  // La clé commence par `connexion:` à dessein : c'est le motif que le lanceur
+  // des suites navigateur remet à zéro entre deux suites
+  // (`scripts/run-e2e-tests.ts`). Nommée autrement, elle aurait accumulé les
+  // connexions de trente-trois suites et fini par bloquer la batterie
+  // elle-même — un contrôle qui casse ce qu'il vérifie.
+  const parCompte = await verifierLimite(`connexion:compte:${email}`, LIMITES.connexionParCompte);
+  if (!parCompte.autorise) {
+    logger.warn("Limite de tentatives de connexion atteinte (compte)", { email });
+    return { erreur: messageAttente(parCompte.retryAfterSecondes) };
   }
 
   try {

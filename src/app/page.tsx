@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { chantierEnCours, getStatutAffiche, statutLabel } from "@/lib/chantier-etat";
+import { ongletDuChantier } from "@/lib/onglet-chantier";
 import { colors, font, smallCaps, cardShadow } from "@/lib/design-tokens";
 import StatusIcon from "@/components/atlas/StatusIcon";
 import ActionPrincipale from "@/components/atlas/ActionPrincipale";
@@ -44,7 +45,14 @@ export default async function ChantiersPage() {
 
   // Le statut est calculé une seule fois, ici : le compteur et la carte doivent
   // dire la même chose, et deux appels séparés finiraient par diverger.
-  const avecStatut = chantiers.map((c) => ({ ...c, statut: getStatutAffiche(c) }));
+  // **Cette liste ne montre que ce qui reste à préparer.** Un chantier passé au
+  // planning vit au planning ; facturé, terminé, ou dont la date est dépassée,
+  // il vit dans « Terminés ». La règle est unique et partagée
+  // (`src/lib/onglet-chantier.ts`) : recopiée par écran, elle rangeait le même
+  // chantier à deux endroits — ce que le patron a vu le 6 août 2026.
+  const avecStatut = chantiers
+    .map((c) => ({ ...c, statut: getStatutAffiche(c) }))
+    .filter((c) => ongletDuChantier(c) === "chantiers");
   const enCours = avecStatut.filter((c) => chantierEnCours(c.statut)).length;
 
   return (
