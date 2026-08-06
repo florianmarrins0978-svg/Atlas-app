@@ -16,7 +16,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 | | Ce qui débloque | Ce que je fais alors |
 |---|---|---|
-| 1 | Deux fournisseurs d'IA retenus | Verrouiller la configuration sur eux, tenir `docs/RGPD.md` §3 à jour — et **enfin comprendre la dictée** : sans modèle, elle est recopiée mot à mot (`lecture-litterale.ts`). Elle va jusqu'au devis chiffré, mais elle ignore qu'un chêne mort s'abat et qu'une haie se taille |
+| 1 | Deux fournisseurs d'IA retenus | **Le code n'attend plus rien** depuis le 2026-08-06 : poser `ANTHROPIC_API_KEY` et `OPENAI_API_KEY` suffit à brancher l'IA (`ARCHITECTURE.md` §25), et `npm run verifier:ia` dit l'état réel. Ce qui reste bloqué est le **contrat**, pas la technique : sans lui, seules des données inventées peuvent être dictées. Sans clé, la dictée est recopiée mot à mot (`src/server/ai/lecture-litterale.ts`) — elle va jusqu'au devis chiffré, mais elle ignore qu'un chêne mort s'abat et qu'une haie se taille |
 | 2 | Contrat de sous-traitance rédigé | Remplacer les canevas sans valeur par les textes réels |
 | 3 | Hébergement européen choisi | Déployer — **sans quoi personne ne peut se servir de l'application** |
 | 4 | Société constituée, assurance souscrite | Rien côté code |

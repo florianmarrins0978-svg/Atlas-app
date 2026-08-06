@@ -62,7 +62,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les seize pièges de ce dépôt
+### Les dix-sept pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -179,6 +179,24 @@ site publié à son adresse réelle.
     **l'application affiche sa version dans les Réglages**. Règle générale :
     avant de chercher un défaut qu'un correctif devait fermer, **demander la
     version** — une capture de l'écran Réglages y répond.
+
+17. **Une configuration par défaut qui ignore ce qu'on lui donne.** Le patron
+    avait posé ses clés Anthropic et OpenAI ; l'IA restait débranchée, et rien
+    ne disait pourquoi. `LLM_PROVIDER` valait `dev` par défaut, le conteneur
+    d'essai écrivait `dev` en dur sans transmettre les clés, et le fournisseur
+    OpenAI n'était qu'une ébauche répondant « non implémenté » — trois causes
+    cumulées, aucune visible. Trois règles en sont sorties, à ne pas défaire :
+    **une variable vide vaut une variable absente** (`?? défaut` ne rattrape pas
+    la chaîne vide, et un conteneur transmet volontiers `${X:-}`) ; **ce qui ne
+    figure pas dans `.devcontainer/docker-compose.yml` n'existe pas dans le
+    conteneur**, secrets compris ; et **une ébauche ne se fait jamais passer
+    pour un fournisseur** — elle est refusée à la configuration, pas au premier
+    appui du patron. L'état réel se lit désormais à l'écran Réglages, au
+    démarrage, et par `npm run verifier:ia` (`ARCHITECTURE.md` §25).
+
+    *Corollaire sur les données :* la protection ne tient plus à une valeur par
+    défaut mais à **l'absence de clé**. C'est pourquoi la batterie retire les
+    clés d'IA de toute étape qui exécute le produit.
 
 ### Le vocabulaire
 

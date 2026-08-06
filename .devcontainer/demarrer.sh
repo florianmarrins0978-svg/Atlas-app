@@ -28,6 +28,23 @@ pkill -f "[n]ext dev" 2>/dev/null || true
 
 cd "$CD" || exit 0
 
+# **Le chemin de secours pour les clés d'IA.**
+#
+# Un secret d'espace de travail n'entre dans le conteneur qu'après une
+# reconstruction — geste peu évident, et impossible à trouver depuis un
+# téléphone. Un fichier `.env.local` déposé à la racine, lui, est pris en
+# compte au prochain allumage, sans rien reconstruire.
+#
+# Chargé ICI plutôt que laissé à Next.js seul : le bandeau ci-dessous et
+# `npm run verifier:ia` doivent voir exactement ce que voit l'application.
+# Ignoré par git (`.gitignore` : `.env*`) — une clé ne se versionne jamais.
+if [ -f "$CD/.env.local" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . "$CD/.env.local"
+  set +a
+fi
+
 # Récupérer le code neuf, à chaque allumage. La logique — et ses prudences —
 # vit dans `mettre-a-jour.sh`, qui est éprouvé par
 # `scripts/test-mise-a-jour-espace.ts` : enfouie ici, elle n'aurait jamais été
@@ -86,6 +103,26 @@ else
 fi
 echo "──────────────────────────────────────────────"
 echo "  Version exécutée : $ATLAS_VERSION"
+
+# **L'IA est-elle branchée ?** Écrit ici parce que la question s'est posée un
+# jour où rien ne pouvait y répondre : les clés étaient enregistrées, elles
+# n'entraient pas dans le conteneur, et le seul symptôme était un devis recopié
+# mot à mot. Lu au démarrage, ce constat évite d'aller chercher ailleurs.
+#
+# Volontairement en shell, à partir des variables réellement présentes DANS le
+# conteneur : c'est exactement ce que l'application lira. Un contrôle qui
+# interrogerait autre chose ne prouverait rien.
+if [ -n "${ANTHROPIC_API_KEY:-}" ] && [ -n "${OPENAI_API_KEY:-}" ]; then
+  echo "  IA : branchée (OpenAI transcrit, Anthropic rédige)."
+elif [ -n "${ANTHROPIC_API_KEY:-}" ]; then
+  echo "  IA : rédaction par Anthropic ; dictée NON transcrite."
+elif [ -n "${OPENAI_API_KEY:-}" ]; then
+  echo "  IA : branchée sur OpenAI (transcription et rédaction)."
+else
+  echo "  IA : mode déterministe — aucune clé n'est arrivée jusqu'ici."
+  echo "       Secrets de l'espace, puis RECONSTRUIRE le conteneur :"
+  echo "       une clé ajoutée après coup n'entre pas dans un espace déjà bâti."
+fi
 case "$MISE_A_JOUR" in
   faite) echo "  Le code a été mis à jour au démarrage." ;;
   impossible*) echo "  ⚠ MISE À JOUR $MISE_A_JOUR" ;;

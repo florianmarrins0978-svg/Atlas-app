@@ -15,9 +15,10 @@ votre compte GitHub, que vous avez déjà.
 2. [En cinq gestes](#en-cinq-gestes)
 3. [Ce que vous pouvez essayer, du début à la fin](#ce-que-vous-pouvez-essayer-du-début-à-la-fin)
 4. [Ce qui ne marchera pas, et pourquoi](#ce-qui-ne-marchera-pas-et-pourquoi)
-5. [Repartir de zéro](#repartir-de-zéro)
-6. [Fermer proprement](#fermer-proprement)
-7. [Si quelque chose ne va pas](#si-quelque-chose-ne-va-pas)
+5. [Brancher l'IA, si vous le voulez](#brancher-lia-si-vous-le-voulez)
+6. [Repartir de zéro](#repartir-de-zéro)
+7. [Fermer proprement](#fermer-proprement)
+8. [Si quelque chose ne va pas](#si-quelque-chose-ne-va-pas)
 
 ---
 
@@ -151,12 +152,61 @@ une date proche : il y apparaît le jour venu.
 - **Rien ne part réellement chez le client** — ni SMS, ni e-mail. Le lien vous
   est remis à l'écran, à vous de le transmettre. C'est le point 5 de
   [`A-FAIRE.md`](A-FAIRE.md), et cela vaut aussi bien ici qu'en production.
-- **L'assistant et la transcription tournent en mode déterministe** : ils
-  répondent sans appeler aucun prestataire. C'est délibéré — envoyer des données
-  d'essai à un fournisseur qui ne figure dans aucun contrat serait précisément
-  l'écart décrit au point 1 de `A-FAIRE.md`.
+- **L'assistant et la transcription tournent en mode déterministe** tant
+  qu'aucune clé d'IA n'est posée : ils répondent sans appeler aucun prestataire.
+  Envoyer des données d'essai à un fournisseur qui ne figure dans aucun contrat
+  serait l'écart décrit au point 1 de `A-FAIRE.md` — d'où la règle du banc
+  d'essai : **des données inventées, uniquement**. Pour brancher l'IA malgré
+  tout, voir juste en dessous.
 - **Les fichiers sont stockés sur le disque du banc d'essai.** Ils disparaissent
   avec lui. En production, ce mode est refusé au démarrage.
+
+---
+
+## Brancher l'IA, si vous le voulez
+
+Sans clé, Atlas ne comprend pas votre dictée : il la **recopie mot à mot**, et
+le devis porte les phrases telles que vous les avez dites. C'est voulu, et
+c'est ce qui protège vos données tant qu'aucun contrat n'existe.
+
+Pour qu'il la comprenne vraiment, deux clés — la première suffit à commencer :
+
+| Clé | Ce qu'elle change |
+|---|---|
+| `OPENAI_API_KEY` | votre voix devient du texte (sans elle, rien n'est écouté) |
+| `ANTHROPIC_API_KEY` | le texte devient un devis structuré, prestations séparées |
+
+**Le plus simple, et le plus rapide :** créez un fichier nommé `.env.local` à la
+racine du projet, avec une ligne par clé :
+
+```
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+Puis rechargez la page de l'éditeur : l'application redémarre et les prend en
+compte. Ce fichier n'est jamais versionné (`.gitignore`).
+
+**Par les secrets de l'espace de travail** (`github.com/settings/codespaces`),
+c'est possible aussi — mais un secret ajouté à un espace **déjà créé** n'y entre
+qu'après une reconstruction du conteneur (*Rebuild Container*). C'est le piège
+qui a fait croire, le 6 août 2026, que les clés étaient posées alors qu'elles
+n'arrivaient jamais jusqu'à l'application.
+
+**Pour savoir où vous en êtes**, sans deviner : l'écran **Réglages** affiche en
+bas quels fournisseurs sont réellement actifs, et ce qui manque le cas échéant.
+Le bandeau de démarrage le dit aussi. En ligne de commande :
+
+```
+npm run verifier:ia
+```
+
+**Ce que cela implique.** Dès qu'une clé est posée, ce que vous dictez — nom du
+client, adresse, prestations — part chez le fournisseur concerné. Anthropic et
+OpenAI n'entraînent pas leurs modèles sur les données reçues par leur API, mais
+elles y transitent et y sont conservées un temps. Tant que le contrat de
+sous-traitance n'existe pas (point 1 de [`A-FAIRE.md`](A-FAIRE.md)), **ne
+dictez que des données inventées**.
 
 ---
 

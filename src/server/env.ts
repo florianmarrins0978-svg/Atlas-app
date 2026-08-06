@@ -16,6 +16,18 @@ export type Env = {
   geminiApiKey?: string;
   deepgramApiKey?: string;
   googleApiKey?: string;
+  /**
+   * Adresses des fournisseurs, surchargeables **pour les essais uniquement**.
+   *
+   * Elles existent parce qu'aucune suite ne pouvait éprouver l'appel réel :
+   * sans elles, vérifier qu'on envoie la bonne requête et qu'on lit bien la
+   * réponse supposait d'appeler le vrai service, avec une vraie clé, et de le
+   * payer. Les suites lancent désormais un serveur local et pointent ici.
+   * En l'absence de valeur, ce sont les adresses officielles — jamais une
+   * adresse devinée.
+   */
+  anthropicBaseUrl: string;
+  openaiBaseUrl: string;
   stockageProvider: FournisseurStockage;
   s3?: {
     bucket: string;
@@ -46,6 +58,22 @@ export class ErreurConfiguration extends Error {
   }
 }
 
+/**
+ * Une variable vide vaut une variable absente.
+ *
+ * **Ce piège a coûté cher.** Le patron avait posé ses clés d'API ; l'IA
+ * restait débranchée. Une des causes : un conteneur qui transmet
+ * `ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}` déclare la variable **à vide**
+ * quand elle n'existe pas côté hôte. `process.env.X ?? défaut` ne rattrape
+ * PAS la chaîne vide — la configuration se croyait alors renseignée, et le
+ * fournisseur refusait sans que rien ne l'explique. Tout ce qui est optionnel
+ * passe donc par ici, et une valeur vide ressort `undefined`.
+ */
+function optionnel(nom: string): string | undefined {
+  const valeur = process.env[nom]?.trim();
+  return valeur ? valeur : undefined;
+}
+
 function requis(nom: string): string {
   const valeur = process.env[nom];
   if (!valeur || valeur.trim() === "") {
@@ -69,12 +97,36 @@ function construireEnv(): Env {
     ? requis("AUTH_SECRET")
     : (process.env.AUTH_SECRET ?? "dev-secret-non-utilise-en-production");
 
-  const llmProvider = process.env.LLM_PROVIDER ?? "dev";
-  if (estProduction && llmProvider !== "dev" && !process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY) {
-    console.error(
-      `[env] LLM_PROVIDER=${llmProvider} configuré en production sans ANTHROPIC_API_KEY ni OPENAI_API_KEY.`
-    );
-  }
+  const anthropicApiKey = optionnel("ANTHROPIC_API_KEY");
+  const openaiApiKey = optionnel("OPENAI_API_KEY");
+  const geminiApiKey = optionnel("GEMINI_API_KEY");
+  const deepgramApiKey = optionnel("DEEPGRAM_API_KEY");
+  const googleApiKey = optionnel("GOOGLE_API_KEY");
+
+  // **Poser une clé suffit à brancher l'IA.**
+  //
+  // Avant : `LLM_PROVIDER` valait `dev` par défaut, et rien d'autre ne le
+  // changeait. Le patron avait renseigné ses deux clés et voyait une
+  // application toujours déterministe — la dictée recopiée mot à mot, jamais
+  // comprise. Aucun écran ne disait pourquoi, et la seule variable qui aurait
+  // tout expliqué ne s'affichait nulle part.
+  //
+  // Désormais : la variable explicite l'emporte toujours (une installation qui
+  // veut rester déterministe pose `LLM_PROVIDER=dev`), et **à défaut, la
+  // présence d'une clé décide**. Sans clé, rien ne change : `dev`, aucun appel
+  // réseau, aucune donnée qui sort — c'est l'état des tests et de la CI, et il
+  // doit le rester.
+  //
+  // Le couple naturel des deux clés du patron : Anthropic rédige (seul
+  // fournisseur LLM éprouvé de bout en bout ici), OpenAI transcrit — Anthropic
+  // ne prend pas d'audio.
+  //
+  // Le nom est ramené en minuscules : `LLM_PROVIDER=Anthropic` tombait sinon
+  // dans le cas par défaut de la fabrique — c'est-à-dire en mode déterministe,
+  // sans un mot. Une majuscule ne doit pas décider du produit.
+  const llmProvider =
+    optionnel("LLM_PROVIDER")?.toLowerCase() ?? (anthropicApiKey ? "anthropic" : openaiApiKey ? "openai" : "dev");
+  const transcriptionProvider = optionnel("TRANSCRIPTION_PROVIDER")?.toLowerCase() ?? (openaiApiKey ? "openai" : "dev");
 
   // Le stockage local ne doit JAMAIS être utilisé en production (fichiers
   // éphémères / non partagés entre instances) — échec explicite au démarrage.
@@ -118,12 +170,14 @@ function construireEnv(): Env {
     databaseUrl,
     authSecret,
     llmProvider,
-    transcriptionProvider: process.env.TRANSCRIPTION_PROVIDER ?? "dev",
-    anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-    openaiApiKey: process.env.OPENAI_API_KEY,
-    geminiApiKey: process.env.GEMINI_API_KEY,
-    deepgramApiKey: process.env.DEEPGRAM_API_KEY,
-    googleApiKey: process.env.GOOGLE_API_KEY,
+    transcriptionProvider,
+    anthropicApiKey,
+    openaiApiKey,
+    geminiApiKey,
+    deepgramApiKey,
+    googleApiKey,
+    anthropicBaseUrl: optionnel("ANTHROPIC_BASE_URL") ?? "https://api.anthropic.com",
+    openaiBaseUrl: optionnel("OPENAI_BASE_URL") ?? "https://api.openai.com",
     stockageProvider,
     s3,
     redisUrl: process.env.REDIS_URL,

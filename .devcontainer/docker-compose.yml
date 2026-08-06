@@ -25,11 +25,32 @@ services:
       REDIS_URL: redis://redis:6379
       AUTH_SECRET: essai-local-non-utilise-en-production-0000
       CRON_SECRET: essai-local-cron-secret-0000000000
-      # L'assistant et la transcription tournent en mode déterministe : aucun
-      # appel réseau, aucune clé, et surtout aucune donnée d'essai envoyée à un
-      # prestataire qui ne figure encore dans aucun contrat (docs/A-FAIRE.md §1).
-      LLM_PROVIDER: dev
-      TRANSCRIPTION_PROVIDER: dev
+      # --- IA -------------------------------------------------------------
+      #
+      # **Ces cinq lignes réparent la panne du 6 août 2026.** Le patron avait
+      # enregistré ses clés Anthropic et OpenAI dans les secrets de son espace
+      # de travail, et l'application restait obstinément déterministe : la
+      # dictée recopiée mot à mot, jamais comprise.
+      #
+      # Deux causes, ici même. Les fournisseurs étaient **écrits en dur à
+      # `dev`** juste en dessous — aucune clé au monde n'y aurait changé quoi
+      # que ce soit. Et surtout : un secret d'espace de travail existe côté
+      # hôte, pas à l'intérieur d'un conteneur décrit par docker-compose. La
+      # liste ci-dessous est explicite, et **ce qui n'y figure pas n'existe
+      # pas** — c'est déjà ce qui avait coûté une demi-journée avec
+      # `CODESPACE_NAME` (voir plus bas).
+      #
+      # Vide par défaut, et une variable vide vaut une variable absente
+      # (`optionnel()` dans `src/server/env.ts`) : sans clé, l'application
+      # retombe d'elle-même en mode déterministe. Rien ne sort tant que rien
+      # n'est posé.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # Laissés vides : la présence d'une clé choisit le fournisseur. Les
+      # renseigner ne sert qu'à forcer un choix contraire — par exemple
+      # `LLM_PROVIDER=dev` pour couper l'IA tout en gardant les clés en place.
+      LLM_PROVIDER: ${LLM_PROVIDER:-}
+      TRANSCRIPTION_PROVIDER: ${TRANSCRIPTION_PROVIDER:-}
       STORAGE_PROVIDER: local
       # L'installation des dépendances télécharge sinon les navigateurs de
       # Playwright — plusieurs centaines de mégaoctets et quelques minutes, pour

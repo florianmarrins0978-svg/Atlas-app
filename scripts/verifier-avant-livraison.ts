@@ -38,6 +38,14 @@ const AUTH = { AUTH_SECRET: "ci-secret-not-a-real-production-value-000000000000"
 const CRON = { CRON_SECRET: "ci-placeholder-cron-secret-0000000000" };
 const REDIS = { REDIS_URL: "redis://localhost:6379" };
 
+// **Aucune suite ne doit appeler un vrai fournisseur d'IA.** Depuis que poser
+// une clé suffit à brancher l'IA, une batterie lancée dans l'espace de travail
+// du patron — où ses clés vivent — enverrait les dictées d'essai chez Anthropic
+// et OpenAI, et les lui ferait payer. Retirées de toute étape qui exécute le
+// produit ; l'étape « Fournisseurs d'IA », elle, les garde : c'est justement sa
+// configuration à lui qu'elle vérifie.
+const SANS_CLES_IA = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "DEEPGRAM_API_KEY", "GOOGLE_API_KEY"];
+
 const APP = "postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test";
 const OWNER = "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test";
 const SUPER = "postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test";
@@ -62,6 +70,15 @@ const ETAPES: Etape[] = [
     ceQueCaAttrape: "une documentation qui décrit une version qui n'existe plus",
   },
   {
+    nom: "Fournisseurs d'IA",
+    commande: "npm",
+    args: ["run", "verifier:ia"],
+    // Volontairement SANS `envSupprime` : cette étape lit la configuration
+    // réelle de la machine. Aucun appel réseau — il faut `--reseau` pour cela.
+    env: { DATABASE_URL: APP },
+    ceQueCaAttrape: "un fournisseur choisi sans sa clé, ou un nom de fournisseur mal orthographié",
+  },
+  {
     nom: "Suites base de données",
     commande: "npm",
     args: ["test"],
@@ -72,7 +89,7 @@ const ETAPES: Etape[] = [
     // batterie entière reste bloquée sans le moindre message. Constaté deux
     // fois de suite, puis isolé : code 124 (délai dépassé) avec la variable,
     // code 0 sans. La CI ne la fournit pas non plus à cette étape.
-    envSupprime: ["REDIS_URL"],
+    envSupprime: ["REDIS_URL", ...SANS_CLES_IA],
     ceQueCaAttrape: "l'isolation entre entreprises, les règles métier, la RLS",
   },
   {
@@ -82,7 +99,7 @@ const ETAPES: Etape[] = [
     commande: "npx",
     args: ["tsx", "src/server/db/seed.ts"],
     env: { DATABASE_URL: SUPER, ...AUTH },
-    envSupprime: ["REDIS_URL"],
+    envSupprime: ["REDIS_URL", ...SANS_CLES_IA],
     ceQueCaAttrape: "rien — c'est une remise en état, pas un contrôle",
   },
   {
@@ -92,6 +109,7 @@ const ETAPES: Etape[] = [
     // Redis ici, comme en CI : la limitation de débit doit être remise à zéro
     // entre deux suites, ce que la mémoire du serveur ne permet pas.
     env: { DATABASE_URL: SUPER, ...AUTH, ...CRON, ...REDIS },
+    envSupprime: SANS_CLES_IA,
     ceQueCaAttrape: "le parcours complet, du devis à la facture",
   },
   {
@@ -99,6 +117,7 @@ const ETAPES: Etape[] = [
     commande: "npx",
     args: ["tsx", "scripts/verifier-connexion-avec-serveur.mts"],
     env: { DATABASE_URL: SUPER, ...AUTH, ...CRON, ...REDIS },
+    envSupprime: SANS_CLES_IA,
     ceQueCaAttrape:
       "« Invalid Server Actions request. » — le défaut qui a coûté une demi-journée au patron,\n" +
       "     invisible partout ailleurs parce que tout le reste interroge 127.0.0.1",

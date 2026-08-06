@@ -165,6 +165,7 @@ export async function poserQuestion(
 function messageErreurUtilisateur(erreur: ErreurIA): string {
   switch (erreur.type) {
     case "cle_api_absente":
+    case "cle_api_refusee":
     case "fournisseur_indisponible":
       return "L'assistant est momentanément indisponible. Réessayez dans un instant.";
     case "timeout":

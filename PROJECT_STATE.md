@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-05 · branche `claude/migrate-app-atlas-zz31ac`
+**Dernière mise à jour :** 2026-08-06 · branche `claude/migrate-app-atlas-zz31ac`
 · dernière migration `drizzle/0021_lecture_dictee.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit

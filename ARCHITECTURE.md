@@ -774,3 +774,69 @@ faille poser la question.
 Un espace créé sur une branche qui n'existe plus, ou dont l'historique a été
 réécrit, reste en arrière — le script refuse d'avancer, à raison. Il le dit ;
 c'est alors un nouvel espace qu'il faut, pas une mise à jour.
+
+---
+
+## 25. Une clé posée branche l'IA — et l'application dit laquelle
+
+**Décidé le 2026-08-06**, après une journée perdue sur une question sans
+réponse : « les clés sont mises, pourquoi l'IA n'est-elle pas branchée ? »
+
+### Ce qui s'est passé
+
+Le patron avait enregistré ses clés Anthropic et OpenAI. L'application
+continuait de recopier sa dictée mot à mot. **Trois causes se cumulaient**, et
+la véritable difficulté n'était aucune des trois : c'est qu'aucune n'était
+visible. Ni l'écran, ni le démarrage, ni aucune commande ne disait quel
+fournisseur tournait réellement. Reconstituer la réponse a demandé la lecture de
+quatre fichiers du dépôt.
+
+| Cause | Pourquoi elle était invisible |
+|---|---|
+| `LLM_PROVIDER` valait `dev` par défaut | poser une clé ne changeait rien, et rien ne le disait |
+| Le conteneur écrivait `dev` en dur, sans transmettre les clés | un secret d'espace vit côté hôte ; le conteneur ne voit que ce qui est listé |
+| `openai.ts` n'était qu'une ébauche | son « non implémenté » ressortait en devis recopié mot à mot |
+
+### Ce qui est décidé
+
+**1. La présence d'une clé décide du fournisseur.** `ANTHROPIC_API_KEY` branche
+la rédaction, `OPENAI_API_KEY` la transcription — Anthropic ne prend pas
+d'audio. La variable explicite reste souveraine : `LLM_PROVIDER=dev` coupe l'IA
+sans qu'il faille retirer les clés, ce dont on a besoin pour rejouer un parcours
+sans qu'une donnée d'essai ne sorte.
+
+*Conséquence à comprendre : la protection ne repose plus sur une valeur par
+défaut, mais sur l'absence de clé* (`docs/RGPD.md` §3). D'où le retrait
+systématique des clés d'IA dans `scripts/verifier-avant-livraison.ts` — une
+batterie lancée dans l'espace du patron enverrait sinon les dictées d'essai chez
+les fournisseurs, et les lui ferait payer.
+
+**2. Une variable vide vaut une variable absente.** `optionnel()` dans
+`src/server/env.ts`, et rien d'autre ne lit une variable optionnelle. Le
+conteneur transmet `${ANTHROPIC_API_KEY:-}` : sans ce garde-fou, une clé
+inexistante se présentait comme renseignée. Le nom du fournisseur est ramené en
+minuscules pour la même raison — `LLM_PROVIDER=Anthropic` retombait en mode
+déterministe sans un mot.
+
+**3. Une ébauche ne se fait jamais passer pour un fournisseur.** Soit elle est
+implémentée — ce qu'est devenu `openai.ts` —, soit elle est **refusée à la
+configuration**, pas au premier appui du patron sur un bouton.
+
+**4. L'état se lit à trois endroits, et c'est délibéré.** `etatIA()`
+(`src/server/ai/diagnostic.ts`) est la seule source ; l'écran Réglages, le
+bandeau de démarrage et `npm run verifier:ia` la présentent. Aucune valeur de
+clé n'en sort jamais — ces états s'affichent et se recopient dans des captures.
+
+**5. Les fournisseurs s'éprouvent sans clé et sans facture.**
+`ANTHROPIC_BASE_URL` / `OPENAI_BASE_URL` existent pour qu'une suite lance un
+serveur local et vérifie ce qui part vraiment : la clé dans le bon en-tête, le
+texte dicté dans le corps, l'appel d'outil relu correctement — sa forme diffère
+d'un fournisseur à l'autre, objet chez l'un, texte JSON chez l'autre.
+
+### Ce que ça ne prouve pas
+
+Qu'une **vraie** clé fonctionne chez le vrai fournisseur. Cela ne s'éprouve
+qu'avec une clé : `npm run verifier:ia -- --reseau`. Ce qui a été vérifié ici,
+sans clé, c'est que l'appel part réellement chez Anthropic et que son refus est
+correctement interprété — `api.openai.com` est, lui, injoignable depuis cet
+environnement, et cette moitié-là n'a été éprouvée que contre un serveur local.
