@@ -66,9 +66,20 @@ Détail dans `CHANGELOG.md`, état complet dans `PROJECT_STATE.md`.
 
 ## Où reprendre
 
-`TODO.md`, dans l'ordre. Le premier point codable seul aujourd'hui est
-l'**agenda Google** — et encore, partiellement : la connexion du compte demande
-des identifiants que le patron doit fournir.
+**`TODO.md` §0 bis — l'agent qui apprend. Le patron l'a demandé expressément le
+6 août 2026 :** *« Ok, garde ça en mémoire et on fera ça après. N'oublie pas de
+le faire. »*
+
+Ce n'est donc pas une liste d'idées : c'est le prochain travail, et il ne doit
+pas avoir à le redemander. Dans l'ordre — l'**entretien de départ**, l'**écart
+devis / facture**, puis **photos ↔ prix**. Le rapport entre techniques (×1,67,
+×2,33) vient après, quand `lecons_prix` aura de quoi le calculer.
+
+Ce qui est déjà fait de cette série : le tapis roulant, l'arrêt d'avant-chiffrage
+(§0 ter) et la mémoire des corrections (§0 quater).
+
+Le reste de `TODO.md` ensuite. L'**agenda Google** est partiellement bloqué : la
+connexion du compte demande des identifiants que le patron doit fournir.
 
 **Avant de proposer autre chose,** lire `docs/A-FAIRE.md` : **quatre** points
 bloquent un usage réel et **aucun ne s'avance en codant**. Ne pas les
