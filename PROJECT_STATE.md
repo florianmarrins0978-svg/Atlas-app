@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-05 · branche `claude/migrate-app-atlas-zz31ac`
-· dernière migration `drizzle/0021_lecture_dictee.sql`
+**Dernière mise à jour :** 2026-08-06 · branche `claude/migrate-app-atlas-zz31ac`
+· dernière migration `drizzle/0022_precisions_chantier.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -71,7 +71,8 @@ seule avec quinze outils.
 | L'espace d'essai se met à jour seul, et l'application annonce sa version | `.devcontainer/mettre-a-jour.sh` + Réglages |
 | Créer un chantier sans rien saisir : son nom se déduit du client, de l'adresse, ou de la date | `src/lib/nom-chantier.ts` |
 | **Le devis écrit à la main, document entier** : émetteur, IBAN, client, quantités, prix unitaires, TVA, conditions | `src/app/chantiers/[id]/devis-complet/` |
-| **Emporter toutes ses données**, en un appui : un ZIP avec les 23 tables, les photos, les enregistrements et les PDF | `src/server/repositories/export-entreprise.ts` + `src/app/api/mes-donnees/` + `src/lib/archive-zip.ts` |
+| **Emporter toutes ses données**, en un appui : un ZIP avec les 24 tables, les photos, les enregistrements et les PDF | `src/server/repositories/export-entreprise.ts` + `src/app/api/mes-donnees/` + `src/lib/archive-zip.ts` |
+| **L'agent s'arrête et demande ce qui fait le prix** (technique, diamètre), et se tait sur le reste | `src/lib/questions-chiffrage.ts` + `drizzle/0022_precisions_chantier.sql` |
 
 ### Conformité RGPD
 
@@ -167,6 +168,10 @@ qu'on le rouvre.
 - **La signature des commits est impossible** dans l'environnement d'exécution :
   la clé SSH configurée est un fichier vide sans partie privée. Signalé une fois,
   non contourné.
+- **Une réponse à l'arrêt d'avant-chiffrage ne change pas encore le montant.**
+  Ce n'est pas un oubli : `docs/EXEMPLE-DICTEE.md` §9c l'exige tant qu'aucun
+  rapport n'a été observé entre les techniques et les prix. Ce qui manque est la
+  mémoire (`TODO.md` §0 bis a et c), pas la question.
 - **La sauvegarde *automatique* n'existe pas, et c'est un blocage réel** — pas
   un oubli. Elle exige une destination extérieure, donc l'hébergeur (point 3
   ci-dessus). Le bouton « Télécharger mes données » couvre l'essentiel en

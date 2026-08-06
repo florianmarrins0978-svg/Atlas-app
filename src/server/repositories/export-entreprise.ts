@@ -21,6 +21,7 @@ import {
   notesVocales,
   parametresChiffrage,
   photos,
+  precisionsChantier,
   prestations,
   propositionsIa,
   tarifs,
@@ -104,6 +105,7 @@ export async function exporterEntreprise(
       lesFragments,
       lesBrouillons,
       lesPropositions,
+      lesPrecisions,
       lesEnvois,
       lesAudiosAPurger,
       lesFactures,
@@ -128,6 +130,7 @@ export async function exporterEntreprise(
       tx.select().from(fragmentsDocuments).where(eq(fragmentsDocuments.entrepriseId, e)),
       tx.select().from(brouillonsInformations).where(eq(brouillonsInformations.entrepriseId, e)),
       tx.select().from(propositionsIa).where(eq(propositionsIa.entrepriseId, e)),
+      tx.select().from(precisionsChantier).where(eq(precisionsChantier.entrepriseId, e)),
       tx.select().from(envoisDevis).where(eq(envoisDevis.entrepriseId, e)),
       tx.select().from(audiosAPurger).where(eq(audiosAPurger.entrepriseId, e)),
       tx.select().from(factures).where(eq(factures.entrepriseId, e)),
@@ -156,6 +159,10 @@ export async function exporterEntreprise(
       fragments_documents: lesFragments,
       brouillons_informations: lesBrouillons,
       propositions_ia: lesPropositions,
+      // Ce qu'il a répondu quand l'agent l'a arrêté avant de chiffrer. Sans
+      // elles, une sauvegarde restituerait des devis dont on ne saurait plus
+      // sur quelle technique ni quel diamètre ils ont été établis.
+      precisions_chantier: lesPrecisions,
       envois_devis: lesEnvois,
       audios_a_purger: lesAudiosAPurger,
       factures: lesFactures,

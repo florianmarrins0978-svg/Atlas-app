@@ -240,8 +240,10 @@ répondu, le 5 août 2026 :
 réponses sont notées telles quelles : les écraser l'une par l'autre ferait
 perdre l'information que la position a bougé, et pourquoi.
 
-**Lecture retenue, et à confirmer par lui :** les deux ne portent pas sur la
-même chose.
+**Lecture confirmée par le patron le 6 août 2026.** Question posée en QCM, réponse
+retenue : *« Oui : il demande si ça change le prix, il signale sinon. »* Les deux
+réponses précédentes ne portaient pas sur la même chose — c'est ce qui les
+réconcilie, et c'est désormais la règle, plus une hypothèse.
 
 | Ce dont il s'agit | Comportement |
 |---|---|

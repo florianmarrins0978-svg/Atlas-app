@@ -7,6 +7,73 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-06
+
+### L'agent s'arrête et demande ce qui coûte de l'argent
+
+**Choisi par le patron en QCM**, devant la mémoire des corrections et
+l'entretien de départ. Et sa règle, confirmée le même jour : *« il demande si ça
+change le prix, il signale sinon »* — ce qui réconcilie deux réponses qu'il avait
+données à une heure d'intervalle, et qui ne portaient pas sur la même chose.
+
+**Ce que ça évite, chiffré.** Il a dicté « un chêne mort à abattre, de vingt
+mètres de haut ». Chez lui, l'abattage vaut 600 € au pied, 1 000 € en démontage,
+1 400 € avec rétention. Ce qui décide, c'est la **technique** et le **diamètre du
+tronc** : sa dictée donne la *hauteur*, qui ne décide de rien, et tait les deux
+autres. L'agent chiffrait donc à l'aveugle, avec 800 € d'écart possible.
+
+Il pose maintenant deux questions, boutons au pouce, et repart.
+
+**Et il se tait partout ailleurs**, ce qui compte autant. `AGENT.md` §2 exige un
+arrêt « franchissable en quelques secondes » : un arrêt devenu formulaire est un
+arrêt contourné, et le contournement ici c'est le devis faux. Le billonnage, le
+fendage, le matériel ne déclenchent rien. Une suite l'éprouve en comptant les
+questions, pas seulement en vérifiant qu'elles sont là.
+
+**Trois décisions de conception :**
+
+- **Les réponses vivent dans leur propre table** (`precisions_chantier`), pas
+  dans le brouillon. Le brouillon se régénère à chaque relecture de la dictée ;
+  ses réponses, elles, ne viennent pas de la dictée. Rangées là, elles seraient
+  effacées à chaque relecture et il serait questionné deux fois sur le même
+  arbre — la meilleure façon de lui faire abandonner l'arrêt.
+- **La reprise ne rappelle pas le modèle.** Repasser par la lecture de la dictée
+  lui ferait payer une seconde analyse, et pourrait renuméroter les questions
+  auxquelles il vient de répondre.
+- **« Vingt mètres » n'est jamais cherché dans la transcription brute.** Le mot
+  figure deux fois dans cette dictée, pour la haie et pour la hauteur du chêne
+  (`docs/EXEMPLE-DICTEE.md` §3). Un filtre qui lirait le texte entier prendrait
+  l'un pour l'autre et tairait une question qui vaut 800 €.
+
+**Ce que ça ne fait pas, et qu'il ne faut pas croire acquis :** la réponse
+n'change pas encore le *montant*. Par sa propre règle (§9c) : tant qu'aucun
+rapport n'a été observé entre techniques et prix, l'agent demande le prix plutôt
+que d'en fabriquer un. Il manque la mémoire, pas la question. `TODO.md` §0 ter
+dit ce qui la débloque.
+
+### Trois défauts de mes propres contrôles, trouvés en regardant l'écran
+
+Aucun n'était dans le produit ; tous auraient laissé passer un vrai défaut.
+
+1. **« Abattage » était pris pour une technique.** Le premier filtre cherchait le
+   premier mot de chaque option — dont « Abattage ». « Abattage d'un chêne mort »
+   comptait donc comme technique déclarée, et la question qui vaut 800 € n'était
+   jamais posée : le défaut que ce module existe pour empêcher, dans le module
+   lui-même. « Abattage » est le mot générique du métier ; la technique, c'est ce
+   qui suit.
+2. **La suite navigateur cliquait un paragraphe.** « démontage avec rétention »
+   figure aussi dans la phrase qui explique la question. Le contrôle visait le
+   texte, cliquait l'explication, aucune option n'était retenue — et il passait
+   quand même. Vert sur une réponse jamais donnée.
+3. **Elle lisait le texte de la page là où les prestations sont des champs de
+   saisie.** `innerText` n'en rend pas la valeur : le contrôle accusait le
+   produit d'un tort qui n'était qu'un mauvais sélecteur.
+
+Aucun des trois ne se voyait en relisant le code. Les trois se sont vus en
+ouvrant l'écran et en regardant la base.
+
+---
+
 ## 2026-08-05
 
 ### Le patron peut emporter ses données, en un appui

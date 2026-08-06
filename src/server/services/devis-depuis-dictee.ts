@@ -7,6 +7,9 @@ import { getOuCreerDevisBrouillon } from "../repositories/devis";
 import { preparerPropositionPrix, type OriginePrix } from "../chiffrage/proposition-prix";
 import { appliquerPropositionPrix } from "../chiffrage/appliquer-proposition";
 import { peutPreparerDevis } from "../../lib/preparation-devis";
+import { listerPrecisions, enregistrerPrecisions, type Precision } from "../repositories/precisions-chantier";
+import { listerPrestations, modifierPrestation } from "../repositories/prestations";
+import { libelleEnrichi, questionsAvantChiffrage, type QuestionChiffrage } from "../../lib/questions-chiffrage";
 import type { LectureDictee, PropositionExtraction } from "../ai/schemas/extraction";
 
 // **De la dictée au devis, en un seul geste.**
@@ -62,6 +65,15 @@ export type ResultatDevisDepuisDictee =
   | { statut: "transcription_simulee" }
   | { statut: "conflit"; propositionNouvelle: PropositionExtraction }
   | { statut: "echec"; erreur: string }
+  /**
+   * L'arrêt d'avant-chiffrage : il manque ce qui **fait le prix**.
+   *
+   * Règle confirmée par le patron le 6 août 2026 : ce qui change le prix se
+   * demande avant de chiffrer, le reste se signale sur le devis
+   * (`docs/EXEMPLE-DICTEE.md` §7). Sur sa dictée du chêne mort, ces deux
+   * questions valent 800 € d'écart.
+   */
+  | { statut: "questions"; questions: QuestionChiffrage[] }
   | { statut: "prepare"; rapport: RapportDevisDepuisDictee };
 
 export async function preparerDevisDepuisDictee(
@@ -95,6 +107,128 @@ export async function preparerDevisDepuisDictee(
     : (contenu?.materiel.map((l) => l.libelle) ?? []);
 
   await marquerInformationsVerifiees(ctx, chantierId);
+
+  // --- 2 bis. L'arrêt d'avant-chiffrage ------------------------------------
+  //
+  // Ici, et pas ailleurs : les prestations sont écrites — donc rien de ce qui
+  // précède n'est perdu s'il s'arrête là — et rien n'est encore chiffré.
+  //
+  // Ce qu'on demande vaut de l'argent, et rien d'autre. Sa dictée du chêne
+  // mort ne dit ni la technique ni le diamètre, les deux seules choses qui
+  // font passer l'abattage de 600 à 1 400 € : chiffrer sans demander serait se
+  // tromper du simple au double, et une mention en bas de devis ne rattrape
+  // pas 800 €.
+  const questions = await questionsRestantes(ctx, chantierId, contenu?.prestations ?? []);
+  if (questions.length > 0) return { statut: "questions", questions };
+
+  return chiffrerEtPreparer(ctx, chantierId, { contenu, lecture: brouillon?.lecture ?? "modele", prestations, materiel });
+}
+
+/**
+ * Les questions encore sans réponse sur ce chantier.
+ *
+ * Les réponses déjà données sont relues depuis la base : c'est ce qui empêche
+ * l'arrêt de se rouvrir tout seul après avoir été franchi, y compris si la
+ * dictée est relue plus tard.
+ */
+async function questionsRestantes(
+  ctx: Ctx,
+  chantierId: string,
+  prestations: { libelle: string; description?: string | null; quantite?: string | null; unite?: string | null }[]
+): Promise<QuestionChiffrage[]> {
+  const deja = await listerPrecisions(ctx, chantierId);
+  return questionsAvantChiffrage(prestations, new Set(deja.map((p) => p.sujet)));
+}
+
+/**
+ * Reprend la chaîne après que le patron a répondu, **sans relire la dictée**.
+ *
+ * Repasser par la génération du brouillon rappellerait le modèle — il paierait
+ * une seconde lecture pour rien — et pourrait produire une lecture légèrement
+ * différente, donc renuméroter les questions et lui reposer celles auxquelles
+ * il vient de répondre. Les prestations sont déjà en base : on repart de là.
+ */
+export async function enregistrerPrecisionsEtReprendre(
+  ctx: Ctx,
+  chantierId: string,
+  reponses: Precision[]
+): Promise<ResultatDevisDepuisDictee> {
+  await enregistrerPrecisions(ctx, chantierId, reponses);
+  await ecrirePrecisionsSurLesPrestations(ctx, chantierId);
+  return reprendreDevisApresPrecisions(ctx, chantierId);
+}
+
+/**
+ * Reporte les réponses sur le libellé des prestations déjà enregistrées.
+ *
+ * **Sans ce report, l'arrêt n'aurait servi à rien de visible.** Le patron
+ * répondrait « démontage avec rétention », et relirait une fiche de chantier
+ * qui dit encore « Abattage d'un chêne mort », sans trace de ce qui vient
+ * d'être décidé.
+ *
+ * **Portée exacte, à ne pas surestimer :** cela enrichit la PRESTATION, celle
+ * qu'il relit sur l'écran Informations. La ligne du devis, elle, porte
+ * l'intitulé du tarif appliqué et ne reprend pas ce libellé — et le montant ne
+ * bouge pas davantage, faute de mémoire reliant technique et prix
+ * (`docs/EXEMPLE-DICTEE.md` §9c, `TODO.md` §0 ter).
+ *
+ * Le rapprochement se fait sur le **libellé au moment de la question**, pas sur
+ * le rang : une relecture de la dictée peut réordonner les lignes, et un report
+ * fondé sur la position collerait alors la technique d'un arbre sur un autre.
+ */
+async function ecrirePrecisionsSurLesPrestations(ctx: Ctx, chantierId: string): Promise<void> {
+  const precisions = await listerPrecisions(ctx, chantierId);
+  if (precisions.length === 0) return;
+
+  const parPrestation = new Map<string, string[]>();
+  for (const p of precisions) {
+    const cle = p.libellePrestation.trim().toLowerCase();
+    parPrestation.set(cle, [...(parPrestation.get(cle) ?? []), p.lisible]);
+  }
+
+  for (const prestation of await listerPrestations(ctx, chantierId)) {
+    // Le libellé en base a pu déjà être enrichi lors d'un passage précédent :
+    // on retrouve alors la prestation par son début, jamais par égalité stricte.
+    const actuel = prestation.libelle.trim().toLowerCase();
+    const entree = [...parPrestation.entries()].find(([cle]) => actuel === cle || actuel.startsWith(`${cle} —`));
+    if (!entree) continue;
+
+    const enrichi = libelleEnrichi(prestation.libelle, entree[1]);
+    if (enrichi !== prestation.libelle) {
+      await modifierPrestation(ctx, prestation.id, enrichi);
+    }
+  }
+}
+
+export async function reprendreDevisApresPrecisions(
+  ctx: Ctx,
+  chantierId: string
+): Promise<ResultatDevisDepuisDictee> {
+  const brouillon = await getBrouillon(ctx, chantierId);
+  const contenu = brouillon?.contenu;
+
+  const questions = await questionsRestantes(ctx, chantierId, contenu?.prestations ?? []);
+  if (questions.length > 0) return { statut: "questions", questions };
+
+  return chiffrerEtPreparer(ctx, chantierId, {
+    contenu,
+    lecture: brouillon?.lecture ?? "modele",
+    prestations: contenu?.prestations.map((l) => l.libelle) ?? [],
+    materiel: contenu?.materiel.map((l) => l.libelle) ?? [],
+  });
+}
+
+async function chiffrerEtPreparer(
+  ctx: Ctx,
+  chantierId: string,
+  vues: {
+    contenu: PropositionExtraction | undefined;
+    lecture: LectureDictee;
+    prestations: string[];
+    materiel: string[];
+  }
+): Promise<ResultatDevisDepuisDictee> {
+  const { contenu, prestations, materiel } = vues;
 
   // --- 3. Le prix ----------------------------------------------------------
   // La proposition est calculée à partir des données qui viennent d'être
@@ -146,7 +280,7 @@ export async function preparerDevisDepuisDictee(
   return {
     statut: "prepare",
     rapport: {
-      lecture: brouillon?.lecture ?? "modele",
+      lecture: vues.lecture,
       prestations,
       materiel,
       dureePrevue: contenu?.dureePrevue ?? null,

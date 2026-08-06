@@ -613,6 +613,38 @@ export const brouillonsInformations = pgTable(
   ]
 );
 
+// Ce que le patron a répondu quand l'agent l'a arrêté avant de chiffrer
+// (migration 0022). Table distincte du brouillon **à dessein** : le brouillon
+// se régénère à chaque relecture de la dictée, ces réponses-là ne viennent pas
+// de la dictée mais de lui, et les y ranger reviendrait à le questionner deux
+// fois sur le même arbre.
+export const precisionsChantier = pgTable(
+  "precisions_chantier",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id").notNull(),
+    /** Identifiant stable de la question — `abattage.technique#1`. */
+    sujet: text("sujet").notNull(),
+    libellePrestation: text("libelle_prestation").notNull(),
+    valeur: text("valeur").notNull(),
+    /** Figé à la réponse : un devis émis ne doit pas changer de texte. */
+    lisible: text("lisible").notNull(),
+    responduAt: timestamp("repondu_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("precisions_chantier_uk").on(t.chantierId, t.sujet),
+    index("precisions_chantier_entreprise_chantier_idx").on(t.entrepriseId, t.chantierId),
+    foreignKey({
+      columns: [t.chantierId, t.entrepriseId],
+      foreignColumns: [chantiers.id, chantiers.entrepriseId],
+      name: "precisions_chantier_chantier_entreprise_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
 export const propositionsIa = pgTable(
   "propositions_ia",
   {
