@@ -28,6 +28,7 @@ qui ne se résoudra pas en codant.
 ## Sommaire
 
 1. [Choisir les fournisseurs d'IA définitifs](#1-choisir-les-fournisseurs-dia-définitifs)
+1 bis. [La mémoire de l'agent : où elle vit, et ce qu'elle devient](#1-bis-la-mémoire-de-lagent--où-elle-vit-et-ce-quelle-devient)
 2. [Faire rédiger le contrat de sous-traitance](#2-faire-rédiger-le-contrat-de-sous-traitance)
 3. [Choisir un hébergement](#3-choisir-un-hébergement)
 4. [Constituer une société et s'assurer](#4-constituer-une-société-et-sassurer)
@@ -55,11 +56,28 @@ peut seulement **choisir à qui**, et **combien de temps ça reste chez eux**.
 
 ### Ce qu'il faut décider
 
-Le code accepte aujourd'hui **six fournisseurs interchangeables**. Il en faut
-**deux** :
+Il faut **deux** prestataires :
 
 - un pour la **transcription** (l'audio → du texte) ;
 - un pour le **raisonnement** (le texte → des informations structurées).
+
+Le code sait en accueillir six, mais **deux seulement sont écrits** aujourd'hui —
+un par besoin :
+
+| Besoin | Écrit et prêt | Simples coquilles |
+|---|---|---|
+| Transcription | **OpenAI** (Whisper) | Deepgram, Google |
+| Raisonnement | **Anthropic** (Claude) | OpenAI, Gemini |
+
+Une coquille répond « fournisseur non implémenté » à chaque appel : l'activer
+mettrait la dictée en panne. Compter **une demi-journée** pour en finir une, le
+jour où votre choix tombe dessus. Ce n'est pas ce qui doit décider — mais mieux
+vaut le savoir avant d'ouvrir un compte et de payer un contrat.
+
+> Ce paragraphe annonçait « six fournisseurs interchangeables ». C'était faux, et
+> corrigé le 3 août 2026 : deux d'entre eux seulement fonctionnent.
+> [`TRANSCRIPTION.md`](TRANSCRIPTION.md) porte le même détail, candidat par
+> candidat.
 
 ### Les trois points à vérifier chez chacun
 
@@ -92,6 +110,101 @@ téléphone — sans prestataire, sans contrat, et sans qu'aucune donnée ne par
 Verrouiller la configuration sur les deux fournisseurs retenus, pour qu'aucun
 autre ne puisse être activé par inadvertance, et tenir la liste à jour dans
 [`RGPD.md`](RGPD.md) §3.
+
+---
+
+## 1 bis. La mémoire de l'agent : où elle vit, et ce qu'elle devient
+
+**Qui : le patron**, pour les trois arbitrages. Le reste se code.
+
+### Ce qui est acquis
+
+Le patron veut que l'agent **s'améliore jour après jour** à partir de ce qu'il
+lui apprend : cette photo, cette prestation, ce prix. Et il a été clair sur le
+« où » :
+
+> *« Je n'ai pas envie que la mémoire aille chez Anthropic. Je veux que ça reste
+> dans l'application. »*
+
+C'est aussi le bon choix techniquement. Deux choses très différentes s'appellent
+« entraîner l'IA » :
+
+| | Entraîner le modèle | La mémoire de l'application |
+|---|---|---|
+| Où vivent vos prix | Chez le prestataire | **Chez vous, en base** |
+| Vous pouvez les relire, les corriger | Non | **Oui** |
+| Si vous changez de prestataire | Tout est perdu | **La mémoire suit** |
+| Effet | Après des centaines d'exemples | **Dès le premier** |
+
+**C'est la seconde qui se construit.** Rien de ce que le patron apprend à
+l'agent ne part chez un prestataire.
+
+### La vraie question : le passage en ligne
+
+> *« Le jour où je vais mettre ça en ligne, est-ce que je vais perdre toute la
+> mémoire qui sert à l'agent à s'améliorer ? »*
+
+**Non — mais seulement si on agit avant.** La base du banc d'essai vit dans
+l'espace de travail ; l'hébergement en aura une autre. Le transfert d'une base à
+l'autre est une procédure connue, documentée dans
+[`PRODUCTION_BACKUP_RESTORE.md`](PRODUCTION_BACKUP_RESTORE.md), et **elle a déjà
+été exécutée avec succès le 29 juillet 2026** sur la base de développement.
+
+Ce qui est vrai, en revanche :
+
+- **Rien ne se transfère tout seul.** Sans geste, la mémoire meurt avec l'espace
+  de travail — et un espace inutilisé finit par être supprimé sans prévenir.
+- **Il n'existe aujourd'hui aucune commande simple** pour que le patron exporte
+  ses données depuis son téléphone. La procédure suppose un terminal.
+- **Rien n'est perdu à ce jour** : la mémoire d'apprentissage n'existe pas
+  encore, c'est le premier point de `TODO.md`. Il reste donc le temps de bien
+  faire.
+
+**Tranché le 5 août 2026 : construire l'export d'abord**, puis nourrir sans
+risque.
+
+### L'obstacle de la sauvegarde automatique
+
+Le patron a demandé une **sauvegarde automatique** plutôt qu'un bouton. C'est le
+bon réflexe — elle ne dépend pas de sa mémoire — mais elle bute sur une
+condition qu'il n'a pas encore :
+
+**une sauvegarde automatique doit déposer son fichier quelque part.**
+
+| Destination | Verdict |
+|---|---|
+| Le dépôt lui-même | **Jamais.** Le dépôt est public (décision du 1ᵉʳ août) : y déposer une base contenant des noms et adresses de clients serait une fuite, pas une sauvegarde |
+| Un stockage objet (S3, R2) | Possible, mais demande un compte et une carte — une décision de plus |
+| L'hébergement, une fois choisi | **La bonne réponse** : un hébergeur managé sauvegarde tout seul, c'est déjà ce que décrit `PRODUCTION_BACKUP_RESTORE.md` |
+
+**Ce qui est donc fait en attendant : le bouton.** « Télécharger mes données »
+dans Réglages, un fichier sur son téléphone, aucun terminal, aucun compte, aucune
+dépendance. Il fonctionne le jour où il est écrit.
+
+**L'automatique suit** dès qu'une destination existe — c'est-à-dire dès le
+point 3. Une raison de plus de le trancher.
+
+### Ce qui reste à décider pour la commercialisation
+
+Le patron a choisi **« un socle commun, puis chacun ajuste »** : un nouvel
+artisan reçoit une base de départ plutôt que rien. Trois questions en découlent,
+aucune tranchée :
+
+1. ~~**Le socle, c'est quoi ?**~~ **Tranché le 5 août 2026 :** les prix du
+   patron, **anonymisés**, servis **dès le deuxième artisan**. Réserve à garder
+   en tête : à deux, l'anonymat est mince — le second saura vraisemblablement
+   d'où viennent ces prix.
+2. **Ses prix sortiraient alors de chez lui.** L'application isole aujourd'hui
+   hermétiquement chaque entreprise. Un socle commun est une **dérogation
+   volontaire** à ce principe : elle se construit exprès, jamais par accident.
+3. ~~**Un artisan qui ajuste doit-il nourrir le socle en retour ?**~~ **Tranché
+   le 5 août 2026 : non.** Le socle est un cadeau de départ, figé. Simple à
+   expliquer, simple à contractualiser, et personne n'a à s'inquiéter de ce que
+   deviennent ses prix.
+
+**En attendant, la mémoire se construit strictement privée** — le seul choix qui
+n'interdit rien. Ouvrir plus tard restera possible ; reprendre ce qui a été
+partagé, non.
 
 ---
 

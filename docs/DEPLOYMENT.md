@@ -11,6 +11,15 @@
   `NODE_ENV=production` — voir `src/server/env.ts`).
 - `CRON_SECRET` généré (16+ caractères), injecté au service de planification
   externe (cron de la plateforme, GitHub Actions schedule, etc.).
+- **Deux fournisseurs d'IA retenus, avec leurs clés.** `LLM_PROVIDER` +
+  `TRANSCRIPTION_PROVIDER`, et la clé que chacun exige. L'application refuse de
+  démarrer en production si l'un vaut `dev`, porte un nom inconnu, ou n'a pas sa
+  clé — sinon un vrai chantier recevrait les textes de l'IA simulée sans que
+  rien ne le signale (voir `src/server/env.ts`). Écrits et complets aujourd'hui :
+  `anthropic` pour le raisonnement, `openai` pour la transcription ; les autres
+  noms sont acceptés mais leur raccordement reste à écrire.
+  **Ce choix engage un contrat de sous-traitance** — c'est le point 1 de
+  `docs/A-FAIRE.md`, à trancher avant, pas pendant le déploiement.
 - Sauvegardes automatiques activées côté fournisseur de base de données —
   voir `docs/PRODUCTION_BACKUP_RESTORE.md`.
 - (Optionnel mais recommandé) `SENTRY_DSN` configuré pour le monitoring

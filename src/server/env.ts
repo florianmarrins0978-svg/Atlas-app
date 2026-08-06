@@ -69,11 +69,71 @@ function construireEnv(): Env {
     ? requis("AUTH_SECRET")
     : (process.env.AUTH_SECRET ?? "dev-secret-non-utilise-en-production");
 
-  const llmProvider = process.env.LLM_PROVIDER ?? "dev";
-  if (estProduction && llmProvider !== "dev" && !process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY) {
-    console.error(
-      `[env] LLM_PROVIDER=${llmProvider} configuré en production sans ANTHROPIC_API_KEY ni OPENAI_API_KEY.`
-    );
+  // Fournisseurs d'IA : quel nom est reconnu, et quelle clé il exige. Cette
+  // table est la seule source — les fabriques (providers/*/fabrique.ts) doivent
+  // en accepter exactement les mêmes noms.
+  const CLES_LLM: Record<string, string> = {
+    anthropic: "ANTHROPIC_API_KEY",
+    openai: "OPENAI_API_KEY",
+    gemini: "GEMINI_API_KEY",
+  };
+  const CLES_TRANSCRIPTION: Record<string, string> = {
+    openai: "OPENAI_API_KEY",
+    deepgram: "DEEPGRAM_API_KEY",
+    google: "GOOGLE_API_KEY",
+  };
+
+  // `?.trim() ||` et non `??` : une variable **vide** doit valoir « absente ».
+  //
+  // Ce n'est pas de la coquetterie défensive. Un passage de variable qui vaut
+  // la chaîne vide est le cas ORDINAIRE quand une valeur ne traverse pas :
+  // `${LLM_PROVIDER:-dev}` dans docker-compose, `${localEnv:LLM_PROVIDER}` dans
+  // devcontainer.json, un secret non défini — tous produisent `""`, jamais
+  // `undefined`. Avec `??`, cette chaîne vide passait pour un nom de
+  // fournisseur : l'écran Réglages annonçait « le nom "" n'est pas reconnu »
+  // et la production refusait de démarrer sur « n'est pas un fournisseur
+  // reconnu » — deux messages qui envoient chercher une faute de frappe là où
+  // il n'y a qu'une variable non transmise.
+  const llmProvider = process.env.LLM_PROVIDER?.trim() || "dev";
+  const transcriptionProvider = process.env.TRANSCRIPTION_PROVIDER?.trim() || "dev";
+
+  // Trois façons de se retrouver en production avec l'IA simulée, et les trois
+  // passaient sans un mot : laisser la valeur par défaut, écrire « dev »
+  // explicitement, ou faire une faute de frappe dans le nom du fournisseur —
+  // les fabriques retombent sur `dev` par leur `default:`. Le patron l'aurait
+  // découvert en dictant sur un chantier : la transcription lui aurait rendu
+  // « [Transcription simulée — … ] » au lieu de ses mots.
+  //
+  // Ce fichier refuse déjà le stockage local, un CRON_SECRET faible et
+  // l'absence de Redis pour exactement la même raison — voir son en-tête :
+  // en production, jamais de repli silencieux vers un comportement de
+  // développement. L'IA simulée était le seul oubli qui passait en silence.
+  if (estProduction) {
+    for (const [variable, valeur, cles] of [
+      ["LLM_PROVIDER", llmProvider, CLES_LLM],
+      ["TRANSCRIPTION_PROVIDER", transcriptionProvider, CLES_TRANSCRIPTION],
+    ] as const) {
+      if (valeur === "dev") {
+        throw new ErreurConfiguration(
+          `${variable} vaut « dev » en production : l'IA simulée répond sans appeler personne, ` +
+            `et servirait de faux textes à de vrais chantiers. Choisir un fournisseur parmi ` +
+            `${Object.keys(cles).join(", ")} et renseigner sa clé (voir docs/A-FAIRE.md §1).`
+        );
+      }
+      const cleAttendue = cles[valeur];
+      if (!cleAttendue) {
+        throw new ErreurConfiguration(
+          `${variable}="${valeur}" n'est pas un fournisseur reconnu. Valeurs acceptées en production : ` +
+            `${Object.keys(cles).join(", ")}. Sans cela l'application retomberait silencieusement sur l'IA simulée.`
+        );
+      }
+      if (!process.env[cleAttendue]?.trim()) {
+        throw new ErreurConfiguration(
+          `${variable}="${valeur}" exige ${cleAttendue}, qui est absente. ` +
+            `Sans clé, chaque dictée échouerait une fois l'application déployée, jamais au démarrage.`
+        );
+      }
+    }
   }
 
   // Le stockage local ne doit JAMAIS être utilisé en production (fichiers
@@ -118,7 +178,7 @@ function construireEnv(): Env {
     databaseUrl,
     authSecret,
     llmProvider,
-    transcriptionProvider: process.env.TRANSCRIPTION_PROVIDER ?? "dev",
+    transcriptionProvider,
     anthropicApiKey: process.env.ANTHROPIC_API_KEY,
     openaiApiKey: process.env.OPENAI_API_KEY,
     geminiApiKey: process.env.GEMINI_API_KEY,

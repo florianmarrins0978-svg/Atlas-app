@@ -25,11 +25,27 @@ services:
       REDIS_URL: redis://redis:6379
       AUTH_SECRET: essai-local-non-utilise-en-production-0000
       CRON_SECRET: essai-local-cron-secret-0000000000
-      # L'assistant et la transcription tournent en mode déterministe : aucun
-      # appel réseau, aucune clé, et surtout aucune donnée d'essai envoyée à un
-      # prestataire qui ne figure encore dans aucun contrat (docs/A-FAIRE.md §1).
-      LLM_PROVIDER: dev
-      TRANSCRIPTION_PROVIDER: dev
+      # L'assistant et la transcription tournent en mode déterministe PAR
+      # DÉFAUT : aucun appel réseau, aucune clé, et surtout aucune donnée
+      # d'essai envoyée à un prestataire qui ne figure encore dans aucun
+      # contrat (docs/A-FAIRE.md §1).
+      #
+      # Mais le patron doit pouvoir brancher une vraie IA sur SES essais sans
+      # éditer ce fichier. D'où le repli `:-` : une variable posée dans les
+      # secrets de Codespaces (Settings → Codespaces → Repository secrets)
+      # traverse jusqu'ici ; absente, on retombe sur le mode déterministe.
+      #
+      # Sans cette forme, la valeur était figée en dur et un secret Codespaces
+      # n'atteignait JAMAIS le conteneur — comme `CODESPACE_NAME` plus bas, dont
+      # l'absence a coûté une demi-journée. Ce qui ne figure pas dans cette
+      # liste n'existe pas à l'intérieur, y compris ce qu'on croit évident.
+      LLM_PROVIDER: ${LLM_PROVIDER:-dev}
+      TRANSCRIPTION_PROVIDER: ${TRANSCRIPTION_PROVIDER:-dev}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      DEEPGRAM_API_KEY: ${DEEPGRAM_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       STORAGE_PROVIDER: local
       # L'installation des dépendances télécharge sinon les navigateurs de
       # Playwright — plusieurs centaines de mégaoctets et quelques minutes, pour

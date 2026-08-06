@@ -147,6 +147,34 @@ supprime la question à la racine.
 > listé dans un contrat, ni autorisé par un artisan. Cette liste doit être
 > annexée au contrat de sous-traitance avant la première utilisation réelle.
 
+### Ce qui a été réglé chez les fournisseurs retenus (3 août 2026)
+
+Le patron a ouvert les deux comptes pour **ses propres essais**, sur ses
+chantiers et ses clients. Cela ne rend rien conforme pour un tiers — le contrat
+du point 2 reste requis avant qu'Atlas serve un autre artisan — mais les
+réglages obtenus sont ceux qu'un juriste demandera, et ils se perdraient s'ils
+n'étaient pas notés ici.
+
+| | OpenAI (transcription) | Anthropic (raisonnement) |
+|---|---|---|
+| Type de compte | Individuel, *usage tier 1* | Individuel |
+| **Entraînement sur nos données** | **Refusé.** Les trois réglages de *Data controls → Sharing* sont sur `Disabled` : partage de retours, données d'évaluation/*fine-tuning*, et entrées/sorties | À vérifier et noter |
+| **Conservation** | Journalisation des appels **désactivée** côté organisation (*Data retention → API call logging = Disabled*). Ce que le fournisseur garde de son côté pour la surveillance des abus — de l'ordre de 30 jours — **n'est pas réglable ici et reste à confirmer** | À vérifier et noter |
+| Plafond de dépense | 10 $/mois, alertes à 80 % et 100 % | — |
+| Localisation | Hors UE — **encadrement contractuel requis** | Hors UE — idem |
+
+**Le piège écarté, et il vaut d'être noté.** OpenAI propose un usage quotidien
+gratuit conséquent (250 000 jetons/jour) **en échange de l'autorisation
+d'entraîner ses modèles sur le trafic partagé**. C'est exactement l'écart décrit
+au point 1 de `A-FAIRE.md`, présenté comme une faveur. Refusé. Détail
+supplémentaire qui tranchait de toute façon : Whisper ne figure pas parmi les
+modèles couverts par cette gratuité — la transcription, celle qui porte la voix
+du client, aurait été payante malgré tout.
+
+**Ce qui reste ouvert :** la durée exacte de conservation côté OpenAI, et les
+mêmes deux réponses pour Anthropic. Aucune n'a été lue à la source par l'agent
+— son mandataire réseau refuse ces pages (voir `TRANSCRIPTION.md` §1).
+
 ## 4. Durées de conservation
 
 Le principe : **ce qui n'est pas conservé ne peut pas fuir.** C'est la mesure de

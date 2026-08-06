@@ -81,7 +81,28 @@ async function main() {
   // devis — et là je fais mes modifications. Je ne veux pas tous les autres
   // trucs intermédiaires. » Le compte rendu qui s'affichait ici était l'un de
   // ces intermédiaires.
-  await page.waitForURL(/\/devis-complet$/, { timeout: 30000 });
+  // **L'arrêt d'avant-chiffrage peut s'intercaler, et c'est voulu.**
+  //
+  // Cette dictée dit « chêne mort à démonter » sans donner le diamètre du
+  // tronc — l'agent le demande donc avant de chiffrer (décision du patron du
+  // 6 août 2026, `docs/EXEMPLE-DICTEE.md` §7). Ce n'est pas un intermédiaire de
+  // plus au sens où il l'entendait : c'est le seul moment où répondre coûte
+  // moins cher que se tromper de 800 €.
+  //
+  // La promesse tenue ici reste « un seul appui mène au devis », avec cette
+  // réserve : si de l'argent est en jeu, on lui pose la question d'abord. On
+  // franchit donc l'arrêt sans rien remplir — il en a le droit — pour vérifier
+  // que le parcours va au bout dans le pire des cas.
+  const arret = page.locator("text=avant de chiffrer");
+  await Promise.race([
+    page.waitForURL(/\/devis-complet$/, { timeout: 60000 }),
+    arret.first().waitFor({ timeout: 60000 }),
+  ]);
+  if (await arret.count()) {
+    console.log("  ✓ l'agent s'arrête pour demander ce qui fait le prix");
+    await page.locator("button", { hasText: /^Continuer/ }).first().click();
+  }
+  await page.waitForURL(/\/devis-complet$/, { timeout: 60000 });
   // La navigation commence avant que la page soit rendue : sans cette attente,
   // on lirait un écran encore vide et l'on conclurait à tort que le devis ne
   // porte rien.
@@ -141,7 +162,28 @@ async function main() {
   const rejouable = page.getByRole("button", { name: "Créer le devis à partir de ma dictée" });
   if (await rejouable.count()) {
     await rejouable.click();
-    await page.waitForURL(/\/devis-complet$/, { timeout: 30000 });
+    // **L'arrêt d'avant-chiffrage peut s'intercaler, et c'est voulu.**
+  //
+  // Cette dictée dit « chêne mort à démonter » sans donner le diamètre du
+  // tronc — l'agent le demande donc avant de chiffrer (décision du patron du
+  // 6 août 2026, `docs/EXEMPLE-DICTEE.md` §7). Ce n'est pas un intermédiaire de
+  // plus au sens où il l'entendait : c'est le seul moment où répondre coûte
+  // moins cher que se tromper de 800 €.
+  //
+  // La promesse tenue ici reste « un seul appui mène au devis », avec cette
+  // réserve : si de l'argent est en jeu, on lui pose la question d'abord. On
+  // franchit donc l'arrêt sans rien remplir — il en a le droit — pour vérifier
+  // que le parcours va au bout dans le pire des cas.
+  const arret = page.locator("text=avant de chiffrer");
+  await Promise.race([
+    page.waitForURL(/\/devis-complet$/, { timeout: 60000 }),
+    arret.first().waitFor({ timeout: 60000 }),
+  ]);
+  if (await arret.count()) {
+    console.log("  ✓ l'agent s'arrête pour demander ce qui fait le prix");
+    await page.locator("button", { hasText: /^Continuer/ }).first().click();
+  }
+  await page.waitForURL(/\/devis-complet$/, { timeout: 60000 });
     const apres = await pool.query(`SELECT count(*) FROM lignes_prix WHERE chantier_id = $1`, [chantierId]);
     assert.equal(
       Number(apres.rows[0].count),

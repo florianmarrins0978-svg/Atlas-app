@@ -4,6 +4,32 @@
   "service": "app",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
+  // Les secrets de Codespaces, par un SECOND chemin — et c'est délibéré.
+  //
+  // `docker-compose.yml` les reprend déjà sous la forme `${VAR:-dev}`. Mais
+  // cette interpolation est faite par docker-compose, au moment de bâtir le
+  // conteneur, et elle ne lit que ce que l'hôte lui présente alors. Rien ne
+  // garantit qu'un secret de Codespaces y soit déjà. `remoteEnv`, lui, est
+  // appliqué par la machinerie du devcontainer À L'INTÉRIEUR, là où les secrets
+  // sont posés — donc pour tout ce qui démarre ensuite, y compris `npm run dev`.
+  //
+  // Deux chemins pour la même valeur, parce que le coût de l'échec est
+  // asymétrique : si aucun ne passe, le patron dicte, l'application lui rend un
+  // texte fabriqué, et RIEN à l'écran ne le lui dit tant qu'il ne va pas voir
+  // Réglages. Il a déjà payé deux comptes pour découvrir ça.
+  //
+  // Une variable non définie donne ici la chaîne vide, jamais `undefined` —
+  // `src/server/env.ts` la traite pour ce qu'elle est : une valeur absente.
+  "remoteEnv": {
+    "LLM_PROVIDER": "${localEnv:LLM_PROVIDER}",
+    "TRANSCRIPTION_PROVIDER": "${localEnv:TRANSCRIPTION_PROVIDER}",
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}",
+    "GEMINI_API_KEY": "${localEnv:GEMINI_API_KEY}",
+    "DEEPGRAM_API_KEY": "${localEnv:DEEPGRAM_API_KEY}",
+    "GOOGLE_API_KEY": "${localEnv:GOOGLE_API_KEY}"
+  },
+
   // Monté une seule fois, à la création : dépendances, migrations, données de
   // démonstration.
   "postCreateCommand": "bash .devcontainer/preparer.sh",

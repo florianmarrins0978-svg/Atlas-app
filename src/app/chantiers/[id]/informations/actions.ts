@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { preparerDevisDepuisDictee } from "@/server/services/devis-depuis-dictee";
+import { preparerDevisDepuisDictee, enregistrerPrecisionsEtReprendre } from "@/server/services/devis-depuis-dictee";
 import {
   ajouterPrestation,
   modifierPrestation,
@@ -426,6 +426,35 @@ export async function preparerDevisDepuisDicteeAction(chantierId: string, rempla
 
   // Le conflit ne traverse pas la frontière client tel quel : seul ce qui sert
   // à afficher le choix est transmis.
+  if (resultat.statut === "conflit") {
+    return { statut: "conflit" as const, propositionNouvelle: resultat.propositionNouvelle };
+  }
+  return resultat;
+}
+
+/**
+ * Il a répondu : on enregistre, on complète les prestations, et on reprend.
+ *
+ * **Les trois gestes sont indissociables**, et c'est pourquoi ils tiennent dans
+ * une seule action plutôt qu'en trois appels depuis l'écran. Enregistrer sans
+ * compléter les prestations laisserait sa réponse invisible sur le devis ;
+ * compléter sans reprendre le laisserait devant des questions déjà répondues.
+ */
+export async function repondreQuestionsChiffrageAction(
+  chantierId: string,
+  reponses: { sujet: string; libellePrestation: string; valeur: string; lisible: string }[]
+) {
+  const ctx = await getCurrentCtx();
+  const resultat = await enregistrerPrecisionsEtReprendre(ctx, chantierId, reponses);
+
+  if (resultat.statut === "prepare") {
+    revalidatePath(`/chantiers/${chantierId}`);
+    revalidatePath(`/chantiers/${chantierId}/informations`);
+    revalidatePath(`/chantiers/${chantierId}/prix`);
+    revalidatePath(`/chantiers/${chantierId}/export`);
+    revalidatePath(`/chantiers/${chantierId}/devis-complet`);
+  }
+
   if (resultat.statut === "conflit") {
     return { statut: "conflit" as const, propositionNouvelle: resultat.propositionNouvelle };
   }

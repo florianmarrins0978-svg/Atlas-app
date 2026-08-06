@@ -15,9 +15,10 @@ votre compte GitHub, que vous avez déjà.
 2. [En cinq gestes](#en-cinq-gestes)
 3. [Ce que vous pouvez essayer, du début à la fin](#ce-que-vous-pouvez-essayer-du-début-à-la-fin)
 4. [Ce qui ne marchera pas, et pourquoi](#ce-qui-ne-marchera-pas-et-pourquoi)
-5. [Repartir de zéro](#repartir-de-zéro)
-6. [Fermer proprement](#fermer-proprement)
-7. [Si quelque chose ne va pas](#si-quelque-chose-ne-va-pas)
+5. [Brancher une vraie IA sur vos essais](#brancher-une-vraie-ia-sur-vos-essais)
+6. [Repartir de zéro](#repartir-de-zéro)
+7. [Fermer proprement](#fermer-proprement)
+8. [Si quelque chose ne va pas](#si-quelque-chose-ne-va-pas)
 
 ---
 
@@ -151,12 +152,97 @@ une date proche : il y apparaît le jour venu.
 - **Rien ne part réellement chez le client** — ni SMS, ni e-mail. Le lien vous
   est remis à l'écran, à vous de le transmettre. C'est le point 5 de
   [`A-FAIRE.md`](A-FAIRE.md), et cela vaut aussi bien ici qu'en production.
-- **L'assistant et la transcription tournent en mode déterministe** : ils
-  répondent sans appeler aucun prestataire. C'est délibéré — envoyer des données
-  d'essai à un fournisseur qui ne figure dans aucun contrat serait précisément
-  l'écart décrit au point 1 de `A-FAIRE.md`.
+- **L'assistant et la transcription tournent en mode déterministe** *par
+  défaut* : ils répondent sans appeler aucun prestataire. C'est délibéré —
+  envoyer des données d'essai à un fournisseur qui ne figure dans aucun contrat
+  serait précisément l'écart décrit au point 1 de `A-FAIRE.md`.
+  **Vous pouvez le brancher pour vos propres essais** : voir juste en dessous.
 - **Les fichiers sont stockés sur le disque du banc d'essai.** Ils disparaissent
   avec lui. En production, ce mode est refusé au démarrage.
+- **Vos données d'essai vivent dans l'espace de travail, pas ailleurs.**
+  L'application a bien une mémoire — une base de données qui survit aux
+  redémarrages et à la mise en veille de trente minutes. Mais **elle meurt avec
+  l'espace de travail** : le supprimer efface vos chantiers, et les données de
+  démonstration repartent à zéro. Un banc d'essai est jetable par construction ;
+  c'est l'hébergement (point 3 de [`A-FAIRE.md`](A-FAIRE.md)) qui donnera à
+  Atlas une mémoire qui dure.
+
+---
+
+## Brancher une vraie IA sur vos essais
+
+Vous n'êtes pas obligé d'attendre le contrat du point 2 pour **vos** essais :
+ce sont vos chantiers, vos clients, votre décision. Le contrat devient
+obligatoire le jour où Atlas sert **quelqu'un d'autre**.
+
+Comptez une vingtaine de minutes, et **entre 2 et 7 € par mois** à votre volume
+(le détail est dans [`TRANSCRIPTION.md`](TRANSCRIPTION.md) §7).
+
+### 1. Ouvrir les deux comptes
+
+| | Où | Ce qu'il faut y faire |
+|---|---|---|
+| **Rédaction** | `console.anthropic.com` | Créer un compte, y mettre 5 € de crédit, générer une clé API |
+| **Transcription** | `platform.openai.com` | Idem. **Puis vérifier, dans les réglages de l'organisation, que le partage de données pour l'entraînement est bien refusé** |
+
+Ce second geste est le plus important des deux, et celui qu'on oublie. C'est la
+question 3 de `TRANSCRIPTION.md`.
+
+> **Ce que je ne sais pas, et que vous verrez à l'écran.** Je ne peux pas lire
+> les pages d'OpenAI depuis l'environnement de développement — elles me
+> répondent `403`. Je ne sais donc pas si ce réglage est déjà au bon endroit
+> chez eux ou s'il faut le changer : **regardez-le, ne le supposez pas.** Le
+> réglage porte un nom du genre *data controls* ou *sharing for model
+> improvement*. S'il n'existe pas, ou si le libellé ne dit rien de clair,
+> écrivez-leur avant d'envoyer la voix d'un client.
+
+### 2. Poser les clés dans les secrets du dépôt
+
+Sur GitHub : **Settings → Secrets and variables → Codespaces → New repository
+secret**. Quatre secrets à créer :
+
+| Nom | Valeur |
+|---|---|
+| `LLM_PROVIDER` | `anthropic` |
+| `ANTHROPIC_API_KEY` | la clé générée chez Anthropic |
+| `TRANSCRIPTION_PROVIDER` | `openai` |
+| `OPENAI_API_KEY` | la clé générée chez OpenAI |
+
+**Ne collez jamais une clé dans un fichier du dépôt, ni dans une conversation.**
+Un secret posé ici ne se relit pas, y compris par vous — c'est voulu.
+
+### 3. Redémarrer l'espace de travail — **et non le supprimer**
+
+> ⚠️ **Supprimer un espace de travail efface toutes vos données d'essai.**
+> Chantiers, devis, factures : tout part avec lui, et les données de
+> démonstration sont réinstallées à neuf. Ne le supprimez que si vous y tenez.
+
+Un espace **déjà allumé** ne voit pas un secret créé après lui — mais un
+**redémarrage** suffit à le lui faire lire, sans rien perdre.
+
+Sur `github.com/codespaces`, menu **⋯** → **Stop codespace**, puis rouvrez-le.
+
+> **Ce que je n'ai pas pu vérifier.** Je n'ai pas de Docker dans mon
+> environnement : je n'ai jamais vu un secret traverser jusqu'à l'application.
+> Le redémarrage *devrait* suffire. **La façon de le savoir en dix secondes :**
+> ouvrez **Réglages** et lisez le bloc « Ce que l'application utilise ». S'il
+> nomme OpenAI et Anthropic, c'est bon. S'il dit « mode déterministe », le
+> secret n'est pas arrivé — et là seulement, recréez l'espace.
+
+**Le second piège, lui, impose bien une recréation** : un espace créé depuis
+`main` ne verra jamais vos clés, parce que c'est la branche
+`claude/dictee-mode-essai-qqhcsn` qui porte le passage des secrets jusqu'au
+conteneur. Tant qu'elle n'est pas fusionnée, `main` fige `LLM_PROVIDER: dev` en
+dur. Une fois la fusion faite, la question ne se pose plus.
+
+### 4. Vérifier que c'est bien branché
+
+Dictez une note vocale et regardez ce qui revient. Si vous lisez
+« **[Transcription simulée — … octets reçus]** », c'est que le mode
+déterministe tourne encore : le secret n'est pas arrivé jusqu'au conteneur, le
+plus souvent parce que l'espace de travail est l'ancien.
+
+Vos mots à l'écran : c'est branché.
 
 ---
 
