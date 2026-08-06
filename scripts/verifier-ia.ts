@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { etatIA } from "../src/server/ai/diagnostic";
 import { getConfigIA } from "../src/server/ai/config";
 import { getFournisseurLLM } from "../src/server/ai/providers/llm/fabrique";
@@ -26,10 +27,23 @@ const AVEC_RESEAU = process.argv.includes("--reseau");
 // Lit le même `.env.local` que l'application au démarrage. Sans cela, cette
 // commande aurait répondu « mode déterministe » à quelqu'un dont les clés
 // fonctionnent — un diagnostic qui se trompe est pire que pas de diagnostic.
+//
+// Passe par `charger-cles.sh`, et pas par `process.loadEnvFile`, pour la même
+// raison que `demarrer.sh` : le modèle de fichier écrit d'avance contient des
+// lignes VIDES, qui écraseraient des clés déjà posées dans l'environnement.
+// Une seule règle de chargement, un seul endroit où elle est éprouvée
+// (`CLAUDE.md` §3).
 try {
-  process.loadEnvFile(new URL("../.env.local", import.meta.url).pathname);
+  const script = new URL("../.devcontainer/charger-cles.sh", import.meta.url).pathname;
+  const fichier = new URL("../.env.local", import.meta.url).pathname;
+  const sortie = execFileSync("bash", [script, fichier], { encoding: "utf8" });
+  for (const ligne of sortie.split("\n")) {
+    const separateur = ligne.indexOf("=");
+    if (separateur > 0) process.env[ligne.slice(0, separateur)] = ligne.slice(separateur + 1);
+  }
 } catch {
-  // Fichier absent : c'est le cas courant, et ce n'est pas une anomalie.
+  // Fichier absent, ou script injoignable : c'est le cas courant hors espace
+  // d'essai, et ce n'est pas une anomalie.
 }
 
 function ligne(titre: string, etat: ReturnType<typeof etatIA>["redaction"]) {

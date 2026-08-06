@@ -62,10 +62,14 @@ fi
 
 # Chargé ICI plutôt que laissé à Next.js seul : le bandeau ci-dessous et
 # `npm run verifier:ia` doivent voir exactement ce que voit l'application.
-set -a
-# shellcheck disable=SC1091
-. "$CD/.env.local"
-set +a
+#
+# **Jamais par `. .env.local`**, qui aurait écrasé avec du vide les clés déjà
+# présentes dans le conteneur — le modèle écrit juste au-dessus aurait alors
+# causé la panne qu'il répare. Le tri vit dans `charger-cles.sh`, éprouvé par
+# `scripts/test-charger-cles.ts`.
+while IFS= read -r ligne; do
+  [ -n "$ligne" ] && export "${ligne?}"
+done < <(bash "$(dirname "$0")/charger-cles.sh" "$CD/.env.local")
 
 # **Un conteneur ancien ne doit pas annuler des clés fraîchement posées.**
 # La décision — et la raison pour laquelle ce n'est pas une entorse à la règle

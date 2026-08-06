@@ -206,6 +206,13 @@ site publié à son adresse réelle.
     neutralise plutôt que d'exiger une reconstruction — introuvable sur un
     téléphone.
 
+    *Et le piège du remède :* `.env.local` est désormais écrit d'avance, **vide**,
+    pour que le patron n'ait qu'à coller ses clés. Le charger naïvement
+    (`set -a ; . .env.local`) écrase alors avec du vide les clés venues des
+    secrets de la plateforme — le correctif recréait le défaut. Une seule règle
+    de chargement, dans `.devcontainer/charger-cles.sh` : rien de vide n'est
+    exporté, et ce qui existe déjà l'emporte toujours sur le fichier.
+
 ### Le vocabulaire
 
 Tout est en français, y compris en base : `chantiers`, `devis`, `envois_devis`,

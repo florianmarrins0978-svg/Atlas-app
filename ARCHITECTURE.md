@@ -833,6 +833,16 @@ serveur local et vérifie ce qui part vraiment : la clé dans le bon en-tête, l
 texte dicté dans le corps, l'appel d'outil relu correctement — sa forme diffère
 d'un fournisseur à l'autre, objet chez l'un, texte JSON chez l'autre.
 
+**6. Le fichier de clés est écrit d'avance, et son chargement a une seule
+règle.** « Créez un fichier `.env.local` à la racine » n'a pas été compris — et
+c'était une consigne mal posée. `demarrer.sh` l'écrit donc vide au premier
+démarrage, une ligne par clé. Conséquence immédiate, et qui aurait tout cassé :
+charger ce modèle vide par `. .env.local` **écrase** les clés venues des secrets
+de la plateforme. `.devcontainer/charger-cles.sh` porte donc la règle unique —
+rien de vide n'est exporté, ce qui existe déjà l'emporte — et `demarrer.sh`
+comme `verifier:ia` l'appellent tous les deux plutôt que d'en réécrire une
+variante.
+
 ### Ce que ça ne prouve pas
 
 Qu'une **vraie** clé fonctionne chez le vrai fournisseur. Cela ne s'éprouve
