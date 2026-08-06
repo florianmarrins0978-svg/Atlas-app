@@ -196,7 +196,15 @@ site publié à son adresse réelle.
 
     *Corollaire sur les données :* la protection ne tient plus à une valeur par
     défaut mais à **l'absence de clé**. C'est pourquoi la batterie retire les
-    clés d'IA de toute étape qui exécute le produit.
+    clés d'IA de toute étape qui exécute le produit — **et pose
+    `LLM_PROVIDER=dev` explicitement** : retirer les variables ne suffit pas,
+    Next.js charge `.env.local` de lui-même, et c'est justement là que le patron
+    est invité à coller les siennes.
+
+    *Corollaire sur l'espace d'essai :* un conteneur construit avant le
+    correctif garde l'ancien réglage figé. `.devcontainer/reglage-ia.sh` le
+    neutralise plutôt que d'exiger une reconstruction — introuvable sur un
+    téléphone.
 
 ### Le vocabulaire
 

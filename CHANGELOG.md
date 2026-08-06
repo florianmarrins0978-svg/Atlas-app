@@ -50,6 +50,18 @@ indisponible » — soit une panne du prestataire, alors que la clé était
 simplement mauvaise. Nouveau type d'erreur `cle_api_refusee`, qui nomme la
 variable à corriger.
 
+**Et pour qu'il n'ait rien à comprendre.** « Créez un fichier `.env.local` à la
+racine du projet » n'a pas été compris — consigne mal posée : créer un fichier
+caché, au bon endroit, avec le bon nom, sur six pouces. Le fichier est donc
+**créé d'avance et vide** au premier démarrage de l'espace, avec une ligne par
+clé et la marche à suivre en français. Il n'y a qu'à coller après le signe égal.
+
+**Un espace de travail construit avant ce correctif garde l'ancien réglage**, et
+aucune clé n'y servirait tant qu'il n'est pas reconstruit — geste introuvable sur
+un téléphone. `.devcontainer/reglage-ia.sh` distingue « `dev` parce qu'on l'a
+voulu » de « `dev` parce qu'un vieux fichier l'écrivait », et neutralise le
+second. Éprouvé sur les quatre états par `scripts/test-reglage-ia-espace.ts`.
+
 **Ce que cela change pour les données.** La protection ne repose plus sur une
 valeur par défaut mais sur **l'absence de clé** — voir `docs/RGPD.md` §3. La
 batterie de contrôles retire donc les clés d'IA de toute étape qui exécute le

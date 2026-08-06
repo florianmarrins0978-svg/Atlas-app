@@ -51,6 +51,12 @@ services:
       # `LLM_PROVIDER=dev` pour couper l'IA tout en gardant les clés en place.
       LLM_PROVIDER: ${LLM_PROVIDER:-}
       TRANSCRIPTION_PROVIDER: ${TRANSCRIPTION_PROVIDER:-}
+      # Marque un conteneur construit APRÈS le correctif du 6 août 2026. Sa
+      # présence signifie : « ce que tu lis dans les deux lignes ci-dessus a
+      # été voulu ». Son absence signale un espace plus ancien, où `dev` était
+      # écrit en dur — et où `reglage-ia.sh` neutralise donc ce réglage figé
+      # plutôt que d'exiger une reconstruction introuvable sur un téléphone.
+      ATLAS_CONTENEUR: "2"
       STORAGE_PROVIDER: local
       # L'installation des dépendances télécharge sinon les navigateurs de
       # Playwright — plusieurs centaines de mégaoctets et quelques minutes, pour

@@ -28,21 +28,52 @@ pkill -f "[n]ext dev" 2>/dev/null || true
 
 cd "$CD" || exit 0
 
-# **Le chemin de secours pour les clés d'IA.**
+# **Le chemin de secours pour les clés d'IA — et il est créé d'avance.**
 #
 # Un secret d'espace de travail n'entre dans le conteneur qu'après une
-# reconstruction — geste peu évident, et impossible à trouver depuis un
-# téléphone. Un fichier `.env.local` déposé à la racine, lui, est pris en
-# compte au prochain allumage, sans rien reconstruire.
+# reconstruction : geste introuvable sur un téléphone. Un fichier `.env.local`
+# à la racine, lui, est pris en compte au prochain allumage, sans rien
+# reconstruire.
 #
+# Il est **écrit ici, vide, dès le premier démarrage**, parce que « créez un
+# fichier nommé .env.local à la racine du projet » n'a pas été compris — et
+# c'était une consigne mal posée : demander de créer un fichier caché, au bon
+# endroit, avec le bon nom, sur six pouces. Le fichier existe donc déjà ; il
+# n'y a qu'à coller une clé après le signe égal.
+#
+# Jamais réécrit s'il existe : une clé déjà collée ne doit pas disparaître à
+# l'allumage suivant. Ignoré par git (`.gitignore` : `.env*`) — une clé ne se
+# versionne pas.
+if [ ! -f "$CD/.env.local" ]; then
+  cat > "$CD/.env.local" <<'MODELE'
+# Collez vos clés après le signe = , puis rechargez la page de l'éditeur.
+# Rien d'autre à faire : Atlas les prend en compte au démarrage suivant.
+#
+# Sans clé, la dictée est recopiée mot à mot au lieu d'être comprise.
+# Ce fichier n'est jamais envoyé sur GitHub.
+
+# Pour que votre voix devienne du texte :
+OPENAI_API_KEY=
+
+# Pour que ce texte devienne un devis structuré :
+ANTHROPIC_API_KEY=
+MODELE
+fi
+
 # Chargé ICI plutôt que laissé à Next.js seul : le bandeau ci-dessous et
 # `npm run verifier:ia` doivent voir exactement ce que voit l'application.
-# Ignoré par git (`.gitignore` : `.env*`) — une clé ne se versionne jamais.
-if [ -f "$CD/.env.local" ]; then
-  set -a
-  # shellcheck disable=SC1091
-  . "$CD/.env.local"
-  set +a
+set -a
+# shellcheck disable=SC1091
+. "$CD/.env.local"
+set +a
+
+# **Un conteneur ancien ne doit pas annuler des clés fraîchement posées.**
+# La décision — et la raison pour laquelle ce n'est pas une entorse à la règle
+# « la variable explicite l'emporte » — vit dans `reglage-ia.sh`, qui est
+# éprouvé par `scripts/test-reglage-ia-espace.ts`.
+ETAT_IA="$(bash "$(dirname "$0")/reglage-ia.sh")"
+if [ "$ETAT_IA" = "neutralise" ]; then
+  unset LLM_PROVIDER TRANSCRIPTION_PROVIDER
 fi
 
 # Récupérer le code neuf, à chaque allumage. La logique — et ses prudences —
@@ -112,17 +143,27 @@ echo "  Version exécutée : $ATLAS_VERSION"
 # Volontairement en shell, à partir des variables réellement présentes DANS le
 # conteneur : c'est exactement ce que l'application lira. Un contrôle qui
 # interrogerait autre chose ne prouverait rien.
-if [ -n "${ANTHROPIC_API_KEY:-}" ] && [ -n "${OPENAI_API_KEY:-}" ]; then
-  echo "  IA : branchée (OpenAI transcrit, Anthropic rédige)."
-elif [ -n "${ANTHROPIC_API_KEY:-}" ]; then
-  echo "  IA : rédaction par Anthropic ; dictée NON transcrite."
-elif [ -n "${OPENAI_API_KEY:-}" ]; then
-  echo "  IA : branchée sur OpenAI (transcription et rédaction)."
-else
-  echo "  IA : mode déterministe — aucune clé n'est arrivée jusqu'ici."
-  echo "       Secrets de l'espace, puis RECONSTRUIRE le conteneur :"
-  echo "       une clé ajoutée après coup n'entre pas dans un espace déjà bâti."
-fi
+case "$ETAT_IA" in
+  sans-cle)
+    echo "  IA : mode déterministe — votre dictée sera recopiée mot à mot."
+    echo "       Pour la brancher : ouvrez le fichier .env.local à la racine,"
+    echo "       collez vos clés après le signe = , et rechargez cette page."
+    ;;
+  coupee)
+    echo "  IA : coupée volontairement (LLM_PROVIDER=dev), clés en place."
+    ;;
+  *)
+    if [ -n "${ANTHROPIC_API_KEY:-}" ] && [ -n "${OPENAI_API_KEY:-}" ]; then
+      echo "  IA : branchée — OpenAI écoute la dictée, Anthropic écrit le devis."
+    elif [ -n "${ANTHROPIC_API_KEY:-}" ]; then
+      echo "  IA : Anthropic écrit le devis ; la dictée n'est PAS écoutée."
+      echo "       Il manque OPENAI_API_KEY pour cela."
+    else
+      echo "  IA : branchée sur OpenAI (écoute la dictée et écrit le devis)."
+    fi
+    [ "$ETAT_IA" = "neutralise" ] && echo "       (réglage figé d'un ancien conteneur neutralisé)"
+    ;;
+esac
 case "$MISE_A_JOUR" in
   faite) echo "  Le code a été mis à jour au démarrage." ;;
   impossible*) echo "  ⚠ MISE À JOUR $MISE_A_JOUR" ;;
