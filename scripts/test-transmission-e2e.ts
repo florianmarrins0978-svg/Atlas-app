@@ -66,6 +66,39 @@ async function main() {
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
 
+  // --- « Télécharger », pas « ouvrir un onglet de plus » -------------------
+  //
+  // Le patron, le 7 août 2026 : « quand je clique sur télécharger le PDF, ça me
+  // propose pas de l'enregistrer, ça ouvre juste une page de plus ». Le lien
+  // servait le document `inline`, et sans nom de fichier : un navigateur
+  // l'affiche alors et n'offre rien.
+  //
+  // Les trois conditions se tiennent, et aucune ne suffit seule :
+  //   - `attachment` côté serveur (`?telecharger=1`), sinon Chrome affiche ;
+  //   - le nom sur le LIEN, sinon Safari nomme le fichier d'après la page —
+  //     c'est le défaut de la sauvegarde, le même matin ;
+  //   - pas de `target`, sinon l'onglet neuf prive Safari de sa demande
+  //     d'enregistrement.
+  const lienPdf = page.getByRole("link", { name: "Télécharger le PDF" });
+  assert.equal(await lienPdf.count(), 1, "Le devis envoyé ne propose plus de télécharger son PDF.");
+  const hrefPdf = (await lienPdf.getAttribute("href")) ?? "";
+  assert.match(
+    hrefPdf,
+    /telecharger=1/,
+    `Le lien sert le PDF en aperçu (« ${hrefPdf} ») : le navigateur l'affichera au lieu de l'enregistrer.`
+  );
+  const nomPdf = (await lienPdf.getAttribute("download")) ?? "";
+  assert.match(
+    nomPdf,
+    /^devis-.+\.pdf$/,
+    `Le lien n'annonce aucun nom de fichier (« ${nomPdf} ») : sur iPhone, le PDF arrivera sous le nom de la page, sans extension.`
+  );
+  assert.equal(
+    await lienPdf.getAttribute("target"),
+    null,
+    "Le lien ouvre un onglet : Safari y affiche le PDF au lieu de proposer de l'enregistrer."
+  );
+
   // --- Le défaut d'origine ------------------------------------------------
   const lienSms = page.locator("a[data-transmission]");
   const adresse = await lienSms.getAttribute("href");

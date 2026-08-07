@@ -6,9 +6,19 @@ import { devis } from "@/server/db/schema";
 import { genererPdfPourApercu, getOuCreerDevisBrouillon } from "@/server/repositories/devis";
 import { lireObjet } from "@/server/storage";
 
-export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(requete: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const ctx = await getCurrentCtx();
+
+  // **« Aperçu » et « Télécharger » ne sont pas le même geste.**
+  //
+  // Le 7 août 2026, le patron : « quand je clique sur télécharger le PDF, ça me
+  // propose pas de l'enregistrer, ça ouvre juste une page de plus ». Le lien
+  // servait le document `inline` dans les deux cas — un navigateur l'affiche
+  // alors, et n'offre rien. C'est le geste attendu pour un aperçu ; c'est
+  // l'inverse de ce qu'il demandait.
+  const enPieceJointe = new URL(requete.url).searchParams.get("telecharger") === "1";
+  const disposition = enPieceJointe ? "attachment" : "inline";
 
   const d = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [row] = await tx.select().from(devis).where(eq(devis.id, id)).limit(1);
@@ -27,7 +37,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       return new NextResponse(new Uint8Array(octets), {
         headers: {
           "Content-Type": "application/pdf",
-          "Content-Disposition": `inline; filename="devis-${d.numeroCommercial}.pdf"`,
+          "Content-Disposition": `${disposition}; filename="devis-${d.numeroCommercial}.pdf"`,
         },
       });
     } catch {
@@ -56,7 +66,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   return new NextResponse(new Uint8Array(pdfBytes), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="devis-${d.numeroCommercial}-brouillon.pdf"`,
+      "Content-Disposition": `${disposition}; filename="devis-${d.numeroCommercial}-brouillon.pdf"`,
     },
   });
 }

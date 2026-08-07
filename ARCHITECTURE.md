@@ -1037,3 +1037,74 @@ l'application sans son geste.
 Atlas ne sait pas que le message est parti, ni quand : il sait seulement qu'un
 lien a été préparé. Pas de relance automatique à échéance, donc — la même limite
 que pour le devis, et pour la même raison.
+
+---
+
+## 28. L'adresse se propose, sans confier les clients à Google
+
+**Décidé le 2026-08-07**, à la demande du patron : *« comme quand on passe une
+commande — on commence à taper l'adresse et il nous propose tout un tas de
+listes, et plus on écrit, plus l'adresse se réduit ; ensuite il n'y a plus qu'à
+cliquer sur notre adresse et ça la valide. »*
+
+### La source : l'État, pas Google
+
+C'est la décision qui compte, et elle n'est pas technique.
+
+| | Google Places | Base Adresse Nationale |
+|---|---|---|
+| Compte, clé, carte bancaire | oui | **non** |
+| Coût | payant au volume | **gratuit** |
+| Sous-traitant à nommer au contrat | **oui** | non — service public français |
+| Où partent les adresses des clients | hors UE | **France** |
+
+Retenir Google aurait ajouté un sous-traitant ultérieur à faire autoriser par
+l'artisan et relire par un juriste : précisément le contrat qui bloque déjà tout
+(`docs/A-FAIRE.md` point 2). Pour une commodité de saisie, le prix était
+absurde.
+
+### Ce qui part, et ce qui ne part pas
+
+**Uniquement la rue en cours de frappe.** Ni le nom du client, ni le chantier,
+ni rien qui permette de rattacher l'adresse à quelqu'un.
+`scripts/test-recherche-adresse.ts` vérifie qu'aucun autre paramètre ne s'ajoute
+à la requête — sans ce contrôle, la phrase ci-dessus serait rassurante plutôt
+que vraie.
+
+**La requête part du serveur d'Atlas, jamais du navigateur.** Deux raisons, et
+la première n'est pas contournable : la politique de sécurité interdit à un
+écran de joindre un hôte extérieur (`connect-src 'self'`). Ce n'est pas une gêne
+à contourner, c'est ce qui garantit qu'aucun écran ne peut envoyer quoi que ce
+soit ailleurs sans qu'on l'ait décidé. La seconde : un seul endroit à lire, à
+limiter et à couper, plutôt qu'autant de téléphones qu'il y a d'utilisateurs.
+
+### Le champ reste libre — ce n'est pas un détail
+
+Un lieu-dit, un chemin de campagne, « derrière la scierie » ne figurent dans
+aucune base. **C'est là que le patron travaille.** Une liste qui l'enfermerait
+dans ce que la base connaît serait une régression, pas une aide. De même, une
+panne du service laisse un champ ordinaire : le chantier se crée quand même,
+sans message rouge.
+
+### Ce qu'on peut éprouver ici, et ce qu'il faut éprouver ailleurs
+
+Le mandataire réseau de l'environnement de développement refuse
+`api-adresse.data.gouv.fr`. La vérification est donc coupée en deux :
+
+| Où | Quoi | Fichier |
+|---|---|---|
+| Ici | ce qu'Atlas retient d'une réponse — illisible, tronquée, en double | `scripts/test-suggestions-adresse.ts` |
+| Ici | l'appel face à un service qui répond, répond mal, ou ne répond pas | `scripts/test-recherche-adresse.ts` |
+| Ici | le geste entier dans un navigateur | `scripts/test-adresse-suggestions-e2e.ts` |
+| **Ailleurs** | le VRAI service rend-il encore ce qu'on croit ? | `.github/workflows/adresses.yml` |
+
+La dernière ligne n'est pas un luxe : si le service changeait de format, l'aide
+s'éteindrait **sans un mot** — la liste resterait simplement vide, ce qui
+ressemble à « aucune adresse ne correspond ». Le patron chercherait longtemps.
+
+### Ce que ça ne résout pas
+
+L'adresse arrive sur une seule ligne, telle que la base la rend. Le jour où un
+document exigera le code postal et la commune séparés — une déclaration, un
+format d'export comptable — il faudra les redemander à la base, qui les fournit
+déjà (`postcode`, `city`). Rien n'est perdu, mais rien n'est stocké non plus.

@@ -126,10 +126,14 @@ export default function PlanningClient({ initialChantiers }: { initialChantiers:
           ) : (
             <div className="flex flex-col gap-2">
               {aPlanifier.map((c) => (
-                <button
+                <CarteGlissante
                   key={c.id}
+                  libelleSuppression={`Supprimer le chantier ${c.nom}`}
+                  onSupprimer={() => supprimer(c.id)}
+                >
+                <button
                   onClick={() => ouvrirSheet(c)}
-                  className="flex items-center justify-between rounded-2xl px-5 py-4 text-left"
+                  className="flex w-full items-center justify-between rounded-2xl px-5 py-4 text-left"
                   style={{ backgroundColor: colors.card }}
                 >
                   <span className="min-w-0 flex-1">
@@ -153,6 +157,7 @@ export default function PlanningClient({ initialChantiers }: { initialChantiers:
                     Choisir une date
                   </span>
                 </button>
+                </CarteGlissante>
               ))}
             </div>
           )}
@@ -170,21 +175,23 @@ export default function PlanningClient({ initialChantiers }: { initialChantiers:
             </p>
             <div className="flex flex-col gap-2">
               {attenteClient.map((c) => (
-                <div
+                <CarteGlissante
                   key={c.id}
-                  className="rounded-2xl px-5 py-4"
-                  style={{ backgroundColor: colors.card }}
+                  libelleSuppression={`Supprimer le chantier ${c.nom}`}
+                  onSupprimer={() => supprimer(c.id)}
                 >
-                  <span
-                    className="block truncate text-[16px]"
-                    style={{ fontFamily: font.display, color: colors.ink }}
-                  >
-                    {c.nom}
-                  </span>
-                  <span className="block truncate text-[13px]" style={{ color: colors.muted }}>
-                    {c.clientNom ?? "Client non renseigné"} — il choisit sa date
-                  </span>
-                </div>
+                  <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: colors.card }}>
+                    <span
+                      className="block truncate text-[16px]"
+                      style={{ fontFamily: font.display, color: colors.ink }}
+                    >
+                      {c.nom}
+                    </span>
+                    <span className="block truncate text-[13px]" style={{ color: colors.muted }}>
+                      {c.clientNom ?? "Client non renseigné"} — il choisit sa date
+                    </span>
+                  </div>
+                </CarteGlissante>
               ))}
             </div>
           </div>

@@ -133,8 +133,22 @@ contrat doit refléter ce choix.
 | Supervision des erreurs | Sentry (optionnel) | Contextes d'erreur — **peuvent contenir des données personnelles** | Filtrer les contextes, ou renoncer à Sentry |
 | Envoi de SMS | à choisir | Numéro de téléphone du client, lien vers son devis | Région UE, durée de rétention des messages chez le fournisseur |
 | Envoi d'e-mails | à choisir | Adresse du client, devis et facture en pièce jointe | Idem |
+| Aide à la saisie d'adresse | Base Adresse Nationale (État français) | **Uniquement la rue en cours de frappe** — jamais le nom du client, jamais le chantier | Service public français, hébergé en France, sans compte ni clé. Éprouvé : `scripts/test-recherche-adresse.ts` vérifie que rien d'autre ne part |
 
-Les deux dernières lignes découlent du parcours décidé dans `AGENT.md` §2.1 :
+**L'aide à la saisie d'adresse mérite une note à part**, parce qu'elle a été
+choisie *contre* la solution évidente. Le patron voulait la commodité qu'il
+connaît sur les sites de commande — celle de Google. Retenir Google aurait fait
+de lui un sous-traitant de plus à nommer, à faire relire, à inscrire au contrat
+qui bloque déjà tout (`docs/A-FAIRE.md` point 2), et aurait envoyé les adresses
+des clients chez un acteur hors UE. La Base Adresse Nationale est un service
+public français, sans compte ni clé, et ne reçoit que la rue tapée : ni le nom
+du client, ni le chantier, ni rien qui permette de le rattacher à quelqu'un.
+
+C'est aussi pourquoi la requête part **du serveur d'Atlas et jamais du
+navigateur** : un seul endroit à lire, à limiter et à couper, plutôt qu'autant
+de téléphones qu'il y a d'utilisateurs.
+
+Les deux lignes sur les envois découlent du parcours décidé dans `AGENT.md` §2.1 :
 le devis part par **SMS ou e-mail**, selon ce que le client a choisi. Chaque
 canal ajoute un sous-traitant à autoriser et à lister.
 

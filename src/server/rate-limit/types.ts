@@ -15,6 +15,11 @@ export const LIMITES = {
   assistant: { max: 20, fenetreMs: 60 * 1000 }, // 20 requêtes IA / minute / entreprise
   confirmationProposition: { max: 30, fenetreMs: 60 * 1000 },
   televersementFichier: { max: 20, fenetreMs: 60 * 1000 },
+  // L'aide à la saisie d'adresse part à chaque pause dans la frappe : une
+  // adresse entière en consomme cinq ou six. Large à dessein — ce seuil ne
+  // protège pas Atlas, il évite que l'adresse publique du banc d'essai serve de
+  // relais vers un service public qui, lui, nous couperait.
+  rechercheAdresse: { max: 120, fenetreMs: 60 * 1000 },
 } as const;
 
 export type ResultatLimite = { autorise: true } | { autorise: false; retryAfterMs: number };

@@ -5,6 +5,9 @@ import { creerChantier } from "@/server/repositories/chantiers";
 import { creerClient, type CanalClient } from "@/server/repositories/clients";
 import { nomDuChantier } from "@/lib/nom-chantier";
 import { jourIso } from "@/lib/jour";
+import { verifierLimite, LIMITES } from "@/server/rate-limit";
+import { verifierTailleFichier, verifierTypeAudio } from "@/server/upload-limits";
+import { lireCoordonneesDictees } from "@/server/ai/services/coordonnees-service";
 
 export type CreerChantierInput = {
   nomClient?: string;
@@ -72,4 +75,36 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
   });
 
   return { id: chantier.id };
+}
+
+/**
+ * Remplir la fiche du client à la voix.
+ *
+ * Le patron, le 7 août 2026 : « une petite touche discrète, juste le signe de
+ * la note vocale, pour appuyer dessus et parler pour remplir les infos du
+ * client si j'ai pas envie de les écrire ».
+ *
+ * **Ne crée rien.** L'action rend des champs ; l'écran les pose dans le
+ * formulaire, le patron les relit et corrige avant de créer le chantier. Un
+ * chantier créé à la voix, sans relecture, mettrait un nom mal entendu sur un
+ * devis (`CLAUDE.md` §4).
+ *
+ * **L'audio n'est pas conservé** : il n'y a pas encore de chantier auquel le
+ * rattacher, et garder une voix sans dossier serait la garder sans raison.
+ */
+export async function dicterCoordonneesAction(formData: FormData) {
+  const fichier = formData.get("fichier");
+  if (!(fichier instanceof File)) throw new Error("Aucun enregistrement reçu.");
+
+  const taille = verifierTailleFichier(fichier);
+  if (!taille.ok) throw new Error(taille.message);
+  const type = verifierTypeAudio(fichier.type);
+  if (!type.ok) throw new Error(type.message);
+
+  const ctx = await getCurrentCtx();
+  const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
+  if (!limite.autorise) throw new Error(limite.message);
+
+  const octets = Buffer.from(await fichier.arrayBuffer());
+  return lireCoordonneesDictees(octets, fichier.type || "audio/webm");
 }

@@ -104,6 +104,7 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
           prestations={prestations.map((p) => p.libelle)}
           lignes={lignesDuDevis.map((l) => ({ libelle: l.libelle, montant: l.montant }))}
           totalTtc={devisRow.totalTtc}
+          numeroDevis={devisRow.numeroCommercial}
           initialEnvoye={devisRow.statut === "envoye"}
           etatEnvoi={etat}
           messageClient={envoi?.precisionClient ?? null}
