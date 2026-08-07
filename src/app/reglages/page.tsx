@@ -6,6 +6,7 @@ import { getConfigIA } from "@/server/ai/config";
 import { listerTarifs } from "@/server/repositories/tarifs";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { versionExecutee } from "@/server/version-executee";
+import { nomFichierSauvegarde } from "@/lib/nom-sauvegarde";
 import ReglagesClient from "./ReglagesClient";
 import BoutonMiseAJour from "./BoutonMiseAJour";
 import { derniereIssueMiseAJour } from "./actions";
@@ -127,9 +128,15 @@ export default async function ReglagesPage() {
             En garder une copie
           </h2>
 
+          {/* Le nom est redit ICI, et pas seulement dans l'en-tête du serveur.
+              Un `download` vide laisse Safari se rabattre sur le nom du
+              document : le 7 août 2026, le patron s'est vu proposer un fichier
+              nommé « reglages », sans extension — donc impossible à ouvrir sur
+              son téléphone. Une sauvegarde qui ne s'ouvre pas ne sauvegarde
+              rien (`src/lib/nom-sauvegarde.ts`). */}
           <a
             href="/api/mes-donnees"
-            download
+            download={nomFichierSauvegarde(entreprise?.nom ?? "Entreprise", new Date())}
             className="inline-block rounded-xl px-5 py-3 text-[15px] font-medium"
             style={{ backgroundColor: colors.rust, color: colors.cream }}
           >

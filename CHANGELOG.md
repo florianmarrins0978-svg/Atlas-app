@@ -9,6 +9,29 @@ Format : le plus récent en tête.
 
 ## 2026-08-07
 
+### La sauvegarde arrive sous son nom, y compris sur un iPhone
+
+Le patron touche « Télécharger mes données » depuis son téléphone, et Safari lui
+propose un fichier nommé **`reglages`**, sans extension — le nom de la page. Il
+arrive dans Fichiers illisible, donc inouvrable. **Une sauvegarde qui ne s'ouvre
+pas ne sauvegarde rien**, et c'est la condition qu'il avait posée lui-même avant
+de nourrir la mémoire de l'agent.
+
+L'archive était pourtant complète et l'en-tête `Content-Disposition` correct :
+un attribut `download` **vide** laisse Safari se rabattre sur le document
+courant. Chrome, lui, lit l'en-tête — d'où un contrôle au vert sur un lien
+pourtant muet. Contrôler l'un ne contrôlait pas l'autre.
+
+Le nom est désormais porté par le lien **et** par l'en-tête, calculés par une
+seule fonction (`src/lib/nom-sauvegarde.ts`) : deux implémentations finiraient
+par diverger, et un fichier qui ne porte pas le nom annoncé est pire qu'un
+fichier sans nom.
+
+`scripts/test-mes-donnees-e2e.ts` lit maintenant l'attribut du lien lui-même.
+Lien remis muet, il repasse au rouge : « Le lien annonce «  » : sur iPhone, la
+sauvegarde arrivera sous le nom de la page, sans extension, et ne s'ouvrira
+pas. »
+
 ### Le bouton de mise à jour n'accuse plus à tort, et son issue survit
 
 **« La mise à jour n'a pas abouti. Redémarrez l'espace de travail. »** Le patron

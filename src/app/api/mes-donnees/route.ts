@@ -5,6 +5,7 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import { exporterEntreprise, type ExportEntreprise } from "@/server/repositories/export-entreprise";
 import { ecrireArchiveZip, type EntreeArchive } from "@/lib/archive-zip";
 import { lireObjet } from "@/server/storage";
+import { nomFichierSauvegarde } from "@/lib/nom-sauvegarde";
 
 // « Télécharger mes données » — voir TODO.md §0.
 //
@@ -17,20 +18,6 @@ export const dynamic = "force-dynamic";
 // Le flux est écrit à la volée : rien ne doit tenter de le mettre en cache ni
 // de le rassembler pour en calculer la longueur.
 export const revalidate = 0;
-
-/** Nom de fichier lisible, et sûr partout — un accent ou une apostrophe dans le
- *  nom de la société suffirait à faire arriver l'archive sous un nom illisible. */
-function partieDeNom(texte: string): string {
-  return (
-    texte
-      .normalize("NFD")
-      .replace(/[̀-ͯ]/g, "")
-      .replace(/[^A-Za-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .toLowerCase()
-      .slice(0, 40) || "entreprise"
-  );
-}
 
 const LISEZ_MOI = (donnees: ExportEntreprise, nomEntreprise: string) => `SAUVEGARDE ATLAS — ${nomEntreprise}
 Exportée le ${donnees.exporteLe}
@@ -141,8 +128,10 @@ export async function GET() {
     },
   });
 
-  const jour = maintenant.toISOString().slice(0, 10);
-  const nomFichier = `atlas-${partieDeNom(nomEntreprise)}-${jour}.zip`;
+  // Le MÊME nom que celui porté par le lien qui a déclenché ce téléchargement
+  // (`src/lib/nom-sauvegarde.ts`) : deux calculs finiraient par diverger, et un
+  // fichier qui ne porte pas le nom annoncé est pire qu'un fichier sans nom.
+  const nomFichier = nomFichierSauvegarde(nomEntreprise, maintenant);
 
   return new NextResponse(flux, {
     headers: {
