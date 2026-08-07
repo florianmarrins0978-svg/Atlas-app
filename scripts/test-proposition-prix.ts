@@ -31,7 +31,17 @@ async function test(nom: string, fn: () => Promise<void>) {
 // 280 €/j, déplacement 35 €, marge 20 %.
 // 2 jours × 2 ouvriers = 800 ; chef 2 × 280 = 560 ; main-d'œuvre 1360 ;
 // + déplacement 35 = 1395 ; + 20 % = 1674,00 €.
-const PRIX_CHIFFRAGE_ATTENDU = "1674.00";
+//
+// **Puis arrondi à 1 670 €, depuis le 7 août 2026.** Ce contrôle exigeait
+// « le montant du moteur, au centime » — il encodait donc l'absence d'arrondi,
+// et c'est ce qui a laissé passer les 858,00 € que le patron a lus sur son
+// devis : « on a dit d'arrondir à la dizaine, toujours pourquoi 858 ??? ».
+// La règle existait depuis le 5 août (`src/lib/arrondi-prix.ts`, avec sa phrase
+// « en HT on fait des prix ronds ») et n'était appelée nulle part dans le
+// chiffrage. Un contrôle qui verrouille un défaut est pire qu'un contrôle
+// absent : il empêche de le corriger.
+const PRIX_MOTEUR_BRUT = "1674.00";
+const PRIX_CHIFFRAGE_ATTENDU = "1670";
 
 async function main() {
   await nettoyerBase();
@@ -81,7 +91,15 @@ async function main() {
 
     const p = await preparerPropositionPrix(A, chantier.id);
     assert.equal(p!.origine, "chiffrage");
-    assert.equal(p!.prixPropose, PRIX_CHIFFRAGE_ATTENDU, "Le montant doit être celui du moteur, au centime");
+    assert.equal(
+      p!.prixPropose,
+      PRIX_CHIFFRAGE_ATTENDU,
+      `Le montant doit être celui du moteur ARRONDI à la dizaine (${PRIX_MOTEUR_BRUT} € → ${PRIX_CHIFFRAGE_ATTENDU} €). Un prix au centime signale une machine, pas un artisan.`
+    );
+    assert.ok(
+      p!.explication.calcul.some((c) => /Arrondi/.test(c.libelle)),
+      "L'arrondi doit être dit dans le détail : un montant qui change sans explication se lit comme une erreur."
+    );
     assert.match(p!.explication.origine, /calculé à partir de vos paramètres/i);
     assert.ok(
       p!.explication.calcul.some((c) => /Main-d'œuvre/.test(c.libelle)),

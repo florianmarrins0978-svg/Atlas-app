@@ -31,7 +31,22 @@ Règles absolues :
   un vide par une supposition.
 - Si une caractéristique est ambiguë (ex. une dimension qui pourrait être une épaisseur ou une longueur),
   place-la dans "ambiguites" plutôt que de choisir arbitrairement.
-- Ne propose jamais de prix : le chiffrage n'est pas de ton ressort.`;
+- Ne propose jamais de prix : le chiffrage n'est pas de ton ressort.
+
+Règle de complétude, aussi importante que celle de non-invention :
+- **Chaque action de travail décrite dans le texte donne UNE prestation.** Ne
+  regroupe jamais deux actions distinctes en une seule ligne, et n'en omets
+  aucune, même énoncée en passant, au milieu d'une phrase ou sans verbe
+  d'action explicite.
+- Une action qui produit un résultat sur le chantier (abattre, tailler, broyer,
+  évacuer, couper, fendre, ranger, débiter, dessoucher, protéger…) est une
+  prestation, même si l'artisan la mentionne comme une évidence.
+- Ce qui décrit la DESTINATION des déchets ("on laisse sur place", "on emporte")
+  va dans "gestionDechets" — mais le TRAVAIL fait sur la matière (couper, fendre,
+  débiter, ranger) reste une prestation à part entière.
+- Avant de répondre, relis le texte et vérifie que chaque verbe d'action y a
+  trouvé sa prestation. Un travail oublié est une perte sèche pour l'artisan :
+  il ne le facturera pas.`;
 
 // Découplage complet (Lot IA-01.5) : ce service ne connaît qu'une interface
 // LLM générique (FournisseurLLM), injectée par la fabrique — aucun import

@@ -2,7 +2,7 @@ import type { Ctx } from "../repositories/context";
 import { genererBrouillon, confirmerBrouillon } from "../ai/services/brouillon-service";
 import { getBrouillon } from "../repositories/brouillons-informations";
 import { marquerInformationsVerifiees, marquerPrixValide } from "../repositories/chantiers";
-import { listerLignesPrix } from "../repositories/lignes-prix";
+import { listerLignesPrix, ajouterLignePrix } from "../repositories/lignes-prix";
 import { getOuCreerDevisBrouillon } from "../repositories/devis";
 import { preparerPropositionPrix, type OriginePrix } from "../chiffrage/proposition-prix";
 import { appliquerPropositionPrix } from "../chiffrage/appliquer-proposition";
@@ -277,6 +277,34 @@ async function chiffrerEtPreparer(
       // Le cas courant : la ligne y était déjà (le patron rejoue l'enchaînement).
       // Ce n'est pas un échec du devis, seulement une ligne non ajoutée.
       prixImpossible = application.erreur;
+    }
+  }
+
+  // --- 3 bis. Sans prix, le travail s'écrit quand même ---------------------
+  //
+  // **Le défaut du 7 août 2026, et le mot du patron : « le devis ne comporte
+  // aucune ligne, gros bug ».** Il dicte « taille d'allégement sur marronnier,
+  // suppression des grosses charpentières champignonnées, broyage des déchets,
+  // évacuation du gros bois », arrive sur son devis — et le document est vide.
+  //
+  // Le refus de chiffrer était juste : il n'avait dit ni durée ni équipe, et
+  // inventer un prix est ce que ce produit ne fera jamais (`docs/AGENT.md` §3).
+  // Mais **refuser un prix n'est pas refuser le travail.** Le devis aurait dû
+  // porter ses quatre prestations, prix à compléter — il n'avait plus qu'à les
+  // remplir. À la place, sa dictée avait disparu.
+  //
+  // Les lignes sont écrites à 0 € et l'écran les montre comme des prix à saisir,
+  // jamais comme des prix décidés (`DevisCompletClient`, champ souligné tant
+  // qu'il est vide). Un zéro affiché comme un montant se lirait « gratuit ».
+  if (prixImpossible && (await listerLignesPrix(ctx, chantierId)).length === 0) {
+    const aEcrire = (await listerPrestations(ctx, chantierId)).map((p) => p.libelle.trim()).filter(Boolean);
+    for (const libelle of aEcrire) {
+      await ajouterLignePrix(ctx, chantierId, libelle, "0", { quantite: "1", prixUnitaire: "0" });
+    }
+    if (aEcrire.length > 0) {
+      prixImpossible =
+        `${prixImpossible} En attendant, vos ${aEcrire.length} prestation${aEcrire.length > 1 ? "s sont inscrites" : " est inscrite"} ` +
+        "sur le devis : il ne reste qu'à poser les prix.";
     }
   }
 

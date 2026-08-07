@@ -10,6 +10,8 @@ import { chiffrerChantier } from "./service";
 import { parseNombreFrancais } from "./parse";
 import type { SourcePrix } from "../orchestrateur/proposition-builder";
 import type { LigneExplication } from "./types";
+import { arrondirALaDizaine } from "../../lib/arrondi-prix";
+import { chiffrerMainOeuvre } from "../../lib/tarif-main-oeuvre";
 
 // Origine du prix — même taxonomie que l'orchestrateur (SourcePrix), volontairement
 // réutilisée plutôt que redéfinie : les deux chemins doivent raconter la même
@@ -231,6 +233,55 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
     };
   }
 
+  // --- La main d'œuvre, prise dans la GRILLE avant tout calcul --------------
+  //
+  // **Le défaut du 7 août 2026.** Le patron dicte « deux hommes, une journée »,
+  // lit 858,00 € et demande : « à quoi correspond ce prix ? Il n'est pas allé
+  // chercher dans la grille de prix. » Il avait raison.
+  //
+  // Le rapprochement ci-dessus se fait par le TEXTE : « Main d'œuvre
+  // (jour/homme) » ne se retrouve dans aucun libellé de prestation, donc aucun
+  // tarif n'était retenu, et l'application basculait sur les paramètres de
+  // chiffrage — un coût interne majoré d'une marge. Deux chiffres sans rapport :
+  // l'un est ce que le travail COÛTE, l'autre ce qu'il se VEND.
+  //
+  // Un tarif au jour ne décrit aucune prestation en particulier : il se
+  // reconnaît à son UNITÉ, et s'applique dès qu'une durée et une équipe sont
+  // connues. C'est exactement ce que le patron dicte à chaque fois.
+  const mainOeuvre = chiffrerMainOeuvre(
+    tarifs.map((t) => ({ id: t.id, intitule: t.intitule, prix: t.prix, unite: t.unite })),
+    parseNombreFrancais(chantier.dureePrevue),
+    parseNombreFrancais(chantier.tailleEquipe)
+  );
+
+  if (mainOeuvre) {
+    const travaux = prestations.map((p) => p.libelle.trim()).filter(Boolean).join(" ; ");
+    const arrondi = arrondirALaDizaine(mainOeuvre.montant) ?? mainOeuvre.montant;
+    return {
+      origine: "tarif",
+      prixPropose: arrondi,
+      libelle: travaux || mainOeuvre.intitule,
+      tarifId: mainOeuvre.tarifId,
+      tarifsCandidats: [],
+      explication: {
+        origine:
+          "Ce prix vient de VOTRE grille de tarifs, appliquée à la durée et à l'équipe que vous avez dictées — il n'a pas été reconstitué depuis vos coûts.",
+        elementsPrisEnCompte,
+        calcul: [
+          { libelle: "Main d'œuvre", detail: mainOeuvre.detail },
+          ...(arrondi !== mainOeuvre.montant
+            ? [{ libelle: "Arrondi", detail: `${mainOeuvre.montant} € arrondi à ${arrondi} € — « en HT on fait des prix ronds ».` }]
+            : []),
+        ],
+        donneesManquantes: [
+          ...donneesManquantes,
+          "Le matériel n'est pas chiffré : à ajouter en ligne si le chantier en demande.",
+        ],
+        ambiguites,
+      },
+    };
+  }
+
   // --- Aucun tarif : calcul depuis les paramètres de l'entreprise ----------
   const chiffrage = await chiffrerChantier(ctx, chantierId);
   const standard = chiffrage?.variantes.standard;
@@ -279,9 +330,17 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
     .filter(Boolean)
     .join(" ; ");
 
+  // **L'arrondi à la dizaine, enfin appliqué là où le prix se décide.**
+  //
+  // La règle existait, écrite avec la phrase du patron (« en HT on fait des
+  // prix ronds : 350, 400, 420, 560 »), et elle n'était appelée nulle part dans
+  // le chiffrage — seulement pour les rappels de prix. D'où le 858,00 € qu'il a
+  // lu le 7 août 2026 : un montant de machine sur un document d'artisan.
+  const arrondiCalcule = arrondirALaDizaine(standard.prixConseille) ?? standard.prixConseille;
+
   return {
     origine: "chiffrage",
-    prixPropose: standard.prixConseille,
+    prixPropose: arrondiCalcule,
     libelle: travauxDictes || "Prestation (prix calculé)",
     tarifId: null,
     tarifsCandidats: [],
@@ -289,7 +348,17 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
       origine:
         "Aucun tarif enregistré ne correspond : ce montant a été calculé à partir de vos paramètres de chiffrage. Il reste à vérifier.",
       elementsPrisEnCompte,
-      calcul: standard.explications,
+      calcul: [
+        ...standard.explications,
+        ...(arrondiCalcule !== standard.prixConseille
+          ? [
+              {
+                libelle: "Arrondi",
+                detail: `${standard.prixConseille} € arrondi à ${arrondiCalcule} € — « en HT on fait des prix ronds ».`,
+              },
+            ]
+          : []),
+      ],
       donneesManquantes: [...donneesManquantes, ...standard.avertissements],
       ambiguites,
     },

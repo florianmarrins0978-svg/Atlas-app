@@ -6,6 +6,7 @@ import { enregistrerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { verifierTailleFichier, verifierTypeAudio } from "@/server/upload-limits";
 import { lancerTranscription } from "@/server/ai/services/transcription-service";
+import { completerNoteVocale } from "@/server/ai/services/complement-note-service";
 
 function extensionPour(mimeType: string): string {
   if (mimeType.includes("webm")) return ".webm";
@@ -70,4 +71,29 @@ export async function supprimerNoteVocaleAction(chantierId: string) {
 export async function lancerTranscriptionAction(chantierId: string) {
   const ctx = await getCurrentCtx();
   return lancerTranscription(ctx, chantierId);
+}
+
+/**
+ * Ajouter à une note vocale qu'on a arrêtée trop tôt.
+ *
+ * Le patron, le 7 août 2026 : « sans faire exprès j'ai mis fin à ma note vocale
+ * mais j'avais encore des choses à dire ». La seule issue était « Remplacer la
+ * note » — tout refaire. Le complément s'ajoute désormais à la suite ; le
+ * pourquoi de ce choix vit dans `complement-note-service.ts`.
+ */
+export async function completerNoteVocaleAction(chantierId: string, formData: FormData) {
+  const fichier = formData.get("fichier");
+  if (!(fichier instanceof File)) throw new Error("Aucun enregistrement reçu.");
+
+  const taille = verifierTailleFichier(fichier);
+  if (!taille.ok) throw new Error(taille.message);
+  const type = verifierTypeAudio(fichier.type);
+  if (!type.ok) throw new Error(type.message);
+
+  const ctx = await getCurrentCtx();
+  const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
+  if (!limite.autorise) throw new Error(limite.message);
+
+  const octets = Buffer.from(await fichier.arrayBuffer());
+  return completerNoteVocale(ctx, chantierId, octets, fichier.type || "audio/webm");
 }
