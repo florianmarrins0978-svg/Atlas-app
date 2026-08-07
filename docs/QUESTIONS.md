@@ -31,6 +31,7 @@ relues à chaque session) :
 7. [Concrètement, quels problèmes pose le dépôt public ?](#7-concrètement-quels-problèmes-pose-le-dépôt-public-)
 8. [Faut-il héberger l'application pour pouvoir l'essayer en entier ?](#8-faut-il-héberger-lapplication-pour-pouvoir-lessayer-en-entier-)
 9. [Ce que je vois là, est-ce le design final ?](#9-ce-que-je-vois-là-est-ce-le-design-final-)
+10. [Qui voit quoi : moi, mes clients, leurs salariés ?](#10-qui-voit-quoi--moi-mes-clients-leurs-salariés-)
 
 ---
 
@@ -479,3 +480,77 @@ l'illusion d'une décision prise, et personne ne la remplace jamais.
 Pour la changer : remplacer `public/icone-source.svg` et lancer `npm run icones`.
 Toutes les tailles se régénèrent d'un trait — un jeu d'icônes retouché taille
 par taille finit toujours par diverger.
+
+---
+
+## 10. Qui voit quoi : moi, mes clients, leurs salariés ?
+
+*Question posée le 7 août 2026, en construisant la page « Le vocabulaire de mon
+métier ».*
+
+### Le point de départ
+
+> *« Est-ce que les utilisateurs auront accès à cette page ? Moi c'est ça que je
+> ne veux pas. Je veux qu'il y ait mon application avec mon compte à moi, et
+> ensuite qu'on crée un profil entreprise — c'est ce profil-là qu'on va vendre.
+> Et il faut aussi que les entrepreneurs, au sein de leur profil entreprise,
+> puissent avoir des profils pour leurs salariés : par exemple juste le planning
+> et les devis, mais sans les prix. »*
+
+### Trois niveaux, et pas deux
+
+| Qui | Ce qu'il voit |
+|---|---|
+| **Vous, l'éditeur** | Tout, **plus** le vocabulaire du métier — qui sert à tous vos clients sans qu'ils y touchent |
+| **Le patron d'une entreprise** — *ce qui se vend* | Toute son entreprise : chantiers, planning, devis, prix, factures, TVA, réglages, ses tarifs |
+| **Le salarié** | Le planning et les chantiers, les devis **sans aucun montant** |
+
+### Ce qui appartient au produit, et ce qui appartient au client
+
+C'est la distinction qui commande tout le reste.
+
+**Va avec l'application, chez tous vos clients :**
+
+- **le vocabulaire du métier** — « charpentière champignonnée », « fendre en
+  50 », « taille de cohabitation ». Ce sont des mots, pas des données de client :
+  aucun nom, aucune adresse, aucun prix. C'est ce qui les rend partageables sans
+  le moindre risque ;
+- **vos règles de chiffrage**, dont celle-ci, que vous avez décidé de faire
+  partir avec l'application (7 août 2026) :
+
+  > *Chaque ligne doit pouvoir se vendre seule. Une prestation détachable — la
+  > fente, l'évacuation, le dessouchage — porte son propre déplacement et sa
+  > mise en œuvre, jamais son seul coût marginal. Ne pas ventiler au prorata du
+  > temps : alléger la ligne principale, charger la détachable.*
+
+  Le pourquoi, dans vos mots : *« si le client ne veut pas la fente, il va
+  trouver le reste cher ; et s'il fait faire le reste par un autre artisan et
+  nous prend juste pour la fente, 100 € ce n'est pas assez. »*
+
+**Reste chez chaque client, et ne se partage jamais :**
+
+- **la mémoire de ses corrections** — ce qu'il avait dicté, ce qu'il a
+  finalement écrit sur son devis. C'est fait de ses chantiers, de ses libellés
+  et de ses prix ;
+- ses tarifs, ses clients, ses documents. Rien de tout cela ne traverse d'une
+  entreprise à l'autre : c'est ce que garantit l'isolation posée en base
+  (`ARCHITECTURE.md` §1).
+
+### « Sans les prix » ne peut pas être un masquage à l'écran
+
+Le point sur lequel il ne faut pas transiger. Cacher un montant dans la page ne
+le retire pas de ce que la page a reçu : un salarié qui ouvre l'adresse du PDF,
+ou qui regarde ce que son téléphone a téléchargé, verrait tout.
+
+**Les montants ne doivent pas sortir du serveur** pour qui n'a pas le droit de
+les voir — ni dans la page, ni dans le PDF, ni dans une réponse d'API. C'est
+plus de travail qu'un test dans l'affichage, et c'est la seule version honnête :
+un salarié qui découvre votre marge parce qu'il a su regarder, c'est pire que
+pas de restriction du tout, puisque vous vous croyiez protégé.
+
+### Ce qui reste à trancher
+
+**Le salarié voit-il le planning de toute l'entreprise, ou seulement ses
+chantiers à lui ?** Question posée le 7 août 2026, réponse remise à plus tard :
+*« attends, fais déjà tout le reste, on en reparle après. »* Elle change le
+travail et elle change ce qui se vend.

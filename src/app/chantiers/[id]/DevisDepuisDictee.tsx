@@ -34,6 +34,7 @@ type Etat =
   | { type: "conflit" }
   // L'arrêt d'avant-chiffrage : ce qui manque et qui fait le prix.
   | { type: "questions"; questions: QuestionChiffrage[] }
+  | { type: "sansPrix"; raison: string }
   | { type: "message"; texte: string };
 
 export default function DevisDepuisDictee({ chantierId, transcriptionDisponible, variante = "principal" }: Props) {
@@ -45,6 +46,20 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
     try {
       const r = await preparerDevisDepuisDicteeAction(chantierId, remplacer);
       if (r.statut === "prepare") {
+        // **Ne jamais l'emmener sur un devis muet.**
+        //
+        // Le 7 août 2026, il dicte quatre prestations, arrive sur son devis, et
+        // le trouve vide : « gros bug, corrige ça et que ça ne se reproduise
+        // plus jamais ». Le refus de chiffrer était juste — il n'avait dit ni
+        // durée ni équipe — mais il partait sans un mot, et un écran vide ne
+        // ressemble jamais à une décision : il ressemble à une panne.
+        //
+        // La raison s'affiche donc AVANT le devis, avec ce qu'il y a à faire.
+        // Le devis, lui, porte désormais les prestations, prix à compléter.
+        if (r.rapport.prixImpossible) {
+          setEtat({ type: "sansPrix", raison: r.rapport.prixImpossible });
+          return;
+        }
         // **On l'emmène droit au devis.** Il l'a demandé le 5 août 2026 : « une
         // fois qu'on valide la note vocale, cette page s'ouvre, j'ai accès à la
         // page où il n'y a que le devis, et là je fais mes modifications. Je ne
@@ -113,6 +128,32 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
         <p role="alert" className="text-[13px]" style={{ color: colors.alert }}>
           {etat.texte}
         </p>
+      )}
+
+      {etat.type === "sansPrix" && (
+        <div className="rounded-2xl px-4 py-4" style={{ backgroundColor: colors.rustTint }}>
+          <p className="text-[13px] leading-snug" style={{ color: colors.rust }}>
+            {etat.raison}
+          </p>
+          <div className="mt-3 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => router.push(`/chantiers/${chantierId}/devis-complet`)}
+              className="rounded-xl px-4 py-2.5 text-[14px] font-medium"
+              style={{ backgroundColor: colors.rust, color: colors.cream }}
+            >
+              Ouvrir le devis et poser les prix →
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push(`/chantiers/${chantierId}/informations`)}
+              className="text-[13px] font-medium"
+              style={{ color: colors.rust }}
+            >
+              Compléter la durée et l&apos;équipe
+            </button>
+          </div>
+        </div>
       )}
 
       {etat.type === "questions" && (

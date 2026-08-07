@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { ACCEPT_AUDIO } from "@/server/upload-limits";
@@ -8,6 +9,7 @@ import {
   enregistrerNoteVocaleAction,
   lancerTranscriptionAction,
   supprimerNoteVocaleAction,
+  completerNoteVocaleAction,
 } from "./actions";
 import DevisDepuisDictee from "../DevisDepuisDictee";
 
@@ -53,11 +55,18 @@ export default function NoteVocaleClient({
   );
   const [modeConfirmation, setModeConfirmation] = useState<ModeConfirmation>("remplacer");
 
+  const router = useRouter();
   const audioRef = useRef<HTMLAudioElement>(null);
   const fichierRef = useRef<HTMLInputElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  // Le magnétophone du complément, distinct du principal : une reprise ratée ne
+  // doit rien coûter à la note déjà enregistrée.
+  const complementRecorder = useRef<MediaRecorder | null>(null);
+  const complementChunks = useRef<Blob[]>([]);
+  const [complementEnCours, setComplementEnCours] = useState(false);
+  const [messageComplement, setMessageComplement] = useState<string | null>(null);
 
   useEffect(() => {
     if (etat !== "enregistrement") return;
@@ -113,6 +122,69 @@ export default function NoteVocaleClient({
     } catch {
       setErreur("Impossible d'enregistrer la note pour l'instant. Réessayez.");
       setEtat("vide");
+    } finally {
+      setEnCours(false);
+    }
+  }
+
+  /**
+   * Reprendre l'enregistrement, pour ajouter ce qui a été oublié.
+   *
+   * Un magnétophone séparé du principal : il ne touche ni à `etat`, ni au
+   * lecteur, ni à la note existante tant que le complément n'a pas abouti. Une
+   * reprise qui échouerait ne doit rien coûter à ce qui est déjà enregistré.
+   */
+  async function demarrerComplement() {
+    setErreur(null);
+    setMessageComplement(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      complementChunks.current = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) complementChunks.current.push(e.data);
+      };
+      recorder.onstop = async () => {
+        // La piste est relâchée dès l'arrêt : sans cela, le voyant du micro
+        // reste allumé et l'on se croit encore écouté.
+        stream.getTracks().forEach((t) => t.stop());
+        await envoyerComplement(new Blob(complementChunks.current, { type: recorder.mimeType || "audio/webm" }));
+      };
+      recorder.start();
+      complementRecorder.current = recorder;
+      setComplementEnCours(true);
+    } catch {
+      setErreur("Impossible d'accéder au micro. Vérifiez les autorisations.");
+    }
+  }
+
+  function arreterComplement() {
+    complementRecorder.current?.stop();
+    complementRecorder.current = null;
+    setComplementEnCours(false);
+  }
+
+  async function envoyerComplement(blob: Blob) {
+    setEnCours(true);
+    try {
+      const fd = new FormData();
+      const extension = blob.type.includes("ogg") ? "ogg" : blob.type.includes("mp4") ? "m4a" : "webm";
+      fd.set("fichier", blob, `complement.${extension}`);
+      const r = await completerNoteVocaleAction(chantierId, fd);
+      if (!r.ok) {
+        setMessageComplement(
+          r.raison === "vide"
+            ? "Rien n'a été entendu — votre note d'origine est intacte."
+            : "Le complément n'a pas pu être transcrit. Votre note d'origine est intacte."
+        );
+        return;
+      }
+      setStatutTranscription("reussie");
+      setErreurTranscription(null);
+      setMessageComplement("Ajouté à la suite de votre note. Relisez la transcription avant de créer le devis.");
+      router.refresh();
+    } catch {
+      setMessageComplement("Le complément n'a pas abouti. Votre note d'origine est intacte.");
     } finally {
       setEnCours(false);
     }
@@ -416,6 +488,37 @@ export default function NoteVocaleClient({
           {erreur && (
             <p className="mt-4 text-center text-[13px]" style={{ color: colors.alert }}>
               {erreur}
+            </p>
+          )}
+
+          {/* **Reprendre, plutôt que tout refaire.**
+              Le patron, le 7 août 2026 : « sans faire exprès j'ai mis fin à ma
+              note vocale mais j'avais encore des choses à dire ». La seule
+              issue était « Remplacer », c'est-à-dire recommencer trente-quatre
+              secondes de description après les avoir déjà dites une fois.
+              Placé AVANT « Remplacer » : c'est le geste qu'on cherche quand on
+              s'est arrêté trop tôt, et le remplacement est celui qu'on regrette.
+              Le complément s'ajoute à la suite du texte, et l'écran le dit —
+              voir `complement-note-service.ts` pour pourquoi ce n'est pas
+              l'audio qu'on recolle. */}
+          <button
+            onClick={complementEnCours ? arreterComplement : demarrerComplement}
+            disabled={enCours}
+            className="mt-4 block w-full rounded-2xl py-3 text-center text-[15px] font-medium disabled:opacity-40"
+            style={{
+              backgroundColor: complementEnCours ? colors.alert : colors.rustTint,
+              color: complementEnCours ? "#FFFFFF" : colors.rust,
+            }}
+          >
+            {complementEnCours
+              ? "J'écoute — touchez pour arrêter"
+              : enCours
+                ? "Un instant…"
+                : "Reprendre — j'avais oublié quelque chose"}
+          </button>
+          {messageComplement && (
+            <p className="mt-2 text-center text-[13px] leading-snug" style={{ color: colors.muted }}>
+              {messageComplement}
             </p>
           )}
 

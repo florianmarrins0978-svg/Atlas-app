@@ -78,6 +78,7 @@
 <li><a href="#7-concrètement-quels-problèmes-pose-le-dépôt-public-">Concrètement, quels problèmes pose le dépôt public ?</a></li>
 <li><a href="#8-faut-il-héberger-lapplication-pour-pouvoir-lessayer-en-entier-">Faut-il héberger l'application pour pouvoir l'essayer en entier ?</a></li>
 <li><a href="#9-ce-que-je-vois-là-est-ce-le-design-final-">Ce que je vois là, est-ce le design final ?</a></li>
+<li><a href="#10-qui-voit-quoi--moi-mes-clients-leurs-salariés-">Qui voit quoi : moi, mes clients, leurs salariés ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -413,6 +414,49 @@
 <h3 id="licône-est-provisoire">L'icône est provisoire</h3>
 <p>Un « A » en forme de chevron de charpente, dans les couleurs de l'application. Volontairement simple : une icône provisoire qui chercherait à bien faire donne l'illusion d'une décision prise, et personne ne la remplace jamais.</p>
 <p>Pour la changer : remplacer <code>public/icone-source.svg</code> et lancer <code>npm run icones</code>. Toutes les tailles se régénèrent d'un trait — un jeu d'icônes retouché taille par taille finit toujours par diverger.</p>
+<hr>
+<h2 id="10-qui-voit-quoi--moi-mes-clients-leurs-salariés-">10. Qui voit quoi : moi, mes clients, leurs salariés ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>*Question posée le 7 août 2026, en construisant la page « Le vocabulaire de mon métier ».*</p>
+<h3 id="le-point-de-départ">Le point de départ</h3>
+<blockquote>*« Est-ce que les utilisateurs auront accès à cette page ? Moi c'est ça que je ne veux pas. Je veux qu'il y ait mon application avec mon compte à moi, et ensuite qu'on crée un profil entreprise — c'est ce profil-là qu'on va vendre. Et il faut aussi que les entrepreneurs, au sein de leur profil entreprise, puissent avoir des profils pour leurs salariés : par exemple juste le planning et les devis, mais sans les prix. »*</blockquote>
+<h3 id="trois-niveaux-et-pas-deux">Trois niveaux, et pas deux</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Qui</th>
+<th>Ce qu'il voit</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Vous, l'éditeur</strong></td>
+<td>Tout, <strong>plus</strong> le vocabulaire du métier — qui sert à tous vos clients sans qu'ils y touchent</td>
+</tr>
+<tr>
+<td><strong>Le patron d'une entreprise</strong> — *ce qui se vend*</td>
+<td>Toute son entreprise : chantiers, planning, devis, prix, factures, TVA, réglages, ses tarifs</td>
+</tr>
+<tr>
+<td><strong>Le salarié</strong></td>
+<td>Le planning et les chantiers, les devis <strong>sans aucun montant</strong></td>
+</tr>
+</tbody></table></div>
+<h3 id="ce-qui-appartient-au-produit-et-ce-qui-appartient-au-client">Ce qui appartient au produit, et ce qui appartient au client</h3>
+<p>C'est la distinction qui commande tout le reste.</p>
+<p><strong>Va avec l'application, chez tous vos clients :</strong></p>
+<ul>
+<li><strong>le vocabulaire du métier</strong> — « charpentière champignonnée », « fendre en 50 », « taille de cohabitation ». Ce sont des mots, pas des données de client : aucun nom, aucune adresse, aucun prix. C'est ce qui les rend partageables sans le moindre risque ;</li>
+<li><strong>vos règles de chiffrage</strong>, dont celle-ci, que vous avez décidé de faire partir avec l'application (7 août 2026) :</li>
+</ul>
+<p>&gt; *Chaque ligne doit pouvoir se vendre seule. Une prestation détachable — la &gt; fente, l'évacuation, le dessouchage — porte son propre déplacement et sa &gt; mise en œuvre, jamais son seul coût marginal. Ne pas ventiler au prorata du &gt; temps : alléger la ligne principale, charger la détachable.*</p>
+<p>Le pourquoi, dans vos mots : *« si le client ne veut pas la fente, il va trouver le reste cher ; et s'il fait faire le reste par un autre artisan et nous prend juste pour la fente, 100 € ce n'est pas assez. »*</p>
+<p><strong>Reste chez chaque client, et ne se partage jamais :</strong></p>
+<ul>
+<li><strong>la mémoire de ses corrections</strong> — ce qu'il avait dicté, ce qu'il a finalement écrit sur son devis. C'est fait de ses chantiers, de ses libellés et de ses prix ;</li>
+<li>ses tarifs, ses clients, ses documents. Rien de tout cela ne traverse d'une entreprise à l'autre : c'est ce que garantit l'isolation posée en base (<code>ARCHITECTURE.md</code> §1).</li>
+</ul>
+<h3 id="-sans-les-prix--ne-peut-pas-être-un-masquage-à-lécran">« Sans les prix » ne peut pas être un masquage à l'écran</h3>
+<p>Le point sur lequel il ne faut pas transiger. Cacher un montant dans la page ne le retire pas de ce que la page a reçu : un salarié qui ouvre l'adresse du PDF, ou qui regarde ce que son téléphone a téléchargé, verrait tout.</p>
+<p><strong>Les montants ne doivent pas sortir du serveur</strong> pour qui n'a pas le droit de les voir — ni dans la page, ni dans le PDF, ni dans une réponse d'API. C'est plus de travail qu'un test dans l'affichage, et c'est la seule version honnête : un salarié qui découvre votre marge parce qu'il a su regarder, c'est pire que pas de restriction du tout, puisque vous vous croyiez protégé.</p>
+<h3 id="ce-qui-reste-à-trancher">Ce qui reste à trancher</h3>
+<p><strong>Le salarié voit-il le planning de toute l'entreprise, ou seulement ses chantiers à lui ?</strong> Question posée le 7 août 2026, réponse remise à plus tard : *« attends, fais déjà tout le reste, on en reparle après. »* Elle change le travail et elle change ce qui se vend.</p>
 </main>
 </body>
 </html>

@@ -10,9 +10,23 @@ import { Pool } from "pg";
 // raisons.
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-// Paramètres par défaut : 2 j × 2 ouvriers × 200 € + chef 2 × 280 € = 1360 €,
-// + 35 € de déplacement = 1395 €, + 20 % de marge = 1674,00 €.
-const PRIX_ATTENDU = "1674.00";
+// **Ce parcours a changé de prix le 7 août 2026, et c'est le correctif.**
+//
+// Il attendait 1 674,00 € — le calcul depuis les paramètres de chiffrage :
+// coûts internes (2 j × 2 ouvriers × 200 € + chef 2 × 280 €), déplacement, puis
+// 20 % de marge. Le patron, devant l'équivalent sur son propre devis : « à quoi
+// correspond ce prix ? Il n'est pas allé chercher dans la grille de prix, ça ne
+// correspond pas du tout. »
+//
+// Il avait raison : l'entreprise de démonstration porte un tarif « Main d'œuvre
+// (jour/homme) » à 280 €, et c'est ce prix de VENTE qui doit s'appliquer dès
+// qu'une durée et une équipe sont connues — pas une reconstitution à partir de
+// ce que le travail coûte. 2 jours × 2 hommes × 280 € = 1 120 €, déjà rond.
+//
+// Le calcul depuis les paramètres reste le repli quand aucun tarif au jour
+// n'existe ; il est éprouvé par `scripts/test-proposition-prix.ts`, sur une
+// entreprise qui n'en a pas.
+const PRIX_ATTENDU = "1120.00";
 
 async function main() {
   const browser = await lancerNavigateur();
@@ -66,10 +80,13 @@ async function main() {
   // waitForURL rend la main dès que l'URL change : le contenu rendu côté
   // serveur peut ne pas encore être peint. On attend donc l'élément lui-même.
   await page.waitForLoadState("networkidle");
-  await page.waitForSelector("text=Calculé depuis vos paramètres", { timeout: 10000 });
+  await page.waitForSelector("text=Tarif de l'entreprise", { timeout: 10000 });
 
   await page.click("text=Voir le détail");
-  await page.waitForSelector("text=Main-d'œuvre", { timeout: 5000 });
+  // Le détail doit NOMMER le tarif employé : c'est exactement la question du
+  // patron — « à quoi correspond ce prix ? ». Un montant sans provenance est ce
+  // qui l'a fait douter de toute la chaîne.
+  await page.waitForSelector("text=Main d'œuvre", { timeout: 5000 });
 
   // --- Rien n'est appliqué tant que le patron n'a pas agi ---
   const avant = await pool.query(`SELECT count(*) FROM lignes_prix WHERE chantier_id = $1`, [chantierId]);
