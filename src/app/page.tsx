@@ -8,6 +8,7 @@ import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
 import { notificationsPatron, envoisCaducs } from "@/server/repositories/envois-devis";
 import Notifications from "./Notifications";
 import ListeChantiers from "./ListeChantiers";
+import AnnonceTransmission from "@/components/atlas/AnnonceTransmission";
 
 // Données réelles, propres à l'entreprise courante : jamais de pré-rendu statique.
 export const dynamic = "force-dynamic";
@@ -80,6 +81,11 @@ export default async function ChantiersPage() {
             </svg>
           </button>
         </div>
+
+        {/* Le mot qui accueille le patron au retour de sa messagerie. Placé
+            AVANT les notifications : c'est la conséquence du geste qu'il vient
+            de faire, pas une information de fond. */}
+        <AnnonceTransmission />
 
         <Notifications initiales={notifications} caducs={caducs} />
 

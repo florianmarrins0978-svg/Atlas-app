@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { colors } from "@/lib/design-tokens";
 import { composerMessageClient, lienTransmission, type CanalClient } from "@/lib/message-client";
+import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { enregistrerCoordonneeClientAction } from "./actions";
 
 // Ouvre l'application de messagerie du patron, message prêt à partir, **au bon
@@ -85,6 +86,19 @@ export default function TransmettreAuClient({
   const [saisie, setSaisie] = useState("");
   const [enregistrement, setEnregistrement] = useState(false);
 
+  // **Ramener le patron chez lui, avec un mot.**
+  //
+  // Le 7 août 2026 : « lorsque j'envoie le SMS et que je reviens sur la page, il
+  // faut que la page se remette sur la première page automatiquement, avec un
+  // petit message ». Aujourd'hui il revenait sur l'écran du devis, identique à
+  // ce qu'il avait quitté — rien ne disait que quelque chose s'était passé.
+  //
+  // Le retour se détecte par `visibilitychange` : iOS ne recharge pas la page
+  // quand on revient de Messages, il la réveille. Aucun événement de navigation
+  // ne se produit, et un `focus` seul se déclenche aussi en changeant d'onglet
+  // sans jamais être parti.
+  useRetourDeMessagerie();
+
   const message = composerMessageClient({ clientNom, entrepriseNom, lien });
   const autre: CanalClient = canalChoisi === "sms" ? "email" : "sms";
   const destinataire = coordonnees[canalChoisi];
@@ -133,6 +147,7 @@ export default function TransmettreAuClient({
       // La coordonnée vient d'être saisie : aucun lien de la page ne la portait
       // encore. On en fabrique un et on le déclenche — `location.assign` plutôt
       // qu'une écriture sur `location.href`, que le lint interdit à raison.
+      marquerDepartMessagerie("devis", clientNom);
       window.location.assign(adresse(canalChoisi, valeur));
     } catch {
       setErreur("La coordonnée n'a pas pu être enregistrée. Réessayez.");
@@ -148,6 +163,7 @@ export default function TransmettreAuClient({
           <a
             href={adresse(canalChoisi, destinataire)}
             data-transmission={canalChoisi}
+            onClick={() => marquerDepartMessagerie("devis", clientNom)}
             className="mt-3 block w-full rounded-2xl py-3 text-center text-[15px] font-medium text-white"
             style={{ backgroundColor: colors.rust }}
           >
@@ -227,3 +243,5 @@ export default function TransmettreAuClient({
     </>
   );
 }
+
+

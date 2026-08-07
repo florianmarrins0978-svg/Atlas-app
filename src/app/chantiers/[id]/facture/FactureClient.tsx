@@ -6,6 +6,7 @@ import { colors, font, smallCaps, couleursDocument } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { jourLisible } from "@/lib/jour";
 import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
+import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { terminerChantierAction, emettreFactureAction, preparerLienFactureAction } from "./actions";
 
 // Arrêt 3 (docs/AGENT.md §2.3). Cet écran EST le contrôle : les montants du
@@ -51,6 +52,7 @@ export default function FactureClient({
   canalClient: CanalClient | null;
 }) {
   const router = useRouter();
+  useRetourDeMessagerie();
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [emise, setEmise] = useState(initialFacture?.statut === "emise");
@@ -249,8 +251,13 @@ export default function FactureClient({
           <div className="mt-5" style={{ borderTop: `1px solid ${colors.lineSoft}`, paddingTop: 16 }}>
             {lienFacture ? (
               <>
+                {/* Même geste que pour le devis : on retient le départ vers la
+                    messagerie, et le retour ramène à l'accueil avec un mot
+                    (`src/lib/annonce-transmission.ts`). La phrase diffère —
+                    une facture n'attend pas de réponse. */}
                 <a
                   href={adresseMessagerie}
+                  onClick={() => marquerDepartMessagerie("facture", initialFacture.clientNom ?? "")}
                   className="block rounded-2xl py-3 text-center text-[15px] font-medium"
                   style={{ backgroundColor: colors.rust, color: colors.cream }}
                 >
