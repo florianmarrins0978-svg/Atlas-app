@@ -9,6 +9,57 @@ Format : le plus récent en tête.
 
 ## 2026-08-07
 
+### La sauvegarde arrive sous son nom, y compris sur un iPhone
+
+Le patron touche « Télécharger mes données » depuis son téléphone, et Safari lui
+propose un fichier nommé **`reglages`**, sans extension — le nom de la page. Il
+arrive dans Fichiers illisible, donc inouvrable. **Une sauvegarde qui ne s'ouvre
+pas ne sauvegarde rien**, et c'est la condition qu'il avait posée lui-même avant
+de nourrir la mémoire de l'agent.
+
+L'archive était pourtant complète et l'en-tête `Content-Disposition` correct :
+un attribut `download` **vide** laisse Safari se rabattre sur le document
+courant. Chrome, lui, lit l'en-tête — d'où un contrôle au vert sur un lien
+pourtant muet. Contrôler l'un ne contrôlait pas l'autre.
+
+Le nom est désormais porté par le lien **et** par l'en-tête, calculés par une
+seule fonction (`src/lib/nom-sauvegarde.ts`) : deux implémentations finiraient
+par diverger, et un fichier qui ne porte pas le nom annoncé est pire qu'un
+fichier sans nom.
+
+`scripts/test-mes-donnees-e2e.ts` lit maintenant l'attribut du lien lui-même.
+Lien remis muet, il repasse au rouge : « Le lien annonce «  » : sur iPhone, la
+sauvegarde arrivera sous le nom de la page, sans extension, et ne s'ouvrira
+pas. »
+
+### Le bouton de mise à jour n'accuse plus à tort, et son issue survit
+
+**« La mise à jour n'a pas abouti. Redémarrez l'espace de travail. »** Le patron
+a lu cette phrase, et elle désignait le mauvais coupable. Tirer le code neuf
+remplace des centaines de fichiers **sous le serveur en train de tourner** :
+celui-ci se recompile aussitôt, et la réponse en cours de route est coupée. Le
+navigateur ne reçoit donc rien — **y compris quand la mise à jour a parfaitement
+réussi**. Il est reparti redémarrer un espace qui n'en avait aucun besoin.
+
+Trois changements, qui tiennent ensemble :
+
+1. **L'issue est déposée dans un fichier** (`/tmp/atlas-mise-a-jour.txt`) avant
+   que quoi que ce soit puisse couper la connexion, et l'écran la relit au rendu
+   suivant. C'est elle qui donne la **raison** d'un refus — « des modifications
+   non enregistrées sont présentes » n'appelle pas le même geste qu'« historique
+   divergent », et personne ne peut la deviner.
+2. **L'écran se rafraîchit tout seul** après l'appui. La ligne Version étant
+   désormais lue dans le dépôt servi, elle répond d'elle-même à la seule question
+   qui compte, sans qu'il faille recharger.
+3. **Le message d'échec ne prétend plus savoir.** Il désigne l'endroit qui, lui,
+   ne peut pas se tromper : « regardez la ligne Version juste au-dessus ».
+
+Le journal vit dans `/tmp`, **jamais dans le dépôt** : un fichier déposé à la
+racine rendrait l'arbre git sale, et `mettre-a-jour.sh` refuserait alors *toutes*
+les mises à jour suivantes. Le remède aurait créé la panne, définitivement.
+`scripts/test-issue-mise-a-jour.ts` le démontre sur un vrai dépôt git plutôt que
+de le promettre.
+
 ### La version affichée vient du dépôt servi, plus d'une variable
 
 Le 7 août au matin, sur un espace de travail **tout neuf**, l'écran Réglages

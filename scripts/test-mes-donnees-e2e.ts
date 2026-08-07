@@ -39,6 +39,25 @@ async function main() {
     const bouton = page.locator("text=Télécharger mes données");
     assert.ok(await bouton.isVisible(), "Le bouton « Télécharger mes données » est absent de Réglages.");
 
+    // **Le nom doit être porté par le LIEN, pas seulement par l'en-tête.**
+    //
+    // Ce contrôle manquait, et son absence a coûté une sauvegarde inutilisable.
+    // Le 7 août 2026, sur un iPhone, Safari a proposé au patron un fichier nommé
+    // « reglages », sans extension — le nom de la page. L'archive était pourtant
+    // complète et `Content-Disposition` correct : un attribut `download` vide
+    // laisse Safari se rabattre sur le document courant. Le fichier arrivait
+    // dans Fichiers sans extension, donc impossible à ouvrir.
+    //
+    // Chrome, lui, lit l'en-tête — d'où un `suggestedFilename()` juste (vérifié
+    // plus bas) sur un lien pourtant muet. Contrôler l'un ne contrôle pas
+    // l'autre.
+    const nomSurLeLien = await page.getAttribute('a[href="/api/mes-donnees"]', "download");
+    assert.match(
+      nomSurLeLien ?? "",
+      /^atlas-.+-\d{4}-\d{2}-\d{2}\.zip$/,
+      `Le lien annonce « ${nomSurLeLien ?? "(rien)"} » : sur iPhone, la sauvegarde arrivera sous le nom de la page, sans extension, et ne s'ouvrira pas.`
+    );
+
     // --- Le geste, et le fichier qui en sort -------------------------------
     const attenteTelechargement = page.waitForEvent("download", { timeout: 60000 });
     await bouton.click();

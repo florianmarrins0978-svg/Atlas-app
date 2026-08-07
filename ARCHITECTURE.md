@@ -796,6 +796,29 @@ Et le bouton de mise à jour **nomme la version obtenue** : « Vous étiez déj�
 jour » ne prouve rien tout seul — c'est précisément la phrase qu'affiche un
 espace resté en arrière.
 
+**4. L'issue de la mise à jour ne voyage pas dans la réponse.** Corrigé le
+2026-08-07, après que le patron a lu « La mise à jour n'a pas abouti » sur une
+mise à jour qui avait abouti.
+
+Tirer le code neuf remplace des centaines de fichiers **sous le serveur en train
+de tourner**. Il se recompile aussitôt, et la réponse en cours de route est
+coupée : le navigateur ne reçoit rien, quel que soit le résultat réel. Une
+réponse HTTP est donc le plus mauvais support possible pour l'issue de
+l'opération qui la détruit.
+
+L'issue est écrite dans `/tmp/atlas-mise-a-jour.txt` **avant** que la migration
+puisse couper quoi que ce soit, et l'écran la relit au rendu suivant. Le bouton
+rafraîchit l'écran de lui-même (`router.refresh()`), et son message d'échec ne
+prétend plus savoir : il renvoie à la ligne Version, qui ne peut pas se tromper.
+
+**Dans `/tmp`, jamais dans le dépôt.** Un fichier déposé à la racine rendrait
+l'arbre git sale, et `mettre-a-jour.sh` refuserait alors *toutes* les mises à
+jour suivantes en disant « des modifications non enregistrées sont présentes » :
+le remède aurait créé la panne, pour de bon.
+`scripts/test-issue-mise-a-jour.ts` le **démontre** sur un vrai dépôt git — il
+crée le fichier à la racine et vérifie que le script refuse — plutôt que de se
+contenter de lire le code.
+
 ### Ce que ça ne résout pas
 
 Un espace créé sur une branche qui n'existe plus, ou dont l'historique a été
