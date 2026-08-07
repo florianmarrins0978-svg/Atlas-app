@@ -3,6 +3,8 @@ import { genererBrouillon, confirmerBrouillon } from "../ai/services/brouillon-s
 import { getBrouillon } from "../repositories/brouillons-informations";
 import { marquerInformationsVerifiees, marquerPrixValide } from "../repositories/chantiers";
 import { listerLignesPrix, ajouterLignePrix } from "../repositories/lignes-prix";
+import { noterPropositionDictee } from "../repositories/termes-metier";
+import { getNoteVocale } from "../repositories/notes-vocales";
 import { getOuCreerDevisBrouillon } from "../repositories/devis";
 import { preparerPropositionPrix, type OriginePrix } from "../chiffrage/proposition-prix";
 import { appliquerPropositionPrix } from "../chiffrage/appliquer-proposition";
@@ -316,6 +318,27 @@ async function chiffrerEtPreparer(
     await marquerPrixValide(ctx, chantierId);
   }
   const devis = await getOuCreerDevisBrouillon(ctx, chantierId);
+
+  // **La photographie de ce qu'Atlas a proposé, avant toute retouche.**
+  //
+  // Le patron, le 7 août 2026 : « comment je fais pour le nourrir et qu'il
+  // apprenne de ces erreurs ? » Sans cette photographie, on saurait plus tard ce
+  // qu'il a écrit — jamais ce qu'il a CHANGÉ. Or c'est l'écart qui enseigne :
+  // « proposé 1 020 € sur une ligne → retenu 850 € + 250 € sur deux lignes ».
+  //
+  // Jamais bloquant : ne pas savoir retenir une leçon ne doit pas empêcher de
+  // préparer un devis. L'apprentissage ne gêne pas le travail.
+  try {
+    const note = await getNoteVocale(ctx, chantierId);
+    await noterPropositionDictee(
+      ctx,
+      chantierId,
+      note?.transcription ?? "",
+      lignes.map((l) => ({ libelle: l.libelle, montant: l.montant }))
+    );
+  } catch {
+    // Volontairement silencieux : voir ci-dessus.
+  }
 
   const aVerifier = [
     ...(vues.aSignaler ?? []),

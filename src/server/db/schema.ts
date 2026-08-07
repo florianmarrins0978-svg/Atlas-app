@@ -955,3 +955,60 @@ export const envoisFactures = pgTable(
     }).onDelete("cascade"),
   ]
 );
+
+/**
+ * Le vocabulaire du métier et les règles de chiffrage — PARTAGÉS.
+ *
+ * Aucune donnée de client ici : ni nom, ni adresse, ni prix. Ce sont des mots et
+ * des principes, et c'est précisément ce qui les rend partageables sans risque.
+ * Ils partent avec l'application chez tous les futurs clients — décision du
+ * patron du 7 août 2026, consignée dans `docs/QUESTIONS.md` §10.
+ *
+ * Même choix que `catalogue_prestations` : pas d'`entreprise_id`, donc pas de
+ * politique d'isolation. Une table sans donnée personnelle n'a rien à isoler,
+ * et lui en poser une ferait croire à une protection qui ne protège rien.
+ */
+export const termesMetier = pgTable(
+  "termes_metier",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    nature: text("nature", { enum: ["mot", "regle"] }).notNull().default("mot"),
+    intitule: text("intitule").notNull(),
+    definition: text("definition").notNull(),
+    /** Ce qu'Atlas doit en FAIRE — la colonne qui fait le travail. */
+    consigne: text("consigne"),
+    ordre: integer("ordre").notNull().default(0),
+    actif: boolean("actif").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("termes_metier_ordre_idx").on(t.nature, t.ordre)]
+);
+
+/**
+ * Ce que le patron avait dicté, et ce qu'il a finalement écrit.
+ *
+ * *« Comment je fais pour le nourrir et qu'il apprenne de ces erreurs ? »* —
+ * le 7 août 2026. Une règle énoncée dit QUOI faire ; un exemple réel montre
+ * JUSQU'OÙ.
+ *
+ * Rattachées à l'entreprise et isolées comme le reste : elles sont faites de
+ * ses chantiers, de ses libellés et de ses prix. Elles ne se partagent jamais.
+ */
+export const correctionsDictee = pgTable(
+  "corrections_dictee",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    chantierId: uuid("chantier_id").notNull(),
+    dictee: text("dictee").notNull(),
+    propose: jsonb("propose").notNull().default(sql`'[]'::jsonb`),
+    retenu: jsonb("retenu").notNull().default(sql`'[]'::jsonb`),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("corrections_dictee_chantier_uk").on(t.chantierId),
+    index("corrections_dictee_entreprise_idx").on(t.entrepriseId, t.updatedAt),
+  ]
+);

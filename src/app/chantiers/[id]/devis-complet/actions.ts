@@ -5,7 +5,8 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { retenirLecon } from "@/server/repositories/lecons-prix";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { mettreAJourClient } from "@/server/repositories/clients";
-import { modifierLignePrix, supprimerLignePrix, ajouterLignePrix } from "@/server/repositories/lignes-prix";
+import { modifierLignePrix, supprimerLignePrix, ajouterLignePrix, listerLignesPrix } from "@/server/repositories/lignes-prix";
+import { noterRetenu } from "@/server/repositories/termes-metier";
 import { mettreAJourAdresseChantier } from "@/server/repositories/chantiers";
 import { mettreAJourEnTeteDevis } from "@/server/repositories/devis";
 
@@ -58,6 +59,28 @@ export async function majLigneAction(
   // ne pas savoir tirer une leçon d'une ligne ne doit pas empêcher d'écrire
   // cette ligne. L'apprentissage ne gêne pas le travail.
   await retenirLecon(ctx, id);
+
+  // **Et c'est ici qu'il apprend à LIRE une dictée.**
+  //
+  // La leçon ci-dessus retient un prix ; celle-ci retient une façon de
+  // découper. Le patron, le 7 août 2026, expliquant pourquoi il a écrit
+  // 850 + 250 plutôt que 1 000 + 100 : « si le client ne veut pas la fente, il
+  // va trouver le reste cher ; et s'il nous prend juste pour la fente, 100 €
+  // ce n'est pas assez ». Cet écart-là ne se devine pas — il s'observe.
+  //
+  // Silencieux et non bloquant, pour la même raison que ci-dessus.
+  if (ligne) {
+    try {
+      const lignes = await listerLignesPrix(ctx, ligne.chantierId);
+      await noterRetenu(
+        ctx,
+        ligne.chantierId,
+        lignes.map((l) => ({ libelle: l.libelle, montant: l.montant }))
+      );
+    } catch {
+      // Ne jamais faire échouer une saisie parce qu'on n'a pas su l'observer.
+    }
+  }
 
   return ligne;
 }

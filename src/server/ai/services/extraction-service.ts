@@ -80,7 +80,17 @@ Règle de complétude, aussi importante que celle de non-invention :
  * pourrait éprouver le repli, et c'est exactement l'erreur qui a coûté deux
  * jours : un chemin non couvert parce qu'il était impossible à provoquer.
  */
-export async function extraire(texte: string, fournisseurInjecte?: FournisseurLLM): Promise<ResultatExtraction> {
+export async function extraire(
+  texte: string,
+  fournisseurInjecte?: FournisseurLLM,
+  /**
+   * Ce que l'artisan a appris à Atlas : son vocabulaire, ses règles, et ses
+   * corrections passées (`src/lib/consigne-metier.ts`). Ajouté à la consigne
+   * système plutôt qu'au texte : le texte est une DONNÉE à analyser, jamais une
+   * instruction — l'y mêler ouvrirait la porte à une dictée qui commande.
+   */
+  consigneMetier?: string
+): Promise<ResultatExtraction> {
   if (!texte || texte.trim().length === 0) {
     return { succes: false, erreur: erreurIA("reponse_invalide", "Texte vide — rien à analyser.") };
   }
@@ -101,7 +111,8 @@ export async function extraire(texte: string, fournisseurInjecte?: FournisseurLL
     return { succes: true, proposition: lireLitteralement(texte), lecture: "litterale", motifRepli: motif };
   }
 
-  const resultat = await fournisseur.genererTexte(SYSTEME, texte);
+  const consigne = consigneMetier?.trim() ? `${SYSTEME}\n\n${consigneMetier.trim()}` : SYSTEME;
+  const resultat = await fournisseur.genererTexte(consigne, texte);
   if (!resultat.succes) {
     return replier(resultat.erreur.message);
   }
