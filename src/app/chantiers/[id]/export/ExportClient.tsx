@@ -25,6 +25,7 @@ export default function ExportClient({
   prestations,
   lignes,
   totalTtc,
+  numeroDevis,
   initialEnvoye,
   etatEnvoi,
   messageClient,
@@ -46,6 +47,8 @@ export default function ExportClient({
   /** Les lignes du devis lui-même : libellé et montant, telles qu'imprimées. */
   lignes: { libelle: string; montant: string }[];
   totalTtc: string;
+  /** Le numéro commercial, pour nommer le fichier téléchargé. */
+  numeroDevis: string;
   initialEnvoye: boolean;
   etatEnvoi: EtatEnvoi;
   /** Ce que le client a écrit, mot pour mot. Vide s'il n'a rien dit. */
@@ -72,6 +75,7 @@ export default function ExportClient({
   // l'écran, et un état figé à l'ouverture continuerait d'annoncer un devis
   // parti alors qu'une nouvelle version attend d'être envoyée.
   const envoye = initialEnvoye || lienClient !== null;
+  const nomFichierDevis = `devis-${numeroDevis}.pdf`;
 
   // Un refus, ou un lien périmé : le devis peut repartir, dans une nouvelle
   // version. Sans ce chemin, un chantier retourné l'était définitivement.
@@ -122,10 +126,17 @@ export default function ExportClient({
           </div>
         )}
 
-        {/* Les prestations restent en complément : elles disent le travail, là
-            où les lignes disent le prix. Elles ne sont plus la seule chose
-            affichée. */}
-        {prestations.length > 0 && (
+        {/* **Les prestations ne sont affichées QUE s'il n'y a pas de lignes.**
+            Retiré le 7 août 2026 : « supprime la ligne prestation sur cette
+            page, pas besoin de se répéter, la ligne devis dit la même chose
+            avec le prix en plus ». Il avait raison — sur sa capture, les deux
+            blocs portaient mot pour mot « Taille de cohabitation d'un charme /
+            Broyage sur place ».
+
+            Elles restent le filet quand aucune ligne n'existe encore : un écran
+            qui n'annoncerait qu'un total, sans dire de quoi il est fait, serait
+            un recul. */}
+        {lignes.length === 0 && prestations.length > 0 && (
           <div className="rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
             <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
               Prestations
@@ -149,15 +160,39 @@ export default function ExportClient({
           </p>
         </div>
 
-        <a
-          href={`/api/devis/${devisId}/pdf`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block text-center text-[14px] font-medium"
-          style={{ color: colors.rust }}
-        >
-          {envoye ? "Télécharger le PDF" : "Aperçu du PDF"}
-        </a>
+        {/* **Deux gestes différents, donc deux liens différents.**
+
+            « Aperçu » ouvre le document pour le relire : un nouvel onglet est
+            exactement ce qu'on veut. « Télécharger » doit le DÉPOSER sur le
+            téléphone — et le lien ouvrait pourtant un onglet de plus, sans rien
+            proposer (le patron, le 7 août 2026).
+
+            Le nom du fichier est redit sur le lien, pas seulement dans l'en-tête
+            du serveur : c'est la leçon de la sauvegarde, le même matin. Safari
+            ignore l'en-tête quand `download` est vide, et le fichier arrive
+            sous le nom de la page (`src/lib/nom-sauvegarde.ts`). Et pas de
+            `target` ici : un onglet neuf priverait Safari de la demande
+            d'enregistrement. */}
+        {envoye ? (
+          <a
+            href={`/api/devis/${devisId}/pdf?telecharger=1`}
+            download={nomFichierDevis}
+            className="block text-center text-[14px] font-medium"
+            style={{ color: colors.rust }}
+          >
+            Télécharger le PDF
+          </a>
+        ) : (
+          <a
+            href={`/api/devis/${devisId}/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-center text-[14px] font-medium"
+            style={{ color: colors.rust }}
+          >
+            Aperçu du PDF
+          </a>
+        )}
 
         {envoye || lienClient ? (
           <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: colors.card }}>

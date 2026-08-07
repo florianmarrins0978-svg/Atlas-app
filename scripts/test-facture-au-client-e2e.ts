@@ -96,9 +96,17 @@ async function main() {
 
   // --- 2. Le lien, et la messagerie du patron -----------------------------
   await bouton.click();
-  await page.waitForTimeout(2000);
 
   const lien = page.getByRole("link", { name: /Ouvrir le (SMS|e-mail) tout prêt/ });
+  // **Attendre le lien, jamais un délai fixe.** Ce contrôle a échoué une fois
+  // au milieu de la batterie complète, et passé seul dans la foulée : sous
+  // trente-cinq suites enchaînées sur un même serveur de développement, la
+  // préparation du lien dépasse parfois deux secondes. Un contrôle qui échoue
+  // au hasard est pire qu'aucun contrôle — il apprend à ignorer le rouge.
+  await lien
+    .first()
+    .waitFor({ state: "visible", timeout: 20_000 })
+    .catch(() => undefined);
   assert.equal(await lien.count(), 1, "Le message tout prêt n'est pas proposé.");
   const adresse = (await lien.getAttribute("href")) ?? "";
   assert.ok(adresse.startsWith("sms:") || adresse.startsWith("mailto:"), `Adresse inattendue : ${adresse}`);

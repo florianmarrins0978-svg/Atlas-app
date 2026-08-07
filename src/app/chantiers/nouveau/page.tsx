@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
+import DicterCoordonnees from "./DicterCoordonnees";
+import type { CoordonneesDictees } from "@/lib/coordonnees-dictees";
 import { creerChantierAction } from "./actions";
 
 // Intégration réelle : la création passe désormais par une Server Action
@@ -39,6 +41,20 @@ export default function NouveauChantierPage() {
   const aTelephone = telephone.trim().length > 0;
   const aEmail = email.trim().length > 0;
   const canal = canalChoisi ?? (aTelephone ? "sms" : aEmail ? "email" : null);
+
+  /**
+   * Ce que la dictée a compris entre dans les champs VIDES seulement.
+   *
+   * Écraser une saisie parce qu'on a dicté ensuite serait la pire façon
+   * d'aider : le patron aurait tapé le numéro, dicté l'adresse, et perdu le
+   * numéro sans comprendre pourquoi.
+   */
+  function appliquerDictee(c: CoordonneesDictees) {
+    if (c.nom && !nomClient.trim()) setNomClient(c.nom);
+    if (c.telephone && !telephone.trim()) setTelephone(c.telephone);
+    if (c.email && !email.trim()) setEmail(c.email);
+    if (c.adresse && !adresseChantier.trim()) setAdresseChantier(c.adresse);
+  }
 
   async function handleCreer() {
     if (enCours) return;
@@ -77,13 +93,19 @@ export default function NouveauChantierPage() {
           </Link>
         </div>
 
-        <div className="px-6 pt-5">
-          <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-            Nouveau
-          </p>
-          <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
-            Un chantier
-          </h1>
+        <div className="flex items-start justify-between gap-4 px-6 pt-5">
+          <div>
+            <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
+              Nouveau
+            </p>
+            <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
+              Un chantier
+            </h1>
+          </div>
+          {/* Le raccourci pour qui a les mains prises — jamais l'action
+              principale de cet écran, d'où le rond discret plutôt qu'un
+              bouton. */}
+          <DicterCoordonnees onCoordonnees={appliquerDictee} />
         </div>
 
         <form

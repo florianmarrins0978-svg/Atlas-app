@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, type ChangeEvent } from "react";
+import Link from "next/link";
 import { colors, font } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import BottomSheet from "@/components/atlas/BottomSheet";
@@ -147,6 +148,32 @@ export default function PhotosClient({
         </p>
       )}
 
+      {/* **Enchaîner, plutôt que revenir en arrière.**
+          Le patron, le 7 août 2026 : « lorsque j'ai ajouté ma photo, je dois
+          avoir une petite touche discrète et élégante pour passer à l'étape
+          suivante (la note vocale) sans avoir à faire machine arrière ».
+          Le parcours réel est celui-là : il photographie l'arbre, puis il
+          dicte. Le renvoyer à la fiche du chantier pour rouvrir un autre écran
+          lui coûte deux appuis, sur place, avec des gants.
+
+          Discrète : un lien, pas un second bouton plein. L'action principale de
+          cet écran reste d'ajouter des photos — on propose la suite, on ne la
+          met pas en avant. N'apparaît qu'une fois une photo présente : avant,
+          elle n'aurait rien à enchaîner. */}
+      {photos.length > 0 && (
+        <div className="mt-7 px-6">
+          <Link
+            href={`/chantiers/${chantierId}/note-vocale`}
+            className="flex items-center justify-center gap-2 rounded-2xl py-3 text-[15px] font-medium"
+            style={{ backgroundColor: colors.rustTint, color: colors.rust, minHeight: 48 }}
+          >
+            <MicroIcon />
+            Passer à la note vocale
+            <span aria-hidden>→</span>
+          </Link>
+        </div>
+      )}
+
       {/* Visionneuse plein écran — seule exception à la palette claire */}
       {ouverte !== null && (
         <div className="fixed inset-0 z-30 flex flex-col" style={{ backgroundColor: colors.ink }}>
@@ -262,6 +289,17 @@ function CameraIcon({ size = 18 }: { size?: number }) {
       <rect x="3" y="7" width="18" height="13" rx="2.5" />
       <path d="M8 7l1.4-2.4A1 1 0 0 1 10.26 4h3.48a1 1 0 0 1 .86.6L16 7" strokeLinecap="round" strokeLinejoin="round" />
       <circle cx="12" cy="13.5" r="3.4" />
+    </svg>
+  );
+}
+
+/** Le micro de la note vocale, au même trait que le reste de l'écran. */
+function MicroIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
+      <rect x="9" y="3" width="6" height="11" rx="3" />
+      <path d="M5 11a7 7 0 0 0 14 0" strokeLinecap="round" />
+      <path d="M12 18v3" strokeLinecap="round" />
     </svg>
   );
 }

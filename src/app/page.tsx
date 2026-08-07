@@ -1,13 +1,13 @@
-import Link from "next/link";
 import { chantierEnCours, getStatutAffiche, statutLabel } from "@/lib/chantier-etat";
 import { ongletDuChantier } from "@/lib/onglet-chantier";
-import { colors, font, smallCaps, cardShadow } from "@/lib/design-tokens";
+import { colors, font, smallCaps } from "@/lib/design-tokens";
 import StatusIcon from "@/components/atlas/StatusIcon";
 import ActionPrincipale from "@/components/atlas/ActionPrincipale";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
 import { notificationsPatron, envoisCaducs } from "@/server/repositories/envois-devis";
 import Notifications from "./Notifications";
+import ListeChantiers from "./ListeChantiers";
 
 // Données réelles, propres à l'entreprise courante : jamais de pré-rendu statique.
 export const dynamic = "force-dynamic";
@@ -107,15 +107,12 @@ export default async function ChantiersPage() {
             </div>
           </div>
         ) : (
-          <div className="mt-8 flex flex-col gap-4 px-6">
-            {avecStatut.map(({ statut, ...c }) => {
-              return (
-                <Link
-                  key={c.id}
-                  href={`/chantiers/${c.id}`}
-                  className="flex items-start gap-4 rounded-[22px] px-5 py-5"
-                  style={{ backgroundColor: colors.card, boxShadow: cardShadow }}
-                >
+          <ListeChantiers
+            chantiers={avecStatut.map(({ statut, ...c }) => ({
+              id: c.id,
+              nom: c.nom,
+              carte: (
+                <>
                   <StatusIcon statut={statut} />
                   <div className="min-w-0 flex-1">
                     <span className={smallCaps} style={{ color: colors.rust }}>
@@ -147,10 +144,10 @@ export default async function ChantiersPage() {
                   >
                     <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                </Link>
-              );
-            })}
-          </div>
+                </>
+              ),
+            }))}
+          />
         )}
       </div>
     </div>
