@@ -1,0 +1,58 @@
+name: Base Adresse Nationale
+
+# Interroge le VRAI service d'adresses, à sa vraie adresse.
+#
+# Pourquoi ce workflow existe : le mandataire réseau de l'environnement de
+# développement refuse `api-adresse.data.gouv.fr`. Tout ce qui touche à
+# l'autocomplétion d'adresse y est donc éprouvé contre un service de
+# remplacement (`scripts/test-recherche-adresse.ts`) — ce qui tient la moitié du
+# problème : notre code se comporte bien face à un service qui répond, qui
+# répond mal, ou pas du tout.
+#
+# L'autre moitié, personne ne la tient : **le vrai service répond-il encore ce
+# qu'on croit ?** Un champ renommé, un format changé, un point d'entrée déplacé,
+# et l'aide à la saisie s'éteint sans un mot — la liste reste simplement vide, ce
+# qui ressemble à « aucune adresse ne correspond ». Le patron chercherait
+# longtemps.
+#
+# Ce qui ne peut pas être éprouvé là où on développe doit l'être ailleurs, par
+# une machine : c'est déjà ce que font `pages.yml` pour le site publié et
+# `banc-essai.yml` pour l'espace de travail (`AGENTS.md`).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/lib/suggestions-adresse.ts"
+      - "src/server/adresses/**"
+      - "src/app/api/adresses/**"
+      - ".github/workflows/adresses.yml"
+  pull_request:
+    paths:
+      - "src/lib/suggestions-adresse.ts"
+      - "src/server/adresses/**"
+      - "src/app/api/adresses/**"
+      - ".github/workflows/adresses.yml"
+  # Une fois par semaine : le service peut changer sans que nous touchions à
+  # quoi que ce soit, et c'est précisément le cas qu'aucun autre déclencheur ne
+  # couvre.
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  interroger-le-vrai-service:
+    name: Le service répond-il ce qu'on croit ?
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Interroger la Base Adresse Nationale, pour de vrai
+        run: npx tsx scripts/verifier-adresses-reelles.ts

@@ -9,6 +9,47 @@ Format : le plus récent en tête.
 
 ## 2026-08-07
 
+### L'adresse se propose pendant la frappe, et se choisit d'un doigt
+
+Le patron : *« comme quand on passe une commande — on commence à taper
+l'adresse et il nous propose tout un tas de listes, et plus on écrit, plus
+l'adresse se réduit ; ensuite il n'y a plus qu'à cliquer sur notre adresse et ça
+la valide. »*
+
+**La source est la Base Adresse Nationale, pas celle de Google** — et ce choix
+n'est pas technique. Google aurait demandé un compte de facturation, une clé, et
+serait devenu un **sous-traitant de plus** à nommer dans les documents du
+patron : exactement le contrat qui le bloque aujourd'hui (`docs/A-FAIRE.md`
+point 2). Le service de l'État est public, français, sans compte ni clé.
+
+**Ce qui part, et ce qui ne part pas.** Uniquement la rue en cours de frappe :
+ni le nom du client, ni le chantier, rien qui permette de rattacher l'adresse à
+quelqu'un. Un contrôle vérifie qu'aucun autre paramètre ne s'y ajoute — sans
+lui, cette phrase serait rassurante plutôt que vraie.
+
+**La requête part du serveur d'Atlas, jamais du navigateur.** La politique de
+sécurité interdit à un écran de joindre un hôte extérieur, et c'est ce qui
+garantit qu'aucun écran ne peut envoyer quoi que ce soit ailleurs sans qu'on
+l'ait décidé. Un seul endroit à lire, à limiter et à couper.
+
+**Le champ reste libre.** Un lieu-dit, un chemin de campagne, « derrière la
+scierie » ne figurent dans aucune base — et c'est là qu'il travaille. Une liste
+qui enfermerait le patron dans ce que la base connaît serait une régression.
+De même, une panne du service laisse un champ ordinaire : le chantier se crée
+quand même.
+
+Trois contrôles, chacun sur ce qu'il peut réellement éprouver :
+`test-suggestions-adresse.ts` (réponses illisibles, doublons, longueur minimale),
+`test-recherche-adresse.ts` (service en panne, injoignable, muet — sur un vrai
+service monté pour l'occasion), `test-adresse-suggestions-e2e.ts` (le geste
+entier dans un navigateur). Et le **vrai** service est interrogé par une machine
+qui peut le joindre : `.github/workflows/adresses.yml`, le mandataire réseau de
+l'environnement de développement refusant `api-adresse.data.gouv.fr`.
+
+Un détail vu sur une capture, jamais par un test : la bulle de l'assistant
+recouvrait la troisième proposition, et le doigt touchait la bulle au lieu de
+l'adresse.
+
 ### La sauvegarde arrive sous son nom, y compris sur un iPhone
 
 Le patron touche « Télécharger mes données » depuis son téléphone, et Safari lui

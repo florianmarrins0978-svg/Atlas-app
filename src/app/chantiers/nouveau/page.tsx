@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
+import ChampAdresse from "@/components/atlas/ChampAdresse";
 import { creerChantierAction } from "./actions";
 
 // Intégration réelle : la création passe désormais par une Server Action
@@ -148,8 +149,11 @@ export default function NouveauChantierPage() {
             </fieldset>
           )}
 
-          {/* 6 — Adresse du chantier : facultative */}
-          <Field
+          {/* 6 — Adresse du chantier : facultative, et proposée pendant la
+              frappe. Le champ reste libre : un lieu-dit ou un chemin de
+              campagne ne figure dans aucune base, et le patron y travaille
+              (`src/components/atlas/ChampAdresse.tsx`). */}
+          <ChampAdresse
             label="Adresse du chantier (facultatif)"
             placeholder="12 rue des Lilas, Nantes"
             value={adresseChantier}
@@ -167,7 +171,7 @@ export default function NouveauChantierPage() {
               + Ajouter une adresse client différente
             </button>
           ) : (
-            <Field
+            <ChampAdresse
               label="Adresse du client (facultatif)"
               placeholder="Si différente de l'adresse du chantier"
               value={adresseClient}
