@@ -761,13 +761,40 @@ dépôts git et le confronte aux quatre états qu'il prétend distinguer. Enfoui
 dans `demarrer.sh`, il n'aurait jamais été vu échouer — et c'est exactement ce
 que `AGENTS.md` interdit.
 
-**3. L'application annonce la version qu'elle exécute** (Réglages, en bas) :
-`ATLAS_VERSION`, posée par `demarrer.sh`, affichée telle quelle. Hors banc
-d'essai elle est absente, et l'écran dit « inconnue » plutôt que d'inventer.
+**3. L'application annonce la version qu'elle exécute** (Réglages, en bas).
 
 C'est le contrôle le moins spectaculaire du dépôt et l'un des plus utiles : une
 capture d'écran répond désormais à « quelle version essayez-vous ? » sans qu'il
 faille poser la question.
+
+**Corrigé le 2026-08-07 : elle est lue dans le dépôt servi, pas dans une
+variable.** Elle venait de `ATLAS_VERSION`, posée par `demarrer.sh` juste avant
+de lancer le serveur. Une variable est figée à la naissance du processus, et
+c'était faux deux fois :
+
+| Situation | Ce que l'écran disait | La vérité |
+|---|---|---|
+| Serveur lancé autrement que par `demarrer.sh` | « inconnue » | le commit servi |
+| Après « Chercher les dernières corrections » | l'**ancien** commit | le nouveau |
+
+Le second cas est le plus grave : le bouton tire du code neuf *sans redémarrer*,
+donc celui qui existait pour éteindre le malentendu « rien n'a été corrigé »
+l'alimentait. Le patron a lu le premier cas le 7 août 2026, sur un espace neuf.
+
+`src/server/version-executee.ts` interroge donc le dépôt à chaque affichage —
+quelques millisecondes, sur un écran consulté trois fois par semaine.
+`safe.directory` est passé à l'appel : dans un conteneur, le dossier de travail
+appartient souvent à un autre compte, et git refuserait en silence, ramenant
+« inconnue » par un autre chemin. Si git ne répond pas, on retombe sur la
+variable plutôt que de faire tomber l'écran.
+
+**Hors banc d'essai, rien ne change** : une application déployée n'a pas de dépôt
+sous la main, et sa version vient de sa chaîne de livraison (`ATLAS_VERSION`,
+`RELEASE_VERSION`). Y lancer une commande git serait au mieux inutile.
+
+Et le bouton de mise à jour **nomme la version obtenue** : « Vous étiez déjà à
+jour » ne prouve rien tout seul — c'est précisément la phrase qu'affiche un
+espace resté en arrière.
 
 ### Ce que ça ne résout pas
 

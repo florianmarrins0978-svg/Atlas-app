@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { creerTarif, modifierTarif, supprimerTarif } from "@/server/repositories/tarifs";
 import { exigerProprietaire } from "@/server/autorisation";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
+import { versionExecutee } from "@/server/version-executee";
 
 export async function creerTarifAction(intitule: string, prix: string) {
   const ctx = await getCurrentCtx();
@@ -87,14 +88,29 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
       return {
         succes: true,
         etat,
-        message: "Mise à jour récupérée. Rechargez la page dans quelques secondes : l'application se recompile.",
+        message: `Mise à jour récupérée${await suffixeVersion()}. Rechargez la page dans quelques secondes : l'application se recompile.`,
       };
     }
     if (etat.startsWith("impossible")) {
       return { succes: false, erreur: `Mise à jour ${etat}` };
     }
-    return { succes: true, etat, message: "Vous étiez déjà à jour." };
+    return { succes: true, etat, message: `Vous étiez déjà à jour${await suffixeVersion()}.` };
   } catch (e) {
     return { succes: false, erreur: e instanceof Error ? e.message.slice(0, 200) : "La mise à jour a échoué." };
   }
+}
+
+/**
+ * La version obtenue, dite par le bouton lui-même.
+ *
+ * « Vous étiez déjà à jour » ne prouve rien tout seul — c'est précisément la
+ * phrase qu'affiche un espace resté en arrière. Nommer le commit obtenu permet
+ * de le comparer à celui annoncé dans le message de livraison, sans terminal.
+ *
+ * Non exporté : un module `"use server"` n'expose que des fonctions appelables
+ * depuis le navigateur, et celle-ci n'a aucune raison de l'être.
+ */
+async function suffixeVersion(): Promise<string> {
+  const version = await versionExecutee();
+  return version ? ` — version ${version}` : "";
 }

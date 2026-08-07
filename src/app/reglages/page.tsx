@@ -5,7 +5,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getConfigIA } from "@/server/ai/config";
 import { listerTarifs } from "@/server/repositories/tarifs";
 import { getEntreprise } from "@/server/repositories/entreprises";
-import { getEnv } from "@/server/env";
+import { versionExecutee } from "@/server/version-executee";
 import ReglagesClient from "./ReglagesClient";
 import BoutonMiseAJour from "./BoutonMiseAJour";
 
@@ -13,8 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ReglagesPage() {
   const ctx = await getCurrentCtx();
-  const [tarifs, entreprise] = await Promise.all([listerTarifs(ctx), getEntreprise(ctx)]);
-  const version = getEnv().versionAffichee;
+  const [tarifs, entreprise, version] = await Promise.all([listerTarifs(ctx), getEntreprise(ctx), versionExecutee()]);
 
   // Seuls les NOMS des fournisseurs traversent jusqu'à l'écran — jamais les
   // clés, qui n'ont rien à faire dans du HTML rendu.
@@ -151,7 +150,12 @@ export default async function ReglagesPage() {
             plus tard, des correctifs livrés la veille, sur un espace de travail
             qui n'avait jamais récupéré le code neuf. Rien à l'écran ne le lui
             disait, et trois échanges ont été perdus à chercher un défaut déjà
-            corrigé. Une capture de cet écran répond désormais à la question. */}
+            corrigé. Une capture de cet écran répond désormais à la question.
+
+            Elle est lue DANS LE DÉPÔT servi, jamais dans une variable posée au
+            démarrage : le 7 août 2026 elle affichait encore « inconnue » sur un
+            espace tout neuf, et elle serait de toute façon restée périmée après
+            le bouton ci-dessous (voir `src/server/version-executee.ts`). */}
         <div className="px-6 pt-10">
           <p className={smallCaps} style={{ color: colors.muted, marginBottom: 4 }}>
             Version

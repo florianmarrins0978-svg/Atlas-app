@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-05 · `claude/migrate-app-atlas-zz31ac`
+**Point de reprise :** 2026-08-07 · `claude/migrate-app-atlas-zz31ac`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---

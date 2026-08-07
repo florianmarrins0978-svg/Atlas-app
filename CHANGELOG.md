@@ -7,6 +7,51 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-07
+
+### La version affichée vient du dépôt servi, plus d'une variable
+
+Le 7 août au matin, sur un espace de travail **tout neuf**, l'écran Réglages
+annonçait : « Version : inconnue — cette installation n'annonce pas sa version ».
+L'écran ne pouvait donc plus répondre à la seule question que le patron sache
+poser depuis un téléphone : *est-ce que j'ai les corrections ?*
+
+La version venait de `ATLAS_VERSION`, posée par `.devcontainer/demarrer.sh` juste
+avant de lancer le serveur. Une variable est **figée à la naissance du
+processus**, et cela produisait deux mensonges :
+
+- **absente** dès que le serveur n'avait pas été lancé par ce script précis ;
+- **périmée** après « Chercher les dernières corrections » — ce bouton tire le
+  code neuf *sans redémarrer*, donc l'écran continuait d'afficher l'ancien
+  commit. Le bouton censé éteindre le malentendu l'alimentait.
+
+La version est désormais lue **dans le dépôt réellement servi**, à chaque
+affichage (`src/server/version-executee.ts`). Sur le banc d'essai seulement :
+une application déployée n'a pas de dépôt sous la main, et sa version continue
+de venir de sa chaîne de livraison. `safe.directory` est passé à l'appel — dans
+un conteneur, le dossier appartient souvent à un autre compte, et git refuserait
+en silence.
+
+Le bouton de mise à jour **nomme aussi la version obtenue** : « Vous étiez déjà
+à jour » ne prouvait rien tout seul — c'est précisément la phrase qu'affiche un
+espace resté en arrière.
+
+Éprouvé en retirant le correctif : la suite retombe sur « aucune version » et
+sur « l'écran annonce 01/01/2020 alors que le code servi est … ».
+
+### Rallumer un espace arrêté : le geste s'appelle « Open in Browser »
+
+Le mode d'emploi disait « menu ⋯ → **Stop codespace**, puis rouvrez-le ». Devant
+un espace **déjà éteint** — ce qui arrive tout seul au bout de trente minutes —
+cette ligne envoie chercher une entrée de menu qui n'existe pas, et il n'y a
+aucun bouton « Démarrer » ni « Réactiver » pour la remplacer. Le patron est resté
+bloqué là : « je ne peux pas le réactiver ».
+
+`docs/ESSAYER.md` nomme maintenant le geste, et dit ce que signifie l'absence de
+« Stop codespace ».
+
+---
+
 ## 2026-08-06
 
 ### Aller chercher les corrections sans quitter l'application
