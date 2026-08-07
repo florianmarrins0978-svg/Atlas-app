@@ -80,6 +80,7 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
       timeout: 120_000,
     });
     const etat = stdout.trim().split("\n").pop() ?? "";
+    await noterIssue(etat);
 
     if (etat === "faite") {
       // Le code neuf peut attendre une base neuve : servir l'un sans l'autre
@@ -96,7 +97,53 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
     }
     return { succes: true, etat, message: `Vous étiez déjà à jour${await suffixeVersion()}.` };
   } catch (e) {
-    return { succes: false, erreur: e instanceof Error ? e.message.slice(0, 200) : "La mise à jour a échoué." };
+    const raison = e instanceof Error ? e.message.slice(0, 200) : "la mise à jour a échoué";
+    await noterIssue(`impossible : ${raison}`);
+    return { succes: false, erreur: raison };
+  }
+}
+
+/**
+ * L'issue du dernier essai, déposée là où elle survit à la réponse.
+ *
+ * **Pourquoi un fichier et pas seulement la réponse de l'action.** Tirer le
+ * code neuf remplace des centaines de fichiers sous le serveur en train de
+ * tourner : il se recompile aussitôt, et la réponse en cours de route est
+ * coupée. Le patron a donc lu « La mise à jour n'a pas abouti » sur une mise à
+ * jour qui, elle, avait parfaitement abouti — et il est reparti redémarrer un
+ * espace qui n'en avait pas besoin.
+ *
+ * L'issue est écrite AVANT que quoi que ce soit puisse couper la réponse.
+ * L'écran la relit au rendu suivant : la vérité ne dépend plus d'une connexion
+ * qui tient.
+ *
+ * **Dans `/tmp`, jamais dans le dépôt** — un fichier déposé à la racine rendrait
+ * l'arbre git sale, et `mettre-a-jour.sh` refuserait *toutes* les mises à jour
+ * suivantes en disant « des modifications non enregistrées sont présentes ».
+ * Le remède aurait créé la panne, définitivement.
+ */
+// Non exporté : un module `"use server"` n'expose QUE des fonctions async — une
+// constante exportée ici fait échouer la compilation.
+const FICHIER_ISSUE = "/tmp/atlas-mise-a-jour.txt";
+
+async function noterIssue(etat: string): Promise<void> {
+  try {
+    const { writeFile } = await import("node:fs/promises");
+    const heure = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    await writeFile(FICHIER_ISSUE, `${heure} — ${etat}\n`, "utf8");
+  } catch {
+    // Ne jamais faire échouer une mise à jour parce qu'on n'a pas pu noter son
+    // issue : le journal sert le diagnostic, il ne commande rien.
+  }
+}
+
+/** Ce que le dernier essai a donné, pour l'écran. `null` si aucun essai. */
+export async function derniereIssueMiseAJour(): Promise<string | null> {
+  try {
+    const { readFile } = await import("node:fs/promises");
+    return (await readFile(FICHIER_ISSUE, "utf8")).trim() || null;
+  } catch {
+    return null;
   }
 }
 

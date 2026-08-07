@@ -8,6 +8,7 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import { versionExecutee } from "@/server/version-executee";
 import ReglagesClient from "./ReglagesClient";
 import BoutonMiseAJour from "./BoutonMiseAJour";
+import { derniereIssueMiseAJour } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -165,7 +166,7 @@ export default async function ReglagesPage() {
           </p>
           {/* Sur le banc d'essai seulement : une application déployée ne va pas
               chercher son propre code, ce serait une porte d'entrée. */}
-          {process.env.ATLAS_BANC_ESSAI === "1" && <BoutonMiseAJour />}
+          {process.env.ATLAS_BANC_ESSAI === "1" && <BoutonMiseAJour derniereIssue={await derniereIssueMiseAJour()} />}
         </div>
       </div>
     </div>
