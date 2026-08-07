@@ -234,7 +234,14 @@ revanche, un espace **déjà allumé** ne le voit pas : il faut le redémarrer.
 
 > ⚠️ **Redémarrer, pas supprimer.** Supprimer un espace de travail efface
 > toutes vos données d'essai — chantiers, devis, factures. Sur
-> `github.com/codespaces`, menu **⋯** → **Stop codespace**, puis rouvrez-le.
+> `github.com/codespaces`, menu **⋯** → **Stop codespace**, puis **Open in
+> Browser**.
+>
+> **Si le menu ne propose pas « Stop codespace », c'est qu'il est déjà
+> arrêté** — au bout de trente minutes il s'éteint tout seul. Il n'existe
+> alors aucun bouton « Démarrer » : **c'est « Open in Browser » qui le
+> rallume.** Chercher un bouton qui n'existe pas a coûté un échange le
+> 2026-08-07.
 
 ### 4. Vérifier que c'est bien branché
 
@@ -327,8 +334,9 @@ Trois causes, dans l'ordre de fréquence :
    l'allumage. **Attendez, puis rechargez la page** — ne concluez rien avant.
 2. **L'espace de travail s'est endormi.** Il se met en veille tout seul après
    trente minutes sans activité, et l'adresse ne mène alors nulle part.
-   Rouvrez-le depuis `github.com/codespaces` : l'application redémarre seule,
-   et vos données sont intactes.
+   Rouvrez-le depuis `github.com/codespaces`, menu **⋯** → **Open in Browser** :
+   l'application redémarre seule, et vos données sont intactes. Il n'y a pas de
+   bouton « Démarrer » ni « Réactiver » — **ouvrir, c'est rallumer.**
 3. **L'espace est trop ancien.** Le démarrage automatique et le port public sont
    lus **à la création** de l'espace. Un espace né avant le 2026-08-01 les
    ignore, quoi qu'on fasse ensuite — un `git pull` n'y change rien.

@@ -146,7 +146,7 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ul>
 <li><strong>Rien ne part réellement chez le client</strong> — ni SMS, ni e-mail. Le lien vous est remis à l'écran, à vous de le transmettre. C'est le point 5 de <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a>, et cela vaut aussi bien ici qu'en production.</li>
-<li><strong>L'assistant et la transcription tournent en mode déterministe</strong> *par défaut* : ils répondent sans appeler aucun prestataire. C'est délibéré — envoyer des données d'essai à un fournisseur qui ne figure dans aucun contrat serait précisément l'écart décrit au point 1 de <code>A-FAIRE.md</code>. <strong>Vous pouvez le brancher pour vos propres essais</strong> : voir juste en dessous.</li>
+<li><strong>L'assistant et la transcription tournent en mode déterministe</strong> tant qu'aucune clé d'IA n'est posée : ils répondent sans appeler aucun prestataire. Envoyer des données d'essai à un fournisseur qui ne figure dans aucun contrat serait l'écart décrit au point 1 de <code>A-FAIRE.md</code> — d'où la règle du banc d'essai : <strong>des données inventées, uniquement</strong>. <strong>Vous pouvez le brancher pour vos propres essais</strong> : voir juste en dessous.</li>
 <li><strong>Les fichiers sont stockés sur le disque du banc d'essai.</strong> Ils disparaissent avec lui. En production, ce mode est refusé au démarrage.</li>
 <li><strong>Vos données d'essai vivent dans l'espace de travail, pas ailleurs.</strong> L'application a bien une mémoire — une base de données qui survit aux redémarrages et à la mise en veille de trente minutes. Mais <strong>elle meurt avec l'espace de travail</strong> : le supprimer efface vos chantiers, et les données de démonstration repartent à zéro. Un banc d'essai est jetable par construction ; c'est l'hébergement (point 3 de <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a>) qui donnera à Atlas une mémoire qui dure.</li>
 </ul>
@@ -155,6 +155,21 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>Vous n'êtes pas obligé d'attendre le contrat du point 2 pour <strong>vos</strong> essais : ce sont vos chantiers, vos clients, votre décision. Le contrat devient obligatoire le jour où Atlas sert <strong>quelqu'un d'autre</strong>.</p>
 <p>Comptez une vingtaine de minutes, et <strong>entre 2 et 7 € par mois</strong> à votre volume (le détail est dans <a href="TRANSCRIPTION.md" target="_blank" rel="noopener"><code>TRANSCRIPTION.md</code></a> §7).</p>
+<p>Sans clé, Atlas ne comprend pas votre dictée : il la <strong>recopie mot à mot</strong>, et le devis porte vos phrases telles que vous les avez dites.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Clé</th>
+<th>Ce qu'elle change</th>
+</tr></thead><tbody>
+<tr>
+<td><code>OPENAI_API_KEY</code></td>
+<td>votre voix devient du texte (sans elle, rien n'est écouté)</td>
+</tr>
+<tr>
+<td><code>ANTHROPIC_API_KEY</code></td>
+<td>ce texte devient un devis structuré, prestations séparées</td>
+</tr>
+</tbody></table></div>
+<p><strong>Poser la clé suffit.</strong> Il n'y a rien d'autre à régler : depuis le 6 août 2026, Atlas choisit le fournisseur d'après la clé qu'il trouve.</p>
 <h3 id="1-ouvrir-les-deux-comptes">1. Ouvrir les deux comptes</h3>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
@@ -174,39 +189,24 @@
 </tbody></table></div>
 <p>Ce second geste est le plus important des deux, et celui qu'on oublie. C'est la question 3 de <code>TRANSCRIPTION.md</code>.</p>
 <blockquote><strong>Ce que je ne sais pas, et que vous verrez à l'écran.</strong> Je ne peux pas lire les pages d'OpenAI depuis l'environnement de développement — elles me répondent <code>403</code>. Je ne sais donc pas si ce réglage est déjà au bon endroit chez eux ou s'il faut le changer : <strong>regardez-le, ne le supposez pas.</strong> Le réglage porte un nom du genre *data controls* ou *sharing for model improvement*. S'il n'existe pas, ou si le libellé ne dit rien de clair, écrivez-leur avant d'envoyer la voix d'un client.</blockquote>
-<h3 id="2-poser-les-clés-dans-les-secrets-du-dépôt">2. Poser les clés dans les secrets du dépôt</h3>
-<p>Sur GitHub : <strong>Settings → Secrets and variables → Codespaces → New repository secret</strong>. Quatre secrets à créer :</p>
-<div class="tablewrap"><table><thead><tr>
-<th>Nom</th>
-<th>Valeur</th>
-</tr></thead><tbody>
-<tr>
-<td><code>LLM_PROVIDER</code></td>
-<td><code>anthropic</code></td>
-</tr>
-<tr>
-<td><code>ANTHROPIC_API_KEY</code></td>
-<td>la clé générée chez Anthropic</td>
-</tr>
-<tr>
-<td><code>TRANSCRIPTION_PROVIDER</code></td>
-<td><code>openai</code></td>
-</tr>
-<tr>
-<td><code>OPENAI_API_KEY</code></td>
-<td>la clé générée chez OpenAI</td>
-</tr>
-</tbody></table></div>
-<p><strong>Ne collez jamais une clé dans un fichier du dépôt, ni dans une conversation.</strong> Un secret posé ici ne se relit pas, y compris par vous — c'est voulu.</p>
-<h3 id="3-redémarrer-lespace-de-travail--et-non-le-supprimer">3. Redémarrer l'espace de travail — <strong>et non le supprimer</strong></h3>
-<blockquote>⚠️ <strong>Supprimer un espace de travail efface toutes vos données d'essai.</strong> Chantiers, devis, factures : tout part avec lui, et les données de démonstration sont réinstallées à neuf. Ne le supprimez que si vous y tenez.</blockquote>
-<p>Un espace <strong>déjà allumé</strong> ne voit pas un secret créé après lui — mais un <strong>redémarrage</strong> suffit à le lui faire lire, sans rien perdre.</p>
-<p>Sur <code>github.com/codespaces</code>, menu <strong>⋯</strong> → <strong>Stop codespace</strong>, puis rouvrez-le.</p>
-<blockquote><strong>Ce que je n'ai pas pu vérifier.</strong> Je n'ai pas de Docker dans mon environnement : je n'ai jamais vu un secret traverser jusqu'à l'application. Le redémarrage *devrait* suffire. <strong>La façon de le savoir en dix secondes :</strong> ouvrez <strong>Réglages</strong> et lisez le bloc « Ce que l'application utilise ». S'il nomme OpenAI et Anthropic, c'est bon. S'il dit « mode déterministe », le secret n'est pas arrivé — et là seulement, recréez l'espace.</blockquote>
-<p><strong>Le second piège, lui, impose bien une recréation</strong> : un espace créé depuis <code>main</code> ne verra jamais vos clés, parce que c'est la branche <code>claude/dictee-mode-essai-qqhcsn</code> qui porte le passage des secrets jusqu'au conteneur. Tant qu'elle n'est pas fusionnée, <code>main</code> fige <code>LLM_PROVIDER: dev</code> en dur. Une fois la fusion faite, la question ne se pose plus.</p>
+<h3 id="2-coller-les-clés--le-chemin-le-plus-court">2. Coller les clés — le chemin le plus court</h3>
+<p>À la racine du projet se trouve un fichier <strong><code>.env.local</code></strong>, créé pour vous au démarrage de l'espace. Ouvrez-le : il contient déjà les deux lignes, vides.</p>
+<p>``<code> OPENAI_API_KEY= ANTHROPIC_API_KEY= </code>``</p>
+<p>Collez chaque clé <strong>juste après le signe égal</strong>, sans espace ni guillemets, enregistrez, puis rechargez la page de l'éditeur. C'est tout : l'application redémarre et les prend en compte.</p>
+<p>Ce fichier n'est jamais envoyé sur GitHub — il est ignoré par git, exprès.</p>
+<h3 id="3-ou-par-les-secrets-du-dépôt-si-vous-préférez">3. Ou par les secrets du dépôt, si vous préférez</h3>
+<p>Sur GitHub : <strong>Settings → Secrets and variables → Codespaces → New repository secret</strong>. Deux secrets suffisent : <code>ANTHROPIC_API_KEY</code> et <code>OPENAI_API_KEY</code>.</p>
+<p>Un secret posé là ne se relit pas, y compris par vous — c'est voulu. En revanche, un espace <strong>déjà allumé</strong> ne le voit pas : il faut le redémarrer.</p>
+<blockquote>⚠️ <strong>Redémarrer, pas supprimer.</strong> Supprimer un espace de travail efface toutes vos données d'essai — chantiers, devis, factures. Sur <code>github.com/codespaces</code>, menu <strong>⋯</strong> → <strong>Stop codespace</strong>, puis <strong>Open in Browser</strong>.  <strong>Si le menu ne propose pas « Stop codespace », c'est qu'il est déjà arrêté</strong> — au bout de trente minutes il s'éteint tout seul. Il n'existe alors aucun bouton « Démarrer » : <strong>c'est « Open in Browser » qui le rallume.</strong> Chercher un bouton qui n'existe pas a coûté un échange le 2026-08-07.</blockquote>
 <h3 id="4-vérifier-que-cest-bien-branché">4. Vérifier que c'est bien branché</h3>
-<p>Dictez une note vocale et regardez ce qui revient. Si vous lisez « <strong>[Transcription simulée — … octets reçus]</strong> », c'est que le mode déterministe tourne encore : le secret n'est pas arrivé jusqu'au conteneur, le plus souvent parce que l'espace de travail est l'ancien.</p>
-<p>Vos mots à l'écran : c'est branché.</p>
+<p>Trois façons, de la plus rapide à la plus sûre :</p>
+<ol>
+<li><strong>Le bandeau au démarrage</strong> de l'espace dit en une ligne ce qui tourne.</li>
+<li><strong>L'écran Réglages</strong>, bloc « Ce que l'application utilise » : s'il nomme OpenAI et Anthropic, c'est branché. S'il dit « mode déterministe », les clés ne sont pas arrivées.</li>
+<li><strong>La commande</strong> <code>npm run verifier:ia</code>, qui nomme aussi ce qui manque. Avec <code>npm run verifier:ia -- --reseau</code>, elle appelle réellement les fournisseurs et vous dit si vos clés sont acceptées.</li>
+</ol>
+<p>Et à l'usage : dictez une note vocale. Si vous lisez « <strong>[Transcription simulée — … octets reçus]</strong> », le mode déterministe tourne encore. Vos mots à l'écran : c'est branché.</p>
+<p><strong>Ce que cela implique.</strong> Dès qu'une clé est posée, ce que vous dictez — nom du client, adresse, prestations — part chez le fournisseur concerné. Anthropic et OpenAI n'entraînent pas leurs modèles sur ce que reçoit leur API, mais les données y transitent et y sont conservées un temps. Tant que le contrat de sous-traitance n'existe pas (point 2 de <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a>), <strong>ne dictez que des données inventées</strong>.</p>
 <hr>
 <h2 id="repartir-de-zéro">Repartir de zéro</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -237,7 +237,7 @@
 <p><strong>La page reste blanche depuis le téléphone.</strong> Blanche, pas crème : ce n'est pas un écran de l'application qui s'affiche mal, c'est qu'aucune page n'arrive. Trois causes, dans l'ordre de fréquence :</p>
 <ol>
 <li><strong>L'application n'est pas encore prête.</strong> C'est de loin la cause la plus fréquente. Le premier écran met une à deux minutes à se compiler après l'allumage. <strong>Attendez, puis rechargez la page</strong> — ne concluez rien avant.</li>
-<li><strong>L'espace de travail s'est endormi.</strong> Il se met en veille tout seul après trente minutes sans activité, et l'adresse ne mène alors nulle part. Rouvrez-le depuis <code>github.com/codespaces</code> : l'application redémarre seule, et vos données sont intactes.</li>
+<li><strong>L'espace de travail s'est endormi.</strong> Il se met en veille tout seul après trente minutes sans activité, et l'adresse ne mène alors nulle part. Rouvrez-le depuis <code>github.com/codespaces</code>, menu <strong>⋯</strong> → <strong>Open in Browser</strong> : l'application redémarre seule, et vos données sont intactes. Il n'y a pas de bouton « Démarrer » ni « Réactiver » — <strong>ouvrir, c'est rallumer.</strong></li>
 <li><strong>L'espace est trop ancien.</strong> Le démarrage automatique et le port public sont lus <strong>à la création</strong> de l'espace. Un espace né avant le 2026-08-01 les ignore, quoi qu'on fasse ensuite — un <code>git pull</code> n'y change rien.</li>
 </ol>
 <p><strong>Supprimez-le et créez-en un neuf</strong> (encadré du geste 1). C'est le seul chemin qui ne demande de viser aucun bouton sur un écran de téléphone.</p>
