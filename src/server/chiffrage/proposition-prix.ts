@@ -3,8 +3,7 @@ import type { Ctx } from "../repositories/context";
 import { getChantier } from "../repositories/chantiers";
 import { listerPrestations } from "../repositories/prestations";
 import { listerMateriel } from "../repositories/materiel";
-import { listerTarifs, getTarif } from "../repositories/tarifs";
-import { ajouterLignePrix } from "../repositories/lignes-prix";
+import { listerTarifs } from "../repositories/tarifs";
 import { getBrouillon } from "../repositories/brouillons-informations";
 import { chiffrerChantier } from "./service";
 import { parseNombreFrancais } from "./parse";
@@ -12,6 +11,11 @@ import type { SourcePrix } from "../orchestrateur/proposition-builder";
 import type { LigneExplication } from "./types";
 import { arrondirALaDizaine } from "../../lib/arrondi-prix";
 import { chiffrerMainOeuvre } from "../../lib/tarif-main-oeuvre";
+import { lignesVendables, repartir, type LigneVendable } from "../../lib/lignes-vendables";
+import { celluleFendage, prixDuFendage } from "../../lib/grille-fendage";
+import { mesuresArbre } from "../../lib/mesures-arbre";
+import { prixConnusDuFendage } from "../repositories/grille-fendage";
+import { listerPrecisions } from "../repositories/precisions-chantier";
 
 // Origine du prix — même taxonomie que l'orchestrateur (SourcePrix), volontairement
 // réutilisée plutôt que redéfinie : les deux chemins doivent raconter la même
@@ -25,12 +29,32 @@ export type TarifCandidat = {
   unite: string | null;
 };
 
+/** Une ligne telle qu'elle sera écrite au détail — et lue par le client. */
+export type LigneProposee = { libelle: string; montant: string };
+
 export type PropositionPrix = {
   origine: OriginePrix;
   // Montant HT proposé. null dès que l'origine ne permet pas d'en proposer un
   // — jamais 0 en guise de « pas de prix ».
+  //
+  // **C'est le TOTAL** quand la proposition compte plusieurs lignes : c'est ce
+  // que l'écran Prix annonce, et ce que le patron compare à ce qu'il aurait dit
+  // de tête.
   prixPropose: string | null;
   libelle: string | null;
+  /**
+   * Le devis proposé, ligne par ligne.
+   *
+   * **Plusieurs, parce qu'un chantier se vend en morceaux détachables.** Le
+   * patron, trois fois en deux jours : *« l'agent ne comprend toujours pas
+   * qu'il faut séparer les tâches. Tout ce que je dicte arrive sur la même
+   * ligne. »* La règle de découpage vit dans `src/lib/lignes-vendables.ts`,
+   * pure et éprouvée sur ses propres dictées.
+   *
+   * Vide quand aucun prix n'est proposable — jamais une ligne à zéro en guise
+   * de « je ne sais pas ».
+   */
+  lignes: LigneProposee[];
   tarifId: string | null;
   // Tarifs en concurrence : renseigné uniquement quand l'origine est
   // "tarifs_ambigus". Le choix appartient au patron, jamais au système.
@@ -125,6 +149,14 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
   const contenuConfirme = brouillon?.statut === "confirme" ? brouillon.contenu : null;
   const quantitesParLibelle = new Map<string, { quantite: string; unite: string | null }>();
 
+  // Les lignes de la dictée telles qu'elles ont été lues — descriptions
+  // comprises. La table `prestations` ne garde qu'un libellé : « vingt mètres
+  // de haut » y disparaît, alors que c'est lui qui désigne la case de la grille
+  // de fendage. Voir `decouperEnLignes`.
+  const textesDictee = (contenuConfirme?.prestations ?? []).map((l) =>
+    [l.libelle, l.description ?? "", l.quantite ?? "", l.unite ?? ""].join(" ")
+  );
+
   if (contenuConfirme) {
     for (const ligne of contenuConfirme.prestations) {
       if (ligne.quantite) {
@@ -168,6 +200,8 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
       origine: "tarifs_ambigus",
       prixPropose: null,
       libelle: null,
+      // Aucune ligne : choisir un tarif à sa place serait choisir son prix.
+      lignes: [],
       tarifId: null,
       tarifsCandidats: candidats,
       explication: {
@@ -221,6 +255,8 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
       origine: "tarif",
       prixPropose: montant.toFixed(2),
       libelle: tarif.intitule,
+      // Un tarif nommé décrit UNE prestation : il n'y a rien à découper.
+      lignes: [{ libelle: tarif.intitule, montant: montant.toFixed(2) }],
       tarifId: tarif.tarifId,
       tarifsCandidats: [],
       explication: {
@@ -255,12 +291,14 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
   );
 
   if (mainOeuvre) {
-    const travaux = prestations.map((p) => p.libelle.trim()).filter(Boolean).join(" ; ");
     const arrondi = arrondirALaDizaine(mainOeuvre.montant) ?? mainOeuvre.montant;
+    const decoupe = await decouperEnLignes(ctx, chantierId, prestations, textesDictee, arrondi);
+
     return {
       origine: "tarif",
-      prixPropose: arrondi,
-      libelle: travaux || mainOeuvre.intitule,
+      prixPropose: decoupe.total,
+      libelle: decoupe.libelle || mainOeuvre.intitule,
+      lignes: decoupe.lignes,
       tarifId: mainOeuvre.tarifId,
       tarifsCandidats: [],
       explication: {
@@ -272,9 +310,11 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
           ...(arrondi !== mainOeuvre.montant
             ? [{ libelle: "Arrondi", detail: `${mainOeuvre.montant} € arrondi à ${arrondi} € — « en HT on fait des prix ronds ».` }]
             : []),
+          ...decoupe.calcul,
         ],
         donneesManquantes: [
           ...donneesManquantes,
+          ...decoupe.donneesManquantes,
           "Le matériel n'est pas chiffré : à ajouter en ligne si le chantier en demande.",
         ],
         ambiguites,
@@ -299,6 +339,7 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
       origine: "aucun",
       prixPropose: null,
       libelle: null,
+      lignes: [],
       tarifId: null,
       tarifsCandidats: [],
       explication: {
@@ -315,21 +356,6 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
     };
   }
 
-  // **Le libellé nomme ce qui a été dicté.**
-  //
-  // « Prestation (prix calculé) » était juste et inutilisable : c'est la ligne
-  // que le CLIENT lit sur son devis, et elle ne lui disait rien du travail. Le
-  // patron, arrivant sur son devis après une dictée, n'y reconnaissait pas
-  // davantage ce qu'il venait de dire.
-  //
-  // Le prix, lui, reste global — il est calculé sur la durée et l'équipe, pas
-  // prestation par prestation. Une seule ligne, donc, mais qui les nomme
-  // toutes : c'est la vérité de ce qui est chiffré, et rien n'est inventé.
-  const travauxDictes = prestations
-    .map((p) => p.libelle.trim())
-    .filter(Boolean)
-    .join(" ; ");
-
   // **L'arrondi à la dizaine, enfin appliqué là où le prix se décide.**
   //
   // La règle existait, écrite avec la phrase du patron (« en HT on fait des
@@ -338,10 +364,20 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
   // lu le 7 août 2026 : un montant de machine sur un document d'artisan.
   const arrondiCalcule = arrondirALaDizaine(standard.prixConseille) ?? standard.prixConseille;
 
+  // **Le libellé nomme ce qui a été dicté, et chaque chose vendable a sa ligne.**
+  //
+  // « Prestation (prix calculé) » était juste et inutilisable : c'est la ligne
+  // que le CLIENT lit sur son devis, et elle ne lui disait rien du travail. La
+  // version suivante nommait bien les travaux — mais tous sur une seule ligne,
+  // séparés par des points-virgules, et c'est le défaut que le patron a signalé
+  // trois fois.
+  const decoupe = await decouperEnLignes(ctx, chantierId, prestations, textesDictee, arrondiCalcule);
+
   return {
     origine: "chiffrage",
-    prixPropose: arrondiCalcule,
-    libelle: travauxDictes || "Prestation (prix calculé)",
+    prixPropose: decoupe.total,
+    libelle: decoupe.libelle || "Prestation (prix calculé)",
+    lignes: decoupe.lignes,
     tarifId: null,
     tarifsCandidats: [],
     explication: {
@@ -358,55 +394,196 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
               },
             ]
           : []),
+        ...decoupe.calcul,
       ],
-      donneesManquantes: [...donneesManquantes, ...standard.avertissements],
+      donneesManquantes: [...donneesManquantes, ...decoupe.donneesManquantes, ...standard.avertissements],
       ambiguites,
     },
   };
 }
 
-// Écrit la proposition dans le détail du chantier.
-//
-// **Vit ici, et non dans un fichier d'actions, parce que deux appelants en ont
-// besoin** : l'écran Prix, quand le patron applique lui-même, et le tapis
-// roulant, qui enchaîne la dictée jusqu'au devis sans lui.
-//
-// Le montant n'est JAMAIS repris de ce qu'affiche un navigateur : la
-// proposition est recalculée ici, depuis la base, et c'est ce résultat-là qui
-// est écrit. Un détail falsifié côté client n'a donc aucun effet.
-export async function appliquerProposition(
+// =========================================================================
+// Le découpage en lignes vendables, et la répartition du montant
+// =========================================================================
+
+type Decoupe = {
+  lignes: LigneProposee[];
+  /** Le total effectivement proposé — somme des lignes, arrondis compris. */
+  total: string;
+  /** Tous les libellés, empilés : ce que l'écran Prix annonce en un coup d'œil. */
+  libelle: string;
+  calcul: LigneExplication[];
+  donneesManquantes: string[];
+};
+
+/**
+ * Transforme un montant global en lignes de devis réellement vendables.
+ *
+ * **Ce que le patron répète depuis trois jours :** *« l'abattage, le broyage et
+ * l'évacuation, c'est sur une ligne, et la fente, ça doit être séparé. »* Le
+ * découpage lui-même est une fonction pure (`lignes-vendables.ts`) ; ce qu'on
+ * fait ici, c'est aller chercher en base de quoi chiffrer la ligne détachable.
+ *
+ * **Le prix de la fente vient de SA grille, jamais d'un pourcentage.** Sa
+ * demande du 8 août : *« on crée une liste de prix en fonction de la hauteur et
+ * du diamètre, comme ça il n'invente rien. »* Une case vide n'est donc pas
+ * comblée par une estimation — la ligne s'écrit à 0 €, visible comme un prix à
+ * poser, et la raison est dite.
+ */
+async function decouperEnLignes(
   ctx: Ctx,
   chantierId: string,
-  tarifIdChoisi?: string
-): Promise<
-  | { succes: true; ligne: { id: string; libelle: string; montant: string } }
-  | { succes: false; erreur: string; ambigu?: boolean }
-> {
-  const proposition = await preparerPropositionPrix(ctx, chantierId);
-  if (!proposition) return { succes: false, erreur: "Chantier introuvable." };
+  prestations: { libelle: string }[],
+  /**
+   * Les lignes de la dictée, descriptions comprises.
+   *
+   * **Sans elles, la grille de fendage ne servirait presque jamais.** La table
+   * `prestations` ne garde qu'un libellé : « vingt mètres de haut », dicté dans
+   * la description, y disparaît. Or c'est ce même texte qui décide de poser ou
+   * non la question de la hauteur (`questions-chiffrage.ts`). Lire moins ici que
+   * là-bas ferait taire la question ET manquer la case — la fente resterait
+   * sans prix, sans qu'aucune erreur ne l'explique.
+   */
+  textesDictee: string[],
+  totalHt: string
+): Promise<Decoupe> {
+  const { lignes: vendables, absorbes } = lignesVendables(prestations.map((p) => p.libelle));
+  const donneesManquantes: string[] = [];
+  const calcul: LigneExplication[] = [];
 
-  // Deux tarifs plausibles : l'agent n'en choisit jamais un lui-même
-  // (docs/AGENT.md §3). Il les présente, et c'est le patron qui tranche.
-  if (proposition.origine === "tarifs_ambigus") {
-    if (!tarifIdChoisi) {
-      return { succes: false, erreur: "Plusieurs tarifs correspondent : choisissez celui à appliquer.", ambigu: true };
-    }
-    const candidat = proposition.tarifsCandidats.find((c) => c.tarifId === tarifIdChoisi);
-    if (!candidat) {
-      return { succes: false, erreur: "Ce tarif ne fait pas partie des tarifs proposés pour ce chantier." };
-    }
-    const tarifActuel = await getTarif(ctx, candidat.tarifId);
-    if (!tarifActuel) {
-      return { succes: false, erreur: "Ce tarif n'existe plus." };
-    }
-    const ligne = await ajouterLignePrix(ctx, chantierId, tarifActuel.intitule, tarifActuel.prix);
-    return { succes: true, ligne: { id: ligne.id, libelle: ligne.libelle, montant: ligne.montant } };
+  if (absorbes.length > 0) {
+    // Une prestation qui disparaît sans un mot, c'est exactement ce qui lui a
+    // fait perdre « on le coupe en 50 » sur le devis du 7 août. Elle disparaît
+    // toujours — c'est la règle — mais elle le dit.
+    calcul.push({
+      libelle: "Compris dans l'abattage",
+      detail: `${absorbes.join(", ")} — pas de ligne séparée : le billonnage fait partie du geste d'abattre.`,
+    });
   }
 
-  if (proposition.prixPropose === null || !proposition.libelle) {
-    return { succes: false, erreur: "Aucun prix ne peut être proposé en l'état." };
+  // Une seule ligne : rien à répartir, le montant global est le sien. (Le
+  // découpage n'en produit jamais plus de deux, et ce cas n'est atteint que
+  // s'il en manque une : `vendables` compte donc zéro ou un élément.)
+  const detachable = vendables.find((l) => l.detachable);
+  const principale = vendables.find((l) => !l.detachable);
+  if (!detachable || !principale) {
+    return {
+      lignes: vendables.map((l) => ({ libelle: l.libelle, montant: totalHt })),
+      total: totalHt,
+      libelle: vendables.map((l) => l.libelle).join("\n"),
+      calcul,
+      donneesManquantes,
+    };
   }
 
-  const ligne = await ajouterLignePrix(ctx, chantierId, proposition.libelle, proposition.prixPropose);
-  return { succes: true, ligne: { id: ligne.id, libelle: ligne.libelle, montant: ligne.montant } };
+  const prixFente = await prixDeLaFente(ctx, chantierId, [...prestations.map((p) => p.libelle), ...textesDictee], detachable);
+  calcul.push(...prixFente.calcul);
+  donneesManquantes.push(...prixFente.donneesManquantes);
+
+  const repartition = prixFente.prix ? repartir(totalHt, prixFente.prix) : null;
+  if (!repartition) {
+    // **Sans prix de fente, on sépare quand même les lignes.** C'est la moitié
+    // de ce qu'il demande, et elle ne dépend d'aucune grille : le client doit
+    // voir la fente à part pour pouvoir la refuser. Le montant reste sur la
+    // ligne principale — le déplacer sans savoir combien vaut la fente
+    // reviendrait à l'inventer.
+    return {
+      lignes: [
+        { libelle: principale.libelle, montant: totalHt },
+        { libelle: detachable.libelle, montant: "0" },
+      ],
+      total: totalHt,
+      libelle: vendables.map((l) => l.libelle).join("\n"),
+      calcul,
+      donneesManquantes,
+    };
+  }
+
+  calcul.push({ libelle: "Répartition", detail: repartition.detail });
+  // `toFixed()` sans argument, et pas `toFixed(2)` : le total doit s'écrire
+  // comme celui du cas à une seule ligne, qui sort d'`arrondirALaDizaine`
+  // (« 1100 », pas « 1100.00 »). Deux formats pour le même montant, selon qu'il
+  // y a une fente ou non, feraient diverger l'écran d'avec le devis.
+  const total = new Decimal(repartition.principal).plus(repartition.detachable).toFixed();
+
+  return {
+    lignes: [
+      { libelle: principale.libelle, montant: repartition.principal },
+      { libelle: detachable.libelle, montant: repartition.detachable },
+    ],
+    total,
+    libelle: vendables.map((l) => l.libelle).join("\n"),
+    calcul,
+    donneesManquantes,
+  };
 }
+
+/** Le prix du fendage, pris dans la grille du patron — ou son absence, expliquée. */
+async function prixDeLaFente(
+  ctx: Ctx,
+  chantierId: string,
+  textes: string[],
+  detachable: LigneVendable
+): Promise<{ prix: string | null; calcul: LigneExplication[]; donneesManquantes: string[] }> {
+  // Ses réponses d'abord, la dictée ensuite : il a pu corriger à l'arrêt ce que
+  // la transcription avait mal entendu.
+  const precisions = await listerPrecisions(ctx, chantierId);
+  const mesures = mesuresArbre(precisions.map((p) => p.lisible), textes);
+  const cellule = celluleFendage(mesures.hauteurM, mesures.diametreCm);
+
+  if (!cellule) {
+    const manque = [
+      mesures.hauteurM === null ? "la hauteur de l'arbre" : null,
+      mesures.diametreCm === null ? "le diamètre du tronc" : null,
+    ].filter(Boolean);
+    return {
+      prix: null,
+      calcul: [],
+      donneesManquantes: [
+        `« ${detachable.libelle} » est sur sa propre ligne, sans prix : ` +
+          (manque.length > 0
+            ? `il manque ${manque.join(" et ")} pour aller chercher dans votre grille.`
+            : // Les deux mesures sont là mais ne désignent aucune case : elles
+              // sont hors de toute tranche. On le dit avec les chiffres lus,
+              // plutôt qu'un « il manque » qui enverrait chercher au mauvais
+              // endroit.
+              `${mesures.hauteurM} m et ⌀ ${mesures.diametreCm} cm ne tombent dans aucune tranche de votre grille.`),
+      ],
+    };
+  }
+
+  const trouve = prixDuFendage(cellule, await prixConnusDuFendage(ctx));
+  if (!trouve) {
+    return {
+      prix: null,
+      calcul: [],
+      donneesManquantes: [
+        `Votre grille de fendage n'a pas de prix pour ${cellule.libelle}. Posez-le sur la ligne : ` +
+          "il se rangera dans la grille et servira aux chantiers suivants.",
+      ],
+    };
+  }
+
+  return {
+    prix: trouve.prix,
+    calcul: [
+      {
+        libelle: "Fendage",
+        detail: `${trouve.prix} € — votre grille, case « ${cellule.libelle} ».`,
+      },
+    ],
+    donneesManquantes: [],
+  };
+}
+
+// **`appliquerProposition` a été retirée le 8 août 2026.**
+//
+// C'était une SECONDE écriture de la proposition au détail, exportée et appelée
+// par personne — `appliquerPropositionPrix` (dans `appliquer-proposition.ts`)
+// fait le même travail, en refusant les doublons. Deux implémentations d'une
+// même règle finissent toujours par diverger (`CLAUDE.md` §3), et celle-ci avait
+// déjà commencé : elle ne connaissait pas le contrôle de doublon, et n'aurait
+// pas su écrire les deux lignes d'un chantier avec fente.
+//
+// Elle a été supprimée en découpant les lignes du devis, plutôt que mise à jour
+// une seconde fois pour rien.

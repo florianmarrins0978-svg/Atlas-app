@@ -12,6 +12,7 @@ import {
   envoisDevis,
   envoisFactures,
   correctionsDictee,
+  grilleFendage,
   factures,
   fragmentsDocuments,
   historiquePrix,
@@ -116,6 +117,7 @@ export async function exporterEntreprise(
       lesLignesFacture,
       lesEnvoisFactures,
       lesCorrections,
+      laGrilleFendage,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -144,6 +146,7 @@ export async function exporterEntreprise(
       tx.select().from(lignesFacture).where(eq(lignesFacture.entrepriseId, e)),
       tx.select().from(envoisFactures).where(eq(envoisFactures.entrepriseId, e)),
       tx.select().from(correctionsDictee).where(eq(correctionsDictee.entrepriseId, e)),
+      tx.select().from(grilleFendage).where(eq(grilleFendage.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -185,6 +188,10 @@ export async function exporterEntreprise(
       // Ce que l'artisan a corrigé après une dictée : c'est SA mémoire, faite de
       // ses libellés et de ses prix. Elle part avec ses données, comme le reste.
       corrections_dictee: lesCorrections,
+      // Sa grille de prix pour fendre le bois. Chaque case est une décision
+      // qu'il a prise, ou un prix qu'il a réellement pratiqué : la perdre lui
+      // ferait rechiffrer à l'aveugle des chantiers déjà arbitrés.
+      grille_fendage: laGrilleFendage,
     };
 
     const compte: Record<string, number> = {};

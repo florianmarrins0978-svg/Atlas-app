@@ -64,6 +64,37 @@ async function serveurVivant(url: string, tentatives = 6, delaiMs = 10_000): Pro
   return false;
 }
 
+/**
+ * Fait compiler les écrans les plus traversés avant que la première suite ne
+ * les touche.
+ *
+ * **La première suite payait pour toutes les autres.** En mode développement,
+ * chaque route se compile au premier appel. `test-adresse-suggestions-e2e` passe
+ * la première dans l'ordre alphabétique : elle attendait donc la compilation de
+ * `/login`, de l'accueil ET de la fiche de chantier, et tombait sur un
+ * dépassement de délai en accusant l'adresse — qui n'y était pour rien.
+ * Constaté le 8 août 2026 : elle échouait en batterie et passait seule.
+ *
+ * Une répondre-sur-`/api/health/live` ne suffit pas : cette route-là est
+ * minuscule et se compile en quelques centaines de millisecondes, pendant que
+ * les écrans réels en demandent des dizaines de secondes.
+ *
+ * Ne fait jamais échouer la batterie : si un écran ne répond pas ici, la suite
+ * qui en dépend le dira mieux, avec son propre message.
+ */
+async function prechaufferLesEcrans(): Promise<void> {
+  const ecrans = ["/login", "/", "/chantiers/nouveau", "/planning", "/reglages"];
+  console.log("Préchauffage des écrans (compilation à la demande)...");
+  for (const ecran of ecrans) {
+    try {
+      await fetch(`http://localhost:3000${ecran}`, { signal: AbortSignal.timeout(120_000) });
+    } catch {
+      // Un écran qui ne répond pas ici n'est pas une raison d'arrêter : la
+      // suite qui le vise l'expliquera mieux que nous.
+    }
+  }
+}
+
 async function attendreServeurPret(url: string, tentativesMax = 30): Promise<boolean> {
   for (let i = 0; i < tentativesMax; i++) {
     try {
@@ -158,6 +189,8 @@ async function main() {
     }
     process.exit(0);
   }
+
+  await prechaufferLesEcrans();
 
   console.log(`\nExécution de ${fichiers.length} suites dépendant du serveur...\n`);
   let echecs = 0;

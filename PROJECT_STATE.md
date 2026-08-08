@@ -75,6 +75,10 @@ seule avec quinze outils.
 | **L'agent s'arrête et demande ce qui fait le prix** (technique, diamètre), et se tait sur le reste | `src/lib/questions-chiffrage.ts` + `drizzle/0022_precisions_chantier.sql` |
 | **Il retient ce que le patron chiffre**, et le lui rappelle sur le chantier comparable suivant | `src/lib/lecons-prix.ts` + `drizzle/0023_lecons_prix.sql` |
 | **L'adresse se propose pendant la frappe** et se choisit d'un doigt — Base Adresse Nationale, jamais Google, et le champ reste libre | `src/components/atlas/ChampAdresse.tsx` + `src/server/adresses/base-adresse-nationale.ts` |
+| **Le vocabulaire du métier**, écrit une fois et envoyé avec chaque dictée — réservé à l'éditeur | `src/app/reglages/vocabulaire/` + `src/lib/consigne-metier.ts` + `drizzle/0025_vocabulaire_metier.sql` |
+| **Le devis se découpe en lignes vendables** : abattage + broyage + évacuation ensemble, la fente à part, sans point-virgule | `src/lib/lignes-vendables.ts` |
+| **La grille de prix du fendage**, hauteur × diamètre, née vide et remplie par ses devis | `src/lib/grille-fendage.ts` + `src/app/reglages/fendage/` + `drizzle/0026_grille_fendage.sql` |
+| **Le retour de la messagerie ramène à l'accueil**, avec un mot qui dit ce qui a été transmis | `src/lib/annonce-transmission.ts` + `src/components/atlas/AnnonceTransmission.tsx` |
 
 ### Conformité RGPD
 

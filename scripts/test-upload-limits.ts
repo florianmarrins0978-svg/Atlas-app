@@ -6,6 +6,7 @@ import * as chantiersRepo from "../src/server/repositories/chantiers";
 import { ajouterPhotoAction } from "../src/app/chantiers/[id]/photos/actions";
 import { enregistrerNoteVocaleAction } from "../src/app/chantiers/[id]/note-vocale/actions";
 import * as photosRepo from "../src/server/repositories/photos";
+import { fermerLimiteur } from "../src/server/rate-limit";
 
 let passed = 0;
 let failed = 0;
@@ -103,7 +104,11 @@ async function main() {
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
+  // Le limiteur de débit ouvre une connexion Redis dès qu'une action protégée
+  // est traversée. Sans cette fermeture, le processus ne rend jamais la main —
+  // tests tous verts, batterie arrêtée pour toujours (8 août 2026).
   await pool.end();
+  await fermerLimiteur();
   if (failed > 0) process.exit(1);
 }
 

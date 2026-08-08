@@ -24,6 +24,8 @@
 // on pose celles qui portent de l'argent. Ce module a autant pour rôle de
 // **taire** les autres que de poser celles-là.
 
+import { diametreLu, hauteurLue } from "./mesures-arbre";
+
 /** Une réponse proposée, quand la question se referme sur un choix connu. */
 export type OptionReponse = {
   valeur: string;
@@ -90,7 +92,9 @@ const HAIE = /\bhaie/i;
 // Une quantité en mètres linéaires, sous les formes qu'une dictée produit :
 // « 20 ml », « 20 m linéaires », « vingt mètres de long ».
 const LONGUEUR = /(\bml\b|mètres?\s+linéaires?|m\s*linéaires?|de\s+long\b|longueur)/i;
-const DIAMETRE = /\b(diamètre|diametre|⌀|Ø)\b/i;
+
+/** Ce qu'on fend : le bois d'un arbre abattu, que le client peut refuser. */
+const FENDAGE = /\b(fend|fente)/i;
 
 /**
  * Le texte dit-il déjà ce qu'on s'apprête à demander ?
@@ -100,9 +104,28 @@ const DIAMETRE = /\b(diamètre|diametre|⌀|Ø)\b/i;
  * information déjà donnée est le plus sûr moyen de rendre l'arrêt pénible.
  */
 function contient(ligne: LignePourQuestions, motif: RegExp): boolean {
-  return motif.test(
-    [ligne.libelle, ligne.description ?? "", ligne.quantite ?? "", ligne.unite ?? ""].join(" ")
-  );
+  return motif.test(toutLeTexte(ligne));
+}
+
+function toutLeTexte(ligne: LignePourQuestions): string {
+  return [ligne.libelle, ligne.description ?? "", ligne.quantite ?? "", ligne.unite ?? ""].join(" ");
+}
+
+/**
+ * Une mesure n'est acquise que si elle porte un NOMBRE.
+ *
+ * La première version se contentait de voir le mot « diamètre » quelque part.
+ * « Diamètre à préciser sur place » comptait donc pour une réponse, et la
+ * question qui vaut 800 € n'était jamais posée. Le même vocabulaire que le
+ * chiffrage (`src/lib/mesures-arbre.ts`) — deux lectures divergentes feraient
+ * poser une question déjà répondue, ou l'inverse.
+ */
+function contientDiametre(ligne: LignePourQuestions): boolean {
+  return diametreLu(toutLeTexte(ligne)) !== null;
+}
+
+function contientHauteur(ligne: LignePourQuestions): boolean {
+  return hauteurLue(toutLeTexte(ligne)) !== null;
 }
 
 export type LignePourQuestions = {
@@ -129,9 +152,60 @@ export function questionsAvantChiffrage(
 ): QuestionChiffrage[] {
   const questions: QuestionChiffrage[] = [];
 
+  // Le diamètre appartient à l'ARBRE, pas à la ligne de devis. Quand un
+  // abattage est dicté, c'est lui qui porte la question — la demander une
+  // seconde fois pour la fente ferait répondre deux fois la même chose sur le
+  // même tronc, et l'arrêt doit rester franchissable en quelques secondes.
+  const abattageDansLaDictee = prestations.some((l) => ABATTAGE.test(l.libelle));
+
+  // La hauteur aussi appartient à l'arbre, et la dictée la donne souvent sur la
+  // ligne de l'abattage — *« un chêne mort de vingt mètres de haut »*. La
+  // redemander sur la ligne de la fente serait faire répéter au patron ce qu'il
+  // vient de dire.
+  //
+  // **Ce n'est tenable que parce que le chiffrage lit les mêmes textes.**
+  // `preparerPropositionPrix` passe les lignes de la dictée — libellés ET
+  // descriptions — à `mesuresArbre`. Si l'un des deux lisait moins que l'autre,
+  // la question serait tue et la case de la grille resterait introuvable : la
+  // fente n'aurait jamais de prix, sans qu'aucune erreur ne le signale.
+  const hauteurDansLaDictee = prestations.some((l) => contientHauteur(l));
+
   prestations.forEach((ligne, rang) => {
     const libelle = ligne.libelle.trim();
     if (!libelle) return;
+
+    // --- La fente : hauteur ET diamètre, parce que c'est du VOLUME ---------
+    //
+    // Le patron, le 8 août 2026 : *« pour la fente ils devraient demander la
+    // hauteur de l'arbre et son diamètre, et on crée une liste de prix en
+    // fonction de la hauteur et du diamètre, comme ça il n'invente rien. »*
+    //
+    // Les deux mesures, et pas une : le volume d'un tronc va comme le carré du
+    // diamètre multiplié par la hauteur. Un chêne de 60 cm fait quatre fois le
+    // bois d'un chêne de 30 cm à hauteur égale — et c'est ce bois-là qu'on fend.
+    if (FENDAGE.test(libelle)) {
+      if (!hauteurDansLaDictee) {
+        questions.push({
+          id: `fendage.hauteur#${rang}`,
+          libellePrestation: libelle,
+          question: "Quelle hauteur fait l'arbre ?",
+          pourquoi: "La hauteur et le diamètre désignent ensemble une case de votre grille de fendage — sans elles, aucun prix n'en sort.",
+          options: null,
+          unite: "m",
+        });
+      }
+      if (!contientDiametre(ligne) && !abattageDansLaDictee) {
+        questions.push({
+          id: `fendage.diametre#${rang}`,
+          libellePrestation: libelle,
+          question: "Quel diamètre fait le tronc ?",
+          pourquoi: "C'est lui qui pèse le plus dans le volume de bois à fendre : un tronc deux fois plus gros en donne quatre fois plus.",
+          options: null,
+          unite: "cm",
+        });
+      }
+      return;
+    }
 
     if (ABATTAGE.test(libelle)) {
       // La technique : c'est elle qui fait 600 ou 1 400 €. Une dictée ne la
@@ -152,7 +226,7 @@ export function questionsAvantChiffrage(
       // elle que la dictée donne (« de vingt mètres de haut »). Ne pas la
       // confondre : demander « la taille » laisserait croire que la hauteur
       // suffit.
-      if (!contient(ligne, DIAMETRE)) {
+      if (!contientDiametre(ligne)) {
         questions.push({
           id: `abattage.diametre#${rang}`,
           libellePrestation: libelle,
@@ -201,7 +275,16 @@ function precisionLisibleParId(
     const choisie = options.find((o) => o.valeur === valeur);
     return (choisie?.libelle ?? valeur).toLowerCase();
   }
-  if (id.startsWith("abattage.diametre")) return `⌀ ${valeur} ${unite ?? ""}`.trim();
+  // **Ces formulations sont relues par la machine autant que par le client.**
+  // `mesures-arbre.ts` doit y retrouver le nombre pour désigner la case de la
+  // grille : « ⌀ 45 cm » et « 12 m de haut » sont exactement les deux formes
+  // qu'il sait lire. Les changer sans le prévenir casserait le chiffrage du
+  // fendage en silence — sans erreur, avec seulement une case qui ne se trouve
+  // plus.
+  if (id.startsWith("abattage.diametre") || id.startsWith("fendage.diametre")) {
+    return `⌀ ${valeur} ${unite ?? ""}`.trim();
+  }
+  if (id.startsWith("fendage.hauteur")) return `${valeur} ${unite ?? "m"} de haut`.trim();
   return `${valeur} ${unite ?? ""}`.trim();
 }
 

@@ -135,6 +135,34 @@ l'autorité de l'expérience.
 qui demande plusieurs devis comparables. La mémoire l'accumule désormais ; la
 règle se calculera quand il y aura de quoi.
 
+### 0 quinquies. Lignes vendables et grille de fendage — ~~à faire~~ **fait le 8 août 2026**
+
+Ce qui est en place, et qu'il ne faut pas refaire :
+
+- le découpage en lignes vendables (`src/lib/lignes-vendables.ts`), avec le
+  billonnage compris dans l'abattage ;
+- la grille de fendage hauteur × diamètre, 8 × 6 cases, née vide, remplie à la
+  main **et** par ses devis (`src/lib/grille-fendage.ts`).
+
+Détail des choix : `ARCHITECTURE.md` §29.
+
+**Ce qui reste ouvert, et qu'il faut lui demander plutôt que de trancher seul :**
+
+| | Question | Pourquoi ça presse un peu |
+|---|---|---|
+| a | **Les tranches lui conviennent-elles ?** 8 diamètres × 6 hauteurs, bornes hautes incluses. | Changer les bornes plus tard rend introuvables les prix déjà rangés. C'est facile aujourd'hui, coûteux après trente devis. |
+| b | **L'abattage mérite-t-il la même grille ?** Il se chiffre déjà à la technique et au diamètre, mais sans liste que le patron puisse voir et compléter. | Question posée le 8 août, restée sans réponse. |
+| c | **La taille de haie devrait-elle avoir sa propre ligne ?** Son devis de référence du 5 août en compte trois — haie 350 €, abattage 600 €, fendage 300 € — quand l'application en produit deux. | Séparer la haie du chêne demanderait de répartir un tarif global entre eux, c'est-à-dire d'inventer deux prix. La fente a le droit à sa ligne parce qu'elle a une grille ; la haie n'en a pas encore. |
+| d | **Autre chose que la fente se détache-t-il ?** Le dessouchage, l'évacuation seule, l'enlèvement des grumes. | Aujourd'hui la fente est le seul cas connu — parce que c'est le seul qu'il ait décrit. |
+
+**Et une limite à connaître avant de promettre quoi que ce soit :** seuls les
+devis **nés d'une dictée** nourrissent `corrections_dictee`. Un devis écrit
+entièrement à la main n'apprend rien sur la façon de LIRE une dictée — c'est
+délibéré (il n'y a pas d'écart à mesurer), mais cela veut dire que sa phrase
+*« je fais plein de devis et dans un mois tu sauras les remplir tout seul »* ne
+vaut que pour les devis dictés. La grille de fendage, elle, se remplit dans les
+deux cas.
+
 ### 0 bis. L'agent qui apprend — le vrai sujet
 
 Le tapis roulant (dictée → devis, d'un seul geste) est en place, et l'arrêt
@@ -144,6 +172,7 @@ le 5 août 2026 :
 | | Quoi | Pourquoi maintenant |
 |---|---|---|
 | a | ~~**Mémoire des corrections.**~~ **Fait le 6 août 2026** — voir §0 quater. | |
+| a bis | ~~**Le découpage des lignes, et la grille de fendage.**~~ **Fait le 8 août 2026** — voir §0 quinquies. | |
 | b | **Entretien de départ.** Il n'a aucun ancien devis à donner en référence — c'est donc l'agent qui l'interroge une fois et écrit ses règles. | Sans ça, l'agent démarre en ne sachant rien et apprend aux frais du patron. |
 | c | **Écart devis / facture.** Les données existent déjà des deux côtés. | La meilleure leçon qui soit : ce qui avait été mal estimé s'y voit tout seul. |
 | d | **Photos ↔ prix.** Conserver le lien entre les photos d'un chantier et le devis qui a suivi. | Objectif du patron : « à force de comparer les photos des arbres et les devis, il devra proposer un prix juste ». Impossible aujourd'hui — mais **l'accumulation doit commencer maintenant**, sinon dans six mois il n'y aura toujours rien à apprendre. |

@@ -4,8 +4,16 @@ import { getTarif } from "../repositories/tarifs";
 import { preparerPropositionPrix } from "./proposition-prix";
 import { ligneDejaAuDetail } from "../../lib/proposition-au-detail";
 
+export type LigneEcrite = { id: string; libelle: string; montant: string };
+
 export type ResultatApplicationPrix =
-  | { succes: true; ligne: { id: string; libelle: string; montant: string } }
+  | {
+      succes: true;
+      /** La première ligne écrite — conservée pour les appelants qui n'en attendent qu'une. */
+      ligne: LigneEcrite;
+      /** Toutes les lignes écrites : le chantier peut en compter plusieurs. */
+      lignes: LigneEcrite[];
+    }
   | { succes: false; erreur: string };
 
 /**
@@ -64,16 +72,41 @@ export async function appliquerPropositionPrix(
     const doublon = refuserSiDoublon(tarifActuel.intitule);
     if (doublon) return doublon;
     const ligne = await ajouterLignePrix(ctx, chantierId, tarifActuel.intitule, tarifActuel.prix);
-    return { succes: true, ligne: { id: ligne.id, libelle: ligne.libelle, montant: ligne.montant } };
+    const ecrite = { id: ligne.id, libelle: ligne.libelle, montant: ligne.montant };
+    return { succes: true, ligne: ecrite, lignes: [ecrite] };
   }
 
-  if (proposition.prixPropose === null || !proposition.libelle) {
+  if (proposition.prixPropose === null || proposition.lignes.length === 0) {
     return { succes: false, erreur: "Aucun prix ne peut être proposé en l'état." };
   }
 
-  const doublon = refuserSiDoublon(proposition.libelle);
-  if (doublon) return doublon;
+  // **Plusieurs lignes, et le doublon se vérifie ligne par ligne.**
+  //
+  // Le patron rejoue souvent l'enchaînement, et le refus global d'autrefois
+  // suffisait quand une proposition ne valait qu'une ligne. Depuis qu'un
+  // chantier peut en produire deux — le travail principal et la fente —, un
+  // contrôle global laisserait passer le cas mixte : la principale déjà au
+  // détail, la fente pas encore. On refuse donc chaque ligne séparément, et
+  // l'ensemble ne devient un échec que si RIEN n'a pu être écrit.
+  const ecrites: LigneEcrite[] = [];
+  const refusees: string[] = [];
+  for (const proposee of proposition.lignes) {
+    const doublon = refuserSiDoublon(proposee.libelle);
+    if (doublon) {
+      refusees.push(doublon.erreur);
+      continue;
+    }
+    const ligne = await ajouterLignePrix(ctx, chantierId, proposee.libelle, proposee.montant);
+    // Le détail relu en début de fonction ne connaît pas les lignes qu'on vient
+    // d'écrire : sans cet ajout, deux lignes au même libellé passeraient toutes
+    // les deux dans la même boucle.
+    detailActuel.push({ ...ligne });
+    ecrites.push({ id: ligne.id, libelle: ligne.libelle, montant: ligne.montant });
+  }
 
-  const ligne = await ajouterLignePrix(ctx, chantierId, proposition.libelle, proposition.prixPropose);
-  return { succes: true, ligne: { id: ligne.id, libelle: ligne.libelle, montant: ligne.montant } };
+  if (ecrites.length === 0) {
+    return { succes: false, erreur: refusees[0] ?? "Aucun prix ne peut être proposé en l'état." };
+  }
+
+  return { succes: true, ligne: ecrites[0], lignes: ecrites };
 }

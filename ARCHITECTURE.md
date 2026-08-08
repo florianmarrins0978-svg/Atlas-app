@@ -1108,3 +1108,165 @@ L'adresse arrive sur une seule ligne, telle que la base la rend. Le jour où un
 document exigera le code postal et la commune séparés — une déclaration, un
 format d'export comptable — il faudra les redemander à la base, qui les fournit
 déjà (`postcode`, `city`). Rien n'est perdu, mais rien n'est stocké non plus.
+
+---
+
+## 29. Le devis se découpe en lignes vendables, et la fente a sa grille
+
+**Décidé les 2026-08-07 et 2026-08-08**, après trois signalements du même défaut
+par le patron — dont un où il a dû rappeler qu'on l'avait déjà diagnostiqué la
+veille sans le corriger : *« on avait déjà travaillé sur ce défaut-là hier et je
+croyais que tu l'avais corrigé. »*
+
+### Ce qui était faux, en une ligne de code
+
+`prestations.map((p) => p.libelle).join(" ; ")`, à deux endroits de
+`src/server/chiffrage/proposition-prix.ts`. Tout ce qu'il dictait arrivait sur
+**une seule ligne** du devis, collé par des points-virgules — et un client qui
+ne veut qu'une partie du chantier ne pouvait rien refuser.
+
+### La règle, dans ses mots
+
+*« L'abattage, le broyage et l'évacuation, c'est sur une ligne, et la fente, ça
+doit être séparé. »*
+
+Et le pourquoi, qui ne se devine pas : *« si le client ne veut pas la fente, il
+va trouver le reste cher ; et s'il fait faire le reste par un autre artisan et
+qu'il nous prend juste pour la fente, 100 € ce n'est pas assez cher. »*
+
+**Une ligne de devis n'est pas une rubrique comptable : c'est une chose que le
+client peut accepter ou refuser seule.** Ce qu'il ne peut pas détacher n'a
+aucune raison d'occuper sa propre ligne ; ce qu'il peut détacher doit porter son
+propre déplacement. D'où sa répartition : **850 + 250**, et non 1 000 + 100.
+
+La règle vit dans `src/lib/lignes-vendables.ts` — pure, éprouvée sur ses dictées
+réelles — et non dans un service. Elle est aussi inscrite dans `termes_metier`
+(migrations 0025 et 0026), pour que le modèle qui LIT la dictée la connaisse
+autant que le code qui écrit le devis. Les deux se corrigent ensemble.
+
+### Le billonnage ne fait pas de ligne
+
+*« Le devis compte trois lignes, pas quatre : le billonnage est compris dans
+l'abattage »* (`docs/EXEMPLE-DICTEE.md`, 5 août). Tronçonner le tronc d'un arbre
+qu'on vient d'abattre n'est pas détachable — c'est la fin du geste d'abattre.
+
+Deux précautions, apprises de ce qui a déjà mal tourné :
+
+- **sans abattage dicté, le billonnage reste** : billonner du bois déjà à terre
+  est un vrai chantier, et le faire disparaître produirait le devis vide du
+  7 août ;
+- **ce qui est absorbé est signalé** dans le détail du chiffrage. Une prestation
+  qui s'évapore sans un mot est exactement ce qui lui a fait perdre « on le
+  coupe en 50, on le fend ».
+
+### La grille de fendage : hauteur × diamètre, 48 cases
+
+*« Pour la fente, ils devraient demander la hauteur de l'arbre et son diamètre,
+et on crée une liste de prix en fonction de la hauteur et du diamètre, comme ça
+il n'invente rien. »* Puis, sur une première grille à 3 × 3 : *« par contre il
+faut faire plus de tranche. »*
+
+|  | Tranches | Pourquoi ce découpage |
+|---|---|---|
+| Diamètre | 8 : ≤20, 20-30, 30-40, 40-50, 50-60, 60-70, 70-90, >90 | serré là où se trouve l'essentiel de ce qui s'abat chez un particulier ; la charnière de 70 cm vient de son dossier du 5 août |
+| Hauteur | 6 : ≤5, 5-10, 10-15, 15-20, 20-25, >25 | cinq mètres est la maille qu'un élagueur estime à l'œil, sans mesurer |
+
+**Les bornes hautes sont incluses** : un tronc de 50 cm est « 40 à 50 », pas
+« 50 à 60 ». Les valeurs rondes — 40, 50, 60 — sont précisément celles qu'un
+artisan annonce ; se tromper de côté déplacerait la majorité des cas.
+
+**Ce qu'on ne fait jamais : interpoler.** Une case vide entourée de cases
+pleines pourrait « se deviner ». Un prix deviné se présenterait avec l'autorité
+des voisins, et il n'aurait aucun moyen de voir qu'il n'a jamais été décidé. La
+case vide reste vide, la ligne s'écrit à 0 € — visible comme un prix à poser — et
+la raison est dite, en nommant la case.
+
+### Elle se remplit toute seule
+
+Une grille de 48 cases qu'il devrait remplir avant de s'en servir ne serait
+jamais remplie : il a un métier, et ce n'est pas celui-là. Deux entrées, donc :
+
+| Origine | Qui écrit | L'emporte sur |
+|---|---|---|
+| `saisi` | lui, dans `Réglages → Mes prix pour fendre le bois` | tout |
+| `devis` | un prix de fente écrit sur un vrai devis | une observation plus ancienne, jamais une saisie |
+
+C'est sa propre idée : *« le mieux, c'est que je fasse plein de devis et que tu
+enregistres toutes mes modifications, et dans un mois tu sauras les remplir tout
+seul. »*
+
+### Par entreprise, contrairement au vocabulaire
+
+`termes_metier` est partagé — ce sont des mots, ils partent avec l'application
+chez tous les artisans (`docs/QUESTIONS.md` §10). `grille_fendage` ne l'est pas :
+ce sont des **prix de vente**, et les partager reviendrait à donner ses tarifs à
+ses concurrents. RLS `FORCE`, comme le reste.
+
+### Le piège qu'il a fallu désamorcer : deux lectures du même texte
+
+La question « quelle hauteur fait l'arbre ? » ne se pose que si la dictée ne la
+donne pas. Le chiffrage, lui, doit retrouver cette hauteur pour désigner la case.
+**Si l'un lisait moins que l'autre, la question serait tue ET la case
+introuvable** — la fente n'aurait jamais de prix, sans qu'aucune erreur ne le
+signale.
+
+Or la table `prestations` ne garde qu'un libellé : « vingt mètres de haut »,
+dicté dans la *description*, y disparaît. Le chiffrage relit donc les lignes du
+brouillon confirmé, descriptions comprises, et les deux passent par le même
+module — `src/lib/mesures-arbre.ts`. Les formulations écrites sur le devis
+(« ⌀ 45 cm », « 12 m de haut ») sont celles que ce module sait relire, et un
+contrôle le vérifie.
+
+### Ce qui a été supprimé au passage
+
+`appliquerProposition`, dans `proposition-prix.ts` : une **seconde** écriture de
+la proposition au détail, exportée et appelée par personne. Elle ignorait le
+contrôle de doublon, et n'aurait pas su écrire deux lignes. Deux implémentations
+d'une même règle divergent toujours (`CLAUDE.md` §3) — celle-ci avait déjà
+commencé.
+
+### Où c'est éprouvé
+
+| Quoi | Fichier |
+|---|---|
+| Le découpage et la répartition, sans base | `scripts/test-lignes-vendables.ts` |
+| Les tranches, les bornes, l'absence d'interpolation | `scripts/test-grille-fendage.ts` |
+| Les questions posées — et surtout celles qui se taisent | `scripts/test-questions-chiffrage.ts` |
+| Le chemin complet : tarif → découpage → grille → détail, et l'isolation | `scripts/test-devis-fendage.ts` |
+
+### Une batterie qui ne finit pas ne prouve rien
+
+Trouvé le 8 août 2026 en voulant simplement jouer `npm test` avant de livrer.
+
+`test-ia-03-propositions.ts` affichait « 8 test(s) réussi(s), 0 échoué(s) » puis
+ne rendait **jamais** la main : le limiteur de débit avait ouvert une connexion
+Redis que personne ne fermait. La batterie s'arrêtait là — sans un mot, sans
+rouge — et les cinquante suites suivantes n'étaient jamais jouées.
+
+**Pourquoi la CI ne l'a jamais vu :** son étape `npm test` ne posait pas
+`REDIS_URL`, alors que `CLAUDE.md` §5 la demande en local. La CI ne jouait donc
+pas ce que le dépôt dit de jouer. C'est le même piège que les contrôles qui
+interrogeaient `127.0.0.1` pendant que le patron passait par un proxy (`CLAUDE.md`
+§5) : **un environnement de vérification qui diffère de l'environnement réel ne
+vérifie pas ce qu'on croit.**
+
+| Correction | Ce qu'elle empêche de revenir |
+|---|---|
+| `fermerLimiteur()`, appelé en fin des neuf suites qui traversent une action limitée | la connexion oubliée |
+| `REDIS_URL` posé sur l'étape `npm test` de la CI | l'écart entre ce qui est documenté et ce qui est joué |
+| Le lanceur tue toute suite muette depuis huit minutes, **en nommant la vraie cause** | qu'un blocage repasse pour un silence normal |
+
+Le troisième point est le seul qui protège contre la **prochaine** fuite, quelle
+qu'en soit la source. Il a été éprouvé contre une suite volontairement bloquée —
+il la voit — et contre une suite saine — il ne se déclenche pas. Un garde-fou
+jamais vu rouge ne prouve rien (`AGENTS.md`).
+
+**Et la première suite ne paie plus pour toutes les autres.** Même jour, même
+sorte de défaut : `test-adresse-suggestions-e2e` échouait en batterie et passait
+seule. Elle passe la première dans l'ordre alphabétique, et attendait donc la
+compilation à la demande de `/login`, de l'accueil ET de la fiche de chantier —
+son message accusait alors l'adresse, qui n'y était pour rien. Le lanceur
+préchauffe désormais les écrans les plus traversés avant de lancer quoi que ce
+soit. Répondre sur `/api/health/live` ne suffisait pas : cette route-là est
+minuscule et se compile en quelques centaines de millisecondes, quand un écran
+réel en demande des dizaines de secondes.

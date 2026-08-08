@@ -7,6 +7,105 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-08
+
+### Le devis se sépare en lignes vendables, et la fente a son prix
+
+Le patron, pour la troisième fois en deux jours : *« l'agent ne comprend
+toujours pas qu'il faut séparer les tâches. Tout ce que je dicte arrive sur la
+même ligne du devis. »* Puis, apprenant qu'on l'avait diagnostiqué la veille sans
+le corriger : *« on avait déjà travaillé sur ce défaut-là hier et je croyais que
+tu l'avais corrigé. »* Il avait raison.
+
+Le défaut tenait en une ligne — `join(" ; ")` — à deux endroits du chiffrage.
+
+**Ce qui change sur son devis :**
+
+- l'abattage, le broyage et l'évacuation sont réunis sur **une** ligne ;
+- la fente du bois fait la **sienne**, parce que le client peut la refuser ou la
+  confier à un autre ;
+- **plus aucun point-virgule** : les travaux réunis s'empilent, un par ligne ;
+- le billonnage (« on le coupe en 50 ») ne fait plus de ligne quand un abattage
+  l'accompagne — il est compris dedans, comme il l'avait dit le 5 août. Ce qui
+  est ainsi fondu est **signalé**, jamais escamoté.
+
+Et la raison, dans ses mots, qui ne se devine pas : *« si le client ne veut pas
+la fente, il va trouver le reste cher ; et s'il fait faire le reste par un autre
+artisan et qu'il nous prend juste pour la fente, 100 € ce n'est pas assez
+cher. »* D'où **850 + 250** au lieu de 1 000 + 100, à total égal.
+
+### Une grille de prix pour la fente : hauteur × diamètre, 48 cases
+
+*« Pour la fente, ils devraient demander la hauteur de l'arbre et son diamètre,
+et on crée une liste de prix en fonction de la hauteur et du diamètre, comme ça
+il n'invente rien. »* Puis, sur une première grille à 3 × 3 : *« par contre il
+faut faire plus de tranche. »* Elle en compte donc **8 diamètres × 6 hauteurs**.
+
+**Elle naît vide, et c'est le point entier.** Aucun prix n'est semé par le
+dépôt, et aucune case ne se devine depuis ses voisines : une case vide est une
+question posée, la ligne s'écrit à 0 € — visible comme un prix à poser — et
+l'écran nomme la case qui manque.
+
+**Elle se remplit toute seule.** Chaque prix de fente écrit sur un vrai devis
+vient se ranger dans la bonne case. C'est son idée : *« le mieux, c'est que je
+fasse plein de devis et que tu enregistres toutes mes modifications, et dans un
+mois tu sauras les remplir tout seul. »* Il peut aussi poser un prix à l'avance,
+dans `Réglages → Mes prix pour fendre le bois` — et une observation n'écrase
+jamais une décision qu'il a prise lui-même.
+
+Ses prix restent **les siens** : la grille est isolée par entreprise, à la
+différence du vocabulaire du métier, qui part avec l'application
+(`docs/QUESTIONS.md` §10).
+
+### Deux défauts trouvés en construisant, et qui n'auraient rien dit
+
+- **Une seconde écriture de la proposition au détail** dormait dans le code,
+  exportée et appelée par personne. Elle ignorait le contrôle de doublon. Elle a
+  été supprimée plutôt que mise à jour une fois de plus.
+- **Le contrôle d'exhaustivité de l'export a fait son travail** : la nouvelle
+  table portant une entreprise manquait dans la sauvegarde du patron. Sans lui,
+  il aurait emporté ses données en y laissant ses prix de fendage.
+
+### La batterie de tests ne finissait pas — et rien ne le disait
+
+Trouvé en voulant simplement jouer `npm test` avant de livrer.
+
+`test-ia-03-propositions.ts` affichait **« 8 test(s) réussi(s), 0 échoué(s) »**
+puis restait là, pour toujours. La batterie s'arrêtait à cette suite, sans un
+mot, et les cinquante suivantes n'étaient jamais jouées. Aucun test n'échouait :
+c'est le pire des états, parce qu'une batterie qui ne finit pas ne dit pas
+« rouge » — elle ne dit plus rien, et on croit vert ce qu'on n'a pas regardé.
+
+**La cause :** le limiteur de débit ouvre une connexion Redis dès qu'une action
+protégée est traversée, et personne ne la fermait. Le processus ne pouvait pas
+s'arrêter.
+
+**Pourquoi ça ne s'est jamais vu en CI :** l'étape `npm test` de la CI ne posait
+pas `REDIS_URL` — alors que `CLAUDE.md` §5 la demande pour jouer la batterie en
+local. La CI ne jouait donc pas ce que le dépôt dit de jouer, et l'écart cachait
+le défaut. Les deux se jouent désormais dans les mêmes conditions.
+
+**Trois corrections, pas une :**
+
+1. `fermerLimiteur()` ferme la connexion, appelée en fin des neuf suites qui
+   traversent une action limitée ;
+2. la CI pose `REDIS_URL` sur `npm test` ;
+3. le lanceur **tue toute suite qui n'a pas rendu la main en huit minutes**, avec
+   un message qui désigne le bon coupable — « ses tests ont peut-être tous
+   réussi ; c'est le processus qui ne s'arrête pas ». Éprouvé contre une suite
+   volontairement bloquée : il la voit, et il ne se déclenche pas sur une suite
+   saine.
+
+**Et un quatrième, de la même famille :** `test-adresse-suggestions-e2e`
+échouait en batterie et passait seule. Elle est la première dans l'ordre
+alphabétique et attendait la toute première compilation des écrans — son message
+accusait l'adresse, qui n'y était pour rien. Le lanceur préchauffe désormais les
+écrans avant de commencer.
+
+Détail des choix dans `ARCHITECTURE.md` §29.
+
+---
+
 ## 2026-08-07
 
 ### L'adresse se propose pendant la frappe, et se choisit d'un doigt

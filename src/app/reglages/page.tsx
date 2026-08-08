@@ -60,6 +60,14 @@ export default async function ReglagesPage() {
           </Link>
         </div>
 
+        {/* La grille de fendage — SES prix, pas du vocabulaire partagé : elle
+            reste donc visible par l'entreprise, contrairement au lien ci-dessous. */}
+        <div className="px-6 pt-4">
+          <Link href="/reglages/fendage" className="text-[14px] font-medium" style={{ color: colors.rust }}>
+            Mes prix pour fendre le bois →
+          </Link>
+        </div>
+
         {/* **Le vocabulaire du métier — l'éditeur seulement.**
             Le patron, le 7 août 2026 : « est-ce que les utilisateurs auront
             accès à cette page ? Moi c'est ça que je ne veux pas. » Ce lien

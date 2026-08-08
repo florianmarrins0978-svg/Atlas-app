@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-07 · `claude/migrate-app-atlas-zz31ac`
+**Point de reprise :** 2026-08-08 · `claude/migrate-app-atlas-zz31ac`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -20,8 +20,23 @@ Next.js avec PostgreSQL, isolée par entreprise via *row level security*.
 
 ## Ce qui vient d'être terminé
 
-Le parcours **devis → réponse du client → chantier → facture → TVA**, de bout en
-bout, avec ses trois points d'arrêt. Plus le suivi de ce que devient un devis une
+**Le devis se découpe enfin en lignes vendables.** C'est le défaut que le patron
+a signalé trois fois en deux jours — *« tout ce que je dicte arrive sur la même
+ligne »* —, et qui avait survécu à un diagnostic sans correction. L'abattage, le
+broyage et l'évacuation vont ensemble ; la fente fait sa ligne ; le billonnage
+n'en fait aucune ; il n'y a plus de point-virgule. La règle est pure et éprouvée
+sur ses dictées : `src/lib/lignes-vendables.ts`.
+
+Avec elle, **sa grille de prix pour fendre le bois** : hauteur de l'arbre ×
+diamètre du tronc, 8 × 6 cases, **née vide**. Aucune case ne se devine depuis ses
+voisines — une case vide est une question posée. Elle se remplit à la main
+(`Réglages → Mes prix pour fendre le bois`) et toute seule, à chaque prix de
+fente écrit sur un vrai devis. Voir `ARCHITECTURE.md` §29, et `TODO.md`
+§0 quinquies pour les trois questions restées ouvertes — **notamment les bornes
+des tranches, faciles à changer aujourd'hui, coûteuses après trente devis**.
+
+Avant cela : le parcours **devis → réponse du client → chantier → facture →
+TVA**, de bout en bout, avec ses trois points d'arrêt. Plus le suivi de ce que devient un devis une
 fois parti : en attente, à relancer, caduc, retourné, accepté.
 
 Et, en dernier lieu, **le devis PDF** : il reproduit désormais

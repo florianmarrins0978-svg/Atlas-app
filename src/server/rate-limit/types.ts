@@ -28,4 +28,10 @@ export interface MagasinLimite {
   // Incrémente le compteur pour `cle` dans la fenêtre courante et renvoie le
   // résultat. Implémentations : mémoire (dev/test) et Redis (production).
   verifierEtIncrementer(cle: string, max: number, fenetreMs: number): Promise<ResultatLimite>;
+
+  // Libère ce qui doit l'être. Facultatif : l'adaptateur mémoire n'a rien à
+  // fermer. L'adaptateur Redis, lui, tient une connexion ouverte — et une
+  // connexion oubliée empêche un processus de rendre la main (voir
+  // `fermerLimiteur`, et le défaut du 8 août 2026 qu'il documente).
+  fermer?(): Promise<void>;
 }

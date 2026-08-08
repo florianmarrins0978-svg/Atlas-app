@@ -7,6 +7,7 @@ import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { mettreAJourClient } from "@/server/repositories/clients";
 import { modifierLignePrix, supprimerLignePrix, ajouterLignePrix, listerLignesPrix } from "@/server/repositories/lignes-prix";
 import { noterRetenu } from "@/server/repositories/termes-metier";
+import { apprendrePrixFendage } from "@/server/services/apprendre-fendage";
 import { mettreAJourAdresseChantier } from "@/server/repositories/chantiers";
 import { mettreAJourEnTeteDevis } from "@/server/repositories/devis";
 
@@ -79,6 +80,21 @@ export async function majLigneAction(
       );
     } catch {
       // Ne jamais faire échouer une saisie parce qu'on n'a pas su l'observer.
+    }
+
+    // **Et c'est ici que sa grille de fendage se remplit.**
+    //
+    // *« Le mieux, c'est que je fasse plein de devis et que tu enregistres
+    // toutes mes modifications, et dans un mois tu sauras les remplir tout
+    // seul. »* — le 7 août 2026. Une grille de 48 cases qu'il devrait remplir
+    // à l'avance ne serait jamais remplie ; celle-ci se remplit en travaillant.
+    try {
+      await apprendrePrixFendage(ctx, ligne.chantierId, {
+        libelle: ligne.libelle,
+        montant: ligne.montant,
+      });
+    } catch {
+      // Même règle : l'apprentissage ne gêne pas le travail.
     }
   }
 
