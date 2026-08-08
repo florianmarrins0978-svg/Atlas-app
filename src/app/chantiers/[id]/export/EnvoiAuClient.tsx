@@ -106,8 +106,16 @@ function Contenu({
         return;
       }
       onEnvoye(r.lien);
-    } catch {
-      setErreur("L'envoi n'a pas pu être préparé.");
+    } catch (e) {
+      // **La phrase de secours, et seulement elle.** L'action rend désormais sa
+      // raison plutôt que de lancer (`actions.ts`) : arriver ici signifie que
+      // la requête elle-même n'a pas abouti — réseau coupé, serveur en train de
+      // se recompiler. On le dit, plutôt que d'accuser l'envoi.
+      setErreur(
+        e instanceof Error && e.message
+          ? `L'envoi n'a pas abouti : ${e.message.slice(0, 160)}`
+          : "L'envoi n'a pas abouti — la réponse n'est pas revenue. Vérifiez votre réseau et réessayez."
+      );
     } finally {
       setEnCours(false);
     }
