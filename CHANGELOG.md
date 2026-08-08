@@ -9,6 +9,75 @@ Format : le plus récent en tête.
 
 ## 2026-08-08
 
+### Le client ne pouvait ni voir sa facture ni télécharger son devis
+
+**Le défaut le plus grave de la journée, et il a été trouvé par accident.** Une
+suite navigateur a échoué parce que je l'avais lancée contre un serveur démarré
+sous le rôle applicatif au lieu du rôle de test. L'erreur de manipulation a mis
+au jour ce qu'aucun contrôle ne pouvait voir.
+
+En production, le lien de facture envoyé au client répondait **« ce lien n'est
+plus valable »** sur une facture parfaitement valide. Et le PDF du devis — le
+document que son client lit — échouait de la même façon. La branche « envoi de
+la facture » qu'il demandait ce jour-là était donc morte avant même d'être
+atteinte.
+
+La cause : `envois_devis` et `envois_factures` portent une politique de lecture
+par jeton, `devis` et `factures` n'en portent pas. Retrouver l'envoi marchait,
+lire le document derrière ne marchait pas. Le correctif pose le contexte
+d'entreprise **déduit du jeton** — ce que la page du devis faisait déjà — sans
+affaiblir l'isolation : l'entreprise vient de l'envoi, jamais du client.
+
+**Ce qu'il faut en retenir dépasse le défaut.** Les suites navigateur démarrent
+leur serveur sous un rôle qui **traverse la RLS**, parce qu'elles inspectent la
+base. Elles ne peuvent donc pas, par construction, voir un défaut d'isolation —
+et `test-facture-au-client-e2e.ts` parcourait ce chemin exact, vert depuis le
+6 août. Tout chemin public par jeton doit désormais être éprouvé par une suite
+base, sous le rôle applicatif : `scripts/test-facture-jeton-rls.ts`.
+Détail dans `ARCHITECTURE.md` §34.
+
+### Du planning à la facture, sans détour
+
+Le patron : *« le client m'avait retourné la date validée, il se range dans les
+chantiers planifiés, mais comment moi je fais pour avoir accès au devis ? Toute
+cette branche-là n'est pas faite. »*
+
+**La chaîne était construite — et injoignable depuis là où il se trouvait.**
+Facture depuis le devis, arrêt 3, émission, relevé de TVA, message tout prêt :
+tout existait. Mais sur le planning, toucher un chantier planifié n'ouvrait
+qu'un sélecteur de date. Une chaîne qu'on ne peut pas atteindre vaut une chaîne
+qu'on n'a pas écrite ; répondre « c'est déjà fait » aurait été exact et inutile.
+
+La carte du planning mène désormais **au chantier**, porte un bouton **Fin de
+chantier**, et garde le changement de date sur un lien discret.
+
+**Deux défauts trouvés en reproduisant son écran**, tous deux issus de la même
+cause : la règle de rangement était écrite trois fois. Le planning comparait
+`< aujourd'hui` en TypeScript, le dépôt des terminés `<= aujourd'hui` en SQL.
+
+- Un chantier prévu **aujourd'hui** figurait dans **deux onglets** — le défaut
+  qu'il avait signalé le 6 août, revenu par la porte du signe.
+- Un chantier **clôturé avant sa date** restait au planning comme si de rien
+  n'était, absent des terminés, **sa facture en brouillon joignable seulement
+  par son adresse**. Or clôturer plus tôt que prévu est autorisé à dessein
+  depuis le 3 août.
+
+Un seul cœur désormais, deux portes selon la donnée disponible, et le filtre du
+planning **sorti du composant** — c'est le vrai correctif : tant qu'il vivait
+dans l'écran, aucun contrôle ne pouvait constater qu'il contredisait la règle.
+Détail dans `ARCHITECTURE.md` §33.
+
+**Et un troisième défaut, vu sur une capture.** À l'arrêt 3, les travaux réunis
+d'une même ligne s'affichaient « Abattage d'un chêne mort Br… ». La coupe venait
+d'un `truncate` : le texte entier restait dans la page, donc **toute assertion
+sur le contenu passait**. L'écran qui sert à vérifier avant que la facture parte
+en cachait les deux tiers. Le contrôle mesure maintenant la hauteur rendue.
+
+Le contrôle `test-planning-e2e.ts` a rougi, à juste titre : il verrouillait
+l'ancien comportement de la carte. Corrigé dans le bon sens, et rendu rejouable
+au passage — il visait « text=DÉC » globalement et échouait sur son propre passé
+au deuxième passage.
+
 ### La facturation électronique : écrire ce qui était déjà décidé
 
 Le patron a demandé : *« qu'est-ce que tu dois faire sur la plateforme de

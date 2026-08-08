@@ -63,10 +63,41 @@ async function main() {
     await page.locator(`text=${nomUnique}`).first().isVisible(),
     "Le chantier planifié doit réapparaître après rechargement"
   );
-  assert.ok(await page.locator("text=DÉC").isVisible(), "Le mois (décembre) doit être affiché sur la vignette de date");
+  // **La vignette de CE chantier, pas la première de l'écran.** Viser
+  // « text=DÉC » globalement rendait la suite non rejouable : au deuxième
+  // passage sur la même base, deux chantiers de décembre coexistent et le
+  // contrôle échoue sur son propre passé, en accusant le code.
+  const carte = () => page.locator(`a[href="/chantiers/${chantierId}"]`);
+  assert.ok(
+    (await carte().locator("text=déc.").count()) > 0,
+    "Le mois (décembre) doit être affiché sur la vignette de date de ce chantier"
+  );
 
-  // --- Modification de la date (même sheet réutilisée) ---
-  await page.locator(`text=${nomUnique}`).first().click();
+  // --- La carte planifiée mène au chantier, pas au sélecteur de date ---
+  //
+  // **Changé le 8 août 2026, et ce contrôle a rougi à juste titre.** Il
+  // verrouillait l'ancien comportement : toucher un chantier planifié n'ouvrait
+  // qu'un sélecteur de date. Le patron : « il se range dans les chantiers
+  // planifiés, mais comment moi je fais pour avoir accès au devis ? » — la
+  // réponse était : on ne peut pas. La carte mène désormais au chantier, et la
+  // date se change par un lien à part.
+  await carte().click();
+  await page.waitForSelector("text=Autres étapes", { timeout: 10000 });
+  assert.ok(
+    page.url().endsWith(`/chantiers/${chantierId}`),
+    `la carte planifiée mène à ${page.url()} au lieu de la fiche du chantier`
+  );
+
+  // Et la clôture est à portée depuis le planning, sans passer par la fiche.
+  await page.goto("http://localhost:3000/planning", { waitUntil: "networkidle" });
+  assert.equal(
+    await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).count(),
+    1,
+    "« Fin de chantier » manque sur la carte du chantier planifié"
+  );
+
+  // --- Modification de la date, par son propre lien ---
+  await page.getByRole("button", { name: `Changer la date du chantier Chez ${nomUnique}` }).click();
   await page.waitForSelector('input[type="date"]', { timeout: 5000 });
   const valeurActuelle = await page.locator('input[type="date"]').inputValue();
   assert.equal(valeurActuelle, "2026-12-10", "La sheet doit préremplir la date déjà enregistrée");
@@ -74,7 +105,10 @@ async function main() {
   await page.click("text=Confirmer la planification");
   await page.waitForTimeout(500);
   await page.reload({ waitUntil: "networkidle" });
-  assert.ok(await page.locator("text=JANV").isVisible(), "La nouvelle date (janvier) doit être persistée");
+  assert.ok(
+    (await carte().locator("text=janv.").count()) > 0,
+    "La nouvelle date (janvier) doit être persistée sur la carte de ce chantier"
+  );
 
   await browser.close();
   await pool.end();

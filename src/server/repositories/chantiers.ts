@@ -260,6 +260,12 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
         // précision son planning ne lui dirait plus lequel passe en premier.
         creneauDebut: chantiers.creneauDebut,
         dureeDemiJournees: chantiers.dureeDemiJournees,
+        // Les deux jalons de fin : sans eux, le planning ne peut pas savoir
+        // qu'un chantier a été clôturé et continue de l'afficher comme à venir.
+        // C'est ce qui est arrivé jusqu'au 8 août 2026 — voir
+        // `src/lib/onglet-chantier.ts`.
+        termineAt: chantiers.termineAt,
+        factureEnvoyeeAt: chantiers.factureEnvoyeeAt,
         ...DERNIER_ENVOI,
       })
       .from(chantiers)

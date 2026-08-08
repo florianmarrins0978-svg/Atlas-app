@@ -184,6 +184,29 @@ gardées ci-dessous pour qu'on n'ait pas à les réinventer ce jour-là.
 | a | Faire lire le PDF par le modèle déjà branché, et lui faire valider l'aperçu comme aujourd'hui | Marche sur les PDF scannés comme sur les autres. Coûte des jetons, et demande d'envoyer le fichier chez un sous-traitant — donc l'accord du patron (`docs/A-FAIRE.md` point 2) |
 | b | Extraire la couche texte à la main (flux `Tj`/`TJ`, positions `Td`/`Tm`) | Sans dépendance ni réseau, mais muet sur un PDF scanné, et fragile sur les encodages de sous-ensembles de polices |
 
+### 0 septies. Du planning à la facture — ~~à faire~~ **fait le 8 août 2026**
+
+Le patron ne pouvait pas atteindre le devis d'un chantier planifié : toucher sa
+carte n'ouvrait qu'un sélecteur de date. La chaîne facture → TVA existait
+pourtant en entier — elle était seulement injoignable depuis son écran.
+
+Fait : la carte mène au chantier, porte « Fin de chantier », et garde le
+changement de date sur un lien à part. Plus deux défauts de rangement corrigés à
+la racine, et un libellé de facture qui n'était plus coupé.
+
+**Ce qu'il faut savoir avant d'y toucher** — `ARCHITECTURE.md` §33 :
+
+- La règle de rangement vit dans `src/lib/onglet-chantier.ts` et **nulle part
+  ailleurs**. Trois portes selon la donnée disponible ; **ne jamais la recopier
+  dans un écran**, c'est exactement ce qui a produit les deux défauts.
+- Aucune barrière de date sur « Fin de chantier », et c'est délibéré depuis le
+  3 août : c'est le patron qui sait quand un chantier est fait.
+
+**Ce qui reste ouvert, et qu'il faudra lui demander** : un chantier passé au
+planning n'affiche rien tant qu'il n'est pas clôturé. Faut-il un rappel — « ce
+chantier était prévu hier » — sur l'écran d'accueil ? Aujourd'hui il bascule
+silencieusement dans « Terminés », ce qui est correct mais discret.
+
 ### 0 bis. L'agent qui apprend — le vrai sujet
 
 Le tapis roulant (dictée → devis, d'un seul geste) est en place, et l'arrêt

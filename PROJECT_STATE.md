@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-07 · branche `claude/migrate-app-atlas-zz31ac`
-· dernière migration `drizzle/0024_envois_factures.sql`
+**Dernière mise à jour :** 2026-08-08 · branche `claude/migrate-app-atlas-zz31ac`
+· dernière migration `drizzle/0027_grille_prix_natures.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -56,6 +56,7 @@ seule avec quinze outils.
 | Reprise d'un devis retourné en nouvelle version | `src/app/chantiers/[id]/export/actions.ts` |
 | Onglet « Terminés » et fin de chantier | `src/app/termines/` |
 | Facture bâtie depuis le devis, arrêt 3 | `src/app/chantiers/[id]/facture/` |
+| **Chemin du planning vers la facture**, et rangement en un seul onglet | `src/lib/onglet-chantier.ts`, `src/app/planning/PlanningClient.tsx` |
 | Installation sur téléphone : icône, plein écran, marges de sécurité | `src/app/layout.tsx`, `src/app/globals.css`, `scripts/generer-icones.mjs` |
 | Relevé de TVA collectée, par trimestre | `src/app/termines/tva/` + `src/server/trimestre.ts` |
 | Devis PDF reprenant le modèle du patron, sur autant de pages qu'il faut | `src/server/pdf/devis-pdf.ts` |

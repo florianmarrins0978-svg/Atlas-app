@@ -133,6 +133,15 @@ CRON_SECRET=ci-placeholder-cron-secret-0000000000
 REDIS_URL=redis://localhost:6379
 ```
 
+**Les suites navigateur ne voient pas les défauts d'isolation.** Elles démarrent
+leur serveur sous un rôle qui **traverse la RLS**, parce qu'elles inspectent la
+base pour vérifier ce qu'elles affirment. Un chemin public par jeton — la page
+du devis, celle de la facture, leurs PDF — éprouvé *uniquement* au navigateur
+n'est donc pas éprouvé de ce point de vue : **il lui faut une suite base, sous
+`atlas_app`**. Le 8 août 2026, le lien de facture et le téléchargement du devis
+étaient morts en production pendant que la suite navigateur correspondante était
+verte (`ARCHITECTURE.md` §34).
+
 **Et surtout : regarder l'écran.** Trois défauts réels de ce projet — une barre
 de navigation sur la page publique du client, l'ordre des totaux d'une facture,
 une pile de notifications qui repoussait tout le contenu hors de l'écran — ont

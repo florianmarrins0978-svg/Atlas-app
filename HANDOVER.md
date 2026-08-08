@@ -20,6 +20,26 @@ Next.js avec PostgreSQL, isolée par entreprise via *row level security*.
 
 ## Ce qui vient d'être terminé
 
+**Une règle de travail, avant tout le reste :** les suites navigateur tournent
+sous un rôle qui **traverse la RLS**, donc elles ne peuvent pas voir un défaut
+d'isolation. Le 8 août, le lien de facture et le PDF du devis étaient morts en
+production — vus par hasard, jamais par un contrôle. **Tout chemin public par
+jeton s'éprouve dans une suite base, sous `atlas_app`**
+(`scripts/test-facture-jeton-rls.ts`). `ARCHITECTURE.md` §34.
+
+**Du planning à la facture, sans détour.** Le patron ne pouvait pas atteindre le
+devis d'un chantier planifié : toucher sa carte n'ouvrait qu'un sélecteur de
+date. Elle mène maintenant au chantier et porte un bouton « Fin de chantier ».
+
+**À savoir avant de toucher au rangement des chantiers :** la règle vit dans
+`src/lib/onglet-chantier.ts` et **nulle part ailleurs**. Elle y était déjà, mais
+seul l'écran Chantiers l'appelait — le planning et le dépôt des terminés en
+gardaient chacun une copie, avec un signe d'écart. Résultat : un chantier prévu
+aujourd'hui dans deux onglets, et un chantier clôturé avant sa date dans aucun,
+sa facture perdue de vue. Ne jamais recopier ce filtre dans un écran : trois
+portes existent (`ongletDuChantier`, `ongletDepuisJalons`, `estAuPlanning`),
+elles couvrent les trois formes de donnée. `ARCHITECTURE.md` §33.
+
 **Trois grilles de prix, et son devis de référence enfin juste.** Il a répondu
 le 8 août au soir : on garde les 8 × 6 tranches du fendage, la haie prend sa
 ligne avec un prix au mètre, l'abattage a sa grille à la technique × le

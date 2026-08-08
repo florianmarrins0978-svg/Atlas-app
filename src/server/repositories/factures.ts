@@ -1,4 +1,4 @@
-import { and, asc, eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, isNotNull, isNull, or, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
 import type { DbOrTx } from "../db/client";
@@ -14,6 +14,7 @@ import type { Ctx } from "./context";
 import { genererPdfFacture, type FacturePdfData } from "../pdf/facture-pdf";
 import { enregistrerObjet } from "../storage";
 import { jourIso } from "../../lib/jour";
+import { ongletDepuisJalons } from "../../lib/onglet-chantier";
 
 // Fin de chantier, facture et TVA — docs/AGENT.md §2.3.
 //
@@ -341,18 +342,25 @@ export type ChantierTermine = {
 };
 
 /**
- * Les chantiers dont l'intervention est passée, rangés par date.
+ * Les chantiers rangés dans l'onglet « Terminés ».
  *
  * Deux populations dans une seule liste, et c'est voulu : ceux qui restent à
  * clôturer et ceux déjà facturés. Les séparer en deux écrans obligerait le
  * patron à savoir d'avance dans lequel chercher.
  *
- * Le critère d'entrée est la date d'intervention passée, pas `termine_at` :
- * sans quoi un chantier n'apparaîtrait dans l'onglet « terminés » qu'une fois
- * déclaré terminé — c'est-à-dire jamais, puisque c'est là qu'on le déclare.
+ * **Le tri n'est pas fait ici : il vient de `ongletDepuisJalons`.** Cette
+ * fonction recopiait la règle en SQL (`date_planifiee <= aujourd'hui`) là où
+ * l'écran Chantiers l'appliquait en TypeScript avec un `<` strict. Un chantier
+ * prévu AUJOURD'HUI tombait donc dans les deux onglets à la fois — le défaut
+ * même que le patron avait signalé le 6 août 2026, revenu par la porte du
+ * signe. Et un chantier clôturé AVANT sa date n'entrait dans aucun des trois :
+ * sa facture en brouillon n'était plus joignable que par son adresse.
+ *
+ * Le SQL ne garde donc qu'un filtre de volume — un sur-ensemble sûr de ce que
+ * la règle peut retenir. C'est la règle, et elle seule, qui tranche ensuite.
  */
 export async function listerChantiersTermines(ctx: Ctx, aujourdHui: string = jourIso(new Date())) {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
+  const candidats = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
     tx
       .select({
         id: chantiers.id,
@@ -372,14 +380,22 @@ export async function listerChantiersTermines(ctx: Ctx, aujourdHui: string = jou
       .where(
         and(
           isNull(chantiers.deletedAt),
-          isNotNull(chantiers.datePlanifiee),
-          sql`${chantiers.datePlanifiee} <= ${aujourdHui}`
+          // Sur-ensemble : un chantier sans date ET jamais clos ne peut pas être
+          // rangé dans les terminés, quoi que dise la règle. Élargir ici est
+          // sans danger ; restreindre serait reprendre la règle en SQL.
+          or(
+            isNotNull(chantiers.datePlanifiee),
+            isNotNull(chantiers.termineAt),
+            isNotNull(chantiers.factureEnvoyeeAt)
+          )
         )
       )
       // Le plus récemment réalisé en tête : c'est celui que le patron vient
       // clôturer en rentrant du chantier.
-      .orderBy(sql`${chantiers.datePlanifiee} DESC`)
+      .orderBy(sql`${chantiers.datePlanifiee} DESC NULLS FIRST`)
   );
+
+  return candidats.filter((c) => ongletDepuisJalons(c, aujourdHui) === "termines");
 }
 
 // --- Relevé de TVA collectée ------------------------------------------------

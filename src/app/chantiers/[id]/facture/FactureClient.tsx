@@ -182,7 +182,16 @@ export default function FactureClient({
           <ul className="flex flex-col gap-2">
             {initialFacture.lignes.map((l) => (
               <li key={l.id} className="flex items-baseline justify-between gap-4 text-[15px]">
-                <span className="min-w-0 truncate" style={{ color: colors.ink }}>
+                {/* **Les travaux réunis s'empilent, un par ligne.** Depuis que
+                    le devis sépare ses prestations par un retour à la ligne
+                    (7 août, `src/lib/lignes-vendables.ts`), un `truncate`
+                    affichait « Abattage d'un chêne mort Br… » : les lignes
+                    fondues en une seule, puis coupées. Et c'est à cet écran-là
+                    que le patron est censé vérifier avant que la facture parte
+                    (arrêt 3) — lui cacher la moitié de ce qu'il facture est
+                    exactement ce qu'il ne faut pas faire. Le PDF du client,
+                    lui, a toujours respecté les retours à la ligne. */}
+                <span className="min-w-0 whitespace-pre-line break-words" style={{ color: colors.ink }}>
                   {l.libelle}
                 </span>
                 <span className="flex-shrink-0" style={{ color: colors.muted }}>

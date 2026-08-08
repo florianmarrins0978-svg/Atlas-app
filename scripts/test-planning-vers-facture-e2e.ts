@@ -1,0 +1,305 @@
+import assert from "node:assert";
+import type { Page, BrowserContext } from "playwright";
+import { lancerNavigateur } from "./e2e-browser";
+import { pool } from "../src/server/db/client";
+
+// **Du planning à la facture, en partant d'où le patron se trouve.**
+//
+// Le 8 août 2026 : *« lorsque le client m'avait retourné la date validée, il se
+// range dans les chantiers planifiés, mais comment moi je fais pour avoir accès
+// au devis ? Je dois pouvoir cliquer directement sur le client qui est
+// planifié, avoir un bouton à côté fin de chantier pour que ça crée
+// automatiquement la facturation, puis l'envoi de la facturation, puis
+// l'automatisation vers la TVA. Toute cette branche-là n'est pas faite. »*
+//
+// **La chaîne ÉTAIT construite — et injoignable.** Facture depuis le devis,
+// arrêt 3, relevé de TVA, message tout prêt : tout existait, mais uniquement
+// depuis la fiche du chantier et l'onglet Terminés. Depuis le planning, toucher
+// un chantier n'ouvrait qu'un sélecteur de date. Une chaîne qu'on ne peut pas
+// atteindre vaut une chaîne qu'on n'a pas écrite — de son côté de l'écran, il
+// avait raison.
+//
+// Cette suite parcourt ce qu'il décrit, dans l'ordre, en touchant ce qu'il
+// touche. Et elle lit **les trois onglets** : c'est le seul contrôle capable de
+// voir un écran réinventer la règle de rangement dans son coin, ce qui est
+// arrivé deux fois (`src/lib/onglet-chantier.ts`).
+
+const BASE = "http://localhost:3000";
+
+async function inspecter(sql: string, params: unknown[], attendu?: number) {
+  const r = await pool.query(sql, params);
+  if (attendu !== undefined && r.rowCount !== attendu) {
+    throw new Error(
+      `Inspection hors application : ${r.rowCount} ligne(s) au lieu de ${attendu}. ` +
+        "Le rôle de test ne traverse probablement plus RLS."
+    );
+  }
+  return r;
+}
+
+let passed = 0;
+let failed = 0;
+async function test(nom: string, fn: () => Promise<void>) {
+  try {
+    await fn();
+    console.log(`✅ ${nom}`);
+    passed++;
+  } catch (err) {
+    console.error(`❌ ${nom}`);
+    console.error(`   ${err instanceof Error ? err.message : err}`);
+    failed++;
+  }
+}
+
+async function seConnecter(context: BrowserContext): Promise<Page> {
+  const page = await context.newPage();
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await page.fill('input[name="email"]', "demo@atlas.local");
+  await page.fill('input[name="password"]', "demo1234");
+  await page.click('button[type="submit"]');
+  await page.waitForURL(`${BASE}/`, { timeout: 15000 });
+  return page;
+}
+
+/**
+ * Un chantier au devis parti, puis planifié — l'état où le laisse un client qui
+ * a retourné sa date.
+ *
+ * `joursAvant` compte à rebours depuis aujourd'hui : 0 pour aujourd'hui, un
+ * nombre négatif pour une date à venir. La date est posée en base plutôt qu'à
+ * l'écran, parce que l'application n'accepte — délibérément — que des dates à
+ * venir, et que la moitié des cas éprouvés ici sont derrière soi.
+ */
+async function chantierPlanifie(
+  page: Page,
+  suffixe: string,
+  joursAvant: number,
+  lignes: { libelle: string; montant: string }[] = [{ libelle: "Abattage d'un chêne mort", montant: "1000.00" }]
+) {
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+  const client = `Mme Costa ${suffixe} ${Date.now()}`;
+  const nom = `Chez ${client}`;
+  await page.fill('input[placeholder="M. Bernard"]', client);
+  await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
+  await page.click('button:has-text("Créer le chantier")');
+  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
+  const url = page.url();
+  const chantierId = url.split("/").pop()!;
+
+  await page.goto(`${url}/prix`, { waitUntil: "networkidle" });
+  for (let i = 0; i < lignes.length; i++) {
+    await page.click("text=+ Ajouter une ligne");
+    await page.waitForTimeout(300);
+    const champs = page.locator("form input");
+    await champs.nth(i * 2).fill(lignes[i].libelle);
+    await champs.nth(i * 2 + 1).fill(lignes[i].montant);
+    await champs.nth(i * 2 + 1).blur();
+    await page.waitForTimeout(500);
+  }
+
+  await page.goto(`${url}/export`, { waitUntil: "networkidle" });
+  await page.click("text=Envoyer au client");
+  await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+  await page.getByRole("button", { name: "Envoyer le devis" }).click();
+  await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+
+  await inspecter(
+    `UPDATE chantiers SET date_planifiee = CURRENT_DATE - $2::int WHERE id = $1`,
+    [chantierId, joursAvant],
+    1
+  );
+  return { chantierId, nom, client, url };
+}
+
+/**
+ * Dans lequel des trois onglets ce chantier apparaît-il ?
+ *
+ * On attend le titre de chaque écran, pas `networkidle` : le serveur de
+ * développement garde une liaison ouverte pour le rechargement à chaud, si bien
+ * que le réseau ne se tait jamais. La suite échouait alors au bout de 45
+ * secondes sur une page pourtant affichée — un contrôle qui accuse le code pour
+ * un défaut de son propre montage.
+ */
+async function ongletsOuIlFigure(page: Page, nom: string): Promise<string[]> {
+  const trouves: string[] = [];
+  for (const [onglet, chemin, titre] of [
+    ["chantiers", "/", "Chantiers"],
+    ["planning", "/planning", "Planning"],
+    ["termines", "/termines", "Terminés"],
+  ] as const) {
+    await page.goto(`${BASE}${chemin}`, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector(`h1:has-text("${titre}")`, { timeout: 30000 });
+    if ((await page.locator(`text=${nom}`).count()) > 0) trouves.push(onglet);
+  }
+  return trouves;
+}
+
+async function main() {
+  const browser = await lancerNavigateur();
+  const context = await browser.newContext({ viewport: { width: 393, height: 852 } });
+  const page = await seConnecter(context);
+
+  await test("depuis le planning, le chantier mène à son devis", async () => {
+    // Sa question, mot pour mot : « comment moi je fais pour avoir accès au
+    // devis ? » Avant ce lot, la réponse était : on ne peut pas.
+    const { nom, chantierId } = await chantierPlanifie(page, "devis", -4);
+    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+
+    await page.locator(`text=${nom}`).first().click();
+    // **On attend l'écran, pas l'URL.** Ces liens font une navigation côté
+    // client : `waitForURL` ne la voit pas, même en « commit », et le contrôle
+    // échouait sur une page pourtant bien ouverte — il accusait le code au lieu
+    // de son propre montage. Un repère de la fiche prouve mieux qu'une adresse
+    // qu'on est arrivé.
+    await page.waitForSelector("text=Autres étapes", { timeout: 15000 });
+    assert.match(page.url(), new RegExp(`/chantiers/${chantierId}$`), "le planning ne mène pas à ce chantier");
+
+    // La fiche mène au devis. Le lien est visé par son adresse : « Devis »
+    // apparaît à plusieurs endroits de l'écran, et viser le premier texte venu
+    // ferait passer le contrôle pour de mauvaises raisons.
+    await page.locator(`a[href="/chantiers/${chantierId}/export"]`).click();
+    // Le titre de l'écran, et non un bouton : « Envoyer au client » disparaît
+    // une fois le devis parti — c'est-à-dire précisément dans le cas qui
+    // intéresse le patron, celui d'un chantier planifié.
+    await page.waitForSelector("h1:has-text('Devis')", { timeout: 15000 });
+    assert.ok(page.url().endsWith("/export"), `arrivé sur ${page.url()} au lieu du devis`);
+    assert.ok(
+      (await page.locator(`text=${nom}`).count()) > 0,
+      "le devis atteint n'est pas celui de ce chantier"
+    );
+  });
+
+  await test("« Fin de chantier » est sur la carte du planning, et prépare la facture", async () => {
+    // « avoir un bouton à côté fin de chantier pour que ça crée automatiquement
+    // la facturation ». Le bouton est sur la carte ; ce qu'il crée est un
+    // brouillon, jamais une facture partie — l'arrêt 3 reste (AGENT.md §2.3).
+    const { chantierId } = await chantierPlanifie(page, "bouton", -6);
+    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+
+    // Le lien de clôture porté par LA carte de ce chantier, et non le premier
+    // de l'écran : avec plusieurs chantiers au planning, viser le premier
+    // clôturerait celui du voisin sans que le contrôle s'en aperçoive.
+    await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).click();
+    await page.waitForSelector("text=Le chantier est réalisé ?", { timeout: 15000 });
+
+    await page.click("text=Fin de chantier");
+    await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
+
+    const { rows } = await inspecter("SELECT statut FROM factures WHERE chantier_id = $1", [chantierId], 1);
+    assert.strictEqual(rows[0].statut, "brouillon", "la facture est partie sans confirmation");
+    assert.ok(
+      await page.locator("text=/1\\s?200,00\\s?€/").isVisible(),
+      "le total du devis n'est pas repris (1 200,00 €)"
+    );
+  });
+
+  await test("la confirmation porte la facture au relevé de TVA, et prépare son envoi", async () => {
+    // La fin de sa phrase : « puis l'envoi de la facturation, puis
+    // l'automatisation vers la TVA ». L'envoi part de SA messagerie — décision
+    // du 3 août, `docs/A-FAIRE.md` §5 : Atlas prépare le message, il ne
+    // l'expédie pas.
+    const { chantierId } = await chantierPlanifie(page, "tva", -8);
+    await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
+    await page.click("text=Fin de chantier");
+    await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
+    await page.click("text=Confirmer le départ de la facture");
+    await page.waitForSelector("text=Elle figure au relevé de TVA collectée", { timeout: 15000 });
+
+    await page.click("text=Envoyer la facture au client");
+    await page.waitForSelector("text=Ouvrir le", { timeout: 15000 });
+
+    const { rows } = await inspecter(
+      "SELECT statut, numero_commercial FROM factures WHERE chantier_id = $1",
+      [chantierId],
+      1
+    );
+    assert.strictEqual(rows[0].statut, "emise");
+
+    // Le relevé se lit par facture, et on cherche CELLE-CI par son numéro. Les
+    // totaux du trimestre cumulent les factures des autres cas de cette suite :
+    // les viser rendrait le contrôle vert ou rouge selon l'ordre d'exécution.
+    await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
+    assert.ok(
+      (await page.locator(`text=${rows[0].numero_commercial}`).count()) > 0,
+      `la facture ${rows[0].numero_commercial} ne figure pas au relevé de TVA du trimestre`
+    );
+  });
+
+  await test("l'arrêt 3 montre TOUS les travaux, pas la première ligne coupée", async () => {
+    // **Un contrôle qui mesure, parce qu'un contrôle qui lit serait vert.**
+    // Le libellé était coupé par `truncate`, c'est-à-dire par du CSS : le texte
+    // entier restait dans la page. Toute assertion sur le contenu passait donc,
+    // pendant que l'écran affichait « Abattage d'un chêne mort Br… ». Trouvé
+    // sur une capture, comme les trois autres défauts d'affichage de ce projet
+    // (`CLAUDE.md` §5).
+    //
+    // Ce que ça coûtait : à l'arrêt 3, le patron valide le départ d'une facture
+    // en n'en voyant qu'un tiers. C'est l'écran de vérification qui cachait ce
+    // qu'il fallait vérifier.
+    const { chantierId } = await chantierPlanifie(page, "empile", -12, [
+      { libelle: "Abattage d'un chêne mort\nBroyage des branches\nÉvacuation du gros bois", montant: "850.00" },
+      { libelle: "Fendage du bois", montant: "250.00" },
+    ]);
+    await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
+    await page.click("text=Fin de chantier");
+    await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
+
+    const groupee = await page.locator("li", { hasText: "Abattage d'un chêne mort" }).first().boundingBox();
+    const seule = await page.locator("li", { hasText: "Fendage du bois" }).first().boundingBox();
+    assert.ok(groupee && seule, "les lignes de la facture sont introuvables");
+    assert.ok(
+      groupee.height > seule.height * 2,
+      `trois travaux tiennent sur ${groupee.height}px quand un seul en prend ${seule.height} : ils sont écrasés sur une ligne`
+    );
+  });
+
+  console.log("\n--- Un chantier, un seul onglet ---");
+
+  await test("planifié pour AUJOURD'HUI : au planning, et nulle part ailleurs", async () => {
+    // Le défaut du 6 août, revenu par la porte du signe : le planning comparait
+    // `<` et le dépôt des terminés `<=`. Un chantier prévu ce jour-là figurait
+    // dans les deux onglets à la fois.
+    const { nom } = await chantierPlanifie(page, "aujourdhui", 0);
+    assert.deepEqual(await ongletsOuIlFigure(page, nom), ["planning"]);
+  });
+
+  await test("date passée : dans les terminés, et nulle part ailleurs", async () => {
+    const { nom } = await chantierPlanifie(page, "passe", 3);
+    assert.deepEqual(await ongletsOuIlFigure(page, nom), ["termines"]);
+  });
+
+  await test("clôturé AVANT sa date : il quitte le planning pour les terminés", async () => {
+    // Le second défaut, celui qui rendait la facture invisible. Le patron peut
+    // clôturer plus tôt que prévu depuis sa fiche (3 août) ; le chantier
+    // restait pourtant affiché au planning comme si de rien n'était, absent des
+    // terminés, et la facture en brouillon n'était plus joignable que par son
+    // adresse.
+    const { nom, chantierId } = await chantierPlanifie(page, "avance", -10);
+    await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
+    await page.click("text=Fin de chantier");
+    await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
+
+    assert.deepEqual(await ongletsOuIlFigure(page, nom), ["termines"]);
+
+    // Et la facture préparée se retrouve : c'est ce qui manquait.
+    await page.goto(`${BASE}/termines`, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector('h1:has-text("Terminés")', { timeout: 30000 });
+    const carte = page.locator("a").filter({ hasText: nom }).last();
+    assert.ok(
+      (await carte.locator("text=Reprendre la facture").count()) > 0,
+      "rien n'indique qu'une facture attend sur ce chantier"
+    );
+  });
+
+  await context.close();
+  await browser.close();
+  console.log(`\n${passed} réussis, ${failed} échoués`);
+  await pool.end();
+  if (failed > 0) process.exit(1);
+}
+
+main().catch(async (err) => {
+  console.error(err);
+  await pool.end();
+  process.exit(1);
+});

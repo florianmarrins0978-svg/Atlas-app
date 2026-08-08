@@ -445,6 +445,20 @@ export async function pdfDevisParJeton(
     if (!envoi) return null;
     if (envoi.expireAt.getTime() <= maintenant.getTime()) return null;
 
+    // **Le contexte d'entreprise, déduit du jeton** — sans lui, la lecture de
+    // `devis` ne rend rien sous le rôle applicatif : `envois_devis` porte une
+    // politique par jeton, `devis` n'en porte pas.
+    //
+    // Le défaut, trouvé le 8 août 2026 : la PAGE du devis s'affichait (elle
+    // pose ce contexte, plus bas dans `lireParJeton`) mais **le téléchargement
+    // du PDF échouait en silence**, renvoyant le client vers « ce lien n'est
+    // plus valable ». Or le PDF est ce que `docs/A-FAIRE.md` §5 lui promet :
+    // « il voit son devis, télécharge le PDF s'il le veut ».
+    //
+    // Invisible partout : les suites navigateur tournent sous un rôle qui
+    // traverse la RLS. Voir `scripts/test-facture-jeton-rls.ts`.
+    await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
+
     const [d] = await tx.select().from(devis).where(eq(devis.id, envoi.devisId)).limit(1);
     if (!d?.pdfStorageKey) return null;
     return { storageKey: d.pdfStorageKey, numero: d.numeroCommercial };

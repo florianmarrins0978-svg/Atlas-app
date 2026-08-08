@@ -124,6 +124,11 @@ export async function pdfFactureParJeton(
     if (!envoi) return null;
     if (envoi.expireAt.getTime() <= maintenant.getTime()) return null;
 
+    // Voir `factureParJeton` : sans ce contexte, la lecture de `factures` ne
+    // rend rien sous le rôle applicatif, et le client reçoit un 303 vers « ce
+    // lien n'est plus valable » au lieu de son PDF.
+    await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
+
     const [f] = await tx.select().from(factures).where(eq(factures.id, envoi.factureId)).limit(1);
     if (!f?.pdfStorageKey) return null;
     return { storageKey: f.pdfStorageKey, numero: f.numeroCommercial };
@@ -162,6 +167,26 @@ export async function factureParJeton(
     const [envoi] = await tx.select().from(envoisFactures).where(eq(envoisFactures.jeton, jeton)).limit(1);
     if (!envoi) return null;
     if (envoi.expireAt.getTime() <= maintenant.getTime()) return null;
+
+    // **Le contexte d'entreprise, DÉDUIT DU JETON — jamais d'une entrée du
+    // client.** Sans cette ligne, la lecture de `factures` ne rend rien sous le
+    // rôle applicatif : `envois_factures` a bien une politique par jeton,
+    // `factures` n'en a pas et reste protégée par l'isolation d'entreprise. Le
+    // client lisait donc « ce lien n'est plus valable » sur une facture
+    // parfaitement valide — toute la branche « envoi de la facture » était
+    // morte en production.
+    //
+    // Ce n'est pas un affaiblissement de la RLS (`CLAUDE.md` §4) : l'entreprise
+    // vient de l'envoi retrouvé par un jeton secret, exactement comme le fait
+    // déjà `lireParJeton` pour le devis (`envois-devis.ts`).
+    //
+    // **Pourquoi personne ne l'avait vu :** les suites navigateur démarrent
+    // leur serveur sous un rôle qui TRAVERSE la RLS, parce qu'elles inspectent
+    // la base. Elles ne peuvent donc pas, par construction, voir un défaut
+    // d'isolation. Tout chemin public par jeton doit être éprouvé par une suite
+    // base, sous le rôle applicatif — c'est ce que fait désormais
+    // `test-facture-jeton-rls.ts`.
+    await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
 
     const [f] = await tx.select().from(factures).where(eq(factures.id, envoi.factureId)).limit(1);
     if (!f) return null;
