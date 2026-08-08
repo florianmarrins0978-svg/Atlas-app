@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 
-// **La grille de fendage, dans un vrai navigateur, sur un vrai téléphone.**
+// **Les trois grilles de prix, dans un vrai navigateur, sur un vrai téléphone.**
 //
 // Ce que les suites sans navigateur ne peuvent pas voir, et qui a déjà coûté
 // trois défauts réels à ce projet — une barre de navigation en trop, un ordre
@@ -16,7 +16,9 @@ import { lancerNavigateur } from "./e2e-browser";
 //      coup ferait croire au patron qu'il a mal tapé, dix fois de suite ;
 //   3. elle tient dans **393 pixels** de large. Huit colonnes de diamètres en
 //      auraient fait quarante par colonne : c'est pour ça qu'elle est dépliée
-//      en blocs, et c'est ce qu'on vérifie.
+//      en blocs, et c'est ce qu'on vérifie ;
+//   4. **les trois grilles sont là** — abattre, fendre, tailler. Une grille
+//      qu'il ne voit pas n'existe pas pour lui.
 
 const BASE = "http://localhost:3000";
 const LARGEUR = 393;
@@ -34,11 +36,11 @@ async function main() {
 
   // --- 1. On la trouve depuis les réglages ---------------------------------
   await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
-  const lien = page.getByRole("link", { name: /fendre le bois/i });
-  assert.equal(await lien.count(), 1, "Aucun lien vers la grille dans les réglages : l'écran est introuvable.");
+  const lien = page.getByRole("link", { name: /Mes prix/i });
+  assert.equal(await lien.count(), 1, "Aucun lien vers les grilles dans les réglages : l'écran est introuvable.");
   await lien.click();
-  await page.waitForURL(/\/reglages\/fendage/);
-  console.log("  ✓ la grille s'atteint depuis les réglages");
+  await page.waitForURL(/\/reglages\/prix/);
+  console.log("  ✓ les grilles s'atteignent depuis les réglages");
 
   // --- 2. Un prix saisi survit au rechargement -----------------------------
   //
@@ -64,10 +66,25 @@ async function main() {
   const corps = await page.locator("body").innerText();
   assert.match(
     corps,
-    /1 case remplie sur 48/,
+    /1 case remplie sur 73/,
     `Le décompte ne dit pas où en est la grille. Lu : « ${corps.replace(/\s+/g, " ").slice(0, 200)} »`
   );
-  console.log("  ✓ elle dit combien de cases sont remplies, sur 48");
+  console.log("  ✓ elle dit combien de cases sont remplies, sur 73");
+
+  // --- 3 bis. Les trois grilles sont là ------------------------------------
+  //
+  // **Sa réponse du 8 août au soir**, à deux questions posées avec leurs
+  // options : l'abattage à la technique × le diamètre, la haie au mètre
+  // linéaire. Une grille qui n'apparaît pas à l'écran n'existe pas pour lui.
+  for (const titre of ["Abattre un arbre", "Fendre le bois", "Tailler une haie"]) {
+    assert.match(corps, new RegExp(titre), `La grille « ${titre} » n'est pas à l'écran.`);
+  }
+  assert.match(
+    corps,
+    /Prix du mètre linéaire/,
+    "La haie n'a pas son champ : elle n'a qu'une case, elle doit se remplir sans déplier quoi que ce soit."
+  );
+  console.log("  ✓ les trois grilles sont à l'écran : abattre, fendre, tailler");
 
   // --- 4. Rien ne déborde de l'écran ---------------------------------------
   //
@@ -92,13 +109,13 @@ async function main() {
   await page.reload({ waitUntil: "networkidle" });
   assert.match(
     await page.locator("body").innerText(),
-    /Aucune case remplie sur 48/,
+    /Aucune case remplie sur 73/,
     "Une case vidée reste enregistrée : le patron ne peut pas revenir sur un prix faux."
   );
   console.log("  ✓ vider une case la rend à la question");
 
   await navigateur.close();
-  console.log("✅ La grille de fendage se trouve, se remplit, se corrige, et tient dans un téléphone.");
+  console.log("✅ Les grilles se trouvent, se remplissent, se corrigent, et tiennent dans un téléphone.");
 }
 
 main().catch((e) => {

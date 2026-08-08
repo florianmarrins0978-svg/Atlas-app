@@ -27,26 +27,30 @@ import { arrondirALaDizaine } from "./arrondi-prix";
 // (migration 0025) : les deux disent la même chose, l'une au modèle, l'autre au
 // code. Elles se corrigent ensemble.
 
-// **Ce que ce module ne fait PAS encore, et qu'il faut savoir en le lisant.**
+// **TROIS groupes, depuis le 8 août 2026 : le chantier, la fente, la haie.**
 //
-// Il connaît DEUX groupes : le chantier, et la fente. C'est exactement ce que le
-// patron a demandé, mot pour mot, le 7 août 2026 — mais son propre devis de
-// référence (`docs/EXEMPLE-DICTEE.md`, 5 août) en compte trois : la taille de
-// haie à 350 €, l'abattage à 600 €, le fendage à 300 €. Une haie est bien un
-// travail qu'un client peut commander seul.
+// Les deux premiers viennent de sa consigne du 7 août, mot pour mot. Le
+// troisième a été ajouté après une question posée puis tranchée : son devis de
+// référence (`docs/EXEMPLE-DICTEE.md`, 5 août) compte bien trois lignes — haie
+// 350 €, abattage 600 €, fendage 300 € — et l'application n'en produisait que
+// deux.
 //
-// Elle n'a pourtant pas sa ligne ici, et le refus est délibéré : le montant
-// vient d'un tarif au jour/homme, global. Séparer la haie du chêne exigerait de
-// répartir ce global entre eux — c'est-à-dire d'inventer deux prix
-// (`docs/AGENT.md` §3). La fente, elle, a une grille : c'est ce qui lui donne le
-// droit d'avoir sa ligne.
-//
-// La suite est donc une question à poser au patron, pas une correction à faire
-// seul : voir `TODO.md` §0 quinquies (c). En attendant, la haie est empilée avec
-// le reste — visible, nommée, et à séparer d'un geste sur l'écran du devis.
+// **Ce qui a débloqué la haie, c'est un prix, pas une envie.** Tant qu'elle
+// n'avait pas de grille, la séparer aurait exigé de répartir un tarif global
+// entre elle et le chêne — c'est-à-dire d'inventer deux prix
+// (`docs/AGENT.md` §3). Depuis qu'il a posé un prix au mètre linéaire, elle
+// porte le sien : c'est ce qui lui donne le droit d'avoir sa ligne.
 
 /** Ce qui se détache : le client peut le refuser, ou le confier à un autre. */
 const FENDAGE = /\b(fend|fente)/i;
+
+/**
+ * Une haie : un travail qu'un client commande seul, sans toucher aux arbres.
+ *
+ * Elle se chiffre au mètre linéaire, et son prix vient de sa grille — voir
+ * `grille-prix.ts`, nature `haie`.
+ */
+const HAIE = /\bhaie/i;
 
 /**
  * Le billonnage — « on le coupe en 50 », « débité en bûches ».
@@ -67,8 +71,8 @@ const BILLONNAGE = /\b(billonn|coup[eé]\w*\s+en\s+\d|d[ée]bit\w*\s+en\s+\d|tro
 const ABATTAGE = /\b(abattage|abattre|abatt|d[ée]mont)/i;
 
 export type LigneVendable = {
-  /** `principal` ou `fendage` — sert au chiffrage, jamais affiché au client. */
-  cle: "principal" | "fendage";
+  /** Sert au chiffrage — jamais affiché au client. */
+  cle: "principal" | "fendage" | "haie";
   /** Ce que le client lit. Plusieurs travaux réunis : un par ligne. */
   libelle: string;
   /** Les prestations réunies, dans l'ordre de la dictée. */
@@ -106,11 +110,16 @@ export function lignesVendables(libelles: readonly string[]): Decoupage {
 
   const principal: string[] = [];
   const fendage: string[] = [];
+  const haie: string[] = [];
   const absorbes: string[] = [];
 
   for (const libelle of propres) {
     if (FENDAGE.test(libelle)) {
       fendage.push(libelle);
+      continue;
+    }
+    if (HAIE.test(libelle)) {
+      haie.push(libelle);
       continue;
     }
     // Le billonnage est compris dans l'abattage — mais seulement s'il y en a
@@ -127,29 +136,30 @@ export function lignesVendables(libelles: readonly string[]): Decoupage {
   if (principal.length > 0) {
     lignes.push({ cle: "principal", libelle: principal.join("\n"), membres: principal, detachable: false });
   }
+  if (haie.length > 0) {
+    lignes.push({ cle: "haie", libelle: haie.join("\n"), membres: haie, detachable: true });
+  }
   if (fendage.length > 0) {
     lignes.push({ cle: "fendage", libelle: fendage.join("\n"), membres: fendage, detachable: true });
   }
 
-  // Une dictée qui ne contient QUE de la fente : elle est alors le chantier, et
-  // non une option de celui-ci. La marquer détachable ferait proposer d'alléger
-  // une ligne principale qui n'existe pas.
-  if (lignes.length === 1 && lignes[0].cle === "fendage") lignes[0].detachable = false;
+  // Une dictée qui ne contient QUE de la haie, ou QUE de la fente : elle est
+  // alors le chantier, et non une option de celui-ci. La marquer détachable
+  // ferait proposer d'alléger une ligne principale qui n'existe pas.
+  if (lignes.length === 1) lignes[0].detachable = false;
 
   return { lignes, absorbes };
 }
 
 export type Repartition = {
-  /** Montant de la ligne principale, arrondi à la dizaine. */
-  principal: string;
-  /** Montant de la ligne détachable, tel que le patron l'a décidé dans sa grille. */
-  detachable: string;
+  /** Le montant de chaque ligne, dans l'ordre reçu. */
+  montants: string[];
   /** Ce qu'on explique au patron sur l'écran Prix. */
   detail: string;
 };
 
 /**
- * Répartit un montant global entre la ligne principale et la ligne détachable.
+ * Répartit un montant global entre la ligne principale et les détachables.
  *
  * **Le total ne bouge pas — c'est la répartition qui protège les deux cas.**
  * Le patron, expliquant pourquoi il écrit 850 + 250 là où le calcul donnerait
@@ -157,43 +167,70 @@ export type Repartition = {
  * qui la refuse trouve le reste cher, et celui qui ne prend qu'elle la paie
  * moins qu'elle ne coûte.
  *
- * Le montant de la ligne détachable vient de SA grille (`grille-fendage.ts`),
- * jamais d'un pourcentage : un pourcentage serait une invention de plus, et
- * c'est précisément ce qu'il a demandé d'éviter — *« comme ça il n'invente
- * rien »*.
+ * Le montant de chaque ligne détachable vient de SA grille
+ * (`grille-prix.ts`), jamais d'un pourcentage : un pourcentage serait une
+ * invention de plus, et c'est précisément ce qu'il a demandé d'éviter — *« comme
+ * ça il n'invente rien »*.
  *
- * Rend `null` quand la répartition ne tient pas debout : un détachable qui vaut
- * le chantier entier, ou davantage, laisserait une ligne principale à zéro ou
- * négative. On préfère alors ne rien répartir et le dire.
+ * @param prixDetachables  Le prix de grille de chaque ligne, `null` quand la
+ *   case est vide. Une ligne sans prix reste à zéro : on ne devine pas.
+ * @param indexPrincipale  La ligne qui absorbe le reste.
+ *
+ * Rend `null` quand la répartition ne tient pas debout : des détachables qui
+ * valent le chantier entier, ou davantage, laisseraient la ligne principale à
+ * zéro ou négative — un devis que le patron enverrait sans le voir.
  */
-export function repartir(totalHt: string, montantDetachable: string): Repartition | null {
+export function repartir(
+  totalHt: string,
+  prixDetachables: readonly (string | null)[],
+  indexPrincipale: number
+): Repartition | null {
   let total: Decimal;
-  let part: Decimal;
   try {
     total = new Decimal(totalHt);
-    part = new Decimal(montantDetachable);
   } catch {
     return null;
   }
-  if (!total.isFinite() || !part.isFinite()) return null;
-  if (part.lessThanOrEqualTo(0) || part.greaterThanOrEqualTo(total)) return null;
+  if (!total.isFinite() || total.lessThanOrEqualTo(0)) return null;
+  if (indexPrincipale < 0 || indexPrincipale >= prixDetachables.length) return null;
 
-  const reste = total.minus(part);
-  const principal = arrondirALaDizaine(reste.toFixed(2)) ?? reste.toFixed(2);
+  let reste = total;
+  const montants: string[] = prixDetachables.map(() => "0");
+
+  for (let i = 0; i < prixDetachables.length; i++) {
+    if (i === indexPrincipale) continue;
+    const brut = prixDetachables[i];
+    if (brut === null) continue;
+    let part: Decimal;
+    try {
+      part = new Decimal(brut);
+    } catch {
+      continue;
+    }
+    if (!part.isFinite() || part.lessThanOrEqualTo(0) || part.greaterThanOrEqualTo(reste)) return null;
+    montants[i] = part.toFixed(2);
+    reste = reste.minus(part);
+  }
 
   // **L'arrondi peut décaler le total de quelques euros, et on le dit.** Le
   // taire serait reprendre le défaut qu'on répare : un montant qui bouge sans
   // que rien ne l'explique. La règle des prix ronds (« 350, 400, 420, 560 »)
   // l'emporte sur l'exactitude à l'euro — mais elle ne se cache pas.
-  const nouveauTotal = new Decimal(principal).plus(part);
+  const principal = arrondirALaDizaine(reste.toFixed(2)) ?? reste.toFixed(2);
+  montants[indexPrincipale] = principal;
+
+  const nouveauTotal = montants.reduce((somme, m) => somme.plus(m), new Decimal(0));
   const ecart = !nouveauTotal.equals(total);
+  const detaches = montants.filter((_, i) => i !== indexPrincipale && Number(montants[i]) > 0);
 
   return {
-    principal,
-    detachable: part.toFixed(2),
+    montants,
     detail:
-      `${part.toFixed(2)} € pour la ligne détachable — c'est le prix de VOTRE grille, pas une part du total. ` +
-      `${principal} € pour le reste, de façon qu'aucune des deux lignes ne se vende à perte.` +
+      (detaches.length > 0
+        ? `${detaches.join(" € et ")} € pour ${detaches.length > 1 ? "les lignes détachables" : "la ligne détachable"} — ` +
+          "ce sont les prix de VOTRE grille, pas une part du total. "
+        : "") +
+      `${principal} € pour le reste, de façon qu'aucune ligne ne se vende à perte.` +
       (ecart
         ? ` Total : ${nouveauTotal.toFixed(2)} € au lieu de ${total.toFixed(2)} €, l'écart vient de l'arrondi à la dizaine.`
         : ` Le total ne change pas : ${total.toFixed(2)} €.`),

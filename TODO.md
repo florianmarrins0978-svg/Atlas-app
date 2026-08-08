@@ -142,7 +142,7 @@ Ce qui est en place, et qu'il ne faut pas refaire :
 - le découpage en lignes vendables (`src/lib/lignes-vendables.ts`), avec le
   billonnage compris dans l'abattage ;
 - la grille de fendage hauteur × diamètre, 8 × 6 cases, née vide, remplie à la
-  main **et** par ses devis (`src/lib/grille-fendage.ts`).
+  main **et** par ses devis (`src/lib/grille-prix.ts`).
 
 Détail des choix : `ARCHITECTURE.md` §29.
 
@@ -174,9 +174,9 @@ colonnes, seulement des morceaux de texte à des coordonnées, souvent dans un
 encodage propre au document. Un prix lu de travers arrive sur le devis d'un
 client — c'est précisément ce que `docs/AGENT.md` §3 interdit.
 
-**Deux suites possibles, et la question à lui poser d'abord :** *a-t-il
-réellement des listes en PDF, ou ses prix sont-ils dans un tableur ?* Le détour
-par « Enregistrer sous → CSV » coûte deux gestes, une seule fois.
+**Question posée le 8 août, et tranchée : « le tableur suffit ».** Le sujet est
+donc clos, et ce point ne se rouvre que s'il change d'avis. Les deux pistes sont
+gardées ci-dessous pour qu'on n'ait pas à les réinventer ce jour-là.
 
 | | Piste | Ce que ça vaut |
 |---|---|---|

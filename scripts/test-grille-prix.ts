@@ -7,7 +7,7 @@ import {
   prixDuFendage,
   toutesLesCellules,
   trancheDe,
-} from "../src/lib/grille-fendage";
+} from "../src/lib/grille-prix";
 import { diametreLu, hauteurLue, mesuresArbre } from "../src/lib/mesures-arbre";
 
 // **La grille de fendage — hauteur de l'arbre × diamètre du tronc.**

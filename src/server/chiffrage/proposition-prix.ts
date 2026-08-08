@@ -12,9 +12,9 @@ import type { LigneExplication } from "./types";
 import { arrondirALaDizaine } from "../../lib/arrondi-prix";
 import { chiffrerMainOeuvre } from "../../lib/tarif-main-oeuvre";
 import { lignesVendables, repartir, type LigneVendable } from "../../lib/lignes-vendables";
-import { celluleFendage, prixDuFendage } from "../../lib/grille-fendage";
-import { mesuresArbre } from "../../lib/mesures-arbre";
-import { prixConnusDuFendage } from "../repositories/grille-fendage";
+import { CELLULE_HAIE, celluleAbattage, celluleFendage, prixDuFendage } from "../../lib/grille-prix";
+import { longueurHaieLue, mesuresArbre } from "../../lib/mesures-arbre";
+import { prixConnusDe } from "../repositories/grille-prix";
 import { listerPrecisions } from "../repositories/precisions-chantier";
 
 // Origine du prix — même taxonomie que l'orchestrateur (SourcePrix), volontairement
@@ -437,11 +437,11 @@ async function decouperEnLignes(
   /**
    * Les lignes de la dictée, descriptions comprises.
    *
-   * **Sans elles, la grille de fendage ne servirait presque jamais.** La table
+   * **Sans elles, les grilles ne serviraient presque jamais.** La table
    * `prestations` ne garde qu'un libellé : « vingt mètres de haut », dicté dans
    * la description, y disparaît. Or c'est ce même texte qui décide de poser ou
    * non la question de la hauteur (`questions-chiffrage.ts`). Lire moins ici que
-   * là-bas ferait taire la question ET manquer la case — la fente resterait
+   * là-bas ferait taire la question ET manquer la case — la ligne resterait
    * sans prix, sans qu'aucune erreur ne l'explique.
    */
   textesDictee: string[],
@@ -460,105 +460,217 @@ async function decouperEnLignes(
       detail: `${absorbes.join(", ")} — pas de ligne séparée : le billonnage fait partie du geste d'abattre.`,
     });
   }
+  if (vendables.length === 0) {
+    return { lignes: [], total: totalHt, libelle: "", calcul, donneesManquantes };
+  }
 
-  // Une seule ligne : rien à répartir, le montant global est le sien. (Le
-  // découpage n'en produit jamais plus de deux, et ce cas n'est atteint que
-  // s'il en manque une : `vendables` compte donc zéro ou un élément.)
-  const detachable = vendables.find((l) => l.detachable);
-  const principale = vendables.find((l) => !l.detachable);
-  if (!detachable || !principale) {
+  // Ce que ses grilles savent dire sur CE chantier, ligne par ligne.
+  const textes = [...prestations.map((p) => p.libelle), ...textesDictee];
+  const chiffrees = await Promise.all(vendables.map((l) => prixDeLaLigne(ctx, chantierId, textes, l)));
+  for (const c of chiffrees) {
+    calcul.push(...c.calcul);
+    donneesManquantes.push(...c.donneesManquantes);
+  }
+
+  const libelle = vendables.map((l) => l.libelle).join("\n");
+  const principaleIndex = vendables.findIndex((l) => !l.detachable);
+
+  // --- Modèle « au poste » : chaque ligne porte son propre prix -------------
+  //
+  // **C'est le devis du 5 août, celui qu'il a écrit lui-même** : haie 350 €,
+  // abattage 600 €, fendage 300 €. Dès que la ligne PRINCIPALE a un prix dans sa
+  // grille — parce qu'il a posé ses prix d'abattage —, le tarif au temps ne sert
+  // plus : le total est la somme des postes, et on le dit.
+  if (principaleIndex >= 0 && chiffrees[principaleIndex].prix) {
+    const lignes = vendables.map((l, i) => ({ libelle: l.libelle, montant: chiffrees[i].prix ?? "0" }));
+    const total = lignes.reduce((somme, l) => somme.plus(l.montant), new Decimal(0)).toFixed();
+    calcul.push({
+      libelle: "Chiffré poste par poste",
+      detail:
+        `${total} € — la somme de vos prix de grille, et non le tarif à la journée. ` +
+        "C'est votre grille qui décide dès qu'elle connaît le travail principal.",
+    });
+    return { lignes, total, libelle, calcul, donneesManquantes };
+  }
+
+  // --- Modèle « au temps » : un total global, réparti ------------------------
+  //
+  // Le tarif au jour/homme donne le total du chantier. Chaque ligne détachable
+  // qui a un prix de grille le prend ; la principale garde le reste, de façon
+  // qu'aucune ne se vende à perte (sa règle du 7 août : 850 + 250, pas
+  // 1 000 + 100).
+  if (principaleIndex < 0) {
+    // Que des lignes détachables — en pratique une seule, marquée non
+    // détachable par `lignesVendables`. On n'arrive ici que si la règle change.
     return {
-      lignes: vendables.map((l) => ({ libelle: l.libelle, montant: totalHt })),
+      lignes: vendables.map((l, i) => ({ libelle: l.libelle, montant: chiffrees[i].prix ?? totalHt })),
       total: totalHt,
-      libelle: vendables.map((l) => l.libelle).join("\n"),
+      libelle,
       calcul,
       donneesManquantes,
     };
   }
 
-  const prixFente = await prixDeLaFente(ctx, chantierId, [...prestations.map((p) => p.libelle), ...textesDictee], detachable);
-  calcul.push(...prixFente.calcul);
-  donneesManquantes.push(...prixFente.donneesManquantes);
+  // La règle de répartition est PURE et éprouvée à part
+  // (`src/lib/lignes-vendables.ts`) : c'est elle qui encode sa décision du
+  // 7 août — 850 + 250, jamais 1 000 + 100.
+  const repartition = repartir(
+    totalHt,
+    chiffrees.map((c) => c.prix),
+    principaleIndex
+  );
 
-  const repartition = prixFente.prix ? repartir(totalHt, prixFente.prix) : null;
   if (!repartition) {
-    // **Sans prix de fente, on sépare quand même les lignes.** C'est la moitié
-    // de ce qu'il demande, et elle ne dépend d'aucune grille : le client doit
-    // voir la fente à part pour pouvoir la refuser. Le montant reste sur la
-    // ligne principale — le déplacer sans savoir combien vaut la fente
+    // **Sans répartition tenable, on sépare quand même les lignes.** C'est la
+    // moitié de ce qu'il demande, et elle ne dépend d'aucune grille : le client
+    // doit voir la fente à part pour pouvoir la refuser. Le montant reste sur
+    // la ligne principale — le déplacer sans savoir combien vaut la fente
     // reviendrait à l'inventer.
-    return {
-      lignes: [
-        { libelle: principale.libelle, montant: totalHt },
-        { libelle: detachable.libelle, montant: "0" },
-      ],
-      total: totalHt,
-      libelle: vendables.map((l) => l.libelle).join("\n"),
-      calcul,
-      donneesManquantes,
-    };
+    const trop = chiffrees.findIndex((c, i) => i !== principaleIndex && c.prix && Number(c.prix) >= Number(totalHt));
+    if (trop >= 0) {
+      donneesManquantes.push(
+        `« ${vendables[trop].libelle} » vaut ${chiffrees[trop].prix} € dans votre grille, soit autant que le ` +
+          "chantier entier : le prix n'a pas été réparti. Vérifiez la durée, ou ce prix."
+      );
+    }
+    const lignesBrutes = vendables.map((l, i) => ({
+      libelle: l.libelle,
+      montant: i === principaleIndex ? totalHt : "0",
+    }));
+    return { lignes: lignesBrutes, total: totalHt, libelle, calcul, donneesManquantes };
   }
 
-  calcul.push({ libelle: "Répartition", detail: repartition.detail });
-  // `toFixed()` sans argument, et pas `toFixed(2)` : le total doit s'écrire
-  // comme celui du cas à une seule ligne, qui sort d'`arrondirALaDizaine`
-  // (« 1100 », pas « 1100.00 »). Deux formats pour le même montant, selon qu'il
-  // y a une fente ou non, feraient diverger l'écran d'avec le devis.
-  const total = new Decimal(repartition.principal).plus(repartition.detachable).toFixed();
+  const montants = repartition.montants;
+  if (montants.some((m, i) => i !== principaleIndex && Number(m) > 0)) {
+    calcul.push({ libelle: "Répartition", detail: repartition.detail });
+  }
 
-  return {
-    lignes: [
-      { libelle: principale.libelle, montant: repartition.principal },
-      { libelle: detachable.libelle, montant: repartition.detachable },
-    ],
-    total,
-    libelle: vendables.map((l) => l.libelle).join("\n"),
-    calcul,
-    donneesManquantes,
-  };
+  const lignes = vendables.map((l, i) => ({ libelle: l.libelle, montant: montants[i] }));
+  const total = lignes.reduce((somme, l) => somme.plus(l.montant), new Decimal(0)).toFixed();
+  return { lignes, total, libelle, calcul, donneesManquantes };
 }
 
-/** Le prix du fendage, pris dans la grille du patron — ou son absence, expliquée. */
-async function prixDeLaFente(
+/**
+ * Le prix d'une ligne, pris dans la grille de SA nature — ou son absence,
+ * expliquée.
+ *
+ * Trois natures, trois façons de désigner une case (`src/lib/grille-prix.ts`) :
+ * le fendage à la hauteur × diamètre, l'abattage à la technique × diamètre, la
+ * haie au mètre linéaire. Une case vide n'est jamais comblée : la ligne s'écrit
+ * à 0 €, visible comme un prix à poser, et l'écran nomme ce qui manque.
+ */
+async function prixDeLaLigne(
   ctx: Ctx,
   chantierId: string,
   textes: string[],
-  detachable: LigneVendable
+  ligne: LigneVendable
 ): Promise<{ prix: string | null; calcul: LigneExplication[]; donneesManquantes: string[] }> {
   // Ses réponses d'abord, la dictée ensuite : il a pu corriger à l'arrêt ce que
   // la transcription avait mal entendu.
   const precisions = await listerPrecisions(ctx, chantierId);
-  const mesures = mesuresArbre(precisions.map((p) => p.lisible), textes);
-  const cellule = celluleFendage(mesures.hauteurM, mesures.diametreCm);
+  const reponses = precisions.map((p) => p.lisible);
 
-  if (!cellule) {
-    const manque = [
-      mesures.hauteurM === null ? "la hauteur de l'arbre" : null,
-      mesures.diametreCm === null ? "le diamètre du tronc" : null,
-    ].filter(Boolean);
+  if (ligne.cle === "haie") return prixDeLaHaie(ctx, reponses, textes, ligne);
+  if (ligne.cle === "fendage") {
+    const mesures = mesuresArbre(reponses, textes);
+    return prixDepuisCase(ctx, "fendage", celluleFendage(mesures.hauteurM, mesures.diametreCm), ligne, {
+      manquant: [
+        mesures.hauteurM === null ? "la hauteur de l'arbre" : null,
+        mesures.diametreCm === null ? "le diamètre du tronc" : null,
+      ].filter((x): x is string => x !== null),
+    });
+  }
+
+  // La ligne principale : elle n'a de prix de grille que si elle porte un
+  // abattage, et seulement quand la technique ET le diamètre sont connus.
+  if (!/\b(abattage|abattre|abatt|d[ée]mont)/i.test(ligne.libelle)) {
+    return { prix: null, calcul: [], donneesManquantes: [] };
+  }
+  const technique = precisions.find((p) => p.sujet.startsWith("abattage.technique"))?.valeur ?? null;
+  const { diametreCm } = mesuresArbre(reponses, textes);
+  return prixDepuisCase(ctx, "abattage", celluleAbattage(technique, diametreCm), ligne, {
+    manquant: [
+      technique === null ? "la technique d'abattage" : null,
+      diametreCm === null ? "le diamètre du tronc" : null,
+    ].filter((x): x is string => x !== null),
+    // Sans grille d'abattage remplie, le chiffrage au temps reprend la main :
+    // ce n'est pas un manque à signaler, c'est le fonctionnement d'hier.
+    silencieuxSiVide: true,
+  });
+}
+
+/** La haie : un prix au mètre linéaire, multiplié par la longueur. */
+async function prixDeLaHaie(
+  ctx: Ctx,
+  reponses: string[],
+  textes: string[],
+  ligne: LigneVendable
+): Promise<{ prix: string | null; calcul: LigneExplication[]; donneesManquantes: string[] }> {
+  const auMetre = (await prixConnusDe(ctx, "haie")).get(CELLULE_HAIE);
+  const longueur = [...reponses, ...textes].map(longueurHaieLue).find((l) => l !== null) ?? null;
+
+  if (!auMetre) {
     return {
       prix: null,
       calcul: [],
       donneesManquantes: [
-        `« ${detachable.libelle} » est sur sa propre ligne, sans prix : ` +
-          (manque.length > 0
-            ? `il manque ${manque.join(" et ")} pour aller chercher dans votre grille.`
-            : // Les deux mesures sont là mais ne désignent aucune case : elles
-              // sont hors de toute tranche. On le dit avec les chiffres lus,
-              // plutôt qu'un « il manque » qui enverrait chercher au mauvais
-              // endroit.
-              `${mesures.hauteurM} m et ⌀ ${mesures.diametreCm} cm ne tombent dans aucune tranche de votre grille.`),
+        `« ${ligne.libelle} » est sur sa propre ligne, sans prix : posez votre prix au mètre linéaire ` +
+          "dans Réglages → Mes prix, et il servira à tous les devis suivants.",
+      ],
+    };
+  }
+  if (longueur === null) {
+    return {
+      prix: null,
+      calcul: [],
+      donneesManquantes: [`« ${ligne.libelle} » : il manque la longueur en mètres pour appliquer votre prix au ml.`],
+    };
+  }
+
+  const montant = new Decimal(auMetre).times(longueur);
+  return {
+    prix: montant.toFixed(2),
+    calcul: [
+      {
+        libelle: "Taille de haie",
+        detail: `${longueur} ml × ${auMetre} € = ${montant.toFixed(2)} € — votre prix au mètre linéaire.`,
+      },
+    ],
+    donneesManquantes: [],
+  };
+}
+
+/** Le prix d'une case, quand elle existe et qu'elle est remplie. */
+async function prixDepuisCase(
+  ctx: Ctx,
+  nature: "fendage" | "abattage",
+  cellule: ReturnType<typeof celluleFendage>,
+  ligne: LigneVendable,
+  options: { manquant?: string[]; silencieuxSiVide?: boolean } = {}
+): Promise<{ prix: string | null; calcul: LigneExplication[]; donneesManquantes: string[] }> {
+  if (!cellule) {
+    if (options.silencieuxSiVide) return { prix: null, calcul: [], donneesManquantes: [] };
+    const manque = options.manquant?.length
+      ? options.manquant
+      : ["la hauteur de l'arbre ou le diamètre du tronc"];
+    return {
+      prix: null,
+      calcul: [],
+      donneesManquantes: [
+        `« ${ligne.libelle} » est sur sa propre ligne, sans prix : il manque ${manque.join(" et ")} ` +
+          "pour aller chercher dans votre grille.",
       ],
     };
   }
 
-  const trouve = prixDuFendage(cellule, await prixConnusDuFendage(ctx));
+  const trouve = prixDuFendage(cellule, await prixConnusDe(ctx, nature));
   if (!trouve) {
+    if (options.silencieuxSiVide) return { prix: null, calcul: [], donneesManquantes: [] };
     return {
       prix: null,
       calcul: [],
       donneesManquantes: [
-        `Votre grille de fendage n'a pas de prix pour ${cellule.libelle}. Posez-le sur la ligne : ` +
+        `Votre grille de ${nature} n'a pas de prix pour ${cellule.libelle}. Posez-le sur la ligne : ` +
           "il se rangera dans la grille et servira aux chantiers suivants.",
       ],
     };
@@ -568,7 +680,7 @@ async function prixDeLaFente(
     prix: trouve.prix,
     calcul: [
       {
-        libelle: "Fendage",
+        libelle: nature === "abattage" ? "Abattage" : "Fendage",
         detail: `${trouve.prix} € — votre grille, case « ${cellule.libelle} ».`,
       },
     ],

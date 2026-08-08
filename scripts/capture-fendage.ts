@@ -28,7 +28,7 @@ async function main() {
   await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
   await page.screenshot({ path: `${OUT}/01-reglages.png`, fullPage: true });
 
-  await page.goto(`${BASE}/reglages/fendage`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/reglages/prix`, { waitUntil: "networkidle" });
   await page.screenshot({ path: `${OUT}/02-grille-fermee.png`, fullPage: true });
 
   await page.getByRole("button", { name: /Arbre 15 à 20 m/ }).click();

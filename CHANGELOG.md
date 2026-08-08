@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-08
 
+### Trois grilles de prix, et le devis du 5 août enfin juste
+
+Le patron a répondu à trois questions posées avec leurs options : **on garde les
+8 × 6 tranches** de la grille de fendage, **la haie prend sa propre ligne** avec
+un prix au mètre linéaire, et **l'abattage a sa grille**, à la technique × le
+diamètre.
+
+Son devis de référence du 5 août — haie 350 €, abattage 600 €, fendage 300 €,
+total 1 250 € — sort désormais **exactement comme il l'avait écrit**. Il en
+comptait deux lignes le matin même.
+
+**La bascule qui va avec, et qu'il faut connaître :** dès que la ligne
+principale a un prix dans sa grille, Atlas cesse de chiffrer à la journée et
+compte **poste par poste**. Le total devient la somme des grilles, et l'écran le
+dit — un total qui change de méthode sans un mot se lit comme une erreur. Tant
+que la grille d'abattage est vide, rien ne change, et en silence.
+
+**La haie s'apprend au mètre, jamais au montant.** 350 € sur une haie de 20 ml
+range 17,50 €/ml dans la grille. Retenir 350 € ferait facturer 350 € la haie
+suivante, quelle que soit sa longueur. Sans longueur connue, on n'apprend rien
+plutôt qu'un prix faux.
+
+L'écran s'appelle maintenant `Réglages → Mes prix : abattre, fendre, tailler`.
+
+Détail des choix dans `ARCHITECTURE.md` §32.
+
 ### Déposer sa liste de prix, au lieu de la retaper
 
 Le patron : *« si l'utilisateur a déjà un fichier Excel ou un PDF avec ces

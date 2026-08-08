@@ -1230,9 +1230,9 @@ commencé.
 | Quoi | Fichier |
 |---|---|
 | Le découpage et la répartition, sans base | `scripts/test-lignes-vendables.ts` |
-| Les tranches, les bornes, l'absence d'interpolation | `scripts/test-grille-fendage.ts` |
+| Les tranches, les bornes, l'absence d'interpolation | `scripts/test-grille-prix.ts` |
 | Les questions posées — et surtout celles qui se taisent | `scripts/test-questions-chiffrage.ts` |
-| Le chemin complet : tarif → découpage → grille → détail, et l'isolation | `scripts/test-devis-fendage.ts` |
+| Le chemin complet : tarif → découpage → grille → détail, et l'isolation | `scripts/test-devis-grilles.ts` |
 
 ### Une batterie qui ne finit pas ne prouve rien
 
@@ -1424,3 +1424,77 @@ qu'il sache pourquoi. La reprise par le modèle reste ouverte — `TODO.md`
 | Les montants, les colonnes, le rapprochement — sans base | `scripts/test-import-tarifs.ts` |
 | Que lire n'écrit rien, et que l'import d'une entreprise ne déborde pas | `scripts/test-import-tarifs-db.ts` |
 | **Que la touche existe**, et que rien n'entre avant son appui | `scripts/test-import-tarifs-e2e.ts` |
+
+
+---
+
+## 32. Trois grilles, et le chiffrage bascule au poste
+
+**Décidé le 2026-08-08 au soir**, par ses réponses à trois questions posées avec
+leurs options :
+
+| Question | Sa réponse |
+|---|---|
+| Les 8 × 6 tranches de la grille de fendage vous vont ? | **oui, on garde** |
+| La taille de haie doit-elle avoir sa propre ligne ? | **oui — grille au mètre linéaire** |
+| L'abattage mérite-t-il la même grille ? | **oui — technique × diamètre** |
+| Faut-il lire les PDF de listes de prix ? | **non, le tableur suffit** |
+
+### Une table, trois natures
+
+`grille_fendage` ne connaissait que la fente, jusque dans son nom. La migration
+0027 la renomme `grille_prix` et lui ajoute une colonne `nature` :
+
+| Nature | Axes | Cases | Pourquoi ces axes |
+|---|---|---|---|
+| `abattage` | technique × diamètre | 24 | chez lui le même chêne vaut 600, 1 000 ou 1 400 € selon la technique. La hauteur ne décide de rien |
+| `fendage` | hauteur × diamètre | 48 | on fend du VOLUME, et le volume va comme le diamètre au carré fois la hauteur |
+| `haie` | aucun — un prix au ml | 1 | son devis dit « 350 € pour 20 ml », sans hauteur. Inventer une seconde dimension ferait quarante cases vides |
+
+Trois tables auraient imposé trois écrans, trois dépôts et trois façons de se
+tromper. Une colonne suffit, et la mécanique reste unique : c'est elle qui
+garantit qu'aucune case ne s'invente, quelle que soit la nature.
+
+### La bascule : au temps, ou au poste
+
+C'est la décision de conception de ce lot, et elle vient de ses deux façons de
+chiffrer.
+
+- **Au temps** — « deux hommes, une journée » : le tarif au jour/homme donne le
+  total, chaque ligne détachable prend son prix de grille, et la principale
+  garde le reste. Sa règle du 7 août : **850 + 250**, jamais 1 000 + 100.
+- **Au poste** — son devis du 5 août : haie 350 €, abattage 600 €, fendage
+  300 €, total 1 250 €. Aucun tarif journalier là-dedans.
+
+**La règle qui les départage tient en une phrase : dès que la ligne PRINCIPALE a
+un prix dans sa grille, le total devient la somme des postes.** Autrement dit,
+le jour où il a posé ses prix d'abattage, sa grille prend la main sur le tarif
+journalier — et l'écran le dit (« Chiffré poste par poste »), parce qu'un total
+qui change de méthode sans un mot se lit comme une erreur.
+
+**Sans grille d'abattage, rien ne bouge, et en silence.** L'absence n'est pas
+signalée comme un manque : c'est le fonctionnement d'hier, et le rappeler à
+chaque devis ferait du bruit pour rien.
+
+### La haie s'apprend au mètre, jamais au montant
+
+Quand il écrit 350 € sur une ligne de haie de 20 ml, c'est **17,50 €/ml** qui se
+range dans la grille. Retenir 350 € ferait facturer 350 € la haie suivante,
+quelle que soit sa longueur — et personne ne verrait d'où vient le chiffre.
+Sans longueur connue, **on n'apprend rien** plutôt qu'un prix faux.
+
+### Ce que la répartition est devenue
+
+`repartir` prend désormais N lignes au lieu de deux : la principale, la haie, la
+fente. Elle reste pure et éprouvée à part (`scripts/test-lignes-vendables.ts`) —
+c'est elle qui encode sa règle du 850 + 250, et la sortir du service est ce qui
+permet de la discuter sans lire une requête.
+
+### Où c'est éprouvé
+
+| Quoi | Fichier |
+|---|---|
+| Le découpage en trois lignes, la répartition à N | `scripts/test-lignes-vendables.ts` |
+| Les tranches, les techniques, la case unique de la haie | `scripts/test-grille-prix.ts` |
+| **Son devis du 5 août, ligne par ligne**, et la bascule au poste | `scripts/test-devis-grilles.ts` |
+| Les trois grilles à l'écran, dans un téléphone | `scripts/test-grille-prix-e2e.ts` |

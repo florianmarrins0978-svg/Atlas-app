@@ -1,4 +1,4 @@
-// La grille de prix du fendage — hauteur de l'arbre × diamètre du tronc.
+// Les grilles de prix du patron — une par nature de travail.
 //
 // **Ce que le patron a demandé, le 8 août 2026 :** *« pour la fente ils
 // devraient demander la hauteur de l'arbre et son diamètre et on crée une liste
@@ -11,6 +11,25 @@
 // par la hauteur : deux troncs de même hauteur, l'un de 30 cm et l'autre de
 // 60 cm, ne font pas le double de bois mais le quadruple. Une grille à deux
 // entrées suit cette réalité de bien plus près qu'une durée dictée à la louche.
+//
+// **Trois natures, décidées avec lui le 8 août 2026** (`docs/QUESTIONS.md` n'a
+// pas encore été mis à jour : voir `ARCHITECTURE.md` §32) :
+//
+//   | Nature     | Ce qui décide le prix          | Cases |
+//   |------------|--------------------------------|-------|
+//   | `fendage`  | hauteur × diamètre             | 48    |
+//   | `abattage` | technique × diamètre           | 24    |
+//   | `haie`     | rien — un prix au mètre        | 1     |
+//
+// **L'abattage se chiffre à la TECHNIQUE, pas à la hauteur**, et c'est lui qui
+// l'a tranché : chez lui le même chêne de 70 cm vaut 600 € au pied, 1 000 € en
+// démontage, 1 400 € avec rétention. La hauteur, elle, ne décide de rien — c'est
+// pourtant elle que les dictées donnent (`docs/EXEMPLE-DICTEE.md`).
+//
+// **La haie n'a qu'une case**, et ce n'est pas un oubli : son devis du 5 août
+// dit « 350 € pour 20 ml », soit 17,50 €/ml, sans mention de hauteur. Lui
+// inventer une seconde dimension qu'il n'a jamais nommée ferait quarante cases
+// vides à remplir pour rien.
 //
 // **La grille naît VIDE, et c'est le point entier.** Aucun prix n'y est posé par
 // ce dépôt : un prix inventé serait exactement ce que `docs/AGENT.md` §3 interdit,
@@ -167,4 +186,82 @@ export function prixDuFendage(
   const prix = prixConnus.get(cellule.cle);
   if (prix === undefined) return null;
   return { prix, cellule };
+}
+
+// ---------------------------------------------------------------------------
+// Les techniques d'abattage, et la haie
+// ---------------------------------------------------------------------------
+
+/**
+ * Les trois façons d'abattre, et l'écart de prix qu'elles portent.
+ *
+ * Les clés sont celles de l'arrêt d'avant-chiffrage (`questions-chiffrage.ts`) :
+ * la question posée au patron et la case de sa grille doivent parler la même
+ * langue, sinon sa réponse ne désigne rien.
+ */
+export const TECHNIQUES: readonly { cle: string; libelle: string }[] = [
+  { cle: "au_pied", libelle: "au pied" },
+  { cle: "demontage", libelle: "démontage" },
+  { cle: "demontage_retention", libelle: "démontage avec rétention" },
+];
+
+/** Les natures de travail qui ont leur propre grille. */
+export type NatureGrille = "fendage" | "abattage" | "haie";
+
+/**
+ * La case de la grille d'abattage : la technique, puis le diamètre.
+ *
+ * `null` dès qu'il manque l'une des deux — et c'est le cas normal au début
+ * d'une dictée, pas une anomalie : il déclenche la question.
+ */
+export function celluleAbattage(technique: string | null, diametreCm: number | null): CelluleFendage | null {
+  const t = TECHNIQUES.find((x) => x.cle === technique);
+  if (!t || diametreCm === null) return null;
+  const diametre = trancheDe(diametreCm, DIAMETRES);
+  if (!diametre) return null;
+  return {
+    cle: `${t.cle}|${diametre.cle}`,
+    // La « hauteur » de la case porte ici la technique. Le type est partagé
+    // avec le fendage pour que l'écran et le dépôt n'aient qu'une forme à
+    // connaître ; ce sont les LIBELLÉS qui disent au patron de quoi on parle.
+    hauteur: { cle: t.cle, de: 0, a: null, libelle: t.libelle },
+    diametre,
+    libelle: `${t.libelle} · tronc de ${diametre.libelle}`,
+  };
+}
+
+/**
+ * La case de la haie : il n'y en a qu'une.
+ *
+ * Un prix au mètre linéaire, et rien d'autre — son choix du 8 août, contre une
+ * grille à deux entrées dont la seconde n'aurait décrit aucune décision.
+ */
+export const CELLULE_HAIE = "ml";
+
+/** Toutes les cases d'une nature, dans l'ordre où l'écran les affiche. */
+export function cellulesDe(nature: NatureGrille): CelluleFendage[] {
+  if (nature === "haie") {
+    return [
+      {
+        cle: CELLULE_HAIE,
+        hauteur: { cle: "ml", de: 0, a: null, libelle: "au mètre linéaire" },
+        diametre: { cle: "ml", de: 0, a: null, libelle: "toutes haies" },
+        libelle: "Prix au mètre linéaire",
+      },
+    ];
+  }
+  if (nature === "abattage") {
+    return TECHNIQUES.flatMap((t) => DIAMETRES.map((d) => celluleAbattage(t.cle, d.a ?? d.de + 1)!));
+  }
+  return toutesLesCellules();
+}
+
+/**
+ * Retrouve une case depuis sa clé, quelle que soit sa nature.
+ *
+ * **Une clé inconnue ne rend rien**, et c'est ce qui protège la base : une clé
+ * inventée depuis un navigateur n'écrit nulle part (voir `poserPrixGrille`).
+ */
+export function celluleDeNature(nature: NatureGrille, cle: string): CelluleFendage | null {
+  return cellulesDe(nature).find((c) => c.cle === cle) ?? null;
 }

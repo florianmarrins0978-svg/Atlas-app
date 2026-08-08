@@ -7,7 +7,7 @@ import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { mettreAJourClient } from "@/server/repositories/clients";
 import { modifierLignePrix, supprimerLignePrix, ajouterLignePrix, listerLignesPrix } from "@/server/repositories/lignes-prix";
 import { noterRetenu } from "@/server/repositories/termes-metier";
-import { apprendrePrixFendage } from "@/server/services/apprendre-fendage";
+import { apprendrePrixGrille } from "@/server/services/apprendre-grille";
 import { mettreAJourAdresseChantier } from "@/server/repositories/chantiers";
 import { mettreAJourEnTeteDevis } from "@/server/repositories/devis";
 
@@ -89,7 +89,7 @@ export async function majLigneAction(
     // seul. »* — le 7 août 2026. Une grille de 48 cases qu'il devrait remplir
     // à l'avance ne serait jamais remplie ; celle-ci se remplit en travaillant.
     try {
-      await apprendrePrixFendage(ctx, ligne.chantierId, {
+      await apprendrePrixGrille(ctx, ligne.chantierId, {
         libelle: ligne.libelle,
         montant: ligne.montant,
       });

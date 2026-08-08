@@ -126,49 +126,109 @@ cas("une dictée vide ne produit rien", () => {
   assert.deepEqual(lignesVendables(["", "   "]), { lignes: [], absorbes: [] });
 });
 
-console.log("\n=== La répartition : charger la ligne détachable ===");
+console.log("\n=== La haie fait sa ligne, depuis le 8 août ===");
+
+// **Sa réponse du 8 août au soir**, à la question « la taille de haie doit-elle
+// avoir sa propre ligne ? » : *« grille au mètre linéaire »*. Son devis de
+// référence du 5 août en comptait bien trois — haie 350 €, abattage 600 €,
+// fendage 300 € — quand l'application n'en produisait que deux.
+//
+// Ce qui a débloqué la haie, c'est un PRIX, pas une envie : tant qu'elle n'avait
+// pas de grille, la séparer aurait exigé d'inventer deux montants.
+
+const DICTEE_COMPLETE = [
+  "Taille de haie de laurier",
+  "Abattage d'un chêne mort",
+  "Broyage des branches",
+  "Coupe en 50 cm",
+  "Fendage du bois",
+];
+
+cas("son devis du 5 août compte bien TROIS lignes", () => {
+  const { lignes } = lignesVendables(DICTEE_COMPLETE);
+  assert.equal(
+    lignes.length,
+    3,
+    `${lignes.length} ligne(s) : ${lignes.map((l) => l.libelle).join(" | ")}`
+  );
+  assert.deepEqual(lignes.map((l) => l.cle), ["principal", "haie", "fendage"]);
+});
+
+cas("la haie ne se mélange pas avec l'arbre", () => {
+  const { lignes } = lignesVendables(DICTEE_COMPLETE);
+  const haie = lignes.find((l) => l.cle === "haie")!;
+  assert.deepEqual(haie.membres, ["Taille de haie de laurier"]);
+  assert.equal(haie.detachable, true, "un client peut commander sa haie seule");
+  const principale = lignes.find((l) => l.cle === "principal")!;
+  assert.ok(!/haie/i.test(principale.libelle), "la haie est restée collée au chêne");
+});
+
+cas("une haie seule EST le chantier, pas une option", () => {
+  const { lignes } = lignesVendables(["Taille de haie de laurier, 20 ml"]);
+  assert.equal(lignes.length, 1);
+  assert.equal(lignes[0].detachable, false, "on proposerait d'alléger une ligne principale qui n'existe pas");
+});
+
+console.log("\n=== La répartition : charger les lignes détachables ===");
 
 // Son explication, mot pour mot : *« s'il met le prix de deux hommes-jour plus
 // le broyeur sur la même ligne, donc 800 + 200, et la fente sur une seule ligne
 // à 100, le client qui ne veut pas la fente va trouver ça cher ; et s'il fait
 // faire le reste par un autre artisan et qu'il nous prend juste pour la fente,
 // 100 € ce n'est pas assez cher. »*
+//
+// L'ordre des montants suit celui des lignes vendables : principale, haie,
+// fente. `null` veut dire « pas de prix dans sa grille » — la ligne reste à
+// zéro, on ne devine pas.
 
 cas("le total ne bouge pas, la répartition oui", () => {
-  const r = repartir("1100.00", "250.00");
+  const r = repartir("1100.00", [null, "250.00"], 0);
   assert.ok(r);
-  assert.equal(r.detachable, "250.00");
-  assert.equal(r.principal, "850");
-  assert.equal(Number(r.principal) + Number(r.detachable), 1100);
+  assert.deepEqual(r.montants, ["850", "250.00"]);
+  assert.equal(r.montants.reduce((s, m) => s + Number(m), 0), 1100);
 });
 
-cas("le montant de la fente vient de la grille, pas d'un pourcentage", () => {
+cas("deux lignes détachables prennent chacune SON prix de grille", () => {
+  // Le cas de son devis du 5 août : la haie ET la fente, chacune sa grille.
+  const r = repartir("1250.00", [null, "350.00", "300.00"], 0);
+  assert.ok(r);
+  assert.deepEqual(r.montants, ["600", "350.00", "300.00"]);
+});
+
+cas("le montant d'une détachable vient de la grille, pas d'un pourcentage", () => {
   // Deux totaux différents, la même fente : c'est SON prix, pas une part.
-  assert.equal(repartir("1100.00", "250.00")!.detachable, "250.00");
-  assert.equal(repartir("2000.00", "250.00")!.detachable, "250.00");
+  assert.equal(repartir("1100.00", [null, "250.00"], 0)!.montants[1], "250.00");
+  assert.equal(repartir("2000.00", [null, "250.00"], 0)!.montants[1], "250.00");
 });
 
-cas("une fente qui vaut le chantier entier ne se répartit pas", () => {
+cas("une ligne sans prix de grille reste à zéro", () => {
+  // On ne devine pas : la ligne s'écrit à 0 €, visible comme un prix à poser.
+  const r = repartir("1100.00", [null, null], 0);
+  assert.ok(r);
+  assert.deepEqual(r.montants, ["1100", "0"]);
+});
+
+cas("une détachable qui vaut le chantier entier ne se répartit pas", () => {
   // Elle laisserait une ligne principale à zéro, ou négative — un devis que le
   // patron enverrait sans le voir.
-  assert.equal(repartir("250.00", "250.00"), null);
-  assert.equal(repartir("200.00", "250.00"), null);
-  assert.equal(repartir("1000.00", "0"), null);
+  assert.equal(repartir("250.00", [null, "250.00"], 0), null);
+  assert.equal(repartir("200.00", [null, "250.00"], 0), null);
 });
 
 cas("l'écart d'arrondi est DIT, jamais tu", () => {
   // « 350, 400, 420, 560 » : la règle des prix ronds l'emporte sur l'exactitude
   // à l'euro. Mais un total qui bouge sans explication est le défaut qu'on
   // répare, pas un détail de présentation.
-  const r = repartir("1104.00", "250.00")!;
-  assert.equal(r.principal, "850");
+  const r = repartir("1104.00", [null, "250.00"], 0)!;
+  assert.equal(r.montants[0], "850");
   assert.match(r.detail, /arrondi/i, `l'écart n'est pas expliqué : « ${r.detail} »`);
   assert.match(r.detail, /1104\.00/, "le total d'avant n'est pas rappelé");
 });
 
 cas("un montant illisible ne produit pas de répartition fantaisiste", () => {
-  assert.equal(repartir("beaucoup", "250.00"), null);
-  assert.equal(repartir("1100.00", "cher"), null);
+  assert.equal(repartir("beaucoup", [null, "250.00"], 0), null);
+  assert.equal(repartir("1100.00", [null, "cher"], 0)!.montants[1], "0");
+  assert.equal(repartir("1100.00", [null, "250.00"], 9), null);
 });
 
 console.log(`\n${echecs === 0 ? "✅ Toutes les vérifications passent." : `❌ ${echecs} échec(s).`}`);

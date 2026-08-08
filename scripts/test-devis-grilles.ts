@@ -7,10 +7,10 @@ import * as tarifsRepo from "../src/server/repositories/tarifs";
 import * as lignesPrixRepo from "../src/server/repositories/lignes-prix";
 import * as brouillonsRepo from "../src/server/repositories/brouillons-informations";
 import { enregistrerPrecisions } from "../src/server/repositories/precisions-chantier";
-import { poserPrixFendage, lireGrilleFendage, prixConnusDuFendage } from "../src/server/repositories/grille-fendage";
+import { poserPrixGrille, lireGrillePrix, prixConnusDe } from "../src/server/repositories/grille-prix";
 import { preparerPropositionPrix } from "../src/server/chiffrage/proposition-prix";
 import { appliquerPropositionPrix } from "../src/server/chiffrage/appliquer-proposition";
-import { apprendrePrixFendage } from "../src/server/services/apprendre-fendage";
+import { apprendrePrixGrille } from "../src/server/services/apprendre-grille";
 import { brouillonVide } from "../src/server/ai/schemas/extraction";
 import { nettoyerBase } from "./_test-db";
 
@@ -29,7 +29,7 @@ import { nettoyerBase } from "./_test-db";
 //     diamètre, comme ça il n'invente rien. »*
 //
 // Les règles de découpage et de tranches sont éprouvées à part, sans base
-// (`test-lignes-vendables.ts`, `test-grille-fendage.ts`). Ce que CETTE suite
+// (`test-lignes-vendables.ts`, `test-grille-prix.ts`). Ce que CETTE suite
 // tient, et qu'elles ne peuvent pas tenir : **que le chemin complet les
 // emprunte réellement** — depuis le tarif de l'entreprise jusqu'aux lignes
 // écrites au détail, en passant par la grille, ses réponses à l'arrêt, et
@@ -165,7 +165,7 @@ async function main() {
 
   await test("Grille remplie : le prix de la fente en sort, et le reste est allégé d'autant", async () => {
     // La case du chêne : 20 m de haut (tranche « 15 à 20 m »), ⌀ 45 (« 40 à 50 »).
-    await poserPrixFendage(A, "h15|d40", "250", "saisi");
+    await poserPrixGrille(A, "fendage", "h15|d40", "250", "saisi");
     const chantier = await chantierDuChene(A, "Chêne grille pleine", { diametreCm: "45" });
     const p = await preparerPropositionPrix(A, chantier.id);
 
@@ -269,38 +269,38 @@ async function main() {
     // toutes mes modifications, et dans un mois tu sauras les remplir tout
     // seul. »* — le 7 août 2026.
     const chantier = await chantierDuChene(B, "Chêne apprenant", { diametreCm: "65" });
-    await apprendrePrixFendage(B, chantier.id, { libelle: "Fendage du bois", montant: "310.00" });
+    await apprendrePrixGrille(B, chantier.id, { libelle: "Fendage du bois", montant: "310.00" });
 
-    const grille = await prixConnusDuFendage(B);
+    const grille = await prixConnusDe(B, "fendage");
     assert.equal(grille.get("h15|d60"), "310.00", `case attendue h15|d60, grille : ${[...grille.keys()].join(", ")}`);
   });
 
   await test("Un zéro n'est pas une décision : il ne remplit aucune case", async () => {
     const chantier = await chantierDuChene(B, "Chêne à zéro", { diametreCm: "25" });
-    await apprendrePrixFendage(B, chantier.id, { libelle: "Fendage du bois", montant: "0" });
-    const grille = await prixConnusDuFendage(B);
+    await apprendrePrixGrille(B, chantier.id, { libelle: "Fendage du bois", montant: "0" });
+    const grille = await prixConnusDe(B, "fendage");
     assert.equal(grille.get("h15|d20"), undefined, "« 0 € » se proposerait plus tard avec l'autorité de sa grille");
   });
 
   await test("Une observation n'écrase pas un prix qu'il a posé lui-même", async () => {
-    await poserPrixFendage(B, "h15|d0", "199", "saisi");
+    await poserPrixGrille(B, "fendage", "h15|d0", "199", "saisi");
     const chantier = await chantierDuChene(B, "Chêne fin", { diametreCm: "15" });
-    await apprendrePrixFendage(B, chantier.id, { libelle: "Fendage du bois", montant: "77.00" });
-    const grille = await prixConnusDuFendage(B);
+    await apprendrePrixGrille(B, chantier.id, { libelle: "Fendage du bois", montant: "77.00" });
+    const grille = await prixConnusDe(B, "fendage");
     assert.equal(grille.get("h15|d0"), "199.00", "un devis a réécrit dans son dos une décision explicite");
   });
 
   await test("Une ligne qui n'est pas une fente n'apprend rien", async () => {
     const chantier = await chantierDuChene(B, "Chêne abattu", { diametreCm: "35" });
-    await apprendrePrixFendage(B, chantier.id, { libelle: "Abattage d'un chêne mort", montant: "900.00" });
-    const grille = await prixConnusDuFendage(B);
+    await apprendrePrixGrille(B, chantier.id, { libelle: "Abattage d'un chêne mort", montant: "900.00" });
+    const grille = await prixConnusDe(B, "fendage");
     assert.equal(grille.get("h15|d30"), undefined, "un prix d'abattage s'est rangé dans la grille de fendage");
   });
 
   // === 5. Isolation : ses prix ne partent pas chez le voisin ===============
 
   await test("La grille de A reste invisible à B", async () => {
-    const casesB = await lireGrilleFendage(B);
+    const casesB = await lireGrillePrix(B);
     assert.ok(
       casesB.every((c) => c.cellule.cle !== "h15|d40"),
       "la case posée par A se lit depuis B : ses prix de vente fuiteraient chez ses concurrents"
@@ -326,23 +326,121 @@ async function main() {
       ["250,50", "250.50"],
       ["1 200", "1200.00"],
     ] as const) {
-      await poserPrixFendage(B, "h0|d0", saisi, "saisi");
-      const grille = await prixConnusDuFendage(B);
+      await poserPrixGrille(B, "fendage", "h0|d0", saisi, "saisi");
+      const grille = await prixConnusDe(B, "fendage");
       assert.equal(grille.get("h0|d0"), attendu, `« ${saisi} » n'a pas été compris`);
     }
     // Et ce qui n'est pas un prix efface bien la case.
     for (const saisi of ["", "   ", "gratuit", "-50"]) {
-      await poserPrixFendage(B, "h0|d0", "300", "saisi");
-      await poserPrixFendage(B, "h0|d0", saisi, "saisi");
-      const grille = await prixConnusDuFendage(B);
+      await poserPrixGrille(B, "fendage", "h0|d0", "300", "saisi");
+      await poserPrixGrille(B, "fendage", "h0|d0", saisi, "saisi");
+      const grille = await prixConnusDe(B, "fendage");
       assert.equal(grille.get("h0|d0"), undefined, `« ${saisi} » aurait dû rendre la case à la question`);
     }
   });
 
+  // === 6. Son devis du 5 août, tel qu'il l'a écrit lui-même ===============
+  //
+  // **Trois lignes, trois grilles** — haie 350 €, abattage 600 €, fendage
+  // 300 €. C'est sa réponse du 8 août au soir à deux questions : la haie prend
+  // sa ligne avec un prix au mètre linéaire, l'abattage a sa grille à la
+  // technique × le diamètre.
+  //
+  // Ce que ces cas tiennent, et qu'aucune règle pure ne peut tenir : que le
+  // chantier bascule du chiffrage AU TEMPS au chiffrage AU POSTE dès que la
+  // grille connaît le travail principal.
+
+  await test("Son devis du 5 août : trois lignes, chacune à SON prix de grille", async () => {
+    const ctx = { ...A };
+    // Ses prix, tels qu'il les a donnés le 5 août.
+    await poserPrixGrille(ctx, "haie", "ml", "17.50", "saisi");
+    await poserPrixGrille(ctx, "abattage", "au_pied|d60", "600", "saisi");
+    await poserPrixGrille(ctx, "fendage", "h15|d60", "300", "saisi");
+
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Devis du 5 août" });
+    const contenu = {
+      ...brouillonVide(),
+      prestations: [
+        { libelle: "Taille de haie de laurier", description: null, quantite: "20", unite: "ml", aConfirmer: false },
+        { libelle: "Abattage d'un chêne mort", description: "20 mètres de haut", quantite: "1", unite: "u", aConfirmer: false },
+        { libelle: "Coupe en 50 cm", description: null, quantite: null, unite: null, aConfirmer: false },
+        { libelle: "Fendage du bois", description: null, quantite: null, unite: null, aConfirmer: false },
+      ],
+    };
+    for (const p of contenu.prestations) await prestationsRepo.ajouterPrestation(ctx, chantier.id, p.libelle);
+    await brouillonsRepo.enregistrerGeneration(ctx, chantier.id, contenu, "dictée");
+    await brouillonsRepo.marquerConfirme(ctx, chantier.id);
+    await chantiersRepo.mettreAJourDureeEquipe(ctx, chantier.id, { dureePrevue: "1 jour", tailleEquipe: "2 hommes" });
+    await enregistrerPrecisions(ctx, chantier.id, [
+      { sujet: "abattage.technique#1", libellePrestation: "Abattage d'un chêne mort", valeur: "au_pied", lisible: "abattage au pied" },
+      { sujet: "abattage.diametre#1", libellePrestation: "Abattage d'un chêne mort", valeur: "65", lisible: "⌀ 65 cm" },
+    ]);
+
+    const p = await preparerPropositionPrix(ctx, chantier.id);
+    assert.ok(p);
+    assert.equal(p!.lignes.length, 3, `${p!.lignes.length} ligne(s) : ${p!.lignes.map((l) => l.libelle).join(" || ")}`);
+
+    const parLibelle = new Map(p!.lignes.map((l) => [l.libelle, l.montant]));
+    const haie = [...parLibelle].find(([lib]) => /haie/i.test(lib));
+    const abattage = [...parLibelle].find(([lib]) => /Abattage/.test(lib));
+    const fente = [...parLibelle].find(([lib]) => /Fendage/.test(lib));
+
+    assert.equal(haie?.[1], "350.00", "20 ml × 17,50 € = 350 € — le prix au mètre n'a pas été appliqué");
+    assert.equal(abattage?.[1], "600.00", "la grille d'abattage (au pied, ⌀ 65) n'a pas donné 600 €");
+    assert.equal(fente?.[1], "300.00", "la grille de fendage n'a pas donné 300 €");
+    assert.equal(p!.prixPropose, "1250", `total attendu 1 250 €, vu ${p!.prixPropose}`);
+    assert.ok(
+      p!.explication.calcul.some((c) => /poste par poste/i.test(c.libelle)),
+      "le passage au chiffrage par poste n'est pas expliqué : le patron verrait le total changer sans raison"
+    );
+  });
+
+  await test("Sans grille d'abattage, le tarif à la journée reprend la main — en silence", async () => {
+    // Le comportement d'hier doit rester intact quand la grille est vide : ce
+    // n'est pas un manque à signaler, c'est le fonctionnement normal.
+    const chantier = await chantierDuChene(B, "Chêne sans grille abattage", { diametreCm: "45" });
+    const p = await preparerPropositionPrix(B, chantier.id);
+    assert.equal(p!.prixPropose, "1100", "le tarif au jour/homme ne s'applique plus");
+    assert.ok(
+      !p!.explication.donneesManquantes.some((d) => /grille de abattage/i.test(d)),
+      "l'absence de grille d'abattage est présentée comme un manque, alors que c'est le cas normal"
+    );
+  });
+
+  await test("Un prix d'abattage écrit sur un devis se range dans SA grille", async () => {
+    const chantier = await chantiersRepo.creerChantier(B, { nom: "Abattage appris" });
+    await prestationsRepo.ajouterPrestation(B, chantier.id, "Abattage d'un tilleul");
+    await enregistrerPrecisions(B, chantier.id, [
+      { sujet: "abattage.technique#0", libellePrestation: "Abattage d'un tilleul", valeur: "demontage", lisible: "démontage" },
+      { sujet: "abattage.diametre#0", libellePrestation: "Abattage d'un tilleul", valeur: "55", lisible: "⌀ 55 cm" },
+    ]);
+    await apprendrePrixGrille(B, chantier.id, { libelle: "Abattage d'un tilleul", montant: "1000.00" });
+    assert.equal((await prixConnusDe(B, "abattage")).get("demontage|d50"), "1000.00");
+    // Et il ne s'est pas rangé dans la grille de fendage.
+    assert.equal((await prixConnusDe(B, "fendage")).get("demontage|d50"), undefined);
+  });
+
+  await test("Un prix de haie se range AU MÈTRE, pas au montant de la ligne", async () => {
+    // **Le piège qui aurait coûté cher.** Écrire 350 € dans sa case ferait
+    // facturer 350 € la prochaine haie, quelle que soit sa longueur.
+    const chantier = await chantiersRepo.creerChantier(B, { nom: "Haie apprise" });
+    await prestationsRepo.ajouterPrestation(B, chantier.id, "Taille de haie de laurier, 20 ml");
+    await apprendrePrixGrille(B, chantier.id, { libelle: "Taille de haie de laurier, 20 ml", montant: "350.00" });
+    assert.equal((await prixConnusDe(B, "haie")).get("ml"), "17.50");
+  });
+
+  await test("Sans longueur, une haie n'apprend rien plutôt qu'un prix faux", async () => {
+    const chantier = await chantiersRepo.creerChantier(A, { nom: "Haie sans longueur" });
+    await prestationsRepo.ajouterPrestation(A, chantier.id, "Taille de haie");
+    const avant = (await prixConnusDe(A, "haie")).get("ml");
+    await apprendrePrixGrille(A, chantier.id, { libelle: "Taille de haie", montant: "480.00" });
+    assert.equal((await prixConnusDe(A, "haie")).get("ml"), avant, "un prix au mètre a été inventé depuis un total");
+  });
+
   await test("Une clé de case inventée n'écrit rien", async () => {
-    await poserPrixFendage(B, "h99|d99", "500", "saisi");
-    await poserPrixFendage(B, "'; DROP TABLE grille_fendage; --", "500", "saisi");
-    const grille = await prixConnusDuFendage(B);
+    await poserPrixGrille(B, "fendage", "h99|d99", "500", "saisi");
+    await poserPrixGrille(B, "fendage", "'; DROP TABLE grille_prix; --", "500", "saisi");
+    const grille = await prixConnusDe(B, "fendage");
     assert.equal(grille.get("h99|d99"), undefined);
     assert.ok(grille.size >= 1, "la table a disparu ou s'est vidée");
   });

@@ -1,14 +1,17 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { grilleFendage } from "../db/schema";
+import { grillePrix } from "../db/schema";
 import type { Ctx } from "./context";
-import { celluleDepuisCle, type CelluleFendage } from "../../lib/grille-fendage";
+import { celluleDeNature, type CelluleFendage, type NatureGrille } from "../../lib/grille-prix";
+
+/** Ré-exporté pour les actions serveur, qui ne doivent typer qu'un seul module. */
+export type NatureGrilleServeur = NatureGrille;
 
 /**
  * La grille de prix du fendage, en base.
  *
  * Les bornes des tranches et la façon de désigner une case vivent dans
- * `src/lib/grille-fendage.ts` : fonctions pures, éprouvables sans base, et
+ * `src/lib/grille-prix.ts` : fonctions pures, éprouvables sans base, et
  * discutables avec le patron sans lire une requête. Ce fichier ne fait que lire
  * et écrire.
  *
@@ -18,33 +21,42 @@ import { celluleDepuisCle, type CelluleFendage } from "../../lib/grille-fendage"
  */
 
 export type CasePleine = {
+  nature: NatureGrille;
   cellule: CelluleFendage;
   prix: string;
   origine: "saisi" | "devis";
   constateLe: Date;
 };
 
-/** Toute la grille, telle qu'elle est remplie aujourd'hui. */
-export async function lireGrilleFendage(ctx: Ctx): Promise<CasePleine[]> {
+/** Toutes les cases remplies, toutes natures confondues. */
+export async function lireGrillePrix(ctx: Ctx): Promise<CasePleine[]> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const lignes = await tx.select().from(grilleFendage);
+    const lignes = await tx.select().from(grillePrix);
     return lignes
       .map((l) => {
-        const cellule = celluleDepuisCle(l.cellule);
+        const cellule = celluleDeNature(l.nature, l.cellule);
         // Une clé qu'aucune tranche ne reconnaît : les bornes ont changé depuis
         // qu'elle a été écrite. On l'ignore plutôt que d'afficher un prix sans
         // savoir à quel arbre il correspond — et on ne la supprime pas, pour
         // qu'un retour en arrière sur les bornes la retrouve.
-        return cellule ? { cellule, prix: l.prix, origine: l.origine, constateLe: l.constateLe } : null;
+        return cellule
+          ? { nature: l.nature, cellule, prix: l.prix, origine: l.origine, constateLe: l.constateLe }
+          : null;
       })
       .filter((c): c is CasePleine => c !== null);
   });
 }
 
-/** La grille sous la forme qu'attend `prixDuFendage` : clé de case → prix. */
-export async function prixConnusDuFendage(ctx: Ctx): Promise<Map<string, string>> {
-  const cases = await lireGrilleFendage(ctx);
-  return new Map(cases.map((c) => [c.cellule.cle, c.prix]));
+/**
+ * Une grille sous la forme qu'attend `prixDuFendage` : clé de case → prix.
+ *
+ * **Une nature à la fois, et jamais deux mélangées.** `d70` désigne une case
+ * chez l'abattage comme chez le fendage : les réunir ferait chiffrer une fente
+ * au prix d'un démontage.
+ */
+export async function prixConnusDe(ctx: Ctx, nature: NatureGrille): Promise<Map<string, string>> {
+  const cases = await lireGrillePrix(ctx);
+  return new Map(cases.filter((c) => c.nature === nature).map((c) => [c.cellule.cle, c.prix]));
 }
 
 /**
@@ -80,35 +92,39 @@ function lireMontant(prix: string | null): number | null {
  * réellement pratiqué (`devis`). Une saisie à la main l'emporte toujours sur une
  * observation — c'est sa décision explicite, contre une déduction.
  */
-export async function poserPrixFendage(
+export async function poserPrixGrille(
   ctx: Ctx,
+  nature: NatureGrille,
   cle: string,
   prix: string | null,
   origine: "saisi" | "devis" = "saisi"
 ): Promise<void> {
-  if (!celluleDepuisCle(cle)) return;
+  // **La case est validée ici, contre la liste des cases possibles.** C'est ce
+  // qui fait qu'une clé fabriquée depuis un navigateur n'écrit rien : la garde
+  // n'est pas dans l'écran, qui ne protège que ce qu'on regarde.
+  if (!celluleDeNature(nature, cle)) return;
 
   const montant = lireMontant(prix);
   if (montant === null) {
     await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-      await tx.delete(grilleFendage).where(eq(grilleFendage.cellule, cle));
+      await tx.delete(grillePrix).where(and(eq(grillePrix.nature, nature), eq(grillePrix.cellule, cle)));
     });
     return;
   }
 
   await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     await tx
-      .insert(grilleFendage)
-      .values({ entrepriseId: ctx.entrepriseId, cellule: cle, prix: montant.toFixed(2), origine })
+      .insert(grillePrix)
+      .values({ entrepriseId: ctx.entrepriseId, nature, cellule: cle, prix: montant.toFixed(2), origine })
       .onConflictDoUpdate({
-        target: [grilleFendage.entrepriseId, grilleFendage.cellule],
+        target: [grillePrix.entrepriseId, grillePrix.nature, grillePrix.cellule],
         set: { prix: montant.toFixed(2), origine, constateLe: sql`now()` },
         // Une observation ne piétine pas une décision : si le patron a posé ce
         // prix lui-même dans les réglages, un devis ne le réécrit pas dans son
         // dos. L'inverse, si : ce qu'il vient d'écrire sur un vrai devis vaut
         // mieux qu'une observation plus ancienne.
         setWhere:
-          origine === "saisi" ? undefined : sql`${grilleFendage.origine} = 'devis'`,
+          origine === "saisi" ? undefined : sql`${grillePrix.origine} = 'devis'`,
       });
   });
 }

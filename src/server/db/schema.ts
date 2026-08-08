@@ -1016,31 +1016,40 @@ export const correctionsDictee = pgTable(
 );
 
 /**
- * La grille de prix du fendage — hauteur de l'arbre × diamètre du tronc.
+ * Les grilles de prix du patron — une par nature de travail.
  *
  * *« Pour la fente, ils devraient demander la hauteur de l'arbre et son
  * diamètre, et on crée une liste de prix en fonction de la hauteur et du
- * diamètre, comme ça il n'invente rien. »* — le patron, le 8 août 2026.
+ * diamètre, comme ça il n'invente rien. »* — le 8 août 2026. Le même jour, il
+ * a étendu le principe à l'abattage (technique × diamètre) et à la haie (un
+ * prix au mètre linéaire).
  *
  * Née vide : aucun prix n'est semé par le dépôt. Une case vide est une question
  * posée ; une case pré-remplie au jugé serait un prix inventé sur le devis d'un
- * client. Les bornes des tranches vivent dans `src/lib/grille-fendage.ts`,
+ * client. Les bornes des tranches vivent dans `src/lib/grille-prix.ts`,
  * pures et éprouvables sans base.
  *
  * Isolée par entreprise, contrairement à `termes_metier` : ce sont ses prix de
  * vente, pas du vocabulaire (`docs/QUESTIONS.md` §10).
  */
-export const grilleFendage = pgTable(
-  "grille_fendage",
+export const grillePrix = pgTable(
+  "grille_prix",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     entrepriseId: uuid("entreprise_id").notNull(),
-    /** La case, `h10|d40` — fabriquée par `celluleFendage`. */
+    /**
+     * La nature du travail chiffré (migration 0027).
+     *
+     * Chaque nature a ses propres axes — fendage : hauteur × diamètre ;
+     * abattage : technique × diamètre ; haie : une seule case au mètre.
+     */
+    nature: text("nature", { enum: ["fendage", "abattage", "haie"] }).notNull().default("fendage"),
+    /** La case, `h10|d40` ou `au_pied|d70` — fabriquée par `src/lib/grille-prix.ts`. */
     cellule: text("cellule").notNull(),
     prix: numeric("prix", { precision: 10, scale: 2 }).notNull(),
     /** `saisi` : posé dans les réglages. `devis` : observé sur un devis réel. */
     origine: text("origine", { enum: ["saisi", "devis"] }).notNull().default("saisi"),
     constateLe: timestamp("constate_le", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [unique("grille_fendage_cellule_uk").on(t.entrepriseId, t.cellule)]
+  (t) => [unique("grille_prix_cellule_uk").on(t.entrepriseId, t.nature, t.cellule)]
 );

@@ -2,15 +2,18 @@ import type { Ctx } from "../repositories/context";
 import { listerPrecisions } from "../repositories/precisions-chantier";
 import { listerPrestations } from "../repositories/prestations";
 import { getBrouillon } from "../repositories/brouillons-informations";
-import { poserPrixFendage } from "../repositories/grille-fendage";
-import { celluleFendage } from "../../lib/grille-fendage";
-import { mesuresArbre } from "../../lib/mesures-arbre";
+import { poserPrixGrille } from "../repositories/grille-prix";
+import { CELLULE_HAIE, celluleAbattage, celluleFendage } from "../../lib/grille-prix";
+import { longueurHaieLue, mesuresArbre } from "../../lib/mesures-arbre";
 
-/** Ce qu'on fend — même vocabulaire que le découpage des lignes. */
+// Même vocabulaire que le découpage des lignes : ce qui fait une ligne à part
+// est ce qui a une grille, et inversement.
 const FENDAGE = /\b(fend|fente)/i;
+const HAIE = /\bhaie/i;
+const ABATTAGE = /\b(abattage|abattre|abatt|d[ée]mont)/i;
 
 /**
- * La grille de fendage se remplit toute seule, à partir des devis réels.
+ * Les grilles se remplissent toutes seules, à partir des devis réels.
  *
  * **Pourquoi ça compte plus que la saisie à la main.** Une grille de 48 cases
  * que le patron devrait remplir avant de s'en servir ne serait jamais remplie —
@@ -28,12 +31,19 @@ const FENDAGE = /\b(fend|fente)/i;
  * un `try`. Ne pas savoir tirer une leçon d'une ligne ne doit jamais empêcher
  * d'écrire cette ligne.
  */
-export async function apprendrePrixFendage(
+export async function apprendrePrixGrille(
   ctx: Ctx,
   chantierId: string,
   ligne: { libelle: string; montant: string }
 ): Promise<void> {
-  if (!FENDAGE.test(ligne.libelle)) return;
+  const nature = FENDAGE.test(ligne.libelle)
+    ? ("fendage" as const)
+    : HAIE.test(ligne.libelle)
+      ? ("haie" as const)
+      : ABATTAGE.test(ligne.libelle)
+        ? ("abattage" as const)
+        : null;
+  if (!nature) return;
 
   const montant = Number(ligne.montant);
   // Un zéro n'est pas une décision : c'est une ligne pas encore remplie. La
@@ -62,11 +72,31 @@ export async function apprendrePrixFendage(
     ]
   );
 
-  const cellule = celluleFendage(mesures.hauteurM, mesures.diametreCm);
-  // Sans les deux mesures, on ne sait pas dans quelle case ranger ce prix. On
-  // ne le range nulle part — un prix dans la mauvaise case reviendrait plus
+  // **La haie se range au MÈTRE, pas au montant de la ligne.** Écrire 350 € dans
+  // sa case ferait facturer 350 € la prochaine haie, quelle que soit sa
+  // longueur. C'est le prix unitaire qu'on retient — et seulement si la longueur
+  // est connue, faute de quoi on ne retient rien.
+  if (nature === "haie") {
+    const longueur = [...precisions.map((p) => p.lisible), ligne.libelle, ...prestations.map((p) => p.libelle)]
+      .map(longueurHaieLue)
+      .find((l) => l !== null);
+    if (!longueur || longueur <= 0) return;
+    await poserPrixGrille(ctx, "haie", CELLULE_HAIE, (montant / longueur).toFixed(2), "devis");
+    return;
+  }
+
+  const cellule =
+    nature === "abattage"
+      ? celluleAbattage(
+          precisions.find((p) => p.sujet.startsWith("abattage.technique"))?.valeur ?? null,
+          mesures.diametreCm
+        )
+      : celluleFendage(mesures.hauteurM, mesures.diametreCm);
+
+  // Sans les mesures qu'il faut, on ne sait pas dans quelle case ranger ce prix.
+  // On ne le range nulle part — un prix dans la mauvaise case reviendrait plus
   // tard avec l'autorité de l'expérience.
   if (!cellule) return;
 
-  await poserPrixFendage(ctx, cellule.cle, montant.toFixed(2), "devis");
+  await poserPrixGrille(ctx, nature, cellule.cle, montant.toFixed(2), "devis");
 }

@@ -1,4 +1,5 @@
-// Lire la hauteur et le diamètre d'un arbre dans ce qui a été dit ou répondu.
+// Lire les mesures d'un chantier — hauteur, diamètre, longueur de haie —
+// dans ce qui a été dit ou répondu.
 //
 // **Un seul vocabulaire, un seul endroit.** Trois modules avaient besoin de la
 // même chose et l'auraient réécrite chacun à sa façon : celui qui décide s'il
@@ -165,4 +166,26 @@ export function mesuresArbre(reponses: readonly string[], textes: readonly strin
     if (diametreCm === null) diametreCm = diametreLu(source);
   }
   return { hauteurM, diametreCm };
+}
+
+/**
+ * La longueur d'une haie, en mètres linéaires.
+ *
+ * « 20 ml », « 20 m linéaires », « vingt mètres de long », « longueur 20 ». Même
+ * vocabulaire que la question posée à l'arrêt d'avant-chiffrage, pour la même
+ * raison que la hauteur : deux lectures différentes feraient poser une question
+ * déjà répondue, ou chercher un prix dans une case qui n'existe pas.
+ *
+ * **Ne confond pas avec la hauteur d'un arbre.** « 20 mètres de haut » n'est pas
+ * une longueur de haie — c'est le piège de sa dictée du 5 août, où « vingt
+ * mètres » figure DEUX FOIS, pour la haie et pour le chêne.
+ */
+const LONGUEUR = [
+  /(\d{1,4}(?:[.,]\d)?)\s*ml\b/i,
+  /(\d{1,4}(?:[.,]\d)?)\s*m(?:[èe]tres?)?\s*(?:lin[ée]aires?|de\s*long\b)/i,
+  /longueur\s*(?:de\s*)?(\d{1,4}(?:[.,]\d)?)/i,
+];
+
+export function longueurHaieLue(texte: string): number | null {
+  return premiereMesure(texte, LONGUEUR);
 }

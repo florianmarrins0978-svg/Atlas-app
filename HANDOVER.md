@@ -20,6 +20,14 @@ Next.js avec PostgreSQL, isolée par entreprise via *row level security*.
 
 ## Ce qui vient d'être terminé
 
+**Trois grilles de prix, et son devis de référence enfin juste.** Il a répondu
+le 8 août au soir : on garde les 8 × 6 tranches du fendage, la haie prend sa
+ligne avec un prix au mètre, l'abattage a sa grille à la technique × le
+diamètre. Son devis du 5 août — haie 350, abattage 600, fendage 300 — sort
+maintenant tel qu'il l'avait écrit. **La règle à connaître avant de toucher au
+chiffrage :** dès que la ligne principale a un prix de grille, le total devient
+la somme des postes au lieu du tarif à la journée (`ARCHITECTURE.md` §32).
+
 **Il peut déposer sa liste de prix Excel ou CSV**, au lieu de la retaper :
 `Réglages → J'ai déjà mes prix ailleurs`. Lue sans aucune bibliothèque, et
 surtout **montrée avant d'être écrite** — ce qui s'ajoute, ce qui change, ce qui
