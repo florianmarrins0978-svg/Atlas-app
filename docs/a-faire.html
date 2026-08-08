@@ -74,6 +74,7 @@
 <li><a href="#3-choisir-un-hébergement">Choisir un hébergement</a></li>
 <li><a href="#4-constituer-une-société-et-sassurer">Constituer une société et s'assurer</a></li>
 <li><a href="#5-brancher-un-fournisseur-sms-et-e-mail--ne-bloque-plus">~~Brancher un fournisseur SMS et e-mail~~ — ne bloque plus</a></li>
+<li><a href="#6-choisir-loutil-qui-émet-les-factures">Choisir l'outil qui émet les factures</a></li>
 </ol>
 <hr>
 <h2 id="1-choisir-les-fournisseurs-dia-définitifs">1. Choisir les fournisseurs d'IA définitifs</h2>
@@ -142,7 +143,7 @@
 <p><strong>Qui : le patron</strong>, pour les trois arbitrages. Le reste se code.</p>
 <h3 id="ce-qui-est-acquis">Ce qui est acquis</h3>
 <p>Le patron veut que l'agent <strong>s'améliore jour après jour</strong> à partir de ce qu'il lui apprend : cette photo, cette prestation, ce prix. Et il a été clair sur le « où » :</p>
-<blockquote>*« Je n'ai pas envie que la mémoire aille chez Anthropic. Je veux que ça reste dans l'application. »*</blockquote>
+<blockquote><em>« Je n'ai pas envie que la mémoire aille chez Anthropic. Je veux que ça reste dans l'application. »</em></blockquote>
 <p>C'est aussi le bon choix techniquement. Deux choses très différentes s'appellent « entraîner l'IA » :</p>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
@@ -172,7 +173,7 @@
 </tbody></table></div>
 <p><strong>C'est la seconde qui se construit.</strong> Rien de ce que le patron apprend à l'agent ne part chez un prestataire.</p>
 <h3 id="la-vraie-question--le-passage-en-ligne">La vraie question : le passage en ligne</h3>
-<blockquote>*« Le jour où je vais mettre ça en ligne, est-ce que je vais perdre toute la mémoire qui sert à l'agent à s'améliorer ? »*</blockquote>
+<blockquote><em>« Le jour où je vais mettre ça en ligne, est-ce que je vais perdre toute la mémoire qui sert à l'agent à s'améliorer ? »</em></blockquote>
 <p><strong>Non — mais seulement si on agit avant.</strong> La base du banc d'essai vit dans l'espace de travail ; l'hébergement en aura une autre. Le transfert d'une base à l'autre est une procédure connue, documentée dans <a href="PRODUCTION_BACKUP_RESTORE.md" target="_blank" rel="noopener"><code>PRODUCTION_BACKUP_RESTORE.md</code></a>, et <strong>elle a déjà été exécutée avec succès le 29 juillet 2026</strong> sur la base de développement.</p>
 <p>Ce qui est vrai, en revanche :</p>
 <ul>
@@ -254,7 +255,7 @@
 </tr>
 </tbody></table></div>
 <p><strong>L'hébergement sert à sortir le produit, pas à le finir.</strong> Il apporte une adresse permanente, des utilisateurs autres que vous, et le droit de confier de vraies données. Rien de plus, rien de moins.</p>
-<p>*Astuce* : dans l'espace de travail, l'adresse est <strong>publique dès la création</strong> — plus rien à régler. Une vraie personne peut donc ouvrir le lien du devis depuis son propre téléphone, de quoi éprouver la page du client pour de bon. En contrepartie, l'adresse est ouverte à qui la possède et le mot de passe de démonstration est écrit dans le dépôt : <strong>n'y saisissez que des données inventées</strong>.</p>
+<p><em>Astuce</em> : dans l'espace de travail, l'adresse est <strong>publique dès la création</strong> — plus rien à régler. Une vraie personne peut donc ouvrir le lien du devis depuis son propre téléphone, de quoi éprouver la page du client pour de bon. En contrepartie, l'adresse est ouverte à qui la possède et le mot de passe de démonstration est écrit dans le dépôt : <strong>n'y saisissez que des données inventées</strong>.</p>
 <h3 id="les-quatre-briques-nécessaires">Les quatre briques nécessaires</h3>
 <div class="tablewrap"><table><thead><tr>
 <th>Brique</th>
@@ -371,6 +372,50 @@
 <p><strong>Joindre le PDF au message, automatiquement.</strong> Un message préparé par un site web ne peut pas porter de pièce jointe — c'est le format qui n'en a pas, aucun développement n'y changera rien.</p>
 <p>Ce n'est pas une perte : <strong>le PDF est au bout du lien</strong>. Et l'y joindre serait même nuisible — votre client lirait la pièce jointe et vous répondrait « c'est bon » par SMS, sans jamais ouvrir la page. Donc sans date choisie, et sans la trace qui vous protège en cas de litige. Vous ressaisiriez tout à la main.</p>
 <p>Le jour où l'application s'installera vraiment depuis l'App Store, le composeur du téléphone acceptera destinataire <strong>et</strong> pièce jointe : on l'ajoutera alors, en gardant le lien dans le message. Cela suppose le compte développeur Apple — <a href="QUESTIONS.md" target="_blank" rel="noopener"><code>QUESTIONS.md</code></a> question 1.</p>
+<hr>
+<h2 id="6-choisir-loutil-qui-émet-les-factures">6. Choisir l'outil qui émet les factures</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Qui : le patron</strong>, pour le choix, le compte et la signature. Le branchement se code ensuite.</p>
+<p><em>Ajouté le 8 août 2026, après votre question « qu'est-ce que tu dois faire sur la plateforme de facturation ? ». La réponse longue est dans <a href="QUESTIONS.md" target="_blank" rel="noopener"><code>QUESTIONS.md</code></a> question 11 ; ce point ne garde que ce qui attend une décision.</em></p>
+<h3 id="ce-qui-est-déjà-décidé-et-ne-se-rouvre-pas">Ce qui est déjà décidé, et ne se rouvre pas</h3>
+<p><strong>Atlas prépare les factures, il ne les émet pas au sens légal.</strong> Décision du 31 juillet 2026, inscrite comme définitive dans <a href="AGENT.md" target="_blank" rel="noopener"><code>AGENT.md</code></a> §6 et <a href="MVP.md" target="_blank" rel="noopener"><code>MVP.md</code></a> — « hors périmètre définitivement, pas <em>pas encore</em> ».</p>
+<p>Une facture non conforme n'est pas un défaut d'affichage : c'est un risque légal pour l'artisan, et une numérotation cassée se traîne sur tout un exercice. On se branche par <strong>API</strong> sur un outil dont c'est le métier.</p>
+<h3 id="pourquoi-cest-bloquant">Pourquoi c'est bloquant</h3>
+<p>Deux choses, et elles ne sont pas de même nature :</p>
+<ol>
+<li><strong>Pour vendre Atlas à un artisan</strong>, il faut que ses factures sortent conformes. Aujourd'hui Atlas produit un PDF numéroté en continu — le minimum — mais <strong>ni Factur-X, ni UBL, ni archivage à valeur probante, ni raccordement à une plateforme agréée</strong>. Vendre l'application en laissant croire l'inverse l'exposerait, lui.</li>
+<li><strong>Pour Eden Nature elle-même</strong>, la réforme de la facturation électronique impose de passer par une plateforme agréée — d'abord pour <strong>recevoir</strong> ses factures fournisseurs, plus tard pour <strong>émettre</strong> les siennes. Cela vaut qu'Atlas existe ou non.</li>
+</ol>
+<h3 id="les-échéances-avec-la-réserve-qui-va-avec">Les échéances, avec la réserve qui va avec</h3>
+<p>Les dates annoncées sont <strong>septembre 2026</strong> pour la réception et <strong>septembre 2027</strong> pour l'émission des petites entreprises.</p>
+<p><strong>Ce calendrier a déjà été décalé deux fois, et je ne peux pas le vérifier d'ici</strong> : le mandataire réseau de l'environnement de développement refuse les sites publics. Le faire confirmer par un comptable est le premier geste — pas me croire sur parole.</p>
+<h3 id="ce-quil-faut-décider">Ce qu'il faut décider</h3>
+<p><strong>Vous n'avez aucun logiciel de comptabilité ni de facturation aujourd'hui</strong> (réponse du 8 août 2026). Il en faut un, et le choix vous appartient : il engage un abonnement et vos écritures.</p>
+<p>Les candidats cités dans <code>AGENT.md</code> §6 — Pennylane, Evoliz, Tiime, Sellsy, Abby. Les trois points à regarder :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Est-il immatriculé comme plateforme agréée</strong>, ou branché sur une</td>
+<td>Sans cela il ne vous met pas en règle, quelle que soit sa qualité par ailleurs</td>
+</tr>
+<tr>
+<td><strong>A-t-il une API</strong> pour créer une facture depuis un autre logiciel</td>
+<td>C'est la condition du branchement. Certains outils très corrects n'en ont pas</td>
+</tr>
+<tr>
+<td><strong>Que fait votre comptable</strong>, s'il en existe un</td>
+<td>Prendre l'outil qu'il utilise déjà vous épargne deux saisies et une brouille</td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucun tarif n'est cité ici, volontairement</strong> : le réseau de l'environnement de développement refuse les pages tarifaires. Un chiffre inventé ferait choisir de travers, et ne se découvrirait qu'à la première facture — c'est déjà la règle appliquée au point 1.</p>
+<h3 id="ce-que-je-peux-faire-et-ce-que-je-ne-peux-pas">Ce que je peux faire, et ce que je ne peux pas</h3>
+<p><strong>Moi, une fois l'outil choisi :</strong> brancher son API, envoyer ce qu'Atlas a déjà préparé — client, lignes, montants, taux, période — récupérer le numéro et le document qu'il a émis, et éprouver le parcours de bout en bout. C'est le point 6 de la liste de <code>AGENT.md</code> §9, un lot de quelques jours.</p>
+<p><strong>Moi, avant :</strong> rien d'utile. Chaque outil a son API ; écrire du code avant le choix, ce serait écrire du code à jeter.</p>
+<p><strong>Ce que je ne peux pas faire à votre place :</strong> ouvrir le compte et accepter les conditions. Cela engage juridiquement, comme pour l'hébergement au point 3.</p>
+<h3 id="ce-que-ça-ne-bloque-pas">Ce que ça ne bloque pas</h3>
+<p>Ni l'essai d'Atlas, ni sa finition. Le parcours entier — dictée, prix, devis, envoi, réponse du client, planification, fin de chantier, facture, relevé de TVA — s'éprouve dès aujourd'hui. Ce point bloque le fait de <strong>confier Atlas à un vrai artisan avec de vrais clients</strong>, comme les autres.</p>
 </main>
 </body>
 </html>

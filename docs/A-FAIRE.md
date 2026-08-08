@@ -33,6 +33,7 @@ qui ne se résoudra pas en codant.
 3. [Choisir un hébergement](#3-choisir-un-hébergement)
 4. [Constituer une société et s'assurer](#4-constituer-une-société-et-sassurer)
 5. [~~Brancher un fournisseur SMS et e-mail~~ — ne bloque plus](#5-brancher-un-fournisseur-sms-et-e-mail--ne-bloque-plus)
+6. [Choisir l'outil qui émet les factures](#6-choisir-loutil-qui-émet-les-factures)
 
 ---
 
@@ -448,3 +449,89 @@ Le jour où l'application s'installera vraiment depuis l'App Store, le composeur
 du téléphone acceptera destinataire **et** pièce jointe : on l'ajoutera alors, en
 gardant le lien dans le message. Cela suppose le compte développeur Apple —
 [`QUESTIONS.md`](QUESTIONS.md) question 1.
+
+---
+
+## 6. Choisir l'outil qui émet les factures
+
+**Qui : le patron**, pour le choix, le compte et la signature. Le branchement
+se code ensuite.
+
+*Ajouté le 8 août 2026, après votre question « qu'est-ce que tu dois faire sur
+la plateforme de facturation ? ». La réponse longue est dans
+[`QUESTIONS.md`](QUESTIONS.md) question 11 ; ce point ne garde que ce qui
+attend une décision.*
+
+### Ce qui est déjà décidé, et ne se rouvre pas
+
+**Atlas prépare les factures, il ne les émet pas au sens légal.** Décision du
+31 juillet 2026, inscrite comme définitive dans [`AGENT.md`](AGENT.md) §6 et
+[`MVP.md`](MVP.md) — « hors périmètre définitivement, pas *pas encore* ».
+
+Une facture non conforme n'est pas un défaut d'affichage : c'est un risque
+légal pour l'artisan, et une numérotation cassée se traîne sur tout un
+exercice. On se branche par **API** sur un outil dont c'est le métier.
+
+### Pourquoi c'est bloquant
+
+Deux choses, et elles ne sont pas de même nature :
+
+1. **Pour vendre Atlas à un artisan**, il faut que ses factures sortent
+   conformes. Aujourd'hui Atlas produit un PDF numéroté en continu — le
+   minimum — mais **ni Factur-X, ni UBL, ni archivage à valeur probante, ni
+   raccordement à une plateforme agréée**. Vendre l'application en laissant
+   croire l'inverse l'exposerait, lui.
+2. **Pour Eden Nature elle-même**, la réforme de la facturation électronique
+   impose de passer par une plateforme agréée — d'abord pour **recevoir** ses
+   factures fournisseurs, plus tard pour **émettre** les siennes. Cela vaut
+   qu'Atlas existe ou non.
+
+### Les échéances, avec la réserve qui va avec
+
+Les dates annoncées sont **septembre 2026** pour la réception et **septembre
+2027** pour l'émission des petites entreprises.
+
+**Ce calendrier a déjà été décalé deux fois, et je ne peux pas le vérifier
+d'ici** : le mandataire réseau de l'environnement de développement refuse les
+sites publics. Le faire confirmer par un comptable est le premier geste — pas
+me croire sur parole.
+
+### Ce qu'il faut décider
+
+**Vous n'avez aucun logiciel de comptabilité ni de facturation aujourd'hui**
+(réponse du 8 août 2026). Il en faut un, et le choix vous appartient : il
+engage un abonnement et vos écritures.
+
+Les candidats cités dans `AGENT.md` §6 — Pennylane, Evoliz, Tiime, Sellsy,
+Abby. Les trois points à regarder :
+
+| Point | Pourquoi |
+|---|---|
+| **Est-il immatriculé comme plateforme agréée**, ou branché sur une | Sans cela il ne vous met pas en règle, quelle que soit sa qualité par ailleurs |
+| **A-t-il une API** pour créer une facture depuis un autre logiciel | C'est la condition du branchement. Certains outils très corrects n'en ont pas |
+| **Que fait votre comptable**, s'il en existe un | Prendre l'outil qu'il utilise déjà vous épargne deux saisies et une brouille |
+
+**Aucun tarif n'est cité ici, volontairement** : le réseau de l'environnement
+de développement refuse les pages tarifaires. Un chiffre inventé ferait choisir
+de travers, et ne se découvrirait qu'à la première facture — c'est déjà la
+règle appliquée au point 1.
+
+### Ce que je peux faire, et ce que je ne peux pas
+
+**Moi, une fois l'outil choisi :** brancher son API, envoyer ce qu'Atlas a déjà
+préparé — client, lignes, montants, taux, période — récupérer le numéro et le
+document qu'il a émis, et éprouver le parcours de bout en bout. C'est le
+point 6 de la liste de `AGENT.md` §9, un lot de quelques jours.
+
+**Moi, avant :** rien d'utile. Chaque outil a son API ; écrire du code avant le
+choix, ce serait écrire du code à jeter.
+
+**Ce que je ne peux pas faire à votre place :** ouvrir le compte et accepter
+les conditions. Cela engage juridiquement, comme pour l'hébergement au point 3.
+
+### Ce que ça ne bloque pas
+
+Ni l'essai d'Atlas, ni sa finition. Le parcours entier — dictée, prix, devis,
+envoi, réponse du client, planification, fin de chantier, facture, relevé de
+TVA — s'éprouve dès aujourd'hui. Ce point bloque le fait de **confier Atlas à
+un vrai artisan avec de vrais clients**, comme les autres.

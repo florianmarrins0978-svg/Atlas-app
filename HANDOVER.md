@@ -107,10 +107,18 @@ Détail dans `CHANGELOG.md`, état complet dans `PROJECT_STATE.md`.
 l'**agenda Google** — et encore, partiellement : la connexion du compte demande
 des identifiants que le patron doit fournir.
 
-**Avant de proposer autre chose,** lire `docs/A-FAIRE.md` : **quatre** points
+**Avant de proposer autre chose,** lire `docs/A-FAIRE.md` : **cinq** points
 bloquent un usage réel et **aucun ne s'avance en codant**. Ne pas les
 redécouvrir ni les reposer au patron : ils sont écrits, avec leur coût et leur
 propriétaire.
+
+Le dernier arrivé est le point 6, **choisir l'outil qui émet les factures**
+(8 août 2026). Deux choses y sont à ne pas confondre. La première est acquise
+et ne se rouvre pas : **Atlas prépare les factures, il ne les émet pas au sens
+légal** — `docs/AGENT.md` §6, acté le 31 juillet, « hors périmètre
+définitivement ». Ce qui est ouvert, c'est seulement *sur quel outil se
+brancher*, et le patron n'en a aucun à ce jour. Tant que le choix n'est pas
+fait, écrire du code de branchement serait écrire du code à jeter.
 
 Le cinquième — brancher un fournisseur SMS et e-mail — a été **tranché le
 2026-08-04 : il n'y en aura pas.** Le devis part de la messagerie du patron.

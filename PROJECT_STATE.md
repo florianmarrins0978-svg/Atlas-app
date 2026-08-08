@@ -137,8 +137,8 @@ Voir `TODO.md` pour le détail et l'ordre.
 
 ## Ce qui bloque, et qui n'avancera pas en codant
 
-**Quatre** points, tous dans **`docs/A-FAIRE.md`**, tous en attente d'une
-décision du patron. Le cinquième — le fournisseur d'envoi — a été tranché le
+**Cinq** points, tous dans **`docs/A-FAIRE.md`**, tous en attente d'une
+décision du patron. Celui du fournisseur d'envoi a été tranché le
 2026-08-04 : il n'y en aura pas, et il est laissé barré ci-dessous pour éviter
 qu'on le rouvre.
 
@@ -162,6 +162,13 @@ qu'on le rouvre.
    plus à autoriser. Restent hors de portée, en conforts et non en blocages :
    relance automatique à sept jours, départ automatique de la facture, accusé de
    réception, code SMS à l'acceptation.
+6. Choisir l'outil comptable qui **émet** les factures — le patron n'en a aucun
+   à ce jour (8 août 2026). Ne pas confondre avec la réserve ci-dessous : que
+   Atlas n'émette pas est **définitif** ; ce qui est ouvert, c'est seulement sur
+   quoi se brancher. Chaque outil ayant son API, il n'y a rien à coder avant le
+   choix. Deux obligations distinctes en dépendent — la conformité des factures
+   des artisans à qui Atlas sera vendu, et celle d'Eden Nature pour ses propres
+   factures, qu'Atlas existe ou non.
 
 ---
 

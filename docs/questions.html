@@ -79,6 +79,7 @@
 <li><a href="#8-faut-il-héberger-lapplication-pour-pouvoir-lessayer-en-entier-">Faut-il héberger l'application pour pouvoir l'essayer en entier ?</a></li>
 <li><a href="#9-ce-que-je-vois-là-est-ce-le-design-final-">Ce que je vois là, est-ce le design final ?</a></li>
 <li><a href="#10-qui-voit-quoi--moi-mes-clients-leurs-salariés-">Qui voit quoi : moi, mes clients, leurs salariés ?</a></li>
+<li><a href="#11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-">Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -133,13 +134,13 @@
 <p><strong>Non</strong>, pas pour ce problème-là. Une clé ne peut pas remplir un champ qui n'existe pas dans la fonction employée.</p>
 <p>Il y a trois niveaux, et deux règlent la question sans rien payer :</p>
 <p><strong>Aujourd'hui, sur le web — gratuit.</strong> Le PDF est joint automatiquement, et l'adresse du client est copiée dans le presse-papier : il ne reste qu'à la coller dans « À : ».</p>
-<p><strong>Dans l'application iOS/Android — gratuit aussi.</strong> Le composeur de mail natif accepte destinataire, objet *et* pièce jointe. Tout serait rempli d'un coup. Aucune clé, aucun serveur : juste un module natif à ajouter au moment du vrai build (voir question 1 pour le compte développeur).</p>
+<p><strong>Dans l'application iOS/Android — gratuit aussi.</strong> Le composeur de mail natif accepte destinataire, objet <em>et</em> pièce jointe. Tout serait rempli d'un coup. Aucune clé, aucun serveur : juste un module natif à ajouter au moment du vrai build (voir question 1 pour le compte développeur).</p>
 <p><strong>L'envoi vraiment automatique — là, oui.</strong> Si le devis doit partir sans que personne ne touche à rien, il faut un service d'envoi (Brevo, Postmark, Resend…), donc une clé API, un compte, et un serveur pour garder cette clé au secret. Une clé placée dans une page publique est une clé perdue.</p>
 <hr>
 <h2 id="3-pourquoi-ladresse-du-client-ne-se-met-pas-toute-seule-dans-le-mail-">3. Pourquoi l'adresse du client ne se met pas toute seule dans le mail ?</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>Parce que <strong>le partage d'iOS n'a pas de champ destinataire</strong>. Ce n'est pas une erreur de programmation : ce partage peut envoyer vers Mail, WhatsApp ou Messages, où « À : » n'aurait aucun sens. C'est aussi pour ça que l'objet reste vide.</p>
-<p>Sur ordinateur, l'adresse *est* remplie automatiquement — parce qu'on y emprunte une autre voie.</p>
+<p>Sur ordinateur, l'adresse <em>est</em> remplie automatiquement — parce qu'on y emprunte une autre voie.</p>
 <h3 id="le-choix-quil-a-fallu-faire">Le choix qu'il a fallu faire</h3>
 <p>Les deux voies s'excluent, et aucune ne fait les deux :</p>
 <div class="tablewrap"><table><thead><tr>
@@ -163,7 +164,7 @@
 <p>Ce compromis disparaît dans l'application native (question 2).</p>
 <h3 id="mise-à-jour-du-2026-08-03--dans-atlas-larbitrage-sinverse">Mise à jour du 2026-08-03 : dans Atlas, l'arbitrage s'inverse</h3>
 <p>Ce qui précède valait pour le site Arborea, où <strong>le PDF était la livraison</strong>. Dans Atlas, la livraison est <strong>la page du client</strong> — c'est là qu'il choisit sa date, et ce choix fait tourner la planification et la facture.</p>
-<p>Le tableau ci-dessus reste exact, mais la case qui compte a changé : <strong>c'est le destinataire prérempli qu'on garde</strong>, et le PDF voyage au bout du lien. Le patron a tranché en ce sens : *« il faut que ça préremplisse automatiquement soit le numéro de téléphone du client, soit l'adresse e-mail. »*</p>
+<p>Le tableau ci-dessus reste exact, mais la case qui compte a changé : <strong>c'est le destinataire prérempli qu'on garde</strong>, et le PDF voyage au bout du lien. Le patron a tranché en ce sens : <em>« il faut que ça préremplisse automatiquement soit le numéro de téléphone du client, soit l'adresse e-mail. »</em></p>
 <p>Et joindre le PDF serait désormais <strong>nuisible</strong> : le client le lirait et répondrait « c'est bon » par retour de message, sans ouvrir la page — donc sans date choisie et sans trace d'acceptation. Détail dans <code>ARCHITECTURE.md</code> §13.</p>
 <hr>
 <h2 id="4-si-lapplication-se-fait-pirater-quest-ce-que-je-risque-">4. Si l'application se fait pirater, qu'est-ce que je risque ?</h2>
@@ -176,14 +177,14 @@
 <li>Pour <strong>vos abonnés artisans</strong> → vous êtes responsable de traitement.</li>
 <li>Pour <strong>les clients de vos artisans</strong> → vous êtes <strong>sous-traitant</strong>, et l'artisan est le responsable.</li>
 </ul>
-<p>Cette seconde relation impose un <strong>contrat</strong> (article 28 du RGPD). Sans lui, vous êtes en tort *avant même* tout piratage.</p>
+<p>Cette seconde relation impose un <strong>contrat</strong> (article 28 du RGPD). Sans lui, vous êtes en tort <em>avant même</em> tout piratage.</p>
 <h3 id="ce-que-vous-encourez-en-cas-de-fuite">Ce que vous encourez en cas de fuite</h3>
 <ul>
 <li><strong>Amende administrative (CNIL)</strong> : jusqu'à 10 M€ ou 2 % du chiffre d'affaires mondial. En pratique, la CNIL commence souvent par une mise en demeure — mais l'absence totale de documentation fait basculer vers la sanction.</li>
 <li><strong>Pénal</strong> : l'article 226-17 du Code pénal punit le défaut de sécurité de 5 ans de prison et 300 000 € d'amende. Pour une société, le montant est quintuplé (1,5 M€). C'est le point que la plupart des gens ignorent.</li>
 <li><strong>Civil</strong> : les personnes concernées peuvent réclamer des dommages.</li>
 <li><strong>Contractuel</strong> : vos artisans peuvent se retourner contre vous.</li>
-<li><strong>Obligation immédiate</strong> : vous devez alerter l'artisan <strong>sans délai</strong>. C'est *lui* qui a ensuite 72 heures pour prévenir la CNIL. Réagir en trois jours lui fait manquer son délai.</li>
+<li><strong>Obligation immédiate</strong> : vous devez alerter l'artisan <strong>sans délai</strong>. C'est <em>lui</em> qui a ensuite 72 heures pour prévenir la CNIL. Réagir en trois jours lui fait manquer son délai.</li>
 </ul>
 <h3 id="ce-qui-réduit-vraiment-le-risque">Ce qui réduit vraiment le risque</h3>
 <div class="tablewrap"><table><thead><tr>
@@ -258,7 +259,7 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>Complément de la question 6, qui répondait « le vol n'est pas le vrai risque » sans dire lequel l'est.</p>
 <h3 id="les-trois-problèmes">Les trois problèmes</h3>
-<p><strong>1. Le code serveur est lisible par tous.</strong> Le plus concret. Un attaquant peut l'étudier tranquillement pour chercher une faille : comment les jetons sont fabriqués, où sont les vérifications, ce qui n'est *pas* contrôlé. Il n'a pas à deviner, il lit.</p>
+<p><strong>1. Le code serveur est lisible par tous.</strong> Le plus concret. Un attaquant peut l'étudier tranquillement pour chercher une faille : comment les jetons sont fabriqués, où sont les vérifications, ce qui n'est <em>pas</em> contrôlé. Il n'a pas à deviner, il lit.</p>
 <p><strong>2. L'analyse RGPD est publique</strong> — détaillée plus bas, c'est le point le moins évident.</p>
 <p><strong>3. Les documents internes sont publics.</strong> Les coûts, l'exposition juridique, les arbitrages. Et <code>AGENT.md</code>, qui expose la stratégie produit : ce qui est construit, ce qui manque, où l'on va. Un concurrent y trouve une feuille de route toute faite.</p>
 <p>S'y ajoutent la configuration d'intégration continue et <code>.env.example</code>, qui révèle quels fournisseurs sont utilisés.</p>
@@ -293,7 +294,7 @@
 <tr>
 <td>Appli statique dans le navigateur</td>
 <td>lisible</td>
-<td>lisible *(inévitable)*</td>
+<td>lisible <em>(inévitable)</em></td>
 </tr>
 </tbody></table></div>
 <h3 id="pourquoi-lanalyse-rgpd-publique-est-gênante">Pourquoi l'analyse RGPD publique est gênante</h3>
@@ -310,7 +311,7 @@
 <hr>
 <h2 id="8-faut-il-héberger-lapplication-pour-pouvoir-lessayer-en-entier-">8. Faut-il héberger l'application pour pouvoir l'essayer en entier ?</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p>*Posée le 2026-08-01.*</p>
+<p><em>Posée le 2026-08-01.</em></p>
 <p><strong>Non.</strong> Vous pouvez essayer l'application entière, et la finir, sans l'héberger nulle part. L'hébergement sert à <strong>sortir</strong> le produit, pas à le terminer.</p>
 <h3 id="la-confusion-à-dissiper-dabord">La confusion à dissiper d'abord</h3>
 <p>Deux choses portent le même mot et n'ont rien à voir :</p>
@@ -373,7 +374,7 @@
 <hr>
 <h2 id="9-ce-que-je-vois-là-est-ce-le-design-final-">9. Ce que je vois là, est-ce le design final ?</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p>*Posée le 2026-08-01.*</p>
+<p><em>Posée le 2026-08-01.</em></p>
 <p><strong>Oui.</strong> Même code, mêmes écrans, mêmes couleurs, mêmes polices. Ce que vous avez sous les yeux n'est pas une approximation : c'est l'application. Rien ne sera redessiné pour la publication.</p>
 <h3 id="trois-choses-changeront-toutes-en-mieux">Trois choses changeront, toutes en mieux</h3>
 <div class="tablewrap"><table><thead><tr>
@@ -417,9 +418,9 @@
 <hr>
 <h2 id="10-qui-voit-quoi--moi-mes-clients-leurs-salariés-">10. Qui voit quoi : moi, mes clients, leurs salariés ?</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p>*Question posée le 7 août 2026, en construisant la page « Le vocabulaire de mon métier ».*</p>
+<p><em>Question posée le 7 août 2026, en construisant la page « Le vocabulaire de mon métier ».</em></p>
 <h3 id="le-point-de-départ">Le point de départ</h3>
-<blockquote>*« Est-ce que les utilisateurs auront accès à cette page ? Moi c'est ça que je ne veux pas. Je veux qu'il y ait mon application avec mon compte à moi, et ensuite qu'on crée un profil entreprise — c'est ce profil-là qu'on va vendre. Et il faut aussi que les entrepreneurs, au sein de leur profil entreprise, puissent avoir des profils pour leurs salariés : par exemple juste le planning et les devis, mais sans les prix. »*</blockquote>
+<blockquote><em>« Est-ce que les utilisateurs auront accès à cette page ? Moi c'est ça que je ne veux pas. Je veux qu'il y ait mon application avec mon compte à moi, et ensuite qu'on crée un profil entreprise — c'est ce profil-là qu'on va vendre. Et il faut aussi que les entrepreneurs, au sein de leur profil entreprise, puissent avoir des profils pour leurs salariés : par exemple juste le planning et les devis, mais sans les prix. »</em></blockquote>
 <h3 id="trois-niveaux-et-pas-deux">Trois niveaux, et pas deux</h3>
 <div class="tablewrap"><table><thead><tr>
 <th>Qui</th>
@@ -430,7 +431,7 @@
 <td>Tout, <strong>plus</strong> le vocabulaire du métier — qui sert à tous vos clients sans qu'ils y touchent</td>
 </tr>
 <tr>
-<td><strong>Le patron d'une entreprise</strong> — *ce qui se vend*</td>
+<td><strong>Le patron d'une entreprise</strong> — <em>ce qui se vend</em></td>
 <td>Toute son entreprise : chantiers, planning, devis, prix, factures, TVA, réglages, ses tarifs</td>
 </tr>
 <tr>
@@ -445,8 +446,8 @@
 <li><strong>le vocabulaire du métier</strong> — « charpentière champignonnée », « fendre en 50 », « taille de cohabitation ». Ce sont des mots, pas des données de client : aucun nom, aucune adresse, aucun prix. C'est ce qui les rend partageables sans le moindre risque ;</li>
 <li><strong>vos règles de chiffrage</strong>, dont celle-ci, que vous avez décidé de faire partir avec l'application (7 août 2026) :</li>
 </ul>
-<p>&gt; *Chaque ligne doit pouvoir se vendre seule. Une prestation détachable — la &gt; fente, l'évacuation, le dessouchage — porte son propre déplacement et sa &gt; mise en œuvre, jamais son seul coût marginal. Ne pas ventiler au prorata du &gt; temps : alléger la ligne principale, charger la détachable.*</p>
-<p>Le pourquoi, dans vos mots : *« si le client ne veut pas la fente, il va trouver le reste cher ; et s'il fait faire le reste par un autre artisan et nous prend juste pour la fente, 100 € ce n'est pas assez. »*</p>
+<p>&gt; <em>Chaque ligne doit pouvoir se vendre seule. Une prestation détachable — la &gt; fente, l'évacuation, le dessouchage — porte son propre déplacement et sa &gt; mise en œuvre, jamais son seul coût marginal. Ne pas ventiler au prorata du &gt; temps : alléger la ligne principale, charger la détachable.</em></p>
+<p>Le pourquoi, dans vos mots : <em>« si le client ne veut pas la fente, il va trouver le reste cher ; et s'il fait faire le reste par un autre artisan et nous prend juste pour la fente, 100 € ce n'est pas assez. »</em></p>
 <p><strong>Reste chez chaque client, et ne se partage jamais :</strong></p>
 <ul>
 <li><strong>la mémoire de ses corrections</strong> — ce qu'il avait dicté, ce qu'il a finalement écrit sur son devis. C'est fait de ses chantiers, de ses libellés et de ses prix ;</li>
@@ -456,7 +457,60 @@
 <p>Le point sur lequel il ne faut pas transiger. Cacher un montant dans la page ne le retire pas de ce que la page a reçu : un salarié qui ouvre l'adresse du PDF, ou qui regarde ce que son téléphone a téléchargé, verrait tout.</p>
 <p><strong>Les montants ne doivent pas sortir du serveur</strong> pour qui n'a pas le droit de les voir — ni dans la page, ni dans le PDF, ni dans une réponse d'API. C'est plus de travail qu'un test dans l'affichage, et c'est la seule version honnête : un salarié qui découvre votre marge parce qu'il a su regarder, c'est pire que pas de restriction du tout, puisque vous vous croyiez protégé.</p>
 <h3 id="ce-qui-reste-à-trancher">Ce qui reste à trancher</h3>
-<p><strong>Le salarié voit-il le planning de toute l'entreprise, ou seulement ses chantiers à lui ?</strong> Question posée le 7 août 2026, réponse remise à plus tard : *« attends, fais déjà tout le reste, on en reparle après. »* Elle change le travail et elle change ce qui se vend.</p>
+<p><strong>Le salarié voit-il le planning de toute l'entreprise, ou seulement ses chantiers à lui ?</strong> Question posée le 7 août 2026, réponse remise à plus tard : <em>« attends, fais déjà tout le reste, on en reparle après. »</em> Elle change le travail et elle change ce qui se vend.</p>
+<hr>
+<h2 id="11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-">11. Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Question posée le 8 août 2026, après que j'ai demandé si une plateforme de facturation électronique était en vue.</em></p>
+<h3 id="la-réponse-courte--rien-et-cest-une-décision-pas-un-oubli">La réponse courte : rien, et c'est une décision, pas un oubli</h3>
+<p>Elle a été prise le 31 juillet 2026 et elle tient. <code>AGENT.md</code> §6, mot pour mot :</p>
+<blockquote>La facturation électronique conforme (numérotation inviolable, archivage, Factur-X/UBL/CII, obligations 2026/2027) est un projet à part et un risque juridique. On s'y branche par <strong>API</strong> sur un outil existant (Pennylane, Evoliz, Tiime, Sellsy, Abby…).</blockquote>
+<p>Et la ligne qui suit, qui est la vraie règle :</p>
+<blockquote><strong>Le rôle de l'agent est donc de préparer, pas d'émettre.</strong></blockquote>
+<p>Atlas rassemble les lignes, le client, les taux, la période. L'outil comptable émet le document légal <strong>et en porte la responsabilité</strong>. C'est inscrit comme définitif dans <code>MVP.md</code> — « hors périmètre définitivement, pas <em>pas encore</em> ».</p>
+<p><strong>Pourquoi on ne le recode pas.</strong> Une facture non conforme n'est pas un défaut d'affichage, c'est un risque légal pour l'artisan. Et une numérotation cassée ne se rattrape pas après coup : elle se traîne sur tout un exercice.</p>
+<h3 id="ce-que-je-dois-faire-alors">Ce que je dois faire, alors</h3>
+<p>Une seule chose, et c'est le point 6 de la liste de <code>AGENT.md</code> §9 : <strong>brancher l'outil comptable par API</strong>. Concrètement, le jour où vous en avez un — envoyer vers lui ce qu'Atlas a déjà préparé, récupérer le numéro et le document qu'il a émis.</p>
+<p>C'est un lot de travail ordinaire, quelques jours. Il ne peut pas commencer avant que l'outil soit choisi : chacun a son API.</p>
+<h3 id="ce-qui-existe-déjà-dans-atlas">Ce qui existe déjà dans Atlas</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Facture pré-remplie depuis le devis</td>
+<td>fait — c'est l'arrêt 3, un appui si rien n'a bougé</td>
+</tr>
+<tr>
+<td>Numérotation <code>F2026-0001</code>, continue, sans trou</td>
+<td>fait — un compteur par entreprise, incrémenté d'un seul coup en base</td>
+</tr>
+<tr>
+<td>PDF de la facture</td>
+<td>fait</td>
+</tr>
+<tr>
+<td>Relevé de TVA collectée</td>
+<td>fait — calculé à partir des factures émises</td>
+</tr>
+</tbody></table></div>
+<h3 id="ce-qui-nexiste-pas-et-quil-ne-faut-pas-croire-acquis">Ce qui n'existe pas, et qu'il ne faut pas croire acquis</h3>
+<ul>
+<li><strong>Aucun format d'échange</strong> : ni Factur-X, ni UBL. Le PDF d'Atlas est un PDF, pas une facture électronique au sens de la réforme.</li>
+<li><strong>Aucun archivage à valeur probante.</strong> La numérotation est continue, ce qui est le minimum, mais rien ne prouve qu'un enregistrement n'a pas été modifié après coup.</li>
+<li><strong>Aucun raccordement</strong> à une plateforme agréée, ni à l'annuaire des destinataires.</li>
+</ul>
+<h3 id="le-point-qui-a-une-date--et-qui-vous-concerne-vous-pas-atlas">Le point qui a une date — et qui vous concerne vous, pas Atlas</h3>
+<p>La réforme oblige d'abord à <strong>recevoir</strong> ses factures fournisseurs par une plateforme agréée, puis, plus tard, à <strong>émettre</strong> les siennes. Les échéances annoncées sont <strong>septembre 2026</strong> pour la réception et <strong>septembre 2027</strong> pour l'émission des petites entreprises.</p>
+<p>Deux réserves, posées franchement :</p>
+<ol>
+<li><strong>Ce calendrier a déjà été décalé deux fois</strong>, et je ne peux pas le vérifier depuis l'environnement de développement — son mandataire réseau refuse les sites publics. <strong>À confirmer par un comptable</strong>, pas par moi.</li>
+<li><strong>Cela vous concerne comme entreprise, pas comme éditeur.</strong> Eden Nature devra passer par une plateforme agréée pour ses propres factures, qu'Atlas existe ou non. Et chaque artisan qui utilisera Atlas aussi.</li>
+</ol>
+<p>C'est une raison de plus de brancher un outil comptable plutôt que d'en réécrire un : l'outil, lui, sera à jour de la réforme — c'est son métier, et c'est ce que vous lui payez.</p>
+<h3 id="où-ça-en-est">Où ça en est</h3>
+<p><strong>Vous n'avez aucun logiciel de comptabilité aujourd'hui</strong> (réponse du 8 août 2026). La question devient donc : lequel prendre. Elle est ouverte au point 6 de <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a>, avec ce que je peux préparer et ce que vous seul pouvez signer.</p>
+<p><strong>Ce que ça ne bloque pas</strong> : ni l'essai d'Atlas, ni sa finition. Comme les autres points de <code>A-FAIRE.md</code>, cela bloque le fait de le confier à un vrai artisan avec de vrais clients.</p>
 </main>
 </body>
 </html>

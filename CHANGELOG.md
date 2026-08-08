@@ -9,6 +9,39 @@ Format : le plus récent en tête.
 
 ## 2026-08-08
 
+### La facturation électronique : écrire ce qui était déjà décidé
+
+Le patron a demandé : *« qu'est-ce que tu dois faire sur la plateforme de
+facturation ? »* La réponse existait dans le dépôt — `docs/AGENT.md` §6, actée
+le 31 juillet — mais **elle n'était écrite nulle part dans son langage**, et
+c'est exactement le cas que `docs/QUESTIONS.md` sert à couvrir : une décision
+expliquée une fois puis oubliée se repose trois mois plus tard.
+
+Ce qui ne se rouvre pas : **Atlas prépare les factures, il ne les émet pas au
+sens légal.** Ce qui reste ouvert : sur quel outil comptable se brancher — il
+n'en a aucun à ce jour.
+
+Deux points qu'il ne faut pas confondre, et qui sont désormais distingués noir
+sur blanc : la conformité d'Atlas comme produit vendu à des artisans, et
+l'obligation qui pèse sur **Eden Nature elle-même**, qu'Atlas existe ou non.
+Les échéances annoncées — septembre 2026 pour la réception, septembre 2027 pour
+l'émission des petites entreprises — sont écrites **avec leur réserve** : ce
+calendrier a déjà été décalé deux fois et l'environnement de l'agent ne peut pas
+le vérifier, son mandataire refusant les sites publics. À faire confirmer par un
+comptable.
+
+`docs/QUESTIONS.md` question 11 et `docs/A-FAIRE.md` point 6, ajoutés avec son
+accord explicite. Rien à coder sur la facturation avant que l'outil soit
+choisi.
+
+**Au passage, un défaut vu sur une capture et pas par un contrôle :** les quatre
+pages consultables affichaient leurs astérisques — `*« … »*` au lieu de
+l'italique. Or dans ces documents l'italique porte **les paroles du patron**,
+citées mot pour mot : une vingtaine de citations défigurées sur les pages qu'il
+lit le plus. `scripts/md-en-page.mjs` connaît maintenant l'italique, après le
+gras et jamais avant — l'inverse ferait de `**mot**` un italique contenant un
+astérisque.
+
 ### Trois grilles de prix, et le devis du 5 août enfin juste
 
 Le patron a répondu à trois questions posées avec leurs options : **on garde les
