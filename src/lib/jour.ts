@@ -12,14 +12,27 @@ const MOIS = [
   "juillet", "août", "septembre", "octobre", "novembre", "décembre",
 ];
 
-/** « lundi 23 mars », « samedi 1er août » */
-export function jourLisible(iso: string): string {
+/**
+ * « lundi 23 mars », « samedi 1er août » — et « lundi 8 février 2027 ».
+ *
+ * **L'année n'apparaît que si ce n'est pas la nôtre**, et cette exception est
+ * arrivée avec les dates lointaines (8 août 2026). Depuis que le patron peut
+ * proposer un chantier à dix-huit mois, « lundi 8 février » ne désigne plus rien
+ * : février prochain, ou celui d'après ? Il enverrait une date à un an d'écart
+ * de ce qu'il croit, et son client la lirait de même.
+ *
+ * L'ajouter partout aurait alourdi les quatre-vingt-dix-neuf cas sur cent où
+ * elle ne sert à rien — un devis pour jeudi prochain n'a pas besoin de son
+ * millésime.
+ */
+export function jourLisible(iso: string, aujourdHui: Date = new Date()): string {
   const [a, m, j] = iso.split("-").map(Number);
   if (!a || !m || !j) return iso;
   const jourSemaine = JOURS[new Date(Date.UTC(a, m - 1, j)).getUTCDay()];
   // Le premier du mois est le seul ordinal en français : « 1er août », jamais
   // « 1 août ». Sur un devis, cette faute se remarque.
-  return `${jourSemaine} ${j === 1 ? "1er" : j} ${MOIS[m - 1]}`;
+  const annee = a === aujourdHui.getUTCFullYear() ? "" : ` ${a}`;
+  return `${jourSemaine} ${j === 1 ? "1er" : j} ${MOIS[m - 1]}${annee}`;
 }
 
 /**

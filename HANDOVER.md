@@ -20,6 +20,14 @@ Next.js avec PostgreSQL, isolée par entreprise via *row level security*.
 
 ## Ce qui vient d'être terminé
 
+**Le patron peut proposer une date à dix-huit mois.** Il ne pouvait proposer que
+les six prochains jours ouvrés — il l'a signalé avant que ça ne lui coûte un
+client. Deux horizons désormais, et **ne pas les confondre est la décision qui
+compte** : le sien va à dix-huit mois, celui du client reste à trois mois ou à
+trois semaines autour de la date proposée. La page publique reçoit la liste des
+jours occupés ; lui ouvrir dix-huit mois reviendrait à lui donner le carnet de
+commandes. Voir `ARCHITECTURE.md` §30.
+
 **Le devis se découpe enfin en lignes vendables.** C'est le défaut que le patron
 a signalé trois fois en deux jours — *« tout ce que je dicte arrive sur la même
 ligne »* —, et qui avait survécu à un diagnostic sans correction. L'abattage, le

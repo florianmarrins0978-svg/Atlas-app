@@ -9,6 +9,43 @@ Format : le plus récent en tête.
 
 ## 2026-08-08
 
+### Proposer une date dans six mois — ce n'était pas possible
+
+Le patron, en le voyant venir avant que ça ne lui coûte : *« la proposition des
+dates au client, on a une visibilité que sur une semaine. Comment je fais si je
+dois lui proposer une date dans six mois ? C'est un problème qui va se produire
+à coup sûr. »*
+
+L'écran suggérait les six prochains jours ouvrés, et **aucune autre porte
+n'existait**. Il peut désormais choisir n'importe quelle date **jusqu'à
+dix-huit mois** — l'élagage est saisonnier, une haie « à la fin de l'hiver
+prochain », c'est quatorze mois. L'écran répond tout de suite : retenue, ou
+pourquoi non, avec le jour libre le plus proche à portée de pouce.
+
+**Ce que son client voit, lui, ne s'ouvre pas d'autant.** La page publique
+reçoit la liste des jours occupés : lui donner dix-huit mois reviendrait à lui
+donner le carnet de commandes. Elle montre donc trois semaines autour de la date
+proposée — assez pour « plutôt la semaine d'après », pas assez pour lire le
+planning. Sur « soit jeudi, soit à la Toussaint », les deux dates restent
+retenables et **le semestre du milieu reste invisible**.
+
+**Trois barrières se dressaient sur ce chemin**, et la troisième était la plus
+chère : la revérification de la réponse. Elle se faisait contre une fenêtre
+glissante de trois mois — le client aurait lu « date indisponible » **en
+acceptant la date que le patron venait de lui proposer**, et le devis se serait
+perdu là.
+
+**Et un défaut latent que personne n'avait signalé :** la fenêtre était
+recalculée à chaque ouverture du lien, depuis la date du jour. Un devis parti un
+lundi et ouvert trois semaines plus tard n'offrait plus les mêmes jours. Elle
+s'ancre maintenant au jour de l'envoi.
+
+Dernier détail, qui n'en est pas un : **l'année s'affiche** quand la date n'est
+pas dans l'année en cours. « Lundi 8 février » ne veut plus rien dire quand on
+peut proposer à dix-huit mois.
+
+Détail des choix dans `ARCHITECTURE.md` §30.
+
 ### Le devis se sépare en lignes vendables, et la fente a son prix
 
 Le patron, pour la troisième fois en deux jours : *« l'agent ne comprend

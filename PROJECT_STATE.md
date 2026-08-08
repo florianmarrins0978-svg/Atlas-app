@@ -79,6 +79,7 @@ seule avec quinze outils.
 | **Le devis se découpe en lignes vendables** : abattage + broyage + évacuation ensemble, la fente à part, sans point-virgule | `src/lib/lignes-vendables.ts` |
 | **La grille de prix du fendage**, hauteur × diamètre, née vide et remplie par ses devis | `src/lib/grille-fendage.ts` + `src/app/reglages/fendage/` + `drizzle/0026_grille_fendage.sql` |
 | **Le retour de la messagerie ramène à l'accueil**, avec un mot qui dit ce qui a été transmis | `src/lib/annonce-transmission.ts` + `src/components/atlas/AnnonceTransmission.tsx` |
+| **Proposer une date jusqu'à 18 mois**, sans montrer au client plus de trois semaines autour | `src/server/disponibilites.ts` (`fenetrePatron`, `bandesVisibles`) |
 
 ### Conformité RGPD
 

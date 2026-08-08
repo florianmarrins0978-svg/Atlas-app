@@ -1270,3 +1270,85 @@ préchauffe désormais les écrans les plus traversés avant de lancer quoi que 
 soit. Répondre sur `/api/health/live` ne suffisait pas : cette route-là est
 minuscule et se compile en quelques centaines de millisecondes, quand un écran
 réel en demande des dizaines de secondes.
+
+---
+
+## 30. Deux horizons pour une date : le sien, et celui du client
+
+**Décidé le 2026-08-08**, sur un défaut que le patron a vu venir avant qu'il ne
+lui coûte quoi que ce soit : *« la proposition des dates au client, on a une
+visibilité que sur une semaine. Comment je fais si je dois lui proposer une date
+dans six mois ? »* — et il ajoutait : *« c'est un problème qui va se produire à
+coup sûr. »*
+
+### Ce qui manquait
+
+L'écran suggérait les six prochains jours ouvrés, et **aucune autre porte
+n'existait**. Le calcul des jours libres était juste, la base acceptait
+n'importe quelle date, la page du client fonctionnait — il n'y avait simplement
+pas de geste. Un défaut invisible depuis le code, visible en deux secondes sur
+l'écran.
+
+### La décision : deux horizons, jamais un seul
+
+|  | Portée | Pourquoi |
+|---|---|---|
+| **Le patron** (`fenetrePatron`) | après-demain → **18 mois** | l'élagage est saisonnier : une haie « à la fin de l'hiver prochain » demande quatorze mois. Douze le renverraient au téléphone |
+| **Le client** (`bandesVisibles`) | 3 mois, **ou** trois semaines autour d'une date lointaine | la page publique reçoit la liste des jours occupés. Lui donner dix-huit mois, c'est lui donner le carnet de commandes |
+
+Les confondre coûte cher **dans les deux sens**, et un contrôle veille sur
+l'écart (`test-fenetre-lointaine.ts`).
+
+### Enveloppe et bandes : la nuance qui protège le planning
+
+Une première version ne connaissait qu'une fenêtre, et le cas mixte l'a montrée
+fausse : « soit jeudi, soit à la Toussaint » l'étirait sur six mois — et livrait
+six mois de jours occupés au client, ce que tout ce mécanisme sert à éviter.
+
+D'où la séparation :
+
+- l'**enveloppe** (`fenetrePourDates`) dit ce qui est **recevable**. Elle court
+  bien de jeudi à la Toussaint : les deux dates doivent rester retenables ;
+- les **bandes** (`bandesVisibles`) disent ce qui se **montre**. Deux blocs, et
+  le semestre du milieu ne regarde pas le client.
+
+Une date lointaine **seule** ne rouvre pas les trois prochains mois : s'il ne
+propose que la Toussaint, montrer octobre inviterait à une contre-proposition
+qu'il n'a pas voulue.
+
+### La fenêtre s'ancre à l'ENVOI, plus à aujourd'hui
+
+Défaut latent que personne n'avait signalé, et que la date lointaine rendait
+certain : la fenêtre était recalculée à chaque ouverture du lien, depuis la date
+du jour. Un devis parti un lundi et ouvert trois semaines plus tard n'offrait
+plus les mêmes jours ; une date à six mois en serait carrément sortie, et le
+client aurait lu **« date indisponible » sur la date qu'on venait de lui
+proposer**.
+
+L'ancre est `envoye_at`, posé explicitement à la création plutôt que laissé au
+`now()` de la base. Avec `dates_proposees`, tous deux immuables, la fenêtre se
+recalcule à l'identique — **sans colonne de plus**. Réserve assumée : changer la
+règle des bandes déplacerait ce que voient les liens déjà partis. C'est le prix
+d'une seule source de vérité, plus faible que celui de deux qui divergent
+(`CLAUDE.md` §3).
+
+Trois barrières se dressaient sur ce chemin, toutes calées sur la même fenêtre
+glissante : la création de l'envoi, la lecture du lien, et **la revérification
+de la réponse** — la plus coûteuse, celle qui aurait perdu le devis à l'instant
+où le client disait oui.
+
+### L'année s'affiche quand ce n'est pas la nôtre
+
+« Lundi 8 février » ne désigne plus rien quand on peut proposer à dix-huit
+mois : février prochain, ou celui d'après ? Le patron enverrait une date à un an
+d'écart de ce qu'il croit. `jourLisible` ajoute donc le millésime — et lui seul,
+pour ne pas alourdir les quatre-vingt-dix-neuf devis sur cent qui parlent de la
+semaine prochaine.
+
+### Où c'est éprouvé
+
+| Quoi | Fichier |
+|---|---|
+| Les deux horizons, les bandes, le cas mixte — sans base | `scripts/test-fenetre-lointaine.ts` |
+| Le parcours complet : création, lecture, acceptation, planification | `scripts/test-envois-devis.ts` |
+| **Que le geste existe à l'écran**, et que le client reçoit la date | `scripts/test-date-lointaine-e2e.ts` |

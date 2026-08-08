@@ -9,7 +9,9 @@ import {
   compterOccupation,
   departPossible,
   dureeEnDemiJournees,
-  fenetreProposition,
+  fenetrePatron,
+  fenetrePourDates,
+  bandesVisibles,
   jourRetenable,
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   versJourIso,
@@ -160,13 +162,24 @@ export async function creerEnvoi(
     throw new Error("Il faut proposer une ou deux dates.");
   }
 
-  const fenetre = fenetreProposition(maintenant);
+  // **Deux fenêtres, et les confondre était le défaut.** Celle du patron va à
+  // dix-huit mois — c'est elle qui dit si sa date est recevable. Celle du
+  // client, plus étroite, est ce qu'il verra : elle est calculée à partir des
+  // dates retenues, puis FIGÉE (voir `fenetrePourDates` et migration 0027).
+  const horizon = fenetrePatron(maintenant);
+  const fenetreClient = fenetrePourDates(maintenant, creation.datesProposees);
 
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // L'occupation se lit sur l'union des deux : une date à six mois doit être
+    // vérifiable, et les jours occupés montrés au client doivent l'être aussi.
+    const fenetreOccupation = {
+      debut: horizon.debut < fenetreClient.debut ? horizon.debut : fenetreClient.debut,
+      fin: horizon.fin > fenetreClient.fin ? horizon.fin : fenetreClient.fin,
+    };
     const { occupation, nombreEquipes } = await contrainteDuPlanning(
       tx,
       ctx.entrepriseId,
-      fenetre,
+      fenetreOccupation,
       creation.chantierId
     );
 
@@ -185,9 +198,9 @@ export async function creerEnvoi(
     const motifs = creation.datesProposees
       .map((date) => ({
         date,
-        motif: jourRetenable(date, duree, occupation, nombreEquipes, fenetre)
+        motif: jourRetenable(date, duree, occupation, nombreEquipes, horizon)
           ? null
-          : date < fenetre.debut || date > fenetre.fin
+          : date < horizon.debut || date > horizon.fin
             ? ("hors_fenetre" as const)
             : ("jour_occupe" as const),
       }))
@@ -203,6 +216,13 @@ export async function creerEnvoi(
         devisId: creation.devisId,
         jeton: genererJeton(),
         expireAt,
+        // **Posé explicitement, et pas laissé au `now()` de la base.** C'est
+        // désormais l'ANCRE de la fenêtre montrée au client : la laisser
+        // diverger de `maintenant` ferait calculer les bandes autour d'un autre
+        // jour que celui où les dates ont été validées — et un envoi rejoué
+        // dans le passé (une suite de tests, une reprise) verrait ses propres
+        // dates tomber hors fenêtre.
+        envoyeAt: maintenant,
         canal: creation.canal,
         datesProposees: creation.datesProposees,
         empreinteDevis: empreinteDevis(creation.contenuDevis),
@@ -282,7 +302,26 @@ export async function lireParJeton(
     if (!envoi) return null;
 
     const expire = envoi.expireAt.getTime() <= maintenant.getTime();
-    const fenetre = fenetreProposition(maintenant);
+
+    // **La fenêtre s'ancre au jour de l'ENVOI, jamais à aujourd'hui.**
+    //
+    // Recalculée depuis la date du jour, elle glissait sous les pieds du
+    // client : un devis parti un lundi et ouvert trois semaines plus tard
+    // n'offrait plus les mêmes jours. Le défaut ne se voyait pas tant qu'on ne
+    // proposait qu'à quelques jours ; avec une date à six mois, elle serait
+    // carrément sortie de la fenêtre — le client aurait lu « plus disponible »
+    // pour un jour que personne n'avait pris.
+    //
+    // `envoyeAt` et `datesProposees` sont tous deux immuables : la fenêtre se
+    // recalcule donc à l'identique à chaque ouverture, sans colonne de plus.
+    // Réserve assumée : changer la règle des bandes déplacerait ce que voient
+    // les liens déjà partis. C'est le prix d'une seule source de vérité, et il
+    // est plus faible que celui de deux qui divergent (`CLAUDE.md` §3).
+    const bandes = bandesVisibles(envoi.envoyeAt, envoi.datesProposees);
+    const fenetre: FenetreProposition = {
+      debut: bandes[0].debut,
+      fin: bandes[bandes.length - 1].fin,
+    };
 
     // Les jours occupés sont lus ici, dans le contexte de l'entreprise
     // propriétaire de l'envoi — jamais depuis une entrée du client.
@@ -307,13 +346,22 @@ export async function lireParJeton(
     // Le client ne saura jamais qu'un 6 août refusé l'est parce que le matin est
     // pris, ni qu'un autre l'est parce que les deux équipes sont sorties : c'est
     // la consigne du patron, et c'est aussi ce qu'il apprendrait au téléphone.
+    // **Seulement les jours des BANDES, jamais tout l'intervalle.**
+    //
+    // « Soit jeudi, soit à la Toussaint » fait courir la fenêtre sur six mois —
+    // il le faut, pour que les deux dates restent retenables. Énumérer les
+    // jours occupés de bout en bout aurait alors livré un semestre de carnet de
+    // commandes à quelqu'un qui n'a rien signé. Le client voit donc les trois
+    // prochains mois ET les trois semaines autour de la Toussaint ; le milieu
+    // ne le regarde pas.
     const joursSansPlace: JourIso[] = [];
-    for (let d = 0; ; d++) {
-      const jour = versJourIso(new Date(maintenant.getTime() + d * 86_400_000));
-      if (jour > fenetre.fin) break;
-      if (jour < fenetre.debut) continue;
-      if (!jourRetenable(jour, dureeReservee, occupation, nombreEquipes, fenetre)) {
-        joursSansPlace.push(jour);
+    for (const bande of bandes) {
+      for (let d = 0; ; d++) {
+        const jour = versJourIso(new Date(new Date(`${bande.debut}T12:00:00Z`).getTime() + d * 86_400_000));
+        if (jour > bande.fin) break;
+        if (!jourRetenable(jour, dureeReservee, occupation, nombreEquipes, fenetre)) {
+          joursSansPlace.push(jour);
+        }
       }
     }
 
@@ -505,8 +553,15 @@ export async function enregistrerReponse(
     const contreProposee = !envoi.datesProposees.includes(date);
 
     // Revérification côté serveur — la seule qui fasse foi.
+    //
+    // **Contre la fenêtre de l'ENVOI, pas celle d'aujourd'hui.** C'est le même
+    // ancrage que la lecture du lien, et il n'est pas facultatif : validée
+    // contre une fenêtre glissante de trois mois, une date à six mois se serait
+    // fait refuser « date indisponible » — au client qui accepte la date que le
+    // patron vient de lui proposer. Le devis se serait perdu là, sans que
+    // personne comprenne pourquoi.
     await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
-    const fenetre = fenetreProposition(maintenant);
+    const fenetre = fenetrePourDates(envoi.envoyeAt, envoi.datesProposees);
     const { occupation, nombreEquipes } = await contrainteDuPlanning(
       tx,
       envoi.entrepriseId,

@@ -4,7 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getOuCreerDevisBrouillon, envoyerDevis } from "@/server/repositories/devis";
 import { listerPrestations } from "@/server/repositories/prestations";
 import { ingererDevis } from "@/server/documents/ingestion";
-import { preparerEnvoi } from "@/server/repositories/preparation-envoi";
+import { preparerEnvoi, verifierJourPropose } from "@/server/repositories/preparation-envoi";
 import { creerEnvoi, DatesProposeesInvalidesError } from "@/server/repositories/envois-devis";
 import { mettreAJourClient } from "@/server/repositories/clients";
 
@@ -56,6 +56,26 @@ export async function reprendreDevisAction(chantierId: string) {
 export async function preparerEnvoiAction(chantierId: string, dureeDemiJournees?: number) {
   const ctx = await getCurrentCtx();
   return preparerEnvoi(ctx, chantierId, new Date(), dureeDemiJournees);
+}
+
+/**
+ * Ce jour-là peut-il accueillir ce chantier ?
+ *
+ * Sert la case « Une autre date… » : le patron choisit un jour au calendrier,
+ * et l'écran lui répond aussitôt — oui, ou pourquoi non, avec le jour libre le
+ * plus proche. Sans cette réponse immédiate, il découvrirait le refus après
+ * avoir composé son message, ce qui coûte un aller-retour avec son client.
+ *
+ * La règle est celle du dépôt, pas une seconde version : proposer une date que
+ * l'envoi refuserait ensuite serait pire que ne rien proposer.
+ */
+export async function verifierJourProposeAction(
+  chantierId: string,
+  jour: string,
+  dureeDemiJournees?: number
+) {
+  const ctx = await getCurrentCtx();
+  return verifierJourPropose(ctx, chantierId, jour, dureeDemiJournees);
 }
 
 export type ResultatEnvoiClient =

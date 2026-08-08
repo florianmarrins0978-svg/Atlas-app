@@ -5,8 +5,8 @@ import { colors, font, smallCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { jourLisible } from "@/lib/jour";
 import { libelleDuree } from "@/server/disponibilites";
-import { preparerEnvoiAction, envoyerAuClientAction } from "./actions";
-import type { PreparationEnvoi } from "@/server/repositories/preparation-envoi";
+import { preparerEnvoiAction, envoyerAuClientAction, verifierJourProposeAction } from "./actions";
+import type { PreparationEnvoi, VerdictJour } from "@/server/repositories/preparation-envoi";
 import BandeDuree from "../BandeDuree";
 
 // L'unique arrêt avant l'envoi (docs/AGENT.md §2.2). Le patron vient de valider
@@ -57,6 +57,12 @@ function Contenu({
   // `undefined` tant que le patron n'a rien corrigé : le serveur déduit alors
   // la durée de la dictée. Une valeur ici veut dire « c'est lui qui a tranché ».
   const [dureeChoisie, setDureeChoisie] = useState<number | undefined>(undefined);
+  // La date que le patron choisit lui-même, et ce que le serveur en dit.
+  // Séparée de `selection` tant qu'elle n'est pas retenable : proposer un jour
+  // que l'envoi refusera ensuite coûte un aller-retour avec son client.
+  const [autreDate, setAutreDate] = useState("");
+  const [verdict, setVerdict] = useState<VerdictJour | null>(null);
+  const [verification, setVerification] = useState(false);
 
   useEffect(() => {
     let annule = false;
@@ -85,6 +91,29 @@ function Contenu({
       if (actuelle.length >= 2) return [actuelle[1], jour];
       return [...actuelle, jour];
     });
+  }
+
+  async function verifierAutreDate(jour: string) {
+    setAutreDate(jour);
+    setVerdict(null);
+    if (!jour) return;
+    setVerification(true);
+    try {
+      const v = await verifierJourProposeAction(chantierId, jour, preparation?.dureeDemiJournees);
+      setVerdict(v);
+      // Retenue tout de suite quand elle tient : un second geste pour confirmer
+      // ce qu'on vient de choisir n'apprend rien à personne.
+      if (v.retenable) basculerJour(jour);
+    } catch {
+      setVerdict({
+        jour,
+        retenable: false,
+        raison: "Impossible de vérifier cette date pour l'instant. Réessayez.",
+        alternative: null,
+      });
+    } finally {
+      setVerification(false);
+    }
   }
 
   async function confirmer() {
@@ -207,8 +236,93 @@ function Contenu({
           {preparation.joursLibres.length === 0 && (
             <p className="mb-4 text-center text-[13px]" style={{ color: colors.rust }}>
               Aucun jour ne peut accueillir {libelleDuree(preparation.dureeDemiJournees)} dans les trois prochains
-              mois. Essayez une durée plus courte, ou ajoutez une équipe dans vos réglages.
+              mois. Choisissez une date plus loin ci-dessous, raccourcissez la durée, ou ajoutez une équipe dans
+              vos réglages.
             </p>
+          )}
+
+          {/* **Une date à soi, jusqu'à dix-huit mois.**
+
+              Le patron, le 8 août 2026 : « la proposition des dates au client,
+              on a une visibilité que sur une semaine. Comment je fais si je dois
+              lui proposer une date dans six mois ? » La liste ci-dessus reste
+              le geste ordinaire — un appui — et ceci est la sortie de secours,
+              pour une haie « à l'automne prochain » ou un chantier calé après
+              la saison.
+
+              Un champ de date natif : sur son téléphone, c'est la molette qu'il
+              connaît déjà, avec son calendrier. Rien à réapprendre. */}
+          <div className="mb-4">
+            <label htmlFor="autre-date" className={smallCaps} style={{ color: colors.muted }}>
+              Ou une autre date
+            </label>
+            <input
+              id="autre-date"
+              type="date"
+              value={autreDate}
+              min={preparation.horizon.debut}
+              max={preparation.horizon.fin}
+              onChange={(e) => verifierAutreDate(e.target.value)}
+              className="mt-1.5 w-full rounded-xl px-4 py-3 text-[15px]"
+              style={{ backgroundColor: colors.card, color: colors.ink, border: "none" }}
+            />
+            {verification && (
+              <p className="mt-1.5 text-[13px]" style={{ color: colors.muted }}>
+                Vérification de votre planning…
+              </p>
+            )}
+            {/* Un jour refusé sans un mot renvoie au téléphone. On dit
+                pourquoi, et on propose le jour libre le plus proche — chercher
+                à l'aveugle dans dix-huit mois de calendrier n'est pas un
+                travail. */}
+            {!verification && verdict?.raison && (
+              <p className="mt-1.5 text-[13px]" style={{ color: verdict.retenable ? colors.muted : colors.rust }}>
+                {verdict.raison}
+                {verdict.alternative && (
+                  <>
+                    {" "}
+                    <button
+                      type="button"
+                      onClick={() => verifierAutreDate(verdict.alternative!)}
+                      className="font-medium underline"
+                      style={{ color: colors.rust }}
+                    >
+                      Prendre le {jourLisible(verdict.alternative)}
+                    </button>
+                  </>
+                )}
+              </p>
+            )}
+            {!verification && verdict?.retenable && !verdict.raison && (
+              <p className="mt-1.5 text-[13px]" style={{ color: colors.rust }}>
+                {jourLisible(verdict.jour)} — retenue.
+              </p>
+            )}
+          </div>
+
+          {/* Les dates retenues hors de la liste des six ne se voient nulle
+              part ailleurs : sans ce rappel, le patron enverrait sans savoir ce
+              qu'il propose. */}
+          {selection.some((j) => !preparation.joursLibres.includes(j)) && (
+            <div className="mb-4 flex flex-col gap-1.5">
+              {selection
+                .filter((j) => !preparation.joursLibres.includes(j))
+                .map((jour) => (
+                  <button
+                    key={jour}
+                    type="button"
+                    onClick={() => basculerJour(jour)}
+                    aria-pressed
+                    className="flex items-center justify-between rounded-xl px-4 py-3 text-[15px]"
+                    style={{ backgroundColor: colors.rustTint, color: colors.ink }}
+                  >
+                    <span>{jourLisible(jour)}</span>
+                    <span className="text-[13px] font-medium" style={{ color: colors.rust }}>
+                      proposée
+                    </span>
+                  </button>
+                ))}
+            </div>
           )}
 
           <p className="mb-4 text-center text-[12px]" style={{ color: colors.muted }}>

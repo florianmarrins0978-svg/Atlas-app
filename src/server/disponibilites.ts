@@ -10,6 +10,34 @@
 export const FENETRE_PROPOSITION_JOURS = 90;
 
 /**
+ * Jusqu'où LE PATRON peut proposer une date — dix-huit mois.
+ *
+ * **Le manque, dans ses mots, le 8 août 2026 :** *« la proposition des dates au
+ * client, on a une visibilité que sur une semaine. Comment je fais si je dois
+ * lui proposer une date dans six mois ? »* Il avait raison, et c'était pire
+ * qu'il ne le disait : l'écran suggérait les six prochains jours ouvrés, et
+ * **aucun autre choix n'existait**.
+ *
+ * Dix-huit mois, et pas six : l'élagage est saisonnier. Un client qui appelle
+ * en août pour une haie « à la fin de l'hiver prochain » demande quatorze mois.
+ * Un horizon qui s'arrête à douze le renverrait à un coup de téléphone —
+ * exactement ce que ce parcours existe pour supprimer.
+ *
+ * **Ce n'est PAS ce que le client voit.** Les deux horizons sont volontairement
+ * distincts : voir `fenetrePourDates`.
+ */
+export const HORIZON_PATRON_JOURS = 550;
+
+/**
+ * Marge laissée au client autour d'une date lointaine, pour en proposer une
+ * autre.
+ *
+ * Trois semaines : assez pour « plutôt la semaine d'après », trop peu pour
+ * livrer un semestre de planning à quelqu'un qui n'a rien signé.
+ */
+export const MARGE_AUTOUR_PROPOSITION_JOURS = 21;
+
+/**
  * Délai minimal entre aujourd'hui et une date proposable. Proposer le jour même
  * n'a aucun sens pour un chantier, et proposer demain met le patron en défaut.
  */
@@ -44,6 +72,105 @@ export function fenetreProposition(
     debut: versJourIso(ajouterJours(aujourdHui, DELAI_MINIMAL_JOURS)),
     fin: versJourIso(ajouterJours(aujourdHui, fenetreJours)),
   };
+}
+
+/**
+ * Ce que LE PATRON peut retenir : de après-demain à dix-huit mois.
+ *
+ * Sert à valider son choix, jamais à composer ce que le client verra.
+ */
+export function fenetrePatron(aujourdHui: Date): FenetreProposition {
+  return {
+    debut: versJourIso(ajouterJours(aujourdHui, DELAI_MINIMAL_JOURS)),
+    fin: versJourIso(ajouterJours(aujourdHui, HORIZON_PATRON_JOURS)),
+  };
+}
+
+/**
+ * Ce que LE CLIENT voit — et c'est délibérément autre chose.
+ *
+ * **Les deux horizons sont séparés, et c'est la décision qui compte ici.** Le
+ * patron peut proposer à dix-huit mois ; livrer dix-huit mois de jours occupés
+ * à quelqu'un qui n'a rien signé serait lui donner le carnet de commandes. La
+ * règle de ce module tient en une phrase (`docs/AGENT.md` §2.2 bis) : le client
+ * apprend ce qu'il aurait appris en téléphonant, pas davantage.
+ *
+ * Deux cas, et un seul change quelque chose :
+ *
+ * - **dates proches** (dans les trois mois) : fenêtre inchangée, de
+ *   après-demain à trois mois. C'est le cas ordinaire, et il ne bouge pas ;
+ * - **date lointaine** : la fenêtre se déplace AUTOUR de la proposition, trois
+ *   semaines de part et d'autre. Le client peut répondre « plutôt la semaine
+ *   suivante » sans qu'on lui montre le semestre.
+ *
+ * Un client qui voudrait bien plus tôt garde deux issues : refuser, ou l'écrire
+ * dans sa précision — le patron la lit.
+ */
+export function bandesVisibles(
+  aujourdHui: Date,
+  datesProposees: readonly JourIso[]
+): FenetreProposition[] {
+  const ordinaire = fenetreProposition(aujourdHui);
+  const retenues = [...datesProposees].filter(Boolean).sort();
+  const lointaines = retenues.filter((d) => d > ordinaire.fin);
+
+  // Rien de lointain : le cas ordinaire, et il ne bouge pas d'un jour.
+  if (lointaines.length === 0) return [ordinaire];
+
+  const marge = (jour: JourIso, sens: 1 | -1) =>
+    versJourIso(ajouterJours(new Date(`${jour}T12:00:00Z`), sens * MARGE_AUTOUR_PROPOSITION_JOURS));
+
+  const bandes: FenetreProposition[] = [];
+  // La bande ordinaire n'est conservée que si le patron a AUSSI proposé une
+  // date proche : « soit jeudi, soit à la Toussaint ». S'il ne propose que la
+  // Toussaint, montrer les trois prochains mois inviterait à une
+  // contre-proposition qu'il n'a pas voulue — et livrerait un trimestre de
+  // planning pour rien.
+  if (retenues.some((d) => d <= ordinaire.fin)) bandes.push(ordinaire);
+
+  for (const date of lointaines) {
+    const debut = marge(date, -1);
+    bandes.push({
+      debut: debut < ordinaire.debut ? ordinaire.debut : debut,
+      fin: marge(date, 1),
+    });
+  }
+
+  // Deux bandes qui se touchent n'en font qu'une : sans cette fusion, un jour
+  // situé dans les deux serait compté deux fois dans la liste des jours
+  // occupés, et le client verrait la même date écrite en double.
+  bandes.sort((a, b) => (a.debut < b.debut ? -1 : 1));
+  const fusionnees: FenetreProposition[] = [];
+  for (const bande of bandes) {
+    const derniere = fusionnees[fusionnees.length - 1];
+    if (derniere && bande.debut <= derniere.fin) {
+      if (bande.fin > derniere.fin) derniere.fin = bande.fin;
+      continue;
+    }
+    fusionnees.push({ ...bande });
+  }
+  return fusionnees;
+}
+
+/**
+ * L'enveloppe des bandes : de la première à la dernière.
+ *
+ * C'est elle qui dit si une date **est recevable**. Elle peut être bien plus
+ * large que ce que le client voit — « jeudi ou à la Toussaint » la fait courir
+ * sur six mois — et c'est voulu : les deux dates proposées doivent rester
+ * retenables, tandis que les jours occupés du milieu, eux, ne se montrent pas.
+ */
+export function fenetrePourDates(
+  aujourdHui: Date,
+  datesProposees: readonly JourIso[]
+): FenetreProposition {
+  const bandes = bandesVisibles(aujourdHui, datesProposees);
+  return { debut: bandes[0].debut, fin: bandes[bandes.length - 1].fin };
+}
+
+/** Ce jour figure-t-il dans une bande montrable au client ? */
+export function jourVisible(jour: JourIso, bandes: readonly FenetreProposition[]): boolean {
+  return bandes.some((b) => jour >= b.debut && jour <= b.fin);
 }
 
 // ---------------------------------------------------------------------------
