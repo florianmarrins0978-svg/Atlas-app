@@ -20,6 +20,12 @@ Next.js avec PostgreSQL, isolée par entreprise via *row level security*.
 
 ## Ce qui vient d'être terminé
 
+**Il peut déposer sa liste de prix Excel ou CSV**, au lieu de la retaper :
+`Réglages → J'ai déjà mes prix ailleurs`. Lue sans aucune bibliothèque, et
+surtout **montrée avant d'être écrite** — ce qui s'ajoute, ce qui change, ce qui
+n'a pas été compris. Le PDF est refusé, à dessein : voir `TODO.md` §0 sexies
+avant de le reproposer.
+
 **Le patron peut proposer une date à dix-huit mois.** Il ne pouvait proposer que
 les six prochains jours ouvrés — il l'a signalé avant que ça ne lui coûte un
 client. Deux horizons désormais, et **ne pas les confondre est la décision qui

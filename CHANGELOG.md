@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-08-08
 
+### Déposer sa liste de prix, au lieu de la retaper
+
+Le patron : *« si l'utilisateur a déjà un fichier Excel ou un PDF avec ces
+lignes de prix, il doit pouvoir le rentrer dans les réglages via une touche, et
+que les prix s'ajoutent automatiquement. »*
+
+`Réglages → J'ai déjà mes prix ailleurs → Choisir un fichier`. Atlas y lit les
+désignations, les prix et les unités, et **montre ce qu'il ferait avant de le
+faire** : ce qui s'ajoute, ce qui change — l'ancien prix barré à côté du nouveau
+—, et ce qu'il n'a pas compris, ligne par ligne. Rien n'est enregistré avant
+son appui.
+
+**Ce n'est pas de la prudence de principe.** Ces tarifs commandent le prix de
+ses devis. Un fichier mal lu écraserait sa grille sans qu'il l'ait vu passer, et
+il ne s'en apercevrait que sur un devis déjà parti.
+
+**Rien n'est deviné.** Une ligne de titre (« ABATTAGE »), un « sur devis », une
+ligne sans désignation : écartées et signalées, jamais complétées par zéro — un
+tarif à 0 € se proposerait ensuite comme « gratuit ». Un même intitulé deux fois
+ne crée pas deux tarifs concurrents.
+
+Lu sans aucune bibliothèque, comme l'archive de la sauvegarde : un `.xlsx` est
+un ZIP de deux fichiers XML. Au passage, sept pièges de vraies feuilles ont été
+traités — le BOM d'Excel, le point-virgule français, un vieux CSV en Latin-1,
+un texte coupé en deux par Excel, une cellule vide qui décale les colonnes, une
+colonne de numéros d'article prise pour les prix.
+
+**Le PDF est refusé, et le refus dit quoi faire.** Un PDF n'est pas un tableau,
+c'est une image de tableau : les colonnes n'y existent plus. Le message donne la
+sortie — « Ouvrez la liste dans Excel puis Enregistrer sous → CSV ». Voir
+`TODO.md` §0 sexies.
+
+Détail des choix dans `ARCHITECTURE.md` §31.
+
 ### Proposer une date dans six mois — ce n'était pas possible
 
 Le patron, en le voyant venir avant que ça ne lui coûte : *« la proposition des

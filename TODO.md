@@ -163,6 +163,26 @@ délibéré (il n'y a pas d'écart à mesurer), mais cela veut dire que sa phras
 vaut que pour les devis dictés. La grille de fendage, elle, se remplit dans les
 deux cas.
 
+### 0 sexies. Le PDF d'une liste de prix — à trancher avec le patron
+
+L'import d'une liste de prix accepte **Excel et CSV** (`ARCHITECTURE.md` §31).
+Le **PDF est refusé**, avec un message qui donne la sortie : « Ouvrez la liste
+dans Excel puis Enregistrer sous → CSV ».
+
+**Pourquoi refusé plutôt que deviné.** Un PDF est une image de tableau : plus de
+colonnes, seulement des morceaux de texte à des coordonnées, souvent dans un
+encodage propre au document. Un prix lu de travers arrive sur le devis d'un
+client — c'est précisément ce que `docs/AGENT.md` §3 interdit.
+
+**Deux suites possibles, et la question à lui poser d'abord :** *a-t-il
+réellement des listes en PDF, ou ses prix sont-ils dans un tableur ?* Le détour
+par « Enregistrer sous → CSV » coûte deux gestes, une seule fois.
+
+| | Piste | Ce que ça vaut |
+|---|---|---|
+| a | Faire lire le PDF par le modèle déjà branché, et lui faire valider l'aperçu comme aujourd'hui | Marche sur les PDF scannés comme sur les autres. Coûte des jetons, et demande d'envoyer le fichier chez un sous-traitant — donc l'accord du patron (`docs/A-FAIRE.md` point 2) |
+| b | Extraire la couche texte à la main (flux `Tj`/`TJ`, positions `Td`/`Tm`) | Sans dépendance ni réseau, mais muet sur un PDF scanné, et fragile sur les encodages de sous-ensembles de polices |
+
 ### 0 bis. L'agent qui apprend — le vrai sujet
 
 Le tapis roulant (dictée → devis, d'un seul geste) est en place, et l'arrêt

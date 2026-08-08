@@ -1,7 +1,9 @@
 "use server";
 
 import { getCurrentCtx } from "@/server/session-ctx";
-import { creerTarif, modifierTarif, supprimerTarif } from "@/server/repositories/tarifs";
+import { creerTarif, listerTarifs, modifierTarif, supprimerTarif } from "@/server/repositories/tarifs";
+import { lireFichierTarifs } from "@/server/import/lire-fichier-tarifs";
+import { montantLu, rapprocher, type LigneImportee, type TarifExistant } from "@/lib/import-tarifs";
 import { exigerProprietaire } from "@/server/autorisation";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { versionExecutee } from "@/server/version-executee";
@@ -22,6 +24,117 @@ export async function supprimerTarifAction(id: string) {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "supprimer un tarif");
   return supprimerTarif(ctx, id);
+}
+
+// --- Reprendre une liste de prix déjà existante ----------------------------
+//
+// Le patron, le 8 août 2026 : *« si l'utilisateur a déjà un fichier Excel ou un
+// PDF avec ces lignes de prix, il doit pouvoir le rentrer dans les réglages via
+// une touche, et que les prix s'ajoutent automatiquement. »*
+//
+// **Deux actions, et cette séparation EST la garantie.** La première lit et
+// n'écrit rien ; la seconde écrit ce que le patron a validé. Un import en un
+// seul geste aurait remplacé ses tarifs par ceux d'un fichier mal lu, sans
+// qu'il l'ait vu passer — et ces tarifs-là partent sur les devis de ses clients.
+
+export type ApercuImport =
+  | { statut: "refuse"; raison: string }
+  | {
+      statut: "lu";
+      format: "csv" | "excel";
+      aCreer: LigneImportee[];
+      aMettreAJour: { id: string; avant: TarifExistant; apres: LigneImportee }[];
+      inchangees: LigneImportee[];
+      ecartees: { contenu: string; raison: string }[];
+    };
+
+/** Lit le fichier et dit ce qu'il ferait. **N'écrit rien.** */
+export async function analyserFichierTarifsAction(donnees: FormData): Promise<ApercuImport> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "importer une liste de tarifs");
+
+  const fichier = donnees.get("fichier");
+  if (!(fichier instanceof File)) return { statut: "refuse", raison: "Aucun fichier reçu." };
+  // Une borne franche : au-delà, ce n'est plus une liste de prix, et un fichier
+  // de cent mégaoctets tiendrait la mémoire du serveur pour rien.
+  if (fichier.size > 5_000_000) {
+    return { statut: "refuse", raison: "Ce fichier dépasse 5 Mo — ce n'est probablement pas une liste de prix." };
+  }
+
+  const lecture = lireFichierTarifs(fichier.name, new Uint8Array(await fichier.arrayBuffer()));
+  if (lecture.statut === "refuse") return lecture;
+
+  const existants = await listerTarifs(ctx);
+  const rapprochement = rapprocher(
+    existants.map((t) => ({ id: t.id, intitule: t.intitule, prix: t.prix, unite: t.unite })),
+    lecture.lecture.retenues
+  );
+  return { statut: "lu", format: lecture.format, ...rapprochement, ecartees: lecture.lecture.ecartees };
+}
+
+/**
+ * Écrit ce que le patron vient de valider.
+ *
+ * **Rien n'est repris du navigateur sans être relu.** Les montants sont
+ * revalidés ici par la même fonction que la lecture : un aperçu falsifié côté
+ * client n'écrira donc pas un prix que le serveur n'aurait pas accepté.
+ *
+ * Les mises à jour sont désignées par l'identifiant du tarif existant, et
+ * `modifierTarif` passe par `withEntreprise` : un identifiant appartenant à une
+ * autre entreprise ne modifie rien, silencieusement — c'est l'isolation qui
+ * tient, pas une vérification de plus.
+ */
+export async function appliquerImportTarifsAction(choix: {
+  creer: LigneImportee[];
+  mettreAJour: { id: string; apres: LigneImportee }[];
+}): Promise<{
+  crees: number;
+  misAJour: number;
+  refuses: number;
+  /**
+   * La liste complète après écriture.
+   *
+   * Rendue par le serveur plutôt que reconstruite par l'écran : c'est lui qui a
+   * écrit, et lui seul sait ce qui l'a été. Un écran qui devine le résultat
+   * afficherait un tarif refusé au dernier contrôle comme s'il existait.
+   */
+  tarifs: TarifExistant[];
+}> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "importer une liste de tarifs");
+
+  let crees = 0;
+  let misAJour = 0;
+  let refuses = 0;
+
+  for (const ligne of choix.creer ?? []) {
+    const prix = montantLu(ligne.prix);
+    const intitule = ligne.intitule?.trim();
+    if (!prix || !intitule) {
+      refuses++;
+      continue;
+    }
+    await creerTarif(ctx, { intitule, prix, ...(ligne.unite?.trim() ? { unite: ligne.unite.trim() } : {}) });
+    crees++;
+  }
+
+  for (const { id, apres } of choix.mettreAJour ?? []) {
+    const prix = montantLu(apres.prix);
+    if (!prix || !id) {
+      refuses++;
+      continue;
+    }
+    await modifierTarif(ctx, id, { prix, ...(apres.unite?.trim() ? { unite: apres.unite.trim() } : {}) });
+    misAJour++;
+  }
+
+  const tarifs = await listerTarifs(ctx);
+  return {
+    crees,
+    misAJour,
+    refuses,
+    tarifs: tarifs.map((t) => ({ id: t.id, intitule: t.intitule, prix: t.prix, unite: t.unite })),
+  };
 }
 
 /**

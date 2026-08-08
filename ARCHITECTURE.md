@@ -1352,3 +1352,75 @@ semaine prochaine.
 | Les deux horizons, les bandes, le cas mixte — sans base | `scripts/test-fenetre-lointaine.ts` |
 | Le parcours complet : création, lecture, acceptation, planification | `scripts/test-envois-devis.ts` |
 | **Que le geste existe à l'écran**, et que le client reçoit la date | `scripts/test-date-lointaine-e2e.ts` |
+
+---
+
+## 31. Reprendre une liste de prix déjà écrite ailleurs
+
+**Décidé le 2026-08-08**, à sa demande : *« si l'utilisateur a déjà un fichier
+Excel ou un PDF avec ces lignes de prix, il doit pouvoir le rentrer dans la
+catégorie réglages via une touche, et que les prix s'ajoutent
+automatiquement. »*
+
+### « Automatiquement » s'arrête avant l'écriture
+
+Le fichier est lu, et l'écran montre **ce qui serait fait** : ce qui s'ajoute,
+ce qui change — l'ancien prix barré à côté du nouveau —, ce qui est déjà là, et
+ce qui n'a pas été compris. Rien n'est enregistré avant son appui.
+
+Ce n'est pas de la prudence de principe. Ces tarifs commandent le prix de ses
+devis : un fichier mal lu écraserait sa grille sans qu'il l'ait vu passer, et il
+ne le découvrirait que sur un devis déjà parti. Deux actions séparées portent
+cette garantie — `analyserFichierTarifsAction` **n'écrit rien**,
+`appliquerImportTarifsAction` écrit ce qu'il a validé — et un contrôle vérifie
+en base que déposer un fichier ne change aucun tarif.
+
+### Sans aucune dépendance, y compris pour Excel
+
+Un `.xlsx` est un ZIP de fichiers XML. On en ouvre deux —
+`xl/worksheets/sheet1.xml` et `xl/sharedStrings.xml` — avec le `zlib` de Node.
+Même raisonnement que l'archive ZIP de la sauvegarde (§25) : embarquer une
+bibliothèque qui lit *tout* le format Office — formules, macros, styles, images
+— pour en tirer trois colonnes serait une surface d'attaque considérable en
+échange de rien.
+
+Ce qu'on lit : le **résultat** des formules (`<v>`), c'est-à-dire ce que le
+patron voit à l'écran. Ce qu'on ne lit pas : les styles, les autres feuilles, et
+rien d'exécutable.
+
+### Ce qui a été appris des vraies feuilles
+
+| Le piège | Ce qu'il aurait coûté |
+|---|---|
+| Le BOM d'Excel colle à la première cellule | l'en-tête « Intitulé » n'est plus reconnu, et personne ne voit pourquoi |
+| Le séparateur est un `;`, la virgule décime | « 400,00 » lu comme deux colonnes |
+| Un CSV en Latin-1 (vieux Excel français) | « Élagage » devient « �lagage » |
+| Excel coupe un texte en plusieurs `<t>` | « Main d'œuvre » revient en « Main d' » |
+| Une cellule vide au milieu d'une ligne | les colonnes glissent, les prix passent dans les désignations |
+| Une colonne de numéros d'article en tête | « 1 » et « 2 » sont d'excellents montants — d'où le choix de la **dernière** colonne la plus riche en nombres, pas la première |
+| Une ligne de titre (« ABATTAGE »), un « sur devis » | un tarif à 0 €, qui se proposerait ensuite comme « gratuit » |
+| Le même intitulé deux fois | deux tarifs concurrents, et le chiffrage qui s'arrête à chaque chantier |
+
+**Rien n'est deviné, et tout ce qui est écarté est dit** — ligne par ligne, avec
+sa raison. Une ligne qui disparaît sans un mot ferait croire à un import
+complet, et le manque ne se verrait que sur un devis.
+
+### Le PDF est refusé, et le refus porte la sortie
+
+Un PDF n'est pas un tableau : c'est une **image** de tableau. Les colonnes n'y
+existent plus, seulement des morceaux de texte posés à des coordonnées, souvent
+avec un encodage propre au document. On peut deviner ; deviner un prix est
+exactement ce que ce produit ne fait jamais (`docs/AGENT.md` §3).
+
+Le message dit donc quoi faire : *« Ouvrez la liste dans Excel puis Enregistrer
+sous → CSV »*. Un refus sans issue renvoie le patron à sa saisie manuelle sans
+qu'il sache pourquoi. La reprise par le modèle reste ouverte — `TODO.md`
+§0 sexies.
+
+### Où c'est éprouvé
+
+| Quoi | Fichier |
+|---|---|
+| Les montants, les colonnes, le rapprochement — sans base | `scripts/test-import-tarifs.ts` |
+| Que lire n'écrit rien, et que l'import d'une entreprise ne déborde pas | `scripts/test-import-tarifs-db.ts` |
+| **Que la touche existe**, et que rien n'entre avant son appui | `scripts/test-import-tarifs-e2e.ts` |
