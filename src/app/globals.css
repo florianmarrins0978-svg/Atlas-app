@@ -77,13 +77,16 @@ body {
 /* La barre de navigation est en position fixe : les marges du body ne
  * l'atteignent pas. Elle porte donc la sienne. */
 .atlas-nav-basse {
-  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  /* La pilule flotte : la marge du bas porte l'indicateur d'accueil de l'iPhone
+     EN PLUS du retrait visuel. Sans le `env()`, la barre repose sur le trait
+     blanc et l'onglet actif devient impossible à viser. */
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
 }
 
 /* Et le contenu doit réserver la hauteur de la barre AINSI grandie, sinon la
  * dernière carte de chaque liste passe dessous. */
 .atlas-contenu {
-  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
 }
 
 /* Ticket / work-order card signature: dashed perforation edge */

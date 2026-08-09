@@ -172,6 +172,22 @@ disque, et n'est remplacé qu'une fois la mise à jour terminée. Éprouvé en t
 le démarrage à cinq secondes : le serveur est debout vingt-six secondes plus
 tard, en version bâtie.
 
+### L'écran Chantiers refait d'après sa maquette
+
+Le patron envoie une capture d'un écran redessiné et demande une reproduction,
+pas une interprétation. La charte gagne un **second accent, l'or**, avec un
+partage clair : le vert pin porte ce qu'on FAIT, l'or ce qu'on LIT — et, sur les
+cartes, l'or signale les états qui attendent un geste de lui.
+
+Tout s'est joué sur des chiffres : filets d'1 px, accents de bord de 2 px,
+rayons ramenés de 22 à 14 px, ombres de 6 % à 4 %, cartes de 150 px à 94 px.
+Le sceau et la branche sont dessinés au trait — aucune image, aucune dépendance.
+
+**Un défaut qu'aucune capture ne montrait :** la branche débordait à droite et
+élargissait le document — la barre basse mesurait 425 px sur un écran de 393, et
+la page glissait latéralement. Trouvé en demandant au navigateur la BOÎTE de la
+barre. Le script de capture l'imprime désormais à chaque passage.
+
 
 ### Une base restée en arrière, et rien pour le dire
 

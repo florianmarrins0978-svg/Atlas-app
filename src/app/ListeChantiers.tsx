@@ -24,7 +24,7 @@ import { supprimerChantierAction } from "./planning/actions";
 export default function ListeChantiers({
   chantiers,
 }: {
-  chantiers: { id: string; nom: string; carte: ReactNode }[];
+  chantiers: { id: string; nom: string; carte: ReactNode; accent: string }[];
 }) {
   const router = useRouter();
   const [retires, setRetires] = useState<string[]>([]);
@@ -54,7 +54,12 @@ export default function ListeChantiers({
           {erreur}
         </p>
       )}
-      <div className="mt-8 flex flex-col gap-4 px-6">
+      {/* **Des cartes fines, et l'écart entre elles aussi.** La maquette du
+          9 août 2026 tient sur trois valeurs : 10 px entre les cartes, un filet
+          d'un pixel autour, un accent de deux pixels à gauche. Les reprendre à
+          la hausse — 4 px d'accent, 16 px d'écart — suffisait à faire basculer
+          l'écran du côté « tableau de bord » que le patron refuse. */}
+      <div className="flex flex-col gap-2.5 px-6">
         {visibles.map((c) => (
           <CarteGlissante
             key={c.id}
@@ -63,8 +68,14 @@ export default function ListeChantiers({
           >
             <Link
               href={`/chantiers/${c.id}`}
-              className="flex items-start gap-4 rounded-[22px] px-5 py-5"
-              style={{ backgroundColor: colors.card, boxShadow: cardShadow }}
+              className="flex items-start gap-3 px-4 py-3.5"
+              style={{
+                backgroundColor: colors.card,
+                borderRadius: 14,
+                border: `1px solid ${colors.lineSoft}`,
+                borderLeft: `2px solid ${c.accent}`,
+                boxShadow: cardShadow,
+              }}
             >
               {c.carte}
             </Link>

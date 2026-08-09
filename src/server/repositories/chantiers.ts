@@ -53,6 +53,11 @@ export async function listerChantiersPourAffichage(ctx: Ctx) {
         nom: chantiers.nom,
         adresseChantier: chantiers.adresseChantier,
         clientNom: clients.nom,
+        // Sert la date relative des cartes de l'écran d'accueil
+        // (« Aujourd'hui », « Hier »). `updatedAt` et non `createdAt` : ce que
+        // l'artisan cherche, c'est le chantier qu'il a touché en dernier, pas
+        // celui qu'il a ouvert en premier.
+        majAt: chantiers.updatedAt,
         informationsVerifieesAt: chantiers.informationsVerifieesAt,
         devisEnvoyeAt: chantiers.devisEnvoyeAt,
         datePlanifiee: chantiers.datePlanifiee,
