@@ -3,8 +3,8 @@
   Parcourt la page unique des maquettes comme le patron la parcourra : clique
   chaque titre du sommaire et vérifie qu'on arrive bien sur l'écran annoncé.
 
-  Pourquoi ce contrôle existe. Les huit maquettes ont d'abord été partagées
-  comme huit adresses séparées, avec un sommaire qui pointait dessus — et le
+  Pourquoi ce contrôle existe. Les maquettes ont d'abord été partagées
+  comme autant d'adresses séparées, avec un sommaire qui pointait dessus — et le
   sommaire ne s'ouvrait pas : une page publiée ne peut pas naviguer ailleurs.
   C'est le patron qui l'a découvert, en cliquant. La page unique répond à ce
   défaut ; ce script est là pour qu'on ne le lui refasse pas découvrir.
@@ -32,7 +32,14 @@ if (CAPTURES) mkdirSync(CAPTURES, { recursive: true });
 // enverrait chercher du côté de l'installation plutôt que de la page.
 const CHROME = process.env.CHROME_ATLAS ?? "/opt/pw-browsers/chromium";
 const navigateur = await chromium.launch(existsSync(CHROME) ? { executablePath: CHROME } : {});
-const page = await navigateur.newPage({ viewport: { width: 1280, height: 900 } });
+// Le défilement doux rendait la mesure intermittente : on la prend donc sous
+// « mouvement réduit », où la page saute directement à l'ancre. C'est aussi le
+// réglage de ceux qui désactivent les animations — donc un cas réel, pas une
+// commodité de test.
+const page = await navigateur.newPage({
+  viewport: { width: 1280, height: 900 },
+  reducedMotion: "reduce",
+});
 
 const plaintes = [];
 page.on("console", (m) => {
@@ -63,7 +70,7 @@ for (const l of liens) {
     continue;
   }
   await page.click(`a.item[href="${l.href}"]`);
-  await page.waitForTimeout(700);
+  await page.waitForTimeout(150);
   const arrivee = await page.evaluate((id) => {
     const r = document.getElementById(id).getBoundingClientRect();
     return { haut: Math.round(r.top), hauteur: Math.round(r.height) };

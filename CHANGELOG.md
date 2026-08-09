@@ -36,6 +36,29 @@ dégradés, il nomme le bon coupable à chaque fois : une ancre morte, un lien
 vers l'extérieur — le défaut d'origine, précisément — et une feuille de style
 qui ne s'applique plus.
 
+### Le premier écran de « Le calme × Aman », avec deux emprunts
+
+Le patron reprend le premier des deux écrans de la maquette 05 et demande deux
+choses précises : le **pied d'Aman** (un cheveu au-dessus, l'onglet actif
+souligné de bronze, plus de plage sous le texte) et le **trait qui ferme
+l'en-tête**, comme dans les maquettes « colonne ».
+
+Sa phrase ne tranchait pas si ce trait vient seul ou avec le chapeau entier de
+la colonne — « En cours » et le compte sur une même ligne. Les deux sont
+proposés côte à côte plutôt que d'en deviner un : `docs/maquettes/09`.
+
+### Les maquettes redeviennent des fichiers qu'on ouvre sans se connecter
+
+Le patron clique l'artefact : on lui demande de se connecter, il ne voit rien.
+Une adresse publiée n'est pas un fichier — et un visuel qu'il ne peut pas
+ouvrir n'existe pas.
+
+Les maquettes du dépôt étaient de simples fragments : ni doctype, ni
+déclaration d'encodage. Ouvertes depuis un disque ou un téléphone, leurs
+accents pouvaient tomber. Ce sont désormais des **documents complets**, qu'on
+lui envoie directement. La forme « fragment », nécessaire à la publication en
+artefact, n'est plus qu'une sortie du script : `--fragment`.
+
 ### L'application ne pouvait pas être bâtie — donc personne ne connaissait sa vitesse
 
 Le patron, inquiet : *« l'application là, elle est super lente. Les

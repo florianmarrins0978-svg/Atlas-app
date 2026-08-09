@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 /*
-  Fusionne les huit maquettes en une seule page consultable.
+  Fusionne toutes les maquettes en une seule page consultable.
 
-  Pourquoi un script plutôt qu'un copier-coller : les huit fichiers ont été
+  Pourquoi un script plutôt qu'un copier-coller : les fichiers ont été
   écrits séparément et se partagent les mêmes noms de classes (.ecran, .prop,
   .nom, .bas…) et les mêmes identifiants (#modele, #duo). Concaténés tels
   quels, ils se marcheraient dessus — la charte de la maquette 6 repeindrait
   la maquette 2. Chaque feuille de style est donc confinée sous un ancêtre
-  unique (#s01 … #s08) et chaque script reçoit un `document` restreint à sa
+  unique (#s01, #s02, …) et chaque script reçoit un `document` restreint à sa
   propre section.
 
   Le script est refait à chaque régénération pour que la page unique ne puisse
-  pas diverger des huit originaux : ils restent la source, elle est le produit.
+  pas diverger de ses originaux : ils restent la source, elle est le produit.
 */
 
 import { readFileSync, writeFileSync } from "node:fs";
@@ -69,6 +69,13 @@ const MAQUETTES = [
     titre: "La colonne — retenue",
     famille: "Vers la décision",
     quoi: "Les trois déclinaisons que vous gardez : le repère, en plages, l’action au pouce.",
+    retenu: true,
+  },
+  {
+    fichier: "09-calme-x-aman-retouche.html",
+    titre: "Le calme × Aman, retouché",
+    famille: "Vers la décision",
+    quoi: "Le premier écran de 05, avec le pied d’Aman et le trait qui ferme l’en-tête.",
     retenu: true,
   },
 ];
@@ -300,15 +307,14 @@ ${code}
   )
   .join("\n\n");
 
-const page = `<title>Atlas — toutes les maquettes de l'écran Chantiers</title>
-<style>
+const corpsDeLaPage = `<style>
   /*
-    Les huit maquettes sur une seule page.
+    Toutes les maquettes sur une seule page.
 
-    Chaque feuille de style d'origine est confinée sous #s01 … #s08 : les
+    Chaque feuille de style d'origine est confinée sous #s01, #s02, … : les
     fichiers partagent les mêmes noms de classes, et sans ce confinement la
     charte de l'une repeindrait l'autre. Cette page est engendrée par
-    scripts/fusionner-maquettes.mjs à partir des huit fichiers voisins, qui
+    scripts/fusionner-maquettes.mjs à partir des fichiers numérotés voisins, qui
     restent la source.
   */
   :root{
@@ -374,7 +380,7 @@ ${styles}
   <div class="ouverture">
     <p class="sur">Atlas — écran Chantiers</p>
     <h1>Toutes les maquettes</h1>
-    <p class="chapo">Les huit propositions, dans l’ordre où elles sont nées, sur une seule page. Cliquez un titre : il vous y emmène.</p>
+    <p class="chapo">Toutes les propositions, dans l’ordre où elles sont nées, sur une seule page. Cliquez un titre : il vous y emmène.</p>
   </div>
 
   <div class="regle"></div>
@@ -396,7 +402,7 @@ ${sections}
 <script>
   // Chaque maquette engendrait ses écrans en clonant un gabarit. Le code est
   // repris tel quel — donc il ne peut pas diverger de l'original — mais il
-  // reçoit un « document » qui ne voit que sa propre section, sinon les huit
+  // reçoit un « document » qui ne voit que sa propre section, sinon les
   // scripts se disputeraient les mêmes identifiants.
   function porteeDe(hote) {
     const racine = document.getElementById(hote);
@@ -410,6 +416,37 @@ ${scripts}
 </script>
 `;
 
-const cible = process.argv[2] ?? SORTIE_PAR_DEFAUT;
+const TITRE = "Atlas — toutes les maquettes de l'écran Chantiers";
+
+// Deux formes, pour deux usages qui ne se recouvrent pas :
+//
+//   — le document complet, avec sa déclaration d'encodage, parce qu'un fichier
+//     ouvert depuis un disque ou un téléphone doit afficher ses accents. C'est
+//     la forme qui vit dans le dépôt, et celle qu'on envoie au patron ;
+//   — le fragment, pour la publication en artefact : l'hôte fournit alors sa
+//     propre enveloppe, et un document imbriqué dans un autre est invalide.
+//
+// Le patron a été bloqué par une page publiée qui lui demandait de se
+// connecter. Le fichier, lui, ne demande rien à personne : c'est la forme sûre,
+// donc la forme par défaut.
+const arguments_ = process.argv.slice(2);
+const fragment = arguments_.includes("--fragment");
+const cible = arguments_.find((a) => !a.startsWith("--")) ?? SORTIE_PAR_DEFAUT;
+
+const page = fragment
+  ? `<title>${TITRE}</title>\n${corpsDeLaPage}`
+  : `<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${TITRE}</title>
+</head>
+<body>
+${corpsDeLaPage}
+</body>
+</html>
+`;
+
 writeFileSync(cible, page);
 console.log(`${pages.length} maquettes fusionnées → ${cible} (${(page.length / 1024).toFixed(0)} Ko)`);

@@ -1,12 +1,19 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Atlas — toutes les maquettes de l'écran Chantiers</title>
+</head>
+<body>
 <style>
   /*
-    Les huit maquettes sur une seule page.
+    Toutes les maquettes sur une seule page.
 
-    Chaque feuille de style d'origine est confinée sous #s01 … #s08 : les
+    Chaque feuille de style d'origine est confinée sous #s01, #s02, … : les
     fichiers partagent les mêmes noms de classes, et sans ce confinement la
     charte de l'une repeindrait l'autre. Cette page est engendrée par
-    scripts/fusionner-maquettes.mjs à partir des huit fichiers voisins, qui
+    scripts/fusionner-maquettes.mjs à partir des fichiers numérotés voisins, qui
     restent la source.
   */
   :root{
@@ -685,13 +692,73 @@
 #s08 .v5 .pastille.rien{background:transparent}
 
 
+/* 09 — Le calme × Aman, retouché */
+#s09{ --fond:#efece6; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+@media (prefers-color-scheme: dark){
+#s09:not([data-theme="light"]){ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  
+}
+#s09[data-theme="dark"]{ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+#s09, #s09 *{box-sizing:border-box}
+#s09{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;padding:48px 20px 76px}
+#s09 .page{max-width:1180px;margin:0 auto}
+#s09 .intro{max-width:60ch;margin:0 auto 52px;text-align:center}
+#s09 .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+#s09 .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+#s09 .intro p{margin:0;color:var(--gris);font-size:15px}
+#s09 .duo{display:flex;flex-wrap:wrap;gap:60px;justify-content:center;align-items:flex-start}
+#s09 .prop{display:flex;flex-direction:column;align-items:center;gap:20px;max-width:390px}
+#s09 .legende{text-align:center}
+#s09 .legende h2{margin:0 0 6px;font:400 11px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze)}
+#s09 .legende p{margin:0;font-size:13.6px;color:var(--gris);line-height:1.6}
+#s09 .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 36px 78px rgba(20,18,14,.24)}
+#s09 .ecran{--e-fond:#efece6;--e-plage:#f6f4ef;--e-encre:#221f1a;--e-gris:#8b8478;--e-bronze:#8a7452;
+         --e-trait:rgba(34,31,26,.13);--e-plein:#221f1a;--e-plein-encre:#f2efe8;--e-plein-signe:#b8a17a;
+         overflow:hidden;border-radius:34px;height:800px;display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+#s09 .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+#s09 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+#s09 .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+#s09 .enseigne{padding:26px 0 18px;text-align:center;font-size:11px;letter-spacing:.52em}
+#s09 .regle{height:1px;background:var(--e-trait)}
+#s09 .titre{padding:42px 22px 0}
+#s09 .titre .salut{margin:0;color:var(--e-bronze)}
+#s09 .titre h1{margin:16px 0 0;font-size:40px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+#s09 .titre .compte{margin:16px 0 0;color:var(--e-gris)}
+#s09 .fermeture{height:1px;background:var(--e-trait);margin:30px 16px 0}
+#s09 .action{display:flex;align-items:center;justify-content:space-between;gap:16px;
+          margin:26px 16px 0;padding:20px 22px;border-radius:6px;text-decoration:none;
+          background:var(--e-plein);color:var(--e-plein-encre)}
+#s09 .action .quoi{display:block;font-size:19px;line-height:1.1}
+#s09 .action .plus{font-size:19px;line-height:1;color:var(--e-plein-signe)}
+#s09 .rubrique{margin:40px 22px 12px;color:var(--e-gris)}
+#s09 .chapeau{display:flex;justify-content:space-between;margin:36px 20px 12px;padding-bottom:11px;
+           border-bottom:1px solid var(--e-trait);color:var(--e-gris)}
+#s09 .bloc{display:grid;grid-template-columns:1fr auto;gap:0 16px;margin:0 16px 6px;padding:18px 20px;
+        border-radius:6px;background:var(--e-plage);text-decoration:none;color:inherit}
+#s09 .etat{grid-column:1;color:var(--e-gris)}
+#s09 .etat.attend{color:var(--e-bronze)}
+#s09 .quand{grid-column:2;grid-row:1;text-align:right;color:var(--e-gris)}
+#s09 .nom{grid-column:1;margin:11px 0 0;font-size:21px;line-height:1.14;font-weight:400}
+#s09 .lieu{grid-column:1;margin:5px 0 0;font-size:12.5px;color:var(--e-gris)}
+#s09 .cpt{grid-column:2;grid-row:3;align-self:end;text-align:right;color:var(--e-gris)}
+#s09 .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:18px 14px 30px}
+#s09 .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
+#s09 .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-bronze)}
+
+
 </style>
 
 <div class="enveloppe">
   <div class="ouverture">
     <p class="sur">Atlas — écran Chantiers</p>
     <h1>Toutes les maquettes</h1>
-    <p class="chapo">Les huit propositions, dans l’ordre où elles sont nées, sur une seule page. Cliquez un titre : il vous y emmène.</p>
+    <p class="chapo">Toutes les propositions, dans l’ordre où elles sont nées, sur une seule page. Cliquez un titre : il vous y emmène.</p>
   </div>
 
   <div class="regle"></div>
@@ -732,6 +799,10 @@
       <a class="item retenu" href="#m08">
         <span class="no">08</span><span class="titre">La colonne — retenue</span><span class="fleche">↓</span>
         <span class="quoi">Les trois déclinaisons que vous gardez : le repère, en plages, l’action au pouce.</span>
+      </a>
+      <a class="item retenu" href="#m09">
+        <span class="no">09</span><span class="titre">Le calme × Aman, retouché</span><span class="fleche">↓</span>
+        <span class="quoi">Le premier écran de 05, avec le pied d’Aman et le trait qui ferme l’en-tête.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -1667,10 +1738,140 @@
     </div>
   </section>
 
+  <section class="etape" id="m09">
+    <div class="etape-tete">
+      <span class="etape-no">09</span>
+      <h2>Le calme × Aman, retouché</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s09">
+<div class="page">
+  <div class="intro">
+    <p class="sur">B × Aman — retouché</p>
+    <h1>Le premier écran, avec le pied d’Aman et le trait de la colonne</h1>
+    <p>Le trait que vous demandez ferme l’en-tête : il sépare le nom, le salut et le titre de tout ce qui se fait en dessous. Reste une question que la phrase ne tranche pas — s’il vient seul, ou avec le chapeau entier de la colonne. Les deux sont là.</p>
+  </div>
+
+  <div class="duo">
+
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="regle"></div>
+
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+
+        <div class="fermeture"></div>
+
+        <a class="action" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus">+</span>
+        </a>
+
+        <p class="rubrique caps">En cours</p>
+
+        <a class="bloc" href="#">
+          <span class="etat caps">Brouillon</span>
+          <span class="quand caps num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p>
+          <p class="lieu">2 route de Vertou, Vertou</p>
+          <span class="cpt caps num">Sans photo</span>
+        </a>
+        <a class="bloc" href="#">
+          <span class="etat caps">À vérifier</span>
+          <span class="quand caps num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p>
+          <p class="lieu">12 rue des Lilas, Nantes</p>
+          <span class="cpt caps num">6 photos</span>
+        </a>
+        <a class="bloc" href="#">
+          <span class="etat caps attend">Devis retourné</span>
+          <span class="quand caps num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p>
+          <p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <span class="cpt caps num">3 photos</span>
+        </a>
+
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <div class="legende">
+        <h2>1 — Le trait seul</h2>
+        <p>Ce que vous avez demandé, à la lettre : un cheveu ferme l’en-tête, juste au-dessus de « Nouveau chantier ». Le compte reste sous le titre, « En cours » reste nu.</p>
+      </div>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="regle"></div>
+
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+        </div>
+
+        <div class="fermeture"></div>
+
+        <a class="action" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus">+</span>
+        </a>
+
+        <div class="chapeau caps"><span>En cours</span><span class="num">Quatre</span></div>
+
+        <a class="bloc" href="#">
+          <span class="etat caps">Brouillon</span>
+          <span class="quand caps num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p>
+          <p class="lieu">2 route de Vertou, Vertou</p>
+          <span class="cpt caps num">Sans photo</span>
+        </a>
+        <a class="bloc" href="#">
+          <span class="etat caps">À vérifier</span>
+          <span class="quand caps num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p>
+          <p class="lieu">12 rue des Lilas, Nantes</p>
+          <span class="cpt caps num">6 photos</span>
+        </a>
+        <a class="bloc" href="#">
+          <span class="etat caps attend">Devis retourné</span>
+          <span class="quand caps num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p>
+          <p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <span class="cpt caps num">3 photos</span>
+        </a>
+
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <div class="legende">
+        <h2>2 — Le trait, et le chapeau de la colonne</h2>
+        <p>Le même trait, plus le second emprunt : « Quatre » remonte à côté d’« En cours », sur une ligne fermée d’un cheveu. L’en-tête respire, et le compte cesse de flotter.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+    </div>
+  </section>
+
 <script>
   // Chaque maquette engendrait ses écrans en clonant un gabarit. Le code est
   // repris tel quel — donc il ne peut pas diverger de l'original — mais il
-  // reçoit un « document » qui ne voit que sa propre section, sinon les huit
+  // reçoit un « document » qui ne voit que sa propre section, sinon les
   // scripts se disputeraient les mêmes identifiants.
   function porteeDe(hote) {
     const racine = document.getElementById(hote);
@@ -1883,3 +2084,6 @@
 
 })(porteeDe("s06"));
 </script>
+
+</body>
+</html>
