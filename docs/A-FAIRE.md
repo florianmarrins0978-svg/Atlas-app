@@ -35,6 +35,7 @@ qui ne se résoudra pas en codant.
 5. [~~Brancher un fournisseur SMS et e-mail~~ — ne bloque plus](#5-brancher-un-fournisseur-sms-et-e-mail--ne-bloque-plus)
 6. [Choisir l'outil qui émet les factures](#6-choisir-loutil-qui-émet-les-factures)
 7. [Créer les identifiants Google, pour qui veut relier son agenda](#7-créer-les-identifiants-google-pour-qui-veut-relier-son-agenda)
+8. [Faire valider l'application par Google — AVANT de commercialiser](#8-faire-valider-lapplication-par-google--avant-de-commercialiser)
 
 ---
 
@@ -629,3 +630,53 @@ Ni l'essai d'Atlas, ni sa finition. Un artisan qui tient son planning **dans
 Atlas seulement** n'a aucun doublon possible, et c'est le cas aujourd'hui. Ce
 point bloque le jour où un artisan tient son agenda ailleurs — c'est-à-dire à
 peu près tout le monde.
+
+---
+
+## 8. Faire valider l'application par Google — AVANT de commercialiser
+
+**Qui : le patron.** Cela engage une entreprise auprès de Google, et demande des
+pièces que vous seul possédez.
+
+> **À ressortir au moment de la commercialisation.** Sa consigne du 9 août
+> 2026 : *« quand on sera arrivé à la partie commercialisation, je veux que tu
+> me le ressortes automatiquement parce que je ne vais pas m'en souvenir. »*
+> Le rappel est armé dans `HANDOVER.md`, que chaque conversation lit en
+> arrivant.
+
+### Pourquoi c'est bloquant, et pourquoi ça ne se voit pas venir
+
+Le raccordement de l'agenda **fonctionnera parfaitement** pour vous et vos
+premiers artisans. Rien n'annoncera le mur.
+
+Tant que Google n'a pas validé l'application, l'accès est limité à **une
+centaine de comptes que vous inscrivez à la main dans la console**. Le
+cent-unième artisan verra un écran d'avertissement de Google, puis un refus. Ce
+n'est pas un défaut d'Atlas : c'est la règle de Google pour les applications non
+vérifiées qui demandent l'accès à un agenda.
+
+### Ce que la vérification demande
+
+| Pièce | État aujourd'hui |
+|---|---|
+| Un nom de domaine dont vous prouvez la propriété | À acquérir — il vous en faut un de toute façon |
+| Une **politique de confidentialité publiée en ligne** | Le contenu existe (`docs/RGPD.md`), il reste à le publier à une adresse publique |
+| Une page d'accueil publique décrivant l'application | À faire |
+| Une vidéo montrant ce que vous faites de l'agenda | Quelques minutes d'écran |
+| L'écran de consentement rempli et soumis | Dans la console Google |
+
+**Le coût est le délai, pas l'argent.** Comptez **plusieurs semaines**, parfois
+davantage si Google demande des précisions. C'est un délai qui ne se rattrape
+pas : lancez la demande **bien avant** la date à laquelle vous voulez vendre.
+
+**Réserve, dite plutôt que tue.** À ma connaissance, l'agenda relève des
+permissions « sensibles » — vérification gratuite — et non des « restreintes »,
+qui exigent en plus un audit de sécurité facturé par un tiers. **Je n'ai pas pu
+le confirmer** : le réseau de l'environnement de développement refuse les pages
+de Google. À vérifier vous-même dans la console avant de vous engager.
+
+### Ce que ça ne bloque pas
+
+Ni l'essai, ni la finition, ni vos premiers artisans. Ce point bloque
+**uniquement** le passage à l'échelle — et il le bloque d'un coup, sans
+prévenir, le jour où vous dépasserez la centaine.

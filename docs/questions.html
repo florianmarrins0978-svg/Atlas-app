@@ -80,6 +80,7 @@
 <li><a href="#9-ce-que-je-vois-là-est-ce-le-design-final-">Ce que je vois là, est-ce le design final ?</a></li>
 <li><a href="#10-qui-voit-quoi--moi-mes-clients-leurs-salariés-">Qui voit quoi : moi, mes clients, leurs salariés ?</a></li>
 <li><a href="#11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-">Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?</a></li>
+<li><a href="#12-lagenda-google--mes-artisans-auront-ils-des-identifiants-à-saisir-">L'agenda Google : mes artisans auront-ils des identifiants à saisir ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -511,6 +512,63 @@
 <h3 id="où-ça-en-est">Où ça en est</h3>
 <p><strong>Vous n'avez aucun logiciel de comptabilité aujourd'hui</strong> (réponse du 8 août 2026). La question devient donc : lequel prendre. Elle est ouverte au point 6 de <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a>, avec ce que je peux préparer et ce que vous seul pouvez signer.</p>
 <p><strong>Ce que ça ne bloque pas</strong> : ni l'essai d'Atlas, ni sa finition. Comme les autres points de <code>A-FAIRE.md</code>, cela bloque le fait de le confier à un vrai artisan avec de vrais clients.</p>
+<hr>
+<h2 id="12-lagenda-google--mes-artisans-auront-ils-des-identifiants-à-saisir-">12. L'agenda Google : mes artisans auront-ils des identifiants à saisir ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Posée le 9 août 2026 :</em> « une fois que j'aurai créé la clé API pour l'agenda Google, les utilisateurs, quand je vais commercialiser l'application, eux, ils auront juste à rentrer leurs identifiants, c'est tout ? »</p>
+<h3 id="non--et-cest-plus-simple-que-ça-pour-eux">Non — et c'est plus simple que ça pour eux</h3>
+<p>Il y a <strong>deux choses différentes</strong> derrière le mot « identifiants », et les confondre fait imaginer un parcours invendable.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce que c'est</th>
+<th>Qui s'en occupe</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Les identifiants de l'application</strong> (client ID + secret)</td>
+<td>L'identité d'Atlas auprès de Google. Ce n'est pas un compte utilisateur</td>
+<td><strong>Vous, une seule fois, pour tous</strong></td>
+</tr>
+<tr>
+<td><strong>Le compte Google de l'artisan</strong></td>
+<td>Son agenda à lui</td>
+<td><strong>Lui</strong> — mais il n'a rien à taper</td>
+</tr>
+</tbody></table></div>
+<p>Concrètement, pour un artisan qui achète Atlas : il ouvre son planning, appuie sur « Relier mon agenda Google », l'écran de Google s'ouvre, il se connecte comme partout ailleurs, il accepte. <strong>Fin.</strong> Aucun projet Google à créer, aucun mot à comprendre.</p>
+<p><strong>Alors à quoi servent les trois cases dans « Mon agenda » ?</strong> À vous, aujourd'hui, tant qu'aucune configuration n'est posée sur le serveur — et plus tard à l'artisan qui voudrait son propre projet Google. L'application regarde d'abord ce que l'entreprise a saisi, et retombe sur votre configuration sinon. Vos artisans ne verront jamais ces cases.</p>
+<h3 id="ce-que-ça-coûte">Ce que ça coûte</h3>
+<p><strong>Rien en argent.</strong> Le projet Google est gratuit, l'API Agenda est gratuite, et son quota libre est très au-delà de ce qu'une centaine d'artisans consommeraient.</p>
+<h3 id="le-vrai-obstacle-et-il-nest-pas-technique">Le vrai obstacle, et il n'est pas technique</h3>
+<p><strong>Tant que Google n'a pas validé l'application, l'accès est limité à une centaine de comptes que vous inscrivez à la main.</strong> Suffisant pour vous et vos premiers artisans ; bloquant au cent-unième.</p>
+<p>Pour aller au-delà, Google demande une vérification :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qu'il faut</th>
+<th>Remarque</th>
+</tr></thead><tbody>
+<tr>
+<td>Un nom de domaine dont vous prouvez la propriété</td>
+<td>Il vous en faudra un de toute façon</td>
+</tr>
+<tr>
+<td>Une politique de confidentialité <strong>en ligne</strong></td>
+<td>Le contenu existe déjà (<code>docs/RGPD.md</code>), il faut la publier</td>
+</tr>
+<tr>
+<td>Une page d'accueil publique</td>
+<td>Idem</td>
+</tr>
+<tr>
+<td>Une vidéo montrant l'usage que vous faites de l'agenda</td>
+<td>Quelques minutes d'écran</td>
+</tr>
+<tr>
+<td><strong>Plusieurs semaines de délai</strong></td>
+<td>C'est le vrai coût</td>
+</tr>
+</tbody></table></div>
+<p><strong>Une réserve, écrite parce qu'elle compte.</strong> À ma connaissance, l'agenda relève des permissions dites « sensibles » — vérification gratuite mais longue — et non des « restreintes », qui exigent en plus un audit de sécurité payant. <strong>Je n'ai pas pu le confirmer</strong> : le réseau de l'environnement de développement refuse les pages de Google. À vérifier avant d'annoncer une date de lancement.</p>
+<h3 id="ce-quil-faut-en-retenir-pour-le-calendrier">Ce qu'il faut en retenir pour le calendrier</h3>
+<p><strong>Lancez la demande de vérification tôt</strong>, pas la semaine où vous voulez vendre. C'est le genre de délai qui ne se rattrape pas.</p>
 </main>
 </body>
 </html>

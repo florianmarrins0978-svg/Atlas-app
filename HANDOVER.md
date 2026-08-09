@@ -18,6 +18,31 @@ complet est décrit dans **`docs/AGENT.md`** — c'est la référence du produit
 lire avant toute décision de conception. Le socle technique est une application
 Next.js avec PostgreSQL, isolée par entreprise via *row level security*.
 
+## ⚠ À RESSORTIR AU PATRON quand le sujet arrive
+
+**Sa consigne du 9 août 2026, à propos de la validation Google :** *« quand on
+sera arrivé à la partie commercialisation, je veux que tu me le ressortes
+automatiquement parce que je ne vais pas m'en souvenir. »*
+
+Ce bloc est le mécanisme. Il est **en tête de ce fichier**, que `CLAUDE.md` §1
+fait lire au début de **chaque** conversation. Ne pas le déplacer plus bas, ne
+pas le résumer : il n'a de valeur que s'il est impossible à manquer.
+
+**La règle : dès qu'un des déclencheurs ci-dessous apparaît dans la
+conversation, le point correspondant se dit AVANT de répondre au reste.** Le
+patron n'a pas à s'en souvenir — c'est le rôle de ce fichier, et sa défaillance
+serait une défaillance du dépôt.
+
+| Si le patron parle de… | Lui ressortir |
+|---|---|
+| **commercialiser, vendre, premiers clients payants, lancement, mise sur le marché, plusieurs artisans** | **La validation de l'application par Google** (`docs/A-FAIRE.md` §8). Sans elle, l'agenda ne fonctionne que pour **une centaine de comptes inscrits à la main** — et le mur arrive d'un coup, sans prévenir. La vérification demande un domaine, une politique de confidentialité **publiée**, une page d'accueil, une vidéo, et **plusieurs semaines**. Le délai ne se rattrape pas : la demande se lance bien avant la date de vente. Détail complet dans `docs/QUESTIONS.md` §12 |
+
+Un point traité ici se **barre** avec sa date plutôt qu'il ne se supprime :
+savoir qu'il a été dit évite de le redire, et savoir quand évite de croire qu'il
+est encore valable.
+
+---
+
 ## Ce qui vient d'être terminé
 
 **La note vocale lit un numéro sans qu'on l'annonce (9 août).** Il signalait que

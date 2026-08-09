@@ -62,6 +62,46 @@ for (const fichier of FICHIERS) {
   }
 }
 
+// --- Les rappels armés ne doivent pas disparaître par distraction -----------
+//
+// **Sa consigne du 9 août 2026 :** *« note-toi-le, enregistre-le, car lorsqu'on
+// sera arrivé à la partie commercialisation, je veux que tu me le ressortes
+// automatiquement parce que je ne vais pas m'en souvenir. »*
+//
+// Un rappel qui vit dans un fichier de prose se supprime d'un coup de ciseaux
+// lors d'un remaniement, et personne ne s'en aperçoit — surtout pas celui à qui
+// il devait servir, puisque justement il ne s'en souvient pas.
+//
+// Ce contrôle ne juge pas le contenu du bloc : il vérifie que la section existe
+// encore et qu'elle porte au moins une ligne de déclencheur. Le supprimer
+// exigera de le faire exprès, en rendant cette suite rouge.
+const RAPPELS_ATTENDUS = [
+  {
+    fichier: "HANDOVER.md",
+    titre: "## ⚠ À RESSORTIR AU PATRON quand le sujet arrive",
+    // Le déclencheur, pas la réponse : c'est lui qui se perd en premier.
+    declencheur: "commercialiser",
+    pourquoi:
+      "le rappel sur la validation Google (docs/A-FAIRE.md §8) doit ressortir " +
+      "de lui-même le jour où la commercialisation revient sur la table",
+  },
+];
+
+for (const rappel of RAPPELS_ATTENDUS) {
+  if (!existsSync(rappel.fichier)) continue;
+  const contenu = readFileSync(rappel.fichier, "utf8");
+  if (!contenu.includes(rappel.titre)) {
+    problemes.push(
+      `${rappel.fichier} — la section « ${rappel.titre.replace(/^#+\s*/, "")} » a disparu : ${rappel.pourquoi}`
+    );
+  } else if (!contenu.includes(rappel.declencheur)) {
+    problemes.push(
+      `${rappel.fichier} — la section des rappels ne porte plus son déclencheur ` +
+        `« ${rappel.declencheur} » : ${rappel.pourquoi}`
+    );
+  }
+}
+
 if (problemes.length > 0) {
   console.error("❌ La mémoire du dépôt pointe dans le vide :\n");
   for (const p of problemes) console.error(`   ${p}`);
@@ -72,4 +112,7 @@ if (problemes.length > 0) {
   process.exit(1);
 }
 
-console.log(`✅ Mémoire du dépôt cohérente (${FICHIERS.length} fichiers vérifiés).`);
+console.log(
+  `✅ Mémoire du dépôt cohérente (${FICHIERS.length} fichiers vérifiés, ` +
+    `${RAPPELS_ATTENDUS.length} rappel(s) armé(s)).`
+);
