@@ -58,6 +58,29 @@ export const BUDGET_CARACTERES = 6000;
 /** Au-delà, les exemples se répètent plus qu'ils n'enseignent. */
 export const MAX_EXEMPLES = 5;
 
+/**
+ * La part du budget tenue en réserve pour SES corrections.
+ *
+ * **Ajouté le 9 août 2026, sur un défaut mesuré et non supposé.** Ce jour-là,
+ * vingt-quatre termes tirés de devis réels sont entrés dans le vocabulaire. La
+ * consigne est passée à 6 044 caractères, et le compte a été fait : quinze
+ * termes retenus sur vingt-six, et **zéro exemple sur cinq**. Les mots avaient
+ * mangé la place de ses corrections.
+ *
+ * C'était une régression franche. Un vocabulaire est écrit une fois par
+ * l'éditeur pour tous les artisans ; une correction est ce que CE patron a
+ * changé de sa main sur SON devis. Sa phrase du 7 août : *« le mieux, c'est que
+ * je fasse plein de devis et que tu enregistres toutes mes modifications, et
+ * dans un mois tu sauras les remplir tout seul. »* Une mécanique qui jette ces
+ * modifications-là pour faire tenir la définition de « jumelle » travaille
+ * contre lui.
+ *
+ * La réserve n'est pas rendue aux mots quand elle sert : elle leur revient
+ * seulement s'il n'y a **aucune** correction à envoyer — un artisan qui débute
+ * n'a rien corrigé encore, et sa consigne n'a aucune raison d'être plus courte.
+ */
+export const PART_RESERVEE_CORRECTIONS = 0.25;
+
 export function construireConsigneMetier(
   termes: TermeMetier[],
   corrections: CorrectionApprise[],
@@ -104,6 +127,19 @@ export function construireConsigneMetier(
     "Règle écartée"
   );
 
+  // **Les mots ne peuvent pas prendre toute la place restante.** Une réserve
+  // est mise de côté pour ses corrections avant qu'ils ne se servent — sans
+  // elle, vingt-quatre définitions suffisent à les faire toutes disparaître,
+  // ce qui a été mesuré le 9 août 2026 (voir `PART_RESERVEE_CORRECTIONS`).
+  //
+  // La réserve ne s'applique que s'il y a quelque chose à réserver : sans
+  // correction enregistrée, rien ne justifie d'amputer le vocabulaire.
+  const exemples = corrections.slice(0, MAX_EXEMPLES).map(formaterCorrection);
+  const reserve = exemples.length > 0 ? Math.floor(budget * PART_RESERVEE_CORRECTIONS) : 0;
+  const disponiblePourLesMots = Math.max(0, reste - reserve);
+  const misDeCote = reste - disponiblePourLesMots;
+  reste = disponiblePourLesMots;
+
   const nbMots = ajouter(
     "VOCABULAIRE DE CET ARTISAN — emploie ces mots, et traite-les comme indiqué :",
     mots.map(formaterTerme),
@@ -111,7 +147,9 @@ export function construireConsigneMetier(
   );
 
   // --- Puis ses corrections, comme preuves ---------------------------------
-  const exemples = corrections.slice(0, MAX_EXEMPLES).map(formaterCorrection);
+  //
+  // La réserve leur revient, augmentée de ce que les mots n'ont pas consommé.
+  reste += misDeCote;
   const nbExemples = ajouter(
     "CE QU'IL A CORRIGÉ LES FOIS PRÉCÉDENTES — c'est sa façon de faire, reprends-la :",
     exemples,

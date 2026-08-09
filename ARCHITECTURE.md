@@ -1864,3 +1864,81 @@ pour cette raison-là accuse à tort.
 | La grille, février bissextile, le passage d'année, la borne des mois | `scripts/test-calendrier.ts` |
 | Un jour pris ne se choisit pas, chez le client | `scripts/test-devis-client-e2e.ts` |
 | Le patron navigue jusqu'à six mois et la date part | `scripts/test-date-lointaine-e2e.ts` |
+
+---
+
+## 37. Le vocabulaire d'un vrai devis d'élagueur, et la place qu'il ne doit pas prendre
+
+**Le patron, le 9 août 2026**, en transmettant quatre devis d'un confrère :
+*« inspire-toi, apprends les phrases, les mots clés, les tournures de phrase,
+sauts de ligne par rapport aux différentes tâches à effectuer. »*
+
+### Ce que ces devis confirment
+
+Ils valident la règle qu'il avait énoncée seul le 7 août — *« chaque ligne doit
+pouvoir se vendre seule »*. Le confrère fait exactement cela : la fente du gros
+bois, le rognage des souches et le débroussaillage ont chacun leur ligne. Son
+intuition était la pratique du métier.
+
+Ils en montrent en plus la **forme**, que rien dans le dépôt ne disait :
+
+| Ce qu'on croyait | Ce que font les vrais devis |
+|---|---|
+| Une ligne = une prestation | Une ligne = **un arbre ou une zone** — « Hêtre », « Espace Hangar », « Bouleau (près de la clôture du voisin) » |
+| Le libellé décrit le geste | Le titre nomme la cible ; **les gestes vont dessous**, un par ligne |
+| Le bois est un détail | **Aucune ligne d'abattage ne finit sans dire où va la matière** — débité en 40 cm, broyé au pied, évacué par camion |
+
+### Ce qui n'est PAS entré, et ce n'est pas de la prudence en plus
+
+Les quatre devis portent le nom, l'adresse et la commune de **vrais clients**,
+plus la raison sociale, le SIRET, l'IBAN et le téléphone d'une **entreprise
+tierce**. Rien n'est reproduit.
+
+C'est la règle déjà écrite : ce vocabulaire est **partagé**, il part avec
+l'application chez tous les artisans (`docs/QUESTIONS.md` §10 — *« ce sont des
+mots, pas des données de client : aucun nom, aucune adresse, aucun prix »*), et
+le dépôt est public depuis le 1ᵉʳ août.
+
+Les prix non plus, pour une autre raison : ce sont les prix d'un confrère. Les
+verser dans les grilles du patron lui ferait facturer les tarifs de quelqu'un
+d'autre.
+
+### **Le défaut que ce lot a créé, et qu'il fallait mesurer**
+
+Vingt-quatre entrées sont entrées dans `termes_metier`. La consigne envoyée avec
+chaque dictée est passée à **6 044 caractères** — au-dessus du budget. Le compte,
+fait juste après :
+
+| | Avant la réserve | Après |
+|---|---|---|
+| Termes retenus | 15 / 26 | 18 / 26 |
+| **Ses corrections** | **0 / 5** | **4 / 5** |
+
+**Zéro sur cinq.** Le vocabulaire avait mangé toute la place de ce que le patron
+avait corrigé de sa main. Or un vocabulaire est écrit **une fois, par l'éditeur,
+pour tous les artisans** ; une correction est ce que **ce** patron a changé sur
+**son** devis — *« je fais plein de devis et tu enregistres toutes mes
+modifications »*. Jeter les secondes pour faire tenir la définition de
+« jumelle » travaille contre lui.
+
+`PART_RESERVEE_CORRECTIONS` met un quart du budget de côté avant que les mots ne
+se servent. La réserve ne se prélève **que s'il y a quelque chose à y mettre** :
+un artisan qui débute n'a rien corrigé, et sa consigne n'a aucune raison d'être
+plus courte.
+
+### L'ordre des termes n'est pas alphabétique, il est conséquentiel
+
+C'est lui qui décide de ce qui part quand le budget se resserre. Passent en
+premier ceux qui changent un **prix** — les deux techniques d'abattage, l'état
+de l'arbre qui les impose — ou qui créent une **ligne détachable** : fente,
+rognage, débroussaillage, échenillage. Le vocabulaire de description vient
+après : mal compris, il coûte un libellé, pas un montant.
+
+Les huit termes qui restent aujourd'hui au vestiaire quand il a cinq corrections
+sont exactement ceux-là : houppier, charpentière, rehaussement, réduction sur
+bois sain, taille de cohabitation, jumelle, rejets, fût.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| La réserve, et son retour aux mots quand elle ne sert pas | `scripts/test-consigne-metier.ts` |
+| Le budget tenu, réserve comprise | idem |

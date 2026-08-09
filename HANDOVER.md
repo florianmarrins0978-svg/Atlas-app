@@ -20,6 +20,14 @@ Next.js avec PostgreSQL, isolée par entreprise via *row level security*.
 
 ## Ce qui vient d'être terminé
 
+**Le vocabulaire d'un vrai devis d'élagueur (9 août).** Six règles de rédaction
+et dix-huit mots du métier, tirés de quatre devis d'un confrère. **À savoir
+avant d'en ajouter :** le budget de la consigne est de 6 000 caractères, et un
+quart est RÉSERVÉ à ses corrections — sans cette réserve, vingt-quatre entrées
+suffisent à les faire toutes disparaître, ce qui a été mesuré. L'ordre des
+termes décide de ce qui part : d'abord ce qui change un prix ou crée une ligne.
+`ARCHITECTURE.md` §37.
+
 **Un calendrier des deux côtés (9 août).** Le client ne peut plus choisir un jour
 déjà pris — il est barré et ne répond pas. Le patron a le même, jusqu'à dix-huit
 mois. Un seul composant sert les deux écrans, et il ne décide de rien : tout
