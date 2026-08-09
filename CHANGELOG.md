@@ -131,6 +131,30 @@ L'adresse vient désormais de ce que le navigateur a demandé
 de défaut que l'origine des actions serveur : une valeur devinée côté serveur là
 où seule la requête fait foi.
 
+### Le banc cesse d'être un atelier : il sert une version bâtie
+
+*« On arrête de tourner en rond, corrige-moi ça une bonne fois pour toutes. »*
+Il avait raison : les 504, les 404, les 502, les ports en conflit et les 38,7
+secondes par écran avaient **tous la même cause** — le banc faisait tourner
+`next dev`, qui ne compile rien d'avance.
+
+Mesuré sur la version bâtie : **36 à 80 ms par écran, au premier accès**, contre
+38,7 s. Plus rien ne se compile à l'ouverture.
+
+Ce qui l'empêchait : `next start` impose `NODE_ENV=production`, et la
+configuration refuse alors l'IA simulée et le stockage local — les deux seules
+choses qu'un banc ne peut pas avoir. D'où un profil **déclaré, jamais deviné**
+(`ATLAS_PROFIL=banc`), qui relâche exactement ces deux points. AUTH_SECRET,
+CRON_SECRET, Redis restent exigés ; l'isolation entre entreprises ne bouge pas
+d'un cran. La suite éprouve les deux sens, y compris les valeurs approchantes.
+
+**Un défaut trouvé par le seul contrôle capable de le voir** : en production,
+Auth.js refuse l'hôte transmis par un mandataire (`UntrustedHost`) et l'artisan
+lit « Une erreur ». Même famille que « Invalid Server Actions request. ».
+`verifier:connexion` monte désormais `npm run banc` — la version bâtie — au lieu
+du serveur de développement : éprouver autre chose que ce qu'on livre, c'est ne
+rien éprouver.
+
 
 ### Une base restée en arrière, et rien pour le dire
 

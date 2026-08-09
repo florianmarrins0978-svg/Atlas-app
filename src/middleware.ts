@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import { authConfig } from "@/auth.config";
 import { NextResponse } from "next/server";
+import { estBancDEssai } from "@/profil-banc";
 
 const { auth } = NextAuth(authConfig);
 
@@ -35,7 +36,12 @@ const ENTETE_CHEMIN = "x-atlas-pathname";
 // chez le patron pour ce motif.
 //
 // `NODE_ENV` ne dépend d'aucun fichier du dépôt : `next dev` le pose lui-même.
-const HORS_PRODUCTION = process.env.NODE_ENV !== "production";
+// **Un banc d'essai reste un banc, même bâti.** Depuis que le banc sert une
+// version BÂTIE (pour ne plus compiler chaque écran à l'ouverture),
+// `NODE_ENV` y vaut `production` : sans cette seconde condition, l'alignement
+// ci-dessous s'éteindrait, et la connexion redeviendrait « Invalid Server
+// Actions request. » — le défaut qui a coûté une journée entière.
+const HORS_PRODUCTION = process.env.NODE_ENV !== "production" || estBancDEssai();
 
 // Fait voir à Next.js le même hôte que celui annoncé par le navigateur.
 //

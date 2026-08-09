@@ -339,6 +339,89 @@ function main() {
     });
   });
 
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // **Le profil « banc d'essai ».**
+  //
+  // Depuis le 9 août 2026, le banc sert une version BÂTIE — `next start`, donc
+  // `NODE_ENV=production`. Sans ce profil, il faudrait une clé d'IA facturée et
+  // un compartiment S3 pour le démarrer : impossible, et c'est ce qui l'avait
+  // laissé sur `next dev`, à trente-huit secondes par écran.
+  //
+  // Le profil relâche EXACTEMENT deux choses. Les cas ci-dessous tiennent les
+  // deux sens : ce qu'il autorise, et surtout ce qu'il n'autorise pas. Sans le
+  // second groupe, `ATLAS_PROFIL` deviendrait un interrupteur ouvrant toutes les
+  // protections de production, et rien ne le dirait.
+
+  // Ce qu'un banc d'essai possède réellement : un secret de session, un secret
+  // de tâche planifiée, un Redis. Ce qu'il ne possède pas : une clé d'IA
+  // facturée et un compartiment S3.
+  const BANC_COMPLET = {
+    ...CONSTRUCTION_SANS_SECRETS,
+    NEXT_PHASE: undefined,
+    ATLAS_PROFIL: "banc",
+    AUTH_SECRET: "secret-de-banc-non-utilise-en-production-000",
+    CRON_SECRET: "secret-de-tache-planifiee-de-banc",
+    REDIS_URL: "redis://localhost:6379",
+  };
+
+  test("Banc déclaré : l'IA simulée et le stockage local sont acceptés", () => {
+    avecEnv(
+      BANC_COMPLET,
+      () => {
+        const env = getEnv();
+        assert.equal(env.bancDEssai, true);
+        assert.equal(env.llmProvider, "dev");
+        assert.equal(env.stockageProvider, "local");
+      }
+    );
+  });
+
+  test("Banc NON déclaré : la même configuration reste refusée", () => {
+    // Le cas qui empêche le profil de devenir une porte dérobée.
+    avecEnv(
+      { ...BANC_COMPLET, ATLAS_PROFIL: undefined },
+      () => {
+        assert.throws(() => getEnv(), ErreurConfiguration);
+      }
+    );
+  });
+
+  test("Banc déclaré : AUTH_SECRET, CRON_SECRET et Redis restent EXIGÉS", () => {
+    // **Le profil ne relâche que ce qu'un banc ne peut pas avoir.** Un banc a
+    // déjà ces trois-là ; les rendre optionnels n'apporterait rien et laisserait
+    // passer des configurations réellement dangereuses.
+    for (const manquante of ["AUTH_SECRET", "CRON_SECRET", "REDIS_URL"]) {
+      avecEnv(
+        { ...BANC_COMPLET, [manquante]: undefined },
+        () => {
+          assert.throws(
+            () => getEnv(),
+            ErreurConfiguration,
+            `${manquante} absente est acceptée sur un banc : le profil relâche trop`
+          );
+        }
+      );
+    }
+  });
+
+  test("Une valeur approchante ne déclare pas un banc", () => {
+    // `ATLAS_PROFIL=bancs`, `=banc-essai`, `=1`… ne doivent rien ouvrir : un
+    // profil deviné est un profil qui s'active par accident.
+    for (const valeur of ["bancs", "banc-essai", "1", "true", ""]) {
+      avecEnv(
+        { ...BANC_COMPLET, ATLAS_PROFIL: valeur },
+        () => {
+          assert.throws(
+            () => getEnv(),
+            ErreurConfiguration,
+            `« ${valeur} » a été pris pour une déclaration de banc`
+          );
+        }
+      );
+    }
+  });
+
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
   if (failed > 0) process.exit(1);
 }

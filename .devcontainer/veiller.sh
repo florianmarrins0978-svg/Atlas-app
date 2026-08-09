@@ -63,14 +63,14 @@ cd "$DEPOT" || exit 0
 # trouverait la ligne de commande de ce script et conclurait toujours que le
 # serveur tourne. Le même piège avait déjà fait que `demarrer.sh` se tuait avant
 # de rien lancer.
-MOTIF='[n]ext(-server| dev)'
+MOTIF='[n]ext(-server| dev| start)'
 
 while true; do
   if ! curl -fsS -o /dev/null --max-time 10 "http://127.0.0.1:${PORT}/api/health/live" 2>/dev/null; then
     if ! pgrep -f "$MOTIF" >/dev/null 2>&1; then
       echo "$(date '+%d/%m %H:%M:%S') — plus rien n'écoute sur le port ${PORT}, relance du serveur" >> "$JOURNAL"
       # Rend la main seulement quand le serveur meurt : la boucle le relèvera.
-      npm run essai >> "$JOURNAL" 2>&1
+      npm run banc >> "$JOURNAL" 2>&1
       echo "$(date '+%d/%m %H:%M:%S') — le serveur s'est arrêté" >> "$JOURNAL"
     else
       # **Un serveur présent mais muet est pire qu'un serveur absent** : il tient

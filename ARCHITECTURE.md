@@ -2729,3 +2729,94 @@ lorsqu'il n'y a strictement rien d'autre.
 **C'est la même famille de défaut que l'origine des actions serveur** (§30) :
 une valeur devinée côté serveur là où seule la requête du navigateur fait foi.
 Deux fois le même piège, deux fois une journée perdue.
+
+---
+
+## 45. Le banc cesse d'être un atelier : il sert une version bâtie
+
+**Le 9 août 2026, dix-sept heures.** « HTTP ERROR 504 », « 404 », « 502 », deux
+serveurs qui se disputaient le port 3000, un écran à 38,7 secondes. Sa phrase, à
+la fin : *« On arrête de tourner en rond, corrige-moi ça une bonne fois pour
+toutes. »*
+
+Il avait raison. Chaque correctif de la journée visait un symptôme. Ils avaient
+**tous la même cause** : le banc faisait tourner `next dev`, qui ne compile rien
+d'avance et attend qu'on ouvre un écran pour le compiler. Un serveur de
+développement est un atelier, pas un produit.
+
+### Ce que la version bâtie change, mesuré
+
+| Écran, premier accès | `next dev` | Version bâtie |
+|---|---:|---:|
+| Accueil | 38,7 s (constaté chez lui) | **46 ms** |
+| Planning | 5,4 s | **47 ms** |
+| Terminés | 38,7 s | **80 ms** |
+| Mon agenda | > 60 s, puis 504 | **38 ms** |
+| Fiche chantier | — | **41 ms** |
+| Devis complet | — | **70 ms** |
+
+Plus rien à compiler à l'ouverture : donc plus de 504, plus de préchauffage à
+inventer, plus de course entre lui et le compilateur. La construction coûte deux
+à cinq minutes au démarrage — une attente déplacée **du moment où il clique vers
+le moment où il met à jour**, c'est-à-dire au bon endroit, et sans lui.
+
+### Le verrou qui l'en empêchait, et comment il est levé
+
+`next build` et `next start` imposent `NODE_ENV=production`, et
+`src/server/env.ts` refuse alors — à juste titre — une IA simulée et un stockage
+local. Un banc n'a ni clé d'IA facturée ni compartiment S3 : la version bâtie
+lui était donc **structurellement interdite**.
+
+D'où `src/profil-banc.ts` : un profil **déclaré, jamais deviné**.
+
+| | Sans le profil | Avec `ATLAS_PROFIL=banc` |
+|---|---|---|
+| IA simulée en production | refusée | acceptée |
+| Stockage local en production | refusé | accepté |
+| Alignement hôte/origine du proxy | éteint | maintenu |
+| Hôte transmis par le mandataire | refusé par Auth.js | accepté |
+| **AUTH_SECRET, CRON_SECRET, Redis** | **exigés** | **exigés** |
+| **Isolation entre entreprises (RLS)** | **entière** | **entière** |
+
+Les deux dernières lignes sont l'essentiel : le profil ne relâche **que** ce
+qu'un banc ne peut pas avoir. Ce qu'il possède déjà reste exigé, et rien de ce
+qui touche à l'isolation ne bouge. `scripts/test-env.ts` tient les deux sens —
+ce que le profil autorise, et ce qu'il refuse toujours, y compris pour une
+valeur approchante (`bancs`, `banc-essai`, `1`).
+
+Le profil est posé par `.devcontainer/demarrer.sh`, qui vit dans le dépôt et
+descend avec le code — jamais par `docker-compose.yml`, dont une variable
+n'existe pas dans un espace créé avant qu'elle n'y soit écrite. Deux correctifs
+sont déjà restés inertes pour ce motif.
+
+### `UntrustedHost` : le défaut que seul le contrôle de connexion pouvait voir
+
+En passant le banc en version bâtie, la connexion s'est cassée — et pas au
+même endroit que la fois précédente :
+
+```
+[auth][error] UntrustedHost: Host must be trusted.
+URL was: http://…-3000.app.github.dev/api/auth/session
+```
+
+L'artisan, lui, ne voyait qu'un écran « Une erreur. Cette page n'a pas pu
+s'afficher. » Auth.js, en production, cesse de faire confiance à l'hôte transmis
+par un mandataire. C'est la **même famille** que « Invalid Server Actions
+request. » (§30) : une protection pensée pour un serveur joignable en direct,
+appliquée à un serveur qui ne l'est jamais.
+
+`trustHost` suit désormais la même règle que le reste : hors production, ou sur
+un banc déclaré. Une vraie mise en production retrouve le refus entier et devra
+poser `AUTH_TRUST_HOST` en connaissance de cause.
+
+**Aucune autre suite ne pouvait le voir.** Les suites base n'ouvrent pas de
+navigateur ; les suites navigateur démarrent leur propre serveur en
+développement. Seul `npm run verifier:connexion` monte ce que le patron exécute
+et se connecte pour de bon derrière une origine étrangère — et il a été changé
+pour monter `npm run banc`, la version bâtie, plutôt que `npm run essai`.
+**Éprouver autre chose que ce qu'on livre, c'est ne rien éprouver.**
+
+### Le repli, qui n'est pas une décoration
+
+Si la construction échoue, `scripts/banc.mjs` repart sur `next dev` en le
+disant. Un banc lent reste un banc ; un banc mort lui coûte sa soirée.
