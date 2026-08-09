@@ -11,9 +11,13 @@
     L'écran retenu — « le trait seul » — dans les seize chartes.
 
     La maquette 10 montrait deux écrans par charte ; le patron a tranché pour
-    celui-ci. Une seule variante permet de poser quatre écrans par rangée au
-    lieu de deux, donc de comparer les couleurs d'un seul coup d'œil plutôt
-    qu'en faisant défiler. C'est tout ce qui change.
+    celui-ci.
+
+    Les écrans gardent les MESURES EXACTES de la maquette 09 — 390 px de large,
+    corps à 16 px, titre à 40 px. Une première version les avait réduits à
+    300 px pour en poser quatre par rangée : le patron a renvoyé sa capture en
+    disant « c'est ce modèle-là ». Le dessin était juste, la taille ne l'était
+    pas — et une maquette qu'il doit pincer pour lire n'a pas été montrée.
 
     Les couleurs sont RECOPIÉES depuis la maquette 10 par un script, jamais à
     la main : deux nuanciers écrits séparément finiraient par diverger, et on
@@ -41,58 +45,58 @@
   .famille span::before{right:100%}
   .famille span::after{left:100%}
 
-  .chartes{display:flex;flex-wrap:wrap;gap:44px 30px;justify-content:center;align-items:flex-start}
-  .prop{display:flex;flex-direction:column;align-items:center;gap:14px;width:300px}
+  .chartes{display:flex;flex-wrap:wrap;gap:58px 40px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:18px;width:390px;max-width:100%}
   .legende{text-align:center}
   .legende h2{margin:0 0 7px;font:400 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
               text-transform:uppercase;color:var(--bronze)}
   .nuancier{display:flex;gap:5px;justify-content:center;margin:0 0 8px}
   .nuancier i{width:12px;height:12px;border-radius:99px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
-  .legende p{margin:0;font-size:12px;color:var(--gris);line-height:1.55}
+  .legende p{margin:0;font-size:13.5px;color:var(--gris);line-height:1.6}
 
-  .tel{width:300px;border-radius:36px;padding:9px;background:#cfccc4;
-       box-shadow:0 1px 3px rgba(20,18,14,.13),0 20px 44px rgba(20,18,14,.18)}
-  .ecran{overflow:hidden;border-radius:28px;height:626px;display:flex;flex-direction:column;
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{overflow:hidden;border-radius:34px;height:816px;display:flex;flex-direction:column;
          background:var(--e-fond);color:var(--e-encre);
-         font:13px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
   .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
   .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
-  .caps{text-transform:uppercase;letter-spacing:.26em;font-size:8px;font-weight:500}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
 
-  .enseigne{padding:18px 0 12px;text-align:center;font-size:9px;letter-spacing:.48em;flex:0 0 auto}
+  .enseigne{padding:26px 0 18px;text-align:center;font-size:11px;letter-spacing:.52em;flex:0 0 auto}
   .regle{height:1px;background:var(--e-trait);flex:0 0 auto}
 
-  .titre{padding:28px 17px 0;flex:0 0 auto}
+  .titre{padding:42px 22px 0;flex:0 0 auto}
   .titre .salut{margin:0;color:var(--e-bronze)}
-  .titre h1{margin:12px 0 0;font-size:30px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
-  .titre .compte{margin:12px 0 0;color:var(--e-gris)}
+  .titre h1{margin:16px 0 0;font-size:40px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+  .titre .compte{margin:16px 0 0;color:var(--e-gris)}
 
   /* Le trait des maquettes « colonne » : il ferme l'en-tête, en retrait de
-     12 px comme les plages — de bord à bord il couperait l'écran en deux. */
-  .fermeture{height:1px;background:var(--e-trait);margin:22px 12px 0;flex:0 0 auto}
+     16 px comme les plages — de bord à bord il couperait l'écran en deux. */
+  .fermeture{height:1px;background:var(--e-trait);margin:30px 16px 0;flex:0 0 auto}
 
-  .action{display:flex;align-items:center;justify-content:space-between;gap:12px;
-          margin:20px 12px 0;padding:15px 17px;border-radius:6px;text-decoration:none;
+  .action{display:flex;align-items:center;justify-content:space-between;gap:16px;
+          margin:26px 16px 0;padding:20px 22px;border-radius:6px;text-decoration:none;
           background:var(--e-plein);color:var(--e-plein-encre);flex:0 0 auto}
-  .action .quoi{display:block;font-size:15px;line-height:1.1}
-  .action .plus{font-size:15px;line-height:1;color:var(--e-plein-signe)}
+  .action .quoi{display:block;font-size:19px;line-height:1.1}
+  .action .plus{font-size:19px;line-height:1;color:var(--e-plein-signe)}
 
-  .rubrique{margin:26px 17px 9px;color:var(--e-gris)}
+  .rubrique{margin:40px 22px 12px;color:var(--e-gris)}
 
-  .bloc{display:grid;grid-template-columns:1fr auto;gap:0 12px;margin:0 12px 5px;padding:14px 15px;
+  .bloc{display:grid;grid-template-columns:1fr auto;gap:0 16px;margin:0 16px 6px;padding:18px 20px;
         border-radius:6px;background:var(--e-plage);text-decoration:none;color:inherit}
   .etat{grid-column:1;color:var(--e-gris)}
   /* La seule couleur qui veut dire quelque chose : un geste vous attend. */
   .etat.attend{color:var(--e-attente)}
   .quand{grid-column:2;grid-row:1;text-align:right;color:var(--e-gris)}
-  .nom{grid-column:1;margin:9px 0 0;font-size:16px;line-height:1.14;font-weight:400}
-  .lieu{grid-column:1;margin:4px 0 0;font-size:10.5px;color:var(--e-gris)}
+  .nom{grid-column:1;margin:11px 0 0;font-size:21px;line-height:1.14;font-weight:400}
+  .lieu{grid-column:1;margin:5px 0 0;font-size:12.5px;color:var(--e-gris)}
   .cpt{grid-column:2;grid-row:3;align-self:end;text-align:right;color:var(--e-gris)}
 
   /* Le pied d'Aman : un cheveu au-dessus, l'onglet actif souligné de bronze. */
   .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
-       border-top:1px solid var(--e-trait);padding:14px 8px 22px;flex:0 0 auto}
-  .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:7px}
+       border-top:1px solid var(--e-trait);padding:18px 14px 30px;flex:0 0 auto}
+  .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
   .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-bronze)}
 </style>
 
@@ -100,7 +104,7 @@
   <div class="intro">
     <p class="sur">L’écran retenu — seize couleurs</p>
     <h1>Le trait seul, dans les seize chartes</h1>
-    <p>Le même écran seize fois : ni une marge ni un corps de texte ne changent d’une charte à l’autre. Ce que vous comparez, c’est la couleur, et elle seule.</p>
+    <p>Le même écran seize fois, à sa taille réelle : ni une marge ni un corps de texte ne changent d’une charte à l’autre. Ce que vous comparez, c’est la couleur, et elle seule.</p>
   </div>
 
   <div id="chartes"></div>

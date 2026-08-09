@@ -38,6 +38,13 @@ qui ne s'applique plus.
 
 ### L'écran retenu seul, et un contrôle qui accusait à tort
 
+**Corrigé dans la foulée : la taille.** Le patron a renvoyé sa capture de la
+maquette 09 — *« c'est ce modèle-là »*. Le dessin était le bon ; ce sont les
+téléphones de 300 px sur une grille de quatre qui étaient illisibles sur son
+écran. La maquette 11 reprend donc les mesures exactes de 09 (390 px, corps à
+16 px, titre à 40 px) et lui part en **une image par coloris**, pas en
+planches. Une maquette qu'il doit pincer pour lire n'a pas été montrée.
+
 Le patron tranche entre les deux écrans : ce sera **le trait seul**. La
 maquette 11 le montre dans les seize chartes, quatre par rangée — une seule
 variante permet de comparer les couleurs d'un coup d'œil au lieu de faire
