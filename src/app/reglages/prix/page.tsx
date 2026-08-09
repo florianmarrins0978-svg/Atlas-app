@@ -51,7 +51,8 @@ export default async function GrillesPrixPage() {
             Mes prix
           </h1>
           <p className="mt-3 text-[14px] leading-snug" style={{ color: colors.muted }}>
-            Abattre, fendre, tailler une haie. Atlas y prend le montant au lieu de l&apos;inventer — et{" "}
+            Abattre, enlever les grumes, fendre, dessoucher, tailler une haie. Atlas y prend le montant au lieu de
+            l&apos;inventer — et{" "}
             <strong>une case vide reste une question</strong>, jamais une estimation.
           </p>
           <p className="mt-2 text-[14px] leading-snug" style={{ color: colors.muted }}>

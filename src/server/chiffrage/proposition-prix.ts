@@ -12,7 +12,16 @@ import type { LigneExplication } from "./types";
 import { arrondirALaDizaine } from "../../lib/arrondi-prix";
 import { chiffrerMainOeuvre } from "../../lib/tarif-main-oeuvre";
 import { lignesVendables, repartir, type LigneVendable } from "../../lib/lignes-vendables";
-import { CELLULE_HAIE, celluleAbattage, celluleFendage, prixDuFendage } from "../../lib/grille-prix";
+import {
+  CELLULE_GRUMES,
+  CELLULE_HAIE,
+  celluleAbattage,
+  celluleDeNature,
+  celluleDessouchage,
+  celluleFendage,
+  prixDuFendage,
+  type NatureGrille,
+} from "../../lib/grille-prix";
 import { longueurHaieLue, mesuresArbre } from "../../lib/mesures-arbre";
 import { prixConnusDe } from "../repositories/grille-prix";
 import { listerPrecisions } from "../repositories/precisions-chantier";
@@ -571,6 +580,23 @@ async function prixDeLaLigne(
   const reponses = precisions.map((p) => p.lisible);
 
   if (ligne.cle === "haie") return prixDeLaHaie(ctx, reponses, textes, ligne);
+
+  // **Les grumes : une seule case, au forfait.** Le patron n'a pas dit à quoi
+  // elles se chiffrent (`grille-prix.ts`, `CELLULE_GRUMES`) ; on retient donc ce
+  // qu'il facture plutôt que d'inventer un mètre cube.
+  if (ligne.cle === "grumes") {
+    return prixDepuisCase(ctx, "grumes", celluleDeNature("grumes", CELLULE_GRUMES), ligne, {});
+  }
+
+  // **Le dessouchage : le diamètre, et rien d'autre.** La hauteur de l'arbre ne
+  // dit plus rien une fois qu'il est à terre.
+  if (ligne.cle === "dessouchage") {
+    const { diametreCm } = mesuresArbre(reponses, textes);
+    return prixDepuisCase(ctx, "dessouchage", celluleDessouchage(diametreCm), ligne, {
+      manquant: diametreCm === null ? ["le diamètre de la souche"] : [],
+    });
+  }
+
   if (ligne.cle === "fendage") {
     const mesures = mesuresArbre(reponses, textes);
     return prixDepuisCase(ctx, "fendage", celluleFendage(mesures.hauteurM, mesures.diametreCm), ligne, {
@@ -643,7 +669,7 @@ async function prixDeLaHaie(
 /** Le prix d'une case, quand elle existe et qu'elle est remplie. */
 async function prixDepuisCase(
   ctx: Ctx,
-  nature: "fendage" | "abattage",
+  nature: NatureGrille,
   cellule: ReturnType<typeof celluleFendage>,
   ligne: LigneVendable,
   options: { manquant?: string[]; silencieuxSiVide?: boolean } = {}

@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
+import { cellulesDe, type NatureGrille } from "../src/lib/grille-prix";
+
+/** Les natures affichées, dans l'ordre de l'écran (`GrillesPrixClient`). */
+const NATURES: NatureGrille[] = ["abattage", "grumes", "fendage", "dessouchage", "haie"];
 
 // **Les trois grilles de prix, dans un vrai navigateur, sur un vrai téléphone.**
 //
@@ -47,7 +51,12 @@ async function main() {
   // Le bloc « 10 à 15 m », le diamètre « 40 à 50 cm » : la case qu'un chêne
   // ordinaire désigne.
   await page.getByRole("button", { name: /Arbre 10 à 15 m/ }).click();
-  const champ = page.getByLabel("40 à 50 cm");
+  // **Le nom accessible porte la grille ET la rangée.** Depuis l'arrivée du
+  // dessouchage, « 40 à 50 cm » désigne deux cases à l'écran : un tronc à fendre
+  // et une souche à arracher. Viser le libellé court seul rendrait ce contrôle
+  // ambigu — et, le jour où il choisirait la mauvaise, il vérifierait le prix
+  // d'une souche en croyant vérifier celui d'une fente.
+  const champ = page.getByLabel("Fendre le bois — Arbre 10 à 15 m — 40 à 50 cm");
   await champ.fill("270");
   // Le prix part au serveur quand le champ perd le focus — comme sur le devis.
   await page.getByRole("button", { name: /Arbre 10 à 15 m/ }).click();
@@ -56,7 +65,7 @@ async function main() {
   await page.reload({ waitUntil: "networkidle" });
   await page.getByRole("button", { name: /Arbre 10 à 15 m/ }).click();
   assert.equal(
-    await page.getByLabel("40 à 50 cm").inputValue(),
+    await page.getByLabel("Fendre le bois — Arbre 10 à 15 m — 40 à 50 cm").inputValue(),
     "270",
     "Le prix ne survit pas au rechargement : le patron croirait avoir mal tapé."
   );
@@ -64,19 +73,30 @@ async function main() {
 
   // --- 3. Le décompte dit ce qui reste à faire -----------------------------
   const corps = await page.locator("body").innerText();
+  // **Le total se calcule, il ne se recopie pas.** Il était écrit « 73 » en dur,
+  // et ajouter deux natures le 8 août 2026 a fait échouer ce contrôle pour une
+  // bonne raison qui n'était pas la sienne. Dérivé des grilles, il suit.
+  const TOTAL = NATURES.reduce((n, nature) => n + cellulesDe(nature).length, 0);
   assert.match(
     corps,
-    /1 case remplie sur 73/,
+    new RegExp(`1 case remplie sur ${TOTAL}`),
     `Le décompte ne dit pas où en est la grille. Lu : « ${corps.replace(/\s+/g, " ").slice(0, 200)} »`
   );
-  console.log("  ✓ elle dit combien de cases sont remplies, sur 73");
+  console.log(`  ✓ elle dit combien de cases sont remplies, sur ${TOTAL}`);
 
-  // --- 3 bis. Les trois grilles sont là ------------------------------------
+  // --- 3 bis. Les CINQ grilles sont là -------------------------------------
   //
-  // **Sa réponse du 8 août au soir**, à deux questions posées avec leurs
-  // options : l'abattage à la technique × le diamètre, la haie au mètre
-  // linéaire. Une grille qui n'apparaît pas à l'écran n'existe pas pour lui.
-  for (const titre of ["Abattre un arbre", "Fendre le bois", "Tailler une haie"]) {
+  // **Ses réponses du 8 août**, à deux séries de questions : l'abattage à la
+  // technique × le diamètre, la haie au mètre linéaire, puis « le dessouchage
+  // oui, et les grumes aussi ». Une grille qui n'apparaît pas à l'écran
+  // n'existe pas pour lui — elle ne se remplira jamais.
+  for (const titre of [
+    "Abattre un arbre",
+    "Enlever les grumes",
+    "Fendre le bois",
+    "Dessoucher",
+    "Tailler une haie",
+  ]) {
     assert.match(corps, new RegExp(titre), `La grille « ${titre} » n'est pas à l'écran.`);
   }
   assert.match(
@@ -84,7 +104,16 @@ async function main() {
     /Prix du mètre linéaire/,
     "La haie n'a pas son champ : elle n'a qu'une case, elle doit se remplir sans déplier quoi que ce soit."
   );
-  console.log("  ✓ les trois grilles sont à l'écran : abattre, fendre, tailler");
+  // Le dessouchage n'a qu'un axe : ses huit diamètres doivent être là sans
+  // qu'on ait à déplier quoi que ce soit.
+  assert.match(
+    corps,
+    // Insensible à la casse : `innerText` rend le texte TEL QU'IL S'AFFICHE, et
+    // ce libellé est en petites capitales — il remonte donc en majuscules.
+    /diamètre de la souche/i,
+    "Le dessouchage ne montre pas son axe : ses huit cases sont repliées pour rien."
+  );
+  console.log("  ✓ les cinq grilles sont à l'écran, chacune dans sa forme");
 
   // --- 4. Rien ne déborde de l'écran ---------------------------------------
   //
@@ -103,13 +132,13 @@ async function main() {
   //
   // Se corriger doit être possible. Une case qu'on vide redevient une question
   // posée ; un zéro enregistré se proposerait sur un devis.
-  await page.getByLabel("40 à 50 cm").fill("");
+  await page.getByLabel("Fendre le bois — Arbre 10 à 15 m — 40 à 50 cm").fill("");
   await page.getByRole("button", { name: /Arbre 10 à 15 m/ }).click();
   await page.waitForTimeout(1200);
   await page.reload({ waitUntil: "networkidle" });
   assert.match(
     await page.locator("body").innerText(),
-    /Aucune case remplie sur 73/,
+    new RegExp(`Aucune case remplie sur ${TOTAL}`),
     "Une case vidée reste enregistrée : le patron ne peut pas revenir sur un prix faux."
   );
   console.log("  ✓ vider une case la rend à la question");

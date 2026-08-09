@@ -2,35 +2,85 @@
 
 import { useState } from "react";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
-import { CELLULE_HAIE, cellulesDe, DIAMETRES, HAUTEURS, TECHNIQUES, type NatureGrille } from "@/lib/grille-prix";
+import {
+  CELLULE_GRUMES,
+  CELLULE_HAIE,
+  cellulesDe,
+  DIAMETRES,
+  HAUTEURS,
+  TECHNIQUES,
+  type NatureGrille,
+} from "@/lib/grille-prix";
 import { poserPrixGrilleAction } from "./actions";
 
 type Case = { nature: NatureGrille; cle: string; prix: string; origine: "saisi" | "devis" };
 
 /**
- * Les trois grilles, dans l'ordre où il les remplira.
+ * Les cinq grilles, dans l'ordre du chantier — pas dans celui du code.
  *
  * L'abattage d'abord : c'est le poste qui porte le plus gros écart chez lui —
- * 600, 1 000 ou 1 400 € pour le même chêne selon la technique.
+ * 600, 1 000 ou 1 400 € pour le même chêne selon la technique. Puis ce qui s'en
+ * détache, dans l'ordre où il le fait : les grumes, la fente, la souche.
+ *
+ * **Trois formes, parce que trois réalités** — et non par goût de la variété :
+ *
+ * | Forme | Nature | Pourquoi |
+ * |---|---|---|
+ * | deux axes | abattage, fendage | Deux choses décident du prix, et il faut les croiser |
+ * | un axe | dessouchage | Seul le diamètre décide : la hauteur de l'arbre absent ne dit rien |
+ * | une case | haie, grumes | Un prix unique — au mètre pour l'une, au forfait pour l'autre |
  */
-const GRILLES: { nature: NatureGrille; titre: string; aide: string; axe: string }[] = [
+type FormeGrille = "deux-axes" | "un-axe" | "une-case";
+
+const GRILLES: {
+  nature: NatureGrille;
+  titre: string;
+  aide: string;
+  axe: string;
+  forme: FormeGrille;
+  cleUnique?: string;
+  libelleUnique?: string;
+}[] = [
   {
     nature: "abattage",
     titre: "Abattre un arbre",
     aide: "Par technique et par diamètre — c'est la technique qui fait le plus gros écart.",
     axe: "Diamètre du tronc",
+    forme: "deux-axes",
+  },
+  {
+    nature: "grumes",
+    titre: "Enlever les grumes",
+    // La réserve est dite à l'écran, pas seulement dans le code : c'est lui qui
+    // décidera de l'unité, et il ne peut le faire que s'il sait qu'elle manque.
+    aide: "Un seul prix pour l'instant. Si vous les facturez au mètre cube ou au voyage, dites-le et la grille suivra.",
+    axe: "",
+    forme: "une-case",
+    cleUnique: CELLULE_GRUMES,
+    libelleUnique: "Prix de l'enlèvement",
   },
   {
     nature: "fendage",
     titre: "Fendre le bois",
     aide: "Par hauteur d'arbre et par diamètre : c'est le volume de bois qui décide.",
     axe: "Diamètre du tronc",
+    forme: "deux-axes",
+  },
+  {
+    nature: "dessouchage",
+    titre: "Dessoucher",
+    aide: "Par diamètre de souche seulement : la hauteur de l'arbre qui n'est plus là ne décide de rien.",
+    axe: "Diamètre de la souche",
+    forme: "un-axe",
   },
   {
     nature: "haie",
     titre: "Tailler une haie",
     aide: "Un seul prix, au mètre linéaire. Atlas le multiplie par la longueur du chantier.",
     axe: "",
+    forme: "une-case",
+    cleUnique: CELLULE_HAIE,
+    libelleUnique: "Prix du mètre linéaire",
   },
 ];
 
@@ -119,17 +169,38 @@ export default function GrillesPrixClient({ initiales }: { initiales: Case[] }) 
             {grille.aide}
           </p>
 
-          {/* La haie n'a qu'une case : la déplier dans un accordéon serait un
-              geste de plus pour un seul champ. */}
-          {grille.nature === "haie" ? (
+          {/* Une seule case : la déplier dans un accordéon serait un geste de
+              plus pour un seul champ. */}
+          {grille.forme === "une-case" ? (
             <div className="rounded-2xl px-4 py-3" style={{ backgroundColor: colors.card }}>
               <Champ
-                nature="haie"
-                cle={CELLULE_HAIE}
-                libelle="Prix du mètre linéaire"
-                posee={cases.get(`haie|${CELLULE_HAIE}`)}
+                nature={grille.nature}
+                cle={grille.cleUnique!}
+                libelle={grille.libelleUnique!}
+                contexte={grille.titre}
+                posee={cases.get(`${grille.nature}|${grille.cleUnique}`)}
                 onPoser={poser}
               />
+            </div>
+          ) : grille.forme === "un-axe" ? (
+            /* Un seul axe : pas d'accordéon non plus. Replier huit champs
+               derrière un appui, quand il n'y a qu'une rangée, ajouterait un
+               geste sans rien ranger. */
+            <div className="flex flex-col gap-2 rounded-2xl px-4 py-3" style={{ backgroundColor: colors.card }}>
+              <span className={smallCaps} style={{ color: colors.muted }}>
+                {grille.axe}
+              </span>
+              {DIAMETRES.map((diametre) => (
+                <Champ
+                  key={diametre.cle}
+                  nature={grille.nature}
+                  cle={diametre.cle}
+                  libelle={diametre.libelle}
+                  contexte={grille.titre}
+                  posee={cases.get(`${grille.nature}|${diametre.cle}`)}
+                  onPoser={poser}
+                />
+              ))}
             </div>
           ) : (
             lignesDe(grille.nature).map((rangee) => {
@@ -167,6 +238,7 @@ export default function GrillesPrixClient({ initiales }: { initiales: Case[] }) 
                             nature={grille.nature}
                             cle={cle}
                             libelle={diametre.libelle}
+                            contexte={`${grille.titre} — ${rangee.titre}`}
                             posee={cases.get(`${grille.nature}|${cle}`)}
                             onPoser={poser}
                           />
@@ -204,12 +276,24 @@ function Champ({
   nature,
   cle,
   libelle,
+  contexte,
   posee,
   onPoser,
 }: {
   nature: NatureGrille;
   cle: string;
   libelle: string;
+  /**
+   * De quelle grille et de quelle rangée vient ce champ.
+   *
+   * **Rendu nécessaire le 8 août 2026 par l'arrivée du dessouchage :** « 40 à
+   * 50 cm » désigne désormais deux cases à l'écran — un tronc à fendre et une
+   * souche à arracher. Le libellé visible reste court, parce que la colonne de
+   * gauche dit déjà de quelle grille il s'agit ; c'est le nom ACCESSIBLE qui
+   * porte le contexte entier. Sans lui, une personne qui n'utilise pas ses yeux
+   * entend cinq fois « 40 à 50 cm » sans savoir lequel elle remplit.
+   */
+  contexte: string;
   posee: Case | undefined;
   onPoser: (nature: NatureGrille, cle: string, saisi: string) => void;
 }) {
@@ -228,6 +312,7 @@ function Champ({
       )}
       <input
         id={identifiant}
+        aria-label={`${contexte} — ${libelle}`}
         type="text"
         inputMode="decimal"
         defaultValue={posee ? String(Number(posee.prix)) : ""}

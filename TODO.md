@@ -184,6 +184,20 @@ gardées ci-dessous pour qu'on n'ait pas à les réinventer ce jour-là.
 | a | Faire lire le PDF par le modèle déjà branché, et lui faire valider l'aperçu comme aujourd'hui | Marche sur les PDF scannés comme sur les autres. Coûte des jetons, et demande d'envoyer le fichier chez un sous-traitant — donc l'accord du patron (`docs/A-FAIRE.md` point 2) |
 | b | Extraire la couche texte à la main (flux `Tj`/`TJ`, positions `Td`/`Tm`) | Sans dépendance ni réseau, mais muet sur un PDF scanné, et fragile sur les encodages de sous-ensembles de polices |
 
+### 0 octies. Ce qui se détache d'un chantier — ~~à trancher~~ **tranché le 8 août 2026**
+
+Question posée : « autre chose se détache-t-il — dessouchage, évacuation seule,
+enlèvement des grumes ? » Sa réponse : **« le dessouchage oui, et les grumes
+aussi »**. L'évacuation seule reste donc avec l'abattage et le broyage.
+
+Fait : cinq natures de grille, trois formes, 82 cases (`ARCHITECTURE.md` §35).
+
+**Ce qui reste ouvert, et qui n'est pas un détail** : à quoi se chiffrent les
+grumes ? Au mètre cube, à la tonne, au voyage de camion ? Il n'a rien dit, la
+grille n'a donc qu'une case au forfait, et l'écran l'invite à trancher. Le jour
+où il répond, une migration ajoute l'axe sans rien perdre — c'est le même chemin
+que la haie.
+
 ### 0 septies. Du planning à la facture — ~~à faire~~ **fait le 8 août 2026**
 
 Le patron ne pouvait pas atteindre le devis d'un chantier planifié : toucher sa

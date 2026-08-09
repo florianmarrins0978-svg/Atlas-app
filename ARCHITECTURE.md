@@ -1676,3 +1676,75 @@ code d'avant, et un qui vérifie qu'aucune porte n'a été ouverte au passage.
 
 C'est la version la plus coûteuse de la règle de `CLAUDE.md` §5 : un
 environnement de vérification qui diffère du vrai ne vérifie pas ce qu'on croit.
+
+---
+
+## 35. Ce qui se détache d'un chantier : la liste est close, et c'est lui qui l'a close
+
+**Sa réponse du 8 août 2026**, à la question laissée ouverte depuis la veille —
+« autre chose se détache-t-il : le dessouchage, l'évacuation seule, l'enlèvement
+des grumes ? » :
+
+> *« Le dessouchage oui. Et les grumes aussi. »*
+
+**Deux sur trois — et le troisième compte autant que les deux autres.**
+L'évacuation seule **ne se détache pas**. Elle reste sur la ligne principale avec
+l'abattage et le broyage, comme sur son devis de référence du 5 août. Un
+contrôle le tient dans les deux sens (`test-lignes-vendables.ts`), parce qu'un
+jour quelqu'un trouvera « logique » de la détacher aussi.
+
+La différence n'est pas de vocabulaire : **une grume a de la valeur**. Le client
+peut vouloir la garder, la vendre, ou la faire enlever par un autre. Les
+branches broyées, elles, ne se gardent pas — les détacher n'offrirait au client
+aucun choix réel.
+
+### Cinq natures, trois formes de grille
+
+| Nature | Ce qui décide le prix | Cases | Forme à l'écran |
+|---|---|---|---|
+| `abattage` | technique × diamètre | 24 | deux axes, dépliés par technique |
+| `grumes` | *(rien pour l'instant)* | 1 | une case |
+| `fendage` | hauteur × diamètre | 48 | deux axes, dépliés par hauteur |
+| `dessouchage` | diamètre | 8 | un axe, tout visible |
+| `haie` | *(rien — au mètre linéaire)* | 1 | une case |
+
+**Le dessouchage se chiffre au diamètre, et à rien d'autre.** La hauteur de
+l'arbre qui n'est plus là ne décide de rien. Il réemploie **les tranches de
+l'abattage** : ce sont les mêmes troncs, et deux jeux de tranches pour la même
+réalité finiraient par ranger le même chêne dans deux cases (`CLAUDE.md` §3).
+
+### La réserve des grumes, écrite à l'écran et pas seulement ici
+
+Le patron a dit que les grumes se détachent. **Il n'a pas dit à quoi elles se
+chiffrent** : au mètre cube, à la tonne, au voyage de camion, au forfait ? Lui
+inventer un axe reviendrait à inventer une décision qu'il n'a pas prise
+(`docs/AGENT.md` §3), et à lui présenter des cases vides qui ne décrivent rien.
+
+Une case unique retient donc ce qu'il facture, et **l'écran le lui dit** : « Un
+seul prix pour l'instant. Si vous les facturez au mètre cube ou au voyage,
+dites-le et la grille suivra. » La réserve n'existe que s'il peut la lever ; la
+cacher dans un commentaire l'aurait rendue invisible à celui qui décide.
+
+C'est exactement le chemin de la haie, restée à une case parce que son devis ne
+mentionnait aucune hauteur.
+
+### Deux détails qui ont failli passer
+
+**Un ordre de reconnaissance, pas une liste.** « Enlèvement des grumes et
+dessouchage » est une seule prestation que deux règles reconnaissent. Sans ordre
+explicite, elle se rangerait deux fois — et se facturerait deux fois. Le
+découpage et l'apprentissage partagent le même ordre, et les deux listes se
+corrigent ensemble : ranger un prix dans une case que le chiffrage n'ira pas
+chercher revient à ne rien ranger.
+
+**Un libellé visible ne suffit plus à nommer un champ.** « 40 à 50 cm » désigne
+désormais deux cases à l'écran : un tronc à fendre, une souche à arracher. Le
+nom **accessible** porte donc la grille et la rangée entières. Sans cela, une
+personne qui n'utilise pas ses yeux entend cinq fois le même libellé — et le
+contrôle navigateur, lui, ne savait plus lequel il visait.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| Ce qui se détache, et ce qui ne se détache pas | `scripts/test-lignes-vendables.ts` |
+| Les cinq natures, leurs cases, leurs clés | `scripts/test-grille-prix.ts` |
+| Les cinq grilles à l'écran, dans un téléphone | `scripts/test-grille-prix-e2e.ts` |

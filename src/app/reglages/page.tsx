@@ -65,7 +65,7 @@ export default async function ReglagesPage() {
             ci-dessous. */}
         <div className="px-6 pt-4">
           <Link href="/reglages/prix" className="text-[14px] font-medium" style={{ color: colors.rust }}>
-            Mes prix : abattre, fendre, tailler →
+            Mes prix : abattre, fendre, dessoucher, tailler →
           </Link>
         </div>
 

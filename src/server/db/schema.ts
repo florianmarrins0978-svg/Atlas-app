@@ -1043,7 +1043,11 @@ export const grillePrix = pgTable(
      * Chaque nature a ses propres axes — fendage : hauteur × diamètre ;
      * abattage : technique × diamètre ; haie : une seule case au mètre.
      */
-    nature: text("nature", { enum: ["fendage", "abattage", "haie"] }).notNull().default("fendage"),
+    // `dessouchage` et `grumes` ajoutés le 8 août 2026 (migration 0028), sur sa
+    // réponse : « le dessouchage oui, et les grumes aussi ».
+    nature: text("nature", { enum: ["fendage", "abattage", "haie", "dessouchage", "grumes"] })
+      .notNull()
+      .default("fendage"),
     /** La case, `h10|d40` ou `au_pied|d70` — fabriquée par `src/lib/grille-prix.ts`. */
     cellule: text("cellule").notNull(),
     prix: numeric("prix", { precision: 10, scale: 2 }).notNull(),

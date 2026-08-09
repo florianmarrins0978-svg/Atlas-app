@@ -169,6 +169,77 @@ cas("une haie seule EST le chantier, pas une option", () => {
   assert.equal(lignes[0].detachable, false, "on proposerait d'alléger une ligne principale qui n'existe pas");
 });
 
+console.log("\n=== La souche et les grumes se détachent, l'évacuation non ===");
+
+// **Sa réponse du 8 août 2026**, à la question « autre chose se détache-t-il :
+// dessouchage, évacuation seule, enlèvement des grumes ? » :
+//
+//   *« Le dessouchage oui. Et les grumes aussi. »*
+//
+// Deux sur trois — et le troisième compte autant. L'évacuation seule NE se
+// détache PAS : elle reste avec l'abattage et le broyage, comme sur son devis
+// du 5 août. Ce contrôle tient les deux côtés, parce qu'un jour quelqu'un
+// trouvera « logique » de détacher l'évacuation aussi.
+
+const DICTEE_COMPLETE_2 = [
+  "Abattage d'un chêne mort",
+  "Broyage des branches",
+  "Évacuation du gros bois",
+  "Enlèvement des grumes",
+  "Fendage du bois",
+  "Dessouchage",
+];
+
+cas("cinq lignes : le chantier, les grumes, la fente, la souche", () => {
+  const { lignes } = lignesVendables(DICTEE_COMPLETE_2);
+  assert.deepEqual(lignes.map((l) => l.cle), ["principal", "grumes", "fendage", "dessouchage"]);
+});
+
+cas("l'évacuation reste avec l'abattage — il ne l'a PAS détachée", () => {
+  const principale = lignesVendables(DICTEE_COMPLETE_2).lignes.find((l) => l.cle === "principal")!;
+  assert.deepEqual(principale.membres, [
+    "Abattage d'un chêne mort",
+    "Broyage des branches",
+    "Évacuation du gros bois",
+  ]);
+});
+
+cas("les grumes ne sont pas l'évacuation, et ne s'y mélangent pas", () => {
+  // Une grume a de la valeur : le client peut vouloir la garder ou la vendre.
+  // Les branches broyées, non. Confondre les deux remettrait le bois d'œuvre
+  // sur une ligne que le client ne peut pas refuser.
+  const grumes = lignesVendables(DICTEE_COMPLETE_2).lignes.find((l) => l.cle === "grumes")!;
+  assert.deepEqual(grumes.membres, ["Enlèvement des grumes"]);
+  assert.equal(grumes.detachable, true);
+});
+
+cas("le dessouchage fait sa ligne, quel que soit le mot employé", () => {
+  for (const dit of ["Dessouchage", "Dessouchage à la mini-pelle", "Rognage de souche", "Retirer la souche"]) {
+    const { lignes } = lignesVendables(["Abattage d'un chêne", dit]);
+    const souche = lignes.find((l) => l.cle === "dessouchage");
+    assert.ok(souche, `« ${dit} » n'a pas été reconnu comme un dessouchage`);
+    assert.equal(souche.detachable, true);
+  }
+});
+
+cas("une souche seule EST le chantier", () => {
+  const { lignes } = lignesVendables(["Dessouchage d'un chêne de 70 cm"]);
+  assert.equal(lignes.length, 1);
+  assert.equal(lignes[0].detachable, false);
+});
+
+cas("« enlèvement des grumes et dessouchage » ne compte qu'une fois", () => {
+  // Deux règles peuvent reconnaître la même phrase. L'ordre décide, et une
+  // prestation rangée deux fois se facturerait deux fois.
+  const { lignes } = lignesVendables(["Abattage", "Enlèvement des grumes et dessouchage"]);
+  const membres = lignes.flatMap((l) => l.membres);
+  assert.equal(
+    membres.filter((m) => /grumes et dessouchage/i.test(m)).length,
+    1,
+    `la prestation apparaît ${membres.length} fois : ${membres.join(" | ")}`
+  );
+});
+
 console.log("\n=== La répartition : charger les lignes détachables ===");
 
 // Son explication, mot pour mot : *« s'il met le prix de deux hommes-jour plus

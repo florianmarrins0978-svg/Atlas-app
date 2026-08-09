@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-08
 
+### La souche et les grumes se détachent — l'évacuation non
+
+Sa réponse à la question laissée ouverte la veille : *« le dessouchage oui, et
+les grumes aussi »*. **Deux sur trois, et le troisième compte autant** :
+l'évacuation seule reste avec l'abattage et le broyage, comme sur son devis du
+5 août. Un contrôle tient les deux sens, parce qu'un jour quelqu'un trouvera
+« logique » de détacher l'évacuation aussi.
+
+La différence n'est pas de vocabulaire : une grume a de la valeur, le client
+peut vouloir la garder ou la vendre. Les branches broyées, non.
+
+Cinq grilles désormais, et trois formes : deux axes pour l'abattage et le
+fendage, **un seul axe pour le dessouchage** (le diamètre de la souche — la
+hauteur de l'arbre qui n'est plus là ne décide de rien), une case unique pour la
+haie et les grumes. 82 cases au total.
+
+**Une réserve, dite à l'écran et pas seulement dans le code :** il n'a pas
+précisé à quoi se chiffrent les grumes — au mètre cube, à la tonne, au voyage.
+Une case unique retient donc ce qu'il facture, et l'écran l'invite à trancher.
+Inventer un axe aurait été inventer sa décision. Détail dans `ARCHITECTURE.md`
+§35.
+
+Deux détails qui ont failli passer : « enlèvement des grumes et dessouchage »
+est une seule prestation que deux règles reconnaissent — sans ordre explicite
+elle se serait facturée deux fois ; et « 40 à 50 cm » désigne maintenant deux
+champs à l'écran, si bien que le nom accessible porte désormais la grille
+entière.
+
 ### Le client ne pouvait ni voir sa facture ni télécharger son devis
 
 **Le défaut le plus grave de la journée, et il a été trouvé par accident.** Une

@@ -70,9 +70,33 @@ const BILLONNAGE = /\b(billonn|coup[eé]\w*\s+en\s+\d|d[ée]bit\w*\s+en\s+\d|tro
 
 const ABATTAGE = /\b(abattage|abattre|abatt|d[ée]mont)/i;
 
+/**
+ * Le dessouchage — arracher, rogner ou dessoucher ce qui reste au sol.
+ *
+ * **Sa réponse du 8 août 2026**, à la question « autre chose se détache-t-il ? » :
+ * *« le dessouchage oui »*. Et c'est logique : une souche se laisse très bien en
+ * place, ou se confie à un autre le mois suivant. Un client qui la refuse ne
+ * renonce pas pour autant à faire abattre son arbre.
+ */
+const DESSOUCHAGE = /\b(dessouch|d[ée]souch|souche|rognage)/i;
+
+/**
+ * L'enlèvement des grumes — le bois d'œuvre, la bille, le tronc à emporter.
+ *
+ * *« Et les grumes aussi »*, même échange. À ne pas confondre avec l'évacuation
+ * du menu bois : **l'évacuation seule ne se détache PAS**, et c'est le troisième
+ * cas de la question, celui qu'il n'a pas retenu. Elle reste sur la ligne
+ * principale avec l'abattage et le broyage, comme sur son devis du 5 août.
+ *
+ * La différence n'est pas de mots : une grume a de la valeur, le client peut
+ * vouloir la garder ou la vendre, et cela se décide à part. Les branches
+ * broyées, elles, ne se gardent pas.
+ */
+const GRUMES = /\bgrume/i;
+
 export type LigneVendable = {
   /** Sert au chiffrage — jamais affiché au client. */
-  cle: "principal" | "fendage" | "haie";
+  cle: "principal" | "fendage" | "haie" | "dessouchage" | "grumes";
   /** Ce que le client lit. Plusieurs travaux réunis : un par ligne. */
   libelle: string;
   /** Les prestations réunies, dans l'ordre de la dictée. */
@@ -111,6 +135,8 @@ export function lignesVendables(libelles: readonly string[]): Decoupage {
   const principal: string[] = [];
   const fendage: string[] = [];
   const haie: string[] = [];
+  const dessouchage: string[] = [];
+  const grumes: string[] = [];
   const absorbes: string[] = [];
 
   for (const libelle of propres) {
@@ -120,6 +146,18 @@ export function lignesVendables(libelles: readonly string[]): Decoupage {
     }
     if (HAIE.test(libelle)) {
       haie.push(libelle);
+      continue;
+    }
+    // **Le dessouchage AVANT les grumes, et les deux avant le billonnage.**
+    // L'ordre compte : « enlèvement des grumes et dessouchage » tomberait dans
+    // la première règle qui le reconnaît. Le dessouchage passe en premier
+    // parce que c'est le geste, quand les grumes sont la matière.
+    if (DESSOUCHAGE.test(libelle)) {
+      dessouchage.push(libelle);
+      continue;
+    }
+    if (GRUMES.test(libelle)) {
+      grumes.push(libelle);
       continue;
     }
     // Le billonnage est compris dans l'abattage — mais seulement s'il y en a
@@ -139,8 +177,17 @@ export function lignesVendables(libelles: readonly string[]): Decoupage {
   if (haie.length > 0) {
     lignes.push({ cle: "haie", libelle: haie.join("\n"), membres: haie, detachable: true });
   }
+  // **L'ordre de lecture du devis suit celui du chantier**, pas celui du code :
+  // on abat, on enlève les grumes, on fend ce qui reste, et la souche part en
+  // dernier — souvent un autre jour, avec une autre machine.
+  if (grumes.length > 0) {
+    lignes.push({ cle: "grumes", libelle: grumes.join("\n"), membres: grumes, detachable: true });
+  }
   if (fendage.length > 0) {
     lignes.push({ cle: "fendage", libelle: fendage.join("\n"), membres: fendage, detachable: true });
+  }
+  if (dessouchage.length > 0) {
+    lignes.push({ cle: "dessouchage", libelle: dessouchage.join("\n"), membres: dessouchage, detachable: true });
   }
 
   // Une dictée qui ne contient QUE de la haie, ou QUE de la fente : elle est

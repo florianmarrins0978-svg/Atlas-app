@@ -206,7 +206,7 @@ export const TECHNIQUES: readonly { cle: string; libelle: string }[] = [
 ];
 
 /** Les natures de travail qui ont leur propre grille. */
-export type NatureGrille = "fendage" | "abattage" | "haie";
+export type NatureGrille = "fendage" | "abattage" | "haie" | "dessouchage" | "grumes";
 
 /**
  * La case de la grille d'abattage : la technique, puis le diamètre.
@@ -238,6 +238,41 @@ export function celluleAbattage(technique: string | null, diametreCm: number | n
  */
 export const CELLULE_HAIE = "ml";
 
+/**
+ * La case des grumes : il n'y en a qu'une, et **c'est une réserve assumée**.
+ *
+ * Le patron a dit le 8 août que les grumes se détachent — il n'a pas dit à quoi
+ * elles se chiffrent. Au mètre cube ? À la tonne ? Au voyage de camion ? Au
+ * forfait par chantier ? Lui inventer un axe reviendrait à inventer une
+ * décision qu'il n'a pas prise (`docs/AGENT.md` §3), et à lui présenter des
+ * cases vides qui ne décrivent rien.
+ *
+ * Une case unique retient donc ce qu'il facture réellement. Le jour où il donne
+ * l'unité, une migration ajoute l'axe — c'est exactement ce qui s'est passé pour
+ * la haie, restée à une case parce que son devis ne mentionnait pas de hauteur.
+ */
+export const CELLULE_GRUMES = "forfait";
+
+/**
+ * La case du dessouchage : le diamètre, et rien d'autre.
+ *
+ * C'est la taille de la souche qui décide du travail — la hauteur de l'arbre
+ * qui n'est plus là ne dit plus rien. On réemploie les tranches de l'abattage :
+ * ce sont les mêmes troncs, et deux jeux de tranches pour la même réalité
+ * finiraient par diverger (`CLAUDE.md` §3).
+ */
+export function celluleDessouchage(diametreCm: number | null): CelluleFendage | null {
+  if (diametreCm === null) return null;
+  const diametre = trancheDe(diametreCm, DIAMETRES);
+  if (!diametre) return null;
+  return {
+    cle: diametre.cle,
+    hauteur: { cle: "souche", de: 0, a: null, libelle: "souche" },
+    diametre,
+    libelle: `Souche de ${diametre.libelle}`,
+  };
+}
+
 /** Toutes les cases d'une nature, dans l'ordre où l'écran les affiche. */
 export function cellulesDe(nature: NatureGrille): CelluleFendage[] {
   if (nature === "haie") {
@@ -249,6 +284,19 @@ export function cellulesDe(nature: NatureGrille): CelluleFendage[] {
         libelle: "Prix au mètre linéaire",
       },
     ];
+  }
+  if (nature === "grumes") {
+    return [
+      {
+        cle: CELLULE_GRUMES,
+        hauteur: { cle: "forfait", de: 0, a: null, libelle: "au forfait" },
+        diametre: { cle: "forfait", de: 0, a: null, libelle: "toutes grumes" },
+        libelle: "Prix de l'enlèvement",
+      },
+    ];
+  }
+  if (nature === "dessouchage") {
+    return DIAMETRES.map((d) => celluleDessouchage(d.a ?? d.de + 1)!);
   }
   if (nature === "abattage") {
     return TECHNIQUES.flatMap((t) => DIAMETRES.map((d) => celluleAbattage(t.cle, d.a ?? d.de + 1)!));

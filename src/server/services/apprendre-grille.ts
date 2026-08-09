@@ -3,13 +3,21 @@ import { listerPrecisions } from "../repositories/precisions-chantier";
 import { listerPrestations } from "../repositories/prestations";
 import { getBrouillon } from "../repositories/brouillons-informations";
 import { poserPrixGrille } from "../repositories/grille-prix";
-import { CELLULE_HAIE, celluleAbattage, celluleFendage } from "../../lib/grille-prix";
+import {
+  CELLULE_GRUMES,
+  CELLULE_HAIE,
+  celluleAbattage,
+  celluleDessouchage,
+  celluleFendage,
+} from "../../lib/grille-prix";
 import { longueurHaieLue, mesuresArbre } from "../../lib/mesures-arbre";
 
 // Même vocabulaire que le découpage des lignes : ce qui fait une ligne à part
 // est ce qui a une grille, et inversement.
 const FENDAGE = /\b(fend|fente)/i;
 const HAIE = /\bhaie/i;
+const DESSOUCHAGE = /\b(dessouch|d[ée]souch|souche|rognage)/i;
+const GRUMES = /\bgrume/i;
 const ABATTAGE = /\b(abattage|abattre|abatt|d[ée]mont)/i;
 
 /**
@@ -36,13 +44,20 @@ export async function apprendrePrixGrille(
   chantierId: string,
   ligne: { libelle: string; montant: string }
 ): Promise<void> {
+  // **L'ordre est celui du découpage des lignes, et ce n'est pas un hasard :**
+  // ranger un prix dans une autre case que celle où le chiffrage ira le
+  // chercher revient à ne rien ranger. Les deux listes se corrigent ensemble.
   const nature = FENDAGE.test(ligne.libelle)
     ? ("fendage" as const)
     : HAIE.test(ligne.libelle)
       ? ("haie" as const)
-      : ABATTAGE.test(ligne.libelle)
-        ? ("abattage" as const)
-        : null;
+      : DESSOUCHAGE.test(ligne.libelle)
+        ? ("dessouchage" as const)
+        : GRUMES.test(ligne.libelle)
+          ? ("grumes" as const)
+          : ABATTAGE.test(ligne.libelle)
+            ? ("abattage" as const)
+            : null;
   if (!nature) return;
 
   const montant = Number(ligne.montant);
@@ -85,13 +100,24 @@ export async function apprendrePrixGrille(
     return;
   }
 
+  // **Les grumes se retiennent telles quelles**, au forfait : faute d'unité
+  // donnée par le patron, il n'y a pas de division à faire — et en inventer une
+  // (au mètre cube, à la tonne) rangerait son prix dans une case qui ne veut
+  // rien dire. Voir `CELLULE_GRUMES` dans `grille-prix.ts`.
+  if (nature === "grumes") {
+    await poserPrixGrille(ctx, "grumes", CELLULE_GRUMES, montant.toFixed(2), "devis");
+    return;
+  }
+
   const cellule =
-    nature === "abattage"
-      ? celluleAbattage(
-          precisions.find((p) => p.sujet.startsWith("abattage.technique"))?.valeur ?? null,
-          mesures.diametreCm
-        )
-      : celluleFendage(mesures.hauteurM, mesures.diametreCm);
+    nature === "dessouchage"
+      ? celluleDessouchage(mesures.diametreCm)
+      : nature === "abattage"
+        ? celluleAbattage(
+            precisions.find((p) => p.sujet.startsWith("abattage.technique"))?.valeur ?? null,
+            mesures.diametreCm
+          )
+        : celluleFendage(mesures.hauteurM, mesures.diametreCm);
 
   // Sans les mesures qu'il faut, on ne sait pas dans quelle case ranger ce prix.
   // On ne le range nulle part — un prix dans la mauvaise case reviendrait plus

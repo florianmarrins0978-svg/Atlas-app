@@ -1,12 +1,18 @@
 import assert from "node:assert/strict";
 import {
+  CELLULE_GRUMES,
   DIAMETRES,
   HAUTEURS,
+  celluleAbattage,
   celluleDepuisCle,
+  celluleDeNature,
+  celluleDessouchage,
   celluleFendage,
+  cellulesDe,
   prixDuFendage,
   toutesLesCellules,
   trancheDe,
+  type NatureGrille,
 } from "../src/lib/grille-prix";
 import { diametreLu, hauteurLue, mesuresArbre } from "../src/lib/mesures-arbre";
 
@@ -190,6 +196,66 @@ cas("ses réponses l'emportent sur ce que la transcription a entendu", () => {
   const m = mesuresArbre(["⌀ 70 cm"], ["Abattage d'un chêne, diamètre 17 cm, 20 mètres de haut"]);
   assert.equal(m.diametreCm, 70);
   assert.equal(m.hauteurM, 20, "la hauteur, elle, vient bien de la dictée quand il n'a pas répondu");
+});
+
+console.log("\n=== Cinq natures, cinq formes, et aucune case qui s'invente ===");
+
+// **Sa réponse du 8 août 2026 :** *« le dessouchage oui, et les grumes aussi. »*
+// Deux natures de plus, et deux formes qui n'existaient pas — un seul axe pour
+// la souche, une case unique au forfait pour les grumes.
+
+cas("chaque nature a le nombre de cases annoncé", () => {
+  const attendu: Record<NatureGrille, number> = {
+    fendage: DIAMETRES.length * HAUTEURS.length,
+    abattage: 3 * DIAMETRES.length,
+    haie: 1,
+    dessouchage: DIAMETRES.length,
+    grumes: 1,
+  };
+  for (const [nature, n] of Object.entries(attendu)) {
+    assert.equal(cellulesDe(nature as NatureGrille).length, n, `${nature} : mauvais nombre de cases`);
+  }
+});
+
+cas("le dessouchage se chiffre au diamètre, jamais à la hauteur", () => {
+  // La hauteur de l'arbre qui n'est plus là ne décide de rien. La souche, elle,
+  // a un diamètre — et c'est le même tronc, donc les mêmes tranches.
+  const c = celluleDessouchage(65);
+  assert.ok(c);
+  assert.equal(c.cle, "d60", `case « ${c.cle} » au lieu de « d60 »`);
+  assert.match(c.libelle, /souche/i);
+
+  // **Les mêmes tranches que l'abattage, bornes comprises.** 70 cm tombe dans
+  // « 60 à 70 » parce que la borne haute est incluse — deux jeux de tranches
+  // pour le même tronc finiraient par ranger le même chêne dans deux cases.
+  assert.equal(celluleDessouchage(70)!.cle, "d60");
+  assert.equal(celluleDessouchage(70)!.diametre.cle, celluleAbattage("au_pied", 70)!.diametre.cle);
+  // Aucune trace de hauteur dans la clé : la case d'un chêne de 5 m et celle
+  // d'un chêne de 25 m sont la même dès que le tronc fait 70 cm.
+  assert.doesNotMatch(c.cle, /\|/, "la clé porte deux axes alors qu'il n'y en a qu'un");
+});
+
+cas("sans diamètre, pas de case de dessouchage — la question se pose", () => {
+  assert.equal(celluleDessouchage(null), null);
+});
+
+cas("les clés d'une nature ne désignent rien dans une autre", () => {
+  // C'est ce qui protège la base : `d70` existe pour le dessouchage et pour le
+  // fendage, mais pas avec le même sens. L'unicité en base porte sur le couple
+  // (nature, cellule) depuis la migration 0027 — sans quoi poser un prix de
+  // souche effacerait un prix de fente.
+  assert.ok(celluleDeNature("dessouchage", "d70"), "d70 devrait exister en dessouchage");
+  assert.equal(celluleDeNature("dessouchage", "au_pied|d70"), null, "une clé d'abattage passe en dessouchage");
+  assert.equal(celluleDeNature("grumes", "d70"), null, "une clé de diamètre passe en grumes");
+  assert.ok(celluleDeNature("grumes", CELLULE_GRUMES));
+});
+
+cas("les grumes n'ont qu'une case, et son libellé ne promet aucune unité", () => {
+  // La réserve est réelle : le patron n'a pas dit à quoi elles se chiffrent.
+  // Écrire « au mètre cube » ici inventerait sa décision.
+  const [c] = cellulesDe("grumes");
+  assert.equal(c.cle, CELLULE_GRUMES);
+  assert.doesNotMatch(c.libelle, /m3|mètre cube|tonne|voyage/i);
 });
 
 console.log(`\n${echecs === 0 ? "✅ Toutes les vérifications passent." : `❌ ${echecs} échec(s).`}`);
