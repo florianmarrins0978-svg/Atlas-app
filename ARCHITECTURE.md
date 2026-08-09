@@ -2297,3 +2297,90 @@ chiffrer donnerait l'illusion de protéger une donnée publique par construction
 | Les identifiants d'un artisan restent invisibles pour un autre | idem |
 | Le planning propose le raccordement, l'écran offre les trois cases, le secret est masqué | `scripts/test-agenda-reglages-e2e.ts` |
 | **Le bouton « Enregistrer » n'est couvert ni par la barre ni par la bulle** | idem — mesuré, pas supposé |
+
+---
+
+## 42. Une base restée en arrière, et personne pour le dire
+
+**Le 9 août 2026**, le patron met à jour son banc d'essai sur mon conseil, lit
+« Mise à jour récupérée », ouvre le Planning — et l'écran tombe. Rien ne relie
+les deux événements.
+
+### La cause tenait en une variable, et elle était là depuis le début
+
+Deux chemins appliquent les migrations sur le banc : le démarrage de l'espace
+(`demarrer.sh`) et le bouton « Chercher les dernières corrections »
+(`mettreAJourApplicationAction`). Tous deux lançaient `npm run db:migrate`
+**avec la variable ambiante `DATABASE_URL`**.
+
+Or sur le banc, `DATABASE_URL` vaut `atlas_app` — le rôle applicatif, qui n'a
+**délibérément aucun droit de créer une table**
+(`docker/init/01-bootstrap-atlas.sql`, même posture qu'en production). La
+commande échouait donc sur `permission denied for schema public`.
+
+**Et l'échec était avalé, des deux côtés** : `|| true` dans le script,
+`.catch(() => undefined)` dans l'action. Le code neuf arrivait, la base restait
+vieille, et l'écran affichait un succès.
+
+`CLAUDE.md` §5 dit déjà, pour les essais locaux : *« Les migrations tournent
+sous le rôle propriétaire : `atlas_app` n'a aucun droit de DDL, et l'oublier
+produit un "permission denied for schema public" qui envoie chercher au mauvais
+endroit. »* La règle était écrite. Le banc ne la suivait pas.
+
+### Ce qui est réparé, et pourquoi les deux moitiés comptent
+
+| | Avant | Après |
+|---|---|---|
+| **Le rôle** | `DATABASE_URL` (applicatif) | `DATABASE_ADMIN_URL` d'abord, `DATABASE_URL` à défaut |
+| **L'échec** | Avalé, deux fois | Rendu en une phrase, affiché au démarrage ET sur l'écran de mise à jour |
+| **Le code** | Deux appels séparés | Un seul script, `.devcontainer/appliquer-migrations.sh` |
+
+**Un seul script pour les deux appelants**, et un contrôle qui interdit à
+quiconque de relancer `db:migrate` directement : deux copies auraient divergé,
+et l'une des deux serait restée sur le mauvais rôle. C'est la même règle que
+partout ailleurs ici (`CLAUDE.md` §3).
+
+**L'écran ne dit plus « Mise à jour récupérée » quand la base a échoué.** Il
+écrit : *« Code récupéré, mais LA BASE N'A PAS SUIVI — <ce que la base a
+répondu>. Les écrans qui touchent une table neuve vont tomber : c'est ça, et
+rien d'autre. »* Une demi-vérité sur cet écran envoie chercher la panne au
+mauvais endroit, ce qui coûte plus cher que pas de message.
+
+### Le message a dû être corrigé deux fois, et c'est instructif
+
+Premier jet : prendre la **dernière** ligne correspondant à un motif d'erreur.
+Résultat réel, mesuré :
+
+```
+échec :   routine: 'aclcheck_error'
+```
+
+Le nom d'une fonction interne de PostgreSQL. La vraie phrase — `permission
+denied for schema public` — se trouvait douze lignes plus haut. Un message qui
+accuse à tort coûte plus cher que pas de message du tout (`CLAUDE.md` §5) :
+c'est la **première** ligne parlante qu'il faut, pas la dernière.
+
+Le correctif cherche maintenant les formulations que PostgreSQL et son pilote
+écrivent vraiment — `permission denied`, `does not exist`, `ECONNREFUSED`… — et
+prend la première.
+
+### Un contrôle existant est passé au rouge, et il avait raison de le faire
+
+`test-issue-mise-a-jour.ts` vérifie que l'issue est notée **avant** la
+migration, pour survivre à une réponse coupée (défaut du 7 août). Il repérait
+la migration par la chaîne `"db:migrate"`, que le correctif supprime :
+`indexOf` a rendu `-1`, et le cas a échoué.
+
+**Aucune régression n'avait eu lieu** — mais c'est exactement ce qu'on veut
+d'un repère disparu : qu'il fasse du bruit plutôt que de se taire. Le cas
+accepte désormais les deux marqueurs et refuse explicitement qu'il n'y en ait
+aucun.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| L'échec est dit, jamais avalé — y compris base injoignable ou adresse absente | `scripts/test-migrations-banc.ts` |
+| Le message nomme le bon coupable (`permission denied for schema public`), joué pour de bon sous `atlas_app` | idem |
+| Le rôle propriétaire est choisi en premier | idem |
+| Aucun appelant ne relance `db:migrate` directement | idem |
+| L'avertissement remonte au démarrage ET à l'écran | idem |
+| Les contrôles savent échouer | Vérifié sur les deux défauts d'origine : 1 rouge pour le rôle, 3 pour le silence |

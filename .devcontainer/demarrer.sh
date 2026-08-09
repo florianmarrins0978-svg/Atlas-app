@@ -91,7 +91,14 @@ MISE_A_JOUR="$(bash "$(dirname "$0")/mettre-a-jour.sh" "$CD")"
 # absente est pire que l'ancienne version.
 if [ "$MISE_A_JOUR" = "faite" ]; then
   npm ci --silent >> "$JOURNAL" 2>&1 || npm install --silent >> "$JOURNAL" 2>&1 || true
-  npm run db:migrate --silent >> "$JOURNAL" 2>&1 || true
+
+  # **Les migrations passent par leur propre script, sous le rôle
+  # PROPRIÉTAIRE.** Lancées ici avec la variable ambiante, elles tournaient sous
+  # `atlas_app` — qui n'a aucun droit de créer une table — et le `|| true`
+  # avalait l'échec. Le code neuf arrivait sur une base vieille, et l'écran qui
+  # touchait une table absente tombait sans que rien ne l'ait annoncé.
+  MIGRATIONS="$(bash "$(dirname "$0")/appliquer-migrations.sh" "$CD")"
+  echo "migrations : $MIGRATIONS" >> "$JOURNAL"
 
   # **Rejouer ce script dans sa version neuve.**
   #
@@ -189,6 +196,19 @@ case "$MISE_A_JOUR" in
   faite) echo "  Le code a été mis à jour au démarrage." ;;
   impossible*) echo "  ⚠ MISE À JOUR $MISE_A_JOUR" ;;
   *) echo "  Déjà à jour." ;;
+esac
+
+# **Une base restée en arrière se DIT, en toutes lettres.** C'est le défaut du
+# 9 août 2026 : les migrations échouaient sous le mauvais rôle, l'échec était
+# avalé, et le patron ouvrait un écran qui tombait sur une table absente sans
+# rien pour le relier à la mise à jour qu'il venait de faire.
+case "${MIGRATIONS:-}" in
+  échec*)
+    echo
+    echo "  ⚠ LA BASE N'A PAS SUIVI LE CODE — $MIGRATIONS"
+    echo "    Les écrans qui touchent une table neuve vont tomber."
+    echo "    Ne cherchez pas ailleurs : c'est ça, et c'est réparable."
+    ;;
 esac
 echo "──────────────────────────────────────────────"
 echo "  Ça prend une minute ou deux. Journal : $JOURNAL"

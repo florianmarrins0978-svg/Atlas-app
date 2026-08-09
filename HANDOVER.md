@@ -45,6 +45,19 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**Les migrations du banc tournaient sous le mauvais rôle, en silence (9 août).**
+`atlas_app` n'a aucun droit de DDL : elles échouaient à chaque mise à jour, et
+les deux appelants avalaient l'échec. Le patron voyait « Mise à jour
+récupérée », puis un écran tombait sur une table absente.
+
+**Avant de toucher à la mise à jour du banc :** les migrations passent par
+`.devcontainer/appliquer-migrations.sh`, et **par lui seul** — un contrôle
+interdit de relancer `db:migrate` ailleurs, parce que c'est par là que le
+mauvais rôle reviendrait. Le script choisit `DATABASE_ADMIN_URL` puis
+`DATABASE_URL`, et rend « faites » ou « échec : <ce que la base a répondu> ».
+`ARCHITECTURE.md` §42.
+
+
 **La note vocale lit un numéro sans qu'on l'annonce (9 août).** Il signalait que
 sans dire « numéro de téléphone », rien n'était reconnu. **Le défaut n'était pas
 celui-là** : la transcription écrit parfois les chiffres en toutes lettres, et

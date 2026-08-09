@@ -9,6 +9,35 @@ Format : le plus récent en tête.
 
 ## 2026-08-09
 
+### Une base restée en arrière, et rien pour le dire
+
+Le patron met à jour son banc, lit « Mise à jour récupérée », ouvre le
+Planning — l'écran tombe. Rien ne relie les deux.
+
+**La cause était là depuis le début.** Les migrations du banc tournaient sous
+`atlas_app`, le rôle applicatif, qui n'a délibérément aucun droit de créer une
+table. Elles échouaient donc à chaque fois sur « permission denied for schema
+public »… **et l'échec était avalé aux deux endroits qui les lancent**. Le code
+neuf arrivait, la base restait vieille, et l'écran annonçait un succès.
+
+La règle était pourtant écrite noir sur blanc dans `CLAUDE.md` §5, pour les
+essais locaux. Le banc ne la suivait pas.
+
+Désormais : un seul script, le rôle propriétaire, et **l'échec se voit** — au
+démarrage de l'espace comme sur l'écran de mise à jour, qui écrit maintenant
+« LA BASE N'A PAS SUIVI » plutôt que « récupérée ».
+
+**Le message a dû être repris deux fois.** Le premier jet rendait
+« échec : routine: 'aclcheck_error' » — le nom d'une fonction interne de
+PostgreSQL, qui envoie chercher n'importe où. La vraie phrase se trouvait douze
+lignes plus haut : c'est la première ligne parlante qu'il faut, pas la dernière.
+
+Et un contrôle existant est passé au rouge en chemin, sans qu'aucune régression
+n'ait eu lieu : il repérait la migration par une chaîne que le correctif
+supprime. C'est le bon comportement — un repère qui disparaît doit faire du
+bruit.
+
+
 ### L'agenda dit AUSSI ce qu'il y a, et les identifiants se collent dans l'appli
 
 *« Si, il doit lire les intitulés aussi ! »* et *« dans planning il faut un

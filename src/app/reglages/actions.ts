@@ -196,9 +196,36 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
     await noterIssue(etat);
 
     if (etat === "faite") {
-      // Le code neuf peut attendre une base neuve : servir l'un sans l'autre
-      // produit une panne, pas un correctif.
-      await executer("npm", ["run", "db:migrate", "--silent"], { cwd: racine, timeout: 180_000 }).catch(() => undefined);
+      // **Le code neuf attend une base neuve, et l'échec ne s'avale plus.**
+      //
+      // Cet appel lançait `npm run db:migrate` avec la variable ambiante — donc
+      // sous `atlas_app`, le rôle applicatif, qui n'a délibérément aucun droit
+      // de créer une table. Il échouait sur « permission denied for schema
+      // public », et le `.catch(() => undefined)` faisait disparaître l'échec :
+      // le patron lisait « Mise à jour récupérée », puis un écran tombait sur
+      // une table absente sans que rien ne relie les deux (9 août 2026).
+      //
+      // Le script choisit maintenant le rôle propriétaire et rend son verdict.
+      const migrations = await executer(
+        "bash",
+        [`${racine}/.devcontainer/appliquer-migrations.sh`, racine],
+        { timeout: 180_000 }
+      )
+        .then((r) => r.stdout.trim().split("\n").pop() ?? "")
+        .catch((e) => `échec : ${e instanceof Error ? e.message : String(e)}`);
+
+      if (migrations.startsWith("échec")) {
+        // Succès de la récupération, échec de la base : le dire tel quel. Une
+        // demi-vérité sur cet écran envoie chercher la panne au mauvais endroit.
+        return {
+          succes: true,
+          etat,
+          message:
+            `Code récupéré${await suffixeVersion()}, mais LA BASE N'A PAS SUIVI — ${migrations}. ` +
+            `Les écrans qui touchent une table neuve vont tomber : c'est ça, et rien d'autre.`,
+        };
+      }
+
       return {
         succes: true,
         etat,

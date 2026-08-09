@@ -54,11 +54,27 @@ cas("l'issue est écrite dans un fichier, pas seulement rendue à l'appelant", (
 });
 
 cas("l'issue est notée AVANT que la migration puisse couper la réponse", () => {
+  // **Le repère a changé le 9 août 2026, pas l'exigence.** Ce cas cherchait la
+  // chaîne `"db:migrate"` ; les migrations passent désormais par
+  // `appliquer-migrations.sh`, qui les lance sous le rôle propriétaire au lieu
+  // du rôle applicatif. Le contrôle est donc devenu rouge sans qu'aucune
+  // régression n'ait eu lieu — et c'est le bon comportement : un repère qui
+  // disparaît doit faire du bruit, pas se taire (`iMigration` valait -1, et
+  // `iNote < -1` est faux).
+  //
+  // On accepte les deux marqueurs pour que le cas dise ce qu'il veut dire :
+  // « quoi que fasse la migration, l'issue est écrite avant ».
   const iNote = SOURCE.indexOf("await noterIssue(etat)");
-  const iMigration = SOURCE.indexOf('"db:migrate"');
+  const marqueurs = ['appliquer-migrations.sh', '"db:migrate"']
+    .map((m) => SOURCE.indexOf(m))
+    .filter((i) => i >= 0);
   assert.ok(iNote > 0, "L'issue n'est pas notée du tout.");
   assert.ok(
-    iNote < iMigration,
+    marqueurs.length > 0,
+    "Plus aucune migration n'est déclenchée par la mise à jour : le code neuf arrivera sur une base vieille."
+  );
+  assert.ok(
+    iNote < Math.min(...marqueurs),
     "L'issue est notée après la migration : si la réponse est coupée pendant celle-ci, elle est perdue — exactement le cas du 7 août."
   );
 });
