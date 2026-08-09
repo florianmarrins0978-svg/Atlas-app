@@ -123,10 +123,16 @@ fi
 ATLAS_VERSION="$(git log -1 --date=format:'%d/%m/%Y %H:%M' --format='%cd · %h' 2>/dev/null || echo 'inconnue')"
 export ATLAS_VERSION
 
-# `setsid` détache le serveur du processus de démarrage : sans cela, l'éditeur
+# `setsid` détache le veilleur du processus de démarrage : sans cela, l'éditeur
 # le tue en même temps que la commande de démarrage, et l'adresse ne répond
 # jamais.
-setsid nohup npm run essai > "$JOURNAL" 2>&1 < /dev/null &
+#
+# **Un veilleur plutôt qu'un serveur, depuis le 9 août 2026.** Le serveur était
+# lancé ici une fois, et une seule. Quand il mourait — et il est mort —, plus
+# rien ne le relevait : le patron a lu « HTTP ERROR 404 », qui sur cette adresse
+# veut dire « plus rien n'écoute », et il n'avait aucun moyen de le savoir.
+# `veiller.sh` regarde toutes les quinze secondes et relance ce qu'il faut.
+setsid nohup bash "$(dirname "$0")/veiller.sh" "$CD" > /dev/null 2>&1 < /dev/null &
 
 # L'adresse exacte, écrite par la machine plutôt que devinée par le patron.
 #
@@ -211,6 +217,8 @@ case "${MIGRATIONS:-}" in
     ;;
 esac
 echo "──────────────────────────────────────────────"
-echo "  Ça prend une minute ou deux. Journal : $JOURNAL"
+echo "  Ça prend une minute ou deux, puis Atlas compile"
+echo "  ses écrans d'avance : les premières ouvertures"
+echo "  ne feront donc plus attendre. Journal : $JOURNAL"
 echo
 exit 0

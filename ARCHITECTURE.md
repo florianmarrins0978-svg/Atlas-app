@@ -2384,3 +2384,170 @@ aucun.
 | Aucun appelant ne relance `db:migrate` directement | idem |
 | L'avertissement remonte au démarrage ET à l'écran | idem |
 | Les contrôles savent échouer | Vérifié sur les deux défauts d'origine : 1 rouge pour le rôle, 3 pour le silence |
+
+---
+
+## 43. Bâtir n'est pas déployer — et personne n'avait jamais bâti Atlas
+
+**Le 9 août 2026**, le patron : *« Mais en fait, ça me fait peur parce que
+l'application là, elle est super lente. Les utilisateurs, ils ne voudront jamais
+utiliser une application aussi lente que ça. »*
+
+La réponse tenait en une phrase — ce qu'il mesure, c'est `next dev`, qui compile
+chaque écran au moment où on l'ouvre. Mais l'affirmer sans chiffre n'avait aucune
+valeur. Il a donc fallu bâtir l'application pour de bon. **Et c'était
+impossible.**
+
+```
+ErreurConfiguration: LLM_PROVIDER vaut « dev » en production…
+Failed to collect page data for /api/agenda/google/retour
+```
+
+### Pourquoi les refus de production tombaient sur un compilateur
+
+`next build` se déclare `NODE_ENV=production` et **importe chaque module** pour
+collecter les données de page. Or `src/auth.ts` lit le secret de session dès
+l'import — NextAuth en a besoin pour se construire. Tous les refus de
+`src/server/env.ts` s'appliquaient donc **pendant la compilation** :
+
+| Refus | Ce qu'il exigeait pour compiler |
+|---|---|
+| `LLM_PROVIDER` ≠ `dev` | une clé d'IA facturée |
+| `STORAGE_PROVIDER = s3` | un compartiment S3 et ses accès |
+| `CRON_SECRET` ≥ 16 caractères | un secret de tâche planifiée |
+| `REDIS_URL` | un Redis joignable |
+
+Produire une version optimisée supposait donc de **détenir tous les secrets de
+production**. Ni la CI, ni le banc d'essai, ni personne cherchant simplement à
+mesurer la vitesse ne le pouvaient. C'est pourquoi le défaut a vécu si
+longtemps : il ne se voyait qu'en faisant une chose que personne ne faisait.
+
+### La correction, et pourquoi ce n'est pas un affaiblissement
+
+Ces refus protègent une application **qui sert des clients**, pas un compilateur
+qui produit des fichiers. Ils sont suspendus pendant la construction — et
+pendant elle seule, sur `NEXT_PHASE === "phase-production-build"`, que Next.js
+pose lui-même.
+
+`scripts/test-env.ts` l'éprouve **dans les deux sens**, et le second cas est le
+plus important :
+
+| Cas | Attendu |
+|---|---|
+| Construction, aucun secret | accepté |
+| **Exécution, même configuration** | **refusé** |
+| **Démarrage du serveur bâti (`phase-production-server`)** | **refusé** |
+
+Sans ces deux derniers, `NEXT_PHASE` deviendrait un interrupteur ouvrant toutes
+les protections de production, et rien ne le dirait.
+
+`src/server/storage/index.ts` violait par ailleurs le contrat de `getEnv()`
+(« validé au premier accès ») en résolvant sa configuration à l'import. Il la
+résout désormais au premier stockage réel ; la seconde barrière contre le
+stockage local en production reste entière.
+
+### Ce que la mesure a donné
+
+Version bâtie, vrai navigateur, base réelle sous le rôle applicatif, machine à
+4 cœurs :
+
+| | Version bâtie | `next dev`, 1re ouverture |
+|---|---:|---:|
+| Démarrage du serveur | 212 ms | plusieurs minutes |
+| Écran de connexion | 333 ms | 104 s (mesuré chez le patron) |
+| Vérification du mot de passe | 489 ms | — |
+| Accueil, Planning, Terminés, Réglages… | **50 à 100 ms** | 38,7 s (Terminés, chez lui) |
+
+**La première ouverture coûte la même chose que la deuxième.** C'est toute la
+différence : plus rien ne se compile à l'ouverture.
+
+Non mesuré, et dit plutôt que supposé : les PDF (exigent un vrai stockage) et la
+dictée (exige de vraies clés, donc un appel facturé).
+
+---
+
+## 44. Un serveur mort que personne ne relève, et des écrans compilés sous ses yeux
+
+Même journée, deux pages d'erreur que le patron a lues coup sur coup. Elles
+n'avaient pas la même cause, et aucune n'était une lenteur.
+
+### « HTTP ERROR 504 » — l'écran se compilait pendant qu'il attendait
+
+Il clique « Connecter » sur le Planning. Rien. Une minute plus tard, le
+mandataire de GitHub abandonne. Son terminal disait pourquoi :
+
+```
+o Compiling /reglages/agenda ...
+GET /termines 200 in 38.7s
+GET /planning 200 in 373ms
+```
+
+Le même écran : **38,7 s** la première fois, **373 ms** ensuite. `next dev` ne
+compile rien d'avance. Chaque écran neuf était donc une page d'erreur, et il en
+concluait — légitimement — que l'application était cassée.
+
+### « HTTP ERROR 404 » — le serveur était mort, et rien ne le relevait
+
+Sur cette adresse, un 404 ne veut pas dire « page absente » : il veut dire
+**« plus rien n'écoute sur le port 3000 »**. Son terminal montrait l'invite
+revenue sous `npm run essai`.
+
+Le démarrage de l'espace lançait le serveur **une fois, et une seule**. Quand il
+mourait — un `pkill` du démarrage rejoué, une commande tapée dans le mauvais
+terminal, deux serveurs se disputant le port — l'application restait morte
+jusqu'à ce que le patron s'en aperçoive et aille taper une commande.
+
+### Les trois pièces, et ce que chacune tient
+
+| Pièce | Ce qu'elle empêche |
+|---|---|
+| `.devcontainer/veiller.sh` | qu'un serveur mort le reste : contrôle toutes les 15 s, relance |
+| Garde dans `scripts/essai.mjs` | qu'une commande tapée par erreur lance un second serveur qui tue le premier |
+| `scripts/prechauffer.mjs` | que le patron subisse la première compilation de chaque écran |
+
+**Le veilleur exige deux conditions avant de relancer** : que la santé ne
+réponde plus **et** qu'aucun `next dev` ne tourne. Sur le seul critère de la
+santé, une grosse compilation aurait fait lancer un second serveur — c'est-à-dire
+exactement le désordre à réparer.
+
+### Le préchauffage a besoin d'une session, et pas de celle qu'on croit
+
+Le middleware redirige toute requête sans session vers `/login` **avant** que la
+page ne soit compilée. Vérifié, pas supposé : une requête anonyme sur
+`/planning` rend un 307 en 147 ms et ne compile rien.
+
+Se connecter pour de bon était le premier réflexe, et c'était un piège. Le
+limiteur autorise **cinq tentatives par quart d'heure et par adresse IP**
+(posé le 6 août après que les parents du patron se soient vu refuser le bon mot
+de passe). Sur un banc, tout arrive par la même adresse : quelques redémarrages
+auraient **verrouillé le patron hors de sa propre application**. Le remède
+aurait créé une panne pire que celle qu'il répare.
+
+Le jeton est donc fabriqué directement, avec la même clé et la même fonction que
+le serveur. Il ne consomme aucune tentative, ne quitte jamais le processus, et
+**n'est jamais fabriqué en production** — refus en tête de fonction, éprouvé.
+
+### Deux pièges rencontrés en le construisant, et gardés ici
+
+**La RLS, encore.** Le premier jet cherchait un chantier à préchauffer par
+`select id from chantiers` sous le rôle applicatif. Zéro ligne, **aucune
+erreur** : le préchauffage annonçait « 11 écrans prêts » en sautant en silence
+les cinq plus lourds — ceux que le patron ouvre en premier. L'identifiant est
+maintenant lu **sur l'écran d'accueil**, ce qui respecte l'isolation au lieu de
+la contourner.
+
+**Une redirection n'a rien compilé.** Compter un 307 comme une réussite aurait
+fait annoncer « 16 écrans prêts » alors qu'aucun ne l'était. Un contrôle qui
+affirme au lieu de vérifier est pire que pas de contrôle.
+
+### Mesuré de bout en bout, cache vidé
+
+| Étape | Durée (4 cœurs) |
+|---|---:|
+| Départ à froid → 16 écrans prêts | **43 s** |
+| Serveur tué → relevé par le veilleur | **16 s** |
+| Écrans après préchauffage | 125 à 680 ms |
+
+Contre 38,7 s pour un seul écran avant. Sur les deux cœurs du banc, compter
+environ le double — mais le préchauffage se joue **pendant que personne ne
+regarde**.

@@ -100,6 +100,22 @@ seule avec quinze outils.
 | Export des données d'un client | `src/server/repositories/donnees-client.ts` |
 | Effacement d'un client, respectant la conservation légale | idem |
 
+### Le banc d'essai (9 août 2026)
+
+- **Il se relève seul.** `.devcontainer/veiller.sh` contrôle la santé toutes les
+  quinze secondes et relance le serveur quand il tombe. Avant, un serveur mort
+  le restait : le patron lisait « HTTP ERROR 404 », qui sur cette adresse veut
+  dire « plus rien n'écoute ».
+- **Il compile seize écrans d'avance.** `scripts/prechauffer.mjs`, au démarrage,
+  avec une session fabriquée — jamais par le formulaire de connexion, dont le
+  limiteur aurait verrouillé le patron au bout de cinq redémarrages. Jamais en
+  production.
+- **Deux serveurs ne se disputent plus le port.** `npm run essai` s'arrête si
+  quelque chose répond déjà.
+- **L'application est enfin constructible** sans les secrets de production
+  (`ARCHITECTURE.md` §43), donc mesurable : démarrage 212 ms, écrans entre 50 et
+  100 ms sur une machine à 4 cœurs.
+
 ### Mise en ligne
 
 L'application-coque statique (`appli/`) est publiée sur GitHub Pages à

@@ -27,6 +27,25 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0. Le banc d'essai tient debout — ~~à faire~~ **fait le 9 août 2026**
+
+Veilleur qui relance le serveur mort, préchauffage de seize écrans, garde contre
+un second serveur, et construction possible sans les secrets de production.
+`ARCHITECTURE.md` §43 et §44.
+
+**Ce qui reste sur ce sujet, et que je dois encore faire :**
+
+- **Le chemin de MISE À JOUR n'est toujours pas éprouvé par la CI.** Elle bâtit
+  un banc neuf à chaque fois ; le défaut des migrations du 9 août est passé par
+  ce trou, et un autre y passera. Il faut un banc qui existe déjà, qui reçoit du
+  code neuf, migrations comprises.
+- **Le navigateur d'essai manque au conteneur.** `npm run verifier:connexion`
+  tombe sur une pile Playwright illisible au lieu d'une phrase. À installer, et
+  à faire dire une ligne claire quand il manque.
+- **Les PDF et la dictée ne sont pas mesurés** — le premier exige un vrai
+  stockage, la seconde un appel facturé. Dit plutôt que supposé.
+
+
 ### 0. La sauvegarde des données — À FAIRE, dans cet ordre
 
 **Décidé avec le patron le 5 août 2026.** Il a demandé explicitement que ce
