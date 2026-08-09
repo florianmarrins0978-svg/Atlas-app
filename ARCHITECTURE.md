@@ -2880,3 +2880,91 @@ mise à jour, et l'`exec` ne peut pas revenir.
 **Une réserve, dite plutôt que tue :** l'allumage qui *récupère* ce correctif
 exécute encore l'ancien script, donc l'ancien ordre. C'est la dernière fois. Si
 cet allumage-là est interrompu, `bash .devcontainer/demarrer.sh` relance tout.
+
+---
+
+## 46. L'écran Chantiers refait d'après une maquette du patron
+
+**Le 9 août 2026, tard.** Il envoie une capture d'un écran Chantiers redessiné
+et demande, en toutes lettres, une *reproduction* et non une interprétation :
+« proportions, espacements, alignements, hiérarchie typographique, finesse des
+bordures, ombres extrêmement discrètes ». Puis, après un premier jet : « je ne
+veux pas une nouvelle proposition graphique ».
+
+### L'or, second accent — et le partage des rôles
+
+La charte n'avait qu'un accent, le vert pin (§17). La maquette en introduit un
+second, un or, et il ne se pose pas au hasard :
+
+| | Porte |
+|---|---|
+| **Vert pin** | ce qu'on FAIT — l'action principale, l'onglet où l'on se trouve |
+| **Or** | ce qu'on LIT — l'accueil, les statuts, les filets, le sceau |
+
+Les mélanger rendrait l'écran bavard, c'est-à-dire exactement le « tableau de
+bord » qu'il refuse. L'or sert en outre d'**information** sur les cartes : les
+états qui attendent un geste de lui — devis retourné, correction demandée,
+relance, caducité — portent l'or ; les autres restent verts. La couleur dit
+alors quoi regarder, elle ne décore pas.
+
+### Les mesures, et pourquoi elles sont celles-là
+
+Sa liste de refus se traduit en chiffres, tous relisibles dans le code :
+
+| | Avant | Après |
+|---|---:|---:|
+| Filet de carte | aucun | 1 px |
+| Accent de bord | aucun | 2 px |
+| Rayon de carte | 22 px | 14 px |
+| Diffusion de l'ombre | 26 px à 6 % | 14 px à 4 % |
+| Écart entre cartes | 16 px | 10 px |
+| Hauteur d'une carte | ~150 px | ~94 px |
+| Texte secondaire | 14 px | 12,5 px |
+
+Au-delà de 18 px de rayon la carte devient un galet et l'écran perd sa tenue ;
+en deçà de 4 % d'ombre elle se décolle du fond crème. Ces deux bornes ont été
+trouvées à l'écran, pas au raisonnement.
+
+### Deux dessins, et pas une image
+
+Le sceau (`MarqueAtlas`) et la branche (`BrancheEucalyptus`) sont **tracés**.
+Une photo détourée aurait pesé des centaines de kilo-octets, se serait affichée
+floue sur un écran dense et aurait fait clignoter la page à chaque ouverture.
+La branche définit **une** foliole dans `<defs>` et la rappelle onze fois : la
+corriger les corrige toutes.
+
+La feuille de l'onglet actif est **le même composant** que le sceau de
+l'en-tête. Deux dessins voisins auraient divergé au premier retouchage.
+
+`public/icone-source.svg` n'est pas réutilisable ici : c'est l'icône
+d'installation, un chevron explicitement provisoire, avec un fond opaque.
+
+### Le défaut que seule une mesure pouvait voir
+
+La branche déborde à droite du titre. Sans `overflow-hidden` sur son conteneur,
+elle **élargit le document** : la barre basse mesurait **425 px sur un écran de
+393**, et toute la page glissait latéralement au doigt.
+
+Invisible sur une capture — le débordement est hors cadre. Il est apparu en
+demandant au navigateur la **boîte** de la barre plutôt qu'en regardant l'image.
+`scripts/capture-accueil.mts` imprime désormais cette boîte à chaque capture.
+
+### Ce que la maquette ne pouvait pas décider
+
+- **La date des cartes** n'existait pas dans les données : `updatedAt` est
+  remontée, et `libelleDateRelative` la rend lisible. `updatedAt` et non
+  `createdAt` — ce qu'on cherche est le chantier touché en dernier.
+- **« Équipe »** mène aux Réglages, où les équipes vivent déjà. Créer un écran
+  pour honorer une maquette aurait ouvert une porte sur rien.
+- **Le prénom** vient de la session ; absent, le salut disparaît plutôt que
+  d'afficher « Bonjour ».
+- **La note vocale quitte les cartes** — sa maquette n'affiche que les photos.
+  C'est une perte d'information, signalée et assumée.
+
+### Comment il a été vérifié
+
+`scripts/capture-accueil.mts` monte un vrai navigateur en 393 × 852, se connecte
+avec le compte du banc, attend les polices, et capture le haut, le bas et la
+barre isolée. Trois passages ont été nécessaires : la branche trop épaisse, puis
+mal placée, puis le débordement. **Aucun de ces trois défauts n'aurait été vu
+sans regarder.**

@@ -7,16 +7,24 @@ import { colors } from "@/lib/design-tokens";
 export default function StatusIcon({
   statut,
   size = 44,
+  couleur = colors.rust,
 }: {
   statut: ChantierStatut;
   size?: number;
+  /**
+   * La teinte du pictogramme. Vert pin par défaut ; l'écran d'accueil passe
+   * l'or aux états qui ATTENDENT quelque chose du patron — un devis retourné,
+   * une correction demandée. La couleur y devient une information, pas une
+   * décoration : elle dit lesquelles des cartes réclament un geste.
+   */
+  couleur?: string;
 }) {
   const common = {
     width: size * 0.45,
     height: size * 0.45,
     viewBox: "0 0 24 24",
     fill: "none",
-    stroke: colors.rust,
+    stroke: couleur,
     strokeWidth: 1.8,
   };
   return (

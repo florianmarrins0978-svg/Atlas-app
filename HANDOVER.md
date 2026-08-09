@@ -45,6 +45,21 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**L'écran Chantiers est refait d'après une maquette du patron (9 août).** Il a
+demandé une reproduction, pas une interprétation.
+
+**Avant de toucher à l'écran d'accueil ou à la charte :** la charte a désormais
+DEUX accents. Le vert pin porte ce qu'on fait (action principale, onglet actif),
+l'or ce qu'on lit (salut, statuts, filets, sceau) — et sur les cartes, l'or
+signale les états qui attendent un geste du patron. Les mélanger rend l'écran
+bavard, c'est-à-dire l'aspect « tableau de bord » qu'il refuse.
+
+Les mesures ne sont pas approximatives : filet 1 px, accent de bord 2 px, rayon
+14 px, ombre 4 %, écart entre cartes 10 px. Et le conteneur du titre garde son
+`overflow-hidden` — sans lui la branche élargit le document et la page glisse
+latéralement. `npx tsx scripts/capture-accueil.mts <fichier.png>` prend les
+captures et imprime la boîte de la barre basse. `ARCHITECTURE.md` §46.
+
 **Le démarrage lance le serveur AVANT la mise à jour (9 août, au soir).** Son
 journal s'arrêtait sur « migrations : faites » et rien n'écoutait : le lancement
 venait en dernier, et `postStartCommand` était interrompu avant. Deux heures

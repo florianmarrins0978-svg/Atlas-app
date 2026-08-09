@@ -36,6 +36,24 @@ export const colors = {
   // confirmer une action destructive. Gardée en terre cuite sombre, car une
   // alerte en vert se confondrait avec l'accent ordinaire.
   alert: "#9C3B2E",
+  // ─── L'or, second accent, posé le 9 août 2026 ────────────────────────────
+  //
+  // **Il vient d'une maquette du patron, pas d'une envie.** Il a envoyé une
+  // capture de l'écran Chantiers refait — sceau, filet sous le titre,
+  // « Bonjour <prénom> », libellés de statut — et demandé de la reproduire.
+  // Jusque-là la charte n'avait qu'un accent, le vert pin ; elle en a deux.
+  //
+  // **Le partage des rôles, et il n'est pas décoratif :** le vert pin porte ce
+  // qu'on FAIT (l'action principale, l'onglet où l'on est), l'or porte ce qu'on
+  // LIT (l'accueil, les statuts, les traits). Les mélanger rendrait l'écran
+  // bavard — c'est exactement l'aspect « tableau de bord » que le patron
+  // refuse.
+  //
+  // Sur le fond crème, `or` tient le contraste du texte courant ; `orClair` est
+  // réservé aux traits, cercles et icônes posés sur le vert pin, où il faut
+  // remonter la clarté.
+  or: "#B98B47",
+  orClair: "#C9A15E",
   line: "rgba(28,28,26,0.12)", // --line : séparateurs, bordures fines
   lineSoft: "rgba(28,28,26,0.07)", // --line-soft : bordure des tuiles
   chevron: "rgba(28,28,26,0.28)", // affordance de navigation discrète
@@ -67,8 +85,11 @@ export const smallCaps = "text-[11px] font-semibold uppercase tracking-[0.18em]"
 
 // Ombre de carte — presque invisible, sert uniquement à détacher la carte du
 // fond. Teintée de vert pin comme chez Arborea, et non de gris neutre.
-export const cardShadow =
-  "0 1px 2px rgba(47,59,47,0.05), 0 12px 26px rgba(47,59,47,0.06)";
+// **Allégée le 9 août 2026.** Elle portait 26 px de diffusion à 6 % : sur
+// l'écran d'accueil refait, les cartes semblaient posées sur l'écran plutôt
+// qu'imprimées dedans, et le patron l'a nommé — « ombres extrêmement légères ».
+// Ce qui reste sert uniquement à détacher la carte du fond crème.
+export const cardShadow = "0 1px 2px rgba(47,59,47,0.04), 0 6px 14px rgba(47,59,47,0.04)";
 
 // Rayons de coin standard, relevés sur Arborea : 20px pour l'action
 // principale, 16px pour les tuiles.

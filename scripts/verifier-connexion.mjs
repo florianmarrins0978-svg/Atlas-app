@@ -82,7 +82,10 @@ try {
 
   // On attend l'écran d'accueil réel, pas une simple absence d'erreur : un
   // formulaire qui ne fait rien du tout passerait sinon pour un succès.
-  await page.getByRole("heading", { name: "Chantiers" }).waitFor({ timeout: 60_000 });
+  // Le titre de l'écran d'accueil est « Vos chantiers » depuis la refonte du
+  // 9 août 2026 (`ARCHITECTURE.md` §46). Le nom exact compte : Playwright
+  // compare la totalité du libellé accessible, pas un fragment.
+  await page.getByRole("heading", { name: "Vos chantiers" }).waitFor({ timeout: 60_000 });
 
   const texte = await page.locator("body").innerText();
   if (texte.includes("Invalid Server Actions request")) {
