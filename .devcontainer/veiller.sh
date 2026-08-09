@@ -44,10 +44,26 @@ echo $$ > "$VERROU"
 
 cd "$DEPOT" || exit 0
 
-# Les crochets autour du « n » : sans eux, `pgrep -f` trouverait la ligne de
-# commande de ce script lui-même et conclurait toujours que le serveur tourne.
-# Le même piège avait déjà fait que `demarrer.sh` se tuait avant de rien lancer.
-MOTIF='[n]ext dev'
+# **`next dev` ne suffit PAS comme motif, et c'est la cause première du 404.**
+#
+# Constaté sur cette machine, en regardant les processus : `npx next dev` n'est
+# qu'une pile d'enveloppes. Le serveur qui écoute vraiment, lui, **se renomme** :
+#
+#     27577 npm exec next dev -H 0.0.0.0 -p 3000   ← enveloppe
+#     27590 node .../next dev -H 0.0.0.0 -p 3000   ← enveloppe
+#     29803 next-server (v16.2.12)                 ← CELUI QUI ÉCOUTE
+#
+# `pkill -f "next dev"` tue donc les enveloppes et **laisse le vrai serveur
+# vivant, orphelin, accroché au port**. Le suivant ne peut plus s'y attacher, et
+# l'orphelin sert un cache qui n'existe peut-être plus : toutes les pages
+# rendent 404. C'est exactement ce que le patron a lu, et c'est reproductible —
+# je l'ai provoqué sans le vouloir en éprouvant ce script.
+#
+# Les crochets autour du « n » restent indispensables : sans eux, `pgrep -f`
+# trouverait la ligne de commande de ce script et conclurait toujours que le
+# serveur tourne. Le même piège avait déjà fait que `demarrer.sh` se tuait avant
+# de rien lancer.
+MOTIF='[n]ext(-server| dev)'
 
 while true; do
   if ! curl -fsS -o /dev/null --max-time 10 "http://127.0.0.1:${PORT}/api/health/live" 2>/dev/null; then
@@ -56,7 +72,21 @@ while true; do
       # Rend la main seulement quand le serveur meurt : la boucle le relèvera.
       npm run essai >> "$JOURNAL" 2>&1
       echo "$(date '+%d/%m %H:%M:%S') — le serveur s'est arrêté" >> "$JOURNAL"
+    else
+      # **Un serveur présent mais muet est pire qu'un serveur absent** : il tient
+      # le port, et rien ne pourra le remplacer tant qu'il n'a pas été délogé.
+      # On lui laisse deux tours — une compilation lourde peut faire taire la
+      # santé un instant — puis on le déloge et la boucle repart proprement.
+      MUET=$((${MUET:-0} + 1))
+      if [ "$MUET" -ge 2 ]; then
+        echo "$(date '+%d/%m %H:%M:%S') — un serveur tient le port ${PORT} sans répondre : on le déloge" >> "$JOURNAL"
+        pkill -f "$MOTIF" 2>/dev/null
+        sleep 2
+        MUET=0
+      fi
     fi
+  else
+    MUET=0
   fi
   sleep "$INTERVALLE"
 done
