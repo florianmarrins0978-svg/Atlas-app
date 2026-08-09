@@ -10,6 +10,27 @@
 export const FENETRE_PROPOSITION_JOURS = 90;
 
 /**
+ * Jusqu'où le calendrier DU PATRON connaît ses jours déjà pris.
+ *
+ * **Sa réponse du 9 août 2026 :** *« tu peux aller jusqu'à douze mois
+ * d'occupation. »* Il répondait à une réserve posée la veille : son calendrier
+ * ne barrait ses journées complètes que sur trois mois, et au-delà il pouvait
+ * proposer un jour déjà pris — le serveur le refusait ensuite, mais après coup.
+ *
+ * **À ne surtout pas confondre avec `FENETRE_PROPOSITION_JOURS`.** Celle-ci
+ * borne ce que voit LE CLIENT, et elle ne bouge pas : lui livrer douze mois de
+ * jours occupés reviendrait à lui donner le carnet de commandes
+ * (`docs/AGENT.md` §2.2 bis). Les deux nombres décrivent deux personnes, et les
+ * réunir un jour « pour simplifier » ouvrirait le planning à des inconnus.
+ *
+ * **Pourquoi douze et non dix-huit**, alors que l'horizon de proposition va à
+ * dix-huit mois : c'est le chiffre qu'il a donné. Au-delà, le calendrier ne
+ * barre rien et le serveur tranche — c'est le fonctionnement d'avant, conservé
+ * pour la queue rare de l'horizon.
+ */
+export const HORIZON_OCCUPATION_PATRON_JOURS = 365;
+
+/**
  * Jusqu'où LE PATRON peut proposer une date — dix-huit mois.
  *
  * **Le manque, dans ses mots, le 8 août 2026 :** *« la proposition des dates au
