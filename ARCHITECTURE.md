@@ -2137,3 +2137,76 @@ sur la machine du patron, le jour où il aura créé les identifiants
 (`docs/A-FAIRE.md` §7). Tout ce qui *décide* de quelque chose a été sorti de ce
 chemin-là exprès, pour que la part non vérifiable se réduise à trois appels HTTP
 et à la lecture de leurs réponses.
+
+---
+
+## 40. La note vocale et les chiffres dits en toutes lettres
+
+**Le patron, le 9 août 2026 :** *« lorsque je remplis avec la note vocale, si je
+ne dis pas "numéro de téléphone 0670…", il ne comprend pas que c'est un numéro
+de téléphone. Pareil pour le mail et les autres infos. Il faut qu'il capte même
+si je ne précise pas. »*
+
+### Le défaut n'était pas celui qu'il décrivait — et c'est le point
+
+Il attribuait l'échec à l'absence d'annonce. **La reconnaissance de forme ne
+l'a jamais exigée** : elle cherche un motif de chiffres, pas une phrase
+d'introduction.
+
+Ce qui manquait est ailleurs : le service de transcription écrit parfois les
+chiffres **en toutes lettres**. « Zéro six douze trente-quatre cinquante-six
+soixante-dix-huit » ne contient aucun chiffre, donc aucune expression régulière
+ne pouvait y voir un numéro. Quand il annonçait « numéro de téléphone », le
+**modèle de langue** comprenait et rattrapait ; sans l'annonce, plus rien ne
+rattrapait — et l'échec paraissait venir de l'annonce.
+
+C'est un rappel de la règle du dépôt : *reproduire le message du serveur, jamais
+l'idée qu'on s'en fait* (`AGENTS.md`). Ici, corriger « le défaut annoncé »
+aurait consisté à améliorer la consigne du modèle, ce qui n'aurait rien réglé
+pour les dictées où il n'annonce pas.
+
+### La règle de lecture, et pourquoi le trait d'union commande
+
+`src/lib/nombres-dictes.ts` rend les chiffres aux mots-nombres, **avant** toute
+reconnaissance de forme. Un numéro se dit par groupes, et chaque groupe vaut un
+ou deux chiffres selon sa valeur : « zéro / six / douze » → `0`, `6`, `12`.
+
+Deux régimes, et c'est **la transcription qui choisit**, jamais nous :
+
+| Ce qu'elle écrit | Ce qu'on en fait | Pourquoi |
+|---|---|---|
+| Avec traits d'union — « soixante-dix quatre-vingts » | On la suit mot à mot : 70, 80 | Elle a déjà découpé. Recoller par-dessus donnait « quatre-vingts quatre » → 84, et un numéro faux de bout en bout |
+| Sans aucun tiret — « soixante dix huit » | On recolle, au plus long | Elle n'a pas découpé : « zero six douze trente quatre… » n'a de sens qu'en regroupant |
+
+**Deux pièges de la langue, payés chacun d'une correction :** 70 et 90 sont déjà
+composés, leur ajouter une unité produisait 74 au lieu de deux nombres ; et
+« cent » a été retiré du vocabulaire reconnu — aucun numéro ne se dicte en
+centaines, et l'accepter réécrivait « mille deux cents » en « mille 2100 ».
+
+**Ce que la réécriture ne touche pas :** la transcription montrée au patron et
+celle envoyée au modèle. Elle ne sert qu'à la reconnaissance de forme. Deux
+nombres séparés par un mot ordinaire restent séparés — « deux chênes de vingt
+mètres » ne produit jamais de numéro.
+
+### Deux défauts trouvés en cherchant le sien, de la pire espèce
+
+Ni l'un ni l'autre ne laissait un champ vide : tous deux remplissaient le champ
+avec quelque chose de **faux et de vraisemblable**. Un champ vide se voit et se
+corrige ; un champ crédible part avec le devis.
+
+| Dictée | Avant | Après |
+|---|---|---|
+| `0033 6 12 34 56 78` | **0336123456** — dix chiffres, pas ceux du client | `+33612345678` |
+| « florian tiret martins arobase gmail point com » | **martins@gmail.com** — le prénom saute | `florian-martins@gmail.com` |
+
+Le premier venait de l'ordre des branches d'une alternance : `0` était essayé
+avant `0033`, et la lecture démarrait au deuxième zéro. Le second, de l'absence
+des mots « tiret » et « souligné » dans les signes épelés à voix haute.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| Numéro dicté en lettres, avec ou sans traits d'union, panaché de chiffres | `scripts/test-coordonnees-dictees.ts` |
+| Les nombres du chantier ne deviennent jamais un numéro | idem |
+| `0033` non raboté, un numéro trop long refusé plutôt que coupé | idem |
+| Tiret et souligné épelés, sous leurs trois noms | idem |
+| Les contrôles savent échouer | Vérifié sur l'ancienne lecture : 9 cas rouges |

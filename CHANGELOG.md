@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-09
 
+### La note vocale comprend un numéro sans qu'on l'annonce
+
+*« Lorsque je remplis avec la note vocale, si je ne dis pas "numéro de téléphone
+0670…", il ne comprend pas que c'est un numéro de téléphone. Pareil pour le
+mail. Il faut qu'il capte même si je ne précise pas. »*
+
+**Le défaut n'était pas là où il semblait.** L'annonce n'a jamais été exigée : le
+vrai problème est que le service de transcription écrit parfois les chiffres
+**en toutes lettres** — « zéro six douze trente-quatre cinquante-six
+soixante-dix-huit » — et qu'aucune recherche de chiffres ne pouvait y voir un
+numéro. Quand il annonçait, le modèle de langue rattrapait ; sans l'annonce,
+plus rien ne rattrapait. Les mots-nombres sont maintenant rendus en chiffres
+avant toute reconnaissance, quelle que soit la façon dont la transcription
+découpe — avec traits d'union ou sans.
+
+**Et deux défauts trouvés en cherchant le sien, tous deux du même genre : un
+champ faux mais crédible, que personne ne relit.**
+
+« 0033 6 12 34 56 78 » donnait **0336123456** — dix chiffres, l'air d'un numéro,
+et pas celui du client. Le devis serait parti chez quelqu'un d'autre. Et
+« florian tiret martins arobase gmail point com » donnait
+**martins@gmail.com** : le prénom disparaissait en silence. Le tiret et le
+souligné dictés sont désormais reconnus, sous leurs différents noms.
+
+Un champ vide se voit et se corrige. Un champ faux et vraisemblable part avec le
+devis.
+
+
 ### Relier son agenda Google, ou non — au choix de chaque artisan
 
 *« Ce qui serait bien, c'est que l'utilisateur puisse, s'il le souhaite ou non,

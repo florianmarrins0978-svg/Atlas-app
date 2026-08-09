@@ -141,5 +141,118 @@ cas("un modèle muet ne fait pas perdre ce que la phrase disait", () => {
   assert.equal(r.email, "martin@exemple.fr");
 });
 
+console.log("\n=== Sans annoncer « numéro de téléphone » — son défaut du 9 août 2026 ===");
+
+// **Ses mots :** *« lorsque je remplis avec la note vocale, si je ne dis pas
+// "numéro de téléphone 0670…", il ne comprend pas que c'est un numéro. Il faut
+// qu'il capte même si je ne précise pas. »*
+//
+// Le diagnostic a montré autre chose que ce qu'il croyait, et c'est pire :
+// l'annonce n'a jamais été exigée. Ce qui manquait, c'est que la transcription
+// écrit parfois les chiffres EN TOUTES LETTRES, et qu'aucune recherche de
+// chiffres ne pouvait y voir un numéro. Son annonce ne servait qu'à faire
+// rattraper le modèle de langue ; sans elle, plus rien ne rattrapait.
+
+cas("un numéro dicté en toutes lettres est lu", () => {
+  const r = lireCoordonneesEvidentes(
+    "Madame Costa zéro six douze trente-quatre cinquante-six soixante-dix-huit"
+  );
+  assert.equal(r.telephone, "0612345678", "le numéro dicté en lettres n'est pas reconnu");
+});
+
+cas("les dizaines composées ne se mélangent pas entre elles", () => {
+  // Le cas qui a demandé deux corrections : « soixante-dix quatre-vingts »
+  // donnait 74 puis 84 selon l'implémentation, et le numéro entier était faux.
+  // Un numéro faux mais crédible ne se corrige jamais — personne ne le relit.
+  const r = lireCoordonneesEvidentes(
+    "Monsieur Dupont zéro six soixante-dix quatre-vingts quatre-vingt-dix dix"
+  );
+  assert.equal(r.telephone, "0670809010");
+});
+
+cas("sans aucun tiret, les mots se recollent quand même", () => {
+  // Certaines transcriptions ne mettent pas de traits d'union. C'est alors à
+  // nous de recoller ; quand elle en met, c'est elle qui a découpé et on la suit.
+  const r = lireCoordonneesEvidentes(
+    "M. Leroy zero six douze trente quatre cinquante six soixante dix huit"
+  );
+  assert.equal(r.telephone, "0612345678");
+});
+
+cas("une dictée panachée chiffres et lettres reste un seul numéro", () => {
+  assert.equal(lireCoordonneesEvidentes("zéro six 12 34 56 78").telephone, "0612345678");
+});
+
+cas("les nombres du chantier ne deviennent PAS un numéro", () => {
+  // Le risque de la réécriture : coller des nombres qui n'ont rien à voir.
+  // Deux nombres séparés par un mot ordinaire restent séparés.
+  for (const phrase of [
+    "J'ai abattu deux chênes de vingt mètres",
+    "Il faut fendre le bois en cinquante centimètres",
+    "trois tonnes de grumes à évacuer",
+  ]) {
+    assert.equal(
+      lireCoordonneesEvidentes(phrase).telephone,
+      null,
+      `« ${phrase} » a produit un numéro de téléphone`
+    );
+  }
+});
+
+console.log("\n=== Un numéro faux et crédible est pire qu'un champ vide ===");
+
+cas("l'indicatif 0033 n'est plus raboté en numéro faux", () => {
+  // **Le défaut trouvé en cherchant le sien.** « 0033 6 12 34 56 78 » rendait
+  // 0336123456 : dix chiffres, l'air d'un numéro, et pas celui du client. Le
+  // devis serait parti chez quelqu'un d'autre sans que personne ne s'en avise.
+  const r = lireCoordonneesEvidentes("0033 6 12 34 56 78");
+  assert.equal(r.telephone, "+33612345678", "l'indicatif international est tronqué");
+});
+
+cas("les deux écritures du même indicatif donnent le même numéro", () => {
+  assert.equal(
+    lireCoordonneesEvidentes("0033 6 12 34 56 78").telephone,
+    lireCoordonneesEvidentes("+33 6 12 34 56 78").telephone
+  );
+});
+
+cas("un numéro trop long est refusé, pas raboté", () => {
+  assert.equal(
+    lireCoordonneesEvidentes("le compte 061234567890123").telephone,
+    null,
+    "une suite de chiffres trop longue a été coupée pour ressembler à un numéro"
+  );
+});
+
+console.log("\n=== L'adresse e-mail épelée à voix haute ===");
+
+cas("le tiret dicté ne fait plus disparaître le prénom", () => {
+  // Rendait `martins@gmail.com` : le prénom sautait en silence, et l'adresse
+  // obtenue avait l'air juste.
+  assert.equal(
+    lireCoordonneesEvidentes("florian tiret martins arobase gmail point com").email,
+    "florian-martins@gmail.com"
+  );
+});
+
+cas("le souligné dicté est reconnu, sous ses trois noms", () => {
+  for (const mot of ["underscore", "souligné", "tiret du bas"]) {
+    assert.equal(
+      lireCoordonneesEvidentes(`eden ${mot} nature arobase orange point fr`).email,
+      "eden_nature@orange.fr",
+      `« ${mot} » n'est pas reconnu`
+    );
+  }
+});
+
+cas("ce qui marchait déjà marche encore", () => {
+  assert.equal(
+    lireCoordonneesEvidentes("florian point martins arobase delapose point net").email,
+    "florian.martins@delapose.net"
+  );
+  assert.equal(lireCoordonneesEvidentes("contact arobase eden-nature point fr").email, "contact@eden-nature.fr");
+  assert.equal(lireCoordonneesEvidentes("mail : paul.durand@wanadoo.fr").email, "paul.durand@wanadoo.fr");
+});
+
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Coordonnées dictées — ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);

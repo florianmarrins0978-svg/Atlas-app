@@ -20,6 +20,26 @@ Next.js avec PostgreSQL, isolée par entreprise via *row level security*.
 
 ## Ce qui vient d'être terminé
 
+**La note vocale lit un numéro sans qu'on l'annonce (9 août).** Il signalait que
+sans dire « numéro de téléphone », rien n'était reconnu. **Le défaut n'était pas
+celui-là** : la transcription écrit parfois les chiffres en toutes lettres, et
+aucune recherche de chiffres ne pouvait les voir. Son annonce ne faisait que
+déclencher le rattrapage du modèle de langue.
+
+**Avant de toucher à `src/lib/nombres-dictes.ts` :** deux régimes de lecture, et
+c'est la transcription qui choisit. Avec traits d'union, on la suit mot à mot
+(elle a déjà découpé) ; sans aucun tiret, on recolle au plus long. Inverser
+l'un des deux casse l'autre — les deux ont été mesurés sur des dictées réelles.
+70 et 90 n'acceptent pas d'unité derrière eux, et « cent » est délibérément
+absent du vocabulaire reconnu. `ARCHITECTURE.md` §40.
+
+**Deux défauts trouvés en cherchant le sien, tous deux du même genre** — un
+champ faux mais crédible plutôt qu'un champ vide : `0033 6 12 34 56 78` rendait
+`0336123456`, et « florian tiret martins arobase… » rendait `martins@gmail.com`.
+C'est la forme de défaut la plus coûteuse du produit : personne ne relit un
+champ qui a l'air juste.
+
+
 **L'agenda extérieur, au choix de l'artisan (9 août).** Atlas peut tenir compte
 d'un agenda Google, si l'artisan le relie. **Avant ce lot, un rendez-vous noté
 ailleurs était invisible** : Atlas proposait ce jour-là et le client le
