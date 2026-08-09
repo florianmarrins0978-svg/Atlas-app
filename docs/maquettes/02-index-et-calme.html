@@ -1,0 +1,220 @@
+<title>Atlas — deux directions pour l'écran Chantiers</title>
+<style>
+  :root{
+    --fond:#eeeeea; --surface:#ffffff; --encre:#16170f; --gris:#6d6e63;
+    --trait:rgba(22,23,15,.12); --or:#8f7130; --pin:#2a3a2e;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#121310; --surface:#1b1c17; --encre:#eceadf; --gris:#9b9c8f;
+      --trait:rgba(236,234,223,.16); --or:#c2a05f; --pin:#a6c091;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#121310; --surface:#1b1c17; --encre:#eceadf; --gris:#9b9c8f;
+    --trait:rgba(236,234,223,.16); --or:#c2a05f; --pin:#a6c091;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;padding:44px 20px 70px}
+  .page{max-width:1180px;margin:0 auto}
+  .intro{max-width:62ch;margin:0 auto 44px;text-align:center}
+  .intro h1{font:400 13px/1 ui-sans-serif,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--or);margin:0 0 14px}
+  .intro p{margin:0;color:var(--gris);font-size:15.5px}
+  .duo{display:flex;flex-wrap:wrap;gap:56px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:18px}
+  .legende{text-align:center;max-width:390px}
+  .legende h2{font:400 22px/1.2 ui-serif,Georgia,serif;margin:0 0 6px}
+  .legende p{margin:0;font-size:14px;color:var(--gris);line-height:1.55}
+
+  /* ── Cadre téléphone ─────────────────────────────────────────────────── */
+  .tel{width:390px;max-width:100%;border-radius:46px;padding:11px;background:#d7d5cd;
+       box-shadow:0 1px 3px rgba(15,20,15,.16),0 34px 74px rgba(15,20,15,.26)}
+  .ecran{position:relative;overflow:hidden;border-radius:36px;height:800px;display:flex;flex-direction:column}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+  /* ═══ A — L'INDEX ════════════════════════════════════════════════════ */
+  .a{background:#f3f2ee;color:#16170f;font:16px/1.5 ui-sans-serif,-apple-system,sans-serif}
+  .a .haut{display:flex;justify-content:space-between;align-items:center;padding:24px 22px 16px}
+  .a .sigle{font-size:12.5px;letter-spacing:.42em;font-weight:500}
+  .a .puce{width:7px;height:7px;border-radius:99px;background:#8f7130}
+  .a .filet{height:1px;background:rgba(22,23,15,.1);margin:0 22px}
+  .a .titre{padding:36px 22px 0}
+  .a .titre .sur{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8f7130;margin:0}
+  .a .titre h1{margin:12px 0 0;font-size:40px;line-height:1;font-weight:400;letter-spacing:-.015em}
+  .a .titre .compte{margin:14px 0 0;font-size:13px;color:#6d6e63}
+  .a .neuf{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:30px 22px 0;
+           padding:15px 0;border-top:1px solid rgba(22,23,15,.12);border-bottom:1px solid rgba(22,23,15,.12);
+           text-decoration:none;color:inherit}
+  .a .neuf span{font-size:15px}
+  .a .neuf em{font-style:normal;color:#8f7130;font-size:19px;line-height:1}
+  .a .liste{margin-top:26px;padding:0 22px}
+  .a .rang{display:grid;grid-template-columns:1fr auto;gap:4px 14px;padding:17px 0;border-bottom:1px solid rgba(22,23,15,.08);text-decoration:none;color:inherit}
+  .a .etat{grid-column:1;display:flex;align-items:center;gap:7px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#6d6e63}
+  .a .etat i{width:5px;height:5px;border-radius:99px;background:#7d9a6d;display:inline-block}
+  .a .etat.attend{color:#8f7130}
+  .a .etat.attend i{background:#8f7130}
+  .a .quand{grid-column:2;grid-row:1;text-align:right;font-size:11.5px;color:#95968b}
+  .a .nom{grid-column:1;margin:5px 0 0;font-size:21px;line-height:1.15;font-weight:400}
+  .a .lieu{grid-column:1;margin:3px 0 0;font-size:12.5px;color:#8b8c81}
+  .a .cpt{grid-column:2;grid-row:3;align-self:end;text-align:right;font-size:11.5px;color:#95968b}
+  .a .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(22,23,15,.1);padding:14px 12px 26px}
+  .a .bas a{text-align:center;text-decoration:none;font-size:11px;letter-spacing:.05em;color:#95968b;padding-bottom:7px}
+  .a .bas a.on{color:#16170f;box-shadow:inset 0 -1.5px 0 #8f7130}
+
+  /* ═══ B — LE CALME ═══════════════════════════════════════════════════ */
+  .b{background:#edece6;color:#16170f;font:16px/1.5 ui-sans-serif,-apple-system,sans-serif}
+  .b .haut{display:flex;justify-content:space-between;align-items:center;padding:24px 20px 6px}
+  .b .sigle{font-size:12.5px;letter-spacing:.42em;font-weight:500}
+  .b .titre{padding:34px 20px 0}
+  .b .titre .sur{margin:0;font-size:13px;color:#8f7130}
+  .b .titre h1{margin:8px 0 0;font-size:38px;line-height:1.02;font-weight:400;letter-spacing:-.015em}
+  .b .titre .compte{margin:12px 0 0;font-size:13px;color:#6d6e63}
+  .b .bloc{background:#f7f6f2;border-radius:22px;padding:16px 18px;margin:0 14px 8px;display:grid;
+           grid-template-columns:1fr auto;gap:3px 14px;text-decoration:none;color:inherit}
+  .b .neuf{display:flex;align-items:center;gap:14px;margin:26px 14px 22px;padding:17px 18px;border-radius:22px;
+           background:#2a3a2e;color:#f2f1ea;text-decoration:none}
+  .b .neuf .plus{width:34px;height:34px;border-radius:99px;display:grid;place-items:center;background:rgba(242,241,234,.1);flex:0 0 auto}
+  .b .neuf strong{font-weight:400;font-size:17px}
+  .b .etiquette{margin:0 20px 10px;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#95968b}
+  .b .etat{grid-column:1;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#7d9a6d}
+  .b .etat.attend{color:#8f7130}
+  .b .quand{grid-column:2;grid-row:1;text-align:right;font-size:11.5px;color:#95968b}
+  .b .nom{grid-column:1;margin:6px 0 0;font-size:20px;line-height:1.15;font-weight:400}
+  .b .lieu{grid-column:1;margin:3px 0 0;font-size:12.5px;color:#8b8c81}
+  .b .cpt{grid-column:2;grid-row:3;align-self:end;text-align:right;font-size:11.5px;color:#95968b}
+  .b .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);padding:12px 14px 26px;gap:6px}
+  .b .bas a{text-align:center;text-decoration:none;font-size:11px;color:#95968b;padding:9px 0;border-radius:14px}
+  .b .bas a.on{color:#16170f;background:#f7f6f2}
+</style>
+
+<div class="page">
+  <div class="intro">
+    <h1>Deux directions</h1>
+    <p>Plus de cartes à bordure, plus d’ombre portée, plus de pastille ronde, plus d’onglet plein. Ce qui tient l’écran, désormais : le blanc, la typographie, et un trait d’or posé une seule fois.</p>
+  </div>
+
+  <div class="duo">
+
+    <!-- ════════ A ════════ -->
+    <div class="prop">
+      <div class="tel"><div class="ecran a">
+        <div class="haut">
+          <span class="sigle">ATLAS</span>
+          <span class="puce" title="notification"></span>
+        </div>
+        <div class="filet"></div>
+
+        <div class="titre">
+          <p class="sur">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte num">4 en cours</p>
+        </div>
+
+        <a class="neuf" href="#">
+          <span>Nouveau chantier</span>
+          <em>+</em>
+        </a>
+
+        <div class="liste">
+          <a class="rang" href="#">
+            <span class="etat"><i></i>Brouillon</span>
+            <span class="quand num">26 juil.</span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <span class="cpt num">0 photo</span>
+          </a>
+          <a class="rang" href="#">
+            <span class="etat"><i></i>À vérifier</span>
+            <span class="quand num">24 juil.</span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <span class="cpt num">6 photos</span>
+          </a>
+          <a class="rang" href="#">
+            <span class="etat attend"><i></i>Devis retourné</span>
+            <span class="quand num">22 juil.</span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <span class="cpt num">3 photos</span>
+          </a>
+          <a class="rang" href="#">
+            <span class="etat"><i></i>En attente de réponse</span>
+            <span class="quand num">18 juil.</span>
+            <p class="nom serif">Reprise de toiture</p>
+            <p class="lieu">8 impasse du Moulin, Rezé</p>
+            <span class="cpt num">9 photos</span>
+          </a>
+        </div>
+
+        <nav class="bas">
+          <a class="on" href="#">Chantiers</a>
+          <a href="#">Planning</a>
+          <a href="#">Terminés</a>
+          <a href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <div class="legende">
+        <h2>A — L’index</h2>
+        <p>Aucune carte. Les chantiers sont des lignes d’un index, séparées par un cheveu. L’or ne sert qu’à deux choses : le salut, et le point des chantiers qui attendent un geste. L’onglet actif est souligné, pas rempli.</p>
+      </div>
+    </div>
+
+    <!-- ════════ B ════════ -->
+    <div class="prop">
+      <div class="tel"><div class="ecran b">
+        <div class="haut">
+          <span class="sigle">ATLAS</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6d6e63" stroke-width="1.4" stroke-linecap="round"><path d="M18 8.5a6 6 0 1 0-12 0c0 5.5-2 6.8-2 6.8h16s-2-1.3-2-6.8"/><path d="M10.5 19.2a2 2 0 0 0 3 0"/></svg>
+        </div>
+
+        <div class="titre">
+          <p class="sur">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte num">4 chantiers en cours</p>
+        </div>
+
+        <a class="neuf" href="#">
+          <span class="plus">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c2a05f" stroke-width="1.7" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </span>
+          <strong class="serif">Nouveau chantier</strong>
+        </a>
+
+        <p class="etiquette">En cours</p>
+
+        <a class="bloc" href="#">
+          <span class="etat">Brouillon</span><span class="quand num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p>
+          <p class="lieu">2 route de Vertou, Vertou</p>
+          <span class="cpt num">0 photo</span>
+        </a>
+        <a class="bloc" href="#">
+          <span class="etat">À vérifier</span><span class="quand num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p>
+          <p class="lieu">12 rue des Lilas, Nantes</p>
+          <span class="cpt num">6 photos</span>
+        </a>
+        <a class="bloc" href="#">
+          <span class="etat attend">Devis retourné</span><span class="quand num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p>
+          <p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <span class="cpt num">3 photos</span>
+        </a>
+
+        <nav class="bas">
+          <a class="on" href="#">Chantiers</a>
+          <a href="#">Planning</a>
+          <a href="#">Terminés</a>
+          <a href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <div class="legende">
+        <h2>B — Le calme</h2>
+        <p>Les blocs restent, mais sans bordure, sans ombre et sans pastille : de simples plages plus claires que le fond. Un seul aplat vert, l’action. La barre du bas ne se remplit plus, elle s’éclaircit.</p>
+      </div>
+    </div>
+
+  </div>
+</div>

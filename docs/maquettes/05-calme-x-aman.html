@@ -1,0 +1,159 @@
+<title>Atlas — « Le calme » dans le langage d'Aman</title>
+<style>
+  :root{ --fond:#efece6; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; }
+  }
+  :root[data-theme="dark"]{ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;padding:48px 20px 76px}
+  .page{max-width:1180px;margin:0 auto}
+  .intro{max-width:58ch;margin:0 auto 52px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0;color:var(--gris);font-size:15px}
+  .duo{display:flex;flex-wrap:wrap;gap:60px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:20px;max-width:390px}
+  .legende{text-align:center}
+  .legende h2{margin:0 0 6px;font:400 11px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze)}
+  .legende p{margin:0;font-size:13.6px;color:var(--gris);line-height:1.6}
+
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 36px 78px rgba(20,18,14,.24)}
+  .ecran{overflow:hidden;border-radius:34px;height:800px;display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  /* En-tête : le nom seul, centré, un cheveu dessous — emprunté à Aman. */
+  .enseigne{padding:26px 0 18px;text-align:center;font-size:11px;letter-spacing:.52em}
+  .regle{height:1px;background:var(--e-trait)}
+
+  .titre{padding:42px 22px 0}
+  .titre .salut{margin:0;color:var(--e-bronze)}
+  .titre h1{margin:16px 0 0;font-size:40px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+  .titre .compte{margin:16px 0 0;color:var(--e-gris)}
+
+  /* L'action : le plein de B, la retenue d'Aman — pas de rond, pas d'ombre. */
+  .action{display:flex;align-items:center;justify-content:space-between;gap:16px;
+          margin:32px 16px 0;padding:20px 22px;border-radius:6px;text-decoration:none;
+          background:var(--e-plein);color:var(--e-plein-encre)}
+  .action .quoi{display:block;font-size:19px;line-height:1.1}
+  .action .plus{font-size:19px;line-height:1;color:var(--e-plein-signe)}
+
+  .rubrique{margin:40px 22px 12px;color:var(--e-gris)}
+
+  /* Les plages de B : plus claires que le fond, sans bordure ni ombre. */
+  .bloc{display:grid;grid-template-columns:1fr auto;gap:0 16px;margin:0 16px 6px;padding:18px 20px;
+        border-radius:6px;background:var(--e-plage);text-decoration:none;color:inherit}
+  .etat{grid-column:1;color:var(--e-gris)}
+  .etat.attend{color:var(--e-bronze)}
+  .quand{grid-column:2;grid-row:1;text-align:right;color:var(--e-gris)}
+  .nom{grid-column:1;margin:11px 0 0;font-size:21px;line-height:1.14;font-weight:400}
+  .lieu{grid-column:1;margin:5px 0 0;font-size:12.5px;color:var(--e-gris)}
+  .cpt{grid-column:2;grid-row:3;align-self:end;text-align:right;color:var(--e-gris)}
+
+  .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:14px 16px 30px}
+  .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding:12px 0;border-radius:6px}
+  .bas a.on{color:var(--e-encre);background:var(--e-plage)}
+
+  .ivoire{--e-fond:#efece6;--e-plage:#f6f4ef;--e-encre:#221f1a;--e-gris:#8b8478;--e-bronze:#8a7452;
+          --e-trait:rgba(34,31,26,.13);--e-plein:#221f1a;--e-plein-encre:#f2efe8;--e-plein-signe:#b8a17a}
+  .nuit{--e-fond:#141310;--e-plage:#1e1c18;--e-encre:#e9e5dc;--e-gris:#8a867c;--e-bronze:#b39b72;
+        --e-trait:rgba(233,229,220,.14);--e-plein:#e9e5dc;--e-plein-encre:#141310;--e-plein-signe:#8a7452}
+</style>
+
+<div class="page">
+  <div class="intro">
+    <p class="sur">B × Aman</p>
+    <h1>Les plages de « Le calme », la retenue d’Aman</h1>
+    <p>La structure que vous aviez retenue — des plages plus claires que le fond, sans bordure ni ombre — habillée d’ivoire, d’une serif claire et de capitales très espacées. Les rayons descendent de 22 px à 6 : la plage reste une plage, elle cesse d’être un galet.</p>
+  </div>
+  <div class="duo" id="duo"></div>
+</div>
+
+<template id="modele">
+  <div class="prop">
+    <div class="tel"><div class="ecran">
+      <div class="enseigne">ATLAS</div>
+      <div class="regle"></div>
+
+      <div class="titre">
+        <p class="salut caps">Bonjour Florian</p>
+        <h1 class="serif">Vos chantiers</h1>
+        <p class="compte caps num">Quatre en cours</p>
+      </div>
+
+      <a class="action" href="#">
+        <span class="quoi serif">Nouveau chantier</span>
+        <span class="plus">+</span>
+      </a>
+
+      <p class="rubrique caps">En cours</p>
+
+      <a class="bloc" href="#">
+        <span class="etat caps">Brouillon</span>
+        <span class="quand caps num">26 juil.</span>
+        <p class="nom serif">Pose de clôture</p>
+        <p class="lieu">2 route de Vertou, Vertou</p>
+        <span class="cpt caps num">Sans photo</span>
+      </a>
+      <a class="bloc" href="#">
+        <span class="etat caps">À vérifier</span>
+        <span class="quand caps num">24 juil.</span>
+        <p class="nom serif">Rénovation salle de bain</p>
+        <p class="lieu">12 rue des Lilas, Nantes</p>
+        <span class="cpt caps num">6 photos</span>
+      </a>
+      <a class="bloc" href="#">
+        <span class="etat caps attend">Devis retourné</span>
+        <span class="quand caps num">22 juil.</span>
+        <p class="nom serif">Terrasse bois</p>
+        <p class="lieu">5 allée des Tilleuls, Nantes</p>
+        <span class="cpt caps num">3 photos</span>
+      </a>
+
+      <nav class="bas">
+        <a class="on caps" href="#">Chantiers</a>
+        <a class="caps" href="#">Planning</a>
+        <a class="caps" href="#">Terminés</a>
+        <a class="caps" href="#">Réglages</a>
+      </nav>
+    </div></div>
+    <div class="legende">
+      <h2></h2>
+      <p></p>
+    </div>
+  </div>
+</template>
+
+<script>
+  // Le même écran, deux tonalités : le gabarit est cloné pour qu'aucune mesure
+  // ne puisse diverger entre les deux.
+  const versions = [
+    {
+      classe: "ivoire",
+      titre: "Ivoire",
+      texte: "L’action reste pleine, comme dans B, mais elle passe du vert à l’encre : un rectangle presque noir sur l’ivoire, avec un plus en bronze. C’est le seul aplat de l’écran.",
+    },
+    {
+      classe: "nuit",
+      titre: "Nuit",
+      texte: "La même grammaire en négatif, et l’action s’inverse : une plage claire sur le noir. Chez Aman, c’est ainsi que se signale ce qu’on veut vous faire toucher.",
+    },
+  ];
+
+  const duo = document.getElementById("duo");
+  const modele = document.getElementById("modele");
+  for (const v of versions) {
+    const noeud = modele.content.cloneNode(true);
+    noeud.querySelector(".ecran").classList.add(v.classe);
+    noeud.querySelector(".legende h2").textContent = v.titre;
+    noeud.querySelector(".legende p").textContent = v.texte;
+    duo.appendChild(noeud);
+  }
+</script>

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — les maquettes de l'écran Chantiers</title>
+<style>
+  /*
+    Le sommaire des maquettes.
+
+    Il vit dans le dépôt et non dans une conversation : une maquette qu'on ne
+    retrouve pas six mois plus tard n'a pas existé. Chaque page est autonome —
+    aucun script, aucune police à télécharger, aucune image — donc chacune
+    s'ouvre depuis un téléphone, hors ligne, et restera lisible quand les
+    adresses partagées auront expiré.
+  */
+  :root{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+  @media (prefers-color-scheme: dark){
+    :root{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;padding:44px 20px 72px}
+  .page{max-width:720px;margin:0 auto}
+  .sur{margin:0 0 14px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  h1{margin:0 0 14px;font:400 34px/1.15 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.015em}
+  .chapo{margin:0 0 8px;color:var(--gris);font-size:15px}
+  .regle{height:1px;background:var(--trait);margin:34px 0 8px}
+  .famille{margin:30px 0 12px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gris)}
+  a.item{display:grid;grid-template-columns:auto 1fr auto;gap:0 16px;align-items:baseline;
+         padding:17px 18px;margin-bottom:6px;border-radius:6px;background:var(--plage);
+         text-decoration:none;color:inherit}
+  a.item .no{font-variant-numeric:tabular-nums;color:var(--bronze);font-size:12px;letter-spacing:.1em}
+  a.item .titre{font:400 19px/1.2 ui-serif,Georgia,serif}
+  a.item .quoi{grid-column:2;margin-top:5px;font-size:12.5px;color:var(--gris);line-height:1.5}
+  a.item .fleche{color:var(--gris)}
+  a.item.retenu{box-shadow:inset 2px 0 0 var(--bronze)}
+  .note{margin-top:26px;padding:16px 18px;border:1px solid var(--trait);border-radius:6px;
+        font-size:13px;color:var(--gris);line-height:1.6}
+  .note b{color:var(--encre);font-weight:500}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="sur">Atlas — écran Chantiers</p>
+  <h1>Les maquettes</h1>
+  <p class="chapo">Toutes les propositions de la soirée du 9 août 2026, dans l’ordre où elles sont nées. Chaque page s’ouvre seule, sur un téléphone comme sur un ordinateur.</p>
+
+  <div class="regle"></div>
+
+  <p class="famille">Le point de départ</p>
+
+  <a class="item" href="01-reference-du-patron.html">
+    <span class="no">01</span><span class="titre">La référence</span><span class="fleche">→</span>
+    <span class="quoi">Votre capture, reproduite. Sceau, branche, cartes, barre en pilule.</span>
+  </a>
+
+  <p class="famille">Chercher plus minimal</p>
+
+  <a class="item" href="02-index-et-calme.html">
+    <span class="no">02</span><span class="titre">L’index et le calme</span><span class="fleche">→</span>
+    <span class="quoi">Deux directions : lignes séparées par un cheveu, ou plages sans bordure ni ombre.</span>
+  </a>
+  <a class="item" href="03-index-trois-chartes.html">
+    <span class="no">03</span><span class="titre">L’index, trois chartes</span><span class="fleche">→</span>
+    <span class="quoi">Nuit, Pierre, Brume — la même mise en page, trois couleurs.</span>
+  </a>
+
+  <p class="famille">Le langage d’Aman</p>
+
+  <a class="item" href="04-aman.html">
+    <span class="no">04</span><span class="titre">D’après Aman</span><span class="fleche">→</span>
+    <span class="quoi">Ivoire, serif claire, capitales espacées, aucun coin arrondi. Jour et nuit.</span>
+  </a>
+  <a class="item" href="05-calme-x-aman.html">
+    <span class="no">05</span><span class="titre">Le calme × Aman</span><span class="fleche">→</span>
+    <span class="quoi">Les plages de « Le calme », habillées d’ivoire et de capitales.</span>
+  </a>
+  <a class="item" href="06-nuancier-neuf-chartes.html">
+    <span class="no">06</span><span class="titre">Le nuancier</span><span class="fleche">→</span>
+    <span class="quoi">Neuf couleurs sur la même page : les vôtres, les miennes, celles de 2026.</span>
+  </a>
+
+  <p class="famille">Vers la décision</p>
+
+  <a class="item" href="07-cinq-mises-en-page.html">
+    <span class="no">07</span><span class="titre">Cinq mises en page</span><span class="fleche">→</span>
+    <span class="quoi">Registre, colonne, plages larges, action au pouce, vignette — toutes en ivoire.</span>
+  </a>
+  <a class="item retenu" href="08-la-colonne-retenue.html">
+    <span class="no">08</span><span class="titre">La colonne — retenue</span><span class="fleche">→</span>
+    <span class="quoi">Les trois déclinaisons que vous gardez : le repère, en plages, l’action au pouce.</span>
+  </a>
+
+  <p class="note">
+    <b>Ce qui n’est pas ici.</b> La proposition « Le calme » en Nuit, Pierre et Brume a été écartée
+    le soir même — elle n’a pas été conservée, pour que ce dossier reste un chemin et non un entrepôt.
+    <br><br>
+    <b>Une réserve sur les polices.</b> Ces pages empruntent la serif de votre appareil.
+    L’application, elle, charge Playfair Display : le rendu final sera plus dessiné.
+  </p>
+</div>
+</body>
+</html>

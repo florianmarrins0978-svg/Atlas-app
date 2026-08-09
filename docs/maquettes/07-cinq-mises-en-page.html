@@ -1,0 +1,325 @@
+<title>Atlas — cinq mises en page, un seul ivoire</title>
+<style>
+  :root{ --fond:#efece6; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+  }
+  :root[data-theme="dark"]{ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;padding:48px 18px 84px}
+  .page{max-width:1520px;margin:0 auto}
+  .intro{max-width:60ch;margin:0 auto 46px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0;color:var(--gris);font-size:15px}
+
+  .grille{display:flex;flex-wrap:wrap;gap:48px 34px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:16px;width:344px}
+  .legende{text-align:center}
+  .legende h2{margin:0 0 5px;font:400 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze)}
+  .legende p{margin:0;font-size:13px;color:var(--gris);line-height:1.55}
+
+  /* ── Cadre et jetons — un seul ivoire pour les cinq ───────────────────── */
+  .tel{width:344px;border-radius:40px;padding:10px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 56px rgba(20,18,14,.2)}
+  .ecran{
+    --e-fond:#efece6; --e-plage:#f6f4ef; --e-encre:#221f1a; --e-gris:#8b8478; --e-bronze:#8a7452;
+    --e-trait:rgba(34,31,26,.13); --e-trait-doux:rgba(34,31,26,.08);
+    --e-plein:#221f1a; --e-plein-encre:#f2efe8; --e-signe:#b8a17a;
+    overflow:hidden;border-radius:31px;height:712px;display:flex;flex-direction:column;
+    background:var(--e-fond);color:var(--e-encre);
+    font:15px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9px;font-weight:500}
+
+  .enseigne{padding:22px 0 15px;text-align:center;font-size:10.5px;letter-spacing:.52em;flex:0 0 auto}
+  .regle{height:1px;background:var(--e-trait);flex:0 0 auto}
+
+  .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:12px 14px 26px;flex:0 0 auto}
+  .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding:11px 0;border-radius:6px}
+  .bas a.on{color:var(--e-encre);background:var(--e-plage)}
+
+  /* ── 0 · Le registre (point de départ) ────────────────────────────────── */
+  .v0 .titre{padding:34px 20px 0}
+  .v0 .titre .salut{margin:0;color:var(--e-bronze)}
+  .v0 .titre h1{margin:13px 0 0;font-size:35px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+  .v0 .titre .compte{margin:13px 0 0;color:var(--e-gris)}
+  .v0 .action{display:flex;align-items:center;justify-content:space-between;margin:26px 14px 0;padding:17px 19px;
+              border-radius:6px;background:var(--e-plein);color:var(--e-plein-encre);text-decoration:none}
+  .v0 .action .quoi{font-size:18px}
+  .v0 .action .plus{font-size:18px;color:var(--e-signe)}
+  .v0 .rubrique{margin:30px 20px 10px;color:var(--e-gris)}
+  .v0 .bloc{display:grid;grid-template-columns:1fr auto;gap:0 14px;margin:0 14px 6px;padding:15px 18px;
+            border-radius:6px;background:var(--e-plage);text-decoration:none;color:inherit}
+  .v0 .nom{grid-column:1;margin:9px 0 0;font-size:19px;line-height:1.14}
+  .v0 .lieu{grid-column:1;margin:4px 0 0;font-size:12px;color:var(--e-gris)}
+  .v0 .etat{grid-column:1;color:var(--e-gris)} .v0 .etat.attend{color:var(--e-bronze)}
+  .v0 .quand{grid-column:2;grid-row:1;text-align:right;color:var(--e-gris)}
+  .v0 .cpt{grid-column:2;grid-row:3;align-self:end;text-align:right;color:var(--e-gris)}
+
+  /* ── 1 · La colonne ───────────────────────────────────────────────────── */
+  .v1 .titre{padding:32px 20px 0}
+  .v1 .titre .salut{margin:0;color:var(--e-bronze)}
+  .v1 .titre h1{margin:13px 0 22px;font-size:35px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+  .v1 .rubrique{display:flex;justify-content:space-between;margin:0 20px 4px;padding-bottom:11px;
+                border-bottom:1px solid var(--e-trait);color:var(--e-gris)}
+  .v1 .ligne{display:grid;grid-template-columns:52px 1fr;gap:0 16px;margin:0 20px;padding:17px 0;
+             border-bottom:1px solid var(--e-trait-doux);text-decoration:none;color:inherit}
+  .v1 .jour{grid-row:1 / span 3;padding-top:3px;color:var(--e-gris);text-align:left}
+  .v1 .jour b{display:block;font-weight:400;font-size:17px;color:var(--e-encre);line-height:1}
+  .v1 .jour span{display:block;margin-top:4px}
+  .v1 .nom{margin:0;font-size:19px;line-height:1.15}
+  .v1 .lieu{margin:4px 0 0;font-size:12px;color:var(--e-gris)}
+  .v1 .etat{margin:8px 0 0;color:var(--e-gris)} .v1 .etat.attend{color:var(--e-bronze)}
+  .v1 .action{display:block;margin:22px 20px 0;padding:15px 0;text-align:center;text-decoration:none;
+              color:inherit;border:1px solid var(--e-trait)}
+
+  /* ── 2 · Les plages larges ────────────────────────────────────────────── */
+  .v2 .titre{padding:32px 20px 0}
+  .v2 .titre .salut{margin:0;color:var(--e-bronze)}
+  .v2 .titre h1{margin:13px 0 0;font-size:35px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+  .v2 .titre .compte{margin:13px 0 24px;color:var(--e-gris)}
+  .v2 .plage{display:grid;grid-template-columns:1fr auto;gap:0 14px;padding:22px 20px;background:var(--e-plage);
+             margin-bottom:1px;text-decoration:none;color:inherit}
+  .v2 .plage.action{background:var(--e-plein);color:var(--e-plein-encre);align-items:center}
+  .v2 .plage.action .quoi{font-size:18px} .v2 .plage.action .plus{font-size:18px;color:var(--e-signe);text-align:right}
+  .v2 .nom{grid-column:1;margin:9px 0 0;font-size:20px;line-height:1.14}
+  .v2 .lieu{grid-column:1;margin:4px 0 0;font-size:12px;color:var(--e-gris)}
+  .v2 .etat{grid-column:1;color:var(--e-gris)} .v2 .etat.attend{color:var(--e-bronze)}
+  .v2 .quand{grid-column:2;grid-row:1;text-align:right;color:var(--e-gris)}
+
+  /* ── 3 · L'action au pouce ────────────────────────────────────────────── */
+  .v3 .titre{padding:32px 20px 0}
+  .v3 .titre .salut{margin:0;color:var(--e-bronze)}
+  .v3 .titre h1{margin:13px 0 0;font-size:35px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+  .v3 .titre .compte{margin:13px 0 0;color:var(--e-gris)}
+  .v3 .rubrique{margin:26px 20px 10px;color:var(--e-gris)}
+  .v3 .bloc{display:grid;grid-template-columns:1fr auto;gap:0 14px;margin:0 14px 6px;padding:15px 18px;
+            border-radius:6px;background:var(--e-plage);text-decoration:none;color:inherit}
+  .v3 .nom{grid-column:1;margin:9px 0 0;font-size:19px;line-height:1.14}
+  .v3 .lieu{grid-column:1;margin:4px 0 0;font-size:12px;color:var(--e-gris)}
+  .v3 .etat{grid-column:1;color:var(--e-gris)} .v3 .etat.attend{color:var(--e-bronze)}
+  .v3 .quand{grid-column:2;grid-row:1;text-align:right;color:var(--e-gris)}
+  .v3 .socle{margin-top:auto;flex:0 0 auto;padding:0 14px}
+  .v3 .socle a{display:flex;align-items:center;justify-content:space-between;padding:16px 19px;border-radius:6px;
+               background:var(--e-plein);color:var(--e-plein-encre);text-decoration:none}
+  .v3 .socle .plus{color:var(--e-signe);font-size:18px}
+  .v3 .socle .quoi{font-size:18px}
+
+  /* ── 4 · La vignette ──────────────────────────────────────────────────── */
+  .v4 .titre{padding:32px 20px 0}
+  .v4 .titre .salut{margin:0;color:var(--e-bronze)}
+  .v4 .titre h1{margin:13px 0 0;font-size:35px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+  .v4 .titre .compte{margin:13px 0 0;color:var(--e-gris)}
+  .v4 .action{display:flex;align-items:center;justify-content:space-between;margin:24px 14px 0;padding:17px 19px;
+              border-radius:6px;background:var(--e-plein);color:var(--e-plein-encre);text-decoration:none}
+  .v4 .action .quoi{font-size:18px} .v4 .action .plus{font-size:18px;color:var(--e-signe)}
+  .v4 .rubrique{margin:28px 20px 10px;color:var(--e-gris)}
+  .v4 .bloc{display:grid;grid-template-columns:54px 1fr auto;gap:0 14px;margin:0 14px 6px;padding:14px 16px;
+            border-radius:6px;background:var(--e-plage);text-decoration:none;color:inherit;align-items:start}
+  .v4 .vign{grid-row:1 / span 3;width:54px;height:54px;border-radius:4px;overflow:hidden}
+  .v4 .vign.vide{border:1px solid var(--e-trait);display:grid;place-items:center}
+  .v4 .nom{margin:8px 0 0;font-size:18px;line-height:1.14}
+  .v4 .lieu{margin:4px 0 0;font-size:12px;color:var(--e-gris)}
+  .v4 .etat{color:var(--e-gris)} .v4 .etat.attend{color:var(--e-bronze)}
+  .v4 .quand{grid-column:3;grid-row:1;text-align:right;color:var(--e-gris)}
+</style>
+
+<div class="page">
+  <div class="intro">
+    <p class="sur">B × Aman — Ivoire</p>
+    <h1>Cinq façons de poser le même écran</h1>
+    <p>Une seule couleur pour les cinq, afin que la comparaison ne porte que sur la structure. Le premier est là où nous en étions ; les quatre autres sont des propositions.</p>
+  </div>
+
+  <div class="grille">
+
+    <!-- ═══ 0 · Le registre ═══ -->
+    <div class="prop">
+      <div class="tel"><div class="ecran v0">
+        <div class="enseigne">ATLAS</div><div class="regle"></div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <a class="action" href="#"><span class="quoi serif">Nouveau chantier</span><span class="plus">+</span></a>
+        <p class="rubrique caps">En cours</p>
+        <a class="bloc" href="#">
+          <span class="etat caps">Brouillon</span><span class="quand caps num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p><p class="lieu">2 route de Vertou, Vertou</p>
+          <span class="cpt caps num">Sans photo</span>
+        </a>
+        <a class="bloc" href="#">
+          <span class="etat caps">À vérifier</span><span class="quand caps num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p><p class="lieu">12 rue des Lilas, Nantes</p>
+          <span class="cpt caps num">6 photos</span>
+        </a>
+        <a class="bloc" href="#">
+          <span class="etat caps attend">Devis retourné</span><span class="quand caps num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p><p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <span class="cpt caps num">3 photos</span>
+        </a>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <div class="legende"><h2>0 — Le registre</h2><p>Où nous en étions. Il sert de repère : les quatre suivants se jugent par rapport à lui.</p></div>
+    </div>
+
+    <!-- ═══ 1 · La colonne ═══ -->
+    <div class="prop">
+      <div class="tel"><div class="ecran v1">
+        <div class="enseigne">ATLAS</div><div class="regle"></div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+        </div>
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <a class="ligne" href="#">
+          <span class="jour caps num"><b>26</b><span>juil.</span></span>
+          <p class="nom serif">Pose de clôture</p>
+          <p class="lieu">2 route de Vertou, Vertou</p>
+          <p class="etat caps">Brouillon · sans photo</p>
+        </a>
+        <a class="ligne" href="#">
+          <span class="jour caps num"><b>24</b><span>juil.</span></span>
+          <p class="nom serif">Rénovation salle de bain</p>
+          <p class="lieu">12 rue des Lilas, Nantes</p>
+          <p class="etat caps">À vérifier · 6 photos</p>
+        </a>
+        <a class="ligne" href="#">
+          <span class="jour caps num"><b>22</b><span>juil.</span></span>
+          <p class="nom serif">Terrasse bois</p>
+          <p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <p class="etat caps attend">Devis retourné · 3 photos</p>
+        </a>
+        <a class="ligne" href="#">
+          <span class="jour caps num"><b>18</b><span>juil.</span></span>
+          <p class="nom serif">Reprise de toiture</p>
+          <p class="lieu">8 impasse du Moulin, Rezé</p>
+          <p class="etat caps">En attente · 9 photos</p>
+        </a>
+        <a class="action caps" href="#">Nouveau chantier</a>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <div class="legende"><h2>1 — La colonne</h2><p>Les dates forment une colonne à gauche, comme un itinéraire. Tout s’aligne sur une seule verticale, et l’œil descend sans effort. Statut et photos tiennent sur une ligne.</p></div>
+    </div>
+
+    <!-- ═══ 2 · Les plages larges ═══ -->
+    <div class="prop">
+      <div class="tel"><div class="ecran v2">
+        <div class="enseigne">ATLAS</div><div class="regle"></div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <a class="plage action" href="#"><span class="quoi serif">Nouveau chantier</span><span class="plus">+</span></a>
+        <a class="plage" href="#">
+          <span class="etat caps">Brouillon</span><span class="quand caps num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p><p class="lieu">2 route de Vertou, Vertou</p>
+        </a>
+        <a class="plage" href="#">
+          <span class="etat caps">À vérifier</span><span class="quand caps num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p><p class="lieu">12 rue des Lilas, Nantes</p>
+        </a>
+        <a class="plage" href="#">
+          <span class="etat caps attend">Devis retourné</span><span class="quand caps num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p><p class="lieu">5 allée des Tilleuls, Nantes</p>
+        </a>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <div class="legende"><h2>2 — Les plages larges</h2><p>Les blocs vont d’un bord à l’autre, séparés par un seul pixel de fond. Des feuilles empilées plutôt que des cartes posées. L’action devient la première plage.</p></div>
+    </div>
+
+    <!-- ═══ 3 · L'action au pouce ═══ -->
+    <div class="prop">
+      <div class="tel"><div class="ecran v3">
+        <div class="enseigne">ATLAS</div><div class="regle"></div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <p class="rubrique caps">En cours</p>
+        <a class="bloc" href="#">
+          <span class="etat caps">Brouillon</span><span class="quand caps num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p><p class="lieu">2 route de Vertou, Vertou</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="etat caps">À vérifier</span><span class="quand caps num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p><p class="lieu">12 rue des Lilas, Nantes</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="etat caps attend">Devis retourné</span><span class="quand caps num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p><p class="lieu">5 allée des Tilleuls, Nantes</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="etat caps">En attente</span><span class="quand caps num">18 juil.</span>
+          <p class="nom serif">Reprise de toiture</p><p class="lieu">8 impasse du Moulin, Rezé</p>
+        </a>
+        <div class="socle">
+          <a href="#"><span class="quoi serif">Nouveau chantier</span><span class="plus">+</span></a>
+        </div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <div class="legende"><h2>3 — L’action au pouce</h2><p>Le bouton quitte le haut de l’écran pour venir sous le pouce, juste au-dessus des onglets. Le haut redevient purement éditorial, et un chantier de plus tient à l’écran.</p></div>
+    </div>
+
+    <!-- ═══ 4 · La vignette ═══ -->
+    <div class="prop">
+      <div class="tel"><div class="ecran v4">
+        <div class="enseigne">ATLAS</div><div class="regle"></div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <a class="action" href="#"><span class="quoi serif">Nouveau chantier</span><span class="plus">+</span></a>
+        <p class="rubrique caps">En cours</p>
+
+        <a class="bloc" href="#">
+          <span class="vign vide">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b9b2a4" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="M12 12c-3.5 0-5.8-2.1-5.8-5.2 3.5 0 5.8 2.1 5.8 5.2Z"/><path d="M12 12c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/></svg>
+          </span>
+          <span class="etat caps">Brouillon</span><span class="quand caps num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p><p class="lieu">2 route de Vertou, Vertou</p>
+        </a>
+
+        <a class="bloc" href="#">
+          <span class="vign" style="background:linear-gradient(150deg,#a9b79b,#6f8466 55%,#4a5c46)"></span>
+          <span class="etat caps">À vérifier</span><span class="quand caps num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p><p class="lieu">12 rue des Lilas, Nantes</p>
+        </a>
+
+        <a class="bloc" href="#">
+          <span class="vign" style="background:linear-gradient(150deg,#c8b79a,#9c8464 60%,#6a5a45)"></span>
+          <span class="etat caps attend">Devis retourné</span><span class="quand caps num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p><p class="lieu">5 allée des Tilleuls, Nantes</p>
+        </a>
+
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <div class="legende"><h2>4 — La vignette</h2><p>La photo du chantier entre dans la ligne. C’est la seule façon d’amener l’image d’Aman sans voler la place aux chantiers. Sans photo : un carré cerné d’un cheveu, avec la feuille.</p></div>
+    </div>
+
+  </div>
+</div>
