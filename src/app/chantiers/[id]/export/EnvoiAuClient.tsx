@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
-import { jourLisible } from "@/lib/jour";
+import { jourIso, jourLisible } from "@/lib/jour";
+import Calendrier from "@/components/atlas/Calendrier";
 import { libelleDuree } from "@/server/disponibilites";
 import { preparerEnvoiAction, envoyerAuClientAction, verifierJourProposeAction } from "./actions";
 import type { PreparationEnvoi, VerdictJour } from "@/server/repositories/preparation-envoi";
@@ -250,22 +251,37 @@ function Contenu({
               pour une haie « à l'automne prochain » ou un chantier calé après
               la saison.
 
-              Un champ de date natif : sur son téléphone, c'est la molette qu'il
-              connaît déjà, avec son calendrier. Rien à réapprendre. */}
+              **Un vrai calendrier depuis le 9 août 2026**, à sa demande :
+              « passe au calendrier pour le choix des dates à proposer au
+              client ». Le champ natif ouvrait bien la molette du téléphone,
+              mais il ne savait pas GRISER les jours pris — le patron y voyait
+              un mois de cases identiques, dont certaines impossibles.
+
+              Le même composant que chez le client, et c'est délibéré : deux
+              calendriers écrits séparément finiraient par ne pas griser les
+              mêmes jours, et l'écart se verrait chez le client.
+
+              **Ce que le calendrier ne peut pas savoir, le serveur le dit.**
+              Les jours occupés ne sont chargés que sur la fenêtre proche ; au
+              delà, seul `verifierJourPropose` sait si la journée tient. Le
+              calendrier propose donc, et le serveur tranche — c'est déjà ce
+              qu'il faisait, et le retirer rendrait le geste plus joli et moins
+              sûr. */}
           <div className="mb-4">
-            <label htmlFor="autre-date" className={smallCaps} style={{ color: colors.muted }}>
+            <p className={smallCaps} style={{ color: colors.muted, marginBottom: 6 }}>
               Ou une autre date
-            </label>
-            <input
-              id="autre-date"
-              type="date"
-              value={autreDate}
-              min={preparation.horizon.debut}
-              max={preparation.horizon.fin}
-              onChange={(e) => verifierAutreDate(e.target.value)}
-              className="mt-1.5 w-full rounded-xl px-4 py-3 text-[15px]"
-              style={{ backgroundColor: colors.card, color: colors.ink, border: "none" }}
-            />
+            </p>
+            <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: colors.card }}>
+              <Calendrier
+                debut={preparation.horizon.debut}
+                fin={preparation.horizon.fin}
+                occupes={preparation.joursOccupes}
+                retenus={autreDate ? [autreDate] : []}
+                aujourdHui={jourIso(new Date())}
+                libelleOccupe="votre planning est complet ce jour-là"
+                onBasculer={(jour) => verifierAutreDate(autreDate === jour ? "" : jour)}
+              />
+            </div>
             {verification && (
               <p className="mt-1.5 text-[13px]" style={{ color: colors.muted }}>
                 Vérification de votre planning…

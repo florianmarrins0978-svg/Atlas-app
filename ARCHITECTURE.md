@@ -1743,8 +1743,100 @@ nom **accessible** porte donc la grille et la rangée entières. Sans cela, une
 personne qui n'utilise pas ses yeux entend cinq fois le même libellé — et le
 contrôle navigateur, lui, ne savait plus lequel il visait.
 
+### Un contrôle lourd doit accuser le bon coupable
+
+`test-planning-vers-facture-e2e.ts` bâtit **sept chantiers de bout en bout**,
+chacun avec son devis envoyé et son PDF archivé. C'est la suite la plus lourde de
+la batterie, et son dernier cas s'exécute sur un serveur de développement déjà
+sollicité par une vingtaine d'autres.
+
+Une navigation y a dépassé les 45 secondes par défaut — **deux fois sur cinq
+batteries, jamais quand la suite tourne seule**. Mesuré hors batterie, avec la
+même base pleine : 333 ms pour cet écran précis. Ce n'est donc pas le code qui
+est lent, c'est le montage qui est chargé.
+
+Un contrôle qui rougit là-dessus **accuse à tort**, et une erreur qui envoie
+chercher au mauvais endroit coûte plus cher que pas d'erreur du tout
+(`AGENTS.md`). D'où une seconde tentative, et un message qui dit que le serveur
+n'a pas répondu plutôt que de laisser croire à un défaut d'affichage. Le
+garde-fou a été éprouvé contre un serveur arrêté : il rougit, et il nomme la
+bonne cause.
+
 | Ce qui est tenu | Par quoi |
 |---|---|
 | Ce qui se détache, et ce qui ne se détache pas | `scripts/test-lignes-vendables.ts` |
 | Les cinq natures, leurs cases, leurs clés | `scripts/test-grille-prix.ts` |
 | Les cinq grilles à l'écran, dans un téléphone | `scripts/test-grille-prix-e2e.ts` |
+
+---
+
+## 36. Un calendrier des deux côtés, où les jours pris ne se touchent pas
+
+**Sa demande du 8 août 2026 :** *« passe au calendrier pour le choix des dates à
+proposer au client, mais également qu'il ait accès au calendrier pour pouvoir
+proposer une date, avec un système pour qu'il n'ait pas accès aux dates déjà
+prises par un autre client. »*
+
+### Ce qui existait, et pourquoi ça ne suffisait pas
+
+Les deux écrans employaient le sélecteur du téléphone, `<input type="date">`. Il
+accepte une fenêtre (`min`, `max`) — mais **il ne sait pas griser des jours au
+milieu**. Le client pouvait donc choisir un mardi déjà pris, et ne l'apprenait
+qu'**après coup**, par un message d'erreur.
+
+Ce n'est pas un détail d'affichage : un client qui bute sur un refus rappelle,
+ou renonce. Le refus arrivait au pire moment — celui où il venait de décider.
+
+### Le même composant des deux côtés
+
+`src/components/atlas/Calendrier.tsx`, employé par la page du client et par
+l'écran d'envoi du patron. Deux calendriers écrits séparément finiraient par ne
+pas griser les mêmes jours, et **l'écart se verrait chez le client, jamais
+ici** (`CLAUDE.md` §3).
+
+Le composant ne décide de rien : la grille du mois, l'état de chaque jour et la
+règle « une ou deux dates, jamais trois » vivent dans `src/lib/calendrier.ts`,
+**fonctions pures éprouvées sans navigateur** (`scripts/test-calendrier.ts`,
+vingt cas).
+
+### Trois décisions qui ne se devinent pas
+
+**1. Un jour hors fenêtre ne dit PAS qu'il est pris.** L'ordre des raisons dans
+`etatDuJour` n'est pas indifférent : un jour à la fois hors fenêtre et occupé se
+dit « hors fenêtre ». Dire au client qu'un jour de l'an prochain est « déjà
+pris » lui apprendrait quelque chose sur le planning du patron — et sa page ne
+reçoit que **des dates, rien d'autre** (`docs/AGENT.md` §2.2 bis).
+
+**2. Un jour déjà retenu se dit « retenu », jamais « occupé ».** Sinon il
+s'afficherait barré, et le patron croirait ne plus pouvoir le décocher.
+
+**3. La troisième date chasse la plus ancienne**, elle n'est pas refusée en
+silence. Un bouton qui ne répond pas se lit comme une panne : il appuierait
+trois fois avant de comprendre.
+
+### Ce que le calendrier ne peut pas savoir, le serveur le dit
+
+Côté patron, l'horizon va à dix-huit mois mais **les jours occupés ne sont
+chargés que sur la fenêtre proche**. Au-delà, seul `verifierJourPropose` sait si
+la journée tient. Le calendrier propose donc, et le serveur tranche — c'est ce
+qu'il faisait déjà, et le retirer aurait rendu le geste plus joli et moins sûr.
+
+Même principe chez le client : l'affichage est un **instantané**, deux clients
+peuvent viser le même jour, et `enregistrerReponse` revérifie de toute façon.
+
+### Ce que les contrôles visaient, et ce qu'ils visent maintenant
+
+Les deux suites navigateur regardaient `min` et `max` d'un champ natif. C'était
+la mauvaise question : **un champ correctement borné laissait quand même choisir
+un jour pris.** Elles regardent désormais ce que la personne peut *toucher* —
+un jour barré est `disabled`, et le contrôle le vérifie.
+
+Les cases portent `data-jour` et `data-etat` : viser « mardi 12 août » rendrait
+les contrôles dépendants de la langue et du fuseau, et un contrôle qui échoue
+pour cette raison-là accuse à tort.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| La grille, février bissextile, le passage d'année, la borne des mois | `scripts/test-calendrier.ts` |
+| Un jour pris ne se choisit pas, chez le client | `scripts/test-devis-client-e2e.ts` |
+| Le patron navigue jusqu'à six mois et la date part | `scripts/test-date-lointaine-e2e.ts` |

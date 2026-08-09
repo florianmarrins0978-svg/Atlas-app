@@ -5,6 +5,7 @@ import { repondreAction } from "./actions";
 import type { EnvoiPourClient } from "@/server/repositories/envois-devis";
 import { jourLisible, dansDelaiRetractation } from "@/lib/jour";
 import { libelleAutreDate } from "@/lib/libelle-dates";
+import Calendrier from "@/components/atlas/Calendrier";
 
 export default function FormulaireReponse({
   envoi,
@@ -65,25 +66,32 @@ export default function FormulaireReponse({
           </label>
 
           {choixDate === "autre" && (
-            <div className="ml-8 flex flex-col gap-1">
-              {/* Sélecteur natif : il ouvre le calendrier du téléphone et rend
-                  une date sans ambiguïté. Un champ libre produirait « le 23 »
-                  ou « fin mars », qu'il faudrait interpréter — donc deviner. */}
-              <input
-                type="date"
-                name="dateAutre"
-                value={dateAutre}
-                min={envoi.fenetre.debut}
-                max={envoi.fenetre.fin}
-                onChange={(e) => setDateAutre(e.target.value)}
-                className="rounded-xl border border-black/10 px-3 py-2 text-[15px]"
+            <div className="mt-2 flex flex-col gap-1">
+              {/* **Un calendrier, et non plus le sélecteur du téléphone.**
+                  Sa demande du 8 août 2026 : « qu'il ait accès au calendrier
+                  pour pouvoir proposer une date, avec un système pour qu'il
+                  n'ait pas accès aux dates déjà prises par un autre client. »
+
+                  `<input type="date">` accepte bien une fenêtre, mais il ne sait
+                  pas griser des jours au milieu : le client choisissait un jour
+                  déjà pris et ne l'apprenait qu'après coup, par un refus. Ici
+                  les jours pris sont barrés et ne répondent pas.
+
+                  Le champ caché reste : c'est lui qui part au serveur, et le
+                  serveur revérifie de toute façon — l'affichage n'est qu'un
+                  instantané, deux clients peuvent viser le même jour. */}
+              <input type="hidden" name="dateAutre" value={dateAutre} />
+              <Calendrier
+                debut={envoi.fenetre.debut}
+                fin={envoi.fenetre.fin}
+                occupes={envoi.joursOccupes}
+                retenus={dateAutre ? [dateAutre] : []}
+                aujourdHui={aujourdHui}
+                onBasculer={(jour) => setDateAutre((actuel) => (actuel === jour ? "" : jour))}
               />
-              <p className="text-[12px] text-ink/50">
-                Les jours déjà pris ne peuvent pas être retenus.
-              </p>
-              {dateAutre && envoi.joursOccupes.includes(dateAutre) && (
-                <p role="alert" className="text-[13px] text-[#B5502F]">
-                  Ce jour n&apos;est pas disponible. Choisissez-en un autre.
+              {dateAutre && (
+                <p className="text-[13px] text-ink/70">
+                  Vous avez choisi le {jourLisible(dateAutre)}.
                 </p>
               )}
             </div>

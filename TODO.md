@@ -184,6 +184,23 @@ gardées ci-dessous pour qu'on n'ait pas à les réinventer ce jour-là.
 | a | Faire lire le PDF par le modèle déjà branché, et lui faire valider l'aperçu comme aujourd'hui | Marche sur les PDF scannés comme sur les autres. Coûte des jetons, et demande d'envoyer le fichier chez un sous-traitant — donc l'accord du patron (`docs/A-FAIRE.md` point 2) |
 | b | Extraire la couche texte à la main (flux `Tj`/`TJ`, positions `Td`/`Tm`) | Sans dépendance ni réseau, mais muet sur un PDF scanné, et fragile sur les encodages de sous-ensembles de polices |
 
+### 0 nonies. Le calendrier, des deux côtés — ~~à faire~~ **fait le 9 août 2026**
+
+Le client ne peut plus choisir un jour déjà pris : il est barré et ne répond
+pas. Le patron a le même calendrier, jusqu'à dix-huit mois. `ARCHITECTURE.md`
+§36.
+
+**À savoir avant d'y toucher** : le composant ne décide de rien, tout vient de
+`src/lib/calendrier.ts`. Et l'ordre des raisons dans `etatDuJour` n'est pas
+indifférent — un jour hors fenêtre ne doit JAMAIS se dire « déjà pris » chez le
+client, sinon la page laisse filtrer le planning du patron.
+
+**Ce qui reste ouvert** : côté patron, les jours occupés ne sont chargés que sur
+la fenêtre proche ; au-delà de trois mois, le calendrier ne barre rien et c'est
+le serveur qui refuse après coup. Charger dix-huit mois d'occupation à
+l'ouverture de l'écran serait lourd pour un gain rare. À revoir s'il se met à
+caler beaucoup de chantiers lointains.
+
 ### 0 octies. Ce qui se détache d'un chantier — ~~à trancher~~ **tranché le 8 août 2026**
 
 Question posée : « autre chose se détache-t-il — dessouchage, évacuation seule,

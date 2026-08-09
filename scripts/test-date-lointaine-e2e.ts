@@ -52,32 +52,52 @@ async function main() {
   await page.getByText("Envoyer au client", { exact: false }).first().click();
   await page.waitForSelector("text=Une date, ou deux au choix du client ?");
 
-  // --- 1. Le champ existe, et il va jusqu'à dix-huit mois ------------------
-  const champ = page.getByLabel("Ou une autre date");
-  assert.equal(
-    await champ.count(),
-    1,
-    "Aucun moyen de choisir une date à soi : le patron ne peut proposer que la semaine qui vient."
-  );
-  const maxi = await champ.getAttribute("max");
-  const mini = await champ.getAttribute("min");
+  // --- 1. Le calendrier existe, et il va jusqu'à dix-huit mois -------------
+  //
+  // **Depuis le 9 août 2026, c'est un vrai calendrier**, à sa demande — plus le
+  // champ natif du téléphone, qui savait borner mais pas griser. Le contrôle
+  // regardait `min` et `max` ; il navigue désormais comme le patron navigue.
   const aujourdHui = new Date();
-  assert.ok(
-    maxi && maxi >= versJourIso(ajouterJours(aujourdHui, HORIZON_PATRON_JOURS - 1)),
-    `Le calendrier s'arrête à ${maxi} — une haie « à l'automne prochain » ne s'y trouve pas.`
+  assert.equal(
+    await page.locator("[data-jour]").count() > 0,
+    true,
+    "Aucun calendrier : le patron ne peut proposer que la semaine qui vient."
   );
-  assert.ok(
-    mini && mini >= versJourIso(ajouterJours(aujourdHui, DELAI_MINIMAL_JOURS - 1)),
-    `Le calendrier laisse choisir ${mini} : proposer demain met le patron en défaut.`
-  );
-  console.log("  ✓ une autre date se choisit, d'après-demain à dix-huit mois");
+
+  // Le lendemain ne se choisit pas : proposer demain met le patron en défaut.
+  const demain = versJourIso(ajouterJours(aujourdHui, 1));
+  const caseDemain = page.locator(`[data-jour="${demain}"]`);
+  if ((await caseDemain.count()) > 0) {
+    assert.ok(
+      await caseDemain.first().isDisabled(),
+      `Le calendrier laisse choisir ${demain} (délai minimal : ${DELAI_MINIMAL_JOURS} jours).`
+    );
+  }
 
   // --- 2. Une date à six mois est acceptée, et elle se voit ----------------
   //
   // Un lundi, pour ne pas tomber sur l'avertissement du week-end : c'est le
   // cas courant, et c'est lui qu'on éprouve ici.
   const dansSixMois = prochainLundi(ajouterJours(aujourdHui, 182));
-  await champ.fill(dansSixMois);
+
+  // On avance de mois en mois, comme lui. Vingt appuis couvrent largement les
+  // six mois visés ; au-delà, c'est que la navigation est bornée trop tôt — et
+  // le message le dit plutôt que de laisser un délai d'attente s'écouler.
+  for (let i = 0; i < 20 && (await page.locator(`[data-jour="${dansSixMois}"]`).count()) === 0; i++) {
+    const suivant = page.getByRole("button", { name: /^Mois suivant/ });
+    assert.ok(
+      await suivant.isEnabled(),
+      `Le calendrier s'arrête avant ${dansSixMois} — une haie « à l'automne prochain » ne s'y trouve pas ` +
+        `(horizon annoncé : ${HORIZON_PATRON_JOURS} jours).`
+    );
+    await suivant.click();
+    await page.waitForTimeout(120);
+  }
+  const cible = page.locator(`[data-jour="${dansSixMois}"]`);
+  assert.equal(await cible.count(), 1, `${dansSixMois} reste introuvable dans le calendrier.`);
+  assert.ok(await cible.isEnabled(), `${dansSixMois} est grisé alors qu'il est libre.`);
+  await cible.click();
+  console.log("  ✓ une autre date se choisit, d'après-demain à dix-huit mois");
   await page.waitForTimeout(2500);
 
   const ecran = await page.locator("body").innerText();

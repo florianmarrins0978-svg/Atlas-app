@@ -7,6 +7,39 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-09
+
+### Un calendrier des deux côtés, où les jours pris ne se touchent pas
+
+Sa demande : *« passe au calendrier pour le choix des dates à proposer au
+client, mais également qu'il ait accès au calendrier pour pouvoir proposer une
+date, avec un système pour qu'il n'ait pas accès aux dates déjà prises par un
+autre client. »*
+
+Les deux écrans employaient le sélecteur du téléphone. Il sait borner une
+fenêtre — **il ne sait pas griser un jour au milieu**. Le client choisissait donc
+un mardi déjà pris et ne l'apprenait qu'après coup, par un refus. Ce n'est pas
+un détail d'affichage : un client qui bute sur un refus rappelle, ou renonce.
+
+Le même composant sert les deux écrans, délibérément : deux calendriers écrits
+séparément finiraient par ne pas griser les mêmes jours, et l'écart se verrait
+chez le client. Il ne décide de rien — la grille, l'état d'un jour et la règle
+« une ou deux dates » sont des fonctions pures, éprouvées sans navigateur.
+
+**Un jour hors de la fenêtre du client ne lui dit jamais qu'il est « déjà
+pris »** : lui apprendre qu'un jour de l'an prochain est occupé lui apprendrait
+quelque chose du planning du patron, et sa page ne reçoit que des dates.
+
+Côté patron, l'horizon va à dix-huit mois mais les jours occupés ne sont chargés
+que sur la fenêtre proche : au-delà, c'est le serveur qui tranche, comme avant.
+Le calendrier propose, il ne décide pas. Détail dans `ARCHITECTURE.md` §36.
+
+Les deux contrôles navigateur regardaient `min` et `max` du champ natif —
+la mauvaise question, puisqu'un champ bien borné laissait quand même choisir un
+jour pris. Ils regardent maintenant ce que la personne peut toucher.
+
+---
+
 ## 2026-08-08
 
 ### La souche et les grumes se détachent — l'évacuation non

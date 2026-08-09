@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-08 · `claude/migrate-app-atlas-zz31ac`
+**Point de reprise :** 2026-08-09 · `claude/migrate-app-atlas-zz31ac`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -19,6 +19,13 @@ lire avant toute décision de conception. Le socle technique est une application
 Next.js avec PostgreSQL, isolée par entreprise via *row level security*.
 
 ## Ce qui vient d'être terminé
+
+**Un calendrier des deux côtés (9 août).** Le client ne peut plus choisir un jour
+déjà pris — il est barré et ne répond pas. Le patron a le même, jusqu'à dix-huit
+mois. Un seul composant sert les deux écrans, et il ne décide de rien : tout
+vient de `src/lib/calendrier.ts`. **L'ordre des raisons dans `etatDuJour` n'est
+pas indifférent** — un jour hors fenêtre ne doit jamais se dire « déjà pris »
+chez le client, sinon sa page laisse filtrer le planning. `ARCHITECTURE.md` §36.
 
 **Une règle de travail, avant tout le reste :** les suites navigateur tournent
 sous un rôle qui **traverse la RLS**, donc elles ne peuvent pas voir un défaut

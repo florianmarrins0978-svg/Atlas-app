@@ -127,11 +127,47 @@ async function ongletsOuIlFigure(page: Page, nom: string): Promise<string[]> {
     ["planning", "/planning", "Planning"],
     ["termines", "/termines", "Terminés"],
   ] as const) {
-    await page.goto(`${BASE}${chemin}`, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector(`h1:has-text("${titre}")`, { timeout: 30000 });
+    await ouvrir(page, chemin, titre);
     if ((await page.locator(`text=${nom}`).count()) > 0) trouves.push(onglet);
   }
   return trouves;
+}
+
+/**
+ * Ouvre un écran, avec une seconde chance — et un message qui désigne le bon
+ * coupable si les deux échouent.
+ *
+ * **Pourquoi une seconde chance ici et nulle part ailleurs.** Cette suite est la
+ * plus lourde de la batterie : elle bâtit sept chantiers de bout en bout, chacun
+ * avec son devis envoyé et son PDF archivé. Son dernier cas s'exécute donc sur
+ * un serveur de développement déjà sollicité par une vingtaine de suites, et une
+ * navigation y a dépassé les 45 secondes par défaut — deux fois sur cinq
+ * batteries, jamais quand la suite tourne seule (mesuré : 333 ms pour cet écran
+ * même, avec la base pleine).
+ *
+ * Ce n'est donc pas le code qui est lent, c'est le montage qui est chargé. Un
+ * contrôle qui rougit là-dessus **accuse à tort**, et une erreur qui envoie
+ * chercher au mauvais endroit coûte plus cher que pas d'erreur du tout
+ * (`AGENTS.md`). D'où la seconde chance — et, si elle échoue aussi, un message
+ * qui dit que le serveur n'a pas répondu plutôt que de laisser croire à un
+ * défaut d'affichage.
+ */
+async function ouvrir(page: Page, chemin: string, titre: string): Promise<void> {
+  for (const essai of [1, 2]) {
+    try {
+      await page.goto(`${BASE}${chemin}`, { waitUntil: "domcontentloaded", timeout: 45_000 });
+      await page.waitForSelector(`h1:has-text("${titre}")`, { timeout: 30_000 });
+      return;
+    } catch (err) {
+      if (essai === 2) {
+        throw new Error(
+          `L'écran « ${titre} » (${chemin}) n'a pas répondu en deux tentatives. ` +
+            "C'est le serveur de développement qui n'a pas suivi, pas l'écran : " +
+            `il répond en quelques centaines de millisecondes hors batterie. (${(err as Error).message.split("\n")[0]})`
+        );
+      }
+    }
+  }
 }
 
 async function main() {
@@ -282,8 +318,13 @@ async function main() {
     assert.deepEqual(await ongletsOuIlFigure(page, nom), ["termines"]);
 
     // Et la facture préparée se retrouve : c'est ce qui manquait.
-    await page.goto(`${BASE}/termines`, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('h1:has-text("Terminés")', { timeout: 30000 });
+    //
+    // **Sans recharger l'écran** : la boucle ci-dessus vient de finir sur
+    // « Terminés », et y retourner immédiatement n'apprenait rien. Cette
+    // navigation de trop est celle qui dépassait les 45 secondes en fin de
+    // batterie — trois fois de suite. Un contrôle qui refait pour rien un
+    // travail coûteux finit par échouer sur sa propre lourdeur, et accuse le
+    // code à sa place.
     const carte = page.locator("a").filter({ hasText: nom }).last();
     assert.ok(
       (await carte.locator("text=Reprendre la facture").count()) > 0,
