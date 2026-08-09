@@ -1703,7 +1703,7 @@ aucun choix réel.
 | Nature | Ce qui décide le prix | Cases | Forme à l'écran |
 |---|---|---|---|
 | `abattage` | technique × diamètre | 24 | deux axes, dépliés par technique |
-| `grumes` | *(rien pour l'instant)* | 1 | une case |
+| `grumes` | *(rien — au poids)* | 1 | une case, à la tonne |
 | `fendage` | hauteur × diamètre | 48 | deux axes, dépliés par hauteur |
 | `dessouchage` | diamètre | 8 | un axe, tout visible |
 | `haie` | *(rien — au mètre linéaire)* | 1 | une case |
@@ -1713,20 +1713,29 @@ l'arbre qui n'est plus là ne décide de rien. Il réemploie **les tranches de
 l'abattage** : ce sont les mêmes troncs, et deux jeux de tranches pour la même
 réalité finiraient par ranger le même chêne dans deux cases (`CLAUDE.md` §3).
 
-### La réserve des grumes, écrite à l'écran et pas seulement ici
+### La réserve des grumes, levée en moins de vingt-quatre heures
 
-Le patron a dit que les grumes se détachent. **Il n'a pas dit à quoi elles se
-chiffrent** : au mètre cube, à la tonne, au voyage de camion, au forfait ? Lui
-inventer un axe reviendrait à inventer une décision qu'il n'a pas prise
-(`docs/AGENT.md` §3), et à lui présenter des cases vides qui ne décrivent rien.
+Le 8 août, le patron avait dit que les grumes se détachent — pas à quoi elles se
+chiffrent. La case portait donc un forfait, et **l'écran disait la réserve** :
+« Un seul prix pour l'instant. Si vous les facturez au mètre cube ou au voyage,
+dites-le et la grille suivra. »
 
-Une case unique retient donc ce qu'il facture, et **l'écran le lui dit** : « Un
-seul prix pour l'instant. Si vous les facturez au mètre cube ou au voyage,
-dites-le et la grille suivra. » La réserve n'existe que s'il peut la lever ; la
-cacher dans un commentaire l'aurait rendue invisible à celui qui décide.
+Le 9 août : *« à la tonne. »*
 
-C'est exactement le chemin de la haie, restée à une case parce que son devis ne
-mentionnait aucune hauteur.
+**C'est exactement ce à quoi servait la réserve**, et la raison de l'avoir mise
+à l'écran plutôt que dans un commentaire : elle n'existe que si celui qui décide
+peut la lire. Cachée dans le code, elle aurait dormi jusqu'à ce qu'un devis
+sorte faux.
+
+La case s'appelle maintenant `tonne`, porte un prix unitaire, et se multiplie
+par le tonnage lu dans la dictée — même mécanique que la haie au mètre linéaire.
+
+**L'ancienne valeur n'a pas été convertie, elle a été effacée** (migration
+0029). Un forfait de 300 € pour un enlèvement n'est pas 300 € la tonne : le
+reconduire ferait facturer dix fois trop sur un gros arbre, et sur un devis
+parti chez un client. On ne sait pas combien pesait le chantier qui a produit ce
+forfait — il n'existe donc aucune conversion honnête. **Une case vide est une
+question posée ; une case fausse est un devis faux.**
 
 ### Deux détails qui ont failli passer
 

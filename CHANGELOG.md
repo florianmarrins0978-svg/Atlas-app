@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-08-09
 
+### Les grumes se facturent à la tonne
+
+*« À la tonne »* — sa réponse à la question laissée ouverte la veille. La
+réserve écrite à l'écran aura tenu moins de vingt-quatre heures, et c'est
+exactement ce à quoi elle servait : posée dans un commentaire, elle aurait dormi
+jusqu'à ce qu'un devis sorte faux.
+
+Atlas lit désormais le tonnage dans la dictée — « 8 tonnes », « 3 t », « trois
+tonnes » — et multiplie par son prix. Sans tonnage, il ne chiffre rien et dit ce
+qui manque, plutôt qu'un chiffre qui aurait l'air d'un prix. Ce qu'il apprend
+d'un devis se range **au poids**, jamais au montant de la ligne : c'est le piège
+de la haie, en plus coûteux.
+
+**L'ancien prix au forfait est effacé, pas converti.** 300 € pour un enlèvement
+n'est pas 300 € la tonne, et on ne sait pas combien pesait le chantier qui a
+produit ce forfait — il n'existe aucune conversion honnête. Une case vide est
+une question posée ; une case fausse est un devis faux.
+
 ### Douze mois de jours pris sur son calendrier, trois pour son client
 
 Sa réponse à la réserve posée la veille : *« tu peux aller jusqu'à douze mois

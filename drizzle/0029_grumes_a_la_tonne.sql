@@ -1,0 +1,31 @@
+-- Les grumes se facturent À LA TONNE.
+--
+-- **Sa réponse du 9 août 2026**, à la question laissée ouverte la veille — au
+-- mètre cube, à la tonne, au voyage de camion, au forfait ? — : *« à la
+-- tonne »*. La réserve posée dans `grille-prix.ts` est donc levée, moins de
+-- vingt-quatre heures après avoir été écrite. C'est exactement ce à quoi elle
+-- servait : une case honnêtement vide se remplit dès qu'on demande.
+--
+-- **Ce que cette migration EFFACE, et pourquoi elle n'essaie pas de convertir.**
+--
+-- La case s'appelait `forfait` et portait un prix d'enlèvement pour un chantier
+-- entier. Elle s'appelle maintenant `tonne` et porte un prix unitaire. Ce ne
+-- sont pas les mêmes chiffres, et il n'existe aucun moyen de passer de l'un à
+-- l'autre : on ne sait pas combien de tonnes pesait le chantier qui a produit
+-- le forfait.
+--
+-- Reconduire la valeur ferait facturer « 300 € LA TONNE » là où le patron avait
+-- écrit « 300 € l'enlèvement » — dix fois trop sur un gros arbre, et sur un
+-- devis parti chez un client. C'est la leçon de la haie, apprise au mètre et
+-- jamais au montant de la ligne (`ARCHITECTURE.md` §32).
+--
+-- **Une case vide est une question posée ; une case fausse est un devis faux.**
+-- On efface donc, et la prochaine ligne de grumes qu'il chiffre remplira la
+-- case avec la bonne unité.
+--
+-- En pratique la table est presque certainement vide sur ce point : la nature
+-- `grumes` n'existe que depuis la veille (migration 0028). L'instruction
+-- ci-dessous n'en est pas moins nécessaire — « probablement vide » n'est pas
+-- « vide », et c'est sur les bases des autres qu'elle compte.
+
+DELETE FROM "grille_prix" WHERE "nature" = 'grumes' AND "cellule" = 'forfait';

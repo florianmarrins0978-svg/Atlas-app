@@ -10,7 +10,7 @@ import {
   celluleDessouchage,
   celluleFendage,
 } from "../../lib/grille-prix";
-import { longueurHaieLue, mesuresArbre } from "../../lib/mesures-arbre";
+import { longueurHaieLue, mesuresArbre, tonnageLu } from "../../lib/mesures-arbre";
 
 // Même vocabulaire que le découpage des lignes : ce qui fait une ligne à part
 // est ce qui a une grille, et inversement.
@@ -100,12 +100,18 @@ export async function apprendrePrixGrille(
     return;
   }
 
-  // **Les grumes se retiennent telles quelles**, au forfait : faute d'unité
-  // donnée par le patron, il n'y a pas de division à faire — et en inventer une
-  // (au mètre cube, à la tonne) rangerait son prix dans une case qui ne veut
-  // rien dire. Voir `CELLULE_GRUMES` dans `grille-prix.ts`.
+  // **Les grumes se rangent À LA TONNE, jamais au montant de la ligne.** Sa
+  // réponse du 9 août 2026. Écrire 900 € dans la case ferait facturer 900 € LA
+  // TONNE au chantier suivant — c'est mot pour mot le piège de la haie, et il
+  // coûterait ici bien plus cher.
+  //
+  // Sans tonnage connu, on ne retient rien plutôt qu'un prix faux.
   if (nature === "grumes") {
-    await poserPrixGrille(ctx, "grumes", CELLULE_GRUMES, montant.toFixed(2), "devis");
+    const tonnage = [...precisions.map((p) => p.lisible), ligne.libelle, ...prestations.map((p) => p.libelle)]
+      .map(tonnageLu)
+      .find((t) => t !== null);
+    if (!tonnage || tonnage <= 0) return;
+    await poserPrixGrille(ctx, "grumes", CELLULE_GRUMES, (montant / tonnage).toFixed(2), "devis");
     return;
   }
 

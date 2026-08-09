@@ -212,11 +212,14 @@ aussi »**. L'évacuation seule reste donc avec l'abattage et le broyage.
 
 Fait : cinq natures de grille, trois formes, 82 cases (`ARCHITECTURE.md` §35).
 
-**Ce qui reste ouvert, et qui n'est pas un détail** : à quoi se chiffrent les
-grumes ? Au mètre cube, à la tonne, au voyage de camion ? Il n'a rien dit, la
-grille n'a donc qu'une case au forfait, et l'écran l'invite à trancher. Le jour
-où il répond, une migration ajoute l'axe sans rien perdre — c'est le même chemin
-que la haie.
+**~~Ce qui restait ouvert~~ — tranché le 9 août 2026 : « à la tonne ».** La case
+porte un prix unitaire, multiplié par le tonnage lu dans la dictée. L'ancien
+forfait a été **effacé** et non converti (migration 0029) : on ne sait pas
+combien pesait le chantier qui l'avait produit.
+
+La réserve, écrite à l'écran plutôt que dans un commentaire, aura tenu moins de
+vingt-quatre heures. À imiter : une question posée là où le patron la lit se
+répond ; enfouie dans le code, elle attend qu'un devis sorte faux.
 
 ### 0 septies. Du planning à la facture — ~~à faire~~ **fait le 8 août 2026**
 

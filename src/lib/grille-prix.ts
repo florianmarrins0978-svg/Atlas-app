@@ -239,19 +239,20 @@ export function celluleAbattage(technique: string | null, diametreCm: number | n
 export const CELLULE_HAIE = "ml";
 
 /**
- * La case des grumes : il n'y en a qu'une, et **c'est une réserve assumée**.
+ * La case des grumes : un prix **à la tonne**.
  *
- * Le patron a dit le 8 août que les grumes se détachent — il n'a pas dit à quoi
- * elles se chiffrent. Au mètre cube ? À la tonne ? Au voyage de camion ? Au
- * forfait par chantier ? Lui inventer un axe reviendrait à inventer une
- * décision qu'il n'a pas prise (`docs/AGENT.md` §3), et à lui présenter des
- * cases vides qui ne décrivent rien.
+ * **Sa réponse du 9 août 2026**, à la question laissée ouverte la veille — au
+ * mètre cube, à la tonne, au voyage de camion ? — : *« à la tonne »*. La
+ * réserve est levée, et la case dit maintenant ce qu'elle mesure.
  *
- * Une case unique retient donc ce qu'il facture réellement. Le jour où il donne
- * l'unité, une migration ajoute l'axe — c'est exactement ce qui s'est passé pour
- * la haie, restée à une case parce que son devis ne mentionnait pas de hauteur.
+ * **La clé a changé, et l'ancienne valeur n'a PAS été reprise.** Un prix saisi
+ * au forfait (« 300 € l'enlèvement ») n'est pas un prix à la tonne : le
+ * reconduire ferait facturer 300 € **par tonne** au chantier suivant, soit dix
+ * fois trop sur un gros arbre. La migration 0029 efface plutôt que de
+ * réinterpréter — même règle que la haie, apprise au mètre et jamais au montant
+ * de la ligne.
  */
-export const CELLULE_GRUMES = "forfait";
+export const CELLULE_GRUMES = "tonne";
 
 /**
  * La case du dessouchage : le diamètre, et rien d'autre.
@@ -289,9 +290,9 @@ export function cellulesDe(nature: NatureGrille): CelluleFendage[] {
     return [
       {
         cle: CELLULE_GRUMES,
-        hauteur: { cle: "forfait", de: 0, a: null, libelle: "au forfait" },
-        diametre: { cle: "forfait", de: 0, a: null, libelle: "toutes grumes" },
-        libelle: "Prix de l'enlèvement",
+        hauteur: { cle: "tonne", de: 0, a: null, libelle: "à la tonne" },
+        diametre: { cle: "tonne", de: 0, a: null, libelle: "toutes grumes" },
+        libelle: "Prix de la tonne",
       },
     ];
   }
