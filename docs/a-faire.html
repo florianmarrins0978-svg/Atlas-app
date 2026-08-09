@@ -75,6 +75,7 @@
 <li><a href="#4-constituer-une-société-et-sassurer">Constituer une société et s'assurer</a></li>
 <li><a href="#5-brancher-un-fournisseur-sms-et-e-mail--ne-bloque-plus">~~Brancher un fournisseur SMS et e-mail~~ — ne bloque plus</a></li>
 <li><a href="#6-choisir-loutil-qui-émet-les-factures">Choisir l'outil qui émet les factures</a></li>
+<li><a href="#7-créer-les-identifiants-google-pour-qui-veut-relier-son-agenda">Créer les identifiants Google, pour qui veut relier son agenda</a></li>
 </ol>
 <hr>
 <h2 id="1-choisir-les-fournisseurs-dia-définitifs">1. Choisir les fournisseurs d'IA définitifs</h2>
@@ -416,6 +417,53 @@
 <p><strong>Ce que je ne peux pas faire à votre place :</strong> ouvrir le compte et accepter les conditions. Cela engage juridiquement, comme pour l'hébergement au point 3.</p>
 <h3 id="ce-que-ça-ne-bloque-pas">Ce que ça ne bloque pas</h3>
 <p>Ni l'essai d'Atlas, ni sa finition. Le parcours entier — dictée, prix, devis, envoi, réponse du client, planification, fin de chantier, facture, relevé de TVA — s'éprouve dès aujourd'hui. Ce point bloque le fait de <strong>confier Atlas à un vrai artisan avec de vrais clients</strong>, comme les autres.</p>
+<hr>
+<h2 id="7-créer-les-identifiants-google-pour-qui-veut-relier-son-agenda">7. Créer les identifiants Google, pour qui veut relier son agenda</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Qui : le patron.</strong> Personne d'autre : cela se crée depuis un compte Google et engage l'acceptation de conditions.</p>
+<blockquote><strong>Demande du 9 août 2026 :</strong> <em>« ce qui serait bien, c'est que l'utilisateur puisse, s'il le souhaite ou non, connecter son planning à son agenda Google. »</em></blockquote>
+<h3 id="pourquoi-cest-bloquant">Pourquoi c'est bloquant</h3>
+<p>Aujourd'hui, Atlas déduit vos jours libres des <strong>seuls chantiers planifiés dans Atlas</strong> (<code>src/server/disponibilites.ts</code>). Il ne sait rien de ce qui existe ailleurs.</p>
+<p>La conséquence n'est pas théorique : un rendez-vous noté dans un agenda Google et pas dans Atlas est <strong>invisible</strong>. Atlas proposera ce jour-là au client, le client le choisira, et l'artisan découvrira le doublon le matin même. Le devis sera parti, la date acceptée, la promesse faite.</p>
+<p>C'est le seul endroit du parcours où Atlas peut engager l'artisan sur une information qu'il n'a pas. Partout ailleurs, il s'arrête et demande.</p>
+<h3 id="ce-quil-faut-et-ce-que-ça-coûte">Ce qu'il faut, et ce que ça coûte</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qu'il faut</th>
+<th>Où</th>
+<th>Coût</th>
+</tr></thead><tbody>
+<tr>
+<td>Un projet dans la console Google Cloud</td>
+<td>console.cloud.google.com</td>
+<td>Gratuit</td>
+</tr>
+<tr>
+<td>L'API Google Calendar activée dessus</td>
+<td>idem</td>
+<td>Gratuit</td>
+</tr>
+<tr>
+<td>Un identifiant OAuth (client ID + secret)</td>
+<td>idem</td>
+<td>Gratuit</td>
+</tr>
+<tr>
+<td>Un écran de consentement, et sa <strong>validation par Google</strong> si l'application sort du cercle des testeurs</td>
+<td>idem</td>
+<td>Gratuit, mais <strong>compter des semaines</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Le vrai coût n'est pas l'argent, c'est le délai de validation.</strong> Tant que l'application n'est pas validée, Google limite l'accès à une centaine de comptes de test inscrits à la main. Suffisant pour vous et vos premiers artisans ; bloquant le jour où Atlas se vend.</p>
+<p><strong>À vérifier auprès de Google, je ne peux pas le faire d'ici</strong> : le réseau de l'environnement de développement refuse les pages de Google. Ce qui est écrit ci-dessus vient de ce que je sais du fonctionnement de cette console, pas d'une page lue aujourd'hui — traitez-le comme une indication à confirmer, pas comme une source.</p>
+<h3 id="ce-que-votre-phrase-a-tranché-et-qui-ne-se-rediscutera-pas">Ce que votre phrase a tranché, et qui ne se rediscutera pas</h3>
+<p><strong>La connexion est un choix, par artisan, jamais un réglage de l'application.</strong> Chacun relie son agenda ou ne le relie pas ; celui qui ne veut rien relier garde exactement l'Atlas d'aujourd'hui, sans écran en plus ni compte à créer.</p>
+<p>Ce n'est pas un détail de confort. Un agenda personnel contient les rendez-vous médicaux, les vacances, la vie privée de la famille. <strong>Atlas n'a besoin que des créneaux occupés</strong> — jamais des intitulés, jamais des participants. La même règle qu'à la page du client, qui reçoit des dates et rien d'autre (<code>docs/AGENT.md</code> §2.2 bis).</p>
+<h3 id="ce-que-je-peux-faire-et-ce-que-je-ne-peux-pas">Ce que je peux faire, et ce que je ne peux pas</h3>
+<p><strong>Moi, une fois les identifiants créés :</strong> tout le reste. Le bouton « Relier mon agenda » dans les réglages, le raccordement du compte, la lecture des créneaux occupés, leur fusion avec les chantiers Atlas <strong>dans la même fonction de disponibilité</strong> — jamais un second calcul à côté, sinon les deux divergent et plus personne ne sait lequel croit quoi — et l'écriture de l'intervention une fois le client d'accord.</p>
+<p><strong>Moi, avant :</strong> je peux écrire le lot entier derrière un interrupteur fermé, comme c'est déjà fait pour l'éditeur (<code>ATLAS_EDITEUR_EMAIL</code>). Il s'allumerait le jour où vous posez les identifiants. <strong>Mais je ne pourrais pas l'éprouver</strong> : sans compte Google raccordé, aucun contrôle ne parcourt ce que vous parcourriez, et c'est exactement ce que le dépôt s'interdit de livrer en le disant vert (<code>AGENTS.md</code>). À vous de dire si vous voulez du code écrit mais non éprouvé.</p>
+<p><strong>Ce que je ne peux pas faire à votre place :</strong> créer le projet Google et accepter ses conditions. Comme l'hébergement au point 3 et l'outil de facturation au point 6, cela vous engage.</p>
+<h3 id="ce-que-ça-ne-bloque-pas">Ce que ça ne bloque pas</h3>
+<p>Ni l'essai d'Atlas, ni sa finition. Un artisan qui tient son planning <strong>dans Atlas seulement</strong> n'a aucun doublon possible, et c'est le cas aujourd'hui. Ce point bloque le jour où un artisan tient son agenda ailleurs — c'est-à-dire à peu près tout le monde.</p>
 </main>
 </body>
 </html>
