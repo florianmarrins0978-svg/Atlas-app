@@ -90,67 +90,6 @@ if [ "$ETAT_IA" = "neutralise" ]; then
   unset LLM_PROVIDER TRANSCRIPTION_PROVIDER
 fi
 
-# Récupérer le code neuf, à chaque allumage. La logique — et ses prudences —
-# vit dans `mettre-a-jour.sh`, qui est éprouvé par
-# `scripts/test-mise-a-jour-espace.ts` : enfouie ici, elle n'aurait jamais été
-# vue échouer.
-MISE_A_JOUR="$(bash "$(dirname "$0")/mettre-a-jour.sh" "$CD")"
-
-# Les dépendances et la base doivent suivre le code, sinon la mise à jour
-# produit une panne au lieu d'un correctif : un écran qui plante sur une colonne
-# absente est pire que l'ancienne version.
-if [ "$MISE_A_JOUR" = "faite" ]; then
-  npm ci --silent >> "$JOURNAL" 2>&1 || npm install --silent >> "$JOURNAL" 2>&1 || true
-
-  # **Les migrations passent par leur propre script, sous le rôle
-  # PROPRIÉTAIRE.** Lancées ici avec la variable ambiante, elles tournaient sous
-  # `atlas_app` — qui n'a aucun droit de créer une table — et le `|| true`
-  # avalait l'échec. Le code neuf arrivait sur une base vieille, et l'écran qui
-  # touchait une table absente tombait sans que rien ne l'ait annoncé.
-  MIGRATIONS="$(bash "$(dirname "$0")/appliquer-migrations.sh" "$CD")"
-  echo "migrations : $MIGRATIONS" >> "$JOURNAL"
-
-  # **Rejouer ce script dans sa version neuve.**
-  #
-  # Sans cela, un démarrage qui récupère du code neuf continue d'exécuter
-  # l'ANCIEN script : le correctif n'entre en vigueur qu'au démarrage suivant.
-  # Le patron aurait dû redémarrer deux fois pour voir un changement livré une
-  # fois — et n'aurait eu aucun moyen de le deviner. C'est la même famille de
-  # défaut que « l'espace ne se met pas à jour tout seul » (`ARCHITECTURE.md`
-  # §24), déplacée d'un cran.
-  #
-  # Le garde-fou n'est pas optionnel : sans lui, un script qui se relance
-  # pourrait le faire sans fin. Au second passage la mise à jour répond « à
-  # jour », mais on ne s'en remet pas à cela — on s'en remet à la variable.
-  if [ "${ATLAS_DEMARRAGE_RELANCE:-}" != "1" ]; then
-    export ATLAS_DEMARRAGE_RELANCE=1
-    # **Ce que le premier passage a constaté doit survivre à l'`exec`.** Voir
-    # juste en dessous : sans ces deux variables, l'avertissement le plus
-    # important du démarrage se perdait à chaque vraie mise à jour.
-    export ATLAS_MISE_A_JOUR="$MISE_A_JOUR"
-    export ATLAS_MIGRATIONS="$MIGRATIONS"
-    exec bash "$0" "$@"
-  fi
-fi
-
-# **L'`exec` effaçait ce qu'il fallait justement dire, et c'est un défaut trouvé
-# en jouant ce script pour de bon, le 9 août 2026.**
-#
-# Le second passage recalcule tout : la mise à jour répond alors « à jour » — le
-# code vient d'être tiré — et `MIGRATIONS` n'existe même plus, puisque le bloc
-# ci-dessus est sauté. Conséquences, toutes les deux invisibles :
-#
-#   1. après une vraie mise à jour, le démarrage affichait « Déjà à jour. » —
-#      exactement le contraire de ce qui venait de se passer, sur un banc dont
-#      l'historique est fait de « je réessaie une version d'avant sans le
-#      savoir » (`ARCHITECTURE.md` §24) ;
-#   2. **l'avertissement « LA BASE N'A PAS SUIVI LE CODE » ne pouvait PLUS
-#      JAMAIS s'afficher.** Il ne se déclenche qu'après une mise à jour — et
-#      c'est précisément le cas où l'`exec` effaçait la variable. Le correctif
-#      du matin même était donc mort-né, sans qu'aucun contrôle ne le voie.
-MISE_A_JOUR="${ATLAS_MISE_A_JOUR:-$MISE_A_JOUR}"
-MIGRATIONS="${ATLAS_MIGRATIONS:-${MIGRATIONS:-}}"
-
 # **Le banc sert une version BÂTIE, et il faut le DÉCLARER.**
 #
 # `next start` impose `NODE_ENV=production` : sans ce profil, la configuration
@@ -169,16 +108,76 @@ export ATLAS_PROFIL=banc
 ATLAS_VERSION="$(git log -1 --date=format:'%d/%m/%Y %H:%M' --format='%cd · %h' 2>/dev/null || echo 'inconnue')"
 export ATLAS_VERSION
 
-# `setsid` détache le veilleur du processus de démarrage : sans cela, l'éditeur
-# le tue en même temps que la commande de démarrage, et l'adresse ne répond
-# jamais.
+# Pose le veilleur, qui monte le serveur et le relève s'il tombe.
+# `setsid` le détache du processus de démarrage : sans cela, l'éditeur le tue en
+# même temps que la commande de démarrage, et l'adresse ne répond jamais.
+# Le veilleur refuse lui-même de se dédoubler (verrou), donc appeler deux fois
+# est sans conséquence.
+lancer_veilleur() {
+  setsid nohup bash "$(dirname "$0")/veiller.sh" "$CD" > /dev/null 2>&1 < /dev/null &
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# **LE SERVEUR D'ABORD, LA MISE À JOUR ENSUITE — et c'est le correctif du
+# 9 août 2026, au soir.**
 #
-# **Un veilleur plutôt qu'un serveur, depuis le 9 août 2026.** Le serveur était
-# lancé ici une fois, et une seule. Quand il mourait — et il est mort —, plus
-# rien ne le relevait : le patron a lu « HTTP ERROR 404 », qui sur cette adresse
-# veut dire « plus rien n'écoute », et il n'avait aucun moyen de le savoir.
-# `veiller.sh` regarde toutes les quinze secondes et relance ce qu'il faut.
-setsid nohup bash "$(dirname "$0")/veiller.sh" "$CD" > /dev/null 2>&1 < /dev/null &
+# Ce que le patron a vécu : son journal s'arrêtait net sur `migrations : faites`,
+# et plus rien. `curl localhost:3000` ne répondait pas. L'application n'était pas
+# lente, pas cassée : **elle n'avait jamais été lancée.** Il a passé la soirée
+# devant des pages blanches, des 502 et des 404 en croyant à des pannes
+# d'application.
+#
+# La cause est dans l'ordre des opérations. Ce script faisait, dans cet ordre :
+# mise à jour, `npm ci`, migrations, **puis seulement** le lancement. Or il est
+# joué par `postStartCommand`, que l'environnement peut interrompre — un délai
+# dépassé pendant un `npm ci` de plusieurs minutes suffit. Tout ce qui vient
+# après meurt avec lui, **et le lancement venait en dernier.**
+#
+# Désormais le veilleur est posé **en premier**, avant toute opération longue. Il
+# monte le serveur avec le code présent sur le disque — celui d'hier, s'il le
+# faut. Si la mise à jour aboutit ensuite, on remplace veilleur et serveur par
+# leurs versions neuves. Quoi qu'il arrive après cette ligne, **le patron a une
+# application qui répond.**
+#
+# Ce que cela remplace : l'`exec bash "$0"` qui rejouait ce script dans sa
+# version neuve (`ARCHITECTURE.md` §24). Il n'existe plus, et c'est délibéré —
+# c'était l'endroit précis où le démarrage mourait. Ce qui compte vraiment est
+# relu depuis le disque au redémarrage du veilleur : `veiller.sh`, `banc.mjs`,
+# et l'application elle-même. Seule la fin de CE fichier reste, pour un
+# allumage, dans sa version d'avant — un bandeau, contre une application qui
+# démarre.
+lancer_veilleur
+
+# Récupérer le code neuf, à chaque allumage. La logique — et ses prudences —
+# vit dans `mettre-a-jour.sh`, qui est éprouvé par
+# `scripts/test-mise-a-jour-espace.ts` : enfouie ici, elle n'aurait jamais été
+# vue échouer.
+MISE_A_JOUR="$(bash "$(dirname "$0")/mettre-a-jour.sh" "$CD")"
+MIGRATIONS=""
+
+# Les dépendances et la base doivent suivre le code, sinon la mise à jour
+# produit une panne au lieu d'un correctif : un écran qui plante sur une colonne
+# absente est pire que l'ancienne version.
+if [ "$MISE_A_JOUR" = "faite" ]; then
+  npm ci --silent >> "$JOURNAL" 2>&1 || npm install --silent >> "$JOURNAL" 2>&1 || true
+
+  # **Les migrations passent par leur propre script, sous le rôle
+  # PROPRIÉTAIRE.** Lancées ici avec la variable ambiante, elles tournaient sous
+  # `atlas_app` — qui n'a aucun droit de créer une table — et le `|| true`
+  # avalait l'échec. Le code neuf arrivait sur une base vieille, et l'écran qui
+  # touchait une table absente tombait sans que rien ne l'ait annoncé.
+  MIGRATIONS="$(bash "$(dirname "$0")/appliquer-migrations.sh" "$CD")"
+  echo "migrations : $MIGRATIONS" >> "$JOURNAL"
+
+  # Le code a changé sous le serveur qui tourne : on remplace le veilleur ET le
+  # serveur par leurs versions neuves. C'est ce qui rend l'`exec` inutile.
+  echo "$(date '+%d/%m %H:%M:%S') — code neuf : on remplace veilleur et serveur" >> "$JOURNAL"
+  pkill -f "[v]eiller.sh" 2>/dev/null || true
+  rm -f /tmp/atlas-veilleur.pid
+  pkill -f "[n]ext(-server| dev| start)" 2>/dev/null || true
+  sleep 1
+  lancer_veilleur
+fi
 
 # L'adresse exacte, écrite par la machine plutôt que devinée par le patron.
 #

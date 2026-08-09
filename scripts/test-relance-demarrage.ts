@@ -131,14 +131,56 @@ cas("déjà à jour : un seul passage, aucune relance inutile", () => {
   }
 });
 
-console.log("\n=== Le vrai script porte bien ce motif ===");
+console.log("\n=== Ce que le vrai script fait DÉSORMAIS, et pourquoi ===");
 
-cas("demarrer.sh se relance après une mise à jour, sous garde-fou", () => {
-  // Sans ce contrôle, le harnais ci-dessus pourrait rester vert pendant que le
-  // vrai script perd sa relance — l'éprouvé et l'exécuté auraient divergé.
-  const reel = readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8");
-  assert.match(reel, /ATLAS_DEMARRAGE_RELANCE/, "Le garde-fou anti-boucle a disparu de demarrer.sh.");
-  assert.match(reel, /exec bash "\$0"/, "La relance a disparu de demarrer.sh.");
+// **Le mécanisme a changé le 9 août 2026 au soir, et le harnais ci-dessus
+// documente celui d'avant.** `demarrer.sh` se rejouait dans sa version neuve
+// par `exec bash "$0"`. C'est exactement là que le démarrage du patron mourait :
+// le script est joué par `postStartCommand`, que l'environnement peut
+// interrompre, et TOUT ce qui venait après — y compris le lancement du
+// serveur — disparaissait avec lui. Son journal s'arrêtait sur
+// « migrations : faites », et rien n'écoutait sur le port 3000.
+//
+// Le lancement est donc passé EN PREMIER, et l'`exec` a disparu. Ce qui compte
+// est relu depuis le disque quand le veilleur est relancé : `veiller.sh`,
+// `banc.mjs`, l'application. Seule la fin de `demarrer.sh` reste, pour un
+// allumage, dans sa version d'avant — un bandeau, contre une application qui
+// démarre.
+
+cas("le serveur est lancé AVANT toute opération longue", () => {
+  const lignes = readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8")
+    .split("\n")
+    .map((texte, numero) => ({ numero, texte: texte.trim() }))
+    .filter((l) => !l.texte.startsWith("#"));
+  const ou = (motif: RegExp) => lignes.find((l) => motif.test(l.texte))?.numero ?? -1;
+
+  const iLancement = ou(/^lancer_veilleur$/);
+  const iMiseAJour = ou(/mettre-a-jour\.sh/);
+  assert.ok(iLancement >= 0, "plus rien ne lance le veilleur : le banc ne démarrera pas seul");
+  assert.ok(iMiseAJour >= 0, "la mise à jour a disparu du démarrage");
+  assert.ok(
+    iLancement < iMiseAJour,
+    "le serveur est lancé APRÈS la mise à jour : une interruption pendant `npm ci` " +
+      "laisse le patron sans application, exactement comme le 9 août au soir"
+  );
+});
+
+cas("l'`exec` qui tuait le démarrage a bien disparu", () => {
+  const lignes = readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8")
+    .split("\n")
+    .filter((l) => !l.trim().startsWith("#"))
+    .filter((l) => /exec bash "\$0"/.test(l));
+  assert.deepEqual(lignes, [], `la relance est revenue : ${lignes.join(" | ")}`);
+});
+
+cas("après une mise à jour, veilleur ET serveur sont remplacés", () => {
+  // C'est ce qui remplace l'`exec` : sans cela, le code neuf arriverait sur le
+  // disque pendant qu'un serveur d'hier continue de le servir.
+  const source = readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8");
+  const apresMigration = source.slice(source.indexOf("appliquer-migrations.sh"));
+  assert.match(apresMigration, /pkill -f "\[v\]eiller\.sh"/, "l'ancien veilleur survivrait à la mise à jour");
+  assert.match(apresMigration, /atlas-veilleur\.pid/, "le verrou du veilleur empêcherait la relance");
+  assert.match(apresMigration, /lancer_veilleur/, "rien ne relance le veilleur après la mise à jour");
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Relance au démarrage — ${echecs} échec(s).`);
