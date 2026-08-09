@@ -2,6 +2,12 @@ import { randomBytes, createHash } from "node:crypto";
 import { and, asc, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { db, type DbOrTx } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
+import { fusionnerOccupationExterne, type PeriodeOccupee } from "../../lib/agenda-externe";
+import {
+  periodesOccupeesExterieures,
+  periodesOccupeesPourEntreprise,
+} from "./agendas-externes";
+import { configurationGoogle } from "../agenda/google";
 import { chantiers, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
 import type { Ctx } from "./context";
 import { lireObjet } from "../storage";
@@ -89,7 +95,16 @@ async function contrainteDuPlanning(
   tx: DbOrTx,
   entrepriseId: string,
   fenetre: FenetreProposition,
-  exclureChantierId?: string
+  exclureChantierId?: string,
+  /**
+   * Les rendez-vous de l'agenda extérieur, s'il y en a un.
+   *
+   * Passés de l'extérieur, jamais lus ici : cette fonction tourne DANS une
+   * transaction, et un appel HTTP à Google en tiendrait une ouverte pendant
+   * toute la durée d'un service qu'on ne maîtrise pas. L'appelant les lit
+   * avant d'ouvrir la sienne.
+   */
+  periodesExterieures: readonly PeriodeOccupee[] = []
 ): Promise<{ occupation: Map<string, number>; nombreEquipes: number }> {
   const lignes = await tx
     .select({
@@ -122,7 +137,20 @@ async function contrainteDuPlanning(
     .where(eq(entreprises.id, entrepriseId))
     .limit(1);
 
-  return { occupation: compterOccupation(planifies), nombreEquipes: entreprise?.nombreEquipes ?? 1 };
+  const nombreEquipes = entreprise?.nombreEquipes ?? 1;
+
+  // **Une seule carte d'occupation, jamais deux.** Les trois chemins qui
+  // passent ici — l'écran d'envoi, la création de l'envoi, la revérification
+  // de la réponse du client — voient donc exactement la même chose, agenda
+  // extérieur compris. Sans agenda relié, la liste est vide et rien ne change.
+  return {
+    occupation: fusionnerOccupationExterne(
+      compterOccupation(planifies),
+      periodesExterieures,
+      nombreEquipes
+    ),
+    nombreEquipes,
+  };
 }
 
 export type CreationEnvoi = {
@@ -169,18 +197,25 @@ export async function creerEnvoi(
   const horizon = fenetrePatron(maintenant);
   const fenetreClient = fenetrePourDates(maintenant, creation.datesProposees);
 
+  // L'occupation se lit sur l'union des deux : une date à six mois doit être
+  // vérifiable, et les jours occupés montrés au client doivent l'être aussi.
+  const fenetreOccupation = {
+    debut: horizon.debut < fenetreClient.debut ? horizon.debut : fenetreClient.debut,
+    fin: horizon.fin > fenetreClient.fin ? horizon.fin : fenetreClient.fin,
+  };
+  const periodesExterieures = await periodesOccupeesExterieures(
+    ctx,
+    new Date(`${fenetreOccupation.debut}T00:00:00Z`),
+    new Date(`${fenetreOccupation.fin}T23:59:59Z`)
+  );
+
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    // L'occupation se lit sur l'union des deux : une date à six mois doit être
-    // vérifiable, et les jours occupés montrés au client doivent l'être aussi.
-    const fenetreOccupation = {
-      debut: horizon.debut < fenetreClient.debut ? horizon.debut : fenetreClient.debut,
-      fin: horizon.fin > fenetreClient.fin ? horizon.fin : fenetreClient.fin,
-    };
     const { occupation, nombreEquipes } = await contrainteDuPlanning(
       tx,
       ctx.entrepriseId,
       fenetreOccupation,
-      creation.chantierId
+      creation.chantierId,
+      periodesExterieures
     );
 
     // La durée que ce chantier réservera. Le patron a pu la corriger à l'écran ;
@@ -277,6 +312,62 @@ export type EnvoiPourClient = {
   };
 };
 
+
+/**
+ * De quoi consulter l'agenda extérieur AVANT d'ouvrir la transaction du client.
+ *
+ * **Pourquoi un aller-retour de plus.** Les deux chemins publics — lire le lien,
+ * enregistrer la réponse — dérivent l'entreprise du jeton, et cette dérivation
+ * se fait forcément en base. Mais l'appel à Google ne doit pas se faire dans la
+ * transaction qui suit : elle immobiliserait une connexion du pool pendant la
+ * durée d'un service extérieur, et une lenteur de Google deviendrait une panne
+ * d'Atlas.
+ *
+ * On paie donc une requête minuscule pour libérer la connexion pendant l'appel.
+ *
+ * **L'entreprise vient du jeton, jamais d'une donnée envoyée par le client** —
+ * c'est la même règle qu'ailleurs sur ces chemins, et elle est ce qui empêche
+ * quelqu'un de faire consulter l'agenda d'une autre entreprise en changeant un
+ * paramètre.
+ */
+async function agendaDuJeton(jeton: string): Promise<PeriodeOccupee[]> {
+  // **Sortir AVANT la requête quand il n'y a rien à consulter.**
+  //
+  // Sans cette ligne, chaque ouverture de lien client payait un aller-retour en
+  // base pour finir par constater qu'aucun agenda n'est configuré. Sur une
+  // installation qui n'en a pas — c'est-à-dire toutes, aujourd'hui — c'est une
+  // transaction gratuite sur le chemin le plus public de l'application.
+  //
+  // Trouvé parce qu'une suite navigateur a expiré sur un serveur de
+  // développement chargé : le coût était réel, pas théorique.
+  if (!configurationGoogle()) return [];
+
+  const repere = await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.jeton_envoi', ${jeton}, true)`);
+    const [e] = await tx
+      .select({
+        entrepriseId: envoisDevis.entrepriseId,
+        envoyeAt: envoisDevis.envoyeAt,
+        datesProposees: envoisDevis.datesProposees,
+      })
+      .from(envoisDevis)
+      .where(eq(envoisDevis.jeton, jeton))
+      .limit(1);
+    return e ?? null;
+  });
+  if (!repere) return [];
+
+  // La même fenêtre que celle du calcul qui suit — ancrée au jour de l'envoi,
+  // pas à aujourd'hui. Interroger Google sur une autre fenêtre rendrait des
+  // rendez-vous hors sujet, ou en oublierait.
+  const fenetre = fenetrePourDates(repere.envoyeAt, repere.datesProposees);
+  return periodesOccupeesPourEntreprise(
+    repere.entrepriseId,
+    new Date(`${fenetre.debut}T00:00:00Z`),
+    new Date(`${fenetre.fin}T23:59:59Z`)
+  );
+}
+
 /**
  * Lecture par jeton, pour la page publique.
  *
@@ -290,6 +381,8 @@ export async function lireParJeton(
   maintenant: Date = new Date()
 ): Promise<EnvoiPourClient | null> {
   if (!jeton) return null;
+
+  const periodesExterieures = await agendaDuJeton(jeton);
 
   return db.transaction(async (tx) => {
     await tx.execute(sql`SELECT set_config('app.jeton_envoi', ${jeton}, true)`);
@@ -330,7 +423,8 @@ export async function lireParJeton(
       tx,
       envoi.entrepriseId,
       fenetre,
-      envoi.chantierId
+      envoi.chantierId,
+      periodesExterieures
     );
     const [chantierRow] = await tx
       .select({ duree: chantiers.dureeDemiJournees, dureePrevue: chantiers.dureePrevue })
@@ -524,6 +618,12 @@ export async function enregistrerReponse(
 ): Promise<ResultatReponse> {
   if (!jeton) return { succes: false, motif: "introuvable" };
 
+  // Lu avant la transaction, comme à la lecture du lien : c'est la
+  // revérification qui fait foi, et elle doit voir le même agenda que l'écran
+  // qui a montré les jours au client. Deux vues différentes rendraient
+  // « indisponible » un jour affiché libre trente secondes plus tôt.
+  const periodesExterieures = await agendaDuJeton(jeton);
+
   return db.transaction(async (tx) => {
     await tx.execute(sql`SELECT set_config('app.jeton_envoi', ${jeton}, true)`);
 
@@ -580,7 +680,8 @@ export async function enregistrerReponse(
       tx,
       envoi.entrepriseId,
       fenetre,
-      envoi.chantierId
+      envoi.chantierId,
+      periodesExterieures
     );
 
     const [chantierRow] = await tx

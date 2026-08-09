@@ -2026,3 +2026,114 @@ disant ce qu'il écarte**.
 |---|---|
 | Les trois en-têtes tiennent dans le budget, à la coupe près | `scripts/test-consigne-metier.ts` |
 | Le contrôle sait échouer | Vérifié en remettant la déduction après coup : deux cas rouges |
+
+---
+
+## 39. L'agenda extérieur : le seul endroit où Atlas pouvait promettre à vide
+
+**Le patron, le 9 août 2026 :** *« ce qui serait bien, c'est que l'utilisateur
+puisse, s'il le souhaite ou non, connecter son planning à son agenda Google. »*
+
+### Le défaut, et pourquoi il était d'une autre nature que les autres
+
+Atlas déduisait les jours libres des **seuls chantiers qu'il connaissait**. Un
+rendez-vous noté ailleurs était invisible : Atlas proposait ce jour-là, le
+client le choisissait, et l'artisan découvrait le doublon le matin même — devis
+parti, date acceptée, promesse faite.
+
+Partout ailleurs dans le parcours, quand Atlas ne sait pas, **il s'arrête et
+demande** (`docs/AGENT.md` §3). Ici, il ne savait pas qu'il ne savait pas. C'est
+le seul point où il engageait l'artisan sur une information qu'il n'avait pas.
+
+### Ce que sa phrase a tranché, et qui commande toute la conception
+
+| Sa décision | Ce qu'elle impose dans le code |
+|---|---|
+| *« s'il le souhaite ou non »* | Une **table par entreprise** (`agendas_externes`), pas une variable d'environnement — qui vaudrait pour tout le monde et supprimerait le « ou non » |
+| Le raccordement appartient à l'artisan | Le jeton vit en base sous RLS, comme toute donnée d'entreprise |
+| Rien n'est imposé | Sans ligne, **aucun appel réseau, aucun changement** — l'Atlas d'avant, à l'octet près |
+
+### Une seule carte d'occupation, et trois portes qui la lisent
+
+Les rendez-vous se fondent dans la **même** `Map` que les chantiers, via
+`fusionnerOccupationExterne`. Tout ce qui décide ensuite — jours suggérés, jours
+barrés sur son calendrier, revérification de la réponse du client — la lit sans
+savoir d'où vient l'occupation.
+
+Ce n'est pas de l'élégance : un second calcul posé à côté finit toujours par
+diverger, et c'est exactement ce dédoublement qui avait rangé un chantier dans
+deux onglets à la fois (§33).
+
+**Le client aussi passe par là**, et il le fallait : c'est lui qui retient la
+date. Ne consulter l'agenda que du côté du patron laissait le trou ouvert par
+l'autre bout. Les deux chemins publics — lire le lien, enregistrer la réponse —
+dérivent l'entreprise **du jeton**, jamais d'une donnée envoyée par le client.
+
+### Trois choix qui se discutent, et qui sont donc écrits
+
+**1. Le moindre chevauchement condamne la demi-journée.** Un rendez-vous de
+trente minutes à 10 h ne laisse pas une matinée exploitable à un élagueur —
+charger, rouler, grimper. Le risque n'est pas symétrique : bloquer un peu trop
+coûte un créneau proposé en moins ; ne pas bloquer assez coûte une promesse.
+
+**2. Un rendez-vous SATURE le créneau**, là où un chantier n'y consomme qu'une
+équipe. Le nombre d'équipes dit combien de chantiers tournent en parallèle, pas
+combien de fois l'artisan peut être à deux endroits. Atlas ne sait pas si une
+équipe part sans lui, et le supposer reprendrait le pari qu'on supprime.
+
+**3. Hors 8 h – 18 h, rien n'est bloqué.** Un dîner à 20 h ne coûte pas une
+journée : Atlas ne planifie pas de chantier à ces heures-là.
+
+### Ce qui n'est jamais demandé, ni stocké, ni exporté
+
+| | Décision |
+|---|---|
+| **Portée Google** | `calendar.freebusy` seule — elle ne rend que des intervalles. `calendar.readonly` aurait été plus simple et aurait donné à Atlas le contenu de tous les rendez-vous. Une permission qu'on ne demande pas est une fuite qui ne peut pas arriver |
+| **En base** | Aucun événement, aucun intitulé, aucune heure. Atlas interroge et ne garde rien |
+| **Les jetons** | Chiffrés en AES-256-GCM avant écriture. La RLS protège d'un autre artisan, pas d'une sauvegarde recopiée — et un jeton de rafraîchissement n'est pas une donnée, il **ouvre un compte**, durablement |
+| **L'export téléchargeable** | Les colonnes de jetons ne sont **pas sélectionnées** — pas filtrées après coup. Ce fichier s'envoie par courriel |
+
+Ce que le chiffrement ne fait **pas** : la clé se dérive d'`AUTH_SECRET`. Qui
+obtient la base *et* la configuration lit tout. Ce n'est pas un coffre-fort,
+c'est une protection contre le cas courant où **seule la base** fuit.
+
+### La panne se voit, elle ne se tait pas
+
+Une lecture qui échoue — accès révoqué, quota, réseau — n'interrompt jamais le
+parcours : Atlas revient à son comportement d'avant. **Mais l'échec s'écrit**
+(`derniere_erreur`) et l'écran l'affiche. Un raccordement mort en silence est
+pire que pas de raccordement : l'artisan se croit protégé du doublon et ne
+l'est plus.
+
+### Ce que ce lot a coûté d'apprendre
+
+**Un module `"use server"` ne peut exporter QUE des fonctions asynchrones.** Y
+avoir ajouté la constante du témoin anti-rejeu n'a pas produit une erreur sur
+elle seule : le module a perdu **tous** ses exports, et l'écran est tombé sur
+« The module has no exports at all ». Ni `tsc` ni le lint ne l'ont vu — les deux
+étaient verts. Seule la suite navigateur l'a attrapé, en ouvrant vraiment la
+page. La constante vit désormais dans `temoin.ts`.
+
+**Et le titre de l'écran mentait.** La capture montrait « Atlas tient compte de
+votre agenda » avec, trois lignes dessous, « Atlas n'arrive plus à lire votre
+agenda » : le cas de panne était traité *après* le cas nominal, donc jamais
+atteint. Aucun test ne pouvait le voir — la phrase vivait dans le JSX. Elle est
+maintenant `titreEtatAgenda()`, une fonction pure, et **l'ordre des cas est la
+règle** : panne, puis pause, puis nominal.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| Quelles demi-journées un rendez-vous occupe, fuseau et heure d'hiver compris | `scripts/test-agenda-externe.ts` |
+| La fusion : bloque, ne double-compte pas, n'écrase pas le planning, ne mute rien | idem |
+| Le titre de l'écran ne ment pas sur l'état réel | idem |
+| Isolation entre artisans, jetons jamais en clair, export sans jetons | `scripts/test-agenda-externe-rls.ts` |
+| La lecture d'une réponse `freeBusy`, et la portée minimale | `scripts/test-agenda-google-lecture.ts` |
+| L'écran se trouve, dit le risque, et ne propose rien qui mène à une erreur | `scripts/test-agenda-reglages-e2e.ts` |
+
+**Ce qui n'est PAS éprouvé, et doit être dit :** l'aller-retour réel avec Google
+— autorisation, échange du code, renouvellement du jeton. Cet environnement n'a
+pas de compte Google et son mandataire refuse ses adresses. Cela se vérifiera
+sur la machine du patron, le jour où il aura créé les identifiants
+(`docs/A-FAIRE.md` §7). Tout ce qui *décide* de quelque chose a été sorti de ce
+chemin-là exprès, pour que la part non vérifiable se réduise à trois appels HTTP
+et à la lecture de leurs réponses.

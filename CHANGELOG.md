@@ -9,6 +9,49 @@ Format : le plus récent en tête.
 
 ## 2026-08-09
 
+### Relier son agenda Google, ou non — au choix de chaque artisan
+
+*« Ce qui serait bien, c'est que l'utilisateur puisse, s'il le souhaite ou non,
+connecter son planning à son agenda Google. »*
+
+Jusqu'ici, Atlas ne connaissait que les chantiers qu'on lui avait dits. Un
+rendez-vous noté ailleurs était **invisible** : il proposait ce jour-là, le
+client le choisissait, et le doublon se découvrait le matin même — devis parti,
+date acceptée, promesse faite. C'était le seul endroit du parcours où Atlas
+engageait quelqu'un sur une information qu'il n'avait pas ; partout ailleurs,
+quand il ne sait pas, il s'arrête et demande.
+
+Un écran « Mon agenda » apparaît dans les réglages. **Celui qui ne relie rien
+garde exactement l'Atlas d'avant** : pas de compte à créer, pas d'appel réseau,
+rien qui change. C'est la moitié de la demande, et c'est la moitié qui se
+respecte dans le code plutôt que dans une intention.
+
+Ce qu'Atlas lit, quand un agenda est relié : **les créneaux occupés, et rien
+d'autre**. Jamais le titre d'un rendez-vous, jamais les participants — la
+permission demandée à Google ne le permet même pas, ce qui vaut mieux qu'une
+promesse. Rien n'est stocké non plus : Atlas interroge au moment où il en a
+besoin. Les jetons, eux, sont chiffrés en base et ne partent pas dans l'export
+téléchargeable.
+
+Et **la panne se voit**. Si la lecture cesse de fonctionner — accès révoqué,
+quota —, Atlas revient à son comportement d'avant sans interrompre le parcours,
+mais l'écran le dit. Un raccordement mort en silence est pire que pas de
+raccordement : on se croit protégé du doublon et on ne l'est plus.
+
+**Il manque une chose, et elle ne dépend pas de moi** : les identifiants Google
+de l'application, qui se créent depuis un compte Google et engagent
+l'acceptation de conditions. Tant qu'ils n'existent pas, l'écran l'annonce et ne
+propose aucun bouton qui mènerait à une erreur (`docs/A-FAIRE.md` §7).
+
+**Deux défauts trouvés en regardant l'écran, pas en lisant un test vert.** Un
+module de Server Actions ne peut exporter que des fonctions : y avoir ajouté une
+constante a fait perdre au fichier *tous* ses exports, types et lint verts. Et
+le titre de l'écran annonçait « Atlas tient compte de votre agenda » trois
+lignes au-dessus de « Atlas n'arrive plus à lire votre agenda » — le cas de
+panne était traité après le cas nominal. Le titre est désormais une fonction
+pure, et l'ordre des cas est tenu par un contrôle.
+
+
 ### Un vrai devis dément une définition écrite la veille — et le budget se mesure
 
 Deux documents de plus du même confrère, une facture de débroussaillage et un

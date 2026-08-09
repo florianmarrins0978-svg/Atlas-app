@@ -20,6 +20,35 @@ Next.js avec PostgreSQL, isolée par entreprise via *row level security*.
 
 ## Ce qui vient d'être terminé
 
+**L'agenda extérieur, au choix de l'artisan (9 août).** Atlas peut tenir compte
+d'un agenda Google, si l'artisan le relie. **Avant ce lot, un rendez-vous noté
+ailleurs était invisible** : Atlas proposait ce jour-là et le client le
+choisissait.
+
+**Trois choses à savoir avant d'y toucher :**
+
+1. **Une seule carte d'occupation.** Les rendez-vous se fondent dans la même
+   `Map` que les chantiers (`fusionnerOccupationExterne`), et les quatre chemins
+   qui décident ensuite la lisent sans savoir d'où vient l'occupation. **Ne
+   jamais ajouter un second calcul à côté** — c'est ce dédoublement qui avait
+   rangé un chantier dans deux onglets à la fois. `ARCHITECTURE.md` §39.
+2. **Le client passe par là aussi**, parce que c'est lui qui retient la date.
+   Ses deux chemins publics dérivent l'entreprise du **jeton**, et lisent
+   l'agenda AVANT d'ouvrir leur transaction — un appel HTTP dans une transaction
+   immobiliserait une connexion du pool pendant une panne de Google.
+3. **Ce qui n'est pas éprouvé, et pourquoi.** L'aller-retour réel avec Google —
+   autorisation, échange du code, renouvellement — n'a pas pu l'être : pas de
+   compte ici, et le mandataire refuse Google. Tout ce qui décide a été sorti de
+   ce chemin exprès ; il ne reste que trois appels HTTP. Cela se vérifiera chez
+   le patron, avec ses identifiants (`docs/A-FAIRE.md` §7).
+
+**Deux pièges rencontrés, à ne pas repayer.** Un module `"use server"` ne peut
+exporter QUE des fonctions asynchrones : une constante y fait perdre **tous** les
+exports du fichier, types et lint verts, écran mort. Et le titre de l'écran
+mentait — cas de panne traité après le cas nominal ; la phrase vit maintenant
+dans `titreEtatAgenda()`, une fonction pure, avec son contrôle.
+
+
 **Le vocabulaire d'un vrai devis d'élagueur (9 août).** Huit règles de rédaction
 et dix-neuf mots du métier, tirés de six documents d'un confrère —
 `termes_metier` en compte vingt-sept.

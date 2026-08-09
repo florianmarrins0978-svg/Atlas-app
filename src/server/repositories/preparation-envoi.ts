@@ -1,5 +1,7 @@
 import { and, eq, gte, isNull, lte } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
+import { fusionnerOccupationExterne } from "../../lib/agenda-externe";
+import { periodesOccupeesExterieures } from "./agendas-externes";
 import { chantiers, clients, devis, entreprises } from "../db/schema";
 import type { Ctx } from "./context";
 import {
@@ -87,6 +89,21 @@ export async function preparerEnvoi(
     fin: versJourIso(ajouterJours(maintenant, HORIZON_OCCUPATION_PATRON_JOURS)),
   };
 
+  // **L'agenda extérieur, s'il y en a un.** Lu AVANT d'ouvrir la transaction :
+  // il part sur le réseau, et tenir une transaction PostgreSQL ouverte pendant
+  // un appel HTTP immobilise une connexion du pool pour la durée d'un service
+  // qu'on ne maîtrise pas.
+  //
+  // Rend une liste vide dans tous les cas ordinaires — pas d'identifiants
+  // Google, rien de relié, raccordement coupé — et aussi quand Google tombe.
+  // L'échec n'est pas avalé pour autant : il s'écrit et l'écran des réglages le
+  // montre (`periodesOccupeesExterieures`).
+  const periodesExterieures = await periodesOccupeesExterieures(
+    ctx,
+    new Date(`${fenetre.debut}T00:00:00Z`),
+    new Date(`${fenetreOccupationPatron.fin}T23:59:59Z`)
+  );
+
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [chantier] = await tx
       .select()
@@ -140,14 +157,27 @@ export async function preparerEnvoi(
         moment: r.moment === "matin" || r.moment === "apres_midi" ? r.moment : null,
         dureeDemiJournees: r.duree,
       }));
-    const occupation = compterOccupation(planifies);
-
     const [entreprise] = await tx
       .select({ nombreEquipes: entreprises.nombreEquipes })
       .from(entreprises)
       .where(eq(entreprises.id, ctx.entrepriseId))
       .limit(1);
     const nombreEquipes = entreprise?.nombreEquipes ?? 1;
+
+    // **Une seule carte d'occupation, jamais deux.** Les rendez-vous de
+    // l'agenda extérieur se fondent ICI, dans la même carte que les chantiers,
+    // et tout ce qui suit — jours suggérés, jours barrés, revérification de la
+    // réponse du client — la lit sans savoir d'où vient l'occupation.
+    //
+    // Un second calcul posé à côté finirait par diverger : c'est ce
+    // dédoublement qui avait rangé un chantier dans deux onglets à la fois
+    // (`ARCHITECTURE.md` §33). Sans agenda relié, la liste est vide et la carte
+    // est exactement celle d'avant.
+    const occupation = fusionnerOccupationExterne(
+      compterOccupation(planifies),
+      periodesExterieures,
+      nombreEquipes
+    );
 
     // La durée retenue, dans l'ordre : ce que le patron a corrigé, sinon ce que
     // sa dictée disait, sinon une journée. Jamais un chiffre inventé sans le

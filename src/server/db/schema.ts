@@ -1057,3 +1057,46 @@ export const grillePrix = pgTable(
   },
   (t) => [unique("grille_prix_cellule_uk").on(t.entrepriseId, t.nature, t.cellule)]
 );
+
+/**
+ * L'agenda extérieur d'un artisan, s'il choisit d'en relier un (migration 0032).
+ *
+ * **Sa décision du 9 août 2026 :** *« que l'utilisateur puisse, s'il le
+ * souhaite ou non, connecter son planning à son agenda Google. »* Le
+ * raccordement appartient donc à chaque entreprise, jamais à l'installation —
+ * une variable d'environnement vaudrait pour tout le monde à la fois, et il n'y
+ * aurait plus de « ou non ».
+ *
+ * **Aucun événement n'est stocké ici.** Ni intitulé, ni participant, ni heure :
+ * Atlas interroge l'agenda quand il en a besoin et n'en garde rien. Ce qui
+ * n'est pas stocké ne peut pas fuir, et un agenda personnel porte la vie privée
+ * d'une famille.
+ *
+ * Les deux jetons sont **chiffrés avant écriture**
+ * (`src/server/agenda/secret-au-repos.ts`) : la RLS protège d'un autre artisan,
+ * pas d'une sauvegarde recopiée.
+ */
+export const agendasExternes = pgTable(
+  "agendas_externes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    fournisseur: text("fournisseur", { enum: ["google"] }).notNull(),
+    /** L'adresse du compte relié, pour que l'artisan sache LEQUEL il a branché. */
+    compte: text("compte"),
+    jetonAcces: text("jeton_acces"),
+    jetonRafraichissement: text("jeton_rafraichissement"),
+    expireAt: timestamp("expire_at", { withTimezone: true }),
+    actif: boolean("actif").notNull().default(true),
+    /**
+     * Un raccordement qui a cessé de fonctionner doit se VOIR. Sinon l'artisan
+     * croit son agenda pris en compte alors qu'Atlas est revenu, en silence, au
+     * comportement qui produisait des doublons.
+     */
+    derniereLectureAt: timestamp("derniere_lecture_at", { withTimezone: true }),
+    derniereErreur: text("derniere_erreur"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("agendas_externes_entreprise_fournisseur_uk").on(t.entrepriseId, t.fournisseur)]
+);

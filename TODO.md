@@ -276,6 +276,18 @@ accumule ne doit pas être présenté comme conservé.
 
 ### 1. Agenda Google — au choix de chaque artisan
 
+> **Fait le 9 août 2026, sauf les identifiants.** L'écran « Mon agenda », le
+> stockage chiffré, la fusion dans la disponibilité et les deux chemins du
+> client sont écrits et éprouvés (`ARCHITECTURE.md` §39). **Ce qui reste tient
+> en une chose, et elle n'est pas codable** : les identifiants OAuth, que seul
+> le patron peut créer (`docs/A-FAIRE.md` §7). Tant qu'ils manquent, l'écran
+> l'annonce et ne propose aucun bouton.
+>
+> **Et ce qui n'a pas pu être éprouvé ici** : l'aller-retour réel avec Google —
+> autorisation, échange du code, renouvellement du jeton. Trois appels HTTP, pas
+> davantage : tout ce qui décide en a été sorti exprès. À vérifier chez lui, le
+> jour où les identifiants existent.
+
 **Partiellement bloqué.** La connexion du compte demande des identifiants OAuth
 que le patron doit créer ; le reste est codable. Le point bloquant est détaillé
 dans `docs/A-FAIRE.md` §7.
