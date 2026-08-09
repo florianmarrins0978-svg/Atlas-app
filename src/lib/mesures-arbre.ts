@@ -189,3 +189,28 @@ const LONGUEUR = [
 export function longueurHaieLue(texte: string): number | null {
   return premiereMesure(texte, LONGUEUR);
 }
+
+/**
+ * Le poids des grumes à enlever, en tonnes.
+ *
+ * **Sa réponse du 9 août 2026**, à la question laissée ouverte la veille : les
+ * grumes se facturent **à la tonne**. La grille passe donc d'un forfait à un
+ * prix unitaire, et il faut un tonnage pour l'appliquer — exactement comme la
+ * longueur pour la haie.
+ *
+ * « 3 tonnes », « 3 t », « 2,5 tonnes », « trois tonnes », « 8 T de grumes ».
+ *
+ * **Le `t` seul exige une frontière de mot ET un chiffre devant**, sinon il
+ * attraperait le « t » de n'importe quoi. Et il ne doit surtout pas confondre
+ * avec un tarif : `\d+\s*t\b` sur « 250 € » ne matche pas, mais sur une phrase
+ * comme « 3 troncs » il matcherait sans le `\b` après le `t`.
+ */
+const TONNAGE = [
+  /(\d{1,4}(?:[.,]\d{1,2})?)\s*tonnes?\b/i,
+  /(\d{1,4}(?:[.,]\d{1,2})?)\s*t\b(?!\w)/i,
+  /tonnage\s*(?:de\s*)?(\d{1,4}(?:[.,]\d{1,2})?)/i,
+];
+
+export function tonnageLu(texte: string): number | null {
+  return premiereMesure(texte, TONNAGE);
+}

@@ -16,13 +16,12 @@ import {
   CELLULE_GRUMES,
   CELLULE_HAIE,
   celluleAbattage,
-  celluleDeNature,
   celluleDessouchage,
   celluleFendage,
   prixDuFendage,
   type NatureGrille,
 } from "../../lib/grille-prix";
-import { longueurHaieLue, mesuresArbre } from "../../lib/mesures-arbre";
+import { longueurHaieLue, mesuresArbre, tonnageLu } from "../../lib/mesures-arbre";
 import { prixConnusDe } from "../repositories/grille-prix";
 import { listerPrecisions } from "../repositories/precisions-chantier";
 
@@ -581,12 +580,9 @@ async function prixDeLaLigne(
 
   if (ligne.cle === "haie") return prixDeLaHaie(ctx, reponses, textes, ligne);
 
-  // **Les grumes : une seule case, au forfait.** Le patron n'a pas dit à quoi
-  // elles se chiffrent (`grille-prix.ts`, `CELLULE_GRUMES`) ; on retient donc ce
-  // qu'il facture plutôt que d'inventer un mètre cube.
-  if (ligne.cle === "grumes") {
-    return prixDepuisCase(ctx, "grumes", celluleDeNature("grumes", CELLULE_GRUMES), ligne, {});
-  }
+  // **Les grumes : un prix à la tonne**, multiplié par le tonnage — sa réponse
+  // du 9 août 2026.
+  if (ligne.cle === "grumes") return prixDesGrumes(ctx, reponses, textes, ligne);
 
   // **Le dessouchage : le diamètre, et rien d'autre.** La hauteur de l'arbre ne
   // dit plus rien une fois qu'il est à terre.
@@ -623,6 +619,54 @@ async function prixDeLaLigne(
     // ce n'est pas un manque à signaler, c'est le fonctionnement d'hier.
     silencieuxSiVide: true,
   });
+}
+
+/**
+ * Les grumes : un prix à la tonne, multiplié par le tonnage.
+ *
+ * **Même mécanique que la haie, et pour la même raison.** Retenir le montant de
+ * la ligne ferait facturer le même prix au chantier suivant, qu'il y ait une
+ * tonne ou dix. Sans tonnage connu, on ne chiffre rien et on dit ce qui manque
+ * — plutôt qu'un chiffre qui aurait l'air d'un prix.
+ */
+async function prixDesGrumes(
+  ctx: Ctx,
+  reponses: string[],
+  textes: string[],
+  ligne: LigneVendable
+): Promise<{ prix: string | null; calcul: LigneExplication[]; donneesManquantes: string[] }> {
+  const aLaTonne = (await prixConnusDe(ctx, "grumes")).get(CELLULE_GRUMES);
+  const tonnage = [...reponses, ligne.libelle, ...textes].map(tonnageLu).find((t) => t !== null) ?? null;
+
+  if (!aLaTonne) {
+    return {
+      prix: null,
+      calcul: [],
+      donneesManquantes: [
+        `« ${ligne.libelle} » est sur sa propre ligne, sans prix : posez votre prix à la tonne ` +
+          "dans Réglages → Mes prix, et il servira à tous les devis suivants.",
+      ],
+    };
+  }
+  if (tonnage === null) {
+    return {
+      prix: null,
+      calcul: [],
+      donneesManquantes: [`« ${ligne.libelle} » : il manque le tonnage pour appliquer votre prix à la tonne.`],
+    };
+  }
+
+  const montant = new Decimal(aLaTonne).times(tonnage);
+  return {
+    prix: montant.toFixed(2),
+    calcul: [
+      {
+        libelle: "Enlèvement des grumes",
+        detail: `${tonnage} t × ${aLaTonne} € = ${montant.toFixed(2)} € — votre prix à la tonne.`,
+      },
+    ],
+    donneesManquantes: [],
+  };
 }
 
 /** La haie : un prix au mètre linéaire, multiplié par la longueur. */

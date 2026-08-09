@@ -28,7 +28,7 @@ type Case = { nature: NatureGrille; cle: string; prix: string; origine: "saisi" 
  * |---|---|---|
  * | deux axes | abattage, fendage | Deux choses décident du prix, et il faut les croiser |
  * | un axe | dessouchage | Seul le diamètre décide : la hauteur de l'arbre absent ne dit rien |
- * | une case | haie, grumes | Un prix unique — au mètre pour l'une, au forfait pour l'autre |
+ * | une case | haie, grumes | Un prix unitaire — au mètre pour l'une, à la tonne pour l'autre |
  */
 type FormeGrille = "deux-axes" | "un-axe" | "une-case";
 
@@ -51,13 +51,14 @@ const GRILLES: {
   {
     nature: "grumes",
     titre: "Enlever les grumes",
-    // La réserve est dite à l'écran, pas seulement dans le code : c'est lui qui
-    // décidera de l'unité, et il ne peut le faire que s'il sait qu'elle manque.
-    aide: "Un seul prix pour l'instant. Si vous les facturez au mètre cube ou au voyage, dites-le et la grille suivra.",
+    // L'unité est dite à l'écran, parce que c'est elle qui change tout : un
+    // prix saisi ici sera MULTIPLIÉ par le tonnage du chantier. Le taire ferait
+    // écrire un forfait dans une case qui n'en est pas une.
+    aide: "Un prix à la tonne. Atlas le multiplie par le tonnage enlevé sur le chantier.",
     axe: "",
     forme: "une-case",
     cleUnique: CELLULE_GRUMES,
-    libelleUnique: "Prix de l'enlèvement",
+    libelleUnique: "Prix de la tonne",
   },
   {
     nature: "fendage",

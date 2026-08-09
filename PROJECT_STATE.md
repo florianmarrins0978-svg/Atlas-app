@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-09 · branche `claude/migrate-app-atlas-zz31ac`
-· dernière migration `drizzle/0028_grille_dessouchage_grumes.sql`
+· dernière migration `drizzle/0029_grumes_a_la_tonne.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -78,7 +78,7 @@ seule avec quinze outils.
 | **L'adresse se propose pendant la frappe** et se choisit d'un doigt — Base Adresse Nationale, jamais Google, et le champ reste libre | `src/components/atlas/ChampAdresse.tsx` + `src/server/adresses/base-adresse-nationale.ts` |
 | **Le vocabulaire du métier**, écrit une fois et envoyé avec chaque dictée — réservé à l'éditeur | `src/app/reglages/vocabulaire/` + `src/lib/consigne-metier.ts` + `drizzle/0025_vocabulaire_metier.sql` |
 | **Le devis se découpe en lignes vendables** : abattage + broyage + évacuation ensemble, la fente à part, sans point-virgule | `src/lib/lignes-vendables.ts` |
-| **Cinq grilles de prix** — abattage (technique × diamètre), fendage (hauteur × diamètre), dessouchage (diamètre), haie (au ml), grumes (au forfait) — nées vides et remplies par ses devis | `src/lib/grille-prix.ts` + `src/app/reglages/prix/` + `drizzle/0028_grille_dessouchage_grumes.sql` |
+| **Cinq grilles de prix** — abattage (technique × diamètre), fendage (hauteur × diamètre), dessouchage (diamètre), haie (au ml), grumes (à la tonne) — nées vides et remplies par ses devis | `src/lib/grille-prix.ts` + `src/app/reglages/prix/` + `drizzle/0029_grumes_a_la_tonne.sql` |
 | **Le retour de la messagerie ramène à l'accueil**, avec un mot qui dit ce qui a été transmis | `src/lib/annonce-transmission.ts` + `src/components/atlas/AnnonceTransmission.tsx` |
 | **Proposer une date jusqu'à 18 mois**, sans montrer au client plus de trois semaines autour | `src/server/disponibilites.ts` (`fenetrePatron`, `bandesVisibles`) |
 | **Un calendrier des deux côtés**, où les jours déjà pris sont barrés et ne se choisissent pas | `src/lib/calendrier.ts` + `src/components/atlas/Calendrier.tsx` |

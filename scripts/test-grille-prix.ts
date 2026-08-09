@@ -14,7 +14,7 @@ import {
   trancheDe,
   type NatureGrille,
 } from "../src/lib/grille-prix";
-import { diametreLu, hauteurLue, mesuresArbre } from "../src/lib/mesures-arbre";
+import { diametreLu, hauteurLue, mesuresArbre, tonnageLu } from "../src/lib/mesures-arbre";
 
 // **La grille de fendage — hauteur de l'arbre × diamètre du tronc.**
 //
@@ -250,12 +250,45 @@ cas("les clés d'une nature ne désignent rien dans une autre", () => {
   assert.ok(celluleDeNature("grumes", CELLULE_GRUMES));
 });
 
-cas("les grumes n'ont qu'une case, et son libellé ne promet aucune unité", () => {
-  // La réserve est réelle : le patron n'a pas dit à quoi elles se chiffrent.
-  // Écrire « au mètre cube » ici inventerait sa décision.
+cas("les grumes n'ont qu'une case, et elle dit son unité : la tonne", () => {
+  // **Sa réponse du 9 août 2026 :** *« à la tonne. »* La réserve de la veille
+  // est levée. Le libellé doit le dire — un prix saisi ici sera MULTIPLIÉ par
+  // le tonnage, et le taire ferait écrire un forfait dans une case qui n'en est
+  // pas une.
   const [c] = cellulesDe("grumes");
   assert.equal(c.cle, CELLULE_GRUMES);
-  assert.doesNotMatch(c.libelle, /m3|mètre cube|tonne|voyage/i);
+  assert.equal(CELLULE_GRUMES, "tonne", "la clé de la case ne dit plus son unité");
+  assert.match(c.libelle, /tonne/i);
+});
+
+console.log("\n=== Le tonnage, lu dans ce qui a été dit ===");
+
+cas("les formes qu'une dictée produit", () => {
+  assert.equal(tonnageLu("Enlèvement des grumes, 3 tonnes"), 3);
+  assert.equal(tonnageLu("8 T de grumes"), 8);
+  assert.equal(tonnageLu("2,5 tonnes de bois d'œuvre"), 2.5);
+  assert.equal(tonnageLu("tonnage 12"), 12);
+  // Il parle, il ne tape pas — la dictée écrit les nombres en toutes lettres.
+  assert.equal(tonnageLu("enlèvement de trois tonnes de grumes"), 3);
+});
+
+cas("ce qui n'est PAS un tonnage n'en devient pas un", () => {
+  // Sans nombre, aucune mesure : la question sera posée, et c'est ce qu'on veut.
+  assert.equal(tonnageLu("enlèvement des grumes"), null);
+  assert.equal(tonnageLu("beaucoup de grumes"), null);
+  // Le piège du « t » isolé : il ne doit pas s'accrocher au premier mot venu.
+  assert.equal(tonnageLu("3 troncs à enlever"), null, "« 3 troncs » a été lu comme 3 tonnes");
+  assert.equal(tonnageLu("abattage à 250 €"), null);
+});
+
+cas("un tonnage n'est ni une hauteur ni un diamètre", () => {
+  // Le piège de la haie, transposé : une dictée porte plusieurs nombres, et
+  // chacun désigne autre chose. Les confondre range le prix dans une case qui
+  // n'a rien à voir.
+  const dictee = "Abattage d'un chêne de vingt mètres de haut, diamètre 70, 8 tonnes de grumes";
+  assert.equal(tonnageLu(dictee), 8);
+  assert.equal(hauteurLue(dictee), 20);
+  assert.equal(diametreLu(dictee), 70);
 });
 
 console.log(`\n${echecs === 0 ? "✅ Toutes les vérifications passent." : `❌ ${echecs} échec(s).`}`);

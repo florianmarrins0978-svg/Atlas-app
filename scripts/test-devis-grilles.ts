@@ -437,6 +437,66 @@ async function main() {
     assert.equal((await prixConnusDe(A, "haie")).get("ml"), avant, "un prix au mètre a été inventé depuis un total");
   });
 
+  await test("Un prix de grumes se range À LA TONNE, pas au montant de la ligne", async () => {
+    // **Sa réponse du 9 août 2026 :** *« à la tonne. »* Le piège est le même que
+    // celui de la haie, en plus coûteux : écrire 900 € dans la case ferait
+    // facturer 900 € LA TONNE au chantier suivant.
+    const chantier = await chantiersRepo.creerChantier(B, { nom: "Grumes apprises" });
+    await prestationsRepo.ajouterPrestation(B, chantier.id, "Enlèvement des grumes, 6 tonnes");
+    await apprendrePrixGrille(B, chantier.id, {
+      libelle: "Enlèvement des grumes, 6 tonnes",
+      montant: "900.00",
+    });
+    assert.equal((await prixConnusDe(B, "grumes")).get("tonne"), "150.00");
+  });
+
+  await test("Sans tonnage, les grumes n'apprennent rien plutôt qu'un prix faux", async () => {
+    const chantier = await chantiersRepo.creerChantier(A, { nom: "Grumes sans poids" });
+    await prestationsRepo.ajouterPrestation(A, chantier.id, "Enlèvement des grumes");
+    const avant = (await prixConnusDe(A, "grumes")).get("tonne");
+    await apprendrePrixGrille(A, chantier.id, { libelle: "Enlèvement des grumes", montant: "900.00" });
+    assert.equal(
+      (await prixConnusDe(A, "grumes")).get("tonne"),
+      avant,
+      "un prix à la tonne a été inventé depuis un total"
+    );
+  });
+
+  await test("Le prix des grumes se multiplie par le tonnage du chantier", async () => {
+    // Le pendant du rangement : ce qui a été appris à la tonne doit ressortir
+    // multiplié. Une case remplie qui ne s'applique pas vaut une case vide.
+    const chantier = await chantiersRepo.creerChantier(A, { nom: "Grumes chiffrées" });
+    await poserPrixGrille(A, "grumes", "tonne", "150.00", "saisi");
+    await prestationsRepo.ajouterPrestation(A, chantier.id, "Abattage d'un chêne mort");
+    await prestationsRepo.ajouterPrestation(A, chantier.id, "Enlèvement des grumes, 4 tonnes");
+    await brouillonsRepo.enregistrerGeneration(
+      A,
+      chantier.id,
+      {
+        ...brouillonVide(),
+        prestations: [
+          { libelle: "Abattage d'un chêne mort", description: null, quantite: null, unite: null, aConfirmer: false },
+          // Le tonnage arrive dans la DESCRIPTION, comme la hauteur de l'arbre :
+          // la table `prestations` ne garde qu'un libellé, et c'est le brouillon
+          // confirmé qui porte le reste.
+          { libelle: "Enlèvement des grumes", description: "4 tonnes", quantite: "4", unite: "t", aConfirmer: false },
+        ],
+      },
+      "dictée"
+    );
+    await brouillonsRepo.marquerConfirme(A, chantier.id);
+    await chantiersRepo.mettreAJourDureeEquipe(A, chantier.id, {
+      dureePrevue: "1 jour",
+      tailleEquipe: "2 hommes",
+    });
+
+    const p = await preparerPropositionPrix(A, chantier.id);
+    assert.ok(p);
+    const grumes = p.lignes.find((l) => /grume/i.test(l.libelle));
+    assert.ok(grumes, `aucune ligne de grumes : ${p.lignes.map((l) => l.libelle).join(" | ")}`);
+    assert.equal(grumes.montant, "600.00", "4 t × 150 € = 600 € — le prix à la tonne n'a pas été appliqué");
+  });
+
   await test("Une clé de case inventée n'écrit rien", async () => {
     await poserPrixGrille(B, "fendage", "h99|d99", "500", "saisi");
     await poserPrixGrille(B, "fendage", "'; DROP TABLE grille_prix; --", "500", "saisi");
