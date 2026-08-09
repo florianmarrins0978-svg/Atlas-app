@@ -120,6 +120,62 @@ cas("sous budget serré, c'est la règle qui survit", () => {
   assert.ok(c.ecartes.length > 0, "Des termes ont disparu sans que personne ne le sache.");
 });
 
+console.log("\n=== Ses corrections ont une place réservée ===");
+
+// **Le défaut du 9 août 2026, mesuré et non supposé.** Vingt-quatre termes
+// tirés de devis réels sont entrés dans le vocabulaire ; le compte a été fait
+// juste après : quinze termes retenus sur vingt-six, et **zéro exemple sur
+// cinq**. Les mots avaient mangé la place de ses corrections.
+//
+// Un vocabulaire est écrit une fois par l'éditeur, pour tous les artisans. Une
+// correction est ce que CE patron a changé de sa main sur SON devis — *« je
+// fais plein de devis et tu enregistres toutes mes modifications »*. Jeter les
+// secondes pour faire tenir les premières travaille contre lui.
+
+cas("un vocabulaire abondant ne chasse plus ses corrections", () => {
+  const beaucoupDeMots: TermeMetier[] = Array.from({ length: 40 }, (_, i) => ({
+    nature: "mot",
+    intitule: `terme ${i}`,
+    definition: "x".repeat(120),
+    consigne: "y".repeat(60),
+  }));
+  const c = construireConsigneMetier([REGLE, ...beaucoupDeMots], [CORRECTION, CORRECTION, CORRECTION]);
+  assert.ok(
+    c.exemplesRetenus >= 1,
+    `aucune de ses corrections n'est partie : les mots ont pris toute la place (${c.termesRetenus} termes retenus)`
+  );
+  assert.ok(c.texte.includes("CE QU'IL A CORRIGÉ"), "le bloc de ses corrections est absent de la consigne");
+});
+
+cas("la réserve revient aux mots quand il n'a rien corrigé", () => {
+  // Un artisan qui débute n'a rien corrigé. Sa consigne n'a aucune raison
+  // d'être plus courte que celle d'un autre : la réserve ne se prélève que
+  // s'il y a quelque chose à réserver.
+  const mots: TermeMetier[] = Array.from({ length: 40 }, (_, i) => ({
+    nature: "mot",
+    intitule: `terme ${i}`,
+    definition: "x".repeat(120),
+    consigne: "y".repeat(60),
+  }));
+  const avec = construireConsigneMetier([REGLE, ...mots], [CORRECTION]);
+  const sans = construireConsigneMetier([REGLE, ...mots], []);
+  assert.ok(
+    sans.termesRetenus > avec.termesRetenus,
+    "la réserve est prélevée même sans correction à y mettre : du vocabulaire est perdu pour rien"
+  );
+});
+
+cas("le budget reste tenu, réserve comprise", () => {
+  const mots: TermeMetier[] = Array.from({ length: 40 }, (_, i) => ({
+    nature: "mot",
+    intitule: `terme ${i}`,
+    definition: "x".repeat(120),
+    consigne: null,
+  }));
+  const c = construireConsigneMetier([REGLE, ...mots], Array(MAX_EXEMPLES).fill(CORRECTION));
+  assert.ok(c.texte.length <= BUDGET_CARACTERES, `${c.texte.length} caractères pour un budget de ${BUDGET_CARACTERES}`);
+});
+
 console.log("\n=== Rien n'est tronqué en silence ===");
 
 cas("ce qui ne tient pas est nommé", () => {
@@ -156,6 +212,52 @@ cas("la consigne ne dépasse jamais le budget", () => {
     `La consigne fait ${c.texte.length} caractères pour un budget de ${BUDGET_CARACTERES} : elle noiera la dictée qu'elle accompagne.`
   );
   assert.ok(c.termesRetenus > 0, "Le budget a tout mangé : plus rien n'est enseigné.");
+});
+
+// **Le cas ordinaire, celui que le scénario extrême cachait.**
+//
+// Le 9 août 2026, la consigne réelle mesurait 6 020 caractères pour un budget
+// de 6 000. Le contrôle ci-dessus était vert : avec deux cents termes, le
+// budget s'épuise dès le premier bloc, si bien que les deux en-têtes suivants
+// n'existent pas — et c'est justement leur coût, compté après coup, qui faisait
+// dépasser. Un scénario extrême prouvait le contraire de ce qu'on croyait
+// vérifier (`CLAUDE.md` §5 : un contrôle jamais vu rouge ne prouve rien).
+//
+// Celui-ci se cale sur le contenu réel — huit règles, dix-neuf mots, cinq
+// corrections — et se donne **exactement** un budget un peu plus court que ce
+// qu'il faudrait pour tout dire. Les trois blocs existent donc tous les trois,
+// la coupe tombe dans le dernier, et les trois en-têtes doivent être payés.
+cas("les trois en-têtes tiennent dans le budget, à la coupe près", () => {
+  const regles: TermeMetier[] = Array.from({ length: 8 }, (_, i) => ({
+    nature: "regle",
+    intitule: `règle ${i} de cet artisan`,
+    definition: "Une phrase de règle de longueur ordinaire, comme le patron en dicte.",
+    consigne: "Et ce qu'il faut en faire concrètement sur le devis.",
+  }));
+  const mots: TermeMetier[] = Array.from({ length: 19 }, (_, i) => ({
+    nature: "mot",
+    intitule: `terme ${i}`,
+    definition: "La définition du terme, en une phrase que le patron reconnaîtrait.",
+    consigne: "Ligne à part, titrée par la zone concernée.",
+  }));
+  const corrections = Array.from({ length: MAX_EXEMPLES }, () => CORRECTION);
+
+  // Ce qu'il faudrait pour tout dire, mesuré et non supposé.
+  const complet = construireConsigneMetier([...regles, ...mots], corrections, 1_000_000);
+  assert.equal(complet.exemplesRetenus, MAX_EXEMPLES, "Le scénario ne produit pas ses trois blocs.");
+
+  // Un cheveu trop court : la coupe tombe dans le dernier bloc, les trois
+  // en-têtes sont écrits, et c'est exactement la situation qui dépassait.
+  const budget = complet.texte.length - 40;
+  const c = construireConsigneMetier([...regles, ...mots], corrections, budget);
+
+  assert.ok(c.texte.includes("RÈGLES"), "Le bloc des règles manque : le scénario ne teste plus trois en-têtes.");
+  assert.ok(c.texte.includes("VOCABULAIRE"), "Le bloc du vocabulaire manque.");
+  assert.ok(c.texte.includes("CE QU'IL A CORRIGÉ"), "Le bloc des corrections manque.");
+  assert.ok(
+    c.texte.length <= budget,
+    `La consigne fait ${c.texte.length} caractères pour un budget de ${budget} : les en-têtes ne sont pas payés.`
+  );
 });
 
 cas("un terme monstrueux ne fait pas tomber le reste", () => {

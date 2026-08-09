@@ -1864,3 +1864,165 @@ pour cette raison-là accuse à tort.
 | La grille, février bissextile, le passage d'année, la borne des mois | `scripts/test-calendrier.ts` |
 | Un jour pris ne se choisit pas, chez le client | `scripts/test-devis-client-e2e.ts` |
 | Le patron navigue jusqu'à six mois et la date part | `scripts/test-date-lointaine-e2e.ts` |
+
+---
+
+## 37. Le vocabulaire d'un vrai devis d'élagueur, et la place qu'il ne doit pas prendre
+
+**Le patron, le 9 août 2026**, en transmettant quatre devis d'un confrère :
+*« inspire-toi, apprends les phrases, les mots clés, les tournures de phrase,
+sauts de ligne par rapport aux différentes tâches à effectuer. »*
+
+### Ce que ces devis confirment
+
+Ils valident la règle qu'il avait énoncée seul le 7 août — *« chaque ligne doit
+pouvoir se vendre seule »*. Le confrère fait exactement cela : la fente du gros
+bois, le rognage des souches et le débroussaillage ont chacun leur ligne. Son
+intuition était la pratique du métier.
+
+Ils en montrent en plus la **forme**, que rien dans le dépôt ne disait :
+
+| Ce qu'on croyait | Ce que font les vrais devis |
+|---|---|
+| Une ligne = une prestation | Une ligne = **un arbre ou une zone** — « Hêtre », « Espace Hangar », « Bouleau (près de la clôture du voisin) » |
+| Le libellé décrit le geste | Le titre nomme la cible ; **les gestes vont dessous**, un par ligne |
+| Le bois est un détail | **Aucune ligne d'abattage ne finit sans dire où va la matière** — débité en 40 cm, broyé au pied, évacué par camion |
+
+### Ce qui n'est PAS entré, et ce n'est pas de la prudence en plus
+
+Les quatre devis portent le nom, l'adresse et la commune de **vrais clients**,
+plus la raison sociale, le SIRET, l'IBAN et le téléphone d'une **entreprise
+tierce**. Rien n'est reproduit.
+
+C'est la règle déjà écrite : ce vocabulaire est **partagé**, il part avec
+l'application chez tous les artisans (`docs/QUESTIONS.md` §10 — *« ce sont des
+mots, pas des données de client : aucun nom, aucune adresse, aucun prix »*), et
+le dépôt est public depuis le 1ᵉʳ août.
+
+Les prix non plus, pour une autre raison : ce sont les prix d'un confrère. Les
+verser dans les grilles du patron lui ferait facturer les tarifs de quelqu'un
+d'autre.
+
+### **Le défaut que ce lot a créé, et qu'il fallait mesurer**
+
+Vingt-quatre entrées sont entrées dans `termes_metier`. La consigne envoyée avec
+chaque dictée est passée à **6 044 caractères** — au-dessus du budget. Le compte,
+fait juste après :
+
+| | Avant la réserve | Après |
+|---|---|---|
+| Termes retenus | 15 / 26 | 18 / 26 |
+| **Ses corrections** | **0 / 5** | **4 / 5** |
+
+**Zéro sur cinq.** Le vocabulaire avait mangé toute la place de ce que le patron
+avait corrigé de sa main. Or un vocabulaire est écrit **une fois, par l'éditeur,
+pour tous les artisans** ; une correction est ce que **ce** patron a changé sur
+**son** devis — *« je fais plein de devis et tu enregistres toutes mes
+modifications »*. Jeter les secondes pour faire tenir la définition de
+« jumelle » travaille contre lui.
+
+`PART_RESERVEE_CORRECTIONS` met un quart du budget de côté avant que les mots ne
+se servent. La réserve ne se prélève **que s'il y a quelque chose à y mettre** :
+un artisan qui débute n'a rien corrigé, et sa consigne n'a aucune raison d'être
+plus courte.
+
+### L'ordre des termes n'est pas alphabétique, il est conséquentiel
+
+C'est lui qui décide de ce qui part quand le budget se resserre. Passent en
+premier ceux qui changent un **prix** — les deux techniques d'abattage, l'état
+de l'arbre qui les impose — ou qui créent une **ligne détachable** : fente,
+rognage, débroussaillage, échenillage. Le vocabulaire de description vient
+après : mal compris, il coûte un libellé, pas un montant.
+
+Les huit termes qui restent aujourd'hui au vestiaire quand il a cinq corrections
+sont exactement ceux-là : houppier, charpentière, rehaussement, réduction sur
+bois sain, taille de cohabitation, jumelle, rejets, fût.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| La réserve, et son retour aux mots quand elle ne sert pas | `scripts/test-consigne-metier.ts` |
+| Le budget tenu, réserve comprise | idem |
+
+---
+
+## 38. Deux documents de plus, qui démentent une définition écrite la veille
+
+**Le patron, le 9 août 2026**, transmet une facture de débroussaillage et un
+devis de frêne, du même confrère, sans un mot d'accompagnement. Ils ajoutent du
+vocabulaire — mais ce n'est pas leur apport principal.
+
+### Une invention déguisée en observation
+
+La migration 0030, écrite quelques heures plus tôt, affirmait : *« Le gros bois
+se débite en 40 ou 50 cm. »* Le devis du frêne dit **33 cm**.
+
+Deux devis avaient montré 40, puis 50. J'en ai conclu une liste fermée et je
+l'ai écrite comme un fait. C'est exactement ce que `docs/AGENT.md` §3 interdit —
+un champ sans source fiable reste ouvert, il ne se remplit pas par
+extrapolation. Le piège est qu'ici la source *existait* : elle était juste trop
+mince pour porter une énumération.
+
+Le détail qui aggrave : la **consigne** attachée au terme était déjà juste
+(« reprendre la longueur dictée telle quelle, ne jamais l'arrondir ni la
+supposer »). C'est la définition qui la contredisait — et un modèle qui lit les
+deux croit à la liste, parce qu'une liste est plus concrète qu'une interdiction.
+
+**Ce qu'on en retient, au-delà de ce terme :** une définition qui énumère est
+une affirmation sur le monde. Deux exemples ne la fondent pas. 0031 la remplace
+par *« la longueur qui convient au client — 33, 40, 50 cm. Il n'y a pas de
+valeur par défaut. »*
+
+### Ce que les deux documents ajoutent vraiment
+
+| Apport | Ce que le document dit | Pourquoi ça compte |
+|---|---|---|
+| Le bois a une **destination**, pas seulement un sort | « ramené sur l'arrière du jardin », « en tas rangé le long de la haie » | Le portage est du travail, et il se paie |
+| Le débroussaillage a **deux machines** | broyeur forestier sur l'accessible, débroussailleuse sur talus et contours | C'est l'accessibilité qui décide du temps passé, donc du prix |
+| Ce qui reste à décider **s'écrit** | « Hauteur du tronc à définir ensemble au moment de l'abattage » | Atlas savait laisser un champ vide et le signaler au patron ; il ne savait pas que cette réserve a sa place **sur le devis** |
+
+Le troisième est devenu une règle (`ordre` 7), pas un mot. C'est la règle du
+dépôt — ne rien inventer — écrite par un professionnel sur un document qui part
+chez un client, avec sa formulation.
+
+### Le budget : un en-tête payé après coup, et un plafond posé à vide
+
+Deux défauts distincts, trouvés en mesurant plutôt qu'en relisant.
+
+**1. Le calcul était faux de trois en-têtes.** `ajouter()` déduisait le titre du
+bloc *après* avoir accepté ses lignes. Avec trois blocs, la consigne dépassait de
+leurs trois titres : **6 020 caractères pour un budget de 6 000**.
+
+Le contrôle qui affirmait le contraire était vert, et **pour une mauvaise
+raison** : son scénario à deux cents termes épuise le budget dès le premier bloc,
+si bien que les deux en-têtes suivants n'existent jamais. Un scénario extrême
+cachait le cas ordinaire — `CLAUDE.md` §5, *un contrôle jamais vu rouge ne
+prouve rien*. Le contrôle ajouté se cale sur le contenu réel (huit règles,
+dix-neuf mots, cinq corrections) et se donne un budget d'un cheveu trop court,
+pour que les trois blocs existent et que la coupe tombe dans le dernier.
+
+**2. Le plafond lui-même ne correspondait plus à rien.** Six mille caractères
+avaient été choisis à vide, quand le vocabulaire tenait en dix termes. Mesure du
+jour : tout dire coûte **8 512 caractères**, et le budget écartait **douze termes
+sur vingt-sept**.
+
+Ajouter du vocabulaire à un document dont la moitié ne part jamais, c'est faire
+semblant de l'ajouter — et c'est précisément ce que le patron avait demandé la
+veille. Le plafond passe à **9 000**, avec un point de comparaison plutôt qu'une
+intuition : la consigne d'extraction générique fait à elle seule ~7 300
+caractères. Ce que cet artisan a appris à Atlas n'a pas à peser moins que
+l'instruction générique qu'il vient corriger.
+
+| | Avant | Après |
+|---|---|---|
+| Longueur | 6 020 / 6 000 — **dépassement** | 8 512 / 9 000 |
+| Termes retenus | 15 / 27 | **27 / 27** |
+| Ses corrections | 4 / 5 | **5 / 5** |
+
+Le garde-fou n'est pas levé, il est recalé : quand le vocabulaire passera neuf
+mille à son tour, il écartera de nouveau — par ordre d'importance, et **en
+disant ce qu'il écarte**.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| Les trois en-têtes tiennent dans le budget, à la coupe près | `scripts/test-consigne-metier.ts` |
+| Le contrôle sait échouer | Vérifié en remettant la déduction après coup : deux cas rouges |

@@ -49,14 +49,51 @@ export type ConsigneMetier = {
 /**
  * Le budget, en caractères.
  *
- * Ordre de grandeur volontairement modeste : une dictée de chantier fait deux à
- * quatre cents caractères. Une consigne de six mille en tête de message reste
- * lisible par le modèle sans écraser ce qu'on lui demande d'analyser.
+ * **Porté de 6 000 à 9 000 le 9 août 2026, sur une mesure et non sur une
+ * intuition.** Les six mille d'origine étaient un ordre de grandeur choisi à
+ * vide, quand le vocabulaire tenait en une dizaine de termes. Le jour où les
+ * devis réels du confrère en ont apporté vingt-quatre, le compte a été fait :
+ * dire tout ce que le dépôt sait coûte **8 512 caractères**, et le budget en
+ * écartait **douze termes sur vingt-sept**. Ajouter du vocabulaire à un
+ * document dont la moitié ne part jamais, c'est faire semblant de l'ajouter.
+ *
+ * Neuf mille, et pas davantage, parce qu'il faut un point de comparaison :
+ * la consigne d'extraction générique fait à elle seule environ 7 300
+ * caractères. Ce que CET artisan a appris à Atlas n'a aucune raison de peser
+ * moins que l'instruction générique qu'il vient corriger — mais pas non plus
+ * de l'écraser d'un ordre de grandeur.
+ *
+ * Le garde-fou n'est pas levé pour autant, il est recalé : quand le
+ * vocabulaire dépassera neuf mille à son tour, il écartera de nouveau — par
+ * ordre d'importance, et **en disant ce qu'il écarte**.
  */
-export const BUDGET_CARACTERES = 6000;
+export const BUDGET_CARACTERES = 9000;
 
 /** Au-delà, les exemples se répètent plus qu'ils n'enseignent. */
 export const MAX_EXEMPLES = 5;
+
+/**
+ * La part du budget tenue en réserve pour SES corrections.
+ *
+ * **Ajouté le 9 août 2026, sur un défaut mesuré et non supposé.** Ce jour-là,
+ * vingt-quatre termes tirés de devis réels sont entrés dans le vocabulaire. La
+ * consigne est passée à 6 044 caractères, et le compte a été fait : quinze
+ * termes retenus sur vingt-six, et **zéro exemple sur cinq**. Les mots avaient
+ * mangé la place de ses corrections.
+ *
+ * C'était une régression franche. Un vocabulaire est écrit une fois par
+ * l'éditeur pour tous les artisans ; une correction est ce que CE patron a
+ * changé de sa main sur SON devis. Sa phrase du 7 août : *« le mieux, c'est que
+ * je fasse plein de devis et que tu enregistres toutes mes modifications, et
+ * dans un mois tu sauras les remplir tout seul. »* Une mécanique qui jette ces
+ * modifications-là pour faire tenir la définition de « jumelle » travaille
+ * contre lui.
+ *
+ * La réserve n'est pas rendue aux mots quand elle sert : elle leur revient
+ * seulement s'il n'y a **aucune** correction à envoyer — un artisan qui débute
+ * n'a rien corrigé encore, et sa consigne n'a aucune raison d'être plus courte.
+ */
+export const PART_RESERVEE_CORRECTIONS = 0.25;
 
 export function construireConsigneMetier(
   termes: TermeMetier[],
@@ -80,21 +117,33 @@ export function construireConsigneMetier(
     let retenues = 0;
     const gardees: string[] = [];
     for (const ligne of lignes) {
+      // **L'en-tête est payé D'AVANCE, avec la première ligne du bloc.**
+      //
+      // Il était compté après coup, au motif qu'un bloc sans titre n'apprend
+      // rien. L'intention était juste, le calcul non : trois blocs faisaient
+      // dépasser le budget de leurs trois en-têtes. Mesuré le 9 août 2026 sur
+      // les données réelles — 6 020 caractères pour un budget de 6 000.
+      //
+      // Le contrôle qui l'affirmait passait, et pour une mauvaise raison : avec
+      // deux cents termes il épuisait le budget dès le premier bloc, si bien
+      // que les en-têtes suivants n'existaient pas. Un scénario extrême cachait
+      // le cas ordinaire (`CLAUDE.md` §5 — un contrôle jamais vu rouge ne
+      // prouve rien).
+      //
+      // Payer d'avance garde l'intention — un bloc retenu a toujours son titre
+      // — et rend le budget vrai.
+      const coutEntete = gardees.length === 0 ? entete.length + 1 : 0;
       // +1 pour le saut de ligne qui la séparera de la suivante.
-      if (ligne.length + 1 > reste) {
+      if (coutEntete + ligne.length + 1 > reste) {
         ecartes.push(`${quoi} : « ${resume(ligne)} »`);
         continue;
       }
       gardees.push(ligne);
-      reste -= ligne.length + 1;
+      reste -= coutEntete + ligne.length + 1;
       retenues++;
     }
     if (gardees.length === 0) return 0;
-    const bloc = `${entete}\n${gardees.join("\n")}`;
-    // L'en-tête est compté après coup : le refuser pour quelques caractères
-    // reviendrait à envoyer des lignes sans dire ce qu'elles sont.
-    reste -= entete.length + 1;
-    morceaux.push(bloc);
+    morceaux.push(`${entete}\n${gardees.join("\n")}`);
     return retenues;
   }
 
@@ -104,6 +153,19 @@ export function construireConsigneMetier(
     "Règle écartée"
   );
 
+  // **Les mots ne peuvent pas prendre toute la place restante.** Une réserve
+  // est mise de côté pour ses corrections avant qu'ils ne se servent — sans
+  // elle, vingt-quatre définitions suffisent à les faire toutes disparaître,
+  // ce qui a été mesuré le 9 août 2026 (voir `PART_RESERVEE_CORRECTIONS`).
+  //
+  // La réserve ne s'applique que s'il y a quelque chose à réserver : sans
+  // correction enregistrée, rien ne justifie d'amputer le vocabulaire.
+  const exemples = corrections.slice(0, MAX_EXEMPLES).map(formaterCorrection);
+  const reserve = exemples.length > 0 ? Math.floor(budget * PART_RESERVEE_CORRECTIONS) : 0;
+  const disponiblePourLesMots = Math.max(0, reste - reserve);
+  const misDeCote = reste - disponiblePourLesMots;
+  reste = disponiblePourLesMots;
+
   const nbMots = ajouter(
     "VOCABULAIRE DE CET ARTISAN — emploie ces mots, et traite-les comme indiqué :",
     mots.map(formaterTerme),
@@ -111,7 +173,9 @@ export function construireConsigneMetier(
   );
 
   // --- Puis ses corrections, comme preuves ---------------------------------
-  const exemples = corrections.slice(0, MAX_EXEMPLES).map(formaterCorrection);
+  //
+  // La réserve leur revient, augmentée de ce que les mots n'ont pas consommé.
+  reste += misDeCote;
   const nbExemples = ajouter(
     "CE QU'IL A CORRIGÉ LES FOIS PRÉCÉDENTES — c'est sa façon de faire, reprends-la :",
     exemples,

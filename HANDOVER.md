@@ -20,9 +20,31 @@ Next.js avec PostgreSQL, isolée par entreprise via *row level security*.
 
 ## Ce qui vient d'être terminé
 
+**Le vocabulaire d'un vrai devis d'élagueur (9 août).** Huit règles de rédaction
+et dix-neuf mots du métier, tirés de six documents d'un confrère —
+`termes_metier` en compte vingt-sept.
+
+**À savoir avant d'en ajouter, et c'est mesuré, pas supposé :** la consigne
+envoyée avec chaque dictée a un budget de **9 000 caractères**, dont un quart est
+RÉSERVÉ à ses corrections. Tout tient aujourd'hui — 8 512 caractères, 27 termes
+sur 27, 5 corrections sur 5 — mais il n'y a plus qu'environ cinq cents
+caractères de marge. **Le prochain qui ajoute du vocabulaire doit remesurer**
+(`construireConsigneMetier(termes, corrections)` rend `termesRetenus` et
+`ecartes`) : au-delà, des termes repartent au vestiaire en silence pour qui ne
+regarde pas. L'ordre des termes décide de qui part : d'abord ce qui change un
+prix ou crée une ligne détachable. `ARCHITECTURE.md` §37 et §38.
+
+**Et une leçon qui n'est pas technique** : la définition « le gros bois se débite
+en 40 ou 50 cm » a été écrite le matin à partir de deux exemples, et démentie
+l'après-midi par un devis à 33 cm. Deux occurrences ne fondent pas une
+énumération — un champ sans source fiable reste ouvert (`docs/AGENT.md` §3).
+
 **Un calendrier des deux côtés (9 août).** Le client ne peut plus choisir un jour
-déjà pris — il est barré et ne répond pas. Le patron a le même, jusqu'à dix-huit
-mois. Un seul composant sert les deux écrans, et il ne décide de rien : tout
+déjà pris — il est barré et ne répond pas. Le patron a le même : ses journées
+prises sont barrées sur **douze mois** (`HORIZON_OCCUPATION_PATRON_JOURS`, 365
+jours), alors qu'il peut proposer une date jusqu'à **dix-huit mois**
+(`HORIZON_PATRON_JOURS`, 550 jours) — deux horizons distincts, ne pas les
+confondre. Un seul composant sert les deux écrans, et il ne décide de rien : tout
 vient de `src/lib/calendrier.ts`. **L'ordre des raisons dans `etatDuJour` n'est
 pas indifférent** — un jour hors fenêtre ne doit jamais se dire « déjà pris »
 chez le client, sinon sa page laisse filtrer le planning. `ARCHITECTURE.md` §36.
