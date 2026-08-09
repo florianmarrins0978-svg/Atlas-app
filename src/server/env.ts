@@ -90,12 +90,43 @@ function construireEnv(): Env {
   const nodeEnv = (process.env.NODE_ENV as Env["nodeEnv"]) ?? "development";
   const estProduction = nodeEnv === "production";
 
+  /**
+   * **Bâtir n'est pas déployer.**
+   *
+   * Découvert le 9 août 2026 en cherchant, pour la première fois, à mesurer la
+   * vitesse réelle de l'application : `npm run build` était **impossible**.
+   *
+   *     ErreurConfiguration: LLM_PROVIDER vaut « dev » en production…
+   *     Failed to collect page data for /api/agenda/google/retour
+   *
+   * `next build` se déclare `NODE_ENV=production` et importe chaque module pour
+   * préparer les pages. Tout module qui lit la configuration à l'import —
+   * `src/auth.ts` a besoin du secret de session pour construire NextAuth —
+   * déclenchait donc les refus ci-dessous **pendant la compilation**. Résultat :
+   * produire une version optimisée exigeait de détenir une clé d'IA facturée,
+   * un compartiment S3 et un secret de tâche planifiée. Ni la CI, ni le banc
+   * d'essai, ni personne ne pouvait le faire — et personne ne l'avait jamais
+   * fait, ce qui est précisément pourquoi le défaut a vécu si longtemps.
+   *
+   * Ces refus protègent une application **qui sert des clients**, pas un
+   * compilateur qui produit des fichiers. On les suspend donc pendant la
+   * construction, et pendant elle seule : au démarrage du serveur, `NEXT_PHASE`
+   * ne vaut plus `phase-production-build`, et tout s'applique à nouveau.
+   *
+   * **Ce n'est pas un affaiblissement**, et il faut pouvoir le démontrer : la
+   * suite `scripts/test-env.ts` éprouve les deux sens — construction acceptée,
+   * exécution toujours refusée. Sans ce second cas, la porte serait ouverte
+   * pour de bon.
+   */
+  const enConstruction = process.env.NEXT_PHASE === "phase-production-build";
+  const exigencesDeProduction = estProduction && !enConstruction;
+
   const databaseUrl = requis("DATABASE_URL");
 
   // AUTH_SECRET : obligatoire en production (signature des sessions Auth.js).
   // En développement/test, une valeur par défaut fixe est acceptée pour ne
   // pas alourdir la configuration locale — jamais utilisée si NODE_ENV=production.
-  const authSecret = estProduction
+  const authSecret = exigencesDeProduction
     ? requis("AUTH_SECRET")
     : (process.env.AUTH_SECRET ?? "dev-secret-non-utilise-en-production");
 
@@ -166,7 +197,7 @@ function construireEnv(): Env {
   // l'absence de Redis pour exactement la même raison — voir son en-tête : en
   // production, jamais de repli silencieux vers un comportement de
   // développement. L'IA simulée était le seul oubli qui passait en silence.
-  if (estProduction) {
+  if (exigencesDeProduction) {
     for (const [variable, valeur, cles] of [
       ["LLM_PROVIDER", llmProvider, CLES_LLM],
       ["TRANSCRIPTION_PROVIDER", transcriptionProvider, CLES_TRANSCRIPTION],
@@ -196,7 +227,7 @@ function construireEnv(): Env {
   // Le stockage local ne doit JAMAIS être utilisé en production (fichiers
   // éphémères / non partagés entre instances) — échec explicite au démarrage.
   const stockageProviderBrut = process.env.STORAGE_PROVIDER ?? "local";
-  if (estProduction && stockageProviderBrut !== "s3") {
+  if (exigencesDeProduction && stockageProviderBrut !== "s3") {
     throw new ErreurConfiguration(
       "STORAGE_PROVIDER doit valoir 's3' en production (le stockage local ne persiste pas entre instances/déploiements)."
     );
@@ -218,7 +249,7 @@ function construireEnv(): Env {
   // d'entrée de purge planifiée) — une valeur triviale/par défaut en
   // production serait une porte dérobée, jamais acceptée silencieusement.
   const cronSecret = process.env.CRON_SECRET;
-  if (estProduction && (!cronSecret || cronSecret.length < 16)) {
+  if (exigencesDeProduction && (!cronSecret || cronSecret.length < 16)) {
     throw new ErreurConfiguration("CRON_SECRET manquant ou trop court en production (16 caractères minimum).");
   }
 
@@ -226,7 +257,7 @@ function construireEnv(): Env {
   // instances : REDIS_URL est donc obligatoire en production, comme pour le
   // stockage — échec explicite au démarrage plutôt qu'un rate limit
   // silencieusement inefficace une fois déployé.
-  if (estProduction && !process.env.REDIS_URL) {
+  if (exigencesDeProduction && !process.env.REDIS_URL) {
     throw new ErreurConfiguration("REDIS_URL manquant en production (la limitation de débit en mémoire n'est jamais autorisée).");
   }
 
