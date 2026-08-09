@@ -58,15 +58,70 @@ async function main() {
     );
   });
 
-  await cas("base injoignable : aucun cookie, et rien qui explose", async () => {
-    // Le préchauffage est un confort. Un confort qui empêche un serveur de
-    // démarrer coûte infiniment plus cher que le confort qu'il apporte.
+  await cas("base injoignable : aucun cookie, et le message accuse LA BASE", async () => {
+    // **Ce message a menti le 9 août 2026.** PostgreSQL s'était arrêté sur la
+    // machine ; le démarrage annonçait « Préchauffage impossible : pas de
+    // session », ce qui envoyait chercher du côté des comptes et des jetons. La
+    // vraie phrase était `ECONNREFUSED 127.0.0.1:5432` — la base ne répondait
+    // pas, donc AUCUN écran ne pouvait fonctionner. Une erreur qui accuse à
+    // tort coûte plus cher que pas d'erreur du tout.
+    //
+    // Le préchauffage reste par ailleurs un confort : il ne doit jamais
+    // empêcher un serveur de démarrer.
+    const dits: string[] = [];
     const cookie = await cookieDeSession({
       databaseUrl: "postgresql://personne:rien@127.0.0.1:1/nexiste_pas",
       authSecret: "un-secret-de-banc",
       nodeEnv: "development",
+      ecrire: (r: string) => {
+        dits.push(r);
+      },
     });
     assert.equal(cookie, null);
+    assert.equal(dits.length, 1, `attendu une raison, reçu : ${JSON.stringify(dits)}`);
+    assert.match(
+      dits[0],
+      /BASE DE DONNÉES NE RÉPOND PAS/,
+      `le message enverrait chercher au mauvais endroit : « ${dits[0]} »`
+    );
+  });
+
+  await cas("l'état du préchauffage vit dans /tmp, jamais dans le dépôt", async () => {
+    // Un fichier neuf à la racine salirait l'arbre git, et `mettre-a-jour.sh`
+    // refuserait alors TOUTES les mises à jour suivantes : le remède créerait
+    // la panne. Même piège, même règle que le journal de mise à jour.
+    const { ETAT_PRECHAUFFAGE } = await import("./prechauffer.mjs");
+    assert.match(ETAT_PRECHAUFFAGE, /^\/tmp\//, `l'état est déposé dans ${ETAT_PRECHAUFFAGE}`);
+  });
+
+  console.log("\n=== L'écran d'état, lisible depuis un téléphone ===");
+
+  await cas("il ne touche ni la base ni les dépôts : il doit répondre quand tout est mort", () => {
+    // Cette page sert quand plus rien ne marche. Une seule requête en base, et
+    // elle tomberait exactement au moment où on en a besoin.
+    const source = readFileSync(
+      path.join(RACINE, "src", "app", "api", "health", "banc", "route.ts"),
+      "utf8"
+    );
+    const imports = source
+      .split("\n")
+      .filter((l) => /^import /.test(l))
+      .filter((l) => /@\/server\/(db|repositories)|drizzle|withEntreprise/.test(l));
+    assert.deepEqual(imports, [], `la page d'état interroge la base : ${imports.join(" | ")}`);
+  });
+
+  await cas("aucune astérisque de mise en forme ne peut atterrir à l'écran", () => {
+    // **Vu sur l'écran, jamais dans le code.** Le premier jet écrivait `**…**`
+    // au milieu d'une phrase : le patron lisait les astérisques en clair.
+    const source = readFileSync(
+      path.join(RACINE, "src", "app", "api", "health", "banc", "route.ts"),
+      "utf8"
+    );
+    const fautives = source
+      .split("\n")
+      .filter((l) => !/^\s*(\/\/|\*)/.test(l.trim()))
+      .filter((l) => /"[^"]*\*\*/.test(l));
+    assert.deepEqual(fautives, [], `du gras en astérisques part vers l'écran : ${fautives.join(" | ")}`);
   });
 
   await cas("hors production avec une vraie base : un cookie de session utilisable", async () => {

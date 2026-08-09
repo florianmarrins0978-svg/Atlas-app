@@ -95,6 +95,25 @@ Le veilleur traite en outre le cas qu'il ne voyait pas : un serveur **présent
 mais muet**, que `pgrep` trouvait — donc aucune relance, et une boucle qui
 tournait pour rien. Il est maintenant délogé après deux tours.
 
+### Une page d'état, parce qu'il travaille au téléphone
+
+*« Va regarder toi-même, je peux pas te l'envoyer. »* Trois minutes devant un
+écran qui ne s'ouvre pas, et la seule chose capable de dire pourquoi était un
+terminal qu'il ne pouvait pas photographier. Je n'ai aucun accès à son espace :
+l'information devait venir à lui.
+
+`/api/health/banc` s'ouvre sans se connecter, en quelques millisecondes, et dit
+la version exécutée, où en est le préchauffage, et ce qui bloque. En HTML et non
+en JSON — sur un téléphone, du JSON se lit sur une ligne minuscule. Sans aucune
+requête en base : elle sert quand tout est mort.
+
+En l'éprouvant, deux défauts de plus. **PostgreSQL était arrêté** et le
+démarrage annonçait « Préchauffage impossible : pas de session » — ce qui
+envoyait chercher du côté des comptes, alors que la base ne répondait pas et
+qu'aucun écran ne pouvait fonctionner. Et la page écrivait `**…**` en croyant
+faire du gras : le patron aurait lu des astérisques. Les deux sont corrigés, et
+tenus par des contrôles éprouvés rouges.
+
 
 ### Une base restée en arrière, et rien pour le dire
 
