@@ -121,9 +121,8 @@ if (!pret) {
   // Rien de tout ceci ne doit pouvoir empêcher le serveur de servir : la
   // moindre difficulté est écrite et oubliée.
   try {
-    const { cookieDeSession, ecransDeChantier, ECRANS_A_PRECHAUFFER, prechauffer } = await import(
-      "./prechauffer.mjs"
-    );
+    const { cookieDeSession, ecransDeChantier, ECRANS_A_PRECHAUFFER, expliquerObstacle, prechauffer } =
+      await import("./prechauffer.mjs");
     const base = `http://127.0.0.1:${PORT}`;
     const cookie = await cookieDeSession({
       databaseUrl: process.env.DATABASE_URL,
@@ -144,8 +143,11 @@ if (!pret) {
       console.log(
         `\n  Préchauffage terminé : ${bilan.reussis} écran(s) prêts` +
           (bilan.echoues ? `, ${bilan.echoues} en échec` : "") +
-          ` — ${bilan.secondes} s.\n`
+          ` — ${bilan.secondes} s.`
       );
+      const obstacle = expliquerObstacle(bilan.renvoiDominant);
+      if (obstacle) console.log(`  ${obstacle}`);
+      console.log("");
     }
   } catch (e) {
     console.log(`  (Préchauffage abandonné : ${e instanceof Error ? e.message : e})\n`);
