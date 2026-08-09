@@ -118,7 +118,10 @@ export default function ExportClient({
             <ul className="flex flex-col gap-2">
               {lignes.map((l, i) => (
                 <li key={i} className="flex items-baseline justify-between gap-3 text-[15px]" style={{ color: colors.ink }}>
-                  <span className="min-w-0 flex-1">{l.libelle || "Ligne sans libellé"}</span>
+                  {/* `whitespace-pre-line` : une ligne réunit plusieurs travaux,
+                      un par ligne. Sans cela, ils se recolleraient en une phrase
+                      — le défaut même qu'on vient de réparer. */}
+                  <span className="min-w-0 flex-1 whitespace-pre-line">{l.libelle || "Ligne sans libellé"}</span>
                   <span style={{ color: colors.muted }}>{enEuros(l.montant)}</span>
                 </li>
               ))}

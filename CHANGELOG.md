@@ -7,6 +7,365 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-09
+
+### Un calendrier des deux côtés, où les jours pris ne se touchent pas
+
+Sa demande : *« passe au calendrier pour le choix des dates à proposer au
+client, mais également qu'il ait accès au calendrier pour pouvoir proposer une
+date, avec un système pour qu'il n'ait pas accès aux dates déjà prises par un
+autre client. »*
+
+Les deux écrans employaient le sélecteur du téléphone. Il sait borner une
+fenêtre — **il ne sait pas griser un jour au milieu**. Le client choisissait donc
+un mardi déjà pris et ne l'apprenait qu'après coup, par un refus. Ce n'est pas
+un détail d'affichage : un client qui bute sur un refus rappelle, ou renonce.
+
+Le même composant sert les deux écrans, délibérément : deux calendriers écrits
+séparément finiraient par ne pas griser les mêmes jours, et l'écart se verrait
+chez le client. Il ne décide de rien — la grille, l'état d'un jour et la règle
+« une ou deux dates » sont des fonctions pures, éprouvées sans navigateur.
+
+**Un jour hors de la fenêtre du client ne lui dit jamais qu'il est « déjà
+pris »** : lui apprendre qu'un jour de l'an prochain est occupé lui apprendrait
+quelque chose du planning du patron, et sa page ne reçoit que des dates.
+
+Côté patron, l'horizon va à dix-huit mois mais les jours occupés ne sont chargés
+que sur la fenêtre proche : au-delà, c'est le serveur qui tranche, comme avant.
+Le calendrier propose, il ne décide pas. Détail dans `ARCHITECTURE.md` §36.
+
+Les deux contrôles navigateur regardaient `min` et `max` du champ natif —
+la mauvaise question, puisqu'un champ bien borné laissait quand même choisir un
+jour pris. Ils regardent maintenant ce que la personne peut toucher.
+
+---
+
+## 2026-08-08
+
+### La souche et les grumes se détachent — l'évacuation non
+
+Sa réponse à la question laissée ouverte la veille : *« le dessouchage oui, et
+les grumes aussi »*. **Deux sur trois, et le troisième compte autant** :
+l'évacuation seule reste avec l'abattage et le broyage, comme sur son devis du
+5 août. Un contrôle tient les deux sens, parce qu'un jour quelqu'un trouvera
+« logique » de détacher l'évacuation aussi.
+
+La différence n'est pas de vocabulaire : une grume a de la valeur, le client
+peut vouloir la garder ou la vendre. Les branches broyées, non.
+
+Cinq grilles désormais, et trois formes : deux axes pour l'abattage et le
+fendage, **un seul axe pour le dessouchage** (le diamètre de la souche — la
+hauteur de l'arbre qui n'est plus là ne décide de rien), une case unique pour la
+haie et les grumes. 82 cases au total.
+
+**Une réserve, dite à l'écran et pas seulement dans le code :** il n'a pas
+précisé à quoi se chiffrent les grumes — au mètre cube, à la tonne, au voyage.
+Une case unique retient donc ce qu'il facture, et l'écran l'invite à trancher.
+Inventer un axe aurait été inventer sa décision. Détail dans `ARCHITECTURE.md`
+§35.
+
+Deux détails qui ont failli passer : « enlèvement des grumes et dessouchage »
+est une seule prestation que deux règles reconnaissent — sans ordre explicite
+elle se serait facturée deux fois ; et « 40 à 50 cm » désigne maintenant deux
+champs à l'écran, si bien que le nom accessible porte désormais la grille
+entière.
+
+### Le client ne pouvait ni voir sa facture ni télécharger son devis
+
+**Le défaut le plus grave de la journée, et il a été trouvé par accident.** Une
+suite navigateur a échoué parce que je l'avais lancée contre un serveur démarré
+sous le rôle applicatif au lieu du rôle de test. L'erreur de manipulation a mis
+au jour ce qu'aucun contrôle ne pouvait voir.
+
+En production, le lien de facture envoyé au client répondait **« ce lien n'est
+plus valable »** sur une facture parfaitement valide. Et le PDF du devis — le
+document que son client lit — échouait de la même façon. La branche « envoi de
+la facture » qu'il demandait ce jour-là était donc morte avant même d'être
+atteinte.
+
+La cause : `envois_devis` et `envois_factures` portent une politique de lecture
+par jeton, `devis` et `factures` n'en portent pas. Retrouver l'envoi marchait,
+lire le document derrière ne marchait pas. Le correctif pose le contexte
+d'entreprise **déduit du jeton** — ce que la page du devis faisait déjà — sans
+affaiblir l'isolation : l'entreprise vient de l'envoi, jamais du client.
+
+**Ce qu'il faut en retenir dépasse le défaut.** Les suites navigateur démarrent
+leur serveur sous un rôle qui **traverse la RLS**, parce qu'elles inspectent la
+base. Elles ne peuvent donc pas, par construction, voir un défaut d'isolation —
+et `test-facture-au-client-e2e.ts` parcourait ce chemin exact, vert depuis le
+6 août. Tout chemin public par jeton doit désormais être éprouvé par une suite
+base, sous le rôle applicatif : `scripts/test-facture-jeton-rls.ts`.
+Détail dans `ARCHITECTURE.md` §34.
+
+### Du planning à la facture, sans détour
+
+Le patron : *« le client m'avait retourné la date validée, il se range dans les
+chantiers planifiés, mais comment moi je fais pour avoir accès au devis ? Toute
+cette branche-là n'est pas faite. »*
+
+**La chaîne était construite — et injoignable depuis là où il se trouvait.**
+Facture depuis le devis, arrêt 3, émission, relevé de TVA, message tout prêt :
+tout existait. Mais sur le planning, toucher un chantier planifié n'ouvrait
+qu'un sélecteur de date. Une chaîne qu'on ne peut pas atteindre vaut une chaîne
+qu'on n'a pas écrite ; répondre « c'est déjà fait » aurait été exact et inutile.
+
+La carte du planning mène désormais **au chantier**, porte un bouton **Fin de
+chantier**, et garde le changement de date sur un lien discret.
+
+**Deux défauts trouvés en reproduisant son écran**, tous deux issus de la même
+cause : la règle de rangement était écrite trois fois. Le planning comparait
+`< aujourd'hui` en TypeScript, le dépôt des terminés `<= aujourd'hui` en SQL.
+
+- Un chantier prévu **aujourd'hui** figurait dans **deux onglets** — le défaut
+  qu'il avait signalé le 6 août, revenu par la porte du signe.
+- Un chantier **clôturé avant sa date** restait au planning comme si de rien
+  n'était, absent des terminés, **sa facture en brouillon joignable seulement
+  par son adresse**. Or clôturer plus tôt que prévu est autorisé à dessein
+  depuis le 3 août.
+
+Un seul cœur désormais, deux portes selon la donnée disponible, et le filtre du
+planning **sorti du composant** — c'est le vrai correctif : tant qu'il vivait
+dans l'écran, aucun contrôle ne pouvait constater qu'il contredisait la règle.
+Détail dans `ARCHITECTURE.md` §33.
+
+**Et un troisième défaut, vu sur une capture.** À l'arrêt 3, les travaux réunis
+d'une même ligne s'affichaient « Abattage d'un chêne mort Br… ». La coupe venait
+d'un `truncate` : le texte entier restait dans la page, donc **toute assertion
+sur le contenu passait**. L'écran qui sert à vérifier avant que la facture parte
+en cachait les deux tiers. Le contrôle mesure maintenant la hauteur rendue.
+
+Le contrôle `test-planning-e2e.ts` a rougi, à juste titre : il verrouillait
+l'ancien comportement de la carte. Corrigé dans le bon sens, et rendu rejouable
+au passage — il visait « text=DÉC » globalement et échouait sur son propre passé
+au deuxième passage.
+
+### La facturation électronique : écrire ce qui était déjà décidé
+
+Le patron a demandé : *« qu'est-ce que tu dois faire sur la plateforme de
+facturation ? »* La réponse existait dans le dépôt — `docs/AGENT.md` §6, actée
+le 31 juillet — mais **elle n'était écrite nulle part dans son langage**, et
+c'est exactement le cas que `docs/QUESTIONS.md` sert à couvrir : une décision
+expliquée une fois puis oubliée se repose trois mois plus tard.
+
+Ce qui ne se rouvre pas : **Atlas prépare les factures, il ne les émet pas au
+sens légal.** Ce qui reste ouvert : sur quel outil comptable se brancher — il
+n'en a aucun à ce jour.
+
+Deux points qu'il ne faut pas confondre, et qui sont désormais distingués noir
+sur blanc : la conformité d'Atlas comme produit vendu à des artisans, et
+l'obligation qui pèse sur **Eden Nature elle-même**, qu'Atlas existe ou non.
+Les échéances annoncées — septembre 2026 pour la réception, septembre 2027 pour
+l'émission des petites entreprises — sont écrites **avec leur réserve** : ce
+calendrier a déjà été décalé deux fois et l'environnement de l'agent ne peut pas
+le vérifier, son mandataire refusant les sites publics. À faire confirmer par un
+comptable.
+
+`docs/QUESTIONS.md` question 11 et `docs/A-FAIRE.md` point 6, ajoutés avec son
+accord explicite. Rien à coder sur la facturation avant que l'outil soit
+choisi.
+
+**Au passage, un défaut vu sur une capture et pas par un contrôle :** les quatre
+pages consultables affichaient leurs astérisques — `*« … »*` au lieu de
+l'italique. Or dans ces documents l'italique porte **les paroles du patron**,
+citées mot pour mot : une vingtaine de citations défigurées sur les pages qu'il
+lit le plus. `scripts/md-en-page.mjs` connaît maintenant l'italique, après le
+gras et jamais avant — l'inverse ferait de `**mot**` un italique contenant un
+astérisque.
+
+### Trois grilles de prix, et le devis du 5 août enfin juste
+
+Le patron a répondu à trois questions posées avec leurs options : **on garde les
+8 × 6 tranches** de la grille de fendage, **la haie prend sa propre ligne** avec
+un prix au mètre linéaire, et **l'abattage a sa grille**, à la technique × le
+diamètre.
+
+Son devis de référence du 5 août — haie 350 €, abattage 600 €, fendage 300 €,
+total 1 250 € — sort désormais **exactement comme il l'avait écrit**. Il en
+comptait deux lignes le matin même.
+
+**La bascule qui va avec, et qu'il faut connaître :** dès que la ligne
+principale a un prix dans sa grille, Atlas cesse de chiffrer à la journée et
+compte **poste par poste**. Le total devient la somme des grilles, et l'écran le
+dit — un total qui change de méthode sans un mot se lit comme une erreur. Tant
+que la grille d'abattage est vide, rien ne change, et en silence.
+
+**La haie s'apprend au mètre, jamais au montant.** 350 € sur une haie de 20 ml
+range 17,50 €/ml dans la grille. Retenir 350 € ferait facturer 350 € la haie
+suivante, quelle que soit sa longueur. Sans longueur connue, on n'apprend rien
+plutôt qu'un prix faux.
+
+L'écran s'appelle maintenant `Réglages → Mes prix : abattre, fendre, tailler`.
+
+Détail des choix dans `ARCHITECTURE.md` §32.
+
+### Déposer sa liste de prix, au lieu de la retaper
+
+Le patron : *« si l'utilisateur a déjà un fichier Excel ou un PDF avec ces
+lignes de prix, il doit pouvoir le rentrer dans les réglages via une touche, et
+que les prix s'ajoutent automatiquement. »*
+
+`Réglages → J'ai déjà mes prix ailleurs → Choisir un fichier`. Atlas y lit les
+désignations, les prix et les unités, et **montre ce qu'il ferait avant de le
+faire** : ce qui s'ajoute, ce qui change — l'ancien prix barré à côté du nouveau
+—, et ce qu'il n'a pas compris, ligne par ligne. Rien n'est enregistré avant
+son appui.
+
+**Ce n'est pas de la prudence de principe.** Ces tarifs commandent le prix de
+ses devis. Un fichier mal lu écraserait sa grille sans qu'il l'ait vu passer, et
+il ne s'en apercevrait que sur un devis déjà parti.
+
+**Rien n'est deviné.** Une ligne de titre (« ABATTAGE »), un « sur devis », une
+ligne sans désignation : écartées et signalées, jamais complétées par zéro — un
+tarif à 0 € se proposerait ensuite comme « gratuit ». Un même intitulé deux fois
+ne crée pas deux tarifs concurrents.
+
+Lu sans aucune bibliothèque, comme l'archive de la sauvegarde : un `.xlsx` est
+un ZIP de deux fichiers XML. Au passage, sept pièges de vraies feuilles ont été
+traités — le BOM d'Excel, le point-virgule français, un vieux CSV en Latin-1,
+un texte coupé en deux par Excel, une cellule vide qui décale les colonnes, une
+colonne de numéros d'article prise pour les prix.
+
+**Le PDF est refusé, et le refus dit quoi faire.** Un PDF n'est pas un tableau,
+c'est une image de tableau : les colonnes n'y existent plus. Le message donne la
+sortie — « Ouvrez la liste dans Excel puis Enregistrer sous → CSV ». Voir
+`TODO.md` §0 sexies.
+
+Détail des choix dans `ARCHITECTURE.md` §31.
+
+### Proposer une date dans six mois — ce n'était pas possible
+
+Le patron, en le voyant venir avant que ça ne lui coûte : *« la proposition des
+dates au client, on a une visibilité que sur une semaine. Comment je fais si je
+dois lui proposer une date dans six mois ? C'est un problème qui va se produire
+à coup sûr. »*
+
+L'écran suggérait les six prochains jours ouvrés, et **aucune autre porte
+n'existait**. Il peut désormais choisir n'importe quelle date **jusqu'à
+dix-huit mois** — l'élagage est saisonnier, une haie « à la fin de l'hiver
+prochain », c'est quatorze mois. L'écran répond tout de suite : retenue, ou
+pourquoi non, avec le jour libre le plus proche à portée de pouce.
+
+**Ce que son client voit, lui, ne s'ouvre pas d'autant.** La page publique
+reçoit la liste des jours occupés : lui donner dix-huit mois reviendrait à lui
+donner le carnet de commandes. Elle montre donc trois semaines autour de la date
+proposée — assez pour « plutôt la semaine d'après », pas assez pour lire le
+planning. Sur « soit jeudi, soit à la Toussaint », les deux dates restent
+retenables et **le semestre du milieu reste invisible**.
+
+**Trois barrières se dressaient sur ce chemin**, et la troisième était la plus
+chère : la revérification de la réponse. Elle se faisait contre une fenêtre
+glissante de trois mois — le client aurait lu « date indisponible » **en
+acceptant la date que le patron venait de lui proposer**, et le devis se serait
+perdu là.
+
+**Et un défaut latent que personne n'avait signalé :** la fenêtre était
+recalculée à chaque ouverture du lien, depuis la date du jour. Un devis parti un
+lundi et ouvert trois semaines plus tard n'offrait plus les mêmes jours. Elle
+s'ancre maintenant au jour de l'envoi.
+
+Dernier détail, qui n'en est pas un : **l'année s'affiche** quand la date n'est
+pas dans l'année en cours. « Lundi 8 février » ne veut plus rien dire quand on
+peut proposer à dix-huit mois.
+
+Détail des choix dans `ARCHITECTURE.md` §30.
+
+### Le devis se sépare en lignes vendables, et la fente a son prix
+
+Le patron, pour la troisième fois en deux jours : *« l'agent ne comprend
+toujours pas qu'il faut séparer les tâches. Tout ce que je dicte arrive sur la
+même ligne du devis. »* Puis, apprenant qu'on l'avait diagnostiqué la veille sans
+le corriger : *« on avait déjà travaillé sur ce défaut-là hier et je croyais que
+tu l'avais corrigé. »* Il avait raison.
+
+Le défaut tenait en une ligne — `join(" ; ")` — à deux endroits du chiffrage.
+
+**Ce qui change sur son devis :**
+
+- l'abattage, le broyage et l'évacuation sont réunis sur **une** ligne ;
+- la fente du bois fait la **sienne**, parce que le client peut la refuser ou la
+  confier à un autre ;
+- **plus aucun point-virgule** : les travaux réunis s'empilent, un par ligne ;
+- le billonnage (« on le coupe en 50 ») ne fait plus de ligne quand un abattage
+  l'accompagne — il est compris dedans, comme il l'avait dit le 5 août. Ce qui
+  est ainsi fondu est **signalé**, jamais escamoté.
+
+Et la raison, dans ses mots, qui ne se devine pas : *« si le client ne veut pas
+la fente, il va trouver le reste cher ; et s'il fait faire le reste par un autre
+artisan et qu'il nous prend juste pour la fente, 100 € ce n'est pas assez
+cher. »* D'où **850 + 250** au lieu de 1 000 + 100, à total égal.
+
+### Une grille de prix pour la fente : hauteur × diamètre, 48 cases
+
+*« Pour la fente, ils devraient demander la hauteur de l'arbre et son diamètre,
+et on crée une liste de prix en fonction de la hauteur et du diamètre, comme ça
+il n'invente rien. »* Puis, sur une première grille à 3 × 3 : *« par contre il
+faut faire plus de tranche. »* Elle en compte donc **8 diamètres × 6 hauteurs**.
+
+**Elle naît vide, et c'est le point entier.** Aucun prix n'est semé par le
+dépôt, et aucune case ne se devine depuis ses voisines : une case vide est une
+question posée, la ligne s'écrit à 0 € — visible comme un prix à poser — et
+l'écran nomme la case qui manque.
+
+**Elle se remplit toute seule.** Chaque prix de fente écrit sur un vrai devis
+vient se ranger dans la bonne case. C'est son idée : *« le mieux, c'est que je
+fasse plein de devis et que tu enregistres toutes mes modifications, et dans un
+mois tu sauras les remplir tout seul. »* Il peut aussi poser un prix à l'avance,
+dans `Réglages → Mes prix pour fendre le bois` — et une observation n'écrase
+jamais une décision qu'il a prise lui-même.
+
+Ses prix restent **les siens** : la grille est isolée par entreprise, à la
+différence du vocabulaire du métier, qui part avec l'application
+(`docs/QUESTIONS.md` §10).
+
+### Deux défauts trouvés en construisant, et qui n'auraient rien dit
+
+- **Une seconde écriture de la proposition au détail** dormait dans le code,
+  exportée et appelée par personne. Elle ignorait le contrôle de doublon. Elle a
+  été supprimée plutôt que mise à jour une fois de plus.
+- **Le contrôle d'exhaustivité de l'export a fait son travail** : la nouvelle
+  table portant une entreprise manquait dans la sauvegarde du patron. Sans lui,
+  il aurait emporté ses données en y laissant ses prix de fendage.
+
+### La batterie de tests ne finissait pas — et rien ne le disait
+
+Trouvé en voulant simplement jouer `npm test` avant de livrer.
+
+`test-ia-03-propositions.ts` affichait **« 8 test(s) réussi(s), 0 échoué(s) »**
+puis restait là, pour toujours. La batterie s'arrêtait à cette suite, sans un
+mot, et les cinquante suivantes n'étaient jamais jouées. Aucun test n'échouait :
+c'est le pire des états, parce qu'une batterie qui ne finit pas ne dit pas
+« rouge » — elle ne dit plus rien, et on croit vert ce qu'on n'a pas regardé.
+
+**La cause :** le limiteur de débit ouvre une connexion Redis dès qu'une action
+protégée est traversée, et personne ne la fermait. Le processus ne pouvait pas
+s'arrêter.
+
+**Pourquoi ça ne s'est jamais vu en CI :** l'étape `npm test` de la CI ne posait
+pas `REDIS_URL` — alors que `CLAUDE.md` §5 la demande pour jouer la batterie en
+local. La CI ne jouait donc pas ce que le dépôt dit de jouer, et l'écart cachait
+le défaut. Les deux se jouent désormais dans les mêmes conditions.
+
+**Trois corrections, pas une :**
+
+1. `fermerLimiteur()` ferme la connexion, appelée en fin des neuf suites qui
+   traversent une action limitée ;
+2. la CI pose `REDIS_URL` sur `npm test` ;
+3. le lanceur **tue toute suite qui n'a pas rendu la main en huit minutes**, avec
+   un message qui désigne le bon coupable — « ses tests ont peut-être tous
+   réussi ; c'est le processus qui ne s'arrête pas ». Éprouvé contre une suite
+   volontairement bloquée : il la voit, et il ne se déclenche pas sur une suite
+   saine.
+
+**Et un quatrième, de la même famille :** `test-adresse-suggestions-e2e`
+échouait en batterie et passait seule. Elle est la première dans l'ordre
+alphabétique et attendait la toute première compilation des écrans — son message
+accusait l'adresse, qui n'y était pour rien. Le lanceur préchauffe désormais les
+écrans avant de commencer.
+
+Détail des choix dans `ARCHITECTURE.md` §29.
+
+---
+
 ## 2026-08-07
 
 ### L'adresse se propose pendant la frappe, et se choisit d'un doigt

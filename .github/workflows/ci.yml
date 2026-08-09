@@ -128,6 +128,15 @@ jobs:
         env:
           DATABASE_URL: postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test
           DATABASE_ADMIN_URL: postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test
+          # **Posé le 8 août 2026, et ce n'est pas une formalité.** `CLAUDE.md`
+          # §5 demande cette variable pour jouer la batterie en local ; cette
+          # étape, elle, ne la posait pas. La CI ne jouait donc PAS ce que le
+          # dépôt dit de jouer — et l'écart cachait un défaut réel : avec Redis,
+          # une suite laissait une connexion ouverte et le processus ne rendait
+          # jamais la main. En local la batterie s'arrêtait pour toujours, sans
+          # un mot ; en CI tout était vert. Les deux se jouent désormais dans
+          # les mêmes conditions.
+          REDIS_URL: redis://localhost:6379
         run: npm test
 
       - name: Build de production (vérification structurelle)

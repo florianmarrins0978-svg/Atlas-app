@@ -4,6 +4,9 @@ import { chantiers, clients, devis, entreprises } from "../db/schema";
 import type { Ctx } from "./context";
 import {
   fenetreProposition,
+  fenetrePatron,
+  libelleDuree,
+  type FenetreProposition,
   versJourIso,
   ajouterJours,
   compterOccupation,
@@ -33,6 +36,16 @@ export type PreparationEnvoi = {
   joursLibres: JourIso[];
   joursOccupes: JourIso[];
   fenetre: { debut: JourIso; fin: JourIso };
+  /**
+   * Jusqu'où LE PATRON peut aller chercher une date — dix-huit mois.
+   *
+   * Distinct de `fenetre`, qui est ce que le CLIENT verra. Les confondre
+   * reviendrait soit à lui interdire de proposer l'automne prochain, soit à
+   * livrer un an et demi de planning à quelqu'un qui n'a rien signé.
+   */
+  horizon: { debut: JourIso; fin: JourIso };
+  /** Nombre d'équipes de l'entreprise — combien de chantiers tiennent le même jour. */
+  nombreEquipes: number;
   /**
    * Durée que ce chantier va réserver, en demi-journées. Elle commande les
    * jours proposables : une demi-journée tient là où une journée entière ne
@@ -146,6 +159,8 @@ export async function preparerEnvoi(
       canal,
       clientNom: client?.nom ?? null,
       destinataire,
+      nombreEquipes,
+      horizon: fenetrePatron(maintenant),
       joursLibres: premiersJoursLibres(
         maintenant,
         { occupation, nombreEquipes, dureeDemiJournees },
@@ -226,4 +241,149 @@ export function premiersJoursLibres(
     libres.push(jour);
   }
   return libres;
+}
+
+// ---------------------------------------------------------------------------
+// Une date que le patron choisit lui-même
+// ---------------------------------------------------------------------------
+//
+// **Le manque, dans ses mots, le 8 août 2026 :** *« la proposition des dates au
+// client, on a une visibilité que sur une semaine. Comment je fais si je dois
+// lui proposer une date dans six mois ? »*
+//
+// Les six jours suggérés restent le cas ordinaire — un appui, et c'est parti.
+// Ce qui manquait, c'est la sortie de secours : une date qu'il choisit
+// lui-même, jusqu'à dix-huit mois. Elle doit répondre **tout de suite**, et
+// dire pourquoi quand elle refuse : un jour grisé sans explication renvoie au
+// téléphone, ce que ce parcours existe pour supprimer.
+
+export type VerdictJour = {
+  jour: JourIso;
+  retenable: boolean;
+  /** Pourquoi ce jour ne peut pas être proposé — en français, pour l'écran. */
+  raison: string | null;
+  /**
+   * Le jour libre le plus proche, quand celui demandé ne l'est pas.
+   *
+   * Refuser sans rien proposer laisse le patron chercher à l'aveugle dans un
+   * calendrier de dix-huit mois. Cherché des deux côtés, au plus près.
+   */
+  alternative: JourIso | null;
+};
+
+/**
+ * Ce jour-là peut-il accueillir ce chantier ?
+ *
+ * Réutilise `preparerEnvoi` : la même occupation, la même durée, les mêmes
+ * règles. Une seconde lecture du planning finirait par diverger de celle qui
+ * décide vraiment (`CLAUDE.md` §3) — et le patron proposerait une date que
+ * l'envoi refuserait ensuite.
+ */
+export async function verifierJourPropose(
+  ctx: Ctx,
+  chantierId: string,
+  jour: JourIso,
+  dureeImposee?: number,
+  maintenant: Date = new Date()
+): Promise<VerdictJour> {
+  const horizon = fenetrePatron(maintenant);
+  const preparation = await preparerEnvoi(ctx, chantierId, maintenant, dureeImposee);
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(jour)) {
+    return { jour, retenable: false, raison: "Cette date n'est pas lisible.", alternative: null };
+  }
+  if (jour < horizon.debut) {
+    return {
+      jour,
+      retenable: false,
+      raison: "Trop tôt : proposez au moins après-demain, sinon vous vous mettez en défaut.",
+      alternative: null,
+    };
+  }
+  if (jour > horizon.fin) {
+    return {
+      jour,
+      retenable: false,
+      raison: "Au-delà de dix-huit mois, on ne sait plus ce qu'on promet.",
+      alternative: null,
+    };
+  }
+
+  // L'occupation est relue sur l'horizon entier : celle de `preparerEnvoi` ne
+  // porte que sur trois mois, et un jour à six mois y serait vu libre à tort —
+  // faute de savoir ce qui s'y trouve, pas parce qu'il l'est.
+  const contrainte = await contrainteSurHorizon(ctx, chantierId, horizon);
+
+  const libre = (j: JourIso) => jourRetenable(j, preparation.dureeDemiJournees, contrainte, preparation.nombreEquipes, horizon);
+  if (libre(jour)) {
+    const weekEnd = [0, 6].includes(new Date(`${jour}T12:00:00Z`).getUTCDay());
+    return {
+      jour,
+      retenable: true,
+      // Pas un refus : il connaît ses clients. Mais le dire évite l'appui
+      // distrait sur un samedi, qui ne se rattrape qu'en rappelant le client.
+      raison: weekEnd ? "C'est un week-end — vous pouvez le proposer, mais vérifiez que c'est voulu." : null,
+      alternative: null,
+    };
+  }
+
+  return {
+    jour,
+    retenable: false,
+    raison: `${libelleDuree(preparation.dureeDemiJournees)} ne tient pas ce jour-là : votre planning est déjà pris.`,
+    alternative: jourLibreLePlusProche(jour, horizon, libre),
+  };
+}
+
+/** Le jour libre le plus proche, cherché des deux côtés en s'éloignant. */
+function jourLibreLePlusProche(
+  depuis: JourIso,
+  horizon: FenetreProposition,
+  libre: (j: JourIso) => boolean
+): JourIso | null {
+  const centre = new Date(`${depuis}T12:00:00Z`);
+  for (let ecart = 1; ecart <= 60; ecart++) {
+    for (const sens of [1, -1] as const) {
+      const candidat = versJourIso(ajouterJours(centre, sens * ecart));
+      if (candidat < horizon.debut || candidat > horizon.fin) continue;
+      if ([0, 6].includes(new Date(`${candidat}T12:00:00Z`).getUTCDay())) continue;
+      if (libre(candidat)) return candidat;
+    }
+  }
+  return null;
+}
+
+/** L'occupation du planning sur tout l'horizon du patron, chantier courant exclu. */
+async function contrainteSurHorizon(
+  ctx: Ctx,
+  chantierId: string,
+  horizon: FenetreProposition
+): Promise<ReadonlyMap<string, number>> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const rows = await tx
+      .select({
+        id: chantiers.id,
+        jour: chantiers.datePlanifiee,
+        moment: chantiers.creneauDebut,
+        duree: chantiers.dureeDemiJournees,
+      })
+      .from(chantiers)
+      .where(
+        and(
+          eq(chantiers.entrepriseId, ctx.entrepriseId),
+          isNull(chantiers.deletedAt),
+          gte(chantiers.datePlanifiee, horizon.debut),
+          lte(chantiers.datePlanifiee, horizon.fin)
+        )
+      );
+    return compterOccupation(
+      rows
+        .filter((r) => r.jour !== null && r.id !== chantierId)
+        .map((r) => ({
+          jour: r.jour as JourIso,
+          moment: r.moment === "matin" || r.moment === "apres_midi" ? r.moment : null,
+          dureeDemiJournees: r.duree,
+        }))
+    );
+  });
 }

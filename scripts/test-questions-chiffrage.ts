@@ -5,6 +5,7 @@ import {
   questionsAvantChiffrage,
   type LignePourQuestions,
 } from "../src/lib/questions-chiffrage";
+import { diametreLu, hauteurLue } from "../src/lib/mesures-arbre";
 
 // Ce que cette suite tient, et pourquoi elle vaut plus qu'un test de fonction.
 //
@@ -97,8 +98,15 @@ cas("« 20 m linéaires » compte comme une longueur, comme « de long »", () =
 });
 
 cas("SE TAIRE : le billonnage et le fendage ne déclenchent rien", () => {
-  // Ils ne portent aucune variable de prix chez lui — le billonnage est même
-  // compris dans l'abattage. Les questionner allongerait l'arrêt pour rien.
+  // Le billonnage est compris dans l'abattage : il ne porte aucune variable de
+  // prix, et le questionner allongerait l'arrêt pour rien.
+  //
+  // **La fente, elle, en porte deux depuis le 8 août 2026** — la hauteur et le
+  // diamètre désignent une case de sa grille. Si elle ne demande rien ICI,
+  // c'est que sa dictée les donne déjà : la hauteur sur la ligne du chêne, le
+  // diamètre par la question posée à l'abattage. Le silence vient de ce que
+  // tout est su, pas de ce que rien ne compte (voir le bloc « La fente » en fin
+  // de suite).
   const q = questionsAvantChiffrage(DICTEE_DU_PATRON);
   const parasites = q.filter(
     (x) => x.libellePrestation.includes("Billonnage") || x.libellePrestation.includes("Fendage")
@@ -183,6 +191,82 @@ cas("sans réponse, le libellé reste intact", () => {
 cas("une prestation sans libellé ne produit rien", () => {
   assert.deepEqual(questionsAvantChiffrage([{ libelle: "   " }]), []);
   assert.deepEqual(questionsAvantChiffrage([]), []);
+});
+
+console.log("\n=== La fente : hauteur et diamètre, sans redemander deux fois ===");
+
+// Le patron, le 8 août 2026 : *« pour la fente ils devraient demander la
+// hauteur de l'arbre et son diamètre, et on crée une liste de prix en fonction
+// de la hauteur et du diamètre, comme ça il n'invente rien. »*
+//
+// Ce que ces cas tiennent, et qui n'est pas évident : **ces deux mesures
+// appartiennent à l'arbre, pas à la ligne de devis.** Les redemander sur la
+// ligne de la fente quand l'abattage les porte déjà ferait répéter au patron ce
+// qu'il vient de dire — et l'arrêt cesserait d'être franchissable.
+
+cas("une fente seule, sans rien de dit, demande les deux mesures", () => {
+  const q = questionsAvantChiffrage([{ libelle: "Fendage du bois" }]);
+  assert.deepEqual(
+    q.map((x) => x.id.split("#")[0]).sort(),
+    ["fendage.diametre", "fendage.hauteur"],
+    `attendu la hauteur et le diamètre, vu : ${q.map((x) => x.id).join(", ") || "rien"}`
+  );
+});
+
+cas("le diamètre ne se demande qu'une fois quand un abattage l'accompagne", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Abattage d'un chêne mort", description: "20 mètres de haut" },
+    { libelle: "Fendage du bois" },
+  ]);
+  assert.equal(
+    q.filter((x) => x.id.startsWith("fendage.diametre")).length,
+    0,
+    "le diamètre est demandé deux fois pour le même tronc — l'abattage le porte déjà"
+  );
+  assert.equal(
+    q.filter((x) => x.id.startsWith("abattage.diametre")).length,
+    1,
+    "et il doit bien être demandé une fois, sur l'abattage"
+  );
+});
+
+cas("la hauteur dite ailleurs dans la dictée ne se redemande pas", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Abattage d'un chêne mort", description: "20 mètres de haut" },
+    { libelle: "Fendage du bois" },
+  ]);
+  assert.equal(
+    q.filter((x) => x.id.startsWith("fendage.hauteur")).length,
+    0,
+    "« vingt mètres de haut » était dans la dictée : la redemander rend l'arrêt pénible"
+  );
+});
+
+cas("mais elle se demande dès que la dictée ne la donne nulle part", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Abattage d'un chêne mort" },
+    { libelle: "Fendage du bois" },
+  ]);
+  assert.equal(
+    q.filter((x) => x.id.startsWith("fendage.hauteur")).length,
+    1,
+    "sans hauteur, aucune case de la grille ne peut être désignée — et la fente resterait sans prix"
+  );
+});
+
+cas("les réponses s'écrivent sous la forme que le chiffrage sait relire", () => {
+  // **Ce cas protège un défaut invisible.** Si « ⌀ 45 cm » devenait « 45 cm de
+  // diamètre du tronc », rien ne casserait : la question serait posée, la
+  // réponse enregistrée, le devis produit — et la case de la grille
+  // introuvable. La fente n'aurait simplement jamais de prix.
+  const hauteur = questionsAvantChiffrage([{ libelle: "Fendage du bois" }]).find((x) =>
+    x.id.startsWith("fendage.hauteur")
+  )!;
+  const diametre = questionsAvantChiffrage([{ libelle: "Fendage du bois" }]).find((x) =>
+    x.id.startsWith("fendage.diametre")
+  )!;
+  assert.equal(hauteurLue(precisionLisible(hauteur, "12")), 12);
+  assert.equal(diametreLu(precisionLisible(diametre, "45")), 45);
 });
 
 console.log(`\n${echecs === 0 ? "✅ Toutes les vérifications passent." : `❌ ${echecs} échec(s).`}`);

@@ -771,6 +771,8 @@ export const envoisDevis = pgTable(
     expireAt: timestamp("expire_at", { withTimezone: true }).notNull(),
     canal: text("canal", { enum: ["sms", "email"] }).notNull(),
     datesProposees: date("dates_proposees").array().notNull(),
+
+
     empreinteDevis: char("empreinte_devis", { length: 64 }).notNull(),
     envoyeAt: timestamp("envoye_at", { withTimezone: true }).notNull().defaultNow(),
 
@@ -954,4 +956,104 @@ export const envoisFactures = pgTable(
       name: "envois_factures_facture_entreprise_fk",
     }).onDelete("cascade"),
   ]
+);
+
+/**
+ * Le vocabulaire du métier et les règles de chiffrage — PARTAGÉS.
+ *
+ * Aucune donnée de client ici : ni nom, ni adresse, ni prix. Ce sont des mots et
+ * des principes, et c'est précisément ce qui les rend partageables sans risque.
+ * Ils partent avec l'application chez tous les futurs clients — décision du
+ * patron du 7 août 2026, consignée dans `docs/QUESTIONS.md` §10.
+ *
+ * Même choix que `catalogue_prestations` : pas d'`entreprise_id`, donc pas de
+ * politique d'isolation. Une table sans donnée personnelle n'a rien à isoler,
+ * et lui en poser une ferait croire à une protection qui ne protège rien.
+ */
+export const termesMetier = pgTable(
+  "termes_metier",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    nature: text("nature", { enum: ["mot", "regle"] }).notNull().default("mot"),
+    intitule: text("intitule").notNull(),
+    definition: text("definition").notNull(),
+    /** Ce qu'Atlas doit en FAIRE — la colonne qui fait le travail. */
+    consigne: text("consigne"),
+    ordre: integer("ordre").notNull().default(0),
+    actif: boolean("actif").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("termes_metier_ordre_idx").on(t.nature, t.ordre)]
+);
+
+/**
+ * Ce que le patron avait dicté, et ce qu'il a finalement écrit.
+ *
+ * *« Comment je fais pour le nourrir et qu'il apprenne de ces erreurs ? »* —
+ * le 7 août 2026. Une règle énoncée dit QUOI faire ; un exemple réel montre
+ * JUSQU'OÙ.
+ *
+ * Rattachées à l'entreprise et isolées comme le reste : elles sont faites de
+ * ses chantiers, de ses libellés et de ses prix. Elles ne se partagent jamais.
+ */
+export const correctionsDictee = pgTable(
+  "corrections_dictee",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    chantierId: uuid("chantier_id").notNull(),
+    dictee: text("dictee").notNull(),
+    propose: jsonb("propose").notNull().default(sql`'[]'::jsonb`),
+    retenu: jsonb("retenu").notNull().default(sql`'[]'::jsonb`),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("corrections_dictee_chantier_uk").on(t.chantierId),
+    index("corrections_dictee_entreprise_idx").on(t.entrepriseId, t.updatedAt),
+  ]
+);
+
+/**
+ * Les grilles de prix du patron — une par nature de travail.
+ *
+ * *« Pour la fente, ils devraient demander la hauteur de l'arbre et son
+ * diamètre, et on crée une liste de prix en fonction de la hauteur et du
+ * diamètre, comme ça il n'invente rien. »* — le 8 août 2026. Le même jour, il
+ * a étendu le principe à l'abattage (technique × diamètre) et à la haie (un
+ * prix au mètre linéaire).
+ *
+ * Née vide : aucun prix n'est semé par le dépôt. Une case vide est une question
+ * posée ; une case pré-remplie au jugé serait un prix inventé sur le devis d'un
+ * client. Les bornes des tranches vivent dans `src/lib/grille-prix.ts`,
+ * pures et éprouvables sans base.
+ *
+ * Isolée par entreprise, contrairement à `termes_metier` : ce sont ses prix de
+ * vente, pas du vocabulaire (`docs/QUESTIONS.md` §10).
+ */
+export const grillePrix = pgTable(
+  "grille_prix",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    /**
+     * La nature du travail chiffré (migration 0027).
+     *
+     * Chaque nature a ses propres axes — fendage : hauteur × diamètre ;
+     * abattage : technique × diamètre ; haie : une seule case au mètre.
+     */
+    // `dessouchage` et `grumes` ajoutés le 8 août 2026 (migration 0028), sur sa
+    // réponse : « le dessouchage oui, et les grumes aussi ».
+    nature: text("nature", { enum: ["fendage", "abattage", "haie", "dessouchage", "grumes"] })
+      .notNull()
+      .default("fendage"),
+    /** La case, `h10|d40` ou `au_pied|d70` — fabriquée par `src/lib/grille-prix.ts`. */
+    cellule: text("cellule").notNull(),
+    prix: numeric("prix", { precision: 10, scale: 2 }).notNull(),
+    /** `saisi` : posé dans les réglages. `devis` : observé sur un devis réel. */
+    origine: text("origine", { enum: ["saisi", "devis"] }).notNull().default("saisi"),
+    constateLe: timestamp("constate_le", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("grille_prix_cellule_uk").on(t.entrepriseId, t.nature, t.cellule)]
 );

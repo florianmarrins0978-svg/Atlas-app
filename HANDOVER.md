@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-07 · `claude/migrate-app-atlas-zz31ac`
+**Point de reprise :** 2026-08-09 · `claude/migrate-app-atlas-zz31ac`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -20,8 +20,72 @@ Next.js avec PostgreSQL, isolée par entreprise via *row level security*.
 
 ## Ce qui vient d'être terminé
 
-Le parcours **devis → réponse du client → chantier → facture → TVA**, de bout en
-bout, avec ses trois points d'arrêt. Plus le suivi de ce que devient un devis une
+**Un calendrier des deux côtés (9 août).** Le client ne peut plus choisir un jour
+déjà pris — il est barré et ne répond pas. Le patron a le même, jusqu'à dix-huit
+mois. Un seul composant sert les deux écrans, et il ne décide de rien : tout
+vient de `src/lib/calendrier.ts`. **L'ordre des raisons dans `etatDuJour` n'est
+pas indifférent** — un jour hors fenêtre ne doit jamais se dire « déjà pris »
+chez le client, sinon sa page laisse filtrer le planning. `ARCHITECTURE.md` §36.
+
+**Une règle de travail, avant tout le reste :** les suites navigateur tournent
+sous un rôle qui **traverse la RLS**, donc elles ne peuvent pas voir un défaut
+d'isolation. Le 8 août, le lien de facture et le PDF du devis étaient morts en
+production — vus par hasard, jamais par un contrôle. **Tout chemin public par
+jeton s'éprouve dans une suite base, sous `atlas_app`**
+(`scripts/test-facture-jeton-rls.ts`). `ARCHITECTURE.md` §34.
+
+**Du planning à la facture, sans détour.** Le patron ne pouvait pas atteindre le
+devis d'un chantier planifié : toucher sa carte n'ouvrait qu'un sélecteur de
+date. Elle mène maintenant au chantier et porte un bouton « Fin de chantier ».
+
+**À savoir avant de toucher au rangement des chantiers :** la règle vit dans
+`src/lib/onglet-chantier.ts` et **nulle part ailleurs**. Elle y était déjà, mais
+seul l'écran Chantiers l'appelait — le planning et le dépôt des terminés en
+gardaient chacun une copie, avec un signe d'écart. Résultat : un chantier prévu
+aujourd'hui dans deux onglets, et un chantier clôturé avant sa date dans aucun,
+sa facture perdue de vue. Ne jamais recopier ce filtre dans un écran : trois
+portes existent (`ongletDuChantier`, `ongletDepuisJalons`, `estAuPlanning`),
+elles couvrent les trois formes de donnée. `ARCHITECTURE.md` §33.
+
+**Trois grilles de prix, et son devis de référence enfin juste.** Il a répondu
+le 8 août au soir : on garde les 8 × 6 tranches du fendage, la haie prend sa
+ligne avec un prix au mètre, l'abattage a sa grille à la technique × le
+diamètre. Son devis du 5 août — haie 350, abattage 600, fendage 300 — sort
+maintenant tel qu'il l'avait écrit. **La règle à connaître avant de toucher au
+chiffrage :** dès que la ligne principale a un prix de grille, le total devient
+la somme des postes au lieu du tarif à la journée (`ARCHITECTURE.md` §32).
+
+**Il peut déposer sa liste de prix Excel ou CSV**, au lieu de la retaper :
+`Réglages → J'ai déjà mes prix ailleurs`. Lue sans aucune bibliothèque, et
+surtout **montrée avant d'être écrite** — ce qui s'ajoute, ce qui change, ce qui
+n'a pas été compris. Le PDF est refusé, à dessein : voir `TODO.md` §0 sexies
+avant de le reproposer.
+
+**Le patron peut proposer une date à dix-huit mois.** Il ne pouvait proposer que
+les six prochains jours ouvrés — il l'a signalé avant que ça ne lui coûte un
+client. Deux horizons désormais, et **ne pas les confondre est la décision qui
+compte** : le sien va à dix-huit mois, celui du client reste à trois mois ou à
+trois semaines autour de la date proposée. La page publique reçoit la liste des
+jours occupés ; lui ouvrir dix-huit mois reviendrait à lui donner le carnet de
+commandes. Voir `ARCHITECTURE.md` §30.
+
+**Le devis se découpe enfin en lignes vendables.** C'est le défaut que le patron
+a signalé trois fois en deux jours — *« tout ce que je dicte arrive sur la même
+ligne »* —, et qui avait survécu à un diagnostic sans correction. L'abattage, le
+broyage et l'évacuation vont ensemble ; la fente fait sa ligne ; le billonnage
+n'en fait aucune ; il n'y a plus de point-virgule. La règle est pure et éprouvée
+sur ses dictées : `src/lib/lignes-vendables.ts`.
+
+Avec elle, **sa grille de prix pour fendre le bois** : hauteur de l'arbre ×
+diamètre du tronc, 8 × 6 cases, **née vide**. Aucune case ne se devine depuis ses
+voisines — une case vide est une question posée. Elle se remplit à la main
+(`Réglages → Mes prix pour fendre le bois`) et toute seule, à chaque prix de
+fente écrit sur un vrai devis. Voir `ARCHITECTURE.md` §29, et `TODO.md`
+§0 quinquies pour les trois questions restées ouvertes — **notamment les bornes
+des tranches, faciles à changer aujourd'hui, coûteuses après trente devis**.
+
+Avant cela : le parcours **devis → réponse du client → chantier → facture →
+TVA**, de bout en bout, avec ses trois points d'arrêt. Plus le suivi de ce que devient un devis une
 fois parti : en attente, à relancer, caduc, retourné, accepté.
 
 Et, en dernier lieu, **le devis PDF** : il reproduit désormais
@@ -70,10 +134,18 @@ Détail dans `CHANGELOG.md`, état complet dans `PROJECT_STATE.md`.
 l'**agenda Google** — et encore, partiellement : la connexion du compte demande
 des identifiants que le patron doit fournir.
 
-**Avant de proposer autre chose,** lire `docs/A-FAIRE.md` : **quatre** points
+**Avant de proposer autre chose,** lire `docs/A-FAIRE.md` : **cinq** points
 bloquent un usage réel et **aucun ne s'avance en codant**. Ne pas les
 redécouvrir ni les reposer au patron : ils sont écrits, avec leur coût et leur
 propriétaire.
+
+Le dernier arrivé est le point 6, **choisir l'outil qui émet les factures**
+(8 août 2026). Deux choses y sont à ne pas confondre. La première est acquise
+et ne se rouvre pas : **Atlas prépare les factures, il ne les émet pas au sens
+légal** — `docs/AGENT.md` §6, acté le 31 juillet, « hors périmètre
+définitivement ». Ce qui est ouvert, c'est seulement *sur quel outil se
+brancher*, et le patron n'en a aucun à ce jour. Tant que le choix n'est pas
+fait, écrire du code de branchement serait écrire du code à jeter.
 
 Le cinquième — brancher un fournisseur SMS et e-mail — a été **tranché le
 2026-08-04 : il n'y en aura pas.** Le devis part de la messagerie du patron.

@@ -6,6 +6,7 @@ import * as prestationsRepo from "../src/server/repositories/prestations";
 import * as tarifsRepo from "../src/server/repositories/tarifs";
 import * as lignesPrixRepo from "../src/server/repositories/lignes-prix";
 import { appliquerPropositionPrixAction } from "../src/app/chantiers/[id]/prix/actions";
+import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
 
 // Le refus côté serveur du doublon de proposition.
@@ -101,7 +102,11 @@ async function main() {
   });
 
   console.log(`\n${reussis} test(s) réussi(s), ${echoues} échoué(s).`);
+  // Le limiteur de débit ouvre une connexion Redis dès qu'une action protégée
+  // est traversée. Sans cette fermeture, le processus ne rend jamais la main —
+  // tests tous verts, batterie arrêtée pour toujours (8 août 2026).
   await pool.end();
+  await fermerLimiteur();
   if (echoues > 0) process.exit(1);
 }
 

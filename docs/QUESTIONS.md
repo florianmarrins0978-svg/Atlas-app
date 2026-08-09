@@ -32,6 +32,7 @@ relues à chaque session) :
 8. [Faut-il héberger l'application pour pouvoir l'essayer en entier ?](#8-faut-il-héberger-lapplication-pour-pouvoir-lessayer-en-entier-)
 9. [Ce que je vois là, est-ce le design final ?](#9-ce-que-je-vois-là-est-ce-le-design-final-)
 10. [Qui voit quoi : moi, mes clients, leurs salariés ?](#10-qui-voit-quoi--moi-mes-clients-leurs-salariés-)
+11. [Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?](#11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-)
 
 ---
 
@@ -554,3 +555,91 @@ pas de restriction du tout, puisque vous vous croyiez protégé.
 chantiers à lui ?** Question posée le 7 août 2026, réponse remise à plus tard :
 *« attends, fais déjà tout le reste, on en reparle après. »* Elle change le
 travail et elle change ce qui se vend.
+
+---
+
+## 11. Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?
+
+*Question posée le 8 août 2026, après que j'ai demandé si une plateforme de
+facturation électronique était en vue.*
+
+### La réponse courte : rien, et c'est une décision, pas un oubli
+
+Elle a été prise le 31 juillet 2026 et elle tient. `AGENT.md` §6, mot pour mot :
+
+> La facturation électronique conforme (numérotation inviolable, archivage,
+> Factur-X/UBL/CII, obligations 2026/2027) est un projet à part et un risque
+> juridique. On s'y branche par **API** sur un outil existant (Pennylane,
+> Evoliz, Tiime, Sellsy, Abby…).
+
+Et la ligne qui suit, qui est la vraie règle :
+
+> **Le rôle de l'agent est donc de préparer, pas d'émettre.**
+
+Atlas rassemble les lignes, le client, les taux, la période. L'outil comptable
+émet le document légal **et en porte la responsabilité**. C'est inscrit comme
+définitif dans `MVP.md` — « hors périmètre définitivement, pas *pas encore* ».
+
+**Pourquoi on ne le recode pas.** Une facture non conforme n'est pas un défaut
+d'affichage, c'est un risque légal pour l'artisan. Et une numérotation cassée
+ne se rattrape pas après coup : elle se traîne sur tout un exercice.
+
+### Ce que je dois faire, alors
+
+Une seule chose, et c'est le point 6 de la liste de `AGENT.md` §9 : **brancher
+l'outil comptable par API**. Concrètement, le jour où vous en avez un — envoyer
+vers lui ce qu'Atlas a déjà préparé, récupérer le numéro et le document qu'il a
+émis.
+
+C'est un lot de travail ordinaire, quelques jours. Il ne peut pas commencer
+avant que l'outil soit choisi : chacun a son API.
+
+### Ce qui existe déjà dans Atlas
+
+| | |
+|---|---|
+| Facture pré-remplie depuis le devis | fait — c'est l'arrêt 3, un appui si rien n'a bougé |
+| Numérotation `F2026-0001`, continue, sans trou | fait — un compteur par entreprise, incrémenté d'un seul coup en base |
+| PDF de la facture | fait |
+| Relevé de TVA collectée | fait — calculé à partir des factures émises |
+
+### Ce qui n'existe pas, et qu'il ne faut pas croire acquis
+
+- **Aucun format d'échange** : ni Factur-X, ni UBL. Le PDF d'Atlas est un PDF,
+  pas une facture électronique au sens de la réforme.
+- **Aucun archivage à valeur probante.** La numérotation est continue, ce qui
+  est le minimum, mais rien ne prouve qu'un enregistrement n'a pas été modifié
+  après coup.
+- **Aucun raccordement** à une plateforme agréée, ni à l'annuaire des
+  destinataires.
+
+### Le point qui a une date — et qui vous concerne vous, pas Atlas
+
+La réforme oblige d'abord à **recevoir** ses factures fournisseurs par une
+plateforme agréée, puis, plus tard, à **émettre** les siennes. Les échéances
+annoncées sont **septembre 2026** pour la réception et **septembre 2027** pour
+l'émission des petites entreprises.
+
+Deux réserves, posées franchement :
+
+1. **Ce calendrier a déjà été décalé deux fois**, et je ne peux pas le vérifier
+   depuis l'environnement de développement — son mandataire réseau refuse les
+   sites publics. **À confirmer par un comptable**, pas par moi.
+2. **Cela vous concerne comme entreprise, pas comme éditeur.** Eden Nature
+   devra passer par une plateforme agréée pour ses propres factures, qu'Atlas
+   existe ou non. Et chaque artisan qui utilisera Atlas aussi.
+
+C'est une raison de plus de brancher un outil comptable plutôt que d'en
+réécrire un : l'outil, lui, sera à jour de la réforme — c'est son métier, et
+c'est ce que vous lui payez.
+
+### Où ça en est
+
+**Vous n'avez aucun logiciel de comptabilité aujourd'hui** (réponse du 8 août
+2026). La question devient donc : lequel prendre. Elle est ouverte au point 6
+de [`A-FAIRE.md`](A-FAIRE.md), avec ce que je peux préparer et ce que vous seul
+pouvez signer.
+
+**Ce que ça ne bloque pas** : ni l'essai d'Atlas, ni sa finition. Comme les
+autres points de `A-FAIRE.md`, cela bloque le fait de le confier à un vrai
+artisan avec de vrais clients.

@@ -10,6 +10,8 @@ import { ajouterPrestation, listerPrestations } from "../../repositories/prestat
 import { ajouterMateriel, listerMateriel } from "../../repositories/materiel";
 import { mettreAJourDureeEquipe } from "../../repositories/chantiers";
 import { extraire } from "./extraction-service";
+import { termesPourConsigne, correctionsRecentes } from "../../repositories/termes-metier";
+import { construireConsigneMetier } from "../../../lib/consigne-metier";
 import { estTranscriptionSimulee } from "../providers/transcription/dev";
 import type { PropositionExtraction, LigneExtraite } from "../schemas/extraction";
 
@@ -59,7 +61,25 @@ export async function genererBrouillon(
 
   const existant = await getBrouillon(ctx, chantierId);
 
-  const resultat = await extraire(transcription);
+  // **Ce que l'artisan a appris à Atlas part avec sa dictée.**
+  //
+  // Le 7 août 2026, sa question : « comment je fais pour le nourrir et qu'il
+  // apprenne de ces erreurs ? » Voici l'endroit. Son vocabulaire et ses règles
+  // (partagés, `termes_metier`) et ses propres corrections (à lui seul,
+  // `corrections_dictee`) sont assemblés en une consigne bornée, puis ajoutés
+  // à la consigne système — jamais au texte, qui reste une donnée à analyser.
+  //
+  // Un échec ici ne doit jamais empêcher de lire une dictée : sans consigne, on
+  // retombe sur le comportement d'avant, qui fonctionnait.
+  let consigneMetier: string | undefined;
+  try {
+    const [termes, corrections] = await Promise.all([termesPourConsigne(), correctionsRecentes(ctx)]);
+    consigneMetier = construireConsigneMetier(termes, corrections).texte || undefined;
+  } catch {
+    consigneMetier = undefined;
+  }
+
+  const resultat = await extraire(transcription, undefined, consigneMetier);
   if (!resultat.succes) {
     return { statut: "echec", erreur: resultat.erreur.message };
   }

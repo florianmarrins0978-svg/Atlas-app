@@ -269,7 +269,12 @@ export default function DevisCompletClient(props: Props) {
             <textarea
               value={l.libelle}
               readOnly={fige}
-              rows={2}
+              // La ligne principale réunit plusieurs travaux, un par ligne
+              // (« abattage / broyage / évacuation »). Deux rangées fixes les
+              // auraient coupés — le patron aurait relu un devis dont il ne
+              // voit qu'une partie, ce qui est exactement le défaut qu'on
+              // répare.
+              rows={Math.max(2, l.libelle.split("\n").length)}
               aria-label={`Description ${i + 1}`}
               placeholder="Ex : Élagage d'un tilleul — taille architecturée"
               onChange={(e) => majLigneLocale(l.id, "libelle", e.target.value)}

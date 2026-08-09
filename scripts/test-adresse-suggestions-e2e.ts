@@ -123,10 +123,15 @@ async function main() {
   // Et le chantier se crée quand même, avec une adresse que la base ignore —
   // un chemin, un lieu-dit, « derrière la scierie ». C'est là qu'il travaille.
   await page.getByRole("button", { name: /Créer le chantier/i }).click();
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}$/, { timeout: 15000 });
+  // **Généreux, et pour une raison précise.** Cette suite passe la PREMIÈRE de
+  // la batterie (ordre alphabétique) : elle paie donc la toute première
+  // compilation de la fiche de chantier, sur un serveur de développement qui
+  // n'a encore rien en cache. Quinze secondes suffisaient seule et pas en
+  // batterie — l'échec accusait alors l'adresse, qui n'y était pour rien.
+  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}$/, { timeout: 60_000 });
   // La fiche affiche « CHARGEMENT… » le temps de se composer : lire l'écran à
   // cet instant reviendrait à accuser le produit d'avoir perdu l'adresse.
-  await page.waitForFunction(() => !document.body.innerText.includes("CHARGEMENT"), null, { timeout: 20000 });
+  await page.waitForFunction(() => !document.body.innerText.includes("CHARGEMENT"), null, { timeout: 40_000 });
 
   const fiche = await page.locator("body").innerText();
   assert.match(

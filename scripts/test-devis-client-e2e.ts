@@ -115,10 +115,26 @@ async function main() {
     await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
 
     await page.locator('input[name="choixDate"][value="autre"]').check();
-    const champ = page.locator('input[name="dateAutre"]');
+
+    // **Un calendrier, et non plus le sélecteur du téléphone** (9 août 2026).
+    // Le contrôle regardait `min` et `max` d'un champ natif ; il regarde
+    // maintenant ce que le client peut TOUCHER, ce qui est la vraie question :
+    // un champ correctement borné laissait quand même choisir un jour pris.
     const f = fenetreProposition(maintenant);
-    assert.strictEqual(await champ.getAttribute("min"), f.debut, "borne basse absente");
-    assert.strictEqual(await champ.getAttribute("max"), f.fin, "borne haute absente");
+    const veille = versJourIso(ajouterJours(new Date(f.debut + "T12:00:00Z"), -1));
+
+    assert.strictEqual(
+      await page.locator(`[data-jour="${f.debut}"]:not([disabled])`).count(),
+      1,
+      `Le premier jour de la fenêtre (${f.debut}) ne se choisit pas.`
+    );
+    const avant = page.locator(`[data-jour="${veille}"]`);
+    if ((await avant.count()) > 0) {
+      assert.ok(
+        await avant.first().isDisabled(),
+        `La veille de la fenêtre (${veille}) se choisit : le client peut proposer trop tôt.`
+      );
+    }
     await page.close();
   });
 

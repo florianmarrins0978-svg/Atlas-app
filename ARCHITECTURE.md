@@ -1108,3 +1108,735 @@ L'adresse arrive sur une seule ligne, telle que la base la rend. Le jour où un
 document exigera le code postal et la commune séparés — une déclaration, un
 format d'export comptable — il faudra les redemander à la base, qui les fournit
 déjà (`postcode`, `city`). Rien n'est perdu, mais rien n'est stocké non plus.
+
+---
+
+## 29. Le devis se découpe en lignes vendables, et la fente a sa grille
+
+**Décidé les 2026-08-07 et 2026-08-08**, après trois signalements du même défaut
+par le patron — dont un où il a dû rappeler qu'on l'avait déjà diagnostiqué la
+veille sans le corriger : *« on avait déjà travaillé sur ce défaut-là hier et je
+croyais que tu l'avais corrigé. »*
+
+### Ce qui était faux, en une ligne de code
+
+`prestations.map((p) => p.libelle).join(" ; ")`, à deux endroits de
+`src/server/chiffrage/proposition-prix.ts`. Tout ce qu'il dictait arrivait sur
+**une seule ligne** du devis, collé par des points-virgules — et un client qui
+ne veut qu'une partie du chantier ne pouvait rien refuser.
+
+### La règle, dans ses mots
+
+*« L'abattage, le broyage et l'évacuation, c'est sur une ligne, et la fente, ça
+doit être séparé. »*
+
+Et le pourquoi, qui ne se devine pas : *« si le client ne veut pas la fente, il
+va trouver le reste cher ; et s'il fait faire le reste par un autre artisan et
+qu'il nous prend juste pour la fente, 100 € ce n'est pas assez cher. »*
+
+**Une ligne de devis n'est pas une rubrique comptable : c'est une chose que le
+client peut accepter ou refuser seule.** Ce qu'il ne peut pas détacher n'a
+aucune raison d'occuper sa propre ligne ; ce qu'il peut détacher doit porter son
+propre déplacement. D'où sa répartition : **850 + 250**, et non 1 000 + 100.
+
+La règle vit dans `src/lib/lignes-vendables.ts` — pure, éprouvée sur ses dictées
+réelles — et non dans un service. Elle est aussi inscrite dans `termes_metier`
+(migrations 0025 et 0026), pour que le modèle qui LIT la dictée la connaisse
+autant que le code qui écrit le devis. Les deux se corrigent ensemble.
+
+### Le billonnage ne fait pas de ligne
+
+*« Le devis compte trois lignes, pas quatre : le billonnage est compris dans
+l'abattage »* (`docs/EXEMPLE-DICTEE.md`, 5 août). Tronçonner le tronc d'un arbre
+qu'on vient d'abattre n'est pas détachable — c'est la fin du geste d'abattre.
+
+Deux précautions, apprises de ce qui a déjà mal tourné :
+
+- **sans abattage dicté, le billonnage reste** : billonner du bois déjà à terre
+  est un vrai chantier, et le faire disparaître produirait le devis vide du
+  7 août ;
+- **ce qui est absorbé est signalé** dans le détail du chiffrage. Une prestation
+  qui s'évapore sans un mot est exactement ce qui lui a fait perdre « on le
+  coupe en 50, on le fend ».
+
+### La grille de fendage : hauteur × diamètre, 48 cases
+
+*« Pour la fente, ils devraient demander la hauteur de l'arbre et son diamètre,
+et on crée une liste de prix en fonction de la hauteur et du diamètre, comme ça
+il n'invente rien. »* Puis, sur une première grille à 3 × 3 : *« par contre il
+faut faire plus de tranche. »*
+
+|  | Tranches | Pourquoi ce découpage |
+|---|---|---|
+| Diamètre | 8 : ≤20, 20-30, 30-40, 40-50, 50-60, 60-70, 70-90, >90 | serré là où se trouve l'essentiel de ce qui s'abat chez un particulier ; la charnière de 70 cm vient de son dossier du 5 août |
+| Hauteur | 6 : ≤5, 5-10, 10-15, 15-20, 20-25, >25 | cinq mètres est la maille qu'un élagueur estime à l'œil, sans mesurer |
+
+**Les bornes hautes sont incluses** : un tronc de 50 cm est « 40 à 50 », pas
+« 50 à 60 ». Les valeurs rondes — 40, 50, 60 — sont précisément celles qu'un
+artisan annonce ; se tromper de côté déplacerait la majorité des cas.
+
+**Ce qu'on ne fait jamais : interpoler.** Une case vide entourée de cases
+pleines pourrait « se deviner ». Un prix deviné se présenterait avec l'autorité
+des voisins, et il n'aurait aucun moyen de voir qu'il n'a jamais été décidé. La
+case vide reste vide, la ligne s'écrit à 0 € — visible comme un prix à poser — et
+la raison est dite, en nommant la case.
+
+### Elle se remplit toute seule
+
+Une grille de 48 cases qu'il devrait remplir avant de s'en servir ne serait
+jamais remplie : il a un métier, et ce n'est pas celui-là. Deux entrées, donc :
+
+| Origine | Qui écrit | L'emporte sur |
+|---|---|---|
+| `saisi` | lui, dans `Réglages → Mes prix pour fendre le bois` | tout |
+| `devis` | un prix de fente écrit sur un vrai devis | une observation plus ancienne, jamais une saisie |
+
+C'est sa propre idée : *« le mieux, c'est que je fasse plein de devis et que tu
+enregistres toutes mes modifications, et dans un mois tu sauras les remplir tout
+seul. »*
+
+### Par entreprise, contrairement au vocabulaire
+
+`termes_metier` est partagé — ce sont des mots, ils partent avec l'application
+chez tous les artisans (`docs/QUESTIONS.md` §10). `grille_fendage` ne l'est pas :
+ce sont des **prix de vente**, et les partager reviendrait à donner ses tarifs à
+ses concurrents. RLS `FORCE`, comme le reste.
+
+### Le piège qu'il a fallu désamorcer : deux lectures du même texte
+
+La question « quelle hauteur fait l'arbre ? » ne se pose que si la dictée ne la
+donne pas. Le chiffrage, lui, doit retrouver cette hauteur pour désigner la case.
+**Si l'un lisait moins que l'autre, la question serait tue ET la case
+introuvable** — la fente n'aurait jamais de prix, sans qu'aucune erreur ne le
+signale.
+
+Or la table `prestations` ne garde qu'un libellé : « vingt mètres de haut »,
+dicté dans la *description*, y disparaît. Le chiffrage relit donc les lignes du
+brouillon confirmé, descriptions comprises, et les deux passent par le même
+module — `src/lib/mesures-arbre.ts`. Les formulations écrites sur le devis
+(« ⌀ 45 cm », « 12 m de haut ») sont celles que ce module sait relire, et un
+contrôle le vérifie.
+
+### Ce qui a été supprimé au passage
+
+`appliquerProposition`, dans `proposition-prix.ts` : une **seconde** écriture de
+la proposition au détail, exportée et appelée par personne. Elle ignorait le
+contrôle de doublon, et n'aurait pas su écrire deux lignes. Deux implémentations
+d'une même règle divergent toujours (`CLAUDE.md` §3) — celle-ci avait déjà
+commencé.
+
+### Où c'est éprouvé
+
+| Quoi | Fichier |
+|---|---|
+| Le découpage et la répartition, sans base | `scripts/test-lignes-vendables.ts` |
+| Les tranches, les bornes, l'absence d'interpolation | `scripts/test-grille-prix.ts` |
+| Les questions posées — et surtout celles qui se taisent | `scripts/test-questions-chiffrage.ts` |
+| Le chemin complet : tarif → découpage → grille → détail, et l'isolation | `scripts/test-devis-grilles.ts` |
+
+### Une batterie qui ne finit pas ne prouve rien
+
+Trouvé le 8 août 2026 en voulant simplement jouer `npm test` avant de livrer.
+
+`test-ia-03-propositions.ts` affichait « 8 test(s) réussi(s), 0 échoué(s) » puis
+ne rendait **jamais** la main : le limiteur de débit avait ouvert une connexion
+Redis que personne ne fermait. La batterie s'arrêtait là — sans un mot, sans
+rouge — et les cinquante suites suivantes n'étaient jamais jouées.
+
+**Pourquoi la CI ne l'a jamais vu :** son étape `npm test` ne posait pas
+`REDIS_URL`, alors que `CLAUDE.md` §5 la demande en local. La CI ne jouait donc
+pas ce que le dépôt dit de jouer. C'est le même piège que les contrôles qui
+interrogeaient `127.0.0.1` pendant que le patron passait par un proxy (`CLAUDE.md`
+§5) : **un environnement de vérification qui diffère de l'environnement réel ne
+vérifie pas ce qu'on croit.**
+
+| Correction | Ce qu'elle empêche de revenir |
+|---|---|
+| `fermerLimiteur()`, appelé en fin des neuf suites qui traversent une action limitée | la connexion oubliée |
+| `REDIS_URL` posé sur l'étape `npm test` de la CI | l'écart entre ce qui est documenté et ce qui est joué |
+| Le lanceur tue toute suite muette depuis huit minutes, **en nommant la vraie cause** | qu'un blocage repasse pour un silence normal |
+
+Le troisième point est le seul qui protège contre la **prochaine** fuite, quelle
+qu'en soit la source. Il a été éprouvé contre une suite volontairement bloquée —
+il la voit — et contre une suite saine — il ne se déclenche pas. Un garde-fou
+jamais vu rouge ne prouve rien (`AGENTS.md`).
+
+**Et la première suite ne paie plus pour toutes les autres.** Même jour, même
+sorte de défaut : `test-adresse-suggestions-e2e` échouait en batterie et passait
+seule. Elle passe la première dans l'ordre alphabétique, et attendait donc la
+compilation à la demande de `/login`, de l'accueil ET de la fiche de chantier —
+son message accusait alors l'adresse, qui n'y était pour rien. Le lanceur
+préchauffe désormais les écrans les plus traversés avant de lancer quoi que ce
+soit. Répondre sur `/api/health/live` ne suffisait pas : cette route-là est
+minuscule et se compile en quelques centaines de millisecondes, quand un écran
+réel en demande des dizaines de secondes.
+
+---
+
+## 30. Deux horizons pour une date : le sien, et celui du client
+
+**Décidé le 2026-08-08**, sur un défaut que le patron a vu venir avant qu'il ne
+lui coûte quoi que ce soit : *« la proposition des dates au client, on a une
+visibilité que sur une semaine. Comment je fais si je dois lui proposer une date
+dans six mois ? »* — et il ajoutait : *« c'est un problème qui va se produire à
+coup sûr. »*
+
+### Ce qui manquait
+
+L'écran suggérait les six prochains jours ouvrés, et **aucune autre porte
+n'existait**. Le calcul des jours libres était juste, la base acceptait
+n'importe quelle date, la page du client fonctionnait — il n'y avait simplement
+pas de geste. Un défaut invisible depuis le code, visible en deux secondes sur
+l'écran.
+
+### La décision : deux horizons, jamais un seul
+
+|  | Portée | Pourquoi |
+|---|---|---|
+| **Le patron** (`fenetrePatron`) | après-demain → **18 mois** | l'élagage est saisonnier : une haie « à la fin de l'hiver prochain » demande quatorze mois. Douze le renverraient au téléphone |
+| **Le client** (`bandesVisibles`) | 3 mois, **ou** trois semaines autour d'une date lointaine | la page publique reçoit la liste des jours occupés. Lui donner dix-huit mois, c'est lui donner le carnet de commandes |
+
+Les confondre coûte cher **dans les deux sens**, et un contrôle veille sur
+l'écart (`test-fenetre-lointaine.ts`).
+
+### Enveloppe et bandes : la nuance qui protège le planning
+
+Une première version ne connaissait qu'une fenêtre, et le cas mixte l'a montrée
+fausse : « soit jeudi, soit à la Toussaint » l'étirait sur six mois — et livrait
+six mois de jours occupés au client, ce que tout ce mécanisme sert à éviter.
+
+D'où la séparation :
+
+- l'**enveloppe** (`fenetrePourDates`) dit ce qui est **recevable**. Elle court
+  bien de jeudi à la Toussaint : les deux dates doivent rester retenables ;
+- les **bandes** (`bandesVisibles`) disent ce qui se **montre**. Deux blocs, et
+  le semestre du milieu ne regarde pas le client.
+
+Une date lointaine **seule** ne rouvre pas les trois prochains mois : s'il ne
+propose que la Toussaint, montrer octobre inviterait à une contre-proposition
+qu'il n'a pas voulue.
+
+### La fenêtre s'ancre à l'ENVOI, plus à aujourd'hui
+
+Défaut latent que personne n'avait signalé, et que la date lointaine rendait
+certain : la fenêtre était recalculée à chaque ouverture du lien, depuis la date
+du jour. Un devis parti un lundi et ouvert trois semaines plus tard n'offrait
+plus les mêmes jours ; une date à six mois en serait carrément sortie, et le
+client aurait lu **« date indisponible » sur la date qu'on venait de lui
+proposer**.
+
+L'ancre est `envoye_at`, posé explicitement à la création plutôt que laissé au
+`now()` de la base. Avec `dates_proposees`, tous deux immuables, la fenêtre se
+recalcule à l'identique — **sans colonne de plus**. Réserve assumée : changer la
+règle des bandes déplacerait ce que voient les liens déjà partis. C'est le prix
+d'une seule source de vérité, plus faible que celui de deux qui divergent
+(`CLAUDE.md` §3).
+
+Trois barrières se dressaient sur ce chemin, toutes calées sur la même fenêtre
+glissante : la création de l'envoi, la lecture du lien, et **la revérification
+de la réponse** — la plus coûteuse, celle qui aurait perdu le devis à l'instant
+où le client disait oui.
+
+### L'année s'affiche quand ce n'est pas la nôtre
+
+« Lundi 8 février » ne désigne plus rien quand on peut proposer à dix-huit
+mois : février prochain, ou celui d'après ? Le patron enverrait une date à un an
+d'écart de ce qu'il croit. `jourLisible` ajoute donc le millésime — et lui seul,
+pour ne pas alourdir les quatre-vingt-dix-neuf devis sur cent qui parlent de la
+semaine prochaine.
+
+### Où c'est éprouvé
+
+| Quoi | Fichier |
+|---|---|
+| Les deux horizons, les bandes, le cas mixte — sans base | `scripts/test-fenetre-lointaine.ts` |
+| Le parcours complet : création, lecture, acceptation, planification | `scripts/test-envois-devis.ts` |
+| **Que le geste existe à l'écran**, et que le client reçoit la date | `scripts/test-date-lointaine-e2e.ts` |
+
+---
+
+## 31. Reprendre une liste de prix déjà écrite ailleurs
+
+**Décidé le 2026-08-08**, à sa demande : *« si l'utilisateur a déjà un fichier
+Excel ou un PDF avec ces lignes de prix, il doit pouvoir le rentrer dans la
+catégorie réglages via une touche, et que les prix s'ajoutent
+automatiquement. »*
+
+### « Automatiquement » s'arrête avant l'écriture
+
+Le fichier est lu, et l'écran montre **ce qui serait fait** : ce qui s'ajoute,
+ce qui change — l'ancien prix barré à côté du nouveau —, ce qui est déjà là, et
+ce qui n'a pas été compris. Rien n'est enregistré avant son appui.
+
+Ce n'est pas de la prudence de principe. Ces tarifs commandent le prix de ses
+devis : un fichier mal lu écraserait sa grille sans qu'il l'ait vu passer, et il
+ne le découvrirait que sur un devis déjà parti. Deux actions séparées portent
+cette garantie — `analyserFichierTarifsAction` **n'écrit rien**,
+`appliquerImportTarifsAction` écrit ce qu'il a validé — et un contrôle vérifie
+en base que déposer un fichier ne change aucun tarif.
+
+### Sans aucune dépendance, y compris pour Excel
+
+Un `.xlsx` est un ZIP de fichiers XML. On en ouvre deux —
+`xl/worksheets/sheet1.xml` et `xl/sharedStrings.xml` — avec le `zlib` de Node.
+Même raisonnement que l'archive ZIP de la sauvegarde (§25) : embarquer une
+bibliothèque qui lit *tout* le format Office — formules, macros, styles, images
+— pour en tirer trois colonnes serait une surface d'attaque considérable en
+échange de rien.
+
+Ce qu'on lit : le **résultat** des formules (`<v>`), c'est-à-dire ce que le
+patron voit à l'écran. Ce qu'on ne lit pas : les styles, les autres feuilles, et
+rien d'exécutable.
+
+### Ce qui a été appris des vraies feuilles
+
+| Le piège | Ce qu'il aurait coûté |
+|---|---|
+| Le BOM d'Excel colle à la première cellule | l'en-tête « Intitulé » n'est plus reconnu, et personne ne voit pourquoi |
+| Le séparateur est un `;`, la virgule décime | « 400,00 » lu comme deux colonnes |
+| Un CSV en Latin-1 (vieux Excel français) | « Élagage » devient « �lagage » |
+| Excel coupe un texte en plusieurs `<t>` | « Main d'œuvre » revient en « Main d' » |
+| Une cellule vide au milieu d'une ligne | les colonnes glissent, les prix passent dans les désignations |
+| Une colonne de numéros d'article en tête | « 1 » et « 2 » sont d'excellents montants — d'où le choix de la **dernière** colonne la plus riche en nombres, pas la première |
+| Une ligne de titre (« ABATTAGE »), un « sur devis » | un tarif à 0 €, qui se proposerait ensuite comme « gratuit » |
+| Le même intitulé deux fois | deux tarifs concurrents, et le chiffrage qui s'arrête à chaque chantier |
+
+**Rien n'est deviné, et tout ce qui est écarté est dit** — ligne par ligne, avec
+sa raison. Une ligne qui disparaît sans un mot ferait croire à un import
+complet, et le manque ne se verrait que sur un devis.
+
+### Le PDF est refusé, et le refus porte la sortie
+
+Un PDF n'est pas un tableau : c'est une **image** de tableau. Les colonnes n'y
+existent plus, seulement des morceaux de texte posés à des coordonnées, souvent
+avec un encodage propre au document. On peut deviner ; deviner un prix est
+exactement ce que ce produit ne fait jamais (`docs/AGENT.md` §3).
+
+Le message dit donc quoi faire : *« Ouvrez la liste dans Excel puis Enregistrer
+sous → CSV »*. Un refus sans issue renvoie le patron à sa saisie manuelle sans
+qu'il sache pourquoi. La reprise par le modèle reste ouverte — `TODO.md`
+§0 sexies.
+
+### Où c'est éprouvé
+
+| Quoi | Fichier |
+|---|---|
+| Les montants, les colonnes, le rapprochement — sans base | `scripts/test-import-tarifs.ts` |
+| Que lire n'écrit rien, et que l'import d'une entreprise ne déborde pas | `scripts/test-import-tarifs-db.ts` |
+| **Que la touche existe**, et que rien n'entre avant son appui | `scripts/test-import-tarifs-e2e.ts` |
+
+
+---
+
+## 32. Trois grilles, et le chiffrage bascule au poste
+
+**Décidé le 2026-08-08 au soir**, par ses réponses à trois questions posées avec
+leurs options :
+
+| Question | Sa réponse |
+|---|---|
+| Les 8 × 6 tranches de la grille de fendage vous vont ? | **oui, on garde** |
+| La taille de haie doit-elle avoir sa propre ligne ? | **oui — grille au mètre linéaire** |
+| L'abattage mérite-t-il la même grille ? | **oui — technique × diamètre** |
+| Faut-il lire les PDF de listes de prix ? | **non, le tableur suffit** |
+
+### Une table, trois natures
+
+`grille_fendage` ne connaissait que la fente, jusque dans son nom. La migration
+0027 la renomme `grille_prix` et lui ajoute une colonne `nature` :
+
+| Nature | Axes | Cases | Pourquoi ces axes |
+|---|---|---|---|
+| `abattage` | technique × diamètre | 24 | chez lui le même chêne vaut 600, 1 000 ou 1 400 € selon la technique. La hauteur ne décide de rien |
+| `fendage` | hauteur × diamètre | 48 | on fend du VOLUME, et le volume va comme le diamètre au carré fois la hauteur |
+| `haie` | aucun — un prix au ml | 1 | son devis dit « 350 € pour 20 ml », sans hauteur. Inventer une seconde dimension ferait quarante cases vides |
+
+Trois tables auraient imposé trois écrans, trois dépôts et trois façons de se
+tromper. Une colonne suffit, et la mécanique reste unique : c'est elle qui
+garantit qu'aucune case ne s'invente, quelle que soit la nature.
+
+### La bascule : au temps, ou au poste
+
+C'est la décision de conception de ce lot, et elle vient de ses deux façons de
+chiffrer.
+
+- **Au temps** — « deux hommes, une journée » : le tarif au jour/homme donne le
+  total, chaque ligne détachable prend son prix de grille, et la principale
+  garde le reste. Sa règle du 7 août : **850 + 250**, jamais 1 000 + 100.
+- **Au poste** — son devis du 5 août : haie 350 €, abattage 600 €, fendage
+  300 €, total 1 250 €. Aucun tarif journalier là-dedans.
+
+**La règle qui les départage tient en une phrase : dès que la ligne PRINCIPALE a
+un prix dans sa grille, le total devient la somme des postes.** Autrement dit,
+le jour où il a posé ses prix d'abattage, sa grille prend la main sur le tarif
+journalier — et l'écran le dit (« Chiffré poste par poste »), parce qu'un total
+qui change de méthode sans un mot se lit comme une erreur.
+
+**Sans grille d'abattage, rien ne bouge, et en silence.** L'absence n'est pas
+signalée comme un manque : c'est le fonctionnement d'hier, et le rappeler à
+chaque devis ferait du bruit pour rien.
+
+### La haie s'apprend au mètre, jamais au montant
+
+Quand il écrit 350 € sur une ligne de haie de 20 ml, c'est **17,50 €/ml** qui se
+range dans la grille. Retenir 350 € ferait facturer 350 € la haie suivante,
+quelle que soit sa longueur — et personne ne verrait d'où vient le chiffre.
+Sans longueur connue, **on n'apprend rien** plutôt qu'un prix faux.
+
+### Ce que la répartition est devenue
+
+`repartir` prend désormais N lignes au lieu de deux : la principale, la haie, la
+fente. Elle reste pure et éprouvée à part (`scripts/test-lignes-vendables.ts`) —
+c'est elle qui encode sa règle du 850 + 250, et la sortir du service est ce qui
+permet de la discuter sans lire une requête.
+
+### Où c'est éprouvé
+
+| Quoi | Fichier |
+|---|---|
+| Le découpage en trois lignes, la répartition à N | `scripts/test-lignes-vendables.ts` |
+| Les tranches, les techniques, la case unique de la haie | `scripts/test-grille-prix.ts` |
+| **Son devis du 5 août, ligne par ligne**, et la bascule au poste | `scripts/test-devis-grilles.ts` |
+| Les trois grilles à l'écran, dans un téléphone | `scripts/test-grille-prix-e2e.ts` |
+
+---
+
+## 33. Un chantier, un seul onglet — et le planning mène quelque part
+
+**Le patron, le 8 août 2026 :** *« lorsque le client m'avait retourné la date
+validée, il se range dans les chantiers planifiés, mais comment moi je fais pour
+avoir accès au devis ? Je dois pouvoir cliquer directement sur le client qui est
+planifié, avoir un bouton à côté fin de chantier pour que ça crée
+automatiquement la facturation, puis l'envoi de la facturation, puis
+l'automatisation vers la TVA. Toute cette branche-là n'est pas faite. »*
+
+### Ce qui était vrai, et ce qui ne l'était pas
+
+**La chaîne était construite.** Facture bâtie depuis le devis, arrêt 3, émission,
+relevé de TVA, message tout prêt : tout existait et fonctionnait, éprouvé par
+`test-facture-e2e.ts`.
+
+**Et elle était injoignable depuis là où il se trouvait.** Sur le planning,
+toucher un chantier planifié n'ouvrait qu'un sélecteur de date. Ni le devis, ni
+la fiche, ni la clôture. La clôture n'était atteignable que par la fiche du
+chantier — dont aucun lien ne partait du planning — ou par l'onglet Terminés,
+où un chantier n'entre qu'une fois sa date passée.
+
+**Une chaîne qu'on ne peut pas atteindre vaut une chaîne qu'on n'a pas écrite.**
+De son côté de l'écran, il avait raison, et répondre « c'est déjà fait » aurait
+été exact et inutile.
+
+### La carte du planning, désormais
+
+Trois destinations, une seule mise en avant :
+
+| Geste | Où il mène | Pourquoi |
+|---|---|---|
+| La carte (date, nom, client) | La fiche du chantier | De là partent le devis, les photos, le prix — tout ce qu'il cherchait |
+| **Fin de chantier** | L'écran facture | Sa demande, mot pour mot. Aucune barrière de date : c'est lui qui sait quand un chantier est fait |
+| Changer la date | Le sélecteur, comme avant | Le geste le plus rare des trois une fois le client d'accord — donc le plus discret |
+
+Le mot « Voir le devis et le chantier → » est porté par la carte. Sans lui, rien
+ne disait qu'elle s'ouvrait : il cherchait son devis sur un écran qui n'avait
+l'air de mener nulle part.
+
+### La cause commune : une règle écrite trois fois
+
+`src/lib/onglet-chantier.ts` existait depuis le 6 août et disait juste. Mais
+**seul l'écran Chantiers l'appelait**. Le planning comparait
+`datePlanifiee < aujourd'hui` dans son composant ; le dépôt des terminés
+comparait `date_planifiee <= aujourd'hui` en SQL. Deux recopies, un signe
+d'écart, et deux défauts observés à l'écran :
+
+| Défaut | Ce que voyait le patron |
+|---|---|
+| Un chantier prévu **aujourd'hui** | Affiché au planning **et** dans les terminés |
+| Un chantier **clôturé avant sa date** | Toujours au planning comme si de rien n'était, absent des terminés, et **sa facture en brouillon joignable seulement par son adresse** |
+
+Le second comptait double : clôturer un chantier plus tôt que prévu est un geste
+délibérément autorisé depuis le 3 août, et il faisait disparaître la facture.
+
+**Ce qui a changé structurellement.** Un seul cœur, `rangement()`, et deux portes
+selon la donnée dont on dispose :
+
+- `ongletDuChantier(statut, date)` — pour les écrans, qui ont le statut affiché ;
+- `ongletDepuisJalons(date, termineAt, factureEnvoyeeAt)` — pour les dépôts, qui
+  ont les jalons datés. Leur faire dériver le statut aurait été la troisième
+  recopie.
+- `estAuPlanning(...)` — **le filtre du planning, sorti du composant.** C'est le
+  vrai correctif : tant qu'il vivait dans l'écran, aucun contrôle ne pouvait
+  constater qu'il contredisait la règle.
+
+Le SQL des terminés ne garde qu'un filtre de **volume** — un sur-ensemble sûr.
+Élargir y est sans danger ; restreindre serait reprendre la règle.
+
+### Ce que les contrôles d'avant ne pouvaient pas voir
+
+`test-onglet-chantier.ts` éprouvait la fonction pure, qui était juste, pendant
+que les écrans en appliquaient une copie fautive à côté. Son dernier cas
+vérifiait que l'onglet rendu figurait parmi trois chaînes — une tautologie, verte
+quoi qu'il arrive.
+
+**Un contrôle qui ne peut pas atteindre le code qui décide ne prouve rien.** Il
+compte désormais les onglets qui retiennent chaque état, et les compare à
+l'onglet **attendu**, écrit à la main : trois fonctions qui se trompent ensemble
+restent cohérentes entre elles.
+
+Et `test-planning-vers-facture-e2e.ts` lit **les trois écrans** dans un vrai
+navigateur : c'est le seul contrôle capable de voir un écran réinventer la règle
+dans son coin. Sur le code d'avant, 4 de ses 7 cas rougissent.
+
+### Un contrôle qui mesure, parce qu'un contrôle qui lit serait vert
+
+Dernier défaut du lot, trouvé sur une capture : à l'arrêt 3, les travaux réunis
+d'une même ligne s'affichaient « Abattage d'un chêne mort Br… ». La coupe venait
+d'un `truncate`, c'est-à-dire du CSS — **le texte entier restait dans la page**,
+et toute assertion sur le contenu passait.
+
+L'écran qui sert à vérifier avant que la facture parte en cachait donc les deux
+tiers. Le PDF du client, lui, a toujours respecté les retours à la ligne
+(`enLignes` dans `document-commun.ts`).
+
+Le contrôle compare la **hauteur rendue** de la ligne groupée à celle d'une ligne
+simple. C'est le seul angle qui rougisse sur l'ancien code.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| Le rangement, état par état, et l'onglet attendu | `scripts/test-onglet-chantier.ts` |
+| Le parcours planning → devis → facture → TVA | `scripts/test-planning-vers-facture-e2e.ts` |
+| La carte planifiée mène au chantier, la date se change à part | `scripts/test-planning-e2e.ts` |
+
+---
+
+## 34. Le client ne pouvait ni voir sa facture ni télécharger son devis
+
+**Trouvé le 8 août 2026, en cherchant tout autre chose.** Une suite navigateur a
+échoué parce que je l'avais lancée, par inadvertance, contre un serveur démarré
+sous le **rôle applicatif** au lieu du rôle de test. L'erreur de manipulation a
+révélé un défaut de production que rien n'attrapait.
+
+### Ce qui était cassé
+
+| Chemin | Sous `postgres` (les suites) | Sous `atlas_app` (la production) |
+|---|---|---|
+| La page de la facture, par jeton | s'affiche | **« Ce lien n'est plus valable »** |
+| Le PDF de la facture, par jeton | se télécharge | **redirigé vers la même erreur** |
+| La page du devis, par jeton | s'affiche | s'affiche |
+| **Le PDF du devis, par jeton** | se télécharge | **échoue en silence** |
+
+Toute la branche « envoi de la facture » — celle que le patron demandait le jour
+même — était **morte en production**. Et le PDF du devis avec, alors que c'est
+le document que son client lit, promis noir sur blanc dans `docs/A-FAIRE.md` §5 :
+« il voit son devis, télécharge le PDF s'il le veut ».
+
+### La cause
+
+Deux tables portent une politique de lecture par jeton : `envois_devis` et
+`envois_factures`. **Ni `devis` ni `factures` n'en portent** — elles restent
+protégées par l'isolation d'entreprise, ce qui est correct.
+
+Retrouver l'envoi avec le jeton marchait donc ; lire le document derrière ne
+marchait pas. La fonction rendait `null`, et `null` veut dire « lien inconnu ou
+expiré » : le client recevait un message honnête sur un lien parfaitement
+valide.
+
+`lireParJeton` (la page du devis) faisait déjà la bonne chose et personne ne
+l'avait remarqué : elle **pose le contexte d'entreprise déduit de l'envoi** avant
+de lire la suite. Les trois autres fonctions ne le faisaient pas.
+
+### Le correctif, et pourquoi il n'affaiblit pas la RLS
+
+```ts
+await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
+```
+
+L'entreprise vient de **l'envoi retrouvé par un jeton secret**, jamais d'une
+entrée du client. C'est le motif déjà en place pour le devis, et il respecte
+`CLAUDE.md` §4 : on ne contourne pas l'isolation, on établit le contexte auquel
+le porteur du jeton a droit. Le contrôle qui le rend défendable vérifie qu'un
+jeton d'une entreprise n'ouvre rien chez une autre.
+
+### **Ce qu'il faut retenir, et qui dépasse ce défaut**
+
+> **Les suites navigateur ne peuvent pas voir un défaut d'isolation.**
+
+Elles démarrent leur serveur sous un rôle qui **traverse la RLS**, parce
+qu'elles inspectent la base pour vérifier ce qu'elles affirment
+(`.github/workflows/ci.yml`). C'est délibéré et nécessaire — et cela veut dire
+qu'un chemin public éprouvé *uniquement* au navigateur n'est pas éprouvé du
+tout de ce point de vue.
+
+`test-facture-au-client-e2e.ts` parcourait exactement ce chemin, dans un vrai
+navigateur, et il était vert depuis le 6 août.
+
+**Règle qui en découle : tout chemin public par jeton doit être éprouvé par une
+suite base, sous `atlas_app`.** C'est ce que fait
+`scripts/test-facture-jeton-rls.ts` — six cas, dont deux qui rougissent sur le
+code d'avant, et un qui vérifie qu'aucune porte n'a été ouverte au passage.
+
+C'est la version la plus coûteuse de la règle de `CLAUDE.md` §5 : un
+environnement de vérification qui diffère du vrai ne vérifie pas ce qu'on croit.
+
+---
+
+## 35. Ce qui se détache d'un chantier : la liste est close, et c'est lui qui l'a close
+
+**Sa réponse du 8 août 2026**, à la question laissée ouverte depuis la veille —
+« autre chose se détache-t-il : le dessouchage, l'évacuation seule, l'enlèvement
+des grumes ? » :
+
+> *« Le dessouchage oui. Et les grumes aussi. »*
+
+**Deux sur trois — et le troisième compte autant que les deux autres.**
+L'évacuation seule **ne se détache pas**. Elle reste sur la ligne principale avec
+l'abattage et le broyage, comme sur son devis de référence du 5 août. Un
+contrôle le tient dans les deux sens (`test-lignes-vendables.ts`), parce qu'un
+jour quelqu'un trouvera « logique » de la détacher aussi.
+
+La différence n'est pas de vocabulaire : **une grume a de la valeur**. Le client
+peut vouloir la garder, la vendre, ou la faire enlever par un autre. Les
+branches broyées, elles, ne se gardent pas — les détacher n'offrirait au client
+aucun choix réel.
+
+### Cinq natures, trois formes de grille
+
+| Nature | Ce qui décide le prix | Cases | Forme à l'écran |
+|---|---|---|---|
+| `abattage` | technique × diamètre | 24 | deux axes, dépliés par technique |
+| `grumes` | *(rien pour l'instant)* | 1 | une case |
+| `fendage` | hauteur × diamètre | 48 | deux axes, dépliés par hauteur |
+| `dessouchage` | diamètre | 8 | un axe, tout visible |
+| `haie` | *(rien — au mètre linéaire)* | 1 | une case |
+
+**Le dessouchage se chiffre au diamètre, et à rien d'autre.** La hauteur de
+l'arbre qui n'est plus là ne décide de rien. Il réemploie **les tranches de
+l'abattage** : ce sont les mêmes troncs, et deux jeux de tranches pour la même
+réalité finiraient par ranger le même chêne dans deux cases (`CLAUDE.md` §3).
+
+### La réserve des grumes, écrite à l'écran et pas seulement ici
+
+Le patron a dit que les grumes se détachent. **Il n'a pas dit à quoi elles se
+chiffrent** : au mètre cube, à la tonne, au voyage de camion, au forfait ? Lui
+inventer un axe reviendrait à inventer une décision qu'il n'a pas prise
+(`docs/AGENT.md` §3), et à lui présenter des cases vides qui ne décrivent rien.
+
+Une case unique retient donc ce qu'il facture, et **l'écran le lui dit** : « Un
+seul prix pour l'instant. Si vous les facturez au mètre cube ou au voyage,
+dites-le et la grille suivra. » La réserve n'existe que s'il peut la lever ; la
+cacher dans un commentaire l'aurait rendue invisible à celui qui décide.
+
+C'est exactement le chemin de la haie, restée à une case parce que son devis ne
+mentionnait aucune hauteur.
+
+### Deux détails qui ont failli passer
+
+**Un ordre de reconnaissance, pas une liste.** « Enlèvement des grumes et
+dessouchage » est une seule prestation que deux règles reconnaissent. Sans ordre
+explicite, elle se rangerait deux fois — et se facturerait deux fois. Le
+découpage et l'apprentissage partagent le même ordre, et les deux listes se
+corrigent ensemble : ranger un prix dans une case que le chiffrage n'ira pas
+chercher revient à ne rien ranger.
+
+**Un libellé visible ne suffit plus à nommer un champ.** « 40 à 50 cm » désigne
+désormais deux cases à l'écran : un tronc à fendre, une souche à arracher. Le
+nom **accessible** porte donc la grille et la rangée entières. Sans cela, une
+personne qui n'utilise pas ses yeux entend cinq fois le même libellé — et le
+contrôle navigateur, lui, ne savait plus lequel il visait.
+
+### Un contrôle lourd doit accuser le bon coupable
+
+`test-planning-vers-facture-e2e.ts` bâtit **sept chantiers de bout en bout**,
+chacun avec son devis envoyé et son PDF archivé. C'est la suite la plus lourde de
+la batterie, et son dernier cas s'exécute sur un serveur de développement déjà
+sollicité par une vingtaine d'autres.
+
+Une navigation y a dépassé les 45 secondes par défaut — **deux fois sur cinq
+batteries, jamais quand la suite tourne seule**. Mesuré hors batterie, avec la
+même base pleine : 333 ms pour cet écran précis. Ce n'est donc pas le code qui
+est lent, c'est le montage qui est chargé.
+
+Un contrôle qui rougit là-dessus **accuse à tort**, et une erreur qui envoie
+chercher au mauvais endroit coûte plus cher que pas d'erreur du tout
+(`AGENTS.md`). D'où une seconde tentative, et un message qui dit que le serveur
+n'a pas répondu plutôt que de laisser croire à un défaut d'affichage. Le
+garde-fou a été éprouvé contre un serveur arrêté : il rougit, et il nomme la
+bonne cause.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| Ce qui se détache, et ce qui ne se détache pas | `scripts/test-lignes-vendables.ts` |
+| Les cinq natures, leurs cases, leurs clés | `scripts/test-grille-prix.ts` |
+| Les cinq grilles à l'écran, dans un téléphone | `scripts/test-grille-prix-e2e.ts` |
+
+---
+
+## 36. Un calendrier des deux côtés, où les jours pris ne se touchent pas
+
+**Sa demande du 8 août 2026 :** *« passe au calendrier pour le choix des dates à
+proposer au client, mais également qu'il ait accès au calendrier pour pouvoir
+proposer une date, avec un système pour qu'il n'ait pas accès aux dates déjà
+prises par un autre client. »*
+
+### Ce qui existait, et pourquoi ça ne suffisait pas
+
+Les deux écrans employaient le sélecteur du téléphone, `<input type="date">`. Il
+accepte une fenêtre (`min`, `max`) — mais **il ne sait pas griser des jours au
+milieu**. Le client pouvait donc choisir un mardi déjà pris, et ne l'apprenait
+qu'**après coup**, par un message d'erreur.
+
+Ce n'est pas un détail d'affichage : un client qui bute sur un refus rappelle,
+ou renonce. Le refus arrivait au pire moment — celui où il venait de décider.
+
+### Le même composant des deux côtés
+
+`src/components/atlas/Calendrier.tsx`, employé par la page du client et par
+l'écran d'envoi du patron. Deux calendriers écrits séparément finiraient par ne
+pas griser les mêmes jours, et **l'écart se verrait chez le client, jamais
+ici** (`CLAUDE.md` §3).
+
+Le composant ne décide de rien : la grille du mois, l'état de chaque jour et la
+règle « une ou deux dates, jamais trois » vivent dans `src/lib/calendrier.ts`,
+**fonctions pures éprouvées sans navigateur** (`scripts/test-calendrier.ts`,
+vingt cas).
+
+### Trois décisions qui ne se devinent pas
+
+**1. Un jour hors fenêtre ne dit PAS qu'il est pris.** L'ordre des raisons dans
+`etatDuJour` n'est pas indifférent : un jour à la fois hors fenêtre et occupé se
+dit « hors fenêtre ». Dire au client qu'un jour de l'an prochain est « déjà
+pris » lui apprendrait quelque chose sur le planning du patron — et sa page ne
+reçoit que **des dates, rien d'autre** (`docs/AGENT.md` §2.2 bis).
+
+**2. Un jour déjà retenu se dit « retenu », jamais « occupé ».** Sinon il
+s'afficherait barré, et le patron croirait ne plus pouvoir le décocher.
+
+**3. La troisième date chasse la plus ancienne**, elle n'est pas refusée en
+silence. Un bouton qui ne répond pas se lit comme une panne : il appuierait
+trois fois avant de comprendre.
+
+### Ce que le calendrier ne peut pas savoir, le serveur le dit
+
+Côté patron, l'horizon va à dix-huit mois mais **les jours occupés ne sont
+chargés que sur la fenêtre proche**. Au-delà, seul `verifierJourPropose` sait si
+la journée tient. Le calendrier propose donc, et le serveur tranche — c'est ce
+qu'il faisait déjà, et le retirer aurait rendu le geste plus joli et moins sûr.
+
+Même principe chez le client : l'affichage est un **instantané**, deux clients
+peuvent viser le même jour, et `enregistrerReponse` revérifie de toute façon.
+
+### Ce que les contrôles visaient, et ce qu'ils visent maintenant
+
+Les deux suites navigateur regardaient `min` et `max` d'un champ natif. C'était
+la mauvaise question : **un champ correctement borné laissait quand même choisir
+un jour pris.** Elles regardent désormais ce que la personne peut *toucher* —
+un jour barré est `disabled`, et le contrôle le vérifie.
+
+Les cases portent `data-jour` et `data-etat` : viser « mardi 12 août » rendrait
+les contrôles dépendants de la langue et du fuseau, et un contrôle qui échoue
+pour cette raison-là accuse à tort.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| La grille, février bissextile, le passage d'année, la borne des mois | `scripts/test-calendrier.ts` |
+| Un jour pris ne se choisit pas, chez le client | `scripts/test-devis-client-e2e.ts` |
+| Le patron navigue jusqu'à six mois et la date part | `scripts/test-date-lointaine-e2e.ts` |

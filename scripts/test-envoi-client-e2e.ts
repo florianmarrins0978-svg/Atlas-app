@@ -49,7 +49,10 @@ async function creerChantierFacturable(
   if (client.telephone) await page.fill('input[placeholder="06 12 34 56 78"]', client.telephone);
   if (client.email) await page.fill('input[placeholder="bernard@exemple.fr"]', client.email);
   await page.click('button:has-text("Créer le chantier")');
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
+  // Sans délai explicite : celui du contexte s'applique (`e2e-browser.ts`).
+  // Dix secondes suffisaient seule et pas en batterie — l'échec accusait alors
+  // l'envoi au client, qui n'y était pour rien.
+  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
   const url = page.url();
 
   // Un devis à zéro euro n'a pas de sens : on lui donne une ligne de prix.

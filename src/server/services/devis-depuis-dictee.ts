@@ -3,6 +3,8 @@ import { genererBrouillon, confirmerBrouillon } from "../ai/services/brouillon-s
 import { getBrouillon } from "../repositories/brouillons-informations";
 import { marquerInformationsVerifiees, marquerPrixValide } from "../repositories/chantiers";
 import { listerLignesPrix, ajouterLignePrix } from "../repositories/lignes-prix";
+import { noterPropositionDictee } from "../repositories/termes-metier";
+import { getNoteVocale } from "../repositories/notes-vocales";
 import { getOuCreerDevisBrouillon } from "../repositories/devis";
 import { preparerPropositionPrix, type OriginePrix } from "../chiffrage/proposition-prix";
 import { appliquerPropositionPrix } from "../chiffrage/appliquer-proposition";
@@ -10,6 +12,7 @@ import { peutPreparerDevis } from "../../lib/preparation-devis";
 import { listerPrecisions, enregistrerPrecisions, type Precision } from "../repositories/precisions-chantier";
 import { listerPrestations, modifierPrestation } from "../repositories/prestations";
 import { libelleEnrichi, questionsAvantChiffrage, type QuestionChiffrage } from "../../lib/questions-chiffrage";
+import { lignesVendables } from "../../lib/lignes-vendables";
 import type { LectureDictee, PropositionExtraction } from "../ai/schemas/extraction";
 
 // **De la dictée au devis, en un seul geste.**
@@ -268,10 +271,15 @@ async function chiffrerEtPreparer(
   } else {
     const application = await appliquerPropositionPrix(ctx, chantierId);
     if (application.succes) {
+      // **Le rapport annonce le TOTAL, et nomme toutes les lignes.** Depuis que
+      // la fente se détache du reste, n'en montrer qu'une ferait croire au
+      // patron que l'autre n'a pas été écrite — et le total affiché ne
+      // correspondrait pas à son devis.
+      const total = application.lignes.reduce((s, l) => s + Number(l.montant), 0);
       prix = {
         origine: proposition.origine,
-        libelle: application.ligne.libelle,
-        montant: application.ligne.montant,
+        libelle: application.lignes.map((l) => l.libelle).join("\n"),
+        montant: total.toFixed(2),
       };
     } else {
       // Le cas courant : la ligne y était déjà (le patron rejoue l'enchaînement).
@@ -297,7 +305,12 @@ async function chiffrerEtPreparer(
   // jamais comme des prix décidés (`DevisCompletClient`, champ souligné tant
   // qu'il est vide). Un zéro affiché comme un montant se lirait « gratuit ».
   if (prixImpossible && (await listerLignesPrix(ctx, chantierId)).length === 0) {
-    const aEcrire = (await listerPrestations(ctx, chantierId)).map((p) => p.libelle.trim()).filter(Boolean);
+    // **Le même découpage que lorsqu'un prix existe.** Une ligne par prestation
+    // dictée était le premier réflexe, et il était faux : le patron aurait vu
+    // « abattage », « broyage », « évacuation » sur trois lignes séparées, puis
+    // aurait dû les réunir à la main — l'inverse exact de sa règle.
+    const prestations = await listerPrestations(ctx, chantierId);
+    const aEcrire = lignesVendables(prestations.map((p) => p.libelle)).lignes.map((l) => l.libelle);
     for (const libelle of aEcrire) {
       await ajouterLignePrix(ctx, chantierId, libelle, "0", { quantite: "1", prixUnitaire: "0" });
     }
@@ -316,6 +329,27 @@ async function chiffrerEtPreparer(
     await marquerPrixValide(ctx, chantierId);
   }
   const devis = await getOuCreerDevisBrouillon(ctx, chantierId);
+
+  // **La photographie de ce qu'Atlas a proposé, avant toute retouche.**
+  //
+  // Le patron, le 7 août 2026 : « comment je fais pour le nourrir et qu'il
+  // apprenne de ces erreurs ? » Sans cette photographie, on saurait plus tard ce
+  // qu'il a écrit — jamais ce qu'il a CHANGÉ. Or c'est l'écart qui enseigne :
+  // « proposé 1 020 € sur une ligne → retenu 850 € + 250 € sur deux lignes ».
+  //
+  // Jamais bloquant : ne pas savoir retenir une leçon ne doit pas empêcher de
+  // préparer un devis. L'apprentissage ne gêne pas le travail.
+  try {
+    const note = await getNoteVocale(ctx, chantierId);
+    await noterPropositionDictee(
+      ctx,
+      chantierId,
+      note?.transcription ?? "",
+      lignes.map((l) => ({ libelle: l.libelle, montant: l.montant }))
+    );
+  } catch {
+    // Volontairement silencieux : voir ci-dessus.
+  }
 
   const aVerifier = [
     ...(vues.aSignaler ?? []),

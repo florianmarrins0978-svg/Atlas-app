@@ -54,11 +54,19 @@ function ancre(titre) {
   );
 }
 
-/** Gras, code, liens — appliqués après échappement pour ne rien réintroduire. */
+/** Gras, italique, code, liens — après échappement pour ne rien réintroduire. */
 function enligne(texte) {
   return echapper(texte)
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    // L'italique APRÈS le gras : `**` a déjà disparu, il ne reste que les
+    // simples. L'inverse ferait de `**mot**` un italique contenant un astérisque.
+    //
+    // Il ne s'agit pas de complétude : dans ces deux documents, l'italique porte
+    // **les paroles du patron**, citées mot pour mot. Les astérisques restaient
+    // affichés tels quels — une vingtaine de citations défigurées sur les pages
+    // qu'il consulte le plus. Vu sur une capture, jamais par un contrôle.
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>")
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, libelle, cible) => {
       const sur = cible.startsWith("#") ? "" : ' target="_blank" rel="noopener"';
       return `<a href="${cible}"${sur}>${libelle}</a>`;

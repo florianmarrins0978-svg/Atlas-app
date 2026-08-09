@@ -6,6 +6,7 @@ import { users } from "../src/server/db/schema";
 import { getCurrentCtx, AucuneEntrepriseError } from "../src/server/session-ctx";
 import { getRole, estProprietaire, exigerProprietaire, AccesRoleRefuseError } from "../src/server/autorisation";
 import { creerTarifAction, supprimerTarifAction } from "../src/app/reglages/actions";
+import { fermerLimiteur } from "../src/server/rate-limit";
 
 let passed = 0;
 let failed = 0;
@@ -219,7 +220,11 @@ async function main() {
   else process.env.AUTH_TEST_UTILISATEUR_ID = original;
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
+  // Le limiteur de débit ouvre une connexion Redis dès qu'une action protégée
+  // est traversée. Sans cette fermeture, le processus ne rend jamais la main —
+  // tests tous verts, batterie arrêtée pour toujours (8 août 2026).
   await pool.end();
+  await fermerLimiteur();
   if (failed > 0) process.exit(1);
 }
 

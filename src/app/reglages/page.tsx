@@ -7,6 +7,7 @@ import { listerTarifs } from "@/server/repositories/tarifs";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { versionExecutee } from "@/server/version-executee";
 import { nomFichierSauvegarde } from "@/lib/nom-sauvegarde";
+import { estEditeur } from "@/server/editeur";
 import ReglagesClient from "./ReglagesClient";
 import BoutonMiseAJour from "./BoutonMiseAJour";
 import { derniereIssueMiseAJour } from "./actions";
@@ -15,7 +16,12 @@ export const dynamic = "force-dynamic";
 
 export default async function ReglagesPage() {
   const ctx = await getCurrentCtx();
-  const [tarifs, entreprise, version] = await Promise.all([listerTarifs(ctx), getEntreprise(ctx), versionExecutee()]);
+  const [tarifs, entreprise, version, editeur] = await Promise.all([
+    listerTarifs(ctx),
+    getEntreprise(ctx),
+    versionExecutee(),
+    estEditeur(ctx),
+  ]);
 
   // Seuls les NOMS des fournisseurs traversent jusqu'à l'écran — jamais les
   // clés, qui n'ont rien à faire dans du HTML rendu.
@@ -53,6 +59,28 @@ export default async function ReglagesPage() {
             Voir le catalogue des prestations et matériels →
           </Link>
         </div>
+
+        {/* Ses grilles de prix — SES prix, pas du vocabulaire partagé : elles
+            restent donc visibles par l'entreprise, contrairement au lien
+            ci-dessous. */}
+        <div className="px-6 pt-4">
+          <Link href="/reglages/prix" className="text-[14px] font-medium" style={{ color: colors.rust }}>
+            Mes prix : abattre, fendre, dessoucher, tailler →
+          </Link>
+        </div>
+
+        {/* **Le vocabulaire du métier — l'éditeur seulement.**
+            Le patron, le 7 août 2026 : « est-ce que les utilisateurs auront
+            accès à cette page ? Moi c'est ça que je ne veux pas. » Ce lien
+            n'apparaît que pour lui — et la page elle-même refuse tout autre
+            compte, parce qu'une adresse se tape (`src/server/editeur.ts`). */}
+        {editeur && (
+          <div className="px-6 pt-4">
+            <Link href="/reglages/vocabulaire" className="text-[14px] font-medium" style={{ color: colors.rust }}>
+              Le vocabulaire de mon métier →
+            </Link>
+          </div>
+        )}
 
         {/*
           Qui écoute et qui rédige, dit à l'écran.

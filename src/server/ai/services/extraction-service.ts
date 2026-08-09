@@ -39,11 +39,18 @@ Règle de complétude, aussi importante que celle de non-invention :
   aucune, même énoncée en passant, au milieu d'une phrase ou sans verbe
   d'action explicite.
 - Une action qui produit un résultat sur le chantier (abattre, tailler, broyer,
-  évacuer, couper, fendre, ranger, débiter, dessoucher, protéger…) est une
-  prestation, même si l'artisan la mentionne comme une évidence.
+  évacuer, fendre, ranger, dessoucher, protéger…) est une prestation, même si
+  l'artisan la mentionne comme une évidence.
 - Ce qui décrit la DESTINATION des déchets ("on laisse sur place", "on emporte")
-  va dans "gestionDechets" — mais le TRAVAIL fait sur la matière (couper, fendre,
-  débiter, ranger) reste une prestation à part entière.
+  va dans "gestionDechets" — mais le TRAVAIL fait sur la matière (fendre, ranger)
+  reste une prestation à part entière.
+- **Une seule exception, et elle est du métier : le billonnage.** Tronçonner le
+  tronc d'un arbre qu'on vient d'abattre ("on le coupe en 50", "débité en
+  bûches") ne donne PAS de prestation séparée quand le même texte parle d'un
+  abattage ou d'un démontage : c'est la fin du geste d'abattre, et l'artisan ne
+  le facture pas à part. Sans abattage dans le texte, en revanche, c'est bien
+  une prestation. À ne pas confondre avec FENDRE le bois, qui se vend seul et
+  fait toujours sa propre prestation.
 - Avant de répondre, relis le texte et vérifie que chaque verbe d'action y a
   trouvé sa prestation. Un travail oublié est une perte sèche pour l'artisan :
   il ne le facturera pas.`;
@@ -80,7 +87,17 @@ Règle de complétude, aussi importante que celle de non-invention :
  * pourrait éprouver le repli, et c'est exactement l'erreur qui a coûté deux
  * jours : un chemin non couvert parce qu'il était impossible à provoquer.
  */
-export async function extraire(texte: string, fournisseurInjecte?: FournisseurLLM): Promise<ResultatExtraction> {
+export async function extraire(
+  texte: string,
+  fournisseurInjecte?: FournisseurLLM,
+  /**
+   * Ce que l'artisan a appris à Atlas : son vocabulaire, ses règles, et ses
+   * corrections passées (`src/lib/consigne-metier.ts`). Ajouté à la consigne
+   * système plutôt qu'au texte : le texte est une DONNÉE à analyser, jamais une
+   * instruction — l'y mêler ouvrirait la porte à une dictée qui commande.
+   */
+  consigneMetier?: string
+): Promise<ResultatExtraction> {
   if (!texte || texte.trim().length === 0) {
     return { succes: false, erreur: erreurIA("reponse_invalide", "Texte vide — rien à analyser.") };
   }
@@ -101,7 +118,8 @@ export async function extraire(texte: string, fournisseurInjecte?: FournisseurLL
     return { succes: true, proposition: lireLitteralement(texte), lecture: "litterale", motifRepli: motif };
   }
 
-  const resultat = await fournisseur.genererTexte(SYSTEME, texte);
+  const consigne = consigneMetier?.trim() ? `${SYSTEME}\n\n${consigneMetier.trim()}` : SYSTEME;
+  const resultat = await fournisseur.genererTexte(consigne, texte);
   if (!resultat.succes) {
     return replier(resultat.erreur.message);
   }

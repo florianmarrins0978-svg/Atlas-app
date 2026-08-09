@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { colors, smallCaps } from "@/lib/design-tokens";
+import ImportTarifs from "./ImportTarifs";
 import {
   creerTarifAction,
   modifierTarifAction,
@@ -104,6 +105,11 @@ export default function ReglagesClient({
         Vos tarifs servent en priorité au calcul du prix d&apos;un chantier. Sans tarif correspondant, le prix est
         calculé à partir de vos paramètres de chiffrage.
       </p>
+
+      {/* Reprendre une liste de prix déjà écrite ailleurs, plutôt que la
+          retaper ligne à ligne. Placé JUSTE avant la liste : c'est là qu'il
+          constate qu'elle est vide, et donc là que la question se pose. */}
+      <ImportTarifs onImporte={(nouveaux) => setTarifs(nouveaux)} />
 
       {tarifs.length === 0 && (
         <p className="mt-5 text-[13px]" style={{ color: colors.muted }}>

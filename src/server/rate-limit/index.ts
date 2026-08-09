@@ -43,6 +43,28 @@ export async function verifierLimite(
   };
 }
 
+/**
+ * Ferme la connexion du limiteur, s'il en a ouvert une.
+ *
+ * **Le défaut du 8 août 2026, et il ne se voyait nulle part.** Avec `REDIS_URL`
+ * posé — ce que `CLAUDE.md` §5 demande, et ce que fait la CI —, une suite qui
+ * déclenche une action limitée laissait une connexion ioredis ouverte. Le
+ * processus ne rendait alors jamais la main : `test-ia-03-propositions.ts`
+ * affichait « 8 test(s) réussi(s) » puis restait là, et **`npm test` s'arrêtait
+ * de progresser pour toujours**.
+ *
+ * Aucun test n'échouait : c'est le pire des états. La batterie ne disait pas
+ * « rouge », elle ne disait plus rien — et une batterie qui ne finit pas ne
+ * prouve rien de ce qu'elle n'a pas atteint.
+ *
+ * À appeler en fin de suite, comme `pool.end()`.
+ */
+export async function fermerLimiteur(): Promise<void> {
+  const actuel = magasin;
+  magasin = null;
+  await actuel?.fermer?.();
+}
+
 // Réservé aux tests utilisant l'adaptateur mémoire directement.
 export function _forcerMagasinPourTests(m: MagasinLimite): void {
   magasin = m;

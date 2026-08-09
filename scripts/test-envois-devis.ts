@@ -60,13 +60,28 @@ async function main() {
 
   // ---- Écriture des dates : ce que le client lit sur son devis.
   await test("une date est écrite en toutes lettres, sans décalage de fuseau", async () => {
-    assert.strictEqual(jourLisible("2026-03-23"), "lundi 23 mars");
-    assert.strictEqual(jourLisible("2026-12-31"), "jeudi 31 décembre");
+    // **L'année de référence est passée explicitement.** Sans elle, ces
+    // contrôles auraient viré au rouge le 1er janvier prochain, sur un produit
+    // parfaitement sain — une bombe à retardement dans la batterie.
+    assert.strictEqual(jourLisible("2026-03-23", MAINTENANT), "lundi 23 mars");
+    assert.strictEqual(jourLisible("2026-12-31", MAINTENANT), "jeudi 31 décembre");
     // Le premier du mois est le seul ordinal du français.
-    assert.strictEqual(jourLisible("2026-08-01"), "samedi 1er août");
+    assert.strictEqual(jourLisible("2026-08-01", MAINTENANT), "samedi 1er août");
     // Un jour est un jour, pas un instant : minuit ne doit jamais reculer
     // d'une case selon le fuseau du lecteur.
-    assert.strictEqual(jourLisible("2026-01-01"), "jeudi 1er janvier");
+    assert.strictEqual(jourLisible("2026-01-01", MAINTENANT), "jeudi 1er janvier");
+  });
+
+  await test("une date d'une AUTRE année porte son millésime", async () => {
+    // **Arrivé avec les dates lointaines.** Depuis que le patron peut proposer
+    // à dix-huit mois, « lundi 8 février » ne désigne plus rien : février
+    // prochain, ou celui d'après ? Il enverrait une date à un an d'écart de ce
+    // qu'il croit, et son client la lirait de même.
+    assert.strictEqual(jourLisible("2027-02-08", MAINTENANT), "lundi 8 février 2027");
+    assert.strictEqual(jourLisible("2027-08-01", MAINTENANT), "dimanche 1er août 2027");
+    // Et l'année en cours reste sobre : quatre-vingt-dix-neuf devis sur cent
+    // n'ont que faire de leur millésime.
+    assert.doesNotMatch(jourLisible("2026-03-23", MAINTENANT), /2026/);
   });
 
   await test("une date illisible est rendue telle quelle, jamais devinée", async () => {
@@ -353,6 +368,110 @@ async function main() {
     const f = fenetreProposition(MAINTENANT);
     assert.ok((await joursOccupes(a.ctx, f.debut, f.fin)).includes(dans(12)));
     assert.strictEqual((await joursOccupes(b.ctx, f.debut, f.fin)).includes(dans(12)), false);
+  });
+
+  // ---- Une date lointaine : le parcours entier, de bout en bout ----------
+  //
+  // **Le patron, le 8 août 2026 :** *« la proposition des dates au client, on a
+  // une visibilité que sur une semaine. Comment je fais si je dois lui proposer
+  // une date dans six mois ? »* Il ajoutait : *« c'est un problème qui va se
+  // produire à coup sûr. »*
+  //
+  // Ce que ces cas tiennent, et qu'aucune règle pure ne peut tenir : la date
+  // lointaine traverse RÉELLEMENT la base — création, relecture du lien,
+  // acceptation, planification. Trois barrières se dressaient sur ce chemin,
+  // toutes calées sur une fenêtre glissante de trois mois.
+
+  const DANS_SIX_MOIS = dans(182);
+
+  await test("le patron peut proposer une date à six mois", async () => {
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`loin-${Date.now()}@t.test`);
+    const envoi = await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [DANS_SIX_MOIS], contenuDevis: "x" },
+      MAINTENANT
+    );
+    assert.ok(envoi.jeton, "l'envoi n'a pas été créé");
+  });
+
+  await test("au-delà de dix-huit mois, elle est refusée", async () => {
+    // L'horizon n'est pas une décoration : sans borne, on promettrait un jour
+    // dont personne ne sait rien.
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`tresloin-${Date.now()}@t.test`);
+    await assert.rejects(
+      creerEnvoi(
+        ctx,
+        { chantierId, devisId, canal: "sms", datesProposees: [dans(600)], contenuDevis: "x" },
+        MAINTENANT
+      ),
+      /hors_fenetre|Date/i
+    );
+  });
+
+  await test("le client voit sa date lointaine, et PAS le semestre qui précède", async () => {
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`vue-${Date.now()}@t.test`);
+    // Un chantier calé dans trois mois : il ne doit PAS apparaître au client,
+    // qui n'a été invité que sur la Toussaint.
+    const autre = await chantiersRepo.creerChantier(ctx, { nom: "Chantier du milieu" });
+    await chantiersRepo.planifierChantier(ctx, autre.id, dans(100));
+
+    const envoi = await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [DANS_SIX_MOIS], contenuDevis: "x" },
+      MAINTENANT
+    );
+    const vue = await lireParJeton(envoi.jeton, MAINTENANT);
+    assert.ok(vue, "le lien ne s'ouvre pas");
+    assert.ok(
+      DANS_SIX_MOIS >= vue.fenetre.debut && DANS_SIX_MOIS <= vue.fenetre.fin,
+      `la date proposée ${DANS_SIX_MOIS} tombe hors de la fenêtre [${vue.fenetre.debut} … ${vue.fenetre.fin}]`
+    );
+    assert.ok(
+      !vue.joursOccupes.includes(dans(100)),
+      "un chantier situé entre aujourd'hui et la date proposée est montré au client : c'est le carnet de commandes qui part"
+    );
+  });
+
+  await test("le client accepte la date à six mois, et le chantier se pose", async () => {
+    // **La barrière la plus coûteuse.** La revérification se faisait contre une
+    // fenêtre de trois mois : le client aurait lu « date indisponible » en
+    // acceptant la date que le patron venait de lui proposer, et le devis se
+    // serait perdu là.
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`accept-${Date.now()}@t.test`);
+    const envoi = await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [DANS_SIX_MOIS], contenuDevis: "x" },
+      MAINTENANT
+    );
+    const r = await enregistrerReponse(
+      envoi.jeton,
+      { decision: "accepte", dateRetenue: DANS_SIX_MOIS },
+      MAINTENANT
+    );
+    assert.deepStrictEqual(r, { succes: true, dateRetenue: DANS_SIX_MOIS, contreProposee: false });
+
+    const chantier = await chantiersRepo.getChantier(ctx, chantierId);
+    assert.strictEqual(chantier?.datePlanifiee, DANS_SIX_MOIS, "le chantier n'a pas été posé à la date retenue");
+  });
+
+  await test("la fenêtre ne glisse plus entre l'envoi et l'ouverture du lien", async () => {
+    // **Un défaut latent que personne n'avait signalé**, et qui devenait
+    // certain avec une date lointaine : la fenêtre était recalculée depuis la
+    // date du JOUR à chaque ouverture. Un devis parti un lundi et ouvert trois
+    // semaines plus tard n'offrait plus les mêmes jours.
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`glisse-${Date.now()}@t.test`);
+    const envoi = await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [dans(5)], contenuDevis: "x" },
+      MAINTENANT
+    );
+    const auDepart = await lireParJeton(envoi.jeton, MAINTENANT);
+    const troisSemainesPlusTard = await lireParJeton(envoi.jeton, new Date(MAINTENANT.getTime() + 21 * 86_400_000));
+    assert.deepStrictEqual(
+      troisSemainesPlusTard?.fenetre,
+      auDepart?.fenetre,
+      "la fenêtre a glissé : le client ne voit plus ce qui lui avait été promis"
+    );
   });
 
   console.log(`\n${passed} réussis, ${failed} échoués`);

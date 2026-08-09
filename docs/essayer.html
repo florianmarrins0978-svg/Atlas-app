@@ -133,7 +133,7 @@
 <li><strong>Créer un chantier</strong> avec un client, un téléphone, un e-mail. L'écran vous demande comment le joindre — c'est ce canal qui rendra l'envoi possible.</li>
 <li><strong>Ajouter des photos, dicter une note vocale</strong>, vérifier les informations.</li>
 <li><strong>Calculer le prix</strong>, préparer le devis.</li>
-<li><strong>Envoyer au client</strong> : une seule question vous est posée — *une date, ou deux au choix du client ?*</li>
+<li><strong>Envoyer au client</strong> : une seule question vous est posée — <em>une date, ou deux au choix du client ?</em></li>
 <li><strong>Ouvrir le lien du client</strong> qui vous est remis. Faites-le dans une fenêtre de navigation privée, pour être vraiment dans sa peau : il n'a pas de compte, pas de session, juste ce lien.</li>
 <li><strong>Répondre à sa place</strong> : accepter une date, en proposer une autre parmi vos jours libres, ou refuser.</li>
 <li><strong>Revenir sur l'application</strong> : le chantier s'est planifié tout seul, ou un « devis retourné » vous attend sur l'accueil.</li>
@@ -188,7 +188,7 @@
 </tr>
 </tbody></table></div>
 <p>Ce second geste est le plus important des deux, et celui qu'on oublie. C'est la question 3 de <code>TRANSCRIPTION.md</code>.</p>
-<blockquote><strong>Ce que je ne sais pas, et que vous verrez à l'écran.</strong> Je ne peux pas lire les pages d'OpenAI depuis l'environnement de développement — elles me répondent <code>403</code>. Je ne sais donc pas si ce réglage est déjà au bon endroit chez eux ou s'il faut le changer : <strong>regardez-le, ne le supposez pas.</strong> Le réglage porte un nom du genre *data controls* ou *sharing for model improvement*. S'il n'existe pas, ou si le libellé ne dit rien de clair, écrivez-leur avant d'envoyer la voix d'un client.</blockquote>
+<blockquote><strong>Ce que je ne sais pas, et que vous verrez à l'écran.</strong> Je ne peux pas lire les pages d'OpenAI depuis l'environnement de développement — elles me répondent <code>403</code>. Je ne sais donc pas si ce réglage est déjà au bon endroit chez eux ou s'il faut le changer : <strong>regardez-le, ne le supposez pas.</strong> Le réglage porte un nom du genre <em>data controls</em> ou <em>sharing for model improvement</em>. S'il n'existe pas, ou si le libellé ne dit rien de clair, écrivez-leur avant d'envoyer la voix d'un client.</blockquote>
 <h3 id="2-coller-les-clés--le-chemin-le-plus-court">2. Coller les clés — le chemin le plus court</h3>
 <p>À la racine du projet se trouve un fichier <strong><code>.env.local</code></strong>, créé pour vous au démarrage de l'espace. Ouvrez-le : il contient déjà les deux lignes, vides.</p>
 <p>``<code> OPENAI_API_KEY= ANTHROPIC_API_KEY= </code>``</p>
@@ -221,7 +221,7 @@
 <h2 id="si-quelque-chose-ne-va-pas">Si quelque chose ne va pas</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><strong>L'éditeur affiche « The workbench failed to connect to the server », « An unexpected error occurred that requires a reload of this page », ou « Déconnecté de codespace » en bas de l'écran.</strong> Ce n'est pas Atlas : c'est <strong>l'éditeur</strong> qui n'a pas réussi à joindre l'espace de travail. L'application, elle, n'est pas concernée — elle tourne dans l'espace, pas dans l'éditeur.</p>
-<p>C'est le cas typique du téléphone : l'espace s'était endormi, l'éditeur a voulu se reconnecter, et il a renoncé avant que le réveil ne soit terminé (« deadline exceeded » = *j'ai attendu trop longtemps*).</p>
+<p>C'est le cas typique du téléphone : l'espace s'était endormi, l'éditeur a voulu se reconnecter, et il a renoncé avant que le réveil ne soit terminé (« deadline exceeded » = <em>j'ai attendu trop longtemps</em>).</p>
 <p>Dans l'ordre :</p>
 <ol>
 <li><strong>Touchez « Reload ».</strong> Neuf fois sur dix l'espace a fini de se réveiller entre-temps.</li>

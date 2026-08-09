@@ -9,6 +9,7 @@ import { appliquerPropositionsAction } from "../src/app/chantiers/[id]/informati
 import { enregistrerPropositions } from "../src/server/repositories/propositions-ia";
 import type { ActionProposee } from "../src/server/ai/propositions";
 import type { Ctx } from "../src/server/repositories/context";
+import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
 
 // Remédiation bugs 2/3 : la confirmation ne prend plus des objets de
@@ -164,6 +165,13 @@ async function main() {
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
   await pool.end();
+  // **Sans ceci, cette suite ne rendait jamais la main.** Elle traverse une
+  // action limitée en débit ; avec `REDIS_URL` posé — ce que `CLAUDE.md` §5
+  // demande —, la connexion ioredis restait ouverte et le processus vivait
+  // pour toujours, après avoir affiché « 8 test(s) réussi(s) ». `npm test`
+  // s'arrêtait là, sans un mot, et tout ce qui suit dans l'alphabet n'était
+  // jamais joué.
+  await fermerLimiteur();
   if (failed > 0) process.exit(1);
 }
 

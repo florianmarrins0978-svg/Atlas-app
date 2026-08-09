@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-07 · branche `claude/migrate-app-atlas-zz31ac`
-· dernière migration `drizzle/0024_envois_factures.sql`
+**Dernière mise à jour :** 2026-08-09 · branche `claude/migrate-app-atlas-zz31ac`
+· dernière migration `drizzle/0028_grille_dessouchage_grumes.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -56,6 +56,7 @@ seule avec quinze outils.
 | Reprise d'un devis retourné en nouvelle version | `src/app/chantiers/[id]/export/actions.ts` |
 | Onglet « Terminés » et fin de chantier | `src/app/termines/` |
 | Facture bâtie depuis le devis, arrêt 3 | `src/app/chantiers/[id]/facture/` |
+| **Chemin du planning vers la facture**, et rangement en un seul onglet | `src/lib/onglet-chantier.ts`, `src/app/planning/PlanningClient.tsx` |
 | Installation sur téléphone : icône, plein écran, marges de sécurité | `src/app/layout.tsx`, `src/app/globals.css`, `scripts/generer-icones.mjs` |
 | Relevé de TVA collectée, par trimestre | `src/app/termines/tva/` + `src/server/trimestre.ts` |
 | Devis PDF reprenant le modèle du patron, sur autant de pages qu'il faut | `src/server/pdf/devis-pdf.ts` |
@@ -75,6 +76,13 @@ seule avec quinze outils.
 | **L'agent s'arrête et demande ce qui fait le prix** (technique, diamètre), et se tait sur le reste | `src/lib/questions-chiffrage.ts` + `drizzle/0022_precisions_chantier.sql` |
 | **Il retient ce que le patron chiffre**, et le lui rappelle sur le chantier comparable suivant | `src/lib/lecons-prix.ts` + `drizzle/0023_lecons_prix.sql` |
 | **L'adresse se propose pendant la frappe** et se choisit d'un doigt — Base Adresse Nationale, jamais Google, et le champ reste libre | `src/components/atlas/ChampAdresse.tsx` + `src/server/adresses/base-adresse-nationale.ts` |
+| **Le vocabulaire du métier**, écrit une fois et envoyé avec chaque dictée — réservé à l'éditeur | `src/app/reglages/vocabulaire/` + `src/lib/consigne-metier.ts` + `drizzle/0025_vocabulaire_metier.sql` |
+| **Le devis se découpe en lignes vendables** : abattage + broyage + évacuation ensemble, la fente à part, sans point-virgule | `src/lib/lignes-vendables.ts` |
+| **Cinq grilles de prix** — abattage (technique × diamètre), fendage (hauteur × diamètre), dessouchage (diamètre), haie (au ml), grumes (au forfait) — nées vides et remplies par ses devis | `src/lib/grille-prix.ts` + `src/app/reglages/prix/` + `drizzle/0028_grille_dessouchage_grumes.sql` |
+| **Le retour de la messagerie ramène à l'accueil**, avec un mot qui dit ce qui a été transmis | `src/lib/annonce-transmission.ts` + `src/components/atlas/AnnonceTransmission.tsx` |
+| **Proposer une date jusqu'à 18 mois**, sans montrer au client plus de trois semaines autour | `src/server/disponibilites.ts` (`fenetrePatron`, `bandesVisibles`) |
+| **Un calendrier des deux côtés**, où les jours déjà pris sont barrés et ne se choisissent pas | `src/lib/calendrier.ts` + `src/components/atlas/Calendrier.tsx` |
+| **Déposer sa liste de prix Excel ou CSV**, avec aperçu avant écriture | `src/app/reglages/ImportTarifs.tsx` + `src/lib/import-tarifs.ts` + `src/server/import/lire-classeur.ts` |
 
 ### Conformité RGPD
 
@@ -131,8 +139,8 @@ Voir `TODO.md` pour le détail et l'ordre.
 
 ## Ce qui bloque, et qui n'avancera pas en codant
 
-**Quatre** points, tous dans **`docs/A-FAIRE.md`**, tous en attente d'une
-décision du patron. Le cinquième — le fournisseur d'envoi — a été tranché le
+**Cinq** points, tous dans **`docs/A-FAIRE.md`**, tous en attente d'une
+décision du patron. Celui du fournisseur d'envoi a été tranché le
 2026-08-04 : il n'y en aura pas, et il est laissé barré ci-dessous pour éviter
 qu'on le rouvre.
 
@@ -156,6 +164,13 @@ qu'on le rouvre.
    plus à autoriser. Restent hors de portée, en conforts et non en blocages :
    relance automatique à sept jours, départ automatique de la facture, accusé de
    réception, code SMS à l'acceptation.
+6. Choisir l'outil comptable qui **émet** les factures — le patron n'en a aucun
+   à ce jour (8 août 2026). Ne pas confondre avec la réserve ci-dessous : que
+   Atlas n'émette pas est **définitif** ; ce qui est ouvert, c'est seulement sur
+   quoi se brancher. Chaque outil ayant son API, il n'y a rien à coder avant le
+   choix. Deux obligations distinctes en dépendent — la conformité des factures
+   des artisans à qui Atlas sera vendu, et celle d'Eden Nature pour ses propres
+   factures, qu'Atlas existe ou non.
 
 ---
 

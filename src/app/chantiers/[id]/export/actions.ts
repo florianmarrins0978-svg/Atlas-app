@@ -4,7 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getOuCreerDevisBrouillon, envoyerDevis } from "@/server/repositories/devis";
 import { listerPrestations } from "@/server/repositories/prestations";
 import { ingererDevis } from "@/server/documents/ingestion";
-import { preparerEnvoi } from "@/server/repositories/preparation-envoi";
+import { preparerEnvoi, verifierJourPropose } from "@/server/repositories/preparation-envoi";
 import { creerEnvoi, DatesProposeesInvalidesError } from "@/server/repositories/envois-devis";
 import { mettreAJourClient } from "@/server/repositories/clients";
 
@@ -58,6 +58,26 @@ export async function preparerEnvoiAction(chantierId: string, dureeDemiJournees?
   return preparerEnvoi(ctx, chantierId, new Date(), dureeDemiJournees);
 }
 
+/**
+ * Ce jour-là peut-il accueillir ce chantier ?
+ *
+ * Sert la case « Une autre date… » : le patron choisit un jour au calendrier,
+ * et l'écran lui répond aussitôt — oui, ou pourquoi non, avec le jour libre le
+ * plus proche. Sans cette réponse immédiate, il découvrirait le refus après
+ * avoir composé son message, ce qui coûte un aller-retour avec son client.
+ *
+ * La règle est celle du dépôt, pas une seconde version : proposer une date que
+ * l'envoi refuserait ensuite serait pire que ne rien proposer.
+ */
+export async function verifierJourProposeAction(
+  chantierId: string,
+  jour: string,
+  dureeDemiJournees?: number
+) {
+  const ctx = await getCurrentCtx();
+  return verifierJourPropose(ctx, chantierId, jour, dureeDemiJournees);
+}
+
 export type ResultatEnvoiClient =
   | { succes: true; lien: string; canal: "sms" | "email"; destinataire: string | null }
   | { succes: false; erreur: string };
@@ -105,7 +125,20 @@ export async function envoyerAuClientAction(
 
   // L'envoi du devis (PDF figé) précède la création du lien : c'est ce PDF dont
   // on prend l'empreinte, et c'est lui que le client acceptera.
-  const devisEnvoye = await envoyerDevisAction(devisId);
+  //
+  // **Sa raison d'échouer ne doit pas se perdre.** Le 7 août 2026, le patron :
+  // « je ne peux pas envoyer au client ». Son écran affichait « L'envoi n'a pas
+  // pu être préparé. » — la phrase de secours du navigateur, celle qui s'affiche
+  // quand l'action a LANCÉ une erreur au lieu d'en rendre une. Le serveur savait
+  // pourquoi (« ce devis a déjà été envoyé », « devis introuvable », un PDF
+  // impossible à composer) ; rien ne le lui a dit, et rien ne me l'a dit non
+  // plus. Une erreur qui n'accuse personne coûte deux échanges à chaque fois.
+  let devisEnvoye: Awaited<ReturnType<typeof envoyerDevisAction>>;
+  try {
+    devisEnvoye = await envoyerDevisAction(devisId);
+  } catch (err) {
+    return { succes: false, erreur: raisonLisible(err) };
+  }
 
   try {
     const envoi = await creerEnvoi(ctx, {
@@ -132,8 +165,26 @@ export async function envoyerAuClientAction(
         erreur: "Une des dates proposées n'est plus libre. Choisissez-en une autre.",
       };
     }
-    throw err;
+    // Plus rien ne sort d'ici sans sa raison : voir le commentaire ci-dessus.
+    return { succes: false, erreur: raisonLisible(err) };
   }
+}
+
+/**
+ * La phrase que le patron lira, tirée de ce qui s'est réellement passé.
+ *
+ * Les erreurs du dépôt sont déjà écrites pour lui — « Ce devis a déjà été
+ * envoyé. », « Devis introuvable » — et valent mille fois mieux qu'un « l'envoi
+ * n'a pas pu être préparé » qui n'apprend rien. Celles qui ne le sont pas
+ * (panne de stockage, base injoignable) reçoivent une phrase de secours qui dit
+ * au moins où regarder.
+ */
+function raisonLisible(err: unknown): string {
+  const message = err instanceof Error ? err.message.trim() : "";
+  if (!message) return "L'envoi n'a pas abouti. Réessayez, et dites-le si cela recommence.";
+  // Tronqué : une pile d'appels dans un bandeau n'aide personne, et une erreur
+  // technique complète peut porter des détails d'infrastructure.
+  return message.length > 200 ? `${message.slice(0, 199)}…` : message;
 }
 
 /**

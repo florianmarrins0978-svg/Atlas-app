@@ -149,6 +149,20 @@ dictée mentionne la coupe en 50 cm.
 | 2 | Abattage du chêne mort | **selon la technique, voir ci-dessous** |
 | 3 | Fendage du bois | **300 €** |
 
+**Où en est l'application, au 8 août 2026 — à lire avant de « corriger ».** Elle
+produit **deux** lignes sur cette dictée, pas trois : la haie est empilée avec
+l'abattage, la fente est séparée. Ce n'est pas un oubli.
+
+- La fente a le droit à sa ligne parce qu'elle a une **grille de prix**
+  (hauteur × diamètre) : son montant est décidé, pas déduit.
+- La haie n'en a pas encore. Séparer son prix de celui du chêne, quand le
+  montant vient d'un tarif au jour/homme global, reviendrait à **inventer deux
+  prix** — ce que `docs/AGENT.md` §3 interdit.
+
+C'est donc une question à poser au patron (`TODO.md` §0 quinquies (c)), pas une
+correction à faire seul. En attendant, la haie figure bien sur le devis, nommée,
+et se sépare d'un geste sur l'écran.
+
 ### La règle de difficulté technique, enfin chiffrée
 
 Le patron n'arrivait pas à la formuler ; ses trois prix la disent pour lui. Même

@@ -113,10 +113,29 @@ async function main() {
   // `innerText`. Le lire là aurait fait conclure à un devis vide alors qu'il
   // était rempli — un contrôle qui accuse à tort coûte plus cher que pas de
   // contrôle du tout.
-  const premiereLigne = await page.getByLabel("Description 1").inputValue();
+  //
+  // **Ce contrôle a changé le 8 août 2026, et dans le bon sens.** Il exigeait
+  // que la haie soit sur la PREMIÈRE ligne. Depuis qu'elle a sa grille au mètre
+  // linéaire, elle a sa propre ligne — après le chantier principal, comme sur
+  // son devis du 5 août. Exiger la première place revenait à verrouiller le
+  // regroupement qu'il a demandé de défaire.
+  const lignesEcrites: string[] = [];
+  for (let i = 1; i <= 6; i++) {
+    const champ = page.getByLabel(`Description ${i}`);
+    if ((await champ.count()) === 0) break;
+    lignesEcrites.push(await champ.inputValue());
+  }
+  assert.ok(lignesEcrites.length > 0, "Le devis ne porte aucune ligne : c'est le devis vide d'avant.");
+  const laHaie = lignesEcrites.find((l) => /haie/i.test(l));
   assert.ok(
-    /taille de haie/i.test(premiereLigne),
-    `Le devis ne porte pas ce qui a été dicté : « ${premiereLigne} »`
+    laHaie,
+    `Le devis ne porte pas ce qui a été dicté : « ${lignesEcrites.join(" || ")} »`
+  );
+  // Et elle est SEULE sur sa ligne : un client peut commander sa haie sans
+  // toucher aux arbres, donc il doit pouvoir la refuser seule.
+  assert.ok(
+    !/abatt|d[ée]mont|fend/i.test(laHaie),
+    `La haie est collée à un autre travail : « ${laHaie} »`
   );
   const devisEcrit = await page.locator("body").innerText();
   assert.ok(

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat";
+import { estAuPlanning } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
@@ -28,6 +30,9 @@ type ChantierPlanning = {
   envoiEnvoyeAt: Date | string | null;
   envoiExpireAt: Date | string | null;
   envoiReponse: "acceptee" | "refusee" | null;
+  /** Les jalons de fin : c'est ce qui sort un chantier du planning. */
+  termineAt: Date | string | null;
+  factureEnvoyeeAt: Date | string | null;
 };
 
 function formatDateFr(iso: string) {
@@ -77,15 +82,13 @@ export default function PlanningClient({ initialChantiers }: { initialChantiers:
   }
   const visibles = chantiers.filter((c) => !supprimes.includes(c.id));
   const aPlanifier = visibles.filter((c) => getPlanificationEtat(c) === "a_planifier");
-  // **Le planning ne montre que ce qui est à venir.** Un chantier dont la date
-  // est passée a eu lieu : il encombrerait ici ce qui reste à faire, et le
-  // patron le retrouve dans « Terminés », d'où il le clôture (règle unique,
-  // `src/lib/onglet-chantier.ts`).
-  const planifies = trierParDatePlanifiee(
-    visibles.filter(
-      (c) => getPlanificationEtat(c) === "planifie" && !(c.datePlanifiee && c.datePlanifiee < aujourdHui)
-    )
-  );
+  // **Le planning ne montre que ce qui est à venir**, et c'est la règle
+  // partagée qui le dit — plus une recopie locale. Cet écran comparait
+  // `datePlanifiee < aujourd'hui` de son côté quand le dépôt des terminés
+  // comparait `<=` du sien : un chantier prévu AUJOURD'HUI figurait dans les
+  // deux onglets, et un chantier clôturé avant sa date restait ici comme si
+  // rien ne s'était passé (`src/lib/onglet-chantier.ts`).
+  const planifies = trierParDatePlanifiee(visibles.filter((c) => estAuPlanning(c, aujourdHui)));
   const attenteClient = visibles.filter((c) => getPlanificationEtat(c) === "attente_client");
 
   function ouvrirSheet(c: ChantierPlanning) {
@@ -220,32 +223,83 @@ export default function PlanningClient({ initialChantiers }: { initialChantiers:
                   libelleSuppression={`Supprimer le chantier ${c.nom}`}
                   onSupprimer={() => supprimer(c.id)}
                 >
-                <button
-                  onClick={() => ouvrirSheet(c)}
-                  className="flex w-full items-center gap-3 rounded-2xl px-5 py-4 text-left"
-                  style={{ backgroundColor: colors.card }}
-                >
+                {/* **Le planning était un cul-de-sac.** Le patron, le 8 août
+                    2026 : « le client m'a retourné la date validée, il se range
+                    dans les chantiers planifiés, mais comment je fais pour
+                    avoir accès au devis ? Je dois pouvoir cliquer directement
+                    sur le client planifié, avoir un bouton à côté fin de
+                    chantier. »
+
+                    Toucher la carte n'ouvrait que le sélecteur de date. Le
+                    devis, la fiche et la clôture existaient — hors d'atteinte
+                    depuis l'écran où il se trouvait. La chaîne complète était
+                    donc construite et injoignable, ce qui revient au même que
+                    de ne pas l'avoir écrite.
+
+                    Trois destinations, une seule mise en avant : la carte mène
+                    au chantier, « Fin de chantier » à la facture, et la date se
+                    change par un lien discret — c'est le geste le plus rare des
+                    trois une fois le client d'accord. */}
+                <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: colors.card }}>
+                  <Link href={`/chantiers/${c.id}`} className="flex items-center gap-3 text-left">
+                    <div
+                      className="flex h-11 w-11 flex-shrink-0 flex-col items-center justify-center rounded-xl"
+                      style={{ backgroundColor: colors.rustTint }}
+                    >
+                      <span className="text-[10px] font-semibold uppercase" style={{ color: colors.rust }}>
+                        {new Date(c.datePlanifiee! + "T00:00:00").toLocaleDateString("fr-FR", { month: "short" })}
+                      </span>
+                      <span className="text-[15px] font-bold" style={{ color: colors.rust }}>
+                        {new Date(c.datePlanifiee! + "T00:00:00").getDate()}
+                      </span>
+                    </div>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
+                        {c.nom}
+                      </span>
+                      <span className="block text-[13px]" style={{ color: colors.muted }}>
+                        {c.clientNom ?? "Client non renseigné"}
+                        {creneauLisible(c) && ` — ${creneauLisible(c)}`}
+                      </span>
+                      {/* Sans ce mot, rien ne dit que la carte s'ouvre. Le
+                          patron cherchait son devis sur un écran qui n'avait
+                          l'air de mener nulle part. */}
+                      <span className="mt-0.5 block text-[12px]" style={{ color: colors.rust }}>
+                        Voir le devis et le chantier →
+                      </span>
+                    </span>
+                  </Link>
+
                   <div
-                    className="flex h-11 w-11 flex-shrink-0 flex-col items-center justify-center rounded-xl"
-                    style={{ backgroundColor: colors.rustTint }}
+                    className="mt-3 flex items-center justify-between gap-3 pt-3"
+                    style={{ borderTop: `1px solid ${colors.line}` }}
                   >
-                    <span className="text-[10px] font-semibold uppercase" style={{ color: colors.rust }}>
-                      {new Date(c.datePlanifiee! + "T00:00:00").toLocaleDateString("fr-FR", { month: "short" })}
-                    </span>
-                    <span className="text-[15px] font-bold" style={{ color: colors.rust }}>
-                      {new Date(c.datePlanifiee! + "T00:00:00").getDate()}
-                    </span>
+                    {/* Le nom du chantier dans le libellé accessible : à
+                        l'écran la colonne le porte déjà, mais une personne qui
+                        n'utilise pas ses yeux entendrait « Changer la date »
+                        cinq fois de suite sans savoir laquelle. */}
+                    <button
+                      onClick={() => ouvrirSheet(c)}
+                      aria-label={`Changer la date du chantier ${c.nom}`}
+                      className="whitespace-nowrap text-[13px]"
+                      style={{ color: colors.muted }}
+                    >
+                      Changer la date
+                    </button>
+                    {/* Aucune barrière de date, comme sur la fiche depuis le
+                        3 août : c'est le patron qui sait quand un chantier est
+                        fait, pas le calendrier. Le geste reste sans danger —
+                        il bâtit la facture qu'il vérifiera, il n'émet rien. */}
+                    <Link
+                      href={`/chantiers/${c.id}/facture`}
+                      aria-label={`Fin de chantier — ${c.nom}`}
+                      className="whitespace-nowrap rounded-full px-4 py-2 text-[14px] font-medium"
+                      style={{ backgroundColor: colors.rustTint, color: colors.rust }}
+                    >
+                      Fin de chantier →
+                    </Link>
                   </div>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
-                      {c.nom}
-                    </span>
-                    <span className="block text-[13px]" style={{ color: colors.muted }}>
-                      {c.clientNom ?? "Client non renseigné"}
-                      {creneauLisible(c) && ` — ${creneauLisible(c)}`}
-                    </span>
-                  </span>
-                </button>
+                </div>
                 </CarteGlissante>
               ))}
             </div>

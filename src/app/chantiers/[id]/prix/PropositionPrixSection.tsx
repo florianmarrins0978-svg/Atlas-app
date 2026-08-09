@@ -59,7 +59,10 @@ export default function PropositionPrixSection({
         setErreur(r.erreur);
         return;
       }
-      onLigneAjoutee(r.ligne);
+      // Toutes les lignes, pas seulement la première : un chantier avec fente
+      // en produit deux, et n'en afficher qu'une ferait croire que l'autre
+      // s'est perdue.
+      for (const ligne of r.lignes) onLigneAjoutee(ligne);
     } catch {
       setErreur("Cette proposition n'a pas pu être ajoutée. Réessayez.");
     } finally {
@@ -78,11 +81,22 @@ export default function PropositionPrixSection({
   //
   // Pour un choix entre plusieurs tarifs, c'est le tarif désigné qu'on cherche
   // dans le détail : les autres candidats restent proposables.
+  //
+  // **Une proposition peut valoir plusieurs lignes** (le travail principal, la
+  // fente). Elle n'est « déjà au détail » que si TOUTES y sont : sinon le
+  // patron se retrouverait avec la principale écrite, la fente absente, et un
+  // bouton grisé qui l'empêcherait de la rattraper.
   const libelleVise =
     origine === "tarifs_ambigus"
       ? (proposition.tarifsCandidats.find((c) => c.tarifId === tarifChoisi)?.intitule ?? null)
-      : proposition.libelle;
-  const dejaAuDetail = ligneDejaAuDetail(libelleVise, lignesDetail);
+      : null;
+  const dejaAuDetail =
+    origine === "tarifs_ambigus"
+      ? ligneDejaAuDetail(libelleVise, lignesDetail)
+      : proposition.lignes.length > 0 &&
+          proposition.lignes.every((l) => ligneDejaAuDetail(l.libelle, lignesDetail))
+        ? ligneDejaAuDetail(proposition.lignes[0].libelle, lignesDetail)
+        : null;
 
   const peutAppliquer =
     origine === "tarif" || origine === "chiffrage" || (origine === "tarifs_ambigus" && tarifChoisi !== null);
@@ -105,6 +119,25 @@ export default function PropositionPrixSection({
             HT
           </span>
         </p>
+      )}
+
+      {/* **La ventilation, visible avant d'appuyer.** Le patron doit voir que
+          la fente fait sa propre ligne, et à combien, AVANT de l'ajouter au
+          détail : c'est le défaut qu'il a signalé trois fois, et il ne se
+          constate pas sur un total. */}
+      {proposition.lignes.length > 1 && (
+        <ul className="flex flex-col gap-1 rounded-xl px-3 py-2" style={{ backgroundColor: colors.cream }}>
+          {proposition.lignes.map((l, i) => (
+            <li key={i} className="flex items-baseline justify-between gap-3 text-[13px]">
+              <span className="whitespace-pre-line" style={{ color: colors.ink }}>
+                {l.libelle}
+              </span>
+              <span className="shrink-0" style={{ color: Number(l.montant) > 0 ? colors.ink : colors.rust }}>
+                {Number(l.montant) > 0 ? enEuros(l.montant) : "prix à poser"}
+              </span>
+            </li>
+          ))}
+        </ul>
       )}
 
       <p className="text-[13px]" style={{ color: colors.ink }}>

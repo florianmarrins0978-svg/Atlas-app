@@ -21,6 +21,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 | 3 | Hébergement européen choisi | Déployer — **sans quoi personne ne peut se servir de l'application** |
 | 4 | Société constituée, assurance souscrite | Rien côté code |
 | 5 | ~~Fournisseur SMS et e-mail~~ — **tranché le 2026-08-04 : il n'y en aura pas** | Rien de bloqué. Le devis part de la messagerie du patron (`ARCHITECTURE.md` §13). Ne restent suspendus qu'aux conforts : relance automatique, accusé de réception, code SMS |
+| 6 | Outil comptable choisi — le patron n'en a **aucun** au 2026-08-08 | Brancher son API : envoyer client, lignes, montants, taux et période, récupérer le numéro et le document émis. Quelques jours. **Rien à écrire avant le choix** — chaque outil a son API, ce serait du code à jeter. Ce qui n'est PAS en jeu : qu'Atlas n'émette pas légalement est définitif (`docs/AGENT.md` §6) |
 
 ---
 
@@ -135,6 +136,108 @@ l'autorité de l'expérience.
 qui demande plusieurs devis comparables. La mémoire l'accumule désormais ; la
 règle se calculera quand il y aura de quoi.
 
+### 0 quinquies. Lignes vendables et grille de fendage — ~~à faire~~ **fait le 8 août 2026**
+
+Ce qui est en place, et qu'il ne faut pas refaire :
+
+- le découpage en lignes vendables (`src/lib/lignes-vendables.ts`), avec le
+  billonnage compris dans l'abattage ;
+- la grille de fendage hauteur × diamètre, 8 × 6 cases, née vide, remplie à la
+  main **et** par ses devis (`src/lib/grille-prix.ts`).
+
+Détail des choix : `ARCHITECTURE.md` §29.
+
+**Ce qui reste ouvert, et qu'il faut lui demander plutôt que de trancher seul :**
+
+| | Question | Pourquoi ça presse un peu |
+|---|---|---|
+| a | **Les tranches lui conviennent-elles ?** 8 diamètres × 6 hauteurs, bornes hautes incluses. | Changer les bornes plus tard rend introuvables les prix déjà rangés. C'est facile aujourd'hui, coûteux après trente devis. |
+| b | **L'abattage mérite-t-il la même grille ?** Il se chiffre déjà à la technique et au diamètre, mais sans liste que le patron puisse voir et compléter. | Question posée le 8 août, restée sans réponse. |
+| c | **La taille de haie devrait-elle avoir sa propre ligne ?** Son devis de référence du 5 août en compte trois — haie 350 €, abattage 600 €, fendage 300 € — quand l'application en produit deux. | Séparer la haie du chêne demanderait de répartir un tarif global entre eux, c'est-à-dire d'inventer deux prix. La fente a le droit à sa ligne parce qu'elle a une grille ; la haie n'en a pas encore. |
+| d | **Autre chose que la fente se détache-t-il ?** Le dessouchage, l'évacuation seule, l'enlèvement des grumes. | Aujourd'hui la fente est le seul cas connu — parce que c'est le seul qu'il ait décrit. |
+
+**Et une limite à connaître avant de promettre quoi que ce soit :** seuls les
+devis **nés d'une dictée** nourrissent `corrections_dictee`. Un devis écrit
+entièrement à la main n'apprend rien sur la façon de LIRE une dictée — c'est
+délibéré (il n'y a pas d'écart à mesurer), mais cela veut dire que sa phrase
+*« je fais plein de devis et dans un mois tu sauras les remplir tout seul »* ne
+vaut que pour les devis dictés. La grille de fendage, elle, se remplit dans les
+deux cas.
+
+### 0 sexies. Le PDF d'une liste de prix — à trancher avec le patron
+
+L'import d'une liste de prix accepte **Excel et CSV** (`ARCHITECTURE.md` §31).
+Le **PDF est refusé**, avec un message qui donne la sortie : « Ouvrez la liste
+dans Excel puis Enregistrer sous → CSV ».
+
+**Pourquoi refusé plutôt que deviné.** Un PDF est une image de tableau : plus de
+colonnes, seulement des morceaux de texte à des coordonnées, souvent dans un
+encodage propre au document. Un prix lu de travers arrive sur le devis d'un
+client — c'est précisément ce que `docs/AGENT.md` §3 interdit.
+
+**Question posée le 8 août, et tranchée : « le tableur suffit ».** Le sujet est
+donc clos, et ce point ne se rouvre que s'il change d'avis. Les deux pistes sont
+gardées ci-dessous pour qu'on n'ait pas à les réinventer ce jour-là.
+
+| | Piste | Ce que ça vaut |
+|---|---|---|
+| a | Faire lire le PDF par le modèle déjà branché, et lui faire valider l'aperçu comme aujourd'hui | Marche sur les PDF scannés comme sur les autres. Coûte des jetons, et demande d'envoyer le fichier chez un sous-traitant — donc l'accord du patron (`docs/A-FAIRE.md` point 2) |
+| b | Extraire la couche texte à la main (flux `Tj`/`TJ`, positions `Td`/`Tm`) | Sans dépendance ni réseau, mais muet sur un PDF scanné, et fragile sur les encodages de sous-ensembles de polices |
+
+### 0 nonies. Le calendrier, des deux côtés — ~~à faire~~ **fait le 9 août 2026**
+
+Le client ne peut plus choisir un jour déjà pris : il est barré et ne répond
+pas. Le patron a le même calendrier, jusqu'à dix-huit mois. `ARCHITECTURE.md`
+§36.
+
+**À savoir avant d'y toucher** : le composant ne décide de rien, tout vient de
+`src/lib/calendrier.ts`. Et l'ordre des raisons dans `etatDuJour` n'est pas
+indifférent — un jour hors fenêtre ne doit JAMAIS se dire « déjà pris » chez le
+client, sinon la page laisse filtrer le planning du patron.
+
+**Ce qui reste ouvert** : côté patron, les jours occupés ne sont chargés que sur
+la fenêtre proche ; au-delà de trois mois, le calendrier ne barre rien et c'est
+le serveur qui refuse après coup. Charger dix-huit mois d'occupation à
+l'ouverture de l'écran serait lourd pour un gain rare. À revoir s'il se met à
+caler beaucoup de chantiers lointains.
+
+### 0 octies. Ce qui se détache d'un chantier — ~~à trancher~~ **tranché le 8 août 2026**
+
+Question posée : « autre chose se détache-t-il — dessouchage, évacuation seule,
+enlèvement des grumes ? » Sa réponse : **« le dessouchage oui, et les grumes
+aussi »**. L'évacuation seule reste donc avec l'abattage et le broyage.
+
+Fait : cinq natures de grille, trois formes, 82 cases (`ARCHITECTURE.md` §35).
+
+**Ce qui reste ouvert, et qui n'est pas un détail** : à quoi se chiffrent les
+grumes ? Au mètre cube, à la tonne, au voyage de camion ? Il n'a rien dit, la
+grille n'a donc qu'une case au forfait, et l'écran l'invite à trancher. Le jour
+où il répond, une migration ajoute l'axe sans rien perdre — c'est le même chemin
+que la haie.
+
+### 0 septies. Du planning à la facture — ~~à faire~~ **fait le 8 août 2026**
+
+Le patron ne pouvait pas atteindre le devis d'un chantier planifié : toucher sa
+carte n'ouvrait qu'un sélecteur de date. La chaîne facture → TVA existait
+pourtant en entier — elle était seulement injoignable depuis son écran.
+
+Fait : la carte mène au chantier, porte « Fin de chantier », et garde le
+changement de date sur un lien à part. Plus deux défauts de rangement corrigés à
+la racine, et un libellé de facture qui n'était plus coupé.
+
+**Ce qu'il faut savoir avant d'y toucher** — `ARCHITECTURE.md` §33 :
+
+- La règle de rangement vit dans `src/lib/onglet-chantier.ts` et **nulle part
+  ailleurs**. Trois portes selon la donnée disponible ; **ne jamais la recopier
+  dans un écran**, c'est exactement ce qui a produit les deux défauts.
+- Aucune barrière de date sur « Fin de chantier », et c'est délibéré depuis le
+  3 août : c'est le patron qui sait quand un chantier est fait.
+
+**Ce qui reste ouvert, et qu'il faudra lui demander** : un chantier passé au
+planning n'affiche rien tant qu'il n'est pas clôturé. Faut-il un rappel — « ce
+chantier était prévu hier » — sur l'écran d'accueil ? Aujourd'hui il bascule
+silencieusement dans « Terminés », ce qui est correct mais discret.
+
 ### 0 bis. L'agent qui apprend — le vrai sujet
 
 Le tapis roulant (dictée → devis, d'un seul geste) est en place, et l'arrêt
@@ -144,6 +247,7 @@ le 5 août 2026 :
 | | Quoi | Pourquoi maintenant |
 |---|---|---|
 | a | ~~**Mémoire des corrections.**~~ **Fait le 6 août 2026** — voir §0 quater. | |
+| a bis | ~~**Le découpage des lignes, et la grille de fendage.**~~ **Fait le 8 août 2026** — voir §0 quinquies. | |
 | b | **Entretien de départ.** Il n'a aucun ancien devis à donner en référence — c'est donc l'agent qui l'interroge une fois et écrit ses règles. | Sans ça, l'agent démarre en ne sachant rien et apprend aux frais du patron. |
 | c | **Écart devis / facture.** Les données existent déjà des deux côtés. | La meilleure leçon qui soit : ce qui avait été mal estimé s'y voit tout seul. |
 | d | **Photos ↔ prix.** Conserver le lien entre les photos d'un chantier et le devis qui a suivi. | Objectif du patron : « à force de comparer les photos des arbres et les devis, il devra proposer un prix juste ». Impossible aujourd'hui — mais **l'accumulation doit commencer maintenant**, sinon dans six mois il n'y aura toujours rien à apprendre. |

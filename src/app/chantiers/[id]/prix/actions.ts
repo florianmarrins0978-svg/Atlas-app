@@ -4,7 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { ajouterLignePrix, listerLignesPrix, modifierLignePrix, supprimerLignePrix } from "@/server/repositories/lignes-prix";
 import { marquerPrixValide } from "@/server/repositories/chantiers";
 import { preparerPropositionPrix } from "@/server/chiffrage/proposition-prix";
-import { appliquerPropositionPrix } from "@/server/chiffrage/appliquer-proposition";
+import { appliquerPropositionPrix, type ResultatApplicationPrix } from "@/server/chiffrage/appliquer-proposition";
 import { peutPreparerDevis, PrixNonPreparableError } from "@/lib/preparation-devis";
 
 export async function ajouterLignePrixAction(chantierId: string) {
@@ -69,7 +69,7 @@ export async function calculerPropositionPrixAction(chantierId: string) {
 export async function appliquerPropositionPrixAction(
   chantierId: string,
   tarifIdChoisi?: string
-): Promise<{ succes: true; ligne: { id: string; libelle: string; montant: string } } | { succes: false; erreur: string }> {
+): Promise<ResultatApplicationPrix> {
   const ctx = await getCurrentCtx();
   return appliquerPropositionPrix(ctx, chantierId, tarifIdChoisi);
 }
