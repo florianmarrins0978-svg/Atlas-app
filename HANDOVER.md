@@ -45,6 +45,55 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**Le banc se relève seul, et compile ses écrans d'avance (9 août).** Le patron
+a lu deux pages d'erreur coup sur coup, et **aucune n'était une lenteur** :
+« HTTP ERROR 504 » parce que `next dev` compilait l'écran pendant qu'il
+attendait (38,7 s pour `/termines`, 373 ms ensuite), et « HTTP ERROR 404 »
+parce que **le serveur était mort** — sur cette adresse, 404 veut dire « plus
+rien n'écoute ».
+
+**Avant de toucher au démarrage du banc :** `.devcontainer/demarrer.sh` ne lance
+plus le serveur, il lance `.devcontainer/veiller.sh`, qui le relance quand il
+tombe. Le veilleur exige **deux** conditions (santé muette ET aucun `next dev`)
+— sur la seule santé, une grosse compilation ferait lancer un second serveur qui
+tuerait le premier. `scripts/prechauffer.mjs` compile ensuite seize écrans, à la
+file, avec une session **fabriquée** et non ouverte par le formulaire : le
+limiteur autorise cinq connexions par quart d'heure et par adresse IP, et
+quelques redémarrages auraient verrouillé le patron hors de son application.
+Jamais en production. `ARCHITECTURE.md` §44.
+
+**L'application ne pouvait pas être bâtie (9 août).** Il s'inquiétait de la
+lenteur ; pour lui répondre avec des chiffres il fallait une version optimisée —
+et `npm run build` échouait. `next build` se déclare `NODE_ENV=production`,
+`src/auth.ts` lit le secret de session dès l'import, et **tous** les refus de
+`src/server/env.ts` tombaient pendant la compilation. Bâtir exigeait une clé
+d'IA facturée, un compartiment S3 et un secret de tâche planifiée : personne ne
+l'avait donc jamais fait.
+
+**Avant de toucher à `src/server/env.ts` :** les refus sont suspendus pendant la
+construction **et pendant elle seule** (`NEXT_PHASE`). `scripts/test-env.ts`
+l'éprouve dans les deux sens, et le second cas est le plus important —
+construction acceptée sans aucun secret, **exécution et démarrage du serveur
+bâti toujours refusés**. Sans lui, `NEXT_PHASE` serait un interrupteur ouvrant
+toutes les protections de production. `ARCHITECTURE.md` §43.
+
+**Les chiffres, enfin mesurés** (version bâtie, 4 cœurs) : démarrage 212 ms,
+écrans entre 50 et 100 ms, première ouverture au même prix que la deuxième.
+Non mesurés, et dits comme tels : les PDF et la dictée.
+
+**Les migrations du banc tournaient sous le mauvais rôle, en silence (9 août).**
+`atlas_app` n'a aucun droit de DDL : elles échouaient à chaque mise à jour, et
+les deux appelants avalaient l'échec. Le patron voyait « Mise à jour
+récupérée », puis un écran tombait sur une table absente.
+
+**Avant de toucher à la mise à jour du banc :** les migrations passent par
+`.devcontainer/appliquer-migrations.sh`, et **par lui seul** — un contrôle
+interdit de relancer `db:migrate` ailleurs, parce que c'est par là que le
+mauvais rôle reviendrait. Le script choisit `DATABASE_ADMIN_URL` puis
+`DATABASE_URL`, et rend « faites » ou « échec : <ce que la base a répondu> ».
+`ARCHITECTURE.md` §42.
+
+
 **La note vocale lit un numéro sans qu'on l'annonce (9 août).** Il signalait que
 sans dire « numéro de téléphone », rien n'était reconnu. **Le défaut n'était pas
 celui-là** : la transcription écrit parfois les chiffres en toutes lettres, et

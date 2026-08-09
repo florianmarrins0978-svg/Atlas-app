@@ -34,6 +34,30 @@ async function repond() {
   }
 }
 
+// **Jamais deux serveurs pour un seul port.**
+//
+// Le 9 août 2026, le patron a lu « HTTP ERROR 404 » : plus rien n'écoutait. Son
+// terminal montrait l'invite revenue après `npm run essai`, c'est-à-dire un
+// serveur mort — pas un serveur lent. Le mécanisme : l'espace démarre le
+// serveur tout seul (`.devcontainer/demarrer.sh`), il en a lancé un second à la
+// main, et le `pkill -f "[n]ext dev"` que fait le démarrage à chaque allumage
+// en a tué un des deux. Celui qui restait n'était pas forcément celui que le
+// mandataire de GitHub avait publié.
+//
+// Une commande tapée par erreur ne doit pas pouvoir éteindre l'application. Si
+// quelqu'un répond déjà sur ce port, on le dit et on s'arrête.
+if (await repond()) {
+  const dejaLa = adressePubliquePossible();
+  console.log(
+    "\n  ─────────────────────────────────────────────────────────────\n" +
+      "   Atlas tourne déjà — rien à relancer.\n\n" +
+      (dejaLa ? `     ${dejaLa}\n` : `     http://localhost:${PORT}\n`) +
+      "\n   (L'espace de travail le démarre tout seul à chaque allumage.)\n" +
+      "  ─────────────────────────────────────────────────────────────\n"
+  );
+  process.exit(0);
+}
+
 const serveur = spawn("npx", ["next", "dev", "-H", "0.0.0.0", "-p", PORT], {
   stdio: "inherit",
   env: process.env,
@@ -86,4 +110,44 @@ if (!pret) {
       "     demo@atlas.local  /  demo1234\n" +
       "  ─────────────────────────────────────────────────────────────\n"
   );
+
+  // **Compiler les écrans maintenant, plutôt que sous ses yeux.**
+  //
+  // `next dev` compile à la demande : le premier accès à un écran coûte trente
+  // à cent secondes, et le mandataire de GitHub abandonne bien avant — d'où les
+  // « HTTP ERROR 504 » du 9 août. On absorbe donc ce coût ici, pendant qu'il ne
+  // regarde pas. Le raisonnement complet vit dans `prechauffer.mjs`.
+  //
+  // Rien de tout ceci ne doit pouvoir empêcher le serveur de servir : la
+  // moindre difficulté est écrite et oubliée.
+  try {
+    const { cookieDeSession, ecransDeChantier, ECRANS_A_PRECHAUFFER, prechauffer } = await import(
+      "./prechauffer.mjs"
+    );
+    const base = `http://127.0.0.1:${PORT}`;
+    const cookie = await cookieDeSession({
+      databaseUrl: process.env.DATABASE_URL,
+      authSecret: process.env.AUTH_SECRET,
+      nodeEnv: process.env.NODE_ENV,
+    });
+    if (!cookie) {
+      console.log("  (Préchauffage impossible : pas de session — les écrans se compileront à l'ouverture.)\n");
+    } else {
+      const ecrans = [...ECRANS_A_PRECHAUFFER, ...(await ecransDeChantier({ base, cookie }))];
+      console.log(`  Préchauffage de ${ecrans.length} écrans en cours — ils s'ouvriront ensuite du premier coup.\n`);
+      const bilan = await prechauffer({
+        base,
+        cookie,
+        ecrans,
+        ecrire: (ligne) => console.log(`  · ${ligne}`),
+      });
+      console.log(
+        `\n  Préchauffage terminé : ${bilan.reussis} écran(s) prêts` +
+          (bilan.echoues ? `, ${bilan.echoues} en échec` : "") +
+          ` — ${bilan.secondes} s.\n`
+      );
+    }
+  } catch (e) {
+    console.log(`  (Préchauffage abandonné : ${e instanceof Error ? e.message : e})\n`);
+  }
 }

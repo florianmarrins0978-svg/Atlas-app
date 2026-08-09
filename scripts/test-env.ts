@@ -35,6 +35,13 @@ function avecEnv<T>(vars: Record<string, string | undefined>, fn: () => T): T {
 }
 
 function main() {
+  // Tous les cas ci-dessous décrivent une application **qui tourne**, jamais
+  // une compilation. Si l'environnement ambiant portait `NEXT_PHASE`, ils
+  // éprouveraient autre chose que ce qu'ils affirment — et les refus de
+  // production sembleraient tous cassés sans qu'on sache pourquoi. Les trois
+  // cas de construction, en fin de fichier, la posent explicitement.
+  delete process.env.NEXT_PHASE;
+
   test("Configuration développement valide : ne lève jamais", () => {
     avecEnv({ NODE_ENV: "development", DATABASE_URL: "postgresql://x", STORAGE_PROVIDER: undefined }, () => {
       const env = getEnv();
@@ -268,6 +275,68 @@ function main() {
         assert.throws(() => getEnv(), ErreurConfiguration);
       }
     );
+  });
+
+  // ------------------------------------------------------------------
+  // Bâtir n'est pas déployer — et la porte ouverte pour bâtir doit rester
+  // fermée pour servir.
+  // ------------------------------------------------------------------
+  //
+  // **Le défaut du 9 août 2026.** `npm run build` était impossible : `next
+  // build` se déclare `NODE_ENV=production`, importe `src/auth.ts` (qui lit le
+  // secret de session dès l'import), et les refus ci-dessus tombaient **pendant
+  // la compilation**. Produire une version optimisée exigeait donc une clé d'IA
+  // facturée, un compartiment S3 et un secret de tâche planifiée. Personne
+  // n'avait jamais bâti cette application, et c'est pourquoi personne ne
+  // connaissait sa vraie vitesse.
+  //
+  // Les trois cas qui suivent vont ensemble, et le deuxième est le plus
+  // important : **un contrôle qu'on assouplit doit être vu refuser encore.**
+  // Sans lui, `NEXT_PHASE` deviendrait un interrupteur pour désactiver toutes
+  // les protections de production, et rien ne le dirait.
+
+  // Ce qu'un banc d'essai ou une CI possèdent : une base, et rien d'autre.
+  const CONSTRUCTION_SANS_SECRETS = {
+    NODE_ENV: "production",
+    DATABASE_URL: "postgresql://x",
+    AUTH_SECRET: undefined,
+    STORAGE_PROVIDER: undefined,
+    STORAGE_S3_BUCKET: undefined,
+    STORAGE_S3_ACCESS_KEY_ID: undefined,
+    STORAGE_S3_SECRET_ACCESS_KEY: undefined,
+    REDIS_URL: undefined,
+    CRON_SECRET: undefined,
+    LLM_PROVIDER: undefined,
+    TRANSCRIPTION_PROVIDER: undefined,
+    ANTHROPIC_API_KEY: undefined,
+    OPENAI_API_KEY: undefined,
+  } as const;
+
+  test("Construction (next build) sans aucun secret de production : ne lève pas", () => {
+    avecEnv({ ...CONSTRUCTION_SANS_SECRETS, NEXT_PHASE: "phase-production-build" }, () => {
+      const env = getEnv();
+      // Les valeurs restent celles d'une installation non configurée : on n'a
+      // rien inventé, on a seulement cessé de refuser de compiler.
+      assert.equal(env.llmProvider, "dev");
+      assert.equal(env.stockageProvider, "local");
+    });
+  });
+
+  test("Exécution (même configuration, hors construction) : refuse toujours", () => {
+    // **Le cas qui prouve que la porte s'est refermée.** Exactement le même
+    // environnement que ci-dessus, à `NEXT_PHASE` près.
+    avecEnv({ ...CONSTRUCTION_SANS_SECRETS, NEXT_PHASE: undefined }, () => {
+      assert.throws(() => getEnv(), ErreurConfiguration);
+    });
+  });
+
+  test("Démarrage du serveur bâti (phase-production-server) : refuse aussi", () => {
+    // Next.js pose `phase-production-server` quand `next start` sert le site.
+    // Une comparaison trop lâche — « NEXT_PHASE contient production » — aurait
+    // laissé passer celui-là, et le serveur aurait démarré avec l'IA simulée.
+    avecEnv({ ...CONSTRUCTION_SANS_SECRETS, NEXT_PHASE: "phase-production-server" }, () => {
+      assert.throws(() => getEnv(), ErreurConfiguration);
+    });
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

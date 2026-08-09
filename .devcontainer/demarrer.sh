@@ -91,7 +91,14 @@ MISE_A_JOUR="$(bash "$(dirname "$0")/mettre-a-jour.sh" "$CD")"
 # absente est pire que l'ancienne version.
 if [ "$MISE_A_JOUR" = "faite" ]; then
   npm ci --silent >> "$JOURNAL" 2>&1 || npm install --silent >> "$JOURNAL" 2>&1 || true
-  npm run db:migrate --silent >> "$JOURNAL" 2>&1 || true
+
+  # **Les migrations passent par leur propre script, sous le rôle
+  # PROPRIÉTAIRE.** Lancées ici avec la variable ambiante, elles tournaient sous
+  # `atlas_app` — qui n'a aucun droit de créer une table — et le `|| true`
+  # avalait l'échec. Le code neuf arrivait sur une base vieille, et l'écran qui
+  # touchait une table absente tombait sans que rien ne l'ait annoncé.
+  MIGRATIONS="$(bash "$(dirname "$0")/appliquer-migrations.sh" "$CD")"
+  echo "migrations : $MIGRATIONS" >> "$JOURNAL"
 
   # **Rejouer ce script dans sa version neuve.**
   #
@@ -116,10 +123,16 @@ fi
 ATLAS_VERSION="$(git log -1 --date=format:'%d/%m/%Y %H:%M' --format='%cd · %h' 2>/dev/null || echo 'inconnue')"
 export ATLAS_VERSION
 
-# `setsid` détache le serveur du processus de démarrage : sans cela, l'éditeur
+# `setsid` détache le veilleur du processus de démarrage : sans cela, l'éditeur
 # le tue en même temps que la commande de démarrage, et l'adresse ne répond
 # jamais.
-setsid nohup npm run essai > "$JOURNAL" 2>&1 < /dev/null &
+#
+# **Un veilleur plutôt qu'un serveur, depuis le 9 août 2026.** Le serveur était
+# lancé ici une fois, et une seule. Quand il mourait — et il est mort —, plus
+# rien ne le relevait : le patron a lu « HTTP ERROR 404 », qui sur cette adresse
+# veut dire « plus rien n'écoute », et il n'avait aucun moyen de le savoir.
+# `veiller.sh` regarde toutes les quinze secondes et relance ce qu'il faut.
+setsid nohup bash "$(dirname "$0")/veiller.sh" "$CD" > /dev/null 2>&1 < /dev/null &
 
 # L'adresse exacte, écrite par la machine plutôt que devinée par le patron.
 #
@@ -190,7 +203,22 @@ case "$MISE_A_JOUR" in
   impossible*) echo "  ⚠ MISE À JOUR $MISE_A_JOUR" ;;
   *) echo "  Déjà à jour." ;;
 esac
+
+# **Une base restée en arrière se DIT, en toutes lettres.** C'est le défaut du
+# 9 août 2026 : les migrations échouaient sous le mauvais rôle, l'échec était
+# avalé, et le patron ouvrait un écran qui tombait sur une table absente sans
+# rien pour le relier à la mise à jour qu'il venait de faire.
+case "${MIGRATIONS:-}" in
+  échec*)
+    echo
+    echo "  ⚠ LA BASE N'A PAS SUIVI LE CODE — $MIGRATIONS"
+    echo "    Les écrans qui touchent une table neuve vont tomber."
+    echo "    Ne cherchez pas ailleurs : c'est ça, et c'est réparable."
+    ;;
+esac
 echo "──────────────────────────────────────────────"
-echo "  Ça prend une minute ou deux. Journal : $JOURNAL"
+echo "  Ça prend une minute ou deux, puis Atlas compile"
+echo "  ses écrans d'avance : les premières ouvertures"
+echo "  ne feront donc plus attendre. Journal : $JOURNAL"
 echo
 exit 0

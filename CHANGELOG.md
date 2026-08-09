@@ -9,6 +9,84 @@ Format : le plus récent en tête.
 
 ## 2026-08-09
 
+### L'application ne pouvait pas être bâtie — donc personne ne connaissait sa vitesse
+
+Le patron, inquiet : *« l'application là, elle est super lente. Les
+utilisateurs, ils ne voudront jamais utiliser une application aussi lente. »*
+Ce qu'il mesurait, c'était `next dev`, qui compile chaque écran à l'ouverture.
+Mais l'affirmer sans chiffre ne valait rien — et bâtir la version optimisée
+s'est révélé **impossible**.
+
+`next build` se déclare `NODE_ENV=production` et importe chaque module ;
+`src/auth.ts` lit le secret de session dès l'import. Tous les refus de
+`src/server/env.ts` tombaient donc **pendant la compilation** : bâtir exigeait
+une clé d'IA facturée, un compartiment S3, un secret de tâche planifiée. Ni la
+CI ni le banc ne les ont, et personne n'avait donc jamais bâti Atlas.
+
+Ces refus protègent une application qui **sert** des clients, pas un
+compilateur. Ils sont suspendus pendant la construction, et pendant elle seule
+(`NEXT_PHASE`) — ce que `scripts/test-env.ts` éprouve dans les deux sens :
+construction acceptée sans aucun secret, exécution et démarrage du serveur bâti
+toujours refusés.
+
+**La mesure, enfin possible** : démarrage en 212 ms, écrans entre 50 et 100 ms,
+et surtout la première ouverture au même prix que la deuxième. Contre 38,7 s
+pour un seul écran sur son banc.
+
+### Un serveur mort que personne ne relevait, et des écrans compilés sous ses yeux
+
+Deux pages d'erreur coup sur coup, deux causes différentes, aucune lenteur.
+
+**« HTTP ERROR 504 »** : `next dev` compilait `/reglages/agenda` pendant qu'il
+attendait, et le mandataire de GitHub abandonnait avant la fin.
+
+**« HTTP ERROR 404 »** : sur cette adresse, cela veut dire « plus rien
+n'écoute ». Le démarrage lançait le serveur une fois et une seule ; mort, il le
+restait jusqu'à ce que le patron s'en aperçoive.
+
+Trois pièces : un **veilleur** qui relance (deux conditions avant de le faire,
+sinon deux serveurs se disputeraient le port), une **garde** qui empêche une
+commande tapée par erreur d'en lancer un second, et un **préchauffage** qui
+compile seize écrans au démarrage — pendant que personne ne regarde.
+
+Le préchauffage fabrique sa session directement plutôt que de se connecter : le
+limiteur autorise cinq tentatives par quart d'heure et par adresse IP, et
+quelques redémarrages auraient **verrouillé le patron hors de son application**.
+Jamais en production.
+
+Mesuré : à froid, seize écrans prêts en 43 s ; serveur tué, relevé en 16 s ;
+écrans entre 125 et 680 ms ensuite.
+
+
+### Une base restée en arrière, et rien pour le dire
+
+Le patron met à jour son banc, lit « Mise à jour récupérée », ouvre le
+Planning — l'écran tombe. Rien ne relie les deux.
+
+**La cause était là depuis le début.** Les migrations du banc tournaient sous
+`atlas_app`, le rôle applicatif, qui n'a délibérément aucun droit de créer une
+table. Elles échouaient donc à chaque fois sur « permission denied for schema
+public »… **et l'échec était avalé aux deux endroits qui les lancent**. Le code
+neuf arrivait, la base restait vieille, et l'écran annonçait un succès.
+
+La règle était pourtant écrite noir sur blanc dans `CLAUDE.md` §5, pour les
+essais locaux. Le banc ne la suivait pas.
+
+Désormais : un seul script, le rôle propriétaire, et **l'échec se voit** — au
+démarrage de l'espace comme sur l'écran de mise à jour, qui écrit maintenant
+« LA BASE N'A PAS SUIVI » plutôt que « récupérée ».
+
+**Le message a dû être repris deux fois.** Le premier jet rendait
+« échec : routine: 'aclcheck_error' » — le nom d'une fonction interne de
+PostgreSQL, qui envoie chercher n'importe où. La vraie phrase se trouvait douze
+lignes plus haut : c'est la première ligne parlante qu'il faut, pas la dernière.
+
+Et un contrôle existant est passé au rouge en chemin, sans qu'aucune régression
+n'ait eu lieu : il repérait la migration par une chaîne que le correctif
+supprime. C'est le bon comportement — un repère qui disparaît doit faire du
+bruit.
+
+
 ### L'agenda dit AUSSI ce qu'il y a, et les identifiants se collent dans l'appli
 
 *« Si, il doit lire les intitulés aussi ! »* et *« dans planning il faut un
