@@ -42,6 +42,14 @@ un second serveur, et construction possible sans les secrets de production.
 - **Le navigateur d'essai manque au conteneur.** `npm run verifier:connexion`
   tombe sur une pile Playwright illisible au lieu d'une phrase. À installer, et
   à faire dire une ligne claire quand il manque.
+  **Précision du 9 août** : dans l'espace de travail de l'agent, le navigateur
+  EST installé — mais sous `/opt/pw-browsers/chromium-1194`, alors que la
+  version de Playwright du dépôt en réclame un autre numéro de build. Le
+  message « Executable doesn't exist… run npx playwright install » envoie donc
+  chercher une installation absente au lieu d'une version qui ne correspond
+  pas. Contournement éprouvé : `chromium.launch({ executablePath:
+  "/opt/pw-browsers/chromium" })` — c'est ce que fait
+  `scripts/verifier-maquettes-page-unique.mjs`.
 - **Les PDF et la dictée ne sont pas mesurés** — le premier exige un vrai
   stockage, la seconde un appel facturé. Dit plutôt que supposé.
 
@@ -262,6 +270,27 @@ la racine, et un libellé de facture qui n'était plus coupé.
 planning n'affiche rien tant qu'il n'est pas clôturé. Faut-il un rappel — « ce
 chantier était prévu hier » — sur l'écran d'accueil ? Aujourd'hui il bascule
 silencieusement dans « Terminés », ce qui est correct mais discret.
+
+### 0 decies. La nouvelle direction graphique — en attente de son choix
+
+Le 9 août au soir, le patron a trouvé l'écran refait « trop application créée
+en 2013 » et demandé quelque chose de **minimaliste et luxueux**, en s'appuyant
+sur `aman.com`. Huit maquettes ont suivi ; il a retenu la mise en page **« la
+colonne »** — la date à gauche, le chantier à droite — et gardé **trois** de ses
+déclinaisons : le repère, en plages, l'action au pouce.
+
+**Rien n'est codé.** L'application porte toujours la reproduction de sa première
+capture (`ARCHITECTURE.md` §46). Il n'a pas encore désigné laquelle des trois.
+
+Tout est dans `docs/maquettes/`, et d'un coup dans
+`docs/maquettes/toutes-les-maquettes.html` — engendrée, jamais éditée à la
+main : `node scripts/fusionner-maquettes.mjs`, puis
+`node scripts/verifier-maquettes-page-unique.mjs`.
+
+Ce que la bascule coûtera, quand il aura choisi : la charte de
+`src/lib/design-tokens.ts` change de fond en comble (ivoire au lieu du gris-vert,
+encre au lieu du vert pin pour l'action, bronze au lieu de l'or), et **tous** les
+écrans suivent — pas seulement Chantiers. À ne pas entamer écran par écran.
 
 ### 0 bis. L'agent qui apprend — le vrai sujet
 

@@ -45,6 +45,24 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**Les maquettes tiennent sur une seule page (9 août, tard).**
+`docs/maquettes/toutes-les-maquettes.html` porte les huit propositions et un
+sommaire à ancres. **Ne pas la modifier à la main** : elle est engendrée par
+`node scripts/fusionner-maquettes.mjs` à partir des huit fichiers voisins, qui
+restent la source. Après toute retouche d'une maquette, régénérer puis jouer
+`node scripts/verifier-maquettes-page-unique.mjs` — il clique les huit titres
+dans un navigateur.
+
+**Et surtout : ne pas repartager un sommaire de liens externes.** Une page
+publiée s'exécute confinée et ne peut naviguer nulle part ; le patron a cliqué
+huit fois dans le vide avant qu'on s'en aperçoive.
+
+**Le design de l'écran Chantiers n'est PAS tranché.** L'application porte
+toujours la reproduction de sa première capture (§46). La direction minimaliste
+— ivoire, serif, capitales espacées — n'existe qu'en maquette. Il a retenu la
+mise en page « la colonne » et gardé trois de ses déclinaisons, sans encore
+choisir laquelle. **Rien à coder tant qu'il n'a pas désigné celle-là.**
+
 **L'écran Chantiers est refait d'après une maquette du patron (9 août).** Il a
 demandé une reproduction, pas une interprétation.
 

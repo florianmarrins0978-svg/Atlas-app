@@ -9,6 +9,33 @@ Format : le plus récent en tête.
 
 ## 2026-08-09
 
+### Un sommaire de maquettes qui ne s'ouvrait pas, et la page unique qui le remplace
+
+Les huit maquettes de l'écran Chantiers avaient été partagées comme huit
+adresses séparées, avec un sommaire qui pointait dessus. **Le sommaire ne
+s'ouvrait pas** : une page publiée s'exécute confinée et ne peut naviguer vers
+aucune autre adresse. C'est le patron qui l'a découvert, en cliquant — encore
+un parcours transmis sans avoir été parcouru.
+
+`scripts/fusionner-maquettes.mjs` engendre désormais **une seule page** qui
+porte les huit maquettes et un sommaire à ancres : cliquer un titre y descend,
+sans jamais quitter la page. Les huit fichiers restent la source ; la page
+unique est un produit qu'on régénère, donc elle ne peut pas diverger d'eux.
+
+**Pourquoi un script et pas un copier-coller.** Les huit maquettes ont été
+écrites séparément et partagent les mêmes noms de classes (`.ecran`, `.prop`,
+`.nom`) et les mêmes identifiants (`#modele`, `#duo`). Concaténées, la charte
+de l'une repeindrait l'autre. Chaque feuille est donc confinée sous un ancêtre
+unique — `:root`, `html` et `body` deviennent `#s01` … `#s08` — et chaque
+script d'origine reçoit un `document` restreint à sa section. Le code des
+scripts n'a pas été réécrit : il ne peut donc pas s'écarter de l'original.
+
+`scripts/verifier-maquettes-page-unique.mjs` **clique les huit titres** dans un
+navigateur et vérifie qu'on arrive sur l'écran. Confronté à trois états
+dégradés, il nomme le bon coupable à chaque fois : une ancre morte, un lien
+vers l'extérieur — le défaut d'origine, précisément — et une feuille de style
+qui ne s'applique plus.
+
 ### L'application ne pouvait pas être bâtie — donc personne ne connaissait sa vitesse
 
 Le patron, inquiet : *« l'application là, elle est super lente. Les
