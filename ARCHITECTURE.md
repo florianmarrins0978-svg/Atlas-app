@@ -2591,3 +2591,47 @@ Mais le bilan, lui, disait « 9 en échec » sans dire de quoi. Il nomme mainten
 l'obstacle quand un même renvoi explique le gros des échecs : documents légaux à
 accepter, session refusée (`AUTH_SECRET` différent), ou autre. Une ligne d'échec
 qui laisse chercher la cause coûte plus cher que pas de ligne du tout.
+
+### La cause première du 404 : tuer les enveloppes et laisser le serveur
+
+Trouvée en dernier, et c'est la plus importante — **en regardant la liste des
+processus de la machine**, jamais en relisant le script. Reproduite sans le
+vouloir en éprouvant le veilleur, ce qui est la meilleure preuve qu'elle est
+réelle.
+
+`npx next dev` n'est qu'une pile d'enveloppes. Le processus qui écoute
+vraiment **se renomme** :
+
+```
+27577 npm exec next dev -H 0.0.0.0 -p 3000   ← enveloppe
+27590 node …/next dev -H 0.0.0.0 -p 3000     ← enveloppe
+29803 next-server (v16.2.12)                 ← CELUI QUI ÉCOUTE
+```
+
+`pkill -f "next dev"` — présent dans `demarrer.sh` **depuis le début** — tue
+donc les enveloppes et laisse le vrai serveur vivant, orphelin, **accroché au
+port 3000**. Deux conséquences, et la seconde explique tout :
+
+1. le serveur suivant ne peut plus s'attacher au port ;
+2. l'orphelin continue de répondre, mais avec un cache de compilation qui
+   n'existe peut-être plus — **toutes les pages rendent 404**, y compris
+   `/api/health/live`, ce qui rend le diagnostic incompréhensible.
+
+Le motif couvre désormais les deux (`[n]ext(-server| dev)`), dans les deux
+scripts, et le démarrage laisse une seconde au port pour se libérer.
+
+**Et le veilleur traite le cas le plus vicieux**, qu'il ne voyait pas dans sa
+première version : un serveur **présent mais muet**. `pgrep` le trouvait, donc
+aucune relance — la boucle aurait tourné indéfiniment sans rien faire. Deux
+tours de patience, puis il est délogé.
+
+| Cas | Avant | Après |
+|---|---|---|
+| Serveur absent | relancé | relancé |
+| Serveur muet qui tient le port | **boucle infinie sans rien faire** | délogé après 30 s, puis relancé |
+| Orphelin `next-server` | survivait à chaque démarrage | tué avec les enveloppes |
+
+Vérifié de bout en bout sur un banc de simulation remis neuf commits en
+arrière : mise à jour, migrations, relance du script, veilleur, seize écrans
+préchauffés en 30 s, serveur tué et relevé. Et l'avertissement « LA BASE N'A PAS
+SUIVI LE CODE » s'affiche enfin, pour de bon.
