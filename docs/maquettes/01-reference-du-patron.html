@@ -1,0 +1,286 @@
+<title>Atlas — écran Chantiers, maquette</title>
+<style>
+  /* ── Jetons de la page (autour de la maquette) ─────────────────────────── */
+  :root{
+    --fond:#f2f0ea; --surface:#ffffff; --encre:#22221f; --encre-doux:#5a584f;
+    --trait:rgba(34,34,31,.14); --or:#9a7434; --pin:#2a3a2e;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#161714; --surface:#1e201c; --encre:#eceade; --encre-doux:#a8a596;
+      --trait:rgba(236,234,222,.16); --or:#c9a15e; --pin:#9fbd82;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#161714; --surface:#1e201c; --encre:#eceade; --encre-doux:#a8a596;
+    --trait:rgba(236,234,222,.16); --or:#c9a15e; --pin:#9fbd82;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--fond); color:var(--encre);
+    font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:40px 20px 64px;
+  }
+  .enveloppe{max-width:1080px;margin:0 auto;display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start;justify-content:center}
+  .colonne{flex:1 1 340px;min-width:300px;max-width:420px}
+  h1.titre{font:600 15px/1.3 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--or);margin:0 0 10px}
+  p.chapo{margin:0 0 28px;color:var(--encre-doux);font-size:15px;max-width:60ch}
+  h2.section{font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--encre-doux);margin:32px 0 12px}
+  ul.notes{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px}
+  ul.notes li{background:var(--surface);border:1px solid var(--trait);border-radius:14px;padding:14px 16px;font-size:14.5px;line-height:1.55}
+  ul.notes b{color:var(--or)}
+  .drapeau{display:inline-block;font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;text-transform:uppercase;
+           color:var(--pin);border:1px solid var(--trait);border-radius:999px;padding:5px 9px;margin-bottom:8px}
+
+  /* ── Le téléphone : monde visuel fermé, peint explicitement ────────────── */
+  .telephone{
+    width:390px;max-width:100%;border-radius:44px;padding:12px;background:#dcd8ce;
+    box-shadow:0 2px 4px rgba(20,26,20,.14),0 30px 70px rgba(20,26,20,.28);
+    margin-inline:auto;
+  }
+  .ecran{
+    position:relative;overflow:hidden;border-radius:34px;background:#f6f4ef;color:#1c1c1a;
+    height:812px;display:flex;flex-direction:column;
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  .serif{font-family:"Playfair Display",ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+
+  .barre-etat{display:flex;justify-content:space-between;align-items:center;padding:14px 26px 0;font-size:14px;font-weight:600;color:#1c1c1a}
+  .barre-etat .droite{display:flex;gap:6px;align-items:center;opacity:.9}
+
+  .defile{flex:1;overflow:hidden;position:relative;padding:0 24px}
+
+  .branche{position:absolute;top:-26px;right:-58px;width:290px;opacity:.85;pointer-events:none}
+
+  .entete{display:flex;align-items:flex-start;justify-content:space-between;padding-top:22px;position:relative;z-index:1}
+  .marque{display:flex;gap:14px;align-items:center}
+  .sceau{width:56px;height:56px;border-radius:999px;border:1.5px solid #b98b47;display:grid;place-items:center;flex:0 0 auto}
+  .mot{font:400 21px/1 inherit;letter-spacing:.3em;color:#1c1c1a}
+  .baseline{margin:7px 0 0;font-size:12.5px;color:#8a8578;letter-spacing:.01em}
+  .cloche{position:relative;width:34px;height:34px;display:grid;place-items:center;flex:0 0 auto}
+  .cloche .point{position:absolute;top:2px;right:2px;width:9px;height:9px;border-radius:999px;background:#c08a3e;border:2px solid #f6f4ef}
+
+  .salut{margin:34px 0 0;font-size:20px;color:#b98b47;position:relative;z-index:1}
+  .grand{margin:2px 0 0;font-size:44px;line-height:1.05;letter-spacing:-.01em;position:relative;z-index:1}
+  .filet{width:118px;height:2px;background:#c9a15e;border-radius:2px;margin:16px 0 0}
+  .compte{margin:14px 0 0;font-size:15px;color:#8a8578}
+
+  .action{
+    display:flex;align-items:center;gap:18px;margin-top:22px;padding:22px 22px;
+    border-radius:20px;background:#26382c;color:#f4f2ec;text-decoration:none;
+  }
+  .action .rond{width:56px;height:56px;border-radius:999px;border:1.5px solid #c9a15e;display:grid;place-items:center;flex:0 0 auto}
+  .action .txt{flex:1;min-width:0}
+  .action .txt strong{display:block;font-weight:400;font-size:22px;line-height:1.15}
+  .action .txt span{display:block;margin-top:6px;font-size:13.5px;line-height:1.4;color:#cfd6cb}
+
+  .etiquette{margin:30px 0 12px;font:600 11px/1 inherit;letter-spacing:.2em;text-transform:uppercase;color:#8a8578}
+
+  .carte{
+    display:flex;gap:16px;align-items:flex-start;padding:18px 18px 18px 16px;background:#fbfaf7;
+    border-radius:16px;border-left:3px solid var(--accent-carte,#7d9a6d);
+    box-shadow:0 1px 2px rgba(47,59,47,.05),0 10px 22px rgba(47,59,47,.05);
+    margin-bottom:14px;
+  }
+  .pastille{width:46px;height:46px;border-radius:999px;background:#eeece4;display:grid;place-items:center;flex:0 0 auto}
+  .corps{flex:1;min-width:0}
+  .statut{font:600 11px/1 inherit;letter-spacing:.16em;text-transform:uppercase}
+  .nom{margin:8px 0 0;font-size:22px;line-height:1.15}
+  .adresse{margin:6px 0 0;font-size:14px;color:#8a8578;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .meta{margin:12px 0 0;display:flex;align-items:center;gap:7px;font-size:13.5px;color:#8a8578}
+  .aparte{display:flex;flex-direction:column;align-items:flex-end;gap:14px;flex:0 0 auto;padding-top:2px}
+  .quand{font-size:13.5px;color:#8a8578;white-space:nowrap}
+
+  .equipe{display:flex;align-items:center;gap:16px;padding:18px;background:#fbfaf7;border:1px solid rgba(28,28,26,.07);border-radius:16px}
+  .equipe .corps strong{display:block;font-weight:400;font-size:19px}
+  .equipe .corps span{display:block;margin-top:3px;font-size:13.5px;color:#8a8578}
+
+  .nav{margin:0 14px 14px;padding:7px;background:#eeece4;border-radius:26px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+  .nav a{display:flex;flex-direction:column;align-items:center;gap:5px;padding:11px 4px;border-radius:20px;text-decoration:none;color:#8a8578;font-size:11.5px}
+  .nav a.actif{background:#26382c;color:#c9a15e}
+  .barre-accueil{width:138px;height:5px;border-radius:999px;background:rgba(28,28,26,.34);margin:0 auto 9px}
+</style>
+
+<div class="enveloppe">
+
+  <div class="colonne" style="flex:0 0 auto;max-width:none">
+    <div class="telephone">
+      <div class="ecran">
+
+        <div class="barre-etat">
+          <span>9:41</span>
+          <span class="droite">
+            <svg width="17" height="11" viewBox="0 0 17 11" fill="#1c1c1a"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1c1c1a" stroke-width="1.4"><path d="M1 4.2a10 10 0 0 1 14 0M3.6 6.9a6.4 6.4 0 0 1 8.8 0M6.2 9.5a2.7 2.7 0 0 1 3.6 0" stroke-linecap="round"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.6" y="0.6" width="20" height="10.8" rx="3" fill="none" stroke="#1c1c1a" stroke-opacity=".45"/><rect x="2.2" y="2.2" width="16.8" height="7.6" rx="1.8" fill="#1c1c1a"/><path d="M22.4 4.2v3.6a2 2 0 0 0 0-3.6z" fill="#1c1c1a" fill-opacity=".45"/></svg>
+          </span>
+        </div>
+
+        <div class="defile">
+
+          <!-- La branche d'eucalyptus : une feuille dessinée une fois, replacée le long d'une tige. -->
+          <svg class="branche" viewBox="0 0 300 250" aria-hidden="true">
+            <defs>
+              <path id="feuille" d="M0 0C11-17 32-19 44 0 32 19 11 17 0 0Z"/>
+              <linearGradient id="vert" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#6f8a63"/><stop offset="1" stop-color="#455a41"/>
+              </linearGradient>
+            </defs>
+            <g fill="none" stroke="#5c7452" stroke-width="2.4" stroke-linecap="round" opacity=".75">
+              <path d="M258 6C226 46 196 96 176 148c-11 29-17 55-19 78"/>
+              <path d="M214 78c-19 9-38 21-54 36"/>
+              <path d="M196 122c-22 3-44 11-63 24"/>
+            </g>
+            <g fill="url(#vert)" opacity=".92">
+              <use href="#feuille" transform="translate(250 14) rotate(-38) scale(1.05)"/>
+              <use href="#feuille" transform="translate(268 40) rotate(18) scale(.92)"/>
+              <use href="#feuille" transform="translate(228 52) rotate(-52) scale(1.12)"/>
+              <use href="#feuille" transform="translate(246 82) rotate(12) scale(1)"/>
+              <use href="#feuille" transform="translate(206 100) rotate(-46) scale(1.06)"/>
+              <use href="#feuille" transform="translate(222 132) rotate(20) scale(.95)"/>
+              <use href="#feuille" transform="translate(160 118) rotate(-160) scale(1.02)"/>
+              <use href="#feuille" transform="translate(186 170) rotate(28) scale(1.08)"/>
+              <use href="#feuille" transform="translate(136 166) rotate(-152) scale(.98)"/>
+              <use href="#feuille" transform="translate(166 210) rotate(46) scale(.9)"/>
+              <use href="#feuille" transform="translate(122 214) rotate(-124) scale(.86)"/>
+            </g>
+          </svg>
+
+          <div class="entete">
+            <div class="marque">
+              <span class="sceau">
+                <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 21V9"/>
+                  <path d="M12 12c-3.6 0-6-2.2-6-5.4C9.6 6.6 12 8.8 12 12Z"/>
+                  <path d="M12 12c3.6 0 6-2.2 6-5.4-3.6 0-6 2.2-6 5.4Z"/>
+                  <path d="M12 17c-2.6 0-4.4-1.6-4.4-3.9 2.6 0 4.4 1.6 4.4 3.9Z"/>
+                </svg>
+              </span>
+              <span>
+                <span class="mot serif">ATLAS</span>
+                <span class="baseline">L&rsquo;outil des pros du paysage</span>
+              </span>
+            </div>
+            <span class="cloche">
+              <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#1c1c1a" stroke-width="1.6" stroke-linecap="round">
+                <path d="M18 8a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7"/><path d="M10.4 20a2 2 0 0 0 3.2 0"/>
+              </svg>
+              <span class="point"></span>
+            </span>
+          </div>
+
+          <p class="salut serif">Bonjour Florian</p>
+          <p class="grand serif">Vos chantiers</p>
+          <div class="filet"></div>
+          <p class="compte">2 chantiers en cours</p>
+
+          <a class="action" href="#">
+            <span class="rond">
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#c9a15e" stroke-width="1.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+            <span class="txt">
+              <strong class="serif">Nouveau chantier</strong>
+              <span>Le client, l&rsquo;adresse, puis la dictée sur place.</span>
+            </span>
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#c9a15e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M12 6l6 6-6 6"/></svg>
+          </a>
+
+          <p class="etiquette">En cours</p>
+
+          <div class="carte" style="--accent-carte:#7d9a6d">
+            <span class="pastille">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>
+            </span>
+            <span class="corps">
+              <span class="statut" style="color:#4f5f4c">Vérifié</span>
+              <p class="nom serif">Chez Monsieur Tacita</p>
+              <p class="adresse">11 Chemin de la Boissière, Nantes</p>
+              <span class="meta">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8a8578" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m3 16 5-4 4 3 3-3 6 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                0 photo
+              </span>
+            </span>
+            <span class="aparte">
+              <span class="quand">Aujourd&rsquo;hui</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(28,28,26,.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg>
+            </span>
+          </div>
+
+          <div class="carte" style="--accent-carte:#c9a15e">
+            <span class="pastille">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#b98b47" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+            </span>
+            <span class="corps">
+              <span class="statut" style="color:#b98b47">Devis retourné</span>
+              <p class="nom serif">Chez M. Martins</p>
+              <p class="adresse">10 Rue Denfert Rochereau, Nantes</p>
+              <span class="meta">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8a8578" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m3 16 5-4 4 3 3-3 6 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                0 photo
+              </span>
+            </span>
+            <span class="aparte">
+              <span class="quand">Hier</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(28,28,26,.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg>
+            </span>
+          </div>
+
+          <div class="equipe">
+            <span class="pastille">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#b98b47" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.8 19c0-3.2 2.8-5.2 6.2-5.2s6.2 2 6.2 5.2"/><path d="M16.5 6.2a3 3 0 0 1 0 5.6M18 13.8c2 .7 3.4 2.3 3.4 4.4"/></svg>
+            </span>
+            <span class="corps">
+              <strong class="serif">Équipe</strong>
+              <span>Gérez votre équipe et les accès.</span>
+            </span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(28,28,26,.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <a class="actif" href="#">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#c9a15e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V10"/><path d="M12 13C8.4 13 6 10.8 6 7.6c3.6 0 6 2.2 6 5.4Z"/><path d="M12 13c3.6 0 6-2.2 6-5.4-3.6 0-6 2.2-6 5.4Z"/></svg>
+            Chantiers
+          </a>
+          <a href="#">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#8a8578" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="5" width="16" height="15" rx="2.4"/><path d="M4 10h16M8 3v4M16 3v4"/></svg>
+            Planning
+          </a>
+          <a href="#">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#8a8578" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+            Terminés
+          </a>
+          <a href="#">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#8a8578" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7.9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H2a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.1-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3 1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7H22a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"/></svg>
+            Réglages
+          </a>
+        </nav>
+        <div class="barre-accueil"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="colonne">
+    <span class="drapeau">Maquette — rien n&rsquo;est encore modifié</span>
+    <h1 class="titre">Écran Chantiers</h1>
+    <p class="chapo">Reproduction de votre capture, avec le vocabulaire réel d&rsquo;Atlas : les statuts affichés (<em>Vérifié</em>, <em>Devis retourné</em>) sont ceux que l&rsquo;application calcule déjà.</p>
+
+    <h2 class="section">Ce qui est nouveau</h2>
+    <ul class="notes">
+      <li><b>Un or.</b> La charte n&rsquo;a aujourd&rsquo;hui qu&rsquo;un accent : le vert pin. Votre maquette en introduit un second — l&rsquo;or du cercle, du filet, du « Bonjour », des statuts. C&rsquo;est un vrai changement d&rsquo;identité, à valider avant de le poser partout.</li>
+      <li><b>L&rsquo;en-tête de marque.</b> Sceau, mot ATLAS, baseline, cloche : l&rsquo;écran n&rsquo;en a aucun aujourd&rsquo;hui.</li>
+      <li><b>La branche.</b> Dessinée au trait, pas une image : elle ne pèse rien et reste nette sur tous les écrans.</li>
+      <li><b>La date à droite.</b> « Aujourd&rsquo;hui », « Hier » — la liste ne transporte pas encore cette information ; il faut la remonter de la base.</li>
+      <li><b>La carte Équipe.</b> Elle vit aujourd&rsquo;hui dans Réglages.</li>
+      <li><b>La barre du bas</b> devient une pilule, l&rsquo;onglet actif en vert plein.</li>
+    </ul>
+
+    <h2 class="section">Ce que je dois vous dire</h2>
+    <ul class="notes">
+      <li><b>Les polices.</b> Cette maquette emprunte la serif de votre appareil. L&rsquo;application, elle, charge <em>Playfair Display</em> — le rendu final sera plus dessiné, plus proche de votre capture.</li>
+      <li><b>La note vocale disparaît des cartes.</b> Votre maquette n&rsquo;affiche que les photos. C&rsquo;est un choix : je le suis, mais je le signale.</li>
+      <li><b>Rien n&rsquo;est modifié dans l&rsquo;application.</b> Dites-moi ce que vous gardez, ce que vous changez — et je le pose ensuite écran par écran.</li>
+    </ul>
+  </div>
+</div>

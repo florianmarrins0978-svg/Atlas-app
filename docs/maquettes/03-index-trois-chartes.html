@@ -1,0 +1,191 @@
+<title>Atlas — « L'index » en trois chartes</title>
+<style>
+  :root{
+    --fond:#ecece8; --encre:#16180f; --gris:#6c6e63; --accent:#8a6f2e;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#111210; --encre:#eceadf; --gris:#9a9c8f; --accent:#c2a05f;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#111210; --encre:#eceadf; --gris:#9a9c8f; --accent:#c2a05f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;padding:44px 20px 72px}
+  .page{max-width:1400px;margin:0 auto}
+  .intro{max-width:60ch;margin:0 auto 46px;text-align:center}
+  .intro h1{font:400 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.26em;text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+  .intro p{margin:0;color:var(--gris);font-size:15.5px}
+  .trio{display:flex;flex-wrap:wrap;gap:52px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:18px;max-width:390px}
+  .legende{text-align:center}
+  .legende h2{font:400 21px/1.2 ui-serif,Georgia,serif;margin:0 0 6px}
+  .legende p{margin:0;font-size:13.8px;color:var(--gris);line-height:1.6}
+  .nuancier{display:flex;gap:6px;justify-content:center;margin:12px 0 0}
+  .nuancier i{width:22px;height:22px;border-radius:99px;display:block;box-shadow:inset 0 0 0 1px rgba(128,128,120,.28)}
+
+  .tel{width:390px;max-width:100%;border-radius:46px;padding:11px;background:#d5d3cb;
+       box-shadow:0 1px 3px rgba(15,20,15,.16),0 34px 74px rgba(15,20,15,.24)}
+  .ecran{position:relative;overflow:hidden;border-radius:36px;height:790px;display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+  /* ── L'index ─────────────────────────────────────────────────────────── */
+  .haut{display:flex;justify-content:space-between;align-items:center;padding:24px 22px 16px}
+  .sigle{font-size:12.5px;letter-spacing:.42em;font-weight:500}
+  .puce{width:7px;height:7px;border-radius:99px;background:var(--e-accent)}
+  .filet{height:1px;background:var(--e-trait);margin:0 22px}
+
+  .titre{padding:36px 22px 0}
+  .titre .sur{margin:0;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--e-accent)}
+  .titre h1{margin:12px 0 0;font-size:40px;line-height:1;font-weight:400;letter-spacing:-.016em}
+  .titre .compte{margin:14px 0 0;font-size:13px;color:var(--e-gris)}
+
+  .neuf{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:30px 22px 0;padding:15px 0;
+        border-top:1px solid var(--e-trait);border-bottom:1px solid var(--e-trait);text-decoration:none;color:inherit}
+  .neuf span{font-size:15px}
+  .neuf em{font-style:normal;color:var(--e-accent);font-size:19px;line-height:1}
+
+  .liste{margin-top:26px;padding:0 22px;overflow:hidden}
+  .rang{display:grid;grid-template-columns:1fr auto;gap:4px 14px;padding:17px 0;
+        border-bottom:1px solid var(--e-trait-doux);text-decoration:none;color:inherit}
+  .etat{grid-column:1;display:flex;align-items:center;gap:7px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--e-gris)}
+  .etat i{width:5px;height:5px;border-radius:99px;background:var(--e-calme);display:inline-block;flex:0 0 auto}
+  .etat.attend{color:var(--e-accent)}
+  .etat.attend i{background:var(--e-accent)}
+  .quand{grid-column:2;grid-row:1;text-align:right;font-size:11.5px;color:var(--e-gris)}
+  .nom{grid-column:1;margin:5px 0 0;font-size:21px;line-height:1.15;font-weight:400}
+  .lieu{grid-column:1;margin:3px 0 0;font-size:12.5px;color:var(--e-gris)}
+  .cpt{grid-column:2;grid-row:3;align-self:end;text-align:right;font-size:11.5px;color:var(--e-gris)}
+
+  .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--e-trait);padding:14px 12px 26px}
+  .bas a{text-align:center;text-decoration:none;font-size:11px;letter-spacing:.05em;color:var(--e-gris);padding-bottom:7px}
+  .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1.5px 0 var(--e-accent)}
+
+  /* ── Chartes ─────────────────────────────────────────────────────────── */
+  .nuit{--e-fond:#101210;--e-encre:#e9e8de;--e-gris:#84887b;--e-accent:#c6a15b;--e-calme:#8fa383;
+        --e-trait:rgba(233,232,222,.16);--e-trait-doux:rgba(233,232,222,.09)}
+  .pierre{--e-fond:#e8e8e3;--e-encre:#1b1d19;--e-gris:#83867c;--e-accent:#6f8466;--e-calme:#8b9d83;
+          --e-trait:rgba(27,29,25,.14);--e-trait-doux:rgba(27,29,25,.08)}
+  .brume{--e-fond:#eaedec;--e-encre:#14191a;--e-gris:#7c8688;--e-accent:#1f4a44;--e-calme:#4f7a72;
+         --e-trait:rgba(20,25,26,.14);--e-trait-doux:rgba(20,25,26,.08)}
+</style>
+
+<div class="page">
+  <div class="intro">
+    <h1>« L’index », en trois chartes</h1>
+    <p>Aucune carte : les chantiers sont des lignes séparées par un cheveu. Mêmes tailles, mêmes écarts, mêmes filets dans les trois — seule la couleur change.</p>
+  </div>
+  <div class="trio" id="trio"></div>
+</div>
+
+<template id="modele">
+  <div class="prop">
+    <div class="tel"><div class="ecran">
+      <div class="haut">
+        <span class="sigle">ATLAS</span>
+        <span class="puce"></span>
+      </div>
+      <div class="filet"></div>
+
+      <div class="titre">
+        <p class="sur">Bonjour Florian</p>
+        <h1 class="serif">Vos chantiers</h1>
+        <p class="compte num">4 en cours</p>
+      </div>
+
+      <a class="neuf" href="#">
+        <span>Nouveau chantier</span>
+        <em>+</em>
+      </a>
+
+      <div class="liste">
+        <a class="rang" href="#">
+          <span class="etat"><i></i>Brouillon</span>
+          <span class="quand num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p>
+          <p class="lieu">2 route de Vertou, Vertou</p>
+          <span class="cpt num">0 photo</span>
+        </a>
+        <a class="rang" href="#">
+          <span class="etat"><i></i>À vérifier</span>
+          <span class="quand num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p>
+          <p class="lieu">12 rue des Lilas, Nantes</p>
+          <span class="cpt num">6 photos</span>
+        </a>
+        <a class="rang" href="#">
+          <span class="etat attend"><i></i>Devis retourné</span>
+          <span class="quand num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p>
+          <p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <span class="cpt num">3 photos</span>
+        </a>
+        <a class="rang" href="#">
+          <span class="etat"><i></i>En attente de réponse</span>
+          <span class="quand num">18 juil.</span>
+          <p class="nom serif">Reprise de toiture</p>
+          <p class="lieu">8 impasse du Moulin, Rezé</p>
+          <span class="cpt num">9 photos</span>
+        </a>
+      </div>
+
+      <nav class="bas">
+        <a class="on" href="#">Chantiers</a>
+        <a href="#">Planning</a>
+        <a href="#">Terminés</a>
+        <a href="#">Réglages</a>
+      </nav>
+    </div></div>
+    <div class="legende">
+      <h2></h2>
+      <p></p>
+      <span class="nuancier"></span>
+    </div>
+  </div>
+</template>
+
+<script>
+  // Une seule mise en page, trois jeux de couleurs : le gabarit est cloné pour
+  // que rien d'autre ne puisse diverger d'une proposition à l'autre.
+  const chartes = [
+    {
+      classe: "nuit",
+      titre: "1 — Nuit",
+      texte: "Sur un index, le noir se comporte autrement que sur des blocs : les cheveux de séparation deviennent des traits de lumière, et la page ressemble à un générique de film. C’est la plus spectaculaire des trois.",
+      pastilles: ["#101210", "#e9e8de", "#c6a15b", "#8fa383"],
+    },
+    {
+      classe: "pierre",
+      titre: "2 — Pierre",
+      texte: "Gris légèrement vert, encre presque noire, sauge désaturée pour seul accent. Sans carte pour la porter, cette charte devient franchement typographique — c’est le registre d’un beau papier à en-tête.",
+      pastilles: ["#e8e8e3", "#1b1d19", "#6f8466", "#8b9d83"],
+    },
+    {
+      classe: "brume",
+      titre: "3 — Brume",
+      texte: "Gris froid presque bleu, vert profond en accent. L’index rend ce registre encore plus net : rien ne flotte, tout est aligné. Le plus clinique, le plus « maison de soin ».",
+      pastilles: ["#eaedec", "#14191a", "#1f4a44", "#4f7a72"],
+    },
+  ];
+
+  const trio = document.getElementById("trio");
+  const modele = document.getElementById("modele");
+  for (const c of chartes) {
+    const noeud = modele.content.cloneNode(true);
+    noeud.querySelector(".ecran").classList.add(c.classe);
+    noeud.querySelector(".legende h2").textContent = c.titre;
+    noeud.querySelector(".legende p").textContent = c.texte;
+    const n = noeud.querySelector(".nuancier");
+    for (const teinte of c.pastilles) {
+      const i = document.createElement("i");
+      i.style.background = teinte;
+      n.appendChild(i);
+    }
+    trio.appendChild(noeud);
+  }
+</script>

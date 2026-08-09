@@ -1,0 +1,169 @@
+<title>Atlas — la colonne, trois déclinaisons</title>
+<style>
+  :root{ --fond:#efece6; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+  }
+  :root[data-theme="dark"]{ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;padding:48px 18px 84px}
+  .page{max-width:1520px;margin:0 auto}
+  .intro{max-width:60ch;margin:0 auto 46px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0;color:var(--gris);font-size:15px}
+  .grille{display:flex;flex-wrap:wrap;gap:48px 34px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:16px;width:344px}
+  .legende{text-align:center}
+  .legende h2{margin:0 0 5px;font:400 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze)}
+  .legende p{margin:0;font-size:13px;color:var(--gris);line-height:1.55}
+
+  .tel{width:344px;border-radius:40px;padding:10px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 56px rgba(20,18,14,.2)}
+  .ecran{
+    --e-fond:#efece6; --e-plage:#f6f4ef; --e-encre:#221f1a; --e-gris:#8b8478; --e-bronze:#8a7452;
+    --e-trait:rgba(34,31,26,.13); --e-trait-doux:rgba(34,31,26,.075);
+    --e-plein:#221f1a; --e-plein-encre:#f2efe8; --e-signe:#b8a17a;
+    overflow:hidden;border-radius:31px;height:712px;display:flex;flex-direction:column;
+    background:var(--e-fond);color:var(--e-encre);
+    font:15px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9px;font-weight:500}
+
+  .enseigne{padding:22px 0 15px;text-align:center;font-size:10.5px;letter-spacing:.52em;flex:0 0 auto}
+  .regle{height:1px;background:var(--e-trait);flex:0 0 auto}
+  .titre{padding:32px 20px 0;flex:0 0 auto}
+  .titre .salut{margin:0;color:var(--e-bronze)}
+  .titre h1{margin:13px 0 20px;font-size:34px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+  .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:12px 14px 26px;flex:0 0 auto}
+  .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding:11px 0;border-radius:6px}
+  .bas a.on{color:var(--e-encre);background:var(--e-plage)}
+
+  /* Éléments communs à la colonne */
+  .chapeau{display:flex;justify-content:space-between;margin:0 20px 4px;padding-bottom:11px;
+           border-bottom:1px solid var(--e-trait);color:var(--e-gris)}
+  .ligne{display:grid;grid-template-columns:50px 1fr;gap:0 16px;text-decoration:none;color:inherit}
+  .jour{grid-row:1 / span 3;padding-top:3px;color:var(--e-gris)}
+  .jour b{display:block;font-weight:400;font-size:17px;color:var(--e-encre);line-height:1}
+  .jour span{display:block;margin-top:4px}
+  .nom{margin:0;font-size:19px;line-height:1.15}
+  .lieu{margin:4px 0 0;font-size:12px;color:var(--e-gris)}
+  .etat{margin:8px 0 0;color:var(--e-gris)}
+  .etat.attend{color:var(--e-bronze)}
+  .cerne{display:block;margin:20px 20px 0;padding:15px 0;text-align:center;text-decoration:none;
+         color:inherit;border:1px solid var(--e-trait)}
+
+  /* ── 1 · La colonne (repère) ──────────────────────────────────────────── */
+  .v1 .ligne{margin:0 20px;padding:17px 0;border-bottom:1px solid var(--e-trait-doux)}
+
+  /* ── 2 · La colonne, en plages ────────────────────────────────────────── */
+  .v2 .ligne{margin:0 14px 6px;padding:15px 18px;border-radius:6px;background:var(--e-plage)}
+  .v2 .chapeau{border-bottom:none;padding-bottom:6px}
+  .v2 .cerne{margin:16px 14px 0;border-radius:6px;background:var(--e-plein);color:var(--e-plein-encre);border:none}
+
+  /* ── 3 · La colonne, par mois ─────────────────────────────────────────── */
+  .v3 .mois{display:flex;align-items:center;gap:12px;margin:22px 20px 2px;color:var(--e-gris)}
+  .v3 .mois::after{content:"";flex:1;height:1px;background:var(--e-trait)}
+  .v3 .ligne{grid-template-columns:38px 1fr;margin:0 20px;padding:15px 0;border-bottom:1px solid var(--e-trait-doux)}
+  .v3 .jour b{font-size:22px;font-family:ui-serif,Georgia,serif}
+  .v3 .jour span{display:none}
+
+  /* ── 4 · La colonne, action au pouce ──────────────────────────────────── */
+  .v4 .ligne{margin:0 20px;padding:15px 0;border-bottom:1px solid var(--e-trait-doux)}
+  .v4 .socle{margin-top:auto;flex:0 0 auto;padding:10px 14px 0}
+  .v4 .socle a{display:flex;align-items:center;justify-content:space-between;padding:16px 19px;border-radius:6px;
+               background:var(--e-plein);color:var(--e-plein-encre);text-decoration:none}
+  .v4 .socle .quoi{font-size:18px}
+  .v4 .socle .plus{font-size:18px;color:var(--e-signe)}
+
+  /* ── 5 · La colonne, silencieuse ──────────────────────────────────────── */
+  .v5 .ligne{grid-template-columns:50px 1fr auto;margin:0 20px;padding:19px 0;border-bottom:1px solid var(--e-trait-doux);align-items:start}
+  .v5 .nom{font-size:20px}
+  .v5 .pastille{grid-column:3;grid-row:1;width:6px;height:6px;border-radius:99px;background:var(--e-bronze);margin-top:8px}
+  .v5 .pastille.rien{background:transparent}
+</style>
+
+<div class="page">
+  <div class="intro">
+    <p class="sur">La colonne — ivoire</p>
+    <h1>Trois façons de tenir la même colonne</h1>
+    <p>La date à gauche, le chantier à droite : c’est la structure que vous avez retenue. Ce qui change ici, c’est la manière dont les lignes se posent — le cheveu d’Aman, la plage de « Le calme », ou les deux.</p>
+  </div>
+
+  <div class="grille">
+
+    <div class="prop">
+      <div class="tel"><div class="ecran v1">
+        <div class="enseigne">ATLAS</div><div class="regle"></div>
+        <div class="titre"><p class="salut caps">Bonjour Florian</p><h1 class="serif">Vos chantiers</h1></div>
+        <div class="chapeau caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <a class="ligne" href="#"><span class="jour caps num"><b>26</b><span>juil.</span></span>
+          <p class="nom serif">Pose de clôture</p><p class="lieu">2 route de Vertou, Vertou</p>
+          <p class="etat caps">Brouillon · sans photo</p></a>
+        <a class="ligne" href="#"><span class="jour caps num"><b>24</b><span>juil.</span></span>
+          <p class="nom serif">Rénovation salle de bain</p><p class="lieu">12 rue des Lilas, Nantes</p>
+          <p class="etat caps">À vérifier · 6 photos</p></a>
+        <a class="ligne" href="#"><span class="jour caps num"><b>22</b><span>juil.</span></span>
+          <p class="nom serif">Terrasse bois</p><p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <p class="etat caps attend">Devis retourné · 3 photos</p></a>
+        <a class="ligne" href="#"><span class="jour caps num"><b>18</b><span>juil.</span></span>
+          <p class="nom serif">Reprise de toiture</p><p class="lieu">8 impasse du Moulin, Rezé</p>
+          <p class="etat caps">En attente · 9 photos</p></a>
+        <a class="cerne caps" href="#">Nouveau chantier</a>
+        <nav class="bas"><a class="on caps" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a></nav>
+      </div></div>
+      <div class="legende"><h2>1 — Le repère</h2><p>Celle que vous avez choisie, inchangée. Tout Aman : des cheveux, aucun aplat, un rectangle cerné pour l’action.</p></div>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran v2">
+        <div class="enseigne">ATLAS</div><div class="regle"></div>
+        <div class="titre"><p class="salut caps">Bonjour Florian</p><h1 class="serif">Vos chantiers</h1></div>
+        <div class="chapeau caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <a class="ligne" href="#"><span class="jour caps num"><b>26</b><span>juil.</span></span>
+          <p class="nom serif">Pose de clôture</p><p class="lieu">2 route de Vertou, Vertou</p>
+          <p class="etat caps">Brouillon · sans photo</p></a>
+        <a class="ligne" href="#"><span class="jour caps num"><b>24</b><span>juil.</span></span>
+          <p class="nom serif">Rénovation salle de bain</p><p class="lieu">12 rue des Lilas, Nantes</p>
+          <p class="etat caps">À vérifier · 6 photos</p></a>
+        <a class="ligne" href="#"><span class="jour caps num"><b>22</b><span>juil.</span></span>
+          <p class="nom serif">Terrasse bois</p><p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <p class="etat caps attend">Devis retourné · 3 photos</p></a>
+        <a class="cerne caps" href="#">Nouveau chantier</a>
+        <nav class="bas"><a class="on caps" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a></nav>
+      </div></div>
+      <div class="legende"><h2>2 — En plages</h2><p>La colonne d’Aman posée sur les plages de « Le calme ». Chaque chantier redevient un objet qu’on touche — au prix d’un peu de la sécheresse qui fait le luxe.</p></div>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran v4">
+        <div class="enseigne">ATLAS</div><div class="regle"></div>
+        <div class="titre"><p class="salut caps">Bonjour Florian</p><h1 class="serif">Vos chantiers</h1></div>
+        <div class="chapeau caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <a class="ligne" href="#"><span class="jour caps num"><b>26</b><span>juil.</span></span>
+          <p class="nom serif">Pose de clôture</p><p class="lieu">2 route de Vertou, Vertou</p>
+          <p class="etat caps">Brouillon · sans photo</p></a>
+        <a class="ligne" href="#"><span class="jour caps num"><b>24</b><span>juil.</span></span>
+          <p class="nom serif">Rénovation salle de bain</p><p class="lieu">12 rue des Lilas, Nantes</p>
+          <p class="etat caps">À vérifier · 6 photos</p></a>
+        <a class="ligne" href="#"><span class="jour caps num"><b>22</b><span>juil.</span></span>
+          <p class="nom serif">Terrasse bois</p><p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <p class="etat caps attend">Devis retourné · 3 photos</p></a>
+        <a class="ligne" href="#"><span class="jour caps num"><b>18</b><span>juil.</span></span>
+          <p class="nom serif">Reprise de toiture</p><p class="lieu">8 impasse du Moulin, Rezé</p>
+          <p class="etat caps">En attente · 9 photos</p></a>
+        <div class="socle"><a href="#"><span class="quoi serif">Nouveau chantier</span><span class="plus">+</span></a></div>
+        <nav class="bas"><a class="on caps" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a></nav>
+      </div></div>
+      <div class="legende"><h2>3 — L’action au pouce</h2><p>La colonne d’Aman, et le seul aplat de « Le calme » descendu sous le pouce. La seule variante qui change quelque chose à l’usage, pas seulement à l’allure.</p></div>
+    </div>
+
+  </div>
+</div>

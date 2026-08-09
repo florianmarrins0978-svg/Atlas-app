@@ -1,0 +1,226 @@
+<title>Atlas — neuf chartes sur la même mise en page</title>
+<style>
+  :root{ --fond:#efece6; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+  }
+  :root[data-theme="dark"]{ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;padding:48px 18px 80px}
+  .page{max-width:1520px;margin:0 auto}
+  .intro{max-width:60ch;margin:0 auto 20px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0;color:var(--gris);font-size:15px}
+  .famille{margin:52px 0 26px;text-align:center}
+  .famille span{display:inline-block;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gris);
+                padding:0 16px;position:relative}
+  .famille span::before,.famille span::after{content:"";position:absolute;top:50%;width:64px;height:1px;background:var(--trait)}
+  .famille span::before{right:100%} .famille span::after{left:100%}
+
+  .grille{display:flex;flex-wrap:wrap;gap:44px 34px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:16px;width:344px}
+  .legende{text-align:center}
+  .legende h2{margin:0 0 5px;font:400 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze)}
+  .legende p{margin:0;font-size:13px;color:var(--gris);line-height:1.55}
+  .nuancier{display:flex;gap:5px;justify-content:center;margin:11px 0 0}
+  .nuancier i{width:19px;height:19px;border-radius:99px;display:block;box-shadow:inset 0 0 0 1px rgba(128,128,120,.3)}
+
+  .tel{width:344px;border-radius:40px;padding:10px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 56px rgba(20,18,14,.2)}
+  .ecran{overflow:hidden;border-radius:31px;height:712px;display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:15px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9px;font-weight:500}
+
+  .enseigne{padding:22px 0 15px;text-align:center;font-size:10.5px;letter-spacing:.52em}
+  .regle{height:1px;background:var(--e-trait)}
+  .titre{padding:36px 20px 0}
+  .titre .salut{margin:0;color:var(--e-bronze)}
+  .titre h1{margin:14px 0 0;font-size:36px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+  .titre .compte{margin:14px 0 0;color:var(--e-gris)}
+
+  .action{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:28px 14px 0;
+          padding:18px 20px;border-radius:6px;text-decoration:none;background:var(--e-plein);color:var(--e-plein-encre)}
+  .action .quoi{font-size:18px;line-height:1.1}
+  .action .plus{font-size:18px;line-height:1;color:var(--e-plein-signe)}
+
+  .rubrique{margin:34px 20px 11px;color:var(--e-gris)}
+  .bloc{display:grid;grid-template-columns:1fr auto;gap:0 14px;margin:0 14px 6px;padding:16px 18px;
+        border-radius:6px;background:var(--e-plage);text-decoration:none;color:inherit}
+  .etat{grid-column:1;color:var(--e-gris)}
+  .etat.attend{color:var(--e-bronze)}
+  .quand{grid-column:2;grid-row:1;text-align:right;color:var(--e-gris)}
+  .nom{grid-column:1;margin:10px 0 0;font-size:19px;line-height:1.14;font-weight:400}
+  .lieu{grid-column:1;margin:4px 0 0;font-size:12px;color:var(--e-gris)}
+  .cpt{grid-column:2;grid-row:3;align-self:end;text-align:right;color:var(--e-gris)}
+
+  .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:12px 14px 26px}
+  .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding:11px 0;border-radius:6px}
+  .bas a.on{color:var(--e-encre);background:var(--e-plage)}
+</style>
+
+<div class="page">
+  <div class="intro">
+    <p class="sur">Une mise en page, neuf chartes</p>
+    <h1>Le nuancier</h1>
+    <p>La structure de « Le calme » habillée d’Aman : plages sans bordure ni ombre, serif claire, capitales espacées, rayons à 6 px. Seule la couleur change d’un écran à l’autre — c’est la seule façon de comparer honnêtement.</p>
+  </div>
+
+  <div class="famille"><span>Vos couleurs</span></div>
+  <div class="grille" id="g1"></div>
+
+  <div class="famille"><span>Celles que je vous avais proposées</span></div>
+  <div class="grille" id="g2"></div>
+
+  <div class="famille"><span>Ce que je vois venir en 2026</span></div>
+  <div class="grille" id="g3"></div>
+</div>
+
+<template id="modele">
+  <div class="prop">
+    <div class="tel"><div class="ecran">
+      <div class="enseigne">ATLAS</div>
+      <div class="regle"></div>
+      <div class="titre">
+        <p class="salut caps">Bonjour Florian</p>
+        <h1 class="serif">Vos chantiers</h1>
+        <p class="compte caps num">Quatre en cours</p>
+      </div>
+      <a class="action" href="#">
+        <span class="quoi serif">Nouveau chantier</span>
+        <span class="plus">+</span>
+      </a>
+      <p class="rubrique caps">En cours</p>
+      <a class="bloc" href="#">
+        <span class="etat caps">Brouillon</span><span class="quand caps num">26 juil.</span>
+        <p class="nom serif">Pose de clôture</p>
+        <p class="lieu">2 route de Vertou, Vertou</p>
+        <span class="cpt caps num">Sans photo</span>
+      </a>
+      <a class="bloc" href="#">
+        <span class="etat caps">À vérifier</span><span class="quand caps num">24 juil.</span>
+        <p class="nom serif">Rénovation salle de bain</p>
+        <p class="lieu">12 rue des Lilas, Nantes</p>
+        <span class="cpt caps num">6 photos</span>
+      </a>
+      <a class="bloc" href="#">
+        <span class="etat caps attend">Devis retourné</span><span class="quand caps num">22 juil.</span>
+        <p class="nom serif">Terrasse bois</p>
+        <p class="lieu">5 allée des Tilleuls, Nantes</p>
+        <span class="cpt caps num">3 photos</span>
+      </a>
+      <nav class="bas">
+        <a class="on caps" href="#">Chantiers</a>
+        <a class="caps" href="#">Planning</a>
+        <a class="caps" href="#">Terminés</a>
+        <a class="caps" href="#">Réglages</a>
+      </nav>
+    </div></div>
+    <div class="legende"><h2></h2><p></p><span class="nuancier"></span></div>
+  </div>
+</template>
+
+<script>
+  // Un gabarit unique, cloné pour chaque charte : aucune mesure ne peut
+  // diverger d'un écran à l'autre, donc la comparaison ne porte que sur la
+  // couleur. C'est tout l'objet de cette page.
+  const familles = {
+    g1: [
+      {
+        nom: "Origine",
+        texte: "Vos couleurs actuelles, dans la nouvelle mise en page : gris-vert, or, et le vert pin gardé pour l’action. Le repère — c’est ce que vous connaissez.",
+        chips: ["#edece6", "#16170f", "#8f7130", "#2a3a2e"],
+        jetons: { fond:"#edece6", plage:"#f7f6f2", encre:"#16170f", gris:"#83867c", bronze:"#8f7130",
+                  trait:"rgba(22,23,15,.12)", plein:"#2a3a2e", pleinEncre:"#f2f1ea", pleinSigne:"#c2a05f" },
+      },
+    ],
+    g2: [
+      {
+        nom: "Pierre",
+        texte: "Gris légèrement vert, encre presque noire, sauge désaturée. Aucun or. La plus intemporelle : elle ne datera pas parce qu’elle ne suit rien.",
+        chips: ["#e8e8e3", "#1b1d19", "#6f8466"],
+        jetons: { fond:"#e8e8e3", plage:"#f4f4f0", encre:"#1b1d19", gris:"#83867c", bronze:"#6f8466",
+                  trait:"rgba(27,29,25,.13)", plein:"#1b1d19", pleinEncre:"#f4f4f0", pleinSigne:"#8b9d83" },
+      },
+      {
+        nom: "Brume",
+        texte: "Gris froid presque bleu, vert profond en action. Le registre des parfumeries : clinique, net, cher.",
+        chips: ["#eaedec", "#14191a", "#1f4a44"],
+        jetons: { fond:"#eaedec", plage:"#f6f8f7", encre:"#14191a", gris:"#7c8688", bronze:"#1f4a44",
+                  trait:"rgba(20,25,26,.13)", plein:"#1f4a44", pleinEncre:"#f0f5f3", pleinSigne:"#8fb3a9" },
+      },
+      {
+        nom: "Ivoire",
+        texte: "Le registre exact d’Aman : ivoire chaud, encre presque noire, bronze mat. Lisible dehors, en plein soleil.",
+        chips: ["#efece6", "#221f1a", "#8a7452"],
+        jetons: { fond:"#efece6", plage:"#f6f4ef", encre:"#221f1a", gris:"#8b8478", bronze:"#8a7452",
+                  trait:"rgba(34,31,26,.13)", plein:"#221f1a", pleinEncre:"#f2efe8", pleinSigne:"#b8a17a" },
+      },
+      {
+        nom: "Nuit",
+        texte: "Noir chaud, laiton doux, et l’action qui s’inverse en plage claire. La plus spectaculaire — et la moins lisible au soleil.",
+        chips: ["#101210", "#e9e8de", "#c6a15b"],
+        jetons: { fond:"#101210", plage:"#1a1d19", encre:"#e9e8de", gris:"#84887b", bronze:"#c6a15b",
+                  trait:"rgba(233,232,222,.14)", plein:"#e9e8de", pleinEncre:"#101210", pleinSigne:"#8a7452" },
+      },
+    ],
+    g3: [
+      {
+        nom: "Sylve",
+        texte: "Le vert profond passe du bouton au FOND. C’est le geste que je préfère : un écran de paysagiste qui assume sa couleur, au lieu de la réduire à un accent. Rare, et difficile à rater.",
+        chips: ["#16241c", "#e6e6da", "#c3b184"],
+        jetons: { fond:"#16241c", plage:"#1e3026", encre:"#e6e6da", gris:"#8ba189", bronze:"#c3b184",
+                  trait:"rgba(230,230,218,.14)", plein:"#e6e6da", pleinEncre:"#16241c", pleinSigne:"#3f5c46" },
+      },
+      {
+        nom: "Beurre",
+        texte: "Le jaune beurre est la couleur qui monte partout depuis deux saisons. Très pâle, il donne une chaleur qu’aucun crème n’atteint — sans virer au kraft.",
+        chips: ["#efe7cf", "#26221a", "#8a6a3a"],
+        jetons: { fond:"#efe7cf", plage:"#f8f3e4", encre:"#26221a", gris:"#8b8368", bronze:"#8a6a3a",
+                  trait:"rgba(38,34,26,.12)", plein:"#26221a", pleinEncre:"#f8f3e4", pleinSigne:"#d8b877" },
+      },
+      {
+        nom: "Moka",
+        texte: "Le brun est la grande affaire de la décennie. Un moka laiteux, une encre espresso, une argile pour l’accent : chaud sans être rustique.",
+        chips: ["#e6ded5", "#2b241e", "#7c5c46"],
+        jetons: { fond:"#e6ded5", plage:"#f2ece5", encre:"#2b241e", gris:"#8d8175", bronze:"#7c5c46",
+                  trait:"rgba(43,36,30,.12)", plein:"#2b241e", pleinEncre:"#f2ece5", pleinSigne:"#c2a184" },
+      },
+      {
+        nom: "Ardoise",
+        texte: "Un gris-bleu froid, réchauffé par un sable. Le contraste froid/chaud est ce qui rend une interface chère aujourd’hui — plus qu’un or.",
+        chips: ["#e6e9ec", "#1a222c", "#8f7a5c"],
+        jetons: { fond:"#e6e9ec", plage:"#f2f4f6", encre:"#1a222c", gris:"#7d858f", bronze:"#8f7a5c",
+                  trait:"rgba(26,34,44,.12)", plein:"#1a222c", pleinEncre:"#f2f4f6", pleinSigne:"#c3aa85" },
+      },
+    ],
+  };
+
+  const modele = document.getElementById("modele");
+  for (const [id, chartes] of Object.entries(familles)) {
+    const hote = document.getElementById(id);
+    for (const c of chartes) {
+      const noeud = modele.content.cloneNode(true);
+      const ecran = noeud.querySelector(".ecran");
+      const j = c.jetons;
+      ecran.style.cssText =
+        `--e-fond:${j.fond};--e-plage:${j.plage};--e-encre:${j.encre};--e-gris:${j.gris};` +
+        `--e-bronze:${j.bronze};--e-trait:${j.trait};--e-plein:${j.plein};` +
+        `--e-plein-encre:${j.pleinEncre};--e-plein-signe:${j.pleinSigne}`;
+      noeud.querySelector(".legende h2").textContent = c.nom;
+      noeud.querySelector(".legende p").textContent = c.texte;
+      const n = noeud.querySelector(".nuancier");
+      for (const teinte of c.chips) {
+        const i = document.createElement("i");
+        i.style.background = teinte;
+        n.appendChild(i);
+      }
+      hote.appendChild(noeud);
+    }
+  }
+</script>
