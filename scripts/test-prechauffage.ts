@@ -268,7 +268,37 @@ async function main() {
   await cas("le motif de recherche ne peut pas se trouver lui-même", () => {
     // `pgrep -f 'next dev'` trouverait la ligne de commande de ce script et
     // conclurait toujours que le serveur tourne. Les crochets l'évitent.
-    assert.match(VEILLEUR, /\[n\]ext dev/, "le motif se trouverait lui-même");
+    assert.match(VEILLEUR, /\[n\]ext/, "le motif se trouverait lui-même");
+  });
+
+  await cas("le motif attrape `next-server`, pas seulement `next dev`", () => {
+    // **La cause première du 404 du patron, trouvée en regardant les processus
+    // de cette machine :**
+    //
+    //     27577 npm exec next dev -H 0.0.0.0 -p 3000   ← enveloppe
+    //     29803 next-server (v16.2.12)                 ← CELUI QUI ÉCOUTE
+    //
+    // Un motif limité à « next dev » tue les enveloppes et laisse le vrai
+    // serveur orphelin, accroché au port. Le suivant ne peut plus s'y attacher,
+    // et l'orphelin sert un cache périmé : toutes les pages en 404.
+    for (const [nom, source] of [
+      ["veiller.sh", VEILLEUR],
+      ["demarrer.sh", readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8")],
+    ] as const) {
+      assert.match(
+        source,
+        /\[n\]ext\(-server\| dev\)/,
+        `${nom} ne vise que les enveloppes : le vrai serveur survivra, accroché au port`
+      );
+    }
+  });
+
+  await cas("un serveur muet qui tient le port finit par être délogé", () => {
+    // Sans cela, le cas le plus vicieux n'est pas couvert : un serveur présent
+    // (donc `pgrep` le trouve, donc on ne relance pas) mais qui ne répond plus.
+    // La boucle tournerait pour toujours sans rien faire.
+    assert.match(VEILLEUR, /pkill -f "\$MOTIF"/, "le veilleur ne déloge jamais un serveur muet");
+    assert.match(VEILLEUR, /MUET/, "aucune patience avant de déloger : une compilation lourde suffirait");
   });
 
   await cas("un seul veilleur à la fois, et un verrou périmé ne bloque rien", () => {

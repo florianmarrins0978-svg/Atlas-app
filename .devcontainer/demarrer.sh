@@ -24,7 +24,17 @@ JOURNAL=/tmp/essai.log
 # de commande ENTIÈRE de chaque processus, y compris celle du shell qui joue ce
 # script. Sans eux, le motif se trouve lui-même et le script se tue avant
 # d'avoir rien démarré. Constaté en le lançant, pas en le relisant.
-pkill -f "[n]ext dev" 2>/dev/null || true
+# **Le motif doit couvrir `next-server`, et c'est la cause première du 404 du
+# 9 août 2026.** `npx next dev` n'est qu'une pile d'enveloppes ; le processus qui
+# écoute vraiment se renomme `next-server (v16.2.12)`. L'ancien motif tuait donc
+# les enveloppes et laissait le vrai serveur vivant, orphelin, **accroché au
+# port 3000** : le suivant ne pouvait plus s'y attacher, et l'orphelin servait un
+# cache périmé — toutes les pages en 404. Reproduit sur cette machine, en
+# regardant la liste des processus, pas en relisant le script.
+pkill -f "[n]ext(-server| dev)" 2>/dev/null || true
+# Laisser le port se libérer : tuer n'est pas instantané, et se précipiter
+# reproduirait la panne qu'on vient d'éviter.
+sleep 1
 
 cd "$CD" || exit 0
 
