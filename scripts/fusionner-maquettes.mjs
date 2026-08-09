@@ -85,6 +85,13 @@ const MAQUETTES = [
     quoi: "La même paire d’écrans, seize fois : les neuf chartes déjà vues, plus sept qui vont jusqu’à cinq teintes.",
     retenu: true,
   },
+  {
+    fichier: "11-ecran-retenu-seize-couleurs.html",
+    titre: "L’écran retenu, seize couleurs",
+    famille: "Vers la décision",
+    quoi: "Le trait seul — celui qu’il garde — dans les seize chartes, quatre par rangée.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
@@ -249,8 +256,23 @@ for (const p of pages) {
       plaintes.push(`${p.fichier} : sélecteur non confiné « ${sel.slice(0, 70)} »`);
     }
   }
-  if (p.scripts.length && !p.corps.includes(`id="${p.hote}-modele"`)) {
-    plaintes.push(`${p.fichier} : script présent mais gabarit non préfixé`);
+  // Chaque identifiant que le script va chercher doit exister, PRÉFIXÉ, dans
+  // le corps — sinon le clonage tombe sur null au chargement de la page.
+  // Le contrôle lit les appels réels plutôt que de supposer un nom : il
+  // accusait « gabarit non préfixé » sur une maquette dont le gabarit
+  // s'appelait simplement autrement.
+  for (const code of p.scripts) {
+    for (const appel of code.matchAll(/getElementById\(\s*["'`]([\w-]+)["'`]\s*\)/g)) {
+      const id = appel[1];
+      if (!IDS_A_PREFIXER.includes(id)) {
+        plaintes.push(
+          `${p.fichier} : le script cherche #${id}, absent de IDS_A_PREFIXER — ` +
+            `il entrerait en collision avec une autre maquette`,
+        );
+      } else if (!p.corps.includes(`id="${p.hote}-${id}"`)) {
+        plaintes.push(`${p.fichier} : le script cherche #${id}, introuvable dans le corps`);
+      }
+    }
   }
 }
 if (plaintes.length) {

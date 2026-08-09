@@ -36,6 +36,30 @@ dégradés, il nomme le bon coupable à chaque fois : une ancre morte, un lien
 vers l'extérieur — le défaut d'origine, précisément — et une feuille de style
 qui ne s'applique plus.
 
+### L'écran retenu seul, et un contrôle qui accusait à tort
+
+Le patron tranche entre les deux écrans : ce sera **le trait seul**. La
+maquette 11 le montre dans les seize chartes, quatre par rangée — une seule
+variante permet de comparer les couleurs d'un coup d'œil au lieu de faire
+défiler.
+
+Ses couleurs sont **recopiées de la maquette 10 par un script**, jamais à la
+main : deux nuanciers écrits séparément finissent par diverger, et on ne sait
+plus lequel fait foi.
+
+**Un contrôle qui désignait le mauvais coupable.** La fusion refusait la
+maquette 11 avec « script présent mais gabarit non préfixé », alors que tout
+était préfixé — le contrôle supposait que tout gabarit s'appelle `modele`.
+Il lit désormais les appels réels du script et vérifie que chaque identifiant
+cherché existe, préfixé, dans le corps. Éprouvé dans les deux sens : un
+identifiant absent de la liste de préfixage, et un gabarit renommé.
+
+**Et il ne faut plus lui envoyer d'adresses.** Trois fois de suite il n'a pas
+pu ouvrir un artefact. Ce qui marche, ce sont **les images** : elles
+s'affichent dans la conversation, sans rien à ouvrir ni à quoi se connecter.
+Les maquettes lui partent désormais en planches PNG, l'adresse seulement en
+complément.
+
 ### Les deux écrans retenus, déclinés en seize chartes
 
 Le patron valide les deux écrans de la maquette 09 et demande à les voir dans

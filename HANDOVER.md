@@ -64,12 +64,16 @@ un fichier ne demande rien à personne.
 toujours la reproduction de sa première capture (§46). La direction minimaliste
 — ivoire, serif, capitales espacées — n'existe qu'en maquette.
 
-**Où en est son choix, au 9 août au soir :** il a validé les DEUX écrans de la
-maquette 09 (« Le calme × Aman » avec le pied d'Aman et le trait qui ferme
-l'en-tête) — l'un avec le trait seul, l'autre avec le chapeau de la colonne en
-plus. Il n'a tranché ni entre ces deux-là, ni la couleur : la maquette 10 les
-décline en seize chartes. **Rien à coder tant qu'il n'a pas désigné un écran
-ET une charte.**
+**Où en est son choix, au 9 août au soir :** l'écran est tranché — c'est celui
+de la maquette 09 dit « le trait seul » : « Le calme × Aman », le pied d'Aman
+(cheveu au-dessus, onglet actif souligné de bronze) et le trait qui ferme
+l'en-tête. **La couleur, elle, n'est pas choisie** : la maquette 11 le montre
+dans seize chartes. **Rien à coder tant qu'il n'a pas nommé la charte.**
+
+**Comment lui montrer une maquette.** Pas une adresse : trois fois de suite il
+n'a pas pu ouvrir un artefact (*« Je ne peux pas ouvrir ça »*). Ce qui marche,
+ce sont des **planches PNG** envoyées dans la conversation. Le fichier HTML et
+l'adresse viennent en complément, jamais seuls.
 
 **L'écran Chantiers est refait d'après une maquette du patron (9 août).** Il a
 demandé une reproduction, pas une interprétation.
