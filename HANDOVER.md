@@ -46,16 +46,19 @@ est encore valable.
 ## Ce qui vient d'être terminé
 
 **Les maquettes tiennent sur une seule page (9 août, tard).**
-`docs/maquettes/toutes-les-maquettes.html` porte les huit propositions et un
+`docs/maquettes/toutes-les-maquettes.html` porte toutes les propositions et un
 sommaire à ancres. **Ne pas la modifier à la main** : elle est engendrée par
-`node scripts/fusionner-maquettes.mjs` à partir des huit fichiers voisins, qui
-restent la source. Après toute retouche d'une maquette, régénérer puis jouer
-`node scripts/verifier-maquettes-page-unique.mjs` — il clique les huit titres
-dans un navigateur.
+`node scripts/fusionner-maquettes.mjs` à partir des fichiers numérotés voisins,
+qui restent la source — une maquette neuve s'ajoute à la liste `MAQUETTES` du
+script, et ses identifiants de gabarit à `IDS_A_PREFIXER`. Après toute
+retouche, régénérer puis jouer `node scripts/verifier-maquettes-page-unique.mjs`
+— il clique chaque titre dans un navigateur.
 
 **Et surtout : ne pas repartager un sommaire de liens externes.** Une page
 publiée s'exécute confinée et ne peut naviguer nulle part ; le patron a cliqué
-huit fois dans le vide avant qu'on s'en aperçoive.
+huit fois dans le vide avant qu'on s'en aperçoive. Et lui envoyer les
+**fichiers** plutôt que des adresses : un artefact lui demande de se connecter,
+un fichier ne demande rien à personne.
 
 **Le design de l'écran Chantiers n'est PAS tranché.** L'application porte
 toujours la reproduction de sa première capture (§46). La direction minimaliste
