@@ -45,6 +45,15 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**Une page d'état lisible au téléphone (9 août).** *« Va regarder toi-même, je
+peux pas te l'envoyer. »* Il travaille au téléphone ; le terminal de l'éditeur
+ne lui est pas offert, et je n'ai aucun accès à son espace.
+
+**Avant de diagnostiquer un banc muet :** lui faire ouvrir
+`<adresse>/api/health/banc`. Elle répond sans session, sans base, en quelques
+millisecondes, et donne la version exécutée, l'avancement du préchauffage et ce
+qui bloque. `ARCHITECTURE.md` §44.
+
 **La cause première du 404, et elle était là depuis le début (9 août).**
 `npx next dev` n'est qu'une pile d'enveloppes : le processus qui écoute se
 **renomme** `next-server`. Le `pkill -f "next dev"` du démarrage tuait donc les

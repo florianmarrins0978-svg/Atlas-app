@@ -42,6 +42,28 @@
 const NOM_COOKIE = "authjs.session-token";
 
 /**
+ * Où l'avancement est déposé, pour que l'application puisse le montrer.
+ *
+ * Dans `/tmp` et jamais à la racine : un fichier neuf dans le dépôt salirait
+ * l'arbre git, et `mettre-a-jour.sh` refuserait alors TOUTES les mises à jour
+ * suivantes — le remède créerait la panne. Le même piège est déjà documenté et
+ * éprouvé pour le journal de mise à jour (`test-issue-mise-a-jour.ts`).
+ */
+export const ETAT_PRECHAUFFAGE = "/tmp/atlas-prechauffage.json";
+
+/**
+ * Le rapporteur par défaut : il ne dit rien.
+ *
+ * Nommé et typé plutôt qu'écrit en ligne, sinon TypeScript déduit `() => void`
+ * des valeurs par défaut et refuse tout appelant qui veut LIRE le message —
+ * c'est-à-dire la suite de contrôles, celle qui vérifie que l'échec accuse le
+ * bon coupable.
+ *
+ * @type {(ligne: string) => void}
+ */
+const NE_RIEN_DIRE = () => {};
+
+/**
  * Les écrans que le patron ouvre, dans l'ordre où il les rencontre.
  *
  * Volontairement court. Les quarante-neuf routes de l'application prendraient
@@ -60,6 +82,8 @@ export const ECRANS_A_PRECHAUFFER = [
   "/catalogue",
   "/chantiers/nouveau",
   "/documents-legaux",
+  // Celui qui répond quand plus rien ne répond : il doit être prêt en premier.
+  "/api/health/banc",
 ];
 
 /**
@@ -77,11 +101,21 @@ export const ECRANS_DE_CHANTIER = ["", "/informations", "/note-vocale", "/prix",
  * préchauffage est un confort, et un confort ne doit pas empêcher un serveur
  * de démarrer.
  */
-export async function cookieDeSession({ databaseUrl, authSecret, nodeEnv }) {
+export async function cookieDeSession({ databaseUrl, authSecret, nodeEnv, ecrire = NE_RIEN_DIRE }) {
   // **Le refus qui compte.** Voir l'en-tête : fabriquer une session sans mot de
   // passe est légitime sur un banc, et ne l'est nulle part ailleurs.
-  if (nodeEnv === "production") return null;
-  if (!databaseUrl || !authSecret) return null;
+  if (nodeEnv === "production") {
+    ecrire("préchauffage écarté : on est en production, et une session ne s'y fabrique pas");
+    return null;
+  }
+  if (!databaseUrl) {
+    ecrire("préchauffage impossible : DATABASE_URL est absente");
+    return null;
+  }
+  if (!authSecret) {
+    ecrire("préchauffage impossible : AUTH_SECRET est absent");
+    return null;
+  }
 
   const { Client } = await import("pg");
   const client = new Client({ connectionString: databaseUrl });
@@ -102,12 +136,29 @@ export async function cookieDeSession({ databaseUrl, authSecret, nodeEnv }) {
         limit 1`
     );
     utilisateur = rows[0];
-  } catch {
+  } catch (e) {
+    // **Ce `catch` était muet, et il a menti.** Le 9 août 2026, PostgreSQL
+    // s'était arrêté sur la machine ; le démarrage annonçait « Préchauffage
+    // impossible : pas de session », ce qui envoyait chercher du côté des
+    // comptes et des jetons. La vraie phrase était `ECONNREFUSED 127.0.0.1:5432`
+    // — la base ne répondait pas, et **l'application entière était donc morte**,
+    // pas seulement le préchauffage. Une erreur qui accuse à tort coûte plus
+    // cher que pas d'erreur du tout (`CLAUDE.md` §5).
+    const raison = e instanceof Error ? e.message : String(e);
+    ecrire(
+      /ECONNREFUSED|ENOTFOUND|ETIMEDOUT/.test(raison)
+        ? `LA BASE DE DONNÉES NE RÉPOND PAS (${raison}). Ce n'est pas le préchauffage : ` +
+            "aucun écran ne fonctionnera. Remonter la base avant tout le reste."
+        : `préchauffage impossible, la base a répondu : ${raison}`
+    );
     return null;
   } finally {
     await client.end().catch(() => undefined);
   }
-  if (!utilisateur) return null;
+  if (!utilisateur) {
+    ecrire("préchauffage impossible : aucun compte dans la base (le jeu de démonstration a-t-il été posé ?)");
+    return null;
+  }
 
   const { encode } = await import("next-auth/jwt");
   const jeton = await encode({
@@ -161,14 +212,29 @@ export async function ecransDeChantier({ base, cookie, fetchImpl = fetch }) {
  *
  * Rend le compte de ce qui a été compilé, pour que le démarrage puisse le dire.
  */
-export async function prechauffer({ base, cookie, ecrans, ecrire = () => {}, fetchImpl = fetch }) {
+export async function prechauffer({
+  base,
+  cookie,
+  ecrans,
+  ecrire = NE_RIEN_DIRE,
+  // **Appelé après chaque écran, pour que quelqu'un d'autre puisse le DIRE.**
+  //
+  // Le patron travaille depuis son téléphone. Le 9 août 2026 il a attendu trois
+  // minutes devant un écran qui ne s'ouvrait pas, et la seule façon de savoir
+  // pourquoi était de lire un terminal — qu'il ne pouvait ni consulter ni
+  // photographier. « Va regarder toi-même, je peux pas te l'envoyer. » Je n'ai
+  // aucun accès à son espace : l'information devait donc venir à lui.
+  avancer = () => {},
+  fetchImpl = fetch,
+}) {
   let reussis = 0;
   let echoues = 0;
   /** Vers où l'application a renvoyé, et combien de fois. Voir le bilan. */
   const renvois = new Map();
   const debut = Date.now();
 
-  for (const chemin of ecrans) {
+  for (const [rang, chemin] of ecrans.entries()) {
+    avancer({ faits: rang, total: ecrans.length, reussis, echoues, encours: chemin });
     const t = Date.now();
     try {
       const reponse = await fetchImpl(`${base}${chemin}`, {
@@ -202,6 +268,8 @@ export async function prechauffer({ base, cookie, ecrans, ecrire = () => {}, fet
       ecrire(`préchauffage ${chemin} — ${e instanceof Error ? e.message : e}`);
     }
   }
+
+  avancer({ faits: ecrans.length, total: ecrans.length, reussis, echoues, encours: null });
 
   return {
     reussis,

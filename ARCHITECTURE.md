@@ -2635,3 +2635,61 @@ Vérifié de bout en bout sur un banc de simulation remis neuf commits en
 arrière : mise à jour, migrations, relance du script, veilleur, seize écrans
 préchauffés en 30 s, serveur tué et relevé. Et l'avertissement « LA BASE N'A PAS
 SUIVI LE CODE » s'affiche enfin, pour de bon.
+
+### Une page d'état, parce qu'il travaille au téléphone
+
+**Sa phrase, le 9 août 2026 :** *« Va regarder toi-même, je peux pas te
+l'envoyer. »* Il attendait depuis trois minutes devant un écran qui ne s'ouvrait
+pas, et la seule chose capable de dire pourquoi était le terminal de l'éditeur —
+qu'il ne pouvait ni lire confortablement ni photographier depuis son téléphone.
+
+Je n'ai aucun accès à son espace de travail. L'information devait donc **venir à
+lui**, et non l'inverse.
+
+`/api/health/banc` répond en quelques millisecondes, sans session, et dit les
+trois seules choses qui comptent quand rien ne s'ouvre :
+
+| | Pourquoi c'est celle-là |
+|---|---|
+| **La version exécutée** | « le correctif est-il descendu ? » a déjà coûté plusieurs journées (§24) |
+| **Où en est le préchauffage** | s'il compile encore, ses clics passent derrière la file, et il n'y a rien à faire qu'attendre |
+| **Ce qui bloque** | base arrêtée, documents à accepter, session refusée |
+
+Trois choix qui ne sont pas des détails :
+
+- **En HTML, pas en JSON.** Sur un téléphone, du JSON brut se lit sur une ligne
+  minuscule. Celui qui consulte cette page cherche pourquoi rien ne marche : ce
+  n'est pas le moment de lui demander un effort.
+- **Aucune requête en base.** Elle sert quand tout est mort ; une seule requête
+  et elle tomberait exactement au moment où on en a besoin. Un contrôle interdit
+  d'y importer `db` ou un dépôt.
+- **Aucune donnée d'entreprise.** Une version, un compteur, une durée. Cette
+  adresse est ouverte à qui connaît le nom de l'espace.
+
+L'avancement transite par `/tmp/atlas-prechauffage.json` — le préchauffage vit
+dans le processus de démarrage, pas dans le serveur. Dans `/tmp` et jamais à la
+racine : un fichier neuf salirait l'arbre git et `mettre-a-jour.sh` refuserait
+alors **toutes** les mises à jour suivantes. Même piège, même règle que le
+journal de mise à jour.
+
+### Le silence qui accusait le mauvais coupable
+
+Trouvé en éprouvant cette page : PostgreSQL s'était arrêté sur la machine, et le
+démarrage annonçait :
+
+```
+(Préchauffage impossible : pas de session — les écrans se compileront à l'ouverture.)
+```
+
+Ce qui envoie chercher du côté des comptes et des jetons. La vraie phrase était
+`ECONNREFUSED 127.0.0.1:5432` : **la base ne répondait pas, donc aucun écran ne
+pouvait fonctionner** — le préchauffage n'était que le premier à s'en apercevoir.
+Un `catch` muet avait tout avalé.
+
+Le message dit maintenant, en toutes lettres, que c'est la base, et que ce n'est
+pas le préchauffage. Éprouvé contre une adresse injoignable.
+
+**Et un troisième défaut, vu à l'écran et nulle part ailleurs :** le premier jet
+de la page écrivait `**…**` au milieu d'une phrase, croyant à du gras. Le patron
+aurait lu des astérisques. Un contrôle interdit désormais les astérisques dans
+les textes destinés à l'écran.

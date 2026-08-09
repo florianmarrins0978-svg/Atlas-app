@@ -1,4 +1,6 @@
 import { spawn } from "node:child_process";
+import { writeFileSync } from "node:fs";
+import { ETAT_PRECHAUFFAGE } from "./prechauffer.mjs";
 
 // Démarre l'application pour les essais, attend qu'elle réponde vraiment, puis
 // affiche l'adresse à ouvrir.
@@ -124,21 +126,66 @@ if (!pret) {
     const { cookieDeSession, ecransDeChantier, ECRANS_A_PRECHAUFFER, expliquerObstacle, prechauffer } =
       await import("./prechauffer.mjs");
     const base = `http://127.0.0.1:${PORT}`;
+    let motifSansSession = null;
     const cookie = await cookieDeSession({
       databaseUrl: process.env.DATABASE_URL,
       authSecret: process.env.AUTH_SECRET,
       nodeEnv: process.env.NODE_ENV,
+      ecrire: (raison) => {
+        motifSansSession = raison;
+      },
     });
     if (!cookie) {
-      console.log("  (Préchauffage impossible : pas de session — les écrans se compileront à l'ouverture.)\n");
+      // **Dire la vraie raison, pas « pas de session ».** Voir `prechauffer.mjs` :
+      // ce message a déjà accusé le mauvais coupable pendant que PostgreSQL
+      // était arrêté et que l'application entière était morte.
+      console.log(`  ⚠ ${motifSansSession ?? "préchauffage impossible, sans raison connue"}\n`);
+      writeFileSync(
+        ETAT_PRECHAUFFAGE,
+        JSON.stringify({
+          faits: 0,
+          total: 0,
+          reussis: 0,
+          echoues: 0,
+          termine: true,
+          obstacle: motifSansSession,
+          majAt: new Date().toISOString(),
+        })
+      );
     } else {
       const ecrans = [...ECRANS_A_PRECHAUFFER, ...(await ecransDeChantier({ base, cookie }))];
       console.log(`  Préchauffage de ${ecrans.length} écrans en cours — ils s'ouvriront ensuite du premier coup.\n`);
+      // **L'avancement est déposé dans un fichier, pour que l'application
+      // puisse le montrer au patron.** Il travaille au téléphone : lire un
+      // terminal ne lui est pas offert, et le 9 août il a attendu trois minutes
+      // sans aucun moyen de savoir si quelque chose avançait. Le fichier est lu
+      // par `/api/health/banc`, qui s'ouvre sans se connecter.
+      const noterAvancement = (etat) => {
+        try {
+          writeFileSync(
+            ETAT_PRECHAUFFAGE,
+            JSON.stringify({ ...etat, majAt: new Date().toISOString() })
+          );
+        } catch {
+          // Un préchauffage qui ne peut pas écrire son état préchauffe quand même.
+        }
+      };
       const bilan = await prechauffer({
         base,
         cookie,
         ecrans,
         ecrire: (ligne) => console.log(`  · ${ligne}`),
+        avancer: noterAvancement,
+      });
+      noterAvancement({
+        faits: ecrans.length,
+        total: ecrans.length,
+        reussis: bilan.reussis,
+        echoues: bilan.echoues,
+        encours: null,
+        termine: true,
+        secondes: bilan.secondes,
+        obstacle: expliquerObstacle(bilan.renvoiDominant),
       });
       console.log(
         `\n  Préchauffage terminé : ${bilan.reussis} écran(s) prêts` +
