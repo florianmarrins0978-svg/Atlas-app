@@ -2820,3 +2820,63 @@ pour monter `npm run banc`, la version bâtie, plutôt que `npm run essai`.
 
 Si la construction échoue, `scripts/banc.mjs` repart sur `next dev` en le
 disant. Un banc lent reste un banc ; un banc mort lui coûte sa soirée.
+
+### Le lancement passait en dernier — donc il ne passait pas
+
+**Le défaut qui a coûté la soirée entière du 9 août 2026**, et qu'aucune des
+corrections précédentes n'avait touché.
+
+Son journal s'arrêtait net :
+
+```
+migrations : faites
+```
+
+Et `curl localhost:3000` ne répondait rien. L'application n'était ni lente ni
+cassée : **elle n'avait jamais été lancée.** Pendant deux heures il a lu des
+pages blanches, des 502 et des 404, et moi j'ai cherché du côté du mandataire,
+de la visibilité du port, du navigateur — partout sauf au bon endroit.
+
+`demarrer.sh` faisait, dans cet ordre :
+
+1. mise à jour du code
+2. `npm ci` — **plusieurs minutes**
+3. migrations
+4. relance du script dans sa version neuve (`exec`)
+5. **lancement du serveur**
+
+Or il est joué par `postStartCommand`, que l'environnement peut interrompre. Le
+lancement venait **en dernier** : tout ce qui suivait l'interruption mourait
+avec elle, et il ne restait rien.
+
+### L'ordre inversé, et ce que cela garantit
+
+Le veilleur est posé **en premier**, avant toute opération longue. Il monte le
+serveur avec le code présent sur le disque — celui d'hier s'il le faut. Si la
+mise à jour aboutit ensuite, veilleur et serveur sont remplacés par leurs
+versions neuves.
+
+**Quoi qu'il arrive après cette ligne, l'artisan a une application qui répond.**
+
+`exec bash "$0"` disparaît, et c'est délibéré : c'était l'endroit précis où le
+démarrage mourait. Ce que §24 protégeait — que le code neuf entre en vigueur
+tout de suite — reste tenu autrement : `veiller.sh`, `banc.mjs` et
+l'application sont relus depuis le disque quand le veilleur redémarre. Seule la
+fin de `demarrer.sh` reste, pour un allumage, dans sa version d'avant. Un
+bandeau, contre une application qui démarre.
+
+### Éprouvé en le tuant
+
+Le contrôle n'est pas une lecture de code : le script est **tué au bout de cinq
+secondes** (`SIGKILL`, le cas le plus brutal), sur un banc de simulation.
+
+| | Avant | Après |
+|---|---|---|
+| Démarrage interrompu à 5 s | rien ne répond, jamais | **serveur debout 26 s plus tard, version bâtie** |
+
+Deux contrôles de source complètent la démonstration : le lancement précède la
+mise à jour, et l'`exec` ne peut pas revenir.
+
+**Une réserve, dite plutôt que tue :** l'allumage qui *récupère* ce correctif
+exécute encore l'ancien script, donc l'ancien ordre. C'est la dernière fois. Si
+cet allumage-là est interrompu, `bash .devcontainer/demarrer.sh` relance tout.
