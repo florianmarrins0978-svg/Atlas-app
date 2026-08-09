@@ -57,6 +57,28 @@ Jamais en production.
 Mesuré : à froid, seize écrans prêts en 43 s ; serveur tué, relevé en 16 s ;
 écrans entre 125 et 680 ms ensuite.
 
+### Et deux défauts trouvés en jouant le démarrage pour de bon
+
+Un banc de simulation, volontairement resté en arrière, a servi à parcourir le
+chemin exact du patron. Il a montré ce qu'aucune relecture n'avait vu :
+
+**L'`exec` de `demarrer.sh` effaçait ses propres constats.** Le script se
+relance dans sa version neuve après une mise à jour ; le second passage
+recalcule tout et trouve « à jour ». Conséquence : le démarrage annonçait
+« Déjà à jour » juste après avoir mis à jour, et surtout **l'avertissement
+« LA BASE N'A PAS SUIVI LE CODE » ne pouvait plus jamais s'afficher** — il ne
+se déclenche qu'après une mise à jour. Le correctif du matin même était
+mort-né.
+
+**Le préchauffage prenait « le compte le plus ancien ».** Sur une base ayant
+servi aux tests, ce n'est pas celui du banc : 2 écrans compilés sur 11, et un
+bilan qui disait « 9 en échec » sans dire pourquoi. Le compte est choisi
+nommément, et l'obstacle est nommé.
+
+Le contrôle du premier point a d'abord été un **faux vert** : écrit avec
+`indexOf`, il trouvait la ligne mise en commentaire. Corrigé, puis éprouvé
+rouge sur les deux moitiés.
+
 
 ### Une base restée en arrière, et rien pour le dire
 

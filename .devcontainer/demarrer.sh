@@ -114,9 +114,32 @@ if [ "$MISE_A_JOUR" = "faite" ]; then
   # jour », mais on ne s'en remet pas à cela — on s'en remet à la variable.
   if [ "${ATLAS_DEMARRAGE_RELANCE:-}" != "1" ]; then
     export ATLAS_DEMARRAGE_RELANCE=1
+    # **Ce que le premier passage a constaté doit survivre à l'`exec`.** Voir
+    # juste en dessous : sans ces deux variables, l'avertissement le plus
+    # important du démarrage se perdait à chaque vraie mise à jour.
+    export ATLAS_MISE_A_JOUR="$MISE_A_JOUR"
+    export ATLAS_MIGRATIONS="$MIGRATIONS"
     exec bash "$0" "$@"
   fi
 fi
+
+# **L'`exec` effaçait ce qu'il fallait justement dire, et c'est un défaut trouvé
+# en jouant ce script pour de bon, le 9 août 2026.**
+#
+# Le second passage recalcule tout : la mise à jour répond alors « à jour » — le
+# code vient d'être tiré — et `MIGRATIONS` n'existe même plus, puisque le bloc
+# ci-dessus est sauté. Conséquences, toutes les deux invisibles :
+#
+#   1. après une vraie mise à jour, le démarrage affichait « Déjà à jour. » —
+#      exactement le contraire de ce qui venait de se passer, sur un banc dont
+#      l'historique est fait de « je réessaie une version d'avant sans le
+#      savoir » (`ARCHITECTURE.md` §24) ;
+#   2. **l'avertissement « LA BASE N'A PAS SUIVI LE CODE » ne pouvait PLUS
+#      JAMAIS s'afficher.** Il ne se déclenche qu'après une mise à jour — et
+#      c'est précisément le cas où l'`exec` effaçait la variable. Le correctif
+#      du matin même était donc mort-né, sans qu'aucun contrôle ne le voie.
+MISE_A_JOUR="${ATLAS_MISE_A_JOUR:-$MISE_A_JOUR}"
+MIGRATIONS="${ATLAS_MIGRATIONS:-${MIGRATIONS:-}}"
 
 # La version exécutée, transmise à l'application pour qu'elle l'affiche.
 # Le format est fait pour être lu sur une capture d'écran, pas par une machine.

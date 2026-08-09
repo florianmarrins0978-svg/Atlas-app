@@ -161,6 +161,54 @@ async function main() {
     assert.equal(bilan.reussis, 0, "une redirection a été comptée comme un écran prêt");
   });
 
+  console.log("\n=== Quand rien ne se compile, dire POURQUOI ===");
+
+  await cas("neuf renvois vers /documents-legaux : la cause est nommée", async () => {
+    // **Trouvé en jouant le démarrage pour de bon, pas en le relisant.** Le
+    // compte choisi n'avait pas accepté les documents légaux : neuf écrans sur
+    // onze partaient en redirection, et le bilan disait « 9 en échec » sans
+    // dire de quoi. Une ligne d'échec qui laisse chercher la cause coûte plus
+    // cher que pas de ligne du tout (`AGENTS.md`).
+    const { expliquerObstacle } = await import("./prechauffer.mjs");
+    const bilan = await prechauffer({
+      base: "http://127.0.0.1:1",
+      cookie: "x=y",
+      ecrans: ["/", "/planning", "/termines", "/reglages"],
+      fetchImpl: (async () => ({
+        status: 307,
+        headers: { get: () => "/documents-legaux" },
+      })) as unknown as typeof fetch,
+    });
+    assert.equal(bilan.renvoiDominant?.vers, "/documents-legaux");
+    assert.match(expliquerObstacle(bilan.renvoiDominant)!, /accepter les documents légaux/);
+  });
+
+  await cas("une session refusée est nommée autrement qu'un document non accepté", async () => {
+    const { expliquerObstacle } = await import("./prechauffer.mjs");
+    assert.match(
+      expliquerObstacle({ vers: "/login", combien: 9 })!,
+      /AUTH_SECRET/,
+      "le message enverrait chercher au mauvais endroit"
+    );
+  });
+
+  await cas("un seul renvoi isolé n'accuse personne", async () => {
+    // Un écran qui redirige légitimement ne doit pas faire afficher un
+    // diagnostic général qui serait faux.
+    const { expliquerObstacle } = await import("./prechauffer.mjs");
+    assert.equal(expliquerObstacle(null), null);
+  });
+
+  await cas("le compte du banc est choisi nommément, pas « le plus ancien »", () => {
+    const source = readFileSync(path.join(RACINE, "scripts", "prechauffer.mjs"), "utf8");
+    assert.match(
+      source,
+      /demo@atlas\.local/,
+      "le préchauffage prend le compte le plus ancien : sur une base ayant servi " +
+        "aux suites de tests, ce n'est pas celui du banc, et rien ne se compile"
+    );
+  });
+
   console.log("\n=== Les écrans de chantier : lus sur l'écran, jamais en base ===");
 
   await cas("l'identifiant vient de l'accueil, et les cinq écrans en découlent", async () => {
@@ -236,6 +284,43 @@ async function main() {
       .filter((l) => /setsid.*npm run essai/.test(l))
       .filter((l) => !/^\s*#/.test(l.trim()));
     assert.deepEqual(lancements, [], `le serveur est encore lancé sans veilleur : ${lancements.join(" | ")}`);
+  });
+
+  await cas("ce que le premier passage a constaté survit à l'`exec`", () => {
+    // **Le défaut le plus grave trouvé ce jour-là, et il annulait le correctif
+    // du matin.** `demarrer.sh` se relance dans sa version neuve après une mise
+    // à jour. Le second passage recalcule tout : la mise à jour répond alors
+    // « à jour », et `MIGRATIONS` n'existe plus du tout. Or l'avertissement
+    // « LA BASE N'A PAS SUIVI LE CODE » ne se déclenche QU'APRÈS une mise à
+    // jour — c'est-à-dire exactement dans le cas où l'`exec` effaçait la
+    // variable. Il ne pouvait donc plus jamais s'afficher.
+    // **Ce cas a d'abord été un faux vert, et c'est instructif.** Écrit avec
+    // `indexOf`, il trouvait la ligne même mise en commentaire : j'ai retiré la
+    // transmission pour l'éprouver, et il est resté au vert. Un contrôle qui ne
+    // sait pas échouer ne prouve rien (`AGENTS.md`) — on ne cherche donc que
+    // dans les lignes qui s'exécutent, et on raisonne en numéros de ligne.
+    const lignes = readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8")
+      .split("\n")
+      .map((texte, numero) => ({ numero, texte: texte.trim() }))
+      .filter((l) => !l.texte.startsWith("#"));
+    const ou = (motif: RegExp) => lignes.find((l) => motif.test(l.texte))?.numero ?? -1;
+
+    const iExport = ou(/^export ATLAS_MIGRATIONS=/);
+    const iExec = ou(/^exec bash/);
+    const iRepriseMigrations = ou(/^MIGRATIONS="\$\{ATLAS_MIGRATIONS:-/);
+    const iRepriseMiseAJour = ou(/^MISE_A_JOUR="\$\{ATLAS_MISE_A_JOUR:-/);
+
+    assert.ok(iExec >= 0, "le script ne se relance plus : ce cas n'éprouve plus rien.");
+    assert.ok(iExport >= 0, "le constat des migrations ne traverse pas la relance.");
+    assert.ok(iExport < iExec, "il est transmis après la relance : trop tard.");
+    assert.ok(
+      iRepriseMigrations > iExec,
+      "il n'est jamais repris après la relance : l'avertissement « LA BASE N'A PAS SUIVI » ne s'affichera plus jamais."
+    );
+    assert.ok(
+      iRepriseMiseAJour > iExec,
+      "le démarrage annoncera « Déjà à jour » juste après avoir mis à jour."
+    );
   });
 
   console.log("\n=== Et deux serveurs ne se battent plus pour le port ===");

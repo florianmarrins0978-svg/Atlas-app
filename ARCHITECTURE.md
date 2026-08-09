@@ -2551,3 +2551,43 @@ affirme au lieu de vérifier est pire que pas de contrôle.
 Contre 38,7 s pour un seul écran avant. Sur les deux cœurs du banc, compter
 environ le double — mais le préchauffage se joue **pendant que personne ne
 regarde**.
+
+### Ce que l'`exec` effaçait, et qui annulait le correctif du matin
+
+Trouvé **en jouant `demarrer.sh` pour de bon**, sur un banc de simulation
+volontairement resté en arrière — jamais en le relisant.
+
+Le script se relance dans sa version neuve après une mise à jour
+(`exec bash "$0"`, §24). Le second passage **recalcule tout** : la mise à jour
+répond alors « à jour » — le code vient d'être tiré — et `MIGRATIONS` n'existe
+plus du tout, puisque le bloc qui la pose est sauté.
+
+| Conséquence | Gravité |
+|---|---|
+| Le démarrage affichait « Déjà à jour. » juste après avoir mis à jour | trompeur, sur un banc dont l'histoire est faite de versions d'avant |
+| **L'avertissement « LA BASE N'A PAS SUIVI LE CODE » ne pouvait plus jamais s'afficher** | il ne se déclenche qu'après une mise à jour : exactement le cas où l'`exec` effaçait la variable |
+
+Le correctif du matin même (§42) était donc **mort-né**, et aucun contrôle ne le
+voyait. Les deux constats traversent désormais la relance
+(`ATLAS_MISE_A_JOUR`, `ATLAS_MIGRATIONS`) et sont repris après elle.
+
+**Le contrôle qui tient ça a d'abord été un faux vert.** Écrit avec `indexOf`,
+il trouvait la ligne même **mise en commentaire** : la transmission retirée, il
+restait au vert. Il ne cherche plus que dans les lignes qui s'exécutent, et
+raisonne en numéros de ligne. Éprouvé rouge sur les deux moitiés — transmission
+absente, reprise absente.
+
+### Le compte du préchauffage, et pourquoi « le plus ancien » ne suffit pas
+
+Même banc de simulation, même méthode : le préchauffage n'a compilé **2 écrans
+sur 11**, les neuf autres partant vers `/documents-legaux`.
+
+La cause n'était pas dans le préchauffage : sur une base ayant servi aux suites
+de tests, `order by created_at asc limit 1` ne désigne pas le compte de
+démonstration mais un compte d'essai — sans chantier, et sans acceptation des
+documents légaux. Le compte est désormais choisi **nommément**.
+
+Mais le bilan, lui, disait « 9 en échec » sans dire de quoi. Il nomme maintenant
+l'obstacle quand un même renvoi explique le gros des échecs : documents légaux à
+accepter, session refusée (`AUTH_SECRET` différent), ou autre. Une ligne d'échec
+qui laisse chercher la cause coûte plus cher que pas de ligne du tout.

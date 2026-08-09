@@ -88,9 +88,18 @@ export async function cookieDeSession({ databaseUrl, authSecret, nodeEnv }) {
   let utilisateur;
   try {
     await client.connect();
-    // Le compte du banc, celui dont le mot de passe est public dans le dépôt.
+    // **Le compte du banc nommément, pas « le plus ancien ».**
+    //
+    // Le premier jet prenait `order by created_at asc limit 1`. Sur une base
+    // qui a servi aux suites de tests, ce n'est PAS le compte de démonstration :
+    // c'est un compte d'essai qui n'a ni chantier ni acceptation des documents
+    // légaux. Le préchauffage compilait alors deux écrans sur onze, et les neuf
+    // autres partaient en redirection. Constaté en jouant le démarrage pour de
+    // bon, jamais en le relisant.
     const { rows } = await client.query(
-      "select id, email from users order by created_at asc limit 1"
+      `select id, email from users
+        order by (email = 'demo@atlas.local') desc, created_at asc
+        limit 1`
     );
     utilisateur = rows[0];
   } catch {
@@ -155,6 +164,8 @@ export async function ecransDeChantier({ base, cookie, fetchImpl = fetch }) {
 export async function prechauffer({ base, cookie, ecrans, ecrire = () => {}, fetchImpl = fetch }) {
   let reussis = 0;
   let echoues = 0;
+  /** Vers où l'application a renvoyé, et combien de fois. Voir le bilan. */
+  const renvois = new Map();
   const debut = Date.now();
 
   for (const chemin of ecrans) {
@@ -179,7 +190,9 @@ export async function prechauffer({ base, cookie, ecrans, ecrire = () => {}, fet
         // prêts » alors qu'aucun ne l'est — un contrôle qui affirme au lieu de
         // vérifier, exactement ce que le dépôt s'interdit.
         echoues++;
-        ecrire(`préchauffage ${chemin} — redirigé vers ${reponse.headers?.get?.("location") ?? "?"}, rien compilé`);
+        const vers = reponse.headers?.get?.("location") ?? "?";
+        renvois.set(vers, (renvois.get(vers) ?? 0) + 1);
+        ecrire(`préchauffage ${chemin} — redirigé vers ${vers}, rien compilé`);
       } else {
         echoues++;
         ecrire(`préchauffage ${chemin} — HTTP ${reponse.status} après ${duree} ms`);
@@ -190,5 +203,45 @@ export async function prechauffer({ base, cookie, ecrans, ecrire = () => {}, fet
     }
   }
 
-  return { reussis, echoues, secondes: Math.round((Date.now() - debut) / 1000) };
+  return {
+    reussis,
+    echoues,
+    secondes: Math.round((Date.now() - debut) / 1000),
+    // **Dire POURQUOI rien ne s'est compilé, pas seulement que rien ne l'est.**
+    //
+    // Neuf écrans sur onze renvoyés vers `/documents-legaux` ne veut pas dire
+    // « le préchauffage est cassé » : cela veut dire que le compte n'a pas
+    // encore accepté les documents. Une ligne d'échec qui laisse chercher la
+    // cause coûte plus cher que pas de ligne du tout (`AGENTS.md`).
+    renvoiDominant: obstacle(renvois, ecrans.length),
+  };
+}
+
+/** Le renvoi qui explique le gros des échecs, s'il y en a un. */
+function obstacle(renvois, total) {
+  let pire = null;
+  for (const [vers, combien] of renvois) {
+    if (!pire || combien > pire.combien) pire = { vers, combien };
+  }
+  if (!pire || pire.combien < Math.max(2, total / 2)) return null;
+  return pire;
+}
+
+/** Ce qu'il faut lire à l'écran quand un renvoi a tout bloqué. */
+export function expliquerObstacle(renvoiDominant) {
+  if (!renvoiDominant) return null;
+  if (renvoiDominant.vers.startsWith("/documents-legaux")) {
+    return (
+      "Les écrans n'ont pas pu être compilés : le compte doit d'abord accepter " +
+      "les documents légaux, à la première connexion. Ils se compileront alors " +
+      "à l'ouverture, une fois chacun."
+    );
+  }
+  if (renvoiDominant.vers.startsWith("/login")) {
+    return (
+      "Les écrans n'ont pas pu être compilés : la session du préchauffage a été " +
+      "refusée. Vérifier qu'AUTH_SECRET est bien le même que celui du serveur."
+    );
+  }
+  return `Les écrans n'ont pas pu être compilés : l'application renvoie vers ${renvoiDominant.vers}.`;
 }
