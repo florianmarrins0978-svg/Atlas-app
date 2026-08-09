@@ -8,6 +8,7 @@ import {
   enregistrerRaccordement,
 } from "@/server/repositories/agendas-externes";
 import { TEMOIN_ETAT_AGENDA } from "@/app/reglages/agenda/temoin";
+import { adressePublique } from "@/server/agenda/adresse-publique";
 
 /**
  * Le retour de chez Google, une fois que l'artisan a dit oui.
@@ -30,6 +31,9 @@ import { TEMOIN_ETAT_AGENDA } from "@/app/reglages/agenda/temoin";
  * chose.
  */
 export async function GET(requete: NextRequest) {
+  const versReglages = (issue: string) =>
+    NextResponse.redirect(new URL(`/reglages/agenda?issue=${issue}`, adressePublique(requete.headers)));
+
   const boite = await cookies();
   const attendu = boite.get(TEMOIN_ETAT_AGENDA)?.value ?? "";
   boite.delete(TEMOIN_ETAT_AGENDA);
@@ -63,9 +67,4 @@ export async function GET(requete: NextRequest) {
     // c'est la seule action utile.
     return versReglages("echec");
   }
-}
-
-function versReglages(issue: string) {
-  const base = process.env.NEXTAUTH_URL ?? process.env.ATLAS_URL_PUBLIQUE ?? "http://localhost:3000";
-  return NextResponse.redirect(new URL(`/reglages/agenda?issue=${issue}`, base));
 }

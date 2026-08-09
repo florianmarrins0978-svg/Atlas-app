@@ -114,6 +114,23 @@ qu'aucun écran ne pouvait fonctionner. Et la page écrivait `**…**` en croyan
 faire du gras : le patron aurait lu des astérisques. Les deux sont corrigés, et
 tenus par des contrôles éprouvés rouges.
 
+### Le retour de Google renvoyait le téléphone vers le téléphone
+
+Trouvé pendant qu'il autorisait Atlas chez Google — donc après avoir franchi
+tout le difficile. Le retour construisait son adresse depuis `NEXTAUTH_URL`,
+`ATLAS_URL_PUBLIQUE`, puis `http://localhost:3000`. **Aucune de ces variables
+n'est posée sur le banc** : le navigateur du téléphone était renvoyé vers
+lui-même.
+
+Le pire n'était pas la page morte : **le raccordement aboutissait**. Les jetons
+étaient enregistrés, l'agenda relié pour de bon — et rien ne le lui disait. Il
+aurait conclu à un échec devant une réussite.
+
+L'adresse vient désormais de ce que le navigateur a demandé
+(`x-forwarded-host`), les variables ne servant plus que de secours. Même famille
+de défaut que l'origine des actions serveur : une valeur devinée côté serveur là
+où seule la requête fait foi.
+
 
 ### Une base restée en arrière, et rien pour le dire
 

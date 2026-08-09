@@ -2693,3 +2693,39 @@ pas le préchauffage. Éprouvé contre une adresse injoignable.
 de la page écrivait `**…**` au milieu d'une phrase, croyant à du gras. Le patron
 aurait lu des astérisques. Un contrôle interdit désormais les astérisques dans
 les textes destinés à l'écran.
+
+### Le retour de Google renvoyait le téléphone… vers le téléphone
+
+Trouvé **pendant** que le patron autorisait Atlas chez Google, le 9 août 2026.
+Il était arrivé jusqu'à l'écran de consentement — donc les identifiants étaient
+enregistrés, l'URI de redirection accepté, le champ d'application correct. Tout
+le difficile était fait.
+
+Le retour, lui, construisait son adresse ainsi :
+
+```ts
+process.env.NEXTAUTH_URL ?? process.env.ATLAS_URL_PUBLIQUE ?? "http://localhost:3000"
+```
+
+**Aucune de ces deux variables n'est posée sur le banc d'essai.** Le navigateur
+de son téléphone était donc renvoyé vers `localhost:3000` — c'est-à-dire vers le
+téléphone lui-même.
+
+Le pire n'est pas la page morte. C'est que **le raccordement aboutissait** : les
+jetons étaient échangés et enregistrés, l'agenda était relié pour de bon — et
+rien ne le lui disait. Il aurait conclu à un échec devant une réussite.
+
+`src/server/agenda/adresse-publique.ts` part maintenant de ce que le **navigateur
+a demandé** : `x-forwarded-host`, à défaut `host`, et les variables en dernier
+secours. C'est exactement l'hôte que Google vient d'utiliser pour nous joindre,
+puisque l'adresse de retour lui a été donnée à l'identique.
+
+La règle vit dans son propre fichier, et non dans la route : un fichier de route
+Next.js ne peut exporter que ses verbes HTTP, et une règle enfouie là n'aurait
+jamais pu être éprouvée. `scripts/test-adresse-publique.ts` couvre les deux
+sens — l'hôte annoncé l'emporte toujours, et `localhost` n'apparaît que
+lorsqu'il n'y a strictement rien d'autre.
+
+**C'est la même famille de défaut que l'origine des actions serveur** (§30) :
+une valeur devinée côté serveur là où seule la requête du navigateur fait foi.
+Deux fois le même piège, deux fois une journée perdue.
