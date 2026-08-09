@@ -9,6 +9,39 @@ Format : le plus récent en tête.
 
 ## 2026-08-09
 
+### Un vrai devis dément une définition écrite la veille — et le budget se mesure
+
+Deux documents de plus du même confrère, une facture de débroussaillage et un
+devis de frêne. Ils corrigent Atlas sur trois points, et **le premier est une
+erreur que j'avais introduite la veille** : le vocabulaire affirmait que le gros
+bois se débite « en 40 ou 50 cm ». Le devis du frêne dit **33**. Deux exemples
+avaient suffi à me faire écrire une liste fermée — c'est exactement ce que le
+dépôt s'interdit. Il n'y a pas de valeur par défaut, et la définition le dit
+maintenant.
+
+Les deux autres apports viennent des documents eux-mêmes : le bois a une
+**destination** (« ramené sur l'arrière du jardin », « en tas rangé le long de
+la haie ») et le portage se paie ; le débroussaillage a **deux machines**, et
+c'est l'accessibilité du terrain qui décide du prix. Une règle de plus s'y
+ajoute, écrite par le confrère sur un document qui part chez un client : *«
+Hauteur du tronc à définir ensemble au moment de l'abattage »* — ce qui reste à
+décider s'écrit sur le devis, au lieu d'être inventé ou tu.
+
+**Et la consigne dépassait son budget.** Deux défauts, trouvés en mesurant :
+le titre de chaque bloc était déduit *après* coup, si bien que trois blocs
+faisaient dépasser de trois titres (6 020 pour 6 000) ; et le plafond lui-même,
+posé à vide quand le vocabulaire tenait en dix termes, écartait désormais
+**douze termes sur vingt-sept**. Ajouter du vocabulaire dont la moitié ne part
+jamais, c'est faire semblant de l'ajouter. Le plafond passe à 9 000 — la
+consigne générique qu'il vient corriger en fait déjà 7 300 à elle seule. Tout
+part maintenant : 27 termes sur 27, 5 corrections sur 5.
+
+Le contrôle qui affirmait que le budget était tenu était vert, **et pour une
+mauvaise raison** : son scénario à deux cents termes épuisait tout dès le
+premier bloc, si bien que les en-têtes suivants n'existaient pas. Un scénario
+extrême cachait le cas ordinaire.
+
+
 ### Les grumes se facturent à la tonne
 
 *« À la tonne »* — sa réponse à la question laissée ouverte la veille. La

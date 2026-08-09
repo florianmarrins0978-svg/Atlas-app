@@ -49,11 +49,25 @@ export type ConsigneMetier = {
 /**
  * Le budget, en caractères.
  *
- * Ordre de grandeur volontairement modeste : une dictée de chantier fait deux à
- * quatre cents caractères. Une consigne de six mille en tête de message reste
- * lisible par le modèle sans écraser ce qu'on lui demande d'analyser.
+ * **Porté de 6 000 à 9 000 le 9 août 2026, sur une mesure et non sur une
+ * intuition.** Les six mille d'origine étaient un ordre de grandeur choisi à
+ * vide, quand le vocabulaire tenait en une dizaine de termes. Le jour où les
+ * devis réels du confrère en ont apporté vingt-quatre, le compte a été fait :
+ * dire tout ce que le dépôt sait coûte **8 512 caractères**, et le budget en
+ * écartait **douze termes sur vingt-sept**. Ajouter du vocabulaire à un
+ * document dont la moitié ne part jamais, c'est faire semblant de l'ajouter.
+ *
+ * Neuf mille, et pas davantage, parce qu'il faut un point de comparaison :
+ * la consigne d'extraction générique fait à elle seule environ 7 300
+ * caractères. Ce que CET artisan a appris à Atlas n'a aucune raison de peser
+ * moins que l'instruction générique qu'il vient corriger — mais pas non plus
+ * de l'écraser d'un ordre de grandeur.
+ *
+ * Le garde-fou n'est pas levé pour autant, il est recalé : quand le
+ * vocabulaire dépassera neuf mille à son tour, il écartera de nouveau — par
+ * ordre d'importance, et **en disant ce qu'il écarte**.
  */
-export const BUDGET_CARACTERES = 6000;
+export const BUDGET_CARACTERES = 9000;
 
 /** Au-delà, les exemples se répètent plus qu'ils n'enseignent. */
 export const MAX_EXEMPLES = 5;
@@ -103,21 +117,33 @@ export function construireConsigneMetier(
     let retenues = 0;
     const gardees: string[] = [];
     for (const ligne of lignes) {
+      // **L'en-tête est payé D'AVANCE, avec la première ligne du bloc.**
+      //
+      // Il était compté après coup, au motif qu'un bloc sans titre n'apprend
+      // rien. L'intention était juste, le calcul non : trois blocs faisaient
+      // dépasser le budget de leurs trois en-têtes. Mesuré le 9 août 2026 sur
+      // les données réelles — 6 020 caractères pour un budget de 6 000.
+      //
+      // Le contrôle qui l'affirmait passait, et pour une mauvaise raison : avec
+      // deux cents termes il épuisait le budget dès le premier bloc, si bien
+      // que les en-têtes suivants n'existaient pas. Un scénario extrême cachait
+      // le cas ordinaire (`CLAUDE.md` §5 — un contrôle jamais vu rouge ne
+      // prouve rien).
+      //
+      // Payer d'avance garde l'intention — un bloc retenu a toujours son titre
+      // — et rend le budget vrai.
+      const coutEntete = gardees.length === 0 ? entete.length + 1 : 0;
       // +1 pour le saut de ligne qui la séparera de la suivante.
-      if (ligne.length + 1 > reste) {
+      if (coutEntete + ligne.length + 1 > reste) {
         ecartes.push(`${quoi} : « ${resume(ligne)} »`);
         continue;
       }
       gardees.push(ligne);
-      reste -= ligne.length + 1;
+      reste -= coutEntete + ligne.length + 1;
       retenues++;
     }
     if (gardees.length === 0) return 0;
-    const bloc = `${entete}\n${gardees.join("\n")}`;
-    // L'en-tête est compté après coup : le refuser pour quelques caractères
-    // reviendrait à envoyer des lignes sans dire ce qu'elles sont.
-    reste -= entete.length + 1;
-    morceaux.push(bloc);
+    morceaux.push(`${entete}\n${gardees.join("\n")}`);
     return retenues;
   }
 

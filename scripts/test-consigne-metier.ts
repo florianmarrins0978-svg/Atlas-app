@@ -214,6 +214,52 @@ cas("la consigne ne dépasse jamais le budget", () => {
   assert.ok(c.termesRetenus > 0, "Le budget a tout mangé : plus rien n'est enseigné.");
 });
 
+// **Le cas ordinaire, celui que le scénario extrême cachait.**
+//
+// Le 9 août 2026, la consigne réelle mesurait 6 020 caractères pour un budget
+// de 6 000. Le contrôle ci-dessus était vert : avec deux cents termes, le
+// budget s'épuise dès le premier bloc, si bien que les deux en-têtes suivants
+// n'existent pas — et c'est justement leur coût, compté après coup, qui faisait
+// dépasser. Un scénario extrême prouvait le contraire de ce qu'on croyait
+// vérifier (`CLAUDE.md` §5 : un contrôle jamais vu rouge ne prouve rien).
+//
+// Celui-ci se cale sur le contenu réel — huit règles, dix-neuf mots, cinq
+// corrections — et se donne **exactement** un budget un peu plus court que ce
+// qu'il faudrait pour tout dire. Les trois blocs existent donc tous les trois,
+// la coupe tombe dans le dernier, et les trois en-têtes doivent être payés.
+cas("les trois en-têtes tiennent dans le budget, à la coupe près", () => {
+  const regles: TermeMetier[] = Array.from({ length: 8 }, (_, i) => ({
+    nature: "regle",
+    intitule: `règle ${i} de cet artisan`,
+    definition: "Une phrase de règle de longueur ordinaire, comme le patron en dicte.",
+    consigne: "Et ce qu'il faut en faire concrètement sur le devis.",
+  }));
+  const mots: TermeMetier[] = Array.from({ length: 19 }, (_, i) => ({
+    nature: "mot",
+    intitule: `terme ${i}`,
+    definition: "La définition du terme, en une phrase que le patron reconnaîtrait.",
+    consigne: "Ligne à part, titrée par la zone concernée.",
+  }));
+  const corrections = Array.from({ length: MAX_EXEMPLES }, () => CORRECTION);
+
+  // Ce qu'il faudrait pour tout dire, mesuré et non supposé.
+  const complet = construireConsigneMetier([...regles, ...mots], corrections, 1_000_000);
+  assert.equal(complet.exemplesRetenus, MAX_EXEMPLES, "Le scénario ne produit pas ses trois blocs.");
+
+  // Un cheveu trop court : la coupe tombe dans le dernier bloc, les trois
+  // en-têtes sont écrits, et c'est exactement la situation qui dépassait.
+  const budget = complet.texte.length - 40;
+  const c = construireConsigneMetier([...regles, ...mots], corrections, budget);
+
+  assert.ok(c.texte.includes("RÈGLES"), "Le bloc des règles manque : le scénario ne teste plus trois en-têtes.");
+  assert.ok(c.texte.includes("VOCABULAIRE"), "Le bloc du vocabulaire manque.");
+  assert.ok(c.texte.includes("CE QU'IL A CORRIGÉ"), "Le bloc des corrections manque.");
+  assert.ok(
+    c.texte.length <= budget,
+    `La consigne fait ${c.texte.length} caractères pour un budget de ${budget} : les en-têtes ne sont pas payés.`
+  );
+});
+
 cas("un terme monstrueux ne fait pas tomber le reste", () => {
   const monstre: TermeMetier = { nature: "mot", intitule: "x", definition: "a".repeat(9000), consigne: null };
   const c = construireConsigneMetier([REGLE, monstre, MOT], []);

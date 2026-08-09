@@ -1942,3 +1942,87 @@ bois sain, taille de cohabitation, jumelle, rejets, fût.
 |---|---|
 | La réserve, et son retour aux mots quand elle ne sert pas | `scripts/test-consigne-metier.ts` |
 | Le budget tenu, réserve comprise | idem |
+
+---
+
+## 38. Deux documents de plus, qui démentent une définition écrite la veille
+
+**Le patron, le 9 août 2026**, transmet une facture de débroussaillage et un
+devis de frêne, du même confrère, sans un mot d'accompagnement. Ils ajoutent du
+vocabulaire — mais ce n'est pas leur apport principal.
+
+### Une invention déguisée en observation
+
+La migration 0030, écrite quelques heures plus tôt, affirmait : *« Le gros bois
+se débite en 40 ou 50 cm. »* Le devis du frêne dit **33 cm**.
+
+Deux devis avaient montré 40, puis 50. J'en ai conclu une liste fermée et je
+l'ai écrite comme un fait. C'est exactement ce que `docs/AGENT.md` §3 interdit —
+un champ sans source fiable reste ouvert, il ne se remplit pas par
+extrapolation. Le piège est qu'ici la source *existait* : elle était juste trop
+mince pour porter une énumération.
+
+Le détail qui aggrave : la **consigne** attachée au terme était déjà juste
+(« reprendre la longueur dictée telle quelle, ne jamais l'arrondir ni la
+supposer »). C'est la définition qui la contredisait — et un modèle qui lit les
+deux croit à la liste, parce qu'une liste est plus concrète qu'une interdiction.
+
+**Ce qu'on en retient, au-delà de ce terme :** une définition qui énumère est
+une affirmation sur le monde. Deux exemples ne la fondent pas. 0031 la remplace
+par *« la longueur qui convient au client — 33, 40, 50 cm. Il n'y a pas de
+valeur par défaut. »*
+
+### Ce que les deux documents ajoutent vraiment
+
+| Apport | Ce que le document dit | Pourquoi ça compte |
+|---|---|---|
+| Le bois a une **destination**, pas seulement un sort | « ramené sur l'arrière du jardin », « en tas rangé le long de la haie » | Le portage est du travail, et il se paie |
+| Le débroussaillage a **deux machines** | broyeur forestier sur l'accessible, débroussailleuse sur talus et contours | C'est l'accessibilité qui décide du temps passé, donc du prix |
+| Ce qui reste à décider **s'écrit** | « Hauteur du tronc à définir ensemble au moment de l'abattage » | Atlas savait laisser un champ vide et le signaler au patron ; il ne savait pas que cette réserve a sa place **sur le devis** |
+
+Le troisième est devenu une règle (`ordre` 7), pas un mot. C'est la règle du
+dépôt — ne rien inventer — écrite par un professionnel sur un document qui part
+chez un client, avec sa formulation.
+
+### Le budget : un en-tête payé après coup, et un plafond posé à vide
+
+Deux défauts distincts, trouvés en mesurant plutôt qu'en relisant.
+
+**1. Le calcul était faux de trois en-têtes.** `ajouter()` déduisait le titre du
+bloc *après* avoir accepté ses lignes. Avec trois blocs, la consigne dépassait de
+leurs trois titres : **6 020 caractères pour un budget de 6 000**.
+
+Le contrôle qui affirmait le contraire était vert, et **pour une mauvaise
+raison** : son scénario à deux cents termes épuise le budget dès le premier bloc,
+si bien que les deux en-têtes suivants n'existent jamais. Un scénario extrême
+cachait le cas ordinaire — `CLAUDE.md` §5, *un contrôle jamais vu rouge ne
+prouve rien*. Le contrôle ajouté se cale sur le contenu réel (huit règles,
+dix-neuf mots, cinq corrections) et se donne un budget d'un cheveu trop court,
+pour que les trois blocs existent et que la coupe tombe dans le dernier.
+
+**2. Le plafond lui-même ne correspondait plus à rien.** Six mille caractères
+avaient été choisis à vide, quand le vocabulaire tenait en dix termes. Mesure du
+jour : tout dire coûte **8 512 caractères**, et le budget écartait **douze termes
+sur vingt-sept**.
+
+Ajouter du vocabulaire à un document dont la moitié ne part jamais, c'est faire
+semblant de l'ajouter — et c'est précisément ce que le patron avait demandé la
+veille. Le plafond passe à **9 000**, avec un point de comparaison plutôt qu'une
+intuition : la consigne d'extraction générique fait à elle seule ~7 300
+caractères. Ce que cet artisan a appris à Atlas n'a pas à peser moins que
+l'instruction générique qu'il vient corriger.
+
+| | Avant | Après |
+|---|---|---|
+| Longueur | 6 020 / 6 000 — **dépassement** | 8 512 / 9 000 |
+| Termes retenus | 15 / 27 | **27 / 27** |
+| Ses corrections | 4 / 5 | **5 / 5** |
+
+Le garde-fou n'est pas levé, il est recalé : quand le vocabulaire passera neuf
+mille à son tour, il écartera de nouveau — par ordre d'importance, et **en
+disant ce qu'il écarte**.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| Les trois en-têtes tiennent dans le budget, à la coupe près | `scripts/test-consigne-metier.ts` |
+| Le contrôle sait échouer | Vérifié en remettant la déduction après coup : deux cas rouges |
