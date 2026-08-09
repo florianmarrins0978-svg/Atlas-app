@@ -5,6 +5,7 @@ import type { Ctx } from "./context";
 import {
   fenetreProposition,
   fenetrePatron,
+  HORIZON_OCCUPATION_PATRON_JOURS,
   libelleDuree,
   type FenetreProposition,
   versJourIso,
@@ -77,6 +78,15 @@ export async function preparerEnvoi(
 ): Promise<PreparationEnvoi> {
   const fenetre = fenetreProposition(maintenant);
 
+  // **Deux fenêtres, et les confondre ouvrirait le planning.** `fenetre` est
+  // celle du client : elle borne ce qu'on lui montrera, et les jours suggérés.
+  // `fenetreOccupationPatron` ne sert QU'À l'écran du patron, pour barrer ses
+  // journées complètes sur douze mois — son chiffre, le 9 août 2026.
+  const fenetreOccupationPatron: FenetreProposition = {
+    debut: fenetre.debut,
+    fin: versJourIso(ajouterJours(maintenant, HORIZON_OCCUPATION_PATRON_JOURS)),
+  };
+
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [chantier] = await tx
       .select()
@@ -116,8 +126,11 @@ export async function preparerEnvoi(
         and(
           eq(chantiers.entrepriseId, ctx.entrepriseId),
           isNull(chantiers.deletedAt),
+          // Bornée sur la fenêtre LA PLUS LARGE des deux : une occupation
+          // absente ne se voit pas — le jour s'affiche simplement libre, et le
+          // patron le propose. C'est exactement le défaut qu'on répare.
           gte(chantiers.datePlanifiee, fenetre.debut),
-          lte(chantiers.datePlanifiee, fenetre.fin)
+          lte(chantiers.datePlanifiee, fenetreOccupationPatron.fin)
         )
       );
     const planifies: ChantierPlanifie[] = occupesRows
@@ -166,10 +179,20 @@ export async function preparerEnvoi(
         { occupation, nombreEquipes, dureeDemiJournees },
         CRENEAUX_SUGGERES
       ),
-      // Les jours de la fenêtre où ce chantier ne tient pas. C'est cette liste
-      // que la page du client reçoit : des DATES, jamais un créneau — consigne
-      // du patron, « mon client ne doit pas être informé de la demi-journée ».
-      joursOccupes: joursSansPlace(maintenant, { occupation, nombreEquipes, dureeDemiJournees }),
+      // Les jours où ce chantier ne tient pas, sur DOUZE MOIS — son chiffre du
+      // 9 août 2026. Cette liste ne sert qu'à SON calendrier.
+      //
+      // **Elle ne part jamais chez le client**, et le commentaire qui prétendait
+      // le contraire ici a été corrigé le même jour : la page du client reçoit
+      // sa propre liste, recalculée sur sa fenêtre à lui au moment où il ouvre
+      // le lien (`lireParJeton`, dans `envois-devis.ts`). Les deux ne se
+      // rejoignent nulle part, et c'est ce qui permet d'élargir celle-ci sans
+      // ouvrir le carnet de commandes (`docs/AGENT.md` §2.2 bis).
+      joursOccupes: joursSansPlace(
+        maintenant,
+        { occupation, nombreEquipes, dureeDemiJournees },
+        fenetreOccupationPatron
+      ),
       fenetre,
       dureeDemiJournees,
       dureeDeduiteDeLaDictee: dureeImposee === undefined && deduite !== null,
@@ -193,8 +216,16 @@ export type ContrainteOccupation = {
  * demi-journée, et l'est encore pour deux jours pleins. La réponse dépend donc
  * du chantier qu'on cherche à caler, ce qui n'était pas le cas avant.
  */
-export function joursSansPlace(maintenant: Date, contrainte: ContrainteOccupation): JourIso[] {
-  const fenetre = fenetreProposition(maintenant);
+export function joursSansPlace(
+  maintenant: Date,
+  contrainte: ContrainteOccupation,
+  /**
+   * Jusqu'où regarder. Par défaut la fenêtre du CLIENT — c'est l'usage
+   * d'origine, et l'oublier livrerait douze mois de planning à un inconnu.
+   * L'écran du patron passe la sienne, plus large (9 août 2026).
+   */
+  fenetre: FenetreProposition = fenetreProposition(maintenant)
+): JourIso[] {
   const sansPlace: JourIso[] = [];
   for (let decalage = 0; ; decalage++) {
     const jour = versJourIso(ajouterJours(maintenant, decalage));

@@ -1814,12 +1814,27 @@ s'afficherait barré, et le patron croirait ne plus pouvoir le décocher.
 silence. Un bouton qui ne répond pas se lit comme une panne : il appuierait
 trois fois avant de comprendre.
 
-### Ce que le calendrier ne peut pas savoir, le serveur le dit
+### Douze mois d'occupation pour lui, trois pour son client
 
-Côté patron, l'horizon va à dix-huit mois mais **les jours occupés ne sont
-chargés que sur la fenêtre proche**. Au-delà, seul `verifierJourPropose` sait si
-la journée tient. Le calendrier propose donc, et le serveur tranche — c'est ce
-qu'il faisait déjà, et le retirer aurait rendu le geste plus joli et moins sûr.
+**Sa réponse du 9 août 2026**, à la réserve posée la veille : *« tu peux aller
+jusqu'à douze mois d'occupation. »* Son calendrier barre donc ses journées
+complètes sur **365 jours** (`HORIZON_OCCUPATION_PATRON_JOURS`).
+
+**À ne surtout pas confondre avec `FENETRE_PROPOSITION_JOURS`**, qui borne ce
+que voit LE CLIENT et n'a pas bougé. Les deux nombres décrivent deux personnes ;
+les réunir un jour « pour simplifier » livrerait le carnet de commandes à des
+inconnus (`docs/AGENT.md` §2.2 bis).
+
+Ce qui rend l'élargissement sûr n'est pas la vigilance mais la **séparation des
+chemins** : la liste du patron vient de `preparerEnvoi`, celle du client est
+recalculée par `lireParJeton` au moment où il ouvre son lien. Aucune valeur ne
+transite de l'une à l'autre — vérifié en mutant l'une pour constater que l'autre
+ne bouge pas.
+
+Au-delà de douze mois, le calendrier ne barre rien et **le serveur tranche** :
+seul `verifierJourPropose` sait si la journée tient. Le calendrier propose, il ne
+décide pas. Un contrôle tient cette borne, pour qu'on ne l'élargisse pas en
+silence à chaque ouverture d'écran.
 
 Même principe chez le client : l'affichage est un **instantané**, deux clients
 peuvent viser le même jour, et `enregistrerReponse` revérifie de toute façon.

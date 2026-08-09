@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-08-09
 
+### Douze mois de jours pris sur son calendrier, trois pour son client
+
+Sa réponse à la réserve posée la veille : *« tu peux aller jusqu'à douze mois
+d'occupation. »* Son calendrier barre désormais ses journées complètes sur un
+an — avant, au-delà de trois mois, un jour déjà pris s'affichait libre et le
+serveur ne le refusait qu'après coup, au moment précis où il venait de le
+choisir.
+
+**Ce que voit son client n'a pas bougé**, et c'est le point à ne pas confondre :
+deux nombres, deux personnes. Ce qui rend l'élargissement sûr n'est pas la
+vigilance mais la séparation des chemins — la liste du patron et celle du client
+sont calculées séparément et ne se rejoignent nulle part. Vérifié en mutant
+l'une pour constater que l'autre ne bouge pas, plutôt qu'en le supposant.
+
+La borne des douze mois est elle-même tenue par un contrôle : au-delà, c'est le
+serveur qui tranche, et l'élargir en silence coûterait une requête plus lourde à
+chaque ouverture d'écran.
+
 ### Un calendrier des deux côtés, où les jours pris ne se touchent pas
 
 Sa demande : *« passe au calendrier pour le choix des dates à proposer au

@@ -195,11 +195,14 @@ pas. Le patron a le même calendrier, jusqu'à dix-huit mois. `ARCHITECTURE.md`
 indifférent — un jour hors fenêtre ne doit JAMAIS se dire « déjà pris » chez le
 client, sinon la page laisse filtrer le planning du patron.
 
-**Ce qui reste ouvert** : côté patron, les jours occupés ne sont chargés que sur
-la fenêtre proche ; au-delà de trois mois, le calendrier ne barre rien et c'est
-le serveur qui refuse après coup. Charger dix-huit mois d'occupation à
-l'ouverture de l'écran serait lourd pour un gain rare. À revoir s'il se met à
-caler beaucoup de chantiers lointains.
+**~~Ce qui restait ouvert~~ — tranché le 9 août 2026 : « tu peux aller jusqu'à
+douze mois d'occupation ».** Son calendrier barre donc ses journées complètes sur
+365 jours. Au-delà, c'est toujours le serveur qui refuse après coup, et un
+contrôle tient cette borne pour qu'on ne l'élargisse pas sans le décider.
+
+**Ce que voit le client n'a pas bougé** — deux nombres, deux personnes. Ne jamais
+les réunir « pour simplifier » : `HORIZON_OCCUPATION_PATRON_JOURS` est à lui,
+`FENETRE_PROPOSITION_JOURS` est à son client.
 
 ### 0 octies. Ce qui se détache d'un chantier — ~~à trancher~~ **tranché le 8 août 2026**
 
