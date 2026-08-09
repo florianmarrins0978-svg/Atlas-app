@@ -8,6 +8,7 @@ import {
   configurationGoogle,
   periodesOccupees,
   rafraichirJeton,
+  type ConfigurationGoogle,
   type JetonsGoogle,
 } from "../agenda/google";
 import { chiffrer, dechiffrer } from "../agenda/secret-au-repos";
@@ -25,8 +26,12 @@ import type { Ctx } from "./context";
 
 /** Ce que l'écran des réglages a besoin de savoir. Jamais un jeton. */
 export type EtatAgenda = {
-  /** L'installation a-t-elle des identifiants Google ? Sinon, rien n'est proposé. */
+  /** Des identifiants Google existent-ils ? Sinon, rien n'est proposé à cliquer. */
   configure: boolean;
+  /** Le `client_id` déjà posé, pour que l'écran le rappelle. Jamais le secret. */
+  clientId: string | null;
+  /** L'adresse de retour à recopier dans la console Google, au caractère près. */
+  redirection: string | null;
   relie: boolean;
   /** L'adresse du compte branché, pour qu'il sache LEQUEL. */
   compte: string | null;
@@ -44,7 +49,6 @@ export type EtatAgenda = {
 };
 
 export async function etatAgenda(ctx: Ctx): Promise<EtatAgenda> {
-  const configure = configurationGoogle() !== null;
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [ligne] = await tx
       .select()
@@ -57,9 +61,16 @@ export async function etatAgenda(ctx: Ctx): Promise<EtatAgenda> {
       )
       .limit(1);
 
+    const config = configurationDe(ligne ?? null);
     return {
-      configure,
-      relie: Boolean(ligne),
+      configure: config !== null,
+      clientId: ligne?.clientId ?? configurationGoogle()?.clientId ?? null,
+      redirection: config?.redirection ?? null,
+      // **Relié ne veut pas dire configuré.** Une ligne peut exister avec les
+      // seuls identifiants, entre le moment où il les colle et son retour de
+      // chez Google. L'écran doit distinguer les deux, sinon il annonce
+      // « agenda relié » à quelqu'un qui n'a encore rien autorisé.
+      relie: Boolean(ligne?.jetonAcces || ligne?.jetonRafraichissement),
       compte: ligne?.compte ?? null,
       actif: ligne?.actif ?? false,
       derniereLectureAt: ligne?.derniereLectureAt ?? null,
@@ -146,6 +157,109 @@ export async function debrancherAgenda(ctx: Ctx): Promise<void> {
 }
 
 /**
+ * Les identifiants à employer pour cette entreprise.
+ *
+ * **Ceux qu'elle a saisis priment sur ceux de l'installation**, et l'ordre est
+ * le bon : sa demande du 9 août 2026 est de pouvoir relier son agenda *seul*,
+ * sans dépendre de ce que quelqu'un a posé sur le serveur. Les variables
+ * d'environnement restent en repli — elles servent au banc d'essai et à une
+ * installation qui voudrait fournir les identifiants pour tous ses artisans.
+ *
+ * Rend `null` si rien n'est complet des deux côtés : **le défaut de
+ * configuration refuse, il n'accorde pas.** Une configuration à moitié posée
+ * enverrait l'artisan chez Google avec un client vide, et il lirait un message
+ * d'erreur en anglais en croyant qu'Atlas est cassé.
+ */
+export function configurationDe(
+  ligne: typeof agendasExternes.$inferSelect | null
+): ConfigurationGoogle | null {
+  const clientId = (ligne?.clientId ?? "").trim();
+  const secretChiffre = ligne?.clientSecret ?? null;
+  const redirection = (ligne?.redirection ?? "").trim();
+  if (clientId && secretChiffre && redirection) {
+    const clientSecret = dechiffrer(secretChiffre);
+    if (clientSecret) return { clientId, clientSecret, redirection };
+    // Secret illisible — `AUTH_SECRET` changé, ligne abîmée. On ne bascule pas
+    // en silence sur les variables d'installation : elles appartiennent à
+    // quelqu'un d'autre, et brancher l'artisan sur un projet Google qu'il n'a
+    // pas choisi serait pire que de lui dire de recoller son secret.
+    return null;
+  }
+  return configurationGoogle();
+}
+
+/** La configuration de CETTE entreprise, telle que les actions en ont besoin. */
+export async function configurationDeLEntreprise(ctx: Ctx): Promise<ConfigurationGoogle | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx
+      .select()
+      .from(agendasExternes)
+      .where(
+        and(eq(agendasExternes.entrepriseId, ctx.entrepriseId), eq(agendasExternes.fournisseur, "google"))
+      )
+      .limit(1);
+    return configurationDe(ligne ?? null);
+  });
+}
+
+/**
+ * Enregistre les identifiants que l'artisan a collés, sans toucher aux jetons.
+ *
+ * Change-t-il d'identifiants ? Les jetons obtenus avec les précédents ne valent
+ * plus rien — ils appartiennent à l'autre projet Google. On les efface, et
+ * l'écran redemandera l'autorisation. Les garder afficherait « relié » sur un
+ * raccordement mort.
+ */
+export async function enregistrerIdentifiants(
+  ctx: Ctx,
+  identifiants: { clientId: string; clientSecret: string | null; redirection: string }
+): Promise<void> {
+  const clientId = identifiants.clientId.trim();
+  const redirection = identifiants.redirection.trim();
+  // Vide = « garde celui que tu as ». L'écran l'annonce, et il faut que ce soit
+  // vrai : un artisan qui revient corriger son adresse de retour n'a pas son
+  // secret sous la main, Google ne le remontre jamais après l'avoir créé.
+  const secret = identifiants.clientSecret?.trim() || null;
+
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [existant] = await tx
+      .select({ clientId: agendasExternes.clientId })
+      .from(agendasExternes)
+      .where(
+        and(eq(agendasExternes.entrepriseId, ctx.entrepriseId), eq(agendasExternes.fournisseur, "google"))
+      )
+      .limit(1);
+
+    const changement = existant !== undefined && existant.clientId !== clientId;
+    const jetonsRemisAZero = changement
+      ? { jetonAcces: null, jetonRafraichissement: null, expireAt: null }
+      : {};
+
+    await tx
+      .insert(agendasExternes)
+      .values({
+        entrepriseId: ctx.entrepriseId,
+        fournisseur: "google",
+        clientId,
+        clientSecret: secret ? chiffrer(secret) : null,
+        redirection,
+        actif: true,
+      })
+      .onConflictDoUpdate({
+        target: [agendasExternes.entrepriseId, agendasExternes.fournisseur],
+        set: {
+          clientId,
+          ...(secret ? { clientSecret: chiffrer(secret) } : {}),
+          redirection,
+          derniereErreur: null,
+          updatedAt: new Date(),
+          ...jetonsRemisAZero,
+        },
+      });
+  });
+}
+
+/**
  * Comment ouvrir la base pour une entreprise donnée.
  *
  * **Deux chemins mènent ici, et ils n'ont pas la même porte d'entrée.** L'écran
@@ -221,9 +335,6 @@ async function periodes(
   debut: Date,
   fin: Date
 ): Promise<PeriodeOccupee[]> {
-  const config = configurationGoogle();
-  if (!config) return [];
-
   // **Lue puis relâchée avant l'appel réseau.** Tenir une transaction
   // PostgreSQL ouverte pendant un appel HTTP immobilise une connexion du pool
   // pour la durée d'un service qu'on ne maîtrise pas.
@@ -241,6 +352,12 @@ async function periodes(
   // Rien de relié, ou coupé par l'artisan : le cas ordinaire, et il ne coûte
   // pas un appel réseau.
   if (!ligne || !ligne.actif) return [];
+
+  // Les identifiants viennent de la ligne qu'on vient de lire, ou de
+  // l'installation à défaut. Une ligne qui n'a que des identifiants et pas
+  // encore de jetons n'a rien à consulter.
+  const config = configurationDe(ligne);
+  if (!config) return [];
 
   try {
     const jetonAcces = await jetonUtilisable(executer, entrepriseId, ligne, config);
@@ -265,7 +382,7 @@ async function jetonUtilisable(
   executer: Executeur,
   entrepriseId: string,
   ligne: typeof agendasExternes.$inferSelect,
-  config: NonNullable<ReturnType<typeof configurationGoogle>>
+  config: ConfigurationGoogle
 ): Promise<string | null> {
   const encoreValable = ligne.expireAt !== null && ligne.expireAt.getTime() > Date.now();
   if (encoreValable && ligne.jetonAcces) {

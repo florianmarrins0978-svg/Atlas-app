@@ -8,6 +8,7 @@ import {
   basculerAgendaAction,
   debrancherAgendaAction,
   demarrerRaccordementAction,
+  enregistrerIdentifiantsAction,
 } from "./actions";
 
 /**
@@ -31,12 +32,45 @@ const MESSAGES_RETOUR: Record<string, { ton: "bien" | "mal"; texte: string }> = 
     texte: "Cette installation n'a pas d'identifiants Google. Rien ne peut être relié pour l'instant.",
   },
   echec: { ton: "mal", texte: "Google n'a pas accepté le raccordement. Rien n'a été relié : vous pouvez réessayer." },
+  identifiants: {
+    ton: "bien",
+    texte: "Vos identifiants sont enregistrés. Il reste à autoriser Atlas chez Google, avec le bouton ci-dessous.",
+  },
 };
 
 export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue: string | null }) {
   const [enCours, demarrer] = useTransition();
   const [confirmation, setConfirmation] = useState(false);
   const retour = issue ? MESSAGES_RETOUR[issue] ?? null : null;
+
+  // La saisie des identifiants s'ouvre d'elle-même tant que rien n'est
+  // configuré : c'est le seul geste utile à ce moment-là, et le cacher derrière
+  // un dépliant ferait chercher.
+  const [saisieOuverte, setSaisieOuverte] = useState(!etat.configure);
+  const [clientId, setClientId] = useState(etat.clientId ?? "");
+  const [clientSecret, setClientSecret] = useState("");
+  const [redirection, setRedirection] = useState(
+    etat.redirection ?? (typeof window !== "undefined" ? `${window.location.origin}/api/agenda/google/retour` : "")
+  );
+  const [motifRefus, setMotifRefus] = useState<string | null>(null);
+  const [enregistre, setEnregistre] = useState(false);
+
+  const enregistrerIdentifiants = () => {
+    setMotifRefus(null);
+    setEnregistre(false);
+    demarrer(async () => {
+      const r = await enregistrerIdentifiantsAction({ clientId, clientSecret, redirection });
+      if (r.ok) {
+        setEnregistre(true);
+        setClientSecret("");
+        // La page se recharge pour que l'état vienne du serveur, jamais d'une
+        // supposition de l'écran sur ce qui a été écrit.
+        window.location.href = "/reglages/agenda?issue=identifiants";
+      } else {
+        setMotifRefus(r.motif);
+      }
+    });
+  };
 
   return (
     <div className="px-6 pt-6">
@@ -71,8 +105,9 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
 
         {!etat.configure && (
           <p className="mt-3 text-[14px] leading-snug" style={{ color: colors.muted }}>
-            Il faut d&apos;abord créer des identifiants Google pour cette application. C&apos;est gratuit, mais
-            cela demande un compte Google et l&apos;acceptation de conditions — donc vous, personne d&apos;autre.
+            Il faut d&apos;abord créer des identifiants Google pour cette application, puis les coller
+            ci-dessous. C&apos;est gratuit, mais cela demande un compte Google et l&apos;acceptation de
+            conditions — donc vous, personne d&apos;autre.
           </p>
         )}
 
@@ -112,6 +147,98 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
           </p>
         )}
       </section>
+
+      {/* --- Ses identifiants Google -------------------------------------- */}
+      {/*
+        **Saisis ICI plutôt que posés sur le serveur, et c'est sa demande.**
+        La veille, le raccordement attendait des variables d'environnement : il
+        créait son projet chez Google, obtenait ses identifiants, et devait
+        ensuite les faire poser par quelqu'un. Le point restait bloqué chez moi
+        alors qu'il avait fait sa part.
+      */}
+      <div className="mt-5">
+        {!saisieOuverte && (
+          <button
+            type="button"
+            onClick={() => setSaisieOuverte(true)}
+            className="px-1 text-[14px] font-medium"
+            style={{ color: colors.rust }}
+          >
+            {etat.configure ? "Changer mes identifiants Google" : "Coller mes identifiants Google"} →
+          </button>
+        )}
+
+        {saisieOuverte && (
+          <section className="rounded-3xl px-5 py-5" style={{ backgroundColor: colors.rustTint }}>
+            <p className="text-[16px]" style={{ fontFamily: font.display, marginBottom: 6 }}>
+              Mes identifiants Google
+            </p>
+            <p className="text-[13px] leading-snug" style={{ color: colors.muted, marginBottom: 14 }}>
+              Ils se créent une fois, sur <strong>console.cloud.google.com</strong> : un projet, l&apos;API
+              Google Agenda activée, puis un identifiant OAuth de type « application Web ». Collez ensuite
+              l&apos;adresse de retour ci-dessous <strong>à l&apos;identique</strong> dans la console — Google
+              refuse au moindre écart.
+            </p>
+
+            <Champ
+              libelle="Identifiant client"
+              valeur={clientId}
+              onChange={setClientId}
+              exemple="1234-abcd.apps.googleusercontent.com"
+            />
+            <Champ
+              libelle="Secret client"
+              valeur={clientSecret}
+              onChange={setClientSecret}
+              exemple={etat.configure ? "(déjà enregistré — laissez vide pour le garder)" : "GOCSPX-…"}
+              masque
+            />
+            <Champ
+              libelle="Adresse de retour"
+              valeur={redirection}
+              onChange={setRedirection}
+              exemple="https://…/api/agenda/google/retour"
+            />
+
+            {motifRefus && (
+              <p
+                role="alert"
+                className="mt-3 rounded-2xl px-4 py-3 text-[13px] leading-snug"
+                style={{ backgroundColor: "#fff", borderLeft: `3px solid ${colors.alert}` }}
+              >
+                {motifRefus}
+              </p>
+            )}
+            {enregistre && !motifRefus && (
+              <p className="mt-3 text-[13px]" style={{ color: colors.rust }}>
+                Enregistré.
+              </p>
+            )}
+
+            <div className="mt-4 flex gap-3">
+              <button
+                type="button"
+                disabled={enCours}
+                onClick={enregistrerIdentifiants}
+                className="rounded-full px-5 py-3 text-[15px] font-medium"
+                style={{ backgroundColor: colors.rust, color: "#fff", opacity: enCours ? 0.6 : 1 }}
+              >
+                Enregistrer
+              </button>
+              {etat.configure && (
+                <button
+                  type="button"
+                  onClick={() => setSaisieOuverte(false)}
+                  className="px-4 py-2 text-[14px] font-medium"
+                  style={{ color: colors.muted }}
+                >
+                  Annuler
+                </button>
+              )}
+            </div>
+          </section>
+        )}
+      </div>
 
       {/* --- Les commandes ------------------------------------------------ */}
       {etat.configure && (
@@ -182,5 +309,43 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Une case de saisie, avec son libellé et un exemple.
+ *
+ * Le secret est masqué à la frappe : ces écrans se remplissent souvent à deux,
+ * ou en visio avec quelqu'un qui aide.
+ */
+function Champ({
+  libelle,
+  valeur,
+  onChange,
+  exemple,
+  masque = false,
+}: {
+  libelle: string;
+  valeur: string;
+  onChange: (v: string) => void;
+  exemple: string;
+  masque?: boolean;
+}) {
+  return (
+    <label className="mb-3 block">
+      <span className="block text-[13px]" style={{ color: colors.muted, marginBottom: 4 }}>
+        {libelle}
+      </span>
+      <input
+        type={masque ? "password" : "text"}
+        value={valeur}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={exemple}
+        autoComplete="off"
+        spellCheck={false}
+        className="w-full rounded-2xl px-4 py-3 text-[15px]"
+        style={{ backgroundColor: "#fff", color: colors.ink, border: `1px solid ${colors.line}` }}
+      />
+    </label>
   );
 }

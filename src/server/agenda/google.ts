@@ -31,18 +31,30 @@ export type ConfigurationGoogle = {
 };
 
 /**
- * La portée demandée, et elle est délibérément minuscule.
+ * La portée demandée.
  *
- * `calendar.freebusy` ne rend que des intervalles occupés. Demander
- * `calendar.readonly` aurait été plus simple — et aurait donné à Atlas les
- * intitulés de tous les rendez-vous de l'artisan, dont il n'a aucun besoin.
- * Une permission qu'on ne demande pas est une fuite qui ne peut pas arriver.
+ * **Élargie le 9 août 2026, sur sa décision.** Elle était `calendar.freebusy`,
+ * qui ne rend que des intervalles : j'avais choisi de ne pas pouvoir lire les
+ * intitulés, en me disant qu'une permission qu'on ne demande pas est une fuite
+ * qui ne peut pas arriver. Sa réponse : *« si, il doit lire les intitulés
+ * aussi ! »* — et elle se comprend : un artisan qui note « élagage chez Mme
+ * Roux » dans son agenda veut le retrouver sur son planning, pas une case grise
+ * sans nom.
+ *
+ * **`events.readonly` et pas `calendar.readonly`**, qui reste plus large : la
+ * seconde donne aussi la liste des agendas, leurs partages et leurs réglages.
+ * On demande ce qu'il faut pour ce qu'il a demandé, pas davantage.
+ *
+ * **Ce que cet élargissement ne change PAS.** Les intitulés vont à SON écran, à
+ * lui seul. La page du client continue de ne recevoir que des dates
+ * (`docs/AGENT.md` §2.2 bis) : c'est la vie privée de ses AUTRES clients, pas
+ * la sienne, et elle n'est pas à sa main.
  */
-export const PORTEE_GOOGLE = "https://www.googleapis.com/auth/calendar.freebusy";
+export const PORTEE_GOOGLE = "https://www.googleapis.com/auth/calendar.events.readonly";
 
 const AUTORISATION = "https://accounts.google.com/o/oauth2/v2/auth";
 const JETONS = "https://oauth2.googleapis.com/token";
-const FREEBUSY = "https://www.googleapis.com/calendar/v3/freeBusy";
+const EVENEMENTS = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
 
 /**
  * La configuration, si elle existe.
@@ -149,32 +161,27 @@ function lireJetons(brut: unknown): JetonsGoogle {
 }
 
 /**
- * Les périodes occupées de l'artisan, entre deux instants.
+ * Les périodes occupées de l'artisan, entre deux instants, avec leur intitulé.
  *
- * `freeBusy` ne rend que des intervalles — c'est tout ce qu'Atlas demande et
- * tout ce que la portée autorise. Les rendez-vous marqués « disponible » dans
- * l'agenda en sont exclus par Google lui-même, ce qui est le bon comportement :
- * un artisan qui note un pense-bête ne veut pas perdre sa journée.
+ * Passe par `events.list` plutôt que `freeBusy` depuis qu'il a demandé les
+ * intitulés. `singleEvents` déplie les séries récurrentes : sans lui, une
+ * réunion hebdomadaire ne renvoie qu'une occurrence et les autres semaines
+ * s'affichent libres — c'est-à-dire proposables à un client.
  */
 export async function periodesOccupees(
   jetonAcces: string,
   debut: Date,
   fin: Date
 ): Promise<PeriodeOccupee[]> {
-  const reponse = await fetch(FREEBUSY, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${jetonAcces}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      timeMin: debut.toISOString(),
-      timeMax: fin.toISOString(),
-      // `primary` : l'agenda principal du compte. Les agendas secondaires — les
-      // jours fériés, un calendrier partagé — ne disent rien de la disponibilité
-      // de l'artisan et bloqueraient des journées qu'il aurait acceptées.
-      items: [{ id: "primary" }],
-    }),
+  const p = new URLSearchParams({
+    timeMin: debut.toISOString(),
+    timeMax: fin.toISOString(),
+    singleEvents: "true",
+    orderBy: "startTime",
+    maxResults: "2500",
+  });
+  const reponse = await fetch(`${EVENEMENTS}?${p.toString()}`, {
+    headers: { authorization: `Bearer ${jetonAcces}` },
     signal: AbortSignal.timeout(15_000),
   });
   if (!reponse.ok) {
@@ -184,35 +191,82 @@ export async function periodesOccupees(
 }
 
 /**
- * Extrait les intervalles de la réponse `freeBusy`.
+ * Extrait les périodes de la réponse `events.list`.
  *
  * Séparée de l'appel réseau **exprès** : c'est la seule partie de ce fichier
  * qui interprète quelque chose, et elle s'éprouve sans Google, sur une réponse
  * enregistrée (`scripts/test-agenda-google-lecture.ts`).
  *
  * Tout ce qui n'est pas une paire de dates lisibles est ignoré, jamais deviné.
- * Une réponse mal formée doit produire moins d'occupation, pas une occupation
- * inventée — et l'appelant, lui, saura que la lecture a échoué.
+ * Une réponse mal formée doit produire MOINS d'occupation, pas une occupation
+ * inventée — l'appelant, lui, saura que la lecture a échoué.
  */
 export function lirePeriodes(brut: unknown): PeriodeOccupee[] {
   const o = (brut ?? {}) as Record<string, unknown>;
-  const calendriers = (o.calendars ?? {}) as Record<string, unknown>;
+  const items = Array.isArray(o.items) ? o.items : [];
   const periodes: PeriodeOccupee[] = [];
 
-  for (const valeur of Object.values(calendriers)) {
-    const cal = (valeur ?? {}) as Record<string, unknown>;
-    const occupes = Array.isArray(cal.busy) ? cal.busy : [];
-    for (const item of occupes) {
-      const p = (item ?? {}) as Record<string, unknown>;
-      if (typeof p.start !== "string" || typeof p.end !== "string") continue;
-      const debut = new Date(p.start);
-      const fin = new Date(p.end);
-      if (Number.isNaN(debut.getTime()) || Number.isNaN(fin.getTime())) continue;
-      periodes.push({ debut, fin });
-    }
+  for (const item of items) {
+    const e = (item ?? {}) as Record<string, unknown>;
+
+    // Un événement annulé n'occupe rien : le garder barrerait une journée que
+    // l'artisan vient justement de libérer.
+    if (e.status === "cancelled") continue;
+    // « Disponible » dans Google : un pense-bête, un anniversaire. L'artisan a
+    // dit lui-même que ça ne l'occupe pas — on ne le contredit pas.
+    if (e.transparency === "transparent") continue;
+
+    const bornes = lireBornes(e.start, e.end);
+    if (!bornes) continue;
+
+    periodes.push({
+      debut: bornes.debut,
+      fin: bornes.fin,
+      // Un événement sans titre existe (Google l'accepte) : on rend `null`
+      // plutôt qu'une chaîne vide, que l'écran afficherait comme un blanc.
+      intitule: typeof e.summary === "string" && e.summary.trim() ? e.summary.trim() : null,
+      journeeEntiere: bornes.journeeEntiere,
+    });
   }
 
   return periodes;
+}
+
+/**
+ * Les deux instants d'un événement, qu'il soit horaire ou sur la journée.
+ *
+ * **Les deux formes ne se lisent pas pareil, et les confondre décale d'un
+ * jour.** Un événement horaire porte `dateTime` (instant précis, avec fuseau) ;
+ * un événement « toute la journée » porte `date` (une date civile, et sa fin
+ * est EXCLUSIVE — un congé du 14 au 14 s'écrit start 14, end 15).
+ */
+function lireBornes(
+  start: unknown,
+  end: unknown
+): { debut: Date; fin: Date; journeeEntiere: boolean } | null {
+  const s = (start ?? {}) as Record<string, unknown>;
+  const e = (end ?? {}) as Record<string, unknown>;
+
+  if (typeof s.dateTime === "string" && typeof e.dateTime === "string") {
+    const debut = new Date(s.dateTime);
+    const fin = new Date(e.dateTime);
+    if (Number.isNaN(debut.getTime()) || Number.isNaN(fin.getTime())) return null;
+    return { debut, fin, journeeEntiere: false };
+  }
+
+  if (typeof s.date === "string" && typeof e.date === "string") {
+    // Midi plutôt que minuit : la conversion de fuseau qui suit ne doit pas
+    // faire basculer la date d'un jour dans un sens ou dans l'autre.
+    const debut = new Date(`${s.date}T00:00:00Z`);
+    // La fin est exclusive côté Google : on recule d'une seconde pour rester
+    // sur le dernier jour réellement occupé.
+    const fin = new Date(new Date(`${e.date}T00:00:00Z`).getTime() - 1000);
+    if (Number.isNaN(debut.getTime()) || Number.isNaN(fin.getTime())) return null;
+    if (fin.getTime() <= debut.getTime()) return null;
+    return { debut, fin, journeeEntiere: true };
+  }
+
+  return null;
 }
 
 /**

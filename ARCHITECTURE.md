@@ -2210,3 +2210,90 @@ des mots « tiret » et « souligné » dans les signes épelés à voix haute.
 | `0033` non raboté, un numéro trop long refusé plutôt que coupé | idem |
 | Tiret et souligné épelés, sous leurs trois noms | idem |
 | Les contrôles savent échouer | Vérifié sur l'ancienne lecture : 9 cas rouges |
+
+---
+
+## 41. Les intitulés de l'agenda, et les identifiants entre ses mains
+
+Deux corrections apportées par le patron, le 9 août 2026, sur le lot de la
+veille (§39).
+
+### « Si, il doit lire les intitulés aussi ! »
+
+J'avais choisi la portée `calendar.freebusy` — celle qui ne rend que des
+intervalles — en me disant qu'une permission qu'on ne demande pas est une fuite
+qui ne peut pas arriver. Le raisonnement tenait ; **il répondait à une question
+que personne n'avait posée.**
+
+Un artisan qui note « élagage chez Mme Roux » dans son agenda veut le retrouver
+sur son planning. Une case grise sans nom lui apprend qu'il est pris, pas
+*pourquoi* — et c'est ce pourquoi qui lui sert à décider. La portée passe donc à
+`calendar.events.readonly`, et l'appel de `freeBusy` à `events.list`.
+
+**Ce que l'élargissement ne prend pas :** `calendar.readonly`, plus large
+encore, donnerait aussi la liste de ses agendas, leurs partages et leurs
+réglages. Une portée en écriture permettrait à Atlas de modifier son agenda, ce
+que personne n'a demandé. Un contrôle fige la chaîne exacte, pour que le
+prochain élargissement soit décidé et non subi.
+
+**Ce que l'élargissement ne change PAS, et qui n'est pas à sa main.** La page du
+client continue de ne recevoir que des dates (`docs/AGENT.md` §2.2 bis). Ce
+n'est pas sa vie privée qui est en jeu là, c'est celle de ses autres clients.
+Le type `PeriodeOccupee` porte l'intitulé en **facultatif**, et aucun calcul ne
+le lit : tout ce qui décide — demi-journées prises, jours proposables — se fait
+sur `debut` et `fin`. Ce qui n'entre dans aucun calcul ne peut pas ressortir
+par un chemin oublié.
+
+**Trois pièges d'`events.list` que `freeBusy` masquait :**
+
+| Cas | Ce qu'il fallait faire | Ce qu'un oubli coûtait |
+|---|---|---|
+| Événement récurrent | `singleEvents=true` déplie la série | Une réunion hebdomadaire n'occupe qu'une semaine ; les autres s'affichent libres, donc proposables |
+| Événement « toute la journée » | Google rend une fin **exclusive** (14→15 pour un seul jour) | Barrer le 15, une journée qu'il aurait acceptée |
+| Événement annulé, ou marqué « disponible » | Les écarter | Barrer une journée qu'il vient de libérer, ou perdre une matinée pour un anniversaire |
+
+### « Un petit bouton connecter son agenda Google » — dans le Planning
+
+Deux choses dans cette phrase, et la seconde débloquait tout.
+
+**L'endroit.** Le raccordement se proposait au fond des réglages. Le planning
+est l'écran où le manque se constate ; y mettre le lien, c'est offrir la
+solution là où le problème apparaît. **Le bandeau disparaît quand tout va
+bien** : un bandeau permanent sur l'écran le plus consulté devient du décor, et
+le jour où il annonce une panne, personne ne le lit.
+
+**Les identifiants.** *« Pour rentrer ses identifiants »* — la veille, ils
+s'attendaient dans trois variables d'environnement. Conséquence : il créait son
+projet chez Google, obtenait ses identifiants, **et restait bloqué** faute de
+pouvoir les poser lui-même. Le point dormait chez moi alors qu'il avait fait sa
+part.
+
+Ils se collent maintenant dans l'écran, et vivent sur la ligne du raccordement
+(migration 0033). Trois décisions qui vont avec :
+
+- **Ceux de l'entreprise priment sur ceux de l'installation.** Les variables
+  restent en repli — banc d'essai, ou installation qui fournirait les
+  identifiants pour tous ses artisans.
+- **Configuré n'est pas relié.** Entre le collage des identifiants et le retour
+  de chez Google, il n'a encore rien autorisé. Confondre les deux afficherait
+  « agenda relié » à quelqu'un qui n'a rien fait.
+- **Changer d'identifiants efface les jetons.** Ils appartiennent à l'autre
+  projet Google et ne valent plus rien ; les garder afficherait « relié » sur un
+  raccordement mort, et le doublon reviendrait en silence.
+- **Le secret peut rester vide à la modification.** Google ne le remontre jamais
+  après l'avoir créé : exiger de le ressaisir pour corriger une faute de frappe
+  dans l'adresse de retour serait une impasse dont on ne sort qu'en refaisant un
+  projet.
+
+Le `client_secret` est chiffré comme les jetons ; le `client_id` reste en clair —
+il figure dans l'adresse de consentement que son navigateur affiche, et le
+chiffrer donnerait l'illusion de protéger une donnée publique par construction.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| Intitulé rendu, événement annulé ou « disponible » écarté, journée entière sans déborder | `scripts/test-agenda-google-lecture.ts` |
+| La portée reste `events.readonly`, ni plus large ni en écriture | idem |
+| Identifiants saisis, secret jamais en clair, secret conservé si vide, jetons effacés au changement | `scripts/test-agenda-externe-rls.ts` |
+| Les identifiants d'un artisan restent invisibles pour un autre | idem |
+| Le planning propose le raccordement, l'écran offre les trois cases, le secret est masqué | `scripts/test-agenda-reglages-e2e.ts` |
+| **Le bouton « Enregistrer » n'est couvert ni par la barre ni par la bulle** | idem — mesuré, pas supposé |

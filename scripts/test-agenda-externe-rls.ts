@@ -3,6 +3,8 @@ import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import {
   basculerAgenda,
+  configurationDeLEntreprise,
+  enregistrerIdentifiants,
   debrancherAgenda,
   enregistrerRaccordement,
   etatAgenda,
@@ -181,10 +183,109 @@ async function main() {
       "le jeton de rafraîchissement part dans l'export : quiconque reçoit le fichier ouvre l'agenda"
     );
     assert.ok(!rendu.includes("jetonAcces"), "la colonne des jetons figure dans l'export");
+    assert.ok(!rendu.includes("clientSecret"), "le secret client figure dans l'export");
     assert.ok(!/"v1\.[A-Za-z0-9+/=]{10}/.test(rendu), "un secret chiffré figure dans l'export");
 
     // Mais ce qui EST sa donnée doit bien y être : quel compte, depuis quand.
     assert.ok(rendu.includes("patron@exemple.test"), "l'export a perdu le compte relié, qui est sa donnée");
+  });
+
+  console.log("\n=== Ses identifiants Google, saisis dans l'application ===");
+
+  // **Sa demande du 9 août 2026 :** *« un petit bouton connecter son agenda
+  // Google cliquable pour rentrer ses identifiants. »* La veille, le
+  // raccordement attendait des variables d'environnement : il créait son projet
+  // chez Google, obtenait ses identifiants, et devait ensuite les faire poser
+  // par quelqu'un. Le point restait bloqué chez moi alors qu'il avait fait sa
+  // part.
+
+  const ctxC = await contexte("c");
+  const IDENTIFIANTS = {
+    clientId: "1234-abcd.apps.googleusercontent.com",
+    clientSecret: "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es",
+    redirection: "https://atlas.exemple.test/api/agenda/google/retour",
+  };
+
+  await test("des identifiants collés rendent l'entreprise configurée, sans la relier", async () => {
+    assert.equal(await configurationDeLEntreprise(ctxC), null, "configurée avant d'avoir rien saisi");
+    await enregistrerIdentifiants(ctxC, IDENTIFIANTS);
+
+    const config = await configurationDeLEntreprise(ctxC);
+    assert.ok(config, "les identifiants saisis ne sont pas relus");
+    assert.equal(config.clientId, IDENTIFIANTS.clientId);
+    assert.equal(config.clientSecret, IDENTIFIANTS.clientSecret, "le secret ne se déchiffre pas");
+    assert.equal(config.redirection, IDENTIFIANTS.redirection);
+
+    // **Configuré n'est pas relié.** Entre le collage des identifiants et le
+    // retour de chez Google, il n'a encore rien autorisé. Confondre les deux
+    // afficherait « agenda relié » à quelqu'un qui n'a rien fait.
+    const etat = await etatAgenda(ctxC);
+    assert.equal(etat.configure, true);
+    assert.equal(etat.relie, false, "l'écran annonce un agenda relié alors que rien n'est autorisé");
+  });
+
+  await test("le secret client ne dort pas en clair", async () => {
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      await client.query(`SELECT set_config('app.entreprise_id', $1, true)`, [ctxC.entrepriseId]);
+      const { rows } = await client.query(
+        `SELECT client_id, client_secret FROM agendas_externes WHERE entreprise_id = $1`,
+        [ctxC.entrepriseId]
+      );
+      await client.query("COMMIT");
+      assert.ok(
+        !String(rows[0].client_secret).includes(IDENTIFIANTS.clientSecret),
+        "le secret client dort en clair : il permet d'usurper l'application auprès de Google"
+      );
+      // L'identifiant, lui, reste en clair : il figure dans l'adresse de
+      // consentement que le navigateur affiche. Le chiffrer donnerait
+      // l'illusion de protéger une donnée publique par construction.
+      assert.equal(rows[0].client_id, IDENTIFIANTS.clientId);
+    } finally {
+      client.release();
+    }
+  });
+
+  await test("le secret peut rester vide pour corriger l'adresse de retour", async () => {
+    // Google ne remontre JAMAIS le secret après l'avoir créé. Exiger de le
+    // ressaisir pour corriger une faute de frappe dans l'adresse serait une
+    // impasse dont on ne sort qu'en refaisant un projet Google.
+    await enregistrerIdentifiants(ctxC, {
+      clientId: IDENTIFIANTS.clientId,
+      clientSecret: null,
+      redirection: "https://atlas.exemple.test/api/agenda/google/retour?corrige=1",
+    });
+    const config = await configurationDeLEntreprise(ctxC);
+    assert.equal(config?.clientSecret, IDENTIFIANTS.clientSecret, "le secret a été effacé");
+    assert.match(config?.redirection ?? "", /corrige=1/, "l'adresse n'a pas été corrigée");
+  });
+
+  await test("changer d'identifiants efface les jetons de l'ancien projet", async () => {
+    // Des jetons obtenus avec un autre client Google ne valent plus rien. Les
+    // garder afficherait « relié » sur un raccordement mort, et le doublon
+    // reviendrait sans que rien ne le dise.
+    await enregistrerRaccordement(ctxC, JETONS, "patron@exemple.test");
+    assert.equal((await etatAgenda(ctxC)).relie, true);
+
+    await enregistrerIdentifiants(ctxC, {
+      clientId: "autre-projet.apps.googleusercontent.com",
+      clientSecret: "GOCSPX-autre",
+      redirection: IDENTIFIANTS.redirection,
+    });
+    assert.equal(
+      (await etatAgenda(ctxC)).relie,
+      false,
+      "les jetons de l'ancien projet survivent au changement d'identifiants"
+    );
+  });
+
+  await test("les identifiants d'un artisan restent invisibles pour un autre", async () => {
+    assert.equal(
+      await configurationDeLEntreprise(ctxB),
+      null,
+      "B lit les identifiants de C, et pourrait se brancher sur son projet Google"
+    );
   });
 
   console.log("\n=== L'isolation entre artisans ===");

@@ -83,13 +83,81 @@ async function main() {
     assert.equal(boutons, 0, `${boutons} bouton(s) de raccordement proposés alors que rien n'est configuré`);
   });
 
+  await cas("mais il propose de coller ses identifiants — le geste qui débloque", async () => {
+    // **Sa demande du 9 août 2026.** Avant, les identifiants se posaient dans
+    // la configuration du serveur : il faisait sa part chez Google et restait
+    // bloqué faute de pouvoir les saisir. Trois cases, et il n'a plus besoin
+    // de personne.
+    for (const libelle of ["Identifiant client", "Secret client", "Adresse de retour"]) {
+      await page
+        .getByLabel(libelle)
+        .waitFor({ state: "visible", timeout: 10000 })
+        .catch(() => {
+          throw new Error(`la case « ${libelle} » n'est pas proposée`);
+        });
+    }
+    const enregistrer = await page.getByRole("button", { name: /Enregistrer/ }).count();
+    assert.equal(enregistrer, 1, "aucun bouton pour enregistrer les identifiants");
+  });
+
+  await cas("le secret ne s'affiche pas en clair pendant la frappe", async () => {
+    // Ces écrans se remplissent souvent à deux, ou en visio avec quelqu'un qui
+    // aide à trouver la bonne page dans la console Google.
+    const type = await page.getByLabel("Secret client").getAttribute("type");
+    assert.equal(type, "password", "le secret client s'affiche en clair");
+  });
+
+  await cas("l'écran dit où créer les identifiants, sans faire chercher", async () => {
+    const texte = await page.locator("body").innerText();
+    assert.match(texte, /console\.cloud\.google\.com/i, "l'adresse de la console Google n'est pas donnée");
+  });
+
+  await cas("le planning propose de relier l'agenda, là où le manque se constate", async () => {
+    // **Sa demande, textuellement :** *« dans planning il faut un petit bouton
+    // connecter son agenda Google cliquable. »* Le laisser au fond des réglages
+    // revenait à demander à quelqu'un qui ignore le problème d'aller chercher
+    // sa solution.
+    await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
+    const lien = page.getByRole("link", { name: /Relier mon agenda Google/i });
+    await lien.waitFor({ state: "visible", timeout: 15000 });
+    await lien.click();
+    await page.getByRole("heading", { name: "Mon agenda" }).waitFor({ timeout: 15000 });
+  });
+
   await cas("l'écran ne s'effondre pas et reste lisible sur un téléphone", async () => {
+    await page.goto(`${BASE}/reglages/agenda`, { waitUntil: "domcontentloaded" });
+    await page.getByRole("heading", { name: "Mon agenda" }).waitFor({ timeout: 15000 });
     // `truncate` et les débordements sont du CSS : une vérification de texte
     // reste verte sur un écran illisible. On mesure donc la page rendue.
     const largeur = await page.evaluate(() => document.documentElement.scrollWidth);
     assert.ok(largeur <= 400, `la page déborde horizontalement (${largeur}px pour 393)`);
     const hauteur = await page.evaluate(() => document.body.getBoundingClientRect().height);
     assert.ok(hauteur > 300, `la page semble vide (${Math.round(hauteur)}px de haut)`);
+  });
+
+  await cas("le bouton « Enregistrer » n'est couvert par rien", async () => {
+    // **Ce que seule une mesure attrape.** La barre de navigation et la bulle
+    // d'assistance sont en position fixe : elles flottent au-dessus du contenu.
+    // Un bouton dessous reste dans le HTML, donc vert pour toute vérification
+    // de texte — et intouchable au doigt. Trois défauts réels de ce projet
+    // étaient de cette famille (`CLAUDE.md` §5).
+    const bouton = page.getByRole("button", { name: "Enregistrer" });
+    await bouton.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+    const boite = await bouton.boundingBox();
+    assert.ok(boite, "le bouton « Enregistrer » n'a pas de place à l'écran");
+    const dessus = await page.evaluate(
+      `(() => {
+        var r = ${JSON.stringify(boite)};
+        var el = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+        return el ? el.tagName + " " + String(el.className).slice(0, 60) : "rien";
+      })()`
+    );
+    assert.match(
+      String(dessus),
+      /BUTTON/,
+      `quelque chose recouvre le bouton « Enregistrer » : ${dessus}`
+    );
   });
 
   await navigateur.close();

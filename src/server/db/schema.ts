@@ -1082,6 +1082,17 @@ export const agendasExternes = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     entrepriseId: uuid("entreprise_id").notNull(),
     fournisseur: text("fournisseur", { enum: ["google"] }).notNull(),
+    /**
+     * Les identifiants de l'application chez Google, saisis par l'artisan
+     * lui-même (migration 0033, sur sa demande du 9 août 2026).
+     *
+     * `clientId` en clair — il figure dans l'adresse de consentement que son
+     * navigateur affiche. `clientSecret` chiffré : il ne suffit pas à ouvrir un
+     * compte, mais il permet d'usurper l'application auprès de Google.
+     */
+    clientId: text("client_id"),
+    clientSecret: text("client_secret"),
+    redirection: text("redirection"),
     /** L'adresse du compte relié, pour que l'artisan sache LEQUEL il a branché. */
     compte: text("compte"),
     jetonAcces: text("jeton_acces"),

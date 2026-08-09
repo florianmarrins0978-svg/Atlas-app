@@ -19,6 +19,10 @@ async function main() {
   await page.click('button[type="submit"]');
   await page.waitForURL(`${BASE}/`, { timeout: 20000 });
 
+  await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(1200);
+  await page.screenshot({ path: `${OUT}/00-planning.png`, fullPage: true });
+
   await page.goto(`${BASE}/reglages`, { waitUntil: "domcontentloaded" });
   await page.getByRole("link", { name: /Mon agenda/i }).waitFor({ timeout: 15000 });
   await page.screenshot({ path: `${OUT}/01-reglages.png`, fullPage: true });

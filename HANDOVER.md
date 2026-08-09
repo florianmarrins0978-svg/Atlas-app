@@ -40,6 +40,22 @@ C'est la forme de défaut la plus coûteuse du produit : personne ne relit un
 champ qui a l'air juste.
 
 
+**Les identifiants Google se saisissent DANS l'application (9 août).** Écran
+« Mon agenda », trois cases. Ceux de l'entreprise priment sur les variables
+d'installation, qui restent en repli. **Trois règles à ne pas défaire** :
+« configuré » n'est pas « relié » (entre le collage et le retour de Google, rien
+n'est autorisé) ; changer d'identifiants efface les jetons (ils appartiennent à
+l'autre projet Google) ; un secret vide conserve l'ancien (Google ne le remontre
+jamais). `ARCHITECTURE.md` §41.
+
+**L'agenda lit aussi les intitulés (9 août).** La portée est passée de
+`freebusy` à `events.readonly` sur sa demande. **Ce qui n'est pas négociable :**
+l'intitulé est FACULTATIF dans `PeriodeOccupee` et n'entre dans aucun calcul —
+c'est ce qui garantit qu'il ne peut pas se glisser vers la page du client, qui
+ne reçoit que des dates. Attention aux trois pièges d'`events.list` :
+`singleEvents` pour déplier les séries, la fin exclusive des événements « toute
+la journée », et les événements annulés ou « disponible » à écarter.
+
 **L'agenda extérieur, au choix de l'artisan (9 août).** Atlas peut tenir compte
 d'un agenda Google, si l'artisan le relie. **Avant ce lot, un rendez-vous noté
 ailleurs était invisible** : Atlas proposait ce jour-là et le client le

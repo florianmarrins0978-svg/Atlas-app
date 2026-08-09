@@ -1,0 +1,55 @@
+-- Les identifiants Google se saisissent DANS l'application, plus dans un fichier.
+--
+-- **Le patron, le 9 août 2026 :** *« dans planning il faut un petit bouton
+-- connecter son agenda Google cliquable pour rentrer ses identifiants et le
+-- connecter si on le souhaite. »*
+--
+-- =========================================================================
+-- Ce que ce changement débloque, et pourquoi il valait une migration
+-- =========================================================================
+--
+-- La veille, le raccordement attendait trois variables d'environnement
+-- (`ATLAS_GOOGLE_CLIENT_ID`, `..._SECRET`, `..._REDIRECTION`). Conséquence : le
+-- patron créait bien son projet chez Google, obtenait ses identifiants… et
+-- devait ensuite les faire poser par quelqu'un sur le serveur. Le point restait
+-- bloqué chez moi alors qu'il avait fait sa part.
+--
+-- Il les colle maintenant dans l'écran « Mon agenda ». Le raccordement cesse
+-- d'être une affaire d'installation pour devenir ce qu'il avait demandé : un
+-- choix de l'artisan, qu'il fait seul, quand il veut.
+--
+-- =========================================================================
+-- Le secret est chiffré, comme les jetons
+-- =========================================================================
+--
+-- `client_secret` n'ouvre pas un compte à lui seul — il faut aussi que
+-- l'artisan ait donné son accord. Mais il permet d'usurper l'application
+-- auprès de Google, et c'est bien assez pour ne pas le laisser en clair dans
+-- une sauvegarde (`src/server/agenda/secret-au-repos.ts`).
+--
+-- `client_id`, lui, reste en clair : il figure dans l'adresse de consentement
+-- que le navigateur de l'artisan affiche. Le chiffrer donnerait l'illusion de
+-- protéger une donnée qui est publique par construction.
+--
+-- =========================================================================
+-- Pourquoi ces colonnes vivent sur la ligne du raccordement
+-- =========================================================================
+--
+-- Une table à part aurait séparé deux choses qui n'existent jamais l'une sans
+-- l'autre, et obligé chaque lecture à joindre. Surtout : elles partagent la
+-- même vie. Débrancher l'agenda efface la ligne, donc les identifiants avec —
+-- ce qui est le comportement attendu de « débrancher et effacer ».
+--
+-- La ligne peut donc exister AVEC des identifiants et SANS jetons : c'est
+-- l'état « configuré, pas encore relié », entre le collage des identifiants et
+-- le retour de chez Google.
+
+ALTER TABLE "agendas_externes"
+  ADD COLUMN "client_id" text,
+  ADD COLUMN "client_secret" text,
+  -- L'adresse de retour, telle que déclarée chez Google. Stockée plutôt que
+  -- déduite : l'artisan doit la recopier À L'IDENTIQUE dans la console, et
+  -- Google refuse au moindre écart — un « http » contre « https », un « / » en
+  -- trop. La garder permet à l'écran de lui montrer exactement ce qu'il a posé,
+  -- au lieu de le laisser deviner ce que le serveur a calculé de son côté.
+  ADD COLUMN "redirection" text;

@@ -42,6 +42,24 @@ export type PeriodeOccupee = {
   debut: Date;
   /** Instant de fin, en UTC. Exclusive : un rendez-vous 9h–12h finit à 12h00. */
   fin: Date;
+  /**
+   * Ce que l'agenda appelle ce rendez-vous — **pour SON écran, jamais pour le
+   * client.**
+   *
+   * Ajouté le 9 août 2026 sur sa demande : *« si, il doit lire les intitulés
+   * aussi ! »* Un artisan qui note « élagage chez Mme Roux » veut le retrouver
+   * sur son planning, pas une case grise sans nom.
+   *
+   * **Facultatif, et il faut qu'il le reste.** Tout ce qui décide — quelles
+   * demi-journées sont prises, quels jours sont proposables — se calcule sur
+   * `debut` et `fin` seuls. L'intitulé n'entre dans aucun calcul : il s'affiche,
+   * ou il ne s'affiche pas. C'est ce qui garantit qu'il ne peut pas se glisser
+   * dans ce qui part chez le client (`docs/AGENT.md` §2.2 bis) — la page
+   * publique reçoit des dates, et le type qu'elle manipule ne porte que ça.
+   */
+  intitule?: string | null;
+  /** Un événement « toute la journée » — un congé, un stage. */
+  journeeEntiere?: boolean;
 };
 
 /**

@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-09
 
+### L'agenda dit AUSSI ce qu'il y a, et les identifiants se collent dans l'appli
+
+*« Si, il doit lire les intitulés aussi ! »* et *« dans planning il faut un
+petit bouton connecter son agenda Google cliquable pour rentrer ses
+identifiants. »*
+
+**Les intitulés.** J'avais restreint la permission aux seuls créneaux occupés,
+en me disant qu'une permission qu'on ne demande pas est une fuite qui ne peut
+pas arriver. Le raisonnement tenait, mais il répondait à une question que
+personne n'avait posée : une case grise apprend qu'on est pris, pas *pourquoi*
+— et c'est ce pourquoi qui sert à décider. Le planning affiche désormais
+« Élagage chez Mme Roux » et « Dentiste », avec leurs horaires.
+
+**Ce qui n'a pas bougé, et qui ne bougera pas :** le client ne reçoit que des
+dates. Ce n'est pas votre vie privée qui est en cause là, c'est celle de vos
+autres clients.
+
+**Les identifiants.** Ils s'attendaient jusqu'ici dans la configuration du
+serveur — autrement dit, vous faisiez votre part chez Google et restiez bloqué
+faute de pouvoir les poser. Trois cases dans l'écran « Mon agenda », et vous
+n'avez plus besoin de personne. Le secret est masqué à la frappe, chiffré en
+base, et vous pouvez le laisser vide pour corriger une adresse : Google ne le
+remontre jamais, exiger de le ressaisir serait une impasse.
+
+**Et le bouton est dans le Planning**, là où le manque se constate — pas au fond
+des réglages. Il disparaît quand tout va bien : un bandeau permanent sur
+l'écran le plus consulté devient du décor, et le jour où il annonce une panne,
+personne ne le lit.
+
+
 ### La note vocale comprend un numéro sans qu'on l'annonce
 
 *« Lorsque je remplis avec la note vocale, si je ne dis pas "numéro de téléphone

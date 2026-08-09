@@ -2,8 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerProprietaire } from "@/server/autorisation";
-import { adresseDuCompte, configurationGoogle, echangerCode } from "@/server/agenda/google";
-import { enregistrerRaccordement } from "@/server/repositories/agendas-externes";
+import { adresseDuCompte, echangerCode } from "@/server/agenda/google";
+import {
+  configurationDeLEntreprise,
+  enregistrerRaccordement,
+} from "@/server/repositories/agendas-externes";
 import { TEMOIN_ETAT_AGENDA } from "@/app/reglages/agenda/temoin";
 
 /**
@@ -42,12 +45,11 @@ export async function GET(requete: NextRequest) {
   const etat = params.get("state") ?? "";
   if (!code || !etat || !attendu || etat !== attendu) return versReglages("etat");
 
-  const config = configurationGoogle();
-  if (!config) return versReglages("non_configure");
-
   try {
     const ctx = await getCurrentCtx();
     await exigerProprietaire(ctx, "relier un agenda");
+    const config = await configurationDeLEntreprise(ctx);
+    if (!config) return versReglages("non_configure");
     const jetons = await echangerCode(config, code);
     // L'adresse du compte est un confort — savoir LEQUEL est branché. Elle ne
     // doit pas faire échouer le raccordement si Google ne la rend pas.

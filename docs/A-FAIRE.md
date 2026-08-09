@@ -596,19 +596,28 @@ qu'à la page du client, qui reçoit des dates et rien d'autre
 
 ### Ce que je peux faire, et ce que je ne peux pas
 
-**Moi, une fois les identifiants créés :** tout le reste. Le bouton « Relier mon
-agenda » dans les réglages, le raccordement du compte, la lecture des créneaux
-occupés, leur fusion avec les chantiers Atlas **dans la même fonction de
-disponibilité** — jamais un second calcul à côté, sinon les deux divergent et
-plus personne ne sait lequel croit quoi — et l'écriture de l'intervention une
-fois le client d'accord.
+> **Mise à jour du 9 août 2026 — tout est écrit, il ne manque que vos
+> identifiants.** L'écran « Mon agenda », le bouton dans le Planning, le
+> stockage chiffré, la lecture des créneaux **et de leurs intitulés**, la fusion
+> dans la disponibilité, les deux chemins du client : c'est fait et éprouvé
+> (`ARCHITECTURE.md` §39 et §41).
+>
+> **Et vous n'avez plus besoin de moi pour la suite.** Les identifiants se
+> collent directement dans l'écran « Mon agenda » — trois cases. Ils attendaient
+> auparavant dans la configuration du serveur, ce qui vous laissait bloqué après
+> avoir fait votre part chez Google.
 
-**Moi, avant :** je peux écrire le lot entier derrière un interrupteur fermé,
-comme c'est déjà fait pour l'éditeur (`ATLAS_EDITEUR_EMAIL`). Il s'allumerait le
-jour où vous posez les identifiants. **Mais je ne pourrais pas l'éprouver** : sans
-compte Google raccordé, aucun contrôle ne parcourt ce que vous parcourriez, et
-c'est exactement ce que le dépôt s'interdit de livrer en le disant vert
-(`AGENTS.md`). À vous de dire si vous voulez du code écrit mais non éprouvé.
+**Ce que je ne peux toujours pas faire à votre place :** créer le projet Google
+et accepter ses conditions. Cela vous engage, comme l'hébergement au point 3 et
+l'outil de facturation au point 6.
+
+**Et ce que je n'ai pas pu éprouver ici, dit noir sur blanc :** l'aller-retour
+réel avec Google — l'autorisation, l'échange du code, le renouvellement du
+jeton. Cet environnement n'a pas de compte Google et son réseau refuse ses
+adresses. Tout ce qui *décide* de quelque chose a été sorti de ce chemin-là
+exprès ; il ne reste que trois appels et la lecture de leurs réponses. **Le
+premier vrai raccordement sera donc le premier essai** : si Google refuse, son
+message s'affichera tel quel à l'écran plutôt que d'être deviné.
 
 **Ce que je ne peux pas faire à votre place :** créer le projet Google et
 accepter ses conditions. Comme l'hébergement au point 3 et l'outil de facturation
