@@ -378,40 +378,30 @@ async function main() {
     assert.deepEqual(lancements, [], `le serveur est encore lancé sans veilleur : ${lancements.join(" | ")}`);
   });
 
-  await cas("ce que le premier passage a constaté survit à l'`exec`", () => {
-    // **Le défaut le plus grave trouvé ce jour-là, et il annulait le correctif
-    // du matin.** `demarrer.sh` se relance dans sa version neuve après une mise
-    // à jour. Le second passage recalcule tout : la mise à jour répond alors
-    // « à jour », et `MIGRATIONS` n'existe plus du tout. Or l'avertissement
-    // « LA BASE N'A PAS SUIVI LE CODE » ne se déclenche QU'APRÈS une mise à
-    // jour — c'est-à-dire exactement dans le cas où l'`exec` effaçait la
-    // variable. Il ne pouvait donc plus jamais s'afficher.
-    // **Ce cas a d'abord été un faux vert, et c'est instructif.** Écrit avec
-    // `indexOf`, il trouvait la ligne même mise en commentaire : j'ai retiré la
-    // transmission pour l'éprouver, et il est resté au vert. Un contrôle qui ne
-    // sait pas échouer ne prouve rien (`AGENTS.md`) — on ne cherche donc que
-    // dans les lignes qui s'exécutent, et on raisonne en numéros de ligne.
+  await cas("le constat des migrations arrive intact jusqu'au bandeau", () => {
+    // **Ce cas éprouvait la survie d'un `exec` qui n'existe plus.** Le script se
+    // relançait dans sa version neuve, et le second passage recalculait tout :
+    // « Déjà à jour » juste après une mise à jour, et surtout l'avertissement
+    // « LA BASE N'A PAS SUIVI LE CODE » qui ne pouvait PLUS JAMAIS s'afficher.
+    //
+    // L'`exec` a été retiré le soir même, pour une raison plus grave encore :
+    // c'était l'endroit précis où le démarrage du patron mourait. Le constat
+    // arrive donc désormais au bandeau sans traverser quoi que ce soit — et
+    // c'est cela qu'on vérifie, plutôt que la mécanique qui le transportait.
     const lignes = readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8")
       .split("\n")
       .map((texte, numero) => ({ numero, texte: texte.trim() }))
       .filter((l) => !l.texte.startsWith("#"));
     const ou = (motif: RegExp) => lignes.find((l) => motif.test(l.texte))?.numero ?? -1;
 
-    const iExport = ou(/^export ATLAS_MIGRATIONS=/);
-    const iExec = ou(/^exec bash/);
-    const iRepriseMigrations = ou(/^MIGRATIONS="\$\{ATLAS_MIGRATIONS:-/);
-    const iRepriseMiseAJour = ou(/^MISE_A_JOUR="\$\{ATLAS_MISE_A_JOUR:-/);
-
-    assert.ok(iExec >= 0, "le script ne se relance plus : ce cas n'éprouve plus rien.");
-    assert.ok(iExport >= 0, "le constat des migrations ne traverse pas la relance.");
-    assert.ok(iExport < iExec, "il est transmis après la relance : trop tard.");
-    assert.ok(
-      iRepriseMigrations > iExec,
-      "il n'est jamais repris après la relance : l'avertissement « LA BASE N'A PAS SUIVI » ne s'affichera plus jamais."
-    );
-    assert.ok(
-      iRepriseMiseAJour > iExec,
-      "le démarrage annoncera « Déjà à jour » juste après avoir mis à jour."
+    const iPose = ou(/^MIGRATIONS="\$\(bash/);
+    const iAvertissement = ou(/LA BASE N'A PAS SUIVI LE CODE/);
+    assert.ok(iPose >= 0, "les migrations ne sont plus jouées au démarrage");
+    assert.ok(iAvertissement > iPose, "l'avertissement ne peut plus voir le constat des migrations");
+    assert.deepEqual(
+      lignes.filter((l) => /^exec bash "\$0"/.test(l.texte)),
+      [],
+      "la relance est revenue : c'est là que le démarrage mourait"
     );
   });
 
