@@ -78,6 +78,13 @@ const MAQUETTES = [
     quoi: "Le premier écran de 05, avec le pied d’Aman et le trait qui ferme l’en-tête.",
     retenu: true,
   },
+  {
+    fichier: "10-le-calme-en-couleurs.html",
+    titre: "Les deux retenus, en seize chartes",
+    famille: "Vers la décision",
+    quoi: "La même paire d’écrans, seize fois : les neuf chartes déjà vues, plus sept qui vont jusqu’à cinq teintes.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
@@ -183,7 +190,7 @@ function confinerCss(css, hote) {
 // Les identifiants que les scripts vont chercher : ils sont dupliqués d'un
 // fichier à l'autre, donc préfixés. Ceux d'un SVG (#feuille, #vert) sont
 // uniques et référencés par <use>/url() : on n'y touche pas.
-const IDS_A_PREFIXER = ["modele", "duo", "trio", "g1", "g2", "g3"];
+const IDS_A_PREFIXER = ["modele", "duo", "trio", "g1", "g2", "g3", "chartes", "ecran"];
 
 function lire(maquette, indice) {
   const numero = String(indice + 1).padStart(2, "0");

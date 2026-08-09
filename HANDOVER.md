@@ -59,9 +59,14 @@ huit fois dans le vide avant qu'on s'en aperçoive.
 
 **Le design de l'écran Chantiers n'est PAS tranché.** L'application porte
 toujours la reproduction de sa première capture (§46). La direction minimaliste
-— ivoire, serif, capitales espacées — n'existe qu'en maquette. Il a retenu la
-mise en page « la colonne » et gardé trois de ses déclinaisons, sans encore
-choisir laquelle. **Rien à coder tant qu'il n'a pas désigné celle-là.**
+— ivoire, serif, capitales espacées — n'existe qu'en maquette.
+
+**Où en est son choix, au 9 août au soir :** il a validé les DEUX écrans de la
+maquette 09 (« Le calme × Aman » avec le pied d'Aman et le trait qui ferme
+l'en-tête) — l'un avec le trait seul, l'autre avec le chapeau de la colonne en
+plus. Il n'a tranché ni entre ces deux-là, ni la couleur : la maquette 10 les
+décline en seize chartes. **Rien à coder tant qu'il n'a pas désigné un écran
+ET une charte.**
 
 **L'écran Chantiers est refait d'après une maquette du patron (9 août).** Il a
 demandé une reproduction, pas une interprétation.

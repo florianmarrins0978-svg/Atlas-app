@@ -36,6 +36,23 @@ dégradés, il nomme le bon coupable à chaque fois : une ancre morte, un lien
 vers l'extérieur — le défaut d'origine, précisément — et une feuille de style
 qui ne s'applique plus.
 
+### Les deux écrans retenus, déclinés en seize chartes
+
+Le patron valide les deux écrans de la maquette 09 et demande à les voir dans
+toutes les couleurs déjà employées, plus des chartes franchement colorées :
+*« tu peux même rajouter plus que trois couleurs »*.
+
+Seize chartes, deux écrans chacune, engendrés depuis un gabarit unique — les
+neuf du nuancier, plus sept nouvelles. Ces sept-là portent **cinq** teintes au
+lieu de trois : la cinquième, `--e-attente`, ne colore que les états qui
+réclament un geste de lui. C'est la seule couleur de l'écran qui veuille dire
+quelque chose ; sans cette règle, ajouter des teintes rend l'écran bavard —
+exactement le défaut qu'il reproche aux tableaux de bord.
+
+Un contrôle mesure, pour chacun des trente-deux écrans, que la barre du bas
+tient dans le téléphone. La leçon du 9 août : c'est en lisant une BOÎTE, pas
+en regardant une image, qu'on avait trouvé la barre de 425 px sur 393.
+
 ### Le premier écran de « Le calme × Aman », avec deux emprunts
 
 Le patron reprend le premier des deux écrans de la maquette 05 et demande deux
