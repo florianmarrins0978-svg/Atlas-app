@@ -45,6 +45,17 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**Le démarrage lance le serveur AVANT la mise à jour (9 août, au soir).** Son
+journal s'arrêtait sur « migrations : faites » et rien n'écoutait : le lancement
+venait en dernier, et `postStartCommand` était interrompu avant. Deux heures
+perdues à chercher ailleurs.
+
+**Avant de toucher à `.devcontainer/demarrer.sh` :** `lancer_veilleur` doit
+rester AVANT `mettre-a-jour.sh`, et l'`exec bash "$0"` ne doit pas revenir —
+c'était l'endroit exact où le démarrage mourait. Le code neuf prend effet par le
+redémarrage du veilleur, pas par une relance du script. Éprouvé en tuant le
+démarrage à cinq secondes. `ARCHITECTURE.md` §45.
+
 **Le banc sert une version BÂTIE, plus un serveur de développement (9 août).**
 Après dix-sept heures de 504, 404, 502 et ports en conflit, le patron : *« On
 arrête de tourner en rond, corrige-moi ça une bonne fois pour toutes. »* Tous

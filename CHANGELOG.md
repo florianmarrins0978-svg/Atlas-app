@@ -155,6 +155,23 @@ lit « Une erreur ». Même famille que « Invalid Server Actions request. ».
 du serveur de développement : éprouver autre chose que ce qu'on livre, c'est ne
 rien éprouver.
 
+### Le lancement passait en dernier — donc il ne passait pas
+
+Le journal du patron s'arrêtait net sur « migrations : faites », et
+`localhost:3000` ne répondait rien. L'application n'était ni lente ni cassée :
+**elle n'avait jamais été lancée.** Deux heures de pages blanches, de 502 et de
+404 — et j'ai cherché du côté du mandataire, du port, du navigateur, partout
+sauf au bon endroit.
+
+`demarrer.sh` mettait à jour, installait, migrait, se relançait, **puis**
+lançait le serveur. Joué par `postStartCommand`, que l'environnement peut
+interrompre : le lancement venant en dernier, il ne survivait pas.
+
+Le veilleur est désormais posé **en premier**. Le serveur monte avec le code du
+disque, et n'est remplacé qu'une fois la mise à jour terminée. Éprouvé en tuant
+le démarrage à cinq secondes : le serveur est debout vingt-six secondes plus
+tard, en version bâtie.
+
 
 ### Une base restée en arrière, et rien pour le dire
 
