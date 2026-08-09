@@ -79,6 +79,22 @@ Le contrôle du premier point a d'abord été un **faux vert** : écrit avec
 `indexOf`, il trouvait la ligne mise en commentaire. Corrigé, puis éprouvé
 rouge sur les deux moitiés.
 
+### Et la cause première du 404, trouvée en dernier
+
+`npx next dev` n'est qu'une pile d'enveloppes : le processus qui écoute
+vraiment se **renomme** `next-server`. Le `pkill -f "next dev"` du démarrage —
+présent depuis le début — tuait donc les enveloppes et laissait le vrai serveur
+orphelin, **accroché au port 3000**. Le suivant ne pouvait plus s'y attacher, et
+l'orphelin servait un cache périmé : toutes les pages en 404, y compris la
+santé, ce qui rendait le diagnostic incompréhensible.
+
+Trouvée en regardant les processus de la machine, et reproduite sans le vouloir
+en éprouvant le veilleur.
+
+Le veilleur traite en outre le cas qu'il ne voyait pas : un serveur **présent
+mais muet**, que `pgrep` trouvait — donc aucune relance, et une boucle qui
+tournait pour rien. Il est maintenant délogé après deux tours.
+
 
 ### Une base restée en arrière, et rien pour le dire
 

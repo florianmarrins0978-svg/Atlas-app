@@ -45,6 +45,18 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**La cause première du 404, et elle était là depuis le début (9 août).**
+`npx next dev` n'est qu'une pile d'enveloppes : le processus qui écoute se
+**renomme** `next-server`. Le `pkill -f "next dev"` du démarrage tuait donc les
+enveloppes et laissait le vrai serveur orphelin, accroché au port — le suivant
+ne pouvait plus s'y attacher, et l'orphelin servait un cache périmé : toutes les
+pages en 404, santé comprise.
+
+**Avant de toucher à un `pkill` dans ce dépôt :** viser `[n]ext(-server| dev)`,
+jamais `next dev` seul. Et ne jamais mettre le motif et une occurrence littérale
+dans la même commande — le shell qui la porte se tue lui-même (arrivé deux fois
+en une soirée). `ARCHITECTURE.md` §44.
+
 **Le banc se relève seul, et compile ses écrans d'avance (9 août).** Le patron
 a lu deux pages d'erreur coup sur coup, et **aucune n'était une lenteur** :
 « HTTP ERROR 504 » parce que `next dev` compilait l'écran pendant qu'il
