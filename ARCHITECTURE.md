@@ -2026,3 +2026,274 @@ disant ce qu'il écarte**.
 |---|---|
 | Les trois en-têtes tiennent dans le budget, à la coupe près | `scripts/test-consigne-metier.ts` |
 | Le contrôle sait échouer | Vérifié en remettant la déduction après coup : deux cas rouges |
+
+---
+
+## 39. L'agenda extérieur : le seul endroit où Atlas pouvait promettre à vide
+
+**Le patron, le 9 août 2026 :** *« ce qui serait bien, c'est que l'utilisateur
+puisse, s'il le souhaite ou non, connecter son planning à son agenda Google. »*
+
+### Le défaut, et pourquoi il était d'une autre nature que les autres
+
+Atlas déduisait les jours libres des **seuls chantiers qu'il connaissait**. Un
+rendez-vous noté ailleurs était invisible : Atlas proposait ce jour-là, le
+client le choisissait, et l'artisan découvrait le doublon le matin même — devis
+parti, date acceptée, promesse faite.
+
+Partout ailleurs dans le parcours, quand Atlas ne sait pas, **il s'arrête et
+demande** (`docs/AGENT.md` §3). Ici, il ne savait pas qu'il ne savait pas. C'est
+le seul point où il engageait l'artisan sur une information qu'il n'avait pas.
+
+### Ce que sa phrase a tranché, et qui commande toute la conception
+
+| Sa décision | Ce qu'elle impose dans le code |
+|---|---|
+| *« s'il le souhaite ou non »* | Une **table par entreprise** (`agendas_externes`), pas une variable d'environnement — qui vaudrait pour tout le monde et supprimerait le « ou non » |
+| Le raccordement appartient à l'artisan | Le jeton vit en base sous RLS, comme toute donnée d'entreprise |
+| Rien n'est imposé | Sans ligne, **aucun appel réseau, aucun changement** — l'Atlas d'avant, à l'octet près |
+
+### Une seule carte d'occupation, et trois portes qui la lisent
+
+Les rendez-vous se fondent dans la **même** `Map` que les chantiers, via
+`fusionnerOccupationExterne`. Tout ce qui décide ensuite — jours suggérés, jours
+barrés sur son calendrier, revérification de la réponse du client — la lit sans
+savoir d'où vient l'occupation.
+
+Ce n'est pas de l'élégance : un second calcul posé à côté finit toujours par
+diverger, et c'est exactement ce dédoublement qui avait rangé un chantier dans
+deux onglets à la fois (§33).
+
+**Le client aussi passe par là**, et il le fallait : c'est lui qui retient la
+date. Ne consulter l'agenda que du côté du patron laissait le trou ouvert par
+l'autre bout. Les deux chemins publics — lire le lien, enregistrer la réponse —
+dérivent l'entreprise **du jeton**, jamais d'une donnée envoyée par le client.
+
+### Trois choix qui se discutent, et qui sont donc écrits
+
+**1. Le moindre chevauchement condamne la demi-journée.** Un rendez-vous de
+trente minutes à 10 h ne laisse pas une matinée exploitable à un élagueur —
+charger, rouler, grimper. Le risque n'est pas symétrique : bloquer un peu trop
+coûte un créneau proposé en moins ; ne pas bloquer assez coûte une promesse.
+
+**2. Un rendez-vous SATURE le créneau**, là où un chantier n'y consomme qu'une
+équipe. Le nombre d'équipes dit combien de chantiers tournent en parallèle, pas
+combien de fois l'artisan peut être à deux endroits. Atlas ne sait pas si une
+équipe part sans lui, et le supposer reprendrait le pari qu'on supprime.
+
+**3. Hors 8 h – 18 h, rien n'est bloqué.** Un dîner à 20 h ne coûte pas une
+journée : Atlas ne planifie pas de chantier à ces heures-là.
+
+### Ce qui n'est jamais demandé, ni stocké, ni exporté
+
+| | Décision |
+|---|---|
+| **Portée Google** | `calendar.freebusy` seule — elle ne rend que des intervalles. `calendar.readonly` aurait été plus simple et aurait donné à Atlas le contenu de tous les rendez-vous. Une permission qu'on ne demande pas est une fuite qui ne peut pas arriver |
+| **En base** | Aucun événement, aucun intitulé, aucune heure. Atlas interroge et ne garde rien |
+| **Les jetons** | Chiffrés en AES-256-GCM avant écriture. La RLS protège d'un autre artisan, pas d'une sauvegarde recopiée — et un jeton de rafraîchissement n'est pas une donnée, il **ouvre un compte**, durablement |
+| **L'export téléchargeable** | Les colonnes de jetons ne sont **pas sélectionnées** — pas filtrées après coup. Ce fichier s'envoie par courriel |
+
+Ce que le chiffrement ne fait **pas** : la clé se dérive d'`AUTH_SECRET`. Qui
+obtient la base *et* la configuration lit tout. Ce n'est pas un coffre-fort,
+c'est une protection contre le cas courant où **seule la base** fuit.
+
+### La panne se voit, elle ne se tait pas
+
+Une lecture qui échoue — accès révoqué, quota, réseau — n'interrompt jamais le
+parcours : Atlas revient à son comportement d'avant. **Mais l'échec s'écrit**
+(`derniere_erreur`) et l'écran l'affiche. Un raccordement mort en silence est
+pire que pas de raccordement : l'artisan se croit protégé du doublon et ne
+l'est plus.
+
+### Ce que ce lot a coûté d'apprendre
+
+**Un module `"use server"` ne peut exporter QUE des fonctions asynchrones.** Y
+avoir ajouté la constante du témoin anti-rejeu n'a pas produit une erreur sur
+elle seule : le module a perdu **tous** ses exports, et l'écran est tombé sur
+« The module has no exports at all ». Ni `tsc` ni le lint ne l'ont vu — les deux
+étaient verts. Seule la suite navigateur l'a attrapé, en ouvrant vraiment la
+page. La constante vit désormais dans `temoin.ts`.
+
+**Et le titre de l'écran mentait.** La capture montrait « Atlas tient compte de
+votre agenda » avec, trois lignes dessous, « Atlas n'arrive plus à lire votre
+agenda » : le cas de panne était traité *après* le cas nominal, donc jamais
+atteint. Aucun test ne pouvait le voir — la phrase vivait dans le JSX. Elle est
+maintenant `titreEtatAgenda()`, une fonction pure, et **l'ordre des cas est la
+règle** : panne, puis pause, puis nominal.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| Quelles demi-journées un rendez-vous occupe, fuseau et heure d'hiver compris | `scripts/test-agenda-externe.ts` |
+| La fusion : bloque, ne double-compte pas, n'écrase pas le planning, ne mute rien | idem |
+| Le titre de l'écran ne ment pas sur l'état réel | idem |
+| Isolation entre artisans, jetons jamais en clair, export sans jetons | `scripts/test-agenda-externe-rls.ts` |
+| La lecture d'une réponse `freeBusy`, et la portée minimale | `scripts/test-agenda-google-lecture.ts` |
+| L'écran se trouve, dit le risque, et ne propose rien qui mène à une erreur | `scripts/test-agenda-reglages-e2e.ts` |
+
+**Ce qui n'est PAS éprouvé, et doit être dit :** l'aller-retour réel avec Google
+— autorisation, échange du code, renouvellement du jeton. Cet environnement n'a
+pas de compte Google et son mandataire refuse ses adresses. Cela se vérifiera
+sur la machine du patron, le jour où il aura créé les identifiants
+(`docs/A-FAIRE.md` §7). Tout ce qui *décide* de quelque chose a été sorti de ce
+chemin-là exprès, pour que la part non vérifiable se réduise à trois appels HTTP
+et à la lecture de leurs réponses.
+
+---
+
+## 40. La note vocale et les chiffres dits en toutes lettres
+
+**Le patron, le 9 août 2026 :** *« lorsque je remplis avec la note vocale, si je
+ne dis pas "numéro de téléphone 0670…", il ne comprend pas que c'est un numéro
+de téléphone. Pareil pour le mail et les autres infos. Il faut qu'il capte même
+si je ne précise pas. »*
+
+### Le défaut n'était pas celui qu'il décrivait — et c'est le point
+
+Il attribuait l'échec à l'absence d'annonce. **La reconnaissance de forme ne
+l'a jamais exigée** : elle cherche un motif de chiffres, pas une phrase
+d'introduction.
+
+Ce qui manquait est ailleurs : le service de transcription écrit parfois les
+chiffres **en toutes lettres**. « Zéro six douze trente-quatre cinquante-six
+soixante-dix-huit » ne contient aucun chiffre, donc aucune expression régulière
+ne pouvait y voir un numéro. Quand il annonçait « numéro de téléphone », le
+**modèle de langue** comprenait et rattrapait ; sans l'annonce, plus rien ne
+rattrapait — et l'échec paraissait venir de l'annonce.
+
+C'est un rappel de la règle du dépôt : *reproduire le message du serveur, jamais
+l'idée qu'on s'en fait* (`AGENTS.md`). Ici, corriger « le défaut annoncé »
+aurait consisté à améliorer la consigne du modèle, ce qui n'aurait rien réglé
+pour les dictées où il n'annonce pas.
+
+### La règle de lecture, et pourquoi le trait d'union commande
+
+`src/lib/nombres-dictes.ts` rend les chiffres aux mots-nombres, **avant** toute
+reconnaissance de forme. Un numéro se dit par groupes, et chaque groupe vaut un
+ou deux chiffres selon sa valeur : « zéro / six / douze » → `0`, `6`, `12`.
+
+Deux régimes, et c'est **la transcription qui choisit**, jamais nous :
+
+| Ce qu'elle écrit | Ce qu'on en fait | Pourquoi |
+|---|---|---|
+| Avec traits d'union — « soixante-dix quatre-vingts » | On la suit mot à mot : 70, 80 | Elle a déjà découpé. Recoller par-dessus donnait « quatre-vingts quatre » → 84, et un numéro faux de bout en bout |
+| Sans aucun tiret — « soixante dix huit » | On recolle, au plus long | Elle n'a pas découpé : « zero six douze trente quatre… » n'a de sens qu'en regroupant |
+
+**Deux pièges de la langue, payés chacun d'une correction :** 70 et 90 sont déjà
+composés, leur ajouter une unité produisait 74 au lieu de deux nombres ; et
+« cent » a été retiré du vocabulaire reconnu — aucun numéro ne se dicte en
+centaines, et l'accepter réécrivait « mille deux cents » en « mille 2100 ».
+
+**Ce que la réécriture ne touche pas :** la transcription montrée au patron et
+celle envoyée au modèle. Elle ne sert qu'à la reconnaissance de forme. Deux
+nombres séparés par un mot ordinaire restent séparés — « deux chênes de vingt
+mètres » ne produit jamais de numéro.
+
+### Deux défauts trouvés en cherchant le sien, de la pire espèce
+
+Ni l'un ni l'autre ne laissait un champ vide : tous deux remplissaient le champ
+avec quelque chose de **faux et de vraisemblable**. Un champ vide se voit et se
+corrige ; un champ crédible part avec le devis.
+
+| Dictée | Avant | Après |
+|---|---|---|
+| `0033 6 12 34 56 78` | **0336123456** — dix chiffres, pas ceux du client | `+33612345678` |
+| « florian tiret martins arobase gmail point com » | **martins@gmail.com** — le prénom saute | `florian-martins@gmail.com` |
+
+Le premier venait de l'ordre des branches d'une alternance : `0` était essayé
+avant `0033`, et la lecture démarrait au deuxième zéro. Le second, de l'absence
+des mots « tiret » et « souligné » dans les signes épelés à voix haute.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| Numéro dicté en lettres, avec ou sans traits d'union, panaché de chiffres | `scripts/test-coordonnees-dictees.ts` |
+| Les nombres du chantier ne deviennent jamais un numéro | idem |
+| `0033` non raboté, un numéro trop long refusé plutôt que coupé | idem |
+| Tiret et souligné épelés, sous leurs trois noms | idem |
+| Les contrôles savent échouer | Vérifié sur l'ancienne lecture : 9 cas rouges |
+
+---
+
+## 41. Les intitulés de l'agenda, et les identifiants entre ses mains
+
+Deux corrections apportées par le patron, le 9 août 2026, sur le lot de la
+veille (§39).
+
+### « Si, il doit lire les intitulés aussi ! »
+
+J'avais choisi la portée `calendar.freebusy` — celle qui ne rend que des
+intervalles — en me disant qu'une permission qu'on ne demande pas est une fuite
+qui ne peut pas arriver. Le raisonnement tenait ; **il répondait à une question
+que personne n'avait posée.**
+
+Un artisan qui note « élagage chez Mme Roux » dans son agenda veut le retrouver
+sur son planning. Une case grise sans nom lui apprend qu'il est pris, pas
+*pourquoi* — et c'est ce pourquoi qui lui sert à décider. La portée passe donc à
+`calendar.events.readonly`, et l'appel de `freeBusy` à `events.list`.
+
+**Ce que l'élargissement ne prend pas :** `calendar.readonly`, plus large
+encore, donnerait aussi la liste de ses agendas, leurs partages et leurs
+réglages. Une portée en écriture permettrait à Atlas de modifier son agenda, ce
+que personne n'a demandé. Un contrôle fige la chaîne exacte, pour que le
+prochain élargissement soit décidé et non subi.
+
+**Ce que l'élargissement ne change PAS, et qui n'est pas à sa main.** La page du
+client continue de ne recevoir que des dates (`docs/AGENT.md` §2.2 bis). Ce
+n'est pas sa vie privée qui est en jeu là, c'est celle de ses autres clients.
+Le type `PeriodeOccupee` porte l'intitulé en **facultatif**, et aucun calcul ne
+le lit : tout ce qui décide — demi-journées prises, jours proposables — se fait
+sur `debut` et `fin`. Ce qui n'entre dans aucun calcul ne peut pas ressortir
+par un chemin oublié.
+
+**Trois pièges d'`events.list` que `freeBusy` masquait :**
+
+| Cas | Ce qu'il fallait faire | Ce qu'un oubli coûtait |
+|---|---|---|
+| Événement récurrent | `singleEvents=true` déplie la série | Une réunion hebdomadaire n'occupe qu'une semaine ; les autres s'affichent libres, donc proposables |
+| Événement « toute la journée » | Google rend une fin **exclusive** (14→15 pour un seul jour) | Barrer le 15, une journée qu'il aurait acceptée |
+| Événement annulé, ou marqué « disponible » | Les écarter | Barrer une journée qu'il vient de libérer, ou perdre une matinée pour un anniversaire |
+
+### « Un petit bouton connecter son agenda Google » — dans le Planning
+
+Deux choses dans cette phrase, et la seconde débloquait tout.
+
+**L'endroit.** Le raccordement se proposait au fond des réglages. Le planning
+est l'écran où le manque se constate ; y mettre le lien, c'est offrir la
+solution là où le problème apparaît. **Le bandeau disparaît quand tout va
+bien** : un bandeau permanent sur l'écran le plus consulté devient du décor, et
+le jour où il annonce une panne, personne ne le lit.
+
+**Les identifiants.** *« Pour rentrer ses identifiants »* — la veille, ils
+s'attendaient dans trois variables d'environnement. Conséquence : il créait son
+projet chez Google, obtenait ses identifiants, **et restait bloqué** faute de
+pouvoir les poser lui-même. Le point dormait chez moi alors qu'il avait fait sa
+part.
+
+Ils se collent maintenant dans l'écran, et vivent sur la ligne du raccordement
+(migration 0033). Trois décisions qui vont avec :
+
+- **Ceux de l'entreprise priment sur ceux de l'installation.** Les variables
+  restent en repli — banc d'essai, ou installation qui fournirait les
+  identifiants pour tous ses artisans.
+- **Configuré n'est pas relié.** Entre le collage des identifiants et le retour
+  de chez Google, il n'a encore rien autorisé. Confondre les deux afficherait
+  « agenda relié » à quelqu'un qui n'a rien fait.
+- **Changer d'identifiants efface les jetons.** Ils appartiennent à l'autre
+  projet Google et ne valent plus rien ; les garder afficherait « relié » sur un
+  raccordement mort, et le doublon reviendrait en silence.
+- **Le secret peut rester vide à la modification.** Google ne le remontre jamais
+  après l'avoir créé : exiger de le ressaisir pour corriger une faute de frappe
+  dans l'adresse de retour serait une impasse dont on ne sort qu'en refaisant un
+  projet.
+
+Le `client_secret` est chiffré comme les jetons ; le `client_id` reste en clair —
+il figure dans l'adresse de consentement que son navigateur affiche, et le
+chiffrer donnerait l'illusion de protéger une donnée publique par construction.
+
+| Ce qui est tenu | Par quoi |
+|---|---|
+| Intitulé rendu, événement annulé ou « disponible » écarté, journée entière sans déborder | `scripts/test-agenda-google-lecture.ts` |
+| La portée reste `events.readonly`, ni plus large ni en écriture | idem |
+| Identifiants saisis, secret jamais en clair, secret conservé si vide, jetons effacés au changement | `scripts/test-agenda-externe-rls.ts` |
+| Les identifiants d'un artisan restent invisibles pour un autre | idem |
+| Le planning propose le raccordement, l'écran offre les trois cases, le secret est masqué | `scripts/test-agenda-reglages-e2e.ts` |
+| **Le bouton « Enregistrer » n'est couvert ni par la barre ni par la bulle** | idem — mesuré, pas supposé |

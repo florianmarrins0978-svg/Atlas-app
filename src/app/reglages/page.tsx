@@ -69,6 +69,17 @@ export default async function ReglagesPage() {
           </Link>
         </div>
 
+        {/* **Son agenda — visible par tous, et facultatif par construction.**
+            Le patron, le 9 août 2026 : « que l'utilisateur puisse, s'il le
+            souhaite ou non, connecter son planning à son agenda Google. » Le
+            lien est donc offert à chaque artisan, et l'écran sait ne rien
+            faire — celui qui ne relie rien garde exactement l'Atlas d'avant. */}
+        <div className="px-6 pt-4">
+          <Link href="/reglages/agenda" className="text-[14px] font-medium" style={{ color: colors.rust }}>
+            Mon agenda : éviter qu&apos;un client prenne un jour déjà pris →
+          </Link>
+        </div>
+
         {/* **Le vocabulaire du métier — l'éditeur seulement.**
             Le patron, le 7 août 2026 : « est-ce que les utilisateurs auront
             accès à cette page ? Moi c'est ça que je ne veux pas. » Ce lien

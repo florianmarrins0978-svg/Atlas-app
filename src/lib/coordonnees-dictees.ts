@@ -20,6 +20,8 @@
  * langue : ils restent au modèle, et cette fonction se contente de nettoyer ce
  * qu'il rend.
  */
+import { chiffrerNombresDictes } from "./nombres-dictes";
+
 export type CoordonneesDictees = {
   nom: string | null;
   telephone: string | null;
@@ -36,7 +38,19 @@ export type CoordonneesDictees = {
  * espaces** : c'est sous cette forme qu'un lien `sms:` fonctionne, et l'oublier
  * a déjà ouvert une messagerie vide chez le patron (le 5 août 2026).
  */
-const TELEPHONE = /(?:\+33|0)\s*[1-9](?:[\s.\-]*\d){8}/;
+/**
+ * **`0033` passe AVANT `0`, et l'ordre n'est pas cosmétique.** Une alternance
+ * essaie ses branches de gauche à droite : avec `0` en premier, « 0033 6 12 34
+ * 56 78 » se lisait à partir du deuxième zéro et rendait **0336123456** — dix
+ * chiffres, l'air d'un numéro, et pas celui du client. Un numéro faux mais
+ * crédible est pire qu'un champ vide : personne ne le corrige (mesuré le 9 août
+ * 2026).
+ *
+ * Les bornes `(?<!\d)` et `(?!\d)` empêchent de commencer ou de s'arrêter au
+ * milieu d'une suite de chiffres plus longue — un numéro à onze chiffres doit
+ * être rejeté, pas raboté.
+ */
+const TELEPHONE = /(?<!\d)(?:\+33|0033|0)\s*[1-9](?:[\s.\-]*\d){8}(?!\d)/;
 
 /** Volontairement simple : on reconnaît une adresse, on ne la valide pas. */
 const EMAIL = /[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/;
@@ -50,15 +64,53 @@ const EMAIL = /[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/;
 export function lireCoordonneesEvidentes(transcription: string): Pick<CoordonneesDictees, "telephone" | "email"> {
   const texte = transcription ?? "";
 
-  const brutTelephone = texte.match(TELEPHONE)?.[0];
-  // Une dictée épelle souvent l'adresse à voix haute (« point fr ») : le
-  // service de transcription rend alors des espaces autour du @ ou du point.
-  const brutEmail = texte.replace(/\s*(@|arobase)\s*/gi, "@").replace(/\s+point\s+/gi, ".").match(EMAIL)?.[0];
+  // **Les nombres dits en toutes lettres sont d'abord rendus en chiffres.**
+  //
+  // Le patron, le 9 août 2026 : *« si je ne dis pas "numéro de téléphone
+  // 0670…", il ne comprend pas que c'est un numéro. »* Le diagnostic a montré
+  // autre chose que ce qu'il croyait, et c'est pire : la transcription écrit
+  // parfois « zéro six douze trente-quatre… », et **aucune** recherche de
+  // chiffres ne pouvait y voir un numéro. Son annonce ne servait qu'à faire
+  // rattraper le modèle de langue ; sans elle, plus rien ne rattrapait.
+  //
+  // La réécriture ne sert QU'À la reconnaissance de forme : la transcription
+  // montrée au patron et envoyée au modèle n'est pas touchée.
+  const chiffre = chiffrerNombresDictes(texte);
+
+  const brutTelephone = (chiffre.match(TELEPHONE) ?? texte.match(TELEPHONE))?.[0];
+  // Une dictée épelle l'adresse à voix haute, et la transcription écrit les
+  // signes de ponctuation en toutes lettres, avec des espaces autour.
+  //
+  // **Le tiret et le souligné manquaient, et leur absence coûtait cher.**
+  // « florian tiret martins arobase gmail point com » rendait
+  // `martins@gmail.com` : le prénom disparaissait en silence, et l'adresse
+  // obtenue avait l'air juste. Un champ vide se voit et se corrige ; une
+  // adresse fausse et vraisemblable part avec le devis (mesuré le 9 août 2026).
+  const epele = texte
+    .replace(/\s*(?:@|arobase)\s*/gi, "@")
+    .replace(/\s*(?:tiret\s+du\s+bas|underscore|souligne|soulign[ée])\s*/gi, "_")
+    .replace(/\s*(?:tiret|trait\s+d['’]union)\s*/gi, "-")
+    .replace(/\s+point\s+/gi, ".");
+  const brutEmail = epele.match(EMAIL)?.[0];
 
   return {
-    telephone: brutTelephone ? brutTelephone.replace(/[\s.\-]/g, "") : null,
+    telephone: brutTelephone ? normaliserTelephone(brutTelephone) : null,
     email: brutEmail ? brutEmail.toLowerCase() : null,
   };
+}
+
+/**
+ * Un numéro sans séparateurs, avec l'indicatif international sous une seule
+ * forme.
+ *
+ * Sans espaces : c'est sous cette forme qu'un lien `sms:` fonctionne, et
+ * l'oublier a déjà ouvert une messagerie vide chez le patron (5 août 2026).
+ * `0033` devient `+33` — deux écritures du même indicatif produiraient deux
+ * fiches pour un seul client.
+ */
+export function normaliserTelephone(brut: string): string {
+  const compact = brut.replace(/[\s.\-]/g, "");
+  return compact.startsWith("0033") ? `+33${compact.slice(4)}` : compact;
 }
 
 /**
@@ -114,7 +166,9 @@ export function assemblerCoordonnees(
   return {
     nom: nettoyerChamp(duModele.nom),
     adresse: nettoyerChamp(duModele.adresse),
-    telephone: evidentes.telephone ?? nettoyerChamp(duModele.telephone)?.replace(/[\s.\-]/g, "") ?? null,
+    telephone:
+      evidentes.telephone ??
+      (nettoyerChamp(duModele.telephone) ? normaliserTelephone(nettoyerChamp(duModele.telephone)!) : null),
     email: evidentes.email ?? nettoyerChamp(duModele.email)?.toLowerCase() ?? null,
   };
 }

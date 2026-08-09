@@ -9,6 +9,107 @@ Format : le plus récent en tête.
 
 ## 2026-08-09
 
+### L'agenda dit AUSSI ce qu'il y a, et les identifiants se collent dans l'appli
+
+*« Si, il doit lire les intitulés aussi ! »* et *« dans planning il faut un
+petit bouton connecter son agenda Google cliquable pour rentrer ses
+identifiants. »*
+
+**Les intitulés.** J'avais restreint la permission aux seuls créneaux occupés,
+en me disant qu'une permission qu'on ne demande pas est une fuite qui ne peut
+pas arriver. Le raisonnement tenait, mais il répondait à une question que
+personne n'avait posée : une case grise apprend qu'on est pris, pas *pourquoi*
+— et c'est ce pourquoi qui sert à décider. Le planning affiche désormais
+« Élagage chez Mme Roux » et « Dentiste », avec leurs horaires.
+
+**Ce qui n'a pas bougé, et qui ne bougera pas :** le client ne reçoit que des
+dates. Ce n'est pas votre vie privée qui est en cause là, c'est celle de vos
+autres clients.
+
+**Les identifiants.** Ils s'attendaient jusqu'ici dans la configuration du
+serveur — autrement dit, vous faisiez votre part chez Google et restiez bloqué
+faute de pouvoir les poser. Trois cases dans l'écran « Mon agenda », et vous
+n'avez plus besoin de personne. Le secret est masqué à la frappe, chiffré en
+base, et vous pouvez le laisser vide pour corriger une adresse : Google ne le
+remontre jamais, exiger de le ressaisir serait une impasse.
+
+**Et le bouton est dans le Planning**, là où le manque se constate — pas au fond
+des réglages. Il disparaît quand tout va bien : un bandeau permanent sur
+l'écran le plus consulté devient du décor, et le jour où il annonce une panne,
+personne ne le lit.
+
+
+### La note vocale comprend un numéro sans qu'on l'annonce
+
+*« Lorsque je remplis avec la note vocale, si je ne dis pas "numéro de téléphone
+0670…", il ne comprend pas que c'est un numéro de téléphone. Pareil pour le
+mail. Il faut qu'il capte même si je ne précise pas. »*
+
+**Le défaut n'était pas là où il semblait.** L'annonce n'a jamais été exigée : le
+vrai problème est que le service de transcription écrit parfois les chiffres
+**en toutes lettres** — « zéro six douze trente-quatre cinquante-six
+soixante-dix-huit » — et qu'aucune recherche de chiffres ne pouvait y voir un
+numéro. Quand il annonçait, le modèle de langue rattrapait ; sans l'annonce,
+plus rien ne rattrapait. Les mots-nombres sont maintenant rendus en chiffres
+avant toute reconnaissance, quelle que soit la façon dont la transcription
+découpe — avec traits d'union ou sans.
+
+**Et deux défauts trouvés en cherchant le sien, tous deux du même genre : un
+champ faux mais crédible, que personne ne relit.**
+
+« 0033 6 12 34 56 78 » donnait **0336123456** — dix chiffres, l'air d'un numéro,
+et pas celui du client. Le devis serait parti chez quelqu'un d'autre. Et
+« florian tiret martins arobase gmail point com » donnait
+**martins@gmail.com** : le prénom disparaissait en silence. Le tiret et le
+souligné dictés sont désormais reconnus, sous leurs différents noms.
+
+Un champ vide se voit et se corrige. Un champ faux et vraisemblable part avec le
+devis.
+
+
+### Relier son agenda Google, ou non — au choix de chaque artisan
+
+*« Ce qui serait bien, c'est que l'utilisateur puisse, s'il le souhaite ou non,
+connecter son planning à son agenda Google. »*
+
+Jusqu'ici, Atlas ne connaissait que les chantiers qu'on lui avait dits. Un
+rendez-vous noté ailleurs était **invisible** : il proposait ce jour-là, le
+client le choisissait, et le doublon se découvrait le matin même — devis parti,
+date acceptée, promesse faite. C'était le seul endroit du parcours où Atlas
+engageait quelqu'un sur une information qu'il n'avait pas ; partout ailleurs,
+quand il ne sait pas, il s'arrête et demande.
+
+Un écran « Mon agenda » apparaît dans les réglages. **Celui qui ne relie rien
+garde exactement l'Atlas d'avant** : pas de compte à créer, pas d'appel réseau,
+rien qui change. C'est la moitié de la demande, et c'est la moitié qui se
+respecte dans le code plutôt que dans une intention.
+
+Ce qu'Atlas lit, quand un agenda est relié : **les créneaux occupés, et rien
+d'autre**. Jamais le titre d'un rendez-vous, jamais les participants — la
+permission demandée à Google ne le permet même pas, ce qui vaut mieux qu'une
+promesse. Rien n'est stocké non plus : Atlas interroge au moment où il en a
+besoin. Les jetons, eux, sont chiffrés en base et ne partent pas dans l'export
+téléchargeable.
+
+Et **la panne se voit**. Si la lecture cesse de fonctionner — accès révoqué,
+quota —, Atlas revient à son comportement d'avant sans interrompre le parcours,
+mais l'écran le dit. Un raccordement mort en silence est pire que pas de
+raccordement : on se croit protégé du doublon et on ne l'est plus.
+
+**Il manque une chose, et elle ne dépend pas de moi** : les identifiants Google
+de l'application, qui se créent depuis un compte Google et engagent
+l'acceptation de conditions. Tant qu'ils n'existent pas, l'écran l'annonce et ne
+propose aucun bouton qui mènerait à une erreur (`docs/A-FAIRE.md` §7).
+
+**Deux défauts trouvés en regardant l'écran, pas en lisant un test vert.** Un
+module de Server Actions ne peut exporter que des fonctions : y avoir ajouté une
+constante a fait perdre au fichier *tous* ses exports, types et lint verts. Et
+le titre de l'écran annonçait « Atlas tient compte de votre agenda » trois
+lignes au-dessus de « Atlas n'arrive plus à lire votre agenda » — le cas de
+panne était traité après le cas nominal. Le titre est désormais une fonction
+pure, et l'ordre des cas est tenu par un contrôle.
+
+
 ### Un vrai devis dément une définition écrite la veille — et le budget se mesure
 
 Deux documents de plus du même confrère, une facture de débroussaillage et un

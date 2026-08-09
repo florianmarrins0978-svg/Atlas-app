@@ -274,20 +274,59 @@ Construire l'apprentissage sur le banc reste utile pour l'éprouver ; ce qui s'y
 accumule ne doit pas être présenté comme conservé.
 
 
-### 1. Agenda Google — lecture des disponibilités
+### 1. Agenda Google — au choix de chaque artisan
+
+> **Fait le 9 août 2026, sauf les identifiants.** L'écran « Mon agenda », le
+> stockage chiffré, la fusion dans la disponibilité et les deux chemins du
+> client sont écrits et éprouvés (`ARCHITECTURE.md` §39). **Ce qui reste tient
+> en une chose, et elle n'est pas codable** : les identifiants OAuth, que seul
+> le patron peut créer (`docs/A-FAIRE.md` §7). Tant qu'ils manquent, l'écran
+> l'annonce et ne propose aucun bouton.
+>
+> **Et ce qui n'a pas pu être éprouvé ici** : l'aller-retour réel avec Google —
+> autorisation, échange du code, renouvellement du jeton. Trois appels HTTP, pas
+> davantage : tout ce qui décide en a été sorti exprès. À vérifier chez lui, le
+> jour où les identifiants existent.
 
 **Partiellement bloqué.** La connexion du compte demande des identifiants OAuth
-que le patron doit créer ; le reste est codable.
+que le patron doit créer ; le reste est codable. Le point bloquant est détaillé
+dans `docs/A-FAIRE.md` §7.
 
 Aujourd'hui, les jours libres se déduisent des seuls chantiers planifiés dans
 Atlas (`src/server/disponibilites.ts`). Un patron qui tient son agenda ailleurs
 verra donc proposer des jours où il est déjà pris — et c'est le client qui
 choisira ce jour-là.
 
-À faire une fois les identifiants disponibles : lecture des événements sur la
-fenêtre de proposition, fusion avec les chantiers Atlas dans la **même** fonction
-de disponibilité (jamais un second calcul), et écriture de l'intervention après
-acceptation.
+**Décision du patron, le 9 août 2026** — *« ce qui serait bien, c'est que
+l'utilisateur puisse, s'il le souhaite ou non, connecter son planning à son
+agenda Google »* — et elle contraint la conception :
+
+- **C'est un choix par artisan, pas un réglage de l'application.** Chacun relie
+  son agenda ou ne le relie pas. Celui qui ne relie rien garde exactement
+  l'Atlas d'aujourd'hui : pas d'écran en plus, pas de compte à créer, aucun
+  chemin de code nouveau à traverser.
+- **Le jeton de raccordement appartient à l'entreprise**, donc il vit en base
+  sous RLS, comme tout le reste — jamais dans une variable d'environnement
+  partagée, qui vaudrait pour tout le monde à la fois.
+- **Atlas ne lit que les créneaux occupés.** Jamais l'intitulé, jamais les
+  participants. Un agenda personnel porte les rendez-vous médicaux et les
+  vacances de la famille ; Atlas n'en a pas besoin pour savoir qu'une journée
+  est prise. Même règle qu'à la page du client, qui reçoit des dates et rien
+  d'autre (`docs/AGENT.md` §2.2 bis).
+- **Une seule fonction de disponibilité**, jamais deux. La fusion des créneaux
+  Google et des chantiers Atlas se fait *dans* `src/server/disponibilites.ts`.
+  Un second calcul à côté finirait par diverger du premier — c'est exactement le
+  défaut qui a produit, le 9 août, un chantier rangé dans deux onglets à la fois
+  (`ARCHITECTURE.md` §33).
+
+À faire une fois les identifiants disponibles : le bouton « Relier mon agenda »
+dans les réglages, le raccordement du compte, la lecture des créneaux sur la
+fenêtre de proposition, la fusion ci-dessus, et l'écriture de l'intervention
+après acceptation.
+
+**Ce qui ne pourra pas être éprouvé ici :** sans compte Google raccordé, aucun
+contrôle local ne parcourt le vrai chemin. La partie fusion, elle, est une
+fonction pure et s'éprouve entièrement (`CLAUDE.md` §5).
 
 ### 2. Code SMS en renfort de l'acceptation
 

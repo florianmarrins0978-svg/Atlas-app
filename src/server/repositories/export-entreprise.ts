@@ -13,6 +13,7 @@ import {
   envoisFactures,
   correctionsDictee,
   grillePrix,
+  agendasExternes,
   factures,
   fragmentsDocuments,
   historiquePrix,
@@ -118,6 +119,7 @@ export async function exporterEntreprise(
       lesEnvoisFactures,
       lesCorrections,
       laGrillePrix,
+      lesAgendas,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -147,6 +149,30 @@ export async function exporterEntreprise(
       tx.select().from(envoisFactures).where(eq(envoisFactures.entrepriseId, e)),
       tx.select().from(correctionsDictee).where(eq(correctionsDictee.entrepriseId, e)),
       tx.select().from(grillePrix).where(eq(grillePrix.entrepriseId, e)),
+      // **Les jetons sont exclus de la requête, pas filtrés après coup.**
+      //
+      // Ce fichier se télécharge et s'envoie par courriel. Y joindre les jetons
+      // d'un compte Google — même chiffrés, la clé se dérivant d'une
+      // configuration serveur — reviendrait à faire circuler l'accès à l'agenda
+      // de l'artisan dans une pièce jointe. Ce qui n'est pas sélectionné ne peut
+      // pas fuir par une distraction plus tard.
+      //
+      // Ce qui reste est bien SA donnée, et lui appartient : quel compte est
+      // relié, depuis quand, et si la lecture fonctionne encore.
+      tx
+        .select({
+          id: agendasExternes.id,
+          entrepriseId: agendasExternes.entrepriseId,
+          fournisseur: agendasExternes.fournisseur,
+          compte: agendasExternes.compte,
+          actif: agendasExternes.actif,
+          derniereLectureAt: agendasExternes.derniereLectureAt,
+          derniereErreur: agendasExternes.derniereErreur,
+          createdAt: agendasExternes.createdAt,
+          updatedAt: agendasExternes.updatedAt,
+        })
+        .from(agendasExternes)
+        .where(eq(agendasExternes.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -192,6 +218,8 @@ export async function exporterEntreprise(
       // qu'il a prise, ou un prix qu'il a réellement pratiqué : la perdre lui
       // ferait rechiffrer à l'aveugle des chantiers déjà arbitrés.
       grille_prix: laGrillePrix,
+      // Sans les jetons — voir la requête ci-dessus.
+      agendas_externes: lesAgendas,
     };
 
     const compte: Record<string, number> = {};

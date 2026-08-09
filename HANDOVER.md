@@ -18,7 +18,97 @@ complet est décrit dans **`docs/AGENT.md`** — c'est la référence du produit
 lire avant toute décision de conception. Le socle technique est une application
 Next.js avec PostgreSQL, isolée par entreprise via *row level security*.
 
+## ⚠ À RESSORTIR AU PATRON quand le sujet arrive
+
+**Sa consigne du 9 août 2026, à propos de la validation Google :** *« quand on
+sera arrivé à la partie commercialisation, je veux que tu me le ressortes
+automatiquement parce que je ne vais pas m'en souvenir. »*
+
+Ce bloc est le mécanisme. Il est **en tête de ce fichier**, que `CLAUDE.md` §1
+fait lire au début de **chaque** conversation. Ne pas le déplacer plus bas, ne
+pas le résumer : il n'a de valeur que s'il est impossible à manquer.
+
+**La règle : dès qu'un des déclencheurs ci-dessous apparaît dans la
+conversation, le point correspondant se dit AVANT de répondre au reste.** Le
+patron n'a pas à s'en souvenir — c'est le rôle de ce fichier, et sa défaillance
+serait une défaillance du dépôt.
+
+| Si le patron parle de… | Lui ressortir |
+|---|---|
+| **commercialiser, vendre, premiers clients payants, lancement, mise sur le marché, plusieurs artisans** | **La validation de l'application par Google** (`docs/A-FAIRE.md` §8). Sans elle, l'agenda ne fonctionne que pour **une centaine de comptes inscrits à la main** — et le mur arrive d'un coup, sans prévenir. La vérification demande un domaine, une politique de confidentialité **publiée**, une page d'accueil, une vidéo, et **plusieurs semaines**. Le délai ne se rattrape pas : la demande se lance bien avant la date de vente. Détail complet dans `docs/QUESTIONS.md` §12 |
+
+Un point traité ici se **barre** avec sa date plutôt qu'il ne se supprime :
+savoir qu'il a été dit évite de le redire, et savoir quand évite de croire qu'il
+est encore valable.
+
+---
+
 ## Ce qui vient d'être terminé
+
+**La note vocale lit un numéro sans qu'on l'annonce (9 août).** Il signalait que
+sans dire « numéro de téléphone », rien n'était reconnu. **Le défaut n'était pas
+celui-là** : la transcription écrit parfois les chiffres en toutes lettres, et
+aucune recherche de chiffres ne pouvait les voir. Son annonce ne faisait que
+déclencher le rattrapage du modèle de langue.
+
+**Avant de toucher à `src/lib/nombres-dictes.ts` :** deux régimes de lecture, et
+c'est la transcription qui choisit. Avec traits d'union, on la suit mot à mot
+(elle a déjà découpé) ; sans aucun tiret, on recolle au plus long. Inverser
+l'un des deux casse l'autre — les deux ont été mesurés sur des dictées réelles.
+70 et 90 n'acceptent pas d'unité derrière eux, et « cent » est délibérément
+absent du vocabulaire reconnu. `ARCHITECTURE.md` §40.
+
+**Deux défauts trouvés en cherchant le sien, tous deux du même genre** — un
+champ faux mais crédible plutôt qu'un champ vide : `0033 6 12 34 56 78` rendait
+`0336123456`, et « florian tiret martins arobase… » rendait `martins@gmail.com`.
+C'est la forme de défaut la plus coûteuse du produit : personne ne relit un
+champ qui a l'air juste.
+
+
+**Les identifiants Google se saisissent DANS l'application (9 août).** Écran
+« Mon agenda », trois cases. Ceux de l'entreprise priment sur les variables
+d'installation, qui restent en repli. **Trois règles à ne pas défaire** :
+« configuré » n'est pas « relié » (entre le collage et le retour de Google, rien
+n'est autorisé) ; changer d'identifiants efface les jetons (ils appartiennent à
+l'autre projet Google) ; un secret vide conserve l'ancien (Google ne le remontre
+jamais). `ARCHITECTURE.md` §41.
+
+**L'agenda lit aussi les intitulés (9 août).** La portée est passée de
+`freebusy` à `events.readonly` sur sa demande. **Ce qui n'est pas négociable :**
+l'intitulé est FACULTATIF dans `PeriodeOccupee` et n'entre dans aucun calcul —
+c'est ce qui garantit qu'il ne peut pas se glisser vers la page du client, qui
+ne reçoit que des dates. Attention aux trois pièges d'`events.list` :
+`singleEvents` pour déplier les séries, la fin exclusive des événements « toute
+la journée », et les événements annulés ou « disponible » à écarter.
+
+**L'agenda extérieur, au choix de l'artisan (9 août).** Atlas peut tenir compte
+d'un agenda Google, si l'artisan le relie. **Avant ce lot, un rendez-vous noté
+ailleurs était invisible** : Atlas proposait ce jour-là et le client le
+choisissait.
+
+**Trois choses à savoir avant d'y toucher :**
+
+1. **Une seule carte d'occupation.** Les rendez-vous se fondent dans la même
+   `Map` que les chantiers (`fusionnerOccupationExterne`), et les quatre chemins
+   qui décident ensuite la lisent sans savoir d'où vient l'occupation. **Ne
+   jamais ajouter un second calcul à côté** — c'est ce dédoublement qui avait
+   rangé un chantier dans deux onglets à la fois. `ARCHITECTURE.md` §39.
+2. **Le client passe par là aussi**, parce que c'est lui qui retient la date.
+   Ses deux chemins publics dérivent l'entreprise du **jeton**, et lisent
+   l'agenda AVANT d'ouvrir leur transaction — un appel HTTP dans une transaction
+   immobiliserait une connexion du pool pendant une panne de Google.
+3. **Ce qui n'est pas éprouvé, et pourquoi.** L'aller-retour réel avec Google —
+   autorisation, échange du code, renouvellement — n'a pas pu l'être : pas de
+   compte ici, et le mandataire refuse Google. Tout ce qui décide a été sorti de
+   ce chemin exprès ; il ne reste que trois appels HTTP. Cela se vérifiera chez
+   le patron, avec ses identifiants (`docs/A-FAIRE.md` §7).
+
+**Deux pièges rencontrés, à ne pas repayer.** Un module `"use server"` ne peut
+exporter QUE des fonctions asynchrones : une constante y fait perdre **tous** les
+exports du fichier, types et lint verts, écran mort. Et le titre de l'écran
+mentait — cas de panne traité après le cas nominal ; la phrase vit maintenant
+dans `titreEtatAgenda()`, une fonction pure, avec son contrôle.
+
 
 **Le vocabulaire d'un vrai devis d'élagueur (9 août).** Huit règles de rédaction
 et dix-neuf mots du métier, tirés de six documents d'un confrère —

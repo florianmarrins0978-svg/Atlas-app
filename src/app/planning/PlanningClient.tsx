@@ -55,7 +55,52 @@ function creneauLisible(c: { creneauDebut: string | null; dureeDemiJournees: num
   return `${moment}, ${libelleDuree(c.dureeDemiJournees)}`;
 }
 
-export default function PlanningClient({ initialChantiers }: { initialChantiers: ChantierPlanning[] }) {
+/** Ce que l'agenda extérieur apporte à cet écran. Jamais un jeton, jamais un compte. */
+export type EtatAgendaPlanning = {
+  configure: boolean;
+  relie: boolean;
+  actif: boolean;
+  enPanne: boolean;
+};
+
+/** Un rendez-vous lu dans son agenda — pour SON écran, jamais pour le client. */
+export type RendezVousExterne = {
+  debut: string;
+  fin: string;
+  intitule: string | null;
+  journeeEntiere: boolean;
+};
+
+/**
+ * « lundi 14 septembre, 9 h – 11 h », ou « du 14 au 17 septembre » sur plusieurs
+ * jours.
+ *
+ * Les heures ne s'affichent PAS pour un événement « toute la journée » : Google
+ * rend alors des dates civiles, et en tirer « 00 h – 23 h » afficherait une
+ * précision que l'agenda ne donne pas.
+ */
+function libelleRendezVous(r: RendezVousExterne): string {
+  const debut = new Date(r.debut);
+  const fin = new Date(r.fin);
+  const jour = (d: Date) =>
+    d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  const heure = (d: Date) => d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+
+  const memeJour = jour(debut) === jour(fin);
+  if (r.journeeEntiere) return memeJour ? jour(debut) : `du ${jour(debut)} au ${jour(fin)}`;
+  if (memeJour) return `${jour(debut)}, ${heure(debut)} – ${heure(fin)}`;
+  return `du ${jour(debut)} ${heure(debut)} au ${jour(fin)} ${heure(fin)}`;
+}
+
+export default function PlanningClient({
+  initialChantiers,
+  agenda = { configure: false, relie: false, actif: false, enPanne: false },
+  rendezVous = [],
+}: {
+  initialChantiers: ChantierPlanning[];
+  agenda?: EtatAgendaPlanning;
+  rendezVous?: RendezVousExterne[];
+}) {
   const [chantiers, setChantiers] = useState<ChantierPlanning[]>(initialChantiers);
   const [ouvert, setOuvert] = useState<ChantierPlanning | null>(null);
   const [dateChoisie, setDateChoisie] = useState("");
@@ -116,6 +161,88 @@ export default function PlanningClient({ initialChantiers }: { initialChantiers:
             Planning
           </h1>
         </div>
+
+        {/*
+          **Le raccordement de l'agenda se propose ICI, et c'est sa demande du
+          9 août 2026** : *« dans planning il faut un petit bouton connecter son
+          agenda Google cliquable. »*
+
+          Il est à sa place : le planning est l'écran où le manque se constate.
+          Le laisser au fond des réglages, c'était demander à quelqu'un qui
+          ignore le problème d'aller chercher sa solution.
+
+          **Le lien disparaît quand tout va bien.** Un bandeau permanent sur
+          l'écran le plus consulté devient du décor : on cesse de le lire, et le
+          jour où il annonce une panne, personne ne le voit.
+        */}
+        {(!agenda.relie || !agenda.actif || agenda.enPanne) && (
+          <div className="mt-5 px-6">
+            <Link
+              href="/reglages/agenda"
+              className="flex items-center justify-between rounded-2xl px-5 py-4"
+              style={{
+                backgroundColor: colors.rustTint,
+                borderLeft: `3px solid ${agenda.enPanne ? colors.alert : colors.sage}`,
+              }}
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px]" style={{ fontFamily: font.display }}>
+                  {agenda.enPanne
+                    ? "Votre agenda n'est plus lu"
+                    : !agenda.relie
+                      ? "Relier mon agenda Google"
+                      : "Votre agenda est en pause"}
+                </span>
+                <span className="block text-[13px] leading-snug" style={{ color: colors.muted }}>
+                  {agenda.enPanne
+                    ? "Un client peut retenir un jour où vous êtes déjà pris."
+                    : !agenda.relie
+                      ? "Sans lui, Atlas ne voit pas les rendez-vous notés ailleurs — et peut les proposer."
+                      : "Reprendre la lecture pour éviter les doublons."}
+                </span>
+              </span>
+              <span
+                className="ml-4 flex-shrink-0 whitespace-nowrap text-[14px] font-medium"
+                style={{ color: colors.rust }}
+              >
+                {agenda.configure ? "Ouvrir" : "Connecter"}
+              </span>
+            </Link>
+          </div>
+        )}
+
+        {/* Ses rendez-vous, avec leur intitulé — sa demande du 9 août : « si, il
+            doit lire les intitulés aussi ! ». Ils ne se modifient pas depuis
+            Atlas : ce sont ceux de son agenda, et deux endroits pour changer la
+            même chose finissent par se contredire. */}
+        {rendezVous.length > 0 && (
+          <div className="mt-7 px-6">
+            <p className={smallCaps} style={{ color: colors.rust, marginBottom: 10 }}>
+              Dans mon agenda
+            </p>
+            <div className="flex flex-col gap-2">
+              {rendezVous.slice(0, 12).map((r, i) => (
+                <div
+                  key={`${r.debut}-${i}`}
+                  className="rounded-2xl px-5 py-4"
+                  style={{ backgroundColor: colors.card }}
+                >
+                  <span className="block truncate text-[16px]" style={{ fontFamily: font.display }}>
+                    {r.intitule ?? "Rendez-vous sans titre"}
+                  </span>
+                  <span className="block text-[13px]" style={{ color: colors.muted }}>
+                    {libelleRendezVous(r)}
+                  </span>
+                </div>
+              ))}
+              {rendezVous.length > 12 && (
+                <p className="px-1 text-[13px]" style={{ color: colors.muted }}>
+                  et {rendezVous.length - 12} autre(s) — l&apos;écran en montre douze, votre agenda les a tous.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* À planifier */}
         <div className="mt-7 px-6">

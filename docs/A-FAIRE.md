@@ -34,6 +34,8 @@ qui ne se résoudra pas en codant.
 4. [Constituer une société et s'assurer](#4-constituer-une-société-et-sassurer)
 5. [~~Brancher un fournisseur SMS et e-mail~~ — ne bloque plus](#5-brancher-un-fournisseur-sms-et-e-mail--ne-bloque-plus)
 6. [Choisir l'outil qui émet les factures](#6-choisir-loutil-qui-émet-les-factures)
+7. [Créer les identifiants Google, pour qui veut relier son agenda](#7-créer-les-identifiants-google-pour-qui-veut-relier-son-agenda)
+8. [Faire valider l'application par Google — AVANT de commercialiser](#8-faire-valider-lapplication-par-google--avant-de-commercialiser)
 
 ---
 
@@ -535,3 +537,146 @@ Ni l'essai d'Atlas, ni sa finition. Le parcours entier — dictée, prix, devis,
 envoi, réponse du client, planification, fin de chantier, facture, relevé de
 TVA — s'éprouve dès aujourd'hui. Ce point bloque le fait de **confier Atlas à
 un vrai artisan avec de vrais clients**, comme les autres.
+
+---
+
+## 7. Créer les identifiants Google, pour qui veut relier son agenda
+
+**Qui : le patron.** Personne d'autre : cela se crée depuis un compte Google et
+engage l'acceptation de conditions.
+
+> **Demande du 9 août 2026 :** *« ce qui serait bien, c'est que l'utilisateur
+> puisse, s'il le souhaite ou non, connecter son planning à son agenda
+> Google. »*
+
+### Pourquoi c'est bloquant
+
+Aujourd'hui, Atlas déduit vos jours libres des **seuls chantiers planifiés dans
+Atlas** (`src/server/disponibilites.ts`). Il ne sait rien de ce qui existe
+ailleurs.
+
+La conséquence n'est pas théorique : un rendez-vous noté dans un agenda Google
+et pas dans Atlas est **invisible**. Atlas proposera ce jour-là au client, le
+client le choisira, et l'artisan découvrira le doublon le matin même. Le devis
+sera parti, la date acceptée, la promesse faite.
+
+C'est le seul endroit du parcours où Atlas peut engager l'artisan sur une
+information qu'il n'a pas. Partout ailleurs, il s'arrête et demande.
+
+### Ce qu'il faut, et ce que ça coûte
+
+| Ce qu'il faut | Où | Coût |
+|---|---|---|
+| Un projet dans la console Google Cloud | console.cloud.google.com | Gratuit |
+| L'API Google Calendar activée dessus | idem | Gratuit |
+| Un identifiant OAuth (client ID + secret) | idem | Gratuit |
+| Un écran de consentement, et sa **validation par Google** si l'application sort du cercle des testeurs | idem | Gratuit, mais **compter des semaines** |
+
+**Le vrai coût n'est pas l'argent, c'est le délai de validation.** Tant que
+l'application n'est pas validée, Google limite l'accès à une centaine de comptes
+de test inscrits à la main. Suffisant pour vous et vos premiers artisans ;
+bloquant le jour où Atlas se vend.
+
+**À vérifier auprès de Google, je ne peux pas le faire d'ici** : le réseau de
+l'environnement de développement refuse les pages de Google. Ce qui est écrit
+ci-dessus vient de ce que je sais du fonctionnement de cette console, pas d'une
+page lue aujourd'hui — traitez-le comme une indication à confirmer, pas comme
+une source.
+
+### Ce que votre phrase a tranché, et qui ne se rediscutera pas
+
+**La connexion est un choix, par artisan, jamais un réglage de l'application.**
+Chacun relie son agenda ou ne le relie pas ; celui qui ne veut rien relier garde
+exactement l'Atlas d'aujourd'hui, sans écran en plus ni compte à créer.
+
+Ce n'est pas un détail de confort. Un agenda personnel contient les rendez-vous
+médicaux, les vacances, la vie privée de la famille. **Atlas n'a besoin que des
+créneaux occupés** — jamais des intitulés, jamais des participants. La même règle
+qu'à la page du client, qui reçoit des dates et rien d'autre
+(`docs/AGENT.md` §2.2 bis).
+
+### Ce que je peux faire, et ce que je ne peux pas
+
+> **Mise à jour du 9 août 2026 — tout est écrit, il ne manque que vos
+> identifiants.** L'écran « Mon agenda », le bouton dans le Planning, le
+> stockage chiffré, la lecture des créneaux **et de leurs intitulés**, la fusion
+> dans la disponibilité, les deux chemins du client : c'est fait et éprouvé
+> (`ARCHITECTURE.md` §39 et §41).
+>
+> **Et vous n'avez plus besoin de moi pour la suite.** Les identifiants se
+> collent directement dans l'écran « Mon agenda » — trois cases. Ils attendaient
+> auparavant dans la configuration du serveur, ce qui vous laissait bloqué après
+> avoir fait votre part chez Google.
+
+**Ce que je ne peux toujours pas faire à votre place :** créer le projet Google
+et accepter ses conditions. Cela vous engage, comme l'hébergement au point 3 et
+l'outil de facturation au point 6.
+
+**Et ce que je n'ai pas pu éprouver ici, dit noir sur blanc :** l'aller-retour
+réel avec Google — l'autorisation, l'échange du code, le renouvellement du
+jeton. Cet environnement n'a pas de compte Google et son réseau refuse ses
+adresses. Tout ce qui *décide* de quelque chose a été sorti de ce chemin-là
+exprès ; il ne reste que trois appels et la lecture de leurs réponses. **Le
+premier vrai raccordement sera donc le premier essai** : si Google refuse, son
+message s'affichera tel quel à l'écran plutôt que d'être deviné.
+
+**Ce que je ne peux pas faire à votre place :** créer le projet Google et
+accepter ses conditions. Comme l'hébergement au point 3 et l'outil de facturation
+au point 6, cela vous engage.
+
+### Ce que ça ne bloque pas
+
+Ni l'essai d'Atlas, ni sa finition. Un artisan qui tient son planning **dans
+Atlas seulement** n'a aucun doublon possible, et c'est le cas aujourd'hui. Ce
+point bloque le jour où un artisan tient son agenda ailleurs — c'est-à-dire à
+peu près tout le monde.
+
+---
+
+## 8. Faire valider l'application par Google — AVANT de commercialiser
+
+**Qui : le patron.** Cela engage une entreprise auprès de Google, et demande des
+pièces que vous seul possédez.
+
+> **À ressortir au moment de la commercialisation.** Sa consigne du 9 août
+> 2026 : *« quand on sera arrivé à la partie commercialisation, je veux que tu
+> me le ressortes automatiquement parce que je ne vais pas m'en souvenir. »*
+> Le rappel est armé dans `HANDOVER.md`, que chaque conversation lit en
+> arrivant.
+
+### Pourquoi c'est bloquant, et pourquoi ça ne se voit pas venir
+
+Le raccordement de l'agenda **fonctionnera parfaitement** pour vous et vos
+premiers artisans. Rien n'annoncera le mur.
+
+Tant que Google n'a pas validé l'application, l'accès est limité à **une
+centaine de comptes que vous inscrivez à la main dans la console**. Le
+cent-unième artisan verra un écran d'avertissement de Google, puis un refus. Ce
+n'est pas un défaut d'Atlas : c'est la règle de Google pour les applications non
+vérifiées qui demandent l'accès à un agenda.
+
+### Ce que la vérification demande
+
+| Pièce | État aujourd'hui |
+|---|---|
+| Un nom de domaine dont vous prouvez la propriété | À acquérir — il vous en faut un de toute façon |
+| Une **politique de confidentialité publiée en ligne** | Le contenu existe (`docs/RGPD.md`), il reste à le publier à une adresse publique |
+| Une page d'accueil publique décrivant l'application | À faire |
+| Une vidéo montrant ce que vous faites de l'agenda | Quelques minutes d'écran |
+| L'écran de consentement rempli et soumis | Dans la console Google |
+
+**Le coût est le délai, pas l'argent.** Comptez **plusieurs semaines**, parfois
+davantage si Google demande des précisions. C'est un délai qui ne se rattrape
+pas : lancez la demande **bien avant** la date à laquelle vous voulez vendre.
+
+**Réserve, dite plutôt que tue.** À ma connaissance, l'agenda relève des
+permissions « sensibles » — vérification gratuite — et non des « restreintes »,
+qui exigent en plus un audit de sécurité facturé par un tiers. **Je n'ai pas pu
+le confirmer** : le réseau de l'environnement de développement refuse les pages
+de Google. À vérifier vous-même dans la console avant de vous engager.
+
+### Ce que ça ne bloque pas
+
+Ni l'essai, ni la finition, ni vos premiers artisans. Ce point bloque
+**uniquement** le passage à l'échelle — et il le bloque d'un coup, sans
+prévenir, le jour où vous dépasserez la centaine.

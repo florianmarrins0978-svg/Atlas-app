@@ -33,6 +33,7 @@ relues à chaque session) :
 9. [Ce que je vois là, est-ce le design final ?](#9-ce-que-je-vois-là-est-ce-le-design-final-)
 10. [Qui voit quoi : moi, mes clients, leurs salariés ?](#10-qui-voit-quoi--moi-mes-clients-leurs-salariés-)
 11. [Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?](#11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-)
+12. [L'agenda Google : mes artisans auront-ils des identifiants à saisir ?](#12-lagenda-google--mes-artisans-auront-ils-des-identifiants-à-saisir-)
 
 ---
 
@@ -643,3 +644,65 @@ pouvez signer.
 **Ce que ça ne bloque pas** : ni l'essai d'Atlas, ni sa finition. Comme les
 autres points de `A-FAIRE.md`, cela bloque le fait de le confier à un vrai
 artisan avec de vrais clients.
+
+---
+
+## 12. L'agenda Google : mes artisans auront-ils des identifiants à saisir ?
+
+*Posée le 9 août 2026 :* « une fois que j'aurai créé la clé API pour l'agenda
+Google, les utilisateurs, quand je vais commercialiser l'application, eux, ils
+auront juste à rentrer leurs identifiants, c'est tout ? »
+
+### Non — et c'est plus simple que ça pour eux
+
+Il y a **deux choses différentes** derrière le mot « identifiants », et les
+confondre fait imaginer un parcours invendable.
+
+| | Ce que c'est | Qui s'en occupe |
+|---|---|---|
+| **Les identifiants de l'application** (client ID + secret) | L'identité d'Atlas auprès de Google. Ce n'est pas un compte utilisateur | **Vous, une seule fois, pour tous** |
+| **Le compte Google de l'artisan** | Son agenda à lui | **Lui** — mais il n'a rien à taper |
+
+Concrètement, pour un artisan qui achète Atlas : il ouvre son planning, appuie
+sur « Relier mon agenda Google », l'écran de Google s'ouvre, il se connecte
+comme partout ailleurs, il accepte. **Fin.** Aucun projet Google à créer, aucun
+mot à comprendre.
+
+**Alors à quoi servent les trois cases dans « Mon agenda » ?** À vous,
+aujourd'hui, tant qu'aucune configuration n'est posée sur le serveur — et plus
+tard à l'artisan qui voudrait son propre projet Google. L'application regarde
+d'abord ce que l'entreprise a saisi, et retombe sur votre configuration sinon.
+Vos artisans ne verront jamais ces cases.
+
+### Ce que ça coûte
+
+**Rien en argent.** Le projet Google est gratuit, l'API Agenda est gratuite, et
+son quota libre est très au-delà de ce qu'une centaine d'artisans
+consommeraient.
+
+### Le vrai obstacle, et il n'est pas technique
+
+**Tant que Google n'a pas validé l'application, l'accès est limité à une
+centaine de comptes que vous inscrivez à la main.** Suffisant pour vous et vos
+premiers artisans ; bloquant au cent-unième.
+
+Pour aller au-delà, Google demande une vérification :
+
+| Ce qu'il faut | Remarque |
+|---|---|
+| Un nom de domaine dont vous prouvez la propriété | Il vous en faudra un de toute façon |
+| Une politique de confidentialité **en ligne** | Le contenu existe déjà (`docs/RGPD.md`), il faut la publier |
+| Une page d'accueil publique | Idem |
+| Une vidéo montrant l'usage que vous faites de l'agenda | Quelques minutes d'écran |
+| **Plusieurs semaines de délai** | C'est le vrai coût |
+
+**Une réserve, écrite parce qu'elle compte.** À ma connaissance, l'agenda relève
+des permissions dites « sensibles » — vérification gratuite mais longue — et non
+des « restreintes », qui exigent en plus un audit de sécurité payant. **Je n'ai
+pas pu le confirmer** : le réseau de l'environnement de développement refuse les
+pages de Google. À vérifier avant d'annoncer une date de lancement.
+
+### Ce qu'il faut en retenir pour le calendrier
+
+**Lancez la demande de vérification tôt**, pas la semaine où vous voulez vendre.
+C'est le genre de délai qui ne se rattrape pas.
