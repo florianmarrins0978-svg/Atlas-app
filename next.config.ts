@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { estBancDEssai } from "./src/profil-banc";
 
 // En-têtes de sécurité — appliqués à toutes les routes. Next.js exige encore
 // 'unsafe-inline' pour script-src (scripts d'hydratation générés par le
@@ -82,8 +83,11 @@ const nextConfig: NextConfig = {
       // régional), et une seule variable d'environnement manquante suffisait à
       // tout bloquer. En production, la liste reste vide : la protection est
       // entière, et ce banc d'essai ne tourne jamais en production.
+      // Le banc d'essai sert désormais une version BÂTIE, donc `NODE_ENV` y
+      // vaut `production` : sans `estBancDEssai()`, la liste redeviendrait vide
+      // et toute action serveur serait refusée derrière le mandataire.
       allowedOrigins:
-        process.env.NODE_ENV === "production"
+        process.env.NODE_ENV === "production" && !estBancDEssai()
           ? []
           : [
               "*.app.github.dev",

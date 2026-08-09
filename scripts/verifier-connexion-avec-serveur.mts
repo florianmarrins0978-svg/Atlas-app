@@ -39,11 +39,24 @@ if (await repond()) {
   process.exit(1);
 }
 
-// `detached` permet de tuer tout l'arbre de processus : `npm run essai` lance
-// lui-même `next dev`, et tuer le parent seul laisserait le port occupé.
-const serveur = spawn("npm", ["run", "essai"], {
+// **On éprouve ce que le patron exécute, et rien d'autre.**
+//
+// Ce contrôle montait `npm run essai`, c'est-à-dire `next dev`. Depuis le
+// 9 août 2026, son banc sert une version BÂTIE (`npm run banc`) : continuer à
+// éprouver le serveur de développement, c'était éprouver une chose qui
+// n'existe plus chez lui. Et la différence n'est pas cosmétique — `next start`
+// impose `NODE_ENV=production`, ce qui éteignait l'alignement d'origine du
+// proxy et ramenait « Invalid Server Actions request. » à la connexion. Ce
+// contrôle est le SEUL qui pouvait le voir.
+//
+// `detached` permet de tuer tout l'arbre de processus : `npm run banc` lance
+// lui-même le serveur, et tuer le parent seul laisserait le port occupé.
+const serveur = spawn("npm", ["run", "banc"], {
   stdio: "ignore",
-  env: process.env,
+  // Le profil est posé ici comme `.devcontainer/demarrer.sh` le pose sur le
+  // banc : sans lui, la version bâtie refuse de démarrer, et le contrôle
+  // échouerait pour une raison qui n'a rien à voir avec la connexion.
+  env: { ...process.env, ATLAS_PROFIL: "banc" },
   detached: true,
 });
 
@@ -57,7 +70,8 @@ function eteindre() {
 process.on("exit", eteindre);
 for (const s of ["SIGINT", "SIGTERM"]) process.on(s, () => process.exit(1));
 
-const limite = Date.now() + 180_000;
+// La construction prend deux à cinq minutes la première fois.
+const limite = Date.now() + 600_000;
 let pret = false;
 while (Date.now() < limite) {
   if (await repond()) {
@@ -68,7 +82,7 @@ while (Date.now() < limite) {
 }
 
 if (!pret) {
-  console.error("❌ Le serveur n'a pas répondu en trois minutes.");
+  console.error("❌ Le serveur n'a pas répondu en dix minutes (construction comprise).");
   eteindre();
   process.exit(1);
 }

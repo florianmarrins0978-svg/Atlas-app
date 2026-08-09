@@ -45,6 +45,25 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**Le banc sert une version BÂTIE, plus un serveur de développement (9 août).**
+Après dix-sept heures de 504, 404, 502 et ports en conflit, le patron : *« On
+arrête de tourner en rond, corrige-moi ça une bonne fois pour toutes. »* Tous
+ces symptômes venaient de `next dev`, qui compile chaque écran à l'ouverture.
+Mesuré après : **36 à 80 ms par écran** contre 38,7 s.
+
+**Avant de toucher au démarrage du banc ou à `src/server/env.ts` :**
+`npm run banc` bâtit puis sert (repli sur `next dev` si la construction échoue).
+`next start` impose `NODE_ENV=production` : le profil `ATLAS_PROFIL=banc`
+(`src/profil-banc.ts`, posé par `demarrer.sh`) relâche **exactement deux
+choses** — IA simulée et stockage local. AUTH_SECRET, CRON_SECRET, Redis restent
+exigés, l'isolation ne bouge pas. Quatre fichiers en dépendent : la
+configuration, le proxy, l'environnement, Auth.js. `ARCHITECTURE.md` §45.
+
+**Et `npm run verifier:connexion` monte maintenant `npm run banc`**, pas
+`npm run essai` : c'est lui, et lui seul, qui a trouvé `UntrustedHost` — Auth.js
+refusant l'hôte du mandataire en production, pendant que l'artisan lisait « Une
+erreur ». Éprouver autre chose que ce qu'on livre, c'est ne rien éprouver.
+
 **Une page d'état lisible au téléphone (9 août).** *« Va regarder toi-même, je
 peux pas te l'envoyer. »* Il travaille au téléphone ; le terminal de l'éditeur
 ne lui est pas offert, et je n'ai aucun accès à son espace.

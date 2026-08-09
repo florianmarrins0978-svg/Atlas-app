@@ -340,11 +340,18 @@ async function main() {
       ["veiller.sh", VEILLEUR],
       ["demarrer.sh", readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8")],
     ] as const) {
-      assert.match(
-        source,
-        /\[n\]ext\(-server\| dev\)/,
-        `${nom} ne vise que les enveloppes : le vrai serveur survivra, accroché au port`
-      );
+      // Trois formes à couvrir : les enveloppes de développement (`next dev`),
+      // celles de la version bâtie (`next start`), et surtout le processus qui
+      // écoute réellement, qui se renomme `next-server`.
+      // Les deux styles de guillemets sont utilisés : simples dans `veiller.sh`
+      // (motif figé), doubles dans `demarrer.sh` (appel direct à `pkill`).
+      const motif = source.match(/\[n\]ext\(([^)]*)\)/)?.[1] ?? "";
+      for (const forme of ["-server", " dev", " start"]) {
+        assert.ok(
+          motif.split("|").includes(forme),
+          `${nom} ne vise pas « next${forme} » : ce serveur-là survivra, accroché au port`
+        );
+      }
     }
   });
 

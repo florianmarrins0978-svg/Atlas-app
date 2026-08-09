@@ -3,6 +3,8 @@
 // clairement si une variable obligatoire manque ou est mal formée — jamais un
 // repli silencieux vers un comportement de développement en production.
 
+import { estBancDEssai } from "../profil-banc";
+
 export type FournisseurStockage = "local" | "s3";
 
 export type Env = {
@@ -51,6 +53,12 @@ export type Env = {
    */
   versionAffichee?: string;
   logLevel: string;
+  /**
+   * Vrai quand cette installation est un banc d'essai déclaré.
+   * L'écran s'en sert pour le DIRE : un banc qu'on prend pour la vraie
+   * application, c'est un devis d'essai envoyé à un vrai client.
+   */
+  bancDEssai: boolean;
 };
 
 export class ErreurConfiguration extends Error {
@@ -88,6 +96,13 @@ function requis(nom: string): string {
 // une valeur — seulement le nom de la variable en cause en cas d'erreur.
 function construireEnv(): Env {
   const nodeEnv = (process.env.NODE_ENV as Env["nodeEnv"]) ?? "development";
+  // **`next start` impose `NODE_ENV=production`, même sur un banc d'essai.**
+  // Sans cette distinction, la seule façon de servir une version BÂTIE serait
+  // de détenir une clé d'IA facturée et un compartiment S3 — ce qu'aucun banc
+  // n'a. On resterait donc à `next dev`, c'est-à-dire à trente-huit secondes
+  // par écran. Voir `src/profil-banc.ts` pour ce que ce profil autorise, et
+  // surtout pour ce qu'il n'autorise pas.
+  const bancDEssai = estBancDEssai();
   const estProduction = nodeEnv === "production";
 
   /**
@@ -120,6 +135,21 @@ function construireEnv(): Env {
    */
   const enConstruction = process.env.NEXT_PHASE === "phase-production-build";
   const exigencesDeProduction = estProduction && !enConstruction;
+
+  /**
+   * **Deux exigences distinctes, et les confondre coûterait cher.**
+   *
+   * `exigencesDeProduction` couvre ce qu'un banc d'essai a DÉJÀ et doit garder :
+   * un secret de session, un secret de tâche planifiée, un Redis. Rien de tout
+   * cela ne se relâche ici — les affaiblir n'apporterait rien et ferait passer
+   * des configurations réellement dangereuses.
+   *
+   * `exigencesDeDeploiement` couvre les deux seules choses qu'un banc ne peut
+   * pas avoir : une clé d'IA facturée et un compartiment S3. Sans cette
+   * distinction, servir une version BÂTIE sur le banc était impossible — et
+   * c'est ce qui l'a laissé sur `next dev`, à trente-huit secondes par écran.
+   */
+  const exigencesDeDeploiement = exigencesDeProduction && !bancDEssai;
 
   const databaseUrl = requis("DATABASE_URL");
 
@@ -197,7 +227,7 @@ function construireEnv(): Env {
   // l'absence de Redis pour exactement la même raison — voir son en-tête : en
   // production, jamais de repli silencieux vers un comportement de
   // développement. L'IA simulée était le seul oubli qui passait en silence.
-  if (exigencesDeProduction) {
+  if (exigencesDeDeploiement) {
     for (const [variable, valeur, cles] of [
       ["LLM_PROVIDER", llmProvider, CLES_LLM],
       ["TRANSCRIPTION_PROVIDER", transcriptionProvider, CLES_TRANSCRIPTION],
@@ -227,7 +257,7 @@ function construireEnv(): Env {
   // Le stockage local ne doit JAMAIS être utilisé en production (fichiers
   // éphémères / non partagés entre instances) — échec explicite au démarrage.
   const stockageProviderBrut = process.env.STORAGE_PROVIDER ?? "local";
-  if (exigencesDeProduction && stockageProviderBrut !== "s3") {
+  if (exigencesDeDeploiement && stockageProviderBrut !== "s3") {
     throw new ErreurConfiguration(
       "STORAGE_PROVIDER doit valoir 's3' en production (le stockage local ne persiste pas entre instances/déploiements)."
     );
@@ -288,6 +318,7 @@ function construireEnv(): Env {
     releaseVersion: process.env.RELEASE_VERSION,
     versionAffichee: process.env.ATLAS_VERSION ?? process.env.RELEASE_VERSION,
     logLevel: process.env.LOG_LEVEL ?? (estProduction ? "info" : "debug"),
+    bancDEssai,
   };
 }
 

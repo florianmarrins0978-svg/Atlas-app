@@ -31,7 +31,7 @@ JOURNAL=/tmp/essai.log
 # port 3000** : le suivant ne pouvait plus s'y attacher, et l'orphelin servait un
 # cache périmé — toutes les pages en 404. Reproduit sur cette machine, en
 # regardant la liste des processus, pas en relisant le script.
-pkill -f "[n]ext(-server| dev)" 2>/dev/null || true
+pkill -f "[n]ext(-server| dev| start)" 2>/dev/null || true
 # Laisser le port se libérer : tuer n'est pas instantané, et se précipiter
 # reproduirait la panne qu'on vient d'éviter.
 sleep 1
@@ -151,6 +151,19 @@ fi
 MISE_A_JOUR="${ATLAS_MISE_A_JOUR:-$MISE_A_JOUR}"
 MIGRATIONS="${ATLAS_MIGRATIONS:-${MIGRATIONS:-}}"
 
+# **Le banc sert une version BÂTIE, et il faut le DÉCLARER.**
+#
+# `next start` impose `NODE_ENV=production` : sans ce profil, la configuration
+# refuserait l'IA simulée et le stockage local — les deux seules choses qu'un
+# banc ne peut pas avoir — et le proxy éteindrait l'alignement d'origine, ce qui
+# ramènerait « Invalid Server Actions request. » à la connexion.
+#
+# Posé ICI plutôt que dans `docker-compose.yml` : une variable déclarée là
+# n'existe pas dans un espace créé avant qu'elle n'y soit écrite, et deux
+# correctifs de suite sont restés inertes pour ce motif. Ce fichier, lui,
+# descend avec le code.
+export ATLAS_PROFIL=banc
+
 # La version exécutée, transmise à l'application pour qu'elle l'affiche.
 # Le format est fait pour être lu sur une capture d'écran, pas par une machine.
 ATLAS_VERSION="$(git log -1 --date=format:'%d/%m/%Y %H:%M' --format='%cd · %h' 2>/dev/null || echo 'inconnue')"
@@ -250,8 +263,8 @@ case "${MIGRATIONS:-}" in
     ;;
 esac
 echo "──────────────────────────────────────────────"
-echo "  Ça prend une minute ou deux, puis Atlas compile"
-echo "  ses écrans d'avance : les premières ouvertures"
-echo "  ne feront donc plus attendre. Journal : $JOURNAL"
+echo "  Atlas se BÂTIT au démarrage : deux à cinq minutes,"
+echo "  une seule fois. Ensuite chaque écran s'ouvre du"
+echo "  premier coup, sans attente. Journal : $JOURNAL"
 echo
 exit 0
