@@ -9,7 +9,9 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { LIBELLE_MOMENT, libelleDuree } from "@/server/disponibilites";
-import CarteGlissante from "@/components/atlas/CarteGlissante";
+import LigneRetirable from "@/components/atlas/LigneRetirable";
+import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
+import { useRetraits } from "@/components/atlas/useRetraits";
 import { planifierChantierAction, supprimerChantierAction } from "./actions";
 
 // Intégration réelle — connectée à la base (docs/ARCHITECTURE_DONNEES.md).
@@ -108,8 +110,6 @@ export default function PlanningClient({
   const [enCours, setEnCours] = useState(false);
 
   const aujourdHui = jourIso(new Date());
-  const [supprimes, setSupprimes] = useState<string[]>([]);
-  const [erreurSuppression, setErreurSuppression] = useState<string | null>(null);
 
   /**
    * Le chantier disparaît de l'écran AVANT la réponse du serveur : sur un
@@ -117,16 +117,13 @@ export default function PlanningClient({
    * bouton qui n'a pas marché, et l'on appuie une seconde fois. En cas de
    * refus — une facture émise —, elle revient, et la raison s'affiche.
    */
-  async function supprimer(id: string) {
-    setErreurSuppression(null);
-    setSupprimes((s) => [...s, id]);
-    const r = await supprimerChantierAction(id);
-    if (!r.succes) {
-      setSupprimes((s) => s.filter((x) => x !== id));
-      setErreurSuppression(r.erreur);
-    }
-  }
-  const visibles = chantiers.filter((c) => !supprimes.includes(c.id));
+  // Le geste retenu le 10 août 2026, ici comme partout : le texte glisse,
+  // « Retirer » se découvre, la carte tombe, et le tiroir la retient. Rien
+  // n'est écrit avant sa fermeture — « Annuler » rend donc vraiment la ligne,
+  // au lieu de la recréer.
+  const retraits = useRetraits({ valider: (id) => supprimerChantierAction(id) });
+
+  const visibles = chantiers.filter((c) => !retraits.estRetire(c.id));
   const aPlanifier = visibles.filter((c) => getPlanificationEtat(c) === "a_planifier");
   // **Le planning ne montre que ce qui est à venir**, et c'est la règle
   // partagée qui le dit — plus une recopie locale. Cet écran comparait
@@ -253,15 +250,17 @@ export default function PlanningClient({
           ) : (
             <div className="flex flex-col gap-2">
               {aPlanifier.map((c) => (
-                <CarteGlissante
+                <LigneRetirable
                   key={c.id}
-                  libelleSuppression={`Supprimer le chantier ${c.nom}`}
-                  onSupprimer={() => supprimer(c.id)}
+                  libelle={`le chantier ${c.nom}`}
+                  retiree={retraits.estRetire(c.id)}
+                  onRetirer={() => retraits.retirer(c.id, `le chantier ${c.nom}`)}
+                  plage={{ fond: colors.card }}
+                  className="flex"
                 >
                 <button
                   onClick={() => ouvrirSheet(c)}
-                  className="flex w-full items-center justify-between rounded-[4px] px-5 py-4 text-left"
-                  style={{ backgroundColor: colors.card }}
+                  className="flex w-full items-center justify-between px-5 py-4 text-left"
                 >
                   <span className="min-w-0 flex-1">
                     <span
@@ -284,7 +283,7 @@ export default function PlanningClient({
                     Choisir une date
                   </span>
                 </button>
-                </CarteGlissante>
+                </LigneRetirable>
               ))}
             </div>
           )}
@@ -302,12 +301,15 @@ export default function PlanningClient({
             </p>
             <div className="flex flex-col gap-2">
               {attenteClient.map((c) => (
-                <CarteGlissante
+                <LigneRetirable
                   key={c.id}
-                  libelleSuppression={`Supprimer le chantier ${c.nom}`}
-                  onSupprimer={() => supprimer(c.id)}
+                  libelle={`le chantier ${c.nom}`}
+                  retiree={retraits.estRetire(c.id)}
+                  onRetirer={() => retraits.retirer(c.id, `le chantier ${c.nom}`)}
+                  plage={{ fond: colors.card }}
+                  className="flex"
                 >
-                  <div className="rounded-[4px] px-5 py-4" style={{ backgroundColor: colors.card }}>
+                  <div className="w-full px-5 py-4">
                     <span
                       className="block truncate text-[16px]"
                       style={{ fontFamily: font.display, color: colors.ink }}
@@ -318,17 +320,21 @@ export default function PlanningClient({
                       {c.clientNom ?? "Client non renseigné"} — il choisit sa date
                     </span>
                   </div>
-                </CarteGlissante>
+                </LigneRetirable>
               ))}
             </div>
           </div>
         )}
 
-        {erreurSuppression && (
-          <p role="alert" className="mt-6 px-6 text-[13px]" style={{ color: colors.alert }}>
-            {erreurSuppression}
+        {/* Un refus du serveur ramène la carte : le dire, sinon elle
+            réapparaît sans raison apparente. C'est ici qu'un chantier facturé
+            se voit refuser — il n'a plus rien à faire au planning, mais le
+            refus doit rester lisible s'il y arrive. */}
+        {Object.entries(retraits.refuses).map(([id, motif]) => (
+          <p key={id} role="alert" className="mt-6 px-6 text-[13px]" style={{ color: colors.alert }}>
+            {motif}
           </p>
-        )}
+        ))}
 
         {/* Planifiés */}
         <div className="mt-8 px-6">
@@ -342,10 +348,17 @@ export default function PlanningClient({
           ) : (
             <div className="flex flex-col gap-2">
               {planifies.map((c) => (
-                <CarteGlissante
+                <LigneRetirable
                   key={c.id}
-                  libelleSuppression={`Supprimer le chantier ${c.nom}`}
-                  onSupprimer={() => supprimer(c.id)}
+                  libelle={`le chantier ${c.nom}`}
+                  retiree={retraits.estRetire(c.id)}
+                  onRetirer={() => retraits.retirer(c.id, `le chantier ${c.nom}`)}
+                  // Une carte planifiée porte trois lignes et deux actions :
+                  // elle monte à 190 px, au-delà des 170 par défaut. Au repos,
+                  // l'enveloppe la tronquerait.
+                  hauteurMax={210}
+                  plage={{ fond: colors.card }}
+                  className="flex"
                 >
                 {/* **Le planning était un cul-de-sac.** Le patron, le 8 août
                     2026 : « le client m'a retourné la date validée, il se range
@@ -364,7 +377,7 @@ export default function PlanningClient({
                     au chantier, « Fin de chantier » à la facture, et la date se
                     change par un lien discret — c'est le geste le plus rare des
                     trois une fois le client d'accord. */}
-                <div className="rounded-[4px] px-5 py-4" style={{ backgroundColor: colors.card }}>
+                <div className="w-full px-5 py-4">
                   <Link href={`/chantiers/${c.id}`} className="flex items-center gap-3 text-left">
                     <div
                       className="flex h-11 w-11 flex-shrink-0 flex-col items-center justify-center rounded-[4px]"
@@ -424,11 +437,22 @@ export default function PlanningClient({
                     </Link>
                   </div>
                 </div>
-                </CarteGlissante>
+                </LigneRetirable>
               ))}
             </div>
           )}
         </div>
+
+        {/* Le tiroir, en fin de contenu et non par-dessus : il pousse la
+            dernière carte vers le haut au lieu de la masquer. Cet écran défile
+            avec la page — le tiroir vient donc après tout le reste, juste
+            au-dessus du bandeau du bas. */}
+        <TiroirDesRetires
+          dernier={retraits.dernier}
+          nombre={retraits.nombre}
+          onAnnuler={retraits.annuler}
+          className="mt-8"
+        />
       </div>
 
       {/* Choix de date — sélecteur natif, confirmation d'action positive (patron n°2) */}

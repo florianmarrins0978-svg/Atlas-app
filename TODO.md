@@ -422,6 +422,29 @@ suffit ») et la **capacité en hommes** — `taille_equipe` est du texte libre,
 faudrait le fiabiliser avant d'en faire une contrainte. Voir `ARCHITECTURE.md`
 §22 pour les arbitrages.
 
+### 7 bis. ~~Le retrait, partout~~ — fait le 10 août 2026
+
+Le cinquième choix du patron sur les maquettes : « le tiroir des retirés »,
+appliqué aux **huit** endroits qui suppriment (le recensement de
+`docs/INTEGRER-ORIGINE.md` §4 bis en annonçait sept — le planning manquait).
+Détail et pièges dans `ARCHITECTURE.md` §48.
+
+**Ce qui reste de la fiche `docs/INTEGRER-ORIGINE.md` :** son §6, l'ouverture
+de « Nouveau chantier » — et il porte un point de PRODUIT non tranché, à poser
+au patron avant de coder : cet écran est aujourd'hui une page avec sa flèche de
+retour, quand l'ouverture retenue raconte une feuille modale.
+
+**Deux choses laissées telles quelles, et dites plutôt que tues :**
+
+- **Les maquettes `/design/prix`** montrent encore l'ancienne croix nue et le
+  bandeau flottant (`AnimatedRow`, `UndoToast`, qui ne servent plus qu'à
+  elles). Elles sont découplées du produit depuis le 1er août ; les reprendre
+  ou les retirer reste à décider, mais elles contredisent l'application.
+- **Le geste en diagonale n'a pas pu être éprouvé ici** : le glissement
+  horizontal du texte et l'accroche verticale du fil ne portent pas sur le même
+  axe, mais un pouce, lui, bouge en biais. Un navigateur piloté ne le
+  reproduit pas — à essayer sur un vrai téléphone.
+
 ### 7. Finir la refonte — l'ordre, les pièges, les valeurs
 
 **Ce point existe pour qu'une conversation neuve puisse reprendre le travail

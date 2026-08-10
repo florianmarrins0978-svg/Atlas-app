@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { colors, smallCaps } from "@/lib/design-tokens";
 import ImportTarifs from "./ImportTarifs";
+import LigneRetirable from "@/components/atlas/LigneRetirable";
+import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
+import { useRetraits } from "@/components/atlas/useRetraits";
 import {
   creerTarifAction,
   modifierTarifAction,
@@ -51,10 +54,16 @@ export default function ReglagesClient({
     }
   }
 
-  async function supprimer(id: string) {
-    setTarifs((cur) => cur.filter((t) => t.id !== id));
-    await supprimerTarifAction(id);
-  }
+  // Le retrait réversible, comme partout. Un tarif effacé par erreur ne se
+  // retrouve pas : c'est une valeur que le patron a saisie à la main, et rien
+  // ne la reconstitue. Le bouton « Supprimer » nu ne laissait aucun retour.
+  const retraits = useRetraits({
+    valider: async (id) => {
+      await supprimerTarifAction(id);
+      setTarifs((cur) => cur.filter((t) => t.id !== id));
+    },
+  });
+  const tarifsVisibles = tarifs.filter((t) => !retraits.estRetire(t.id));
 
   return (
     <div className="px-6 pt-5">
@@ -111,7 +120,7 @@ export default function ReglagesClient({
           constate qu'elle est vide, et donc là que la question se pose. */}
       <ImportTarifs onImporte={(nouveaux) => setTarifs(nouveaux)} />
 
-      {tarifs.length === 0 && (
+      {tarifsVisibles.length === 0 && (
         <p className="mt-5 text-[13px]" style={{ color: colors.muted }}>
           Aucun tarif pour l&apos;instant.
         </p>
@@ -119,7 +128,18 @@ export default function ReglagesClient({
 
       <ul className="mt-5 flex flex-col gap-3">
         {tarifs.map((t) => (
-          <li key={t.id} className="flex flex-col gap-2 rounded-[4px] p-4" style={{ backgroundColor: colors.card }}>
+          <li key={t.id}>
+          <LigneRetirable
+            libelle={t.intitule ? `le tarif « ${t.intitule} »` : "ce tarif"}
+            retiree={retraits.estRetire(t.id)}
+            onRetirer={() => retraits.retirer(t.id, t.intitule ? `le tarif « ${t.intitule} »` : "ce tarif")}
+            // Un tarif porte trois champs sur deux rangées : 190 px suffisent,
+            // les 170 par défaut le tronqueraient au repos.
+            hauteurMax={200}
+            plage={{ fond: colors.card }}
+            className="flex"
+          >
+          <div className="flex w-full flex-col gap-2 p-4">
             <div className="flex items-center gap-2">
               <input
                 value={t.intitule}
@@ -130,15 +150,6 @@ export default function ReglagesClient({
                 className="min-w-0 flex-1 rounded-[4px] border-0 px-3 py-2.5 outline-none"
                 style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
               />
-              <button
-                type="button"
-                onClick={() => supprimer(t.id)}
-                aria-label="Supprimer ce tarif"
-                className="flex-shrink-0 text-[13px]"
-                style={{ color: colors.muted }}
-              >
-                Supprimer
-              </button>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <label className="flex flex-col gap-1">
@@ -174,9 +185,18 @@ export default function ReglagesClient({
                 />
               </label>
             </div>
+          </div>
+          </LigneRetirable>
           </li>
         ))}
       </ul>
+
+      <TiroirDesRetires
+        dernier={retraits.dernier}
+        nombre={retraits.nombre}
+        onAnnuler={retraits.annuler}
+        className="mt-3 !mx-0"
+      />
 
       <button
         type="button"

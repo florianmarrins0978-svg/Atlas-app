@@ -117,13 +117,20 @@ l'application. Ce qui est **fait** :
   des « six ».
 - **La typographie** : plus aucune police téléchargée. L'application prend
   celles de l'appareil, comme la maquette que le patron a validée.
+- **Le retrait, partout** (10 août, au soir) : le texte glisse, « Retirer » se
+  découvre, la ligne tombe, un tiroir la retient. **Huit** endroits, une seule
+  mécanique là où il y en avait trois. Les panneaux « Supprimer … ? »
+  disparaissent : la sécurité passe d'une confirmation avant à une
+  réversibilité après, et **rien n'est écrit tant que le tiroir est ouvert**.
+  `ARCHITECTURE.md` §48.
 
 Ce qui **reste**, avec l'ordre, les valeurs, les sept pièges et les deux
 réserves : **`TODO.md` §7**. Le dessin fait foi dans
 `docs/maquettes/13-le-fil-quatre-couleurs.html`, qui est du HTML pur.
 
-**Trois pièces partagées portent toute la grammaire** — `EnTeteEcran`,
-`PrimaryButton`, `src/lib/design-tokens.ts`. Une allure ne se recopie pas dans
+**Cinq pièces partagées portent toute la grammaire** — `EnTeteEcran`,
+`PrimaryButton`, `src/lib/design-tokens.ts`, et depuis le 10 août au soir
+`LigneRetirable` + `TiroirDesRetires` (avec le crochet `useRetraits`). Une allure ne se recopie pas dans
 un écran : elle s'ajoute à ces pièces, sinon les écrans divergent de nouveau.
 Les deux voix de l'écran retenu y sont depuis le 10 août : **`libelleCaps`**
 (les libellés, états et actions secondaires) et **`texteSituation`** (ce qui se

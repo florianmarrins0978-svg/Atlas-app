@@ -27,7 +27,10 @@ const dossier = process.argv[2];
 const chantierId = process.argv[3];
 const etapes = process.argv.slice(4);
 const port = process.env.PORT_BANC ?? "3000";
-const base = `http://127.0.0.1:${port}`;
+// `localhost` et non `127.0.0.1` : Next bloque ses ressources de
+// développement pour toute origine qu'il juge étrangère, et la page arrive
+// alors sans être hydratée — visible, mais morte sous le doigt.
+const base = `http://localhost:${port}`;
 
 if (!dossier || !chantierId || etapes.length === 0) {
   console.error("usage : npx tsx scripts/capture-etape.mts <dossier> <chantierId> <etape…>");

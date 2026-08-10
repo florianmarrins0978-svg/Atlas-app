@@ -56,11 +56,18 @@ async function main() {
   await page.waitForSelector('button[aria-label="Fermer"]', { timeout: 5000 });
   assert.ok(await page.locator(`img[src="${src}"]`).last().isVisible(), "La visionneuse doit afficher la même image");
 
-  // --- Suppression réelle avec confirmation ---
-  await page.click('button[aria-label="Supprimer cette photo"]');
-  await page.waitForSelector("text=Supprimer cette photo ?", { timeout: 5000 });
-  await page.click('button:has-text("Supprimer")');
+  // --- Retrait réel, SANS panneau de confirmation ---
+  //
+  // Le panneau « Supprimer cette photo ? » a disparu le 10 août 2026 : la
+  // sécurité est passée d'une confirmation avant à une réversibilité après.
+  // Ce que cette suite tient désormais : le retrait se fait d'un seul geste,
+  // et le tiroir s'ouvre pour le rattraper.
+  await page.click('button[aria-label="Retirer cette photo"]');
   await page.waitForSelector("text=Aucune photo pour l'instant", { timeout: 5000 });
+  assert.ok(
+    await page.locator(".atlas-tiroir[data-ouvert='oui']").first().isVisible(),
+    "Le tiroir des retirés ne s'est pas ouvert : le retrait n'est rattrapable nulle part."
+  );
 
   // Le fichier ne doit plus être accessible immédiatement après confirmation
   // côté liste (suppression douce actée), même si la purge physique est différée.
@@ -103,7 +110,10 @@ async function main() {
     "La feuille doit proposer d'aller chercher une photo déjà prise."
   );
   // Une feuille sans sortie est un piège : on doit pouvoir renoncer.
-  await page.click('button:has-text("Annuler")');
+  //
+  // Visé par son libellé EXACT : depuis que le tiroir des retirés porte lui
+  // aussi un « Annuler », `has-text` en trouve deux et prend le mauvais.
+  await page.getByRole("button", { name: "Annuler", exact: true }).click();
   assert.equal(
     await page.getByRole("button", { name: /Choisir dans ma bibliothèque/i }).count(),
     0,

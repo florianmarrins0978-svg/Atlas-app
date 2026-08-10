@@ -9,6 +9,52 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le tiroir des retirés — une seule façon de supprimer, partout
+
+*« Je veux qu'il applique ce style à tout ce qu'on peut supprimer dans
+l'appli. »* Le texte glisse vers la gauche, « Retirer » se découvre, la ligne
+tombe, et un tiroir la retient en bas de l'écran : « Retiré à l'instant —
+Annuler ».
+
+**Ce que ce lot déplace, et c'est le cœur du geste :** la sécurité passait par
+une confirmation AVANT (« Supprimer cette photo ? »), elle passe par une
+réversibilité APRÈS. Les deux panneaux disparaissent — garder les deux ferait
+demander deux fois.
+
+**Rien n'est écrit tant que le tiroir est ouvert**, et c'est la promesse dont
+tout dépend. La photo et la note vocale mettent leur fichier en file de purge
+*dans la même transaction* que la suppression : appeler le serveur au moment du
+geste aurait rendu « Annuler » menteur — la ligne serait revenue, le fichier
+non. La ligne est donc seulement masquée, et l'écriture attend la fermeture.
+Trois sorties la déclenchent : le minuteur, le départ de la page, le démontage.
+
+**Trois mécaniques deviennent une**, sur **huit** endroits — le recensement en
+annonçait sept, le planning et ses trois listes manquaient à l'appel.
+`CarteGlissante` disparaît ; `AnimatedRow` ne sert plus qu'aux maquettes.
+
+**Le glissement est désormais un défilement natif**, et non un suivi du doigt
+en JavaScript. Cent lignes de calcul d'élan en moins, et quatre choses en plus
+qui n'existaient pas : l'inertie de la plateforme, `prefers-reduced-motion`, la
+molette, et un « Retirer » atteignable au clavier.
+
+**Un seul des huit ne prend pas le glissement, à dessein :** les photos. Une
+vignette carrée dans une grille de trois n'est pas une ligne. Elle garde tout
+le reste du geste et se retire depuis la visionneuse, là où on la regarde.
+
+**Deux défauts que seule l'exécution pouvait trouver.** Sur le devis complet,
+les totaux lisaient le crochet déclaré plus bas : zone morte temporelle, écran
+en 500, et ni `tsc` ni `eslint` ne la voient. Et sur le planning comme sur les
+tarifs, la carte entière glissait avec son fond — rectangle tiré hors de
+l'écran, bordure tranchée net. Vu en capture ; le fond est maintenant porté par
+l'enveloppe, qui ne bouge pas.
+
+**Une heure perdue sur un défaut qui n'existait pas**, et la leçon est écrite :
+les captures visaient `127.0.0.1`, où Next **refuse de servir ses ressources de
+développement**. La page arrivait rendue par le serveur et jamais hydratée — on
+cliquait dans le vide, et tout accusait le retrait. C'est `localhost` qu'il
+faut viser, et le contrôle attend désormais un marqueur posé après le premier
+effet, en échouant s'il n'arrive pas.
+
 ### Le corps des écrans Informations et Prix
 
 Étape 2 de la fin de refonte (`TODO.md` §7) : les deux écrans les plus chargés

@@ -3046,3 +3046,105 @@ vise désormais `a.atlas-brin`, une étiquette de code et non un libellé.
 d'abord s'il lit du **rendu** ou de la **donnée**. Corriger le produit pour
 satisfaire un contrôle qui lit du rendu, c'est défaire ce qui vient d'être
 validé.
+
+---
+
+## 48. Le tiroir des retirés — une seule façon de supprimer, partout
+
+*Cinquième et dernier choix arrêté par le patron sur les maquettes du 10 août
+2026 : « je veux qu'il applique ce style à tout ce qu'on peut supprimer dans
+l'appli ». `docs/INTEGRER-ORIGINE.md` §4 et §4 bis portent le dessin.*
+
+### Ce que le geste déplace, et qu'il faut décider en le sachant
+
+**La sécurité passe d'une confirmation AVANT à une réversibilité APRÈS.** Les
+panneaux « Supprimer cette photo ? » et « Supprimer cette note vocale ? »
+disparaissent : garder les deux ferait demander deux fois, et c'est le cœur de
+ce que le patron a retenu. Ce n'est pas un allègement — c'est un déplacement,
+et il ne tient qu'à une condition, celle du paragraphe suivant.
+
+### Rien n'est écrit tant que le tiroir est ouvert
+
+**C'est la seule promesse qui ne se vérifie pas à l'écran, et la seule dont
+tout dépend.** La photo et la note vocale ont un fichier derrière elles, et
+`supprimerPhoto` / `supprimerNoteVocale` mettent ce fichier en file de purge
+**dans la même transaction** que la suppression (`fichiers_a_purger`). Appeler
+le serveur au moment du geste aurait rendu « Annuler » menteur : la ligne
+serait revenue, le fichier non. *Une annulation qui ne rend rien est pire que
+pas d'annulation.*
+
+D'où `useRetraits` : la ligne est **masquée**, jamais retirée de l'état de
+l'écran, et l'écriture attend la fermeture du tiroir. Annuler n'est alors qu'un
+oubli. L'ancienne mécanique — supprimer, puis RECRÉER à l'annulation — rendait
+une ligne neuve avec un identifiant neuf, ce qui n'est pas la même chose.
+
+**Trois sorties, et il en faut trois** : le minuteur (six secondes), le départ
+de la page (`pagehide`), et le démontage. Sans les deux dernières, quitter
+l'écran pendant le délai annulerait le retrait en silence, et le patron
+retrouverait la ligne qu'il croit supprimée.
+
+### Le glissement est un défilement natif, pas un suivi du doigt
+
+`CarteGlissante` mesurait l'élan à la main — `touchstart`/`touchmove`/
+`touchend`, une fonction de freinage, un seuil de chiquenaude : cent lignes
+pour refaire ce que le système fait mieux. `.atlas-glisse` est un conteneur à
+`overflow-x: auto` avec deux points d'accroche.
+
+Quatre choses viennent avec, et aucune n'existait avant : l'inertie et le
+rebond de la plateforme, `prefers-reduced-motion`, la molette et le pavé
+tactile, et surtout un « Retirer » **atteignable au clavier** — le focus fait
+défiler la colonne tout seul, là où l'ancienne carte devait sortir son bouton
+de l'ordre de tabulation tant qu'elle était fermée.
+
+### Seule la colonne du texte glisse — et le fond ne glisse jamais
+
+La date et le fil ne bougent pas (`avant`), et le voile de 16 px fait
+**dissoudre** le texte qui sort au lieu de le trancher en plein mot.
+
+**Le fond est porté par l'enveloppe, qui reste en place** (`plage`). Vu en
+capture, et c'est le seul vrai défaut de ce lot : sur le planning et les
+tarifs, où la ligne est une carte, laisser le fond partir avec le texte tirait
+le rectangle clair hors de l'écran, bordure tranchée net, « Retirer » posé sur
+le fond de page. Ça se lisait comme un défaut d'affichage, pas comme un geste.
+
+### Huit endroits, pas sept — et un qui ne prend pas le glissement
+
+Le recensement de la fiche en comptait sept. **Le planning est le huitième** :
+ses trois listes supprimaient par `CarteGlissante`. L'oublier aurait laissé la
+moitié de l'ancienne mécanique debout.
+
+**Les photos ne prennent pas le glissement, et c'est délibéré :** une vignette
+carrée dans une grille de trois n'est pas une ligne, et y faire glisser un
+texte qui n'existe pas n'aurait aucun sens. Elles gardent tout le reste — le
+mot « Retirer », sa couleur, le tiroir, l'écriture différée — et se retirent
+depuis la visionneuse, là où on les regarde.
+
+### Ce qui reste refusé, et le dit
+
+Un chantier facturé ne se retire pas : sa facture figure au relevé de TVA.
+`CarteGlissante` portait `desactive` et ne faisait alors **rien du tout** — un
+geste sans effet ressemble à une panne. Le glissement découvre désormais le
+**motif** à la place du bouton. Et si le serveur refuse malgré tout — c'est lui
+qui tranche —, la ligne revient avec sa raison plutôt que de disparaître à tort.
+
+### Deux défauts que seule l'exécution pouvait trouver
+
+1. **« Cannot access 'retraits' before initialization ».** Sur le devis complet,
+   les totaux lisaient le crochet déclaré plus bas : zone morte temporelle,
+   écran en 500, et **ni `tsc` ni `eslint` ne la voient**. Trouvé en ouvrant
+   l'écran, pas autrement.
+2. **Une heure perdue sur un défaut qui n'existait pas.** Les captures visaient
+   `127.0.0.1` ; Next **refuse de servir ses ressources de développement à une
+   origine qu'il juge étrangère**. La page arrivait rendue par le serveur et
+   n'était jamais hydratée : les boutons existaient sans le moindre écouteur,
+   on cliquait dans le vide, et tout accusait le retrait. C'est `localhost`
+   qu'il faut viser. `scripts/capture-retrait.mts` attend désormais un marqueur
+   posé **après** le premier effet (`data-atlas-vivant`), et **échoue** si ce
+   marqueur n'arrive pas — en nommant le bon coupable.
+
+### Ce qui n'a pas pu être éprouvé ici, et qui doit l'être au doigt
+
+Le glissement horizontal du texte et l'accroche verticale du fil
+(`scroll-snap-stop: always`) ne portent pas sur le même axe, mais ils se
+disputent un mouvement en **diagonale** — le cas ordinaire d'un pouce. Un
+navigateur piloté ne le reproduit pas. À essayer sur un vrai téléphone.

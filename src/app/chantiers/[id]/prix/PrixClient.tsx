@@ -5,8 +5,9 @@ import { useState } from "react";
 import Decimal from "decimal.js";
 import { champPlage, colors, font, libelleCaps, styleChampPlage, texteSituation } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
-import UndoToast from "@/components/atlas/UndoToast";
-import { AnimatedRow } from "@/components/atlas/AnimatedRow";
+import LigneRetirable from "@/components/atlas/LigneRetirable";
+import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
+import { useRetraits } from "@/components/atlas/useRetraits";
 import {
   ajouterLignePrixAction,
   modifierLignePrixAction,
@@ -36,20 +37,34 @@ export default function PrixClient({
   const router = useRouter();
   const [propositionVisible, setPropositionVisible] = useState(!saisieManuelle);
   const [lignes, setLignes] = useState<Ligne[]>(initialLignes);
-  const [leavingIds, setLeavingIds] = useState<Set<string>>(new Set());
-  const [toast, setToast] = useState<{ item: Ligne; index: number } | null>(null);
   const [validationEnCours, setValidationEnCours] = useState(false);
   const [erreurValidation, setErreurValidation] = useState<string | null>(null);
 
+  // Le retrait réversible : la ligne n'est que masquée tant que le tiroir est
+  // ouvert, et l'écriture attend sa fermeture. L'ancienne mécanique supprimait
+  // puis RECRÉAIT une ligne à l'annulation — un identifiant neuf pour la même
+  // ligne, ce qui n'est pas la même chose.
+  const retraits = useRetraits({
+    valider: async (id) => {
+      await supprimerLignePrixAction(id);
+      setLignes((cur) => cur.filter((l) => l.id !== id));
+    },
+  });
+
+  // **Le total suit ce qui reste.** Un montant qui ne bouge pas après un
+  // retrait fait douter que le retrait ait eu lieu — et ici, c'est le chiffre
+  // que le client recevra.
+  const visibles = lignes.filter((l) => !retraits.estRetire(l.id));
+
   // Total exact — jamais de somme via `number`/parseFloat, même côté client
   // pour l'affichage en direct pendant la saisie.
-  const total = lignes
+  const total = visibles
     .reduce((acc, l) => acc.plus(new Decimal(l.montant || "0")), new Decimal(0))
     .toFixed(2);
 
   // La même règle que celle appliquée côté serveur : un écran plus permissif
   // que le serveur laisse le patron devant un bouton qui échoue sans raison.
-  const verdict = peutPreparerDevis(lignes);
+  const verdict = peutPreparerDevis(visibles);
 
   async function ajouter() {
     const nouvelle = await ajouterLignePrixAction(chantierId);
@@ -74,35 +89,6 @@ export default function PrixClient({
     const decimal = new Decimal(montantSaisi || "0").toFixed(2);
     setLignes((cur) => cur.map((l) => (l.id === id ? { ...l, montant: decimal } : l)));
     await modifierLignePrixAction(id, { montant: decimal });
-  }
-
-  function retirer(id: string) {
-    setLeavingIds((s) => new Set(s).add(id));
-    setTimeout(async () => {
-      const index = lignes.findIndex((l) => l.id === id);
-      if (index === -1) return;
-      const item = lignes[index];
-      setLignes((cur) => cur.filter((l) => l.id !== id));
-      setLeavingIds((s) => {
-        const next = new Set(s);
-        next.delete(id);
-        return next;
-      });
-      setToast({ item, index });
-      await supprimerLignePrixAction(id);
-    }, 180);
-  }
-
-  async function annulerSuppression() {
-    if (!toast) return;
-    const { item } = toast;
-    setToast(null);
-    // Ligne facilement recréable (donnée métier recréable, cf. règle validée) :
-    // réinsère une nouvelle ligne avec le même contenu plutôt que de restaurer
-    // l'id supprimé côté base.
-    const nouvelle = await ajouterLignePrixAction(chantierId);
-    await modifierLignePrixAction(nouvelle.id, { libelle: item.libelle, montant: item.montant });
-    setLignes((cur) => [...cur, { id: nouvelle.id, libelle: item.libelle, montant: item.montant }]);
   }
 
   async function valider() {
@@ -187,7 +173,16 @@ export default function PrixClient({
         {lignes.length > 0 && (
           <div className="flex flex-col gap-1">
             {lignes.map((ligne) => (
-              <AnimatedRow key={ligne.id} leaving={leavingIds.has(ligne.id)} onRemove={() => retirer(ligne.id)}>
+              <LigneRetirable
+                key={ligne.id}
+                libelle={ligne.libelle ? `la ligne ${ligne.libelle}` : "cette ligne"}
+                retiree={retraits.estRetire(ligne.id)}
+                onRetirer={() =>
+                  retraits.retirer(ligne.id, ligne.libelle ? `la ligne ${ligne.libelle}` : "cette ligne")
+                }
+                hauteurMax={70}
+                className="flex items-center gap-2"
+              >
                 <input
                   value={ligne.libelle}
                   onChange={(e) => modifierLibelle(ligne.id, e.target.value)}
@@ -207,12 +202,12 @@ export default function PrixClient({
                   className="w-[92px] flex-shrink-0 border-0 px-3 py-3 text-right outline-none"
                   style={{ ...styleChampPlage, fontVariantNumeric: "tabular-nums" }}
                 />
-              </AnimatedRow>
+              </LigneRetirable>
             ))}
           </div>
         )}
 
-        {lignes.length === 0 && (
+        {visibles.length === 0 && (
           <p className={texteSituation} style={{ color: colors.muted }}>
             Aucune ligne pour l&apos;instant.
           </p>
@@ -257,9 +252,16 @@ export default function PrixClient({
             </p>
           )}
         </div>
-      </form>
 
-      <UndoToast open={toast !== null} message="Ligne supprimée" onUndo={annulerSuppression} onDismiss={() => setToast(null)} />
+        {/* Le tiroir vient APRÈS le bouton : il pousse le pied de page vers le
+            haut plutôt que de recouvrir « Préparer le devis ». */}
+        <TiroirDesRetires
+          dernier={retraits.dernier}
+          nombre={retraits.nombre}
+          onAnnuler={retraits.annuler}
+          className="mt-6 !mx-0"
+        />
+      </form>
     </>
   );
 }

@@ -89,11 +89,17 @@ async function main() {
   assert.equal(await section(page, "Prestations").locator("input").first().inputValue(), "Dépose carrelage (terminé)");
 
   // --- Suppression avec toast Annuler ---
-  await section(page, "Prestations").locator('button[aria-label="Retirer cette ligne"]').first().click();
-  await page.waitForTimeout(300);
-  assert.ok(await page.locator("text=Prestation supprimée").isVisible());
-  await page.getByRole("button", { name: "Annuler" }).click();
-  await page.waitForTimeout(300);
+  // Depuis le 10 août 2026 : « Retirer » découvert par glissement, et un tiroir
+  // en bas d'écran qui rattrape. Ce que la suite tient reste le même —
+  // l'annulation doit RENDRE la ligne.
+  await section(page, "Prestations").getByRole("button", { name: /^Retirer / }).first().click();
+  await page.waitForTimeout(500);
+  assert.ok(
+    await page.locator(".atlas-tiroir[data-ouvert='oui']").first().isVisible(),
+    "Le tiroir des retirés ne s'est pas ouvert."
+  );
+  await page.getByRole("button", { name: /^Annuler le retrait/ }).click();
+  await page.waitForTimeout(500);
   const prestationsApresAnnulation = await section(page, "Prestations").locator("input").count();
   assert.equal(prestationsApresAnnulation, 1, "La prestation doit être restaurée après annulation");
 

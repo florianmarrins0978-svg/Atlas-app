@@ -45,6 +45,35 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**Le retrait est le même partout (10 août, au soir).** Le texte glisse vers la
+gauche, « Retirer » se découvre, la ligne tombe, un tiroir la retient :
+« Retiré à l'instant — Annuler ». Huit endroits, une seule mécanique là où il
+y en avait trois.
+
+**Quatre choses à savoir avant d'y toucher — les trois premières sont des
+promesses, pas des détails :**
+
+1. **Rien n'est écrit tant que le tiroir est ouvert.** La photo et la note
+   vocale mettent leur fichier en file de purge dans la MÊME transaction que la
+   suppression : appeler le serveur au moment du geste rendrait « Annuler »
+   menteur — la ligne reviendrait, le fichier non. `useRetraits` masque la
+   ligne et n'écrit qu'à la fermeture (minuteur, `pagehide`, démontage).
+2. **Le fond ne glisse jamais.** Seule la colonne du texte bouge ; la date, le
+   fil et la plage restent en place (`avant`, `plage`). Laisser la carte partir
+   avec son fond la tire hors de l'écran, bordure tranchée — vu en capture sur
+   le planning et les tarifs.
+3. **« Annuler » vise le DERNIER retrait.** Un libellé unique pointant toujours
+   la même ligne rendrait la première quand on retire la deuxième :
+   l'annulation supprimerait.
+4. **Les photos ne prennent pas le glissement**, et ce n'est pas un oubli : une
+   vignette carrée n'est pas une ligne. Elles gardent le reste du geste et se
+   retirent depuis la visionneuse.
+
+**Et le piège qui a coûté une heure, sur du code juste :** une capture qui vise
+`127.0.0.1` obtient une page **jamais hydratée** — Next refuse d'y servir ses
+ressources de développement. Les boutons existent sans écouteur, on clique dans
+le vide, et tout accuse l'écran. **Viser `localhost`.**
+
 **Les corps d'Informations et de Prix sont refaits (10 août) — étape 2 de
 `TODO.md` §7.** Reste l'étape 3 : Devis, Export, Facture.
 

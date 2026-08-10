@@ -2,7 +2,9 @@
 
 import { useRef, useState, type ChangeEvent } from "react";
 import Link from "next/link";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
+import { useRetraits } from "@/components/atlas/useRetraits";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { ajouterPhotoAction, supprimerPhotoAction } from "./actions";
@@ -18,7 +20,26 @@ export default function PhotosClient({
 }) {
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
   const [ouverte, setOuverte] = useState<string | null>(null);
-  const [confirmationVisible, setConfirmationVisible] = useState(false);
+
+  // **Le panneau « Supprimer cette photo ? » a disparu, et c'est le cœur du
+  // geste retenu le 10 août 2026** : la sécurité passe d'une confirmation
+  // AVANT à une réversibilité APRÈS. Garder les deux ferait demander deux fois.
+  //
+  // La photo a un fichier derrière elle, et `supprimerPhoto` le met en file de
+  // purge dans la même transaction. L'appel n'a donc lieu qu'à la FERMETURE du
+  // tiroir : d'ici là, « Annuler » rend la photo, fichier compris.
+  const retraits = useRetraits({
+    valider: async (id) => {
+      try {
+        await supprimerPhotoAction(id);
+        setPhotos((p) => p.filter((ph) => ph.id !== id));
+      } catch {
+        // Déjà répercutée visuellement ; une resynchronisation complète en cas
+        // d'échec réseau est laissée à un lot ultérieur.
+      }
+    },
+  });
+  const visibles = photos.filter((p) => !retraits.estRetire(p.id));
   const [enCours, setEnCours] = useState(false);
   const [choixOuvert, setChoixOuvert] = useState(false);
   // **Un seul bouton, et le choix au moment d'appuyer.**
@@ -67,20 +88,6 @@ export default function PhotosClient({
     setEnCours(false);
   }
 
-  async function confirmerSuppression() {
-    if (!ouverte) return;
-    const id = ouverte;
-    setConfirmationVisible(false);
-    setOuverte(null);
-    setPhotos((p) => p.filter((ph) => ph.id !== id));
-    try {
-      await supprimerPhotoAction(id);
-    } catch {
-      // La suppression est déjà répercutée visuellement ; une resynchronisation
-      // complète en cas d'échec réseau est laissée à un lot ultérieur.
-    }
-  }
-
   function choisir(champ: React.RefObject<HTMLInputElement | null>) {
     // La feuille se referme AVANT d'ouvrir le sélecteur : sur iPhone, elle
     // resterait sinon affichée derrière l'appareil photo, et se retrouverait au
@@ -92,10 +99,17 @@ export default function PhotosClient({
   return (
     <>
       <p
+        // Une étiquette de code, pas un libellé : un contrôle accroché au texte
+        // casse à la refonte suivante sans qu'aucun défaut n'existe.
+        data-atlas="compte-photos"
         className="px-[26px] pt-4 text-[9.5px] font-medium uppercase"
         style={{ color: colors.muted, letterSpacing: "0.28em" }}
       >
-        {photos.length > 0 ? `${photos.length} photo${photos.length > 1 ? "s" : ""}` : "Aucune photo pour l'instant"}
+        {/* Le décompte suit le retrait : « 6 photos » au-dessus de cinq
+            vignettes ferait douter que le retrait ait eu lieu. */}
+        {visibles.length > 0
+          ? `${visibles.length} photo${visibles.length > 1 ? "s" : ""}`
+          : "Aucune photo pour l'instant"}
       </p>
 
       <div className="px-[26px] pt-6">
@@ -125,9 +139,9 @@ export default function PhotosClient({
         </PrimaryButton>
       </div>
 
-      {photos.length > 0 ? (
+      {visibles.length > 0 ? (
         <div className="mt-6 grid grid-cols-3 gap-2.5 px-[26px]">
-          {photos.map((p) => (
+          {visibles.map((p) => (
             <button
               key={p.id}
               onClick={() => setOuverte(p.id)}
@@ -163,7 +177,7 @@ export default function PhotosClient({
           cet écran reste d'ajouter des photos — on propose la suite, on ne la
           met pas en avant. N'apparaît qu'une fois une photo présente : avant,
           elle n'aurait rien à enchaîner. */}
-      {photos.length > 0 && (
+      {visibles.length > 0 && (
         <div className="mt-7 px-[26px]">
           <Link
             href={`/chantiers/${chantierId}/note-vocale`}
@@ -182,6 +196,15 @@ export default function PhotosClient({
         </div>
       )}
 
+      {/* Le tiroir, sous la grille et le lien de suite : il pousse le contenu
+          vers le haut au lieu de le recouvrir. */}
+      <TiroirDesRetires
+        dernier={retraits.dernier}
+        nombre={retraits.nombre}
+        onAnnuler={retraits.annuler}
+        className="mt-7"
+      />
+
       {/* Visionneuse plein écran — seule exception à la palette claire */}
       {ouverte !== null && (
         <div className="fixed inset-0 z-30 flex flex-col" style={{ backgroundColor: colors.ink }}>
@@ -196,15 +219,23 @@ export default function PhotosClient({
                 <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
               </svg>
             </button>
+            {/* **Le seul écran où le glissement ne s'applique pas**, et ce
+                n'est pas un oubli : une vignette carrée dans une grille de
+                trois n'est pas une ligne, et y faire glisser un texte qui
+                n'existe pas n'aurait aucun sens. Ce qui est repris, c'est le
+                reste du geste — le mot « Retirer », sa couleur, et le tiroir
+                qui rattrape. La photo se retire d'où on la regarde. */}
             <button
-              onClick={() => setConfirmationVisible(true)}
-              aria-label="Supprimer cette photo"
-              className="flex h-11 w-11 items-center justify-center rounded-full"
-              style={{ backgroundColor: "rgba(255,255,255,0.12)" }}
+              onClick={() => {
+                const id = ouverte;
+                setOuverte(null);
+                retraits.retirer(id, "cette photo");
+              }}
+              aria-label="Retirer cette photo"
+              className={`flex h-11 items-center justify-center rounded-full px-4 ${libelleCaps}`}
+              style={{ backgroundColor: "rgba(255,255,255,0.12)", color: colors.orClair, letterSpacing: "0.26em" }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F6F1E6" strokeWidth="2">
-                <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-8 0v12a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V7" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              Retirer
             </button>
           </div>
           <div className="flex flex-1 items-center justify-center">
@@ -222,33 +253,6 @@ export default function PhotosClient({
             />
           </div>
 
-          {/* Confirmation de suppression — sheet légère, jamais l'action visuellement dominante */}
-          {confirmationVisible && (
-            <div className="fixed inset-0 z-40 flex items-end" style={{ backgroundColor: "rgba(0,0,0,0.35)" }}>
-              <div className="w-full rounded-t-[26px] px-[26px] pb-9 pt-3" style={{ backgroundColor: colors.cream }}>
-                <div className="mx-auto mb-5 h-1 w-10 rounded-full" style={{ backgroundColor: colors.line }} />
-                <p className="mb-5 text-center text-[16px]" style={{ color: colors.ink, fontFamily: font.display }}>
-                  Supprimer cette photo ?
-                </p>
-                <div className="flex flex-col gap-2.5">
-                  <button
-                    onClick={() => setConfirmationVisible(false)}
-                    className="rounded-[4px] py-3.5 text-[16px] font-medium"
-                    style={{ backgroundColor: colors.card, color: colors.ink }}
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    onClick={confirmerSuppression}
-                    className="rounded-[4px] py-3.5 text-[15px] font-medium"
-                    style={{ color: colors.alert }}
-                  >
-                    Supprimer
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
