@@ -38,6 +38,12 @@ faux — seul l'après-midi l'était.
 règles qui cachent le bloc des noms, `verifier-atlas-equipes.mjs` rougit ; en
 réintroduisant « Équipe A » dans le planning du solitaire, il rougit deux fois.
 
+**« Autant de chantiers de front » ne disait rien au patron** — *« pour moi
+rien »*. La légende du compteur tient maintenant en une phrase par état : « Un
+chantier à la fois : un jour pris n'est plus proposé. » et « Un jour reste
+proposé tant qu'une équipe est libre. » Un mot de métier qui n'est pas le sien
+n'est pas de la concision, c'est du bruit.
+
 **Le compteur va jusqu'à vingt**, comme `entreprises.nombre_equipes`, avec une
 ligne de nom par équipe. Et un contrôle **vert sur un écran vide** s'est glissé
 là : les vingt lignes gardaient `display:flex` pendant que leur bloc parent
