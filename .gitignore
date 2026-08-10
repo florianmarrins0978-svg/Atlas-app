@@ -67,3 +67,5 @@ next-env.d.ts
 
 # Instantané de Redis, écrit par le service local lancé pour les suites.
 dump.rdb
+maquettes/vues/
+maquettes/*-essai.html

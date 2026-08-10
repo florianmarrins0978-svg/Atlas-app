@@ -229,6 +229,12 @@ trait G au bandeau, la perle qui suit le défilement, l'écran qui recule à
 l'ouverture de « Nouveau chantier », et **le tiroir des retirés** pour
 supprimer une ligne. Le détail et les réserves sont dans `PROJECT_STATE.md`.
 
+> **La fiche de reprise est `docs/INTEGRER-ORIGINE.md`** : elle porte le code
+> exact des maquettes, les pièges déjà payés, l'ordre de travail et ce qu'il
+> faudra vérifier. La maquette elle-même est `maquettes/atlas-origine.html`
+> (elle s'ouvre dans un navigateur, sans rien monter) et
+> `npm run verifier:maquette` la contrôle.
+
 **Le CSS des maquettes ne se recopie pas tel quel**, et c'est le point qui
 coûtera le plus de temps si on l'ignore : l'écran d'accueil n'a aujourd'hui
 **aucune des structures** que ces effets supposent.

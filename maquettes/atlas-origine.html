@@ -1,0 +1,527 @@
+<title>Atlas — version retenue</title>
+
+<style>
+  /*
+    VERSION RETENUE PAR LE PATRON, le 2026-08-10.
+
+      · Charte     Origine
+      · Le trait   G — il dépasse sa cible, revient, et le mot choisi monte
+                   de deux pixels à sa rencontre
+      · La perle   part du 22 juillet, s'accroche à mi-hauteur dès que ce
+                   chantier remonte, un chantier par glissement
+      · Nouveau    D — l'écran des chantiers recule et s'assombrit, la feuille
+        chantier   monte devant lui
+      · Retirer    P — le texte glisse, la ligne tombe, et elle va se compter
+                   dans un tiroir en bas d'où on peut la reprendre
+
+    SANS AUCUN SCRIPT : le lecteur du patron n'en exécute pas. Les onglets
+    sont des boutons radio, l'ouverture et le retrait des cases à cocher, la
+    perle un élément collé. Rien n'est calculé.
+
+    Quatre choses à ne pas défaire :
+      · PAS de cheveu sous ATLAS — refusé explicitement. Seul reste celui qui
+        ferme l'en-tête, au-dessus de « Nouveau chantier ».
+      · PAS de champ « nom du chantier » — supprimé le 5 août 2026 : c'était
+        le seul qui demandait au patron d'inventer quelque chose. Le nom se
+        déduit du client, sinon de l'adresse, sinon de la date.
+      · La marge de fin est DANS le fil, jamais sur le cadre : posée sur le
+        cadre elle rétrécit la zone de défilement, et la perle part 54 px
+        trop haut.
+      · La date et le fil ne glissent PAS avec le texte : une ligne qui part
+        d'un bloc coupe le nom en deux et laisse le fil traverser les lettres.
+        Seule la colonne du texte bouge, et elle se dissout au bord.
+
+    Aucun chantier facturé n'apparaît ici — ils vivent sous « Terminés ». Le
+    refus (« sa facture figure au relevé de TVA ») se joue donc là-bas, pas
+    sur cet écran.
+  */
+  :root{
+    --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c;
+    --bronze:#8f7130; --trait:rgba(22,23,15,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:900px;margin:0 auto;display:flex;flex-direction:column;align-items:center}
+
+  .intro{max-width:58ch;margin:0 auto 30px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 10px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:760px;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#edece6; --e-plage:#f7f6f2; --e-encre:#16170f; --e-gris:#83867c;
+         --e-bronze:#8f7130; --e-trait:rgba(22,23,15,.13); --e-plein:#2a3a2e;
+         --e-plein-encre:#f2f1ea; --e-signe:#c2a05f; --e-attente:#8f7130}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  /* ═══ L'écran des chantiers ═══════════════════════════════════════════ */
+
+  .dessous{position:absolute;inset:0;display:flex;flex-direction:column;
+           transform-origin:50% 44%;
+           transition:transform .56s cubic-bezier(.22,.61,.36,1),filter .56s}
+
+  .enseigne{padding:26px 0 0;text-align:center;font-size:11px;letter-spacing:.52em;flex:none}
+  .titre{padding:34px 26px 0;flex:none}
+  .titre .salut{margin:0;color:var(--e-bronze)}
+  .titre h1{margin:14px 0 0;font-size:36px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+  .titre .compte{margin:14px 0 0;color:var(--e-gris)}
+  .fermeture{height:1px;background:var(--e-trait);margin:26px 26px 0;flex:none}
+
+  .action{position:relative;display:flex;align-items:center;justify-content:space-between;
+          gap:16px;margin:22px 26px 0;padding:16px 20px;border-radius:5px;
+          background:var(--e-plein);color:var(--e-plein-encre);cursor:pointer;flex:none;
+          -webkit-tap-highlight-color:transparent;
+          transition:transform .18s cubic-bezier(.22,.61,.36,1)}
+  .action:active{transform:scale(.985)}
+  .action .quoi{font-size:18px;line-height:1.1;font-family:ui-serif,Georgia,serif}
+  .action .plus{font-size:18px;line-height:1;color:var(--e-signe)}
+
+  .rubrique{display:flex;justify-content:space-between;margin:30px 26px 4px;color:var(--e-gris);flex:none}
+
+  /* ═══ La liste et la perle ════════════════════════════════════════════ */
+
+  .liste{flex:1;min-height:0;overflow-y:auto;
+         scroll-snap-type:y mandatory;scroll-padding-top:44px;
+         -webkit-overflow-scrolling:touch;padding:10px 0 14px;
+         mask-image:linear-gradient(180deg,transparent 0,#000 20px,#000 calc(100% - 20px),transparent 100%);
+         -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 20px,#000 calc(100% - 20px),transparent 100%)}
+
+  /* La marge de fin est ici, sur le fil : elle permet au dernier chantier de
+     venir sous la perle. Sur le cadre, elle déplacerait la perle. */
+  .tige{position:relative;margin:0 26px;padding-bottom:104px}
+  .tige::before{content:"";position:absolute;left:47px;top:12px;bottom:116px;width:1px;background:var(--e-trait)}
+
+  /* `scroll-snap-stop: always` : un geste vif avance d'un chantier, et d'un
+     seul. Sans lui il en saute trois et la perle paraît sauter. Il tient
+     maintenant sur .ligne, l'enveloppe qui se referme au retrait. */
+  .ligne{position:relative;overflow:hidden;max-height:170px;
+         scroll-snap-align:center;scroll-snap-stop:always}
+  .brin{position:relative;display:grid;grid-template-columns:47px 1fr;gap:0 26px;
+        padding:17px 0;text-decoration:none;color:inherit}
+  .jour{grid-row:1 / span 3;text-align:right;padding-right:13px;color:var(--e-gris)}
+  .jour b{display:block;font-weight:400;font-size:19px;line-height:1;color:var(--e-encre);
+          font-family:ui-serif,Georgia,serif}
+  .jour span{display:block;margin-top:4px}
+  .ecran .nom{margin:0;font-size:19px;line-height:1.15;font-weight:400;font-family:ui-serif,Georgia,serif}
+  .ecran .lieu{margin:3px 0 0;font-size:11.5px;color:var(--e-gris)}
+  .ecran .etat{margin:7px 0 0;color:var(--e-gris)}
+  .ecran .etat.attend{color:var(--e-attente)}
+
+  /* La perle est posée dans le flux juste avant le 22 juillet : c'est là
+     qu'elle se tient au repos. Les 23 px retranchés font tomber le point
+     exactement à mi-hauteur une fois accrochée. */
+  .perle{position:sticky;top:calc(50% - 23px);height:0;z-index:2;pointer-events:none}
+  .perle i{position:absolute;left:47px;top:23px;width:7px;height:7px;border-radius:99px;
+           transform:translate(-50%,-50%);background:var(--e-attente);
+           box-shadow:0 0 0 4px var(--e-fond)}
+
+  @supports (animation-timeline: view()){
+    .liste .brin{animation:mettre-en-avant linear both;
+                 animation-timeline:view(); animation-range:cover 12% cover 88%}
+    @keyframes mettre-en-avant{0%,100%{opacity:.4}44%,56%{opacity:1}}
+  }
+
+  /* ═══ Retirer — P : la ligne tombe, le tiroir la retient ══════════════ */
+
+  .sup{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  /* Le voile de 16 px : le texte qui sort se DISSOUT au lieu d'être tranché
+     en plein mot. La marge négative et le retrait intérieur s'annulent, si
+     bien qu'au repos la première lettre est intacte. */
+  .glisse{display:flex;min-width:0;margin-left:-16px;overflow-x:auto;
+          scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;
+          -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 16px);
+          mask-image:linear-gradient(90deg,transparent 0,#000 16px)}
+  .glisse::-webkit-scrollbar{display:none}
+  .volet{flex:0 0 100%;scroll-snap-align:start;padding-left:16px}
+  .corps{display:block;text-decoration:none;color:inherit}
+  .decouvre{flex:0 0 92px;scroll-snap-align:end;display:flex;align-items:center;
+            justify-content:flex-end;color:var(--e-bronze);cursor:pointer;
+            -webkit-tap-highlight-color:transparent;
+            font-size:10px;letter-spacing:.26em;text-transform:uppercase}
+
+  .ligne{transition:max-height .44s .2s cubic-bezier(.4,0,.2,1)}
+  .brin{transition:transform .44s cubic-bezier(.4,0,.6,1),opacity .34s .1s}
+  .sup:checked + .ligne{max-height:0}
+  .sup:checked + .ligne .brin{transform:translateY(46px);opacity:0}
+
+  .tiroir{flex:none;display:flex;justify-content:space-between;align-items:center;
+          margin:0 26px;padding:0;max-height:0;overflow:hidden;opacity:0;
+          border-top:1px solid transparent;
+          transition:max-height .42s cubic-bezier(.22,.61,.36,1),opacity .3s,
+                     padding .42s,border-color .3s}
+  .dessous:has(.sup:checked) .tiroir{max-height:60px;opacity:1;padding:15px 0 4px;
+          border-top-color:var(--e-trait)}
+  .tiroir .quoi{font-size:11.5px;color:var(--e-gris)}
+  .tiroir .agir{display:none;font-size:10px;letter-spacing:.24em;text-transform:uppercase;
+          color:var(--e-bronze);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .tiroir .quoi .plusieurs{display:none}
+  .dessous:has(.sup:checked ~ .sup:checked) .tiroir .quoi .un{display:none}
+  .dessous:has(.sup:checked ~ .sup:checked) .tiroir .quoi .plusieurs{display:inline}
+
+  /* Un « Annuler » unique visant toujours la même ligne rendrait la première
+     au retrait de la deuxième — l'annulation supprimerait. Chaque ligne porte
+     donc son libellé ; on n'affiche que celui du dernier retrait, détecté par
+     « existe-t-il une case cochée APRÈS celle-ci ». */
+  .dessous:has(#c1:checked) .a1{display:block}
+  .dessous:has(#c2:checked) .a2{display:block}
+  .dessous:has(#c3:checked) .a3{display:block}
+  .dessous:has(#c4:checked) .a4{display:block}
+  .dessous:has(#c5:checked) .a5{display:block}
+  .dessous:has(#c6:checked) .a6{display:block}
+  .dessous:has(#c7:checked) .a7{display:block}
+  .dessous:has(#c8:checked) .a8{display:block}
+  .dessous:has(#c1:checked ~ .sup:checked) .a1{display:none}
+  .dessous:has(#c2:checked ~ .sup:checked) .a2{display:none}
+  .dessous:has(#c3:checked ~ .sup:checked) .a3{display:none}
+  .dessous:has(#c4:checked ~ .sup:checked) .a4{display:none}
+  .dessous:has(#c5:checked ~ .sup:checked) .a5{display:none}
+  .dessous:has(#c6:checked ~ .sup:checked) .a6{display:none}
+  .dessous:has(#c7:checked ~ .sup:checked) .a7{display:none}
+
+  /* Le décompte suit ce qui reste. « Huit en cours » au-dessus de six lignes
+     est le genre de détail qui décide, seul, du sentiment de soin. La chaîne
+     de `~ .sup:checked` compte combien de cases sont cochées, sans script. */
+  .n{display:none}
+  .n8{display:inline}
+  .dessous:has(.sup:checked) .n8{display:none}
+  .dessous:has(.sup:checked) .n7{display:inline}
+  .dessous:has(.sup:checked ~ .sup:checked) .n7{display:none}
+  .dessous:has(.sup:checked ~ .sup:checked) .n6{display:inline}
+  .dessous:has(.sup:checked ~ .sup:checked ~ .sup:checked) .n6{display:none}
+  .dessous:has(.sup:checked ~ .sup:checked ~ .sup:checked) .n5{display:inline}
+  .dessous:has(.sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked) .n5{display:none}
+  .dessous:has(.sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked) .n4{display:inline}
+  .dessous:has(.sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked) .n4{display:none}
+  .dessous:has(.sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked) .n3{display:inline}
+  .dessous:has(.sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked) .n3{display:none}
+  .dessous:has(.sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked) .n2{display:inline}
+  .dessous:has(.sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked) .n2{display:none}
+  .dessous:has(.sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked) .n1{display:inline}
+  .dessous:has(.sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked) .n1{display:none}
+  .dessous:has(.sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked ~ .sup:checked) .n0{display:inline}
+
+  /* ═══ Le bandeau — trait G ════════════════════════════════════════════ */
+
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:18px 14px 30px;background:var(--e-fond)}
+  .pico{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+  /* Le bandeau ne prend PAS la chasse de la charte : « CHANTIERS » à .28em
+     mesure 86 px pour une colonne de 85 et vient coller « PLANNING ». Les
+     libellés y sont donc resserrés — c'est le seul endroit de l'écran où
+     quatre mots doivent tenir côte à côte. */
+  .bas label{font-size:9px;letter-spacing:.15em}
+  .bas label{text-align:center;color:var(--e-gris);padding-bottom:8px;cursor:pointer;
+             -webkit-tap-highlight-color:transparent;
+             transition:color .32s cubic-bezier(.22,.61,.36,1),
+                        transform .34s cubic-bezier(.34,1.4,.5,1)}
+  .bas input:checked + label{color:var(--e-encre);transform:translateY(-2px)}
+  .bas input:focus-visible + label{outline:2px solid var(--e-bronze);outline-offset:3px}
+
+  .trait{position:absolute;left:14px;bottom:30px;width:calc((100% - 28px) / 4);pointer-events:none;
+         transition:transform .54s cubic-bezier(.34,1.4,.5,1)}
+  .trait i{display:block;height:1px;background:var(--e-bronze)}
+  .bas input:nth-of-type(1):checked ~ .trait{transform:translateX(0)}
+  .bas input:nth-of-type(2):checked ~ .trait{transform:translateX(100%)}
+  .bas input:nth-of-type(3):checked ~ .trait{transform:translateX(200%)}
+  .bas input:nth-of-type(4):checked ~ .trait{transform:translateX(300%)}
+
+  /* ═══ Nouveau chantier — ouverture D : l'écran recule ═════════════════ */
+
+  .ouvre{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  .voile{position:absolute;inset:0;z-index:4;background:rgba(20,18,14,.12);
+         opacity:0;visibility:hidden;transition:opacity .46s,visibility 0s .46s}
+  .ouvre:checked ~ .voile{opacity:1;visibility:visible;transition:opacity .46s,visibility 0s 0s}
+
+  .feuille{position:absolute;left:0;right:0;bottom:0;top:60px;z-index:5;
+           display:flex;flex-direction:column;overflow:hidden;
+           background:var(--e-fond);color:var(--e-encre);
+           border-radius:26px 26px 0 0;
+           box-shadow:0 -22px 50px rgba(20,18,14,.22);
+           transform:translateY(100%);visibility:hidden;
+           transition:transform .56s cubic-bezier(.22,.61,.36,1),visibility 0s .56s}
+  .ouvre:checked ~ .feuille{transform:translateY(0);visibility:visible;
+           transition:transform .56s cubic-bezier(.22,.61,.36,1),visibility 0s 0s}
+
+  /* C'est la profondeur qui dit « on est passé au-dessus », pas le voile. */
+  .ouvre:checked ~ .dessous{transform:scale(.93) translateY(-10px);filter:brightness(.78)}
+
+  .dedans{flex:1;min-height:0;overflow-y:auto;padding:0 26px 30px}
+
+  .haut{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-top:26px}
+  .rond{display:flex;align-items:center;justify-content:center;width:40px;height:40px;
+        border-radius:99px;background:var(--e-plage);cursor:pointer;flex:none;
+        -webkit-tap-highlight-color:transparent}
+  .rond svg{display:block}
+  .titre-feuille{padding-top:22px}
+  .titre-feuille .sur{margin:0;color:var(--e-bronze)}
+  .titre-feuille h2{margin:10px 0 0;font:400 32px/1.02 ui-serif,Georgia,serif;letter-spacing:-.018em}
+
+  .champ{margin-top:26px}
+  .champ .etiq{display:block;color:var(--e-gris)}
+  .champ .val{margin:9px 0 0;padding-bottom:9px;border-bottom:1px solid var(--e-trait);
+              color:var(--e-gris);font-size:16px}
+  .champ.grand .val{font-size:20px;font-family:ui-serif,Georgia,serif}
+
+  .canal{margin-top:26px}
+  .canal .etiq{display:block;color:var(--e-gris)}
+  .canal .choix{display:flex;gap:10px;margin-top:11px}
+  .canal .choix span{flex:1;text-align:center;padding:13px 0;border-radius:4px;
+                     background:var(--e-plage);color:var(--e-encre);font-size:15px}
+  .canal .choix span.actif{background:var(--e-plein);color:var(--e-plein-encre)}
+
+  .ajout{margin-top:22px;color:var(--e-bronze);font-size:14px}
+  .valider{margin-top:30px;display:flex;align-items:center;justify-content:center;gap:10px;
+           padding:17px 20px;border-radius:5px;background:var(--e-plein);
+           color:var(--e-plein-encre);font-family:ui-serif,Georgia,serif;font-size:18px}
+  .garde{margin:16px 0 0;text-align:center;font-size:12.5px;line-height:1.5;color:var(--e-gris)}
+
+  /* Le contenu entre APRÈS la feuille, dans l'ordre de lecture. Le décompte
+     porte sur les ENFANTS : viser « le premier bloc portant la classe champ »
+     ne désignait personne, et deux champs arrivaient alors sans délai — donc
+     avant les autres, en laissant des trous à leur place. */
+  .dedans > *{opacity:0;transform:translateY(12px);transition:opacity .4s,transform .4s}
+  .ouvre:checked ~ .feuille .dedans > *{opacity:1;transform:none}
+  .ouvre:checked ~ .feuille .dedans > *:nth-child(1){transition-delay:.24s}
+  .ouvre:checked ~ .feuille .dedans > *:nth-child(2){transition-delay:.30s}
+  .ouvre:checked ~ .feuille .dedans > *:nth-child(3){transition-delay:.36s}
+  .ouvre:checked ~ .feuille .dedans > *:nth-child(4){transition-delay:.40s}
+  .ouvre:checked ~ .feuille .dedans > *:nth-child(5){transition-delay:.44s}
+  .ouvre:checked ~ .feuille .dedans > *:nth-child(6){transition-delay:.48s}
+  .ouvre:checked ~ .feuille .dedans > *:nth-child(7){transition-delay:.52s}
+  .ouvre:checked ~ .feuille .dedans > *:nth-child(8){transition-delay:.56s}
+  .ouvre:checked ~ .feuille .dedans > *:nth-child(9){transition-delay:.60s}
+  .ouvre:checked ~ .feuille .dedans > *:nth-child(10){transition-delay:.64s}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+  }
+
+  .apres{max-width:56ch;margin:32px auto 0;text-align:center;font-size:13.5px;
+         color:var(--gris);line-height:1.65}
+  .apres b{color:var(--encre);font-weight:600}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Atlas — version retenue</p>
+    <h1>Origine, trait G, écran qui recule, tiroir des retirés</h1>
+    <p>
+      <strong>Faites glisser la liste des chantiers.</strong> Au repos la perle
+      est devant le 22 juillet ; dès que ce chantier remonte, elle s'accroche à
+      mi-hauteur et les autres défilent dessous. Redescendez : elle revient s'y
+      poser.
+    </p>
+    <p>
+      <strong>Pour retirer une ligne</strong>, faites glisser son texte vers la
+      gauche puis touchez <em>Retirer</em> : elle tombe, le décompte se met à
+      jour et un tiroir s'ouvre en bas — <em>Annuler</em> la ramène.
+    </p>
+    <p>Le bandeau porte le trait <strong>G</strong> — touchez les onglets.</p>
+    <p>
+      <strong>Touchez « Nouveau chantier »</strong> : la liste recule et
+      s'assombrit, la feuille monte devant. Le rond en haut à gauche referme.
+    </p>
+  </div>
+
+  <div class="tel"><div class="ecran">
+    <input class="ouvre" type="checkbox" id="ouv">
+
+    <div class="dessous">
+      <div class="enseigne">ATLAS</div>
+
+      <div class="titre">
+        <p class="salut caps">Bonjour Florian</p>
+        <h1 class="serif">Vos chantiers</h1>
+        <p class="compte caps num"><span class="n n8">Huit</span><span class="n n7">Sept</span><span class="n n6">Six</span><span class="n n5">Cinq</span><span class="n n4">Quatre</span><span class="n n3">Trois</span><span class="n n2">Deux</span><span class="n n1">Un</span><span class="n n0">Aucun</span> en cours</p>
+      </div>
+
+      <div class="fermeture"></div>
+
+      <label class="action" for="ouv">
+        <span class="quoi">Nouveau chantier</span>
+        <span class="plus">+</span>
+      </label>
+
+      <div class="rubrique caps"><span>En cours</span><span class="num"><span class="n n8">Huit</span><span class="n n7">Sept</span><span class="n n6">Six</span><span class="n n5">Cinq</span><span class="n n4">Quatre</span><span class="n n3">Trois</span><span class="n n2">Deux</span><span class="n n1">Un</span><span class="n n0">Aucun</span></span></div>
+
+      <div class="liste">
+        <div class="tige">
+
+          <input class="sup" type="checkbox" id="c1">
+          <div class="ligne"><div class="brin">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <div class="glisse">
+              <div class="volet"><a class="corps" href="#">
+                <p class="nom">Pose de clôture</p><p class="lieu">2 route de Vertou, Vertou</p>
+                <p class="etat caps">Brouillon · sans photo</p></a></div>
+              <label class="decouvre" for="c1">Retirer</label>
+            </div>
+          </div></div>
+
+          <input class="sup" type="checkbox" id="c2">
+          <div class="ligne"><div class="brin">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <div class="glisse">
+              <div class="volet"><a class="corps" href="#">
+                <p class="nom">Rénovation salle de bain</p><p class="lieu">12 rue des Lilas, Nantes</p>
+                <p class="etat caps">À vérifier · 6 photos</p></a></div>
+              <label class="decouvre" for="c2">Retirer</label>
+            </div>
+          </div></div>
+
+          <!-- La perle se tient ici au repos : devant le 22 juillet. -->
+          <span class="perle"><i></i></span>
+
+          <input class="sup" type="checkbox" id="c3">
+          <div class="ligne"><div class="brin">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <div class="glisse">
+              <div class="volet"><a class="corps" href="#">
+                <p class="nom">Terrasse bois</p><p class="lieu">5 allée des Tilleuls, Nantes</p>
+                <p class="etat caps attend">Devis retourné · 3 photos</p></a></div>
+              <label class="decouvre" for="c3">Retirer</label>
+            </div>
+          </div></div>
+
+          <input class="sup" type="checkbox" id="c4">
+          <div class="ligne"><div class="brin">
+            <span class="jour caps num"><b>18</b><span>juil.</span></span>
+            <div class="glisse">
+              <div class="volet"><a class="corps" href="#">
+                <p class="nom">Reprise de toiture</p><p class="lieu">8 impasse du Moulin, Rezé</p>
+                <p class="etat caps">En attente · 9 photos</p></a></div>
+              <label class="decouvre" for="c4">Retirer</label>
+            </div>
+          </div></div>
+
+          <input class="sup" type="checkbox" id="c5">
+          <div class="ligne"><div class="brin">
+            <span class="jour caps num"><b>15</b><span>juil.</span></span>
+            <div class="glisse">
+              <div class="volet"><a class="corps" href="#">
+                <p class="nom">Muret de pierre</p><p class="lieu">3 chemin des Vignes, Vertou</p>
+                <p class="etat caps">À chiffrer · 4 photos</p></a></div>
+              <label class="decouvre" for="c5">Retirer</label>
+            </div>
+          </div></div>
+
+          <input class="sup" type="checkbox" id="c6">
+          <div class="ligne"><div class="brin">
+            <span class="jour caps num"><b>11</b><span>juil.</span></span>
+            <div class="glisse">
+              <div class="volet"><a class="corps" href="#">
+                <p class="nom">Abri de jardin</p><p class="lieu">21 rue Basse, Saint-Sébastien</p>
+                <p class="etat caps">Brouillon · 2 photos</p></a></div>
+              <label class="decouvre" for="c6">Retirer</label>
+            </div>
+          </div></div>
+
+          <input class="sup" type="checkbox" id="c7">
+          <div class="ligne"><div class="brin">
+            <span class="jour caps num"><b>08</b><span>juil.</span></span>
+            <div class="glisse">
+              <div class="volet"><a class="corps" href="#">
+                <p class="nom">Portail coulissant</p><p class="lieu">7 rue du Pré, Bouguenais</p>
+                <p class="etat caps">À vérifier · 5 photos</p></a></div>
+              <label class="decouvre" for="c7">Retirer</label>
+            </div>
+          </div></div>
+
+          <input class="sup" type="checkbox" id="c8">
+          <div class="ligne"><div class="brin">
+            <span class="jour caps num"><b>04</b><span>juil.</span></span>
+            <div class="glisse">
+              <div class="volet"><a class="corps" href="#">
+                <p class="nom">Dalle de garage</p><p class="lieu">14 route de Clisson, Vertou</p>
+                <p class="etat caps">Brouillon · sans photo</p></a></div>
+              <label class="decouvre" for="c8">Retirer</label>
+            </div>
+          </div></div>
+
+        </div>
+      </div>
+
+      <div class="tiroir">
+        <span class="quoi"><span class="un">Retiré à l'instant</span><span class="plusieurs">Retirés à l'instant</span></span>
+        <label class="agir a1" for="c1">Annuler</label>
+        <label class="agir a2" for="c2">Annuler</label>
+        <label class="agir a3" for="c3">Annuler</label>
+        <label class="agir a4" for="c4">Annuler</label>
+        <label class="agir a5" for="c5">Annuler</label>
+        <label class="agir a6" for="c6">Annuler</label>
+        <label class="agir a7" for="c7">Annuler</label>
+        <label class="agir a8" for="c8">Annuler</label>
+      </div>
+
+      <nav class="bas">
+        <input class="pico" type="radio" name="onglet" id="t1" checked><label class="caps" for="t1">Chantiers</label>
+        <input class="pico" type="radio" name="onglet" id="t2"><label class="caps" for="t2">Planning</label>
+        <input class="pico" type="radio" name="onglet" id="t3"><label class="caps" for="t3">Terminés</label>
+        <input class="pico" type="radio" name="onglet" id="t4"><label class="caps" for="t4">Réglages</label>
+        <span class="trait"><i></i></span>
+      </nav>
+    </div>
+
+    <span class="voile"></span>
+
+    <div class="feuille"><div class="dedans">
+      <div class="haut">
+        <label class="rond" for="ouv" aria-label="Retour à la liste des chantiers">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2a3a2e" stroke-width="2.2"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </label>
+        <span class="rond" aria-label="Dicter les coordonnées">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2a3a2e" stroke-width="1.9"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+
+      <div class="titre-feuille"><p class="sur caps">Nouveau</p><h2>Un chantier</h2></div>
+
+      <div class="champ grand"><span class="etiq caps">Nom du client (facultatif)</span><p class="val">M. Bernard</p></div>
+      <div class="champ"><span class="etiq caps">Téléphone (facultatif)</span><p class="val">06 12 34 56 78</p></div>
+      <div class="champ"><span class="etiq caps">E-mail (facultatif)</span><p class="val">bernard@exemple.fr</p></div>
+
+      <div class="canal"><span class="etiq caps">Comment lui envoyer son devis ?</span>
+        <div class="choix"><span class="actif">Par SMS</span><span>Par e-mail</span></div></div>
+
+      <div class="champ"><span class="etiq caps">Adresse du chantier (facultatif)</span><p class="val">12 rue des Lilas, Nantes</p></div>
+
+      <p class="ajout">+ Ajouter une adresse client différente</p>
+
+      <div class="valider">Créer le chantier <span>→</span></div>
+      <p class="garde">Renseignez dès maintenant ce que vous savez du client : ces informations ne sont plus modifiables ensuite.</p>
+    </div></div>
+
+  </div></div>
+
+  <p class="apres">
+    Toujours <b>aucun JavaScript</b> : les onglets sont des boutons radio,
+    l'ouverture et le retrait des cases à cocher, la perle un élément collé.
+    Rien n'est calculé, donc rien ne peut prendre du retard sur le doigt.
+    Le tiroir et le décompte reposent sur <code>:has()</code> — si votre
+    iPhone ne le connaît pas, la ligne part quand même, mais le tiroir ne
+    s'ouvrira pas et le décompte restera sur « huit ».
+  </p>
+</div>
