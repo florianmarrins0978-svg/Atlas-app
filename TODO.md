@@ -292,6 +292,26 @@ Ce que la bascule coûtera, quand il aura choisi : la charte de
 encre au lieu du vert pin pour l'action, bronze au lieu de l'or), et **tous** les
 écrans suivent — pas seulement Chantiers. À ne pas entamer écran par écran.
 
+### 0 undecies. Finir la refonte : le corps des écrans d'étape
+
+L'en-tête, les boutons et les jetons sont passés partout (10 août 2026). Reste
+le CORPS de quatre écrans, dans l'ordre du parcours :
+
+| | Écran | Ce qu'il faut y faire |
+|---|---|---|
+| ~~1~~ | ~~Photos~~ | ~~marges, compte en capitales, grille resserrée~~ — **fait le 10 août** |
+| 2 | Note vocale | l'encart d'enregistrement et la liste des prises |
+| 3 | Informations / Prix | les champs et le tableau des lignes — les plus chargés |
+| 4 | Devis, Export, Facture | les récapitulatifs et les encarts d'envoi |
+
+Chacun a sa propre structure : il n'y a plus de motif commun à remplacer, donc
+plus de codemod possible. C'est du cas par cas, et chaque écran se regarde en
+capture avant d'être déclaré fait.
+
+**Le jeu de démonstration ne dépose pas les fichiers de photos** : les
+vignettes s'affichent cassées sur le banc. À corriger dans le seed, sinon
+personne ne pourra juger cet écran.
+
 ### 0 bis. L'agent qui apprend — le vrai sujet
 
 Le tapis roulant (dictée → devis, d'un seul geste) est en place, et l'arrêt

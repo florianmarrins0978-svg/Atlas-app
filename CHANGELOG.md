@@ -9,6 +9,20 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le corps de l'écran Photos
+
+Premier corps repris, dans l'ordre du parcours. Les marges passent à 26 px
+comme partout — vingt-quatre contre vingt-six ne se voit pas seul, mais se voit
+dès qu'on descend de l'en-tête à la grille. Le compte prend la voix des
+libellés (« 6 PHOTOS », capitales espacées), les vignettes se resserrent de
+12 px à 10, et « Passer à la note vocale » rejoint les autres actions
+secondaires en capitales.
+
+**Un manque du banc, constaté et non corrigé :** les vignettes s'affichent
+cassées. Le jeu de démonstration insère des lignes de photos sans déposer les
+fichiers, et `/api/fichiers/…` répond 308. Ce n'est pas la refonte — c'est le
+seed. Noté ici pour que personne ne cherche du côté de l'affichage.
+
 ### Les six écrans d'étape suivent, et par un codemod plutôt qu'à la main
 
 Photos, Note vocale, Prix, Devis, Export, Facture : les six portaient

@@ -91,11 +91,14 @@ export default function PhotosClient({
 
   return (
     <>
-      <p className="px-6 text-[14px]" style={{ marginTop: "6px", color: colors.muted }}>
+      <p
+        className="px-[26px] pt-4 text-[9.5px] font-medium uppercase"
+        style={{ color: colors.muted, letterSpacing: "0.28em" }}
+      >
         {photos.length > 0 ? `${photos.length} photo${photos.length > 1 ? "s" : ""}` : "Aucune photo pour l'instant"}
       </p>
 
-      <div className="px-6 pt-6">
+      <div className="px-[26px] pt-6">
         <input
           ref={champAppareilPhoto}
           type="file"
@@ -123,7 +126,7 @@ export default function PhotosClient({
       </div>
 
       {photos.length > 0 ? (
-        <div className="mt-7 grid grid-cols-3 gap-3 px-6">
+        <div className="mt-6 grid grid-cols-3 gap-2.5 px-[26px]">
           {photos.map((p) => (
             <button
               key={p.id}
@@ -143,7 +146,7 @@ export default function PhotosClient({
           ))}
         </div>
       ) : (
-        <p className="mt-7 px-6 text-center text-[14px]" style={{ color: colors.muted }}>
+        <p className="mt-7 px-[26px] text-center text-[14px]" style={{ color: colors.muted }}>
           Ajoutez une première photo pour garder une mémoire visuelle du chantier.
         </p>
       )}
@@ -161,11 +164,16 @@ export default function PhotosClient({
           met pas en avant. N'apparaît qu'une fois une photo présente : avant,
           elle n'aurait rien à enchaîner. */}
       {photos.length > 0 && (
-        <div className="mt-7 px-6">
+        <div className="mt-7 px-[26px]">
           <Link
             href={`/chantiers/${chantierId}/note-vocale`}
-            className="flex items-center justify-center gap-2 rounded-[4px] py-3 text-[15px] font-medium"
-            style={{ backgroundColor: colors.rustTint, color: colors.rust, minHeight: 48 }}
+            className="flex items-center justify-center gap-2 rounded-[4px] py-3.5 text-[9.5px] font-medium uppercase"
+            style={{
+              letterSpacing: "0.28em",
+              backgroundColor: colors.rustTint,
+              color: colors.rust,
+              minHeight: 48,
+            }}
           >
             <MicroIcon />
             Passer à la note vocale
@@ -177,7 +185,7 @@ export default function PhotosClient({
       {/* Visionneuse plein écran — seule exception à la palette claire */}
       {ouverte !== null && (
         <div className="fixed inset-0 z-30 flex flex-col" style={{ backgroundColor: colors.ink }}>
-          <div className="flex items-center justify-between px-6 pt-8">
+          <div className="flex items-center justify-between px-[26px] pt-8">
             <button
               onClick={() => setOuverte(null)}
               aria-label="Fermer"
@@ -217,7 +225,7 @@ export default function PhotosClient({
           {/* Confirmation de suppression — sheet légère, jamais l'action visuellement dominante */}
           {confirmationVisible && (
             <div className="fixed inset-0 z-40 flex items-end" style={{ backgroundColor: "rgba(0,0,0,0.35)" }}>
-              <div className="w-full rounded-t-[26px] px-6 pb-9 pt-3" style={{ backgroundColor: colors.cream }}>
+              <div className="w-full rounded-t-[26px] px-[26px] pb-9 pt-3" style={{ backgroundColor: colors.cream }}>
                 <div className="mx-auto mb-5 h-1 w-10 rounded-full" style={{ backgroundColor: colors.line }} />
                 <p className="mb-5 text-center text-[16px]" style={{ color: colors.ink, fontFamily: font.display }}>
                   Supprimer cette photo ?
