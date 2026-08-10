@@ -507,6 +507,125 @@ masquait le décalage.
 
 ---
 
+## 6 quinquies. « Terminés » — le fil, l'encart, et facturer en trois appuis
+
+**Choisi par le patron le 2026-08-10.** Maquette :
+`maquettes/atlas-facturer.html`, contrôlée par `npm run verifier:maquette`.
+Écran remplacé : `src/app/termines/page.tsx`.
+
+### Ce qui clochait, et qui n'était pas une affaire de goût
+
+L'écran empilait **trois sortes de pavés arrondis** — le relevé de TVA, les
+chantiers à facturer, les factures. Le relevé de TVA était le **seul cadre
+plein**, si bien que l'œil allait d'abord sur ce qu'on consulte une fois par
+trimestre. « Rien à facturer » s'affichait comme un **titre de section suivi de
+rien**. Et l'écran **ne disait jamais combien** — alors que c'est la seule
+question qu'on lui pose.
+
+### Le fil par mois
+
+Le même fil que la liste des chantiers : marge de 47 px pour le mois, filet
+d'un pixel, une perle par ligne. Deux écrans qui se ressemblent s'apprennent
+une seule fois.
+
+```css
+.fil::before{content:"";position:absolute;left:47px;top:14px;bottom:16px;
+             width:1px;background:var(--trait)}
+.mois{display:grid;grid-template-columns:47px 1fr;gap:0 26px}
+.brin{display:grid;grid-template-columns:47px 1fr;gap:0 26px}
+.brin > *{min-width:0}          /* sinon une étiquette insécable élargit la piste */
+/* La perle CREUSE = pas encore facturé, comme l'anneau du planning = il reste
+   de la place. Un signe appris une fois sert sur deux écrans. */
+.creux i.vide{background:var(--fond);
+              box-shadow:inset 0 0 0 1px var(--bronze),0 0 0 4px var(--fond)}
+```
+
+**Les montants tiennent une colonne** : `font-variant-numeric: tabular-nums`,
+alignés à droite au pixel près. Sinon l'œil recompte à chaque ligne. **Rien ne
+doit s'ajouter après le montant** — un chevron en bout de ligne lui vole 24 px
+et brise la colonne.
+
+**Un mois se solde** : chaque mois porte son total, et l'écran porte celui du
+trimestre. Aucun pavé plein, aucun coin arrondi dans le corps.
+
+### L'encart « à facturer », posé DANS le mois
+
+Un chantier dont la date est passée arrive tout seul dans « Terminés », et il
+appartient à **son mois** — le chantier du 20 août est un chantier d'août. Le
+sortir dans un bloc à part casse le fil, qui ne raconte plus le temps mais deux
+listes empilées.
+
+- Une **pastille bronze** portant le nombre, posée **sur le fil** à hauteur du
+  mois (`left:47px`, `transform:translate(-50%,-50%)`, fond opaque pour masquer
+  le fil). **Pas dans la marge** : elle fait 47 px et n'a pas de place en trop —
+  la pastille y chevauchait « août ».
+- Sous le mois, une ligne bronze de **44 px de haut** : « DEUX À FACTURER ·
+  1 940,00 € › ». Une ligne de 9,5 px se rate deux fois sur trois.
+- **Repliée au repos.** L'écran s'appelle « Terminés » : il montre d'abord ce
+  qui est fait. L'encart appelle, il n'occupe pas.
+- **À zéro, l'encart n'existe pas.** Jamais de « 0 », jamais de compte au
+  singulier bancal — le mois n'affiche que son total.
+- Le compte s'écrit **en toutes lettres** (« Deux à facturer »).
+- Le montant vient du **devis accepté**, et l'écran dit sa source : « Montants
+  prévus aux devis » — **jamais « à encaisser »**. Un devis n'est pas une
+  facture (`docs/AGENT.md` §3).
+
+### Facturer en trois appuis
+
+| | Geste | Ce qui arrive |
+|---|---|---|
+| 1 | l'encart | le mois s'ouvre, on voit qui attend |
+| 2 | la ligne du chantier | son devis, avec **une seule** touche pleine |
+| 3 | « Créer la facture » | la facture existe, **elle n'est pas partie** |
+
+**Un seul pavé plein par écran** — c'est ce qui en fait l'action évidente. En
+mettre deux, c'est n'en avoir aucune ; la seconde action se pose en filet
+(`box-shadow: inset 0 0 0 1px var(--trait)`).
+
+**CRÉER N'EST PAS ENVOYER**, et ça ne se plie pas (`CLAUDE.md` §4). La facture
+naît d'un appui, elle part d'un autre : c'est l'envoi qui la rend définitive et
+la porte au relevé de TVA. L'écran le dit aux deux étapes — « rien ne part au
+client tant que vous ne l'envoyez pas », puis « rien n'est parti ».
+
+**La touche existe déjà, sous un autre nom.** C'est `terminerChantierAction`
+(`src/app/chantiers/[id]/facture/FactureClient.tsx`), étiquetée « Fin de
+chantier → ». Elle **bâtit la facture à partir du devis** — le nom ne le dit
+pas. La maquette l'appelle « Créer la facture » : **renommage à faire valider
+par le patron.** Elle est déjà **idempotente**
+(`src/server/repositories/factures.ts` §56) : rappuyer redonne la facture bâtie
+au lieu d'en créer une seconde.
+
+### Le relevé de TVA
+
+Il cesse d'être un pavé : une **ligne** au pied de l'écran. Où qu'il aille, la
+mention **« Atlas prépare ce relevé, il ne le déclare pas »** reste
+(`docs/AGENT.md` §6).
+
+### Ce qui reste à trancher avec le patron
+
+- **Une facture à 0,00 €** existe dans ses données réelles (F2026-0001). Devis
+  vide facturé par erreur, ou geste commercial ? L'écran doit le montrer — un
+  montant nul se lit, il ne se cache pas — mais on ne sait pas encore quoi dire.
+- **« La date est passée » dépend de la demi-journée** : un chantier de
+  l'après-midi du 20 n'est terminé qu'à la fin de cette demi-journée. Vérifier
+  que `listerChantiersTermines` compte le 20 comme terminé **le 21 au matin**,
+  et non le 20 à minuit.
+- **La bulle de l'assistant** (`AssistantSidebar`, `fixed bottom-24 right-4`)
+  flotte au-dessus du bandeau. Reste-t-elle posée là ?
+
+### Trois pièges déjà payés, et un contrôle qui mentait
+
+- **Une étiquette insécable dans une piste `1fr` élargit la piste.** Les
+  montants du tiroir sortaient de 13 px de leur colonne.
+- **`Element.checkVisibility()` ignore le rognage** : les lignes d'un tiroir
+  fermé lui paraissent visibles. Mesurer l'**intersection réelle** avec la
+  boîte du tiroir.
+- **Un contrôle de mise en page ne voit que la vue affichée.** Les autres vues
+  étant cachées, leurs hauteurs valent zéro et rien ne rougit — il faut jouer
+  le contrôle **dans chaque vue pendant qu'elle est à l'écran**.
+
+---
+
 ## 7. Ordre de travail
 
 Chaque étape est utilisable seule.
@@ -525,6 +644,8 @@ Chaque étape est utilisable seule.
    s'ouvre dessous. Ne dépend d'aucune des étapes précédentes.
 9. **Les équipes nommées** (§6 ter) — Réglages d'abord, planning ensuite. Cette
    étape-là touche la base : elle ne se fait pas en même temps que les autres.
+10. **« Terminés » et le parcours de facturation** (§6 quinquies) — le fil,
+    l'encart dans le mois, et « Créer la facture ». Indépendante des autres.
 
 ---
 
