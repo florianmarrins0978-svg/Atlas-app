@@ -9,6 +9,33 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### La construction mourait en rendant la main — « setRawMode EIO », segfault
+
+**Après un « Compiled successfully in 62s » :**
+
+    > Build error occurred
+    Error: setRawMode EIO   (errno -5, syscall 'setRawMode')
+    Segmentation fault (core dumped)
+
+La construction avait **réussi**, et elle est morte en rendant la main. Quand
+son entrée est un vrai terminal, Next.js tente d'en prendre le contrôle pour
+écouter les touches ; dans un espace distant ce terminal peut disparaître sous
+lui — une session rechargée, un onglet fermé — et l'appel échoue en `EIO`, que
+la couche native ne rattrape pas : segmentation fault, une minute de travail
+perdue.
+
+`next build` ne lit rien au clavier. Ses enfants ne reçoivent donc plus d'entrée
+du tout : `isTTY` devient faux et l'opération n'est même plus tentée. La sortie
+reste héritée — le patron doit voir ce qui se passe — et **Ctrl+C continue de
+fonctionner**, puisqu'il passe par le groupe de processus du terminal, jamais
+par l'entrée de l'enfant. Même traitement dans `essai.mjs`.
+
+**Le mécanisme a été mesuré, pas supposé** : un enfant lancé avec l'entrée
+héritée depuis un vrai terminal voit `isTTY=true` et obtient `setRawMode` ;
+entrée coupée, `isTTY=false` et l'appel n'est plus possible. Puis le banc a été
+joué **dans un vrai terminal** (`script -qec`) : construction menée à son terme,
+aucun `setRawMode`, aucune segmentation fault, application servie en 7 ms.
+
 ### Deux bancs se tuaient l'un l'autre — « EADDRINUSE », errno -98
 
 **Ce que le patron a lu**, après une construction pourtant réussie :

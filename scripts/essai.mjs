@@ -111,8 +111,14 @@ if (!existsSync(NEXT_LOCAL)) {
 // `--no-install` en renfort : si le contrôle ci-dessus laissait passer un cas
 // non prévu, npx échoue au lieu de POSER UNE QUESTION à laquelle personne
 // n'attend d'avoir à répondre.
+// Entrée coupée, sortie héritée — même raison que dans `banc.mjs` : quand son
+// entrée est un vrai terminal, Next.js tente d'en prendre le contrôle
+// (`setRawMode`), et cet appel échoue en `EIO` si le terminal disparaît sous
+// lui. Le patron y a perdu une construction entière, sur une segmentation
+// fault, après un « Compiled successfully ». Ctrl+C continue de fonctionner :
+// il passe par le groupe de processus, jamais par l'entrée de l'enfant.
 const serveur = spawn("npx", ["--no-install", "next", "dev", "-H", "0.0.0.0", "-p", PORT], {
-  stdio: "inherit",
+  stdio: ["ignore", "inherit", "inherit"],
   env: process.env,
 });
 

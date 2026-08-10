@@ -3742,3 +3742,28 @@ consultation du drapeau avait été remplacée par `if false`** : il cherchait
 vise maintenant l'appel. Deuxième fois dans la même soirée qu'un contrôle
 regarde une mention au lieu d'un geste — c'est le piège de §50, et il se
 reproduit chaque fois qu'on éprouve un branchement par une chaîne de caractères.
+
+**Et une troisième panne, le même soir, au même endroit : le terminal.**
+
+```
+✓ Compiled successfully in 62s
+> Build error occurred
+Error: setRawMode EIO   (errno -5, syscall 'setRawMode')
+Segmentation fault (core dumped)
+```
+
+La construction avait **réussi** ; elle est morte en rendant la main. Quand son
+entrée est un vrai terminal, Next.js tente d'en prendre le contrôle pour écouter
+les touches — et dans un espace distant, ce terminal peut disparaître sous lui.
+L'appel échoue en `EIO`, que la couche native ne rattrape pas.
+
+Aucun enfant du banc ne reçoit plus d'entrée : `["ignore", "inherit", "inherit"]`
+partout. `isTTY` devient faux et l'opération n'est même plus tentée ; la sortie
+reste héritée, et **Ctrl+C continue de fonctionner** — il passe par le groupe de
+processus du terminal, jamais par l'entrée de l'enfant.
+
+Mesuré plutôt que supposé : un enfant lancé avec l'entrée héritée depuis un vrai
+terminal voit `isTTY=true` et obtient `setRawMode` ; entrée coupée, `isTTY=false`
+et l'appel n'est plus possible. Puis le banc entier a été joué **dans un vrai
+terminal** (`script -qec`) : construction menée à son terme, aucun `setRawMode`,
+aucune segmentation fault, application servie en 7 ms.

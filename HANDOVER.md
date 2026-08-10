@@ -80,6 +80,14 @@ avec une ligne par équipe. Réglages laisse nommer les équipes.
    est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
    sans qu'aucun chiffre ne manque.
 
+**La construction mourait en rendant la main (10 août, tard).**
+« setRawMode EIO » puis « Segmentation fault », APRÈS un « Compiled
+successfully ». Next.js prend le contrôle du terminal quand son entrée en est
+un ; dans un espace distant ce terminal peut disparaître sous lui. **Aucun
+enfant du banc ne reçoit plus d'entrée** (`["ignore","inherit","inherit"]`) —
+la sortie reste héritée, et Ctrl+C marche toujours, il passe par le groupe de
+processus. Ne pas remettre `stdio: "inherit"` : un contrôle échoue.
+
 **Deux bancs se tuaient l'un l'autre — « EADDRINUSE », errno -98 (10 août, tard).**
 Le veilleur ne pouvait pas distinguer une BASCULE d'une MORT : pendant que
 `banc.mjs` remplace son serveur, la santé se tait et aucun `next` ne tourne —

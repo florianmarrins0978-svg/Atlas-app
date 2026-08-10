@@ -102,10 +102,35 @@ function doitRebatir(version) {
   }
 }
 
+// **AUCUN ENFANT NE REÇOIT LE TERMINAL, et c'est un correctif, pas un détail.**
+//
+// Le 10 août 2026, la construction du patron est morte ainsi, APRÈS avoir
+// pourtant réussi :
+//
+//     ✓ Compiled successfully in 62s
+//     > Build error occurred
+//     Error: setRawMode EIO   (errno -5, syscall 'setRawMode')
+//     Segmentation fault (core dumped)
+//
+// `next build` ne lit rien au clavier, mais quand son entrée est un vrai
+// terminal il tente d'en prendre le contrôle (`setRawMode`) pour écouter les
+// touches. Dans un espace distant, ce terminal peut disparaître sous lui — une
+// session rechargée, un onglet fermé, un processus détaché — et l'appel échoue
+// en `EIO`, ce que la couche native ne rattrape pas : segmentation fault, et
+// une construction perdue après une minute de travail réussi.
+//
+// On ne donne donc plus d'entrée aux enfants : `ignore` la remplace par rien du
+// tout, `isTTY` devient faux, et Next.js ne tente même plus l'opération. La
+// SORTIE, elle, reste héritée — le patron doit voir ce qui se passe.
+//
+// Ce que cela ne change pas : Ctrl+C. L'interruption passe par le groupe de
+// processus du terminal, jamais par l'entrée de l'enfant.
+const SANS_TERMINAL = ["ignore", "inherit", "inherit"];
+
 /** Joue une commande en laissant sa sortie visible. Rend le code de sortie. */
 function jouer(commande, args, env = process.env) {
   return new Promise((resoudre) => {
-    const p = spawn(commande, args, { stdio: "inherit", env });
+    const p = spawn(commande, args, { stdio: SANS_TERMINAL, env });
     p.on("exit", (code) => resoudre(code ?? 1));
     p.on("error", () => resoudre(1));
   });
@@ -155,10 +180,10 @@ const raison = doitRebatir(version);
 
 const lancerBati = () =>
   spawn("npx", ["next", "start", "-H", "0.0.0.0", "-p", PORT],
-    { stdio: "inherit", env: { ...process.env, ATLAS_DIST_DIR: DIST } });
+    { stdio: SANS_TERMINAL, env: { ...process.env, ATLAS_DIST_DIR: DIST } });
 const lancerDev = () =>
   spawn("npx", ["next", "dev", "-H", "0.0.0.0", "-p", PORT],
-    { stdio: "inherit", env: process.env });
+    { stdio: SANS_TERMINAL, env: process.env });
 
 // **SERVIR D'ABORD, BÂTIR ENSUITE — le correctif du 10 août 2026, au soir.**
 //

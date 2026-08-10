@@ -213,6 +213,42 @@ cas("banc.mjs prend le verrou avant de lancer quoi que ce soit", () => {
   assert.match(code, /libererVerrouBanc\(\)/, "banc.mjs ne rend jamais son verrou");
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// **« setRawMode EIO », puis « Segmentation fault (core dumped) ».**
+//
+// Lu chez le patron le 10 août 2026, APRÈS un « Compiled successfully in 62s » :
+// la construction avait réussi, et elle est morte en rendant la main. Quand son
+// entrée est un vrai terminal, Next.js tente d'en prendre le contrôle pour
+// écouter les touches ; dans un espace distant ce terminal peut disparaître
+// sous lui — session rechargée, onglet fermé — et l'appel échoue en `EIO`, que
+// la couche native ne rattrape pas.
+//
+// `next build` ne lit rien au clavier. On ne lui donne donc plus d'entrée du
+// tout : `isTTY` devient faux et l'opération n'est même plus tentée. La SORTIE
+// reste héritée — le patron doit voir ce qui se passe — et Ctrl+C continue de
+// fonctionner, puisqu'il passe par le groupe de processus.
+//
+// Éprouvé en lançant le banc DANS un vrai terminal (`script -qec`) : la
+// construction va au bout, aucun `setRawMode`, aucune segmentation fault, et
+// l'application sert en 7 ms.
+cas("aucun enfant du banc ne reçoit le terminal", () => {
+  for (const fichier of [BANC, path.join(__dirname, "essai.mjs")]) {
+    const code = readFileSync(fichier, "utf8")
+      .split("\n")
+      .filter((l) => !l.trimStart().startsWith("//"))
+      .join("\n");
+    assert.ok(
+      !/stdio:\s*"inherit"/.test(code),
+      `${path.basename(fichier)} donne encore le terminal à un enfant : c'est le « setRawMode EIO » du 10 août`
+    );
+    assert.match(
+      code,
+      /\["ignore",\s*"inherit",\s*"inherit"\]|SANS_TERMINAL/,
+      `${path.basename(fichier)} ne laisse plus passer la sortie : le patron ne verrait plus rien`
+    );
+  }
+});
+
 rmSync(dossier, { recursive: true, force: true });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Bascule et veilleur — ${echecs} échec(s).`);
