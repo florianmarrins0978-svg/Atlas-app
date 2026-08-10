@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### « Terminés » — quatre propositions, et trois défauts de l'écran actuel
+
+Le patron a envoyé une capture de l'écran réel et demandé des propositions.
+Trois constats, qui ne sont pas des goûts :
+
+- **Le pavé du relevé de TVA est le seul cadre plein de l'écran** : il attire
+  l'œil sur ce qui est le moins urgent.
+- **« Rien à facturer » s'affiche comme un titre de section suivi de rien** —
+  l'écran a l'air amputé plutôt que calme.
+- **L'écran ne dit jamais combien.** Or c'est la seule question qu'on lui pose.
+  Il faut additionner de tête.
+
+Quatre organisations dans `maquettes/atlas-termines.html`, toutes en filets :
+**A** ouvre sur la somme et fait descendre le détail de TVA sous le doigt ;
+**B** répond d'abord à « ai-je quelque chose à faire ? » ; **C** reprend le fil
+de la liste des chantiers avec le total du mois en marge ; **D** est un registre
+où le relevé de TVA n'est plus un autre écran — il *est* l'écran.
+
+Une facture à **0,00 €** existe dans les données réelles du patron. Elle passe
+aujourd'hui sans un mot : c'est soit un devis vide facturé par erreur, soit un
+geste commercial — dans les deux cas l'écran doit le montrer.
+
+Contrôles : montants alignés au pixel près et chiffres tabulaires (sinon l'œil
+recompte à chaque ligne), aucun pavé plein ni carte arrondie dans le corps,
+une somme écrite sur chacun des quatre écrans — c'est ce dernier contrôle qui a
+attrapé le fil par mois, qui totalisait par mois et laissait le trimestre à
+faire de tête.
+
 ### Le trait du bandeau désignait le mauvais onglet
 
 Sur le planning, le filet bronze restait sous « CHANTIERS » pendant que

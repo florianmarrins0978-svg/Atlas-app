@@ -245,6 +245,33 @@ suffit ») et la **capacité en hommes** — `taille_equipe` est du texte libre,
 faudrait le fiabiliser avant d'en faire une contrainte. Voir `ARCHITECTURE.md`
 §22 pour les arbitrages.
 
+### 5 bis. « Terminés » — quatre propositions, aucun choix arrêté
+
+**Proposé le 2026-08-10**, sur une capture de l'écran réel envoyée par le
+patron. `maquettes/atlas-termines.html`, contrôlée par
+`npm run verifier:maquette`. **Il n'a pas encore choisi** : ne rien coder tant
+qu'il n'a pas tranché entre A (la somme), B (ce qui attend), C (le fil par
+mois) et D (le registre).
+
+Ce qui est acquis quel que soit le choix, parce que ce sont des défauts et non
+des goûts :
+
+- **Le relevé de TVA cesse d'être un pavé plein** — c'est le seul cadre de
+  l'écran, et il désigne ce qui est le moins urgent.
+- **Les montants s'alignent en colonne**, chiffres tabulaires. Sinon l'œil
+  recompte à chaque ligne.
+- **L'écran dit une somme.** Aujourd'hui il faut additionner de tête.
+- **Un état vide se dit en toutes lettres**, jamais par un titre de section
+  suivi de rien.
+
+Deux points à trancher avec lui, notés ici pour ne pas les redécouvrir :
+
+- **Une facture à 0,00 €** existe dans ses données (F2026-0001). Devis vide
+  facturé par erreur, ou geste commercial ? L'écran doit le montrer, mais on ne
+  sait pas encore quoi montrer.
+- **La bulle de l'assistant** (`AssistantSidebar`, `fixed bottom-24 right-4`)
+  flotte au-dessus du bandeau. Reste-t-elle posée là sur tous les écrans ?
+
 ### 6. Rien ne mène le patron d'un écran au suivant
 
 **Le tronçon principal est réglé** (2026-08-04) : depuis la transcription, un
