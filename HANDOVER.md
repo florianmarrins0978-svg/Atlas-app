@@ -80,6 +80,13 @@ avec une ligne par équipe. Réglages laisse nommer les équipes.
    est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
    sans qu'aucun chiffre ne manque.
 
+**L'annonce n'affirme plus que l'adresse est joignable (10 août, tard).** Elle
+écrivait « Ouvrable depuis un téléphone, telle quelle » alors que le port était
+privé : le terminal affirmait le contraire de ce que le patron voyait. Ce module
+ne peut pas le savoir — seul `diagnostiquer-banc.mjs` interroge l'adresse du
+dehors. **Règle : ne rien affirmer qu'on n'a pas vérifié ; décrire la panne et
+sa sortie.** Un contrôle échoue si la promesse revient.
+
 **`npm run essai` dit maintenant qu'il est l'atelier (10 août, tard).** Le patron
 l'a lancé sur son espace et a attendu plus de trois minutes sur la plus petite
 route du dépôt : `next dev` compile chaque écran à l'ouverture, et le disque

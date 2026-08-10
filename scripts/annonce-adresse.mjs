@@ -55,9 +55,22 @@ export function annoncePrete({ port, precision = "" }) {
     `   ${MARQUEUR_PRET}${precision ? ` — ${precision}` : "."}\n\n` +
     (adresse
       ? `     ${adresse}\n\n` +
-        "   Ouvrable depuis un téléphone, telle quelle.\n" +
-        "   N'y mettez que des données inventées : cette adresse est\n" +
-        "   publique, et le mot de passe ci-dessous aussi.\n\n"
+        // **Ne JAMAIS affirmer que cette adresse est joignable.** Cette ligne
+        // disait « Ouvrable depuis un téléphone, telle quelle » et « cette
+        // adresse est publique » — sans rien avoir vérifié. Le 10 août 2026,
+        // elle l'a écrit alors que le port était PRIVÉ : GitHub servait sa page
+        // de connexion, le téléphone du patron ne montrait rien, et le terminal
+        // lui affirmait le contraire. Un message qui affirme sans savoir est
+        // pire qu'un silence : il fait chercher partout ailleurs.
+        //
+        // Ce module ne peut pas savoir — il faudrait interroger l'adresse du
+        // dehors, ce que fait `scripts/diagnostiquer-banc.mjs`. Il dit donc ce
+        // qu'il sait, et surtout à quoi ressemble la panne et comment en sortir.
+        "   Si vous y voyez une page de connexion GITHUB au lieu d'Atlas,\n" +
+        "   le port est privé. Trois clics dans cet éditeur :\n" +
+        "     onglet PORTS → clic droit sur 3000 → « Visibilité » → « Public »\n\n" +
+        "   N'y mettez que des données inventées : le mot de passe\n" +
+        "   ci-dessous est public.\n\n"
       : `     http://localhost:${port}\n\n`) +
     "     demo@atlas.local  /  demo1234\n" +
     "  ─────────────────────────────────────────────────────────────\n"

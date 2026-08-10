@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### L'annonce cesse d'affirmer que l'adresse est joignable
+
+**Le terminal lui affirmait le contraire de ce qu'il voyait.** À chaque
+démarrage, l'annonce écrivait « Ouvrable depuis un téléphone, **telle quelle** »
+et « cette adresse est **publique** ». Le 10 août 2026, elle l'a écrit alors que
+le port était PRIVÉ : GitHub servait sa page de connexion, le téléphone du
+patron ne montrait rien, et le seul message à l'écran disait que tout allait
+bien. Il a cherché ailleurs pendant des heures.
+
+Ce module ne **peut pas** savoir : il faudrait interroger l'adresse depuis le
+dehors, ce que seul `diagnostiquer-banc.mjs` fait. Il n'affirme donc plus rien —
+il décrit la panne (« une page de connexion GITHUB au lieu d'Atlas ») et sa
+sortie (onglet PORTS, trois clics). Un message qui affirme sans savoir coûte
+plus cher qu'un silence : il envoie chercher partout ailleurs.
+
+Un contrôle échoue désormais si l'une de ces deux promesses réapparaît, ou si la
+sortie n'est plus indiquée.
+
 ### L'atelier dit ce qu'il est, au lieu de faire attendre en silence
 
 **Le patron a tapé `npm run essai` dans son espace GitHub** et regardé

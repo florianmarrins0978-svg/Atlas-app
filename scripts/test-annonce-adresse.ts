@@ -111,5 +111,39 @@ essai("dans un espace de travail, l'adresse publique porte le port", () => {
   }
 });
 
+// **L'annonce ne doit RIEN affirmer qu'elle n'a vérifié.**
+//
+// Elle écrivait « Ouvrable depuis un téléphone, telle quelle » et « cette
+// adresse est publique ». Le 10 août 2026, elle l'a écrit alors que le port
+// était PRIVÉ : GitHub servait sa page de connexion, le téléphone du patron ne
+// montrait rien, et le terminal lui affirmait le contraire. Il a cherché
+// ailleurs pendant des heures. Un message qui affirme sans savoir coûte plus
+// cher qu'un silence.
+//
+// Ce module ne PEUT pas savoir : il faudrait interroger l'adresse depuis le
+// dehors, ce que fait `diagnostiquer-banc.mjs`. Il doit donc décrire la panne
+// et sa sortie, jamais promettre.
+essai("l'annonce ne promet pas une adresse joignable, et dit comment en sortir", () => {
+  const avant = process.env.CODESPACE_NAME;
+  process.env.CODESPACE_NAME = "atlas-essai";
+  try {
+    const texte = annoncePrete({ port: "3000" });
+    for (const promesse of ["Ouvrable depuis un téléphone", "adresse est\n   publique"]) {
+      assert.ok(
+        !texte.includes(promesse),
+        `l'annonce affirme « ${promesse} » sans l'avoir vérifié — c'est ce qui a envoyé chercher ailleurs`
+      );
+    }
+    assert.match(
+      texte,
+      /onglet PORTS/,
+      "l'annonce ne dit pas comment sortir d'un port privé, qui est la panne la plus fréquente ici"
+    );
+  } finally {
+    if (avant === undefined) delete process.env.CODESPACE_NAME;
+    else process.env.CODESPACE_NAME = avant;
+  }
+});
+
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Annonce de l'adresse — ${echecs} échec(s).`);
 process.exit(echecs === 0 ? 0 : 1);
