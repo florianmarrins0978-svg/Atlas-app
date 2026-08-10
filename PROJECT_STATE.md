@@ -145,6 +145,11 @@ Ce que cela impose à **toute maquette qui lui est destinée** :
     Un rembourrage bas posé sur cette zone la rétrécit et décale le repère de
     la moitié — la marge de fin qui permet à la dernière ligne d'atteindre le
     centre doit donc être posée sur le **contenu**, jamais sur le conteneur.
+  - **`scroll-snap-stop: always` est ce qui fait « un élément à la fois ».**
+    Sans lui, un geste vif saute trois lignes et le repère paraît sauter avec
+    elles ; avec lui, chaque glissement avance d'une ligne et d'une seule.
+    C'est ce que le patron demande — « elle glisse, elle s'arrête pile poil
+    centrée » — et ça ne s'obtient pas en réglant l'accroche seule.
   - **L'accroche ne se vérifie pas à la molette synthétique.** Chromium sans
     interface ne l'applique pas : le contrôle rend la même valeur quelle que
     soit la correction. L'éprouver par un défilement programmé, auquel le
