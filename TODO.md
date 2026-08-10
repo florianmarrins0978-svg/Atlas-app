@@ -303,26 +303,6 @@ lui est antérieur. Reste à savoir s'il tient au harnais (`run-e2e-tests` monte
 son propre serveur et son propre jeu de données) ou à la suite elle-même. À
 reproduire d'abord par `npm run test:e2e` complet avant de conclure.
 
-### 0 undecies. Finir la refonte : le corps des écrans d'étape
-
-L'en-tête, les boutons et les jetons sont passés partout (10 août 2026). Reste
-le CORPS de quatre écrans, dans l'ordre du parcours :
-
-| | Écran | Ce qu'il faut y faire |
-|---|---|---|
-| ~~1~~ | ~~Photos~~ | ~~marges, compte en capitales, grille resserrée~~ — **fait le 10 août** |
-| 2 | Note vocale | l'encart d'enregistrement et la liste des prises |
-| 3 | Informations / Prix | les champs et le tableau des lignes — les plus chargés |
-| 4 | Devis, Export, Facture | les récapitulatifs et les encarts d'envoi |
-
-Chacun a sa propre structure : il n'y a plus de motif commun à remplacer, donc
-plus de codemod possible. C'est du cas par cas, et chaque écran se regarde en
-capture avant d'être déclaré fait.
-
-**Le jeu de démonstration ne dépose pas les fichiers de photos** : les
-vignettes s'affichent cassées sur le banc. À corriger dans le seed, sinon
-personne ne pourra juger cet écran.
-
 ### 0 bis. L'agent qui apprend — le vrai sujet
 
 Le tapis roulant (dictée → devis, d'un seul geste) est en place, et l'arrêt
@@ -441,6 +421,82 @@ Le jour où il aura deux vraies équipes distinctes, la suite est une table
 suffit ») et la **capacité en hommes** — `taille_equipe` est du texte libre, il
 faudrait le fiabiliser avant d'en faire une contrainte. Voir `ARCHITECTURE.md`
 §22 pour les arbitrages.
+
+### 7. Finir la refonte — l'ordre, les pièges, les valeurs
+
+**Ce point existe pour qu'une conversation neuve puisse reprendre le travail
+sans rien redemander.** Le CSS n'est pas recopié ici : il est dans la maquette
+publiée, `docs/maquettes/13-le-fil-quatre-couleurs.html`, qui est du HTML pur —
+ouvrez-la, lisez la feuille de style, elle fait foi pour le dessin.
+
+#### L'ordre, et où l'on en est
+
+| | Écran | État |
+|---|---|---|
+| — | Accueil, Planning, Terminés, Réglages, relevé de TVA | **fait** le 10 août 2026 |
+| — | Fiche chantier, entièrement | **fait** |
+| — | En-tête + boutons des six écrans d'étape | **fait**, par remplacement de motif |
+| — | Corps de Photos | **fait** |
+| ~~1~~ | ~~Corps de **Note vocale**~~ | **fait** le 10 août 2026 |
+| **2** | Corps d'**Informations** puis de **Prix** | à faire — les plus chargés |
+| **3** | Corps de **Devis**, **Export**, **Facture** | à faire |
+
+Il n'y a plus de motif commun à remplacer : chacun a sa structure, donc plus de
+codemod possible. C'est du cas par cas, **et chaque écran se regarde en capture
+avant d'être déclaré fait** — trois défauts réels de cette refonte n'ont été
+trouvés que là (`CLAUDE.md` §5).
+
+#### Les valeurs de la grammaire
+
+Elles ne s'inventent pas écran par écran : elles viennent des trois pièces
+partagées — `EnTeteEcran`, `PrimaryButton`, `src/lib/design-tokens.ts`.
+
+| Quoi | Valeur |
+|---|---|
+| Marge horizontale | **26 px** partout (`px-[26px]`), jamais 24 |
+| Rayon | **4 px** pour une plage, **5 px** pour une action. Rien au-delà |
+| Ombre | **aucune** (`cardShadow` vaut `"none"`) |
+| Titre d'écran | serif, **36 px**, `letter-spacing: -0.018em` |
+| Nom d'un chantier, intitulé d'étape | serif, **19 px** |
+| Libellé, état, action secondaire | capitales, **9,5 px**, `letter-spacing: 0.28em` |
+| Texte de situation (adresse, meta) | **11,5 px**, en `colors.muted` |
+| Séparateur | un cheveu d'1 px, `colors.line` |
+| Couleur d'attente | l'or, **et uniquement sur ce qui réclame un geste du patron** |
+
+#### Les pièges, tous rencontrés une fois
+
+1. **`npm run banc` ne rebâtit que si le commit a changé.** Tant que le travail
+   n'est pas commité, il ressert la version d'avant : on mesure du code qui
+   n'est pas sur le disque. `rm .next/atlas-version-batie.txt` force le rebâti.
+2. **`npm test` abîme le jeu de démonstration.** Après la batterie, la connexion
+   `demo@atlas.local` échoue jusqu'à un nouveau
+   `DATABASE_URL="$DATABASE_ADMIN_URL" npm run db:seed`.
+3. **Un bandeau posé dans l'en-tête écrase la liste.** Tout ce qui peut
+   apparaître (notifications, annonces) va DANS la zone qui défile.
+4. **`CarteGlissante` repeint ce qui est dessous** : sa couche porte le fond de
+   la page. Un trait dessiné sous une liste glissante disparaît — le dessiner
+   ligne par ligne.
+5. **`position: sticky` est borné par le PARENT**, pas par le conteneur qui
+   défile. Un élément collant enfermé dans un `div` d'une ligne ne colle que sur
+   cette ligne : utiliser un fragment.
+6. **Une feuille en `absolute` passe SOUS le bandeau et la bulle**, tous deux
+   fixés. Une feuille modale se pose en `fixed`, au-dessus de `z-40`.
+7. **Le navigateur d'essai** : `chromium.launch({ executablePath:
+   "/opt/pw-browsers/chromium" })`, sinon Playwright réclame une installation
+   qui est pourtant là (voir §0).
+
+#### Les deux réserves — ce qui ne doit PAS suivre
+
+- **Les maquettes `/design/*`** : découplées du produit depuis le 1er août,
+  elles ne sont pas des écrans du patron.
+- **Les pages que le CLIENT reçoit** — `devis/[jeton]`, `factures/[jeton]`, et
+  le PDF. Un devis n'est pas un écran : c'est la pièce que le client garde,
+  imprime et signe, et le patron a choisi sa terre cuite le 3 août **en
+  connaissance de cause**, puis l'a maintenue.
+
+**Une question ouverte pour le patron**, à ne pas trancher seul : le changement
+de police du 10 août touche aussi le devis et la facture, qui partagent
+`--font-display`. Il en a été informé ; sa réponse n'est pas encore là.
 
 ### 6. Rien ne mène le patron d'un écran au suivant
 

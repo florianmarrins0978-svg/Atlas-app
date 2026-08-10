@@ -100,6 +100,29 @@ seule avec quinze outils.
 | Export des données d'un client | `src/server/repositories/donnees-client.ts` |
 | Effacement d'un client, respectant la conservation légale | idem |
 
+### La refonte de l'interface (10 août 2026)
+
+Le patron a arrêté un écran après une soirée de maquettes
+(`docs/maquettes/`, treize propositions), puis l'a fait poser dans
+l'application. Ce qui est **fait** :
+
+- **L'accueil** : le fil qui porte les jours, la perle d'or sur ce qui attend un
+  geste, le trait qui glisse sous les onglets, et « Nouveau chantier » qui monte
+  en feuille pendant que la liste recule.
+- **Planning, Terminés, Réglages, relevé de TVA, fiche chantier** : même
+  en-tête, mêmes rayons, mêmes capitales.
+- **Les six écrans d'étape** : en-tête et boutons. Le corps de **Photos** aussi.
+- **La typographie** : plus aucune police téléchargée. L'application prend
+  celles de l'appareil, comme la maquette que le patron a validée.
+
+Ce qui **reste**, avec l'ordre, les valeurs, les sept pièges et les deux
+réserves : **`TODO.md` §7**. Le dessin fait foi dans
+`docs/maquettes/13-le-fil-quatre-couleurs.html`, qui est du HTML pur.
+
+**Trois pièces partagées portent toute la grammaire** — `EnTeteEcran`,
+`PrimaryButton`, `src/lib/design-tokens.ts`. Une allure ne se recopie pas dans
+un écran : elle s'ajoute à ces pièces, sinon les écrans divergent de nouveau.
+
 ### Le banc d'essai (9 août 2026)
 
 - **Il se relève seul.** `.devcontainer/veiller.sh` contrôle la santé toutes les

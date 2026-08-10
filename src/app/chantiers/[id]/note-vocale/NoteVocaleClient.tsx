@@ -300,7 +300,7 @@ export default function NoteVocaleClient({
   const mmss = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   return (
-    <div className="px-6 pt-7">
+    <div className="px-[26px] pt-7">
       {etat === "vide" && (
         <>
           <PrimaryButton onClick={demarrer} disabled={enCours}>
@@ -321,8 +321,8 @@ export default function NoteVocaleClient({
             type="button"
             onClick={() => fichierRef.current?.click()}
             disabled={enCours}
-            className="mt-3 block w-full text-center text-[14px] font-medium disabled:opacity-40"
-            style={{ color: colors.rust }}
+            className="mt-4 block w-full text-center text-[9.5px] font-medium uppercase disabled:opacity-40"
+            style={{ letterSpacing: "0.28em", color: colors.rust }}
           >
             {enCours ? "Ajout en cours…" : "Ajouter un fichier audio"}
           </button>
@@ -357,10 +357,13 @@ export default function NoteVocaleClient({
               quoi l'artisan croirait avoir tout perdu. */}
           {!storageKey && (
             <div className="rounded-[4px] px-5 py-4" style={{ backgroundColor: colors.card }}>
-              <p className="text-[15px] font-medium" style={{ color: colors.ink }}>
+              <p className="text-[19px] leading-[1.15]" style={{ color: colors.ink, fontFamily: font.display }}>
                 Enregistrement effacé
               </p>
-              <p className="mt-1 text-[13px]" style={{ color: colors.muted }}>
+              <p
+                className="mt-[7px] text-[9.5px] font-medium uppercase"
+                style={{ color: colors.muted, letterSpacing: "0.28em" }}
+              >
                 L&apos;audio est supprimé une fois la transcription obtenue. Le texte,
                 lui, est conservé.
               </p>
@@ -405,10 +408,13 @@ export default function NoteVocaleClient({
               {lecture ? <PauseIcon /> : <PlayIcon />}
             </button>
             <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-medium" style={{ color: colors.ink }}>
+              <p className="text-[19px] leading-[1.15]" style={{ color: colors.ink, fontFamily: font.display }}>
                 {fraichementEnregistree ? "Enregistrée à l'instant" : "Note enregistrée"}
               </p>
-              <p className="mt-0.5 text-[13px]" style={{ color: colors.muted }}>
+              <p
+                className="mt-[7px] text-[9.5px] font-medium uppercase"
+                style={{ color: colors.muted, letterSpacing: "0.28em" }}
+              >
                 {mmss(dureeNote)}
               </p>
               <div className="mt-2 h-1 w-full rounded-full" style={{ backgroundColor: colors.line }}>
@@ -426,8 +432,8 @@ export default function NoteVocaleClient({
             {statutTranscription === "non_demandee" && (
               <button
                 onClick={lancerTranscription}
-                className="block w-full text-center text-[14px] font-medium"
-                style={{ color: colors.rust }}
+                className="block w-full text-center text-[9.5px] font-medium uppercase"
+                style={{ letterSpacing: "0.28em", color: colors.rust }}
               >
                 Lancer la transcription
               </button>

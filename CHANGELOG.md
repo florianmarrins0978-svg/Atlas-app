@@ -9,6 +9,25 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le plan de fin de refonte, et le corps de Note vocale
+
+**`TODO.md` §7 existe désormais** : l'ordre des écrans restants, les valeurs
+exactes de la grammaire, les sept pièges déjà rencontrés une fois chacun, et
+les deux réserves — ce qui ne doit PAS suivre. Le CSS n'y est pas recopié : il
+vit dans `docs/maquettes/13-le-fil-quatre-couleurs.html`, du HTML pur qui fait
+foi. `PROJECT_STATE.md` dit où en est la refonte et renvoie là.
+
+**Pourquoi ce point plutôt qu'un mot dans une conversation :** une conversation
+neuve doit pouvoir reprendre le travail sur une seule ligne — « lis §7, fais
+l'étape 1 » — sans rien redemander au patron. C'est la règle du dépôt
+(`CLAUDE.md` §2), appliquée à ce chantier-ci.
+
+**Étape 1 faite : le corps de Note vocale.** Marges à 26 px, prises de son en
+serif 19 px avec leur situation en capitales, et les deux actions secondaires
+— « Ajouter un fichier audio », « Lancer la transcription » — sorties du corps
+de texte : à 14 px en graisse moyenne, elles étaient indiscernables d'une
+phrase.
+
 ### La perle manquait, et le bandeau écrasait la liste
 
 *« Il manque la perle dorée qui glisse. »* Deux causes, l'une derrière l'autre.
