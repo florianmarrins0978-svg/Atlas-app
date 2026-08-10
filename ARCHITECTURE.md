@@ -3561,3 +3561,61 @@ l'endroit d'où on l'atteint.
 le 20 à minuit : `ongletDepuisJalons` range sur `datePlanifiee < aujourdHui`, et
 la journée entière reste au planning. C'est de là que le patron clôture en
 rentrant.
+
+---
+
+## 54. Une session dont le compte n'existe plus, et là où ce contrôle doit vivre
+
+**Le fait.** Un cookie de session Auth.js est **signé** : il reste valide même
+quand la ligne `users` qu'il désigne a disparu. Refaire le jeu de démonstration
+suffit à fabriquer un fantôme. `auth()` rend alors un `utilisateurId`,
+l'application laisse entrer, et **toute écriture** est refusée — clé étrangère,
+puis politique RLS. Le patron a vu « aucune adhésion d'entreprise », puis un
+`insert` en échec, sans que rien ne relie ces messages.
+
+**La décision : le contrôle vit dans le LAYOUT, pas dans la page.**
+
+Écrit d'abord dans `src/app/documents-legaux/page.tsx`, il **ne fonctionnait
+pas**, et rien ne le disait. Une page rend sous la frontière de
+`src/app/loading.tsx` : quand elle décide, l'enveloppe HTML est déjà partie. Le
+`redirect()` ne peut plus devenir un 307 — Next.js répond **200** et enfouit
+`NEXT_REDIRECT;replace;/api/session-perimee` dans la charge React, que seul le
+navigateur rejoue, **en JavaScript**. Mesuré à `curl` : 23 ko de page, et le
+contrôle au vert.
+
+`GardeDocumentsLegaux`, rendu dans `src/app/layout.tsx`, précède le premier
+octet : son renvoi est un vrai 307. La règle qui en découle dépasse ce cas —
+**tout contrôle d'accès qui doit valoir sans JavaScript appartient au layout.**
+
+**La deuxième décision : un `Location` relatif.** `NextResponse.redirect` exige
+une adresse absolue, qu'on ne peut fabriquer que depuis `request.url` — soit
+l'adresse d'**écoute**, `http://0.0.0.0:3000`. La route répondait donc
+`location: http://0.0.0.0:3000/login`, une adresse morte derrière le relais d'un
+espace de travail distant. `/login?session=perimee`, relatif, est résolu par le
+navigateur contre l'adresse qu'il a lui-même ouverte : aucun relais ne peut le
+tromper.
+
+**La troisième : deux situations, deux remèdes.** « Le compte n'existe plus » et
+« le compte n'a aucune entreprise » se ressemblent à l'endroit du code où on les
+rencontre (`resoudreEntrepriseId`), et n'appellent pas du tout la même réponse.
+Effacer la session du second l'enferme : il se reconnecte, n'a toujours pas
+d'entreprise, repart vers l'effacement. Les deux cas sont distingués par
+l'existence du compte ; l'anomalie de données lève `AucuneEntrepriseError`,
+comme avant.
+
+**Ce que le test tient** (`scripts/test-session-perimee-e2e.ts`, cinq contrôles) :
+le **statut** du renvoi et pas seulement sa destination — un 200 y est un échec,
+puisque c'est la forme exacte qu'avait le défaut ; le caractère relatif du
+`Location` ; l'effacement des deux familles de cookies ; qu'une session **valide**
+n'est jamais renvoyée là ; et le parcours entier dans un vrai navigateur,
+**JavaScript coupé**. Chaque contrôle a été vu échouer sur l'état dégradé qu'il
+prétend détecter, et sur lui seul.
+
+**Et la règle d'outillage qui manquait.** `no-undef` est éteint par défaut sur
+les fichiers JavaScript, et TypeScript — qui joue ce rôle ailleurs — ne les
+regarde pas. `scripts/banc.mjs` lisait une variable `bati` inexistante : le banc
+mourait **après la construction**, une fois annoncé prêt. La règle est activée
+dans `eslint.config.mjs` pour tout le JavaScript du dépôt, avec les globales
+lues sur `globalThis` du processus qui joue ESLint — les énumérer à la main
+condamnerait à un faux positif le jour où un script emploie `structuredClone`,
+et un contrôle qui accuse à tort coûte plus cher que pas de contrôle.

@@ -80,6 +80,32 @@ avec une ligne par équipe. Réglages laisse nommer les équipes.
    est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
    sans qu'aucun chiffre ne manque.
 
+**La session fantôme, close et tenue par un test (10 août, tard).** Le remède
+posé plus tôt dans la soirée fonctionnait sur le papier et **pas dans un
+navigateur** : le contrôle écrit pour le tenir a trouvé trois défauts d'affilée.
+Le détail est dans `CHANGELOG.md` du 2026-08-10 ; ce qui compte pour la suite du
+travail, en trois points qui ne concernent pas que ce coin du code :
+
+1. **Une redirection lancée depuis une PAGE ne peut pas être un 307.** Elle rend
+   sous la frontière de `src/app/loading.tsx`, où l'enveloppe HTML est déjà
+   partie : Next.js répond **200**, et le renvoi est joué en JavaScript. Vu à
+   l'essai — 23 ko de page, `NEXT_REDIRECT` enfoui dans la charge React, pendant
+   que le contrôle passait au vert. **Un contrôle d'accès qui doit valoir sans
+   JavaScript vit dans le layout**, jamais dans la page.
+2. **`NextResponse.redirect` renvoie vers l'adresse d'ÉCOUTE.** Elle fabrique une
+   adresse absolue depuis `request.url`, soit `http://0.0.0.0:3000/…`. Derrière
+   le relais du patron, elle ne mène nulle part — le remède l'aurait laissé
+   devant une page blanche, comme le défaut. **Renvoyer relatif.**
+3. **`no-undef` était éteint sur tout le JavaScript du dépôt.** `banc.mjs` lisait
+   une variable `bati` qui n'existait pas : types verts, lint vert, et le banc
+   mourait **après la construction**, une fois annoncé prêt. La règle est
+   activée, avec les globales lues sur Node lui-même.
+
+**Et un piège d'environnement, pas de code :** Redis démarré depuis un dossier
+qui a ensuite disparu refuse toute écriture (`MISCONF … unable to persist`), et
+sept suites échouent alors en accusant la taille des fichiers ou l'IA. Le
+démarrer avec `--dir` sur un dossier stable.
+
 **L'anneau muet et la pellicule, sur la fiche chantier (10 août, au soir).** La
 ligne « Note vocale » devient un anneau qu'on touche pour écouter et qu'on
 pousse vers le haut pour retirer ; les photos deviennent une pellicule dans le

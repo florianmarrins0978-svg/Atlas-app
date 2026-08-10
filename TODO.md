@@ -27,16 +27,26 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 bis. Une session périmée — TRAITÉE le 2026-08-10, reste à couvrir par un test
+### ~~0 bis. Une session périmée~~ — **close le 2026-08-10, test compris**
 
-**Le remède est en place** : `GET /api/session-perimee` efface les cookies et
-renvoie à la connexion ; `getCurrentCtx` et l'écran des documents légaux y
-mènent. Éprouvé à la main contre l'identifiant fantôme du patron.
+`GET /api/session-perimee` efface les cookies et renvoie à la connexion ;
+`GardeDocumentsLegaux` (layout racine) et `getCurrentCtx` y mènent.
+`scripts/test-session-perimee-e2e.ts` le tient en cinq contrôles, dont un
+parcours dans un vrai navigateur, JavaScript coupé.
 
-**Ce qui manque** : un test automatique. Il demande de forger une session signée
-pour un utilisateur absent — `scripts/prechauffer.mjs` sait déjà fabriquer un
-cookie de session, c'est de là qu'il faut partir. Sans ce test, la redirection
-peut se défaire sans que rien ne le dise.
+**Trois défauts que ce test a trouvés, et qu'il faut connaître avant de toucher
+à ce coin du code** (le détail est dans `CHANGELOG.md` du 2026-08-10) :
+
+1. Une redirection lancée depuis une **page** ne peut pas être un 307 : elle
+   rend sous la frontière de `src/app/loading.tsx`, où l'enveloppe est déjà
+   partie. Next.js répond alors 200, et le renvoi est joué en JavaScript. Tout
+   contrôle d'accès qui doit valoir sans JavaScript vit dans le **layout**.
+2. `NextResponse.redirect` fabrique une adresse absolue depuis `request.url`,
+   c'est-à-dire l'adresse d'**écoute** (`0.0.0.0`). Derrière le relais du
+   patron, elle ne mène nulle part. Renvoyer relatif.
+3. « Compte disparu » et « compte sans entreprise » ne se traitent pas pareil :
+   effacer la session du second l'enfermerait dans une boucle
+   connexion → effacement → connexion.
 
 #### La forme d'origine du défaut, pour mémoire
 

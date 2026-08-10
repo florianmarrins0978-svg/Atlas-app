@@ -100,6 +100,20 @@ seule avec quinze outils.
 | Export des données d'un client | `src/server/repositories/donnees-client.ts` |
 | Effacement d'un client, respectant la conservation légale | idem |
 
+### La session fantôme (10 août 2026)
+
+Un cookie Auth.js est signé : il survit à la disparition du compte qu'il
+désigne. Refaire le jeu de démonstration suffisait à enfermer le patron
+dehors — l'application le laissait entrer, puis refusait toute écriture.
+
+| Brique | Où c'est |
+|---|---|
+| Route qui efface les cookies et renvoie à la connexion | `src/app/api/session-perimee/route.ts` |
+| Contrôle du compte, dans le **layout** (307 sans JavaScript) | `src/components/atlas/GardeDocumentsLegaux.tsx` |
+| Compte disparu ≠ compte sans entreprise | `src/server/session-ctx.ts` |
+| Contrôle, cinq points dont un navigateur sans JavaScript | `scripts/test-session-perimee-e2e.ts` |
+| Le pourquoi, et les trois défauts trouvés à l'essai | `ARCHITECTURE.md` §54 |
+
 ### La refonte de l'interface (10 août 2026)
 
 Le patron a arrêté un écran après une soirée de maquettes

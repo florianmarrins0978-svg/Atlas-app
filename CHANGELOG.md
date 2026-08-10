@@ -9,7 +9,65 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
-### Une session dont le compte n'existe plus se défait toute seule
+### Le correctif de la session fantôme, éprouvé — et trois défauts qu'il cachait
+
+Le remède posé quelques heures plus tôt **fonctionnait sur le papier et pas dans
+un navigateur**. Le contrôle écrit pour le tenir a trouvé, l'un après l'autre,
+trois défauts qu'aucun voyant vert ne montrait.
+
+**1. La redirection n'était pas une redirection.** Le contrôle vivait dans
+`src/app/documents-legaux/page.tsx`. Or une page rend sous la frontière de
+`src/app/loading.tsx` : l'enveloppe HTML est déjà partie quand la page décide.
+Next.js ne peut plus émettre de 307 — il rend **200**, avec un renvoi que le
+navigateur joue *en JavaScript*. Mesuré, pas supposé : `curl` recevait 23 ko de
+page et `NEXT_REDIRECT;replace;/api/session-perimee` enfoui dans la charge React.
+Le contrôle est donc remonté dans le layout (`GardeDocumentsLegaux`), qui précède
+le premier octet. Quatre écrans vérifiés — `/`, `/documents-legaux`, `/planning`,
+`/login` — rendent désormais un vrai **307**, sans une ligne de JavaScript.
+
+**2. Le remède renvoyait vers une adresse morte.** `NextResponse.redirect` exige
+une adresse absolue, fabriquée depuis `request.url` — laquelle vaut l'adresse
+d'ÉCOUTE. La route répondait `location: http://0.0.0.0:3000/login`. Derrière le
+relais de son espace de travail, le patron aurait atterri nulle part : le
+correctif l'aurait laissé devant une page blanche, exactement comme le défaut
+qu'il répare. Le `Location` est maintenant **relatif** — aucun relais ne peut
+tromper un chemin que le navigateur résout contre l'adresse qu'il a ouverte.
+
+**3. Le premier correctif déconnectait un compte parfaitement valide.**
+`resoudreEntrepriseId` envoyait vers l'effacement dès qu'il ne trouvait aucune
+adhésion. Or « compte disparu » et « compte sans entreprise » sont deux choses :
+le second se serait reconnecté, n'aurait toujours pas d'entreprise, et serait
+reparti vers l'effacement — **une boucle sans sortie**. Les deux cas sont
+désormais distingués par l'existence du compte ; l'anomalie de données lève de
+nouveau `AucuneEntrepriseError`, ce que `test-auth-autorisation` exigeait depuis
+toujours et que le correctif avait cassé (deux contrôles au rouge).
+
+`scripts/test-session-perimee-e2e.ts` tient les cinq points, dont un parcours
+dans un **vrai navigateur, JavaScript coupé** — le seul qui distingue un 307
+d'un renvoi joué après coup. Chacun a été vu échouer sur l'état dégradé qu'il
+prétend détecter, et sur lui seul.
+
+### Un nom inventé arrête désormais la livraison
+
+`scripts/banc.mjs` lisait une variable `bati` qui **n'existait pas**. Types au
+vert, lint au vert : la panne n'apparaissait qu'à l'exécution — et pas n'importe
+où, **après la construction**, une fois le banc annoncé prêt. Le patron perdait
+son application au moment précis où elle venait d'arriver, sur un
+`ReferenceError` suivi d'un `EADDRINUSE`.
+
+Rien ne pouvait le voir : `no-undef` est éteint par défaut sur ces fichiers, et
+TypeScript — qui joue ce rôle ailleurs — ne les regarde pas. La règle est
+activée pour tout le JavaScript du dépôt, avec les globales lues **sur Node
+lui-même** plutôt qu'énumérées à la main : une liste écrite à la main finit
+toujours par accuser à tort un `structuredClone` ou un `fetch`. Éprouvé en
+remettant le défaut d'origine : `banc.mjs 'bati' is not defined` — et le défaut
+avait **survécu** à la réécriture de l'annonce entre-temps, sous une autre
+forme, à une autre ligne.
+
+**Et le dossier que le banc bâtit était lu par le lint.** `.next-batie` n'est
+pas couvert par `.next/**` : une fois `npm run banc` joué, `npm run lint`
+recrachait **1 271 erreurs** venues de code généré. Personne ne s'en apercevait
+tant qu'on ne lançait pas le banc — et un contrôle noyé ne se lit plus.
 
 **La panne qui a tenu la soirée entière.** Le jeu de démonstration avait été
 refait, l'ancien compte supprimé, et le navigateur du patron portait toujours la

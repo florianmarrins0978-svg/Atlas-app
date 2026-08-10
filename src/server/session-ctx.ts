@@ -2,7 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { auth } from "../auth";
 import { db } from "./db/client";
-import { membresEntreprise } from "./db/schema";
+import { membresEntreprise, users } from "./db/schema";
 import type { Ctx } from "./repositories/context";
 import { enrichirContexteRequete } from "./request-context";
 
@@ -70,16 +70,29 @@ async function resoudreEntrepriseId(utilisateurId: string): Promise<string> {
       .limit(1);
 
     if (!membre) {
-      // **Une session valide dont le compte n'a plus d'entreprise est une
-      // session PÉRIMÉE, pas une panne.** Le 10 août 2026, le patron a passé sa
-      // soirée dessus : le jeu de démonstration refait, l'ancien compte
-      // supprimé, et son navigateur portait toujours ce fantôme. L'erreur
-      // remontait en 500 sur chaque écran, sans jamais dire quoi faire.
+      // **Deux situations que rien ne distinguait, et qui n'appellent pas du
+      // tout le même remède.**
       //
-      // On l'envoie donc là où le cookie sera effacé, puis à l'écran de
-      // connexion. `redirect()` lève une exception que Next.js reconnaît :
-      // elle traverse ce qui l'appelle sans rien laisser à moitié fait.
-      redirect("/api/session-perimee");
+      // Le compte n'existe PLUS : la session est périmée. Le 10 août 2026, le
+      // jeu de démonstration a été refait, l'ancien compte supprimé, et le
+      // navigateur du patron portait toujours ce fantôme. L'erreur remontait en
+      // 500 sur chaque écran, sans jamais dire quoi faire. On l'envoie donc là
+      // où le cookie sera effacé, puis à l'écran de connexion.
+      //
+      // Le compte existe mais n'a aucune adhésion : ce n'est PAS une session
+      // périmée, et l'effacer serait pire que le défaut. Le compte se
+      // reconnecterait, n'aurait toujours pas d'entreprise, et repartirait vers
+      // l'effacement — une boucle dont on ne sort jamais. C'est une anomalie de
+      // données, qui doit se voir comme telle : `AucuneEntrepriseError`, ce que
+      // `test-auth-autorisation` exige depuis toujours. Le premier correctif
+      // avait remplacé les deux cas par le premier, et cassait ce contrôle.
+      const [existe] = await tx.select({ id: users.id }).from(users).where(eq(users.id, utilisateurId)).limit(1);
+      if (!existe) {
+        // `redirect()` lève une exception que Next.js reconnaît : elle traverse
+        // ce qui l'appelle sans rien laisser à moitié fait.
+        redirect("/api/session-perimee");
+      }
+      throw new AucuneEntrepriseError(utilisateurId);
     }
     enrichirContexteRequete({ utilisateurId, entrepriseId: membre.entrepriseId });
     return membre.entrepriseId;

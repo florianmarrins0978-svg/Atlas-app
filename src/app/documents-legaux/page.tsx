@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { documentsAAccepter, utilisateurExiste } from "@/server/repositories/documents-legaux";
+import { documentsAAccepter } from "@/server/repositories/documents-legaux";
 import FormulaireAcceptation from "./formulaire";
 
 export const dynamic = "force-dynamic";
@@ -10,11 +10,11 @@ export default async function DocumentsLegauxPage() {
   const utilisateurId = session?.user?.id;
   if (!utilisateurId) redirect("/login");
 
-  // **Le compte existe-t-il encore ?** Cet écran est le premier que voit une
-  // session périmée — il précède toute entreprise. Sans ce contrôle,
-  // l'acceptation partait en base et échouait sur la clé étrangère, en
-  // affichant une requête SQL au patron.
-  if (!(await utilisateurExiste(utilisateurId))) redirect("/api/session-perimee");
+  // Le compte disparu est traité par `GardeDocumentsLegaux`, dans le layout,
+  // et non ici : une redirection lancée depuis une page passe sous la
+  // frontière de `loading.tsx`, où l'enveloppe est déjà partie — elle ne peut
+  // alors plus être un 307. Le contrôle a bel et bien été écrit ici d'abord,
+  // et rendait 200.
 
   const documents = await documentsAAccepter(utilisateurId);
   // Plus rien à accepter : cette page n'a aucune raison de rester atteignable.

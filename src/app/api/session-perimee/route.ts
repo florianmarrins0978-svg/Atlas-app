@@ -35,7 +35,7 @@ const COOKIES_DE_SESSION = [
   "__Secure-authjs.callback-url",
 ];
 
-export async function GET(requete: Request) {
+export async function GET() {
   const boite = await cookies();
   for (const nom of COOKIES_DE_SESSION) {
     // `delete` ne suffit pas toujours : un cookie posé avec un chemin précis
@@ -44,9 +44,16 @@ export async function GET(requete: Request) {
     boite.delete(nom);
     boite.set(nom, "", { path: "/", maxAge: 0, expires: new Date(0) });
   }
-  const base = new URL(requete.url);
-  return NextResponse.redirect(new URL("/login?session=perimee", base.origin), {
+  // **Adresse RELATIVE, et c'est essentiel.** `NextResponse.redirect` exige une
+  // adresse absolue, qu'il faut alors fabriquer depuis `request.url` — laquelle
+  // vaut l'adresse d'écoute, `http://0.0.0.0:3000`. Constaté à l'essai : le
+  // navigateur du patron aurait été renvoyé vers `0.0.0.0`, qui ne mène nulle
+  // part. Le remède l'aurait laissé devant une page morte, exactement comme le
+  // défaut qu'il répare. Un `Location` relatif est résolu par le navigateur
+  // contre l'adresse qu'il a lui-même ouverte : aucun relais ne peut le tromper.
+  return new NextResponse(null, {
     // 303 : la suite est une page à afficher, jamais une action à rejouer.
     status: 303,
+    headers: { location: "/login?session=perimee" },
   });
 }

@@ -233,6 +233,10 @@ async function annoncerDesQueCaRepond(bati) {
 
 let serveur = raison ? lancerDev() : lancerBati();
 let enBascule = false;
+// Ce qui SERT réellement, à cet instant — pas ce qu'on espérait servir. La
+// bascule peut échouer (le port n'est pas rendu) : l'annonce doit alors dire
+// « mode développement », sinon elle promet une vitesse qui n'existe pas.
+let sertBati = !raison;
 
 // Le serveur tient ce script en vie ; sa mort l'arrête — SAUF pendant la
 // bascule, où on le tue nous-mêmes pour le remplacer.
@@ -286,6 +290,7 @@ if (raison) {
       serveur = lancerBati();
       serveur.on("exit", surSortie);
       enBascule = false;
+      sertBati = true;
     } else {
       // **On ne bascule pas dans le vide.** Mieux vaut un banc lent qu'un banc
       // mort : le serveur de développement tient encore le port, il sert.
@@ -339,5 +344,9 @@ if (!pret) {
   // répéter en entier ferait croire à un second démarrage.
   console.log("\n  Version rapide en place — chaque écran s'ouvre maintenant du premier coup.\n");
 } else {
-  annoncer(bati);
+  // `sertBati` et non `bati` : ce dernier n'existe pas à cet endroit — il est le
+  // paramètre de `annoncer`, et une variable locale à `doitRebatir`. Le banc
+  // mourait ici sur un `ReferenceError`, APRÈS la construction, une fois
+  // annoncé prêt. `no-undef` l'attrape désormais (voir `eslint.config.mjs`).
+  annoncer(sertBati);
 }
