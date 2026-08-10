@@ -130,6 +130,12 @@ Ce que cela impose à **toute maquette qui lui est destinée** :
   avec quatre `input[type=radio]`, des `label`, et
   `input:nth-of-type(n):checked ~ .trait`. Les colonnes étant égales, un onglet
   vaut exactement `translateX(100%)` : rien à mesurer.
+- **Un repère qui suit le défilement se fait avec `position: sticky`**, pas
+  avec un calcul. Une pastille collée à `top: 50%` dans la liste **est**, par
+  construction, sur l'élément centré ; avec `scroll-snap-align: center` sur
+  chaque ligne, celui-ci vient se caler dessous. Rien à mesurer, et surtout
+  rien qui puisse se désynchroniser du défilement — ce qu'un suivi image par
+  image finit toujours par faire sur un téléphone chargé.
 - **Éprouver avec `javaScriptEnabled: false`.** Une page bâtie en JS passe tous
   les contrôles ordinaires et arrive quand même vide chez lui. Le contrôle
   ouvre la page dans ce mode, compte les onglets, et **charge en contre-épreuve
