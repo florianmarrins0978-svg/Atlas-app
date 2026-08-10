@@ -352,6 +352,18 @@ jour-là. Supprimez-le et recréez-en un — voir l'encadré du geste 1. C'est l
 cas le plus fréquent, et le plus déroutant, parce que l'erreur ne dit pas que
 le problème est l'ancienneté de l'espace.
 
+**Avant tout dépannage un peu brutal : mettez la base à l'abri.** Elle vit
+DANS l'espace de travail — supprimer l'espace emporte vos chantiers, vos
+clients, et tout ce que l'agent a appris.
+
+```bash
+npm run sauvegarder:banc
+```
+
+Le fichier `sauvegarde-atlas-….sql` paraît à la racine, dans la liste de
+gauche. **Appui long dessus → « Télécharger »** : tant qu'il n'est pas sur
+votre appareil, il disparaît avec l'espace, puisqu'il vit au même endroit.
+
 **`AucuneEntrepriseError : l'utilisateur … n'a aucune adhésion d'entreprise
 active`, et toutes les pages s'écroulent.** Constaté le 10 août 2026. Votre
 navigateur porte encore la session d'un compte de démonstration **qui n'existe
