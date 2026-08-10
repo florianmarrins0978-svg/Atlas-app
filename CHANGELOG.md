@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### « Ok to proceed? » — une question qui n'avait rien à faire là
+
+Le patron, dans son Codespace : `npm run essai` lui demandait
+*« Need to install the following packages: next@16.3.0 — Ok to proceed? »*.
+La cause n'était pas Next : **les dépendances n'étaient pas installées**, et
+`npx`, ne trouvant pas `next` en local, proposait de le télécharger. En
+**16.3.0**, quand le dépôt est figé sur **16.2.12** — accepter aurait fait
+tourner l'application sur une version que personne n'a éprouvée.
+
+`scripts/essai.mjs` vérifie donc d'abord que `node_modules/next` existe, et
+sort en nommant le vrai coupable : *« Les dépendances ne sont pas installées —
+jouez `bash .devcontainer/preparer.sh` »*. Et `npx --no-install` en renfort,
+pour qu'un cas non prévu **échoue** au lieu de poser une question à laquelle
+personne n'attend d'avoir à répondre.
+
+Éprouvé rouge en jouant le script depuis un dossier sans dépendances : il
+affiche la marche à suivre et sort en 1.
+
 ### Facturer en trois appuis, depuis l'écran « Terminés »
 
 Choix arrêté : **E1, avec la pastille de E2** — un anneau bronze portant le

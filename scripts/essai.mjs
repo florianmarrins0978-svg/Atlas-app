@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 
 // Démarre l'application pour les essais, attend qu'elle réponde vraiment, puis
 // affiche l'adresse à ouvrir.
@@ -34,7 +35,41 @@ async function repond() {
   }
 }
 
-const serveur = spawn("npx", ["next", "dev", "-H", "0.0.0.0", "-p", PORT], {
+// Sans dépendances installées, `npx` ne trouve pas `next` en local et PROPOSE
+// DE LE TÉLÉCHARGER — « Need to install the following packages: next@… Ok to
+// proceed? ». Le patron est tombé dessus le 2026-08-10 : la question n'a aucun
+// rapport avec ce qu'il voulait faire, et accepter installerait une version
+// différente de celle que le dépôt a éprouvée. On refuse avant d'en arriver là,
+// et on nomme le vrai coupable.
+const NEXT_LOCAL = "node_modules/next/dist/bin/next";
+if (!existsSync(NEXT_LOCAL)) {
+  console.error(`
+  ─────────────────────────────────────────────────────────────
+   Les dépendances ne sont pas installées.
+
+   Ne laissez pas « npx » vous proposer de télécharger Next :
+   il prendrait une autre version que celle du dépôt.
+
+   Jouez d'abord, dans cet ordre :
+
+     bash .devcontainer/preparer.sh    dépendances, base, données
+
+   ou, si la base est déjà prête :
+
+     npm ci
+
+   puis relancez :
+
+     npm run essai
+  ─────────────────────────────────────────────────────────────
+`);
+  process.exit(1);
+}
+
+// `--no-install` en renfort : si le contrôle ci-dessus laissait passer un cas
+// que je n'ai pas prévu, npx échoue au lieu de POSER UNE QUESTION à laquelle
+// personne n'attend d'avoir à répondre.
+const serveur = spawn("npx", ["--no-install", "next", "dev", "-H", "0.0.0.0", "-p", PORT], {
   stdio: "inherit",
   env: process.env,
 });
