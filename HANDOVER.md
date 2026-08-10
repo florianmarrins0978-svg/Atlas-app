@@ -92,6 +92,11 @@ tout correctif d'environnement doit être rejoué à chaque allumage**, dans
 `gh` n'existe pas dans l'espace de l'agent, et un contrôle qu'on ne peut pas
 jouer ne prouve rien.
 
+**Et attention au remède qu'on indique :** `gh` n'existe PAS dans ce conteneur
+(image `typescript-node:22`), contrairement à l'image Codespaces par défaut. Le
+premier message renvoyait vers `gh …` et le patron a reçu « command not found ».
+Partout, c'est l'onglet **PORTS** de l'éditeur qui passe devant.
+
 **La session fantôme, close et tenue par un test (10 août, tard).** Le remède
 posé plus tôt dans la soirée fonctionnait sur le papier et **pas dans un
 navigateur** : le contrôle écrit pour le tenir a trouvé trois défauts d'affilée.

@@ -30,6 +30,19 @@ ce qu'il en advient** : le taire était la moitié du défaut. Sans `gh`, ou si
 `gh` refuse, le démarrage affiche la commande de secours au lieu de laisser
 croire que tout va bien.
 
+**Et le remède indiqué était introuvable.** Première version, le démarrage et le
+diagnostic donnaient `gh codespace ports visibility …` — le patron l'a tapée et
+a reçu **« bash: gh: command not found »**. L'image de ce conteneur,
+`mcr.microsoft.com/devcontainers/typescript-node:22`, n'embarque pas `gh` ;
+l'image Codespaces par défaut si, d'où la méprise. Un remède introuvable coûte
+plus cher que pas de remède. Les deux messages mettent donc en avant l'onglet
+**PORTS** de l'éditeur — trois clics, rien à installer — et `gh` n'est plus
+qu'une mention entre parenthèses. `devcontainer.json` réclame désormais `gh`
+comme fonctionnalité, pour les espaces à naître.
+
+Le diagnostic recopiait ce remède **quatre fois** : il est écrit une seule fois,
+et un contrôle échoue s'il réapparaît en double.
+
 `scripts/test-ouvrir-port.ts` l'éprouve avec un **faux `gh`** posé devant le
 vrai — l'agent n'a pas d'espace GitHub, et un contrôle qu'on ne peut pas jouer
 ne prouve rien. Il vérifie la commande exacte envoyée, les deux modes de panne,

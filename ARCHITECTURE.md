@@ -3661,3 +3661,18 @@ rester **vert alors que l'appel avait été supprimé** — il lisait le comment
 qui le surplombe, où le nom du script figure. Les commentaires sont maintenant
 retirés avant de regarder. Même piège que le test de l'annonce d'adresse (§50) :
 un contrôle qui vise un texte au lieu d'un geste ne contrôle rien.
+
+**Et le remède indiqué doit exister sur la machine qui le lit.** Le premier
+message donnait `gh codespace ports visibility …` ; le patron a reçu
+**« bash: gh: command not found »**. L'image de ce conteneur,
+`mcr.microsoft.com/devcontainers/typescript-node:22`, n'embarque pas `gh` —
+l'image Codespaces par défaut si, et c'est de là que venait la méprise. Le geste
+à la souris (onglet **PORTS** → clic droit → « Visibilité du port » → « Public »)
+passe donc devant partout : il ne demande d'installer rien. `gh` est réclamé par
+une fonctionnalité de `devcontainer.json`, ce qui ne vaut — encore une fois —
+que pour les espaces à naître.
+
+Le diagnostic recopiait ce remède quatre fois. Il est désormais écrit une seule
+fois (`OUVRIR_LE_PORT`), et `test-ouvrir-port.ts` échoue s'il réapparaît en
+double : deux copies d'un message finissent toujours par diverger, et c'est
+celle qu'on a oublié de corriger que le patron lira.

@@ -133,10 +133,45 @@ cas("le démarrage appelle réellement ce script, et dit ce qu'il en advient", (
     /case\s+"\$PORT_PUBLIC"/,
     "demarrer.sh appelle ouvrir-port.sh sans rien dire de son verdict : un port privé resterait muet"
   );
+  // **Le remède indiqué doit exister sur CETTE machine.** Première version, le
+  // message donnait `gh codespace ports visibility …` en premier ; le patron a
+  // reçu « bash: gh: command not found », l'image de ce conteneur n'embarquant
+  // pas `gh`. Un remède introuvable coûte plus cher que pas de remède.
   assert.match(
     code,
-    /gh codespace ports visibility 3000:public/,
-    "demarrer.sh ne donne pas au patron la commande de secours quand gh manque"
+    /onglet PORTS/,
+    "demarrer.sh n'indique pas l'onglet PORTS — le seul remède qui ne demande " +
+      "l'installation de rien, et le seul qui marche dans l'image de ce conteneur"
+  );
+});
+
+// **Le diagnostic est ce que le patron LIT quand rien ne marche.** C'est lui
+// qui l'a envoyé taper une commande absente : il donnait `gh …` quatre fois,
+// recopiée. Le remède y est désormais écrit une seule fois, et commence par le
+// geste qui ne demande d'installer rien.
+cas("le diagnostic indique l'onglet PORTS, et n'écrit son remède qu'une fois", () => {
+  const source = readFileSync(path.join(__dirname, "diagnostiquer-banc.mjs"), "utf8");
+  assert.match(
+    source,
+    /onglet PORTS/,
+    "le diagnostic n'indique pas l'onglet PORTS — c'est pourtant le seul remède qui marche ici"
+  );
+  const recopies = source.split("gh codespace ports visibility").length - 1;
+  assert.equal(
+    recopies,
+    1,
+    `le remède est recopié ${recopies} fois : deux copies finissent toujours par diverger`
+  );
+});
+
+// L'outil `gh` n'est pas dans l'image du conteneur : sans cette fonctionnalité,
+// `ouvrir-port.sh` restera `sans-gh` à chaque allumage, pour toujours.
+cas("l'espace de travail réclame `gh`, que son image n'embarque pas", () => {
+  const config = readFileSync(path.join(__dirname, "..", ".devcontainer", "devcontainer.json"), "utf8");
+  assert.match(
+    config,
+    /features\/github-cli/,
+    "devcontainer.json ne demande pas gh : le port ne pourra jamais s'ouvrir seul"
   );
 });
 

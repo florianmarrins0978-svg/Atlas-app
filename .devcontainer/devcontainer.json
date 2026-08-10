@@ -30,6 +30,19 @@
     "GOOGLE_API_KEY": "${localEnv:GOOGLE_API_KEY}"
   },
 
+  // **`gh` n'est PAS dans l'image de ce conteneur** — constaté le 10 août 2026,
+  // par « bash: gh: command not found » chez le patron. L'image Codespaces par
+  // défaut l'embarque ; `mcr.microsoft.com/devcontainers/typescript-node:22`,
+  // celle de `docker-compose.yml`, non. Sans lui, `ouvrir-port.sh` ne peut pas
+  // publier le port tout seul.
+  //
+  // Comme tout ce qui est déclaré ici, cela ne vaut QUE pour un espace à naître
+  // (voir plus bas, et `ARCHITECTURE.md` §55) : dans un espace existant, le
+  // remède reste l'onglet PORTS, que le démarrage indique.
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
   // Monté une seule fois, à la création : dépendances, migrations, données de
   // démonstration.
   "postCreateCommand": "bash .devcontainer/preparer.sh",

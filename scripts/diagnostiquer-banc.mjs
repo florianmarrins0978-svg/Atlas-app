@@ -122,11 +122,23 @@ if (!publique) {
   process.exit(0);
 }
 
+// **Le remède, écrit UNE FOIS.** Il était recopié quatre fois dans ce fichier,
+// et il envoyait au mauvais endroit : `gh` n'est pas dans l'image de ce
+// conteneur (`typescript-node:22`, voir `.devcontainer/docker-compose.yml`).
+// Le patron a suivi la ligne à la lettre et reçu « bash: gh: command not
+// found ». Le geste à la souris passe donc devant — il ne demande d'installer
+// rien, et l'onglet PORTS est toujours là.
+const OUVRIR_LE_PORT =
+  "    onglet PORTS (à côté de TERMINAL) → clic droit sur la ligne du port 3000\n" +
+  "      → « Visibilité du port » → « Public »\n" +
+  "    (ou, si vous avez l'outil gh :\n" +
+  "     gh codespace ports visibility 3000:public -c $CODESPACE_NAME)\n";
+
 if (!dehors.ok) {
   console.log(
     "\n  MAIS SON ADRESSE PUBLIQUE NE RÉPOND PAS.\n" +
-      "  Le port 3000 n'est probablement pas ouvert. Une commande :\n" +
-      "    gh codespace ports visibility 3000:public -c $CODESPACE_NAME\n"
+      "  Le port 3000 n'est probablement pas ouvert. Trois clics :\n" +
+      OUVRIR_LE_PORT
   );
   process.exit(1);
 }
@@ -135,8 +147,8 @@ if (reponseDeGitHub(dehors)) {
   console.log(
     "\n  MAIS C'EST GITHUB QUI RÉPOND, pas Atlas.\n" +
       "  Le port est PRIVÉ : depuis un téléphone non connecté à GitHub, il n'y\n" +
-      "  a rien à voir. Une commande :\n" +
-      "    gh codespace ports visibility 3000:public -c $CODESPACE_NAME\n"
+      "  a rien à voir. Trois clics :\n" +
+      OUVRIR_LE_PORT
   );
   process.exit(1);
 }
@@ -151,7 +163,7 @@ if (dehors.statut >= 400) {
       "  Ce que le relais a répondu, mot pour mot :\n\n" +
       "    " + (dehors.debut.replace(/\s+/g, " ").trim().slice(0, 180) || "(rien)") + "\n\n" +
       "  Si c'est 401 ou 403, le port n'est pas ouvert :\n" +
-      "    gh codespace ports visibility 3000:public -c $CODESPACE_NAME\n"
+      OUVRIR_LE_PORT
   );
   process.exit(1);
 }
@@ -164,7 +176,7 @@ if (seraTelecharge(dehors)) {
       "  TÉLÉCHARGEMENT au lieu d'afficher la page.\n\n" +
       "  Cause connue : le protocole du port est réglé sur HTTPS alors que\n" +
       "  l'application parle en HTTP. À remettre sur HTTP :\n" +
-      "    gh codespace ports visibility 3000:public -c $CODESPACE_NAME\n" +
+      OUVRIR_LE_PORT +
       "  puis, dans l'onglet Ports de l'éditeur, « Change Port Protocol » → HTTP.\n"
   );
   process.exit(1);

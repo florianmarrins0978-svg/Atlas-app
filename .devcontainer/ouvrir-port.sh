@@ -31,6 +31,15 @@
 #   sans-gh        l'outil `gh` est absent — le patron devra le faire à la main
 #   échec          `gh` a refusé ; la raison est sur la sortie d'erreur
 #
+# **`sans-gh` n'est PAS un cas d'école, c'est le cas courant ici.** L'image de ce
+# conteneur est `mcr.microsoft.com/devcontainers/typescript-node:22`, qui
+# n'embarque pas `gh` — contrairement à l'image Codespaces par défaut, d'où la
+# méprise. Le patron a reçu « bash: gh: command not found ». Le remède qui marche
+# sans rien installer est l'onglet PORTS de l'éditeur, et c'est LUI que
+# `demarrer.sh` met en avant. `gh` arrive par une fonctionnalité déclarée dans
+# `devcontainer.json` — donc seulement pour les espaces à naître, une fois de
+# plus (voir `ARCHITECTURE.md` §55).
+#
 # Ne fait JAMAIS échouer le démarrage : un port privé rend le banc pénible, une
 # erreur ici le rendrait mort.
 set -uo pipefail

@@ -230,12 +230,23 @@ case "$PORT_PUBLIC" in
     echo "  Port : ouvert à tous — l'adresse s'ouvre depuis un téléphone."
     ;;
   sans-gh|échec)
+    # **Le geste à la souris D'ABORD, la commande ensuite — et l'ordre compte.**
+    # Le 10 août 2026, ce message donnait `gh codespace ports visibility …` en
+    # premier ; le patron a reçu « bash: gh: command not found ». L'image de ce
+    # conteneur (`typescript-node:22`) n'embarque pas `gh`, contrairement à
+    # l'image Codespaces par défaut. Un remède introuvable coûte plus cher que
+    # pas de remède : l'onglet PORTS, lui, est toujours là.
     echo
-    echo "  ⚠ LE PORT EST PEUT-ÊTRE PRIVÉ. Depuis un téléphone non connecté"
-    echo "    à GitHub, l'adresse montre une page de connexion GitHub au lieu"
-    echo "    d'Atlas. Une commande, ici, règle cela :"
+    echo "  ⚠ LE PORT EST PRIVÉ. Depuis un téléphone non connecté à GitHub,"
+    echo "    l'adresse montre une page de connexion GitHub au lieu d'Atlas."
+    echo "    Trois clics, dans cet éditeur, règlent cela :"
     echo
-    echo "      gh codespace ports visibility 3000:public -c \$CODESPACE_NAME"
+    echo "      onglet PORTS (à côté de TERMINAL)"
+    echo "        → clic droit sur la ligne du port 3000"
+    echo "        → « Visibilité du port » → « Public »"
+    echo
+    echo "    (Avec l'outil gh, si vous l'avez :"
+    echo "     gh codespace ports visibility 3000:public -c \$CODESPACE_NAME)"
     ;;
 esac
 
