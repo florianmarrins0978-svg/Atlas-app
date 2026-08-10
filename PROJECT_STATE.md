@@ -202,7 +202,30 @@ Ce que cela change pour le code, et pourquoi c'est écrit ici :
 - `src/lib/design-tokens.ts` et `docs/DESIGN_SYSTEM.md` décrivent donc une
   identité que le patron est en train de quitter.
 
-**Rien n'est tranché, et rien n'a été codé dans ce sens.** Mais une conversation
+### Ce que le patron a arrêté le 2026-08-10, sur maquettes
+
+Quatre choix faits, après avoir touché chaque variante sur son téléphone :
+
+| | Retenu | Ce que ça veut dire |
+|---|---|---|
+| Charte | **Origine** | fond `#edece6`, encre `#16170f`, bronze `#8f7130` |
+| Trait du bandeau | **G** | il dépasse sa cible et revient ; le mot choisi monte de 2 px, le mot quitté redescend |
+| La perle du fil | **elle suit** | posée devant le 22 juillet au repos, accrochée à mi-hauteur dès que ce chantier remonte, **un chantier par glissement** |
+| « Nouveau chantier » | **l'écran recule** | la liste passe à 93 % et s'assombrit, la feuille monte devant, son contenu arrive après elle dans l'ordre de lecture |
+
+**Conséquence assumée sur la perle**, signalée deux fois et maintenue : elle ne
+désigne plus le chantier dont le devis est revenu, puisqu'elle suit le doigt.
+Seul reste le libellé « Devis retourné », en bronze. Ne pas « corriger » cela
+par erreur en croyant retrouver l'intention d'origine.
+
+**Réserve non levée :** « Nouveau chantier » est aujourd'hui une **page**
+(`/chantiers/nouveau`, avec sa flèche de retour vers la liste), pas une
+feuille modale. L'ouverture retenue raconte une feuille. Soit l'écran devient
+une vraie feuille — et la flèche cède la place à un geste de fermeture vers le
+bas —, soit l'ouverture devra changer le jour de l'intégration. Le patron a
+tranché sur le style ; ce point de produit reste ouvert.
+
+**Rien d'autre n'est tranché, et rien n'a été codé dans ce sens.** Mais une conversation
 qui lirait le dépôt seul repartirait en vert pin avec des icônes, c'est-à-dire à
 contresens. Quand le choix sera arrêté, ce sont `design-tokens.ts`,
 `globals.css`, `manifest.json`, `AtlasBottomNav` et `docs/DESIGN_SYSTEM.md` qui
