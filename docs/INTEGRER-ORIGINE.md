@@ -1,14 +1,25 @@
 # Poser la charte Origine dans l'application
 
 > **État au 10 août 2026, au soir.** Cette fiche a été écrite sur une branche
-> qui ne portait pas encore la refonte. Depuis, **§1 à §3 et §5 sont faits** —
-> la charte, la liste en fil, la perle, le bandeau — et **§4 (le retrait) l'est
-> aussi**, sur les huit endroits qui suppriment. Le §2 décrit encore
-> `ListeChantiers` comme « une pile de cartes » : ce n'est plus vrai.
-> **Reste ouvert : §6, l'ouverture de « Nouveau chantier »**, et le point de
-> produit qu'il faut poser au patron avant de coder.
+> qui ne portait pas encore la refonte. Depuis, sont **faits** : §1 à §3 et §5
+> (la charte, la liste en fil, la perle, le bandeau), **§4 — le retrait**, sur
+> les huit endroits qui suppriment, et **§6 bis — la note vocale et les photos
+> de la fiche chantier**.
 >
-> Ce qu'il faut savoir pour reprendre le retrait est dans `ARCHITECTURE.md` §48.
+> Deux corrections au recensement du §4, payées à l'essai : ils sont **huit et
+> non sept** (le planning supprimait lui aussi, par `CarteGlissante`), et
+> **l'un des huit ne prend pas le glissement, à dessein** — une vignette carrée
+> dans une grille de trois n'est pas une ligne ; la photo garde le mot, la
+> couleur, le tiroir et l'écriture différée, et se retire depuis la
+> visionneuse. Un troisième morceau non prévu ici porte tout cela :
+> `useRetraits` (délai, pile des retraits, écriture différée).
+>
+> Le §2 décrit encore `ListeChantiers` comme « une pile de cartes » : ce n'est
+> plus vrai. **Reste ouvert : §6, l'ouverture de « Nouveau chantier »**, et le
+> point de produit qu'il faut poser au patron avant de coder.
+>
+> Ce qu'il faut savoir pour reprendre : `ARCHITECTURE.md` §48 (le retrait) et
+> §49 (l'anneau et le tiroir de la fiche).
 
 Fiche de reprise pour la conversation qui fera le travail. Elle décrit **ce que
 le patron a retenu le 2026-08-10**, le code exact des maquettes, et les pièges
@@ -185,21 +196,6 @@ confirmation. C'est cette dispersion qu'il faut faire disparaître.
   le glissement (colonne du texte seule), la chute, et signale le retrait.
 - `TiroirDesRetires` — un par écran, posé entre le contenu et le bas de page.
 
-**Fait le 10 août 2026.** Les deux existent, plus un troisième morceau que
-cette fiche n'avait pas prévu : `useRetraits`, qui porte le délai, la pile des
-retraits et l'écriture différée. Sans lui, chaque écran aurait réinventé le
-minuteur — et c'est exactement la dispersion qu'on venait de supprimer.
-
-**Le recensement était incomplet : ils sont HUIT, pas sept.** Le planning
-(`src/app/planning/PlanningClient.tsx`) supprime lui aussi, sur ses trois
-listes, et il passait par `CarteGlissante`. L'oublier aurait laissé la moitié
-de l'ancienne mécanique en place.
-
-**Et l'un des huit ne prend pas le glissement, à dessein :** les photos. Une
-vignette carrée dans une grille de trois n'est pas une ligne. Elle garde le
-reste du geste — le mot, la couleur, le tiroir, l'écriture différée — et se
-retire depuis la visionneuse, là où on la regarde.
-
 **Ce que ce changement déplace, et qui doit être décidé en le sachant :** la
 sécurité passe d'une **confirmation avant** à une **réversibilité après**. Les
 deux panneaux « Supprimer cette photo ? » et « Supprimer cette note vocale ? »
@@ -290,6 +286,95 @@ produit reste ouvert : le lui poser avant de coder cette étape.**
 
 ---
 
+## 6 bis. La note vocale sur la fiche chantier
+
+**Choisi par le patron le 2026-08-10.** Maquette :
+`maquettes/atlas-note-vocale.html`, contrôlée par
+`npm run verifier:maquette`.
+
+Un **anneau muet** remplace la ligne « Note vocale » comme accès direct : il se
+pose entre le pavé de bas de fiche et le tiroir, seul et centré. Aucun libellé
+visible — mais un nom accessible « Écouter la note vocale ».
+
+```css
+/* Le vert tient le tour, l'or se pose dedans. Trois traits au centre. */
+.vert{width:74px;height:74px;border:1.5px solid var(--plein)}   /* #2a3a2e */
+.or  {width:56px;height:56px;border:1px solid var(--bronze)}    /* #8f7130 */
+.anneaux{min-width:76px;min-height:76px}                        /* la prise */
+```
+
+**À la lecture** : les trois traits battent, les secondes apparaissent, et de
+chaque côté des barreaux partent du centre vers l'extérieur en s'effaçant au
+bout — hauteurs inégales et départs décalés, sinon l'onde ressemble à un décor.
+Dans l'application, ces hauteurs suivent le **volume réellement enregistré**, et
+le compteur la **lecture réelle** (la maquette n'a qu'une horloge CSS).
+
+**Trois règles qui ne se voient pas mais se sentent :**
+
+1. **Tout est en pause au repos.** Une onde qui bat quand rien ne joue fait
+   croire qu'un son sort du téléphone.
+2. **Les ailes ne prennent jamais le doigt** (`pointer-events:none`). Un barreau
+   qui passe sous le pouce volerait l'appui destiné à l'anneau.
+3. **La prise vaut 76 px** quand le trait n'en dessine que 56. Une icône fine
+   qu'on rate deux fois sur trois n'est pas élégante, elle est ratée.
+
+### Retirer la note — on fait MONTER l'anneau
+
+Le doigt pousse l'anneau vers le haut, « Retirer » se découvre dessous.
+L'issue est **celle des chantiers** : les traits rentrent dans l'anneau — la
+voix se ramasse au lieu de s'évaporer —, l'anneau se contracte et part, et
+« Note vocale retirée — Annuler » vient à sa place.
+
+- **La consigne doit dire le geste réel.** La première version annonçait
+  « faites descendre » alors que le doigt fait monter : une consigne fausse
+  coûte plus cher qu'aucune consigne.
+- **Le déclencheur s'efface avec la note.** « Retirer » restait allumé et
+  s'imprimait par-dessus « Annuler ». Le contrôle qui aurait dû le voir lisait
+  l'opacité de l'élément seul, pas celle héritée de son parent : interroger
+  `Element.checkVisibility({opacityProperty:true})`.
+- **`overscroll-behavior: contain`** sur le glisseur, sinon le doigt emporte
+  toute la page avec l'anneau.
+- **Rien n'est effacé tant qu'« Annuler » est à l'écran** : la purge du fichier
+  part après, jamais avant (voir §4 bis).
+
+### La pellicule, dans le tiroir
+
+Les vignettes deviennent des boutons — on les touche pour ouvrir — et la
+**case « + » vient en PREMIER** : posée à la fin, il fallait faire défiler six
+photos pour la trouver. La ligne « Photos · 6 » disparaît : elle comptait ce qui
+est désormais sous les yeux.
+
+`scroll-padding-left: 26px` sur la pellicule, sinon l'accroche vise le bord du
+cadre et le glisseur se décale seul de 26 px au chargement — la première photo
+arrive déjà coupée.
+
+### Fait le 10 août 2026 — et trois pièges que la maquette ne pouvait pas poser
+
+Tout ce qui précède est en place (`AnneauNoteVocale.tsx`, `TiroirFiche.tsx`).
+Trois défauts sont apparus au passage à l'application, tous **trouvés à l'œil
+sur capture**, aucun par un contrôle :
+
+1. **`display: flex` n'étire pas un `<button>`.** La maquette pose un
+   `<label>` pour « Retirer » ; l'application pose un vrai bouton, et un
+   contrôle de formulaire garde une largeur au contenu même déclaré `flex`. Le
+   mot se retrouvait collé au bord gauche, son R à moitié dehors, pendant que
+   tous les contrôles passaient : il existait, il était visible, il répondait
+   au doigt. **`width: 100%` est donc obligatoire ici, et ne l'était pas là-bas.**
+2. **`--atlas-barre` est une réserve de place (68 px), pas la hauteur que la
+   barre dessine (49 px).** Le tiroir posé dessus laissait dépasser 84 px au
+   lieu de 65, et une bande de pellicule affleurait sous le résumé. Le tiroir
+   mesure donc la barre réelle. **Corriger la variable aurait déplacé le cheveu
+   du bandeau sur tous les écrans, dont l'accueil, que le patron a arrêté.**
+3. **L'écran de dessous doit reculer** quand le tiroir monte
+   (`scale(.955) translateY(-16px)` + `brightness(.9)`), comme la feuille
+   « Nouveau chantier ». Sans ce recul, le tiroir tranche l'anneau par le
+   milieu et l'écran a l'air cassé, pas superposé.
+
+Les cinq états de la fiche se capturent en une commande :
+`npx tsx scripts/capture-fiche-note-vocale.mts <dossier> <id-chantier>`.
+
+---
+
 ## 7. Ordre de travail
 
 Chaque étape est utilisable seule.
@@ -302,6 +387,30 @@ Chaque étape est utilisable seule.
 4. **Le bandeau** — `AtlasBottomNav.tsx`.
 5. **Le retrait** — il remplace la corbeille de `CarteGlissante`.
 6. **L'ouverture** — après avoir tranché le point de produit ci-dessus.
+7. **La note vocale sur la fiche chantier** — l'anneau, la lecture, le retrait
+   par le haut, la pellicule (§6 bis). Indépendante des autres étapes.
+
+---
+
+## 7 bis. Le défaut que les contrôles ne peuvent pas voir
+
+**Safari sur iPhone n'active pas un `<label>` qui n'a pas `cursor: pointer`.**
+Chromium s'en passe. Toutes les maquettes de ce dépôt portent donc :
+
+```css
+label{cursor:pointer}
+```
+
+Le patron, le 2026-08-10, devant le calendrier : *« rien ne s'ouvre quand je
+touche un jour »* — quarante contrôles au vert, et l'écran muet sous son doigt.
+Le contrôle qui l'attrape ne se joue pas dans un navigateur : il **lit le
+style**. Aucun essai en Chromium ne pouvait voir ce défaut.
+
+La leçon dépasse ce cas : quand un mécanisme repose sur un `<label>` et une case
+à cocher, l'essai automatique ne prouve rien sur l'appareil du patron. Sur
+l'application, ces mécanismes deviennent du vrai JavaScript et le problème
+disparaît — mais **les maquettes doivent rester touchables chez lui**, sinon il
+juge un écran qui ne répond pas.
 
 ---
 

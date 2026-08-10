@@ -3148,3 +3148,123 @@ Le glissement horizontal du texte et l'accroche verticale du fil
 (`scroll-snap-stop: always`) ne portent pas sur le même axe, mais ils se
 disputent un mouvement en **diagonale** — le cas ordinaire d'un pouce. Un
 navigateur piloté ne le reproduit pas. À essayer sur un vrai téléphone.
+
+---
+
+## 49. L'anneau muet et la pellicule — la fiche chantier
+
+**Retenu par le patron le 10 août 2026, sur maquette**
+(`maquettes/atlas-note-vocale.html`, `docs/INTEGRER-ORIGINE.md` §6 bis).
+
+Sur la fiche, deux choses changent de nature. La ligne « Note vocale » devient
+un **anneau muet** — un accès direct, sans libellé visible : on le touche, la
+note se lit ; on le retouche, elle s'arrête ; on le pousse **vers le haut**,
+« Retirer » se découvre dessous. Et les photos, qui n'étaient qu'un compteur
+dans une liste, deviennent une **pellicule** dans le tiroir du bas.
+
+`src/app/chantiers/[id]/AnneauNoteVocale.tsx` et `TiroirFiche.tsx`.
+
+### Pourquoi un anneau plutôt qu'une ligne
+
+Une ligne « Note vocale · 1 min 42 » annonce une note ; elle ne la joue pas. Il
+fallait un écran de plus pour entendre ce que le patron venait de dire. L'anneau
+supprime cet écran : la chose la plus fréquente — réécouter — devient le geste
+le plus court.
+
+**Aucun libellé visible, mais un nom accessible** (« Écouter la note vocale »).
+Une icône muette pour l'œil ne doit pas l'être pour qui n'a pas l'usage de ses
+yeux.
+
+**La prise vaut 76 px quand le trait n'en dessine que 56.** Une icône fine qu'on
+rate deux fois sur trois n'est pas élégante, elle est ratée.
+
+### Ce que la maquette ne pouvait pas rendre, et qui est vrai ici
+
+La maquette n'a **aucun JavaScript** — le lecteur du patron n'en exécute pas.
+Son compteur est une horloge CSS et son onde un décor vraisemblable. Recopier
+l'un ou l'autre aurait donné un écran qui ment.
+
+- **Le compteur suit la lecture réelle** (`currentTime` / `duration`).
+- **La hauteur des barreaux suit le volume réellement enregistré** : un
+  `AnalyserNode` posé sur l'élément audio, l'écart quadratique moyen du signal
+  — le volume *perçu*, pas le pic, qui ferait sauter l'onde sur un claquement.
+- **L'ampleur se pose sur le CONTENEUR, jamais barreau par barreau** : une
+  variable CSS (`--atlas-ampleur`) et un `scaleY`. Seize éléments remis en page
+  soixante fois par seconde coûteraient plus que tout le reste de l'écran.
+- **Le glissement est un défilement natif**, avec l'inertie de la plateforme :
+  la maquette, elle, s'accrochait d'un cran.
+
+### Cinq pièges, tous payés
+
+1. **Un contexte audio naît suspendu, et se rendort en arrière-plan.** Suspendu,
+   il ne laisse rien passer : la lecture avançait, le compteur courait, et
+   l'onde mesurait un silence **que nous avions nous-mêmes créé** en intercalant
+   l'analyseur. `resume()` à chaque appui, pas seulement au premier. Et
+   `noeud.connect(destination)`, sinon le son se tait pour de bon.
+2. **Le jeu de démonstration ne déposait aucun fichier** : il déclarait des
+   clés de stockage sans octets derrière. `play()` était refusé, l'anneau
+   restait inerte, et rien ne disait pourquoi. `seed.ts` fabrique désormais de
+   vraies photos PNG et une vraie note WAV — une voix de synthèse à modulation
+   syllabique, parce qu'un signal plat donne une onde plate.
+3. **Le raccourci `animation:` remet `animation-play-state` à `running`.**
+   Déclaré avant, il était silencieusement annulé : l'onde battait au repos, et
+   un écran qui bat fait croire qu'un son sort du téléphone. La déclaration
+   vient **après** le raccourci, dans la même règle.
+4. **`display: flex` n'étire pas un `<button>`.** La maquette pose un
+   `<label>` ; un contrôle de formulaire, lui, garde une largeur au contenu.
+   « Retirer » se dessinait collé au bord gauche, son R à moitié hors de
+   l'écran — **visible, touchable, et tous les contrôles au vert**. D'où
+   `width: 100%`, et un contrôle qui mesure désormais l'écart au centre.
+5. **`--atlas-barre` est une réserve de place (68 px), pas la hauteur que la
+   barre dessine (49 px).** Le tiroir posé dessus laissait dépasser 84 px au
+   lieu de 65 : une bande de pellicule affleurait sous le résumé, on voyait le
+   haut de deux photos sans pouvoir les toucher. **Le tiroir mesure la barre
+   réelle** plutôt que de corriger la variable — la corriger aurait déplacé le
+   cheveu du bandeau sur tous les écrans, dont l'accueil, que le patron a
+   arrêté.
+
+### Le tiroir : il se clippe, et l'écran de dessous recule
+
+Le tiroir ne se **déplace** pas sous l'écran, il **borne sa hauteur** : ce qui
+dépasse au repos est exactement la prise, quelle que soit l'encoche du
+téléphone. Et quand il monte, la scène du dessus recule
+(`scale(.955) translateY(-16px)`, `brightness(.9)`) — même geste que la feuille
+« Nouveau chantier » sur l'accueil, et pour la même raison : **c'est la
+profondeur qui dit « on est passé au-dessus », pas un voile.** Sans ce recul, le
+tiroir tranchait l'anneau par le milieu et l'écran avait l'air cassé.
+
+L'état passe par un attribut sur la racine (`data-tiroir`), et non par une
+propriété : la fiche est un composant serveur, et le faire descendre obligerait
+à la rendre cliente entière pour un `transform`.
+
+**La case « + » vient en PREMIER**, et la ligne « Photos · 6 photos »
+disparaît. Posée en fin de pellicule, la case demandait de faire défiler six
+photos pour ajouter la septième : sur un téléphone, ajouter une photo ne doit
+pas se mériter. Quant à la ligne, elle comptait ce qui est désormais sous les
+yeux — deux fois la même information sur un écran, c'est une de trop.
+
+### Le retrait obéit au vocabulaire commun (§48)
+
+L'anneau se retire comme une ligne se retire : **rien n'est effacé tant
+qu'« Annuler » est à l'écran.** Le fichier ne part en file de purge qu'à la
+fermeture du tiroir — une annulation qui ne rendrait que le texte serait pire
+que pas d'annulation. C'est `useRetraits` qui porte le délai, ici comme partout
+ailleurs.
+
+**Et la consigne dit le geste RÉEL** — « Poussez l'anneau vers le haut ». Une
+première version annonçait « faites descendre » alors que le doigt fait monter :
+une consigne fausse coûte plus cher qu'aucune consigne.
+
+### Ce que ce lot dit des contrôles
+
+**Tous les défauts de ce lot ont été trouvés à l'œil, aucun par un contrôle** :
+un libellé imprimé par-dessus un autre, une consigne inversée, une poignée qui
+ne se dessinait pas, une cible tactile de zéro pixel, un mot centré qui ne
+l'était pas. Les cinq états se capturent en une commande —
+`npx tsx scripts/capture-fiche-note-vocale.mts <dossier> <id-chantier>` — et
+ce script mesure ce que l'œil venait de voir, pour que la prochaine fois il le
+voie avant nous.
+
+Un point de méthode qui vaut au-delà de cet écran : **`Element.checkVisibility({
+opacityProperty: true })`**. L'opacité propre d'un élément ne dit rien de celle
+qu'il hérite de son parent — un libellé effacé passe sinon pour visible.

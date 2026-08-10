@@ -9,6 +9,42 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### L'anneau muet et la pellicule — la fiche chantier
+
+Sur la fiche, la ligne « Note vocale · 1 min 42 » devient un **anneau** : on le
+touche, la note se lit ; on le pousse vers le haut, « Retirer » se découvre.
+Elle annonçait une note sans la jouer — il fallait un écran de plus pour
+entendre ce que le patron venait de dire. **La chose la plus fréquente devient
+le geste le plus court.** Aucun libellé visible, mais un nom accessible :
+« Écouter la note vocale ».
+
+**Le compteur suit la lecture réelle, et l'onde le volume réellement
+enregistré.** La maquette n'avait qu'une horloge CSS et une onde
+vraisemblable ; les recopier aurait donné un écran qui ment. Un `AnalyserNode`
+mesure le signal qui sort et pilote la hauteur des barreaux par une variable
+CSS — sur le conteneur, jamais barreau par barreau.
+
+**Les photos deviennent une pellicule** dans le tiroir du bas, **case « + » en
+tête** : posée à la fin, il fallait faire défiler six photos pour ajouter la
+septième. La ligne « Photos · 6 photos » disparaît — elle comptait ce qui est
+désormais sous les yeux.
+
+**Et le jeu de démonstration contient enfin des fichiers.** Il déclarait des
+clés de stockage sans octets derrière : la lecture était refusée, les vignettes
+vides, et rien ne le disait. `seed.ts` fabrique désormais de vraies photos PNG
+et une vraie note WAV — une voix de synthèse à modulation syllabique, parce
+qu'un signal plat donne une onde plate.
+
+**Cinq pièges payés, tous vus à l'œil et aucun par un contrôle** : un contexte
+audio qui mesure un silence qu'il a lui-même créé ; le raccourci `animation:`
+qui remet `animation-play-state` à `running` et fait battre l'onde au repos ;
+un `<button>` que `display: flex` n'étire pas, d'où « Retirer » collé au bord
+gauche, visible et touchable, tous voyants au vert ; `--atlas-barre` qui est une
+réserve de place (68 px) et non la hauteur dessinée (49 px), d'où une bande de
+pellicule affleurant sous le résumé ; et l'écran de dessous qui doit reculer,
+faute de quoi le tiroir tranche l'anneau par le milieu. Détail dans
+`ARCHITECTURE.md` §49.
+
 ### Le tiroir des retirés — une seule façon de supprimer, partout
 
 *« Je veux qu'il applique ce style à tout ce qu'on peut supprimer dans

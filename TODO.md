@@ -445,6 +445,21 @@ retour, quand l'ouverture retenue raconte une feuille modale.
   axe, mais un pouce, lui, bouge en biais. Un navigateur piloté ne le
   reproduit pas — à essayer sur un vrai téléphone.
 
+### 7 ter. ~~L'anneau muet et la pellicule~~ — fait le 10 août 2026, au soir
+
+Le §6 bis de `docs/INTEGRER-ORIGINE.md` : sur la fiche chantier, un **anneau
+muet** remplace la ligne « Note vocale » comme accès direct — on le touche, la
+note se lit ; on le pousse vers le haut, « Retirer » se découvre. Les photos
+deviennent une **pellicule** dans le tiroir du bas, case « + » en tête, et la
+ligne « Photos · 6 photos » disparaît. Détail et pièges dans
+`ARCHITECTURE.md` §49.
+
+**Ce qui n'a pas été refait, et c'est délibéré :** l'en-tête de la fiche et son
+pavé d'action principale. La demande nommait la note vocale et les photos ; la
+maquette raconte en plus une scène entière (titre serif, phrase de situation)
+qui remplacerait `EnTeteEcran` sur cet écran seul. À poser au patron avant d'y
+toucher — c'est un choix, pas un reste.
+
 ### 7. Finir la refonte — l'ordre, les pièges, les valeurs
 
 **Ce point existe pour qu'une conversation neuve puisse reprendre le travail
@@ -462,6 +477,7 @@ ouvrez-la, lisez la feuille de style, elle fait foi pour le dessin.
 | — | Corps de Photos | **fait** |
 | ~~1~~ | ~~Corps de **Note vocale**~~ | **fait** le 10 août 2026 |
 | ~~2~~ | ~~Corps d'**Informations** puis de **Prix**~~ | **fait** le 10 août 2026 |
+| — | Fiche chantier : **l'anneau muet** et **la pellicule** | **fait** le 10 août 2026, au soir |
 | **3** | Corps de **Devis**, **Export**, **Facture** | à faire |
 
 **Ce que l'étape 2 a appris, et qui sert à l'étape 3.**

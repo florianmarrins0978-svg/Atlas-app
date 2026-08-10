@@ -45,6 +45,31 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**L'anneau muet et la pellicule, sur la fiche chantier (10 août, au soir).** La
+ligne « Note vocale » devient un anneau qu'on touche pour écouter et qu'on
+pousse vers le haut pour retirer ; les photos deviennent une pellicule dans le
+tiroir du bas, case « + » en tête. `ARCHITECTURE.md` §49.
+
+**Cinq choses à savoir avant d'y toucher :**
+
+1. **Le compteur et l'onde sont réels**, pas décoratifs : `currentTime` pour
+   l'un, un `AnalyserNode` sur l'élément audio pour l'autre. Le contexte audio
+   naît **suspendu** et se rendort en arrière-plan — `resume()` à chaque appui,
+   sinon l'onde mesure un silence qu'on a soi-même créé en intercalant
+   l'analyseur.
+2. **`display: flex` n'étire pas un `<button>`.** La maquette pose un
+   `<label>` ; « Retirer » se retrouvait collé au bord gauche, **visible,
+   touchable, et tous les contrôles au vert**. `width: 100%` est obligatoire ici.
+3. **`--atlas-barre` est une réserve de place (68 px), pas la hauteur que la
+   barre dessine (49 px).** Le tiroir mesure donc la barre réelle. Ne pas
+   « corriger » la variable : cela déplacerait le cheveu du bandeau sur tous les
+   écrans, dont l'accueil, que le patron a arrêté.
+4. **Le jeu de démonstration contient de vrais fichiers** depuis ce lot (PNG et
+   WAV fabriqués dans `seed.ts`). Avant, il déclarait des clés sans octets
+   derrière : l'anneau restait inerte sans rien dire.
+5. **Les cinq états se capturent en une commande** :
+   `npx tsx scripts/capture-fiche-note-vocale.mts <dossier> <id-chantier>`.
+
 **Le retrait est le même partout (10 août, au soir).** Le texte glisse vers la
 gauche, « Retirer » se découvre, la ligne tombe, un tiroir la retient :
 « Retiré à l'instant — Annuler ». Huit endroits, une seule mécanique là où il

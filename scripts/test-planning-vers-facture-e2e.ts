@@ -187,8 +187,17 @@ async function main() {
     // échouait sur une page pourtant bien ouverte — il accusait le code au lieu
     // de son propre montage. Un repère de la fiche prouve mieux qu'une adresse
     // qu'on est arrivé.
-    await page.waitForSelector("text=Autres étapes", { timeout: 15000 });
+    // Le repère est le tiroir du bas : « Autres étapes » ne s'écrit plus depuis
+    // que les étapes y sont rangées (`ARCHITECTURE.md` §49).
+    await page.waitForSelector("[data-atlas='tiroir-fiche']", { timeout: 15000 });
     assert.match(page.url(), new RegExp(`/chantiers/${chantierId}$`), "le planning ne mène pas à ce chantier");
+
+    // **Il faut ouvrir le tiroir : au repos, seule sa prise dépasse.** Les
+    // étapes existent dans la page mais sont clippées — un clic direct
+    // échouerait sur un écran pourtant juste. C'est le geste du patron, pas un
+    // contournement : les étapes sont désormais rangées, et on les tire.
+    await page.locator("[data-atlas='tiroir-fiche'] button[aria-expanded]").click();
+    await page.waitForSelector("[data-atlas='tiroir-fiche'][data-ouvert='oui']", { timeout: 5000 });
 
     // La fiche mène au devis. Le lien est visé par son adresse : « Devis »
     // apparaît à plusieurs endroits de l'écran, et viser le premier texte venu

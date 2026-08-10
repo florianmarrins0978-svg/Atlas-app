@@ -6,6 +6,144 @@ import { createHash } from "node:crypto";
 import { attribuerNumeroDevis } from "../repositories/devis";
 import { genererPdfDevis } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
+import { mkdir, writeFile } from "node:fs/promises";
+import { deflateSync } from "node:zlib";
+import path from "node:path";
+/**
+ * Une image PNG d'une seule couleur, fabriquée sans aucune dépendance.
+ *
+ * **Pourquoi le seed dépose enfin les fichiers.** Il inscrivait des lignes de
+ * photos sans jamais poser d'image : les vignettes s'affichaient cassées sur le
+ * banc, et la pellicule de la fiche chantier — qui EST l'écran des photos
+ * désormais — ne pouvait pas se juger. Signalé le 10 août au matin, corrigé le
+ * soir même, quand cet écran en a fait un empêchement et non plus une gêne.
+ */
+function imageDeDemonstration(r: number, v: number, b: number): Buffer {
+  const cote = 64;
+  // Chaque rangée d'un PNG commence par un octet de filtre — ici zéro, « aucun
+  // filtre » : c'est le seul cas qu'on peut écrire sans rien calculer.
+  const brut = Buffer.alloc(cote * (cote * 3 + 1));
+  let i = 0;
+  for (let y = 0; y < cote; y++) {
+    brut[i++] = 0;
+    for (let x = 0; x < cote; x++) {
+      // Un léger dégradé : une vignette parfaitement plate ne dit pas si
+      // l'image est réellement décodée ou si l'on regarde un fond de secours.
+      const f = 0.72 + (0.28 * (x + y)) / (2 * cote);
+      brut[i++] = Math.round(r * f);
+      brut[i++] = Math.round(v * f);
+      brut[i++] = Math.round(b * f);
+    }
+  }
+  const bloc = (type: string, donnees: Buffer): Buffer => {
+    const longueur = Buffer.alloc(4);
+    longueur.writeUInt32BE(donnees.length, 0);
+    const corps = Buffer.concat([Buffer.from(type, "ascii"), donnees]);
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(crc32(corps), 0);
+    return Buffer.concat([longueur, corps, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(cote, 0);
+  ihdr.writeUInt32BE(cote, 4);
+  ihdr[8] = 8; // 8 bits par canal
+  ihdr[9] = 2; // couleur vraie, sans transparence
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    bloc("IHDR", ihdr),
+    bloc("IDAT", deflateSync(brut)),
+    bloc("IEND", Buffer.alloc(0)),
+  ]);
+}
+
+/** Le CRC-32 du format PNG. Table calculée une fois, à la première image. */
+let tableCrc: number[] | null = null;
+function crc32(octets: Buffer): number {
+  if (!tableCrc) {
+    tableCrc = [];
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+      tableCrc[n] = c >>> 0;
+    }
+  }
+  let c = 0xffffffff;
+  for (const o of octets) c = tableCrc[(c ^ o) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+/** Quelques teintes de chantier, pour que les vignettes ne soient pas jumelles. */
+const TEINTES_PHOTOS: [number, number, number][] = [
+  [111, 122, 88],
+  [195, 171, 132],
+  [169, 168, 158],
+  [142, 160, 122],
+  [208, 195, 166],
+  [154, 164, 168],
+  [120, 134, 110],
+  [186, 158, 118],
+  [138, 146, 150],
+];
+
+/** La durée de la note de démonstration, en secondes. */
+const DUREE_NOTE_DEMO = 12;
+
+/**
+ * Un WAV fabriqué à la volée, sans aucune dépendance.
+ *
+ * **Pourquoi une vraie onde plutôt qu'un silence.** L'anneau de la fiche
+ * chantier fait battre ses barreaux selon le VOLUME réellement enregistré : sur
+ * un fichier plat, ils resteraient immobiles et l'écran paraîtrait arrêté
+ * pendant qu'il lit. L'enveloppe ci-dessous monte et descend comme une phrase,
+ * avec des respirations — c'est ce qui permet de juger l'onde à l'œil.
+ */
+function audioDeDemonstration(secondes: number): Buffer {
+  const taux = 8000;
+  const total = taux * secondes;
+  const donnees = Buffer.alloc(total * 2);
+  for (let i = 0; i < total; i++) {
+    const t = i / taux;
+    // Des syllabes qui s'enchaînent, et une respiration toutes les quatre
+    // secondes seulement. Une enveloppe à moitié silencieuse — le premier
+    // essai — donnait une onde qui s'écrasait la moitié du temps : mesuré,
+    // pas supposé, et corrigé après l'avoir vu à plat.
+    const syllabe = 0.42 + 0.58 * Math.abs(Math.sin((t * Math.PI) / 0.34));
+    const respiration = t % 4 > 3.55 ? 0.12 : 1;
+    const porteuse = Math.sin(2 * Math.PI * 190 * t) + 0.4 * Math.sin(2 * Math.PI * 430 * t);
+    const echantillon = Math.max(-1, Math.min(1, porteuse * 0.46 * syllabe * respiration));
+    donnees.writeInt16LE(Math.round(echantillon * 32000), i * 2);
+  }
+
+  const entete = Buffer.alloc(44);
+  entete.write("RIFF", 0);
+  entete.writeUInt32LE(36 + donnees.length, 4);
+  entete.write("WAVE", 8);
+  entete.write("fmt ", 12);
+  entete.writeUInt32LE(16, 16); // taille du bloc de format
+  entete.writeUInt16LE(1, 20); // PCM
+  entete.writeUInt16LE(1, 22); // mono
+  entete.writeUInt32LE(taux, 24);
+  entete.writeUInt32LE(taux * 2, 28); // octets par seconde
+  entete.writeUInt16LE(2, 32); // alignement
+  entete.writeUInt16LE(16, 34); // bits par échantillon
+  entete.write("data", 36);
+  entete.writeUInt32LE(donnees.length, 40);
+  return Buffer.concat([entete, donnees]);
+}
+
+/**
+ * Dépose un objet du jeu de démonstration à une clé CHOISIE.
+ *
+ * `enregistrerObjet` engendre sa propre clé aléatoire, ce qui convient au
+ * produit mais pas ici : le seed doit pouvoir réécrire la même clé à chaque
+ * amorçage, sinon chaque passage laisse un fichier orphelin de plus.
+ */
+async function ecrireObjetDeSeed(storageKey: string, octets: Buffer): Promise<void> {
+  const chemin = path.join(process.cwd(), ".storage", storageKey);
+  await mkdir(path.dirname(chemin), { recursive: true });
+  await writeFile(chemin, octets);
+}
+
 import { creerPrestationCatalogue } from "../repositories/catalogue-prestations";
 import { creerMaterielCatalogue } from "../repositories/catalogue-materiels";
 import {
@@ -221,30 +359,54 @@ async function main() {
       chantierIdsParNom[c.nom] = chantier.id;
 
       if (c.photos > 0) {
-        await tx.insert(photos).values(
-          Array.from({ length: c.photos }, (_, i) => ({
-            entrepriseId: entreprise.id,
-            chantierId: chantier.id,
-            storageKey: `seed/${chantier.id}/photo-${i + 1}.jpg`,
-            mimeType: "image/jpeg",
-            tailleOctets: 1_200_000,
-            nomOriginal: `photo-${i + 1}.jpg`,
-            checksum: `seed-checksum-${chantier.id}-${i + 1}`,
-            ordre: i,
-          }))
+        // Les fichiers sont réellement déposés : sans eux, les vignettes
+        // s'affichent cassées et la pellicule de la fiche chantier ne peut
+        // pas se juger — ni par le patron sur le banc, ni en capture.
+        const vignettes = await Promise.all(
+          Array.from({ length: c.photos }, async (_, i) => {
+            const teinte = TEINTES_PHOTOS[i % TEINTES_PHOTOS.length];
+            const image = imageDeDemonstration(teinte[0], teinte[1], teinte[2]);
+            const storageKey = `seed/${chantier.id}/photo-${i + 1}.png`;
+            await ecrireObjetDeSeed(storageKey, image);
+            return {
+              entrepriseId: entreprise.id,
+              chantierId: chantier.id,
+              storageKey,
+              // Le type déclaré doit dire la vérité : la route sert cet
+              // en-tête tel quel, et un `image/jpeg` sur un PNG ferait
+              // refuser l'affichage.
+              mimeType: "image/png",
+              tailleOctets: image.length,
+              nomOriginal: `photo-${i + 1}.png`,
+              checksum: createHash("sha256").update(image).digest("hex"),
+              ordre: i,
+            };
+          })
         );
+        await tx.insert(photos).values(vignettes);
       }
 
       if (c.aUneNoteVocale) {
+        // **Le fichier est réellement déposé, pas seulement déclaré.** Sans
+        // lui, l'anneau de la fiche chantier ne joue rien : `play()` échoue en
+        // silence, l'onde ne bat pas, le compteur reste à zéro — et personne,
+        // ni le patron sur le banc ni le contrôle, ne peut juger cet écran.
+        // C'est le même manque que pour les photos, signalé le 10 août.
+        const audio = audioDeDemonstration(DUREE_NOTE_DEMO);
+        const storageKey = `seed/${chantier.id}/note.wav`;
+        await ecrireObjetDeSeed(storageKey, audio);
         await tx.insert(notesVocales).values({
           entrepriseId: entreprise.id,
           chantierId: chantier.id,
-          storageKey: `seed/${chantier.id}/note.m4a`,
-          mimeType: "audio/mp4",
-          tailleOctets: 850_000,
-          nomOriginal: "note.m4a",
-          checksum: `seed-checksum-note-${chantier.id}`,
-          dureeSecondes: 134,
+          storageKey,
+          // Le WAV se fabrique sans aucune dépendance et se lit partout. Le
+          // type déclaré doit dire la vérité : la route sert cet en-tête tel
+          // quel, et un `audio/mp4` sur un WAV ferait refuser la lecture.
+          mimeType: "audio/wav",
+          tailleOctets: audio.length,
+          nomOriginal: "note.wav",
+          checksum: createHash("sha256").update(audio).digest("hex"),
+          dureeSecondes: DUREE_NOTE_DEMO,
           transcription:
             c.nom === "Rénovation salle de bain"
               ? "Alors pour la salle de bain de monsieur Bernard, on va devoir déposer l'ancien carrelage " +

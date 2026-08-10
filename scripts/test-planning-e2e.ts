@@ -82,7 +82,9 @@ async function main() {
   // réponse était : on ne peut pas. La carte mène désormais au chantier, et la
   // date se change par un lien à part.
   await carte().click();
-  await page.waitForSelector("text=Autres étapes", { timeout: 10000 });
+  // Le tiroir du bas est le repère d'arrivée sur une fiche : « Autres étapes »
+  // ne s'écrit plus depuis que les étapes y sont rangées (`ARCHITECTURE.md` §49).
+  await page.waitForSelector("[data-atlas='tiroir-fiche']", { timeout: 10000 });
   assert.ok(
     page.url().endsWith(`/chantiers/${chantierId}`),
     `la carte planifiée mène à ${page.url()} au lieu de la fiche du chantier`

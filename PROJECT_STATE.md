@@ -123,6 +123,11 @@ l'application. Ce qui est **fait** :
   disparaissent : la sécurité passe d'une confirmation avant à une
   réversibilité après, et **rien n'est écrit tant que le tiroir est ouvert**.
   `ARCHITECTURE.md` §48.
+- **L'anneau muet et la pellicule** (10 août, au soir) : sur la fiche
+  chantier, la ligne « Note vocale » devient un anneau qu'on touche pour
+  écouter — le compteur suit la lecture réelle et l'onde le volume réellement
+  enregistré, pas un décor — et les photos une pellicule dans le tiroir du bas,
+  case « + » en tête. `ARCHITECTURE.md` §49.
 
 Ce qui **reste**, avec l'ordre, les valeurs, les sept pièges et les deux
 réserves : **`TODO.md` §7**. Le dessin fait foi dans

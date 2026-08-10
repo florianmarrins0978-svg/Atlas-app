@@ -12,7 +12,11 @@ import { colors, font } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantierPourHub } from "@/server/repositories/chantiers";
+import { listerPhotos } from "@/server/repositories/photos";
+import { getNoteVocale } from "@/server/repositories/notes-vocales";
 import { jourLisible } from "@/lib/jour";
+import AnneauNoteVocale from "./AnneauNoteVocale";
+import TiroirFiche from "./TiroirFiche";
 
 // Écran connecté à la base réelle. Charge le chantier uniquement dans le
 // contexte de l'entreprise active (withEntreprise, via le repository) — un
@@ -31,11 +35,23 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
 
   const statut = getStatutAffiche(chantier);
   const nextAction = getNextAction(chantier);
-  const secondarySteps = getSecondarySteps(chantier.id, chantier, nextAction?.key);
+
+  const [photos, note] = await Promise.all([listerPhotos(ctx, id), getNoteVocale(ctx, id)]);
+
+  // **La ligne « Photos · 6 photos » disparaît des étapes.** Elle comptait ce
+  // que la pellicule montre désormais, et deux fois la même information sur un
+  // écran, c'est une de trop (`docs/INTEGRER-ORIGINE.md` §6 bis). Elle n'est
+  // pas perdue : la pellicule mène au même endroit, et sa case « + » aussi.
+  const etapes = getSecondarySteps(chantier.id, chantier, nextAction?.key).filter((s) => s.key !== "photos");
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
-      <div className="pb-10">
+      {/* Le talon laisse la place à la prise du tiroir (65 px) : sans lui, la
+          dernière chose de la fiche se glisse dessous.
+
+          `atlas-scene-fiche` est ce qui RECULE quand le tiroir monte — c'est
+          la profondeur qui dit « on est passé au-dessus ». */}
+      <div className="atlas-scene-fiche pb-[86px]">
         {/* Retour à gauche ; à droite, la sortie du chantier planifié. */}
         {/* Ordre de lecture : statut → nom → client. Même grammaire que les
             autres écrans depuis le 10 août 2026 — le surtitre porte l'état,
@@ -120,58 +136,39 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
           )}
         </div>
 
-        {/* Étapes secondaires — toujours accessibles, jamais verrouillées */}
-        <div className="mt-9 px-[26px]">
-          <p
-            className="mb-1 text-[9.5px] font-medium uppercase"
-            style={{ color: colors.muted, letterSpacing: "0.28em" }}
-          >
-            Autres étapes
-          </p>
-          <div style={{ borderTop: `1px solid ${colors.line}` }}>
-            {secondarySteps.map((s) => (
-              <a
-                key={s.key}
-                href={s.href}
-                className="flex items-center gap-3 py-4"
-                style={{ borderBottom: `1px solid ${colors.line}` }}
-              >
-                <StepIcon done={s.done} />
-                <span className="flex-1">
-                  <span className="block text-[19px] leading-[1.15]" style={{ color: colors.ink, fontFamily: font.display }}>
-                    {s.label}
-                  </span>
-                  <span
-                    className="mt-[7px] block text-[9.5px] font-medium uppercase"
-                    style={{ color: colors.muted, letterSpacing: "0.28em" }}
-                  >
-                    {s.meta}
-                  </span>
-                </span>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={colors.chevron} strokeWidth="2">
-                  <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </a>
-            ))}
+        {/* L'anneau muet : l'accès direct à la note vocale, seul et centré,
+            entre le pavé de bas de fiche et le tiroir. Il ne s'affiche que
+            s'il y a une note — un anneau qui ne joue rien serait un bouton en
+            panne. La ligne « Note vocale » reste dans le tiroir : l'anneau est
+            l'accès DIRECT, pas le seul chemin. */}
+        {/* **`storageKey` et non `note` seule.** L'audio est effacé une fois la
+            transcription obtenue (`docs/RGPD.md` §4) : la note existe encore,
+            mais il n'y a plus rien à écouter. L'anneau se tairait sous le doigt
+            sans rien dire — un bouton en panne. Le texte, lui, reste : la ligne
+            « Note vocale » du tiroir y mène, et cet écran-là explique
+            l'effacement au lieu de le subir. */}
+        {note?.storageKey && (
+          <div className="mt-7">
+            <AnneauNoteVocale
+              chantierId={chantier.id}
+              storageKey={note.storageKey}
+              dureeSecondes={note.dureeSecondes}
+            />
           </div>
-        </div>
+        )}
       </div>
-    </div>
-  );
-}
 
-function StepIcon({ done }: { done: boolean }) {
-  if (done) {
-    return (
-      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.2" className="flex-shrink-0">
-        <circle cx="12" cy="12" r="9" />
-        <path d="M8 12.5l2.5 2.5L16 9.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-  return (
-    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={colors.chevron} strokeWidth="1.8" className="flex-shrink-0">
-      <circle cx="12" cy="12" r="9" />
-    </svg>
+      {/* Le tiroir affleure en bas : la pellicule et les étapes. Il est FIXÉ,
+          donc le contenu au-dessus lui laisse la place de sa prise. */}
+      <TiroirFiche
+        chantierId={chantier.id}
+        photos={photos.map((p) => ({ id: p.id, storageKey: p.storageKey }))}
+        etapes={etapes}
+        resume={{
+          gauche: "Le chantier",
+          droite: statutLabel[statut],
+        }}
+      />
+    </div>
   );
 }

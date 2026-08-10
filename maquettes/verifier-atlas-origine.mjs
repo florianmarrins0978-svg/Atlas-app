@@ -26,6 +26,15 @@ verifie("aucun href javascript:", !/javascript:/i.test(source));
 // ce champ y figure en toutes lettres, et le contrôle accusait le commentaire
 // qui la porte. Il porte donc sur les étiquettes affichées.
 
+// Contrôle de source, pas de navigateur : Chromium active un <label> sans
+// `cursor:pointer`, Safari sur iPhone non. Aucun essai ici ne peut voir le
+// défaut — seule la lecture du style le peut.
+{
+  const styles = source.split("</style>")[0];
+  const global = /(^|[\s,{}])label\s*\{[^}]*cursor:\s*pointer/m.test(styles);
+  verifie("les libellés portent cursor:pointer (Safari l'exige)", global);
+}
+
 const ESSAI = FICHIER.replace(/\.html$/, "-essai.html");
 fs.writeFileSync(ESSAI, '<meta name="viewport" content="width=device-width, initial-scale=1">\n' + source);
 
