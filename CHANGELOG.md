@@ -9,6 +9,22 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Un orphelin d'hier soir ne condamne plus le démarrage
+
+Un `next-server` laissé par une exécution précédente tient le port et rend
+`EADDRINUSE` **avant qu'on ait rien tenté**. Le patron a dû taper `pkill` à la
+main plusieurs fois cette nuit-là — ce n'est pas son travail.
+
+Le banc regarde donc le port au démarrage, et la distinction qui compte :
+
+- **quelque chose répond à la santé** → c'est Atlas qui sert, on n'y touche pas ;
+- **le port est pris sans que rien ne réponde** → c'est un orphelin, et lui seul.
+  Il est délogé, et le banc le dit en une ligne.
+
+Éprouvé en plantant un vrai orphelin sur le port : *« Un serveur d'une exécution
+précédente tenait le port 4700 : délogé. »*, puis démarrage, construction,
+bascule, `/login` en 183 ms.
+
 ### Le serveur est détaché, et c'est son GROUPE qu'on tue
 
 **Quatre fois de suite, le même `EADDRINUSE` — et la vraie cause était plus

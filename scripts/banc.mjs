@@ -211,6 +211,31 @@ if (!verrou.pris) {
 }
 process.on("exit", () => libererVerrouBanc());
 
+// **Un orphelin d'hier soir ne doit pas condamner ce démarrage.**
+//
+// Un `next-server` laissé par une exécution précédente — un Ctrl+C d'avant le
+// correctif du groupe, un conteneur mis en veille au mauvais moment — tient
+// encore le port et rend `EADDRINUSE` avant même qu'on ait rien tenté. Le
+// patron a dû taper `pkill` à la main plusieurs fois cette nuit-là ; ce n'est
+// pas son travail.
+//
+// **La distinction qui compte** : si quelque chose répond à la santé, c'est
+// Atlas qui sert — on n'y touche pas, et le verrou ci-dessus a déjà tranché. Si
+// le port est pris SANS que rien ne réponde, c'est un orphelin, et lui seul.
+if (!(await portLibre())) {
+  if (await repond()) {
+    console.log(
+      "\n  ─────────────────────────────────────────────────────────────\n" +
+        "   Atlas répond déjà sur le port " + PORT + " — rien à relancer.\n" +
+        "  ─────────────────────────────────────────────────────────────\n"
+    );
+    process.exit(0);
+  }
+  console.log(`  (Un serveur d'une exécution précédente tenait le port ${PORT} : délogé.)`);
+  delogerCeQuiEcoute();
+  await attendre(2000);
+}
+
 const version = versionDuCode();
 const raison = doitRebatir(version);
 

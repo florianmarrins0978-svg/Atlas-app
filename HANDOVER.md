@@ -80,6 +80,11 @@ avec une ligne par équipe. Réglages laisse nommer les équipes.
    est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
    sans qu'aucun chiffre ne manque.
 
+**Le banc déloge un orphelin au démarrage (11 août, nuit).** Un `next-server`
+d'une exécution précédente tenait le port et faisait échouer le démarrage avant
+tout. Distinction à ne pas casser : *quelque chose répond à la santé* = Atlas
+sert, on n'y touche pas ; *port pris et rien ne répond* = orphelin, délogé.
+
 **Le serveur du banc est DÉTACHÉ, et c'est son groupe qu'on tue (11 août, nuit).**
 La vraie cause des quatre `EADDRINUSE` : `npx next dev` est une pile
 d'enveloppes, et `next-server` **survit à la mort de son père**. Tuer l'enfant
