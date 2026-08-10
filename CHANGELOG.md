@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Les polices de l'artefact, puisque c'est ce qu'il a retenu
+
+*« T'es sûr que t'as pas modifié la typographie ? »* Les caractères n'avaient
+pas bougé — Playfair Display et Inter depuis le 3 août. Mais la maquette qu'il
+a validée était une **page autonome** : elle ne pouvait charger aucune police
+et empruntait donc celles de son iPhone. C'est ce dessin-là qu'il a choisi,
+sans le savoir, et il l'a redemandé : *« exactement la même chose […] même
+typographie ».*
+
+L'application ne télécharge donc plus aucune police :
+`ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", serif` pour les
+titres, `ui-sans-serif, -apple-system, …` pour le texte — les piles exactes de
+l'artefact. Mesuré sur le banc : **zéro fichier de police chargé**, contre deux
+avant.
+
+**Deux conséquences à connaître avant d'y revenir.** Plus de clignotement au
+remplacement de police, l'écran s'affiche d'un coup. Mais le dessin dépend
+désormais de l'appareil : Iowan Old Style sur iPhone, Georgia sur Windows, Noto
+Serif sur Android — proches, jamais identiques. C'est le prix de ce qu'il a
+choisi, et il est assumé.
+
+Les titres repassent en graisse 400 : la serif du système est déjà dense, et la
+forcer à 500 la fait synthétiser par le navigateur — un faux gras mou, là où la
+maquette montre un trait net.
+
+**Ce changement touche aussi le devis et la facture**, qui partagent ces deux
+jetons. Signalé au patron plutôt que décidé pour lui.
+
 ### Le corps de l'écran Photos
 
 Premier corps repris, dans l'ordre du parcours. Les marges passent à 26 px

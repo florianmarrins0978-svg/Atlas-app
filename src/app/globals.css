@@ -22,20 +22,29 @@
   --color-line: var(--line);
   --color-ok: var(--ok);
   --color-warn: var(--warn);
-  /* Les deux polices d'Arborea. `next/font` les rapatrie au build et les sert
-     depuis notre propre origine : indispensable ici, où la politique de
-     sécurité (`default-src 'self'`) interdirait de les charger chez Google. */
-  --font-display: var(--police-titres), Georgia, "Times New Roman", serif;
-  --font-body: var(--police-texte), system-ui, -apple-system, sans-serif;
+  /* ─── Les polices de l'écran retenu, posées le 10 août 2026 ──────────────
+     Le patron a comparé sa maquette et l'application : *« t'es sûr que t'as pas
+     modifié la typographie ? »* Les caractères n'avaient pas bougé — mais la
+     maquette, page autonome, ne pouvait charger aucune police et empruntait
+     donc celles de son iPhone. C'est CE dessin-là qu'il a retenu, pas Playfair.
+
+     Deux conséquences qu'il faut connaître avant d'y revenir :
+       · plus aucune police n'est téléchargée — l'application s'affiche
+         instantanément, sans le clignotement du remplacement de police ;
+       · le dessin dépend de l'appareil. `ui-serif` donne Iowan Old Style sur
+         iPhone, Georgia sur Windows, Noto Serif sur Android : proches, pas
+         identiques. C'est le prix de ce qu'il a choisi, et il est assumé. */
+  --font-display: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  --font-body: ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", "IBM Plex Mono", Menlo, Consolas, monospace;
 }
 
-/* Arborea resserre ses titres au lieu de les condenser : Playfair Display n'a
-   pas de graisse étroite, et `font-stretch:condensed` la ferait synthétiser par
-   le navigateur — un faux gras large et mou. */
+/* Les titres restent en graisse normale : la serif du système est déjà dense,
+   et la passer en 500 la ferait synthétiser par le navigateur — un faux gras
+   large et mou, là où la maquette montre un trait net. */
 .font-display {
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: -0.01em;
 }
 
@@ -45,7 +54,7 @@ body {
 }
 h1, h2, h3 {
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: -0.01em;
 }
 

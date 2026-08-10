@@ -1,29 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 import AtlasBottomNav from "@/components/atlas/AtlasBottomNav";
 import AssistantSidebar from "@/components/atlas/AssistantSidebar";
 import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
 
-// Les deux polices d'Arborea. `next/font` les télécharge au moment de la
-// construction et les sert depuis notre propre origine : sans cela, la
-// politique de sécurité (`default-src 'self'`) les bloquerait, et l'artisan
-// verrait les polices de repli de son téléphone — c'est-à-dire pas Arborea.
-const policeTexte = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--police-texte",
-  display: "swap",
-});
-
-const policeTitres = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["500", "600"],
-  variable: "--police-titres",
-  display: "swap",
-});
-
+// **Plus aucune police n'est téléchargée depuis le 10 août 2026.** L'écran que
+// le patron a retenu était une maquette autonome : elle ne pouvait charger
+// aucune police et empruntait celles de son appareil. C'est ce dessin-là qu'il
+// a validé, et il l'a redemandé en propres termes. Les piles sont dans
+// `globals.css` — voir le commentaire de `--font-display`.
 export const metadata: Metadata = {
   title: "Atlas",
   description: "Atlas — dictée de chantier, vérification et préparation de devis.",
@@ -89,7 +75,7 @@ export default async function RootLayout({
   const sansNavigation = estEcranSansNavigation(chemin);
 
   return (
-    <html lang="fr" className={`${policeTexte.variable} ${policeTitres.variable}`}>
+    <html lang="fr">
       <body className="font-body antialiased">
         {/* Redirige vers l'écran d'acceptation tant qu'un document requis n'a
             pas été accepté. Rendu avant le contenu : la redirection intervient

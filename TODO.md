@@ -292,6 +292,17 @@ Ce que la bascule coûtera, quand il aura choisi : la charte de
 encre au lieu du vert pin pour l'action, bronze au lieu de l'or), et **tous** les
 écrans suivent — pas seulement Chantiers. À ne pas entamer écran par écran.
 
+### 0 duodecies. `test-devis-papier-e2e` échoue sur le banc local
+
+`TypeError: Cannot read properties of undefined (reading 'id')` — la suite
+cherche une ligne dans `devis` pour son chantier et n'en trouve aucune.
+
+**Ce n'est PAS la refonte** : vérifié en remisant les modifications et en
+rejouant la suite sur le code d'avant — même échec, à la même ligne. Le défaut
+lui est antérieur. Reste à savoir s'il tient au harnais (`run-e2e-tests` monte
+son propre serveur et son propre jeu de données) ou à la suite elle-même. À
+reproduire d'abord par `npm run test:e2e` complet avant de conclure.
+
 ### 0 undecies. Finir la refonte : le corps des écrans d'étape
 
 L'en-tête, les boutons et les jetons sont passés partout (10 août 2026). Reste
