@@ -80,6 +80,13 @@ avec une ligne par équipe. Réglages laisse nommer les équipes.
    est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
    sans qu'aucun chiffre ne manque.
 
+**La bascule déloge d'abord, vérifie ensuite, réessaie — et ne meurt plus
+(10 août, très tard).** `serveur.kill()` ne tue que l'enveloppe `npx` : le
+processus qui écoute se renomme `next-server` et lui survit. Le `pkill` était
+appelé en dernier recours ; il est maintenant le **premier geste, sans
+condition**. Et si la reprise du port échoue malgré tout, le banc **relance un
+serveur de développement** au lieu de mourir : un banc lent reste un banc.
+
 **Le remède de la session fantôme a tourné en rond (10 août, très tard).** Deux
 causes, dont la première invisible à `curl` :
 

@@ -161,6 +161,22 @@ function portLibre() {
   });
 }
 
+/**
+ * Déloge ce qui écoute encore, sans condition.
+ *
+ * `serveur.kill()` ne tue que l'enveloppe `npx` : le processus qui écoute
+ * vraiment se renomme `next-server` et lui survit. Les crochets autour du « n »
+ * sont indispensables — sans eux, le motif se trouverait dans la ligne de
+ * commande de ce script, et le banc se tuerait lui-même.
+ */
+function delogerCeQuiEcoute() {
+  try {
+    execFileSync("pkill", ["-f", "[n]ext-server"]);
+  } catch {
+    // Personne à tuer : tant mieux.
+  }
+}
+
 async function portRendu(limiteMs) {
   const fin = Date.now() + limiteMs;
   while (Date.now() < fin) {
@@ -360,31 +376,66 @@ if (raison) {
     // AVANT de tuer quoi que ce soit : le battement qui suit ressemble trait
     // pour trait à un serveur mort, et le veilleur en lancerait un second.
     marquerBascule("--debut");
+
+    // **DÉLOGER D'ABORD, VÉRIFIER ENSUITE — et sans condition.**
+    //
+    // Le 10 août 2026, le journal du patron a montré ce qu'aucun raisonnement
+    // n'avait vu : après « Construction terminée », `EADDRINUSE` **immédiat**,
+    // puis le serveur de développement qui CONTINUE de servir
+    // (`GET / 307 in 95s`). Il n'était donc pas mort du tout, et le port n'a
+    // jamais été rendu — mais le banc, lui, avait conclu le contraire et
+    // relancé aussitôt dessus.
+    //
+    // Deux enseignements, tous deux payés cher :
+    //
+    //   1. `serveur.kill()` ne tue que l'enveloppe `npx`. Le processus qui
+    //      ÉCOUTE se renomme `next-server` et lui survit. On ne l'appelait
+    //      qu'en dernier recours, après vingt secondes d'attente ; il est
+    //      désormais le premier geste, sans condition — il n'y a rien à
+    //      épargner, ce serveur est de toute façon condamné.
+    //   2. On ne demande plus « la santé répond-elle ? » mais « puis-je écouter
+    //      sur ce port ? » (`portLibre`). C'est la seule question dont la
+    //      réponse engage `next start`.
+    delogerCeQuiEcoute();
     serveur.kill("SIGTERM");
 
-    // **ATTENDRE QUE LE PORT SOIT VRAIMENT RENDU, et le vérifier.**
-    //
-    // Trouvé à l'essai, et c'était grave : trois secondes ne suffisent pas.
-    // `next dev` n'est qu'une enveloppe ; le processus qui ÉCOUTE se renomme
-    // `next-server` et survit à la mort de son père. La bascule tombait donc
-    // sur « EADDRINUSE », `next start` refusait de démarrer, le script mourait
-    // — et le patron se retrouvait sans application, à cause du remède. C'est
-    // le même piège que le 404 du 9 août (`veiller.sh`), déplacé d'un cran.
-    if (!(await portRendu(20_000))) {
-      try {
-        // Les crochets autour du « n » : sans eux, le motif se trouverait
-        // lui-même dans la ligne de commande de ce script.
-        execFileSync("pkill", ["-f", "[n]ext-server"]);
-      } catch {
-        // Personne à tuer : tant mieux.
+    // **Et si `next start` tombe quand même, on RÉESSAIE une fois.** Un banc
+    // qui meurt sur son propre remède coûte une soirée ; une seconde tentative
+    // coûte dix secondes.
+    let bascule = false;
+    for (let tentative = 1; tentative <= 2 && !bascule; tentative++) {
+      if (!(await portRendu(30_000))) {
+        delogerCeQuiEcoute();
+        await attendre(2000);
       }
+      if (!(await portRendu(15_000))) continue;
+
+      const candidat = lancerBati();
+      // Une naissance ratée se voit tout de suite : `EADDRINUSE` sort dans la
+      // seconde. On ne déclare la bascule faite qu'après ce délai de grâce.
+      const mortNee = await new Promise((resoudre) => {
+        const t = setTimeout(() => resoudre(false), 8000);
+        candidat.once("exit", () => {
+          clearTimeout(t);
+          resoudre(true);
+        });
+      });
+      if (mortNee) {
+        console.error(`  (Tentative ${tentative} de bascule : le port était encore pris.)`);
+        delogerCeQuiEcoute();
+        await attendre(2000);
+        continue;
+      }
+
+      serveur = candidat;
+      serveur.on("exit", surSortie);
+      sertBati = true;
+      bascule = true;
     }
 
-    if (await portRendu(20_000)) {
-      serveur = lancerBati();
-      serveur.on("exit", surSortie);
-      enBascule = false;
-      sertBati = true;
+    enBascule = false;
+
+    if (bascule) {
       // **Le drapeau ne tombe qu'une fois le NOUVEAU serveur en écoute.** Le
       // relever dès le lancement rouvrirait la fenêtre exacte qu'il ferme :
       // `next start` met plusieurs secondes à écouter, et le veilleur passe
@@ -394,12 +445,15 @@ if (raison) {
       }
       marquerBascule("--fin");
     } else {
-      // **On ne bascule pas dans le vide.** Mieux vaut un banc lent qu'un banc
-      // mort : le serveur de développement tient encore le port, il sert.
-      enBascule = false;
+      // **On ne bascule pas dans le vide, et on ne meurt pas non plus.** Mieux
+      // vaut un banc lent qu'un banc mort. Le serveur de développement a été
+      // délogé : il faut donc en relancer un, sinon l'application disparaît —
+      // ce serait le remède qui tue, encore.
       marquerBascule("--fin");
+      serveur = lancerDev();
+      serveur.on("exit", surSortie);
       console.error(
-        "\n  ⚠️  Le port n'a pas été rendu : on RESTE en mode développement.\n" +
+        "\n  ⚠️  Le port n'a pas pu être repris : on RESTE en mode développement.\n" +
           "     L'application fonctionne — elle sera simplement moins rapide.\n" +
           "     La version rapide prendra le relais au prochain démarrage.\n"
       );

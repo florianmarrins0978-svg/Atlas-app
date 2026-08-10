@@ -9,6 +9,38 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### La bascule déloge d'abord, vérifie ensuite, et réessaie
+
+**Le journal du patron a montré ce qu'aucun raisonnement n'avait vu.** Après
+« Construction terminée », `EADDRINUSE` **immédiat** — puis le serveur de
+développement qui **continue de servir** :
+
+    ⨯ Failed to start server
+    Error: listen EADDRINUSE ... 0.0.0.0:3000
+    GET / 307 in 95s
+
+Il n'était donc pas mort du tout. `serveur.kill()` ne tue que l'enveloppe `npx` ;
+le processus qui écoute se renomme `next-server` et lui survit. Le dépôt le
+savait — c'est écrit noir sur blanc dans `veiller.sh` depuis le 9 août — mais le
+banc n'appelait `pkill` qu'**en dernier recours**, après vingt secondes, et
+seulement si le port semblait encore pris. Or il ne le semblait pas : la question
+posée était « la santé répond-elle ? », et un serveur qu'on vient de tuer se tait
+bien avant de rendre sa socket.
+
+Trois changements, et l'ordre compte :
+
+1. **On déloge d'abord, sans condition.** Ce serveur est de toute façon
+   condamné : il n'y a rien à épargner.
+2. **On demande au port**, pas à la santé — la seule question dont la réponse
+   engage `next start`.
+3. **On réessaie une fois**, et une naissance ratée se voit dans les huit
+   secondes. Surtout, **le banc ne meurt plus** : si la reprise échoue, il
+   relance un serveur de développement au lieu de laisser le patron sans rien.
+   Un banc lent reste un banc ; un banc mort coûte une soirée.
+
+Éprouvé de bout en bout : construction, délogement, reprise du port, « Version
+rapide en place », zéro `EADDRINUSE`, `/login` servi en 206 ms.
+
 ### Le remède tournait en rond — et la bascule ratait encore le port
 
 Deux défauts, dont **le premier est le mien, introduit le soir même.**
