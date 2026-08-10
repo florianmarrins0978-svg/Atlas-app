@@ -334,10 +334,15 @@ async function main() {
     // batterie — trois fois de suite. Un contrôle qui refait pour rien un
     // travail coûteux finit par échouer sur sa propre lourdeur, et accuse le
     // code à sa place.
-    const carte = page.locator("a").filter({ hasText: nom }).last();
+    // **Le fil a remplacé les cartes le 10 août 2026** (`ARCHITECTURE.md` §53).
+    // Un chantier dont la facture attend porte une perle CREUSE et vit sous
+    // l'encart « à facturer » de son mois — il n'y a plus de libellé
+    // « Reprendre la facture » à trouver. Ce qui doit rester vrai : le chantier
+    // est là, et sa ligne mène à sa facture.
+    assert.ok((await page.locator(`text=${nom}`).count()) > 0, "le chantier n'est pas dans les terminés");
     assert.ok(
-      (await carte.locator("text=Reprendre la facture").count()) > 0,
-      "rien n'indique qu'une facture attend sur ce chantier"
+      (await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).count()) > 0,
+      "rien ne mène à la facture qui attend sur ce chantier"
     );
   });
 

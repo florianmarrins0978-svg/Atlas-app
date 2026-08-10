@@ -99,14 +99,21 @@ async function main() {
   const context = await browser.newContext({ viewport: { width: 393, height: 852 } });
   const page = await seConnecter(context);
 
-  await test("le chantier réalisé apparaît dans l'onglet Terminés", async () => {
-    const { nom } = await chantierRealise(page, "onglet");
+  await test("le chantier réalisé apparaît dans l'onglet Terminés, et mène à sa facture", async () => {
+    const { nom, chantierId } = await chantierRealise(page, "onglet");
     await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
 
     assert.ok(await page.locator(`text=${nom}`).first().isVisible(), "le chantier n'apparaît pas");
-    assert.ok(
-      await page.locator("text=Créer la facture").first().isVisible(),
-      "le bouton de clôture est absent"
+    // **La touche ne vit plus ici**, et c'est la maquette du 10 août 2026 :
+    // « Terminés » est un fil, on y touche la LIGNE du chantier et c'est
+    // l'écran suivant qui porte l'unique pavé plein — « Créer la facture »
+    // (`ARCHITECTURE.md` §53). Un seul pavé plein par écran, sans quoi il n'y a
+    // plus d'action évidente. Ce qui doit être vrai ici, c'est que le chemin
+    // existe.
+    assert.equal(
+      await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).count(),
+      1,
+      "la ligne du chantier ne mène pas à son écran de facture"
     );
   });
 
