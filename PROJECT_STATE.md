@@ -113,6 +113,33 @@ production les demande.
 
 ---
 
+## Une identité visuelle est en cours de remplacement — ne pas se fier au code seul
+
+**Constaté le 2026-08-10, hors du dépôt.** Le patron explore une charte que rien
+ici ne mentionne : un registre **ivoire**, encre presque noire, et un **bronze
+mat** employé deux fois seulement, présenté dans un fichier de maquettes qu'il
+tient de son côté (`toutes-les-maquettes.html`, absent du dépôt) sous le nom
+d'un registre hôtelier. Sa phrase, à propos du bandeau du bas : « c'est à ça que
+va ressembler à la fin ».
+
+Ce que cela change, concrètement, et pourquoi c'est écrit ici :
+
+- **La navigation basse y perd ses icônes.** Ce sont quatre libellés en petites
+  capitales espacées, et l'onglet actif se signale par un **trait bronze** sous
+  le mot. `AtlasBottomNav` code aujourd'hui l'inverse : icône + libellé, accent
+  porté par la couleur du texte.
+- **L'accent n'est plus le vert pin d'Arborea.** `src/lib/design-tokens.ts` et
+  `docs/DESIGN_SYSTEM.md` décrivent donc une identité que le patron est en train
+  de quitter.
+
+**Rien n'est tranché, et rien n'a été codé dans ce sens.** Mais une conversation
+qui lirait le dépôt seul repartirait en vert pin avec des icônes, c'est-à-dire à
+contresens. Quand le choix sera arrêté, ce sont `design-tokens.ts`,
+`globals.css`, `manifest.json`, `AtlasBottomNav` et `docs/DESIGN_SYSTEM.md` qui
+changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet.
+
+---
+
 ## Ce qui reste, et que je peux faire seul
 
 Voir `TODO.md` pour le détail et l'ordre.
