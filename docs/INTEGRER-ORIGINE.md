@@ -383,6 +383,130 @@ serveur ne connaît pas.
 
 ---
 
+## 6 quater. Le planning — le mois, et la journée qui s'ouvre dessous
+
+**Choisi par le patron le 2026-08-10** (variante « le mois »). Maquette :
+`maquettes/atlas-planning.html`, contrôlée par `npm run verifier:maquette`.
+La règle de nommage des équipes est au §6 ter ci-dessus ; cette section décrit
+l'écran.
+
+L'écran remplace `src/app/planning/PlanningClient.tsx`.
+
+### Le mois
+
+Un calendrier de sept colonnes, et **rien qui ressemble à un tableau** : pas de
+bordure, pas de fond de case, un chiffre en serif de 15 px par jour.
+
+```css
+.sem7 span{font-size:8px;letter-spacing:.16em;text-transform:uppercase} /* lun…dim */
+.grille{display:grid;grid-template-columns:repeat(7,1fr);gap:2px 0}
+.case{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;gap:5px;border-radius:99px;
+      font:400 15px/1 ui-serif,Georgia,serif}
+```
+
+**Cinq marques, pas quatre** — un point de 5 px sous le chiffre. Quatre ne
+suffisaient plus dès qu'il y a plusieurs équipes :
+
+| Marque | Ce qu'elle dit |
+|---|---|
+| rien | journée entièrement libre |
+| **anneau creux** | il reste de la place — au moins une équipe libre |
+| **demi-disque haut** | le matin est complet pour toutes les équipes |
+| **demi-disque bas** | l'après-midi est complet |
+| **disque plein** | journée pleine |
+
+```css
+.occ{width:5px;height:5px;border-radius:99px;background:transparent}
+.occ.reste{box-shadow:inset 0 0 0 1px var(--bronze)}
+.occ.m{background:linear-gradient(180deg,var(--bronze) 50%,transparent 50%)}
+.occ.a{background:linear-gradient(180deg,transparent 50%,var(--bronze) 50%)}
+.occ.p{background:var(--bronze)}
+```
+
+Aujourd'hui est **en bronze**, pas en pavé. Les samedis et dimanches sont
+estompés **par la couleur** (`rgba(22,23,15,.28)`), jamais par l'opacité :
+l'animation d'arrivée finit à `opacity:1` et l'emporterait.
+
+**Ces marques se recalculent** à partir de `src/server/disponibilites.ts` —
+`creneauxDuChantier` pour les demi-journées, `departPossible` pour « complet »
+qui se compte **par équipe**, `jourSuivantOuvre` pour les week-ends. Dans la
+maquette elles sont figées : c'est la seule chose qu'elle ne peut pas montrer.
+
+### La journée s'ouvre par une ANCRE, jamais par une case à cocher
+
+**Deux fois de suite le patron a écrit « rien ne s'ouvre quand je touche un
+jour »**, avec quarante contrôles au vert. Le couple `<label>` + case à cocher
+fonctionne en laboratoire et se dérobe sur son iPhone (voir §7 bis). Un lien
+ordinaire est honoré partout — et il **amène** la journée à l'écran :
+
+```html
+<a class="case" href="#j20">20<span class="occ reste"></span></a>
+...
+<div class="journee" id="j20">…</div>
+```
+```css
+.journee{display:none;scroll-margin-top:190px}
+.journee:target{display:block}
+```
+
+**La journée se pose directement sous le calendrier**, pas après la légende :
+posée plus bas, elle s'ouvrait hors du champ et l'écran paraissait mort.
+
+Dans l'application, ce sera de l'état React ordinaire — mais **le comportement
+doit rester celui-là** : ouvrir *et* amener à l'écran.
+
+### Ce que la journée contient
+
+1. La date en serif 23 px — « Jeudi 20 août ».
+2. Une ligne grise : « Où poser « Chez M. Martins » ? »
+3. **MATIN**, puis **APRÈS-MIDI**, en capitales espacées suivies d'un filet.
+4. Sous chacun, **une ligne par équipe** — un filet dessous, jamais un cadre.
+   Une équipe prise **nomme son chantier** en gris ; une équipe libre affiche
+   « Libre » en bronze. (À une seule équipe : ni ligne ni nom, voir §6 ter.)
+5. Choisir une ligne libre : une **perle bronze** paraît devant le nom, le filet
+   passe au bronze, « Libre » passe à l'encre.
+6. **Un seul bouton**, jamais trois lignes : « Poser · matin · Théo → ».
+7. Une ligne grise : « Touchez un chantier posé pour changer son équipe. »
+
+**Poser, c'est dire à la fois QUAND et QUI.** Le bouton ne s'arme qu'une fois
+l'équipe choisie ; une date sans équipe laisse le travail à moitié fait.
+
+Un jour **plein** ne propose aucune ligne et dit quoi faire : « Journée pleine —
+Portail coulissant et Dalle de garage. Il faudrait une troisième équipe. » Un
+**samedi** rappelle la règle qui surprend : un chantier de deux jours parti
+vendredi matin finit **lundi**.
+
+### Sous le calendrier
+
+Une légende des cinq marques, une phrase qui dit ce que « complet » veut dire,
+puis **« SANS DATE »** — les chantiers acceptés qui attendent encore un jour,
+nom en serif à gauche, état à droite (« Devis accepté » en bronze).
+
+### Trois pièges déjà payés
+
+- **Le calendrier doit dire vrai.** Le 1er août 2026 est un **samedi** : j'avais
+  quatre cases de juillet au lieu de cinq, et tout le mois glissait d'un jour.
+  Écrire des contrôles sur les colonnes du 1er, du 10, du 15 et du 31.
+- **Un sélecteur de frère ne sort jamais de son parent.** Ce piège a mordu
+  **quatre fois** : les boutons radio qui commandent les créneaux doivent être
+  **frères** de ce qu'ils commandent, jamais enfermés dans un conteneur.
+- **`label:nth-of-type(n)` compte dans son propre bloc.** La ligne choisie
+  s'allumait sur le matin **et** l'après-midi à la fois. Donner à chaque ligne
+  son rang en clair (`.r1`…`.r4`), et vérifier qu'**une seule** s'allume.
+
+### Le trait du bandeau
+
+Il doit tomber sous **l'onglet actif**. Recopié depuis un écran où le premier
+onglet était choisi, il est resté sous « CHANTIERS » pendant que « PLANNING »
+était le mot allumé — 77 px d'écart, **vu par le patron sur une capture**
+pendant que le contrôle du libellé actif restait vert. Le contrôle mesure
+désormais l'écart entre le centre du trait et le centre du **texte** de l'onglet
+(`Range.getBoundingClientRect`) : la boîte du libellé vaut sa colonne entière et
+masquait le décalage.
+
+---
+
 ## 7. Ordre de travail
 
 Chaque étape est utilisable seule.
@@ -397,7 +521,9 @@ Chaque étape est utilisable seule.
 6. **L'ouverture** — après avoir tranché le point de produit ci-dessus.
 7. **La note vocale sur la fiche chantier** — l'anneau, la lecture, le retrait
    par le haut, la pellicule (§6 bis). Indépendante des autres étapes.
-8. **Les équipes nommées** (§6 ter) — Réglages d'abord, planning ensuite. Cette
+8. **Le planning** (§6 quater) — le mois, les cinq marques, la journée qui
+   s'ouvre dessous. Ne dépend d'aucune des étapes précédentes.
+9. **Les équipes nommées** (§6 ter) — Réglages d'abord, planning ensuite. Cette
    étape-là touche la base : elle ne se fait pas en même temps que les autres.
 
 ---
