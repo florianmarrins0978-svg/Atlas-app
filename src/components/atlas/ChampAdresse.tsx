@@ -111,7 +111,7 @@ export default function ChampAdresse({
           aria-expanded={listeVisible}
           aria-autocomplete="list"
           aria-controls={`${identifiant}-liste`}
-          className="rounded-2xl border-0 px-4 py-3.5 outline-none"
+          className="rounded-[4px] border-0 px-4 py-3.5 outline-none"
           style={{ backgroundColor: colors.card, color: colors.ink, fontFamily: font.body, fontSize: "16px" }}
         />
       </label>
@@ -125,7 +125,7 @@ export default function ChampAdresse({
           // droite (`AssistantSidebar.tsx`). Sans ce cran au-dessus, elle
           // recouvre la troisième proposition et le doigt touche la bulle au
           // lieu de l'adresse — vu sur une capture, jamais par un test.
-          className="relative z-40 overflow-hidden rounded-2xl"
+          className="relative z-40 overflow-hidden rounded-[4px]"
           style={{ backgroundColor: colors.card, border: `1px solid ${colors.rustTint}` }}
         >
           {suggestions.map((suggestion) => (

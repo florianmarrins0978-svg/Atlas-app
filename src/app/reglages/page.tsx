@@ -1,4 +1,5 @@
 import Link from "next/link";
+import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { decrireEtatIA, aFaireIA } from "@/lib/etat-ia";
 import { getCurrentCtx } from "@/server/session-ctx";
@@ -40,14 +41,7 @@ export default async function ReglagesPage() {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-24">
-        <div className="px-6 pt-8">
-          <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-            Mon entreprise
-          </p>
-          <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
-            Réglages
-          </h1>
-        </div>
+        <EnTeteEcran surtitre="Mon entreprise" titre="Réglages" />
 
         <ReglagesClient
           initialTarifs={tarifs.map((t) => ({ id: t.id, intitule: t.intitule, prix: t.prix, unite: t.unite }))}
@@ -114,7 +108,7 @@ export default async function ReglagesPage() {
             {etatsIA.map((etat) => (
               <div
                 key={etat.role}
-                className="rounded-xl p-4"
+                className="rounded-[4px] p-4"
                 style={{
                   backgroundColor: colors.card,
                   // Un liseré n'apparaît que si quelque chose ne fait pas ce
@@ -176,7 +170,7 @@ export default async function ReglagesPage() {
           <a
             href="/api/mes-donnees"
             download={nomFichierSauvegarde(entreprise?.nom ?? "Entreprise", new Date())}
-            className="inline-block rounded-xl px-5 py-3 text-[15px] font-medium"
+            className="inline-block rounded-[4px] px-5 py-3 text-[15px] font-medium"
             style={{ backgroundColor: colors.rust, color: colors.cream }}
           >
             Télécharger mes données

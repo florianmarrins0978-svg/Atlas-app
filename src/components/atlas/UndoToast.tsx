@@ -31,7 +31,7 @@ export default function UndoToast({
   return (
     <div className="fixed inset-x-0 z-30 mx-auto flex max-w-md justify-center px-6" style={{ bottom: "96px" }}>
       <div
-        className="flex items-center gap-4 rounded-2xl px-5 py-3.5"
+        className="flex items-center gap-4 rounded-[4px] px-5 py-3.5"
         style={{ backgroundColor: colors.ink, boxShadow: "0 8px 24px rgba(0,0,0,0.18)" }}
       >
         <span className="text-[14px]" style={{ color: colors.cream }}>

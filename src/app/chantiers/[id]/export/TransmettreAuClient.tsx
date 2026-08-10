@@ -164,7 +164,7 @@ export default function TransmettreAuClient({
             href={adresse(canalChoisi, destinataire)}
             data-transmission={canalChoisi}
             onClick={() => marquerDepartMessagerie("devis", clientNom)}
-            className="mt-3 block w-full rounded-2xl py-3 text-center text-[15px] font-medium text-white"
+            className="mt-3 block w-full rounded-[4px] py-3 text-center text-[15px] font-medium text-white"
             style={{ backgroundColor: colors.rust }}
           >
             {LIBELLE[canalChoisi].bouton}
@@ -196,14 +196,14 @@ export default function TransmettreAuClient({
             inputMode={canalChoisi === "sms" ? "tel" : "email"}
             placeholder={LIBELLE[canalChoisi].exemple}
             aria-label={LIBELLE[canalChoisi].champ}
-            className="w-full rounded-2xl border-0 px-4 py-3 outline-none"
+            className="w-full rounded-[4px] border-0 px-4 py-3 outline-none"
             style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
           />
           <button
             type="button"
             onClick={enregistrerEtOuvrir}
             disabled={enregistrement || saisie.trim() === ""}
-            className="w-full rounded-2xl py-3 text-[15px] font-medium text-white disabled:opacity-40"
+            className="w-full rounded-[4px] py-3 text-[15px] font-medium text-white disabled:opacity-40"
             style={{ backgroundColor: colors.rust }}
           >
             {enregistrement ? "Enregistrement…" : "Enregistrer et ouvrir le message"}

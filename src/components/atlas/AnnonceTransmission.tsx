@@ -69,7 +69,7 @@ export default function AnnonceTransmission() {
     <div className="px-6 pt-4">
       <p
         role="status"
-        className="rounded-2xl px-4 py-3 text-[14px] leading-snug"
+        className="rounded-[4px] px-4 py-3 text-[14px] leading-snug"
         style={{ backgroundColor: colors.rustTint, color: colors.rust }}
       >
         {message}

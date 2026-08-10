@@ -61,14 +61,24 @@ export const colors = {
 
 // ─── Les documents que le client reçoit ─────────────────────────────────────
 //
-// Devis et facture gardent la terre cuite. Le patron l'a choisie le
-// 3 août 2026, les deux versions sous les yeux, **et l'a maintenue** en
-// demandant que le reste de l'application reprenne Arborea.
+// **La terre cuite est abandonnée le 10 août 2026, à sa demande** : *« oui,
+// harmonise aussi le devis »*. Elle avait été choisie le 3 août, les deux
+// versions sous les yeux, et maintenue quand le reste de l'application est
+// passé à Arborea — le devis n'étant pas un écran mais une pièce que le client
+// garde et signe.
 //
-// Ce n'est pas une incohérence : un devis n'est pas un écran. C'est la pièce
-// que son client garde, imprime et signe, et elle porte sa propre teinte.
+// Il a tranché l'inverse une fois l'application refaite : une seule identité,
+// écran et document. L'accent devient donc **l'or**, celui qui porte partout
+// ailleurs ce qu'on LIT — et un intertitre « ÉMETTEUR » est exactement cela.
+// Le vert pin aurait été le mauvais choix : il porte ce qu'on FAIT, et il n'y a
+// rien à faire sur un devis imprimé.
+//
+// **Ce bloc existe encore, et doit rester**, même s'il ne diverge plus : le
+// papier et l'encre d'un document imprimé ne suivront pas forcément un futur
+// changement d'écran. Le jour où l'application passera au sombre, ce fichier
+// sera l'endroit où l'on empêchera le devis de partir en noir chez le client.
 export const couleursDocument = {
-  accent: "#B25A2E", // terre cuite — intertitres « Émetteur » / « Client »
+  accent: "#B98B47", // l'or — intertitres « Émetteur » / « Client »
   papier: "#faf9f5",
   encre: "#1c1c1a",
   etiquette: "#6b6b5c",
@@ -89,13 +99,22 @@ export const smallCaps = "text-[11px] font-semibold uppercase tracking-[0.18em]"
 // l'écran d'accueil refait, les cartes semblaient posées sur l'écran plutôt
 // qu'imprimées dedans, et le patron l'a nommé — « ombres extrêmement légères ».
 // Ce qui reste sert uniquement à détacher la carte du fond crème.
-export const cardShadow = "0 1px 2px rgba(47,59,47,0.04), 0 6px 14px rgba(47,59,47,0.04)";
+// **Supprimée le 10 août 2026**, avec le reste de la refonte. Le patron a
+// retenu un écran sans une seule ombre : une plage plus claire que le fond
+// suffit à détacher, et une ombre — même à 4 % — remet le contenu « au-dessus »
+// de la page au lieu de dedans. La constante reste, et vaut « aucune ombre » :
+// une soixantaine d'endroits l'importent, et les reprendre un par un aurait
+// mêlé un changement d'identité à un changement mécanique.
+export const cardShadow = "none";
 
 // Rayons de coin standard, relevés sur Arborea : 20px pour l'action
 // principale, 16px pour les tuiles.
+// **Resserrés le 10 août 2026.** L'écran retenu n'arrondit presque rien : au
+// delà de 6 px, une plage devient un galet et l'écran perd sa tenue. Seuls les
+// ronds — pastilles, avatars — restent pleinement circulaires.
 export const radius = {
-  card: "16px",
-  button: "20px",
+  card: "4px",
+  button: "5px",
   avatar: "9999px",
 } as const;
 

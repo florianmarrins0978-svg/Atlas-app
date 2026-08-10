@@ -102,7 +102,7 @@ export default function PropositionPrixSection({
     origine === "tarif" || origine === "chiffrage" || (origine === "tarifs_ambigus" && tarifChoisi !== null);
 
   return (
-    <div className="mx-6 mt-5 flex flex-col gap-3 rounded-2xl p-4" style={{ backgroundColor: colors.card }}>
+    <div className="mx-6 mt-5 flex flex-col gap-3 rounded-[4px] p-4" style={{ backgroundColor: colors.card }}>
       <div className="flex items-baseline justify-between">
         <span className={smallCaps} style={{ color: colors.muted }}>
           Proposition
@@ -126,7 +126,7 @@ export default function PropositionPrixSection({
           détail : c'est le défaut qu'il a signalé trois fois, et il ne se
           constate pas sur un total. */}
       {proposition.lignes.length > 1 && (
-        <ul className="flex flex-col gap-1 rounded-xl px-3 py-2" style={{ backgroundColor: colors.cream }}>
+        <ul className="flex flex-col gap-1 rounded-[4px] px-3 py-2" style={{ backgroundColor: colors.cream }}>
           {proposition.lignes.map((l, i) => (
             <li key={i} className="flex items-baseline justify-between gap-3 text-[13px]">
               <span className="whitespace-pre-line" style={{ color: colors.ink }}>
@@ -150,7 +150,7 @@ export default function PropositionPrixSection({
           {proposition.tarifsCandidats.map((c) => (
             <label
               key={c.tarifId}
-              className="flex items-center gap-2 rounded-xl px-3 py-2 text-[14px]"
+              className="flex items-center gap-2 rounded-[4px] px-3 py-2 text-[14px]"
               style={{ backgroundColor: colors.cream, color: colors.ink }}
             >
               <input
@@ -179,7 +179,7 @@ export default function PropositionPrixSection({
       </button>
 
       {detailOuvert && (
-        <div className="flex flex-col gap-3 rounded-2xl p-3" style={{ backgroundColor: colors.cream }}>
+        <div className="flex flex-col gap-3 rounded-[4px] p-3" style={{ backgroundColor: colors.cream }}>
           <BlocExplication titre="Éléments pris en compte" lignes={explication.elementsPrisEnCompte} />
           <BlocExplication titre="Calcul" lignes={explication.calcul} />
           {explication.donneesManquantes.length > 0 && (
@@ -231,7 +231,7 @@ export default function PropositionPrixSection({
             type="button"
             onClick={appliquer}
             disabled={enCours || dejaAuDetail !== null || !peutAppliquer}
-            className="rounded-2xl py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
+            className="rounded-[4px] py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
             style={{ backgroundColor: colors.rust }}
           >
             {dejaAuDetail ? "Déjà au détail" : enCours ? "Ajout…" : "Ajouter au détail"}

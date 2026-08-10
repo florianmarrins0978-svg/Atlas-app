@@ -80,7 +80,7 @@ export default function VocabulaireClient({ initiaux }: { initiaux: Terme[] }) {
   return (
     <div className="px-6 pt-8">
       {/* --- Ajouter -------------------------------------------------------- */}
-      <div className="rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
+      <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
         <p className={smallCaps} style={{ color: colors.rust, marginBottom: 12 }}>
           Ajouter
         </p>
@@ -124,7 +124,7 @@ export default function VocabulaireClient({ initiaux }: { initiaux: Terme[] }) {
           type="button"
           onClick={ajouter}
           disabled={enCours}
-          className="mt-2 w-full rounded-2xl py-3 text-[15px] font-medium disabled:opacity-40"
+          className="mt-2 w-full rounded-[4px] py-3 text-[15px] font-medium disabled:opacity-40"
           style={{ backgroundColor: colors.rust, color: colors.cream }}
         >
           {enCours ? "Ajout…" : "Ajouter"}
@@ -172,7 +172,7 @@ function Section({
           {termes.map((t) => (
             <div
               key={t.id}
-              className="rounded-2xl px-5 py-4"
+              className="rounded-[4px] px-5 py-4"
               style={{ backgroundColor: colors.card, opacity: t.actif ? 1 : 0.5 }}
             >
               <p className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
@@ -208,7 +208,7 @@ function ChoixNature({ libelle, actif, onClick }: { libelle: string; actif: bool
       type="button"
       onClick={onClick}
       aria-pressed={actif}
-      className="flex-1 rounded-xl py-2.5 text-[14px] font-medium"
+      className="flex-1 rounded-[4px] py-2.5 text-[14px] font-medium"
       style={{ backgroundColor: actif ? colors.rustTint : colors.cream, color: actif ? colors.rust : colors.muted }}
     >
       {libelle}
@@ -247,7 +247,7 @@ function Champ({
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="rounded-xl border-0 px-4 py-3 outline-none"
+          className="rounded-[4px] border-0 px-4 py-3 outline-none"
           style={style}
         />
       ) : (
@@ -256,7 +256,7 @@ function Champ({
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="rounded-xl border-0 px-4 py-3 outline-none"
+          className="rounded-[4px] border-0 px-4 py-3 outline-none"
           style={style}
         />
       )}

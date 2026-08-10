@@ -44,7 +44,7 @@ export default function Erreur({
       </div>
 
       <div className="mt-8 px-6">
-        <div className="rounded-2xl px-5 py-8 text-center" style={{ backgroundColor: colors.card }}>
+        <div className="rounded-[4px] px-5 py-8 text-center" style={{ backgroundColor: colors.card }}>
           <p className="text-[14px]" style={{ color: colors.muted }}>
             Cette page n&apos;a pas pu s&apos;afficher.
           </p>
@@ -52,7 +52,7 @@ export default function Erreur({
 
         {EN_DEVELOPPEMENT && error.message ? (
           <div
-            className="mt-4 overflow-x-auto rounded-2xl px-5 py-4 text-left"
+            className="mt-4 overflow-x-auto rounded-[4px] px-5 py-4 text-left"
             style={{ backgroundColor: colors.card }}
           >
             <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>

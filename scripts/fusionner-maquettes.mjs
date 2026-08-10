@@ -1,0 +1,495 @@
+#!/usr/bin/env node
+/*
+  Fusionne toutes les maquettes en une seule page consultable.
+
+  Pourquoi un script plutôt qu'un copier-coller : les fichiers ont été
+  écrits séparément et se partagent les mêmes noms de classes (.ecran, .prop,
+  .nom, .bas…) et les mêmes identifiants (#modele, #duo). Concaténés tels
+  quels, ils se marcheraient dessus — la charte de la maquette 6 repeindrait
+  la maquette 2. Chaque feuille de style est donc confinée sous un ancêtre
+  unique (#s01, #s02, …) et chaque script reçoit un `document` restreint à sa
+  propre section.
+
+  Le script est refait à chaque régénération pour que la page unique ne puisse
+  pas diverger de ses originaux : ils restent la source, elle est le produit.
+*/
+
+import { readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const SOURCE = join(dirname(fileURLToPath(import.meta.url)), "..", "docs", "maquettes");
+const SORTIE_PAR_DEFAUT = join(SOURCE, "toutes-les-maquettes.html");
+
+const MAQUETTES = [
+  {
+    fichier: "01-reference-du-patron.html",
+    titre: "La référence",
+    famille: "Le point de départ",
+    quoi: "Votre capture, reproduite. Sceau, branche, cartes, barre en pilule.",
+  },
+  {
+    fichier: "02-index-et-calme.html",
+    titre: "L’index et le calme",
+    famille: "Chercher plus minimal",
+    quoi: "Deux directions : lignes séparées par un cheveu, ou plages sans bordure ni ombre.",
+  },
+  {
+    fichier: "03-index-trois-chartes.html",
+    titre: "L’index, trois chartes",
+    famille: "Chercher plus minimal",
+    quoi: "Nuit, Pierre, Brume — la même mise en page, trois couleurs.",
+  },
+  {
+    fichier: "04-aman.html",
+    titre: "D’après Aman",
+    famille: "Le langage d’Aman",
+    quoi: "Ivoire, serif claire, capitales espacées, aucun coin arrondi. Jour et nuit.",
+  },
+  {
+    fichier: "05-calme-x-aman.html",
+    titre: "Le calme × Aman",
+    famille: "Le langage d’Aman",
+    quoi: "Les plages de « Le calme », habillées d’ivoire et de capitales.",
+  },
+  {
+    fichier: "06-nuancier-neuf-chartes.html",
+    titre: "Le nuancier",
+    famille: "Le langage d’Aman",
+    quoi: "Neuf couleurs sur la même page : les vôtres, les miennes, celles de 2026.",
+  },
+  {
+    fichier: "07-cinq-mises-en-page.html",
+    titre: "Cinq mises en page",
+    famille: "Vers la décision",
+    quoi: "Registre, colonne, plages larges, action au pouce, vignette — toutes en ivoire.",
+  },
+  {
+    fichier: "08-la-colonne-retenue.html",
+    titre: "La colonne — retenue",
+    famille: "Vers la décision",
+    quoi: "Les trois déclinaisons que vous gardez : le repère, en plages, l’action au pouce.",
+    retenu: true,
+  },
+  {
+    fichier: "09-calme-x-aman-retouche.html",
+    titre: "Le calme × Aman, retouché",
+    famille: "Vers la décision",
+    quoi: "Le premier écran de 05, avec le pied d’Aman et le trait qui ferme l’en-tête.",
+    retenu: true,
+  },
+  {
+    fichier: "10-le-calme-en-couleurs.html",
+    titre: "Les deux retenus, en seize chartes",
+    famille: "Vers la décision",
+    quoi: "La même paire d’écrans, seize fois : les neuf chartes déjà vues, plus sept qui vont jusqu’à cinq teintes.",
+    retenu: true,
+  },
+  {
+    fichier: "11-ecran-retenu-seize-couleurs.html",
+    titre: "L’écran retenu, seize couleurs",
+    famille: "Vers la décision",
+    quoi: "Le trait seul — celui qu’il garde — dans les seize chartes, quatre par rangée.",
+    retenu: true,
+  },
+  {
+    fichier: "12-origine-plus-fin.html",
+    titre: "Origine, plus fin — trois tentatives",
+    famille: "Vers la décision",
+    quoi: "Encadrés amincis et resserrés, puis deux façons d’enlever la boîte : l’ourlet, et le fil.",
+    retenu: true,
+  },
+  {
+    fichier: "13-le-fil-quatre-couleurs.html",
+    titre: "Le fil, en quatre couleurs",
+    famille: "Vers la décision",
+    quoi: "Sans le cheveu sous ATLAS. Les trois formes de liste × Origine, Ivoire, Sylve, Océan.",
+    retenu: true,
+  },
+];
+
+/* ————————————————————————————————————————————————————————————————
+   Confinement de la feuille de style
+   ———————————————————————————————————————————————————————————————— */
+
+function sansCommentaires(css) {
+  return css.replace(/\/\*[\s\S]*?\*\//g, "");
+}
+
+// Découpe une liste de sélecteurs sur les virgules de premier niveau : une
+// virgule dans :not(…) ou rgba(…) n'en sépare pas deux.
+function decouperSelecteurs(liste) {
+  const morceaux = [];
+  let courant = "";
+  let parentheses = 0;
+  let crochets = 0;
+  for (const c of liste) {
+    if (c === "(") parentheses += 1;
+    else if (c === ")") parentheses -= 1;
+    else if (c === "[") crochets += 1;
+    else if (c === "]") crochets -= 1;
+    if (c === "," && parentheses === 0 && crochets === 0) {
+      morceaux.push(courant);
+      courant = "";
+      continue;
+    }
+    courant += c;
+  }
+  morceaux.push(courant);
+  return morceaux;
+}
+
+function confinerSelecteur(selecteur, hote) {
+  const s = selecteur.trim();
+  if (!s) return "";
+  if (s === "*") return `${hote}, ${hote} *`;
+  // :root, html et body désignaient la page entière : ils désignent
+  // désormais la section, qui joue ce rôle dans la page fusionnée.
+  const racine = s.match(/^(:root|html|body)(?![\w-])/);
+  if (racine) return hote + s.slice(racine[1].length);
+  return `${hote} ${s}`;
+}
+
+// Les règles imbriquées d'une at-rule à blocs (@media, @supports) sont
+// confinées récursivement ; @keyframes et @font-face n'ont pas de sélecteurs
+// à réécrire et passent intactes.
+const AT_RULES_TRANSPARENTES = /^@(media|supports|layer|container)\b/;
+const AT_RULES_OPAQUES = /^@(keyframes|-webkit-keyframes|font-face|counter-style|property|page)\b/;
+
+function confinerCss(css, hote) {
+  let sortie = "";
+  let i = 0;
+  while (i < css.length) {
+    const ouvrante = css.indexOf("{", i);
+    if (ouvrante === -1) {
+      sortie += css.slice(i);
+      break;
+    }
+    const prelude = css.slice(i, ouvrante).trim();
+
+    // Une at-rule sans bloc (@import, @charset) se termine par un point-virgule
+    // avant l'accolade : on la recopie et on reprend après.
+    const pointVirgule = prelude.lastIndexOf(";");
+    if (pointVirgule !== -1) {
+      sortie += css.slice(i, i + pointVirgule + 1) + "\n";
+      i += pointVirgule + 1;
+      continue;
+    }
+
+    let profondeur = 1;
+    let j = ouvrante + 1;
+    while (j < css.length && profondeur > 0) {
+      if (css[j] === "{") profondeur += 1;
+      else if (css[j] === "}") profondeur -= 1;
+      j += 1;
+    }
+    if (profondeur !== 0) {
+      throw new Error(`Accolade non refermée près de « ${prelude.slice(0, 60)} »`);
+    }
+    const corps = css.slice(ouvrante + 1, j - 1);
+
+    if (AT_RULES_TRANSPARENTES.test(prelude)) {
+      sortie += `${prelude}{\n${confinerCss(corps, hote)}\n}\n`;
+    } else if (AT_RULES_OPAQUES.test(prelude)) {
+      sortie += `${prelude}{${corps}}\n`;
+    } else {
+      const selecteurs = decouperSelecteurs(prelude)
+        .map((s) => confinerSelecteur(s, hote))
+        .filter(Boolean)
+        .join(",");
+      sortie += `${selecteurs}{${corps}}\n`;
+    }
+    i = j;
+  }
+  return sortie;
+}
+
+/* ————————————————————————————————————————————————————————————————
+   Lecture et découpe d'une maquette
+   ———————————————————————————————————————————————————————————————— */
+
+// Les identifiants que les scripts vont chercher : ils sont dupliqués d'un
+// fichier à l'autre, donc préfixés. Ceux d'un SVG (#feuille, #vert) sont
+// uniques et référencés par <use>/url() : on n'y touche pas.
+const IDS_A_PREFIXER = ["modele", "duo", "trio", "g1", "g2", "g3", "chartes", "ecran"];
+
+function lire(maquette, indice) {
+  const numero = String(indice + 1).padStart(2, "0");
+  const hote = `#s${numero}`;
+  const brut = readFileSync(join(SOURCE, maquette.fichier), "utf8");
+
+  const style = brut.match(/<style>([\s\S]*?)<\/style>/);
+  if (!style) throw new Error(`${maquette.fichier} : pas de <style>`);
+
+  let corps = brut
+    .replace(/<!doctype[^>]*>/i, "")
+    .replace(/<\/?(html|head|body)[^>]*>/gi, "")
+    .replace(/<meta[^>]*>/gi, "")
+    .replace(/<title>[\s\S]*?<\/title>/i, "")
+    .replace(/<style>[\s\S]*?<\/style>/, "")
+    .trim();
+
+  const scripts = [];
+  corps = corps.replace(/<script>([\s\S]*?)<\/script>/g, (_, code) => {
+    scripts.push(code);
+    return "";
+  });
+
+  for (const id of IDS_A_PREFIXER) {
+    corps = corps.replaceAll(`id="${id}"`, `id="s${numero}-${id}"`);
+  }
+
+  return {
+    ...maquette,
+    numero,
+    ancre: `m${numero}`,
+    hote: `s${numero}`,
+    css: confinerCss(sansCommentaires(style[1]), hote),
+    corps: corps.trim(),
+    scripts,
+  };
+}
+
+const pages = MAQUETTES.map(lire);
+
+/* ————————————————————————————————————————————————————————————————
+   Contrôles : un contrôle qui ne sait pas échouer ne prouve rien.
+   ———————————————————————————————————————————————————————————————— */
+
+const plaintes = [];
+for (const p of pages) {
+  if (!p.corps) plaintes.push(`${p.fichier} : corps vide après découpe`);
+  if (/:root|^\s*body\s*\{/m.test(p.css)) {
+    plaintes.push(`${p.fichier} : un :root ou un body a survécu au confinement`);
+  }
+  const regles = p.css.match(/[^{}]+\{/g) ?? [];
+  for (const r of regles) {
+    const sel = r.slice(0, -1).trim();
+    if (sel.startsWith("@")) continue;
+    if (!sel.split(",").every((s) => s.trim().startsWith(`#${p.hote}`))) {
+      plaintes.push(`${p.fichier} : sélecteur non confiné « ${sel.slice(0, 70)} »`);
+    }
+  }
+  // Chaque identifiant que le script va chercher doit exister, PRÉFIXÉ, dans
+  // le corps — sinon le clonage tombe sur null au chargement de la page.
+  // Le contrôle lit les appels réels plutôt que de supposer un nom : il
+  // accusait « gabarit non préfixé » sur une maquette dont le gabarit
+  // s'appelait simplement autrement.
+  for (const code of p.scripts) {
+    for (const appel of code.matchAll(/getElementById\(\s*["'`]([\w-]+)["'`]\s*\)/g)) {
+      const id = appel[1];
+      if (!IDS_A_PREFIXER.includes(id)) {
+        plaintes.push(
+          `${p.fichier} : le script cherche #${id}, absent de IDS_A_PREFIXER — ` +
+            `il entrerait en collision avec une autre maquette`,
+        );
+      } else if (!p.corps.includes(`id="${p.hote}-${id}"`)) {
+        plaintes.push(`${p.fichier} : le script cherche #${id}, introuvable dans le corps`);
+      }
+    }
+  }
+}
+if (plaintes.length) {
+  console.error("Fusion refusée :\n  " + plaintes.join("\n  "));
+  process.exit(1);
+}
+
+/* ————————————————————————————————————————————————————————————————
+   Assemblage
+   ———————————————————————————————————————————————————————————————— */
+
+const familles = [];
+for (const p of pages) {
+  const derniere = familles[familles.length - 1];
+  if (derniere && derniere.nom === p.famille) derniere.pages.push(p);
+  else familles.push({ nom: p.famille, pages: [p] });
+}
+
+const sommaire = familles
+  .map(
+    (f) => `      <p class="famille">${f.nom}</p>
+${f.pages
+  .map(
+    (p) => `      <a class="item${p.retenu ? " retenu" : ""}" href="#${p.ancre}">
+        <span class="no">${p.numero}</span><span class="titre">${p.titre}</span><span class="fleche">↓</span>
+        <span class="quoi">${p.quoi}</span>
+      </a>`,
+  )
+  .join("\n")}`,
+  )
+  .join("\n");
+
+const sections = pages
+  .map(
+    (p) => `  <section class="etape" id="${p.ancre}">
+    <div class="etape-tete">
+      <span class="etape-no">${p.numero}</span>
+      <h2>${p.titre}</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="${p.hote}">
+${p.corps}
+    </div>
+  </section>`,
+  )
+  .join("\n\n");
+
+const styles = pages.map((p) => `/* ${p.numero} — ${p.titre} */\n${p.css}`).join("\n");
+
+// Chaque script d'origine allait chercher ses nœuds dans `document`. Il reçoit
+// ici un `document` restreint à sa section, avec le préfixe d'identifiant
+// appliqué : le code n'a pas eu à être réécrit, donc il ne peut pas diverger
+// de l'original.
+const scripts = pages
+  .flatMap((p) =>
+    p.scripts.map(
+      (code) => `(function (document) {
+${code}
+})(porteeDe(${JSON.stringify(p.hote)}));`,
+    ),
+  )
+  .join("\n\n");
+
+const corpsDeLaPage = `<style>
+  /*
+    Toutes les maquettes sur une seule page.
+
+    Chaque feuille de style d'origine est confinée sous #s01, #s02, … : les
+    fichiers partagent les mêmes noms de classes, et sans ce confinement la
+    charte de l'une repeindrait l'autre. Cette page est engendrée par
+    scripts/fusionner-maquettes.mjs à partir des fichiers numérotés voisins, qui
+    restent la source.
+  */
+  :root{
+    --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478;
+    --bronze:#8a7452; --trait:rgba(34,31,26,.13);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c;
+      --bronze:#b39b72; --trait:rgba(233,229,220,.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c;
+    --bronze:#b39b72; --trait:rgba(233,229,220,.16);
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+  .enveloppe{max-width:1180px;margin:0 auto;padding:44px 20px 96px}
+  .ouverture{max-width:60ch;margin:0 auto 10px;text-align:center}
+  .sur{margin:0 0 14px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  h1{margin:0 0 14px;font:400 34px/1.15 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.015em;text-wrap:balance}
+  .chapo{margin:0;color:var(--gris);font-size:15px}
+  .regle{height:1px;background:var(--trait);margin:34px auto 8px;max-width:720px}
+
+  .sommaire{max-width:720px;margin:0 auto}
+  .famille{margin:30px 0 12px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gris)}
+  a.item{display:grid;grid-template-columns:auto 1fr auto;gap:0 16px;align-items:baseline;
+         padding:17px 18px;margin-bottom:6px;border-radius:6px;background:var(--plage);
+         text-decoration:none;color:inherit}
+  a.item:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
+  a.item .no{font-variant-numeric:tabular-nums;color:var(--bronze);font-size:12px;letter-spacing:.1em}
+  a.item .titre{font:400 19px/1.2 ui-serif,Georgia,serif}
+  a.item .quoi{grid-column:2;margin-top:5px;font-size:12.5px;color:var(--gris);line-height:1.5}
+  a.item .fleche{color:var(--gris)}
+  a.item.retenu{box-shadow:inset 2px 0 0 var(--bronze)}
+  .note{max-width:720px;margin:26px auto 0;padding:16px 18px;border:1px solid var(--trait);border-radius:6px;
+        font-size:13px;color:var(--gris);line-height:1.6}
+  .note b{color:var(--encre);font-weight:500}
+
+  .etape{scroll-margin-top:12px;padding-top:34px}
+  .etape-tete{display:flex;align-items:baseline;gap:14px;max-width:1080px;margin:0 auto 4px;
+              padding:0 4px 12px;border-bottom:1px solid var(--trait)}
+  .etape-no{font-variant-numeric:tabular-nums;font-size:12px;letter-spacing:.1em;color:var(--bronze)}
+  .etape-tete h2{margin:0;font:400 22px/1.2 ui-serif,Georgia,serif;flex:1}
+  .retour{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gris);text-decoration:none}
+  .retour:hover{color:var(--encre)}
+  .retour:focus-visible{outline:2px solid var(--bronze);outline-offset:3px}
+
+  /* La section reçoit les styles de « body » de la maquette d'origine : elle
+     apporte son propre fond, son propre encrage, ses propres marges. */
+  .cadre{overflow-x:auto}
+
+${styles}
+</style>
+
+<div class="enveloppe">
+  <div class="ouverture">
+    <p class="sur">Atlas — écran Chantiers</p>
+    <h1>Toutes les maquettes</h1>
+    <p class="chapo">Toutes les propositions, dans l’ordre où elles sont nées, sur une seule page. Cliquez un titre : il vous y emmène.</p>
+  </div>
+
+  <div class="regle"></div>
+
+  <nav class="sommaire" id="sommaire" aria-label="Les maquettes">
+${sommaire}
+    <p class="note">
+      <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
+      Ce dossier est un chemin, pas un entrepôt.
+      <br><br>
+      <b>Une réserve sur les polices.</b> Ces écrans empruntent la serif de votre appareil.
+      L’application, elle, charge Playfair Display : le rendu final sera plus dessiné.
+    </p>
+  </nav>
+</div>
+
+${sections}
+
+<script>
+  // Chaque maquette engendrait ses écrans en clonant un gabarit. Le code est
+  // repris tel quel — donc il ne peut pas diverger de l'original — mais il
+  // reçoit un « document » qui ne voit que sa propre section, sinon les
+  // scripts se disputeraient les mêmes identifiants.
+  function porteeDe(hote) {
+    const racine = document.getElementById(hote);
+    return {
+      getElementById: (id) => racine.querySelector("#" + hote + "-" + id),
+      createElement: (nom) => document.createElement(nom),
+    };
+  }
+
+${scripts}
+</script>
+`;
+
+const TITRE = "Atlas — toutes les maquettes de l'écran Chantiers";
+
+// Deux formes, pour deux usages qui ne se recouvrent pas :
+//
+//   — le document complet, avec sa déclaration d'encodage, parce qu'un fichier
+//     ouvert depuis un disque ou un téléphone doit afficher ses accents. C'est
+//     la forme qui vit dans le dépôt, et celle qu'on envoie au patron ;
+//   — le fragment, pour la publication en artefact : l'hôte fournit alors sa
+//     propre enveloppe, et un document imbriqué dans un autre est invalide.
+//
+// Le patron a été bloqué par une page publiée qui lui demandait de se
+// connecter. Le fichier, lui, ne demande rien à personne : c'est la forme sûre,
+// donc la forme par défaut.
+const arguments_ = process.argv.slice(2);
+const fragment = arguments_.includes("--fragment");
+const cible = arguments_.find((a) => !a.startsWith("--")) ?? SORTIE_PAR_DEFAUT;
+
+const page = fragment
+  ? `<title>${TITRE}</title>\n${corpsDeLaPage}`
+  : `<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${TITRE}</title>
+</head>
+<body>
+${corpsDeLaPage}
+</body>
+</html>
+`;
+
+writeFileSync(cible, page);
+console.log(`${pages.length} maquettes fusionnées → ${cible} (${(page.length / 1024).toFixed(0)} Ko)`);

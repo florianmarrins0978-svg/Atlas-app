@@ -42,6 +42,14 @@ un second serveur, et construction possible sans les secrets de production.
 - **Le navigateur d'essai manque au conteneur.** `npm run verifier:connexion`
   tombe sur une pile Playwright illisible au lieu d'une phrase. À installer, et
   à faire dire une ligne claire quand il manque.
+  **Précision du 9 août** : dans l'espace de travail de l'agent, le navigateur
+  EST installé — mais sous `/opt/pw-browsers/chromium-1194`, alors que la
+  version de Playwright du dépôt en réclame un autre numéro de build. Le
+  message « Executable doesn't exist… run npx playwright install » envoie donc
+  chercher une installation absente au lieu d'une version qui ne correspond
+  pas. Contournement éprouvé : `chromium.launch({ executablePath:
+  "/opt/pw-browsers/chromium" })` — c'est ce que fait
+  `scripts/verifier-maquettes-page-unique.mjs`.
 - **Les PDF et la dictée ne sont pas mesurés** — le premier exige un vrai
   stockage, la seconde un appel facturé. Dit plutôt que supposé.
 
@@ -263,6 +271,38 @@ planning n'affiche rien tant qu'il n'est pas clôturé. Faut-il un rappel — «
 chantier était prévu hier » — sur l'écran d'accueil ? Aujourd'hui il bascule
 silencieusement dans « Terminés », ce qui est correct mais discret.
 
+### 0 decies. La nouvelle direction graphique — en attente de son choix
+
+Le 9 août au soir, le patron a trouvé l'écran refait « trop application créée
+en 2013 » et demandé quelque chose de **minimaliste et luxueux**, en s'appuyant
+sur `aman.com`. Huit maquettes ont suivi ; il a retenu la mise en page **« la
+colonne »** — la date à gauche, le chantier à droite — et gardé **trois** de ses
+déclinaisons : le repère, en plages, l'action au pouce.
+
+**Rien n'est codé.** L'application porte toujours la reproduction de sa première
+capture (`ARCHITECTURE.md` §46). Il n'a pas encore désigné laquelle des trois.
+
+Tout est dans `docs/maquettes/`, et d'un coup dans
+`docs/maquettes/toutes-les-maquettes.html` — engendrée, jamais éditée à la
+main : `node scripts/fusionner-maquettes.mjs`, puis
+`node scripts/verifier-maquettes-page-unique.mjs`.
+
+Ce que la bascule coûtera, quand il aura choisi : la charte de
+`src/lib/design-tokens.ts` change de fond en comble (ivoire au lieu du gris-vert,
+encre au lieu du vert pin pour l'action, bronze au lieu de l'or), et **tous** les
+écrans suivent — pas seulement Chantiers. À ne pas entamer écran par écran.
+
+### 0 duodecies. `test-devis-papier-e2e` échoue sur le banc local
+
+`TypeError: Cannot read properties of undefined (reading 'id')` — la suite
+cherche une ligne dans `devis` pour son chantier et n'en trouve aucune.
+
+**Ce n'est PAS la refonte** : vérifié en remisant les modifications et en
+rejouant la suite sur le code d'avant — même échec, à la même ligne. Le défaut
+lui est antérieur. Reste à savoir s'il tient au harnais (`run-e2e-tests` monte
+son propre serveur et son propre jeu de données) ou à la suite elle-même. À
+reproduire d'abord par `npm run test:e2e` complet avant de conclure.
+
 ### 0 bis. L'agent qui apprend — le vrai sujet
 
 Le tapis roulant (dictée → devis, d'un seul geste) est en place, et l'arrêt
@@ -381,6 +421,92 @@ Le jour où il aura deux vraies équipes distinctes, la suite est une table
 suffit ») et la **capacité en hommes** — `taille_equipe` est du texte libre, il
 faudrait le fiabiliser avant d'en faire une contrainte. Voir `ARCHITECTURE.md`
 §22 pour les arbitrages.
+
+### 7. Finir la refonte — l'ordre, les pièges, les valeurs
+
+**Ce point existe pour qu'une conversation neuve puisse reprendre le travail
+sans rien redemander.** Le CSS n'est pas recopié ici : il est dans la maquette
+publiée, `docs/maquettes/13-le-fil-quatre-couleurs.html`, qui est du HTML pur —
+ouvrez-la, lisez la feuille de style, elle fait foi pour le dessin.
+
+#### L'ordre, et où l'on en est
+
+| | Écran | État |
+|---|---|---|
+| — | Accueil, Planning, Terminés, Réglages, relevé de TVA | **fait** le 10 août 2026 |
+| — | Fiche chantier, entièrement | **fait** |
+| — | En-tête + boutons des six écrans d'étape | **fait**, par remplacement de motif |
+| — | Corps de Photos | **fait** |
+| ~~1~~ | ~~Corps de **Note vocale**~~ | **fait** le 10 août 2026 |
+| **2** | Corps d'**Informations** puis de **Prix** | à faire — les plus chargés |
+| **3** | Corps de **Devis**, **Export**, **Facture** | à faire |
+
+Il n'y a plus de motif commun à remplacer : chacun a sa structure, donc plus de
+codemod possible. C'est du cas par cas, **et chaque écran se regarde en capture
+avant d'être déclaré fait** — trois défauts réels de cette refonte n'ont été
+trouvés que là (`CLAUDE.md` §5).
+
+#### Les valeurs de la grammaire
+
+Elles ne s'inventent pas écran par écran : elles viennent des trois pièces
+partagées — `EnTeteEcran`, `PrimaryButton`, `src/lib/design-tokens.ts`.
+
+| Quoi | Valeur |
+|---|---|
+| Marge horizontale | **26 px** partout (`px-[26px]`), jamais 24 |
+| Rayon | **4 px** pour une plage, **5 px** pour une action. Rien au-delà |
+| Ombre | **aucune** (`cardShadow` vaut `"none"`) |
+| Titre d'écran | serif, **36 px**, `letter-spacing: -0.018em` |
+| Nom d'un chantier, intitulé d'étape | serif, **19 px** |
+| Libellé, état, action secondaire | capitales, **9,5 px**, `letter-spacing: 0.28em` |
+| Texte de situation (adresse, meta) | **11,5 px**, en `colors.muted` |
+| Séparateur | un cheveu d'1 px, `colors.line` |
+| Couleur d'attente | l'or, **et uniquement sur ce qui réclame un geste du patron** |
+
+#### Les pièges, tous rencontrés une fois
+
+1. **`npm run banc` ne rebâtit que si le commit a changé.** Tant que le travail
+   n'est pas commité, il ressert la version d'avant : on mesure du code qui
+   n'est pas sur le disque. `rm .next/atlas-version-batie.txt` force le rebâti.
+2. **`npm test` abîme le jeu de démonstration.** Après la batterie, la connexion
+   `demo@atlas.local` échoue jusqu'à un nouveau
+   `DATABASE_URL="$DATABASE_ADMIN_URL" npm run db:seed`.
+3. **Un bandeau posé dans l'en-tête écrase la liste.** Tout ce qui peut
+   apparaître (notifications, annonces) va DANS la zone qui défile.
+4. **`CarteGlissante` repeint ce qui est dessous** : sa couche porte le fond de
+   la page. Un trait dessiné sous une liste glissante disparaît — le dessiner
+   ligne par ligne.
+5. **`position: sticky` est borné par le PARENT**, pas par le conteneur qui
+   défile. Un élément collant enfermé dans un `div` d'une ligne ne colle que sur
+   cette ligne : utiliser un fragment.
+6. **Une feuille en `absolute` passe SOUS le bandeau et la bulle**, tous deux
+   fixés. Une feuille modale se pose en `fixed`, au-dessus de `z-40`.
+7. **Le navigateur d'essai** : `chromium.launch({ executablePath:
+   "/opt/pw-browsers/chromium" })`, sinon Playwright réclame une installation
+   qui est pourtant là (voir §0).
+
+#### Les deux réserves — ce qui ne doit PAS suivre
+
+- **Les maquettes `/design/*`** : découplées du produit depuis le 1er août,
+  elles ne sont pas des écrans du patron.
+- **Les pages que le CLIENT reçoit** — `devis/[jeton]`, `factures/[jeton]`, et
+  le PDF. Un devis n'est pas un écran : c'est la pièce que le client garde,
+  imprime et signe, et le patron a choisi sa terre cuite le 3 août **en
+  connaissance de cause**, puis l'a maintenue.
+
+**~~Question ouverte~~ — tranchée par le patron le 10 août 2026 :** *« il faut
+que toutes les écritures de l'appli changent de police, on harmonise le tout. »*
+Le devis et la facture suivent donc l'écran, et il n'y a plus d'exception de
+typographie nulle part.
+
+**Et la couleur suit aussi**, tranchée dans la foulée : *« oui, harmonise aussi
+le devis »*. La terre cuite disparaît, l'accent des documents devient l'or.
+`couleursDocument` reste néanmoins un jeton à part — papier et encre d'une
+pièce imprimée ne suivront pas forcément un futur écran sombre.
+
+Le **PDF**, lui, n'a jamais chargé Playfair ni Inter : il embarque Times et
+Helvetica, les polices standard du format — il était déjà d'accord avec ce que
+l'écran est devenu.
 
 ### 6. Rien ne mène le patron d'un écran au suivant
 

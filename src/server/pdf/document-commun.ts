@@ -378,8 +378,12 @@ export async function composerDocument(
   const colonneDroite = MARGE + (DROITE - MARGE) / 2 + 10;
   const largeurColonne = (DROITE - MARGE) / 2 - 10;
 
-  // Ces deux-là sont des `h3` dans le modèle : ils héritent donc de Playfair,
-  // là où les en-têtes de colonnes et les intertitres restent en Inter.
+  // Ces deux-là sont des `h3` dans le modèle : ils prennent donc la serif, là
+  // où les en-têtes de colonnes et les intertitres restent en linéale.
+  // **Le PDF n'a jamais chargé Playfair ni Inter** — il embarque Times et
+  // Helvetica, les polices standard du format. C'est ce qui l'a mis d'accord
+  // tout seul avec l'écran le 10 août 2026, quand l'application est passée aux
+  // polices de l'appareil.
   const etiquettePartie: Style = { taille: 8.5, police: ctx.serif, couleur: TITRE_PARTIE };
   ecrireEspace(ctx, "ÉMETTEUR", MARGE, y, APPROCHE_ETIQUETTE, etiquettePartie);
   ecrireEspace(ctx, "CLIENT", colonneDroite, y, APPROCHE_ETIQUETTE, etiquettePartie);

@@ -137,7 +137,7 @@ export default function FactureClient({
   if (!initialFacture) {
     return (
       <div className="mt-6 flex flex-col gap-4 px-6">
-        <div className="rounded-2xl px-5 py-6" style={{ backgroundColor: colors.card }}>
+        <div className="rounded-[4px] px-5 py-6" style={{ backgroundColor: colors.card }}>
           <p className="text-center text-[15px]" style={{ color: colors.ink }}>
             Le chantier est réalisé ?
           </p>
@@ -160,7 +160,7 @@ export default function FactureClient({
 
   return (
     <div className="mt-6 flex flex-col gap-4 px-6">
-      <div className="rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
+      <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
         <p className={smallCaps} style={{ color: colors.muted, marginBottom: 4 }}>
           Facture
         </p>
@@ -175,7 +175,7 @@ export default function FactureClient({
       </div>
 
       {initialFacture.lignes.length > 0 && (
-        <div className="rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
+        <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
           <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
             Reprise du devis
           </p>
@@ -203,7 +203,7 @@ export default function FactureClient({
         </div>
       )}
 
-      <div className="rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
+      <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
         <Ligne label="Total HT" valeur={initialFacture.totalHt} />
         <Ligne label={`TVA ${Number(initialFacture.tauxTva)} %`} valeur={initialFacture.totalTva} />
         <div className="mt-3 border-t pt-3 text-center" style={{ borderColor: colors.line }}>
@@ -243,7 +243,7 @@ export default function FactureClient({
       )}
 
       {emise ? (
-        <div className="rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
+        <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
           <p className="text-center text-[15px]" style={{ color: colors.ink }}>
             Facture {initialFacture.numeroCommercial} arrêtée.
           </p>
@@ -267,7 +267,7 @@ export default function FactureClient({
                 <a
                   href={adresseMessagerie}
                   onClick={() => marquerDepartMessagerie("facture", initialFacture.clientNom ?? "")}
-                  className="block rounded-2xl py-3 text-center text-[15px] font-medium"
+                  className="block rounded-[4px] py-3 text-center text-[15px] font-medium"
                   style={{ backgroundColor: colors.rust, color: colors.cream }}
                 >
                   Ouvrir le {canal === "sms" ? "SMS" : "e-mail"} tout prêt →

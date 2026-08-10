@@ -78,7 +78,7 @@ export default function ImportTarifs({ onImporte }: { onImporte: (tarifs: Tarif[
   }
 
   return (
-    <div className="mt-6 rounded-2xl p-4" style={{ backgroundColor: colors.card }}>
+    <div className="mt-6 rounded-[4px] p-4" style={{ backgroundColor: colors.card }}>
       <span className={smallCaps} style={{ color: colors.muted }}>
         J&apos;ai déjà mes prix ailleurs
       </span>
@@ -98,7 +98,7 @@ export default function ImportTarifs({ onImporte }: { onImporte: (tarifs: Tarif[
       />
       <label
         htmlFor="fichier-tarifs"
-        className="mt-3 inline-block cursor-pointer rounded-2xl px-4 py-2.5 text-[14px] font-medium text-white"
+        className="mt-3 inline-block cursor-pointer rounded-[4px] px-4 py-2.5 text-[14px] font-medium text-white"
         style={{ backgroundColor: colors.rust }}
       >
         {enCours ? "Lecture…" : "Choisir un fichier"}
@@ -182,7 +182,7 @@ export default function ImportTarifs({ onImporte }: { onImporte: (tarifs: Tarif[
               type="button"
               onClick={appliquer}
               disabled={enCours || (apercu.aCreer.length === 0 && apercu.aMettreAJour.length === 0)}
-              className="rounded-2xl py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
+              className="rounded-[4px] py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
               style={{ backgroundColor: colors.rust }}
             >
               {enCours ? "Enregistrement…" : "Enregistrer ces tarifs"}

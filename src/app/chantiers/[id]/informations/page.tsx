@@ -69,7 +69,7 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
         {/* Le bandeau n'a de sens que si une dictée a réellement alimenté cet
             écran : l'afficher sans transcription laisserait croire que ce qui
             suit vient d'une analyse. */}
-        <div className="mx-6 mt-5 rounded-2xl px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
+        <div className="mx-6 mt-5 rounded-[4px] px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
           <p className="text-[13px]" style={{ color: colors.rust }}>
             {/* Sans dictée, ne pas répéter l'invitation déjà portée par la
                 section Brouillon juste en dessous : dire simplement d'où

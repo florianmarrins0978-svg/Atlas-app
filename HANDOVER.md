@@ -45,6 +45,82 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**Les maquettes tiennent sur une seule page (9 août, tard).**
+`docs/maquettes/toutes-les-maquettes.html` porte toutes les propositions et un
+sommaire à ancres. **Ne pas la modifier à la main** : elle est engendrée par
+`node scripts/fusionner-maquettes.mjs` à partir des fichiers numérotés voisins,
+qui restent la source — une maquette neuve s'ajoute à la liste `MAQUETTES` du
+script, et ses identifiants de gabarit à `IDS_A_PREFIXER`. Après toute
+retouche, régénérer puis jouer `node scripts/verifier-maquettes-page-unique.mjs`
+— il clique chaque titre dans un navigateur.
+
+**Et surtout : ne pas repartager un sommaire de liens externes.** Une page
+publiée s'exécute confinée et ne peut naviguer nulle part ; le patron a cliqué
+huit fois dans le vide avant qu'on s'en aperçoive. Et lui envoyer les
+**fichiers** plutôt que des adresses : un artefact lui demande de se connecter,
+un fichier ne demande rien à personne.
+
+**L'écran des chantiers est celui qu'il a retenu (10 août 2026) — c'est fait.**
+Le fil, la perle, le trait d'or qui glisse, la feuille qui monte. **Avant d'y
+toucher, lire l'en-tête de `src/app/EcranChantiers.tsx`** : il liste les trois
+choses qu'il a explicitement refusées, et les remettre reviendrait à défaire ce
+qu'il a validé.
+
+**Deux pièges de ce lot, qui coûteront une heure à qui les redécouvre :**
+1. `npm run banc` **ne rebâtit que si le commit a changé**. Tant que le travail
+   n'est pas commité, il ressert la version d'avant — et l'on mesure du code qui
+   n'est pas sur le disque. `rm .next/atlas-version-batie.txt` force le rebâti.
+2. Les suites base **abîment le jeu de démonstration** : après `npm test`, la
+   connexion `demo@atlas.local` échoue jusqu'à un nouveau
+   `DATABASE_URL="$DATABASE_ADMIN_URL" npm run db:seed`.
+
+**Le chemin qui y a mené**, si la question se repose : `docs/maquettes/`, de la
+reproduction de sa première capture (01) jusqu'au fil en couleurs (11 à 13). La
+charte retenue est **Origine** — celle que l'application portait déjà.
+
+**Ce qu'il a explicitement refusé, et qui ne doit pas revenir :** le trait entre
+ATLAS et « Bonjour Florian », la boîte autour d'un chantier, et toute couleur
+qui ne désigne rien.
+
+**La grammaire est portée par TROIS pièces partagées** — les toucher change
+toute l'application d'un coup, et c'est voulu : `PrimaryButton` (27 écrans),
+`EnTeteEcran` (nouveau) et les jetons de `src/lib/design-tokens.ts`
+(`radius`, `cardShadow` qui vaut « none »). Ne pas recopier une allure dans un
+écran : l'ajouter à ces pièces.
+
+**Où en est la refonte, au 10 août au soir.** Faits : l'accueil, Planning,
+Terminés, Réglages, le relevé de TVA, la fiche chantier, et les six écrans
+d'étape (Photos, Note vocale, Prix, Devis, Export, Facture) — tous à
+`EnTeteEcran`, aux jetons resserrés et au bouton commun. **Ce qui reste :** le
+CORPS de ces six écrans (listes de photos, encarts de dictée, tableaux de prix)
+garde encore ses cartes et ses libellés d'avant. **La fiche
+chantier, elle, est faite** (10 août) : elle sert de modèle aux suivants —
+en-tête commun avec `retour` et `action`, intitulés en serif 19 px, lignes du
+dessous en capitales espacées, séparateurs d'un cheveu, aucune pilule.
+
+**Deux familles ne doivent PAS suivre**, et ce n'est pas un oubli : les
+maquettes `/design/*` (découplées du produit) et les pages que le CLIENT reçoit
+(`devis/[jeton]`, `factures/[jeton]`). Un devis n'est pas un écran.
+
+**Une règle de charte, née de la 12 et qui vaut pour tout l'écran :** une
+couleur qui ne veut rien dire est une couleur en trop. L'accent d'attente ne se
+pose que sur ce qui réclame un geste du patron — nulle part ailleurs.
+
+**Comment lui montrer une maquette. Deux règles, apprises à ses dépens.**
+
+1. **Une maquette ne doit contenir AUCUN script.** C'est la vraie cause de
+   *« Je ne peux pas ouvrir ça »*, répété trois fois : les maquettes 06, 10 et
+   11 engendraient leurs écrans en JavaScript, la 09 est du HTML pur — et la 09
+   est la seule qu'il ait ouverte, du premier coup, sur son téléphone. Son
+   lecteur n'exécute pas les scripts. La garantie « rien ne diverge d'un écran
+   à l'autre » se tient donc dans le script qui ÉCRIT la page
+   (`scripts/engendrer-maquette-couleurs.mjs`), pas dans la page.
+   **Les maquettes 03, 04, 05, 06 et 10 ont encore des scripts** : les
+   convertir avant de les lui renvoyer.
+2. **Lui envoyer aussi des images.** Une planche PNG s'affiche dans la
+   conversation sans rien à ouvrir. Le fichier HTML complète, l'adresse d'un
+   artefact ne suffit jamais.
+
 **L'écran Chantiers est refait d'après une maquette du patron (9 août).** Il a
 demandé une reproduction, pas une interprétation.
 

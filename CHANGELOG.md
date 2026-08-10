@@ -7,7 +7,408 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-10
+
+### Le devis rejoint la charte : la terre cuite s'efface
+
+*« Oui, harmonise aussi le devis. »* La teinte terre cuite des documents, tenue
+à part depuis le 3 août, disparaît. L'accent des intertitres « ÉMETTEUR » /
+« CLIENT » devient **l'or**.
+
+**Pourquoi l'or et pas le vert pin.** Le partage des rôles ne change pas : le
+vert porte ce qu'on FAIT, l'or ce qu'on LIT. Sur un devis imprimé il n'y a rien
+à faire — un intertitre est de la lecture pure.
+
+**`couleursDocument` reste, alors qu'il ne diverge plus**, et ce n'est pas un
+oubli : le papier et l'encre d'une pièce imprimée ne suivront pas forcément un
+futur changement d'écran. Le jour où l'application passera au sombre, c'est là
+qu'on empêchera le devis de partir en noir chez le client.
+
+Le changement traverse d'un seul point : l'écran du devis, celui de la facture
+et **les deux PDF** lisent tous ce jeton. Contrôles des deux PDF au vert.
+
+### Une seule écriture pour toute l'application
+
+*« Il faut que toutes les écritures de l'appli changent de police, on harmonise
+le tout. »* La réserve laissée ouverte la veille est levée : le devis et la
+facture suivent l'écran, et il n'y a plus d'exception de typographie nulle part.
+
+**Rien à changer pour cela, et c'est le point intéressant** — vérifié plutôt
+que supposé :
+
+- les pages du client (`devis/[jeton]`, `factures/[jeton]`) et l'écran des
+  documents légaux déclaraient déjà `ui-serif, Georgia, serif` en dur : la même
+  pile que celle adoptée le 10 août ;
+- le **PDF n'a jamais chargé Playfair ni Inter**. Il embarque Times et
+  Helvetica, les polices standard du format. Il était donc déjà d'accord avec ce
+  que l'écran est devenu.
+
+Un commentaire mentait sur ce dernier point — il annonçait un héritage de
+Playfair dans un fichier qui n'en a jamais vu. Corrigé : une documentation qui
+décrit une version disparue est pire qu'absente.
+
+**Ce qui ne change PAS, et qu'il ne faudra pas « corriger » :** la couleur terre
+cuite des documents. Le patron l'a choisie le 3 août les deux versions sous les
+yeux ; une police commune n'est pas une palette commune.
+
+### Le plan de fin de refonte, et le corps de Note vocale
+
+**`TODO.md` §7 existe désormais** : l'ordre des écrans restants, les valeurs
+exactes de la grammaire, les sept pièges déjà rencontrés une fois chacun, et
+les deux réserves — ce qui ne doit PAS suivre. Le CSS n'y est pas recopié : il
+vit dans `docs/maquettes/13-le-fil-quatre-couleurs.html`, du HTML pur qui fait
+foi. `PROJECT_STATE.md` dit où en est la refonte et renvoie là.
+
+**Pourquoi ce point plutôt qu'un mot dans une conversation :** une conversation
+neuve doit pouvoir reprendre le travail sur une seule ligne — « lis §7, fais
+l'étape 1 » — sans rien redemander au patron. C'est la règle du dépôt
+(`CLAUDE.md` §2), appliquée à ce chantier-ci.
+
+**Étape 1 faite : le corps de Note vocale.** Marges à 26 px, prises de son en
+serif 19 px avec leur situation en capitales, et les deux actions secondaires
+— « Ajouter un fichier audio », « Lancer la transcription » — sorties du corps
+de texte : à 14 px en graisse moyenne, elles étaient indiscernables d'une
+phrase.
+
+### La perle manquait, et le bandeau écrasait la liste
+
+*« Il manque la perle dorée qui glisse. »* Deux causes, l'une derrière l'autre.
+
+**La perle n'avait rien à désigner.** Le jeu de démonstration ne contenait
+aucun chantier attendant un geste du patron : l'unique devis envoyé n'avait
+jamais reçu de réponse. Or la perle ne se pose que sur ceux-là. Le seed fait
+désormais répondre le client — une demande de correction, motivée, comme la
+base l'exige (`envois_devis_correction_motivee_ck`). Une fonctionnalité qu'on
+ne peut pas voir est une fonctionnalité qu'on croit cassée.
+
+**Et le bandeau de notification écrasait la liste.** Placé dans l'en-tête, il
+mangeait deux cents pixels dès qu'il apparaissait : la liste se réduisait à une
+bande et la perle passait sous le bord. Les bandeaux défilent maintenant AVEC
+la liste. **C'est le même défaut qu'en juillet**, à un autre endroit — et
+comme en juillet, il n'était visible que sur une capture : la structure
+semblait juste, et les suites étaient vertes.
+
+Mesuré après correction : en-tête intact, liste de 463 px, et la perle qui
+s'accroche — elle monte de 864 à 639 px quand la liste défile de 260.
+
+### Les polices de l'artefact, puisque c'est ce qu'il a retenu
+
+*« T'es sûr que t'as pas modifié la typographie ? »* Les caractères n'avaient
+pas bougé — Playfair Display et Inter depuis le 3 août. Mais la maquette qu'il
+a validée était une **page autonome** : elle ne pouvait charger aucune police
+et empruntait donc celles de son iPhone. C'est ce dessin-là qu'il a choisi,
+sans le savoir, et il l'a redemandé : *« exactement la même chose […] même
+typographie ».*
+
+L'application ne télécharge donc plus aucune police :
+`ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", serif` pour les
+titres, `ui-sans-serif, -apple-system, …` pour le texte — les piles exactes de
+l'artefact. Mesuré sur le banc : **zéro fichier de police chargé**, contre deux
+avant.
+
+**Deux conséquences à connaître avant d'y revenir.** Plus de clignotement au
+remplacement de police, l'écran s'affiche d'un coup. Mais le dessin dépend
+désormais de l'appareil : Iowan Old Style sur iPhone, Georgia sur Windows, Noto
+Serif sur Android — proches, jamais identiques. C'est le prix de ce qu'il a
+choisi, et il est assumé.
+
+Les titres repassent en graisse 400 : la serif du système est déjà dense, et la
+forcer à 500 la fait synthétiser par le navigateur — un faux gras mou, là où la
+maquette montre un trait net.
+
+**Ce changement touche aussi le devis et la facture**, qui partagent ces deux
+jetons. Signalé au patron plutôt que décidé pour lui.
+
+### Le corps de l'écran Photos
+
+Premier corps repris, dans l'ordre du parcours. Les marges passent à 26 px
+comme partout — vingt-quatre contre vingt-six ne se voit pas seul, mais se voit
+dès qu'on descend de l'en-tête à la grille. Le compte prend la voix des
+libellés (« 6 PHOTOS », capitales espacées), les vignettes se resserrent de
+12 px à 10, et « Passer à la note vocale » rejoint les autres actions
+secondaires en capitales.
+
+**Un manque du banc, constaté et non corrigé :** les vignettes s'affichent
+cassées. Le jeu de démonstration insère des lignes de photos sans déposer les
+fichiers, et `/api/fichiers/…` répond 308. Ce n'est pas la refonte — c'est le
+seed. Noté ici pour que personne ne cherche du côté de l'affichage.
+
+### Les six écrans d'étape suivent, et par un codemod plutôt qu'à la main
+
+Photos, Note vocale, Prix, Devis, Export, Facture : les six portaient
+exactement le même en-tête — flèche de retour dans son bloc, nom du chantier en
+petites capitales vertes, titre à 32 px. Ils sont passés à `EnTeteEcran` d'un
+seul coup, par un remplacement de motif.
+
+**Pourquoi un codemod et pas six modifications.** Six retouches à la main, ce
+sont six occasions de laisser un pixel derrière soi — et l'écart ne se voit
+qu'en mettant les écrans côte à côte, ce que personne ne fait. Le motif a été
+reconnu six fois et remplacé six fois par la même chose : il n'y a rien à
+comparer.
+
+Les cinq écrans ont été parcourus dans un navigateur, un par un : titre juste,
+aucun débordement latéral, aucune erreur de script.
+
+### La fiche chantier passe à la nouvelle grammaire
+
+Le premier écran profond repris. Ce qui change tient en une idée : **la fiche
+se lit maintenant comme le fil**.
+
+- Le retour et « Fin de chantier » entrent dans l'en-tête commun. Ils vivaient
+  dans un bloc séparé, à `px-6` quand l'en-tête est à `px-[26px]` : deux marges
+  différentes sur le même écran, visibles dès qu'on les met côte à côte.
+- « Fin de chantier » perd sa pilule pour un rectangle cerné d'un cheveu.
+- Les étapes prennent la voix du fil : intitulé en serif 19 px, ligne du
+  dessous en capitales espacées. C'est la même information qu'un état de
+  chantier — elle doit se lire pareil, sinon l'œil réapprend à chaque écran.
+- La sortie de secours « rédiger le devis à la main » passe en capitales : les
+  libellés d'action secondaire ont désormais une seule voix.
+
+### La grammaire de l'écran retenu, portée à toute l'application
+
+*« Change le style complet de l'appli par ce style-là. »* Trois pièces
+partagées font l'essentiel, et c'est délibéré : recopier une allure écran par
+écran, c'est s'assurer qu'ils divergeront de nouveau au premier retouchage.
+
+- **`PrimaryButton`** — présent sur vingt-sept écrans. Rayon de 16 px à 5,
+  libellé en serif, hauteur resserrée. Un rectangle presque droit se lit comme
+  une pièce imprimée ; le même arrondi à 16 px se lit comme un bouton
+  d'application, et c'est ce dont le patron ne voulait plus.
+- **`EnTeteEcran`** (nouveau) — surtitre en capitales d'or, titre serif 36 px,
+  précision en capitales, et le cheveu qui FERME l'en-tête. Jamais de trait
+  au-dessus du titre : il l'a refusé sur l'accueil, et un écran qui en porterait
+  un jurerait avec les autres. Posé sur Planning, Terminés, Réglages, le relevé
+  de TVA et la fiche chantier.
+- **Les jetons** — `radius.card` 16 → 4, `radius.button` 20 → 5, et
+  `cardShadow` vaut désormais « aucune ombre ». La constante reste plutôt que
+  d'être retirée d'une soixantaine d'endroits : ce brassage aurait mêlé un
+  changement d'identité à un changement mécanique, chacun masquant les erreurs
+  de l'autre.
+
+**Et un balayage :** 143 coins arrondis ramenés à 4 px dans les écrans du
+patron. Deux familles en sont exclues, et ce n'est pas un oubli — les maquettes
+`/design/*`, découplées du produit, et **les pages que le CLIENT reçoit**
+(`devis/[jeton]`, `factures/[jeton]`). Un devis n'est pas un écran : c'est la
+pièce que son client garde, imprime et signe, et elle porte sa propre teinte
+depuis le 3 août.
+
+**Ce qui reste dans l'ancienne grammaire :** l'intérieur des écrans profonds —
+photos, dictée, prix, export, facture. Leur en-tête et leurs boutons ont suivi ;
+leurs listes et leurs encarts non.
+
+### L'écran des chantiers, tel qu'il l'a retenu
+
+Après une soirée de maquettes, le patron s'est arrêté sur une version et l'a
+donnée à coder. Elle est en place.
+
+**Ce qui change, et ce que chaque changement évite :**
+
+- **Le fil remplace les cartes.** Un trait vertical traverse la liste et porte
+  les jours. Une liste de chantiers n'est pas un tableau de bord : ce qui doit
+  se voir, c'est la suite des jours, pas le contenant. Quatre chantiers
+  tiennent maintenant à l'écran là où il y en avait trois.
+- **La perle, seul point de couleur.** Elle se colle à mi-hauteur et ne se pose
+  que sur le PREMIER chantier qui attend un geste du patron. Règle de charte
+  qui vaut désormais partout : *une couleur qui ne veut rien dire est une
+  couleur en trop*.
+- **Plus de cheveu sous ATLAS**, refusé explicitement. Seul reste celui qui
+  FERME l'en-tête, au-dessus de « Nouveau chantier » — celui-là, il l'avait
+  demandé.
+- **Le bandeau du bas perd son aplat vert** au profit d'un trait d'or qui
+  glisse d'un onglet à l'autre. Le vert plein était un second bloc de couleur
+  sur un écran qui n'en veut qu'un.
+- **« Nouveau chantier » monte en feuille** : la liste recule, s'assombrit, le
+  formulaire arrive devant. La route `/chantiers/nouveau` reste — les suites y
+  vont directement, et un lien profond doit continuer d'ouvrir un écran entier.
+  Le formulaire est extrait une fois et servi aux deux endroits : deux copies
+  auraient divergé au premier champ ajouté.
+
+**Trois défauts trouvés en REGARDANT, pas en testant.**
+
+1. **Le fil ne s'affichait pas.** Posé une seule fois sous la liste, il était
+   repeint par la couche qui glisse pour découvrir la corbeille — celle-ci
+   porte le fond de la page. Il est désormais dessiné ligne par ligne ; bout à
+   bout, les segments n'en font qu'un.
+2. **La perle n'aurait pas pu se coller.** Elle était fille d'un conteneur haut
+   d'une seule ligne : `position: sticky` s'y serait arrêté au bout de 97 px.
+   Un fragment à la place du conteneur la rend fille directe du fil.
+3. **La feuille passait sous le bandeau et sous la bulle de l'assistant**, tous
+   deux fixés au-dessus. Sa dernière ligne — celle qui prévient que les
+   coordonnées ne seront plus modifiables — était cachée derrière les onglets.
+
+**Et un piège du banc, à retenir.** `npm run banc` ne rebâtit que si le commit
+a changé : tant que le travail n'est pas commité, il ressert la version
+précédente. Une mesure a été prise sur du code qui n'était pas celui du disque,
+et le fil « absent » l'était seulement parce qu'il n'avait jamais été bâti.
+Supprimer `.next/atlas-version-batie.txt` force la reconstruction.
+
+**Ce qui a disparu, et pourquoi ce n'est pas une perte.** La carte « Équipe »
+au pied de la liste menait aux Réglages, qui sont un onglet du bandeau ; et la
+cloche de l'en-tête n'avait jamais eu de comportement. Les notifications, elles,
+restent affichées sous le titre.
+
+**Éprouvé** : 99 suites base au vert, la suite bout en bout de l'accueil, et la
+connexion réelle derrière une origine étrangère. Le compteur de l'accueil porte
+désormais son nombre en attribut (`data-atlas="compteur"`) — un contrôle
+accroché au libellé cassait à chaque refonte sans qu'aucun défaut n'existe.
+
+---
+
 ## 2026-08-09
+
+### Un sommaire de maquettes qui ne s'ouvrait pas, et la page unique qui le remplace
+
+Les huit maquettes de l'écran Chantiers avaient été partagées comme huit
+adresses séparées, avec un sommaire qui pointait dessus. **Le sommaire ne
+s'ouvrait pas** : une page publiée s'exécute confinée et ne peut naviguer vers
+aucune autre adresse. C'est le patron qui l'a découvert, en cliquant — encore
+un parcours transmis sans avoir été parcouru.
+
+`scripts/fusionner-maquettes.mjs` engendre désormais **une seule page** qui
+porte les huit maquettes et un sommaire à ancres : cliquer un titre y descend,
+sans jamais quitter la page. Les huit fichiers restent la source ; la page
+unique est un produit qu'on régénère, donc elle ne peut pas diverger d'eux.
+
+**Pourquoi un script et pas un copier-coller.** Les huit maquettes ont été
+écrites séparément et partagent les mêmes noms de classes (`.ecran`, `.prop`,
+`.nom`) et les mêmes identifiants (`#modele`, `#duo`). Concaténées, la charte
+de l'une repeindrait l'autre. Chaque feuille est donc confinée sous un ancêtre
+unique — `:root`, `html` et `body` deviennent `#s01` … `#s08` — et chaque
+script d'origine reçoit un `document` restreint à sa section. Le code des
+scripts n'a pas été réécrit : il ne peut donc pas s'écarter de l'original.
+
+`scripts/verifier-maquettes-page-unique.mjs` **clique les huit titres** dans un
+navigateur et vérifie qu'on arrive sur l'écran. Confronté à trois états
+dégradés, il nomme le bon coupable à chaque fois : une ancre morte, un lien
+vers l'extérieur — le défaut d'origine, précisément — et une feuille de style
+qui ne s'applique plus.
+
+### Le cheveu sous ATLAS tombe, et le fil part en quatre couleurs
+
+Le patron garde l'écran aminci et tranche une chose : **plus de trait entre
+ATLAS et « Bonjour Florian »**. Celui qui ferme l'en-tête, au-dessus de
+« Nouveau chantier », reste — c'est lui qu'il avait demandé deux échanges plus
+tôt. L'en-tête respire donc d'un seul tenant, du nom jusqu'à ce trait.
+
+`scripts/engendrer-maquette-fil.mjs` écrit les douze écrans — trois formes de
+liste × quatre chartes (Origine, Ivoire, Sylve, Océan) — **en HTML pur**. Le
+contrôle les mesure JavaScript coupé : douze écrans, quatre fonds distincts,
+aucun cheveu sous ATLAS, aucun pied hors du téléphone.
+
+### Enlever la boîte : trois tentatives sur Origine
+
+Le patron demande des encadrés *« plus fins, moins larges »*, et surtout de
+**tenter quelque chose** pour que l'application soit moderne et unique — sur un
+seul coloris.
+
+Les encadrés passent de 16 à 26 px des bords et de 18 à 12 px de hauteur
+intérieure : **quatre chantiers tiennent là où il y en avait trois**. Mais la
+tentative est ailleurs. Une liste de chantiers n'est pas un tableau de bord :
+ce qui doit se voir, c'est la suite des jours, pas le contenant. Les trois
+variantes en enlèvent chacune un peu plus.
+
+- **L'ourlet** — la plage devient un simple cheveu vertical, qui passe à l'or
+  *uniquement* là où un geste est dû. La couleur cesse de décorer : elle
+  désigne.
+- **Le fil** — plus aucune boîte : un trait vertical traverse la liste et porte
+  les jours, comme une tige. Une seule perle d'or s'y pose, sur le chantier qui
+  attend une réponse.
+
+Une règle en sort, qui vaudra pour tout l'écran : **une couleur qui ne veut
+rien dire est une couleur en trop.**
+
+### La vraie raison pour laquelle il ne pouvait rien ouvrir : le JavaScript
+
+Trois fois : *« Je ne peux pas ouvrir ça. »* J'ai d'abord accusé la connexion
+aux artefacts, puis la taille des écrans. C'était ni l'un ni l'autre.
+
+**La maquette 09 s'est affichée du premier coup sur son téléphone** — il en a
+renvoyé la capture. Les 06, 10 et 11, non. La seule différence entre elles :
+09 est du HTML pur, les autres engendrent leurs écrans en JavaScript depuis un
+gabarit cloné. Son lecteur n'exécute pas les scripts, et il recevait donc une
+page vide.
+
+La maquette 11 est réécrite **sans une ligne de script** :
+`scripts/engendrer-maquette-couleurs.mjs` dépose les seize écrans en clair. La
+promesse « rien ne change sauf la couleur » n'est pas abandonnée, elle change
+de gardien — elle passe du navigateur au script qui écrit la page. Le contrôle
+charge désormais la page **JavaScript coupé** : il reproduit ses conditions,
+pas les miennes.
+
+La leçon vaut au-delà des maquettes : trois correctifs de suite ont réparé une
+panne imaginée parce que personne n'était allé chercher ce qui différait
+vraiment entre le cas qui marche et celui qui échoue.
+
+### L'écran retenu seul, et un contrôle qui accusait à tort
+
+**Corrigé dans la foulée : la taille.** Le patron a renvoyé sa capture de la
+maquette 09 — *« c'est ce modèle-là »*. Le dessin était le bon ; ce sont les
+téléphones de 300 px sur une grille de quatre qui étaient illisibles sur son
+écran. La maquette 11 reprend donc les mesures exactes de 09 (390 px, corps à
+16 px, titre à 40 px) et lui part en **une image par coloris**, pas en
+planches. Une maquette qu'il doit pincer pour lire n'a pas été montrée.
+
+Le patron tranche entre les deux écrans : ce sera **le trait seul**. La
+maquette 11 le montre dans les seize chartes, quatre par rangée — une seule
+variante permet de comparer les couleurs d'un coup d'œil au lieu de faire
+défiler.
+
+Ses couleurs sont **recopiées de la maquette 10 par un script**, jamais à la
+main : deux nuanciers écrits séparément finissent par diverger, et on ne sait
+plus lequel fait foi.
+
+**Un contrôle qui désignait le mauvais coupable.** La fusion refusait la
+maquette 11 avec « script présent mais gabarit non préfixé », alors que tout
+était préfixé — le contrôle supposait que tout gabarit s'appelle `modele`.
+Il lit désormais les appels réels du script et vérifie que chaque identifiant
+cherché existe, préfixé, dans le corps. Éprouvé dans les deux sens : un
+identifiant absent de la liste de préfixage, et un gabarit renommé.
+
+**Et il ne faut plus lui envoyer d'adresses.** Trois fois de suite il n'a pas
+pu ouvrir un artefact. Ce qui marche, ce sont **les images** : elles
+s'affichent dans la conversation, sans rien à ouvrir ni à quoi se connecter.
+Les maquettes lui partent désormais en planches PNG, l'adresse seulement en
+complément.
+
+### Les deux écrans retenus, déclinés en seize chartes
+
+Le patron valide les deux écrans de la maquette 09 et demande à les voir dans
+toutes les couleurs déjà employées, plus des chartes franchement colorées :
+*« tu peux même rajouter plus que trois couleurs »*.
+
+Seize chartes, deux écrans chacune, engendrés depuis un gabarit unique — les
+neuf du nuancier, plus sept nouvelles. Ces sept-là portent **cinq** teintes au
+lieu de trois : la cinquième, `--e-attente`, ne colore que les états qui
+réclament un geste de lui. C'est la seule couleur de l'écran qui veuille dire
+quelque chose ; sans cette règle, ajouter des teintes rend l'écran bavard —
+exactement le défaut qu'il reproche aux tableaux de bord.
+
+Un contrôle mesure, pour chacun des trente-deux écrans, que la barre du bas
+tient dans le téléphone. La leçon du 9 août : c'est en lisant une BOÎTE, pas
+en regardant une image, qu'on avait trouvé la barre de 425 px sur 393.
+
+### Le premier écran de « Le calme × Aman », avec deux emprunts
+
+Le patron reprend le premier des deux écrans de la maquette 05 et demande deux
+choses précises : le **pied d'Aman** (un cheveu au-dessus, l'onglet actif
+souligné de bronze, plus de plage sous le texte) et le **trait qui ferme
+l'en-tête**, comme dans les maquettes « colonne ».
+
+Sa phrase ne tranchait pas si ce trait vient seul ou avec le chapeau entier de
+la colonne — « En cours » et le compte sur une même ligne. Les deux sont
+proposés côte à côte plutôt que d'en deviner un : `docs/maquettes/09`.
+
+### Les maquettes redeviennent des fichiers qu'on ouvre sans se connecter
+
+Le patron clique l'artefact : on lui demande de se connecter, il ne voit rien.
+Une adresse publiée n'est pas un fichier — et un visuel qu'il ne peut pas
+ouvrir n'existe pas.
+
+Les maquettes du dépôt étaient de simples fragments : ni doctype, ni
+déclaration d'encodage. Ouvertes depuis un disque ou un téléphone, leurs
+accents pouvaient tomber. Ce sont désormais des **documents complets**, qu'on
+lui envoie directement. La forme « fragment », nécessaire à la publication en
+artefact, n'est plus qu'une sortie du script : `--fragment`.
 
 ### L'application ne pouvait pas être bâtie — donc personne ne connaissait sa vitesse
 

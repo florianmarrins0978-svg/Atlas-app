@@ -217,7 +217,7 @@ function Contenu({
                   type="button"
                   onClick={() => basculerJour(jour)}
                   aria-pressed={choisi}
-                  className="flex items-center justify-between rounded-xl px-4 py-3 text-[15px]"
+                  className="flex items-center justify-between rounded-[4px] px-4 py-3 text-[15px]"
                   style={{
                     backgroundColor: choisi ? colors.rustTint : colors.card,
                     color: colors.ink,
@@ -271,7 +271,7 @@ function Contenu({
             <p className={smallCaps} style={{ color: colors.muted, marginBottom: 6 }}>
               Ou une autre date
             </p>
-            <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: colors.card }}>
+            <div className="rounded-[4px] px-3 py-3" style={{ backgroundColor: colors.card }}>
               <Calendrier
                 debut={preparation.horizon.debut}
                 fin={preparation.horizon.fin}
@@ -329,7 +329,7 @@ function Contenu({
                     type="button"
                     onClick={() => basculerJour(jour)}
                     aria-pressed
-                    className="flex items-center justify-between rounded-xl px-4 py-3 text-[15px]"
+                    className="flex items-center justify-between rounded-[4px] px-4 py-3 text-[15px]"
                     style={{ backgroundColor: colors.rustTint, color: colors.ink }}
                   >
                     <span>{jourLisible(jour)}</span>
@@ -359,14 +359,14 @@ function Contenu({
         <button
           onClick={confirmer}
           disabled={enCours || !preparation || !!blocage || selection.length === 0}
-          className="rounded-2xl py-3.5 text-[16px] font-medium text-white disabled:opacity-50"
+          className="rounded-[4px] py-3.5 text-[16px] font-medium text-white disabled:opacity-50"
           style={{ backgroundColor: colors.rust }}
         >
           {enCours ? "Envoi…" : "Envoyer le devis"}
         </button>
         <button
           onClick={onFermer}
-          className="rounded-2xl py-3.5 text-[15px] font-medium"
+          className="rounded-[4px] py-3.5 text-[15px] font-medium"
           style={{ color: colors.muted }}
         >
           Annuler

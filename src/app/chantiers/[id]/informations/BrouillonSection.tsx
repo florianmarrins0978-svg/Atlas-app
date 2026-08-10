@@ -213,7 +213,7 @@ export default function BrouillonSection({
 
       {/* Recopie, et non analyse : le patron doit savoir ce qu'il relit. */}
       {contenu && lecture === "litterale" && (
-        <div className="rounded-2xl px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
+        <div className="rounded-[4px] px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
           <p className="text-[13px]" style={{ color: colors.rust }}>
             {MENTION_LITTERALE}
           </p>
@@ -223,7 +223,7 @@ export default function BrouillonSection({
       {/* Brouillon issu d'une transcription qui n'est plus celle du chantier :
           signalé, jamais supprimé — il peut porter des corrections humaines. */}
       {contenu && brouillonInitial?.fraicheur.obsolete && (
-        <div className="rounded-2xl px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
+        <div className="rounded-[4px] px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
           <p className="text-[13px]" style={{ color: colors.rust }}>
             {brouillonInitial.fraicheur.message}
           </p>
@@ -321,7 +321,7 @@ export default function BrouillonSection({
                 type="button"
                 onClick={confirmer}
                 disabled={enCours}
-                className="rounded-2xl py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
+                className="rounded-[4px] py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
                 style={{ backgroundColor: colors.rust }}
               >
                 {enCours ? "Application…" : "Confirmer et ajouter au chantier"}
@@ -360,7 +360,7 @@ export default function BrouillonSection({
             <div className="flex flex-col gap-2.5">
               <button
                 onClick={() => setConflit(null)}
-                className="rounded-2xl py-3.5 text-[16px] font-medium"
+                className="rounded-[4px] py-3.5 text-[16px] font-medium"
                 style={{ backgroundColor: colors.card, color: colors.ink }}
               >
                 Conserver mes corrections
@@ -370,7 +370,7 @@ export default function BrouillonSection({
                   setConflit(null);
                   generer(true);
                 }}
-                className="rounded-2xl py-3.5 text-[15px] font-medium"
+                className="rounded-[4px] py-3.5 text-[15px] font-medium"
                 style={{ color: colors.alert }}
               >
                 Remplacer par la nouvelle analyse
@@ -389,7 +389,7 @@ export default function BrouillonSection({
 // et ferait passer une proposition pour une donnée validée.
 function Carte({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl p-4" style={{ backgroundColor: colors.card }}>
+    <div className="flex flex-col gap-3 rounded-[4px] p-4" style={{ backgroundColor: colors.card }}>
       {children}
     </div>
   );
@@ -423,7 +423,7 @@ function ChampBrouillon({
         aria-label={`${label} (brouillon)`}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onCommit}
-        className="rounded-2xl border-0 px-4 py-3 outline-none"
+        className="rounded-[4px] border-0 px-4 py-3 outline-none"
         style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
       />
     </label>
@@ -458,7 +458,7 @@ function ListeLignes({
         </p>
       )}
       {lignes.map((ligne, i) => (
-        <div key={i} className="flex flex-col gap-1.5 rounded-2xl p-3" style={{ backgroundColor: colors.cream }}>
+        <div key={i} className="flex flex-col gap-1.5 rounded-[4px] p-3" style={{ backgroundColor: colors.cream }}>
           <div className="flex items-center gap-2">
             <input
               value={ligne.libelle}
@@ -466,7 +466,7 @@ function ListeLignes({
               aria-label={`${titre} ${i + 1}`}
               onChange={(e) => onChange(i, "libelle", e.target.value)}
               onBlur={onCommit}
-              className="min-w-0 flex-1 rounded-xl border-0 px-3 py-2 outline-none"
+              className="min-w-0 flex-1 rounded-[4px] border-0 px-3 py-2 outline-none"
               style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
             />
             {!lectureSeule && (
@@ -489,7 +489,7 @@ function ListeLignes({
               aria-label={`Quantité ${titre} ${i + 1}`}
               onChange={(e) => onChange(i, "quantite", e.target.value)}
               onBlur={onCommit}
-              className="rounded-xl border-0 px-3 py-2 outline-none"
+              className="rounded-[4px] border-0 px-3 py-2 outline-none"
               style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "15px" }}
             />
             <input
@@ -499,7 +499,7 @@ function ListeLignes({
               aria-label={`Unité ${titre} ${i + 1}`}
               onChange={(e) => onChange(i, "unite", e.target.value)}
               onBlur={onCommit}
-              className="rounded-xl border-0 px-3 py-2 outline-none"
+              className="rounded-[4px] border-0 px-3 py-2 outline-none"
               style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "15px" }}
             />
           </div>
@@ -510,7 +510,7 @@ function ListeLignes({
             aria-label={`Description ${titre} ${i + 1}`}
             onChange={(e) => onChange(i, "description", e.target.value)}
             onBlur={onCommit}
-            className="rounded-xl border-0 px-3 py-2 outline-none"
+            className="rounded-[4px] border-0 px-3 py-2 outline-none"
             style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "15px" }}
           />
           {ligne.aConfirmer && (

@@ -15,7 +15,7 @@ export default function Erreur({ reset }: { error: Error & { digest?: string }; 
         </h1>
       </div>
       <div className="px-6 pt-6">
-        <div className="rounded-2xl px-5 py-6 text-center" style={{ backgroundColor: colors.card }}>
+        <div className="rounded-[4px] px-5 py-6 text-center" style={{ backgroundColor: colors.card }}>
           <p className="text-[14px]" style={{ color: colors.muted }}>
             Impossible de charger le prix pour l&apos;instant.
           </p>

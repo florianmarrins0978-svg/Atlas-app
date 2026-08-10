@@ -22,20 +22,29 @@
   --color-line: var(--line);
   --color-ok: var(--ok);
   --color-warn: var(--warn);
-  /* Les deux polices d'Arborea. `next/font` les rapatrie au build et les sert
-     depuis notre propre origine : indispensable ici, où la politique de
-     sécurité (`default-src 'self'`) interdirait de les charger chez Google. */
-  --font-display: var(--police-titres), Georgia, "Times New Roman", serif;
-  --font-body: var(--police-texte), system-ui, -apple-system, sans-serif;
+  /* ─── Les polices de l'écran retenu, posées le 10 août 2026 ──────────────
+     Le patron a comparé sa maquette et l'application : *« t'es sûr que t'as pas
+     modifié la typographie ? »* Les caractères n'avaient pas bougé — mais la
+     maquette, page autonome, ne pouvait charger aucune police et empruntait
+     donc celles de son iPhone. C'est CE dessin-là qu'il a retenu, pas Playfair.
+
+     Deux conséquences qu'il faut connaître avant d'y revenir :
+       · plus aucune police n'est téléchargée — l'application s'affiche
+         instantanément, sans le clignotement du remplacement de police ;
+       · le dessin dépend de l'appareil. `ui-serif` donne Iowan Old Style sur
+         iPhone, Georgia sur Windows, Noto Serif sur Android : proches, pas
+         identiques. C'est le prix de ce qu'il a choisi, et il est assumé. */
+  --font-display: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  --font-body: ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", "IBM Plex Mono", Menlo, Consolas, monospace;
 }
 
-/* Arborea resserre ses titres au lieu de les condenser : Playfair Display n'a
-   pas de graisse étroite, et `font-stretch:condensed` la ferait synthétiser par
-   le navigateur — un faux gras large et mou. */
+/* Les titres restent en graisse normale : la serif du système est déjà dense,
+   et la passer en 500 la ferait synthétiser par le navigateur — un faux gras
+   large et mou, là où la maquette montre un trait net. */
 .font-display {
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: -0.01em;
 }
 
@@ -45,7 +54,7 @@ body {
 }
 h1, h2, h3 {
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: -0.01em;
 }
 
@@ -75,18 +84,105 @@ body {
 }
 
 /* La barre de navigation est en position fixe : les marges du body ne
- * l'atteignent pas. Elle porte donc la sienne. */
-.atlas-nav-basse {
-  /* La pilule flotte : la marge du bas porte l'indicateur d'accueil de l'iPhone
-     EN PLUS du retrait visuel. Sans le `env()`, la barre repose sur le trait
-     blanc et l'onglet actif devient impossible à viser. */
-  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+ * l'atteignent pas. Elle porte donc la sienne.
+ *
+ * **Refaite le 10 août 2026, d'après la version retenue par le patron.** Elle
+ * n'est plus une pilule flottante mais un bandeau plein, cerné d'un seul cheveu
+ * en haut, dont l'onglet courant est souligné d'un trait d'or qui GLISSE d'un
+ * onglet à l'autre. Le trait qui se déplace remplace l'aplat vert : il dit où
+ * l'on est sans poser un second bloc de couleur sur l'écran.
+ *
+ * `--atlas-barre` est sa hauteur totale, indicateur d'accueil compris. Une
+ * seule source : la marge que le contenu réserve et la hauteur que l'écran des
+ * chantiers retranche viennent toutes deux d'ici. Les tenir séparément, c'est
+ * s'assurer qu'un jour l'une bougera sans l'autre. */
+:root {
+  --atlas-barre: calc(4.25rem + env(safe-area-inset-bottom));
 }
 
-/* Et le contenu doit réserver la hauteur de la barre AINSI grandie, sinon la
- * dernière carte de chaque liste passe dessous. */
+.atlas-nav-basse {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Le contenu réserve la hauteur de la barre, sinon la dernière carte de chaque
+ * liste passe dessous. */
 .atlas-contenu {
-  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  padding-bottom: var(--atlas-barre);
+}
+
+/* --- L'écran des chantiers : une hauteur fixe, une liste qui défile dedans --
+ *
+ * C'est ce qui rend possible le fil et sa perle. L'en-tête ne bouge pas, la
+ * liste glisse dessous, et la perle peut se coller à mi-hauteur — impossible si
+ * c'est la page entière qui défile.
+ *
+ * La hauteur retranche la barre ET la marge haute de sécurité : le `body` porte
+ * déjà `padding-top: env(safe-area-inset-top)`, donc `100dvh` déborderait
+ * d'autant. */
+.atlas-ecran {
+  height: calc(100dvh - var(--atlas-barre) - env(safe-area-inset-top));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* La zone qui défile. Le dégradé d'opacité aux deux bouts évite la coupure
+ * nette : une ligne tranchée au ras du bord se lit comme un défaut d'affichage,
+ * un fondu se lit comme « ça continue ». */
+.atlas-fil-defile {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scroll-snap-type: y proximity;
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(180deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+}
+
+/* La marge de fin est portée par le FIL, jamais par le cadre qui défile : posée
+ * sur le cadre, elle rétrécit la zone de défilement et la perle se colle trop
+ * haut. Le défaut est invisible tant qu'on ne mesure pas. */
+.atlas-tige {
+  position: relative;
+  padding-bottom: 3.5rem;
+}
+/* Le fil lui-même est dessiné ligne par ligne (`src/app/ListeChantiers.tsx`)
+ * et non ici : la couche qui glisse pour découvrir la corbeille porte le fond
+ * de la page, et un trait posé sous elle disparaît. Le défaut ne se voit que
+ * sur une capture — la structure, elle, semblait juste. */
+
+/* `scroll-snap-stop: always` : un geste vif avance d'un chantier, et d'un seul.
+ * Sans lui il en saute trois, et la perle paraît sauter avec eux. */
+.atlas-brin {
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+/* La perle est posée dans le flux juste avant le premier chantier qui attend un
+ * geste du patron : c'est là qu'elle se tient au repos. Dès que ce chantier
+ * remonte, elle s'accroche à mi-hauteur et les autres défilent dessous. */
+.atlas-perle {
+  position: sticky;
+  top: calc(50% - 23px);
+  height: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Le chantier au centre est net, les autres s'effacent. Sous `@supports` : là
+ * où la timeline de défilement manque, tout reste lisible à pleine opacité —
+ * une dégradation qui n'enlève rien. */
+@supports (animation-timeline: view()) {
+  .atlas-fil-defile .atlas-brin {
+    animation: atlas-mettre-en-avant linear both;
+    animation-timeline: view();
+    animation-range: cover 12% cover 88%;
+  }
+  @keyframes atlas-mettre-en-avant {
+    0%, 100% { opacity: 0.45; }
+    44%, 56% { opacity: 1; }
+  }
 }
 
 /* Ticket / work-order card signature: dashed perforation edge */
