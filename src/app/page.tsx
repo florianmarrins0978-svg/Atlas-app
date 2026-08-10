@@ -1,6 +1,5 @@
 import { chantierEnCours, getStatutAffiche, statutLabel, type ChantierStatut } from "@/lib/chantier-etat";
 import { ongletDuChantier } from "@/lib/onglet-chantier";
-import { nombreEnLettres } from "@/lib/nombre-en-lettres";
 import { auth } from "@/auth";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
@@ -53,7 +52,6 @@ export default async function ChantiersPage() {
   const avecStatut = chantiers
     .map((c) => ({ ...c, statut: getStatutAffiche(c) }))
     .filter((c) => ongletDuChantier(c) === "chantiers");
-  const enCours = avecStatut.filter((c) => chantierEnCours(c.statut)).length;
 
   const brins: BrinChantier[] = avecStatut.map((c) => {
     const { jour, mois } = jourEtMois(c.majAt);
@@ -68,14 +66,23 @@ export default async function ChantiersPage() {
       // c'est la forme retenue, et elle tient là où deux lignes débordaient.
       etat: `${statutLabel[c.statut]} · ${photos}`,
       attend: ETATS_EN_ATTENTE.includes(c.statut),
+      // Le décompte doit suivre un retrait sans redemander la page : l'écran
+      // ne peut le faire que s'il sait, ligne par ligne, laquelle compte.
+      enCours: chantierEnCours(c.statut),
+      // Un chantier facturé ne devrait pas être ici — il vit sous « Terminés ».
+      // Le refus voyage quand même avec la donnée : c'est le serveur qui le
+      // prononce (`SuppressionChantierRefusee`), et l'écran doit pouvoir le
+      // dire AVANT le geste plutôt que de laisser la ligne partir puis revenir.
+      refusRetrait:
+        c.statut === "facture"
+          ? "Ce chantier est facturé : sa facture figure au relevé de TVA."
+          : undefined,
     };
   });
 
   return (
     <EcranChantiers
       prenom={prenom}
-      compte={enCours}
-      compteEnLettres={nombreEnLettres(enCours)}
       chantiers={brins}
       bandeaux={
         <>

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { listerPrestations } from "@/server/repositories/prestations";
@@ -38,39 +39,24 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-16">
-        <div className="flex items-center justify-between px-6 pt-8">
-          <a
-            href={`/chantiers/${id}`}
-            aria-label="Retour à la fiche du chantier"
-            className="flex h-10 w-10 items-center justify-center rounded-full"
-            style={{ backgroundColor: colors.rustTint }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
-              <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </a>
-          {/* Lien masqué sans transcription : il ne mènerait qu'à un écran vide. */}
-          {transcriptionDisponible && (
-            <a href={`/chantiers/${id}/transcription`} className="text-[14px] font-medium" style={{ color: colors.rust }}>
-              Voir la transcription
-            </a>
-          )}
-        </div>
+        {/* Cet écran était le seul des sept à s'être dessiné son propre en-tête :
+            les six autres sont passés à `EnTeteEcran` le 10 août, il avait été
+            oublié. Son titre tenait en 32 px, son surtitre en vert pin —
+            l'écart sautait aux yeux dès qu'on venait de la fiche du chantier. */}
+        <EnTeteEcran
+          retour={{ href: `/chantiers/${id}`, libelle: "Retour à la fiche du chantier" }}
+          surtitre={chantier.nom}
+          titre="Informations"
+        />
 
-        <div className="px-6 pt-5">
-          <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-            {chantier.nom}
-          </p>
-          <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
-            Informations
-          </h1>
-        </div>
-
-        {/* Le bandeau n'a de sens que si une dictée a réellement alimenté cet
-            écran : l'afficher sans transcription laisserait croire que ce qui
-            suit vient d'une analyse. */}
-        <div className="mx-6 mt-5 rounded-[4px] px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
-          <p className="text-[13px]" style={{ color: colors.rust }}>
+        {/* D'où viennent les informations affichées — désormais une phrase de
+            situation, et non plus un encart teinté.
+            Le teinté disait quelque chose qu'il ne voulait pas dire : la couleur
+            ne désigne ici aucun geste à faire, et une couleur qui ne désigne
+            rien est une couleur en trop (`HANDOVER.md`, règle née de la
+            maquette 12). La phrase n'a pas changé, sa voix seulement. */}
+        <div className="flex flex-col items-start gap-3 px-[26px] pt-6">
+          <p className={texteSituation} style={{ color: colors.muted }}>
             {/* Sans dictée, ne pas répéter l'invitation déjà portée par la
                 section Brouillon juste en dessous : dire simplement d'où
                 viennent les informations affichées. */}
@@ -80,6 +66,19 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
                 ? "Votre dictée est enregistrée mais n'a pas été transcrite : aucun prestataire de transcription n'est encore raccordé. Les informations ci-dessous sont celles que vous saisissez."
                 : "Aucune dictée n'a encore alimenté cet écran : les informations ci-dessous sont celles que vous saisissez."}
           </p>
+
+          {/* Ce lien était à droite du titre. Vu en capture : « Voir la
+              transcription » en capitales espacées mange plus de la moitié de
+              la largeur, et le nom du chantier se replie sur deux lignes pour
+              lui faire place — l'en-tête, qui doit être le point calme de
+              l'écran, devenait le plus encombré.
+              Il est ici parce que c'est ici qu'on parle de la dictée.
+              Masqué sans transcription : il ne mènerait qu'à un écran vide. */}
+          {transcriptionDisponible && (
+            <a href={`/chantiers/${id}/transcription`} className={libelleCaps} style={{ color: colors.rust }}>
+              Voir la transcription
+            </a>
+          )}
         </div>
 
         <InformationsClient

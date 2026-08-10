@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-09 · `claude/migrate-app-atlas-zz31ac`
+**Point de reprise :** 2026-08-10 · `claude/migrate-app-atlas-zz31ac`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -44,6 +44,84 @@ est encore valable.
 ---
 
 ## Ce qui vient d'être terminé
+
+**L'anneau muet et la pellicule, sur la fiche chantier (10 août, au soir).** La
+ligne « Note vocale » devient un anneau qu'on touche pour écouter et qu'on
+pousse vers le haut pour retirer ; les photos deviennent une pellicule dans le
+tiroir du bas, case « + » en tête. `ARCHITECTURE.md` §49.
+
+**Cinq choses à savoir avant d'y toucher :**
+
+1. **Le compteur et l'onde sont réels**, pas décoratifs : `currentTime` pour
+   l'un, un `AnalyserNode` sur l'élément audio pour l'autre. Le contexte audio
+   naît **suspendu** et se rendort en arrière-plan — `resume()` à chaque appui,
+   sinon l'onde mesure un silence qu'on a soi-même créé en intercalant
+   l'analyseur.
+2. **`display: flex` n'étire pas un `<button>`.** La maquette pose un
+   `<label>` ; « Retirer » se retrouvait collé au bord gauche, **visible,
+   touchable, et tous les contrôles au vert**. `width: 100%` est obligatoire ici.
+3. **`--atlas-barre` est une réserve de place (68 px), pas la hauteur que la
+   barre dessine (49 px).** Le tiroir mesure donc la barre réelle. Ne pas
+   « corriger » la variable : cela déplacerait le cheveu du bandeau sur tous les
+   écrans, dont l'accueil, que le patron a arrêté.
+4. **Le jeu de démonstration contient de vrais fichiers** depuis ce lot (PNG et
+   WAV fabriqués dans `seed.ts`). Avant, il déclarait des clés sans octets
+   derrière : l'anneau restait inerte sans rien dire.
+5. **Les cinq états se capturent en une commande** :
+   `npx tsx scripts/capture-fiche-note-vocale.mts <dossier> <id-chantier>`.
+
+**Le retrait est le même partout (10 août, au soir).** Le texte glisse vers la
+gauche, « Retirer » se découvre, la ligne tombe, un tiroir la retient :
+« Retiré à l'instant — Annuler ». Huit endroits, une seule mécanique là où il
+y en avait trois.
+
+**Quatre choses à savoir avant d'y toucher — les trois premières sont des
+promesses, pas des détails :**
+
+1. **Rien n'est écrit tant que le tiroir est ouvert.** La photo et la note
+   vocale mettent leur fichier en file de purge dans la MÊME transaction que la
+   suppression : appeler le serveur au moment du geste rendrait « Annuler »
+   menteur — la ligne reviendrait, le fichier non. `useRetraits` masque la
+   ligne et n'écrit qu'à la fermeture (minuteur, `pagehide`, démontage).
+2. **Le fond ne glisse jamais.** Seule la colonne du texte bouge ; la date, le
+   fil et la plage restent en place (`avant`, `plage`). Laisser la carte partir
+   avec son fond la tire hors de l'écran, bordure tranchée — vu en capture sur
+   le planning et les tarifs.
+3. **« Annuler » vise le DERNIER retrait.** Un libellé unique pointant toujours
+   la même ligne rendrait la première quand on retire la deuxième :
+   l'annulation supprimerait.
+4. **Les photos ne prennent pas le glissement**, et ce n'est pas un oubli : une
+   vignette carrée n'est pas une ligne. Elles gardent le reste du geste et se
+   retirent depuis la visionneuse.
+
+**Et le piège qui a coûté une heure, sur du code juste :** une capture qui vise
+`127.0.0.1` obtient une page **jamais hydratée** — Next refuse d'y servir ses
+ressources de développement. Les boutons existent sans écouteur, on clique dans
+le vide, et tout accuse l'écran. **Viser `localhost`.**
+
+**Les corps d'Informations et de Prix sont refaits (10 août) — étape 2 de
+`TODO.md` §7.** Reste l'étape 3 : Devis, Export, Facture.
+
+**Avant de reprendre la refonte, quatre choses qui font gagner une heure :**
+
+1. **Les deux voix sont des jetons**, plus des valeurs à retaper :
+   `libelleCaps` et `texteSituation` dans `src/lib/design-tokens.ts`.
+   `smallCaps` est l'ANCIENNE voix — un écran qui l'importe encore n'est pas
+   refait, et elle ne survit que pour les maquettes `/design/*`.
+2. **`innerText` rend le texte tel qu'il s'affiche.** Trois contrôles
+   cherchaient « Prix Calculé » ou « Déjà au détail » et sont devenus rouges le
+   jour où ces libellés sont passés en capitales — sans qu'aucun défaut
+   n'existe. Deux l'étaient déjà avant ce lot. Avant de corriger le produit,
+   regarder si le contrôle lit du **rendu** ou de la **donnée**.
+3. **Prendre la capture, en haut ET en bas :**
+   `npx tsx scripts/capture-etape.mts <dossier> <chantierId> <étape…>`.
+   Les deux seuls défauts réels de ce lot n'étaient visibles que là : la croix
+   qui retire une ligne de prix **sortait de l'écran** (elle existait dans la
+   page, donc les contrôles la trouvaient), et la bulle de l'assistant mordait
+   sur « Préparer le devis ».
+4. **Le jeu de démonstration ne pose aucun brouillon**, et sa dictée ne
+   s'analyse pas ici : pour regarder l'écran Informations plein, insérer soi-même
+   une ligne dans `brouillons_informations`. Sinon on juge un écran vide.
 
 **Les maquettes tiennent sur une seule page (9 août, tard).**
 `docs/maquettes/toutes-les-maquettes.html` porte toutes les propositions et un
@@ -89,14 +167,23 @@ toute l'application d'un coup, et c'est voulu : `PrimaryButton` (27 écrans),
 écran : l'ajouter à ces pièces.
 
 **Où en est la refonte, au 10 août au soir.** Faits : l'accueil, Planning,
-Terminés, Réglages, le relevé de TVA, la fiche chantier, et les six écrans
-d'étape (Photos, Note vocale, Prix, Devis, Export, Facture) — tous à
-`EnTeteEcran`, aux jetons resserrés et au bouton commun. **Ce qui reste :** le
-CORPS de ces six écrans (listes de photos, encarts de dictée, tableaux de prix)
-garde encore ses cartes et ses libellés d'avant. **La fiche
-chantier, elle, est faite** (10 août) : elle sert de modèle aux suivants —
-en-tête commun avec `retour` et `action`, intitulés en serif 19 px, lignes du
-dessous en capitales espacées, séparateurs d'un cheveu, aucune pilule.
+Terminés, Réglages, le relevé de TVA, la fiche chantier, et les écrans d'étape
+— tous à `EnTeteEcran`, aux jetons resserrés et au bouton commun. Les CORPS de
+Photos, Note vocale, Informations et Prix le sont aussi. **Ce qui reste :** les
+corps de **Devis, Export et Facture**.
+
+**Un angle mort à connaître :** « les six écrans d'étape » ne comptaient pas
+Informations, dont l'en-tête était donc resté à l'ancienne grammaire jusqu'au
+soir du 10. Vérifier que **Transcription** ne dort pas dans le même angle mort
+avant de déclarer la refonte finie.
+
+**La fiche chantier sert de modèle** : en-tête commun avec `retour` et
+`action`, intitulés en serif 19 px, lignes du dessous en capitales espacées,
+séparateurs d'un cheveu, aucune pilule. Et deux règles tirées de l'étape 2 :
+une **plage** occupe la largeur entière, une **action en toutes lettres**
+s'aligne à gauche (`self-start`, sans quoi elle s'étire et se centre seule) ;
+et une action en capitales espacées prend **deux fois** la place de la même en
+bas de casse — c'est ce qui a chassé « Voir la transcription » de l'en-tête.
 
 **Deux familles ne doivent PAS suivre**, et ce n'est pas un oubli : les
 maquettes `/design/*` (découplées du produit) et les pages que le CLIENT reçoit

@@ -40,7 +40,12 @@ Toute feuille de confirmation utilise la coquille partagée `BottomSheet` (`src/
 
 ### Patron n°1 — Confirmation d'action destructive
 
-Utilisé pour : supprimer une photo, remplacer une note vocale, toute future suppression de contenu difficile à recréer.
+**Périmètre réduit le 10 août 2026 : il ne sert plus à supprimer.** Toute
+suppression passe désormais par le retrait et son tiroir (voir plus bas), et
+garder les deux ferait demander deux fois. Ce patron reste pour ce qui n'est
+pas une suppression mais engage quand même : **remplacer une note vocale**, par
+exemple, qui ouvre un nouvel enregistrement sans rien détruire au moment du
+geste — il n'y a donc rien qu'un tiroir puisse retenir.
 
 Objectif : protéger l'utilisateur contre une perte de données.
 
@@ -62,24 +67,52 @@ Règle de décision : si la feuille protège contre une perte → patron n°1. S
 
 `BottomSheet` est le composant unique pour toute feuille modale de l'application — les feuilles inline encore présentes sur Photos et Note vocale seront migrées dessus lors d'une phase de refactorisation dédiée, sans changement de comportement.
 
-## Actions destructives (référence pour toute l'application)
+## Retirer — le geste unique, sur tout ce qui se supprime
 
-Validé sur l'écran Photos, ce patron s'applique à **toute** action irréversible future (remplacer une note vocale, supprimer une ligne de tarif, etc.) :
+*Retenu par le patron le 10 août 2026 sur maquette, et posé partout le soir
+même. `ARCHITECTURE.md` §48 pour le détail, `docs/INTEGRER-ORIGINE.md` §4 pour
+le dessin.*
 
-- Une action destructive n'est **jamais** l'action visuellement principale d'un écran — elle reste un lien ou bouton discret, jamais un `PrimaryButton`.
-- Elle déclenche systématiquement une **confirmation légère** : une feuille qui remonte du bas (coins arrondis 26px, fond `cream`, poignée fine), un message court à la forme interrogative (« Supprimer cette photo ? »), puis deux actions empilées : **Annuler** (poids visuel fort — fond `card`) au-dessus de **[Verbe]** (simple texte, couleur `colors.alert`, jamais de fond plein).
-- `colors.alert` (`#9C3B2E`) est réservée exclusivement à ces confirmations. Elle n'apparaît nulle part ailleurs dans l'interface.
-- Annuler doit toujours être atteignable aussi facilement que l'action destructive elle-même — jamais plus petit, jamais en dessous visuellement.
+Il y avait **trois** mécaniques de suppression — glissement et corbeille rouge,
+croix nue, panneau de confirmation. Il n'y en a plus qu'une :
 
-### Portée de cette règle : uniquement le contenu difficile à recréer
+1. le **texte** de la ligne glisse vers la gauche (le fond, la date et le fil
+   ne bougent pas), et se dissout au bord plutôt que d'être tranché ;
+2. **« Retirer »** se découvre, en capitales espacées, couleur d'attente ;
+3. la ligne **tombe**, le décompte de l'écran suit ;
+4. un **tiroir** s'ouvre entre le contenu et le bas de page : « Retiré à
+   l'instant — Annuler ». Il pousse le contenu, il ne le recouvre jamais.
 
-La confirmation par feuille ne s'applique qu'aux pertes de contenu **coûteuses à refaire** : une photo, une note vocale, un devis déjà envoyé. Pour les données métier facilement recréables (une ligne de prestation, un matériel, un texte de formulaire), on privilégie la vitesse :
+**La sécurité a changé de place, et c'est le cœur du geste** : d'une
+confirmation AVANT à une réversibilité APRÈS.
 
-- La suppression est immédiate, sans feuille de confirmation.
-- La ligne disparaît avec une transition discrète (fondu + réduction de hauteur, ~180ms) pour que la disparition reste compréhensible.
-- Un **toast avec « Annuler »** apparaît quelques secondes (`UndoToast`, `src/components/atlas/UndoToast.tsx`) — fond `ink`, texte `cream`, bouton Annuler en `rust`. Il se referme seul, ou sur nouvelle suppression le remplace.
+### Les trois règles à ne pas défaire
 
-Règle de décision : si perdre l'élément coûte du temps ou est irremplaçable (média, envoi déjà effectué) → feuille de confirmation. Si l'élément se retape en quelques secondes → suppression immédiate + `UndoToast`.
+- **Rien n'est écrit tant que le tiroir est ouvert.** Un média met son fichier
+  en file de purge dans la même transaction que sa suppression : écrire au
+  moment du geste rendrait « Annuler » menteur — la ligne reviendrait, le
+  fichier non. *Une annulation qui ne rend rien est pire que pas d'annulation.*
+- **« Annuler » vise le DERNIER retrait.** Un libellé unique pointant toujours
+  la même ligne rendrait la première quand on retire la deuxième.
+- **Un refus se lit.** Ce qui ne peut pas être retiré — un chantier facturé —
+  découvre son MOTIF à la place du bouton. Un geste sans effet ressemble à une
+  panne.
+
+### Les pièces
+
+| Pièce | Ce qu'elle porte |
+|---|---|
+| `LigneRetirable` | le glissement, la chute, le refus. Remplace `AnimatedRow` et `CarteGlissante` |
+| `TiroirDesRetires` | le tiroir — un par écran, en fin de colonne |
+| `useRetraits` | le délai, la pile des retraits, l'écriture différée |
+
+`colors.alert` (`#9C3B2E`) ne sert plus qu'à ce qui reste vraiment destructif
+et sans retour — elle n'apparaît nulle part ailleurs.
+
+**Une exception, assumée :** les photos. Une vignette carrée dans une grille de
+trois n'est pas une ligne, et y faire glisser un texte qui n'existe pas n'a
+aucun sens. Elles gardent le mot, la couleur, le tiroir et l'écriture différée,
+et se retirent depuis la visionneuse — là où on les regarde.
 
 ## Principes d'expérience (à appliquer à chaque nouvel écran)
 

@@ -3,8 +3,12 @@
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, texteSituation } from "@/lib/design-tokens";
+import { nombreEnLettres } from "@/lib/nombre-en-lettres";
+import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
+import { useRetraits } from "@/components/atlas/useRetraits";
 import FormulaireNouveauChantier from "./chantiers/nouveau/FormulaireNouveauChantier";
+import { supprimerChantierAction } from "./planning/actions";
 import ListeChantiers, { type BrinChantier } from "./ListeChantiers";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -38,20 +42,36 @@ import ListeChantiers, { type BrinChantier } from "./ListeChantiers";
 
 export default function EcranChantiers({
   prenom,
-  compte,
-  compteEnLettres,
   chantiers,
   bandeaux,
 }: {
   prenom: string | null;
-  compte: number;
-  compteEnLettres: string;
   chantiers: BrinChantier[];
   /** Notifications et annonces, rendues par le serveur et posées sous le titre. */
   bandeaux: ReactNode;
 }) {
   const router = useRouter();
   const [ouvert, setOuvert] = useState(false);
+
+  // Le retrait, et le tiroir qui le retient. L'écriture n'a lieu qu'à la
+  // fermeture du tiroir : d'ici là la ligne n'est que masquée, et « Annuler »
+  // la rend vraiment — elle n'a jamais quitté l'état de l'écran.
+  const retraits = useRetraits({
+    valider: async (id) => {
+      const resultat = await supprimerChantierAction(id);
+      // La liste a changé : on la redemande au serveur plutôt que de deviner.
+      if (resultat.succes) router.refresh();
+      return resultat;
+    },
+  });
+
+  // **Le décompte suit ce qui reste, sans attendre le serveur.** « Huit en
+  // cours » au-dessus de sept lignes ferait douter que le retrait ait eu lieu.
+  // Tous les chantiers de la liste n'y entrent pas : `enCours` le dit ligne par
+  // ligne, et c'est la seule façon de recompter juste ici.
+  const restants = chantiers.filter((c) => !retraits.estRetire(c.id));
+  const compte = restants.filter((c) => c.enCours).length;
+  const compteEnLettres = nombreEnLettres(compte);
 
   // Échapper referme, comme partout ailleurs. Sans cela, une personne au
   // clavier se retrouve enfermée dans la feuille.
@@ -154,7 +174,7 @@ export default function EcranChantiers({
           <span style={{ fontVariantNumeric: "tabular-nums" }}>{compteEnLettres}</span>
         </div>
 
-        {chantiers.length === 0 ? (
+        {restants.length === 0 ? (
           <div className="atlas-fil-defile pt-4">
             {bandeaux}
             <p className="px-[26px] pt-2 text-[13px]" style={{ color: colors.muted }}>
@@ -171,9 +191,35 @@ export default function EcranChantiers({
                 les suites étaient vertes. C'est le même défaut qu'en juillet,
                 à un autre endroit. */}
             {bandeaux}
-            <ListeChantiers chantiers={chantiers} />
+            <ListeChantiers
+              chantiers={chantiers}
+              estRetire={retraits.estRetire}
+              onRetirer={retraits.retirer}
+            />
           </div>
         )}
+
+        {/* Un refus du serveur ramène la ligne : le dire, sinon elle
+            réapparaît sans raison apparente. */}
+        {Object.entries(retraits.refuses).map(([id, motif]) => (
+          <p
+            key={id}
+            role="alert"
+            className={`px-[26px] pb-2 ${texteSituation}`}
+            style={{ color: colors.alert }}
+          >
+            {motif}
+          </p>
+        ))}
+
+        {/* Le tiroir est le DERNIER enfant de la colonne : il pousse la liste
+            vers le haut au lieu de la recouvrir. Posé par-dessus, il masquerait
+            la dernière ligne — celle qu'on vient justement de toucher. */}
+        <TiroirDesRetires
+          dernier={retraits.dernier}
+          nombre={retraits.nombre}
+          onAnnuler={retraits.annuler}
+        />
       </div>
 
       {/* ── Le voile ──────────────────────────────────────────────────────

@@ -150,7 +150,14 @@ async function main() {
     !texteFiche.includes("Calculer le prix"),
     "Le prix étant validé, le chantier ne doit plus proposer de le calculer"
   );
-  assert.ok(texteFiche.includes("Prix Calculé"), "L'étape Prix doit apparaître comme franchie");
+  // Insensible à la casse : depuis la refonte du 10 août 2026, la ligne du
+  // dessous d'une étape est en capitales espacées, et `innerText` rend le texte
+  // TEL QU'IL S'AFFICHE — « Prix CALCULÉ ». Ce qui est éprouvé ici est l'état de
+  // l'étape, pas la casse dans laquelle l'écran l'écrit.
+  assert.ok(
+    /prix\s+calculé/i.test(texteFiche),
+    `L'étape Prix doit apparaître comme franchie. Contenu rendu : ${texteFiche.slice(0, 500)}`
+  );
 
   await browser.close();
   await pool.end();

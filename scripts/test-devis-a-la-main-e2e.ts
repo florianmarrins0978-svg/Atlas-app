@@ -45,7 +45,10 @@ async function main() {
   const chantierId = chantierUrl.split("/").pop()!;
 
   // --- 1. Le devis à la main, depuis la fiche, sans passer par la dictée ----
-  await page.waitForSelector("text=Autres étapes", { timeout: 10000 });
+  // Le repère d'arrivée est le tiroir du bas. « Autres étapes » ne s'écrit plus
+  // nulle part depuis que les étapes y sont rangées (`ARCHITECTURE.md` §49) :
+  // attendre un titre disparu ferait échouer le contrôle sur un écran sain.
+  await page.waitForSelector("[data-atlas='tiroir-fiche']", { timeout: 10000 });
   const versLaMain = page.getByRole("link", { name: /rédiger le devis à la main/i });
   assert.equal(
     await versLaMain.count(),

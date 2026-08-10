@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
+import LigneRetirable from "@/components/atlas/LigneRetirable";
+import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
+import { useRetraits } from "@/components/atlas/useRetraits";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { ACCEPT_AUDIO } from "@/server/upload-limits";
 import {
@@ -13,11 +16,12 @@ import {
 } from "./actions";
 import DevisDepuisDictee from "../DevisDepuisDictee";
 
+// « confirmation » ne sert plus qu'au REMPLACEMENT depuis le 10 août 2026 : le
+// retrait, lui, passe par le glissement et le tiroir, sans rien demander avant.
+// Le remplacement garde sa question parce qu'il ne détruit rien au moment du
+// geste — il ouvre un nouvel enregistrement, l'ancienne note vivant jusqu'à ce
+// que la nouvelle soit prise. Il n'y a donc rien qu'un tiroir puisse retenir.
 type Etat = "vide" | "enregistrement" | "note" | "confirmation";
-// Le remplacement conserve la note tant qu'une nouvelle n'est pas enregistrée ;
-// la suppression, elle, retire la note immédiatement. Deux gestes distincts,
-// donc deux confirmations distinctes.
-type ModeConfirmation = "remplacer" | "supprimer";
 
 type StatutTranscription = "non_demandee" | "en_cours" | "reussie" | "echouee";
 
@@ -53,7 +57,6 @@ export default function NoteVocaleClient({
   const [erreurTranscription, setErreurTranscription] = useState<string | null>(
     noteInitiale?.transcriptionErreur ?? null
   );
-  const [modeConfirmation, setModeConfirmation] = useState<ModeConfirmation>("remplacer");
 
   const router = useRouter();
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -197,8 +200,29 @@ export default function NoteVocaleClient({
     setFraichementEnregistree(false);
   }
 
-  async function confirmerSuppression() {
-    setEnCours(true);
+  // **Le panneau « Supprimer cette note vocale ? » a disparu.** La sécurité
+  // passe d'une confirmation avant à une réversibilité après — c'est le geste
+  // retenu, et garder les deux ferait demander deux fois.
+  //
+  // L'audio a un fichier derrière lui, et `supprimerNoteVocale` le met en file
+  // de purge dans la même transaction. L'appel attend donc la FERMETURE du
+  // tiroir : tant qu'il est ouvert, « Annuler » rend la note ET son
+  // enregistrement. Une annulation qui ne rendrait que le texte serait pire
+  // que pas d'annulation du tout.
+  const retraits = useRetraits({
+    valider: async () => {
+      await effacerVraiment();
+    },
+  });
+  // La note n'a pas d'identifiant propre sur cet écran : il n'y en a qu'une
+  // par chantier. Celui du chantier fait donc office de clé.
+  const noteRetiree = retraits.estRetire(chantierId);
+  // L'écran se lit comme s'il n'y avait plus de note, mais RIEN n'a été
+  // détruit : ni `storageKey`, ni la durée, ni le statut de transcription.
+  // C'est exactement ce qui permet à « Annuler » de tout rendre.
+  const etatAffiche: Etat = noteRetiree ? "vide" : etat;
+
+  async function effacerVraiment() {
     setErreur(null);
     try {
       await supprimerNoteVocaleAction(chantierId);
@@ -349,7 +373,7 @@ export default function NoteVocaleClient({
         </>
       )}
 
-      {(etat === "note" || etat === "confirmation") && (
+      {(etatAffiche === "note" || etatAffiche === "confirmation") && (
         <>
           {/* L'audio est purgé une fois la transcription obtenue
               (docs/RGPD.md §4). Seul le lecteur disparaît alors : la
@@ -398,15 +422,36 @@ export default function NoteVocaleClient({
               {erreurLecture}
             </p>
           )}
-          <div className="flex items-center gap-4 rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
-            <button
-              onClick={togglerLecture}
-              aria-label={lecture ? "Mettre en pause" : "Écouter la note"}
-              className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full"
-              style={{ backgroundColor: colors.rust }}
-            >
-              {lecture ? <PauseIcon /> : <PlayIcon />}
-            </button>
+          {/* Le même geste que partout : le bloc glisse, « Retirer » se
+              découvre, la note tombe et le tiroir la retient. Il remplace le
+              bouton « Supprimer la note » qui vivait au bas de l'écran. */}
+          <LigneRetirable
+            libelle="cette note vocale"
+            retiree={false}
+            onRetirer={() => retraits.retirer(chantierId, "cette note vocale")}
+            hauteurMax={140}
+            // La plage est portée par l'enveloppe, qui ne bouge pas : sinon
+            // l'encart part de biais avec son fond, bordure tranchée net, et
+            // « Retirer » se retrouve posé sur le fond de page.
+            plage={{ fond: colors.card }}
+            // Le bouton d'écoute NE GLISSE PAS : c'est un repère et une
+            // commande, pas du texte. Il tient ici le rôle de la date sur la
+            // liste des chantiers. Emporté par le glissement, il sortait de
+            // l'écran par la gauche — on ne pouvait plus écouter la note qu'on
+            // s'apprêtait à retirer.
+            avant={
+              <button
+                onClick={togglerLecture}
+                aria-label={lecture ? "Mettre en pause" : "Écouter la note"}
+                className="ml-5 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full"
+                style={{ backgroundColor: colors.rust }}
+              >
+                {lecture ? <PauseIcon /> : <PlayIcon />}
+              </button>
+            }
+            className="flex w-full items-center gap-4 py-5 pr-5"
+          >
+          <div className="w-full">
             <div className="min-w-0 flex-1">
               <p className="text-[19px] leading-[1.15]" style={{ color: colors.ink, fontFamily: font.display }}>
                 {fraichementEnregistree ? "Enregistrée à l'instant" : "Note enregistrée"}
@@ -425,6 +470,7 @@ export default function NoteVocaleClient({
               </div>
             </div>
           </div>
+          </LigneRetirable>
           </>
           )}
 
@@ -530,7 +576,6 @@ export default function NoteVocaleClient({
 
           <button
             onClick={() => {
-              setModeConfirmation("remplacer");
               setEtat("confirmation");
             }}
             className="mt-4 block w-full text-center text-[14px] font-medium"
@@ -538,30 +583,23 @@ export default function NoteVocaleClient({
           >
             Remplacer la note
           </button>
-          <button
-            onClick={() => {
-              setModeConfirmation("supprimer");
-              setEtat("confirmation");
-            }}
-            className="mt-3 block w-full text-center text-[14px] font-medium"
-            style={{ color: colors.muted }}
-          >
-            Supprimer la note
-          </button>
         </>
       )}
 
-      {etat === "confirmation" && (
+      {etatAffiche === "confirmation" && (
         <div className="fixed inset-0 z-40 flex items-end" style={{ backgroundColor: "rgba(0,0,0,0.35)" }}>
           <div className="w-full rounded-t-[26px] px-6 pb-9 pt-3" style={{ backgroundColor: colors.cream }}>
             <div className="mx-auto mb-5 h-1 w-10 rounded-full" style={{ backgroundColor: colors.line }} />
+            {/* Il ne reste QUE le remplacement. Et il garde sa question, à
+                dessein : contrairement au retrait, il ne détruit rien au moment
+                du geste — il ouvre un nouvel enregistrement, et l'ancienne note
+                vit jusqu'à ce que la nouvelle soit prise. Il n'y a donc rien à
+                rattraper derrière, et donc rien qu'un tiroir puisse retenir. */}
             <p className="mb-1 text-center text-[16px]" style={{ color: colors.ink, fontFamily: font.display }}>
-              {modeConfirmation === "remplacer" ? "Remplacer cette note vocale ?" : "Supprimer cette note vocale ?"}
+              Remplacer cette note vocale ?
             </p>
             <p className="mb-5 text-center text-[13px]" style={{ color: colors.muted }}>
-              {modeConfirmation === "remplacer"
-                ? "La note actuelle sera conservée jusqu'à l'enregistrement de la nouvelle."
-                : "La note et sa transcription seront retirées de ce chantier."}
+              La note actuelle sera conservée jusqu&apos;à l&apos;enregistrement de la nouvelle.
             </p>
             <div className="flex flex-col gap-2.5">
               <button
@@ -572,17 +610,23 @@ export default function NoteVocaleClient({
                 Annuler
               </button>
               <button
-                onClick={modeConfirmation === "remplacer" ? confirmerRemplacement : confirmerSuppression}
+                onClick={confirmerRemplacement}
                 disabled={enCours}
                 className="rounded-[4px] py-3.5 text-[15px] font-medium disabled:opacity-40"
                 style={{ color: colors.alert }}
               >
-                {modeConfirmation === "remplacer" ? "Remplacer" : "Supprimer"}
+                Remplacer
               </button>
             </div>
           </div>
         </div>
       )}
+      <TiroirDesRetires
+        dernier={retraits.dernier}
+        nombre={retraits.nombre}
+        onAnnuler={retraits.annuler}
+        className="mt-7 !mx-0"
+      />
     </div>
   );
 }

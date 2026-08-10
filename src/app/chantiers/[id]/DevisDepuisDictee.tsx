@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors } from "@/lib/design-tokens";
+import { colors, libelleCaps } from "@/lib/design-tokens";
 import { preparerDevisDepuisDicteeAction, repondreQuestionsChiffrageAction } from "./informations/actions";
 import { precisionLisible, type QuestionChiffrage } from "@/lib/questions-chiffrage";
 
@@ -111,10 +111,17 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
           type="button"
           onClick={() => lancer()}
           disabled={etat.type === "encours"}
-          className="self-start text-[14px] font-medium disabled:opacity-40"
+          // Seule la variante discrète prend la voix des libellés : c'est la
+          // seule à ne vivre que sur l'écran Informations. La variante mise en
+          // avant est sur l'écran Transcription, qui n'est pas encore refait —
+          // et lui donner cette voix seule y ferait une fausse note.
+          className={`self-start disabled:opacity-40 ${libelleCaps}`}
           style={{ color: colors.rust }}
         >
-          {etat.type === "encours" ? "Atlas prépare le devis…" : "Aller jusqu'au devis d'un seul geste →"}
+          {/* Sans la flèche : en capitales espacées, la phrase tient tout juste
+              sur une ligne, et la flèche la faisait passer à deux — seule sur
+              la seconde. Vu en capture, jamais par une suite. */}
+          {etat.type === "encours" ? "Atlas prépare le devis…" : "Aller jusqu'au devis d'un seul geste"}
         </button>
       )}
 

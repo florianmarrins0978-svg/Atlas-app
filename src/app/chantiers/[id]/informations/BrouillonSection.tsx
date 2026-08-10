@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { colors, smallCaps, font } from "@/lib/design-tokens";
+import { colors, libelleCaps, texteSituation, font } from "@/lib/design-tokens";
 import type { PropositionExtraction, LigneExtraite, LectureDictee } from "@/server/ai/schemas/extraction";
 import type { EtatFraicheurBrouillon } from "@/lib/brouillon-etat";
 import DevisDepuisDictee from "../DevisDepuisDictee";
@@ -149,15 +149,19 @@ export default function BrouillonSection({
     if (dicteeNonTranscrite) {
       return (
         <Carte>
-          <span className={smallCaps} style={{ color: colors.muted }}>
+          <span className={libelleCaps} style={{ color: colors.muted }}>
             Brouillon
           </span>
-          <p className="text-[13px]" style={{ color: colors.muted }}>
+          <p className={texteSituation} style={{ color: colors.muted }}>
             Votre dictée est bien enregistrée, mais elle n&apos;a pas été transcrite :
             aucun prestataire de transcription n&apos;est encore raccordé. Rien n&apos;a donc
             pu en être extrait — et rien ne sera inventé.
           </p>
-          <a href={`/chantiers/${chantierId}/transcription`} className="self-start text-[14px] font-medium" style={{ color: colors.rust }}>
+          <a
+            href={`/chantiers/${chantierId}/transcription`}
+            className={`self-start ${libelleCaps}`}
+            style={{ color: colors.rust }}
+          >
             Écrire ce que vous avez dit
           </a>
         </Carte>
@@ -165,13 +169,17 @@ export default function BrouillonSection({
     }
     return (
       <Carte>
-        <span className={smallCaps} style={{ color: colors.muted }}>
+        <span className={libelleCaps} style={{ color: colors.muted }}>
           Brouillon
         </span>
-        <p className="text-[13px]" style={{ color: colors.muted }}>
+        <p className={texteSituation} style={{ color: colors.muted }}>
           Enregistrez une note vocale et lancez sa transcription pour obtenir un brouillon d&apos;informations.
         </p>
-        <a href={`/chantiers/${chantierId}/note-vocale`} className="self-start text-[14px] font-medium" style={{ color: colors.rust }}>
+        <a
+          href={`/chantiers/${chantierId}/note-vocale`}
+          className={`self-start ${libelleCaps}`}
+          style={{ color: colors.rust }}
+        >
           Aller à la note vocale
         </a>
       </Carte>
@@ -180,12 +188,15 @@ export default function BrouillonSection({
 
   return (
     <Carte>
-      <div className="flex items-baseline justify-between">
-        <span className={smallCaps} style={{ color: colors.muted }}>
+      <div className="flex items-baseline justify-between gap-3">
+        <span className={libelleCaps} style={{ color: colors.muted }}>
           Brouillon issu de la dictée
         </span>
+        {/* « Confirmé » en gris, et non en accent : rien n'est attendu du patron
+            sur un brouillon déjà appliqué, et la couleur ne se pose que sur ce
+            qui réclame un geste de lui. */}
         {statut === "confirme" && (
-          <span className="text-[12px]" style={{ color: colors.rust }}>
+          <span className={libelleCaps} style={{ color: colors.muted }}>
             Confirmé
           </span>
         )}
@@ -193,14 +204,14 @@ export default function BrouillonSection({
 
       {!contenu && (
         <>
-          <p className="text-[13px]" style={{ color: colors.muted }}>
+          <p className={texteSituation} style={{ color: colors.muted }}>
             La transcription est disponible. Générez un brouillon structuré, puis corrigez-le avant de le confirmer.
           </p>
           <button
             type="button"
             onClick={() => generer()}
             disabled={enCours}
-            className="self-start text-[14px] font-medium disabled:opacity-40"
+            className={`self-start disabled:opacity-40 ${libelleCaps}`}
             style={{ color: colors.rust }}
           >
             {enCours ? "Analyse en cours…" : "Générer le brouillon"}
@@ -212,22 +223,12 @@ export default function BrouillonSection({
       )}
 
       {/* Recopie, et non analyse : le patron doit savoir ce qu'il relit. */}
-      {contenu && lecture === "litterale" && (
-        <div className="rounded-[4px] px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
-          <p className="text-[13px]" style={{ color: colors.rust }}>
-            {MENTION_LITTERALE}
-          </p>
-        </div>
-      )}
+      {contenu && lecture === "litterale" && <Avertissement>{MENTION_LITTERALE}</Avertissement>}
 
       {/* Brouillon issu d'une transcription qui n'est plus celle du chantier :
           signalé, jamais supprimé — il peut porter des corrections humaines. */}
       {contenu && brouillonInitial?.fraicheur.obsolete && (
-        <div className="rounded-[4px] px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
-          <p className="text-[13px]" style={{ color: colors.rust }}>
-            {brouillonInitial.fraicheur.message}
-          </p>
-        </div>
+        <Avertissement>{brouillonInitial.fraicheur.message}</Avertissement>
       )}
 
       {contenu && (
@@ -289,13 +290,15 @@ export default function BrouillonSection({
             onCommit={() => persister(contenu)}
           />
 
+          {/* « À confirmer » est la seule chose de cet encart qui réclame un
+              geste du patron : c'est donc la seule à porter l'or. */}
           {contenu.ambiguites.length > 0 && (
-            <div>
-              <span className={smallCaps} style={{ color: colors.rust }}>
+            <div className="flex flex-col gap-1.5">
+              <span className={libelleCaps} style={{ color: colors.or }}>
                 À confirmer
               </span>
               {contenu.ambiguites.map((a, i) => (
-                <p key={i} className="text-[13px]" style={{ color: colors.muted }}>
+                <p key={i} className={texteSituation} style={{ color: colors.muted }}>
                   {a}
                 </p>
               ))}
@@ -303,12 +306,12 @@ export default function BrouillonSection({
           )}
 
           {contenu.informationsManquantes.length > 0 && (
-            <div>
-              <span className={smallCaps} style={{ color: colors.muted }}>
+            <div className="flex flex-col gap-1.5">
+              <span className={libelleCaps} style={{ color: colors.muted }}>
                 Non mentionné dans la dictée
               </span>
               {contenu.informationsManquantes.map((m, i) => (
-                <p key={i} className="text-[13px]" style={{ color: colors.muted }}>
+                <p key={i} className={texteSituation} style={{ color: colors.muted }}>
                   {m}
                 </p>
               ))}
@@ -316,13 +319,16 @@ export default function BrouillonSection({
           )}
 
           {statut !== "confirme" && (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2.5">
+              {/* L'action teintée des écrans refaits (voir le pied de Photos) :
+                  elle se voit comme un geste sans disputer la place au bouton
+                  principal du bas de page, qui, lui, valide tout l'écran. */}
               <button
                 type="button"
                 onClick={confirmer}
                 disabled={enCours}
-                className="rounded-[4px] py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
-                style={{ backgroundColor: colors.rust }}
+                className={`rounded-[4px] py-3.5 disabled:opacity-40 ${libelleCaps}`}
+                style={{ backgroundColor: colors.rustTint, color: colors.rust, minHeight: 48 }}
               >
                 {enCours ? "Application…" : "Confirmer et ajouter au chantier"}
               </button>
@@ -330,7 +336,9 @@ export default function BrouillonSection({
                 type="button"
                 onClick={() => generer()}
                 disabled={enCours}
-                className="text-[14px] font-medium disabled:opacity-40"
+                // Aligné à gauche comme toutes les actions en toutes lettres de
+                // ces deux écrans : seule une PLAGE occupe la largeur entière.
+                className={`self-start disabled:opacity-40 ${libelleCaps}`}
                 style={{ color: colors.muted }}
               >
                 Régénérer depuis la dictée
@@ -341,27 +349,30 @@ export default function BrouillonSection({
       )}
 
       {erreur && (
-        <p className="text-[13px]" style={{ color: colors.alert }}>
+        <p className={texteSituation} style={{ color: colors.alert }}>
           {erreur}
         </p>
       )}
 
       {conflit && (
-        <div className="fixed inset-0 z-40 flex items-end" style={{ backgroundColor: "rgba(0,0,0,0.35)" }}>
-          <div className="w-full rounded-t-[26px] px-6 pb-9 pt-3" style={{ backgroundColor: colors.cream }}>
-            <div className="mx-auto mb-5 h-1 w-10 rounded-full" style={{ backgroundColor: colors.line }} />
-            <p className="mb-1 text-center text-[16px]" style={{ color: colors.ink, fontFamily: font.display }}>
+        <div className="fixed inset-0 z-[50] flex items-end" style={{ backgroundColor: "rgba(20,18,14,0.35)" }}>
+          <div className="w-full rounded-t-[26px] px-[26px] pb-9 pt-3" style={{ backgroundColor: colors.cream }}>
+            <div className="mx-auto mb-6 h-1 w-10 rounded-full" style={{ backgroundColor: colors.line }} />
+            <p
+              className="mb-2 text-center text-[19px] leading-[1.15]"
+              style={{ color: colors.ink, fontFamily: font.display }}
+            >
               Remplacer vos corrections ?
             </p>
-            <p className="mb-5 text-center text-[13px]" style={{ color: colors.muted }}>
+            <p className={`mb-6 text-center ${texteSituation}`} style={{ color: colors.muted }}>
               Vous avez modifié ce brouillon à la main. Une nouvelle analyse de la dictée est prête : l&apos;appliquer
               effacera vos corrections.
             </p>
             <div className="flex flex-col gap-2.5">
               <button
                 onClick={() => setConflit(null)}
-                className="rounded-[4px] py-3.5 text-[16px] font-medium"
-                style={{ backgroundColor: colors.card, color: colors.ink }}
+                className={`py-3.5 ${libelleCaps}`}
+                style={{ backgroundColor: colors.card, color: colors.ink, borderRadius: 5, minHeight: 48 }}
               >
                 Conserver mes corrections
               </button>
@@ -370,7 +381,7 @@ export default function BrouillonSection({
                   setConflit(null);
                   generer(true);
                 }}
-                className="rounded-[4px] py-3.5 text-[15px] font-medium"
+                className={`py-3.5 ${libelleCaps}`}
                 style={{ color: colors.alert }}
               >
                 Remplacer par la nouvelle analyse
@@ -383,13 +394,30 @@ export default function BrouillonSection({
   );
 }
 
+// Un avertissement qui ne s'entoure pas d'un fond teinté : un cheveu d'or à
+// gauche, comme l'« ourlet » de la maquette, où le trait prend la couleur
+// d'attente uniquement là où quelque chose est dû. Ici, la relecture est due.
+function Avertissement({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      className={`py-1 pl-[15px] ${texteSituation}`}
+      style={{ color: colors.ink, borderLeft: `1px solid ${colors.or}` }}
+    >
+      {children}
+    </p>
+  );
+}
+
 // `gap-3` et non `gap-2` : les listes de l'écran principal sont repérées par
 // `div.flex.flex-col.gap-2`, y compris par les tests de bout en bout. Un
 // conteneur du brouillon portant la même signature rendrait ce repère ambigu —
 // et ferait passer une proposition pour une donnée validée.
 function Carte({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-3 rounded-[4px] p-4" style={{ backgroundColor: colors.card }}>
+    <div
+      className="flex flex-col gap-3 px-[15px] py-4"
+      style={{ backgroundColor: colors.card, borderRadius: 4 }}
+    >
       {children}
     </div>
   );
@@ -409,8 +437,8 @@ function ChampBrouillon({
   onCommit: () => void;
 }) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className={smallCaps} style={{ color: colors.muted }}>
+    <label className="flex flex-col gap-2">
+      <span className={libelleCaps} style={{ color: colors.muted }}>
         {label}
       </span>
       <input
@@ -423,8 +451,8 @@ function ChampBrouillon({
         aria-label={`${label} (brouillon)`}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onCommit}
-        className="rounded-[4px] border-0 px-4 py-3 outline-none"
-        style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
+        className="border-0 px-[15px] py-3 outline-none"
+        style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px", borderRadius: 4 }}
       />
     </label>
   );
@@ -449,16 +477,20 @@ function ListeLignes({
     // gap-3 : même raison que dans Carte — ne jamais imiter la signature des
     // listes de données validées.
     <div className="flex flex-col gap-3">
-      <span className={smallCaps} style={{ color: colors.muted }}>
+      <span className={libelleCaps} style={{ color: colors.muted }}>
         {titre}
       </span>
       {lignes.length === 0 && (
-        <p className="text-[13px]" style={{ color: colors.muted }}>
+        <p className={texteSituation} style={{ color: colors.muted }}>
           Rien de détecté dans la dictée.
         </p>
       )}
       {lignes.map((ligne, i) => (
-        <div key={i} className="flex flex-col gap-1.5 rounded-[4px] p-3" style={{ backgroundColor: colors.cream }}>
+        <div
+          key={i}
+          className="flex flex-col gap-1.5 p-3"
+          style={{ backgroundColor: colors.cream, borderRadius: 4 }}
+        >
           <div className="flex items-center gap-2">
             <input
               value={ligne.libelle}
@@ -466,18 +498,25 @@ function ListeLignes({
               aria-label={`${titre} ${i + 1}`}
               onChange={(e) => onChange(i, "libelle", e.target.value)}
               onBlur={onCommit}
-              className="min-w-0 flex-1 rounded-[4px] border-0 px-3 py-2 outline-none"
-              style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
+              className="min-w-0 flex-1 border-0 px-3 py-2 outline-none"
+              style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px", borderRadius: 4 }}
             />
             {!lectureSeule && (
+              // La même croix que dans `AnimatedRow`, et pour deux raisons.
+              // « RETIRER » en capitales espacées prend quatre-vingt-dix pixels
+              // sur les trois cent onze de la ligne — le libellé s'y trouvait
+              // coupé en plein milieu, vu en capture. Et le geste de retrait
+              // s'écrit de la même façon partout dans l'application.
               <button
                 type="button"
                 onClick={() => onRetirer(i)}
                 aria-label={`Retirer ${ligne.libelle}`}
-                className="text-[13px]"
+                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full"
                 style={{ color: colors.muted }}
               >
-                Retirer
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+                </svg>
               </button>
             )}
           </div>
@@ -489,8 +528,8 @@ function ListeLignes({
               aria-label={`Quantité ${titre} ${i + 1}`}
               onChange={(e) => onChange(i, "quantite", e.target.value)}
               onBlur={onCommit}
-              className="rounded-[4px] border-0 px-3 py-2 outline-none"
-              style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "15px" }}
+              className="min-w-0 border-0 px-3 py-2 outline-none"
+              style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px", borderRadius: 4 }}
             />
             <input
               value={ligne.unite ?? ""}
@@ -499,8 +538,8 @@ function ListeLignes({
               aria-label={`Unité ${titre} ${i + 1}`}
               onChange={(e) => onChange(i, "unite", e.target.value)}
               onBlur={onCommit}
-              className="rounded-[4px] border-0 px-3 py-2 outline-none"
-              style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "15px" }}
+              className="min-w-0 border-0 px-3 py-2 outline-none"
+              style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px", borderRadius: 4 }}
             />
           </div>
           <input
@@ -510,11 +549,11 @@ function ListeLignes({
             aria-label={`Description ${titre} ${i + 1}`}
             onChange={(e) => onChange(i, "description", e.target.value)}
             onBlur={onCommit}
-            className="rounded-[4px] border-0 px-3 py-2 outline-none"
-            style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "15px" }}
+            className="border-0 px-3 py-2 outline-none"
+            style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px", borderRadius: 4 }}
           />
           {ligne.aConfirmer && (
-            <span className="text-[12px]" style={{ color: colors.rust }}>
+            <span className={libelleCaps} style={{ color: colors.or }}>
               À confirmer
             </span>
           )}

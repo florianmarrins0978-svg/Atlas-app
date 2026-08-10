@@ -17,7 +17,13 @@ async function main() {
   await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
   assert.ok(await page.locator("text=Chantiers").first().isVisible());
 
-  const compterChantiersAffiches = () => page.locator('a[href^="/chantiers/"]:not([href="/chantiers/nouveau"])').count();
+  // `a.atlas-brin`, et non tout lien vers un chantier : depuis que les
+  // notifications défilent AVEC la liste (10 août 2026), « devis retourné »
+  // pose lui aussi un `a[href^="/chantiers/"]` sur l'accueil. Le contrôle
+  // comptait donc une carte de plus que le compteur, et accusait le compteur.
+  // `atlas-brin` est la classe d'un brin du fil — une étiquette de code, pas
+  // un libellé, donc stable d'une maquette à l'autre.
+  const compterChantiersAffiches = () => page.locator("a.atlas-brin").count();
   const nbAvant = await compterChantiersAffiches();
 
   // Le compteur s'écrit en toutes lettres depuis le 10 août 2026 (« HUIT EN

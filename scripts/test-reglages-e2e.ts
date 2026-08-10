@@ -36,10 +36,14 @@ const PAUSE_MS = 500;
  * réécriture de ce fichier — trois relectures montrant « 0,00 » sur un
  * enregistrement que le test venait d'interrompre.
  */
-async function enregistrer(page: Page, geste: () => Promise<void>): Promise<void> {
+async function enregistrer(
+  page: Page,
+  geste: () => Promise<void>,
+  options: { timeout?: number } = {}
+): Promise<void> {
   const reponse = page.waitForResponse(
     (r) => r.request().method() === "POST" && r.url().includes("/reglages"),
-    { timeout: 15000 }
+    { timeout: options.timeout ?? 15000 }
   );
   await geste();
   await reponse;
@@ -130,8 +134,13 @@ async function main() {
   // --- Suppression ---
   const nbAvant = await page.locator("li").count();
   const ligneASupprimer = page.locator("li", { has: page.locator(`input[value="${libelleUnique}"]`) });
-  await enregistrer(page, () =>
-    ligneASupprimer.locator('button[aria-label="Supprimer ce tarif"]').click()
+  // « Retirer le tarif « … » » depuis le 10 août 2026, et l'écriture n'a lieu
+  // qu'à la fermeture du tiroir : `enregistrer` attend donc la vraie requête,
+  // qui arrive après le délai d'annulation.
+  await enregistrer(
+    page,
+    () => ligneASupprimer.getByRole("button", { name: /^Retirer le tarif/ }).click(),
+    { timeout: 20000 }
   );
   await attendreDisparition(page, libelleUnique);
 

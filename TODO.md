@@ -422,6 +422,55 @@ suffit ») et la **capacité en hommes** — `taille_equipe` est du texte libre,
 faudrait le fiabiliser avant d'en faire une contrainte. Voir `ARCHITECTURE.md`
 §22 pour les arbitrages.
 
+### 7 bis. ~~Le retrait, partout~~ — fait le 10 août 2026
+
+Le cinquième choix du patron sur les maquettes : « le tiroir des retirés »,
+appliqué aux **huit** endroits qui suppriment (le recensement de
+`docs/INTEGRER-ORIGINE.md` §4 bis en annonçait sept — le planning manquait).
+Détail et pièges dans `ARCHITECTURE.md` §48.
+
+**Ce qui reste de la fiche `docs/INTEGRER-ORIGINE.md` :** son §6, l'ouverture
+de « Nouveau chantier » — et il porte un point de PRODUIT non tranché, à poser
+au patron avant de coder : cet écran est aujourd'hui une page avec sa flèche de
+retour, quand l'ouverture retenue raconte une feuille modale.
+
+**Deux choses laissées telles quelles, et dites plutôt que tues :**
+
+- **Les maquettes `/design/prix`** montrent encore l'ancienne croix nue et le
+  bandeau flottant (`AnimatedRow`, `UndoToast`, qui ne servent plus qu'à
+  elles). Elles sont découplées du produit depuis le 1er août ; les reprendre
+  ou les retirer reste à décider, mais elles contredisent l'application.
+- **Le geste en diagonale n'a pas pu être éprouvé ici** : le glissement
+  horizontal du texte et l'accroche verticale du fil ne portent pas sur le même
+  axe, mais un pouce, lui, bouge en biais. Un navigateur piloté ne le
+  reproduit pas — à essayer sur un vrai téléphone.
+
+### 7 ter. ~~L'anneau muet et la pellicule~~ — fait le 10 août 2026, au soir
+
+Le §6 bis de `docs/INTEGRER-ORIGINE.md` : sur la fiche chantier, un **anneau
+muet** remplace la ligne « Note vocale » comme accès direct — on le touche, la
+note se lit ; on le pousse vers le haut, « Retirer » se découvre. Les photos
+deviennent une **pellicule** dans le tiroir du bas, case « + » en tête, et la
+ligne « Photos · 6 photos » disparaît. Détail et pièges dans
+`ARCHITECTURE.md` §49.
+
+**L'en-tête de la fiche ne bouge pas — ~~à trancher~~ TRANCHÉ le 10 août 2026.**
+
+La maquette `atlas-note-vocale.html` raconte en plus de l'anneau une **scène**
+entière : grand titre serif, phrase de situation (« Intervention prévue vendredi
+15 août »), à la place de l'en-tête commun. La question lui a été posée en
+image ; sa réponse : **« N'y touche pas. »**
+
+**Ne pas la rouvrir en découvrant l'écart avec la maquette.** L'écart est connu
+et voulu. `EnTeteEcran` est **une seule pièce partagée** par la fiche, le
+planning, les terminés, les réglages et les six écrans d'étape : la refaire
+pour la seule fiche désaccorderait cet écran de tous les autres, et la refaire
+partout serait un lot en soi, touchant l'accueil — que le patron a arrêté et
+qu'il ne veut pas revoir.
+
+Si le sujet revient, c'est **lui** qui le rouvre, et alors c'est « partout »
+ou rien.
+
 ### 7. Finir la refonte — l'ordre, les pièges, les valeurs
 
 **Ce point existe pour qu'une conversation neuve puisse reprendre le travail
@@ -438,8 +487,37 @@ ouvrez-la, lisez la feuille de style, elle fait foi pour le dessin.
 | — | En-tête + boutons des six écrans d'étape | **fait**, par remplacement de motif |
 | — | Corps de Photos | **fait** |
 | ~~1~~ | ~~Corps de **Note vocale**~~ | **fait** le 10 août 2026 |
-| **2** | Corps d'**Informations** puis de **Prix** | à faire — les plus chargés |
+| ~~2~~ | ~~Corps d'**Informations** puis de **Prix**~~ | **fait** le 10 août 2026 |
+| — | Fiche chantier : **l'anneau muet** et **la pellicule** | **fait** le 10 août 2026, au soir |
 | **3** | Corps de **Devis**, **Export**, **Facture** | à faire |
+
+**Ce que l'étape 2 a appris, et qui sert à l'étape 3.**
+
+- **Les deux voix sont désormais des jetons** : `libelleCaps` et
+  `texteSituation` dans `src/lib/design-tokens.ts`. Ne plus les retaper à la
+  main. `smallCaps`, l'ancienne voix, ne sert plus qu'aux maquettes
+  `/design/*` — un écran qui l'importe encore n'est pas refait.
+- **L'écran Informations n'était pas dans « les six »** : son en-tête avait été
+  oublié le 10 août au matin, et il est passé à `EnTeteEcran` avec son corps.
+  Vérifier que **Transcription** ne dort pas dans le même angle mort.
+- **Une action en capitales prend deux fois la place.** « Voir la
+  transcription » à droite du titre repliait le nom du chantier sur deux
+  lignes ; une flèche de plus faisait passer « Aller jusqu'au devis d'un seul
+  geste » à deux lignes, la flèche seule sur la seconde. Mesurer avant, ou
+  déplacer l'action.
+- **Une plage occupe la largeur ; une action en toutes lettres s'aligne à
+  gauche.** Sans `self-start`, un bouton texte s'étire et se centre tout seul.
+- **`innerText` rend le texte TEL QU'IL S'AFFICHE.** Trois contrôles cherchaient
+  « Prix Calculé » ou « Déjà au détail » ; les capitales les ont cassés sans
+  qu'aucun défaut n'existe. Le réflexe utile : avant de corriger le produit,
+  regarder si le contrôle lit du rendu ou de la donnée.
+- **Prendre la capture d'abord, et à deux endroits** :
+  `npx tsx scripts/capture-etape.mts <dossier> <chantierId> <étape…>` écrit le
+  haut ET le bas de chaque écran. Les deux défauts réels de l'étape 2 — une
+  croix hors de l'écran, la bulle sur le bouton — n'étaient visibles que là.
+- **Le jeu de démonstration ne pose ni brouillon ni dictée analysable ici** :
+  pour regarder un écran plein, insérer soi-même une ligne dans
+  `brouillons_informations`. Sans cela on juge un écran vide.
 
 Il n'y a plus de motif commun à remplacer : chacun a sa structure, donc plus de
 codemod possible. C'est du cas par cas, **et chaque écran se regarde en capture

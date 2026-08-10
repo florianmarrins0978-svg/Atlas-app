@@ -1,0 +1,364 @@
+<title>Atlas — la note vocale, version retenue</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT pour la page.
+
+    Deux demandes du patron, tenues ensemble :
+
+      1. « L'anneau vert plus gros que l'anneau doré — ou mélange, fais ce que
+         tu veux, mais il faut du doré, du vert et les trois traits. »
+         Quatre traitements, tous à trois barreaux, tous à deux cercles.
+
+      2. « Quand j'appuie, la note se lance ; les secondes apparaissent ; et de
+         chaque côté des petits traits partent du centre vers l'extérieur,
+         plus on parle fort plus ils sont hauts. »
+         L'appui bascule un état : les ailes émettent, les barreaux battent, et
+         le chronomètre part.
+
+    LE CHRONOMÈTRE N'EST PAS UNE IMAGE : trois colonnes de chiffres défilent
+    par crans — les unités en dix secondes, les dizaines en soixante, les
+    minutes en cent vingt. Sans JavaScript, c'est la seule façon d'afficher un
+    temps qui avance vraiment plutôt qu'un « 0:07 » peint sur l'écran.
+
+    Toutes les animations sont EN PAUSE au repos. Une onde qui bat sur un écran
+    où rien ne joue ferait croire qu'un son est en train de sortir.
+  */
+  :root{
+    --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c;
+    --bronze:#8f7130; --trait:rgba(22,23,15,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`.
+     Le patron, le 2026-08-10 : « rien ne s'ouvre quand je touche un jour ».
+     Chromium s'en passe — les contrôles restaient donc au vert pendant que
+     l'écran ne répondait pas sous son doigt. Une règle unique, pour ne plus
+     jamais l'oublier. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1400px;margin:0 auto}
+
+  .intro{max-width:60ch;margin:0 auto 12px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:390px;max-width:100%}
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:720px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#edece6; --e-plage:#f7f6f2; --e-encre:#16170f; --e-gris:#83867c;
+         --e-bronze:#8f7130; --e-trait:rgba(22,23,15,.13); --e-plein:#2a3a2e;
+         --e-plein-encre:#f2f1ea; --e-signe:#c2a05f}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  .barre{display:flex;align-items:center;justify-content:space-between;padding:22px 24px 0;flex:none}
+  .rond{display:flex;align-items:center;justify-content:center;width:40px;height:40px;
+        border-radius:99px;background:var(--e-plage);flex:none;-webkit-tap-highlight-color:transparent}
+  .rond svg{display:block}
+  .fin{padding:10px 16px;border-radius:99px;background:var(--e-plage);
+       color:var(--e-bronze);font-size:12.5px;text-decoration:none;
+       -webkit-tap-highlight-color:transparent}
+
+  .zone{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+  .scene{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;
+         padding:0 30px;
+         transition:transform .5s cubic-bezier(.22,.61,.36,1),filter .5s}
+  .scene .statut{margin:0;color:var(--e-bronze)}
+  .scene .nom{margin:14px 0 0;font:400 23px/1.16 ui-serif,Georgia,serif;
+              letter-spacing:-.01em;color:var(--e-gris)}
+  .scene .phrase{margin:22px 0 0;font:400 33px/1.14 ui-serif,Georgia,serif;letter-spacing:-.022em}
+  .scene .calme{margin:24px 0 0;padding:16px 18px;border-radius:5px;background:var(--e-plage);
+                font-size:13.5px;line-height:1.55;color:var(--e-gris)}
+  .scene .calme b{color:var(--e-bronze);font-weight:400}
+
+  .tiroir{position:absolute;left:0;right:0;bottom:0;z-index:4;
+          background:var(--e-plage);border-radius:24px 24px 0 0;
+          box-shadow:0 -18px 44px rgba(20,18,14,.16);
+          transform:translateY(calc(100% - 65px));
+          transition:transform .5s cubic-bezier(.22,.61,.36,1)}
+  .prise{display:block;padding:14px 26px 16px;-webkit-tap-highlight-color:transparent}
+  .prise .poignee{display:block;width:36px;height:3px;border-radius:9px;
+                  background:var(--e-trait);margin:0 auto 13px}
+  .prise .resume{display:flex;justify-content:space-between;align-items:baseline;
+                 color:var(--e-gris);font-size:12.5px}
+  .prise .resume b{color:var(--e-encre);font-weight:400}
+  .contenu{padding:2px 26px 30px}
+  .ligne{display:flex;justify-content:space-between;align-items:center;
+         padding:14px 0;border-top:1px solid var(--e-trait);text-decoration:none;color:inherit}
+  .ligne .d{font-size:12.5px;color:var(--e-gris)}
+  .ligne .d.fait{color:var(--e-bronze)}
+
+  .pellicule{display:flex;gap:7px;margin:2px -26px 0;padding:2px 26px 16px;
+    overflow-x:auto;scroll-snap-type:x proximity;scroll-padding-left:26px;scrollbar-width:none;
+    -webkit-mask-image:linear-gradient(90deg,#000 0 calc(100% - 32px),transparent 100%);
+    mask-image:linear-gradient(90deg,#000 0 calc(100% - 32px),transparent 100%)}
+  .pellicule::-webkit-scrollbar{display:none}
+  .vue{position:relative;flex:0 0 68px;height:62px;border-radius:3px;overflow:hidden;
+    scroll-snap-align:start;-webkit-tap-highlight-color:transparent;
+    transition:transform .2s cubic-bezier(.22,.61,.36,1)}
+  .vue:active{transform:scale(.96)}
+  .ajouter{display:flex;align-items:center;justify-content:center;
+    flex:0 0 68px;height:62px;border-radius:3px;scroll-snap-align:start;
+    border:1px solid var(--e-trait);color:var(--e-bronze);text-decoration:none;
+    font-size:20px;line-height:1;-webkit-tap-highlight-color:transparent;
+    transition:transform .2s cubic-bezier(.22,.61,.36,1),border-color .2s}
+  .ajouter:active{transform:scale(.96);border-color:var(--e-bronze)}
+
+  .tirer:checked ~ .zone .tiroir{transform:translateY(0)}
+  .tirer:checked ~ .zone .scene{transform:scale(.955) translateY(-16px);filter:brightness(.9)}
+
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;background:var(--e-fond)}
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9px;letter-spacing:.15em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre)}
+  .bas i{position:absolute;left:14px;bottom:26px;width:calc((100% - 28px)/4);height:1px;background:var(--e-bronze)}
+
+  /* ═══ Le lecteur ══════════════════════════════════════════════════════ */
+
+  .lecteur{align-self:center;margin-top:26px;position:relative;
+           display:flex;flex-direction:column;align-items:center;width:100%}
+  /* Les ailes ne prennent jamais le doigt : sans cela, un barreau qui passe
+     sous le pouce volerait l'appui destiné à l'anneau. */
+  .aile{position:absolute;top:0;height:76px;width:104px;display:flex;align-items:center;
+        overflow:hidden;pointer-events:none}
+  .aile.g{right:calc(50% + 40px);justify-content:flex-end}
+  .aile.d{left:calc(50% + 40px);justify-content:flex-start}
+  .aile i{position:absolute;display:block;width:2px;border-radius:2px;
+          background:var(--e-bronze);opacity:0}
+  .aile.g i{right:0}
+  .aile.d i{left:0}
+  .lire:checked ~ .zone .aile i{animation-play-state:running}
+
+  .aile.g i{animation:partir-g 1.9s linear infinite;animation-play-state:paused}
+  .aile.d i{animation:partir-d 1.9s linear infinite;animation-play-state:paused}
+  @keyframes partir-g{
+    0%{transform:translateX(0) scaleY(.15);opacity:0}
+    16%{opacity:.95}
+    72%{opacity:.7}
+    100%{transform:translateX(-98px) scaleY(1);opacity:0}}
+  @keyframes partir-d{
+    0%{transform:translateX(0) scaleY(.15);opacity:0}
+    16%{opacity:.95}
+    72%{opacity:.7}
+    100%{transform:translateX(98px) scaleY(1);opacity:0}}
+  /* Hauteurs inégales et départs décalés : une onde régulière ressemble à un
+     décor, pas à une voix. */
+  .aile i:nth-child(1){height:9px;animation-delay:-0s}
+  .aile i:nth-child(2){height:20px;animation-delay:-.24s}
+  .aile i:nth-child(3){height:13px;animation-delay:-.48s}
+  .aile i:nth-child(4){height:27px;animation-delay:-.72s}
+  .aile i:nth-child(5){height:11px;animation-delay:-.96s}
+  .aile i:nth-child(6){height:22px;animation-delay:-1.2s}
+  .aile i:nth-child(7){height:8px;animation-delay:-1.44s}
+  .aile i:nth-child(8){height:17px;animation-delay:-1.68s}
+
+  .anneaux{position:relative;display:flex;align-items:center;justify-content:center;
+           min-width:76px;min-height:76px;-webkit-tap-highlight-color:transparent;
+           transition:transform .22s cubic-bezier(.22,.61,.36,1)}
+  .anneaux:active{transform:scale(.95)}
+  .vert,.or{position:absolute;border-radius:99px;pointer-events:none}
+  .traits{position:relative;display:flex;align-items:center;gap:4px;z-index:2}
+  .traits i{display:block;width:2px;border-radius:2px;background:var(--e-bronze);
+            transform-origin:center;animation:battre 1.15s ease-in-out infinite;
+            animation-play-state:paused}
+  .traits i:nth-child(1){height:12px;animation-delay:-.1s}
+  .traits i:nth-child(2){height:24px;animation-delay:-.45s}
+  .traits i:nth-child(3){height:12px;animation-delay:-.8s}
+  @keyframes battre{0%,100%{transform:scaleY(.42)}50%{transform:scaleY(1)}}
+  .lire:checked ~ .zone .traits i{animation-play-state:running}
+
+  /* Le chronomètre : trois colonnes qui défilent par crans. Les unités font un
+     tour en dix secondes, les dizaines en soixante, les minutes en cent vingt —
+     c'est un temps qui avance, pas un nombre peint. */
+  .chrono{margin-top:14px;height:16px;display:flex;align-items:center;justify-content:center;
+          gap:0;color:var(--e-bronze);font-size:13px;line-height:16px;
+          opacity:0;transform:translateY(-4px);
+          transition:opacity .32s .1s,transform .32s .1s}
+  .lire:checked ~ .zone .chrono{opacity:1;transform:none}
+  .colonne{display:block;height:16px;overflow:hidden}
+  .rouleau{display:block}
+  .rouleau b{display:block;height:16px;font-weight:400}
+  .colonne.min .rouleau{animation:defiler2 120s steps(2) infinite;animation-play-state:paused}
+  .colonne.dix .rouleau{animation:defiler6 60s steps(6) infinite;animation-play-state:paused}
+  .colonne.uni .rouleau{animation:defiler10 10s steps(10) infinite;animation-play-state:paused}
+  .lire:checked ~ .zone .rouleau{animation-play-state:running}
+  @keyframes defiler2{to{transform:translateY(-32px)}}
+  @keyframes defiler6{to{transform:translateY(-96px)}}
+  @keyframes defiler10{to{transform:translateY(-160px)}}
+  .duree{margin-left:7px;color:var(--e-gris)}
+
+  /* ═══ Les quatre habillages ═══════════════════════════════════════════ */
+
+  /* L'habillage retenu : le vert tient le tour, l'or se pose dedans. */
+  .vert{width:74px;height:74px;border:1.5px solid var(--e-plein)}
+  .or{width:56px;height:56px;border:1px solid var(--e-bronze)}
+
+  /* ═══ Retirer la note — trois gestes, une seule issue ══════════════════ */
+  /* L'issue est celle que le patron a déjà retenue pour les chantiers : la
+     chose s'en va, et un « Annuler » la rend. Un même vocabulaire de retrait
+     dans toute l'application vaut mieux que trois inventions brillantes. */
+  .oter:checked ~ .zone .aile{opacity:0;transition:opacity .22s}
+  .oter:checked ~ .zone .anneaux{transform:scale(.14);opacity:0;
+    transition:transform .44s cubic-bezier(.5,0,.75,0),opacity .3s .06s}
+  .oter:checked ~ .zone .chrono{opacity:0;transform:translateY(-4px);transition:opacity .2s}
+  /* Tout le déclencheur s'efface avec la note, pas seulement l'anneau : le
+     libellé « Retirer » restait allumé et s'imprimait par-dessus « Annuler ». */
+  .oter:checked ~ .zone .glisseur,
+  .oter:checked ~ .zone .indice{opacity:0;pointer-events:none;transition:opacity .26s}
+  /* Les barreaux rentrent dans l'anneau avant qu'il ne parte : la voix se
+     ramasse au lieu de s'évaporer. */
+  .oter:checked ~ .zone .traits i{animation:none;transform:scaleY(.08);
+    transition:transform .3s cubic-bezier(.5,0,.75,0)}
+
+  .retire{position:absolute;top:22px;left:0;right:0;display:flex;align-items:center;
+    justify-content:center;gap:14px;
+    opacity:0;visibility:hidden;transform:translateY(6px);
+    transition:opacity .34s,transform .34s,visibility 0s .34s}
+  .oter:checked ~ .zone .retire{opacity:1;visibility:visible;transform:none;
+    transition:opacity .34s .28s,transform .34s .28s,visibility 0s .28s}
+  .retire .quoi{font-size:13px;color:var(--e-gris)}
+  .retire .annuler{padding:9px 4px;font-size:10px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--e-bronze);-webkit-tap-highlight-color:transparent}
+
+  /* ═══ Le retrait — on fait MONTER l'anneau ════════════════════════════ */
+  /* Le doigt pousse l'anneau vers le haut et « Retirer » se découvre dessous.
+     La première version annonçait « faites descendre » : c'était l'inverse du
+     geste réel, et une consigne fausse coûte plus cher qu'aucune consigne.
+     `overscroll-behavior` empêche le glissement de continuer sur la page —
+     sans lui, le doigt emporterait tout l'écran. */
+  .glisseur{height:78px;width:100%;overflow-y:auto;
+    scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain}
+  .glisseur::-webkit-scrollbar{display:none}
+  .volet{height:78px;display:flex;align-items:center;justify-content:center;
+    scroll-snap-align:start}
+  .fosse{height:78px;display:flex;align-items:center;justify-content:center;
+    scroll-snap-align:start;color:var(--e-bronze);font-size:10px;letter-spacing:.24em;
+    text-transform:uppercase;-webkit-tap-highlight-color:transparent}
+  .indice{margin-top:8px;font-size:11px;color:var(--e-gris)}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+      transition-duration:.001ms !important}
+  }
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Atlas — version retenue</p>
+    <h1>La note vocale : écouter, retirer, rendre</h1>
+    <p>
+      <strong>Touchez l'anneau</strong> : les secondes courent, les trois traits
+      battent, et de chaque côté des barreaux partent du centre. Retouchez :
+      tout s'arrête.
+    </p>
+    <p>
+      <strong>Poussez l'anneau vers le haut</strong> : « Retirer » se découvre
+      dessous. La voix se ramasse dans l'anneau, il part, et
+      <em>Annuler</em> la rend.
+    </p>
+  </div>
+
+  <div class="rangee">
+    <div class="prop">
+      <div class="tel"><div class="ecran" data-s="v">
+        <input class="interrupteur tirer" type="checkbox" id="t-v">
+        <input class="interrupteur lire" type="checkbox" id="l-v">
+        <input class="interrupteur oter" type="checkbox" id="o-v">
+        <div class="barre">
+          <span class="rond"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2a3a2e" stroke-width="2.2"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <a class="fin" href="#">Fin de chantier →</a>
+        </div>
+        <div class="zone">
+          <div class="scene">
+            <p class="statut caps">Planifié</p>
+            <p class="nom">M. Bernard — 12 rue des Lilas</p>
+            <p class="phrase">Intervention prévue vendredi 15 août.</p>
+            <p class="calme">Une fois le chantier fait, touchez <b>Fin de chantier</b>, en haut : vous vérifierez la facture avant qu'elle n'existe pour votre client.</p>
+
+            <div class="lecteur">
+              <span class="aile g"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="aile d"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+              <div class="glisseur">
+                <div class="volet">
+                  <label class="anneaux" for="l-v" aria-label="Écouter la note vocale">
+                    <span class="vert"></span><span class="or"></span>
+                    <span class="traits"><i></i><i></i><i></i></span>
+                  </label>
+                </div>
+                <label class="fosse" for="o-v">Retirer</label>
+              </div>
+              <p class="indice">Poussez l'anneau vers le haut</p>
+              <span class="chrono num"><span class="colonne min"><span class="rouleau"><b>0</b><b>1</b><b>0</b></span></span>:<span class="colonne dix"><span class="rouleau"><b>0</b><b>1</b><b>2</b><b>3</b><b>4</b><b>5</b><b>0</b></span></span><span class="colonne uni"><span class="rouleau"><b>0</b><b>1</b><b>2</b><b>3</b><b>4</b><b>5</b><b>6</b><b>7</b><b>8</b><b>9</b><b>0</b></span></span><span class="duree">/ 1:42</span></span>
+              <div class="retire">
+                <span class="quoi">Note vocale retirée</span>
+                <label class="annuler" for="o-v">Annuler</label>
+              </div>
+            </div>
+          </div>
+          <div class="tiroir">
+            <label class="prise" for="t-v"><span class="poignee"></span>
+              <span class="resume"><span>Le chantier</span><span><b>2 340 €</b> · devis accepté</span></span></label>
+            <div class="contenu">
+              <div class="pellicule">
+                <a class="ajouter" href="#" aria-label="Ajouter des photos">+</a>
+                <a class="vue" href="#" aria-label="Photo 1 sur 6" style="background:linear-gradient(160deg,#6f7a58,#2a3226)"></a>
+                <a class="vue" href="#" aria-label="Photo 2 sur 6" style="background:linear-gradient(150deg,#c3ab84,#5e4d33)"></a>
+                <a class="vue" href="#" aria-label="Photo 3 sur 6" style="background:linear-gradient(170deg,#a9a89e,#4d4c45)"></a>
+                <a class="vue" href="#" aria-label="Photo 4 sur 6" style="background:linear-gradient(155deg,#8ea07a,#39452f)"></a>
+                <a class="vue" href="#" aria-label="Photo 5 sur 6" style="background:linear-gradient(165deg,#d0c3a6,#6a5a3c)"></a>
+                <a class="vue" href="#" aria-label="Photo 6 sur 6" style="background:linear-gradient(145deg,#9aa4a8,#414a4d)"></a>
+              </div>
+              <a class="ligne" href="#"><span>Note vocale</span><span class="d fait">1 min 42 · hier</span></a>
+              <a class="ligne" href="#"><span>Informations</span><span class="d fait">Vérifiées</span></a>
+              <a class="ligne" href="#"><span>Prix</span><span class="d fait">Calculé</span></a>
+              <a class="ligne" href="#"><span>Devis</span><span class="d fait">Envoyé mardi · accepté</span></a>
+            </div>
+          </div>
+        </div>
+        <nav class="bas"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span><i></i></nav>
+      </div></div>
+      <p class="sous">La fiche chantier — version retenue</p>
+      <p class="note">Anneau vert et or, lecture réelle, pellicule qui ajoute, retrait par le haut. <b>Un seul vocabulaire de retrait dans toute l'application.</b></p>
+    </div>
+  </div>
+
+  <p class="note" style="max-width:60ch;margin:44px auto 0;border:0">
+    <b>Ce que la maquette ne peut pas rendre, et qui reste à faire.</b> Ici
+    l'anneau s'accroche en haut d'un cran ; sur l'appareil il devra suivre le
+    doigt et finir sa course avec l'élan. Le chronomètre est une horloge CSS —
+    dans l'application il suivra la lecture réelle, et les barreaux le volume
+    réellement enregistré. Enfin, <b>rien n'est effacé tant qu'« Annuler » est à
+    l'écran</b> : le fichier ne part à la purge qu'après.
+  </p>
+</div>

@@ -5,6 +5,9 @@ import { colors, font } from "@/lib/design-tokens";
 import { adressesDuDocument } from "@/lib/adresses";
 import { enEuros } from "@/lib/euros";
 import { jourNumerique } from "@/lib/jour";
+import LigneRetirable from "@/components/atlas/LigneRetirable";
+import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
+import { useRetraits } from "@/components/atlas/useRetraits";
 import {
   majEmetteurAction,
   majClientDuDevisAction,
@@ -86,9 +89,29 @@ export default function DevisCompletClient(props: Props) {
   // adresse.
   const { chantierSepare } = adressesDuDocument({ clientAdresse: client.adresse, adresseChantier });
 
+  // **Déclaré AVANT les totaux, et ce n'est pas un détail de style** : ils le
+  // lisent. Placé après, il produisait un « Cannot access before
+  // initialization » que ni `tsc` ni `eslint` ne voient — l'écran répondait 500
+  // et rien d'autre ne le disait.
+  //
+  // Le retrait réversible, comme partout depuis le 10 août 2026. Ici l'enjeu
+  // est direct : ces lignes SONT le devis que le client recevra, et une croix
+  // nue sans retour possible est le geste le plus coûteux de l'application.
+  const retraits = useRetraits({
+    valider: async (id) => {
+      await retirerLigneAction(id);
+      setLignes((cur) => cur.filter((l) => l.id !== id));
+    },
+  });
+
   // Les totaux se recalculent sous ses yeux, à chaque frappe : un devis dont le
   // total n'apparaît qu'après enregistrement se relit deux fois.
-  const totalHt = lignes.reduce((somme, l) => somme + montantDeLaLigne(l), 0);
+  //
+  // **Ils suivent ce qui reste.** Un total qui ne bouge pas après un
+  // retrait fait douter que le retrait ait eu lieu — et ici il ferait douter du
+  // montant même du devis.
+  const lignesVisibles = lignes.filter((l) => !retraits.estRetire(l.id));
+  const totalHt = lignesVisibles.reduce((somme, l) => somme + montantDeLaLigne(l), 0);
   const totalTva = (totalHt * nombre(tauxTva)) / 100;
 
   function majLigneLocale(id: string, champ: keyof Ligne, valeur: string) {
@@ -125,10 +148,6 @@ export default function DevisCompletClient(props: Props) {
     setLignes((cur) => [...cur, { id: creee.id, libelle: "", quantite: "1", prixUnitaire: "", montant: "0.00" }]);
   }
 
-  async function retirer(id: string) {
-    setLignes((cur) => cur.filter((l) => l.id !== id));
-    await retirerLigneAction(id);
-  }
 
   return (
     <article
@@ -254,16 +273,28 @@ export default function DevisCompletClient(props: Props) {
           <span />
         </div>
 
-        {lignes.length === 0 && (
+        {lignesVisibles.length === 0 && (
           <p className="py-4 text-[13px]" style={{ color: colors.muted }}>
             Aucune ligne pour l&apos;instant.
           </p>
         )}
 
         {lignes.map((l, i) => (
-          <div
+          <LigneRetirable
             key={l.id}
-            className="grid gap-2 py-3 sm:grid-cols-[1fr_70px_130px_130px_28px] sm:items-start sm:gap-3"
+            libelle={l.libelle ? `« ${l.libelle.split("\n")[0]} »` : `la ligne ${i + 1}`}
+            retiree={retraits.estRetire(l.id)}
+            onRetirer={() =>
+              retraits.retirer(l.id, l.libelle ? `« ${l.libelle.split("\n")[0]} »` : `la ligne ${i + 1}`)
+            }
+            // Une ligne de devis porte un libellé sur plusieurs lignes, une
+            // quantité, un prix : elle monte bien au-delà des 170 px par défaut,
+            // et l'enveloppe la tronquerait au repos.
+            hauteurMax={420}
+            className="flex"
+          >
+          <div
+            className="grid w-full gap-2 py-3 sm:grid-cols-[1fr_70px_130px_130px] sm:items-start sm:gap-3"
             style={{ borderBottom: `1px solid ${colors.lineSoft}` }}
           >
             <textarea
@@ -328,18 +359,8 @@ export default function DevisCompletClient(props: Props) {
               </div>
             )}
 
-            {!fige && (
-              <button
-                type="button"
-                onClick={() => retirer(l.id)}
-                aria-label={`Supprimer la ligne ${i + 1}`}
-                className="justify-self-end text-[18px] leading-none"
-                style={{ color: colors.muted }}
-              >
-                ×
-              </button>
-            )}
           </div>
+          </LigneRetirable>
         ))}
 
         {!fige && (
@@ -347,6 +368,13 @@ export default function DevisCompletClient(props: Props) {
             + Ajouter une ligne
           </button>
         )}
+
+        <TiroirDesRetires
+          dernier={retraits.dernier}
+          nombre={retraits.nombre}
+          onAnnuler={retraits.annuler}
+          className="mt-4 !mx-0"
+        />
       </section>
 
       {/* --- Les totaux, alignés à droite comme sur le papier ---------------- */}

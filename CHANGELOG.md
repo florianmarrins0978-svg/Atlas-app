@@ -9,6 +9,157 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le banc d'essai reparle : deux phrases qui avaient divergé
+
+Depuis le 9 août au soir, la vérification du banc échouait à chaque fois sur
+« l'adresse à ouvrir n'est annoncée nulle part » — **et l'adresse était
+annoncée**, mot pour mot, deux lignes plus haut dans le même journal.
+
+Il y a deux façons de démarrer le banc. `npm run essai` écrivait
+« L'application répond » ; `npm run banc` — celui que l'espace de travail
+démarre tout seul depuis qu'il sert une version bâtie — écrivait « Atlas
+répond ». Le contrôle cherchait la première phrase dans un journal produit par
+le second.
+
+Le message accusait donc le mauvais coupable, ce qui coûte plus cher que pas de
+message du tout. L'annonce vient désormais d'un seul endroit
+(`scripts/annonce-adresse.mjs`), et un test **lit le script du conteneur** pour
+vérifier que la phrase qu'il cherche est celle que le module écrit. En cas
+d'échec, la fin du journal de démarrage est recrachée.
+
+### L'anneau muet et la pellicule — la fiche chantier
+
+Sur la fiche, la ligne « Note vocale · 1 min 42 » devient un **anneau** : on le
+touche, la note se lit ; on le pousse vers le haut, « Retirer » se découvre.
+Elle annonçait une note sans la jouer — il fallait un écran de plus pour
+entendre ce que le patron venait de dire. **La chose la plus fréquente devient
+le geste le plus court.** Aucun libellé visible, mais un nom accessible :
+« Écouter la note vocale ».
+
+**Le compteur suit la lecture réelle, et l'onde le volume réellement
+enregistré.** La maquette n'avait qu'une horloge CSS et une onde
+vraisemblable ; les recopier aurait donné un écran qui ment. Un `AnalyserNode`
+mesure le signal qui sort et pilote la hauteur des barreaux par une variable
+CSS — sur le conteneur, jamais barreau par barreau.
+
+**Les photos deviennent une pellicule** dans le tiroir du bas, **case « + » en
+tête** : posée à la fin, il fallait faire défiler six photos pour ajouter la
+septième. La ligne « Photos · 6 photos » disparaît — elle comptait ce qui est
+désormais sous les yeux.
+
+**Et le jeu de démonstration contient enfin des fichiers.** Il déclarait des
+clés de stockage sans octets derrière : la lecture était refusée, les vignettes
+vides, et rien ne le disait. `seed.ts` fabrique désormais de vraies photos PNG
+et une vraie note WAV — une voix de synthèse à modulation syllabique, parce
+qu'un signal plat donne une onde plate.
+
+**Cinq pièges payés, tous vus à l'œil et aucun par un contrôle** : un contexte
+audio qui mesure un silence qu'il a lui-même créé ; le raccourci `animation:`
+qui remet `animation-play-state` à `running` et fait battre l'onde au repos ;
+un `<button>` que `display: flex` n'étire pas, d'où « Retirer » collé au bord
+gauche, visible et touchable, tous voyants au vert ; `--atlas-barre` qui est une
+réserve de place (68 px) et non la hauteur dessinée (49 px), d'où une bande de
+pellicule affleurant sous le résumé ; et l'écran de dessous qui doit reculer,
+faute de quoi le tiroir tranche l'anneau par le milieu. Détail dans
+`ARCHITECTURE.md` §49.
+
+### Le tiroir des retirés — une seule façon de supprimer, partout
+
+*« Je veux qu'il applique ce style à tout ce qu'on peut supprimer dans
+l'appli. »* Le texte glisse vers la gauche, « Retirer » se découvre, la ligne
+tombe, et un tiroir la retient en bas de l'écran : « Retiré à l'instant —
+Annuler ».
+
+**Ce que ce lot déplace, et c'est le cœur du geste :** la sécurité passait par
+une confirmation AVANT (« Supprimer cette photo ? »), elle passe par une
+réversibilité APRÈS. Les deux panneaux disparaissent — garder les deux ferait
+demander deux fois.
+
+**Rien n'est écrit tant que le tiroir est ouvert**, et c'est la promesse dont
+tout dépend. La photo et la note vocale mettent leur fichier en file de purge
+*dans la même transaction* que la suppression : appeler le serveur au moment du
+geste aurait rendu « Annuler » menteur — la ligne serait revenue, le fichier
+non. La ligne est donc seulement masquée, et l'écriture attend la fermeture.
+Trois sorties la déclenchent : le minuteur, le départ de la page, le démontage.
+
+**Trois mécaniques deviennent une**, sur **huit** endroits — le recensement en
+annonçait sept, le planning et ses trois listes manquaient à l'appel.
+`CarteGlissante` disparaît ; `AnimatedRow` ne sert plus qu'aux maquettes.
+
+**Le glissement est désormais un défilement natif**, et non un suivi du doigt
+en JavaScript. Cent lignes de calcul d'élan en moins, et quatre choses en plus
+qui n'existaient pas : l'inertie de la plateforme, `prefers-reduced-motion`, la
+molette, et un « Retirer » atteignable au clavier.
+
+**Un seul des huit ne prend pas le glissement, à dessein :** les photos. Une
+vignette carrée dans une grille de trois n'est pas une ligne. Elle garde tout
+le reste du geste et se retire depuis la visionneuse, là où on la regarde.
+
+**Deux défauts que seule l'exécution pouvait trouver.** Sur le devis complet,
+les totaux lisaient le crochet déclaré plus bas : zone morte temporelle, écran
+en 500, et ni `tsc` ni `eslint` ne la voient. Et sur le planning comme sur les
+tarifs, la carte entière glissait avec son fond — rectangle tiré hors de
+l'écran, bordure tranchée net. Vu en capture ; le fond est maintenant porté par
+l'enveloppe, qui ne bouge pas.
+
+**Une heure perdue sur un défaut qui n'existait pas**, et la leçon est écrite :
+les captures visaient `127.0.0.1`, où Next **refuse de servir ses ressources de
+développement**. La page arrivait rendue par le serveur et jamais hydratée — on
+cliquait dans le vide, et tout accusait le retrait. C'est `localhost` qu'il
+faut viser, et le contrôle attend désormais un marqueur posé après le premier
+effet, en échouant s'il n'arrive pas.
+
+### Le corps des écrans Informations et Prix
+
+Étape 2 de la fin de refonte (`TODO.md` §7) : les deux écrans les plus chargés
+du parcours. Marges à 26 px, libellés en capitales espacées, textes de
+situation à 11,5 px, plages à 4 px sans une ombre.
+
+**Trois choses ont changé de fond, pas seulement d'allure.**
+
+1. **L'encart teinté d'Informations disparaît.** « Proposé à partir de votre
+   dictée » vivait dans une plage vert pâle qui ne désignait aucun geste à
+   faire. Une couleur qui ne veut rien dire est une couleur en trop — la règle
+   née de la maquette 12. La phrase reste, en texte de situation.
+2. **L'or ne se pose plus que sur ce qui attend le patron** : « à confirmer »,
+   « à compléter », « prix à poser », la mention « recopiée mot à mot », et le
+   motif qui grise « Préparer le devis ». Ces avertissements ne sont plus des
+   boîtes teintées mais un cheveu d'or à gauche — l'« ourlet » de la maquette.
+   Partout ailleurs (provenance d'un prix, « Confirmé »), le gris.
+3. **Le total du Prix sort de sa boîte** : capitale, montant en serif de titre,
+   phrase dessous. La plage centrée le remettait *au-dessus* de la page, ce que
+   le patron a écarté en retenant un écran sans cartes ni ombres.
+
+**Deux défauts trouvés en regardant l'écran, et qu'aucune suite ne pouvait
+voir** — les deux étaient là avant ce lot :
+
+- **La croix qui retire une ligne de prix sortait de l'écran.** Une ligne du
+  détail porte deux champs ; le conteneur de `AnimatedRow` refusait de
+  descendre sous leur largeur intrinsèque, faute d'un `min-w-0`. Le bouton
+  existait dans la page — donc les contrôles le trouvaient — mais le doigt du
+  patron ne pouvait pas l'atteindre. C'était la seule façon de retirer une
+  ligne.
+- **La bulle de l'assistant mordait sur « Préparer le devis ».** Soixante-quatre
+  pixels de talon ne suffisaient pas.
+
+**Deux voix partagées entrent dans `design-tokens.ts`** — `libelleCaps` et
+`texteSituation`. Elles étaient recopiées à la main dans chaque écran refait,
+six fois les mêmes quatre valeurs ; un `0.28em` mal retapé ne se voit pas en
+relecture. `smallCaps` reste, et sert désormais les seules maquettes
+`/design/*`, découplées du produit.
+
+**Ce qui n'a PAS suivi, et pourquoi :** la variante mise en avant de
+« Créer le devis à partir de ma dictée » vit sur l'écran Transcription, qui
+n'est pas encore refait — lui donner cette voix seule y ferait une fausse note.
+
+**Trois contrôles réparés, dont deux rouges depuis le 10 août au matin.**
+`innerText` rend le texte **tel qu'il s'affiche** : depuis que les libellés sont
+en capitales, `« Prix Calculé »` et `« Déjà au détail »` ne s'y trouvent plus
+tels qu'écrits dans le code. Et le compteur de l'accueil était accusé à tort —
+`a[href^="/chantiers/"]` comptait aussi le lien d'une notification, qui défile
+avec la liste depuis le 10 août. Aucun de ces trois n'était un défaut du
+produit, et le premier réflexe — croire le contrôle — aurait coûté une heure.
+
 ### Le devis rejoint la charte : la terre cuite s'efface
 
 *« Oui, harmonise aussi le devis. »* La teinte terre cuite des documents, tenue

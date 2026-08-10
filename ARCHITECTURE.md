@@ -2968,3 +2968,366 @@ avec le compte du banc, attend les polices, et capture le haut, le bas et la
 barre isolée. Trois passages ont été nécessaires : la branche trop épaisse, puis
 mal placée, puis le débordement. **Aucun de ces trois défauts n'aurait été vu
 sans regarder.**
+
+---
+
+## 47. Les deux voix de l'écran retenu, et deux défauts que seule la capture voyait
+
+*Étape 2 de la fin de refonte (`TODO.md` §7) : les corps d'Informations et de
+Prix, 10 août 2026.*
+
+### Pourquoi deux jetons de plus, et pas une valeur recopiée
+
+La grammaire retenue le 10 août tient en quatre mesures — 9,5 px et 0,28 em
+d'écartement pour un libellé, 11,5 px pour une phrase de situation. Elles
+étaient **recopiées à la main dans chaque écran refait**, six fois. Un `0.28em`
+mal retapé ne se voit pas en relecture, et `CLAUDE.md` §3 dit exactement ce
+qu'il fallait faire : une allure s'ajoute aux pièces partagées, elle ne se
+recopie pas dans un écran.
+
+D'où `libelleCaps` et `texteSituation` dans `src/lib/design-tokens.ts`.
+
+**`smallCaps` reste, et c'est délibéré.** C'est l'ANCIENNE voix (11 px, 0,18 em)
+et elle sert encore les maquettes `/design/*`, découplées du produit depuis le
+1er août. La renommer ou la changer aurait réécrit des pages qui ne sont plus
+des écrans du patron. Conséquence utile pour la suite : **un écran qui importe
+encore `smallCaps` n'est pas refait** — c'est le repère le moins cher pour
+savoir où l'on en est.
+
+### La couleur qui ne désignait rien
+
+Trois encarts teintés en vert pâle disparaissent (la provenance des
+informations, la mention « recopiée mot à mot », le brouillon obsolète). Aucun
+ne demandait un geste au patron : ils décrivaient. La règle née de la maquette
+12 s'applique — *une couleur qui ne veut rien dire est une couleur en trop*.
+
+Ce qui **reste** en couleur d'attente, et rien d'autre : « à confirmer », « à
+compléter », « prix à poser », l'avertissement de relecture, et le motif qui
+grise « Préparer le devis ». Leur forme est l'« ourlet » de la maquette — un
+cheveu d'or à gauche, sans fond.
+
+### Deux défauts réels, tous deux invisibles aux suites
+
+1. **La croix qui retire une ligne de prix sortait de l'écran.** Une ligne du
+   détail porte deux champs ; le conteneur intérieur d'`AnimatedRow` n'avait pas
+   de `min-w-0` et refusait donc de descendre sous la largeur intrinsèque de ses
+   enfants. Le bouton était **bien dans la page** — les contrôles le trouvaient,
+   le cliquaient, et passaient au vert — mais il se dessinait à 371 px sur un
+   écran de 393, marge comprise : le doigt du patron ne pouvait pas l'atteindre,
+   et c'est la seule façon de retirer une ligne.
+
+   *La leçon, et elle n'est pas nouvelle :* un contrôle qui clique par sélecteur
+   ne dit rien de l'atteignabilité. Ce qui l'a montré est une **mesure** —
+   `getBoundingClientRect` sur la croix, comme la boîte de la barre basse au §46.
+
+2. **La bulle de l'assistant mordait sur « Préparer le devis ».** Soixante-quatre
+   pixels de talon en bas de page ne suffisaient pas ; il en faut cent douze.
+   Vu sur la capture du bas, jamais autrement.
+
+### Un contrôle qui accusait au hasard
+
+`verifier:memoire` déclarait `ARCHITECTURE.md` menteur parce qu'il y cite
+`/tmp/atlas-prechauffage.json` — un chemin **d'exécution**, écrit par le
+préchauffage du banc, donc présent ou absent selon qu'une machine tourne. Le
+contrôle ne regarde plus que les chemins relatifs, c'est-à-dire ceux de ce
+dépôt. Il sait toujours échouer : un chemin de dépôt inventé le fait rougir.
+
+### Et trois contrôles rouges qui n'accusaient rien de réel
+
+`innerText` rend le texte **tel qu'il s'affiche**. Depuis que les libellés sont
+en capitales, ni « Prix Calculé » ni « Déjà au détail » ne s'y trouvent tels
+qu'ils sont écrits dans le code. Deux de ces trois suites étaient rouges depuis
+le matin du 10 août, avant ce lot. La troisième accusait le compteur de
+l'accueil, alors que son sélecteur — `a[href^="/chantiers/"]` — comptait aussi
+le lien d'une notification, qui défile avec la liste depuis le même jour ; il
+vise désormais `a.atlas-brin`, une étiquette de code et non un libellé.
+
+**Le réflexe à garder :** devant un contrôle rouge après une refonte, regarder
+d'abord s'il lit du **rendu** ou de la **donnée**. Corriger le produit pour
+satisfaire un contrôle qui lit du rendu, c'est défaire ce qui vient d'être
+validé.
+
+---
+
+## 48. Le tiroir des retirés — une seule façon de supprimer, partout
+
+*Cinquième et dernier choix arrêté par le patron sur les maquettes du 10 août
+2026 : « je veux qu'il applique ce style à tout ce qu'on peut supprimer dans
+l'appli ». `docs/INTEGRER-ORIGINE.md` §4 et §4 bis portent le dessin.*
+
+### Ce que le geste déplace, et qu'il faut décider en le sachant
+
+**La sécurité passe d'une confirmation AVANT à une réversibilité APRÈS.** Les
+panneaux « Supprimer cette photo ? » et « Supprimer cette note vocale ? »
+disparaissent : garder les deux ferait demander deux fois, et c'est le cœur de
+ce que le patron a retenu. Ce n'est pas un allègement — c'est un déplacement,
+et il ne tient qu'à une condition, celle du paragraphe suivant.
+
+### Rien n'est écrit tant que le tiroir est ouvert
+
+**C'est la seule promesse qui ne se vérifie pas à l'écran, et la seule dont
+tout dépend.** La photo et la note vocale ont un fichier derrière elles, et
+`supprimerPhoto` / `supprimerNoteVocale` mettent ce fichier en file de purge
+**dans la même transaction** que la suppression (`fichiers_a_purger`). Appeler
+le serveur au moment du geste aurait rendu « Annuler » menteur : la ligne
+serait revenue, le fichier non. *Une annulation qui ne rend rien est pire que
+pas d'annulation.*
+
+D'où `useRetraits` : la ligne est **masquée**, jamais retirée de l'état de
+l'écran, et l'écriture attend la fermeture du tiroir. Annuler n'est alors qu'un
+oubli. L'ancienne mécanique — supprimer, puis RECRÉER à l'annulation — rendait
+une ligne neuve avec un identifiant neuf, ce qui n'est pas la même chose.
+
+**Trois sorties, et il en faut trois** : le minuteur (six secondes), le départ
+de la page (`pagehide`), et le démontage. Sans les deux dernières, quitter
+l'écran pendant le délai annulerait le retrait en silence, et le patron
+retrouverait la ligne qu'il croit supprimée.
+
+### Le glissement est un défilement natif, pas un suivi du doigt
+
+`CarteGlissante` mesurait l'élan à la main — `touchstart`/`touchmove`/
+`touchend`, une fonction de freinage, un seuil de chiquenaude : cent lignes
+pour refaire ce que le système fait mieux. `.atlas-glisse` est un conteneur à
+`overflow-x: auto` avec deux points d'accroche.
+
+Quatre choses viennent avec, et aucune n'existait avant : l'inertie et le
+rebond de la plateforme, `prefers-reduced-motion`, la molette et le pavé
+tactile, et surtout un « Retirer » **atteignable au clavier** — le focus fait
+défiler la colonne tout seul, là où l'ancienne carte devait sortir son bouton
+de l'ordre de tabulation tant qu'elle était fermée.
+
+### Seule la colonne du texte glisse — et le fond ne glisse jamais
+
+La date et le fil ne bougent pas (`avant`), et le voile de 16 px fait
+**dissoudre** le texte qui sort au lieu de le trancher en plein mot.
+
+**Le fond est porté par l'enveloppe, qui reste en place** (`plage`). Vu en
+capture, et c'est le seul vrai défaut de ce lot : sur le planning et les
+tarifs, où la ligne est une carte, laisser le fond partir avec le texte tirait
+le rectangle clair hors de l'écran, bordure tranchée net, « Retirer » posé sur
+le fond de page. Ça se lisait comme un défaut d'affichage, pas comme un geste.
+
+### Huit endroits, pas sept — et un qui ne prend pas le glissement
+
+Le recensement de la fiche en comptait sept. **Le planning est le huitième** :
+ses trois listes supprimaient par `CarteGlissante`. L'oublier aurait laissé la
+moitié de l'ancienne mécanique debout.
+
+**Les photos ne prennent pas le glissement, et c'est délibéré :** une vignette
+carrée dans une grille de trois n'est pas une ligne, et y faire glisser un
+texte qui n'existe pas n'aurait aucun sens. Elles gardent tout le reste — le
+mot « Retirer », sa couleur, le tiroir, l'écriture différée — et se retirent
+depuis la visionneuse, là où on les regarde.
+
+### Ce qui reste refusé, et le dit
+
+Un chantier facturé ne se retire pas : sa facture figure au relevé de TVA.
+`CarteGlissante` portait `desactive` et ne faisait alors **rien du tout** — un
+geste sans effet ressemble à une panne. Le glissement découvre désormais le
+**motif** à la place du bouton. Et si le serveur refuse malgré tout — c'est lui
+qui tranche —, la ligne revient avec sa raison plutôt que de disparaître à tort.
+
+### Deux défauts que seule l'exécution pouvait trouver
+
+1. **« Cannot access 'retraits' before initialization ».** Sur le devis complet,
+   les totaux lisaient le crochet déclaré plus bas : zone morte temporelle,
+   écran en 500, et **ni `tsc` ni `eslint` ne la voient**. Trouvé en ouvrant
+   l'écran, pas autrement.
+2. **Une heure perdue sur un défaut qui n'existait pas.** Les captures visaient
+   `127.0.0.1` ; Next **refuse de servir ses ressources de développement à une
+   origine qu'il juge étrangère**. La page arrivait rendue par le serveur et
+   n'était jamais hydratée : les boutons existaient sans le moindre écouteur,
+   on cliquait dans le vide, et tout accusait le retrait. C'est `localhost`
+   qu'il faut viser. `scripts/capture-retrait.mts` attend désormais un marqueur
+   posé **après** le premier effet (`data-atlas-vivant`), et **échoue** si ce
+   marqueur n'arrive pas — en nommant le bon coupable.
+
+### Ce qui n'a pas pu être éprouvé ici, et qui doit l'être au doigt
+
+Le glissement horizontal du texte et l'accroche verticale du fil
+(`scroll-snap-stop: always`) ne portent pas sur le même axe, mais ils se
+disputent un mouvement en **diagonale** — le cas ordinaire d'un pouce. Un
+navigateur piloté ne le reproduit pas. À essayer sur un vrai téléphone.
+
+---
+
+## 49. L'anneau muet et la pellicule — la fiche chantier
+
+**Retenu par le patron le 10 août 2026, sur maquette**
+(`maquettes/atlas-note-vocale.html`, `docs/INTEGRER-ORIGINE.md` §6 bis).
+
+Sur la fiche, deux choses changent de nature. La ligne « Note vocale » devient
+un **anneau muet** — un accès direct, sans libellé visible : on le touche, la
+note se lit ; on le retouche, elle s'arrête ; on le pousse **vers le haut**,
+« Retirer » se découvre dessous. Et les photos, qui n'étaient qu'un compteur
+dans une liste, deviennent une **pellicule** dans le tiroir du bas.
+
+`src/app/chantiers/[id]/AnneauNoteVocale.tsx` et `TiroirFiche.tsx`.
+
+### Pourquoi un anneau plutôt qu'une ligne
+
+Une ligne « Note vocale · 1 min 42 » annonce une note ; elle ne la joue pas. Il
+fallait un écran de plus pour entendre ce que le patron venait de dire. L'anneau
+supprime cet écran : la chose la plus fréquente — réécouter — devient le geste
+le plus court.
+
+**Aucun libellé visible, mais un nom accessible** (« Écouter la note vocale »).
+Une icône muette pour l'œil ne doit pas l'être pour qui n'a pas l'usage de ses
+yeux.
+
+**La prise vaut 76 px quand le trait n'en dessine que 56.** Une icône fine qu'on
+rate deux fois sur trois n'est pas élégante, elle est ratée.
+
+### Ce que la maquette ne pouvait pas rendre, et qui est vrai ici
+
+La maquette n'a **aucun JavaScript** — le lecteur du patron n'en exécute pas.
+Son compteur est une horloge CSS et son onde un décor vraisemblable. Recopier
+l'un ou l'autre aurait donné un écran qui ment.
+
+- **Le compteur suit la lecture réelle** (`currentTime` / `duration`).
+- **La hauteur des barreaux suit le volume réellement enregistré** : un
+  `AnalyserNode` posé sur l'élément audio, l'écart quadratique moyen du signal
+  — le volume *perçu*, pas le pic, qui ferait sauter l'onde sur un claquement.
+- **L'ampleur se pose sur le CONTENEUR, jamais barreau par barreau** : une
+  variable CSS (`--atlas-ampleur`) et un `scaleY`. Seize éléments remis en page
+  soixante fois par seconde coûteraient plus que tout le reste de l'écran.
+- **Le glissement est un défilement natif**, avec l'inertie de la plateforme :
+  la maquette, elle, s'accrochait d'un cran.
+
+### Cinq pièges, tous payés
+
+1. **Un contexte audio naît suspendu, et se rendort en arrière-plan.** Suspendu,
+   il ne laisse rien passer : la lecture avançait, le compteur courait, et
+   l'onde mesurait un silence **que nous avions nous-mêmes créé** en intercalant
+   l'analyseur. `resume()` à chaque appui, pas seulement au premier. Et
+   `noeud.connect(destination)`, sinon le son se tait pour de bon.
+2. **Le jeu de démonstration ne déposait aucun fichier** : il déclarait des
+   clés de stockage sans octets derrière. `play()` était refusé, l'anneau
+   restait inerte, et rien ne disait pourquoi. `seed.ts` fabrique désormais de
+   vraies photos PNG et une vraie note WAV — une voix de synthèse à modulation
+   syllabique, parce qu'un signal plat donne une onde plate.
+3. **Le raccourci `animation:` remet `animation-play-state` à `running`.**
+   Déclaré avant, il était silencieusement annulé : l'onde battait au repos, et
+   un écran qui bat fait croire qu'un son sort du téléphone. La déclaration
+   vient **après** le raccourci, dans la même règle.
+4. **`display: flex` n'étire pas un `<button>`.** La maquette pose un
+   `<label>` ; un contrôle de formulaire, lui, garde une largeur au contenu.
+   « Retirer » se dessinait collé au bord gauche, son R à moitié hors de
+   l'écran — **visible, touchable, et tous les contrôles au vert**. D'où
+   `width: 100%`, et un contrôle qui mesure désormais l'écart au centre.
+5. **`--atlas-barre` est une réserve de place (68 px), pas la hauteur que la
+   barre dessine (49 px).** Le tiroir posé dessus laissait dépasser 84 px au
+   lieu de 65 : une bande de pellicule affleurait sous le résumé, on voyait le
+   haut de deux photos sans pouvoir les toucher. **Le tiroir mesure la barre
+   réelle** plutôt que de corriger la variable — la corriger aurait déplacé le
+   cheveu du bandeau sur tous les écrans, dont l'accueil, que le patron a
+   arrêté.
+
+### Le tiroir : il se clippe, et l'écran de dessous recule
+
+Le tiroir ne se **déplace** pas sous l'écran, il **borne sa hauteur** : ce qui
+dépasse au repos est exactement la prise, quelle que soit l'encoche du
+téléphone. Et quand il monte, la scène du dessus recule
+(`scale(.955) translateY(-16px)`, `brightness(.9)`) — même geste que la feuille
+« Nouveau chantier » sur l'accueil, et pour la même raison : **c'est la
+profondeur qui dit « on est passé au-dessus », pas un voile.** Sans ce recul, le
+tiroir tranchait l'anneau par le milieu et l'écran avait l'air cassé.
+
+L'état passe par un attribut sur la racine (`data-tiroir`), et non par une
+propriété : la fiche est un composant serveur, et le faire descendre obligerait
+à la rendre cliente entière pour un `transform`.
+
+**La case « + » vient en PREMIER**, et la ligne « Photos · 6 photos »
+disparaît. Posée en fin de pellicule, la case demandait de faire défiler six
+photos pour ajouter la septième : sur un téléphone, ajouter une photo ne doit
+pas se mériter. Quant à la ligne, elle comptait ce qui est désormais sous les
+yeux — deux fois la même information sur un écran, c'est une de trop.
+
+### Le retrait obéit au vocabulaire commun (§48)
+
+L'anneau se retire comme une ligne se retire : **rien n'est effacé tant
+qu'« Annuler » est à l'écran.** Le fichier ne part en file de purge qu'à la
+fermeture du tiroir — une annulation qui ne rendrait que le texte serait pire
+que pas d'annulation. C'est `useRetraits` qui porte le délai, ici comme partout
+ailleurs.
+
+**Et la consigne dit le geste RÉEL** — « Poussez l'anneau vers le haut ». Une
+première version annonçait « faites descendre » alors que le doigt fait monter :
+une consigne fausse coûte plus cher qu'aucune consigne.
+
+### Ce qui n'a PAS été repris de la maquette, et par décision
+
+La maquette montre autour de l'anneau une **scène** entière — grand titre serif,
+phrase de situation — à la place de l'en-tête commun. **Elle n'est pas
+appliquée, et c'est un choix du patron du 10 août 2026 :** *« N'y touche pas. »*
+
+La raison tient en une ligne : `EnTeteEcran` est une pièce **partagée** par la
+fiche, le planning, les terminés, les réglages et les six écrans d'étape. La
+refaire pour la seule fiche désaccorderait cet écran de tous les autres ; la
+refaire partout est un lot en soi, qui toucherait l'accueil — arrêté et non
+rouvrable. **Cet écart avec la maquette est connu et voulu : ne pas le
+« corriger ».**
+
+### Ce que ce lot dit des contrôles
+
+**Tous les défauts de ce lot ont été trouvés à l'œil, aucun par un contrôle** :
+un libellé imprimé par-dessus un autre, une consigne inversée, une poignée qui
+ne se dessinait pas, une cible tactile de zéro pixel, un mot centré qui ne
+l'était pas. Les cinq états se capturent en une commande —
+`npx tsx scripts/capture-fiche-note-vocale.mts <dossier> <id-chantier>` — et
+ce script mesure ce que l'œil venait de voir, pour que la prochaine fois il le
+voie avant nous.
+
+Un point de méthode qui vaut au-delà de cet écran : **`Element.checkVisibility({
+opacityProperty: true })`**. L'opacité propre d'un élément ne dit rien de celle
+qu'il hérite de son parent — un libellé effacé passe sinon pour visible.
+
+---
+
+## 50. Deux phrases qui divergent, un banc rouge deux jours
+
+**Le défaut.** Depuis le 9 août 2026 au soir, `banc-essai.yml` échouait à chaque
+exécution sur `main`, avec ce message :
+
+```
+❌ l'adresse à ouvrir n'est annoncée nulle part
+```
+
+**Et l'adresse était annoncée**, mot pour mot, deux lignes plus haut dans le
+même journal. Le message accusait le mauvais coupable — exactement ce que
+`AGENTS.md` interdit : *« une erreur qui envoie chercher au mauvais endroit
+coûte plus cher que pas d'erreur du tout »*.
+
+**La cause.** Il y a deux façons de démarrer le banc, et elles ne disaient pas
+la même chose :
+
+| Ce qui démarre | Ce qu'il écrivait |
+|---|---|
+| `npm run essai` — l'atelier, tapé à la main | « L'application répond » |
+| `npm run banc` — la version bâtie, démarrée SEULE à l'allumage | « Atlas répond » |
+
+`.devcontainer/verifier.sh` cherchait la **première** phrase dans un journal
+produit par le **second** script. Le basculement du banc de `essai` vers `banc`
+(§45) a donc cassé ce contrôle sans que personne n'ait touché au contrôle.
+
+**Ce n'est pas un accident, c'est une règle enfreinte.** `CLAUDE.md` §3 :
+*« Jamais de règle dupliquée entre l'affichage et la vérification. Deux
+implémentations finissent toujours par diverger. »* Elles ont divergé — et pas
+seulement sur la phrase : `adressePubliquePossible()` était recopiée à
+l'identique dans les deux fichiers.
+
+**Le correctif.** `scripts/annonce-adresse.mjs` porte désormais l'annonce
+entière, et les deux scripts l'appellent. Le marqueur cherché par le conteneur
+y est **exporté** (`MARQUEUR_PRET`), et `scripts/test-annonce-adresse.ts` **lit
+le fichier `.devcontainer/verifier.sh`** pour vérifier que la phrase qu'il y
+cherche est celle que le module écrit. Recopier la phrase dans le test aurait
+reproduit la duplication qu'on venait de supprimer.
+
+Le test vise la ligne du `grep` **par ce qu'elle fait** — chercher dans
+`/tmp/essai.log` — et non par son message d'échec : première version, il visait
+le message, et reformuler celui-ci a suffi à lui faire contrôler la mauvaise
+ligne. Vu en le jouant, pas en le relisant.
+
+**Et le message désigne maintenant le bon coupable :** en cas d'échec, la fin du
+journal de démarrage est recrachée. Sans elle, on part chercher une adresse
+absente au lieu de lire ce que le démarrage a réellement dit.

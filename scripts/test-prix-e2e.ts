@@ -68,11 +68,20 @@ async function main() {
   const totalApresModif = await page.locator("p", { hasText: "€" }).first().innerText();
   assert.match(totalApresModif.replace(/\s/g, " "), /1\s?234,50\s?€/);
 
-  // --- Suppression avec toast Annuler ---
-  await section(page).locator('button[aria-label="Retirer cette ligne"]').first().click();
-  await page.waitForTimeout(300);
-  assert.ok(await page.locator("text=Ligne supprimée").isVisible());
-  await page.getByRole("button", { name: "Annuler" }).click();
+  // --- Retrait, puis « Annuler » depuis le tiroir ---
+  //
+  // Le geste a changé le 10 août 2026 : plus de croix nue ni de bandeau
+  // flottant, mais « Retirer » découvert par glissement et un tiroir en bas.
+  // Ce qui compte ici n'a pas changé : **annuler doit RENDRE la ligne**. Et
+  // c'est plus vrai qu'avant — rien n'est écrit tant que le tiroir est ouvert,
+  // là où l'ancienne mécanique supprimait puis recréait une ligne neuve.
+  await page.getByRole("button", { name: /^Retirer / }).first().click();
+  await page.waitForTimeout(500);
+  assert.ok(
+    await page.locator(".atlas-tiroir[data-ouvert='oui']").first().isVisible(),
+    "Le tiroir des retirés ne s'est pas ouvert."
+  );
+  await page.getByRole("button", { name: /^Annuler le retrait/ }).click();
   await page.waitForTimeout(1000);
   const nbLignesApresAnnulation = await section(page).locator("input").count();
   assert.equal(nbLignesApresAnnulation, 4, "Les deux lignes (4 champs) doivent être restaurées après annulation");

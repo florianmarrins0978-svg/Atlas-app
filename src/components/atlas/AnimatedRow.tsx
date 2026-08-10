@@ -18,7 +18,14 @@ export function AnimatedRow({
       className="flex items-center gap-2 overflow-hidden transition-all duration-200 ease-in-out"
       style={leaving ? { opacity: 0, maxHeight: 0, marginBottom: 0 } : { opacity: 1, maxHeight: 60 }}
     >
-      <div className="flex flex-1 items-center gap-2">{children}</div>
+      {/* `min-w-0` : sans lui, ce conteneur refuse de descendre sous la largeur
+          intrinsèque de ses champs, et c'est la CROIX qui sort de l'écran —
+          la seule façon de retirer une ligne, invisible.
+          Vu en capture le 10 août 2026 sur l'écran Prix, où une ligne porte
+          deux champs (le libellé et le montant) : le défaut y était depuis le
+          début, et aucune suite ne pouvait le voir puisque le bouton existait
+          bel et bien dans la page. */}
+      <div className="flex min-w-0 flex-1 items-center gap-2">{children}</div>
       <button
         type="button"
         onClick={onRemove}

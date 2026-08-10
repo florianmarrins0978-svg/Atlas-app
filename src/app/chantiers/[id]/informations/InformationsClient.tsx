@@ -2,10 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { colors, smallCaps } from "@/lib/design-tokens";
+import { champPlage, colors, libelleCaps, styleChampPlage, texteSituation } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
-import UndoToast from "@/components/atlas/UndoToast";
-import { AnimatedRow } from "@/components/atlas/AnimatedRow";
+import LigneRetirable from "@/components/atlas/LigneRetirable";
+import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
+import { useRetraits } from "@/components/atlas/useRetraits";
 import {
   ajouterPrestationAction,
   modifierPrestationAction,
@@ -55,9 +56,19 @@ export default function InformationsClient({
   // ressortirait dans le prix.
   const dureeDemiJournees = dureeEnDemiJournees(duree);
   const [equipe, setEquipe] = useState(initialEquipe);
-  const [leavingIds, setLeavingIds] = useState<Set<string>>(new Set());
-  const [toast, setToast] = useState<{ liste: NomListe; item: Ligne; index: number } | null>(null);
   const [validationEnCours, setValidationEnCours] = useState(false);
+
+  // Un seul tiroir pour l'écran, alors qu'il porte DEUX listes : c'est ce que
+  // le patron a retenu — un tiroir par écran, pas un par rubrique. Le crochet
+  // retrouve seul de quelle liste vient l'identifiant.
+  const retraits = useRetraits({
+    valider: async (id) => {
+      const estPrestation = prestations.some((p) => p.id === id);
+      await (estPrestation ? supprimerPrestationAction(id) : supprimerMaterielAction(id));
+      const setItems = estPrestation ? setPrestations : setMateriel;
+      setItems((cur) => cur.filter((i) => i.id !== id));
+    },
+  });
 
   function listeEtSetter(nom: NomListe) {
     return nom === "prestations" ? ([prestations, setPrestations] as const) : ([materiel, setMateriel] as const);
@@ -80,38 +91,6 @@ export default function InformationsClient({
     await action(id, libelle);
   }
 
-  function retirer(nom: NomListe, id: string) {
-    setLeavingIds((s) => new Set(s).add(id));
-    setTimeout(async () => {
-      const [items, setItems] = listeEtSetter(nom);
-      const index = items.findIndex((i) => i.id === id);
-      if (index === -1) return;
-      const item = items[index];
-      setItems(items.filter((i) => i.id !== id));
-      setLeavingIds((s) => {
-        const next = new Set(s);
-        next.delete(id);
-        return next;
-      });
-      setToast({ liste: nom, item, index });
-      const action = nom === "prestations" ? supprimerPrestationAction : supprimerMaterielAction;
-      await action(id);
-    }, 180);
-  }
-
-  async function annulerSuppression() {
-    if (!toast) return;
-    const { liste, item } = toast;
-    setToast(null);
-    // Une prestation/un matériel supprimé se recrée facilement (donnée métier
-    // recréable, cf. règle validée) : l'annulation réinsère une nouvelle ligne
-    // avec le même libellé plutôt que de restaurer l'ancien id supprimé côté base.
-    const action = liste === "prestations" ? ajouterPrestationAction : ajouterMaterielAction;
-    const recreee = await action(chantierId, item.libelle);
-    const [, setItems] = listeEtSetter(liste);
-    setItems((cur) => [...cur, { id: recreee.id, libelle: recreee.libelle }]);
-  }
-
   // Le brouillon confirmé alimente les listes réelles sans rechargement — les
   // lignes créées sont celles renvoyées par le serveur, jamais reconstruites ici.
   function integrerBrouillonApplique(
@@ -132,13 +111,12 @@ export default function InformationsClient({
     }
   }
 
-  const toastVisible = toast !== null;
-  const toastMessage = toast?.liste === "prestations" ? "Prestation supprimée" : "Matériel supprimé";
-
   return (
     <>
+      {/* 26 px, et huit d'écart entre les rubriques — les mesures de l'écran
+          retenu, portées ici sans être réinventées (`TODO.md` §7). */}
       <form
-        className="mt-7 flex flex-col gap-7 px-6"
+        className="mt-8 flex flex-col gap-8 px-[26px]"
         onSubmit={(e) => {
           e.preventDefault();
           valider();
@@ -157,11 +135,11 @@ export default function InformationsClient({
           emptyMessage="Aucune prestation pour l'instant."
           addLabel="+ Ajouter une prestation"
           items={prestations}
-          leavingIds={leavingIds}
+          estRetire={retraits.estRetire}
+          onRetirer={retraits.retirer}
           onAdd={() => ajouter("prestations")}
           onChange={(id, v) => modifier("prestations", id, v)}
           onBlurCommit={(id, v) => persisterModification("prestations", id, v)}
-          onRemove={(id) => retirer("prestations", id)}
         />
 
         {/* La durée se choisit à la molette, ici comme à l'envoi.
@@ -198,14 +176,14 @@ export default function InformationsClient({
           emptyMessage="Aucun matériel pour l'instant."
           addLabel="+ Ajouter un matériel"
           items={materiel}
-          leavingIds={leavingIds}
+          estRetire={retraits.estRetire}
+          onRetirer={retraits.retirer}
           onAdd={() => ajouter("materiel")}
           onChange={(id, v) => modifier("materiel", id, v)}
           onBlurCommit={(id, v) => persisterModification("materiel", id, v)}
-          onRemove={(id) => retirer("materiel", id)}
         />
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <PrimaryButton onClick={valider} disabled={validationEnCours}>
             {validationEnCours ? "Validation…" : "Valider et calculer le prix →"}
           </PrimaryButton>
@@ -224,7 +202,7 @@ export default function InformationsClient({
               car il doit pouvoir la rappeler. */}
           <a
             href={`/chantiers/${chantierId}/devis-complet`}
-            className="text-center text-[14px] font-medium"
+            className={`block text-center ${libelleCaps}`}
             style={{ color: colors.rust }}
           >
             Ou écrire le devis moi-même →
@@ -234,13 +212,18 @@ export default function InformationsClient({
               fois la page déroulée à fond. Une pile de notifications avait déjà
               poussé du contenu hors de l'écran — trouvé sur une capture, pas
               par un test. */}
-          <p className="-mt-1 pb-10 text-center text-[12px] leading-relaxed" style={{ color: colors.muted }}>
+          <p className={`-mt-2 pb-10 text-center ${texteSituation}`} style={{ color: colors.muted }}>
             Vous saisissez chaque ligne et son montant, sans passer par la proposition de prix.
           </p>
         </div>
-      </form>
 
-      <UndoToast open={toastVisible} message={toastMessage} onUndo={annulerSuppression} onDismiss={() => setToast(null)} />
+        <TiroirDesRetires
+          dernier={retraits.dernier}
+          nombre={retraits.nombre}
+          onAnnuler={retraits.annuler}
+          className="!mx-0"
+        />
+      </form>
     </>
   );
 }
@@ -257,16 +240,16 @@ function Field({
   onBlurCommit: () => void;
 }) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className={smallCaps} style={{ color: colors.muted }}>
+    <label className="flex flex-col gap-2">
+      <span className={libelleCaps} style={{ color: colors.muted }}>
         {label}
       </span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlurCommit}
-        className="rounded-[4px] border-0 px-4 py-3 outline-none"
-        style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
+        className={`w-full ${champPlage}`}
+        style={styleChampPlage}
       />
     </label>
   );
@@ -275,53 +258,71 @@ function Field({
 function ListeTextes({
   label,
   items,
-  leavingIds,
+  estRetire,
   onAdd,
   onChange,
   onBlurCommit,
-  onRemove,
+  onRetirer,
   addLabel,
   emptyMessage,
 }: {
   label: string;
   items: Ligne[];
-  leavingIds: Set<string>;
+  estRetire: (id: string) => boolean;
   onAdd: () => void;
   onChange: (id: string, value: string) => void;
   onBlurCommit: (id: string, value: string) => void;
-  onRemove: (id: string) => void;
+  onRetirer: (id: string, libelle: string) => void;
   addLabel: string;
   emptyMessage: string;
 }) {
+  const visibles = items.filter((i) => !estRetire(i.id));
   return (
+    // `flex flex-col gap-2` est un REPÈRE, pas une mesure : les suites de bout
+    // en bout désignent une rubrique par cette signature plus le libellé qu'elle
+    // porte (`test-informations-e2e.ts`). Les lignes, elles, se serrent à 4 px
+    // dans un conteneur intérieur — l'écart de la maquette entre deux plages.
     <div className="flex flex-col gap-2">
-      <span className={smallCaps} style={{ color: colors.muted }}>
+      <span className={libelleCaps} style={{ color: colors.muted }}>
         {label}
       </span>
-      {items.map((item) => (
-        <AnimatedRow key={item.id} leaving={leavingIds.has(item.id)} onRemove={() => onRemove(item.id)}>
-          <input
-            value={item.libelle}
-            onChange={(e) => onChange(item.id, e.target.value)}
-            onBlur={(e) => onBlurCommit(item.id, e.target.value)}
-            className="w-full rounded-[4px] border-0 px-4 py-3 outline-none"
-            style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
-          />
-        </AnimatedRow>
-      ))}
+      {items.length > 0 && (
+        <div className="flex flex-col gap-1">
+          {items.map((item) => (
+            <LigneRetirable
+              key={item.id}
+              libelle={item.libelle ? `« ${item.libelle} »` : `cette ligne de ${label.toLowerCase()}`}
+              retiree={estRetire(item.id)}
+              onRetirer={() =>
+                onRetirer(item.id, item.libelle ? `« ${item.libelle} »` : `cette ligne de ${label.toLowerCase()}`)
+              }
+              hauteurMax={70}
+              className="flex items-center"
+            >
+              <input
+                value={item.libelle}
+                onChange={(e) => onChange(item.id, e.target.value)}
+                onBlur={(e) => onBlurCommit(item.id, e.target.value)}
+                className={`w-full ${champPlage}`}
+                style={styleChampPlage}
+              />
+            </LigneRetirable>
+          ))}
+        </div>
+      )}
+      {visibles.length === 0 && (
+        <p className={texteSituation} style={{ color: colors.muted }}>
+          {emptyMessage}
+        </p>
+      )}
       <button
         type="button"
         onClick={onAdd}
-        className="self-start text-[14px] font-medium"
+        className={`self-start ${libelleCaps}`}
         style={{ color: colors.rust }}
       >
         {addLabel}
       </button>
-      {items.length === 0 && (
-        <p className="text-[13px]" style={{ color: colors.muted }}>
-          {emptyMessage}
-        </p>
-      )}
     </div>
   );
 }

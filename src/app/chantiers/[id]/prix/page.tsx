@@ -38,7 +38,10 @@ export default async function PrixPage({
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
-      <div className="pb-16">
+      {/* La bulle de l'assistant est fixée en bas à droite : avec 64 px de
+          talon, elle mordait sur le coin de « Préparer le devis ». Vu en
+          capture, jamais par une suite — le bouton était bien là. */}
+      <div className="pb-28">
         <EnTeteEcran
           retour={{ href: `/chantiers/${id}`, libelle: "Retour à la fiche du chantier" }}
           surtitre={chantier.nom}
