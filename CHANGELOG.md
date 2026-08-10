@@ -9,6 +9,27 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### La perle manquait, et le bandeau écrasait la liste
+
+*« Il manque la perle dorée qui glisse. »* Deux causes, l'une derrière l'autre.
+
+**La perle n'avait rien à désigner.** Le jeu de démonstration ne contenait
+aucun chantier attendant un geste du patron : l'unique devis envoyé n'avait
+jamais reçu de réponse. Or la perle ne se pose que sur ceux-là. Le seed fait
+désormais répondre le client — une demande de correction, motivée, comme la
+base l'exige (`envois_devis_correction_motivee_ck`). Une fonctionnalité qu'on
+ne peut pas voir est une fonctionnalité qu'on croit cassée.
+
+**Et le bandeau de notification écrasait la liste.** Placé dans l'en-tête, il
+mangeait deux cents pixels dès qu'il apparaissait : la liste se réduisait à une
+bande et la perle passait sous le bord. Les bandeaux défilent maintenant AVEC
+la liste. **C'est le même défaut qu'en juillet**, à un autre endroit — et
+comme en juillet, il n'était visible que sur une capture : la structure
+semblait juste, et les suites étaient vertes.
+
+Mesuré après correction : en-tête intact, liste de 463 px, et la perle qui
+s'accroche — elle monte de 864 à 639 px quand la liste défile de 260.
+
 ### Les polices de l'artefact, puisque c'est ce qu'il a retenu
 
 *« T'es sûr que t'as pas modifié la typographie ? »* Les caractères n'avaient

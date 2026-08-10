@@ -121,8 +121,6 @@ export default function EcranChantiers({
           </p>
         </div>
 
-        {bandeaux}
-
         {/* Le seul trait de l'en-tête : celui qui le ferme. */}
         <div className="mx-[26px] mt-[26px] h-px" style={{ backgroundColor: colors.line }} />
 
@@ -157,11 +155,22 @@ export default function EcranChantiers({
         </div>
 
         {chantiers.length === 0 ? (
-          <p className="px-[26px] pt-6 text-[13px]" style={{ color: colors.muted }}>
-            Aucun chantier pour l&apos;instant. Créez votre premier chantier pour commencer.
-          </p>
+          <div className="atlas-fil-defile pt-4">
+            {bandeaux}
+            <p className="px-[26px] pt-2 text-[13px]" style={{ color: colors.muted }}>
+              Aucun chantier pour l&apos;instant. Créez votre premier chantier pour commencer.
+            </p>
+          </div>
         ) : (
           <div className="atlas-fil-defile pb-3 pt-2.5">
+            {/* **Les bandeaux défilent AVEC la liste, ils ne la repoussent
+                pas.** Posés dans l'en-tête, une notification de trois lignes
+                mangeait deux cents pixels : la liste se réduisait à une bande,
+                et la perle se retrouvait sous le bord. Le défaut n'était
+                visible que sur une capture — la structure semblait juste, et
+                les suites étaient vertes. C'est le même défaut qu'en juillet,
+                à un autre endroit. */}
+            {bandeaux}
             <ListeChantiers chantiers={chantiers} />
           </div>
         )}

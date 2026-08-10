@@ -417,6 +417,18 @@ async function main() {
         .update("Reprise de toiture — devis de démonstration")
         .digest("hex"),
       expireAt: new Date(Date.now() + 14 * 86400_000),
+      // **Le client a répondu, et il a renvoyé le devis.** Sans cette réponse,
+      // le jeu de démonstration ne contenait AUCUN chantier attendant un geste
+      // du patron — et la perle d'or de l'écran d'accueil, qui ne se pose que
+      // sur ceux-là, restait invisible sur le banc. Une fonctionnalité qu'on ne
+      // peut pas voir est une fonctionnalité qu'on croit cassée : c'est
+      // exactement ce que le patron a signalé le 10 août 2026.
+      reponse: "correction",
+      responduAt: new Date(Date.now() - 86400_000),
+      // Une correction sans motif est refusée par la base
+      // (`envois_devis_correction_motivee_ck`), et c'est voulu : un devis
+      // renvoyé sans un mot ne dit pas au patron ce qu'il doit changer.
+      precisionClient: "Pouvez-vous retirer l'évacuation des gravats ? Je m'en occupe.",
     });
 
     console.log("Seed terminé.");
