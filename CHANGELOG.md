@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### L'atelier dit ce qu'il est, au lieu de faire attendre en silence
+
+**Le patron a tapé `npm run essai` dans son espace GitHub** et regardé
+« toujours en compilation » pendant plus de **trois minutes** — sur
+`/api/health/live`, la plus petite route du dépôt. Rien n'était cassé : c'est
+l'atelier, `next dev`, qui compile chaque écran au moment où on l'ouvre, sur un
+disque distant lent (le journal l'écrit lui-même : « Slow filesystem detected »).
+Chaque écran suivant lui aurait coûté la même attente.
+
+**Troisième fois que cette lenteur lui coûte une soirée** — et les deux
+premières avaient précisément produit `npm run banc`, qui bâtit une fois puis
+sert des écrans immédiats. Le dépôt savait, et se taisait : une commande qui
+laisse prendre le mauvais chemin sans un mot vaut un défaut.
+
+`npm run essai` annonce donc, sur un espace distant seulement, ce qu'il est et
+quelle commande sert vraiment à se servir d'Atlas. Il n'interdit rien :
+l'atelier reste l'outil du développement, et le rechargement à chaud n'existe
+que là. En local, où la compilation prend quelques centaines de millisecondes,
+il ne dit rien — un mauvais conseil coûte plus cher que le silence.
+
+Le texte vit dans `scripts/annonce-atelier.mjs`, pas enfoui dans `essai.mjs` :
+un message enfoui n'est jamais vu échouer. `test-annonce-atelier.ts` vérifie
+qu'il nomme la sortie, qu'il se tait en local, et qu'`essai.mjs` l'imprime
+vraiment.
+
 ### Le port du banc s'ouvre à chaque allumage, au lieu d'être seulement déclaré
 
 **Ce que le diagnostic du patron a rapporté**, le soir même : l'application

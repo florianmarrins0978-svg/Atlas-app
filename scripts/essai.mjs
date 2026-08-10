@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { writeFileSync } from "node:fs";
 import { ETAT_PRECHAUFFAGE } from "./prechauffer.mjs";
 import { annoncePrete, adressePubliquePossible } from "./annonce-adresse.mjs";
+import { avertissementAtelier } from "./annonce-atelier.mjs";
 
 // Démarre l'application pour les essais, attend qu'elle réponde vraiment, puis
 // affiche l'adresse à ouvrir.
@@ -53,6 +54,27 @@ if (await repond()) {
   );
   process.exit(0);
 }
+
+// **`npm run essai` est l'ATELIER, et sur un espace distant c'est un piège.**
+//
+// Le 10 août 2026, le patron a tapé cette commande dans son espace GitHub et
+// regardé « toujours en compilation » pendant plus de trois minutes — sur
+// `/api/health/live`, la route la plus petite du dépôt. Rien n'était cassé :
+// `next dev` compile chaque écran au moment où on l'ouvre, et le disque d'un
+// espace distant est lent (le journal l'écrit lui-même : « Slow filesystem
+// detected »). Chaque écran suivant lui aurait coûté la même attente.
+//
+// C'est la troisième fois que la lenteur du mode développement lui coûte une
+// soirée, et les deux premières ont produit `npm run banc` — qui bâtit une fois
+// puis sert des écrans immédiats (`ARCHITECTURE.md` §45). Le dépôt le savait et
+// ne le lui disait pas : une commande qui laisse prendre le mauvais chemin sans
+// un mot vaut un défaut.
+//
+// On ne l'empêche pas — l'atelier reste l'outil du développement, et le
+// rechargement à chaud n'existe que là. On le dit, c'est tout. Le texte vit dans
+// `annonce-atelier.mjs` : enfoui ici, il n'aurait jamais été vu échouer.
+const AVERTISSEMENT_ATELIER = avertissementAtelier();
+if (AVERTISSEMENT_ATELIER) console.log(AVERTISSEMENT_ATELIER);
 
 // **Sans dépendances installées, `npx` PROPOSE DE TÉLÉCHARGER Next.**
 //

@@ -80,6 +80,16 @@ avec une ligne par équipe. Réglages laisse nommer les équipes.
    est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
    sans qu'aucun chiffre ne manque.
 
+**`npm run essai` dit maintenant qu'il est l'atelier (10 août, tard).** Le patron
+l'a lancé sur son espace et a attendu plus de trois minutes sur la plus petite
+route du dépôt : `next dev` compile chaque écran à l'ouverture, et le disque
+d'un espace distant est lent. **Troisième fois** que cette lenteur coûte une
+soirée, alors que `npm run banc` existe pour ça depuis deux fois. La règle qui
+en sort : **une commande qui laisse prendre le mauvais chemin sans un mot vaut
+un défaut.** Texte dans `scripts/annonce-atelier.mjs` (pas enfoui dans
+`essai.mjs` : un message enfoui n'est jamais vu échouer), tenu par
+`test-annonce-atelier.ts`. Il se tait en local, où l'atelier est le bon outil.
+
 **Le port du banc, ouvert à chaque allumage (10 août, tard).** Le diagnostic du
 patron a rapporté une page de connexion **GitHub** à la place d'Atlas :
 `devcontainer.json` déclare le port public depuis le 6 août, mais ce fichier
