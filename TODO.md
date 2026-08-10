@@ -494,9 +494,17 @@ partagées — `EnTeteEcran`, `PrimaryButton`, `src/lib/design-tokens.ts`.
   imprime et signe, et le patron a choisi sa terre cuite le 3 août **en
   connaissance de cause**, puis l'a maintenue.
 
-**Une question ouverte pour le patron**, à ne pas trancher seul : le changement
-de police du 10 août touche aussi le devis et la facture, qui partagent
-`--font-display`. Il en a été informé ; sa réponse n'est pas encore là.
+**~~Question ouverte~~ — tranchée par le patron le 10 août 2026 :** *« il faut
+que toutes les écritures de l'appli changent de police, on harmonise le tout. »*
+Le devis et la facture suivent donc l'écran, et il n'y a plus d'exception de
+typographie nulle part.
+
+**Ce qui reste vrai malgré cela**, et qu'il ne faut pas « corriger » : la
+**couleur** terre cuite des documents, elle, demeure (`couleursDocument`). Il
+l'a choisie le 3 août les deux versions sous les yeux, et une police commune
+n'est pas une palette commune. Et le **PDF** n'a jamais chargé Playfair ni
+Inter : il embarque Times et Helvetica, les polices standard du format — il
+était déjà d'accord avec ce que l'écran est devenu.
 
 ### 6. Rien ne mène le patron d'un écran au suivant
 

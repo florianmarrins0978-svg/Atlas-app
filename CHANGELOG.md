@@ -9,6 +9,30 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Une seule écriture pour toute l'application
+
+*« Il faut que toutes les écritures de l'appli changent de police, on harmonise
+le tout. »* La réserve laissée ouverte la veille est levée : le devis et la
+facture suivent l'écran, et il n'y a plus d'exception de typographie nulle part.
+
+**Rien à changer pour cela, et c'est le point intéressant** — vérifié plutôt
+que supposé :
+
+- les pages du client (`devis/[jeton]`, `factures/[jeton]`) et l'écran des
+  documents légaux déclaraient déjà `ui-serif, Georgia, serif` en dur : la même
+  pile que celle adoptée le 10 août ;
+- le **PDF n'a jamais chargé Playfair ni Inter**. Il embarque Times et
+  Helvetica, les polices standard du format. Il était donc déjà d'accord avec ce
+  que l'écran est devenu.
+
+Un commentaire mentait sur ce dernier point — il annonçait un héritage de
+Playfair dans un fichier qui n'en a jamais vu. Corrigé : une documentation qui
+décrit une version disparue est pire qu'absente.
+
+**Ce qui ne change PAS, et qu'il ne faudra pas « corriger » :** la couleur terre
+cuite des documents. Le patron l'a choisie le 3 août les deux versions sous les
+yeux ; une police commune n'est pas une palette commune.
+
 ### Le plan de fin de refonte, et le corps de Note vocale
 
 **`TODO.md` §7 existe désormais** : l'ordre des écrans restants, les valeurs
