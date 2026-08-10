@@ -3281,3 +3281,53 @@ voie avant nous.
 Un point de méthode qui vaut au-delà de cet écran : **`Element.checkVisibility({
 opacityProperty: true })`**. L'opacité propre d'un élément ne dit rien de celle
 qu'il hérite de son parent — un libellé effacé passe sinon pour visible.
+
+---
+
+## 50. Deux phrases qui divergent, un banc rouge deux jours
+
+**Le défaut.** Depuis le 9 août 2026 au soir, `banc-essai.yml` échouait à chaque
+exécution sur `main`, avec ce message :
+
+```
+❌ l'adresse à ouvrir n'est annoncée nulle part
+```
+
+**Et l'adresse était annoncée**, mot pour mot, deux lignes plus haut dans le
+même journal. Le message accusait le mauvais coupable — exactement ce que
+`AGENTS.md` interdit : *« une erreur qui envoie chercher au mauvais endroit
+coûte plus cher que pas d'erreur du tout »*.
+
+**La cause.** Il y a deux façons de démarrer le banc, et elles ne disaient pas
+la même chose :
+
+| Ce qui démarre | Ce qu'il écrivait |
+|---|---|
+| `npm run essai` — l'atelier, tapé à la main | « L'application répond » |
+| `npm run banc` — la version bâtie, démarrée SEULE à l'allumage | « Atlas répond » |
+
+`.devcontainer/verifier.sh` cherchait la **première** phrase dans un journal
+produit par le **second** script. Le basculement du banc de `essai` vers `banc`
+(§45) a donc cassé ce contrôle sans que personne n'ait touché au contrôle.
+
+**Ce n'est pas un accident, c'est une règle enfreinte.** `CLAUDE.md` §3 :
+*« Jamais de règle dupliquée entre l'affichage et la vérification. Deux
+implémentations finissent toujours par diverger. »* Elles ont divergé — et pas
+seulement sur la phrase : `adressePubliquePossible()` était recopiée à
+l'identique dans les deux fichiers.
+
+**Le correctif.** `scripts/annonce-adresse.mjs` porte désormais l'annonce
+entière, et les deux scripts l'appellent. Le marqueur cherché par le conteneur
+y est **exporté** (`MARQUEUR_PRET`), et `scripts/test-annonce-adresse.ts` **lit
+le fichier `.devcontainer/verifier.sh`** pour vérifier que la phrase qu'il y
+cherche est celle que le module écrit. Recopier la phrase dans le test aurait
+reproduit la duplication qu'on venait de supprimer.
+
+Le test vise la ligne du `grep` **par ce qu'elle fait** — chercher dans
+`/tmp/essai.log` — et non par son message d'échec : première version, il visait
+le message, et reformuler celui-ci a suffi à lui faire contrôler la mauvaise
+ligne. Vu en le jouant, pas en le relisant.
+
+**Et le message désigne maintenant le bon coupable :** en cas d'échec, la fin du
+journal de démarrage est recrachée. Sans elle, on part chercher une adresse
+absente au lieu de lire ce que le démarrage a réellement dit.

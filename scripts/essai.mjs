@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { ETAT_PRECHAUFFAGE } from "./prechauffer.mjs";
+import { annoncePrete, adressePubliquePossible } from "./annonce-adresse.mjs";
 
 // Démarre l'application pour les essais, attend qu'elle réponde vraiment, puis
 // affiche l'adresse à ouvrir.
@@ -14,14 +15,6 @@ import { ETAT_PRECHAUFFAGE } from "./prechauffer.mjs";
 
 const PORT = process.env.PORT ?? "3000";
 const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
-
-/** L'adresse publique de l'espace de travail, quand on y est. */
-function adressePubliquePossible() {
-  const nom = process.env.CODESPACE_NAME;
-  if (!nom) return null;
-  const domaine = process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN ?? "app.github.dev";
-  return `https://${nom}-${PORT}.${domaine}`;
-}
 
 function attendre(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -49,7 +42,7 @@ async function repond() {
 // Une commande tapée par erreur ne doit pas pouvoir éteindre l'application. Si
 // quelqu'un répond déjà sur ce port, on le dit et on s'arrête.
 if (await repond()) {
-  const dejaLa = adressePubliquePossible();
+  const dejaLa = adressePubliquePossible(PORT);
   console.log(
     "\n  ─────────────────────────────────────────────────────────────\n" +
       "   Atlas tourne déjà — rien à relancer.\n\n" +
@@ -90,8 +83,6 @@ while (Date.now() < LIMITE) {
   await attendre(2000);
 }
 
-const adresse = adressePubliquePossible();
-
 if (!pret) {
   console.error(
     "\n  ⚠️  L'application n'a pas répondu après trois minutes.\n" +
@@ -100,18 +91,7 @@ if (!pret) {
       "     relancer alors `bash .devcontainer/preparer.sh`.\n"
   );
 } else {
-  console.log(
-    "\n  ─────────────────────────────────────────────────────────────\n" +
-      "   L'application répond.\n\n" +
-      (adresse
-        ? `     ${adresse}\n\n` +
-          "   Ouvrable depuis un téléphone, telle quelle.\n" +
-          "   N'y mettez que des données inventées : cette adresse est\n" +
-          "   publique, et le mot de passe ci-dessous aussi.\n\n"
-        : `     http://localhost:${PORT}\n\n`) +
-      "     demo@atlas.local  /  demo1234\n" +
-      "  ─────────────────────────────────────────────────────────────\n"
-  );
+  console.log(annoncePrete({ port: PORT }));
 
   // **Compiler les écrans maintenant, plutôt que sous ses yeux.**
   //

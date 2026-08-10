@@ -45,7 +45,21 @@ echo "   ✅ L'écran de connexion s'affiche"
 
 # L'adresse reste annoncée dans le journal : c'est là que le patron la retrouve
 # s'il ne voit pas la notification de l'éditeur.
-grep -q "L'application répond" /tmp/essai.log || echec "l'adresse à ouvrir n'est annoncée nulle part"
+#
+# **La phrase cherchée ici est un contrat**, tenu par `scripts/annonce-adresse.mjs`
+# et éprouvé par `scripts/test-annonce-adresse.ts` : ce test lit CETTE ligne et
+# refuse qu'elle s'écarte du texte réellement écrit. Les deux ont divergé une
+# fois — « Atlas répond » d'un côté, « L'application répond » de l'autre — et le
+# banc est resté rouge deux jours en accusant une adresse manquante qui était,
+# elle, bel et bien écrite.
+#
+# Le journal est recraché en cas d'échec : sans lui, ce message envoie chercher
+# une adresse absente au lieu de montrer ce que le démarrage a réellement dit.
+grep -q "L'application répond" /tmp/essai.log || {
+  echo "--- fin du journal de démarrage (/tmp/essai.log) ---" >&2
+  tail -30 /tmp/essai.log >&2 2>/dev/null || echo "(aucun journal)" >&2
+  echec "l'adresse à ouvrir n'est annoncée nulle part dans /tmp/essai.log"
+}
 echo "   ✅ L'adresse à ouvrir est écrite dans /tmp/essai.log"
 
 echo

@@ -29,18 +29,11 @@
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
+import { annoncePrete } from "./annonce-adresse.mjs";
 
 const PORT = process.env.PORT ?? "3000";
 const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
 const TEMOIN_BATI = ".next/atlas-version-batie.txt";
-
-/** L'adresse publique de l'espace de travail, quand on y est. */
-function adressePubliquePossible() {
-  const nom = process.env.CODESPACE_NAME;
-  if (!nom) return null;
-  const domaine = process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN ?? "app.github.dev";
-  return `https://${nom}-${PORT}.${domaine}`;
-}
 
 const attendre = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -144,8 +137,6 @@ while (Date.now() < LIMITE) {
   await attendre(1000);
 }
 
-const adresse = adressePubliquePossible();
-
 if (!pret) {
   console.error(
     "\n  ⚠️  L'application n'a pas répondu après trois minutes.\n" +
@@ -154,15 +145,11 @@ if (!pret) {
   );
 } else {
   console.log(
-    "\n  ─────────────────────────────────────────────────────────────\n" +
-      `   Atlas répond${bati ? " — version bâtie, chaque écran est immédiat." : " (mode développement : premier accès lent)."}\n\n` +
-      (adresse
-        ? `     ${adresse}\n\n` +
-          "   Ouvrable depuis un téléphone, telle quelle.\n" +
-          "   N'y mettez que des données inventées : cette adresse est\n" +
-          "   publique, et le mot de passe ci-dessous aussi.\n\n"
-        : `     http://localhost:${PORT}\n\n`) +
-      "     demo@atlas.local  /  demo1234\n" +
-      "  ─────────────────────────────────────────────────────────────\n"
+    annoncePrete({
+      port: PORT,
+      precision: bati
+        ? "version bâtie, chaque écran est immédiat."
+        : "mode développement, premier accès lent.",
+    })
   );
 }

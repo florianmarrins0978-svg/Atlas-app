@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le banc d'essai reparle : deux phrases qui avaient divergé
+
+Depuis le 9 août au soir, la vérification du banc échouait à chaque fois sur
+« l'adresse à ouvrir n'est annoncée nulle part » — **et l'adresse était
+annoncée**, mot pour mot, deux lignes plus haut dans le même journal.
+
+Il y a deux façons de démarrer le banc. `npm run essai` écrivait
+« L'application répond » ; `npm run banc` — celui que l'espace de travail
+démarre tout seul depuis qu'il sert une version bâtie — écrivait « Atlas
+répond ». Le contrôle cherchait la première phrase dans un journal produit par
+le second.
+
+Le message accusait donc le mauvais coupable, ce qui coûte plus cher que pas de
+message du tout. L'annonce vient désormais d'un seul endroit
+(`scripts/annonce-adresse.mjs`), et un test **lit le script du conteneur** pour
+vérifier que la phrase qu'il cherche est celle que le module écrit. En cas
+d'échec, la fin du journal de démarrage est recrachée.
+
 ### L'anneau muet et la pellicule — la fiche chantier
 
 Sur la fiche, la ligne « Note vocale · 1 min 42 » devient un **anneau** : on le
