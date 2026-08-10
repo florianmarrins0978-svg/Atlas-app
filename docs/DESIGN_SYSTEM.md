@@ -61,7 +61,7 @@ Les tailles de texte sont fixes et ne se réinventent pas d'un écran à l'autre
 - **Bouton principal** (`PrimaryButton`) : pleine largeur, fond accent plein, coins arrondis `rounded-2xl`, toujours à la même position dans la page (juste sous l'en-tête). Un seul bouton principal par écran. Désactivé, il prend `line` sur `muted` — jamais l'accent en transparence.
 - **Icône de statut** (`StatusIcon`) : avatar circulaire 44px, fond `rustTint`, icône fine (trait 1.8px) en `rust`. Le statut se lit à l'icône, pas à la couleur.
 - **Carte** : coins arrondis `radius.card` (16px), ombre presque invisible (`cardShadow`) **teintée de vert pin et non de gris neutre**, jamais de bordure visible.
-- **Navigation basse** (`AtlasBottomNav`) : identique sur tous les écrans qui la comportent, 3 onglets, icône + libellé, accent = actif.
+- **Navigation basse** (`AtlasBottomNav`) : identique sur tous les écrans qui la comportent, 4 onglets (Chantiers, Planning, Terminés, Réglages), icône + libellé, accent = actif. La liste est fixe et ne dépend pas de l'état des données : un onglet qui apparaît et disparaît déplace les trois autres sous le doigt.
 - **Chevron** : seule affordance de navigation vers l'intérieur d'une carte — gris discret, jamais coloré.
 
 ## Feuilles de confirmation — deux patrons, une seule coquille
