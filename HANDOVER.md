@@ -90,7 +90,10 @@ toute l'application d'un coup, et c'est voulu : `PrimaryButton` (27 écrans),
 
 **Ce qui reste dans l'ancienne grammaire :** l'INTÉRIEUR des écrans profonds —
 photos, dictée, prix, export, facture. Leur en-tête et leurs boutons ont suivi ;
-leurs listes et leurs encarts non. À reprendre écran par écran.
+leurs listes et leurs encarts non. À reprendre écran par écran. **La fiche
+chantier, elle, est faite** (10 août) : elle sert de modèle aux suivants —
+en-tête commun avec `retour` et `action`, intitulés en serif 19 px, lignes du
+dessous en capitales espacées, séparateurs d'un cheveu, aucune pilule.
 
 **Deux familles ne doivent PAS suivre**, et ce n'est pas un oubli : les
 maquettes `/design/*` (découplées du produit) et les pages que le CLIENT reçoit

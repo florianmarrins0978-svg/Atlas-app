@@ -9,6 +9,21 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### La fiche chantier passe à la nouvelle grammaire
+
+Le premier écran profond repris. Ce qui change tient en une idée : **la fiche
+se lit maintenant comme le fil**.
+
+- Le retour et « Fin de chantier » entrent dans l'en-tête commun. Ils vivaient
+  dans un bloc séparé, à `px-6` quand l'en-tête est à `px-[26px]` : deux marges
+  différentes sur le même écran, visibles dès qu'on les met côte à côte.
+- « Fin de chantier » perd sa pilule pour un rectangle cerné d'un cheveu.
+- Les étapes prennent la voix du fil : intitulé en serif 19 px, ligne du
+  dessous en capitales espacées. C'est la même information qu'un état de
+  chantier — elle doit se lire pareil, sinon l'œil réapprend à chaque écran.
+- La sortie de secours « rédiger le devis à la main » passe en capitales : les
+  libellés d'action secondaire ont désormais une seule voix.
+
 ### La grammaire de l'écran retenu, portée à toute l'application
 
 *« Change le style complet de l'appli par ce style-là. »* Trois pièces
