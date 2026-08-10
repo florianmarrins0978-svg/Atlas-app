@@ -346,6 +346,28 @@ Chaque étape est utilisable seule.
 
 ---
 
+## 7 bis. Le défaut que les contrôles ne peuvent pas voir
+
+**Safari sur iPhone n'active pas un `<label>` qui n'a pas `cursor: pointer`.**
+Chromium s'en passe. Toutes les maquettes de ce dépôt portent donc :
+
+```css
+label{cursor:pointer}
+```
+
+Le patron, le 2026-08-10, devant le calendrier : *« rien ne s'ouvre quand je
+touche un jour »* — quarante contrôles au vert, et l'écran muet sous son doigt.
+Le contrôle qui l'attrape ne se joue pas dans un navigateur : il **lit le
+style**. Aucun essai en Chromium ne pouvait voir ce défaut.
+
+La leçon dépasse ce cas : quand un mécanisme repose sur un `<label>` et une case
+à cocher, l'essai automatique ne prouve rien sur l'appareil du patron. Sur
+l'application, ces mécanismes deviennent du vrai JavaScript et le problème
+disparaît — mais **les maquettes doivent rester touchables chez lui**, sinon il
+juge un écran qui ne répond pas.
+
+---
+
 ## 8. Ce qu'il faudra vérifier, et qui n'est pas facultatif
 
 `npm run verifier:avant-livraison` avant toute demande au patron

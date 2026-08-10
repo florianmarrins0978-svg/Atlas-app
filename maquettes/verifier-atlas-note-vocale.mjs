@@ -21,6 +21,15 @@ verifie("aucune balise <script>", !/<script/i.test(source));
 verifie("aucun gestionnaire en ligne", !/\son[a-z]+\s*=/i.test(source));
 verifie("aucun href javascript:", !/javascript:/i.test(source));
 
+// Contrôle de source, pas de navigateur : Chromium active un <label> sans
+// `cursor:pointer`, Safari sur iPhone non. Aucun essai ici ne peut voir le
+// défaut — seule la lecture du style le peut.
+{
+  const styles = source.split("</style>")[0];
+  const global = /(^|[\s,{}])label\s*\{[^}]*cursor:\s*pointer/m.test(styles);
+  verifie("les libellés portent cursor:pointer (Safari l'exige)", global);
+}
+
 const ESSAI = FICHIER.replace(/\.html$/, "-essai.html");
 fs.writeFileSync(ESSAI, '<meta name="viewport" content="width=device-width, initial-scale=1">\n' + source);
 
