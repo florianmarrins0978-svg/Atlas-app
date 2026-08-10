@@ -329,6 +329,51 @@ arrive déjà coupée.
 
 ---
 
+## 6 ter. Nommer les équipes — et se taire quand il n'y a personne
+
+**Demandé par le patron le 2026-08-10.** Maquette :
+`maquettes/atlas-equipes.html`, contrôlée par `npm run verifier:maquette`.
+
+*« Il faut que dans le fichier réglages on puisse mettre le nom des équipes —
+soit équipe A équipe B, soit des noms et prénoms. Mais s'il n'a pas d'équipe et
+qu'il ne met rien, il ne faut pas qu'il y ait quand même écrit équipe A équipe
+B. »*
+
+**La règle, et elle n'est pas cosmétique :**
+
+| Combien d'équipes | Ce que Réglages propose | Ce que le planning écrit |
+|---|---|---|
+| **1** | rien à nommer — le bloc « leurs noms » n'existe pas | **aucun nom d'équipe.** Une demi-journée est libre, ou elle porte le nom de son chantier |
+| **2 et plus** | une ligne par équipe, un champ libre par ligne | le nom écrit ; **à défaut**, « Équipe A », « Équipe B » |
+
+Le principe qui tient les deux lignes du tableau : **on n'invente jamais un nom,
+et on ne laisse jamais deux lignes indiscernables.** À une équipe il n'y a
+personne à distinguer, donc rien à écrire ; à deux, la lettre est un repli
+assumé — elle ne prétend rien savoir de personne. C'est le même arbitrage que
+pour les prix (`docs/AGENT.md` §3) : sans source fiable, on n'écrit pas.
+
+**Le repli se montre, il ne s'explique pas.** Le champ vide affiche déjà
+« Équipe A » en gris : ce qui sera écrit à sa place est sous les yeux avant
+d'être subi. Aucune phrase n'a à le raconter.
+
+**Deux pièges déjà payés :**
+
+- **Ne pas proposer de nommer ce qui ne sera jamais lu.** Laisser le bloc des
+  noms à une seule équipe serait un piège : le patron y écrirait un prénom qui
+  n'apparaîtrait nulle part.
+- **Le champ fait 17 px.** En dessous de 16, Safari zoome à la mise au point et
+  l'écran saute sous le doigt.
+
+**Côté code, ce que cela suppose** — c'est `TODO.md` §5, et rien n'est écrit
+encore : une table `equipes` (`nom` **nullable** — un nom absent est un état
+normal, pas une donnée manquante), une colonne `chantiers.equipe_id`, et
+**une seule fonction pure** qui décide du libellé à afficher, appelée par le
+planning comme par la revalidation. Deux implémentations de cette règle
+divergeraient, et le jour où elles divergent l'écran promet une équipe que le
+serveur ne connaît pas.
+
+---
+
 ## 7. Ordre de travail
 
 Chaque étape est utilisable seule.
@@ -343,6 +388,8 @@ Chaque étape est utilisable seule.
 6. **L'ouverture** — après avoir tranché le point de produit ci-dessus.
 7. **La note vocale sur la fiche chantier** — l'anneau, la lecture, le retrait
    par le haut, la pellicule (§6 bis). Indépendante des autres étapes.
+8. **Les équipes nommées** (§6 ter) — Réglages d'abord, planning ensuite. Cette
+   étape-là touche la base : elle ne se fait pas en même temps que les autres.
 
 ---
 

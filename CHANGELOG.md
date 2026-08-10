@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Nommer les équipes — et se taire quand il n'y a personne à nommer
+
+Le patron : *« il faut que dans le fichier réglages on puisse mettre le nom des
+équipes — soit équipe A équipe B, soit des noms et prénoms. Mais s'il n'a pas
+d'équipe et qu'il ne met rien, il ne faut pas qu'il y ait quand même écrit
+équipe A équipe B. »*
+
+**Ce que ça évite :** un planning qui affiche « Équipe A » à un artisan qui
+travaille seul. Le mot désigne alors quelque chose qui n'existe pas, et il
+occupe une ligne sur deux d'un écran qu'on consulte tous les matins.
+
+**La règle retenue**, dans `maquettes/atlas-equipes.html` et spécifiée dans
+`docs/INTEGRER-ORIGINE.md` §6 ter : à **une** équipe, aucun nom d'équipe n'est
+écrit et Réglages ne propose même pas d'en donner un — offrir un champ dont la
+valeur ne sera jamais lue est un piège. À **deux et plus**, une ligne par
+équipe, et le champ vide affiche déjà « Équipe A » en gris : le repli est montré
+avant d'être subi. On n'invente jamais un nom, on ne laisse jamais deux lignes
+indiscernables.
+
+**Deux défauts vus à l'écran, aucun aux contrôles** — la règle du dépôt tient
+toujours : les noms d'équipes prises et libres ne s'alignaient pas (la perle
+invisible occupait sa place d'un côté seulement), et « Deux demi-journées » posé
+en face de « Libre » se lisait comme *« libre deux demi-journées »*, ce qui est
+faux — seul l'après-midi l'était.
+
+**Un contrôle éprouvé rouge avant d'être cru vert** : en retirant les deux
+règles qui cachent le bloc des noms, `verifier-atlas-equipes.mjs` rougit ; en
+réintroduisant « Équipe A » dans le planning du solitaire, il rougit deux fois.
+
+
 ### Retirer un chantier : le tiroir des retirés
 
 Cinquième choix arrêté sur maquettes, après trois séries de propositions. Le

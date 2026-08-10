@@ -70,6 +70,13 @@ bronze, qui remplace le vert pin d'Arborea), le **trait G** au bandeau, la
 **perle** qui suit le défilement, l'**écran qui recule** à l'ouverture de
 « Nouveau chantier », et le **tiroir des retirés** pour supprimer une ligne.
 
+S'y ajoutent, le même jour, deux écrans : le **planning** (le mois, les
+demi-journées, une ligne par équipe) et **Réglages · vos équipes**. Ce dernier
+porte une règle à ne pas défaire : **à une seule équipe, le planning n'écrit
+aucun nom d'équipe** — le patron l'a demandé mot pour mot. À deux et plus, le
+champ vide affiche déjà « Équipe A » en gris. On n'invente jamais un nom, et on
+ne laisse jamais deux lignes indiscernables (`docs/INTEGRER-ORIGINE.md` §6 ter).
+
 **Rien de tout cela n'est encore dans l'application** — `design-tokens.ts` porte
 toujours Arborea. Une conversation qui lirait le code seul repartirait en vert
 pin avec des icônes, c'est-à-dire à contresens. Le détail, les réserves et

@@ -229,6 +229,16 @@ Ce qu'elle fixe, et qui ne se devine pas :
 - **Cinq marques**, pas quatre : libre, il reste de la place, matin complet,
   après-midi complet, journée pleine. Quatre ne suffisaient pas dès qu'il y a
   plusieurs équipes.
+- **Les équipes se nomment dans Réglages, et le nom peut manquer.** Décidé le
+  2026-08-10 : *« soit on mettra équipe A équipe B, soit l'utilisateur pourra
+  mettre des noms et prénoms — mais s'il n'a pas d'équipe et qu'il ne met rien,
+  il ne faut pas qu'il y ait quand même écrit équipe A équipe B. »* D'où la
+  règle : **à une équipe le planning n'écrit aucun nom d'équipe** (une
+  demi-journée est libre, ou elle porte le nom de son chantier) ; **à deux et
+  plus**, le nom écrit, et à défaut la lettre. `equipes.nom` est donc
+  **nullable** : un nom absent est un état normal, pas une donnée manquante.
+  Maquette : `maquettes/atlas-equipes.html`, spécification
+  `docs/INTEGRER-ORIGINE.md` §6 ter.
 
 Écarté aussi, et volontairement : les **heures réelles** (« la demi-journée
 suffit ») et la **capacité en hommes** — `taille_equipe` est du texte libre, il

@@ -254,6 +254,31 @@ une vraie feuille — et la flèche cède la place à un geste de fermeture vers
 bas —, soit l'ouverture devra changer le jour de l'intégration. Le patron a
 tranché sur le style ; ce point de produit reste ouvert.
 
+### Le planning, et les équipes nommées — 2026-08-10
+
+Deux écrans de plus ont été arrêtés le même jour, sur maquettes :
+`maquettes/atlas-planning.html` (le mois, les demi-journées, les équipes) et
+`maquettes/atlas-equipes.html` (Réglages : nommer les équipes). Les deux sont
+tenus par `npm run verifier:maquette` ; la spécification d'intégration est dans
+`docs/INTEGRER-ORIGINE.md` §6 ter, la suite technique dans `TODO.md` §5.
+
+**La règle du nommage, qui n'est pas un détail d'affichage** — elle vient d'une
+demande explicite du patron : *« s'il n'a pas d'équipe et qu'il ne met rien, il
+ne faut pas qu'il y ait quand même écrit équipe A équipe B »*.
+
+- **À une équipe**, le planning n'écrit **aucun nom d'équipe** : une
+  demi-journée est libre, ou elle porte le nom de son chantier. Réglages ne
+  propose même pas de la nommer — offrir un champ dont la valeur ne sera jamais
+  lue est un piège.
+- **À deux et plus**, chaque équipe a sa ligne dans Réglages. Le champ vide
+  affiche déjà « Équipe A » en gris : le repli est **montré** avant d'être subi.
+
+Le principe qui tient les deux cas : **on n'invente jamais un nom, et on ne
+laisse jamais deux lignes indiscernables.** Conséquence pour la base :
+`equipes.nom` sera **nullable** — un nom absent est un état normal, pas une
+donnée manquante — et **une seule fonction pure** décidera du libellé, pour le
+planning comme pour la revalidation.
+
 **Rien d'autre n'est tranché, et rien n'a été codé dans ce sens.** Mais une conversation
 qui lirait le dépôt seul repartirait en vert pin avec des icônes, c'est-à-dire à
 contresens. Quand le choix sera arrêté, ce sont `design-tokens.ts`,
