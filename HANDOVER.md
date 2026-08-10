@@ -88,9 +88,12 @@ toute l'application d'un coup, et c'est voulu : `PrimaryButton` (27 écrans),
 (`radius`, `cardShadow` qui vaut « none »). Ne pas recopier une allure dans un
 écran : l'ajouter à ces pièces.
 
-**Ce qui reste dans l'ancienne grammaire :** l'INTÉRIEUR des écrans profonds —
-photos, dictée, prix, export, facture. Leur en-tête et leurs boutons ont suivi ;
-leurs listes et leurs encarts non. À reprendre écran par écran. **La fiche
+**Où en est la refonte, au 10 août au soir.** Faits : l'accueil, Planning,
+Terminés, Réglages, le relevé de TVA, la fiche chantier, et les six écrans
+d'étape (Photos, Note vocale, Prix, Devis, Export, Facture) — tous à
+`EnTeteEcran`, aux jetons resserrés et au bouton commun. **Ce qui reste :** le
+CORPS de ces six écrans (listes de photos, encarts de dictée, tableaux de prix)
+garde encore ses cartes et ses libellés d'avant. **La fiche
 chantier, elle, est faite** (10 août) : elle sert de modèle aux suivants —
 en-tête commun avec `retour` et `action`, intitulés en serif 19 px, lignes du
 dessous en capitales espacées, séparateurs d'un cheveu, aucune pilule.

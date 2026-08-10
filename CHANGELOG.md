@@ -9,6 +9,22 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Les six écrans d'étape suivent, et par un codemod plutôt qu'à la main
+
+Photos, Note vocale, Prix, Devis, Export, Facture : les six portaient
+exactement le même en-tête — flèche de retour dans son bloc, nom du chantier en
+petites capitales vertes, titre à 32 px. Ils sont passés à `EnTeteEcran` d'un
+seul coup, par un remplacement de motif.
+
+**Pourquoi un codemod et pas six modifications.** Six retouches à la main, ce
+sont six occasions de laisser un pixel derrière soi — et l'écart ne se voit
+qu'en mettant les écrans côte à côte, ce que personne ne fait. Le motif a été
+reconnu six fois et remplacé six fois par la même chose : il n'y a rien à
+comparer.
+
+Les cinq écrans ont été parcourus dans un navigateur, un par un : titre juste,
+aucun débordement latéral, aucune erreur de script.
+
 ### La fiche chantier passe à la nouvelle grammaire
 
 Le premier écran profond repris. Ce qui change tient en une idée : **la fiche
