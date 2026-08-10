@@ -9,6 +9,46 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le planning au mois, et les équipes qui portent un nom
+
+*« Il faut que dans le fichier réglages on puisse mettre le nom des équipes —
+soit équipe A équipe B, soit des noms et prénoms. Mais s'il n'a pas d'équipe et
+qu'il ne met rien, il ne faut pas qu'il y ait quand même écrit équipe A équipe
+B. »*
+
+**La règle qui en découle n'est pas cosmétique :** on n'invente jamais un nom,
+et on ne laisse jamais deux lignes indiscernables. À une seule équipe, le mot
+« équipe » ne s'écrit **nulle part** — ni dans le planning, ni dans une phrase
+d'explication, et Réglages ne propose même pas de champ : le patron y écrirait
+un prénom qui n'apparaîtrait nulle part. À deux, chaque ligne porte le sien, et
+un champ vide affiche déjà en gris ce qui sera écrit à sa place.
+
+**Le repli est un affichage, jamais une donnée.** `equipes.nom` est nullable et
+sans valeur par défaut ; une seule fonction pure décide du libellé, appelée par
+l'écran comme par la revalidation serveur. Deux implémentations divergeraient, et
+le jour où elles divergent l'écran promet une équipe que le serveur ne connaît
+pas.
+
+**Le planning devient un mois.** Sept colonnes, aucune bordure, un chiffre en
+serif et un point de 5 px dessous. **Cinq marques et non quatre** : sans
+l'anneau « il reste de la place », un jour à moitié pris se lisait comme un jour
+libre dès qu'il y a plusieurs équipes. Toucher un jour ouvre sa journée
+directement sous le calendrier et l'amène à l'écran — posée plus bas, elle
+s'ouvrait hors du champ et le patron a écrit deux fois « rien ne s'ouvre quand
+je touche un jour ».
+
+**Poser, c'est dire à la fois quand et qui** : le bouton ne s'arme qu'une fois
+l'équipe choisie, et il n'y en a qu'un — « Poser · matin · Théo → ». Le serveur
+revalide le créneau, parce qu'entre l'affichage et l'appui un client a pu le
+prendre.
+
+**Un aller-retour sur le compteur ne perd aucun nom.** Redescendre de trois à
+deux ne supprime rien en base : remonter rend le nom écrit pour la troisième.
+Effacer aurait été une perte silencieuse sur une saisie que rien ne
+reconstitue.
+
+Détail et pièges dans `ARCHITECTURE.md` §51 et §52.
+
 ### Le banc d'essai reparle : deux phrases qui avaient divergé
 
 Depuis le 9 août au soir, la vérification du banc échouait à chaque fois sur

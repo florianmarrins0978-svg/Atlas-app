@@ -6,7 +6,23 @@ import { lireFichierTarifs } from "@/server/import/lire-fichier-tarifs";
 import { montantLu, rapprocher, type LigneImportee, type TarifExistant } from "@/lib/import-tarifs";
 import { exigerProprietaire } from "@/server/autorisation";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
+import { nommerEquipe } from "@/server/repositories/equipes";
 import { versionExecutee } from "@/server/version-executee";
+
+/**
+ * Écrire — ou effacer — le nom d'une équipe, par son RANG.
+ *
+ * **Vider le champ remet `null`, jamais une chaîne vide** : la base ne doit
+ * porter qu'une seule façon de dire « pas de nom », sans quoi `libelleEquipe`
+ * devrait connaître les deux. Effacer un nom, c'est revenir au repli
+ * « Équipe B » — un état normal (`ARCHITECTURE.md` §51).
+ */
+export async function nommerEquipeAction(rang: number, nom: string) {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "nommer une équipe");
+  const enregistree = await nommerEquipe(ctx, rang, nom);
+  return { rang: enregistree.rang, nom: enregistree.nom };
+}
 
 export async function creerTarifAction(intitule: string, prix: string) {
   const ctx = await getCurrentCtx();

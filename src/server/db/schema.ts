@@ -88,6 +88,35 @@ export const entreprises = pgTable("entreprises", {
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
+/**
+ * Les équipes, et leurs noms — quand il y en a à écrire.
+ *
+ * **`nom` est nullable, et c'est le cœur de la règle** (`ARCHITECTURE.md` §51) :
+ * un nom absent est un état normal, pas une donnée manquante. Le repli
+ * « Équipe A » est un AFFICHAGE, décidé par `libelleEquipe` dans
+ * `src/lib/equipes.ts` — jamais une valeur écrite ici.
+ *
+ * **`entreprises.nombre_equipes` fait autorité sur le nombre.** Cette table ne
+ * porte que des noms : une ligne peut donc survivre au-delà du compteur, et
+ * c'est voulu — redescendre puis remonter ne doit pas effacer un nom saisi à
+ * la main.
+ */
+export const equipes = pgTable(
+  "equipes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    /** 1 à 20. Porte la lettre de repli (1 → A) et l'ordre d'affichage. */
+    rang: integer("rang").notNull(),
+    nom: text("nom"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("equipes_entreprise_rang_uk").on(t.entrepriseId, t.rang)]
+);
+
 // Correction v2.1 §3 : "prochain_numero_devis" représente le PROCHAIN numéro
 // disponible (pas le dernier attribué). Initialisé à 1 à la création de
 // l'entreprise, consommé par UPDATE ... RETURNING (voir withEntreprise / repository devis).
@@ -184,6 +213,10 @@ export const chantiers = pgTable(
     termineAt: timestamp("termine_at", { withTimezone: true }),
     factureEnvoyeeAt: timestamp("facture_envoyee_at", { withTimezone: true }),
     tailleEquipe: text("taille_equipe"),
+    // Quelle équipe tient ce chantier. NULL = pas encore attribué, l'état de
+    // tout chantier planifié avant la migration 0034 : rien ne permet de
+    // deviner après coup qui l'a fait.
+    equipeId: uuid("equipe_id").references(() => equipes.id, { onDelete: "set null" }),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

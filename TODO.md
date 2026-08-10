@@ -410,12 +410,26 @@ Interrogé « Comment a été envoyé le devis ? », il a répondu :
 Le patron n'a pas à lire du JSON. L'assistant doit répondre en français, ou dire
 qu'il ne sait pas — et jamais recracher la sortie d'un outil telle quelle.
 
-### 5. Les équipes nommées, si l'entreprise grandit
+### 5. ~~Les équipes nommées~~ — fait le 10 août 2026
 
-Le patron a retenu un **compteur** d'équipes (Réglages), pas des équipes
-nommées : il sait combien de chantiers il mène de front, pas encore qui va où.
-Le jour où il aura deux vraies équipes distinctes, la suite est une table
-`equipes` + `chantiers.equipe_id`, et un planning qui se lit par colonne.
+**Demandé par le patron le 10 août** : *« il faut que dans le fichier réglages
+on puisse mettre le nom des équipes — soit équipe A équipe B, soit des noms et
+prénoms. Mais s'il n'a pas d'équipe et qu'il ne met rien, il ne faut pas qu'il y
+ait quand même écrit équipe A équipe B. »*
+
+Table `equipes` (`nom` **nullable**), colonne `chantiers.equipe_id`, et une
+seule fonction pure qui décide du libellé (`src/lib/equipes.ts`). Le planning se
+lit désormais au mois, avec une ligne par équipe sous chaque demi-journée.
+Détail et pièges dans `ARCHITECTURE.md` §51 et §52.
+
+**Ce qui n'a PAS bougé, et qu'il ne faut pas « corriger » :**
+
+- **`entreprises.nombre_equipes` fait toujours autorité sur le NOMBRE.** La
+  table ne porte que des noms. Un `COUNT(*)` ferait dépendre le calcul des
+  disponibilités de lignes qu'aucun écran n'oblige à créer.
+- **Aucun nom n'est écrit en base au moment de l'insertion.** Le repli
+  « Équipe A » est un affichage — l'écrire en donnée le rendrait indiscernable
+  d'un nom choisi, et un retour à une seule équipe le ferait parler.
 
 Écarté aussi, et volontairement : les **heures réelles** (« la demi-journée
 suffit ») et la **capacité en hommes** — `taille_equipe` est du texte libre, il

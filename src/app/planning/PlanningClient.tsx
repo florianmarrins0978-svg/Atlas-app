@@ -1,26 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat";
+import { trierParDatePlanifiee } from "@/lib/chantier-etat";
 import { estAuPlanning } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
-import BottomSheet from "@/components/atlas/BottomSheet";
-import { LIBELLE_MOMENT, libelleDuree } from "@/server/disponibilites";
-import LigneRetirable from "@/components/atlas/LigneRetirable";
-import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
-import { useRetraits } from "@/components/atlas/useRetraits";
-import { planifierChantierAction, supprimerChantierAction } from "./actions";
+import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import {
+  compterOccupation,
+  creneauxDuChantier,
+  cleCreneau,
+  dureeEnDemiJournees,
+  DUREE_PAR_DEFAUT_DEMI_JOURNEES,
+  LIBELLE_MOMENT,
+  MOMENTS,
+  type JourIso,
+  type Moment,
+} from "@/server/disponibilites";
+import {
+  grilleDuMois,
+  marqueDuJour,
+  repartirParEquipe,
+  jourLisibleCourt,
+  estWeekEndIso,
+  JOURS_COURTS,
+  MOIS_LONGS,
+  LEGENDE_MARQUES,
+  type MarqueJour,
+} from "@/lib/mois";
+import { equipesAffichees, libelleEquipe } from "@/lib/equipes";
+import { planifierChantierAction } from "./actions";
 
-// Intégration réelle — connectée à la base (docs/ARCHITECTURE_DONNEES.md).
-// Cet écran ne connaît toujours aucune règle métier : il affiche uniquement le
-// résultat de getPlanificationEtat() (src/lib/chantier-etat.ts).
-//
-// La suppression d'une planification (deplanifierChantierAction) existe côté
-// repository/action et est testée, mais n'est reliée à aucun contrôle visuel
-// ici : la maquette validée ne prévoit pas de bouton dédié pour cela.
+/**
+ * Le planning — le mois, et la journée qui s'ouvre dessous.
+ *
+ * *Variante « le mois », retenue par le patron le 10 août 2026 sur maquette
+ * (`maquettes/atlas-planning.html`, `docs/INTEGRER-ORIGINE.md` §6 quater).*
+ *
+ * **Rien qui ressemble à un tableau** : pas de bordure, pas de fond de case, un
+ * chiffre en serif et un point de 5 px dessous. Le calendrier doit se lire
+ * d'abord comme des chiffres.
+ *
+ * **La journée s'ouvre DIRECTEMENT SOUS le calendrier, et s'amène à l'écran.**
+ * Deux fois de suite le patron a écrit « rien ne s'ouvre quand je touche un
+ * jour », avec quarante contrôles au vert : posée plus bas, elle s'ouvrait hors
+ * du champ et l'écran paraissait mort.
+ *
+ * **Poser, c'est dire à la fois QUAND et QUI.** Le bouton ne s'arme qu'une fois
+ * l'équipe choisie ; une date sans équipe laisse le travail à moitié fait.
+ */
 
 type ChantierPlanning = {
   id: string;
@@ -30,35 +59,16 @@ type ChantierPlanning = {
   datePlanifiee: string | null;
   creneauDebut: string | null;
   dureeDemiJournees: number | null;
+  dureePrevue?: string | null;
+  /** Le rang de l'équipe qui le tient. `null` = pas encore attribué. */
+  rangEquipe: number | null;
   envoiEnvoyeAt: Date | string | null;
   envoiExpireAt: Date | string | null;
   envoiReponse: "acceptee" | "refusee" | null;
-  /** Les jalons de fin : c'est ce qui sort un chantier du planning. */
   termineAt: Date | string | null;
   factureEnvoyeeAt: Date | string | null;
 };
 
-function formatDateFr(iso: string) {
-  const d = new Date(iso + "T00:00:00");
-  return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-}
-
-/**
- * « après-midi », « matin — 2 jours »… — pour le patron, jamais pour le client.
- *
- * Muet quand le chantier n'a pas de créneau : ce sont ceux planifiés avant la
- * migration 0019, et écrire « matin » sur eux serait affirmer une chose que
- * personne n'a décidée.
- */
-function creneauLisible(c: { creneauDebut: string | null; dureeDemiJournees: number | null }): string | null {
-  if (c.creneauDebut !== "matin" && c.creneauDebut !== "apres_midi") return null;
-  const moment = LIBELLE_MOMENT[c.creneauDebut];
-  if (!c.dureeDemiJournees || c.dureeDemiJournees === 2) return moment;
-  if (c.dureeDemiJournees === 1) return moment;
-  return `${moment}, ${libelleDuree(c.dureeDemiJournees)}`;
-}
-
-/** Ce que l'agenda extérieur apporte à cet écran. Jamais un jeton, jamais un compte. */
 export type EtatAgendaPlanning = {
   configure: boolean;
   relie: boolean;
@@ -66,7 +76,6 @@ export type EtatAgendaPlanning = {
   enPanne: boolean;
 };
 
-/** Un rendez-vous lu dans son agenda — pour SON écran, jamais pour le client. */
 export type RendezVousExterne = {
   debut: string;
   fin: string;
@@ -74,110 +83,162 @@ export type RendezVousExterne = {
   journeeEntiere: boolean;
 };
 
-/**
- * « lundi 14 septembre, 9 h – 11 h », ou « du 14 au 17 septembre » sur plusieurs
- * jours.
- *
- * Les heures ne s'affichent PAS pour un événement « toute la journée » : Google
- * rend alors des dates civiles, et en tirer « 00 h – 23 h » afficherait une
- * précision que l'agenda ne donne pas.
- */
-function libelleRendezVous(r: RendezVousExterne): string {
-  const debut = new Date(r.debut);
-  const fin = new Date(r.fin);
-  const jour = (d: Date) =>
-    d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
-  const heure = (d: Date) => d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-
-  const memeJour = jour(debut) === jour(fin);
-  if (r.journeeEntiere) return memeJour ? jour(debut) : `du ${jour(debut)} au ${jour(fin)}`;
-  if (memeJour) return `${jour(debut)}, ${heure(debut)} – ${heure(fin)}`;
-  return `du ${jour(debut)} ${heure(debut)} au ${jour(fin)} ${heure(fin)}`;
-}
-
 export default function PlanningClient({
   initialChantiers,
+  nombreEquipes = 1,
+  equipesNommees = [],
   agenda = { configure: false, relie: false, actif: false, enPanne: false },
   rendezVous = [],
 }: {
   initialChantiers: ChantierPlanning[];
+  nombreEquipes?: number;
+  equipesNommees?: { rang: number; nom: string | null }[];
   agenda?: EtatAgendaPlanning;
   rendezVous?: RendezVousExterne[];
 }) {
   const [chantiers, setChantiers] = useState<ChantierPlanning[]>(initialChantiers);
-  const [ouvert, setOuvert] = useState<ChantierPlanning | null>(null);
-  const [dateChoisie, setDateChoisie] = useState("");
-  const [enCours, setEnCours] = useState(false);
-
   const aujourdHui = jourIso(new Date());
 
+  const [curseur, setCurseur] = useState(() => {
+    const d = new Date(`${aujourdHui}T12:00:00Z`);
+    return { annee: d.getUTCFullYear(), mois: d.getUTCMonth() };
+  });
+  const [jourOuvert, setJourOuvert] = useState<JourIso | null>(null);
+  const [choix, setChoix] = useState<{ moment: Moment; rang: number } | null>(null);
+  const [refus, setRefus] = useState<string | null>(null);
+  const [enCours, setEnCours] = useState(false);
+
+  const journeeRef = useRef<HTMLDivElement>(null);
+
+  const planifies = useMemo(
+    () => trierParDatePlanifiee(chantiers.filter((c) => estAuPlanning(c, aujourdHui))),
+    [chantiers, aujourdHui]
+  );
+
+  /** Ceux qui attendent un jour — c'est eux qu'on pose. */
+  const sansDate = useMemo(
+    () =>
+      chantiers.filter(
+        (c) => !c.datePlanifiee && !c.termineAt && !c.factureEnvoyeeAt && c.devisEnvoyeAt
+      ),
+    [chantiers]
+  );
+
+  const [aPoserId, setAPoserId] = useState<string | null>(null);
+  const aPoser = sansDate.find((c) => c.id === aPoserId) ?? sansDate[0] ?? null;
+
+  const dureeAPoser =
+    aPoser?.dureeDemiJournees ??
+    dureeEnDemiJournees(aPoser?.dureePrevue ?? null) ??
+    DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+
+  const occupation = useMemo(
+    () =>
+      compterOccupation(
+        planifies.map((c) => ({
+          jour: c.datePlanifiee as string,
+          moment: c.creneauDebut === "matin" || c.creneauDebut === "apres_midi" ? c.creneauDebut : null,
+          dureeDemiJournees: c.dureeDemiJournees,
+        }))
+      ),
+    [planifies]
+  );
+
+  const cases = useMemo(() => grilleDuMois(curseur.annee, curseur.mois), [curseur]);
+  const lignesEquipes = equipesAffichees(equipesNommees, nombreEquipes);
+
   /**
-   * Le chantier disparaît de l'écran AVANT la réponse du serveur : sur un
-   * téléphone, une carte qui reste une seconde après l'appui se lit comme un
-   * bouton qui n'a pas marché, et l'on appuie une seconde fois. En cas de
-   * refus — une facture émise —, elle revient, et la raison s'affiche.
+   * **Ouvrir ET amener à l'écran.** C'est le comportement que la maquette
+   * obtenait par une ancre (`:target` + `scroll-margin-top`) ; ici c'est de
+   * l'état React, mais l'effet doit rester le même — sans quoi l'écran paraît
+   * mort sous le doigt.
    */
-  // Le geste retenu le 10 août 2026, ici comme partout : le texte glisse,
-  // « Retirer » se découvre, la carte tombe, et le tiroir la retient. Rien
-  // n'est écrit avant sa fermeture — « Annuler » rend donc vraiment la ligne,
-  // au lieu de la recréer.
-  const retraits = useRetraits({ valider: (id) => supprimerChantierAction(id) });
+  useEffect(() => {
+    if (!jourOuvert) return;
+    journeeRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [jourOuvert]);
 
-  const visibles = chantiers.filter((c) => !retraits.estRetire(c.id));
-  const aPlanifier = visibles.filter((c) => getPlanificationEtat(c) === "a_planifier");
-  // **Le planning ne montre que ce qui est à venir**, et c'est la règle
-  // partagée qui le dit — plus une recopie locale. Cet écran comparait
-  // `datePlanifiee < aujourd'hui` de son côté quand le dépôt des terminés
-  // comparait `<=` du sien : un chantier prévu AUJOURD'HUI figurait dans les
-  // deux onglets, et un chantier clôturé avant sa date restait ici comme si
-  // rien ne s'était passé (`src/lib/onglet-chantier.ts`).
-  const planifies = trierParDatePlanifiee(visibles.filter((c) => estAuPlanning(c, aujourdHui)));
-  const attenteClient = visibles.filter((c) => getPlanificationEtat(c) === "attente_client");
-
-  function ouvrirSheet(c: ChantierPlanning) {
-    setDateChoisie(c.datePlanifiee ?? "");
-    setOuvert(c);
+  function ouvrirJour(jour: JourIso) {
+    setRefus(null);
+    setChoix(null);
+    // **Une case du mois voisin fait basculer le calendrier.** Sans cela,
+    // l'écran affichait « Lundi 27 juillet » sous un calendrier titré « août » :
+    // les deux se contredisaient, et rien ne disait lequel croire. Vu en
+    // capture, jamais autrement.
+    const d = new Date(`${jour}T12:00:00Z`);
+    if (d.getUTCFullYear() !== curseur.annee || d.getUTCMonth() !== curseur.mois) {
+      setCurseur({ annee: d.getUTCFullYear(), mois: d.getUTCMonth() });
+    }
+    setJourOuvert((cur) => (cur === jour ? null : jour));
   }
 
-  async function confirmer() {
-    if (!ouvert || !dateChoisie) return;
+  /** Qui occupe cette demi-journée, équipe par équipe. */
+  function lignesDuMoment(jour: JourIso, moment: Moment) {
+    const occupants = planifies
+      .filter((c) => {
+        if (!c.datePlanifiee) return false;
+        const depart: { jour: JourIso; moment: Moment } = {
+          jour: c.datePlanifiee,
+          moment: c.creneauDebut === "apres_midi" ? "apres_midi" : "matin",
+        };
+        const duree = c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+        return creneauxDuChantier(depart, duree).some((x) => cleCreneau(x) === cleCreneau({ jour, moment }));
+      })
+      .map((c) => ({ id: c.id, nom: c.nom, rangEquipe: c.rangEquipe }));
+    return repartirParEquipe(occupants, nombreEquipes);
+  }
+
+  async function poser() {
+    if (!aPoser || !jourOuvert || !choix) return;
     setEnCours(true);
+    setRefus(null);
     try {
-      await planifierChantierAction(ouvert.id, dateChoisie);
-      setChantiers((cur) => cur.map((c) => (c.id === ouvert.id ? { ...c, datePlanifiee: dateChoisie } : c)));
-      setOuvert(null);
+      const r = await planifierChantierAction(aPoser.id, jourOuvert, {
+        moment: choix.moment,
+        rangEquipe: nombreEquipes > 1 ? choix.rang : null,
+      });
+      if (!r.succes) {
+        setRefus(r.erreur);
+        return;
+      }
+      setChantiers((cur) =>
+        cur.map((c) =>
+          c.id === aPoser.id
+            ? {
+                ...c,
+                datePlanifiee: jourOuvert,
+                creneauDebut: choix.moment,
+                dureeDemiJournees: dureeAPoser,
+                rangEquipe: nombreEquipes > 1 ? choix.rang : null,
+              }
+            : c
+        )
+      );
+      setChoix(null);
+      setJourOuvert(null);
+      setAPoserId(null);
     } finally {
       setEnCours(false);
     }
   }
+
+  const marqueDe = (jour: JourIso): MarqueJour => marqueDuJour(jour, occupation, nombreEquipes);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-16">
         <EnTeteEcran surtitre="Vos journées" titre="Planning" />
 
-        {/*
-          **Le raccordement de l'agenda se propose ICI, et c'est sa demande du
-          9 août 2026** : *« dans planning il faut un petit bouton connecter son
-          agenda Google cliquable. »*
-
-          Il est à sa place : le planning est l'écran où le manque se constate.
-          Le laisser au fond des réglages, c'était demander à quelqu'un qui
-          ignore le problème d'aller chercher sa solution.
-
-          **Le lien disparaît quand tout va bien.** Un bandeau permanent sur
-          l'écran le plus consulté devient du décor : on cesse de le lire, et le
-          jour où il annonce une panne, personne ne le voit.
-        */}
+        {/* Le raccordement de l'agenda — sa demande du 9 août 2026. Il
+            disparaît quand tout va bien : un bandeau permanent sur l'écran le
+            plus consulté devient du décor, et le jour où il annonce une panne
+            personne ne le voit. */}
         {(!agenda.relie || !agenda.actif || agenda.enPanne) && (
-          <div className="mt-5 px-6">
+          <div className="mt-5 px-[26px]">
             <Link
               href="/reglages/agenda"
-              className="flex items-center justify-between rounded-[4px] px-5 py-4"
-              style={{
-                backgroundColor: colors.rustTint,
-                borderLeft: `3px solid ${agenda.enPanne ? colors.alert : colors.sage}`,
-              }}
+              className="flex items-center justify-between py-3.5"
+              style={{ borderBottom: `1px solid ${colors.line}` }}
             >
               <span className="min-w-0 flex-1">
                 <span className="block text-[15px]" style={{ fontFamily: font.display }}>
@@ -187,312 +248,455 @@ export default function PlanningClient({
                       ? "Relier mon agenda Google"
                       : "Votre agenda est en pause"}
                 </span>
-                <span className="block text-[13px] leading-snug" style={{ color: colors.muted }}>
+                <span className="block text-[12.5px] leading-snug" style={{ color: colors.muted }}>
                   {agenda.enPanne
                     ? "Un client peut retenir un jour où vous êtes déjà pris."
                     : !agenda.relie
-                      ? "Sans lui, Atlas ne voit pas les rendez-vous notés ailleurs — et peut les proposer."
+                      ? "Sans lui, Atlas ne voit pas les rendez-vous notés ailleurs."
                       : "Reprendre la lecture pour éviter les doublons."}
                 </span>
               </span>
-              <span
-                className="ml-4 flex-shrink-0 whitespace-nowrap text-[14px] font-medium"
-                style={{ color: colors.rust }}
-              >
+              <span className={`ml-4 flex-shrink-0 ${libelleCaps}`} style={{ color: colors.or }}>
                 {agenda.configure ? "Ouvrir" : "Connecter"}
               </span>
             </Link>
           </div>
         )}
 
-        {/* Ses rendez-vous, avec leur intitulé — sa demande du 9 août : « si, il
-            doit lire les intitulés aussi ! ». Ils ne se modifient pas depuis
-            Atlas : ce sont ceux de son agenda, et deux endroits pour changer la
-            même chose finissent par se contredire. */}
-        {rendezVous.length > 0 && (
-          <div className="mt-7 px-6">
-            <p className={smallCaps} style={{ color: colors.rust, marginBottom: 10 }}>
-              Dans mon agenda
-            </p>
-            <div className="flex flex-col gap-2">
-              {rendezVous.slice(0, 12).map((r, i) => (
-                <div
-                  key={`${r.debut}-${i}`}
-                  className="rounded-[4px] px-5 py-4"
-                  style={{ backgroundColor: colors.card }}
+        {/* ─── Le mois ──────────────────────────────────────────────────── */}
+        <div className="mt-[26px] px-[26px]">
+          <div className="mb-4 flex items-baseline justify-between">
+            <span style={{ fontFamily: font.display, fontSize: 21, lineHeight: 1 }}>
+              {MOIS_LONGS[curseur.mois]}
+            </span>
+            <span className="flex items-center gap-4">
+              <span className="text-[11px] uppercase" style={{ color: colors.muted, letterSpacing: "0.2em" }}>
+                {curseur.annee}
+              </span>
+              <button
+                type="button"
+                aria-label="Mois précédent"
+                onClick={() =>
+                  setCurseur((c) => (c.mois === 0 ? { annee: c.annee - 1, mois: 11 } : { ...c, mois: c.mois - 1 }))
+                }
+                className="px-2 py-1 text-[15px]"
+                style={{ color: colors.muted }}
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                aria-label="Mois suivant"
+                onClick={() =>
+                  setCurseur((c) => (c.mois === 11 ? { annee: c.annee + 1, mois: 0 } : { ...c, mois: c.mois + 1 }))
+                }
+                className="px-2 py-1 text-[15px]"
+                style={{ color: colors.muted }}
+              >
+                ›
+              </button>
+            </span>
+          </div>
+
+          <div
+            className="mb-2.5 grid grid-cols-7 gap-x-0 gap-y-0.5 text-center"
+            style={{ color: colors.muted }}
+            aria-hidden="true"
+          >
+            {JOURS_COURTS.map((j) => (
+              <span key={j} className="text-[8px] uppercase" style={{ letterSpacing: "0.16em" }}>
+                {j}
+              </span>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-7 gap-y-0.5" data-atlas="grille-mois">
+            {cases.map((c) => {
+              const marque = c.horsMois ? "libre" : marqueDe(c.jour);
+              const estAujourdHui = c.jour === aujourdHui;
+              const ouvert = c.jour === jourOuvert;
+              return (
+                <button
+                  key={c.jour}
+                  type="button"
+                  onClick={() => ouvrirJour(c.jour)}
+                  aria-label={`${jourLisibleCourt(c.jour)}${legendeDeMarque(marque)}`}
+                  aria-expanded={ouvert}
+                  data-jour={c.jour}
+                  data-marque={marque}
+                  className="flex aspect-square flex-col items-center justify-center gap-[5px] rounded-full"
+                  style={{
+                    fontFamily: font.display,
+                    fontSize: 15,
+                    lineHeight: 1,
+                    // **La couleur, jamais l'opacité, pour estomper.** Une
+                    // animation d'arrivée finit à `opacity:1` et l'emporterait.
+                    color: c.horsMois
+                      ? colors.muted
+                      : ouvert || estAujourdHui
+                        ? colors.or
+                        : c.weekEnd
+                          ? "rgba(28,28,26,0.28)"
+                          : colors.ink,
+                    opacity: c.horsMois ? 0.3 : 1,
+                    boxShadow: ouvert ? `inset 0 0 0 1px ${colors.or}` : "none",
+                    WebkitTapHighlightColor: "transparent",
+                    transition: "color .28s, box-shadow .28s",
+                  }}
                 >
-                  <span className="block truncate text-[16px]" style={{ fontFamily: font.display }}>
-                    {r.intitule ?? "Rendez-vous sans titre"}
-                  </span>
-                  <span className="block text-[13px]" style={{ color: colors.muted }}>
-                    {libelleRendezVous(r)}
-                  </span>
-                </div>
-              ))}
-              {rendezVous.length > 12 && (
-                <p className="px-1 text-[13px]" style={{ color: colors.muted }}>
-                  et {rendezVous.length - 12} autre(s) — l&apos;écran en montre douze, votre agenda les a tous.
-                </p>
-              )}
-            </div>
+                  {c.numero}
+                  <Marque marque={c.horsMois ? "libre" : marque} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ─── La journée, DIRECTEMENT sous le calendrier ────────────────── */}
+        {jourOuvert && (
+          <div ref={journeeRef} className="mt-[26px] px-[26px]" data-atlas="journee" data-jour={jourOuvert}>
+            <p style={{ fontFamily: font.display, fontSize: 23, lineHeight: 1.08, letterSpacing: "-0.012em" }}>
+              {jourLisibleCourt(jourOuvert)}
+            </p>
+
+            {estWeekEndIso(jourOuvert) ? (
+              // Le samedi rappelle la règle qui surprend : un chantier de deux
+              // jours parti vendredi matin finit LUNDI.
+              <p className="mt-3.5 text-[13px] leading-[1.6]" style={{ color: colors.muted }}>
+                Jamais proposé. Un chantier de deux jours parti{" "}
+                <span style={{ color: colors.ink }}>vendredi matin</span> se termine{" "}
+                <span style={{ color: colors.ink }}>lundi</span>.
+              </p>
+            ) : (
+              <JourneeOuvrable
+                jour={jourOuvert}
+                aPoser={aPoser}
+                nombreEquipes={nombreEquipes}
+                lignesEquipes={lignesEquipes}
+                lignesDuMoment={lignesDuMoment}
+                choix={choix}
+                onChoisir={setChoix}
+                onPoser={poser}
+                enCours={enCours}
+                refus={refus}
+              />
+            )}
           </div>
         )}
 
-        {/* À planifier */}
-        <div className="mt-7 px-6">
-          <p className={smallCaps} style={{ color: colors.rust, marginBottom: 10 }}>
-            À planifier
+        {/* ─── La légende, et ce que « complet » veut dire ───────────────── */}
+        <div className="mt-5 flex flex-wrap items-center gap-x-3.5 gap-y-1 px-[26px] text-[11px]" style={{ color: colors.muted }}>
+          {LEGENDE_MARQUES.map((l) => (
+            <span key={l.marque} className="flex items-center gap-1.5">
+              <Marque marque={l.marque} />
+              {l.texte}
+            </span>
+          ))}
+        </div>
+        <p className="mt-2.5 px-[26px] text-[11px] leading-[1.6]" style={{ color: colors.muted, opacity: 0.85 }}>
+          {nombreEquipes > 1
+            ? `« Complet » veut dire : vos ${nombreEquipes} équipes sont prises sur cette demi-journée.`
+            : "« Complet » veut dire : cette demi-journée est prise."}
+        </p>
+
+        {/* ─── Sans date ─────────────────────────────────────────────────── */}
+        <div className="mt-[30px] px-[26px] pt-[18px]" style={{ borderTop: `1px solid ${colors.line}` }}>
+          <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+            Sans date
           </p>
-          {aPlanifier.length === 0 ? (
-            <p className="text-[14px]" style={{ color: colors.muted }}>
-              Aucun chantier en attente de planification.
+          {sansDate.length === 0 ? (
+            <p className="text-[13px]" style={{ color: colors.muted }}>
+              Aucun chantier n&apos;attend de jour.
             </p>
           ) : (
-            <div className="flex flex-col gap-2">
-              {aPlanifier.map((c) => (
-                <LigneRetirable
-                  key={c.id}
-                  libelle={`le chantier ${c.nom}`}
-                  retiree={retraits.estRetire(c.id)}
-                  onRetirer={() => retraits.retirer(c.id, `le chantier ${c.nom}`)}
-                  plage={{ fond: colors.card }}
-                  className="flex"
-                >
+            sansDate.map((c) => {
+              const vise = aPoser?.id === c.id;
+              return (
                 <button
-                  onClick={() => ouvrirSheet(c)}
-                  className="flex w-full items-center justify-between px-5 py-4 text-left"
+                  key={c.id}
+                  type="button"
+                  onClick={() => setAPoserId(c.id)}
+                  aria-pressed={vise}
+                  data-atlas="sans-date"
+                  className="flex w-full items-baseline justify-between gap-3.5 py-[11px] text-left"
                 >
-                  <span className="min-w-0 flex-1">
-                    <span
-                      className="block truncate text-[16px]"
-                      style={{ fontFamily: font.display, color: colors.ink }}
-                    >
-                      {c.nom}
-                    </span>
-                    <span className="block truncate text-[13px]" style={{ color: colors.muted }}>
-                      {c.clientNom ?? "Client non renseigné"}
-                    </span>
-                  </span>
-                  {/* Ne se coupe jamais en deux lignes : un nom de chantier un
-                      peu long faisait passer l'action à la ligne, et l'action
-                      est ce que le patron vient chercher. */}
                   <span
-                    className="ml-4 flex-shrink-0 whitespace-nowrap text-[14px] font-medium"
-                    style={{ color: colors.rust }}
+                    className="min-w-0 flex-1 truncate"
+                    style={{ fontFamily: font.display, fontSize: 16, lineHeight: 1.2, color: colors.ink }}
                   >
-                    Choisir une date
+                    {c.nom}
+                  </span>
+                  <span
+                    className="flex-shrink-0 whitespace-nowrap text-[12px]"
+                    style={{ color: vise ? colors.or : colors.muted }}
+                  >
+                    {vise ? "À poser" : "Devis accepté"}
                   </span>
                 </button>
-                </LigneRetirable>
-              ))}
-            </div>
+              );
+            })
           )}
         </div>
 
-        {/* En attente du client — ni planifiables ni oubliables.
-            Ces chantiers ne sont pas proposés à la planification : leur date se
-            décide chez le client. Les taire les ferait disparaître entre deux
-            listes, alors que ce sont précisément ceux dont le patron se demande
-            où ils en sont. */}
-        {attenteClient.length > 0 && (
-          <div className="mt-8 px-6">
-            <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
-              En attente du client
+        {/* Ses rendez-vous, avec leur intitulé — sa demande du 9 août : « si,
+            il doit lire les intitulés aussi ! ». Ils ne se modifient pas depuis
+            Atlas : deux endroits pour changer la même chose finissent par se
+            contredire. */}
+        {rendezVous.length > 0 && (
+          <div className="mt-[30px] px-[26px] pt-[18px]" style={{ borderTop: `1px solid ${colors.line}` }}>
+            <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+              Dans mon agenda
             </p>
-            <div className="flex flex-col gap-2">
-              {attenteClient.map((c) => (
-                <LigneRetirable
-                  key={c.id}
-                  libelle={`le chantier ${c.nom}`}
-                  retiree={retraits.estRetire(c.id)}
-                  onRetirer={() => retraits.retirer(c.id, `le chantier ${c.nom}`)}
-                  plage={{ fond: colors.card }}
-                  className="flex"
+            {rendezVous.slice(0, 8).map((r, i) => (
+              <div key={`${r.debut}-${i}`} className="flex items-baseline justify-between gap-3.5 py-[11px]">
+                <span
+                  className="min-w-0 flex-1 truncate"
+                  style={{ fontFamily: font.display, fontSize: 16, lineHeight: 1.2 }}
                 >
-                  <div className="w-full px-5 py-4">
-                    <span
-                      className="block truncate text-[16px]"
-                      style={{ fontFamily: font.display, color: colors.ink }}
-                    >
-                      {c.nom}
-                    </span>
-                    <span className="block truncate text-[13px]" style={{ color: colors.muted }}>
-                      {c.clientNom ?? "Client non renseigné"} — il choisit sa date
-                    </span>
-                  </div>
-                </LigneRetirable>
-              ))}
-            </div>
+                  {r.intitule ?? "Rendez-vous sans titre"}
+                </span>
+                <span className="flex-shrink-0 whitespace-nowrap text-[12px]" style={{ color: colors.muted }}>
+                  {libelleRendezVous(r)}
+                </span>
+              </div>
+            ))}
           </div>
         )}
-
-        {/* Un refus du serveur ramène la carte : le dire, sinon elle
-            réapparaît sans raison apparente. C'est ici qu'un chantier facturé
-            se voit refuser — il n'a plus rien à faire au planning, mais le
-            refus doit rester lisible s'il y arrive. */}
-        {Object.entries(retraits.refuses).map(([id, motif]) => (
-          <p key={id} role="alert" className="mt-6 px-6 text-[13px]" style={{ color: colors.alert }}>
-            {motif}
-          </p>
-        ))}
-
-        {/* Planifiés */}
-        <div className="mt-8 px-6">
-          <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
-            Planifiés
-          </p>
-          {planifies.length === 0 ? (
-            <p className="text-[14px]" style={{ color: colors.muted }}>
-              Aucun chantier planifié pour l&apos;instant.
-            </p>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {planifies.map((c) => (
-                <LigneRetirable
-                  key={c.id}
-                  libelle={`le chantier ${c.nom}`}
-                  retiree={retraits.estRetire(c.id)}
-                  onRetirer={() => retraits.retirer(c.id, `le chantier ${c.nom}`)}
-                  // Une carte planifiée porte trois lignes et deux actions :
-                  // elle monte à 190 px, au-delà des 170 par défaut. Au repos,
-                  // l'enveloppe la tronquerait.
-                  hauteurMax={210}
-                  plage={{ fond: colors.card }}
-                  className="flex"
-                >
-                {/* **Le planning était un cul-de-sac.** Le patron, le 8 août
-                    2026 : « le client m'a retourné la date validée, il se range
-                    dans les chantiers planifiés, mais comment je fais pour
-                    avoir accès au devis ? Je dois pouvoir cliquer directement
-                    sur le client planifié, avoir un bouton à côté fin de
-                    chantier. »
-
-                    Toucher la carte n'ouvrait que le sélecteur de date. Le
-                    devis, la fiche et la clôture existaient — hors d'atteinte
-                    depuis l'écran où il se trouvait. La chaîne complète était
-                    donc construite et injoignable, ce qui revient au même que
-                    de ne pas l'avoir écrite.
-
-                    Trois destinations, une seule mise en avant : la carte mène
-                    au chantier, « Fin de chantier » à la facture, et la date se
-                    change par un lien discret — c'est le geste le plus rare des
-                    trois une fois le client d'accord. */}
-                <div className="w-full px-5 py-4">
-                  <Link href={`/chantiers/${c.id}`} className="flex items-center gap-3 text-left">
-                    <div
-                      className="flex h-11 w-11 flex-shrink-0 flex-col items-center justify-center rounded-[4px]"
-                      style={{ backgroundColor: colors.rustTint }}
-                    >
-                      <span className="text-[10px] font-semibold uppercase" style={{ color: colors.rust }}>
-                        {new Date(c.datePlanifiee! + "T00:00:00").toLocaleDateString("fr-FR", { month: "short" })}
-                      </span>
-                      <span className="text-[15px] font-bold" style={{ color: colors.rust }}>
-                        {new Date(c.datePlanifiee! + "T00:00:00").getDate()}
-                      </span>
-                    </div>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
-                        {c.nom}
-                      </span>
-                      <span className="block text-[13px]" style={{ color: colors.muted }}>
-                        {c.clientNom ?? "Client non renseigné"}
-                        {creneauLisible(c) && ` — ${creneauLisible(c)}`}
-                      </span>
-                      {/* Sans ce mot, rien ne dit que la carte s'ouvre. Le
-                          patron cherchait son devis sur un écran qui n'avait
-                          l'air de mener nulle part. */}
-                      <span className="mt-0.5 block text-[12px]" style={{ color: colors.rust }}>
-                        Voir le devis et le chantier →
-                      </span>
-                    </span>
-                  </Link>
-
-                  <div
-                    className="mt-3 flex items-center justify-between gap-3 pt-3"
-                    style={{ borderTop: `1px solid ${colors.line}` }}
-                  >
-                    {/* Le nom du chantier dans le libellé accessible : à
-                        l'écran la colonne le porte déjà, mais une personne qui
-                        n'utilise pas ses yeux entendrait « Changer la date »
-                        cinq fois de suite sans savoir laquelle. */}
-                    <button
-                      onClick={() => ouvrirSheet(c)}
-                      aria-label={`Changer la date du chantier ${c.nom}`}
-                      className="whitespace-nowrap text-[13px]"
-                      style={{ color: colors.muted }}
-                    >
-                      Changer la date
-                    </button>
-                    {/* Aucune barrière de date, comme sur la fiche depuis le
-                        3 août : c'est le patron qui sait quand un chantier est
-                        fait, pas le calendrier. Le geste reste sans danger —
-                        il bâtit la facture qu'il vérifiera, il n'émet rien. */}
-                    <Link
-                      href={`/chantiers/${c.id}/facture`}
-                      aria-label={`Fin de chantier — ${c.nom}`}
-                      className="whitespace-nowrap rounded-full px-4 py-2 text-[14px] font-medium"
-                      style={{ backgroundColor: colors.rustTint, color: colors.rust }}
-                    >
-                      Fin de chantier →
-                    </Link>
-                  </div>
-                </div>
-                </LigneRetirable>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Le tiroir, en fin de contenu et non par-dessus : il pousse la
-            dernière carte vers le haut au lieu de la masquer. Cet écran défile
-            avec la page — le tiroir vient donc après tout le reste, juste
-            au-dessus du bandeau du bas. */}
-        <TiroirDesRetires
-          dernier={retraits.dernier}
-          nombre={retraits.nombre}
-          onAnnuler={retraits.annuler}
-          className="mt-8"
-        />
       </div>
-
-      {/* Choix de date — sélecteur natif, confirmation d'action positive (patron n°2) */}
-      <BottomSheet open={ouvert !== null} onBackdropClick={() => setOuvert(null)}>
-        <p className="mb-1 text-center text-[16px]" style={{ color: colors.ink, fontFamily: font.display }}>
-          {ouvert?.nom}
-        </p>
-        <p className="mb-5 text-center text-[13px]" style={{ color: colors.muted }}>
-          Choisissez une date pour ce chantier.
-        </p>
-        <input
-          type="date"
-          value={dateChoisie}
-          onChange={(e) => setDateChoisie(e.target.value)}
-          className="mb-5 w-full rounded-[4px] border-0 px-4 py-3.5 outline-none"
-          style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
-        />
-        {dateChoisie && (
-          <p className="mb-4 text-center text-[13px]" style={{ color: colors.muted }}>
-            {formatDateFr(dateChoisie)}
-          </p>
-        )}
-        <div className="flex flex-col gap-2.5">
-          <button
-            onClick={confirmer}
-            disabled={!dateChoisie || enCours}
-            className="rounded-[4px] py-3.5 text-[16px] font-medium text-white disabled:opacity-40"
-            style={{ backgroundColor: colors.rust }}
-          >
-            {enCours ? "Enregistrement…" : "Confirmer la planification"}
-          </button>
-          <button
-            onClick={() => setOuvert(null)}
-            className="rounded-[4px] py-3.5 text-[15px] font-medium"
-            style={{ color: colors.muted }}
-          >
-            Annuler
-          </button>
-        </div>
-      </BottomSheet>
     </div>
   );
+}
+
+/** De quoi écrire « une troisième équipe » sans fabriquer « 3ᵉ ». */
+const ORDINAUX: Record<number, string> = {
+  2: "deuxième",
+  3: "troisième",
+  4: "quatrième",
+  5: "cinquième",
+  6: "sixième",
+};
+
+/** Le point de 5 px sous le chiffre — cinq marques, pas quatre. */
+function Marque({ marque }: { marque: MarqueJour }) {
+  const base = { width: 5, height: 5, borderRadius: 99, display: "block" } as const;
+  if (marque === "libre") return <span aria-hidden="true" style={{ ...base, background: "transparent" }} />;
+  if (marque === "reste")
+    return <span aria-hidden="true" style={{ ...base, boxShadow: `inset 0 0 0 1px ${colors.or}` }} />;
+  if (marque === "plein") return <span aria-hidden="true" style={{ ...base, background: colors.or }} />;
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        ...base,
+        background:
+          marque === "matin"
+            ? `linear-gradient(180deg, ${colors.or} 50%, transparent 50%)`
+            : `linear-gradient(180deg, transparent 50%, ${colors.or} 50%)`,
+        boxShadow: `inset 0 0 0 0.5px ${colors.or}`,
+      }}
+    />
+  );
+}
+
+function legendeDeMarque(marque: MarqueJour): string {
+  if (marque === "libre") return " — libre";
+  if (marque === "reste") return " — il reste de la place";
+  if (marque === "matin") return " — matin complet";
+  if (marque === "apres_midi") return " — après-midi complet";
+  return " — journée pleine";
+}
+
+/** Le contenu d'une journée ouvrable : matin, après-midi, et le bouton. */
+function JourneeOuvrable({
+  jour,
+  aPoser,
+  nombreEquipes,
+  lignesEquipes,
+  lignesDuMoment,
+  choix,
+  onChoisir,
+  onPoser,
+  enCours,
+  refus,
+}: {
+  jour: JourIso;
+  aPoser: { id: string; nom: string } | null;
+  nombreEquipes: number;
+  lignesEquipes: { rang: number; nom?: string | null }[];
+  lignesDuMoment: (jour: JourIso, moment: Moment) => { rang: number; occupe: { id: string; nom: string } | null }[];
+  choix: { moment: Moment; rang: number } | null;
+  onChoisir: (c: { moment: Moment; rang: number }) => void;
+  onPoser: () => void;
+  enCours: boolean;
+  refus: string | null;
+}) {
+  const parMoment = MOMENTS.map((m) => ({ moment: m, lignes: lignesDuMoment(jour, m) }));
+  const toutPris = parMoment.every((p) => p.lignes.every((l) => l.occupe !== null));
+
+  if (toutPris) {
+    const noms = [...new Set(parMoment.flatMap((p) => p.lignes.map((l) => l.occupe?.nom).filter(Boolean)))];
+    return (
+      <p className="mt-3.5 text-[13px] leading-[1.6]" style={{ color: colors.muted }}>
+        Journée pleine — <span style={{ color: colors.ink }}>{noms.join(" et ")}</span>.{" "}
+        {/* **Seul, on ne conseille pas d'embaucher.** Le mot « équipe » ne
+            s'écrit nulle part tant qu'il n'y en a qu'une : à ce compte-là,
+            l'écran désignerait une organisation que le patron n'a pas. */}
+        {nombreEquipes > 1
+          ? `Il faudrait une ${ORDINAUX[nombreEquipes + 1] ?? `${nombreEquipes + 1}ᵉ`} équipe.`
+          : "Rien ne peut s'y ajouter."}
+      </p>
+    );
+  }
+
+  const nomChoisie = choix
+    ? libelleEquipe(lignesEquipes.find((e) => e.rang === choix.rang) ?? null, nombreEquipes)
+    : null;
+
+  return (
+    <>
+      {aPoser ? (
+        <p className="mt-[7px] text-[12.5px]" style={{ color: colors.muted }}>
+          Où poser «&nbsp;{aPoser.nom}&nbsp;» ?
+        </p>
+      ) : (
+        <p className="mt-[7px] text-[12.5px]" style={{ color: colors.muted }}>
+          Aucun chantier n&apos;attend de jour — cette journée se lit, elle ne se remplit pas.
+        </p>
+      )}
+
+      {parMoment.map(({ moment, lignes }) => (
+        <div key={moment} className="mt-[22px]">
+          <p className={`mb-0.5 flex items-center gap-3 ${libelleCaps}`} style={{ color: colors.muted }}>
+            {moment === "matin" ? "Matin" : "Après-midi"}
+            <i className="h-px flex-1" style={{ backgroundColor: colors.line }} />
+          </p>
+          {lignes.map((l) => {
+            const libre = l.occupe === null;
+            // **Le rang est écrit en clair.** Un `nth-of-type` comptait dans son
+            // propre bloc et allumait la ligne sur le matin ET l'après-midi à la
+            // fois : la clé porte donc les deux, moment compris.
+            const vise = choix?.moment === moment && choix.rang === l.rang;
+            const nomEquipe = libelleEquipe(lignesEquipes.find((e) => e.rang === l.rang) ?? null, nombreEquipes);
+            // **Deux colonnes quand il y a une équipe à nommer, UNE SEULE
+            // sinon.** À une équipe, « Libre » — ou le nom du chantier — tient
+            // la place du nom, et la colonne de droite n'existe pas : l'écrire
+            // des deux côtés mettait « Libre » deux fois sur la même ligne, et
+            // deux fois la même information sur un écran, c'est une de trop.
+            const gauche = nomEquipe ?? (libre ? "Libre" : (l.occupe?.nom ?? ""));
+            const droite = nomEquipe ? (libre ? "Libre" : (l.occupe?.nom ?? "")) : null;
+            return (
+              <button
+                key={`${moment}-${l.rang}`}
+                type="button"
+                disabled={!libre || !aPoser}
+                onClick={() => onChoisir({ moment, rang: l.rang })}
+                aria-pressed={vise}
+                data-atlas="creneau"
+                data-moment={moment}
+                data-rang={l.rang}
+                data-libre={libre ? "oui" : "non"}
+                className="flex w-full items-center justify-between gap-3.5 py-3.5 text-left"
+                style={{
+                  borderBottom: `1px solid ${vise ? colors.or : colors.line}`,
+                  transition: "border-color .26s",
+                  WebkitTapHighlightColor: "transparent",
+                }}
+              >
+                <span className="flex min-w-0 items-center gap-2.5">
+                  {/* La perle bronze paraît devant le nom quand la ligne est
+                      choisie. Elle occupe sa place en permanence : sinon le nom
+                      saute de dix pixels au moment du choix. */}
+                  <span
+                    aria-hidden="true"
+                    className="block flex-none"
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: 99,
+                      backgroundColor: colors.or,
+                      opacity: vise ? 1 : 0,
+                      transition: "opacity .26s",
+                    }}
+                  />
+                  <span
+                    className="truncate"
+                    style={{
+                      fontFamily: font.display,
+                      fontSize: 17,
+                      lineHeight: 1.15,
+                      // Seul, une demi-journée libre n'a personne à nommer :
+                      // c'est « Libre » qui tient la place du nom, en bronze.
+                      color: libre && !nomEquipe ? colors.or : colors.ink,
+                    }}
+                  >
+                    {gauche}
+                  </span>
+                </span>
+                {droite && (
+                  <span
+                    className="flex-shrink-0 whitespace-nowrap text-[12.5px]"
+                    style={{ color: vise ? colors.ink : libre ? colors.or : colors.muted }}
+                  >
+                    {droite}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      ))}
+
+      {refus && (
+        <p role="alert" className="mt-4 text-[13px]" style={{ color: colors.alert }}>
+          {refus}
+        </p>
+      )}
+
+      {/* **Un seul bouton, jamais trois lignes.** Et il ne s'arme qu'une fois
+          l'équipe choisie : poser, c'est dire à la fois quand et qui. */}
+      {choix && aPoser && (
+        <button
+          type="button"
+          onClick={onPoser}
+          disabled={enCours}
+          data-atlas="poser"
+          className="mt-[22px] flex w-full items-center justify-center gap-3 rounded-full px-[22px] py-4 disabled:opacity-50"
+          style={{
+            backgroundColor: colors.rust,
+            color: colors.cream,
+            fontFamily: font.display,
+            fontSize: 16,
+            lineHeight: 1,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {enCours
+            ? "On pose…"
+            : `Poser · ${LIBELLE_MOMENT[choix.moment]}${nomChoisie ? ` · ${nomChoisie}` : ""}`}
+          <span style={{ color: colors.or }}>→</span>
+        </button>
+      )}
+
+      {/* **Cette phrase n'existe qu'à partir de DEUX équipes.** Seul, il n'y a
+          personne à changer, et l'écran promettrait un geste qui n'existe pas —
+          en écrivant précisément le mot que le patron a interdit dans ce cas. */}
+      {nombreEquipes > 1 && (
+        <p className="mt-3.5 text-center text-[11.5px]" style={{ color: colors.muted }}>
+          Touchez un chantier posé pour changer son équipe.
+        </p>
+      )}
+    </>
+  );
+}
+
+/** « lundi 14 septembre, 9 h – 11 h » — pour SON écran, jamais pour le client. */
+function libelleRendezVous(r: RendezVousExterne): string {
+  const debut = new Date(r.debut);
+  const fin = new Date(r.fin);
+  const jour = (d: Date) => d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  const heure = (d: Date) => d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const memeJour = jour(debut) === jour(fin);
+  if (r.journeeEntiere) return memeJour ? jour(debut) : `du ${jour(debut)} au ${jour(fin)}`;
+  if (memeJour) return `${jour(debut)}, ${heure(debut)}`;
+  return `du ${jour(debut)} au ${jour(fin)}`;
 }

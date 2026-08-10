@@ -128,6 +128,12 @@ l'application. Ce qui est **fait** :
   écouter — le compteur suit la lecture réelle et l'onde le volume réellement
   enregistré, pas un décor — et les photos une pellicule dans le tiroir du bas,
   case « + » en tête. `ARCHITECTURE.md` §49.
+- **Le planning au mois, et les équipes nommées** (10 août, au soir) : sept
+  colonnes sans bordure, cinq marques d'occupation, et la journée qui s'ouvre
+  sous le calendrier. Réglages laisse nommer les équipes — mais **seulement à
+  partir de deux** : seul, le mot « équipe » ne s'écrit nulle part. Une table
+  `equipes` (`nom` nullable), une colonne `chantiers.equipe_id`, et une seule
+  fonction pure qui décide du libellé. `ARCHITECTURE.md` §51 et §52.
 
 Ce qui **reste**, avec l'ordre, les valeurs, les sept pièges et les deux
 réserves : **`TODO.md` §7**. Le dessin fait foi dans

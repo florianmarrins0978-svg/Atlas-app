@@ -45,6 +45,27 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**Le planning au mois et les équipes nommées (10 août, au soir).** Le planning
+est un calendrier de sept colonnes ; toucher un jour ouvre sa journée dessous,
+avec une ligne par équipe. Réglages laisse nommer les équipes.
+`ARCHITECTURE.md` §51 et §52.
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **À UNE seule équipe, le mot « équipe » ne s'écrit nulle part** — ni au
+   planning, ni dans une phrase d'explication, et Réglages ne propose aucun
+   champ. C'est la demande du patron, pas un détail d'affichage. Un contrôle de
+   capture échoue si la chaîne « quipe » réapparaît.
+2. **Le repli « Équipe A » est un AFFICHAGE.** `equipes.nom` est nullable et n'a
+   aucune valeur par défaut ; `libelleEquipe` (`src/lib/equipes.ts`) est la
+   seule à décider, pour l'écran comme pour le serveur.
+3. **`entreprises.nombre_equipes` fait autorité sur le nombre** ; la table ne
+   porte que des noms. Une ligne survit au-delà du compteur, à dessein :
+   redescendre puis remonter ne doit pas perdre un nom saisi à la main.
+4. **La grille se cale sur LUNDI** — `(getUTCDay() + 6) % 7`. Le 1er août 2026
+   est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
+   sans qu'aucun chiffre ne manque.
+
 **L'anneau muet et la pellicule, sur la fiche chantier (10 août, au soir).** La
 ligne « Note vocale » devient un anneau qu'on touche pour écouter et qu'on
 pousse vers le haut pour retirer ; les photos deviennent une pellicule dans le

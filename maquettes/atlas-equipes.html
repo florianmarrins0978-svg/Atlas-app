@@ -1,0 +1,521 @@
+<title>Atlas — Réglages : vos équipes, et leurs noms</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT pour la page.
+
+    RÉGLAGES — NOMMER LES ÉQUIPES.
+
+    Le patron, le 2026-08-10 : « il faut que dans le fichier réglages on puisse
+    mettre le nom des équipes — soit équipe A équipe B, soit des noms et
+    prénoms. Mais s'il n'a pas d'équipe et qu'il ne met rien, il ne faut pas
+    qu'il y ait quand même écrit équipe A équipe B. »
+
+    LA RÈGLE QUI EN DÉCOULE, et qui n'est pas un détail d'affichage :
+
+      · UNE SEULE ÉQUIPE  → le planning n'écrit AUCUN nom d'équipe. Il n'y a
+        personne à distinguer : une demi-journée est libre, ou elle porte le
+        nom de son chantier. Le bloc « leurs noms » disparaît lui aussi —
+        proposer de nommer ce qui ne sera jamais écrit serait un piège.
+      · PLUSIEURS ÉQUIPES → il FAUT les distinguer. Un champ laissé vide prend
+        « Équipe A », « Équipe B » — c'est le repli, pas une invention : la
+        lettre ne prétend rien savoir de personne.
+
+    Autrement dit : on n'invente jamais un nom, mais on ne laisse jamais deux
+    lignes indiscernables. C'est le même arbitrage que pour les prix
+    (`docs/AGENT.md` §3) : sans source fiable, on n'écrit pas.
+
+    LE REPLI EST MONTRÉ, PAS EXPLIQUÉ. Le champ vide affiche déjà « Équipe A »
+    en gris : ce qui sera écrit est sous les yeux, aucune phrase ne le raconte.
+
+    RÉSERVE. Les équipes ne sont aujourd'hui qu'un COMPTEUR
+    (`entreprises.nombre_equipes`, 1 à 20). Les nommer suppose une table
+    `equipes` et une colonne `chantiers.equipe_id` — `TODO.md` §5.
+  */
+
+  :root{
+    --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c;
+    --bronze:#8f7130; --trait:rgba(22,23,15,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`.
+     Deux fois de suite : « rien ne s'ouvre quand je touche ». Chromium s'en
+     passe — les contrôles restaient au vert pendant que l'écran ne répondait
+     pas sous son doigt. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1400px;margin:0 auto}
+
+  .intro{max-width:60ch;margin:0 auto 34px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:390px;max-width:100%}
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:720px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#edece6; --e-plage:#f7f6f2; --e-encre:#16170f; --e-gris:#83867c;
+         --e-bronze:#8f7130; --e-trait:rgba(22,23,15,.13); --e-plein:#2a3a2e;
+         --e-plein-encre:#f2f1ea; --e-signe:#c2a05f}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  .tete{padding:26px 26px 0;flex:none}
+  .tete .sur{margin:0;color:var(--e-bronze)}
+  .tete h1{margin:9px 0 0;font:400 34px/1 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
+
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;background:var(--e-fond)}
+  /* 9 px et .15em : la chasse de la charte (.28em) donne 86 px pour une
+     colonne de 85, et « CHANTIERS » vient coller « PLANNING ». */
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9px;letter-spacing:.15em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre)}
+  .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;background:var(--e-bronze)}
+  .bas i.q2{left:calc(14px + (100% - 28px)/4)}
+  .bas i.q4{left:calc(14px + 3*(100% - 28px)/4)}
+
+  /* ═══ Réglages ═══════════════════════════════════════════════════════ */
+  /* Registre commun aux autres écrans : des filets, pas des cadres ; du serif
+     pour ce qui compte ; presque pas de mots. */
+  .bloc{margin:30px 26px 0}
+  .bloc .t{display:flex;align-items:center;gap:12px;margin:0 0 6px;color:var(--e-gris)}
+  .bloc .t i{flex:1;height:1px;background:var(--e-trait)}
+
+  /* Le compteur. Un vrai − / + sans script : chaque état porte ses deux
+     libellés, empilés au même endroit, et l'état courant montre les siens. */
+  .pas{display:flex;align-items:center;justify-content:center;gap:30px;padding:14px 0 4px}
+  .cote{position:relative;width:46px;height:46px;flex:none}
+  .pm{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+      border-radius:99px;box-shadow:inset 0 0 0 1px var(--e-trait);
+      font:400 21px/1 ui-serif,Georgia,serif;color:var(--e-encre);
+      -webkit-tap-highlight-color:transparent;transition:box-shadow .24s,color .24s}
+  .pm:active{box-shadow:inset 0 0 0 1px var(--e-bronze);color:var(--e-bronze)}
+  .pm.inerte{color:var(--e-gris);opacity:.32}
+  .chiffre{position:relative;min-width:2ch;text-align:center;
+           font:400 52px/1 ui-serif,Georgia,serif;letter-spacing:-.03em;
+           font-variant-numeric:tabular-nums}
+  .chiffre b{display:none;font-weight:400}
+  .quoi{display:none;margin:8px 0 0;text-align:center;font-size:12.5px;color:var(--e-gris);line-height:1.6}
+
+  #n1:checked ~ .combien .c1,
+  #n2:checked ~ .combien .c2,
+  #n3:checked ~ .combien .c3,
+  #n4:checked ~ .combien .c4,
+  #n5:checked ~ .combien .c5,
+  #n6:checked ~ .combien .c6,
+  #n7:checked ~ .combien .c7,
+  #n8:checked ~ .combien .c8,
+  #n9:checked ~ .combien .c9,
+  #n10:checked ~ .combien .c10,
+  #n11:checked ~ .combien .c11,
+  #n12:checked ~ .combien .c12,
+  #n13:checked ~ .combien .c13,
+  #n14:checked ~ .combien .c14,
+  #n15:checked ~ .combien .c15,
+  #n16:checked ~ .combien .c16,
+  #n17:checked ~ .combien .c17,
+  #n18:checked ~ .combien .c18,
+  #n19:checked ~ .combien .c19,
+  #n20:checked ~ .combien .c20{display:block}
+  #n1:checked ~ .combien .q1,
+  #n2:checked ~ .combien .qn,
+  #n3:checked ~ .combien .qn,
+  #n4:checked ~ .combien .qn,
+  #n5:checked ~ .combien .qn,
+  #n6:checked ~ .combien .qn,
+  #n7:checked ~ .combien .qn,
+  #n8:checked ~ .combien .qn,
+  #n9:checked ~ .combien .qn,
+  #n10:checked ~ .combien .qn,
+  #n11:checked ~ .combien .qn,
+  #n12:checked ~ .combien .qn,
+  #n13:checked ~ .combien .qn,
+  #n14:checked ~ .combien .qn,
+  #n15:checked ~ .combien .qn,
+  #n16:checked ~ .combien .qn,
+  #n17:checked ~ .combien .qn,
+  #n18:checked ~ .combien .qn,
+  #n19:checked ~ .combien .qn,
+  #n20:checked ~ .combien .qn{display:block}
+  #n1:checked ~ .combien .g .pm:nth-child(1),
+  #n2:checked ~ .combien .g .pm:nth-child(2),
+  #n3:checked ~ .combien .g .pm:nth-child(3),
+  #n4:checked ~ .combien .g .pm:nth-child(4),
+  #n5:checked ~ .combien .g .pm:nth-child(5),
+  #n6:checked ~ .combien .g .pm:nth-child(6),
+  #n7:checked ~ .combien .g .pm:nth-child(7),
+  #n8:checked ~ .combien .g .pm:nth-child(8),
+  #n9:checked ~ .combien .g .pm:nth-child(9),
+  #n10:checked ~ .combien .g .pm:nth-child(10),
+  #n11:checked ~ .combien .g .pm:nth-child(11),
+  #n12:checked ~ .combien .g .pm:nth-child(12),
+  #n13:checked ~ .combien .g .pm:nth-child(13),
+  #n14:checked ~ .combien .g .pm:nth-child(14),
+  #n15:checked ~ .combien .g .pm:nth-child(15),
+  #n16:checked ~ .combien .g .pm:nth-child(16),
+  #n17:checked ~ .combien .g .pm:nth-child(17),
+  #n18:checked ~ .combien .g .pm:nth-child(18),
+  #n19:checked ~ .combien .g .pm:nth-child(19),
+  #n20:checked ~ .combien .g .pm:nth-child(20),
+  #n1:checked ~ .combien .d .pm:nth-child(1),
+  #n2:checked ~ .combien .d .pm:nth-child(2),
+  #n3:checked ~ .combien .d .pm:nth-child(3),
+  #n4:checked ~ .combien .d .pm:nth-child(4),
+  #n5:checked ~ .combien .d .pm:nth-child(5),
+  #n6:checked ~ .combien .d .pm:nth-child(6),
+  #n7:checked ~ .combien .d .pm:nth-child(7),
+  #n8:checked ~ .combien .d .pm:nth-child(8),
+  #n9:checked ~ .combien .d .pm:nth-child(9),
+  #n10:checked ~ .combien .d .pm:nth-child(10),
+  #n11:checked ~ .combien .d .pm:nth-child(11),
+  #n12:checked ~ .combien .d .pm:nth-child(12),
+  #n13:checked ~ .combien .d .pm:nth-child(13),
+  #n14:checked ~ .combien .d .pm:nth-child(14),
+  #n15:checked ~ .combien .d .pm:nth-child(15),
+  #n16:checked ~ .combien .d .pm:nth-child(16),
+  #n17:checked ~ .combien .d .pm:nth-child(17),
+  #n18:checked ~ .combien .d .pm:nth-child(18),
+  #n19:checked ~ .combien .d .pm:nth-child(19),
+  #n20:checked ~ .combien .d .pm:nth-child(20){display:flex}
+
+  /* Les noms. Un filet par équipe, la lettre de repli devant, et le champ
+     occupe toute la ligne : c'est le champ qu'on touche, pas une icône. */
+  .nomm{display:none}
+  .ligne{display:none;align-items:center;gap:14px;padding:13px 0;
+         border-bottom:1px solid var(--e-trait);transition:border-color .26s}
+  .ligne .rep{flex:none;width:20px;text-align:center;color:var(--e-bronze);
+              font:400 15px/1 ui-serif,Georgia,serif}
+  /* 17 px : en dessous de 16, Safari zoome à la mise au point et l'écran saute. */
+  .champ{flex:1;min-width:0;border:0;background:transparent;padding:0;margin:0;
+         -webkit-appearance:none;appearance:none;border-radius:0;
+         font:400 17px/1.3 ui-serif,Georgia,serif;color:var(--e-encre)}
+  .champ::placeholder{color:var(--e-gris);opacity:.72}
+  .champ:focus{outline:none}
+  .nomm:has(.champ:focus) .ligne:has(.champ:focus){border-bottom-color:var(--e-bronze)}
+
+  /* Seul : rien à nommer. Le bloc entier s'efface plutôt que de proposer un
+     champ dont la valeur ne serait jamais lue. */
+  .seulmot{display:none;margin:30px 26px 0;padding-top:18px;
+           border-top:1px solid var(--e-trait);font-size:13px;color:var(--e-gris);line-height:1.7}
+  .seulmot b{color:var(--e-encre);font-weight:400}
+  #n1:checked ~ .nomm{display:none}
+  #n2:checked ~ .nomm,
+  #n3:checked ~ .nomm,
+  #n4:checked ~ .nomm,
+  #n5:checked ~ .nomm,
+  #n6:checked ~ .nomm,
+  #n7:checked ~ .nomm,
+  #n8:checked ~ .nomm,
+  #n9:checked ~ .nomm,
+  #n10:checked ~ .nomm,
+  #n11:checked ~ .nomm,
+  #n12:checked ~ .nomm,
+  #n13:checked ~ .nomm,
+  #n14:checked ~ .nomm,
+  #n15:checked ~ .nomm,
+  #n16:checked ~ .nomm,
+  #n17:checked ~ .nomm,
+  #n18:checked ~ .nomm,
+  #n19:checked ~ .nomm,
+  #n20:checked ~ .nomm{display:block}
+  #n1:checked ~ .seulmot{display:block}
+  #n2:checked ~ .nomm .ligne:nth-of-type(-n+2),
+  #n3:checked ~ .nomm .ligne:nth-of-type(-n+3),
+  #n4:checked ~ .nomm .ligne:nth-of-type(-n+4),
+  #n5:checked ~ .nomm .ligne:nth-of-type(-n+5),
+  #n6:checked ~ .nomm .ligne:nth-of-type(-n+6),
+  #n7:checked ~ .nomm .ligne:nth-of-type(-n+7),
+  #n8:checked ~ .nomm .ligne:nth-of-type(-n+8),
+  #n9:checked ~ .nomm .ligne:nth-of-type(-n+9),
+  #n10:checked ~ .nomm .ligne:nth-of-type(-n+10),
+  #n11:checked ~ .nomm .ligne:nth-of-type(-n+11),
+  #n12:checked ~ .nomm .ligne:nth-of-type(-n+12),
+  #n13:checked ~ .nomm .ligne:nth-of-type(-n+13),
+  #n14:checked ~ .nomm .ligne:nth-of-type(-n+14),
+  #n15:checked ~ .nomm .ligne:nth-of-type(-n+15),
+  #n16:checked ~ .nomm .ligne:nth-of-type(-n+16),
+  #n17:checked ~ .nomm .ligne:nth-of-type(-n+17),
+  #n18:checked ~ .nomm .ligne:nth-of-type(-n+18),
+  #n19:checked ~ .nomm .ligne:nth-of-type(-n+19),
+  #n20:checked ~ .nomm .ligne:nth-of-type(-n+20){display:flex}
+
+  /* ═══ La journée, telle que le planning l'écrira ══════════════════════ */
+  .jour{margin:26px 26px 0}
+  .quand{margin:0;font:400 23px/1.08 ui-serif,Georgia,serif;letter-spacing:-.012em}
+  .ou{margin:7px 0 0;font-size:12.5px;color:var(--e-gris)}
+  .moment{margin-top:22px}
+  .moment .mtitre{display:flex;align-items:center;gap:12px;margin:0 0 2px;color:var(--e-gris)}
+  .moment .mtitre i{flex:1;height:1px;background:var(--e-trait)}
+  .rang{display:flex;align-items:center;justify-content:space-between;gap:14px;
+        padding:14px 0;border-bottom:1px solid var(--e-trait);
+        text-decoration:none;color:inherit;-webkit-tap-highlight-color:transparent;
+        transition:border-color .26s}
+  .rang .qui{display:flex;align-items:center;gap:10px;
+             font:400 17px/1.15 ui-serif,Georgia,serif;transition:color .26s}
+  .rang .qui b{display:block;width:5px;height:5px;border-radius:99px;
+               background:var(--e-bronze);opacity:0;transition:opacity .26s}
+  .rang .etat{font-size:12.5px;color:var(--e-gris);text-align:right;transition:color .26s}
+  .rang.libre .etat{color:var(--e-bronze)}
+  /* Seul, une demi-journée libre n'a personne à nommer : c'est « Libre » qui
+     tient la place du nom, en serif et en bronze. */
+  .rang.libre.anonyme .qui{color:var(--e-bronze)}
+
+  /* Le rang est écrit en clair (.r1…) : `label:nth-of-type(n)` comptait dans
+     son propre bloc « moment » et allumait la ligne sur les DEUX
+     demi-journées à la fois. */
+  .jour .cr:nth-of-type(1):checked ~ .creneaux .r1,
+  .jour .cr:nth-of-type(2):checked ~ .creneaux .r2{border-bottom-color:var(--e-bronze)}
+  .jour .cr:nth-of-type(1):checked ~ .creneaux .r1 .qui b,
+  .jour .cr:nth-of-type(2):checked ~ .creneaux .r2 .qui b{opacity:1}
+  .jour .cr:nth-of-type(1):checked ~ .creneaux .r1 .etat,
+  .jour .cr:nth-of-type(2):checked ~ .creneaux .r2 .etat{color:var(--e-encre)}
+
+  .poser{display:none;margin-top:22px;align-items:center;justify-content:center;gap:12px;
+         padding:16px 22px;border-radius:99px;background:var(--e-plein);
+         color:var(--e-plein-encre);text-decoration:none;white-space:nowrap;
+         font:400 16px/1 ui-serif,Georgia,serif;-webkit-tap-highlight-color:transparent;
+         transition:transform .18s cubic-bezier(.22,.61,.36,1)}
+  .poser:active{transform:scale(.985)}
+  .poser .fleche{color:var(--e-signe);font-family:inherit}
+  .jour .cr:nth-of-type(1):checked ~ .poser:nth-of-type(1),
+  .jour .cr:nth-of-type(2):checked ~ .poser:nth-of-type(2){display:flex}
+  .changer{margin:14px 0 0;text-align:center;font-size:11.5px;color:var(--e-gris)}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+      transition-duration:.001ms !important}
+  }
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Réglages — vos équipes</p>
+    <h1>On n'invente jamais un nom</h1>
+    <p>
+      <strong>Touchez le − et le +</strong> du premier écran, puis
+      <strong>écrivez dans les lignes</strong>. À <strong>une</strong> équipe,
+      le bloc des noms disparaît : il n'y a personne à distinguer, et le
+      planning n'écrira aucune équipe. À <strong>deux</strong>, un champ laissé
+      vide affiche déjà, en gris, ce qui sera écrit à sa place.
+    </p>
+  </div>
+
+  <div class="rangee">
+
+    <!-- ── 1. Réglages, manipulable ───────────────────────────────────── -->
+    <div class="prop">
+      <div class="tel"><div class="ecran" data-s="r">
+        <div class="tete"><p class="sur caps">Réglages</p><h1>Vos équipes</h1></div>
+        <div class="corps">
+
+          <input class="interrupteur nb" type="radio" name="nb" id="n1" checked>
+          <input class="interrupteur nb" type="radio" name="nb" id="n2">
+          <input class="interrupteur nb" type="radio" name="nb" id="n3">
+          <input class="interrupteur nb" type="radio" name="nb" id="n4">
+          <input class="interrupteur nb" type="radio" name="nb" id="n5">
+          <input class="interrupteur nb" type="radio" name="nb" id="n6">
+          <input class="interrupteur nb" type="radio" name="nb" id="n7">
+          <input class="interrupteur nb" type="radio" name="nb" id="n8">
+          <input class="interrupteur nb" type="radio" name="nb" id="n9">
+          <input class="interrupteur nb" type="radio" name="nb" id="n10">
+          <input class="interrupteur nb" type="radio" name="nb" id="n11">
+          <input class="interrupteur nb" type="radio" name="nb" id="n12">
+          <input class="interrupteur nb" type="radio" name="nb" id="n13">
+          <input class="interrupteur nb" type="radio" name="nb" id="n14">
+          <input class="interrupteur nb" type="radio" name="nb" id="n15">
+          <input class="interrupteur nb" type="radio" name="nb" id="n16">
+          <input class="interrupteur nb" type="radio" name="nb" id="n17">
+          <input class="interrupteur nb" type="radio" name="nb" id="n18">
+          <input class="interrupteur nb" type="radio" name="nb" id="n19">
+          <input class="interrupteur nb" type="radio" name="nb" id="n20">
+
+          <div class="bloc combien">
+            <p class="t caps">Combien partent en même temps<i></i></p>
+            <div class="pas">
+              <span class="cote g">
+                <span class="pm inerte">−</span>
+                <label class="pm" for="n1" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n2" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n3" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n4" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n5" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n6" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n7" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n8" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n9" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n10" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n11" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n12" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n13" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n14" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n15" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n16" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n17" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n18" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n19" aria-label="Une équipe de moins">−</label>
+              </span>
+              <span class="chiffre"><b class="c1">1</b><b class="c2">2</b><b class="c3">3</b><b class="c4">4</b><b class="c5">5</b><b class="c6">6</b><b class="c7">7</b><b class="c8">8</b><b class="c9">9</b><b class="c10">10</b><b class="c11">11</b><b class="c12">12</b><b class="c13">13</b><b class="c14">14</b><b class="c15">15</b><b class="c16">16</b><b class="c17">17</b><b class="c18">18</b><b class="c19">19</b><b class="c20">20</b></span>
+              <span class="cote d">
+                <label class="pm" for="n2" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n3" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n4" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n5" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n6" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n7" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n8" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n9" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n10" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n11" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n12" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n13" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n14" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n15" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n16" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n17" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n18" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n19" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n20" aria-label="Une équipe de plus">+</label>
+                <span class="pm inerte">+</span>
+              </span>
+            </div>
+            <p class="quoi q1">Un chantier à la fois : un jour pris n'est plus proposé.</p>
+            <p class="quoi qn">Un jour reste proposé tant qu'une équipe est libre.</p>
+          </div>
+
+          <div class="bloc nomm">
+            <p class="t caps">Leurs noms<i></i></p>
+            <label class="ligne e1"><span class="rep">A</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe A"></label>
+            <label class="ligne e2"><span class="rep">B</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe B"></label>
+            <label class="ligne e3"><span class="rep">C</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe C"></label>
+            <label class="ligne e4"><span class="rep">D</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe D"></label>
+            <label class="ligne e5"><span class="rep">E</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe E"></label>
+            <label class="ligne e6"><span class="rep">F</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe F"></label>
+            <label class="ligne e7"><span class="rep">G</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe G"></label>
+            <label class="ligne e8"><span class="rep">H</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe H"></label>
+            <label class="ligne e9"><span class="rep">I</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe I"></label>
+            <label class="ligne e10"><span class="rep">J</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe J"></label>
+            <label class="ligne e11"><span class="rep">K</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe K"></label>
+            <label class="ligne e12"><span class="rep">L</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe L"></label>
+            <label class="ligne e13"><span class="rep">M</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe M"></label>
+            <label class="ligne e14"><span class="rep">N</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe N"></label>
+            <label class="ligne e15"><span class="rep">O</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe O"></label>
+            <label class="ligne e16"><span class="rep">P</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe P"></label>
+            <label class="ligne e17"><span class="rep">Q</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe Q"></label>
+            <label class="ligne e18"><span class="rep">R</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe R"></label>
+            <label class="ligne e19"><span class="rep">S</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe S"></label>
+            <label class="ligne e20"><span class="rep">T</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="done" placeholder="Équipe T"></label>
+          </div>
+
+          <p class="seulmot">Seul, rien à nommer : <b>le planning n'écrira aucune équipe</b>.</p>
+
+        </div>
+        <nav class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></nav>
+      </div></div>
+      <p class="sous">Réglages — vos équipes</p>
+      <p class="note">Rien sous la dernière ligne : <b>le champ vide affiche déjà « Équipe A » en gris</b>, aucune phrase n'a à le raconter.</p>
+    </div>
+
+    <!-- ── 2. Le planning quand il est seul ───────────────────────────── -->
+    <div class="prop">
+      <div class="tel"><div class="ecran" data-s="seul">
+        <div class="tete"><p class="sur caps">Vos journées</p><h1>Planning</h1></div>
+        <div class="corps">
+          <div class="jour">
+            <p class="quand">Jeudi 20 août</p>
+            <p class="ou">Où poser « Chez M. Martins » ?</p>
+            <input class="interrupteur cr" type="radio" name="s20" id="s201">
+            <div class="creneaux">
+              <div class="moment">
+                <p class="mtitre caps">Matin<i></i></p>
+                <div class="rang"><span class="qui"><b></b>Reprise de toiture</span></div>
+              </div>
+              <div class="moment">
+                <p class="mtitre caps">Après-midi<i></i></p>
+                <label class="rang libre anonyme r1" for="s201"><span class="qui"><b></b>Libre</span></label>
+              </div>
+            </div>
+            <a class="poser" href="#">Poser · après-midi <span class="fleche">→</span></a>
+          </div>
+        </div>
+        <nav class="bas"><span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Réglages</span><i class="q2"></i></nav>
+      </div></div>
+      <p class="sous">Une équipe — aucun nom écrit</p>
+      <p class="note">Pas de colonne, pas de lettre, pas d'« Équipe A ». <b>Une demi-journée est libre, ou elle porte le nom de son chantier.</b></p>
+    </div>
+
+    <!-- ── 3. Le planning quand elles sont nommées ────────────────────── -->
+    <div class="prop">
+      <div class="tel"><div class="ecran" data-s="nom">
+        <div class="tete"><p class="sur caps">Vos journées</p><h1>Planning</h1></div>
+        <div class="corps">
+          <div class="jour">
+            <p class="quand">Jeudi 20 août</p>
+            <p class="ou">Où poser « Chez M. Martins » ?</p>
+            <input class="interrupteur cr" type="radio" name="d20" id="d201">
+            <input class="interrupteur cr" type="radio" name="d20" id="d202">
+            <div class="creneaux">
+              <div class="moment">
+                <p class="mtitre caps">Matin<i></i></p>
+                <div class="rang"><span class="qui"><b></b>Malik</span><span class="etat">Reprise de toiture</span></div>
+                <label class="rang libre r1" for="d201"><span class="qui"><b></b>Théo</span><span class="etat">Libre</span></label>
+              </div>
+              <div class="moment">
+                <p class="mtitre caps">Après-midi<i></i></p>
+                <div class="rang"><span class="qui"><b></b>Malik</span><span class="etat">Reprise de toiture</span></div>
+                <label class="rang libre r2" for="d202"><span class="qui"><b></b>Théo</span><span class="etat">Libre</span></label>
+              </div>
+            </div>
+            <a class="poser" href="#">Poser · matin · Théo <span class="fleche">→</span></a>
+            <a class="poser" href="#">Poser · après-midi · Théo <span class="fleche">→</span></a>
+            <p class="changer">Touchez un chantier posé pour changer son équipe.</p>
+          </div>
+        </div>
+        <nav class="bas"><span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Réglages</span><i class="q2"></i></nav>
+      </div></div>
+      <p class="sous">Deux équipes nommées</p>
+      <p class="note">La lettre a disparu avec le nom. <b>Le bouton dit la phrase entière : « Poser · matin · Théo ».</b></p>
+    </div>
+
+  </div>
+
+  <p class="note" style="max-width:64ch;margin:44px auto 0;border:0">
+    <b>Ce que cette maquette engage.</b> Une équipe non nommée n'est pas une
+    équipe anonyme : c'est une équipe <b>qu'on n'a pas besoin de nommer</b>.
+    D'où la règle — seul, aucun nom n'est écrit ; à plusieurs, la lettre sert de
+    repli parce qu'il faut bien distinguer deux lignes. On n'invente jamais un
+    nom, et on ne laisse jamais deux lignes indiscernables.
+    <b>Aujourd'hui, les équipes ne sont qu'un compteur</b>
+    (<code>entreprises.nombre_equipes</code>) : les nommer suppose une table
+    <code>equipes</code> et une colonne <code>chantiers.equipe_id</code> —
+    <code>TODO.md</code> §5.
+  </p>
+</div>
