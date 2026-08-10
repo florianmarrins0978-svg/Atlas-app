@@ -72,9 +72,9 @@ async function main() {
   await page.click('button:has-text("J\'accepte ce devis")');
   await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 15000 });
 
-  // Fin de chantier, puis arrêt de la facture.
+  // Créer la facture, puis arrêt de l'envoi.
   await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: /Fin de chantier|Confirmer le départ/i }).first().click();
+  await page.getByRole("button", { name: /Créer la facture|Confirmer le départ/i }).first().click();
   await page.waitForTimeout(2000);
   const confirmer = page.getByRole("button", { name: /Confirmer le départ/i });
   if (await confirmer.count()) {

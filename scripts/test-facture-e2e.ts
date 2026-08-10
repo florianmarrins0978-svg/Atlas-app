@@ -3,7 +3,7 @@ import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 
-// Fin de chantier, facture et relevé de TVA, vus depuis l'écran du patron
+// Créer la facture, l'envoyer, et le relevé de TVA — vus depuis l'écran du patron
 // (docs/AGENT.md §2.3). L'arrêt 3 est ici : rien ne part sans un appui.
 
 const BASE = "http://localhost:3000";
@@ -105,7 +105,7 @@ async function main() {
 
     assert.ok(await page.locator(`text=${nom}`).first().isVisible(), "le chantier n'apparaît pas");
     assert.ok(
-      await page.locator("text=Fin de chantier").first().isVisible(),
+      await page.locator("text=Créer la facture").first().isVisible(),
       "le bouton de clôture est absent"
     );
   });
@@ -124,10 +124,10 @@ async function main() {
     assert.ok(await page.locator("text=Le chantier est réalisé ?").isVisible());
   });
 
-  await test("« Fin de chantier » prépare la facture sans l'émettre", async () => {
+  await test("« Créer la facture » prépare la facture sans l'émettre", async () => {
     const { chantierId } = await chantierRealise(page, "preparer");
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
-    await page.click("text=Fin de chantier");
+    await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
 
     assert.ok(
@@ -142,7 +142,7 @@ async function main() {
   await test("la confirmation fige la facture et la porte au relevé de TVA", async () => {
     const { chantierId } = await chantierRealise(page, "emettre");
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
-    await page.click("text=Fin de chantier");
+    await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
     await page.click("text=Confirmer le départ de la facture");
     await page.waitForSelector("text=Elle figure au relevé de TVA collectée", { timeout: 15000 });
@@ -171,7 +171,7 @@ async function main() {
   await test("une facture émise ne peut plus repartir", async () => {
     const { chantierId } = await chantierRealise(page, "rejeu");
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
-    await page.click("text=Fin de chantier");
+    await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
     await page.click("text=Confirmer le départ de la facture");
     await page.waitForSelector("text=Elle figure au relevé de TVA collectée", { timeout: 15000 });

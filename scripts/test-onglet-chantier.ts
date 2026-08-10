@@ -49,7 +49,7 @@ cas("planifié pour aujourd'hui : encore au planning — la journée n'est pas f
   assert.equal(ongletDuChantier({ statut: "planifie", datePlanifiee: AUJ }, AUJ), "planning");
 });
 
-cas("la date est passée : dans les terminés, même sans « Fin de chantier »", () => {
+cas("la date est passée : dans les terminés, même sans « Créer la facture »", () => {
   assert.equal(ongletDuChantier({ statut: "planifie", datePlanifiee: "2026-08-05" }, AUJ), "termines");
 });
 

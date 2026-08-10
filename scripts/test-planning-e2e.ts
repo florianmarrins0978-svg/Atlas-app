@@ -112,7 +112,7 @@ async function main() {
   assert.equal(
     await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).count(),
     1,
-    "« Fin de chantier » manque sur la carte du chantier planifié"
+    "« Créer la facture » manque sur la ligne du chantier planifié"
   );
 
   // --- Déplacer un chantier déjà posé ---
