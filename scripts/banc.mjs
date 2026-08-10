@@ -90,6 +90,20 @@ function jouer(commande, args, env = process.env) {
   });
 }
 
+/**
+ * Le port est-il vraiment rendu ? On interroge la santé : tant qu'elle répond,
+ * quelqu'un écoute encore. Rien d'autre ne le prouve — un processus disparu de
+ * la liste peut avoir laissé un enfant derrière lui.
+ */
+async function portRendu(limiteMs) {
+  const fin = Date.now() + limiteMs;
+  while (Date.now() < fin) {
+    if (!(await repond())) return true;
+    await attendre(1000);
+  }
+  return false;
+}
+
 const version = versionDuCode();
 const raison = doitRebatir(version);
 
@@ -142,6 +156,43 @@ async function prechaufferEcransPublics() {
     }
   }
   console.log("\n  L'écran de connexion s'ouvre maintenant du premier coup.\n");
+
+  // **Et TOUS les autres écrans derrière, dans la foulée.**
+  //
+  // Ouvrir la connexion ne suffit pas : chaque écran suivant coûte le même
+  // premier appel, et le relais coupe pareil. Le patron se connecterait pour
+  // retomber sur une page blanche à l'écran d'après — le même défaut, déplacé
+  // d'un cran. `prechauffer.mjs` sait ouvrir une session et parcourir la liste,
+  // y compris les écrans d'un chantier, qui sont les plus lourds.
+  //
+  // Enveloppé en entier : rien de ceci ne doit pouvoir empêcher le banc de
+  // servir. Au pire, le premier appel repaiera son coût.
+  try {
+    const { cookieDeSession, ecransDeChantier, ECRANS_A_PRECHAUFFER, expliquerObstacle, prechauffer } =
+      await import("./prechauffer.mjs");
+    let motif = null;
+    const cookie = await cookieDeSession({
+      databaseUrl: process.env.DATABASE_URL,
+      authSecret: process.env.AUTH_SECRET,
+      nodeEnv: process.env.NODE_ENV,
+      ecrire: (raison) => { motif = raison; },
+    });
+    if (!cookie) {
+      // Dire la VRAIE raison : ce message a déjà accusé le mauvais coupable
+      // pendant que PostgreSQL était arrêté (voir `prechauffer.mjs`).
+      console.log(`  ⚠ ${motif ?? "préchauffage complet impossible, sans raison connue"}\n`);
+      return;
+    }
+    const ecrans = [...ECRANS_A_PRECHAUFFER, ...(await ecransDeChantier({ base, cookie }))];
+    console.log(`  Préchauffage de ${ecrans.length} écrans — ils s'ouvriront ensuite du premier coup.`);
+    const bilan = await prechauffer({ base, cookie, ecrans, ecrire: (l) => console.log(`  · ${l}`) });
+    console.log(`  Préchauffage terminé : ${bilan.reussis} écran(s) prêts` +
+      (bilan.echoues ? `, ${bilan.echoues} en échec` : "") + ` — ${bilan.secondes} s.\n`);
+    const obstacle = expliquerObstacle(bilan.renvoiDominant);
+    if (obstacle) console.log(`  ${obstacle}\n`);
+  } catch (e) {
+    console.log(`  (Préchauffage complet abandonné : ${e instanceof Error ? e.message : e})\n`);
+  }
 }
 
 let serveur = raison ? lancerDev() : lancerBati();
@@ -174,12 +225,39 @@ if (raison) {
     console.log("\n  Construction terminée — passage à la version rapide.\n");
     enBascule = true;
     serveur.kill("SIGTERM");
-    // Laisser le port se libérer : se précipiter donnerait « port déjà pris »,
-    // c'est-à-dire un message sans rapport avec la cause.
-    await attendre(3000);
-    serveur = lancerBati();
-    serveur.on("exit", surSortie);
-    enBascule = false;
+
+    // **ATTENDRE QUE LE PORT SOIT VRAIMENT RENDU, et le vérifier.**
+    //
+    // Trouvé à l'essai, et c'était grave : trois secondes ne suffisent pas.
+    // `next dev` n'est qu'une enveloppe ; le processus qui ÉCOUTE se renomme
+    // `next-server` et survit à la mort de son père. La bascule tombait donc
+    // sur « EADDRINUSE », `next start` refusait de démarrer, le script mourait
+    // — et le patron se retrouvait sans application, à cause du remède. C'est
+    // le même piège que le 404 du 9 août (`veiller.sh`), déplacé d'un cran.
+    if (!(await portRendu(20_000))) {
+      try {
+        // Les crochets autour du « n » : sans eux, le motif se trouverait
+        // lui-même dans la ligne de commande de ce script.
+        execFileSync("pkill", ["-f", "[n]ext-server"]);
+      } catch {
+        // Personne à tuer : tant mieux.
+      }
+    }
+
+    if (await portRendu(20_000)) {
+      serveur = lancerBati();
+      serveur.on("exit", surSortie);
+      enBascule = false;
+    } else {
+      // **On ne bascule pas dans le vide.** Mieux vaut un banc lent qu'un banc
+      // mort : le serveur de développement tient encore le port, il sert.
+      enBascule = false;
+      console.error(
+        "\n  ⚠️  Le port n'a pas été rendu : on RESTE en mode développement.\n" +
+          "     L'application fonctionne — elle sera simplement moins rapide.\n" +
+          "     La version rapide prendra le relais au prochain démarrage.\n"
+      );
+    }
   } else {
     // **Jamais en silence, et jamais rien du tout.** Voir l'en-tête : un banc
     // lent reste un banc, un banc mort coûte une soirée.

@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Préchauffer TOUS les écrans, et ne plus mourir en basculant
+
+Deux suites au correctif précédent, la seconde trouvée à l'essai et sérieuse.
+
+**Ouvrir la connexion ne suffisait pas.** Chaque écran suivant coûte le même
+premier appel, et le relais coupe pareil : le patron se serait connecté pour
+retomber sur une page blanche à l'écran d'après — le même défaut, déplacé d'un
+cran. Le banc parcourt donc **les dix-sept écrans** avec une vraie session, y
+compris ceux d'un chantier, qui sont les plus lourds. Mesuré : 26 s pour les
+dix-sept, et chacun s'ouvre ensuite en quelques dizaines de millisecondes.
+
+**La bascule tuait l'application.** `next dev` n'est qu'une enveloppe : le
+processus qui ÉCOUTE se renomme `next-server` et **survit à la mort de son
+père**. Trois secondes d'attente ne suffisaient pas ; `next start` tombait sur
+`EADDRINUSE`, le script mourait, et le patron se retrouvait sans application —
+**à cause du remède**. C'est le piège du 404 du 9 août (`veiller.sh`), déplacé
+d'un cran.
+
+On attend désormais que le port soit **vraiment** rendu, on le vérifie en
+interrogeant la santé, on insiste sur `next-server` s'il le faut — et si le port
+ne se libère pas, **on ne bascule pas** : mieux vaut un banc lent qu'un banc mort.
+
+Vu rouge puis vert : `EADDRINUSE` avant, `Ready in 157ms` et `200 en 0,2 s`
+après.
+
 ### La page blanche, enfin : le relais coupait avant la fin de la compilation
 
 **Mesuré, pas supposé.** `next dev` ne compile un écran qu'au **premier appel** :
