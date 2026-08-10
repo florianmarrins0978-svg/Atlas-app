@@ -1,4 +1,5 @@
 import { eq, sql } from "drizzle-orm";
+import { redirect } from "next/navigation";
 import { auth } from "../auth";
 import { db } from "./db/client";
 import { membresEntreprise } from "./db/schema";
@@ -69,7 +70,16 @@ async function resoudreEntrepriseId(utilisateurId: string): Promise<string> {
       .limit(1);
 
     if (!membre) {
-      throw new AucuneEntrepriseError(utilisateurId);
+      // **Une session valide dont le compte n'a plus d'entreprise est une
+      // session PÉRIMÉE, pas une panne.** Le 10 août 2026, le patron a passé sa
+      // soirée dessus : le jeu de démonstration refait, l'ancien compte
+      // supprimé, et son navigateur portait toujours ce fantôme. L'erreur
+      // remontait en 500 sur chaque écran, sans jamais dire quoi faire.
+      //
+      // On l'envoie donc là où le cookie sera effacé, puis à l'écran de
+      // connexion. `redirect()` lève une exception que Next.js reconnaît :
+      // elle traverse ce qui l'appelle sans rien laisser à moitié fait.
+      redirect("/api/session-perimee");
     }
     enrichirContexteRequete({ utilisateurId, entrepriseId: membre.entrepriseId });
     return membre.entrepriseId;

@@ -27,7 +27,18 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 bis. Une session périmée fait s'écrouler toutes les pages — À FAIRE
+### 0 bis. Une session périmée — TRAITÉE le 2026-08-10, reste à couvrir par un test
+
+**Le remède est en place** : `GET /api/session-perimee` efface les cookies et
+renvoie à la connexion ; `getCurrentCtx` et l'écran des documents légaux y
+mènent. Éprouvé à la main contre l'identifiant fantôme du patron.
+
+**Ce qui manque** : un test automatique. Il demande de forger une session signée
+pour un utilisateur absent — `scripts/prechauffer.mjs` sait déjà fabriquer un
+cookie de session, c'est de là qu'il faut partir. Sans ce test, la redirection
+peut se défaire sans que rien ne le dise.
+
+#### La forme d'origine du défaut, pour mémoire
 
 **Constaté chez le patron le 10 août 2026, sur son banc.** Son navigateur
 portait la session d'un compte de démonstration supprimé par un nouveau seed.

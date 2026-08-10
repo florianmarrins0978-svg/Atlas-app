@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { documentsAAccepter } from "@/server/repositories/documents-legaux";
+import { documentsAAccepter, utilisateurExiste } from "@/server/repositories/documents-legaux";
 import FormulaireAcceptation from "./formulaire";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +9,12 @@ export default async function DocumentsLegauxPage() {
   const session = await auth();
   const utilisateurId = session?.user?.id;
   if (!utilisateurId) redirect("/login");
+
+  // **Le compte existe-t-il encore ?** Cet écran est le premier que voit une
+  // session périmée — il précède toute entreprise. Sans ce contrôle,
+  // l'acceptation partait en base et échouait sur la clé étrangère, en
+  // affichant une requête SQL au patron.
+  if (!(await utilisateurExiste(utilisateurId))) redirect("/api/session-perimee");
 
   const documents = await documentsAAccepter(utilisateurId);
   // Plus rien à accepter : cette page n'a aucune raison de rester atteignable.

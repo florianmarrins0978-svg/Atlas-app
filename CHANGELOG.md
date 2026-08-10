@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Une session dont le compte n'existe plus se défait toute seule
+
+**La panne qui a tenu la soirée entière.** Le jeu de démonstration avait été
+refait, l'ancien compte supprimé, et le navigateur du patron portait toujours la
+session de ce fantôme — `38befa76-e564-4751-9060-69ada52e720d`. Le cookie est
+signé, donc valide : l'application le laissait entrer, puis **toute écriture
+était refusée**. Il a vu « aucune adhésion d'entreprise », puis un `insert` en
+échec sur les documents légaux, sans que rien ne relie ces messages à leur cause
+commune. Reproduit ici, sous le rôle applicatif :
+`new row violates row-level security policy`.
+
+Lui demander de vider ses cookies n'est pas une réponse : c'est lui faire
+réparer notre défaut, à vingt-deux heures, sur un téléphone.
+
+`GET /api/session-perimee` efface les cookies de session — **les deux familles
+de noms**, `authjs.*` et `__Secure-` / `__Host-`, sans quoi le défaut resterait
+intact précisément derrière le relais où il le rencontre — et renvoie à l'écran
+de connexion. Elle ne touche à aucune donnée : c'est le navigateur qu'elle
+nettoie, jamais la base. Elle est publique dans le middleware, sinon le
+garde-fou renverrait vers `/login` **avant** que le cookie soit effacé, et le
+fantôme survivrait au remède.
+
+Deux endroits y mènent, parce que le fantôme mord à deux moments : `getCurrentCtx`
+quand il n'y a pas d'entreprise, et l'écran des documents légaux — qui précède
+toute entreprise — quand le compte lui-même n'existe plus.
+
+Éprouvé contre **son identifiant exact** : `utilisateurExiste` répond `true` pour
+le compte réel et `false` pour le fantôme ; la route rend `303` avec les cookies
+expirés au 1er janvier 1970.
+
 ### Préchauffer TOUS les écrans, et ne plus mourir en basculant
 
 Deux suites au correctif précédent, la seconde trouvée à l'essai et sérieuse.

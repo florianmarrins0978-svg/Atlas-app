@@ -1,6 +1,6 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../db/client";
-import { acceptationsDocuments, documentsLegaux } from "../db/schema";
+import { acceptationsDocuments, documentsLegaux, users } from "../db/schema";
 import { VERSIONS_DOCUMENTS } from "../documents-legaux/versions";
 
 // Accès aux documents légaux et à la preuve de leur acceptation
@@ -153,4 +153,21 @@ export async function acceptationsDe(utilisateurId: string) {
       .where(eq(acceptationsDocuments.utilisateurId, utilisateurId))
       .orderBy(desc(acceptationsDocuments.accepteAt));
   });
+}
+
+/**
+ * Le compte de cette session existe-t-il encore ?
+ *
+ * Interrogé sous le rôle applicatif, comme le reste : un contrôle fait sous un
+ * rôle privilégié pourrait répondre « oui » là où l'application voit « non ».
+ * Aucune politique d'isolation ne s'applique à `users` pour cette lecture — on
+ * ne demande qu'une existence, jamais un contenu.
+ */
+export async function utilisateurExiste(utilisateurId: string): Promise<boolean> {
+  const [ligne] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.id, utilisateurId))
+    .limit(1);
+  return Boolean(ligne);
 }
