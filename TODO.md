@@ -202,12 +202,33 @@ Interrogé « Comment a été envoyé le devis ? », il a répondu :
 Le patron n'a pas à lire du JSON. L'assistant doit répondre en français, ou dire
 qu'il ne sait pas — et jamais recracher la sortie d'un outil telle quelle.
 
-### 5. Les équipes nommées, si l'entreprise grandit
+### 5. Les équipes nommées — **demandé le 2026-08-10**
 
 Le patron a retenu un **compteur** d'équipes (Réglages), pas des équipes
-nommées : il sait combien de chantiers il mène de front, pas encore qui va où.
-Le jour où il aura deux vraies équipes distinctes, la suite est une table
-`equipes` + `chantiers.equipe_id`, et un planning qui se lit par colonne.
+nommées : il savait combien de chantiers il mène de front, pas encore qui va où.
+Ce fichier disait « le jour où il aura deux vraies équipes distinctes ». **Ce
+jour est arrivé** : *« il y aura des équipes qui devront être affiliées au jour ;
+quand je clique sur le 20, il faut qu'il y ait marqué équipe A ou équipe B, et
+l'utilisateur devra pouvoir affilier les équipes au jour. »*
+
+La suite est celle qui était prévue : une table `equipes`, une colonne
+`chantiers.equipe_id`, et un planning qui se lit **par équipe**. La maquette
+existe et se manipule : `maquettes/atlas-planning.html`, contrôlée par
+`npm run verifier:maquette`.
+
+Ce qu'elle fixe, et qui ne se devine pas :
+
+- **Le jour s'ouvre en deux colonnes** — matin, après-midi — et **une ligne par
+  équipe**. Une case libre se choisit, une case prise nomme son chantier.
+- **Poser, c'est dire à la fois quand ET qui.** Le bouton ne s'arme qu'une fois
+  l'équipe choisie, et il écrit la phrase entière : « jeudi 20 août · matin ·
+  équipe B ». Poser une date sans l'équipe laisserait le travail à moitié fait.
+- **« Complet » veut dire toutes les équipes prises** — c'est déjà ce que
+  calcule `departPossible`. Le 20 reste donc disponible bien que l'équipe A y
+  soit prise toute la journée.
+- **Cinq marques**, pas quatre : libre, il reste de la place, matin complet,
+  après-midi complet, journée pleine. Quatre ne suffisaient pas dès qu'il y a
+  plusieurs équipes.
 
 Écarté aussi, et volontairement : les **heures réelles** (« la demi-journée
 suffit ») et la **capacité en hommes** — `taille_equipe` est du texte libre, il

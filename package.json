@@ -14,7 +14,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "verifier:memoire": "node scripts/verifier-memoire.mjs",
-    "verifier:maquette": "node maquettes/verifier-atlas-origine.mjs && node maquettes/verifier-atlas-note-vocale.mjs",
+    "verifier:maquette": "node maquettes/verifier-atlas-origine.mjs && node maquettes/verifier-atlas-note-vocale.mjs && node maquettes/verifier-atlas-planning.mjs",
     "verifier:ia": "tsx scripts/verifier-ia.ts",
     "icones": "node scripts/generer-icones.mjs",
     "test": "tsx scripts/run-all-tests.ts",

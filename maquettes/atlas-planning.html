@@ -1,0 +1,294 @@
+<title>Atlas — le planning, le mois et les équipes</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT pour la page.
+
+    LE PLANNING — le mois, les demi-journées et les ÉQUIPES.
+
+    Le patron, le 2026-08-10 : « il y aura des équipes qui devront être
+    affiliées au jour ; quand je clique sur le 20, il faut qu'il y ait marqué
+    équipe A ou équipe B, et l'utilisateur devra pouvoir affilier les équipes
+    au jour ».
+
+    Ce que dit le code (`src/server/disponibilites.ts`) :
+      · On travaille en DEMI-JOURNÉES : un matin peut être pris et
+        l'après-midi libre (`creneauxDuChantier`).
+      · « Complet » se compte PAR ÉQUIPE (`departPossible`) : avec deux
+        équipes, une demi-journée occupée reste disponible pour l'autre.
+      · LES WEEK-ENDS NE SONT JAMAIS PROPOSÉS (`jourSuivantOuvre`) : un
+        chantier de deux jours parti vendredi matin finit LUNDI.
+
+    RÉSERVE, écrite aussi sur la page : les équipes ne sont aujourd'hui qu'un
+    COMPTEUR dans Réglages — ni nom, ni identité, aucun chantier rattaché.
+    Les nommer suppose une table `equipes` et `chantiers.equipe_id`
+    (`TODO.md` §5). Cette maquette est le jour où il les veut.
+
+    LE JOUR S'OUVRE PAR UNE ANCRE, jamais par une case à cocher. Deux fois de
+    suite : « rien ne s'ouvre quand je touche un jour ». Le couple <label> +
+    case fonctionne en laboratoire et se dérobe sur son iPhone ; `:target` est
+    du lien ordinaire, honoré partout — et il AMÈNE la journée à l'écran.
+  */
+
+  :root{
+    --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c;
+    --bronze:#8f7130; --trait:rgba(22,23,15,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`.
+     Le patron, le 2026-08-10 : « rien ne s'ouvre quand je touche un jour ».
+     Chromium s'en passe — les contrôles restaient donc au vert pendant que
+     l'écran ne répondait pas sous son doigt. Une règle unique, pour ne plus
+     jamais l'oublier. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1400px;margin:0 auto}
+
+  .intro{max-width:60ch;margin:0 auto 12px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:390px;max-width:100%}
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:720px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#edece6; --e-plage:#f7f6f2; --e-encre:#16170f; --e-gris:#83867c;
+         --e-bronze:#8f7130; --e-trait:rgba(22,23,15,.13); --e-plein:#2a3a2e;
+         --e-plein-encre:#f2f1ea; --e-signe:#c2a05f}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  .barre{display:flex;align-items:center;justify-content:space-between;padding:22px 24px 0;flex:none}
+  .rond{display:flex;align-items:center;justify-content:center;width:40px;height:40px;
+        border-radius:99px;background:var(--e-plage);flex:none;-webkit-tap-highlight-color:transparent}
+  .rond svg{display:block}
+  .fin{padding:10px 16px;border-radius:99px;background:var(--e-plage);
+       color:var(--e-bronze);font-size:12.5px;text-decoration:none;
+       -webkit-tap-highlight-color:transparent}
+
+
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;background:var(--e-fond)}
+  /* 9 px et .15em : la chasse de la charte (.28em) donne 86 px pour une
+     colonne de 85, et « CHANTIERS » vient coller « PLANNING ». */
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9px;letter-spacing:.15em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre)}
+  .bas i{position:absolute;left:14px;bottom:26px;width:calc((100% - 28px)/4);height:1px;
+         background:var(--e-bronze)}
+
+  /* ═══ Le planning ════════════════════════════════════════════════════ */
+  .tete{padding:26px 26px 0;flex:none}
+  .tete .sur{margin:0;color:var(--e-bronze)}
+  .tete h1{margin:9px 0 0;font:400 34px/1 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:22px}
+  .rubrique{margin:26px 26px 8px;color:var(--e-gris)}
+  .rubrique.act{color:var(--e-bronze)}
+  .carte{display:block;margin:0 26px 8px;padding:15px 18px;border-radius:5px;
+         background:var(--e-plage);color:inherit}
+  .carte .nom{font:400 17px/1.15 ui-serif,Georgia,serif}
+  .carte .qui{display:block;margin-top:3px;font-size:12.5px;color:var(--e-gris)}
+  .carte .agir{float:right;font-size:13px;color:var(--e-bronze)}
+
+  /* Cinq marques, parce que le patron travaille en demi-journées ET avec
+     plusieurs équipes : quatre n'auraient pas suffi. */
+  .occ{display:inline-block;width:9px;height:9px;border-radius:99px;
+       box-shadow:inset 0 0 0 1px var(--e-trait)}
+  .occ.m{background:linear-gradient(180deg,var(--e-bronze) 50%,transparent 50%)}
+  .occ.a{background:linear-gradient(180deg,transparent 50%,var(--e-bronze) 50%)}
+  .occ.p{background:var(--e-bronze)}
+  .occ.reste{background:transparent;box-shadow:inset 0 0 0 1.5px var(--e-bronze)}
+
+  .mois{margin:18px 26px 0}
+  .mois .entete{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+  .mois .entete .m{font:400 20px/1 ui-serif,Georgia,serif}
+  .mois .entete .a{font-size:12px;color:var(--e-gris)}
+  .sem7{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px;
+        color:var(--e-gris);text-align:center}
+  .sem7 span{font-size:8.5px;letter-spacing:.12em;text-transform:uppercase}
+  .grille{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .case{position:relative;aspect-ratio:1;display:flex;flex-direction:column;
+        align-items:center;justify-content:center;gap:3px;border-radius:4px;
+        font:400 14px/1 ui-serif,Georgia,serif;color:var(--e-encre);text-decoration:none;
+        -webkit-tap-highlight-color:transparent;transition:background .24s,color .24s;
+        animation:poserjour .42s cubic-bezier(.22,.61,.36,1) both}
+  .grille .case:nth-child(-n+12){animation-delay:.04s}
+  .grille .case:nth-child(n+13):nth-child(-n+19){animation-delay:.10s}
+  .grille .case:nth-child(n+20):nth-child(-n+26){animation-delay:.16s}
+  .grille .case:nth-child(n+27):nth-child(-n+33){animation-delay:.22s}
+  .grille .case:nth-child(n+34){animation-delay:.28s}
+  @keyframes poserjour{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+  .case.hors{color:var(--e-gris);opacity:.35}
+  .case.auj{color:var(--e-bronze)}
+  /* La couleur, pas l'opacité : l'animation d'arrivée se termine à
+     `opacity:1` et l'emporterait sur tout estompage. */
+  .case.fin-sem{color:rgba(22,23,15,.3)}
+
+  /* La journée s'ouvre par `:target`, et se pose JUSTE SOUS le calendrier :
+     la réponse doit se produire là où le doigt regarde. La marge de défilement
+     garde le calendrier visible, sinon on ne peut plus essayer un autre jour. */
+  .journee{display:none;margin:18px 26px 0;scroll-margin-top:190px}
+  .journee:target{display:block}
+  .journee .quand{margin:0 0 12px;font:400 20px/1.1 ui-serif,Georgia,serif}
+  .ferme{margin:0;font-size:13px;color:var(--e-gris);line-height:1.55}
+  .ferme b{color:var(--e-encre);font-weight:400}
+
+  /* Deux colonnes — matin, après-midi — et une ligne par équipe. */
+  .creneaux{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mtitre{margin:0 0 2px;color:var(--e-gris)}
+  .eq{display:flex;flex-direction:column;justify-content:center;gap:4px;min-height:68px;
+      padding:11px 13px;border-radius:5px;background:var(--e-plage);
+      border:1px solid transparent;text-decoration:none;color:inherit;
+      -webkit-tap-highlight-color:transparent;
+      transition:border-color .24s,background .24s,transform .18s cubic-bezier(.22,.61,.36,1)}
+  .eq:active{transform:scale(.98)}
+  .eq .n{font-size:13px}
+  .eq .e{font-size:11.5px;color:var(--e-gris);line-height:1.35}
+  .eq.pris{background:transparent;border-color:var(--e-trait)}
+  .eq.pris .n{color:var(--e-gris)}
+  .journee .cr:nth-of-type(1):checked ~ .creneaux label:nth-of-type(1),
+  .journee .cr:nth-of-type(2):checked ~ .creneaux label:nth-of-type(2),
+  .journee .cr:nth-of-type(3):checked ~ .creneaux label:nth-of-type(3),
+  .journee .cr:nth-of-type(4):checked ~ .creneaux label:nth-of-type(4){
+    background:var(--e-plein);border-color:var(--e-plein)}
+  .journee .cr:nth-of-type(1):checked ~ .creneaux label:nth-of-type(1) .n,
+  .journee .cr:nth-of-type(2):checked ~ .creneaux label:nth-of-type(2) .n,
+  .journee .cr:nth-of-type(3):checked ~ .creneaux label:nth-of-type(3) .n,
+  .journee .cr:nth-of-type(4):checked ~ .creneaux label:nth-of-type(4) .n{color:var(--e-plein-encre)}
+  .journee .cr:nth-of-type(1):checked ~ .creneaux label:nth-of-type(1) .e,
+  .journee .cr:nth-of-type(2):checked ~ .creneaux label:nth-of-type(2) .e,
+  .journee .cr:nth-of-type(3):checked ~ .creneaux label:nth-of-type(3) .e,
+  .journee .cr:nth-of-type(4):checked ~ .creneaux label:nth-of-type(4) .e{color:var(--e-signe)}
+
+  /* Un libellé de pose PAR choix : la seule façon, sans script, d'écrire
+     exactement ce qui va se passer — « jeudi 20 · matin · équipe B ». */
+  .poser{display:none;margin-top:14px;align-items:center;justify-content:center;gap:11px;
+         padding:15px 20px;border-radius:5px;background:var(--e-plein);
+         color:var(--e-plein-encre);text-decoration:none;text-align:center;
+         font:400 15.5px/1.35 ui-serif,Georgia,serif;-webkit-tap-highlight-color:transparent}
+  .poser .fleche{color:var(--e-signe);font-family:inherit}
+  .journee .cr:nth-of-type(1):checked ~ .poser:nth-of-type(1),
+  .journee .cr:nth-of-type(2):checked ~ .poser:nth-of-type(2),
+  .journee .cr:nth-of-type(3):checked ~ .poser:nth-of-type(3),
+  .journee .cr:nth-of-type(4):checked ~ .poser:nth-of-type(4){display:flex}
+  .changer{margin:11px 0 0;font-size:11.5px;color:var(--e-gris);line-height:1.5}
+  .changer b{color:var(--e-bronze);font-weight:400}
+
+  .code{margin:20px 26px 0;padding:14px 16px;border-radius:5px;background:var(--e-plage)}
+  .code .titre{margin:0 0 10px;color:var(--e-gris)}
+  .code ul{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:9px 12px}
+  .code li{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--e-gris)}
+  .code li b{color:var(--e-encre);font-weight:400}
+  /* `.regle`, pas `.fin` : cette classe-là sert déjà à la pastille
+     « Fin de chantier », dont la dernière ligne héritait un arrondi de 99 px. */
+  .code .regle{grid-column:1 / -1;display:block;margin:2px 0 0;padding-top:9px;
+               border-top:1px solid var(--e-trait);font-size:11.5px;line-height:1.5}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+      transition-duration:.001ms !important}
+  }
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Le planning — le mois et les équipes</p>
+    <h1>Quand, et par qui</h1>
+    <p>
+      <strong>Touchez un jour</strong> : sa journée s'ouvre dessous, en deux
+      colonnes — matin et après-midi — et <strong>une ligne par équipe</strong>.
+      Les cases libres se choisissent, les prises disent quel chantier les
+      occupe. Poser, c'est dire <strong>à la fois quand et qui</strong>.
+    </p>
+    <p>
+      Essayez le <strong>20</strong> (équipe A prise toute la journée, équipe B
+      libre), le <strong>12</strong> (matin complet), le <strong>21</strong>
+      (journée pleine) et un <strong>samedi</strong>.
+    </p>
+  </div>
+
+  <div class="rangee">
+    <div class="prop">
+      <div class="tel"><div class="ecran" data-s="p">
+        <div class="tete"><p class="sur caps">Vos journées · deux équipes</p><h1>Planning</h1></div>
+        <div class="corps">
+          <div class="mois">
+            <div class="entete"><span class="m">Août</span><span class="a">2026</span></div>
+            <div class="sem7"><span>lun</span><span>mar</span><span>mer</span><span>jeu</span><span>ven</span><span>sam</span><span>dim</span></div>
+            <div class="grille"><span class="case hors">27</span><span class="case hors">28</span><span class="case hors">29</span><span class="case hors">30</span><span class="case hors">31</span><a class="case fin-sem" href="#j1">1<span class="occ" style="opacity:0"></span></a><a class="case fin-sem" href="#j2">2<span class="occ" style="opacity:0"></span></a><a class="case" href="#j3">3<span class="occ" style="opacity:0"></span></a><a class="case" href="#j4">4<span class="occ" style="opacity:0"></span></a><a class="case" href="#j5">5<span class="occ" style="opacity:0"></span></a><a class="case" href="#j6">6<span class="occ" style="opacity:0"></span></a><a class="case" href="#j7">7<span class="occ" style="opacity:0"></span></a><a class="case fin-sem" href="#j8">8<span class="occ" style="opacity:0"></span></a><a class="case fin-sem" href="#j9">9<span class="occ" style="opacity:0"></span></a><a class="case auj" href="#j10">10<span class="occ reste"></span></a><a class="case" href="#j11">11<span class="occ reste"></span></a><a class="case" href="#j12">12<span class="occ m"></span></a><a class="case" href="#j13">13<span class="occ a"></span></a><a class="case" href="#j14">14<span class="occ reste"></span></a><a class="case fin-sem" href="#j15">15<span class="occ" style="opacity:0"></span></a><a class="case fin-sem" href="#j16">16<span class="occ" style="opacity:0"></span></a><a class="case" href="#j17">17<span class="occ reste"></span></a><a class="case" href="#j18">18<span class="occ" style="opacity:0"></span></a><a class="case" href="#j19">19<span class="occ" style="opacity:0"></span></a><a class="case" href="#j20">20<span class="occ reste"></span></a><a class="case" href="#j21">21<span class="occ p"></span></a><a class="case fin-sem" href="#j22">22<span class="occ" style="opacity:0"></span></a><a class="case fin-sem" href="#j23">23<span class="occ" style="opacity:0"></span></a><a class="case" href="#j24">24<span class="occ" style="opacity:0"></span></a><a class="case" href="#j25">25<span class="occ" style="opacity:0"></span></a><a class="case" href="#j26">26<span class="occ" style="opacity:0"></span></a><a class="case" href="#j27">27<span class="occ" style="opacity:0"></span></a><a class="case" href="#j28">28<span class="occ" style="opacity:0"></span></a><a class="case fin-sem" href="#j29">29<span class="occ" style="opacity:0"></span></a><a class="case fin-sem" href="#j30">30<span class="occ" style="opacity:0"></span></a><a class="case" href="#j31">31<span class="occ" style="opacity:0"></span></a></div>
+          </div>
+
+          <div class="journee" id="j1"><p class="quand">Samedi 1 août</p><p class="ferme">Les week-ends ne sont jamais proposés. Un chantier de deux jours commencé <b>vendredi matin</b> se termine <b>lundi</b>, jamais samedi.</p></div><div class="journee" id="j2"><p class="quand">Dimanche 2 août</p><p class="ferme">Les week-ends ne sont jamais proposés. Un chantier de deux jours commencé <b>vendredi matin</b> se termine <b>lundi</b>, jamais samedi.</p></div><div class="journee" id="j3"><p class="quand">Lundi 3 août</p><input class="interrupteur cr" type="radio" name="q3" id="q31"><input class="interrupteur cr" type="radio" name="q3" id="q32"><input class="interrupteur cr" type="radio" name="q3" id="q33"><input class="interrupteur cr" type="radio" name="q3" id="q34"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q31"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q32"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q33"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q34"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j3">Poser Chez M. Martins<br>lundi 3 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j3">Poser Chez M. Martins<br>lundi 3 août · après-midi · équipe A <span class="fleche">→</span></a><a class="poser" href="#j3">Poser Chez M. Martins<br>lundi 3 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j3">Poser Chez M. Martins<br>lundi 3 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j4"><p class="quand">Mardi 4 août</p><input class="interrupteur cr" type="radio" name="q4" id="q41"><input class="interrupteur cr" type="radio" name="q4" id="q42"><input class="interrupteur cr" type="radio" name="q4" id="q43"><input class="interrupteur cr" type="radio" name="q4" id="q44"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q41"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q42"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q43"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q44"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j4">Poser Chez M. Martins<br>mardi 4 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j4">Poser Chez M. Martins<br>mardi 4 août · après-midi · équipe A <span class="fleche">→</span></a><a class="poser" href="#j4">Poser Chez M. Martins<br>mardi 4 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j4">Poser Chez M. Martins<br>mardi 4 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j5"><p class="quand">Mercredi 5 août</p><input class="interrupteur cr" type="radio" name="q5" id="q51"><input class="interrupteur cr" type="radio" name="q5" id="q52"><input class="interrupteur cr" type="radio" name="q5" id="q53"><input class="interrupteur cr" type="radio" name="q5" id="q54"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q51"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q52"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q53"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q54"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j5">Poser Chez M. Martins<br>mercredi 5 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j5">Poser Chez M. Martins<br>mercredi 5 août · après-midi · équipe A <span class="fleche">→</span></a><a class="poser" href="#j5">Poser Chez M. Martins<br>mercredi 5 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j5">Poser Chez M. Martins<br>mercredi 5 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j6"><p class="quand">Jeudi 6 août</p><input class="interrupteur cr" type="radio" name="q6" id="q61"><input class="interrupteur cr" type="radio" name="q6" id="q62"><input class="interrupteur cr" type="radio" name="q6" id="q63"><input class="interrupteur cr" type="radio" name="q6" id="q64"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q61"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q62"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q63"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q64"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j6">Poser Chez M. Martins<br>jeudi 6 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j6">Poser Chez M. Martins<br>jeudi 6 août · après-midi · équipe A <span class="fleche">→</span></a><a class="poser" href="#j6">Poser Chez M. Martins<br>jeudi 6 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j6">Poser Chez M. Martins<br>jeudi 6 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j7"><p class="quand">Vendredi 7 août</p><input class="interrupteur cr" type="radio" name="q7" id="q71"><input class="interrupteur cr" type="radio" name="q7" id="q72"><input class="interrupteur cr" type="radio" name="q7" id="q73"><input class="interrupteur cr" type="radio" name="q7" id="q74"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q71"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q72"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q73"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q74"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j7">Poser Chez M. Martins<br>vendredi 7 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j7">Poser Chez M. Martins<br>vendredi 7 août · après-midi · équipe A <span class="fleche">→</span></a><a class="poser" href="#j7">Poser Chez M. Martins<br>vendredi 7 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j7">Poser Chez M. Martins<br>vendredi 7 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j8"><p class="quand">Samedi 8 août</p><p class="ferme">Les week-ends ne sont jamais proposés. Un chantier de deux jours commencé <b>vendredi matin</b> se termine <b>lundi</b>, jamais samedi.</p></div><div class="journee" id="j9"><p class="quand">Dimanche 9 août</p><p class="ferme">Les week-ends ne sont jamais proposés. Un chantier de deux jours commencé <b>vendredi matin</b> se termine <b>lundi</b>, jamais samedi.</p></div><div class="journee" id="j10"><p class="quand">Lundi 10 août</p><input class="interrupteur cr" type="radio" name="q10" id="q101"><input class="interrupteur cr" type="radio" name="q10" id="q102"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><a class="eq pris" href="#j10"><span class="n">Équipe A</span><span class="e">Chez Martin</span></a><a class="eq pris" href="#j10"><span class="n">Équipe A</span><span class="e">Chez Martin</span></a><label class="eq" for="q101"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q102"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j10">Poser Chez M. Martins<br>lundi 10 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j10">Poser Chez M. Martins<br>lundi 10 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j11"><p class="quand">Mardi 11 août</p><input class="interrupteur cr" type="radio" name="q11" id="q111"><input class="interrupteur cr" type="radio" name="q11" id="q112"><input class="interrupteur cr" type="radio" name="q11" id="q113"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q111"><span class="n">Équipe A</span><span class="e">Libre</span></label><a class="eq pris" href="#j11"><span class="n">Équipe A</span><span class="e">Muret de pierre</span></a><label class="eq" for="q112"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q113"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j11">Poser Chez M. Martins<br>mardi 11 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j11">Poser Chez M. Martins<br>mardi 11 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j11">Poser Chez M. Martins<br>mardi 11 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j12"><p class="quand">Mercredi 12 août</p><input class="interrupteur cr" type="radio" name="q12" id="q121"><input class="interrupteur cr" type="radio" name="q12" id="q122"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><a class="eq pris" href="#j12"><span class="n">Équipe A</span><span class="e">Abri de jardin</span></a><label class="eq" for="q121"><span class="n">Équipe A</span><span class="e">Libre</span></label><a class="eq pris" href="#j12"><span class="n">Équipe B</span><span class="e">Pose de clôture</span></a><label class="eq" for="q122"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j12">Poser Chez M. Martins<br>mercredi 12 août · après-midi · équipe A <span class="fleche">→</span></a><a class="poser" href="#j12">Poser Chez M. Martins<br>mercredi 12 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j13"><p class="quand">Jeudi 13 août</p><input class="interrupteur cr" type="radio" name="q13" id="q131"><input class="interrupteur cr" type="radio" name="q13" id="q132"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q131"><span class="n">Équipe A</span><span class="e">Libre</span></label><a class="eq pris" href="#j13"><span class="n">Équipe A</span><span class="e">Dalle de garage</span></a><label class="eq" for="q132"><span class="n">Équipe B</span><span class="e">Libre</span></label><a class="eq pris" href="#j13"><span class="n">Équipe B</span><span class="e">Reprise de mur</span></a></div><a class="poser" href="#j13">Poser Chez M. Martins<br>jeudi 13 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j13">Poser Chez M. Martins<br>jeudi 13 août · matin · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j14"><p class="quand">Vendredi 14 août</p><input class="interrupteur cr" type="radio" name="q14" id="q141"><input class="interrupteur cr" type="radio" name="q14" id="q142"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q141"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q142"><span class="n">Équipe A</span><span class="e">Libre</span></label><a class="eq pris" href="#j14"><span class="n">Équipe B</span><span class="e">Terrasse bois</span></a><a class="eq pris" href="#j14"><span class="n">Équipe B</span><span class="e">Terrasse bois</span></a></div><a class="poser" href="#j14">Poser Chez M. Martins<br>vendredi 14 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j14">Poser Chez M. Martins<br>vendredi 14 août · après-midi · équipe A <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j15"><p class="quand">Samedi 15 août</p><p class="ferme">Les week-ends ne sont jamais proposés. Un chantier de deux jours commencé <b>vendredi matin</b> se termine <b>lundi</b>, jamais samedi.</p></div><div class="journee" id="j16"><p class="quand">Dimanche 16 août</p><p class="ferme">Les week-ends ne sont jamais proposés. Un chantier de deux jours commencé <b>vendredi matin</b> se termine <b>lundi</b>, jamais samedi.</p></div><div class="journee" id="j17"><p class="quand">Lundi 17 août</p><input class="interrupteur cr" type="radio" name="q17" id="q171"><input class="interrupteur cr" type="radio" name="q17" id="q172"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q171"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q172"><span class="n">Équipe A</span><span class="e">Libre</span></label><a class="eq pris" href="#j17"><span class="n">Équipe B</span><span class="e">Terrasse bois</span></a><a class="eq pris" href="#j17"><span class="n">Équipe B</span><span class="e">Terrasse bois</span></a></div><a class="poser" href="#j17">Poser Chez M. Martins<br>lundi 17 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j17">Poser Chez M. Martins<br>lundi 17 août · après-midi · équipe A <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j18"><p class="quand">Mardi 18 août</p><input class="interrupteur cr" type="radio" name="q18" id="q181"><input class="interrupteur cr" type="radio" name="q18" id="q182"><input class="interrupteur cr" type="radio" name="q18" id="q183"><input class="interrupteur cr" type="radio" name="q18" id="q184"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q181"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q182"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q183"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q184"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j18">Poser Chez M. Martins<br>mardi 18 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j18">Poser Chez M. Martins<br>mardi 18 août · après-midi · équipe A <span class="fleche">→</span></a><a class="poser" href="#j18">Poser Chez M. Martins<br>mardi 18 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j18">Poser Chez M. Martins<br>mardi 18 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j19"><p class="quand">Mercredi 19 août</p><input class="interrupteur cr" type="radio" name="q19" id="q191"><input class="interrupteur cr" type="radio" name="q19" id="q192"><input class="interrupteur cr" type="radio" name="q19" id="q193"><input class="interrupteur cr" type="radio" name="q19" id="q194"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q191"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q192"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q193"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q194"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j19">Poser Chez M. Martins<br>mercredi 19 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j19">Poser Chez M. Martins<br>mercredi 19 août · après-midi · équipe A <span class="fleche">→</span></a><a class="poser" href="#j19">Poser Chez M. Martins<br>mercredi 19 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j19">Poser Chez M. Martins<br>mercredi 19 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j20"><p class="quand">Jeudi 20 août</p><input class="interrupteur cr" type="radio" name="q20" id="q201"><input class="interrupteur cr" type="radio" name="q20" id="q202"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><a class="eq pris" href="#j20"><span class="n">Équipe A</span><span class="e">Reprise de toiture</span></a><a class="eq pris" href="#j20"><span class="n">Équipe A</span><span class="e">Reprise de toiture</span></a><label class="eq" for="q201"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q202"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j20">Poser Chez M. Martins<br>jeudi 20 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j20">Poser Chez M. Martins<br>jeudi 20 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j21"><p class="quand">Vendredi 21 août</p><p class="ferme">Journée pleine : l'équipe A par <b>Portail coulissant</b> et l'équipe B par <b>Dalle de garage</b>. Il faudrait une troisième équipe — cela se règle dans Réglages.</p></div><div class="journee" id="j22"><p class="quand">Samedi 22 août</p><p class="ferme">Les week-ends ne sont jamais proposés. Un chantier de deux jours commencé <b>vendredi matin</b> se termine <b>lundi</b>, jamais samedi.</p></div><div class="journee" id="j23"><p class="quand">Dimanche 23 août</p><p class="ferme">Les week-ends ne sont jamais proposés. Un chantier de deux jours commencé <b>vendredi matin</b> se termine <b>lundi</b>, jamais samedi.</p></div><div class="journee" id="j24"><p class="quand">Lundi 24 août</p><input class="interrupteur cr" type="radio" name="q24" id="q241"><input class="interrupteur cr" type="radio" name="q24" id="q242"><input class="interrupteur cr" type="radio" name="q24" id="q243"><input class="interrupteur cr" type="radio" name="q24" id="q244"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q241"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q242"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q243"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q244"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j24">Poser Chez M. Martins<br>lundi 24 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j24">Poser Chez M. Martins<br>lundi 24 août · après-midi · équipe A <span class="fleche">→</span></a><a class="poser" href="#j24">Poser Chez M. Martins<br>lundi 24 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j24">Poser Chez M. Martins<br>lundi 24 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j25"><p class="quand">Mardi 25 août</p><input class="interrupteur cr" type="radio" name="q25" id="q251"><input class="interrupteur cr" type="radio" name="q25" id="q252"><input class="interrupteur cr" type="radio" name="q25" id="q253"><input class="interrupteur cr" type="radio" name="q25" id="q254"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q251"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q252"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q253"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q254"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j25">Poser Chez M. Martins<br>mardi 25 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j25">Poser Chez M. Martins<br>mardi 25 août · après-midi · équipe A <span class="fleche">→</span></a><a class="poser" href="#j25">Poser Chez M. Martins<br>mardi 25 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j25">Poser Chez M. Martins<br>mardi 25 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j26"><p class="quand">Mercredi 26 août</p><input class="interrupteur cr" type="radio" name="q26" id="q261"><input class="interrupteur cr" type="radio" name="q26" id="q262"><input class="interrupteur cr" type="radio" name="q26" id="q263"><input class="interrupteur cr" type="radio" name="q26" id="q264"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q261"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q262"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q263"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q264"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j26">Poser Chez M. Martins<br>mercredi 26 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j26">Poser Chez M. Martins<br>mercredi 26 août · après-midi · équipe A <span class="fleche">→</span></a><a class="poser" href="#j26">Poser Chez M. Martins<br>mercredi 26 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j26">Poser Chez M. Martins<br>mercredi 26 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j27"><p class="quand">Jeudi 27 août</p><input class="interrupteur cr" type="radio" name="q27" id="q271"><input class="interrupteur cr" type="radio" name="q27" id="q272"><input class="interrupteur cr" type="radio" name="q27" id="q273"><input class="interrupteur cr" type="radio" name="q27" id="q274"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q271"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q272"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q273"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q274"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j27">Poser Chez M. Martins<br>jeudi 27 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j27">Poser Chez M. Martins<br>jeudi 27 août · après-midi · équipe A <span class="fleche">→</span></a><a class="poser" href="#j27">Poser Chez M. Martins<br>jeudi 27 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j27">Poser Chez M. Martins<br>jeudi 27 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j28"><p class="quand">Vendredi 28 août</p><input class="interrupteur cr" type="radio" name="q28" id="q281"><input class="interrupteur cr" type="radio" name="q28" id="q282"><input class="interrupteur cr" type="radio" name="q28" id="q283"><input class="interrupteur cr" type="radio" name="q28" id="q284"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q281"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q282"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q283"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q284"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j28">Poser Chez M. Martins<br>vendredi 28 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j28">Poser Chez M. Martins<br>vendredi 28 août · après-midi · équipe A <span class="fleche">→</span></a><a class="poser" href="#j28">Poser Chez M. Martins<br>vendredi 28 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j28">Poser Chez M. Martins<br>vendredi 28 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div><div class="journee" id="j29"><p class="quand">Samedi 29 août</p><p class="ferme">Les week-ends ne sont jamais proposés. Un chantier de deux jours commencé <b>vendredi matin</b> se termine <b>lundi</b>, jamais samedi.</p></div><div class="journee" id="j30"><p class="quand">Dimanche 30 août</p><p class="ferme">Les week-ends ne sont jamais proposés. Un chantier de deux jours commencé <b>vendredi matin</b> se termine <b>lundi</b>, jamais samedi.</p></div><div class="journee" id="j31"><p class="quand">Lundi 31 août</p><input class="interrupteur cr" type="radio" name="q31" id="q311"><input class="interrupteur cr" type="radio" name="q31" id="q312"><input class="interrupteur cr" type="radio" name="q31" id="q313"><input class="interrupteur cr" type="radio" name="q31" id="q314"><div class="creneaux"><p class="mtitre caps">Matin</p><p class="mtitre caps">Après-midi</p><label class="eq" for="q311"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q312"><span class="n">Équipe A</span><span class="e">Libre</span></label><label class="eq" for="q313"><span class="n">Équipe B</span><span class="e">Libre</span></label><label class="eq" for="q314"><span class="n">Équipe B</span><span class="e">Libre</span></label></div><a class="poser" href="#j31">Poser Chez M. Martins<br>lundi 31 août · matin · équipe A <span class="fleche">→</span></a><a class="poser" href="#j31">Poser Chez M. Martins<br>lundi 31 août · après-midi · équipe A <span class="fleche">→</span></a><a class="poser" href="#j31">Poser Chez M. Martins<br>lundi 31 août · matin · équipe B <span class="fleche">→</span></a><a class="poser" href="#j31">Poser Chez M. Martins<br>lundi 31 août · après-midi · équipe B <span class="fleche">→</span></a><p class="changer">Touchez une case libre pour <b>affilier une équipe</b> à cette demi-journée. Touchez un chantier posé pour changer la sienne.</p></div>
+
+          <div class="code">
+            <p class="titre caps">Le code des jours</p>
+            <ul>
+              <li><span class="occ" style="opacity:.5"></span><span><b>Libre</b> — rien de posé</span></li>
+              <li><span class="occ reste"></span><span><b>De la place</b> reste</span></li>
+              <li><span class="occ m"></span><span><b>Matin</b> complet</span></li>
+              <li><span class="occ a"></span><span><b>Après-midi</b> complet</span></li>
+              <li><span class="occ p"></span><span><b>Journée</b> pleine</span></li>
+              <li class="regle">« Complet » veut dire : <b>toutes les équipes prises</b>. Avec deux
+                équipes, une demi-journée occupée reste disponible pour l'autre — c'est pourquoi le
+                20 laisse encore de la place. Le nombre d'équipes se règle dans <b>Réglages</b>.
+                Les <b>samedis et dimanches</b>, en pâle, ne sont jamais proposés.</li>
+            </ul>
+          </div>
+
+          <p class="rubrique act caps">À planifier</p>
+          <span class="carte"><span class="agir">Poser une date</span>
+            <span class="nom">Chez M. Martins</span><span class="qui">M. Martins — devis accepté</span></span>
+
+          <p class="rubrique caps">En attente du client</p>
+          <span class="carte"><span class="nom">Abri de jardin</span>
+            <span class="qui">M. Leroy — il choisit sa date</span></span>
+        </div>
+        <nav class="bas"><span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Réglages</span><i></i></nav>
+      </div></div>
+      <p class="sous">Le mois — quand, et par qui</p>
+      <p class="note">Deux colonnes, une ligne par équipe. <b>Le bouton de pose écrit exactement ce qui va se passer : jour, demi-journée, équipe.</b></p>
+    </div>
+  </div>
+
+  <p class="note" style="max-width:62ch;margin:44px auto 0;border:0">
+    <b>Une réserve qui compte.</b> Dans l'application d'aujourd'hui, les équipes
+    ne sont qu'un <b>compteur</b> (Réglages) : ni nom, ni identité, et aucun
+    chantier ne s'y rattache. Les nommer suppose une table <code>equipes</code>
+    et une colonne <code>chantiers.equipe_id</code> — c'est écrit dans
+    <code>TODO.md</code> §5, avec la phrase « le jour où il aura deux vraies
+    équipes distinctes ». Cette maquette est ce jour-là.
+    <b>Le reste vient du code</b> : « complet » se compte par équipe
+    (<code>departPossible</code>), un chantier de deux jours parti vendredi
+    matin finit lundi — d'où le 14 et le 17, jamais le 15 — et les week-ends ne
+    sont jamais proposés.
+  </p>
+</div>
