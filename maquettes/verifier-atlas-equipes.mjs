@@ -60,8 +60,12 @@ try {
   await cadrer(R);
   verifie("l'écran s'ouvre sur une équipe", (await txt(`${R} .chiffre`)) === "1");
   verifie("seul, le bloc des noms est absent", !(await vu(`${R} .nomm`)));
+  const seulmot = await txt(`${R} .seulmot`);
   verifie("seul, l'écran dit pourquoi il ne demande rien",
-    (await vu(`${R} .seulmot`)) && /aucune\s+équipe/i.test(await txt(`${R} .seulmot`)));
+    (await vu(`${R} .seulmot`)) && /aucune\s+équipe/i.test(seulmot));
+  // Coupé net à sa demande : la suite expliquait ce que l'écran montre déjà.
+  verifie("et il s'arrête là — pas un mot de plus",
+    !/demi-journée/i.test(seulmot) && seulmot.length < 70, `« ${seulmot} »`);
   const moins = await page.$$eval(`${R} .cote.g .pm`, (l) =>
     l.filter((e) => getComputedStyle(e).display !== "none")
      .map((e) => e.tagName + ":" + e.className));
@@ -70,38 +74,53 @@ try {
   await (await page.$(R)).screenshot({ path: `${SORTIE}/equipes-seul.png` });
 } catch (e) { echecs.push("seul · interrompu — " + String(e.message).split("\n")[0]); }
 
-// ── 2. Le compteur monte et descend pour de bon ──────────────────────────
+// ── 2. Le compteur monte et descend pour de bon, jusqu'à vingt ──────────
 try {
   await cadrer(R);
+  const lignesVisibles = () => page.$$eval(`${R} .nomm .ligne`, (l) =>
+    l.filter((e) => e.checkVisibility({ opacityProperty: true, visibilityProperty: true })).length);
+
   await page.click(`${R} .cote.d .pm:visible`);
-  await page.waitForTimeout(320);
+  await page.waitForTimeout(300);
   verifie("le + fait passer à deux", (await txt(`${R} .chiffre`)) === "2");
   verifie("à deux, le bloc des noms paraît", await vu(`${R} .nomm`));
   verifie("et la phrase du « seul » s'efface", !(await vu(`${R} .seulmot`)));
-  const l2 = await page.$$eval(`${R} .nomm .ligne`, (l) =>
-    l.filter((e) => getComputedStyle(e).display !== "none").length);
-  verifie("deux équipes donnent deux lignes, pas trois", l2 === 2, `${l2}`);
+  verifie("deux équipes donnent deux lignes, pas vingt", (await lignesVisibles()) === 2,
+    `${await lignesVisibles()}`);
 
-  await page.click(`${R} .cote.d .pm:visible`);
-  await page.waitForTimeout(320);
-  verifie("le + fait passer à trois", (await txt(`${R} .chiffre`)) === "3");
-  const l3 = await page.$$eval(`${R} .nomm .ligne`, (l) =>
-    l.filter((e) => getComputedStyle(e).display !== "none").length);
-  verifie("trois équipes donnent trois lignes", l3 === 3, `${l3}`);
+  // Vingt, c'est la borne de l'application (`entreprises.nombre_equipes`).
+  // Monter jusque-là au doigt vérifie du même coup les dix-huit états du milieu.
+  let derive = "";
+  for (let k = 3; k <= 20; k++) {
+    await page.click(`${R} .cote.d .pm:visible`);
+    await page.waitForTimeout(70);
+    const chiffre = await txt(`${R} .chiffre`);
+    const lignes = await lignesVisibles();
+    if (chiffre !== String(k) || lignes !== k) derive ||= `à ${k} : « ${chiffre} », ${lignes} ligne(s)`;
+  }
+  verifie("le compteur monte jusqu'à vingt, une ligne de nom par équipe", derive === "", derive);
+
   const plus = await page.$$eval(`${R} .cote.d .pm`, (l) =>
     l.filter((e) => getComputedStyle(e).display !== "none").map((e) => e.tagName));
-  verifie("à trois, le + est inerte — le compteur est borné", plus.join("") === "SPAN", plus.join("|"));
+  verifie("à vingt, le + est inerte — le compteur est borné comme la base",
+    plus.join("") === "SPAN", plus.join("|"));
+  const lettres = await page.$$eval(`${R} .nomm .ligne`, (l) =>
+    l.filter((e) => e.checkVisibility({ opacityProperty: true, visibilityProperty: true }))
+     .map((e) => e.querySelector(".rep").textContent.trim()).join(""));
+  verifie("les vingt lettres de repli vont de A à T", lettres === "ABCDEFGHIJKLMNOPQRST", lettres);
+  await (await page.$(R)).screenshot({ path: `${SORTIE}/equipes-vingt.png` });
 
-  await page.click(`${R} .cote.g .pm:visible`);
-  await page.waitForTimeout(320);
-  verifie("le − redescend à deux", (await txt(`${R} .chiffre`)) === "2");
+  for (let k = 19; k >= 2; k--) await page.click(`${R} .cote.g .pm:visible`);
+  await page.waitForTimeout(300);
+  verifie("le − redescend jusqu'à deux", (await txt(`${R} .chiffre`)) === "2");
+  verifie("et les lignes en trop s'en vont avec lui", (await lignesVisibles()) === 2);
 } catch (e) { echecs.push("compteur · interrompu — " + String(e.message).split("\n")[0]); }
 
 // ── 3. Le repli est montré, puis effacé par un nom ───────────────────────
 try {
   await cadrer(R);
   const creux = await page.$$eval(`${R} .nomm .ligne`, (l) =>
-    l.filter((e) => getComputedStyle(e).display !== "none")
+    l.filter((e) => e.checkVisibility({ opacityProperty: true, visibilityProperty: true }))
      .map((e) => ({ rep: e.querySelector(".rep").textContent.trim(),
                     creux: e.querySelector(".champ").placeholder,
                     vide: e.querySelector(".champ").matches(":placeholder-shown") })));

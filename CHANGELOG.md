@@ -38,6 +38,16 @@ faux — seul l'après-midi l'était.
 règles qui cachent le bloc des noms, `verifier-atlas-equipes.mjs` rougit ; en
 réintroduisant « Équipe A » dans le planning du solitaire, il rougit deux fois.
 
+**Le compteur va jusqu'à vingt**, comme `entreprises.nombre_equipes`, avec une
+ligne de nom par équipe. Et un contrôle **vert sur un écran vide** s'est glissé
+là : les vingt lignes gardaient `display:flex` pendant que leur bloc parent
+était caché, si bien que la vérification lisait vingt lettres que personne ne
+voyait — au-delà de trois équipes, l'écran ne montrait rien. **Seule la capture
+l'a vu.** Un contrôle de visibilité interroge `Element.checkVisibility()`,
+jamais le `display` de l'élément seul : c'est la deuxième fois que ce même
+raccourci coûte un défaut (voir la note vocale et son « ANNULER » imprimé
+par-dessus « RETIRER »).
+
 
 ### Retirer un chantier : le tiroir des retirés
 

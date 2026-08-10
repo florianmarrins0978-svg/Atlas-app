@@ -127,21 +127,89 @@
 
   #n1:checked ~ .combien .c1,
   #n2:checked ~ .combien .c2,
-  #n3:checked ~ .combien .c3{display:block}
+  #n3:checked ~ .combien .c3,
+  #n4:checked ~ .combien .c4,
+  #n5:checked ~ .combien .c5,
+  #n6:checked ~ .combien .c6,
+  #n7:checked ~ .combien .c7,
+  #n8:checked ~ .combien .c8,
+  #n9:checked ~ .combien .c9,
+  #n10:checked ~ .combien .c10,
+  #n11:checked ~ .combien .c11,
+  #n12:checked ~ .combien .c12,
+  #n13:checked ~ .combien .c13,
+  #n14:checked ~ .combien .c14,
+  #n15:checked ~ .combien .c15,
+  #n16:checked ~ .combien .c16,
+  #n17:checked ~ .combien .c17,
+  #n18:checked ~ .combien .c18,
+  #n19:checked ~ .combien .c19,
+  #n20:checked ~ .combien .c20{display:block}
   #n1:checked ~ .combien .q1,
-  #n2:checked ~ .combien .q2,
-  #n3:checked ~ .combien .q3{display:block}
+  #n2:checked ~ .combien .qn,
+  #n3:checked ~ .combien .qn,
+  #n4:checked ~ .combien .qn,
+  #n5:checked ~ .combien .qn,
+  #n6:checked ~ .combien .qn,
+  #n7:checked ~ .combien .qn,
+  #n8:checked ~ .combien .qn,
+  #n9:checked ~ .combien .qn,
+  #n10:checked ~ .combien .qn,
+  #n11:checked ~ .combien .qn,
+  #n12:checked ~ .combien .qn,
+  #n13:checked ~ .combien .qn,
+  #n14:checked ~ .combien .qn,
+  #n15:checked ~ .combien .qn,
+  #n16:checked ~ .combien .qn,
+  #n17:checked ~ .combien .qn,
+  #n18:checked ~ .combien .qn,
+  #n19:checked ~ .combien .qn,
+  #n20:checked ~ .combien .qn{display:block}
   #n1:checked ~ .combien .g .pm:nth-child(1),
   #n2:checked ~ .combien .g .pm:nth-child(2),
   #n3:checked ~ .combien .g .pm:nth-child(3),
+  #n4:checked ~ .combien .g .pm:nth-child(4),
+  #n5:checked ~ .combien .g .pm:nth-child(5),
+  #n6:checked ~ .combien .g .pm:nth-child(6),
+  #n7:checked ~ .combien .g .pm:nth-child(7),
+  #n8:checked ~ .combien .g .pm:nth-child(8),
+  #n9:checked ~ .combien .g .pm:nth-child(9),
+  #n10:checked ~ .combien .g .pm:nth-child(10),
+  #n11:checked ~ .combien .g .pm:nth-child(11),
+  #n12:checked ~ .combien .g .pm:nth-child(12),
+  #n13:checked ~ .combien .g .pm:nth-child(13),
+  #n14:checked ~ .combien .g .pm:nth-child(14),
+  #n15:checked ~ .combien .g .pm:nth-child(15),
+  #n16:checked ~ .combien .g .pm:nth-child(16),
+  #n17:checked ~ .combien .g .pm:nth-child(17),
+  #n18:checked ~ .combien .g .pm:nth-child(18),
+  #n19:checked ~ .combien .g .pm:nth-child(19),
+  #n20:checked ~ .combien .g .pm:nth-child(20),
   #n1:checked ~ .combien .d .pm:nth-child(1),
   #n2:checked ~ .combien .d .pm:nth-child(2),
-  #n3:checked ~ .combien .d .pm:nth-child(3){display:flex}
+  #n3:checked ~ .combien .d .pm:nth-child(3),
+  #n4:checked ~ .combien .d .pm:nth-child(4),
+  #n5:checked ~ .combien .d .pm:nth-child(5),
+  #n6:checked ~ .combien .d .pm:nth-child(6),
+  #n7:checked ~ .combien .d .pm:nth-child(7),
+  #n8:checked ~ .combien .d .pm:nth-child(8),
+  #n9:checked ~ .combien .d .pm:nth-child(9),
+  #n10:checked ~ .combien .d .pm:nth-child(10),
+  #n11:checked ~ .combien .d .pm:nth-child(11),
+  #n12:checked ~ .combien .d .pm:nth-child(12),
+  #n13:checked ~ .combien .d .pm:nth-child(13),
+  #n14:checked ~ .combien .d .pm:nth-child(14),
+  #n15:checked ~ .combien .d .pm:nth-child(15),
+  #n16:checked ~ .combien .d .pm:nth-child(16),
+  #n17:checked ~ .combien .d .pm:nth-child(17),
+  #n18:checked ~ .combien .d .pm:nth-child(18),
+  #n19:checked ~ .combien .d .pm:nth-child(19),
+  #n20:checked ~ .combien .d .pm:nth-child(20){display:flex}
 
   /* Les noms. Un filet par équipe, la lettre de repli devant, et le champ
      occupe toute la ligne : c'est le champ qu'on touche, pas une icône. */
   .nomm{display:none}
-  .ligne{display:flex;align-items:center;gap:14px;padding:13px 0;
+  .ligne{display:none;align-items:center;gap:14px;padding:13px 0;
          border-bottom:1px solid var(--e-trait);transition:border-color .26s}
   .ligne .rep{flex:none;width:20px;text-align:center;color:var(--e-bronze);
               font:400 15px/1 ui-serif,Georgia,serif}
@@ -162,10 +230,44 @@
   .seulmot b{color:var(--e-encre);font-weight:400}
   #n1:checked ~ .nomm{display:none}
   #n2:checked ~ .nomm,
-  #n3:checked ~ .nomm{display:block}
+  #n3:checked ~ .nomm,
+  #n4:checked ~ .nomm,
+  #n5:checked ~ .nomm,
+  #n6:checked ~ .nomm,
+  #n7:checked ~ .nomm,
+  #n8:checked ~ .nomm,
+  #n9:checked ~ .nomm,
+  #n10:checked ~ .nomm,
+  #n11:checked ~ .nomm,
+  #n12:checked ~ .nomm,
+  #n13:checked ~ .nomm,
+  #n14:checked ~ .nomm,
+  #n15:checked ~ .nomm,
+  #n16:checked ~ .nomm,
+  #n17:checked ~ .nomm,
+  #n18:checked ~ .nomm,
+  #n19:checked ~ .nomm,
+  #n20:checked ~ .nomm{display:block}
   #n1:checked ~ .seulmot{display:block}
-  .nomm .ligne.e3{display:none}
-  #n3:checked ~ .nomm .ligne.e3{display:flex}
+  #n2:checked ~ .nomm .ligne:nth-of-type(-n+2),
+  #n3:checked ~ .nomm .ligne:nth-of-type(-n+3),
+  #n4:checked ~ .nomm .ligne:nth-of-type(-n+4),
+  #n5:checked ~ .nomm .ligne:nth-of-type(-n+5),
+  #n6:checked ~ .nomm .ligne:nth-of-type(-n+6),
+  #n7:checked ~ .nomm .ligne:nth-of-type(-n+7),
+  #n8:checked ~ .nomm .ligne:nth-of-type(-n+8),
+  #n9:checked ~ .nomm .ligne:nth-of-type(-n+9),
+  #n10:checked ~ .nomm .ligne:nth-of-type(-n+10),
+  #n11:checked ~ .nomm .ligne:nth-of-type(-n+11),
+  #n12:checked ~ .nomm .ligne:nth-of-type(-n+12),
+  #n13:checked ~ .nomm .ligne:nth-of-type(-n+13),
+  #n14:checked ~ .nomm .ligne:nth-of-type(-n+14),
+  #n15:checked ~ .nomm .ligne:nth-of-type(-n+15),
+  #n16:checked ~ .nomm .ligne:nth-of-type(-n+16),
+  #n17:checked ~ .nomm .ligne:nth-of-type(-n+17),
+  #n18:checked ~ .nomm .ligne:nth-of-type(-n+18),
+  #n19:checked ~ .nomm .ligne:nth-of-type(-n+19),
+  #n20:checked ~ .nomm .ligne:nth-of-type(-n+20){display:flex}
 
   /* ═══ La journée, telle que le planning l'écrira ══════════════════════ */
   .jour{margin:26px 26px 0}
@@ -240,6 +342,23 @@
           <input class="interrupteur nb" type="radio" name="nb" id="n1" checked>
           <input class="interrupteur nb" type="radio" name="nb" id="n2">
           <input class="interrupteur nb" type="radio" name="nb" id="n3">
+          <input class="interrupteur nb" type="radio" name="nb" id="n4">
+          <input class="interrupteur nb" type="radio" name="nb" id="n5">
+          <input class="interrupteur nb" type="radio" name="nb" id="n6">
+          <input class="interrupteur nb" type="radio" name="nb" id="n7">
+          <input class="interrupteur nb" type="radio" name="nb" id="n8">
+          <input class="interrupteur nb" type="radio" name="nb" id="n9">
+          <input class="interrupteur nb" type="radio" name="nb" id="n10">
+          <input class="interrupteur nb" type="radio" name="nb" id="n11">
+          <input class="interrupteur nb" type="radio" name="nb" id="n12">
+          <input class="interrupteur nb" type="radio" name="nb" id="n13">
+          <input class="interrupteur nb" type="radio" name="nb" id="n14">
+          <input class="interrupteur nb" type="radio" name="nb" id="n15">
+          <input class="interrupteur nb" type="radio" name="nb" id="n16">
+          <input class="interrupteur nb" type="radio" name="nb" id="n17">
+          <input class="interrupteur nb" type="radio" name="nb" id="n18">
+          <input class="interrupteur nb" type="radio" name="nb" id="n19">
+          <input class="interrupteur nb" type="radio" name="nb" id="n20">
 
           <div class="bloc combien">
             <p class="t caps">Combien partent en même temps<i></i></p>
@@ -248,30 +367,79 @@
                 <span class="pm inerte">−</span>
                 <label class="pm" for="n1" aria-label="Une équipe de moins">−</label>
                 <label class="pm" for="n2" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n3" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n4" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n5" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n6" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n7" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n8" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n9" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n10" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n11" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n12" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n13" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n14" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n15" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n16" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n17" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n18" aria-label="Une équipe de moins">−</label>
+                <label class="pm" for="n19" aria-label="Une équipe de moins">−</label>
               </span>
-              <span class="chiffre"><b class="c1">1</b><b class="c2">2</b><b class="c3">3</b></span>
+              <span class="chiffre"><b class="c1">1</b><b class="c2">2</b><b class="c3">3</b><b class="c4">4</b><b class="c5">5</b><b class="c6">6</b><b class="c7">7</b><b class="c8">8</b><b class="c9">9</b><b class="c10">10</b><b class="c11">11</b><b class="c12">12</b><b class="c13">13</b><b class="c14">14</b><b class="c15">15</b><b class="c16">16</b><b class="c17">17</b><b class="c18">18</b><b class="c19">19</b><b class="c20">20</b></span>
               <span class="cote d">
                 <label class="pm" for="n2" aria-label="Une équipe de plus">+</label>
                 <label class="pm" for="n3" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n4" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n5" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n6" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n7" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n8" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n9" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n10" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n11" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n12" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n13" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n14" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n15" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n16" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n17" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n18" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n19" aria-label="Une équipe de plus">+</label>
+                <label class="pm" for="n20" aria-label="Une équipe de plus">+</label>
                 <span class="pm inerte">+</span>
               </span>
             </div>
             <p class="quoi q1">Un seul chantier à la fois. Un jour pris n'est plus proposé.</p>
-            <p class="quoi q2">Deux chantiers de front. Un jour reste proposé tant que les deux ne sont pas prises.</p>
-            <p class="quoi q3">Trois chantiers de front. Un jour reste proposé tant que les trois ne sont pas prises.</p>
+            <p class="quoi qn">Autant de chantiers de front. Un jour reste proposé tant que toutes ne sont pas prises.</p>
           </div>
 
           <div class="bloc nomm">
             <p class="t caps">Leurs noms<i></i></p>
             <label class="ligne e1"><span class="rep">A</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe A"></label>
             <label class="ligne e2"><span class="rep">B</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe B"></label>
-            <label class="ligne e3"><span class="rep">C</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="done" placeholder="Équipe C"></label>
+            <label class="ligne e3"><span class="rep">C</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe C"></label>
+            <label class="ligne e4"><span class="rep">D</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe D"></label>
+            <label class="ligne e5"><span class="rep">E</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe E"></label>
+            <label class="ligne e6"><span class="rep">F</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe F"></label>
+            <label class="ligne e7"><span class="rep">G</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe G"></label>
+            <label class="ligne e8"><span class="rep">H</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe H"></label>
+            <label class="ligne e9"><span class="rep">I</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe I"></label>
+            <label class="ligne e10"><span class="rep">J</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe J"></label>
+            <label class="ligne e11"><span class="rep">K</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe K"></label>
+            <label class="ligne e12"><span class="rep">L</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe L"></label>
+            <label class="ligne e13"><span class="rep">M</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe M"></label>
+            <label class="ligne e14"><span class="rep">N</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe N"></label>
+            <label class="ligne e15"><span class="rep">O</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe O"></label>
+            <label class="ligne e16"><span class="rep">P</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe P"></label>
+            <label class="ligne e17"><span class="rep">Q</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe Q"></label>
+            <label class="ligne e18"><span class="rep">R</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe R"></label>
+            <label class="ligne e19"><span class="rep">S</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe S"></label>
+            <label class="ligne e20"><span class="rep">T</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="done" placeholder="Équipe T"></label>
             <p class="repli">Un nom, un prénom, deux prénoms — ce que vous écrivez ici est
               ce que dira le planning. <b>Laissé vide, il dira la lettre.</b></p>
           </div>
 
-          <p class="seulmot">Seul, rien à nommer : <b>le planning n'écrira aucune
-            équipe</b>. Une demi-journée est libre, ou elle porte le nom de son chantier.</p>
+          <p class="seulmot">Seul, rien à nommer : <b>le planning n'écrira aucune équipe</b>.</p>
 
         </div>
         <nav class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></nav>

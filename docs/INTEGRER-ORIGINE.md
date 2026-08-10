@@ -356,13 +356,22 @@ pour les prix (`docs/AGENT.md` §3) : sans source fiable, on n'écrit pas.
 « Équipe A » en gris : ce qui sera écrit à sa place est sous les yeux avant
 d'être subi. Aucune phrase n'a à le raconter.
 
-**Deux pièges déjà payés :**
+**Le compteur va de 1 à 20**, comme `entreprises.nombre_equipes` aujourd'hui —
+et le nombre de lignes de noms le suit exactement. Le − est inerte à 1, le + à
+20 : la borne se voit avant d'être rencontrée.
+
+**Trois pièges déjà payés :**
 
 - **Ne pas proposer de nommer ce qui ne sera jamais lu.** Laisser le bloc des
   noms à une seule équipe serait un piège : le patron y écrirait un prénom qui
   n'apparaîtrait nulle part.
 - **Le champ fait 17 px.** En dessous de 16, Safari zoome à la mise au point et
   l'écran saute sous le doigt.
+- **Un contrôle de visibilité ne lit pas `display` sur l'élément seul.** Les
+  vingt lignes de noms gardaient `display:flex` alors que leur bloc parent était
+  caché : le contrôle lisait vingt lettres sur un écran vide, et il est resté
+  vert pendant que l'écran ne montrait rien au-delà de trois équipes. Seule la
+  capture l'a vu. Interroger `Element.checkVisibility()`, jamais le style propre.
 
 **Côté code, ce que cela suppose** — c'est `TODO.md` §5, et rien n'est écrit
 encore : une table `equipes` (`nom` **nullable** — un nom absent est un état
