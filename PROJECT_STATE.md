@@ -131,9 +131,12 @@ Ce que cela impose à **toute maquette qui lui est destinée** :
   `input:nth-of-type(n):checked ~ .trait`. Les colonnes étant égales, un onglet
   vaut exactement `translateX(100%)` : rien à mesurer.
 - **Éprouver avec `javaScriptEnabled: false`.** Une page bâtie en JS passe tous
-  les contrôles ordinaires et arrive quand même vide chez lui —
-  `scripts/../essayer-sans-script.mjs` a été écrit pour ça, et sa contre-épreuve
-  charge un banc bâti en JS pour vérifier qu'il compte bien **zéro** onglet.
+  les contrôles ordinaires et arrive quand même vide chez lui. Le contrôle
+  ouvre la page dans ce mode, compte les onglets, et **charge en contre-épreuve
+  une page bâtie en JS pour vérifier qu'il y en trouve zéro** — sans quoi il ne
+  prouverait rien. Aucun script du dépôt ne le fait à ce jour : il vit dans
+  l'espace de travail de la conversation, et devra être rapatrié ici le jour où
+  des maquettes seront produites depuis le dépôt.
 
 Cela ne concerne pas l'application elle-même, qui est un Next.js qu'il ouvre
 dans Safari. Uniquement ce qu'on lui **transmet à lire**.
@@ -144,8 +147,8 @@ dans Safari. Uniquement ce qu'on lui **transmet à lire**.
 
 **Constaté le 2026-08-10, hors du dépôt**, puis précisé en lisant ses maquettes.
 Le patron explore une identité que rien ici ne mentionne. Elle est engendrée de
-son côté par `scripts/engendrer-maquette-fil.mjs` — un script **absent du
-dépôt**, et ses pages portent la consigne « ne pas la modifier à la main ».
+son côté par un script nommé `engendrer-maquette-fil.mjs`, **absent du dépôt**,
+et ses pages portent la consigne « ne pas les modifier à la main ».
 
 **Quatre chartes**, pas une, et l'accent n'est jamais le vert pin d'Arborea :
 
