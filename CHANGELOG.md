@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Un diagnostic qui dit QUI ment, en une commande
+
+`npm run diagnostiquer:banc`.
+
+**Pourquoi.** Le patron ouvre l'adresse de son banc depuis son téléphone :
+Safari affiche `about:blank` et lui propose de **télécharger un fichier**. Pas
+une page blanche — un téléchargement. J'ai reproduit l'application ici, base
+montée, serveur lancé : elle répond `307 → /login` puis `200 text/html`, y
+compris avec les en-têtes du mandataire de GitHub. **L'application est donc hors
+de cause**, et je ne pouvais pas aller plus loin : le réseau de l'agent refuse
+`*.app.github.dev`.
+
+Ce qui manquait n'était pas une idée, c'était **un fait** : la réponse exacte
+que reçoit son téléphone. Ce script va la chercher **depuis l'intérieur de
+l'espace de travail**, seul endroit d'où l'adresse publique est joignable, et il
+en tire un verdict en français : l'application est morte, l'application renvoie
+un type illisible, le port n'est pas ouvert, c'est GitHub qui répond à sa place,
+le relais abîme la réponse, ou tout est en ordre.
+
+Il suit les redirections, parce qu'un `307` n'a pas de type de contenu et que
+s'arrêter là ne prouverait rien ; et il annonce l'en-tête `accept` d'un
+navigateur, sinon il éprouverait un cas que personne ne vit.
+
+**Une erreur n'est pas un type de contenu abîmé.** La première version accusait
+le protocole du port devant un `403` du relais — le mauvais coupable, ce que le
+dépôt interdit. Les deux cas sont désormais distingués, et le message recopie
+**mot pour mot** ce que le relais a répondu.
+
+Les six verdicts ont été joués, chacun contre l'état qu'il prétend détecter.
+
 ### Le banc d'essai envoyait le patron chercher au mauvais endroit
 
 Deux défauts trouvés en le regardant s'en servir, le 10 août au soir, et
