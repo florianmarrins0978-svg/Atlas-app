@@ -214,12 +214,49 @@ process.on("exit", () => libererVerrouBanc());
 const version = versionDuCode();
 const raison = doitRebatir(version);
 
+// **`detached: true` — c'est ce qui rend la bascule sûre, et rien d'autre.**
+//
+// `npx next dev` est une pile d'enveloppes ; le processus qui ÉCOUTE se renomme
+// `next-server` et **survit à la mort de son père**. Tuer l'enfant qu'on connaît
+// ne libère donc pas le port : le patron l'a vu quatre fois, `EADDRINUSE`
+// immédiat après « Construction terminée », avec le serveur de développement qui
+// continuait tranquillement de servir juste en dessous.
+//
+// `pkill -f "[n]ext-server"` marchait ici et pas chez lui — on ne visait pas des
+// processus, on visait un MOTIF. Détaché, l'enfant devient chef de son propre
+// groupe : `process.kill(-pid)` emporte alors l'enveloppe ET le serveur, sans
+// dépendre d'un nom de processus ni de la présence de `pkill`.
+//
+// Ce que cela impose, et qui est fait plus bas : le groupe ne meurt plus avec ce
+// script, il faut donc le tuer explicitement — à la sortie ET sur Ctrl+C.
 const lancerBati = () =>
   spawn("npx", ["next", "start", "-H", "0.0.0.0", "-p", PORT],
-    { stdio: SANS_TERMINAL, env: { ...process.env, ATLAS_DIST_DIR: DIST } });
+    { stdio: SANS_TERMINAL, detached: true, env: { ...process.env, ATLAS_DIST_DIR: DIST } });
 const lancerDev = () =>
   spawn("npx", ["next", "dev", "-H", "0.0.0.0", "-p", PORT],
-    { stdio: SANS_TERMINAL, env: process.env });
+    { stdio: SANS_TERMINAL, detached: true, env: process.env });
+
+/**
+ * Tue un serveur ET tout ce qu'il a engendré.
+ *
+ * Le signe moins désigne le GROUPE de processus, pas le seul enfant : c'est là
+ * toute la différence, et c'est ce qui manquait. On garde `pkill` en second
+ * rideau — s'il existe — pour un orphelin d'une exécution précédente, que
+ * personne ne connaît plus.
+ */
+function tuerLeServeur(p) {
+  if (p?.pid) {
+    try {
+      process.kill(-p.pid, "SIGTERM");
+    } catch {
+      try {
+        p.kill("SIGTERM");
+      } catch {
+        // Déjà parti.
+      }
+    }
+  }
+}
 
 // **SERVIR D'ABORD, BÂTIR ENSUITE — le correctif du 10 août 2026, au soir.**
 //
@@ -396,8 +433,8 @@ if (raison) {
     //   2. On ne demande plus « la santé répond-elle ? » mais « puis-je écouter
     //      sur ce port ? » (`portLibre`). C'est la seule question dont la
     //      réponse engage `next start`.
+    tuerLeServeur(serveur);
     delogerCeQuiEcoute();
-    serveur.kill("SIGTERM");
 
     // **Et si `next start` tombe quand même, on RÉESSAIE une fois.** Un banc
     // qui meurt sur son propre remède coûte une soirée ; une seconde tentative
@@ -472,13 +509,23 @@ if (raison) {
 // Arrêter ce script doit arrêter le serveur : sans cela il reste en écoute, et
 // la tentative suivante échoue sur un port déjà pris — message qui n'a plus
 // aucun rapport avec la cause.
+//
+// **Le GROUPE, pas le seul enfant.** Depuis que le serveur est détaché (voir
+// `lancerDev`), Ctrl+C ne lui parvient plus tout seul : il faut le lui
+// transmettre, sinon fermer le banc laisserait derrière soi exactement
+// l'orphelin qui a coûté la soirée du 10 août.
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, () => {
     enBascule = false;
-    serveur.kill(signal);
+    tuerLeServeur(serveur);
     process.exit(0);
   });
 }
+
+// Même chose pour une sortie ordinaire, ou une exception : un serveur détaché ne
+// meurt plus avec son père, et un orphelin accroché au port est précisément la
+// panne qu'on répare ici.
+process.on("exit", () => tuerLeServeur(serveur));
 
 const LIMITE = Date.now() + 180_000;
 let pret = false;

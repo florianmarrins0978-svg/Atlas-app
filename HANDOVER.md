@@ -80,6 +80,15 @@ avec une ligne par équipe. Réglages laisse nommer les équipes.
    est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
    sans qu'aucun chiffre ne manque.
 
+**Le serveur du banc est DÉTACHÉ, et c'est son groupe qu'on tue (11 août, nuit).**
+La vraie cause des quatre `EADDRINUSE` : `npx next dev` est une pile
+d'enveloppes, et `next-server` **survit à la mort de son père**. Tuer l'enfant
+ne libère pas le port ; `pkill -f` visait un motif, pas des processus — ça
+marchait ici et pas chez lui. `detached: true` + `process.kill(-pid)` emporte
+tout le groupe. **Ne jamais retirer l'un sans l'autre** : détaché sans mort du
+groupe, chaque Ctrl+C laisserait un orphelin sur le port — ce qui empoisonnait
+justement chacune de ses tentatives suivantes.
+
 **La bascule déloge d'abord, vérifie ensuite, réessaie — et ne meurt plus
 (10 août, très tard).** `serveur.kill()` ne tue que l'enveloppe `npx` : le
 processus qui écoute se renomme `next-server` et lui survit. Le `pkill` était

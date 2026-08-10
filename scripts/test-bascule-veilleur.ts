@@ -142,7 +142,11 @@ cas("banc.mjs pose le drapeau AVANT de tuer son serveur", () => {
     .filter((l) => !l.trimStart().startsWith("//"))
     .join("\n");
   const pose = code.indexOf('marquerBascule("--debut")');
-  const tue = code.indexOf('serveur.kill("SIGTERM")');
+  // `tuerLeServeur` et non `serveur.kill` : depuis que le serveur est détaché,
+  // c'est le GROUPE qu'on tue — tuer l'enfant seul laissait `next-server`
+  // accroché au port, et c'est ce qui a produit « EADDRINUSE » quatre fois de
+  // suite chez le patron.
+  const tue = code.indexOf("tuerLeServeur(serveur)");
   const retire = code.indexOf('marquerBascule("--fin")');
   assert.notEqual(pose, -1, "banc.mjs ne pose pas le drapeau");
   assert.notEqual(tue, -1, "banc.mjs ne tue plus son serveur : ce contrôle n'éprouve plus rien");
@@ -247,6 +251,40 @@ cas("aucun enfant du banc ne reçoit le terminal", () => {
       `${path.basename(fichier)} ne laisse plus passer la sortie : le patron ne verrait plus rien`
     );
   }
+});
+
+// **`detached` + `process.kill(-pid)` — le cœur du correctif, et rien d'autre.**
+//
+// Mesuré en isolant le mécanisme : un serveur lancé NON détaché, puis tué par
+// son père, laisse son petit-fils accroché au port ; détaché et tué par groupe,
+// le port est libéré. C'est toute la panne du 10 août, en douze lignes.
+//
+// Ce contrôle tient le branchement : le détachement sans la mort du groupe
+// serait pire que rien — chaque Ctrl+C laisserait un orphelin sur le port.
+cas("le serveur est détaché, et c'est le GROUPE qu'on tue", () => {
+  const code = readFileSync(BANC, "utf8")
+    .split("\n")
+    .filter((l) => !l.trimStart().startsWith("//"))
+    .join("\n");
+
+  const detachements = (code.match(/detached:\s*true/g) ?? []).length;
+  assert.equal(
+    detachements,
+    2,
+    `le serveur doit être détaché dans les DEUX modes (dev et bâti) — ${detachements} trouvé(s)`
+  );
+  assert.match(
+    code,
+    /process\.kill\(-\w+\.pid/,
+    "on tue encore l'enfant seul : `next-server` restera accroché au port"
+  );
+  // Détaché sans transmission du signal, fermer le banc laisserait un orphelin
+  // — exactement la panne qu'on répare.
+  assert.match(
+    code,
+    /process\.on\("exit",\s*\(\)\s*=>\s*tuerLeServeur/,
+    "le banc ne tue pas son serveur en sortant : chaque Ctrl+C laisserait un orphelin sur le port"
+  );
 });
 
 rmSync(dossier, { recursive: true, force: true });

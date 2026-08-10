@@ -9,6 +9,38 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le serveur est détaché, et c'est son GROUPE qu'on tue
+
+**Quatre fois de suite, le même `EADDRINUSE` — et la vraie cause était plus
+simple que tout ce que j'avais corrigé.**
+
+`npx next dev` est une pile d'enveloppes. Le processus qui écoute vraiment se
+renomme `next-server` et **survit à la mort de son père**. Tuer l'enfant qu'on
+connaît ne libère donc pas le port. Le dépôt le savait, et s'en remettait à
+`pkill -f "[n]ext-server"` : on ne visait pas des processus, on visait un
+**motif** — ça marchait ici, et pas chez lui.
+
+Le serveur est désormais lancé `detached: true` : il devient chef de son propre
+groupe, et `process.kill(-pid)` emporte l'enveloppe **et** le serveur, sans
+dépendre d'un nom ni de la présence de `pkill`.
+
+**Mesuré en isolant le mécanisme, hors d'Atlas, en douze lignes :**
+
+| | port pris avant | port libéré après |
+|---|---|---|
+| enfant tué seul (ce que faisait le banc) | oui | **non — l'orphelin tient le port** |
+| groupe tué (le correctif) | oui | **oui** |
+
+**Et cela répare une seconde chose, que personne n'avait reliée : chaque Ctrl+C
+laissait un orphelin.** Le patron en a fait plusieurs au fil de la soirée ;
+chacun laissait un `next-server` accroché au port 3000, qui condamnait la
+tentative suivante. Le banc transmet maintenant le signal à son groupe, à la
+sortie comme sur Ctrl+C — vérifié : port libéré, aucun orphelin.
+
+Éprouvé de bout en bout : construction, bascule, « Version rapide en place »,
+zéro `EADDRINUSE`, santé en 5 ms, `/login` en 177 ms, et les sept contrôles de
+session au vert sur la version bâtie.
+
 ### La bascule déloge d'abord, vérifie ensuite, et réessaie
 
 **Le journal du patron a montré ce qu'aucun raisonnement n'avait vu.** Après

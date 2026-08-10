@@ -3807,3 +3807,30 @@ aucun cas — d'où le retour d'« EADDRINUSE » malgré le verrou et le drapeau
 demande maintenant au système, en essayant d'écouter dessus : c'est la seule
 question dont la réponse engage `next start`. Éprouvé dans les trois états —
 port vide, port occupé, port relâché.
+
+**Et la cause première, trouvée après quatre correctifs : le serveur n'est pas
+l'enfant qu'on croit.**
+
+`npx next dev` est une pile d'enveloppes ; le processus qui ÉCOUTE se renomme
+`next-server` et **survit à la mort de son père**. Tuer l'enfant qu'on connaît ne
+libère donc pas le port. Le dépôt le savait — c'est écrit dans `veiller.sh`
+depuis le 9 août — et s'en remettait à `pkill -f "[n]ext-server"` : on ne visait
+pas des processus, on visait un **motif**. Ça marchait sur la machine de l'agent,
+et pas chez le patron.
+
+Le serveur est donc lancé `detached: true`. Il devient chef de son propre groupe,
+et `process.kill(-pid)` emporte l'enveloppe et le serveur, sans dépendre d'un nom
+de processus ni de la présence de `pkill`.
+
+Mesuré hors d'Atlas, en isolant le mécanisme :
+
+| | port pris avant | port libéré après |
+|---|---|---|
+| enfant tué seul | oui | **non — l'orphelin tient le port** |
+| groupe tué | oui | **oui** |
+
+**Les deux moitiés vont ensemble, et un contrôle l'exige.** Détaché sans
+transmission du signal, le serveur ne meurt plus avec le banc : chaque Ctrl+C
+laisserait un orphelin accroché au port — c'est-à-dire la panne qu'on répare.
+C'est aussi, rétrospectivement, ce qui condamnait chaque tentative suivante du
+patron : il avait fait plusieurs Ctrl+C dans la soirée.
