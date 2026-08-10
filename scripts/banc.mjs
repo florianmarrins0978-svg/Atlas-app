@@ -195,6 +195,42 @@ async function prechaufferEcransPublics() {
   }
 }
 
+/**
+ * **L'adresse s'annonce DÈS QUE l'application répond, pas à la fin.**
+ *
+ * Corrigé le 10 août 2026, au soir. Depuis « servir d'abord, bâtir ensuite »,
+ * l'annonce venait après `next build` — des minutes plus tard. Le patron avait
+ * donc une application qui répondait sans savoir où l'ouvrir, ce qui annule
+ * précisément ce que ce correctif lui apportait. Et le contrôle du conteneur,
+ * lui, cherchait l'adresse bien avant : le banc rougissait sur un serveur
+ * parfaitement vivant.
+ *
+ * Elle ne se dit qu'une fois : la bascule vers la version bâtie n'ajoute
+ * qu'une ligne, l'adresse ne change pas.
+ */
+let annonceFaite = false;
+function annoncer(bati) {
+  if (annonceFaite) return;
+  annonceFaite = true;
+  console.log(
+    annoncePrete({
+      port: PORT,
+      precision: bati ? "version bâtie, chaque écran est immédiat." : "mode développement, premier accès lent.",
+    })
+  );
+}
+
+async function annoncerDesQueCaRepond(bati) {
+  const limite = Date.now() + 180_000;
+  while (Date.now() < limite) {
+    if (await repond()) {
+      annoncer(bati);
+      return;
+    }
+    await attendre(1000);
+  }
+}
+
 let serveur = raison ? lancerDev() : lancerBati();
 let enBascule = false;
 
@@ -207,7 +243,9 @@ serveur.on("exit", surSortie);
 
 if (raison) {
   console.log(`\n  Atlas répond déjà, en mode développement.`);
-  // Pas d'`await` : le préchauffage et la construction avancent ensemble.
+  // Pas d'`await` : le préchauffage, l'annonce et la construction avancent
+  // ensemble. L'adresse doit partir la première — c'est elle qu'il attend.
+  void annoncerDesQueCaRepond(false);
   prechaufferEcransPublics();
   console.log(`  Sa version rapide se construit en même temps (${raison}) — ne fermez rien.\n`);
 
@@ -296,13 +334,10 @@ if (!pret) {
       "     Les lignes ci-dessus, émises par le serveur, disent pourquoi.\n" +
       "     Cause la plus fréquente : la base de données n'est pas montée.\n"
   );
+} else if (annonceFaite) {
+  // Déjà annoncée pendant la construction : l'adresse n'a pas changé, et la
+  // répéter en entier ferait croire à un second démarrage.
+  console.log("\n  Version rapide en place — chaque écran s'ouvre maintenant du premier coup.\n");
 } else {
-  console.log(
-    annoncePrete({
-      port: PORT,
-      precision: bati
-        ? "version bâtie, chaque écran est immédiat."
-        : "mode développement, premier accès lent.",
-    })
-  );
+  annoncer(bati);
 }
