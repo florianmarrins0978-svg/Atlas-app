@@ -120,7 +120,7 @@ async function main() {
   // Le sélecteur de date a disparu avec l'ancien écran ; changer une date se
   // fait désormais avec le MÊME geste que poser — « Déplacer », puis un jour,
   // une demi-journée, et le bouton s'arme.
-  await page.getByRole("button", { name: `Déplacer le chantier ${nomUnique}` }).click();
+  await page.getByRole("button", { name: `Déplacer le chantier Chez ${nomUnique}` }).click();
   await page.waitForTimeout(400);
   for (let i = 0; i < 24; i++) {
     if ((await page.locator('[data-atlas="grille-mois"] button[data-jour="2027-01-15"]').count()) > 0) break;

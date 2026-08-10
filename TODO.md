@@ -436,6 +436,29 @@ suffit ») et la **capacité en hommes** — `taille_equipe` est du texte libre,
 faudrait le fiabiliser avant d'en faire une contrainte. Voir `ARCHITECTURE.md`
 §22 pour les arbitrages.
 
+### 5 bis. ~~« Terminés » et le parcours de facturation~~ — fait le 10 août 2026
+
+Le §6 quinquies de `docs/INTEGRER-ORIGINE.md` : l'écran devient un **fil par
+mois**, l'encart « à facturer » se pose **dans le mois** plutôt qu'à côté, et le
+relevé de TVA cesse d'être un pavé pour devenir une ligne au pied.
+`ARCHITECTURE.md` §53.
+
+**Trois décisions du patron, prises le 10 août et à ne pas rouvrir :**
+
+1. **« Fin de chantier » devient « Créer la facture »**, sur les trois écrans
+   qui portaient le mot (fiche, planning, écran de facture). Le nom dit
+   désormais ce que la touche fabrique.
+2. **Une facture à 0,00 € s'affiche telle quelle**, sans mention ni
+   avertissement. Il en a une dans ses données réelles (F2026-0001) : un
+   montant nul se lit, il ne se commente pas.
+3. **La bulle de l'assistant s'écarte du bandeau** — elle venait toucher la
+   dernière ligne de l'écran.
+
+**Ce qui a été vérifié et qui n'était PAS un défaut :** `listerChantiersTermines`
+compte bien un chantier du 20 comme terminé **le 21**, jamais le 20 à minuit
+(`ongletDepuisJalons` : `datePlanifiee < aujourdHui`). La journée entière reste
+au planning — c'est de là que le patron clôture en rentrant.
+
 ### 7 bis. ~~Le retrait, partout~~ — fait le 10 août 2026
 
 Le cinquième choix du patron sur les maquettes : « le tiroir des retirés »,

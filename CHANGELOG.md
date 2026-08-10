@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### « Terminés » : un fil par mois, et facturer en trois appuis
+
+L'écran empilait trois sortes de pavés arrondis, dont **un seul plein** : le
+relevé de TVA. L'œil allait donc d'abord sur ce qu'on consulte une fois par
+trimestre. « Rien à facturer » s'affichait comme un titre de section suivi de
+rien — l'écran avait l'air amputé au lieu d'avoir l'air calme. Et **il ne disait
+jamais combien**, alors que c'est la seule question qu'on lui pose.
+
+Il devient un **fil par mois**, le même que la liste des chantiers : deux écrans
+qui se ressemblent s'apprennent une seule fois. Des filets, aucun pavé. Les
+montants tiennent une colonne et rien ne s'ajoute après eux.
+
+**L'encart « à facturer » se pose DANS le mois**, pas à côté : le chantier du
+20 août est un chantier d'août, et le sortir casserait le fil. Une pastille
+bronze sur le fil porte le nombre, une ligne l'annonce en toutes lettres, et
+tout cela **reste replié au repos** — l'encart appelle, il n'occupe pas. **À
+zéro, il n'existe pas** : jamais de « 0 », jamais de compte bancal.
+
+Le montant vient du devis accepté, et l'écran le dit : « Montants prévus aux
+devis », **jamais « à encaisser »**.
+
+**« Fin de chantier » devient « Créer la facture »**, sur les trois écrans qui
+portaient le mot. L'ancien nom ne disait pas ce que la touche fabrique. Et
+**créer n'est toujours pas envoyer** : la facture naît d'un appui, elle part
+d'un autre.
+
+**Deux défauts que seule la capture a vus.** Une ligne trop longue déborde
+toujours du côté de la fin de ligne, quel que soit `text-align` : « juillet »
+passait sous la pastille, qui lui mangeait sa dernière lettre. Et un montant
+inconnu s'écrivait « 0,00 € » — un chantier sans devis chiffré n'attend pas zéro
+euro, on ne sait pas.
+
+`ARCHITECTURE.md` §53.
+
 ### Le planning au mois, et les équipes qui portent un nom
 
 *« Il faut que dans le fichier réglages on puisse mettre le nom des équipes —

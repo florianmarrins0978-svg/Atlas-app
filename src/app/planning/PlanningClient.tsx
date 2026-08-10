@@ -517,7 +517,7 @@ export default function PlanningClient({
 
             La maquette ne montre que le mois et la journée ; la reprendre telle
             quelle aurait refermé ce chemin sans que rien ne le dise. Le nom mène
-            au chantier, « Fin de chantier » à la facture. */}
+            au chantier, « Créer la facture » à la facture. */}
         {planifies.length > 0 && (
           <div className="mt-[30px] px-[26px] pt-[18px]" style={{ borderTop: `1px solid ${colors.line}` }}>
             <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
@@ -574,11 +574,11 @@ export default function PlanningClient({
                   </button>
                   <Link
                     href={`/chantiers/${c.id}/facture`}
-                    aria-label={`Fin de chantier — ${c.nom}`}
+                    aria-label={`Créer la facture — ${c.nom}`}
                     className={`whitespace-nowrap ${libelleCaps}`}
                     style={{ color: colors.or }}
                   >
-                    Fin de chantier
+                    Créer la facture
                   </Link>
                 </span>
               </div>

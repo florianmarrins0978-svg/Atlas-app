@@ -19,7 +19,7 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
   if (!chantier) notFound();
 
   // La facture n'est PAS bâtie à l'ouverture de l'écran : consulter n'est pas
-  // clôturer. Elle naît de l'appui sur « Fin de chantier », jamais d'un regard.
+  // clôturer. Elle naît de l'appui sur « Créer la facture », jamais d'un regard.
   const existante = await getFacturePourChantier(ctx, id);
 
   const [entreprise, client] = await Promise.all([

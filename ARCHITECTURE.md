@@ -3476,3 +3476,88 @@ que le contrôle du libellé restait vert. Le contrôle mesure désormais l'éca
 entre le centre du trait et le centre du **texte** de l'onglet
 (`Range.getBoundingClientRect`) : la boîte du libellé vaut sa colonne entière et
 masquait le décalage.
+
+---
+
+## 53. « Terminés » — le fil par mois, et facturer en trois appuis
+
+**Choisi par le patron le 10 août 2026 sur maquette**
+(`maquettes/atlas-facturer.html`, `docs/INTEGRER-ORIGINE.md` §6 quinquies).
+
+### Ce qui clochait, et qui n'était pas une affaire de goût
+
+L'écran empilait **trois sortes de pavés arrondis** — le relevé de TVA, les
+chantiers à facturer, les factures. Le relevé de TVA était le **seul cadre
+plein**, si bien que l'œil allait d'abord sur ce qu'on consulte une fois par
+trimestre. « Rien à facturer » s'affichait comme un **titre de section suivi de
+rien** : l'écran avait l'air amputé au lieu d'avoir l'air calme. Et il **ne
+disait jamais combien**, alors que c'est la seule question qu'on lui pose.
+
+### Le fil, et l'encart posé DANS le mois
+
+Le même fil que la liste des chantiers — deux écrans qui se ressemblent
+s'apprennent une seule fois. **Des filets, jamais de pavé** : aucun fond plein
+ni coin arrondi dans le corps.
+
+**Un chantier non facturé reste dans SON mois.** Le chantier du 20 août est un
+chantier d'août ; le sortir dans un bloc à part casserait le fil, qui ne
+raconterait plus le temps mais deux listes empilées. Une pastille bronze posée
+**sur le fil** porte le nombre, et une ligne de 44 px l'annonce en toutes
+lettres — « Deux à facturer · 1 940,00 € ». **Repliée au repos** : l'écran
+s'appelle « Terminés », il montre d'abord ce qui est fait ; l'encart appelle, il
+n'occupe pas.
+
+**À zéro, l'encart n'existe pas.** Jamais de « 0 », jamais de compte au
+singulier bancal.
+
+**Le montant vient du devis, et l'écran le dit** — « Montants prévus aux
+devis », jamais « à encaisser ». Un devis n'est pas une facture, et le montant
+peut encore bouger (`docs/AGENT.md` §3). La source se dit **une fois**, sous les
+lignes : la répéter sur chacune y ajoutait une étiquette insécable, et une
+étiquette insécable dans une piste `1fr` élargit la piste.
+
+### Créer n'est pas envoyer
+
+La facture naît d'un appui, elle part d'un autre : c'est l'envoi qui la rend
+définitive et la porte au relevé de TVA. Fondre les deux ferait partir un
+document chez le client sur un geste destiné à le préparer. L'écran le dit **aux
+deux étapes**, et `terminerChantier` reste **idempotente** — rappuyer redonne la
+facture bâtie au lieu d'en créer une seconde.
+
+**« Fin de chantier » devient « Créer la facture »**, décidé par le patron le
+10 août 2026. L'ancien nom ne disait pas ce que la touche fabrique. Le mot est
+changé sur les **trois** écrans qui le portaient — fiche du chantier, planning,
+écran de facture : un même geste ne peut pas s'appeler de deux façons selon
+l'endroit d'où on l'atteint.
+
+### Deux défauts que seule la capture a vus
+
+- **Une ligne trop longue déborde toujours du côté de la fin de ligne**, quel
+  que soit `text-align`. « juillet » ne tient pas dans les 47 px de la marge : il
+  débordait **à droite**, sous la pastille, dont le fond opaque lui mangeait sa
+  dernière lettre. `justify-self: end` fait tenir la boîte au texte et la colle à
+  la fin de colonne — ce qui dépasse part alors dans la marge de 26 px, où il y a
+  la place. Mesuré au pixel, pas supposé.
+- **Un montant inconnu s'écrivait « 0,00 € ».** Un chantier sans devis chiffré
+  n'attend pas zéro euro : on ne sait pas. L'encart n'affiche donc son montant
+  que si au moins un est connu — sinon il dirait au patron qu'il n'y a rien à
+  encaisser là où il y a peut-être tout.
+
+### Ce que les contrôles doivent savoir faire
+
+- **`Element.checkVisibility()` ignore le rognage** : les lignes d'un volet
+  fermé lui paraissent visibles. On mesure l'**intersection réelle** avec la
+  boîte du volet.
+- **Un contrôle de mise en page ne voit que ce qui lui est donné à voir** :
+  interroger le document entier ramenait le bandeau du bas et la bulle de
+  l'assistant, et accusait « Terminés » de pavés qui ne lui appartiennent pas.
+  La sonde est bornée à `[data-atlas="ecran-termines"]`.
+- **Les montants d'une même colonne finissent au même pixel**, et rien ne
+  s'ajoute après : un chevron en bout de ligne leur volerait 24 px.
+
+### Ce qui a été vérifié et n'était pas un défaut
+
+`listerChantiersTermines` compte un chantier du 20 comme terminé **le 21**, pas
+le 20 à minuit : `ongletDepuisJalons` range sur `datePlanifiee < aujourdHui`, et
+la journée entière reste au planning. C'est de là que le patron clôture en
+rentrant.

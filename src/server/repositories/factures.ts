@@ -373,6 +373,26 @@ export async function listerChantiersTermines(ctx: Ctx, aujourdHui: string = jou
         factureStatut: factures.statut,
         factureNumero: factures.numeroCommercial,
         totalTtc: factures.totalTtc,
+        // **Le montant PRÉVU au devis, pour ce qui n'est pas encore facturé.**
+        // L'écran doit dire combien attend d'être facturé — c'est la seule
+        // question qu'on lui pose. Il dira aussi d'où vient ce chiffre :
+        // « Montants prévus aux devis », jamais « à encaisser ». Un devis n'est
+        // pas une facture, et le montant peut encore bouger
+        // (`docs/AGENT.md` §3).
+        //
+        // La dernière version envoyée fait foi : un devis corrigé puis renvoyé
+        // porte plusieurs lignes, et retenir la première annoncerait un montant
+        // que le client a refusé.
+        devisNumero: sql<string | null>`(
+          SELECT d."numero_commercial" FROM "devis" d
+          WHERE d."chantier_id" = ${chantiers.id} AND d."statut" = 'envoye'
+          ORDER BY d."numero_version" DESC LIMIT 1
+        )`,
+        devisTotalTtc: sql<string | null>`(
+          SELECT d."total_ttc" FROM "devis" d
+          WHERE d."chantier_id" = ${chantiers.id} AND d."statut" = 'envoye'
+          ORDER BY d."numero_version" DESC LIMIT 1
+        )`,
       })
       .from(chantiers)
       .leftJoin(clients, eq(chantiers.clientId, clients.id))

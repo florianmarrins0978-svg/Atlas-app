@@ -134,6 +134,11 @@ l'application. Ce qui est **fait** :
   partir de deux** : seul, le mot « équipe » ne s'écrit nulle part. Une table
   `equipes` (`nom` nullable), une colonne `chantiers.equipe_id`, et une seule
   fonction pure qui décide du libellé. `ARCHITECTURE.md` §51 et §52.
+- **« Terminés » et le parcours de facturation** (10 août, au soir) : un fil par
+  mois, l'encart « à facturer » posé DANS le mois et replié au repos, le relevé
+  de TVA en simple ligne au pied. « Fin de chantier » s'appelle désormais
+  **« Créer la facture »** — mais créer n'est toujours pas envoyer.
+  `ARCHITECTURE.md` §53.
 
 Ce qui **reste**, avec l'ordre, les valeurs, les sept pièges et les deux
 réserves : **`TODO.md` §7**. Le dessin fait foi dans

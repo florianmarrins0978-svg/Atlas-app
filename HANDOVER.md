@@ -45,6 +45,20 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**« Terminés » et la facturation (10 août, au soir).** L'écran est un fil par
+mois ; l'encart « à facturer » vit dans le mois et se déplie d'un appui.
+`ARCHITECTURE.md` §53.
+
+**Trois choses à savoir avant d'y toucher :**
+
+1. **« Créer la facture » a remplacé « Fin de chantier »** partout — décision du
+   patron du 10 août. Le geste n'a pas changé : il bâtit la facture à partir du
+   devis, et **n'envoie rien**. Créer n'est pas envoyer, et ça ne se plie pas.
+2. **À zéro chantier en attente, la chaîne « à facturer » ne doit apparaître
+   nulle part.** Un contrôle de capture échoue si elle revient.
+3. **Un montant inconnu n'est pas zéro.** Un chantier sans devis chiffré affiche
+   « — », et l'encart tait son total plutôt que d'annoncer « 0,00 € ».
+
 **Le planning au mois et les équipes nommées (10 août, au soir).** Le planning
 est un calendrier de sept colonnes ; toucher un jour ouvre sa journée dessous,
 avec une ligne par équipe. Réglages laisse nommer les équipes.
