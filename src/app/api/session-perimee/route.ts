@@ -38,11 +38,33 @@ const COOKIES_DE_SESSION = [
 export async function GET() {
   const boite = await cookies();
   for (const nom of COOKIES_DE_SESSION) {
+    // **`__Secure-` et `__Host-` EXIGENT l'attribut `Secure` — sans lui, le
+    // navigateur REFUSE l'effacement, en silence.**
+    //
+    // C'est le défaut du 10 août 2026 au soir, et il était pire que celui qu'il
+    // réparait : le patron a vu son application tourner en rond,
+    // `/login → /api/session-perimee → /login`, sans fin. Derrière le relais de
+    // son espace, tout est en HTTPS : Auth.js nomme donc son cookie
+    // `__Secure-authjs.session-token`. L'effacement partait sans `Secure`, le
+    // navigateur le jetait — la règle des préfixes le lui impose — et le fantôme
+    // survivait à chaque tour. Vu à `curl`, l'en-tête paraissait pourtant
+    // parfait : c'est le NAVIGATEUR qui refusait, pas le serveur qui oubliait.
+    //
+    // L'inverse est vrai aussi : poser `Secure` sur les noms sans préfixe les
+    // rendrait inopérants en clair, c'est-à-dire sur le banc local. On aligne
+    // donc l'attribut sur le nom, jamais sur une supposition d'environnement.
+    const exigeSecure = nom.startsWith("__Secure-") || nom.startsWith("__Host-");
     // `delete` ne suffit pas toujours : un cookie posé avec un chemin précis
     // survit à une suppression qui ne le vise pas. On écrase donc aussi la
     // valeur, avec une expiration dans le passé.
     boite.delete(nom);
-    boite.set(nom, "", { path: "/", maxAge: 0, expires: new Date(0) });
+    boite.set(nom, "", {
+      path: "/",
+      maxAge: 0,
+      expires: new Date(0),
+      secure: exigeSecure,
+      sameSite: "lax",
+    });
   }
   // **Adresse RELATIVE, et c'est essentiel.** `NextResponse.redirect` exige une
   // adresse absolue, qu'il faut alors fabriquer depuis `request.url` — laquelle

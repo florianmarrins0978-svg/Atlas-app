@@ -29,9 +29,19 @@ const CHEMINS_EXEMPTS = ["/login", "/documents-legaux", "/api", "/devis"];
 // un artisan y arrivant avec un cookie mort n'a aucune raison d'être arraché
 // à la lecture d'un document qui ne dépend d'aucune session.
 //
-// `/login` et `/documents-legaux`, eux, ne sont PAS exemptés, à la différence
-// des documents légaux : c'est précisément là qu'un fantôme atterrit.
-const CHEMINS_SANS_CONTROLE_DE_COMPTE = ["/api", "/devis", "/factures"];
+// **`/login` en fait partie, et c'est un correctif, pas un oubli.**
+//
+// Le 10 août 2026 au soir, le patron a vu son application tourner en rond :
+// `/login` → `/api/session-perimee` → `/login`, sans fin. La cause première
+// était ailleurs (l'effacement du cookie était refusé par le navigateur, voir
+// `api/session-perimee/route.ts`), mais **c'est cette garde qui transformait
+// une panne en boucle** : renvoyée vers l'effacement, la page de connexion y
+// retournait au tour suivant, indéfiniment.
+//
+// Un remède qui boucle est pire que le défaut qu'il répare. Sur `/login`, il
+// n'y a d'ailleurs rien à protéger : aucune donnée n'y est lue, et la connexion
+// remplace le cookie de toute façon. Ne jamais l'y remettre.
+const CHEMINS_SANS_CONTROLE_DE_COMPTE = ["/api", "/devis", "/factures", "/login"];
 
 function estExempt(chemin: string, exempts: string[]) {
   return exempts.some((p) => chemin === p || chemin.startsWith(`${p}/`));

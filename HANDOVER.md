@@ -80,6 +80,21 @@ avec une ligne par équipe. Réglages laisse nommer les équipes.
    est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
    sans qu'aucun chiffre ne manque.
 
+**Le remède de la session fantôme a tourné en rond (10 août, très tard).** Deux
+causes, dont la première invisible à `curl` :
+
+1. **`__Secure-` / `__Host-` exigent l'attribut `Secure`** — sans lui le
+   NAVIGATEUR jette le Set-Cookie, en silence. Derrière le relais (HTTPS), c'est
+   ce nom-là qui porte la session : l'effacement échouait, le fantôme survivait.
+   L'attribut suit le NOM, jamais une supposition d'environnement — le poser sur
+   un nom sans préfixe le rendrait inopérant en clair.
+2. **`/login` ne doit JAMAIS être soumis au contrôle du compte** : c'est ce qui
+   transformait la panne en boucle infinie.
+
+Et `portRendu` posait la mauvaise question : la santé, au lieu du port. Un
+serveur tué cesse de répondre bien avant de rendre sa socket — d'où le retour
+d'« EADDRINUSE ». Il essaie maintenant d'écouter sur le port.
+
 **La construction mourait en rendant la main (10 août, tard).**
 « setRawMode EIO » puis « Segmentation fault », APRÈS un « Compiled
 successfully ». Next.js prend le contrôle du terminal quand son entrée en est

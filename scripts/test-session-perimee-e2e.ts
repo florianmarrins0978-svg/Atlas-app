@@ -36,10 +36,13 @@ const NOM_COOKIE = "authjs.session-token";
 // Un identifiant qui n'existe dans aucune base : c'est tout l'objet du fantôme.
 const FANTOME = "38befa76-e564-4751-9060-69ada52e720d";
 
-// Les écrans par lesquels le patron est réellement passé ce soir-là, plus
-// `/login` : c'est là qu'il revenait à chaque échec, et un cookie mort doit y
-// être défait plutôt qu'y survivre.
-const ECRANS = ["/", "/documents-legaux", "/planning", "/login"];
+// Les écrans par lesquels le patron est réellement passé ce soir-là.
+//
+// **`/login` n'en fait PAS partie, et c'est un correctif.** L'y inclure a
+// produit une boucle infinie chez lui — `/login` → `/api/session-perimee` →
+// `/login`, sans fin — le soir même. Un remède qui boucle est pire que le
+// défaut qu'il répare.
+const ECRANS = ["/", "/documents-legaux", "/planning"];
 
 /** Fabrique un cookie de session signé pour un identifiant donné. */
 async function cookiePour(utilisateurId: string, email: string) {
@@ -141,6 +144,70 @@ async function main() {
   }
   console.log("✓ une session valide n'est jamais renvoyée vers l'effacement");
 
+  // **La boucle : le défaut que ce correctif a lui-même créé, le 10 août 2026.**
+  //
+  // Le patron a vu tourner en rond, indéfiniment :
+  //     GET /login?session=perimee 307 → /api/session-perimee
+  //     GET /api/session-perimee  303 → /login?session=perimee
+  //
+  // Deux causes, et il fallait les deux : `/login` était soumis au contrôle du
+  // compte, et l'effacement du cookie était REFUSÉ par le navigateur faute de
+  // l'attribut `Secure` sur un nom `__Secure-`. Ce contrôle suit la chaîne
+  // jusqu'au bout : ce qui compte n'est pas par où l'on passe, c'est qu'on
+  // s'arrête.
+  {
+    let chemin = "/";
+    const passages: string[] = [];
+    let arrive = false;
+    for (let saut = 0; saut < 6; saut++) {
+      const r = await aller(chemin, fantome.entete);
+      const ou = r.headers.get("location");
+      if (!ou) {
+        arrive = true;
+        assert.ok(r.status < 400, `le parcours s'arrête sur ${r.status} au lieu d'un écran`);
+        break;
+      }
+      assert.ok(
+        !passages.includes(ou),
+        `BOUCLE : « ${ou} » est traversé deux fois — ${[...passages, ou].join(" → ")}`
+      );
+      passages.push(ou);
+      chemin = ou.startsWith("http") ? new URL(ou).pathname + new URL(ou).search : ou;
+    }
+    assert.ok(arrive, `le fantôme tourne encore après six sauts : ${passages.join(" → ")}`);
+    assert.ok(
+      passages.some((p) => p.includes("/login")),
+      `le parcours devrait aboutir à la connexion — ${passages.join(" → ")}`
+    );
+  }
+  console.log("✓ le fantôme aboutit à la connexion, sans jamais repasser au même endroit");
+
+  // **`__Secure-` EXIGE l'attribut `Secure`, sinon le navigateur REFUSE.**
+  // C'est la cause première de la boucle : l'en-tête paraissait parfait à
+  // `curl`, et le navigateur le jetait. Derrière le relais du patron tout est
+  // en HTTPS, donc c'est CE nom-là qui porte sa session.
+  {
+    const r = await aller("/api/session-perimee");
+    for (const pose of r.headers.getSetCookie()) {
+      const nom = pose.split("=")[0];
+      if (nom.startsWith("__Secure-") || nom.startsWith("__Host-")) {
+        assert.match(
+          pose,
+          /;\s*Secure/i,
+          `« ${nom} » est effacé sans l'attribut Secure : le navigateur refusera, et le fantôme survivra`
+        );
+      } else {
+        assert.ok(
+          !/;\s*Secure/i.test(pose),
+          `« ${nom} » porte Secure : il ne s'effacerait plus en clair, c'est-à-dire sur le banc local`
+        );
+      }
+    }
+  }
+  console.log("✓ chaque cookie est effacé avec l'attribut que son nom exige");
+
+
+
   // 5. **Le parcours entier, dans un vrai navigateur, JavaScript coupé.**
   //    Les quatre contrôles ci-dessus lisent des en-têtes ; celui-ci regarde
   //    ce que le patron verrait. JavaScript coupé délibérément : c'est ce qui
@@ -180,7 +247,7 @@ async function main() {
   }
   console.log("✓ un vrai navigateur, JavaScript coupé, part du fantôme et arrive à la connexion");
 
-  console.log("\nSession périmée : 5 contrôles au vert.");
+  console.log("\nSession périmée : 7 contrôles au vert.");
 }
 
 main().catch((e) => {

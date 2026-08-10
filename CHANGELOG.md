@@ -9,6 +9,46 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le remède tournait en rond — et la bascule ratait encore le port
+
+Deux défauts, dont **le premier est le mien, introduit le soir même.**
+
+**1. Une boucle sans fin, pire que le défaut qu'elle réparait.** Le patron a vu
+défiler, indéfiniment :
+
+    GET /login?session=perimee  307 → /api/session-perimee
+    GET /api/session-perimee    303 → /login?session=perimee
+
+Il fallait **deux** causes, et elles se cachaient l'une l'autre :
+
+- **`__Secure-` exige l'attribut `Secure`, sinon le navigateur REFUSE.**
+  Derrière le relais de son espace, tout est en HTTPS : Auth.js nomme donc son
+  cookie `__Secure-authjs.session-token`. L'effacement partait sans `Secure`, la
+  règle des préfixes le faisait jeter, et le fantôme survivait à chaque tour.
+  **Vu à `curl`, l'en-tête paraissait parfait** — c'est le navigateur qui
+  refusait, pas le serveur qui oubliait, et aucun contrôle ne regardait
+  l'attribut. L'inverse est vrai aussi : poser `Secure` sur les noms sans
+  préfixe les rendrait inopérants en clair, donc sur le banc local. L'attribut
+  suit désormais le NOM, jamais une supposition d'environnement.
+- **`/login` était soumis au contrôle du compte.** C'est ce qui transformait une
+  panne en boucle : renvoyée vers l'effacement, la page de connexion y
+  retournait au tour suivant. Elle en est exemptée — il n'y a rien à y protéger,
+  et la connexion remplace le cookie de toute façon.
+
+**2. « EADDRINUSE » revenait, malgré le verrou et le drapeau.** Parce que
+`portRendu` posait la mauvaise question : il interrogeait `/api/health/live` et
+concluait « port rendu » dès qu'il ne répondait plus. Un serveur qu'on vient de
+tuer cesse de répondre **bien avant** de rendre sa socket, et un processus qui
+tient le port sans servir Atlas ne répond à cette route dans aucun cas. On
+demande maintenant au système, en essayant d'**écouter** dessus — la seule
+question dont la réponse engage `next start`. Éprouvé dans les trois états :
+port vide, port occupé, port relâché.
+
+Deux contrôles nouveaux, chacun vu échouer sur sa panne : le parcours du fantôme
+échoue s'il **repasse deux fois au même endroit** (et le message affiche le
+chemin exact du patron), et chaque cookie effacé doit porter l'attribut que son
+nom exige — ni plus, ni moins.
+
 ### La construction mourait en rendant la main — « setRawMode EIO », segfault
 
 **Après un « Compiled successfully in 62s » :**

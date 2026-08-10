@@ -27,6 +27,7 @@
 // banc ; un banc mort lui coûte sa soirée.
 
 import { spawn } from "node:child_process";
+import { createServer } from "node:net";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { annoncePrete } from "./annonce-adresse.mjs";
@@ -137,14 +138,33 @@ function jouer(commande, args, env = process.env) {
 }
 
 /**
- * Le port est-il vraiment rendu ? On interroge la santé : tant qu'elle répond,
- * quelqu'un écoute encore. Rien d'autre ne le prouve — un processus disparu de
- * la liste peut avoir laissé un enfant derrière lui.
+ * **Le PORT est-il libre — pas « la santé se tait-elle ».**
+ *
+ * La version précédente interrogeait `/api/health/live` et concluait « port
+ * rendu » dès qu'il ne répondait plus. C'est faux, et c'est ce qui a fait
+ * revenir « EADDRINUSE » chez le patron le 10 août 2026 au soir, APRÈS une
+ * construction réussie : un serveur qu'on vient de tuer cesse de répondre bien
+ * avant de rendre sa socket, et un processus qui tient le port sans servir
+ * Atlas ne répond à cette route dans aucun cas. Le banc lançait donc
+ * `next start` sur un port encore occupé.
+ *
+ * On demande maintenant au système, en essayant d'ÉCOUTER dessus : c'est la
+ * seule question dont la réponse engage `next start`. La socket d'essai est
+ * refermée aussitôt.
  */
+function portLibre() {
+  return new Promise((resoudre) => {
+    const essai = createServer();
+    essai.once("error", () => resoudre(false));
+    essai.once("listening", () => essai.close(() => resoudre(true)));
+    essai.listen(Number(PORT), "0.0.0.0");
+  });
+}
+
 async function portRendu(limiteMs) {
   const fin = Date.now() + limiteMs;
   while (Date.now() < fin) {
-    if (!(await repond())) return true;
+    if (await portLibre()) return true;
     await attendre(1000);
   }
   return false;

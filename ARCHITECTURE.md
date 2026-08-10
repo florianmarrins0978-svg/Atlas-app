@@ -3767,3 +3767,43 @@ terminal voit `isTTY=true` et obtient `setRawMode` ; entrée coupée, `isTTY=fal
 et l'appel n'est plus possible. Puis le banc entier a été joué **dans un vrai
 terminal** (`script -qec`) : construction menée à son terme, aucun `setRawMode`,
 aucune segmentation fault, application servie en 7 ms.
+
+**Et le remède lui-même a tourné en rond — la panne la plus coûteuse du lot,
+parce qu'elle rendait l'application inutilisable là où le défaut d'origine ne
+faisait qu'agacer.**
+
+```
+GET /login?session=perimee  307 → /api/session-perimee
+GET /api/session-perimee    303 → /login?session=perimee
+```
+
+Il fallait **deux** causes, et chacune masquait l'autre :
+
+1. **`__Secure-` et `__Host-` exigent l'attribut `Secure`.** Sans lui, le
+   navigateur **jette** le `Set-Cookie` — la règle des préfixes le lui impose.
+   Derrière le relais d'un espace de travail, tout est en HTTPS : c'est donc
+   `__Secure-authjs.session-token` qui porte la session, et c'est lui qui n'était
+   pas effacé. **Vu à `curl`, l'en-tête paraissait parfait** : le serveur ne
+   l'oubliait pas, c'est le navigateur qui refusait. Le contrôle regardait la
+   présence du cookie dans la réponse, jamais ses attributs.
+   L'inverse compte autant : poser `Secure` sur un nom sans préfixe le rendrait
+   inopérant en clair, c'est-à-dire sur le banc local. **L'attribut suit le NOM**,
+   jamais une supposition d'environnement.
+2. **`/login` était soumis au contrôle du compte.** C'est ce qui transformait une
+   panne en boucle : renvoyée vers l'effacement, la page de connexion y
+   retournait au tour suivant. Elle en est exemptée — il n'y a rien à y protéger,
+   et la connexion remplace le cookie de toute façon.
+
+**Ce qu'on en retient au-delà de ce cas :** un parcours de redirections doit être
+éprouvé **jusqu'à son terme**, jamais saut par saut. `test-session-perimee-e2e`
+échoue désormais si une adresse est traversée deux fois, et son message affiche
+le chemin exact.
+
+**Et `portRendu` posait la mauvaise question.** Il interrogeait
+`/api/health/live` et concluait « port rendu » dès qu'il ne répondait plus. Un
+serveur qu'on vient de tuer cesse de répondre bien avant de rendre sa socket, et
+un processus qui tient le port sans servir Atlas ne répond à cette route dans
+aucun cas — d'où le retour d'« EADDRINUSE » malgré le verrou et le drapeau. On
+demande maintenant au système, en essayant d'écouter dessus : c'est la seule
+question dont la réponse engage `next start`. Éprouvé dans les trois états —
+port vide, port occupé, port relâché.
