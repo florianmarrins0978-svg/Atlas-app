@@ -222,6 +222,47 @@ photo, après un tarif enregistré, après une facture émise, rien n'indique o�
 l'on va. Un écran qui ne dit pas la suite se lit comme une application en panne,
 et c'est déjà arrivé.
 
+### 7. Poser la charte Origine dans l'application — et ce que ça suppose
+
+**Choix arrêtés par le patron le 2026-08-10** sur maquettes : charte Origine,
+trait G au bandeau, la perle qui suit le défilement, l'écran qui recule à
+l'ouverture de « Nouveau chantier ». Le détail et les deux réserves sont dans
+`PROJECT_STATE.md`.
+
+**Le CSS des maquettes ne se recopie pas tel quel**, et c'est le point qui
+coûtera le plus de temps si on l'ignore : l'écran d'accueil n'a aujourd'hui
+**aucune des structures** que ces effets supposent.
+
+| Ce que la maquette suppose | Ce que l'écran a aujourd'hui |
+|---|---|
+| Une liste « en fil » : une tige verticale, une colonne de dates, une ligne par chantier | Des cartes empilées (`ListeChantiers.tsx` + `CarteGlissante`), sans tige ni dates en marge |
+| Une zone de défilement propre à la liste | La **page entière** défile ; la barre du bas est fixée |
+| Quatre libellés en petites capitales, trait bronze sous la colonne active | Icône + libellé, accent porté par la couleur du texte |
+| Fond ivoire, bronze | Vert pin d'Arborea (`design-tokens.ts`) |
+
+Ordre à respecter, chaque étape étant utilisable seule :
+
+1. **La charte d'abord** — `design-tokens.ts`, `globals.css`, `manifest.json`,
+   `docs/DESIGN_SYSTEM.md`. Les quatre ensemble, sinon deux chartes coexistent
+   comme en juillet.
+2. **La liste en fil** — refonte de `ListeChantiers.tsx`. C'est le vrai
+   chantier ; la perle en dépend entièrement.
+3. **La perle** — `position: sticky; top: calc(50% - 23px)` sur un repère posé
+   dans le flux à hauteur de la ligne concernée. Les pièges sont dans
+   `PROJECT_STATE.md`. **Deux valeurs à recalibrer sur les vraies dimensions** :
+   le décalage de 23 px (haut de ligne → ligne du nom) et le `scroll-padding`
+   de 44 px. Si la page reste le conteneur de défilement, retrancher aussi la
+   moitié de la barre basse, sans quoi le « centre » n'est pas le centre visible.
+4. **Le bandeau** — `AtlasBottomNav.tsx` perd ses icônes.
+5. **L'ouverture** — dépend d'un point de produit non tranché : « Nouveau
+   chantier » est une page, l'ouverture retenue raconte une feuille.
+
+**Un risque à éprouver au doigt, pas au test :** `CarteGlissante` suit le doigt
+à l'horizontale pour découvrir la corbeille, et l'accroche verticale
+(`scroll-snap-stop: always`) retient le défilement. Les deux gestes ne portent
+pas sur le même axe, mais ils se disputent un mouvement en diagonale — le cas
+ordinaire d'un pouce. À essayer sur un vrai téléphone avant de trancher.
+
 ---
 
 ## Terminé
