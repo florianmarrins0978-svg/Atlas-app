@@ -7,6 +7,66 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-10
+
+### L'écran des chantiers, tel qu'il l'a retenu
+
+Après une soirée de maquettes, le patron s'est arrêté sur une version et l'a
+donnée à coder. Elle est en place.
+
+**Ce qui change, et ce que chaque changement évite :**
+
+- **Le fil remplace les cartes.** Un trait vertical traverse la liste et porte
+  les jours. Une liste de chantiers n'est pas un tableau de bord : ce qui doit
+  se voir, c'est la suite des jours, pas le contenant. Quatre chantiers
+  tiennent maintenant à l'écran là où il y en avait trois.
+- **La perle, seul point de couleur.** Elle se colle à mi-hauteur et ne se pose
+  que sur le PREMIER chantier qui attend un geste du patron. Règle de charte
+  qui vaut désormais partout : *une couleur qui ne veut rien dire est une
+  couleur en trop*.
+- **Plus de cheveu sous ATLAS**, refusé explicitement. Seul reste celui qui
+  FERME l'en-tête, au-dessus de « Nouveau chantier » — celui-là, il l'avait
+  demandé.
+- **Le bandeau du bas perd son aplat vert** au profit d'un trait d'or qui
+  glisse d'un onglet à l'autre. Le vert plein était un second bloc de couleur
+  sur un écran qui n'en veut qu'un.
+- **« Nouveau chantier » monte en feuille** : la liste recule, s'assombrit, le
+  formulaire arrive devant. La route `/chantiers/nouveau` reste — les suites y
+  vont directement, et un lien profond doit continuer d'ouvrir un écran entier.
+  Le formulaire est extrait une fois et servi aux deux endroits : deux copies
+  auraient divergé au premier champ ajouté.
+
+**Trois défauts trouvés en REGARDANT, pas en testant.**
+
+1. **Le fil ne s'affichait pas.** Posé une seule fois sous la liste, il était
+   repeint par la couche qui glisse pour découvrir la corbeille — celle-ci
+   porte le fond de la page. Il est désormais dessiné ligne par ligne ; bout à
+   bout, les segments n'en font qu'un.
+2. **La perle n'aurait pas pu se coller.** Elle était fille d'un conteneur haut
+   d'une seule ligne : `position: sticky` s'y serait arrêté au bout de 97 px.
+   Un fragment à la place du conteneur la rend fille directe du fil.
+3. **La feuille passait sous le bandeau et sous la bulle de l'assistant**, tous
+   deux fixés au-dessus. Sa dernière ligne — celle qui prévient que les
+   coordonnées ne seront plus modifiables — était cachée derrière les onglets.
+
+**Et un piège du banc, à retenir.** `npm run banc` ne rebâtit que si le commit
+a changé : tant que le travail n'est pas commité, il ressert la version
+précédente. Une mesure a été prise sur du code qui n'était pas celui du disque,
+et le fil « absent » l'était seulement parce qu'il n'avait jamais été bâti.
+Supprimer `.next/atlas-version-batie.txt` force la reconstruction.
+
+**Ce qui a disparu, et pourquoi ce n'est pas une perte.** La carte « Équipe »
+au pied de la liste menait aux Réglages, qui sont un onglet du bandeau ; et la
+cloche de l'en-tête n'avait jamais eu de comportement. Les notifications, elles,
+restent affichées sous le titre.
+
+**Éprouvé** : 99 suites base au vert, la suite bout en bout de l'accueil, et la
+connexion réelle derrière une origine étrangère. Le compteur de l'accueil porte
+désormais son nombre en attribut (`data-atlas="compteur"`) — un contrôle
+accroché au libellé cassait à chaque refonte sans qu'aucun défaut n'existe.
+
+---
+
 ## 2026-08-09
 
 ### Un sommaire de maquettes qui ne s'ouvrait pas, et la page unique qui le remplace

@@ -3,111 +3,90 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { colors } from "@/lib/design-tokens";
-import { FeuilleAtlas } from "./MarqueAtlas";
 
-// La barre basse, refaite le 9 août 2026 d'après la maquette du patron.
+// Le bandeau du bas, refait le 10 août 2026 d'après la version retenue.
 //
-// **Une pilule, et un seul onglet plein.** Avant : quatre icônes posées sur une
-// bande, séparées du contenu par un filet. Sa maquette en fait un objet — un
-// conteneur clair légèrement arrondi, dans lequel l'onglet courant est un petit
-// bloc vert plein à l'icône et au texte dorés. Les trois autres restent sur le
-// fond clair, sans encadrement.
+// **Le trait remplace l'aplat.** Avant : une pilule flottante dont l'onglet
+// courant était un bloc vert plein. Désormais un bandeau plein, cerné d'un
+// seul cheveu en haut, et un TRAIT D'OR qui glisse d'un onglet à l'autre. Le
+// patron a nommé ce mouvement « trait G » : il dépasse légèrement sa cible,
+// revient, et le mot choisi monte de deux pixels à sa rencontre.
 //
-// **Le vert plein ne se met qu'à un seul endroit à la fois**, et c'est ce qui
-// le rend lisible : l'œil trouve où il est sans lire. Le doubler d'un second
-// aplat — un bouton d'action, un badge — le tuerait.
+// **Pourquoi c'est mieux qu'un aplat.** Le vert plein était un second bloc de
+// couleur sur un écran qui n'en veut qu'un — celui de « Nouveau chantier ». Le
+// trait dit où l'on est sans rien peser, et son déplacement dit d'où l'on
+// vient : sur un écran ouvert vingt fois par jour, c'est la seule animation qui
+// apprenne quelque chose.
 //
-// La feuille de l'onglet Chantiers est **la même** que le sceau de l'en-tête
-// (`MarqueAtlas`) : deux dessins voisins auraient divergé au premier retouchage.
+// **Il n'y a plus d'icônes**, et c'est délibéré : quatre pictogrammes sous
+// quatre mots répétaient la même information deux fois.
 
-const tabs = [
-  { href: "/", label: "Chantiers", icon: "feuille" as const },
-  { href: "/planning", label: "Planning", icon: "calendar" as const },
-  { href: "/termines", label: "Terminés", icon: "check" as const },
+const ONGLETS = [
+  { href: "/", label: "Chantiers" },
+  { href: "/planning", label: "Planning" },
+  { href: "/termines", label: "Terminés" },
   // « Réglages » depuis que cet écran porte aussi le nombre d'équipes : un
   // onglet nommé « Tarifs » cacherait le réglage qui commande le planning.
-  { href: "/reglages", label: "Réglages", icon: "reglages" as const },
+  { href: "/reglages", label: "Réglages" },
 ];
 
 export default function AtlasBottomNav() {
   const pathname = usePathname();
+  const indexActif = ONGLETS.reduce(
+    (trouve, t, i) => (estActif(pathname, t.href) ? i : trouve),
+    // Aucun onglet ne correspond (une fiche chantier, par exemple) : le trait
+    // reste sous « Chantiers », d'où l'on vient forcément.
+    0,
+  );
+
   return (
     <nav
-      className="atlas-nav-basse fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md px-3 pt-2"
+      className="atlas-nav-basse fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md"
       aria-label="Navigation principale"
+      style={{ backgroundColor: colors.cream, borderTop: `1px solid ${colors.line}` }}
     >
-      <div
-        className="grid grid-cols-4 gap-1 p-1.5 backdrop-blur"
-        style={{ backgroundColor: `${colors.rustTint}F2`, borderRadius: 24 }}
-      >
-        {tabs.map((t) => {
-          const active = t.href === "/" ? pathname === "/" : pathname.startsWith(t.href);
+      <div className="relative grid grid-cols-4 px-3.5 pb-2 pt-[18px]">
+        {ONGLETS.map((t, i) => {
+          const actif = i === indexActif;
           return (
             <Link
               key={t.href}
               href={t.href}
-              aria-current={active ? "page" : undefined}
-              className="flex flex-col items-center gap-1 py-2.5"
+              aria-current={actif ? "page" : undefined}
+              className="pb-2 text-center text-[9.5px] font-medium uppercase"
               style={{
-                backgroundColor: active ? colors.rust : "transparent",
-                borderRadius: 18,
+                color: actif ? colors.ink : colors.muted,
+                letterSpacing: "0.28em",
+                transform: actif ? "translateY(-2px)" : "none",
+                transition:
+                  "color 320ms cubic-bezier(0.22,0.61,0.36,1), transform 340ms cubic-bezier(0.34,1.4,0.5,1)",
               }}
             >
-              <NavIcon icon={t.icon} couleur={active ? colors.orClair : colors.muted} />
-              <span
-                className="text-[10.5px] font-medium"
-                style={{ color: active ? colors.orClair : colors.muted, letterSpacing: "0.02em" }}
-              >
-                {t.label}
-              </span>
+              {t.label}
             </Link>
           );
         })}
+
+        {/* Le trait. Sa largeur est le quart de la rangée, marges déduites ;
+            son déplacement se fait en pourcentage de sa propre largeur, donc il
+            reste juste quel que soit l'écran. La courbe dépasse légèrement (1.4
+            en troisième point) : c'est ce « G » que le patron a retenu. */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-2 left-3.5"
+          style={{
+            width: "calc((100% - 1.75rem) / 4)",
+            transform: `translateX(${indexActif * 100}%)`,
+            transition: "transform 540ms cubic-bezier(0.34,1.4,0.5,1)",
+          }}
+        >
+          <span className="block h-px" style={{ backgroundColor: colors.or }} />
+        </span>
       </div>
     </nav>
   );
 }
 
-function NavIcon({
-  icon,
-  couleur,
-}: {
-  icon: "feuille" | "calendar" | "check" | "reglages";
-  couleur: string;
-}) {
-  if (icon === "feuille") return <FeuilleAtlas taille={20} couleur={couleur} epaisseur={1.5} />;
-
-  const common = {
-    width: 20,
-    height: 20,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: couleur,
-    strokeWidth: 1.5,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-  };
-  if (icon === "check")
-    return (
-      <svg {...common}>
-        <circle cx="12" cy="12" r="9" />
-        <path d="m8.5 12 2.5 2.5 4.5-5" />
-      </svg>
-    );
-  if (icon === "calendar")
-    return (
-      <svg {...common}>
-        <rect x="4" y="5" width="16" height="15" rx="2.4" />
-        <path d="M4 10h16M8 3v4M16 3v4" />
-      </svg>
-    );
-  // Réglages : un rouage fin, plus proche du vocabulaire iOS que l'étiquette
-  // qui s'y trouvait — celle-ci évoquait un prix, alors que l'écran porte
-  // désormais bien plus que les tarifs.
-  return (
-    <svg {...common}>
-      <circle cx="12" cy="12" r="3.1" />
-      <path d="M19.1 14.3a1.5 1.5 0 0 0 .3 1.7l.1.1a1.9 1.9 0 1 1-2.6 2.6l-.1-.1a1.5 1.5 0 0 0-2.5 1v.2a1.9 1.9 0 1 1-3.7 0v-.1a1.5 1.5 0 0 0-1-1.4 1.5 1.5 0 0 0-1.7.3l-.1.1a1.9 1.9 0 1 1-2.6-2.6l.1-.1a1.5 1.5 0 0 0-1-2.5h-.2a1.9 1.9 0 1 1 0-3.7h.1a1.5 1.5 0 0 0 1.4-1 1.5 1.5 0 0 0-.3-1.7l-.1-.1a1.9 1.9 0 1 1 2.6-2.6l.1.1a1.5 1.5 0 0 0 1.7.3h.1a1.5 1.5 0 0 0 .9-1.4v-.2a1.9 1.9 0 1 1 3.7 0v.1a1.5 1.5 0 0 0 .9 1.4 1.5 1.5 0 0 0 1.7-.3l.1-.1a1.9 1.9 0 1 1 2.6 2.6l-.1.1a1.5 1.5 0 0 0-.3 1.7v.1a1.5 1.5 0 0 0 1.4.9h.2a1.9 1.9 0 1 1 0 3.7h-.1a1.5 1.5 0 0 0-1.4.9Z" />
-    </svg>
-  );
+function estActif(chemin: string, href: string): boolean {
+  return href === "/" ? chemin === "/" : chemin.startsWith(href);
 }

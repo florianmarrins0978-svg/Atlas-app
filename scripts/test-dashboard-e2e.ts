@@ -20,8 +20,14 @@ async function main() {
   const compterChantiersAffiches = () => page.locator('a[href^="/chantiers/"]:not([href="/chantiers/nouveau"])').count();
   const nbAvant = await compterChantiersAffiches();
 
-  const texteCompteurAvant = await page.locator("text=/chantiers? en cours/").innerText();
-  const nombreAvant = parseInt(texteCompteurAvant, 10);
+  // Le compteur s'écrit en toutes lettres depuis le 10 août 2026 (« HUIT EN
+  // COURS ») : on ne peut plus le lire au `parseInt`. Il porte donc son nombre
+  // en attribut — un libellé se réécrit à chaque maquette, une étiquette de
+  // code non, et un contrôle accroché au libellé casse à la refonte suivante
+  // sans qu'aucun défaut n'existe.
+  const lireCompteur = async () =>
+    Number(await page.locator('[data-atlas="compteur"]').getAttribute("data-compte"));
+  const nombreAvant = await lireCompteur();
   assert.equal(nombreAvant, nbAvant, "L'indicateur affiché doit correspondre au nombre réel de cartes chantier");
 
   // --- Crée un nouveau chantier réel et vérifie que l'indicateur se met à jour ---
@@ -35,9 +41,7 @@ async function main() {
   const nbApres = await compterChantiersAffiches();
   assert.equal(nbApres, nbAvant + 1, "Un chantier de plus doit apparaître après création réelle");
 
-  const texteCompteurApres = await page.locator("text=/chantiers? en cours/").innerText();
-  const nombreApres = parseInt(texteCompteurApres, 10);
-  assert.equal(nombreApres, nbAvant + 1, "L'indicateur doit refléter le nouveau total réel");
+  assert.equal(await lireCompteur(), nbAvant + 1, "L'indicateur doit refléter le nouveau total réel");
   assert.ok(
     await page.locator(`text=${nomUnique}`).first().isVisible(),
     "Le nouveau chantier doit apparaître dans la liste"
@@ -45,8 +49,7 @@ async function main() {
 
   // --- Persistance après rechargement ---
   await page.reload({ waitUntil: "networkidle" });
-  const texteApresReload = await page.locator("text=/chantiers? en cours/").innerText();
-  assert.equal(parseInt(texteApresReload, 10), nbAvant + 1);
+  assert.equal(await lireCompteur(), nbAvant + 1);
 
   await browser.close();
   console.log("✅ Test bout-en-bout Dashboard (accueil) réussi.");

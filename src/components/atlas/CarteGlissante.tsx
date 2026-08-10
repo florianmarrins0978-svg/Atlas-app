@@ -47,6 +47,8 @@ export default function CarteGlissante({
   onSupprimer,
   libelleSuppression,
   desactive,
+  fond,
+  rayon,
 }: {
   children: ReactNode;
   onSupprimer: () => void;
@@ -54,6 +56,12 @@ export default function CarteGlissante({
   libelleSuppression: string;
   /** Une facture émise ne se supprime pas : la carte ne glisse alors pas. */
   desactive?: boolean;
+  /** Le fond de la couche qui glisse. Sur le fil des chantiers il n'y a plus
+      de carte : la ligne doit porter le fond de la PAGE, sinon elle réapparaît
+      en pavé clair sur un écran qui n'en veut plus. */
+  fond?: string;
+  /** Le rayon des coins, en pixels. Zéro sur le fil, où rien n'est arrondi. */
+  rayon?: number;
 }) {
   const [decalage, setDecalage] = useState(0);
   const [ouverte, setOuverte] = useState(false);
@@ -138,7 +146,7 @@ export default function CarteGlissante({
   const avancement = Math.min(1, Math.abs(decalage) / LARGEUR_CORBEILLE);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl">
+    <div className="relative overflow-hidden" style={{ borderRadius: rayon ?? 16 }}>
       {/* La corbeille vit SOUS la carte : elle se découvre, elle n'apparaît
           pas par-dessus — c'est ce qui rend le geste lisible. */}
       <button
@@ -183,9 +191,10 @@ export default function CarteGlissante({
           transition: glisse
             ? "none"
             : `transform ${ouverte ? 200 : 280}ms cubic-bezier(0.22, 1, 0.36, 1)`,
-          backgroundColor: colors.card,
+          backgroundColor: fond ?? colors.card,
+          borderRadius: rayon ?? 16,
         }}
-        className="relative rounded-2xl"
+        className="relative"
       >
         {children}
       </div>

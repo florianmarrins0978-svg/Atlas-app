@@ -60,22 +60,32 @@ huit fois dans le vide avant qu'on s'en aperçoive. Et lui envoyer les
 **fichiers** plutôt que des adresses : un artefact lui demande de se connecter,
 un fichier ne demande rien à personne.
 
-**Le design de l'écran Chantiers n'est PAS tranché.** L'application porte
-toujours la reproduction de sa première capture (§46). La direction minimaliste
-— ivoire, serif, capitales espacées — n'existe qu'en maquette.
+**L'écran des chantiers est celui qu'il a retenu (10 août 2026) — c'est fait.**
+Le fil, la perle, le trait d'or qui glisse, la feuille qui monte. **Avant d'y
+toucher, lire l'en-tête de `src/app/EcranChantiers.tsx`** : il liste les trois
+choses qu'il a explicitement refusées, et les remettre reviendrait à défaire ce
+qu'il a validé.
 
-**Où en est son choix, au 9 août au soir :** l'écran est tranché — c'est celui
-de la maquette 09 dit « le trait seul » : « Le calme × Aman », le pied d'Aman
-(cheveu au-dessus, onglet actif souligné de bronze) et le trait qui ferme
-l'en-tête. **La couleur, elle, n'est pas choisie** : la maquette 11 le montre
-dans seize chartes, et la **12** propose trois façons d'amincir la liste sur la
-charte Origine — la plage amincie, l'ourlet, le fil. **Rien à coder tant qu'il
-n'a pas nommé la charte ET la façon de poser la liste.**
+**Deux pièges de ce lot, qui coûteront une heure à qui les redécouvre :**
+1. `npm run banc` **ne rebâtit que si le commit a changé**. Tant que le travail
+   n'est pas commité, il ressert la version d'avant — et l'on mesure du code qui
+   n'est pas sur le disque. `rm .next/atlas-version-batie.txt` force le rebâti.
+2. Les suites base **abîment le jeu de démonstration** : après `npm test`, la
+   connexion `demo@atlas.local` échoue jusqu'à un nouveau
+   `DATABASE_URL="$DATABASE_ADMIN_URL" npm run db:seed`.
 
-**Deux points d'en-tête tranchés par lui, à ne pas défaire :** PAS de trait
-entre ATLAS et « Bonjour Florian » ; le trait qui FERME l'en-tête, juste
-au-dessus de « Nouveau chantier », reste. La maquette **13** porte cet état,
-en quatre chartes (`scripts/engendrer-maquette-fil.mjs`).
+**Le chemin qui y a mené**, si la question se repose : `docs/maquettes/`, de la
+reproduction de sa première capture (01) jusqu'au fil en couleurs (11 à 13). La
+charte retenue est **Origine** — celle que l'application portait déjà.
+
+**Ce qu'il a explicitement refusé, et qui ne doit pas revenir :** le trait entre
+ATLAS et « Bonjour Florian », la boîte autour d'un chantier, et toute couleur
+qui ne désigne rien.
+
+**Les écrans AUTRES que l'accueil n'ont pas suivi.** Planning, Terminés,
+Réglages et la fiche chantier portent encore les cartes, les rayons de 14 px et
+l'ancienne grammaire. Le bandeau du bas, lui, a changé pour tout le monde — il
+est partagé. À reprendre écran par écran, pas d'un bloc.
 
 **Une règle de charte, née de la 12 et qui vaut pour tout l'écran :** une
 couleur qui ne veut rien dire est une couleur en trop. L'accent d'attente ne se
