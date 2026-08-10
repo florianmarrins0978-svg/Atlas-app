@@ -23,7 +23,7 @@ verifie("aucun sélecteur de date natif", !/type="date"/i.test(source));
 verifie("le jour s'ouvre par une ancre, pas par une case à cocher",
   /class="case[^"]*" href="#j1"/.test(source) && !/<label class="case/.test(source));
 verifie("la journée est posée sous le calendrier, pas après la légende",
-  source.indexOf('class="journee"') < source.indexOf('class="code"'));
+  source.indexOf('class="journee"') < source.indexOf('class="legende"'));
 // Contrôle de source : Chromium active un <label> sans `cursor:pointer`, Safari non.
 verifie("les libellés portent cursor:pointer (Safari l'exige)",
   /(^|[\s,{}])label\s*\{[^}]*cursor:\s*pointer/m.test(source.split("</style>")[0]));
@@ -82,23 +82,29 @@ try {
   verifie("un samedi se voit en retrait d'un jour ouvré", couleurs.sam !== couleurs.lun,
     `${couleurs.sam} contre ${couleurs.lun}`);
   // La règle du serveur : vendredi + 2 jours finit lundi, jamais samedi.
-  const m = (d) => page.$eval(`${ec} a[href="#j${d}"].case .occ`, (e) => +getComputedStyle(e).opacity);
+  // Marquée ou non : c'est ce qui PEINT le point qu'il faut lire, pas son
+  // opacité — toutes les marques sont désormais présentes dans le DOM.
+  const m = (d) => page.$eval(`${ec} a[href="#j${d}"].case .occ`, (e) => {
+    const c = getComputedStyle(e);
+    return c.backgroundColor !== "rgba(0, 0, 0, 0)" ||
+           c.backgroundImage !== "none" || c.boxShadow !== "none";
+  });
   verifie("le chantier de vendredi saute le week-end",
-    (await m(14)) > .5 && (await m(15)) < .1 && (await m(17)) > .5,
+    (await m(14)) && !(await m(15)) && (await m(17)),
     `14:${await m(14)} 15:${await m(15)} 17:${await m(17)}`);
 } catch (e) { echecs.push("calendrier · interrompu — " + String(e.message).split("\n")[0]); }
 
 // ── Le code des jours ────────────────────────────────────────────────────
 try {
-  const t = await txt(`${ec} .code`);
-  for (const mot of ["Libre", "place", "Matin", "Après-midi", "Journée", "équipes", "Réglages", "samedis"])
+  const t = (await txt(`${ec} .legende`)) + " " + (await txt(`${ec} .regle`));
+  for (const mot of ["libre", "place", "matin", "après-midi", "journée", "équipes", "samedis"])
     verifie(`le code explique « ${mot} »`, new RegExp(mot, "i").test(t));
-  const marques = await page.$$eval(`${ec} .code .occ`, (l) =>
+  const marques = await page.$$eval(`${ec} .legende .occ`, (l) =>
     l.map((e) => getComputedStyle(e).backgroundImage + "|" + getComputedStyle(e).backgroundColor +
                  "|" + getComputedStyle(e).boxShadow));
   verifie("les cinq marques du code sont distinctes", new Set(marques).size === 5,
     `${new Set(marques).size} sur ${marques.length}`);
-  const ovales = await page.$$eval(`${ec} .code *`, (l) =>
+  const ovales = await page.$$eval(`${ec} .legende *, ${ec} .regle *`, (l) =>
     l.filter((e) => e.getBoundingClientRect().width > 200 &&
                     parseFloat(getComputedStyle(e).borderRadius) > 30).length);
   verifie("la légende n'emprunte l'arrondi de personne", ovales === 0, `${ovales}`);
@@ -117,10 +123,10 @@ try {
   verifie("une seule journée s'ouvre, celle qu'on a touchée",
     ouvertes.length === 1 && ouvertes[0] === "j20", ouvertes.join(","));
   verifie("le 20 annonce jeudi", /Jeudi 20 août/i.test(await txt(`${ec} #j20 .quand`)));
-  const cases20 = await page.$$eval(`${ec} #j20 .eq`, (l) =>
-    l.map((e) => (e.classList.contains("pris") ? "pris:" : "libre:") +
+  const cases20 = await page.$$eval(`${ec} #j20 .rang`, (l) =>
+    l.map((e) => (e.classList.contains("libre") ? "libre:" : "pris:") +
                  e.textContent.trim().replace(/\s+/g, " ")));
-  verifie("le 20 montre quatre cases : deux équipes × deux demi-journées",
+  verifie("le 20 montre quatre lignes : deux équipes × deux demi-journées",
     cases20.length === 4, `${cases20.length}`);
   verifie("l'équipe A y est prise matin ET après-midi",
     cases20.filter((c) => /^pris:Équipe A/.test(c)).length === 2, cases20.join(" | "));
@@ -137,19 +143,34 @@ try {
   const visibles = await page.$$eval(`${ec} #j20 .poser`, (l) =>
     l.filter((e) => getComputedStyle(e).display !== "none").map((e) => e.innerText.replace(/\s+/g, " ").trim()));
   verifie("le choix fait paraître UN bouton de pose", visibles.length === 1, `${visibles.length}`);
-  verifie("qui dit le jour, la demi-journée ET l'équipe",
-    /jeudi 20 août/i.test(visibles[0]) && /matin/i.test(visibles[0]) && /équipe B/i.test(visibles[0]),
-    visibles[0]);
-  const choisi = await page.$eval(`${ec} #j20 label[for="q201"]`, (e) => getComputedStyle(e).backgroundColor);
-  verifie("et la case choisie se voit", /42, 58, 46/.test(choisi), choisi);
-  verifie("on peut affilier ou changer d'équipe, et l'écran le dit",
-    /affilier une équipe/i.test(await txt(`${ec} #j20 .changer`)));
+  // Le jour est dans le titre de la journée : le répéter dans le bouton
+  // l'alourdissait de trois lignes. Le bouton dit le reste, en une phrase.
+  verifie("le bouton dit la demi-journée ET l'équipe",
+    /matin/i.test(visibles[0]) && /équipe B/i.test(visibles[0]), visibles[0]);
+  verifie("et le jour reste écrit au-dessus",
+    /Jeudi 20 août/i.test(await txt(`${ec} #j20 .quand`)));
+  const choisi = await page.$eval(`${ec} #j20 label[for="q201"]`, (e) => ({
+    filet: getComputedStyle(e).borderBottomColor,
+    point: getComputedStyle(e.querySelector(".qui b")).opacity }));
+  // Et une seule : le sélecteur comptait dans chaque bloc, si bien que la
+  // ligne s'allumait sur les deux demi-journées.
+  const allumees = await page.$$eval(`${ec} #j20 .rang`, (l) =>
+    l.filter((e) => +getComputedStyle(e.querySelector(".qui b")).opacity > .9).length);
+  verifie("une seule ligne s'allume", allumees === 1, `${allumees}`);
+  verifie("et la ligne choisie se voit — filet bronze et point",
+    /143, 113, 48/.test(choisi.filet) && +choisi.point > .9, JSON.stringify(choisi));
+  verifie("on peut changer l'équipe d'un chantier posé, et l'écran le dit",
+    /changer son équipe/i.test(await txt(`${ec} #j20 .changer`)));
+  // Le registre : une seule phrase dans le bouton, jamais trois lignes.
+  const lignes = visibles[0].split("\n").length;
+  verifie("le bouton tient en une phrase", lignes === 1 && visibles[0].length < 40,
+    `${lignes} ligne(s), « ${visibles[0]} »`);
   await (await page.$(`${ec}`)).screenshot({ path: `${SORTIE}/planning-jour.png` });
 
   // Le 12 : matin complet pour les deux équipes, après-midi libre.
   await ouvrir(12);
-  const cases12 = await page.$$eval(`${ec} #j12 .eq`, (l) =>
-    l.map((e) => (e.classList.contains("pris") ? "pris" : "libre") + ":" +
+  const cases12 = await page.$$eval(`${ec} #j12 .rang`, (l) =>
+    l.map((e) => (e.classList.contains("libre") ? "libre" : "pris") + ":" +
                  e.textContent.trim().replace(/\s+/g, " ")));
   verifie("le 12 a son matin complet et son après-midi libre",
     cases12.filter((c) => c.startsWith("pris")).length === 2 &&
@@ -157,12 +178,12 @@ try {
 
   // Le 21 : journée pleine — aucune case, et l'écran dit quoi faire.
   await ouvrir(21);
-  verifie("le 21 ne propose aucune case", (await page.$$eval(`${ec} #j21 .eq`, (l) => l.length)) === 0);
+  verifie("le 21 ne propose aucune ligne", (await page.$$eval(`${ec} #j21 .rang`, (l) => l.length)) === 0);
   verifie("et renvoie à une troisième équipe", /troisième équipe/i.test(await txt(`${ec} #j21`)));
 
   // Un samedi : jamais proposé, et la règle des deux jours est dite.
   await ouvrir(15);
-  verifie("un samedi ne propose rien", (await page.$$eval(`${ec} #j15 .eq`, (l) => l.length)) === 0);
+  verifie("un samedi ne propose rien", (await page.$$eval(`${ec} #j15 .rang`, (l) => l.length)) === 0);
   verifie("et rappelle que vendredi + 2 jours finit lundi",
     /lundi/i.test(await txt(`${ec} #j15`)) && /samedi/i.test(await txt(`${ec} #j15`)));
 } catch (e) { echecs.push("équipes · interrompu — " + String(e.message).split("\n")[0]); }
@@ -172,8 +193,8 @@ try {
   const c = await rect(`${ec} a[href="#j12"].case`);
   verifie("une case du mois se touche", c.w >= 38 && c.h >= 38, `${c.w.toFixed(0)} × ${c.h.toFixed(0)} px`);
   await ouvrir(20);
-  const e2 = await rect(`${ec} #j20 .eq`);
-  verifie("une case d'équipe se touche", e2.w >= 100 && e2.h >= 60, `${e2.w.toFixed(0)} × ${e2.h.toFixed(0)} px`);
+  const e2 = await rect(`${ec} #j20 .rang`);
+  verifie("une ligne d'équipe se touche", e2.w >= 200 && e2.h >= 44, `${e2.w.toFixed(0)} × ${e2.h.toFixed(0)} px`);
   const grosses = await page.$$eval(`${ec} input`, (l) =>
     l.filter((e) => { const r = e.getBoundingClientRect(); return r.width > 2 || r.height > 2; }).length);
   verifie("aucune case native visible", grosses === 0, `${grosses}`);
