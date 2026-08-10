@@ -99,6 +99,13 @@ const MAQUETTES = [
     quoi: "Encadrés amincis et resserrés, puis deux façons d’enlever la boîte : l’ourlet, et le fil.",
     retenu: true,
   },
+  {
+    fichier: "13-le-fil-quatre-couleurs.html",
+    titre: "Le fil, en quatre couleurs",
+    famille: "Vers la décision",
+    quoi: "Sans le cheveu sous ATLAS. Les trois formes de liste × Origine, Ivoire, Sylve, Océan.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

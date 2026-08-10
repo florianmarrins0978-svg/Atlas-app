@@ -977,6 +977,84 @@
 #s12 .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-bronze)}
 
 
+/* 13 — Le fil, en quatre couleurs */
+#s13{ --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c; --bronze:#8f7130; --trait:rgba(22,23,15,.12); }
+@media (prefers-color-scheme: dark){
+#s13:not([data-theme="light"]){ --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80; --bronze:#c2a05f; --trait:rgba(232,231,221,.15); }
+
+  
+}
+#s13[data-theme="dark"]{ --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80; --bronze:#c2a05f; --trait:rgba(232,231,221,.15); }
+#s13, #s13 *{box-sizing:border-box}
+#s13{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;padding:44px 16px 84px}
+#s13 .page{max-width:1400px;margin:0 auto}
+#s13 .intro{max-width:60ch;margin:0 auto 12px;text-align:center}
+#s13 .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+#s13 .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+#s13 .intro p{margin:0;color:var(--gris);font-size:15px}
+#s13 .famille{margin:56px 0 12px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--gris)}
+#s13 .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
+#s13 .famille span::before,#s13 .famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
+#s13 .famille span::before{right:100%}
+#s13 .famille span::after{left:100%}
+#s13 .dit{max-width:56ch;margin:0 auto 30px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s13 .rangee{display:flex;flex-wrap:wrap;gap:44px 36px;justify-content:center;align-items:flex-start}
+#s13 .prop{display:flex;flex-direction:column;align-items:center;gap:14px;width:390px;max-width:100%}
+#s13 .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze)}
+#s13 .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+#s13 .ecran{overflow:hidden;border-radius:34px;height:816px;display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+#s13 .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+#s13 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+#s13 .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+#s13 .enseigne{padding:30px 0 0;text-align:center;font-size:11px;letter-spacing:.52em}
+#s13 .titre{padding:52px 26px 0}
+#s13 .titre .salut{margin:0;color:var(--e-bronze)}
+#s13 .titre h1{margin:16px 0 0;font-size:40px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+#s13 .titre .compte{margin:16px 0 0;color:var(--e-gris)}
+#s13 .fermeture{height:1px;background:var(--e-trait);margin:30px 26px 0}
+#s13 .action{display:flex;align-items:center;justify-content:space-between;gap:16px;
+          margin:24px 26px 0;padding:16px 20px;border-radius:5px;text-decoration:none;
+          background:var(--e-plein);color:var(--e-plein-encre)}
+#s13 .action .quoi{display:block;font-size:18px;line-height:1.1}
+#s13 .action .plus{font-size:18px;line-height:1;color:var(--e-signe)}
+#s13 .rubrique{display:flex;justify-content:space-between;margin:32px 26px 12px;color:var(--e-gris)}
+#s13 .plage .bloc,#s13 .ourlet .bloc{display:grid;grid-template-columns:1fr auto;gap:0 14px;
+                             text-decoration:none;color:inherit}
+#s13 .plage .bloc{margin:0 26px 4px;padding:12px 15px;border-radius:4px;background:var(--e-plage)}
+#s13 .ourlet .bloc{margin:0 26px;padding:14px 0 14px 15px;border-left:1px solid var(--e-trait)}
+#s13 .ourlet .bloc.attend{border-left-color:var(--e-attente)}
+#s13 .plage .nom,#s13 .ourlet .nom{grid-column:1;margin:0;font-size:19px;line-height:1.15;font-weight:400}
+#s13 .plage .lieu,#s13 .ourlet .lieu{grid-column:1;margin:3px 0 0;font-size:11.5px;color:var(--e-gris)}
+#s13 .plage .quand,#s13 .ourlet .quand{grid-column:2;grid-row:1;text-align:right;color:var(--e-gris);padding-top:4px}
+#s13 .plage .etat,#s13 .ourlet .etat{grid-column:1;margin:7px 0 0;color:var(--e-gris)}
+#s13 .plage .etat.attend,#s13 .ourlet .etat.attend{color:var(--e-attente)}
+#s13 .fil .tige{position:relative;margin:0 26px}
+#s13 .fil .tige::before{content:"";position:absolute;left:47px;top:10px;bottom:10px;
+                     width:1px;background:var(--e-trait)}
+#s13 .fil .brin{position:relative;display:grid;grid-template-columns:47px 1fr;gap:0 26px;
+             padding:15px 0;text-decoration:none;color:inherit}
+#s13 .fil .jour{grid-row:1 / span 3;text-align:right;padding-right:13px;color:var(--e-gris)}
+#s13 .fil .jour b{display:block;font-weight:400;font-size:19px;line-height:1;color:var(--e-encre);
+               font-family:ui-serif,Georgia,serif}
+#s13 .fil .jour span{display:block;margin-top:4px}
+#s13 .fil .nom{margin:0;font-size:19px;line-height:1.15;font-weight:400}
+#s13 .fil .lieu{margin:3px 0 0;font-size:11.5px;color:var(--e-gris)}
+#s13 .fil .etat{margin:7px 0 0;color:var(--e-gris)}
+#s13 .fil .etat.attend{color:var(--e-attente)}
+#s13 .fil .brin.attend::after{content:"";position:absolute;left:44px;top:21px;
+                           width:7px;height:7px;border-radius:99px;
+                           background:var(--e-attente);box-shadow:0 0 0 4px var(--e-fond)}
+#s13 .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:18px 14px 30px}
+#s13 .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
+#s13 .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-bronze)}
+
+
 </style>
 
 <div class="enveloppe">
@@ -1040,6 +1118,10 @@
       <a class="item retenu" href="#m12">
         <span class="no">12</span><span class="titre">Origine, plus fin — trois tentatives</span><span class="fleche">↓</span>
         <span class="quoi">Encadrés amincis et resserrés, puis deux façons d’enlever la boîte : l’ourlet, et le fil.</span>
+      </a>
+      <a class="item retenu" href="#m13">
+        <span class="no">13</span><span class="titre">Le fil, en quatre couleurs</span><span class="fleche">↓</span>
+        <span class="quoi">Sans le cheveu sous ATLAS. Les trois formes de liste × Origine, Ivoire, Sylve, Océan.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -3297,6 +3379,700 @@
       </div>
     </div>
 
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m13">
+    <div class="etape-tete">
+      <span class="etape-no">13</span>
+      <h2>Le fil, en quatre couleurs</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s13">
+<div class="page">
+  <div class="intro">
+    <p class="sur">Le fil — quatre couleurs</p>
+    <h1>Sans le trait sous ATLAS</h1>
+    <p>Le cheveu qui séparait le nom du « Bonjour Florian » a disparu : le haut respire d’un seul tenant jusqu’au trait qui ferme l’en-tête. Tout le reste est celui que vous venez de garder.</p>
+  </div>
+
+  <div class="forme">
+    <p class="famille"><span>Le fil</span></p>
+    <p class="dit">Plus aucune boîte. Un trait vertical traverse la liste et porte les jours, comme une tige. Une seule perle s’y pose — sur le chantier qui attend votre réponse.</p>
+  </div>
+
+  <div class="rangee">
+    <div class="prop">
+      <div class="tel"><div class="ecran fil" style="--e-fond:#edece6;--e-plage:#f7f6f2;--e-encre:#16170f;--e-gris:#83867c;--e-bronze:#8f7130;--e-trait:rgba(22,23,15,.13);--e-trait-doux:rgba(22,23,15,.07);--e-plein:#2a3a2e;--e-plein-encre:#f2f1ea;--e-signe:#c2a05f;--e-attente:#8f7130">
+        <div class="enseigne">ATLAS</div>
+
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+
+        <div class="fermeture"></div>
+
+        <a class="action" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus">+</span>
+        </a>
+
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+
+        <div class="tige">
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>26</b><span>juil.</span></span>
+              <p class="nom serif">Pose de clôture</p>
+              <p class="lieu">2 route de Vertou, Vertou</p>
+              <p class="etat caps">Brouillon · sans photo</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>24</b><span>juil.</span></span>
+              <p class="nom serif">Rénovation salle de bain</p>
+              <p class="lieu">12 rue des Lilas, Nantes</p>
+              <p class="etat caps">À vérifier · 6 photos</p>
+            </a>
+            <a class="brin attend" href="#">
+              <span class="jour caps num"><b>22</b><span>juil.</span></span>
+              <p class="nom serif">Terrasse bois</p>
+              <p class="lieu">5 allée des Tilleuls, Nantes</p>
+              <p class="etat caps attend">Devis retourné · 3 photos</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>18</b><span>juil.</span></span>
+              <p class="nom serif">Reprise de toiture</p>
+              <p class="lieu">8 impasse du Moulin, Rezé</p>
+              <p class="etat caps">En attente · 9 photos</p>
+            </a>
+        </div>
+
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="sous">Origine</p>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran fil" style="--e-fond:#efece6;--e-plage:#f6f4ef;--e-encre:#221f1a;--e-gris:#8b8478;--e-bronze:#8a7452;--e-trait:rgba(34,31,26,.13);--e-trait-doux:rgba(34,31,26,.07);--e-plein:#221f1a;--e-plein-encre:#f2efe8;--e-signe:#b8a17a;--e-attente:#8a7452">
+        <div class="enseigne">ATLAS</div>
+
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+
+        <div class="fermeture"></div>
+
+        <a class="action" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus">+</span>
+        </a>
+
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+
+        <div class="tige">
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>26</b><span>juil.</span></span>
+              <p class="nom serif">Pose de clôture</p>
+              <p class="lieu">2 route de Vertou, Vertou</p>
+              <p class="etat caps">Brouillon · sans photo</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>24</b><span>juil.</span></span>
+              <p class="nom serif">Rénovation salle de bain</p>
+              <p class="lieu">12 rue des Lilas, Nantes</p>
+              <p class="etat caps">À vérifier · 6 photos</p>
+            </a>
+            <a class="brin attend" href="#">
+              <span class="jour caps num"><b>22</b><span>juil.</span></span>
+              <p class="nom serif">Terrasse bois</p>
+              <p class="lieu">5 allée des Tilleuls, Nantes</p>
+              <p class="etat caps attend">Devis retourné · 3 photos</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>18</b><span>juil.</span></span>
+              <p class="nom serif">Reprise de toiture</p>
+              <p class="lieu">8 impasse du Moulin, Rezé</p>
+              <p class="etat caps">En attente · 9 photos</p>
+            </a>
+        </div>
+
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="sous">Ivoire</p>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran fil" style="--e-fond:#16241c;--e-plage:#1e3026;--e-encre:#e6e6da;--e-gris:#8ba189;--e-bronze:#c3b184;--e-trait:rgba(230,230,218,.15);--e-trait-doux:rgba(230,230,218,.08);--e-plein:#e6e6da;--e-plein-encre:#16241c;--e-signe:#3f5c46;--e-attente:#c3b184">
+        <div class="enseigne">ATLAS</div>
+
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+
+        <div class="fermeture"></div>
+
+        <a class="action" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus">+</span>
+        </a>
+
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+
+        <div class="tige">
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>26</b><span>juil.</span></span>
+              <p class="nom serif">Pose de clôture</p>
+              <p class="lieu">2 route de Vertou, Vertou</p>
+              <p class="etat caps">Brouillon · sans photo</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>24</b><span>juil.</span></span>
+              <p class="nom serif">Rénovation salle de bain</p>
+              <p class="lieu">12 rue des Lilas, Nantes</p>
+              <p class="etat caps">À vérifier · 6 photos</p>
+            </a>
+            <a class="brin attend" href="#">
+              <span class="jour caps num"><b>22</b><span>juil.</span></span>
+              <p class="nom serif">Terrasse bois</p>
+              <p class="lieu">5 allée des Tilleuls, Nantes</p>
+              <p class="etat caps attend">Devis retourné · 3 photos</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>18</b><span>juil.</span></span>
+              <p class="nom serif">Reprise de toiture</p>
+              <p class="lieu">8 impasse du Moulin, Rezé</p>
+              <p class="etat caps">En attente · 9 photos</p>
+            </a>
+        </div>
+
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="sous">Sylve</p>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran fil" style="--e-fond:#e6ecf2;--e-plage:#f3f7fb;--e-encre:#0d1b2c;--e-gris:#74839a;--e-bronze:#1e4f86;--e-trait:rgba(13,27,44,.13);--e-trait-doux:rgba(13,27,44,.07);--e-plein:#123253;--e-plein-encre:#eef4fa;--e-signe:#d98f4e;--e-attente:#c25a3a">
+        <div class="enseigne">ATLAS</div>
+
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+
+        <div class="fermeture"></div>
+
+        <a class="action" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus">+</span>
+        </a>
+
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+
+        <div class="tige">
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>26</b><span>juil.</span></span>
+              <p class="nom serif">Pose de clôture</p>
+              <p class="lieu">2 route de Vertou, Vertou</p>
+              <p class="etat caps">Brouillon · sans photo</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>24</b><span>juil.</span></span>
+              <p class="nom serif">Rénovation salle de bain</p>
+              <p class="lieu">12 rue des Lilas, Nantes</p>
+              <p class="etat caps">À vérifier · 6 photos</p>
+            </a>
+            <a class="brin attend" href="#">
+              <span class="jour caps num"><b>22</b><span>juil.</span></span>
+              <p class="nom serif">Terrasse bois</p>
+              <p class="lieu">5 allée des Tilleuls, Nantes</p>
+              <p class="etat caps attend">Devis retourné · 3 photos</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>18</b><span>juil.</span></span>
+              <p class="nom serif">Reprise de toiture</p>
+              <p class="lieu">8 impasse du Moulin, Rezé</p>
+              <p class="etat caps">En attente · 9 photos</p>
+            </a>
+        </div>
+
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="sous">Océan</p>
+    </div>
+  </div>
+
+  <div class="forme">
+    <p class="famille"><span>L’ourlet</span></p>
+    <p class="dit">La plage se réduit à un cheveu vertical, qui prend la couleur d’attente uniquement là où un geste vous est dû.</p>
+  </div>
+
+  <div class="rangee">
+    <div class="prop">
+      <div class="tel"><div class="ecran ourlet" style="--e-fond:#edece6;--e-plage:#f7f6f2;--e-encre:#16170f;--e-gris:#83867c;--e-bronze:#8f7130;--e-trait:rgba(22,23,15,.13);--e-trait-doux:rgba(22,23,15,.07);--e-plein:#2a3a2e;--e-plein-encre:#f2f1ea;--e-signe:#c2a05f;--e-attente:#8f7130">
+        <div class="enseigne">ATLAS</div>
+
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+
+        <div class="fermeture"></div>
+
+        <a class="action" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus">+</span>
+        </a>
+
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+
+        <a class="bloc" href="#">
+          <span class="quand caps num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p>
+          <p class="lieu">2 route de Vertou, Vertou</p>
+          <p class="etat caps">Brouillon · sans photo</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p>
+          <p class="lieu">12 rue des Lilas, Nantes</p>
+          <p class="etat caps">À vérifier · 6 photos</p>
+        </a>
+        <a class="bloc attend" href="#">
+          <span class="quand caps num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p>
+          <p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <p class="etat caps attend">Devis retourné · 3 photos</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">18 juil.</span>
+          <p class="nom serif">Reprise de toiture</p>
+          <p class="lieu">8 impasse du Moulin, Rezé</p>
+          <p class="etat caps">En attente · 9 photos</p>
+        </a>
+
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="sous">Origine</p>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran ourlet" style="--e-fond:#efece6;--e-plage:#f6f4ef;--e-encre:#221f1a;--e-gris:#8b8478;--e-bronze:#8a7452;--e-trait:rgba(34,31,26,.13);--e-trait-doux:rgba(34,31,26,.07);--e-plein:#221f1a;--e-plein-encre:#f2efe8;--e-signe:#b8a17a;--e-attente:#8a7452">
+        <div class="enseigne">ATLAS</div>
+
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+
+        <div class="fermeture"></div>
+
+        <a class="action" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus">+</span>
+        </a>
+
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+
+        <a class="bloc" href="#">
+          <span class="quand caps num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p>
+          <p class="lieu">2 route de Vertou, Vertou</p>
+          <p class="etat caps">Brouillon · sans photo</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p>
+          <p class="lieu">12 rue des Lilas, Nantes</p>
+          <p class="etat caps">À vérifier · 6 photos</p>
+        </a>
+        <a class="bloc attend" href="#">
+          <span class="quand caps num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p>
+          <p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <p class="etat caps attend">Devis retourné · 3 photos</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">18 juil.</span>
+          <p class="nom serif">Reprise de toiture</p>
+          <p class="lieu">8 impasse du Moulin, Rezé</p>
+          <p class="etat caps">En attente · 9 photos</p>
+        </a>
+
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="sous">Ivoire</p>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran ourlet" style="--e-fond:#16241c;--e-plage:#1e3026;--e-encre:#e6e6da;--e-gris:#8ba189;--e-bronze:#c3b184;--e-trait:rgba(230,230,218,.15);--e-trait-doux:rgba(230,230,218,.08);--e-plein:#e6e6da;--e-plein-encre:#16241c;--e-signe:#3f5c46;--e-attente:#c3b184">
+        <div class="enseigne">ATLAS</div>
+
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+
+        <div class="fermeture"></div>
+
+        <a class="action" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus">+</span>
+        </a>
+
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+
+        <a class="bloc" href="#">
+          <span class="quand caps num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p>
+          <p class="lieu">2 route de Vertou, Vertou</p>
+          <p class="etat caps">Brouillon · sans photo</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p>
+          <p class="lieu">12 rue des Lilas, Nantes</p>
+          <p class="etat caps">À vérifier · 6 photos</p>
+        </a>
+        <a class="bloc attend" href="#">
+          <span class="quand caps num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p>
+          <p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <p class="etat caps attend">Devis retourné · 3 photos</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">18 juil.</span>
+          <p class="nom serif">Reprise de toiture</p>
+          <p class="lieu">8 impasse du Moulin, Rezé</p>
+          <p class="etat caps">En attente · 9 photos</p>
+        </a>
+
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="sous">Sylve</p>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran ourlet" style="--e-fond:#e6ecf2;--e-plage:#f3f7fb;--e-encre:#0d1b2c;--e-gris:#74839a;--e-bronze:#1e4f86;--e-trait:rgba(13,27,44,.13);--e-trait-doux:rgba(13,27,44,.07);--e-plein:#123253;--e-plein-encre:#eef4fa;--e-signe:#d98f4e;--e-attente:#c25a3a">
+        <div class="enseigne">ATLAS</div>
+
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+
+        <div class="fermeture"></div>
+
+        <a class="action" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus">+</span>
+        </a>
+
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+
+        <a class="bloc" href="#">
+          <span class="quand caps num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p>
+          <p class="lieu">2 route de Vertou, Vertou</p>
+          <p class="etat caps">Brouillon · sans photo</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p>
+          <p class="lieu">12 rue des Lilas, Nantes</p>
+          <p class="etat caps">À vérifier · 6 photos</p>
+        </a>
+        <a class="bloc attend" href="#">
+          <span class="quand caps num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p>
+          <p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <p class="etat caps attend">Devis retourné · 3 photos</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">18 juil.</span>
+          <p class="nom serif">Reprise de toiture</p>
+          <p class="lieu">8 impasse du Moulin, Rezé</p>
+          <p class="etat caps">En attente · 9 photos</p>
+        </a>
+
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="sous">Océan</p>
+    </div>
+  </div>
+
+  <div class="forme">
+    <p class="famille"><span>La plage amincie</span></p>
+    <p class="dit">La plage reste, mais resserrée : 26 px des bords, 12 px de hauteur intérieure, rayon de 4 px.</p>
+  </div>
+
+  <div class="rangee">
+    <div class="prop">
+      <div class="tel"><div class="ecran plage" style="--e-fond:#edece6;--e-plage:#f7f6f2;--e-encre:#16170f;--e-gris:#83867c;--e-bronze:#8f7130;--e-trait:rgba(22,23,15,.13);--e-trait-doux:rgba(22,23,15,.07);--e-plein:#2a3a2e;--e-plein-encre:#f2f1ea;--e-signe:#c2a05f;--e-attente:#8f7130">
+        <div class="enseigne">ATLAS</div>
+
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+
+        <div class="fermeture"></div>
+
+        <a class="action" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus">+</span>
+        </a>
+
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+
+        <a class="bloc" href="#">
+          <span class="quand caps num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p>
+          <p class="lieu">2 route de Vertou, Vertou</p>
+          <p class="etat caps">Brouillon · sans photo</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p>
+          <p class="lieu">12 rue des Lilas, Nantes</p>
+          <p class="etat caps">À vérifier · 6 photos</p>
+        </a>
+        <a class="bloc attend" href="#">
+          <span class="quand caps num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p>
+          <p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <p class="etat caps attend">Devis retourné · 3 photos</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">18 juil.</span>
+          <p class="nom serif">Reprise de toiture</p>
+          <p class="lieu">8 impasse du Moulin, Rezé</p>
+          <p class="etat caps">En attente · 9 photos</p>
+        </a>
+
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="sous">Origine</p>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran plage" style="--e-fond:#efece6;--e-plage:#f6f4ef;--e-encre:#221f1a;--e-gris:#8b8478;--e-bronze:#8a7452;--e-trait:rgba(34,31,26,.13);--e-trait-doux:rgba(34,31,26,.07);--e-plein:#221f1a;--e-plein-encre:#f2efe8;--e-signe:#b8a17a;--e-attente:#8a7452">
+        <div class="enseigne">ATLAS</div>
+
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+
+        <div class="fermeture"></div>
+
+        <a class="action" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus">+</span>
+        </a>
+
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+
+        <a class="bloc" href="#">
+          <span class="quand caps num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p>
+          <p class="lieu">2 route de Vertou, Vertou</p>
+          <p class="etat caps">Brouillon · sans photo</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p>
+          <p class="lieu">12 rue des Lilas, Nantes</p>
+          <p class="etat caps">À vérifier · 6 photos</p>
+        </a>
+        <a class="bloc attend" href="#">
+          <span class="quand caps num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p>
+          <p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <p class="etat caps attend">Devis retourné · 3 photos</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">18 juil.</span>
+          <p class="nom serif">Reprise de toiture</p>
+          <p class="lieu">8 impasse du Moulin, Rezé</p>
+          <p class="etat caps">En attente · 9 photos</p>
+        </a>
+
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="sous">Ivoire</p>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran plage" style="--e-fond:#16241c;--e-plage:#1e3026;--e-encre:#e6e6da;--e-gris:#8ba189;--e-bronze:#c3b184;--e-trait:rgba(230,230,218,.15);--e-trait-doux:rgba(230,230,218,.08);--e-plein:#e6e6da;--e-plein-encre:#16241c;--e-signe:#3f5c46;--e-attente:#c3b184">
+        <div class="enseigne">ATLAS</div>
+
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+
+        <div class="fermeture"></div>
+
+        <a class="action" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus">+</span>
+        </a>
+
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+
+        <a class="bloc" href="#">
+          <span class="quand caps num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p>
+          <p class="lieu">2 route de Vertou, Vertou</p>
+          <p class="etat caps">Brouillon · sans photo</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p>
+          <p class="lieu">12 rue des Lilas, Nantes</p>
+          <p class="etat caps">À vérifier · 6 photos</p>
+        </a>
+        <a class="bloc attend" href="#">
+          <span class="quand caps num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p>
+          <p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <p class="etat caps attend">Devis retourné · 3 photos</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">18 juil.</span>
+          <p class="nom serif">Reprise de toiture</p>
+          <p class="lieu">8 impasse du Moulin, Rezé</p>
+          <p class="etat caps">En attente · 9 photos</p>
+        </a>
+
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="sous">Sylve</p>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran plage" style="--e-fond:#e6ecf2;--e-plage:#f3f7fb;--e-encre:#0d1b2c;--e-gris:#74839a;--e-bronze:#1e4f86;--e-trait:rgba(13,27,44,.13);--e-trait-doux:rgba(13,27,44,.07);--e-plein:#123253;--e-plein-encre:#eef4fa;--e-signe:#d98f4e;--e-attente:#c25a3a">
+        <div class="enseigne">ATLAS</div>
+
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+
+        <div class="fermeture"></div>
+
+        <a class="action" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus">+</span>
+        </a>
+
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+
+        <a class="bloc" href="#">
+          <span class="quand caps num">26 juil.</span>
+          <p class="nom serif">Pose de clôture</p>
+          <p class="lieu">2 route de Vertou, Vertou</p>
+          <p class="etat caps">Brouillon · sans photo</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">24 juil.</span>
+          <p class="nom serif">Rénovation salle de bain</p>
+          <p class="lieu">12 rue des Lilas, Nantes</p>
+          <p class="etat caps">À vérifier · 6 photos</p>
+        </a>
+        <a class="bloc attend" href="#">
+          <span class="quand caps num">22 juil.</span>
+          <p class="nom serif">Terrasse bois</p>
+          <p class="lieu">5 allée des Tilleuls, Nantes</p>
+          <p class="etat caps attend">Devis retourné · 3 photos</p>
+        </a>
+        <a class="bloc" href="#">
+          <span class="quand caps num">18 juil.</span>
+          <p class="nom serif">Reprise de toiture</p>
+          <p class="lieu">8 impasse du Moulin, Rezé</p>
+          <p class="etat caps">En attente · 9 photos</p>
+        </a>
+
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="sous">Océan</p>
+    </div>
   </div>
 </div>
     </div>

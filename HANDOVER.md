@@ -72,6 +72,11 @@ dans seize chartes, et la **12** propose trois façons d'amincir la liste sur la
 charte Origine — la plage amincie, l'ourlet, le fil. **Rien à coder tant qu'il
 n'a pas nommé la charte ET la façon de poser la liste.**
 
+**Deux points d'en-tête tranchés par lui, à ne pas défaire :** PAS de trait
+entre ATLAS et « Bonjour Florian » ; le trait qui FERME l'en-tête, juste
+au-dessus de « Nouveau chantier », reste. La maquette **13** porte cet état,
+en quatre chartes (`scripts/engendrer-maquette-fil.mjs`).
+
 **Une règle de charte, née de la 12 et qui vaut pour tout l'écran :** une
 couleur qui ne veut rien dire est une couleur en trop. L'accent d'attente ne se
 pose que sur ce qui réclame un geste du patron — nulle part ailleurs.

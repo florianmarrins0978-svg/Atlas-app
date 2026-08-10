@@ -36,6 +36,18 @@ dégradés, il nomme le bon coupable à chaque fois : une ancre morte, un lien
 vers l'extérieur — le défaut d'origine, précisément — et une feuille de style
 qui ne s'applique plus.
 
+### Le cheveu sous ATLAS tombe, et le fil part en quatre couleurs
+
+Le patron garde l'écran aminci et tranche une chose : **plus de trait entre
+ATLAS et « Bonjour Florian »**. Celui qui ferme l'en-tête, au-dessus de
+« Nouveau chantier », reste — c'est lui qu'il avait demandé deux échanges plus
+tôt. L'en-tête respire donc d'un seul tenant, du nom jusqu'à ce trait.
+
+`scripts/engendrer-maquette-fil.mjs` écrit les douze écrans — trois formes de
+liste × quatre chartes (Origine, Ivoire, Sylve, Océan) — **en HTML pur**. Le
+contrôle les mesure JavaScript coupé : douze écrans, quatre fonds distincts,
+aucun cheveu sous ATLAS, aucun pied hors du téléphone.
+
 ### Enlever la boîte : trois tentatives sur Origine
 
 Le patron demande des encadrés *« plus fins, moins larges »*, et surtout de
