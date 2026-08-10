@@ -113,24 +113,67 @@ production les demande.
 
 ---
 
+## Le lecteur du patron n'exécute pas JavaScript — les maquettes doivent s'en passer
+
+**Constaté le 2026-08-10, et payé une fois.** Trois bancs d'essai lui ont été
+envoyés avec leurs barres d'onglets construites en JavaScript. Chez lui, ils
+arrivaient **vides** : les textes s'affichaient, les téléphones étaient des
+rectangles nus. La contrainte était déjà écrite dans son propre fichier de
+maquettes — « son lecteur n'en exécute pas ; les pages engendrées en JavaScript
+lui arrivaient vides » — et n'existait nulle part ici.
+
+Ce que cela impose à **toute maquette qui lui est destinée** :
+
+- **Aucune balise `<script>`, aucun gestionnaire en ligne.** Le contrôle est
+  mécanique : chercher `<script`, ` on…=`, `javascript:` dans la source.
+- **Ce qui doit réagir au doigt se fait en CSS.** Une barre d'onglets se bâtit
+  avec quatre `input[type=radio]`, des `label`, et
+  `input:nth-of-type(n):checked ~ .trait`. Les colonnes étant égales, un onglet
+  vaut exactement `translateX(100%)` : rien à mesurer.
+- **Éprouver avec `javaScriptEnabled: false`.** Une page bâtie en JS passe tous
+  les contrôles ordinaires et arrive quand même vide chez lui —
+  `scripts/../essayer-sans-script.mjs` a été écrit pour ça, et sa contre-épreuve
+  charge un banc bâti en JS pour vérifier qu'il compte bien **zéro** onglet.
+
+Cela ne concerne pas l'application elle-même, qui est un Next.js qu'il ouvre
+dans Safari. Uniquement ce qu'on lui **transmet à lire**.
+
+---
+
 ## Une identité visuelle est en cours de remplacement — ne pas se fier au code seul
 
-**Constaté le 2026-08-10, hors du dépôt.** Le patron explore une charte que rien
-ici ne mentionne : un registre **ivoire**, encre presque noire, et un **bronze
-mat** employé deux fois seulement, présenté dans un fichier de maquettes qu'il
-tient de son côté (`toutes-les-maquettes.html`, absent du dépôt) sous le nom
-d'un registre hôtelier. Sa phrase, à propos du bandeau du bas : « c'est à ça que
-va ressembler à la fin ».
+**Constaté le 2026-08-10, hors du dépôt**, puis précisé en lisant ses maquettes.
+Le patron explore une identité que rien ici ne mentionne. Elle est engendrée de
+son côté par `scripts/engendrer-maquette-fil.mjs` — un script **absent du
+dépôt**, et ses pages portent la consigne « ne pas la modifier à la main ».
 
-Ce que cela change, concrètement, et pourquoi c'est écrit ici :
+**Quatre chartes**, pas une, et l'accent n'est jamais le vert pin d'Arborea :
 
-- **La navigation basse y perd ses icônes.** Ce sont quatre libellés en petites
-  capitales espacées, et l'onglet actif se signale par un **trait bronze** sous
-  le mot. `AtlasBottomNav` code aujourd'hui l'inverse : icône + libellé, accent
-  porté par la couleur du texte.
-- **L'accent n'est plus le vert pin d'Arborea.** `src/lib/design-tokens.ts` et
-  `docs/DESIGN_SYSTEM.md` décrivent donc une identité que le patron est en train
-  de quitter.
+| Charte | Fond | Encre | Accent |
+|---|---|---|---|
+| Origine | `#edece6` | `#16170f` | `#8f7130` |
+| Ivoire | `#efece6` | `#221f1a` | `#8a7452` |
+| Sylve (sombre) | `#16241c` | `#e6e6da` | `#c3b184` |
+| Océan | `#e6ecf2` | `#0d1b2c` | `#1e4f86` |
+
+**Trois formes de liste** sont mises en concurrence : *le fil* (une tige
+verticale porte les jours, une seule perle sur ce qui attend une réponse),
+*l'ourlet* (un cheveu vertical qui prend la couleur d'attente là où un geste est
+dû), *la plage amincie*.
+
+Ce que cela change pour le code, et pourquoi c'est écrit ici :
+
+- **La navigation basse perd ses icônes.** Quatre libellés en petites capitales
+  — 9,5 px, `letter-spacing: .28em`, graisse 500 — en grille de quatre colonnes
+  égales. L'onglet actif prend la couleur d'encre et **un trait d'un pixel sur
+  toute la largeur de sa colonne** (`box-shadow: inset 0 -1px 0`), pas sous le
+  seul mot. `AtlasBottomNav` code aujourd'hui l'inverse : icône + libellé,
+  accent porté par la couleur du texte.
+- **Deux refus explicites, à ne pas défaire :** aucun cheveu sous « ATLAS » —
+  seul reste celui qui ferme l'en-tête, au-dessus de « Nouveau chantier » ; et
+  la couleur ne décore pas, elle ne se pose que là où un geste est attendu.
+- `src/lib/design-tokens.ts` et `docs/DESIGN_SYSTEM.md` décrivent donc une
+  identité que le patron est en train de quitter.
 
 **Rien n'est tranché, et rien n'a été codé dans ce sens.** Mais une conversation
 qui lirait le dépôt seul repartirait en vert pin avec des icônes, c'est-à-dire à
