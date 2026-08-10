@@ -102,8 +102,11 @@
   .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
             font-size:9px;letter-spacing:.15em;text-transform:uppercase}
   .bas span.actif{color:var(--e-encre)}
-  .bas i{position:absolute;left:14px;bottom:26px;width:calc((100% - 28px)/4);height:1px;
-         background:var(--e-bronze)}
+  /* Le trait se pose sous L'ONGLET ACTIF. Recopié tel quel depuis un écran où
+     « Chantiers » était choisi, il désignait le mauvais mot — vu par le patron
+     sur une capture, pendant que le contrôle du libellé actif restait vert. */
+  .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;
+         background:var(--e-bronze);left:calc(14px + (100% - 28px)/4)}
 
   /* ═══ Le planning ════════════════════════════════════════════════════ */
   /* Registre : des FILETS, pas des cadres ; du serif pour ce qui compte ;

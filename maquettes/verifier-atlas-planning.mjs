@@ -208,6 +208,19 @@ try {
   }
   verifie("les libellés du bandeau ne se touchent pas", pire.ecart >= 6, `${pire.ecart.toFixed(1)} px`);
   verifie("c'est bien Planning qui est actif", /planning/i.test(await txt(`${ec} .bas .actif`)));
+  // Le trait doit tomber sous L'ONGLET ACTIF : recopié d'un écran à l'autre, il
+  // reste sous le premier onglet et désigne le mauvais mot. Mesurer l'étendue du
+  // TEXTE — la boîte du libellé vaut sa colonne entière et masquerait l'écart.
+  const soulignement = async (sel) => page.$eval(sel, (r) => {
+    const t = r.querySelector(".bas i").getBoundingClientRect();
+    const a = r.querySelector(".bas .actif");
+    const g = document.createRange(); g.selectNodeContents(a);
+    const m = g.getBoundingClientRect();
+    return { ecart: (t.x + t.width / 2) - (m.x + m.width / 2), mot: a.textContent.trim() };
+  });
+  const sl = await soulignement(ec);
+  verifie("le trait tombe sous l'onglet actif", Math.abs(sl.ecart) < 8,
+    `${sl.mot} : ${sl.ecart.toFixed(1)} px`);
   const deborde = await page.evaluate(
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
   verifie("aucun débordement horizontal", !deborde);

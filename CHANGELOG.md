@@ -9,6 +9,18 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le trait du bandeau désignait le mauvais onglet
+
+Sur le planning, le filet bronze restait sous « CHANTIERS » pendant que
+« PLANNING » était le mot actif : la règle avait été recopiée depuis un écran
+où le premier onglet était choisi. **Vu par le patron sur une capture** — le
+contrôle existant lisait le libellé actif, jamais la position du trait.
+
+Les quatre maquettes vérifient désormais que le centre du trait tombe sous le
+centre du **texte** de l'onglet actif (l'étendue du texte, pas la boîte du
+libellé : elle vaut sa colonne entière et masquerait l'écart de 77 px). Éprouvé
+rouge en remettant le défaut.
+
 ### Nommer les équipes — et se taire quand il n'y a personne à nommer
 
 Le patron : *« il faut que dans le fichier réglages on puisse mettre le nom des

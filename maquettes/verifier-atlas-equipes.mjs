@@ -222,9 +222,21 @@ try {
   const grosses = await page.$$eval('.ecran input[type="radio"]', (l) =>
     l.filter((e) => { const r = e.getBoundingClientRect(); return r.width > 2 || r.height > 2; }).length);
   verifie("aucune case native visible", grosses === 0, `${grosses}`);
+  // Le trait doit tomber sous L'ONGLET ACTIF : recopié d'un écran à l'autre, il
+  // reste sous le premier onglet et désigne le mauvais mot. Mesurer l'étendue du
+  // TEXTE — la boîte du libellé vaut sa colonne entière et masquerait l'écart.
+  const soulignement = async (sel) => page.$eval(sel, (r) => {
+    const t = r.querySelector(".bas i").getBoundingClientRect();
+    const a = r.querySelector(".bas .actif");
+    const g = document.createRange(); g.selectNodeContents(a);
+    const m = g.getBoundingClientRect();
+    return { ecart: (t.x + t.width / 2) - (m.x + m.width / 2), mot: a.textContent.trim() };
+  });
   for (const [nom, sel, actif] of [["Réglages", R, "Réglages"], ["Planning seul", SEUL, "Planning"], ["Planning nommé", NOM, "Planning"]]) {
     verifie(`le bandeau de « ${nom} » désigne le bon écran`,
       (await txt(`${sel} .bas .actif`)).toLowerCase() === actif.toLowerCase());
+    const sl = await soulignement(sel);
+    verifie(`et son trait tombe sous « ${actif} »`, Math.abs(sl.ecart) < 8, `${sl.ecart.toFixed(1)} px`);
   }
   const b = await page.$$eval(`${R} .bas span`, (l) =>
     l.map((e) => { const r = document.createRange(); r.selectNodeContents(e);
