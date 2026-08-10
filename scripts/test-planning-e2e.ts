@@ -49,13 +49,30 @@ async function main() {
     "Le chantier doit apparaître en 'À planifier'"
   );
 
-  // --- Planification (création d'une intervention) ---
-  await page.locator(`text=${nomUnique}`).first().click();
-  await page.waitForSelector('input[type="date"]', { timeout: 5000 });
-  await page.fill('input[type="date"]', "2026-12-10");
-  await page.click("text=Confirmer la planification");
+  // --- Planification : on POSE, et poser dit à la fois quand et qui ---
+  //
+  // **Le sélecteur de date natif a disparu le 10 août 2026**, et ce contrôle a
+  // rougi à juste titre : il verrouillait un geste qui n'existe plus. Le
+  // planning est un mois — on choisit le chantier à poser, on touche un jour,
+  // puis une demi-journée libre, et le bouton s'arme
+  // (`ARCHITECTURE.md` §52).
+  await page.locator(`[data-atlas="sans-date"]:has-text("${nomUnique}")`).first().click();
+  await page.waitForTimeout(300);
+
+  // Décembre 2026 : on avance jusqu'au mois voulu plutôt que de le supposer
+  // affiché — le calendrier s'ouvre sur le mois courant.
+  for (let i = 0; i < 24; i++) {
+    const titre = await page.locator("[data-atlas='grille-mois']").count();
+    if (titre && (await page.locator('[data-atlas="grille-mois"] button[data-jour="2026-12-10"]').count()) > 0) break;
+    await page.click('button[aria-label="Mois suivant"]');
+    await page.waitForTimeout(150);
+  }
+  await page.click('[data-atlas="grille-mois"] button[data-jour="2026-12-10"]');
   await page.waitForTimeout(500);
-  assert.ok(!(await page.locator("text=Aucun chantier planifié").isVisible()));
+  await page.locator("[data-atlas='creneau'][data-libre='oui']").first().click();
+  await page.waitForTimeout(300);
+  await page.click("[data-atlas='poser']");
+  await page.waitForTimeout(900);
 
   // --- Persistance après rechargement ---
   await page.reload({ waitUntil: "networkidle" });
@@ -69,8 +86,8 @@ async function main() {
   // contrôle échoue sur son propre passé, en accusant le code.
   const carte = () => page.locator(`a[href="/chantiers/${chantierId}"]`);
   assert.ok(
-    (await carte().locator("text=déc.").count()) > 0,
-    "Le mois (décembre) doit être affiché sur la vignette de date de ce chantier"
+    (await carte().innerText()).toLowerCase().includes("déc"),
+    `Le mois (décembre) doit figurer sur la ligne de ce chantier : « ${await carte().innerText()} »`
   );
 
   // --- La carte planifiée mène au chantier, pas au sélecteur de date ---
@@ -98,18 +115,28 @@ async function main() {
     "« Fin de chantier » manque sur la carte du chantier planifié"
   );
 
-  // --- Modification de la date, par son propre lien ---
-  await page.getByRole("button", { name: `Changer la date du chantier Chez ${nomUnique}` }).click();
-  await page.waitForSelector('input[type="date"]', { timeout: 5000 });
-  const valeurActuelle = await page.locator('input[type="date"]').inputValue();
-  assert.equal(valeurActuelle, "2026-12-10", "La sheet doit préremplir la date déjà enregistrée");
-  await page.fill('input[type="date"]', "2027-01-15");
-  await page.click("text=Confirmer la planification");
+  // --- Déplacer un chantier déjà posé ---
+  //
+  // Le sélecteur de date a disparu avec l'ancien écran ; changer une date se
+  // fait désormais avec le MÊME geste que poser — « Déplacer », puis un jour,
+  // une demi-journée, et le bouton s'arme.
+  await page.getByRole("button", { name: `Déplacer le chantier ${nomUnique}` }).click();
+  await page.waitForTimeout(400);
+  for (let i = 0; i < 24; i++) {
+    if ((await page.locator('[data-atlas="grille-mois"] button[data-jour="2027-01-15"]').count()) > 0) break;
+    await page.click('button[aria-label="Mois suivant"]');
+    await page.waitForTimeout(150);
+  }
+  await page.click('[data-atlas="grille-mois"] button[data-jour="2027-01-15"]');
   await page.waitForTimeout(500);
+  await page.locator("[data-atlas='creneau'][data-libre='oui']").first().click();
+  await page.waitForTimeout(300);
+  await page.click("[data-atlas='poser']");
+  await page.waitForTimeout(900);
   await page.reload({ waitUntil: "networkidle" });
   assert.ok(
-    (await carte().locator("text=janv.").count()) > 0,
-    "La nouvelle date (janvier) doit être persistée sur la carte de ce chantier"
+    (await carte().innerText()).toLowerCase().includes("janv"),
+    `La nouvelle date (janvier) doit être persistée : « ${await carte().innerText()} »`
   );
 
   await browser.close();

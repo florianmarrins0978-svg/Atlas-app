@@ -136,7 +136,10 @@ async function main() {
   // Le jeu de démonstration ne garantit pas les trois sections peuplées : on
   // n'exige donc que ce qui est réellement affiché. Un contrôle qui échouerait
   // parce qu'une section est vide accuserait à tort.
-  const sections = ["à planifier", "en attente du client", "planifiés"].filter((s) => ecran.includes(s));
+  // Les trois anciennes listes ont disparu le 10 août 2026 : le planning est un
+  // mois, et le retrait vit sur « Sans date » — celle où l'on se débarrasse
+  // d'un chantier plutôt que de le poser (`ARCHITECTURE.md` §52).
+  const sections = ["sans date", "planifiés"].filter((s) => ecran.includes(s));
   assert.ok(sections.length > 0, "Aucune section du planning n'est affichée : le contrôle n'éprouve rien.");
   assert.ok(
     nbPlanning > 0,
