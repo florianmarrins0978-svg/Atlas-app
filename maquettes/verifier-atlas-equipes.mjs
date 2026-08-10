@@ -129,6 +129,11 @@ try {
     creux.every((c) => c.vide), JSON.stringify(creux));
   verifie("la lettre de repli est devant la ligne",
     creux[0].rep === "A" && creux[1].rep === "B", JSON.stringify(creux.map((c) => c.rep)));
+  // Retiré à sa demande : le champ vide dit déjà « Équipe A ». Une phrase qui
+  // répète ce que l'écran montre est du bruit, pas de la pédagogie.
+  const apres_lignes = await page.$eval(`${R} .nomm`, (e) => e.lastElementChild.tagName);
+  verifie("rien n'est écrit sous la dernière équipe", apres_lignes === "LABEL", apres_lignes);
+
   const t = await rect(`${R} .nomm .ligne.e1 .champ`);
   const corps = await page.$eval(`${R} .nomm .ligne.e1 .champ`, (e) => parseFloat(getComputedStyle(e).fontSize));
   verifie("le champ occupe la ligne et ne fait pas zoomer Safari",

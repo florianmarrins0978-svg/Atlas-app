@@ -220,8 +220,6 @@
   .champ::placeholder{color:var(--e-gris);opacity:.72}
   .champ:focus{outline:none}
   .nomm:has(.champ:focus) .ligne:has(.champ:focus){border-bottom-color:var(--e-bronze)}
-  .repli{margin:14px 0 0;font-size:11.5px;color:var(--e-gris);line-height:1.65}
-  .repli b{color:var(--e-encre);font-weight:400}
 
   /* Seul : rien à nommer. Le bloc entier s'efface plutôt que de proposer un
      champ dont la valeur ne serait jamais lue. */
@@ -435,8 +433,6 @@
             <label class="ligne e18"><span class="rep">R</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe R"></label>
             <label class="ligne e19"><span class="rep">S</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="Équipe S"></label>
             <label class="ligne e20"><span class="rep">T</span><input class="champ" type="text" autocomplete="off" spellcheck="false" enterkeyhint="done" placeholder="Équipe T"></label>
-            <p class="repli">Un nom, un prénom, deux prénoms — ce que vous écrivez ici est
-              ce que dira le planning. <b>Laissé vide, il dira la lettre.</b></p>
           </div>
 
           <p class="seulmot">Seul, rien à nommer : <b>le planning n'écrira aucune équipe</b>.</p>
@@ -445,7 +441,7 @@
         <nav class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></nav>
       </div></div>
       <p class="sous">Réglages — vos équipes</p>
-      <p class="note">Le repli se montre, il ne s'explique pas : <b>le champ vide affiche déjà « Équipe A » en gris.</b></p>
+      <p class="note">Rien sous la dernière ligne : <b>le champ vide affiche déjà « Équipe A » en gris</b>, aucune phrase n'a à le raconter.</p>
     </div>
 
     <!-- ── 2. Le planning quand il est seul ───────────────────────────── -->
