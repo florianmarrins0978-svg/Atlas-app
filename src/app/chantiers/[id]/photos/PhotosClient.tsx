@@ -128,7 +128,7 @@ export default function PhotosClient({
             <button
               key={p.id}
               onClick={() => setOuverte(p.id)}
-              className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl"
+              className="flex aspect-square items-center justify-center overflow-hidden rounded-[4px]"
               style={{ backgroundColor: colors.card, boxShadow: "0 1px 2px rgba(28,27,23,0.04), 0 4px 12px rgba(28,27,23,0.03)" }}
               aria-label="Voir la photo"
             >
@@ -164,7 +164,7 @@ export default function PhotosClient({
         <div className="mt-7 px-6">
           <Link
             href={`/chantiers/${chantierId}/note-vocale`}
-            className="flex items-center justify-center gap-2 rounded-2xl py-3 text-[15px] font-medium"
+            className="flex items-center justify-center gap-2 rounded-[4px] py-3 text-[15px] font-medium"
             style={{ backgroundColor: colors.rustTint, color: colors.rust, minHeight: 48 }}
           >
             <MicroIcon />
@@ -225,14 +225,14 @@ export default function PhotosClient({
                 <div className="flex flex-col gap-2.5">
                   <button
                     onClick={() => setConfirmationVisible(false)}
-                    className="rounded-2xl py-3.5 text-[16px] font-medium"
+                    className="rounded-[4px] py-3.5 text-[16px] font-medium"
                     style={{ backgroundColor: colors.card, color: colors.ink }}
                   >
                     Annuler
                   </button>
                   <button
                     onClick={confirmerSuppression}
-                    className="rounded-2xl py-3.5 text-[15px] font-medium"
+                    className="rounded-[4px] py-3.5 text-[15px] font-medium"
                     style={{ color: colors.alert }}
                   >
                     Supprimer
@@ -256,7 +256,7 @@ export default function PhotosClient({
           <button
             type="button"
             onClick={() => choisir(champAppareilPhoto)}
-            className="rounded-2xl py-3.5 text-[15px] font-medium"
+            className="rounded-[4px] py-3.5 text-[15px] font-medium"
             style={{ backgroundColor: colors.rust, color: colors.cream }}
           >
             Prendre une photo
@@ -264,7 +264,7 @@ export default function PhotosClient({
           <button
             type="button"
             onClick={() => choisir(champPellicule)}
-            className="rounded-2xl py-3.5 text-[15px] font-medium"
+            className="rounded-[4px] py-3.5 text-[15px] font-medium"
             style={{ backgroundColor: colors.card, color: colors.ink }}
           >
             Choisir dans ma bibliothèque
@@ -272,7 +272,7 @@ export default function PhotosClient({
           <button
             type="button"
             onClick={() => setChoixOuvert(false)}
-            className="rounded-2xl py-3.5 text-[15px]"
+            className="rounded-[4px] py-3.5 text-[15px]"
             style={{ color: colors.muted }}
           >
             Annuler

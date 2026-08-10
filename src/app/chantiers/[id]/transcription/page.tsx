@@ -68,7 +68,7 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
           Texte brut de votre dictée, tel qu&apos;il a été transcrit — jamais retouché.
         </p>
 
-        <div className="mx-6 mt-3 rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
+        <div className="mx-6 mt-3 rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
           <p
             className="whitespace-pre-wrap text-[15px] leading-relaxed"
             style={{ color: disponible ? colors.ink : colors.muted }}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat";
 import { estAuPlanning } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
+import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { LIBELLE_MOMENT, libelleDuree } from "@/server/disponibilites";
@@ -156,11 +157,7 @@ export default function PlanningClient({
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-16">
-        <div className="px-6 pt-9">
-          <h1 className="text-[36px] leading-none" style={{ fontFamily: font.display }}>
-            Planning
-          </h1>
-        </div>
+        <EnTeteEcran surtitre="Vos journées" titre="Planning" />
 
         {/*
           **Le raccordement de l'agenda se propose ICI, et c'est sa demande du
@@ -179,7 +176,7 @@ export default function PlanningClient({
           <div className="mt-5 px-6">
             <Link
               href="/reglages/agenda"
-              className="flex items-center justify-between rounded-2xl px-5 py-4"
+              className="flex items-center justify-between rounded-[4px] px-5 py-4"
               style={{
                 backgroundColor: colors.rustTint,
                 borderLeft: `3px solid ${agenda.enPanne ? colors.alert : colors.sage}`,
@@ -224,7 +221,7 @@ export default function PlanningClient({
               {rendezVous.slice(0, 12).map((r, i) => (
                 <div
                   key={`${r.debut}-${i}`}
-                  className="rounded-2xl px-5 py-4"
+                  className="rounded-[4px] px-5 py-4"
                   style={{ backgroundColor: colors.card }}
                 >
                   <span className="block truncate text-[16px]" style={{ fontFamily: font.display }}>
@@ -263,7 +260,7 @@ export default function PlanningClient({
                 >
                 <button
                   onClick={() => ouvrirSheet(c)}
-                  className="flex w-full items-center justify-between rounded-2xl px-5 py-4 text-left"
+                  className="flex w-full items-center justify-between rounded-[4px] px-5 py-4 text-left"
                   style={{ backgroundColor: colors.card }}
                 >
                   <span className="min-w-0 flex-1">
@@ -310,7 +307,7 @@ export default function PlanningClient({
                   libelleSuppression={`Supprimer le chantier ${c.nom}`}
                   onSupprimer={() => supprimer(c.id)}
                 >
-                  <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: colors.card }}>
+                  <div className="rounded-[4px] px-5 py-4" style={{ backgroundColor: colors.card }}>
                     <span
                       className="block truncate text-[16px]"
                       style={{ fontFamily: font.display, color: colors.ink }}
@@ -367,10 +364,10 @@ export default function PlanningClient({
                     au chantier, « Fin de chantier » à la facture, et la date se
                     change par un lien discret — c'est le geste le plus rare des
                     trois une fois le client d'accord. */}
-                <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: colors.card }}>
+                <div className="rounded-[4px] px-5 py-4" style={{ backgroundColor: colors.card }}>
                   <Link href={`/chantiers/${c.id}`} className="flex items-center gap-3 text-left">
                     <div
-                      className="flex h-11 w-11 flex-shrink-0 flex-col items-center justify-center rounded-xl"
+                      className="flex h-11 w-11 flex-shrink-0 flex-col items-center justify-center rounded-[4px]"
                       style={{ backgroundColor: colors.rustTint }}
                     >
                       <span className="text-[10px] font-semibold uppercase" style={{ color: colors.rust }}>
@@ -446,7 +443,7 @@ export default function PlanningClient({
           type="date"
           value={dateChoisie}
           onChange={(e) => setDateChoisie(e.target.value)}
-          className="mb-5 w-full rounded-2xl border-0 px-4 py-3.5 outline-none"
+          className="mb-5 w-full rounded-[4px] border-0 px-4 py-3.5 outline-none"
           style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
         />
         {dateChoisie && (
@@ -458,14 +455,14 @@ export default function PlanningClient({
           <button
             onClick={confirmer}
             disabled={!dateChoisie || enCours}
-            className="rounded-2xl py-3.5 text-[16px] font-medium text-white disabled:opacity-40"
+            className="rounded-[4px] py-3.5 text-[16px] font-medium text-white disabled:opacity-40"
             style={{ backgroundColor: colors.rust }}
           >
             {enCours ? "Enregistrement…" : "Confirmer la planification"}
           </button>
           <button
             onClick={() => setOuvert(null)}
-            className="rounded-2xl py-3.5 text-[15px] font-medium"
+            className="rounded-[4px] py-3.5 text-[15px] font-medium"
             style={{ color: colors.muted }}
           >
             Annuler

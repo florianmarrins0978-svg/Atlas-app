@@ -265,7 +265,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlurCommit}
-        className="rounded-2xl border-0 px-4 py-3 outline-none"
+        className="rounded-[4px] border-0 px-4 py-3 outline-none"
         style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
       />
     </label>
@@ -304,7 +304,7 @@ function ListeTextes({
             value={item.libelle}
             onChange={(e) => onChange(item.id, e.target.value)}
             onBlur={(e) => onBlurCommit(item.id, e.target.value)}
-            className="w-full rounded-2xl border-0 px-4 py-3 outline-none"
+            className="w-full rounded-[4px] border-0 px-4 py-3 outline-none"
             style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
           />
         </AnimatedRow>

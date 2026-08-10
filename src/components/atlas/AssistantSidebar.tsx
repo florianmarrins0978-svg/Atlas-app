@@ -150,7 +150,7 @@ export default function AssistantSidebar() {
                 {messages.map((m, i) => (
                   <div
                     key={i}
-                    className="max-w-[85%] rounded-2xl px-3 py-2 text-[14px]"
+                    className="max-w-[85%] rounded-[4px] px-3 py-2 text-[14px]"
                     style={{
                       alignSelf: m.role === "user" ? "flex-end" : "flex-start",
                       backgroundColor: m.role === "user" ? colors.rustTint : colors.card,
@@ -202,14 +202,14 @@ export default function AssistantSidebar() {
                             <button
                               onClick={() => appliquerPropositions(i)}
                               disabled={enCours}
-                              className="flex-1 rounded-xl py-2 text-[13px] font-medium text-white disabled:opacity-40"
+                              className="flex-1 rounded-[4px] py-2 text-[13px] font-medium text-white disabled:opacity-40"
                               style={{ backgroundColor: colors.rust }}
                             >
                               Appliquer les modifications
                             </button>
                             <button
                               onClick={() => annulerPropositions(i)}
-                              className="flex-1 rounded-xl py-2 text-[13px] font-medium"
+                              className="flex-1 rounded-[4px] py-2 text-[13px] font-medium"
                               style={{ backgroundColor: colors.line, color: colors.ink }}
                             >
                               Annuler
@@ -252,7 +252,7 @@ export default function AssistantSidebar() {
                   if (e.key === "Enter") envoyer();
                 }}
                 placeholder="Votre question…"
-                className="flex-1 rounded-2xl border-0 px-4 py-2.5 outline-none"
+                className="flex-1 rounded-[4px] border-0 px-4 py-2.5 outline-none"
                 style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "14px" }}
               />
               <button

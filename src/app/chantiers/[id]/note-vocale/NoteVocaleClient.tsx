@@ -356,7 +356,7 @@ export default function NoteVocaleClient({
               transcription et la suite du parcours restent accessibles, sans
               quoi l'artisan croirait avoir tout perdu. */}
           {!storageKey && (
-            <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: colors.card }}>
+            <div className="rounded-[4px] px-5 py-4" style={{ backgroundColor: colors.card }}>
               <p className="text-[15px] font-medium" style={{ color: colors.ink }}>
                 Enregistrement effacé
               </p>
@@ -395,7 +395,7 @@ export default function NoteVocaleClient({
               {erreurLecture}
             </p>
           )}
-          <div className="flex items-center gap-4 rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
+          <div className="flex items-center gap-4 rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
             <button
               onClick={togglerLecture}
               aria-label={lecture ? "Mettre en pause" : "Écouter la note"}
@@ -504,7 +504,7 @@ export default function NoteVocaleClient({
           <button
             onClick={complementEnCours ? arreterComplement : demarrerComplement}
             disabled={enCours}
-            className="mt-4 block w-full rounded-2xl py-3 text-center text-[15px] font-medium disabled:opacity-40"
+            className="mt-4 block w-full rounded-[4px] py-3 text-center text-[15px] font-medium disabled:opacity-40"
             style={{
               backgroundColor: complementEnCours ? colors.alert : colors.rustTint,
               color: complementEnCours ? "#FFFFFF" : colors.rust,
@@ -560,7 +560,7 @@ export default function NoteVocaleClient({
             <div className="flex flex-col gap-2.5">
               <button
                 onClick={() => setEtat("note")}
-                className="rounded-2xl py-3.5 text-[16px] font-medium"
+                className="rounded-[4px] py-3.5 text-[16px] font-medium"
                 style={{ backgroundColor: colors.card, color: colors.ink }}
               >
                 Annuler
@@ -568,7 +568,7 @@ export default function NoteVocaleClient({
               <button
                 onClick={modeConfirmation === "remplacer" ? confirmerRemplacement : confirmerSuppression}
                 disabled={enCours}
-                className="rounded-2xl py-3.5 text-[15px] font-medium disabled:opacity-40"
+                className="rounded-[4px] py-3.5 text-[15px] font-medium disabled:opacity-40"
                 style={{ color: colors.alert }}
               >
                 {modeConfirmation === "remplacer" ? "Remplacer" : "Supprimer"}

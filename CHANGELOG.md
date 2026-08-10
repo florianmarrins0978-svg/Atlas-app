@@ -9,6 +9,38 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### La grammaire de l'écran retenu, portée à toute l'application
+
+*« Change le style complet de l'appli par ce style-là. »* Trois pièces
+partagées font l'essentiel, et c'est délibéré : recopier une allure écran par
+écran, c'est s'assurer qu'ils divergeront de nouveau au premier retouchage.
+
+- **`PrimaryButton`** — présent sur vingt-sept écrans. Rayon de 16 px à 5,
+  libellé en serif, hauteur resserrée. Un rectangle presque droit se lit comme
+  une pièce imprimée ; le même arrondi à 16 px se lit comme un bouton
+  d'application, et c'est ce dont le patron ne voulait plus.
+- **`EnTeteEcran`** (nouveau) — surtitre en capitales d'or, titre serif 36 px,
+  précision en capitales, et le cheveu qui FERME l'en-tête. Jamais de trait
+  au-dessus du titre : il l'a refusé sur l'accueil, et un écran qui en porterait
+  un jurerait avec les autres. Posé sur Planning, Terminés, Réglages, le relevé
+  de TVA et la fiche chantier.
+- **Les jetons** — `radius.card` 16 → 4, `radius.button` 20 → 5, et
+  `cardShadow` vaut désormais « aucune ombre ». La constante reste plutôt que
+  d'être retirée d'une soixantaine d'endroits : ce brassage aurait mêlé un
+  changement d'identité à un changement mécanique, chacun masquant les erreurs
+  de l'autre.
+
+**Et un balayage :** 143 coins arrondis ramenés à 4 px dans les écrans du
+patron. Deux familles en sont exclues, et ce n'est pas un oubli — les maquettes
+`/design/*`, découplées du produit, et **les pages que le CLIENT reçoit**
+(`devis/[jeton]`, `factures/[jeton]`). Un devis n'est pas un écran : c'est la
+pièce que son client garde, imprime et signe, et elle porte sa propre teinte
+depuis le 3 août.
+
+**Ce qui reste dans l'ancienne grammaire :** l'intérieur des écrans profonds —
+photos, dictée, prix, export, facture. Leur en-tête et leurs boutons ont suivi ;
+leurs listes et leurs encarts non.
+
 ### L'écran des chantiers, tel qu'il l'a retenu
 
 Après une soirée de maquettes, le patron s'est arrêté sur une version et l'a

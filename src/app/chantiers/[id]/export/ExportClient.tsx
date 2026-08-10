@@ -101,7 +101,7 @@ export default function ExportClient({
     <>
       <div className="mt-6 flex flex-col gap-4 px-6">
         {/* Synthèse — lecture seule, aucune édition sur cet écran */}
-        <div className="rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
+        <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
           <Row label="Chantier" value={`${chantierNom} — ${adresseChantier}`} />
           <Row label="Client" value={`${clientNom} — ${clientTelephone}`} last />
         </div>
@@ -111,7 +111,7 @@ export default function ExportClient({
             écrit entièrement à la main n'en a aucune, et le patron n'y voyait
             qu'un total, sans savoir ce qui partirait chez son client. */}
         {lignes.length > 0 && (
-          <div className="rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
+          <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
             <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
               Lignes du devis
             </p>
@@ -140,7 +140,7 @@ export default function ExportClient({
             qui n'annoncerait qu'un total, sans dire de quoi il est fait, serait
             un recul. */}
         {lignes.length === 0 && prestations.length > 0 && (
-          <div className="rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
+          <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
             <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
               Prestations
             </p>
@@ -154,7 +154,7 @@ export default function ExportClient({
           </div>
         )}
 
-        <div className="rounded-2xl px-5 py-5 text-center" style={{ backgroundColor: colors.card }}>
+        <div className="rounded-[4px] px-5 py-5 text-center" style={{ backgroundColor: colors.card }}>
           <p className={smallCaps} style={{ color: colors.muted, marginBottom: 6 }}>
             Total
           </p>
@@ -198,7 +198,7 @@ export default function ExportClient({
         )}
 
         {envoye || lienClient ? (
-          <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: colors.card }}>
+          <div className="rounded-[4px] px-5 py-4" style={{ backgroundColor: colors.card }}>
             {/* L'état d'abord, l'explication ensuite. « Devis envoyé » ne disait
                 pas si le client réfléchissait ou s'il avait dit non. */}
             <p className={smallCaps} style={{ color: colors.rust, marginBottom: 6, textAlign: "center" }}>
@@ -229,7 +229,7 @@ export default function ExportClient({
                     : "Le lien est toujours actif — renvoyez-le tel quel pour relancer."}
                 </p>
                 <p
-                  className="mt-2 break-all rounded-xl px-3 py-2 text-center text-[12px]"
+                  className="mt-2 break-all rounded-[4px] px-3 py-2 text-center text-[12px]"
                   style={{ backgroundColor: colors.cream, color: colors.muted }}
                 >
                   {lienComplet(lienAMontrer)}
@@ -271,7 +271,7 @@ export default function ExportClient({
                 type="button"
                 onClick={reprendre}
                 disabled={reprise}
-                className="mt-4 block w-full rounded-2xl py-3 text-[15px] font-medium text-white disabled:opacity-50"
+                className="mt-4 block w-full rounded-[4px] py-3 text-[15px] font-medium text-white disabled:opacity-50"
                 style={{ backgroundColor: colors.rust }}
               >
                 {reprise

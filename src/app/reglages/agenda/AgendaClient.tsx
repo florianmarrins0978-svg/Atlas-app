@@ -77,7 +77,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
       {retour && (
         <p
           role="status"
-          className="mb-5 rounded-2xl px-4 py-3 text-[14px] leading-snug"
+          className="mb-5 rounded-[4px] px-4 py-3 text-[14px] leading-snug"
           style={{
             backgroundColor: colors.rustTint,
             borderLeft: `3px solid ${retour.ton === "bien" ? colors.sage : colors.alert}`,
@@ -90,7 +90,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
 
       {/* --- L'état, en une phrase, avant toute commande ------------------ */}
       <section
-        className="rounded-3xl px-5 py-5"
+        className="rounded-[4px] px-5 py-5"
         style={{ backgroundColor: colors.rustTint }}
       >
         <p className="text-[18px] leading-snug" style={{ fontFamily: font.display }}>
@@ -130,7 +130,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
             revenu, en silence, au comportement qui produisait des doublons. */}
         {etat.derniereErreur && (
           <p
-            className="mt-4 rounded-2xl px-4 py-3 text-[13px] leading-snug"
+            className="mt-4 rounded-[4px] px-4 py-3 text-[13px] leading-snug"
             style={{ backgroundColor: colors.rustTint, borderLeft: `3px solid ${colors.alert}`, color: colors.ink }}
           >
             <strong>Atlas n&apos;arrive plus à lire votre agenda.</strong> En attendant, il propose des dates à
@@ -169,7 +169,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
         )}
 
         {saisieOuverte && (
-          <section className="rounded-3xl px-5 py-5" style={{ backgroundColor: colors.rustTint }}>
+          <section className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.rustTint }}>
             <p className="text-[16px]" style={{ fontFamily: font.display, marginBottom: 6 }}>
               Mes identifiants Google
             </p>
@@ -203,7 +203,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
             {motifRefus && (
               <p
                 role="alert"
-                className="mt-3 rounded-2xl px-4 py-3 text-[13px] leading-snug"
+                className="mt-3 rounded-[4px] px-4 py-3 text-[13px] leading-snug"
                 style={{ backgroundColor: "#fff", borderLeft: `3px solid ${colors.alert}` }}
               >
                 {motifRefus}
@@ -280,7 +280,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
               retourner chercher chez Google, et un doigt qui glisse sur un
               téléphone ne doit pas coûter ça. */}
           {etat.relie && confirmation && (
-            <div className="rounded-2xl px-4 py-4" style={{ backgroundColor: colors.rustTint, borderLeft: `3px solid ${colors.alert}` }}>
+            <div className="rounded-[4px] px-4 py-4" style={{ backgroundColor: colors.rustTint, borderLeft: `3px solid ${colors.alert}` }}>
               <p className="text-[14px] leading-snug">
                 Atlas oubliera ce raccordement et cessera de lire votre agenda. Vous pourrez le relier à nouveau
                 quand vous voudrez.
@@ -343,7 +343,7 @@ function Champ({
         placeholder={exemple}
         autoComplete="off"
         spellCheck={false}
-        className="w-full rounded-2xl px-4 py-3 text-[15px]"
+        className="w-full rounded-[4px] px-4 py-3 text-[15px]"
         style={{ backgroundColor: "#fff", color: colors.ink, border: `1px solid ${colors.line}` }}
       />
     </label>

@@ -38,7 +38,7 @@ export default function BandeDuree({ label, valeur, onChange, aide, disabled }: 
         value={valeur ?? ""}
         disabled={disabled}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full rounded-xl px-4 py-3 outline-none disabled:opacity-40"
+        className="w-full rounded-[4px] px-4 py-3 outline-none disabled:opacity-40"
         // 16 px : en dessous, iOS agrandit la page à l'ouverture de la molette
         // et le patron se retrouve avec un écran zoomé qu'il doit rétablir.
         style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}

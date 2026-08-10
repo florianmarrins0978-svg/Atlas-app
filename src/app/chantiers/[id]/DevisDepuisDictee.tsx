@@ -101,7 +101,7 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
           type="button"
           onClick={() => lancer()}
           disabled={etat.type === "encours"}
-          className="w-full rounded-2xl py-3.5 text-[15px] font-medium text-white disabled:opacity-40"
+          className="w-full rounded-[4px] py-3.5 text-[15px] font-medium text-white disabled:opacity-40"
           style={{ backgroundColor: colors.rust }}
         >
           {etat.type === "encours" ? "Atlas prépare le devis…" : "Créer le devis à partir de ma dictée"}
@@ -131,7 +131,7 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
       )}
 
       {etat.type === "sansPrix" && (
-        <div className="rounded-2xl px-4 py-4" style={{ backgroundColor: colors.rustTint }}>
+        <div className="rounded-[4px] px-4 py-4" style={{ backgroundColor: colors.rustTint }}>
           <p className="text-[13px] leading-snug" style={{ color: colors.rust }}>
             {etat.raison}
           </p>
@@ -139,7 +139,7 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
             <button
               type="button"
               onClick={() => router.push(`/chantiers/${chantierId}/devis-complet`)}
-              className="rounded-xl px-4 py-2.5 text-[14px] font-medium"
+              className="rounded-[4px] px-4 py-2.5 text-[14px] font-medium"
               style={{ backgroundColor: colors.rust, color: colors.cream }}
             >
               Ouvrir le devis et poser les prix →
@@ -167,7 +167,7 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
       )}
 
       {etat.type === "conflit" && (
-        <div className="rounded-2xl px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
+        <div className="rounded-[4px] px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
           <p className="text-[13px]" style={{ color: colors.rust }}>
             Vous avez corrigé ce brouillon à la main. Repartir de la dictée effacerait vos corrections.
           </p>
@@ -175,7 +175,7 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
             <button
               type="button"
               onClick={() => setEtat({ type: "repos" })}
-              className="rounded-2xl py-2.5 text-[14px] font-medium"
+              className="rounded-[4px] py-2.5 text-[14px] font-medium"
               style={{ backgroundColor: colors.card, color: colors.ink }}
             >
               Conserver mes corrections
@@ -256,7 +256,7 @@ function QuestionsChiffrage({
   }
 
   return (
-    <div className="rounded-2xl px-4 py-4" style={{ backgroundColor: colors.rustTint }}>
+    <div className="rounded-[4px] px-4 py-4" style={{ backgroundColor: colors.rustTint }}>
       <p className="text-[13px] font-medium" style={{ color: colors.rust }}>
         {questions.length === 1
           ? "Une précision avant de chiffrer"
@@ -288,7 +288,7 @@ function QuestionsChiffrage({
                       key={o.valeur}
                       type="button"
                       onClick={() => setReponses((r) => ({ ...r, [q.id]: o.valeur }))}
-                      className="rounded-xl px-4 py-2.5 text-left text-[14px] font-medium"
+                      className="rounded-[4px] px-4 py-2.5 text-left text-[14px] font-medium"
                       style={{
                         backgroundColor: choisie ? colors.rust : colors.card,
                         color: choisie ? colors.cream : colors.ink,
@@ -307,7 +307,7 @@ function QuestionsChiffrage({
                   aria-label={q.question}
                   value={reponses[q.id] ?? ""}
                   onChange={(e) => setReponses((r) => ({ ...r, [q.id]: e.target.value }))}
-                  className="w-28 rounded-xl px-3 py-2.5 text-[15px]"
+                  className="w-28 rounded-[4px] px-3 py-2.5 text-[15px]"
                   style={{ backgroundColor: colors.card, color: colors.ink }}
                 />
                 <span className="text-[14px]" style={{ color: colors.muted }}>
@@ -323,7 +323,7 @@ function QuestionsChiffrage({
         type="button"
         onClick={valider}
         disabled={envoi}
-        className="mt-5 w-full rounded-2xl py-3 text-[15px] font-medium disabled:opacity-40"
+        className="mt-5 w-full rounded-[4px] py-3 text-[15px] font-medium disabled:opacity-40"
         style={{ backgroundColor: colors.rust, color: colors.cream }}
       >
         {envoi ? "Atlas termine le devis…" : toutesRepondues ? "Continuer vers le devis" : "Continuer sans répondre à tout"}

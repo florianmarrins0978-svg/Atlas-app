@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { colors, font, smallCaps, cardShadow } from "@/lib/design-tokens";
+import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersTermines } from "@/server/repositories/factures";
 import { jourLisible } from "@/lib/jour";
+import { nombreEnLettres } from "@/lib/nombre-en-lettres";
 
 export const dynamic = "force-dynamic";
 
@@ -27,24 +29,20 @@ export default async function TerminesPage() {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-10">
-        <div className="px-6 pt-9">
-          <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-            Chantiers réalisés
-          </p>
-          <h1 className="text-[36px] leading-none" style={{ fontFamily: font.display }}>
-            Terminés
-          </h1>
-          <p className="mt-2 text-[14px]" style={{ color: colors.muted }}>
-            {aCloturer.length === 0
-              ? "Rien à facturer pour l'instant."
-              : `${aCloturer.length} chantier${aCloturer.length > 1 ? "s" : ""} à facturer`}
-          </p>
-        </div>
+        <EnTeteEcran
+          surtitre="Chantiers réalisés"
+          titre="Terminés"
+          precision={
+            aCloturer.length === 0
+              ? "Rien à facturer"
+              : `${nombreEnLettres(aCloturer.length)} à facturer`
+          }
+        />
 
         <div className="px-6 pt-6">
           <Link
             href="/termines/tva"
-            className="flex items-center justify-between rounded-2xl px-5 py-4"
+            className="flex items-center justify-between rounded-[4px] px-5 py-4"
             style={{ backgroundColor: colors.rustTint }}
           >
             <span className="text-[15px] font-medium" style={{ color: colors.rust }}>
@@ -58,7 +56,7 @@ export default async function TerminesPage() {
 
         {chantiers.length === 0 ? (
           <div className="mt-8 px-6">
-            <div className="rounded-2xl px-5 py-8 text-center" style={{ backgroundColor: colors.card }}>
+            <div className="rounded-[4px] px-5 py-8 text-center" style={{ backgroundColor: colors.card }}>
               <p className="text-[14px]" style={{ color: colors.muted }}>
                 Vos chantiers apparaîtront ici une fois leur date d&apos;intervention passée.
               </p>
@@ -85,7 +83,7 @@ export default async function TerminesPage() {
                       {c.clientNom ?? "Client non renseigné"}
                     </p>
                     <p
-                      className="mt-4 rounded-2xl py-3 text-center text-[15px] font-medium text-white"
+                      className="mt-4 rounded-[4px] py-3 text-center text-[15px] font-medium text-white"
                       style={{ backgroundColor: colors.rust }}
                     >
                       {c.factureId ? "Reprendre la facture" : "Fin de chantier"}

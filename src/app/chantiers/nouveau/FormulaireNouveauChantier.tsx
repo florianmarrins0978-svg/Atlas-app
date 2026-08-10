@@ -275,7 +275,7 @@ function ChoixCanal({
       onClick={onClick}
       disabled={!disponible}
       aria-pressed={actif}
-      className="flex-1 rounded-2xl py-3.5 text-[15px] font-medium disabled:opacity-40"
+      className="flex-1 rounded-[4px] py-3.5 text-[15px] font-medium disabled:opacity-40"
       style={{
         backgroundColor: actif ? colors.rustTint : colors.card,
         color: actif ? colors.rust : colors.ink,
@@ -314,7 +314,7 @@ function Field({
         value={value}
         onChange={onChange ? (e) => onChange(e.target.value) : undefined}
         aria-required={required || undefined}
-        className="rounded-2xl border-0 px-4 py-3.5 outline-none"
+        className="rounded-[4px] border-0 px-4 py-3.5 outline-none"
         style={{
           backgroundColor: colors.card,
           color: colors.ink,

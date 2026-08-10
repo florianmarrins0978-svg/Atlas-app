@@ -173,7 +173,7 @@ export default function GrillesPrixClient({ initiales }: { initiales: Case[] }) 
           {/* Une seule case : la déplier dans un accordéon serait un geste de
               plus pour un seul champ. */}
           {grille.forme === "une-case" ? (
-            <div className="rounded-2xl px-4 py-3" style={{ backgroundColor: colors.card }}>
+            <div className="rounded-[4px] px-4 py-3" style={{ backgroundColor: colors.card }}>
               <Champ
                 nature={grille.nature}
                 cle={grille.cleUnique!}
@@ -187,7 +187,7 @@ export default function GrillesPrixClient({ initiales }: { initiales: Case[] }) 
             /* Un seul axe : pas d'accordéon non plus. Replier huit champs
                derrière un appui, quand il n'y a qu'une rangée, ajouterait un
                geste sans rien ranger. */
-            <div className="flex flex-col gap-2 rounded-2xl px-4 py-3" style={{ backgroundColor: colors.card }}>
+            <div className="flex flex-col gap-2 rounded-[4px] px-4 py-3" style={{ backgroundColor: colors.card }}>
               <span className={smallCaps} style={{ color: colors.muted }}>
                 {grille.axe}
               </span>
@@ -211,7 +211,7 @@ export default function GrillesPrixClient({ initiales }: { initiales: Case[] }) 
                 cases.has(`${grille.nature}|${rangee.cle}|${d.cle}`)
               ).length;
               return (
-                <div key={identifiantRangee} className="rounded-2xl" style={{ backgroundColor: colors.card }}>
+                <div key={identifiantRangee} className="rounded-[4px]" style={{ backgroundColor: colors.card }}>
                   <button
                     type="button"
                     onClick={() => setOuverte(ouvert ? null : identifiantRangee)}
@@ -319,7 +319,7 @@ function Champ({
         defaultValue={posee ? String(Number(posee.prix)) : ""}
         placeholder="—"
         onBlur={(e) => onPoser(nature, cle, e.target.value)}
-        className="w-24 rounded-xl px-3 py-2 text-right text-[14px]"
+        className="w-24 rounded-[4px] px-3 py-2 text-right text-[14px]"
         style={{
           backgroundColor: colors.cream,
           color: colors.ink,

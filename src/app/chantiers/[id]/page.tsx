@@ -7,6 +7,7 @@ import {
   getNextActionHref,
   getSecondarySteps,
 } from "@/lib/chantier-etat";
+import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { getCurrentCtx } from "@/server/session-ctx";
@@ -71,18 +72,14 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
           )}
         </div>
 
-        {/* Ordre de lecture : statut → nom → client */}
-        <div className="px-6 pt-5">
-          <span className={smallCaps} style={{ color: colors.rust }}>
-            {statutLabel[statut]}
-          </span>
-          <h1 className="mt-1 text-[32px] leading-tight" style={{ fontFamily: font.display }}>
-            {chantier.nom}
-          </h1>
-          <p className="mt-1.5 text-[14px]" style={{ color: colors.muted }}>
-            {chantier.clientNom ?? "Client non renseigné"} — {chantier.adresseChantier ?? "Adresse non renseignée"}
-          </p>
-        </div>
+        {/* Ordre de lecture : statut → nom → client. Même grammaire que les
+            autres écrans depuis le 10 août 2026 — le surtitre porte l'état,
+            qui est ce qu'on vient lire en premier. */}
+        <EnTeteEcran
+          surtitre={statutLabel[statut]}
+          titre={chantier.nom}
+          precision={`${chantier.clientNom ?? "Client non renseigné"} · ${chantier.adresseChantier ?? "Adresse non renseignée"}`}
+        />
 
         {/* Action principale unique, ou message calme si rien n'est requis */}
         <div className="px-6 pt-7">
@@ -111,7 +108,7 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
               )}
             </>
           ) : (
-            <div className="rounded-2xl px-5 py-4 text-center" style={{ backgroundColor: colors.card }}>
+            <div className="rounded-[4px] px-5 py-4 text-center" style={{ backgroundColor: colors.card }}>
               {/* « Rien à faire pour l'instant » était vrai et inutile : il ne
                   disait ni quand, ni quoi ensuite. Un écran qui ne dit pas où
                   l'on va se lit comme une application en panne. */}

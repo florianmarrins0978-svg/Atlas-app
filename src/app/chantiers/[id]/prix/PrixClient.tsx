@@ -125,7 +125,7 @@ export default function PrixClient({
   return (
     <>
       {/* Total — information la plus importante, en évidence */}
-      <div className="mx-6 mt-6 rounded-2xl px-5 py-6 text-center" style={{ backgroundColor: colors.card }}>
+      <div className="mx-6 mt-6 rounded-[4px] px-5 py-6 text-center" style={{ backgroundColor: colors.card }}>
         <p className={smallCaps} style={{ color: colors.muted, marginBottom: 6 }}>
           Total
         </p>
@@ -180,7 +180,7 @@ export default function PrixClient({
               value={ligne.libelle}
               onChange={(e) => modifierLibelle(ligne.id, e.target.value)}
               onBlur={(e) => persisterLibelle(ligne.id, e.target.value)}
-              className="flex-1 rounded-2xl border-0 px-4 py-3 outline-none"
+              className="flex-1 rounded-[4px] border-0 px-4 py-3 outline-none"
               style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "15px" }}
             />
             <input
@@ -189,7 +189,7 @@ export default function PrixClient({
               value={ligne.montant}
               onChange={(e) => modifierMontant(ligne.id, e.target.value)}
               onBlur={(e) => persisterMontant(ligne.id, e.target.value)}
-              className="w-24 flex-shrink-0 rounded-2xl border-0 px-3 py-3 text-right outline-none"
+              className="w-24 flex-shrink-0 rounded-[4px] border-0 px-3 py-3 text-right outline-none"
               style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "15px" }}
             />
           </AnimatedRow>
@@ -215,7 +215,7 @@ export default function PrixClient({
               bloque, et surtout par où sortir. */}
           {!verdict.possible && (
             <div
-              className="mb-3 rounded-2xl px-4 py-3"
+              className="mb-3 rounded-[4px] px-4 py-3"
               style={{ backgroundColor: colors.card }}
             >
               <p className="text-[14px]" style={{ color: colors.ink }}>

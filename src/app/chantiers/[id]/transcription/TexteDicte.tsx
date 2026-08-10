@@ -64,7 +64,7 @@ export default function TexteDicte({ chantierId, texteActuel, simulee }: Props) 
   }
 
   return (
-    <div className="mx-6 mt-5 rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
+    <div className="mx-6 mt-5 rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
       <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
         Écrire ce que vous avez dit
       </p>
@@ -95,7 +95,7 @@ export default function TexteDicte({ chantierId, texteActuel, simulee }: Props) 
         }}
         rows={6}
         placeholder="Exemple : élagage du grand chêne au fond du jardin, deux jours à deux, broyage sur place…"
-        className="w-full rounded-xl px-3 py-3 text-[15px] leading-relaxed"
+        className="w-full rounded-[4px] px-3 py-3 text-[15px] leading-relaxed"
         style={{ backgroundColor: colors.cream, color: colors.ink, border: `1px solid ${colors.rustTint}` }}
       />
 

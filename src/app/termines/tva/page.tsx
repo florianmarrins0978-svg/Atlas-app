@@ -1,4 +1,5 @@
 import Link from "next/link";
+import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { releveTvaCollectee } from "@/server/repositories/factures";
@@ -66,14 +67,7 @@ export default async function ReleveTvaPage({
           </Link>
         </div>
 
-        <div className="px-6 pt-5">
-          <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-            TVA collectée
-          </p>
-          <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
-            {libelleTrimestre(periode)}
-          </h1>
-        </div>
+        <EnTeteEcran surtitre="TVA collectée" titre={libelleTrimestre(periode)} />
 
         <div className="mt-5 flex items-center justify-between px-6 text-[14px] font-medium">
           <Link href={lien(precedent)} style={{ color: colors.rust }}>
@@ -85,7 +79,7 @@ export default async function ReleveTvaPage({
         </div>
 
         <div className="mt-6 flex flex-col gap-4 px-6">
-          <div className="rounded-2xl px-5 py-6 text-center" style={{ backgroundColor: colors.card }}>
+          <div className="rounded-[4px] px-5 py-6 text-center" style={{ backgroundColor: colors.card }}>
             <p className={smallCaps} style={{ color: colors.muted, marginBottom: 6 }}>
               TVA collectée
             </p>
@@ -101,13 +95,13 @@ export default async function ReleveTvaPage({
           </div>
 
           {releve.lignes.length === 0 ? (
-            <div className="rounded-2xl px-5 py-8 text-center" style={{ backgroundColor: colors.card }}>
+            <div className="rounded-[4px] px-5 py-8 text-center" style={{ backgroundColor: colors.card }}>
               <p className="text-[14px]" style={{ color: colors.muted }}>
                 Aucune facture émise sur ce trimestre.
               </p>
             </div>
           ) : (
-            <div className="rounded-2xl px-5 py-5" style={{ backgroundColor: colors.card }}>
+            <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
               <p className={smallCaps} style={{ color: colors.muted, marginBottom: 12 }}>
                 {releve.lignes.length} facture{releve.lignes.length > 1 ? "s" : ""}
               </p>

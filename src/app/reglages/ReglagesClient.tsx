@@ -62,7 +62,7 @@ export default function ReglagesClient({
           chantiers peuvent tomber le même jour. Il vit ici plutôt que sur
           l'écran d'envoi parce qu'il change une ou deux fois par an, pas à
           chaque devis. */}
-      <div className="mb-7 flex flex-col gap-2 rounded-2xl p-4" style={{ backgroundColor: colors.card }}>
+      <div className="mb-7 flex flex-col gap-2 rounded-[4px] p-4" style={{ backgroundColor: colors.card }}>
         <span className={smallCaps} style={{ color: colors.muted }}>
           Mes équipes
         </span>
@@ -119,7 +119,7 @@ export default function ReglagesClient({
 
       <ul className="mt-5 flex flex-col gap-3">
         {tarifs.map((t) => (
-          <li key={t.id} className="flex flex-col gap-2 rounded-2xl p-4" style={{ backgroundColor: colors.card }}>
+          <li key={t.id} className="flex flex-col gap-2 rounded-[4px] p-4" style={{ backgroundColor: colors.card }}>
             <div className="flex items-center gap-2">
               <input
                 value={t.intitule}
@@ -127,7 +127,7 @@ export default function ReglagesClient({
                 aria-label="Intitulé du tarif"
                 onChange={(e) => modifierLocal(t.id, "intitule", e.target.value)}
                 onBlur={(e) => persister(t.id, "intitule", e.target.value)}
-                className="min-w-0 flex-1 rounded-xl border-0 px-3 py-2.5 outline-none"
+                className="min-w-0 flex-1 rounded-[4px] border-0 px-3 py-2.5 outline-none"
                 style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
               />
               <button
@@ -152,7 +152,7 @@ export default function ReglagesClient({
                   aria-label="Prix du tarif"
                   onChange={(e) => modifierLocal(t.id, "prix", e.target.value)}
                   onBlur={(e) => persister(t.id, "prix", e.target.value)}
-                  className="rounded-xl border-0 px-3 py-2.5 text-right outline-none"
+                  className="rounded-[4px] border-0 px-3 py-2.5 text-right outline-none"
                   style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
                 />
               </label>
@@ -169,7 +169,7 @@ export default function ReglagesClient({
                   aria-label="Unité du tarif"
                   onChange={(e) => modifierLocal(t.id, "unite", e.target.value)}
                   onBlur={(e) => persister(t.id, "unite", e.target.value)}
-                  className="rounded-xl border-0 px-3 py-2.5 outline-none"
+                  className="rounded-[4px] border-0 px-3 py-2.5 outline-none"
                   style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
                 />
               </label>

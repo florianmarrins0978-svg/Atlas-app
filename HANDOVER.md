@@ -82,10 +82,19 @@ charte retenue est **Origine** — celle que l'application portait déjà.
 ATLAS et « Bonjour Florian », la boîte autour d'un chantier, et toute couleur
 qui ne désigne rien.
 
-**Les écrans AUTRES que l'accueil n'ont pas suivi.** Planning, Terminés,
-Réglages et la fiche chantier portent encore les cartes, les rayons de 14 px et
-l'ancienne grammaire. Le bandeau du bas, lui, a changé pour tout le monde — il
-est partagé. À reprendre écran par écran, pas d'un bloc.
+**La grammaire est portée par TROIS pièces partagées** — les toucher change
+toute l'application d'un coup, et c'est voulu : `PrimaryButton` (27 écrans),
+`EnTeteEcran` (nouveau) et les jetons de `src/lib/design-tokens.ts`
+(`radius`, `cardShadow` qui vaut « none »). Ne pas recopier une allure dans un
+écran : l'ajouter à ces pièces.
+
+**Ce qui reste dans l'ancienne grammaire :** l'INTÉRIEUR des écrans profonds —
+photos, dictée, prix, export, facture. Leur en-tête et leurs boutons ont suivi ;
+leurs listes et leurs encarts non. À reprendre écran par écran.
+
+**Deux familles ne doivent PAS suivre**, et ce n'est pas un oubli : les
+maquettes `/design/*` (découplées du produit) et les pages que le CLIENT reçoit
+(`devis/[jeton]`, `factures/[jeton]`). Un devis n'est pas un écran.
 
 **Une règle de charte, née de la 12 et qui vaut pour tout l'écran :** une
 couleur qui ne veut rien dire est une couleur en trop. L'accent d'attente ne se
