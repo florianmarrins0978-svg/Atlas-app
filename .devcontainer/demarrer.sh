@@ -190,6 +190,15 @@ fi
 # Les deux variables sont posées par Codespaces. Absentes ailleurs (essai en
 # local, autre machine) : on ne raconte alors rien plutôt que d'inventer une
 # adresse fausse.
+# **Le port doit être PUBLIC, et le déclarer ne suffit pas.**
+#
+# `devcontainer.json` le déclare depuis le 6 août 2026 — mais ce fichier n'est
+# appliqué qu'à la CRÉATION de l'espace, et celui du patron est plus ancien. Le
+# 10 août au soir, son port était donc privé : GitHub répondait par sa page de
+# connexion à la place d'Atlas, et son téléphone ne voyait rien. Le geste est
+# rejoué ici, à chaque allumage. Le pourquoi complet est dans `ouvrir-port.sh`.
+PORT_PUBLIC="$(bash "$(dirname "$0")/ouvrir-port.sh" 3000)"
+
 ADRESSE=""
 if [ -n "${CODESPACE_NAME:-}" ] && [ -n "${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-}" ]; then
   ADRESSE="https://${CODESPACE_NAME}-3000.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
@@ -213,6 +222,22 @@ else
 fi
 echo "──────────────────────────────────────────────"
 echo "  Version exécutée : $ATLAS_VERSION"
+
+# Ce qu'il advient du port, dit en toutes lettres. Le taire a coûté une soirée :
+# l'application répondait parfaitement, et c'est GitHub qui parlait à sa place.
+case "$PORT_PUBLIC" in
+  ouvert)
+    echo "  Port : ouvert à tous — l'adresse s'ouvre depuis un téléphone."
+    ;;
+  sans-gh|échec)
+    echo
+    echo "  ⚠ LE PORT EST PEUT-ÊTRE PRIVÉ. Depuis un téléphone non connecté"
+    echo "    à GitHub, l'adresse montre une page de connexion GitHub au lieu"
+    echo "    d'Atlas. Une commande, ici, règle cela :"
+    echo
+    echo "      gh codespace ports visibility 3000:public -c \$CODESPACE_NAME"
+    ;;
+esac
 
 # **L'IA est-elle branchée ?** Écrit ici parce que la question s'est posée un
 # jour où rien ne pouvait y répondre : les clés étaient enregistrées, elles

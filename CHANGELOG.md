@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le port du banc s'ouvre à chaque allumage, au lieu d'être seulement déclaré
+
+**Ce que le diagnostic du patron a rapporté**, le soir même : l'application
+saine de l'intérieur — `200 · text/html` sur `/login` — et, à l'adresse
+publique, une page `/pf-signin?...`. **C'est GitHub qui répondait, pas Atlas.**
+Le port était privé ; depuis son téléphone, non connecté à GitHub, il n'y avait
+rien à voir, et rien ne le disait.
+
+Or `devcontainer.json` déclare `visibility: "public"` depuis le 6 août. La
+déclaration n'était pas fausse, elle était **inerte** : ce fichier n'est appliqué
+qu'à la **création** de l'espace de travail, et le sien est plus ancien que la
+ligne. C'est très exactement le piège d'`ATLAS_BANC_ESSAI` dans
+`docker-compose.yml` (`src/profil-banc.ts`) — **la troisième fois** qu'une
+déclaration exacte et sans effet coûte une soirée. Une déclaration ne répare pas
+un espace déjà né ; seul un geste rejoué à chaque allumage le fait.
+
+`.devcontainer/ouvrir-port.sh` publie donc le port à chaque démarrage, et **dit
+ce qu'il en advient** : le taire était la moitié du défaut. Sans `gh`, ou si
+`gh` refuse, le démarrage affiche la commande de secours au lieu de laisser
+croire que tout va bien.
+
+`scripts/test-ouvrir-port.ts` l'éprouve avec un **faux `gh`** posé devant le
+vrai — l'agent n'a pas d'espace GitHub, et un contrôle qu'on ne peut pas jouer
+ne prouve rien. Il vérifie la commande exacte envoyée, les deux modes de panne,
+et **que `demarrer.sh` l'appelle vraiment** : un script juste que personne
+n'appelle ne répare rien, ce qui est le défaut d'origine. Ce dernier contrôle a
+d'ailleurs commencé par rester vert alors que l'appel avait été supprimé — il
+lisait le commentaire qui le surplombe. Les commentaires sont maintenant retirés
+avant de regarder ; c'est le même piège que le test de l'annonce d'adresse.
+
 ### Le correctif de la session fantôme, éprouvé — et trois défauts qu'il cachait
 
 Le remède posé quelques heures plus tôt **fonctionnait sur le papier et pas dans

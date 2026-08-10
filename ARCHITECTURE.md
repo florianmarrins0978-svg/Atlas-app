@@ -3619,3 +3619,45 @@ dans `eslint.config.mjs` pour tout le JavaScript du dépôt, avec les globales
 lues sur `globalThis` du processus qui joue ESLint — les énumérer à la main
 condamnerait à un faux positif le jour où un script emploie `structuredClone`,
 et un contrôle qui accuse à tort coûte plus cher que pas de contrôle.
+
+---
+
+## 55. Une déclaration ne répare pas un espace déjà né
+
+**Le fait, constaté trois fois.** `devcontainer.json` et `docker-compose.yml`
+sont lus à la **création** de l'espace de travail. Une ligne ajoutée après coup
+y est exacte et **sans le moindre effet** sur un espace existant — et rien ne le
+signale, ni au démarrage, ni dans l'éditeur.
+
+| Ce qui a été déclaré | Où | Ce que ça a coûté |
+|---|---|---|
+| `ATLAS_BANC_ESSAI=1` | `docker-compose.yml` | deux correctifs de suite restés inertes, sans message |
+| `CODESPACE_NAME` | `docker-compose.yml` | l'adresse publique introuvable |
+| `portsAttributes.3000.visibility: "public"` | `devcontainer.json` | une soirée : GitHub répondait `/pf-signin` à la place d'Atlas, et le téléphone ne voyait rien |
+
+**La règle qui en découle.** Tout réglage d'environnement dont dépend le banc se
+rejoue **à chaque allumage**, depuis `.devcontainer/demarrer.sh` — un fichier du
+dépôt, qui descend avec le code. La déclaration reste, pour les espaces à naître ;
+le geste la double, pour ceux qui existent déjà. Les deux ne font pas double
+emploi : ils couvrent deux populations différentes.
+
+C'est ce que font `ATLAS_PROFIL=banc` (§45) et, depuis le 10 août 2026,
+`ouvrir-port.sh`.
+
+**Et le verdict se dit.** Le taire était la moitié du défaut : l'application
+répondait parfaitement, et c'est GitHub qui parlait à sa place. Sans `gh`, ou si
+`gh` refuse, le démarrage affiche la commande de secours plutôt que de laisser
+croire que tout va bien.
+
+**Éprouvé avec un FAUX `gh`.** L'agent n'a ni espace GitHub ni `gh` : un contrôle
+qu'on ne peut pas jouer ne prouve rien. `scripts/test-ouvrir-port.ts` pose un
+`gh` factice devant le vrai dans le `PATH` et vérifie la commande exacte envoyée
+— une commande approchante ne ferait rien, en silence — puis les deux modes de
+panne, puis **que `demarrer.sh` l'appelle vraiment**.
+
+Ce dernier point mérite son existence : un script juste que personne n'appelle
+ne répare rien, ce qui est précisément le défaut d'origine. Et il a commencé par
+rester **vert alors que l'appel avait été supprimé** — il lisait le commentaire
+qui le surplombe, où le nom du script figure. Les commentaires sont maintenant
+retirés avant de regarder. Même piège que le test de l'annonce d'adresse (§50) :
+un contrôle qui vise un texte au lieu d'un geste ne contrôle rien.

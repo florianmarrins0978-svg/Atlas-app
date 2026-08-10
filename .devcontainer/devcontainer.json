@@ -60,6 +60,16 @@
   // serait de faire venir `demo1234` d'un secret du compte plutôt que du dépôt.
   // Proposé au patron le 6 août 2026 ; il n'a pas tranché, donc rien n'est fait.
   //
+  // **ET CETTE DÉCLARATION NE SUFFIT PAS — constaté le 10 août 2026.** Le port
+  // du patron était PRIVÉ malgré cette ligne : son diagnostic a rapporté une
+  // page `/pf-signin?...` de GitHub là où Atlas aurait dû répondre. `devcontainer.json`
+  // n'est appliqué qu'à la CRÉATION de l'espace, et le sien est plus ancien que
+  // cette ligne. C'est le piège d'`ATLAS_BANC_ESSAI` dans `docker-compose.yml`
+  // (voir `src/profil-banc.ts`), pour la troisième fois : une déclaration ne
+  // répare pas un espace déjà né. Le geste est donc rejoué à chaque allumage par
+  // `.devcontainer/ouvrir-port.sh`. Ne pas retirer l'un en croyant que l'autre
+  // suffit — ils couvrent deux cas différents.
+  //
   // Ce que cela expose, et ce que cela n'expose pas : l'application garde son
   // écran de connexion, et la page du client reste protégée par un jeton
   // imprévisible. Ce qui devient joignable, c'est la porte, pas le contenu.

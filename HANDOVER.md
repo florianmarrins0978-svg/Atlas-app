@@ -80,6 +80,18 @@ avec une ligne par équipe. Réglages laisse nommer les équipes.
    est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
    sans qu'aucun chiffre ne manque.
 
+**Le port du banc, ouvert à chaque allumage (10 août, tard).** Le diagnostic du
+patron a rapporté une page de connexion **GitHub** à la place d'Atlas :
+`devcontainer.json` déclare le port public depuis le 6 août, mais ce fichier
+n'est appliqué **qu'à la création** de l'espace, et le sien est plus ancien.
+Troisième fois que ce piège coûte une soirée — le même qu'`ATLAS_BANC_ESSAI`
+dans `docker-compose.yml`. **Une déclaration ne répare pas un espace déjà né :
+tout correctif d'environnement doit être rejoué à chaque allumage**, dans
+`.devcontainer/demarrer.sh`, qui descend avec le code. Fait par
+`ouvrir-port.sh`, tenu par `scripts/test-ouvrir-port.ts` avec un faux `gh` —
+`gh` n'existe pas dans l'espace de l'agent, et un contrôle qu'on ne peut pas
+jouer ne prouve rien.
+
 **La session fantôme, close et tenue par un test (10 août, tard).** Le remède
 posé plus tôt dans la soirée fonctionnait sur le papier et **pas dans un
 navigateur** : le contrôle écrit pour le tenir a trouvé trois défauts d'affilée.
