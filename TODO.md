@@ -264,6 +264,22 @@ des goûts :
 - **Un état vide se dit en toutes lettres**, jamais par un titre de section
   suivi de rien.
 
+**Le fil (C) est celui qu'il préfère** — *« j'aime beaucoup le C »*, le
+2026-08-10. Il a demandé d'y ajouter **le nombre de chantiers pas encore
+facturés** ; quatre placements sont proposés dans
+`maquettes/atlas-termines-fil.html` (C1 la phrase seule en tête, C2 la phrase
+chiffrée, C3 dans le fil avec une perle creuse, C4 au pied en regard du total).
+**Il n'a pas encore choisi entre les quatre.**
+
+Ce qui est acquis pour ce texte, quel que soit le placement :
+
+- **Le montant en attente vient du devis accepté**, et l'écran le dit —
+  « prévus aux devis », jamais « à encaisser ». Un devis n'est pas une facture.
+- **Le compte s'écrit en toutes lettres** (« Deux à facturer »), et **à zéro la
+  phrase disparaît** au profit de « Rien n'attend de facture ». Jamais de « 0 ».
+- **La perle creuse veut dire « pas encore facturé »** — le même vocabulaire que
+  l'anneau du planning, qui veut dire « il reste de la place ».
+
 Deux points à trancher avec lui, notés ici pour ne pas les redécouvrir :
 
 - **Une facture à 0,00 €** existe dans ses données (F2026-0001). Devis vide

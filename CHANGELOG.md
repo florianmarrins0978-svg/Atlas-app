@@ -9,6 +9,26 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le fil retenu, et le texte qui dit ce qui attend sa facture
+
+Le patron a retenu **le fil par mois** et demandé d'y voir *« le nombre de devis
+qui n'ont pas été encore facturés »*. Quatre placements dans
+`maquettes/atlas-termines-fil.html` — en tête, en tête chiffré, dans le fil, au
+pied — parce que le placement change le sens : en tête, la phrase passe devant
+ce qui est fait sur un écran qui s'appelle « Terminés » ; dans le fil, elle
+prend sa place dans le temps.
+
+**Ce qui est acquis quel que soit le choix :** le montant en attente vient du
+**devis accepté** et l'écran le dit (« prévus aux devis », jamais « à
+encaisser » — un devis n'est pas une facture) ; le compte s'écrit en toutes
+lettres ; et **à zéro la phrase disparaît** au lieu d'afficher un « 0 ».
+
+**Deux défauts vus à la capture, aucun aux contrôles d'abord** : « à faire » se
+cassait en deux dans la marge du fil — cette marge fait 47 px, elle tient une
+date, pas un titre —, et « Terminé le 5 août » passait à la ligne. Un contrôle
+neuf mesure maintenant la hauteur de chaque étiquette contre son interligne, et
+rougit dès qu'une passe sur deux lignes.
+
 ### « Terminés » — quatre propositions, et trois défauts de l'écran actuel
 
 Le patron a envoyé une capture de l'écran réel et demandé des propositions.
