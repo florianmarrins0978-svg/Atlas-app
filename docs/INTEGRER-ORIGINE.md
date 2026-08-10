@@ -348,6 +348,20 @@ est désormais sous les yeux.
 cadre et le glisseur se décale seul de 26 px au chargement — la première photo
 arrive déjà coupée.
 
+### L'en-tête de la fiche ne suit PAS la maquette — décidé le 10 août 2026
+
+La maquette montre, autour de l'anneau, une **scène** entière : grand titre
+serif, phrase de situation, à la place de l'en-tête commun. **Elle n'a pas été
+reprise, et c'est une décision du patron, pas un oubli** — la question lui a
+été posée en image, sa réponse : *« N'y touche pas. »*
+
+`EnTeteEcran` est une **pièce partagée** par la fiche, le planning, les
+terminés, les réglages et les six écrans d'étape. La refaire pour la seule
+fiche désaccorderait cet écran de tous les autres ; la refaire partout serait un
+lot en soi, touchant l'accueil — que le patron a arrêté.
+
+**Ne pas « corriger » cet écart en le découvrant.** Il est connu et voulu.
+
 ### Fait le 10 août 2026 — et trois pièges que la maquette ne pouvait pas poser
 
 Tout ce qui précède est en place (`AnneauNoteVocale.tsx`, `TiroirFiche.tsx`).

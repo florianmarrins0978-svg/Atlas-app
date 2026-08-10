@@ -454,11 +454,22 @@ deviennent une **pellicule** dans le tiroir du bas, case « + » en tête, et la
 ligne « Photos · 6 photos » disparaît. Détail et pièges dans
 `ARCHITECTURE.md` §49.
 
-**Ce qui n'a pas été refait, et c'est délibéré :** l'en-tête de la fiche et son
-pavé d'action principale. La demande nommait la note vocale et les photos ; la
-maquette raconte en plus une scène entière (titre serif, phrase de situation)
-qui remplacerait `EnTeteEcran` sur cet écran seul. À poser au patron avant d'y
-toucher — c'est un choix, pas un reste.
+**L'en-tête de la fiche ne bouge pas — ~~à trancher~~ TRANCHÉ le 10 août 2026.**
+
+La maquette `atlas-note-vocale.html` raconte en plus de l'anneau une **scène**
+entière : grand titre serif, phrase de situation (« Intervention prévue vendredi
+15 août »), à la place de l'en-tête commun. La question lui a été posée en
+image ; sa réponse : **« N'y touche pas. »**
+
+**Ne pas la rouvrir en découvrant l'écart avec la maquette.** L'écart est connu
+et voulu. `EnTeteEcran` est **une seule pièce partagée** par la fiche, le
+planning, les terminés, les réglages et les six écrans d'étape : la refaire
+pour la seule fiche désaccorderait cet écran de tous les autres, et la refaire
+partout serait un lot en soi, touchant l'accueil — que le patron a arrêté et
+qu'il ne veut pas revoir.
+
+Si le sujet revient, c'est **lui** qui le rouvre, et alors c'est « partout »
+ou rien.
 
 ### 7. Finir la refonte — l'ordre, les pièges, les valeurs
 

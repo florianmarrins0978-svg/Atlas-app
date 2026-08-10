@@ -3255,6 +3255,19 @@ ailleurs.
 première version annonçait « faites descendre » alors que le doigt fait monter :
 une consigne fausse coûte plus cher qu'aucune consigne.
 
+### Ce qui n'a PAS été repris de la maquette, et par décision
+
+La maquette montre autour de l'anneau une **scène** entière — grand titre serif,
+phrase de situation — à la place de l'en-tête commun. **Elle n'est pas
+appliquée, et c'est un choix du patron du 10 août 2026 :** *« N'y touche pas. »*
+
+La raison tient en une ligne : `EnTeteEcran` est une pièce **partagée** par la
+fiche, le planning, les terminés, les réglages et les six écrans d'étape. La
+refaire pour la seule fiche désaccorderait cet écran de tous les autres ; la
+refaire partout est un lot en soi, qui toucherait l'accueil — arrêté et non
+rouvrable. **Cet écart avec la maquette est connu et voulu : ne pas le
+« corriger ».**
+
 ### Ce que ce lot dit des contrôles
 
 **Tous les défauts de ce lot ont été trouvés à l'œil, aucun par un contrôle** :
