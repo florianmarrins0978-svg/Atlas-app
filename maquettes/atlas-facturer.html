@@ -1,0 +1,371 @@
+<title>Atlas — Terminés · de l'encart au devis, du devis à la facture</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT pour la page. Le parcours se joue en entier :
+    « Deux à facturer » → « Chez Mme Roux » → « Créer la facture ».
+
+    E1 RETENU, avec la pastille de E2. Le patron, le 2026-08-10 :
+    « je veux le E1, mais rajoute le petit rond avec le 2 collé à août. Et
+    quand je clique sur le bandeau deux à facturer, j'arrive chez Mme Roux ;
+    quand je clique sur Chez Mme Roux, ça m'amène sur la touche qui transforme
+    le devis en facture. Comme ça j'ai juste à cliquer dessus, ça me crée la
+    facture, et ensuite je n'ai plus qu'à l'envoyer. »
+
+    TROIS ÉCRANS, TROIS APPUIS, ET PAS UN DE PLUS :
+      1. le mois s'ouvre          → on voit qui attend
+      2. on touche le chantier    → son devis, et la touche qui facture
+      3. on touche « Créer »      → la facture existe, prête à partir
+
+    CE QUI NE DOIT PAS ÊTRE DÉFAIT, et qui est une règle du produit, pas un
+    goût (CLAUDE.md §4) : CRÉER N'EST PAS ENVOYER. La facture naît d'un appui,
+    elle part d'un autre. Fondre les deux ferait partir un document au client
+    sur un geste destiné à le préparer.
+
+    CE QUE ÇA CHANGE DANS LE CODE. La touche existe déjà — c'est
+    `terminerChantierAction` (`src/app/chantiers/[id]/facture/FactureClient.tsx`),
+    aujourd'hui étiquetée « Fin de chantier → ». Le nom ne dit pas ce que le
+    geste fait : il BÂTIT LA FACTURE à partir du devis. La maquette l'appelle
+    « Créer la facture ». À renommer avec le patron.
+    L'action est déjà IDEMPOTENTE (`src/server/repositories/factures.ts` §56) :
+    rappuyer redonne la facture déjà bâtie au lieu d'en faire une seconde.
+
+    CE QUE LA MAQUETTE NE MONTRE PAS : le montant du devis peut différer du
+    travail réellement fait. C'est pourquoi l'écran dit « reprend le devis à
+    l'identique » et laisse la facture modifiable avant l'envoi.
+  */
+
+  :root{
+    --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c;
+    --bronze:#8f7130; --trait:rgba(22,23,15,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1400px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 34px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:390px;max-width:100%}
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:760px;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#edece6; --e-plage:#f7f6f2; --e-encre:#16170f; --e-gris:#83867c;
+         --e-bronze:#8f7130; --e-trait:rgba(22,23,15,.13); --e-plein:#2a3a2e;
+         --e-plein-encre:#f2f1ea; --e-signe:#c2a05f}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  /* ═══ Les trois vues d'un même téléphone ═════════════════════════════ */
+  /* `:target` plutôt que case à cocher : le couple <label> + case se dérobe
+     sur l'iPhone du patron, et un lien ordinaire est honoré partout.
+     Les vues cachées sont posées AVANT la liste pour qu'un sélecteur de frère
+     puisse la masquer — un sélecteur de frère ne remonte jamais. */
+  .vue{display:none;flex-direction:column;height:100%;scroll-margin-top:140px}
+  .vue.depart{display:flex}
+  .vue:target{display:flex}
+  #devis:target ~ .depart,
+  #faite:target ~ .depart{display:none}
+
+  .tete{padding:26px 26px 0;flex:none}
+  .tete .sur{margin:0;color:var(--e-bronze)}
+  .tete h1{margin:9px 0 0;font:400 34px/1 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
+
+  .retour{display:flex;align-items:center;justify-content:center;width:44px;height:44px;
+          margin:18px 0 0 20px;border-radius:99px;color:var(--e-encre);
+          font:400 19px/1 ui-serif,Georgia,serif;text-decoration:none;
+          -webkit-tap-highlight-color:transparent}
+  .retour:active{color:var(--e-bronze)}
+
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;background:var(--e-fond)}
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9px;letter-spacing:.15em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre)}
+  .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;
+         background:var(--e-bronze);left:calc(14px + 2*(100% - 28px)/4)}
+
+  /* ═══ Le fil ═════════════════════════════════════════════════════════ */
+  .fil{position:relative;margin:24px 26px 0}
+  .fil::before{content:"";position:absolute;left:47px;top:14px;bottom:16px;
+               width:1px;background:var(--e-trait)}
+  .mois{position:relative;display:grid;grid-template-columns:47px 1fr;gap:0 26px;padding:14px 0 4px}
+  .mois .m{text-align:right;padding-right:13px}
+  .mois .m b{display:block;font:400 17px/1 ui-serif,Georgia,serif}
+  .mois .m span{display:block;margin-top:4px;font-size:9px;letter-spacing:.16em;
+                text-transform:uppercase;color:var(--e-gris)}
+  .mois .tot{align-self:center;text-align:right;font-size:11px;letter-spacing:.2em;
+             text-transform:uppercase;color:var(--e-bronze);font-variant-numeric:tabular-nums}
+  /* La pastille se pose SUR LE FIL, à hauteur du mois : la marge fait 47 px et
+     n'a pas de place en trop — posée dedans, elle chevauchait « août ». */
+  .pastille{position:absolute;left:47px;top:19px;transform:translate(-50%,-50%);
+            display:flex;align-items:center;justify-content:center;
+            width:20px;height:20px;border-radius:99px;background:var(--e-fond);
+            box-shadow:inset 0 0 0 1px var(--e-bronze);color:var(--e-bronze);
+            font:400 11px/1 ui-serif,Georgia,serif;font-variant-numeric:tabular-nums}
+
+  .brin{display:grid;grid-template-columns:47px 1fr;gap:0 26px}
+  .brin > *{min-width:0}
+  .brin .creux{position:relative}
+  .brin .creux i{position:absolute;left:47px;top:22px;width:7px;height:7px;
+                 border-radius:99px;transform:translate(-50%,-50%);
+                 background:var(--e-bronze);box-shadow:0 0 0 4px var(--e-fond)}
+  .brin .creux i.vide{background:var(--e-fond);
+                      box-shadow:inset 0 0 0 1px var(--e-bronze),0 0 0 4px var(--e-fond)}
+
+  .fact{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+        padding:14px 0;text-decoration:none;color:inherit;
+        -webkit-tap-highlight-color:transparent}
+  .fact .qui{min-width:0}
+  .fact .n{display:block;font:400 17px/1.2 ui-serif,Georgia,serif;
+           white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fact .ref{display:block;margin-top:3px;font-size:11px;letter-spacing:.14em;
+             text-transform:uppercase;color:var(--e-gris);
+             white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fact .eur{flex:none;font:400 16px/1.2 ui-serif,Georgia,serif;
+             font-variant-numeric:tabular-nums;text-align:right}
+  .fact .eur.prevu{color:var(--e-bronze)}
+
+  .pied{margin:22px 26px 0;border-top:1px solid var(--e-trait);padding-top:16px}
+  .lg{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+      padding:5px 0;font-size:14px}
+  .lg b{font-weight:400;font-variant-numeric:tabular-nums}
+  .lien{display:flex;align-items:center;justify-content:space-between;gap:14px;
+        padding:15px 0 0;text-decoration:none;color:inherit;
+        -webkit-tap-highlight-color:transparent}
+  .lien .t{font:400 16px/1.2 ui-serif,Georgia,serif}
+  .lien .f{color:var(--e-bronze);font-size:15px}
+
+  /* L'encart : 44 px de haut, sinon une ligne de 9,5 px se rate. */
+  .encart{display:flex;align-items:center;gap:9px;margin-left:73px;
+          min-height:44px;color:var(--e-bronze);
+          -webkit-tap-highlight-color:transparent}
+  .encart .q{white-space:nowrap;letter-spacing:.22em}
+  .encart .v{font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;opacity:.8}
+  .encart .chevron{margin-left:auto;font-size:15px;
+                   transition:transform .4s cubic-bezier(.22,.61,.36,1)}
+  .ouv:checked ~ label .chevron{transform:rotate(90deg)}
+  /* Le dépliage calcule sa hauteur seul : aucun chiffre magique à tenir à jour
+     quand le nombre de chantiers change. */
+  .volet{display:grid;grid-template-rows:0fr;
+         transition:grid-template-rows .46s cubic-bezier(.22,.61,.36,1)}
+  .volet > div{overflow:hidden}
+  .ouv:checked ~ .volet{grid-template-rows:1fr}
+  .source{margin:2px 0 10px 73px;font-size:12px;color:var(--e-gris)}
+
+  /* ═══ Le devis, et la touche qui le transforme ═══════════════════════ */
+  .fiche{padding:0 26px}
+  .fiche .sur{margin:20px 0 0;color:var(--e-bronze)}
+  .fiche h1{margin:9px 0 0;font:400 32px/1.05 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .fiche .quand{margin:9px 0 0;font-size:12.5px;color:var(--e-gris)}
+  .bloc{margin-top:26px;border-top:1px solid var(--e-trait)}
+  .l{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+     padding:13px 0;border-bottom:1px solid var(--e-trait)}
+  .l .k{font-size:12.5px;color:var(--e-gris)}
+  .l .v{font:400 16px/1.2 ui-serif,Georgia,serif;text-align:right;
+        font-variant-numeric:tabular-nums}
+  .l.somme{border-bottom:0;padding-top:16px}
+  .l.somme .k{font-size:11px;letter-spacing:.24em;text-transform:uppercase}
+  .l.somme .v{font:400 23px/1 ui-serif,Georgia,serif;white-space:nowrap}
+  .l.somme{border-top:1px solid var(--e-encre);margin-top:6px}
+
+  /* LA touche. Un seul pavé plein sur tout l'écran : c'est ce qui en fait
+     l'action évidente. En mettre deux, c'est n'en avoir aucune. */
+  .agir{display:flex;align-items:center;justify-content:center;gap:12px;
+        margin-top:28px;padding:18px 22px;border-radius:99px;
+        background:var(--e-plein);color:var(--e-plein-encre);text-decoration:none;
+        white-space:nowrap;font:400 17px/1 ui-serif,Georgia,serif;
+        -webkit-tap-highlight-color:transparent;
+        transition:transform .18s cubic-bezier(.22,.61,.36,1)}
+  .agir:active{transform:scale(.985)}
+  .agir .fl{color:var(--e-signe)}
+  .apres{margin:14px 0 0;text-align:center;font-size:11.5px;line-height:1.65;color:var(--e-gris)}
+
+  /* L'issue : la facture existe, elle n'est pas partie. */
+  .sceau{display:flex;align-items:center;gap:12px;margin-top:24px;color:var(--e-bronze)}
+  .sceau i{display:block;width:7px;height:7px;border-radius:99px;background:var(--e-bronze)}
+  .sceau span{font-size:11px;letter-spacing:.24em;text-transform:uppercase}
+  .doux{display:flex;align-items:center;justify-content:center;gap:10px;
+        margin-top:14px;padding:15px 22px;border-radius:99px;
+        box-shadow:inset 0 0 0 1px var(--e-trait);color:var(--e-encre);
+        text-decoration:none;font:400 15px/1 ui-serif,Georgia,serif;
+        -webkit-tap-highlight-color:transparent}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+  }
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Terminés · facturer en trois appuis</p>
+    <h1>De l'encart à la facture</h1>
+    <p>
+      Le parcours se joue en entier sur le téléphone :
+      <strong>« Deux à facturer »</strong> ouvre le mois,
+      <strong>« Chez Mme Roux »</strong> ouvre son devis, et
+      <strong>« Créer la facture »</strong> la fait exister.
+    </p>
+    <p>
+      La pastille <strong>2</strong> est posée sur le fil, contre août — elle
+      dit qu'il reste deux chantiers à facturer <em>ce mois-là</em>.
+      <strong>Créer n'est pas envoyer</strong> : la facture naît d'un appui,
+      elle part d'un autre.
+    </p>
+  </div>
+
+  <div class="rangee">
+    <div class="prop">
+      <div class="tel"><div class="ecran" data-s="f">
+
+        <!-- ── Le devis (caché tant qu'on ne l'a pas demandé) ────────── -->
+        <div class="vue" id="devis">
+          <a class="retour" href="#liste" aria-label="Retour aux chantiers terminés">‹</a>
+          <div class="corps">
+            <div class="fiche">
+              <p class="sur caps">Devis accepté · D2026-0031</p>
+              <h1>Chez Mme Roux</h1>
+              <p class="quand">Chantier terminé le 20 août. Pas encore facturé.</p>
+
+              <div class="bloc">
+                <p class="l"><span class="k">Client</span><span class="v">Mme Roux</span></p>
+                <p class="l"><span class="k">Travaux</span><span class="v">Terrasse et muret</span></p>
+                <p class="l"><span class="k">Total hors taxes</span><span class="v num">1 033,33 €</span></p>
+                <p class="l"><span class="k">TVA · 20 %</span><span class="v num">206,67 €</span></p>
+                <p class="l somme"><span class="k">Total du devis</span><span class="v num">1 240,00 €</span></p>
+              </div>
+
+              <a class="agir" href="#faite">Créer la facture <span class="fl">→</span></a>
+              <p class="apres">La facture reprend le devis à l'identique. Vous pourrez encore
+                la modifier — <b>rien ne part au client tant que vous ne l'envoyez pas</b>.</p>
+            </div>
+          </div>
+          <nav class="bas"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Réglages</span><i></i></nav>
+        </div>
+
+        <!-- ── La facture existe, elle n'est pas partie ──────────────── -->
+        <div class="vue" id="faite">
+          <a class="retour" href="#liste" aria-label="Retour aux chantiers terminés">‹</a>
+          <div class="corps">
+            <div class="fiche">
+              <p class="sur caps">Facture · F2026-0007</p>
+              <h1>Chez Mme Roux</h1>
+              <p class="quand">Créée à l'instant, à partir du devis D2026-0031.</p>
+
+              <div class="sceau"><i></i><span>Prête à envoyer</span></div>
+
+              <div class="bloc">
+                <p class="l"><span class="k">Total hors taxes</span><span class="v num">1 033,33 €</span></p>
+                <p class="l"><span class="k">TVA · 20 %</span><span class="v num">206,67 €</span></p>
+                <p class="l somme"><span class="k">Total facturé</span><span class="v num">1 240,00 €</span></p>
+              </div>
+
+              <a class="agir" href="#faite">Envoyer au client <span class="fl">→</span></a>
+              <a class="doux" href="#devis">Revoir le détail</a>
+              <p class="apres">Rien n'est parti. <b>L'envoi est un second geste</b> —
+                c'est lui qui rend la facture définitive et la porte au relevé de TVA.</p>
+            </div>
+          </div>
+          <nav class="bas"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Réglages</span><i></i></nav>
+        </div>
+
+        <!-- ── La liste, au départ ───────────────────────────────────── -->
+        <div class="vue depart" id="liste">
+          <div class="tete"><p class="sur caps">Chantiers réalisés</p><h1>Terminés</h1></div>
+          <div class="corps">
+            <div class="fil">
+              <input class="interrupteur ouv" type="checkbox" id="o1">
+              <div class="mois">
+                <span class="pastille num">2</span>
+                <span class="m"><b>août</b><span>2026</span></span>
+                <span class="tot num">1 320,00 €</span>
+              </div>
+              <label class="encart" for="o1">
+                <span class="q caps">Deux à facturer</span>
+                <span class="v num">1 940,00 €</span>
+                <span class="chevron">›</span>
+              </label>
+              <div class="volet"><div>
+                <div class="brin"><span class="creux"><i class="vide"></i></span>
+                  <a class="fact" href="#devis"><span class="qui"><b class="n">Chez Mme Roux</b><span class="ref">Le 20 août</span></span><span class="eur prevu num">1 240,00 €</span></a>
+                </div>
+                <div class="brin"><span class="creux"><i class="vide"></i></span>
+                  <a class="fact" href="#devis"><span class="qui"><b class="n">Dalle de garage</b><span class="ref">Le 18 août</span></span><span class="eur prevu num">700,00 €</span></a>
+                </div>
+                <p class="source">Montants prévus aux devis.</p>
+              </div></div>
+
+              <div class="brin"><span class="creux"><i></i></span>
+                <a class="fact" href="#liste"><span class="qui"><b class="n">Chez M. Martins</b><span class="ref">F2026-0006 · le 2</span></span><span class="eur num">1 320,00 €</span></a>
+              </div>
+
+              <div class="mois"><span class="m"><b>juillet</b><span>2026</span></span><span class="tot num">3 000,00 €</span></div>
+              <div class="brin"><span class="creux"><i></i></span>
+                <a class="fact" href="#liste"><span class="qui"><b class="n">Terrasse bois</b><span class="ref">F2026-0005 · le 28</span></span><span class="eur num">1 860,00 €</span></a>
+              </div>
+              <div class="brin"><span class="creux"><i></i></span>
+                <a class="fact" href="#liste"><span class="qui"><b class="n">Muret de pierre</b><span class="ref">F2026-0004 · le 21</span></span><span class="eur num">640,00 €</span></a>
+              </div>
+              <div class="brin"><span class="creux"><i></i></span>
+                <a class="fact" href="#liste"><span class="qui"><b class="n">Abri de jardin</b><span class="ref">F2026-0003 · le 14</span></span><span class="eur num">500,00 €</span></a>
+              </div>
+            </div>
+            <div class="pied">
+              <p class="lg">Facturé ce trimestre <b class="num">4 320,00 €</b></p>
+              <a class="lien" href="#liste"><span class="t">Relevé de TVA collectée</span><span class="f">›</span></a>
+            </div>
+          </div>
+          <nav class="bas"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Réglages</span><i></i></nav>
+        </div>
+
+      </div></div>
+      <p class="sous">Trois appuis, et la facture existe</p>
+      <p class="note">Ouvrir le mois, toucher le chantier, créer. <b>Le quatrième appui, l'envoi, reste séparé — et c'est voulu.</b></p>
+    </div>
+  </div>
+
+  <p class="note" style="max-width:66ch;margin:44px auto 0;border:0">
+    <b>Ce que ça change dans le code, et qu'il faut décider.</b> La touche
+    existe déjà : c'est <code>terminerChantierAction</code>, aujourd'hui
+    étiquetée <b>« Fin de chantier → »</b>. Le nom ne dit pas ce que le geste
+    fait — il <b>bâtit la facture à partir du devis</b>. La maquette l'appelle
+    « Créer la facture » ; c'est un renommage, à valider par vous.
+    Bonne nouvelle : l'action est déjà <b>idempotente</b> — rappuyer redonne la
+    facture déjà bâtie au lieu d'en créer une seconde.
+    <br><br>
+    <b>Et une règle que je n'ai pas voulu plier.</b> Créer n'est pas envoyer.
+    Fondre les deux ferait partir un document chez votre client sur un geste
+    destiné à le préparer, et l'envoi est ce qui porte la facture au relevé de
+    TVA. Deux appuis, donc — mais l'un derrière l'autre, sans rien chercher.
+  </p>
+</div>

@@ -245,7 +245,7 @@ suffit ») et la **capacité en hommes** — `taille_equipe` est du texte libre,
 faudrait le fiabiliser avant d'en faire une contrainte. Voir `ARCHITECTURE.md`
 §22 pour les arbitrages.
 
-### 5 bis. « Terminés » — quatre propositions, aucun choix arrêté
+### 5 bis. « Terminés » — le fil, l'encart, et le parcours de facturation
 
 **Proposé le 2026-08-10**, sur une capture de l'écran réel envoyée par le
 patron. `maquettes/atlas-termines.html`, contrôlée par
@@ -263,6 +263,32 @@ des goûts :
 - **L'écran dit une somme.** Aujourd'hui il faut additionner de tête.
 - **Un état vide se dit en toutes lettres**, jamais par un titre de section
   suivi de rien.
+
+**TRANCHÉ le 2026-08-10 : E1 + la pastille, et le parcours jusqu'à la
+facture.** Maquette de référence : `maquettes/atlas-facturer.html`, contrôlée
+par `npm run verifier:maquette`. Le patron : *« je veux le E1, mais rajoute le
+petit rond avec le 2 collé à août. Et quand je clique sur Chez Mme Roux, ça
+m'amène sur la touche qui transforme le devis en facture. »*
+
+Trois appuis, et pas un de plus :
+
+| | Geste | Ce qui arrive |
+|---|---|---|
+| 1 | « Deux à facturer » | le mois s'ouvre, on voit qui attend |
+| 2 | « Chez Mme Roux » | son devis, avec **une seule** touche pleine |
+| 3 | « Créer la facture » | la facture existe, **elle n'est pas partie** |
+
+**Deux points à régler avec le patron avant de coder :**
+
+- **Renommer « Fin de chantier → » en « Créer la facture ».** La touche existe
+  déjà (`terminerChantierAction`, `src/app/chantiers/[id]/facture/FactureClient.tsx`)
+  et fait exactement ça : elle bâtit la facture à partir du devis. Le nom
+  actuel ne le dit pas. Elle est déjà **idempotente**
+  (`src/server/repositories/factures.ts` §56) : rappuyer redonne la facture
+  bâtie au lieu d'en créer une seconde.
+- **CRÉER N'EST PAS ENVOYER**, et ça ne se plie pas (`CLAUDE.md` §4). La
+  facture naît d'un appui, elle part d'un autre — c'est l'envoi qui la rend
+  définitive et la porte au relevé de TVA.
 
 **Un chantier dont la date est passée appartient à SON MOIS.** Précisé par le
 patron le 2026-08-10 : *« une fois que la date du devis est passée, il se

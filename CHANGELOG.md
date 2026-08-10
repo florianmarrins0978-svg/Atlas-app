@@ -9,6 +9,30 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Facturer en trois appuis, depuis l'écran « Terminés »
+
+Choix arrêté : **E1, avec la pastille de E2** — un anneau bronze portant le
+nombre, posé sur le fil contre le mois. Et le parcours va désormais jusqu'au
+bout : « Deux à facturer » ouvre le mois, le chantier ouvre son devis, et une
+**seule** touche pleine le transforme en facture.
+
+**Ce qui ne se plie pas :** créer n'est pas envoyer. Fondre les deux ferait
+partir un document chez le client sur un geste destiné à le préparer, et c'est
+l'envoi qui porte la facture au relevé de TVA.
+
+**Un renommage à valider :** la touche existe déjà — `terminerChantierAction`,
+étiquetée « Fin de chantier → ». Le nom ne dit pas ce qu'elle fait : elle bâtit
+la facture à partir du devis.
+
+**Trois défauts trouvés à la capture, et un contrôle qui mentait.** Le chevron
+posé en bout de ligne volait 24 px au montant et brisait la colonne des euros ;
+« Total de la facture » cassait en deux et poussait le « € » à la ligne ; la
+phrase qui promet que rien ne part passait sous le bandeau. Le contrôle des
+étiquettes, lui, **ne voyait que la dernière vue** — les autres étant cachées,
+leurs hauteurs valaient zéro et rien ne rougissait. Il se joue maintenant dans
+chaque vue pendant qu'elle est à l'écran, et un contrôle neuf vérifie que la
+promesse « rien ne part » tient au-dessus du bandeau.
+
 ### Le compte « à facturer » vit dans son mois, pas dans un bloc à part
 
 **Correction d'une erreur de ma part.** J'avais posé les chantiers non facturés
