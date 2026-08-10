@@ -2968,3 +2968,81 @@ avec le compte du banc, attend les polices, et capture le haut, le bas et la
 barre isolée. Trois passages ont été nécessaires : la branche trop épaisse, puis
 mal placée, puis le débordement. **Aucun de ces trois défauts n'aurait été vu
 sans regarder.**
+
+---
+
+## 47. Les deux voix de l'écran retenu, et deux défauts que seule la capture voyait
+
+*Étape 2 de la fin de refonte (`TODO.md` §7) : les corps d'Informations et de
+Prix, 10 août 2026.*
+
+### Pourquoi deux jetons de plus, et pas une valeur recopiée
+
+La grammaire retenue le 10 août tient en quatre mesures — 9,5 px et 0,28 em
+d'écartement pour un libellé, 11,5 px pour une phrase de situation. Elles
+étaient **recopiées à la main dans chaque écran refait**, six fois. Un `0.28em`
+mal retapé ne se voit pas en relecture, et `CLAUDE.md` §3 dit exactement ce
+qu'il fallait faire : une allure s'ajoute aux pièces partagées, elle ne se
+recopie pas dans un écran.
+
+D'où `libelleCaps` et `texteSituation` dans `src/lib/design-tokens.ts`.
+
+**`smallCaps` reste, et c'est délibéré.** C'est l'ANCIENNE voix (11 px, 0,18 em)
+et elle sert encore les maquettes `/design/*`, découplées du produit depuis le
+1er août. La renommer ou la changer aurait réécrit des pages qui ne sont plus
+des écrans du patron. Conséquence utile pour la suite : **un écran qui importe
+encore `smallCaps` n'est pas refait** — c'est le repère le moins cher pour
+savoir où l'on en est.
+
+### La couleur qui ne désignait rien
+
+Trois encarts teintés en vert pâle disparaissent (la provenance des
+informations, la mention « recopiée mot à mot », le brouillon obsolète). Aucun
+ne demandait un geste au patron : ils décrivaient. La règle née de la maquette
+12 s'applique — *une couleur qui ne veut rien dire est une couleur en trop*.
+
+Ce qui **reste** en couleur d'attente, et rien d'autre : « à confirmer », « à
+compléter », « prix à poser », l'avertissement de relecture, et le motif qui
+grise « Préparer le devis ». Leur forme est l'« ourlet » de la maquette — un
+cheveu d'or à gauche, sans fond.
+
+### Deux défauts réels, tous deux invisibles aux suites
+
+1. **La croix qui retire une ligne de prix sortait de l'écran.** Une ligne du
+   détail porte deux champs ; le conteneur intérieur d'`AnimatedRow` n'avait pas
+   de `min-w-0` et refusait donc de descendre sous la largeur intrinsèque de ses
+   enfants. Le bouton était **bien dans la page** — les contrôles le trouvaient,
+   le cliquaient, et passaient au vert — mais il se dessinait à 371 px sur un
+   écran de 393, marge comprise : le doigt du patron ne pouvait pas l'atteindre,
+   et c'est la seule façon de retirer une ligne.
+
+   *La leçon, et elle n'est pas nouvelle :* un contrôle qui clique par sélecteur
+   ne dit rien de l'atteignabilité. Ce qui l'a montré est une **mesure** —
+   `getBoundingClientRect` sur la croix, comme la boîte de la barre basse au §46.
+
+2. **La bulle de l'assistant mordait sur « Préparer le devis ».** Soixante-quatre
+   pixels de talon en bas de page ne suffisaient pas ; il en faut cent douze.
+   Vu sur la capture du bas, jamais autrement.
+
+### Un contrôle qui accusait au hasard
+
+`verifier:memoire` déclarait `ARCHITECTURE.md` menteur parce qu'il y cite
+`/tmp/atlas-prechauffage.json` — un chemin **d'exécution**, écrit par le
+préchauffage du banc, donc présent ou absent selon qu'une machine tourne. Le
+contrôle ne regarde plus que les chemins relatifs, c'est-à-dire ceux de ce
+dépôt. Il sait toujours échouer : un chemin de dépôt inventé le fait rougir.
+
+### Et trois contrôles rouges qui n'accusaient rien de réel
+
+`innerText` rend le texte **tel qu'il s'affiche**. Depuis que les libellés sont
+en capitales, ni « Prix Calculé » ni « Déjà au détail » ne s'y trouvent tels
+qu'ils sont écrits dans le code. Deux de ces trois suites étaient rouges depuis
+le matin du 10 août, avant ce lot. La troisième accusait le compteur de
+l'accueil, alors que son sélecteur — `a[href^="/chantiers/"]` — comptait aussi
+le lien d'une notification, qui défile avec la liste depuis le même jour ; il
+vise désormais `a.atlas-brin`, une étiquette de code et non un libellé.
+
+**Le réflexe à garder :** devant un contrôle rouge après une refonte, regarder
+d'abord s'il lit du **rendu** ou de la **donnée**. Corriger le produit pour
+satisfaire un contrôle qui lit du rendu, c'est défaire ce qui vient d'être
+validé.

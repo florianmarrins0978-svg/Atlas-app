@@ -76,9 +76,12 @@ async function main() {
   await page.waitForTimeout(1500);
 
   const libelleApresRetour = await bouton.innerText();
+  // Insensible à la casse, pour la même raison qu'ailleurs depuis la refonte :
+  // `innerText` rend « DÉJÀ AU DÉTAIL » là où le code écrit « Déjà au détail ».
+  // Ce qui compte est que le bouton REFUSE de rajouter la ligne, pas la casse.
   assert.match(
     libelleApresRetour,
-    /Déjà au détail/,
+    /déjà au détail/i,
     `Après un retour arrière, le bouton dit « ${libelleApresRetour} » : l'écran réinvite à doubler le devis.`
   );
   assert.equal(await bouton.isDisabled(), true, "Le bouton reste actionnable après un retour arrière.");

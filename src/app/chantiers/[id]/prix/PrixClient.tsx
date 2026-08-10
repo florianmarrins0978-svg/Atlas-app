@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Decimal from "decimal.js";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { champPlage, colors, font, libelleCaps, styleChampPlage, texteSituation } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import UndoToast from "@/components/atlas/UndoToast";
 import { AnimatedRow } from "@/components/atlas/AnimatedRow";
@@ -124,15 +124,25 @@ export default function PrixClient({
 
   return (
     <>
-      {/* Total — information la plus importante, en évidence */}
-      <div className="mx-6 mt-6 rounded-[4px] px-5 py-6 text-center" style={{ backgroundColor: colors.card }}>
-        <p className={smallCaps} style={{ color: colors.muted, marginBottom: 6 }}>
+      {/* Le total — ce qu'on vient lire en premier, et il n'a plus besoin d'une
+          boîte pour se voir : la serif de titre suffit. La plage centrée
+          d'avant remettait le montant « au-dessus » de la page, exactement ce
+          que le patron a écarté en retenant l'écran sans ombres ni cartes.
+
+          Il reste un `<p>` portant l'euro, et le PREMIER de la page : c'est par
+          là que `test-devis-doublon-e2e.ts` lit le total pour vérifier qu'un
+          retour arrière ne le double pas. */}
+      <div className="px-[26px] pt-7">
+        <p className={libelleCaps} style={{ color: colors.muted }}>
           Total
         </p>
-        <p className="text-[40px] font-semibold leading-none" style={{ fontFamily: font.display, color: colors.rust }}>
+        <p
+          className="mt-3 text-[36px] leading-[1.02]"
+          style={{ fontFamily: font.display, letterSpacing: "-0.018em", fontVariantNumeric: "tabular-nums" }}
+        >
           {enEuros(total)}
         </p>
-        <p className="mt-2 text-[12px]" style={{ color: colors.muted }}>
+        <p className={`mt-3 ${texteSituation}`} style={{ color: colors.muted }}>
           Somme des lignes du détail. C&apos;est cette valeur qui sera reprise dans le devis.
         </p>
       </div>
@@ -150,7 +160,7 @@ export default function PrixClient({
         <button
           type="button"
           onClick={() => setPropositionVisible(true)}
-          className="mx-6 mt-6 self-start text-[14px] font-medium"
+          className={`mx-[26px] mt-7 self-start ${libelleCaps}`}
           style={{ color: colors.rust }}
         >
           Voir la proposition de prix →
@@ -158,77 +168,82 @@ export default function PrixClient({
       )}
 
       <form
-        className="mt-7 flex flex-col gap-2 px-6"
+        className="mt-8 flex flex-col gap-2 px-[26px]"
         onSubmit={(e) => {
           e.preventDefault();
           valider();
         }}
       >
-        <span className={smallCaps} style={{ color: colors.muted }}>
+        <span className={libelleCaps} style={{ color: colors.muted }}>
           Détail
         </span>
         {saisieManuelle && (
-          <p className="-mt-1 mb-1 text-[13px] leading-relaxed" style={{ color: colors.muted }}>
+          <p className={texteSituation} style={{ color: colors.muted }}>
             Vous écrivez ce devis vous-même. Chaque ligne ci-dessous, avec son montant, est ce que
             votre client recevra.
           </p>
         )}
 
-        {lignes.map((ligne) => (
-          <AnimatedRow key={ligne.id} leaving={leavingIds.has(ligne.id)} onRemove={() => retirer(ligne.id)}>
-            <input
-              value={ligne.libelle}
-              onChange={(e) => modifierLibelle(ligne.id, e.target.value)}
-              onBlur={(e) => persisterLibelle(ligne.id, e.target.value)}
-              className="flex-1 rounded-[4px] border-0 px-4 py-3 outline-none"
-              style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "15px" }}
-            />
-            <input
-              type="number"
-              step="0.01"
-              value={ligne.montant}
-              onChange={(e) => modifierMontant(ligne.id, e.target.value)}
-              onBlur={(e) => persisterMontant(ligne.id, e.target.value)}
-              className="w-24 flex-shrink-0 rounded-[4px] border-0 px-3 py-3 text-right outline-none"
-              style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "15px" }}
-            />
-          </AnimatedRow>
-        ))}
+        {lignes.length > 0 && (
+          <div className="flex flex-col gap-1">
+            {lignes.map((ligne) => (
+              <AnimatedRow key={ligne.id} leaving={leavingIds.has(ligne.id)} onRemove={() => retirer(ligne.id)}>
+                <input
+                  value={ligne.libelle}
+                  onChange={(e) => modifierLibelle(ligne.id, e.target.value)}
+                  onBlur={(e) => persisterLibelle(ligne.id, e.target.value)}
+                  className={`min-w-0 flex-1 ${champPlage}`}
+                  style={styleChampPlage}
+                />
+                {/* Les chiffres en chasse fixe : sans cela, deux montants
+                    alignés à droite ne s'alignent pas colonne par colonne, et
+                    une somme se relit mal. */}
+                <input
+                  type="number"
+                  step="0.01"
+                  value={ligne.montant}
+                  onChange={(e) => modifierMontant(ligne.id, e.target.value)}
+                  onBlur={(e) => persisterMontant(ligne.id, e.target.value)}
+                  className="w-[92px] flex-shrink-0 border-0 px-3 py-3 text-right outline-none"
+                  style={{ ...styleChampPlage, fontVariantNumeric: "tabular-nums" }}
+                />
+              </AnimatedRow>
+            ))}
+          </div>
+        )}
 
-        <button
-          type="button"
-          onClick={ajouter}
-          className="mt-1 self-start text-[14px] font-medium"
-          style={{ color: colors.rust }}
-        >
-          + Ajouter une ligne
-        </button>
         {lignes.length === 0 && (
-          <p className="text-[13px]" style={{ color: colors.muted }}>
+          <p className={texteSituation} style={{ color: colors.muted }}>
             Aucune ligne pour l&apos;instant.
           </p>
         )}
 
-        <div className="pt-5">
+        <button
+          type="button"
+          onClick={ajouter}
+          className={`self-start ${libelleCaps}`}
+          style={{ color: colors.rust }}
+        >
+          + Ajouter une ligne
+        </button>
+
+        <div className="pt-6">
           {/* Un bouton grisé sans explication se lit comme une panne : le
               patron l'a déjà conclu sur l'écran de dictée. On dit donc ce qui
-              bloque, et surtout par où sortir. */}
+              bloque, et surtout par où sortir.
+
+              Le cheveu d'or à gauche plutôt qu'une plage : ici, quelque chose
+              est réellement dû par le patron — c'est le seul emploi que la
+              charte reconnaisse à la couleur d'attente. */}
           {!verdict.possible && (
-            <div
-              className="mb-3 rounded-[4px] px-4 py-3"
-              style={{ backgroundColor: colors.card }}
-            >
-              <p className="text-[14px]" style={{ color: colors.ink }}>
+            <div className="mb-5 py-1 pl-[15px]" style={{ borderLeft: `1px solid ${colors.or}` }}>
+              <p className="text-[19px] leading-[1.15]" style={{ color: colors.ink, fontFamily: font.display }}>
                 {verdict.probleme}
               </p>
-              <p className="mt-1 text-[13px] leading-relaxed" style={{ color: colors.muted }}>
+              <p className={`mt-2 ${texteSituation}`} style={{ color: colors.muted }}>
                 {verdict.marcheASuivre}
               </p>
-              <a
-                href="/reglages"
-                className="mt-2 inline-block text-[14px] font-medium"
-                style={{ color: colors.rust }}
-              >
+              <a href="/reglages" className={`mt-3 inline-block ${libelleCaps}`} style={{ color: colors.rust }}>
                 Ouvrir mes tarifs →
               </a>
             </div>
@@ -237,7 +252,7 @@ export default function PrixClient({
             {validationEnCours ? "Validation…" : "Préparer le devis →"}
           </PrimaryButton>
           {erreurValidation && (
-            <p role="alert" className="mt-2 text-[13px]" style={{ color: colors.alert }}>
+            <p role="alert" className={`mt-3 ${texteSituation}`} style={{ color: colors.alert }}>
               {erreurValidation}
             </p>
           )}

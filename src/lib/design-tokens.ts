@@ -91,7 +91,47 @@ export const font = {
 
 // Petites capitales utilisées pour tout libellé de statut ou d'eyebrow.
 // Arborea espace davantage les siennes (`letter-spacing:0.22em` sur `.eyebrow`).
+//
+// **Ancienne voix.** Elle survit parce que les maquettes `/design/*` s'en
+// servent, et qu'elles sont découplées du produit depuis le 1er août : les
+// toucher reviendrait à réécrire des pages qui ne sont plus des écrans du
+// patron. Un écran refondu prend `libelleCaps` ci-dessous.
 export const smallCaps = "text-[11px] font-semibold uppercase tracking-[0.18em]";
+
+// ─── Les deux voix de l'écran retenu le 10 août 2026 ─────────────────────────
+//
+// Elles étaient recopiées à la main dans chaque écran refait — six fois les
+// mêmes quatre valeurs, et un `0.28em` mal retapé ne se voit pas en relecture.
+// `CLAUDE.md` §3 le dit : une allure ne se recopie pas dans un écran, elle
+// s'ajoute aux pièces partagées. Les voici.
+//
+// **La voix des libellés** : tout ce qui nomme sans être un titre — l'intitulé
+// d'une rubrique, un état, une action secondaire. Neuf virgule cinq pixels et
+// 0,28 em d'écartement : c'est ce qui distingue un repère d'une phrase, et
+// c'est ce qui manquait à « Ajouter un fichier audio » quand elle se lisait
+// comme du texte courant.
+export const libelleCaps = "text-[9.5px] font-medium uppercase tracking-[0.28em]";
+
+// **La voix de la situation** : l'adresse sous un nom, ce que change une
+// durée, d'où viennent les informations affichées. Elle se lit, elle ne se
+// touche pas — et à 11,5 px elle ne dispute jamais la place au serif.
+export const texteSituation = "text-[11.5px] leading-[1.5]";
+
+// La plage d'un champ de saisie : 15 px de retrait, 4 px de rayon, le fond des
+// plages, aucune bordure. Ce sont les mesures de la maquette retenue.
+//
+// **Deux choses à ne pas défaire.** Les 16 px de corps : en dessous, iOS
+// agrandit la page dès qu'un champ prend le focus, et le patron se retrouve
+// avec un écran zoomé qu'il doit rétablir à la main. Et la plage elle-même :
+// un champ vide sans repère se lit comme « pas cliquable », quel que soit ce
+// qu'en dit le navigateur (`HANDOVER.md`, piège 18).
+export const champPlage = "border-0 px-[15px] py-3 outline-none";
+export const styleChampPlage = {
+  backgroundColor: colors.card,
+  color: colors.ink,
+  fontSize: "16px",
+  borderRadius: 4,
+} as const;
 
 // Ombre de carte — presque invisible, sert uniquement à détacher la carte du
 // fond. Teintée de vert pin comme chez Arborea, et non de gris neutre.

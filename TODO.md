@@ -438,8 +438,36 @@ ouvrez-la, lisez la feuille de style, elle fait foi pour le dessin.
 | — | En-tête + boutons des six écrans d'étape | **fait**, par remplacement de motif |
 | — | Corps de Photos | **fait** |
 | ~~1~~ | ~~Corps de **Note vocale**~~ | **fait** le 10 août 2026 |
-| **2** | Corps d'**Informations** puis de **Prix** | à faire — les plus chargés |
+| ~~2~~ | ~~Corps d'**Informations** puis de **Prix**~~ | **fait** le 10 août 2026 |
 | **3** | Corps de **Devis**, **Export**, **Facture** | à faire |
+
+**Ce que l'étape 2 a appris, et qui sert à l'étape 3.**
+
+- **Les deux voix sont désormais des jetons** : `libelleCaps` et
+  `texteSituation` dans `src/lib/design-tokens.ts`. Ne plus les retaper à la
+  main. `smallCaps`, l'ancienne voix, ne sert plus qu'aux maquettes
+  `/design/*` — un écran qui l'importe encore n'est pas refait.
+- **L'écran Informations n'était pas dans « les six »** : son en-tête avait été
+  oublié le 10 août au matin, et il est passé à `EnTeteEcran` avec son corps.
+  Vérifier que **Transcription** ne dort pas dans le même angle mort.
+- **Une action en capitales prend deux fois la place.** « Voir la
+  transcription » à droite du titre repliait le nom du chantier sur deux
+  lignes ; une flèche de plus faisait passer « Aller jusqu'au devis d'un seul
+  geste » à deux lignes, la flèche seule sur la seconde. Mesurer avant, ou
+  déplacer l'action.
+- **Une plage occupe la largeur ; une action en toutes lettres s'aligne à
+  gauche.** Sans `self-start`, un bouton texte s'étire et se centre tout seul.
+- **`innerText` rend le texte TEL QU'IL S'AFFICHE.** Trois contrôles cherchaient
+  « Prix Calculé » ou « Déjà au détail » ; les capitales les ont cassés sans
+  qu'aucun défaut n'existe. Le réflexe utile : avant de corriger le produit,
+  regarder si le contrôle lit du rendu ou de la donnée.
+- **Prendre la capture d'abord, et à deux endroits** :
+  `npx tsx scripts/capture-etape.mts <dossier> <chantierId> <étape…>` écrit le
+  haut ET le bas de chaque écran. Les deux défauts réels de l'étape 2 — une
+  croix hors de l'écran, la bulle sur le bouton — n'étaient visibles que là.
+- **Le jeu de démonstration ne pose ni brouillon ni dictée analysable ici** :
+  pour regarder un écran plein, insérer soi-même une ligne dans
+  `brouillons_informations`. Sans cela on juge un écran vide.
 
 Il n'y a plus de motif commun à remplacer : chacun a sa structure, donc plus de
 codemod possible. C'est du cas par cas, **et chaque écran se regarde en capture

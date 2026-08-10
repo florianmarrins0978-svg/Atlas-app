@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-09 · branche `claude/migrate-app-atlas-zz31ac`
+**Dernière mise à jour :** 2026-08-10 · branche `claude/migrate-app-atlas-zz31ac`
 · dernière migration `drizzle/0033_identifiants_google_par_entreprise.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -111,7 +111,10 @@ l'application. Ce qui est **fait** :
   en feuille pendant que la liste recule.
 - **Planning, Terminés, Réglages, relevé de TVA, fiche chantier** : même
   en-tête, mêmes rayons, mêmes capitales.
-- **Les six écrans d'étape** : en-tête et boutons. Le corps de **Photos** aussi.
+- **Les six écrans d'étape** : en-tête et boutons. Les corps de **Photos**, de
+  **Note vocale**, d'**Informations** et de **Prix** aussi — plus l'en-tête
+  d'Informations, oublié le matin même parce que cet écran ne fait pas partie
+  des « six ».
 - **La typographie** : plus aucune police téléchargée. L'application prend
   celles de l'appareil, comme la maquette que le patron a validée.
 
@@ -122,6 +125,10 @@ réserves : **`TODO.md` §7**. Le dessin fait foi dans
 **Trois pièces partagées portent toute la grammaire** — `EnTeteEcran`,
 `PrimaryButton`, `src/lib/design-tokens.ts`. Une allure ne se recopie pas dans
 un écran : elle s'ajoute à ces pièces, sinon les écrans divergent de nouveau.
+Les deux voix de l'écran retenu y sont depuis le 10 août : **`libelleCaps`**
+(les libellés, états et actions secondaires) et **`texteSituation`** (ce qui se
+lit sans se toucher). `smallCaps`, l'ancienne voix, ne sert plus qu'aux
+maquettes `/design/*` — un écran qui l'importe encore n'est pas refait.
 
 ### Le banc d'essai (9 août 2026)
 
@@ -260,7 +267,7 @@ et §17).
 
 | | |
 |---|---|
-| Suites base de données | **61/61**, jouées dans l'environnement de l'agent |
-| Suites navigateur (bout en bout) | 25/25 |
+| Suites base de données | **99/99**, jouées dans l'environnement de l'agent |
+| Suites navigateur (bout en bout) | **44/44**, jouées dans l'environnement de l'agent |
 | Types, lint | propres |
 | CI GitHub | verte au commit `78c746a` ; `07fa28c` en cours au moment d'écrire |

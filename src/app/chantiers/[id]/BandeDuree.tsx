@@ -1,6 +1,6 @@
 "use client";
 
-import { colors, smallCaps } from "@/lib/design-tokens";
+import { colors, libelleCaps, texteSituation } from "@/lib/design-tokens";
 import { DUREES } from "@/lib/durees-chantier";
 
 // La bande déroulante des durées, telle que le patron l'a demandée — et posée
@@ -30,7 +30,10 @@ type Props = {
 export default function BandeDuree({ label, valeur, onChange, aide, disabled }: Props) {
   return (
     <div>
-      <p className={smallCaps} style={{ color: colors.muted, marginBottom: 6 }}>
+      {/* La voix des libellés — celle de l'écran retenu le 10 août 2026. Cette
+          bande est sur DEUX écrans (Informations, envoi au client) : lui garder
+          l'ancienne voix aurait fait bégayer la page à cet endroit-là seul. */}
+      <p className={libelleCaps} style={{ color: colors.muted, marginBottom: 8 }}>
         {label}
       </p>
       <select
@@ -38,7 +41,7 @@ export default function BandeDuree({ label, valeur, onChange, aide, disabled }: 
         value={valeur ?? ""}
         disabled={disabled}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full rounded-[4px] px-4 py-3 outline-none disabled:opacity-40"
+        className="w-full rounded-[4px] px-[15px] py-3 outline-none disabled:opacity-40"
         // 16 px : en dessous, iOS agrandit la page à l'ouverture de la molette
         // et le patron se retrouve avec un écran zoomé qu'il doit rétablir.
         style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
@@ -51,7 +54,7 @@ export default function BandeDuree({ label, valeur, onChange, aide, disabled }: 
         ))}
       </select>
       {aide && (
-        <p className="mt-1 text-[12px] leading-relaxed" style={{ color: colors.muted }}>
+        <p className={`mt-2 ${texteSituation}`} style={{ color: colors.muted }}>
           {aide}
         </p>
       )}

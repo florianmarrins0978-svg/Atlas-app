@@ -56,6 +56,14 @@ for (const fichier of FICHIERS) {
   )) {
     if (chemin.includes("*") || chemin.startsWith("node_modules")) continue;
     if (!chemin.includes("/")) continue; // simple nom de fichier en prose
+    // Un chemin ABSOLU n'est pas un fichier de ce dépôt : c'est un chemin
+    // d'exécution, écrit par la machine et absent tant que rien ne tourne.
+    // `ARCHITECTURE.md` en cite un — l'état du préchauffage, dans `/tmp` —, et
+    // le contrôle le déclarait mort une fois sur deux, selon qu'un banc était
+    // en marche ou non. Un contrôle qui accuse au hasard coûte plus cher que
+    // pas de contrôle du tout : ce qu'on éprouve ici, ce sont les renvois vers
+    // le dépôt, et eux seuls.
+    if (chemin.startsWith("/")) continue;
     if (!existsSync(chemin)) {
       problemes.push(`${fichier} — chemin inexistant : ${chemin}`);
     }

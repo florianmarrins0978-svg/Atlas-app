@@ -9,6 +9,57 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le corps des écrans Informations et Prix
+
+Étape 2 de la fin de refonte (`TODO.md` §7) : les deux écrans les plus chargés
+du parcours. Marges à 26 px, libellés en capitales espacées, textes de
+situation à 11,5 px, plages à 4 px sans une ombre.
+
+**Trois choses ont changé de fond, pas seulement d'allure.**
+
+1. **L'encart teinté d'Informations disparaît.** « Proposé à partir de votre
+   dictée » vivait dans une plage vert pâle qui ne désignait aucun geste à
+   faire. Une couleur qui ne veut rien dire est une couleur en trop — la règle
+   née de la maquette 12. La phrase reste, en texte de situation.
+2. **L'or ne se pose plus que sur ce qui attend le patron** : « à confirmer »,
+   « à compléter », « prix à poser », la mention « recopiée mot à mot », et le
+   motif qui grise « Préparer le devis ». Ces avertissements ne sont plus des
+   boîtes teintées mais un cheveu d'or à gauche — l'« ourlet » de la maquette.
+   Partout ailleurs (provenance d'un prix, « Confirmé »), le gris.
+3. **Le total du Prix sort de sa boîte** : capitale, montant en serif de titre,
+   phrase dessous. La plage centrée le remettait *au-dessus* de la page, ce que
+   le patron a écarté en retenant un écran sans cartes ni ombres.
+
+**Deux défauts trouvés en regardant l'écran, et qu'aucune suite ne pouvait
+voir** — les deux étaient là avant ce lot :
+
+- **La croix qui retire une ligne de prix sortait de l'écran.** Une ligne du
+  détail porte deux champs ; le conteneur de `AnimatedRow` refusait de
+  descendre sous leur largeur intrinsèque, faute d'un `min-w-0`. Le bouton
+  existait dans la page — donc les contrôles le trouvaient — mais le doigt du
+  patron ne pouvait pas l'atteindre. C'était la seule façon de retirer une
+  ligne.
+- **La bulle de l'assistant mordait sur « Préparer le devis ».** Soixante-quatre
+  pixels de talon ne suffisaient pas.
+
+**Deux voix partagées entrent dans `design-tokens.ts`** — `libelleCaps` et
+`texteSituation`. Elles étaient recopiées à la main dans chaque écran refait,
+six fois les mêmes quatre valeurs ; un `0.28em` mal retapé ne se voit pas en
+relecture. `smallCaps` reste, et sert désormais les seules maquettes
+`/design/*`, découplées du produit.
+
+**Ce qui n'a PAS suivi, et pourquoi :** la variante mise en avant de
+« Créer le devis à partir de ma dictée » vit sur l'écran Transcription, qui
+n'est pas encore refait — lui donner cette voix seule y ferait une fausse note.
+
+**Trois contrôles réparés, dont deux rouges depuis le 10 août au matin.**
+`innerText` rend le texte **tel qu'il s'affiche** : depuis que les libellés sont
+en capitales, `« Prix Calculé »` et `« Déjà au détail »` ne s'y trouvent plus
+tels qu'écrits dans le code. Et le compteur de l'accueil était accusé à tort —
+`a[href^="/chantiers/"]` comptait aussi le lien d'une notification, qui défile
+avec la liste depuis le 10 août. Aucun de ces trois n'était un défaut du
+produit, et le premier réflexe — croire le contrôle — aurait coûté une heure.
+
 ### Le devis rejoint la charte : la terre cuite s'efface
 
 *« Oui, harmonise aussi le devis. »* La teinte terre cuite des documents, tenue

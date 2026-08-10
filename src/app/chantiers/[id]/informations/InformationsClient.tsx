@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { colors, smallCaps } from "@/lib/design-tokens";
+import { champPlage, colors, libelleCaps, styleChampPlage, texteSituation } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import UndoToast from "@/components/atlas/UndoToast";
 import { AnimatedRow } from "@/components/atlas/AnimatedRow";
@@ -137,8 +137,10 @@ export default function InformationsClient({
 
   return (
     <>
+      {/* 26 px, et huit d'écart entre les rubriques — les mesures de l'écran
+          retenu, portées ici sans être réinventées (`TODO.md` §7). */}
       <form
-        className="mt-7 flex flex-col gap-7 px-6"
+        className="mt-8 flex flex-col gap-8 px-[26px]"
         onSubmit={(e) => {
           e.preventDefault();
           valider();
@@ -205,7 +207,7 @@ export default function InformationsClient({
           onRemove={(id) => retirer("materiel", id)}
         />
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <PrimaryButton onClick={valider} disabled={validationEnCours}>
             {validationEnCours ? "Validation…" : "Valider et calculer le prix →"}
           </PrimaryButton>
@@ -224,7 +226,7 @@ export default function InformationsClient({
               car il doit pouvoir la rappeler. */}
           <a
             href={`/chantiers/${chantierId}/devis-complet`}
-            className="text-center text-[14px] font-medium"
+            className={`block text-center ${libelleCaps}`}
             style={{ color: colors.rust }}
           >
             Ou écrire le devis moi-même →
@@ -234,7 +236,7 @@ export default function InformationsClient({
               fois la page déroulée à fond. Une pile de notifications avait déjà
               poussé du contenu hors de l'écran — trouvé sur une capture, pas
               par un test. */}
-          <p className="-mt-1 pb-10 text-center text-[12px] leading-relaxed" style={{ color: colors.muted }}>
+          <p className={`-mt-2 pb-10 text-center ${texteSituation}`} style={{ color: colors.muted }}>
             Vous saisissez chaque ligne et son montant, sans passer par la proposition de prix.
           </p>
         </div>
@@ -257,16 +259,16 @@ function Field({
   onBlurCommit: () => void;
 }) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className={smallCaps} style={{ color: colors.muted }}>
+    <label className="flex flex-col gap-2">
+      <span className={libelleCaps} style={{ color: colors.muted }}>
         {label}
       </span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlurCommit}
-        className="rounded-[4px] border-0 px-4 py-3 outline-none"
-        style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
+        className={`w-full ${champPlage}`}
+        style={styleChampPlage}
       />
     </label>
   );
@@ -294,34 +296,42 @@ function ListeTextes({
   emptyMessage: string;
 }) {
   return (
+    // `flex flex-col gap-2` est un REPÈRE, pas une mesure : les suites de bout
+    // en bout désignent une rubrique par cette signature plus le libellé qu'elle
+    // porte (`test-informations-e2e.ts`). Les lignes, elles, se serrent à 4 px
+    // dans un conteneur intérieur — l'écart de la maquette entre deux plages.
     <div className="flex flex-col gap-2">
-      <span className={smallCaps} style={{ color: colors.muted }}>
+      <span className={libelleCaps} style={{ color: colors.muted }}>
         {label}
       </span>
-      {items.map((item) => (
-        <AnimatedRow key={item.id} leaving={leavingIds.has(item.id)} onRemove={() => onRemove(item.id)}>
-          <input
-            value={item.libelle}
-            onChange={(e) => onChange(item.id, e.target.value)}
-            onBlur={(e) => onBlurCommit(item.id, e.target.value)}
-            className="w-full rounded-[4px] border-0 px-4 py-3 outline-none"
-            style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
-          />
-        </AnimatedRow>
-      ))}
+      {items.length > 0 && (
+        <div className="flex flex-col gap-1">
+          {items.map((item) => (
+            <AnimatedRow key={item.id} leaving={leavingIds.has(item.id)} onRemove={() => onRemove(item.id)}>
+              <input
+                value={item.libelle}
+                onChange={(e) => onChange(item.id, e.target.value)}
+                onBlur={(e) => onBlurCommit(item.id, e.target.value)}
+                className={`w-full ${champPlage}`}
+                style={styleChampPlage}
+              />
+            </AnimatedRow>
+          ))}
+        </div>
+      )}
+      {items.length === 0 && (
+        <p className={texteSituation} style={{ color: colors.muted }}>
+          {emptyMessage}
+        </p>
+      )}
       <button
         type="button"
         onClick={onAdd}
-        className="self-start text-[14px] font-medium"
+        className={`self-start ${libelleCaps}`}
         style={{ color: colors.rust }}
       >
         {addLabel}
       </button>
-      {items.length === 0 && (
-        <p className="text-[13px]" style={{ color: colors.muted }}>
-          {emptyMessage}
-        </p>
-      )}
     </div>
   );
 }

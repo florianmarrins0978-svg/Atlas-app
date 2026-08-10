@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { colors, smallCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
 import type { PropositionPrix, OriginePrix } from "@/server/chiffrage/proposition-prix";
 import { ligneDejaAuDetail, type LigneDetail } from "@/lib/proposition-au-detail";
 import { calculerPropositionPrixAction, appliquerPropositionPrixAction } from "./actions";
@@ -102,20 +102,34 @@ export default function PropositionPrixSection({
     origine === "tarif" || origine === "chiffrage" || (origine === "tarifs_ambigus" && tarifChoisi !== null);
 
   return (
-    <div className="mx-6 mt-5 flex flex-col gap-3 rounded-[4px] p-4" style={{ backgroundColor: colors.card }}>
-      <div className="flex items-baseline justify-between">
-        <span className={smallCaps} style={{ color: colors.muted }}>
+    <div
+      className="mx-[26px] mt-7 flex flex-col gap-3 px-[15px] py-4"
+      style={{ backgroundColor: colors.card, borderRadius: 4 }}
+    >
+      <div className="flex items-baseline justify-between gap-3">
+        <span className={libelleCaps} style={{ color: colors.muted }}>
           Proposition
         </span>
-        <span className="text-[12px]" style={{ color: colors.rust }}>
+        {/* D'où vient ce prix : une provenance se lit, elle ne se touche pas.
+            En gris, donc — la couleur d'attente ne se pose que sur ce qui
+            réclame un geste du patron, et lire ne l'est pas. */}
+        <span className={`text-right ${libelleCaps}`} style={{ color: colors.muted }}>
           {LIBELLE_ORIGINE[origine]}
         </span>
       </div>
 
       {proposition.prixPropose !== null && (
-        <p className="text-[28px] font-semibold leading-none" style={{ color: colors.ink }}>
+        <p
+          className="text-[28px] leading-none"
+          style={{
+            color: colors.ink,
+            fontFamily: font.display,
+            letterSpacing: "-0.018em",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
           {enEuros(proposition.prixPropose)}
-          <span className="ml-2 text-[13px] font-normal" style={{ color: colors.muted }}>
+          <span className={`ml-2 ${libelleCaps}`} style={{ color: colors.muted }}>
             HT
           </span>
         </p>
@@ -126,13 +140,21 @@ export default function PropositionPrixSection({
           détail : c'est le défaut qu'il a signalé trois fois, et il ne se
           constate pas sur un total. */}
       {proposition.lignes.length > 1 && (
-        <ul className="flex flex-col gap-1 rounded-[4px] px-3 py-2" style={{ backgroundColor: colors.cream }}>
+        <ul className="flex flex-col gap-1.5 px-3 py-2.5" style={{ backgroundColor: colors.cream, borderRadius: 4 }}>
           {proposition.lignes.map((l, i) => (
-            <li key={i} className="flex items-baseline justify-between gap-3 text-[13px]">
+            <li key={i} className={`flex items-baseline justify-between gap-3 ${texteSituation}`}>
               <span className="whitespace-pre-line" style={{ color: colors.ink }}>
                 {l.libelle}
               </span>
-              <span className="shrink-0" style={{ color: Number(l.montant) > 0 ? colors.ink : colors.rust }}>
+              {/* « prix à poser » attend un geste du patron : c'est l'un des
+                  rares endroits où l'or dit quelque chose. */}
+              <span
+                className="shrink-0"
+                style={{
+                  color: Number(l.montant) > 0 ? colors.ink : colors.or,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
                 {Number(l.montant) > 0 ? enEuros(l.montant) : "prix à poser"}
               </span>
             </li>
@@ -140,7 +162,7 @@ export default function PropositionPrixSection({
         </ul>
       )}
 
-      <p className="text-[13px]" style={{ color: colors.ink }}>
+      <p className={texteSituation} style={{ color: colors.ink }}>
         {explication.origine}
       </p>
 
@@ -150,8 +172,8 @@ export default function PropositionPrixSection({
           {proposition.tarifsCandidats.map((c) => (
             <label
               key={c.tarifId}
-              className="flex items-center gap-2 rounded-[4px] px-3 py-2 text-[14px]"
-              style={{ backgroundColor: colors.cream, color: colors.ink }}
+              className="flex items-center gap-2.5 px-3 py-2.5 text-[14px]"
+              style={{ backgroundColor: colors.cream, color: colors.ink, borderRadius: 4 }}
             >
               <input
                 type="radio"
@@ -161,7 +183,7 @@ export default function PropositionPrixSection({
                 onChange={() => setTarifChoisi(c.tarifId)}
               />
               <span className="flex-1">{c.intitule}</span>
-              <span style={{ color: colors.muted }}>
+              <span style={{ color: colors.muted, fontVariantNumeric: "tabular-nums" }}>
                 {c.prix} €{c.unite ? ` / ${c.unite}` : ""}
               </span>
             </label>
@@ -172,35 +194,37 @@ export default function PropositionPrixSection({
       <button
         type="button"
         onClick={() => setDetailOuvert((v) => !v)}
-        className="self-start text-[14px] font-medium"
+        className={`self-start ${libelleCaps}`}
         style={{ color: colors.rust }}
       >
         {detailOuvert ? "Masquer le détail" : "Voir le détail"}
       </button>
 
       {detailOuvert && (
-        <div className="flex flex-col gap-3 rounded-[4px] p-3" style={{ backgroundColor: colors.cream }}>
+        <div className="flex flex-col gap-3.5 p-3" style={{ backgroundColor: colors.cream, borderRadius: 4 }}>
           <BlocExplication titre="Éléments pris en compte" lignes={explication.elementsPrisEnCompte} />
           <BlocExplication titre="Calcul" lignes={explication.calcul} />
+          {/* Ces deux-là, et elles seules, réclament un geste du patron : elles
+              portent donc l'or. Les intertitres voisins restent gris. */}
           {explication.donneesManquantes.length > 0 && (
-            <div>
-              <span className={smallCaps} style={{ color: colors.rust }}>
+            <div className="flex flex-col gap-1.5">
+              <span className={libelleCaps} style={{ color: colors.or }}>
                 À compléter
               </span>
               {explication.donneesManquantes.map((d, i) => (
-                <p key={i} className="text-[13px]" style={{ color: colors.muted }}>
+                <p key={i} className={texteSituation} style={{ color: colors.muted }}>
                   {d}
                 </p>
               ))}
             </div>
           )}
           {explication.ambiguites.length > 0 && (
-            <div>
-              <span className={smallCaps} style={{ color: colors.rust }}>
+            <div className="flex flex-col gap-1.5">
+              <span className={libelleCaps} style={{ color: colors.or }}>
                 À confirmer
               </span>
               {explication.ambiguites.map((a, i) => (
-                <p key={i} className="text-[13px]" style={{ color: colors.muted }}>
+                <p key={i} className={texteSituation} style={{ color: colors.muted }}>
                   {a}
                 </p>
               ))}
@@ -210,7 +234,7 @@ export default function PropositionPrixSection({
       )}
 
       {erreur && (
-        <p className="text-[13px]" style={{ color: colors.alert }}>
+        <p className={texteSituation} style={{ color: colors.alert }}>
           {erreur}
         </p>
       )}
@@ -219,7 +243,7 @@ export default function PropositionPrixSection({
           lit comme une panne — et ici, c'est au contraire la seule chose qui
           empêche le devis de doubler. */}
       {dejaAuDetail && (
-        <p className="text-[13px]" style={{ color: colors.muted }}>
+        <p className={texteSituation} style={{ color: colors.muted }}>
           Déjà au détail : « {dejaAuDetail.libelle} » à {enEuros(dejaAuDetail.montant)}.
           Pour la changer, modifiez la ligne ci-dessous plutôt que d&apos;en ajouter une seconde.
         </p>
@@ -231,8 +255,8 @@ export default function PropositionPrixSection({
             type="button"
             onClick={appliquer}
             disabled={enCours || dejaAuDetail !== null || !peutAppliquer}
-            className="rounded-[4px] py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
-            style={{ backgroundColor: colors.rust }}
+            className={`rounded-[4px] py-3.5 disabled:opacity-40 ${libelleCaps}`}
+            style={{ backgroundColor: colors.rustTint, color: colors.rust, minHeight: 48 }}
           >
             {dejaAuDetail ? "Déjà au détail" : enCours ? "Ajout…" : "Ajouter au détail"}
           </button>
@@ -241,7 +265,10 @@ export default function PropositionPrixSection({
           type="button"
           onClick={recalculer}
           disabled={enCours}
-          className="text-[14px] font-medium disabled:opacity-40"
+          // `self-start` : sans lui, ce bouton s'étire sur toute la largeur de
+          // la colonne et son libellé se retrouve centré — seul de l'écran,
+          // alors que « Voir le détail » juste au-dessus est aligné à gauche.
+          className={`self-start disabled:opacity-40 ${libelleCaps}`}
           style={{ color: colors.muted }}
         >
           Relancer le calcul
@@ -254,12 +281,12 @@ export default function PropositionPrixSection({
 function BlocExplication({ titre, lignes }: { titre: string; lignes: { libelle: string; detail: string }[] }) {
   if (lignes.length === 0) return null;
   return (
-    <div>
-      <span className={smallCaps} style={{ color: colors.muted }}>
+    <div className="flex flex-col gap-1.5">
+      <span className={libelleCaps} style={{ color: colors.muted }}>
         {titre}
       </span>
       {lignes.map((l, i) => (
-        <p key={i} className="text-[13px]" style={{ color: colors.ink }}>
+        <p key={i} className={texteSituation} style={{ color: colors.ink }}>
           <span style={{ color: colors.muted }}>{l.libelle} — </span>
           {l.detail}
         </p>
