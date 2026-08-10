@@ -70,7 +70,8 @@
     "3000": {
       "label": "Atlas",
       "onAutoForward": "notify",
-      "visibility": "public"
+      "visibility": "public",
+      "protocol": "http"
     }
   },
 

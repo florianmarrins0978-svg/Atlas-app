@@ -9,6 +9,196 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Préchauffer TOUS les écrans, et ne plus mourir en basculant
+
+Deux suites au correctif précédent, la seconde trouvée à l'essai et sérieuse.
+
+**Ouvrir la connexion ne suffisait pas.** Chaque écran suivant coûte le même
+premier appel, et le relais coupe pareil : le patron se serait connecté pour
+retomber sur une page blanche à l'écran d'après — le même défaut, déplacé d'un
+cran. Le banc parcourt donc **les dix-sept écrans** avec une vraie session, y
+compris ceux d'un chantier, qui sont les plus lourds. Mesuré : 26 s pour les
+dix-sept, et chacun s'ouvre ensuite en quelques dizaines de millisecondes.
+
+**La bascule tuait l'application.** `next dev` n'est qu'une enveloppe : le
+processus qui ÉCOUTE se renomme `next-server` et **survit à la mort de son
+père**. Trois secondes d'attente ne suffisaient pas ; `next start` tombait sur
+`EADDRINUSE`, le script mourait, et le patron se retrouvait sans application —
+**à cause du remède**. C'est le piège du 404 du 9 août (`veiller.sh`), déplacé
+d'un cran.
+
+On attend désormais que le port soit **vraiment** rendu, on le vérifie en
+interrogeant la santé, on insiste sur `next-server` s'il le faut — et si le port
+ne se libère pas, **on ne bascule pas** : mieux vaut un banc lent qu'un banc mort.
+
+Vu rouge puis vert : `EADDRINUSE` avant, `Ready in 157ms` et `200 en 0,2 s`
+après.
+
+### La page blanche, enfin : le relais coupait avant la fin de la compilation
+
+**Mesuré, pas supposé.** `next dev` ne compile un écran qu'au **premier appel** :
+la route de santé répond en 0,5 s, mais `/login` coûte **6,8 s ici** — et
+**trois minutes** sur le disque du patron, son propre journal le disait depuis
+le début : `GET / 307 in 3.0min`. Or le relais de GitHub abandonne au bout d'une
+minute.
+
+Il ne pouvait donc **jamais** voir cette page, quoi qu'il fasse : elle n'était
+pas encore compilée quand le relais coupait. Toutes les autres pistes — session,
+port, protocole, adresse — étaient des symptômes ou des erreurs de ma part.
+
+Le banc paie donc ce coût **de l'intérieur**, où rien n'abandonne, dès que le
+serveur répond : il ouvre `/login` puis `/` pour lui. Mesuré de bout en bout :
+
+| | |
+|---|---|
+| `/login` compilé de l'intérieur | 13 s |
+| premier appel extérieur, ensuite | **0,043 s** |
+| après bascule sur la version bâtie | 0,062 s |
+
+Quinze minutes de patience accordées au préchauffage : abandonner là rendrait
+exactement la page blanche qu'on cherche à épargner. Et un échec n'empêche
+rien — ce n'est qu'une avance prise.
+
+### Servir d'abord, bâtir ensuite — la page blanche n'était qu'une attente
+
+Le patron ouvre son adresse : page blanche, encore. Le diagnostic dit
+**« Application, vue de l'intérieur : injoignable »**. Rien n'était cassé : le
+banc se rebâtissait, et `scripts/banc.mjs` **bâtissait AVANT de servir**. Sur son
+disque — que Next.js mesure lui-même deux cents fois trop lent — cela veut dire
+des dizaines de minutes sans rien du tout.
+
+Désormais le serveur de développement part **tout de suite**, et la construction
+se fait à côté ; on ne bascule qu'une fois qu'elle a abouti. **À aucun moment il
+n'y a plus rien.**
+
+Ce que ça exigeait : **deux dossiers de construction**, sinon les deux serveurs
+se marchent dessus et le remède casse ce qu'il répare. `next.config.ts` lit donc
+`ATLAS_DIST_DIR` — le développement garde `.next`, la version bâtie vit dans
+`.next-batie`.
+
+**Mesuré, pas supposé** : l'application répond en **20 secondes** au lieu
+d'attendre la fin de la construction ; la bascule se fait ensuite sans coupure —
+`200` avant, `200` après.
+
+**Un défaut de mon banc d'essai à moi, au passage** : Turbopack refuse un
+`node_modules` en lien symbolique hors du projet. Mon premier essai a donc
+échoué sur ma propre installation, pas sur le correctif — et j'ai bien failli en
+tirer la mauvaise conclusion.
+
+### `pg_dump: command not found` — j'avais supposé un outil au lieu de le vérifier
+
+La sauvegarde que je venais d'écrire pour protéger sa base a répondu au patron
+`pg_dump: command not found`. **C'est encore lui qui l'a découvert**, sur une
+machine que je ne peux pas voir, un soir où il essayait déjà de sauver ses
+données.
+
+`scripts/sauvegarder-banc.mjs` fait le même travail **sans `pg_dump`** : il
+n'emploie que `pg`, déjà dépendance de l'application, et écrit toutes les lignes
+de toutes les tables dans un seul JSON. Le script shell garde `pg_dump` quand il
+existe — meilleure fidélité — et bascule sur ce chemin sinon, en le disant.
+
+Ce qui est sauvegardé, dit franchement : **les données, pas le schéma**. Celui-ci
+vit dans `drizzle/`, versionné, et se rejoue avec `npm run db:migrate`. Ce qui ne
+se retrouve nulle part ailleurs, ce sont les chantiers, les clients, et ce que
+l'agent a appris.
+
+`ATLAS_SANS_PGDUMP=1` force le repli : un chemin de secours jamais joué ne
+protège de rien. Les deux chemins ont été joués sur une vraie base — 39 tables.
+
+### Le banc se diagnostique tout seul, et déclare le protocole de son port
+
+Suite de la soirée du 10 août. Le patron a ouvert l'adresse de son banc dans
+**deux navigateurs différents, en navigation privée** — donc sans le moindre
+cookie — et les deux lui ont proposé de **télécharger un fichier**. Cela tue
+l'hypothèse de la session périmée : ce n'est pas son compte, c'est la réponse
+elle-même qui n'est pas une page.
+
+Deux changements, et aucun ne lui demande de taper quoi que ce soit :
+
+- **Le protocole du port est déclaré** dans `devcontainer.json` :
+  `"protocol": "http"`. Un relais réglé sur HTTPS devant un serveur qui parle
+  HTTP renvoie des octets illisibles — et un navigateur devant des octets sans
+  type les prend pour un fichier. C'est la cause qui colle exactement au
+  symptôme, et elle se règle par déclaration plutôt que par un panneau à
+  trouver sur six pouces.
+- **Le démarrage lance le diagnostic tout seul**, détaché : il attend que le
+  serveur réponde, puis écrit son verdict dans `/tmp/verdict-banc.txt`. Le
+  bandeau de démarrage donne la seule commande à taper si l'adresse ne s'ouvre
+  pas — `cat /tmp/verdict-banc.txt` — et la réponse y est **déjà** quand il la
+  demande, au lieu d'attendre trente secondes de plus.
+
+Le bloc détaché a été joué pour de vrai, serveur absent : il patiente, puis
+écrit « L'APPLICATION NE RÉPOND PAS, même de l'intérieur ».
+
+### Un diagnostic qui dit QUI ment, en une commande
+
+`npm run diagnostiquer:banc`.
+
+**Pourquoi.** Le patron ouvre l'adresse de son banc depuis son téléphone :
+Safari affiche `about:blank` et lui propose de **télécharger un fichier**. Pas
+une page blanche — un téléchargement. J'ai reproduit l'application ici, base
+montée, serveur lancé : elle répond `307 → /login` puis `200 text/html`, y
+compris avec les en-têtes du mandataire de GitHub. **L'application est donc hors
+de cause**, et je ne pouvais pas aller plus loin : le réseau de l'agent refuse
+`*.app.github.dev`.
+
+Ce qui manquait n'était pas une idée, c'était **un fait** : la réponse exacte
+que reçoit son téléphone. Ce script va la chercher **depuis l'intérieur de
+l'espace de travail**, seul endroit d'où l'adresse publique est joignable, et il
+en tire un verdict en français : l'application est morte, l'application renvoie
+un type illisible, le port n'est pas ouvert, c'est GitHub qui répond à sa place,
+le relais abîme la réponse, ou tout est en ordre.
+
+Il suit les redirections, parce qu'un `307` n'a pas de type de contenu et que
+s'arrêter là ne prouverait rien ; et il annonce l'en-tête `accept` d'un
+navigateur, sinon il éprouverait un cas que personne ne vit.
+
+**Une erreur n'est pas un type de contenu abîmé.** La première version accusait
+le protocole du port devant un `403` du relais — le mauvais coupable, ce que le
+dépôt interdit. Les deux cas sont désormais distingués, et le message recopie
+**mot pour mot** ce que le relais a répondu.
+
+Les six verdicts ont été joués, chacun contre l'état qu'il prétend détecter.
+
+### Le banc d'essai envoyait le patron chercher au mauvais endroit
+
+Deux défauts trouvés en le regardant s'en servir, le 10 août au soir, et
+**aucun dans l'application** — les deux dans `scripts/essai.mjs`.
+
+**« Ok to proceed? »** Sans dépendances installées, `npx` ne trouve pas `next`
+en local et **propose de le télécharger** : *« Need to install the following
+packages: next@16.3.0 »*, quand le dépôt est figé sur **16.2.12**. Le patron a
+lu une question sans rapport avec ce qu'il voulait faire, et accepter aurait
+fait tourner l'application sur une version que personne n'a éprouvée. Le script
+vérifie donc `node_modules/next` avant tout, et sort en nommant le vrai
+coupable ; `npx --no-install` en renfort, pour qu'un cas non prévu **échoue** au
+lieu de poser une question.
+
+**« L'application n'a pas répondu après trois minutes »** — alors qu'elle
+arrivait. Le journal disait tout, trois lignes plus haut : **`Slow filesystem
+detected. The benchmark took 20605 ms`**, deux cents fois la normale. Le serveur
+avait démarré en 486 ms et compilait encore. Trois corrections :
+
+1. **Dix minutes au lieu de trois.** Abandonner trop tôt ne coûte pas une
+   attente : ça fait croire à une panne.
+2. **Un signe de vie toutes les trente secondes.** Un écran figé dix minutes se
+   lit comme un plantage — et on ferme alors le terminal, ce qui tue le serveur
+   au moment où il aboutit.
+3. **Le message n'accuse plus la base de données par défaut.** Il regarde si le
+   serveur est **encore en vie**, ce qui sépare les deux cas sans rien
+   supposer : s'il tourne, il dit de ne pas fermer le terminal et donne la
+   commande qui répond par oui ou non ; s'il est mort, alors seulement la base
+   est citée.
+
+**Un défaut trouvé en éprouvant le correctif :** la branche « le serveur s'est
+arrêté » était **inatteignable**. `serveur.on("exit")` appelait `process.exit`
+sur-le-champ, si bien que le script mourait avant de pouvoir expliquer quoi que
+ce soit. La sortie est désormais retenue, traitée après le diagnostic, puis
+rendue telle quelle.
+
+Les quatre chemins ont été joués : dépendances absentes, serveur mort, serveur
+vivant qui ne répond pas, et démarrage normal.
+
 ### « Terminés » : un fil par mois, et facturer en trois appuis
 
 L'écran empilait trois sortes de pavés arrondis, dont **un seul plein** : le

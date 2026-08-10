@@ -261,6 +261,32 @@ case "${MIGRATIONS:-}" in
     echo "    Ne cherchez pas ailleurs : c'est ça, et c'est réparable."
     ;;
 esac
+# **Le banc se diagnostique tout seul, sans qu'on le lui demande.**
+#
+# Le 10 août 2026, le patron a passé une soirée entre une page blanche, un
+# téléchargement proposé par deux navigateurs différents, et des messages qui
+# accusaient tour à tour la base, le réseau et sa session. Aucun n'avait raison,
+# et la seule réponse — ce que reçoit VRAIMENT son téléphone — n'était joignable
+# que d'ici : le réseau de l'agent refuse `*.app.github.dev`.
+#
+# Ce contrôle part donc en arrière-plan, attend que le serveur réponde, puis
+# écrit son verdict dans un fichier. Détaché et sans conséquence : il ne modifie
+# rien, et son échec ne peut pas empêcher le banc de servir.
+VERDICT=/tmp/verdict-banc.txt
+setsid nohup bash -c "
+  for _ in \$(seq 1 60); do
+    curl -sf -o /dev/null --max-time 5 http://127.0.0.1:3000/api/health/live && break
+    sleep 10
+  done
+  cd '$CD' && node scripts/diagnostiquer-banc.mjs > '$VERDICT' 2>&1
+" > /dev/null 2>&1 < /dev/null &
+
+echo "──────────────────────────────────────────────"
+echo "  Si l'adresse ne s'ouvre pas, une seule commande"
+echo "  vous dira pourquoi — elle est déjà en train de"
+echo "  chercher :"
+echo
+echo "      cat $VERDICT"
 echo "──────────────────────────────────────────────"
 echo "  Atlas se BÂTIT au démarrage : deux à cinq minutes,"
 echo "  une seule fois. Ensuite chaque écran s'ouvre du"
