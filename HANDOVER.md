@@ -70,10 +70,20 @@ de la maquette 09 dit « le trait seul » : « Le calme × Aman », le pied d'Am
 l'en-tête. **La couleur, elle, n'est pas choisie** : la maquette 11 le montre
 dans seize chartes. **Rien à coder tant qu'il n'a pas nommé la charte.**
 
-**Comment lui montrer une maquette.** Pas une adresse : trois fois de suite il
-n'a pas pu ouvrir un artefact (*« Je ne peux pas ouvrir ça »*). Ce qui marche,
-ce sont des **planches PNG** envoyées dans la conversation. Le fichier HTML et
-l'adresse viennent en complément, jamais seuls.
+**Comment lui montrer une maquette. Deux règles, apprises à ses dépens.**
+
+1. **Une maquette ne doit contenir AUCUN script.** C'est la vraie cause de
+   *« Je ne peux pas ouvrir ça »*, répété trois fois : les maquettes 06, 10 et
+   11 engendraient leurs écrans en JavaScript, la 09 est du HTML pur — et la 09
+   est la seule qu'il ait ouverte, du premier coup, sur son téléphone. Son
+   lecteur n'exécute pas les scripts. La garantie « rien ne diverge d'un écran
+   à l'autre » se tient donc dans le script qui ÉCRIT la page
+   (`scripts/engendrer-maquette-couleurs.mjs`), pas dans la page.
+   **Les maquettes 03, 04, 05, 06 et 10 ont encore des scripts** : les
+   convertir avant de les lui renvoyer.
+2. **Lui envoyer aussi des images.** Une planche PNG s'affiche dans la
+   conversation sans rien à ouvrir. Le fichier HTML complète, l'adresse d'un
+   artefact ne suffit jamais.
 
 **L'écran Chantiers est refait d'après une maquette du patron (9 août).** Il a
 demandé une reproduction, pas une interprétation.

@@ -36,6 +36,28 @@ dégradés, il nomme le bon coupable à chaque fois : une ancre morte, un lien
 vers l'extérieur — le défaut d'origine, précisément — et une feuille de style
 qui ne s'applique plus.
 
+### La vraie raison pour laquelle il ne pouvait rien ouvrir : le JavaScript
+
+Trois fois : *« Je ne peux pas ouvrir ça. »* J'ai d'abord accusé la connexion
+aux artefacts, puis la taille des écrans. C'était ni l'un ni l'autre.
+
+**La maquette 09 s'est affichée du premier coup sur son téléphone** — il en a
+renvoyé la capture. Les 06, 10 et 11, non. La seule différence entre elles :
+09 est du HTML pur, les autres engendrent leurs écrans en JavaScript depuis un
+gabarit cloné. Son lecteur n'exécute pas les scripts, et il recevait donc une
+page vide.
+
+La maquette 11 est réécrite **sans une ligne de script** :
+`scripts/engendrer-maquette-couleurs.mjs` dépose les seize écrans en clair. La
+promesse « rien ne change sauf la couleur » n'est pas abandonnée, elle change
+de gardien — elle passe du navigateur au script qui écrit la page. Le contrôle
+charge désormais la page **JavaScript coupé** : il reproduit ses conditions,
+pas les miennes.
+
+La leçon vaut au-delà des maquettes : trois correctifs de suite ont réparé une
+panne imaginée parce que personne n'était allé chercher ce qui différait
+vraiment entre le cas qui marche et celui qui échoue.
+
 ### L'écran retenu seul, et un contrôle qui accusait à tort
 
 **Corrigé dans la foulée : la taille.** Le patron a renvoyé sa capture de la
