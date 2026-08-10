@@ -35,7 +35,20 @@ const CSP = [
   "object-src 'none'",
 ].join("; ");
 
+// **Le dossier de construction est déplaçable, et ce n'est pas un confort.**
+//
+// Le 10 août 2026, le patron regarde une page blanche pendant que son banc se
+// rebâtit. Sur son disque — que Next.js mesure lui-même deux cents fois trop
+// lent — la construction dure des dizaines de minutes, et RIEN ne sert pendant
+// ce temps : `scripts/banc.mjs` bâtissait d'abord, servait ensuite.
+//
+// Pour servir en même temps qu'on bâtit, il faut deux dossiers : le serveur de
+// développement garde `.next`, la construction écrit ailleurs. Sans cela les
+// deux se marchent dessus, et le remède casserait ce qu'il répare.
+const DIST = process.env.ATLAS_DIST_DIR;
+
 const nextConfig: NextConfig = {
+  ...(DIST ? { distDir: DIST } : {}),
   async headers() {
     return [
       {

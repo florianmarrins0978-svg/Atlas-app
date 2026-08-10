@@ -33,7 +33,13 @@ import { annoncePrete } from "./annonce-adresse.mjs";
 
 const PORT = process.env.PORT ?? "3000";
 const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
-const TEMOIN_BATI = ".next/atlas-version-batie.txt";
+// **Deux dossiers, et c'est le cœur du correctif du 10 août 2026.** Le serveur
+// de développement garde `.next` ; la version bâtie vit à côté. C'est ce qui
+// permet de SERVIR PENDANT QU'ON BÂTIT — sans quoi le patron regarde une page
+// blanche pendant toute la construction, qui dure des dizaines de minutes sur
+// un disque lent. Voir `next.config.ts` (`ATLAS_DIST_DIR`).
+const DIST = ".next-batie";
+const TEMOIN_BATI = `${DIST}/atlas-version-batie.txt`;
 
 const attendre = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -64,7 +70,7 @@ function versionDuCode() {
  * compare donc le commit bâti au commit présent.
  */
 function doitRebatir(version) {
-  if (!existsSync(".next/BUILD_ID")) return "aucune version bâtie";
+  if (!existsSync(`${DIST}/BUILD_ID`)) return "aucune version bâtie";
   if (!version) return null; // Hors git : on ne peut pas comparer, on garde.
   try {
     const bati = readFileSync(TEMOIN_BATI, "utf8").trim();
@@ -76,9 +82,9 @@ function doitRebatir(version) {
 }
 
 /** Joue une commande en laissant sa sortie visible. Rend le code de sortie. */
-function jouer(commande, args) {
+function jouer(commande, args, env = process.env) {
   return new Promise((resoudre) => {
-    const p = spawn(commande, args, { stdio: "inherit", env: process.env });
+    const p = spawn(commande, args, { stdio: "inherit", env });
     p.on("exit", (code) => resoudre(code ?? 1));
     p.on("error", () => resoudre(1));
   });
@@ -86,42 +92,76 @@ function jouer(commande, args) {
 
 const version = versionDuCode();
 const raison = doitRebatir(version);
-let bati = !raison;
+
+const lancerBati = () =>
+  spawn("npx", ["next", "start", "-H", "0.0.0.0", "-p", PORT],
+    { stdio: "inherit", env: { ...process.env, ATLAS_DIST_DIR: DIST } });
+const lancerDev = () =>
+  spawn("npx", ["next", "dev", "-H", "0.0.0.0", "-p", PORT],
+    { stdio: "inherit", env: process.env });
+
+// **SERVIR D'ABORD, BÂTIR ENSUITE — le correctif du 10 août 2026, au soir.**
+//
+// Ce que le patron a vécu : une page blanche, encore. Le diagnostic disait
+// « Application, vue de l'intérieur : injoignable ». Rien n'était cassé : le
+// banc se rebâtissait, et l'ancienne version de ce script bâtissait AVANT de
+// servir. Sur un disque que Next.js mesure deux cents fois trop lent, cela veut
+// dire des dizaines de minutes sans rien. Il a passé sa soirée devant ce vide.
+//
+// Désormais le serveur de développement part TOUT DE SUITE — une minute, et il
+// répond. La construction se fait à côté, dans son propre dossier, et on ne
+// bascule qu'une fois qu'elle a abouti. À aucun moment il n'y a rien.
+let serveur = raison ? lancerDev() : lancerBati();
+let enBascule = false;
+
+// Le serveur tient ce script en vie ; sa mort l'arrête — SAUF pendant la
+// bascule, où on le tue nous-mêmes pour le remplacer.
+const surSortie = (code) => {
+  if (!enBascule) process.exit(code ?? 0);
+};
+serveur.on("exit", surSortie);
 
 if (raison) {
-  console.log(`\n  Construction d'Atlas (${raison}).`);
-  console.log("  Deux à cinq minutes, une seule fois. Ensuite chaque écran s'ouvre du premier coup.\n");
-  const code = await jouer("npx", ["next", "build"]);
+  console.log(`\n  Atlas répond déjà, en mode développement.`);
+  console.log(`  Sa version rapide se construit en même temps (${raison}) — ne fermez rien.\n`);
+
+  // La construction écrit dans SON dossier : le serveur de développement garde
+  // le sien, et les deux ne se marchent jamais dessus.
+  const code = await jouer("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
+
   if (code === 0) {
-    bati = true;
     try {
-      mkdirSync(".next", { recursive: true });
+      mkdirSync(DIST, { recursive: true });
       writeFileSync(TEMOIN_BATI, version ?? "inconnue");
     } catch {
       // Sans témoin on rebâtira au prochain démarrage : coûteux, jamais faux.
     }
+    console.log("\n  Construction terminée — passage à la version rapide.\n");
+    enBascule = true;
+    serveur.kill("SIGTERM");
+    // Laisser le port se libérer : se précipiter donnerait « port déjà pris »,
+    // c'est-à-dire un message sans rapport avec la cause.
+    await attendre(3000);
+    serveur = lancerBati();
+    serveur.on("exit", surSortie);
+    enBascule = false;
   } else {
     // **Jamais en silence, et jamais rien du tout.** Voir l'en-tête : un banc
     // lent reste un banc, un banc mort coûte une soirée.
     console.error(
       "\n  ⚠️  LA CONSTRUCTION A ÉCHOUÉ — les lignes ci-dessus disent pourquoi.\n" +
-        "     Atlas repart en mode développement : il fonctionne, mais chaque\n" +
+        "     Atlas continue en mode développement : il fonctionne, mais chaque\n" +
         "     écran mettra jusqu'à une minute à s'ouvrir la première fois.\n"
     );
   }
 }
-
-const serveur = bati
-  ? spawn("npx", ["next", "start", "-H", "0.0.0.0", "-p", PORT], { stdio: "inherit", env: process.env })
-  : spawn("npx", ["next", "dev", "-H", "0.0.0.0", "-p", PORT], { stdio: "inherit", env: process.env });
-
-serveur.on("exit", (code) => process.exit(code ?? 0));
 
 // Arrêter ce script doit arrêter le serveur : sans cela il reste en écoute, et
 // la tentative suivante échoue sur un port déjà pris — message qui n'a plus
 // aucun rapport avec la cause.
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, () => {
+    enBascule = false;
     serveur.kill(signal);
     process.exit(0);
   });

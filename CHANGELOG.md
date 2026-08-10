@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Servir d'abord, bâtir ensuite — la page blanche n'était qu'une attente
+
+Le patron ouvre son adresse : page blanche, encore. Le diagnostic dit
+**« Application, vue de l'intérieur : injoignable »**. Rien n'était cassé : le
+banc se rebâtissait, et `scripts/banc.mjs` **bâtissait AVANT de servir**. Sur son
+disque — que Next.js mesure lui-même deux cents fois trop lent — cela veut dire
+des dizaines de minutes sans rien du tout.
+
+Désormais le serveur de développement part **tout de suite**, et la construction
+se fait à côté ; on ne bascule qu'une fois qu'elle a abouti. **À aucun moment il
+n'y a plus rien.**
+
+Ce que ça exigeait : **deux dossiers de construction**, sinon les deux serveurs
+se marchent dessus et le remède casse ce qu'il répare. `next.config.ts` lit donc
+`ATLAS_DIST_DIR` — le développement garde `.next`, la version bâtie vit dans
+`.next-batie`.
+
+**Mesuré, pas supposé** : l'application répond en **20 secondes** au lieu
+d'attendre la fin de la construction ; la bascule se fait ensuite sans coupure —
+`200` avant, `200` après.
+
+**Un défaut de mon banc d'essai à moi, au passage** : Turbopack refuse un
+`node_modules` en lien symbolique hors du projet. Mon premier essai a donc
+échoué sur ma propre installation, pas sur le correctif — et j'ai bien failli en
+tirer la mauvaise conclusion.
+
 ### `pg_dump: command not found` — j'avais supposé un outil au lieu de le vérifier
 
 La sauvegarde que je venais d'écrire pour protéger sa base a répondu au patron

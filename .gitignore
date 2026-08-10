@@ -75,3 +75,4 @@ maquettes/*-essai.html
 # Sauvegardes du banc d'essai — noms et adresses de clients : jamais versionnées.
 sauvegarde-atlas-*.sql
 sauvegarde-atlas-*.json
+.next-batie
