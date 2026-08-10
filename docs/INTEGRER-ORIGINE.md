@@ -152,6 +152,52 @@ colonne : il pousse la liste vers le haut au lieu de la recouvrir.
   Il n'apparaît pas sur cet écran (il vit sous « Terminés ») : c'est **là-bas**
   que le refus doit s'écrire, et il doit dire pourquoi.
 
+### 4 bis. Le même retrait partout — les sept endroits
+
+Le patron, le 2026-08-10 : *« je veux qu'il applique ce style à tout ce qu'on
+peut supprimer dans l'appli »*. Aujourd'hui, sept endroits suppriment, avec
+**trois mécaniques différentes** — glissement, croix nue, panneau de
+confirmation. C'est cette dispersion qu'il faut faire disparaître.
+
+| Où | Quoi | Comment aujourd'hui |
+|---|---|---|
+| `src/app/ListeChantiers.tsx` | un chantier | `CarteGlissante` : glissement + corbeille |
+| `src/app/chantiers/[id]/photos/PhotosClient.tsx` | une photo | croix, puis panneau « Supprimer cette photo ? » |
+| `src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx` | la note vocale | bouton, puis panneau « Supprimer cette note vocale ? » |
+| `src/app/chantiers/[id]/prix/PrixClient.tsx` | une ligne de prix | `AnimatedRow` : croix nue |
+| `src/app/chantiers/[id]/informations/InformationsClient.tsx` | une prestation, un matériel | `AnimatedRow` : croix nue |
+| `src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx` | une ligne du devis | croix nue |
+| `src/app/reglages/ReglagesClient.tsx` | un tarif | bouton « Supprimer » |
+
+**Deux composants partagés, et aucun geste réinventé sur place :**
+
+- `LigneRetirable` — remplace `AnimatedRow` **et** `CarteGlissante`. Elle porte
+  le glissement (colonne du texte seule), la chute, et signale le retrait.
+- `TiroirDesRetires` — un par écran, posé entre le contenu et le bas de page.
+
+**Ce que ce changement déplace, et qui doit être décidé en le sachant :** la
+sécurité passe d'une **confirmation avant** à une **réversibilité après**. Les
+deux panneaux « Supprimer cette photo ? » et « Supprimer cette note vocale ? »
+disparaissent donc — sinon l'écran demande deux fois. C'est le cœur du geste
+retenu ; ne pas le garder « au cas où ».
+
+**Trois conséquences à ne pas manquer :**
+
+1. **Le délai d'annulation précède l'écriture destructrice.** Tant que le tiroir
+   est ouvert, rien n'est effacé pour de bon. La note vocale et les photos ont
+   un fichier derrière elles : leur purge passe déjà par `audios_a_purger` —
+   ne pas la déclencher avant la fermeture du tiroir.
+2. **Un chantier facturé refuse toujours**, et dit pourquoi. `CarteGlissante`
+   portait déjà `desactive` pour cela : la nouvelle ligne doit garder l'idée,
+   avec le motif visible plutôt qu'un simple blocage.
+3. **Le décompte de l'écran suit le retrait** partout où il en existe un
+   (« Huit en cours », « 6 photos », le total du devis). Un compteur qui ne
+   bouge pas fait douter que le retrait ait eu lieu.
+
+Les maquettes `src/app/design/photos` et `src/app/design/informations` montrent
+les anciens gestes : les mettre à jour ou les retirer, mais ne pas les laisser
+contredire l'application.
+
 ---
 
 ## 5. Le bandeau — trait G
