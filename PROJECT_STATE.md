@@ -204,7 +204,7 @@ Ce que cela change pour le code, et pourquoi c'est écrit ici :
 
 ### Ce que le patron a arrêté le 2026-08-10, sur maquettes
 
-Quatre choix faits, après avoir touché chaque variante sur son téléphone :
+Cinq choix faits, après avoir touché chaque variante sur son téléphone :
 
 | | Retenu | Ce que ça veut dire |
 |---|---|---|
@@ -212,6 +212,35 @@ Quatre choix faits, après avoir touché chaque variante sur son téléphone :
 | Trait du bandeau | **G** | il dépasse sa cible et revient ; le mot choisi monte de 2 px, le mot quitté redescend |
 | La perle du fil | **elle suit** | posée devant le 22 juillet au repos, accrochée à mi-hauteur dès que ce chantier remonte, **un chantier par glissement** |
 | « Nouveau chantier » | **l'écran recule** | la liste passe à 93 % et s'assombrit, la feuille monte devant, son contenu arrive après elle dans l'ordre de lecture |
+| Retirer un chantier | **le tiroir des retirés** (P) | on fait glisser **le texte** de la ligne vers la gauche, « Retirer » se découvre ; la ligne **tombe** et un tiroir s'ouvre au-dessus du bandeau : « Retiré à l'instant — Annuler » |
+
+**Ce que le retrait retenu suppose.** Le geste n'efface pas : il déplace vers
+un état réversible tant qu'on est sur l'écran. Trois règles en découlent, et
+elles ont été payées à l'essai sur la maquette :
+
+- **La date et le fil ne glissent pas avec le texte.** Faire partir la ligne
+  d'un bloc coupe le nom en plein mot et laisse le fil traverser les lettres :
+  ça se lit comme un défaut d'affichage, pas comme un geste. Seule la colonne
+  du texte bouge, et un voile de 16 px la fait se **dissoudre** au bord plutôt
+  que d'être tranchée. La marge négative du glisseur et le retrait intérieur du
+  volet s'annulent, sinon la première lettre est mangée **au repos**.
+- **« Annuler » doit viser la ligne réellement retirée.** Un libellé unique
+  pointant toujours la même case rend la première ligne quand on retire la
+  deuxième — l'annulation *supprime*. Chaque ligne porte son libellé, et on
+  n'affiche que celui du dernier retrait, détecté par
+  `:has(#cN:checked ~ .sup:checked)`.
+- **Le décompte suit ce qui reste.** « Huit en cours » au-dessus de six lignes
+  est le genre de détail qui décide seul du sentiment de soin. Sans script, une
+  chaîne de `~ .sup:checked` compte les cases cochées.
+
+**Réserve :** le tiroir et le décompte reposent sur `:has()`. S'il manque, la
+ligne part quand même mais le tiroir ne s'ouvre pas — dégradation acceptable,
+à confirmer sur l'iPhone du patron. Dans l'application, le tiroir devra porter
+un délai réel avant l'écriture en base ; la maquette, elle, ne fait que cacher.
+
+**Aucun chantier facturé n'apparaît sur cet écran** — ils vivent sous
+« Terminés ». Le refus (« sa facture figure au relevé de TVA ») se joue donc
+là-bas, et c'est là qu'il faudra l'écrire.
 
 **Conséquence assumée sur la perle**, signalée deux fois et maintenue : elle ne
 désigne plus le chantier dont le devis est revenu, puisqu'elle suit le doigt.

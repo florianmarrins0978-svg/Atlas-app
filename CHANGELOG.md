@@ -7,6 +7,48 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-10
+
+### Retirer un chantier : le tiroir des retirés
+
+Cinquième choix arrêté sur maquettes, après trois séries de propositions. Le
+patron cherchait *« quelque chose de luxueux et très moderne pour pouvoir
+supprimer des lignes »*. Les deux premières séries faisaient varier **ce qui
+déclenche** le retrait ; la troisième a fait varier **la manière dont la ligne
+s'en va**, et c'est celle-là qui a emporté la décision.
+
+**Le geste retenu.** Le texte de la ligne glisse vers la gauche, « Retirer » se
+découvre, la ligne **tombe** et un tiroir s'ouvre au-dessus du bandeau :
+« Retiré à l'instant — Annuler ». Aucun panneau, aucun rouge, et deux gestes
+jamais un.
+
+**Trois défauts trouvés en regardant l'écran, aucun par les contrôles** — la
+règle du dépôt s'est vérifiée une fois de plus :
+
+- Deux **cases à cocher bleues d'iOS** trônaient au milieu d'une maquette
+  ivoire : une classe de masquage oubliée sur des `input` ajoutés après coup.
+- Une classe homonyme (`.compte`, utilisée à la fois pour le décompte de
+  l'en-tête et pour un filet d'un pixel) avait **effacé la ligne « Trois en
+  cours »** de l'écran. Vert partout.
+- La ligne entière glissait : le nom se coupait en plein mot et le fil
+  traversait les lettres. Désormais **seule la colonne du texte bouge**, et un
+  voile la dissout au bord.
+
+Et un quatrième, dans la version déjà retenue la veille : au bandeau,
+**« CHANTIERS » touchait « PLANNING »**. La chasse de la charte (`.28em`) donne
+86 px pour une colonne de 85. Un contrôle mesure maintenant l'écart entre les
+libellés — en mesurant l'étendue du *texte*, la boîte du libellé valant sa
+colonne entière.
+
+**Le piège du « Annuler ».** Un libellé unique visant toujours la même ligne
+rend la première quand on retire la deuxième : l'annulation *supprime*. Chaque
+ligne porte son libellé, et l'on n'affiche que celui du dernier retrait.
+
+Le détail, les réserves (`:has()`, le délai réel avant écriture en base) et ce
+que l'intégration suppose sont dans `PROJECT_STATE.md` et `TODO.md` §7.
+
+---
+
 ## 2026-08-07
 
 ### L'adresse se propose pendant la frappe, et se choisit d'un doigt

@@ -64,6 +64,25 @@ au volume du patron coûterait **2 à 8 $**, transcription comprise.
 
 Détail dans `CHANGELOG.md`, état complet dans `PROJECT_STATE.md`.
 
+**Et, en dernier lieu, l'esthétique — sur maquettes, pas dans le code.** Le
+patron a arrêté **cinq** choix le 2026-08-10 : la charte **Origine** (ivoire et
+bronze, qui remplace le vert pin d'Arborea), le **trait G** au bandeau, la
+**perle** qui suit le défilement, l'**écran qui recule** à l'ouverture de
+« Nouveau chantier », et le **tiroir des retirés** pour supprimer une ligne.
+
+**Rien de tout cela n'est encore dans l'application** — `design-tokens.ts` porte
+toujours Arborea. Une conversation qui lirait le code seul repartirait en vert
+pin avec des icônes, c'est-à-dire à contresens. Le détail, les réserves et
+l'ordre d'intégration sont dans `PROJECT_STATE.md` et `TODO.md` §7.
+
+Deux contraintes à ne pas redécouvrir : **les maquettes envoyées au patron ne
+doivent contenir aucun JavaScript** (son lecteur n'en exécute pas — les pages
+engendrées en script lui arrivaient vides), et **il faut regarder les captures**.
+Sur ce lot, quatre défauts se sont vus à l'écran et aucun aux contrôles : des
+cases à cocher bleues d'iOS en pleine page ivoire, une ligne d'en-tête effacée
+par une classe homonyme, un nom coupé en plein mot par le glissement, et
+« CHANTIERS » qui touchait « PLANNING ».
+
 ## Où reprendre
 
 `TODO.md`, dans l'ordre. Le premier point codable seul aujourd'hui est

@@ -226,8 +226,8 @@ et c'est déjà arrivé.
 
 **Choix arrêtés par le patron le 2026-08-10** sur maquettes : charte Origine,
 trait G au bandeau, la perle qui suit le défilement, l'écran qui recule à
-l'ouverture de « Nouveau chantier ». Le détail et les deux réserves sont dans
-`PROJECT_STATE.md`.
+l'ouverture de « Nouveau chantier », et **le tiroir des retirés** pour
+supprimer une ligne. Le détail et les réserves sont dans `PROJECT_STATE.md`.
 
 **Le CSS des maquettes ne se recopie pas tel quel**, et c'est le point qui
 coûtera le plus de temps si on l'ignore : l'écran d'accueil n'a aujourd'hui
@@ -253,8 +253,20 @@ Ordre à respecter, chaque étape étant utilisable seule :
    le décalage de 23 px (haut de ligne → ligne du nom) et le `scroll-padding`
    de 44 px. Si la page reste le conteneur de défilement, retrancher aussi la
    moitié de la barre basse, sans quoi le « centre » n'est pas le centre visible.
-4. **Le bandeau** — `AtlasBottomNav.tsx` perd ses icônes.
-5. **L'ouverture** — dépend d'un point de produit non tranché : « Nouveau
+4. **Le bandeau** — `AtlasBottomNav.tsx` perd ses icônes. **La chasse de la
+   charte n'y tient pas** : « CHANTIERS » en `.28em` mesure 86 px pour une
+   colonne de 85, et vient coller « PLANNING ». Le bandeau est le seul endroit
+   de l'écran où quatre mots doivent tenir côte à côte : 9 px / `.15em` y
+   laissent une vraie respiration. Un contrôle mesure désormais l'écart entre
+   les libellés — la boîte du libellé vaut sa colonne entière, il faut donc
+   mesurer l'étendue du **texte** (`Range.getBoundingClientRect`), sinon le
+   contrôle reste vert pendant que les mots se touchent.
+5. **Le retrait** — le tiroir des retirés remplace la corbeille de
+   `CarteGlissante`. Le glissement ne doit porter que sur **la colonne du
+   texte** : la date et le fil restent en place (voir `PROJECT_STATE.md`). Dans
+   l'application, « Annuler » a besoin d'un vrai délai avant l'écriture en base,
+   et le tiroir doit se refermer quand ce délai passe.
+6. **L'ouverture** — dépend d'un point de produit non tranché : « Nouveau
    chantier » est une page, l'ouverture retenue raconte une feuille.
 
 **Un risque à éprouver au doigt, pas au test :** `CarteGlissante` suit le doigt
