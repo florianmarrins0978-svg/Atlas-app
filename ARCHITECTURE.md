@@ -3331,3 +3331,233 @@ ligne. Vu en le jouant, pas en le relisant.
 **Et le message désigne maintenant le bon coupable :** en cas d'échec, la fin du
 journal de démarrage est recrachée. Sans elle, on part chercher une adresse
 absente au lieu de lire ce que le démarrage a réellement dit.
+
+---
+
+## 51. Nommer les équipes — et se taire quand il n'y a personne
+
+**Demandé par le patron le 10 août 2026 :** *« il faut que dans le fichier
+réglages on puisse mettre le nom des équipes — soit équipe A équipe B, soit des
+noms et prénoms. Mais s'il n'a pas d'équipe et qu'il ne met rien, il ne faut pas
+qu'il y ait quand même écrit équipe A équipe B. »*
+
+**Le principe qui tient tout le reste :** on n'invente jamais un nom, et on ne
+laisse jamais deux lignes indiscernables.
+
+| Combien d'équipes | Ce que Réglages propose | Ce que le planning écrit |
+|---|---|---|
+| **1** | rien à nommer — le bloc n'existe pas | **aucun nom d'équipe** |
+| **2 et plus** | une ligne par équipe, un champ libre | le nom écrit ; à défaut « Équipe A », « Équipe B »… |
+
+À une équipe il n'y a personne à distinguer, donc rien à écrire ; à deux, la
+lettre est un repli assumé — elle ne prétend rien savoir de personne. C'est le
+même arbitrage que pour les prix (`docs/AGENT.md` §3) : **sans source fiable, on
+n'écrit pas.**
+
+### Le repli est un AFFICHAGE, jamais une donnée
+
+`equipes.nom` est **nullable et sans valeur par défaut**. Écrire « Équipe A » en
+base au moment de l'insertion serait le piège exact que le patron désigne : la
+lettre deviendrait indiscernable d'un nom qu'il aurait choisi, et le jour où il
+repasse à une seule équipe, le planning aurait un nom à écrire là où il ne doit
+rien écrire.
+
+**Une seule fonction décide** — `libelleEquipe` dans `src/lib/equipes.ts`,
+appelée par le planning comme par la revalidation serveur. Elle rend `null` pour
+dire « n'écris rien », jamais une chaîne vide. Deux implémentations de cette
+règle divergeraient, et le jour où elles divergent l'écran promet une équipe que
+le serveur ne connaît pas — c'est exactement ce qui est arrivé aux deux phrases
+d'annonce du banc d'essai (§50).
+
+### Qui fait autorité sur le NOMBRE
+
+**`entreprises.nombre_equipes`**, et la table `equipes` ne porte que des noms.
+
+Le compteur existe déjà, il commande la planification (`departPossible`,
+`jourRetenable`) et il est éprouvé. Lui substituer un `COUNT(*)` ferait dépendre
+le calcul des disponibilités de lignes qu'aucun écran n'oblige à créer.
+
+**Conséquence assumée : une ligne survit au-delà du compteur.** Redescendre de
+trois à deux ne supprime rien ; remonter rend le nom écrit pour la troisième.
+Effacer aurait été une perte silencieuse sur une donnée saisie à la main que
+rien ne reconstitue.
+
+### Trois pièges déjà payés
+
+- **Ne pas proposer de nommer ce qui ne sera jamais lu.** À une équipe, le bloc
+  des noms n'existe pas — il ne se grise pas. Le laisser serait un piège : le
+  patron y écrirait un prénom qui n'apparaîtrait nulle part.
+- **Le champ fait 17 px.** En dessous de 16, Safari zoome à la mise au point et
+  l'écran saute sous le doigt.
+- **Un contrôle de visibilité ne lit jamais `display` sur l'élément seul.** Les
+  vingt lignes gardaient `display:flex` sous un parent caché, et le contrôle
+  restait vert sur un écran vide. `Element.checkVisibility()`, jamais le style
+  propre.
+
+---
+
+## 52. Le planning — le mois, et la journée qui s'ouvre dessous
+
+**Variante « le mois », retenue par le patron le 10 août 2026 sur maquette**
+(`maquettes/atlas-planning.html`, `docs/INTEGRER-ORIGINE.md` §6 quater).
+
+Sept colonnes, **rien qui ressemble à un tableau** : pas de bordure, pas de fond
+de case, un chiffre en serif de 15 px et un point de 5 px dessous. Le calendrier
+doit se lire d'abord comme des chiffres.
+
+### Cinq marques, pas quatre
+
+| Marque | Ce qu'elle dit |
+|---|---|
+| rien | journée entièrement libre |
+| anneau creux | il reste de la place — au moins une équipe libre |
+| demi-disque haut | le matin est complet **pour toutes les équipes** |
+| demi-disque bas | l'après-midi est complet |
+| disque plein | journée pleine |
+
+**Quatre ne suffisaient plus dès qu'il y a plusieurs équipes** : sans l'anneau
+creux, un jour à moitié pris se lisait comme un jour libre, et la collision se
+découvrait en ouvrant la journée. Les marques se calculent dans
+`marqueDuJour` (`src/lib/mois.ts`) à partir de l'occupation réelle — et
+**« complet » se compte PAR ÉQUIPE**, ce qui est tout l'objet du compteur de
+Réglages.
+
+### La grille doit dire vrai
+
+`grilleDuMois` cale la semaine sur **lundi** : `(getUTCDay() + 6) % 7`. Le 1er
+août 2026 est un **samedi** ; un calage sur dimanche pose quatre cases de
+juillet au lieu de cinq et **tout le mois glisse d'un jour**. Tous les chiffres
+sont là, aucun n'est en trop, et le calendrier est faux — invisible à la
+relecture, évident sur une capture. D'où des contrôles sur les colonnes du 1er,
+du 10, du 15 et du 31 (`scripts/test-mois.ts`), confrontés au défaut qu'ils
+prétendent détecter.
+
+### La journée s'ouvre SOUS le calendrier, et s'amène à l'écran
+
+Deux fois de suite le patron a écrit « rien ne s'ouvre quand je touche un jour »,
+avec quarante contrôles au vert : posée plus bas, la journée s'ouvrait hors du
+champ et l'écran paraissait mort. Elle se pose donc **directement sous la
+grille**, et un `scrollIntoView` l'amène au centre — c'est ce que la maquette
+obtenait par une ancre et `scroll-margin-top`.
+
+**Une case du mois voisin fait basculer le calendrier sur son mois.** Sans cela
+l'écran affichait « Lundi 27 juillet » sous un titre « août » : les deux se
+contredisaient et rien ne disait lequel croire. Vu en capture.
+
+### Poser, c'est dire à la fois QUAND et QUI
+
+Une ligne par équipe sous chaque demi-journée, un filet dessous, jamais un
+cadre. Le bouton **ne s'arme qu'une fois l'équipe choisie** — une date sans
+équipe laisse le travail à moitié fait — et il n'y en a **qu'un seul**, jamais
+trois lignes : « Poser · matin · Théo → ».
+
+**Deux colonnes quand il y a une équipe à nommer, une seule sinon.** À une
+équipe, « Libre » — ou le nom du chantier — tient la place du nom et la colonne
+de droite n'existe pas. L'écrire des deux côtés mettait « Libre » deux fois sur
+la même ligne. Vu en capture, comme le reste.
+
+**Le choix est revalidé au serveur**, jamais cru sur parole : entre l'affichage
+et l'appui, un client a pu retenir ce créneau. `CreneauIndisponible` porte le
+jour et le moment, pour que l'écran DISE lequel vient de partir — sinon le
+patron réessaie le même et ne comprend pas pourquoi rien ne se passe.
+
+### Le rang est écrit en clair
+
+Sur la maquette, `label:nth-of-type(n)` comptait dans son propre bloc et allumait
+la ligne choisie sur le matin **et** l'après-midi à la fois. Ici la clé porte le
+moment ET le rang, et un contrôle vérifie qu'**une seule** ligne s'allume.
+
+### Le trait du bandeau
+
+Il doit tomber sous **l'onglet actif**. Recopié depuis un écran où le premier
+onglet était choisi, il est resté sous « CHANTIERS » pendant que « PLANNING »
+était le mot allumé — 77 px d'écart, vu par le patron sur une capture pendant
+que le contrôle du libellé restait vert. Le contrôle mesure désormais l'écart
+entre le centre du trait et le centre du **texte** de l'onglet
+(`Range.getBoundingClientRect`) : la boîte du libellé vaut sa colonne entière et
+masquait le décalage.
+
+---
+
+## 53. « Terminés » — le fil par mois, et facturer en trois appuis
+
+**Choisi par le patron le 10 août 2026 sur maquette**
+(`maquettes/atlas-facturer.html`, `docs/INTEGRER-ORIGINE.md` §6 quinquies).
+
+### Ce qui clochait, et qui n'était pas une affaire de goût
+
+L'écran empilait **trois sortes de pavés arrondis** — le relevé de TVA, les
+chantiers à facturer, les factures. Le relevé de TVA était le **seul cadre
+plein**, si bien que l'œil allait d'abord sur ce qu'on consulte une fois par
+trimestre. « Rien à facturer » s'affichait comme un **titre de section suivi de
+rien** : l'écran avait l'air amputé au lieu d'avoir l'air calme. Et il **ne
+disait jamais combien**, alors que c'est la seule question qu'on lui pose.
+
+### Le fil, et l'encart posé DANS le mois
+
+Le même fil que la liste des chantiers — deux écrans qui se ressemblent
+s'apprennent une seule fois. **Des filets, jamais de pavé** : aucun fond plein
+ni coin arrondi dans le corps.
+
+**Un chantier non facturé reste dans SON mois.** Le chantier du 20 août est un
+chantier d'août ; le sortir dans un bloc à part casserait le fil, qui ne
+raconterait plus le temps mais deux listes empilées. Une pastille bronze posée
+**sur le fil** porte le nombre, et une ligne de 44 px l'annonce en toutes
+lettres — « Deux à facturer · 1 940,00 € ». **Repliée au repos** : l'écran
+s'appelle « Terminés », il montre d'abord ce qui est fait ; l'encart appelle, il
+n'occupe pas.
+
+**À zéro, l'encart n'existe pas.** Jamais de « 0 », jamais de compte au
+singulier bancal.
+
+**Le montant vient du devis, et l'écran le dit** — « Montants prévus aux
+devis », jamais « à encaisser ». Un devis n'est pas une facture, et le montant
+peut encore bouger (`docs/AGENT.md` §3). La source se dit **une fois**, sous les
+lignes : la répéter sur chacune y ajoutait une étiquette insécable, et une
+étiquette insécable dans une piste `1fr` élargit la piste.
+
+### Créer n'est pas envoyer
+
+La facture naît d'un appui, elle part d'un autre : c'est l'envoi qui la rend
+définitive et la porte au relevé de TVA. Fondre les deux ferait partir un
+document chez le client sur un geste destiné à le préparer. L'écran le dit **aux
+deux étapes**, et `terminerChantier` reste **idempotente** — rappuyer redonne la
+facture bâtie au lieu d'en créer une seconde.
+
+**« Fin de chantier » devient « Créer la facture »**, décidé par le patron le
+10 août 2026. L'ancien nom ne disait pas ce que la touche fabrique. Le mot est
+changé sur les **trois** écrans qui le portaient — fiche du chantier, planning,
+écran de facture : un même geste ne peut pas s'appeler de deux façons selon
+l'endroit d'où on l'atteint.
+
+### Deux défauts que seule la capture a vus
+
+- **Une ligne trop longue déborde toujours du côté de la fin de ligne**, quel
+  que soit `text-align`. « juillet » ne tient pas dans les 47 px de la marge : il
+  débordait **à droite**, sous la pastille, dont le fond opaque lui mangeait sa
+  dernière lettre. `justify-self: end` fait tenir la boîte au texte et la colle à
+  la fin de colonne — ce qui dépasse part alors dans la marge de 26 px, où il y a
+  la place. Mesuré au pixel, pas supposé.
+- **Un montant inconnu s'écrivait « 0,00 € ».** Un chantier sans devis chiffré
+  n'attend pas zéro euro : on ne sait pas. L'encart n'affiche donc son montant
+  que si au moins un est connu — sinon il dirait au patron qu'il n'y a rien à
+  encaisser là où il y a peut-être tout.
+
+### Ce que les contrôles doivent savoir faire
+
+- **`Element.checkVisibility()` ignore le rognage** : les lignes d'un volet
+  fermé lui paraissent visibles. On mesure l'**intersection réelle** avec la
+  boîte du volet.
+- **Un contrôle de mise en page ne voit que ce qui lui est donné à voir** :
+  interroger le document entier ramenait le bandeau du bas et la bulle de
+  l'assistant, et accusait « Terminés » de pavés qui ne lui appartiennent pas.
+  La sonde est bornée à `[data-atlas="ecran-termines"]`.
+- **Les montants d'une même colonne finissent au même pixel**, et rien ne
+  s'ajoute après : un chevron en bout de ligne leur volerait 24 px.
+
+### Ce qui a été vérifié et n'était pas un défaut
+
+`listerChantiersTermines` compte un chantier du 20 comme terminé **le 21**, pas
+le 20 à minuit : `ongletDepuisJalons` range sur `datePlanifiee < aujourdHui`, et
+la journée entière reste au planning. C'est de là que le patron clôture en
+rentrant.

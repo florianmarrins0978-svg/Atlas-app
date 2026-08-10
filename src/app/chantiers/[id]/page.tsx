@@ -85,7 +85,7 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
                   borderRadius: 4,
                 }}
               >
-                Fin de chantier
+                Créer la facture
               </Link>
             ) : undefined
           }
@@ -129,8 +129,8 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
               </p>
               <p className="mt-1 text-[13px]" style={{ color: colors.muted }}>
                 Une fois le chantier fait, touchez{" "}
-                <strong style={{ color: colors.rust }}>Fin de chantier</strong>, en haut : vous vérifierez la
-                facture avant qu&apos;elle n&apos;existe pour votre client.
+                <strong style={{ color: colors.rust }}>Créer la facture</strong>, en haut : vous la vérifierez
+                avant qu&apos;elle n&apos;existe pour votre client.
               </p>
             </div>
           )}

@@ -14,6 +14,7 @@ import {
   correctionsDictee,
   grillePrix,
   agendasExternes,
+  equipes,
   factures,
   fragmentsDocuments,
   historiquePrix,
@@ -120,6 +121,7 @@ export async function exporterEntreprise(
       lesCorrections,
       laGrillePrix,
       lesAgendas,
+      lesEquipes,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -173,6 +175,9 @@ export async function exporterEntreprise(
         })
         .from(agendasExternes)
         .where(eq(agendasExternes.entrepriseId, e)),
+      // Les noms que le patron a donnés à ses équipes. C'est SA saisie, et rien
+      // ne la reconstitue : elle part avec le reste de ses données.
+      tx.select().from(equipes).where(eq(equipes.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -220,6 +225,7 @@ export async function exporterEntreprise(
       grille_prix: laGrillePrix,
       // Sans les jetons — voir la requête ci-dessus.
       agendas_externes: lesAgendas,
+      equipes: lesEquipes,
     };
 
     const compte: Record<string, number> = {};

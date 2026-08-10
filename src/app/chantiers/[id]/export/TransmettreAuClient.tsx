@@ -173,7 +173,7 @@ export default function TransmettreAuClient({
               messagerie, pas le découvrir dedans.
               La phrase est d'un seul tenant : coupée en morceaux, JSX avalait
               l'espace avant le tiret et affichait « Au 0679984514— c'est vous ».
-              Même défaut que « Fin de chantieren haut » sur la fiche. */}
+              Même défaut que « Créer la facture » en haut de la fiche. */}
           <p className="mt-2 text-center text-[12px]" style={{ color: colors.muted }}>
             {`${canalChoisi === "sms" ? "Au" : "À"} ${destinataire} — c'est vous qui l'envoyez.`}
           </p>

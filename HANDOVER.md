@@ -45,6 +45,41 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**« Terminés » et la facturation (10 août, au soir).** L'écran est un fil par
+mois ; l'encart « à facturer » vit dans le mois et se déplie d'un appui.
+`ARCHITECTURE.md` §53.
+
+**Trois choses à savoir avant d'y toucher :**
+
+1. **« Créer la facture » a remplacé « Fin de chantier »** partout — décision du
+   patron du 10 août. Le geste n'a pas changé : il bâtit la facture à partir du
+   devis, et **n'envoie rien**. Créer n'est pas envoyer, et ça ne se plie pas.
+2. **À zéro chantier en attente, la chaîne « à facturer » ne doit apparaître
+   nulle part.** Un contrôle de capture échoue si elle revient.
+3. **Un montant inconnu n'est pas zéro.** Un chantier sans devis chiffré affiche
+   « — », et l'encart tait son total plutôt que d'annoncer « 0,00 € ».
+
+**Le planning au mois et les équipes nommées (10 août, au soir).** Le planning
+est un calendrier de sept colonnes ; toucher un jour ouvre sa journée dessous,
+avec une ligne par équipe. Réglages laisse nommer les équipes.
+`ARCHITECTURE.md` §51 et §52.
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **À UNE seule équipe, le mot « équipe » ne s'écrit nulle part** — ni au
+   planning, ni dans une phrase d'explication, et Réglages ne propose aucun
+   champ. C'est la demande du patron, pas un détail d'affichage. Un contrôle de
+   capture échoue si la chaîne « quipe » réapparaît.
+2. **Le repli « Équipe A » est un AFFICHAGE.** `equipes.nom` est nullable et n'a
+   aucune valeur par défaut ; `libelleEquipe` (`src/lib/equipes.ts`) est la
+   seule à décider, pour l'écran comme pour le serveur.
+3. **`entreprises.nombre_equipes` fait autorité sur le nombre** ; la table ne
+   porte que des noms. Une ligne survit au-delà du compteur, à dessein :
+   redescendre puis remonter ne doit pas perdre un nom saisi à la main.
+4. **La grille se cale sur LUNDI** — `(getUTCDay() + 6) % 7`. Le 1er août 2026
+   est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
+   sans qu'aucun chiffre ne manque.
+
 **L'anneau muet et la pellicule, sur la fiche chantier (10 août, au soir).** La
 ligne « Note vocale » devient un anneau qu'on touche pour écouter et qu'on
 pousse vers le haut pour retirer ; les photos deviennent une pellicule dans le

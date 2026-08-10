@@ -2,12 +2,59 @@ import { and, eq, isNull, isNotNull, sql, desc } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { chantiers, clients, entreprises, factures } from "../db/schema";
 import {
+  cleCreneau,
   compterOccupation,
+  creneauxDuChantier,
   departPossible,
   dureeEnDemiJournees,
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
+  type Moment,
 } from "../disponibilites";
+import { equipes } from "../db/schema";
 import type { Ctx } from "./context";
+
+/**
+ * Le créneau choisi n'est plus libre — quelqu'un l'a pris entre l'affichage et
+ * l'appui.
+ *
+ * Une classe plutôt qu'un booléen : l'écran doit pouvoir DIRE lequel, sinon le
+ * patron réessaie le même et ne comprend pas pourquoi rien ne se passe.
+ */
+export class CreneauIndisponible extends Error {
+  constructor(
+    readonly jour: string,
+    readonly moment: Moment
+  ) {
+    super(`Le ${moment === "matin" ? "matin" : "après-midi"} du ${jour} vient d'être pris.`);
+    this.name = "CreneauIndisponible";
+  }
+}
+
+/**
+ * L'identifiant de l'équipe de ce rang, créée au besoin.
+ *
+ * Créée ICI et pas à l'affichage : c'est le seul instant où l'on a besoin
+ * d'une clé étrangère. Le `nom` reste `null` — on enregistre qu'une équipe de
+ * rang N existe, jamais qu'elle s'appelle « Équipe B ».
+ */
+async function idEquipeDeRang(
+  tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
+  entrepriseId: string,
+  rang: number
+): Promise<string> {
+  const borne = Math.min(20, Math.max(1, Math.trunc(rang)));
+  const [existante] = await tx
+    .select({ id: equipes.id })
+    .from(equipes)
+    .where(and(eq(equipes.entrepriseId, entrepriseId), eq(equipes.rang, borne)))
+    .limit(1);
+  if (existante) return existante.id;
+  const [creee] = await tx
+    .insert(equipes)
+    .values({ entrepriseId, rang: borne })
+    .returning({ id: equipes.id });
+  return creee.id;
+}
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -175,7 +222,21 @@ export const marquerPrixValide = (ctx: Ctx, chantierId: string) => marquerJalon(
  * décide. Ce sont ses clients qu'on protège d'une date impossible, pas lui de
  * lui-même. Le créneau retombe alors sur le matin, faute de place.
  */
-export async function planifierChantier(ctx: Ctx, chantierId: string, datePlanifiee: string) {
+/**
+ * Ce que le patron a choisi en posant un chantier : quand, et par qui.
+ *
+ * **Poser, c'est dire à la fois QUAND et QUI** — une date sans équipe laisse le
+ * travail à moitié fait. `rangEquipe` reste `null` à une seule équipe : il n'y
+ * a personne à désigner (`src/lib/equipes.ts`).
+ */
+export type ChoixDePose = { moment: Moment; rangEquipe: number | null };
+
+export async function planifierChantier(
+  ctx: Ctx,
+  chantierId: string,
+  datePlanifiee: string,
+  choix?: ChoixDePose
+) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const autres = await tx
       .select({
@@ -218,8 +279,29 @@ export async function planifierChantier(ctx: Ctx, chantierId: string, datePlanif
           dureeDemiJournees: a.duree,
         }))
     );
-    const creneauDebut =
-      departPossible(datePlanifiee, duree, occupation, entreprise?.nombreEquipes ?? 1) ?? "matin";
+    const nombreEquipes = entreprise?.nombreEquipes ?? 1;
+    const automatique = departPossible(datePlanifiee, duree, occupation, nombreEquipes) ?? "matin";
+
+    // **Le choix du patron est REVALIDÉ, jamais cru sur parole.** L'écran ne
+    // propose que des demi-journées libres, mais entre l'affichage et l'appui
+    // un client a pu retenir ce créneau. Sans ce contrôle, deux chantiers
+    // tomberaient sur la même équipe au même moment — et rien ne le dirait.
+    let creneauDebut: Moment = automatique;
+    if (choix) {
+      const tient = creneauxDuChantier({ jour: datePlanifiee, moment: choix.moment }, duree).every(
+        (c) => (occupation.get(cleCreneau(c)) ?? 0) < nombreEquipes
+      );
+      if (!tient) throw new CreneauIndisponible(datePlanifiee, choix.moment);
+      creneauDebut = choix.moment;
+    }
+
+    // L'équipe n'est enregistrée QUE si elle a été choisie. À une seule équipe,
+    // `rangEquipe` vaut `null` : il n'y a personne à désigner, et écrire une
+    // ligne « Équipe A » ferait exactement ce que le patron a interdit.
+    const equipeId =
+      choix?.rangEquipe != null && nombreEquipes > 1
+        ? await idEquipeDeRang(tx, ctx.entrepriseId, choix.rangEquipe)
+        : undefined;
 
     const [row] = await tx
       .update(chantiers)
@@ -227,6 +309,7 @@ export async function planifierChantier(ctx: Ctx, chantierId: string, datePlanif
         datePlanifiee,
         creneauDebut,
         dureeDemiJournees: duree,
+        ...(equipeId ? { equipeId } : {}),
         updatedBy: ctx.utilisateurId,
         updatedAt: new Date(),
       })
@@ -271,10 +354,17 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
         // `src/lib/onglet-chantier.ts`.
         termineAt: chantiers.termineAt,
         factureEnvoyeeAt: chantiers.factureEnvoyeeAt,
+        // La durée dictée sert à savoir combien de demi-journées poser quand le
+        // chantier n'a pas encore de durée réservée.
+        dureePrevue: chantiers.dureePrevue,
+        // Le RANG de l'équipe, jamais son identifiant : c'est le rang qui porte
+        // la lettre de repli, et l'écran n'a rien à faire d'une clé étrangère.
+        rangEquipe: equipes.rang,
         ...DERNIER_ENVOI,
       })
       .from(chantiers)
       .leftJoin(clients, eq(chantiers.clientId, clients.id))
+      .leftJoin(equipes, eq(chantiers.equipeId, equipes.id))
       .where(and(isNull(chantiers.deletedAt), isNotNull(chantiers.devisEnvoyeAt)))
   );
 }

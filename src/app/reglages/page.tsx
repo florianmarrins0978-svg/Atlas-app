@@ -6,10 +6,12 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getConfigIA } from "@/server/ai/config";
 import { listerTarifs } from "@/server/repositories/tarifs";
 import { getEntreprise } from "@/server/repositories/entreprises";
+import { listerEquipes } from "@/server/repositories/equipes";
 import { versionExecutee } from "@/server/version-executee";
 import { nomFichierSauvegarde } from "@/lib/nom-sauvegarde";
 import { estEditeur } from "@/server/editeur";
 import ReglagesClient from "./ReglagesClient";
+import VosEquipes from "./VosEquipes";
 import BoutonMiseAJour from "./BoutonMiseAJour";
 import { derniereIssueMiseAJour } from "./actions";
 
@@ -17,9 +19,10 @@ export const dynamic = "force-dynamic";
 
 export default async function ReglagesPage() {
   const ctx = await getCurrentCtx();
-  const [tarifs, entreprise, version, editeur] = await Promise.all([
+  const [tarifs, entreprise, equipes, version, editeur] = await Promise.all([
     listerTarifs(ctx),
     getEntreprise(ctx),
+    listerEquipes(ctx),
     versionExecutee(),
     estEditeur(ctx),
   ]);
@@ -43,9 +46,16 @@ export default async function ReglagesPage() {
       <div className="pb-24">
         <EnTeteEcran surtitre="Mon entreprise" titre="Réglages" />
 
+        {/* Les équipes viennent AVANT les tarifs : c'est le réglage qui
+            commande le planning, et celui que le patron vient rarement mais
+            précisément chercher. */}
+        <VosEquipes
+          initialNombreEquipes={entreprise?.nombreEquipes ?? 1}
+          initialNoms={equipes.map((e) => ({ rang: e.rang, nom: e.nom }))}
+        />
+
         <ReglagesClient
           initialTarifs={tarifs.map((t) => ({ id: t.id, intitule: t.intitule, prix: t.prix, unite: t.unite }))}
-          initialNombreEquipes={entreprise?.nombreEquipes ?? 1}
         />
 
         <div className="px-6 pt-8">

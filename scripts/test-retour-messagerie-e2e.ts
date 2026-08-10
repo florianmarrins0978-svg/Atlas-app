@@ -74,9 +74,13 @@ async function main() {
   await page.waitForURL(`${BASE}/`, { timeout: 20_000 });
   console.log("  ✓ le retour ramène à la liste des chantiers");
 
-  const accueil = page.locator("body");
-  await accueil.getByText(/Devis transmis à Mr Cuisseau/).waitFor({ state: "visible", timeout: 10_000 });
-  const texte = await accueil.innerText();
+  // **On lit LE BANDEAU, pas tout l'écran.** Viser `body` faisait rougir ce
+  // contrôle le jour où un chantier de la liste portait l'état « Devis envoyé » :
+  // il accusait le bandeau d'une affirmation écrite ailleurs, et envoyait
+  // chercher au mauvais endroit.
+  const bandeau = page.locator('[role="status"]').first();
+  await bandeau.getByText(/Devis transmis à Mr Cuisseau/).waitFor({ state: "visible", timeout: 10_000 });
+  const texte = await bandeau.innerText();
   assert.match(
     texte,
     /en attente de sa réponse/i,

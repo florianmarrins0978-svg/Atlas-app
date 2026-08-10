@@ -1,129 +1,92 @@
 import Link from "next/link";
-import { colors, font, smallCaps, cardShadow } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersTermines } from "@/server/repositories/factures";
-import { jourLisible } from "@/lib/jour";
-import { nombreEnLettres } from "@/lib/nombre-en-lettres";
+import { formatEuros, grouperParMois, totalFacture } from "@/lib/termines-par-mois";
+import FilTermines from "./FilTermines";
 
 export const dynamic = "force-dynamic";
 
-// Onglet « Chantiers terminés » (docs/AGENT.md §2.3). Les chantiers dont la
-// date d'intervention est passée, rangés par date, le plus récent en tête —
-// c'est celui que le patron vient clôturer en rentrant.
-
-const formatEuros = new Intl.NumberFormat("fr-FR", {
-  style: "currency",
-  currency: "EUR",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
+/**
+ * « Terminés » — le fil par mois, et facturer en trois appuis.
+ *
+ * *Refait le 10 août 2026 d'après la maquette retenue par le patron
+ * (`maquettes/atlas-facturer.html`, `docs/INTEGRER-ORIGINE.md` §6 quinquies).*
+ *
+ * **Ce qui clochait, et qui n'était pas une affaire de goût.** L'écran empilait
+ * trois sortes de pavés arrondis — le relevé de TVA, les chantiers à facturer,
+ * les factures. Le relevé de TVA était le **seul cadre plein**, si bien que
+ * l'œil allait d'abord sur ce qu'on consulte une fois par trimestre.
+ * « Rien à facturer » s'affichait comme un titre de section suivi de rien :
+ * l'écran avait l'air amputé au lieu d'avoir l'air calme. Et **il ne disait
+ * jamais combien**, alors que c'est la seule question qu'on lui pose.
+ *
+ * **Un chantier non facturé reste DANS SON MOIS.** Le chantier du 20 août est
+ * un chantier d'août ; le sortir dans un bloc à part casse le fil, qui ne
+ * raconte plus le temps mais deux listes empilées.
+ */
 export default async function TerminesPage() {
   const ctx = await getCurrentCtx();
   const chantiers = await listerChantiersTermines(ctx);
-
-  const aCloturer = chantiers.filter((c) => c.factureStatut !== "emise");
-  const factures = chantiers.filter((c) => c.factureStatut === "emise");
+  const mois = grouperParMois(chantiers);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
-      <div className="pb-10">
+      <div className="pb-10" data-atlas="ecran-termines">
         <EnTeteEcran
           surtitre="Chantiers réalisés"
           titre="Terminés"
-          precision={
-            aCloturer.length === 0
-              ? "Rien à facturer"
-              : `${nombreEnLettres(aCloturer.length)} à facturer`
-          }
+          // **Rien quand il n'y a rien.** L'ancien écran écrivait « Rien à
+          // facturer », ce qui remplissait la place d'une absence par un titre
+          // suivi de rien. Le compte vit désormais dans l'encart du mois — là
+          // où il sert — et l'en-tête se tait.
         />
 
-        <div className="px-6 pt-6">
+        {chantiers.length === 0 ? (
+          <p className="mt-8 px-[26px] text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
+            Vos chantiers apparaîtront ici une fois leur date d&apos;intervention passée.
+          </p>
+        ) : (
+          <FilTermines mois={mois} />
+        )}
+
+        {/* Le pied : ce que le trimestre a facturé, puis le relevé.
+            **Le relevé cesse d'être un pavé** — c'est une ligne, comme le
+            reste. Il se consulte une fois par trimestre : il n'a rien à faire
+            en tête d'écran. */}
+        <div className="mx-[26px] mt-[22px] pt-4" style={{ borderTop: `1px solid ${colors.line}` }}>
+          <p
+            className="flex items-baseline justify-between gap-3.5 py-1.5 text-[12.5px]"
+            style={{ color: colors.muted }}
+          >
+            Facturé ce trimestre
+            <b
+              className="font-normal"
+              style={{ color: colors.ink, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}
+            >
+              {formatEuros(totalFacture(mois))}
+            </b>
+          </p>
           <Link
             href="/termines/tva"
-            className="flex items-center justify-between rounded-[4px] px-5 py-4"
-            style={{ backgroundColor: colors.rustTint }}
+            className="flex items-center justify-between gap-3.5 py-3.5"
+            style={{ borderTop: `1px solid ${colors.line}` }}
           >
-            <span className="text-[15px] font-medium" style={{ color: colors.rust }}>
+            <span style={{ fontFamily: font.display, fontSize: 16, lineHeight: 1.2 }}>
               Relevé de TVA collectée
             </span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2">
-              <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <span aria-hidden="true" className="text-[15px]" style={{ color: colors.or }}>
+              ›
+            </span>
           </Link>
+          {/* **Cette mention reste, où que le relevé aille** (`docs/AGENT.md`
+              §6) : Atlas le prépare, il ne le déclare pas. Le relevé est
+              calculé à la demande, jamais stocké. */}
+          <p className="text-[11px] leading-[1.6]" style={{ color: colors.muted }}>
+            Atlas prépare ce relevé, il ne le déclare pas.
+          </p>
         </div>
-
-        {chantiers.length === 0 ? (
-          <div className="mt-8 px-6">
-            <div className="rounded-[4px] px-5 py-8 text-center" style={{ backgroundColor: colors.card }}>
-              <p className="text-[14px]" style={{ color: colors.muted }}>
-                Vos chantiers apparaîtront ici une fois leur date d&apos;intervention passée.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <>
-            {aCloturer.length > 0 && (
-              <div className="mt-8 flex flex-col gap-4 px-6">
-                {aCloturer.map((c) => (
-                  <Link
-                    key={c.id}
-                    href={`/chantiers/${c.id}/facture`}
-                    className="block rounded-[22px] px-5 py-5"
-                    style={{ backgroundColor: colors.card, boxShadow: cardShadow }}
-                  >
-                    <span className={smallCaps} style={{ color: colors.rust }}>
-                      {c.datePlanifiee ? jourLisible(c.datePlanifiee) : "Date inconnue"}
-                    </span>
-                    <h2 className="mt-1 truncate text-[22px] leading-tight" style={{ fontFamily: font.display }}>
-                      {c.nom}
-                    </h2>
-                    <p className="mt-1 truncate text-[14px]" style={{ color: colors.muted }}>
-                      {c.clientNom ?? "Client non renseigné"}
-                    </p>
-                    <p
-                      className="mt-4 rounded-[4px] py-3 text-center text-[15px] font-medium text-white"
-                      style={{ backgroundColor: colors.rust }}
-                    >
-                      {c.factureId ? "Reprendre la facture" : "Fin de chantier"}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            )}
-
-            {factures.length > 0 && (
-              <div className="mt-9 px-6">
-                <p className={smallCaps} style={{ color: colors.muted, marginBottom: 12 }}>
-                  Facturés
-                </p>
-                <div className="flex flex-col gap-3">
-                  {factures.map((c) => (
-                    <Link
-                      key={c.id}
-                      href={`/chantiers/${c.id}/facture`}
-                      className="flex items-center justify-between rounded-[18px] px-5 py-4"
-                      style={{ backgroundColor: colors.card }}
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate text-[16px]" style={{ color: colors.ink }}>
-                          {c.nom}
-                        </p>
-                        <p className="mt-0.5 text-[13px]" style={{ color: colors.muted }}>
-                          {c.factureNumero}
-                        </p>
-                      </div>
-                      <span className="ml-4 flex-shrink-0 text-[15px] font-medium" style={{ color: colors.rust }}>
-                        {c.totalTtc ? formatEuros.format(Number(c.totalTtc)) : ""}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
       </div>
     </div>
   );

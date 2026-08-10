@@ -3,7 +3,7 @@ import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 
-// Fin de chantier, facture et relevé de TVA, vus depuis l'écran du patron
+// Créer la facture, l'envoyer, et le relevé de TVA — vus depuis l'écran du patron
 // (docs/AGENT.md §2.3). L'arrêt 3 est ici : rien ne part sans un appui.
 
 const BASE = "http://localhost:3000";
@@ -99,14 +99,21 @@ async function main() {
   const context = await browser.newContext({ viewport: { width: 393, height: 852 } });
   const page = await seConnecter(context);
 
-  await test("le chantier réalisé apparaît dans l'onglet Terminés", async () => {
-    const { nom } = await chantierRealise(page, "onglet");
+  await test("le chantier réalisé apparaît dans l'onglet Terminés, et mène à sa facture", async () => {
+    const { nom, chantierId } = await chantierRealise(page, "onglet");
     await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
 
     assert.ok(await page.locator(`text=${nom}`).first().isVisible(), "le chantier n'apparaît pas");
-    assert.ok(
-      await page.locator("text=Fin de chantier").first().isVisible(),
-      "le bouton de clôture est absent"
+    // **La touche ne vit plus ici**, et c'est la maquette du 10 août 2026 :
+    // « Terminés » est un fil, on y touche la LIGNE du chantier et c'est
+    // l'écran suivant qui porte l'unique pavé plein — « Créer la facture »
+    // (`ARCHITECTURE.md` §53). Un seul pavé plein par écran, sans quoi il n'y a
+    // plus d'action évidente. Ce qui doit être vrai ici, c'est que le chemin
+    // existe.
+    assert.equal(
+      await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).count(),
+      1,
+      "la ligne du chantier ne mène pas à son écran de facture"
     );
   });
 
@@ -124,10 +131,10 @@ async function main() {
     assert.ok(await page.locator("text=Le chantier est réalisé ?").isVisible());
   });
 
-  await test("« Fin de chantier » prépare la facture sans l'émettre", async () => {
+  await test("« Créer la facture » prépare la facture sans l'émettre", async () => {
     const { chantierId } = await chantierRealise(page, "preparer");
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
-    await page.click("text=Fin de chantier");
+    await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
 
     assert.ok(
@@ -142,7 +149,7 @@ async function main() {
   await test("la confirmation fige la facture et la porte au relevé de TVA", async () => {
     const { chantierId } = await chantierRealise(page, "emettre");
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
-    await page.click("text=Fin de chantier");
+    await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
     await page.click("text=Confirmer le départ de la facture");
     await page.waitForSelector("text=Elle figure au relevé de TVA collectée", { timeout: 15000 });
@@ -171,7 +178,7 @@ async function main() {
   await test("une facture émise ne peut plus repartir", async () => {
     const { chantierId } = await chantierRealise(page, "rejeu");
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
-    await page.click("text=Fin de chantier");
+    await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
     await page.click("text=Confirmer le départ de la facture");
     await page.waitForSelector("text=Elle figure au relevé de TVA collectée", { timeout: 15000 });

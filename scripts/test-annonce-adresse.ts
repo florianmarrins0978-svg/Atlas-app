@@ -47,6 +47,30 @@ essai("le script du conteneur cherche exactement la phrase que le module écrit"
   );
 });
 
+essai("l'adresse ne se dit pas APRÈS la construction", () => {
+  // **Le défaut du 10 août 2026, au soir.** Depuis « servir d'abord, bâtir
+  // ensuite », l'annonce était passée derrière `next build` : le patron avait
+  // une application qui répondait sans savoir où l'ouvrir, pendant des minutes,
+  // et le banc rougissait sur un serveur parfaitement vivant.
+  //
+  // On lit l'ORDRE dans le fichier : l'annonce doit être lancée avant qu'on
+  // attende la construction. Un commentaire ne suffirait pas — c'est justement
+  // une réorganisation qui l'a déplacée.
+  const banc = readFileSync("scripts/banc.mjs", "utf8");
+  // **L'APPEL, pas la définition.** Première version, ce contrôle cherchait
+  // « annoncerDesQueCaRepond( » : il tombait sur la déclaration de la fonction,
+  // qui vient toujours en tête de fichier. Retirer l'appel ne le faisait donc
+  // pas rougir — un contrôle qui ne sait pas échouer ne prouve rien.
+  const annonce = banc.indexOf("void annoncerDesQueCaRepond(");
+  const build = banc.indexOf('await jouer("npx", ["next", "build"]');
+  assert.notEqual(annonce, -1, "banc.mjs n'appelle plus l'annonce sans attendre la construction");
+  assert.notEqual(build, -1, "banc.mjs ne construit plus : ce contrôle n'éprouve plus rien");
+  assert.ok(
+    annonce < build,
+    "l'annonce de l'adresse vient après la construction : le patron attend des minutes devant une application qui répond déjà"
+  );
+});
+
 essai("l'annonce porte le marqueur, quel que soit le régime", () => {
   for (const precision of ["", "version bâtie, chaque écran est immédiat."]) {
     const texte = annoncePrete({ port: "3000", precision });

@@ -214,7 +214,7 @@ async function main() {
     );
   });
 
-  await test("« Fin de chantier » est sur la carte du planning, et prépare la facture", async () => {
+  await test("« Créer la facture » est sur la ligne du planning, et prépare la facture", async () => {
     // « avoir un bouton à côté fin de chantier pour que ça crée automatiquement
     // la facturation ». Le bouton est sur la carte ; ce qu'il crée est un
     // brouillon, jamais une facture partie — l'arrêt 3 reste (AGENT.md §2.3).
@@ -227,7 +227,7 @@ async function main() {
     await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).click();
     await page.waitForSelector("text=Le chantier est réalisé ?", { timeout: 15000 });
 
-    await page.click("text=Fin de chantier");
+    await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
 
     const { rows } = await inspecter("SELECT statut FROM factures WHERE chantier_id = $1", [chantierId], 1);
@@ -245,7 +245,7 @@ async function main() {
     // l'expédie pas.
     const { chantierId } = await chantierPlanifie(page, "tva", -8);
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
-    await page.click("text=Fin de chantier");
+    await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
     await page.click("text=Confirmer le départ de la facture");
     await page.waitForSelector("text=Elle figure au relevé de TVA collectée", { timeout: 15000 });
@@ -286,7 +286,7 @@ async function main() {
       { libelle: "Fendage du bois", montant: "250.00" },
     ]);
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
-    await page.click("text=Fin de chantier");
+    await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
 
     const groupee = await page.locator("li", { hasText: "Abattage d'un chêne mort" }).first().boundingBox();
@@ -321,7 +321,7 @@ async function main() {
     // adresse.
     const { nom, chantierId } = await chantierPlanifie(page, "avance", -10);
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
-    await page.click("text=Fin de chantier");
+    await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
 
     assert.deepEqual(await ongletsOuIlFigure(page, nom), ["termines"]);
@@ -334,10 +334,15 @@ async function main() {
     // batterie — trois fois de suite. Un contrôle qui refait pour rien un
     // travail coûteux finit par échouer sur sa propre lourdeur, et accuse le
     // code à sa place.
-    const carte = page.locator("a").filter({ hasText: nom }).last();
+    // **Le fil a remplacé les cartes le 10 août 2026** (`ARCHITECTURE.md` §53).
+    // Un chantier dont la facture attend porte une perle CREUSE et vit sous
+    // l'encart « à facturer » de son mois — il n'y a plus de libellé
+    // « Reprendre la facture » à trouver. Ce qui doit rester vrai : le chantier
+    // est là, et sa ligne mène à sa facture.
+    assert.ok((await page.locator(`text=${nom}`).count()) > 0, "le chantier n'est pas dans les terminés");
     assert.ok(
-      (await carte.locator("text=Reprendre la facture").count()) > 0,
-      "rien n'indique qu'une facture attend sur ce chantier"
+      (await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).count()) > 0,
+      "rien ne mène à la facture qui attend sur ce chantier"
     );
   });
 

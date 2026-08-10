@@ -229,6 +229,80 @@ rendue telle quelle.
 Les quatre chemins ont été joués : dépendances absentes, serveur mort, serveur
 vivant qui ne répond pas, et démarrage normal.
 
+### « Terminés » : un fil par mois, et facturer en trois appuis
+
+L'écran empilait trois sortes de pavés arrondis, dont **un seul plein** : le
+relevé de TVA. L'œil allait donc d'abord sur ce qu'on consulte une fois par
+trimestre. « Rien à facturer » s'affichait comme un titre de section suivi de
+rien — l'écran avait l'air amputé au lieu d'avoir l'air calme. Et **il ne disait
+jamais combien**, alors que c'est la seule question qu'on lui pose.
+
+Il devient un **fil par mois**, le même que la liste des chantiers : deux écrans
+qui se ressemblent s'apprennent une seule fois. Des filets, aucun pavé. Les
+montants tiennent une colonne et rien ne s'ajoute après eux.
+
+**L'encart « à facturer » se pose DANS le mois**, pas à côté : le chantier du
+20 août est un chantier d'août, et le sortir casserait le fil. Une pastille
+bronze sur le fil porte le nombre, une ligne l'annonce en toutes lettres, et
+tout cela **reste replié au repos** — l'encart appelle, il n'occupe pas. **À
+zéro, il n'existe pas** : jamais de « 0 », jamais de compte bancal.
+
+Le montant vient du devis accepté, et l'écran le dit : « Montants prévus aux
+devis », **jamais « à encaisser »**.
+
+**« Fin de chantier » devient « Créer la facture »**, sur les trois écrans qui
+portaient le mot. L'ancien nom ne disait pas ce que la touche fabrique. Et
+**créer n'est toujours pas envoyer** : la facture naît d'un appui, elle part
+d'un autre.
+
+**Deux défauts que seule la capture a vus.** Une ligne trop longue déborde
+toujours du côté de la fin de ligne, quel que soit `text-align` : « juillet »
+passait sous la pastille, qui lui mangeait sa dernière lettre. Et un montant
+inconnu s'écrivait « 0,00 € » — un chantier sans devis chiffré n'attend pas zéro
+euro, on ne sait pas.
+
+`ARCHITECTURE.md` §53.
+
+### Le planning au mois, et les équipes qui portent un nom
+
+*« Il faut que dans le fichier réglages on puisse mettre le nom des équipes —
+soit équipe A équipe B, soit des noms et prénoms. Mais s'il n'a pas d'équipe et
+qu'il ne met rien, il ne faut pas qu'il y ait quand même écrit équipe A équipe
+B. »*
+
+**La règle qui en découle n'est pas cosmétique :** on n'invente jamais un nom,
+et on ne laisse jamais deux lignes indiscernables. À une seule équipe, le mot
+« équipe » ne s'écrit **nulle part** — ni dans le planning, ni dans une phrase
+d'explication, et Réglages ne propose même pas de champ : le patron y écrirait
+un prénom qui n'apparaîtrait nulle part. À deux, chaque ligne porte le sien, et
+un champ vide affiche déjà en gris ce qui sera écrit à sa place.
+
+**Le repli est un affichage, jamais une donnée.** `equipes.nom` est nullable et
+sans valeur par défaut ; une seule fonction pure décide du libellé, appelée par
+l'écran comme par la revalidation serveur. Deux implémentations divergeraient, et
+le jour où elles divergent l'écran promet une équipe que le serveur ne connaît
+pas.
+
+**Le planning devient un mois.** Sept colonnes, aucune bordure, un chiffre en
+serif et un point de 5 px dessous. **Cinq marques et non quatre** : sans
+l'anneau « il reste de la place », un jour à moitié pris se lisait comme un jour
+libre dès qu'il y a plusieurs équipes. Toucher un jour ouvre sa journée
+directement sous le calendrier et l'amène à l'écran — posée plus bas, elle
+s'ouvrait hors du champ et le patron a écrit deux fois « rien ne s'ouvre quand
+je touche un jour ».
+
+**Poser, c'est dire à la fois quand et qui** : le bouton ne s'arme qu'une fois
+l'équipe choisie, et il n'y en a qu'un — « Poser · matin · Théo → ». Le serveur
+revalide le créneau, parce qu'entre l'affichage et l'appui un client a pu le
+prendre.
+
+**Un aller-retour sur le compteur ne perd aucun nom.** Redescendre de trois à
+deux ne supprime rien en base : remonter rend le nom écrit pour la troisième.
+Effacer aurait été une perte silencieuse sur une saisie que rien ne
+reconstitue.
+
+Détail et pièges dans `ARCHITECTURE.md` §51 et §52.
+
 ### Le banc d'essai reparle : deux phrases qui avaient divergé
 
 Depuis le 9 août au soir, la vérification du banc échouait à chaque fois sur

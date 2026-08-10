@@ -6,11 +6,36 @@ import {
   deplanifierChantier,
   supprimerChantier,
   SuppressionChantierRefusee,
+  CreneauIndisponible,
 } from "@/server/repositories/chantiers";
 
-export async function planifierChantierAction(chantierId: string, datePlanifiee: string) {
+/**
+ * Poser un chantier : la date, la demi-journée, et l'équipe.
+ *
+ * **Les trois ensemble, jamais la date seule.** Le patron choisit une ligne
+ * dans la journée ouverte — ce geste dit à la fois quand et qui. Le serveur
+ * revalide le créneau : entre l'affichage et l'appui, un client a pu le
+ * prendre, et deux chantiers tomberaient sur la même équipe au même moment.
+ *
+ * Rend `{ succes: false, erreur }` plutôt que de laisser remonter l'exception :
+ * l'écran doit pouvoir DIRE lequel des créneaux vient de partir, sinon le
+ * patron réessaie le même et ne comprend pas pourquoi rien ne se passe.
+ */
+export type ResultatPose = { succes: true } | { succes: false; erreur: string };
+
+export async function planifierChantierAction(
+  chantierId: string,
+  datePlanifiee: string,
+  choix?: { moment: "matin" | "apres_midi"; rangEquipe: number | null }
+): Promise<ResultatPose> {
   const ctx = await getCurrentCtx();
-  return planifierChantier(ctx, chantierId, datePlanifiee);
+  try {
+    await planifierChantier(ctx, chantierId, datePlanifiee, choix);
+    return { succes: true };
+  } catch (e) {
+    if (e instanceof CreneauIndisponible) return { succes: false, erreur: e.message };
+    throw e;
+  }
 }
 
 export async function deplanifierChantierAction(chantierId: string) {
