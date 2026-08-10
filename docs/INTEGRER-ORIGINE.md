@@ -265,6 +265,70 @@ produit reste ouvert : le lui poser avant de coder cette étape.**
 
 ---
 
+## 6 bis. La note vocale sur la fiche chantier
+
+**Choisi par le patron le 2026-08-10.** Maquette :
+`maquettes/atlas-note-vocale.html`, contrôlée par
+`npm run verifier:maquette`.
+
+Un **anneau muet** remplace la ligne « Note vocale » comme accès direct : il se
+pose entre le pavé de bas de fiche et le tiroir, seul et centré. Aucun libellé
+visible — mais un nom accessible « Écouter la note vocale ».
+
+```css
+/* Le vert tient le tour, l'or se pose dedans. Trois traits au centre. */
+.vert{width:74px;height:74px;border:1.5px solid var(--plein)}   /* #2a3a2e */
+.or  {width:56px;height:56px;border:1px solid var(--bronze)}    /* #8f7130 */
+.anneaux{min-width:76px;min-height:76px}                        /* la prise */
+```
+
+**À la lecture** : les trois traits battent, les secondes apparaissent, et de
+chaque côté des barreaux partent du centre vers l'extérieur en s'effaçant au
+bout — hauteurs inégales et départs décalés, sinon l'onde ressemble à un décor.
+Dans l'application, ces hauteurs suivent le **volume réellement enregistré**, et
+le compteur la **lecture réelle** (la maquette n'a qu'une horloge CSS).
+
+**Trois règles qui ne se voient pas mais se sentent :**
+
+1. **Tout est en pause au repos.** Une onde qui bat quand rien ne joue fait
+   croire qu'un son sort du téléphone.
+2. **Les ailes ne prennent jamais le doigt** (`pointer-events:none`). Un barreau
+   qui passe sous le pouce volerait l'appui destiné à l'anneau.
+3. **La prise vaut 76 px** quand le trait n'en dessine que 56. Une icône fine
+   qu'on rate deux fois sur trois n'est pas élégante, elle est ratée.
+
+### Retirer la note — on fait MONTER l'anneau
+
+Le doigt pousse l'anneau vers le haut, « Retirer » se découvre dessous.
+L'issue est **celle des chantiers** : les traits rentrent dans l'anneau — la
+voix se ramasse au lieu de s'évaporer —, l'anneau se contracte et part, et
+« Note vocale retirée — Annuler » vient à sa place.
+
+- **La consigne doit dire le geste réel.** La première version annonçait
+  « faites descendre » alors que le doigt fait monter : une consigne fausse
+  coûte plus cher qu'aucune consigne.
+- **Le déclencheur s'efface avec la note.** « Retirer » restait allumé et
+  s'imprimait par-dessus « Annuler ». Le contrôle qui aurait dû le voir lisait
+  l'opacité de l'élément seul, pas celle héritée de son parent : interroger
+  `Element.checkVisibility({opacityProperty:true})`.
+- **`overscroll-behavior: contain`** sur le glisseur, sinon le doigt emporte
+  toute la page avec l'anneau.
+- **Rien n'est effacé tant qu'« Annuler » est à l'écran** : la purge du fichier
+  part après, jamais avant (voir §4 bis).
+
+### La pellicule, dans le tiroir
+
+Les vignettes deviennent des boutons — on les touche pour ouvrir — et la
+**case « + » vient en PREMIER** : posée à la fin, il fallait faire défiler six
+photos pour la trouver. La ligne « Photos · 6 » disparaît : elle comptait ce qui
+est désormais sous les yeux.
+
+`scroll-padding-left: 26px` sur la pellicule, sinon l'accroche vise le bord du
+cadre et le glisseur se décale seul de 26 px au chargement — la première photo
+arrive déjà coupée.
+
+---
+
 ## 7. Ordre de travail
 
 Chaque étape est utilisable seule.
@@ -277,6 +341,8 @@ Chaque étape est utilisable seule.
 4. **Le bandeau** — `AtlasBottomNav.tsx`.
 5. **Le retrait** — il remplace la corbeille de `CarteGlissante`.
 6. **L'ouverture** — après avoir tranché le point de produit ci-dessus.
+7. **La note vocale sur la fiche chantier** — l'anneau, la lecture, le retrait
+   par le haut, la pellicule (§6 bis). Indépendante des autres étapes.
 
 ---
 
