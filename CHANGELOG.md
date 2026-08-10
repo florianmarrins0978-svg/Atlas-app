@@ -36,6 +36,28 @@ dégradés, il nomme le bon coupable à chaque fois : une ancre morte, un lien
 vers l'extérieur — le défaut d'origine, précisément — et une feuille de style
 qui ne s'applique plus.
 
+### Enlever la boîte : trois tentatives sur Origine
+
+Le patron demande des encadrés *« plus fins, moins larges »*, et surtout de
+**tenter quelque chose** pour que l'application soit moderne et unique — sur un
+seul coloris.
+
+Les encadrés passent de 16 à 26 px des bords et de 18 à 12 px de hauteur
+intérieure : **quatre chantiers tiennent là où il y en avait trois**. Mais la
+tentative est ailleurs. Une liste de chantiers n'est pas un tableau de bord :
+ce qui doit se voir, c'est la suite des jours, pas le contenant. Les trois
+variantes en enlèvent chacune un peu plus.
+
+- **L'ourlet** — la plage devient un simple cheveu vertical, qui passe à l'or
+  *uniquement* là où un geste est dû. La couleur cesse de décorer : elle
+  désigne.
+- **Le fil** — plus aucune boîte : un trait vertical traverse la liste et porte
+  les jours, comme une tige. Une seule perle d'or s'y pose, sur le chantier qui
+  attend une réponse.
+
+Une règle en sort, qui vaudra pour tout l'écran : **une couleur qui ne veut
+rien dire est une couleur en trop.**
+
 ### La vraie raison pour laquelle il ne pouvait rien ouvrir : le JavaScript
 
 Trois fois : *« Je ne peux pas ouvrir ça. »* J'ai d'abord accusé la connexion

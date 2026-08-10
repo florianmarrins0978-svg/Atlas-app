@@ -68,7 +68,13 @@ toujours la reproduction de sa première capture (§46). La direction minimalist
 de la maquette 09 dit « le trait seul » : « Le calme × Aman », le pied d'Aman
 (cheveu au-dessus, onglet actif souligné de bronze) et le trait qui ferme
 l'en-tête. **La couleur, elle, n'est pas choisie** : la maquette 11 le montre
-dans seize chartes. **Rien à coder tant qu'il n'a pas nommé la charte.**
+dans seize chartes, et la **12** propose trois façons d'amincir la liste sur la
+charte Origine — la plage amincie, l'ourlet, le fil. **Rien à coder tant qu'il
+n'a pas nommé la charte ET la façon de poser la liste.**
+
+**Une règle de charte, née de la 12 et qui vaut pour tout l'écran :** une
+couleur qui ne veut rien dire est une couleur en trop. L'accent d'attente ne se
+pose que sur ce qui réclame un geste du patron — nulle part ailleurs.
 
 **Comment lui montrer une maquette. Deux règles, apprises à ses dépens.**
 

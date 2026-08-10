@@ -92,6 +92,13 @@ const MAQUETTES = [
     quoi: "Le trait seul — celui qu’il garde — dans les seize chartes, quatre par rangée.",
     retenu: true,
   },
+  {
+    fichier: "12-origine-plus-fin.html",
+    titre: "Origine, plus fin — trois tentatives",
+    famille: "Vers la décision",
+    quoi: "Encadrés amincis et resserrés, puis deux façons d’enlever la boîte : l’ourlet, et le fil.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
