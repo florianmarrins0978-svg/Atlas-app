@@ -135,7 +135,20 @@ Ce que cela impose à **toute maquette qui lui est destinée** :
   construction, sur l'élément centré ; avec `scroll-snap-align: center` sur
   chaque ligne, celui-ci vient se caler dessous. Rien à mesurer, et surtout
   rien qui puisse se désynchroniser du défilement — ce qu'un suivi image par
-  image finit toujours par faire sur un téléphone chargé.
+  image finit toujours par faire sur un téléphone chargé. Trois pièges,
+  éprouvés le 2026-08-10 :
+  - **Le point d'ancrage détermine la position au repos.** Placé en tête de
+    liste, le repère est déjà au centre avant tout défilement ; placé dans le
+    flux à hauteur d'une ligne précise, il s'y tient jusqu'à ce qu'elle
+    remonte. C'est ce second placement que le patron demande.
+  - **Le `50 %` se calcule sur la boîte de contenu de la zone de défilement.**
+    Un rembourrage bas posé sur cette zone la rétrécit et décale le repère de
+    la moitié — la marge de fin qui permet à la dernière ligne d'atteindre le
+    centre doit donc être posée sur le **contenu**, jamais sur le conteneur.
+  - **L'accroche ne se vérifie pas à la molette synthétique.** Chromium sans
+    interface ne l'applique pas : le contrôle rend la même valeur quelle que
+    soit la correction. L'éprouver par un défilement programmé, auquel le
+    moteur applique bien l'accroche.
 - **Éprouver avec `javaScriptEnabled: false`.** Une page bâtie en JS passe tous
   les contrôles ordinaires et arrive quand même vide chez lui. Le contrôle
   ouvre la page dans ce mode, compte les onglets, et **charge en contre-épreuve
