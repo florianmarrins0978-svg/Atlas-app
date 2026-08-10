@@ -30,6 +30,13 @@ if [ -z "$URL" ]; then
   exit 1
 fi
 
+# `ATLAS_SANS_PGDUMP=1` sert à ÉPROUVER ce repli sur une machine qui, elle,
+# possède pg_dump. Un chemin de secours jamais joué ne protège de rien.
+if [ "${ATLAS_SANS_PGDUMP:-}" = "1" ] || ! command -v pg_dump > /dev/null 2>&1; then
+  echo "→ pg_dump absent de ce conteneur — sauvegarde par l'application."
+  cd "$CD" && exec node scripts/sauvegarder-banc.mjs
+fi
+
 echo "→ Copie de la base en cours…"
 if ! pg_dump "$URL" > "$FICHIER" 2> /tmp/sauvegarde-banc.err; then
   echo "❌ La copie a échoué. Ce que PostgreSQL a répondu :"

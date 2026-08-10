@@ -9,6 +9,26 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### `pg_dump: command not found` — j'avais supposé un outil au lieu de le vérifier
+
+La sauvegarde que je venais d'écrire pour protéger sa base a répondu au patron
+`pg_dump: command not found`. **C'est encore lui qui l'a découvert**, sur une
+machine que je ne peux pas voir, un soir où il essayait déjà de sauver ses
+données.
+
+`scripts/sauvegarder-banc.mjs` fait le même travail **sans `pg_dump`** : il
+n'emploie que `pg`, déjà dépendance de l'application, et écrit toutes les lignes
+de toutes les tables dans un seul JSON. Le script shell garde `pg_dump` quand il
+existe — meilleure fidélité — et bascule sur ce chemin sinon, en le disant.
+
+Ce qui est sauvegardé, dit franchement : **les données, pas le schéma**. Celui-ci
+vit dans `drizzle/`, versionné, et se rejoue avec `npm run db:migrate`. Ce qui ne
+se retrouve nulle part ailleurs, ce sont les chantiers, les clients, et ce que
+l'agent a appris.
+
+`ATLAS_SANS_PGDUMP=1` force le repli : un chemin de secours jamais joué ne
+protège de rien. Les deux chemins ont été joués sur une vraie base — 39 tables.
+
 ### Le banc se diagnostique tout seul, et déclare le protocole de son port
 
 Suite de la soirée du 10 août. Le patron a ouvert l'adresse de son banc dans
