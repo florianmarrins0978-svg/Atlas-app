@@ -352,6 +352,32 @@ jour-là. Supprimez-le et recréez-en un — voir l'encadré du geste 1. C'est l
 cas le plus fréquent, et le plus déroutant, parce que l'erreur ne dit pas que
 le problème est l'ancienneté de l'espace.
 
+**`AucuneEntrepriseError : l'utilisateur … n'a aucune adhésion d'entreprise
+active`, et toutes les pages s'écroulent.** Constaté le 10 août 2026. Votre
+navigateur porte encore la session d'un compte de démonstration **qui n'existe
+plus** : le seed vide puis reconstruit, et le nouveau compte n'a pas le même
+identifiant que l'ancien. Le cookie reste valide — l'application vous laisse
+donc entrer, puis ne trouve aucune entreprise derrière vous.
+
+Deux remèdes, du plus rapide au plus complet :
+
+1. **Ouvrez l'adresse dans un onglet de navigation privée**, et connectez-vous.
+   Vous saurez en trente secondes si c'était bien ça.
+2. Si le compte de démonstration manque vraiment, reconstruisez-le :
+
+   ```bash
+   DATABASE_URL="$DATABASE_SUPER_URL" npx tsx src/server/db/seed.ts
+   ```
+
+   Il **efface les données de démonstration** et les refait à neuf — c'est un
+   banc d'essai, il n'y a rien à y perdre d'irremplaçable. Puis reconnectez-vous
+   **en navigation privée** : le nouveau compte a un nouvel identifiant, et
+   l'ancienne session ne vaut plus rien.
+
+> **Ce défaut est le nôtre, pas le vôtre.** Une session périmée devrait vous
+> ramener à l'écran de connexion, jamais faire s'écrouler la page. C'est écrit
+> dans `TODO.md`.
+
 **`EADDRINUSE: address already in use 0.0.0.0:3000`.** L'application tourne
 déjà — elle démarre toute seule à l'allumage de l'espace. Ce n'est pas une
 panne.

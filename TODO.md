@@ -27,6 +27,27 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 bis. Une session périmée fait s'écrouler toutes les pages — À FAIRE
+
+**Constaté chez le patron le 10 août 2026, sur son banc.** Son navigateur
+portait la session d'un compte de démonstration supprimé par un nouveau seed.
+Le cookie restait valide, `auth()` rendait donc un `utilisateurId` — et
+`resoudreEntrepriseId` levait `AucuneEntrepriseError`, qui n'est **attrapée
+nulle part** (`src/server/session-ctx.ts`). Résultat : toutes les pages en 500,
+et un écran qui ne dit rien de ce qu'il faut faire.
+
+**Ce qu'il faut, et pourquoi ce n'est pas une ligne de code :** une session
+valide sans adhésion doit ramener à l'écran de connexion, **et la session doit
+être révoquée** — sinon la page de connexion renvoie vers l'accueil, qui
+renvoie vers la connexion, en boucle. `getCurrentCtx` sert aussi les actions
+serveur et les routes d'API : le remède doit valoir pour les trois, sans
+affaiblir l'isolation. À écrire avec un test qui reproduit la panne : session
+signée d'un utilisateur sans adhésion.
+
+**En attendant**, le contournement est écrit dans `docs/ESSAYER.md` : ouvrir en
+navigation privée, ou rejouer le seed.
+
+
 ### 0. Le banc d'essai tient debout — ~~à faire~~ **fait le 9 août 2026**
 
 Veilleur qui relance le serveur mort, préchauffage de seize écrans, garde contre
