@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le banc se diagnostique tout seul, et déclare le protocole de son port
+
+Suite de la soirée du 10 août. Le patron a ouvert l'adresse de son banc dans
+**deux navigateurs différents, en navigation privée** — donc sans le moindre
+cookie — et les deux lui ont proposé de **télécharger un fichier**. Cela tue
+l'hypothèse de la session périmée : ce n'est pas son compte, c'est la réponse
+elle-même qui n'est pas une page.
+
+Deux changements, et aucun ne lui demande de taper quoi que ce soit :
+
+- **Le protocole du port est déclaré** dans `devcontainer.json` :
+  `"protocol": "http"`. Un relais réglé sur HTTPS devant un serveur qui parle
+  HTTP renvoie des octets illisibles — et un navigateur devant des octets sans
+  type les prend pour un fichier. C'est la cause qui colle exactement au
+  symptôme, et elle se règle par déclaration plutôt que par un panneau à
+  trouver sur six pouces.
+- **Le démarrage lance le diagnostic tout seul**, détaché : il attend que le
+  serveur réponde, puis écrit son verdict dans `/tmp/verdict-banc.txt`. Le
+  bandeau de démarrage donne la seule commande à taper si l'adresse ne s'ouvre
+  pas — `cat /tmp/verdict-banc.txt` — et la réponse y est **déjà** quand il la
+  demande, au lieu d'attendre trente secondes de plus.
+
+Le bloc détaché a été joué pour de vrai, serveur absent : il patiente, puis
+écrit « L'APPLICATION NE RÉPOND PAS, même de l'intérieur ».
+
 ### Un diagnostic qui dit QUI ment, en une commande
 
 `npm run diagnostiquer:banc`.
