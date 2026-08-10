@@ -9,6 +9,45 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le banc d'essai envoyait le patron chercher au mauvais endroit
+
+Deux défauts trouvés en le regardant s'en servir, le 10 août au soir, et
+**aucun dans l'application** — les deux dans `scripts/essai.mjs`.
+
+**« Ok to proceed? »** Sans dépendances installées, `npx` ne trouve pas `next`
+en local et **propose de le télécharger** : *« Need to install the following
+packages: next@16.3.0 »*, quand le dépôt est figé sur **16.2.12**. Le patron a
+lu une question sans rapport avec ce qu'il voulait faire, et accepter aurait
+fait tourner l'application sur une version que personne n'a éprouvée. Le script
+vérifie donc `node_modules/next` avant tout, et sort en nommant le vrai
+coupable ; `npx --no-install` en renfort, pour qu'un cas non prévu **échoue** au
+lieu de poser une question.
+
+**« L'application n'a pas répondu après trois minutes »** — alors qu'elle
+arrivait. Le journal disait tout, trois lignes plus haut : **`Slow filesystem
+detected. The benchmark took 20605 ms`**, deux cents fois la normale. Le serveur
+avait démarré en 486 ms et compilait encore. Trois corrections :
+
+1. **Dix minutes au lieu de trois.** Abandonner trop tôt ne coûte pas une
+   attente : ça fait croire à une panne.
+2. **Un signe de vie toutes les trente secondes.** Un écran figé dix minutes se
+   lit comme un plantage — et on ferme alors le terminal, ce qui tue le serveur
+   au moment où il aboutit.
+3. **Le message n'accuse plus la base de données par défaut.** Il regarde si le
+   serveur est **encore en vie**, ce qui sépare les deux cas sans rien
+   supposer : s'il tourne, il dit de ne pas fermer le terminal et donne la
+   commande qui répond par oui ou non ; s'il est mort, alors seulement la base
+   est citée.
+
+**Un défaut trouvé en éprouvant le correctif :** la branche « le serveur s'est
+arrêté » était **inatteignable**. `serveur.on("exit")` appelait `process.exit`
+sur-le-champ, si bien que le script mourait avant de pouvoir expliquer quoi que
+ce soit. La sortie est désormais retenue, traitée après le diagnostic, puis
+rendue telle quelle.
+
+Les quatre chemins ont été joués : dépendances absentes, serveur mort, serveur
+vivant qui ne répond pas, et démarrage normal.
+
 ### Le banc d'essai reparle : deux phrases qui avaient divergé
 
 Depuis le 9 août au soir, la vérification du banc échouait à chaque fois sur
