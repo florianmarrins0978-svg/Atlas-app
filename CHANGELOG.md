@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### « L'application n'a pas répondu » — quand elle était en train d'arriver
+
+Le patron, sur son Codespace, le 2026-08-10. Le journal disait tout, trois
+lignes plus haut : **`Slow filesystem detected. The benchmark took 20605 ms`** —
+deux cents fois la normale. Le serveur avait démarré en 486 ms et compilait
+encore ; `scripts/essai.mjs` a renoncé au bout de **trois minutes** et annoncé
+que l'application n'avait pas répondu. Elle arrivait.
+
+**Trois corrections, et la troisième est la plus importante :**
+
+1. **Dix minutes au lieu de trois.** Abandonner trop tôt ne coûte pas une
+   attente : ça fait croire à une panne.
+2. **Un signe de vie toutes les trente secondes.** Un écran figé dix minutes se
+   lit comme un plantage — et on ferme alors le terminal, ce qui tue le serveur
+   au moment où il aboutit.
+3. **Le message n'accuse plus la base de données par défaut.** Il regardait
+   ailleurs que le journal et envoyait chercher au mauvais endroit — exactement
+   ce qu'`AGENTS.md` interdit. Il distingue maintenant deux cas en regardant si
+   le serveur est **encore en vie** : s'il tourne, il dit de ne pas fermer le
+   terminal et donne la commande qui répond par oui ou non ; s'il est mort,
+   alors seulement la base est citée.
+
+**Un défaut trouvé en éprouvant le correctif** : la branche « le serveur s'est
+arrêté » était **inatteignable**. `serveur.on("exit")` appelait `process.exit`
+sur-le-champ, si bien que le script mourait avant de pouvoir expliquer quoi que
+ce soit. La sortie est désormais retenue, traitée après le diagnostic, puis
+rendue telle quelle.
+
+Les deux branches ont été vues rouges : santé injoignable serveur vivant, et
+port déjà pris.
+
 ### « Ok to proceed? » — une question qui n'avait rien à faire là
 
 Le patron, dans son Codespace : `npm run essai` lui demandait
