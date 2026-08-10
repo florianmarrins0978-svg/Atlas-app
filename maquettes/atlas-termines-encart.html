@@ -1,0 +1,380 @@
+<title>Atlas — Terminés · l'encart « à facturer », dans le mois</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT pour la page. Touchez l'encart : le mois s'ouvre.
+
+    L'ENCART « À FACTURER », POSÉ DANS LE MOIS.
+
+    Le patron, le 2026-08-10 : « une fois que la date du devis est passée, il se
+    retrouve automatiquement dans les chantiers terminés, mais à facturer. On
+    est le 21, donc le chantier du 20 doit s'y retrouver tout seul. Il doit y
+    avoir un petit encart à côté du mois — par exemple deux non facturées — et
+    qu'on puisse cliquer dessus pour voir lesquelles. »
+
+    CE QUE ÇA CORRIGE DANS MES PROPOSITIONS PRÉCÉDENTES. J'avais posé les
+    chantiers en attente dans un bloc à part, en tête de l'écran. C'était faux :
+    un chantier terminé le 20 août appartient à AOÛT. Le sortir de son mois
+    casse le fil, qui ne raconte plus le temps mais deux listes empilées.
+
+    D'où la règle : LE COMPTE VIT DANS SON MOIS, et le mois porte donc deux
+    chiffres — ce qui est rentré, et ce qui reste à rentrer. Les trois
+    variantes ne changent que la façon de le dire.
+
+    CE QUI EST COMMUN, ET QUI N'EST PAS NÉGOCIABLE :
+
+      · LE COMPTE EST REPLIÉ AU REPOS. L'écran s'appelle « Terminés » : il
+        montre d'abord ce qui est fait. L'encart appelle, il n'occupe pas.
+      · LE MONTANT EN ATTENTE VIENT DU DEVIS ACCEPTÉ, et l'écran le dit —
+        « prévu au devis », jamais « à encaisser ». Un devis n'est pas une
+        facture, et le montant peut encore bouger (docs/AGENT.md §3).
+      · LA PERLE CREUSE VEUT DIRE « PAS ENCORE FACTURÉ » — le même vocabulaire
+        que l'anneau du planning, qui veut dire « il reste de la place ».
+      · À ZÉRO, L'ENCART DISPARAÎT. Pas de « 0 », pas de compte au singulier
+        bancal : le mois n'affiche que son total. C'est montré sur juillet.
+  */
+
+  :root{
+    --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c;
+    --bronze:#8f7130; --trait:rgba(22,23,15,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1400px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 34px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:390px;max-width:100%}
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:760px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#edece6; --e-plage:#f7f6f2; --e-encre:#16170f; --e-gris:#83867c;
+         --e-bronze:#8f7130; --e-trait:rgba(22,23,15,.13); --e-plein:#2a3a2e;
+         --e-plein-encre:#f2f1ea; --e-signe:#c2a05f}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  .tete{padding:26px 26px 0;flex:none}
+  .tete .sur{margin:0;color:var(--e-bronze)}
+  .tete h1{margin:9px 0 0;font:400 34px/1 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
+
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;background:var(--e-fond)}
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9px;letter-spacing:.15em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre)}
+  .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;
+         background:var(--e-bronze);left:calc(14px + 2*(100% - 28px)/4)}
+
+  /* ═══ Le fil ═════════════════════════════════════════════════════════ */
+  .fil{position:relative;margin:24px 26px 0}
+  .fil::before{content:"";position:absolute;left:47px;top:14px;bottom:16px;
+               width:1px;background:var(--e-trait)}
+  .mois{display:grid;grid-template-columns:47px 1fr;gap:0 26px;padding:14px 0 4px}
+  .mois .m{text-align:right;padding-right:13px}
+  .mois .m b{display:block;font:400 17px/1 ui-serif,Georgia,serif}
+  .mois .m span{display:block;margin-top:4px;font-size:9px;letter-spacing:.16em;
+                text-transform:uppercase;color:var(--e-gris)}
+  .mois .tot{align-self:center;text-align:right;font-size:11px;letter-spacing:.2em;
+             text-transform:uppercase;color:var(--e-bronze);font-variant-numeric:tabular-nums}
+  .brin{display:grid;grid-template-columns:47px 1fr;gap:0 26px}
+  .brin > *{min-width:0}
+  .brin .creux{position:relative}
+  .brin .creux i{position:absolute;left:47px;top:22px;width:7px;height:7px;
+                 border-radius:99px;transform:translate(-50%,-50%);
+                 background:var(--e-bronze);box-shadow:0 0 0 4px var(--e-fond)}
+  .brin .creux i.vide{background:var(--e-fond);
+                      box-shadow:inset 0 0 0 1px var(--e-bronze),0 0 0 4px var(--e-fond)}
+
+  .fact{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+        padding:14px 0;text-decoration:none;color:inherit;
+        -webkit-tap-highlight-color:transparent}
+  .fact .qui{min-width:0}
+  .fact .n{display:block;font:400 17px/1.2 ui-serif,Georgia,serif;
+           white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fact .ref{display:block;margin-top:3px;font-size:11px;letter-spacing:.14em;
+             text-transform:uppercase;color:var(--e-gris);
+             white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fact .eur{flex:none;font:400 16px/1.2 ui-serif,Georgia,serif;
+             font-variant-numeric:tabular-nums;text-align:right}
+  .fact .eur.prevu{color:var(--e-bronze)}
+
+  .pied{margin:22px 26px 0;border-top:1px solid var(--e-trait);padding-top:16px}
+  .lg{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+      padding:5px 0;font-size:14px}
+  .lg b{font-weight:400;font-variant-numeric:tabular-nums}
+  .lien{display:flex;align-items:center;justify-content:space-between;gap:14px;
+        padding:15px 0 0;text-decoration:none;color:inherit;
+        -webkit-tap-highlight-color:transparent}
+  .lien .t{font:400 16px/1.2 ui-serif,Georgia,serif}
+  .lien .f{color:var(--e-bronze);font-size:15px}
+
+  /* Le dépliage : la hauteur se calcule toute seule, sans chiffre magique à
+     tenir à jour quand le nombre de chantiers change. */
+  .volet{display:grid;grid-template-rows:0fr;
+         transition:grid-template-rows .46s cubic-bezier(.22,.61,.36,1)}
+  .volet > div{overflow:hidden}
+  .ouv:checked ~ .volet{grid-template-rows:1fr}
+  .chevron{display:inline-block;transition:transform .4s cubic-bezier(.22,.61,.36,1)}
+  .ouv:checked ~ label .chevron{transform:rotate(90deg)}
+
+  /* ═══ E1 · le compte sous le mois ════════════════════════════════════ */
+  /* 44 px de haut : une ligne de 9,5 px se rate deux fois sur trois. */
+  .encart{display:flex;align-items:center;gap:9px;margin-left:73px;
+          min-height:44px;color:var(--e-bronze);
+          -webkit-tap-highlight-color:transparent}
+  .encart .q{white-space:nowrap;letter-spacing:.22em}
+  .encart .v{font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;opacity:.8}
+  .encart .chevron{margin-left:auto;font-size:15px}
+
+  /* ═══ E2 · la pastille dans la marge ═════════════════════════════════ */
+  .mois.avec{position:relative}
+  .pastille{position:absolute;left:47px;top:19px;transform:translate(-50%,-50%);
+            display:flex;align-items:center;justify-content:center;
+            width:20px;height:20px;border-radius:99px;background:var(--e-fond);
+            box-shadow:inset 0 0 0 1px var(--e-bronze);color:var(--e-bronze);
+            font:400 11px/1 ui-serif,Georgia,serif;font-variant-numeric:tabular-nums}
+  .bloc-mois{display:block;-webkit-tap-highlight-color:transparent}
+  .rangmois{display:flex;align-items:center;gap:12px;min-height:44px}
+  .rangmois .tot{margin-left:auto}
+  .dit{display:flex;align-items:center;gap:12px;margin:0 0 6px 73px;
+       font-size:12px;color:var(--e-bronze)}
+  .dit .chevron{margin-left:auto;font-size:15px}
+  .source{margin:2px 0 10px 73px;font-size:12px;color:var(--e-gris)}
+
+  /* ═══ E3 · le mois porte ses deux chiffres ═══════════════════════════ */
+  .deux{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+  .deux .a{font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+           color:var(--e-bronze);font-variant-numeric:tabular-nums}
+  .deux .b{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--e-gris);font-variant-numeric:tabular-nums}
+  .deux .b em{font-style:normal;color:var(--e-bronze)}
+  .lignedeux{display:grid;grid-template-columns:47px 1fr;gap:0 26px;
+             padding:14px 0 4px;min-height:52px;-webkit-tap-highlight-color:transparent}
+  .lignedeux .m{text-align:right;padding-right:13px}
+  .lignedeux .m b{display:block;font:400 17px/1 ui-serif,Georgia,serif}
+  .lignedeux .m span{display:block;margin-top:4px;font-size:9px;letter-spacing:.16em;
+                     text-transform:uppercase;color:var(--e-gris)}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+  }
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Terminés · l'encart « à facturer »</p>
+    <h1>Le compte vit dans son mois</h1>
+    <p>
+      Nous sommes le <strong>21 août</strong>. Le chantier du <strong>20</strong>
+      est arrivé tout seul dans « Terminés » — sa date est passée — mais il n'est
+      pas facturé. Il appartient donc à <strong>août</strong>, pas à un bloc à
+      part : c'était mon erreur dans la version précédente.
+    </p>
+    <p>
+      <strong>Touchez l'encart</strong> sur chacun des trois : le mois s'ouvre et
+      montre ce qui reste à facturer. <strong>Juillet n'a pas d'encart</strong> —
+      tout y est facturé, et un compte à zéro ne s'affiche pas.
+    </p>
+  </div>
+
+  <div class="rangee">
+
+    <!-- ── E1 · le compte sous le mois ───────────────────────────────── -->
+    <div class="prop">
+      <div class="tel"><div class="ecran" data-s="e1">
+        <div class="tete"><p class="sur caps">Chantiers réalisés</p><h1>Terminés</h1></div>
+        <div class="corps">
+          <div class="fil">
+            <input class="interrupteur ouv" type="checkbox" id="o1">
+            <div class="mois"><span class="m"><b>août</b><span>2026</span></span><span class="tot num">1 320,00 €</span></div>
+            <label class="encart" for="o1">
+              <span class="q caps">Deux à facturer</span>
+              <span class="v num">1 940,00 €</span>
+              <span class="chevron">›</span>
+            </label>
+            <div class="volet"><div>
+              <div class="brin"><span class="creux"><i class="vide"></i></span>
+                <a class="fact" href="#e1"><span class="qui"><b class="n">Chez Mme Roux</b><span class="ref">Le 20 août</span></span><span class="eur prevu num">1 240,00 €</span></a>
+              </div>
+              <div class="brin"><span class="creux"><i class="vide"></i></span>
+                <a class="fact" href="#e1"><span class="qui"><b class="n">Dalle de garage</b><span class="ref">Le 18 août</span></span><span class="eur prevu num">700,00 €</span></a>
+              </div>
+              <p class="source">Montants prévus aux devis.</p>
+            </div></div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#e1"><span class="qui"><b class="n">Chez M. Martins</b><span class="ref">F2026-0006 · le 2</span></span><span class="eur num">1 320,00 €</span></a>
+            </div>
+
+            <div class="mois"><span class="m"><b>juillet</b><span>2026</span></span><span class="tot num">3 000,00 €</span></div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#e1"><span class="qui"><b class="n">Terrasse bois</b><span class="ref">F2026-0005 · le 28</span></span><span class="eur num">1 860,00 €</span></a>
+            </div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#e1"><span class="qui"><b class="n">Muret de pierre</b><span class="ref">F2026-0004 · le 21</span></span><span class="eur num">640,00 €</span></a>
+            </div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#e1"><span class="qui"><b class="n">Abri de jardin</b><span class="ref">F2026-0003 · le 14</span></span><span class="eur num">500,00 €</span></a>
+            </div>
+          </div>
+          <div class="pied">
+            <p class="lg">Facturé ce trimestre <b class="num">4 320,00 €</b></p>
+            <a class="lien" href="#e1"><span class="t">Relevé de TVA collectée</span><span class="f">›</span></a>
+          </div>
+        </div>
+        <nav class="bas"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Réglages</span><i></i></nav>
+      </div></div>
+      <p class="sous">E1 · le compte sous le mois</p>
+      <p class="note">Une ligne bronze sous « août », qui dit le nombre et le montant. <b>C'est la plus lisible des trois : rien n'est deviné.</b></p>
+    </div>
+
+    <!-- ── E2 · la pastille dans la marge ────────────────────────────── -->
+    <div class="prop">
+      <div class="tel"><div class="ecran" data-s="e2">
+        <div class="tete"><p class="sur caps">Chantiers réalisés</p><h1>Terminés</h1></div>
+        <div class="corps">
+          <div class="fil">
+            <input class="interrupteur ouv" type="checkbox" id="o2">
+            <label class="bloc-mois" for="o2">
+              <span class="mois avec rangmois">
+                <span class="pastille num">2</span>
+                <span class="m"><b>août</b><span>2026</span></span>
+                <span class="tot num">1 320,00 €</span>
+              </span>
+              <span class="dit"><span class="t">Deux attendent leur facture.</span><span class="chevron">›</span></span>
+            </label>
+            <div class="volet"><div>
+              <div class="brin"><span class="creux"><i class="vide"></i></span>
+                <a class="fact" href="#e2"><span class="qui"><b class="n">Chez Mme Roux</b><span class="ref">Le 20 août</span></span><span class="eur prevu num">1 240,00 €</span></a>
+              </div>
+              <div class="brin"><span class="creux"><i class="vide"></i></span>
+                <a class="fact" href="#e2"><span class="qui"><b class="n">Dalle de garage</b><span class="ref">Le 18 août</span></span><span class="eur prevu num">700,00 €</span></a>
+              </div>
+              <p class="source">Montants prévus aux devis.</p>
+            </div></div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#e2"><span class="qui"><b class="n">Chez M. Martins</b><span class="ref">F2026-0006 · le 2</span></span><span class="eur num">1 320,00 €</span></a>
+            </div>
+
+            <div class="mois"><span class="m"><b>juillet</b><span>2026</span></span><span class="tot num">3 000,00 €</span></div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#e2"><span class="qui"><b class="n">Terrasse bois</b><span class="ref">F2026-0005 · le 28</span></span><span class="eur num">1 860,00 €</span></a>
+            </div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#e2"><span class="qui"><b class="n">Muret de pierre</b><span class="ref">F2026-0004 · le 21</span></span><span class="eur num">640,00 €</span></a>
+            </div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#e2"><span class="qui"><b class="n">Abri de jardin</b><span class="ref">F2026-0003 · le 14</span></span><span class="eur num">500,00 €</span></a>
+            </div>
+          </div>
+          <div class="pied">
+            <p class="lg">Facturé ce trimestre <b class="num">4 320,00 €</b></p>
+            <a class="lien" href="#e2"><span class="t">Relevé de TVA collectée</span><span class="f">›</span></a>
+          </div>
+        </div>
+        <nav class="bas"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Réglages</span><i></i></nav>
+      </div></div>
+      <p class="sous">E2 · la pastille dans la marge</p>
+      <p class="note">Un anneau bronze avec le nombre, contre le mois — c'est la marge du fil qui parle. <b>Le plus discret ; la phrase dessous existe parce qu'un « 2 » seul ne dit pas de quoi.</b></p>
+    </div>
+
+    <!-- ── E3 · le mois porte ses deux chiffres ──────────────────────── -->
+    <div class="prop">
+      <div class="tel"><div class="ecran" data-s="e3">
+        <div class="tete"><p class="sur caps">Chantiers réalisés</p><h1>Terminés</h1></div>
+        <div class="corps">
+          <div class="fil">
+            <input class="interrupteur ouv" type="checkbox" id="o3">
+            <label class="lignedeux" for="o3">
+              <span class="m"><b>août</b><span>2026</span></span>
+              <span class="deux">
+                <span class="a num">1 320,00 € facturés</span>
+                <span class="b num"><em>1 940,00 € à facturer · 2</em><span class="chevron">›</span></span>
+              </span>
+            </label>
+            <div class="volet"><div>
+              <div class="brin"><span class="creux"><i class="vide"></i></span>
+                <a class="fact" href="#e3"><span class="qui"><b class="n">Chez Mme Roux</b><span class="ref">Le 20 août</span></span><span class="eur prevu num">1 240,00 €</span></a>
+              </div>
+              <div class="brin"><span class="creux"><i class="vide"></i></span>
+                <a class="fact" href="#e3"><span class="qui"><b class="n">Dalle de garage</b><span class="ref">Le 18 août</span></span><span class="eur prevu num">700,00 €</span></a>
+              </div>
+              <p class="source">Montants prévus aux devis.</p>
+            </div></div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#e3"><span class="qui"><b class="n">Chez M. Martins</b><span class="ref">F2026-0006 · le 2</span></span><span class="eur num">1 320,00 €</span></a>
+            </div>
+
+            <div class="mois"><span class="m"><b>juillet</b><span>2026</span></span><span class="tot num">3 000,00 €</span></div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#e3"><span class="qui"><b class="n">Terrasse bois</b><span class="ref">F2026-0005 · le 28</span></span><span class="eur num">1 860,00 €</span></a>
+            </div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#e3"><span class="qui"><b class="n">Muret de pierre</b><span class="ref">F2026-0004 · le 21</span></span><span class="eur num">640,00 €</span></a>
+            </div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#e3"><span class="qui"><b class="n">Abri de jardin</b><span class="ref">F2026-0003 · le 14</span></span><span class="eur num">500,00 €</span></a>
+            </div>
+          </div>
+          <div class="pied">
+            <p class="lg">Facturé ce trimestre <b class="num">4 320,00 €</b></p>
+            <a class="lien" href="#e3"><span class="t">Relevé de TVA collectée</span><span class="f">›</span></a>
+          </div>
+        </div>
+        <nav class="bas"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Réglages</span><i></i></nav>
+      </div></div>
+      <p class="sous">E3 · le mois porte ses deux chiffres</p>
+      <p class="note">Rentré au-dessus, à rentrer en dessous. <b>Le plus complet — et le plus chargé : deux montants sur une ligne de mois, ça commence à faire un tableau.</b></p>
+    </div>
+
+  </div>
+
+  <p class="note" style="max-width:66ch;margin:44px auto 0;border:0">
+    <b>Ce que je vous recommande : E1.</b> Le mois garde un seul chiffre — ce
+    qui est rentré —, et la ligne bronze dessous dit le reste en toutes lettres,
+    sans rien faire deviner. E2 est plus beau mais un « 2 » seul dans la marge
+    ne dit pas de quoi il s'agit : il faut la phrase dessous, et on a alors deux
+    éléments là où E1 n'en a qu'un. E3 dit tout, mais deux montants sur une
+    ligne de mois commencent à faire un tableau — ce qu'on cherchait justement à
+    quitter.
+    <br><br>
+    <b>Un point qui se code, pas qui se dessine.</b> « La date est passée » se
+    décide au jour près et dépend de la demi-journée : un chantier de l'après-midi
+    du 20 n'est terminé qu'à la fin de cette demi-journée. C'est
+    <code>listerChantiersTermines</code> qui tranche aujourd'hui — il faudra
+    vérifier qu'il compte bien le 20 comme terminé le 21 au matin, et non le
+    20 à minuit.
+  </p>
+</div>

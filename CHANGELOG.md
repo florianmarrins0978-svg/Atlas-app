@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le compte « à facturer » vit dans son mois, pas dans un bloc à part
+
+**Correction d'une erreur de ma part.** J'avais posé les chantiers non facturés
+dans un bloc en tête d'écran. Le patron a précisé la mécanique : un chantier
+dont la date est passée arrive tout seul dans « Terminés », et il appartient à
+**son mois**. Le sortir de son mois cassait le fil, qui ne racontait plus le
+temps mais deux listes empilées.
+
+Trois encarts dans `maquettes/atlas-termines-encart.html`, tous repliés au repos
+et ouverts sous le doigt : une ligne bronze sous le mois, une pastille posée sur
+le fil, ou un mois portant ses deux chiffres.
+
+**Trois défauts attrapés, dont deux que les contrôles ne voyaient pas :**
+
+- Une **étiquette insécable dans une piste `1fr` élargit la piste** : la colonne
+  des montants sortait de 13 px sous le tiroir. `min-width:0` sur les cellules,
+  et la source du montant se dit une fois sous les lignes au lieu d'être
+  répétée sur chacune.
+- **`checkVisibility()` ignore le rognage** : les lignes d'un tiroir fermé lui
+  paraissaient visibles. Il faut mesurer l'intersection réelle avec la boîte du
+  tiroir. C'est la limite de l'outil qui avait justement corrigé le défaut
+  précédent — un contrôle n'est jamais acquis.
+- La **pastille chevauchait « août »** : la marge du fil fait 47 px et n'a pas
+  de place en trop. Elle se pose désormais **sur le fil**, comme une perle qui
+  porterait le compte. Vu sur la capture, pas par les contrôles.
+
 ### Le fil retenu, et le texte qui dit ce qui attend sa facture
 
 Le patron a retenu **le fil par mois** et demandé d'y voir *« le nombre de devis

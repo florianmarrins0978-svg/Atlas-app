@@ -264,6 +264,23 @@ des goûts :
 - **Un état vide se dit en toutes lettres**, jamais par un titre de section
   suivi de rien.
 
+**Un chantier dont la date est passée appartient à SON MOIS.** Précisé par le
+patron le 2026-08-10 : *« une fois que la date du devis est passée, il se
+retrouve automatiquement dans les chantiers terminés, mais à facturer. On est le
+21, donc le chantier du 20 doit s'y retrouver tout seul. »* Mes premières
+propositions posaient ces chantiers dans un **bloc à part en tête d'écran** :
+c'était faux, et ça cassait le fil, qui ne racontait plus le temps mais deux
+listes empilées. Le compte vit dans le mois, il se replie au repos, et il
+s'ouvre sous le doigt : `maquettes/atlas-termines-encart.html` (E1 la ligne
+bronze sous le mois, E2 la pastille sur le fil, E3 le mois à deux chiffres).
+**Il n'a pas encore choisi entre les trois.**
+
+**À vérifier côté code quand ce sera à faire :** « la date est passée » se décide
+au jour près et dépend de la demi-journée — un chantier de l'après-midi du 20
+n'est terminé qu'à la fin de cette demi-journée. C'est
+`listerChantiersTermines` qui tranche : s'assurer qu'il compte le 20 comme
+terminé le 21 au matin, et non le 20 à minuit.
+
 **Le fil (C) est celui qu'il préfère** — *« j'aime beaucoup le C »*, le
 2026-08-10. Il a demandé d'y ajouter **le nombre de chantiers pas encore
 facturés** ; quatre placements sont proposés dans
