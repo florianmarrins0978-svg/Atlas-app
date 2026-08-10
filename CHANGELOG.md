@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### La page blanche, enfin : le relais coupait avant la fin de la compilation
+
+**Mesuré, pas supposé.** `next dev` ne compile un écran qu'au **premier appel** :
+la route de santé répond en 0,5 s, mais `/login` coûte **6,8 s ici** — et
+**trois minutes** sur le disque du patron, son propre journal le disait depuis
+le début : `GET / 307 in 3.0min`. Or le relais de GitHub abandonne au bout d'une
+minute.
+
+Il ne pouvait donc **jamais** voir cette page, quoi qu'il fasse : elle n'était
+pas encore compilée quand le relais coupait. Toutes les autres pistes — session,
+port, protocole, adresse — étaient des symptômes ou des erreurs de ma part.
+
+Le banc paie donc ce coût **de l'intérieur**, où rien n'abandonne, dès que le
+serveur répond : il ouvre `/login` puis `/` pour lui. Mesuré de bout en bout :
+
+| | |
+|---|---|
+| `/login` compilé de l'intérieur | 13 s |
+| premier appel extérieur, ensuite | **0,043 s** |
+| après bascule sur la version bâtie | 0,062 s |
+
+Quinze minutes de patience accordées au préchauffage : abandonner là rendrait
+exactement la page blanche qu'on cherche à épargner. Et un échec n'empêche
+rien — ce n'est qu'une avance prise.
+
 ### Servir d'abord, bâtir ensuite — la page blanche n'était qu'une attente
 
 Le patron ouvre son adresse : page blanche, encore. Le diagnostic dit

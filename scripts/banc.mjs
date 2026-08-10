@@ -111,6 +111,39 @@ const lancerDev = () =>
 // Désormais le serveur de développement part TOUT DE SUITE — une minute, et il
 // répond. La construction se fait à côté, dans son propre dossier, et on ne
 // bascule qu'une fois qu'elle a abouti. À aucun moment il n'y a rien.
+/**
+ * **Ouvrir l'écran de connexion AVANT que le patron ne le demande.**
+ *
+ * Le 10 août 2026, au soir : le serveur répondait, et sa page restait blanche.
+ * Mesuré plutôt que supposé — `next dev` ne compile un écran qu'au premier
+ * appel : la santé répond en 0,5 s, mais `/login` coûte 6,8 s ici… et
+ * TROIS MINUTES sur son disque (son propre journal : `GET / 307 in 3.0min`).
+ * Or le relais de GitHub abandonne au bout d'une minute. Il n'a donc jamais pu
+ * voir cette page, quoi qu'il fasse : elle n'était pas encore compilée quand le
+ * relais coupait.
+ *
+ * On paie donc ce coût ICI, depuis l'intérieur, où rien n'abandonne. Deuxième
+ * appel mesuré : 0,04 s. Le premier écran qu'il ouvre est alors instantané.
+ *
+ * Jamais bloquant, et un échec n'empêche rien : ce n'est qu'une avance prise.
+ */
+async function prechaufferEcransPublics() {
+  while (!(await repond())) await attendre(2000);
+  const base = `http://127.0.0.1:${PORT}`;
+  for (const chemin of ["/login", "/"]) {
+    const depart = Date.now();
+    try {
+      // Quinze minutes : sur un disque très lent, abandonner ici rendrait au
+      // patron exactement la page blanche qu'on cherche à lui épargner.
+      await fetch(base + chemin, { redirect: "follow", signal: AbortSignal.timeout(900_000) });
+      console.log(`  ${chemin} compilé en ${Math.round((Date.now() - depart) / 1000)} s.`);
+    } catch {
+      // Un préchauffage qui échoue laisse simplement le premier appel payer.
+    }
+  }
+  console.log("\n  L'écran de connexion s'ouvre maintenant du premier coup.\n");
+}
+
 let serveur = raison ? lancerDev() : lancerBati();
 let enBascule = false;
 
@@ -123,6 +156,8 @@ serveur.on("exit", surSortie);
 
 if (raison) {
   console.log(`\n  Atlas répond déjà, en mode développement.`);
+  // Pas d'`await` : le préchauffage et la construction avancent ensemble.
+  prechaufferEcransPublics();
   console.log(`  Sa version rapide se construit en même temps (${raison}) — ne fermez rien.\n`);
 
   // La construction écrit dans SON dossier : le serveur de développement garde
