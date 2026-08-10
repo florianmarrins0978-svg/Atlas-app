@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le devis rejoint la charte : la terre cuite s'efface
+
+*« Oui, harmonise aussi le devis. »* La teinte terre cuite des documents, tenue
+à part depuis le 3 août, disparaît. L'accent des intertitres « ÉMETTEUR » /
+« CLIENT » devient **l'or**.
+
+**Pourquoi l'or et pas le vert pin.** Le partage des rôles ne change pas : le
+vert porte ce qu'on FAIT, l'or ce qu'on LIT. Sur un devis imprimé il n'y a rien
+à faire — un intertitre est de la lecture pure.
+
+**`couleursDocument` reste, alors qu'il ne diverge plus**, et ce n'est pas un
+oubli : le papier et l'encre d'une pièce imprimée ne suivront pas forcément un
+futur changement d'écran. Le jour où l'application passera au sombre, c'est là
+qu'on empêchera le devis de partir en noir chez le client.
+
+Le changement traverse d'un seul point : l'écran du devis, celui de la facture
+et **les deux PDF** lisent tous ce jeton. Contrôles des deux PDF au vert.
+
 ### Une seule écriture pour toute l'application
 
 *« Il faut que toutes les écritures de l'appli changent de police, on harmonise

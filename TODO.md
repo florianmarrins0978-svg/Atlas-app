@@ -499,12 +499,14 @@ que toutes les écritures de l'appli changent de police, on harmonise le tout. �
 Le devis et la facture suivent donc l'écran, et il n'y a plus d'exception de
 typographie nulle part.
 
-**Ce qui reste vrai malgré cela**, et qu'il ne faut pas « corriger » : la
-**couleur** terre cuite des documents, elle, demeure (`couleursDocument`). Il
-l'a choisie le 3 août les deux versions sous les yeux, et une police commune
-n'est pas une palette commune. Et le **PDF** n'a jamais chargé Playfair ni
-Inter : il embarque Times et Helvetica, les polices standard du format — il
-était déjà d'accord avec ce que l'écran est devenu.
+**Et la couleur suit aussi**, tranchée dans la foulée : *« oui, harmonise aussi
+le devis »*. La terre cuite disparaît, l'accent des documents devient l'or.
+`couleursDocument` reste néanmoins un jeton à part — papier et encre d'une
+pièce imprimée ne suivront pas forcément un futur écran sombre.
+
+Le **PDF**, lui, n'a jamais chargé Playfair ni Inter : il embarque Times et
+Helvetica, les polices standard du format — il était déjà d'accord avec ce que
+l'écran est devenu.
 
 ### 6. Rien ne mène le patron d'un écran au suivant
 
