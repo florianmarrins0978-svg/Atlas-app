@@ -114,6 +114,7 @@ dehors — l'application le laissait entrer, puis refusait toute écriture.
 | Contrôle, cinq points dont un navigateur sans JavaScript | `scripts/test-session-perimee-e2e.ts` |
 | Le pourquoi, et les trois défauts trouvés à l'essai | `ARCHITECTURE.md` §54 |
 | Le port du banc, rendu public à **chaque allumage** (le déclarer ne suffit pas) | `.devcontainer/ouvrir-port.sh` + `scripts/test-ouvrir-port.ts` |
+| Un seul banc à la fois, et le veilleur ne tue plus la bascule | `.devcontainer/bascule-en-cours.sh` + `scripts/verrou-banc.mjs` + `scripts/test-bascule-veilleur.ts` (`ARCHITECTURE.md` §56) |
 
 ### La refonte de l'interface (10 août 2026)
 

@@ -30,6 +30,7 @@ import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { annoncePrete } from "./annonce-adresse.mjs";
+import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
 
 const PORT = process.env.PORT ?? "3000";
 const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
@@ -40,6 +41,26 @@ const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
 // un disque lent. Voir `next.config.ts` (`ATLAS_DIST_DIR`).
 const DIST = ".next-batie";
 const TEMOIN_BATI = `${DIST}/atlas-version-batie.txt`;
+
+// **Prévenir le veilleur pendant la bascule, sinon il tue ce qu'on remplace.**
+//
+// Le 10 août 2026 chez le patron : construction réussie, puis
+// « listen EADDRINUSE … 0.0.0.0:3000 », errno -98. Pendant le battement où l'on
+// tue `next dev` avant de lancer `next start`, `.devcontainer/veiller.sh` voit
+// exactement ses deux conditions de relance — santé muette, aucun `next` — et
+// démarre un SECOND banc, qui prend le port. Le raisonnement complet — et
+// pourquoi le drapeau doit EXPIRER — vit dans `bascule-en-cours.sh`, seul à
+// connaître le chemin du drapeau.
+const DRAPEAU_BASCULE = new URL("../.devcontainer/bascule-en-cours.sh", import.meta.url).pathname;
+
+function marquerBascule(etape) {
+  try {
+    execFileSync("bash", [DRAPEAU_BASCULE, etape], { stdio: "ignore" });
+  } catch {
+    // Le drapeau est un confort : son absence ramène l'ancien désordre, jamais
+    // pire. On ne fait surtout pas échouer un démarrage pour ça.
+  }
+}
 
 const attendre = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -103,6 +124,31 @@ async function portRendu(limiteMs) {
   }
   return false;
 }
+
+// **UN SEUL BANC, et c'est la garde qui manquait le 10 août 2026.**
+//
+// Le patron a lu « listen EADDRINUSE … 0.0.0.0:3000 » (errno -98) suivi d'une
+// SECONDE construction : deux bancs tournaient. L'espace en démarre un tout
+// seul à chaque allumage ; ne voyant rien venir, il en a lancé un autre à la
+// main. Les deux ont bâti, et le premier à vouloir servir a trouvé le port pris.
+//
+// Regarder le port n'aurait rien donné : pendant sa construction, un banc n'y
+// répond pas encore. C'est l'existence d'un autre banc qu'il faut voir. Le
+// raisonnement complet est dans `verrou-banc.mjs`.
+const verrou = prendreVerrouBanc();
+if (!verrou.pris) {
+  console.log(
+    "\n  ─────────────────────────────────────────────────────────────\n" +
+      "   Atlas est DÉJÀ en train de démarrer — rien à relancer.\n\n" +
+      "   L'espace de travail s'en charge tout seul à chaque allumage.\n" +
+      "   Suivez-le : tail -f /tmp/essai.log\n\n" +
+      "   (En lancer un second ferait échouer les deux sur le port 3000 :\n" +
+      "    c'est le « EADDRINUSE » du 10 août 2026.)\n" +
+      "  ─────────────────────────────────────────────────────────────\n"
+  );
+  process.exit(0);
+}
+process.on("exit", () => libererVerrouBanc());
 
 const version = versionDuCode();
 const raison = doitRebatir(version);
@@ -266,6 +312,9 @@ if (raison) {
     }
     console.log("\n  Construction terminée — passage à la version rapide.\n");
     enBascule = true;
+    // AVANT de tuer quoi que ce soit : le battement qui suit ressemble trait
+    // pour trait à un serveur mort, et le veilleur en lancerait un second.
+    marquerBascule("--debut");
     serveur.kill("SIGTERM");
 
     // **ATTENDRE QUE LE PORT SOIT VRAIMENT RENDU, et le vérifier.**
@@ -291,10 +340,19 @@ if (raison) {
       serveur.on("exit", surSortie);
       enBascule = false;
       sertBati = true;
+      // **Le drapeau ne tombe qu'une fois le NOUVEAU serveur en écoute.** Le
+      // relever dès le lancement rouvrirait la fenêtre exacte qu'il ferme :
+      // `next start` met plusieurs secondes à écouter, et le veilleur passe
+      // toutes les quinze.
+      for (let reste = 90_000; reste > 0 && !(await repond()); reste -= 1000) {
+        await attendre(1000);
+      }
+      marquerBascule("--fin");
     } else {
       // **On ne bascule pas dans le vide.** Mieux vaut un banc lent qu'un banc
       // mort : le serveur de développement tient encore le port, il sert.
       enBascule = false;
+      marquerBascule("--fin");
       console.error(
         "\n  ⚠️  Le port n'a pas été rendu : on RESTE en mode développement.\n" +
           "     L'application fonctionne — elle sera simplement moins rapide.\n" +

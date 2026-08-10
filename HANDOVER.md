@@ -80,6 +80,23 @@ avec une ligne par équipe. Réglages laisse nommer les équipes.
    est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
    sans qu'aucun chiffre ne manque.
 
+**Deux bancs se tuaient l'un l'autre — « EADDRINUSE », errno -98 (10 août, tard).**
+Le veilleur ne pouvait pas distinguer une BASCULE d'une MORT : pendant que
+`banc.mjs` remplace son serveur, la santé se tait et aucun `next` ne tourne —
+ses deux conditions de relance, mot pour mot. Il lançait un second banc, qui
+prenait le port. Et rien n'empêchait le patron d'en lancer un troisième à la
+main. Deux gardes désormais :
+
+- `.devcontainer/bascule-en-cours.sh` — un drapeau, **qui expire en 3 min**.
+  Ne jamais le rendre permanent : un banc tué rendrait le veilleur muet pour
+  toujours, et le 404 du 9 août reviendrait sans que rien ne l'y relie.
+- `scripts/verrou-banc.mjs` — un seul banc à la fois, **par identifiant de
+  processus** et non par simple drapeau, pour la même raison.
+
+Regarder le PORT ne suffit pas : pendant sa construction, un banc n'y répond pas
+encore. C'est l'existence d'un autre banc qu'il faut voir.
+`scripts/test-bascule-veilleur.ts`, douze contrôles.
+
 **L'annonce n'affirme plus que l'adresse est joignable (10 août, tard).** Elle
 écrivait « Ouvrable depuis un téléphone, telle quelle » alors que le port était
 privé : le terminal affirmait le contraire de ce que le patron voyait. Ce module

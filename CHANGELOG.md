@@ -9,6 +9,52 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Deux bancs se tuaient l'un l'autre — « EADDRINUSE », errno -98
+
+**Ce que le patron a lu**, après une construction pourtant réussie :
+
+    Error: listen EADDRINUSE: address already in use 0.0.0.0:3000
+    errno: -98, syscall: 'listen'
+
+puis, juste dessous, une SECONDE construction qui démarrait. **Deux bancs
+tournaient.** Deux causes distinctes, et aucune n'était visible d'un seul
+fichier — chacun était juste séparément.
+
+**1. Le veilleur prenait la bascule pour une mort.** Quand `banc.mjs` remplace
+son serveur de développement par la version bâtie, il tue le premier avant de
+lancer le second. Pendant ce battement, la santé ne répond plus **et** aucun
+processus `next` ne tourne — c'est-à-dire, mot pour mot, les deux conditions que
+`veiller.sh` exige pour conclure « le serveur est mort ». Il lançait donc un
+second banc, qui prenait le port, et le `next start` du premier mourait.
+
+Un drapeau (`.devcontainer/bascule-en-cours.sh`) le lui dit désormais. **Il
+expire au bout de trois minutes, et c'est le point qui compte le plus** : un
+banc tué au mauvais moment laisserait sinon un drapeau éternel, et le veilleur —
+dont l'existence répare le 404 du 9 août — ne relèverait plus jamais rien, sans
+un mot. Une bascule bousculée vaut mieux qu'un veilleur muet. Un drapeau
+illisible ne vaut pas non plus « ne fais rien ».
+
+**2. Rien n'empêchait d'en lancer un second à la main.** L'espace démarre un
+banc tout seul à chaque allumage ; ne voyant rien venir, le patron en a lancé un
+autre. `essai.mjs` refuse ce doublon depuis le 9 août — mais en regardant le
+port, ce qui ne suffit pas ici : **pendant sa construction, un banc ne répond pas
+encore**. C'est l'existence d'un autre banc qu'il faut voir, pas le port.
+`scripts/verrou-banc.mjs` porte un identifiant de processus, jamais un simple
+drapeau : un verrou laissé par un banc tué bloquerait sinon tout démarrage
+ultérieur, pour toujours.
+
+**Éprouvé en rejouant le geste exact du patron** : veilleur en place, un banc
+lancé par lui, puis un second à la main. Le second est refusé avec un message
+qui dit pourquoi ; le premier va au bout de sa bascule — « Version rapide en
+place », zéro `EADDRINUSE`, `/login` en 68 ms. Douze contrôles tiennent le tout,
+et chacun a été vu échouer sur l'état dégradé qu'il prétend détecter.
+
+L'un d'eux a d'ailleurs commencé par rester **vert alors que la consultation du
+drapeau avait été coupée** : il cherchait `$BASCULE` n'importe où dans le
+fichier, et la ligne qui *déclare* le chemin le satisfaisait. Il vise maintenant
+l'appel. C'est la deuxième fois ce soir qu'un contrôle regarde une mention au
+lieu d'un geste.
+
 ### L'annonce cesse d'affirmer que l'adresse est joignable
 
 **Le terminal lui affirmait le contraire de ce qu'il voyait.** À chaque

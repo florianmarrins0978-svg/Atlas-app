@@ -65,7 +65,24 @@ cd "$DEPOT" || exit 0
 # de rien lancer.
 MOTIF='[n]ext(-server| dev| start)'
 
+BASCULE="$(dirname "$0")/bascule-en-cours.sh"
+
 while true; do
+  # **Ne pas prendre une bascule pour une mort.** Quand `banc.mjs` remplace son
+  # serveur de développement par la version bâtie, il tue le premier avant de
+  # lancer le second : pendant ce battement, la santé ne répond plus ET aucun
+  # `next` ne tourne — les deux conditions ci-dessous, mot pour mot. Le veilleur
+  # lançait donc un SECOND banc, qui prenait le port, et le `next start` du
+  # premier tombait sur « EADDRINUSE ». Constaté chez le patron le 10 août 2026,
+  # `errno: -98`, après une construction pourtant réussie.
+  #
+  # Le drapeau expire tout seul (voir `bascule-en-cours.sh`) : un banc tué au
+  # mauvais moment ne peut pas endormir ce veilleur pour toujours.
+  if bash "$BASCULE" 2>/dev/null; then
+    sleep "$INTERVALLE"
+    continue
+  fi
+
   if ! curl -fsS -o /dev/null --max-time 10 "http://127.0.0.1:${PORT}/api/health/live" 2>/dev/null; then
     if ! pgrep -f "$MOTIF" >/dev/null 2>&1; then
       echo "$(date '+%d/%m %H:%M:%S') — plus rien n'écoute sur le port ${PORT}, relance du serveur" >> "$JOURNAL"

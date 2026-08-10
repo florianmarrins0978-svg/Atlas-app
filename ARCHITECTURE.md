@@ -3676,3 +3676,69 @@ Le diagnostic recopiait ce remède quatre fois. Il est désormais écrit une seu
 fois (`OUVRIR_LE_PORT`), et `test-ouvrir-port.ts` échoue s'il réapparaît en
 double : deux copies d'un message finissent toujours par diverger, et c'est
 celle qu'on a oublié de corriger que le patron lira.
+
+---
+
+## 56. La bascule et le veilleur : deux scripts justes qui se tuaient l'un l'autre
+
+**Le fait, lu chez le patron le 10 août 2026 :**
+
+```
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3000
+errno: -98, syscall: 'listen'
+```
+
+suivi, deux lignes plus bas, d'une **seconde** construction qui démarrait.
+
+**Ni `banc.mjs` ni `veiller.sh` n'avait tort. C'est leur rencontre qui tuait
+l'application** — et aucun contrôle ne les regardait ensemble. C'est la leçon
+générale de cette section : un défaut peut n'exister dans aucun des fichiers où
+on le cherche.
+
+### La fenêtre de quinze secondes
+
+1. `banc.mjs` tue son `next dev` pour libérer le port ;
+2. pendant ce battement, la santé ne répond plus **et** aucun processus `next`
+   ne tourne — les deux conditions que `veiller.sh` exige, mot pour mot, pour
+   conclure « le serveur est mort » ;
+3. le veilleur lance `npm run banc`. Un second banc démarre et prend le port ;
+4. le `next start` du premier tombe sur `EADDRINUSE`.
+
+Le veilleur ne **peut pas** distinguer une mort d'un remplacement : les deux se
+ressemblent trait pour trait. Il faut le lui dire — c'est tout l'objet de
+`.devcontainer/bascule-en-cours.sh`, seul à connaître le chemin du drapeau.
+
+**Le drapeau EXPIRE, et ce n'est pas un détail de confort.** Un banc tué pendant
+sa bascule laisserait sinon un drapeau éternel, et le veilleur ne relèverait plus
+jamais rien — le 404 du 9 août reviendrait, sans que rien ne le relie à ce
+fichier. Trois minutes : au-delà, on préfère une bascule bousculée à un veilleur
+muet. Même raisonnement pour un contenu illisible : on retombe toujours du côté
+du veilleur actif.
+
+### Et rien n'empêchait d'en lancer un second à la main
+
+L'espace démarre un banc tout seul à chaque allumage. Ne voyant rien venir, le
+patron en a lancé un autre. `essai.mjs` refuse ce doublon depuis le 9 août, mais
+**en regardant le port** — ce qui ne suffit pas ici : pendant sa construction, un
+banc n'y répond pas encore. Ce n'est pas le port qu'il faut regarder, c'est
+l'existence d'un autre banc.
+
+`scripts/verrou-banc.mjs` porte donc un **identifiant de processus**, jamais un
+simple drapeau : un verrou laissé par un banc tué, ou par un conteneur précédent,
+bloquerait sinon tout démarrage ultérieur — et l'application ne reviendrait plus.
+C'est la prudence déjà prise par `veiller.sh` pour son propre verrou.
+
+### Ce qui a été éprouvé, et comment
+
+Le geste exact du patron a été rejoué : veilleur en place, un banc lancé par lui,
+puis un second à la main. Le second est refusé avec un message qui dit pourquoi ;
+le premier va au bout de sa bascule — « Version rapide en place », **zéro
+`EADDRINUSE`**, `/login` servi en 68 ms.
+
+`scripts/test-bascule-veilleur.ts` tient douze points, chacun vu échouer sur
+l'état dégradé qu'il prétend détecter. L'un d'eux est resté **vert alors que la
+consultation du drapeau avait été remplacée par `if false`** : il cherchait
+`$BASCULE` n'importe où, et la ligne qui *déclare* le chemin le satisfaisait. Il
+vise maintenant l'appel. Deuxième fois dans la même soirée qu'un contrôle
+regarde une mention au lieu d'un geste — c'est le piège de §50, et il se
+reproduit chaque fois qu'on éprouve un branchement par une chaîne de caractères.
