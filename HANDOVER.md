@@ -45,6 +45,32 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**La bascule et la capsule sont EN PLACE sur l'écran de création (11 août, tard).**
+Deux mots en serif, un trait d'or qui glisse, un seul bouton dont le libellé se
+fond. « Je l'écris » puis le bouton mène directement au devis entier, client déjà
+en en-tête. `ARCHITECTURE.md` §60.
+
+**Quatre choses à ne pas défaire :**
+
+1. **Un seul bouton, et c'est tout l'enjeu.** Deux boutons à égalité
+   obligeraient tout le monde à trancher avant d'avoir vu le chantier, alors que
+   neuf fois sur dix la réponse est « je dicterai ». La bascule existe pour
+   garder les deux chemins visibles SANS ajouter ce coût.
+2. **La capsule ne vaut que pour cet écran.** `PrimaryButton` est sur
+   **vingt-sept écrans** : passer `forme="capsule"` par défaut les changerait
+   tous d'un coup. La question a été posée au patron, elle n'est pas tranchée.
+3. **Le chantier est créé AVANT le devis**, toujours, par la même fonction
+   (`creerPuisAller`). C'est ce qui permet au devis de relire le client. Sauter
+   la création produirait le devis orphelin qu'il redoutait.
+4. **Le repère `data-atlas="action-creation"`** sur le bouton n'est pas
+   décoratif : les DEUX libellés vivent dans le bouton, l'un à `opacity:0`, et un
+   sélecteur par le texte les trouverait tous les deux.
+
+**Le piège, payé deux fois maintenant :** `innerText` ne connaît pas l'opacité.
+Un contrôle qui lit le libellé du bouton par le texte passe au vert **même sur
+une bascule morte** — il ne sait pas échouer, donc il ne prouve rien. Lire le
+style calculé, et attendre la fin du fondu (260 ms) avant de conclure.
+
 **La phrase de pied de la création est retirée, et six façons de montrer les
 deux portes sont proposées (11 août, tard).** Sa demande, capture à l'appui :
 *« on ne voit que création de chantier, on ne voit pas devis à la main »*.

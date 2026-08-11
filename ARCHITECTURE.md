@@ -4179,3 +4179,99 @@ n'est pas rejouée telle quelle : elle demanderait de faire vieillir un onglet
 pendant une bascule complète du banc. Le 404 sur le morceau en est l'effet
 exact au niveau du réseau, et c'est lui qui est éprouvé. La différence est
 mince, mais elle est dite plutôt que tue.
+
+---
+
+## 60. Les deux portes de la création : une bascule, et une capsule
+
+**Trois demandes du patron, le 11 août 2026 au soir, dans cet ordre.**
+
+1. *« Retire la petite écriture sous devis à la main. »*
+2. *« On ne voit que création de chantier, on ne voit pas devis à la main. Il
+   faut qu'on puisse voir les deux. »*
+3. *« Le bouton, je le trouve un peu trop gros, carré, pas esthétique. »*
+
+Puis, maquettes en main : la **bascule** (déclinaison 1, le trait qui glisse) et
+la **capsule** (proposition 5).
+
+### Pourquoi une bascule et non deux boutons
+
+C'est la question de fond, et elle avait déjà été tranchée le matin même : **deux
+boutons à égalité obligent TOUT LE MONDE à trancher** avant même d'avoir vu le
+chantier, alors que neuf fois sur dix la réponse est « je dicterai ». C'est pour
+cela qu'un lien discret avait d'abord été retenu.
+
+Le lien réglait le mauvais problème : il ne se voyait pas. La bascule garde les
+deux propriétés à la fois — les deux chemins sont lisibles, et il n'y a
+**toujours qu'un seul bouton à toucher**. Le geste ordinaire n'a pas changé de
+coût.
+
+### Le dessin, et ce qui le tient
+
+- **La serif, pas les capitales.** Un mot en capitales espacées est un panneau ;
+  le même en serif est une phrase. On choisit entre deux façons de travailler.
+- **Le trait GLISSE, il ne saute pas.** `translateX` sur trois dixièmes de
+  seconde — déplacer coûte moins cher au navigateur que repeindre, et le
+  mouvement reste fluide sur son téléphone.
+- **La couleur désigne, jamais le gras.** Un mot qui grossit décale son voisin.
+- **Les deux libellés du bouton sont superposés** dans la même case de grille et
+  se croisent en opacité. Les afficher l'un OU l'autre ferait changer le bouton
+  de largeur au moment du choix, et un bouton qui bouge sous le doigt est la
+  façon la plus sûre de faire douter de ce qu'on vient de toucher.
+
+### La capsule : ce qui l'allège n'est pas le rayon
+
+La masse venait de **trois** choses à la fois — la hauteur (58 px), l'aplat, et
+la **pleine largeur**. Un bouton qui touche les deux marges n'est contenu par
+rien. La capsule lâche la pleine largeur : elle est tenue par le blanc autour
+d'elle, et cesse aussitôt de peser. L'aplat, lui, reste plein — c'est ce qui la
+sépare des formes sans fond, plus élégantes mais qui **se cherchent au lieu de
+se trouver** sur un écran qu'on parcourt vite.
+
+**Elle ne contredit pas la décision du 10 août.** Celle-ci visait le rayon
+MOYEN : « le même arrondi à 16 px se lit comme un bouton d'application ». Un
+demi-cercle franc est une forme en soi — un jeton, pas une tuile.
+
+**Un seul écran s'en sert.** `PrimaryButton` est sur vingt-sept écrans : basculer
+la valeur par défaut les changerait tous d'un coup, sans que le patron les ait
+vus. C'est `forme="capsule"`, à la demande, et rien d'autre.
+
+### Où mène « Ouvrir le devis », et pourquoi le chantier est créé d'abord
+
+Vers `/chantiers/<id>/devis-complet` — la page où **il n'y a que le devis**, celle
+qu'il avait demandée le 5 août. Et le chantier est créé **avant** : c'est ce qui
+permet à la page du devis de relire le client rattaché. Sauter la
+création pour « gagner du temps » produirait le devis orphelin qu'il redoutait
+le 11 août au matin. **Une seule fonction crée**, `creerPuisAller`, deux
+destinations en sortent — deux fonctions auraient divergé au premier champ
+ajouté.
+
+### « Entrée » suit désormais la bascule
+
+Tant que le devis à la main était un lien discret, valider un champ au clavier ne
+devait surtout pas y mener : on n'aurait pas choisi cette sortie, on serait tombé
+dedans. Depuis que le choix est explicite et affiché **au-dessus** du bouton,
+l'ignorer serait l'inverse du défaut.
+
+### Le piège de mesure, payé deux fois
+
+Les deux libellés vivent **en même temps** dans le bouton, l'un à `opacity:0`.
+`innerText` ne connaît pas l'opacité : il les rend TOUJOURS tous les deux. Un
+contrôle écrit dessus passerait au vert quel que soit l'état, **y compris sur une
+bascule morte** — il ne saurait pas échouer, donc il ne prouverait rien.
+`test-devis-main-depuis-creation-e2e.ts` lit donc le style calculé, et attend que
+le fondu soit fini : pendant sa première moitié, l'ancien libellé est encore
+au-dessus de 0,5. Le même piège avait déjà fait déclarer rouges six maquettes
+justes (`scripts/verifier-maquette-bascule.mjs`).
+
+Éprouvé en sabotant : figer le libellé sur « Créer le chantier » rend un rouge, et
+un seul — celui qui doit tomber.
+
+### La phrase de pied, retirée
+
+« Le nom crée la fiche du client. Le reste se corrige ensuite, sur le devis. » La
+ligne subsiste mais ne parle qu'en cas d'erreur, et **sa place reste réservée** :
+sans cela, l'apparition d'un message ferait sauter la mise en page d'une ligne
+sous le doigt qui vient d'appuyer. Ce qu'elle disait reste vrai et n'est plus
+écrit nulle part à l'écran — c'est le NOM qui crée la fiche client. Le jour où ce
+cas doit se voir, c'est **sur l'écran du devis** qu'il faudra le dire.

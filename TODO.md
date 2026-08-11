@@ -27,46 +27,19 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 septies. Les deux portes de la création — **en attente de son choix**
+### ~~0 septies. Les deux portes de la création~~ — **close le 2026-08-11**
 
-**Sa demande du 11 août 2026, au soir :** *« on ne voit que création de chantier,
-on ne voit pas devis à la main. Il faut qu'on puisse voir les deux, dans un style
-très luxueux et très moderne. »*
+Il a choisi, maquettes en main : la **bascule « le trait qui glisse »**
+(`docs/maquettes/15-la-bascule-affinee.html`, déclinaison 1) et le bouton **« la
+capsule »** (`docs/maquettes/17-le-bouton.html`, proposition 5). Les deux sont en
+place sur l'écran de création, et « Je l'écris » mène à la page du devis entier
+avec le client déjà en en-tête. Le raisonnement complet est dans
+`ARCHITECTURE.md` §60.
 
-Six propositions ont été montrées (`docs/maquettes/14-les-deux-portes.html`).
-**Il a retenu la n° 4, la bascule**, et demandé plus élégant : six déclinaisons
-de cette seule idée sont dans `docs/maquettes/15-la-bascule-affinee.html` — le
-trait qui glisse, le point d'or, la plage, la perle, le cartouche, la bascule en
-pied. Et **`docs/maquettes/16-banc-dessai-bascule.html` les fait ESSAYER** :
-champs où l'on tape, bascule, et un bouton qui mène vraiment à deux écrans
-différents selon le choix. **Rien n'est appliqué au produit tant qu'il n'a pas
-choisi laquelle** — appliquer d'office reviendrait à trancher à sa place une
-question qu'il a posée.
-
-**Le 11 août au soir, il a retenu la déclinaison 1 — le trait qui glisse.** Reste
-le BOUTON, qu'il trouve « un peu trop gros, carré, pas esthétique » : huit
-formes sont proposées dans `docs/maquettes/17-le-bouton.html`, la bascule étant
-identique sur les huit. Deux choses à savoir avant d'appliquer :
-
-- **Ce bouton est sur vingt-sept écrans** (`PrimaryButton.tsx`). Le changer ici,
-  c'est le changer partout — devis, facture, planning. C'est voulu, mais le
-  choix dépasse l'écran de création.
-- **La proposition 8 revient sur une décision du 10 août.** Le rayon de 5 px
-  avait été retenu pour que le bouton se lise « comme une pièce imprimée » et
-  non « comme un bouton d'application ». Il peut rouvrir ce point — c'est son
-  écran — mais ce n'est pas un détail de finition, et il faut le lui rappeler
-  s'il choisit celle-là sans y revenir.
-
-Ce qui a fait retenir la bascule, et qui ne se rediscute pas : **deux boutons à
-égalité obligent tout le monde à trancher**, alors que neuf fois sur dix la
-réponse est « je dicterai ». C'est la raison pour laquelle le lien discret avait
-été retenu le matin même. La bascule est la seule forme qui montre les deux
-chemins sans rien demander — un seul bouton, dont le mot suit le choix.
-
-Une fois le choix fait : le geste ne change pas (`creerPuisAller("fiche" |
-"devis")`, une seule fonction de création), seule la mise en page du bloc
-d'actions bouge, dans `FormulaireNouveauChantier.tsx`. **Et la porte du tiroir
-sur la fiche chantier reste** : ce sont deux moments, pas deux chemins.
+**Ce qui reste ouvert, et qui n'est PAS de la finition :** la capsule ne vaut que
+pour cet écran. `PrimaryButton` est sur **vingt-sept écrans** ; la passer par
+défaut les changerait tous d'un coup, sans qu'il les ait vus. La question lui a
+été posée — tant qu'il n'a pas répondu, on ne touche à rien.
 
 ### ~~0 ter. Les suites navigateur mesuraient un écran que personne ne possède~~ — **close le 2026-08-11**
 

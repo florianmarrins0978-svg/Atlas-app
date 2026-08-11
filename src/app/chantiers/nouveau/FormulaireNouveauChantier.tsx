@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { colors, font, smallCaps, libelleCaps } from "@/lib/design-tokens";
+import { colors, font, smallCaps } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
 import DicterCoordonnees from "./DicterCoordonnees";
@@ -30,6 +30,15 @@ import { creerChantierAction } from "./actions";
  * il n'y en a qu'un, et il ne connaît de son hôte que deux choses : s'il est en
  * feuille, et comment se refermer.
  */
+/**
+ * Par quelle porte on sort de cet écran.
+ *
+ * `dictee` mène à la fiche du chantier — c'est là qu'on dicte, et c'est la
+ * réponse neuf fois sur dix. `main` mène au devis entier, à remplir soi-même.
+ * Les deux passent par la MÊME création : voir `creerPuisAller`.
+ */
+type Porte = "dictee" | "main";
+
 export default function FormulaireNouveauChantier({
   enFeuille = false,
   onFermer,
@@ -45,6 +54,10 @@ export default function FormulaireNouveauChantier({
   const [adresseChantier, setAdresseChantier] = useState("");
   const [adresseClient, setAdresseClient] = useState("");
   const [adresseClientVisible, setAdresseClientVisible] = useState(false);
+  // Le choix par défaut est la dictée, et il ne se discute pas : c'est le
+  // produit. La porte du devis à la main existe pour ceux qui savent déjà ; la
+  // proposer en premier reviendrait à ne plus jamais proposer la dictée.
+  const [porte, setPorte] = useState<Porte>("dictee");
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -173,10 +186,14 @@ export default function FormulaireNouveauChantier({
           className="mt-7 flex flex-col gap-4 px-6"
           onSubmit={(e) => {
             e.preventDefault();
-            // La touche « Entrée » vaut le geste ordinaire, jamais la sortie de
-            // secours : on ne part pas rédiger un devis à la main parce qu'on a
-            // validé un champ au clavier.
-            creerPuisAller("fiche");
+            // **« Entrée » suit désormais la bascule, et c'est un changement.**
+            // Tant que le devis à la main était un lien discret, valider un
+            // champ au clavier ne devait surtout pas y mener : on n'aurait pas
+            // choisi cette sortie, on serait tombé dedans. Depuis que le choix
+            // est explicite et affiché au-dessus du bouton, l'ignorer serait
+            // l'inverse du défaut : le patron aurait touché « je l'écris » et se
+            // retrouverait sur la fiche sans comprendre pourquoi.
+            creerPuisAller(porte === "main" ? "devis" : "fiche");
           }}
         >
           {/* 1 — Nom du client.
@@ -265,37 +282,45 @@ export default function FormulaireNouveauChantier({
             />
           )}
 
-          {/* 8 — Action principale */}
+          {/* 8 — Le choix, puis l'action.
+
+              **Le patron, le 11 août 2026 au soir, capture à l'appui :** *« on
+              ne voit que création de chantier, on ne voit pas devis à la
+              main »*. C'était juste : le lien en capitales d'or vivait SOUS le
+              bouton, dans la zone où l'œil ne revient pas une fois qu'il a
+              trouvé ce qu'il cherchait — et sur son téléphone, la barre du
+              navigateur mange le bas.
+
+              **Ce qui a été gardé de la version d'avant, et qui gouverne ce
+              dessin :** deux boutons à égalité obligeraient TOUT LE MONDE à
+              trancher avant d'avoir vu le chantier, alors que neuf fois sur dix
+              la réponse est « je dicterai ». D'où la bascule plutôt que deux
+              portes : les deux chemins se voient, et il n'y a toujours qu'un
+              seul bouton à toucher. Le geste ordinaire n'a pas changé de coût.
+
+              **Elle ne remplace pas la porte du tiroir**, sur la fiche
+              chantier, et ce n'est pas un doublon : ce sont deux MOMENTS. Ici,
+              « je sais déjà que je l'écrirai moi-même » ; là-bas, « j'ai
+              commencé, finalement je l'écris ». Retirer la seconde enfermerait
+              un chantier créé la veille dont la dictée n'a rien donné.
+
+              Six dessins de bascule et huit de bouton lui ont été montrés
+              (`docs/maquettes/15-…`, `17-…`) ; il a retenu le trait qui glisse
+              et la capsule. */}
           <div className="pt-4">
-            <PrimaryButton disabled={!peutCreer} onClick={() => creerPuisAller("fiche")}>
-              {enCours ? "Création…" : "Créer le chantier →"}
-            </PrimaryButton>
-            {/* **La sortie de secours, au moment où elle se décide.**
-                Le patron, le 11 août 2026, maquette en main : *« je préfère la
-                première option »* — le lien discret plutôt que deux boutons à
-                égalité.
-
-                Le choix de la forme n'est pas cosmétique. Deux boutons
-                obligeraient TOUT LE MONDE à trancher avant même d'avoir vu le
-                chantier, alors que neuf fois sur dix la réponse est « je
-                dicterai ». Ici, « Créer le chantier » reste le geste évident ;
-                celui qui sait déjà qu'il écrira son devis à la main trouve sa
-                porte, sans que les autres aient à choisir.
-
-                **Elle ne remplace pas celle du tiroir**, et ce n'est pas un
-                doublon : ce sont deux MOMENTS. Ici, « je sais déjà que je
-                l'écrirai moi-même » ; sur la fiche, « j'ai commencé, finalement
-                je l'écris ». Retirer la seconde enfermerait un chantier créé la
-                veille dont la dictée n'a rien donné. */}
-            <button
-              type="button"
-              disabled={!peutCreer}
-              onClick={() => creerPuisAller("devis")}
-              className={`mt-4 block w-full text-center ${libelleCaps}`}
-              style={{ color: colors.or }}
-            >
-              Ou rédiger le devis à la main →
-            </button>
+            <BasculePorte porte={porte} onChange={setPorte} />
+            {/* Le repère sert aux suites : les DEUX libellés vivent dans le
+                bouton — l'un à `opacity:0` — et un sélecteur par le texte les
+                trouverait tous les deux. Voir `test-devis-main-depuis-creation-e2e`. */}
+            <div className="mt-5" data-atlas="action-creation">
+              <PrimaryButton
+                forme="capsule"
+                disabled={!peutCreer}
+                onClick={() => creerPuisAller(porte === "main" ? "devis" : "fiche")}
+              >
+                {enCours ? "Création…" : <LibelleDeLaPorte porte={porte} />}
+              </PrimaryButton>
+            </div>
           </div>
           {/* **Cette ligne ne parle plus que quand il y a quelque chose à dire.**
               Elle portait aussi, en permanence, « Le nom crée la fiche du
@@ -324,6 +349,108 @@ export default function FormulaireNouveauChantier({
         </form>
       </div>
     </div>
+  );
+}
+
+/**
+ * **Les deux mots, et le trait d'or qui glisse de l'un à l'autre.**
+ *
+ * Trois choix de dessin, tous mesurés à l'écran plutôt que raisonnés :
+ *
+ * 1. **La serif, pas les capitales.** Un mot en capitales espacées est un
+ *    panneau ; le même en serif est une phrase. On choisit ici entre deux
+ *    façons de travailler, pas entre deux rubriques.
+ * 2. **Le trait GLISSE, il ne saute pas.** Un repère qui saute d'un bloc à
+ *    l'autre donne un écran mécanique ; le même qui glisse en trois dixièmes de
+ *    seconde donne un écran habité. C'est un `translateX`, jamais un
+ *    changement de bordure : déplacer coûte moins cher au navigateur que
+ *    repeindre, et le mouvement reste fluide sur son téléphone.
+ * 3. **La couleur désigne, jamais le gras.** Un mot qui grossit décale son
+ *    voisin, et l'œil voit bouger ce qui n'a pas changé.
+ *
+ * `aria-pressed` plutôt qu'un `role="tablist"` : ce ne sont pas des onglets —
+ * rien n'apparaît en dessous. C'est un choix qui arme le bouton.
+ */
+function BasculePorte({
+  porte,
+  onChange,
+}: {
+  porte: Porte;
+  onChange: (p: Porte) => void;
+}) {
+  return (
+    <div className="relative flex" style={{ borderBottom: `1px solid ${colors.line}` }}>
+      {(
+        [
+          ["dictee", "Je dicterai"],
+          ["main", "Je l'écris"],
+        ] as const
+      ).map(([valeur, libelle]) => (
+        <button
+          key={valeur}
+          type="button"
+          onClick={() => onChange(valeur)}
+          aria-pressed={porte === valeur}
+          className="flex-1 pb-3 text-center text-[17px]"
+          style={{
+            fontFamily: font.display,
+            color: porte === valeur ? colors.ink : colors.muted,
+            transition: "color .26s ease",
+          }}
+        >
+          {libelle}
+        </button>
+      ))}
+      <span
+        aria-hidden="true"
+        className="absolute left-0 w-1/2"
+        style={{
+          bottom: -1,
+          height: 1.5,
+          backgroundColor: colors.or,
+          transform: porte === "main" ? "translateX(100%)" : "none",
+          transition: "transform .3s cubic-bezier(.4,0,.2,1)",
+        }}
+      />
+    </div>
+  );
+}
+
+/**
+ * **Les deux libellés superposés dans la même case, qui se croisent en
+ * opacité.**
+ *
+ * Les afficher l'un OU l'autre ferait changer le bouton de largeur au moment du
+ * choix — et un bouton qui bouge sous le doigt est la façon la plus sûre de
+ * faire douter de ce qu'on vient de toucher. Superposés, ils imposent au bouton
+ * la largeur du plus long, une fois pour toutes.
+ *
+ * Le libellé caché est retiré aux lecteurs d'écran : deux textes lus à la suite
+ * pour un seul bouton n'apprendraient rien à personne.
+ */
+function LibelleDeLaPorte({ porte }: { porte: Porte }) {
+  return (
+    <span className="grid">
+      {(
+        [
+          ["dictee", "Créer le chantier →"],
+          ["main", "Ouvrir le devis →"],
+        ] as const
+      ).map(([valeur, libelle]) => (
+        <span
+          key={valeur}
+          aria-hidden={porte !== valeur}
+          className="whitespace-nowrap"
+          style={{
+            gridArea: "1 / 1",
+            opacity: porte === valeur ? 1 : 0,
+            transition: "opacity .26s ease",
+          }}
+        >
+          {libelle}
+        </span>
+      ))}
+    </span>
   );
 }
 

@@ -9,6 +9,42 @@ Format : le plus récent en tête.
 
 ## 2026-08-11
 
+### Appliqué : la bascule et la capsule sur l'écran de création
+
+**Il a choisi**, maquettes en main : la bascule « le trait qui glisse » et le
+bouton « la capsule ». C'est en place.
+
+Ce qu'on voit maintenant sur l'écran de création : deux mots en serif — *Je
+dicterai* · *Je l'écris* — un trait d'or qui glisse de l'un à l'autre, et
+**un seul bouton** dont le libellé se fond de « Créer le chantier » à « Ouvrir le
+devis ». Toucher « Je l'écris » puis le bouton mène **directement à la page du
+devis entier**, avec le client déjà en en-tête.
+
+**Ce qui n'a pas changé, et qui est le point :** il n'y a toujours qu'un seul
+bouton à toucher. Deux boutons à égalité obligeraient tout le monde à trancher
+avant d'avoir vu le chantier, alors que neuf fois sur dix la réponse est « je
+dicterai ».
+
+**La capsule n'allège pas par son rayon mais par sa largeur.** Un bouton qui
+touche les deux marges n'est contenu par rien ; celui-ci est tenu par le blanc
+autour de lui. L'aplat reste plein — c'est ce qui le sépare des formes sans fond,
+plus élégantes mais qui se cherchent au lieu de se trouver. **Un seul écran s'en
+sert** : `PrimaryButton` est sur vingt-sept écrans, et basculer la valeur par
+défaut les changerait tous sans qu'il les ait vus.
+
+**« Entrée » suit désormais la bascule.** Tant que le devis à la main était un
+lien discret, valider un champ au clavier ne devait pas y mener — on serait tombé
+dedans sans l'avoir choisi. Le choix étant maintenant explicite et affiché,
+l'ignorer serait l'inverse du défaut.
+
+**Et le piège de mesure, payé une seconde fois.** Les deux libellés vivent en
+même temps dans le bouton, l'un à `opacity:0` : `innerText` les rend TOUJOURS
+tous les deux, donc un contrôle écrit dessus passerait au vert même sur une
+bascule morte. La suite lit le style calculé, et attend la fin du fondu.
+Éprouvée en sabotant : un rouge, et un seul. `ARCHITECTURE.md` §60.
+
+---
+
 ### Le bouton, huit façons — et une décision qu'il faut savoir qu'on rouvre
 
 **Le patron :** *« j'aime bien le premier [le trait qui glisse], par contre le
