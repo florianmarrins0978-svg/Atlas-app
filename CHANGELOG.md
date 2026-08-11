@@ -635,6 +635,18 @@ fait croire le correctif inutile.
 lui, la prochaine construction rouvrirait la panne en silence, et elle ne se
 reverrait que chez lui.
 
+**Et il y avait une SECONDE forme du même piège, trouvée en vérifiant la
+première.** `.next/types` — les types d'une construction faite dans le dossier
+par défaut — n'est jamais régénéré ici, puisque le banc bâtit dans
+`.next-batie`. Il ne peut donc qu'être périmé, et il décrit alors des routes
+d'avant : l'écran des photos, supprimé le soir même par une autre session, en est
+l'exemple exact. La construction du banc échouait dessus, au mot près comme sur
+la première forme.
+
+Celui-là ne s'ignore pas, il s'efface : `scripts/banc.mjs` le supprime avant de
+bâtir. Confronté dans les deux sens — avec le reste, la construction échoue ;
+après le nettoyage, elle passe.
+
 
 ### Le fil se bloquait à chaque chantier, et montrait sa barre grise
 
