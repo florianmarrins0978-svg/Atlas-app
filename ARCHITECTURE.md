@@ -4232,9 +4232,29 @@ se trouver** sur un écran qu'on parcourt vite.
 MOYEN : « le même arrondi à 16 px se lit comme un bouton d'application ». Un
 demi-cercle franc est une forme en soi — un jeton, pas une tuile.
 
-**Un seul écran s'en sert.** `PrimaryButton` est sur vingt-sept écrans : basculer
-la valeur par défaut les changerait tous d'un coup, sans que le patron les ait
-vus. C'est `forme="capsule"`, à la demande, et rien d'autre.
+**Elle est sur les dix-huit écrans depuis le 11 août au soir**, et il n'existe
+plus qu'une seule forme d'action principale. Le chemin pour y arriver compte
+autant que la décision : le patron a d'abord dit *« montre-moi avant de faire,
+plutôt que de faire pour revenir en arrière »*. La capsule a donc été posée dans
+une copie de travail, photographiée **sur ses vrais écrans**, retirée — puis
+posée pour de bon quand il a répondu « partout ». `capture-bouton-partout.mjs`
+existe pour cela, et resservira.
+
+**Aucune variante « plaque » n'est conservée.** Elle a vécu une journée, le temps
+de la comparaison. Garder le dessin d'avant « au cas où » aurait laissé dans le
+dépôt une seconde forme d'action que plus rien n'emploie — et qu'un écran futur
+aurait fini par reprendre au hasard. L'historique la garde ; le code, non.
+
+**Les largeurs, mesurées et non supposées** (390 px d'écran, sa place réelle) :
+de 141 px pour « Réessayer » à 316 px pour « Confirmer le départ de la facture ».
+Aucun libellé ne déborde. Le dernier occupe 92 % et redevient pleine largeur de
+fait — ce n'est pas un défaut, c'est le geste le plus irréversible de
+l'application.
+
+**Un effet de bord heureux, vu en capture :** sur l'écran d'erreur, la bulle de
+l'assistant mordait sur le bouton (§59). Une capsule centrée ne l'atteint plus.
+La réserve `pb-40` reste : elle protège d'un message plus long, pas d'une
+largeur.
 
 ### Où mène « Ouvrir le devis », et pourquoi le chantier est créé d'abord
 
@@ -4253,7 +4273,7 @@ devait surtout pas y mener : on n'aurait pas choisi cette sortie, on serait tomb
 dedans. Depuis que le choix est explicite et affiché **au-dessus** du bouton,
 l'ignorer serait l'inverse du défaut.
 
-### Le piège de mesure, payé deux fois
+### Deux pièges de mesure, dans la même soirée
 
 Les deux libellés vivent **en même temps** dans le bouton, l'un à `opacity:0`.
 `innerText` ne connaît pas l'opacité : il les rend TOUJOURS tous les deux. Un
@@ -4266,6 +4286,15 @@ justes (`scripts/verifier-maquette-bascule.mjs`).
 
 Éprouvé en sabotant : figer le libellé sur « Créer le chantier » rend un rouge, et
 un seul — celui qui doit tomber.
+
+**Le second piège n'était pas dans un contrôle mais dans une PLANCHE.** La
+première comparaison avant/après cadrait chaque bouton au plus près. Deux
+captures de largeurs différentes, posées côte à côte, se remettent à la même
+taille : la capsule — plus étroite en réalité — s'y affichait **plus grosse** que
+le rectangle qu'elle remplace. La planche disait exactement l'inverse de la
+vérité, et elle serait partie ainsi si personne ne l'avait regardée. Le cadre
+prend désormais toute la largeur de l'écran, jamais celle du bouton : à échelle
+constante, la place laissée autour — qui est tout le sujet — se voit.
 
 ### La phrase de pied, retirée
 

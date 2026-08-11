@@ -56,13 +56,22 @@ en en-tête. `ARCHITECTURE.md` §60.
    obligeraient tout le monde à trancher avant d'avoir vu le chantier, alors que
    neuf fois sur dix la réponse est « je dicterai ». La bascule existe pour
    garder les deux chemins visibles SANS ajouter ce coût.
-2. **La capsule ne vaut que pour cet écran.** `PrimaryButton` est sur
-   **dix-huit écrans** — 8 du produit, 10 d'erreur via `CorpsErreur` : passer
-   `forme="capsule"` par défaut les changerait tous d'un coup. La question a été
-   posée au patron, elle n'est pas tranchée. **Ne pas se fier à un chiffre écrit
-   dans un commentaire** : celui-ci a annoncé « vingt-sept » pendant deux jours
-   sans que rien ne le vérifie, et il a été répété au patron. La commande est
-   dans l'en-tête de `PrimaryButton.tsx`.
+2. **La capsule est partout, et c'est tranché** (« partout », 11 août au soir).
+   `PrimaryButton` est sur **dix-huit écrans** — 8 du produit, 10 d'erreur via
+   `CorpsErreur` — et il n'existe **plus qu'une seule forme** d'action
+   principale : la variante « plaque » a été retirée, pas mise de côté. **Ne pas
+   se fier à un chiffre écrit dans un commentaire** : celui-ci a annoncé
+   « vingt-sept » pendant deux jours sans que rien ne le vérifie, et il a été
+   répété au patron. La commande qui recompte est dans l'en-tête de
+   `PrimaryButton.tsx`.
+
+   **Sa règle, à respecter pour tout changement qui touche plusieurs écrans :**
+   *« montre-moi avant de faire, plutôt que de faire pour revenir en arrière »*.
+   `scripts/capture-bouton-partout.mjs` photographie l'action principale sur les
+   écrans réels sans rien modifier ; l'« après » s'obtient dans une copie de
+   travail qu'on remet ensuite. **Et la planche se cadre à largeur d'écran
+   constante** : deux captures de largeurs différentes se remettent à la même
+   taille, et la comparaison dit alors l'inverse de la vérité — c'est arrivé.
 3. **Le chantier est créé AVANT le devis**, toujours, par la même fonction
    (`creerPuisAller`). C'est ce qui permet au devis de relire le client. Sauter
    la création produirait le devis orphelin qu'il redoutait.

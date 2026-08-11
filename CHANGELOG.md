@@ -9,6 +9,35 @@ Format : le plus récent en tête.
 
 ## 2026-08-11
 
+### La capsule partout — une seule forme d'action dans toute l'application
+
+**Il a répondu « partout ».** Le bouton principal est désormais une capsule sur
+les dix-huit écrans, et la variante rectangulaire n'existe plus.
+
+**Le chemin compte autant que la décision.** Il avait posé la règle : *« montre-moi
+avant de faire, plutôt que de faire pour revenir en arrière »*. La capsule a donc
+été posée dans une copie de travail, photographiée **sur ses vrais écrans** —
+informations, photos, note vocale, devis, facture — retirée, puis posée pour de
+bon une fois sa réponse reçue. `scripts/capture-bouton-partout.mjs` fait ce
+travail et resservira ; il cherche les boutons par leur COULEUR d'action, pas par
+une classe, pour qu'un bouton qui l'aurait perdue disparaisse de la planche.
+
+**Aucune variante n'est conservée.** Garder le dessin d'avant « au cas où »
+aurait laissé une seconde forme d'action que plus rien n'emploie, et qu'un écran
+futur aurait reprise au hasard. Deux formes dans la même application se lisent
+comme un travail inachevé.
+
+**Un effet de bord heureux :** sur l'écran d'erreur, la bulle de l'assistant
+mordait sur le bouton. Une capsule centrée ne l'atteint plus.
+
+**Et une planche jetée.** La première comparaison avant/après cadrait chaque
+bouton au plus près : à tailles différentes remises à la même largeur, la
+capsule y paraissait **plus grosse** que le rectangle qu'elle remplace —
+l'inverse exact de la vérité. Elle serait partie ainsi si personne ne l'avait
+regardée. `ARCHITECTURE.md` §60.
+
+---
+
 ### Appliqué : la bascule et la capsule sur l'écran de création
 
 **Il a choisi**, maquettes en main : la bascule « le trait qui glisse » et le

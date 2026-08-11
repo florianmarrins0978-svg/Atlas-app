@@ -314,7 +314,6 @@ export default function FormulaireNouveauChantier({
                 trouverait tous les deux. Voir `test-devis-main-depuis-creation-e2e`. */}
             <div className="mt-5" data-atlas="action-creation">
               <PrimaryButton
-                forme="capsule"
                 disabled={!peutCreer}
                 onClick={() => creerPuisAller(porte === "main" ? "devis" : "fiche")}
               >
