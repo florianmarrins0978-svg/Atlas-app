@@ -41,7 +41,7 @@ et les gestes** — pas les cases à cocher qui les simulent.
 |---|---|---|
 | Charte | **Origine** | fond `#edece6`, plage `#f7f6f2`, encre `#16170f`, gris `#83867c`, bronze `#8f7130`, filets `rgba(22,23,15,.13)`, plein `#2a3a2e` |
 | Trait du bandeau | **G** | il dépasse sa cible et revient ; le mot choisi monte de 2 px |
-| La perle du fil | **elle suit** | devant le 22 juillet au repos, accrochée à mi-hauteur dès que ce chantier remonte, **un chantier par glissement** |
+| La perle du fil | **elle suit** | à mi-hauteur du fil ; les chantiers défilent dessous, **un chantier par glissement** — et tout au bout, elle descend sur le dernier jour |
 | « Nouveau chantier » | **l'écran recule** | la liste passe à 93 % et s'assombrit, la feuille monte devant |
 | Retirer une ligne | **le tiroir des retirés** | le texte glisse, la ligne tombe, un tiroir s'ouvre : « Retiré à l'instant — Annuler » |
 
@@ -93,21 +93,50 @@ lui, un geste vif en saute trois et la perle paraît sauter.
          background:var(--attente);box-shadow:0 0 0 4px var(--fond)}
 ```
 
-Le repère est **posé dans le flux** juste avant la ligne qu'il désigne au repos.
-Trois pièges, tous payés :
+Dans la maquette, le repère est **posé dans le flux** juste avant la ligne qu'il
+désigne au repos — le 22 juillet, qui s'y trouve à mi-hauteur. Dans
+l'application, il est **premier enfant du fil** : sa place naturelle étant
+au-dessus du point d'accroche, `sticky` l'y descend dès le premier pixel et l'y
+maintient jusqu'au bas. Même comportement, sans dépendre d'une ligne précise —
+l'application n'a pas de « 22 juillet ».
+
+**Et tout au bout de la liste, elle descend sur le dernier jour** — décidé par le
+patron le 11 août 2026 : *« quand on arrive au dernier, là, elle descend et elle
+se met en face du dernier jour. »* Ce mouvement-là n'est PAS du CSS et ne peut pas
+l'être : il faut descendre pendant que le contenu monte, et une accroche ne cloue
+que dans un sens. Il est calculé dans `src/lib/perle-descente.ts`
+(`ARCHITECTURE.md` §57).
+
+Cinq pièges, tous payés :
 
 1. **La marge de fin va sur `.tige`, pas sur `.liste`.** Sur le cadre, elle
    rétrécit la zone de défilement, et le `50 %` du `sticky` se résout contre
    elle : la perle part **54 px trop haut**.
-2. **Les 23 px** font tomber le point à mi-hauteur exacte une fois accroché.
+2. **Ne pas allonger cette marge pour faire monter le dernier chantier jusqu'à
+   la perle.** Cela marche — c'est même la première version, mesurée — mais le
+   patron a écarté le grand blanc qui en résulte sous le dernier chantier. C'est
+   la perle qui va au chantier, pas la liste qui s'allonge.
+3. **`display: block` sur la perle, sinon la descente ne se dessine pas.** Un
+   `span` est une boîte en ligne, et une transformation ne s'y applique pas.
+   `getComputedStyle` renvoie pourtant la bonne matrice : le défaut ne se voit
+   qu'en mesurant la position réelle du point sur l'écran.
+4. **Les 23 px** font tomber le point à mi-hauteur exacte une fois accroché.
    **À recalibrer** sur les vraies dimensions (haut de ligne → ligne du nom).
-3. **Si la page reste le conteneur de défilement**, retrancher aussi la moitié
+5. **Si la page reste le conteneur de défilement**, retrancher aussi la moitié
    de la barre basse, sans quoi le « centre » n'est pas le centre visible.
 
-**Conséquence assumée, signalée deux fois et maintenue :** la perle ne désigne
+**Conséquence assumée, signalée trois fois et maintenue :** la perle ne désigne
 plus le chantier dont le devis est revenu, puisqu'elle suit le doigt. Seul reste
-le libellé « Devis retourné », en bronze. Ne pas « corriger » cela en croyant
-retrouver l'intention d'origine.
+le libellé « Correction demandée », en bronze. Ne pas « corriger » cela en
+croyant retrouver l'intention d'origine — c'est exactement l'erreur commise lors
+du portage, et elle a envoyé la perle tout en bas de l'écran du patron.
+
+**Le contrôle qui le tient : `npx tsx scripts/capture-accueil-perle.mts`.** Il
+mesure la perle à quatre positions de défilement et refuse si elle quitte le
+milieu ailleurs qu'au bout, si elle désigne du vide, si elle n'atteint pas le
+dernier jour, ou si elle ne vise pas le même endroit dans la ligne selon
+l'endroit où l'on se trouve. Une suite qui se contente de vérifier la présence du
+point ne prouve rien : le point était bien présent, au mauvais endroit.
 
 ---
 

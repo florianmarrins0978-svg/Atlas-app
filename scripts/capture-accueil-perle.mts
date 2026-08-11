@@ -1,0 +1,246 @@
+/**
+ * La perle du fil : où se tient-elle, vraiment, en pixels — et le dernier
+ * chantier peut-il venir dessous ?
+ *
+ * **Pourquoi ce script existe.** Le 11 août 2026, le patron a envoyé une
+ * capture de son téléphone : la perle était tout en bas de l'écran, à demeure.
+ * Aucune suite n'était rouge, et pour cause — aucune ne regardait où le point
+ * tombait. La perle était posée devant le premier chantier « en attente », donc
+ * n'importe où selon la liste ; chez lui, sur le dernier.
+ *
+ * Un contrôle qui se contente d'affirmer « la perle est présente » ne prouve
+ * rien : elle l'était. Celui-ci MESURE, et refuse sur trois points :
+ *
+ *   1. la perle tombe à mi-hauteur du cadre qui défile partout SAUF au bout —
+ *      c'est ce qui fait d'elle un repère qu'on apprend ;
+ *   2. un chantier se trouve toujours dessous, jamais du vide ;
+ *   3. tout en bas, elle est en face du DERNIER jour : *« quand on arrive au
+ *      dernier, là, elle descend et elle se met en face du dernier jour »*
+ *      (le patron, 11 août 2026). C'est le seul endroit où elle bouge.
+ *
+ * Il écrit aussi trois captures : l'œil juge ce que la mesure ne dit pas.
+ *
+ * Suppose un serveur déjà en écoute. **Sur `localhost`, jamais `127.0.0.1`** :
+ * Next refuse ses ressources de développement à une origine qu'il ne
+ * reconnaît pas, la page n'est jamais hydratée, et on mesure une page morte.
+ *
+ *   npx tsx scripts/capture-accueil-perle.mts [dossier] [port]
+ */
+import { existsSync, readdirSync } from "node:fs";
+import { chromium } from "playwright";
+
+const dossier = process.argv[2] ?? "/tmp";
+const port = process.argv[3] ?? "3000";
+const base = `http://localhost:${port}`;
+
+/** La hauteur d'une ligne de chantier, mesurée. Voir `.atlas-tige`. */
+const LIGNE_ATTENDUE = 122;
+/** Ce qu'on tolère entre le point et le milieu du cadre. */
+const ECART_TOLERE = 3;
+
+function navigateurPreInstalle(): string | undefined {
+  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
+  const racine = process.env.PLAYWRIGHT_BROWSERS_PATH;
+  if (!racine || !existsSync(racine)) return undefined;
+  const nom = readdirSync(racine).find((d) => /^chromium-\d+$/.test(d));
+  if (!nom) return undefined;
+  const chemin = `${racine}/${nom}/chrome-linux/chrome`;
+  return existsSync(chemin) ? chemin : undefined;
+}
+
+const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
+// iPhone 14/15 : 393 × 852 en points. La maquette du patron est à cette taille.
+const contexte = await navigateur.newContext({
+  viewport: { width: 393, height: 852 },
+  deviceScaleFactor: 2,
+  isMobile: true,
+  hasTouch: true,
+});
+const page = await contexte.newPage();
+
+await page.goto(`${base}/login`, { waitUntil: "networkidle" });
+await page.fill('input[name="email"]', "demo@atlas.local");
+await page.fill('input[name="password"]', "demo1234");
+await page.click('button[type="submit"]');
+await page.waitForURL(`${base}/`, { timeout: 60_000 });
+await page.goto(`${base}/`, { waitUntil: "networkidle" });
+// Les polices décident de la moitié des mesures qu'on vient de régler.
+await page.evaluate(() => document.fonts.ready);
+await page.waitForTimeout(400);
+
+const griefs: string[] = [];
+
+async function releve(nom: string) {
+  const m = await page.evaluate(() => {
+    const fil = document.querySelector(".atlas-fil-defile") as HTMLElement | null;
+    const perle = document.querySelector(".atlas-perle span") as HTMLElement | null;
+    if (!fil) return null;
+    const rf = fil.getBoundingClientRect();
+    const rp = perle ? perle.getBoundingClientRect() : null;
+    const enveloppe = document.querySelector(".atlas-perle") as HTMLElement | null;
+    const releve = {
+      descente: enveloppe ? enveloppe.style.getPropertyValue("--atlas-perle-descente") : "",
+      milieuDuCadre: Math.round(rf.top + rf.height / 2),
+      defile: Math.round(fil.scrollTop),
+      defileMax: Math.round(fil.scrollHeight - fil.clientHeight),
+      perle: rp ? Math.round(rp.top + rp.height / 2) : null,
+      lignes: [] as { nom: string; jour: string; haut: number; bas: number; hauteur: number }[],
+    };
+    for (const l of document.querySelectorAll(".atlas-ligne")) {
+      const r = l.getBoundingClientRect();
+      const titre = l.querySelector("h2");
+      const jour = l.querySelector("b");
+      releve.lignes.push({
+        nom: (titre ? titre.textContent ?? "" : "").trim(),
+        jour: (jour ? jour.textContent ?? "" : "").trim(),
+        haut: Math.round(r.top),
+        bas: Math.round(r.bottom),
+        hauteur: Math.round(r.height),
+      });
+    }
+    return releve;
+  });
+
+  if (!m) {
+    griefs.push("le cadre qui défile (.atlas-fil-defile) est introuvable : ce n'est pas l'écran d'accueil");
+    return null;
+  }
+  if (m.perle === null) {
+    griefs.push(`[${nom}] aucune perle sur l'écran — le repère du fil a disparu`);
+    return m;
+  }
+
+  const dessous = m.lignes.find((l) => m.perle! >= l.haut && m.perle! <= l.bas);
+  const ecart = m.perle - m.milieuDuCadre;
+  console.log(
+    `  ${nom.padEnd(7)} défilé ${String(m.defile).padStart(3)}/${m.defileMax} · ` +
+      `perle y=${m.perle} (milieu ${m.milieuDuCadre}, écart ${ecart >= 0 ? "+" : ""}${ecart}, ` +
+      `descente « ${m.descente || "—"} ») · ` +
+      `dessous : ${dessous ? `${dessous.jour} ${dessous.nom}` : "RIEN"}`
+  );
+
+  // Au bout de la liste, la perle a le DROIT — le devoir — de quitter le milieu :
+  // elle plonge sur le dernier jour. Partout ailleurs, elle n'y touche pas.
+  if (nom !== "bas" && Math.abs(ecart) > ECART_TOLERE) {
+    griefs.push(
+      `[${nom}] la perle est à ${m.perle} px, le milieu du cadre à ${m.milieuDuCadre} : ` +
+        `${ecart > 0 ? "elle est descendue" : "elle est remontée"} de ${Math.abs(ecart)} px ` +
+        "alors qu'on n'est PAS au bout de la liste. Un repère qui change de place ne s'apprend pas."
+    );
+  }
+  if (!dessous) {
+    griefs.push(`[${nom}] la perle ne tombe sur aucun chantier : elle désigne du vide`);
+  }
+  await page.screenshot({ path: `${dossier}/perle-${nom}.png` });
+  return { ...m, dessous };
+}
+
+console.log("=== La perle du fil, mesurée ===");
+// « haut » est la position d'arrivée, celle que le navigateur choisit seul.
+const haut = await releve("haut");
+// « sommet » est le fil poussé de force tout en haut, hors de tout point
+// d'accroche : c'est là que la perle risque de tomber dans l'intervalle entre
+// le bandeau et le premier chantier — le seul endroit de la liste où elle peut
+// désigner du vide.
+await page.evaluate(() => {
+  const fil = document.querySelector(".atlas-fil-defile") as HTMLElement;
+  fil.scrollTop = 0;
+});
+await page.waitForTimeout(300);
+await releve("sommet");
+await page.evaluate(() => {
+  const fil = document.querySelector(".atlas-fil-defile") as HTMLElement;
+  fil.scrollTop = Math.round((fil.scrollHeight - fil.clientHeight) / 2);
+});
+await page.waitForTimeout(400);
+await releve("milieu");
+await page.evaluate(() => {
+  const fil = document.querySelector(".atlas-fil-defile") as HTMLElement;
+  fil.scrollTop = fil.scrollHeight;
+});
+await page.waitForTimeout(500);
+const bas = await releve("bas");
+
+// **Tout en bas, la perle doit être en face du DERNIER jour.** C'est la réponse
+// que le patron a donnée le 11 août : *« quand on arrive au dernier, là, elle
+// descend et elle se met en face du dernier jour. »* C'est le seul endroit de la
+// liste où elle a le droit de quitter le milieu, et le seul contrôle capable de
+// dire si la descente arrive à destination.
+if (bas && "dessous" in bas && bas.perle !== null && bas.lignes.length > 0) {
+  const dernier = bas.lignes[bas.lignes.length - 1];
+  // La cible est le MILIEU de la dernière ligne : ailleurs, le point d'accroche
+  // centre la ligne dans le cadre et la perle y tombe au milieu. Se poser
+  // ailleurs sur la dernière se lirait comme un décalage, pas une intention.
+  const cible = dernier.haut + dernier.hauteur / 2;
+  const ecart = Math.round(bas.perle - cible);
+  if (!bas.dessous || bas.dessous.nom !== dernier.nom) {
+    // **Deux pannes très différentes portent le même symptôme, et les
+    // confondre coûte une heure.** Ou bien la descente est mal calculée — et
+    // c'est `perle-descente.ts` qu'il faut lire ; ou bien elle est calculée
+    // juste et le navigateur ne la dessine pas — et c'est le CSS. Le second cas
+    // est arrivé le 11 août 2026 : `.atlas-perle` est un `span`, donc une boîte
+    // EN LIGNE, et une transformation ne s'y applique pas. La valeur était
+    // bonne, `getComputedStyle` la renvoyait, rien ne bougeait. La variable
+    // relevée sur l'écran départage les deux, alors disons laquelle.
+    const calculee = parseFloat(bas.descente || "0");
+    griefs.push(
+      "tout en bas, la perle s'arrête sur « " +
+        (bas.dessous ? bas.dessous.nom : "rien") +
+        " » alors que le dernier chantier est « " +
+        dernier.nom +
+        " » : il lui manque " +
+        -ecart +
+        " px. " +
+        (Math.abs(calculee - -ecart) < ECART_TOLERE + 2
+          ? `La descente est pourtant CALCULÉE à ${bas.descente} — elle n'est donc pas DESSINÉE. ` +
+            "Chercher du côté du CSS de `.atlas-perle` (une transformation ne s'applique pas à " +
+            "une boîte en ligne), pas du côté de `src/lib/perle-descente.ts`."
+          : `La descente calculée vaut ${bas.descente || "rien"} : c'est le calcul qui est en cause, ` +
+            "dans `src/lib/perle-descente.ts`.")
+    );
+  } else if (Math.abs(ecart) > ECART_TOLERE) {
+    griefs.push(
+      `tout en bas, la perle est bien sur « ${dernier.nom} » mais ${Math.abs(ecart)} px ` +
+        `${ecart > 0 ? "sous" : "au-dessus de"} la rangée du nom : la descente vise à côté.`
+    );
+  }
+}
+
+// La perle doit se poser au même endroit DANS la ligne, en haut comme en bas :
+// c'est ce qui fait que la descente se lit comme une intention et non comme un
+// décalage. En haut, c'est le point d'accroche qui centre la ligne ; en bas,
+// c'est la descente qui vise le centre. Les deux doivent tomber ensemble.
+if (haut && "dessous" in haut && bas && "dessous" in bas && haut.perle !== null && bas.perle !== null) {
+  const dansLaLigne = (releve: typeof haut) =>
+    releve.dessous ? Math.round(releve.perle! - releve.dessous.haut) : null;
+  const enHaut = dansLaLigne(haut);
+  const enBas = dansLaLigne(bas);
+  if (enHaut !== null && enBas !== null && Math.abs(enHaut - enBas) > ECART_TOLERE) {
+    griefs.push(
+      `la perle se pose à ${enHaut} px du haut de la ligne en début de liste, et à ${enBas} px ` +
+        "sur la dernière : elle ne vise pas le même endroit selon l'endroit où l'on est."
+    );
+  }
+}
+
+// La hauteur d'une ligne ne sert à aucun calcul depuis que la descente se
+// mesure, mais elle reste le repère de tout le reste de l'écran : la voir
+// dériver, c'est apprendre qu'un texte s'est mis à se replier.
+if (haut && haut.lignes.length > 0) {
+  const hauteurs = [...new Set(haut.lignes.map((l) => l.hauteur))];
+  if (hauteurs.some((h) => Math.abs(h - LIGNE_ATTENDUE) > 2)) {
+    griefs.push(
+      `une ligne de chantier ne fait plus ${LIGNE_ATTENDUE} px mais ${hauteurs.join(", ")} px : ` +
+        "un texte s'est replié, ou une marge a bougé. Vérifier l'écran avant de rien recalibrer."
+    );
+  }
+}
+
+await navigateur.close();
+
+if (griefs.length > 0) {
+  console.log(`\n❌ La perle — ${griefs.length} grief(s) :`);
+  for (const g of griefs) console.log(`   · ${g}`);
+  process.exit(1);
+}
+console.log(`\n✅ La perle tient le milieu, du premier au dernier chantier. Captures : ${dossier}/perle-*.png`);

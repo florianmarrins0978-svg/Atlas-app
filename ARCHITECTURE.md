@@ -3834,3 +3834,113 @@ transmission du signal, le serveur ne meurt plus avec le banc : chaque Ctrl+C
 laisserait un orphelin accroché au port — c'est-à-dire la panne qu'on répare.
 C'est aussi, rétrospectivement, ce qui condamnait chaque tentative suivante du
 patron : il avait fait plusieurs Ctrl+C dans la soirée.
+
+---
+
+## 57. La perle du fil désigne ce qu'on regarde, jamais un état
+
+**Le patron, capture de son téléphone à l'appui, le 11 août 2026 :** *« Lorsqu'on
+est tout en haut, elle devrait être au niveau du vingt-deux, donc bien centré sur
+l'écran. Et en fait là, elle se retrouve constamment tout en bas. »*
+
+Deux intentions se sont succédé, et l'application avait gardé la première :
+
+| | Ce que la perle désigne | Où elle se trouve |
+|---|---|---|
+| Avant le 10 août | le premier chantier **qui attend un geste** | n'importe où — selon la liste |
+| Retenu sur maquette | **le chantier qu'on regarde** | à mi-hauteur |
+
+`docs/INTEGRER-ORIGINE.md` §3 signalait le changement et disait de ne pas le
+« corriger ». Le portage l'a fait quand même. Chez le patron, le chantier qui
+attend est le dernier de la liste : le point de couleur s'est donc installé tout
+en bas, à demeure, et n'a plus rien désigné de ce qu'il regardait.
+
+**Pourquoi la deuxième intention est la bonne, et pas seulement « celle qui a été
+retenue » :** un repère qui change de place à chaque liste ne s'apprend pas. Il
+faut le chercher avant de savoir ce qu'il dit — c'est-à-dire l'inverse d'un
+repère. Fixé au milieu, il ne demande rien : les chantiers passent dessous.
+
+Ce que cela coûte, et qui est assumé pour la troisième fois : le chantier dont le
+devis est revenu n'a plus de point de couleur. Il garde son libellé
+« Correction demandée », en bronze.
+
+### Le maintien au milieu : deux lignes de CSS et une place dans l'arbre
+
+La perle est **première fille du fil** (`src/app/ListeChantiers.tsx`). Sa place
+naturelle étant au-dessus du point d'accroche, `position: sticky;
+top: calc(50% - 23px)` l'y descend dès le premier pixel et l'y maintient. Aucun
+calcul, aucun écouteur de défilement — le navigateur suit le doigt mieux que
+nous, et gratuitement.
+
+Un piège de placement : la perle doit être fille **directe** du fil. Enfermée
+dans un conteneur haut d'une ligne, elle ne pourrait s'accrocher que sur cette
+ligne-là.
+
+### La descente sur le dernier jour : la seule chose que le CSS ne sait pas faire
+
+**Le patron, même échange, sur la fin de liste :** *« Quand on arrive au dernier,
+là, elle descend et elle se met en face du dernier jour. »*
+
+Cela veut dire que, sur les derniers pixels, la perle doit **descendre pendant
+que le contenu monte**. `position: sticky` ne cloue que dans un sens : son
+accroche pousse vers le bas jusqu'au point d'arrêt, jamais au-delà, et la
+contrainte du bloc conteneur ne fait que la tirer vers le haut. Trois montages
+ont été essayés avant de le reconnaître — perle en dernier enfant, accroche par
+le bas, conteneur raccourci — et tous ramènent la perle au milieu ou au-dessus.
+
+La descente se **calcule** donc, dans `src/lib/perle-descente.ts`, en fonction
+pure : elle vaut zéro tant qu'il reste plus de chemin à parcourir que de descente
+à faire, puis croît sur les derniers pixels jusqu'à poser la perle au milieu de
+la dernière ligne. L'écran mesure trois grandeurs et applique le résultat à une
+variable CSS ; il ne décide de rien.
+
+Deux propriétés de ce montage valent d'être dites :
+
+- **La variable vaut zéro par défaut.** Si le JavaScript ne tourne pas, la perle
+  reste au milieu : la dégradation est encore juste, ce qui ne serait pas le cas
+  si la position entière était écrite par le code.
+- **La cible est le MILIEU de la dernière ligne, pas la rangée du nom.** Partout
+  ailleurs, le point d'accroche centre la ligne dans le cadre et la perle y tombe
+  au milieu ; viser autre chose sur la dernière se lirait comme un décalage.
+
+**Une alternative a été construite puis écartée par le patron** : allonger la
+marge de fin du fil (`max(3.5rem, calc(50cqh - 61px))`) pour que le dernier
+chantier puisse monter au milieu rejoindre la perle. Cela marchait, mesuré, mais
+laissait un grand blanc sous le dernier chantier. Il a préféré que la perle aille
+au chantier plutôt que la liste s'allonge — et une fin de liste ressemble alors à
+une fin de liste.
+
+### Un défaut à connaître : calculé juste, jamais dessiné
+
+La descente a d'abord été **calculée correctement et pas affichée**.
+`.atlas-perle` est un `span` — une boîte **en ligne** — et une transformation ne
+s'applique pas à une boîte en ligne non remplacée. `position: sticky` ne rend pas
+une boîte de bloc, à la différence de `absolute` : il ne rattrapait donc rien.
+`getComputedStyle` renvoyait pourtant la bonne matrice, et le contrôle accusait
+le calcul, qui était innocent. Un `display: block` a suffi.
+
+C'est le genre de défaut que seule la mesure sur l'écran départage : le code
+était juste, la valeur était juste, et le rendu était faux.
+
+### Le contrôle : mesurer, pas constater la présence
+
+`npx tsx scripts/capture-accueil-perle.mts` relève la perle à quatre positions
+de défilement — arrivée, sommet forcé, milieu, bas — et refuse sur quatre
+points : elle quitte le milieu ailleurs qu'au bout ; elle ne tombe sur aucun
+chantier ; tout en bas elle n'est pas en face du dernier jour ; elle ne vise pas
+le même endroit dans la ligne selon l'endroit où l'on se trouve. Il écrit aussi
+les captures : l'œil juge ce que la mesure ne dit pas.
+
+**Une suite qui vérifiait la présence du point n'aurait rien vu** : le point
+était bien là, au mauvais endroit. C'est le même défaut de fond que le relevé de
+la barre basse (§34) — un contrôle qui n'interroge pas la bonne grandeur est un
+contrôle vert sur une panne réelle.
+
+**Et son message doit désigner le bon coupable.** Deux pannes très différentes
+donnent le même symptôme — descente mal calculée, ou descente non dessinée — et
+les confondre coûte une heure. Le contrôle relève donc la variable posée sur
+l'écran et dit laquelle des deux est en cause.
+
+Confronté trois fois avant d'être cru : perle déplacée à 20 % → rouge en nommant
+l'écart ; `display: block` retiré → rouge en nommant le CSS et non le calcul ;
+descente supprimée dans la fonction pure → rouge sur le cas proportionnel.

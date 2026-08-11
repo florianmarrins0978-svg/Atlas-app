@@ -122,9 +122,12 @@ Le patron a arrêté un écran après une soirée de maquettes
 (`docs/maquettes/`, treize propositions), puis l'a fait poser dans
 l'application. Ce qui est **fait** :
 
-- **L'accueil** : le fil qui porte les jours, la perle d'or sur ce qui attend un
-  geste, le trait qui glisse sous les onglets, et « Nouveau chantier » qui monte
-  en feuille pendant que la liste recule.
+- **L'accueil** : le fil qui porte les jours, la perle d'or qui se tient à
+  mi-hauteur et désigne le chantier qu'on regarde, puis descend sur le dernier
+  jour quand on arrive au bout (corrigé le 11 août 2026 : elle était posée sur le
+  chantier en attente, donc tout en bas chez le patron — `ARCHITECTURE.md` §57),
+  le trait qui glisse sous les onglets, et « Nouveau chantier » qui monte en
+  feuille pendant que la liste recule.
 - **Planning, Terminés, Réglages, relevé de TVA, fiche chantier** : même
   en-tête, mêmes rayons, mêmes capitales.
 - **Les six écrans d'étape** : en-tête et boutons. Les corps de **Photos**, de

@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-10 · `claude/migrate-app-atlas-zz31ac`
+**Point de reprise :** 2026-08-11 · `claude/migrate-app-atlas-zz31ac`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -315,6 +315,17 @@ Le fil, la perle, le trait d'or qui glisse, la feuille qui monte. **Avant d'y
 toucher, lire l'en-tête de `src/app/EcranChantiers.tsx`** : il liste les trois
 choses qu'il a explicitement refusées, et les remettre reviendrait à défaire ce
 qu'il a validé.
+
+**La perle se tient à mi-hauteur du fil, et descend sur le dernier jour quand on
+arrive au bout.** Elle ne désigne PAS le chantier qui attend un geste — cette
+intention est celle d'avant la maquette du 10 août, et l'avoir « restaurée » a
+mis un point de couleur immuablement en bas de l'écran du patron. C'est écrit
+trois fois maintenant (`ARCHITECTURE.md` §57, `docs/INTEGRER-ORIGINE.md` §3, ici)
+parce que ça a été défait deux fois. La descente finale est la seule part
+calculée (`src/lib/perle-descente.ts`) : `sticky` ne sait pas descendre pendant
+que le contenu monte. Le contrôle qui tient l'ensemble — et qui MESURE au lieu
+de constater une présence — est `npx tsx scripts/capture-accueil-perle.mts`,
+serveur en écoute.
 
 **Deux pièges de ce lot, qui coûteront une heure à qui les redécouvre :**
 1. `npm run banc` **ne rebâtit que si le commit a changé**. Tant que le travail
