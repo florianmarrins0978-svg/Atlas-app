@@ -287,6 +287,40 @@ cas("le serveur est détaché, et c'est le GROUPE qu'on tue", () => {
   );
 });
 
+// **On attend tant que le serveur vit — et on n'accuse plus la base.**
+//
+// Le 11 août 2026, le journal du patron a montré, dans cet ordre :
+//
+//     ⚠ L'application n'a pas répondu après trois minutes.
+//       Cause la plus fréquente : la base de données n'est pas montée.
+//     ✓ Finished filesystem cache database compaction in 15.4s
+//      GET /api/health/live 200 in 1415ms
+//
+// Elle répondait la seconde d'après, et la base allait très bien. Deux fautes
+// que ce dépôt s'interdit : conclure au chronomètre, et désigner le mauvais
+// coupable.
+cas("le banc attend la vie du serveur, pas une montre — et n'accuse pas la base", () => {
+  const code = readFileSync(BANC, "utf8")
+    .split("\n")
+    .filter((l) => !l.trimStart().startsWith("//"))
+    .join("\n");
+
+  assert.match(
+    code,
+    /!serveurMort/,
+    "l'attente ne dépend plus de la vie du serveur : elle conclura encore trop tôt sur un disque lent"
+  );
+  assert.ok(
+    !/Cause la plus fréquente : la base de données/.test(code),
+    "le banc accuse encore la base de données par défaut — c'est le mauvais coupable, et il envoie chercher ailleurs"
+  );
+  assert.match(
+    code,
+    /LE SERVEUR S'EST ARRÊTÉ/,
+    "le seul cas où l'on peut conclure — le serveur mort — n'est plus distingué"
+  );
+});
+
 rmSync(dossier, { recursive: true, force: true });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Bascule et veilleur — ${echecs} échec(s).`);

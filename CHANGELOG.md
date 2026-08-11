@@ -9,6 +9,29 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le banc concluait à la panne trois secondes avant que l'application réponde
+
+**Le journal du patron, dans cet ordre :**
+
+    ⚠ L'application n'a pas répondu après trois minutes.
+      Cause la plus fréquente : la base de données n'est pas montée.
+    ✓ Finished filesystem cache database compaction in 15.4s
+     GET /api/health/live 200 in 1415ms
+
+Elle répondait **la seconde d'après**, et la base allait parfaitement bien. Deux
+fautes que ce dépôt s'interdit explicitement, commises dans la même ligne :
+conclure au chronomètre, et **désigner le mauvais coupable**.
+
+Le bon critère n'est pas la montre, c'est **la vie du serveur** : tant qu'il
+tourne, il travaille — ici une compaction de cache lui avait pris le disque
+quinze secondes. Le banc l'attend donc, avec un signe de vie toutes les trente
+secondes pour que l'écran ne paraisse pas figé, et ne renonce que s'il meurt.
+
+Et le message ne suppose plus rien : serveur mort → « regardez les lignes
+ci-dessus, et nulle part ailleurs » ; serveur vivant mais muet → la commande de
+diagnostic, qui, elle, va voir. Un contrôle échoue si l'accusation de la base
+réapparaît.
+
 ### Un refus qui n'informe pas ne vaut guère mieux qu'une panne
 
 Le verrou du banc disait « Atlas est DÉJÀ en train de démarrer » et rien d'autre.

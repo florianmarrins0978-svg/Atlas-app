@@ -570,21 +570,56 @@ for (const signal of ["SIGINT", "SIGTERM"]) {
 // panne qu'on répare ici.
 process.on("exit", () => tuerLeServeur(serveur));
 
-const LIMITE = Date.now() + 180_000;
+// **ON ATTEND TANT QUE LE SERVEUR VIT — pas trois minutes au chronomètre.**
+//
+// Le 11 août 2026, le journal du patron a montré ceci, dans cet ordre :
+//
+//     ⚠ L'application n'a pas répondu après trois minutes.
+//       Cause la plus fréquente : la base de données n'est pas montée.
+//     ✓ Finished filesystem cache database compaction in 15.4s
+//      GET /api/health/live 200 in 1415ms
+//
+// Elle répondait **la seconde d'après**. Le délai était trop court pour son
+// disque — une compaction de cache l'avait accaparé quinze secondes — et
+// l'avertissement accusait la base, qui n'y était pour rien. Deux fautes que ce
+// dépôt s'interdit : conclure trop tôt, et **désigner le mauvais coupable**.
+//
+// Le bon critère n'est pas la montre, c'est la vie du serveur : tant qu'il
+// tourne, il travaille. On l'attend donc, avec un signe de vie régulier pour que
+// l'écran ne paraisse pas figé — et on ne renonce que s'il meurt, ou après un
+// délai franchement long.
+const DEBUT_ATTENTE = Date.now();
+const ATTENTE_MAX = 15 * 60_000;
 let pret = false;
-while (Date.now() < LIMITE) {
+let prochainSigne = DEBUT_ATTENTE + 30_000;
+let serveurMort = false;
+serveur.once("exit", () => {
+  serveurMort = true;
+});
+
+while (Date.now() - DEBUT_ATTENTE < ATTENTE_MAX && !serveurMort) {
   if (await repond()) {
     pret = true;
     break;
+  }
+  if (Date.now() >= prochainSigne) {
+    const secondes = Math.round((Date.now() - DEBUT_ATTENTE) / 1000);
+    console.log(`  … l'application finit de démarrer (${secondes} s). Le disque de cet espace est lent.`);
+    prochainSigne = Date.now() + 30_000;
   }
   await attendre(1000);
 }
 
 if (!pret) {
+  const minutes = Math.round((Date.now() - DEBUT_ATTENTE) / 60_000);
   console.error(
-    "\n  ⚠️  L'application n'a pas répondu après trois minutes.\n" +
-      "     Les lignes ci-dessus, émises par le serveur, disent pourquoi.\n" +
-      "     Cause la plus fréquente : la base de données n'est pas montée.\n"
+    serveurMort
+      ? "\n  ⚠️  LE SERVEUR S'EST ARRÊTÉ. Les lignes ci-dessus, émises par lui,\n" +
+          "     disent pourquoi — c'est là qu'il faut regarder, et nulle part ailleurs.\n"
+      : `\n  ⚠️  L'application n'a toujours pas répondu après ${minutes} minutes,\n` +
+          "     alors que son serveur tourne encore. Ce n'est donc pas un démarrage\n" +
+          "     manqué : quelque chose la retient. Une commande le dira :\n\n" +
+          "         npm run diagnostiquer:banc\n"
   );
 } else if (annonceFaite) {
   // Déjà annoncée pendant la construction : l'adresse n'a pas changé, et la

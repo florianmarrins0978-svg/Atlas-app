@@ -80,6 +80,13 @@ avec une ligne par équipe. Réglages laisse nommer les équipes.
    est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
    sans qu'aucun chiffre ne manque.
 
+**Le banc attend la VIE DU SERVEUR, pas une montre (11 août, nuit).** Il
+concluait « l'application n'a pas répondu après trois minutes — cause la plus
+fréquente : la base n'est pas montée » … trois secondes avant qu'elle réponde,
+et la base allait bien. Sur ce disque, une compaction de cache prend quinze
+secondes. **Ne jamais remettre de délai fixe ni d'accusation par défaut** : un
+contrôle échoue si « base de données » revient dans ce message.
+
 **Le banc déloge un orphelin au démarrage (11 août, nuit).** Un `next-server`
 d'une exécution précédente tenait le port et faisait échouer le démarrage avant
 tout. Distinction à ne pas casser : *quelque chose répond à la santé* = Atlas
