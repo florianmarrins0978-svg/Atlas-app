@@ -34,6 +34,21 @@ Rien n'est codé : l'application porte toujours l'aplat (`TODO.md`, 0 terdecies)
 3. **Aucun script**, comme les treize maquettes précédentes : son lecteur n'en
    exécute pas, et une page engendrée en JavaScript lui arrive vide.
 
+### Un rouge d'enchaînement qui n'en était pas un
+
+`test-devis-e2e` — le total TTC d'un devis — est tombé **une fois** dans un
+balayage complet, puis a repassé au vert sur les trois vérifications suivantes :
+seule, sur `main` seul, et dans un second balayage complet de la même branche
+(51/51). Il n'y avait donc rien à corriger, et c'est écrit ici pour que la
+prochaine conversation ne reprenne pas la chasse.
+
+**Ce que la chasse a quand même appris**, et qui vaut plus que le rouge :
+`main` seul passe à 50/50, la branche à 51/51, et la suite fautive est **la
+même** dans les deux cas quand on la joue isolément. Un balayage rouge une fois
+sur quatre n'est pas une preuve : la machine porte alors un serveur, une base,
+un navigateur et parfois un autre balayage — c'est la charge qui bouge, pas le
+code. Rejouer AVANT d'accuser.
+
 ### L'aplat vert est remplacé — le bouton est CODÉ
 
 Douze jours après le refus (*« ce gros bouton en plein milieu, ça ne fait pas
