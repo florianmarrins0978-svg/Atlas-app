@@ -4,8 +4,35 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-10 · `claude/migrate-app-atlas-zz31ac`
+**Point de reprise :** 2026-08-11 · `claude/migrate-app-atlas-zz31ac`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## ⚠ Plusieurs conversations travaillent sur ce dépôt EN MÊME TEMPS
+
+**Dit par le patron le 11 août 2026 :** *« sur d'autres sessions, je demande de
+faire d'autres corrections. »* Ce n'est donc pas une hypothèse : `main` bouge
+pendant qu'on travaille, et il a bougé de trois commits en une après-midi.
+
+Trois conséquences, à appliquer sans y réfléchir :
+
+1. **Avant de fusionner, ramener `main` chez soi et REJOUER la batterie.**
+   Fusionner sans cela livre un mélange que personne n'a éprouvé : chaque côté
+   était vert seul, ce qui ne dit rien de leur somme.
+2. **Attendre des conflits dans les six fichiers de mémoire, et les garder tous
+   les deux.** `ARCHITECTURE.md`, `CHANGELOG.md` et `TODO.md` conflictent à
+   chaque fois — les deux sessions écrivent à la suite. Renuméroter sa propre
+   section (celle qui est déjà sur `main` garde son numéro) et **corriger les
+   renvois « §NN » des autres fichiers**, sinon ils désignent le travail de
+   quelqu'un d'autre.
+3. **Si deux sessions touchent le même écran, regarder avant de fusionner.**
+   Ici, la session voisine a bâti PAR-DESSUS le travail de la fiche chantier,
+   pas à la place — mais rien ne le garantissait, et chacune était verte de son
+   côté. Deux verts ne font pas un vert.
+
+Ne jamais forcer une poussée : ce serait effacer le travail d'une autre
+conversation, sans qu'elle en sache rien.
 
 ---
 
@@ -388,6 +415,17 @@ Le fil, la perle, le trait d'or qui glisse, la feuille qui monte. **Avant d'y
 toucher, lire l'en-tête de `src/app/EcranChantiers.tsx`** : il liste les trois
 choses qu'il a explicitement refusées, et les remettre reviendrait à défaire ce
 qu'il a validé.
+
+**La perle se tient à mi-hauteur du fil, et descend sur le dernier jour quand on
+arrive au bout.** Elle ne désigne PAS le chantier qui attend un geste — cette
+intention est celle d'avant la maquette du 10 août, et l'avoir « restaurée » a
+mis un point de couleur immuablement en bas de l'écran du patron. C'est écrit
+trois fois maintenant (`ARCHITECTURE.md` §59, `docs/INTEGRER-ORIGINE.md` §3, ici)
+parce que ça a été défait deux fois. La descente finale est la seule part
+calculée (`src/lib/perle-descente.ts`) : `sticky` ne sait pas descendre pendant
+que le contenu monte. Le contrôle qui tient l'ensemble — et qui MESURE au lieu
+de constater une présence — est `npx tsx scripts/capture-accueil-perle.mts`,
+serveur en écoute.
 
 **Deux pièges de ce lot, qui coûteront une heure à qui les redécouvre :**
 1. `npm run banc` **ne rebâtit que si le commit a changé**. Tant que le travail

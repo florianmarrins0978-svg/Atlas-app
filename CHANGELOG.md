@@ -7,6 +7,60 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-11
+
+### La perle du fil était tout en bas de l'écran, à demeure
+
+**Constaté par le patron, capture de son téléphone à l'appui :** *« Lorsqu'on
+est tout en haut, elle devrait être au niveau du vingt-deux, donc bien centré
+sur l'écran. Et en fait là, elle se retrouve constamment tout en bas. »*
+
+La maquette retenue le 10 août fait suivre la perle : elle se tient à
+mi-hauteur, et les chantiers défilent dessous. Le portage avait gardé
+l'intention PRÉCÉDENTE — la perle posée devant le premier chantier « en
+attente » — alors même que `docs/INTEGRER-ORIGINE.md` §3 signalait le
+changement et disait de ne pas le « corriger ». Chez le patron, le chantier en
+attente est le dernier de la liste : d'où un point de couleur immuablement en
+bas, qui ne désignait rien de ce qu'il regardait.
+
+La perle est désormais **premier enfant du fil** et ne bouge plus du milieu —
+sauf tout en bas. Le patron a tranché la fin de liste dans le même échange :
+
+> « Quand on arrive au dernier, là, elle descend et elle se met en face du
+> dernier jour. »
+
+C'est la seule chose que `position: sticky` ne sache pas faire : sur les
+derniers pixels, la perle doit descendre PENDANT que le contenu monte, et une
+accroche ne cloue que dans un sens. Trois montages purement CSS ont été essayés
+avant de le reconnaître. La descente se calcule donc — `src/lib/perle-descente.ts`,
+fonction pure, sept cas de suite — et l'écran ne fait que mesurer et appliquer.
+Si ce calcul ne tourne pas, la perle reste au milieu : une dégradation qui reste
+juste.
+
+Ce que cela coûte, dit franchement : le chantier dont le devis est revenu n'a
+plus de point de couleur. Il garde son libellé « Correction demandée » en
+bronze — c'est le compromis de la maquette, assumé pour la troisième fois.
+
+**Un défaut mérite d'être retenu :** la descente a d'abord été calculée juste et
+**pas dessinée**. `.atlas-perle` est un `span`, donc une boîte en ligne, et une
+transformation ne s'applique pas à une boîte en ligne. `getComputedStyle`
+renvoyait pourtant la bonne matrice. Le contrôle disait « il manque 66 px » en
+désignant le calcul, qui était innocent — il distingue désormais les deux pannes
+et nomme la bonne.
+
+`scripts/capture-accueil-perle.mts` mesure la perle à quatre positions de
+défilement et refuse si elle quitte le milieu ailleurs qu'au bout, si elle
+désigne du vide, si le dernier jour n'est pas atteint, ou si elle ne vise pas le
+même endroit dans la ligne selon l'endroit où l'on est. Confronté trois fois :
+perle déplacée à 20 % → rouge ; `display: block` retiré → rouge en nommant le
+CSS et non le calcul ; descente supprimée dans la fonction pure → rouge.
+
+L'ancienne règle — celle qui posait la perle sur le chantier en attente — et sa
+suite disparaissent : une règle morte qui décrit une intention abandonnée est un
+piège pour la conversation suivante.
+
+---
+
 ## 2026-08-10
 
 ### De l'anneau au devis, en une touche
@@ -250,6 +304,30 @@ Un contrôle garde cette frontière (`test-anneau-dictee-e2e.ts`) : *le corps ne
 porte que l'anneau, et le tiroir garde tout le reste*. Il échoue aussi bien si
 l'on remet un bouton dans le corps que si l'on oublie de descendre une entrée
 dans le tiroir.
+
+### `npm run essai` accusait la base pendant qu'Atlas démarrait déjà
+
+**Constaté chez le patron, sur son espace de travail.** Il tape `npm run essai`,
+et l'écran répond :
+
+> ⚠️ Le serveur s'est arrêté avant de répondre.
+> Cause fréquente : la base de données n'est pas montée.
+
+La base n'y était pour rien. L'espace démarre Atlas tout seul à chaque
+allumage ; pendant sa construction, **le banc ne répond pas encore** — le
+garde-fou d'`essai.mjs`, qui demandait « quelqu'un répond-il ? », l'a donc
+laissé passer. Un second serveur est parti, a trouvé le port pris, et est mort
+sur « EADDRINUSE ». Le message affiché envoyait chercher au mauvais endroit, ce
+qui coûte plus cher que pas de message du tout.
+
+`banc.mjs` prend un verrou depuis le même jour, et sa documentation le disait
+déjà : **ce n'est pas le port qu'il faut regarder, c'est l'existence d'un autre
+banc.** `essai.mjs` ne le prenait pas — et c'est par là que le patron est passé.
+Il le prend désormais, et refuse en disant quoi faire : combien de temps
+attendre, quel journal suivre, et quelle ligne attendre.
+
+Éprouvé en reproduisant la situation : un banc tient le verrou, `npm run essai`
+arrive dessus, et refuse au lieu de démarrer.
 
 ### Refaire la démonstration n'efface plus ce que l'artisan a tapé à la main
 

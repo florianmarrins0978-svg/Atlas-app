@@ -50,6 +50,34 @@ quel : le cadre honnête n'a révélé aucun défaut caché.
 le doigt n'atteint pas. Un seul écran vérifiait cela auparavant, pour un seul
 bouton.
 
+### ~~0 quater. Le bandeau d'alerte est coupé en haut, à l'arrivée sur l'accueil~~ — **tranché le 2026-08-11 : on laisse tel quel**
+
+**Le patron, après avoir vu le raisonnement :** *« Dans ce cas-là, laisse tel
+quel. »* Ne pas rouvrir ce point sans lui : ce n'est pas un défaut oublié, c'est
+un arbitrage rendu. Le raisonnement qui l'a emporté est conservé ci-dessous —
+c'est lui qui évitera de le refaire.
+
+**Vu en regardant les captures de la perle, le 11 août 2026 — aucune suite ne le
+disait.** À l'ouverture de « Vos chantiers », le fil est déjà défilé de 61 px :
+le navigateur pose la liste sur son premier point d'accroche, qui centre le
+premier chantier. Le bandeau « CORRECTION DEMANDÉE », qui vit **dans** la liste,
+perd donc sa première ligne — et il n'existe aucune position de repos où on la
+revoie : forcer le défilement à zéro y ramène.
+
+Ce n'est **pas** une conséquence du travail sur la perle : mesuré avant, c'était
+déjà 61 px.
+
+L'arbitrage, et pourquoi il ne se tranche pas en codant : les deux moitiés ne
+peuvent pas être vraies ensemble.
+
+| Choix | Ce qu'on gagne | Ce qu'on perd |
+|---|---|---|
+| **Laisser tel quel** (retenu) | la perle désigne un chantier dès l'ouverture | le bandeau perd sa ligne de capitales — son nom, sa phrase et ses deux boutons restent entiers |
+| Ajouter un point d'accroche en haut | le bandeau entier | on arrive sur une liste où la perle ne désigne rien, à **chaque** ouverture |
+
+Un repère abîmé à chaque ouverture coûte plus cher qu'une ligne de capitales
+coupée : c'est ce qui a emporté la décision.
+
 ### ~~0 bis. Une session périmée~~ — **close le 2026-08-10, test compris**
 
 `GET /api/session-perimee` efface les cookies et renvoie à la connexion ;
