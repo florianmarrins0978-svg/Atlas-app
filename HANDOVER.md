@@ -57,6 +57,11 @@ pastille ronde qui tourne, jette une onde et des éclats, et ouvre la feuille un
 demi-seconde plus tard. Maquette 16, la seule des seize **qui se presse** :
 `node scripts/verifier-maquette-pastille.mjs` la met à l'épreuve au doigt.
 
+**Où en est son choix, exactement :** le **sceau clair** lui plaît — disque de
+papier, cheveu d'or — mais pas la rose des vents gravée dedans. Six gravures de
+rechange sont à l'essai (maquette 17) ; le disque, sa place, la gerbe et la
+demi-seconde ne sont plus en discussion.
+
 **Et une règle en est sortie, qui prime sur l'envie d'aider** (`CLAUDE.md`
 §3 bis) : une demande d'apparence ou de geste se **dessine** d'abord. La
 pastille avait été portée d'un coup dans l'application ; il l'a arrêté net —

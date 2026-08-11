@@ -34,6 +34,32 @@ Rien n'est codé : l'application porte toujours l'aplat (`TODO.md`, 0 terdecies)
 3. **Aucun script**, comme les treize maquettes précédentes : son lecteur n'en
    exécute pas, et une page engendrée en JavaScript lui arrive vide.
 
+### Le sceau est retenu, six gravures le disputent
+
+*« J'aime beaucoup la deuxième. Par contre, ce que je n'aime pas, c'est un peu
+le design de la pastille. »*
+
+Le **sceau clair** — disque de papier cerné d'un cheveu d'or — est donc acquis :
+sa taille, sa place, la gerbe et la demi-seconde ne bougent plus.
+`docs/maquettes/17-six-marques.html` ne fait varier que **la gravure** : le
+cadran gradué, le trait pur, le monogramme d'Atlas, la facette, l'anneau et sa
+bille, le point. Les six se pressent — côte à côte pour comparer la marque, puis
+chacun dans l'écran pour le geste entier.
+
+**Le cadran ne fait pas tourner son signe, mais sa lunette.** Une aiguille qui
+tourne se lit comme un chargement ; une lunette qui tourne se lit comme un
+mécanisme. C'est la seule des six où le mouvement veut dire quelque chose.
+
+**Trois défauts vus à la capture, invisibles autrement :** la lunette tournait
+sans que rien ne le montre — soixante graduations identiques sont immobiles quel
+que soit l'angle, il a fallu leur donner un repère ; l'onde d'un grand sceau
+débordait de sa carte et n'y laissait que quatre arcs dans les angles ; et la
+corde horizontale de la facette brouillait la taille de la pierre.
+
+Le contrôle éprouve désormais la **première et la dernière** pastille armée
+d'une page : sur la page fusionnée, ce sont deux maquettes différentes, chacune
+avec son script — n'en éprouver qu'une laissait l'autre silencieusement morte.
+
 ### La pastille qui tourne, éclate et ouvre — la première maquette qu'on presse
 
 *« Je veux une sorte de pastille un peu ronde avec un design sympa à

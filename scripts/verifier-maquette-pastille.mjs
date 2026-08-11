@@ -57,7 +57,11 @@ async function feuilleOuverte(pastille) {
   );
 }
 
-async function essayer({ calme }) {
+// Le contrôle joue le geste sur la PREMIÈRE et la DERNIÈRE pastille armée.
+// Sur la page qui fusionne les seize, ce sont deux maquettes différentes, et
+// chacune a son propre script : n'en éprouver qu'une laisserait l'autre
+// silencieusement morte.
+async function essayer({ calme, rang }) {
   const page = await navigateur.newPage({
     viewport: { width: 1280, height: 900 },
     reducedMotion: calme ? "reduce" : "no-preference",
@@ -70,25 +74,31 @@ async function essayer({ calme }) {
   // qui n'a jamais rien promis.
   const pastilles = page.locator(".ecran:has(.feuille) .pastille[href]");
   const nombre = await pastilles.count();
-  if (!calme) dire(nombre >= 3, `${nombre} pastilles pressables (au moins 3 attendues)`);
+  if (!calme && rang === "premiere") {
+    dire(nombre >= 3, `${nombre} pastilles pressables (au moins 3 attendues)`);
+  }
 
-  const premiere = pastilles.first();
+  const premiere = rang === "derniere" ? pastilles.last() : pastilles.first();
   await premiere.click();
 
   if (calme) {
     // Sous mouvement réduit, l'attente n'a plus de raison d'être.
     await page.waitForTimeout(120);
-    dire(await feuilleOuverte(premiere), "mouvement réduit : la feuille monte tout de suite");
+    dire(await feuilleOuverte(premiere), `${rang} · mouvement réduit : la feuille monte tout de suite`);
   } else {
     await page.waitForTimeout(200);
-    dire(!(await feuilleOuverte(premiere)), "à 200 ms, la feuille n'est pas encore montée");
+    dire(!(await feuilleOuverte(premiere)), `${rang} · à 200 ms, la feuille n'est pas encore montée`);
 
     // Le tour est-il vraiment joué ? Une classe posée ne prouve rien : on lit
     // l'animation que le navigateur exécute réellement.
-    const anime = await premiere.evaluate(
-      (p) => p.querySelector(".rose").getAnimations().length > 0,
+    // On interroge la GRAVURE, quelle qu'elle soit : la maquette 16 fait
+    // tourner tout le dessin, la 17 parfois une seule pièce (la lunette du
+    // cadran tourne, son signe reste). Chercher une classe précise, c'était
+    // faire échouer le contrôle à chaque nouvelle marque.
+    const anime = await premiere.evaluate((p) =>
+      Array.from(p.querySelectorAll("svg, svg *")).some((n) => n.getAnimations().length > 0),
     );
-    dire(anime, "la rose des vents tourne pour de bon (animation en cours)");
+    dire(anime, `${rang} · la gravure tourne pour de bon (animation en cours)`);
 
     // Deuxième appui pendant le geste : il doit être ignoré. Le clic est
     // envoyé au nœud lui-même plutôt qu'à sa position — sinon, le jour où la
@@ -98,23 +108,24 @@ async function essayer({ calme }) {
     // mauvais endroit.
     await premiere.evaluate((p) => p.click());
     await page.waitForTimeout(600);
-    dire(await feuilleOuverte(premiere), "à 800 ms, la feuille est montée");
+    dire(await feuilleOuverte(premiere), `${rang} · à 800 ms, la feuille est montée`);
 
     await page.waitForTimeout(500);
     const feuilles = await page.locator(".feuille.ouverte").count();
-    dire(feuilles === 1, `un seul appui utile malgré deux clics (${feuilles} feuille(s) ouverte(s))`);
+    dire(feuilles === 1, `${rang} · un seul appui utile malgré deux clics (${feuilles} feuille(s) ouverte(s))`);
 
     await premiere.evaluate((p) => p.closest(".ecran").querySelector(".fermer").click());
     await page.waitForTimeout(120);
-    dire(!(await feuilleOuverte(premiere)), "« Refermer » referme, on peut recommencer");
+    dire(!(await feuilleOuverte(premiere)), `${rang} · « Refermer » referme, on peut recommencer`);
   }
 
   await page.close();
 }
 
 console.log("=== La pastille répond-elle au doigt ? ===\n");
-await essayer({ calme: false });
-await essayer({ calme: true });
+await essayer({ calme: false, rang: "premiere" });
+await essayer({ calme: false, rang: "derniere" });
+await essayer({ calme: true, rang: "premiere" });
 await navigateur.close();
 
 if (plaintes.length) {

@@ -127,6 +127,13 @@ const MAQUETTES = [
     quoi: "La seule maquette qui répond au doigt : on appuie, la rose des vents part en trois tours, jette une onde et dix éclats, et la feuille monte une demi-seconde plus tard.",
     retenu: true,
   },
+  {
+    fichier: "17-six-marques.html",
+    titre: "Six marques pour le sceau",
+    famille: "Enlever le gros bouton",
+    quoi: "Le sceau clair est retenu ; seule la gravure change. Le cadran, le trait pur, le monogramme, la facette, l’anneau et la bille, le point — les six se pressent.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

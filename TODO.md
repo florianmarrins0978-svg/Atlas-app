@@ -363,7 +363,10 @@ Le 11 août 2026, capture à l'appui : *« j'aime pas le gros bouton nouveau
 chantier […] ce gros bouton en plein milieu, ça ne fait pas très luxe »*. Le
 reste de l'écran lui convient — c'est **l'aplat vert seul** qui est en cause.
 
-**Treize** remplaçants sont dessinés, en trois tournées. La première
+**Treize** remplaçants sont dessinés, en trois tournées — et l'un d'eux est
+maintenant à moitié choisi : **le sceau clair** (maquette 16, deuxième
+habillage), *« j'aime beaucoup la deuxième »*. Reste à désigner **la gravure**
+qui va dedans : six candidates dans `docs/maquettes/17-six-marques.html`. La première
 (`docs/maquettes/14-le-geste-nouveau-chantier.html`) amincit le bouton : le
 filet qui se trace, le sceau, le premier brin, le cartouche gravé, la pastille
 au pouce, la légende sur le trait. Elle n'a pas convaincu — *« je ne suis pas
