@@ -67,6 +67,23 @@ langage. Rien n'y entre sans son accord explicite (voir `AGENTS.md`).
   fonction sert à construire un écran et à revalider ce qu'il renvoie — deux
   implémentations finissent toujours par diverger.
 
+## 3 bis. La maquette d'abord, le code ensuite
+
+**Règle posée par le patron le 11 août 2026**, après qu'une demande de geste
+— « une pastille qui tourne » — a été portée d'un coup dans la maquette **et**
+dans l'application : *« crée-moi une maquette avant de changer quoi que ce
+soit »*.
+
+Une demande d'apparence ou de geste se dessine, se montre, et **ne touche à
+`src/` qu'une fois choisie**. Ce n'est pas une précaution de style : le code
+écrit avant l'accord doit être défait si l'accord ne vient pas, et il encombre
+la relecture de tout ce qui n'a pas été retenu. La maquette, elle, reste — même
+écartée, elle raconte le chemin.
+
+Ce qui ne compte PAS comme une exception : « c'est tout petit », « ça se
+défait facilement », « il pourra ainsi l'essayer en vrai ». S'il veut l'essayer
+en vrai, il le dira.
+
 ## 4. Ce qu'on ne fait jamais
 
 - **Affaiblir la RLS pour se simplifier la vie.** Une opération de maintenance
@@ -205,8 +222,50 @@ Quand ni l'un ni l'autre n'est possible, **le dire** plutôt que de laisser croi
 
 ## 6. Git
 
-- Branche de développement : `claude/migrate-app-atlas-zz31ac`.
+- Branche de développement : celle que la conversation désigne. Elle change à
+  chaque session — ne pas se fier à un nom écrit ici, qui serait faux le
+  lendemain.
 - Messages de commit **en français**, à l'impératif, expliquant **pourquoi** le
   changement existe et ce qu'il évite. Le diff dit déjà quoi.
 - Ne jamais pousser sur une autre branche sans accord explicite.
 - Ne jamais ouvrir de *pull request* sans demande explicite.
+
+### Rien n'est livré tant que ce n'est pas sur `main`
+
+**Payé deux fois, la seconde le 11 août 2026.** Un lot complet — code, suites,
+documentation, batterie au vert — a été poussé sur sa branche de session, et le
+patron a répondu : *« les modifications ne me sont pas parvenues »*. Elles
+étaient bien poussées. Elles n'étaient nulle part où il regarde.
+
+Son banc d'essai ne sait faire qu'une chose (`.devcontainer/mettre-a-jour.sh`) :
+à chaque allumage, il avance **sa propre branche** en ligne droite
+(`--ff-only`). Une branche qu'il ne suit pas ne lui arrivera **jamais**, quoi
+qu'on y pousse — et il n'aura pas le moindre message pour le lui dire.
+
+**Donc : un lot n'est terminé qu'une fois sur `main`.** Le pousser sur sa
+branche est une étape, pas une livraison. Demander l'accord (§6 ci-dessus), puis
+fusionner et pousser — sans quoi il éprouve une version d'avant en croyant
+éprouver la nouvelle.
+
+**Pour savoir ce que son banc exécute vraiment**, ne pas le lui faire deviner :
+l'écran **Réglages** affiche la version servie (date · numéro de commit,
+`src/server/version-executee.ts`). Une capture répond à la question sans qu'on
+ait à la poser.
+
+### Plusieurs sessions écrivent sur `main` en même temps
+
+**Sa consigne du 11 août 2026 :** *« souvent j'ai deux ou trois sessions qui
+tournent et qui modifient en même temps plusieurs choses sur l'appli, fais
+attention à ça »*.
+
+Trois règles qui en découlent, et qui ne se négocient pas :
+
+1. **Jamais de poussée en force sur `main`.** Un refus pour « non
+   *fast-forward* » n'est pas un obstacle à contourner : c'est le garde-fou qui
+   vient d'empêcher d'effacer le travail d'une autre session.
+2. **Refusionner et rejouer, plutôt qu'insister.** `git fetch origin main`,
+   fusionner, **relancer la batterie** — le code arrivé entre-temps n'est pas le
+   sien, et rien ne dit qu'il s'accorde au nôtre. C'est ainsi qu'a été trouvée
+   la §59 publiée en double le 11 août.
+3. **Fusionner juste avant de pousser, pas la veille.** Entre la vérification et
+   la poussée, `main` a pu bouger encore. Vérifier une dernière fois.

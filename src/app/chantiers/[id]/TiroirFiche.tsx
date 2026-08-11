@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
-import AjoutDePhotos from "@/components/atlas/AjoutDePhotos";
+import Pellicule, { type VignettePhoto } from "./Pellicule";
 
 export type EtapeFiche = { key: string; href: string; label: string; meta: string; done: boolean };
-export type VignettePhoto = { id: string; storageKey: string };
+export type { VignettePhoto };
 
 /**
  * Le tiroir du bas de la fiche chantier — la pellicule et les étapes.
@@ -25,6 +25,11 @@ export type VignettePhoto = { id: string; storageKey: string };
  * **La case « + » vient en PREMIER.** Posée en fin de pellicule, il fallait
  * faire défiler six photos pour la trouver : sur un téléphone, ajouter une
  * photo ne doit pas se mériter.
+ *
+ * **Et elle ne mène plus nulle part : elle ouvre le menu du téléphone sur
+ * place** (11 août 2026, `Pellicule.tsx`). La pellicule est désormais le seul
+ * endroit où l'on ajoute, regarde et retire une photo — l'écran
+ * `/chantiers/[id]/photos` n'existe plus.
  */
 export default function TiroirFiche({
   chantierId,
@@ -39,13 +44,6 @@ export default function TiroirFiche({
   resume: { gauche: string; droite: string };
 }) {
   const [ouvert, setOuvert] = useState(false);
-
-  // La pellicule tient sa propre liste : une photo prise depuis la fiche doit
-  // apparaître SOUS LES YEUX, sans redemander la page au serveur. Semée par ce
-  // que le serveur a rendu, elle ne s'en écarte que le temps de l'ajout.
-  const [vignettes, setVignettes] = useState<VignettePhoto[]>(photos);
-  const [choixOuvert, setChoixOuvert] = useState(false);
-  const [envoiEnCours, setEnvoiEnCours] = useState(false);
 
   // **Le tiroir se CLIPPE, il ne se déplace pas.**
   //
@@ -73,8 +71,19 @@ export default function TiroirFiche({
     };
     mesurer();
     window.addEventListener("resize", mesurer);
-    return () => window.removeEventListener("resize", mesurer);
-  }, [vignettes.length, etapes.length]);
+    // **On observe le corps plutôt que de compter les photos.** Depuis que la
+    // pellicule ajoute et retire sans changer de page, ce qu'elle contient ne
+    // passe plus par les propriétés du tiroir : une liste de dépendances ne
+    // pouvait donc plus rien voir. Le tiroir gardait alors la hauteur d'avant
+    // — et le tiroir des retirés, apparu sous la pellicule, restait derrière
+    // le bord, « Annuler » hors d'atteinte.
+    const observateur = new ResizeObserver(mesurer);
+    if (corps.current) observateur.observe(corps.current);
+    return () => {
+      window.removeEventListener("resize", mesurer);
+      observateur.disconnect();
+    };
+  }, []);
 
   // **L'écran de dessous RECULE quand le tiroir monte.** Même geste que la
   // feuille « Nouveau chantier » sur l'accueil : c'est la profondeur qui dit
@@ -150,59 +159,10 @@ export default function TiroirFiche({
           libellé. Vu en capture, jamais autrement — le tiroir défile, donc ce
           talon ne coûte rien d'autre qu'un peu de course. */}
       <div ref={corps} className="px-[26px] pb-[84px] pt-0.5">
-        {/* La pellicule. Les marges négatives la font courir d'un bord à
-            l'autre pendant que son contenu reste aligné sur les 26 px. */}
-        <div className="atlas-pellicule -mx-[26px] mt-0.5 px-[26px] pb-4 pt-0.5">
-          {/* **Le « + » ajoute une photo ICI, il ne mène plus à l'écran
-              Photos.** Le patron, le 11 août 2026 : *« quand je clique sur
-              l'encadré avec le plus là des photos, ça me ramène encore sur
-              cette page-là. »* Il avait raison : sa case était un simple lien,
-              si bien qu'ajouter une photo depuis la fiche demandait de changer
-              d'écran d'abord, puis d'appuyer sur un second bouton. Sur un
-              chantier, avec des gants, c'est un appui de trop.
-
-              **Elle RESTE un lien**, comme « Nouveau chantier » sur l'accueil :
-              sans JavaScript, ou ouverte dans un nouvel onglet, elle mène
-              toujours à l'écran entier. Le clic ordinaire est détourné — la
-              route ne disparaît pas, elle change de porte. */}
-          <a
-            href={`/chantiers/${chantierId}/photos`}
-            onClick={(e) => {
-              if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-              e.preventDefault();
-              setChoixOuvert(true);
-            }}
-            aria-label="Ajouter des photos"
-            className="atlas-ajouter"
-            style={{
-              border: `1px solid ${colors.line}`,
-              color: colors.or,
-              // Grisé pendant l'envoi : sans cela, rien ne distingue « en cours »
-              // de « n'a rien fait », et le doigt réappuie.
-              opacity: envoiEnCours ? 0.45 : 1,
-            }}
-          >
-            +
-          </a>
-          {vignettes.map((p, i) => (
-            // Un lien, pas un bouton : ouvrir une photo est une navigation, et
-            // elle doit rester ouvrable dans un nouvel onglet. Il s'enfonce
-            // sous le doigt comme un bouton (`.atlas-vue:active`).
-            <a
-              key={p.id}
-              href={`/chantiers/${chantierId}/photos`}
-              aria-label={`Photo ${i + 1} sur ${vignettes.length}`}
-              className="atlas-vue"
-              style={{ backgroundColor: colors.cream }}
-            >
-              {/* Conservé en <img> : `next/image` réécrit le `src` via
-                  `/_next/image`, ce qui romprait la correspondance exacte
-                  attendue par la visionneuse (éprouvée de bout en bout). */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/api/fichiers/${p.storageKey}`} alt="" className="h-full w-full object-cover" />
-            </a>
-          ))}
-        </div>
+        {/* La pellicule : ajouter, regarder, retirer — sans quitter la fiche.
+            Elle porte son propre état depuis le 11 août 2026, l'écran Photos
+            ayant disparu (voir `Pellicule.tsx`). */}
+        <Pellicule chantierId={chantierId} initiales={photos} />
 
         {etapes.map((s) => (
           <a
@@ -231,17 +191,6 @@ export default function TiroirFiche({
           </a>
         ))}
       </div>
-
-      {/* Le mécanisme d'ajout, partagé avec l'écran Photos. Posé ICI plutôt que
-          dans la pellicule : sa feuille de choix se pose au bas de l'écran
-          entier, pas dans une bande qui défile horizontalement. */}
-      <AjoutDePhotos
-        chantierId={chantierId}
-        ouvert={choixOuvert}
-        onFermer={() => setChoixOuvert(false)}
-        onAjoutee={(photo) => setVignettes((v) => [...v, photo])}
-        onEnCours={setEnvoiEnCours}
-      />
     </div>
   );
 }

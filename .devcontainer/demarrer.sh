@@ -105,7 +105,29 @@ export ATLAS_PROFIL=banc
 
 # La version exécutée, transmise à l'application pour qu'elle l'affiche.
 # Le format est fait pour être lu sur une capture d'écran, pas par une machine.
-ATLAS_VERSION="$(git log -1 --date=format:'%d/%m/%Y %H:%M' --format='%cd · %h' 2>/dev/null || echo 'inconnue')"
+#
+# **La BRANCHE en fait partie, et c'est le correctif du 11 août 2026 au soir.**
+# Un travail livré sur une branche de travail n'est jamais arrivé jusqu'au
+# patron, dont l'espace suit `main`. Il a lu une date de la même heure — les deux
+# branches avançaient ce soir-là — et conclu qu'il avait tout. La date ne mentait
+# pas ; elle ne suffisait pas. Le nom de la branche est le seul mot de cette
+# ligne qui réponde à « est-ce que j'ai ce qui vient d'être fait ».
+#
+# **Recalculée APRÈS la mise à jour, pas seulement avant.** Elle était posée ici
+# une fois pour toutes, et la mise à jour vient cinquante lignes plus bas : le
+# bandeau annonçait donc « Le code a été mis à jour au démarrage » puis
+# « Version exécutée : <celle d'avant> ». Exactement le malentendu que cette
+# ligne existe pour éteindre.
+version_du_depot() {
+  local v b
+  v="$(git log -1 --date=format:'%d/%m/%Y %H:%M' --format='%cd · %h' 2>/dev/null)" || v=""
+  [ -z "$v" ] && { echo "inconnue"; return; }
+  b="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" || b=""
+  # Tête détachée : on n'invente pas un nom de branche, on n'en dit aucun.
+  [ -n "$b" ] && [ "$b" != "HEAD" ] && v="$v · $b"
+  echo "$v"
+}
+ATLAS_VERSION="$(version_du_depot)"
 export ATLAS_VERSION
 
 # Pose le veilleur, qui monte le serveur et le relève s'il tombe.
@@ -154,6 +176,13 @@ lancer_veilleur
 # vue échouer.
 MISE_A_JOUR="$(bash "$(dirname "$0")/mettre-a-jour.sh" "$CD")"
 MIGRATIONS=""
+
+# Le code a peut-être changé sous nos pieds : on relit la version AVANT que le
+# veilleur ne soit relancé plus bas, sinon le serveur neuf hériterait de la
+# variable d'avant — et le bandeau annoncerait une mise à jour tout en affichant
+# ce qu'elle a remplacé.
+ATLAS_VERSION="$(version_du_depot)"
+export ATLAS_VERSION
 
 # Les dépendances et la base doivent suivre le code, sinon la mise à jour
 # produit une panne au lieu d'un correctif : un écran qui plante sur une colonne

@@ -96,8 +96,12 @@ async function ecrans(): Promise<Array<[string, string]>> {
   ];
   if (chantier) {
     liste.push(
+      // Ses photos n'ont plus d'écran depuis le 11 août 2026 : elles vivent
+      // dans la pellicule du tiroir de la fiche, ci-dessus (`ARCHITECTURE.md`
+      // §60). Cette ligne a été écrite sur une branche partie avant la
+      // suppression — laissée en place, elle aurait fait mesurer une page 404,
+      // qui n'a évidemment aucune barre : un contrôle vert sur du vide.
       ["la fiche d'un chantier", `/chantiers/${chantier}`],
-      ["ses photos", `/chantiers/${chantier}/photos`],
       ["sa note vocale", `/chantiers/${chantier}/note-vocale`],
       ["son devis à la main", `/chantiers/${chantier}/devis-complet`]
     );

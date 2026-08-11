@@ -139,8 +139,9 @@ async function ecrans(): Promise<Array<[string, string]>> {
   ];
   if (chantier) {
     liste.push(
+      // Ses photos n'ont plus d'écran : elles vivent dans la pellicule du
+      // tiroir de la fiche, ci-dessus (11 août 2026).
       ["la fiche d'un chantier", `/chantiers/${chantier}`],
-      ["ses photos", `/chantiers/${chantier}/photos`],
       ["sa note vocale", `/chantiers/${chantier}/note-vocale`],
       ["ses informations", `/chantiers/${chantier}/informations`],
       ["son prix", `/chantiers/${chantier}/prix`],

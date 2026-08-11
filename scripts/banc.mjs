@@ -432,6 +432,44 @@ const surSortie = (code) => {
 };
 serveur.on("exit", surSortie);
 
+// Arrêter ce script doit arrêter le serveur : sans cela il reste en écoute, et
+// la tentative suivante échoue sur un port déjà pris — message qui n'a plus
+// aucun rapport avec la cause.
+//
+// **Le GROUPE, pas le seul enfant.** Depuis que le serveur est détaché (voir
+// `lancerDev`), Ctrl+C ne lui parvient plus tout seul : il faut le lui
+// transmettre, sinon fermer le banc laisserait derrière soi exactement
+// l'orphelin qui a coûté la soirée du 10 août.
+//
+// **POSÉS ICI, LIGNE SUIVANTE — et c'est tout le correctif du 11 août 2026.**
+//
+// Ils vivaient en fin de fichier, c'est-à-dire APRÈS la construction. Or ce
+// script sert d'abord et bâtit ensuite : entre le lancement du serveur et
+// l'installation de ces gardiens, il s'écoule **plusieurs minutes**. Un
+// `SIGTERM` reçu dans cette fenêtre ne rencontre aucun gestionnaire, tue ce
+// script net — et le serveur, DÉTACHÉ, survit et garde le port.
+//
+// Ce n'est pas une hypothèse : c'est ce que fait
+// `scripts/verifier-connexion-avec-serveur.mts`, qui lance `npm run banc` puis
+// tue son groupe dès la connexion éprouvée — sans attendre la construction. Le
+// serveur orphelin restait alors sur le port 3000, et la batterie suivante
+// accusait le calcul du prix (`TODO.md`, « serveur fantôme »).
+//
+// Un gardien installé trop tard ne protège de rien, et ne se voit pas : le code
+// est juste, il arrive en retard.
+for (const signal of ["SIGINT", "SIGTERM"]) {
+  process.on(signal, () => {
+    enBascule = false;
+    tuerLeServeur(serveur);
+    process.exit(0);
+  });
+}
+
+// Même chose pour une sortie ordinaire, ou une exception : un serveur détaché ne
+// meurt plus avec son père, et un orphelin accroché au port est précisément la
+// panne qu'on répare ici.
+process.on("exit", () => tuerLeServeur(serveur));
+
 if (raison) {
   console.log(`\n  Atlas répond déjà, en mode développement.`);
   // Pas d'`await` : le préchauffage, l'annonce et la construction avancent
@@ -548,27 +586,6 @@ if (raison) {
     );
   }
 }
-
-// Arrêter ce script doit arrêter le serveur : sans cela il reste en écoute, et
-// la tentative suivante échoue sur un port déjà pris — message qui n'a plus
-// aucun rapport avec la cause.
-//
-// **Le GROUPE, pas le seul enfant.** Depuis que le serveur est détaché (voir
-// `lancerDev`), Ctrl+C ne lui parvient plus tout seul : il faut le lui
-// transmettre, sinon fermer le banc laisserait derrière soi exactement
-// l'orphelin qui a coûté la soirée du 10 août.
-for (const signal of ["SIGINT", "SIGTERM"]) {
-  process.on(signal, () => {
-    enBascule = false;
-    tuerLeServeur(serveur);
-    process.exit(0);
-  });
-}
-
-// Même chose pour une sortie ordinaire, ou une exception : un serveur détaché ne
-// meurt plus avec son père, et un orphelin accroché au port est précisément la
-// panne qu'on répare ici.
-process.on("exit", () => tuerLeServeur(serveur));
 
 // **ON ATTEND TANT QUE LE SERVEUR VIT — pas trois minutes au chronomètre.**
 //

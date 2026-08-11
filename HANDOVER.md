@@ -72,6 +72,144 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**⚠ SI LE PATRON DIT « ce n'est toujours pas là » : REGARDER LA BRANCHE
+D'ABORD.** C'est le défaut du 11 août au soir, et il coûterait le même
+aller-retour à chaque fois. Son espace de travail suit **`main`**, et rien ne
+l'en fera sortir : `.devcontainer/mettre-a-jour.sh` fait un
+`git merge --ff-only origin/<branche courante>`, à l'allumage **et** derrière le
+bouton « Chercher les dernières corrections » de Réglages. **Un travail livré
+sur une branche ne lui parviendra jamais**, quelle que soit la date affichée,
+quel que soit le nombre de fois qu'il presse le bouton.
+
+Ce soir-là il a dit : *« la modification n'est pas effectuée. Et pourtant, j'ai
+la nouvelle dernière mise à jour, celle de dix-neuf heures et quelques. »* Il
+avait raison sur les deux points — `main` avait bien bougé à 19 h 37, et le
+bouton était ailleurs. **Avant de chercher un défaut dans le code, jouer :**
+
+```bash
+git show origin/main:<le fichier> | grep <la marque du travail>
+```
+
+La ligne « Version » de Réglages nomme désormais la branche
+(`11/08/2026 19:37 · b45cd5d · main`) : une capture suffit à trancher, sans
+avoir à le lui demander. Elle ne le disait pas, et c'est ce qui a permis le
+malentendu.
+
+**Le bouton « Nouveau chantier » a été fusionné dans `main` le 11 août au soir**,
+sur son accord explicite (`6059641`). Il est donc chez lui. Ce qui reste utile
+ici, c'est le piège : il resservira au prochain travail livré sur une branche.
+
+**Douze remplaçants au gros bouton, en deux tournées (11 août).** Le patron ne
+veut plus de l'aplat vert « Nouveau chantier » au milieu de l'écran Chantiers ;
+le reste lui convient. Maquettes 14 et 15 dans `docs/maquettes/`, sur la dalle
+réelle (390 × 664). **Rien n'est codé, et rien ne doit l'être avant son choix**
+— `TODO.md`, 0 terdecies. Ne pas trancher à sa place : c'est le troisième
+arbitrage graphique qu'il garde pour lui.
+
+**La troisième tournée est la sienne** : il a décrit le geste lui-même — une
+pastille ronde qui tourne, jette une onde et des éclats, et ouvre la feuille une
+demi-seconde plus tard. Maquette 16, la seule des seize **qui se presse** :
+`node scripts/verifier-maquette-pastille.mjs` la met à l'épreuve au doigt.
+
+**Où en est son choix, exactement.** Le sceau de papier a d'abord plu, puis a
+été écarté : *« le fond blanc me dérange »*. Ce qui tient encore : un objet
+rond, à la place de l'aplat, la gerbe et la demi-seconde. Ce qui est ouvert : la
+**matière** (maquette 18 — laque, or brossé, cire, encre vivante, ou pas de
+disque du tout) et la **façon dont la page arrive** — deux propositions font
+grandir le bouton jusqu'à ce qu'il DEVIENNE la page.
+
+**Le bouton « Nouveau chantier » est CODÉ (11 août, au soir).** L'aplat vert a
+disparu de `EcranChantiers.tsx` : à sa place, le mot écrit et un anneau d'un
+cheveu qui bat tant qu'on ne l'a pas touché ; à l'appui, trois tours, onze
+grains d'or, et la feuille 520 ms plus tard. Toutes les mesures viennent de
+`docs/maquettes/24-le-bouton-retenu.html` — **les reprendre de là si on y
+retouche**, jamais de mémoire.
+
+**Quatre choses à ne pas défaire**, chacune payée par un défaut réel :
+l'enfoncement immédiat (140 ms) sans lequel la demi-seconde passe pour une
+panne ; l'ignorance du second appui, sans laquelle deux chantiers naissent au
+lieu d'un ; le respect de « mouvement réduit », qui ouvre alors tout de suite ;
+et le `href` conservé, qui mène à l'écran entier avant l'hydratation.
+
+*Ce qui suit est l'historique du choix, gardé pour ne pas rouvrir ce qui est
+clos.*
+
+**LE BOUTON EST ARRÊTÉ, ET CHIFFRÉ — c'est par là qu'on reprend.**
+`docs/maquettes/24-le-bouton-retenu.html` : « Nouveau chantier » écrit, le rond
+qui bat à sa droite, trois tours et onze grains d'or à l'appui, la feuille une
+demi-seconde plus tard. Le tableau au bas de la maquette donne toutes les
+mesures. **Rien n'est codé** — c'est la seule chose qui reste (`TODO.md`,
+0 terdecies).
+
+*Ce qui suit est l'historique du choix, gardé pour ne pas rouvrir ce qui est
+clos.*
+
+**LE BOUTON EST CHOISI, et c'est là qu'il faut reprendre.** C'est **l'anneau
+d'un cheveu avec son « + »**, qui doit **tourner à fond puis ouvrir la page**.
+Il est **au centre**, à la place de l'ancien aplat vert, avec **un petit trait
+de chaque côté qui s'écarte à l'appui**. Quinze déclinaisons attendent son verdict : huit du tour seul (maquette 22 ; la
+version en haut à droite est restée dans la 21) et sept qui ajoutent **le mot**
+et un **battement d'attente** (maquette 23 — c'est la dernière, et celle qu'il a
+décrite pièce par pièce). Deux d'entre elles reprennent **l'anneau de la
+note vocale** — c'est la piste la plus solide, parce que c'est la seule qui ne
+repose pas sur un goût : les deux écrans partageraient enfin le même
+vocabulaire. Rien n'est codé.
+
+**Ce qui précède n'est plus d'actualité, et ne doit pas être ressorti :**
+
+**Où en est le choix au 11 août au soir.** Il a fini par décrire le bouton
+lui-même : *« un rond avec un plus, et lorsque j'appuie, une dynamique un peu
+style explosion, de débris, avec le rond qui s'agrandit »*. Ce squelette est
+acquis — disque plein, « + », gerbe, agrandissement jusqu'à la page, aucun fond
+clair. Six gerbes sont à l'essai (maquette 20) ; il ne reste qu'à en désigner
+une.
+
+**Quatre refus de suite disent deux choses.** D'abord, décliner un même objet ne
+le sauve pas : ce qui a débloqué la conversation à chaque fois, c'est de changer
+d'axe — la nature du geste (16), la gravure (17), la matière et l'ouverture
+(18), la retenue (19). Ensuite, et c'est la correction la plus utile qu'il ait
+faite : *« tu as primé sur l'originalité au détriment de l'élégance »*. Chercher
+l'inédit **contre** la tenue est un mauvais échange ; la maquette 19 retire la
+gerbe, les matières imitées et les mouvements simultanés, et n'en garde qu'un
+seul à la fois.
+
+**Et une règle en est sortie, qui prime sur l'envie d'aider** (`CLAUDE.md`
+§3 bis) : une demande d'apparence ou de geste se **dessine** d'abord. La
+pastille avait été portée d'un coup dans l'application ; il l'a arrêté net —
+*« crée-moi une maquette avant de changer quoi que ce soit »*. Le changement a
+été défait, `src/` est intact.
+
+**Ce que la première tournée a appris, et qui resservira :** proposer six
+variantes du même geste, ce n'est pas proposer six idées. Il l'a renvoyée d'un
+« je ne suis pas encore hyper convaincu ». La seconde change de **nature** à
+chaque proposition, et c'est ce qu'il faudra refaire si une troisième est
+demandée.
+
+**Les refus de note vocale disent pourquoi (11 août, tard).** Le patron voyait
+*« Impossible d'enregistrer la note pour l'instant. Réessayez. »* sans que
+personne puisse savoir ce qui s'était passé.
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **Un refus ATTENDU est une valeur de retour, jamais une exception.**
+   `enregistrerNoteVocaleAction` rend `{ ok: false, raison }`. Ce n'est pas un
+   goût de style : **Next.js remplace en production le message d'une action
+   serveur par un identifiant opaque**, et le banc du patron sert une version
+   bâtie. Une exception ne lui parvient donc jamais lisible. La documentation du
+   cadre le prescrit (`node_modules/next/dist/docs/01-app/01-getting-started/
+   10-error-handling.md`). **Ne pas revenir à `throw` pour un refus.**
+2. **Les pannes IMPRÉVUES lèvent encore, mais le serveur les écrit d'abord**
+   (`logger.error`, avec chantier, format et taille). Sans cette ligne, une
+   panne chez lui ne laisse aucune trace nulle part — c'est ce qui a manqué.
+3. **Le défaut n'a PAS été reproduit ici**, et c'est écrit tel quel. La dictée a
+   été rejouée avec un micro simulé en développement, puis sur la version bâtie
+   derrière une origine étrangère : elle passe les deux fois. Ce qui est corrigé,
+   c'est le silence, pas la panne. Si elle revient, l'écran la nommera —
+   **demander la phrase exacte plutôt que de supposer.**
+4. **Un fichier de zéro octet est refusé à l'entrée.** Avant, il descendait
+   jusqu'à la base, qui le rejetait, et l'écran affichait la requête SQL
+   entière — noms de tables et identifiant d'entreprise compris.
+
 **Le défilement du fil, et la barre grise (11 août, au soir).** Le patron :
 *« c'est saccadé »*, *« je ne veux pas voir cette bande grise du tout, je veux
 juste que ça slide. »*
@@ -209,6 +347,25 @@ Trois choses à savoir avant d'y toucher :
 - **La réserve de bas d'écran (`pb-40`) ne vaut qu'en page.** En feuille, celle-ci
   est `fixed` en `z-[50]` et recouvre déjà la bulle : y ajouter la même réserve
   ne protège de rien et laisse quatre-vingts pixels de vide.
+
+**La pellicule ajoute sur place, et l'écran Photos a été supprimé (11 août,
+soir).** Le « + » du tiroir n'est plus un lien : il ouvre le menu du téléphone,
+sur la fiche. `src/app/chantiers/[id]/Pellicule.tsx`, `ARCHITECTURE.md` §60.
+Quatre choses à savoir avant d'y toucher :
+
+- **Aucun champ de fichier ne doit porter `capture`.** Sur un iPhone, il impose
+  l'appareil photo, retire l'accès à la photothèque, et le menu à trois entrées
+  — celui que le patron a photographié — n'apparaît jamais. Une suite compte les
+  champs et refuse `capture` : c'est le seul garde-fou, aucune machine de test
+  ne rendra ce menu.
+- **La visionneuse sort par un portail, et il le faut.** Le tiroir porte un
+  `z-index` : rendue dedans, elle passe **sous** la barre de navigation, qui se
+  peint en travers de la photo.
+- **Le tiroir mesure sa hauteur par `ResizeObserver`.** La pellicule ne passe
+  plus par ses propriétés : une liste de dépendances ne verrait plus rien, et le
+  tiroir des retirés resterait derrière le bord, « Annuler » hors d'atteinte.
+- **`/chantiers/[id]/photos` n'existe plus** (404, vérifié). Les liens de
+  `chantier-etat.ts` pointent désormais sur la fiche elle-même.
 
 **Le corps de la fiche ne porte QUE l'anneau (11 août, après-midi).** Sa
 maquette (`maquettes/atlas-note-vocale.html`) ne montre aucun bouton, et il l'a
@@ -911,6 +1068,16 @@ site publié à son adresse réelle.
    Actions request. ». Aucune suite ne le voit : elles interrogent toutes
    `127.0.0.1`, où les deux coïncident. C'est le rôle de
    `scripts/verifier-connexion.mjs`, qui pose exprès une origine étrangère.
+0 ter. **Le message d'une exception levée par une action serveur N'ARRIVE PAS
+   jusqu'à l'écran du patron.** Next.js le remplace en production par un
+   identifiant opaque, et le banc sert une version bâtie : un code qui affiche
+   `err.message` en croyant montrer la cause ne montre qu'un digest. C'est le
+   piège qui a rendu « Impossible d'enregistrer la note » indéchiffrable le 11
+   août 2026. **Tout refus attendu se rend en valeur de retour** —
+   `{ ok: false, raison }` — jamais en exception ; les pannes imprévues lèvent,
+   mais se journalisent AVANT (`logger.error`), sans quoi elles ne laissent
+   aucune trace nulle part. Le cadre le prescrit noir sur blanc :
+   `node_modules/next/dist/docs/01-app/01-getting-started/10-error-handling.md`.
 0 bis. **Les fabriques d'IA retombent sur `dev` par leur `default:`.** Une faute
    de frappe dans `LLM_PROVIDER` ou `TRANSCRIPTION_PROVIDER` donnait donc l'IA
    simulée, sans un mot, et la dictée rendait « [Transcription simulée — … ] ».

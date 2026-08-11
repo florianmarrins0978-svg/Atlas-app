@@ -9,6 +9,7 @@
   --accent: #2f3b2f;       /* --pine : l'accent unique */
   --accent-deep: #4f5f4c;  /* --pine-light */
   --line: rgba(28, 28, 26, 0.12);
+  --or: #b98b47;           /* le second accent, celui de ce qu'on LIT */
   --ok: #7d9a6d;           /* --sage */
   --warn: #b8860b;
 }
@@ -714,11 +715,153 @@ body {
 }
 .atlas-ajouter:active { transform: scale(0.96); }
 
+/* ═══ Le bouton « Nouveau chantier » ══════════════════════════════════════
+ *
+ * **Il remplace l'aplat vert**, refusé par le patron le 11 août 2026 : « ce
+ * gros bouton en plein milieu, ça ne fait pas très luxe ». Ce qui suit a été
+ * arrêté par lui après onze maquettes, et chaque mesure est chiffrée dans
+ * `docs/maquettes/24-le-bouton-retenu.html` — c'est lui qui a resserré l'onde,
+ * réduit le rond et ramené la gerbe de seize grains à onze.
+ *
+ * Le geste, dans l'ordre : l'anneau BAT tant qu'on ne l'a pas touché ; à
+ * l'appui il s'enfonce, le signe part en trois tours freinés, onze grains d'or
+ * sont projetés depuis le bord ; la feuille monte 520 ms plus tard.
+ *
+ * Quatre choses à ne pas défaire :
+ *
+ *   1. **L'enfoncement est immédiat** (140 ms), bien avant la fin du tour. Une
+ *      demi-seconde sans réponse se lit comme une panne, et on appuie deux
+ *      fois — deux chantiers au lieu d'un.
+ *   2. **Le battement s'arrête net à l'appui.** Un objet qui continue
+ *      d'appeler alors qu'on l'a déjà pris n'écoute pas.
+ *   3. **Les grains naissent au BORD de l'anneau** (46 % de leur course), pas
+ *      du centre : partis du milieu, les trois quarts restent cachés derrière
+ *      le signe. Défaut vu sur une capture, jamais par un contrôle.
+ *   4. **Ils gardent leur plein jusqu'à 64 % de leur course**, puis s'éteignent
+ *      d'un coup. Pâlis dès le départ, ils sont invisibles — même défaut, même
+ *      capture. */
+.atlas-geste-nouveau {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  text-decoration: none;
+  color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+}
+.atlas-geste-nouveau .atlas-mot {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: letter-spacing 0.62s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+[data-geste="part"] .atlas-mot { letter-spacing: 0.38em; }
+
+.atlas-rond {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 9999px;
+  transition: transform 0.14s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.atlas-geste-nouveau:active .atlas-rond { transform: scale(0.92); }
+.atlas-rond .atlas-cerne {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 9999px;
+  border: 1px solid var(--line);
+}
+.atlas-rond .atlas-signe {
+  position: relative;
+  z-index: 4;
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+/* Le battement d'attente : une onde d'or qui naît du bord et se dissout, toutes
+ * les 3,4 s. Ce n'est PAS un clignotement — allumé/éteint est un signal
+ * d'alarme, et un écran qui alerte dix fois par jour finit par être ignoré. Le
+ * patron l'a lui-même ramenée de 1,85 à 1,42 fois le rond : au-delà, l'onde
+ * partait si loin qu'elle n'appartenait plus à l'objet. */
+.atlas-rond .atlas-pouls {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 9999px;
+  border: 1px solid var(--or);
+  opacity: 0;
+  animation: atlas-battement 3.4s cubic-bezier(0.16, 0.7, 0.3, 1) infinite;
+}
+@keyframes atlas-battement {
+  0% { transform: scale(1); opacity: 0; }
+  8% { opacity: 0.5; }
+  46% { transform: scale(1.42); opacity: 0; }
+  100% { transform: scale(1.42); opacity: 0; }
+}
+[data-geste="part"] .atlas-pouls { animation: none; opacity: 0; }
+
+[data-geste="part"] .atlas-signe {
+  animation: atlas-tour 0.56s cubic-bezier(0.16, 0.74, 0.22, 1) both;
+}
+@keyframes atlas-tour {
+  0% { transform: rotate(0); }
+  14% { transform: rotate(120deg); }
+  100% { transform: rotate(1080deg); }
+}
+
+.atlas-rond .atlas-gerbe {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.atlas-rond .atlas-gerbe i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--l);
+  height: var(--l);
+  margin: calc(var(--l) / -2) 0 0 calc(var(--l) / -2);
+  border-radius: 9999px;
+  background: var(--or);
+  opacity: 0;
+}
+[data-geste="part"] .atlas-gerbe i {
+  animation: atlas-grain 0.56s cubic-bezier(0.16, 0.68, 0.3, 1) both;
+  animation-delay: var(--t);
+}
+@keyframes atlas-grain {
+  0% {
+    transform: translate(calc(var(--x) * 0.46), calc(var(--y) * 0.46)) scale(0.4);
+    opacity: 0;
+  }
+  16% { opacity: 1; }
+  64% { opacity: 1; }
+  100% { transform: translate(var(--x), var(--y)) scale(0.7); opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .atlas-aile i,
   .atlas-traits i {
     animation: none;
   }
+  /* Qui demande moins de mouvement n'a droit ni au battement ni à la gerbe — et
+   * la feuille s'ouvre alors TOUT DE SUITE (voir `EcranChantiers.tsx`).
+   * Attendre une demi-seconde une animation qui ne joue pas ferait passer un
+   * réglage d'accessibilité pour une lenteur. */
+  .atlas-rond .atlas-pouls,
+  [data-geste="part"] .atlas-signe,
+  [data-geste="part"] .atlas-gerbe i {
+    animation: none;
+  }
+  .atlas-rond .atlas-gerbe { display: none; }
+  .atlas-rond { transition: none; }
   .atlas-anneaux,
   .atlas-aile,
   .atlas-chrono,

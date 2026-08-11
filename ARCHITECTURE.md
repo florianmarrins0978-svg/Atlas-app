@@ -4197,3 +4197,181 @@ l'écran et dit laquelle des deux est en cause.
 Confronté trois fois avant d'être cru : perle déplacée à 20 % → rouge en nommant
 l'écart ; `display: block` retiré → rouge en nommant le CSS et non le calcul ;
 descente supprimée dans la fonction pure → rouge sur le cas proportionnel.
+
+---
+
+## 60. Ajouter une photo sans changer de page — et l'écran Photos qui disparaît
+
+**Le patron, le 11 août 2026, deux captures à l'appui :** *« lorsque je suis sur
+la page chantier et que je clique sur l'encadré doré avec le petit plus doré
+pour ajouter des photos, je veux que ça arrête de me faire changer de page et je
+veux voir apparaître directement la photothèque / prendre une photo /
+bibliothèque […] et que tu me supprimes toutes les autres étapes »*.
+
+### Ce que coûtait l'ancien chemin
+
+Ajouter une photo demandait **quatre gestes et un changement de page** :
+
+| Geste | Ce qui se passait |
+|---|---|
+| 1 | toucher le « + » de la pellicule |
+| 2 | *l'écran change* — `/chantiers/[id]/photos` se charge |
+| 3 | toucher « Ajouter une photo » |
+| 4 | choisir dans **notre** feuille : « Prendre une photo » / « Choisir dans ma bibliothèque » |
+| 5 | et **enfin** le menu du téléphone |
+
+Il en coûte deux : le « + », puis le menu du téléphone. Le reste a été supprimé,
+pas déplacé.
+
+### La décision de fond : laisser le système faire le choix
+
+Le 6 août, le patron exigeait les deux chemins : *« il faut bien évidemment
+pouvoir faire les deux »*. La réponse d'alors était **deux champs de fichier**
+(l'un avec `capture`, l'autre sans) et une feuille maison pour les départager.
+
+Elle était juste, et elle est devenue inutile : un champ `accept="image/*"`
+**sans `capture`** fait afficher par iOS un menu qui porte déjà les trois
+entrées — *Photothèque*, *Prendre une photo*, *Choisir les fichiers*. Le système
+pose le choix mieux que nous, et un geste plus tôt.
+
+**`capture` reste interdit dans la pellicule, et ce n'est pas un réglage.** Sur
+un iPhone il n'exprime aucune préférence : il **impose** l'appareil photo, retire
+l'accès à la photothèque — et le menu ci-dessus n'apparaît jamais. Un artisan qui
+a photographié le chantier le matin ne pourrait rien joindre l'après-midi.
+
+### L'écran `/chantiers/[id]/photos` n'existe plus
+
+Décision prise avec le patron le 11 août : *« on le supprime entièrement — tout
+se passe dans la pellicule du tiroir : ajouter, regarder, retirer »*. La route
+répond **404**, et une suite le vérifie : un écran à moitié supprimé, c'est un
+chemin mort qu'on retrouve trois mois plus tard sans savoir s'il compte encore.
+
+Ce qui a déménagé dans `src/app/chantiers/[id]/Pellicule.tsx` :
+
+| Ce qui vivait sur l'écran Photos | Où c'est maintenant |
+|---|---|
+| l'ajout | le « + » de la pellicule, qui ouvre le menu du téléphone |
+| la visionneuse plein écran | la même, ouverte depuis la vignette |
+| « Retirer » + le tiroir des retirés | identiques, sous la pellicule |
+| le décompte « 6 photos » | **supprimé** — il comptait ce qu'on a sous les yeux |
+| « Passer à la note vocale » | **supprimé** — l'anneau est au centre de la fiche (§57) |
+
+Les actions serveur, elles, n'ont pas bougé d'un octet : le fichier d'actions du
+dossier supprimé est devenu
+`src/app/chantiers/[id]/photos-actions.ts`, au même niveau que la fiche.
+
+### Trois pièges, et pourquoi ils ne se voient pas en lisant le code
+
+1. **La visionneuse doit sortir du tiroir par un portail.** Le tiroir porte un
+   `z-index`, donc il ouvre son propre contexte d'empilement : une visionneuse
+   « plein écran » rendue à l'intérieur reste plafonnée au niveau du tiroir, et
+   la barre de navigation — posée plus loin dans le document, au même `z-20` —
+   se peint **par-dessus la photo**. `createPortal(document.body)` la sort de
+   là. Une suite mesure le point central de la barre et exige qu'elle soit
+   couverte.
+
+2. **Le tiroir mesure sa hauteur par `ResizeObserver`, plus par une liste de
+   dépendances.** Il se dimensionnait sur `[photos.length, etapes.length]` —
+   deux propriétés. Depuis que la pellicule ajoute et retire sans changer de
+   page, son contenu ne passe plus par les propriétés du tiroir : la mesure ne
+   voyait plus rien, le tiroir gardait sa hauteur d'avant, et le tiroir des
+   retirés apparu sous la pellicule restait **derrière le bord — « Annuler »
+   hors d'atteinte**.
+
+3. **La fiche se rafraîchit après un ajout et après un retrait.** Le statut du
+   chantier et l'étape suivante se déduisent du **nombre** de photos : sans
+   `router.refresh()`, le résumé du tiroir continuerait de réclamer « Ajouter
+   des photos » au-dessus d'une pellicule qui en montre une. L'état local, lui,
+   n'est jamais resynchronisé depuis le serveur : ce qu'on vient d'ajouter ou de
+   retirer ne doit pas être écrasé par un rendu arrivé en retard.
+
+### Ce que la suite tient, et qu'aucun contrôle d'affichage ne verrait
+
+`scripts/test-photos-e2e.ts` compare l'adresse **avant et après** l'ajout. C'est
+la demande elle-même : tout le reste peut être vert pendant que le patron change
+d'écran. Elle exige aussi qu'il n'y ait **qu'un** champ de fichier et qu'il soit
+**sans `capture`** — sinon le menu à trois entrées ne s'ouvre pas, et le défaut
+serait invisible sur une machine de test, où aucun iPhone ne décide.
+
+---
+
+## 61. L'espace du patron suit une BRANCHE, et la ligne « Version » doit la nommer
+
+**Le défaut, le 11 août 2026 au soir.** Le bouton « Nouveau chantier » venait
+d'être codé, éprouvé et poussé. Le patron : *« la modification du bouton nouveau
+chantier n'est pas effectuée. Corrige ça. Et pourtant, j'ai la nouvelle dernière
+mise à jour, celle de dix-neuf heures et quelques. »*
+
+Les deux moitiés de la phrase étaient vraies en même temps, et c'est ce qui a
+rendu le diagnostic long.
+
+### Ce qui se passait vraiment
+
+Son espace de travail se met à jour tout seul — c'est le correctif du 6 août
+(`.devcontainer/mettre-a-jour.sh`, §24). Mais il le fait ainsi :
+
+```sh
+BRANCHE="$(git rev-parse --abbrev-ref HEAD)"
+git fetch origin "$BRANCHE"
+git merge --ff-only "origin/$BRANCHE"
+```
+
+**Il suit la branche courante, et rien d'autre.** L'espace du patron est né sur
+`main` ; il suivra `main` jusqu'à sa mort. Le bouton, lui, vivait sur
+`claude/nouveau-chantier-button-design-2vuu9h`. Aucun allumage, aucune pression
+sur « Chercher les dernières corrections » — qui appelle **le même script** —
+ne pouvait le lui apporter. Le bouton répondait fidèlement « vous étiez déjà à
+jour », et c'était exact.
+
+Et `main` avançait ce soir-là en parallèle : 19:02, 19:11, 19:13, 19:37. Sa
+« mise à jour de dix-neuf heures » existait donc bel et bien. Elle n'était
+simplement pas celle qu'on lui annonçait.
+
+### Pourquoi l'écran ne pouvait pas l'arbitrer
+
+La ligne « Version » de Réglages existe depuis le 7 août précisément pour
+répondre à « est-ce que j'ai les corrections ? » (§24). Elle affichait
+`11/08/2026 19:37 · b45cd5d`. Une date et sept caractères.
+
+**Deux branches vivantes le même soir portent la même heure.** Et une empreinte
+courte ne se compare pas de tête, sur six pouces, à une empreinte annoncée dans
+un message. La ligne a donc répondu **oui** à une question dont la réponse était
+**non** — le pire état possible pour un dispositif de confiance : plus nuisible
+qu'une ligne absente, parce qu'on s'y fie.
+
+### La décision
+
+**La ligne nomme la branche** — `11/08/2026 19:37 · b45cd5d · main` — dans les
+deux endroits qui l'écrivent : `src/server/version-executee.ts` (l'écran, lu
+dans le dépôt à chaque affichage) et `.devcontainer/demarrer.sh` (le bandeau du
+terminal). Une phrase sous la ligne dit ce que ce mot engage : *un correctif
+livré sur une autre branche n'arrivera pas ici, même en cherchant les
+corrections.*
+
+**On n'invente jamais de branche.** Hors dépôt git, la version reste
+« inconnue » ; sur une tête détachée, la ligne perd son dernier mot plutôt que
+d'affirmer un nom faux. Une ligne incomplète se voit ; une ligne fausse se croit.
+
+**Et le bandeau du terminal cesse de mentir sur le même sujet.**
+`ATLAS_VERSION` était calculée avant la mise à jour et affichée après : le
+bandeau annonçait « Le code a été mis à jour au démarrage » puis « Version
+exécutée : *celle d'avant* ». Elle est relue juste après `mettre-a-jour.sh`,
+donc **avant** que le veilleur ne soit relancé — sinon le serveur neuf héritait
+lui aussi de la variable périmée.
+
+### Ce que cela ne résout pas, et qu'il ne faut pas confondre
+
+Nommer la branche ne livre rien. **Un travail sur une branche reste hors de sa
+portée tant qu'il n'est pas dans `main`**, et l'y porter n'appartient pas à
+l'agent (`CLAUDE.md` §6 : jamais de poussée ailleurs sans accord explicite).
+
+Ce qui change, c'est qu'une capture de son écran tranche désormais la question
+en une seconde, au lieu d'un aller-retour et d'une soirée à chercher un défaut
+dans du code qui n'a jamais tourné chez lui.
+
+**La règle générale, puisqu'elle se répète :** avant de chercher un défaut dans
+un travail que le patron dit ne pas voir, vérifier qu'il l'a. Une commande :
+
+```sh
+git show origin/main:<le fichier> | grep <la marque du travail>
+```

@@ -206,7 +206,13 @@ export default async function ReglagesPage() {
             Elle est lue DANS LE DÉPÔT servi, jamais dans une variable posée au
             démarrage : le 7 août 2026 elle affichait encore « inconnue » sur un
             espace tout neuf, et elle serait de toute façon restée périmée après
-            le bouton ci-dessous (voir `src/server/version-executee.ts`). */}
+            le bouton ci-dessous (voir `src/server/version-executee.ts`).
+
+            Le dernier mot de la ligne est la BRANCHE, et il est là depuis le
+            11 août au soir : ce jour-là un travail livré sur une branche n'est
+            jamais arrivé jusqu'à lui, dont l'espace suit `main`. Il a lu une
+            date de la même heure — les deux avançaient en parallèle — et conclu
+            qu'il avait tout. La date ne mentait pas ; elle ne suffisait pas. */}
         <div className="px-6 pt-10">
           <p className={smallCaps} style={{ color: colors.muted, marginBottom: 4 }}>
             Version
@@ -214,6 +220,21 @@ export default async function ReglagesPage() {
           <p className="text-[13px]" style={{ color: colors.muted }}>
             {version ?? "inconnue — cette installation n'annonce pas sa version."}
           </p>
+          {/* Dit en toutes lettres, parce que « main » tout seul ne veut rien
+              dire pour lui : le dernier mot est la branche suivie, et un travail
+              livré ailleurs n'arrivera JAMAIS ici, quelle que soit la date.
+
+              **Sur le banc d'essai SEULEMENT**, comme le bouton ci-dessous. Une
+              application déployée n'a pas de dépôt : sa version vient de la
+              chaîne de livraison et ne porte aucune branche
+              (`src/server/version-executee.ts`). Cette phrase y serait donc du
+              jargon, et un jargon FAUX — le pire des deux. */}
+          {process.env.ATLAS_BANC_ESSAI === "1" && (
+            <p className="text-[12px]" style={{ color: colors.muted, marginTop: 4, opacity: 0.85 }}>
+              Le dernier mot est la branche suivie. Un correctif livré sur une autre
+              branche n&apos;arrivera pas ici, même en cherchant les corrections.
+            </p>
+          )}
           {/* Sur le banc d'essai seulement : une application déployée ne va pas
               chercher son propre code, ce serait une porte d'entrée. */}
           {process.env.ATLAS_BANC_ESSAI === "1" && <BoutonMiseAJour derniereIssue={await derniereIssueMiseAJour()} />}

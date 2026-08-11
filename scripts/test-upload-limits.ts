@@ -3,7 +3,7 @@ import { verifierTailleFichier, LIMITE_TELEVERSEMENT_OCTETS, MESSAGE_FICHIER_TRO
 import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import * as chantiersRepo from "../src/server/repositories/chantiers";
-import { ajouterPhotoAction } from "../src/app/chantiers/[id]/photos/actions";
+import { ajouterPhotoAction } from "../src/app/chantiers/[id]/photos-actions";
 import { enregistrerNoteVocaleAction } from "../src/app/chantiers/[id]/note-vocale/actions";
 import * as photosRepo from "../src/server/repositories/photos";
 import { fermerLimiteur } from "../src/server/rate-limit";
@@ -85,22 +85,42 @@ async function main() {
     formData.set("fichier", fichierDeTaille(200 * 1024, "audio/webm", "note.webm"));
     formData.set("dureeSecondes", "12");
     const note = await enregistrerNoteVocaleAction(chantier.id, formData);
-    assert.ok(note);
+    assert.equal(note.ok, true);
   });
 
-  await test("Upload note vocale : un fichier surdimensionné est rejeté avec un message clair", async () => {
+  // **Un refus n'est plus une exception, et ce contrôle a changé avec lui**
+  // (11 août 2026). Le message d'une exception levée par une action serveur
+  // n'atteint jamais l'écran du patron : Next.js le remplace en production par
+  // un identifiant opaque, et son banc sert une version bâtie. Le refus est
+  // donc une valeur de retour — c'est ce qu'on vérifie ici, message compris,
+  // puisque c'est précisément ce qu'il doit pouvoir lire.
+  await test("Upload note vocale : un fichier surdimensionné est refusé avec un message clair", async () => {
     const formData = new FormData();
     formData.set("fichier", fichierDeTaille(LIMITE_TELEVERSEMENT_OCTETS + 1024, "audio/webm", "note-trop-grosse.webm"));
-    let leve = false;
-    let message = "";
-    try {
-      await enregistrerNoteVocaleAction(chantier.id, formData);
-    } catch (err) {
-      leve = true;
-      message = err instanceof Error ? err.message : String(err);
-    }
-    assert.ok(leve);
-    assert.equal(message, MESSAGE_FICHIER_TROP_VOLUMINEUX);
+    const resultat = await enregistrerNoteVocaleAction(chantier.id, formData);
+    assert.equal(resultat.ok, false, "Un fichier surdimensionné doit être refusé");
+    assert.equal(resultat.ok === false && resultat.raison, MESSAGE_FICHIER_TROP_VOLUMINEUX);
+  });
+
+  await test("Upload note vocale : un format refusé NOMME le format reçu", async () => {
+    const formData = new FormData();
+    formData.set("fichier", fichierDeTaille(1024, "application/pdf", "faux.pdf"));
+    const resultat = await enregistrerNoteVocaleAction(chantier.id, formData);
+    assert.equal(resultat.ok, false);
+    // Sans le format reçu, un type que le téléphone du patron produit et que la
+    // liste blanche ignore resterait introuvable : il faudrait le lui demander.
+    assert.ok(
+      resultat.ok === false && resultat.raison.includes("application/pdf"),
+      `le refus doit nommer le format reçu, or il dit : ${resultat.ok === false ? resultat.raison : ""}`
+    );
+  });
+
+  await test("Upload note vocale : un enregistrement vide est refusé, pas rangé", async () => {
+    const formData = new FormData();
+    formData.set("fichier", fichierDeTaille(0, "audio/webm", "note-vide.webm"));
+    const resultat = await enregistrerNoteVocaleAction(chantier.id, formData);
+    assert.equal(resultat.ok, false, "Zéro octet n'est pas un enregistrement");
+    assert.ok(resultat.ok === false && /vide/i.test(resultat.raison));
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

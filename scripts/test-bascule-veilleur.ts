@@ -137,16 +137,36 @@ cas("veiller.sh consulte le drapeau AVANT de conclure à une mort", () => {
 });
 
 cas("banc.mjs pose le drapeau AVANT de tuer son serveur", () => {
-  const code = readFileSync(BANC, "utf8")
+  const fichier = readFileSync(BANC, "utf8")
     .split("\n")
     .filter((l) => !l.trimStart().startsWith("//"))
     .join("\n");
+
+  // **On ne regarde QUE la bascule, et c'est un correctif du contrôle
+  // lui-même** (11 août 2026). Il cherchait la première mise à mort du fichier
+  // entier ; depuis que les gestionnaires de signal sont posés tôt — pour ne
+  // plus laisser un serveur orphelin sur le port, voir `test-prechauffage.ts`
+  // —, cette première occurrence est la LEUR, et elle n'a rien à voir avec la
+  // bascule. Le contrôle rougissait donc sur un code parfaitement juste :
+  // il visait mal, et un contrôle qui accuse à tort coûte plus cher que pas de
+  // contrôle du tout (`AGENTS.md`).
+  const debut = fichier.indexOf("enBascule = true;");
+  assert.notEqual(debut, -1, "la bascule est introuvable : ce contrôle n'éprouve plus rien");
+  const code = fichier.slice(debut);
+
   const pose = code.indexOf('marquerBascule("--debut")');
   // `tuerLeServeur` et non `serveur.kill` : depuis que le serveur est détaché,
   // c'est le GROUPE qu'on tue — tuer l'enfant seul laissait `next-server`
   // accroché au port, et c'est ce qui a produit « EADDRINUSE » quatre fois de
   // suite chez le patron.
-  const tue = code.indexOf("tuerLeServeur(serveur)");
+  //
+  // La bascule déloge de deux façons — le groupe qu'elle connaît, puis ce qui
+  // écoute encore. C'est la PREMIÈRE des deux qui ouvre la fenêtre, et donc
+  // celle que le drapeau doit précéder.
+  const morts = ["tuerLeServeur(serveur)", "delogerCeQuiEcoute()"]
+    .map((m) => code.indexOf(m))
+    .filter((i) => i >= 0);
+  const tue = morts.length > 0 ? Math.min(...morts) : -1;
   const retire = code.indexOf('marquerBascule("--fin")');
   assert.notEqual(pose, -1, "banc.mjs ne pose pas le drapeau");
   assert.notEqual(tue, -1, "banc.mjs ne tue plus son serveur : ce contrôle n'éprouve plus rien");
