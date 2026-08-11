@@ -2,10 +2,26 @@ import { colors, font } from "@/lib/design-tokens";
 
 // L'action principale, refaite le 10 août 2026 avec le reste de l'application.
 //
-// **Ce bouton est sur vingt-sept écrans** : le changer, c'est changer partout
-// d'un coup — et c'est bien l'intention. Trois choses le rapprochent de l'écran
-// des chantiers que le patron a retenu : le rayon tombe de 16 px à 5, le libellé
-// passe à la serif de titre, et la hauteur se resserre.
+// **Le changer, c'est changer partout d'un coup — et c'est bien l'intention.**
+// Trois choses le rapprochent de l'écran des chantiers que le patron a retenu :
+// le rayon tombe de 16 px à 5, le libellé passe à la serif de titre, et la
+// hauteur se resserre.
+//
+// **Combien d'écrans, exactement.** Ce commentaire a longtemps annoncé
+// « vingt-sept », chiffre qui ne correspondait à rien de vérifiable et qui a été
+// répété tel quel au patron le 11 août. Recompté ce jour-là, à sa demande :
+//
+//   · **8 écrans du produit**, 11 boutons — création de chantier, informations,
+//     prix, transcription, photos, note vocale (2), devis à envoyer, facture (3) ;
+//   · **10 écrans d'erreur**, servis par un seul bouton dans `CorpsErreur` ;
+//   · 8 pages `/design/*`, 9 boutons — **hors produit**, découplées depuis le
+//     1er août (voir `smallCaps` dans `design-tokens.ts`).
+//
+// Soit **18 écrans réels**. Pour recompter sans se fier à cette ligne :
+//
+//     grep -rl PrimaryButton src/ --include="*.tsx"
+//
+// Un chiffre écrit dans un commentaire vieillit ; la commande, non.
 //
 // **Le rayon est ce qui compte le plus.** Un rectangle presque droit se lit
 // comme une pièce imprimée ; le même arrondi à 16 px se lit comme un bouton
@@ -32,10 +48,10 @@ import { colors, font } from "@/lib/design-tokens";
 // c'est une forme en soi, celle d'un jeton, pas d'une tuile d'application. La
 // plaque droite reste la forme par défaut partout ailleurs.
 //
-// **Pour l'instant, un seul écran s'en sert** — celui de la création. Ce bouton
-// est sur vingt-sept écrans : basculer la valeur par défaut les changerait tous
-// d'un coup, sans que le patron les ait vus. Le jour où il le demande, c'est
-// `forme = "capsule"` par défaut ici, et rien d'autre.
+// **Pour l'instant, un seul écran s'en sert** — celui de la création. Basculer
+// la valeur par défaut changerait les dix-sept autres d'un coup (voir le compte
+// en tête de fichier), sans que le patron les ait vus. Le jour où il le demande,
+// c'est `forme = "capsule"` par défaut ici, et rien d'autre.
 type Forme = "plaque" | "capsule";
 
 export default function PrimaryButton({

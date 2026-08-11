@@ -57,8 +57,12 @@ en en-tête. `ARCHITECTURE.md` §60.
    neuf fois sur dix la réponse est « je dicterai ». La bascule existe pour
    garder les deux chemins visibles SANS ajouter ce coût.
 2. **La capsule ne vaut que pour cet écran.** `PrimaryButton` est sur
-   **vingt-sept écrans** : passer `forme="capsule"` par défaut les changerait
-   tous d'un coup. La question a été posée au patron, elle n'est pas tranchée.
+   **dix-huit écrans** — 8 du produit, 10 d'erreur via `CorpsErreur` : passer
+   `forme="capsule"` par défaut les changerait tous d'un coup. La question a été
+   posée au patron, elle n'est pas tranchée. **Ne pas se fier à un chiffre écrit
+   dans un commentaire** : celui-ci a annoncé « vingt-sept » pendant deux jours
+   sans que rien ne le vérifie, et il a été répété au patron. La commande est
+   dans l'en-tête de `PrimaryButton.tsx`.
 3. **Le chantier est créé AVANT le devis**, toujours, par la même fonction
    (`creerPuisAller`). C'est ce qui permet au devis de relire le client. Sauter
    la création produirait le devis orphelin qu'il redoutait.

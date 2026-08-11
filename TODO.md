@@ -37,9 +37,15 @@ avec le client déjà en en-tête. Le raisonnement complet est dans
 `ARCHITECTURE.md` §60.
 
 **Ce qui reste ouvert, et qui n'est PAS de la finition :** la capsule ne vaut que
-pour cet écran. `PrimaryButton` est sur **vingt-sept écrans** ; la passer par
+pour cet écran. `PrimaryButton` est sur **dix-huit écrans** — 8 du produit
+(création, informations, prix, transcription, photos, note vocale, devis à
+envoyer, facture) et 10 écrans d'erreur servis par `CorpsErreur`. La passer par
 défaut les changerait tous d'un coup, sans qu'il les ait vus. La question lui a
 été posée — tant qu'il n'a pas répondu, on ne touche à rien.
+
+*(Le chiffre « vingt-sept », écrit le 10 août et répété au patron le 11, ne
+correspondait à rien de vérifiable. Recompté et corrigé dans
+`PrimaryButton.tsx`, avec la commande pour le refaire.)*
 
 ### ~~0 ter. Les suites navigateur mesuraient un écran que personne ne possède~~ — **close le 2026-08-11**
 
