@@ -82,6 +82,23 @@ async function main() {
   assert.equal(reponse.status(), 200);
   assert.equal(reponse.headers()["content-type"], "image/jpeg");
 
+  // --- Elle est ENREGISTRÉE, pas seulement affichée ----------------------
+  //
+  // Repris d'une suite écrite le même jour par une autre session
+  // (`test-ajout-photo-fiche-e2e.ts`), retirée par arbitrage du patron : elle
+  // éprouvait une feuille maison qui n'existe plus. Ce contrôle-ci, lui, valait
+  // d'être gardé — un ajout qui ne survit pas au rechargement est un ajout qui
+  // n'a pas eu lieu, et rien d'autre ici ne le disait.
+  await page.reload({ waitUntil: "networkidle" });
+  await page.click('button[aria-label="Ouvrir le détail du chantier"]');
+  await tiroir.locator('img[src^="/api/fichiers/"]').first().waitFor({ state: "visible", timeout: 15000 });
+  assert.equal(
+    await tiroir.locator('img[src^="/api/fichiers/"]').count(),
+    1,
+    "La photo n'a pas survécu au rechargement : elle n'était qu'affichée."
+  );
+  console.log("  ✓ la photo survit au rechargement");
+
   // --- Le menu du téléphone, et rien d'autre -----------------------------
   //
   // `capture` n'est pas une préférence : sur un iPhone, il IMPOSE l'appareil

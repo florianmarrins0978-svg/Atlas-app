@@ -46,9 +46,25 @@ Ce que cela exige concrètement, à chaque lot :
   contrôles savaient échouer — sur le mauvais défaut. **Avant de corriger, aller
   chercher la ligne exacte que le serveur écrit.** Une demi-journée de plus a été
   perdue faute de l'avoir lue.
+- **Et si le message n'existe pas, le faire exister avant de chercher.** Le
+  11 août 2026, le patron signale « Impossible d'enregistrer la note pour
+  l'instant. Réessayez. » — et personne ne peut savoir pourquoi : les quatre
+  refus possibles portaient chacun leur phrase, et l'écran les jetait tous dans
+  un `catch {}`. Rien n'était journalisé. **Devant un défaut muet, la première
+  livraison n'est pas un correctif : c'est de rendre le défaut bavard.** Deviner
+  à sa place, c'est réparer une panne imaginée — le piège juste au-dessus.
+  Corollaire propre à ce cadre : **le message d'une exception levée par une
+  action serveur n'arrive JAMAIS jusqu'à lui** (Next.js le remplace en
+  production par un identifiant opaque, et son banc sert une version bâtie). Un
+  refus attendu se rend en valeur de retour ; une panne imprévue se journalise
+  avant de lever. Voir `HANDOVER.md`, piège 0 ter.
 - **Ne jamais transmettre une commande non vérifiée sans le dire.** Si elle ne
   peut pas l'être ici, l'écrire noir sur blanc plutôt que de la présenter comme
   sûre.
+- **Ne pas annoncer une panne corrigée quand seul le silence l'a été.** Ce qui
+  n'a pas pu être reproduit ici s'écrit comme non reproduit — dans le journal
+  des changements, dans `TODO.md`, et au patron. Une réparation supposée
+  présentée comme acquise lui coûte l'essai, puis l'aller-retour.
 - **Ce qui ne peut pas être éprouvé ici doit l'être ailleurs.** Cet environnement
   n'a ni démon Docker, ni GitHub CLI, et son mandataire réseau refuse `github.io`,
   `api.github.com` et la documentation GitHub. Ne pas contourner : déplacer la

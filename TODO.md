@@ -90,6 +90,28 @@ caprice de machine chargée.
 pas ce qui n'était pas demandé. À trancher : les supprimer, ou les marquer
 « maquette historique ».
 
+### 0. Si « Impossible d'enregistrer la note » revient : lire la phrase, ne pas la deviner
+
+**Ouvert le 11 août 2026, et volontairement laissé ouvert.** Le patron a signalé
+ce message ; il n'a **pas pu être reproduit ici** — la dictée passe avec un micro
+simulé, en développement comme sur la version bâtie derrière une origine
+étrangère. Ce qui a été corrigé, c'est le silence : l'écran nommait le refus
+« Impossible… Réessayez » quelle qu'en fût la cause, et rien n'était journalisé.
+
+Désormais, l'écran distingue trois choses, et il faut **lui demander laquelle
+il voit** :
+
+| Ce qu'il lit | Ce que ça désigne |
+|---|---|
+| une phrase précise (format, taille, cadence, enregistrement vide) | le serveur a refusé, et la raison est dedans — le format reçu est nommé |
+| « la connexion a été interrompue » | l'aller-retour n'a pas abouti : mandataire, réseau, session expirée |
+| plus rien, la note s'enregistre | c'était l'un des refus ci-dessus |
+
+Le journal du serveur porte les pannes imprévues avec le chantier, le format et
+la taille. **Ne rien supposer avant d'avoir la phrase** : deux diagnostics à
+distance ont déjà coûté un aller-retour chacun ce jour-là.
+
+
 ### 0 bis. Si le fil accroche ENCORE chez le patron : le masque, sur iOS
 
 **Ouvert le 11 août 2026, et volontairement laissé ouvert.** Le saccadé signalé

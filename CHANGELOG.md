@@ -53,6 +53,60 @@ vus** — détail dans `ARCHITECTURE.md` §60 :
 demande elle-même, et tout le reste peut être vert pendant que le patron change
 d'écran.
 
+### « Impossible d'enregistrer la note » ne disait pas pourquoi — et personne ne pouvait le savoir
+
+**Le patron, capture de son téléphone :** *« Pb sur la note vocale, corrige
+ça ! »* L'écran affichait *« Impossible d'enregistrer la note pour l'instant.
+Réessayez. »*
+
+**Ce défaut-ci n'a pas été reproduit ici, et il faut le dire tel quel.** La
+dictée a été rejouée dans un vrai navigateur avec un micro simulé, deux fois :
+en mode développement, puis sur la **version bâtie derrière une origine
+étrangère** — les conditions de son banc. Les deux fois, la note s'est
+enregistrée. Ce qui a donc été corrigé n'est pas la panne : c'est **ce qui
+rendait la panne impossible à nommer**.
+
+Deux choses s'y opposaient :
+
+1. **`catch {}` sans variable**, dans l'anneau comme dans l'écran de dictée. Le
+   message du serveur n'était même pas lu. Les quatre refus possibles — aucun
+   fichier, fichier trop lourd, format non pris en charge, cadence dépassée —
+   portaient chacun leur phrase, et l'écran les jetait toutes pour afficher la
+   même formule creuse.
+2. **Une exception ne traverse pas la version bâtie.** Next.js remplace en
+   production le message d'une action serveur par un identifiant opaque. L'écran
+   d'import de fichier croyait bien faire en affichant `err.message` : sur le
+   banc, il ne pouvait montrer qu'un digest. La documentation du cadre le dit en
+   toutes lettres — *« avoid using try/catch blocks and throw errors. Instead,
+   model expected errors as return values »*.
+
+Les refus attendus sont donc désormais des **valeurs de retour**, qui traversent
+la version bâtie intactes ; les pannes imprévues continuent de lever, mais le
+serveur les **écrit** avant, avec le chantier, le format et la taille. Sans
+cette ligne, une panne chez lui ne laissait aucune trace nulle part.
+
+**Le refus nomme le format reçu.** Si son iPhone produit un format que la liste
+blanche ignore, le message le dit — sans quoi il resterait introuvable, et il
+faudrait le lui demander.
+
+**Trouvé en chemin, et plus grave que le reste :** un enregistrement de zéro
+octet n'était pas refusé. Il descendait jusqu'à la base, qui le rejetait — et ce
+qui remontait à l'écran n'était plus un refus mais **la requête SQL entière,
+noms de tables et identifiant d'entreprise compris**. Il est maintenant arrêté à
+l'entrée, avec une phrase qui dit quoi faire.
+
+`test-note-vocale-refus-e2e.ts` éprouve les deux, par le chemin d'import qui
+emprunte la même action serveur que l'anneau et que l'écran de dictée. Confronté
+à l'ancien code : deux rouges.
+
+**La leçon, puisqu'elle se répète.** Deux diagnostics à distance avaient déjà
+coûté un aller-retour chacun ce jour-là. Cette fois, rien n'a été supposé : la
+dictée a été rejouée dans les conditions du banc avant d'écrire une ligne, et la
+configuration soupçonnée a été vérifiée dans la documentation du cadre — elle
+était juste, l'hypothèse est morte là. Ce qui reste inconnu est écrit comme
+inconnu.
+
+
 ### Le fil se bloquait à chaque chantier, et montrait sa barre grise
 
 **Le patron, capture de son ordinateur et de son téléphone à l'appui :** *« je
@@ -112,6 +166,51 @@ vert, et la coupure silencieuse — donc pire. `test-aucun-texte-coupe-e2e.ts`
 écrit un texte long pour de bon et vérifie qu'il tient dans sa boîte. On ne peut
 pas le contenter en cachant quoi que ce soit. Confronté à l'ancien code : il
 nomme les deux zones fautives et le nombre de pixels perdus.
+
+### La case « + » de la pellicule ajoute une photo, au lieu de changer d'écran
+
+**Le patron, le 11 août 2026 :** *« quand je clique sur l'encadré avec le plus
+là des photos, ça me ramène encore sur cette page-là. »*
+
+Sa case était un simple lien vers l'écran Photos. Ajouter une photo depuis la
+fiche demandait donc de changer d'écran d'abord, puis d'appuyer sur un second
+bouton : deux appuis et une navigation pour un geste qu'on fait cent fois par
+jour, sur un chantier, avec des gants.
+
+Elle ouvre désormais le choix « prendre une photo / choisir dans ma
+bibliothèque » **sur place**, et la photo apparaît dans la pellicule sans que
+l'écran bouge. Elle **reste un lien** — sans JavaScript, ou ouverte dans un
+nouvel onglet, elle mène toujours à l'écran Photos, comme « Nouveau chantier »
+sur l'accueil.
+
+Le mécanisme n'a pas été recopié : les deux champs de fichier (dont l'un impose
+l'appareil photo), l'ordre de fermeture de la feuille et la boucle d'envoi
+vivent dans un composant partagé — **AjoutDePhotos**, depuis supprimé (voir
+plus bas) — que l'écran Photos et la fiche partagent. Deux copies auraient divergé au premier correctif
+(`CLAUDE.md` §3).
+
+Sa suite — **test-ajout-photo-fiche-e2e**, supprimée avec elle — éprouvait le
+PARCOURS, pas la règle :
+l'appui n'ouvre pas une page, le choix s'ouvre, la photo part, elle s'affiche
+sans rechargement, elle survit au rechargement, et la porte de secours reste un
+lien. Confronté en rétablissant l'ancien lien : rouge, avec la phrase du patron
+— « on s'est retrouvé sur .../photos ».
+
+**Remplacée le soir même, par arbitrage du patron.** Deux sessions ont traité
+cette demande en parallèle, et leurs réponses divergeaient sur l'essentiel : ici,
+le « + » ouvre **notre** feuille (« prendre une photo / choisir dans ma
+bibliothèque ») ; dans l'autre, il ouvre **le menu du téléphone**, celui que le
+patron avait photographié — *Photothèque · Prendre une photo · Choisir les
+fichiers*. Sa demande disait les deux choses : ne plus changer d'écran, **et**
+« supprime-moi toutes les autres étapes ».
+
+Les deux ne pouvaient pas coexister : le menu du système n'apparaît que si aucun
+champ ne porte `capture`, et c'est précisément ce que la feuille ci-dessus
+suppose. Mis devant le choix, il a tranché pour le menu du téléphone. Ce qui
+disparaît donc avec cette version : le composant **AjoutDePhotos**, la feuille, le second
+champ, et l'écran Photos lui-même (voir l'entrée « Ajouter une photo ne fait plus
+changer de page » ci-dessus). Ce qui en a été **gardé** : son contrôle de
+persistance après rechargement, repris dans `scripts/test-photos-e2e.ts`.
 
 
 ### La perle plongeait avant le départ, sur une liste qui défile à peine
