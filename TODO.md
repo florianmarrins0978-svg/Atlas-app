@@ -37,12 +37,22 @@ vert.** La même commande, rejouée sur le même code, a donné deux rouges :
 | `test-prix-e2e` : `'0.00' == '34.50'` | un enregistrement qui n'a pas eu le temps de partir — le serveur était occupé à recompiler |
 | `❌ Le port 3000 est déjà pris.` | la vraie cause, mais annoncée **en dernier**, deux étapes trop tard |
 
-Un serveur `next dev -H 0.0.0.0 -p 3000` était resté vivant. `-H 0.0.0.0` ne
-vient ni de `run-e2e-tests.ts` ni de `verifier-connexion-avec-serveur.mts`, mais
-de `scripts/essai.mjs` / `scripts/banc.mjs` — que **six suites base** exercent
-(`test-bascule-veilleur.ts`, `test-prechauffage.ts`, `test-relance-demarrage.ts`,
-`test-ouvrir-port.ts`, `test-annonce-atelier.ts`, `test-annonce-adresse.ts`).
-L'une d'elles ne tue pas ce qu'elle a lancé.
+**Ce qui est établi, et pas supposé.** Un `next dev -H 0.0.0.0 -p 3000` tenait
+le port. Trois pièces le datent et le rattachent :
+
+- il a démarré à **18:59:50**, en pleine batterie ;
+- `/tmp/atlas-banc.pid` porte la **même minute** : c'est donc bien
+  `scripts/banc.mjs` qui a été lancé, pas un serveur d'essai ;
+- au moment du constat, **son parent n'existait plus** (`ppid = 1`) alors que
+  l'enfant tournait toujours.
+
+C'est le revers exact d'un correctif antérieur : `banc.mjs` **détache**
+volontairement son serveur pour pouvoir tuer son GROUPE (commit « Détacher le
+serveur du banc, et tuer son GROUPE plutôt que l'enfant »). Détaché, il survit à
+un parent tué brutalement — un délai de suite dépassé suffit. Reste à trouver
+**qui** lance un vrai banc pendant la batterie : les six suites qui exercent
+`banc.mjs` / `essai.mjs` le lisent au lieu de l'exécuter, la piste n'est donc
+pas close.
 
 **Pourquoi ça coûte cher, et pas seulement une exécution :** les suites
 navigateur suivantes ne se sont pas plaintes. Elles ont trouvé un serveur en vie
@@ -50,11 +60,17 @@ sur le port attendu et ont travaillé dessus — plus lentement, d'où le rouge 
 prix. Une batterie qui interroge un serveur qu'elle n'a pas démarré ne le dit
 nulle part : c'est exactement le genre de vert (ou de rouge) qui ne prouve rien.
 
-**Ce qu'il faut :** que `run-e2e-tests.ts` refuse de démarrer si le port est
-déjà pris — plutôt que de se rabattre en silence sur l'occupant — et que la
-suite fautive soit trouvée et refermée. `scripts/banc.mjs` sait déjà interroger
-le port (`essai.listen`) : le savoir-faire est là, il n'est simplement pas
-employé au bon endroit.
+**Ce qu'il faut**, dans cet ordre — le second seul suffirait à ne plus jamais
+être trompé :
+
+1. que `run-e2e-tests.ts` **refuse** de continuer si le port est déjà pris,
+   plutôt que de se rabattre en silence sur l'occupant. `scripts/banc.mjs` sait
+   déjà interroger un port (`essai.listen`) : le savoir-faire est là, il n'est
+   pas employé au bon endroit ;
+2. que le lanceur du banc soit identifié et refermé.
+
+**Reproduit deux fois sur deux batteries consécutives** — ce n'est pas un
+caprice de machine chargée.
 
 ### 0 quaterdecies. Deux maquettes `/design` décrivent un écran supprimé
 
