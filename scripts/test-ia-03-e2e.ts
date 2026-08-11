@@ -45,7 +45,13 @@ async function main() {
   await page.fill('input[placeholder="Votre question…"]', "Ajoute la prestation Ne jamais appliquer ceci");
   await page.click('button[aria-label="Envoyer"]');
   await page.waitForSelector("text=Appliquer les modifications", { timeout: 10000 });
-  await page.click("text=Annuler");
+  // **Visé par son libellé EXACT.** Depuis que la pellicule vit sur la fiche
+  // (11 août 2026), le tiroir des retirés y est rendu en permanence — replié,
+  // mais présent — et il porte lui aussi un « Annuler ». `text=` en trouvait
+  // deux et cliquait le mauvais, sous le panneau de l'assistant. Le libellé
+  // accessible du tiroir est « Annuler le retrait » : la correspondance exacte
+  // les sépare.
+  await page.getByRole("button", { name: "Annuler", exact: true }).click();
   await page.waitForSelector("text=Annulé.");
 
   await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });

@@ -348,6 +348,25 @@ Trois choses à savoir avant d'y toucher :
   est `fixed` en `z-[50]` et recouvre déjà la bulle : y ajouter la même réserve
   ne protège de rien et laisse quatre-vingts pixels de vide.
 
+**La pellicule ajoute sur place, et l'écran Photos a été supprimé (11 août,
+soir).** Le « + » du tiroir n'est plus un lien : il ouvre le menu du téléphone,
+sur la fiche. `src/app/chantiers/[id]/Pellicule.tsx`, `ARCHITECTURE.md` §60.
+Quatre choses à savoir avant d'y toucher :
+
+- **Aucun champ de fichier ne doit porter `capture`.** Sur un iPhone, il impose
+  l'appareil photo, retire l'accès à la photothèque, et le menu à trois entrées
+  — celui que le patron a photographié — n'apparaît jamais. Une suite compte les
+  champs et refuse `capture` : c'est le seul garde-fou, aucune machine de test
+  ne rendra ce menu.
+- **La visionneuse sort par un portail, et il le faut.** Le tiroir porte un
+  `z-index` : rendue dedans, elle passe **sous** la barre de navigation, qui se
+  peint en travers de la photo.
+- **Le tiroir mesure sa hauteur par `ResizeObserver`.** La pellicule ne passe
+  plus par ses propriétés : une liste de dépendances ne verrait plus rien, et le
+  tiroir des retirés resterait derrière le bord, « Annuler » hors d'atteinte.
+- **`/chantiers/[id]/photos` n'existe plus** (404, vérifié). Les liens de
+  `chantier-etat.ts` pointent désormais sur la fiche elle-même.
+
 **Le corps de la fiche ne porte QUE l'anneau (11 août, après-midi).** Sa
 maquette (`maquettes/atlas-note-vocale.html`) ne montre aucun bouton, et il l'a
 redemandé deux fois : *« exactement, respecte strictement ma maquette »*. Ce

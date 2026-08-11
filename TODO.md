@@ -28,6 +28,69 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quindecies. Une suite laisse un serveur sur le port 3000, et la batterie accuse le mauvais coupable
+
+**Vu le 11 août 2026, sur une batterie qui venait de passer entièrement au
+vert.** La même commande, rejouée sur le même code, a donné deux rouges :
+
+| Ce qu'on lisait | Ce que c'était |
+|---|---|
+| `test-prix-e2e` : `'0.00' == '34.50'` | un enregistrement qui n'a pas eu le temps de partir — le serveur était occupé à recompiler |
+| `❌ Le port 3000 est déjà pris.` | la vraie cause, mais annoncée **en dernier**, deux étapes trop tard |
+
+**Ce qui est établi, et pas supposé.** Un `next dev -H 0.0.0.0 -p 3000` tenait
+le port. Trois pièces le datent et le rattachent :
+
+- il a démarré à **18:59:50**, en pleine batterie ;
+- `/tmp/atlas-banc.pid` porte la **même minute** : c'est donc bien
+  `scripts/banc.mjs` qui a été lancé, pas un serveur d'essai ;
+- au moment du constat, **son parent n'existait plus** (`ppid = 1`) alors que
+  l'enfant tournait toujours.
+
+C'est le revers exact d'un correctif antérieur : `banc.mjs` **détache**
+volontairement son serveur pour pouvoir tuer son GROUPE (commit « Détacher le
+serveur du banc, et tuer son GROUPE plutôt que l'enfant »). Détaché, il survit à
+un parent tué brutalement — un délai de suite dépassé suffit. Reste à trouver
+**qui** lance un vrai banc pendant la batterie : les six suites qui exercent
+`banc.mjs` / `essai.mjs` le lisent au lieu de l'exécuter, la piste n'est donc
+pas close.
+
+**Pourquoi ça coûte cher, et pas seulement une exécution :** les suites
+navigateur suivantes ne se sont pas plaintes. Elles ont trouvé un serveur en vie
+sur le port attendu et ont travaillé dessus — plus lentement, d'où le rouge du
+prix. Une batterie qui interroge un serveur qu'elle n'a pas démarré ne le dit
+nulle part : c'est exactement le genre de vert (ou de rouge) qui ne prouve rien.
+
+**Ce qu'il faut**, dans cet ordre — le second seul suffirait à ne plus jamais
+être trompé :
+
+1. que `run-e2e-tests.ts` **refuse** de continuer si le port est déjà pris,
+   plutôt que de se rabattre en silence sur l'occupant. `scripts/banc.mjs` sait
+   déjà interroger un port (`essai.listen`) : le savoir-faire est là, il n'est
+   pas employé au bon endroit ;
+2. que le lanceur du banc soit identifié et refermé.
+
+**Reproduit deux fois sur deux batteries consécutives** — ce n'est pas un
+caprice de machine chargée.
+
+### 0 quaterdecies. Deux maquettes `/design` décrivent un écran supprimé
+
+**Né le 11 août 2026**, en supprimant `/chantiers/[id]/photos` (`ARCHITECTURE.md`
+§60). Restent derrière lui :
+
+- `src/app/design/photos/page.tsx` — la maquette d'un écran qui n'existe plus ;
+- `src/app/design/hub/page.tsx` — un lien `/chantiers/1/photos` désormais mort
+  (tous les liens de cette maquette le sont déjà : elle vise un chantier « 1 »
+  imaginaire) ;
+- le tableau du §4 bis de `docs/INTEGRER-ORIGINE.md`, qui cite le fichier
+  supprimé — mais ce document raconte un **état daté**, et le réécrire
+  falsifierait ce qu'on savait ce jour-là.
+
+**Volontairement pas touché dans le même lot** : ces maquettes ne sont ni des
+écrans du produit ni de la mémoire, et le patron avait demandé qu'on ne corrige
+pas ce qui n'était pas demandé. À trancher : les supprimer, ou les marquer
+« maquette historique ».
+
 ### 0. Si « Impossible d'enregistrer la note » revient : lire la phrase, ne pas la deviner
 
 **Ouvert le 11 août 2026, et volontairement laissé ouvert.** Le patron a signalé
@@ -49,6 +112,7 @@ Le journal du serveur porte les pannes imprévues avec le chantier, le format et
 la taille. **Ne rien supposer avant d'avoir la phrase** : deux diagnostics à
 distance ont déjà coûté un aller-retour chacun ce jour-là.
 
+
 ### 0 bis. Si le fil accroche ENCORE chez le patron : le masque, sur iOS
 
 **Ouvert le 11 août 2026, et volontairement laissé ouvert.** Le saccadé signalé
@@ -68,6 +132,7 @@ Deux précautions à ce moment-là : les dégradés doivent être placés aux bo
 la zone qui défile, pas du cadre (l'en-tête n'est pas dedans), et une capture
 avant/après doit être identique — sinon on aura échangé un défaut contre un
 autre.
+
 
 ### ~~0 ter. Les suites navigateur mesuraient un écran que personne ne possède~~ — **close le 2026-08-11**
 

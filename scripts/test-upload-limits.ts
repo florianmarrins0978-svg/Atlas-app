@@ -3,7 +3,7 @@ import { verifierTailleFichier, LIMITE_TELEVERSEMENT_OCTETS, MESSAGE_FICHIER_TRO
 import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import * as chantiersRepo from "../src/server/repositories/chantiers";
-import { ajouterPhotoAction } from "../src/app/chantiers/[id]/photos/actions";
+import { ajouterPhotoAction } from "../src/app/chantiers/[id]/photos-actions";
 import { enregistrerNoteVocaleAction } from "../src/app/chantiers/[id]/note-vocale/actions";
 import * as photosRepo from "../src/server/repositories/photos";
 import { fermerLimiteur } from "../src/server/rate-limit";

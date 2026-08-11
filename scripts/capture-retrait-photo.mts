@@ -12,8 +12,6 @@
  *
  *   - la cible de « Retirer » est atteignable (44 px, centre dans la cible) ;
  *   - **une seule vignette part** ;
- *   - **le décompte suit** — « 6 photos » au-dessus de cinq vignettes est le
- *     genre de détail qui décide seul du sentiment de soin ;
  *   - **rien n'est mis en file de purge tant que le tiroir est ouvert** : c'est
  *     la promesse que « Annuler » rend la photo, fichier compris, et c'est la
  *     seule qui ne se vérifie pas à l'écran.
@@ -57,7 +55,11 @@ await page.fill('input[name="password"]', "demo1234");
 await page.click('button[type="submit"]');
 await page.waitForURL(`${base}/`, { timeout: 60_000 });
 
-await page.goto(`${base}/chantiers/${chantierId}/photos`, { waitUntil: "networkidle" });
+// Les photos vivent dans la pellicule du tiroir depuis le 11 août 2026 :
+// l'écran `/photos` n'existe plus. Le décompte non plus — la pellicule montre
+// les vignettes, et compter à côté ce qu'on a sous les yeux était une
+// information de trop.
+await page.goto(`${base}/chantiers/${chantierId}`, { waitUntil: "networkidle" });
 await page.evaluate(() => document.fonts.ready);
 try {
   await page.locator("[data-atlas-vivant='oui']").first().waitFor({ state: "attached", timeout: 60_000 });
@@ -66,6 +68,7 @@ try {
   await navigateur.close();
   process.exit(1);
 }
+await page.click('button[aria-label="Ouvrir le détail du chantier"]');
 await page.waitForTimeout(700);
 await page.screenshot({ path: `${dossier}/photos-1-repos.png`, fullPage: true });
 
@@ -73,9 +76,7 @@ await page.screenshot({ path: `${dossier}/photos-1-repos.png`, fullPage: true })
 // le sélecteur large comptait douze cibles pour six photos, et le contrôle
 // annonçait alors deux départs pour un seul retrait.
 const vignettes = page.getByRole("button", { name: "Voir la photo" });
-const decompte = page.locator("[data-atlas='compte-photos']");
 const avant = await vignettes.count();
-const compteAvant = (await decompte.innerText()).trim();
 if (avant === 0) {
   console.error("✗ photos : aucune vignette — ce contrôle n'a rien éprouvé.");
   await navigateur.close();
@@ -115,15 +116,9 @@ await page.waitForTimeout(1100);
 await page.screenshot({ path: `${dossier}/photos-3-tiroir.png`, fullPage: true });
 
 const apres = await vignettes.count();
-const compteApres = (await decompte.innerText()).trim();
-console.log(`  photos — vignettes : ${avant} → ${apres} | décompte : « ${compteAvant} » → « ${compteApres} »`);
+console.log(`  photos — vignettes : ${avant} → ${apres}`);
 if (avant - apres !== 1) {
   console.error(`✗ photos : ${avant - apres} vignette(s) sont parties au lieu d'une seule.`);
-  await navigateur.close();
-  process.exit(1);
-}
-if (compteAvant === compteApres) {
-  console.error("✗ photos : le décompte n'a pas bougé — le retrait paraît ne pas avoir eu lieu.");
   await navigateur.close();
   process.exit(1);
 }

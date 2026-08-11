@@ -9,6 +9,50 @@ Format : le plus récent en tête.
 
 ## 2026-08-11
 
+### Ajouter une photo ne fait plus changer de page — et l'écran Photos disparaît
+
+**Le patron, capture à l'appui :** *« lorsque je suis sur la page chantier et que
+je clique sur l'encadré doré avec le petit plus doré pour ajouter des photos, je
+veux que ça arrête de me faire changer de page […] et que tu me supprimes toutes
+les autres étapes »*.
+
+Ajouter une photo coûtait **quatre gestes et un changement d'écran** : le « + »,
+la page Photos, le bouton « Ajouter une photo », notre feuille « Prendre une
+photo / Choisir dans ma bibliothèque », et **enfin** le menu du téléphone. Il en
+coûte deux : le « + », puis le menu du téléphone.
+
+**Notre feuille maison a disparu parce que le système fait mieux.** Un champ
+`accept="image/*"` **sans `capture`** fait afficher par iOS un menu qui porte
+déjà les trois entrées — *Photothèque*, *Prendre une photo*, *Choisir les
+fichiers*. Les deux chemins que le patron exigeait le 6 août y sont, au même
+endroit, un geste plus tôt. `capture` reste interdit : sur un iPhone il n'exprime
+pas une préférence, il **impose** l'appareil photo et retire l'accès à la
+photothèque.
+
+**L'écran `/chantiers/[id]/photos` n'existe plus** — décision prise avec le
+patron le même jour. Ajouter, regarder et retirer se font désormais dans la
+pellicule du tiroir de la fiche. La route répond 404, et une suite le vérifie :
+un écran à moitié supprimé est un chemin mort qu'on retrouve trois mois plus
+tard sans savoir s'il compte encore. Deux choses ont été supprimées avec lui, à
+dessein : le décompte « 6 photos » (il comptait ce qu'on a sous les yeux) et le
+lien « Passer à la note vocale » (l'anneau est au centre de la fiche depuis la
+veille).
+
+**Deux défauts que le déménagement crée, et qu'aucune relecture n'aurait
+vus** — détail dans `ARCHITECTURE.md` §60 :
+
+- la visionneuse plein écran, rendue **dans** le tiroir, passait **sous** la
+  barre de navigation : le tiroir porte un `z-index` et plafonne ses enfants.
+  Elle sort par un portail, et une suite mesure que la barre est bien couverte ;
+- le tiroir mesurait sa hauteur sur `[photos.length, etapes.length]`. La
+  pellicule ne passant plus par ses propriétés, la mesure ne voyait plus rien :
+  le tiroir des retirés apparaissait **derrière le bord**, « Annuler » hors
+  d'atteinte. Il observe désormais son corps (`ResizeObserver`).
+
+**Ce que la suite tient :** l'adresse **avant et après** l'ajout — c'est la
+demande elle-même, et tout le reste peut être vert pendant que le patron change
+d'écran.
+
 ### La ligne « Version » ne disait pas la BRANCHE — et il a cru avoir le bouton
 
 **Le patron :** *« la modification du bouton nouveau chantier n'est pas
@@ -510,6 +554,7 @@ configuration soupçonnée a été vérifiée dans la documentation du cadre —
 était juste, l'hypothèse est morte là. Ce qui reste inconnu est écrit comme
 inconnu.
 
+
 ### Le fil se bloquait à chaque chantier, et montrait sa barre grise
 
 **Le patron, capture de son ordinateur et de son téléphone à l'appui :** *« je
@@ -588,15 +633,33 @@ sur l'accueil.
 
 Le mécanisme n'a pas été recopié : les deux champs de fichier (dont l'un impose
 l'appareil photo), l'ordre de fermeture de la feuille et la boucle d'envoi
-vivent dans `src/components/atlas/AjoutDePhotos.tsx`, que l'écran Photos et la
-fiche partagent. Deux copies auraient divergé au premier correctif
+vivent dans un composant partagé — **AjoutDePhotos**, depuis supprimé (voir
+plus bas) — que l'écran Photos et la fiche partagent. Deux copies auraient divergé au premier correctif
 (`CLAUDE.md` §3).
 
-`scripts/test-ajout-photo-fiche-e2e.ts` éprouve le PARCOURS, pas la règle :
+Sa suite — **test-ajout-photo-fiche-e2e**, supprimée avec elle — éprouvait le
+PARCOURS, pas la règle :
 l'appui n'ouvre pas une page, le choix s'ouvre, la photo part, elle s'affiche
 sans rechargement, elle survit au rechargement, et la porte de secours reste un
 lien. Confronté en rétablissant l'ancien lien : rouge, avec la phrase du patron
 — « on s'est retrouvé sur .../photos ».
+
+**Remplacée le soir même, par arbitrage du patron.** Deux sessions ont traité
+cette demande en parallèle, et leurs réponses divergeaient sur l'essentiel : ici,
+le « + » ouvre **notre** feuille (« prendre une photo / choisir dans ma
+bibliothèque ») ; dans l'autre, il ouvre **le menu du téléphone**, celui que le
+patron avait photographié — *Photothèque · Prendre une photo · Choisir les
+fichiers*. Sa demande disait les deux choses : ne plus changer d'écran, **et**
+« supprime-moi toutes les autres étapes ».
+
+Les deux ne pouvaient pas coexister : le menu du système n'apparaît que si aucun
+champ ne porte `capture`, et c'est précisément ce que la feuille ci-dessus
+suppose. Mis devant le choix, il a tranché pour le menu du téléphone. Ce qui
+disparaît donc avec cette version : le composant **AjoutDePhotos**, la feuille, le second
+champ, et l'écran Photos lui-même (voir l'entrée « Ajouter une photo ne fait plus
+changer de page » ci-dessus). Ce qui en a été **gardé** : son contrôle de
+persistance après rechargement, repris dans `scripts/test-photos-e2e.ts`.
+
 
 ### La perle plongeait avant le départ, sur une liste qui défile à peine
 
@@ -673,6 +736,7 @@ CSS et non le calcul ; descente supprimée dans la fonction pure → rouge.
 L'ancienne règle — celle qui posait la perle sur le chantier en attente — et sa
 suite disparaissent : une règle morte qui décrit une intention abandonnée est un
 piège pour la conversation suivante.
+
 
 ---
 
