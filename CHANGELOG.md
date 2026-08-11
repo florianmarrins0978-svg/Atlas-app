@@ -9,6 +9,35 @@ Format : le plus récent en tête.
 
 ## 2026-08-11
 
+### La case « + » de la pellicule ajoute une photo, au lieu de changer d'écran
+
+**Le patron, le 11 août 2026 :** *« quand je clique sur l'encadré avec le plus
+là des photos, ça me ramène encore sur cette page-là. »*
+
+Sa case était un simple lien vers l'écran Photos. Ajouter une photo depuis la
+fiche demandait donc de changer d'écran d'abord, puis d'appuyer sur un second
+bouton : deux appuis et une navigation pour un geste qu'on fait cent fois par
+jour, sur un chantier, avec des gants.
+
+Elle ouvre désormais le choix « prendre une photo / choisir dans ma
+bibliothèque » **sur place**, et la photo apparaît dans la pellicule sans que
+l'écran bouge. Elle **reste un lien** — sans JavaScript, ou ouverte dans un
+nouvel onglet, elle mène toujours à l'écran Photos, comme « Nouveau chantier »
+sur l'accueil.
+
+Le mécanisme n'a pas été recopié : les deux champs de fichier (dont l'un impose
+l'appareil photo), l'ordre de fermeture de la feuille et la boucle d'envoi
+vivent dans `src/components/atlas/AjoutDePhotos.tsx`, que l'écran Photos et la
+fiche partagent. Deux copies auraient divergé au premier correctif
+(`CLAUDE.md` §3).
+
+`scripts/test-ajout-photo-fiche-e2e.ts` éprouve le PARCOURS, pas la règle :
+l'appui n'ouvre pas une page, le choix s'ouvre, la photo part, elle s'affiche
+sans rechargement, elle survit au rechargement, et la porte de secours reste un
+lien. Confronté en rétablissant l'ancien lien : rouge, avec la phrase du patron
+— « on s'est retrouvé sur .../photos ».
+
+
 ### La perle plongeait avant le départ, sur une liste qui défile à peine
 
 **Le patron, le soir, après la fusion :** *« la perle reste accolée en bas au
