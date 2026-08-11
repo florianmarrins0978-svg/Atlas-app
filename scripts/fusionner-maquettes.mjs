@@ -169,6 +169,13 @@ const MAQUETTES = [
     quoi: "Le même anneau, ramené AU CENTRE, avec un petit trait de chaque côté qui s’écarte quand le signe part en trois tours. Huit déclinaisons, dont deux qui reprennent l’anneau de la note vocale.",
     retenu: true,
   },
+  {
+    fichier: "23-le-mot-et-le-rond-qui-bat.html",
+    titre: "Le mot, le rond qui bat, et la poussière",
+    famille: "Enlever le gros bouton",
+    quoi: "Le mixte : le mot écrit, le rond qui bat en attendant le doigt, et au clic le tour et la poussière. Sept dispositions du mot — à droite, coupé en deux, en petit doré dessous, « Ajouter », avec les traits, au-dessus, ou effacé par le geste.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

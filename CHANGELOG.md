@@ -34,6 +34,31 @@ Rien n'est codé : l'application porte toujours l'aplat (`TODO.md`, 0 terdecies)
 3. **Aucun script**, comme les treize maquettes précédentes : son lecteur n'en
    exécute pas, et une page engendrée en JavaScript lui arrive vide.
 
+### Le mot, le rond qui bat, et la poussière
+
+Il a décrit le mixte pièce par pièce : *« nouveau chantier écrit, le plus à
+droite qui clignote en attente qu'on clique dessus, et une fois qu'on clique,
+il se met à tourner avec les éclats de poussière »*.
+
+`docs/maquettes/23-le-mot-et-le-rond-qui-bat.html` tient le geste fixe — le
+battement d'attente, le tour de trois tours, seize grains d'or, puis la page —
+et ne fait varier que **la place du mot** : à droite du rond, coupé en deux par
+lui (« Nouveau » | rond | « chantier »), en petit doré dessous, réduit à
+**« Ajouter »**, accompagné des deux traits, posé au-dessus, ou **effacé par le
+geste lui-même**.
+
+**Le battement n'est pas un clignotement, et c'est délibéré.** Allumé/éteint,
+c'est un signal d'alarme ; ici une onde d'or naît du bord de l'anneau toutes les
+3,4 secondes et se dissout. Elle s'arrête NET dès l'appui : un objet qui
+continue d'appeler alors qu'on l'a déjà pris n'écoute pas. Et le rythme est lent
+à dessein — un écran qui alerte dix fois par jour finit par être ignoré, ou
+éteint.
+
+**Un défaut vu à la capture :** « le mot dessus » était la copie exacte de « le
+mot dessous ». Le mot était déjà écrit avant le rond dans le balisage, et la
+colonne était en plus inversée — deux inversions valent une identité. Les sept
+contrôles étaient verts, et les deux cartes montraient la même chose.
+
 ### Le rond redescend au milieu, entre deux traits
 
 *« Je ne veux pas qu'il soit en haut à droite, je veux qu'il soit vraiment

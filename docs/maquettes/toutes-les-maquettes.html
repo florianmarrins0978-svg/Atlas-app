@@ -2614,6 +2614,180 @@
 }
 
 
+/* 23 — Le mot, le rond qui bat, et la poussière */
+#s23{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+@media (prefers-color-scheme: dark){
+#s23:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  
+}
+#s23[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+#s23, #s23 *{box-sizing:border-box}
+#s23{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 90px}
+#s23 .page{max-width:1360px;margin:0 auto}
+#s23 .intro{max-width:62ch;margin:0 auto}
+#s23 .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
+#s23 .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
+#s23 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
+#s23 .intro b{color:var(--encre);font-weight:500}
+#s23 .appui{max-width:52ch;margin:22px auto 0;padding:15px 20px;border:1px solid var(--trait);
+         border-radius:6px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s23 .appui b{color:var(--encre);font-weight:500}
+#s23 .famille{margin:60px 0 14px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--gris)}
+#s23 .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
+#s23 .famille span::before,#s23 .famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
+#s23 .famille span::before{right:100%}
+#s23 .famille span::after{left:100%}
+#s23 .sous-titre{max-width:58ch;margin:0 auto 30px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s23 .planche{display:flex;flex-wrap:wrap;gap:26px;justify-content:center}
+#s23 .carte{width:300px;display:flex;flex-direction:column;align-items:center;gap:14px}
+#s23 .socle{display:grid;place-items:center;overflow:hidden;width:300px;height:150px;border-radius:10px;
+         background:#f5f3ee;border:1px solid var(--trait);
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f;
+         --e-trait:rgba(28,28,26,.16)}
+#s23 .etiquette{color:var(--bronze)}
+#s23 .rangee{display:flex;flex-wrap:wrap;gap:52px 40px;justify-content:center;align-items:flex-start}
+#s23 .prop{display:flex;flex-direction:column;align-items:center;gap:16px;width:412px;max-width:100%}
+#s23 .prop .nom-prop{margin:0;font:400 22px/1.25 ui-serif,Georgia,serif;text-align:center}
+#s23 .prop .dit{margin:0;max-width:37ch;text-align:center;font-size:13px;line-height:1.6;color:var(--gris)}
+#s23 .prop .dit b{color:var(--encre);font-weight:500}
+#s23 .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
+#s23 .ecran{position:relative;overflow:hidden;border-radius:34px;height:664px;
+         display:flex;flex-direction:column;
+         background:#f5f3ee;color:#1c1c1a;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f;
+         --e-trait:rgba(28,28,26,.16); --e-trait-doux:rgba(28,28,26,.07)}
+#s23 .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+#s23 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+#s23 .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+#s23 .enseigne{padding:26px 0 0;text-align:center;font-size:11px;letter-spacing:.52em}
+#s23 .titre .salut{margin:0;color:var(--e-or)}
+#s23 .titre h1{margin:14px 0 0;font-size:36px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+#s23 .titre .compte{margin:14px 0 0;color:var(--e-gris)}
+#s23 .fermeture{height:1px;background:var(--e-trait);margin:26px 26px 0}
+#s23 .rubrique{display:flex;justify-content:space-between;align-items:center;
+            margin:26px 26px 10px;color:var(--e-gris)}
+#s23 .tige{position:relative;margin:0 26px;flex:1 1 auto;min-height:0;overflow:hidden}
+#s23 .tige::before{content:"";position:absolute;left:47px;top:10px;bottom:10px;width:1px;background:var(--e-trait)}
+#s23 .brin{position:relative;display:grid;grid-template-columns:47px 1fr;gap:0 26px;
+        padding:15px 0;text-decoration:none;color:inherit}
+#s23 .brin .jour{grid-row:1 / span 3;text-align:right;padding-right:13px;color:var(--e-gris)}
+#s23 .brin .jour b{display:block;font-weight:400;font-size:19px;line-height:1;color:var(--e-encre);
+                font-family:ui-serif,Georgia,serif}
+#s23 .brin .jour span{display:block;margin-top:4px}
+#s23 .brin .nom{margin:0;font-size:19px;line-height:1.15;font-weight:400}
+#s23 .brin .lieu{margin:3px 0 0;font-size:11.5px;color:var(--e-gris)}
+#s23 .brin .etat{margin:7px 0 0;color:var(--e-gris)}
+#s23 .brin.attend .etat{color:var(--e-or)}
+#s23 .brin.attend::after{content:"";position:absolute;left:44px;top:21px;width:7px;height:7px;
+                      border-radius:99px;background:var(--e-or);box-shadow:0 0 0 4px var(--e-fond)}
+#s23 .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;position:relative;z-index:2;
+       background:var(--e-fond)}
+#s23 .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
+#s23 .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-or)}
+#s23 .titre{padding:34px 26px 0}
+#s23 .siege{display:flex;justify-content:center;padding:22px 26px 2px}
+#s23 .geste{display:flex;align-items:center;justify-content:center;gap:16px;
+         text-decoration:none;color:var(--e-encre);-webkit-tap-highlight-color:transparent}
+#s23 .geste .mot{letter-spacing:.28em;white-space:nowrap;
+              transition:letter-spacing 620ms cubic-bezier(.22,.61,.36,1),opacity 320ms}
+#s23 .geste .mot.dore{color:var(--e-or);font-size:9px;letter-spacing:.32em}
+#s23 .geste.dessous,#s23 .geste.ajouter,#s23 .geste.dessus,#s23 .geste.efface{flex-direction:column;gap:12px}
+#s23 .geste.traits{flex-wrap:wrap;width:236px}
+#s23 .geste.traits .mot{flex-basis:100%;text-align:center;margin-top:11px}
+#s23 .geste.grand.traits{width:262px}
+#s23 .rond{position:relative;display:grid;place-items:center;width:46px;height:46px;
+        border-radius:99px;transition:transform 140ms cubic-bezier(.2,.7,.3,1)}
+#s23 .geste.grand .rond{width:54px;height:54px}
+#s23 .geste:active .rond{transform:scale(.92)}
+#s23 .rond .cerne{position:absolute;inset:0;border-radius:99px;border:1px solid var(--e-trait);z-index:2}
+#s23 .rond .signe{position:relative;z-index:4;display:block;width:24px;height:24px}
+#s23 .geste.grand .rond .signe{width:28px;height:28px}
+#s23 .rond .croix{stroke:var(--e-or);stroke-width:1.15;fill:none}
+#s23 .rond .pouls{position:absolute;inset:0;border-radius:99px;z-index:1;
+               border:1px solid var(--e-or);opacity:0;
+               animation:s23-battement 3.4s cubic-bezier(.16,.7,.3,1) infinite}
+@keyframes s23-battement{
+    0%{transform:scale(1);opacity:0}
+    8%{opacity:.55}
+    46%{transform:scale(1.85);opacity:0}
+    100%{transform:scale(1.85);opacity:0}
+  }
+#s23 .geste.part .pouls{animation:none;opacity:0}
+#s23 .geste.part .signe{animation:s23-tour 560ms cubic-bezier(.16,.74,.22,1) both}
+@keyframes s23-tour{
+    0%{transform:rotate(0)}
+    14%{transform:rotate(120deg)}
+    100%{transform:rotate(1080deg)}
+  }
+#s23 .geste.part .mot{letter-spacing:.40em}
+#s23 .geste.dessous.part .mot.dore,#s23 .geste.ajouter.part .mot.dore,#s23 .geste.dessus.part .mot.dore,#s23 .geste.traits.part .mot.dore{letter-spacing:.44em}
+#s23 .geste.efface.part .mot.seffacer{opacity:0}
+#s23 .rond .gerbe{position:absolute;inset:0;z-index:3;pointer-events:none}
+#s23 .rond .gerbe i{position:absolute;left:50%;top:50%;width:var(--l);height:var(--l);
+                 margin:calc(var(--l) / -2) 0 0 calc(var(--l) / -2);
+                 border-radius:99px;background:var(--e-or);opacity:0}
+#s23 .geste.part .gerbe i{animation:s23-grain 580ms cubic-bezier(.16,.68,.3,1) both;
+                       animation-delay:var(--t)}
+@keyframes s23-grain{
+    0%{transform:translate(calc(var(--x) * .42),calc(var(--y) * .42)) scale(.4);opacity:0}
+    16%{opacity:1}
+    66%{opacity:1}
+    100%{transform:translate(var(--x),var(--y)) scale(.7);opacity:0}
+  }
+#s23 .geste .trait{width:52px;height:1px;background:var(--e-trait);
+                transition:transform 560ms cubic-bezier(.16,.74,.22,1),opacity 560ms}
+#s23 .geste.part .trait.g{transform:translateX(-12px);opacity:.55}
+#s23 .geste.part .trait.d{transform:translateX(12px);opacity:.55}
+#s23 .rond .revelation{display:none}
+#s23 .scene{display:flex;flex-direction:column;flex:1;min-height:0}
+@media (prefers-reduced-motion: reduce){
+#s23 .rond .pouls{animation:none;opacity:0}
+
+  
+}
+#s23 .feuille{position:absolute;left:0;right:0;bottom:0;top:56px;z-index:6;
+           display:flex;flex-direction:column;background:var(--e-fond);
+           border-radius:22px 22px 0 0;box-shadow:0 -22px 50px rgba(20,18,14,.22);
+           transform:translateY(100%);visibility:hidden;
+           transition:transform 540ms cubic-bezier(.22,.61,.36,1),visibility 0s 540ms}
+#s23 .feuille.ouverte{transform:translateY(0);visibility:visible;transition-delay:0s}
+#s23 .ecran[data-ouverture="cercle"] .feuille{top:0;border-radius:0;box-shadow:none;
+                                           transition:opacity 160ms ease,visibility 0s 160ms}
+#s23 .ecran[data-ouverture="cercle"] .feuille.ouverte{transform:none;opacity:1;transition-delay:0s}
+#s23 .ecran[data-ouverture="cercle"] .feuille:not(.ouverte){transform:none;opacity:0}
+#s23 .feuille .poignee{width:38px;height:4px;border-radius:9px;background:var(--e-trait);margin:12px auto 0}
+#s23 .feuille h2{margin:26px 26px 0;font:400 30px/1.05 ui-serif,Georgia,serif;letter-spacing:-.018em}
+#s23 .feuille .quoi{margin:12px 26px 0;color:var(--e-gris);font-size:11.5px;line-height:1.5}
+#s23 .feuille .champ{margin:22px 26px 0}
+#s23 .feuille .champ span{display:block;color:var(--e-gris);margin-bottom:7px}
+#s23 .feuille .champ b{display:block;padding:13px 15px;border-radius:4px;background:var(--e-plage);
+                    font-weight:400;color:var(--e-gris);font-size:15px}
+#s23 .feuille .fermer{display:block;margin:auto 26px 30px;padding:15px;text-align:center;
+                   text-decoration:none;color:var(--e-gris);border-top:1px solid var(--e-trait)}
+#s23 .note{max-width:62ch;margin:56px auto 0;padding:20px 22px;border:1px solid var(--trait);
+        border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.7}
+#s23 .note h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
+#s23 .note b{color:var(--encre);font-weight:500}
+#s23 .note p{margin:0 0 12px}
+#s23 .note p:last-child{margin-bottom:0}
+@media (prefers-reduced-motion: reduce){
+#s23 .rond.part .signe,#s23 .rond.part .gerbe i,#s23 .rond.part .revelation,#s23 .rond.contre.part .cerne{animation:none}
+#s23 .rond .gerbe{display:none}
+#s23 .ecran.agit .fermeture,#s23 .ecran.agit .scene{transform:none;filter:none}
+
+  
+}
+
+
 </style>
 
 <div class="enveloppe">
@@ -2718,6 +2892,10 @@
       <a class="item retenu" href="#m22">
         <span class="no">22</span><span class="titre">Le rond au milieu, entre deux traits</span><span class="fleche">↓</span>
         <span class="quoi">Le même anneau, ramené AU CENTRE, avec un petit trait de chaque côté qui s’écarte quand le signe part en trois tours. Huit déclinaisons, dont deux qui reprennent l’anneau de la note vocale.</span>
+      </a>
+      <a class="item retenu" href="#m23">
+        <span class="no">23</span><span class="titre">Le mot, le rond qui bat, et la poussière</span><span class="fleche">↓</span>
+        <span class="quoi">Le mixte : le mot écrit, le rond qui bat en attendant le doigt, et au clic le tour et la poussière. Sept dispositions du mot — à droite, coupé en deux, en petit doré dessous, « Ajouter », avec les traits, au-dessus, ou effacé par le geste.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -10348,6 +10526,652 @@
     </div>
   </section>
 
+  <section class="etape" id="m23">
+    <div class="etape-tete">
+      <span class="etape-no">23</span>
+      <h2>Le mot, le rond qui bat, et la poussière</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s23">
+<div class="page">
+  <div class="intro">
+    <p class="sur">Atlas — le bouton, huitième passe</p>
+    <h1>Le mot, le rond qui bat, et la poussière</h1>
+    <p>Le mixte que vous avez demandé : <b>« Nouveau chantier » écrit</b>, le rond qui <b>bat doucement</b> en attendant le doigt, et au clic <b>le tour et la poussière</b> — trois tours, seize grains d’or, puis la page.</p>
+    <p><b>Les sept ne changent qu’une chose :</b> la place du mot. À droite du rond, coupé en deux par lui, en petit doré dessous, réduit à « Ajouter », accompagné des traits, posé au-dessus, ou effacé par le geste lui-même.</p>
+    <p class="appui"><b>Appuyez sur les sept.</b> En haut, le bouton seul, pour comparer les dispositions. Dessous, chacun dans l’écran. Refermez pour recommencer.</p>
+  </div>
+
+  <p class="famille"><span>Les sept dispositions, côte à côte</span></p>
+  <p class="sous-titre">Regardez d’abord <b>au repos</b> : c’est cet état-là que vous verrez dix fois par jour. Le battement y joue, comme il jouera sur votre téléphone.</p>
+  <div class="planche">
+<div class="carte">
+      <div class="socle">
+        <a class="geste cote grand" href="#" aria-label="Nouveau chantier">
+              <span class="mot caps">Nouveau chantier</span><span class="rond">
+                <span class="pouls" aria-hidden="true"></span>
+                <span class="cerne" aria-hidden="true"></span>
+                <span class="gerbe" aria-hidden="true"><i style="--x:6.6px;--y:-46.3px;--l:2.5px;--t:10ms"></i><i style="--x:15.1px;--y:-59.2px;--l:1.7px;--t:47ms"></i><i style="--x:33.0px;--y:-40.4px;--l:1.8px;--t:24ms"></i><i style="--x:39.0px;--y:-18.9px;--l:1.9px;--t:1ms"></i><i style="--x:57.6px;--y:-0.8px;--l:2.1px;--t:38ms"></i><i style="--x:44.5px;--y:19.9px;--l:2.2px;--t:15ms"></i><i style="--x:41.3px;--y:47.7px;--l:2.3px;--t:52ms"></i><i style="--x:14.9px;--y:52.1px;--l:2.4px;--t:29ms"></i><i style="--x:-7.1px;--y:44.8px;--l:2.6px;--t:6ms"></i><i style="--x:-15.6px;--y:57.5px;--l:1.7px;--t:43ms"></i><i style="--x:-32.7px;--y:38.8px;--l:1.8px;--t:20ms"></i><i style="--x:-59.0px;--y:27.4px;--l:2.0px;--t:57ms"></i><i style="--x:-56.2px;--y:-0.1px;--l:2.1px;--t:34ms"></i><i style="--x:-42.8px;--y:-20.0px;--l:2.2px;--t:11ms"></i><i style="--x:-39.6px;--y:-47.2px;--l:2.4px;--t:48ms"></i><i style="--x:-13.7px;--y:-50.9px;--l:2.5px;--t:25ms"></i></span>
+                <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+                </svg>
+                <span class="revelation" aria-hidden="true"></span>
+              </span>
+            </a>
+      </div>
+      <p class="etiquette caps">Le mot, le rond à droite</p>
+    </div>
+    <div class="carte">
+      <div class="socle">
+        <a class="geste coupe grand" href="#" aria-label="Nouveau chantier">
+              <span class="mot caps">Nouveau</span><span class="rond">
+                <span class="pouls" aria-hidden="true"></span>
+                <span class="cerne" aria-hidden="true"></span>
+                <span class="gerbe" aria-hidden="true"><i style="--x:6.6px;--y:-46.3px;--l:2.5px;--t:10ms"></i><i style="--x:15.1px;--y:-59.2px;--l:1.7px;--t:47ms"></i><i style="--x:33.0px;--y:-40.4px;--l:1.8px;--t:24ms"></i><i style="--x:39.0px;--y:-18.9px;--l:1.9px;--t:1ms"></i><i style="--x:57.6px;--y:-0.8px;--l:2.1px;--t:38ms"></i><i style="--x:44.5px;--y:19.9px;--l:2.2px;--t:15ms"></i><i style="--x:41.3px;--y:47.7px;--l:2.3px;--t:52ms"></i><i style="--x:14.9px;--y:52.1px;--l:2.4px;--t:29ms"></i><i style="--x:-7.1px;--y:44.8px;--l:2.6px;--t:6ms"></i><i style="--x:-15.6px;--y:57.5px;--l:1.7px;--t:43ms"></i><i style="--x:-32.7px;--y:38.8px;--l:1.8px;--t:20ms"></i><i style="--x:-59.0px;--y:27.4px;--l:2.0px;--t:57ms"></i><i style="--x:-56.2px;--y:-0.1px;--l:2.1px;--t:34ms"></i><i style="--x:-42.8px;--y:-20.0px;--l:2.2px;--t:11ms"></i><i style="--x:-39.6px;--y:-47.2px;--l:2.4px;--t:48ms"></i><i style="--x:-13.7px;--y:-50.9px;--l:2.5px;--t:25ms"></i></span>
+                <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+                </svg>
+                <span class="revelation" aria-hidden="true"></span>
+              </span><span class="mot caps">chantier</span>
+            </a>
+      </div>
+      <p class="etiquette caps">Le rond au milieu du mot</p>
+    </div>
+    <div class="carte">
+      <div class="socle">
+        <a class="geste dessous grand" href="#" aria-label="Nouveau chantier">
+              <span class="rond">
+                <span class="pouls" aria-hidden="true"></span>
+                <span class="cerne" aria-hidden="true"></span>
+                <span class="gerbe" aria-hidden="true"><i style="--x:6.6px;--y:-46.3px;--l:2.5px;--t:10ms"></i><i style="--x:15.1px;--y:-59.2px;--l:1.7px;--t:47ms"></i><i style="--x:33.0px;--y:-40.4px;--l:1.8px;--t:24ms"></i><i style="--x:39.0px;--y:-18.9px;--l:1.9px;--t:1ms"></i><i style="--x:57.6px;--y:-0.8px;--l:2.1px;--t:38ms"></i><i style="--x:44.5px;--y:19.9px;--l:2.2px;--t:15ms"></i><i style="--x:41.3px;--y:47.7px;--l:2.3px;--t:52ms"></i><i style="--x:14.9px;--y:52.1px;--l:2.4px;--t:29ms"></i><i style="--x:-7.1px;--y:44.8px;--l:2.6px;--t:6ms"></i><i style="--x:-15.6px;--y:57.5px;--l:1.7px;--t:43ms"></i><i style="--x:-32.7px;--y:38.8px;--l:1.8px;--t:20ms"></i><i style="--x:-59.0px;--y:27.4px;--l:2.0px;--t:57ms"></i><i style="--x:-56.2px;--y:-0.1px;--l:2.1px;--t:34ms"></i><i style="--x:-42.8px;--y:-20.0px;--l:2.2px;--t:11ms"></i><i style="--x:-39.6px;--y:-47.2px;--l:2.4px;--t:48ms"></i><i style="--x:-13.7px;--y:-50.9px;--l:2.5px;--t:25ms"></i></span>
+                <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+                </svg>
+                <span class="revelation" aria-hidden="true"></span>
+              </span><span class="mot dore dessous caps">Nouveau chantier</span>
+            </a>
+      </div>
+      <p class="etiquette caps">Le rond, et le mot dessous</p>
+    </div>
+    <div class="carte">
+      <div class="socle">
+        <a class="geste ajouter grand" href="#" aria-label="Nouveau chantier">
+              <span class="rond">
+                <span class="pouls" aria-hidden="true"></span>
+                <span class="cerne" aria-hidden="true"></span>
+                <span class="gerbe" aria-hidden="true"><i style="--x:6.6px;--y:-46.3px;--l:2.5px;--t:10ms"></i><i style="--x:15.1px;--y:-59.2px;--l:1.7px;--t:47ms"></i><i style="--x:33.0px;--y:-40.4px;--l:1.8px;--t:24ms"></i><i style="--x:39.0px;--y:-18.9px;--l:1.9px;--t:1ms"></i><i style="--x:57.6px;--y:-0.8px;--l:2.1px;--t:38ms"></i><i style="--x:44.5px;--y:19.9px;--l:2.2px;--t:15ms"></i><i style="--x:41.3px;--y:47.7px;--l:2.3px;--t:52ms"></i><i style="--x:14.9px;--y:52.1px;--l:2.4px;--t:29ms"></i><i style="--x:-7.1px;--y:44.8px;--l:2.6px;--t:6ms"></i><i style="--x:-15.6px;--y:57.5px;--l:1.7px;--t:43ms"></i><i style="--x:-32.7px;--y:38.8px;--l:1.8px;--t:20ms"></i><i style="--x:-59.0px;--y:27.4px;--l:2.0px;--t:57ms"></i><i style="--x:-56.2px;--y:-0.1px;--l:2.1px;--t:34ms"></i><i style="--x:-42.8px;--y:-20.0px;--l:2.2px;--t:11ms"></i><i style="--x:-39.6px;--y:-47.2px;--l:2.4px;--t:48ms"></i><i style="--x:-13.7px;--y:-50.9px;--l:2.5px;--t:25ms"></i></span>
+                <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+                </svg>
+                <span class="revelation" aria-hidden="true"></span>
+              </span><span class="mot dore dessous caps">Ajouter</span>
+            </a>
+      </div>
+      <p class="etiquette caps">Le rond, et « Ajouter »</p>
+    </div>
+    <div class="carte">
+      <div class="socle">
+        <a class="geste traits grand" href="#" aria-label="Nouveau chantier">
+              <span class="trait g" aria-hidden="true"></span><span class="rond">
+                <span class="pouls" aria-hidden="true"></span>
+                <span class="cerne" aria-hidden="true"></span>
+                <span class="gerbe" aria-hidden="true"><i style="--x:6.6px;--y:-46.3px;--l:2.5px;--t:10ms"></i><i style="--x:15.1px;--y:-59.2px;--l:1.7px;--t:47ms"></i><i style="--x:33.0px;--y:-40.4px;--l:1.8px;--t:24ms"></i><i style="--x:39.0px;--y:-18.9px;--l:1.9px;--t:1ms"></i><i style="--x:57.6px;--y:-0.8px;--l:2.1px;--t:38ms"></i><i style="--x:44.5px;--y:19.9px;--l:2.2px;--t:15ms"></i><i style="--x:41.3px;--y:47.7px;--l:2.3px;--t:52ms"></i><i style="--x:14.9px;--y:52.1px;--l:2.4px;--t:29ms"></i><i style="--x:-7.1px;--y:44.8px;--l:2.6px;--t:6ms"></i><i style="--x:-15.6px;--y:57.5px;--l:1.7px;--t:43ms"></i><i style="--x:-32.7px;--y:38.8px;--l:1.8px;--t:20ms"></i><i style="--x:-59.0px;--y:27.4px;--l:2.0px;--t:57ms"></i><i style="--x:-56.2px;--y:-0.1px;--l:2.1px;--t:34ms"></i><i style="--x:-42.8px;--y:-20.0px;--l:2.2px;--t:11ms"></i><i style="--x:-39.6px;--y:-47.2px;--l:2.4px;--t:48ms"></i><i style="--x:-13.7px;--y:-50.9px;--l:2.5px;--t:25ms"></i></span>
+                <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+                </svg>
+                <span class="revelation" aria-hidden="true"></span>
+              </span><span class="trait d" aria-hidden="true"></span><span class="mot dore dessous caps">Ajouter un chantier</span>
+            </a>
+      </div>
+      <p class="etiquette caps">Le rond, ses traits, et le mot</p>
+    </div>
+    <div class="carte">
+      <div class="socle">
+        <a class="geste dessus grand" href="#" aria-label="Nouveau chantier">
+              <span class="mot dore dessus caps">Nouveau chantier</span><span class="rond">
+                <span class="pouls" aria-hidden="true"></span>
+                <span class="cerne" aria-hidden="true"></span>
+                <span class="gerbe" aria-hidden="true"><i style="--x:6.6px;--y:-46.3px;--l:2.5px;--t:10ms"></i><i style="--x:15.1px;--y:-59.2px;--l:1.7px;--t:47ms"></i><i style="--x:33.0px;--y:-40.4px;--l:1.8px;--t:24ms"></i><i style="--x:39.0px;--y:-18.9px;--l:1.9px;--t:1ms"></i><i style="--x:57.6px;--y:-0.8px;--l:2.1px;--t:38ms"></i><i style="--x:44.5px;--y:19.9px;--l:2.2px;--t:15ms"></i><i style="--x:41.3px;--y:47.7px;--l:2.3px;--t:52ms"></i><i style="--x:14.9px;--y:52.1px;--l:2.4px;--t:29ms"></i><i style="--x:-7.1px;--y:44.8px;--l:2.6px;--t:6ms"></i><i style="--x:-15.6px;--y:57.5px;--l:1.7px;--t:43ms"></i><i style="--x:-32.7px;--y:38.8px;--l:1.8px;--t:20ms"></i><i style="--x:-59.0px;--y:27.4px;--l:2.0px;--t:57ms"></i><i style="--x:-56.2px;--y:-0.1px;--l:2.1px;--t:34ms"></i><i style="--x:-42.8px;--y:-20.0px;--l:2.2px;--t:11ms"></i><i style="--x:-39.6px;--y:-47.2px;--l:2.4px;--t:48ms"></i><i style="--x:-13.7px;--y:-50.9px;--l:2.5px;--t:25ms"></i></span>
+                <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+                </svg>
+                <span class="revelation" aria-hidden="true"></span>
+              </span>
+            </a>
+      </div>
+      <p class="etiquette caps">Le mot dessus, le rond dessous</p>
+    </div>
+    <div class="carte">
+      <div class="socle">
+        <a class="geste efface grand" href="#" aria-label="Nouveau chantier">
+              <span class="rond">
+                <span class="pouls" aria-hidden="true"></span>
+                <span class="cerne" aria-hidden="true"></span>
+                <span class="gerbe" aria-hidden="true"><i style="--x:6.6px;--y:-46.3px;--l:2.5px;--t:10ms"></i><i style="--x:15.1px;--y:-59.2px;--l:1.7px;--t:47ms"></i><i style="--x:33.0px;--y:-40.4px;--l:1.8px;--t:24ms"></i><i style="--x:39.0px;--y:-18.9px;--l:1.9px;--t:1ms"></i><i style="--x:57.6px;--y:-0.8px;--l:2.1px;--t:38ms"></i><i style="--x:44.5px;--y:19.9px;--l:2.2px;--t:15ms"></i><i style="--x:41.3px;--y:47.7px;--l:2.3px;--t:52ms"></i><i style="--x:14.9px;--y:52.1px;--l:2.4px;--t:29ms"></i><i style="--x:-7.1px;--y:44.8px;--l:2.6px;--t:6ms"></i><i style="--x:-15.6px;--y:57.5px;--l:1.7px;--t:43ms"></i><i style="--x:-32.7px;--y:38.8px;--l:1.8px;--t:20ms"></i><i style="--x:-59.0px;--y:27.4px;--l:2.0px;--t:57ms"></i><i style="--x:-56.2px;--y:-0.1px;--l:2.1px;--t:34ms"></i><i style="--x:-42.8px;--y:-20.0px;--l:2.2px;--t:11ms"></i><i style="--x:-39.6px;--y:-47.2px;--l:2.4px;--t:48ms"></i><i style="--x:-13.7px;--y:-50.9px;--l:2.5px;--t:25ms"></i></span>
+                <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+                </svg>
+                <span class="revelation" aria-hidden="true"></span>
+              </span><span class="mot dore dessous seffacer caps">Nouveau chantier</span>
+            </a>
+      </div>
+      <p class="etiquette caps">Le mot qui s’efface</p>
+    </div>
+  </div>
+
+  <p class="famille"><span>Chacun dans l’écran</span></p>
+  <p class="sous-titre">Le geste entier : le battement, l’appui, le tour, la poussière, puis la page.</p>
+  <div class="rangee">
+<div class="prop">
+      <p class="nom-prop">Le mot, le rond à droite</p>
+      <p class="dit">Ce que vous avez demandé : <b>« Nouveau chantier » écrit</b>, et le rond qui <b>bat doucement</b> à sa droite en attendant le doigt. Au clic, il part en trois tours et sème sa poussière.</p>
+      <div class="tel"><div class="ecran">
+        <div class="scene">
+          <div class="enseigne">ATLAS</div>
+          <div class="titre">
+            <p class="salut caps">Bonjour Florian</p>
+            <h1 class="serif">Vos chantiers</h1>
+            <p class="compte caps num">Quatre en cours</p>
+          </div>
+          <div class="fermeture"></div>
+          <div class="siege">
+            <a class="geste cote " href="#" aria-label="Nouveau chantier">
+              <span class="mot caps">Nouveau chantier</span><span class="rond">
+                <span class="pouls" aria-hidden="true"></span>
+                <span class="cerne" aria-hidden="true"></span>
+                <span class="gerbe" aria-hidden="true"><i style="--x:6.6px;--y:-46.3px;--l:2.5px;--t:10ms"></i><i style="--x:15.1px;--y:-59.2px;--l:1.7px;--t:47ms"></i><i style="--x:33.0px;--y:-40.4px;--l:1.8px;--t:24ms"></i><i style="--x:39.0px;--y:-18.9px;--l:1.9px;--t:1ms"></i><i style="--x:57.6px;--y:-0.8px;--l:2.1px;--t:38ms"></i><i style="--x:44.5px;--y:19.9px;--l:2.2px;--t:15ms"></i><i style="--x:41.3px;--y:47.7px;--l:2.3px;--t:52ms"></i><i style="--x:14.9px;--y:52.1px;--l:2.4px;--t:29ms"></i><i style="--x:-7.1px;--y:44.8px;--l:2.6px;--t:6ms"></i><i style="--x:-15.6px;--y:57.5px;--l:1.7px;--t:43ms"></i><i style="--x:-32.7px;--y:38.8px;--l:1.8px;--t:20ms"></i><i style="--x:-59.0px;--y:27.4px;--l:2.0px;--t:57ms"></i><i style="--x:-56.2px;--y:-0.1px;--l:2.1px;--t:34ms"></i><i style="--x:-42.8px;--y:-20.0px;--l:2.2px;--t:11ms"></i><i style="--x:-39.6px;--y:-47.2px;--l:2.4px;--t:48ms"></i><i style="--x:-13.7px;--y:-50.9px;--l:2.5px;--t:25ms"></i></span>
+                <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+                </svg>
+                <span class="revelation" aria-hidden="true"></span>
+              </span>
+            </a>
+          </div>
+          <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+          <div class="tige">
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>26</b><span>juil.</span></span>
+              <p class="nom serif">Pose de clôture</p>
+              <p class="lieu">2 route de Vertou, Vertou</p>
+              <p class="etat caps">Brouillon · sans photo</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>24</b><span>juil.</span></span>
+              <p class="nom serif">Rénovation salle de bain</p>
+              <p class="lieu">12 rue des Lilas, Nantes</p>
+              <p class="etat caps">À vérifier · 6 photos</p>
+            </a>
+            <a class="brin attend" href="#">
+              <span class="jour caps num"><b>22</b><span>juil.</span></span>
+              <p class="nom serif">Terrasse bois</p>
+              <p class="lieu">5 allée des Tilleuls, Nantes</p>
+              <p class="etat caps">Devis retourné · 3 photos</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>18</b><span>juil.</span></span>
+              <p class="nom serif">Reprise de toiture</p>
+              <p class="lieu">8 impasse du Moulin, Rezé</p>
+              <p class="etat caps">En attente · 9 photos</p>
+            </a>
+          </div>
+          <nav class="bas">
+            <a class="on caps" href="#">Chantiers</a>
+            <a class="caps" href="#">Planning</a>
+            <a class="caps" href="#">Terminés</a>
+            <a class="caps" href="#">Réglages</a>
+          </nav>
+        </div>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="prop">
+      <p class="nom-prop">Le rond au milieu du mot</p>
+      <p class="dit"><b>« Nouveau » d’un côté, « chantier » de l’autre</b>, et le rond exactement au centre de l’écran. Le mot n’est plus posé à côté du bouton : il l’encadre.</p>
+      <div class="tel"><div class="ecran">
+        <div class="scene">
+          <div class="enseigne">ATLAS</div>
+          <div class="titre">
+            <p class="salut caps">Bonjour Florian</p>
+            <h1 class="serif">Vos chantiers</h1>
+            <p class="compte caps num">Quatre en cours</p>
+          </div>
+          <div class="fermeture"></div>
+          <div class="siege">
+            <a class="geste coupe " href="#" aria-label="Nouveau chantier">
+              <span class="mot caps">Nouveau</span><span class="rond">
+                <span class="pouls" aria-hidden="true"></span>
+                <span class="cerne" aria-hidden="true"></span>
+                <span class="gerbe" aria-hidden="true"><i style="--x:6.6px;--y:-46.3px;--l:2.5px;--t:10ms"></i><i style="--x:15.1px;--y:-59.2px;--l:1.7px;--t:47ms"></i><i style="--x:33.0px;--y:-40.4px;--l:1.8px;--t:24ms"></i><i style="--x:39.0px;--y:-18.9px;--l:1.9px;--t:1ms"></i><i style="--x:57.6px;--y:-0.8px;--l:2.1px;--t:38ms"></i><i style="--x:44.5px;--y:19.9px;--l:2.2px;--t:15ms"></i><i style="--x:41.3px;--y:47.7px;--l:2.3px;--t:52ms"></i><i style="--x:14.9px;--y:52.1px;--l:2.4px;--t:29ms"></i><i style="--x:-7.1px;--y:44.8px;--l:2.6px;--t:6ms"></i><i style="--x:-15.6px;--y:57.5px;--l:1.7px;--t:43ms"></i><i style="--x:-32.7px;--y:38.8px;--l:1.8px;--t:20ms"></i><i style="--x:-59.0px;--y:27.4px;--l:2.0px;--t:57ms"></i><i style="--x:-56.2px;--y:-0.1px;--l:2.1px;--t:34ms"></i><i style="--x:-42.8px;--y:-20.0px;--l:2.2px;--t:11ms"></i><i style="--x:-39.6px;--y:-47.2px;--l:2.4px;--t:48ms"></i><i style="--x:-13.7px;--y:-50.9px;--l:2.5px;--t:25ms"></i></span>
+                <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+                </svg>
+                <span class="revelation" aria-hidden="true"></span>
+              </span><span class="mot caps">chantier</span>
+            </a>
+          </div>
+          <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+          <div class="tige">
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>26</b><span>juil.</span></span>
+              <p class="nom serif">Pose de clôture</p>
+              <p class="lieu">2 route de Vertou, Vertou</p>
+              <p class="etat caps">Brouillon · sans photo</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>24</b><span>juil.</span></span>
+              <p class="nom serif">Rénovation salle de bain</p>
+              <p class="lieu">12 rue des Lilas, Nantes</p>
+              <p class="etat caps">À vérifier · 6 photos</p>
+            </a>
+            <a class="brin attend" href="#">
+              <span class="jour caps num"><b>22</b><span>juil.</span></span>
+              <p class="nom serif">Terrasse bois</p>
+              <p class="lieu">5 allée des Tilleuls, Nantes</p>
+              <p class="etat caps">Devis retourné · 3 photos</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>18</b><span>juil.</span></span>
+              <p class="nom serif">Reprise de toiture</p>
+              <p class="lieu">8 impasse du Moulin, Rezé</p>
+              <p class="etat caps">En attente · 9 photos</p>
+            </a>
+          </div>
+          <nav class="bas">
+            <a class="on caps" href="#">Chantiers</a>
+            <a class="caps" href="#">Planning</a>
+            <a class="caps" href="#">Terminés</a>
+            <a class="caps" href="#">Réglages</a>
+          </nav>
+        </div>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="prop">
+      <p class="nom-prop">Le rond, et le mot dessous</p>
+      <p class="dit">Le rond seul, centré, et <b>« Nouveau chantier » en petit doré en dessous</b>. C’est la disposition d’un cartel de musée : l’objet d’abord, son nom ensuite.</p>
+      <div class="tel"><div class="ecran">
+        <div class="scene">
+          <div class="enseigne">ATLAS</div>
+          <div class="titre">
+            <p class="salut caps">Bonjour Florian</p>
+            <h1 class="serif">Vos chantiers</h1>
+            <p class="compte caps num">Quatre en cours</p>
+          </div>
+          <div class="fermeture"></div>
+          <div class="siege">
+            <a class="geste dessous " href="#" aria-label="Nouveau chantier">
+              <span class="rond">
+                <span class="pouls" aria-hidden="true"></span>
+                <span class="cerne" aria-hidden="true"></span>
+                <span class="gerbe" aria-hidden="true"><i style="--x:6.6px;--y:-46.3px;--l:2.5px;--t:10ms"></i><i style="--x:15.1px;--y:-59.2px;--l:1.7px;--t:47ms"></i><i style="--x:33.0px;--y:-40.4px;--l:1.8px;--t:24ms"></i><i style="--x:39.0px;--y:-18.9px;--l:1.9px;--t:1ms"></i><i style="--x:57.6px;--y:-0.8px;--l:2.1px;--t:38ms"></i><i style="--x:44.5px;--y:19.9px;--l:2.2px;--t:15ms"></i><i style="--x:41.3px;--y:47.7px;--l:2.3px;--t:52ms"></i><i style="--x:14.9px;--y:52.1px;--l:2.4px;--t:29ms"></i><i style="--x:-7.1px;--y:44.8px;--l:2.6px;--t:6ms"></i><i style="--x:-15.6px;--y:57.5px;--l:1.7px;--t:43ms"></i><i style="--x:-32.7px;--y:38.8px;--l:1.8px;--t:20ms"></i><i style="--x:-59.0px;--y:27.4px;--l:2.0px;--t:57ms"></i><i style="--x:-56.2px;--y:-0.1px;--l:2.1px;--t:34ms"></i><i style="--x:-42.8px;--y:-20.0px;--l:2.2px;--t:11ms"></i><i style="--x:-39.6px;--y:-47.2px;--l:2.4px;--t:48ms"></i><i style="--x:-13.7px;--y:-50.9px;--l:2.5px;--t:25ms"></i></span>
+                <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+                </svg>
+                <span class="revelation" aria-hidden="true"></span>
+              </span><span class="mot dore dessous caps">Nouveau chantier</span>
+            </a>
+          </div>
+          <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+          <div class="tige">
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>26</b><span>juil.</span></span>
+              <p class="nom serif">Pose de clôture</p>
+              <p class="lieu">2 route de Vertou, Vertou</p>
+              <p class="etat caps">Brouillon · sans photo</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>24</b><span>juil.</span></span>
+              <p class="nom serif">Rénovation salle de bain</p>
+              <p class="lieu">12 rue des Lilas, Nantes</p>
+              <p class="etat caps">À vérifier · 6 photos</p>
+            </a>
+            <a class="brin attend" href="#">
+              <span class="jour caps num"><b>22</b><span>juil.</span></span>
+              <p class="nom serif">Terrasse bois</p>
+              <p class="lieu">5 allée des Tilleuls, Nantes</p>
+              <p class="etat caps">Devis retourné · 3 photos</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>18</b><span>juil.</span></span>
+              <p class="nom serif">Reprise de toiture</p>
+              <p class="lieu">8 impasse du Moulin, Rezé</p>
+              <p class="etat caps">En attente · 9 photos</p>
+            </a>
+          </div>
+          <nav class="bas">
+            <a class="on caps" href="#">Chantiers</a>
+            <a class="caps" href="#">Planning</a>
+            <a class="caps" href="#">Terminés</a>
+            <a class="caps" href="#">Réglages</a>
+          </nav>
+        </div>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="prop">
+      <p class="nom-prop">Le rond, et « Ajouter »</p>
+      <p class="dit">La même, mais le mot se réduit à <b>« Ajouter »</b>. Un seul mot doré sous le rond — c’est la version la plus courte possible sans devenir muette.</p>
+      <div class="tel"><div class="ecran">
+        <div class="scene">
+          <div class="enseigne">ATLAS</div>
+          <div class="titre">
+            <p class="salut caps">Bonjour Florian</p>
+            <h1 class="serif">Vos chantiers</h1>
+            <p class="compte caps num">Quatre en cours</p>
+          </div>
+          <div class="fermeture"></div>
+          <div class="siege">
+            <a class="geste ajouter " href="#" aria-label="Nouveau chantier">
+              <span class="rond">
+                <span class="pouls" aria-hidden="true"></span>
+                <span class="cerne" aria-hidden="true"></span>
+                <span class="gerbe" aria-hidden="true"><i style="--x:6.6px;--y:-46.3px;--l:2.5px;--t:10ms"></i><i style="--x:15.1px;--y:-59.2px;--l:1.7px;--t:47ms"></i><i style="--x:33.0px;--y:-40.4px;--l:1.8px;--t:24ms"></i><i style="--x:39.0px;--y:-18.9px;--l:1.9px;--t:1ms"></i><i style="--x:57.6px;--y:-0.8px;--l:2.1px;--t:38ms"></i><i style="--x:44.5px;--y:19.9px;--l:2.2px;--t:15ms"></i><i style="--x:41.3px;--y:47.7px;--l:2.3px;--t:52ms"></i><i style="--x:14.9px;--y:52.1px;--l:2.4px;--t:29ms"></i><i style="--x:-7.1px;--y:44.8px;--l:2.6px;--t:6ms"></i><i style="--x:-15.6px;--y:57.5px;--l:1.7px;--t:43ms"></i><i style="--x:-32.7px;--y:38.8px;--l:1.8px;--t:20ms"></i><i style="--x:-59.0px;--y:27.4px;--l:2.0px;--t:57ms"></i><i style="--x:-56.2px;--y:-0.1px;--l:2.1px;--t:34ms"></i><i style="--x:-42.8px;--y:-20.0px;--l:2.2px;--t:11ms"></i><i style="--x:-39.6px;--y:-47.2px;--l:2.4px;--t:48ms"></i><i style="--x:-13.7px;--y:-50.9px;--l:2.5px;--t:25ms"></i></span>
+                <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+                </svg>
+                <span class="revelation" aria-hidden="true"></span>
+              </span><span class="mot dore dessous caps">Ajouter</span>
+            </a>
+          </div>
+          <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+          <div class="tige">
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>26</b><span>juil.</span></span>
+              <p class="nom serif">Pose de clôture</p>
+              <p class="lieu">2 route de Vertou, Vertou</p>
+              <p class="etat caps">Brouillon · sans photo</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>24</b><span>juil.</span></span>
+              <p class="nom serif">Rénovation salle de bain</p>
+              <p class="lieu">12 rue des Lilas, Nantes</p>
+              <p class="etat caps">À vérifier · 6 photos</p>
+            </a>
+            <a class="brin attend" href="#">
+              <span class="jour caps num"><b>22</b><span>juil.</span></span>
+              <p class="nom serif">Terrasse bois</p>
+              <p class="lieu">5 allée des Tilleuls, Nantes</p>
+              <p class="etat caps">Devis retourné · 3 photos</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>18</b><span>juil.</span></span>
+              <p class="nom serif">Reprise de toiture</p>
+              <p class="lieu">8 impasse du Moulin, Rezé</p>
+              <p class="etat caps">En attente · 9 photos</p>
+            </a>
+          </div>
+          <nav class="bas">
+            <a class="on caps" href="#">Chantiers</a>
+            <a class="caps" href="#">Planning</a>
+            <a class="caps" href="#">Terminés</a>
+            <a class="caps" href="#">Réglages</a>
+          </nav>
+        </div>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="prop">
+      <p class="nom-prop">Le rond, ses traits, et le mot</p>
+      <p class="dit">Le mixte complet : <b>les deux traits de la maquette précédente</b>, qui s’écartent à l’appui, <b>et</b> le mot doré en dessous. C’est la plus fournie des sept — à voir si elle ne l’est pas trop.</p>
+      <div class="tel"><div class="ecran">
+        <div class="scene">
+          <div class="enseigne">ATLAS</div>
+          <div class="titre">
+            <p class="salut caps">Bonjour Florian</p>
+            <h1 class="serif">Vos chantiers</h1>
+            <p class="compte caps num">Quatre en cours</p>
+          </div>
+          <div class="fermeture"></div>
+          <div class="siege">
+            <a class="geste traits " href="#" aria-label="Nouveau chantier">
+              <span class="trait g" aria-hidden="true"></span><span class="rond">
+                <span class="pouls" aria-hidden="true"></span>
+                <span class="cerne" aria-hidden="true"></span>
+                <span class="gerbe" aria-hidden="true"><i style="--x:6.6px;--y:-46.3px;--l:2.5px;--t:10ms"></i><i style="--x:15.1px;--y:-59.2px;--l:1.7px;--t:47ms"></i><i style="--x:33.0px;--y:-40.4px;--l:1.8px;--t:24ms"></i><i style="--x:39.0px;--y:-18.9px;--l:1.9px;--t:1ms"></i><i style="--x:57.6px;--y:-0.8px;--l:2.1px;--t:38ms"></i><i style="--x:44.5px;--y:19.9px;--l:2.2px;--t:15ms"></i><i style="--x:41.3px;--y:47.7px;--l:2.3px;--t:52ms"></i><i style="--x:14.9px;--y:52.1px;--l:2.4px;--t:29ms"></i><i style="--x:-7.1px;--y:44.8px;--l:2.6px;--t:6ms"></i><i style="--x:-15.6px;--y:57.5px;--l:1.7px;--t:43ms"></i><i style="--x:-32.7px;--y:38.8px;--l:1.8px;--t:20ms"></i><i style="--x:-59.0px;--y:27.4px;--l:2.0px;--t:57ms"></i><i style="--x:-56.2px;--y:-0.1px;--l:2.1px;--t:34ms"></i><i style="--x:-42.8px;--y:-20.0px;--l:2.2px;--t:11ms"></i><i style="--x:-39.6px;--y:-47.2px;--l:2.4px;--t:48ms"></i><i style="--x:-13.7px;--y:-50.9px;--l:2.5px;--t:25ms"></i></span>
+                <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+                </svg>
+                <span class="revelation" aria-hidden="true"></span>
+              </span><span class="trait d" aria-hidden="true"></span><span class="mot dore dessous caps">Ajouter un chantier</span>
+            </a>
+          </div>
+          <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+          <div class="tige">
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>26</b><span>juil.</span></span>
+              <p class="nom serif">Pose de clôture</p>
+              <p class="lieu">2 route de Vertou, Vertou</p>
+              <p class="etat caps">Brouillon · sans photo</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>24</b><span>juil.</span></span>
+              <p class="nom serif">Rénovation salle de bain</p>
+              <p class="lieu">12 rue des Lilas, Nantes</p>
+              <p class="etat caps">À vérifier · 6 photos</p>
+            </a>
+            <a class="brin attend" href="#">
+              <span class="jour caps num"><b>22</b><span>juil.</span></span>
+              <p class="nom serif">Terrasse bois</p>
+              <p class="lieu">5 allée des Tilleuls, Nantes</p>
+              <p class="etat caps">Devis retourné · 3 photos</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>18</b><span>juil.</span></span>
+              <p class="nom serif">Reprise de toiture</p>
+              <p class="lieu">8 impasse du Moulin, Rezé</p>
+              <p class="etat caps">En attente · 9 photos</p>
+            </a>
+          </div>
+          <nav class="bas">
+            <a class="on caps" href="#">Chantiers</a>
+            <a class="caps" href="#">Planning</a>
+            <a class="caps" href="#">Terminés</a>
+            <a class="caps" href="#">Réglages</a>
+          </nav>
+        </div>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="prop">
+      <p class="nom-prop">Le mot dessus, le rond dessous</p>
+      <p class="dit">L’ordre inversé : <b>le mot doré d’abord</b>, le rond ensuite. Le regard lit avant de toucher — ce qui est l’ordre naturel de lecture, mais fait perdre au rond sa place de premier objet.</p>
+      <div class="tel"><div class="ecran">
+        <div class="scene">
+          <div class="enseigne">ATLAS</div>
+          <div class="titre">
+            <p class="salut caps">Bonjour Florian</p>
+            <h1 class="serif">Vos chantiers</h1>
+            <p class="compte caps num">Quatre en cours</p>
+          </div>
+          <div class="fermeture"></div>
+          <div class="siege">
+            <a class="geste dessus " href="#" aria-label="Nouveau chantier">
+              <span class="mot dore dessus caps">Nouveau chantier</span><span class="rond">
+                <span class="pouls" aria-hidden="true"></span>
+                <span class="cerne" aria-hidden="true"></span>
+                <span class="gerbe" aria-hidden="true"><i style="--x:6.6px;--y:-46.3px;--l:2.5px;--t:10ms"></i><i style="--x:15.1px;--y:-59.2px;--l:1.7px;--t:47ms"></i><i style="--x:33.0px;--y:-40.4px;--l:1.8px;--t:24ms"></i><i style="--x:39.0px;--y:-18.9px;--l:1.9px;--t:1ms"></i><i style="--x:57.6px;--y:-0.8px;--l:2.1px;--t:38ms"></i><i style="--x:44.5px;--y:19.9px;--l:2.2px;--t:15ms"></i><i style="--x:41.3px;--y:47.7px;--l:2.3px;--t:52ms"></i><i style="--x:14.9px;--y:52.1px;--l:2.4px;--t:29ms"></i><i style="--x:-7.1px;--y:44.8px;--l:2.6px;--t:6ms"></i><i style="--x:-15.6px;--y:57.5px;--l:1.7px;--t:43ms"></i><i style="--x:-32.7px;--y:38.8px;--l:1.8px;--t:20ms"></i><i style="--x:-59.0px;--y:27.4px;--l:2.0px;--t:57ms"></i><i style="--x:-56.2px;--y:-0.1px;--l:2.1px;--t:34ms"></i><i style="--x:-42.8px;--y:-20.0px;--l:2.2px;--t:11ms"></i><i style="--x:-39.6px;--y:-47.2px;--l:2.4px;--t:48ms"></i><i style="--x:-13.7px;--y:-50.9px;--l:2.5px;--t:25ms"></i></span>
+                <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+                </svg>
+                <span class="revelation" aria-hidden="true"></span>
+              </span>
+            </a>
+          </div>
+          <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+          <div class="tige">
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>26</b><span>juil.</span></span>
+              <p class="nom serif">Pose de clôture</p>
+              <p class="lieu">2 route de Vertou, Vertou</p>
+              <p class="etat caps">Brouillon · sans photo</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>24</b><span>juil.</span></span>
+              <p class="nom serif">Rénovation salle de bain</p>
+              <p class="lieu">12 rue des Lilas, Nantes</p>
+              <p class="etat caps">À vérifier · 6 photos</p>
+            </a>
+            <a class="brin attend" href="#">
+              <span class="jour caps num"><b>22</b><span>juil.</span></span>
+              <p class="nom serif">Terrasse bois</p>
+              <p class="lieu">5 allée des Tilleuls, Nantes</p>
+              <p class="etat caps">Devis retourné · 3 photos</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>18</b><span>juil.</span></span>
+              <p class="nom serif">Reprise de toiture</p>
+              <p class="lieu">8 impasse du Moulin, Rezé</p>
+              <p class="etat caps">En attente · 9 photos</p>
+            </a>
+          </div>
+          <nav class="bas">
+            <a class="on caps" href="#">Chantiers</a>
+            <a class="caps" href="#">Planning</a>
+            <a class="caps" href="#">Terminés</a>
+            <a class="caps" href="#">Réglages</a>
+          </nav>
+        </div>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="prop">
+      <p class="nom-prop">Le mot qui s’efface</p>
+      <p class="dit">Comme « le rond et le mot dessous », mais <b>le mot disparaît dès que le tour commence</b> : il ne reste que le rond qui tourne, seul, avant la page. Le libellé a servi, il s’en va.</p>
+      <div class="tel"><div class="ecran">
+        <div class="scene">
+          <div class="enseigne">ATLAS</div>
+          <div class="titre">
+            <p class="salut caps">Bonjour Florian</p>
+            <h1 class="serif">Vos chantiers</h1>
+            <p class="compte caps num">Quatre en cours</p>
+          </div>
+          <div class="fermeture"></div>
+          <div class="siege">
+            <a class="geste efface " href="#" aria-label="Nouveau chantier">
+              <span class="rond">
+                <span class="pouls" aria-hidden="true"></span>
+                <span class="cerne" aria-hidden="true"></span>
+                <span class="gerbe" aria-hidden="true"><i style="--x:6.6px;--y:-46.3px;--l:2.5px;--t:10ms"></i><i style="--x:15.1px;--y:-59.2px;--l:1.7px;--t:47ms"></i><i style="--x:33.0px;--y:-40.4px;--l:1.8px;--t:24ms"></i><i style="--x:39.0px;--y:-18.9px;--l:1.9px;--t:1ms"></i><i style="--x:57.6px;--y:-0.8px;--l:2.1px;--t:38ms"></i><i style="--x:44.5px;--y:19.9px;--l:2.2px;--t:15ms"></i><i style="--x:41.3px;--y:47.7px;--l:2.3px;--t:52ms"></i><i style="--x:14.9px;--y:52.1px;--l:2.4px;--t:29ms"></i><i style="--x:-7.1px;--y:44.8px;--l:2.6px;--t:6ms"></i><i style="--x:-15.6px;--y:57.5px;--l:1.7px;--t:43ms"></i><i style="--x:-32.7px;--y:38.8px;--l:1.8px;--t:20ms"></i><i style="--x:-59.0px;--y:27.4px;--l:2.0px;--t:57ms"></i><i style="--x:-56.2px;--y:-0.1px;--l:2.1px;--t:34ms"></i><i style="--x:-42.8px;--y:-20.0px;--l:2.2px;--t:11ms"></i><i style="--x:-39.6px;--y:-47.2px;--l:2.4px;--t:48ms"></i><i style="--x:-13.7px;--y:-50.9px;--l:2.5px;--t:25ms"></i></span>
+                <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+                </svg>
+                <span class="revelation" aria-hidden="true"></span>
+              </span><span class="mot dore dessous seffacer caps">Nouveau chantier</span>
+            </a>
+          </div>
+          <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+          <div class="tige">
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>26</b><span>juil.</span></span>
+              <p class="nom serif">Pose de clôture</p>
+              <p class="lieu">2 route de Vertou, Vertou</p>
+              <p class="etat caps">Brouillon · sans photo</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>24</b><span>juil.</span></span>
+              <p class="nom serif">Rénovation salle de bain</p>
+              <p class="lieu">12 rue des Lilas, Nantes</p>
+              <p class="etat caps">À vérifier · 6 photos</p>
+            </a>
+            <a class="brin attend" href="#">
+              <span class="jour caps num"><b>22</b><span>juil.</span></span>
+              <p class="nom serif">Terrasse bois</p>
+              <p class="lieu">5 allée des Tilleuls, Nantes</p>
+              <p class="etat caps">Devis retourné · 3 photos</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>18</b><span>juil.</span></span>
+              <p class="nom serif">Reprise de toiture</p>
+              <p class="lieu">8 impasse du Moulin, Rezé</p>
+              <p class="etat caps">En attente · 9 photos</p>
+            </a>
+          </div>
+          <nav class="bas">
+            <a class="on caps" href="#">Chantiers</a>
+            <a class="caps" href="#">Planning</a>
+            <a class="caps" href="#">Terminés</a>
+            <a class="caps" href="#">Réglages</a>
+          </nav>
+        </div>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <h2>Ce que je ferais</h2>
+    <p><b>« Le rond, et « Ajouter » ».</b> Un rond, un mot, et rien d’autre. Le libellé doré sous l’anneau tient le rôle du cartel de musée : l’objet d’abord, son nom ensuite, en petit. Et <b>« Ajouter » plutôt que « Nouveau chantier »</b> — sous un écran qui s’appelle déjà « Vos chantiers », répéter le mot « chantier » n’apprend rien à personne.</p>
+    <p><b>Si vous voulez que ce soit dit en entier :</b> « le rond, et le mot dessous ». Même disposition, le libellé complet.</p>
+    <p><b>La plus surprenante, et je la défends :</b> « le mot qui s’efface ». Le libellé sert à savoir ce qu’on va faire ; une fois le doigt posé, il ne sert plus à rien et il s’en va. Il ne reste que le rond qui tourne, seul, avant la page.</p>
+    <p><b>Deux réserves, dites franchement.</b> « Le rond au milieu du mot » coupe « Nouveau » de « chantier » : c’est joli sur la planche, mais on lit deux mots au lieu d’un — à voir sur votre téléphone. Et « le rond, ses traits, et le mot » est la plus fournie des sept : elle empile le rond, deux traits et un libellé là où les autres se contentent de deux pièces.</p>
+    <p><b>Sur le battement.</b> Il revient toutes les 3,4 secondes, et s’arrête dès l’appui. C’est volontairement lent : un rythme plus rapide se lit comme une alerte, et un écran qui alerte dix fois par jour finit par être ignoré — ou éteint.</p>
+  </div>
+</div>
+    </div>
+  </section>
+
 <script>
   // Chaque maquette engendrait ses écrans en clonant un gabarit. Le code est
   // repris tel quel — donc il ne peut pas diverger de l'original — mais il
@@ -11135,6 +11959,73 @@ function armer(geste) {
 
 })(porteeDe("s22")); } catch (erreur) {
   console.error("Maquette 22 — son script a échoué :", erreur);
+}
+
+try { (function (document) {
+
+/*
+  Le même script qu'aux maquettes 16 à 20. Deux ajouts : l'écran porte le nom
+  du tour (`data-tour`), pour les deux variantes où quelque chose d'autre que
+  le bouton bouge ; et la classe `agit` marque la durée du geste sur l'écran
+  lui-même, pas sur le bouton — un attribut posé sur le bouton ne pourrait pas
+  atteindre le filet de l'en-tête.
+*/
+var gestes = document.querySelectorAll(".geste[href]");
+
+for (var i = 0; i < gestes.length; i++) armer(gestes[i]);
+
+function armer(geste) {
+  var ecran = geste.closest(".ecran");
+  var feuille = ecran ? ecran.querySelector(".feuille") : null;
+  var parCercle = geste.getAttribute("data-ouverture") === "cercle";
+  var enCours = false;
+
+  if (ecran) {
+    if (parCercle) ecran.setAttribute("data-ouverture", "cercle");
+    var classes = geste.className.split(/\s+/);
+    for (var k = 0; k < classes.length; k++) {
+      if (classes[k] && classes[k] !== "geste" && classes[k] !== "grand") {
+        ecran.setAttribute("data-tour", classes[k]);
+      }
+    }
+  }
+
+  geste.addEventListener("click", function (evenement) {
+    evenement.preventDefault();
+    // Un deuxième appui pendant le geste ne relance rien : dans
+    // l'application, ce serait deux chantiers créés au lieu d'un.
+    if (enCours) return;
+    enCours = true;
+
+    var calme = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    geste.classList.add("part");
+    if (parCercle && !calme) geste.classList.add("par-cercle");
+    if (ecran && !calme) ecran.classList.add("agit");
+
+    if (feuille) {
+      window.setTimeout(function () {
+        feuille.classList.add("ouverte");
+      }, calme ? 0 : 520);
+    }
+
+    window.setTimeout(function () {
+      geste.classList.remove("part");
+      geste.classList.remove("par-cercle");
+      if (ecran) ecran.classList.remove("agit");
+      enCours = false;
+    }, calme ? 0 : 940);
+  });
+
+  if (feuille) {
+    feuille.querySelector(".fermer").addEventListener("click", function (evenement) {
+      evenement.preventDefault();
+      feuille.classList.remove("ouverte");
+    });
+  }
+}
+
+})(porteeDe("s23")); } catch (erreur) {
+  console.error("Maquette 23 — son script a échoué :", erreur);
 }
 </script>
 
