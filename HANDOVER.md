@@ -113,6 +113,20 @@ enregistre) ; avec, il redevient le lecteur. Le magnétophone est partagé
 (`src/app/chantiers/[id]/magnetophone.ts`) — ne pas le recopier dans un
 troisième écran.
 
+**La version bâtie ne se recompile JAMAIS (11 août, soir).** `next start` sert
+un dossier figé : tirer du code sous ses pieds n'y change rien. Le bouton
+« Chercher les dernières corrections » promettait une recompilation impossible,
+et le patron a passé une soirée à recharger un écran qui ne pouvait pas changer.
+
+La règle est dans `src/lib/issue-mise-a-jour.ts`, en fonction pure. **Ne jamais
+la ramener à un message unique** : les trois cas sont distincts, et le troisième
+— version bâtie *sans veilleur* — doit rester sans coupure, sous peine
+d'éteindre l'application du patron sans personne pour la relever.
+
+**Pour savoir si un espace a vraiment pris le code :** le démarrage affiche
+`⚠ MISE À JOUR impossible : <raison>`. Les causes les plus fréquentes sont un
+dépôt sale et une branche qui n'est pas celle qu'on pousse.
+
 **« Mon devis » sous l'anneau enchaîne tout jusqu'au devis (11 août, soir).**
 Cinq choses à savoir avant d'y toucher :
 
