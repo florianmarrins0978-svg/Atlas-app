@@ -37,9 +37,21 @@ bougent pas pendant qu'on les lit.
 l'heure. Retirer la ligne de `include` n'aurait tenu qu'une construction. C'est
 `exclude` qui répare, parce que Next n'y touche pas et qu'il l'emporte.
 
-Reproduit avant de corriger, et confronté après :
-un reste périmé posé dans `.next/dev/types` fait échouer le contrôle avec le
-message exact du patron ; avec l'exclusion, il est ignoré.
+**Next se protège pourtant de ce cas — son filtre vise simplement le mauvais
+dossier ici.** Sa fonction `runTypeCheck` écarte `<distDir>/dev/types` avant de
+vérifier, en disant explicitement pourquoi : « empêcher des types de
+développement périmés de faire échouer la construction ». Mais le banc bâtit
+dans `.next-batie`, donc le filtre écarte `.next-batie/dev` — pendant que le
+serveur de développement écrit dans `.next/dev`. Ce dossier-là passe entre les
+mailles, et c'est exactement celui que l'erreur du patron désigne. Le garde-fou
+existait ; il visait à côté dès qu'on bâtit ailleurs que dans `.next`.
+
+Reproduit **dans la configuration exacte du banc**, et non dans une approchante
+— `ATLAS_DIST_DIR=.next-batie npx next build`, un reste périmé posé dans
+`.next/dev/types` : rouge sans les exclusions, avec le message du patron au mot
+près, vert avec, le reste périmé toujours en place. La première tentative de
+reproduction, faite avec le dossier par défaut, passait au vert : elle aurait
+fait croire le correctif inutile.
 `scripts/test-tsconfig-sans-restes-dev.ts` refuse le retour en arrière — sans
 lui, la prochaine construction rouvrirait la panne en silence, et elle ne se
 reverrait que chez lui.

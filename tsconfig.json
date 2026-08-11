@@ -48,9 +48,23 @@
   // `.next-batie/types`, engendrés par la construction elle-même, qui ne bougent
   // pas pendant qu'on les lit.
   //
+  // **Next se protège pourtant de ce cas — mais son filtre vise le mauvais
+  // dossier ici, et c'est toute l'explication.** `runTypeCheck` écarte
+  // `<distDir>/dev/types` avant de vérifier, précisément « pour empêcher des
+  // types de développement périmés de faire échouer la construction ». Or le
+  // banc bâtit dans `.next-batie` : le filtre écarte donc `.next-batie/dev`,
+  // pendant que le serveur de développement, lui, écrit dans `.next/dev`. Ce
+  // dossier-là passe entre les mailles — et c'est celui que l'erreur du patron
+  // désigne.
+  //
+  // Reproduit dans la configuration exacte du banc
+  // (`ATLAS_DIST_DIR=.next-batie npx next build`, un reste périmé posé dans
+  // `.next/dev/types`) : rouge sans ces exclusions, vert avec, le reste périmé
+  // toujours en place.
+  //
   // `scripts/test-tsconfig-sans-restes-dev.ts` refuse leur retour, avec ce
-  // pourquoi : la ligne se remet toute seule à la moindre reprise de
-  // configuration Next, et le défaut ne se reverrait que chez le patron.
+  // pourquoi : la ligne d'`include` se remet toute seule — deux fois en une
+  // soirée — et le défaut ne se reverrait que chez le patron.
   "include": [
     "next-env.d.ts",
     "**/*.ts",
