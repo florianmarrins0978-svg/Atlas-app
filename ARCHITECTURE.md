@@ -4127,6 +4127,42 @@ laissait un grand blanc sous le dernier chantier. Il a préféré que la perle a
 au chantier plutôt que la liste s'allonge — et une fin de liste ressemble alors à
 une fin de liste.
 
+### Le second défaut, et le plus instructif : une suite verte sur une règle fausse
+
+**Le patron, le soir même, après la fusion :** *« la perle reste accolée en bas
+au numéro dix-huit. »*
+
+La première version de la descente la faisait plonger sur les `descenteEntiere`
+derniers pixels de défilement — **sans se demander s'il y en avait autant**. Deux
+conséquences, et il les a vues toutes les deux :
+
+| Situation | Ce qui se passait |
+|---|---|
+| liste qui défile à peine (écran haut, peu de chantiers) | la plongée commençait avant le départ : la perle arrivait **déjà tombée** |
+| liste qui tient dans l'écran | une règle écrite exprès la collait au **dernier** chantier |
+
+Mesuré pour le reproduire : écran de 1100 px, 77 px à défiler pour 226 px de
+descente à faire, perle 148 px sous le milieu **alors qu'on était tout en haut**.
+
+Le correctif tient en un `min` : la plongée occupe les derniers pixels, **au plus
+tout ce qu'on peut défiler**. Quand le chemin manque, elle s'étale dessus au lieu
+de déborder avant le départ. Et quand la liste ne défile pas du tout, la perle ne
+bouge plus — sauf si le dernier chantier est lui-même au-dessus du milieu, auquel
+cas elle remonte le rejoindre.
+
+**Ce qu'il faut retenir dépasse ce correctif.** La suite de cas éprouvait cette
+règle fausse et la trouvait juste, parce que **tous ses cas donnaient une liste
+au chemin confortable**. Le contrôle au navigateur ne mesurait qu'un seul écran,
+852 px, où la liste de démonstration a 325 px devant elle — quatre fois ce qu'il
+faut. Deux contrôles verts, un défaut visible à l'œil nu sur le téléphone du
+patron.
+
+Un cas manquant ne rougit pas. Quand une règle porte sur un RAPPORT — ici entre
+le chemin à défiler et la descente à faire — il faut l'éprouver des deux côtés du
+rapport, pas seulement du côté confortable. Le contrôle mesure désormais **deux
+hauteurs d'écran**, dont une où la liste ne défile presque plus, et la suite de
+cas a gagné la liste courte.
+
 ### Un défaut à connaître : calculé juste, jamais dessiné
 
 La descente a d'abord été **calculée correctement et pas affichée**.

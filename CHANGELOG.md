@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-11
 
+### La perle plongeait avant le départ, sur une liste qui défile à peine
+
+**Le patron, le soir, après la fusion :** *« la perle reste accolée en bas au
+numéro dix-huit. »* Il avait raison, et deux fois plutôt qu'une.
+
+La descente s'étalait sur les derniers pixels de défilement — sans vérifier
+qu'il y en avait autant. Sur un écran haut, ou chez un artisan qui a trois
+chantiers, la liste ne défile presque plus : la plongée commençait donc **avant
+le départ**, et la perle arrivait déjà tombée. Et quand la liste tenait
+entièrement dans l'écran, une règle écrite exprès la collait au dernier
+chantier. Mesuré : 1100 px d'écran, 77 px à défiler pour 226 px de descente,
+perle 148 px sous le milieu tout en haut de la liste.
+
+La plongée occupe désormais les derniers pixels **au plus égaux au chemin
+disponible**, et une liste qui ne défile pas laisse la perle au milieu.
+
+**La leçon vaut plus que le correctif, et elle est écrite dans le dépôt :** les
+deux contrôles étaient VERTS. La suite de cas ne donnait jamais une liste au
+chemin trop court ; le contrôle au navigateur ne mesurait qu'un écran de 852 px,
+où la liste de démonstration a quatre fois le chemin nécessaire. Un cas manquant
+ne rougit pas. Quand une règle porte sur un rapport, il faut l'éprouver des deux
+côtés — le contrôle mesure maintenant deux hauteurs d'écran, et la suite a gagné
+la liste courte. Confronté : l'ancienne règle rétablie fait rougir le contrôle
+en nommant le défaut du soir.
+
+
 ### La perle du fil était tout en bas de l'écran, à demeure
 
 **Constaté par le patron, capture de son téléphone à l'appui :** *« Lorsqu'on

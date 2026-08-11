@@ -38,6 +38,7 @@ cas("loin du bout, la perle ne bouge pas d'un pixel", () => {
         milieuDuDernier: MILIEU + DESCENTE_ENTIERE + restant,
         milieuDuCadre: MILIEU,
         restantADefiler: restant,
+        hauteurADefiler: 900,
       }),
       0,
       `à ${restant} px du bout, la perle a quitté le milieu`
@@ -51,6 +52,7 @@ cas("au bout, la perle est exactement en face du dernier", () => {
       milieuDuDernier: MILIEU + DESCENTE_ENTIERE,
       milieuDuCadre: MILIEU,
       restantADefiler: 0,
+      hauteurADefiler: 900,
     }),
     DESCENTE_ENTIERE
   );
@@ -65,41 +67,98 @@ cas("la descente se fait sur les derniers pixels, et proportionnellement", () =>
       milieuDuDernier: MILIEU + DESCENTE_ENTIERE + restant,
       milieuDuCadre: MILIEU,
       restantADefiler: restant,
+      hauteurADefiler: 900,
     }),
     DESCENTE_ENTIERE - restant
   );
 });
 
+cas("une liste qui défile à PEINE ne fait pas plonger la perle dès le haut", () => {
+  // **Le défaut que le patron a vu sur son téléphone**, et que cette suite ne
+  // voyait pas : tous les autres cas donnent une liste au chemin confortable.
+  // Ici elle n'a que 40 px à défiler pour 65 px de descente à faire. L'ancienne
+  // règle retranchait bêtement l'un de l'autre : la perle arrivait déjà tombée
+  // de 25 px, tout en haut de la liste.
+  const CHEMIN = 40;
+  assert.equal(
+    descenteDeLaPerle({
+      milieuDuDernier: MILIEU + DESCENTE_ENTIERE + CHEMIN,
+      milieuDuCadre: MILIEU,
+      restantADefiler: CHEMIN,
+      hauteurADefiler: CHEMIN,
+    }),
+    0,
+    "tout en haut d'une liste courte, la perle a déjà quitté le milieu"
+  );
+  // Et au bout de ce peu de chemin, elle est quand même arrivée sur le dernier.
+  assert.equal(
+    descenteDeLaPerle({
+      milieuDuDernier: MILIEU + DESCENTE_ENTIERE,
+      milieuDuCadre: MILIEU,
+      restantADefiler: 0,
+      hauteurADefiler: CHEMIN,
+    }),
+    DESCENTE_ENTIERE
+  );
+  // À mi-chemin, la moitié : la plongée s'étale au lieu de commencer trop tôt.
+  assert.equal(
+    descenteDeLaPerle({
+      milieuDuDernier: MILIEU + DESCENTE_ENTIERE + CHEMIN / 2,
+      milieuDuCadre: MILIEU,
+      restantADefiler: CHEMIN / 2,
+      hauteurADefiler: CHEMIN,
+    }),
+    DESCENTE_ENTIERE / 2
+  );
+});
+
 cas("elle ne descend jamais plus bas que le dernier jour", () => {
-  // Le cas du dépassement élastique d'iOS : `scrollTop` peut passer au-delà du
-  // bout, et `restantADefiler` devenir négatif. Sans garde, la perle
-  // continuerait de plonger sous le dernier chantier, hors de l'écran.
+  // Le cas du dépassement élastique d'iOS : `scrollTop` passe au-delà du bout,
+  // et `restantADefiler` devient négatif. Sans borne, la perle continuerait de
+  // plonger sous le dernier chantier, hors de l'écran.
+  //
+  // **Les entrées doivent rester physiquement cohérentes**, et la première
+  // version de ce cas ne l'était pas : elle tirait le défilement 40 px au-delà
+  // du bout tout en laissant le dernier chantier là où il est AU bout. Dans un
+  // vrai navigateur, le contenu remonte de ces 40 px avec le doigt. Un cas
+  // impossible ne prouve rien — au mieux il passe par accident, au pire il fait
+  // « corriger » une règle juste.
+  const DEBORD = 40;
   const descente = descenteDeLaPerle({
-    milieuDuDernier: MILIEU + DESCENTE_ENTIERE,
+    milieuDuDernier: MILIEU + DESCENTE_ENTIERE - DEBORD,
     milieuDuCadre: MILIEU,
-    restantADefiler: -40,
+    restantADefiler: -DEBORD,
+    hauteurADefiler: 900,
   });
   assert.equal(descente, DESCENTE_ENTIERE);
 });
 
-cas("une liste qui ne défile pas : la perle rejoint le dernier tout de suite", () => {
-  // Un artisan qui n'a qu'un ou deux chantiers. La liste tient dans l'écran,
-  // il n'y a pas de « bout » à atteindre — et la perle laissée au milieu
-  // désignerait le vide sous le dernier.
+cas("une liste qui ne défile pas et remplit l'écran : la perle NE BOUGE PAS", () => {
+  // **L'autre moitié du défaut du 11 août au soir.** La liste tient dans
+  // l'écran ; il n'y a donc pas de bout à atteindre, et rien ne justifie de
+  // quitter le milieu — où un chantier se trouve. La première version collait
+  // la perle au dernier chantier, tout en bas : c'est ce que le patron a vu.
   assert.equal(
-    descenteDeLaPerle({ milieuDuDernier: 420, milieuDuCadre: MILIEU, restantADefiler: 0 }),
-    420 - MILIEU
+    descenteDeLaPerle({
+      milieuDuDernier: MILIEU + 80,
+      milieuDuCadre: MILIEU,
+      restantADefiler: 0,
+      hauteurADefiler: 0,
+    }),
+    0
   );
 });
 
 cas("une liste courte : la perle REMONTE sur le dernier, elle ne reste pas au milieu", () => {
-  // Corollaire du cas précédent, et le seul endroit où la descente est
-  // négative. Écrit à part parce qu'un `Math.max(0, …)` posé par réflexe le
-  // casserait sans que rien d'autre ne rougisse.
+  // Corollaire du cas précédent : quand le dernier chantier est lui-même
+  // AU-DESSUS du milieu, le milieu ne montre plus rien. C'est le seul endroit
+  // où la descente est négative — écrit à part parce qu'un `Math.max(0, …)`
+  // posé par réflexe le casserait sans que rien d'autre ne rougisse.
   const descente = descenteDeLaPerle({
     milieuDuDernier: 420,
     milieuDuCadre: MILIEU,
     restantADefiler: 0,
+    hauteurADefiler: 0,
   });
   assert.ok(descente < 0, `la perle devrait remonter, elle descend de ${descente} px`);
 });
@@ -109,11 +168,11 @@ cas("un dernier chantier qui atteint le milieu seul : aucune descente", () => {
   // au milieu, il n'y a rien à faire — et forcer une descente le ferait
   // dépasser vers le bas.
   assert.equal(
-    descenteDeLaPerle({ milieuDuDernier: MILIEU + 300, milieuDuCadre: MILIEU, restantADefiler: 300 }),
+    descenteDeLaPerle({ milieuDuDernier: MILIEU + 300, milieuDuCadre: MILIEU, restantADefiler: 300, hauteurADefiler: 900 }),
     0
   );
   assert.equal(
-    descenteDeLaPerle({ milieuDuDernier: MILIEU + 300, milieuDuCadre: MILIEU, restantADefiler: 340 }),
+    descenteDeLaPerle({ milieuDuDernier: MILIEU + 300, milieuDuCadre: MILIEU, restantADefiler: 340, hauteurADefiler: 900 }),
     0
   );
 });

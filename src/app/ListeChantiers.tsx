@@ -131,6 +131,9 @@ export default function ListeChantiers({
         milieuDuDernier: derniere.getBoundingClientRect().top + derniere.offsetHeight / 2,
         milieuDuCadre: boite.top + boite.height / 2,
         restantADefiler: cadre.scrollHeight - cadre.clientHeight - cadre.scrollTop,
+        // Tout le chemin possible, et pas seulement ce qui reste : sans lui, la
+        // plongée démarrait avant le départ sur une liste qui défile à peine.
+        hauteurADefiler: cadre.scrollHeight - cadre.clientHeight,
       });
       point.style.setProperty("--atlas-perle-descente", `${Math.round(descente)}px`);
     };
