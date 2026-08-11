@@ -144,6 +144,12 @@ l'application. Ce qui est **fait** :
   écouter — le compteur suit la lecture réelle et l'onde le volume réellement
   enregistré, pas un décor — et les photos une pellicule dans le tiroir du bas,
   case « + » en tête. `ARCHITECTURE.md` §49.
+- **La pellicule ajoute sur place, et l'écran Photos n'existe plus** (11 août) :
+  le « + » du tiroir ouvre directement le menu du téléphone — *Photothèque ·
+  Prendre une photo · Choisir les fichiers* — au lieu de charger un écran puis
+  d'y poser une feuille maison. Quatre gestes deviennent deux. Ajouter, regarder
+  et retirer se font dans la pellicule ; `/chantiers/[id]/photos` répond 404, et
+  une suite le vérifie. `ARCHITECTURE.md` §59.
 - **Le planning au mois, et les équipes nommées** (10 août, au soir) : sept
   colonnes sans bordure, cinq marques d'occupation, et la journée qui s'ouvre
   sous le calendrier. Réglages laisse nommer les équipes — mais **seulement à

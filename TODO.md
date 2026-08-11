@@ -27,6 +27,24 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quaterdecies. Deux maquettes `/design` décrivent un écran supprimé
+
+**Né le 11 août 2026**, en supprimant `/chantiers/[id]/photos` (`ARCHITECTURE.md`
+§59). Restent derrière lui :
+
+- `src/app/design/photos/page.tsx` — la maquette d'un écran qui n'existe plus ;
+- `src/app/design/hub/page.tsx` — un lien `/chantiers/1/photos` désormais mort
+  (tous les liens de cette maquette le sont déjà : elle vise un chantier « 1 »
+  imaginaire) ;
+- le tableau du §4 bis de `docs/INTEGRER-ORIGINE.md`, qui cite le fichier
+  supprimé — mais ce document raconte un **état daté**, et le réécrire
+  falsifierait ce qu'on savait ce jour-là.
+
+**Volontairement pas touché dans le même lot** : ces maquettes ne sont ni des
+écrans du produit ni de la mémoire, et le patron avait demandé qu'on ne corrige
+pas ce qui n'était pas demandé. À trancher : les supprimer, ou les marquer
+« maquette historique ».
+
 ### ~~0 ter. Les suites navigateur mesuraient un écran que personne ne possède~~ — **close le 2026-08-11**
 
 **Trouvé le 11 août 2026, et le patron l'a payé.** Les suites posaient un cadre

@@ -7,6 +7,54 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-11
+
+### Ajouter une photo ne fait plus changer de page — et l'écran Photos disparaît
+
+**Le patron, capture à l'appui :** *« lorsque je suis sur la page chantier et que
+je clique sur l'encadré doré avec le petit plus doré pour ajouter des photos, je
+veux que ça arrête de me faire changer de page […] et que tu me supprimes toutes
+les autres étapes »*.
+
+Ajouter une photo coûtait **quatre gestes et un changement d'écran** : le « + »,
+la page Photos, le bouton « Ajouter une photo », notre feuille « Prendre une
+photo / Choisir dans ma bibliothèque », et **enfin** le menu du téléphone. Il en
+coûte deux : le « + », puis le menu du téléphone.
+
+**Notre feuille maison a disparu parce que le système fait mieux.** Un champ
+`accept="image/*"` **sans `capture`** fait afficher par iOS un menu qui porte
+déjà les trois entrées — *Photothèque*, *Prendre une photo*, *Choisir les
+fichiers*. Les deux chemins que le patron exigeait le 6 août y sont, au même
+endroit, un geste plus tôt. `capture` reste interdit : sur un iPhone il n'exprime
+pas une préférence, il **impose** l'appareil photo et retire l'accès à la
+photothèque.
+
+**L'écran `/chantiers/[id]/photos` n'existe plus** — décision prise avec le
+patron le même jour. Ajouter, regarder et retirer se font désormais dans la
+pellicule du tiroir de la fiche. La route répond 404, et une suite le vérifie :
+un écran à moitié supprimé est un chemin mort qu'on retrouve trois mois plus
+tard sans savoir s'il compte encore. Deux choses ont été supprimées avec lui, à
+dessein : le décompte « 6 photos » (il comptait ce qu'on a sous les yeux) et le
+lien « Passer à la note vocale » (l'anneau est au centre de la fiche depuis la
+veille).
+
+**Deux défauts que le déménagement crée, et qu'aucune relecture n'aurait
+vus** — détail dans `ARCHITECTURE.md` §59 :
+
+- la visionneuse plein écran, rendue **dans** le tiroir, passait **sous** la
+  barre de navigation : le tiroir porte un `z-index` et plafonne ses enfants.
+  Elle sort par un portail, et une suite mesure que la barre est bien couverte ;
+- le tiroir mesurait sa hauteur sur `[photos.length, etapes.length]`. La
+  pellicule ne passant plus par ses propriétés, la mesure ne voyait plus rien :
+  le tiroir des retirés apparaissait **derrière le bord**, « Annuler » hors
+  d'atteinte. Il observe désormais son corps (`ResizeObserver`).
+
+**Ce que la suite tient :** l'adresse **avant et après** l'ajout — c'est la
+demande elle-même, et tout le reste peut être vert pendant que le patron change
+d'écran.
+
+---
+
 ## 2026-08-10
 
 ### Le devis à la main s'ouvre depuis la création du chantier

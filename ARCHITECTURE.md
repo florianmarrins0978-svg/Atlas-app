@@ -4051,3 +4051,98 @@ Ce garde-fou n'est pas un ornement. Sans lui, quelqu'un remettra un jour un
 `viewport` dans cette suite, elle passera au vert d'un bout à l'autre sans rien
 avoir éprouvé, et personne ne s'en apercevra — c'est mot pour mot ce qui est
 arrivé au contrôle de la bulle.
+
+---
+
+## 59. Ajouter une photo sans changer de page — et l'écran Photos qui disparaît
+
+**Le patron, le 11 août 2026, deux captures à l'appui :** *« lorsque je suis sur
+la page chantier et que je clique sur l'encadré doré avec le petit plus doré
+pour ajouter des photos, je veux que ça arrête de me faire changer de page et je
+veux voir apparaître directement la photothèque / prendre une photo /
+bibliothèque […] et que tu me supprimes toutes les autres étapes »*.
+
+### Ce que coûtait l'ancien chemin
+
+Ajouter une photo demandait **quatre gestes et un changement de page** :
+
+| Geste | Ce qui se passait |
+|---|---|
+| 1 | toucher le « + » de la pellicule |
+| 2 | *l'écran change* — `/chantiers/[id]/photos` se charge |
+| 3 | toucher « Ajouter une photo » |
+| 4 | choisir dans **notre** feuille : « Prendre une photo » / « Choisir dans ma bibliothèque » |
+| 5 | et **enfin** le menu du téléphone |
+
+Il en coûte deux : le « + », puis le menu du téléphone. Le reste a été supprimé,
+pas déplacé.
+
+### La décision de fond : laisser le système faire le choix
+
+Le 6 août, le patron exigeait les deux chemins : *« il faut bien évidemment
+pouvoir faire les deux »*. La réponse d'alors était **deux champs de fichier**
+(l'un avec `capture`, l'autre sans) et une feuille maison pour les départager.
+
+Elle était juste, et elle est devenue inutile : un champ `accept="image/*"`
+**sans `capture`** fait afficher par iOS un menu qui porte déjà les trois
+entrées — *Photothèque*, *Prendre une photo*, *Choisir les fichiers*. Le système
+pose le choix mieux que nous, et un geste plus tôt.
+
+**`capture` reste interdit dans la pellicule, et ce n'est pas un réglage.** Sur
+un iPhone il n'exprime aucune préférence : il **impose** l'appareil photo, retire
+l'accès à la photothèque — et le menu ci-dessus n'apparaît jamais. Un artisan qui
+a photographié le chantier le matin ne pourrait rien joindre l'après-midi.
+
+### L'écran `/chantiers/[id]/photos` n'existe plus
+
+Décision prise avec le patron le 11 août : *« on le supprime entièrement — tout
+se passe dans la pellicule du tiroir : ajouter, regarder, retirer »*. La route
+répond **404**, et une suite le vérifie : un écran à moitié supprimé, c'est un
+chemin mort qu'on retrouve trois mois plus tard sans savoir s'il compte encore.
+
+Ce qui a déménagé dans `src/app/chantiers/[id]/Pellicule.tsx` :
+
+| Ce qui vivait sur l'écran Photos | Où c'est maintenant |
+|---|---|
+| l'ajout | le « + » de la pellicule, qui ouvre le menu du téléphone |
+| la visionneuse plein écran | la même, ouverte depuis la vignette |
+| « Retirer » + le tiroir des retirés | identiques, sous la pellicule |
+| le décompte « 6 photos » | **supprimé** — il comptait ce qu'on a sous les yeux |
+| « Passer à la note vocale » | **supprimé** — l'anneau est au centre de la fiche (§57) |
+
+Les actions serveur, elles, n'ont pas bougé d'un octet : le fichier d'actions du
+dossier supprimé est devenu
+`src/app/chantiers/[id]/photos-actions.ts`, au même niveau que la fiche.
+
+### Trois pièges, et pourquoi ils ne se voient pas en lisant le code
+
+1. **La visionneuse doit sortir du tiroir par un portail.** Le tiroir porte un
+   `z-index`, donc il ouvre son propre contexte d'empilement : une visionneuse
+   « plein écran » rendue à l'intérieur reste plafonnée au niveau du tiroir, et
+   la barre de navigation — posée plus loin dans le document, au même `z-20` —
+   se peint **par-dessus la photo**. `createPortal(document.body)` la sort de
+   là. Une suite mesure le point central de la barre et exige qu'elle soit
+   couverte.
+
+2. **Le tiroir mesure sa hauteur par `ResizeObserver`, plus par une liste de
+   dépendances.** Il se dimensionnait sur `[photos.length, etapes.length]` —
+   deux propriétés. Depuis que la pellicule ajoute et retire sans changer de
+   page, son contenu ne passe plus par les propriétés du tiroir : la mesure ne
+   voyait plus rien, le tiroir gardait sa hauteur d'avant, et le tiroir des
+   retirés apparu sous la pellicule restait **derrière le bord — « Annuler »
+   hors d'atteinte**.
+
+3. **La fiche se rafraîchit après un ajout et après un retrait.** Le statut du
+   chantier et l'étape suivante se déduisent du **nombre** de photos : sans
+   `router.refresh()`, le résumé du tiroir continuerait de réclamer « Ajouter
+   des photos » au-dessus d'une pellicule qui en montre une. L'état local, lui,
+   n'est jamais resynchronisé depuis le serveur : ce qu'on vient d'ajouter ou de
+   retirer ne doit pas être écrasé par un rendu arrivé en retard.
+
+### Ce que la suite tient, et qu'aucun contrôle d'affichage ne verrait
+
+`scripts/test-photos-e2e.ts` compare l'adresse **avant et après** l'ajout. C'est
+la demande elle-même : tout le reste peut être vert pendant que le patron change
+d'écran. Elle exige aussi qu'il n'y ait **qu'un** champ de fichier et qu'il soit
+**sans `capture`** — sinon le menu à trois entrées ne s'ouvre pas, et le défaut
+serait invisible sur une machine de test, où aucun iPhone ne décide.
