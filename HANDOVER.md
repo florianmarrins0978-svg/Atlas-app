@@ -64,6 +64,16 @@ rond, à la place de l'aplat, la gerbe et la demi-seconde. Ce qui est ouvert : l
 disque du tout) et la **façon dont la page arrive** — deux propositions font
 grandir le bouton jusqu'à ce qu'il DEVIENNE la page.
 
+**LE BOUTON EST ARRÊTÉ, ET CHIFFRÉ — c'est par là qu'on reprend.**
+`docs/maquettes/24-le-bouton-retenu.html` : « Nouveau chantier » écrit, le rond
+qui bat à sa droite, trois tours et onze grains d'or à l'appui, la feuille une
+demi-seconde plus tard. Le tableau au bas de la maquette donne toutes les
+mesures. **Rien n'est codé** — c'est la seule chose qui reste (`TODO.md`,
+0 terdecies).
+
+*Ce qui suit est l'historique du choix, gardé pour ne pas rouvrir ce qui est
+clos.*
+
 **LE BOUTON EST CHOISI, et c'est là qu'il faut reprendre.** C'est **l'anneau
 d'un cheveu avec son « + »**, qui doit **tourner à fond puis ouvrir la page**.
 Il est **au centre**, à la place de l'ancien aplat vert, avec **un petit trait

@@ -79,7 +79,11 @@ async function essayer({ calme, rang }) {
   );
   const nombre = await pastilles.count();
   if (!calme && rang === "premiere") {
-    dire(nombre >= 3, `${nombre} pastilles pressables (au moins 3 attendues)`);
+    // **Au moins UN, et pas au moins trois.** Le seuil de trois supposait une
+    // page de comparaison ; la maquette 24 n'en montre qu'un seul, celui qui a
+    // été retenu — et le contrôle refusait la page pour cette seule raison.
+    // Un contrôle qui encode une habitude finit par refuser ce qui la rompt.
+    dire(nombre >= 1, `${nombre} bouton(s) pressable(s) dans un écran`);
   }
 
   const premiere = rang === "derniere" ? pastilles.last() : pastilles.first();

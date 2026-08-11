@@ -176,6 +176,13 @@ const MAQUETTES = [
     quoi: "Le mixte : le mot écrit, le rond qui bat en attendant le doigt, et au clic le tour et la poussière. Sept dispositions du mot — à droite, coupé en deux, en petit doré dessous, « Ajouter », avec les traits, au-dessus, ou effacé par le geste.",
     retenu: true,
   },
+  {
+    fichier: "24-le-bouton-retenu.html",
+    titre: "Le bouton retenu, resserré",
+    famille: "Enlever le gros bouton",
+    quoi: "Celui qu’il a gardé, et lui seul : le mot, le rond qui bat à sa droite. Onde ramenée de 1,85 à 1,42 fois le rond, rond de 46 à 38 px, gerbe de seize grains à onze.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

@@ -34,6 +34,32 @@ Rien n'est codé : l'application porte toujours l'aplat (`TODO.md`, 0 terdecies)
 3. **Aucun script**, comme les treize maquettes précédentes : son lecteur n'en
    exécute pas, et une page engendrée en JavaScript lui arrive vide.
 
+### Le bouton est arrêté : le mot, le rond qui bat, resserré
+
+Il a retenu la première disposition — *« j'aime bien le premier »* — et demandé
+quatre réglages : une onde d'attente qui va moins loin, un ensemble plus petit,
+un rond plus petit, moins de grains.
+`docs/maquettes/24-le-bouton-retenu.html` ne montre que celui-là, et chiffre
+chaque écart pour qu'il puisse être refait à l'identique dans l'application :
+
+| | avant | après |
+|---|---|---|
+| portée de l'onde | 1,85 × le rond | **1,42 ×** |
+| diamètre du rond | 46 px | **38 px** |
+| taille du « + » | 24 px | **20 px** |
+| écart mot ↔ rond | 16 px | **13 px** |
+| corps du libellé | 9,5 px | **9 px** |
+| nombre de grains | 16 | **11** |
+| portée des grains | 58 px | **46 px** |
+
+Ce qui n'a pas bougé : les trois tours freinés en 560 ms, la demi-seconde avant
+la page, l'arrêt net du battement dès l'appui.
+
+**Le contrôle exigeait au moins trois boutons pressables par page** — une
+habitude prise sur les pages de comparaison. Il refusait donc celle-ci, qui
+n'en montre qu'un, et pour cette seule raison. Un contrôle qui encode une
+habitude finit par refuser ce qui la rompt : le seuil est ramené à un.
+
 ### Le mot, le rond qui bat, et la poussière
 
 Il a décrit le mixte pièce par pièce : *« nouveau chantier écrit, le plus à

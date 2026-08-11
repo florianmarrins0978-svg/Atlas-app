@@ -2788,6 +2788,157 @@
 }
 
 
+/* 24 — Le bouton retenu, resserré */
+#s24{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+@media (prefers-color-scheme: dark){
+#s24:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  
+}
+#s24[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+#s24, #s24 *{box-sizing:border-box}
+#s24{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 90px}
+#s24 .page{max-width:1000px;margin:0 auto}
+#s24 .intro{max-width:62ch;margin:0 auto}
+#s24 .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
+#s24 .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
+#s24 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
+#s24 .intro b{color:var(--encre);font-weight:500}
+#s24 .appui{max-width:52ch;margin:22px auto 0;padding:15px 20px;border:1px solid var(--trait);
+         border-radius:6px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s24 .appui b{color:var(--encre);font-weight:500}
+#s24 .famille{margin:56px 0 14px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--gris)}
+#s24 .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
+#s24 .famille span::before,#s24 .famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
+#s24 .famille span::before{right:100%}
+#s24 .famille span::after{left:100%}
+#s24 .sous-titre{max-width:58ch;margin:0 auto 28px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s24 .duo{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;align-items:flex-start}
+#s24 .socle{display:grid;place-items:center;overflow:hidden;width:330px;height:150px;border-radius:10px;
+         background:#f5f3ee;border:1px solid var(--trait);
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f;
+         --e-trait:rgba(28,28,26,.16)}
+#s24 .socle.grand .geste{transform:scale(2.2);transform-origin:center}
+#s24 .socle.grand .mot{display:none}
+#s24 .cartouche{display:flex;flex-direction:column;align-items:center;gap:13px}
+#s24 .etiquette{color:var(--bronze);font-size:10px;letter-spacing:.3em;text-transform:uppercase}
+#s24 .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
+#s24 .ecran{position:relative;overflow:hidden;border-radius:34px;height:664px;
+         display:flex;flex-direction:column;
+         background:#f5f3ee;color:#1c1c1a;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f;
+         --e-trait:rgba(28,28,26,.16); --e-trait-doux:rgba(28,28,26,.07)}
+#s24 .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+#s24 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+#s24 .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+#s24 .enseigne{padding:26px 0 0;text-align:center;font-size:11px;letter-spacing:.52em}
+#s24 .titre{padding:34px 26px 0}
+#s24 .titre .salut{margin:0;color:var(--e-or)}
+#s24 .titre h1{margin:14px 0 0;font-size:36px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+#s24 .titre .compte{margin:14px 0 0;color:var(--e-gris)}
+#s24 .fermeture{height:1px;background:var(--e-trait);margin:26px 26px 0}
+#s24 .rubrique{display:flex;justify-content:space-between;align-items:center;
+            margin:26px 26px 10px;color:var(--e-gris)}
+#s24 .tige{position:relative;margin:0 26px;flex:1 1 auto;min-height:0;overflow:hidden}
+#s24 .tige::before{content:"";position:absolute;left:47px;top:10px;bottom:10px;width:1px;background:var(--e-trait)}
+#s24 .brin{position:relative;display:grid;grid-template-columns:47px 1fr;gap:0 26px;
+        padding:15px 0;text-decoration:none;color:inherit}
+#s24 .brin .jour{grid-row:1 / span 3;text-align:right;padding-right:13px;color:var(--e-gris)}
+#s24 .brin .jour b{display:block;font-weight:400;font-size:19px;line-height:1;color:var(--e-encre);
+                font-family:ui-serif,Georgia,serif}
+#s24 .brin .jour span{display:block;margin-top:4px}
+#s24 .brin .nom{margin:0;font-size:19px;line-height:1.15;font-weight:400}
+#s24 .brin .lieu{margin:3px 0 0;font-size:11.5px;color:var(--e-gris)}
+#s24 .brin .etat{margin:7px 0 0;color:var(--e-gris)}
+#s24 .brin.attend .etat{color:var(--e-or)}
+#s24 .brin.attend::after{content:"";position:absolute;left:44px;top:21px;width:7px;height:7px;
+                      border-radius:99px;background:var(--e-or);box-shadow:0 0 0 4px var(--e-fond)}
+#s24 .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;position:relative;z-index:2;
+       background:var(--e-fond)}
+#s24 .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
+#s24 .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-or)}
+#s24 .siege{display:flex;justify-content:center;padding:22px 26px 2px}
+#s24 .geste{display:flex;align-items:center;justify-content:center;gap:13px;
+         text-decoration:none;color:var(--e-encre);-webkit-tap-highlight-color:transparent}
+#s24 .geste .mot{font-size:9px;letter-spacing:.28em;white-space:nowrap;
+              transition:letter-spacing 620ms cubic-bezier(.22,.61,.36,1)}
+#s24 .rond{position:relative;display:grid;place-items:center;width:38px;height:38px;
+        border-radius:99px;transition:transform 140ms cubic-bezier(.2,.7,.3,1)}
+#s24 .geste:active .rond{transform:scale(.92)}
+#s24 .rond .cerne{position:absolute;inset:0;border-radius:99px;border:1px solid var(--e-trait);z-index:2}
+#s24 .rond .signe{position:relative;z-index:4;display:block;width:20px;height:20px}
+#s24 .rond .croix{stroke:var(--e-or);stroke-width:1.25;fill:none}
+#s24 .rond .pouls{position:absolute;inset:0;border-radius:99px;z-index:1;
+               border:1px solid var(--e-or);opacity:0;
+               animation:s24-battement 3.4s cubic-bezier(.16,.7,.3,1) infinite}
+@keyframes s24-battement{
+    0%{transform:scale(1);opacity:0}
+    8%{opacity:.5}
+    46%{transform:scale(1.42);opacity:0}
+    100%{transform:scale(1.42);opacity:0}
+  }
+#s24 .geste.part .pouls{animation:none;opacity:0}
+#s24 .geste.part .signe{animation:s24-tour 560ms cubic-bezier(.16,.74,.22,1) both}
+@keyframes s24-tour{
+    0%{transform:rotate(0)}
+    14%{transform:rotate(120deg)}
+    100%{transform:rotate(1080deg)}
+  }
+#s24 .geste.part .mot{letter-spacing:.38em}
+#s24 .rond .gerbe{position:absolute;inset:0;z-index:3;pointer-events:none}
+#s24 .rond .gerbe i{position:absolute;left:50%;top:50%;width:var(--l);height:var(--l);
+                 margin:calc(var(--l) / -2) 0 0 calc(var(--l) / -2);
+                 border-radius:99px;background:var(--e-or);opacity:0}
+#s24 .geste.part .gerbe i{animation:s24-grain 560ms cubic-bezier(.16,.68,.3,1) both;
+                       animation-delay:var(--t)}
+@keyframes s24-grain{
+    0%{transform:translate(calc(var(--x) * .46),calc(var(--y) * .46)) scale(.4);opacity:0}
+    16%{opacity:1}
+    64%{opacity:1}
+    100%{transform:translate(var(--x),var(--y)) scale(.7);opacity:0}
+  }
+#s24 .feuille{position:absolute;left:0;right:0;bottom:0;top:56px;z-index:6;
+           display:flex;flex-direction:column;background:var(--e-fond);
+           border-radius:22px 22px 0 0;box-shadow:0 -22px 50px rgba(20,18,14,.22);
+           transform:translateY(100%);visibility:hidden;
+           transition:transform 540ms cubic-bezier(.22,.61,.36,1),visibility 0s 540ms}
+#s24 .feuille.ouverte{transform:translateY(0);visibility:visible;transition-delay:0s}
+#s24 .feuille .poignee{width:38px;height:4px;border-radius:9px;background:var(--e-trait);margin:12px auto 0}
+#s24 .feuille h2{margin:26px 26px 0;font:400 30px/1.05 ui-serif,Georgia,serif;letter-spacing:-.018em}
+#s24 .feuille .quoi{margin:12px 26px 0;color:var(--e-gris);font-size:11.5px;line-height:1.5}
+#s24 .feuille .champ{margin:22px 26px 0}
+#s24 .feuille .champ span{display:block;color:var(--e-gris);margin-bottom:7px}
+#s24 .feuille .champ b{display:block;padding:13px 15px;border-radius:4px;background:var(--e-plage);
+                    font-weight:400;color:var(--e-gris);font-size:15px}
+#s24 .feuille .fermer{display:block;margin:auto 26px 30px;padding:15px;text-align:center;
+                   text-decoration:none;color:var(--e-gris);border-top:1px solid var(--e-trait)}
+#s24 .note{max-width:62ch;margin:52px auto 0;padding:20px 22px;border:1px solid var(--trait);
+        border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.7}
+#s24 .note h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
+#s24 .note b{color:var(--encre);font-weight:500}
+#s24 .note p{margin:0 0 12px}
+#s24 .note p:last-child{margin-bottom:0}
+#s24 .note table{width:100%;border-collapse:collapse;margin:14px 0 4px;font-size:12.5px}
+#s24 .note th{text-align:left;font-weight:500;color:var(--encre);padding:0 0 7px}
+#s24 .note td{padding:5px 0;border-top:1px solid var(--trait);font-variant-numeric:tabular-nums}
+#s24 .note td:last-child,#s24 .note th:last-child{text-align:right}
+@media (prefers-reduced-motion: reduce){
+#s24 .rond .pouls{animation:none;opacity:0}
+#s24 .geste.part .gerbe i,#s24 .geste.part .signe{animation:none}
+#s24 .rond .gerbe{display:none}
+
+  
+}
+
+
 </style>
 
 <div class="enveloppe">
@@ -2896,6 +3047,10 @@
       <a class="item retenu" href="#m23">
         <span class="no">23</span><span class="titre">Le mot, le rond qui bat, et la poussière</span><span class="fleche">↓</span>
         <span class="quoi">Le mixte : le mot écrit, le rond qui bat en attendant le doigt, et au clic le tour et la poussière. Sept dispositions du mot — à droite, coupé en deux, en petit doré dessous, « Ajouter », avec les traits, au-dessus, ou effacé par le geste.</span>
+      </a>
+      <a class="item retenu" href="#m24">
+        <span class="no">24</span><span class="titre">Le bouton retenu, resserré</span><span class="fleche">↓</span>
+        <span class="quoi">Celui qu’il a gardé, et lui seul : le mot, le rond qui bat à sa droite. Onde ramenée de 1,85 à 1,42 fois le rond, rond de 46 à 38 px, gerbe de seize grains à onze.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -11172,6 +11327,140 @@
     </div>
   </section>
 
+  <section class="etape" id="m24">
+    <div class="etape-tete">
+      <span class="etape-no">24</span>
+      <h2>Le bouton retenu, resserré</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s24">
+<div class="page">
+  <div class="intro">
+    <p class="sur">Atlas — le bouton retenu</p>
+    <h1>Resserré, et lui seul</h1>
+    <p>La disposition que vous avez gardée : <b>« Nouveau chantier » écrit, le rond qui bat à sa droite</b>. Quatre réglages, et rien d’autre n’a bougé.</p>
+    <p class="appui"><b>Appuyez dessus.</b> En haut le bouton seul, à sa taille réelle puis grossi deux fois pour juger le détail ; dessous, dans l’écran. Refermez pour recommencer.</p>
+  </div>
+
+  <p class="famille"><span>Le bouton seul</span></p>
+  <p class="sous-titre">À gauche, sa taille réelle sur votre téléphone. À droite, le même, grossi — c’est le seul moyen de juger l’onde et les grains à l’œil nu.</p>
+  <div class="duo">
+    <div class="cartouche">
+      <div class="socle"><a class="geste" href="#" aria-label="Nouveau chantier">
+            <span class="mot caps">Nouveau chantier</span>
+            <span class="rond">
+              <span class="pouls" aria-hidden="true"></span>
+              <span class="cerne" aria-hidden="true"></span>
+              <span class="gerbe" aria-hidden="true"><i style="--x:7.7px;--y:-36.9px;--l:2.3px;--t:9ms"></i><i style="--x:17.0px;--y:-44.8px;--l:1.6px;--t:43ms"></i><i style="--x:34.9px;--y:-22.6px;--l:1.7px;--t:22ms"></i><i style="--x:35.2px;--y:2.1px;--l:1.8px;--t:0ms"></i><i style="--x:35.0px;--y:29.0px;--l:1.9px;--t:34ms"></i><i style="--x:9.5px;--y:38.0px;--l:2.0px;--t:13ms"></i><i style="--x:-18.7px;--y:45.7px;--l:2.2px;--t:47ms"></i><i style="--x:-36.7px;--y:22.4px;--l:2.3px;--t:26ms"></i><i style="--x:-36.5px;--y:-3.1px;--l:2.4px;--t:5ms"></i><i style="--x:-45.5px;--y:-11.3px;--l:1.6px;--t:39ms"></i><i style="--x:-25.9px;--y:-31.2px;--l:1.8px;--t:18ms"></i></span>
+              <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+              </svg>
+            </span>
+          </a></div>
+      <p class="etiquette">Taille réelle</p>
+    </div>
+    <div class="cartouche">
+      <div class="socle grand"><a class="geste" href="#" aria-label="Nouveau chantier">
+            <span class="mot caps">Nouveau chantier</span>
+            <span class="rond">
+              <span class="pouls" aria-hidden="true"></span>
+              <span class="cerne" aria-hidden="true"></span>
+              <span class="gerbe" aria-hidden="true"><i style="--x:7.7px;--y:-36.9px;--l:2.3px;--t:9ms"></i><i style="--x:17.0px;--y:-44.8px;--l:1.6px;--t:43ms"></i><i style="--x:34.9px;--y:-22.6px;--l:1.7px;--t:22ms"></i><i style="--x:35.2px;--y:2.1px;--l:1.8px;--t:0ms"></i><i style="--x:35.0px;--y:29.0px;--l:1.9px;--t:34ms"></i><i style="--x:9.5px;--y:38.0px;--l:2.0px;--t:13ms"></i><i style="--x:-18.7px;--y:45.7px;--l:2.2px;--t:47ms"></i><i style="--x:-36.7px;--y:22.4px;--l:2.3px;--t:26ms"></i><i style="--x:-36.5px;--y:-3.1px;--l:2.4px;--t:5ms"></i><i style="--x:-45.5px;--y:-11.3px;--l:1.6px;--t:39ms"></i><i style="--x:-25.9px;--y:-31.2px;--l:1.8px;--t:18ms"></i></span>
+              <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+              </svg>
+            </span>
+          </a></div>
+      <p class="etiquette">Grossi deux fois</p>
+    </div>
+  </div>
+
+  <p class="famille"><span>Dans l’écran</span></p>
+  <p class="sous-titre">Le geste entier : le battement, l’appui, le tour, la poussière, puis la page.</p>
+  <div class="duo">
+    <div class="tel"><div class="ecran">
+      <div class="enseigne">ATLAS</div>
+      <div class="titre">
+        <p class="salut caps">Bonjour Florian</p>
+        <h1 class="serif">Vos chantiers</h1>
+        <p class="compte caps num">Quatre en cours</p>
+      </div>
+      <div class="fermeture"></div>
+      <div class="siege"><a class="geste" href="#" aria-label="Nouveau chantier">
+            <span class="mot caps">Nouveau chantier</span>
+            <span class="rond">
+              <span class="pouls" aria-hidden="true"></span>
+              <span class="cerne" aria-hidden="true"></span>
+              <span class="gerbe" aria-hidden="true"><i style="--x:7.7px;--y:-36.9px;--l:2.3px;--t:9ms"></i><i style="--x:17.0px;--y:-44.8px;--l:1.6px;--t:43ms"></i><i style="--x:34.9px;--y:-22.6px;--l:1.7px;--t:22ms"></i><i style="--x:35.2px;--y:2.1px;--l:1.8px;--t:0ms"></i><i style="--x:35.0px;--y:29.0px;--l:1.9px;--t:34ms"></i><i style="--x:9.5px;--y:38.0px;--l:2.0px;--t:13ms"></i><i style="--x:-18.7px;--y:45.7px;--l:2.2px;--t:47ms"></i><i style="--x:-36.7px;--y:22.4px;--l:2.3px;--t:26ms"></i><i style="--x:-36.5px;--y:-3.1px;--l:2.4px;--t:5ms"></i><i style="--x:-45.5px;--y:-11.3px;--l:1.6px;--t:39ms"></i><i style="--x:-25.9px;--y:-31.2px;--l:1.8px;--t:18ms"></i></span>
+              <svg class="signe" viewBox="0 0 32 32" aria-hidden="true">
+                <path class="croix" d="M16 9.6v12.8M9.6 16h12.8"/>
+              </svg>
+            </span>
+          </a></div>
+      <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+      <div class="tige">
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>26</b><span>juil.</span></span>
+              <p class="nom serif">Pose de clôture</p>
+              <p class="lieu">2 route de Vertou, Vertou</p>
+              <p class="etat caps">Brouillon · sans photo</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>24</b><span>juil.</span></span>
+              <p class="nom serif">Rénovation salle de bain</p>
+              <p class="lieu">12 rue des Lilas, Nantes</p>
+              <p class="etat caps">À vérifier · 6 photos</p>
+            </a>
+            <a class="brin attend" href="#">
+              <span class="jour caps num"><b>22</b><span>juil.</span></span>
+              <p class="nom serif">Terrasse bois</p>
+              <p class="lieu">5 allée des Tilleuls, Nantes</p>
+              <p class="etat caps">Devis retourné · 3 photos</p>
+            </a>
+            <a class="brin" href="#">
+              <span class="jour caps num"><b>18</b><span>juil.</span></span>
+              <p class="nom serif">Reprise de toiture</p>
+              <p class="lieu">8 impasse du Moulin, Rezé</p>
+              <p class="etat caps">En attente · 9 photos</p>
+            </a>
+      </div>
+      <nav class="bas">
+        <a class="on caps" href="#">Chantiers</a>
+        <a class="caps" href="#">Planning</a>
+        <a class="caps" href="#">Terminés</a>
+        <a class="caps" href="#">Réglages</a>
+      </nav>
+      <div class="feuille">
+        <span class="poignee" aria-hidden="true"></span>
+        <h2 class="serif">Nouveau chantier</h2>
+        <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+        <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+        <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+        <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+        <a class="fermer caps" href="#">Refermer — et recommencer</a>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="note">
+    <h2>Ce qui a changé, au chiffre près</h2>
+    <table>
+      <tr><th>Réglage</th><th>Avant</th><th>Après</th></tr>
+      <tr><td>Portée de l’onde d’attente</td><td>1,85 ×</td><td>1,42 ×</td></tr>
+      <tr><td>Diamètre du rond</td><td>46 px</td><td>38 px</td></tr>
+      <tr><td>Taille du signe « + »</td><td>24 px</td><td>20 px</td></tr>
+      <tr><td>Écart entre le mot et le rond</td><td>16 px</td><td>13 px</td></tr>
+      <tr><td>Corps du libellé</td><td>9,5 px</td><td>9 px</td></tr>
+      <tr><td>Nombre de grains</td><td>16</td><td>11</td></tr>
+      <tr><td>Portée des grains</td><td>58 px</td><td>46 px</td></tr>
+    </table>
+    <p style="margin-top:14px"><b>Ce qui n’a pas bougé, et ne devrait pas :</b> les trois tours freinés en 560 ms, la demi-seconde avant que la page monte, et l’arrêt net du battement dès que le doigt se pose.</p>
+    <p><b>Une limite que je peux encore régler en un mot :</b> l’onde s’arrête maintenant à quarante-deux pour cent du rayon au-delà du rond. Si elle vous paraît encore large, on descend à 1,3 — en dessous, elle ne se distingue plus du contour et le bouton cesse d’appeler.</p>
+  </div>
+</div>
+    </div>
+  </section>
+
 <script>
   // Chaque maquette engendrait ses écrans en clonant un gabarit. Le code est
   // repris tel quel — donc il ne peut pas diverger de l'original — mais il
@@ -12026,6 +12315,55 @@ function armer(geste) {
 
 })(porteeDe("s23")); } catch (erreur) {
   console.error("Maquette 23 — son script a échoué :", erreur);
+}
+
+try { (function (document) {
+
+/*
+  Le même script que les maquettes 16 à 23 : il arme le bouton, ouvre la feuille
+  une demi-seconde après l'appui, et referme. Un second appui pendant le geste
+  est ignoré — sinon, dans l'application, ce serait deux chantiers créés au lieu
+  d'un.
+*/
+var gestes = document.querySelectorAll(".geste[href]");
+
+for (var i = 0; i < gestes.length; i++) armer(gestes[i]);
+
+function armer(geste) {
+  var ecran = geste.closest(".ecran");
+  var feuille = ecran ? ecran.querySelector(".feuille") : null;
+  var enCours = false;
+
+  geste.addEventListener("click", function (evenement) {
+    evenement.preventDefault();
+    if (enCours) return;
+    enCours = true;
+
+    var calme = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    geste.classList.add("part");
+
+    if (feuille) {
+      window.setTimeout(function () {
+        feuille.classList.add("ouverte");
+      }, calme ? 0 : 520);
+    }
+
+    window.setTimeout(function () {
+      geste.classList.remove("part");
+      enCours = false;
+    }, calme ? 0 : 940);
+  });
+
+  if (feuille) {
+    feuille.querySelector(".fermer").addEventListener("click", function (evenement) {
+      evenement.preventDefault();
+      feuille.classList.remove("ouverte");
+    });
+  }
+}
+
+})(porteeDe("s24")); } catch (erreur) {
+  console.error("Maquette 24 — son script a échoué :", erreur);
 }
 </script>
 

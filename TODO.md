@@ -357,7 +357,7 @@ Ce que la bascule coûtera, quand il aura choisi : la charte de
 encre au lieu du vert pin pour l'action, bronze au lieu de l'or), et **tous** les
 écrans suivent — pas seulement Chantiers. À ne pas entamer écran par écran.
 
-### 0 terdecies. L'action « Nouveau chantier » — six propositions, en attente de son choix
+### 0 terdecies. L'action « Nouveau chantier » — ARRÊTÉE, reste à coder
 
 Le 11 août 2026, capture à l'appui : *« j'aime pas le gros bouton nouveau
 chantier […] ce gros bouton en plein milieu, ça ne fait pas très luxe »*. Le
@@ -372,7 +372,20 @@ matières** (laque, or brossé, cire, encre vivante, ou pas de disque du tout) e
 **deux ouvertures où le bouton devient la page** au lieu de faire monter une
 feuille.
 
-**LE BOUTON EST CHOISI (11 août, au soir).** C'est **l'anneau d'un cheveu avec
+**LE BOUTON EST ARRÊTÉ (11 août, au soir), et il est chiffré.** C'est
+`docs/maquettes/24-le-bouton-retenu.html` : **« Nouveau chantier » écrit, le
+rond d'un cheveu qui bat à sa droite**, et à l'appui **trois tours avec onze
+grains d'or**, puis la feuille une demi-seconde plus tard. Toutes les mesures
+sont dans le tableau au bas de cette maquette — les reprendre telles quelles.
+
+Il reste à **le coder** : le bloc `<Link>` de `EcranChantiers.tsx`, une
+trentaine de lignes de `globals.css`, le délai avant l'ouverture de la feuille,
+une suite qui mesure la demi-seconde et une capture. Une demi-journée. Deux
+choses à ne pas oublier : l'appui doit s'enfoncer tout de suite (140 ms), et un
+second appui pendant le tour doit être ignoré, sans quoi deux chantiers naissent
+au lieu d'un.
+
+**L'historique du choix (pour ne pas rouvrir ce qui est clos) :** C'est **l'anneau d'un cheveu avec
 son « + »**, qui doit **tourner à fond puis ouvrir la page**. Sa place a été
 tranchée juste après : **au centre**, à l'endroit qu'occupait l'aplat vert — et
 non en haut à droite comme il l'avait d'abord montré — avec **un petit trait de
