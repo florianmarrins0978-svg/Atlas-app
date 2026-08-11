@@ -134,6 +134,71 @@ piège pour la conversation suivante.
 
 ## 2026-08-10
 
+### Un diagnostic qui regarde l'espace du patron, au lieu de raisonner dessus
+
+**Deux hypothèses avancées pour expliquer son « ça ne marche pas », et les deux
+fausses.** D'abord un service de transcription absent — c'était mon
+environnement, pas le sien. Puis une branche différente de celle où l'on
+pousse — il était bien sur `main`. Chacune lui a coûté un aller-retour pour
+rien.
+
+Le défaut n'est pas de s'être trompé : c'est d'avoir raisonné **à distance** sur
+une machine qu'on ne voit pas, alors que cette machine sait tout.
+
+`npm run diagnostiquer:espace` ne devine rien, il regarde — et il montre la
+seule chose que rien d'autre ne montrait : **le commit RÉELLEMENT SERVI**. La
+ligne « Version » de Réglages lit le dépôt, donc le code *récupéré* ; la version
+rapide est un dossier bâti et figé. Entre les deux il peut y avoir un monde, et
+c'est précisément là que se logeait le malentendu.
+
+Il rend six lignes — branche suivie, code récupéré, **code servi**, serveur,
+veilleur, issue de la dernière mise à jour — puis un verdict dans ses mots :
+retard, fichiers non enregistrés, historique divergé, version bâtie périmée,
+serveur muet. Et quand tout concorde, il le dit aussi, en désignant alors le
+produit plutôt que l'espace.
+
+**Éprouvé dans ses états dégradés**, pas seulement au vert : dépôt sale, version
+bâtie plus ancienne que le code, tête détachée (où « HEAD » ne serait qu'un
+aveu incompréhensible), dépôt distant injoignable.
+
+### « J'ai relancé le banc, ça ne marche pas » — la version rapide ne se recompile jamais
+
+**Le patron, le 11 août 2026 au soir.** Le code neuf était bien tiré, la ligne
+Version affichait le commit neuf, et l'écran servi restait l'ancien. Il pouvait
+recharger cent fois.
+
+**La cause tient en une phrase :** `next start` sert un dossier **bâti**, figé à
+la seconde de sa construction. Tirer du code sous ses pieds n'y change rien. Or
+le bouton « Chercher les dernières corrections » annonçait *« rechargez la page,
+l'application se recompile »* — exact en développement, **impossible** sur la
+version rapide.
+
+C'est la **troisième fois** que ce dépôt paie le même malentendu : *le produit
+paraît cassé alors qu'il est simplement vieux*. Les deux premières ont donné la
+ligne Version, puis ce bouton. Celle-ci donne trois issues distinctes :
+
+| Ce qui tourne | Ce qu'on annonce | Ce qu'on fait |
+|---|---|---|
+| développement | « l'application se recompile » | rien — c'est vrai |
+| version bâtie, veilleur présent | « elle se reconstruit, injoignable une minute » | on coupe le serveur |
+| version bâtie, **sans veilleur** | « arrêtez puis rouvrez l'espace » | **rien** |
+
+**Le troisième cas est le plus important.** Couper sans personne pour relever le
+serveur reviendrait à éteindre l'application du patron pour lui livrer un
+correctif — le remède serait pire que le mal, et il resterait devant un écran
+mort. Le veilleur est donc interrogé par son identifiant de processus, pas par
+l'existence de son fichier verrou.
+
+La règle vit dans `src/lib/issue-mise-a-jour.ts`, en fonction pure : une
+décision qui peut couper le serveur du patron doit s'éprouver sans base, sans
+serveur et sans banc. `scripts/test-issue-mise-a-jour.ts` la tient en cinq
+contrôles, vérifiés rouges sur l'ancien comportement.
+
+**Vérifié aussi, et c'est ce qui a permis de trancher :** le tiroir allégé
+fonctionne bel et bien, sur les quatre états réels d'un chantier — neuf, avec
+dictée, avec devis généré, avec devis envoyé. Ni « Informations » ni « Prix »
+n'y figurent nulle part. Ce que le patron voyait était l'ancien code.
+
 ### De l'anneau au devis, en une touche
 
 **Le patron, le 11 août 2026, après avoir essayé six formes du déclencheur :**

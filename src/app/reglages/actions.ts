@@ -8,6 +8,7 @@ import { exigerProprietaire } from "@/server/autorisation";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { nommerEquipe } from "@/server/repositories/equipes";
 import { versionExecutee } from "@/server/version-executee";
+import { issueApresMiseAJour } from "@/lib/issue-mise-a-jour";
 
 /**
  * Écrire — ou effacer — le nom d'une équipe, par son RANG.
@@ -242,11 +243,20 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
         };
       }
 
-      return {
-        succes: true,
-        etat,
-        message: `Mise à jour récupérée${await suffixeVersion()}. Rechargez la page dans quelques secondes : l'application se recompile.`,
-      };
+      // **La version RAPIDE ne se recompile jamais**, et ce message le
+      // promettait. La règle — quoi dire, et s'il faut couper le serveur pour
+      // que le code neuf soit servi — vit dans `src/lib/issue-mise-a-jour.ts`,
+      // où elle s'éprouve sans base ni serveur.
+      //
+      // `NODE_ENV` tranche sans ambiguïté : `next start` impose `production`,
+      // c'est écrit dans `demarrer.sh`.
+      const issue = issueApresMiseAJour({
+        versionBatie: process.env.NODE_ENV === "production",
+        veilleurPresent: await veilleurEnVie(),
+        suffixeVersion: await suffixeVersion(),
+      });
+      if (issue.couperLeServeur) programmerReconstruction();
+      return { succes: true, etat, message: issue.message };
     }
     if (etat.startsWith("impossible")) {
       return { succes: false, erreur: `Mise à jour ${etat}` };
@@ -278,6 +288,49 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
  * suivantes en disant « des modifications non enregistrées sont présentes ».
  * Le remède aurait créé la panne, définitivement.
  */
+/**
+ * Le veilleur est-il là pour relever le serveur qu'on s'apprête à couper ?
+ *
+ * Son verrou porte un identifiant de processus, précisément pour qu'un fichier
+ * resté d'un conteneur précédent ne mente pas (`veiller.sh`). On vérifie donc
+ * que le processus vit, pas que le fichier existe.
+ */
+async function veilleurEnVie(): Promise<boolean> {
+  try {
+    const { readFile } = await import("node:fs/promises");
+    const pid = Number((await readFile("/tmp/atlas-veilleur.pid", "utf8")).trim());
+    if (!Number.isInteger(pid) || pid <= 0) return false;
+    process.kill(pid, 0); // Ne tue rien : demande seulement s'il existe.
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Coupe le serveur bâti — après avoir rendu sa réponse.
+ *
+ * **Le délai n'est pas une précaution vague** : sans lui, on tuerait le
+ * processus en train d'écrire la réponse, et le patron lirait un échec sur une
+ * mise à jour réussie — le malentendu exact que cet écran existe pour éteindre.
+ *
+ * Détaché et délié : l'ordre doit survivre à la mort de celui qui le donne.
+ *
+ * Le motif ne vise QUE la version bâtie (`next-server`, `next start`) : un
+ * `next dev` n'a rien à faire ici, et cette branche ne s'exécute de toute façon
+ * qu'en production.
+ */
+function programmerReconstruction(): void {
+  void import("node:child_process").then(({ spawn }) => {
+    const enfant = spawn(
+      "bash",
+      ["-c", 'sleep 3; pkill -f "[n]ext(-server| start)" 2>/dev/null || true'],
+      { detached: true, stdio: "ignore" }
+    );
+    enfant.unref();
+  });
+}
+
 // Non exporté : un module `"use server"` n'expose QUE des fonctions async — une
 // constante exportée ici fait échouer la compilation.
 const FICHIER_ISSUE = "/tmp/atlas-mise-a-jour.txt";
