@@ -89,7 +89,7 @@ for (let i = 0; i < props.length; i++) {
 }
 
 /** Une planche est une page HTML qu'on photographie : pas de bibliothèque à ajouter. */
-function planche({ titre, sous, corps, largeur }) {
+function planche({ corps, largeur }) {
   return `<!doctype html><meta charset="utf-8"><style>
     :root{--fond:#efece6;--encre:#1c1c1a;--gris:#8a8578;--or:#B98B47;--trait:rgba(28,28,26,.13)}
     *{box-sizing:border-box}

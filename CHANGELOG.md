@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-11
 
+### Un banc d'essai pour la bascule — qu'on utilise, au lieu de la regarder
+
+**Sa demande :** *« créez-moi une maquette en HTML dynamique que je peux tester,
+voir si ça me plaît ».* Les maquettes 14 et 15 se regardent ;
+`docs/maquettes/16-banc-dessai-bascule.html` s'utilise : on change de
+déclinaison en haut, on **tape** dans de vrais champs, on bascule, et le bouton
+**mène vraiment quelque part** — à deux écrans différents selon le choix. Sur un
+téléphone, le cadre s'efface et l'écran prend toute la place : c'est ainsi qu'il
+faut juger.
+
+**Toujours aucun script, et cette page va plus loin que les précédentes.** La
+navigation entre écrans se fait par `:target` — de simples ancres. Et **le
+bouton est deux liens superposés** : celui qu'on lit est le seul qui reçoive le
+doigt. C'est le seul endroit qui méritait un contrôle à lui : si le lien
+invisible gardait ses `pointer-events`, il continuerait d'intercepter l'appui et
+le bouton mènerait toujours au même écran, **en silence**, pendant que son
+libellé, lui, aurait changé. Un contrôle qui se contenterait de lire le libellé
+passerait au vert sur exactement ce défaut. Le nôtre appuie pour de bon et
+regarde où l'on arrive — douze appuis, six déclinaisons × deux destinations,
+JavaScript coupé. Sabotée, la règle rend six rouges.
+
+**Et un défaut trouvé en regardant l'écran, comme les trois autres de ce
+projet.** `.champ` est un `<label>`, donc **inline** : ses marges latérales ne
+s'appliquaient pas, et sur le téléphone les libellés et les plages partaient à
+ras bord pendant que le bouton, lui, était bien en retrait. Invisible sur un
+écran d'ordinateur, invisible pour tout contrôle — visible sur une capture au
+format de son téléphone.
+
+---
+
 ### La bascule retenue, puis affinée — six déclinaisons
 
 **Le patron, dans la foulée :** *« pars sur l'idée de la proposition numéro

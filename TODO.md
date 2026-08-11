@@ -37,8 +37,11 @@ Six propositions ont été montrées (`docs/maquettes/14-les-deux-portes.html`).
 **Il a retenu la n° 4, la bascule**, et demandé plus élégant : six déclinaisons
 de cette seule idée sont dans `docs/maquettes/15-la-bascule-affinee.html` — le
 trait qui glisse, le point d'or, la plage, la perle, le cartouche, la bascule en
-pied. **Rien n'est appliqué au produit tant qu'il n'a pas choisi laquelle** —
-appliquer d'office reviendrait à trancher à sa place une question qu'il a posée.
+pied. Et **`docs/maquettes/16-banc-dessai-bascule.html` les fait ESSAYER** :
+champs où l'on tape, bascule, et un bouton qui mène vraiment à deux écrans
+différents selon le choix. **Rien n'est appliqué au produit tant qu'il n'a pas
+choisi laquelle** — appliquer d'office reviendrait à trancher à sa place une
+question qu'il a posée.
 
 Ce qui a fait retenir la bascule, et qui ne se rediscute pas : **deux boutons à
 égalité obligent tout le monde à trancher**, alors que neuf fois sur dix la

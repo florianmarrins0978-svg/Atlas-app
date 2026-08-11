@@ -56,8 +56,27 @@ deux portes sont proposées (11 août, tard).** Sa demande, capture à l'appui :
 - **Proposé** : `docs/maquettes/14-les-deux-portes.html`, six mises en page où
   les deux sorties se voient d'un coup. **Il a retenu la n° 4, la bascule**, et
   demandé plus élégant : six déclinaisons de cette seule idée sont dans
-  `docs/maquettes/15-la-bascule-affinee.html`. **Laquelle n'est pas encore
-  tranché** — voir `TODO.md` §0 septies.
+  `docs/maquettes/15-la-bascule-affinee.html`, et
+  `docs/maquettes/16-banc-dessai-bascule.html` les fait **essayer** (champs où
+  l'on tape, bascule, bouton qui mène vraiment à deux écrans différents).
+  **Laquelle n'est pas encore tranché** — voir `TODO.md` §0 septies.
+
+  **Le banc n'est PAS dans la page unique, et c'est délibéré** : il navigue
+  entre plusieurs écrans et prend tout le téléphone, deux choses qu'une page de
+  comparaison ne sait pas accueillir. Ne pas l'ajouter à `MAQUETTES` dans
+  `fusionner-maquettes.mjs` en croyant réparer un oubli.
+
+  **Le point fragile du banc, s'il faut y toucher :** le bouton est **deux liens
+  superposés**, et seul celui qu'on lit reçoit le doigt. Retirer le
+  `pointer-events:none` du lien invisible ferait mener le bouton toujours au même
+  écran, **en silence**, pendant que son libellé aurait changé — un contrôle qui
+  lit seulement le libellé passerait au vert dessus. Le nôtre appuie pour de bon.
+
+  **Et un défaut de mise en page à ne pas repayer :** `.champ` est un `<label>`,
+  donc **inline** — sans `display:block`, ses marges latérales ne s'appliquent
+  pas et les champs partent à ras bord du téléphone, pendant que le bouton reste
+  en retrait. Invisible sur un écran d'ordinateur, invisible pour tout contrôle,
+  visible sur une capture au format de son téléphone.
 
 **Deux choses à ne pas défaire dans cette maquette :**
 

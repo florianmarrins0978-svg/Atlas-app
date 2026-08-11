@@ -192,6 +192,54 @@ if (existsSync(PAGE_UNIQUE)) {
   verifier("toutes-les-maquettes.html existe — régénérez-la sinon", false);
 }
 
+// ── 4. Le banc d'essai : le bouton mène-t-il VRAIMENT au bon endroit ? ─────
+//
+// **C'est ici que ça peut mentir en silence, et nulle part ailleurs.** Dans la
+// maquette 16, le bouton est DEUX liens superposés : celui qu'on lit est le seul
+// qui doive recevoir le doigt. Si le lien invisible gardait ses
+// `pointer-events`, il continuerait d'intercepter l'appui et le bouton mènerait
+// TOUJOURS au même écran — pendant que son libellé, lui, aurait bel et bien
+// changé. Un contrôle qui se contenterait de lire le libellé passerait au vert
+// sur exactement ce défaut. On appuie donc pour de bon, et on regarde où l'on
+// arrive.
+const BANC = join(MAQUETTES, "16-banc-dessai-bascule.html");
+if (existsSync(BANC)) {
+  const source = readFileSync(BANC, "utf8");
+  verifier("16-banc-dessai-bascule.html — aucune balise <script>", !/<script[\s>]/i.test(source));
+  verifier(
+    "16-banc-dessai-bascule.html — aucun gestionnaire en attribut",
+    !/\son[a-z]+\s*=\s*["']/i.test(source)
+  );
+
+  await page.goto(`file://${BANC}`);
+  const choix = page.locator("[data-choix]");
+  const combien = await choix.count();
+  verifier("banc d'essai — six déclinaisons proposées", combien === 6);
+
+  for (let i = 0; i < combien; i++) {
+    const nom = (await choix.nth(i).innerText()).trim();
+    await choix.nth(i).click();
+
+    // La zone visible est celle de la déclinaison choisie : une seule à la fois.
+    const zone = page.locator("[data-bascule]:visible");
+    verifier(`banc · ${nom} — une seule bascule affichée`, (await zone.count()) === 1);
+
+    for (const [rang, attendu] of [
+      [0, "#fiche"],
+      [1, "#devis"],
+    ]) {
+      await zone.locator("label").nth(rang).click();
+      await motLu(zone); // laisse le fondu finir : le lien du dessus doit avoir pris la main
+      await zone.locator(".bouton").click();
+      const arrivee = new URL(page.url()).hash;
+      verifier(`banc · ${nom} — le bouton mène à ${attendu}`, arrivee === attendu);
+      await page.locator(".cible:target .retour").click();
+    }
+  }
+} else {
+  verifier("16-banc-dessai-bascule.html existe", false);
+}
+
 await navigateur.close();
 
 if (problemes.length > 0) {
