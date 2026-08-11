@@ -43,6 +43,20 @@ différents selon le choix. **Rien n'est appliqué au produit tant qu'il n'a pas
 choisi laquelle** — appliquer d'office reviendrait à trancher à sa place une
 question qu'il a posée.
 
+**Le 11 août au soir, il a retenu la déclinaison 1 — le trait qui glisse.** Reste
+le BOUTON, qu'il trouve « un peu trop gros, carré, pas esthétique » : huit
+formes sont proposées dans `docs/maquettes/17-le-bouton.html`, la bascule étant
+identique sur les huit. Deux choses à savoir avant d'appliquer :
+
+- **Ce bouton est sur vingt-sept écrans** (`PrimaryButton.tsx`). Le changer ici,
+  c'est le changer partout — devis, facture, planning. C'est voulu, mais le
+  choix dépasse l'écran de création.
+- **La proposition 8 revient sur une décision du 10 août.** Le rayon de 5 px
+  avait été retenu pour que le bouton se lise « comme une pièce imprimée » et
+  non « comme un bouton d'application ». Il peut rouvrir ce point — c'est son
+  écran — mais ce n'est pas un détail de finition, et il faut le lui rappeler
+  s'il choisit celle-là sans y revenir.
+
 Ce qui a fait retenir la bascule, et qui ne se rediscute pas : **deux boutons à
 égalité obligent tout le monde à trancher**, alors que neuf fois sur dix la
 réponse est « je dicterai ». C'est la raison pour laquelle le lien discret avait

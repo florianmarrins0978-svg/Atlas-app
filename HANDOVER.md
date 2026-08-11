@@ -59,7 +59,16 @@ deux portes sont proposées (11 août, tard).** Sa demande, capture à l'appui :
   `docs/maquettes/15-la-bascule-affinee.html`, et
   `docs/maquettes/16-banc-dessai-bascule.html` les fait **essayer** (champs où
   l'on tape, bascule, bouton qui mène vraiment à deux écrans différents).
-  **Laquelle n'est pas encore tranché** — voir `TODO.md` §0 septies.
+  **Il a retenu la déclinaison 1, le trait qui glisse.** Reste le BOUTON, qu'il
+  trouve « trop gros, carré » : huit formes dans
+  `docs/maquettes/17-le-bouton.html`, **non tranchées** — voir `TODO.md`
+  §0 septies.
+
+  **Deux choses à ne pas oublier de lui dire s'il choisit :** ce bouton est sur
+  **vingt-sept écrans** (`PrimaryButton.tsx`), donc le changer ici le change
+  partout ; et la proposition 8 **revient sur la décision du 10 août** — le
+  rayon droit avait été retenu pour ne pas ressembler à un bouton
+  d'application.
 
   **Le banc n'est PAS dans la page unique, et c'est délibéré** : il navigue
   entre plusieurs écrans et prend tout le téléphone, deux choses qu'une page de

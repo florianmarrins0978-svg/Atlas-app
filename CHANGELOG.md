@@ -9,6 +9,35 @@ Format : le plus récent en tête.
 
 ## 2026-08-11
 
+### Le bouton, huit façons — et une décision qu'il faut savoir qu'on rouvre
+
+**Le patron :** *« j'aime bien le premier [le trait qui glisse], par contre le
+bouton je le trouve un peu trop gros, carré, pas esthétique ».*
+
+`docs/maquettes/17-le-bouton.html`. La bascule retenue est identique sur les
+huit écrans — **seul le bouton change**, sinon on ne comparerait rien.
+
+**D'où vient la masse, puisque c'est elle qu'il faut alléger.** Le bouton pèse
+par trois choses à la fois, et chacune se traite séparément : la **hauteur**
+(58 px, près d'un dixième de son écran), le **remplissage** (un aplat d'un bord
+à l'autre) et la **pleine largeur** (il touche les deux marges, donc rien ne le
+contient). Les huit n'attaquent pas les mêmes : 1, 6 et 7 enlèvent le
+remplissage ; 2 et 3 rabattent la hauteur ; 5 lâche la pleine largeur ; 4 et 8
+gardent la masse et travaillent le détail.
+
+**La réserve, dite avant qu'il choisisse.** Le rayon de 5 px n'est pas un
+défaut : il a été retenu le 10 août, et `PrimaryButton.tsx` dit pourquoi — « un
+rectangle presque droit se lit comme une pièce imprimée ; le même arrondi à
+16 px se lit comme un bouton d'application, c'est très exactement ce dont le
+patron ne voulait plus ». La proposition 8 rouvre ce point. Elle est là parce
+qu'il dit aujourd'hui « trop carré » et que c'est son écran ; elle est signalée
+pour qu'il sache ce qu'il rouvre, pas pour l'en dissuader.
+
+**Et un rappel qui dépasse l'écran :** ce bouton est sur vingt-sept écrans. Le
+changer ici, c'est le changer partout.
+
+---
+
 ### Un banc d'essai pour la bascule — qu'on utilise, au lieu de la regarder
 
 **Sa demande :** *« créez-moi une maquette en HTML dynamique que je peux tester,

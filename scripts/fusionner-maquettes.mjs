@@ -120,6 +120,13 @@ const MAQUETTES = [
     quoi: "Six déclinaisons de la proposition 4 : le trait qui glisse, le point d’or, la plage, la perle, le cartouche, la bascule en pied.",
     retenu: true,
   },
+  {
+    fichier: "17-le-bouton.html",
+    titre: "Le bouton, huit façons",
+    famille: "Après la décision",
+    quoi: "« Trop gros, carré. » Filet, bandeau fin, plaque gravée, sceau, capsule, double filet, trait d’or, angle adouci.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

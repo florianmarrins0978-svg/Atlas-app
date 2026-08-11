@@ -42,6 +42,7 @@ const PAGE_UNIQUE = join(MAQUETTES, "toutes-les-maquettes.html");
 const ATTENDU = [
   { fichier: "14-les-deux-portes.html", bascules: 2 },
   { fichier: "15-la-bascule-affinee.html", bascules: 6 },
+  { fichier: "17-le-bouton.html", bascules: 8 },
 ];
 
 // Chemin propre à cet environnement, utilisé seulement s'il existe : ailleurs,
