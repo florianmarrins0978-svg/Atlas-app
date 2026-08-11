@@ -158,6 +158,73 @@ variantes du même geste, ce n'est pas proposer six idées. Il l'a renvoyée d'u
 chaque proposition, et c'est ce qu'il faudra refaire si une troisième est
 demandée.
 
+**Les refus de note vocale disent pourquoi (11 août, tard).** Le patron voyait
+*« Impossible d'enregistrer la note pour l'instant. Réessayez. »* sans que
+personne puisse savoir ce qui s'était passé.
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **Un refus ATTENDU est une valeur de retour, jamais une exception.**
+   `enregistrerNoteVocaleAction` rend `{ ok: false, raison }`. Ce n'est pas un
+   goût de style : **Next.js remplace en production le message d'une action
+   serveur par un identifiant opaque**, et le banc du patron sert une version
+   bâtie. Une exception ne lui parvient donc jamais lisible. La documentation du
+   cadre le prescrit (`node_modules/next/dist/docs/01-app/01-getting-started/
+   10-error-handling.md`). **Ne pas revenir à `throw` pour un refus.**
+2. **Les pannes IMPRÉVUES lèvent encore, mais le serveur les écrit d'abord**
+   (`logger.error`, avec chantier, format et taille). Sans cette ligne, une
+   panne chez lui ne laisse aucune trace nulle part — c'est ce qui a manqué.
+3. **Le défaut n'a PAS été reproduit ici**, et c'est écrit tel quel. La dictée a
+   été rejouée avec un micro simulé en développement, puis sur la version bâtie
+   derrière une origine étrangère : elle passe les deux fois. Ce qui est corrigé,
+   c'est le silence, pas la panne. Si elle revient, l'écran la nommera —
+   **demander la phrase exacte plutôt que de supposer.**
+4. **Un fichier de zéro octet est refusé à l'entrée.** Avant, il descendait
+   jusqu'à la base, qui le rejetait, et l'écran affichait la requête SQL
+   entière — noms de tables et identifiant d'entreprise compris.
+
+**Le défilement du fil, et la barre grise (11 août, au soir).** Le patron :
+*« c'est saccadé »*, *« je ne veux pas voir cette bande grise du tout, je veux
+juste que ça slide. »*
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **`scroll-snap-stop: always` a été retiré de `.atlas-ligne`, et il ne faut
+   pas le remettre sans le patron.** Il avait été posé le 10 août pour qu'un
+   geste vif n'avance que d'un chantier ; c'est lui qui bloquait l'élan. Reste
+   `proximity` sur le cadre et `center` sur la ligne : la perle se recale à
+   l'arrêt, sans arrêter le doigt. L'arbitrage — « un geste = un chantier »
+   contre « ça glisse » — a été tranché en faveur du second, dans ses mots.
+2. **Le masque en dégradé et l'animation d'opacité sont HORS DE CAUSE, c'est
+   mesuré.** `npx tsx scripts/mesurer-fluidite-fil.mts [--sans-masque]
+   [--sans-animation] [--sans-accroche]` : les quatre combinaisons donnent 60
+   images par seconde, médiane 16,7 ms. Ce sont les deux suspects évidents ; les
+   retirer abîmerait l'écran sans rien gagner. **Relancer la mesure avant de les
+   accuser à nouveau.**
+3. **Ce qui n'a PAS pu être éprouvé ici, et qu'il faut dire** : l'élan d'un vrai
+   doigt. Le navigateur sans tête ne produit pas de lancer avec inertie — la
+   mesure porte sur le coût de rendu, pas sur la sensation du geste. Si le
+   patron trouve encore que ça accroche, le suspect suivant est le masque **sur
+   iOS**, où un cadre masqué se recompose à chaque image ; le déplacer sur
+   `.atlas-ecran` en surimpression garderait le fondu sans masquer le cadre qui
+   défile.
+4. **Aucune zone qui défile ne montre sa barre, et un balayage y veille.**
+   `test-aucune-barre-de-defilement-e2e.ts` parcourt douze écrans et exige
+   `scrollbar-width: none` sur toute zone qui déborde vraiment. Il lit la
+   propriété calculée, pas les pixels : ici la barre est en surimpression, elle
+   ne prend aucune largeur et n'apparaît jamais sur une capture.
+
+**Le devis coupait le texte, trouvé par ce même balayage (11 août).** Les trois
+zones de `devis-complet` estimaient leur hauteur ; elles la **mesurent**
+désormais (`ZoneQuiGrandit`, `scrollHeight`). Deux choses à retenir :
+
+1. **La barre grise était le symptôme, la coupure était le défaut.** La masquer
+   aurait rendu le balayage vert et la perte de texte silencieuse. C'est
+   pourquoi `test-aucun-texte-coupe-e2e.ts` existe : il écrit un texte long pour
+   de bon et vérifie qu'il tient dans sa boîte, et rien de caché ne le contente.
+2. **Il lui faut un devis NON envoyé en base.** Un devis parti est figé, ses
+   zones sont en lecture seule et rien ne s'y écrit — le contrôle le dit et
+   rougit plutôt que de passer vert sans avoir rien éprouvé.
 
 **« Terminés » et la facturation (10 août, au soir).** L'écran est un fil par
 mois ; l'encart « à facturer » vit dans le mois et se déplie d'un appui.
@@ -199,6 +266,27 @@ Demandé par le patron. Sans note il est un micro (un appui dicte, un second
 enregistre) ; avec, il redevient le lecteur. Le magnétophone est partagé
 (`src/app/chantiers/[id]/magnetophone.ts`) — ne pas le recopier dans un
 troisième écran.
+
+**Avant de raisonner sur l'espace du patron, le regarder :
+`npm run diagnostiquer:espace`.** Il rend la branche suivie, le code récupéré,
+**le code réellement servi**, l'état du serveur et du veilleur. Deux hypothèses
+ont été avancées à distance le 11 août pour expliquer un « ça ne marche pas », et
+les deux étaient fausses — chacune lui a coûté un aller-retour. Cette commande
+existe pour que la troisième ne le soit pas.
+
+**La version bâtie ne se recompile JAMAIS (11 août, soir).** `next start` sert
+un dossier figé : tirer du code sous ses pieds n'y change rien. Le bouton
+« Chercher les dernières corrections » promettait une recompilation impossible,
+et le patron a passé une soirée à recharger un écran qui ne pouvait pas changer.
+
+La règle est dans `src/lib/issue-mise-a-jour.ts`, en fonction pure. **Ne jamais
+la ramener à un message unique** : les trois cas sont distincts, et le troisième
+— version bâtie *sans veilleur* — doit rester sans coupure, sous peine
+d'éteindre l'application du patron sans personne pour la relever.
+
+**Pour savoir si un espace a vraiment pris le code :** le démarrage affiche
+`⚠ MISE À JOUR impossible : <raison>`. Les causes les plus fréquentes sont un
+dépôt sale et une branche qui n'est pas celle qu'on pousse.
 
 **« Mon devis » sous l'anneau enchaîne tout jusqu'au devis (11 août, soir).**
 Cinq choses à savoir avant d'y toucher :
@@ -934,6 +1022,16 @@ site publié à son adresse réelle.
    Actions request. ». Aucune suite ne le voit : elles interrogent toutes
    `127.0.0.1`, où les deux coïncident. C'est le rôle de
    `scripts/verifier-connexion.mjs`, qui pose exprès une origine étrangère.
+0 ter. **Le message d'une exception levée par une action serveur N'ARRIVE PAS
+   jusqu'à l'écran du patron.** Next.js le remplace en production par un
+   identifiant opaque, et le banc sert une version bâtie : un code qui affiche
+   `err.message` en croyant montrer la cause ne montre qu'un digest. C'est le
+   piège qui a rendu « Impossible d'enregistrer la note » indéchiffrable le 11
+   août 2026. **Tout refus attendu se rend en valeur de retour** —
+   `{ ok: false, raison }` — jamais en exception ; les pannes imprévues lèvent,
+   mais se journalisent AVANT (`logger.error`), sans quoi elles ne laissent
+   aucune trace nulle part. Le cadre le prescrit noir sur blanc :
+   `node_modules/next/dist/docs/01-app/01-getting-started/10-error-handling.md`.
 0 bis. **Les fabriques d'IA retombent sur `dev` par leur `default:`.** Une faute
    de frappe dans `LLM_PROVIDER` ou `TRANSCRIPTION_PROVIDER` donnait donc l'IA
    simulée, sans un mot, et la dictée rendait « [Transcription simulée — … ] ».

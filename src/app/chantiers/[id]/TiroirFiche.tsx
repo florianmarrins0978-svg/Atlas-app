@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import AjoutDePhotos from "@/components/atlas/AjoutDePhotos";
 
 export type EtapeFiche = { key: string; href: string; label: string; meta: string; done: boolean };
 export type VignettePhoto = { id: string; storageKey: string };
@@ -39,6 +40,13 @@ export default function TiroirFiche({
 }) {
   const [ouvert, setOuvert] = useState(false);
 
+  // La pellicule tient sa propre liste : une photo prise depuis la fiche doit
+  // apparaître SOUS LES YEUX, sans redemander la page au serveur. Semée par ce
+  // que le serveur a rendu, elle ne s'en écarte que le temps de l'ajout.
+  const [vignettes, setVignettes] = useState<VignettePhoto[]>(photos);
+  const [choixOuvert, setChoixOuvert] = useState(false);
+  const [envoiEnCours, setEnvoiEnCours] = useState(false);
+
   // **Le tiroir se CLIPPE, il ne se déplace pas.**
   //
   // La première version le poussait sous l'écran d'un `translateY(100% -
@@ -66,7 +74,7 @@ export default function TiroirFiche({
     mesurer();
     window.addEventListener("resize", mesurer);
     return () => window.removeEventListener("resize", mesurer);
-  }, [photos.length, etapes.length]);
+  }, [vignettes.length, etapes.length]);
 
   // **L'écran de dessous RECULE quand le tiroir monte.** Même geste que la
   // feuille « Nouveau chantier » sur l'accueil : c'est la profondeur qui dit
@@ -145,22 +153,45 @@ export default function TiroirFiche({
         {/* La pellicule. Les marges négatives la font courir d'un bord à
             l'autre pendant que son contenu reste aligné sur les 26 px. */}
         <div className="atlas-pellicule -mx-[26px] mt-0.5 px-[26px] pb-4 pt-0.5">
+          {/* **Le « + » ajoute une photo ICI, il ne mène plus à l'écran
+              Photos.** Le patron, le 11 août 2026 : *« quand je clique sur
+              l'encadré avec le plus là des photos, ça me ramène encore sur
+              cette page-là. »* Il avait raison : sa case était un simple lien,
+              si bien qu'ajouter une photo depuis la fiche demandait de changer
+              d'écran d'abord, puis d'appuyer sur un second bouton. Sur un
+              chantier, avec des gants, c'est un appui de trop.
+
+              **Elle RESTE un lien**, comme « Nouveau chantier » sur l'accueil :
+              sans JavaScript, ou ouverte dans un nouvel onglet, elle mène
+              toujours à l'écran entier. Le clic ordinaire est détourné — la
+              route ne disparaît pas, elle change de porte. */}
           <a
             href={`/chantiers/${chantierId}/photos`}
+            onClick={(e) => {
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+              e.preventDefault();
+              setChoixOuvert(true);
+            }}
             aria-label="Ajouter des photos"
             className="atlas-ajouter"
-            style={{ border: `1px solid ${colors.line}`, color: colors.or }}
+            style={{
+              border: `1px solid ${colors.line}`,
+              color: colors.or,
+              // Grisé pendant l'envoi : sans cela, rien ne distingue « en cours »
+              // de « n'a rien fait », et le doigt réappuie.
+              opacity: envoiEnCours ? 0.45 : 1,
+            }}
           >
             +
           </a>
-          {photos.map((p, i) => (
+          {vignettes.map((p, i) => (
             // Un lien, pas un bouton : ouvrir une photo est une navigation, et
             // elle doit rester ouvrable dans un nouvel onglet. Il s'enfonce
             // sous le doigt comme un bouton (`.atlas-vue:active`).
             <a
               key={p.id}
               href={`/chantiers/${chantierId}/photos`}
-              aria-label={`Photo ${i + 1} sur ${photos.length}`}
+              aria-label={`Photo ${i + 1} sur ${vignettes.length}`}
               className="atlas-vue"
               style={{ backgroundColor: colors.cream }}
             >
@@ -200,6 +231,17 @@ export default function TiroirFiche({
           </a>
         ))}
       </div>
+
+      {/* Le mécanisme d'ajout, partagé avec l'écran Photos. Posé ICI plutôt que
+          dans la pellicule : sa feuille de choix se pose au bas de l'écran
+          entier, pas dans une bande qui défile horizontalement. */}
+      <AjoutDePhotos
+        chantierId={chantierId}
+        ouvert={choixOuvert}
+        onFermer={() => setChoixOuvert(false)}
+        onAjoutee={(photo) => setVignettes((v) => [...v, photo])}
+        onEnCours={setEnvoiEnCours}
+      />
     </div>
   );
 }

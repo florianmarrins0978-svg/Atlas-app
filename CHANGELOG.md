@@ -415,6 +415,146 @@ section (`s14-halo`), comme le sont déjà les identifiants.
 
 Le contrôle a été confronté à l'état qu'il prétend détecter : confinement
 neutralisé, il refuse la fusion sur les quatorze maquettes.
+### « Impossible d'enregistrer la note » ne disait pas pourquoi — et personne ne pouvait le savoir
+
+**Le patron, capture de son téléphone :** *« Pb sur la note vocale, corrige
+ça ! »* L'écran affichait *« Impossible d'enregistrer la note pour l'instant.
+Réessayez. »*
+
+**Ce défaut-ci n'a pas été reproduit ici, et il faut le dire tel quel.** La
+dictée a été rejouée dans un vrai navigateur avec un micro simulé, deux fois :
+en mode développement, puis sur la **version bâtie derrière une origine
+étrangère** — les conditions de son banc. Les deux fois, la note s'est
+enregistrée. Ce qui a donc été corrigé n'est pas la panne : c'est **ce qui
+rendait la panne impossible à nommer**.
+
+Deux choses s'y opposaient :
+
+1. **`catch {}` sans variable**, dans l'anneau comme dans l'écran de dictée. Le
+   message du serveur n'était même pas lu. Les quatre refus possibles — aucun
+   fichier, fichier trop lourd, format non pris en charge, cadence dépassée —
+   portaient chacun leur phrase, et l'écran les jetait toutes pour afficher la
+   même formule creuse.
+2. **Une exception ne traverse pas la version bâtie.** Next.js remplace en
+   production le message d'une action serveur par un identifiant opaque. L'écran
+   d'import de fichier croyait bien faire en affichant `err.message` : sur le
+   banc, il ne pouvait montrer qu'un digest. La documentation du cadre le dit en
+   toutes lettres — *« avoid using try/catch blocks and throw errors. Instead,
+   model expected errors as return values »*.
+
+Les refus attendus sont donc désormais des **valeurs de retour**, qui traversent
+la version bâtie intactes ; les pannes imprévues continuent de lever, mais le
+serveur les **écrit** avant, avec le chantier, le format et la taille. Sans
+cette ligne, une panne chez lui ne laissait aucune trace nulle part.
+
+**Le refus nomme le format reçu.** Si son iPhone produit un format que la liste
+blanche ignore, le message le dit — sans quoi il resterait introuvable, et il
+faudrait le lui demander.
+
+**Trouvé en chemin, et plus grave que le reste :** un enregistrement de zéro
+octet n'était pas refusé. Il descendait jusqu'à la base, qui le rejetait — et ce
+qui remontait à l'écran n'était plus un refus mais **la requête SQL entière,
+noms de tables et identifiant d'entreprise compris**. Il est maintenant arrêté à
+l'entrée, avec une phrase qui dit quoi faire.
+
+`test-note-vocale-refus-e2e.ts` éprouve les deux, par le chemin d'import qui
+emprunte la même action serveur que l'anneau et que l'écran de dictée. Confronté
+à l'ancien code : deux rouges.
+
+**La leçon, puisqu'elle se répète.** Deux diagnostics à distance avaient déjà
+coûté un aller-retour chacun ce jour-là. Cette fois, rien n'a été supposé : la
+dictée a été rejouée dans les conditions du banc avant d'écrire une ligne, et la
+configuration soupçonnée a été vérifiée dans la documentation du cadre — elle
+était juste, l'hypothèse est morte là. Ce qui reste inconnu est écrit comme
+inconnu.
+
+### Le fil se bloquait à chaque chantier, et montrait sa barre grise
+
+**Le patron, capture de son ordinateur et de son téléphone à l'appui :** *« je
+trouve que ça manque de fluidité. Quand je slide en haut ou en bas, c'est
+saccadé »*, et *« quand on slide, il y a une espèce de bande déroulante grise
+qui apparaît sur le côté à droite. Supprime-moi ça, je ne veux pas voir ça du
+tout, je veux juste que ça slide. »*
+
+Deux causes, sans rapport l'une avec l'autre.
+
+**Le saccadé venait de `scroll-snap-stop: always`**, posé la veille pour qu'un
+geste vif n'avance que d'un chantier. Mais `always` ne ralentit pas l'élan : il
+l'ARRÊTE au premier point rencontré. Le doigt lance la liste, la liste se
+bloque, et il faut recommencer à chaque chantier. Retiré. Ce qui reste —
+`proximity` sur le cadre, `center` sur la ligne — suffit à la perle : l'élan
+court librement et la liste se recale sur un chantier en s'arrêtant. On perd
+« un geste = un chantier », on gagne un défilement qui glisse.
+
+**Le coût de rendu a été mis hors de cause AVANT de toucher à quoi que ce
+soit** — c'est le point qui compte. Trois choses se superposaient sur ce
+défilement, et deux d'entre elles étaient les suspects évidents : le masque en
+dégradé posé sur le cadre, et l'animation d'opacité qui joue sur chaque ligne.
+`scripts/mesurer-fluidite-fil.mts` relève la durée de chaque image rendue et
+sait retirer une cause à la fois dans le navigateur seulement. Verdict : les
+quatre combinaisons mesurent la même chose — 60 images par seconde, médiane
+16,7 ms. Les retirer aurait abîmé l'écran sans rien gagner, et c'est très
+exactement le correctif imaginé que ce dépôt a déjà payé trois fois.
+
+**La barre grise, elle, n'était pas un choix : c'était un oubli.** Les trois
+autres zones qui défilent la masquent depuis toujours ; `.atlas-fil-defile`,
+**la plus vue de l'application**, avait été sautée. Rien ne pouvait le dire,
+puisque chaque zone porte la règle chez elle et que personne ne comptait les
+zones. `test-aucune-barre-de-defilement-e2e.ts` les compte désormais sur tout le
+parcours — corriger une ligne aurait réparé ce jour-là, le balayage répare la
+classe entière, y compris la zone qui n'existe pas encore.
+
+### Le devis coupait le texte du patron, et c'est le balayage qui l'a vu
+
+Trouvé par le contrôle précédent, alors qu'il cherchait tout autre chose : une
+barre grise sur une zone de texte du devis. **La barre était le symptôme ; le
+défaut était que le devis cachait ce qu'on venait d'y écrire.**
+
+Les trois zones estimaient leur hauteur, et les trois estimaient mal :
+l'adresse comptait les caractères (`ceil(longueur / 34)`), la description
+comptait les retours à la ligne, les conditions ne comptaient rien (`rows={2}`).
+Or un texte se coupe au MOT, quand il touche le bord : deux lignes estimées en
+font trois à l'écran. Mesuré sur le jeu de démonstration : 46 px affichés pour
+70 px de texte. C'est le défaut même que la zone d'adresse existait pour
+corriger — *« le patron lit une adresse amputée sur son propre devis »* — revenu
+par une autre porte.
+
+Les trois passent par `ZoneQuiGrandit`, qui **mesure au lieu d'estimer**.
+
+**Et un second contrôle est né du premier, parce que le premier pouvait être
+satisfait de travers** : masquer la barre de cette zone aurait rendu le balayage
+vert, et la coupure silencieuse — donc pire. `test-aucun-texte-coupe-e2e.ts`
+écrit un texte long pour de bon et vérifie qu'il tient dans sa boîte. On ne peut
+pas le contenter en cachant quoi que ce soit. Confronté à l'ancien code : il
+nomme les deux zones fautives et le nombre de pixels perdus.
+
+### La case « + » de la pellicule ajoute une photo, au lieu de changer d'écran
+
+**Le patron, le 11 août 2026 :** *« quand je clique sur l'encadré avec le plus
+là des photos, ça me ramène encore sur cette page-là. »*
+
+Sa case était un simple lien vers l'écran Photos. Ajouter une photo depuis la
+fiche demandait donc de changer d'écran d'abord, puis d'appuyer sur un second
+bouton : deux appuis et une navigation pour un geste qu'on fait cent fois par
+jour, sur un chantier, avec des gants.
+
+Elle ouvre désormais le choix « prendre une photo / choisir dans ma
+bibliothèque » **sur place**, et la photo apparaît dans la pellicule sans que
+l'écran bouge. Elle **reste un lien** — sans JavaScript, ou ouverte dans un
+nouvel onglet, elle mène toujours à l'écran Photos, comme « Nouveau chantier »
+sur l'accueil.
+
+Le mécanisme n'a pas été recopié : les deux champs de fichier (dont l'un impose
+l'appareil photo), l'ordre de fermeture de la feuille et la boucle d'envoi
+vivent dans `src/components/atlas/AjoutDePhotos.tsx`, que l'écran Photos et la
+fiche partagent. Deux copies auraient divergé au premier correctif
+(`CLAUDE.md` §3).
+
+`scripts/test-ajout-photo-fiche-e2e.ts` éprouve le PARCOURS, pas la règle :
+l'appui n'ouvre pas une page, le choix s'ouvre, la photo part, elle s'affiche
+sans rechargement, elle survit au rechargement, et la porte de secours reste un
+lien. Confronté en rétablissant l'ancien lien : rouge, avec la phrase du patron
+— « on s'est retrouvé sur .../photos ».
 
 ### La perle plongeait avant le départ, sur une liste qui défile à peine
 
@@ -495,6 +635,71 @@ piège pour la conversation suivante.
 ---
 
 ## 2026-08-10
+
+### Un diagnostic qui regarde l'espace du patron, au lieu de raisonner dessus
+
+**Deux hypothèses avancées pour expliquer son « ça ne marche pas », et les deux
+fausses.** D'abord un service de transcription absent — c'était mon
+environnement, pas le sien. Puis une branche différente de celle où l'on
+pousse — il était bien sur `main`. Chacune lui a coûté un aller-retour pour
+rien.
+
+Le défaut n'est pas de s'être trompé : c'est d'avoir raisonné **à distance** sur
+une machine qu'on ne voit pas, alors que cette machine sait tout.
+
+`npm run diagnostiquer:espace` ne devine rien, il regarde — et il montre la
+seule chose que rien d'autre ne montrait : **le commit RÉELLEMENT SERVI**. La
+ligne « Version » de Réglages lit le dépôt, donc le code *récupéré* ; la version
+rapide est un dossier bâti et figé. Entre les deux il peut y avoir un monde, et
+c'est précisément là que se logeait le malentendu.
+
+Il rend six lignes — branche suivie, code récupéré, **code servi**, serveur,
+veilleur, issue de la dernière mise à jour — puis un verdict dans ses mots :
+retard, fichiers non enregistrés, historique divergé, version bâtie périmée,
+serveur muet. Et quand tout concorde, il le dit aussi, en désignant alors le
+produit plutôt que l'espace.
+
+**Éprouvé dans ses états dégradés**, pas seulement au vert : dépôt sale, version
+bâtie plus ancienne que le code, tête détachée (où « HEAD » ne serait qu'un
+aveu incompréhensible), dépôt distant injoignable.
+
+### « J'ai relancé le banc, ça ne marche pas » — la version rapide ne se recompile jamais
+
+**Le patron, le 11 août 2026 au soir.** Le code neuf était bien tiré, la ligne
+Version affichait le commit neuf, et l'écran servi restait l'ancien. Il pouvait
+recharger cent fois.
+
+**La cause tient en une phrase :** `next start` sert un dossier **bâti**, figé à
+la seconde de sa construction. Tirer du code sous ses pieds n'y change rien. Or
+le bouton « Chercher les dernières corrections » annonçait *« rechargez la page,
+l'application se recompile »* — exact en développement, **impossible** sur la
+version rapide.
+
+C'est la **troisième fois** que ce dépôt paie le même malentendu : *le produit
+paraît cassé alors qu'il est simplement vieux*. Les deux premières ont donné la
+ligne Version, puis ce bouton. Celle-ci donne trois issues distinctes :
+
+| Ce qui tourne | Ce qu'on annonce | Ce qu'on fait |
+|---|---|---|
+| développement | « l'application se recompile » | rien — c'est vrai |
+| version bâtie, veilleur présent | « elle se reconstruit, injoignable une minute » | on coupe le serveur |
+| version bâtie, **sans veilleur** | « arrêtez puis rouvrez l'espace » | **rien** |
+
+**Le troisième cas est le plus important.** Couper sans personne pour relever le
+serveur reviendrait à éteindre l'application du patron pour lui livrer un
+correctif — le remède serait pire que le mal, et il resterait devant un écran
+mort. Le veilleur est donc interrogé par son identifiant de processus, pas par
+l'existence de son fichier verrou.
+
+La règle vit dans `src/lib/issue-mise-a-jour.ts`, en fonction pure : une
+décision qui peut couper le serveur du patron doit s'éprouver sans base, sans
+serveur et sans banc. `scripts/test-issue-mise-a-jour.ts` la tient en cinq
+contrôles, vérifiés rouges sur l'ancien comportement.
+
+**Vérifié aussi, et c'est ce qui a permis de trancher :** le tiroir allégé
+fonctionne bel et bien, sur les quatre états réels d'un chantier — neuf, avec
+dictée, avec devis généré, avec devis envoyé. Ni « Informations » ni « Prix »
+n'y figurent nulle part. Ce que le patron voyait était l'ancien code.
 
 ### De l'anneau au devis, en une touche
 

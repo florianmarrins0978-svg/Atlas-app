@@ -27,6 +27,47 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0. Si « Impossible d'enregistrer la note » revient : lire la phrase, ne pas la deviner
+
+**Ouvert le 11 août 2026, et volontairement laissé ouvert.** Le patron a signalé
+ce message ; il n'a **pas pu être reproduit ici** — la dictée passe avec un micro
+simulé, en développement comme sur la version bâtie derrière une origine
+étrangère. Ce qui a été corrigé, c'est le silence : l'écran nommait le refus
+« Impossible… Réessayez » quelle qu'en fût la cause, et rien n'était journalisé.
+
+Désormais, l'écran distingue trois choses, et il faut **lui demander laquelle
+il voit** :
+
+| Ce qu'il lit | Ce que ça désigne |
+|---|---|
+| une phrase précise (format, taille, cadence, enregistrement vide) | le serveur a refusé, et la raison est dedans — le format reçu est nommé |
+| « la connexion a été interrompue » | l'aller-retour n'a pas abouti : mandataire, réseau, session expirée |
+| plus rien, la note s'enregistre | c'était l'un des refus ci-dessus |
+
+Le journal du serveur porte les pannes imprévues avec le chantier, le format et
+la taille. **Ne rien supposer avant d'avoir la phrase** : deux diagnostics à
+distance ont déjà coûté un aller-retour chacun ce jour-là.
+
+### 0 bis. Si le fil accroche ENCORE chez le patron : le masque, sur iOS
+
+**Ouvert le 11 août 2026, et volontairement laissé ouvert.** Le saccadé signalé
+ce soir-là avait pour cause `scroll-snap-stop: always`, retiré ; la mesure a mis
+le masque en dégradé et l'animation d'opacité hors de cause — mais **elle a
+mesuré Chromium sans tête sur cette machine**, pas Safari sur son iPhone, et
+elle n'a pas pu produire l'élan d'un vrai doigt.
+
+Si la plainte revient, le suspect suivant est le `mask-image` de
+`.atlas-fil-defile` : sur iOS, un cadre masqué se recompose à chaque image du
+défilement. Le correctif est écrit d'avance et ne coûte rien à l'œil —
+**déplacer le fondu sur `.atlas-ecran`**, en deux dégradés posés PAR-DESSUS
+(couleur `--card`, `pointer-events: none`), plutôt qu'en masque SUR le cadre qui
+défile. Alléger, c'est déplacer.
+
+Deux précautions à ce moment-là : les dégradés doivent être placés aux bords de
+la zone qui défile, pas du cadre (l'en-tête n'est pas dedans), et une capture
+avant/après doit être identique — sinon on aura échangé un défaut contre un
+autre.
+
 ### ~~0 ter. Les suites navigateur mesuraient un écran que personne ne possède~~ — **close le 2026-08-11**
 
 **Trouvé le 11 août 2026, et le patron l'a payé.** Les suites posaient un cadre

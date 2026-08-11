@@ -1,13 +1,13 @@
 "use client";
 
-import { useRef, useState, type ChangeEvent } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, libelleCaps } from "@/lib/design-tokens";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
-import BottomSheet from "@/components/atlas/BottomSheet";
-import { ajouterPhotoAction, supprimerPhotoAction } from "./actions";
+import AjoutDePhotos from "@/components/atlas/AjoutDePhotos";
+import { supprimerPhotoAction } from "./actions";
 
 type Photo = { id: string; storageKey: string };
 
@@ -42,59 +42,16 @@ export default function PhotosClient({
   const visibles = photos.filter((p) => !retraits.estRetire(p.id));
   const [enCours, setEnCours] = useState(false);
   const [choixOuvert, setChoixOuvert] = useState(false);
-  // **Un seul bouton, et le choix au moment d'appuyer.**
+  // Le mécanisme d'ajout — les deux champs, la feuille de choix, l'envoi — vit
+  // dans `AjoutDePhotos` depuis le 11 août 2026 : la pellicule de la fiche
+  // chantier l'ouvre elle aussi, et le recopier aurait fait diverger les deux au
+  // premier correctif. Cet écran garde ce qui lui appartient : son bouton pleine
+  // largeur, la grille des vignettes, la visionneuse et le retrait.
   //
-  // Première version : deux boutons côte à côte. Le patron, le 6 août 2026 :
-  // « ça fait trop de boutons. Ou alors tu mets juste une case "ajouter des
-  // photos" et quand on clique dessus, il y a un message qui demande si on veut
-  // prendre une photo ou aller chercher dans la bibliothèque. » Un écran de
-  // chantier doit se lire d'un coup d'œil : deux boutons pour une seule
-  // intention, c'est une décision qu'on impose avant même qu'elle se pose.
-  //
-  // **Deux entrées restent nécessaires en dessous, et c'est délibéré.**
-  //
-  // Le patron, le 6 août 2026 : « lorsque je clique sur ajouter des photos, je
-  // peux simplement prendre une photo. J'ai besoin de pouvoir accéder aux
-  // photos que j'ai déjà prises. Il faut bien évidemment pouvoir faire les
-  // deux. »
-  //
-  // L'attribut `capture` d'un champ de fichier n'est pas une préférence : sur
-  // un iPhone, il **impose** l'appareil photo et retire purement et simplement
-  // l'accès à la pellicule. Un artisan qui a photographié le chantier le matin
-  // ne pouvait donc rien joindre l'après-midi.
-  //
-  // Le retirer tout court aurait échangé un défaut contre l'autre : le
-  // sélecteur de fichiers s'ouvre alors sur la photothèque, et prendre une
-  // photo demande deux appuis de plus, sur un chantier, avec des gants. D'où
-  // deux champs distincts, et deux boutons qui disent lequel fait quoi.
-  const champAppareilPhoto = useRef<HTMLInputElement>(null);
-  const champPellicule = useRef<HTMLInputElement>(null);
-
-  async function onFichiersChoisis(e: ChangeEvent<HTMLInputElement>) {
-    const fichiers = Array.from(e.target.files ?? []);
-    e.target.value = ""; // permet de resélectionner le même fichier ensuite
-    if (fichiers.length === 0) return;
-    setEnCours(true);
-    for (const fichier of fichiers) {
-      const fd = new FormData();
-      fd.set("fichier", fichier);
-      try {
-        const { id, storageKey } = await ajouterPhotoAction(chantierId, fd);
-        setPhotos((p) => [...p, { id, storageKey }]);
-      } catch {
-        // Une photo en échec parmi plusieurs n'interrompt pas les autres.
-      }
-    }
-    setEnCours(false);
-  }
-
-  function choisir(champ: React.RefObject<HTMLInputElement | null>) {
-    // La feuille se referme AVANT d'ouvrir le sélecteur : sur iPhone, elle
-    // resterait sinon affichée derrière l'appareil photo, et se retrouverait au
-    // premier plan au retour, par-dessus la photo qu'on vient de prendre.
-    setChoixOuvert(false);
-    champ.current?.click();
-  }
+  // **Un seul bouton, et le choix au moment d'appuyer.** Le patron, le 6 août
+  // 2026 : « ça fait trop de boutons. Ou alors tu mets juste une case "ajouter
+  // des photos" et quand on clique dessus, il y a un message qui demande si on
+  // veut prendre une photo ou aller chercher dans la bibliothèque. »
 
   return (
     <>
@@ -113,27 +70,6 @@ export default function PhotosClient({
       </p>
 
       <div className="px-[26px] pt-6">
-        <input
-          ref={champAppareilPhoto}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          multiple
-          hidden
-          aria-label="Prendre une photo"
-          onChange={onFichiersChoisis}
-        />
-        {/* Sans `capture`, et c'est tout ce qui les distingue : ce champ-ci
-            ouvre la photothèque du téléphone. */}
-        <input
-          ref={champPellicule}
-          type="file"
-          accept="image/*"
-          multiple
-          hidden
-          aria-label="Choisir dans mes photos"
-          onChange={onFichiersChoisis}
-        />
         <PrimaryButton onClick={() => setChoixOuvert(true)} disabled={enCours}>
           <CameraIcon /> {enCours ? "Ajout en cours…" : "Ajouter une photo"}
         </PrimaryButton>
@@ -256,41 +192,13 @@ export default function PhotosClient({
         </div>
       )}
 
-      {/* Le choix, au moment où il se pose — et pas avant. */}
-      <BottomSheet open={choixOuvert} onBackdropClick={() => setChoixOuvert(false)}>
-        <p className="mb-1 text-center text-[16px]" style={{ color: colors.ink, fontFamily: font.display }}>
-          Ajouter une photo
-        </p>
-        <p className="mb-5 text-center text-[13px]" style={{ color: colors.muted }}>
-          Prise maintenant, ou déjà dans votre téléphone.
-        </p>
-        <div className="flex flex-col gap-2">
-          <button
-            type="button"
-            onClick={() => choisir(champAppareilPhoto)}
-            className="rounded-[4px] py-3.5 text-[15px] font-medium"
-            style={{ backgroundColor: colors.rust, color: colors.cream }}
-          >
-            Prendre une photo
-          </button>
-          <button
-            type="button"
-            onClick={() => choisir(champPellicule)}
-            className="rounded-[4px] py-3.5 text-[15px] font-medium"
-            style={{ backgroundColor: colors.card, color: colors.ink }}
-          >
-            Choisir dans ma bibliothèque
-          </button>
-          <button
-            type="button"
-            onClick={() => setChoixOuvert(false)}
-            className="rounded-[4px] py-3.5 text-[15px]"
-            style={{ color: colors.muted }}
-          >
-            Annuler
-          </button>
-        </div>
-      </BottomSheet>
+      <AjoutDePhotos
+        chantierId={chantierId}
+        ouvert={choixOuvert}
+        onFermer={() => setChoixOuvert(false)}
+        onAjoutee={(photo) => setPhotos((p) => [...p, photo])}
+        onEnCours={setEnCours}
+      />
     </>
   );
 }
