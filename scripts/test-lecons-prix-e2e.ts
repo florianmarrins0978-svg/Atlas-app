@@ -65,7 +65,7 @@ const BASE = "http://localhost:3000";
 async function main() {
   const terrain = await preparerTerrain();
   const browser = await lancerNavigateur();
-  const context = await browser.newContext({ viewport: { width: 393, height: 852 } });
+  const context = await browser.newContext();
   const page = await context.newPage();
 
   try {

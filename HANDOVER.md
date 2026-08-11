@@ -100,12 +100,25 @@ qu'il faut savoir avant d'y toucher :
   `actionPlacee`), employés par cette seule fiche. Leurs valeurs par défaut
   gardent la grammaire commune du 10 août : ne pas les inverser.
 
-**Et une leçon qui dépasse cet écran : les suites mesuraient 393 × 852**, plus
-haut que la hauteur utile d'un vrai iPhone 13 (390 × **664**, barre du
-navigateur déduite). Un contrôle de chevauchement passait au vert sur une mise
-en page qui, chez lui, recouvrait un lien. `test-anneau-dictee-e2e.ts` emploie
-désormais `devices["iPhone 13"]` ; **les autres suites ont encore l'ancien
-cadre** et peuvent donc rater les défauts de bas d'écran.
+**L'écran des suites vit à UN endroit : `ECRAN_DU_PATRON`, dans
+`scripts/e2e-browser.ts`** (11 août, après-midi). Ne pas réécrire de
+`viewport: { width: 393, height: 852 }` dans une suite : c'était la dalle d'un
+iPhone 14, pas la place réelle d'une page (390 × **664**, barre du navigateur
+déduite), et ces 190 px de trop ont laissé passer un lien recouvert chez lui.
+Une suite qui a VRAIMENT besoin d'un autre cadre en passe un explicitement — il
+est alors conservé, et c'est un choix visible dans son code.
+
+**Le cadre honnête n'a révélé aucun défaut caché** : 46/47, l'unique rouge étant
+un dépassement de délai du serveur de développement (la suite rejouée seule
+passe). Ce n'est pas une déception, c'est un résultat.
+
+**`scripts/test-rien-de-recouvert-e2e.ts` cherche, sur quatorze écrans, ce qui
+est hors d'atteinte du doigt.** Avant d'y toucher, savoir que trois précautions
+y sont *indispensables*, chacune payée par une volée de fausses accusations :
+on amène la cible au centre avant de juger (sinon tout ce qui est sous la barre
+du bas est accusé à tort), on écarte ce qu'un parent **rogne** (l'encart « à
+facturer » replié garde ses liens dans la page), et on écarte la parenté
+directe. Les retirer rendrait cette suite bruyante, donc ignorée.
 
 **Le seed conserve les identifiants Google (11 août, matin).** `agendas_externes`
 porte `entreprise_id … ON DELETE CASCADE` : le `TRUNCATE … entreprises` du seed

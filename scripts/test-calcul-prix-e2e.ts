@@ -30,7 +30,7 @@ const PRIX_ATTENDU = "1120.00";
 
 async function main() {
   const browser = await lancerNavigateur();
-  const context = await browser.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 3 });
+  const context = await browser.newContext({ deviceScaleFactor: 3 });
   const page = await context.newPage();
 
   await page.goto("http://localhost:3000/login", { waitUntil: "networkidle" });

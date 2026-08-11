@@ -164,6 +164,16 @@ l'application. Ce qui est **fait** :
   maquette (client en serif **avant** le titre, pastille sur la ligne de la
   flèche, pas de trait de fermeture), par trois réglages **facultatifs** de
   `EnTeteEcran` qui laissent les autres écrans intacts. `ARCHITECTURE.md` §57.
+- **Les suites mesurent l'écran du patron, et cherchent ce que le doigt
+  n'atteint pas** (11 août) : le cadre vit à un seul endroit
+  (`ECRAN_DU_PATRON`, 390 × 664 au lieu des 393 × 852 qu'on posait — la dalle
+  d'un iPhone, pas la place réelle d'une page). Quarante-et-une suites et
+  vingt-neuf scripts de capture en héritent. Le cadre honnête n'a révélé aucun
+  défaut caché, mais il rendait enfin possible
+  `scripts/test-rien-de-recouvert-e2e.ts` : quatorze écrans, et sur chacun la
+  question « qui répondrait au doigt ? » posée à chaque lien, bouton et champ.
+  C'est la famille des trois seuls défauts que ce dépôt n'a jamais su attraper
+  autrement qu'à l'œil. `ARCHITECTURE.md` §58.
 
 Ce qui **reste**, avec l'ordre, les valeurs, les sept pièges et les deux
 réserves : **`TODO.md` §7**. Le dessin fait foi dans

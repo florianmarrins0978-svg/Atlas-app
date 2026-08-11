@@ -1,5 +1,4 @@
 import { lancerNavigateur } from "./e2e-browser";
-import { devices } from "playwright";
 import assert from "node:assert";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -50,16 +49,9 @@ async function main() {
       `--use-file-for-fake-audio-capture=${MICRO_SIMULE}`,
     ],
   });
-  // **L'écran du patron, pas un écran inventé.** Une première version posait
-  // 393 × 852 : plus HAUT que la hauteur utile d'un vrai iPhone une fois la
-  // barre du navigateur déduite (390 × 664 selon Playwright). Le contrôle de la
-  // bulle passait donc au vert sur une mise en page qui, sur son téléphone,
-  // recouvrait « ou rédiger le devis à la main ». Un contrôle qui mesure un
-  // écran que personne ne possède ne prouve rien.
-  const contexte = await navigateur.newContext({
-    ...devices["iPhone 13"],
-    permissions: ["microphone"],
-  });
+  // L'écran du patron vient de `e2e-browser` — c'est ce défaut-ci qui l'y a
+  // fait poser, et le détail de l'histoire est écrit là-bas.
+  const contexte = await navigateur.newContext({ permissions: ["microphone"] });
   const page = await contexte.newPage();
 
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });

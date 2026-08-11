@@ -3933,3 +3933,121 @@ bulle tombait 190 px plus bas et ne recouvrait rien. `test-anneau-dictee-e2e.ts`
 emploie `devices["iPhone 13"]`, et sa version rouge a été vérifiée sur la mise
 en page d'avant. **Les autres suites ont encore l'ancien cadre** : elles peuvent
 donc rater les défauts de bas d'écran.
+
+---
+
+## 58. L'écran des suites : un seul endroit, et un contrôle qui cherche ce que le doigt n'atteint pas
+
+**Le patron, le 11 août 2026 :** *« fais tout ce que tu penses qu'il faut faire
+pour que l'application fonctionne »*, après avoir appris qu'il restait
+trente-trois suites cadrant un écran que personne ne possède.
+
+### Le cadre était faux, et de la pire façon : trop grand
+
+| | Ce qu'on posait | Ce que le patron a |
+|---|---|---|
+| largeur | 393 | **390** |
+| hauteur | 852 | **664** |
+
+852, c'est la **dalle** d'un iPhone 14. La page, elle, n'a que ce qui reste une
+fois la barre d'adresse du navigateur installée. Cent quatre-vingt-dix pixels de
+bas d'écran fantômes — assez pour qu'une bulle flottante tombe dans le vide au
+lieu de recouvrir un lien. C'est exactement ce qui s'est produit la veille
+(§57) : le contrôle existait, il était juste, et il mesurait un écran imaginaire.
+
+**Un contrôle qui mesure un écran que personne ne possède ne prouve pas qu'il
+n'y a pas de défaut : il prouve qu'il ne sait pas le voir.**
+
+### Posé à un seul endroit, comme le délai d'attente
+
+`ECRAN_DU_PATRON` vit dans `scripts/e2e-browser.ts`, à côté de
+`DELAI_PAR_DEFAUT_MS`, et pour la raison qui y est déjà écrite : *« une valeur
+par site d'appel, c'est trente endroits à corriger et vingt-neuf oublis. »*
+Quarante-et-une suites et vingt-neuf scripts de capture ont perdu leur cadre
+écrit à la main.
+
+**Il se propose, il ne s'impose pas.** `newContext()` applique le téléphone
+seulement quand l'appelant ne dit rien. Une suite qui passe son propre
+`viewport` le garde — `test-devis-complet-e2e.ts` ouvre délibérément le devis
+sur 1024 × 900, parce qu'un devis se lit aussi sur un écran d'ordinateur. Lui
+refuser ce cadre remplacerait un mensonge par un autre.
+
+C'est `devices["iPhone 13"]` de Playwright, et non trois nombres recopiés : la
+valeur est tenue à jour par des gens dont c'est le métier.
+
+**Deux tolérances inventées sont tombées avec le cadre**, et elles méritent
+d'être nommées parce qu'elles se ressemblent : un contrôle de débordement
+mesurait contre « 400 px » sur un écran de 393 — sept pixels de marge qu'on
+s'accordait à soi-même —, et la grille des prix se cadrait à 393 là où le vrai
+téléphone en fait 390. Une tolérance écrite à la main finit toujours par couvrir
+un débordement véritable ; on mesure désormais contre la largeur **réelle** de
+la fenêtre.
+
+### Ce que le cadre honnête a trouvé : rien — et c'est un résultat
+
+46 suites sur 47, l'unique rouge étant un dépassement de délai du serveur de
+développement (rejouée seule, elle passe). Aucun écran n'a bronché.
+
+Il fallait pourtant le faire, et le dire tel quel plutôt que d'annoncer une
+moisson qui n'a pas eu lieu.
+
+**Mais « aucune suite n'a bronché » ne veut pas dire « rien n'est recouvert ».**
+Ça veut dire qu'aucun contrôle existant ne l'aurait remarqué — et un seul écran
+vérifiait ce genre de chose, pour un seul bouton
+(`test-agenda-reglages-e2e.ts`). C'est le vrai trou, et le cadre juste ne le
+bouchait pas.
+
+### `test-rien-de-recouvert-e2e.ts` — le trou bouché
+
+Quatorze écrans du parcours. Sur chacun, pour chaque lien, bouton et champ, une
+question au navigateur : **qui répondrait au doigt en son centre ?** Si ce n'est
+pas lui, quelque chose flotte au-dessus.
+
+C'est la famille des trois défauts réels de ce dépôt — une barre de navigation
+sur la page publique du client, une pile de notifications qui poussait le
+contenu dehors, un lien sous la bulle — et **aucun des trois n'a été trouvé par
+un test**. Ils se ressemblent tous : l'élément est dans le HTML, il répond même
+au clic programmé, et le doigt ne l'atteint pas. Toute vérification par le texte
+reste verte.
+
+**L'essentiel du travail a consisté à l'empêcher d'accuser à tort.** Trois
+versions successives criaient sur des écrans parfaitement sains :
+
+1. **Un bouton sous la barre du bas n'est pas hors d'atteinte : il suffit de
+   défiler.** On amène donc chaque cible au centre de l'écran *avant* de juger.
+   Ce qui reste recouvert après ce geste l'est pour de bon — il n'existe aucune
+   position où l'artisan l'atteindrait. Sans cela : une vingtaine d'accusations
+   par écran.
+2. **Un parent qui rogne cache sans masquer.** L'encart « à facturer », replié
+   au repos, garde ses liens dans la page ; `checkVisibility` les dit visibles,
+   puisqu'ils ne sont ni masqués ni transparents — ils sont seulement découpés
+   par un `overflow: hidden`. Onze accusations pour des éléments qui n'étaient
+   pas à l'écran du tout.
+3. **La parenté directe n'est pas un recouvrement.** `elementFromPoint` rend
+   l'élément le plus profond : un lien dont le centre tombe sur son propre
+   libellé se dénonçait lui-même.
+
+Chacune de ces trois exceptions écarte quelque chose qui **n'est pas** le défaut
+cherché. Aucune n'a été ajoutée pour faire taire un rouge gênant — la distinction
+est mince à l'écriture et décisive à l'usage : une suite bruyante finit ignorée,
+et une suite complaisante ne sert à rien.
+
+### Il sait échouer — vérifié sur les deux défauts qu'il vise
+
+Le défaut du 11 août a été **reconstitué** dans la fiche chantier : un lien posé
+là où flotte la bulle. La suite le nomme par son propre libellé, désigne le
+coupable, et reste muette sur les treize autres écrans.
+
+Et son garde-fou — *« la fenêtre est-elle bien celle d'un téléphone ? »* —
+rougit dès qu'on lui repose l'ancien cadre :
+
+```
+✗ l'écran mesuré est celui d'un vrai téléphone (393×852)
+  la fenêtre fait 393×852 : plus haute que la place réelle d'un téléphone
+  (390 × 664). Sur ce cadre, cette suite ne peut RIEN attraper.
+```
+
+Ce garde-fou n'est pas un ornement. Sans lui, quelqu'un remettra un jour un
+`viewport` dans cette suite, elle passera au vert d'un bout à l'autre sans rien
+avoir éprouvé, et personne ne s'en apercevra — c'est mot pour mot ce qui est
+arrivé au contrôle de la bulle.

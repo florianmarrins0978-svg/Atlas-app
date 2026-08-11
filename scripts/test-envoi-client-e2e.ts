@@ -70,7 +70,7 @@ async function creerChantierFacturable(
 
 async function main() {
   const browser = await lancerNavigateur();
-  const context = await browser.newContext({ viewport: { width: 393, height: 852 } });
+  const context = await browser.newContext();
   const page = await seConnecter(context);
 
   await test("sans canal convenu, l'envoi est refusé avec la marche à suivre", async () => {
@@ -190,7 +190,7 @@ async function main() {
 
     // Ouvert dans un contexte vierge : c'est bien la situation du client, qui
     // n'a ni session ni cookie de l'application.
-    const contexteClient = await browser.newContext({ viewport: { width: 393, height: 852 } });
+    const contexteClient = await browser.newContext();
     const pageClient = await contexteClient.newPage();
     await pageClient.goto(`${BASE}${chemin}`, { waitUntil: "networkidle" });
 

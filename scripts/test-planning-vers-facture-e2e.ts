@@ -172,7 +172,7 @@ async function ouvrir(page: Page, chemin: string, titre: string): Promise<void> 
 
 async function main() {
   const browser = await lancerNavigateur();
-  const context = await browser.newContext({ viewport: { width: 393, height: 852 } });
+  const context = await browser.newContext();
   const page = await seConnecter(context);
 
   await test("depuis le planning, le chantier mène à son devis", async () => {

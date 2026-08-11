@@ -25,7 +25,7 @@ const BASE = "http://localhost:3000";
 
 async function main() {
   const navigateur = await lancerNavigateur();
-  const contexte = await navigateur.newContext({ viewport: { width: 393, height: 852 } });
+  const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
 
   let echecs = 0;
@@ -130,7 +130,15 @@ async function main() {
     // `truncate` et les débordements sont du CSS : une vérification de texte
     // reste verte sur un écran illisible. On mesure donc la page rendue.
     const largeur = await page.evaluate(() => document.documentElement.scrollWidth);
-    assert.ok(largeur <= 400, `la page déborde horizontalement (${largeur}px pour 393)`);
+    // **Contre la largeur RÉELLE de la fenêtre, pas contre un nombre écrit à la
+    // main.** « 400 » s'accordait sept pixels de marge sur un écran de 393 — et
+    // le vrai téléphone n'en fait que 390. Une tolérance inventée finit
+    // toujours par couvrir un débordement véritable.
+    const fenetre = await page.evaluate(() => document.documentElement.clientWidth);
+    assert.ok(
+      largeur <= fenetre + 1,
+      `la page déborde horizontalement (${largeur}px pour ${fenetre} disponibles)`
+    );
     const hauteur = await page.evaluate(() => document.body.getBoundingClientRect().height);
     assert.ok(hauteur > 300, `la page semble vide (${Math.round(hauteur)}px de haut)`);
   });

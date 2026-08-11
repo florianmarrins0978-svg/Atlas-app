@@ -33,7 +33,7 @@ const DELAI_TIROIR_MS = 6000;
 async function main() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   const navigateur = await lancerNavigateur();
-  const contexte = await navigateur.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
+  const contexte = await navigateur.newContext({ hasTouch: true });
   const page = await contexte.newPage();
 
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });

@@ -74,7 +74,7 @@ async function precisionsEnregistrees(chantierId: string): Promise<{ sujet: stri
 async function main() {
   const chantierId = await preparerChantier();
   const browser = await lancerNavigateur();
-  const context = await browser.newContext({ viewport: { width: 393, height: 852 } });
+  const context = await browser.newContext();
   const page = await context.newPage();
 
   try {

@@ -27,22 +27,28 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 ter. Les suites navigateur mesurent un écran que personne ne possède
+### ~~0 ter. Les suites navigateur mesuraient un écran que personne ne possède~~ — **close le 2026-08-11**
 
-**Trouvé le 11 août 2026, et le patron l'a payé.** Les suites posent un cadre de
-393 × 852. La hauteur **utile** d'un vrai iPhone 13, barre du navigateur
+**Trouvé le 11 août 2026, et le patron l'a payé.** Les suites posaient un cadre
+de 393 × 852. La hauteur **utile** d'un vrai iPhone 13, barre du navigateur
 déduite, est de 390 × **664** (`devices["iPhone 13"]` de Playwright). Sur ce
 cadre trop haut, un contrôle de chevauchement passait au vert alors que, sur son
 téléphone, la bulle de l'assistant recouvrait « ou rédiger le devis à la main ».
 
-`test-anneau-dictee-e2e.ts` emploie désormais le descripteur d'appareil réel.
-**Les trente-trois autres non**, et elles peuvent donc rater tout défaut de bas
-d'écran. Le travail : passer chaque suite à `devices["iPhone 13"]` et regarder
-lesquelles virent au rouge — celles qui virent désignent un vrai défaut, pas une
-régression du test.
+**Fait.** L'écran vit désormais dans `ECRAN_DU_PATRON` (`scripts/e2e-browser.ts`)
+et toutes les suites en héritent ; deux tolérances écrites à la main sont tombées
+avec (« 400 px » de débordement toléré sur un écran de 393 ; une grille cadrée à
+393 au lieu de 390).
 
-Proposé au patron le 11 août ; sa réponse n'est pas encore venue, mais ce point
-ne dépend d'aucune décision : il peut se faire seul.
+**Ce que ça a trouvé : rien.** 46/47, l'unique rouge étant un dépassement de
+délai du serveur de développement. Il fallait quand même le faire — un contrôle
+qui mesure un écran inventé ne prouve rien, vert ou rouge — mais le dire tel
+quel : le cadre honnête n'a révélé aucun défaut caché.
+
+**Ce qui manquait vraiment**, et qui existe maintenant :
+`scripts/test-rien-de-recouvert-e2e.ts`, qui cherche sur quatorze écrans ce que
+le doigt n'atteint pas. Un seul écran vérifiait cela auparavant, pour un seul
+bouton.
 
 ### ~~0 bis. Une session périmée~~ — **close le 2026-08-10, test compris**
 

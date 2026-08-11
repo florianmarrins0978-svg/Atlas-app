@@ -96,7 +96,7 @@ async function chantierRealise(page: Page, suffixe: string) {
 
 async function main() {
   const browser = await lancerNavigateur();
-  const context = await browser.newContext({ viewport: { width: 393, height: 852 } });
+  const context = await browser.newContext();
   const page = await seConnecter(context);
 
   await test("le chantier réalisé apparaît dans l'onglet Terminés, et mène à sa facture", async () => {

@@ -8,7 +8,7 @@ const FIXTURE = path.join(__dirname, "fixtures", "test-photo.jpg");
 
 async function main() {
   const browser = await lancerNavigateur();
-  const context = await browser.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 3 });
+  const context = await browser.newContext({ deviceScaleFactor: 3 });
   const page = await context.newPage();
 
   // Connexion réelle (Auth.js) — toutes les routes applicatives sont

@@ -21,7 +21,7 @@
  *   npx tsx scripts/capture-etape.mts /tmp/vues <uuid> informations prix
  */
 import { existsSync, mkdirSync, readdirSync } from "node:fs";
-import { chromium } from "playwright";
+import { chromium, devices } from "playwright";
 
 const dossier = process.argv[2];
 const chantierId = process.argv[3];
@@ -52,13 +52,15 @@ function navigateurPreInstalle(): string | undefined {
 }
 
 const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
-// iPhone 14/15 : 393 × 852 en points, densité 3 — la taille de la maquette que
-// le patron a retenue. Comparer à une autre largeur ne prouverait rien.
+// **L'écran du patron, barre du navigateur déduite.** Ces scripts posaient
+// 393 × 852 — la dalle d'un iPhone 14, pas la place qui reste à la page une
+// fois la barre d'adresse installée : 390 × 664. Sur le cadre trop haut, une
+// capture montrait un bas d'écran que personne ne voit ainsi, et c'est
+// exactement ce qui a laissé passer, le 11 août 2026, une bulle d'assistant
+// qui recouvrait un lien. Une capture qui ment coûte plus cher qu'aucune
+// capture : c'est sur elle qu'on décide.
 const contexte = await navigateur.newContext({
-  viewport: { width: 393, height: 852 },
-  deviceScaleFactor: 3,
-  isMobile: true,
-  hasTouch: true,
+  ...devices["iPhone 13"],
 });
 const page = await contexte.newPage();
 

@@ -9,6 +9,69 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Toutes les suites mesurent enfin l'écran que le patron a dans la main
+
+*« Fais tout ce que tu penses qu'il faut faire pour que l'application
+fonctionne »*, le 11 août 2026, après avoir appris qu'il restait trente-trois
+suites cadrant un écran que personne ne possède.
+
+**Le cadre était faux, et de la pire façon : trop grand.** Les suites posaient
+393 × 852 — la dalle d'un iPhone 14, pas la place qui reste une fois la barre
+d'adresse installée : **390 × 664**. Cent quatre-vingt-dix pixels de bas
+d'écran que le patron n'a jamais eus, et où tout tenait donc confortablement.
+C'est ce qui a laissé passer, la veille, une bulle d'assistant recouvrant « ou
+rédiger le devis à la main ».
+
+**L'écran est désormais posé à UN endroit** (`e2e-browser.ts`,
+`ECRAN_DU_PATRON`), comme l'est déjà le délai d'attente et pour la même raison :
+quarante sites d'appel, c'est quarante corrections et trente-neuf oublis. Une
+suite qui a besoin d'autre chose — le devis complet s'ouvre aussi sur un écran
+d'ordinateur — passe son propre cadre, et c'est alors un choix visible.
+Quarante-et-une suites et vingt-neuf scripts de capture ont perdu leur cadre
+écrit à la main.
+
+**Deux tolérances inventées sont tombées avec.** Un contrôle mesurait le
+débordement contre « 400 px » sur un écran de 393 : sept pixels de marge qu'on
+s'accordait à soi-même. Il mesure maintenant contre la largeur **réelle** de la
+fenêtre. Un autre cadrait 393 px de large là où le vrai téléphone en fait 390.
+
+**Résultat, et il faut le dire tel quel : aucun écran n'a bronché.** 46 suites
+sur 47, l'unique rouge étant un dépassement de délai du serveur de
+développement — la suite rejouée seule passe. Le cadre honnête n'a donc révélé
+aucun défaut caché.
+
+**Mais « aucune suite n'a bronché » ne veut pas dire « rien n'est recouvert »**
+— seulement qu'aucun contrôle existant ne l'aurait remarqué. Un seul écran
+vérifiait ce genre de chose, et pour un seul bouton. D'où la suite qui suit.
+
+### Un contrôle qui cherche partout ce qui est caché sous le mobilier fixe
+
+`scripts/test-rien-de-recouvert-e2e.ts` parcourt **quatorze écrans** du parcours
+et, sur chacun, demande au navigateur qui répondrait au doigt au centre de
+chaque lien, bouton et champ. Ce que ça attrape n'a pas d'autre moyen d'être vu :
+l'élément est dans le HTML, il répond au clic programmé, **et le doigt ne
+l'atteint pas**. Trois défauts réels de ce dépôt sont de cette famille, tous
+trouvés à l'œil, aucun par un test.
+
+**Écrire ce contrôle a surtout consisté à l'empêcher de mentir.** Trois versions
+successives accusaient des écrans parfaitement sains :
+
+1. un bouton sous la barre du bas n'est pas hors d'atteinte — **il suffit de
+   défiler**. On amène donc chaque cible au centre avant de juger : ce qui reste
+   recouvert après ce geste l'est pour de bon ;
+2. l'encart « à facturer », replié au repos, garde ses liens dans la page. Le
+   navigateur les dit « visibles » — ils sont seulement **rognés** par un
+   `overflow: hidden`. Onze accusations pour des éléments qui n'étaient pas à
+   l'écran du tout ;
+3. un lien dont le centre tombe sur son propre libellé se dénonçait lui-même.
+
+**Et il sait échouer, sur les deux défauts qu'il vise.** Le défaut du 11 août a
+été reconstitué dans la fiche : il le nomme par son propre libellé et désigne le
+coupable, en restant muet sur les treize autres écrans. Son garde-fou — *« la
+fenêtre est-elle bien celle d'un téléphone ? »* — rougit dès qu'on lui repose
+l'ancien cadre. Sans lui, cette suite serait verte d'un bout à l'autre sans rien
+avoir éprouvé : c'est exactement ce qui est arrivé au contrôle de la bulle.
+
 ### L'anneau de la dictée est au centre de la fiche, dès l'arrivée
 
 **Le patron, le 11 août 2026, devant un chantier qu'il venait de créer :**

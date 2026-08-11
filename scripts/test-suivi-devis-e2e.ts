@@ -85,7 +85,7 @@ async function devisParti(page: Page, suffixe: string) {
 
 /** Le client refuse, depuis sa page publique — sans session, comme en vrai. */
 async function clientRefuse(browser: Awaited<ReturnType<typeof lancerNavigateur>>, jeton: string) {
-  const contexte = await browser.newContext({ viewport: { width: 393, height: 852 } });
+  const contexte = await browser.newContext();
   const p = await contexte.newPage();
   await p.goto(`${BASE}/devis/${jeton}`, { waitUntil: "networkidle" });
   await p.click('button:has-text("Je ne donne pas suite")');
@@ -95,7 +95,7 @@ async function clientRefuse(browser: Awaited<ReturnType<typeof lancerNavigateur>
 
 async function main() {
   const browser = await lancerNavigateur();
-  const context = await browser.newContext({ viewport: { width: 393, height: 852 } });
+  const context = await browser.newContext();
   const page = await seConnecter(context);
 
   await test("un devis parti met le chantier en attente, pas en « à planifier »", async () => {

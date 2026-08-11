@@ -6,7 +6,7 @@
 // `localhost`, jamais `127.0.0.1` : Next refuse ses ressources de développement
 // à une origine étrangère, et la page arrive alors JAMAIS hydratée.
 import { existsSync, mkdirSync, readdirSync } from "node:fs";
-import { chromium } from "playwright";
+import { chromium, devices } from "playwright";
 
 const dossier = process.argv[2];
 if (!dossier) { console.error("usage: capture-planning.mts <dossier>"); process.exit(1); }
@@ -23,7 +23,7 @@ function navigateurPreInstalle(): string | undefined {
 
 const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
 const contexte = await navigateur.newContext({
-  viewport: { width: 393, height: 852 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true,
+  ...devices["iPhone 13"], isMobile: true, hasTouch: true,
 });
 const page = await contexte.newPage();
 const echecs: string[] = [];

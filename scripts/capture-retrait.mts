@@ -19,7 +19,7 @@
  *   npx tsx scripts/capture-retrait.mts <dossier> <nom> <url> [selecteurLigne]
  */
 import { existsSync, mkdirSync, readdirSync } from "node:fs";
-import { chromium, type Page } from "playwright";
+import { chromium, type Page, devices } from "playwright";
 
 const dossier = process.argv[2];
 const nom = process.argv[3];
@@ -67,9 +67,7 @@ async function glisser(page: Page, index: number) {
 
 const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
 const contexte = await navigateur.newContext({
-  viewport: { width: 393, height: 852 },
-  deviceScaleFactor: 3,
-  isMobile: true,
+  ...devices["iPhone 13"], isMobile: true,
   hasTouch: true,
 });
 const page = await contexte.newPage();

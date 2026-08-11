@@ -24,7 +24,6 @@ const MAUVAIS = "pas-le-bon-mot-de-passe";
 
 async function tenter(navigateur: Awaited<ReturnType<typeof lancerNavigateur>>, ip: string, motDePasse: string) {
   const contexte = await navigateur.newContext({
-    viewport: { width: 393, height: 852 },
     extraHTTPHeaders: { "x-forwarded-for": ip },
   });
   const page = await contexte.newPage();
