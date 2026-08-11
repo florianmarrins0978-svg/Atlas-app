@@ -95,9 +95,9 @@ La ligne « Version » de Réglages nomme désormais la branche
 avoir à le lui demander. Elle ne le disait pas, et c'est ce qui a permis le
 malentendu.
 
-**Le bouton « Nouveau chantier » attend cette fusion, et rien d'autre**
-(`TODO.md`, 0 quaterdecies). La branche porte déjà `origin/main` fusionnée
-dedans : c'est un sur-ensemble strict, sans conflit à venir.
+**Le bouton « Nouveau chantier » a été fusionné dans `main` le 11 août au soir**,
+sur son accord explicite (`6059641`). Il est donc chez lui. Ce qui reste utile
+ici, c'est le piège : il resservira au prochain travail livré sur une branche.
 
 **Douze remplaçants au gros bouton, en deux tournées (11 août).** Le patron ne
 veut plus de l'aplat vert « Nouveau chantier » au milieu de l'écran Chantiers ;

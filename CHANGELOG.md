@@ -91,9 +91,11 @@ dépôt git (« inconnue »), et tête détachée (la ligne perd son dernier mot
 plutôt que d'affirmer une branche fausse). Confronté à l'ancien code, le
 contrôle rougit et nomme la branche manquante.
 
-**Ce que cela n'a PAS corrigé, et qui reste ouvert :** le bouton n'est toujours
-pas chez lui. Il attend une fusion vers `main`, qui ne se fait pas sans son
-accord (`TODO.md`, 0 quaterdecies).
+**Et le bouton est parti chez lui.** Sur son accord — *« fusionne dans main »* —
+la branche est fusionnée dans `main` en avance rapide (`6059641`), batterie
+complète au vert sur la fusion, 54/54 suites navigateur et connexion réelle
+derrière une origine étrangère. Son espace le prendra au prochain allumage, ou
+tout de suite par « Chercher les dernières corrections ».
 
 ### Six façons d'ouvrir un chantier, pour remplacer l'aplat vert
 
