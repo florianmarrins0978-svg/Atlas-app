@@ -64,6 +64,13 @@ rond, à la place de l'aplat, la gerbe et la demi-seconde. Ce qui est ouvert : l
 disque du tout) et la **façon dont la page arrive** — deux propositions font
 grandir le bouton jusqu'à ce qu'il DEVIENNE la page.
 
+**Où en est le choix au 11 août au soir.** Il a fini par décrire le bouton
+lui-même : *« un rond avec un plus, et lorsque j'appuie, une dynamique un peu
+style explosion, de débris, avec le rond qui s'agrandit »*. Ce squelette est
+acquis — disque plein, « + », gerbe, agrandissement jusqu'à la page, aucun fond
+clair. Six gerbes sont à l'essai (maquette 20) ; il ne reste qu'à en désigner
+une.
+
 **Quatre refus de suite disent deux choses.** D'abord, décliner un même objet ne
 le sauve pas : ce qui a débloqué la conversation à chaque fois, c'est de changer
 d'axe — la nature du geste (16), la gravure (17), la matière et l'ouverture

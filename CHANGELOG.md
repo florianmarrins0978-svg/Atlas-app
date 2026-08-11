@@ -34,6 +34,35 @@ Rien n'est codé : l'application porte toujours l'aplat (`TODO.md`, 0 terdecies)
 3. **Aucun script**, comme les treize maquettes précédentes : son lecteur n'en
    exécute pas, et une page engendrée en JavaScript lui arrive vide.
 
+### Le rond éclate, et devient la page
+
+*« Un rond avec un plus et lorsque j'appuie, une dynamique un peu style
+explosion, de débris, avec le rond qui s'agrandit. »* Le squelette est donc fixé
+par lui, et ne varie plus : disque plein (vert pin, ou or), « + », gerbe, puis
+agrandissement jusqu'à remplir l'écran. **Aucun fond clair nulle part.**
+
+`docs/maquettes/20-le-rond-qui-eclate.html` ne fait varier que **la nature des
+débris** : la poussière d'or (vingt grains fins), les tessons (c'est le rond
+lui-même qui se fend en six), la braise (treize étincelles qui **retombent**),
+le souffle (aucun débris, trois ondes), l'or plein (disque d'or, gerbe sombre),
+la croix éclatée (c'est le « + » qui se brise en quatre barres).
+
+**La feuille ne monte plus du bas** : elle est posée sous le rond qui grandit et
+se découvre à mesure. Deux mouvements l'un sur l'autre faisaient bégayer le
+geste.
+
+**Trois défauts vus à la capture, et aucun n'aurait été trouvé autrement.**
+Le rond commençait à grandir en même temps que la gerbe : le disque de papier
+recouvrait les débris avant qu'on ait pu les voir — l'explosion existait dans le
+code et nulle part à l'écran. Les débris étaient posés **sous** le disque : on
+ne voyait qu'une poussière collée sur le vert, de la saleté plutôt qu'une
+explosion. Et ils partaient du centre au lieu du bord, si bien que les trois
+quarts de la gerbe restaient cachés.
+
+Les distances de projection sont donc étirées pour le grand format de la planche
+(`--f`) : un débris qui naît au bord d'un disque de 76 px naîtrait au milieu
+d'un disque de 104.
+
 ### Retour à la retenue : six gestes tenus
 
 *« Tu as primé sur l'originalité au détriment de l'élégance. »* Le reproche est

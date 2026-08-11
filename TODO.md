@@ -372,6 +372,11 @@ matières** (laque, or brossé, cire, encre vivante, ou pas de disque du tout) e
 **deux ouvertures où le bouton devient la page** au lieu de faire monter une
 feuille.
 
+**Le squelette est arrêté par lui le 11 août au soir** : un rond plein avec un
+« + », une explosion de débris à l'appui, et le rond qui s'agrandit jusqu'à
+devenir la page. Six gerbes sont à l'essai dans
+`docs/maquettes/20-le-rond-qui-eclate.html` ; il ne reste qu'à en désigner une.
+
 La maquette 18 a été jugée trop démonstrative — *« tu as primé sur l'originalité
 au détriment de l'élégance »*. `docs/maquettes/19-six-gestes-tenus.html` revient
 donc à la retenue : plus de gerbe, plus de matière imitée, une seule chose qui

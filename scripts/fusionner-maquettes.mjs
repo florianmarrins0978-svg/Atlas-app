@@ -148,6 +148,13 @@ const MAQUETTES = [
     quoi: "Retour à la retenue : la gerbe est partie, les matières imitées aussi. Une seule chose bouge à la fois. Le mot, la goutte d’or, le disque de nuit, le cercle qui se ferme, le filet traversé, les deux volets.",
     retenu: true,
   },
+  {
+    fichier: "20-le-rond-qui-eclate.html",
+    titre: "Le rond éclate, et devient la page",
+    famille: "Enlever le gros bouton",
+    quoi: "Un rond plein, un « + », une explosion de débris, et le rond qui s’agrandit jusqu’à remplir l’écran. Six gerbes : poussière, tessons du rond lui-même, braises qui retombent, aucun débris, gerbe sombre sur or, signe qui se brise.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
