@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### `npm run essai` accusait la base pendant qu'Atlas démarrait déjà
+
+**Constaté chez le patron, sur son espace de travail.** Il tape `npm run essai`,
+et l'écran répond :
+
+> ⚠️ Le serveur s'est arrêté avant de répondre.
+> Cause fréquente : la base de données n'est pas montée.
+
+La base n'y était pour rien. L'espace démarre Atlas tout seul à chaque
+allumage ; pendant sa construction, **le banc ne répond pas encore** — le
+garde-fou d'`essai.mjs`, qui demandait « quelqu'un répond-il ? », l'a donc
+laissé passer. Un second serveur est parti, a trouvé le port pris, et est mort
+sur « EADDRINUSE ». Le message affiché envoyait chercher au mauvais endroit, ce
+qui coûte plus cher que pas de message du tout.
+
+`banc.mjs` prend un verrou depuis le même jour, et sa documentation le disait
+déjà : **ce n'est pas le port qu'il faut regarder, c'est l'existence d'un autre
+banc.** `essai.mjs` ne le prenait pas — et c'est par là que le patron est passé.
+Il le prend désormais, et refuse en disant quoi faire : combien de temps
+attendre, quel journal suivre, et quelle ligne attendre.
+
+Éprouvé en reproduisant la situation : un banc tient le verrou, `npm run essai`
+arrive dessus, et refuse au lieu de démarrer.
+
+
 ### Refaire la démonstration n'efface plus ce que l'artisan a tapé à la main
 
 **Le patron, le 11 août au matin :** *« On avait raccordé l'agenda Google.
