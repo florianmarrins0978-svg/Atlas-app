@@ -64,10 +64,12 @@ rond, à la place de l'aplat, la gerbe et la demi-seconde. Ce qui est ouvert : l
 disque du tout) et la **façon dont la page arrive** — deux propositions font
 grandir le bouton jusqu'à ce qu'il DEVIENNE la page.
 
-**LE BOUTON EST CHOISI, et c'est là qu'il faut reprendre.** C'est le **« + » au
-bout du titre** — l'anneau d'un cheveu sur la ligne de base de « Vos chantiers »
-(maquette 15, proposition H), qui doit **tourner à fond puis ouvrir la page**.
-Six déclinaisons du tour attendent son verdict (maquette 21). Rien n'est codé.
+**LE BOUTON EST CHOISI, et c'est là qu'il faut reprendre.** C'est **l'anneau
+d'un cheveu avec son « + »**, qui doit **tourner à fond puis ouvrir la page**.
+Il est **au centre**, à la place de l'ancien aplat vert, avec **un petit trait
+de chaque côté qui s'écarte à l'appui**. Six déclinaisons du tour attendent son
+verdict (maquette 22 ; la version en haut à droite est restée dans la 21). Rien
+n'est codé.
 
 **Ce qui précède n'est plus d'actualité, et ne doit pas être ressorti :**
 

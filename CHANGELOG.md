@@ -34,6 +34,30 @@ Rien n'est codé : l'application porte toujours l'aplat (`TODO.md`, 0 terdecies)
 3. **Aucun script**, comme les treize maquettes précédentes : son lecteur n'en
    exécute pas, et une page engendrée en JavaScript lui arrive vide.
 
+### Le rond redescend au milieu, entre deux traits
+
+*« Je ne veux pas qu'il soit en haut à droite, je veux qu'il soit vraiment
+centré au milieu, et peut-être avec un petit trait de chaque côté du rond […]
+et lorsqu'on clique, les traits qui s'écartent légèrement. »*
+
+`docs/maquettes/22-le-rond-entre-deux-traits.html` reprend donc l'anneau et son
+« + » — celui qu'il a retenu — mais **au centre**, à la place qu'occupait
+l'aplat vert, flanqué de deux traits de 56 px. À l'appui : trois tours, les
+traits s'écartent de douze pixels, puis la page.
+
+Les six déclinaisons sont les mêmes qu'à la maquette 21, à une près : « le trait
+aspiré » devient **« les traits qui rentrent »** — l'inverse du geste demandé,
+gardé pour qu'il puisse comparer plutôt que me croire sur parole.
+
+**Les traits sont DANS le lien, pas à côté.** La cible du doigt fait alors toute
+la largeur du groupe au lieu des quarante-six pixels de l'anneau : sur un
+téléphone, c'est la différence entre viser et toucher.
+
+**Un défaut vu à la capture, invisible au contrôle :** le bloc du titre a perdu
+ses marges en changeant de squelette — elles vivaient dans la grille de la
+maquette précédente, où le « + » était dans l'en-tête. « Bonjour Florian » se
+retrouvait collé au bord de l'écran, et les douze contrôles étaient verts.
+
 ### Le bouton est choisi : le « + » au bout du titre
 
 Il l'a désigné sur une capture de la maquette 15 (proposition H) : *« le petit

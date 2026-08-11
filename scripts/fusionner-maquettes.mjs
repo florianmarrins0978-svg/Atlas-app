@@ -162,6 +162,13 @@ const MAQUETTES = [
     quoi: "Le bouton qu’il a désigné : l’anneau au bout de « Vos chantiers », qui ne coûte aucune ligne. Trois tours rapides puis la page — et six façons de le décliner.",
     retenu: true,
   },
+  {
+    fichier: "22-le-rond-entre-deux-traits.html",
+    titre: "Le rond au milieu, entre deux traits",
+    famille: "Enlever le gros bouton",
+    quoi: "Le même anneau, ramené AU CENTRE, avec un petit trait de chaque côté qui s’écarte quand le signe part en trois tours. Les six déclinaisons, à presser.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

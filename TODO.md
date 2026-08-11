@@ -372,12 +372,14 @@ matières** (laque, or brossé, cire, encre vivante, ou pas de disque du tout) e
 **deux ouvertures où le bouton devient la page** au lieu de faire monter une
 feuille.
 
-**LE BOUTON EST CHOISI (11 août, au soir).** C'est **le « + » au bout du titre**
-— l'anneau d'un cheveu posé sur la ligne de base de « Vos chantiers », qui ne
-coûte aucune ligne à l'écran (maquette 15, proposition H). Il doit **tourner à
-fond puis ouvrir la page**. Six déclinaisons du tour sont à l'essai dans
-`docs/maquettes/21-le-plus-du-titre.html` ; il ne reste qu'à en désigner une —
-et le tour franc suffirait.
+**LE BOUTON EST CHOISI (11 août, au soir).** C'est **l'anneau d'un cheveu avec
+son « + »**, qui doit **tourner à fond puis ouvrir la page**. Sa place a été
+tranchée juste après : **au centre**, à l'endroit qu'occupait l'aplat vert — et
+non en haut à droite comme il l'avait d'abord montré — avec **un petit trait de
+chaque côté, qui s'écarte à l'appui**. Six déclinaisons du tour sont à l'essai
+dans `docs/maquettes/22-le-rond-entre-deux-traits.html` ; il ne reste qu'à en
+désigner une, et le tour franc suffirait. (La version en haut à droite reste
+dans la maquette 21, si jamais il y revenait.)
 
 **Ce que coûtera la bascule, une fois la déclinaison choisie** : le bloc
 `<Link>` de `EcranChantiers.tsx` devient un anneau posé dans l'en-tête (grille à
