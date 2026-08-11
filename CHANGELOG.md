@@ -9,6 +9,42 @@ Format : le plus récent en tête.
 
 ## 2026-08-11
 
+### « Failed to type check » sur l'espace du patron — une course, pas un défaut
+
+**Sur son espace, ce soir :**
+
+> Failed to type check.
+> `.next/dev/types/validator.ts:116:39`
+> Type error: Cannot find module `.../chantiers/[id]/photos/page.js`
+
+Le fichier existait, et la construction passait ici depuis un état propre. Le
+message accusait le code alors que rien n'était cassé — exactement ce que
+`AGENTS.md` interdit de laisser passer.
+
+**La cause :** `npm run banc` sert la version de développement — qui écrit dans
+`.next/dev/` — PENDANT qu'il bâtit la version rapide dans `.next-batie/`. Le
+contrôle de types lisait donc les fichiers de travail d'un autre processus, en
+train d'être réécrits : selon l'instant, ils désignent une route à moitié
+engendrée. D'où une panne intermittente, sur son espace seulement, sur un code
+parfaitement valable.
+
+Ces fichiers sont désormais **exclus** du contrôle de types. Les types de route
+restent vérifiés, par ceux qu'engendre la construction elle-même — qui ne
+bougent pas pendant qu'on les lit.
+
+**Et la réparation ne tenait pas où on l'aurait mise :** `next build` RÉÉCRIT
+`tsconfig.json` et y remet `.next/dev/types/**/*.ts` de lui-même — constaté dans
+l'heure. Retirer la ligne de `include` n'aurait tenu qu'une construction. C'est
+`exclude` qui répare, parce que Next n'y touche pas et qu'il l'emporte.
+
+Reproduit avant de corriger, et confronté après :
+un reste périmé posé dans `.next/dev/types` fait échouer le contrôle avec le
+message exact du patron ; avec l'exclusion, il est ignoré.
+`scripts/test-tsconfig-sans-restes-dev.ts` refuse le retour en arrière — sans
+lui, la prochaine construction rouvrirait la panne en silence, et elle ne se
+reverrait que chez lui.
+
+
 ### Le fil se bloquait à chaque chantier, et montrait sa barre grise
 
 **Le patron, capture de son ordinateur et de son téléphone à l'appui :** *« je

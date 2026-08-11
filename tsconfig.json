@@ -28,18 +28,41 @@
       ]
     }
   },
+  // **Les types engendrés par le serveur de DÉVELOPPEMENT ne sont plus
+  // type-vérifiés — c'est la réparation du 11 août 2026, au soir.**
+  //
+  // Le patron, sur son espace : « Failed to type check », et l'erreur désignait
+  // `.next/dev/types/validator.ts:116` — « Cannot find module
+  // .../chantiers/[id]/photos/page.js ». Ce fichier existe pourtant, et la
+  // construction passait ici.
+  //
+  // La cause est une COURSE, pas un défaut de code. `npm run banc` sert la
+  // version de développement (qui écrit dans `.next/dev/`) PENDANT qu'il bâtit
+  // la version rapide (dans `.next-batie/`). Le contrôle de types de la
+  // construction lisait donc les fichiers de travail d'un autre processus, en
+  // train d'être réécrits : selon l'instant, ils désignent une route à moitié
+  // engendrée. Le message accusait le code alors que rien n'était cassé.
+  //
+  // Une construction ne doit pas type-vérifier les fichiers de travail d'un
+  // voisin. Les types de route restent vérifiés — par `.next/types` et
+  // `.next-batie/types`, engendrés par la construction elle-même, qui ne bougent
+  // pas pendant qu'on les lit.
+  //
+  // `scripts/test-tsconfig-sans-restes-dev.ts` refuse leur retour, avec ce
+  // pourquoi : la ligne se remet toute seule à la moindre reprise de
+  // configuration Next, et le défaut ne se reverrait que chez le patron.
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
     "**/*.mts",
-    ".next/dev/dev/types/**/*.ts",
+    ".next/types/**/*.ts",
     ".next-batie/types/**/*.ts",
-    ".next-batie/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".next/dev",
+    ".next-batie/dev"
   ]
 }
