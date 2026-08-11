@@ -89,6 +89,33 @@ piège pour la conversation suivante.
 
 ## 2026-08-10
 
+### Un diagnostic qui regarde l'espace du patron, au lieu de raisonner dessus
+
+**Deux hypothèses avancées pour expliquer son « ça ne marche pas », et les deux
+fausses.** D'abord un service de transcription absent — c'était mon
+environnement, pas le sien. Puis une branche différente de celle où l'on
+pousse — il était bien sur `main`. Chacune lui a coûté un aller-retour pour
+rien.
+
+Le défaut n'est pas de s'être trompé : c'est d'avoir raisonné **à distance** sur
+une machine qu'on ne voit pas, alors que cette machine sait tout.
+
+`npm run diagnostiquer:espace` ne devine rien, il regarde — et il montre la
+seule chose que rien d'autre ne montrait : **le commit RÉELLEMENT SERVI**. La
+ligne « Version » de Réglages lit le dépôt, donc le code *récupéré* ; la version
+rapide est un dossier bâti et figé. Entre les deux il peut y avoir un monde, et
+c'est précisément là que se logeait le malentendu.
+
+Il rend six lignes — branche suivie, code récupéré, **code servi**, serveur,
+veilleur, issue de la dernière mise à jour — puis un verdict dans ses mots :
+retard, fichiers non enregistrés, historique divergé, version bâtie périmée,
+serveur muet. Et quand tout concorde, il le dit aussi, en désignant alors le
+produit plutôt que l'espace.
+
+**Éprouvé dans ses états dégradés**, pas seulement au vert : dépôt sale, version
+bâtie plus ancienne que le code, tête détachée (où « HEAD » ne serait qu'un
+aveu incompréhensible), dépôt distant injoignable.
+
 ### « J'ai relancé le banc, ça ne marche pas » — la version rapide ne se recompile jamais
 
 **Le patron, le 11 août 2026 au soir.** Le code neuf était bien tiré, la ligne

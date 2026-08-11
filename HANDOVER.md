@@ -113,6 +113,13 @@ enregistre) ; avec, il redevient le lecteur. Le magnétophone est partagé
 (`src/app/chantiers/[id]/magnetophone.ts`) — ne pas le recopier dans un
 troisième écran.
 
+**Avant de raisonner sur l'espace du patron, le regarder :
+`npm run diagnostiquer:espace`.** Il rend la branche suivie, le code récupéré,
+**le code réellement servi**, l'état du serveur et du veilleur. Deux hypothèses
+ont été avancées à distance le 11 août pour expliquer un « ça ne marche pas », et
+les deux étaient fausses — chacune lui a coûté un aller-retour. Cette commande
+existe pour que la troisième ne le soit pas.
+
 **La version bâtie ne se recompile JAMAIS (11 août, soir).** `next start` sert
 un dossier figé : tirer du code sous ses pieds n'y change rien. Le bouton
 « Chercher les dernières corrections » promettait une recompilation impossible,

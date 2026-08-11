@@ -32,7 +32,8 @@
     "db:seed:local": "tsx --env-file=.env src/server/db/seed.ts",
     "verifier:avant-livraison": "tsx scripts/verifier-avant-livraison.ts",
     "verifier:connexion": "tsx scripts/verifier-connexion-avec-serveur.mts",
-    "banc": "node scripts/banc.mjs"
+    "banc": "node scripts/banc.mjs",
+    "diagnostiquer:espace": "node scripts/diagnostiquer-espace.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1097.0",
