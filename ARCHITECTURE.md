@@ -3834,3 +3834,102 @@ transmission du signal, le serveur ne meurt plus avec le banc : chaque Ctrl+C
 laisserait un orphelin accroché au port — c'est-à-dire la panne qu'on répare.
 C'est aussi, rétrospectivement, ce qui condamnait chaque tentative suivante du
 patron : il avait fait plusieurs Ctrl+C dans la soirée.
+
+---
+
+## 57. L'anneau au centre de la fiche — et ce qu'un écran vidé emporte avec lui
+
+**Le patron, le 11 août 2026, devant la fiche d'un chantier qu'il venait de
+créer :** *« pourquoi on est encore sur cette page, il manque la note vocale au
+milieu »*. Puis, deux fois de suite, la même demande : *« ça ressemble toujours
+pas à la maquette »*, *« exactement, respecte strictement ma maquette »*.
+
+### L'anneau n'était pas absent : il était un lecteur
+
+Le défaut était plus profond qu'un anneau manquant. L'anneau ne naissait
+qu'**après** la dictée — il servait à réécouter — et la dictée arrivait en
+**deuxième** action, derrière les photos (`src/lib/chantier-etat.ts`). Sur un
+chantier neuf, c'est-à-dire au moment précis où l'artisan veut parler, le cœur
+du produit était donc caché derrière autre chose.
+
+Il est désormais **un objet à deux états**, jamais deux boutons :
+
+| État | Ce qu'il est | Le geste |
+|---|---|---|
+| pas de note | un micro | un appui dicte, un second arrête et enregistre |
+| une note, audio présent | un lecteur | une poussée joue |
+| une note, audio purgé | absent | la ligne du tiroir mène à l'écran qui l'explique |
+
+Le troisième cas est une exception vraie, pas un oubli : l'audio est effacé une
+fois la transcription obtenue (`docs/RGPD.md` §4). La note **existe** encore ;
+proposer d'en dicter une autre à cet endroit effacerait le travail déjà fait.
+
+**Le magnétophone est écrit une seule fois** (`src/app/chantiers/[id]/magnetophone.ts`).
+L'écran de dictée savait déjà capter le son ; recopier ces trente lignes dans
+l'anneau, c'était s'assurer qu'un jour l'un corrige un défaut que l'autre garde
+(`CLAUDE.md` §3). Le module capte, compte et rend un `Blob` — ce qu'on en fait
+ensuite regarde l'appelant, sans quoi il ne servirait qu'un seul des deux.
+
+### Ce qu'un écran vidé emporte, et qu'il faut rattraper
+
+Sa maquette (`maquettes/atlas-note-vocale.html`) ne montre **aucun bouton** :
+un statut, un titre, une phrase calme, l'anneau. Le corps de la fiche a donc été
+vidé — et **six suites sont tombées d'un coup**, toutes sur la même phrase
+manquante.
+
+Ce n'était pas du bruit. Le bouton portait la **seule** indication de la marche
+à suivre, et le tiroir fermé ne montre qu'un état. Un écran qui ne dit pas où
+l'on va se lit comme une application en panne — c'est déjà écrit dans le cas
+« rien à faire », trois lignes plus haut dans le même fichier.
+
+Deux règles en sont sorties, et elles valent pour tout allègement d'écran :
+
+1. **Alléger, c'est déplacer, pas supprimer.** L'étape suivante est passée dans
+   le bandeau du tiroir (`Ajouter des photos →`), la rédaction à la main dans
+   sa liste. Les deux étaient des demandes du patron, des 3 et 4 août ; ce lot
+   les aurait défaites en silence.
+2. **`getSecondarySteps` est appelé SANS `nextAction.key`.** Il excluait
+   l'étape suivante parce qu'elle vivait dans le bouton. Le bouton parti, le
+   tiroir est le seul endroit où elle vive : l'exclure la ferait disparaître de
+   l'application entière.
+
+Un contrôle garde cette frontière dans les deux sens
+(`test-anneau-dictee-e2e.ts`, *« le corps ne porte que l'anneau, et le tiroir
+garde tout le reste »*) : il échoue si l'on remet un bouton dans le corps, et il
+échoue si l'on oublie de descendre une entrée dans le tiroir.
+
+### Trois réglages facultatifs plutôt qu'un en-tête de plus
+
+La maquette pose le client **avant** le titre, en serif gris, la pastille de
+facturation sur la ligne de la flèche, et ne ferme pas l'en-tête d'un trait.
+Rien de tout cela n'est du goût pur : à côté du titre, la pastille lui prend la
+moitié de la largeur et casse « Intervention prévue vendredi 15 août. » en
+**quatre** lignes au lieu de deux.
+
+`EnTeteEcran` reçoit donc `precisionPlacee`, `cheveu` et `actionPlacee`, **avec
+les valeurs par défaut d'avant**. La grammaire commune posée le 10 août pour
+tous les écrans n'est pas touchée ; seule la fiche demande autre chose. Un
+composant partagé qu'on fait diverger par ses défauts fait diverger tous ses
+appelants — c'est le contraire de ce pour quoi il existe.
+
+### La leçon qui dépasse cet écran : supposer n'est pas comparer
+
+Il a fallu qu'il le dise **deux fois**. Entre les deux, j'avais relu la maquette
+au lieu de la **rendre** : côte à côte avec l'écran, une seule capture a montré
+ce que trois lectures n'avaient pas vu — l'anneau portait un point là où le sien
+porte trois barres, et sa maquette ne montre aucun bouton.
+
+Deux défauts de mise en page ont été trouvés de la même façon, et par aucun
+contrôle : sans note, l'anneau réservait encore la place du glissement
+« Retirer », du compteur et du tiroir « note retirée » — trois choses qui
+n'existent pas encore — ce qui poussait « ou rédiger le devis à la main » sous
+la bulle de l'assistant. Le lien existait, il était touchable, il était
+illisible.
+
+**Et le contrôle qui aurait dû le voir mesurait un écran que personne ne
+possède.** Les suites posaient 393 × 852 ; la hauteur utile d'un vrai iPhone 13,
+barre du navigateur déduite, est de 390 × **664**. Sur ce cadre trop haut, la
+bulle tombait 190 px plus bas et ne recouvrait rien. `test-anneau-dictee-e2e.ts`
+emploie `devices["iPhone 13"]`, et sa version rouge a été vérifiée sur la mise
+en page d'avant. **Les autres suites ont encore l'ancien cadre** : elles peuvent
+donc rater les défauts de bas d'écran.

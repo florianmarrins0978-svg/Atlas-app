@@ -528,6 +528,36 @@ body {
   opacity: 0;
   pointer-events: none;
 }
+
+/* **Sans note, le glisseur ne réserve plus la place de « Retirer ».**
+ *
+ * La course du glissement mesure deux volets — l'anneau, puis la fosse. Sur un
+ * chantier neuf il n'y a rien à retirer : cette seconde hauteur restait
+ * pourtant réservée, et poussait tout ce qui suit de 78 px. Vu en capture, le
+ * 11 août 2026 : la bulle de l'assistant recouvrait « ou rédiger le devis à la
+ * main ». Aucun contrôle ne l'aurait dit — le lien existait, il était
+ * touchable, et il était illisible.
+ *
+ * Le défilement est coupé aussi : un glissement qui ne mène nulle part se lit
+ * comme un geste qui a raté. */
+[data-vide="oui"] .atlas-glisseur {
+  overflow: hidden;
+  scroll-snap-type: none;
+}
+
+/* **Sans note, on n'affiche pas ce qui n'existe pas.** Le compteur marquerait
+ * « 0:00 » avant qu'on ait dit un mot. Avec le tiroir « Note vocale retirée »,
+ * qui réservait lui aussi sa place, cela poussait le bas de l'écran de près de
+ * cinquante pixels — assez pour que la bulle de l'assistant vienne recouvrir
+ * « ou rédiger le devis à la main ». Vu en capture le 11 août 2026, jamais
+ * autrement : le lien existait, il était touchable, et il était illisible.
+ *
+ * Le tiroir, lui, ne se masque plus : il est **absent du document**. Le masquer
+ * laissait dans la page un bouton « Annuler » que le texte trouvait encore —
+ * une suite de l'assistant a cliqué dessus au lieu du sien. */
+[data-vide="oui"][data-enregistre="non"] .atlas-chrono {
+  display: none;
+}
 [data-retiree="oui"] .atlas-aile { opacity: 0; }
 [data-retiree="oui"] .atlas-chrono { opacity: 0; transform: translateY(-4px); }
 /* L'anneau se contracte et part. */

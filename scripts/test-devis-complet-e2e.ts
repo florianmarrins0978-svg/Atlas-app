@@ -44,7 +44,9 @@ async function main() {
   const chantierId = chantierUrl.split("/").pop()!;
 
   // --- 1. Le lien mène au document entier --------------------------------
-  await page.getByRole("link", { name: /rédiger le devis à la main/i }).click();
+  // Par sa destination : la rédaction à la main vit dans le tiroir depuis le
+  // 11 août 2026, et s'y écrit « Devis à la main ».
+  await page.locator('[data-atlas="tiroir-fiche"] a[href$="/devis-complet"]').click();
   await page.waitForURL(/\/devis-complet$/, { timeout: 10000 });
   // Le titre du DOCUMENT, et non un titre d'écran : la page ne porte plus que
   // le devis (« une page où il n'y a que le devis », le 5 août 2026).

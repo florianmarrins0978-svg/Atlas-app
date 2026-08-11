@@ -4,12 +4,10 @@ import {
   statutLabel,
   getStatutAffiche,
   getNextAction,
-  getNextActionHref,
   getSecondarySteps,
 } from "@/lib/chantier-etat";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
-import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantierPourHub } from "@/server/repositories/chantiers";
 import { listerPhotos } from "@/server/repositories/photos";
@@ -42,7 +40,11 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
   // que la pellicule montre désormais, et deux fois la même information sur un
   // écran, c'est une de trop (`docs/INTEGRER-ORIGINE.md` §6 bis). Elle n'est
   // pas perdue : la pellicule mène au même endroit, et sa case « + » aussi.
-  const etapes = getSecondarySteps(chantier.id, chantier, nextAction?.key).filter((s) => s.key !== "photos");
+  // **L'étape suivante n'est plus retirée de la liste.** Depuis que le corps de
+  // la fiche ne porte que l'anneau (11 août 2026), le tiroir est le SEUL endroit
+  // où elle vive : l'exclure la ferait disparaître de l'application. Les photos
+  // restent hors liste — elles sont la pellicule, juste au-dessus.
+  const etapes = getSecondarySteps(chantier.id, chantier, undefined).filter((s) => s.key !== "photos");
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -60,7 +62,17 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
           retour={{ href: "/", libelle: "Retour à la liste des chantiers" }}
           surtitre={statutLabel[statut]}
           titre={chantier.nom}
-          precision={`${chantier.clientNom ?? "Client non renseigné"} · ${chantier.adresseChantier ?? "Adresse non renseignée"}`}
+          precision={`${chantier.clientNom ?? "Client non renseigné"} — ${chantier.adresseChantier ?? "adresse non renseignée"}`}
+          // La maquette pose le client AVANT le titre, en serif gris, et ne
+          // ferme pas l'en-tête d'un trait. Demandé le 11 août 2026 : « je veux
+          // que ça ressemble exactement à la maquette ».
+          precisionPlacee="avant"
+          cheveu={false}
+          // La pastille rejoint la ligne de la flèche, comme sur la maquette :
+          // à côté du titre elle lui prenait la moitié de la largeur, et
+          // « Intervention prévue vendredi 15 août. » se cassait en quatre
+          // lignes au lieu de deux.
+          actionPlacee="retour"
           action={
             /* « Pourquoi n'y ai-je pas accès ??? » — sa question du 3 août
                2026. La clôture n'existait que dans l'onglet Terminés, où un
@@ -77,7 +89,7 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
             chantier.datePlanifiee ? (
               <Link
                 href={`/chantiers/${chantier.id}/facture`}
-                className="mt-1 flex-shrink-0 px-3 py-2 text-[9.5px] font-medium uppercase"
+                className="flex-shrink-0 px-3 py-2 text-[9.5px] font-medium uppercase"
                 style={{
                   color: colors.rust,
                   letterSpacing: "0.28em",
@@ -91,34 +103,26 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
           }
         />
 
-        {/* Action principale unique, ou message calme si rien n'est requis */}
-        <div className="px-[26px] pt-7">
-          {nextAction ? (
-            <>
-              <PrimaryButton href={getNextActionHref(chantier.id, nextAction)}>{nextAction.label} →</PrimaryButton>
-              {/* La sortie de secours, à hauteur de la fiche.
-                  Le patron, le 4 août : « je ne peux toujours pas rédiger mon
-                  devis seulement à la main si je le souhaite ». Elle existait —
-                  mais uniquement au bas de l'écran Informations, c'est-à-dire
-                  après avoir traversé photos et dictée. Et les étapes affichaient
-                  « Prix — en attente des informations », qui se lit comme un
-                  verrou alors que rien n'est verrouillé.
+        {/* **Le corps de la fiche ne porte QUE l'anneau.** Demandé par le patron
+            le 11 août 2026, maquette en main : *« exactement, respecte
+            strictement ma maquette »*.
 
-                  Elle disparaît une fois le devis parti : rédiger à la main un
-                  devis déjà chez le client n'a plus de sens, et le rouvrir passe
-                  par « Corriger et renvoyer ». */}
-              {!chantier.devisEnvoyeAt && (
-                <a
-                  href={`/chantiers/${chantier.id}/devis-complet`}
-                  className="mt-4 block text-center text-[9.5px] font-medium uppercase"
-                  style={{ color: colors.rust, letterSpacing: "0.28em" }}
-                >
-                  Ou rédiger le devis à la main →
-                </a>
-              )}
-            </>
-          ) : (
-            <div className="px-5 py-5 text-center" style={{ backgroundColor: colors.card, borderRadius: 4 }}>
+            Sa maquette (`maquettes/atlas-note-vocale.html`) ne montre aucun
+            bouton : un statut, un titre, une phrase calme, l'anneau. Le pavé
+            vert « Ajouter des photos » écrasait tout et faisait de la dictée un
+            à-côté, alors qu'elle EST le produit.
+
+            Rien n'est perdu pour autant — et c'est la condition pour que ce
+            soit un allègement et non une amputation : l'étape suivante et la
+            rédaction à la main descendent dans le tiroir, à un glissement. Les
+            supprimer aurait défait deux demandes qu'il avait faites lui-même
+            (le 3 et le 4 août). */}
+        <div className="px-[26px] pt-7">
+          {nextAction ? null : (
+            /* Aligné à gauche, comme la maquette : centré, un paragraphe de
+               quatre lignes se lit en escalier et ne ressemble plus à une
+               phrase qu'on vous adresse. */
+            <div className="px-5 py-5" style={{ backgroundColor: colors.card, borderRadius: 4 }}>
               {/* « Rien à faire pour l'instant » était vrai et inutile : il ne
                   disait ni quand, ni quoi ensuite. Un écran qui ne dit pas où
                   l'on va se lit comme une application en panne. */}
@@ -136,23 +140,26 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
           )}
         </div>
 
-        {/* L'anneau muet : l'accès direct à la note vocale, seul et centré,
-            entre le pavé de bas de fiche et le tiroir. Il ne s'affiche que
-            s'il y a une note — un anneau qui ne joue rien serait un bouton en
-            panne. La ligne « Note vocale » reste dans le tiroir : l'anneau est
-            l'accès DIRECT, pas le seul chemin. */}
-        {/* **`storageKey` et non `note` seule.** L'audio est effacé une fois la
-            transcription obtenue (`docs/RGPD.md` §4) : la note existe encore,
-            mais il n'y a plus rien à écouter. L'anneau se tairait sous le doigt
-            sans rien dire — un bouton en panne. Le texte, lui, reste : la ligne
-            « Note vocale » du tiroir y mène, et cet écran-là explique
-            l'effacement au lieu de le subir. */}
-        {note?.storageKey && (
-          <div className="mt-7">
+        {/* **L'anneau est là DÈS L'ARRIVÉE, avec ou sans note.** Demandé par le
+            patron le 11 août 2026, devant la fiche d'un chantier neuf : *« il
+            est en plein milieu et dès qu'on arrive sur la page, il y est, qu'on
+            ait cliqué dessus ou non »*. Avant, il n'apparaissait qu'une fois la
+            dictée faite — et la dictée arrivait DERRIÈRE les photos. Sur un
+            chantier neuf, c'est-à-dire au moment précis où l'on veut parler, le
+            cœur du produit était donc caché.
+
+            Sans enregistrement il devient un micro ; avec, il redevient le
+            lecteur. Une seule exception, et elle est vraie : quand l'audio a été
+            purgé après transcription (`docs/RGPD.md` §4), la note EXISTE mais il
+            n'y a plus rien à écouter — proposer d'en dicter une autre à cet
+            endroit effacerait le travail déjà fait. La ligne « Note vocale » du
+            tiroir mène alors à l'écran qui explique l'effacement. */}
+        {(!note || note.storageKey) && (
+          <div className="mt-4">
             <AnneauNoteVocale
               chantierId={chantier.id}
-              storageKey={note.storageKey}
-              dureeSecondes={note.dureeSecondes}
+              storageKey={note?.storageKey ?? null}
+              dureeSecondes={note?.dureeSecondes ?? null}
             />
           </div>
         )}
@@ -163,10 +170,45 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
       <TiroirFiche
         chantierId={chantier.id}
         photos={photos.map((p) => ({ id: p.id, storageKey: p.storageKey }))}
-        etapes={etapes}
+        etapes={[
+          ...etapes,
+          // **La sortie de secours suit le même chemin que le reste.**
+          // Le patron, le 4 août : « je ne peux toujours pas rédiger mon devis
+          // seulement à la main si je le souhaite ». Elle vivait sous le bouton
+          // principal ; celui-ci ayant quitté le corps de la fiche, elle
+          // descend ici plutôt que de disparaître.
+          //
+          // Elle s'efface une fois le devis parti : rédiger à la main un devis
+          // déjà chez le client n'a plus de sens, et le rouvrir passe par
+          // « Corriger et renvoyer ».
+          ...(chantier.devisEnvoyeAt
+            ? []
+            : [
+                {
+                  key: "devis-a-la-main" as const,
+                  label: "Devis à la main",
+                  meta: "Le rédiger soi-même",
+                  done: false,
+                  href: `/chantiers/${chantier.id}/devis-complet`,
+                },
+              ]),
+        ]}
+        // **La fiche doit continuer de dire QUOI FAIRE ENSUITE.**
+        //
+        // Vider le corps (11 août 2026, à sa demande) a fait tomber six suites
+        // d'un coup — toutes sur la même phrase manquante. Ce n'était pas du
+        // bruit : le bouton portait la seule indication de la marche à suivre,
+        // et le tiroir fermé ne montre qu'un état. Un écran qui ne dit pas où
+        // l'on va se lit comme une application en panne — c'est déjà la raison
+        // d'être du pavé calme, plus haut, pour le cas « rien à faire ».
+        //
+        // Le bandeau du tiroir porte donc l'action quand il y en a une, et
+        // l'état quand il n'y en a plus. Même emplacement que la maquette, qui
+        // y met « 2 340 € · devis accepté » — un chantier où il n'y a
+        // effectivement plus rien à faire.
         resume={{
           gauche: "Le chantier",
-          droite: statutLabel[statut],
+          droite: nextAction ? `${nextAction.label} →` : statutLabel[statut],
         }}
       />
     </div>

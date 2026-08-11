@@ -80,6 +80,33 @@ avec une ligne par équipe. Réglages laisse nommer les équipes.
    est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
    sans qu'aucun chiffre ne manque.
 
+**L'anneau de la dictée est au centre de la fiche, dès l'arrivée (11 août).**
+Demandé par le patron. Sans note il est un micro (un appui dicte, un second
+enregistre) ; avec, il redevient le lecteur. Le magnétophone est partagé
+(`src/app/chantiers/[id]/magnetophone.ts`) — ne pas le recopier dans un
+troisième écran.
+
+**Le corps de la fiche ne porte QUE l'anneau (11 août, après-midi).** Sa
+maquette (`maquettes/atlas-note-vocale.html`) ne montre aucun bouton, et il l'a
+redemandé deux fois : *« exactement, respecte strictement ma maquette »*. Ce
+qu'il faut savoir avant d'y toucher :
+
+- **L'étape suivante vit désormais dans le bandeau du tiroir**, et la rédaction
+  à la main dans sa liste. Vider le corps sans les descendre a fait tomber six
+  suites d'un coup — c'étaient deux demandes à lui, des 3 et 4 août.
+  `getSecondarySteps` est donc appelé **sans** `nextAction.key` : l'exclure
+  ferait disparaître l'étape suivante de l'application entière.
+- **`EnTeteEcran` a trois réglages facultatifs** (`precisionPlacee`, `cheveu`,
+  `actionPlacee`), employés par cette seule fiche. Leurs valeurs par défaut
+  gardent la grammaire commune du 10 août : ne pas les inverser.
+
+**Et une leçon qui dépasse cet écran : les suites mesuraient 393 × 852**, plus
+haut que la hauteur utile d'un vrai iPhone 13 (390 × **664**, barre du
+navigateur déduite). Un contrôle de chevauchement passait au vert sur une mise
+en page qui, chez lui, recouvrait un lien. `test-anneau-dictee-e2e.ts` emploie
+désormais `devices["iPhone 13"]` ; **les autres suites ont encore l'ancien
+cadre** et peuvent donc rater les défauts de bas d'écran.
+
 **Le seed conserve les identifiants Google (11 août, matin).** `agendas_externes`
 porte `entreprise_id … ON DELETE CASCADE` : le `TRUNCATE … entreprises` du seed
 emportait ce que le patron avait tapé à la main. On garde les **identifiants**

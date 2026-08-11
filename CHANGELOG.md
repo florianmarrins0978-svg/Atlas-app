@@ -9,6 +9,85 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### L'anneau de la dictée est au centre de la fiche, dès l'arrivée
+
+**Le patron, le 11 août 2026, devant un chantier qu'il venait de créer :**
+*« pourquoi on est encore sur cette page, il manque la note vocale au
+milieu »*, puis *« l'anneau qui est en plein milieu et dès qu'on arrive sur la
+page, il y est en fait, qu'on ait cliqué dessus ou non. C'est ça que je veux. »*
+
+Il avait raison, et le défaut était plus profond qu'un anneau absent. L'anneau
+n'apparaissait qu'**une fois la dictée faite** — c'était un lecteur — et la
+dictée arrivait en **deuxième** action, derrière les photos
+(`src/lib/chantier-etat.ts`). Sur un chantier neuf, c'est-à-dire au moment précis
+où l'on veut parler, le cœur du produit était donc caché derrière autre chose.
+
+L'anneau est désormais là dès l'arrivée, au centre, **au-dessus** de l'action
+principale. Sans enregistrement il devient un micro : un appui dicte, un second
+arrête et enregistre, la fiche se rafraîchit sur place et il redevient le
+lecteur. Même objet, deux états — jamais deux boutons, jamais un écran de plus.
+
+**Le magnétophone est écrit une seule fois** (`magnetophone.ts`) : l'écran de
+dictée savait déjà capter le son, et recopier ces trente lignes dans l'anneau,
+c'était s'assurer qu'un jour l'un corrige un défaut que l'autre garde.
+
+**Deux défauts trouvés à l'écran, aucun par un contrôle :**
+
+- Remonter l'anneau au centre a poussé « ou rédiger le devis à la main » **sous
+  la bulle de l'assistant**. Le lien existait, il était touchable, il était
+  illisible. Sans note, l'anneau réservait encore la place du glissement
+  « Retirer », du compteur et du tiroir « note retirée » — trois choses qui
+  n'existent pas encore.
+- **Et le contrôle qui aurait dû le voir mesurait un écran que personne ne
+  possède.** Les suites posaient un cadre de 393 × 852 ; la hauteur utile d'un
+  vrai iPhone 13, barre du navigateur déduite, est de 390 × **664**. Sur ce
+  cadre trop haut, la bulle tombait 190 px plus bas et ne recouvrait rien. La
+  suite emploie maintenant le descripteur d'appareil réel — et elle échoue bien
+  sur la mise en page d'avant, ce que l'ancien cadre ne faisait pas.
+
+`scripts/test-anneau-dictee-e2e.ts` tient les quatre points, avec un micro
+simulé : la note enregistrée depuis l'anneau existe vraiment en base.
+
+### La fiche chantier suit la maquette, au pixel — et rien n'est perdu au passage
+
+**Le patron, le 11 août, deux fois de suite :** *« ça ressemble toujours pas à
+la maquette »*, puis *« exactement, respecte strictement ma maquette »*.
+
+Il avait raison une seconde fois, et pour une raison qui vaut d'être écrite :
+**j'avais supposé au lieu de comparer.** Rendre sa maquette
+(`maquettes/atlas-note-vocale.html`) côte à côte avec l'écran a montré en une
+capture ce que trois lectures n'avaient pas vu — l'anneau portait un point là où
+le sien porte trois barres, et sa maquette **ne montre aucun bouton**. Regarder
+l'écran n'est pas de la finition (`CLAUDE.md` §5) ; ici c'était le seul moyen.
+
+Ce qui change sur la fiche :
+
+- **Le corps ne porte que l'anneau.** Le pavé vert « Ajouter des photos »
+  écrasait tout et faisait de la dictée un à-côté, alors qu'elle EST le produit.
+- **L'en-tête suit la maquette** : le client en serif gris **avant** le titre, la
+  pastille de facturation sur la ligne de la flèche, pas de trait de fermeture.
+  La pastille à côté du titre lui prenait la moitié de la largeur et cassait
+  « Intervention prévue vendredi 15 août. » en quatre lignes.
+  `EnTeteEcran` reçoit trois réglages **facultatifs** (`precisionPlacee`,
+  `cheveu`, `actionPlacee`) : les autres écrans gardent la grammaire commune du
+  10 août sans être touchés.
+- **Trois barres au repos dans TOUS les états**, le carré n'apparaissant que
+  pendant l'enregistrement — comme sur sa maquette.
+
+**Alléger un écran est facile ; le faire sans l'amputer l'est moins.** Vider le
+corps a fait tomber **six suites d'un coup**, toutes sur la même phrase
+manquante : le bouton portait la seule indication de la marche à suivre. Ce
+n'était pas du bruit — un écran qui ne dit pas où l'on va se lit comme une
+application en panne. L'étape suivante est donc passée dans le bandeau du
+tiroir (« Ajouter des photos → »), et la rédaction à la main dans sa liste. Deux
+demandes qu'il avait faites lui-même, les 3 et 4 août, et que ce lot aurait
+défaites en silence.
+
+Un contrôle garde cette frontière (`test-anneau-dictee-e2e.ts`) : *le corps ne
+porte que l'anneau, et le tiroir garde tout le reste*. Il échoue aussi bien si
+l'on remet un bouton dans le corps que si l'on oublie de descendre une entrée
+dans le tiroir.
+
 ### Refaire la démonstration n'efface plus ce que l'artisan a tapé à la main
 
 **Le patron, le 11 août au matin :** *« On avait raccordé l'agenda Google.

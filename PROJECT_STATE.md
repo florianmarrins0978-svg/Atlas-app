@@ -155,6 +155,15 @@ l'application. Ce qui est **fait** :
   de TVA en simple ligne au pied. « Fin de chantier » s'appelle désormais
   **« Créer la facture »** — mais créer n'est toujours pas envoyer.
   `ARCHITECTURE.md` §53.
+- **La fiche chantier tenue à sa maquette, et l'anneau qui dicte** (11 août) :
+  le corps ne porte plus que l'anneau, au centre, **présent dès l'arrivée**.
+  Sans note il est un micro — un appui dicte, un second enregistre, la fiche se
+  rafraîchit sur place ; avec, il redevient le lecteur. Le bouton principal, la
+  rédaction à la main et les étapes descendent dans le tiroir : la fiche dit
+  toujours quoi faire ensuite, mais depuis son bandeau. L'en-tête suit la
+  maquette (client en serif **avant** le titre, pastille sur la ligne de la
+  flèche, pas de trait de fermeture), par trois réglages **facultatifs** de
+  `EnTeteEcran` qui laissent les autres écrans intacts. `ARCHITECTURE.md` §57.
 
 Ce qui **reste**, avec l'ordre, les valeurs, les sept pièges et les deux
 réserves : **`TODO.md` §7**. Le dessin fait foi dans

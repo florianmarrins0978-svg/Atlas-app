@@ -27,6 +27,23 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 ter. Les suites navigateur mesurent un écran que personne ne possède
+
+**Trouvé le 11 août 2026, et le patron l'a payé.** Les suites posent un cadre de
+393 × 852. La hauteur **utile** d'un vrai iPhone 13, barre du navigateur
+déduite, est de 390 × **664** (`devices["iPhone 13"]` de Playwright). Sur ce
+cadre trop haut, un contrôle de chevauchement passait au vert alors que, sur son
+téléphone, la bulle de l'assistant recouvrait « ou rédiger le devis à la main ».
+
+`test-anneau-dictee-e2e.ts` emploie désormais le descripteur d'appareil réel.
+**Les trente-trois autres non**, et elles peuvent donc rater tout défaut de bas
+d'écran. Le travail : passer chaque suite à `devices["iPhone 13"]` et regarder
+lesquelles virent au rouge — celles qui virent désignent un vrai défaut, pas une
+régression du test.
+
+Proposé au patron le 11 août ; sa réponse n'est pas encore venue, mais ce point
+ne dépend d'aucune décision : il peut se faire seul.
+
 ### ~~0 bis. Une session périmée~~ — **close le 2026-08-10, test compris**
 
 `GET /api/session-perimee` efface les cookies et renvoie à la connexion ;

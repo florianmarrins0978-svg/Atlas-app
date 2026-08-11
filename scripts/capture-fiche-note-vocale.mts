@@ -25,7 +25,7 @@
  *   npx tsx scripts/capture-fiche-note-vocale.mts <dossier> <chantierId>
  */
 import { existsSync, mkdirSync, readdirSync } from "node:fs";
-import { chromium } from "playwright";
+import { chromium, devices } from "playwright";
 
 const dossier = process.argv[2];
 const chantierId = process.argv[3];
@@ -97,11 +97,15 @@ const navigateur = await chromium.launch({
   // éprouverait alors un écran qui ne joue pas, ce qui ne prouve rien.
   args: ["--autoplay-policy=no-user-gesture-required"],
 });
+// **L'écran du patron, pas un écran inventé.** Ce script posait 393 × 852 :
+// plus HAUT que la hauteur utile d'un vrai iPhone une fois la barre du
+// navigateur déduite (390 × 664 selon Playwright). C'est précisément ce qui a
+// laissé passer, le 11 août 2026, une bulle d'assistant qui recouvrait « ou
+// rédiger le devis à la main » chez lui — 190 px plus bas, elle ne recouvrait
+// rien ici. Un outil de capture qui cadre un écran que personne ne possède
+// ment deux fois : à l'œil et aux mesures.
 const contexte = await navigateur.newContext({
-  viewport: { width: 393, height: 852 },
-  deviceScaleFactor: 3,
-  isMobile: true,
-  hasTouch: true,
+  ...devices["iPhone 13"],
 });
 const page = await contexte.newPage();
 
