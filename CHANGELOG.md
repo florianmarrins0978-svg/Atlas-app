@@ -9,6 +9,56 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### De l'anneau au devis, en une touche
+
+**Le patron, le 11 août 2026, après avoir essayé six formes du déclencheur :**
+*« ok, j'aime bien le un »* — l'écriture nue sous l'anneau. Puis la question qui
+décidait de tout : *« si je clique dessus, j'arrive directement à la page du
+devis et je ne passe pas par une page intermédiaire ? »*
+
+Oui. Un appui sur l'anneau démarre la dictée, un second l'arrête, et
+**« MON DEVIS → »** naît dessous. Il transcrit, range les informations, cherche
+les prix, rédige, et dépose sur `devis-complet` — la page où il n'y a que le
+devis. Aucun écran entre les deux.
+
+**Le maillon qui manquait était la transcription.** Toute cette chaîne existait
+et était éprouvée depuis le 4 août, mais elle exigeait une transcription **déjà
+faite** — si bien qu'elle ne pouvait vivre que sur l'écran Transcription, à
+quatre écrans de l'endroit où l'on vient de parler. `preparerDevisDepuisDictee`
+la lance désormais elle-même, une seule fois, et seulement s'il y a un son à
+transcrire.
+
+**L'écriture parle en OR, contre l'usage de la charte.** L'or est la voix de ce
+qu'on lit, le vert pin celle de ce qu'on fait (`design-tokens.ts`). C'est la
+seule action de l'application à déroger — et c'est délibéré : en vert, elle
+faisait un second centre à côté de l'anneau, deux objets à regarder là où il
+n'en faut qu'un.
+
+**Trois lignes quittent le tiroir** — Informations, Prix, Devis — à sa demande.
+Elles décrivaient un travail que la chaîne fait seule. Elles sont **déplacées,
+pas supprimées** : les informations se corrigent sur le devis, le prix s'y pose
+ligne à ligne, et les écrans restent joignables par leur adresse. Un contrôle
+l'exige, parce qu'ôter une ligne d'une liste ne doit jamais condamner une page.
+
+**Et le bandeau du tiroir se tait quand la dictée est là.** L'étape suivante
+calculée valait souvent l'une des trois lignes retirées : l'annoncer aurait
+envoyé chercher une porte qu'on venait de condamner.
+
+### Ce que l'écran a dit, et que je n'aurais pas deviné
+
+- **Sans service de transcription raccordé, le geste s'arrête — et il le dit.**
+  C'est l'état réel de l'application (`TODO.md`, décision n°1) : aucun contrat
+  n'est signé. En appuyant aujourd'hui, le patron lit *« aucun prestataire de
+  transcription n'est encore raccordé »*. Un contrôle tient cette phrase :
+  un geste qui ne fait rien **sans rien dire** se lit comme une panne.
+- **L'arrêt d'avant-chiffrage s'ouvre bien sur la fiche.** La dictée d'essai ne
+  disait ni la longueur de haie ni le diamètre du tronc : Atlas demande, sans
+  changer d'écran, et repart de lui-même. C'est ce qui avait été promis.
+- **L'écart sous l'anneau était de 50 px au lieu de 34.** Le compteur, invisible
+  mais présent, en prend seize. Mesuré, pas estimé à l'œil — et resserré à 38,
+  parce que c'est ce qui rattache le geste à l'anneau plutôt que de le laisser
+  flotter : le défaut connu de la forme qu'il a choisie.
+
 ### Le devis à la main s'ouvre depuis la création du chantier
 
 **Le patron, le 11 août 2026 :** *« si je clique sur "ou rédiger le devis à la

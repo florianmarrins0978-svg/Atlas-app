@@ -86,6 +86,23 @@ enregistre) ; avec, il redevient le lecteur. Le magnétophone est partagé
 (`src/app/chantiers/[id]/magnetophone.ts`) — ne pas le recopier dans un
 troisième écran.
 
+**« Mon devis » sous l'anneau enchaîne tout jusqu'au devis (11 août, soir).**
+Cinq choses à savoir avant d'y toucher :
+
+- **La chaîne lance la transcription elle-même** (`devis-depuis-dictee.ts`,
+  étape 1). C'était le maillon manquant ; le retirer renverrait ce geste sur
+  l'écran Transcription, à quatre écrans de la dictée.
+- **`variante="anneau"` de `DevisDepuisDictee`** — l'écriture nue, en OR et non
+  en vert pin. Dérogation assumée à la charte : en vert elle faisait un second
+  centre à côté de l'anneau.
+- **Informations, Prix et Devis ont quitté le tiroir**, mais **leurs écrans
+  répondent toujours** à leur adresse. Un contrôle l'exige.
+- **Le bandeau du tiroir se tait dès qu'une note existe** : l'étape suivante
+  calculée vaut souvent l'une des lignes retirées, et l'annoncer enverrait
+  chercher une porte condamnée.
+- **Sans service de transcription raccordé, le geste s'arrête en le disant.**
+  C'est l'état réel de l'application, pas un défaut — et c'est éprouvé.
+
 **Le devis à la main s'ouvre aussi depuis l'écran de création (11 août, soir).**
 `creerPuisAller("fiche" | "devis")` — **une seule fonction de création**, deux
 destinations. Le chantier est créé d'abord : c'est ce qui permet à
