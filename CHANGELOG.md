@@ -34,6 +34,42 @@ Rien n'est codé : l'application porte toujours l'aplat (`TODO.md`, 0 terdecies)
 3. **Aucun script**, comme les treize maquettes précédentes : son lecteur n'en
    exécute pas, et une page engendrée en JavaScript lui arrive vide.
 
+### Retour à la retenue : six gestes tenus
+
+*« Tu as primé sur l'originalité au détriment de l'élégance. »* Le reproche est
+juste, et il est daté : la maquette 18 faisait du spectacle.
+
+`docs/maquettes/19-six-gestes-tenus.html` retire trois choses, et c'est tout le
+sujet : **la gerbe d'éclats** (dix esquilles projetées), **les matières
+simulées** (métal brossé, laque brillante, cire), et **les mouvements
+simultanés** — désormais une seule chose bouge à la fois, le reste de l'écran ne
+bronche pas. Restent la proportion, le cheveu d'or et le temps : les six gestes
+durent entre 500 et 640 ms.
+
+Les six : **le mot** (les lettres s'écartent, l'œil se referme), **la goutte
+d'or** (vingt pixels, le seul aplat de couleur de l'écran), **le disque de
+nuit** (galet mat, le cerceau vient s'y poser), **le cercle qui se ferme** (il
+manque un arc ; l'appui le complète, puis le cercle devient la page), **le filet
+traversé** (le trait qui ferme l'en-tête porte l'œil — rien ne s'ajoute), **les
+deux volets** (la ligne s'écarte en deux, la feuille monte par l'ouverture).
+
+**L'ouverture par agrandissement n'est gardée que sur une seule des six.**
+Répétée partout, elle deviendrait un tic — et c'est exactement ce qui rendait la
+maquette précédente bavarde.
+
+**Un défaut né en cherchant l'élégance, et il en dit long.** L'écartement des
+lettres élargissait le lien de vingt-huit pixels *pendant* le geste : le
+contrôle automatique n'arrivait plus à le presser deux fois de suite. Une cible
+qui grandit sous le doigt est une cible qui se dérobe — la boîte du bouton est
+maintenant fixe, seules les lettres bougent dedans. Et sans `nowrap`, le libellé
+passait sur deux lignes en plein geste.
+
+**Le contrôle ne cherche plus une classe, mais un rôle.** Il visait
+`.pastille`, puis `.geste` ; la maquette suivante l'aurait encore appelé
+autrement, et il serait passé au vert **sans rien presser du tout**. Il vise
+désormais ce que le bouton annonce à qui ne voit pas l'écran :
+`[aria-label="Nouveau chantier"]`.
+
 ### Plus aucun fond clair : six matières, et deux boutons qui deviennent la page
 
 *« On s'améliore, mais je n'aime toujours pas. […] J'ai l'impression que le fond

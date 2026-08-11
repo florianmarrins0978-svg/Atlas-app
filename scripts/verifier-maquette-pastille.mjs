@@ -68,11 +68,15 @@ async function essayer({ calme, rang }) {
   });
   await page.goto(`file://${CIBLE}`, { waitUntil: "load" });
 
-  // Les pastilles ARMÉES, et pas toutes celles qui portent ce nom de classe :
-  // la maquette 14 en pose une aussi, sans feuille derrière. Sur la page qui
-  // fusionne les seize, l'ignorer ferait échouer le contrôle sur une maquette
-  // qui n'a jamais rien promis.
-  const pastilles = page.locator(".ecran:has(.feuille) .pastille[href]");
+  // **Le bouton se désigne par son RÔLE, pas par sa classe.** Il s'est appelé
+  // « pastille », puis « geste » ; la prochaine maquette l'appellera encore
+  // autrement, et le contrôle serait alors vert en ne pressant rien du tout.
+  // Ce qui ne change pas, c'est ce qu'il annonce à qui ne voit pas l'écran.
+  // On ne garde que ceux qui ont une feuille derrière eux : la planche du haut
+  // de chaque page joue le geste, et rien d'autre — elle n'a rien promis.
+  const pastilles = page.locator(
+    '.ecran:has(.feuille) [href][aria-label="Nouveau chantier"]',
+  );
   const nombre = await pastilles.count();
   if (!calme && rang === "premiere") {
     dire(nombre >= 3, `${nombre} pastilles pressables (au moins 3 attendues)`);
@@ -101,8 +105,9 @@ async function essayer({ calme, rang }) {
     // sa place — et qu'elle accuse le délai, pas l'outil.
     try {
       await premiere.click({ timeout: 5000 });
-    } catch {
+    } catch (erreur) {
       /* la feuille a pu monter par-dessus : la mesure du délai le dira */
+      if (process.env.ATLAS_BAVARD) console.error("  … clic :", String(erreur).slice(0, 300));
     }
 
     // Le tour est-il vraiment joué ? On interroge TOUT ce qui n'est ni l'onde,

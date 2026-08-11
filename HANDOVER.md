@@ -64,10 +64,14 @@ rond, à la place de l'aplat, la gerbe et la demi-seconde. Ce qui est ouvert : l
 disque du tout) et la **façon dont la page arrive** — deux propositions font
 grandir le bouton jusqu'à ce qu'il DEVIENNE la page.
 
-**Trois refus de suite disent quelque chose :** décliner un même objet ne le
-sauve pas. Ce qui a débloqué la conversation à chaque fois, c'est de changer
+**Quatre refus de suite disent deux choses.** D'abord, décliner un même objet ne
+le sauve pas : ce qui a débloqué la conversation à chaque fois, c'est de changer
 d'axe — la nature du geste (16), la gravure (17), la matière et l'ouverture
-(18). Ne pas repartir sur une septième variante du même disque.
+(18), la retenue (19). Ensuite, et c'est la correction la plus utile qu'il ait
+faite : *« tu as primé sur l'originalité au détriment de l'élégance »*. Chercher
+l'inédit **contre** la tenue est un mauvais échange ; la maquette 19 retire la
+gerbe, les matières imitées et les mouvements simultanés, et n'en garde qu'un
+seul à la fois.
 
 **Et une règle en est sortie, qui prime sur l'envie d'aider** (`CLAUDE.md`
 §3 bis) : une demande d'apparence ou de geste se **dessine** d'abord. La

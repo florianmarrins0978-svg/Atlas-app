@@ -141,6 +141,13 @@ const MAQUETTES = [
     quoi: "Plus aucun disque clair : laque, or brossé, cire, encre vivante — ou pas de disque du tout. Sur l’iris et le vide, la feuille ne monte pas : le bouton s’agrandit jusqu’à devenir la page.",
     retenu: true,
   },
+  {
+    fichier: "19-six-gestes-tenus.html",
+    titre: "Six gestes tenus",
+    famille: "Enlever le gros bouton",
+    quoi: "Retour à la retenue : la gerbe est partie, les matières imitées aussi. Une seule chose bouge à la fois. Le mot, la goutte d’or, le disque de nuit, le cercle qui se ferme, le filet traversé, les deux volets.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

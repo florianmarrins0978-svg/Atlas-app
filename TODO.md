@@ -372,6 +372,11 @@ matières** (laque, or brossé, cire, encre vivante, ou pas de disque du tout) e
 **deux ouvertures où le bouton devient la page** au lieu de faire monter une
 feuille.
 
+La maquette 18 a été jugée trop démonstrative — *« tu as primé sur l'originalité
+au détriment de l'élégance »*. `docs/maquettes/19-six-gestes-tenus.html` revient
+donc à la retenue : plus de gerbe, plus de matière imitée, une seule chose qui
+bouge à la fois.
+
 **Ce qu'il faudra prévoir si une matière est retenue :** la teinte de laque
 (#10150f → #263025) n'existe pas dans `src/lib/design-tokens.ts`, et l'ouverture
 par agrandissement du disque n'est pas la transition actuelle — c'est un
