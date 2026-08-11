@@ -9,6 +9,59 @@ Format : le plus récent en tête.
 
 ## 2026-08-11
 
+### « Impossible d'enregistrer la note » ne disait pas pourquoi — et personne ne pouvait le savoir
+
+**Le patron, capture de son téléphone :** *« Pb sur la note vocale, corrige
+ça ! »* L'écran affichait *« Impossible d'enregistrer la note pour l'instant.
+Réessayez. »*
+
+**Ce défaut-ci n'a pas été reproduit ici, et il faut le dire tel quel.** La
+dictée a été rejouée dans un vrai navigateur avec un micro simulé, deux fois :
+en mode développement, puis sur la **version bâtie derrière une origine
+étrangère** — les conditions de son banc. Les deux fois, la note s'est
+enregistrée. Ce qui a donc été corrigé n'est pas la panne : c'est **ce qui
+rendait la panne impossible à nommer**.
+
+Deux choses s'y opposaient :
+
+1. **`catch {}` sans variable**, dans l'anneau comme dans l'écran de dictée. Le
+   message du serveur n'était même pas lu. Les quatre refus possibles — aucun
+   fichier, fichier trop lourd, format non pris en charge, cadence dépassée —
+   portaient chacun leur phrase, et l'écran les jetait toutes pour afficher la
+   même formule creuse.
+2. **Une exception ne traverse pas la version bâtie.** Next.js remplace en
+   production le message d'une action serveur par un identifiant opaque. L'écran
+   d'import de fichier croyait bien faire en affichant `err.message` : sur le
+   banc, il ne pouvait montrer qu'un digest. La documentation du cadre le dit en
+   toutes lettres — *« avoid using try/catch blocks and throw errors. Instead,
+   model expected errors as return values »*.
+
+Les refus attendus sont donc désormais des **valeurs de retour**, qui traversent
+la version bâtie intactes ; les pannes imprévues continuent de lever, mais le
+serveur les **écrit** avant, avec le chantier, le format et la taille. Sans
+cette ligne, une panne chez lui ne laissait aucune trace nulle part.
+
+**Le refus nomme le format reçu.** Si son iPhone produit un format que la liste
+blanche ignore, le message le dit — sans quoi il resterait introuvable, et il
+faudrait le lui demander.
+
+**Trouvé en chemin, et plus grave que le reste :** un enregistrement de zéro
+octet n'était pas refusé. Il descendait jusqu'à la base, qui le rejetait — et ce
+qui remontait à l'écran n'était plus un refus mais **la requête SQL entière,
+noms de tables et identifiant d'entreprise compris**. Il est maintenant arrêté à
+l'entrée, avec une phrase qui dit quoi faire.
+
+`test-note-vocale-refus-e2e.ts` éprouve les deux, par le chemin d'import qui
+emprunte la même action serveur que l'anneau et que l'écran de dictée. Confronté
+à l'ancien code : deux rouges.
+
+**La leçon, puisqu'elle se répète.** Deux diagnostics à distance avaient déjà
+coûté un aller-retour chacun ce jour-là. Cette fois, rien n'a été supposé : la
+dictée a été rejouée dans les conditions du banc avant d'écrire une ligne, et la
+configuration soupçonnée a été vérifiée dans la documentation du cadre — elle
+était juste, l'hypothèse est morte là. Ce qui reste inconnu est écrit comme
+inconnu.
+
 ### Le fil se bloquait à chaque chantier, et montrait sa barre grise
 
 **Le patron, capture de son ordinateur et de son téléphone à l'appui :** *« je

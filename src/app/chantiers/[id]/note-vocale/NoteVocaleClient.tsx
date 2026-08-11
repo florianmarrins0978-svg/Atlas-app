@@ -114,17 +114,25 @@ export default function NoteVocaleClient({
       // rend du mp4, Firefox de l'ogg, Chrome du webm, et deux copies de cette
       // règle finiraient par diverger — l'anneau de la fiche l'emploie aussi.
       const fd = formulaireDeNote(blob, dureeFinale);
-      const note = await enregistrerNoteVocaleAction(chantierId, fd);
-      setStorageKey(note.storageKey);
-      setDureeNote(note.dureeSecondes ?? dureeFinale);
+      const resultat = await enregistrerNoteVocaleAction(chantierId, fd);
+      // Un refus dit pourquoi — voir `ResultatNoteVocale` dans ./actions.ts.
+      if (!resultat.ok) {
+        setErreur(resultat.raison);
+        setEtat("vide");
+        return;
+      }
+      setStorageKey(resultat.storageKey);
+      setDureeNote(resultat.dureeSecondes ?? dureeFinale);
       setLecture(false);
       setProgression(0);
       setFraichementEnregistree(true);
       setStatutTranscription("non_demandee");
       setErreurTranscription(null);
       setEtat("note");
-    } catch {
-      setErreur("Impossible d'enregistrer la note pour l'instant. Réessayez.");
+    } catch (err) {
+      // Pas un refus : l'aller-retour n'a pas abouti. Voir AnneauNoteVocale.
+      console.error("Note vocale : envoi impossible", err);
+      setErreur("L'enregistrement n'a pas pu être transmis — la connexion a été interrompue. Réessayez.");
       setEtat("vide");
     } finally {
       setEnCours(false);
@@ -174,10 +182,15 @@ export default function NoteVocaleClient({
       const fd = formulaireDeNote(blob, null, "complement");
       const r = await completerNoteVocaleAction(chantierId, fd);
       if (!r.ok) {
+        // Un refus d'entrée porte sa phrase dans `detail` — format, taille,
+        // cadence, enregistrement vide. Elle est plus précise que tout libellé
+        // générique : on la montre telle quelle. Voir `completerNoteVocaleAction`.
         setMessageComplement(
-          r.raison === "vide"
-            ? "Rien n'a été entendu — votre note d'origine est intacte."
-            : "Le complément n'a pas pu être transcrit. Votre note d'origine est intacte."
+          "detail" in r && r.detail
+            ? r.detail
+            : r.raison === "vide"
+              ? "Rien n'a été entendu — votre note d'origine est intacte."
+              : "Le complément n'a pas pu être transcrit. Votre note d'origine est intacte."
         );
         return;
       }
@@ -249,9 +262,18 @@ export default function NoteVocaleClient({
     try {
       const fd = new FormData();
       fd.set("fichier", fichier);
-      const note = await enregistrerNoteVocaleAction(chantierId, fd);
-      setStorageKey(note.storageKey);
-      setDureeNote(note.dureeSecondes ?? 0);
+      const resultat = await enregistrerNoteVocaleAction(chantierId, fd);
+      // **Ce chemin CROYAIT déjà montrer le message du serveur** — il lisait
+      // `err.message`. Sur la version bâtie du banc, Next.js remplace ce
+      // message par un identifiant opaque : le patron n'a jamais pu lire ni la
+      // taille ni le format refusés. Le refus est maintenant une valeur de
+      // retour, qui traverse intacte.
+      if (!resultat.ok) {
+        setErreur(resultat.raison);
+        return;
+      }
+      setStorageKey(resultat.storageKey);
+      setDureeNote(resultat.dureeSecondes ?? 0);
       setLecture(false);
       setProgression(0);
       setFraichementEnregistree(true);
@@ -259,9 +281,8 @@ export default function NoteVocaleClient({
       setErreurTranscription(null);
       setEtat("note");
     } catch (err) {
-      // Le message du serveur (taille, format) est plus précis que tout libellé
-      // générique : on le montre tel quel quand il existe.
-      setErreur(err instanceof Error && err.message ? err.message : "Ce fichier n'a pas pu être ajouté.");
+      console.error("Note vocale : import impossible", err);
+      setErreur("Ce fichier n'a pas pu être transmis — la connexion a été interrompue. Réessayez.");
     } finally {
       setEnCours(false);
       if (fichierRef.current) fichierRef.current.value = "";

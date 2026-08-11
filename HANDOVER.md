@@ -72,6 +72,31 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**Les refus de note vocale disent pourquoi (11 août, tard).** Le patron voyait
+*« Impossible d'enregistrer la note pour l'instant. Réessayez. »* sans que
+personne puisse savoir ce qui s'était passé.
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **Un refus ATTENDU est une valeur de retour, jamais une exception.**
+   `enregistrerNoteVocaleAction` rend `{ ok: false, raison }`. Ce n'est pas un
+   goût de style : **Next.js remplace en production le message d'une action
+   serveur par un identifiant opaque**, et le banc du patron sert une version
+   bâtie. Une exception ne lui parvient donc jamais lisible. La documentation du
+   cadre le prescrit (`node_modules/next/dist/docs/01-app/01-getting-started/
+   10-error-handling.md`). **Ne pas revenir à `throw` pour un refus.**
+2. **Les pannes IMPRÉVUES lèvent encore, mais le serveur les écrit d'abord**
+   (`logger.error`, avec chantier, format et taille). Sans cette ligne, une
+   panne chez lui ne laisse aucune trace nulle part — c'est ce qui a manqué.
+3. **Le défaut n'a PAS été reproduit ici**, et c'est écrit tel quel. La dictée a
+   été rejouée avec un micro simulé en développement, puis sur la version bâtie
+   derrière une origine étrangère : elle passe les deux fois. Ce qui est corrigé,
+   c'est le silence, pas la panne. Si elle revient, l'écran la nommera —
+   **demander la phrase exacte plutôt que de supposer.**
+4. **Un fichier de zéro octet est refusé à l'entrée.** Avant, il descendait
+   jusqu'à la base, qui le rejetait, et l'écran affichait la requête SQL
+   entière — noms de tables et identifiant d'entreprise compris.
+
 **Le défilement du fil, et la barre grise (11 août, au soir).** Le patron :
 *« c'est saccadé »*, *« je ne veux pas voir cette bande grise du tout, je veux
 juste que ça slide. »*
@@ -911,6 +936,16 @@ site publié à son adresse réelle.
    Actions request. ». Aucune suite ne le voit : elles interrogent toutes
    `127.0.0.1`, où les deux coïncident. C'est le rôle de
    `scripts/verifier-connexion.mjs`, qui pose exprès une origine étrangère.
+0 ter. **Le message d'une exception levée par une action serveur N'ARRIVE PAS
+   jusqu'à l'écran du patron.** Next.js le remplace en production par un
+   identifiant opaque, et le banc sert une version bâtie : un code qui affiche
+   `err.message` en croyant montrer la cause ne montre qu'un digest. C'est le
+   piège qui a rendu « Impossible d'enregistrer la note » indéchiffrable le 11
+   août 2026. **Tout refus attendu se rend en valeur de retour** —
+   `{ ok: false, raison }` — jamais en exception ; les pannes imprévues lèvent,
+   mais se journalisent AVANT (`logger.error`), sans quoi elles ne laissent
+   aucune trace nulle part. Le cadre le prescrit noir sur blanc :
+   `node_modules/next/dist/docs/01-app/01-getting-started/10-error-handling.md`.
 0 bis. **Les fabriques d'IA retombent sur `dev` par leur `default:`.** Une faute
    de frappe dans `LLM_PROVIDER` ou `TRANSCRIPTION_PROVIDER` donnait donc l'IA
    simulée, sans un mot, et la dictée rendait « [Transcription simulée — … ] ».
