@@ -1398,6 +1398,167 @@
 }
 
 
+/* 16 — La pastille qui tourne */
+#s16{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+@media (prefers-color-scheme: dark){
+#s16:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  
+}
+#s16[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+#s16, #s16 *{box-sizing:border-box}
+#s16{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 90px}
+#s16 .page{max-width:1360px;margin:0 auto}
+#s16 .intro{max-width:62ch;margin:0 auto}
+#s16 .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
+#s16 .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
+#s16 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
+#s16 .intro b{color:var(--encre);font-weight:500}
+#s16 .appui{max-width:52ch;margin:22px auto 0;padding:15px 20px;border:1px solid var(--trait);
+         border-radius:6px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s16 .appui b{color:var(--encre);font-weight:500}
+#s16 .famille{margin:60px 0 14px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--gris)}
+#s16 .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
+#s16 .famille span::before,#s16 .famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
+#s16 .famille span::before{right:100%}
+#s16 .famille span::after{left:100%}
+#s16 .rangee{display:flex;flex-wrap:wrap;gap:52px 40px;justify-content:center;align-items:flex-start}
+#s16 .prop{display:flex;flex-direction:column;align-items:center;gap:16px;width:412px;max-width:100%}
+#s16 .prop .nom-prop{margin:0;font:400 22px/1.25 ui-serif,Georgia,serif;text-align:center}
+#s16 .prop .dit{margin:0;max-width:36ch;text-align:center;font-size:13px;line-height:1.6;color:var(--gris)}
+#s16 .prop .dit b{color:var(--encre);font-weight:500}
+#s16 .prop .lettre{margin:0;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze)}
+#s16 .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
+#s16 .ecran{position:relative;overflow:hidden;border-radius:34px;height:664px;
+         display:flex;flex-direction:column;
+         background:#f5f3ee;color:#1c1c1a;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f; --e-pin-encre:#faf9f5;
+         --e-trait:rgba(28,28,26,.12); --e-trait-doux:rgba(28,28,26,.07)}
+#s16 .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+#s16 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+#s16 .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+#s16 .enseigne{padding:26px 0 0;text-align:center;font-size:11px;letter-spacing:.52em}
+#s16 .titre{padding:34px 26px 0}
+#s16 .titre .salut{margin:0;color:var(--e-or)}
+#s16 .titre h1{margin:14px 0 0;font-size:36px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+#s16 .titre .compte{margin:14px 0 0;color:var(--e-gris)}
+#s16 .fermeture{height:1px;background:var(--e-trait);margin:26px 26px 0}
+#s16 .rubrique{display:flex;justify-content:space-between;align-items:center;
+            margin:26px 26px 10px;color:var(--e-gris)}
+#s16 .tige{position:relative;margin:0 26px;flex:1 1 auto;min-height:0;overflow:hidden}
+#s16 .tige::before{content:"";position:absolute;left:47px;top:10px;bottom:10px;width:1px;background:var(--e-trait)}
+#s16 .brin{position:relative;display:grid;grid-template-columns:47px 1fr;gap:0 26px;
+        padding:15px 0;text-decoration:none;color:inherit}
+#s16 .brin .jour{grid-row:1 / span 3;text-align:right;padding-right:13px;color:var(--e-gris)}
+#s16 .brin .jour b{display:block;font-weight:400;font-size:19px;line-height:1;color:var(--e-encre);
+                font-family:ui-serif,Georgia,serif}
+#s16 .brin .jour span{display:block;margin-top:4px}
+#s16 .brin .nom{margin:0;font-size:19px;line-height:1.15;font-weight:400}
+#s16 .brin .lieu{margin:3px 0 0;font-size:11.5px;color:var(--e-gris)}
+#s16 .brin .etat{margin:7px 0 0;color:var(--e-gris)}
+#s16 .brin.attend .etat{color:var(--e-or)}
+#s16 .brin.attend::after{content:"";position:absolute;left:44px;top:21px;width:7px;height:7px;
+                      border-radius:99px;background:var(--e-or);box-shadow:0 0 0 4px var(--e-fond)}
+#s16 .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;position:relative;z-index:2;
+       background:var(--e-fond)}
+#s16 .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
+#s16 .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-or)}
+#s16 .bulle{position:absolute;right:20px;bottom:96px;width:52px;height:52px;border-radius:99px;
+         background:var(--e-pin);color:var(--e-pin-encre);display:grid;place-items:center;font-size:19px}
+#s16 .bulle.repoussee{bottom:172px;background:transparent;color:var(--e-pin);border:1px solid var(--e-trait)}
+#s16 .siege{display:flex;justify-content:center;padding:20px 0 4px}
+#s16 .pastille{position:relative;display:grid;place-items:center;
+            width:74px;height:74px;border-radius:99px;
+            text-decoration:none;-webkit-tap-highlight-color:transparent;
+            
+            transition:transform 140ms ease}
+#s16 .pastille:active{transform:scale(.94)}
+#s16 .pastille .rose{position:relative;z-index:2;display:block;width:34px;height:34px;
+                  transition:transform 120ms ease}
+#s16 .pastille.pleine{background:var(--e-pin)}
+#s16 .pastille.pleine .rose{color:var(--e-or-clair)}
+#s16 .pastille.claire{background:var(--e-plage);box-shadow:inset 0 0 0 1px var(--e-or)}
+#s16 .pastille.claire .rose{color:var(--e-or)}
+#s16 .pastille.nue{box-shadow:inset 0 0 0 1px var(--e-trait)}
+#s16 .pastille.nue .rose{color:var(--e-or)}
+#s16 .pastille .onde{position:absolute;inset:0;border-radius:99px;
+                  border:1px solid var(--e-or);opacity:0;pointer-events:none}
+#s16 .pastille .onde.deux{border-color:var(--e-or-clair)}
+#s16 .pastille .eclats{position:absolute;inset:0;pointer-events:none}
+#s16 .pastille .eclats i{position:absolute;left:50%;top:50%;width:2.5px;height:9px;margin:-4.5px 0 0 -1.25px;
+                      border-radius:2px;background:var(--e-or);opacity:0;
+                      transform:rotate(var(--a)) translateY(-34px)}
+#s16 .pastille.part .rose{animation:s16-tourner 620ms cubic-bezier(.18,.72,.24,1) both}
+#s16 .pastille.part .onde{animation:s16-onde 640ms cubic-bezier(.16,.7,.3,1) both}
+#s16 .pastille.part .onde.deux{animation-delay:110ms}
+#s16 .pastille.part .eclats i{animation:s16-eclat 600ms cubic-bezier(.2,.66,.3,1) both}
+@keyframes s16-tourner{
+    0%{transform:rotate(0) scale(1)}
+    18%{transform:rotate(90deg) scale(.9)}
+    100%{transform:rotate(1080deg) scale(1)}
+  }
+@keyframes s16-onde{
+    0%{transform:scale(1);opacity:.85}
+    100%{transform:scale(2.9);opacity:0}
+  }
+@keyframes s16-eclat{
+    0%{transform:rotate(var(--a)) translateY(-26px) scale(.5);opacity:0}
+    12%{opacity:1}
+    64%{opacity:1}
+    100%{transform:rotate(var(--a)) translateY(var(--d)) scale(.4);opacity:0}
+  }
+#s16 .feuille{position:absolute;left:0;right:0;bottom:0;top:56px;z-index:3;
+           display:flex;flex-direction:column;background:var(--e-fond);
+           border-radius:22px 22px 0 0;box-shadow:0 -22px 50px rgba(20,18,14,.22);
+           transform:translateY(100%);visibility:hidden;
+           transition:transform 520ms cubic-bezier(.22,.61,.36,1),visibility 0s 520ms}
+#s16 .feuille.ouverte{transform:translateY(0);visibility:visible;transition-delay:0s}
+#s16 .feuille .poignee{width:38px;height:4px;border-radius:9px;background:var(--e-trait);margin:12px auto 0}
+#s16 .feuille h2{margin:26px 26px 0;font:400 30px/1.05 ui-serif,Georgia,serif;letter-spacing:-.018em}
+#s16 .feuille .quoi{margin:12px 26px 0;color:var(--e-gris);font-size:11.5px;line-height:1.5}
+#s16 .feuille .champ{margin:22px 26px 0}
+#s16 .feuille .champ span{display:block;color:var(--e-gris);margin-bottom:7px}
+#s16 .feuille .champ b{display:block;padding:13px 15px;border-radius:4px;background:var(--e-plage);
+                    font-weight:400;color:var(--e-gris);font-size:15px}
+#s16 .feuille .fermer{display:block;margin:auto 26px 30px;padding:15px;text-align:center;
+                   text-decoration:none;color:var(--e-gris);border-top:1px solid var(--e-trait)}
+#s16 .film{display:flex;flex-wrap:wrap;gap:20px;justify-content:center}
+#s16 .vignette{width:196px;background:#f5f3ee;border:1px solid var(--trait);border-radius:8px;
+            padding:22px 0 18px;text-align:center;
+            --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+            --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f;
+            --e-trait:rgba(28,28,26,.12)}
+#s16 .vignette .cadre{display:flex;justify-content:center;height:96px;align-items:center}
+#s16 .vignette .quand{margin:10px 14px 0;font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:#8a8578}
+#s16 .vignette .duree{margin:6px 14px 0;font-size:11.5px;color:#B98B47;font-variant-numeric:tabular-nums}
+#s16 .vignette.f2 .rose{transform:rotate(150deg) scale(.9)}
+#s16 .vignette.f3 .rose{transform:rotate(760deg)}
+#s16 .vignette.f3 .onde{opacity:.5;transform:scale(2)}
+#s16 .vignette.f3 .onde.deux{opacity:.75;transform:scale(1.5)}
+#s16 .vignette.f3 .eclats i{opacity:1;transform:rotate(var(--a)) translateY(var(--d)) scale(.6)}
+#s16 .vignette.f4 .rose{transform:rotate(1080deg)}
+#s16 .vignette.f4 .pastille{opacity:.35}
+#s16 .note{max-width:62ch;margin:56px auto 0;padding:20px 22px;border:1px solid var(--trait);
+        border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.7}
+#s16 .note h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
+#s16 .note b{color:var(--encre);font-weight:500}
+#s16 .note p{margin:0 0 12px}
+#s16 .note p:last-child{margin-bottom:0}
+@media (prefers-reduced-motion: reduce){
+#s16 .pastille.part .rose,#s16 .pastille.part .onde,#s16 .pastille.part .eclats i{animation:none}
+#s16 .pastille .eclats{display:none}
+
+  
+}
+
+
 </style>
 
 <div class="enveloppe">
@@ -1474,6 +1635,10 @@
       <a class="item retenu" href="#m15">
         <span class="no">15</span><span class="titre">Encore six gestes</span><span class="fleche">↓</span>
         <span class="quoi">Deuxième tournée : la ligne du registre, le titre qui porte l’action, la marque d’imprimeur, le cinquième onglet, tirer pour ouvrir, le signet sur la tranche.</span>
+      </a>
+      <a class="item retenu" href="#m16">
+        <span class="no">16</span><span class="titre">La pastille qui tourne</span><span class="fleche">↓</span>
+        <span class="quoi">La seule maquette qui répond au doigt : on appuie, la rose des vents part en trois tours, jette une onde et dix éclats, et la feuille monte une demi-seconde plus tard.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -5238,6 +5403,403 @@
     </div>
   </section>
 
+  <section class="etape" id="m16">
+    <div class="etape-tete">
+      <span class="etape-no">16</span>
+      <h2>La pastille qui tourne</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s16">
+<div class="page">
+  <div class="intro">
+    <p class="sur">Atlas — écran Chantiers</p>
+    <h1>La pastille qui tourne, éclate, et ouvre</h1>
+    <p>Une rose des vents gravée dans un disque. On appuie : elle part en trois tours, jette une onde et dix éclats d’or — et <b>une demi-seconde plus tard</b>, la feuille du nouveau chantier monte.</p>
+    <p class="appui"><b>Appuyez sur les pastilles ci-dessous.</b> Cette page-ci répond vraiment au doigt — c’est la seule des seize. Refermez la feuille pour recommencer autant de fois que vous voulez.</p>
+    <p style="margin-top:22px">La rose des vents n’est pas un ornement : <b>Atlas est un nom de cartes</b>, et ses quatre branches longues dessinent déjà un « + ». Le signe de l’ajout est dans la marque, il n’a pas eu à s’y coller.</p>
+  </div>
+
+  <p class="famille"><span>Trois habillages, la même mécanique</span></p>
+  <div class="rangee">
+
+    <!-- ═══ 1 · pleine ══════════════════════════════════════════════════ -->
+    <div class="prop">
+      <p class="nom-prop">Le jeton de vert pin</p>
+      <p class="dit">Le disque plein, la rose en or clair. C’est <b>le seul point sombre de l’écran</b> — il se voit de loin sans occuper de place, là où l’aplat prenait toute la largeur.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="fermeture"></div>
+        <div class="siege">
+          <a class="pastille pleine" href="#" aria-label="Nouveau chantier">
+            <span class="onde" aria-hidden="true"></span>
+            <span class="onde deux" aria-hidden="true"></span>
+            <span class="eclats" aria-hidden="true">
+              <i style="--a:0deg;--d:-78px"></i><i style="--a:36deg;--d:-68px"></i>
+              <i style="--a:72deg;--d:-84px"></i><i style="--a:108deg;--d:-66px"></i>
+              <i style="--a:144deg;--d:-76px"></i><i style="--a:180deg;--d:-72px"></i>
+              <i style="--a:216deg;--d:-80px"></i><i style="--a:252deg;--d:-64px"></i>
+              <i style="--a:288deg;--d:-77px"></i><i style="--a:324deg;--d:-70px"></i>
+            </span>
+            <svg class="rose" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <circle cx="16" cy="16" r="14.2" stroke="currentColor" stroke-width=".7" opacity=".45"/>
+              <path d="M16 2.6 17.5 14.5 29.4 16 17.5 17.5 16 29.4 14.5 17.5 2.6 16 14.5 14.5Z" fill="currentColor"/>
+              <path d="M16 8.4 16.7 15.3 23.6 16 16.7 16.7 16 23.6 15.3 16.7 8.4 16 15.3 15.3Z" fill="currentColor" opacity=".55" transform="rotate(45 16 16)"/>
+              <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+            </svg>
+          </a>
+        </div>
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+        </div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+      <p class="lettre">Ma recommandation</p>
+    </div>
+
+    <!-- ═══ 2 · claire ══════════════════════════════════════════════════ -->
+    <div class="prop">
+      <p class="nom-prop">Le sceau clair</p>
+      <p class="dit">Le même disque, mais <b>en papier plutôt qu’en encre</b> : un cercle d’or d’un cheveu, la rose en or dedans. Rien de sombre nulle part — c’est la version la plus proche d’Aman.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="fermeture"></div>
+        <div class="siege">
+          <a class="pastille claire" href="#" aria-label="Nouveau chantier">
+            <span class="onde" aria-hidden="true"></span>
+            <span class="onde deux" aria-hidden="true"></span>
+            <span class="eclats" aria-hidden="true">
+              <i style="--a:0deg;--d:-78px"></i><i style="--a:36deg;--d:-68px"></i>
+              <i style="--a:72deg;--d:-84px"></i><i style="--a:108deg;--d:-66px"></i>
+              <i style="--a:144deg;--d:-76px"></i><i style="--a:180deg;--d:-72px"></i>
+              <i style="--a:216deg;--d:-80px"></i><i style="--a:252deg;--d:-64px"></i>
+              <i style="--a:288deg;--d:-77px"></i><i style="--a:324deg;--d:-70px"></i>
+            </span>
+            <svg class="rose" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <circle cx="16" cy="16" r="14.2" stroke="currentColor" stroke-width=".7" opacity=".45"/>
+              <path d="M16 2.6 17.5 14.5 29.4 16 17.5 17.5 16 29.4 14.5 17.5 2.6 16 14.5 14.5Z" fill="currentColor"/>
+              <path d="M16 8.4 16.7 15.3 23.6 16 16.7 16.7 16 23.6 15.3 16.7 8.4 16 15.3 15.3Z" fill="currentColor" opacity=".55" transform="rotate(45 16 16)"/>
+              <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+            </svg>
+          </a>
+        </div>
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+        </div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+      <p class="lettre">Deuxième habillage</p>
+    </div>
+  </div>
+
+  <!-- ═══ 3 · au pouce ═══════════════════════════════════════════════════ -->
+  <p class="famille"><span>La même, sous le pouce</span></p>
+  <div class="rangee">
+    <div class="prop">
+      <p class="nom-prop">Le jeton posé en bas</p>
+      <p class="dit">Le même jeton, mais là où le pouce tombe. <b>L’en-tête ne porte alors plus rien du tout</b> — et la bulle de l’assistant remonte, en cercle vide, pour ne pas faire deux disques pleins l’un sur l’autre.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="fermeture"></div>
+        <div class="rubrique caps" style="margin-top:26px"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>18</b><span>juil.</span></span>
+            <p class="nom serif">Reprise de toiture</p>
+            <p class="lieu">8 impasse du Moulin, Rezé</p>
+            <p class="etat caps">En attente · 9 photos</p>
+          </a>
+        </div>
+        <div class="bulle repoussee" aria-hidden="true">✳</div>
+        <a class="pastille pleine" href="#" aria-label="Nouveau chantier"
+           style="position:absolute;right:18px;bottom:94px;z-index:2">
+          <span class="onde" aria-hidden="true"></span>
+          <span class="onde deux" aria-hidden="true"></span>
+          <span class="eclats" aria-hidden="true">
+            <i style="--a:0deg;--d:-78px"></i><i style="--a:36deg;--d:-68px"></i>
+            <i style="--a:72deg;--d:-84px"></i><i style="--a:108deg;--d:-66px"></i>
+            <i style="--a:144deg;--d:-76px"></i><i style="--a:180deg;--d:-72px"></i>
+            <i style="--a:216deg;--d:-80px"></i><i style="--a:252deg;--d:-64px"></i>
+            <i style="--a:288deg;--d:-77px"></i><i style="--a:324deg;--d:-70px"></i>
+          </span>
+          <svg class="rose" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <circle cx="16" cy="16" r="14.2" stroke="currentColor" stroke-width=".7" opacity=".45"/>
+            <path d="M16 2.6 17.5 14.5 29.4 16 17.5 17.5 16 29.4 14.5 17.5 2.6 16 14.5 14.5Z" fill="currentColor"/>
+            <path d="M16 8.4 16.7 15.3 23.6 16 16.7 16.7 16 23.6 15.3 16.7 8.4 16 15.3 15.3Z" fill="currentColor" opacity=".55" transform="rotate(45 16 16)"/>
+            <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+          </svg>
+        </a>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+      <p class="lettre">Même mécanique, autre place</p>
+    </div>
+
+    <div class="prop">
+      <p class="nom-prop">Le disque nu</p>
+      <p class="dit">Ni encre ni or plein : <b>un cercle d’un cheveu</b> et la rose dedans. Le plus discret des trois — et celui qui a le plus besoin du mouvement pour se faire remarquer.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="fermeture"></div>
+        <div class="siege">
+          <a class="pastille nue" href="#" aria-label="Nouveau chantier">
+            <span class="onde" aria-hidden="true"></span>
+            <span class="onde deux" aria-hidden="true"></span>
+            <span class="eclats" aria-hidden="true">
+              <i style="--a:0deg;--d:-78px"></i><i style="--a:36deg;--d:-68px"></i>
+              <i style="--a:72deg;--d:-84px"></i><i style="--a:108deg;--d:-66px"></i>
+              <i style="--a:144deg;--d:-76px"></i><i style="--a:180deg;--d:-72px"></i>
+              <i style="--a:216deg;--d:-80px"></i><i style="--a:252deg;--d:-64px"></i>
+              <i style="--a:288deg;--d:-77px"></i><i style="--a:324deg;--d:-70px"></i>
+            </span>
+            <svg class="rose" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <circle cx="16" cy="16" r="14.2" stroke="currentColor" stroke-width=".7" opacity=".45"/>
+              <path d="M16 2.6 17.5 14.5 29.4 16 17.5 17.5 16 29.4 14.5 17.5 2.6 16 14.5 14.5Z" fill="currentColor"/>
+              <path d="M16 8.4 16.7 15.3 23.6 16 16.7 16.7 16 23.6 15.3 16.7 8.4 16 15.3 15.3Z" fill="currentColor" opacity=".55" transform="rotate(45 16 16)"/>
+              <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+            </svg>
+          </a>
+        </div>
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+        </div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+      <p class="lettre">Troisième habillage</p>
+    </div>
+  </div>
+
+  <!-- ═══ Le démontage ═══════════════════════════════════════════════════ -->
+  <p class="famille"><span>Le geste, image par image</span></p>
+  <div class="film">
+    <div class="vignette f1">
+      <div class="cadre">
+        <span class="pastille pleine">
+          <svg class="rose" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <circle cx="16" cy="16" r="14.2" stroke="currentColor" stroke-width=".7" opacity=".45"/>
+            <path d="M16 2.6 17.5 14.5 29.4 16 17.5 17.5 16 29.4 14.5 17.5 2.6 16 14.5 14.5Z" fill="currentColor"/>
+            <path d="M16 8.4 16.7 15.3 23.6 16 16.7 16.7 16 23.6 15.3 16.7 8.4 16 15.3 15.3Z" fill="currentColor" opacity=".55" transform="rotate(45 16 16)"/>
+            <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+          </svg>
+        </span>
+      </div>
+      <p class="quand">Au repos</p>
+      <p class="duree">0 ms</p>
+    </div>
+    <div class="vignette f2">
+      <div class="cadre">
+        <span class="pastille pleine">
+          <svg class="rose" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <circle cx="16" cy="16" r="14.2" stroke="currentColor" stroke-width=".7" opacity=".45"/>
+            <path d="M16 2.6 17.5 14.5 29.4 16 17.5 17.5 16 29.4 14.5 17.5 2.6 16 14.5 14.5Z" fill="currentColor"/>
+            <path d="M16 8.4 16.7 15.3 23.6 16 16.7 16.7 16 23.6 15.3 16.7 8.4 16 15.3 15.3Z" fill="currentColor" opacity=".55" transform="rotate(45 16 16)"/>
+            <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+          </svg>
+        </span>
+      </div>
+      <p class="quand">Le doigt se pose — elle s’enfonce et part</p>
+      <p class="duree">0 → 110 ms</p>
+    </div>
+    <div class="vignette f3">
+      <div class="cadre">
+        <span class="pastille pleine">
+          <span class="onde" aria-hidden="true"></span>
+          <span class="onde deux" aria-hidden="true"></span>
+          <span class="eclats" aria-hidden="true">
+            <i style="--a:0deg;--d:-78px"></i><i style="--a:36deg;--d:-68px"></i>
+            <i style="--a:72deg;--d:-84px"></i><i style="--a:108deg;--d:-66px"></i>
+            <i style="--a:144deg;--d:-76px"></i><i style="--a:180deg;--d:-72px"></i>
+            <i style="--a:216deg;--d:-80px"></i><i style="--a:252deg;--d:-64px"></i>
+            <i style="--a:288deg;--d:-77px"></i><i style="--a:324deg;--d:-70px"></i>
+          </span>
+          <svg class="rose" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <circle cx="16" cy="16" r="14.2" stroke="currentColor" stroke-width=".7" opacity=".45"/>
+            <path d="M16 2.6 17.5 14.5 29.4 16 17.5 17.5 16 29.4 14.5 17.5 2.6 16 14.5 14.5Z" fill="currentColor"/>
+            <path d="M16 8.4 16.7 15.3 23.6 16 16.7 16.7 16 23.6 15.3 16.7 8.4 16 15.3 15.3Z" fill="currentColor" opacity=".55" transform="rotate(45 16 16)"/>
+            <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+          </svg>
+        </span>
+      </div>
+      <p class="quand">L’onde et les dix éclats</p>
+      <p class="duree">110 → 620 ms</p>
+    </div>
+    <div class="vignette f4">
+      <div class="cadre">
+        <span class="pastille pleine">
+          <svg class="rose" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <circle cx="16" cy="16" r="14.2" stroke="currentColor" stroke-width=".7" opacity=".45"/>
+            <path d="M16 2.6 17.5 14.5 29.4 16 17.5 17.5 16 29.4 14.5 17.5 2.6 16 14.5 14.5Z" fill="currentColor"/>
+            <path d="M16 8.4 16.7 15.3 23.6 16 16.7 16.7 16 23.6 15.3 16.7 8.4 16 15.3 15.3Z" fill="currentColor" opacity=".55" transform="rotate(45 16 16)"/>
+            <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+          </svg>
+        </span>
+      </div>
+      <p class="quand">La feuille monte par-dessus</p>
+      <p class="duree">500 ms</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <h2>Trois choses à savoir avant de la coder pour de bon</h2>
+    <p><b>La demi-seconde ne doit jamais retenir le doigt.</b> L’appui s’enfonce en 140 ms — bien avant la fin du tour. Sans cela, une demi-seconde d’attente se lit comme une panne, et on appuie deux fois : deux chantiers créés au lieu d’un. Un deuxième appui pendant le geste est donc ignoré, ici comme dans l’application.</p>
+    <p><b>Un système réglé sur « mouvement réduit » n’a pas droit à la gerbe</b> — et la feuille s’ouvre alors <i>tout de suite</i>. Attendre une demi-seconde une animation qui ne joue pas, ce serait faire passer un réglage d’accessibilité pour une lenteur.</p>
+    <p><b>Cette page a un script, contrairement aux quinze autres.</b> Elle n’existe que pour être pressée. Si vous l’ouvrez dans un lecteur qui n’exécute rien, les pastilles resteront immobiles — le démontage image par image ci-dessus, lui, se lit partout.</p>
+  </div>
+</div>
+
+
+
+
+</content>
+    </div>
+  </section>
+
 <script>
   // Chaque maquette engendrait ses écrans en clonant un gabarit. Le code est
   // repris tel quel — donc il ne peut pas diverger de l'original — mais il
@@ -5248,10 +5810,17 @@
     return {
       getElementById: (id) => racine.querySelector("#" + hote + "-" + id),
       createElement: (nom) => document.createElement(nom),
+      // Une maquette qui ne cherche AUCUN identifiant — la 16 arme ses
+      // pastilles par leur classe — a quand même besoin de balayer sa
+      // section. Sans ces deux-là, son script mourait sur
+      // « document.querySelectorAll is not a function », et l'exception
+      // emportait avec elle les scripts des maquettes suivantes.
+      querySelector: (s) => racine.querySelector(s),
+      querySelectorAll: (s) => racine.querySelectorAll(s),
     };
   }
 
-(function (document) {
+try { (function (document) {
 
   // Une seule mise en page, trois jeux de couleurs : le gabarit est cloné pour
   // que rien d'autre ne puisse diverger d'une proposition à l'autre.
@@ -5292,9 +5861,11 @@
     trio.appendChild(noeud);
   }
 
-})(porteeDe("s03"));
+})(porteeDe("s03")); } catch (erreur) {
+  console.error("Maquette 03 — son script a échoué :", erreur);
+}
 
-(function (document) {
+try { (function (document) {
 
   // Le même écran, deux fois : seules les couleurs changent. Le gabarit est
   // cloné pour qu'aucune mesure ne puisse diverger entre les deux versions.
@@ -5321,9 +5892,11 @@
     duo.appendChild(noeud);
   }
 
-})(porteeDe("s04"));
+})(porteeDe("s04")); } catch (erreur) {
+  console.error("Maquette 04 — son script a échoué :", erreur);
+}
 
-(function (document) {
+try { (function (document) {
 
   // Le même écran, deux tonalités : le gabarit est cloné pour qu'aucune mesure
   // ne puisse diverger entre les deux.
@@ -5350,9 +5923,11 @@
     duo.appendChild(noeud);
   }
 
-})(porteeDe("s05"));
+})(porteeDe("s05")); } catch (erreur) {
+  console.error("Maquette 05 — son script a échoué :", erreur);
+}
 
-(function (document) {
+try { (function (document) {
 
   // Un gabarit unique, cloné pour chaque charte : aucune mesure ne peut
   // diverger d'un écran à l'autre, donc la comparaison ne porte que sur la
@@ -5452,9 +6027,11 @@
     }
   }
 
-})(porteeDe("s06"));
+})(porteeDe("s06")); } catch (erreur) {
+  console.error("Maquette 06 — son script a échoué :", erreur);
+}
 
-(function (document) {
+try { (function (document) {
 
   // Un gabarit d'écran, cloné deux fois par charte, et une seule déclaration
   // de couleurs par charte : c'est la seule façon d'être sûr que la comparaison
@@ -5612,7 +6189,60 @@
     }
   }
 
-})(porteeDe("s10"));
+})(porteeDe("s10")); } catch (erreur) {
+  console.error("Maquette 10 — son script a échoué :", erreur);
+}
+
+try { (function (document) {
+
+/*
+  Le seul script des seize maquettes. Il fait trois choses, et rien d'autre :
+  il arme chaque pastille, il ouvre la feuille une demi-seconde après l'appui,
+  et il referme.
+
+  Il ne va chercher aucun identifiant : dans la page qui fusionne les seize
+  maquettes, chaque script reçoit un `document` restreint à sa section, et un
+  identifiant partagé y entrerait en collision.
+*/
+var pastilles = document.querySelectorAll(".pastille[href]");
+
+for (var i = 0; i < pastilles.length; i++) armer(pastilles[i]);
+
+function armer(pastille) {
+  var ecran = pastille.closest(".ecran");
+  var feuille = ecran.querySelector(".feuille");
+  var fermer = feuille.querySelector(".fermer");
+  var enCours = false;
+
+  pastille.addEventListener("click", function (evenement) {
+    evenement.preventDefault();
+    // Un deuxième appui pendant le geste ne relance rien : dans
+    // l'application, ce serait deux chantiers créés au lieu d'un.
+    if (enCours) return;
+    enCours = true;
+
+    var calme = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    pastille.classList.add("part");
+
+    window.setTimeout(function () {
+      feuille.classList.add("ouverte");
+    }, calme ? 0 : 500);
+
+    window.setTimeout(function () {
+      pastille.classList.remove("part");
+      enCours = false;
+    }, calme ? 0 : 900);
+  });
+
+  fermer.addEventListener("click", function (evenement) {
+    evenement.preventDefault();
+    feuille.classList.remove("ouverte");
+  });
+}
+
+})(porteeDe("s16")); } catch (erreur) {
+  console.error("Maquette 16 — son script a échoué :", erreur);
+}
 </script>
 
 </body>

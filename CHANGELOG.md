@@ -34,6 +34,43 @@ Rien n'est codé : l'application porte toujours l'aplat (`TODO.md`, 0 terdecies)
 3. **Aucun script**, comme les treize maquettes précédentes : son lecteur n'en
    exécute pas, et une page engendrée en JavaScript lui arrive vide.
 
+### La pastille qui tourne, éclate et ouvre — la première maquette qu'on presse
+
+*« Je veux une sorte de pastille un peu ronde avec un design sympa à
+l'intérieur. Lorsqu'on appuie dessus, je veux qu'elle se mette à tourner super
+vite, qu'elle dégage comme une sorte d'onde ou de petits fragments et qu'au bout
+d'une demi-seconde, ça ouvre la page nouveau chantier. »*
+
+`docs/maquettes/16-la-pastille-qui-tourne.html`. Trois habillages du même
+disque, tous pressables : jeton de vert pin, sceau clair, disque nu — plus le
+même jeton posé sous le pouce. La marque gravée est une **rose des vents** :
+Atlas est un nom de cartes, et les quatre branches longues d'une rose dessinent
+déjà un « + ». Le signe de l'ajout est dans la marque, il n'a pas eu à s'y
+coller.
+
+**C'est la première des seize qui porte un script**, et c'est assumé : une page
+qui ne répond pas au doigt ne prouve rien de ce qu'elle avance. Le geste est
+donc aussi démonté image par image, pour les lecteurs qui n'exécutent rien.
+
+**Ce qui a été trouvé en regardant, et jamais par un contrôle vert :** au
+premier essai, les dix éclats partaient aux bons angles, à la bonne vitesse — et
+restaient invisibles, parce qu'ils pâlissaient dès leur départ. Ils gardent
+maintenant leur plein jusqu'à 64 % de leur course.
+
+`scripts/verifier-maquette-pastille.mjs` presse la pastille pour de bon, dans
+les deux pages (la maquette seule et la page fusionnée) et dans les deux
+réglages de mouvement. Confronté à une demi-seconde supprimée, il refuse — avec
+le bon coupable dans le message.
+
+### Un script de maquette ne pouvait ni balayer sa section, ni échouer seul
+
+La page unique donnait aux scripts un `document` réduit à `getElementById` : la
+maquette 16, qui arme ses pastilles par leur classe, y mourait sur
+« querySelectorAll is not a function ». Pire, l'exception emportait les scripts
+des maquettes suivantes — une page à moitié morte, sans un mot pour dire
+laquelle avait fauté. La portée sait maintenant balayer sa section, et chaque
+script est enfermé dans son propre essai.
+
 ### Deuxième tournée : six gestes qui, cette fois, ne se ressemblent pas
 
 *« Je ne suis pas encore hyper convaincu. Propose-moi d'autres choses. »*

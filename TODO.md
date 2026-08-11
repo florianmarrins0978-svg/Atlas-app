@@ -363,7 +363,7 @@ Le 11 août 2026, capture à l'appui : *« j'aime pas le gros bouton nouveau
 chantier […] ce gros bouton en plein milieu, ça ne fait pas très luxe »*. Le
 reste de l'écran lui convient — c'est **l'aplat vert seul** qui est en cause.
 
-**Douze** remplaçants sont dessinés, en deux tournées. La première
+**Treize** remplaçants sont dessinés, en trois tournées. La première
 (`docs/maquettes/14-le-geste-nouveau-chantier.html`) amincit le bouton : le
 filet qui se trace, le sceau, le premier brin, le cartouche gravé, la pastille
 au pouce, la légende sur le trait. Elle n'a pas convaincu — *« je ne suis pas
@@ -372,7 +372,26 @@ d'amincir un bouton ne font qu'une idée**. La seconde
 (`docs/maquettes/15-encore-six-gestes.html`) change donc de nature à chaque
 fois : la ligne du registre, le titre qui porte l'action, la marque
 d'imprimeur, le cinquième onglet, tirer pour ouvrir, le signet sur la tranche.
-**Rien n'est codé** tant qu'il n'a pas désigné le sien.
+La troisième vient de lui : il a décrit le geste lui-même — *« une sorte de
+pastille un peu ronde »*, qui *« se mette à tourner super vite »*, *« dégage
+comme une sorte d'onde ou de petits fragments »*, et ouvre la feuille *« au bout
+d'une demi-seconde »*. Elle est dessinée, et **pressable**, dans
+`docs/maquettes/16-la-pastille-qui-tourne.html` — trois habillages, plus une
+version sous le pouce.
+
+**Rien n'est codé** tant qu'il n'a pas désigné le sien. Le 11 août, la pastille
+avait été portée d'un coup dans l'application ; il l'a arrêté net — *« crée-moi
+une maquette avant de changer quoi que ce soit »* — et le changement a été
+défait. La règle est désormais dans `CLAUDE.md` §3 bis.
+
+**Ce que coûtera la pastille, le jour où il la choisit** (mesuré, puis défait) :
+le bloc `<Link>` de `EcranChantiers.tsx`, une trentaine de lignes de
+`globals.css` pour le tour, l'onde et les éclats, une variable `--or` dans la
+palette, une suite qui mesure la demi-seconde, et un script de capture. Une
+demi-journée, sans surprise connue. Deux points à ne pas oublier : l'appui doit
+s'enfoncer **tout de suite** (140 ms) sinon la demi-seconde passe pour une
+panne, et un second appui pendant le geste doit être ignoré, sans quoi deux
+chantiers naissent au lieu d'un.
 
 Ce que coûtera la bascule, une fois le choix fait : **un seul endroit**, le
 bloc `<Link>` de `src/app/EcranChantiers.tsx` (lignes 151-167). Vérifié plutôt

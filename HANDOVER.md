@@ -52,6 +52,17 @@ réelle (390 × 664). **Rien n'est codé, et rien ne doit l'être avant son choi
 — `TODO.md`, 0 terdecies. Ne pas trancher à sa place : c'est le troisième
 arbitrage graphique qu'il garde pour lui.
 
+**La troisième tournée est la sienne** : il a décrit le geste lui-même — une
+pastille ronde qui tourne, jette une onde et des éclats, et ouvre la feuille une
+demi-seconde plus tard. Maquette 16, la seule des seize **qui se presse** :
+`node scripts/verifier-maquette-pastille.mjs` la met à l'épreuve au doigt.
+
+**Et une règle en est sortie, qui prime sur l'envie d'aider** (`CLAUDE.md`
+§3 bis) : une demande d'apparence ou de geste se **dessine** d'abord. La
+pastille avait été portée d'un coup dans l'application ; il l'a arrêté net —
+*« crée-moi une maquette avant de changer quoi que ce soit »*. Le changement a
+été défait, `src/` est intact.
+
 **Ce que la première tournée a appris, et qui resservira :** proposer six
 variantes du même geste, ce n'est pas proposer six idées. Il l'a renvoyée d'un
 « je ne suis pas encore hyper convaincu ». La seconde change de **nature** à

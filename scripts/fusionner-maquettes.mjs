@@ -120,6 +120,13 @@ const MAQUETTES = [
     quoi: "Deuxième tournée : la ligne du registre, le titre qui porte l’action, la marque d’imprimeur, le cinquième onglet, tirer pour ouvrir, le signet sur la tranche.",
     retenu: true,
   },
+  {
+    fichier: "16-la-pastille-qui-tourne.html",
+    titre: "La pastille qui tourne",
+    famille: "Enlever le gros bouton",
+    quoi: "La seule maquette qui répond au doigt : on appuie, la rose des vents part en trois tours, jette une onde et dix éclats, et la feuille monte une demi-seconde plus tard.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
@@ -408,9 +415,15 @@ const styles = pages.map((p) => `/* ${p.numero} — ${p.titre} */\n${p.css}`).jo
 const scripts = pages
   .flatMap((p) =>
     p.scripts.map(
-      (code) => `(function (document) {
+      // Chaque maquette est enfermée dans son propre essai : une erreur dans
+      // le script de l'une laissait les suivantes non armées, et la page
+      // paraissait à moitié morte sans qu'aucun message ne dise laquelle
+      // avait fauté.
+      (code) => `try { (function (document) {
 ${code}
-})(porteeDe(${JSON.stringify(p.hote)}));`,
+})(porteeDe(${JSON.stringify(p.hote)})); } catch (erreur) {
+  console.error("Maquette ${p.numero} — son script a échoué :", erreur);
+}`,
     ),
   )
   .join("\n\n");
@@ -517,6 +530,13 @@ ${sections}
     return {
       getElementById: (id) => racine.querySelector("#" + hote + "-" + id),
       createElement: (nom) => document.createElement(nom),
+      // Une maquette qui ne cherche AUCUN identifiant — la 16 arme ses
+      // pastilles par leur classe — a quand même besoin de balayer sa
+      // section. Sans ces deux-là, son script mourait sur
+      // « document.querySelectorAll is not a function », et l'exception
+      // emportait avec elle les scripts des maquettes suivantes.
+      querySelector: (s) => racine.querySelector(s),
+      querySelectorAll: (s) => racine.querySelectorAll(s),
     };
   }
 
