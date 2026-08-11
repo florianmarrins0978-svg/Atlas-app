@@ -490,6 +490,161 @@ Ce que la bascule coûtera, quand il aura choisi : la charte de
 encre au lieu du vert pin pour l'action, bronze au lieu de l'or), et **tous** les
 écrans suivent — pas seulement Chantiers. À ne pas entamer écran par écran.
 
+### ~~0 quindecies. Le bouton était codé mais PAS chez lui~~ — **fusionné dans `main` le 2026-08-11, sur son accord**
+
+**C'était le seul point qui le séparait de son bouton, et il n'était pas
+technique.** Il a répondu *« fusionne dans main »* : c'est fait (`6059641`), et
+son espace le prendra au prochain allumage — ou tout de suite par « Chercher les
+dernières corrections ».
+
+*Ce qui suit est gardé parce que le piège, lui, resservira.*
+
+Le 11 août au soir : *« la modification du bouton nouveau chantier n'est pas
+effectuée. Corrige ça. Et pourtant, j'ai la nouvelle dernière mise à jour, celle
+de dix-neuf heures et quelques. »* Les deux moitiés de la phrase étaient vraies.
+
+- Le bouton vit sur `claude/nouveau-chantier-button-design-2vuu9h`.
+- Son espace de travail suit **`main`** — `.devcontainer/mettre-a-jour.sh` fait
+  un `git merge --ff-only origin/<branche courante>`, à chaque allumage et
+  derrière le bouton « Chercher les dernières corrections ». **Les deux suivent
+  la branche courante.** Aucun des deux n'ira jamais chercher ailleurs.
+- `main` n'a jamais reçu ce travail, et avançait en parallèle ce soir-là
+  (19:02, 19:11, 19:13, 19:37). D'où sa « mise à jour de dix-neuf heures ».
+
+**Ce qu'il a fallu faire, et qui n'appartenait pas à l'agent :** fusionner la
+branche dans `main` — **fait le 2026-08-11, sur son accord explicite**
+(`6059641`, en avance rapide, `main` fusionné dans la branche juste avant).
+
+**Ne pas contourner en lui demandant de changer de branche** : ce serait des
+commandes git tapées au doigt sur six pouces, ce que tout ce dépôt s'emploie à
+lui épargner (`.devcontainer/demarrer.sh`).
+
+**Ce qui, lui, a été corrigé sans attendre :** la ligne « Version » de Réglages
+nomme désormais la **branche** suivie, et le bandeau du terminal ne l'annonce
+plus périmée. Un espace en retard d'une branche se voit maintenant sur une
+capture, sans avoir à poser la question — c'est précisément ce à quoi cette
+ligne servait, et ce qu'elle n'a pas su faire ce soir-là.
+
+### ~~0 terdecies. L'action « Nouveau chantier »~~ — **close le 2026-08-11, codée et éprouvée**
+
+Le 11 août 2026, capture à l'appui : *« j'aime pas le gros bouton nouveau
+chantier […] ce gros bouton en plein milieu, ça ne fait pas très luxe »*. Le
+reste de l'écran lui convient — c'est **l'aplat vert seul** qui est en cause.
+
+**Treize** remplaçants sont dessinés, en trois tournées — et l'un d'eux est
+maintenant à moitié choisi : **le sceau clair** (maquette 16, deuxième
+habillage), *« j'aime beaucoup la deuxième »*. Puis il a écarté le sceau
+lui-même — *« le fond blanc me dérange »* — et demandé de l'innovation, pas une
+variante. `docs/maquettes/18-six-matieres.html` répond sur deux axes : **des
+matières** (laque, or brossé, cire, encre vivante, ou pas de disque du tout) et
+**deux ouvertures où le bouton devient la page** au lieu de faire monter une
+feuille.
+
+**FAIT.** Le bouton est dans l'application depuis le 11 août au soir :
+`src/app/EcranChantiers.tsx` et `src/app/globals.css`. Éprouvé par
+`scripts/test-bouton-nouveau-chantier-e2e.ts` (la demi-seconde, le double appui,
+le mouvement réduit), regardé par
+`scripts/capture-bouton-nouveau-chantier.mts` (attente, geste, feuille). 108
+suites base et 49 suites navigateur au vert, connexion réelle comprise.
+
+**Ce qui a été retenu, pour mémoire :** C'est
+`docs/maquettes/24-le-bouton-retenu.html` : **« Nouveau chantier » écrit, le
+rond d'un cheveu qui bat à sa droite**, et à l'appui **trois tours avec onze
+grains d'or**, puis la feuille une demi-seconde plus tard. Toutes les mesures
+sont dans le tableau au bas de cette maquette — les reprendre telles quelles.
+
+Il reste à **le coder** : le bloc `<Link>` de `EcranChantiers.tsx`, une
+trentaine de lignes de `globals.css`, le délai avant l'ouverture de la feuille,
+une suite qui mesure la demi-seconde et une capture. Une demi-journée. Deux
+choses à ne pas oublier : l'appui doit s'enfoncer tout de suite (140 ms), et un
+second appui pendant le tour doit être ignoré, sans quoi deux chantiers naissent
+au lieu d'un.
+
+**L'historique du choix (pour ne pas rouvrir ce qui est clos) :** C'est **l'anneau d'un cheveu avec
+son « + »**, qui doit **tourner à fond puis ouvrir la page**. Sa place a été
+tranchée juste après : **au centre**, à l'endroit qu'occupait l'aplat vert — et
+non en haut à droite comme il l'avait d'abord montré — avec **un petit trait de
+chaque côté, qui s'écarte à l'appui**. La dernière tournée ajoute **le mot** au geste
+(`docs/maquettes/23-le-mot-et-le-rond-qui-bat.html`) : « Nouveau chantier »
+écrit, le rond qui bat en attendant le doigt, et au clic le tour et la
+poussière — sept dispositions du libellé. **Huit** autres déclinaisons du tour
+seul restent dans `docs/maquettes/22-le-rond-entre-deux-traits.html` — dont deux qui reprennent
+l'anneau de la note vocale (un cercle dehors, un cercle dedans), et une qui met
+les crans de la dictée à la place des traits ; il ne reste qu'à en
+désigner une, et le tour franc suffirait. (La version en haut à droite reste
+dans la maquette 21, si jamais il y revenait.)
+
+**Ce que coûtera la bascule, une fois la déclinaison choisie** : le bloc
+`<Link>` de `EcranChantiers.tsx` devient un anneau posé dans l'en-tête (grille à
+deux colonnes, aligné sur la ligne de base du titre), plus une trentaine de
+lignes de `globals.css` pour le tour, plus le délai avant l'ouverture de la
+feuille. Une demi-journée. Deux choses à ne pas oublier : l'appui doit s'enfoncer
+tout de suite (140 ms), et un second appui pendant le tour doit être ignoré,
+sans quoi deux chantiers naissent au lieu d'un.
+
+**L'ancien squelette (rond plein au milieu, explosion, agrandissement) n'est plus
+d'actualité** : il est resté une soirée. Ne pas le ressortir — maquette 20.
+
+**Le squelette était arrêté par lui le 11 août en fin d'après-midi** : un rond plein avec un
+« + », une explosion de débris à l'appui, et le rond qui s'agrandit jusqu'à
+devenir la page. Six gerbes sont à l'essai dans
+`docs/maquettes/20-le-rond-qui-eclate.html` ; il ne reste qu'à en désigner une.
+
+La maquette 18 a été jugée trop démonstrative — *« tu as primé sur l'originalité
+au détriment de l'élégance »*. `docs/maquettes/19-six-gestes-tenus.html` revient
+donc à la retenue : plus de gerbe, plus de matière imitée, une seule chose qui
+bouge à la fois.
+
+**Ce qu'il faudra prévoir si une matière est retenue :** la teinte de laque
+(#10150f → #263025) n'existe pas dans `src/lib/design-tokens.ts`, et l'ouverture
+par agrandissement du disque n'est pas la transition actuelle — c'est un
+changement de `FormulaireNouveauChantier` en feuille, pas seulement du bouton.
+Compter une journée plutôt qu'une demi. La première
+(`docs/maquettes/14-le-geste-nouveau-chantier.html`) amincit le bouton : le
+filet qui se trace, le sceau, le premier brin, le cartouche gravé, la pastille
+au pouce, la légende sur le trait. Elle n'a pas convaincu — *« je ne suis pas
+encore hyper convaincu »* — et le pourquoi vaut d'être retenu : **six façons
+d'amincir un bouton ne font qu'une idée**. La seconde
+(`docs/maquettes/15-encore-six-gestes.html`) change donc de nature à chaque
+fois : la ligne du registre, le titre qui porte l'action, la marque
+d'imprimeur, le cinquième onglet, tirer pour ouvrir, le signet sur la tranche.
+La troisième vient de lui : il a décrit le geste lui-même — *« une sorte de
+pastille un peu ronde »*, qui *« se mette à tourner super vite »*, *« dégage
+comme une sorte d'onde ou de petits fragments »*, et ouvre la feuille *« au bout
+d'une demi-seconde »*. Elle est dessinée, et **pressable**, dans
+`docs/maquettes/16-la-pastille-qui-tourne.html` — trois habillages, plus une
+version sous le pouce.
+
+**Rien n'est codé** tant qu'il n'a pas désigné le sien. Le 11 août, la pastille
+avait été portée d'un coup dans l'application ; il l'a arrêté net — *« crée-moi
+une maquette avant de changer quoi que ce soit »* — et le changement a été
+défait. La règle est désormais dans `CLAUDE.md` §3 bis.
+
+**Ce que coûtera la pastille, le jour où il la choisit** (mesuré, puis défait) :
+le bloc `<Link>` de `EcranChantiers.tsx`, une trentaine de lignes de
+`globals.css` pour le tour, l'onde et les éclats, une variable `--or` dans la
+palette, une suite qui mesure la demi-seconde, et un script de capture. Une
+demi-journée, sans surprise connue. Deux points à ne pas oublier : l'appui doit
+s'enfoncer **tout de suite** (140 ms) sinon la demi-seconde passe pour une
+panne, et un second appui pendant le geste doit être ignoré, sans quoi deux
+chantiers naissent au lieu d'un.
+
+Ce que coûtera la bascule, une fois le choix fait : **un seul endroit**, le
+bloc `<Link>` de `src/app/EcranChantiers.tsx` (lignes 151-167). Vérifié plutôt
+que supposé : les suites navigateur atteignent `/chantiers/nouveau` **par son
+adresse**, aucune ne cherche le libellé — changer la présentation n'en casse
+donc aucune, et **c'est justement le risque** : rien ne se plaindra si l'action
+devient introuvable au doigt. Prendre une capture (`CLAUDE.md` §5) et rejouer
+`test-rien-de-recouvert-e2e` — la suite qui mesure ce que le mobilier fixe
+recouvre, et la seule qui verrait le défaut de la proposition E.
+
+**Trois réserves à ne pas perdre.** La pastille flottante (E) entre en conflit
+avec la bulle de l'assistant, qui occupe déjà ce coin — la maquette le montre
+plutôt qu'elle ne le tait. Le cinquième onglet (J) **supprime** cette bulle :
+c'est une décision à prendre avec lui, pas un détail de mise en page. Et le
+geste de traction (K) ne doit jamais partir seul : un geste caché est élégant le
+premier jour et coûteux le trentième, quand un remplaçant prend le téléphone.
+
 ### 0 duodecies. `test-devis-papier-e2e` échoue sur le banc local
 
 `TypeError: Cannot read properties of undefined (reading 'id')` — la suite

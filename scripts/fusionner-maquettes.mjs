@@ -106,6 +106,83 @@ const MAQUETTES = [
     quoi: "Sans le cheveu sous ATLAS. Les trois formes de liste × Origine, Ivoire, Sylve, Océan.",
     retenu: true,
   },
+  {
+    fichier: "14-le-geste-nouveau-chantier.html",
+    titre: "Six façons d’ouvrir un chantier",
+    famille: "Enlever le gros bouton",
+    quoi: "L’aplat vert remplacé six fois : le filet qui se trace, le sceau, le premier brin, le cartouche gravé, la pastille au pouce, la légende sur le trait.",
+    retenu: true,
+  },
+  {
+    fichier: "15-encore-six-gestes.html",
+    titre: "Encore six gestes",
+    famille: "Enlever le gros bouton",
+    quoi: "Deuxième tournée : la ligne du registre, le titre qui porte l’action, la marque d’imprimeur, le cinquième onglet, tirer pour ouvrir, le signet sur la tranche.",
+    retenu: true,
+  },
+  {
+    fichier: "16-la-pastille-qui-tourne.html",
+    titre: "La pastille qui tourne",
+    famille: "Enlever le gros bouton",
+    quoi: "La seule maquette qui répond au doigt : on appuie, la rose des vents part en trois tours, jette une onde et dix éclats, et la feuille monte une demi-seconde plus tard.",
+    retenu: true,
+  },
+  {
+    fichier: "17-six-marques.html",
+    titre: "Six marques pour le sceau",
+    famille: "Enlever le gros bouton",
+    quoi: "Le sceau clair est retenu ; seule la gravure change. Le cadran, le trait pur, le monogramme, la facette, l’anneau et la bille, le point — les six se pressent.",
+    retenu: true,
+  },
+  {
+    fichier: "18-six-matieres.html",
+    titre: "Six matières, et deux qui s’ouvrent en devenant la page",
+    famille: "Enlever le gros bouton",
+    quoi: "Plus aucun disque clair : laque, or brossé, cire, encre vivante — ou pas de disque du tout. Sur l’iris et le vide, la feuille ne monte pas : le bouton s’agrandit jusqu’à devenir la page.",
+    retenu: true,
+  },
+  {
+    fichier: "19-six-gestes-tenus.html",
+    titre: "Six gestes tenus",
+    famille: "Enlever le gros bouton",
+    quoi: "Retour à la retenue : la gerbe est partie, les matières imitées aussi. Une seule chose bouge à la fois. Le mot, la goutte d’or, le disque de nuit, le cercle qui se ferme, le filet traversé, les deux volets.",
+    retenu: true,
+  },
+  {
+    fichier: "20-le-rond-qui-eclate.html",
+    titre: "Le rond éclate, et devient la page",
+    famille: "Enlever le gros bouton",
+    quoi: "Un rond plein, un « + », une explosion de débris, et le rond qui s’agrandit jusqu’à remplir l’écran. Six gerbes : poussière, tessons du rond lui-même, braises qui retombent, aucun débris, gerbe sombre sur or, signe qui se brise.",
+    retenu: true,
+  },
+  {
+    fichier: "21-le-plus-du-titre.html",
+    titre: "Le « + » du titre, et six tours",
+    famille: "Enlever le gros bouton",
+    quoi: "Le bouton qu’il a désigné : l’anneau au bout de « Vos chantiers », qui ne coûte aucune ligne. Trois tours rapides puis la page — et six façons de le décliner.",
+    retenu: true,
+  },
+  {
+    fichier: "22-le-rond-entre-deux-traits.html",
+    titre: "Le rond au milieu, entre deux traits",
+    famille: "Enlever le gros bouton",
+    quoi: "Le même anneau, ramené AU CENTRE, avec un petit trait de chaque côté qui s’écarte quand le signe part en trois tours. Huit déclinaisons, dont deux qui reprennent l’anneau de la note vocale.",
+    retenu: true,
+  },
+  {
+    fichier: "23-le-mot-et-le-rond-qui-bat.html",
+    titre: "Le mot, le rond qui bat, et la poussière",
+    famille: "Enlever le gros bouton",
+    quoi: "Le mixte : le mot écrit, le rond qui bat en attendant le doigt, et au clic le tour et la poussière. Sept dispositions du mot — à droite, coupé en deux, en petit doré dessous, « Ajouter », avec les traits, au-dessus, ou effacé par le geste.",
+    retenu: true,
+  },
+  {
+    fichier: "24-le-bouton-retenu.html",
+    titre: "Le bouton retenu, resserré",
+    famille: "Enlever le gros bouton",
+    quoi: "Celui qu’il a gardé, et lui seul : le mot, le rond qui bat à sa droite. Onde ramenée de 1,85 à 1,42 fois le rond, rond de 46 à 38 px, gerbe de seize grains à onze.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
@@ -204,6 +281,57 @@ function confinerCss(css, hote) {
   return sortie;
 }
 
+// Un nom d'animation est GLOBAL, comme un identifiant : deux maquettes qui
+// déclarent chacune un `@keyframes halo` se le disputent, et la dernière lue
+// gagne pour toute la page. Le confinement par ancêtre ne protège pas de cela —
+// il ne touche qu'aux sélecteurs. On préfixe donc les noms, et on ne les
+// réécrit que dans `animation` et `animation-name` : ailleurs, le même mot
+// pourrait être une classe.
+function confinerAnimations(css, prefixe) {
+  const noms = [...css.matchAll(/@(?:-webkit-)?keyframes\s+([\w-]+)/g)].map((m) => m[1]);
+  if (noms.length === 0) return css;
+  let sortie = css.replace(
+    /(@(?:-webkit-)?keyframes\s+)([\w-]+)/g,
+    (_, tete, nom) => `${tete}${prefixe}-${nom}`,
+  );
+  sortie = sortie.replace(/(animation(?:-name)?\s*:)([^;}]*)/g, (_, tete, valeur) => {
+    let v = valeur;
+    for (const nom of noms) {
+      v = v.replace(new RegExp(`(^|[\\s,])${nom}(?![\\w-])`, "g"), `$1${prefixe}-${nom}`);
+    }
+    return tete + v;
+  });
+  return sortie;
+}
+
+// Les pourcentages d'un `@keyframes` ne sont pas des sélecteurs : ils n'ont
+// rien à confiner, et le contrôle qui les prenait pour tels refusait toute
+// maquette animée. On les retire avant de vérifier le confinement.
+function sansBlocsOpaques(css) {
+  let sortie = "";
+  let i = 0;
+  while (i < css.length) {
+    const at = css.slice(i).search(/@(?:-webkit-)?keyframes|@font-face/);
+    if (at === -1) {
+      sortie += css.slice(i);
+      break;
+    }
+    const debut = i + at;
+    sortie += css.slice(i, debut);
+    const ouvrante = css.indexOf("{", debut);
+    if (ouvrante === -1) break;
+    let profondeur = 1;
+    let j = ouvrante + 1;
+    while (j < css.length && profondeur > 0) {
+      if (css[j] === "{") profondeur += 1;
+      else if (css[j] === "}") profondeur -= 1;
+      j += 1;
+    }
+    i = j;
+  }
+  return sortie;
+}
+
 /* ————————————————————————————————————————————————————————————————
    Lecture et découpe d'une maquette
    ———————————————————————————————————————————————————————————————— */
@@ -244,7 +372,7 @@ function lire(maquette, indice) {
     numero,
     ancre: `m${numero}`,
     hote: `s${numero}`,
-    css: confinerCss(sansCommentaires(style[1]), hote),
+    css: confinerAnimations(confinerCss(sansCommentaires(style[1]), hote), `s${numero}`),
     corps: corps.trim(),
     scripts,
   };
@@ -262,7 +390,7 @@ for (const p of pages) {
   if (/:root|^\s*body\s*\{/m.test(p.css)) {
     plaintes.push(`${p.fichier} : un :root ou un body a survécu au confinement`);
   }
-  const regles = p.css.match(/[^{}]+\{/g) ?? [];
+  const regles = sansBlocsOpaques(p.css).match(/[^{}]+\{/g) ?? [];
   for (const r of regles) {
     const sel = r.slice(0, -1).trim();
     if (sel.startsWith("@")) continue;
@@ -343,9 +471,15 @@ const styles = pages.map((p) => `/* ${p.numero} — ${p.titre} */\n${p.css}`).jo
 const scripts = pages
   .flatMap((p) =>
     p.scripts.map(
-      (code) => `(function (document) {
+      // Chaque maquette est enfermée dans son propre essai : une erreur dans
+      // le script de l'une laissait les suivantes non armées, et la page
+      // paraissait à moitié morte sans qu'aucun message ne dise laquelle
+      // avait fauté.
+      (code) => `try { (function (document) {
 ${code}
-})(porteeDe(${JSON.stringify(p.hote)}));`,
+})(porteeDe(${JSON.stringify(p.hote)})); } catch (erreur) {
+  console.error("Maquette ${p.numero} — son script a échoué :", erreur);
+}`,
     ),
   )
   .join("\n\n");
@@ -452,6 +586,13 @@ ${sections}
     return {
       getElementById: (id) => racine.querySelector("#" + hote + "-" + id),
       createElement: (nom) => document.createElement(nom),
+      // Une maquette qui ne cherche AUCUN identifiant — la 16 arme ses
+      // pastilles par leur classe — a quand même besoin de balayer sa
+      // section. Sans ces deux-là, son script mourait sur
+      // « document.querySelectorAll is not a function », et l'exception
+      // emportait avec elle les scripts des maquettes suivantes.
+      querySelector: (s) => racine.querySelector(s),
+      querySelectorAll: (s) => racine.querySelectorAll(s),
     };
   }
 

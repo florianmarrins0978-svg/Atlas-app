@@ -67,6 +67,23 @@ langage. Rien n'y entre sans son accord explicite (voir `AGENTS.md`).
   fonction sert à construire un écran et à revalider ce qu'il renvoie — deux
   implémentations finissent toujours par diverger.
 
+## 3 bis. La maquette d'abord, le code ensuite
+
+**Règle posée par le patron le 11 août 2026**, après qu'une demande de geste
+— « une pastille qui tourne » — a été portée d'un coup dans la maquette **et**
+dans l'application : *« crée-moi une maquette avant de changer quoi que ce
+soit »*.
+
+Une demande d'apparence ou de geste se dessine, se montre, et **ne touche à
+`src/` qu'une fois choisie**. Ce n'est pas une précaution de style : le code
+écrit avant l'accord doit être défait si l'accord ne vient pas, et il encombre
+la relecture de tout ce qui n'a pas été retenu. La maquette, elle, reste — même
+écartée, elle raconte le chemin.
+
+Ce qui ne compte PAS comme une exception : « c'est tout petit », « ça se
+défait facilement », « il pourra ainsi l'essayer en vrai ». S'il veut l'essayer
+en vrai, il le dira.
+
 ## 4. Ce qu'on ne fait jamais
 
 - **Affaiblir la RLS pour se simplifier la vie.** Une opération de maintenance
