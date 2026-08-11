@@ -103,8 +103,15 @@ async function essayer({ calme, rang }) {
     // rendre un « click intercepted » de trente secondes. Le clic, lui, a bien
     // eu lieu. On avale donc l'erreur ici pour que la mesure ci-dessous parle à
     // sa place — et qu'elle accuse le délai, pas l'outil.
+    // `force` : le clic est dispatché tout de suite, sans attendre que le nœud
+    // soit « stable ». C'est nécessaire dès qu'un geste déplace son propre
+    // bouton — l'écran qui recule, les lettres qui s'écartent — car Playwright
+    // rejoue alors son clic en boucle jusqu'au délai, et chaque rejeu relance
+    // le geste. On perd la vérification d'accessibilité de l'outil ; on la
+    // remplace par la nôtre, juste au-dessus : le bouton a été trouvé par son
+    // rôle, et compté.
     try {
-      await premiere.click({ timeout: 5000 });
+      await premiere.click({ force: true, timeout: 5000 });
     } catch (erreur) {
       /* la feuille a pu monter par-dessus : la mesure du délai le dira */
       if (process.env.ATLAS_BAVARD) console.error("  … clic :", String(erreur).slice(0, 300));
@@ -128,8 +135,15 @@ async function essayer({ calme, rang }) {
     // là où le fautif serait le délai.
     await premiere.evaluate((p) => p.click());
 
+    // **La fenêtre de mesure part d'ICI, pas de l'appui.** Quand le clic met
+    // cinq secondes à rendre la main — ce qui arrive si le bouton bouge pendant
+    // son propre geste — une fenêtre comptée depuis l'appui était déjà close, et
+    // le contrôle annonçait « la feuille n'est jamais montée » alors qu'elle
+    // était montée depuis longtemps. Le message accusait la maquette ; le fautif
+    // était le contrôle.
+    const debutMesure = Date.now();
     let delai = null;
-    while (Date.now() - depart < 3000) {
+    while (Date.now() - debutMesure < 3000) {
       if (await feuilleOuverte(premiere)) {
         delai = Date.now() - depart;
         break;

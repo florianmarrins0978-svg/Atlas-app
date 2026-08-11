@@ -34,6 +34,44 @@ Rien n'est codé : l'application porte toujours l'aplat (`TODO.md`, 0 terdecies)
 3. **Aucun script**, comme les treize maquettes précédentes : son lecteur n'en
    exécute pas, et une page engendrée en JavaScript lui arrive vide.
 
+### Le bouton est choisi : le « + » au bout du titre
+
+Il l'a désigné sur une capture de la maquette 15 (proposition H) : *« le petit
+plus là que tu vois en haut à droite, c'est celui-là que je veux »*. C'est
+l'anneau d'un cheveu posé sur la ligne de base de « Vos chantiers » — celui qui
+**ne coûte aucune ligne à l'écran**. Ce qu'il demande en plus : *« qu'il se
+mette à tourner à fond et qu'ensuite ça ouvre la page »*.
+
+`docs/maquettes/21-le-plus-du-titre.html` en donne six déclinaisons, toutes
+bâties sur le même tour — trois tours rapides, freinés à la fin, puis la page :
+**le tour franc** (rien d'autre), **le tour et la poussière** (seize grains
+d'or), **l'anneau qui s'ouvre** (il s'agrandit jusqu'à devenir la page — et,
+comme il est en haut à droite, la page naît du coin), **les deux sens** (l'anneau
+contre le signe), **le trait aspiré** (le filet de l'en-tête se rétracte dans
+l'anneau), **le tour appuyé** (l'écran recule d'un cheveu, comme il le fait déjà
+quand une feuille monte).
+
+**Un cercle qui tourne ne se voit pas tourner.** Celui du contre-tour porte donc
+une encoche d'or. C'est exactement l'erreur qui avait rendu invisible la lunette
+du cadran, quatre maquettes plus tôt — et elle serait passée une deuxième fois
+sans la capture.
+
+### Trois défauts du contrôle, dont deux qui accusaient la maquette
+
+Éprouver des gestes de plus en plus vivants a fini par casser l'outil qui les
+éprouve, et chaque fois en accusant le mauvais coupable :
+
+- **Sa fenêtre de mesure partait de l'appui.** Quand le clic mettait cinq
+  secondes à rendre la main, elle était close avant d'avoir commencé : il
+  annonçait « la feuille n'est jamais montée » alors qu'elle l'était depuis
+  longtemps.
+- **Son clic attendait un bouton immobile.** Dès qu'un geste déplace son propre
+  bouton — l'écran qui recule, les lettres qui s'écartent — Playwright rejouait
+  son clic en boucle, et chaque rejeu relançait le geste. Le clic est désormais
+  dispatché sans attendre (`force`).
+- **Il jugeait « ça bouge » en cherchant un `<svg>`**, ce qui refusait toute
+  proposition dont la matière n'a pas de dessin.
+
 ### Le rond éclate, et devient la page
 
 *« Un rond avec un plus et lorsque j'appuie, une dynamique un peu style

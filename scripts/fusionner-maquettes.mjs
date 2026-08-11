@@ -155,6 +155,13 @@ const MAQUETTES = [
     quoi: "Un rond plein, un « + », une explosion de débris, et le rond qui s’agrandit jusqu’à remplir l’écran. Six gerbes : poussière, tessons du rond lui-même, braises qui retombent, aucun débris, gerbe sombre sur or, signe qui se brise.",
     retenu: true,
   },
+  {
+    fichier: "21-le-plus-du-titre.html",
+    titre: "Le « + » du titre, et six tours",
+    famille: "Enlever le gros bouton",
+    quoi: "Le bouton qu’il a désigné : l’anneau au bout de « Vos chantiers », qui ne coûte aucune ligne. Trois tours rapides puis la page — et six façons de le décliner.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

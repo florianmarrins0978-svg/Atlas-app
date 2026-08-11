@@ -64,6 +64,13 @@ rond, à la place de l'aplat, la gerbe et la demi-seconde. Ce qui est ouvert : l
 disque du tout) et la **façon dont la page arrive** — deux propositions font
 grandir le bouton jusqu'à ce qu'il DEVIENNE la page.
 
+**LE BOUTON EST CHOISI, et c'est là qu'il faut reprendre.** C'est le **« + » au
+bout du titre** — l'anneau d'un cheveu sur la ligne de base de « Vos chantiers »
+(maquette 15, proposition H), qui doit **tourner à fond puis ouvrir la page**.
+Six déclinaisons du tour attendent son verdict (maquette 21). Rien n'est codé.
+
+**Ce qui précède n'est plus d'actualité, et ne doit pas être ressorti :**
+
 **Où en est le choix au 11 août au soir.** Il a fini par décrire le bouton
 lui-même : *« un rond avec un plus, et lorsque j'appuie, une dynamique un peu
 style explosion, de débris, avec le rond qui s'agrandit »*. Ce squelette est

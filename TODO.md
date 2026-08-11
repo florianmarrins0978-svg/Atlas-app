@@ -372,7 +372,25 @@ matières** (laque, or brossé, cire, encre vivante, ou pas de disque du tout) e
 **deux ouvertures où le bouton devient la page** au lieu de faire monter une
 feuille.
 
-**Le squelette est arrêté par lui le 11 août au soir** : un rond plein avec un
+**LE BOUTON EST CHOISI (11 août, au soir).** C'est **le « + » au bout du titre**
+— l'anneau d'un cheveu posé sur la ligne de base de « Vos chantiers », qui ne
+coûte aucune ligne à l'écran (maquette 15, proposition H). Il doit **tourner à
+fond puis ouvrir la page**. Six déclinaisons du tour sont à l'essai dans
+`docs/maquettes/21-le-plus-du-titre.html` ; il ne reste qu'à en désigner une —
+et le tour franc suffirait.
+
+**Ce que coûtera la bascule, une fois la déclinaison choisie** : le bloc
+`<Link>` de `EcranChantiers.tsx` devient un anneau posé dans l'en-tête (grille à
+deux colonnes, aligné sur la ligne de base du titre), plus une trentaine de
+lignes de `globals.css` pour le tour, plus le délai avant l'ouverture de la
+feuille. Une demi-journée. Deux choses à ne pas oublier : l'appui doit s'enfoncer
+tout de suite (140 ms), et un second appui pendant le tour doit être ignoré,
+sans quoi deux chantiers naissent au lieu d'un.
+
+**L'ancien squelette (rond plein au milieu, explosion, agrandissement) n'est plus
+d'actualité** : il est resté une soirée. Ne pas le ressortir — maquette 20.
+
+**Le squelette était arrêté par lui le 11 août en fin d'après-midi** : un rond plein avec un
 « + », une explosion de débris à l'appui, et le rond qui s'agrandit jusqu'à
 devenir la page. Six gerbes sont à l'essai dans
 `docs/maquettes/20-le-rond-qui-eclate.html` ; il ne reste qu'à en désigner une.
