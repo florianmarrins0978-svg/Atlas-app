@@ -34,6 +34,25 @@ Rien n'est codé : l'application porte toujours l'aplat (`TODO.md`, 0 terdecies)
 3. **Aucun script**, comme les treize maquettes précédentes : son lecteur n'en
    exécute pas, et une page engendrée en JavaScript lui arrive vide.
 
+### Deuxième tournée : six gestes qui, cette fois, ne se ressemblent pas
+
+*« Je ne suis pas encore hyper convaincu. Propose-moi d'autres choses. »*
+
+Le défaut de la première tournée est nommé dans la page elle-même : six façons
+d'**amincir le bouton** ne font pas six idées, elles font une idée déclinée six
+fois. `docs/maquettes/15-encore-six-gestes.html` change donc de nature à chaque
+fois — l'action prend une ligne d'écriture (**G**, une ligne réglée où bat un
+curseur), se pose sur la ligne de base du titre sans occuper de rang (**H**),
+devient une marque d'imprimeur (**I**), descend au milieu du bandeau (**J**),
+disparaît au profit d'un geste de traction (**K**), ou se range en signet sur la
+tranche droite (**L**).
+
+**Deux réserves écrites dans la maquette plutôt que tues.** J supprime la bulle
+de l'assistant — c'est une décision, pas un détail. Et K, le geste caché, garde
+une porte visible (un « + » au bout de la ligne « En cours ») : élégant le
+premier jour, un geste invisible coûte cher le trentième, quand un remplaçant
+prend le téléphone.
+
 ### La page unique acceptait tout, sauf une maquette animée
 
 `fusionner-maquettes.mjs` refusait la maquette 14 avec « sélecteur non confiné

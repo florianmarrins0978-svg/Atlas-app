@@ -363,10 +363,16 @@ Le 11 août 2026, capture à l'appui : *« j'aime pas le gros bouton nouveau
 chantier […] ce gros bouton en plein milieu, ça ne fait pas très luxe »*. Le
 reste de l'écran lui convient — c'est **l'aplat vert seul** qui est en cause.
 
-Six remplaçants sont dessinés dans
-`docs/maquettes/14-le-geste-nouveau-chantier.html` : le filet qui se trace, le
-sceau, le premier brin, le cartouche gravé, la pastille au pouce, la légende sur
-le trait. **Rien n'est codé** tant qu'il n'a pas désigné le sien.
+**Douze** remplaçants sont dessinés, en deux tournées. La première
+(`docs/maquettes/14-le-geste-nouveau-chantier.html`) amincit le bouton : le
+filet qui se trace, le sceau, le premier brin, le cartouche gravé, la pastille
+au pouce, la légende sur le trait. Elle n'a pas convaincu — *« je ne suis pas
+encore hyper convaincu »* — et le pourquoi vaut d'être retenu : **six façons
+d'amincir un bouton ne font qu'une idée**. La seconde
+(`docs/maquettes/15-encore-six-gestes.html`) change donc de nature à chaque
+fois : la ligne du registre, le titre qui porte l'action, la marque
+d'imprimeur, le cinquième onglet, tirer pour ouvrir, le signet sur la tranche.
+**Rien n'est codé** tant qu'il n'a pas désigné le sien.
 
 Ce que coûtera la bascule, une fois le choix fait : **un seul endroit**, le
 bloc `<Link>` de `src/app/EcranChantiers.tsx` (lignes 151-167). Vérifié plutôt
@@ -377,9 +383,12 @@ devient introuvable au doigt. Prendre une capture (`CLAUDE.md` §5) et rejouer
 `test-rien-de-recouvert-e2e` — la suite qui mesure ce que le mobilier fixe
 recouvre, et la seule qui verrait le défaut de la proposition E.
 
-**Une réserve à ne pas perdre :** la pastille flottante (proposition E) entre en
-conflit avec la bulle de l'assistant, qui occupe déjà ce coin. La maquette le
-montre plutôt qu'elle ne le tait.
+**Trois réserves à ne pas perdre.** La pastille flottante (E) entre en conflit
+avec la bulle de l'assistant, qui occupe déjà ce coin — la maquette le montre
+plutôt qu'elle ne le tait. Le cinquième onglet (J) **supprime** cette bulle :
+c'est une décision à prendre avec lui, pas un détail de mise en page. Et le
+geste de traction (K) ne doit jamais partir seul : un geste caché est élégant le
+premier jour et coûteux le trentième, quand un remplaçant prend le téléphone.
 
 ### 0 duodecies. `test-devis-papier-e2e` échoue sur le banc local
 

@@ -45,12 +45,18 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
-**Six remplaçants au gros bouton (11 août).** Le patron ne veut plus de l'aplat
-vert « Nouveau chantier » au milieu de l'écran Chantiers ; le reste lui convient.
-`docs/maquettes/14-le-geste-nouveau-chantier.html` en propose six, sur la dalle
+**Douze remplaçants au gros bouton, en deux tournées (11 août).** Le patron ne
+veut plus de l'aplat vert « Nouveau chantier » au milieu de l'écran Chantiers ;
+le reste lui convient. Maquettes 14 et 15 dans `docs/maquettes/`, sur la dalle
 réelle (390 × 664). **Rien n'est codé, et rien ne doit l'être avant son choix**
 — `TODO.md`, 0 terdecies. Ne pas trancher à sa place : c'est le troisième
 arbitrage graphique qu'il garde pour lui.
+
+**Ce que la première tournée a appris, et qui resservira :** proposer six
+variantes du même geste, ce n'est pas proposer six idées. Il l'a renvoyée d'un
+« je ne suis pas encore hyper convaincu ». La seconde change de **nature** à
+chaque proposition, et c'est ce qu'il faudra refaire si une troisième est
+demandée.
 
 
 **« Terminés » et la facturation (10 août, au soir).** L'écran est un fil par

@@ -113,6 +113,13 @@ const MAQUETTES = [
     quoi: "L’aplat vert remplacé six fois : le filet qui se trace, le sceau, le premier brin, le cartouche gravé, la pastille au pouce, la légende sur le trait.",
     retenu: true,
   },
+  {
+    fichier: "15-encore-six-gestes.html",
+    titre: "Encore six gestes",
+    famille: "Enlever le gros bouton",
+    quoi: "Deuxième tournée : la ligne du registre, le titre qui porte l’action, la marque d’imprimeur, le cinquième onglet, tirer pour ouvrir, le signet sur la tranche.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
