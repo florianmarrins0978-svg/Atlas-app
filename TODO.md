@@ -27,6 +27,35 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quindecies. Une suite laisse un serveur sur le port 3000, et la batterie accuse le mauvais coupable
+
+**Vu le 11 août 2026, sur une batterie qui venait de passer entièrement au
+vert.** La même commande, rejouée sur le même code, a donné deux rouges :
+
+| Ce qu'on lisait | Ce que c'était |
+|---|---|
+| `test-prix-e2e` : `'0.00' == '34.50'` | un enregistrement qui n'a pas eu le temps de partir — le serveur était occupé à recompiler |
+| `❌ Le port 3000 est déjà pris.` | la vraie cause, mais annoncée **en dernier**, deux étapes trop tard |
+
+Un serveur `next dev -H 0.0.0.0 -p 3000` était resté vivant. `-H 0.0.0.0` ne
+vient ni de `run-e2e-tests.ts` ni de `verifier-connexion-avec-serveur.mts`, mais
+de `scripts/essai.mjs` / `scripts/banc.mjs` — que **six suites base** exercent
+(`test-bascule-veilleur.ts`, `test-prechauffage.ts`, `test-relance-demarrage.ts`,
+`test-ouvrir-port.ts`, `test-annonce-atelier.ts`, `test-annonce-adresse.ts`).
+L'une d'elles ne tue pas ce qu'elle a lancé.
+
+**Pourquoi ça coûte cher, et pas seulement une exécution :** les suites
+navigateur suivantes ne se sont pas plaintes. Elles ont trouvé un serveur en vie
+sur le port attendu et ont travaillé dessus — plus lentement, d'où le rouge du
+prix. Une batterie qui interroge un serveur qu'elle n'a pas démarré ne le dit
+nulle part : c'est exactement le genre de vert (ou de rouge) qui ne prouve rien.
+
+**Ce qu'il faut :** que `run-e2e-tests.ts` refuse de démarrer si le port est
+déjà pris — plutôt que de se rabattre en silence sur l'occupant — et que la
+suite fautive soit trouvée et refermée. `scripts/banc.mjs` sait déjà interroger
+le port (`essai.listen`) : le savoir-faire est là, il n'est simplement pas
+employé au bon endroit.
+
 ### 0 quaterdecies. Deux maquettes `/design` décrivent un écran supprimé
 
 **Né le 11 août 2026**, en supprimant `/chantiers/[id]/photos` (`ARCHITECTURE.md`
