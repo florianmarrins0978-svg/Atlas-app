@@ -49,6 +49,19 @@ Les six déclinaisons sont les mêmes qu'à la maquette 21, à une près : « le
 aspiré » devient **« les traits qui rentrent »** — l'inverse du geste demandé,
 gardé pour qu'il puisse comparer plutôt que me croire sur parole.
 
+**Deux de plus, à sa demande, reprennent l'anneau de la note vocale** : un
+cercle sombre à l'extérieur, un second à l'intérieur — et la dernière remplace
+les traits par **les petits crans de la dictée**. L'argument n'est pas de goût :
+les deux écrans cesseraient d'avoir chacun son vocabulaire. On dicte dans un
+anneau, on ouvre un chantier dans le même, et le troisième geste rond, le jour
+où il faudra, existera déjà.
+
+Deux mesures qui ne se voient pas mais qui décident : le rond passe de 46 à
+52 px quand il porte le second anneau — en dessous, deux cercles concentriques
+se touchent presque et l'ensemble se lit comme un trait épais ; et les sept
+crans ont des hauteurs inégales, parce qu'un peigne régulier se lit comme une
+mire d'imprimeur, pas comme un son.
+
 **Les traits sont DANS le lien, pas à côté.** La cible du doigt fait alors toute
 la largeur du groupe au lieu des quarante-six pixels de l'anneau : sur un
 téléphone, c'est la différence entre viser et toucher.

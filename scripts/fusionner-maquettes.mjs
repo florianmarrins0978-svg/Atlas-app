@@ -166,7 +166,7 @@ const MAQUETTES = [
     fichier: "22-le-rond-entre-deux-traits.html",
     titre: "Le rond au milieu, entre deux traits",
     famille: "Enlever le gros bouton",
-    quoi: "Le même anneau, ramené AU CENTRE, avec un petit trait de chaque côté qui s’écarte quand le signe part en trois tours. Les six déclinaisons, à presser.",
+    quoi: "Le même anneau, ramené AU CENTRE, avec un petit trait de chaque côté qui s’écarte quand le signe part en trois tours. Huit déclinaisons, dont deux qui reprennent l’anneau de la note vocale.",
     retenu: true,
   },
 ];

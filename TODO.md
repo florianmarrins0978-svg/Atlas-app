@@ -376,8 +376,10 @@ feuille.
 son « + »**, qui doit **tourner à fond puis ouvrir la page**. Sa place a été
 tranchée juste après : **au centre**, à l'endroit qu'occupait l'aplat vert — et
 non en haut à droite comme il l'avait d'abord montré — avec **un petit trait de
-chaque côté, qui s'écarte à l'appui**. Six déclinaisons du tour sont à l'essai
-dans `docs/maquettes/22-le-rond-entre-deux-traits.html` ; il ne reste qu'à en
+chaque côté, qui s'écarte à l'appui**. **Huit** déclinaisons du tour sont à l'essai dans
+`docs/maquettes/22-le-rond-entre-deux-traits.html` — dont deux qui reprennent
+l'anneau de la note vocale (un cercle dehors, un cercle dedans), et une qui met
+les crans de la dictée à la place des traits ; il ne reste qu'à en
 désigner une, et le tour franc suffirait. (La version en haut à droite reste
 dans la maquette 21, si jamais il y revenait.)
 
