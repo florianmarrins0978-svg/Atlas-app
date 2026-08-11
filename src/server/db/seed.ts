@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, isNotNull, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { hashSync } from "bcryptjs";
 import { pool, db } from "./client";
@@ -164,6 +164,7 @@ import {
   devis,
   envoisDevis,
   lignesDevis,
+  agendasExternes,
 } from "./schema";
 
 // Reconstitue les données actuelles de src/lib/mock-data.ts comme de vraies
@@ -179,6 +180,51 @@ import {
 
 async function main() {
   await db.transaction(async (tx) => {
+    // **Ce que l'artisan a tapé À LA MAIN ne se jette pas avec la démonstration.**
+    //
+    // Le 11 août 2026, le patron a rouvert « Mon agenda » et lu « Le
+    // raccordement n'est pas encore disponible ». Il l'avait pourtant relié la
+    // veille. Cause, et elle est dans la migration 0032 :
+    //
+    //     "entreprise_id" ... REFERENCES "entreprises"("id") ON DELETE CASCADE
+    //
+    // Ses identifiants Google vivent dans une ligne rattachée à son entreprise.
+    // Le `TRUNCATE ... entreprises ... CASCADE` ci-dessous les emportait — le
+    // même geste qui avait produit la session fantôme la veille au soir. Ces
+    // identifiants ne sont pas une donnée de démonstration : il est allé les
+    // créer chez Google, et les a recopiés lui-même.
+    //
+    // **On garde les identifiants, PAS l'autorisation.** Les jetons disent
+    // « cet artisan a donné son accord pour CETTE entreprise » ; l'entreprise
+    // disparaît, l'accord tombe avec elle, et c'est honnête. Le raccordement se
+    // refait alors d'un seul appui, sans repasser par la console de Google.
+    // **On POSE le contexte d'isolation, on ne le contourne pas.** La RLS est en
+    // `FORCE` : sans `app.entreprise_id`, cette lecture rend zéro ligne — en
+    // silence — et la conservation ne conserverait rien sans qu'un seul message
+    // ne l'annonce. Première version, elle passait au vert pour cette raison
+    // exacte. On parcourt donc les entreprises, en posant leur contexte, comme
+    // le fait `withEntreprise`.
+    const entreprisesAvant = await tx.select({ id: entreprises.id }).from(entreprises);
+    const identifiantsGardes: {
+      fournisseur: "google";
+      clientId: string | null;
+      clientSecret: string | null;
+      redirection: string | null;
+    }[] = [];
+    for (const avant of entreprisesAvant) {
+      await tx.execute(sql`SELECT set_config('app.entreprise_id', ${avant.id}, true)`);
+      const lignes = await tx
+        .select({
+          fournisseur: agendasExternes.fournisseur,
+          clientId: agendasExternes.clientId,
+          clientSecret: agendasExternes.clientSecret,
+          redirection: agendasExternes.redirection,
+        })
+        .from(agendasExternes)
+        .where(isNotNull(agendasExternes.clientId));
+      identifiantsGardes.push(...lignes);
+    }
+
     console.log("Nettoyage des données de démonstration existantes...");
     await tx.execute(sql`
       TRUNCATE TABLE
@@ -200,6 +246,27 @@ async function main() {
         iban: "FR76 3000 1000 0000 0000 0000 000",
       })
       .returning();
+
+    // Les identifiants Google retrouvent leur place, sur la nouvelle entreprise.
+    // Ni `compte` ni jetons : l'accord de l'artisan valait pour l'entreprise qui
+    // vient de disparaître. Il lui restera un seul appui sur « Relier mon agenda
+    // Google », sans repasser par la console.
+    if (identifiantsGardes.length > 0) {
+      // Même exigence à l'écriture : la politique porte un `WITH CHECK`.
+      await tx.execute(sql`SELECT set_config('app.entreprise_id', ${entreprise.id}, true)`);
+      await tx.insert(agendasExternes).values(
+        identifiantsGardes.map((garde) => ({
+          entrepriseId: entreprise.id,
+          fournisseur: garde.fournisseur,
+          clientId: garde.clientId,
+          clientSecret: garde.clientSecret,
+          redirection: garde.redirection,
+        }))
+      );
+      console.log(
+        `Identifiants d'agenda conservés (${identifiantsGardes.length}) — le raccordement se refait en un appui.`
+      );
+    }
 
     const [utilisateur] = await tx
       .insert(users)

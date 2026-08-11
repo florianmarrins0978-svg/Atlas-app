@@ -80,6 +80,15 @@ avec une ligne par équipe. Réglages laisse nommer les équipes.
    est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
    sans qu'aucun chiffre ne manque.
 
+**Le seed conserve les identifiants Google (11 août, matin).** `agendas_externes`
+porte `entreprise_id … ON DELETE CASCADE` : le `TRUNCATE … entreprises` du seed
+emportait ce que le patron avait tapé à la main. On garde les **identifiants**
+(il est allé les créer chez Google), pas les **jetons** (l'accord valait pour
+l'entreprise disparue) — sinon l'écran annoncerait un raccordement qui ne vaut
+plus. Attention en y touchant : la RLS est en `FORCE`, il faut POSER
+`app.entreprise_id` pour lire, sinon la conservation ne conserve rien **en
+silence** — c'est arrivé au premier jet, contrôle au vert compris.
+
 **Le banc attend la VIE DU SERVEUR, pas une montre (11 août, nuit).** Il
 concluait « l'application n'a pas répondu après trois minutes — cause la plus
 fréquente : la base n'est pas montée » … trois secondes avant qu'elle réponde,

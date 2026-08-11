@@ -9,6 +9,41 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Refaire la démonstration n'efface plus ce que l'artisan a tapé à la main
+
+**Le patron, le 11 août au matin :** *« On avait raccordé l'agenda Google.
+Pourquoi il ne l'est plus ? »* Il l'avait bien relié la veille.
+
+La cause est dans la migration 0032, et elle est sans détour :
+
+```sql
+"entreprise_id" ... REFERENCES "entreprises"("id") ON DELETE CASCADE
+```
+
+Ses identifiants Google vivent dans une ligne rattachée à son entreprise, et le
+seed fait `TRUNCATE … entreprises … CASCADE`. **Un seul `seed` a donc causé les
+deux pannes de la nuit** : la session fantôme, et la perte du raccordement.
+
+Ces identifiants ne sont pas une donnée de démonstration — il est allé les créer
+chez Google et les a recopiés lui-même. Le seed les conserve désormais et les
+rattache à la nouvelle entreprise.
+
+**Mais pas l'autorisation, et c'est délibéré.** Les jetons disent « cet artisan a
+donné son accord pour CETTE entreprise » ; l'entreprise disparaît, l'accord tombe
+avec elle. Les conserver ferait dire à l'écran « agenda relié » pour un
+consentement qui ne vaut plus. Il lui reste **un seul appui** sur « Relier mon
+agenda Google », sans repasser par la console de Google.
+
+**Et le premier correctif ne conservait rien, en silence.** La RLS est en
+`FORCE` : sans `app.entreprise_id`, la lecture rendait zéro ligne sans un mot, et
+le contrôle passait au vert pour cette raison exacte. Le seed pose donc le
+contexte de chaque entreprise avant de lire, comme le fait `withEntreprise` — on
+ne contourne pas l'isolation pour se simplifier la vie.
+
+`scripts/test-seed-conserve-identifiants.ts`, trois contrôles, chacun vu échouer
+sur son état dégradé : le défaut d'origine remis, et le remède qui mentirait en
+gardant l'autorisation.
+
 ### Le banc concluait à la panne trois secondes avant que l'application réponde
 
 **Le journal du patron, dans cet ordre :**
