@@ -53,6 +53,67 @@ vus** — détail dans `ARCHITECTURE.md` §60 :
 demande elle-même, et tout le reste peut être vert pendant que le patron change
 d'écran.
 
+### Le fil se bloquait à chaque chantier, et montrait sa barre grise
+
+**Le patron, capture de son ordinateur et de son téléphone à l'appui :** *« je
+trouve que ça manque de fluidité. Quand je slide en haut ou en bas, c'est
+saccadé »*, et *« quand on slide, il y a une espèce de bande déroulante grise
+qui apparaît sur le côté à droite. Supprime-moi ça, je ne veux pas voir ça du
+tout, je veux juste que ça slide. »*
+
+Deux causes, sans rapport l'une avec l'autre.
+
+**Le saccadé venait de `scroll-snap-stop: always`**, posé la veille pour qu'un
+geste vif n'avance que d'un chantier. Mais `always` ne ralentit pas l'élan : il
+l'ARRÊTE au premier point rencontré. Le doigt lance la liste, la liste se
+bloque, et il faut recommencer à chaque chantier. Retiré. Ce qui reste —
+`proximity` sur le cadre, `center` sur la ligne — suffit à la perle : l'élan
+court librement et la liste se recale sur un chantier en s'arrêtant. On perd
+« un geste = un chantier », on gagne un défilement qui glisse.
+
+**Le coût de rendu a été mis hors de cause AVANT de toucher à quoi que ce
+soit** — c'est le point qui compte. Trois choses se superposaient sur ce
+défilement, et deux d'entre elles étaient les suspects évidents : le masque en
+dégradé posé sur le cadre, et l'animation d'opacité qui joue sur chaque ligne.
+`scripts/mesurer-fluidite-fil.mts` relève la durée de chaque image rendue et
+sait retirer une cause à la fois dans le navigateur seulement. Verdict : les
+quatre combinaisons mesurent la même chose — 60 images par seconde, médiane
+16,7 ms. Les retirer aurait abîmé l'écran sans rien gagner, et c'est très
+exactement le correctif imaginé que ce dépôt a déjà payé trois fois.
+
+**La barre grise, elle, n'était pas un choix : c'était un oubli.** Les trois
+autres zones qui défilent la masquent depuis toujours ; `.atlas-fil-defile`,
+**la plus vue de l'application**, avait été sautée. Rien ne pouvait le dire,
+puisque chaque zone porte la règle chez elle et que personne ne comptait les
+zones. `test-aucune-barre-de-defilement-e2e.ts` les compte désormais sur tout le
+parcours — corriger une ligne aurait réparé ce jour-là, le balayage répare la
+classe entière, y compris la zone qui n'existe pas encore.
+
+### Le devis coupait le texte du patron, et c'est le balayage qui l'a vu
+
+Trouvé par le contrôle précédent, alors qu'il cherchait tout autre chose : une
+barre grise sur une zone de texte du devis. **La barre était le symptôme ; le
+défaut était que le devis cachait ce qu'on venait d'y écrire.**
+
+Les trois zones estimaient leur hauteur, et les trois estimaient mal :
+l'adresse comptait les caractères (`ceil(longueur / 34)`), la description
+comptait les retours à la ligne, les conditions ne comptaient rien (`rows={2}`).
+Or un texte se coupe au MOT, quand il touche le bord : deux lignes estimées en
+font trois à l'écran. Mesuré sur le jeu de démonstration : 46 px affichés pour
+70 px de texte. C'est le défaut même que la zone d'adresse existait pour
+corriger — *« le patron lit une adresse amputée sur son propre devis »* — revenu
+par une autre porte.
+
+Les trois passent par `ZoneQuiGrandit`, qui **mesure au lieu d'estimer**.
+
+**Et un second contrôle est né du premier, parce que le premier pouvait être
+satisfait de travers** : masquer la barre de cette zone aurait rendu le balayage
+vert, et la coupure silencieuse — donc pire. `test-aucun-texte-coupe-e2e.ts`
+écrit un texte long pour de bon et vérifie qu'il tient dans sa boîte. On ne peut
+pas le contenter en cachant quoi que ce soit. Confronté à l'ancien code : il
+nomme les deux zones fautives et le nombre de pixels perdus.
+
+
 ### La perle plongeait avant le départ, sur une liste qui défile à peine
 
 **Le patron, le soir, après la fusion :** *« la perle reste accolée en bas au

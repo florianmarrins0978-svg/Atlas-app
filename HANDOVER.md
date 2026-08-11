@@ -72,6 +72,49 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**Le défilement du fil, et la barre grise (11 août, au soir).** Le patron :
+*« c'est saccadé »*, *« je ne veux pas voir cette bande grise du tout, je veux
+juste que ça slide. »*
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **`scroll-snap-stop: always` a été retiré de `.atlas-ligne`, et il ne faut
+   pas le remettre sans le patron.** Il avait été posé le 10 août pour qu'un
+   geste vif n'avance que d'un chantier ; c'est lui qui bloquait l'élan. Reste
+   `proximity` sur le cadre et `center` sur la ligne : la perle se recale à
+   l'arrêt, sans arrêter le doigt. L'arbitrage — « un geste = un chantier »
+   contre « ça glisse » — a été tranché en faveur du second, dans ses mots.
+2. **Le masque en dégradé et l'animation d'opacité sont HORS DE CAUSE, c'est
+   mesuré.** `npx tsx scripts/mesurer-fluidite-fil.mts [--sans-masque]
+   [--sans-animation] [--sans-accroche]` : les quatre combinaisons donnent 60
+   images par seconde, médiane 16,7 ms. Ce sont les deux suspects évidents ; les
+   retirer abîmerait l'écran sans rien gagner. **Relancer la mesure avant de les
+   accuser à nouveau.**
+3. **Ce qui n'a PAS pu être éprouvé ici, et qu'il faut dire** : l'élan d'un vrai
+   doigt. Le navigateur sans tête ne produit pas de lancer avec inertie — la
+   mesure porte sur le coût de rendu, pas sur la sensation du geste. Si le
+   patron trouve encore que ça accroche, le suspect suivant est le masque **sur
+   iOS**, où un cadre masqué se recompose à chaque image ; le déplacer sur
+   `.atlas-ecran` en surimpression garderait le fondu sans masquer le cadre qui
+   défile.
+4. **Aucune zone qui défile ne montre sa barre, et un balayage y veille.**
+   `test-aucune-barre-de-defilement-e2e.ts` parcourt douze écrans et exige
+   `scrollbar-width: none` sur toute zone qui déborde vraiment. Il lit la
+   propriété calculée, pas les pixels : ici la barre est en surimpression, elle
+   ne prend aucune largeur et n'apparaît jamais sur une capture.
+
+**Le devis coupait le texte, trouvé par ce même balayage (11 août).** Les trois
+zones de `devis-complet` estimaient leur hauteur ; elles la **mesurent**
+désormais (`ZoneQuiGrandit`, `scrollHeight`). Deux choses à retenir :
+
+1. **La barre grise était le symptôme, la coupure était le défaut.** La masquer
+   aurait rendu le balayage vert et la perte de texte silencieuse. C'est
+   pourquoi `test-aucun-texte-coupe-e2e.ts` existe : il écrit un texte long pour
+   de bon et vérifie qu'il tient dans sa boîte, et rien de caché ne le contente.
+2. **Il lui faut un devis NON envoyé en base.** Un devis parti est figé, ses
+   zones sont en lecture seule et rien ne s'y écrit — le contrôle le dit et
+   rougit plutôt que de passer vert sans avoir rien éprouvé.
+
 **« Terminés » et la facturation (10 août, au soir).** L'écran est un fil par
 mois ; l'encart « à facturer » vit dans le mois et se déplie d'un appui.
 `ARCHITECTURE.md` §53.
