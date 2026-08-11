@@ -9,6 +9,66 @@ Format : le plus récent en tête.
 
 ## 2026-08-11
 
+### Le fil se bloquait à chaque chantier, et montrait sa barre grise
+
+**Le patron, capture de son ordinateur et de son téléphone à l'appui :** *« je
+trouve que ça manque de fluidité. Quand je slide en haut ou en bas, c'est
+saccadé »*, et *« quand on slide, il y a une espèce de bande déroulante grise
+qui apparaît sur le côté à droite. Supprime-moi ça, je ne veux pas voir ça du
+tout, je veux juste que ça slide. »*
+
+Deux causes, sans rapport l'une avec l'autre.
+
+**Le saccadé venait de `scroll-snap-stop: always`**, posé la veille pour qu'un
+geste vif n'avance que d'un chantier. Mais `always` ne ralentit pas l'élan : il
+l'ARRÊTE au premier point rencontré. Le doigt lance la liste, la liste se
+bloque, et il faut recommencer à chaque chantier. Retiré. Ce qui reste —
+`proximity` sur le cadre, `center` sur la ligne — suffit à la perle : l'élan
+court librement et la liste se recale sur un chantier en s'arrêtant. On perd
+« un geste = un chantier », on gagne un défilement qui glisse.
+
+**Le coût de rendu a été mis hors de cause AVANT de toucher à quoi que ce
+soit** — c'est le point qui compte. Trois choses se superposaient sur ce
+défilement, et deux d'entre elles étaient les suspects évidents : le masque en
+dégradé posé sur le cadre, et l'animation d'opacité qui joue sur chaque ligne.
+`scripts/mesurer-fluidite-fil.mts` relève la durée de chaque image rendue et
+sait retirer une cause à la fois dans le navigateur seulement. Verdict : les
+quatre combinaisons mesurent la même chose — 60 images par seconde, médiane
+16,7 ms. Les retirer aurait abîmé l'écran sans rien gagner, et c'est très
+exactement le correctif imaginé que ce dépôt a déjà payé trois fois.
+
+**La barre grise, elle, n'était pas un choix : c'était un oubli.** Les trois
+autres zones qui défilent la masquent depuis toujours ; `.atlas-fil-defile`,
+**la plus vue de l'application**, avait été sautée. Rien ne pouvait le dire,
+puisque chaque zone porte la règle chez elle et que personne ne comptait les
+zones. `test-aucune-barre-de-defilement-e2e.ts` les compte désormais sur tout le
+parcours — corriger une ligne aurait réparé ce jour-là, le balayage répare la
+classe entière, y compris la zone qui n'existe pas encore.
+
+### Le devis coupait le texte du patron, et c'est le balayage qui l'a vu
+
+Trouvé par le contrôle précédent, alors qu'il cherchait tout autre chose : une
+barre grise sur une zone de texte du devis. **La barre était le symptôme ; le
+défaut était que le devis cachait ce qu'on venait d'y écrire.**
+
+Les trois zones estimaient leur hauteur, et les trois estimaient mal :
+l'adresse comptait les caractères (`ceil(longueur / 34)`), la description
+comptait les retours à la ligne, les conditions ne comptaient rien (`rows={2}`).
+Or un texte se coupe au MOT, quand il touche le bord : deux lignes estimées en
+font trois à l'écran. Mesuré sur le jeu de démonstration : 46 px affichés pour
+70 px de texte. C'est le défaut même que la zone d'adresse existait pour
+corriger — *« le patron lit une adresse amputée sur son propre devis »* — revenu
+par une autre porte.
+
+Les trois passent par `ZoneQuiGrandit`, qui **mesure au lieu d'estimer**.
+
+**Et un second contrôle est né du premier, parce que le premier pouvait être
+satisfait de travers** : masquer la barre de cette zone aurait rendu le balayage
+vert, et la coupure silencieuse — donc pire. `test-aucun-texte-coupe-e2e.ts`
+écrit un texte long pour de bon et vérifie qu'il tient dans sa boîte. On ne peut
+pas le contenter en cachant quoi que ce soit. Confronté à l'ancien code : il
+nomme les deux zones fautives et le nombre de pixels perdus.
+
 ### La case « + » de la pellicule ajoute une photo, au lieu de changer d'écran
 
 **Le patron, le 11 août 2026 :** *« quand je clique sur l'encadré avec le plus
@@ -36,7 +96,6 @@ l'appui n'ouvre pas une page, le choix s'ouvre, la photo part, elle s'affiche
 sans rechargement, elle survit au rechargement, et la porte de secours reste un
 lien. Confronté en rétablissant l'ancien lien : rouge, avec la phrase du patron
 — « on s'est retrouvé sur .../photos ».
-
 
 ### La perle plongeait avant le départ, sur une liste qui défile à peine
 
@@ -117,6 +176,71 @@ piège pour la conversation suivante.
 ---
 
 ## 2026-08-10
+
+### Un diagnostic qui regarde l'espace du patron, au lieu de raisonner dessus
+
+**Deux hypothèses avancées pour expliquer son « ça ne marche pas », et les deux
+fausses.** D'abord un service de transcription absent — c'était mon
+environnement, pas le sien. Puis une branche différente de celle où l'on
+pousse — il était bien sur `main`. Chacune lui a coûté un aller-retour pour
+rien.
+
+Le défaut n'est pas de s'être trompé : c'est d'avoir raisonné **à distance** sur
+une machine qu'on ne voit pas, alors que cette machine sait tout.
+
+`npm run diagnostiquer:espace` ne devine rien, il regarde — et il montre la
+seule chose que rien d'autre ne montrait : **le commit RÉELLEMENT SERVI**. La
+ligne « Version » de Réglages lit le dépôt, donc le code *récupéré* ; la version
+rapide est un dossier bâti et figé. Entre les deux il peut y avoir un monde, et
+c'est précisément là que se logeait le malentendu.
+
+Il rend six lignes — branche suivie, code récupéré, **code servi**, serveur,
+veilleur, issue de la dernière mise à jour — puis un verdict dans ses mots :
+retard, fichiers non enregistrés, historique divergé, version bâtie périmée,
+serveur muet. Et quand tout concorde, il le dit aussi, en désignant alors le
+produit plutôt que l'espace.
+
+**Éprouvé dans ses états dégradés**, pas seulement au vert : dépôt sale, version
+bâtie plus ancienne que le code, tête détachée (où « HEAD » ne serait qu'un
+aveu incompréhensible), dépôt distant injoignable.
+
+### « J'ai relancé le banc, ça ne marche pas » — la version rapide ne se recompile jamais
+
+**Le patron, le 11 août 2026 au soir.** Le code neuf était bien tiré, la ligne
+Version affichait le commit neuf, et l'écran servi restait l'ancien. Il pouvait
+recharger cent fois.
+
+**La cause tient en une phrase :** `next start` sert un dossier **bâti**, figé à
+la seconde de sa construction. Tirer du code sous ses pieds n'y change rien. Or
+le bouton « Chercher les dernières corrections » annonçait *« rechargez la page,
+l'application se recompile »* — exact en développement, **impossible** sur la
+version rapide.
+
+C'est la **troisième fois** que ce dépôt paie le même malentendu : *le produit
+paraît cassé alors qu'il est simplement vieux*. Les deux premières ont donné la
+ligne Version, puis ce bouton. Celle-ci donne trois issues distinctes :
+
+| Ce qui tourne | Ce qu'on annonce | Ce qu'on fait |
+|---|---|---|
+| développement | « l'application se recompile » | rien — c'est vrai |
+| version bâtie, veilleur présent | « elle se reconstruit, injoignable une minute » | on coupe le serveur |
+| version bâtie, **sans veilleur** | « arrêtez puis rouvrez l'espace » | **rien** |
+
+**Le troisième cas est le plus important.** Couper sans personne pour relever le
+serveur reviendrait à éteindre l'application du patron pour lui livrer un
+correctif — le remède serait pire que le mal, et il resterait devant un écran
+mort. Le veilleur est donc interrogé par son identifiant de processus, pas par
+l'existence de son fichier verrou.
+
+La règle vit dans `src/lib/issue-mise-a-jour.ts`, en fonction pure : une
+décision qui peut couper le serveur du patron doit s'éprouver sans base, sans
+serveur et sans banc. `scripts/test-issue-mise-a-jour.ts` la tient en cinq
+contrôles, vérifiés rouges sur l'ancien comportement.
+
+**Vérifié aussi, et c'est ce qui a permis de trancher :** le tiroir allégé
+fonctionne bel et bien, sur les quatre états réels d'un chantier — neuf, avec
+dictée, avec devis généré, avec devis envoyé. Ni « Informations » ni « Prix »
+n'y figurent nulle part. Ce que le patron voyait était l'ancien code.
 
 ### De l'anneau au devis, en une touche
 

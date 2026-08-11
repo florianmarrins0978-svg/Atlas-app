@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { colors, font } from "@/lib/design-tokens";
 import { adressesDuDocument } from "@/lib/adresses";
 import { enEuros } from "@/lib/euros";
@@ -297,20 +297,18 @@ export default function DevisCompletClient(props: Props) {
             className="grid w-full gap-2 py-3 sm:grid-cols-[1fr_70px_130px_130px] sm:items-start sm:gap-3"
             style={{ borderBottom: `1px solid ${colors.lineSoft}` }}
           >
-            <textarea
-              value={l.libelle}
-              readOnly={fige}
-              // La ligne principale réunit plusieurs travaux, un par ligne
-              // (« abattage / broyage / évacuation »). Deux rangées fixes les
-              // auraient coupés — le patron aurait relu un devis dont il ne
-              // voit qu'une partie, ce qui est exactement le défaut qu'on
-              // répare.
-              rows={Math.max(2, l.libelle.split("\n").length)}
-              aria-label={`Description ${i + 1}`}
+            {/* La ligne principale réunit plusieurs travaux, un par ligne
+                (« abattage / broyage / évacuation »). Compter les retours à la
+                ligne ne suffisait pas : un seul travail au libellé long en
+                occupe deux à l'écran. Voir `ZoneQuiGrandit`. */}
+            <ZoneQuiGrandit
+              valeur={l.libelle}
+              fige={fige}
+              aria={`Description ${i + 1}`}
               placeholder="Ex : Élagage d'un tilleul — taille architecturée"
-              onChange={(e) => majLigneLocale(l.id, "libelle", e.target.value)}
-              onBlur={() => persisterLigne(l)}
-              className="w-full resize-none border-0 bg-transparent p-0 outline-none focus:bg-[rgba(0,0,0,0.03)]"
+              onChange={(v) => majLigneLocale(l.id, "libelle", v)}
+              onFini={() => persisterLigne(l)}
+              className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[rgba(0,0,0,0.03)]"
               style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.45 }}
             />
 
@@ -415,15 +413,14 @@ export default function DevisCompletClient(props: Props) {
       {/* --- Notes, modalités --------------------------------------------- */}
       <section className="mt-9">
         <Intertitre>Notes / conditions</Intertitre>
-        <textarea
-          value={conditions}
-          readOnly={fige}
-          rows={2}
-          aria-label="Notes et conditions"
+        <ZoneQuiGrandit
+          valeur={conditions}
+          fige={fige}
+          aria="Notes et conditions"
           placeholder="Acompte de 30 % à la signature, solde à réception des travaux. Devis gratuit et sans engagement."
-          onChange={(e) => setConditions(e.target.value)}
-          onBlur={() => majEnTeteDevisAction(props.devisId, { conditionsPaiement: conditions })}
-          className="w-full resize-none border-0 bg-transparent p-0 outline-none focus:bg-[rgba(0,0,0,0.03)]"
+          onChange={setConditions}
+          onFini={() => majEnTeteDevisAction(props.devisId, { conditionsPaiement: conditions })}
+          className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[rgba(0,0,0,0.03)]"
           style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.5 }}
         />
       </section>
@@ -513,6 +510,79 @@ function normaliser(valeur: string, defaut: string): string {
 }
 
 /**
+ * Une zone de texte HAUTE DE CE QU'ELLE CONTIENT — jamais de ce qu'on estime.
+ *
+ * **Les trois zones du devis estimaient leur hauteur, et les trois estimaient
+ * mal.** L'adresse comptait les caractères (`ceil(longueur / 34)`), la
+ * description comptait les retours à la ligne, les conditions ne comptaient
+ * rien du tout (`rows={2}`). Or un texte ne se coupe ni au caractère ni au
+ * retour à la ligne : il se coupe au mot, quand il touche le bord. Deux lignes
+ * estimées en font trois à l'écran, la zone se met à défiler, et le patron
+ * relit un devis amputé du bas.
+ *
+ * C'est très exactement le défaut que la zone d'adresse existait pour
+ * corriger — *« le patron lit une adresse amputée sur son propre devis »* —
+ * revenu par une autre porte.
+ *
+ * **Trouvé le 11 août 2026 par le balayage des barres de défilement**, qui
+ * cherchait tout autre chose. La barre grise était le symptôme ; le texte caché
+ * était le défaut. La masquer aurait rendu la coupure silencieuse — c'eût été
+ * le pire des deux.
+ *
+ * On mesure donc au lieu d'estimer. `scrollHeight` donne la hauteur réelle une
+ * fois le texte reporté à la ligne. La remise à `auto` avant de lire est
+ * indispensable : sans elle la hauteur ne redescend jamais quand on efface.
+ */
+function ZoneQuiGrandit({
+  valeur,
+  onChange,
+  onFini,
+  placeholder,
+  aria,
+  fige,
+  className,
+  style,
+}: {
+  valeur: string;
+  onChange: (v: string) => void;
+  onFini: () => void;
+  placeholder: string;
+  aria: string;
+  fige: boolean;
+  className: string;
+  style: React.CSSProperties;
+}) {
+  const zone = useRef<HTMLTextAreaElement>(null);
+
+  // À chaque frappe ET au premier rendu : le contenu vient du serveur, il est
+  // déjà long avant qu'on ait touché quoi que ce soit.
+  //
+  // `useLayoutEffect` et non `useEffect` : la mesure doit être posée avant que
+  // le navigateur peigne, sinon la feuille sursaute au chargement.
+  useLayoutEffect(() => {
+    const el = zone.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [valeur]);
+
+  return (
+    <textarea
+      ref={zone}
+      value={valeur}
+      readOnly={fige}
+      placeholder={placeholder}
+      aria-label={aria}
+      rows={1}
+      onChange={(e) => onChange(e.target.value)}
+      onBlur={onFini}
+      className={className}
+      style={style}
+    />
+  );
+}
+
+/**
  * Un champ sans cadre : le devis reste une feuille, pas un formulaire.
  * Il ne se signale qu'au moment où on écrit dedans.
  */
@@ -544,15 +614,14 @@ function ChampNu({
 }) {
   if (long) {
     return (
-      <textarea
-        value={valeur}
-        readOnly={fige}
+      <ZoneQuiGrandit
+        valeur={valeur}
+        onChange={onChange}
+        onFini={onFini}
         placeholder={placeholder}
-        aria-label={aria}
-        rows={Math.max(1, Math.ceil(valeur.length / 34))}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onFini}
-        className="block w-full resize-none border-0 bg-transparent p-0 py-0.5 outline-none focus:bg-[rgba(0,0,0,0.03)]"
+        aria={aria}
+        fige={fige}
+        className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 py-0.5 outline-none focus:bg-[rgba(0,0,0,0.03)]"
         style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.4 }}
       />
     );
