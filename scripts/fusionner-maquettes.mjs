@@ -134,6 +134,13 @@ const MAQUETTES = [
     quoi: "Le sceau clair est retenu ; seule la gravure change. Le cadran, le trait pur, le monogramme, la facette, l’anneau et la bille, le point — les six se pressent.",
     retenu: true,
   },
+  {
+    fichier: "18-six-matieres.html",
+    titre: "Six matières, et deux qui s’ouvrent en devenant la page",
+    famille: "Enlever le gros bouton",
+    quoi: "Plus aucun disque clair : laque, or brossé, cire, encre vivante — ou pas de disque du tout. Sur l’iris et le vide, la feuille ne monte pas : le bouton s’agrandit jusqu’à devenir la page.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

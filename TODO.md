@@ -365,8 +365,18 @@ reste de l'écran lui convient — c'est **l'aplat vert seul** qui est en cause.
 
 **Treize** remplaçants sont dessinés, en trois tournées — et l'un d'eux est
 maintenant à moitié choisi : **le sceau clair** (maquette 16, deuxième
-habillage), *« j'aime beaucoup la deuxième »*. Reste à désigner **la gravure**
-qui va dedans : six candidates dans `docs/maquettes/17-six-marques.html`. La première
+habillage), *« j'aime beaucoup la deuxième »*. Puis il a écarté le sceau
+lui-même — *« le fond blanc me dérange »* — et demandé de l'innovation, pas une
+variante. `docs/maquettes/18-six-matieres.html` répond sur deux axes : **des
+matières** (laque, or brossé, cire, encre vivante, ou pas de disque du tout) et
+**deux ouvertures où le bouton devient la page** au lieu de faire monter une
+feuille.
+
+**Ce qu'il faudra prévoir si une matière est retenue :** la teinte de laque
+(#10150f → #263025) n'existe pas dans `src/lib/design-tokens.ts`, et l'ouverture
+par agrandissement du disque n'est pas la transition actuelle — c'est un
+changement de `FormulaireNouveauChantier` en feuille, pas seulement du bouton.
+Compter une journée plutôt qu'une demi. La première
 (`docs/maquettes/14-le-geste-nouveau-chantier.html`) amincit le bouton : le
 filet qui se trace, le sceau, le premier brin, le cartouche gravé, la pastille
 au pouce, la légende sur le trait. Elle n'a pas convaincu — *« je ne suis pas

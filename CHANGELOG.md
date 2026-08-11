@@ -34,6 +34,50 @@ Rien n'est codé : l'application porte toujours l'aplat (`TODO.md`, 0 terdecies)
 3. **Aucun script**, comme les treize maquettes précédentes : son lecteur n'en
    exécute pas, et une page engendrée en JavaScript lui arrive vide.
 
+### Plus aucun fond clair : six matières, et deux boutons qui deviennent la page
+
+*« On s'améliore, mais je n'aime toujours pas. […] J'ai l'impression que le fond
+blanc me dérange. J'ai envie que tu sois innovant […] devancer tout le monde,
+Apple, Amazon. »*
+
+`docs/maquettes/18-six-matieres.html` change d'axe. Aucune des six ne pose de
+disque de papier : **l'iris** (six lames de laque qui s'écartent sur une lumière
+d'or), **l'or brossé** (un anneau de métal dont les stries tournent avec lui),
+**la laque** (un galet profond où un reflet glisse même au repos), **le cachet
+de cire** (bord irrégulier, A en relief, qui s'écrase à l'appui), **le vide**
+(pas de disque du tout — un anneau, et le papier de l'écran au milieu), **le
+noyau** (de l'encre et de l'or qui dérivent, sans aucune marque).
+
+**Et surtout, deux d'entre elles n'ouvrent plus la feuille : elles la
+deviennent.** Sur l'iris et le vide, le bouton s'agrandit jusqu'à remplir
+l'écran, et la page est déjà là quand il a fini. Le geste et l'écran qui arrive
+ne font qu'un seul mouvement — c'est là que se joue l'écart avec ce que font les
+autres, pas dans la couleur.
+
+Tout est fait à la main, sans image ni police : dégradés coniques pour le métal,
+ombres internes pour le relief de la cire, six lames en SVG pour l'iris.
+
+**Deux défauts vus à la capture, et un seul aurait suffi à tout gâcher.** Dans
+un SVG, un « px » de transformation vaut **une unité de la vue** : les lames de
+l'iris, écartées de « 4,2 px », partaient en réalité de treize pixels — le
+disque devenait un carré à l'ouverture. Et le grain de lumière du centre,
+déclaré avant les lames, passait dessous : en SVG c'est l'ordre du balisage qui
+décide, pas l'intention.
+
+**Si une matière est retenue**, la teinte de laque (#10150f → #263025) devra
+entrer dans `src/lib/design-tokens.ts` : une couleur qui ne vit que dans une
+maquette finit par diverger de l'écran.
+
+### Le contrôle mesurait la demi-seconde à l'œil, il la chronomètre
+
+`verifier-maquette-pastille.mjs` regardait « à 200 ms, la feuille est-elle
+fermée ? ». Sur une machine chargée, ce regard arrivait parfois à 520 ms et
+accusait un délai qui n'avait pas bougé — un contrôle qui échoue une fois sur
+dix ne prouve rien et use la confiance de qui le lit. Il **mesure** désormais
+l'instant où la feuille monte. Il ne cherche plus non plus de `<svg>` pour
+juger que « ça bouge » : « le noyau » n'a aucun dessin, sa matière est une nappe
+de dégradés — chercher une forme précise, c'est refuser la proposition suivante.
+
 ### Le sceau est retenu, six gravures le disputent
 
 *« J'aime beaucoup la deuxième. Par contre, ce que je n'aime pas, c'est un peu

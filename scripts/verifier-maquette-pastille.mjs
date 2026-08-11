@@ -86,31 +86,58 @@ async function essayer({ calme, rang }) {
     await page.waitForTimeout(120);
     dire(await feuilleOuverte(premiere), `${rang} · mouvement réduit : la feuille monte tout de suite`);
   } else {
-    await page.waitForTimeout(200);
-    dire(!(await feuilleOuverte(premiere)), `${rang} · à 200 ms, la feuille n'est pas encore montée`);
+    // **On MESURE le moment où la feuille monte, au lieu de regarder à un
+    // instant choisi.** Le contrôle guettait d'abord « à 200 ms, est-elle
+    // fermée ? » : sur une machine chargée, ce regard arrivait parfois à 520 ms
+    // et accusait une demi-seconde qui n'avait pas bougé d'un pouce. Un
+    // contrôle qui échoue une fois sur dix ne prouve rien et use la confiance
+    // de celui qui le lit.
+    const depart = Date.now();
+    // Le premier appui est un VRAI clic — c'est tout l'objet du contrôle. Mais
+    // il est enveloppé : le jour où la demi-seconde disparaît, la feuille monte
+    // pendant que Playwright vérifie que son clic a porté, et l'outil finit par
+    // rendre un « click intercepted » de trente secondes. Le clic, lui, a bien
+    // eu lieu. On avale donc l'erreur ici pour que la mesure ci-dessous parle à
+    // sa place — et qu'elle accuse le délai, pas l'outil.
+    try {
+      await premiere.click({ timeout: 5000 });
+    } catch {
+      /* la feuille a pu monter par-dessus : la mesure du délai le dira */
+    }
 
-    // Le tour est-il vraiment joué ? Une classe posée ne prouve rien : on lit
-    // l'animation que le navigateur exécute réellement.
-    // On interroge la GRAVURE, quelle qu'elle soit : la maquette 16 fait
-    // tourner tout le dessin, la 17 parfois une seule pièce (la lunette du
-    // cadran tourne, son signe reste). Chercher une classe précise, c'était
-    // faire échouer le contrôle à chaque nouvelle marque.
+    // Le tour est-il vraiment joué ? On interroge TOUT ce qui n'est ni l'onde,
+    // ni les éclats, ni le cercle d'ouverture — c'est-à-dire la marque ou la
+    // matière, quelle qu'elle soit. Le contrôle a d'abord cherché un `<svg>` :
+    // il refusait alors « le noyau », dont la matière vivante est une nappe de
+    // dégradés sans aucun dessin. Chercher une forme précise, c'est refuser la
+    // proposition suivante.
     const anime = await premiere.evaluate((p) =>
-      Array.from(p.querySelectorAll("svg, svg *")).some((n) => n.getAnimations().length > 0),
+      Array.from(p.querySelectorAll("*"))
+        .filter((n) => !n.closest(".onde, .eclats, .revelation"))
+        .some((n) => n.getAnimations().length > 0),
     );
-    dire(anime, `${rang} · la gravure tourne pour de bon (animation en cours)`);
+    dire(anime, `${rang} · la marque ou la matière bouge pour de bon`);
 
-    // Deuxième appui pendant le geste : il doit être ignoré. Le clic est
-    // envoyé au nœud lui-même plutôt qu'à sa position — sinon, le jour où la
-    // demi-seconde disparaît, la feuille déjà montée intercepte le doigt et le
-    // script meurt sur « click intercepted ». Le contrôle accuserait alors
-    // Playwright là où le fautif est le délai, et enverrait chercher au
-    // mauvais endroit.
+    // Un deuxième appui pendant le geste : envoyé au nœud lui-même, sinon la
+    // feuille montée intercepterait le doigt et l'erreur accuserait Playwright
+    // là où le fautif serait le délai.
     await premiere.evaluate((p) => p.click());
-    await page.waitForTimeout(600);
-    dire(await feuilleOuverte(premiere), `${rang} · à 800 ms, la feuille est montée`);
 
-    await page.waitForTimeout(500);
+    let delai = null;
+    while (Date.now() - depart < 3000) {
+      if (await feuilleOuverte(premiere)) {
+        delai = Date.now() - depart;
+        break;
+      }
+      await page.waitForTimeout(20);
+    }
+    dire(delai !== null, `${rang} · la feuille finit par monter`);
+    dire(
+      delai !== null && delai >= 380,
+      `${rang} · la demi-seconde du geste existe (feuille montée après ${delai} ms)`,
+    );
+
+    await page.waitForTimeout(400);
     const feuilles = await page.locator(".feuille.ouverte").count();
     dire(feuilles === 1, `${rang} · un seul appui utile malgré deux clics (${feuilles} feuille(s) ouverte(s))`);
 

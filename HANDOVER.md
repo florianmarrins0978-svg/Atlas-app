@@ -57,10 +57,17 @@ pastille ronde qui tourne, jette une onde et des éclats, et ouvre la feuille un
 demi-seconde plus tard. Maquette 16, la seule des seize **qui se presse** :
 `node scripts/verifier-maquette-pastille.mjs` la met à l'épreuve au doigt.
 
-**Où en est son choix, exactement :** le **sceau clair** lui plaît — disque de
-papier, cheveu d'or — mais pas la rose des vents gravée dedans. Six gravures de
-rechange sont à l'essai (maquette 17) ; le disque, sa place, la gerbe et la
-demi-seconde ne sont plus en discussion.
+**Où en est son choix, exactement.** Le sceau de papier a d'abord plu, puis a
+été écarté : *« le fond blanc me dérange »*. Ce qui tient encore : un objet
+rond, à la place de l'aplat, la gerbe et la demi-seconde. Ce qui est ouvert : la
+**matière** (maquette 18 — laque, or brossé, cire, encre vivante, ou pas de
+disque du tout) et la **façon dont la page arrive** — deux propositions font
+grandir le bouton jusqu'à ce qu'il DEVIENNE la page.
+
+**Trois refus de suite disent quelque chose :** décliner un même objet ne le
+sauve pas. Ce qui a débloqué la conversation à chaque fois, c'est de changer
+d'axe — la nature du geste (16), la gravure (17), la matière et l'ouverture
+(18). Ne pas repartir sur une septième variante du même disque.
 
 **Et une règle en est sortie, qui prime sur l'envie d'aider** (`CLAUDE.md`
 §3 bis) : une demande d'apparence ou de geste se **dessine** d'abord. La
