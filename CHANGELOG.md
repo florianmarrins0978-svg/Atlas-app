@@ -40,6 +40,40 @@ cela : sa première version cherchait le nom de la fonction dans le fichier et
 restait verte quand la garde était neutralisée d'un `if (false && …)`. Un
 contrôle qui se contente de trouver un mot ne protège que du mot.
 
+### Un chantier dicté ne pouvait plus jamais être envoyé au client
+
+**Le patron, capture à l'appui :** *« l'encart qui permet d'envoyer aux clients
+par SMS, par e-mail, a disparu. »* La feuille d'envoi était réduite à une
+phrase — « Indiquez d'abord comment joindre ce client — sur sa fiche » — et un
+bouton grisé.
+
+**L'encart n'avait pas disparu ; la porte qu'on lui désignait, si.** L'écran
+« Informations », seul endroit où saisir un téléphone ou un e-mail, avait quitté
+le tiroir de la fiche **quelques heures plus tôt, à sa demande** — c'est donc un
+défaut créé le soir même, en allégeant cet écran. Résultat : un chantier né d'une
+dictée, dont le client reste « non renseigné », ne pouvait plus jamais partir.
+
+Les deux canaux et le champ sont désormais offerts **là où ça bloque**, et la
+coordonnée est écrite sur le client — pas retenue pour ce seul envoi.
+
+**Ce que ça apprend dépasse cet écran, et c'est le vrai enseignement.** Le dépôt
+avait déjà tranché ce point exact le 4 août, pour l'écran d'APRÈS l'envoi :
+*« si la coordonnée manque, elle se saisit sur place — il n'existe aucun autre
+écran pour la renseigner, et renvoyer le patron sur la fiche du client
+l'enverrait vers une porte qui n'existe pas »*. La règle était juste, écrite, et
+n'avait été appliquée qu'à un seul des deux écrans. Une semaine plus tard, le
+second l'a payée. Elle est maintenant générale (`ARCHITECTURE.md` §62) : **un
+écran qui refuse d'avancer offre de lever ce qui l'arrête, ou nomme un endroit
+qui existe** — jamais l'un sans l'autre. Un renvoi écrit dans une phrase se
+périme dès que la navigation bouge, et aucun test ne suit un lien écrit en
+français.
+
+**Pourquoi aucune suite ne l'avait vu :** toutes créaient leur chantier AVEC un
+numéro. Le chemin le plus courant chez lui — créer, laisser le contact vide,
+envoyer — n'était emprunté par personne. Il l'est maintenant, par l'écran, et le
+contrôle va jusqu'à vérifier que la coordonnée est rangée en base : un écran qui
+accepterait la saisie sans la ranger serait vert à l'œil et faux. Confronté au
+code livré : trois rouges.
 
 ### Ajouter une photo ne fait plus changer de page — et l'écran Photos disparaît
 

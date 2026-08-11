@@ -185,6 +185,25 @@ variantes du même geste, ce n'est pas proposer six idées. Il l'a renvoyée d'u
 chaque proposition, et c'est ce qu'il faudra refaire si une troisième est
 demandée.
 
+**Le contact du client se saisit dans la feuille d'envoi (11 août, tard).**
+`ARCHITECTURE.md` §62. Le patron : *« l'encart qui permet d'envoyer aux clients
+par SMS, par e-mail, a disparu. »*
+
+**Trois choses à savoir avant d'y toucher :**
+
+1. **Ne jamais rétablir le renvoi « sur sa fiche ».** L'écran « Informations » a
+   quitté le tiroir du chantier le même soir : cette phrase désigne une porte
+   qui n'existe plus, et un chantier dicté (client « non renseigné ») ne pouvait
+   alors plus jamais partir. La règle vaut pour tout arrêt du parcours : **un
+   écran qui refuse d'avancer offre de lever ce qui l'arrête, ou nomme un
+   endroit qui existe.** Jamais l'un sans l'autre.
+2. **La coordonnée est écrite SUR LE CLIENT**, pas retenue pour cet envoi — même
+   information que la fiche portait. Et la feuille **rejoue la préparation**
+   après l'enregistrement : l'état vient du serveur, jamais d'un blocage effacé
+   à la main.
+3. **`devis_absent` reste un arrêt sec, et c'est juste** : aucune saisie ne le
+   lève. Ne pas l'aligner sur les deux autres par symétrie.
+
 **Les refus de note vocale disent pourquoi (11 août, tard).** Le patron voyait
 *« Impossible d'enregistrer la note pour l'instant. Réessayez. »* sans que
 personne puisse savoir ce qui s'était passé.
