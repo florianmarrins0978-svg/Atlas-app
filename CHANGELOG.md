@@ -9,6 +9,48 @@ Format : le plus récent en tête.
 
 ## 2026-08-11
 
+### La ligne « Version » ne disait pas la BRANCHE — et il a cru avoir le bouton
+
+**Le patron :** *« la modification du bouton nouveau chantier n'est pas
+effectuée. Corrige ça. Et pourtant, j'ai la nouvelle dernière mise à jour, celle
+de dix-neuf heures et quelques. »*
+
+**Les deux affirmations étaient vraies, et c'est tout le problème.** Le bouton
+est bien codé, poussé, éprouvé — sur la branche
+`claude/nouveau-chantier-button-design-2vuu9h`. Son espace de travail, lui, suit
+`main`, où il n'a jamais été fusionné. Et `main` avançait ce soir-là en
+parallèle : `19:02`, `19:11`, `19:13`, `19:37`. Il a ouvert Réglages, lu
+« 11/08/2026 19:37 · b45cd5d », et conclu qu'il avait la livraison de dix-neuf
+heures. Il l'avait — ce n'était simplement pas celle-là.
+
+**Rien à l'écran ne pouvait l'arbitrer.** Deux branches vivantes le même soir
+portent la même heure, et sept caractères d'empreinte ne se comparent pas de
+tête sur six pouces. La ligne Version existait précisément pour répondre à
+« est-ce que j'ai les corrections ? » (7 août) ; elle a répondu **oui** à une
+question à laquelle la réponse était **non**.
+
+Elle nomme désormais la branche suivie — `… · b45cd5d · main` — et l'écran dit
+en toutes lettres qu'un correctif livré sur une autre branche n'arrivera jamais
+là, quelle que soit la date et quel que soit le nombre de fois qu'on presse
+« Chercher les dernières corrections ». Ce bouton suit la branche courante : il
+répondra fidèlement « vous étiez déjà à jour » jusqu'à la fin des temps.
+
+**Un second mensonge, trouvé en chemin, dans `.devcontainer/demarrer.sh`.**
+`ATLAS_VERSION` était calculée à la ligne 108 et la mise à jour arrivait à la
+ligne 155 : le bandeau du terminal annonçait donc « Le code a été mis à jour au
+démarrage » puis « Version exécutée : *celle d'avant* ». Elle est relue après la
+mise à jour, avant que le veilleur ne reparte — sans quoi le serveur neuf
+héritait lui aussi de la variable périmée.
+
+Les trois états sont éprouvés, y compris ceux où l'on n'invente rien : hors
+dépôt git (« inconnue »), et tête détachée (la ligne perd son dernier mot
+plutôt que d'affirmer une branche fausse). Confronté à l'ancien code, le
+contrôle rougit et nomme la branche manquante.
+
+**Ce que cela n'a PAS corrigé, et qui reste ouvert :** le bouton n'est toujours
+pas chez lui. Il attend une fusion vers `main`, qui ne se fait pas sans son
+accord (`TODO.md`, 0 quaterdecies).
+
 ### Six façons d'ouvrir un chantier, pour remplacer l'aplat vert
 
 *« J'aime pas le gros bouton nouveau chantier […] ce gros bouton en plein

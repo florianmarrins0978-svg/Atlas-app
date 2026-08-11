@@ -34,6 +34,8 @@ async function cas(nom: string, verifier: () => Promise<void>) {
 
 /** Le commit réellement présent sous le dossier de travail — la vérité. */
 const COURT = execFileSync("git", ["log", "-1", "--format=%h"], { encoding: "utf8" }).trim();
+/** Et la branche suivie, qui est l'autre moitié de la réponse. */
+const BRANCHE = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], { encoding: "utf8" }).trim();
 
 async function avec(variables: Record<string, string | undefined>, fn: () => Promise<void>) {
   const avant: Record<string, string | undefined> = {};
@@ -67,6 +69,23 @@ async function main() {
       assert.ok(
         v.includes(COURT),
         `La version affichée « ${v} » ne nomme pas le commit servi (${COURT}) : elle ne permet donc pas de le comparer à ce qui a été livré.`
+      );
+    });
+  });
+
+  await cas("la ligne nomme la BRANCHE, sans quoi elle ne tranche rien", async () => {
+    // Le 11 août 2026 au soir : le bouton « Nouveau chantier » était livré sur
+    // une branche de travail, l'espace du patron suivait `main`, et les deux
+    // avançaient le même soir. Il a lu une date fraîche et conclu qu'il avait
+    // tout — il avait raison sur la date, et il lui manquait le travail. Une
+    // date et sept caractères d'empreinte ne pouvaient pas l'arbitrer.
+    await avec({ ATLAS_BANC_ESSAI: "1", ATLAS_VERSION: undefined, RELEASE_VERSION: undefined }, async () => {
+      const v = await versionExecutee();
+      assert.ok(
+        v?.includes(BRANCHE),
+        `La version affichée « ${v} » ne nomme pas la branche servie (${BRANCHE}) : ` +
+          `deux branches vivantes le même soir portent la même heure, et l'écran ne peut ` +
+          `alors plus répondre à « est-ce que j'ai ce qui vient d'être fait ».`
       );
     });
   });

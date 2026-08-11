@@ -28,6 +28,20 @@ const executer = promisify(execFile);
  * donc à chaque affichage. Quelques millisecondes, sur un écran consulté trois
  * fois par semaine.
  *
+ * **Et la BRANCHE se dit, pas seulement la date — c'est le défaut du 11 août
+ * 2026 au soir.** Le bouton « Nouveau chantier » venait d'être livré sur une
+ * branche de travail ; l'espace du patron, lui, suit `main`, où le bouton
+ * n'était pas. Il a ouvert Réglages, lu une date de la même heure — `main`
+ * avançait en parallèle — et conclu, à juste titre : *« j'ai la nouvelle
+ * dernière mise à jour »*. Puis : *« la modification n'est pas effectuée »*.
+ *
+ * Les deux affirmations étaient vraies. Son espace était parfaitement à jour, et
+ * le travail était ailleurs. Une date et un commit court ne pouvaient pas
+ * l'arbitrer : deux branches vivantes le même soir portent la même heure et des
+ * empreintes également illisibles sur six pouces. **Le nom de la branche est le
+ * seul mot de cette ligne qui répond vraiment à « est-ce que j'ai ce qui vient
+ * d'être fait ».**
+ *
  * `safe.directory` est passé à l'appel : dans un conteneur, le dossier de
  * travail appartient souvent à un autre compte que celui qui exécute, et git
  * refuse alors de répondre — panne muette qui aurait ramené « inconnue » par un
@@ -59,7 +73,32 @@ async function versionDuDepot(racine: string): Promise<string | null> {
       ["-c", `safe.directory=${racine}`, "log", "-1", "--date=format:%d/%m/%Y %H:%M", "--format=%cd · %h"],
       { cwd: racine, timeout: 5_000 }
     );
-    return stdout.trim() || null;
+    const version = stdout.trim();
+    if (!version) return null;
+    const branche = await brancheDuDepot(racine);
+    return branche ? `${version} · ${branche}` : version;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * La branche suivie par le dépôt servi.
+ *
+ * Rend `null` — et non « inconnue » — quand git ne répond pas ou que la tête est
+ * détachée : la ligne Version perd alors son dernier mot, ce qui est exactement
+ * l'état d'avant. Mieux vaut une ligne incomplète qu'une ligne qui affirme une
+ * branche fausse ; c'est précisément la confiance qu'on cherche à rétablir ici.
+ */
+async function brancheDuDepot(racine: string): Promise<string | null> {
+  try {
+    const { stdout } = await executer(
+      "git",
+      ["-c", `safe.directory=${racine}`, "rev-parse", "--abbrev-ref", "HEAD"],
+      { cwd: racine, timeout: 5_000 }
+    );
+    const branche = stdout.trim();
+    return branche && branche !== "HEAD" ? branche : null;
   } catch {
     return null;
   }

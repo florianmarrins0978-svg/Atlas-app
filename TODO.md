@@ -21,6 +21,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 | 3 | Hébergement européen choisi | Déployer — **sans quoi personne ne peut se servir de l'application** |
 | 4 | Société constituée, assurance souscrite | Rien côté code |
 | 5 | ~~Fournisseur SMS et e-mail~~ — **tranché le 2026-08-04 : il n'y en aura pas** | Rien de bloqué. Le devis part de la messagerie du patron (`ARCHITECTURE.md` §13). Ne restent suspendus qu'aux conforts : relance automatique, accusé de réception, code SMS |
+| 0 | **Son accord pour fusionner `claude/nouveau-chantier-button-design-2vuu9h` dans `main`** | Le bouton « Nouveau chantier » est codé et éprouvé, mais son espace de travail suit `main` et n'ira jamais le chercher sur une branche. **C'est la seule chose qui le sépare de son bouton** (voir 0 quaterdecies) |
 | 6 | Outil comptable choisi — le patron n'en a **aucun** au 2026-08-08 | Brancher son API : envoyer client, lignes, montants, taux et période, récupérer le numéro et le document émis. Quelques jours. **Rien à écrire avant le choix** — chaque outil a son API, ce serait du code à jeter. Ce qui n'est PAS en jeu : qu'Atlas n'émette pas légalement est définitif (`docs/AGENT.md` §6) |
 
 ---
@@ -425,6 +426,37 @@ Ce que la bascule coûtera, quand il aura choisi : la charte de
 `src/lib/design-tokens.ts` change de fond en comble (ivoire au lieu du gris-vert,
 encre au lieu du vert pin pour l'action, bronze au lieu de l'or), et **tous** les
 écrans suivent — pas seulement Chantiers. À ne pas entamer écran par écran.
+
+### 0 quaterdecies. Le bouton est codé mais PAS chez lui — il attend une fusion vers `main`
+
+**C'est le seul point qui le sépare de son bouton, et il n'est pas technique.**
+
+Le 11 août au soir : *« la modification du bouton nouveau chantier n'est pas
+effectuée. Corrige ça. Et pourtant, j'ai la nouvelle dernière mise à jour, celle
+de dix-neuf heures et quelques. »* Les deux moitiés de la phrase étaient vraies.
+
+- Le bouton vit sur `claude/nouveau-chantier-button-design-2vuu9h`.
+- Son espace de travail suit **`main`** — `.devcontainer/mettre-a-jour.sh` fait
+  un `git merge --ff-only origin/<branche courante>`, à chaque allumage et
+  derrière le bouton « Chercher les dernières corrections ». **Les deux suivent
+  la branche courante.** Aucun des deux n'ira jamais chercher ailleurs.
+- `main` n'a jamais reçu ce travail, et avançait en parallèle ce soir-là
+  (19:02, 19:11, 19:13, 19:37). D'où sa « mise à jour de dix-neuf heures ».
+
+**Ce qui reste à faire, et qui n'appartient pas à l'agent :** fusionner la
+branche dans `main`. La branche porte déjà `origin/main` fusionnée dedans
+(2026-08-11, `36c555a`) : elle en est un sur-ensemble strict, rien ne se perdra
+et il n'y a pas de conflit à craindre au moment venu.
+
+**Ne pas contourner en lui demandant de changer de branche** : ce serait des
+commandes git tapées au doigt sur six pouces, ce que tout ce dépôt s'emploie à
+lui épargner (`.devcontainer/demarrer.sh`).
+
+**Ce qui, lui, a été corrigé sans attendre :** la ligne « Version » de Réglages
+nomme désormais la **branche** suivie, et le bandeau du terminal ne l'annonce
+plus périmée. Un espace en retard d'une branche se voit maintenant sur une
+capture, sans avoir à poser la question — c'est précisément ce à quoi cette
+ligne servait, et ce qu'elle n'a pas su faire ce soir-là.
 
 ### ~~0 terdecies. L'action « Nouveau chantier »~~ — **close le 2026-08-11, codée et éprouvée**
 

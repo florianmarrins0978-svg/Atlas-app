@@ -72,6 +72,33 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**⚠ SI LE PATRON DIT « ce n'est toujours pas là » : REGARDER LA BRANCHE
+D'ABORD.** C'est le défaut du 11 août au soir, et il coûterait le même
+aller-retour à chaque fois. Son espace de travail suit **`main`**, et rien ne
+l'en fera sortir : `.devcontainer/mettre-a-jour.sh` fait un
+`git merge --ff-only origin/<branche courante>`, à l'allumage **et** derrière le
+bouton « Chercher les dernières corrections » de Réglages. **Un travail livré
+sur une branche ne lui parviendra jamais**, quelle que soit la date affichée,
+quel que soit le nombre de fois qu'il presse le bouton.
+
+Ce soir-là il a dit : *« la modification n'est pas effectuée. Et pourtant, j'ai
+la nouvelle dernière mise à jour, celle de dix-neuf heures et quelques. »* Il
+avait raison sur les deux points — `main` avait bien bougé à 19 h 37, et le
+bouton était ailleurs. **Avant de chercher un défaut dans le code, jouer :**
+
+```bash
+git show origin/main:<le fichier> | grep <la marque du travail>
+```
+
+La ligne « Version » de Réglages nomme désormais la branche
+(`11/08/2026 19:37 · b45cd5d · main`) : une capture suffit à trancher, sans
+avoir à le lui demander. Elle ne le disait pas, et c'est ce qui a permis le
+malentendu.
+
+**Le bouton « Nouveau chantier » attend cette fusion, et rien d'autre**
+(`TODO.md`, 0 quaterdecies). La branche porte déjà `origin/main` fusionnée
+dedans : c'est un sur-ensemble strict, sans conflit à venir.
+
 **Douze remplaçants au gros bouton, en deux tournées (11 août).** Le patron ne
 veut plus de l'aplat vert « Nouveau chantier » au milieu de l'écran Chantiers ;
 le reste lui convient. Maquettes 14 et 15 dans `docs/maquettes/`, sur la dalle
