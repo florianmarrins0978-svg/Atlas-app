@@ -415,6 +415,71 @@ async function main() {
     assert.ok(iGarde < iSpawn, "la garde arrive après le lancement : elle ne sert plus à rien");
   });
 
+  // **Le gardien du banc doit être posé AVANT la construction, pas après.**
+  //
+  // `banc.mjs` sert d'abord et bâtit ensuite : entre le lancement du serveur et
+  // la fin de la construction, il s'écoule plusieurs minutes. Ses gestionnaires
+  // de `SIGTERM` vivaient à la fin du fichier, c'est-à-dire après cette
+  // attente : un signal reçu dans la fenêtre tuait le script net, et le
+  // serveur — détaché — survivait, accroché au port.
+  //
+  // Ce n'est pas théorique : `verifier-connexion-avec-serveur.mts` tue le
+  // groupe dès la connexion éprouvée, sans attendre la construction. Quatre
+  // batteries de suite ont fini sur « Le port 3000 est déjà pris », et l'une
+  // d'elles a fait accuser le calcul du prix.
+  await cas("`banc.mjs` installe son gardien de signal AVANT d'attendre quoi que ce soit", () => {
+    const source = readFileSync(path.join(RACINE, "scripts", "banc.mjs"), "utf8");
+    const iLancement = source.indexOf("let serveur = raison ?");
+    const iGardien = source.indexOf('process.on(signal, () => {');
+    assert.ok(iLancement > 0, "le lancement du serveur est introuvable : ce contrôle n'éprouve rien");
+    assert.ok(iGardien > 0, "aucun gestionnaire de signal : fermer le banc laisserait son serveur sur le port");
+    assert.ok(
+      iGardien > iLancement,
+      "le gardien est posé avant que le serveur existe : il ne tuerait rien"
+    );
+    // L'attente longue du fil principal : la construction. Tout ce qui est
+    // installé après elle ne protège pas pendant ces minutes-là — et c'est
+    // exactement la fenêtre où le signal arrivait.
+    const iConstruction = source.indexOf('jouer("npx", ["next", "build"]');
+    assert.ok(
+      iConstruction > 0,
+      "la construction est introuvable : ce contrôle ne sait plus où est la fenêtre qu'il surveille"
+    );
+    assert.ok(
+      iGardien < iConstruction,
+      "le gardien est installé APRÈS la construction : pendant ces minutes, un SIGTERM laisse un serveur orphelin sur le port"
+    );
+  });
+
+  // **Et la batterie navigateur doit REFUSER un port déjà pris.** Sans cette
+  // garde, elle se rabat en silence sur l'occupant : cinquante suites
+  // travaillent alors sur un serveur qu'elle n'a pas lancé, et leur résultat ne
+  // veut plus rien dire — ni vert, ni rouge.
+  //
+  // **On vérifie l'EFFET, pas la présence.** Une première version de ce
+  // contrôle cherchait le nom de la fonction dans le fichier : neutraliser la
+  // garde d'un `if (false && …)` la laissait verte. Un contrôle qui se contente
+  // de trouver un mot ne protège que du mot.
+  await cas("`run-e2e-tests` refuse de continuer si quelque chose écoute déjà", () => {
+    const source = readFileSync(path.join(RACINE, "scripts", "run-e2e-tests.ts"), "utf8");
+    const iGarde = source.indexOf('if (await quelquUnEcouteDeja("http://localhost:3000');
+    const iSpawn = source.indexOf('spawn(NPM, ["run", "dev"');
+    assert.ok(
+      iGarde > 0,
+      "aucune garde en tête de batterie : un orphelin du banc rendrait les cinquante suites ininterprétables"
+    );
+    assert.ok(iSpawn > 0, "le démarrage du serveur est introuvable : ce contrôle n'éprouve rien");
+    assert.ok(iGarde < iSpawn, "la garde arrive après le lancement : elle ne protège plus de rien");
+    // Et elle doit ARRÊTER, pas seulement prévenir : un avertissement dans un
+    // journal de deux mille lignes n'a jamais retenu personne.
+    const corps = source.slice(iGarde, iGarde + 900);
+    assert.match(
+      corps,
+      /process\.exit\(1\)/,
+      "la garde constate le port occupé mais laisse la batterie continuer : elle ne sert à rien"
+    );
+  });
+
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Préchauffage et veilleur — ${echecs} échec(s).`);
   if (echecs > 0) process.exit(1);
 }

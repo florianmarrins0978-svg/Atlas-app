@@ -27,50 +27,49 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 quindecies. Une suite laisse un serveur sur le port 3000, et la batterie accuse le mauvais coupable
+### ~~0 quindecies. Un serveur fantôme sur le port 3000, et la batterie accusait le prix~~ — **corrigé le 11 août 2026**
 
-**Vu le 11 août 2026, sur une batterie qui venait de passer entièrement au
-vert.** La même commande, rejouée sur le même code, a donné deux rouges :
+**Vu sur une batterie qui venait de passer entièrement au vert.** La même
+commande, rejouée sur le même code, a donné deux rouges :
 
 | Ce qu'on lisait | Ce que c'était |
 |---|---|
-| `test-prix-e2e` : `'0.00' == '34.50'` | un enregistrement qui n'a pas eu le temps de partir — le serveur était occupé à recompiler |
+| `test-prix-e2e` : `'0.00' == '34.50'` | un enregistrement qui n'a pas eu le temps de partir — l'occupant du port compilait |
 | `❌ Le port 3000 est déjà pris.` | la vraie cause, mais annoncée **en dernier**, deux étapes trop tard |
 
-**Ce qui est établi, et pas supposé.** Un `next dev -H 0.0.0.0 -p 3000` tenait
-le port. Trois pièces le datent et le rattachent :
+**La cause, établie et non supposée.** Une sentinelle a noté ce qui tournait au
+moment où le serveur apparaissait : parent déjà mort (`ppid = 1`), aucune suite
+en cours, `/tmp/atlas-banc.pid` à la même minute. Ce n'était donc **pas** une
+suite oublieuse — l'hypothèse écrite d'abord, et fausse — mais
+`verifier-connexion-avec-serveur.mts`, qui lance `npm run banc` puis tue son
+groupe dès la connexion éprouvée.
 
-- il a démarré à **18:59:50**, en pleine batterie ;
-- `/tmp/atlas-banc.pid` porte la **même minute** : c'est donc bien
-  `scripts/banc.mjs` qui a été lancé, pas un serveur d'essai ;
-- au moment du constat, **son parent n'existait plus** (`ppid = 1`) alors que
-  l'enfant tournait toujours.
+Pourquoi le serveur survivait : `banc.mjs` **sert d'abord et bâtit ensuite**, et
+ses gestionnaires de `SIGTERM` vivaient en **fin de fichier**, c'est-à-dire après
+la construction. Entre le lancement du serveur et leur installation, il
+s'écoulait plusieurs minutes ; un signal reçu dans cette fenêtre tuait le script
+net, et le serveur — **détaché**, pour d'excellentes raisons — survivait,
+accroché au port. Un gardien juste, arrivé en retard.
 
-C'est le revers exact d'un correctif antérieur : `banc.mjs` **détache**
-volontairement son serveur pour pouvoir tuer son GROUPE (commit « Détacher le
-serveur du banc, et tuer son GROUPE plutôt que l'enfant »). Détaché, il survit à
-un parent tué brutalement — un délai de suite dépassé suffit. Reste à trouver
-**qui** lance un vrai banc pendant la batterie : les six suites qui exercent
-`banc.mjs` / `essai.mjs` le lisent au lieu de l'exécuter, la piste n'est donc
-pas close.
+**Corrigé en deux endroits :**
 
-**Pourquoi ça coûte cher, et pas seulement une exécution :** les suites
-navigateur suivantes ne se sont pas plaintes. Elles ont trouvé un serveur en vie
-sur le port attendu et ont travaillé dessus — plus lentement, d'où le rouge du
-prix. Une batterie qui interroge un serveur qu'elle n'a pas démarré ne le dit
-nulle part : c'est exactement le genre de vert (ou de rouge) qui ne prouve rien.
+1. `scripts/banc.mjs` — les gardiens sont posés **ligne suivante après le
+   lancement**, avant toute attente.
+2. `scripts/run-e2e-tests.ts` — la batterie **refuse** désormais un port déjà
+   pris, au lieu de se rabattre en silence sur l'occupant. C'était le plus grave
+   : cinquante suites avaient travaillé, une fois, sur un serveur qu'elle
+   n'avait pas lancé, **sans un mot**.
 
-**Ce qu'il faut**, dans cet ordre — le second seul suffirait à ne plus jamais
-être trompé :
+**Éprouvé, dans les deux sens** (`test-prechauffage.ts`, section « deux serveurs
+ne se battent plus pour le port ») :
 
-1. que `run-e2e-tests.ts` **refuse** de continuer si le port est déjà pris,
-   plutôt que de se rabattre en silence sur l'occupant. `scripts/banc.mjs` sait
-   déjà interroger un port (`essai.listen`) : le savoir-faire est là, il n'est
-   pas employé au bon endroit ;
-2. que le lanceur du banc soit identifié et refermé.
-
-**Reproduit deux fois sur deux batteries consécutives** — ce n'est pas un
-caprice de machine chargée.
+- gardiens remis en fin de fichier → rouge, en nommant la fenêtre ;
+- garde neutralisée d'un `if (false && …)` → rouge. La première version du
+  contrôle cherchait le nom de la fonction et restait verte : **un contrôle qui
+  se contente de trouver un mot ne protège que du mot** ;
+- et en vrai : le script de connexion rejoué rend le port (`000`), là où il
+  laissait un serveur ; la batterie navigateur, lancée sur un port occupé,
+  s'arrête en une seconde avec le remède à taper.
 
 ### 0 quaterdecies. Deux maquettes `/design` décrivent un écran supprimé
 

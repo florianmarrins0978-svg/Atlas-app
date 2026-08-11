@@ -9,6 +9,38 @@ Format : le plus récent en tête.
 
 ## 2026-08-11
 
+### Le serveur fantôme du port 3000 : un gardien juste, posé trop tard
+
+Quatre batteries de suite ont fini sur « ❌ Le port 3000 est déjà pris », et
+l'une d'elles a fait accuser le calcul du prix — `'0.00' == '34.50'`, un
+enregistrement qui n'avait pas eu le temps de partir pendant que l'occupant
+compilait. Le prix n'y était pour rien.
+
+**Ce n'était pas une suite oublieuse** — l'hypothèse écrite en premier, et
+fausse. Une sentinelle a noté ce qui tournait au moment où le serveur
+apparaissait : parent déjà mort, aucune suite en cours, le verrou du banc à la
+même minute. Le lanceur était `verifier-connexion-avec-serveur.mts`, qui monte
+un vrai banc puis tue son groupe dès la connexion éprouvée.
+
+`banc.mjs` **sert d'abord et bâtit ensuite** ; ses gestionnaires de `SIGTERM`
+vivaient en fin de fichier, donc **après** la construction. Entre le lancement du
+serveur et leur installation, plusieurs minutes : un signal reçu là tuait le
+script net, et le serveur — détaché, pour d'excellentes raisons — survivait sur
+le port. Le code était juste ; il arrivait en retard.
+
+Ils sont désormais posés ligne suivante après le lancement. Et la batterie
+navigateur **refuse** un port déjà pris au lieu de se rabattre en silence sur
+l'occupant : c'était le plus grave, car cinquante suites avaient travaillé une
+fois sur un serveur qu'elle n'avait pas lancé, sans un mot. Un résultat obtenu
+d'un serveur inconnu ne prouve rien — vert ou rouge, c'est le pire des deux
+états.
+
+**Les deux contrôles savent échouer**, et l'un d'eux a dû être renforcé pour
+cela : sa première version cherchait le nom de la fonction dans le fichier et
+restait verte quand la garde était neutralisée d'un `if (false && …)`. Un
+contrôle qui se contente de trouver un mot ne protège que du mot.
+
+
 ### Ajouter une photo ne fait plus changer de page — et l'écran Photos disparaît
 
 **Le patron, capture à l'appui :** *« lorsque je suis sur la page chantier et que
