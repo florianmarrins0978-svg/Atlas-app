@@ -4051,3 +4051,131 @@ Ce garde-fou n'est pas un ornement. Sans lui, quelqu'un remettra un jour un
 `viewport` dans cette suite, elle passera au vert d'un bout à l'autre sans rien
 avoir éprouvé, et personne ne s'en apercevra — c'est mot pour mot ce qui est
 arrivé au contrôle de la bulle.
+
+---
+
+## 59. « Réessayer » ne pouvait pas réparer un morceau de code disparu
+
+**Le 11 août 2026, 18 h 02.** Le patron envoie deux captures de son téléphone.
+La première est l'indicateur de Next.js, marqué **(stale)** :
+
+```
+Runtime ChunkLoadError
+Failed to load chunk /_next/static/chunks/src_06hhplf._.js from module
+[project]/node_modules/next/dist/compiled/react-server-dom-turbopack/cjs/
+react-server-dom-turbopack-client.browser.development.js [app-client] (ecmascript)
+```
+
+La seconde est l'écran d'Atlas : « Une erreur — Cette page n'a pas pu
+s'afficher », la cause, et **un seul bouton : « Réessayer »**.
+
+### Ce bouton ne pouvait pas le sauver, et c'est le défaut
+
+`reset()` refait le rendu du même arbre React. Les adresses des morceaux sont
+gravées dans le code déjà chargé — celui d'une version que le serveur ne sert
+plus. Il redemande donc le même fichier absent, obtient le même 404, et retombe
+sur le même écran. **Autant de fois qu'on appuie.** Le patron avait un écran
+d'erreur poli, un bouton, et aucune issue.
+
+### Pourquoi cela lui arrive à lui, et jamais ici
+
+Son espace redémarre son serveur plusieurs fois par soirée : mise à jour du
+code, bascule du mode développement vers la version bâtie (§45, `banc.mjs`),
+veilleur qui relève un serveur tombé (§44). À chaque redémarrage, les morceaux
+changent de nom. Son onglet, lui, reste ouvert des heures — dix onglets sur la
+capture. Le premier lien qu'il touche ensuite demande un fichier qui n'existe
+plus.
+
+Aucune suite ne pouvait le voir : elles ouvrent une page et la referment dans la
+même minute, sur un serveur qui ne bouge pas. **C'est la durée de vie de son
+onglet qui fabrique la panne**, pas le code.
+
+### Le remède : recharger, une fois, et savoir s'arrêter
+
+`src/lib/reprise-erreur.ts` — fonction pure, donc éprouvable sans navigateur.
+
+1. **Reconnaître.** Les formulations diffèrent d'un navigateur à l'autre, et le
+   patron est sur Safari : `Failed to load chunk` (Turbopack), `Loading chunk 42
+   failed` (webpack), `Failed to fetch dynamically imported module` (Chrome),
+   `error loading dynamically imported module` (Firefox), `Importing a module
+   script failed` (**Safari**). Le nom `ChunkLoadError` suffit aussi. La cause
+   est suivie sur quelques niveaux — React enveloppe volontiers l'erreur
+   d'origine — avec une profondeur bornée, une chaîne de causes pouvant boucler.
+2. **Recharger tout seul.** Un rechargement complet va rechercher la page et ses
+   morceaux auprès du serveur d'aujourd'hui. On ne le demande pas : on le fait.
+3. **Une seule fois par fenêtre de cinq minutes.** C'est la garde, et elle vaut
+   le correctif : recharger sur une panne qui revient donnerait un téléphone qui
+   tourne en rond pour toujours — la pire des pannes, parce qu'elle n'affiche
+   **jamais rien à lire**. Passé cette borne, on rend la main avec une phrase.
+
+**Et cette phrase ne désigne pas un coupable qu'on ignore.** Après un
+rechargement resté sans effet, deux causes tiennent encore : une mise à jour en
+cours, ou une connexion coupée. Le message nomme les deux. Trancher au hasard
+enverrait chercher au mauvais endroit — ce que ce dépôt paie le plus cher.
+
+### La phrase de l'écran s'efface, et c'est délibéré
+
+Chaque écran d'erreur dit sa propre panne : « Impossible de charger le
+planning », « Photos indisponibles ». Sur un morceau manquant, **ces phrases
+mentent** : le planning n'y est pour rien, c'est la page entière qui a vieilli.
+Elles ne servent donc que lorsque la cause leur appartient vraiment.
+
+### Un corps commun pour les dix écrans d'erreur
+
+`src/components/atlas/CorpsErreur.tsx`. Dix `error.tsx` portaient dix copies du
+même corps ; le jour où l'un d'eux apprend à se relever, les neuf autres ne
+l'auraient pas su. Chaque écran garde son en-tête — son titre, son retour — et
+délègue la carte, la cause, la référence et le bouton.
+
+**Au passage, la cause n'était affichée que sur l'écran racine.** Le
+raisonnement était pourtant déjà écrit dans `src/app/error.tsx` : le patron
+diagnostique depuis un téléphone, sans terminal sous les yeux, et c'est là — et
+là seulement — qu'il peut lire ce que le serveur a écrit. Il ne s'appliquait
+qu'à un dixième de l'application. En production, la cause reste tue : un message
+d'erreur serveur peut divulguer la structure de la base.
+
+### Trois choses à ne pas défaire
+
+1. **`sessionStorage`, pas `localStorage`.** La mémoire meurt avec l'onglet : un
+   onglet neuf a droit à son rechargement, et rien ne traîne sur son téléphone.
+   Sa lecture est enveloppée — **Safari en navigation privée lève à la simple
+   lecture**, et il n'y a pas d'écran d'erreur derrière un écran d'erreur. Sans
+   mémoire, on refuse le rechargement automatique plutôt que de risquer la
+   boucle.
+2. **On note AVANT de recharger.** Noter après, c'est ne jamais noter : la page
+   part. La garde ne garderait rien.
+3. **La réserve `pb-40` sous le bouton.** Mesurée, pas supposée : la bulle de
+   l'assistant est `fixed` en bas à droite et recouvrait 48 px du bouton dès que
+   le message dépassait deux lignes — ce qui est le cas ici, et de tout écran
+   affichant une cause en développement. Sans la réserve, la page ne défile pas
+   et le bouton reste sous la bulle, sans recours.
+
+### Ce que les contrôles éprouvent — et qu'ils savent échouer
+
+- `scripts/test-reprise-erreur.ts` — 14 contrôles purs, dont le message **exact**
+  de sa capture, les cinq formulations de navigateurs, la garde, et surtout le
+  cas qui rend les autres crédibles : **une panne ordinaire ne doit PAS être
+  prise pour un morceau manquant**. Sabotée (reconnaissance neutralisée, soit
+  l'ancien comportement), la suite rend 8 rouges sur 14.
+- `scripts/test-reprise-morceau-e2e.ts` — la panne rejouée dans un vrai
+  navigateur, à l'écran du patron. Le 404 est posé par le navigateur plutôt
+  qu'en redémarrant le serveur : au niveau du réseau c'est la même chose — le
+  morceau demandé n'est pas là — et c'est reproductible à la seconde. Deux cas :
+  la page se relève et l'écran revient ; la page **ne** recharge **pas** quand un
+  rechargement vient d'avoir lieu. Sabotée de la même façon, le premier cas
+  expire sur soixante secondes — exactement ce que le patron a vécu.
+- Le contrôle de recouvrement du bouton rougit dès qu'on retire `pb-40`.
+
+**Un piège de mesure, qui a d'abord fait passer un contrôle pour rien.**
+`framenavigated` est émis par Playwright sur les navigations `pushState` du
+routeur, sans qu'aucune page n'ait rechargé. Compter cela, c'était prendre la
+navigation qu'on provoque pour le rechargement qu'on veut prouver. **C'est la
+requête de DOCUMENT qui signe un rechargement**, et elle seule.
+
+### Ce qui n'est pas couvert, et qui le sera chez lui
+
+La panne d'origine — un serveur qui redémarre sous un onglet ouvert des heures —
+n'est pas rejouée telle quelle : elle demanderait de faire vieillir un onglet
+pendant une bascule complète du banc. Le 404 sur le morceau en est l'effet
+exact au niveau du réseau, et c'est lui qui est éprouvé. La différence est
+mince, mais elle est dite plutôt que tue.

@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-10 · `claude/migrate-app-atlas-zz31ac`
+**Point de reprise :** 2026-08-11 · `claude/new-session-a1l4v9`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -44,6 +44,34 @@ est encore valable.
 ---
 
 ## Ce qui vient d'être terminé
+
+**L'écran d'erreur se relève tout seul d'un morceau de code disparu
+(11 août, au soir).** Sa capture de 18 h 02 : `ChunkLoadError`, « Failed to load
+chunk », et un bouton « Réessayer » qui ne pouvait pas marcher — `reset()` refait
+le même rendu avec les mêmes adresses mortes. `ARCHITECTURE.md` §59.
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **La décision est une fonction pure**, `src/lib/reprise-erreur.ts`, et le
+   corps commun des dix écrans est `src/components/atlas/CorpsErreur.tsx`. Ne
+   pas recopier un `<PrimaryButton onClick={reset}>` dans un `error.tsx` : c'est
+   très exactement le défaut réparé, et il reviendrait par là.
+2. **Une seule fois par fenêtre de cinq minutes**, et cette borne vaut le
+   correctif. Sans elle, une panne qui dure donne un téléphone qui recharge sans
+   fin — il n'afficherait alors *jamais* le message qui lui dit quoi faire.
+   `sessionStorage` (pas `localStorage`), lecture enveloppée : **Safari en
+   navigation privée lève à la simple lecture**, et il n'y a pas d'écran
+   d'erreur derrière un écran d'erreur.
+3. **On note AVANT de recharger.** Noter après, c'est ne jamais noter : la page
+   est déjà partie.
+4. **`pb-40` sous le bouton n'est pas de l'espacement.** Mesuré : la bulle de
+   l'assistant recouvrait 48 px du bouton dès que le message dépassait deux
+   lignes. Un contrôle rougit si la réserve disparaît.
+
+**Et un piège de mesure, qui a d'abord fait passer un contrôle pour rien :**
+Playwright émet `framenavigated` sur les navigations `pushState` du routeur,
+sans qu'aucune page n'ait rechargé. **C'est la requête de DOCUMENT qui signe un
+rechargement**, et elle seule.
 
 **« Terminés » et la facturation (10 août, au soir).** L'écran est un fil par
 mois ; l'encart « à facturer » vit dans le mois et se déplie d'un appui.

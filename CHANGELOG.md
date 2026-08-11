@@ -7,6 +7,52 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-11
+
+### « Réessayer » ne pouvait pas réparer un morceau de code disparu
+
+**Le patron, 18 h 02, deux captures de son téléphone.** L'indicateur de Next.js
+marqué **(stale)**, `ChunkLoadError`, « Failed to load chunk
+/_next/static/chunks/src_06hhplf._.js » — et dessous l'écran d'Atlas, « Une
+erreur — Cette page n'a pas pu s'afficher », avec un seul bouton : *Réessayer*.
+
+**Ce bouton ne pouvait pas le sauver.** `reset()` refait le rendu du même arbre
+React, avec les adresses de morceaux gravées dans le code déjà chargé — celui
+d'une version que le serveur ne sert plus. Il redemande le même fichier absent,
+obtient le même 404, retombe sur le même écran. Autant de fois qu'on appuie.
+
+Son espace redémarre son serveur plusieurs fois par soirée (mise à jour,
+bascule du banc, veilleur), et son onglet reste ouvert des heures — dix onglets
+sur la capture. Aucune suite ne pouvait le voir : elles ouvrent une page et la
+referment dans la minute, sur un serveur qui ne bouge pas. **C'est la durée de
+vie de son onglet qui fabrique la panne, pas le code.**
+
+**Désormais la page se recharge toute seule**, une fois par fenêtre de cinq
+minutes. La borne n'est pas un détail : recharger sur une panne qui revient
+donnerait un téléphone qui tourne en rond pour toujours — la pire des pannes,
+puisqu'elle n'affiche jamais rien à lire. Passé la borne, le message nomme les
+**deux** causes qui tiennent encore, mise à jour en cours ou connexion coupée,
+plutôt que d'en désigner une au hasard.
+
+Et la phrase propre à l'écran (« Impossible de charger le planning… ») s'efface
+sur cette panne-là : le planning n'y est pour rien, c'est la page entière qui a
+vieilli.
+
+**Au passage, deux choses qui traînaient.** Les dix `error.tsx` portaient dix
+copies du même corps — elles partagent maintenant `CorpsErreur`, sans quoi neuf
+écrans sur dix n'auraient jamais appris à se relever. Et la cause n'était
+affichée que sur l'écran racine, alors que le patron diagnostique depuis un
+téléphone : les neuf autres la taisaient. En production, elle reste tue.
+
+Éprouvé : `scripts/test-reprise-erreur.ts` (14 contrôles purs, dont son message
+exact et les cinq formulations de navigateurs — Safari compris, c'est le sien) et
+`scripts/test-reprise-morceau-e2e.ts` (la panne rejouée dans un vrai navigateur,
+à l'écran du patron). Les deux savent échouer : neutraliser la reconnaissance
+rend 8 rouges sur 14, et fait expirer le cas navigateur sur soixante secondes —
+exactement ce qu'il a vécu. `ARCHITECTURE.md` §59.
+
+---
+
 ## 2026-08-10
 
 ### Le devis à la main s'ouvre depuis la création du chantier
