@@ -12,7 +12,6 @@
 // seulement « la photo est en base » aurait été verte avec l'ancien lien.
 
 import { lancerNavigateur } from "./e2e-browser";
-import assert from "node:assert/strict";
 
 const BASE = "http://localhost:3000";
 
