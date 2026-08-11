@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-11
 
+### La phrase de pied part, et les deux portes se cherchent une place
+
+**Le patron, capture à l'appui :** *« on ne voit que création de chantier, on ne
+voit pas devis à la main. Donc il faut qu'on puisse voir les deux. »* Il a
+raison : le lien en capitales d'or est sous le bouton, dans la zone où l'œil ne
+revient pas une fois qu'il a trouvé ce qu'il cherchait — et sur son téléphone, la
+barre du navigateur mange le bas.
+
+**Retiré, à sa demande :** « Le nom crée la fiche du client. Le reste se corrige
+ensuite, sur le devis. » La ligne reste dans la page mais ne parle qu'en cas
+d'erreur, et **sa place reste réservée** : sans cela, l'apparition d'un message
+ferait sauter la mise en page d'une ligne sous le doigt qui vient d'appuyer.
+
+Ce qu'elle disait reste vrai et n'est plus écrit nulle part à l'écran : c'est le
+NOM qui crée la fiche client. Le jour où ce cas doit se voir, c'est sur l'écran
+du devis qu'il faudra le dire — pas en remettant une phrase permanente ici.
+
+**Proposé, et pas encore tranché :** `docs/maquettes/14-les-deux-portes.html`,
+six mises en page où les deux sorties se voient ensemble — la plaque partagée, les
+plaques jumelles, le diptyque, la bascule d'or, le sceau, la balance.
+
+**La bascule bouge sans une ligne de JavaScript**, par cases radio natives. Ce
+n'est pas une coquetterie : les maquettes qui engendraient leurs écrans en script
+lui rendaient une page blanche, et il a dit trois fois « Je ne peux pas ouvrir
+ça ». `scripts/verifier-maquette-bascule.mjs` joue donc la bascule **JavaScript
+coupé**, dans le fichier seul et dans la page unique — c'est la fusion, qui
+réécrit les sélecteurs pour confiner les feuilles de style, qui pourrait la
+casser en silence. Le contrôle sait échouer.
+
+---
+
 ### « Réessayer » ne pouvait pas réparer un morceau de code disparu
 
 **Le patron, 18 h 02, deux captures de son téléphone.** L'indicateur de Next.js

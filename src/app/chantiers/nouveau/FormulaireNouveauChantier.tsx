@@ -297,20 +297,29 @@ export default function FormulaireNouveauChantier({
               Ou rédiger le devis à la main →
             </button>
           </div>
-          {/* **Cette phrase était devenue fausse, et elle faisait peur pour
-              rien.** Elle annonçait que les informations « ne sont plus
-              modifiables ensuite » — c'était vrai quand elle a été écrite, plus
-              depuis que l'écran du devis les rend toutes éditables
-              (`majClientDuDevisAction`). Une mise en garde périmée est pire
-              qu'aucune : elle fait remplir un formulaire par crainte, et elle
-              apprend à se méfier d'un écran qui dit vrai ailleurs.
+          {/* **Cette ligne ne parle plus que quand il y a quelque chose à dire.**
+              Elle portait aussi, en permanence, « Le nom crée la fiche du
+              client. Le reste se corrige ensuite, sur le devis. » — retirée le
+              11 août 2026 à la demande du patron : l'écran est plus net sans
+              elle, et il connaît son application.
 
-              Ce qui reste vrai, et qui est la seule chose à savoir ici : c'est
-              le NOM qui crée la fiche client. Sans lui, aucun client n'est
-              rattaché, et le devis n'offre pas d'en ajouter un. */}
-          <p className="text-center text-[13px]" style={{ color: erreur ? colors.alert : colors.muted }}>
-            {erreur ??
-              "Le nom crée la fiche du client. Le reste se corrige ensuite, sur le devis."}
+              Ce qu'elle disait reste vrai et n'est écrit nulle part ailleurs à
+              l'écran : **c'est le NOM qui crée la fiche client**. Sans lui,
+              aucun client n'est rattaché, et le devis n'offre pas d'en ajouter
+              un après coup. Si ce cas devait un jour se voir, c'est sur l'écran
+              du devis qu'il faudrait le dire — pas en remettant une phrase
+              permanente ici.
+
+              La place, elle, est RÉSERVÉE en toutes circonstances : sans cela,
+              l'apparition d'une erreur ferait sauter la mise en page d'une
+              ligne sous le doigt qui vient d'appuyer. */}
+          <p
+            className="min-h-[19px] text-center text-[13px]"
+            style={{ color: colors.alert }}
+            role="alert"
+            aria-live="polite"
+          >
+            {erreur}
           </p>
         </form>
       </div>

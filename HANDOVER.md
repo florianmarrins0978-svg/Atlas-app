@@ -45,6 +45,30 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**La phrase de pied de la création est retirée, et six façons de montrer les
+deux portes sont proposées (11 août, tard).** Sa demande, capture à l'appui :
+*« on ne voit que création de chantier, on ne voit pas devis à la main »*.
+
+- **Retiré** : « Le nom crée la fiche du client. Le reste se corrige ensuite,
+  sur le devis. » La ligne subsiste mais ne parle qu'en cas d'erreur — sa place
+  reste **réservée** (`min-h-[19px]`), sinon l'apparition d'un message ferait
+  sauter la mise en page sous le doigt qui vient d'appuyer.
+- **Proposé** : `docs/maquettes/14-les-deux-portes.html`, six mises en page où
+  les deux sorties se voient d'un coup. **Le choix n'est pas fait** — voir
+  `TODO.md` §0 septies.
+
+**Deux choses à ne pas défaire dans cette maquette :**
+
+1. **Aucun script, et c'est éprouvé** — `node scripts/verifier-maquette-bascule.mjs`
+   joue la bascule **JavaScript coupé**, dans le fichier seul ET dans la page
+   unique, où la fusion réécrit les sélecteurs. C'est là que ça casserait sans
+   bruit. Le contrôle sait échouer : casser la règle `:checked ~` rend deux
+   rouges.
+2. **Le geste unique reste la question de fond.** Deux boutons à égalité
+   obligent tout le monde à trancher, alors que neuf fois sur dix la réponse est
+   « je dicterai » — c'est ce qui avait fait retenir le lien discret le 11 août
+   au matin. Seule la proposition 4 montre les deux **sans** rien demander.
+
 **L'écran d'erreur se relève tout seul d'un morceau de code disparu
 (11 août, au soir).** Sa capture de 18 h 02 : `ChunkLoadError`, « Failed to load
 chunk », et un bouton « Réessayer » qui ne pouvait pas marcher — `reset()` refait
@@ -125,7 +149,11 @@ Trois choses à savoir avant d'y toucher :
 - **La porte du tiroir reste**, et ce n'est pas un doublon : deux *moments*, pas
   deux chemins (« je sais déjà » vs « finalement je l'écris »).
 - **Sans nom de client, aucune fiche client n'est créée**, et le devis n'offre
-  pas d'en rattacher un — d'où la phrase de pied, qui dit exactement cela.
+  pas d'en rattacher un. **Ce n'est plus écrit nulle part à l'écran** depuis le
+  11 août au soir : le patron a fait retirer la phrase de pied qui le disait
+  (« Le nom crée la fiche du client… »), l'écran étant plus net sans elle. Le cas
+  reste vrai ; s'il devait un jour se voir, c'est **sur l'écran du devis** qu'il
+  faudrait le dire — pas en remettant une phrase permanente sur la création.
 - **La réserve de bas d'écran (`pb-40`) ne vaut qu'en page.** En feuille, celle-ci
   est `fixed` en `z-[50]` et recouvre déjà la bulle : y ajouter la même réserve
   ne protège de rien et laisse quatre-vingts pixels de vide.

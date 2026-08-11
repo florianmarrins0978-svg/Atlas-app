@@ -106,6 +106,13 @@ const MAQUETTES = [
     quoi: "Sans le cheveu sous ATLAS. Les trois formes de liste × Origine, Ivoire, Sylve, Océan.",
     retenu: true,
   },
+  {
+    fichier: "14-les-deux-portes.html",
+    titre: "Les deux portes, côte à côte",
+    famille: "Après la décision",
+    quoi: "Six façons de montrer « créer le chantier » ET « devis à la main » d’un seul coup d’œil. La 4 bascule pour de bon, sans script.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
