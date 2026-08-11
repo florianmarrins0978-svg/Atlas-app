@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-11
 
+### La bascule retenue, puis affinée — six déclinaisons
+
+**Le patron, dans la foulée :** *« pars sur l'idée de la proposition numéro
+quatre, et modifie-la pour que ce soit beaucoup plus esthétique et élégant ».*
+
+`docs/maquettes/15-la-bascule-affinee.html`. Ce qui est acquis et ne se
+rediscute plus : les deux chemins se voient, et il n'y a qu'un bouton à toucher.
+Ce qui change d'une déclinaison à l'autre, c'est la façon dont le choix se
+dessine — le premier essai étant le plus bavard de tous, parce que
+l'appareillage (deux onglets en capitales, un filet qui saute) se voyait plus
+que le choix.
+
+**Quatre gestes font l'élégance ici, et ils valent au-delà de cet écran :**
+la serif remplace les capitales (un mot en capitales est un panneau, le même en
+serif est une phrase) ; le repère **glisse** au lieu de sauter ; le mot du bouton
+se **fond** au lieu de clignoter, deux libellés superposés dans la même case de
+grille — le bouton ne change donc jamais de largeur sous le doigt ; et l'or ne
+souligne que ce qui est retenu.
+
+**Un piège de mesure, qui a fait accuser six maquettes justes.** Le contrôle
+lisait le libellé du bouton juste après le clic : pendant la première moitié
+d'un fondu de 260 ms, l'ancien mot est encore au-dessus de 0,5 d'opacité, et
+deux lectures identiques d'affilée y sont la NORME, pas le signe que c'est fini.
+Six rouges sur un comportement correct. Le contrôle exige désormais une valeur
+tenue plus longtemps que la plus longue transition — et il est devenu générique
+(il cherche les blocs marqués `data-bascule`), donc une septième déclinaison
+serait éprouvée sans qu'on y touche.
+
+---
+
 ### La phrase de pied part, et les deux portes se cherchent une place
 
 **Le patron, capture à l'appui :** *« on ne voit que création de chantier, on ne

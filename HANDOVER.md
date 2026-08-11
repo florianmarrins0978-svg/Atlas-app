@@ -54,16 +54,29 @@ deux portes sont proposées (11 août, tard).** Sa demande, capture à l'appui :
   reste **réservée** (`min-h-[19px]`), sinon l'apparition d'un message ferait
   sauter la mise en page sous le doigt qui vient d'appuyer.
 - **Proposé** : `docs/maquettes/14-les-deux-portes.html`, six mises en page où
-  les deux sorties se voient d'un coup. **Le choix n'est pas fait** — voir
-  `TODO.md` §0 septies.
+  les deux sorties se voient d'un coup. **Il a retenu la n° 4, la bascule**, et
+  demandé plus élégant : six déclinaisons de cette seule idée sont dans
+  `docs/maquettes/15-la-bascule-affinee.html`. **Laquelle n'est pas encore
+  tranché** — voir `TODO.md` §0 septies.
 
 **Deux choses à ne pas défaire dans cette maquette :**
 
 1. **Aucun script, et c'est éprouvé** — `node scripts/verifier-maquette-bascule.mjs`
-   joue la bascule **JavaScript coupé**, dans le fichier seul ET dans la page
-   unique, où la fusion réécrit les sélecteurs. C'est là que ça casserait sans
-   bruit. Le contrôle sait échouer : casser la règle `:checked ~` rend deux
-   rouges.
+   joue les **huit** bascules des maquettes 14 et 15 **JavaScript coupé**, dans
+   les fichiers seuls ET dans la page unique, où la fusion réécrit les
+   sélecteurs. C'est là que ça casserait sans bruit. Il est générique : il
+   cherche les blocs marqués `data-bascule` et les mots marqués `data-mot` —
+   une déclinaison de plus est donc éprouvée sans qu'on touche au contrôle, et
+   le NOMBRE attendu par fichier y est écrit pour qu'une déclinaison oubliée ne
+   passe pas en silence. Il sait échouer : casser la règle `:checked ~` rend
+   douze rouges.
+
+   **Et le piège qu'il a coûté :** lire le libellé du bouton juste après le clic
+   donne l'état d'AVANT. Pendant la première moitié d'un fondu de 260 ms,
+   l'ancien mot est encore au-dessus de 0,5 d'opacité — deux lectures identiques
+   d'affilée y sont la norme. Six maquettes justes ont été déclarées rouges pour
+   cela. On exige donc une valeur **tenue plus longtemps que la plus longue
+   transition**, jamais deux lectures d'affilée.
 2. **Le geste unique reste la question de fond.** Deux boutons à égalité
    obligent tout le monde à trancher, alors que neuf fois sur dix la réponse est
    « je dicterai » — c'est ce qui avait fait retenir le lien discret le 11 août

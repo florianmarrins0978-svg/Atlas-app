@@ -113,6 +113,13 @@ const MAQUETTES = [
     quoi: "Six façons de montrer « créer le chantier » ET « devis à la main » d’un seul coup d’œil. La 4 bascule pour de bon, sans script.",
     retenu: true,
   },
+  {
+    fichier: "15-la-bascule-affinee.html",
+    titre: "La bascule, affinée",
+    famille: "Après la décision",
+    quoi: "Six déclinaisons de la proposition 4 : le trait qui glisse, le point d’or, la plage, la perle, le cartouche, la bascule en pied.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

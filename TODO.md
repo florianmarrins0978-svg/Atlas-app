@@ -33,15 +33,18 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 on ne voit pas devis à la main. Il faut qu'on puisse voir les deux, dans un style
 très luxueux et très moderne. »*
 
-Six propositions sont prêtes : `docs/maquettes/14-les-deux-portes.html`. **Rien
-n'est appliqué au produit tant qu'il n'a pas choisi** — appliquer d'office
-reviendrait à trancher à sa place une question qu'il a posée.
+Six propositions ont été montrées (`docs/maquettes/14-les-deux-portes.html`).
+**Il a retenu la n° 4, la bascule**, et demandé plus élégant : six déclinaisons
+de cette seule idée sont dans `docs/maquettes/15-la-bascule-affinee.html` — le
+trait qui glisse, le point d'or, la plage, la perle, le cartouche, la bascule en
+pied. **Rien n'est appliqué au produit tant qu'il n'a pas choisi laquelle** —
+appliquer d'office reviendrait à trancher à sa place une question qu'il a posée.
 
-Ce qui est en jeu, et qu'il faut lui redire s'il hésite : **deux boutons à
+Ce qui a fait retenir la bascule, et qui ne se rediscute pas : **deux boutons à
 égalité obligent tout le monde à trancher**, alors que neuf fois sur dix la
 réponse est « je dicterai ». C'est la raison pour laquelle le lien discret avait
-été retenu le matin même. La proposition 4 (la bascule) est la seule qui montre
-les deux chemins sans rien demander — un seul bouton, dont le mot suit l'onglet.
+été retenu le matin même. La bascule est la seule forme qui montre les deux
+chemins sans rien demander — un seul bouton, dont le mot suit le choix.
 
 Une fois le choix fait : le geste ne change pas (`creerPuisAller("fiche" |
 "devis")`, une seule fonction de création), seule la mise en page du bloc
