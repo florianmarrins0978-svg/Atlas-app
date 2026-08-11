@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, texteSituation } from "@/lib/design-tokens";
@@ -40,6 +40,28 @@ import ListeChantiers, { type BrinChantier } from "./ListeChantiers";
 // la base. La maquette ne fixe que la présentation.
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Les onze grains d'or projetés à l'appui : leur point d'arrivée, leur taille
+ *  et leur retard.
+ *
+ *  **Ces nombres sont ceux de la maquette retenue**, repris tels quels
+ *  (`docs/maquettes/24-le-bouton-retenu.html`). Ils sont volontairement
+ *  irréguliers : onze grains à la même distance dessinent une roue de vélo, pas
+ *  une gerbe. Le patron a lui-même ramené leur nombre de seize à onze et leur
+ *  portée de 58 à 46 px — ne pas les « arrondir ». */
+const GRAINS = [
+  { x: 7.7, y: -36.9, l: 2.3, t: 9 },
+  { x: 17.0, y: -44.8, l: 1.6, t: 43 },
+  { x: 34.9, y: -22.6, l: 1.7, t: 22 },
+  { x: 35.2, y: 2.1, l: 1.8, t: 0 },
+  { x: 35.0, y: 29.0, l: 1.9, t: 34 },
+  { x: 9.5, y: 38.0, l: 2.0, t: 13 },
+  { x: -18.7, y: 45.7, l: 2.2, t: 47 },
+  { x: -36.7, y: 22.4, l: 2.3, t: 26 },
+  { x: -36.5, y: -3.1, l: 2.4, t: 5 },
+  { x: -45.5, y: -11.3, l: 1.6, t: 39 },
+  { x: -25.9, y: -31.2, l: 1.8, t: 18 },
+] as const;
+
 export default function EcranChantiers({
   prenom,
   chantiers,
@@ -52,6 +74,39 @@ export default function EcranChantiers({
 }) {
   const router = useRouter();
   const [ouvert, setOuvert] = useState(false);
+
+  // ── Le geste du bouton ─────────────────────────────────────────────────
+  //
+  // Une demi-seconde sépare l'appui de la feuille : c'est le temps du tour et
+  // de la gerbe. Trois précautions, et aucune n'est décorative :
+  //
+  //   · un second appui pendant le geste est ignoré — sinon deux feuilles, et
+  //     le patron crée deux fois le même chantier ;
+  //   · sous « mouvement réduit », la feuille monte TOUT DE SUITE : attendre
+  //     une animation qui ne joue pas ferait passer un réglage d'accessibilité
+  //     pour une lenteur ;
+  //   · les minuteries sont annulées au démontage, sinon React reçoit un
+  //     changement d'état sur un écran qui n'existe plus.
+  const [anime, setAnime] = useState(false);
+  const minuteries = useRef<number[]>([]);
+  useEffect(() => {
+    const encours = minuteries.current;
+    return () => encours.forEach((m) => window.clearTimeout(m));
+  }, []);
+
+  function ouvrirAvecLeGeste() {
+    if (anime) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setOuvert(true);
+      return;
+    }
+    setAnime(true);
+    // 520 ms : la mesure de la maquette retenue. Le tour dure 560 ms, la
+    // feuille part donc juste avant qu'il ne s'achève — attendre la fin
+    // complète ajoutait un temps mort qui se sentait.
+    minuteries.current.push(window.setTimeout(() => setOuvert(true), 520));
+    minuteries.current.push(window.setTimeout(() => setAnime(false), 940));
+  }
 
   // Le retrait, et le tiroir qui le retient. L'écriture n'a lieu qu'à la
   // fermeture du tiroir : d'ici là la ligne n'est que masquée, et « Annuler »
@@ -144,27 +199,60 @@ export default function EcranChantiers({
         {/* Le seul trait de l'en-tête : celui qui le ferme. */}
         <div className="mx-[26px] mt-[26px] h-px" style={{ backgroundColor: colors.line }} />
 
-        {/* L'action reste un LIEN : sans JavaScript, ou en ouvrant dans un
+        {/* ── L'action ───────────────────────────────────────────────────
+            **L'aplat vert a été refusé le 11 août 2026** — « ce gros bouton en
+            plein milieu, ça ne fait pas très luxe » — et ce qui le remplace a
+            été arrêté par le patron après onze maquettes : le mot écrit, un
+            anneau d'un cheveu à sa droite qui BAT tant qu'on ne l'a pas touché,
+            et à l'appui trois tours avec onze grains d'or, puis la feuille une
+            demi-seconde plus tard.
+
+            Toutes les mesures viennent de `docs/maquettes/24-le-bouton-retenu.html`,
+            où elles sont chiffrées une à une : il les a resserrées lui-même
+            (l'onde d'attente, la taille du rond, le nombre de grains). Ne pas
+            les réinventer ici — les deux finiraient par diverger.
+
+            L'action reste un LIEN : sans JavaScript, ou en ouvrant dans un
             nouvel onglet, elle mène à l'écran entier. Le clic ordinaire est
-            détourné pour faire monter la feuille — la route ne disparaît pas,
-            elle change de porte. */}
-        <Link
-          href="/chantiers/nouveau"
-          onClick={(e) => {
-            if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-            e.preventDefault();
-            setOuvert(true);
-          }}
-          className="mx-[26px] mt-[22px] flex items-center justify-between gap-4 px-5 py-4 transition-transform active:scale-[0.985]"
-          style={{ backgroundColor: colors.rust, color: colors.card, borderRadius: 5 }}
-        >
-          <span className="text-[18px] leading-tight" style={{ fontFamily: font.display }}>
-            Nouveau chantier
-          </span>
-          <span className="text-[18px] leading-none" style={{ color: colors.orClair }} aria-hidden="true">
-            +
-          </span>
-        </Link>
+            détourné pour jouer le geste puis faire monter la feuille — la route
+            ne disparaît pas, elle change de porte. */}
+        <div className="flex justify-center px-[26px] pb-0.5 pt-[22px]">
+          <Link
+            href="/chantiers/nouveau"
+            data-atlas="nouveau-chantier"
+            data-geste={anime ? "part" : undefined}
+            onClick={(e) => {
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+              e.preventDefault();
+              ouvrirAvecLeGeste();
+            }}
+            className="atlas-geste-nouveau"
+          >
+            <span className="atlas-mot">Nouveau chantier</span>
+            <span className="atlas-rond">
+              <span className="atlas-pouls" aria-hidden="true" />
+              <span className="atlas-cerne" aria-hidden="true" />
+              <span className="atlas-gerbe" aria-hidden="true">
+                {GRAINS.map(({ x, y, l, t }) => (
+                  <i
+                    key={`${x}-${y}`}
+                    style={
+                      {
+                        "--x": `${x}px`,
+                        "--y": `${y}px`,
+                        "--l": `${l}px`,
+                        "--t": `${t}ms`,
+                      } as CSSProperties
+                    }
+                  />
+                ))}
+              </span>
+              <svg className="atlas-signe" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                <path d="M16 9.6v12.8M9.6 16h12.8" stroke={colors.or} strokeWidth="1.25" />
+              </svg>
+            </span>
+          </Link>
+        </div>
 
         <div
           className="mx-[26px] mb-1 mt-[30px] flex justify-between text-[9.5px] font-medium uppercase"

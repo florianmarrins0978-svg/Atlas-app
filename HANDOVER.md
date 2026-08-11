@@ -64,6 +64,22 @@ rond, à la place de l'aplat, la gerbe et la demi-seconde. Ce qui est ouvert : l
 disque du tout) et la **façon dont la page arrive** — deux propositions font
 grandir le bouton jusqu'à ce qu'il DEVIENNE la page.
 
+**Le bouton « Nouveau chantier » est CODÉ (11 août, au soir).** L'aplat vert a
+disparu de `EcranChantiers.tsx` : à sa place, le mot écrit et un anneau d'un
+cheveu qui bat tant qu'on ne l'a pas touché ; à l'appui, trois tours, onze
+grains d'or, et la feuille 520 ms plus tard. Toutes les mesures viennent de
+`docs/maquettes/24-le-bouton-retenu.html` — **les reprendre de là si on y
+retouche**, jamais de mémoire.
+
+**Quatre choses à ne pas défaire**, chacune payée par un défaut réel :
+l'enfoncement immédiat (140 ms) sans lequel la demi-seconde passe pour une
+panne ; l'ignorance du second appui, sans laquelle deux chantiers naissent au
+lieu d'un ; le respect de « mouvement réduit », qui ouvre alors tout de suite ;
+et le `href` conservé, qui mène à l'écran entier avant l'hydratation.
+
+*Ce qui suit est l'historique du choix, gardé pour ne pas rouvrir ce qui est
+clos.*
+
 **LE BOUTON EST ARRÊTÉ, ET CHIFFRÉ — c'est par là qu'on reprend.**
 `docs/maquettes/24-le-bouton-retenu.html` : « Nouveau chantier » écrit, le rond
 qui bat à sa droite, trois tours et onze grains d'or à l'appui, la feuille une

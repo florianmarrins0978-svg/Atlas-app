@@ -357,7 +357,7 @@ Ce que la bascule coûtera, quand il aura choisi : la charte de
 encre au lieu du vert pin pour l'action, bronze au lieu de l'or), et **tous** les
 écrans suivent — pas seulement Chantiers. À ne pas entamer écran par écran.
 
-### 0 terdecies. L'action « Nouveau chantier » — ARRÊTÉE, reste à coder
+### ~~0 terdecies. L'action « Nouveau chantier »~~ — **close le 2026-08-11, codée et éprouvée**
 
 Le 11 août 2026, capture à l'appui : *« j'aime pas le gros bouton nouveau
 chantier […] ce gros bouton en plein milieu, ça ne fait pas très luxe »*. Le
@@ -372,7 +372,14 @@ matières** (laque, or brossé, cire, encre vivante, ou pas de disque du tout) e
 **deux ouvertures où le bouton devient la page** au lieu de faire monter une
 feuille.
 
-**LE BOUTON EST ARRÊTÉ (11 août, au soir), et il est chiffré.** C'est
+**FAIT.** Le bouton est dans l'application depuis le 11 août au soir :
+`src/app/EcranChantiers.tsx` et `src/app/globals.css`. Éprouvé par
+`scripts/test-bouton-nouveau-chantier-e2e.ts` (la demi-seconde, le double appui,
+le mouvement réduit), regardé par
+`scripts/capture-bouton-nouveau-chantier.mts` (attente, geste, feuille). 108
+suites base et 49 suites navigateur au vert, connexion réelle comprise.
+
+**Ce qui a été retenu, pour mémoire :** C'est
 `docs/maquettes/24-le-bouton-retenu.html` : **« Nouveau chantier » écrit, le
 rond d'un cheveu qui bat à sa droite**, et à l'appui **trois tours avec onze
 grains d'or**, puis la feuille une demi-seconde plus tard. Toutes les mesures

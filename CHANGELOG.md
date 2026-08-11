@@ -34,6 +34,40 @@ Rien n'est codé : l'application porte toujours l'aplat (`TODO.md`, 0 terdecies)
 3. **Aucun script**, comme les treize maquettes précédentes : son lecteur n'en
    exécute pas, et une page engendrée en JavaScript lui arrive vide.
 
+### L'aplat vert est remplacé — le bouton est CODÉ
+
+Douze jours après le refus (*« ce gros bouton en plein milieu, ça ne fait pas
+très luxe »*) et vingt-quatre maquettes plus tard, `src/app/EcranChantiers.tsx`
+porte enfin le bouton qu'il a arrêté : **« Nouveau chantier » écrit, un anneau
+d'un cheveu à sa droite qui BAT tant qu'on ne l'a pas touché**, et à l'appui
+**trois tours avec onze grains d'or**, puis la feuille 520 ms plus tard.
+
+**Les mesures viennent de la maquette, pas d'un souvenir.** Les onze grains
+sont recopiés un à un depuis `docs/maquettes/24-le-bouton-retenu.html`, avec
+leurs distances irrégulières — onze grains à la même distance dessinent une roue
+de vélo, pas une gerbe. Les réinventer, c'était s'assurer que l'écran et la
+maquette divergent au premier retour.
+
+**Ce que le geste protège, et qui n'est pas décoratif :**
+
+- **l'appui s'enfonce en 140 ms**, bien avant la fin du tour — une demi-seconde
+  sans réponse se lit comme une panne, et on appuie deux fois ;
+- **un second appui pendant le geste est ignoré** — sans quoi deux chantiers
+  naissent là où il n'en voulait qu'un ;
+- **sous « mouvement réduit », la feuille monte tout de suite**, sans battement
+  ni gerbe : attendre une animation qui ne joue pas ferait passer un réglage
+  d'accessibilité pour une lenteur ;
+- **le lien garde son `href`** : sans JavaScript, ou avant l'hydratation, il
+  mène à l'écran entier. C'est le repli, et il est voulu.
+
+`scripts/test-bouton-nouveau-chantier-e2e.ts` mesure la demi-seconde et le
+double appui ; `scripts/capture-bouton-nouveau-chantier.mts` prend les trois
+états — l'attente, le geste figé à mi-course, la feuille — parce que trois
+défauts de ces maquettes n'ont été trouvés que par une capture.
+
+**Une variable de plus dans la palette** : `--or`, le second accent, qui
+n'existait que dans `design-tokens.ts` et pas en CSS.
+
 ### Le bouton est arrêté : le mot, le rond qui bat, resserré
 
 Il a retenu la première disposition — *« j'aime bien le premier »* — et demandé
