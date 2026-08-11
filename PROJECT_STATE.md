@@ -127,7 +127,16 @@ l'application. Ce qui est **fait** :
   jour quand on arrive au bout (corrigé le 11 août 2026 : elle était posée sur le
   chantier en attente, donc tout en bas chez le patron — `ARCHITECTURE.md` §59),
   le trait qui glisse sous les onglets, et « Nouveau chantier » qui monte en
-  feuille pendant que la liste recule.
+  feuille pendant que la liste recule. **Le fil glisse librement depuis le 11
+  août 2026** : `scroll-snap-stop: always` l'arrêtait à chaque chantier — le
+  patron le lisait comme du saccadé — et aucune zone qui défile ne montre plus
+  sa barre grise. Le masque en dégradé et l'animation d'opacité sont hors de
+  cause, c'est **mesuré** (`scripts/mesurer-fluidite-fil.mts`) : ne pas les
+  accuser sans relancer la mesure.
+- **Le devis à la main** : ses trois zones de texte mesurent leur hauteur au
+  lieu de l'estimer (11 août 2026). Elles comptaient les caractères ou les
+  retours à la ligne, alors qu'un texte se coupe au mot : le devis cachait 24 px
+  de ce que le patron venait d'y écrire.
 - **Planning, Terminés, Réglages, relevé de TVA, fiche chantier** : même
   en-tête, mêmes rayons, mêmes capitales.
 - **Les six écrans d'étape** : en-tête et boutons. Les corps de **Photos**, de

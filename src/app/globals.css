@@ -138,6 +138,23 @@ body {
   -webkit-overflow-scrolling: touch;
   mask-image: linear-gradient(180deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
   -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+  /* **La barre grise n'a rien à faire ici.** Le patron, le 11 août 2026 :
+   * *« quand on slide, il y a une espèce de bande déroulante grise qui apparaît
+   * sur le côté à droite. Supprime-moi ça, je ne veux pas voir ça du tout, je
+   * veux juste que ça slide. »*
+   *
+   * Ce n'était pas un désaccord de goût, c'était un oubli : les trois autres
+   * zones qui défilent — `.atlas-glisse`, `.atlas-glisseur`, `.atlas-pellicule`
+   * — la masquent depuis toujours. Celle-ci, **la plus vue de l'application**,
+   * avait été sautée, et rien ne pouvait le dire : chaque zone porte la règle
+   * chez elle, et personne ne comptait les zones.
+   *
+   * `scripts/test-aucune-barre-de-defilement-e2e.ts` les compte désormais, sur
+   * tout le parcours — pour que la prochaine ne soit pas oubliée à son tour. */
+  scrollbar-width: none;
+}
+.atlas-fil-defile::-webkit-scrollbar {
+  display: none;
 }
 
 /* La marge de fin est portée par le FIL, jamais par le cadre qui défile : posée
@@ -161,8 +178,28 @@ body {
  * de la page, et un trait posé sous elle disparaît. Le défaut ne se voit que
  * sur une capture — la structure, elle, semblait juste. */
 
-/* `scroll-snap-stop: always` : un geste vif avance d'un chantier, et d'un seul.
- * Sans lui il en saute trois, et la perle paraît sauter avec eux.
+/* L'accroche aligne la perle sur un chantier À L'ARRÊT, et rien de plus.
+ *
+ * **`scroll-snap-stop: always` a été retiré le 11 août 2026, et c'est la
+ * réponse à « c'est saccadé ».** Il avait été posé la veille pour qu'un geste
+ * vif n'avance que d'un chantier — sans lui il en sautait trois, et la perle
+ * paraissait sauter avec eux. Mais `always` ne ralentit pas l'élan : il
+ * l'ARRÊTE au premier point rencontré. Le doigt lance la liste, la liste se
+ * bloque, et il faut recommencer à chaque chantier. C'est très exactement ce
+ * que le patron décrit : *« quand je slide en haut ou en bas, c'est
+ * saccadé »*, *« je veux juste que ça slide »*.
+ *
+ * Ce qui reste — `proximity` sur le cadre, `center` ici — suffit à la perle :
+ * l'élan court librement, et la liste se recale sur un chantier en s'arrêtant.
+ * On perd « un geste = un chantier », on gagne un défilement qui glisse ; c'est
+ * l'arbitrage qu'il a demandé, dans ses mots.
+ *
+ * **Le coût de rendu, lui, avait été mis hors de cause AVANT de toucher à quoi
+ * que ce soit** (`scripts/mesurer-fluidite-fil.mts`). Le masque en dégradé et
+ * l'animation d'opacité mesurent la même chose que sans eux — 60 images par
+ * seconde, médiane 16,7 ms, dans les quatre combinaisons. Les retirer aurait
+ * abîmé l'écran sans rien gagner, et c'est précisément le genre de correctif
+ * imaginé que ce dépôt a déjà payé trois fois (`AGENTS.md`).
  *
  * **Porté par l'enveloppe, pas par le contenu** (10 août 2026). C'est
  * `.atlas-ligne` qui se referme au retrait ; l'accroche doit vivre sur elle,
@@ -170,7 +207,6 @@ body {
  * défilement bute sur du vide. */
 .atlas-ligne {
   scroll-snap-align: center;
-  scroll-snap-stop: always;
 }
 
 /* La perle se tient à mi-hauteur du cadre qui défile : les chantiers passent

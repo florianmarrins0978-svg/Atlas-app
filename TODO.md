@@ -27,6 +27,26 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 bis. Si le fil accroche ENCORE chez le patron : le masque, sur iOS
+
+**Ouvert le 11 août 2026, et volontairement laissé ouvert.** Le saccadé signalé
+ce soir-là avait pour cause `scroll-snap-stop: always`, retiré ; la mesure a mis
+le masque en dégradé et l'animation d'opacité hors de cause — mais **elle a
+mesuré Chromium sans tête sur cette machine**, pas Safari sur son iPhone, et
+elle n'a pas pu produire l'élan d'un vrai doigt.
+
+Si la plainte revient, le suspect suivant est le `mask-image` de
+`.atlas-fil-defile` : sur iOS, un cadre masqué se recompose à chaque image du
+défilement. Le correctif est écrit d'avance et ne coûte rien à l'œil —
+**déplacer le fondu sur `.atlas-ecran`**, en deux dégradés posés PAR-DESSUS
+(couleur `--card`, `pointer-events: none`), plutôt qu'en masque SUR le cadre qui
+défile. Alléger, c'est déplacer.
+
+Deux précautions à ce moment-là : les dégradés doivent être placés aux bords de
+la zone qui défile, pas du cadre (l'en-tête n'est pas dedans), et une capture
+avant/après doit être identique — sinon on aura échangé un défaut contre un
+autre.
+
 ### ~~0 ter. Les suites navigateur mesuraient un écran que personne ne possède~~ — **close le 2026-08-11**
 
 **Trouvé le 11 août 2026, et le patron l'a payé.** Les suites posaient un cadre
