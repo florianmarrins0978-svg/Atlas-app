@@ -164,6 +164,11 @@ l'application. Ce qui est **fait** :
   maquette (client en serif **avant** le titre, pastille sur la ligne de la
   flèche, pas de trait de fermeture), par trois réglages **facultatifs** de
   `EnTeteEcran` qui laissent les autres écrans intacts. `ARCHITECTURE.md` §57.
+- **Le devis à la main s'ouvre depuis la création du chantier** (11 août) : un
+  lien discret sous « Créer le chantier ». Le chantier est créé, puis le devis
+  s'ouvre avec le client déjà en en-tête — nom, adresse, téléphone. La porte du
+  tiroir reste : ce sont deux moments, pas deux chemins.
+  `scripts/test-devis-main-depuis-creation-e2e.ts`.
 - **Les suites mesurent l'écran du patron, et cherchent ce que le doigt
   n'atteint pas** (11 août) : le cadre vit à un seul endroit
   (`ECRAN_DU_PATRON`, 390 × 664 au lieu des 393 × 852 qu'on posait — la dalle

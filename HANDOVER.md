@@ -86,6 +86,22 @@ enregistre) ; avec, il redevient le lecteur. Le magnétophone est partagé
 (`src/app/chantiers/[id]/magnetophone.ts`) — ne pas le recopier dans un
 troisième écran.
 
+**Le devis à la main s'ouvre aussi depuis l'écran de création (11 août, soir).**
+`creerPuisAller("fiche" | "devis")` — **une seule fonction de création**, deux
+destinations. Le chantier est créé d'abord : c'est ce qui permet à
+`devis-complet` de relire le client. Deux fonctions auraient divergé au premier
+champ ajouté.
+
+Trois choses à savoir avant d'y toucher :
+
+- **La porte du tiroir reste**, et ce n'est pas un doublon : deux *moments*, pas
+  deux chemins (« je sais déjà » vs « finalement je l'écris »).
+- **Sans nom de client, aucune fiche client n'est créée**, et le devis n'offre
+  pas d'en rattacher un — d'où la phrase de pied, qui dit exactement cela.
+- **La réserve de bas d'écran (`pb-40`) ne vaut qu'en page.** En feuille, celle-ci
+  est `fixed` en `z-[50]` et recouvre déjà la bulle : y ajouter la même réserve
+  ne protège de rien et laisse quatre-vingts pixels de vide.
+
 **Le corps de la fiche ne porte QUE l'anneau (11 août, après-midi).** Sa
 maquette (`maquettes/atlas-note-vocale.html`) ne montre aucun bouton, et il l'a
 redemandé deux fois : *« exactement, respecte strictement ma maquette »*. Ce

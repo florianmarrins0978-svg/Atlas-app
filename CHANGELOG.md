@@ -9,6 +9,56 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Le devis à la main s'ouvre depuis la création du chantier
+
+**Le patron, le 11 août 2026 :** *« si je clique sur "ou rédiger le devis à la
+main", ça m'ouvre la page du devis complet, avec les informations du client qui
+se seront ajoutées automatiquement ? C'est bien ça ? »* — oui, et il avait
+raison de le demander avant de valider : c'était précisément le point qui
+pouvait rendre la porte inutile.
+
+Le lien est posé **sous** le bouton principal, en or, discret. Ce n'est pas un
+choix cosmétique : deux boutons à égalité auraient obligé tout le monde à
+trancher avant même d'avoir vu le chantier, alors que neuf fois sur dix la
+réponse est « je dicterai ». Ici, « Créer le chantier » reste le geste évident.
+
+**Une seule fonction crée le chantier, deux destinations en sortent.** Le
+chantier est créé d'abord — c'est ce qui permet à `devis-complet` de relire le
+client rattaché. Sauter la création pour « gagner du temps » aurait produit
+exactement le devis orphelin qu'il redoutait.
+
+**Elle ne remplace pas celle du tiroir, et ce n'est pas un doublon.** Ce sont
+deux *moments*, pas deux chemins : ici, « je sais déjà que je l'écrirai
+moi-même » ; sur la fiche, « j'ai commencé, finalement je l'écris ». Retirer la
+seconde enfermerait un chantier créé la veille dont la dictée n'a rien donné.
+
+### Deux défauts trouvés en regardant l'écran de création, aucun par un test
+
+- **Une mise en garde devenue fausse.** « Ces informations ne sont plus
+  modifiables ensuite » : c'était vrai quand la phrase a été écrite, plus depuis
+  que le devis les rend toutes éditables (`majClientDuDevisAction`). Une mise en
+  garde périmée est pire qu'aucune — elle fait remplir un formulaire par crainte,
+  et elle apprend à se méfier d'un écran qui dit vrai ailleurs. Elle dit
+  maintenant ce qui reste vrai, et c'est utile : **c'est le nom qui crée la fiche
+  client**, et sans lui le devis n'offre pas d'en rattacher un.
+- **La bulle de l'assistant recouvrait cette phrase**, et `finDePage: 0` —
+  aucun défilement ne l'en dégageait. Illisible en permanence, sur la moitié de
+  sa largeur. Quatrième défaut de cette famille sur ce dépôt.
+
+**Et la réserve du bas d'écran ne vaut qu'EN PAGE.** La poser aussi sur la
+feuille ajoutait quatre-vingts pixels de vide pour se protéger de quelque chose
+qui n'y arrive pas : la feuille est `fixed` en `z-[50]` et recouvre déjà la
+bulle. Vu en mesurant les deux formes, pas en supposant que la seconde
+ressemblait à la première.
+
+**Un contrôle qui a d'abord accusé à tort**, et c'est la partie qui a demandé le
+plus d'attention : sa première version lisait le texte de la page et annonçait
+que le client manquait sur le devis — c'est-à-dire exactement la panne que le
+patron redoutait. L'en-tête du devis est fait de champs éditables, et
+`innerText` ne rend jamais la valeur d'un `<input>`. Le nom était là, sous les
+yeux. Le contrôle lit désormais la valeur des champs, et il a été vérifié rouge
+en cassant la destination.
+
 ### Toutes les suites mesurent enfin l'écran que le patron a dans la main
 
 *« Fais tout ce que tu penses qu'il faut faire pour que l'application
