@@ -1,9 +1,9 @@
 "use client";
 
-import { Fragment } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { colors, font } from "@/lib/design-tokens";
-import { chantierQuiPorteLaPerle } from "@/lib/perle-attente";
+import { descenteDeLaPerle } from "@/lib/perle-descente";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 
 /**
@@ -75,10 +75,10 @@ export type BrinChantier = {
  * liste de chantiers n'est pas un tableau de bord ; ce qui doit se voir, c'est
  * la suite des jours, pas le contenant.
  *
- * **La perle est le seul point de couleur de l'écran**, et elle ne se pose que
- * sur le PREMIER chantier qui attend une réponse. Une couleur qui ne veut rien
- * dire est une couleur en trop : c'est la règle de charte née de la maquette 12
- * et elle vaut partout ailleurs.
+ * **La perle est le seul point de couleur de l'écran**, et elle se tient à
+ * mi-hauteur, toujours : elle désigne le chantier qu'on regarde, pas un état.
+ * Une couleur qui ne veut rien dire est une couleur en trop — celle-ci veut
+ * dire « voici où vous en êtes ».
  *
  * **Le retrait a changé de mécanique le 10 août 2026, au soir.** La corbeille
  * rouge qui se découvrait sous la carte a cédé la place au geste retenu : le
@@ -100,63 +100,137 @@ export default function ListeChantiers({
   estRetire: (id: string) => boolean;
   onRetirer: (id: string, libelle: string) => void;
 }) {
-  // La règle vit dans une fonction pure : elle se casse sur des listes que le
-  // banc ne contient pas (aucune attente, plusieurs, la dernière), et aucune de
-  // ces situations ne s'atteint en cliquant.
-  //
-  // Elle ne voit que ce qui RESTE : la perle posée devant une ligne en train de
-  // tomber descendrait avec elle, puis sauterait.
-  const visibles = chantiers.filter((c) => !estRetire(c.id));
-  const premierEnAttente = chantierQuiPorteLaPerle(visibles);
+  const perle = useRef<HTMLSpanElement>(null);
+
+  // **La descente sur le dernier jour, et rien d'autre.** Le maintien à
+  // mi-hauteur reste du CSS (`position: sticky`) : le navigateur suit le doigt
+  // mieux que nous, y compris pendant l'élan. Ce qu'il ne sait pas faire, c'est
+  // faire descendre la perle pendant que le contenu monte — le pourquoi est
+  // dans `src/lib/perle-descente.ts`. On ne calcule donc que ce supplément, et
+  // on le passe au CSS par une variable plutôt qu'en écrivant une position :
+  // si ce code ne tourne pas, la perle reste au milieu, ce qui est encore juste.
+  useEffect(() => {
+    const point = perle.current;
+    const cadre = point?.closest<HTMLElement>(".atlas-fil-defile");
+    const tige = point?.parentElement;
+    if (!point || !cadre || !tige) return;
+
+    let prevu = 0;
+    const placer = () => {
+      prevu = 0;
+      // La DERNIÈRE ligne encore debout : une ligne retirée se referme à zéro
+      // de hauteur avant de disparaître, et viser celle-là ferait plonger la
+      // perle sur un chantier qui n'existe plus.
+      const lignes = [...tige.querySelectorAll<HTMLElement>(".atlas-ligne")].filter(
+        (l) => l.offsetHeight > 0,
+      );
+      const derniere = lignes[lignes.length - 1];
+      if (!derniere) return;
+      const boite = cadre.getBoundingClientRect();
+      const descente = descenteDeLaPerle({
+        milieuDuDernier: derniere.getBoundingClientRect().top + derniere.offsetHeight / 2,
+        milieuDuCadre: boite.top + boite.height / 2,
+        restantADefiler: cadre.scrollHeight - cadre.clientHeight - cadre.scrollTop,
+        // Tout le chemin possible, et pas seulement ce qui reste : sans lui, la
+        // plongée démarrait avant le départ sur une liste qui défile à peine.
+        hauteurADefiler: cadre.scrollHeight - cadre.clientHeight,
+      });
+      point.style.setProperty("--atlas-perle-descente", `${Math.round(descente)}px`);
+    };
+
+    // Une image par image, jamais plus : le défilement tire des dizaines
+    // d'événements par seconde, et mesurer à chacun ferait saccader ce qu'on
+    // essaie de rendre fluide.
+    const auGeste = () => {
+      if (prevu) return;
+      prevu = requestAnimationFrame(placer);
+    };
+
+    placer();
+    cadre.addEventListener("scroll", auGeste, { passive: true });
+    window.addEventListener("resize", auGeste);
+    // La liste change de hauteur sans que rien ne défile : une ligne retirée se
+    // referme, un bandeau tombe, le clavier du téléphone s'ouvre. Sans cela, la
+    // perle garderait la descente calculée pour la liste d'avant.
+    const veille = new ResizeObserver(auGeste);
+    veille.observe(tige);
+    veille.observe(cadre);
+
+    return () => {
+      if (prevu) cancelAnimationFrame(prevu);
+      cadre.removeEventListener("scroll", auGeste);
+      window.removeEventListener("resize", auGeste);
+      veille.disconnect();
+    };
+  }, [chantiers]);
 
   return (
     <div className="atlas-tige mx-[26px]">
+      {/* **LA PERLE SUIT LE DOIGT — elle ne désigne plus le chantier qui
+          attend.** C'est la version que le patron a retenue sur maquette, et
+          l'application avait gardé l'ancienne intention : la perle était posée
+          devant le premier chantier en attente, si bien qu'elle apparaissait
+          n'importe où — tout en bas de l'écran chez lui, le 11 août 2026, parce
+          que c'est là que se trouvait le chantier à corriger.
+
+          Un repère qui change de place à chaque liste ne s'apprend pas. Celui-ci
+          est à mi-hauteur : ce qu'il montre, c'est le chantier qu'on regarde.
+          Posée en PREMIER enfant du fil, sa position naturelle est le haut —
+          au-dessus du point d'accroche — si bien que `sticky` la descend à
+          mi-hauteur dès le premier pixel, et l'y maintient.
+
+          **Une seule exception, demandée par le patron :** sur les derniers
+          pixels de défilement, elle quitte le milieu et plonge sur le dernier
+          jour. C'est la seule chose que `sticky` ne sache pas faire, et c'est le
+          rôle de la variable `--atlas-perle-descente` posée plus haut.
+
+          Ce que cela coûte, dit franchement : le chantier dont le devis est
+          revenu n'a plus de point de couleur. Il garde son libellé en bronze
+          (« Correction demandée »), et c'est le compromis assumé de la maquette
+          (`docs/INTEGRER-ORIGINE.md` §3).
+
+          Un fragment, jamais un `div` : la perle doit être fille DIRECTE du
+          fil. Enfermée dans un conteneur d'une ligne de haut, elle ne pourrait
+          s'accrocher que sur cette ligne-là. */}
+      <span className="atlas-perle" aria-hidden="true" ref={perle}>
+        <span
+          className="absolute block h-[7px] w-[7px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{
+            left: 47,
+            top: 23,
+            backgroundColor: colors.or,
+            boxShadow: `0 0 0 4px ${colors.cream}`,
+          }}
+        />
+      </span>
       {chantiers.map((c) => (
-        // Un fragment, jamais un `div` : la perle doit être fille DIRECTE du
-        // fil. Collée dans un conteneur d'une ligne de haut, elle ne peut
-        // s'accrocher que sur cette ligne-là — elle passerait sans jamais
-        // s'arrêter à mi-hauteur.
-        <Fragment key={c.id}>
-          {c.id === premierEnAttente && (
-            <span className="atlas-perle" aria-hidden="true">
-              <span
-                className="absolute block h-[7px] w-[7px] -translate-x-1/2 -translate-y-1/2 rounded-full"
-                style={{
-                  left: 47,
-                  top: 23,
-                  backgroundColor: colors.or,
-                  boxShadow: `0 0 0 4px ${colors.cream}`,
-                }}
-              />
-            </span>
-          )}
-          <LigneRetirable
-            libelle={`le chantier ${c.nom}`}
-            retiree={estRetire(c.id)}
-            onRetirer={() => onRetirer(c.id, `le chantier ${c.nom}`)}
-            refus={c.refusRetrait}
-            avant={<JourDuBrin jour={c.jour} mois={c.mois} />}
-            className="relative grid grid-cols-[47px_1fr] gap-x-[26px] py-[17px]"
-          >
-            {/* Ce qui glisse : le nom, le lieu, l'état. Le fil et la date
-                restent en place — une ligne qui part d'un bloc coupe le nom en
-                plein mot et laisse le fil traverser les lettres. */}
-            <Link href={`/chantiers/${c.id}`} className="atlas-brin block">
-              <h2 className="truncate text-[19px] font-normal leading-[1.15]" style={{ fontFamily: font.display }}>
-                {c.nom}
-              </h2>
-              <p className="mt-[3px] truncate text-[11.5px]" style={{ color: colors.muted }}>
-                {c.lieu}
-              </p>
-              <p
-                className="mt-[7px] text-[9.5px] font-medium uppercase"
-                style={{ color: c.attend ? colors.or : colors.muted, letterSpacing: "0.28em" }}
-              >
-                {c.etat}
-              </p>
-            </Link>
-          </LigneRetirable>
-        </Fragment>
+        <LigneRetirable
+          key={c.id}
+          libelle={`le chantier ${c.nom}`}
+          retiree={estRetire(c.id)}
+          onRetirer={() => onRetirer(c.id, `le chantier ${c.nom}`)}
+          refus={c.refusRetrait}
+          avant={<JourDuBrin jour={c.jour} mois={c.mois} />}
+          className="relative grid grid-cols-[47px_1fr] gap-x-[26px] py-[17px]"
+        >
+          {/* Ce qui glisse : le nom, le lieu, l'état. Le fil et la date
+              restent en place — une ligne qui part d'un bloc coupe le nom en
+              plein mot et laisse le fil traverser les lettres. */}
+          <Link href={`/chantiers/${c.id}`} className="atlas-brin block">
+            <h2 className="truncate text-[19px] font-normal leading-[1.15]" style={{ fontFamily: font.display }}>
+              {c.nom}
+            </h2>
+            <p className="mt-[3px] truncate text-[11.5px]" style={{ color: colors.muted }}>
+              {c.lieu}
+            </p>
+            <p
+              className="mt-[7px] text-[9.5px] font-medium uppercase"
+              style={{ color: c.attend ? colors.or : colors.muted, letterSpacing: "0.28em" }}
+            >
+              {c.etat}
+            </p>
+          </Link>
+        </LigneRetirable>
       ))}
     </div>
   );

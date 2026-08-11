@@ -14,6 +14,7 @@ import { listerPhotos } from "@/server/repositories/photos";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
 import { jourLisible } from "@/lib/jour";
 import AnneauNoteVocale from "./AnneauNoteVocale";
+import DevisDepuisDictee from "./DevisDepuisDictee";
 import TiroirFiche from "./TiroirFiche";
 
 // Écran connecté à la base réelle. Charge le chantier uniquement dans le
@@ -44,7 +45,36 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
   // la fiche ne porte que l'anneau (11 août 2026), le tiroir est le SEUL endroit
   // où elle vive : l'exclure la ferait disparaître de l'application. Les photos
   // restent hors liste — elles sont la pellicule, juste au-dessus.
-  const etapes = getSecondarySteps(chantier.id, chantier, undefined).filter((s) => s.key !== "photos");
+  //
+  // **Trois étapes de plus quittent le tiroir le 11 août au soir**, à sa
+  // demande : *« informations, prix, devis peuvent disparaître »*. Elles
+  // décrivaient un travail que la chaîne franchit désormais toute seule — les
+  // proposer, c'est offrir une besogne que plus personne n'a à faire.
+  //
+  // **Elles ne sont pas supprimées, elles sont déplacées** : les informations
+  // se corrigent sur le devis, le prix s'y pose ligne à ligne, et « Mon devis »
+  // mène au document lui-même. Les écrans, eux, restent joignables par leur
+  // adresse — un lien profond, un signet, une suite ne tombent pas dans le
+  // vide.
+  // **Mais « Devis » revient dès qu'un devis EXISTE**, et cette nuance n'est pas
+  // un détail : elle a été trouvée par une suite, pas à la lecture.
+  //
+  // Tant qu'il n'y a rien, cette ligne annonce une besogne — « à préparer une
+  // fois le prix posé » — et c'est celle-là qu'il fallait retirer. Une fois le
+  // devis généré ou parti, elle ne propose plus un travail : elle mène au
+  // DOCUMENT. Et « Mon devis » ne peut pas prendre le relais, puisqu'il
+  // disparaît une fois le devis envoyé.
+  //
+  // Sans ce retour, le devis d'un chantier planifié devenait injoignable depuis
+  // sa fiche — c'est-à-dire précisément le cas qui intéresse le patron.
+  // Alléger, c'est déplacer ; ici, il n'y avait nulle part où déplacer.
+  const devisExiste = !!chantier.devisGenereAt || !!chantier.devisEnvoyeAt;
+  const ETAPES_RETIREES = new Set(
+    devisExiste ? ["photos", "informations", "prix"] : ["photos", "informations", "prix", "devis"]
+  );
+  const etapes = getSecondarySteps(chantier.id, chantier, undefined).filter(
+    (s) => !ETAPES_RETIREES.has(s.key)
+  );
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -163,6 +193,31 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
             />
           </div>
         )}
+
+        {/* **Le geste unique, sous l'anneau — et rien qu'une écriture.**
+            Le patron, le 11 août 2026, après avoir essayé six formes : *« ok,
+            j'aime bien le un »*. Puis : *« si je clique dessus, j'arrive
+            directement à la page du devis et je ne passe pas par une page
+            intermédiaire ? »* — oui : la chaîne dépose sur `devis-complet`,
+            et la seule halte possible est l'arrêt d'avant-chiffrage, qui
+            s'ouvre ICI, sans quitter la fiche.
+
+            **Il n'apparaît qu'une fois la dictée faite**, et il ne demande plus
+            que la transcription le soit : depuis ce jour, la chaîne la lance
+            elle-même. C'était le maillon qui manquait — sans lui, ce geste ne
+            pouvait vivre que sur l'écran Transcription, à quatre écrans de
+            l'endroit où l'on vient de parler. */}
+        {/* **Serré contre l'anneau, mesuré et non estimé à l'œil.** À `mt-5`,
+            l'écart entre la consigne et l'écriture montait à 50 px — le
+            compteur, invisible mais présent, en prend déjà 16. Sur la maquette
+            qu'il a validée, cet écart fait 34 px, et c'est ce qui rattache le
+            geste à l'anneau plutôt que de le laisser flotter au milieu de la
+            page : c'était précisément le défaut connu de la forme choisie. */}
+        {note && !chantier.devisEnvoyeAt && (
+          <div className="mt-2">
+            <DevisDepuisDictee chantierId={chantier.id} transcriptionDisponible variante="anneau" />
+          </div>
+        )}
       </div>
 
       {/* Le tiroir affleure en bas : la pellicule et les étapes. Il est FIXÉ,
@@ -206,9 +261,21 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
         // l'état quand il n'y en a plus. Même emplacement que la maquette, qui
         // y met « 2 340 € · devis accepté » — un chantier où il n'y a
         // effectivement plus rien à faire.
+        // **Et il ne doit pas désigner une porte qu'on vient de condamner.**
+        //
+        // Depuis que « Informations », « Prix » et « Devis » ont quitté le
+        // tiroir (11 août, soir), l'étape suivante calculée vaut souvent l'une
+        // des trois. L'annoncer ici enverrait chercher une ligne qui n'existe
+        // plus — et, pire, un travail que la chaîne fait désormais seule.
+        //
+        // La règle est donc simple : **quand la dictée est là, c'est « Mon
+        // devis » qui dit la marche à suivre**, sous l'anneau, au centre. Le
+        // bandeau se tait alors et se contente de l'état, comme sur la maquette
+        // du patron. Sans dictée, il reprend son rôle : c'est le seul moment où
+        // le corps de la fiche ne dit rien.
         resume={{
           gauche: "Le chantier",
-          droite: nextAction ? `${nextAction.label} →` : statutLabel[statut],
+          droite: !note && nextAction ? `${nextAction.label} →` : statutLabel[statut],
         }}
       />
     </div>

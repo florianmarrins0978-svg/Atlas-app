@@ -22,10 +22,25 @@ import { precisionLisible, type QuestionChiffrage } from "@/lib/questions-chiffr
 
 type Props = {
   chantierId: string;
-  /** Sans transcription, il n'y a rien à enchaîner : le bouton ne s'affiche pas. */
+  /**
+   * Sans dictée, il n'y a rien à enchaîner : le bouton ne s'affiche pas.
+   *
+   * **Ce n'est plus « transcription faite », mais « dictée faite ».** Depuis le
+   * 11 août 2026, la chaîne lance elle-même la transcription si elle manque
+   * (`devis-depuis-dictee.ts`) : exiger ici qu'elle soit déjà obtenue
+   * empêcherait précisément le geste unique que le patron a demandé.
+   */
   transcriptionDisponible: boolean;
-  /** Mis en avant sur l'écran Transcription, discret sur l'écran Informations. */
-  variante?: "principal" | "secondaire";
+  /**
+   * `"principal"` — le pavé vert, sur l'écran Transcription.
+   * `"secondaire"` — la ligne discrète, sur l'écran Informations.
+   * `"anneau"` — l'écriture nue sous l'anneau de la fiche. **Aucun cadre,
+   * aucun fond** : le patron a choisi cette forme le 11 août 2026, parmi six,
+   * et pour une raison qu'il faut connaître avant d'y toucher — sa fiche n'a
+   * plus aucun bouton depuis ce matin-là, et y remettre un pavé vert lui
+   * rendrait le poids qu'on venait de lui retirer.
+   */
+  variante?: "principal" | "secondaire" | "anneau";
 };
 
 type Etat =
@@ -95,8 +110,29 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
   if (!transcriptionDisponible) return null;
 
   return (
-    <div className="flex flex-col gap-2">
-      {variante === "principal" ? (
+    <div className={`flex flex-col gap-2 ${variante === "anneau" ? "items-center" : ""}`}>
+      {variante === "anneau" ? (
+        /* **L'écriture nue, et rien autour.** Choisie par le patron le 11 août
+           2026 sur six formes essayées — l'écriture, le trait, le bouton
+           plein, la pastille, l'anneau qui s'étire, le bandeau du tiroir.
+
+           Elle porte l'OR et non le vert pin, contre l'usage : l'or est la voix
+           de ce qu'on lit, le vert celle de ce qu'on fait
+           (`design-tokens.ts`). Ici, le vert aurait fait un second centre à
+           côté de l'anneau — deux objets à regarder là où il n'en faut qu'un.
+           C'est la seule action de l'application qui parle en or, et c'est
+           pour rester sous l'anneau plutôt qu'à côté de lui. */
+        <button
+          type="button"
+          onClick={() => lancer()}
+          disabled={etat.type === "encours"}
+          data-atlas="mon-devis"
+          className={`px-2 py-2 disabled:opacity-40 ${libelleCaps}`}
+          style={{ color: colors.or }}
+        >
+          {etat.type === "encours" ? "Atlas prépare le devis…" : "Mon devis →"}
+        </button>
+      ) : variante === "principal" ? (
         <button
           type="button"
           onClick={() => lancer()}

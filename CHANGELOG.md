@@ -401,7 +401,185 @@ section (`s14-halo`), comme le sont déjà les identifiants.
 Le contrôle a été confronté à l'état qu'il prétend détecter : confinement
 neutralisé, il refuse la fusion sur les quatorze maquettes.
 
+### La perle plongeait avant le départ, sur une liste qui défile à peine
+
+**Le patron, le soir, après la fusion :** *« la perle reste accolée en bas au
+numéro dix-huit. »* Il avait raison, et deux fois plutôt qu'une.
+
+La descente s'étalait sur les derniers pixels de défilement — sans vérifier
+qu'il y en avait autant. Sur un écran haut, ou chez un artisan qui a trois
+chantiers, la liste ne défile presque plus : la plongée commençait donc **avant
+le départ**, et la perle arrivait déjà tombée. Et quand la liste tenait
+entièrement dans l'écran, une règle écrite exprès la collait au dernier
+chantier. Mesuré : 1100 px d'écran, 77 px à défiler pour 226 px de descente,
+perle 148 px sous le milieu tout en haut de la liste.
+
+La plongée occupe désormais les derniers pixels **au plus égaux au chemin
+disponible**, et une liste qui ne défile pas laisse la perle au milieu.
+
+**La leçon vaut plus que le correctif, et elle est écrite dans le dépôt :** les
+deux contrôles étaient VERTS. La suite de cas ne donnait jamais une liste au
+chemin trop court ; le contrôle au navigateur ne mesurait qu'un écran de 852 px,
+où la liste de démonstration a quatre fois le chemin nécessaire. Un cas manquant
+ne rougit pas. Quand une règle porte sur un rapport, il faut l'éprouver des deux
+côtés — le contrôle mesure maintenant deux hauteurs d'écran, et la suite a gagné
+la liste courte. Confronté : l'ancienne règle rétablie fait rougir le contrôle
+en nommant le défaut du soir.
+
+
+### La perle du fil était tout en bas de l'écran, à demeure
+
+**Constaté par le patron, capture de son téléphone à l'appui :** *« Lorsqu'on
+est tout en haut, elle devrait être au niveau du vingt-deux, donc bien centré
+sur l'écran. Et en fait là, elle se retrouve constamment tout en bas. »*
+
+La maquette retenue le 10 août fait suivre la perle : elle se tient à
+mi-hauteur, et les chantiers défilent dessous. Le portage avait gardé
+l'intention PRÉCÉDENTE — la perle posée devant le premier chantier « en
+attente » — alors même que `docs/INTEGRER-ORIGINE.md` §3 signalait le
+changement et disait de ne pas le « corriger ». Chez le patron, le chantier en
+attente est le dernier de la liste : d'où un point de couleur immuablement en
+bas, qui ne désignait rien de ce qu'il regardait.
+
+La perle est désormais **premier enfant du fil** et ne bouge plus du milieu —
+sauf tout en bas. Le patron a tranché la fin de liste dans le même échange :
+
+> « Quand on arrive au dernier, là, elle descend et elle se met en face du
+> dernier jour. »
+
+C'est la seule chose que `position: sticky` ne sache pas faire : sur les
+derniers pixels, la perle doit descendre PENDANT que le contenu monte, et une
+accroche ne cloue que dans un sens. Trois montages purement CSS ont été essayés
+avant de le reconnaître. La descente se calcule donc — `src/lib/perle-descente.ts`,
+fonction pure, sept cas de suite — et l'écran ne fait que mesurer et appliquer.
+Si ce calcul ne tourne pas, la perle reste au milieu : une dégradation qui reste
+juste.
+
+Ce que cela coûte, dit franchement : le chantier dont le devis est revenu n'a
+plus de point de couleur. Il garde son libellé « Correction demandée » en
+bronze — c'est le compromis de la maquette, assumé pour la troisième fois.
+
+**Un défaut mérite d'être retenu :** la descente a d'abord été calculée juste et
+**pas dessinée**. `.atlas-perle` est un `span`, donc une boîte en ligne, et une
+transformation ne s'applique pas à une boîte en ligne. `getComputedStyle`
+renvoyait pourtant la bonne matrice. Le contrôle disait « il manque 66 px » en
+désignant le calcul, qui était innocent — il distingue désormais les deux pannes
+et nomme la bonne.
+
+`scripts/capture-accueil-perle.mts` mesure la perle à quatre positions de
+défilement et refuse si elle quitte le milieu ailleurs qu'au bout, si elle
+désigne du vide, si le dernier jour n'est pas atteint, ou si elle ne vise pas le
+même endroit dans la ligne selon l'endroit où l'on est. Confronté trois fois :
+perle déplacée à 20 % → rouge ; `display: block` retiré → rouge en nommant le
+CSS et non le calcul ; descente supprimée dans la fonction pure → rouge.
+
+L'ancienne règle — celle qui posait la perle sur le chantier en attente — et sa
+suite disparaissent : une règle morte qui décrit une intention abandonnée est un
+piège pour la conversation suivante.
+
+---
+
 ## 2026-08-10
+
+### De l'anneau au devis, en une touche
+
+**Le patron, le 11 août 2026, après avoir essayé six formes du déclencheur :**
+*« ok, j'aime bien le un »* — l'écriture nue sous l'anneau. Puis la question qui
+décidait de tout : *« si je clique dessus, j'arrive directement à la page du
+devis et je ne passe pas par une page intermédiaire ? »*
+
+Oui. Un appui sur l'anneau démarre la dictée, un second l'arrête, et
+**« MON DEVIS → »** naît dessous. Il transcrit, range les informations, cherche
+les prix, rédige, et dépose sur `devis-complet` — la page où il n'y a que le
+devis. Aucun écran entre les deux.
+
+**Le maillon qui manquait était la transcription.** Toute cette chaîne existait
+et était éprouvée depuis le 4 août, mais elle exigeait une transcription **déjà
+faite** — si bien qu'elle ne pouvait vivre que sur l'écran Transcription, à
+quatre écrans de l'endroit où l'on vient de parler. `preparerDevisDepuisDictee`
+la lance désormais elle-même, une seule fois, et seulement s'il y a un son à
+transcrire.
+
+**L'écriture parle en OR, contre l'usage de la charte.** L'or est la voix de ce
+qu'on lit, le vert pin celle de ce qu'on fait (`design-tokens.ts`). C'est la
+seule action de l'application à déroger — et c'est délibéré : en vert, elle
+faisait un second centre à côté de l'anneau, deux objets à regarder là où il
+n'en faut qu'un.
+
+**Trois lignes quittent le tiroir** — Informations, Prix, Devis — à sa demande.
+Elles décrivaient un travail que la chaîne fait seule. Elles sont **déplacées,
+pas supprimées** : les informations se corrigent sur le devis, le prix s'y pose
+ligne à ligne, et les écrans restent joignables par leur adresse. Un contrôle
+l'exige, parce qu'ôter une ligne d'une liste ne doit jamais condamner une page.
+
+**Et le bandeau du tiroir se tait quand la dictée est là.** L'étape suivante
+calculée valait souvent l'une des trois lignes retirées : l'annoncer aurait
+envoyé chercher une porte qu'on venait de condamner.
+
+### Ce que l'écran a dit, et que je n'aurais pas deviné
+
+- **Sans service de transcription raccordé, le geste s'arrête — et il le dit.**
+  C'est l'état réel de l'application (`TODO.md`, décision n°1) : aucun contrat
+  n'est signé. En appuyant aujourd'hui, le patron lit *« aucun prestataire de
+  transcription n'est encore raccordé »*. Un contrôle tient cette phrase :
+  un geste qui ne fait rien **sans rien dire** se lit comme une panne.
+- **L'arrêt d'avant-chiffrage s'ouvre bien sur la fiche.** La dictée d'essai ne
+  disait ni la longueur de haie ni le diamètre du tronc : Atlas demande, sans
+  changer d'écran, et repart de lui-même. C'est ce qui avait été promis.
+- **L'écart sous l'anneau était de 50 px au lieu de 34.** Le compteur, invisible
+  mais présent, en prend seize. Mesuré, pas estimé à l'œil — et resserré à 38,
+  parce que c'est ce qui rattache le geste à l'anneau plutôt que de le laisser
+  flotter : le défaut connu de la forme qu'il a choisie.
+
+### Le devis à la main s'ouvre depuis la création du chantier
+
+**Le patron, le 11 août 2026 :** *« si je clique sur "ou rédiger le devis à la
+main", ça m'ouvre la page du devis complet, avec les informations du client qui
+se seront ajoutées automatiquement ? C'est bien ça ? »* — oui, et il avait
+raison de le demander avant de valider : c'était précisément le point qui
+pouvait rendre la porte inutile.
+
+Le lien est posé **sous** le bouton principal, en or, discret. Ce n'est pas un
+choix cosmétique : deux boutons à égalité auraient obligé tout le monde à
+trancher avant même d'avoir vu le chantier, alors que neuf fois sur dix la
+réponse est « je dicterai ». Ici, « Créer le chantier » reste le geste évident.
+
+**Une seule fonction crée le chantier, deux destinations en sortent.** Le
+chantier est créé d'abord — c'est ce qui permet à `devis-complet` de relire le
+client rattaché. Sauter la création pour « gagner du temps » aurait produit
+exactement le devis orphelin qu'il redoutait.
+
+**Elle ne remplace pas celle du tiroir, et ce n'est pas un doublon.** Ce sont
+deux *moments*, pas deux chemins : ici, « je sais déjà que je l'écrirai
+moi-même » ; sur la fiche, « j'ai commencé, finalement je l'écris ». Retirer la
+seconde enfermerait un chantier créé la veille dont la dictée n'a rien donné.
+
+### Deux défauts trouvés en regardant l'écran de création, aucun par un test
+
+- **Une mise en garde devenue fausse.** « Ces informations ne sont plus
+  modifiables ensuite » : c'était vrai quand la phrase a été écrite, plus depuis
+  que le devis les rend toutes éditables (`majClientDuDevisAction`). Une mise en
+  garde périmée est pire qu'aucune — elle fait remplir un formulaire par crainte,
+  et elle apprend à se méfier d'un écran qui dit vrai ailleurs. Elle dit
+  maintenant ce qui reste vrai, et c'est utile : **c'est le nom qui crée la fiche
+  client**, et sans lui le devis n'offre pas d'en rattacher un.
+- **La bulle de l'assistant recouvrait cette phrase**, et `finDePage: 0` —
+  aucun défilement ne l'en dégageait. Illisible en permanence, sur la moitié de
+  sa largeur. Quatrième défaut de cette famille sur ce dépôt.
+
+**Et la réserve du bas d'écran ne vaut qu'EN PAGE.** La poser aussi sur la
+feuille ajoutait quatre-vingts pixels de vide pour se protéger de quelque chose
+qui n'y arrive pas : la feuille est `fixed` en `z-[50]` et recouvre déjà la
+bulle. Vu en mesurant les deux formes, pas en supposant que la seconde
+ressemblait à la première.
+
+**Un contrôle qui a d'abord accusé à tort**, et c'est la partie qui a demandé le
+plus d'attention : sa première version lisait le texte de la page et annonçait
+que le client manquait sur le devis — c'est-à-dire exactement la panne que le
+patron redoutait. L'en-tête du devis est fait de champs éditables, et
+`innerText` ne rend jamais la valeur d'un `<input>`. Le nom était là, sous les
+yeux. Le contrôle lit désormais la valeur des champs, et il a été vérifié rouge
+en cassant la destination.
 
 ### Toutes les suites mesurent enfin l'écran que le patron a dans la main
 
@@ -544,6 +722,30 @@ Un contrôle garde cette frontière (`test-anneau-dictee-e2e.ts`) : *le corps ne
 porte que l'anneau, et le tiroir garde tout le reste*. Il échoue aussi bien si
 l'on remet un bouton dans le corps que si l'on oublie de descendre une entrée
 dans le tiroir.
+
+### `npm run essai` accusait la base pendant qu'Atlas démarrait déjà
+
+**Constaté chez le patron, sur son espace de travail.** Il tape `npm run essai`,
+et l'écran répond :
+
+> ⚠️ Le serveur s'est arrêté avant de répondre.
+> Cause fréquente : la base de données n'est pas montée.
+
+La base n'y était pour rien. L'espace démarre Atlas tout seul à chaque
+allumage ; pendant sa construction, **le banc ne répond pas encore** — le
+garde-fou d'`essai.mjs`, qui demandait « quelqu'un répond-il ? », l'a donc
+laissé passer. Un second serveur est parti, a trouvé le port pris, et est mort
+sur « EADDRINUSE ». Le message affiché envoyait chercher au mauvais endroit, ce
+qui coûte plus cher que pas de message du tout.
+
+`banc.mjs` prend un verrou depuis le même jour, et sa documentation le disait
+déjà : **ce n'est pas le port qu'il faut regarder, c'est l'existence d'un autre
+banc.** `essai.mjs` ne le prenait pas — et c'est par là que le patron est passé.
+Il le prend désormais, et refuse en disant quoi faire : combien de temps
+attendre, quel journal suivre, et quelle ligne attendre.
+
+Éprouvé en reproduisant la situation : un banc tient le verrou, `npm run essai`
+arrive dessus, et refuse au lieu de démarrer.
 
 ### Refaire la démonstration n'efface plus ce que l'artisan a tapé à la main
 

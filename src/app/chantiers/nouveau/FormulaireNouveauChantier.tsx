@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font, smallCaps, libelleCaps } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
 import DicterCoordonnees from "./DicterCoordonnees";
@@ -73,7 +73,22 @@ export default function FormulaireNouveauChantier({
     if (c.adresse && !adresseChantier.trim()) setAdresseChantier(c.adresse);
   }
 
-  async function handleCreer() {
+  /**
+   * Crée le chantier, puis mène là où le patron a dit vouloir aller.
+   *
+   * **Une seule création, deux destinations.** Le patron, le 11 août 2026 :
+   * *« si je clique sur "ou rédiger le devis à la main", ça m'ouvre la page du
+   * devis complet, avec les informations du client qui se seront ajoutées
+   * automatiquement ? »* — oui, et c'est justement parce que le chantier est
+   * créé d'abord que ça marche : `devis-complet` lit le client rattaché au
+   * chantier (`devis-complet/page.tsx`). Sauter la création pour « gagner du
+   * temps » produirait le devis orphelin qu'il redoutait.
+   *
+   * Écrire deux fonctions de création aurait fait diverger les deux chemins au
+   * premier champ ajouté — l'un enregistrerait le téléphone, l'autre l'aurait
+   * oublié.
+   */
+  async function creerPuisAller(vers: "fiche" | "devis") {
     if (enCours) return;
     setEnCours(true);
     setErreur(null);
@@ -86,7 +101,7 @@ export default function FormulaireNouveauChantier({
         adresseChantier,
         adresseClient,
       });
-      router.push(`/chantiers/${id}`);
+      router.push(vers === "devis" ? `/chantiers/${id}/devis-complet` : `/chantiers/${id}`);
     } catch {
       setErreur("Impossible de créer le chantier pour l'instant. Réessayez.");
       setEnCours(false);
@@ -102,7 +117,17 @@ export default function FormulaireNouveauChantier({
         minHeight: enFeuille ? undefined : "100%",
       }}
     >
-      <div className={enFeuille ? "pb-10" : "pb-16"}>
+      {/* **La bulle de l'assistant flotte au-dessus du bas de l'écran — mais
+          seulement EN PAGE.** Mesuré le 11 août 2026 : la phrase de pied
+          tombait sous elle, et `finDePage: 0` — aucun défilement ne l'en
+          dégageait. Elle était donc illisible en permanence, sur la moitié de
+          sa largeur.
+
+          En FEUILLE, rien à réserver : celle-ci est `fixed` en `z-[50]` et
+          recouvre déjà la bulle et le bandeau du bas (`EcranChantiers.tsx`).
+          Y poser la même réserve ajoutait quatre-vingts pixels de vide sous le
+          formulaire, pour se protéger de quelque chose qui n'y arrive pas. */}
+      <div className={enFeuille ? "pb-10" : "pb-40"}>
         {/* Retour discret — même style que la fiche chantier. En feuille il
             referme sans quitter l'accueil ; en page il y revient. Le dessin est
             le même : c'est le même geste pour le patron. */}
@@ -148,7 +173,10 @@ export default function FormulaireNouveauChantier({
           className="mt-7 flex flex-col gap-4 px-6"
           onSubmit={(e) => {
             e.preventDefault();
-            handleCreer();
+            // La touche « Entrée » vaut le geste ordinaire, jamais la sortie de
+            // secours : on ne part pas rédiger un devis à la main parce qu'on a
+            // validé un champ au clavier.
+            creerPuisAller("fiche");
           }}
         >
           {/* 1 — Nom du client.
@@ -239,16 +267,50 @@ export default function FormulaireNouveauChantier({
 
           {/* 8 — Action principale */}
           <div className="pt-4">
-            <PrimaryButton disabled={!peutCreer} onClick={handleCreer}>
+            <PrimaryButton disabled={!peutCreer} onClick={() => creerPuisAller("fiche")}>
               {enCours ? "Création…" : "Créer le chantier →"}
             </PrimaryButton>
+            {/* **La sortie de secours, au moment où elle se décide.**
+                Le patron, le 11 août 2026, maquette en main : *« je préfère la
+                première option »* — le lien discret plutôt que deux boutons à
+                égalité.
+
+                Le choix de la forme n'est pas cosmétique. Deux boutons
+                obligeraient TOUT LE MONDE à trancher avant même d'avoir vu le
+                chantier, alors que neuf fois sur dix la réponse est « je
+                dicterai ». Ici, « Créer le chantier » reste le geste évident ;
+                celui qui sait déjà qu'il écrira son devis à la main trouve sa
+                porte, sans que les autres aient à choisir.
+
+                **Elle ne remplace pas celle du tiroir**, et ce n'est pas un
+                doublon : ce sont deux MOMENTS. Ici, « je sais déjà que je
+                l'écrirai moi-même » ; sur la fiche, « j'ai commencé, finalement
+                je l'écris ». Retirer la seconde enfermerait un chantier créé la
+                veille dont la dictée n'a rien donné. */}
+            <button
+              type="button"
+              disabled={!peutCreer}
+              onClick={() => creerPuisAller("devis")}
+              className={`mt-4 block w-full text-center ${libelleCaps}`}
+              style={{ color: colors.or }}
+            >
+              Ou rédiger le devis à la main →
+            </button>
           </div>
+          {/* **Cette phrase était devenue fausse, et elle faisait peur pour
+              rien.** Elle annonçait que les informations « ne sont plus
+              modifiables ensuite » — c'était vrai quand elle a été écrite, plus
+              depuis que l'écran du devis les rend toutes éditables
+              (`majClientDuDevisAction`). Une mise en garde périmée est pire
+              qu'aucune : elle fait remplir un formulaire par crainte, et elle
+              apprend à se méfier d'un écran qui dit vrai ailleurs.
+
+              Ce qui reste vrai, et qui est la seule chose à savoir ici : c'est
+              le NOM qui crée la fiche client. Sans lui, aucun client n'est
+              rattaché, et le devis n'offre pas d'en ajouter un. */}
           <p className="text-center text-[13px]" style={{ color: erreur ? colors.alert : colors.muted }}>
-            {/* Ne promet plus une modification ultérieure du client : aucun
-                écran ne le permet aujourd'hui. Mieux vaut inviter à renseigner
-                maintenant ce qui est connu. */}
             {erreur ??
-              "Renseignez dès maintenant ce que vous savez du client : ces informations ne sont plus modifiables ensuite."}
+              "Le nom crée la fiche du client. Le reste se corrige ensuite, sur le devis."}
           </p>
         </form>
       </div>

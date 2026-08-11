@@ -143,7 +143,16 @@ body {
 
 /* La marge de fin est portée par le FIL, jamais par le cadre qui défile : posée
  * sur le cadre, elle rétrécit la zone de défilement et la perle se colle trop
- * haut. Le défaut est invisible tant qu'on ne mesure pas. */
+ * haut. Le défaut est invisible tant qu'on ne mesure pas.
+ *
+ * **Elle reste courte, et c'est un choix.** Il a d'abord été essayé de
+ * l'allonger jusqu'à ce que le dernier chantier puisse monter au milieu
+ * rejoindre la perle — cela marchait, au prix d'un grand blanc sous le dernier
+ * chantier. Le patron a tranché autrement le 11 août 2026 : *« quand on arrive
+ * au dernier, elle descend et elle se met en face du dernier jour. »* C'est
+ * donc la perle qui va au chantier, pas la liste qui s'allonge, et la fin de la
+ * liste ressemble à une fin de liste. La descente est calculée dans
+ * `src/lib/perle-descente.ts`. */
 .atlas-tige {
   position: relative;
   padding-bottom: 3.5rem;
@@ -165,15 +174,38 @@ body {
   scroll-snap-stop: always;
 }
 
-/* La perle est posée dans le flux juste avant le premier chantier qui attend un
- * geste du patron : c'est là qu'elle se tient au repos. Dès que ce chantier
- * remonte, elle s'accroche à mi-hauteur et les autres défilent dessous. */
+/* La perle se tient à mi-hauteur du cadre qui défile : les chantiers passent
+ * dessous, elle désigne celui qu'on regarde. Posée en PREMIER enfant de la
+ * tige, sa place naturelle est au-dessus de ce point d'accroche, si bien
+ * qu'elle y est descendue dès le premier pixel et l'y reste — voir
+ * `src/app/ListeChantiers.tsx` pour le pourquoi.
+ *
+ * Les 23 px retranchés font tomber le point à mi-hauteur EXACTE une fois
+ * accroché : la perle elle-même est haute de zéro et porte son point 23 px plus
+ * bas, à hauteur de la ligne du nom.
+ *
+ * **`--atlas-perle-descente` est la seule chose que le CSS ne sait pas faire :**
+ * sur les derniers pixels de défilement, la perle quitte le milieu et plonge sur
+ * le dernier jour. Il y faut un mouvement DESCENDANT pendant que le contenu
+ * monte, et `sticky` ne cloue que dans un sens. La variable vaut zéro tant que
+ * personne ne l'écrit : si le JavaScript ne tourne pas, la perle reste au
+ * milieu, ce qui est encore juste. */
 .atlas-perle {
   position: sticky;
   top: calc(50% - 23px);
   height: 0;
   z-index: 2;
   pointer-events: none;
+  /* **`display: block` n'est pas une coquetterie : sans lui, la descente ne se
+   * voit pas.** La perle est un `span`, donc une boîte EN LIGNE — et une
+   * transformation ne s'applique pas à une boîte en ligne non remplacée. Le
+   * navigateur acceptait la valeur (`getComputedStyle` renvoyait bien la
+   * matrice), la calculait, et ne la dessinait pas. Le contrôle disait « il
+   * manque 66 px » et le code était juste : c'est un cas où seule la mesure sur
+   * l'écran départage. `position: sticky` ne rend pas une boîte de bloc, à la
+   * différence de `absolute` — il ne rattrape donc rien. */
+  display: block;
+  transform: translateY(var(--atlas-perle-descente, 0px));
 }
 
 /* ═══ Le retrait — « le tiroir des retirés » ══════════════════════════════

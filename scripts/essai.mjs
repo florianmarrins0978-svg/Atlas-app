@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { writeFileSync } from "node:fs";
 import { ETAT_PRECHAUFFAGE } from "./prechauffer.mjs";
 import { annoncePrete, adressePubliquePossible } from "./annonce-adresse.mjs";
+import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
 import { avertissementAtelier } from "./annonce-atelier.mjs";
 
 // Démarre l'application pour les essais, attend qu'elle réponde vraiment, puis
@@ -54,6 +55,36 @@ if (await repond()) {
   );
   process.exit(0);
 }
+
+// **UN SEUL BANC À LA FOIS — et répondre ne suffit pas à le savoir.**
+//
+// Constaté chez le patron le 10 août 2026, au soir : il a tapé `npm run essai`
+// pendant que l'espace de travail construisait déjà le sien. Le garde ci-dessus
+// ne l'a pas arrêté — **pendant sa construction, un banc ne répond pas encore**
+// — un second serveur est parti, a trouvé le port pris, et est mort sur
+// « EADDRINUSE ». Le message affiché accusait alors la base de données, qui
+// n'y était pour rien : une erreur qui désigne le mauvais coupable coûte plus
+// cher que pas d'erreur du tout (`AGENTS.md`).
+//
+// `banc.mjs` prend ce verrou depuis le même jour ; `essai.mjs` ne le prenait
+// pas, et c'est par là que le patron est passé. Ce n'est pas le port qu'il faut
+// regarder, c'est **l'existence d'un autre banc**.
+const verrou = prendreVerrouBanc();
+if (!verrou.pris) {
+  console.log(
+    "\n  ─────────────────────────────────────────────────────────────\n" +
+      "   Atlas est DÉJÀ en train de démarrer — rien à relancer.\n\n" +
+      "   L'espace de travail s'en charge tout seul à chaque allumage.\n" +
+      "   Comptez deux à cinq minutes la première fois.\n\n" +
+      "   Pour le suivre :   tail -f /tmp/essai.log\n" +
+      "   Vous attendez la ligne « L'application répond ».\n\n" +
+      "   (En lancer un second ferait échouer les deux sur le port " + PORT + " :\n" +
+      "    c'est le « EADDRINUSE » du 10 août 2026.)\n" +
+      "  ─────────────────────────────────────────────────────────────\n"
+  );
+  process.exit(0);
+}
+process.on("exit", () => libererVerrouBanc());
 
 // **`npm run essai` est l'ATELIER, et sur un espace distant c'est un piège.**
 //
