@@ -25,7 +25,7 @@ const BASE = "http://localhost:3000";
 
 async function main() {
   const navigateur = await lancerNavigateur();
-  const contexte = await navigateur.newContext({ viewport: { width: 393, height: 852 } });
+  const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
 
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
@@ -134,7 +134,7 @@ async function main() {
   assert.ok(adresse.includes(encodeURIComponent(jeton)) || adresse.includes(jeton), "Le message ne porte pas le lien.");
 
   // --- 3. Ce que le client voit -------------------------------------------
-  const contexteClient = await navigateur.newContext({ viewport: { width: 393, height: 852 } });
+  const contexteClient = await navigateur.newContext();
   const pageClient = await contexteClient.newPage();
   await pageClient.goto(`${BASE}/factures/${jeton}`, { waitUntil: "networkidle" });
   const vueClient = await pageClient.locator("body").innerText();

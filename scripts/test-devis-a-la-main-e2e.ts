@@ -26,7 +26,7 @@ const BASE = "http://localhost:3000";
 
 async function main() {
   const navigateur = await lancerNavigateur();
-  const contexte = await navigateur.newContext({ viewport: { width: 393, height: 852 } });
+  const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
 
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
@@ -49,7 +49,13 @@ async function main() {
   // nulle part depuis que les étapes y sont rangées (`ARCHITECTURE.md` §49) :
   // attendre un titre disparu ferait échouer le contrôle sur un écran sain.
   await page.waitForSelector("[data-atlas='tiroir-fiche']", { timeout: 10000 });
-  const versLaMain = page.getByRole("link", { name: /rédiger le devis à la main/i });
+  // **Repéré par sa DESTINATION, plus par son libellé.** Depuis le 11 août 2026,
+  // le corps de la fiche ne porte plus que l'anneau (à la demande du patron,
+  // maquette en main) : la rédaction à la main est descendue dans le tiroir, où
+  // elle s'écrit « Devis à la main ». Ce qui compte n'a jamais été le mot mais
+  // le chemin — et viser le chemin met ce contrôle à l'abri du prochain
+  // changement de mise en page.
+  const versLaMain = page.locator('[data-atlas="tiroir-fiche"] a[href$="/devis-complet"]');
   assert.equal(
     await versLaMain.count(),
     1,

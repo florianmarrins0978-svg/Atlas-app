@@ -1,4 +1,4 @@
-import { chromium } from "playwright";
+import { chromium, devices } from "playwright";
 import { mkdirSync } from "fs";
 
 const OUT = "artifacts/screenshots/step-23-prix-reel";
@@ -8,7 +8,7 @@ async function main() {
   const browser = await chromium.launch({
     executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
   });
-  const context = await browser.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 3 });
+  const context = await browser.newContext({ ...devices["iPhone 13"], });
   const page = await context.newPage();
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });

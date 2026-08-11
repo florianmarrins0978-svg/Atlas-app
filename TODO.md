@@ -27,7 +27,30 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### ~~0 ter. Le bandeau d'alerte est coupé en haut, à l'arrivée sur l'accueil~~ — **tranché le 2026-08-11 : on laisse tel quel**
+### ~~0 ter. Les suites navigateur mesuraient un écran que personne ne possède~~ — **close le 2026-08-11**
+
+**Trouvé le 11 août 2026, et le patron l'a payé.** Les suites posaient un cadre
+de 393 × 852. La hauteur **utile** d'un vrai iPhone 13, barre du navigateur
+déduite, est de 390 × **664** (`devices["iPhone 13"]` de Playwright). Sur ce
+cadre trop haut, un contrôle de chevauchement passait au vert alors que, sur son
+téléphone, la bulle de l'assistant recouvrait « ou rédiger le devis à la main ».
+
+**Fait.** L'écran vit désormais dans `ECRAN_DU_PATRON` (`scripts/e2e-browser.ts`)
+et toutes les suites en héritent ; deux tolérances écrites à la main sont tombées
+avec (« 400 px » de débordement toléré sur un écran de 393 ; une grille cadrée à
+393 au lieu de 390).
+
+**Ce que ça a trouvé : rien.** 46/47, l'unique rouge étant un dépassement de
+délai du serveur de développement. Il fallait quand même le faire — un contrôle
+qui mesure un écran inventé ne prouve rien, vert ou rouge — mais le dire tel
+quel : le cadre honnête n'a révélé aucun défaut caché.
+
+**Ce qui manquait vraiment**, et qui existe maintenant :
+`scripts/test-rien-de-recouvert-e2e.ts`, qui cherche sur quatorze écrans ce que
+le doigt n'atteint pas. Un seul écran vérifiait cela auparavant, pour un seul
+bouton.
+
+### ~~0 quater. Le bandeau d'alerte est coupé en haut, à l'arrivée sur l'accueil~~ — **tranché le 2026-08-11 : on laisse tel quel**
 
 **Le patron, après avoir vu le raisonnement :** *« Dans ce cas-là, laisse tel
 quel. »* Ne pas rouvrir ce point sans lui : ce n'est pas un défaut oublié, c'est

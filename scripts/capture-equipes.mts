@@ -7,7 +7,7 @@
 // développement à une origine qu'il juge étrangère, et la page arrive alors
 // rendue par le serveur, JAMAIS hydratée — les boutons existent sans écouteur.
 import { existsSync, mkdirSync, readdirSync } from "node:fs";
-import { chromium } from "playwright";
+import { chromium, devices } from "playwright";
 
 const dossier = process.argv[2];
 if (!dossier) { console.error("usage: capture-equipes.mts <dossier>"); process.exit(1); }
@@ -24,7 +24,7 @@ function navigateurPreInstalle(): string | undefined {
 
 const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
 const contexte = await navigateur.newContext({
-  viewport: { width: 393, height: 852 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true,
+  ...devices["iPhone 13"], isMobile: true, hasTouch: true,
 });
 const page = await contexte.newPage();
 const echecs: string[] = [];

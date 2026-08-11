@@ -22,7 +22,6 @@ async function main() {
   const browser = await lancerNavigateur();
   const dossier = mkdtempSync(path.join(tmpdir(), "atlas-mes-donnees-"));
   const context = await browser.newContext({
-    viewport: { width: 393, height: 852 },
     acceptDownloads: true,
   });
   const page = await context.newPage();

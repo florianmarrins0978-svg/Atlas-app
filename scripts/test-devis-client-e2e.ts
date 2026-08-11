@@ -55,7 +55,7 @@ async function preparerEnvoi(suffixe: string, datesDansNJours: number[]) {
 
 async function main() {
   const browser = await lancerNavigateur();
-  const context = await browser.newContext({ viewport: { width: 393, height: 852 } });
+  const context = await browser.newContext();
 
   await test("un jeton inconnu ne révèle rien au visiteur", async () => {
     const page = await context.newPage();

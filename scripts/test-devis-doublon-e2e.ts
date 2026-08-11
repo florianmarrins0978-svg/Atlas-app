@@ -22,7 +22,7 @@ function montantDuTotal(texte: string): number {
 
 async function main() {
   const navigateur = await lancerNavigateur();
-  const contexte = await navigateur.newContext({ viewport: { width: 393, height: 852 } });
+  const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
 
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });

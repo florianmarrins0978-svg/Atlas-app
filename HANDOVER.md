@@ -9,6 +9,33 @@ sert.
 
 ---
 
+## ⚠ Plusieurs conversations travaillent sur ce dépôt EN MÊME TEMPS
+
+**Dit par le patron le 11 août 2026 :** *« sur d'autres sessions, je demande de
+faire d'autres corrections. »* Ce n'est donc pas une hypothèse : `main` bouge
+pendant qu'on travaille, et il a bougé de trois commits en une après-midi.
+
+Trois conséquences, à appliquer sans y réfléchir :
+
+1. **Avant de fusionner, ramener `main` chez soi et REJOUER la batterie.**
+   Fusionner sans cela livre un mélange que personne n'a éprouvé : chaque côté
+   était vert seul, ce qui ne dit rien de leur somme.
+2. **Attendre des conflits dans les six fichiers de mémoire, et les garder tous
+   les deux.** `ARCHITECTURE.md`, `CHANGELOG.md` et `TODO.md` conflictent à
+   chaque fois — les deux sessions écrivent à la suite. Renuméroter sa propre
+   section (celle qui est déjà sur `main` garde son numéro) et **corriger les
+   renvois « §NN » des autres fichiers**, sinon ils désignent le travail de
+   quelqu'un d'autre.
+3. **Si deux sessions touchent le même écran, regarder avant de fusionner.**
+   Ici, la session voisine a bâti PAR-DESSUS le travail de la fiche chantier,
+   pas à la place — mais rien ne le garantissait, et chacune était verte de son
+   côté. Deux verts ne font pas un vert.
+
+Ne jamais forcer une poussée : ce serait effacer le travail d'une autre
+conversation, sans qu'elle en sache rien.
+
+---
+
 ## En trois phrases
 
 Atlas est un agent au service de l'artisan patron : il prépare les devis, les
@@ -79,6 +106,62 @@ avec une ligne par équipe. Réglages laisse nommer les équipes.
 4. **La grille se cale sur LUNDI** — `(getUTCDay() + 6) % 7`. Le 1er août 2026
    est un samedi : un calage sur dimanche fait glisser tout le mois d'un jour,
    sans qu'aucun chiffre ne manque.
+
+**L'anneau de la dictée est au centre de la fiche, dès l'arrivée (11 août).**
+Demandé par le patron. Sans note il est un micro (un appui dicte, un second
+enregistre) ; avec, il redevient le lecteur. Le magnétophone est partagé
+(`src/app/chantiers/[id]/magnetophone.ts`) — ne pas le recopier dans un
+troisième écran.
+
+**Le devis à la main s'ouvre aussi depuis l'écran de création (11 août, soir).**
+`creerPuisAller("fiche" | "devis")` — **une seule fonction de création**, deux
+destinations. Le chantier est créé d'abord : c'est ce qui permet à
+`devis-complet` de relire le client. Deux fonctions auraient divergé au premier
+champ ajouté.
+
+Trois choses à savoir avant d'y toucher :
+
+- **La porte du tiroir reste**, et ce n'est pas un doublon : deux *moments*, pas
+  deux chemins (« je sais déjà » vs « finalement je l'écris »).
+- **Sans nom de client, aucune fiche client n'est créée**, et le devis n'offre
+  pas d'en rattacher un — d'où la phrase de pied, qui dit exactement cela.
+- **La réserve de bas d'écran (`pb-40`) ne vaut qu'en page.** En feuille, celle-ci
+  est `fixed` en `z-[50]` et recouvre déjà la bulle : y ajouter la même réserve
+  ne protège de rien et laisse quatre-vingts pixels de vide.
+
+**Le corps de la fiche ne porte QUE l'anneau (11 août, après-midi).** Sa
+maquette (`maquettes/atlas-note-vocale.html`) ne montre aucun bouton, et il l'a
+redemandé deux fois : *« exactement, respecte strictement ma maquette »*. Ce
+qu'il faut savoir avant d'y toucher :
+
+- **L'étape suivante vit désormais dans le bandeau du tiroir**, et la rédaction
+  à la main dans sa liste. Vider le corps sans les descendre a fait tomber six
+  suites d'un coup — c'étaient deux demandes à lui, des 3 et 4 août.
+  `getSecondarySteps` est donc appelé **sans** `nextAction.key` : l'exclure
+  ferait disparaître l'étape suivante de l'application entière.
+- **`EnTeteEcran` a trois réglages facultatifs** (`precisionPlacee`, `cheveu`,
+  `actionPlacee`), employés par cette seule fiche. Leurs valeurs par défaut
+  gardent la grammaire commune du 10 août : ne pas les inverser.
+
+**L'écran des suites vit à UN endroit : `ECRAN_DU_PATRON`, dans
+`scripts/e2e-browser.ts`** (11 août, après-midi). Ne pas réécrire de
+`viewport: { width: 393, height: 852 }` dans une suite : c'était la dalle d'un
+iPhone 14, pas la place réelle d'une page (390 × **664**, barre du navigateur
+déduite), et ces 190 px de trop ont laissé passer un lien recouvert chez lui.
+Une suite qui a VRAIMENT besoin d'un autre cadre en passe un explicitement — il
+est alors conservé, et c'est un choix visible dans son code.
+
+**Le cadre honnête n'a révélé aucun défaut caché** : 46/47, l'unique rouge étant
+un dépassement de délai du serveur de développement (la suite rejouée seule
+passe). Ce n'est pas une déception, c'est un résultat.
+
+**`scripts/test-rien-de-recouvert-e2e.ts` cherche, sur quatorze écrans, ce qui
+est hors d'atteinte du doigt.** Avant d'y toucher, savoir que trois précautions
+y sont *indispensables*, chacune payée par une volée de fausses accusations :
+on amène la cible au centre avant de juger (sinon tout ce qui est sous la barre
+du bas est accusé à tort), on écarte ce qu'un parent **rogne** (l'encart « à
+facturer » replié garde ses liens dans la page), et on écarte la parenté
+directe. Les retirer rendrait cette suite bruyante, donc ignorée.
 
 **Le seed conserve les identifiants Google (11 août, matin).** `agendas_externes`
 porte `entreprise_id … ON DELETE CASCADE` : le `TRUNCATE … entreprises` du seed
@@ -320,7 +403,7 @@ qu'il a validé.
 arrive au bout.** Elle ne désigne PAS le chantier qui attend un geste — cette
 intention est celle d'avant la maquette du 10 août, et l'avoir « restaurée » a
 mis un point de couleur immuablement en bas de l'écran du patron. C'est écrit
-trois fois maintenant (`ARCHITECTURE.md` §57, `docs/INTEGRER-ORIGINE.md` §3, ici)
+trois fois maintenant (`ARCHITECTURE.md` §59, `docs/INTEGRER-ORIGINE.md` §3, ici)
 parce que ça a été défait deux fois. La descente finale est la seule part
 calculée (`src/lib/perle-descente.ts`) : `sticky` ne sait pas descendre pendant
 que le contenu monte. Le contrôle qui tient l'ensemble — et qui MESURE au lieu

@@ -63,6 +63,198 @@ piège pour la conversation suivante.
 
 ## 2026-08-10
 
+### Le devis à la main s'ouvre depuis la création du chantier
+
+**Le patron, le 11 août 2026 :** *« si je clique sur "ou rédiger le devis à la
+main", ça m'ouvre la page du devis complet, avec les informations du client qui
+se seront ajoutées automatiquement ? C'est bien ça ? »* — oui, et il avait
+raison de le demander avant de valider : c'était précisément le point qui
+pouvait rendre la porte inutile.
+
+Le lien est posé **sous** le bouton principal, en or, discret. Ce n'est pas un
+choix cosmétique : deux boutons à égalité auraient obligé tout le monde à
+trancher avant même d'avoir vu le chantier, alors que neuf fois sur dix la
+réponse est « je dicterai ». Ici, « Créer le chantier » reste le geste évident.
+
+**Une seule fonction crée le chantier, deux destinations en sortent.** Le
+chantier est créé d'abord — c'est ce qui permet à `devis-complet` de relire le
+client rattaché. Sauter la création pour « gagner du temps » aurait produit
+exactement le devis orphelin qu'il redoutait.
+
+**Elle ne remplace pas celle du tiroir, et ce n'est pas un doublon.** Ce sont
+deux *moments*, pas deux chemins : ici, « je sais déjà que je l'écrirai
+moi-même » ; sur la fiche, « j'ai commencé, finalement je l'écris ». Retirer la
+seconde enfermerait un chantier créé la veille dont la dictée n'a rien donné.
+
+### Deux défauts trouvés en regardant l'écran de création, aucun par un test
+
+- **Une mise en garde devenue fausse.** « Ces informations ne sont plus
+  modifiables ensuite » : c'était vrai quand la phrase a été écrite, plus depuis
+  que le devis les rend toutes éditables (`majClientDuDevisAction`). Une mise en
+  garde périmée est pire qu'aucune — elle fait remplir un formulaire par crainte,
+  et elle apprend à se méfier d'un écran qui dit vrai ailleurs. Elle dit
+  maintenant ce qui reste vrai, et c'est utile : **c'est le nom qui crée la fiche
+  client**, et sans lui le devis n'offre pas d'en rattacher un.
+- **La bulle de l'assistant recouvrait cette phrase**, et `finDePage: 0` —
+  aucun défilement ne l'en dégageait. Illisible en permanence, sur la moitié de
+  sa largeur. Quatrième défaut de cette famille sur ce dépôt.
+
+**Et la réserve du bas d'écran ne vaut qu'EN PAGE.** La poser aussi sur la
+feuille ajoutait quatre-vingts pixels de vide pour se protéger de quelque chose
+qui n'y arrive pas : la feuille est `fixed` en `z-[50]` et recouvre déjà la
+bulle. Vu en mesurant les deux formes, pas en supposant que la seconde
+ressemblait à la première.
+
+**Un contrôle qui a d'abord accusé à tort**, et c'est la partie qui a demandé le
+plus d'attention : sa première version lisait le texte de la page et annonçait
+que le client manquait sur le devis — c'est-à-dire exactement la panne que le
+patron redoutait. L'en-tête du devis est fait de champs éditables, et
+`innerText` ne rend jamais la valeur d'un `<input>`. Le nom était là, sous les
+yeux. Le contrôle lit désormais la valeur des champs, et il a été vérifié rouge
+en cassant la destination.
+
+### Toutes les suites mesurent enfin l'écran que le patron a dans la main
+
+*« Fais tout ce que tu penses qu'il faut faire pour que l'application
+fonctionne »*, le 11 août 2026, après avoir appris qu'il restait trente-trois
+suites cadrant un écran que personne ne possède.
+
+**Le cadre était faux, et de la pire façon : trop grand.** Les suites posaient
+393 × 852 — la dalle d'un iPhone 14, pas la place qui reste une fois la barre
+d'adresse installée : **390 × 664**. Cent quatre-vingt-dix pixels de bas
+d'écran que le patron n'a jamais eus, et où tout tenait donc confortablement.
+C'est ce qui a laissé passer, la veille, une bulle d'assistant recouvrant « ou
+rédiger le devis à la main ».
+
+**L'écran est désormais posé à UN endroit** (`e2e-browser.ts`,
+`ECRAN_DU_PATRON`), comme l'est déjà le délai d'attente et pour la même raison :
+quarante sites d'appel, c'est quarante corrections et trente-neuf oublis. Une
+suite qui a besoin d'autre chose — le devis complet s'ouvre aussi sur un écran
+d'ordinateur — passe son propre cadre, et c'est alors un choix visible.
+Quarante-et-une suites et vingt-neuf scripts de capture ont perdu leur cadre
+écrit à la main.
+
+**Deux tolérances inventées sont tombées avec.** Un contrôle mesurait le
+débordement contre « 400 px » sur un écran de 393 : sept pixels de marge qu'on
+s'accordait à soi-même. Il mesure maintenant contre la largeur **réelle** de la
+fenêtre. Un autre cadrait 393 px de large là où le vrai téléphone en fait 390.
+
+**Résultat, et il faut le dire tel quel : aucun écran n'a bronché.** 46 suites
+sur 47, l'unique rouge étant un dépassement de délai du serveur de
+développement — la suite rejouée seule passe. Le cadre honnête n'a donc révélé
+aucun défaut caché.
+
+**Mais « aucune suite n'a bronché » ne veut pas dire « rien n'est recouvert »**
+— seulement qu'aucun contrôle existant ne l'aurait remarqué. Un seul écran
+vérifiait ce genre de chose, et pour un seul bouton. D'où la suite qui suit.
+
+### Un contrôle qui cherche partout ce qui est caché sous le mobilier fixe
+
+`scripts/test-rien-de-recouvert-e2e.ts` parcourt **quatorze écrans** du parcours
+et, sur chacun, demande au navigateur qui répondrait au doigt au centre de
+chaque lien, bouton et champ. Ce que ça attrape n'a pas d'autre moyen d'être vu :
+l'élément est dans le HTML, il répond au clic programmé, **et le doigt ne
+l'atteint pas**. Trois défauts réels de ce dépôt sont de cette famille, tous
+trouvés à l'œil, aucun par un test.
+
+**Écrire ce contrôle a surtout consisté à l'empêcher de mentir.** Trois versions
+successives accusaient des écrans parfaitement sains :
+
+1. un bouton sous la barre du bas n'est pas hors d'atteinte — **il suffit de
+   défiler**. On amène donc chaque cible au centre avant de juger : ce qui reste
+   recouvert après ce geste l'est pour de bon ;
+2. l'encart « à facturer », replié au repos, garde ses liens dans la page. Le
+   navigateur les dit « visibles » — ils sont seulement **rognés** par un
+   `overflow: hidden`. Onze accusations pour des éléments qui n'étaient pas à
+   l'écran du tout ;
+3. un lien dont le centre tombe sur son propre libellé se dénonçait lui-même.
+
+**Et il sait échouer, sur les deux défauts qu'il vise.** Le défaut du 11 août a
+été reconstitué dans la fiche : il le nomme par son propre libellé et désigne le
+coupable, en restant muet sur les treize autres écrans. Son garde-fou — *« la
+fenêtre est-elle bien celle d'un téléphone ? »* — rougit dès qu'on lui repose
+l'ancien cadre. Sans lui, cette suite serait verte d'un bout à l'autre sans rien
+avoir éprouvé : c'est exactement ce qui est arrivé au contrôle de la bulle.
+
+### L'anneau de la dictée est au centre de la fiche, dès l'arrivée
+
+**Le patron, le 11 août 2026, devant un chantier qu'il venait de créer :**
+*« pourquoi on est encore sur cette page, il manque la note vocale au
+milieu »*, puis *« l'anneau qui est en plein milieu et dès qu'on arrive sur la
+page, il y est en fait, qu'on ait cliqué dessus ou non. C'est ça que je veux. »*
+
+Il avait raison, et le défaut était plus profond qu'un anneau absent. L'anneau
+n'apparaissait qu'**une fois la dictée faite** — c'était un lecteur — et la
+dictée arrivait en **deuxième** action, derrière les photos
+(`src/lib/chantier-etat.ts`). Sur un chantier neuf, c'est-à-dire au moment précis
+où l'on veut parler, le cœur du produit était donc caché derrière autre chose.
+
+L'anneau est désormais là dès l'arrivée, au centre, **au-dessus** de l'action
+principale. Sans enregistrement il devient un micro : un appui dicte, un second
+arrête et enregistre, la fiche se rafraîchit sur place et il redevient le
+lecteur. Même objet, deux états — jamais deux boutons, jamais un écran de plus.
+
+**Le magnétophone est écrit une seule fois** (`magnetophone.ts`) : l'écran de
+dictée savait déjà capter le son, et recopier ces trente lignes dans l'anneau,
+c'était s'assurer qu'un jour l'un corrige un défaut que l'autre garde.
+
+**Deux défauts trouvés à l'écran, aucun par un contrôle :**
+
+- Remonter l'anneau au centre a poussé « ou rédiger le devis à la main » **sous
+  la bulle de l'assistant**. Le lien existait, il était touchable, il était
+  illisible. Sans note, l'anneau réservait encore la place du glissement
+  « Retirer », du compteur et du tiroir « note retirée » — trois choses qui
+  n'existent pas encore.
+- **Et le contrôle qui aurait dû le voir mesurait un écran que personne ne
+  possède.** Les suites posaient un cadre de 393 × 852 ; la hauteur utile d'un
+  vrai iPhone 13, barre du navigateur déduite, est de 390 × **664**. Sur ce
+  cadre trop haut, la bulle tombait 190 px plus bas et ne recouvrait rien. La
+  suite emploie maintenant le descripteur d'appareil réel — et elle échoue bien
+  sur la mise en page d'avant, ce que l'ancien cadre ne faisait pas.
+
+`scripts/test-anneau-dictee-e2e.ts` tient les quatre points, avec un micro
+simulé : la note enregistrée depuis l'anneau existe vraiment en base.
+
+### La fiche chantier suit la maquette, au pixel — et rien n'est perdu au passage
+
+**Le patron, le 11 août, deux fois de suite :** *« ça ressemble toujours pas à
+la maquette »*, puis *« exactement, respecte strictement ma maquette »*.
+
+Il avait raison une seconde fois, et pour une raison qui vaut d'être écrite :
+**j'avais supposé au lieu de comparer.** Rendre sa maquette
+(`maquettes/atlas-note-vocale.html`) côte à côte avec l'écran a montré en une
+capture ce que trois lectures n'avaient pas vu — l'anneau portait un point là où
+le sien porte trois barres, et sa maquette **ne montre aucun bouton**. Regarder
+l'écran n'est pas de la finition (`CLAUDE.md` §5) ; ici c'était le seul moyen.
+
+Ce qui change sur la fiche :
+
+- **Le corps ne porte que l'anneau.** Le pavé vert « Ajouter des photos »
+  écrasait tout et faisait de la dictée un à-côté, alors qu'elle EST le produit.
+- **L'en-tête suit la maquette** : le client en serif gris **avant** le titre, la
+  pastille de facturation sur la ligne de la flèche, pas de trait de fermeture.
+  La pastille à côté du titre lui prenait la moitié de la largeur et cassait
+  « Intervention prévue vendredi 15 août. » en quatre lignes.
+  `EnTeteEcran` reçoit trois réglages **facultatifs** (`precisionPlacee`,
+  `cheveu`, `actionPlacee`) : les autres écrans gardent la grammaire commune du
+  10 août sans être touchés.
+- **Trois barres au repos dans TOUS les états**, le carré n'apparaissant que
+  pendant l'enregistrement — comme sur sa maquette.
+
+**Alléger un écran est facile ; le faire sans l'amputer l'est moins.** Vider le
+corps a fait tomber **six suites d'un coup**, toutes sur la même phrase
+manquante : le bouton portait la seule indication de la marche à suivre. Ce
+n'était pas du bruit — un écran qui ne dit pas où l'on va se lit comme une
+application en panne. L'étape suivante est donc passée dans le bandeau du
+tiroir (« Ajouter des photos → »), et la rédaction à la main dans sa liste. Deux
+demandes qu'il avait faites lui-même, les 3 et 4 août, et que ce lot aurait
+défaites en silence.
+
+Un contrôle garde cette frontière (`test-anneau-dictee-e2e.ts`) : *le corps ne
+porte que l'anneau, et le tiroir garde tout le reste*. Il échoue aussi bien si
+l'on remet un bouton dans le corps que si l'on oublie de descendre une entrée
+dans le tiroir.
+
 ### `npm run essai` accusait la base pendant qu'Atlas démarrait déjà
 
 **Constaté chez le patron, sur son espace de travail.** Il tape `npm run essai`,
@@ -86,7 +278,6 @@ attendre, quel journal suivre, et quelle ligne attendre.
 
 Éprouvé en reproduisant la situation : un banc tient le verrou, `npm run essai`
 arrive dessus, et refuse au lieu de démarrer.
-
 
 ### Refaire la démonstration n'efface plus ce que l'artisan a tapé à la main
 

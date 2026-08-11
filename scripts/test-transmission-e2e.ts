@@ -23,7 +23,7 @@ const TELEPHONE = "0679984514";
 
 async function main() {
   const navigateur = await lancerNavigateur();
-  const contexte = await navigateur.newContext({ viewport: { width: 393, height: 852 } });
+  const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
 
   // Le partage existe sur son téléphone : c'est justement ce qui déclenchait le

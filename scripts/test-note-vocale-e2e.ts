@@ -15,7 +15,6 @@ async function main() {
     ],
   });
   const context = await browser.newContext({
-    viewport: { width: 393, height: 852 },
     deviceScaleFactor: 3,
     permissions: ["microphone"],
   });

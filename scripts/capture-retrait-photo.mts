@@ -21,7 +21,7 @@
  *   npx tsx scripts/capture-retrait-photo.mts <dossier> <chantierId>
  */
 import { existsSync, mkdirSync, readdirSync } from "node:fs";
-import { chromium } from "playwright";
+import { chromium, devices } from "playwright";
 
 const dossier = process.argv[2];
 const chantierId = process.argv[3];
@@ -46,9 +46,7 @@ function navigateurPreInstalle(): string | undefined {
 
 const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
 const contexte = await navigateur.newContext({
-  viewport: { width: 393, height: 852 },
-  deviceScaleFactor: 3,
-  isMobile: true,
+  ...devices["iPhone 13"], isMobile: true,
   hasTouch: true,
 });
 const page = await contexte.newPage();

@@ -33,7 +33,7 @@ const FEUILLE = [
 
 async function main() {
   const navigateur = await lancerNavigateur();
-  const contexte = await navigateur.newContext({ viewport: { width: 393, height: 852 } });
+  const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 

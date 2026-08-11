@@ -18,18 +18,18 @@ const NATURES: NatureGrille[] = ["abattage", "grumes", "fendage", "dessouchage",
 //      trouve pas n'existe pas ;
 //   2. un prix saisi **survit au rechargement**. Un champ qui se vide après
 //      coup ferait croire au patron qu'il a mal tapé, dix fois de suite ;
-//   3. elle tient dans **393 pixels** de large. Huit colonnes de diamètres en
-//      auraient fait quarante par colonne : c'est pour ça qu'elle est dépliée
-//      en blocs, et c'est ce qu'on vérifie ;
+//   3. elle tient dans la largeur d'un vrai téléphone. Huit colonnes de
+//      diamètres en auraient fait quarante par colonne : c'est pour ça qu'elle
+//      est dépliée en blocs, et c'est ce qu'on vérifie ;
 //   4. **les trois grilles sont là** — abattre, fendre, tailler. Une grille
 //      qu'il ne voit pas n'existe pas pour lui.
 
 const BASE = "http://localhost:3000";
-const LARGEUR = 393;
-
 async function main() {
   const navigateur = await lancerNavigateur();
-  const contexte = await navigateur.newContext({ viewport: { width: LARGEUR, height: 852 } });
+  // L'écran du patron vient de `e2e-browser` : 390 px de large, et non les 393
+  // qu'on écrivait ici — trois pixels de marge qu'on s'accordait à soi-même.
+  const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
 
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
@@ -126,7 +126,7 @@ async function main() {
     debordement <= 1,
     `La page déborde de ${debordement} px : la grille ne tient pas dans un téléphone.`
   );
-  console.log("  ✓ rien ne déborde d'un écran de 393 px");
+  console.log("  ✓ rien ne déborde de la largeur d'un vrai téléphone");
 
   // --- 5. Vider une case la rend à la question -----------------------------
   //

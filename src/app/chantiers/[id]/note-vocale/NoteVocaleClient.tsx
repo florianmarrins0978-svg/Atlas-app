@@ -15,6 +15,7 @@ import {
   completerNoteVocaleAction,
 } from "./actions";
 import DevisDepuisDictee from "../DevisDepuisDictee";
+import { formulaireDeNote } from "../magnetophone";
 
 // « confirmation » ne sert plus qu'au REMPLACEMENT depuis le 10 août 2026 : le
 // retrait, lui, passe par le glissement et le tiroir, sans rien demander avant.
@@ -109,10 +110,10 @@ export default function NoteVocaleClient({
 
     setEnCours(true);
     try {
-      const fd = new FormData();
-      const extension = blob.type.includes("ogg") ? "ogg" : blob.type.includes("mp4") ? "m4a" : "webm";
-      fd.set("fichier", blob, `note.${extension}`);
-      fd.set("dureeSecondes", String(dureeFinale));
+      // La règle qui choisit l'extension vit dans `../magnetophone` : Safari
+      // rend du mp4, Firefox de l'ogg, Chrome du webm, et deux copies de cette
+      // règle finiraient par diverger — l'anneau de la fiche l'emploie aussi.
+      const fd = formulaireDeNote(blob, dureeFinale);
       const note = await enregistrerNoteVocaleAction(chantierId, fd);
       setStorageKey(note.storageKey);
       setDureeNote(note.dureeSecondes ?? dureeFinale);
@@ -170,9 +171,7 @@ export default function NoteVocaleClient({
   async function envoyerComplement(blob: Blob) {
     setEnCours(true);
     try {
-      const fd = new FormData();
-      const extension = blob.type.includes("ogg") ? "ogg" : blob.type.includes("mp4") ? "m4a" : "webm";
-      fd.set("fichier", blob, `complement.${extension}`);
+      const fd = formulaireDeNote(blob, null, "complement");
       const r = await completerNoteVocaleAction(chantierId, fd);
       if (!r.ok) {
         setMessageComplement(

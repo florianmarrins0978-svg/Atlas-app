@@ -125,7 +125,7 @@ l'application. Ce qui est **fait** :
 - **L'accueil** : le fil qui porte les jours, la perle d'or qui se tient à
   mi-hauteur et désigne le chantier qu'on regarde, puis descend sur le dernier
   jour quand on arrive au bout (corrigé le 11 août 2026 : elle était posée sur le
-  chantier en attente, donc tout en bas chez le patron — `ARCHITECTURE.md` §57),
+  chantier en attente, donc tout en bas chez le patron — `ARCHITECTURE.md` §59),
   le trait qui glisse sous les onglets, et « Nouveau chantier » qui monte en
   feuille pendant que la liste recule.
 - **Planning, Terminés, Réglages, relevé de TVA, fiche chantier** : même
@@ -158,6 +158,30 @@ l'application. Ce qui est **fait** :
   de TVA en simple ligne au pied. « Fin de chantier » s'appelle désormais
   **« Créer la facture »** — mais créer n'est toujours pas envoyer.
   `ARCHITECTURE.md` §53.
+- **La fiche chantier tenue à sa maquette, et l'anneau qui dicte** (11 août) :
+  le corps ne porte plus que l'anneau, au centre, **présent dès l'arrivée**.
+  Sans note il est un micro — un appui dicte, un second enregistre, la fiche se
+  rafraîchit sur place ; avec, il redevient le lecteur. Le bouton principal, la
+  rédaction à la main et les étapes descendent dans le tiroir : la fiche dit
+  toujours quoi faire ensuite, mais depuis son bandeau. L'en-tête suit la
+  maquette (client en serif **avant** le titre, pastille sur la ligne de la
+  flèche, pas de trait de fermeture), par trois réglages **facultatifs** de
+  `EnTeteEcran` qui laissent les autres écrans intacts. `ARCHITECTURE.md` §57.
+- **Le devis à la main s'ouvre depuis la création du chantier** (11 août) : un
+  lien discret sous « Créer le chantier ». Le chantier est créé, puis le devis
+  s'ouvre avec le client déjà en en-tête — nom, adresse, téléphone. La porte du
+  tiroir reste : ce sont deux moments, pas deux chemins.
+  `scripts/test-devis-main-depuis-creation-e2e.ts`.
+- **Les suites mesurent l'écran du patron, et cherchent ce que le doigt
+  n'atteint pas** (11 août) : le cadre vit à un seul endroit
+  (`ECRAN_DU_PATRON`, 390 × 664 au lieu des 393 × 852 qu'on posait — la dalle
+  d'un iPhone, pas la place réelle d'une page). Quarante-et-une suites et
+  vingt-neuf scripts de capture en héritent. Le cadre honnête n'a révélé aucun
+  défaut caché, mais il rendait enfin possible
+  `scripts/test-rien-de-recouvert-e2e.ts` : quatorze écrans, et sur chacun la
+  question « qui répondrait au doigt ? » posée à chaque lien, bouton et champ.
+  C'est la famille des trois seuls défauts que ce dépôt n'a jamais su attraper
+  autrement qu'à l'œil. `ARCHITECTURE.md` §58.
 
 Ce qui **reste**, avec l'ordre, les valeurs, les sept pièges et les deux
 réserves : **`TODO.md` §7**. Le dessin fait foi dans

@@ -10,7 +10,7 @@ const OUT = "artifacts/screenshots/vocabulaire";
 async function main() {
   mkdirSync(OUT, { recursive: true });
   const navigateur = await lancerNavigateur();
-  const contexte = await navigateur.newContext({ viewport: { width: 393, height: 852 } });
+  const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
 
   await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });

@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { colors, libelleCaps } from "@/lib/design-tokens";
 import { useRetraits } from "@/components/atlas/useRetraits";
-import { supprimerNoteVocaleAction } from "./note-vocale/actions";
+import { supprimerNoteVocaleAction, enregistrerNoteVocaleAction } from "./note-vocale/actions";
+import { useMagnetophone, formulaireDeNote } from "./magnetophone";
 
 /**
  * L'anneau muet — l'accès direct à la note vocale, sur la fiche du chantier.
@@ -26,6 +28,22 @@ import { supprimerNoteVocaleAction } from "./note-vocale/actions";
  *
  * **Et le glissement suit le doigt.** La maquette s'accrochait d'un cran ; ici
  * c'est un défilement natif, avec l'inertie et le rebond de la plateforme.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **L'anneau est là DÈS L'ARRIVÉE, même sans rien à écouter** — demandé par le
+ * patron le 11 août 2026, sur sa fiche d'un chantier neuf :
+ *
+ *   *« l'anneau qui est en plein milieu et dès qu'on arrive sur la page, il y
+ *   est en fait, qu'on ait cliqué dessus ou non. C'est ça que je veux. »*
+ *
+ * Avant, il n'apparaissait qu'une fois la note enregistrée, et la dictée
+ * arrivait en DEUXIÈME action, derrière les photos. Sur un chantier neuf —
+ * c'est-à-dire au moment précis où l'on veut parler — le cœur du produit était
+ * donc caché derrière autre chose.
+ *
+ * Sans enregistrement, l'anneau devient un micro : un appui commence à dicter,
+ * un second arrête et enregistre. Avec un enregistrement, il redevient le
+ * lecteur. Même objet, deux états — jamais deux boutons.
  */
 export default function AnneauNoteVocale({
   chantierId,
@@ -43,6 +61,13 @@ export default function AnneauNoteVocale({
   const [lit, setLit] = useState(false);
   const [seconde, setSeconde] = useState(0);
   const [duree, setDuree] = useState(dureeSecondes ?? 0);
+
+  // **Rien à écouter : l'anneau devient un micro.** Le même objet, jamais un
+  // second bouton — la fiche n'a qu'un centre.
+  const router = useRouter();
+  const magnetophone = useMagnetophone();
+  const [envoi, setEnvoi] = useState(false);
+  const enregistreur = !storageKey;
 
   // Le retrait obéit au vocabulaire commun (`ARCHITECTURE.md` §48) : la note
   // n'est que masquée, et **rien n'est effacé tant qu'« Annuler » est à
@@ -163,6 +188,33 @@ export default function AnneauNoteVocale({
     }
   }
 
+  /**
+   * Un appui commence, un second arrête et enregistre.
+   *
+   * **On ne quitte pas l'écran.** La fiche se rafraîchit sur place : l'anneau
+   * qui était un micro devient le lecteur de ce qu'on vient de dire, au même
+   * endroit. Renvoyer vers un autre écran ferait perdre le fil de ce qu'on
+   * était en train de faire.
+   */
+  async function basculerDictee() {
+    if (envoi) return;
+    if (!magnetophone.enregistre) {
+      await magnetophone.demarrer();
+      return;
+    }
+    const capte = await magnetophone.arreter();
+    if (!capte) return;
+    setEnvoi(true);
+    try {
+      await enregistrerNoteVocaleAction(chantierId, formulaireDeNote(capte.blob, capte.secondes));
+      router.refresh();
+    } catch {
+      magnetophone.setErreur("Impossible d'enregistrer la note pour l'instant. Réessayez.");
+    } finally {
+      setEnvoi(false);
+    }
+  }
+
   function retirer() {
     audioRef.current?.pause();
     setLit(false);
@@ -178,7 +230,11 @@ export default function AnneauNoteVocale({
     <div
       ref={lecteurRef}
       className="atlas-lecteur"
-      data-lit={lit ? "oui" : "non"}
+      // `data-lit` pilote l'onde : elle bat quand on écoute ET quand on dicte.
+      // Un micro immobile pendant qu'on parle se lit comme un micro en panne.
+      data-lit={lit || magnetophone.enregistre ? "oui" : "non"}
+      data-enregistre={magnetophone.enregistre ? "oui" : "non"}
+      data-vide={enregistreur ? "oui" : "non"}
       data-retiree={retiree ? "oui" : "non"}
       data-atlas="anneau-note-vocale"
     >
@@ -209,55 +265,117 @@ export default function AnneauNoteVocale({
         <div className="atlas-volet-anneau">
           <button
             type="button"
-            onClick={basculerLecture}
-            // Le seul texte de tout l'anneau, et il ne s'affiche pas.
-            aria-label={lit ? "Mettre en pause la note vocale" : "Écouter la note vocale"}
-            aria-pressed={lit}
+            onClick={enregistreur ? basculerDictee : basculerLecture}
+            disabled={envoi}
+            // Le seul texte de tout l'anneau, et il ne s'affiche pas. Il dit le
+            // geste RÉEL, qui n'est pas le même selon qu'il y a ou non une note.
+            aria-label={
+              enregistreur
+                ? magnetophone.enregistre
+                  ? "Arrêter la dictée et enregistrer"
+                  : "Dicter une note vocale"
+                : lit
+                  ? "Mettre en pause la note vocale"
+                  : "Écouter la note vocale"
+            }
+            aria-pressed={enregistreur ? magnetophone.enregistre : lit}
             className="atlas-anneaux"
           >
             <span data-cercle style={{ width: 74, height: 74, border: `1.5px solid ${colors.rust}` }} />
             <span data-cercle style={{ width: 56, height: 56, border: `1px solid ${colors.or}` }} />
-            <span className="atlas-traits" aria-hidden="true">
-              <i style={{ backgroundColor: colors.or }} />
-              <i style={{ backgroundColor: colors.or }} />
-              <i style={{ backgroundColor: colors.or }} />
-            </span>
+            {/* **Les trois traits, dans TOUS les états au repos.**
+                Une première version posait un point plein quand il n'y avait
+                rien à écouter — le symbole des magnétophones. Le patron l'a
+                rejeté en une phrase : « ça ressemble toujours pas à la
+                maquette ». Il avait raison, et c'est plus qu'un détail de
+                dessin : l'anneau est UN objet, il ne doit pas changer de visage
+                selon ce qu'il contient. Seule la dictée EN COURS mérite un
+                signe distinct — le carré, qui ne veut dire qu'une chose :
+                arrêter. */}
+            {magnetophone.enregistre ? (
+              <span
+                aria-hidden="true"
+                style={{
+                  backgroundColor: colors.or,
+                  width: 17,
+                  height: 17,
+                  borderRadius: 3,
+                  transition: "border-radius 180ms ease, width 180ms ease, height 180ms ease",
+                }}
+              />
+            ) : (
+              <span className="atlas-traits" aria-hidden="true">
+                <i style={{ backgroundColor: colors.or }} />
+                <i style={{ backgroundColor: colors.or }} />
+                <i style={{ backgroundColor: colors.or }} />
+              </span>
+            )}
           </button>
         </div>
-        <button type="button" onClick={retirer} className={`atlas-fosse ${libelleCaps}`} style={{ color: colors.or, letterSpacing: "0.24em" }}>
-          Retirer
-        </button>
+        {!enregistreur && (
+          <button type="button" onClick={retirer} className={`atlas-fosse ${libelleCaps}`} style={{ color: colors.or, letterSpacing: "0.24em" }}>
+            Retirer
+          </button>
+        )}
       </div>
 
-      {/* **La consigne dit le geste RÉEL.** Une première version annonçait
-          « faites descendre » alors que le doigt fait monter : une consigne
-          fausse coûte plus cher qu'aucune consigne. */}
+      {/* **La consigne dit le geste RÉEL, et celui de CET état.** Une première
+          version annonçait « faites descendre » alors que le doigt fait monter :
+          une consigne fausse coûte plus cher qu'aucune consigne. De même,
+          proposer « poussez vers le haut » sans note à retirer enverrait
+          chercher un geste sans effet — et un anneau muet sur un chantier neuf
+          ne dirait pas qu'il attend la voix. */}
       <p className="atlas-indice mt-2 text-[11px]" style={{ color: colors.muted }}>
-        Poussez l&apos;anneau vers le haut
+        {enregistreur
+          ? magnetophone.enregistre
+            ? "Appuyez pour arrêter"
+            : envoi
+              ? "Enregistrement…"
+              : "Appuyez et décrivez le chantier"
+          : "Poussez l'anneau vers le haut"}
       </p>
 
-      <p className="atlas-chrono" style={{ color: colors.or }} aria-hidden={!lit}>
-        {mmss(seconde)}
-        <span className="ml-[7px]" style={{ color: colors.muted }}>
-          / {mmss(duree)}
-        </span>
+      {magnetophone.erreur && (
+        <p className="mt-2 text-center text-[12px]" style={{ color: colors.rust }}>
+          {magnetophone.erreur}
+        </p>
+      )}
+
+      {/* Pendant la dictée, le compteur ne compte QUE ce qui a été dit : il n'y
+          a pas encore de durée totale, et en inventer une serait mentir. */}
+      <p className="atlas-chrono" style={{ color: colors.or }} aria-hidden={!lit && !magnetophone.enregistre}>
+        {mmss(magnetophone.enregistre ? magnetophone.secondes : seconde)}
+        {!enregistreur && (
+          <span className="ml-[7px]" style={{ color: colors.muted }}>
+            / {mmss(duree)}
+          </span>
+        )}
       </p>
 
-      <div className="atlas-note-retiree">
-        <span className="text-[13px]" style={{ color: colors.muted }}>
-          Note vocale retirée
-        </span>
-        <button
-          type="button"
-          onClick={retraits.annuler}
-          aria-label="Annuler le retrait de la note vocale"
-          tabIndex={retiree ? 0 : -1}
-          className={`px-1 py-2 ${libelleCaps}`}
-          style={{ color: colors.or, letterSpacing: "0.24em" }}
-        >
-          Annuler
-        </button>
-      </div>
+      {/* **Absent du document, pas seulement invisible.** Depuis que l'anneau
+          est rendu même sans note (11 août 2026), ce tiroir « Note vocale
+          retirée » traînait dans la page de tout chantier neuf — avec son
+          bouton « Annuler ». Une suite de l'assistant a alors trouvé DEUX
+          « Annuler » et cliqué sur le mauvais : celui-ci, invisible et hors du
+          parcours au clavier. Un bouton qu'on ne peut ni voir ni atteindre ne
+          doit pas non plus exister pour qui cherche par le texte. */}
+      {!enregistreur && (
+        <div className="atlas-note-retiree">
+          <span className="text-[13px]" style={{ color: colors.muted }}>
+            Note vocale retirée
+          </span>
+          <button
+            type="button"
+            onClick={retraits.annuler}
+            aria-label="Annuler le retrait de la note vocale"
+            tabIndex={retiree ? 0 : -1}
+            className={`px-1 py-2 ${libelleCaps}`}
+            style={{ color: colors.or, letterSpacing: "0.24em" }}
+          >
+            Annuler
+          </button>
+        </div>
+      )}
     </div>
   );
 }

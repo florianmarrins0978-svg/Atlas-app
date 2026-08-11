@@ -1,4 +1,4 @@
-import { chromium } from "playwright";
+import { chromium, devices } from "playwright";
 import { mkdirSync } from "fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,9 +18,7 @@ async function main() {
     ],
   });
   const context = await browser.newContext({
-    viewport: { width: 393, height: 852 },
-    deviceScaleFactor: 3,
-    permissions: ["microphone"],
+    ...devices["iPhone 13"], permissions: ["microphone"],
   });
   const page = await context.newPage();
 

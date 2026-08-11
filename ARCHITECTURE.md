@@ -3837,7 +3837,224 @@ patron : il avait fait plusieurs Ctrl+C dans la soirée.
 
 ---
 
-## 57. La perle du fil désigne ce qu'on regarde, jamais un état
+## 57. L'anneau au centre de la fiche — et ce qu'un écran vidé emporte avec lui
+
+**Le patron, le 11 août 2026, devant la fiche d'un chantier qu'il venait de
+créer :** *« pourquoi on est encore sur cette page, il manque la note vocale au
+milieu »*. Puis, deux fois de suite, la même demande : *« ça ressemble toujours
+pas à la maquette »*, *« exactement, respecte strictement ma maquette »*.
+
+### L'anneau n'était pas absent : il était un lecteur
+
+Le défaut était plus profond qu'un anneau manquant. L'anneau ne naissait
+qu'**après** la dictée — il servait à réécouter — et la dictée arrivait en
+**deuxième** action, derrière les photos (`src/lib/chantier-etat.ts`). Sur un
+chantier neuf, c'est-à-dire au moment précis où l'artisan veut parler, le cœur
+du produit était donc caché derrière autre chose.
+
+Il est désormais **un objet à deux états**, jamais deux boutons :
+
+| État | Ce qu'il est | Le geste |
+|---|---|---|
+| pas de note | un micro | un appui dicte, un second arrête et enregistre |
+| une note, audio présent | un lecteur | une poussée joue |
+| une note, audio purgé | absent | la ligne du tiroir mène à l'écran qui l'explique |
+
+Le troisième cas est une exception vraie, pas un oubli : l'audio est effacé une
+fois la transcription obtenue (`docs/RGPD.md` §4). La note **existe** encore ;
+proposer d'en dicter une autre à cet endroit effacerait le travail déjà fait.
+
+**Le magnétophone est écrit une seule fois** (`src/app/chantiers/[id]/magnetophone.ts`).
+L'écran de dictée savait déjà capter le son ; recopier ces trente lignes dans
+l'anneau, c'était s'assurer qu'un jour l'un corrige un défaut que l'autre garde
+(`CLAUDE.md` §3). Le module capte, compte et rend un `Blob` — ce qu'on en fait
+ensuite regarde l'appelant, sans quoi il ne servirait qu'un seul des deux.
+
+### Ce qu'un écran vidé emporte, et qu'il faut rattraper
+
+Sa maquette (`maquettes/atlas-note-vocale.html`) ne montre **aucun bouton** :
+un statut, un titre, une phrase calme, l'anneau. Le corps de la fiche a donc été
+vidé — et **six suites sont tombées d'un coup**, toutes sur la même phrase
+manquante.
+
+Ce n'était pas du bruit. Le bouton portait la **seule** indication de la marche
+à suivre, et le tiroir fermé ne montre qu'un état. Un écran qui ne dit pas où
+l'on va se lit comme une application en panne — c'est déjà écrit dans le cas
+« rien à faire », trois lignes plus haut dans le même fichier.
+
+Deux règles en sont sorties, et elles valent pour tout allègement d'écran :
+
+1. **Alléger, c'est déplacer, pas supprimer.** L'étape suivante est passée dans
+   le bandeau du tiroir (`Ajouter des photos →`), la rédaction à la main dans
+   sa liste. Les deux étaient des demandes du patron, des 3 et 4 août ; ce lot
+   les aurait défaites en silence.
+2. **`getSecondarySteps` est appelé SANS `nextAction.key`.** Il excluait
+   l'étape suivante parce qu'elle vivait dans le bouton. Le bouton parti, le
+   tiroir est le seul endroit où elle vive : l'exclure la ferait disparaître de
+   l'application entière.
+
+Un contrôle garde cette frontière dans les deux sens
+(`test-anneau-dictee-e2e.ts`, *« le corps ne porte que l'anneau, et le tiroir
+garde tout le reste »*) : il échoue si l'on remet un bouton dans le corps, et il
+échoue si l'on oublie de descendre une entrée dans le tiroir.
+
+### Trois réglages facultatifs plutôt qu'un en-tête de plus
+
+La maquette pose le client **avant** le titre, en serif gris, la pastille de
+facturation sur la ligne de la flèche, et ne ferme pas l'en-tête d'un trait.
+Rien de tout cela n'est du goût pur : à côté du titre, la pastille lui prend la
+moitié de la largeur et casse « Intervention prévue vendredi 15 août. » en
+**quatre** lignes au lieu de deux.
+
+`EnTeteEcran` reçoit donc `precisionPlacee`, `cheveu` et `actionPlacee`, **avec
+les valeurs par défaut d'avant**. La grammaire commune posée le 10 août pour
+tous les écrans n'est pas touchée ; seule la fiche demande autre chose. Un
+composant partagé qu'on fait diverger par ses défauts fait diverger tous ses
+appelants — c'est le contraire de ce pour quoi il existe.
+
+### La leçon qui dépasse cet écran : supposer n'est pas comparer
+
+Il a fallu qu'il le dise **deux fois**. Entre les deux, j'avais relu la maquette
+au lieu de la **rendre** : côte à côte avec l'écran, une seule capture a montré
+ce que trois lectures n'avaient pas vu — l'anneau portait un point là où le sien
+porte trois barres, et sa maquette ne montre aucun bouton.
+
+Deux défauts de mise en page ont été trouvés de la même façon, et par aucun
+contrôle : sans note, l'anneau réservait encore la place du glissement
+« Retirer », du compteur et du tiroir « note retirée » — trois choses qui
+n'existent pas encore — ce qui poussait « ou rédiger le devis à la main » sous
+la bulle de l'assistant. Le lien existait, il était touchable, il était
+illisible.
+
+**Et le contrôle qui aurait dû le voir mesurait un écran que personne ne
+possède.** Les suites posaient 393 × 852 ; la hauteur utile d'un vrai iPhone 13,
+barre du navigateur déduite, est de 390 × **664**. Sur ce cadre trop haut, la
+bulle tombait 190 px plus bas et ne recouvrait rien. `test-anneau-dictee-e2e.ts`
+emploie `devices["iPhone 13"]`, et sa version rouge a été vérifiée sur la mise
+en page d'avant. **Les autres suites ont encore l'ancien cadre** : elles peuvent
+donc rater les défauts de bas d'écran.
+
+---
+
+## 58. L'écran des suites : un seul endroit, et un contrôle qui cherche ce que le doigt n'atteint pas
+
+**Le patron, le 11 août 2026 :** *« fais tout ce que tu penses qu'il faut faire
+pour que l'application fonctionne »*, après avoir appris qu'il restait
+trente-trois suites cadrant un écran que personne ne possède.
+
+### Le cadre était faux, et de la pire façon : trop grand
+
+| | Ce qu'on posait | Ce que le patron a |
+|---|---|---|
+| largeur | 393 | **390** |
+| hauteur | 852 | **664** |
+
+852, c'est la **dalle** d'un iPhone 14. La page, elle, n'a que ce qui reste une
+fois la barre d'adresse du navigateur installée. Cent quatre-vingt-dix pixels de
+bas d'écran fantômes — assez pour qu'une bulle flottante tombe dans le vide au
+lieu de recouvrir un lien. C'est exactement ce qui s'est produit la veille
+(§57) : le contrôle existait, il était juste, et il mesurait un écran imaginaire.
+
+**Un contrôle qui mesure un écran que personne ne possède ne prouve pas qu'il
+n'y a pas de défaut : il prouve qu'il ne sait pas le voir.**
+
+### Posé à un seul endroit, comme le délai d'attente
+
+`ECRAN_DU_PATRON` vit dans `scripts/e2e-browser.ts`, à côté de
+`DELAI_PAR_DEFAUT_MS`, et pour la raison qui y est déjà écrite : *« une valeur
+par site d'appel, c'est trente endroits à corriger et vingt-neuf oublis. »*
+Quarante-et-une suites et vingt-neuf scripts de capture ont perdu leur cadre
+écrit à la main.
+
+**Il se propose, il ne s'impose pas.** `newContext()` applique le téléphone
+seulement quand l'appelant ne dit rien. Une suite qui passe son propre
+`viewport` le garde — `test-devis-complet-e2e.ts` ouvre délibérément le devis
+sur 1024 × 900, parce qu'un devis se lit aussi sur un écran d'ordinateur. Lui
+refuser ce cadre remplacerait un mensonge par un autre.
+
+C'est `devices["iPhone 13"]` de Playwright, et non trois nombres recopiés : la
+valeur est tenue à jour par des gens dont c'est le métier.
+
+**Deux tolérances inventées sont tombées avec le cadre**, et elles méritent
+d'être nommées parce qu'elles se ressemblent : un contrôle de débordement
+mesurait contre « 400 px » sur un écran de 393 — sept pixels de marge qu'on
+s'accordait à soi-même —, et la grille des prix se cadrait à 393 là où le vrai
+téléphone en fait 390. Une tolérance écrite à la main finit toujours par couvrir
+un débordement véritable ; on mesure désormais contre la largeur **réelle** de
+la fenêtre.
+
+### Ce que le cadre honnête a trouvé : rien — et c'est un résultat
+
+46 suites sur 47, l'unique rouge étant un dépassement de délai du serveur de
+développement (rejouée seule, elle passe). Aucun écran n'a bronché.
+
+Il fallait pourtant le faire, et le dire tel quel plutôt que d'annoncer une
+moisson qui n'a pas eu lieu.
+
+**Mais « aucune suite n'a bronché » ne veut pas dire « rien n'est recouvert ».**
+Ça veut dire qu'aucun contrôle existant ne l'aurait remarqué — et un seul écran
+vérifiait ce genre de chose, pour un seul bouton
+(`test-agenda-reglages-e2e.ts`). C'est le vrai trou, et le cadre juste ne le
+bouchait pas.
+
+### `test-rien-de-recouvert-e2e.ts` — le trou bouché
+
+Quatorze écrans du parcours. Sur chacun, pour chaque lien, bouton et champ, une
+question au navigateur : **qui répondrait au doigt en son centre ?** Si ce n'est
+pas lui, quelque chose flotte au-dessus.
+
+C'est la famille des trois défauts réels de ce dépôt — une barre de navigation
+sur la page publique du client, une pile de notifications qui poussait le
+contenu dehors, un lien sous la bulle — et **aucun des trois n'a été trouvé par
+un test**. Ils se ressemblent tous : l'élément est dans le HTML, il répond même
+au clic programmé, et le doigt ne l'atteint pas. Toute vérification par le texte
+reste verte.
+
+**L'essentiel du travail a consisté à l'empêcher d'accuser à tort.** Trois
+versions successives criaient sur des écrans parfaitement sains :
+
+1. **Un bouton sous la barre du bas n'est pas hors d'atteinte : il suffit de
+   défiler.** On amène donc chaque cible au centre de l'écran *avant* de juger.
+   Ce qui reste recouvert après ce geste l'est pour de bon — il n'existe aucune
+   position où l'artisan l'atteindrait. Sans cela : une vingtaine d'accusations
+   par écran.
+2. **Un parent qui rogne cache sans masquer.** L'encart « à facturer », replié
+   au repos, garde ses liens dans la page ; `checkVisibility` les dit visibles,
+   puisqu'ils ne sont ni masqués ni transparents — ils sont seulement découpés
+   par un `overflow: hidden`. Onze accusations pour des éléments qui n'étaient
+   pas à l'écran du tout.
+3. **La parenté directe n'est pas un recouvrement.** `elementFromPoint` rend
+   l'élément le plus profond : un lien dont le centre tombe sur son propre
+   libellé se dénonçait lui-même.
+
+Chacune de ces trois exceptions écarte quelque chose qui **n'est pas** le défaut
+cherché. Aucune n'a été ajoutée pour faire taire un rouge gênant — la distinction
+est mince à l'écriture et décisive à l'usage : une suite bruyante finit ignorée,
+et une suite complaisante ne sert à rien.
+
+### Il sait échouer — vérifié sur les deux défauts qu'il vise
+
+Le défaut du 11 août a été **reconstitué** dans la fiche chantier : un lien posé
+là où flotte la bulle. La suite le nomme par son propre libellé, désigne le
+coupable, et reste muette sur les treize autres écrans.
+
+Et son garde-fou — *« la fenêtre est-elle bien celle d'un téléphone ? »* —
+rougit dès qu'on lui repose l'ancien cadre :
+
+```
+✗ l'écran mesuré est celui d'un vrai téléphone (393×852)
+  la fenêtre fait 393×852 : plus haute que la place réelle d'un téléphone
+  (390 × 664). Sur ce cadre, cette suite ne peut RIEN attraper.
+```
+
+Ce garde-fou n'est pas un ornement. Sans lui, quelqu'un remettra un jour un
+`viewport` dans cette suite, elle passera au vert d'un bout à l'autre sans rien
+avoir éprouvé, et personne ne s'en apercevra — c'est mot pour mot ce qui est
+arrivé au contrôle de la bulle.
+
+---
+
+## 59. La perle du fil désigne ce qu'on regarde, jamais un état
 
 **Le patron, capture de son téléphone à l'appui, le 11 août 2026 :** *« Lorsqu'on
 est tout en haut, elle devrait être au niveau du vingt-deux, donc bien centré sur

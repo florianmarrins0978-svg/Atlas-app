@@ -105,7 +105,7 @@ patron le 11 août 2026 : *« quand on arrive au dernier, là, elle descend et e
 se met en face du dernier jour. »* Ce mouvement-là n'est PAS du CSS et ne peut pas
 l'être : il faut descendre pendant que le contenu monte, et une accroche ne cloue
 que dans un sens. Il est calculé dans `src/lib/perle-descente.ts`
-(`ARCHITECTURE.md` §57).
+(`ARCHITECTURE.md` §59).
 
 Cinq pièges, tous payés :
 
