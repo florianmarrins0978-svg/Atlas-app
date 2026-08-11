@@ -198,15 +198,33 @@ async function portRendu(limiteMs) {
 // raisonnement complet est dans `verrou-banc.mjs`.
 const verrou = prendreVerrouBanc();
 if (!verrou.pris) {
-  console.log(
-    "\n  ─────────────────────────────────────────────────────────────\n" +
-      "   Atlas est DÉJÀ en train de démarrer — rien à relancer.\n\n" +
-      "   L'espace de travail s'en charge tout seul à chaque allumage.\n" +
-      "   Suivez-le : tail -f /tmp/essai.log\n\n" +
-      "   (En lancer un second ferait échouer les deux sur le port 3000 :\n" +
-      "    c'est le « EADDRINUSE » du 10 août 2026.)\n" +
-      "  ─────────────────────────────────────────────────────────────\n"
-  );
+  // **Refuser ne suffit pas : il faut dire OÙ ÇA EN EST.**
+  //
+  // Première version, ce message disait « Atlas est déjà en train de démarrer »
+  // et rien d'autre. Le patron s'est retrouvé devant un refus sans savoir s'il
+  // devait attendre trente secondes ou cinq minutes, ni si l'application était
+  // déjà ouvrable. Un refus qui n'informe pas ne vaut guère mieux qu'une panne.
+  //
+  // On interroge donc l'application avant de répondre : si elle sert déjà, on
+  // lui donne l'adresse ; sinon, on lui dit ce qu'il reste à attendre.
+  if (await repond()) {
+    console.log(
+      "\n  Atlas tourne déjà — rien à relancer.\n" +
+        annoncePrete({ port: PORT, precision: "déjà en service." })
+    );
+  } else {
+    console.log(
+      "\n  ─────────────────────────────────────────────────────────────\n" +
+        "   Atlas est DÉJÀ en train de se construire — rien à relancer.\n\n" +
+        "   L'espace de travail s'en charge tout seul à chaque allumage.\n" +
+        "   Comptez deux à cinq minutes la première fois.\n\n" +
+        "   Pour le suivre :   tail -f /tmp/essai.log\n" +
+        "   Vous attendez la ligne « Version rapide en place ».\n\n" +
+        "   (En lancer un second ferait échouer les deux sur le port " + PORT + " :\n" +
+        "    c'est le « EADDRINUSE » du 10 août 2026.)\n" +
+        "  ─────────────────────────────────────────────────────────────\n"
+    );
+  }
   process.exit(0);
 }
 process.on("exit", () => libererVerrouBanc());

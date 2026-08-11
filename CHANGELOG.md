@@ -9,6 +9,18 @@ Format : le plus récent en tête.
 
 ## 2026-08-10
 
+### Un refus qui n'informe pas ne vaut guère mieux qu'une panne
+
+Le verrou du banc disait « Atlas est DÉJÀ en train de démarrer » et rien d'autre.
+Le patron s'est retrouvé devant ce refus sans savoir s'il devait attendre trente
+secondes ou cinq minutes, ni si l'application était déjà ouvrable.
+
+Le banc interroge donc l'application avant de répondre :
+
+- **elle sert déjà** → on donne l'adresse et de quoi s'y connecter ;
+- **elle se construit encore** → on dit combien de temps compter, la commande
+  pour suivre, et **la ligne exacte qu'il attend** (« Version rapide en place »).
+
 ### Un orphelin d'hier soir ne condamne plus le démarrage
 
 Un `next-server` laissé par une exécution précédente tient le port et rend
