@@ -150,13 +150,19 @@ async function main() {
     !texteFiche.includes("Calculer le prix"),
     "Le prix étant validé, le chantier ne doit plus proposer de le calculer"
   );
-  // Insensible à la casse : depuis la refonte du 10 août 2026, la ligne du
-  // dessous d'une étape est en capitales espacées, et `innerText` rend le texte
-  // TEL QU'IL S'AFFICHE — « Prix CALCULÉ ». Ce qui est éprouvé ici est l'état de
-  // l'étape, pas la casse dans laquelle l'écran l'écrit.
+  // **La ligne « Prix » a quitté le tiroir le 11 août 2026**, à la demande du
+  // patron : *« informations, prix, devis peuvent disparaître »*. Elle
+  // décrivait un travail que la chaîne de la dictée fait désormais seule, et
+  // qui se corrige de toute façon sur le devis, ligne à ligne.
+  //
+  // Ce contrôle lisait l'état de l'étape À L'ÉCRAN. Ce qu'il tient vraiment —
+  // **le prix validé est bien enregistré** — se lit désormais là où il vit
+  // réellement, en base : c'est plus solide qu'un libellé, et cela ne dépend
+  // plus de la façon dont un tiroir l'écrit.
+  const valide = await pool.query(`SELECT prix_valide_at FROM chantiers WHERE id = $1`, [chantierId]);
   assert.ok(
-    /prix\s+calculé/i.test(texteFiche),
-    `L'étape Prix doit apparaître comme franchie. Contenu rendu : ${texteFiche.slice(0, 500)}`
+    valide.rows[0]?.prix_valide_at,
+    `Le prix n'est pas marqué validé en base. Contenu rendu : ${texteFiche.slice(0, 500)}`
   );
 
   await browser.close();

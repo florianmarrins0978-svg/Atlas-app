@@ -122,9 +122,12 @@ Le patron a arrêté un écran après une soirée de maquettes
 (`docs/maquettes/`, treize propositions), puis l'a fait poser dans
 l'application. Ce qui est **fait** :
 
-- **L'accueil** : le fil qui porte les jours, la perle d'or sur ce qui attend un
-  geste, le trait qui glisse sous les onglets, et « Nouveau chantier » qui monte
-  en feuille pendant que la liste recule.
+- **L'accueil** : le fil qui porte les jours, la perle d'or qui se tient à
+  mi-hauteur et désigne le chantier qu'on regarde, puis descend sur le dernier
+  jour quand on arrive au bout (corrigé le 11 août 2026 : elle était posée sur le
+  chantier en attente, donc tout en bas chez le patron — `ARCHITECTURE.md` §59),
+  le trait qui glisse sous les onglets, et « Nouveau chantier » qui monte en
+  feuille pendant que la liste recule.
 - **Planning, Terminés, Réglages, relevé de TVA, fiche chantier** : même
   en-tête, mêmes rayons, mêmes capitales.
 - **Les six écrans d'étape** : en-tête et boutons. Les corps de **Photos**, de
@@ -149,7 +152,7 @@ l'application. Ce qui est **fait** :
   Prendre une photo · Choisir les fichiers* — au lieu de charger un écran puis
   d'y poser une feuille maison. Quatre gestes deviennent deux. Ajouter, regarder
   et retirer se font dans la pellicule ; `/chantiers/[id]/photos` répond 404, et
-  une suite le vérifie. `ARCHITECTURE.md` §59.
+  une suite le vérifie. `ARCHITECTURE.md` §60.
 - **Le planning au mois, et les équipes nommées** (10 août, au soir) : sept
   colonnes sans bordure, cinq marques d'occupation, et la journée qui s'ouvre
   sous le calendrier. Réglages laisse nommer les équipes — mais **seulement à
@@ -170,6 +173,13 @@ l'application. Ce qui est **fait** :
   maquette (client en serif **avant** le titre, pastille sur la ligne de la
   flèche, pas de trait de fermeture), par trois réglages **facultatifs** de
   `EnTeteEcran` qui laissent les autres écrans intacts. `ARCHITECTURE.md` §57.
+- **De l'anneau au devis, en une touche** (11 août, soir) : un appui dicte, un
+  second arrête, et « MON DEVIS → » naît sous l'anneau — transcription,
+  informations, prix, rédaction, et l'on arrive sur `devis-complet` sans écran
+  intermédiaire. La chaîne lance elle-même la transcription, ce qui manquait.
+  Le tiroir ne garde que Photos, Note vocale et Devis à la main ; les écrans
+  retirés restent joignables par leur adresse.
+  `scripts/test-anneau-vers-devis-e2e.ts`.
 - **Le devis à la main s'ouvre depuis la création du chantier** (11 août) : un
   lien discret sous « Créer le chantier ». Le chantier est créé, puis le devis
   s'ouvre avec le client déjà en en-tête — nom, adresse, téléphone. La porte du

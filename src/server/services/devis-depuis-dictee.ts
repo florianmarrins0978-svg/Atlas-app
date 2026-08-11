@@ -1,5 +1,6 @@
 import type { Ctx } from "../repositories/context";
 import { genererBrouillon, confirmerBrouillon } from "../ai/services/brouillon-service";
+import { lancerTranscription } from "../ai/services/transcription-service";
 import { getBrouillon } from "../repositories/brouillons-informations";
 import { marquerInformationsVerifiees, marquerPrixValide } from "../repositories/chantiers";
 import { listerLignesPrix, ajouterLignePrix } from "../repositories/lignes-prix";
@@ -85,7 +86,29 @@ export async function preparerDevisDepuisDictee(
   options: { remplacer?: boolean } = {}
 ): Promise<ResultatDevisDepuisDictee> {
   // --- 1. La dictée devient une proposition structurée ---------------------
-  const generation = await genererBrouillon(ctx, chantierId, { remplacer: options.remplacer });
+  let generation = await genererBrouillon(ctx, chantierId, { remplacer: options.remplacer });
+
+  // **La chaîne transcrit elle-même, plutôt que de renvoyer le patron le faire.**
+  //
+  // Le patron, le 11 août 2026, en décrivant le geste qu'il voulait : *« ça
+  // enverrait automatiquement toute la transcription sur la page du devis »*,
+  // et *« en une touche, on fait tout ça »*.
+  //
+  // C'était le seul maillon manquant. Tout le reste de cette chaîne existait
+  // et était éprouvé, mais elle exigeait une transcription DÉJÀ faite — si bien
+  // qu'elle ne pouvait vivre que sur l'écran Transcription, à quatre écrans de
+  // l'endroit où il venait de parler. Le geste unique qu'il réclamait butait
+  // sur une étape qu'il fallait aller déclencher ailleurs.
+  //
+  // **On ne réessaie qu'UNE fois**, et seulement s'il y a un son à transcrire :
+  // sans note, ou après la purge de l'audio (`docs/RGPD.md` §4), il n'y a rien
+  // à reprendre et le dire vaut mieux que boucler.
+  if (generation.statut === "transcription_absente") {
+    const note = await getNoteVocale(ctx, chantierId);
+    if (!note?.storageKey) return { statut: "transcription_absente" };
+    await lancerTranscription(ctx, chantierId);
+    generation = await genererBrouillon(ctx, chantierId, { remplacer: options.remplacer });
+  }
   if (generation.statut === "transcription_absente") return { statut: "transcription_absente" };
   if (generation.statut === "transcription_simulee") return { statut: "transcription_simulee" };
   if (generation.statut === "conflit") {
