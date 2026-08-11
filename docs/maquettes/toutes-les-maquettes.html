@@ -1055,6 +1055,186 @@
 #s13 .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-bronze)}
 
 
+/* 14 — Six façons d’ouvrir un chantier */
+#s14{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+@media (prefers-color-scheme: dark){
+#s14:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  
+}
+#s14[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+#s14, #s14 *{box-sizing:border-box}
+#s14{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 90px}
+#s14 .page{max-width:1360px;margin:0 auto}
+#s14 .intro{max-width:62ch;margin:0 auto 10px;text-align:center}
+#s14 .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+#s14 .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-wrap:balance}
+#s14 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+#s14 .constat{padding:20px 22px;border:1px solid var(--trait);border-radius:6px}
+#s14 .constat h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif}
+#s14 .constat ul{margin:0;padding-left:18px;color:var(--gris);font-size:14px;line-height:1.7}
+#s14 .constat b{color:var(--encre);font-weight:500}
+#s14 .famille{margin:64px 0 14px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--gris)}
+#s14 .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
+#s14 .famille span::before,#s14 .famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
+#s14 .famille span::before{right:100%}
+#s14 .famille span::after{left:100%}
+#s14 .rangee{display:flex;flex-wrap:wrap;gap:52px 40px;justify-content:center;align-items:flex-start}
+#s14 .prop{display:flex;flex-direction:column;align-items:center;gap:16px;width:412px;max-width:100%}
+#s14 .prop .nom-prop{margin:0;font:400 22px/1.25 ui-serif,Georgia,serif;text-align:center}
+#s14 .prop .dit{margin:0;max-width:34ch;text-align:center;font-size:13px;line-height:1.6;color:var(--gris)}
+#s14 .prop .dit b{color:var(--encre);font-weight:500}
+#s14 .prop .lettre{margin:0;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze)}
+#s14 .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
+#s14 .ecran{position:relative;overflow:hidden;border-radius:34px;height:664px;
+         display:flex;flex-direction:column;
+         background:#f5f3ee;color:#1c1c1a;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f; --e-pin-encre:#faf9f5;
+         --e-trait:rgba(28,28,26,.12); --e-trait-doux:rgba(28,28,26,.07)}
+#s14 .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+#s14 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+#s14 .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+#s14 .enseigne{padding:26px 0 0;text-align:center;font-size:11px;letter-spacing:.52em}
+#s14 .titre{padding:34px 26px 0}
+#s14 .titre .salut{margin:0;color:var(--e-or)}
+#s14 .titre h1{margin:14px 0 0;font-size:36px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+#s14 .titre .compte{margin:14px 0 0;color:var(--e-gris)}
+#s14 .fermeture{height:1px;background:var(--e-trait);margin:26px 26px 0}
+#s14 .rubrique{display:flex;justify-content:space-between;margin:30px 26px 10px;color:var(--e-gris)}
+#s14 .tige{position:relative;margin:0 26px;flex:1 1 auto;min-height:0;overflow:hidden}
+#s14 .tige::before{content:"";position:absolute;left:47px;top:10px;bottom:10px;width:1px;background:var(--e-trait)}
+#s14 .brin{position:relative;display:grid;grid-template-columns:47px 1fr;gap:0 26px;
+        padding:15px 0;text-decoration:none;color:inherit}
+#s14 .brin .jour{grid-row:1 / span 3;text-align:right;padding-right:13px;color:var(--e-gris)}
+#s14 .brin .jour b{display:block;font-weight:400;font-size:19px;line-height:1;color:var(--e-encre);
+                font-family:ui-serif,Georgia,serif}
+#s14 .brin .jour span{display:block;margin-top:4px}
+#s14 .brin .nom{margin:0;font-size:19px;line-height:1.15;font-weight:400}
+#s14 .brin .lieu{margin:3px 0 0;font-size:11.5px;color:var(--e-gris)}
+#s14 .brin .etat{margin:7px 0 0;color:var(--e-gris)}
+#s14 .brin.attend .etat{color:var(--e-or)}
+#s14 .brin.attend::after{content:"";position:absolute;left:44px;top:21px;width:7px;height:7px;
+                      border-radius:99px;background:var(--e-or);box-shadow:0 0 0 4px var(--e-fond)}
+#s14 .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px}
+#s14 .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
+#s14 .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-or)}
+#s14 .bulle{position:absolute;right:20px;bottom:96px;width:52px;height:52px;border-radius:99px;
+         background:var(--e-pin);color:var(--e-pin-encre);display:grid;place-items:center;font-size:19px}
+#s14 .aplat{display:flex;align-items:center;justify-content:space-between;gap:16px;
+         margin:22px 26px 0;padding:16px 20px;border-radius:5px;text-decoration:none;
+         background:var(--e-pin);color:var(--e-pin-encre)}
+#s14 .aplat .quoi{font-size:18px;line-height:1.1}
+#s14 .aplat .plus{font-size:18px;line-height:1;color:var(--e-or-clair)}
+#s14 .filet{position:relative;display:flex;align-items:baseline;justify-content:space-between;
+         gap:16px;margin:20px 26px 0;padding:6px 0 13px;text-decoration:none;color:inherit}
+#s14 .filet .quoi{font-size:21px;line-height:1.1}
+#s14 .filet .plus{font-size:17px;line-height:1;color:var(--e-or)}
+#s14 .filet .rail{position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--e-trait-doux)}
+#s14 .filet .rail::after{content:"";position:absolute;inset:0;background:var(--e-or);
+                      transform-origin:left;transform:scaleX(0);
+                      animation:s14-tracer 7s cubic-bezier(.22,.61,.36,1) infinite}
+@keyframes s14-tracer{
+    0%{transform:scaleX(0);opacity:0}
+    8%{opacity:1}
+    38%{transform:scaleX(1);opacity:1}
+    82%{transform:scaleX(1);opacity:1}
+    100%{transform:scaleX(1);opacity:0}
+  }
+#s14 .sceau{display:flex;align-items:center;justify-content:space-between;gap:16px;
+         margin:22px 26px 0;padding:8px 0;text-decoration:none;color:inherit}
+#s14 .sceau .quoi{font-size:20px;line-height:1.1}
+#s14 .sceau .anneau{position:relative;flex:none;width:38px;height:38px;border-radius:99px;
+                 border:1px solid var(--e-or);color:var(--e-or);
+                 display:grid;place-items:center;font-size:17px;line-height:1}
+#s14 .sceau .anneau::before{content:"";position:absolute;inset:-1px;border-radius:99px;
+                         border:1px solid var(--e-or);animation:s14-halo 4.6s ease-out infinite}
+@keyframes s14-halo{
+    0%{transform:scale(1);opacity:.55}
+    60%{transform:scale(1.42);opacity:0}
+    100%{transform:scale(1.42);opacity:0}
+  }
+#s14 .tige.avec-neuf::before{top:0}
+#s14 .brin.neuf .jour{display:grid;place-items:center;padding-right:13px}
+#s14 .brin.neuf .signe{position:relative;display:grid;place-items:center;
+                    width:22px;height:22px;border-radius:99px;
+                    background:var(--e-or);color:var(--e-fond);font-size:14px;line-height:1;
+                    box-shadow:0 0 0 5px var(--e-fond)}
+#s14 .brin.neuf .signe::after{content:"";position:absolute;inset:0;border-radius:99px;
+                           border:1px solid var(--e-or);animation:s14-halo 4.6s ease-out infinite}
+#s14 .brin.neuf .nom{color:var(--e-encre)}
+#s14 .brin.neuf .etat{color:var(--e-or)}
+#s14 .cartouche{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;
+             gap:14px;margin:22px 26px 0;padding:17px 20px;
+             border:1px solid var(--e-trait);text-decoration:none;color:inherit}
+#s14 .cartouche .quoi{letter-spacing:.3em;text-transform:uppercase;font-size:10.5px;font-weight:500}
+#s14 .cartouche .plus{font-size:13px;line-height:1;color:var(--e-or)}
+#s14 .cartouche::after{content:"";position:absolute;top:0;bottom:0;width:38%;
+                    background:linear-gradient(100deg,transparent,rgba(185,139,71,.16),transparent);
+                    animation:s14-lustre 9s ease-in-out infinite}
+@keyframes s14-lustre{
+    0%{transform:translateX(-160%)}
+    55%{transform:translateX(420%)}
+    100%{transform:translateX(420%)}
+  }
+#s14 .pastille{position:absolute;right:20px;bottom:96px;width:56px;height:56px;border-radius:99px;
+            background:var(--e-pin);color:var(--e-or-clair);display:grid;place-items:center;
+            font-size:22px;line-height:1;text-decoration:none}
+#s14 .pastille::after{content:"";position:absolute;inset:0;border-radius:99px;
+                   border:1px solid var(--e-pin);animation:s14-halo 4.6s ease-out infinite}
+#s14 .bulle.repoussee{bottom:164px;background:transparent;color:var(--e-pin);
+                   border:1px solid var(--e-trait)}
+#s14 .legende{display:flex;align-items:center;gap:18px;margin:26px 26px 0;
+           text-decoration:none;color:inherit}
+#s14 .legende .fil-g,#s14 .legende .fil-d{flex:1;height:1px;background:var(--e-trait);position:relative;overflow:hidden}
+#s14 .legende .fil-g::after,#s14 .legende .fil-d::after{content:"";position:absolute;inset:0;
+      background:linear-gradient(90deg,transparent,var(--e-or),transparent);
+      transform:translateX(-100%);animation:s14-courir 7s ease-in-out infinite}
+#s14 .legende .fil-d::after{animation-delay:.35s}
+@keyframes s14-courir{
+    0%{transform:translateX(-100%);opacity:0}
+    10%{opacity:1}
+    50%{transform:translateX(100%);opacity:1}
+    60%{opacity:0}
+    100%{transform:translateX(100%);opacity:0}
+  }
+#s14 .legende .mot{display:flex;align-items:center;gap:9px;color:var(--e-encre);
+                letter-spacing:.28em;text-transform:uppercase;font-size:9.5px;font-weight:500}
+#s14 .legende .mot .plus{color:var(--e-or);font-size:13px;letter-spacing:0}
+#s14 .detail{display:flex;flex-wrap:wrap;gap:26px;justify-content:center;align-items:stretch}
+#s14 .vue{width:412px;max-width:100%;background:var(--e-fond,#f5f3ee);border:1px solid var(--trait);
+       border-radius:8px;padding:22px 0 26px;
+       --e-fond:#f5f3ee; --e-encre:#1c1c1a; --e-gris:#8a8578; --e-or:#B98B47;
+       --e-pin:#2f3b2f; --e-trait:rgba(28,28,26,.12); --e-trait-doux:rgba(28,28,26,.07);
+       background-color:#f5f3ee;color:#1c1c1a;
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+#s14 .vue .quand{margin:0 26px 4px;font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:#8a8578}
+#s14 .vue.pose .filet .rail::after{animation:none;transform:scaleX(1);opacity:1}
+#s14 .vue.pose .filet{transform:scale(.985);transform-origin:left center}
+#s14 .vue.pose .filet .quoi{color:#6f5a2e}
+#s14 .vue.pose .filet .plus{transform:rotate(90deg);display:inline-block}
+#s14 .vue.repos .filet .rail::after{animation:none;transform:scaleX(.36);opacity:1}
+#s14 .note{max-width:62ch;margin:56px auto 0;padding:20px 22px;border:1px solid var(--trait);
+        border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.7}
+#s14 .note h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
+#s14 .note b{color:var(--encre);font-weight:500}
+#s14 .note ol{margin:10px 0 0;padding-left:20px}
+#s14 .note li{margin-bottom:8px}
+@media (prefers-reduced-motion: reduce){
+#s14, #s14 *{animation:none !important}
+#s14 .filet .rail::after{transform:scaleX(1);opacity:1}
+
+  
+}
+
+
 </style>
 
 <div class="enveloppe">
@@ -1122,6 +1302,11 @@
       <a class="item retenu" href="#m13">
         <span class="no">13</span><span class="titre">Le fil, en quatre couleurs</span><span class="fleche">↓</span>
         <span class="quoi">Sans le cheveu sous ATLAS. Les trois formes de liste × Origine, Ivoire, Sylve, Océan.</span>
+      </a>
+      <p class="famille">Enlever le gros bouton</p>
+      <a class="item retenu" href="#m14">
+        <span class="no">14</span><span class="titre">Six façons d’ouvrir un chantier</span><span class="fleche">↓</span>
+        <span class="quoi">L’aplat vert remplacé six fois : le filet qui se trace, le sceau, le premier brin, le cartouche gravé, la pastille au pouce, la légende sur le trait.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -4075,6 +4260,460 @@
     </div>
   </div>
 </div>
+    </div>
+  </section>
+
+  <section class="etape" id="m14">
+    <div class="etape-tete">
+      <span class="etape-no">14</span>
+      <h2>Six façons d’ouvrir un chantier</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s14">
+<div class="page">
+  <div class="intro">
+    <p class="sur">Atlas — écran Chantiers</p>
+    <h1>Six façons d’ouvrir un chantier, sans le gros bouton</h1>
+    <p>Le reste de l’écran ne change pas : même en-tête, même fil, même perle d’or. Seule l’action change, pour qu’il n’y ait qu’une chose à comparer.</p>
+    <p>Chaque proposition <b>bouge d’elle-même</b> — inutile de survoler, il n’y a pas de souris sur un téléphone.</p>
+  </div>
+
+  <p class="famille"><span>Aujourd’hui</span></p>
+  <div class="rangee">
+    <div class="prop">
+      <p class="nom-prop">L’écran d’aujourd’hui</p>
+      <p class="dit">Le voici à sa vraie taille — <b>390 sur 664</b>, la place qui reste sur votre téléphone une fois la barre d’adresse posée. Trois chantiers et demi tiennent à l’écran ; le quatrième est sous le bord.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="fermeture"></div>
+        <a class="aplat" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus" aria-hidden="true">+</span>
+        </a>
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>18</b><span>juil.</span></span>
+            <p class="nom serif">Reprise de toiture</p>
+            <p class="lieu">8 impasse du Moulin, Rezé</p>
+            <p class="etat caps">En attente · 9 photos</p>
+          </a>
+        </div>
+        <div class="bulle" aria-hidden="true">✳</div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="lettre">Ce qu’on remplace</p>
+    </div>
+
+    <div class="prop" style="align-self:center">
+      <div class="constat">
+        <h2>Pourquoi l’aplat vert ne tient pas</h2>
+        <ul>
+          <li><b>Il pèse plus que le contenu.</b> Cinquante-cinq pixels de vert plein, quatre-vingts avec sa marge : sur les 664 que vous avez, c’est <b>un chantier de moins</b> visible. Et c’est la première chose que l’œil voit, avant la liste — qui est pourtant la raison d’ouvrir l’application.</li>
+          <li><b>Il annonce une action qu’on fait rarement.</b> Un chantier se crée une ou deux fois par semaine ; on consulte la liste dix fois par jour. La hiérarchie visuelle dit l’inverse de l’usage.</li>
+          <li><b>Le luxe ne remplit pas, il retire.</b> Chez Aman, une action ne se signale jamais par une masse de couleur : un filet, une capitale espacée, du vide autour suffisent.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ A ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>A · Le filet</span></p>
+  <div class="rangee">
+    <div class="prop">
+      <p class="nom-prop">Le filet qui se trace</p>
+      <p class="dit">Le nom, un signe, et un <b>trait d’or qui se dessine tout seul</b> sous les deux, toutes les sept secondes. Aucun aplat : ce qui attire l’œil, c’est le mouvement, pas la masse.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="fermeture"></div>
+        <a class="filet" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="plus" aria-hidden="true">+</span>
+          <span class="rail"></span>
+        </a>
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>18</b><span>juil.</span></span>
+            <p class="nom serif">Reprise de toiture</p>
+            <p class="lieu">8 impasse du Moulin, Rezé</p>
+            <p class="etat caps">En attente · 9 photos</p>
+          </a>
+        </div>
+        <div class="bulle" aria-hidden="true">✳</div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="lettre">Ma recommandation</p>
+    </div>
+
+    <!-- ═══ B ═══════════════════════════════════════════════════════════ -->
+    <div class="prop">
+      <p class="nom-prop">Le sceau</p>
+      <p class="dit">Le nom reste en serif, le geste se prend dans un <b>anneau d’or qui respire</b>. La cible fait 38 px de haut — le pouce l’atteint — sans qu’un aplat traverse l’écran.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="fermeture"></div>
+        <a class="sceau" href="#">
+          <span class="quoi serif">Nouveau chantier</span>
+          <span class="anneau" aria-hidden="true">+</span>
+        </a>
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>18</b><span>juil.</span></span>
+            <p class="nom serif">Reprise de toiture</p>
+            <p class="lieu">8 impasse du Moulin, Rezé</p>
+            <p class="etat caps">En attente · 9 photos</p>
+          </a>
+        </div>
+        <div class="bulle" aria-hidden="true">✳</div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="lettre">B</p>
+    </div>
+  </div>
+
+  <!-- ═══ C ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>C · Le premier brin</span></p>
+  <div class="rangee">
+    <div class="prop">
+      <p class="nom-prop">Le chantier à venir</p>
+      <p class="dit">Il n’y a <b>plus d’action du tout</b>. Le chantier suivant est la première ligne du fil, à sa place dans le temps : on n’ajoute rien à l’écran, on ouvre la liste par le haut. C’est la plus rare des six, et la plus tenue.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="fermeture"></div>
+        <div class="rubrique caps" style="margin-top:26px"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige avec-neuf">
+          <a class="brin neuf" href="#">
+            <span class="jour"><span class="signe" aria-hidden="true">+</span></span>
+            <p class="nom serif">Nouveau chantier</p>
+            <p class="lieu">Nom, adresse, date — trois champs</p>
+            <p class="etat caps">À ouvrir</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>18</b><span>juil.</span></span>
+            <p class="nom serif">Reprise de toiture</p>
+            <p class="lieu">8 impasse du Moulin, Rezé</p>
+            <p class="etat caps">En attente · 9 photos</p>
+          </a>
+        </div>
+        <div class="bulle" aria-hidden="true">✳</div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="lettre">C</p>
+    </div>
+
+    <!-- ═══ D ═══════════════════════════════════════════════════════════ -->
+    <div class="prop">
+      <p class="nom-prop">Le cartouche gravé</p>
+      <p class="dit">La forme de bouton reste, <b>vidée de sa couleur</b> : un filet d’un cheveu, des capitales espacées, et une lumière qui traverse la plaque toutes les neuf secondes. Le plus proche de ce que vous avez déjà.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="fermeture"></div>
+        <a class="cartouche" href="#">
+          <span class="plus" aria-hidden="true">+</span>
+          <span class="quoi">Nouveau chantier</span>
+        </a>
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>18</b><span>juil.</span></span>
+            <p class="nom serif">Reprise de toiture</p>
+            <p class="lieu">8 impasse du Moulin, Rezé</p>
+            <p class="etat caps">En attente · 9 photos</p>
+          </a>
+        </div>
+        <div class="bulle" aria-hidden="true">✳</div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="lettre">D</p>
+    </div>
+  </div>
+
+  <!-- ═══ E ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>E · Au pouce</span></p>
+  <div class="rangee">
+    <div class="prop">
+      <p class="nom-prop">La pastille</p>
+      <p class="dit">L’action quitte le haut de l’écran et descend là où le pouce arrive. <b>Elle a un défaut, et il est visible ici :</b> la bulle de l’assistant occupe déjà ce coin, et se retrouve repoussée — deux ronds l’un au-dessus de l’autre, ce n’est plus du calme.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="fermeture"></div>
+        <div class="rubrique caps" style="margin-top:26px"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>18</b><span>juil.</span></span>
+            <p class="nom serif">Reprise de toiture</p>
+            <p class="lieu">8 impasse du Moulin, Rezé</p>
+            <p class="etat caps">En attente · 9 photos</p>
+          </a>
+        </div>
+        <div class="bulle repoussee" aria-hidden="true">✳</div>
+        <a class="pastille" href="#" aria-label="Nouveau chantier"><span aria-hidden="true">+</span></a>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="lettre">E</p>
+    </div>
+
+    <!-- ═══ F ═══════════════════════════════════════════════════════════ -->
+    <div class="prop">
+      <p class="nom-prop">La légende sur le trait</p>
+      <p class="dit">Rien ne s’ajoute : <b>le trait qui ferme déjà l’en-tête s’ouvre en son milieu</b> et porte l’action, comme la légende gravée sur un filet de page. Une lueur d’or court le long du trait, de temps en temps.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <a class="legende" href="#">
+          <span class="fil-g"></span>
+          <span class="mot"><span class="plus" aria-hidden="true">+</span>Nouveau chantier</span>
+          <span class="fil-d"></span>
+        </a>
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>18</b><span>juil.</span></span>
+            <p class="nom serif">Reprise de toiture</p>
+            <p class="lieu">8 impasse du Moulin, Rezé</p>
+            <p class="etat caps">En attente · 9 photos</p>
+          </a>
+        </div>
+        <div class="bulle" aria-hidden="true">✳</div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+      </div></div>
+      <p class="lettre">F</p>
+    </div>
+  </div>
+
+  <!-- ═══ Le doigt posé ══════════════════════════════════════════════════ -->
+  <p class="famille"><span>Le doigt posé</span></p>
+  <div class="detail">
+    <div class="vue repos">
+      <p class="quand">Au repos — le trait se dessine</p>
+      <a class="filet" href="#">
+        <span class="quoi serif">Nouveau chantier</span>
+        <span class="plus" aria-hidden="true">+</span>
+        <span class="rail"></span>
+      </a>
+    </div>
+    <div class="vue pose">
+      <p class="quand">Doigt posé — le trait est plein, le signe pivote</p>
+      <a class="filet" href="#">
+        <span class="quoi serif">Nouveau chantier</span>
+        <span class="plus" aria-hidden="true">+</span>
+        <span class="rail"></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="note">
+    <h2>Ce que je ferais</h2>
+    <p><b>A, le filet.</b> Il retire l’aplat sans rien perdre : l’action garde sa largeur — donc sa cible — mais elle ne pèse plus rien à l’œil. Le trait d’or qui se trace la désigne mieux qu’un rectangle vert, parce qu’un mouvement lent attire l’œil sans occuper de place.</p>
+    <ol>
+      <li><b>Si vous voulez le plus discret :</b> F, la légende sur le trait. L’écran n’a plus un seul élément de plus qu’avant.</li>
+      <li><b>Si vous voulez le plus rare :</b> C, le premier brin. C’est celui qu’un hôtel ferait — mais c’est aussi celui qui demande le plus de confiance, puisque plus rien ne ressemble à un bouton.</li>
+      <li><b>Si vous voulez le moins de changement :</b> D, le cartouche. Même forme, même place, sans la masse verte.</li>
+    </ol>
+    <p style="margin-bottom:0"><b>Deux réserves, dites avant que vous les trouviez.</b> La serif de cette page est celle de votre téléphone : l’application charge Playfair Display, le rendu final sera plus dessiné. Et l’état « doigt posé » est montré en fixe ci-dessus, parce qu’une maquette qu’il faut toucher pour comprendre ne se comprend pas.</p>
+  </div>
+</div>
+
+
+</content>
+</invoke>
     </div>
   </section>
 

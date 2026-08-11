@@ -106,6 +106,13 @@ const MAQUETTES = [
     quoi: "Sans le cheveu sous ATLAS. Les trois formes de liste × Origine, Ivoire, Sylve, Océan.",
     retenu: true,
   },
+  {
+    fichier: "14-le-geste-nouveau-chantier.html",
+    titre: "Six façons d’ouvrir un chantier",
+    famille: "Enlever le gros bouton",
+    quoi: "L’aplat vert remplacé six fois : le filet qui se trace, le sceau, le premier brin, le cartouche gravé, la pastille au pouce, la légende sur le trait.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
@@ -204,6 +211,57 @@ function confinerCss(css, hote) {
   return sortie;
 }
 
+// Un nom d'animation est GLOBAL, comme un identifiant : deux maquettes qui
+// déclarent chacune un `@keyframes halo` se le disputent, et la dernière lue
+// gagne pour toute la page. Le confinement par ancêtre ne protège pas de cela —
+// il ne touche qu'aux sélecteurs. On préfixe donc les noms, et on ne les
+// réécrit que dans `animation` et `animation-name` : ailleurs, le même mot
+// pourrait être une classe.
+function confinerAnimations(css, prefixe) {
+  const noms = [...css.matchAll(/@(?:-webkit-)?keyframes\s+([\w-]+)/g)].map((m) => m[1]);
+  if (noms.length === 0) return css;
+  let sortie = css.replace(
+    /(@(?:-webkit-)?keyframes\s+)([\w-]+)/g,
+    (_, tete, nom) => `${tete}${prefixe}-${nom}`,
+  );
+  sortie = sortie.replace(/(animation(?:-name)?\s*:)([^;}]*)/g, (_, tete, valeur) => {
+    let v = valeur;
+    for (const nom of noms) {
+      v = v.replace(new RegExp(`(^|[\\s,])${nom}(?![\\w-])`, "g"), `$1${prefixe}-${nom}`);
+    }
+    return tete + v;
+  });
+  return sortie;
+}
+
+// Les pourcentages d'un `@keyframes` ne sont pas des sélecteurs : ils n'ont
+// rien à confiner, et le contrôle qui les prenait pour tels refusait toute
+// maquette animée. On les retire avant de vérifier le confinement.
+function sansBlocsOpaques(css) {
+  let sortie = "";
+  let i = 0;
+  while (i < css.length) {
+    const at = css.slice(i).search(/@(?:-webkit-)?keyframes|@font-face/);
+    if (at === -1) {
+      sortie += css.slice(i);
+      break;
+    }
+    const debut = i + at;
+    sortie += css.slice(i, debut);
+    const ouvrante = css.indexOf("{", debut);
+    if (ouvrante === -1) break;
+    let profondeur = 1;
+    let j = ouvrante + 1;
+    while (j < css.length && profondeur > 0) {
+      if (css[j] === "{") profondeur += 1;
+      else if (css[j] === "}") profondeur -= 1;
+      j += 1;
+    }
+    i = j;
+  }
+  return sortie;
+}
+
 /* ————————————————————————————————————————————————————————————————
    Lecture et découpe d'une maquette
    ———————————————————————————————————————————————————————————————— */
@@ -244,7 +302,7 @@ function lire(maquette, indice) {
     numero,
     ancre: `m${numero}`,
     hote: `s${numero}`,
-    css: confinerCss(sansCommentaires(style[1]), hote),
+    css: confinerAnimations(confinerCss(sansCommentaires(style[1]), hote), `s${numero}`),
     corps: corps.trim(),
     scripts,
   };
@@ -262,7 +320,7 @@ for (const p of pages) {
   if (/:root|^\s*body\s*\{/m.test(p.css)) {
     plaintes.push(`${p.fichier} : un :root ou un body a survécu au confinement`);
   }
-  const regles = p.css.match(/[^{}]+\{/g) ?? [];
+  const regles = sansBlocsOpaques(p.css).match(/[^{}]+\{/g) ?? [];
   for (const r of regles) {
     const sel = r.slice(0, -1).trim();
     if (sel.startsWith("@")) continue;

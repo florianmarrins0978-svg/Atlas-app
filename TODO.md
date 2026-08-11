@@ -357,6 +357,30 @@ Ce que la bascule coûtera, quand il aura choisi : la charte de
 encre au lieu du vert pin pour l'action, bronze au lieu de l'or), et **tous** les
 écrans suivent — pas seulement Chantiers. À ne pas entamer écran par écran.
 
+### 0 terdecies. L'action « Nouveau chantier » — six propositions, en attente de son choix
+
+Le 11 août 2026, capture à l'appui : *« j'aime pas le gros bouton nouveau
+chantier […] ce gros bouton en plein milieu, ça ne fait pas très luxe »*. Le
+reste de l'écran lui convient — c'est **l'aplat vert seul** qui est en cause.
+
+Six remplaçants sont dessinés dans
+`docs/maquettes/14-le-geste-nouveau-chantier.html` : le filet qui se trace, le
+sceau, le premier brin, le cartouche gravé, la pastille au pouce, la légende sur
+le trait. **Rien n'est codé** tant qu'il n'a pas désigné le sien.
+
+Ce que coûtera la bascule, une fois le choix fait : **un seul endroit**, le
+bloc `<Link>` de `src/app/EcranChantiers.tsx` (lignes 151-167). Vérifié plutôt
+que supposé : les suites navigateur atteignent `/chantiers/nouveau` **par son
+adresse**, aucune ne cherche le libellé — changer la présentation n'en casse
+donc aucune, et **c'est justement le risque** : rien ne se plaindra si l'action
+devient introuvable au doigt. Prendre une capture (`CLAUDE.md` §5) et rejouer
+`test-rien-de-recouvert-e2e` — la suite qui mesure ce que le mobilier fixe
+recouvre, et la seule qui verrait le défaut de la proposition E.
+
+**Une réserve à ne pas perdre :** la pastille flottante (proposition E) entre en
+conflit avec la bulle de l'assistant, qui occupe déjà ce coin. La maquette le
+montre plutôt qu'elle ne le tait.
+
 ### 0 duodecies. `test-devis-papier-e2e` échoue sur le banc local
 
 `TypeError: Cannot read properties of undefined (reading 'id')` — la suite

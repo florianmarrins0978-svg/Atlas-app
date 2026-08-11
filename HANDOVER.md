@@ -45,6 +45,14 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**Six remplaçants au gros bouton (11 août).** Le patron ne veut plus de l'aplat
+vert « Nouveau chantier » au milieu de l'écran Chantiers ; le reste lui convient.
+`docs/maquettes/14-le-geste-nouveau-chantier.html` en propose six, sur la dalle
+réelle (390 × 664). **Rien n'est codé, et rien ne doit l'être avant son choix**
+— `TODO.md`, 0 terdecies. Ne pas trancher à sa place : c'est le troisième
+arbitrage graphique qu'il garde pour lui.
+
+
 **« Terminés » et la facturation (10 août, au soir).** L'écran est un fil par
 mois ; l'encart « à facturer » vit dans le mois et se déplie d'un appui.
 `ARCHITECTURE.md` §53.

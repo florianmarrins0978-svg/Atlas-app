@@ -7,6 +7,49 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-11
+
+### Six façons d'ouvrir un chantier, pour remplacer l'aplat vert
+
+*« J'aime pas le gros bouton nouveau chantier […] ce gros bouton en plein
+milieu, ça ne fait pas très luxe »*, le 11 août 2026, capture à l'appui.
+
+`docs/maquettes/14-le-geste-nouveau-chantier.html` propose six remplaçants au
+même endroit, l'écran restant identique par ailleurs — même en-tête, même fil,
+même perle : **le filet** qui se trace, **le sceau**, **le premier brin**, **le
+cartouche gravé**, **la pastille au pouce**, **la légende sur le trait**.
+Rien n'est codé : l'application porte toujours l'aplat (`TODO.md`, 0 terdecies).
+
+**Trois choix de fabrication qui ont compté.**
+
+1. **Les écrans font 390 × 664**, la dalle réelle du patron (`ECRAN_DU_PATRON`),
+   et non les 852 px d'une fiche technique. C'est ce qui rend le reproche
+   mesurable : l'aplat coûte quatre-vingts pixels, soit **un chantier de moins**
+   visible. L'écran d'aujourd'hui figure sur la page, à côté du constat — on ne
+   compare pas à un souvenir.
+2. **Tout ce qui bouge, bouge sans qu'on le survole.** Le patron regarde depuis
+   un téléphone : un état qui n'existe qu'au survol n'existe pas pour lui. Les
+   six propositions s'animent seules, en CSS, et l'état « doigt posé » est
+   montré en fixe à côté du repos.
+3. **Aucun script**, comme les treize maquettes précédentes : son lecteur n'en
+   exécute pas, et une page engendrée en JavaScript lui arrive vide.
+
+### La page unique acceptait tout, sauf une maquette animée
+
+`fusionner-maquettes.mjs` refusait la maquette 14 avec « sélecteur non confiné
+« 0% » » : son contrôle prenait les pourcentages d'un `@keyframes` pour des
+sélecteurs. Le message accusait la maquette là où le fautif était le contrôle —
+exactement ce que `AGENTS.md` interdit.
+
+**Et un vrai défaut dormait dessous, celui-là silencieux :** un nom d'animation
+est **global**. Deux maquettes déclarant chacune un `@keyframes halo` se le
+seraient disputé, la dernière lue gagnant pour toute la page — le confinement
+par ancêtre ne protège que des sélecteurs. Les noms sont désormais préfixés par
+section (`s14-halo`), comme le sont déjà les identifiants.
+
+Le contrôle a été confronté à l'état qu'il prétend détecter : confinement
+neutralisé, il refuse la fusion sur les quatorze maquettes.
+
 ## 2026-08-10
 
 ### Toutes les suites mesurent enfin l'écran que le patron a dans la main
