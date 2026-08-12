@@ -9,6 +9,28 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### Le bouton de la facture prend la capsule — son choix, la variante A
+
+*« Code la A. »* Après deux planches (30, puis 31 à sa demande), « Ouvrir le SMS
+tout prêt » quitte son aplat à 4 px de rayon et passe par **`PrimaryButton`**,
+la capsule des dix-sept autres écrans. `ARCHITECTURE.md` §67.
+
+**Il passe par le composant, jamais par un dessin recopié sur place** — c'est le
+défaut même qu'on répare : une action principale peinte dans un écran échappe à
+toute décision d'ensemble, et c'est ce qui lui avait fait manquer la capsule du
+11 août. Deux suites mesurent désormais le rayon calculé du bouton : le
+repeindre à la main les rend rouges.
+
+**Deux réglages facultatifs ajoutés à `PrimaryButton`, aucun d'apparence.**
+`onClick` est enfin honoré sur la variante `href` — elle le perdait en silence,
+et ce bouton-là est un lien qui doit AUSSI retenir le départ vers la messagerie.
+`repere` pose un `data-atlas`, pour qu'une suite ne désigne pas ce lien par son
+seul texte : « Ouvrir le SMS tout prêt » et « Ouvrir l'e-mail tout prêt » se
+ressemblent assez pour qu'un contrôle passe au vert sur le mauvais.
+
+Les quatre gestes écartés — la lueur, le cachet, l'encre, le trait — restent
+dans la maquette 31.
+
 ### Cinq boutons de facture qui se pressent pour de vrai
 
 **Sa demande :** *« sors-moi une maquette avec plusieurs versions cliquables et

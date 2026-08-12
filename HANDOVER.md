@@ -181,17 +181,18 @@ manques qu'il avait signalés le 10 août (`TODO.md` §8, `ARCHITECTURE.md` §67
 
 **Cinq choses à savoir avant d'y toucher :**
 
-1. **Le troisième manque est ENCORE OUVERT, et rien ne doit être codé dessus.**
-   Il veut « Ouvrir le SMS tout prêt » **ovale**. Deux planches l'attendent :
-   `docs/maquettes/30-le-bouton-de-la-facture.html` (deux dessins immobiles) et
-   `docs/maquettes/31-le-bouton-de-la-facture-a-lessai.html` — **cinq gestes
-   qui se pressent**, demandés le 12 août : la capsule nue, la lueur, le
-   cachet, l'encre, le trait. **Ce qu'il faut lui dire en même temps :** sa
-   demande date du 10 août, quand tous les boutons étaient carrés ; depuis, il
-   a lui-même choisi la capsule « partout ». Choisir la capsule ne rouvre donc
-   **aucune** décision — c'est un rattrapage, pas un changement de charte. Et
-   **le cachet est la seule proposition qui ne repose pas sur un goût** : c'est
-   le geste de « Nouveau chantier », donc un vocabulaire partagé.
+1. **Les TROIS manques sont réglés.** Le bouton a pris la capsule le 12 août —
+   *« code la A »*, après deux planches (`docs/maquettes/30-…` puis `31-…`, cinq
+   gestes qui se pressent). Il passe par `PrimaryButton`, **jamais par un
+   dessin recopié sur place** : c'est le défaut qu'on répare, et le repeindre à
+   la main le ferait revenir au prochain changement de charte. Deux suites
+   mesurent son rayon calculé et rougissent si cela arrive.
+
+   **Les quatre gestes écartés restent dans la maquette 31** — la lueur, le
+   cachet, l'encre, le trait. S'il rouvre le sujet, repartir de là plutôt que
+   de redessiner. Et se souvenir que **le cachet était la seule proposition qui
+   ne reposait pas sur un goût** : c'est le geste de « Nouveau chantier », donc
+   un vocabulaire partagé entre deux écrans.
 
    **⚠ UNE MAQUETTE NE PORTE PAS DE SCRIPT.** La première version de la 31
    engendrait ses cinq téléphones en JavaScript : chez le patron, page vide —

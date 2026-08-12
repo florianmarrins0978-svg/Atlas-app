@@ -956,9 +956,19 @@ une ligne de mémoire.
    fichier** (`Content-Disposition: attachment` sur `?telecharger=1`) : le seul
    attribut `download` du lien est ignoré par certaines versions d'iOS, et le
    PDF s'ouvrait alors dans un onglet sans rien enregistrer.
-2. **« Ouvrir le SMS tout prêt » est carré**, alors qu'il le veut **ovale comme
-   tous les autres**. — **EN ATTENTE DE SON CHOIX, rien n'est codé**
-   (`CLAUDE.md` §3 bis). Deux planches l'attendent :
+2. ~~**« Ouvrir le SMS tout prêt » est carré**, alors qu'il le veut **ovale
+   comme tous les autres**.~~ — **tranché et codé le 12 août 2026 : « code la
+   A », la capsule.** Le bouton passe par `PrimaryButton`, jamais par un dessin
+   recopié sur place : c'est le défaut même qu'on répare (§0 octies), et le
+   repeindre à la main le ferait revenir au prochain changement de charte.
+
+   **Deux réglages facultatifs ont été ajoutés à `PrimaryButton`**, sans
+   toucher au dessin : `onClick` est désormais honoré sur la variante `href`
+   (elle le perdait en silence — le départ vers la messagerie n'aurait plus été
+   retenu), et `repere` pose un `data-atlas` pour que les suites désignent ce
+   lien autrement que par son texte.
+
+   *Les planches restent, elles racontent le chemin :*
 
    - `docs/maquettes/30-le-bouton-de-la-facture.html` — deux dessins immobiles :
      **A**, la capsule exacte des dix-sept autres écrans ; **B**, la même
@@ -970,9 +980,10 @@ une ligne de mémoire.
      sème l'or, D l'encre qui remplit, E le trait qui s'ouvre. Éprouvée au doigt
      par `scripts/verifier-maquette-bouton-facture.mjs`.
 
-   **C est la seule qui ne repose pas sur un goût** : c'est le geste de
-   « Nouveau chantier », et les deux écrans partageraient enfin le même
-   vocabulaire. À dire s'il hésite.
+   **Il a retenu A**, la capsule nue — la retenue, encore une fois, comme à
+   chaque tournée depuis le 11 août. Les quatre gestes écartés (la lueur, le
+   cachet, l'encre, le trait) restent dans la maquette : s'il rouvre le sujet,
+   c'est là qu'il faut repartir, et non les redessiner.
 
    **Ce qu'il faut lui dire, et qui a changé depuis sa demande :** le 10 août,
    tous les boutons étaient à 5 px de rayon et « ovale » aurait voulu dire

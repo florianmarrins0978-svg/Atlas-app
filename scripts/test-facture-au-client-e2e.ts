@@ -129,6 +129,17 @@ async function main() {
   assert.ok(destinataire.length > 0, "Le message s'ouvrirait sans destinataire.");
   console.log("  ✓ le message s'ouvre dans la messagerie du patron, destinataire compris");
 
+  // **La capsule, et non un aplat repeint sur place** (son choix du 12 août,
+  // maquette 31, variante A). On mesure le RAYON CALCULÉ : ce bouton était le
+  // dernier de l'écran dessiné à la main, et c'est ainsi qu'il avait manqué la
+  // décision du 11 août. Un retour au dessin local rendrait ce contrôle rouge.
+  const rayon = await lien.first().evaluate((el) => parseFloat(getComputedStyle(el).borderTopLeftRadius));
+  const hauteur = (await lien.first().boundingBox())?.height ?? 0;
+  assert.ok(rayon > 20, `Le bouton n'est pas une capsule : rayon de ${rayon} px.`);
+  // 44 px est ce qu'Apple demande au doigt ; la capsule en fait 50.
+  assert.ok(hauteur >= 44, `Le bouton fait ${Math.round(hauteur)} px de haut : sous 44, on le rate.`);
+  console.log(`  ✓ le message tout prêt porte la capsule (rayon ${rayon} px, ${Math.round(hauteur)} px de haut)`);
+
   const envoi = await pool.query(
     `SELECT ef.jeton FROM envois_factures ef
        JOIN factures f ON f.id = ef.facture_id
@@ -178,7 +189,7 @@ async function main() {
   assert.equal(await champEmail.count(), 1, "L'adresse manquante ne se saisit nulle part : le patron est bloqué.");
   await champEmail.fill("client@exemple.fr");
   await page.getByRole("button", { name: /Enregistrer et ouvrir le message/i }).click();
-  const lienMail = page.locator("a[data-transmission='email']");
+  const lienMail = page.locator("a[data-atlas='transmission-email']");
   await lienMail.waitFor({ state: "visible", timeout: 20_000 }).catch(() => undefined);
   assert.equal(await lienMail.count(), 1, "Le message e-mail tout prêt n'apparaît pas.");
   const adresseMail = (await lienMail.getAttribute("href")) ?? "";

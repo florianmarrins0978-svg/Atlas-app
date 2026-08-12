@@ -23,11 +23,13 @@ import { preparerLienFactureAction } from "./actions";
 // devis. Deux implémentations d'un même geste finissent toujours par diverger,
 // et c'est le client qui lit la mauvaise (`CLAUDE.md` §3).
 //
-// **Ce qui n'est délibérément PAS touché ici : le dessin du bouton.** Le patron
-// le veut « ovale comme tous les autres » (`TODO.md` §8, point 2) — mais une
-// demande d'apparence se dessine avant de se coder (`CLAUDE.md` §3 bis). Deux
-// variantes l'attendent dans `docs/maquettes/30-le-bouton-de-la-facture.html`.
-// Ce lien garde donc ses 4 px de rayon tant qu'il n'a pas tranché.
+// **Le bouton est la capsule, et c'est son choix du 12 août 2026** — « code
+// la A », parmi les cinq gestes de
+// `docs/maquettes/31-le-bouton-de-la-facture-a-lessai.html` (`TODO.md` §8,
+// point 2). Il était le dernier de cet écran dessiné sur place, ce qui l'avait
+// fait manquer la décision du 11 août. **Ne pas le repeindre ici** : une action
+// principale dessinée à la main échappe à toute décision d'ensemble, et c'est
+// par là que le défaut reviendrait.
 
 const LIBELLE: Record<
   CanalClient,
@@ -196,16 +198,23 @@ export default function TransmettreLaFacture({
           {/* Même geste que pour le devis : on retient le départ vers la
               messagerie, et le retour ramène à l'accueil avec un mot
               (`src/lib/annonce-transmission.ts`). La phrase diffère — une
-              facture n'attend pas de réponse. */}
-          <a
+              facture n'attend pas de réponse.
+
+              **La capsule, choisie par le patron le 12 août 2026** parmi les
+              cinq gestes de `docs/maquettes/31-le-bouton-de-la-facture-a-lessai.html`.
+              Ce bouton était le dernier de l'écran à être dessiné SUR PLACE —
+              un aplat à 4 px de rayon — et c'est pour cela qu'il avait manqué
+              la décision du 11 août (« la capsule, partout »). Il passe donc
+              par `PrimaryButton`, jamais par un dessin recopié ici : c'est très
+              exactement le défaut qu'on répare, et le repeindre à la main le
+              ferait revenir au prochain changement de charte. */}
+          <PrimaryButton
             href={adresse(destinataire)}
-            data-transmission={canalChoisi}
             onClick={() => marquerDepartMessagerie("facture", clientNom)}
-            className="block rounded-[4px] py-3 text-center text-[15px] font-medium"
-            style={{ backgroundColor: colors.rust, color: colors.cream }}
+            repere={`transmission-${canalChoisi}`}
           >
             {LIBELLE[canalChoisi].bouton} →
-          </a>
+          </PrimaryButton>
           {/* Dire à qui : le patron doit voir le destinataire AVANT d'ouvrir sa
               messagerie, pas le découvrir dedans. La phrase est d'un seul
               tenant — coupée en morceaux, JSX avale l'espace avant le tiret et

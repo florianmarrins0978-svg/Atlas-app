@@ -4881,12 +4881,36 @@ remplace pas le premier.
    « F2026-0001.pdf » — parce que le libellé lisait le rendu d'arrivée et non
    l'état vivant de l'écran.
 
-### Le bouton, lui, n'est pas touché
+### Le bouton : dessiné, montré, puis codé — dans cet ordre
 
-« Ouvrir le SMS tout prêt » garde ses 4 px de rayon. Le patron le veut ovale ;
-une demande d'apparence se **dessine** avant de se coder (`CLAUDE.md` §3 bis).
-Deux variantes l'attendent dans `docs/maquettes/30-le-bouton-de-la-facture.html`.
+« Ouvrir le SMS tout prêt » gardait ses 4 px de rayon parce qu'il était **peint
+à la main dans l'écran** : c'est ce qui lui avait fait manquer la capsule du
+11 août, exactement comme la feuille d'envoi du devis (§66). Une action
+principale dessinée sur place échappe à toute décision d'ensemble.
 
-**Ce bouton est peint à la main dans l'écran** — c'est pour cela qu'il a manqué
-la capsule du 11 août, exactement comme la feuille d'envoi du devis (§66). Le
+Une demande d'apparence se **dessine** avant de se coder (`CLAUDE.md` §3 bis).
+Deux planches l'ont précédé : `30-le-bouton-de-la-facture.html` (deux dessins
+immobiles) puis, à sa demande, `31-le-bouton-de-la-facture-a-lessai.html` —
+cinq gestes qui se pressent. **Il a retenu A, la capsule nue**, et le bouton
+passe désormais par `PrimaryButton`.
+
+**Deux réglages facultatifs ont été ajoutés à `PrimaryButton`, et aucun ne
+touche au dessin** — en ajouter un d'apparence rouvrirait « une seule forme
+d'action », qui est le sujet même de ce composant :
+
+- **`onClick` est honoré sur la variante `href`.** Elle le perdait en silence.
+  Ce bouton-là est un lien (`sms:`, `mailto:`) qui doit AUSSI retenir le départ
+  vers la messagerie ; sans ce correctif, le retour n'aurait plus ramené à
+  l'accueil avec un mot (`src/lib/annonce-transmission.ts`).
+- **`repere` pose un `data-atlas`.** Sans lui, une suite ne peut désigner ce
+  lien que par son texte — et « Ouvrir le SMS tout prêt » ressemble assez à
+  « Ouvrir l'e-mail tout prêt » pour qu'un contrôle passe au vert sur le
+  mauvais.
+
+**Deux suites mesurent le RAYON CALCULÉ** (`test-facture-au-client-e2e.ts`,
+`capture-facture.mts`) : un retour au dessin local les rend rouges. Le
 recensement des actions encore dessinées sur place est dans `TODO.md` §0 octies.
+
+**Les quatre gestes écartés restent dans la maquette 31** — la lueur, le cachet,
+l'encre, le trait. Si le sujet se rouvre, c'est de là qu'il faut repartir : les
+redessiner serait refaire un chemin déjà parcouru.

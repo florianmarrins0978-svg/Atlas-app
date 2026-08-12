@@ -152,7 +152,7 @@ if (await confirmer.count()) {
 await page.screenshot({ path: `${dossier}/facture-2-arretee.png`, fullPage: true });
 
 await page.getByRole("button", { name: /Envoyer la facture au client/i }).first().click();
-const lienSms = page.locator("a[data-transmission='sms']");
+const lienSms = page.locator("a[data-atlas='transmission-sms']");
 await lienSms.waitFor({ state: "visible", timeout: 30_000 }).catch(() => undefined);
 await page.waitForTimeout(500);
 await page.screenshot({ path: `${dossier}/facture-3-sms.png`, fullPage: true });
@@ -162,6 +162,27 @@ if ((await lienSms.count()) !== 1) {
 } else {
   const adresse = (await lienSms.getAttribute("href")) ?? "";
   if (!adresse.startsWith("sms:")) echecs.push(`adresse inattendue pour le SMS : ${adresse}`);
+
+  // **La capsule, et non un aplat repeint sur place** — son choix du 12 août
+  // (maquette 31, variante A). Ce bouton était le dernier de l'écran dessiné à
+  // la main, et c'est ce qui lui avait fait manquer la décision du 11 août.
+  const forme = await lienSms.evaluate((el) => {
+    const s = getComputedStyle(el);
+    const r = el.getBoundingClientRect();
+    return {
+      rayon: parseFloat(s.borderTopLeftRadius),
+      hauteur: Math.round(r.height),
+      largeur: Math.round(r.width),
+      fond: s.backgroundColor,
+    };
+  });
+  console.log(`  la capsule — ${JSON.stringify(forme)}`);
+  if (forme.rayon <= 20) {
+    echecs.push(`le bouton est revenu carré : rayon de ${forme.rayon} px au lieu d'une capsule.`);
+  }
+  if (forme.hauteur < 44) {
+    echecs.push(`le bouton fait ${forme.hauteur} px de haut : sous 44, le doigt le rate deux fois sur trois.`);
+  }
 }
 
 // ─── 3. « On ne propose que le SMS » — la bascule ───────────────────────────
@@ -190,7 +211,7 @@ if ((await bascule.count()) !== 1) {
     await page.waitForTimeout(2500);
     await page.screenshot({ path: `${dossier}/facture-6-email-pret.png`, fullPage: true });
 
-    const lienMail = page.locator("a[data-transmission='email']");
+    const lienMail = page.locator("a[data-atlas='transmission-email']");
     if ((await lienMail.count()) !== 1) {
       echecs.push("après saisie de l'adresse, le message e-mail tout prêt n'apparaît pas.");
     } else {
