@@ -4375,3 +4375,130 @@ un travail que le patron dit ne pas voir, vérifier qu'il l'a. Une commande :
 ```sh
 git show origin/main:<le fichier> | grep <la marque du travail>
 ```
+
+---
+
+## 62. L'écran d'un devis parti : deux écrans, pas un avec des variantes
+
+**Le 12 août 2026, capture à l'appui :** *« je trouve qu'il y a trop d'infos sur
+cette page »*. Mesuré avant de dessiner : **onze blocs**, et **382 px de
+débordement** sur sa dalle. La carte d'état portait à elle seule six choses,
+dont l'adresse complète du lien sur trois lignes illisibles.
+
+### La décision, et elle n'est pas graphique
+
+Le même écran servait deux moments qui n'ont rien en commun :
+
+- **avant l'envoi**, le patron VÉRIFIE — il a besoin des lignes, du total, de
+  l'aperçu, du rappel du client ;
+- **après l'envoi**, il ATTEND — il vient voir où ça en est, et relancer.
+
+Un empilement de cartes qui sert les deux sert mal les deux. `ExportClient` rend
+donc désormais **deux mises en page distinctes**, et non une avec des conditions.
+Les lignes de prestations vivent du côté « avant » : c'est là qu'on vérifie ce
+qui part, pas après.
+
+La mise en page de l'écran d'attente est **la sienne** — idée 5 de
+`docs/maquettes/26-le-devis-sur-sa-base.html`, « le signet d'or » : un filet d'or
+vertical pour l'état, le nom du devis et le montant seuls au centre, « Modifier
+mon devis » sous le total, le geste et les trois actions en bas sous le pouce.
+
+### La hauteur ne s'écrit pas à la main — deux échecs pour l'apprendre
+
+Le geste doit être **en bas**, sous le pouce. Deux tentatives ont débordé, et
+**c'est la suite qui les a trouvées, pas l'œil** :
+
+| Tentative | Ce qu'elle valait |
+|---|---|
+| `min-height: calc(100vh - 232px)` | 232 = l'en-tête « mesuré ». Débordait de **100 px**, et serait devenu faux au premier mot ajouté à un titre |
+| `min-h-screen` + `pb-16` | Comptait **deux fois** la barre du bas : `main.atlas-contenu` réserve déjà `--atlas-barre`. Débordait de **68 px** |
+
+La bonne réponse existait depuis toujours : **`atlas-ecran`**, la classe de
+l'écran des chantiers — `height: calc(100dvh - var(--atlas-barre) -
+env(safe-area-inset-top))`, colonne, rien qui dépasse. Une seule définition à
+tenir à jour, et elle est déjà juste.
+
+Ce qu'elle impose, et qui est fait : `overflow: hidden` signifie qu'une zone
+doit défiler à l'intérieur, sinon le bas est **coupé sans que rien ne le dise**.
+D'où `.atlas-colonne-defile` — écrite pour être réutilisée, parce que la
+cinquième zone recopiée aurait fini par oublier de masquer sa barre grise, comme
+c'est déjà arrivé au fil des chantiers le 11 août.
+
+**Règle générale, puisqu'elle s'est vérifiée deux fois de suite :** un nombre qui
+décrit la hauteur d'un autre élément est un défaut en attente. Faire partager la
+hauteur, ne pas la soustraire.
+
+### « Modifier mon devis » engage quelque chose, donc il prévient
+
+Le patron a demandé un lien sous le total. Ce lien n'existait pas : jusqu'ici,
+« Devis à la main » **disparaissait** une fois le devis parti, et le rouvrir
+passait par « Corriger et renvoyer » — réservé à un refus.
+
+Vérifié dans le dépôt avant d'écrire l'écran, et c'est ce qui a décidé de la
+forme : `getOuCreerDevisBrouillon` crée bien une nouvelle version dès que la
+dernière est partie, **mais l'envoi déjà fait n'est pas annulé**. La page
+publique sert `envoi.devis` — la version que le client a reçue. Il continue donc
+de la voir, et **peut l'accepter au prix d'avant**, tant qu'une nouvelle n'est
+pas envoyée.
+
+Le taire, c'est laisser le patron croire qu'il a corrigé un prix que son client
+peut encore accepter à l'ancien. Une feuille le dit en trois lignes, une seule
+fois, et se refuse — **et refuser ne crée aucune version**, ce que la suite
+vérifie explicitement (`CLAUDE.md` §4 : rien ne s'engage sans un geste).
+
+**Deux portes vers la même pièce seraient une de trop.** Quand le client a
+refusé, demandé une correction, ou laissé le lien expirer, reprendre le devis EST
+l'action principale : elle garde son bouton plein et « Modifier mon devis »
+s'efface. Tant qu'il réfléchit, c'est l'inverse.
+
+### Ce que la maquette avait perdu, et que le code a rattrapé
+
+**« Plutôt par e-mail » ne figurait dans AUCUNE des cinq propositions.** Ni lui
+ni moi ne l'avions vu. Le livrer ainsi aurait défait sa demande du 4 août —
+*« si je veux l'envoyer par e-mail, je ne peux pas revenir le choisir »*. Il
+reprend sa place sous la ligne du destinataire, qui nomme déjà le canal : c'est
+là qu'on s'aperçoit qu'on s'est trompé de voie.
+
+**Leçon : une maquette validée n'est pas un cahier des charges complet.** Ce
+qu'elle ne montre pas peut être ce qu'on efface sans le savoir. Avant de coder
+d'après une maquette, relire ce que l'écran portait — et nommer ce qui disparaît.
+
+### Le numéro se relit, ou il ne sert à rien
+
+`src/lib/numero-lisible.ts` espace le numéro du destinataire : `0679984514` →
+`06 79 98 45 14`. Ce n'est pas une coquetterie. Cette ligne est **la dernière
+chose que le patron voit avant d'ouvrir sa messagerie**, et le 12 août son devis
+n'est pas parti à cause d'une faute dans une adresse qu'il n'avait pas relue.
+
+**Elle refuse de grouper tout ce qu'elle ne reconnaît pas** — indicatif
+international, poste à quatre chiffres, saisie en cours. Un numéro étranger
+découpé par paires aurait l'apparence d'un numéro français normal tout en étant
+faux : sur une ligne dont l'unique rôle est la vérification, c'est le pire
+résultat possible, pire que de ne rien faire.
+
+**Le lien `sms:` continue de porter le numéro brut** : c'est `lienTransmission`
+qui retire les séparateurs, et jamais l'affichage. Les deux assertions
+coexistent dans `test-transmission-e2e` — le jour où l'affichage contaminerait le
+lien, la première rougirait.
+
+### Ce qu'un écran retire, six contrôles le pleurent
+
+Retirer l'adresse affichée a fait tomber **six contrôles** répartis dans deux
+suites — et aucun ne portait sur l'affichage. Ils lisaient simplement le jeton
+du devis là où il était commode de le lire : à l'écran.
+
+C'est un défaut de contrôle, pas de produit. Un contrôle qui prélève une donnée
+sur un détail d'affichage se lie à ce détail, et rougira le jour où il change —
+en accusant l'écran, jamais lui-même.
+
+**La règle qui en sort :** un contrôle prend ce dont il a besoin **là où la
+chose existe pour de bon** — la base, ou le geste que le doigt touche. Jamais
+dans un texte affiché à côté, à moins que ce texte ne soit précisément ce qu'il
+éprouve.
+
+Et quand un contrôle tombe sur un changement voulu, la question n'est pas
+« comment le faire repasser » mais **« que défendait-il, au juste ? »**. Ici,
+« un devis en attente affiche son lien » défendait en réalité *relancer ne doit
+pas obliger à regénérer un devis*. Réécrit ainsi, il éprouve le geste de relance
+et le nombre de versions en base — et il ne dépend plus de rien qui puisse
+changer sans qu'on le veuille.

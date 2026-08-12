@@ -77,8 +77,24 @@ async function devisParti(page: Page, suffixe: string) {
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
 
-  const lien = await page.locator("text=/\\/devis\\/[A-Za-z0-9_-]+/").first().innerText();
-  const jeton = lien.slice(lien.indexOf("/devis/") + "/devis/".length).trim();
+  // **Le jeton se lit dans la BASE, plus à l'écran.**
+  //
+  // Il se lisait dans l'adresse complète, affichée en toutes lettres sous le
+  // total. Le patron l'a fait retirer le 12 août — « il y a trop d'infos sur
+  // cette page » : trois lignes de caractères illisibles qu'il ne relisait
+  // jamais, et que « Copier le lien » met de toute façon dans le presse-papier.
+  //
+  // Cette suite ne parle pas du lien : elle a besoin du jeton pour JOUER LE
+  // CLIENT sur sa page publique. Le prendre à l'écran, c'était faire dépendre
+  // cinq contrôles de suivi d'un détail d'affichage — et c'est exactement ce
+  // qui vient d'arriver : les cinq sont tombés d'un coup sur un changement qui
+  // ne les concernait pas.
+  const { rows } = await inspecter(
+    "select jeton from envois_devis where chantier_id = $1 order by envoye_at desc limit 1",
+    [chantierId],
+    1
+  );
+  const jeton = rows[0].jeton as string;
 
   return { chantierId, nom, url, jeton };
 }
@@ -206,25 +222,46 @@ async function main() {
     assert.strictEqual(envois.rows[0].n, 2, "le second envoi n'a pas été enregistré");
   });
 
-  await test("un devis en attente affiche son lien, pour relancer sans le regénérer", async () => {
-    const { url } = await devisParti(page, "relance");
+  await test("relancer réutilise le MÊME lien, sans regénérer de devis", async () => {
+    const { url, jeton } = await devisParti(page, "relance");
 
     await page.reload({ waitUntil: "networkidle" });
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
 
-    // Sélecteurs restreints au paragraphe : en mode développement, une erreur
-    // afficherait le code source de l'écran, où ces phrases figurent aussi.
+    // Sélecteur restreint au paragraphe : en mode développement, une erreur
+    // afficherait le code source de l'écran, où cette phrase figure aussi.
     assert.strictEqual(
       await page.locator('p:text-is("En attente de réponse")').count(),
       1,
       "l'écran ne rappelle pas que le client n'a pas répondu"
     );
+
+    // **Ce qui compte, c'est que le lien soit LE MÊME — pas qu'il soit affiché.**
+    //
+    // Ce contrôle exigeait la phrase « Le lien est toujours actif », posée sous
+    // l'adresse complète écrite en toutes lettres. Le patron a fait retirer les
+    // deux le 12 août : trois lignes de caractères qu'il ne relisait jamais.
+    // Le contrôle est alors tombé — sur un détail d'affichage, pas sur ce qu'il
+    // avait à défendre.
+    //
+    // Ce qu'il avait à défendre, c'est ceci : relancer ne doit pas obliger à
+    // regénérer un devis, donc le geste de relance doit porter le jeton DÉJÀ
+    // envoyé. On le lit dans le lien de transmission, celui que le doigt touche.
+    const adresse = (await page.locator("a[data-transmission]").getAttribute("href")) ?? "";
+    assert.ok(
+      decodeURIComponent(adresse).includes(`/devis/${jeton}`),
+      `Le geste de relance ne porte pas le jeton déjà envoyé (${jeton}) : le patron devrait renvoyer un nouveau devis pour relancer. Adresse : « ${adresse.slice(0, 90)} »`
+    );
+
+    // Et le devis n'a pas été régénéré au passage : une seule version existe.
+    const { rows } = await inspecter(
+      "select count(*)::text as n from devis where chantier_id = $1",
+      [url.split("/").pop()!]
+    );
     assert.strictEqual(
-      await page
-        .locator('p:has-text("Le lien est toujours actif — renvoyez-le tel quel pour relancer.")')
-        .count(),
-      1,
-      "le lien n'est pas proposé : relancer obligerait à renvoyer un nouveau devis"
+      rows[0].n,
+      "1",
+      "Consulter l'écran d'un devis parti a créé une seconde version : la relance ne doit rien regénérer."
     );
   });
 

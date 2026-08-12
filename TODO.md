@@ -90,7 +90,38 @@ caprice de machine chargée.
 pas ce qui n'était pas demandé. À trancher : les supprimer, ou les marquer
 « maquette historique ».
 
-### 0 septdecies. L'écran du devis : le CONTENU est arrêté, la mise en page attend un numéro
+### ~~0 septdecies. L'écran du devis parti~~ — **codé et éprouvé le 2026-08-12**
+
+*« Code le 5 »* — le signet d'or. `ExportClient.tsx`, `TransmettreAuClient.tsx`,
+`src/lib/numero-lisible.ts`, `scripts/test-devis-parti-signet-e2e.ts`. Les mesures
+viennent de `docs/maquettes/26-le-devis-sur-sa-base.html` : **les reprendre de là**
+si on y retouche, jamais de mémoire.
+
+**Cinq choses à ne pas défaire, chacune payée par un défaut réel :**
+
+1. **`atlas-ecran` sur la page, pas de hauteur écrite à la main.** Deux
+   tentatives ont débordé avant — un en-tête « mesuré » à 232 px, puis
+   `min-h-screen` + `pb-16` qui comptait deux fois la barre du bas
+   (`main.atlas-contenu` la réserve déjà). 100 px, puis 68.
+2. **L'avertissement de « Modifier mon devis ».** Rouvrir un devis parti crée une
+   version mais **n'annule pas l'envoi** : le client voit toujours celle qu'il a
+   reçue et peut l'accepter au prix d'avant. Refuser ne doit créer AUCUNE version.
+3. **Le voile de la feuille est `aria-hidden`** — sinon deux boutons s'appellent
+   « Annuler », et qui ne voit pas l'écran en entend deux.
+4. **La bascule de canal reste.** Elle manquait à mes cinq maquettes ; la livrer
+   ainsi aurait défait sa demande du 4 août.
+5. **`numeroLisible` refuse de grouper ce qu'elle ne reconnaît pas.** Un numéro
+   étranger découpé par paires aurait l'air juste sans l'être — pire que rien sur
+   une ligne dont le seul rôle est la vérification.
+
+**Ce qui reste ouvert, et n'a pas été tranché :** le rayon du bouton. Tout est au
+rayon d'aujourd'hui (4 px). La bande de comparaison — 4, 8, 12, pilule — est au
+bas de `docs/maquettes/25-le-devis-parti-allege.html`. Son choix vaudra pour
+**vingt-sept écrans** (`PrimaryButton`) : ne pas le poser sur ce seul écran.
+
+*Ce qui suit est l'énoncé d'origine, gardé parce qu'il porte la mesure.*
+
+### ~~0 septdecies bis. L'énoncé~~ — le CONTENU arrêté par lui le 12 août
 
 **Arrêté par lui le 12 août** — c'est acquis, ne pas le rediscuter :
 

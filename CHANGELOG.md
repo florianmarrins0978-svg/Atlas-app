@@ -9,6 +9,72 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### L'écran du devis parti est codé — « le signet d'or »
+
+*« Code le 5. »* Retenu après onze blocs mesurés et cinq propositions
+(`docs/maquettes/26-le-devis-sur-sa-base.html`).
+
+**Ce que l'écran devient**, une fois le devis chez le client : un filet d'or pour
+l'état, le nom du devis et le montant seuls au centre (46 px), « Modifier mon
+devis » sous le total, et en bas sous le pouce le geste, le destinataire, puis
+les trois actions en encre foncée — PDF · Copier le lien · Partager. Les lignes
+de prestations n'y sont plus. **Elles restent AVANT l'envoi** : c'est là qu'on
+vérifie ce qui part, et ce sont donc deux écrans distincts, pas un avec des
+variantes.
+
+**« Modifier mon devis » prévient, et ce n'est pas un ornement.** Vérifié dans le
+dépôt avant d'écrire une ligne : rouvrir un devis parti crée une nouvelle version
+mais **n'annule pas l'envoi** — la page publique sert `envoi.devis`, la version
+reçue. Le client continue donc de la voir et peut l'accepter **au prix d'avant**.
+Une feuille le dit en trois lignes, une seule fois, et se refuse. Refuser ne crée
+aucune version : la suite le vérifie, parce que c'est exactement le genre de chose
+qu'un correctif de confort casse sans bruit (`CLAUDE.md` §4).
+
+**Trois défauts trouvés en éprouvant, et aucun n'était visible dans le code.**
+
+1. **La hauteur, deux fois fausse.** D'abord `min-height: calc(100vh - 232px)` —
+   232 étant l'en-tête « mesuré » ; l'écran débordait de 100 px. Puis
+   `min-h-screen` + `pb-16`, qui comptait **deux fois** la barre du bas,
+   `main.atlas-contenu` la réservant déjà : 68 px de trop. La bonne réponse
+   existait depuis toujours — `atlas-ecran`, la classe de l'écran des chantiers.
+   Un nombre magique décrivant la hauteur d'un en-tête devient faux au premier
+   mot ajouté à un titre.
+2. **Deux boutons nommés « Annuler »** dans la feuille — le voile et le vrai. Qui
+   ne voit pas l'écran en entendait deux, sans savoir lequel choisir. Le voile est
+   désormais `aria-hidden`, comme celui de l'écran des chantiers.
+3. **« Plutôt par e-mail » manquait à mes cinq maquettes.** Personne ne l'avait
+   remarqué, moi compris. Le livrer ainsi aurait défait sa demande du 4 août —
+   *« si je veux l'envoyer par e-mail, je ne peux pas revenir le choisir »*. Il
+   reprend sa place sous la ligne du destinataire, qui nomme déjà le canal.
+
+**Deux détails qui viennent de sa capture du 12 août.** Le numéro s'écrit espacé
+(`src/lib/numero-lisible.ts`) : collé, il ne se vérifiait pas d'un coup d'œil, et
+c'est pourtant la dernière occasion de voir qu'on s'adresse au mauvais client —
+son devis n'est pas parti ce jour-là à cause d'une adresse fausse. La fonction
+**refuse de grouper** tout ce qui n'est pas un numéro français à dix chiffres :
+un numéro étranger découpé par paires aurait l'air juste sans l'être, ce qui est
+pire que rien sur une ligne de vérification. Et le bouton dit « Relancer par
+SMS » quand le devis est déjà parti, « Ouvrir le SMS tout prêt » au premier envoi.
+
+Éprouvé par `scripts/test-devis-parti-signet-e2e.ts` (huit points, dont le
+débordement mesuré sur sa dalle) et `scripts/test-numero-lisible.ts`.
+109/109 suites base, 55/55 suites navigateur, connexion réelle comprise.
+
+**Deux suites tombaient, et elles avaient tort.** `test-suivi-devis-e2e` et
+`test-envoi-client-e2e` lisaient le jeton du devis **dans l'adresse affichée à
+l'écran** — celle-là même qu'il fait retirer. Six contrôles de suivi
+dépendaient donc d'un détail d'affichage qui ne les concernait pas, et sont
+tombés d'un coup. Ils prennent désormais le jeton là où il compte : dans la base
+pour l'un, **dans le message que le patron va envoyer** pour l'autre. Le second
+est un meilleur contrôle que l'ancien — il éprouve le lien que le CLIENT
+recevra, et non celui qui était affiché à côté.
+
+Un troisième exigeait la phrase « Le lien est toujours actif », et s'appelait
+« un devis en attente affiche son lien ». Ce qu'il avait à défendre n'était pas
+l'affichage mais le fait que **relancer réutilise le même lien** : il s'appelle
+maintenant ainsi, et le vérifie sur le geste de relance et sur le nombre de
+versions en base.
+
 ### Le devis parti, sur sa base — cinq façons de tenir ce qu'il a arrêté
 
 Après la maquette 25, il tranche le **contenu** : ne garder que le nom du devis

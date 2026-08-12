@@ -128,6 +128,28 @@ body {
   position: relative;
 }
 
+/* --- Une colonne d'écran qui défile, sans barre grise ----------------------
+ *
+ * Chaque zone qui défile portait jusqu'ici sa propre règle de masquage, et
+ * personne ne les comptait : celle du fil des chantiers — la plus vue de
+ * l'application — avait été oubliée, et le patron l'a signalée le 11 août
+ * (« supprime-moi ça, je ne veux pas voir ça du tout »).
+ *
+ * Celle-ci est écrite pour être RÉUTILISÉE plutôt que recopiée. La cinquième
+ * zone recopiée aurait fini par oublier la règle à son tour ; c'est déjà
+ * arrivé une fois, et `test-aucune-barre-de-defilement-e2e.ts` existe
+ * précisément parce que la vigilance n'y suffisait pas. */
+.atlas-colonne-defile {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.atlas-colonne-defile::-webkit-scrollbar {
+  display: none;
+}
+
 /* La zone qui défile. Le dégradé d'opacité aux deux bouts évite la coupure
  * nette : une ligne tranchée au ras du bord se lit comme un défaut d'affichage,
  * un fondu se lit comme « ça continue ». */
