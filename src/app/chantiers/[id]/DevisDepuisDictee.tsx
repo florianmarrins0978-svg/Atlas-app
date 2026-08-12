@@ -414,7 +414,7 @@ function QuestionsChiffrage({
         type="button"
         onClick={valider}
         disabled={envoi}
-        className="mt-5 w-full rounded-[4px] py-3 text-[15px] font-medium disabled:opacity-40"
+        className="mt-5 w-full rounded-full py-3 text-[15px] font-medium disabled:opacity-40"
         style={{ backgroundColor: colors.rust, color: colors.cream }}
       >
         {envoi ? "Atlas termine le devis…" : toutesRepondues ? "Continuer vers le devis" : "Continuer sans répondre à tout"}

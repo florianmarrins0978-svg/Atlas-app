@@ -271,7 +271,7 @@ export default function ExportClient({
                 type="button"
                 onClick={reprendre}
                 disabled={reprise}
-                className="mt-4 block w-full rounded-[4px] py-3 text-[15px] font-medium text-white disabled:opacity-50"
+                className="mt-4 block w-full rounded-full py-3 text-[15px] font-medium text-white disabled:opacity-50"
                 style={{ backgroundColor: colors.rust }}
               >
                 {reprise

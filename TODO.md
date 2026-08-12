@@ -27,6 +27,25 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 nonies. L'écran de connexion est resté dans l'ancienne identité
+
+**Vu en capture le 12 août 2026**, en vérifiant que les boutons arrondis
+n'avaient rien cassé. `src/app/login/page.tsx` n'a jamais été repris par la
+refonte du 10 août :
+
+- son bouton est en **terre cuite `#B5502F`**, couleur abandonnée le 3 août
+  quand l'application est passée à Arborea — écrite en dur, hors
+  `design-tokens.ts` ;
+- carte blanche, bordures grises, aucune serif de titre, aucun jeton de la
+  charte.
+
+**C'est le PREMIER écran qu'il voit**, et le seul qui ne ressemble pas à Atlas.
+Même remarque pour `src/app/documents-legaux/formulaire.tsx`, qui porte la même
+couleur en dur.
+
+**Non fait :** il n'a pas demandé cet écran, et sa règle est *« montre-moi avant
+de faire »*. Lui montrer une maquette avant/après, puis appliquer.
+
 ### 0 octies. Les actions principales encore dessinées à la main
 
 **Trouvé le 12 août 2026, parce que le patron l'a vu avant nous.** La feuille

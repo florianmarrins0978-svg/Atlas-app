@@ -180,7 +180,7 @@ export default async function ReglagesPage() {
           <a
             href="/api/mes-donnees"
             download={nomFichierSauvegarde(entreprise?.nom ?? "Entreprise", new Date())}
-            className="inline-block rounded-[4px] px-5 py-3 text-[15px] font-medium"
+            className="inline-block rounded-full px-5 py-3 text-[15px] font-medium"
             style={{ backgroundColor: colors.rust, color: colors.cream }}
           >
             Télécharger mes données

@@ -285,7 +285,7 @@ function Contenu({
             type="button"
             onClick={enregistrerContact}
             disabled={enregistrement || !coordonnee.trim() || !preparation.clientId}
-            className="mt-2.5 w-full rounded-[4px] py-3 text-[15px] font-medium disabled:opacity-50"
+            className="mt-2.5 w-full rounded-full py-3 text-[15px] font-medium disabled:opacity-50"
             style={{ backgroundColor: colors.card, color: colors.rust }}
           >
             {enregistrement ? "Enregistrement…" : "Enregistrer et continuer"}
@@ -501,7 +501,7 @@ function Contenu({
         </PrimaryButton>
         <button
           onClick={onFermer}
-          className="rounded-[4px] py-3.5 text-[15px] font-medium"
+          className="rounded-full py-3.5 text-[15px] font-medium"
           style={{ color: colors.muted }}
         >
           Annuler

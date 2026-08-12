@@ -472,7 +472,7 @@ function ChoixCanal({
       onClick={onClick}
       disabled={!disponible}
       aria-pressed={actif}
-      className="flex-1 rounded-[4px] py-3.5 text-[15px] font-medium disabled:opacity-40"
+      className="flex-1 rounded-full py-3.5 text-[15px] font-medium disabled:opacity-40"
       style={{
         backgroundColor: actif ? colors.rustTint : colors.card,
         color: actif ? colors.rust : colors.ink,
