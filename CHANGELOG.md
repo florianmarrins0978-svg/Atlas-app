@@ -726,7 +726,193 @@ ne répare pas la panne : il fait qu'elle se désigne. Et la note captée reste
 **perdue** quand l'envoi échoue (`TODO.md` §0).
 
 ---
+### Un contrôle qui s'effaçait lui-même son témoin
 
+`test-detection-automatique-e2e` échouait sur « les `tel:` écrits par Atlas
+restent des liens » — quarante-cinq secondes d'attente sur un `#temoin`
+introuvable.
+
+**Vérifié sur `main` seul avant de rien conclure : il échouait pareil.** Ce
+n'était donc pas le lot en cours — et c'est la deuxième fois de la journée que
+cette vérification évite d'accuser à tort.
+
+La cause, reproduite puis comprise : le cas écrivait son témoin par `setContent`
+dans la page qui venait de servir `/login`. Or `setContent` ne réécrit que le
+document — **l'application, elle, tourne toujours**. Next réinjectait son
+`<title>Atlas</title>` dans le `<head>` fraîchement écrit, et emportait tantôt
+le témoin avec. Le contrôle accusait la détection automatique là où le fautif
+était son propre décor.
+
+Le témoin vit maintenant sur une page neuve, où aucune application ne tourne.
+
+### Le contrôle des boutons ronds ne voyait presque rien
+
+**Trouvé en lui livrant un bouton carré de plus.** `test-boutons-arrondis.ts`,
+écrit le 12 août après sa demande — *« remplace tous les boutons rectangulaires
+par les boutons arrondis »* —, cherchait la forme avec une classe niée `[^>]`.
+
+Or **la flèche d'une fonction porte un chevron**. Tout bouton écrit
+`onClick={() => …}` — c'est-à-dire l'immense majorité — passait donc sous le
+radar. Le contrôle avait rougi une fois, sur le seul bouton dépourvu de
+`onClick`, et en laissait passer **douze** à côté : quatre dans le devis dicté,
+**trois sur la feuille d'envoi elle-même** — l'écran précis où il avait vu « un
+bouton carré à côté d'une capsule » —, un sur la facture, un sur la note
+vocale, deux sur l'assistant, un sur le calendrier.
+
+Un contrôle qui attrape le cas rare et manque le cas courant est pire
+qu'aucun : il fait croire que c'est propre. Le motif accepte désormais `=>`, et
+les treize boutons portent la capsule. Sa règle du 12 août n'était appliquée
+qu'à moitié ; elle l'est maintenant.
+
+Le contrôle a été confronté à l'état qu'il prétend détecter — un bouton
+rectangulaire témoin, avec et sans flèche.
+
+### L'écran du devis parti est codé — « le signet d'or »
+
+*« Code le 5. »* Retenu après onze blocs mesurés et cinq propositions
+(`docs/maquettes/34-le-devis-sur-sa-base.html`).
+
+**Ce que l'écran devient**, une fois le devis chez le client : un filet d'or pour
+l'état, le nom du devis et le montant seuls au centre (46 px), « Modifier mon
+devis » sous le total, et en bas sous le pouce le geste, le destinataire, puis
+les trois actions en encre foncée — PDF · Copier le lien · Partager. Les lignes
+de prestations n'y sont plus. **Elles restent AVANT l'envoi** : c'est là qu'on
+vérifie ce qui part, et ce sont donc deux écrans distincts, pas un avec des
+variantes.
+
+**« Modifier mon devis » prévient, et ce n'est pas un ornement.** Vérifié dans le
+dépôt avant d'écrire une ligne : rouvrir un devis parti crée une nouvelle version
+mais **n'annule pas l'envoi** — la page publique sert `envoi.devis`, la version
+reçue. Le client continue donc de la voir et peut l'accepter **au prix d'avant**.
+Une feuille le dit en trois lignes, une seule fois, et se refuse. Refuser ne crée
+aucune version : la suite le vérifie, parce que c'est exactement le genre de chose
+qu'un correctif de confort casse sans bruit (`CLAUDE.md` §4).
+
+**Trois défauts trouvés en éprouvant, et aucun n'était visible dans le code.**
+
+1. **La hauteur, deux fois fausse.** D'abord `min-height: calc(100vh - 232px)` —
+   232 étant l'en-tête « mesuré » ; l'écran débordait de 100 px. Puis
+   `min-h-screen` + `pb-16`, qui comptait **deux fois** la barre du bas,
+   `main.atlas-contenu` la réservant déjà : 68 px de trop. La bonne réponse
+   existait depuis toujours — `atlas-ecran`, la classe de l'écran des chantiers.
+   Un nombre magique décrivant la hauteur d'un en-tête devient faux au premier
+   mot ajouté à un titre.
+2. **Deux boutons nommés « Annuler »** dans la feuille — le voile et le vrai. Qui
+   ne voit pas l'écran en entendait deux, sans savoir lequel choisir. Le voile est
+   désormais `aria-hidden`, comme celui de l'écran des chantiers.
+3. **« Plutôt par e-mail » manquait à mes cinq maquettes.** Personne ne l'avait
+   remarqué, moi compris. Le livrer ainsi aurait défait sa demande du 4 août —
+   *« si je veux l'envoyer par e-mail, je ne peux pas revenir le choisir »*. Il
+   reprend sa place sous la ligne du destinataire, qui nomme déjà le canal.
+
+**Deux détails qui viennent de sa capture du 12 août.** Le numéro s'écrit espacé
+(`src/lib/numero-lisible.ts`) : collé, il ne se vérifiait pas d'un coup d'œil, et
+c'est pourtant la dernière occasion de voir qu'on s'adresse au mauvais client —
+son devis n'est pas parti ce jour-là à cause d'une adresse fausse. La fonction
+**refuse de grouper** tout ce qui n'est pas un numéro français à dix chiffres :
+un numéro étranger découpé par paires aurait l'air juste sans l'être, ce qui est
+pire que rien sur une ligne de vérification. Et le bouton dit « Relancer par
+SMS » quand le devis est déjà parti, « Ouvrir le SMS tout prêt » au premier envoi.
+
+Éprouvé par `scripts/test-devis-parti-signet-e2e.ts` (huit points, dont le
+débordement mesuré sur sa dalle) et `scripts/test-numero-lisible.ts`.
+109/109 suites base, 55/55 suites navigateur, connexion réelle comprise.
+
+**Deux suites tombaient, et elles avaient tort.** `test-suivi-devis-e2e` et
+`test-envoi-client-e2e` lisaient le jeton du devis **dans l'adresse affichée à
+l'écran** — celle-là même qu'il fait retirer. Six contrôles de suivi
+dépendaient donc d'un détail d'affichage qui ne les concernait pas, et sont
+tombés d'un coup. Ils prennent désormais le jeton là où il compte : dans la base
+pour l'un, **dans le message que le patron va envoyer** pour l'autre. Le second
+est un meilleur contrôle que l'ancien — il éprouve le lien que le CLIENT
+recevra, et non celui qui était affiché à côté.
+
+Un troisième exigeait la phrase « Le lien est toujours actif », et s'appelait
+« un devis en attente affiche son lien ». Ce qu'il avait à défendre n'était pas
+l'affichage mais le fait que **relancer réutilise le même lien** : il s'appelle
+maintenant ainsi, et le vérifie sur le geste de relance et sur le nombre de
+versions en base.
+
+### Le devis parti, sur sa base — cinq façons de tenir ce qu'il a arrêté
+
+Après la maquette 33, il tranche le **contenu** : ne garder que le nom du devis
+et le total, retirer les lignes de prestations, poser sous le total un lien
+**« Modifier mon devis »** qui ramène au devis, et passer « Télécharger le PDF »
+et les deux autres **en encre foncée**, visiblement cliquables.
+
+`docs/maquettes/34-le-devis-sur-sa-base.html` : sa base au mot près, puis quatre
+façons de la tenir à contenu identique — le montant à même la page (52 px, sans
+carte), le montant monté dans le titre, les trois actions empilées, et le signet
+d'or. Ce qui se choisit n'est donc plus quoi montrer, mais comment le poser.
+
+**Deux choses réglées en dessinant, et elles ne sont pas décoratives.**
+« Partager autrement (WhatsApp…) » ne tient pas à trois sur une ligne : il
+devient « Partager », ou bien les trois s'empilent (idée 4), ce qui rend chaque
+cible large comme le pouce. Et l'idée 4 débordait de 23 px — resserrée à 11 px
+de hauteur de ligne plutôt qu'en retirant « Parti il y a 2 jours », qui est la
+seule chose de l'écran disant depuis quand on attend.
+
+**Une question posée, pas tranchée :** reprendre un devis déjà parti en crée une
+nouvelle version et rend l'ancien lien caduc. Faut-il le prévenir au clic ?
+
+`src/` n'est toujours pas touché.
+
+### « Trop d'infos sur cette page » — quatre façons de retrancher, dessinées
+
+Le patron, capture à l'appui : *« je trouve qu'il y a trop d'infos sur cette
+page, crée moi une maquette optimisée »*, puis : *« fabrique-moi la maquette et
+montre-la-moi avant de coder quoi que ce soit »*. `src/` n'est pas touché
+(`CLAUDE.md` §3 bis).
+
+**Mesuré avant d'être dessiné.** L'écran du devis parti porte **onze blocs** et
+déborde de **382 px** — il faut défiler, et c'est exactement ce qu'il signale.
+La carte d'état porte à elle seule six choses, dont l'adresse complète du lien
+sur trois lignes illisibles.
+
+`docs/maquettes/33-le-devis-parti-allege.html` propose quatre retranchements qui
+ne portent pas au même endroit — l'adresse effacée (6 blocs), l'état monté dans
+le titre (4), le devis replié derrière une ligne (5), le geste seul sous le
+pouce (3). Chacune dit **ce qu'elle coûte**, parce que c'est cela qui se choisit.
+
+**Un contrôle qui a servi tout de suite.** La proposition A annonçait « tout
+tient sans défiler » et débordait de 84 px : le texte était faux, et l'œil ne le
+voyait pas. Il a fallu retirer aussi la carte « Chantier / Client », qui redisait
+le numéro affiché deux blocs plus bas. Deux autres défauts n'ont été vus que sur
+la capture — cinquante pixels de vide sous le total (les jambages d'une serif de
+21 px), et quatre vignettes de bouton **vides**, leurs teintes n'existant que
+dans le cadre du téléphone.
+
+### Le bouton « carré » : il est déjà au rayon des cartes
+
+*« Le bouton est toujours carré, pas arrondi comme tous les autres. »* Mesuré
+avant de corriger : ce bouton porte **exactement le rayon des cartes**, 4 px
+(`radius.card`), posé le 10 août à sa demande — *« un rectangle presque droit se
+lit comme une pièce imprimée »*.
+
+Il a pourtant raison de le voir carré, et la raison n'est pas dans le code :
+**sur un aplat vert foncé, un rayon de 4 px ne se voit pas**, le contraste est
+franc et l'œil lit un angle droit ; sur une carte crème posée sur un fond crème,
+le même rayon se lit, parce que le coin fond dans la page. Pour *paraître* aussi
+arrondi qu'une carte, un bouton plein doit être *plus* arrondi qu'elle.
+
+La maquette montre donc le même bouton à 4, 8, 12 px et en pilule, chacun
+au-dessus d'une carte au même rayon. Le choix lui revient — et il vaudra pour
+**vingt-sept écrans** (`PrimaryButton`), ce qui est écrit noir sur blanc sur la
+page.
+
+### L'envoi du devis n'est pas en panne — et il ne faut pas le « réparer »
+
+Signalé d'abord comme un défaut : *« lorsque le mail est parti je n'ai pas de
+message qui prouve qu'il est bien parti, la page reste figée »*. Puis, de
+lui-même : *« en fait le mail n'était pas parti […] il y avait une faute sur
+l'adresse mail, c'est pour ça »*.
+
+**Sa messagerie s'est bien ouverte. Le message n'est pas parti parce que
+l'adresse était fausse.** Rien n'a donc été modifié, et c'est délibéré : la CSP
+a été relue (elle ne régit pas la navigation `mailto:`), et l'adresse construite
+pour son cas exact a été fabriquée et mesurée — 574 caractères, très en deçà de
+toute limite. Écrit ici pour qu'une prochaine conversation ne parte pas réparer
+une panne qui n'a pas eu lieu (`TODO.md`, 0 sexdecies).
 ## 2026-08-11
 
 ### Le serveur fantôme du port 3000 : un gardien juste, posé trop tard

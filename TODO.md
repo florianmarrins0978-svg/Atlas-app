@@ -242,7 +242,108 @@ pas ce qui n'était pas demandé. À trancher : les supprimer, ou les marquer
 « maquette historique ».
 
 ### ~~0. « Impossible d'enregistrer la note »~~ — **CAUSE TROUVÉE ET REPRODUITE le 2026-08-12**
+### ~~0 septdecies. L'écran du devis parti~~ — **codé et éprouvé le 2026-08-12**
 
+*« Code le 5 »* — le signet d'or. `ExportClient.tsx`, `TransmettreAuClient.tsx`,
+`src/lib/numero-lisible.ts`, `scripts/test-devis-parti-signet-e2e.ts`. Les mesures
+viennent de `docs/maquettes/34-le-devis-sur-sa-base.html` : **les reprendre de là**
+si on y retouche, jamais de mémoire.
+
+**Cinq choses à ne pas défaire, chacune payée par un défaut réel :**
+
+1. **`atlas-ecran` sur la page, pas de hauteur écrite à la main.** Deux
+   tentatives ont débordé avant — un en-tête « mesuré » à 232 px, puis
+   `min-h-screen` + `pb-16` qui comptait deux fois la barre du bas
+   (`main.atlas-contenu` la réserve déjà). 100 px, puis 68.
+2. **L'avertissement de « Modifier mon devis ».** Rouvrir un devis parti crée une
+   version mais **n'annule pas l'envoi** : le client voit toujours celle qu'il a
+   reçue et peut l'accepter au prix d'avant. Refuser ne doit créer AUCUNE version.
+3. **Le voile de la feuille est `aria-hidden`** — sinon deux boutons s'appellent
+   « Annuler », et qui ne voit pas l'écran en entend deux.
+4. **La bascule de canal reste.** Elle manquait à mes cinq maquettes ; la livrer
+   ainsi aurait défait sa demande du 4 août.
+5. **`numeroLisible` refuse de grouper ce qu'elle ne reconnaît pas.** Un numéro
+   étranger découpé par paires aurait l'air juste sans l'être — pire que rien sur
+   une ligne dont le seul rôle est la vérification.
+
+**Ce qui reste ouvert, et n'a pas été tranché :** le rayon du bouton. Tout est au
+rayon d'aujourd'hui (4 px). La bande de comparaison — 4, 8, 12, pilule — est au
+bas de `docs/maquettes/33-le-devis-parti-allege.html`. Son choix vaudra pour
+**vingt-sept écrans** (`PrimaryButton`) : ne pas le poser sur ce seul écran.
+
+*Ce qui suit est l'énoncé d'origine, gardé parce qu'il porte la mesure.*
+
+### ~~0 septdecies bis. L'énoncé~~ — le CONTENU arrêté par lui le 12 août
+
+**Arrêté par lui le 12 août** — c'est acquis, ne pas le rediscuter :
+
+- ne garder que **le nom du devis et le total** ;
+- **retirer les lignes de prestations** ;
+- un lien **« Modifier mon devis »** sous le total, qui ramène au devis ;
+- « Télécharger le PDF », « Copier le lien », « Partager » **en encre foncée**,
+  visiblement cliquables.
+
+`docs/maquettes/34-le-devis-sur-sa-base.html` : sa base au mot près, plus quatre
+mises en page du même contenu (sans carte · dans le titre · actions empilées ·
+signet d'or). **Rien n'est codé** tant qu'il n'a pas donné un numéro.
+
+**Trois points ouverts, à ne pas trancher seul :**
+
+1. **Reprendre un devis déjà parti crée une nouvelle version** et rend l'ancien
+   lien caduc. Faut-il le prévenir au clic sur « Modifier mon devis » ? Une
+   phrase courte, une seule fois, est proposée — pas décidée.
+2. **« Partager autrement (WhatsApp… ) » ne tient pas** à trois sur une ligne. Il
+   devient « Partager », ou les trois s'empilent (idée 4). Son choix.
+3. **Le rayon du bouton reste sans réponse** (bande de la maquette 33 : 4, 8, 12,
+   pilule). Tout est dessiné à 4 px pour ne rien présumer.
+
+### ~~0 sexdecies. L'écran du devis parti : quatre maquettes~~ — **dépassée le 2026-08-12 par la 26**
+
+*Gardée parce qu'elle porte la mesure d'origine : onze blocs, 382 px de trop.*
+
+**Rien n'est codé, et rien ne doit l'être avant qu'il ait désigné une lettre**
+(`CLAUDE.md` §3 bis). Il a demandé la maquette explicitement : *« fabrique-moi la
+maquette et montre-la-moi avant de coder quoi que ce soit »*.
+
+`docs/maquettes/33-le-devis-parti-allege.html`. Mesuré : l'écran porte **onze
+blocs** et déborde de **382 px** sur sa dalle.
+
+| | Blocs | Ce qu'elle retranche | Ce qu'elle coûte |
+|---|---|---|---|
+| A | 6 | l'adresse illisible, la phrase en double, la carte Chantier/Client | il ne relit plus l'adresse à l'œil |
+| B | 4 | la carte d'état, montée dans le titre | un appui pour les autres canaux |
+| C | 5 | le devis replié derrière une ligne | un appui pour le détail |
+| D | 3 | tout sauf le montant et le geste | rien du devis sans un appui |
+
+**Trois choses que la maquette propose et qui ne sont PAS acquises :** « il y a
+2 jours » (la date d'envoi est en base, jamais affichée) ; le libellé qui passe
+d'« Ouvrir le SMS tout prêt » à « Relancer par SMS » une fois le devis parti ; et
+le numéro écrit espacé plutôt que collé.
+
+**Et le rayon du bouton, qui se choisit en même temps.** Il a dit *« le bouton
+est toujours carré »*. Vérifié : il est **déjà au rayon des cartes** (4 px,
+`radius.card`, posé le 10 août à sa demande). Ce n'est pas un oubli — c'est que
+sur un aplat vert foncé, 4 px ne se voient pas. La bande du bas de la maquette
+montre 4 / 8 / 12 / pilule. **Son choix vaudra pour vingt-sept écrans**
+(`PrimaryButton`) : ne pas le poser sur ce seul écran, deux formes de bouton
+dans la même application est précisément ce qui vient d'être démêlé.
+
+### ~~0 quindecies bis. « Le mail n'est pas parti »~~ — **ce n'était pas un défaut, 2026-08-12**
+
+**Ne pas rouvrir, et surtout ne rien « réparer ».** Signalé comme une panne —
+*« lorsque le mail est parti je n'ai pas de message qui prouve qu'il est bien
+parti, la page reste figée »* — puis démenti par lui-même dans la foulée :
+*« en fait le mail n'était pas parti […] il y avait une faute sur l'adresse
+mail »*.
+
+Sa messagerie s'est bien ouverte ; l'adresse du destinataire était fausse.
+Vérifié avant de conclure : la CSP ne régit pas la navigation `mailto:`
+(`next.config.ts`), et l'adresse construite pour son cas exact fait
+574 caractères — très en deçà de toute limite. `useRetourDeMessagerie` n'a donc
+pas renvoyé à l'accueil pour la seule bonne raison : **il n'est jamais parti de
+la page**.
+
+### 0. Si « Impossible d'enregistrer la note » revient : lire la phrase, ne pas la deviner
 **Ouvert le 11 août 2026, et volontairement laissé ouvert.** Le patron a signalé
 ce message ; il n'a **pas pu être reproduit ici** — la dictée passe avec un micro
 simulé, en développement comme sur la version bâtie derrière une origine

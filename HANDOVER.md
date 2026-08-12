@@ -322,6 +322,26 @@ l'écran de son client.
    et rougit si un chemin déclaré n'y est pas éprouvé. Il visite de vrais
    jetons : un jeton inventé rendrait « lien inconnu », et le contrôle serait
    vert sur du vide.
+**L'ÉCRAN DU DEVIS PARTI EST CODÉ — « le signet d'or » (12 août).** Il a répondu
+« code le 5 ». Un filet d'or pour l'état, le nom du devis et le montant seuls au
+centre, « Modifier mon devis » sous le total, et en bas le geste puis les trois
+actions en encre. Les lignes de prestations restent AVANT l'envoi et disparaissent
+après : ce sont deux écrans, pas un avec des variantes.
+
+**Cinq choses à ne pas défaire** sont listées dans `TODO.md` 0 septdecies — dont
+`atlas-ecran` (deux tentatives de hauteur écrite à la main ont débordé de 100 puis
+68 px) et l'avertissement de « Modifier mon devis », qui protège un engagement
+réel : rouvrir un devis parti n'annule pas l'envoi, le client peut encore accepter
+l'ancien prix.
+
+**Ce qui reste ouvert :** le rayon du bouton (4, 8, 12 ou pilule — bande au bas de
+la maquette 33). Son choix vaudra pour vingt-sept écrans. Il a demandé la maquette en toutes lettres : *« fabrique-
+moi la maquette et montre-la-moi avant de coder quoi que ce soit »*.
+
+**Et NE PAS chercher une panne d'envoi de devis.** Elle a été signalée puis
+démentie par lui le même jour : sa messagerie s'ouvrait bien, l'adresse du
+client était fausse. `TODO.md` 0 quindecies bis dit ce qui a été vérifié — CSP,
+longueur de l'adresse — pour qu'on ne le refasse pas.
 
 ---
 

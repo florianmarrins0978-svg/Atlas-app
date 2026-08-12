@@ -29,7 +29,21 @@ const RACINE = "src";
 // Pas de drapeau `s` : la cible TypeScript du projet ne l'accepte pas, et il
 // serait de toute façon inutile — une classe niée comme `[^>]` franchit déjà
 // les retours à la ligne. Le typecheck l'a dit avant que quiconque ne le lise.
-const RECTANGULAIRE = /<(?:button|a)\b[^>]*?rounded-\[(\d+)px\][^>]*>/g;
+//
+// **`(?:[^>]|=>)` et non `[^>]` — sans quoi ce contrôle ne voit presque rien.**
+//
+// Découvert le 12 août 2026 au soir, en lui livrant un bouton carré de plus :
+// une classe niée `[^>]` s'arrête au premier chevron, **et la flèche d'une
+// fonction en porte un**. Tout bouton écrit `onClick={() => …}` — c'est-à-dire
+// l'immense majorité — passait donc sous le radar. Trois l'ont fait, sur la
+// feuille d'envoi elle-même : exactement l'écran où le patron avait vu « un
+// bouton carré à côté d'une capsule ».
+//
+// Le contrôle avait donc rougi une fois, sur le seul bouton qui n'avait pas de
+// `onClick` — et il en laissait passer trois à côté. Un contrôle qui attrape le
+// cas rare et manque le cas courant est pire qu'aucun : il fait croire que
+// c'est propre.
+const RECTANGULAIRE = /<(?:button|a)\b(?:[^>]|=>)*?rounded-\[(\d+)px\](?:[^>]|=>)*>/g;
 
 function fichiers(dossier: string): string[] {
   const sortie: string[] = [];
