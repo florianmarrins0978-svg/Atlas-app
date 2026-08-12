@@ -46,7 +46,7 @@ couleur en dur.
 **Non fait :** il n'a pas demandé cet écran, et sa règle est *« montre-moi avant
 de faire »*. Lui montrer une maquette avant/après, puis appliquer.
 
-**Maquette livrée le 12 août 2026 — `docs/maquettes/31-l-ecran-de-connexion.html`**
+**Maquette livrée le 12 août 2026 — `docs/maquettes/32-l-ecran-de-connexion.html`**
 (« oui, fais-moi une maquette avant/après »). L'avant reproduit, puis quatre
 après : la carte gardée, sans carte, le sceau, la ligne d'imprimé. **En attente
 de son choix — `src/` n'a pas été touché.**

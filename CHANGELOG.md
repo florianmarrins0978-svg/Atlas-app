@@ -9,10 +9,102 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### « Ça ne marche pas » va désormais chercher la fiche tout seul
+
+**Sa demande :** *« Il faudrait que si j'écris ça ne marche pas, d'elle-même
+elle aille regarder la fiche. »*
+
+La consigne existait déjà en toutes lettres (`CLAUDE.md` §1 bis, écrit le matin
+même). Elle ne suffisait pas, et pour une raison qui n'a rien à voir avec la
+bonne volonté : **une consigne en prose se lit au début d'une conversation et
+s'oublie au bout de trois heures** — or c'est au bout de trois heures qu'il
+signale une panne, jamais au début.
+
+`.claude/settings.json` branche donc `scripts/rappel-panne.mjs` sur chaque
+message reçu. Dès qu'une tournure comme « ça ne marche pas » apparaît, le rappel
+est remis sous les yeux de la session **au moment exact où il sert** : lire la
+fiche d'état de son espace, regarder sa date d'abord, ne supposer qu'ensuite, et
+lui faire lancer `claude` chez lui plutôt que de lui dicter dix commandes depuis
+un téléphone.
+
+**Il vaut pour ses trois ou quatre sessions à la fois**, et sans qu'aucune ait
+rien à retenir : le fichier est dans le dépôt, donc chacune l'applique. C'est ce
+qu'il demandait la veille — *« je veux que si je leur dis ça ne marche pas,
+qu'elles se débrouillent »*.
+
+**Il n'interdit rien et ne bloque rien** : il ajoute du contexte, et devant le
+moindre doute il se tait. Ce n'est pas de la prudence de façade — un rappel qui
+parle à tort s'apprend à être ignoré, et le garde-fou se perd alors sans que
+personne s'en aperçoive. D'où deux garde-fous symétriques dans
+`scripts/test-rappel-panne.ts` : les tournures qu'il a **réellement écrites**
+les 11 et 12 août déclenchent (aucune n'est inventée), et les demandes
+ordinaires — « corrige l'erreur de type », « est-ce que la CI est passée ? »,
+« ça fonctionne ? » — ne déclenchent rien. Le câblage lui-même est vérifié : un
+script juste que rien n'appelle ne protège personne, et son absence ne se voit
+nulle part.
+
+Confronté à l'état dégradé : réglages vidés de leur crochet, le contrôle passe
+au rouge en nommant le bon coupable. Une entrée illisible, elle, laisse le
+déclencheur muet et en succès — il gêne chaque message du patron ou il ne gêne
+rien.
+
+### L'espace du patron raconte son état là où l'agent sait lire
+
+**Sa demande :** *« Faut trouver un moyen pour que tu aies accès à mon espace,
+trouve. »*
+
+Il n'y en a pas, et il ne fallait pas en fabriquer un. Aucune route ne relie la
+machine de l'agent à son Codespace. Et la solution qui « marcherait » — une
+boucle qui lirait des ordres dans le dépôt et les exécuterait chez lui — serait
+une porte dérobée sur une machine qui porte ses identifiants GitHub et ses clés
+d'IA : quiconque obtiendrait le dépôt commanderait son ordinateur. **Refusé, et
+écrit ici pour que la question ne se repose pas.**
+
+Le sens inverse est sans danger : **il pousse, l'agent lit.** À chaque allumage,
+son espace publie son état sur une fiche GitHub dédiée — toujours la même, mise
+à jour au lieu d'être multipliée : le commit récupéré, le commit réellement
+SERVI, les services debout ou non, et les quarante dernières lignes du
+démarrage. L'agent lit les fiches du dépôt ; il voit donc la machine du patron
+sans y toucher, et sans lui faire recopier un terminal depuis un téléphone — ce
+qui a coûté quatre allers-retours dans la seule nuit du 11 au 12 août.
+
+**Ce qui ne sort jamais, et c'est éprouvé :** aucune variable d'environnement,
+aucune clé. Le journal est recopié mais toute ligne qui ressemble à un secret est
+remplacée par une mention. La censure est volontairement grossière — une ligne
+innocente retirée ne coûte qu'une gêne de lecture, une clé publiée coûte une
+clé. `scripts/test-rapport-espace.ts` tient les deux bouts : clé d'IA, adresse de
+base et jeton GitHub disparaissent, le compte de démonstration reste lisible
+puisqu'il est public. Confronté : sans la censure, les trois premiers passent.
+
+**Best-effort, et jamais bloquant.** Sans `gh`, ou sans réseau, le script le dit
+et rend la main — il ne peut pas empêcher le banc de servir. Vérifié ici, où
+`gh` n'existe pas : « ⚠ Rapport non publié », code de sortie 0.
+
+**Et cela vaut pour ses TROIS OU QUATRE sessions à la fois**, puisqu'il en fait
+tourner plusieurs en parallèle. Deux choses ont été posées pour ça, sans quoi le
+canal n'aurait servi qu'à celle qui l'a construit :
+
+- la consigne vit dans **`CLAUDE.md` §1 bis**, lu au début de CHAQUE
+  conversation — pas seulement dans `HANDOVER.md`. Devant un « ça ne marche
+  pas » : lire la fiche, regarder sa date, n'avancer une hypothèse qu'ensuite,
+  et lui faire lancer `claude` si un geste est nécessaire chez lui ;
+- **le veilleur republie la fiche tous les quarts d'heure.** Écrite au seul
+  allumage, elle décrivait l'état d'il y a six heures — et une session qui s'y
+  fie conclut de travers, exactement comme d'une documentation périmée.
+
+Deux contrôles de plus refusent que l'un ou l'autre disparaisse à la prochaine
+réécriture.
+
+Ce que cela ne donne toujours pas : l'écran du patron, et le pouvoir d'agir.
+L'agent verra qu'un service est tombé ; c'est `claude`, installé dans l'espace,
+qui pourra le relever.
+
+---
+
 ### L'écran de connexion : une maquette avant/après, et un défaut trouvé en la dessinant
 
 **Sa réponse à l'offre de la veille :** *« oui, fais-moi une maquette »*.
-`docs/maquettes/31-l-ecran-de-connexion.html` reproduit l'écran d'aujourd'hui,
+`docs/maquettes/32-l-ecran-de-connexion.html` reproduit l'écran d'aujourd'hui,
 puis en propose quatre : la carte gardée, sans carte, le sceau, la ligne
 d'imprimé. **Rien n'est posé dans `src/`** — c'est sa règle du 11 août, et la
 maquette existe précisément pour qu'on n'ait rien à défaire.
@@ -66,8 +158,6 @@ premier écran qu'il voit. Rien n'a été touché ; c'est dans `TODO.md`.
 `ARCHITECTURE.md` §67.
 
 ---
-
-## 2026-08-12
 
 ### « Mon devis » pouvait attendre indéfiniment une réponse déjà perdue
 
@@ -172,8 +262,6 @@ adresses, et une feuille qui monte sur un geste n'en a pas. Le compte
 `ARCHITECTURE.md` §66.
 
 ---
-
-## 2026-08-12
 
 ### L'écran de connexion accusait le patron pendant qu'un service était couché
 
@@ -1188,8 +1276,6 @@ CSS et non le calcul ; descente supprimée dans la fonction pure → rouge.
 L'ancienne règle — celle qui posait la perle sur le chantier en attente — et sa
 suite disparaissent : une règle morte qui décrit une intention abandonnée est un
 piège pour la conversation suivante.
-
-## 2026-08-11
 
 ### La capsule partout — une seule forme d'action dans toute l'application
 

@@ -232,7 +232,7 @@ l'application. Ce qui est **fait** :
   envoi. Une règle écrite deux fois qui avait divergé. `ARCHITECTURE.md` §66.
 - **L'écran de connexion, dessiné mais PAS posé** (12 août) : le seul écran
   resté dans l'identité d'avant le 3 août, parce qu'il est le seul vu **avant**
-  d'être connecté. `docs/maquettes/31-l-ecran-de-connexion.html` — l'avant, puis
+  d'être connecté. `docs/maquettes/32-l-ecran-de-connexion.html` — l'avant, puis
   quatre après. **Son choix est attendu ; `src/app/login/` n'a pas bougé.**
   Trois corrections partiront quoi qu'il choisisse, dont les champs à 16 px, en
   dessous desquels iOS lui agrandit la page. `TODO.md` §0 nonies.

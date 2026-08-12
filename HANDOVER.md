@@ -9,7 +9,39 @@ sert.
 
 ---
 
+## Voir la machine du patron sans y avoir accès
+
+**Il n'y a aucun accès, et il ne faut pas en fabriquer un.** La question a été
+posée le 12 août 2026 (*« trouve un moyen pour que tu aies accès à mon
+espace »*) et tranchée : une boucle qui exécuterait chez lui des ordres lus dans
+le dépôt serait une porte dérobée sur une machine portant ses identifiants. Ne
+pas la rouvrir en croyant bien faire.
+
+Ce qui existe à la place : **son espace publie son état**, à chaque allumage, sur
+une fiche GitHub dont le titre est fixe (`TITRE_FICHE` dans
+`scripts/rapporter-espace.mjs`). Elle porte le commit récupéré, le commit
+réellement SERVI, l'état des services et la fin du journal de démarrage.
+
+**Devant un « ça ne marche pas », lire cette fiche AVANT de faire taper quoi que
+ce soit au patron.** C'est exactement ce qui a coûté quatre allers-retours dans
+la nuit du 11 au 12 août : des hypothèses formulées à distance, toutes fausses,
+pendant que sa machine savait tout.
+
+Cette phrase-là n'est plus à retenir : `.claude/settings.json` branche
+`scripts/rappel-panne.mjs` sur chaque message reçu, et le rappel réapparaît de
+lui-même dès qu'il signale une panne — dans cette session comme dans les trois
+ou quatre autres qu'il fait tourner en parallèle. Il ajoute du contexte, il ne
+bloque rien, et devant le moindre doute il se tait : un rappel qui parle à tort
+finit ignoré, et le garde-fou se perd sans bruit.
+
+---
+
 ## ⚠ LE PREMIER RÉFLEXE, DEMANDÉ PAR LE PATRON LE 12 AOÛT 2026
+
+**À faire juste après avoir lu la fiche ci-dessus** : la fiche dit dans quel
+état est sa machine, la question ci-dessous dit dans quel état est son onglet.
+Les deux se lisent avant la moindre hypothèse, et pour la même raison — regarder
+coûte une minute, supposer a coûté deux jours.
 
 > *« Retiens ce problème, et la prochaine fois qu'on a un souci, commence par
 > regarder si ce n'est pas ça. »*
@@ -191,7 +223,7 @@ serif. C'est le premier écran qu'il voit. `TODO.md` §0 nonies.
 
 ## L'écran de connexion : maquette posée, choix EN ATTENTE (12 août)
 
-`docs/maquettes/31-l-ecran-de-connexion.html` — l'avant reproduit, puis quatre
+`docs/maquettes/32-l-ecran-de-connexion.html` — l'avant reproduit, puis quatre
 après (la carte gardée, sans carte, le sceau, la ligne d'imprimé). **Ne rien
 poser dans `src/app/login/` avant qu'il ait désigné laquelle**, sa règle du
 11 août.
