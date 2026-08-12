@@ -245,17 +245,14 @@ un second serveur, et construction possible sans les secrets de production.
   un banc neuf à chaque fois ; le défaut des migrations du 9 août est passé par
   ce trou, et un autre y passera. Il faut un banc qui existe déjà, qui reçoit du
   code neuf, migrations comprises.
-- **Le navigateur d'essai manque au conteneur.** `npm run verifier:connexion`
-  tombe sur une pile Playwright illisible au lieu d'une phrase. À installer, et
-  à faire dire une ligne claire quand il manque.
-  **Précision du 9 août** : dans l'espace de travail de l'agent, le navigateur
-  EST installé — mais sous `/opt/pw-browsers/chromium-1194`, alors que la
-  version de Playwright du dépôt en réclame un autre numéro de build. Le
-  message « Executable doesn't exist… run npx playwright install » envoie donc
-  chercher une installation absente au lieu d'une version qui ne correspond
-  pas. Contournement éprouvé : `chromium.launch({ executablePath:
-  "/opt/pw-browsers/chromium" })` — c'est ce que fait
-  `scripts/verifier-maquettes-page-unique.mjs`.
+- ~~**Le navigateur d'essai manque au conteneur.**~~ — **réglé le 2026-08-12.**
+  Il s'installe dans la commande du workflow (`npx playwright install --with-deps
+  chromium`), et non dans l'image : l'espace du patron ne porte pas trois cents
+  mégaoctets dont il ne se sert jamais, la machine de GitHub les paie une fois
+  par exécution. Ce qui l'a débloqué : `.devcontainer/verifier.sh` **se connecte
+  désormais pour de vrai** sur le banc, derrière une origine étrangère — le
+  contrôle qui manquait quand le patron a écrit « je n'arrive pas à me
+  connecter ».
 - **Les PDF et la dictée ne sont pas mesurés** — le premier exige un vrai
   stockage, la seconde un appel facturé. Dit plutôt que supposé.
 

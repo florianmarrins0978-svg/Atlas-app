@@ -9,6 +9,46 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### Deux chantiers pour que l'agent n'ait plus besoin du patron pour diagnostiquer
+
+**Sa question, le 12 août 2026 :** *« comment on peut faire pour que tu aies
+accès à mon espace, pour que tu sois autonome ? »* Elle vient de deux journées
+perdues sur des pannes qui n'étaient PAS dans le code — services couchés, restes
+de construction périmés, message qui accusait son mot de passe. Chacune a coûté
+un aller-retour, parfois trois, parce qu'il fallait lui faire taper une commande
+et recopier ce qu'elle affichait, depuis un téléphone.
+
+**1. Un agent dans son espace.** `preparer.sh` installe Claude Code, et le
+message d'accueil le dit : `claude` confie l'espace à l'agent, qui lit les
+journaux, relance les services et rebâtit. Installation *best-effort* et jamais
+bloquante — le patron ne doit pas perdre son banc parce qu'un registre npm a
+hoqueté ; en cas d'échec, un message dit quoi retaper plus tard.
+
+**2. Le contrôle du banc SE CONNECTE, pour de vrai.** Il s'arrêtait à « l'écran
+de connexion s'affiche ». Or le 12 août, cet écran s'affichait parfaitement :
+c'est ce qui se passait APRÈS l'appui qui était cassé. Un formulaire rendu ne
+prouve rien d'une connexion, comme une page de santé ne prouve rien d'un écran.
+`.devcontainer/verifier.sh` joue désormais `verifier-connexion.mjs` contre le
+banc **déjà en écoute** — donc contre la version bâtie, celle que le patron
+ouvre vraiment — avec une origine étrangère.
+
+Trois trous bouchés au passage :
+
+- **le navigateur manquait au conteneur** (`TODO.md` le signalait depuis le
+  9 août) : il s'installe dans la commande du workflow, pas dans l'image ;
+- **le workflow ne se déclenchait pas sur le code de connexion.** Deux
+  correctifs de connexion sont partis sur `main` le 12 août sans qu'il s'en
+  aperçoive : ses déclencheurs ne regardaient que l'outillage du banc, jamais ce
+  qui laisse entrer ;
+- **le nettoyage des types périmés n'avait aucun garde-fou.** Posé après la
+  construction, il ne protégerait plus de rien — un contrôle lit maintenant
+  l'ordre dans le fichier, et rougit si on l'inverse. Confronté.
+
+Ce que cela ne donne pas, et qu'il faut dire : **l'agent n'a toujours pas son
+écran.** Ce qui a été trouvé en regardant une capture — la perle en bas, le
+bandeau coupé — restera trouvé par lui.
+
+
 ### L'écran de connexion accusait le patron pendant qu'un service était couché
 
 **Le 12 août 2026 :** *« Ça ne marche pas, je n'arrive pas à me connecter.
