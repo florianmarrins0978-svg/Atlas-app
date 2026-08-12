@@ -52,6 +52,99 @@ Confronté : en rétablissant l'ancien traitement, deux contrôles rougissent en
 citant l'écran mot pour mot — « Email ou mot de passe incorrect » pendant que la
 base est arrêtée.
 
+### La note vocale ne partait pas — TROUVÉ : la page vieillissait sous le patron
+
+**Trois signalements, la même phrase, et un défaut qui ne se reproduisait
+jamais ici.** *« L'enregistrement n'a pas pu être transmis — la connexion a été
+interrompue. »* La dictée passait pourtant à chaque essai : en développement,
+sur la version bâtie, derrière une origine étrangère, avec un micro simulé.
+
+**Ce qui manquait à mes essais, c'était le temps.** Les suites ouvrent une page
+et agissent dans la seconde. Lui ouvre la fiche, regarde, réfléchit — et pendant
+ce temps son banc se met à jour tout seul, comme il est fait pour.
+
+Or **une action serveur n'a pas d'adresse** : elle porte un identifiant fabriqué
+à la construction et inscrit dans la page. Après une reconstruction, la page
+déjà ouverte appelle un identifiant que le nouveau serveur ne connaît plus.
+L'envoi échoue **sans jamais l'atteindre** — d'où l'absence de trace au journal,
+l'absence de refus à l'écran, et une phrase de secours qui accusait le réseau
+alors que le serveur allait très bien.
+
+Cela explique tout ce qui rendait le défaut insaisissable :
+
+- **il ne se reproduisait pas ici** — l'identifiant était toujours frais ;
+- **le reste de l'application marchait** — naviguer recharge la page, donc les
+  identifiants. La fiche du chantier est justement l'écran où l'on STATIONNE ;
+- **aucun message ne disait rien** — rien n'atteignait le serveur.
+
+**Ce n'est plus une hypothèse : c'est reproduit.**
+`scripts/eprouver-page-vieillie.mts` ouvre la fiche, redémarre le serveur, puis
+dicte. Sur le code d'avant, il rend un `500` et **le message du patron, mot pour
+mot**, avec la base vide. Par la route, un `200` et la note rangée.
+
+L'enregistrement passe donc par une **URL** — `/api/notes-vocales/<chantier>` —
+qui, elle, ne vieillit pas. Trois bénéfices s'ajoutent, qui vaudraient à eux
+seuls le changement : le client reçoit un vrai code HTTP (401, 409, 500 se
+distinguent), la limite de corps des actions serveur ne s'applique plus, et
+l'envoi survit à une reconstruction. La règle est écrite une fois, dans
+`note-vocale-entrante.ts`, et partagée par les trois écrans qui envoient une
+note.
+
+`test-note-vocale-par-url-e2e.ts` (voir `ARCHITECTURE.md` §65) tient l'invariant en continu : ramener
+l'enregistrement dans une action serveur le fait rougir.
+
+**Deux contrôles qui accusaient à tort, corrigés au passage.** Ils piochaient
+« un chantier sans note » au hasard et tombaient parfois sur celui d'une autre
+entreprise ; l'isolation le refusait à très juste titre, et le rouge désignait
+l'application. Ils créent désormais leur chantier par l'écran. C'est le message
+« étape : base » ajouté le matin même qui a permis de le voir en une lecture.
+
+### La note vocale accusait le réseau d'une panne qui était au serveur
+
+**Le patron, capture à l'appui :** *« L'enregistrement n'a pas pu être transmis
+— la connexion a été interrompue. »*
+
+C'était la branche de secours de l'écran, et **c'était le correctif de la veille
+laissé à moitié fait**. Les refus ATTENDUS avaient été rendus bavards — format,
+taille, cadence, enregistrement vide — mais les pannes IMPRÉVUES continuaient de
+lever. La catégorie muette était précisément celle qui se produisait.
+
+**Et sa phrase désignait le mauvais coupable.** Elle parlait de connexion alors
+que l'aller-retour avait peut-être parfaitement eu lieu : une session expirée,
+un disque plein, un service absent produisaient tous cette même phrase. Le
+patron cherchait du côté de son réseau pendant que la panne était ailleurs. Une
+erreur qui envoie chercher au mauvais endroit coûte plus cher que pas d'erreur
+du tout — c'est écrit dans `AGENTS.md`, et c'est cette ligne-là qui a été
+enfreinte.
+
+**Deux changements, et le second est le plus important.**
+
+*L'action ne lève plus rien.* Chaque panne rend une phrase qui **nomme le
+maillon** — session, cadence, lecture, stockage, base. Le disque plein, le droit
+d'écriture refusé et le service injoignable ont leur propre phrase, parce qu'ils
+appellent chacun un geste différent : libérer de la place, corriger des droits,
+relancer l'espace. « Le serveur n'a pas pu écrire » aurait fait chercher un
+défaut dans le code, là où il n'y en a aucun. Le détail technique reste au
+journal : le 11 août, une erreur de base non traduite avait affiché **la requête
+SQL entière**, noms de tables et identifiant d'entreprise compris.
+
+*L'écran ne conclut plus, il demande.* Quand l'appel lui-même échoue, il
+interroge le serveur avant de parler. S'il répond, ce n'était pas la connexion —
+c'est presque toujours une **page vieillie** : l'espace de travail se
+reconstruit, les actions serveur changent d'identifiant, et une page ouverte
+avant appelle une action qui n'existe plus. Le serveur va très bien, et un
+rechargement suffit. Impossible à deviner, trivial à vérifier.
+
+Douze cas éprouvent les deux règles sans base ni navigateur, et le contrôle a
+été confronté à une traduction neutralisée : les huit premiers rougissent, y
+compris celui qui interdit à la tuyauterie de fuir à l'écran.
+
+**Ce qui n'est PAS corrigé, et qu'il faut dire :** la panne du patron n'a
+toujours pas été reproduite ici — la dictée passe, avec un micro simulé, en
+développement comme sur la version bâtie derrière une origine étrangère. Ce lot
+ne répare pas la panne : il fait qu'elle se désigne. Et la note captée reste
+**perdue** quand l'envoi échoue (`TODO.md` §0).
+
 ---
 
 ## 2026-08-11

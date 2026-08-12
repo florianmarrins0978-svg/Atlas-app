@@ -89,7 +89,7 @@ ne se battent plus pour le port ») :
 pas ce qui n'était pas demandé. À trancher : les supprimer, ou les marquer
 « maquette historique ».
 
-### 0. Si « Impossible d'enregistrer la note » revient : lire la phrase, ne pas la deviner
+### ~~0. « Impossible d'enregistrer la note »~~ — **CAUSE TROUVÉE ET REPRODUITE le 2026-08-12**
 
 **Ouvert le 11 août 2026, et volontairement laissé ouvert.** Le patron a signalé
 ce message ; il n'a **pas pu être reproduit ici** — la dictée passe avec un micro
@@ -97,18 +97,57 @@ simulé, en développement comme sur la version bâtie derrière une origine
 étrangère. Ce qui a été corrigé, c'est le silence : l'écran nommait le refus
 « Impossible… Réessayez » quelle qu'en fût la cause, et rien n'était journalisé.
 
-Désormais, l'écran distingue trois choses, et il faut **lui demander laquelle
-il voit** :
+**Le 12 août, le patron a rapporté la phrase — et elle accusait le mauvais
+coupable.** Il a lu *« L'enregistrement n'a pas pu être transmis — la connexion
+a été interrompue »*. C'était la branche `catch` de l'écran, c'est-à-dire la
+seule catégorie que le correctif de la veille avait laissée muette : les refus
+ATTENDUS étaient devenus bavards, les pannes IMPRÉVUES continuaient de lever.
+**Le correctif était à moitié fait, et la moitié manquante était exactement
+celle qui se produisait.**
+
+Pire que muet : cette phrase désignait le réseau alors que l'aller-retour avait
+peut-être très bien eu lieu. Elle envoyait chercher au mauvais endroit.
+
+Deux choses ont changé le 12 août :
+
+1. **L'action ne lève plus rien.** Toute panne rend une phrase qui **nomme le
+   maillon** — session, cadence, lecture, stockage, base (`src/lib/panne-note-vocale.ts`).
+   Le disque plein, le droit d'écriture refusé et le service absent ont leur
+   propre phrase, parce qu'ils appellent chacun un geste différent.
+2. **L'écran ne conclut plus, il demande.** Quand l'appel lui-même échoue, il
+   interroge le serveur avant de parler (`src/lib/diagnostic-liaison.ts`) :
+   s'il répond, ce n'était pas la connexion mais une **page vieillie** — le cas
+   le plus probable sur ce banc, où l'espace se reconstruit et où les actions
+   changent d'identifiant sous une page déjà ouverte.
+
+**Puis la cause a été trouvée, le 12 août, en reproduisant son parcours plutôt
+qu'en raisonnant dessus.** Une action serveur porte un identifiant fabriqué à la
+construction ; son banc se met à jour tout seul ; une page restée ouverte appelle
+un identifiant disparu, et l'envoi échoue sans atteindre le serveur.
+`scripts/eprouver-page-vieillie.mts` le rejoue : code d'avant, `500` et le
+message du patron mot pour mot. L'enregistrement passe désormais par une URL
+(`ARCHITECTURE.md`, `HANDOVER.md`).
+
+**Ce qui reste utile si une panne d'un autre ordre survient :** les phrases
+ci-dessous désignent chacune un endroit différent, et aucune ne demande de
+deviner.
 
 | Ce qu'il lit | Ce que ça désigne |
 |---|---|
-| une phrase précise (format, taille, cadence, enregistrement vide) | le serveur a refusé, et la raison est dedans — le format reçu est nommé |
-| « la connexion a été interrompue » | l'aller-retour n'a pas abouti : mandataire, réseau, session expirée |
-| plus rien, la note s'enregistre | c'était l'un des refus ci-dessus |
+| « (étape : session) » | sa session a expiré — recharger et se reconnecter |
+| « (étape : stockage) », disque plein | l'espace de travail n'a plus de place |
+| « (étape : cadence) » ou un service qui ne répond pas | Redis absent — l'espace est à relancer |
+| « (étape : base) » | la fiche n'a pas pu être mise à jour — le journal porte le détail |
+| « cette page a été ouverte avant la dernière mise à jour » | il suffit de recharger |
+| « le serveur est injoignable depuis ce téléphone » | c'est bien le réseau, cette fois |
 
-Le journal du serveur porte les pannes imprévues avec le chantier, le format et
-la taille. **Ne rien supposer avant d'avoir la phrase** : deux diagnostics à
-distance ont déjà coûté un aller-retour chacun ce jour-là.
+**Ne rien supposer avant d'avoir la phrase** : trois diagnostics à distance ont
+déjà coûté un aller-retour chacun.
+
+**Ce qui n'est toujours pas fait, et qui coûte à chaque échec :** la note captée
+est **perdue** quand l'envoi échoue — il faut tout redicter. La garder en local
+(IndexedDB) et la reproposer au retour serait le vrai confort ; ce n'est pas
+fait, et ce n'est pas un détail pour quelqu'un qui dicte debout sur un chantier.
 
 
 ### ~~0 bis. Si le fil accroche ENCORE chez le patron : le masque, sur iOS~~ — **close le 2026-08-11 par le patron lui-même**

@@ -4678,3 +4678,70 @@ sans cela, l'apparition d'un message ferait sauter la mise en page d'une ligne
 sous le doigt qui vient d'appuyer. Ce qu'elle disait reste vrai et n'est plus
 écrit nulle part à l'écran — c'est le NOM qui crée la fiche client. Le jour où ce
 cas doit se voir, c'est **sur l'écran du devis** qu'il faudra le dire.
+
+## 65. Un envoi de fichier passe par une URL, jamais par une action serveur
+
+> **À lire avec le §63, qui décrit LE MÊME phénomène par un autre symptôme.**
+> Une session voisine, le même soir et sans concertation, a trouvé que l'onglet
+> du patron réclamait des morceaux de code disparus après un redémarrage. Ici,
+> c'est un identifiant d'action serveur qui a disparu de la même façon. Deux
+> symptômes, une seule cause : **son onglet survit à son serveur.** Le jour où
+> un troisième symptôme apparaîtra, c'est là qu'il faudra le chercher — et non
+> dans le réseau, ni dans le produit.
+
+**Trois signalements du patron, les 11 et 12 août 2026, la même phrase :**
+*« L'enregistrement n'a pas pu être transmis — la connexion a été
+interrompue. »* Et un défaut qui ne se reproduisait jamais ici — en
+développement, sur la version bâtie, derrière une origine étrangère, avec un
+micro simulé, la dictée passait à chaque essai.
+
+**Ce qui manquait aux essais, c'était le temps.** Les suites ouvrent une page et
+agissent dans la seconde. Le patron, lui, ouvre la fiche, regarde, réfléchit — et
+pendant ce temps son banc se met à jour tout seul, comme il est fait pour.
+
+Or **une action serveur n'a pas d'adresse** : elle porte un identifiant fabriqué
+à la construction et inscrit dans la page. Après une reconstruction, la page
+déjà ouverte appelle un identifiant que le nouveau serveur ne connaît plus.
+L'envoi échoue **sans jamais l'atteindre**.
+
+Cela explique chacun des traits qui rendaient le défaut insaisissable :
+
+| Ce qu'on observait | Pourquoi |
+|---|---|
+| irreproductible ici | l'identifiant était toujours frais |
+| le reste de l'application marchait | naviguer recharge la page, donc les identifiants |
+| rien au journal du serveur | rien ne l'atteignait |
+| aucun refus affiché | il n'y avait pas de refus, il y avait une absence |
+| la phrase accusait le réseau | c'est ce que l'écran supposait, faute de mieux |
+
+**Reproduit, pas supposé.** `scripts/eprouver-page-vieillie.mts` ouvre la fiche,
+redémarre le serveur, puis dicte. Sur le code d'avant : `500`, le message du
+patron mot pour mot, base vide. Par la route : `200`, note rangée.
+
+**La règle qui en sort, et qui dépasse la note vocale :** tout envoi déclenché
+depuis un écran où l'on **stationne** passe par une URL. Une action serveur
+convient à un geste qui suit immédiatement l'arrivée sur la page ; elle ne
+convient pas à un geste qu'on fera « quand on sera prêt ».
+
+Trois bénéfices s'ajoutent, indépendants de cette cause, et qui suffiraient :
+
+1. le client reçoit un **vrai code HTTP** — 401 se répare en se reconnectant,
+   409 en corrigeant l'envoi, 500 en regardant le serveur ; une action ne rend
+   qu'un échec sans nature ;
+2. la limite de corps des actions serveur (15 Mo) ne s'applique plus ;
+3. l'envoi survit à une reconstruction du serveur.
+
+**Ce qui est en place :**
+
+- `src/server/services/note-vocale-entrante.ts` porte la règle, **écrite une
+  fois** pour l'anneau, l'écran de dictée et l'import (`CLAUDE.md` §3) ;
+- `src/app/api/notes-vocales/[chantierId]/route.ts` ne fait que traduire un
+  résultat en réponse HTTP ;
+- `src/lib/envoi-note-vocale.ts` porte le côté navigateur, et **ne lève jamais** :
+  une réponse qui n'est pas du JSON — page de connexion rendue par un mandataire,
+  par exemple — est traitée comme un échec, jamais comme un succès ;
+- `test-note-vocale-par-url-e2e.ts` tient l'invariant en continu.
+
+**Ce qui reste à faire, et qui n'est pas un détail :** les photos passent encore
+par une action serveur, depuis le même écran où l'on stationne. Le raisonnement
+vaut pour elles ; rien ne le prouve encore de leur côté.

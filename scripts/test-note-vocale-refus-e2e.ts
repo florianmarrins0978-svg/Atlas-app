@@ -22,9 +22,10 @@ import { Pool } from "pg";
 //   2. **un enregistrement vide est refusé, pas rangé.** Un micro qui rend zéro
 //      octet posait jusqu'ici une note muette, et l'écran annonçait une réussite.
 //
-// Il passe par l'import de fichier, qui emprunte la MÊME action serveur que
-// l'anneau et que l'écran de dictée : c'est le seul chemin où une suite peut
-// choisir ce qu'elle envoie. Éprouver l'action, c'est éprouver les trois.
+// Il passe par l'import de fichier, qui emprunte la MÊME route que l'anneau et
+// que l'écran de dictée (`/api/notes-vocales/<chantier>`) : c'est le seul chemin
+// où une suite peut choisir ce qu'elle envoie. Éprouver la route, c'est éprouver
+// les trois.
 
 const BASE = "http://localhost:3000";
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -44,13 +45,6 @@ async function cas(nom: string, verifier: () => Promise<void>) {
 async function main() {
   console.log("=== Un refus de note vocale dit pourquoi ===\n");
 
-  const { rows } = await pool.query(
-    `select c.id from chantiers c
-      where not exists (select 1 from notes_vocales n where n.chantier_id = c.id)
-      limit 1`
-  );
-  const chantier = rows[0]?.id as string | undefined;
-
   const navigateur = await lancerNavigateur();
   const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
@@ -61,14 +55,16 @@ async function main() {
   await page.click('button[type="submit"]');
   await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
 
-  await cas("le jeu de démonstration porte un chantier sans note vocale", async () => {
-    if (!chantier) {
-      throw new Error(
-        "aucun chantier sans note vocale en base. Ce contrôle ne peut RIEN éprouver : " +
-          "l'écran de dictée n'offre l'import que sur un chantier vierge."
-      );
-    }
-  });
+  // **Le chantier est CRÉÉ par l'écran, pas pioché en base.** Une première
+  // version prenait « un chantier sans note » au hasard — et tombait parfois sur
+  // celui d'une autre entreprise, laissé par une suite voisine. L'isolation le
+  // refusait alors, à très juste titre, et le contrôle accusait l'application
+  // d'un défaut qui n'existait pas.
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+  await page.fill('input[placeholder="M. Bernard"]', `Refus note ${Date.now()}`);
+  await page.click('button:has-text("Créer le chantier")');
+  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
+  const chantier = page.url().split("/").pop()!.split("?")[0];
 
   /** Dépose un fichier sur l'écran de dictée et rend ce que l'écran répond. */
   async function deposer(nom: string, mimeType: string, octets: Buffer): Promise<string> {
@@ -85,7 +81,7 @@ async function main() {
     return await page.locator("body").innerText();
   }
 
-  if (chantier) {
+  {
     await cas("un format refusé nomme le format reçu", async () => {
       const ecran = await deposer("photo.pdf", "application/pdf", Buffer.from("%PDF-1.4 rien"));
       if (!/application\/pdf/.test(ecran)) {
