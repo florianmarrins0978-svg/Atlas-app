@@ -1,7 +1,7 @@
 "use client";
 
 import { colors, font, smallCaps } from "@/lib/design-tokens";
-import PrimaryButton from "@/components/atlas/PrimaryButton";
+import CorpsErreur from "@/components/atlas/CorpsErreur";
 
 // Écran d'erreur de TOUTE l'application, pas seulement des chantiers.
 //
@@ -11,12 +11,10 @@ import PrimaryButton from "@/components/atlas/PrimaryButton";
 // problème qui n'y était pas. Un message qui désigne le mauvais coupable coûte
 // plus cher que pas de message du tout.
 //
-// En développement, la cause réelle est affichée : sans elle, diagnostiquer
-// depuis un téléphone suppose d'aller lire un terminal qu'on n'a pas sous les
-// yeux. En production, Next.js ne transmet qu'un identifiant — c'est voulu, un
-// message d'erreur serveur peut divulguer la structure de la base.
-
-const EN_DEVELOPPEMENT = process.env.NODE_ENV !== "production";
+// Le corps — la carte, la cause en développement, la référence et le bouton —
+// vit dans `CorpsErreur`, partagé par les neuf écrans d'erreur. C'est lui qui
+// sait qu'un morceau de code manquant ne se répare pas avec « Réessayer » :
+// voir `src/lib/reprise-erreur.ts`.
 
 export default function Erreur({
   error,
@@ -44,38 +42,12 @@ export default function Erreur({
       </div>
 
       <div className="mt-8 px-6">
-        <div className="rounded-[4px] px-5 py-8 text-center" style={{ backgroundColor: colors.card }}>
-          <p className="text-[14px]" style={{ color: colors.muted }}>
-            Cette page n&apos;a pas pu s&apos;afficher.
-          </p>
-        </div>
-
-        {EN_DEVELOPPEMENT && error.message ? (
-          <div
-            className="mt-4 overflow-x-auto rounded-[4px] px-5 py-4 text-left"
-            style={{ backgroundColor: colors.card }}
-          >
-            <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-              Cause
-            </p>
-            <pre
-              className="whitespace-pre-wrap break-words text-[12px] leading-snug"
-              style={{ color: colors.ink, fontFamily: "ui-monospace, monospace" }}
-            >
-              {error.message}
-            </pre>
-          </div>
-        ) : null}
-
-        {error.digest ? (
-          <p className="mt-3 text-center text-[11px]" style={{ color: colors.muted }}>
-            Référence : {error.digest}
-          </p>
-        ) : null}
-
-        <div className="mt-4">
-          <PrimaryButton onClick={reset}>Réessayer</PrimaryButton>
-        </div>
+        <CorpsErreur
+          erreur={error}
+          reset={reset}
+          phrase="Cette page n'a pas pu s'afficher."
+          aire={32}
+        />
       </div>
     </div>
   );

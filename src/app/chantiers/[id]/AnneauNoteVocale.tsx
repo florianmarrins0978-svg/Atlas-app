@@ -4,8 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, libelleCaps } from "@/lib/design-tokens";
 import { useRetraits } from "@/components/atlas/useRetraits";
-import { supprimerNoteVocaleAction, enregistrerNoteVocaleAction } from "./note-vocale/actions";
+import { supprimerNoteVocaleAction } from "./note-vocale/actions";
 import { useMagnetophone, formulaireDeNote } from "./magnetophone";
+import { envoyerNoteVocale } from "@/lib/envoi-note-vocale";
 
 /**
  * L'anneau muet — l'accès direct à la note vocale, sur la fiche du chantier.
@@ -206,28 +207,24 @@ export default function AnneauNoteVocale({
     if (!capte) return;
     setEnvoi(true);
     try {
-      const resultat = await enregistrerNoteVocaleAction(
+      // **Une URL, pas une action serveur** — c'est le correctif du 12 août
+      // 2026, après trois signalements du patron. Une action est adressée par
+      // un identifiant fabriqué à la construction ; son banc se reconstruit
+      // tout seul, et cette fiche est justement l'écran où l'on STATIONNE avant
+      // de dicter. La page appelait donc un identifiant disparu, et l'envoi
+      // échouait sans jamais atteindre le serveur. Voir `envoi-note-vocale.ts`.
+      //
+      // `envoyerNoteVocale` ne lève jamais : tout échec revient en `raison`,
+      // déjà traduit et nommant le maillon.
+      const resultat = await envoyerNoteVocale(
         chantierId,
         formulaireDeNote(capte.blob, capte.secondes)
       );
-      // **Un refus DIT pourquoi.** Le patron a vu « Impossible d'enregistrer la
-      // note pour l'instant. Réessayez. » sans que personne puisse savoir ce
-      // qui s'était passé — le message du serveur était jeté ici même. Voir
-      // `ResultatNoteVocale` dans note-vocale/actions.ts.
       if (!resultat.ok) {
         magnetophone.setErreur(resultat.raison);
         return;
       }
       router.refresh();
-    } catch (err) {
-      // Ici, ce n'est plus un refus : c'est que l'aller-retour n'a pas abouti.
-      // Le distinguer compte — « le serveur a dit non » et « le serveur n'a
-      // rien dit » ne se réparent pas au même endroit, et le second est ce
-      // qu'on voit derrière un mandataire qui coupe.
-      console.error("Note vocale : envoi impossible", err);
-      magnetophone.setErreur(
-        "L'enregistrement n'a pas pu être transmis — la connexion a été interrompue. Réessayez."
-      );
     } finally {
       setEnvoi(false);
     }

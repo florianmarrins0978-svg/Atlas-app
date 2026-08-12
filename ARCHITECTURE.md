@@ -4426,3 +4426,322 @@ envoyer — n'était emprunté par personne.
 jusqu'à vérifier que la coordonnée est **rangée en base** : un écran qui
 accepterait la saisie sans la ranger serait vert à l'œil et faux — elle serait à
 ressaisir au prochain envoi. Confronté au code livré : trois rouges.
+
+---
+## 63. « Réessayer » ne pouvait pas réparer un morceau de code disparu
+
+**Le 11 août 2026, 18 h 02.** Le patron envoie deux captures de son téléphone.
+La première est l'indicateur de Next.js, marqué **(stale)** :
+
+```
+Runtime ChunkLoadError
+Failed to load chunk /_next/static/chunks/src_06hhplf._.js from module
+[project]/node_modules/next/dist/compiled/react-server-dom-turbopack/cjs/
+react-server-dom-turbopack-client.browser.development.js [app-client] (ecmascript)
+```
+
+La seconde est l'écran d'Atlas : « Une erreur — Cette page n'a pas pu
+s'afficher », la cause, et **un seul bouton : « Réessayer »**.
+
+### Ce bouton ne pouvait pas le sauver, et c'est le défaut
+
+`reset()` refait le rendu du même arbre React. Les adresses des morceaux sont
+gravées dans le code déjà chargé — celui d'une version que le serveur ne sert
+plus. Il redemande donc le même fichier absent, obtient le même 404, et retombe
+sur le même écran. **Autant de fois qu'on appuie.** Le patron avait un écran
+d'erreur poli, un bouton, et aucune issue.
+
+### Pourquoi cela lui arrive à lui, et jamais ici
+
+Son espace redémarre son serveur plusieurs fois par soirée : mise à jour du
+code, bascule du mode développement vers la version bâtie (§45, `banc.mjs`),
+veilleur qui relève un serveur tombé (§44). À chaque redémarrage, les morceaux
+changent de nom. Son onglet, lui, reste ouvert des heures — dix onglets sur la
+capture. Le premier lien qu'il touche ensuite demande un fichier qui n'existe
+plus.
+
+Aucune suite ne pouvait le voir : elles ouvrent une page et la referment dans la
+même minute, sur un serveur qui ne bouge pas. **C'est la durée de vie de son
+onglet qui fabrique la panne**, pas le code.
+
+### Le remède : recharger, une fois, et savoir s'arrêter
+
+`src/lib/reprise-erreur.ts` — fonction pure, donc éprouvable sans navigateur.
+
+1. **Reconnaître.** Les formulations diffèrent d'un navigateur à l'autre, et le
+   patron est sur Safari : `Failed to load chunk` (Turbopack), `Loading chunk 42
+   failed` (webpack), `Failed to fetch dynamically imported module` (Chrome),
+   `error loading dynamically imported module` (Firefox), `Importing a module
+   script failed` (**Safari**). Le nom `ChunkLoadError` suffit aussi. La cause
+   est suivie sur quelques niveaux — React enveloppe volontiers l'erreur
+   d'origine — avec une profondeur bornée, une chaîne de causes pouvant boucler.
+2. **Recharger tout seul.** Un rechargement complet va rechercher la page et ses
+   morceaux auprès du serveur d'aujourd'hui. On ne le demande pas : on le fait.
+3. **Une seule fois par fenêtre de cinq minutes.** C'est la garde, et elle vaut
+   le correctif : recharger sur une panne qui revient donnerait un téléphone qui
+   tourne en rond pour toujours — la pire des pannes, parce qu'elle n'affiche
+   **jamais rien à lire**. Passé cette borne, on rend la main avec une phrase.
+
+**Et cette phrase ne désigne pas un coupable qu'on ignore.** Après un
+rechargement resté sans effet, deux causes tiennent encore : une mise à jour en
+cours, ou une connexion coupée. Le message nomme les deux. Trancher au hasard
+enverrait chercher au mauvais endroit — ce que ce dépôt paie le plus cher.
+
+### La phrase de l'écran s'efface, et c'est délibéré
+
+Chaque écran d'erreur dit sa propre panne : « Impossible de charger le
+planning », « Photos indisponibles ». Sur un morceau manquant, **ces phrases
+mentent** : le planning n'y est pour rien, c'est la page entière qui a vieilli.
+Elles ne servent donc que lorsque la cause leur appartient vraiment.
+
+### Un corps commun pour les neuf écrans d'erreur
+
+`src/components/atlas/CorpsErreur.tsx`. Dix `error.tsx` portaient dix copies du
+même corps ; le jour où l'un d'eux apprend à se relever, les neuf autres ne
+l'auraient pas su. Chaque écran garde son en-tête — son titre, son retour — et
+délègue la carte, la cause, la référence et le bouton.
+
+**Au passage, la cause n'était affichée que sur l'écran racine.** Le
+raisonnement était pourtant déjà écrit dans `src/app/error.tsx` : le patron
+diagnostique depuis un téléphone, sans terminal sous les yeux, et c'est là — et
+là seulement — qu'il peut lire ce que le serveur a écrit. Il ne s'appliquait
+qu'à un dixième de l'application. En production, la cause reste tue : un message
+d'erreur serveur peut divulguer la structure de la base.
+
+### Trois choses à ne pas défaire
+
+1. **`sessionStorage`, pas `localStorage`.** La mémoire meurt avec l'onglet : un
+   onglet neuf a droit à son rechargement, et rien ne traîne sur son téléphone.
+   Sa lecture est enveloppée — **Safari en navigation privée lève à la simple
+   lecture**, et il n'y a pas d'écran d'erreur derrière un écran d'erreur. Sans
+   mémoire, on refuse le rechargement automatique plutôt que de risquer la
+   boucle.
+2. **On note AVANT de recharger.** Noter après, c'est ne jamais noter : la page
+   part. La garde ne garderait rien.
+3. **La réserve `pb-40` sous le bouton.** Mesurée, pas supposée : la bulle de
+   l'assistant est `fixed` en bas à droite et recouvrait 48 px du bouton dès que
+   le message dépassait deux lignes — ce qui est le cas ici, et de tout écran
+   affichant une cause en développement. Sans la réserve, la page ne défile pas
+   et le bouton reste sous la bulle, sans recours.
+
+### Ce que les contrôles éprouvent — et qu'ils savent échouer
+
+- `scripts/test-reprise-erreur.ts` — 14 contrôles purs, dont le message **exact**
+  de sa capture, les cinq formulations de navigateurs, la garde, et surtout le
+  cas qui rend les autres crédibles : **une panne ordinaire ne doit PAS être
+  prise pour un morceau manquant**. Sabotée (reconnaissance neutralisée, soit
+  l'ancien comportement), la suite rend 8 rouges sur 14.
+- `scripts/test-reprise-morceau-e2e.ts` — la panne rejouée dans un vrai
+  navigateur, à l'écran du patron. Le 404 est posé par le navigateur plutôt
+  qu'en redémarrant le serveur : au niveau du réseau c'est la même chose — le
+  morceau demandé n'est pas là — et c'est reproductible à la seconde. Deux cas :
+  la page se relève et l'écran revient ; la page **ne** recharge **pas** quand un
+  rechargement vient d'avoir lieu. Sabotée de la même façon, le premier cas
+  expire sur soixante secondes — exactement ce que le patron a vécu.
+- Le contrôle de recouvrement du bouton rougit dès qu'on retire `pb-40`.
+
+**Un piège de mesure, qui a d'abord fait passer un contrôle pour rien.**
+`framenavigated` est émis par Playwright sur les navigations `pushState` du
+routeur, sans qu'aucune page n'ait rechargé. Compter cela, c'était prendre la
+navigation qu'on provoque pour le rechargement qu'on veut prouver. **C'est la
+requête de DOCUMENT qui signe un rechargement**, et elle seule.
+
+### Ce qui n'est pas couvert, et qui le sera chez lui
+
+La panne d'origine — un serveur qui redémarre sous un onglet ouvert des heures —
+n'est pas rejouée telle quelle : elle demanderait de faire vieillir un onglet
+pendant une bascule complète du banc. Le 404 sur le morceau en est l'effet
+exact au niveau du réseau, et c'est lui qui est éprouvé. La différence est
+mince, mais elle est dite plutôt que tue.
+
+---
+
+## 64. Les deux portes de la création : une bascule, et une capsule
+
+**Trois demandes du patron, le 11 août 2026 au soir, dans cet ordre.**
+
+1. *« Retire la petite écriture sous devis à la main. »*
+2. *« On ne voit que création de chantier, on ne voit pas devis à la main. Il
+   faut qu'on puisse voir les deux. »*
+3. *« Le bouton, je le trouve un peu trop gros, carré, pas esthétique. »*
+
+Puis, maquettes en main : la **bascule** (déclinaison 1, le trait qui glisse) et
+la **capsule** (proposition 5).
+
+### Pourquoi une bascule et non deux boutons
+
+C'est la question de fond, et elle avait déjà été tranchée le matin même : **deux
+boutons à égalité obligent TOUT LE MONDE à trancher** avant même d'avoir vu le
+chantier, alors que neuf fois sur dix la réponse est « je dicterai ». C'est pour
+cela qu'un lien discret avait d'abord été retenu.
+
+Le lien réglait le mauvais problème : il ne se voyait pas. La bascule garde les
+deux propriétés à la fois — les deux chemins sont lisibles, et il n'y a
+**toujours qu'un seul bouton à toucher**. Le geste ordinaire n'a pas changé de
+coût.
+
+### Le dessin, et ce qui le tient
+
+- **La serif, pas les capitales.** Un mot en capitales espacées est un panneau ;
+  le même en serif est une phrase. On choisit entre deux façons de travailler.
+- **Le trait GLISSE, il ne saute pas.** `translateX` sur trois dixièmes de
+  seconde — déplacer coûte moins cher au navigateur que repeindre, et le
+  mouvement reste fluide sur son téléphone.
+- **La couleur désigne, jamais le gras.** Un mot qui grossit décale son voisin.
+- **Les deux libellés du bouton sont superposés** dans la même case de grille et
+  se croisent en opacité. Les afficher l'un OU l'autre ferait changer le bouton
+  de largeur au moment du choix, et un bouton qui bouge sous le doigt est la
+  façon la plus sûre de faire douter de ce qu'on vient de toucher.
+
+### La capsule : ce qui l'allège n'est pas le rayon
+
+La masse venait de **trois** choses à la fois — la hauteur (58 px), l'aplat, et
+la **pleine largeur**. Un bouton qui touche les deux marges n'est contenu par
+rien. La capsule lâche la pleine largeur : elle est tenue par le blanc autour
+d'elle, et cesse aussitôt de peser. L'aplat, lui, reste plein — c'est ce qui la
+sépare des formes sans fond, plus élégantes mais qui **se cherchent au lieu de
+se trouver** sur un écran qu'on parcourt vite.
+
+**Elle ne contredit pas la décision du 10 août.** Celle-ci visait le rayon
+MOYEN : « le même arrondi à 16 px se lit comme un bouton d'application ». Un
+demi-cercle franc est une forme en soi — un jeton, pas une tuile.
+
+**Elle est sur les dix-sept écrans depuis le 11 août au soir**, et il n'existe
+plus qu'une seule forme d'action principale. Le chemin pour y arriver compte
+autant que la décision : le patron a d'abord dit *« montre-moi avant de faire,
+plutôt que de faire pour revenir en arrière »*. La capsule a donc été posée dans
+une copie de travail, photographiée **sur ses vrais écrans**, retirée — puis
+posée pour de bon quand il a répondu « partout ». `capture-bouton-partout.mjs`
+existe pour cela, et resservira.
+
+**Aucune variante « plaque » n'est conservée.** Elle a vécu une journée, le temps
+de la comparaison. Garder le dessin d'avant « au cas où » aurait laissé dans le
+dépôt une seconde forme d'action que plus rien n'emploie — et qu'un écran futur
+aurait fini par reprendre au hasard. L'historique la garde ; le code, non.
+
+**Les largeurs, mesurées et non supposées** (390 px d'écran, sa place réelle) :
+de 141 px pour « Réessayer » à 316 px pour « Confirmer le départ de la facture ».
+Aucun libellé ne déborde. Le dernier occupe 92 % et redevient pleine largeur de
+fait — ce n'est pas un défaut, c'est le geste le plus irréversible de
+l'application.
+
+**Un effet de bord heureux, vu en capture :** sur l'écran d'erreur, la bulle de
+l'assistant mordait sur le bouton (§63). Une capsule centrée ne l'atteint plus.
+La réserve `pb-40` reste : elle protège d'un message plus long, pas d'une
+largeur.
+
+### Où mène « Ouvrir le devis », et pourquoi le chantier est créé d'abord
+
+Vers `/chantiers/<id>/devis-complet` — la page où **il n'y a que le devis**, celle
+qu'il avait demandée le 5 août. Et le chantier est créé **avant** : c'est ce qui
+permet à la page du devis de relire le client rattaché. Sauter la
+création pour « gagner du temps » produirait le devis orphelin qu'il redoutait
+le 11 août au matin. **Une seule fonction crée**, `creerPuisAller`, deux
+destinations en sortent — deux fonctions auraient divergé au premier champ
+ajouté.
+
+### « Entrée » suit désormais la bascule
+
+Tant que le devis à la main était un lien discret, valider un champ au clavier ne
+devait surtout pas y mener : on n'aurait pas choisi cette sortie, on serait tombé
+dedans. Depuis que le choix est explicite et affiché **au-dessus** du bouton,
+l'ignorer serait l'inverse du défaut.
+
+### Deux pièges de mesure, dans la même soirée
+
+Les deux libellés vivent **en même temps** dans le bouton, l'un à `opacity:0`.
+`innerText` ne connaît pas l'opacité : il les rend TOUJOURS tous les deux. Un
+contrôle écrit dessus passerait au vert quel que soit l'état, **y compris sur une
+bascule morte** — il ne saurait pas échouer, donc il ne prouverait rien.
+`test-devis-main-depuis-creation-e2e.ts` lit donc le style calculé, et attend que
+le fondu soit fini : pendant sa première moitié, l'ancien libellé est encore
+au-dessus de 0,5. Le même piège avait déjà fait déclarer rouges six maquettes
+justes (`scripts/verifier-maquette-bascule.mjs`).
+
+Éprouvé en sabotant : figer le libellé sur « Créer le chantier » rend un rouge, et
+un seul — celui qui doit tomber.
+
+**Le second piège n'était pas dans un contrôle mais dans une PLANCHE.** La
+première comparaison avant/après cadrait chaque bouton au plus près. Deux
+captures de largeurs différentes, posées côte à côte, se remettent à la même
+taille : la capsule — plus étroite en réalité — s'y affichait **plus grosse** que
+le rectangle qu'elle remplace. La planche disait exactement l'inverse de la
+vérité, et elle serait partie ainsi si personne ne l'avait regardée. Le cadre
+prend désormais toute la largeur de l'écran, jamais celle du bouton : à échelle
+constante, la place laissée autour — qui est tout le sujet — se voit.
+
+### La phrase de pied, retirée
+
+« Le nom crée la fiche du client. Le reste se corrige ensuite, sur le devis. » La
+ligne subsiste mais ne parle qu'en cas d'erreur, et **sa place reste réservée** :
+sans cela, l'apparition d'un message ferait sauter la mise en page d'une ligne
+sous le doigt qui vient d'appuyer. Ce qu'elle disait reste vrai et n'est plus
+écrit nulle part à l'écran — c'est le NOM qui crée la fiche client. Le jour où ce
+cas doit se voir, c'est **sur l'écran du devis** qu'il faudra le dire.
+
+## 65. Un envoi de fichier passe par une URL, jamais par une action serveur
+
+> **À lire avec le §63, qui décrit LE MÊME phénomène par un autre symptôme.**
+> Une session voisine, le même soir et sans concertation, a trouvé que l'onglet
+> du patron réclamait des morceaux de code disparus après un redémarrage. Ici,
+> c'est un identifiant d'action serveur qui a disparu de la même façon. Deux
+> symptômes, une seule cause : **son onglet survit à son serveur.** Le jour où
+> un troisième symptôme apparaîtra, c'est là qu'il faudra le chercher — et non
+> dans le réseau, ni dans le produit.
+
+**Trois signalements du patron, les 11 et 12 août 2026, la même phrase :**
+*« L'enregistrement n'a pas pu être transmis — la connexion a été
+interrompue. »* Et un défaut qui ne se reproduisait jamais ici — en
+développement, sur la version bâtie, derrière une origine étrangère, avec un
+micro simulé, la dictée passait à chaque essai.
+
+**Ce qui manquait aux essais, c'était le temps.** Les suites ouvrent une page et
+agissent dans la seconde. Le patron, lui, ouvre la fiche, regarde, réfléchit — et
+pendant ce temps son banc se met à jour tout seul, comme il est fait pour.
+
+Or **une action serveur n'a pas d'adresse** : elle porte un identifiant fabriqué
+à la construction et inscrit dans la page. Après une reconstruction, la page
+déjà ouverte appelle un identifiant que le nouveau serveur ne connaît plus.
+L'envoi échoue **sans jamais l'atteindre**.
+
+Cela explique chacun des traits qui rendaient le défaut insaisissable :
+
+| Ce qu'on observait | Pourquoi |
+|---|---|
+| irreproductible ici | l'identifiant était toujours frais |
+| le reste de l'application marchait | naviguer recharge la page, donc les identifiants |
+| rien au journal du serveur | rien ne l'atteignait |
+| aucun refus affiché | il n'y avait pas de refus, il y avait une absence |
+| la phrase accusait le réseau | c'est ce que l'écran supposait, faute de mieux |
+
+**Reproduit, pas supposé.** `scripts/eprouver-page-vieillie.mts` ouvre la fiche,
+redémarre le serveur, puis dicte. Sur le code d'avant : `500`, le message du
+patron mot pour mot, base vide. Par la route : `200`, note rangée.
+
+**La règle qui en sort, et qui dépasse la note vocale :** tout envoi déclenché
+depuis un écran où l'on **stationne** passe par une URL. Une action serveur
+convient à un geste qui suit immédiatement l'arrivée sur la page ; elle ne
+convient pas à un geste qu'on fera « quand on sera prêt ».
+
+Trois bénéfices s'ajoutent, indépendants de cette cause, et qui suffiraient :
+
+1. le client reçoit un **vrai code HTTP** — 401 se répare en se reconnectant,
+   409 en corrigeant l'envoi, 500 en regardant le serveur ; une action ne rend
+   qu'un échec sans nature ;
+2. la limite de corps des actions serveur (15 Mo) ne s'applique plus ;
+3. l'envoi survit à une reconstruction du serveur.
+
+**Ce qui est en place :**
+
+- `src/server/services/note-vocale-entrante.ts` porte la règle, **écrite une
+  fois** pour l'anneau, l'écran de dictée et l'import (`CLAUDE.md` §3) ;
+- `src/app/api/notes-vocales/[chantierId]/route.ts` ne fait que traduire un
+  résultat en réponse HTTP ;
+- `src/lib/envoi-note-vocale.ts` porte le côté navigateur, et **ne lève jamais** :
+  une réponse qui n'est pas du JSON — page de connexion rendue par un mandataire,
+  par exemple — est traitée comme un échec, jamais comme un succès ;
+- `test-note-vocale-par-url-e2e.ts` tient l'invariant en continu.
+
+**Ce qui reste à faire, et qui n'est pas un détail :** les photos passent encore
+par une action serveur, depuis le même écran où l'on stationne. Le raisonnement
+vaut pour elles ; rien ne le prouve encore de leur côté.
