@@ -124,15 +124,15 @@ deux portes sont proposées (11 août, tard).** Sa demande, capture à l'appui :
   sur le devis. » La ligne subsiste mais ne parle qu'en cas d'erreur — sa place
   reste **réservée** (`min-h-[19px]`), sinon l'apparition d'un message ferait
   sauter la mise en page sous le doigt qui vient d'appuyer.
-- **Proposé** : `docs/maquettes/14-les-deux-portes.html`, six mises en page où
+- **Proposé** : `docs/maquettes/25-les-deux-portes.html`, six mises en page où
   les deux sorties se voient d'un coup. **Il a retenu la n° 4, la bascule**, et
   demandé plus élégant : six déclinaisons de cette seule idée sont dans
-  `docs/maquettes/15-la-bascule-affinee.html`, et
-  `docs/maquettes/16-banc-dessai-bascule.html` les fait **essayer** (champs où
+  `docs/maquettes/26-la-bascule-affinee.html`, et
+  `docs/maquettes/27-banc-dessai-bascule.html` les fait **essayer** (champs où
   l'on tape, bascule, bouton qui mène vraiment à deux écrans différents).
   **Il a retenu la déclinaison 1, le trait qui glisse.** Reste le BOUTON, qu'il
   trouve « trop gros, carré » : huit formes dans
-  `docs/maquettes/17-le-bouton.html`, **non tranchées** — voir `TODO.md`
+  `docs/maquettes/28-le-bouton.html`, **non tranchées** — voir `TODO.md`
   §0 septies.
 
   **Deux choses à ne pas oublier de lui dire s'il choisit :** ce bouton est sur
@@ -161,7 +161,7 @@ deux portes sont proposées (11 août, tard).** Sa demande, capture à l'appui :
 **Deux choses à ne pas défaire dans cette maquette :**
 
 1. **Aucun script, et c'est éprouvé** — `node scripts/verifier-maquette-bascule.mjs`
-   joue les **huit** bascules des maquettes 14 et 15 **JavaScript coupé**, dans
+   joue les **huit** bascules des maquettes 25 et 26 **JavaScript coupé**, dans
    les fichiers seuls ET dans la page unique, où la fusion réécrit les
    sélecteurs. C'est là que ça casserait sans bruit. Il est générique : il
    cherche les blocs marqués `data-bascule` et les mots marqués `data-mot` —

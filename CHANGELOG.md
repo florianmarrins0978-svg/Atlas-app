@@ -79,7 +79,7 @@ bascule morte. La suite lit le style calculé, et attend la fin du fondu.
 **Le patron :** *« j'aime bien le premier [le trait qui glisse], par contre le
 bouton je le trouve un peu trop gros, carré, pas esthétique ».*
 
-`docs/maquettes/17-le-bouton.html`. La bascule retenue est identique sur les
+`docs/maquettes/28-le-bouton.html`. La bascule retenue est identique sur les
 huit écrans — **seul le bouton change**, sinon on ne comparerait rien.
 
 **D'où vient la masse, puisque c'est elle qu'il faut alléger.** Le bouton pèse
@@ -106,8 +106,8 @@ changer ici, c'est le changer partout.
 ### Un banc d'essai pour la bascule — qu'on utilise, au lieu de la regarder
 
 **Sa demande :** *« créez-moi une maquette en HTML dynamique que je peux tester,
-voir si ça me plaît ».* Les maquettes 14 et 15 se regardent ;
-`docs/maquettes/16-banc-dessai-bascule.html` s'utilise : on change de
+voir si ça me plaît ».* Les maquettes 25 et 26 se regardent ;
+`docs/maquettes/27-banc-dessai-bascule.html` s'utilise : on change de
 déclinaison en haut, on **tape** dans de vrais champs, on bascule, et le bouton
 **mène vraiment quelque part** — à deux écrans différents selon le choix. Sur un
 téléphone, le cadre s'efface et l'écran prend toute la place : c'est ainsi qu'il
@@ -138,7 +138,7 @@ format de son téléphone.
 **Le patron, dans la foulée :** *« pars sur l'idée de la proposition numéro
 quatre, et modifie-la pour que ce soit beaucoup plus esthétique et élégant ».*
 
-`docs/maquettes/15-la-bascule-affinee.html`. Ce qui est acquis et ne se
+`docs/maquettes/26-la-bascule-affinee.html`. Ce qui est acquis et ne se
 rediscute plus : les deux chemins se voient, et il n'y a qu'un bouton à toucher.
 Ce qui change d'une déclinaison à l'autre, c'est la façon dont le choix se
 dessine — le premier essai étant le plus bavard de tous, parce que
@@ -180,7 +180,7 @@ Ce qu'elle disait reste vrai et n'est plus écrit nulle part à l'écran : c'est
 NOM qui crée la fiche client. Le jour où ce cas doit se voir, c'est sur l'écran
 du devis qu'il faudra le dire — pas en remettant une phrase permanente ici.
 
-**Proposé, et pas encore tranché :** `docs/maquettes/14-les-deux-portes.html`,
+**Proposé, et pas encore tranché :** `docs/maquettes/25-les-deux-portes.html`,
 six mises en page où les deux sorties se voient ensemble — la plaque partagée, les
 plaques jumelles, le diptyque, la bascule d'or, le sceau, la balance.
 

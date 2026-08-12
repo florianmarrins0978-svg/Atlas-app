@@ -30,8 +30,8 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 ### ~~0 septies. Les deux portes de la création~~ — **close le 2026-08-11**
 
 Il a choisi, maquettes en main : la **bascule « le trait qui glisse »**
-(`docs/maquettes/15-la-bascule-affinee.html`, déclinaison 1) et le bouton **« la
-capsule »** (`docs/maquettes/17-le-bouton.html`, proposition 5). Les deux sont en
+(`docs/maquettes/26-la-bascule-affinee.html`, déclinaison 1) et le bouton **« la
+capsule »** (`docs/maquettes/28-le-bouton.html`, proposition 5). Les deux sont en
 place sur l'écran de création, et « Je l'écris » mène à la page du devis entier
 avec le client déjà en en-tête. Le raisonnement complet est dans
 `ARCHITECTURE.md` §60.

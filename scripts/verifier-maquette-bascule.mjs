@@ -6,7 +6,7 @@
   **Pourquoi ce contrôle existe.** Le patron a dit trois fois « Je ne peux pas
   ouvrir ça » : les maquettes qui engendraient leurs écrans en JavaScript lui
   rendaient une page blanche, son lecteur n'exécutant pas les scripts. Les
-  maquettes 14 et 15 promettent donc deux choses qui paraissent se contredire :
+  maquettes 25 et 26 promettent donc deux choses qui paraissent se contredire :
 
     1. **Aucun script**, nulle part — ni dans le fichier, ni dans la page unique
        où il est fondu ;
@@ -40,9 +40,9 @@ const PAGE_UNIQUE = join(MAQUETTES, "toutes-les-maquettes.html");
 // Le nombre de bascules attendu par fichier. Sans lui, retirer une déclinaison
 // — ou oublier de la marquer — rendrait un contrôle vert sur un fichier amputé.
 const ATTENDU = [
-  { fichier: "14-les-deux-portes.html", bascules: 2 },
-  { fichier: "15-la-bascule-affinee.html", bascules: 6 },
-  { fichier: "17-le-bouton.html", bascules: 8 },
+  { fichier: "25-les-deux-portes.html", bascules: 2 },
+  { fichier: "26-la-bascule-affinee.html", bascules: 6 },
+  { fichier: "28-le-bouton.html", bascules: 8 },
 ];
 
 // Chemin propre à cet environnement, utilisé seulement s'il existe : ailleurs,
@@ -61,7 +61,7 @@ function verifier(quoi, condition) {
 /**
  * Le mot effectivement LU sur le bouton.
  *
- * Deux mécaniques coexistent — la 14 masque (`display:none`), la 15 fond en
+ * Deux mécaniques coexistent — la 25 masque (`display:none`), la 26 fond en
  * opacité — et un `:visible` de Playwright ne distingue pas la seconde : un
  * élément à `opacity:0` lui reste « visible ». On regarde donc le style calculé,
  * qui est la seule source qui dise ce que l'œil voit.
@@ -80,7 +80,7 @@ async function lireMot(bloc) {
  * **Le mot lu UNE FOIS LE FONDU FINI — et c'est ce détail qui a d'abord fait
  * accuser six maquettes justes.**
  *
- * La maquette 14 masque son libellé (`display:none`) : le changement est
+ * La maquette 25 masque son libellé (`display:none`) : le changement est
  * instantané, et lire aussitôt après le clic donnait le bon résultat. La 15
  * fait se croiser deux libellés en opacité sur un quart de seconde — lire
  * aussitôt, c'est lire l'état d'AVANT, encore à `opacity:1`. Le contrôle
@@ -121,7 +121,7 @@ async function motLu(bloc) {
 /**
  * Joue la bascule sans rien supposer de son état de départ : on force le
  * premier mot, on passe au second, on revient. Une déclinaison qui s'ouvre déjà
- * sur le second état (la « 4 bis » de la maquette 14) est donc éprouvée par le
+ * sur le second état (la « 4 bis » de la maquette 25) est donc éprouvée par le
  * même code que les autres.
  */
 async function eprouver(bloc, ou, indice) {
@@ -196,19 +196,19 @@ if (existsSync(PAGE_UNIQUE)) {
 // ── 4. Le banc d'essai : le bouton mène-t-il VRAIMENT au bon endroit ? ─────
 //
 // **C'est ici que ça peut mentir en silence, et nulle part ailleurs.** Dans la
-// maquette 16, le bouton est DEUX liens superposés : celui qu'on lit est le seul
+// maquette 27, le bouton est DEUX liens superposés : celui qu'on lit est le seul
 // qui doive recevoir le doigt. Si le lien invisible gardait ses
 // `pointer-events`, il continuerait d'intercepter l'appui et le bouton mènerait
 // TOUJOURS au même écran — pendant que son libellé, lui, aurait bel et bien
 // changé. Un contrôle qui se contenterait de lire le libellé passerait au vert
 // sur exactement ce défaut. On appuie donc pour de bon, et on regarde où l'on
 // arrive.
-const BANC = join(MAQUETTES, "16-banc-dessai-bascule.html");
+const BANC = join(MAQUETTES, "27-banc-dessai-bascule.html");
 if (existsSync(BANC)) {
   const source = readFileSync(BANC, "utf8");
-  verifier("16-banc-dessai-bascule.html — aucune balise <script>", !/<script[\s>]/i.test(source));
+  verifier("27-banc-dessai-bascule.html — aucune balise <script>", !/<script[\s>]/i.test(source));
   verifier(
-    "16-banc-dessai-bascule.html — aucun gestionnaire en attribut",
+    "27-banc-dessai-bascule.html — aucun gestionnaire en attribut",
     !/\son[a-z]+\s*=\s*["']/i.test(source)
   );
 
@@ -238,7 +238,7 @@ if (existsSync(BANC)) {
     }
   }
 } else {
-  verifier("16-banc-dessai-bascule.html existe", false);
+  verifier("27-banc-dessai-bascule.html existe", false);
 }
 
 await navigateur.close();

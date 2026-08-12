@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  Fabrique les planches en IMAGE de la maquette 15.
+  Fabrique les planches en IMAGE de la maquette 26.
 
       node scripts/capture-maquette-bascule.mjs <dossier>
 
@@ -28,7 +28,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
-const MAQUETTE = join(RACINE, "docs", "maquettes", "15-la-bascule-affinee.html");
+const MAQUETTE = join(RACINE, "docs", "maquettes", "26-la-bascule-affinee.html");
 const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
 const dossier = resolve(process.argv[2] ?? join(RACINE, "captures-bascule"));
