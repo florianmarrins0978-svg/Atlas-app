@@ -4914,3 +4914,79 @@ recensement des actions encore dessinées sur place est dans `TODO.md` §0 octie
 **Les quatre gestes écartés restent dans la maquette 31** — la lueur, le cachet,
 l'encre, le trait. Si le sujet se rouvre, c'est de là qu'il faut repartir : les
 redessiner serait refaire un chemin déjà parcouru.
+
+---
+
+## 68. Le calendrier ne marquait qu'un jour, et il en fallait deux
+
+**Le patron, le 12 août 2026, capture à l'appui :** *« je ne peux pas choisir
+deux jours à partir du planning […] En fait je ne peux choisir que deux jours si
+c'est les premières propositions qu'il y a tout en haut. Mais dès que je choisis
+à même le planning, je ne peux choisir qu'un seul jour. Or je dois pouvoir
+proposer deux jours au client. »*
+
+### Deux états pour une seule vérité
+
+`EnvoiAuClient` portait la sélection à **deux endroits** :
+
+- `selection`, un tableau — ce qui part réellement au client ;
+- `autreDate`, **une chaîne**, pour le jour choisi au calendrier.
+
+Et le calendrier ne recevait que la seconde : `retenus={autreDate ? [autreDate] : []}`.
+Choisir un second jour effaçait donc le premier **sous ses yeux**. Rien ne lui
+disait que les deux étaient retenus — et il en concluait, à raison, qu'il ne
+pouvait en proposer qu'un.
+
+**La conséquence la plus traître était l'autre :** rappuyer sur le premier jour
+pour le retirer le **remettait**. Le geste de retrait ne fonctionnait que sur le
+dernier jour touché, parce qu'il se comparait à `autreDate` et non à ce qui était
+réellement retenu.
+
+**`selection` fait désormais foi, et elle seule.** Ce qui reste de `autreDate`
+— renommé `jourInterroge` — ne sert plus qu'à afficher la phrase du serveur sous
+le calendrier. Le calendrier reçoit `retenus={selection}` : ce que le patron voit
+est exactement ce que son client recevra, jours de la liste du haut compris.
+
+### La règle des deux dates était écrite deux fois
+
+`src/lib/calendrier.ts` porte `basculerJour(retenus, jour, maximum)` depuis le
+9 août — pure, éprouvée sans navigateur, et **personne ne s'en servait**.
+L'écran avait sa propre copie, à trois lignes près la même. C'est très exactement
+ce que `CLAUDE.md` §3 interdit : *« deux implémentations finissent toujours par
+diverger »*. L'écran appelle maintenant la fonction du dépôt.
+
+### Pourquoi aucune suite ne l'avait vu
+
+`test-date-lointaine-e2e` choisit **une** date au calendrier et vérifie qu'elle
+part — ce qu'elle faisait parfaitement. Personne n'avait jamais essayé d'en
+choisir deux.
+
+**Un parcours à moitié joué ne prouve que la moitié qu'on joue.** Quand un écran
+offre un maximum (deux dates, trois photos, cinq lignes), l'éprouver à un seul
+exemplaire ne dit rien du second — et c'est au second que les états parallèles se
+révèlent. `test-deux-dates-calendrier-e2e.ts` rejoue son geste entier : deux
+jours pris au calendrier, un retiré, un troisième qui chasse le plus ancien, et
+les deux qui partent en base. Confronté au code d'avant, il échoue sur sa phrase
+exacte — « le calendrier ne marque que […] ».
+
+### Deux suites voisines ont dû être corrigées, et pour deux raisons opposées
+
+**`test-envoi-client-e2e` accusait à tort.** Il comptait `button[aria-pressed="true"]`
+sur tout l'écran et annonçait « 4 dates retenues au lieu de 2 » — sur une
+sélection parfaitement juste. Depuis que le calendrier marque la sélection, un
+même jour est légitimement pressé à deux endroits : sa ligne dans la liste, et
+sa case au calendrier. Il compte désormais des **jours** (les lignes portant
+« proposée »), pas des boutons.
+
+**`test-retour-messagerie-e2e` tirait au sort.** Il empruntait un chantier à une
+autre suite — `SELECT … WHERE reponse IS NULL LIMIT 1`, sans `ORDER BY` ni
+propriétaire — et le jeu de démonstration n'en fournit aucun : son unique devis
+envoyé porte déjà une réponse. Il ne pouvait donc pas tourner seul, et **ajouter
+une suite ailleurs a suffi à changer l'ordre physique des lignes** et à le faire
+tomber sur un chantier dont l'écran d'envoi ne monte pas le mécanisme du retour.
+Il accusait alors le retour de messagerie, qui n'y était pour rien. Il fabrique
+maintenant son propre chantier, du client au devis parti.
+
+**La règle qui en sort :** une suite qui dépend des restes d'une autre n'éprouve
+pas ce qu'elle croit — et le jour où elle rougit, elle désigne le mauvais
+coupable.

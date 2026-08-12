@@ -176,6 +176,40 @@ faites d'office : sa règle est *« montre-moi avant de faire »*.
 
 ## Ce qui vient d'être terminé
 
+**LE CALENDRIER D'ENVOI NE MARQUAIT QU'UN JOUR (12 août).** Il ne pouvait
+proposer qu'une date dès qu'il la prenait au calendrier, alors que son client
+doit pouvoir choisir entre deux (`ARCHITECTURE.md` §68).
+
+**Deux leçons qui resserviront, et qui ne sont pas propres à cet écran :**
+
+1. **Un état parallèle à la vérité finit toujours par mentir.** L'écran gardait
+   la date du calendrier dans une chaîne à part, à côté de la sélection réelle.
+   Le symptôme visible n'était pas le pire : rappuyer sur un jour retenu le
+   **remettait** au lieu de l'enlever, parce que le geste se comparait à l'état
+   parallèle. Devant un écran où « ça ne se désélectionne pas », chercher
+   d'abord s'il existe deux états pour une seule chose.
+2. **Un parcours à moitié joué ne prouve que la moitié qu'on joue.**
+   `test-date-lointaine-e2e` choisissait UNE date au calendrier, et passait.
+   Quand un écran offre un maximum — deux dates, trois photos, cinq lignes —
+   l'éprouver à un seul exemplaire ne dit rien du second, et c'est au second que
+   les états parallèles se révèlent.
+
+**Et la règle des deux dates était écrite en double** : `basculerJour` existait
+depuis le 9 août dans `src/lib/calendrier.ts`, pure et éprouvée, sans que
+personne s'en serve. L'écran avait sa copie. C'est le §3 de `CLAUDE.md` — devant
+une règle métier dans un composant, vérifier d'abord si le dépôt ne la porte pas
+déjà.
+
+**⚠ Deux suites voisines ont dû être réparées au passage, et la seconde vaut un
+réflexe.** `test-retour-messagerie-e2e` **empruntait** son chantier à une autre
+suite (`WHERE reponse IS NULL LIMIT 1`, sans `ORDER BY` ni propriétaire) : il ne
+savait pas tourner seul, et ajouter une suite ailleurs a suffi à changer l'ordre
+des lignes et à le faire rougir — en accusant le retour de messagerie, qui n'y
+était pour rien. **Devant une suite qui rougit sans rapport avec ce qu'on vient
+de toucher, regarder d'abord si elle possède ses données ou si elle les
+emprunte.** Chacune fabrique désormais les siennes.
+
+
 **LA FACTURE PART PAR E-MAIL, ET SE TÉLÉCHARGE (12 août).** Deux des trois
 manques qu'il avait signalés le 10 août (`TODO.md` §8, `ARCHITECTURE.md` §67).
 

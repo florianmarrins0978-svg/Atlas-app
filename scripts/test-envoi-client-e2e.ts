@@ -135,7 +135,19 @@ async function main() {
     await jours.nth(1).click();
     await jours.nth(2).click();
 
-    const selectionnes = await page.locator('button[aria-pressed="true"]').count();
+    // **On compte des JOURS, pas des boutons pressés.** Depuis le 12 août 2026,
+    // le calendrier marque toute la sélection et non plus la dernière date
+    // touchée (`ARCHITECTURE.md` §68) : un même jour est donc légitimement
+    // pressé à deux endroits — sa ligne dans la liste, et sa case au
+    // calendrier. Ce contrôle annonçait « 4 dates retenues au lieu de 2 » sur
+    // une sélection parfaitement juste, c'est-à-dire qu'il accusait à tort.
+    //
+    // « proposée » n'est écrit que sur les lignes de la sélection : une case du
+    // calendrier ne porte que son numéro.
+    const selectionnes = await page
+      .locator('button[aria-pressed="true"]')
+      .filter({ hasText: /proposée/ })
+      .count();
     assert.strictEqual(selectionnes, 2, `${selectionnes} dates retenues au lieu de 2`);
     await page.click('button:has-text("Annuler")');
   });

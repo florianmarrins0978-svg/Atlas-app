@@ -9,6 +9,35 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### Deux dates se choisissent enfin à même le calendrier
+
+**Le patron :** *« dès que je choisis à même le planning, je ne peux choisir
+qu'un seul jour. Or je dois pouvoir proposer deux jours au client. »*
+`ARCHITECTURE.md` §68.
+
+La feuille d'envoi portait la sélection à **deux endroits** : un tableau — ce
+qui part réellement — et une **chaîne unique** pour le jour choisi au
+calendrier. Le calendrier ne recevait que la seconde : choisir un second jour
+effaçait le premier sous ses yeux. Le plus traître était l'autre moitié du
+défaut : **rappuyer sur le premier jour le remettait au lieu de le retirer.**
+
+Le calendrier marque désormais toute la sélection — ce qu'il voit est ce que son
+client recevra. Et la règle « une ou deux, jamais trois » cesse d'être écrite en
+double : elle vivait déjà dans `src/lib/calendrier.ts`, éprouvée sans
+navigateur, et l'écran en avait sa propre copie.
+
+**Pourquoi aucune suite ne l'avait vu :** celle qui existe choisit UNE date au
+calendrier et vérifie qu'elle part. Personne n'avait jamais essayé d'en choisir
+deux. Un parcours à moitié joué ne prouve que la moitié qu'on joue — quand un
+écran offre un maximum, l'éprouver à un seul exemplaire ne dit rien du second.
+
+**Deux suites voisines ont été réparées au passage**, pour deux raisons
+opposées : l'une accusait à tort (elle comptait des boutons pressés, or un même
+jour est désormais marqué à deux endroits) ; l'autre **empruntait son chantier à
+une autre suite** et ne savait pas tourner seule — ajouter une suite ailleurs a
+suffi à changer l'ordre des lignes et à la faire rougir en désignant le mauvais
+coupable. Chacune possède maintenant ses données.
+
 ### Le bouton de la facture prend la capsule — son choix, la variante A
 
 *« Code la A. »* Après deux planches (30, puis 31 à sa demande), « Ouvrir le SMS
