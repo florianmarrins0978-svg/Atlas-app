@@ -161,6 +161,36 @@ ne se battent plus pour le port ») :
   laissait un serveur ; la batterie navigateur, lancée sur un port occupé,
   s'arrête en une seconde avec le remède à taper.
 
+### ~~0 sexdecies. Des suites dépassent leur délai en batterie et font rejouer 25 minutes~~ — **CAUSE TROUVÉE le 2026-08-12**
+
+**Quatre faux rouges dans la journée, sur trois suites sans rapport** —
+« clôturé AVANT sa date » (deux fois), « Créer la facture », puis « un appui
+dicte, un second enregistre ». Chacune diagnostiquait la même chose et avait
+raison — le serveur de développement n'avait pas suivi — et chacune passait au
+vert jouée seule. Coût : une batterie complète rejouée à chaque fois.
+
+**Ce n'était pas la machine** : 13 Go libres, charge à 1,2. C'était le
+préchauffage de `run-e2e-tests.ts`, et il avait deux défauts qui n'en font
+qu'un :
+
+1. **il tournait sans session.** Un appel anonyme sur `/termines` est renvoyé
+   vers `/login` par le middleware : la route visée n'est jamais rendue, donc
+   jamais compilée. Il ne préchauffait que `/login` — et faisait croire au
+   contraire ;
+2. **sa liste était incomplète.** `/termines`, justement, n'y figurait pas.
+
+**Les deux venaient d'une deuxième implémentation.** `scripts/prechauffer.mjs`
+sait ouvrir une session et parcourir la liste complète, écrans de chantier
+compris — c'est ce que le banc d'essai fait depuis toujours. La batterie avait
+sa propre version naïve. Deux copies de la même idée finissent toujours par
+diverger, et c'est la plus faible qui servait ici.
+
+La batterie emprunte désormais le même préchauffage que le banc.
+
+**Ce qui reste à surveiller :** si un faux rouge de ce genre revient malgré le
+préchauffage, ne pas allonger les délais — cela cacherait un écran devenu lent
+au lieu de le dire. Mesurer d'abord quel écran, et pourquoi.
+
 ### 0 quaterdecies. Deux maquettes `/design` décrivent un écran supprimé
 
 **Né le 11 août 2026**, en supprimant `/chantiers/[id]/photos` (`ARCHITECTURE.md`

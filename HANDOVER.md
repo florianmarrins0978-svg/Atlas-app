@@ -233,6 +233,27 @@ serif. C'est le premier écran qu'il voit. `TODO.md` §0 nonies.
 
 ## Ce qui vient d'être terminé
 
+**Les pages du CLIENT ne portent plus la navigation du patron (12 août).** Sa
+facture affichait « Chantiers · Planning · Terminés · Réglages » au bas de
+l'écran de son client.
+
+**Trois choses à savoir :**
+
+1. **Il n'y a jamais eu de fuite** — un appui menait à la page de connexion, et
+   le contrôle qui le prouve était vert avant même le correctif. Le dire
+   d'emblée si le sujet revient : c'était une gêne d'affichage, pas un défaut de
+   confidentialité.
+2. **La liste des chemins publics vit dans `src/lib/chemins-publics.ts`, et
+   nulle part ailleurs.** Elle était tenue en double — middleware d'un côté,
+   mise en page de l'autre — et les deux ont divergé. **Ne pas en recréer une
+   seconde** : un écran public ajouté plus tard n'entrerait que dans l'une.
+3. **`test-pages-publiques-sans-navigation-e2e.ts` lit cette liste à sa source**
+   et rougit si un chemin déclaré n'y est pas éprouvé. Il visite de vrais
+   jetons : un jeton inventé rendrait « lien inconnu », et le contrôle serait
+   vert sur du vide.
+
+---
+
 ### « Y aller » — le chevron doré du planning (12 août 2026)
 
 Au bout de chaque chantier planifié, un chevron doré ouvre une feuille : Plans,
