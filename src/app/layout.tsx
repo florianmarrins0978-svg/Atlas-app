@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
 import AtlasBottomNav from "@/components/atlas/AtlasBottomNav";
+import { estCheminPublic } from "@/lib/chemins-publics";
 import AssistantSidebar from "@/components/atlas/AssistantSidebar";
 import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
 
@@ -80,25 +81,40 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-// Écrans qui ne font pas partie de l'espace de travail du patron et ne doivent
-// donc porter NI la navigation, NI l'assistant :
+// Écrans qui ne portent NI la navigation, NI l'assistant.
 //
-// - `/devis/…` est vu par le CLIENT de l'artisan. Lui afficher « Chantiers /
-//   Planning / Tarifs » lui donnerait l'illusion d'un accès à l'outil, et ces
-//   liens ne mèneraient qu'à une page de connexion. Une barre de navigation
-//   inopérante est pire qu'absente.
-// - `/login` et `/documents-legaux` précèdent l'entrée dans l'application :
-//   naviguer ailleurs n'y a pas de sens.
+// **Les écrans PUBLICS ne sont plus listés ici : ils viennent du même endroit
+// que le contrôle d'accès** (`src/lib/chemins-publics.ts`).
+//
+// Le patron, le 12 août 2026, capture à l'appui : *« lorsque le client reçoit
+// le lien cliquable de la facture, s'il clique en dessous sur planning ou
+// chantier, il a accès à mon application. »* Il n'y avait pas de fuite — ces
+// liens mènent à la page de connexion — mais son client voyait les onglets de
+// son outil de travail au bas de sa facture.
+//
+// La cause n'était pas un oubli isolé : **deux listes tenaient la même vérité.**
+// Le middleware savait `/factures` public depuis le 6 août ; celle-ci ne
+// connaissait que `/devis`. Un écran public ajouté plus tard n'entrait que dans
+// l'une des deux. Une seule source, donc, et l'invariant tient désormais par
+// construction : ce qui s'atteint sans compte ne porte jamais la navigation.
+//
+// Restent ici les écrans du PATRON qui n'ont pas de navigation pour une raison
+// qui leur est propre — ils ne sont pas publics, et n'ont donc rien à faire
+// dans la liste partagée :
+//
+// - `/documents-legaux` précède l'entrée dans l'application : naviguer ailleurs
+//   n'y a pas de sens.
 // - `…/devis-complet` est le devis lui-même, seul sur sa page. Le patron l'a
 //   demandé ainsi : « une page où il n'y a que le devis ». Une barre d'onglets
 //   au bas d'une feuille de devis la fait ressembler à un écran d'application,
 //   et c'est précisément ce qu'elle ne doit pas être.
-const CHEMINS_SANS_NAVIGATION = ["/devis", "/login", "/documents-legaux"];
+const ECRANS_DU_PATRON_SANS_NAVIGATION = ["/documents-legaux"];
 
 function estEcranSansNavigation(chemin: string | null): boolean {
   if (!chemin) return false;
+  if (estCheminPublic(chemin)) return true;
   if (chemin.endsWith("/devis-complet")) return true;
-  return CHEMINS_SANS_NAVIGATION.some((p) => chemin === p || chemin.startsWith(`${p}/`));
+  return ECRANS_DU_PATRON_SANS_NAVIGATION.some((p) => chemin === p || chemin.startsWith(`${p}/`));
 }
 
 export default async function RootLayout({
