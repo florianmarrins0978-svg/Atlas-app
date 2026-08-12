@@ -203,6 +203,15 @@ sur quatre n'est pas une preuve : la machine porte alors un serveur, une base,
 un navigateur et parfois un autre balayage — c'est la charge qui bouge, pas le
 code. Rejouer AVANT d'accuser.
 
+**Une seconde suite se comporte de même, et elle est nommée ici pour la même
+raison** : `test-planning-vers-facture-e2e`, sur son dernier cas — *« clôturé
+AVANT sa date : il quitte le planning pour les terminés »*. Deux balayages
+complets l'ont vue rouge, deux exécutions isolées l'ont vue verte, sur le même
+code. Elle porte déjà sa propre explication, et elle est juste : *« l'écran
+Terminés n'a pas répondu en deux tentatives. C'est le serveur de développement
+qui n'a pas suivi, pas l'écran. »* Un message qui désigne le bon coupable vaut
+la moitié du diagnostic — ne pas le contredire sans preuve.
+
 ### L'aplat vert est remplacé — le bouton est CODÉ
 
 Douze jours après le refus (*« ce gros bouton en plein milieu, ça ne fait pas
