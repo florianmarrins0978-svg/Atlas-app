@@ -27,6 +27,118 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### ~~0 quindecies. Un serveur fantôme sur le port 3000, et la batterie accusait le prix~~ — **corrigé le 11 août 2026**
+
+**Vu sur une batterie qui venait de passer entièrement au vert.** La même
+commande, rejouée sur le même code, a donné deux rouges :
+
+| Ce qu'on lisait | Ce que c'était |
+|---|---|
+| `test-prix-e2e` : `'0.00' == '34.50'` | un enregistrement qui n'a pas eu le temps de partir — l'occupant du port compilait |
+| `❌ Le port 3000 est déjà pris.` | la vraie cause, mais annoncée **en dernier**, deux étapes trop tard |
+
+**La cause, établie et non supposée.** Une sentinelle a noté ce qui tournait au
+moment où le serveur apparaissait : parent déjà mort (`ppid = 1`), aucune suite
+en cours, `/tmp/atlas-banc.pid` à la même minute. Ce n'était donc **pas** une
+suite oublieuse — l'hypothèse écrite d'abord, et fausse — mais
+`verifier-connexion-avec-serveur.mts`, qui lance `npm run banc` puis tue son
+groupe dès la connexion éprouvée.
+
+Pourquoi le serveur survivait : `banc.mjs` **sert d'abord et bâtit ensuite**, et
+ses gestionnaires de `SIGTERM` vivaient en **fin de fichier**, c'est-à-dire après
+la construction. Entre le lancement du serveur et leur installation, il
+s'écoulait plusieurs minutes ; un signal reçu dans cette fenêtre tuait le script
+net, et le serveur — **détaché**, pour d'excellentes raisons — survivait,
+accroché au port. Un gardien juste, arrivé en retard.
+
+**Corrigé en deux endroits :**
+
+1. `scripts/banc.mjs` — les gardiens sont posés **ligne suivante après le
+   lancement**, avant toute attente.
+2. `scripts/run-e2e-tests.ts` — la batterie **refuse** désormais un port déjà
+   pris, au lieu de se rabattre en silence sur l'occupant. C'était le plus grave
+   : cinquante suites avaient travaillé, une fois, sur un serveur qu'elle
+   n'avait pas lancé, **sans un mot**.
+
+**Éprouvé, dans les deux sens** (`test-prechauffage.ts`, section « deux serveurs
+ne se battent plus pour le port ») :
+
+- gardiens remis en fin de fichier → rouge, en nommant la fenêtre ;
+- garde neutralisée d'un `if (false && …)` → rouge. La première version du
+  contrôle cherchait le nom de la fonction et restait verte : **un contrôle qui
+  se contente de trouver un mot ne protège que du mot** ;
+- et en vrai : le script de connexion rejoué rend le port (`000`), là où il
+  laissait un serveur ; la batterie navigateur, lancée sur un port occupé,
+  s'arrête en une seconde avec le remède à taper.
+
+### 0 quaterdecies. Deux maquettes `/design` décrivent un écran supprimé
+
+**Né le 11 août 2026**, en supprimant `/chantiers/[id]/photos` (`ARCHITECTURE.md`
+§60). Restent derrière lui :
+
+- `src/app/design/photos/page.tsx` — la maquette d'un écran qui n'existe plus ;
+- `src/app/design/hub/page.tsx` — un lien `/chantiers/1/photos` désormais mort
+  (tous les liens de cette maquette le sont déjà : elle vise un chantier « 1 »
+  imaginaire) ;
+- le tableau du §4 bis de `docs/INTEGRER-ORIGINE.md`, qui cite le fichier
+  supprimé — mais ce document raconte un **état daté**, et le réécrire
+  falsifierait ce qu'on savait ce jour-là.
+
+**Volontairement pas touché dans le même lot** : ces maquettes ne sont ni des
+écrans du produit ni de la mémoire, et le patron avait demandé qu'on ne corrige
+pas ce qui n'était pas demandé. À trancher : les supprimer, ou les marquer
+« maquette historique ».
+
+### 0. Si « Impossible d'enregistrer la note » revient : lire la phrase, ne pas la deviner
+
+**Ouvert le 11 août 2026, et volontairement laissé ouvert.** Le patron a signalé
+ce message ; il n'a **pas pu être reproduit ici** — la dictée passe avec un micro
+simulé, en développement comme sur la version bâtie derrière une origine
+étrangère. Ce qui a été corrigé, c'est le silence : l'écran nommait le refus
+« Impossible… Réessayez » quelle qu'en fût la cause, et rien n'était journalisé.
+
+Désormais, l'écran distingue trois choses, et il faut **lui demander laquelle
+il voit** :
+
+| Ce qu'il lit | Ce que ça désigne |
+|---|---|
+| une phrase précise (format, taille, cadence, enregistrement vide) | le serveur a refusé, et la raison est dedans — le format reçu est nommé |
+| « la connexion a été interrompue » | l'aller-retour n'a pas abouti : mandataire, réseau, session expirée |
+| plus rien, la note s'enregistre | c'était l'un des refus ci-dessus |
+
+Le journal du serveur porte les pannes imprévues avec le chantier, le format et
+la taille. **Ne rien supposer avant d'avoir la phrase** : deux diagnostics à
+distance ont déjà coûté un aller-retour chacun ce jour-là.
+
+
+### ~~0 bis. Si le fil accroche ENCORE chez le patron : le masque, sur iOS~~ — **close le 2026-08-11 par le patron lui-même**
+
+**Ouvert puis refermé le même soir, et c'est le refermer qui compte.** Le
+saccadé avait pour cause `scroll-snap-stop: always`, retiré ; la mesure
+(`scripts/mesurer-fluidite-fil.mts`) mettait le masque en dégradé et l'animation
+d'opacité hors de cause — mais elle avait mesuré **Chromium sans tête sur cette
+machine**, pas Safari sur son iPhone, et elle ne pouvait pas produire l'élan d'un
+vrai doigt. Ce point restait donc ouvert par honnêteté, pas par doute.
+
+**Le patron a tranché, sur son téléphone :** *« la fluidité de l'iPhone, ça
+aussi, ça a été corrigé. »* Le retrait de l'accroche suffisait ; le masque
+n'était pour rien dans la plainte.
+
+**Ce qu'il faut en retenir, et pourquoi ce point reste écrit plutôt que
+supprimé :** le `mask-image` de `.atlas-fil-defile` est **hors de cause, vérifié
+sur le vrai appareil**. Quelqu'un finira par le soupçonner — c'est le suspect
+qui vient à l'esprit dès qu'on parle de défilement qui accroche sur iOS. Le
+déplacer coûterait du travail et du risque pour rien. Le correctif de repli
+reste décrit ci-dessous **au cas où une plainte NOUVELLE apparaîtrait**, pas
+pour celle-ci, qui est réglée.
+
+Repli, si et seulement si le sujet revient : **déplacer le fondu sur
+`.atlas-ecran`**, en deux dégradés posés PAR-DESSUS (couleur `--card`,
+`pointer-events: none`), plutôt qu'en masque SUR le cadre qui défile. Deux
+précautions alors : les dégradés se placent aux bords de la zone qui défile, pas
+du cadre (l'en-tête n'est pas dedans), et une capture avant/après doit être
+identique — sinon on aura échangé un défaut contre un autre.
+
 ### ~~0 septies. Les deux portes de la création~~ — **close le 2026-08-11**
 
 Il a choisi, maquettes en main : la **bascule « le trait qui glisse »**
@@ -34,10 +146,10 @@ Il a choisi, maquettes en main : la **bascule « le trait qui glisse »**
 capsule »** (`docs/maquettes/28-le-bouton.html`, proposition 5). Les deux sont en
 place sur l'écran de création, et « Je l'écris » mène à la page du devis entier
 avec le client déjà en en-tête. Le raisonnement complet est dans
-`ARCHITECTURE.md` §60.
+`ARCHITECTURE.md` §64.
 
 **Tranché le 11 août au soir : « partout ».** La capsule est la seule forme
-d'action principale de l'application, sur les dix-huit écrans, et la variante
+d'action principale de l'application, sur les dix-sept écrans, et la variante
 rectangulaire a été retirée. Elle lui a été montrée **sur ses vrais écrans avant
 d'être posée** — sa règle : « montre-moi avant de faire, plutôt que de faire pour
 revenir en arrière ». `scripts/capture-bouton-partout.mjs` refait la planche.
@@ -64,6 +176,34 @@ quel : le cadre honnête n'a révélé aucun défaut caché.
 `scripts/test-rien-de-recouvert-e2e.ts`, qui cherche sur quatorze écrans ce que
 le doigt n'atteint pas. Un seul écran vérifiait cela auparavant, pour un seul
 bouton.
+
+### ~~0 quater. Le bandeau d'alerte est coupé en haut, à l'arrivée sur l'accueil~~ — **tranché le 2026-08-11 : on laisse tel quel**
+
+**Le patron, après avoir vu le raisonnement :** *« Dans ce cas-là, laisse tel
+quel. »* Ne pas rouvrir ce point sans lui : ce n'est pas un défaut oublié, c'est
+un arbitrage rendu. Le raisonnement qui l'a emporté est conservé ci-dessous —
+c'est lui qui évitera de le refaire.
+
+**Vu en regardant les captures de la perle, le 11 août 2026 — aucune suite ne le
+disait.** À l'ouverture de « Vos chantiers », le fil est déjà défilé de 61 px :
+le navigateur pose la liste sur son premier point d'accroche, qui centre le
+premier chantier. Le bandeau « CORRECTION DEMANDÉE », qui vit **dans** la liste,
+perd donc sa première ligne — et il n'existe aucune position de repos où on la
+revoie : forcer le défilement à zéro y ramène.
+
+Ce n'est **pas** une conséquence du travail sur la perle : mesuré avant, c'était
+déjà 61 px.
+
+L'arbitrage, et pourquoi il ne se tranche pas en codant : les deux moitiés ne
+peuvent pas être vraies ensemble.
+
+| Choix | Ce qu'on gagne | Ce qu'on perd |
+|---|---|---|
+| **Laisser tel quel** (retenu) | la perle désigne un chantier dès l'ouverture | le bandeau perd sa ligne de capitales — son nom, sa phrase et ses deux boutons restent entiers |
+| Ajouter un point d'accroche en haut | le bandeau entier | on arrive sur une liste où la perle ne désigne rien, à **chaque** ouverture |
+
+Un repère abîmé à chaque ouverture coûte plus cher qu'une ligne de capitales
+coupée : c'est ce qui a emporté la décision.
 
 ### ~~0 bis. Une session périmée~~ — **close le 2026-08-10, test compris**
 
@@ -371,6 +511,161 @@ Ce que la bascule coûtera, quand il aura choisi : la charte de
 `src/lib/design-tokens.ts` change de fond en comble (ivoire au lieu du gris-vert,
 encre au lieu du vert pin pour l'action, bronze au lieu de l'or), et **tous** les
 écrans suivent — pas seulement Chantiers. À ne pas entamer écran par écran.
+
+### ~~0 quindecies. Le bouton était codé mais PAS chez lui~~ — **fusionné dans `main` le 2026-08-11, sur son accord**
+
+**C'était le seul point qui le séparait de son bouton, et il n'était pas
+technique.** Il a répondu *« fusionne dans main »* : c'est fait (`6059641`), et
+son espace le prendra au prochain allumage — ou tout de suite par « Chercher les
+dernières corrections ».
+
+*Ce qui suit est gardé parce que le piège, lui, resservira.*
+
+Le 11 août au soir : *« la modification du bouton nouveau chantier n'est pas
+effectuée. Corrige ça. Et pourtant, j'ai la nouvelle dernière mise à jour, celle
+de dix-neuf heures et quelques. »* Les deux moitiés de la phrase étaient vraies.
+
+- Le bouton vit sur `claude/nouveau-chantier-button-design-2vuu9h`.
+- Son espace de travail suit **`main`** — `.devcontainer/mettre-a-jour.sh` fait
+  un `git merge --ff-only origin/<branche courante>`, à chaque allumage et
+  derrière le bouton « Chercher les dernières corrections ». **Les deux suivent
+  la branche courante.** Aucun des deux n'ira jamais chercher ailleurs.
+- `main` n'a jamais reçu ce travail, et avançait en parallèle ce soir-là
+  (19:02, 19:11, 19:13, 19:37). D'où sa « mise à jour de dix-neuf heures ».
+
+**Ce qu'il a fallu faire, et qui n'appartenait pas à l'agent :** fusionner la
+branche dans `main` — **fait le 2026-08-11, sur son accord explicite**
+(`6059641`, en avance rapide, `main` fusionné dans la branche juste avant).
+
+**Ne pas contourner en lui demandant de changer de branche** : ce serait des
+commandes git tapées au doigt sur six pouces, ce que tout ce dépôt s'emploie à
+lui épargner (`.devcontainer/demarrer.sh`).
+
+**Ce qui, lui, a été corrigé sans attendre :** la ligne « Version » de Réglages
+nomme désormais la **branche** suivie, et le bandeau du terminal ne l'annonce
+plus périmée. Un espace en retard d'une branche se voit maintenant sur une
+capture, sans avoir à poser la question — c'est précisément ce à quoi cette
+ligne servait, et ce qu'elle n'a pas su faire ce soir-là.
+
+### ~~0 terdecies. L'action « Nouveau chantier »~~ — **close le 2026-08-11, codée et éprouvée**
+
+Le 11 août 2026, capture à l'appui : *« j'aime pas le gros bouton nouveau
+chantier […] ce gros bouton en plein milieu, ça ne fait pas très luxe »*. Le
+reste de l'écran lui convient — c'est **l'aplat vert seul** qui est en cause.
+
+**Treize** remplaçants sont dessinés, en trois tournées — et l'un d'eux est
+maintenant à moitié choisi : **le sceau clair** (maquette 16, deuxième
+habillage), *« j'aime beaucoup la deuxième »*. Puis il a écarté le sceau
+lui-même — *« le fond blanc me dérange »* — et demandé de l'innovation, pas une
+variante. `docs/maquettes/18-six-matieres.html` répond sur deux axes : **des
+matières** (laque, or brossé, cire, encre vivante, ou pas de disque du tout) et
+**deux ouvertures où le bouton devient la page** au lieu de faire monter une
+feuille.
+
+**FAIT.** Le bouton est dans l'application depuis le 11 août au soir :
+`src/app/EcranChantiers.tsx` et `src/app/globals.css`. Éprouvé par
+`scripts/test-bouton-nouveau-chantier-e2e.ts` (la demi-seconde, le double appui,
+le mouvement réduit), regardé par
+`scripts/capture-bouton-nouveau-chantier.mts` (attente, geste, feuille). 108
+suites base et 49 suites navigateur au vert, connexion réelle comprise.
+
+**Ce qui a été retenu, pour mémoire :** C'est
+`docs/maquettes/24-le-bouton-retenu.html` : **« Nouveau chantier » écrit, le
+rond d'un cheveu qui bat à sa droite**, et à l'appui **trois tours avec onze
+grains d'or**, puis la feuille une demi-seconde plus tard. Toutes les mesures
+sont dans le tableau au bas de cette maquette — les reprendre telles quelles.
+
+Il reste à **le coder** : le bloc `<Link>` de `EcranChantiers.tsx`, une
+trentaine de lignes de `globals.css`, le délai avant l'ouverture de la feuille,
+une suite qui mesure la demi-seconde et une capture. Une demi-journée. Deux
+choses à ne pas oublier : l'appui doit s'enfoncer tout de suite (140 ms), et un
+second appui pendant le tour doit être ignoré, sans quoi deux chantiers naissent
+au lieu d'un.
+
+**L'historique du choix (pour ne pas rouvrir ce qui est clos) :** C'est **l'anneau d'un cheveu avec
+son « + »**, qui doit **tourner à fond puis ouvrir la page**. Sa place a été
+tranchée juste après : **au centre**, à l'endroit qu'occupait l'aplat vert — et
+non en haut à droite comme il l'avait d'abord montré — avec **un petit trait de
+chaque côté, qui s'écarte à l'appui**. La dernière tournée ajoute **le mot** au geste
+(`docs/maquettes/23-le-mot-et-le-rond-qui-bat.html`) : « Nouveau chantier »
+écrit, le rond qui bat en attendant le doigt, et au clic le tour et la
+poussière — sept dispositions du libellé. **Huit** autres déclinaisons du tour
+seul restent dans `docs/maquettes/22-le-rond-entre-deux-traits.html` — dont deux qui reprennent
+l'anneau de la note vocale (un cercle dehors, un cercle dedans), et une qui met
+les crans de la dictée à la place des traits ; il ne reste qu'à en
+désigner une, et le tour franc suffirait. (La version en haut à droite reste
+dans la maquette 21, si jamais il y revenait.)
+
+**Ce que coûtera la bascule, une fois la déclinaison choisie** : le bloc
+`<Link>` de `EcranChantiers.tsx` devient un anneau posé dans l'en-tête (grille à
+deux colonnes, aligné sur la ligne de base du titre), plus une trentaine de
+lignes de `globals.css` pour le tour, plus le délai avant l'ouverture de la
+feuille. Une demi-journée. Deux choses à ne pas oublier : l'appui doit s'enfoncer
+tout de suite (140 ms), et un second appui pendant le tour doit être ignoré,
+sans quoi deux chantiers naissent au lieu d'un.
+
+**L'ancien squelette (rond plein au milieu, explosion, agrandissement) n'est plus
+d'actualité** : il est resté une soirée. Ne pas le ressortir — maquette 20.
+
+**Le squelette était arrêté par lui le 11 août en fin d'après-midi** : un rond plein avec un
+« + », une explosion de débris à l'appui, et le rond qui s'agrandit jusqu'à
+devenir la page. Six gerbes sont à l'essai dans
+`docs/maquettes/20-le-rond-qui-eclate.html` ; il ne reste qu'à en désigner une.
+
+La maquette 18 a été jugée trop démonstrative — *« tu as primé sur l'originalité
+au détriment de l'élégance »*. `docs/maquettes/19-six-gestes-tenus.html` revient
+donc à la retenue : plus de gerbe, plus de matière imitée, une seule chose qui
+bouge à la fois.
+
+**Ce qu'il faudra prévoir si une matière est retenue :** la teinte de laque
+(#10150f → #263025) n'existe pas dans `src/lib/design-tokens.ts`, et l'ouverture
+par agrandissement du disque n'est pas la transition actuelle — c'est un
+changement de `FormulaireNouveauChantier` en feuille, pas seulement du bouton.
+Compter une journée plutôt qu'une demi. La première
+(`docs/maquettes/14-le-geste-nouveau-chantier.html`) amincit le bouton : le
+filet qui se trace, le sceau, le premier brin, le cartouche gravé, la pastille
+au pouce, la légende sur le trait. Elle n'a pas convaincu — *« je ne suis pas
+encore hyper convaincu »* — et le pourquoi vaut d'être retenu : **six façons
+d'amincir un bouton ne font qu'une idée**. La seconde
+(`docs/maquettes/15-encore-six-gestes.html`) change donc de nature à chaque
+fois : la ligne du registre, le titre qui porte l'action, la marque
+d'imprimeur, le cinquième onglet, tirer pour ouvrir, le signet sur la tranche.
+La troisième vient de lui : il a décrit le geste lui-même — *« une sorte de
+pastille un peu ronde »*, qui *« se mette à tourner super vite »*, *« dégage
+comme une sorte d'onde ou de petits fragments »*, et ouvre la feuille *« au bout
+d'une demi-seconde »*. Elle est dessinée, et **pressable**, dans
+`docs/maquettes/16-la-pastille-qui-tourne.html` — trois habillages, plus une
+version sous le pouce.
+
+**Rien n'est codé** tant qu'il n'a pas désigné le sien. Le 11 août, la pastille
+avait été portée d'un coup dans l'application ; il l'a arrêté net — *« crée-moi
+une maquette avant de changer quoi que ce soit »* — et le changement a été
+défait. La règle est désormais dans `CLAUDE.md` §3 bis.
+
+**Ce que coûtera la pastille, le jour où il la choisit** (mesuré, puis défait) :
+le bloc `<Link>` de `EcranChantiers.tsx`, une trentaine de lignes de
+`globals.css` pour le tour, l'onde et les éclats, une variable `--or` dans la
+palette, une suite qui mesure la demi-seconde, et un script de capture. Une
+demi-journée, sans surprise connue. Deux points à ne pas oublier : l'appui doit
+s'enfoncer **tout de suite** (140 ms) sinon la demi-seconde passe pour une
+panne, et un second appui pendant le geste doit être ignoré, sans quoi deux
+chantiers naissent au lieu d'un.
+
+Ce que coûtera la bascule, une fois le choix fait : **un seul endroit**, le
+bloc `<Link>` de `src/app/EcranChantiers.tsx` (lignes 151-167). Vérifié plutôt
+que supposé : les suites navigateur atteignent `/chantiers/nouveau` **par son
+adresse**, aucune ne cherche le libellé — changer la présentation n'en casse
+donc aucune, et **c'est justement le risque** : rien ne se plaindra si l'action
+devient introuvable au doigt. Prendre une capture (`CLAUDE.md` §5) et rejouer
+`test-rien-de-recouvert-e2e` — la suite qui mesure ce que le mobilier fixe
+recouvre, et la seule qui verrait le défaut de la proposition E.
+
+**Trois réserves à ne pas perdre.** La pastille flottante (E) entre en conflit
+avec la bulle de l'assistant, qui occupe déjà ce coin — la maquette le montre
+plutôt qu'elle ne le tait. Le cinquième onglet (J) **supprime** cette bulle :
+c'est une décision à prendre avec lui, pas un détail de mise en page. Et le
+geste de traction (K) ne doit jamais partir seul : un geste caché est élégant le
+premier jour et coûteux le trentième, quand un remplaçant prend le téléphone.
 
 ### 0 duodecies. `test-devis-papier-e2e` échoue sur le banc local
 

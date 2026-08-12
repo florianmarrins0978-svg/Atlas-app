@@ -4054,7 +4054,381 @@ arrivé au contrôle de la bulle.
 
 ---
 
-## 59. « Réessayer » ne pouvait pas réparer un morceau de code disparu
+## 59. La perle du fil désigne ce qu'on regarde, jamais un état
+
+**Le patron, capture de son téléphone à l'appui, le 11 août 2026 :** *« Lorsqu'on
+est tout en haut, elle devrait être au niveau du vingt-deux, donc bien centré sur
+l'écran. Et en fait là, elle se retrouve constamment tout en bas. »*
+
+Deux intentions se sont succédé, et l'application avait gardé la première :
+
+| | Ce que la perle désigne | Où elle se trouve |
+|---|---|---|
+| Avant le 10 août | le premier chantier **qui attend un geste** | n'importe où — selon la liste |
+| Retenu sur maquette | **le chantier qu'on regarde** | à mi-hauteur |
+
+`docs/INTEGRER-ORIGINE.md` §3 signalait le changement et disait de ne pas le
+« corriger ». Le portage l'a fait quand même. Chez le patron, le chantier qui
+attend est le dernier de la liste : le point de couleur s'est donc installé tout
+en bas, à demeure, et n'a plus rien désigné de ce qu'il regardait.
+
+**Pourquoi la deuxième intention est la bonne, et pas seulement « celle qui a été
+retenue » :** un repère qui change de place à chaque liste ne s'apprend pas. Il
+faut le chercher avant de savoir ce qu'il dit — c'est-à-dire l'inverse d'un
+repère. Fixé au milieu, il ne demande rien : les chantiers passent dessous.
+
+Ce que cela coûte, et qui est assumé pour la troisième fois : le chantier dont le
+devis est revenu n'a plus de point de couleur. Il garde son libellé
+« Correction demandée », en bronze.
+
+### Le maintien au milieu : deux lignes de CSS et une place dans l'arbre
+
+La perle est **première fille du fil** (`src/app/ListeChantiers.tsx`). Sa place
+naturelle étant au-dessus du point d'accroche, `position: sticky;
+top: calc(50% - 23px)` l'y descend dès le premier pixel et l'y maintient. Aucun
+calcul, aucun écouteur de défilement — le navigateur suit le doigt mieux que
+nous, et gratuitement.
+
+Un piège de placement : la perle doit être fille **directe** du fil. Enfermée
+dans un conteneur haut d'une ligne, elle ne pourrait s'accrocher que sur cette
+ligne-là.
+
+### La descente sur le dernier jour : la seule chose que le CSS ne sait pas faire
+
+**Le patron, même échange, sur la fin de liste :** *« Quand on arrive au dernier,
+là, elle descend et elle se met en face du dernier jour. »*
+
+Cela veut dire que, sur les derniers pixels, la perle doit **descendre pendant
+que le contenu monte**. `position: sticky` ne cloue que dans un sens : son
+accroche pousse vers le bas jusqu'au point d'arrêt, jamais au-delà, et la
+contrainte du bloc conteneur ne fait que la tirer vers le haut. Trois montages
+ont été essayés avant de le reconnaître — perle en dernier enfant, accroche par
+le bas, conteneur raccourci — et tous ramènent la perle au milieu ou au-dessus.
+
+La descente se **calcule** donc, dans `src/lib/perle-descente.ts`, en fonction
+pure : elle vaut zéro tant qu'il reste plus de chemin à parcourir que de descente
+à faire, puis croît sur les derniers pixels jusqu'à poser la perle au milieu de
+la dernière ligne. L'écran mesure trois grandeurs et applique le résultat à une
+variable CSS ; il ne décide de rien.
+
+Deux propriétés de ce montage valent d'être dites :
+
+- **La variable vaut zéro par défaut.** Si le JavaScript ne tourne pas, la perle
+  reste au milieu : la dégradation est encore juste, ce qui ne serait pas le cas
+  si la position entière était écrite par le code.
+- **La cible est le MILIEU de la dernière ligne, pas la rangée du nom.** Partout
+  ailleurs, le point d'accroche centre la ligne dans le cadre et la perle y tombe
+  au milieu ; viser autre chose sur la dernière se lirait comme un décalage.
+
+**Une alternative a été construite puis écartée par le patron** : allonger la
+marge de fin du fil (`max(3.5rem, calc(50cqh - 61px))`) pour que le dernier
+chantier puisse monter au milieu rejoindre la perle. Cela marchait, mesuré, mais
+laissait un grand blanc sous le dernier chantier. Il a préféré que la perle aille
+au chantier plutôt que la liste s'allonge — et une fin de liste ressemble alors à
+une fin de liste.
+
+### Le second défaut, et le plus instructif : une suite verte sur une règle fausse
+
+**Le patron, le soir même, après la fusion :** *« la perle reste accolée en bas
+au numéro dix-huit. »*
+
+La première version de la descente la faisait plonger sur les `descenteEntiere`
+derniers pixels de défilement — **sans se demander s'il y en avait autant**. Deux
+conséquences, et il les a vues toutes les deux :
+
+| Situation | Ce qui se passait |
+|---|---|
+| liste qui défile à peine (écran haut, peu de chantiers) | la plongée commençait avant le départ : la perle arrivait **déjà tombée** |
+| liste qui tient dans l'écran | une règle écrite exprès la collait au **dernier** chantier |
+
+Mesuré pour le reproduire : écran de 1100 px, 77 px à défiler pour 226 px de
+descente à faire, perle 148 px sous le milieu **alors qu'on était tout en haut**.
+
+Le correctif tient en un `min` : la plongée occupe les derniers pixels, **au plus
+tout ce qu'on peut défiler**. Quand le chemin manque, elle s'étale dessus au lieu
+de déborder avant le départ. Et quand la liste ne défile pas du tout, la perle ne
+bouge plus — sauf si le dernier chantier est lui-même au-dessus du milieu, auquel
+cas elle remonte le rejoindre.
+
+**Ce qu'il faut retenir dépasse ce correctif.** La suite de cas éprouvait cette
+règle fausse et la trouvait juste, parce que **tous ses cas donnaient une liste
+au chemin confortable**. Le contrôle au navigateur ne mesurait qu'un seul écran,
+852 px, où la liste de démonstration a 325 px devant elle — quatre fois ce qu'il
+faut. Deux contrôles verts, un défaut visible à l'œil nu sur le téléphone du
+patron.
+
+Un cas manquant ne rougit pas. Quand une règle porte sur un RAPPORT — ici entre
+le chemin à défiler et la descente à faire — il faut l'éprouver des deux côtés du
+rapport, pas seulement du côté confortable. Le contrôle mesure désormais **deux
+hauteurs d'écran**, dont une où la liste ne défile presque plus, et la suite de
+cas a gagné la liste courte.
+
+### Un défaut à connaître : calculé juste, jamais dessiné
+
+La descente a d'abord été **calculée correctement et pas affichée**.
+`.atlas-perle` est un `span` — une boîte **en ligne** — et une transformation ne
+s'applique pas à une boîte en ligne non remplacée. `position: sticky` ne rend pas
+une boîte de bloc, à la différence de `absolute` : il ne rattrapait donc rien.
+`getComputedStyle` renvoyait pourtant la bonne matrice, et le contrôle accusait
+le calcul, qui était innocent. Un `display: block` a suffi.
+
+C'est le genre de défaut que seule la mesure sur l'écran départage : le code
+était juste, la valeur était juste, et le rendu était faux.
+
+### Le contrôle : mesurer, pas constater la présence
+
+`npx tsx scripts/capture-accueil-perle.mts` relève la perle à quatre positions
+de défilement — arrivée, sommet forcé, milieu, bas — et refuse sur quatre
+points : elle quitte le milieu ailleurs qu'au bout ; elle ne tombe sur aucun
+chantier ; tout en bas elle n'est pas en face du dernier jour ; elle ne vise pas
+le même endroit dans la ligne selon l'endroit où l'on se trouve. Il écrit aussi
+les captures : l'œil juge ce que la mesure ne dit pas.
+
+**Une suite qui vérifiait la présence du point n'aurait rien vu** : le point
+était bien là, au mauvais endroit. C'est le même défaut de fond que le relevé de
+la barre basse (§34) — un contrôle qui n'interroge pas la bonne grandeur est un
+contrôle vert sur une panne réelle.
+
+**Et son message doit désigner le bon coupable.** Deux pannes très différentes
+donnent le même symptôme — descente mal calculée, ou descente non dessinée — et
+les confondre coûte une heure. Le contrôle relève donc la variable posée sur
+l'écran et dit laquelle des deux est en cause.
+
+Confronté trois fois avant d'être cru : perle déplacée à 20 % → rouge en nommant
+l'écart ; `display: block` retiré → rouge en nommant le CSS et non le calcul ;
+descente supprimée dans la fonction pure → rouge sur le cas proportionnel.
+
+---
+
+## 60. Ajouter une photo sans changer de page — et l'écran Photos qui disparaît
+
+**Le patron, le 11 août 2026, deux captures à l'appui :** *« lorsque je suis sur
+la page chantier et que je clique sur l'encadré doré avec le petit plus doré
+pour ajouter des photos, je veux que ça arrête de me faire changer de page et je
+veux voir apparaître directement la photothèque / prendre une photo /
+bibliothèque […] et que tu me supprimes toutes les autres étapes »*.
+
+### Ce que coûtait l'ancien chemin
+
+Ajouter une photo demandait **quatre gestes et un changement de page** :
+
+| Geste | Ce qui se passait |
+|---|---|
+| 1 | toucher le « + » de la pellicule |
+| 2 | *l'écran change* — `/chantiers/[id]/photos` se charge |
+| 3 | toucher « Ajouter une photo » |
+| 4 | choisir dans **notre** feuille : « Prendre une photo » / « Choisir dans ma bibliothèque » |
+| 5 | et **enfin** le menu du téléphone |
+
+Il en coûte deux : le « + », puis le menu du téléphone. Le reste a été supprimé,
+pas déplacé.
+
+### La décision de fond : laisser le système faire le choix
+
+Le 6 août, le patron exigeait les deux chemins : *« il faut bien évidemment
+pouvoir faire les deux »*. La réponse d'alors était **deux champs de fichier**
+(l'un avec `capture`, l'autre sans) et une feuille maison pour les départager.
+
+Elle était juste, et elle est devenue inutile : un champ `accept="image/*"`
+**sans `capture`** fait afficher par iOS un menu qui porte déjà les trois
+entrées — *Photothèque*, *Prendre une photo*, *Choisir les fichiers*. Le système
+pose le choix mieux que nous, et un geste plus tôt.
+
+**`capture` reste interdit dans la pellicule, et ce n'est pas un réglage.** Sur
+un iPhone il n'exprime aucune préférence : il **impose** l'appareil photo, retire
+l'accès à la photothèque — et le menu ci-dessus n'apparaît jamais. Un artisan qui
+a photographié le chantier le matin ne pourrait rien joindre l'après-midi.
+
+### L'écran `/chantiers/[id]/photos` n'existe plus
+
+Décision prise avec le patron le 11 août : *« on le supprime entièrement — tout
+se passe dans la pellicule du tiroir : ajouter, regarder, retirer »*. La route
+répond **404**, et une suite le vérifie : un écran à moitié supprimé, c'est un
+chemin mort qu'on retrouve trois mois plus tard sans savoir s'il compte encore.
+
+Ce qui a déménagé dans `src/app/chantiers/[id]/Pellicule.tsx` :
+
+| Ce qui vivait sur l'écran Photos | Où c'est maintenant |
+|---|---|
+| l'ajout | le « + » de la pellicule, qui ouvre le menu du téléphone |
+| la visionneuse plein écran | la même, ouverte depuis la vignette |
+| « Retirer » + le tiroir des retirés | identiques, sous la pellicule |
+| le décompte « 6 photos » | **supprimé** — il comptait ce qu'on a sous les yeux |
+| « Passer à la note vocale » | **supprimé** — l'anneau est au centre de la fiche (§57) |
+
+Les actions serveur, elles, n'ont pas bougé d'un octet : le fichier d'actions du
+dossier supprimé est devenu
+`src/app/chantiers/[id]/photos-actions.ts`, au même niveau que la fiche.
+
+### Trois pièges, et pourquoi ils ne se voient pas en lisant le code
+
+1. **La visionneuse doit sortir du tiroir par un portail.** Le tiroir porte un
+   `z-index`, donc il ouvre son propre contexte d'empilement : une visionneuse
+   « plein écran » rendue à l'intérieur reste plafonnée au niveau du tiroir, et
+   la barre de navigation — posée plus loin dans le document, au même `z-20` —
+   se peint **par-dessus la photo**. `createPortal(document.body)` la sort de
+   là. Une suite mesure le point central de la barre et exige qu'elle soit
+   couverte.
+
+2. **Le tiroir mesure sa hauteur par `ResizeObserver`, plus par une liste de
+   dépendances.** Il se dimensionnait sur `[photos.length, etapes.length]` —
+   deux propriétés. Depuis que la pellicule ajoute et retire sans changer de
+   page, son contenu ne passe plus par les propriétés du tiroir : la mesure ne
+   voyait plus rien, le tiroir gardait sa hauteur d'avant, et le tiroir des
+   retirés apparu sous la pellicule restait **derrière le bord — « Annuler »
+   hors d'atteinte**.
+
+3. **La fiche se rafraîchit après un ajout et après un retrait.** Le statut du
+   chantier et l'étape suivante se déduisent du **nombre** de photos : sans
+   `router.refresh()`, le résumé du tiroir continuerait de réclamer « Ajouter
+   des photos » au-dessus d'une pellicule qui en montre une. L'état local, lui,
+   n'est jamais resynchronisé depuis le serveur : ce qu'on vient d'ajouter ou de
+   retirer ne doit pas être écrasé par un rendu arrivé en retard.
+
+### Ce que la suite tient, et qu'aucun contrôle d'affichage ne verrait
+
+`scripts/test-photos-e2e.ts` compare l'adresse **avant et après** l'ajout. C'est
+la demande elle-même : tout le reste peut être vert pendant que le patron change
+d'écran. Elle exige aussi qu'il n'y ait **qu'un** champ de fichier et qu'il soit
+**sans `capture`** — sinon le menu à trois entrées ne s'ouvre pas, et le défaut
+serait invisible sur une machine de test, où aucun iPhone ne décide.
+
+---
+
+## 61. L'espace du patron suit une BRANCHE, et la ligne « Version » doit la nommer
+
+**Le défaut, le 11 août 2026 au soir.** Le bouton « Nouveau chantier » venait
+d'être codé, éprouvé et poussé. Le patron : *« la modification du bouton nouveau
+chantier n'est pas effectuée. Corrige ça. Et pourtant, j'ai la nouvelle dernière
+mise à jour, celle de dix-neuf heures et quelques. »*
+
+Les deux moitiés de la phrase étaient vraies en même temps, et c'est ce qui a
+rendu le diagnostic long.
+
+### Ce qui se passait vraiment
+
+Son espace de travail se met à jour tout seul — c'est le correctif du 6 août
+(`.devcontainer/mettre-a-jour.sh`, §24). Mais il le fait ainsi :
+
+```sh
+BRANCHE="$(git rev-parse --abbrev-ref HEAD)"
+git fetch origin "$BRANCHE"
+git merge --ff-only "origin/$BRANCHE"
+```
+
+**Il suit la branche courante, et rien d'autre.** L'espace du patron est né sur
+`main` ; il suivra `main` jusqu'à sa mort. Le bouton, lui, vivait sur
+`claude/nouveau-chantier-button-design-2vuu9h`. Aucun allumage, aucune pression
+sur « Chercher les dernières corrections » — qui appelle **le même script** —
+ne pouvait le lui apporter. Le bouton répondait fidèlement « vous étiez déjà à
+jour », et c'était exact.
+
+Et `main` avançait ce soir-là en parallèle : 19:02, 19:11, 19:13, 19:37. Sa
+« mise à jour de dix-neuf heures » existait donc bel et bien. Elle n'était
+simplement pas celle qu'on lui annonçait.
+
+### Pourquoi l'écran ne pouvait pas l'arbitrer
+
+La ligne « Version » de Réglages existe depuis le 7 août précisément pour
+répondre à « est-ce que j'ai les corrections ? » (§24). Elle affichait
+`11/08/2026 19:37 · b45cd5d`. Une date et sept caractères.
+
+**Deux branches vivantes le même soir portent la même heure.** Et une empreinte
+courte ne se compare pas de tête, sur six pouces, à une empreinte annoncée dans
+un message. La ligne a donc répondu **oui** à une question dont la réponse était
+**non** — le pire état possible pour un dispositif de confiance : plus nuisible
+qu'une ligne absente, parce qu'on s'y fie.
+
+### La décision
+
+**La ligne nomme la branche** — `11/08/2026 19:37 · b45cd5d · main` — dans les
+deux endroits qui l'écrivent : `src/server/version-executee.ts` (l'écran, lu
+dans le dépôt à chaque affichage) et `.devcontainer/demarrer.sh` (le bandeau du
+terminal). Une phrase sous la ligne dit ce que ce mot engage : *un correctif
+livré sur une autre branche n'arrivera pas ici, même en cherchant les
+corrections.*
+
+**On n'invente jamais de branche.** Hors dépôt git, la version reste
+« inconnue » ; sur une tête détachée, la ligne perd son dernier mot plutôt que
+d'affirmer un nom faux. Une ligne incomplète se voit ; une ligne fausse se croit.
+
+**Et le bandeau du terminal cesse de mentir sur le même sujet.**
+`ATLAS_VERSION` était calculée avant la mise à jour et affichée après : le
+bandeau annonçait « Le code a été mis à jour au démarrage » puis « Version
+exécutée : *celle d'avant* ». Elle est relue juste après `mettre-a-jour.sh`,
+donc **avant** que le veilleur ne soit relancé — sinon le serveur neuf héritait
+lui aussi de la variable périmée.
+
+### Ce que cela ne résout pas, et qu'il ne faut pas confondre
+
+Nommer la branche ne livre rien. **Un travail sur une branche reste hors de sa
+portée tant qu'il n'est pas dans `main`**, et l'y porter n'appartient pas à
+l'agent (`CLAUDE.md` §6 : jamais de poussée ailleurs sans accord explicite).
+
+Ce qui change, c'est qu'une capture de son écran tranche désormais la question
+en une seconde, au lieu d'un aller-retour et d'une soirée à chercher un défaut
+dans du code qui n'a jamais tourné chez lui.
+
+**La règle générale, puisqu'elle se répète :** avant de chercher un défaut dans
+un travail que le patron dit ne pas voir, vérifier qu'il l'a. Une commande :
+
+```sh
+git show origin/main:<le fichier> | grep <la marque du travail>
+```
+
+---
+
+## 62. Ce qui bloque un envoi se répare là où ça bloque
+
+**Le patron, le 11 août 2026 au soir :** *« l'encart qui permet d'envoyer aux
+clients par SMS, par e-mail, a disparu. »* Sa capture montre la feuille d'envoi
+réduite à une phrase — « Indiquez d'abord comment joindre ce client — par SMS ou
+par e-mail — sur sa fiche » — et un bouton grisé.
+
+**L'encart n'avait pas disparu : la porte qu'on lui désignait, si.** L'écran
+« Informations » — le seul endroit où saisir un téléphone ou un e-mail — avait
+quitté le tiroir de la fiche quelques heures plus tôt, à sa demande (« il faut
+juste photo et note vocale »). La feuille renvoyait donc vers un écran devenu
+inatteignable, et **un chantier né d'une dictée ne pouvait plus jamais partir** :
+son client reste « non renseigné » jusqu'à ce que quelqu'un le renseigne, et
+plus personne ne le pouvait.
+
+**Ce que ce défaut apprend, et qui dépasse cet écran.** Le dépôt avait déjà
+tranché ce point exact le 4 août, pour l'écran d'APRÈS l'envoi
+(`TransmettreAuClient`) : *« si la coordonnée manque, elle se saisit sur place —
+il n'existe aucun autre écran pour la renseigner, et renvoyer le patron sur la
+fiche du client l'enverrait vers une porte qui n'existe pas »*. La règle était
+juste et écrite ; elle n'avait été appliquée qu'à un seul des deux écrans. Un
+mois plus tard, le second l'a payée.
+
+**La règle, donc, et pour tout arrêt du parcours :** un écran qui refuse
+d'avancer offre de lever ce qui l'arrête, ou nomme un endroit qui existe. Jamais
+l'un sans l'autre. Un renvoi vers « sa fiche », « les réglages », « l'écran
+précédent » se périme dès que la navigation bouge — et rien ne le signale, parce
+qu'aucun test ne suit un lien écrit dans une phrase.
+
+**Ce qui est en place :**
+
+- `PreparationEnvoi` porte `clientId`, sans quoi l'écran ne peut rien réparer ;
+- `EnvoiAuClient` offre les deux canaux et le champ, puis **rejoue la
+  préparation** — l'état affiché vient toujours du serveur, jamais d'un blocage
+  qu'on aurait effacé à la main ;
+- la coordonnée est écrite **sur le client**, pas retenue pour cet envoi : c'est
+  la même information que la fiche portait, et la saisir deux fois serait la
+  saisir une fois de trop ;
+- `devis_absent` reste un arrêt sec, et c'est juste : aucune saisie ne le lève.
+
+**Pourquoi aucune suite ne l'avait vu.** Toutes créaient leur chantier **avec**
+un numéro — `test-envoi-raison-e2e` remplit le champ téléphone dès la création.
+Le chemin le plus courant chez le patron — créer, laisser le contact vide,
+envoyer — n'était emprunté par personne.
+`scripts/test-envoi-contact-sur-place-e2e.ts` l'emprunte, par l'écran, et va
+jusqu'à vérifier que la coordonnée est **rangée en base** : un écran qui
+accepterait la saisie sans la ranger serait vert à l'œil et faux — elle serait à
+ressaisir au prochain envoi. Confronté au code livré : trois rouges.
+
+---
+## 63. « Réessayer » ne pouvait pas réparer un morceau de code disparu
 
 **Le 11 août 2026, 18 h 02.** Le patron envoie deux captures de son téléphone.
 La première est l'indicateur de Next.js, marqué **(stale)** :
@@ -4120,7 +4494,7 @@ planning », « Photos indisponibles ». Sur un morceau manquant, **ces phrases
 mentent** : le planning n'y est pour rien, c'est la page entière qui a vieilli.
 Elles ne servent donc que lorsque la cause leur appartient vraiment.
 
-### Un corps commun pour les dix écrans d'erreur
+### Un corps commun pour les neuf écrans d'erreur
 
 `src/components/atlas/CorpsErreur.tsx`. Dix `error.tsx` portaient dix copies du
 même corps ; le jour où l'un d'eux apprend à se relever, les neuf autres ne
@@ -4182,7 +4556,7 @@ mince, mais elle est dite plutôt que tue.
 
 ---
 
-## 60. Les deux portes de la création : une bascule, et une capsule
+## 64. Les deux portes de la création : une bascule, et une capsule
 
 **Trois demandes du patron, le 11 août 2026 au soir, dans cet ordre.**
 
@@ -4232,7 +4606,7 @@ se trouver** sur un écran qu'on parcourt vite.
 MOYEN : « le même arrondi à 16 px se lit comme un bouton d'application ». Un
 demi-cercle franc est une forme en soi — un jeton, pas une tuile.
 
-**Elle est sur les dix-huit écrans depuis le 11 août au soir**, et il n'existe
+**Elle est sur les dix-sept écrans depuis le 11 août au soir**, et il n'existe
 plus qu'une seule forme d'action principale. Le chemin pour y arriver compte
 autant que la décision : le patron a d'abord dit *« montre-moi avant de faire,
 plutôt que de faire pour revenir en arrière »*. La capsule a donc été posée dans
@@ -4252,7 +4626,7 @@ fait — ce n'est pas un défaut, c'est le geste le plus irréversible de
 l'application.
 
 **Un effet de bord heureux, vu en capture :** sur l'écran d'erreur, la bulle de
-l'assistant mordait sur le bouton (§59). Une capsule centrée ne l'atteint plus.
+l'assistant mordait sur le bouton (§63). Une capsule centrée ne l'atteint plus.
 La réserve `pb-40` reste : elle protège d'un message plus long, pas d'une
 largeur.
 

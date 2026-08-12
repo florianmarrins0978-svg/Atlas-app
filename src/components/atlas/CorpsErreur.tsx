@@ -5,7 +5,7 @@ import { colors, smallCaps } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { peutRechargerSeul, repriseApresErreur, type Reprise } from "@/lib/reprise-erreur";
 
-// Le corps commun des dix écrans d'erreur : la carte, la cause en développement,
+// Le corps commun des neuf écrans d'erreur : la carte, la cause en développement,
 // la référence, et le bouton qui **sort vraiment de la panne**.
 //
 // Il existe pour deux raisons, et la seconde est la plus importante :

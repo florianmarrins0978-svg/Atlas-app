@@ -1,31 +1,31 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { issueApresMiseAJour } from "../src/lib/issue-mise-a-jour";
 
-// **« La mise à jour n'a pas abouti. Redémarrez l'espace de travail. »**
+// **« J'ai relancé le banc, j'ai essayé, ça ne marche pas. »**
 //
-// Le patron a lu cette phrase le 7 août 2026, et elle accusait le mauvais
-// coupable. Tirer le code neuf remplace des centaines de fichiers SOUS le
-// serveur en train de tourner : il se recompile aussitôt, et la réponse en
-// cours de route est coupée. Le navigateur ne reçoit donc rien — y compris
-// quand la mise à jour a parfaitement réussi. Il est reparti redémarrer un
-// espace qui n'en avait aucun besoin.
+// Le patron, le 11 août 2026 au soir, après une livraison. Le code neuf était
+// bien tiré — la ligne Version affichait le commit neuf — et l'écran servi
+// restait l'ancien. Il pouvait recharger cent fois.
 //
-// Deux choses tenues ici, et aucune ne se voyait avant :
+// La cause tient en une phrase : **`next start` sert un dossier BÂTI, figé à la
+// seconde de sa construction.** Le message, lui, promettait « rechargez la
+// page, l'application se recompile » : vrai en développement, faux sur la
+// version rapide.
 //
-//   1. **l'issue survit à la réponse.** Elle est déposée dans un fichier avant
-//      que quoi que ce soit puisse couper la connexion, et l'écran la relit au
-//      rendu suivant ;
-//   2. **elle n'est jamais déposée dans le dépôt.** Un fichier à la racine
-//      rendrait l'arbre git sale, et `mettre-a-jour.sh` refuserait alors TOUTES
-//      les mises à jour suivantes : le remède aurait créé la panne, pour de
-//      bon.
+// C'est la troisième fois que ce dépôt paie le même malentendu — *le produit
+// paraît cassé alors qu'il est simplement vieux*. Les deux premières ont donné
+// la ligne Version, puis le bouton « Chercher les dernières corrections ».
 //
-// Le point 2 se démontre sur un vrai dépôt git, pas en lisant le code.
+// Ce que cette suite tient :
+//
+//   1. en développement, la phrase d'origine reste — elle était exacte ;
+//   2. sur la version bâtie, on ne promet plus une recompilation qui n'aura
+//      pas lieu ;
+//   3. **on ne coupe le serveur que si un veilleur le relèvera.** Sans lui, le
+//      remède éteindrait l'application du patron pour lui livrer un correctif.
 
 let echecs = 0;
+
 function cas(nom: string, verifier: () => void) {
   try {
     verifier();
@@ -36,108 +36,76 @@ function cas(nom: string, verifier: () => void) {
   }
 }
 
-const SOURCE = readFileSync(new URL("../src/app/reglages/actions.ts", import.meta.url), "utf8");
+console.log("=== Ce qu'on annonce après avoir tiré du code neuf ===\n");
 
-console.log("=== L'issue de la mise à jour survit à la réponse coupée ===");
+cas("en développement : la phrase d'origine, et rien n'est coupé", () => {
+  const r = issueApresMiseAJour({
+    versionBatie: false,
+    veilleurPresent: true,
+    suffixeVersion: " · c35be23",
+  });
+  assert.equal(r.couperLeServeur, false, "on couperait un serveur qui se recompile tout seul");
+  assert.match(r.message, /se recompile/, "la phrase exacte du mode développement a disparu");
+  assert.match(r.message, /c35be23/, "la version n'est pas rappelée : c'est elle qui prouve la mise à jour");
+});
 
-cas("l'issue est écrite dans un fichier, pas seulement rendue à l'appelant", () => {
-  assert.match(
-    SOURCE,
-    /noterIssue\(/,
-    "Rien n'est déposé hors de la réponse : une réponse coupée efface l'issue, et l'écran ment."
+cas("version bâtie, veilleur présent : on reconstruit, et on le dit", () => {
+  const r = issueApresMiseAJour({
+    versionBatie: true,
+    veilleurPresent: true,
+    suffixeVersion: " · c35be23",
+  });
+  assert.equal(r.couperLeServeur, true, "le code neuf ne sera jamais servi : la version bâtie est figée");
+  assert.doesNotMatch(
+    r.message,
+    /se recompile/,
+    "on promet encore une recompilation que la version bâtie ne fera jamais"
   );
+  assert.match(r.message, /reconstruit/, "on ne dit pas ce qui va se passer");
   assert.match(
-    SOURCE,
-    /derniereIssueMiseAJour/,
-    "L'issue est écrite mais jamais relue : elle ne sert alors à personne."
+    r.message,
+    /injoignable/,
+    "on ne prévient pas que l'application va disparaître une minute : il la croirait plantée"
   );
 });
 
-cas("l'issue est notée AVANT que la migration puisse couper la réponse", () => {
-  // **Le repère a changé le 9 août 2026, pas l'exigence.** Ce cas cherchait la
-  // chaîne `"db:migrate"` ; les migrations passent désormais par
-  // `appliquer-migrations.sh`, qui les lance sous le rôle propriétaire au lieu
-  // du rôle applicatif. Le contrôle est donc devenu rouge sans qu'aucune
-  // régression n'ait eu lieu — et c'est le bon comportement : un repère qui
-  // disparaît doit faire du bruit, pas se taire (`iMigration` valait -1, et
-  // `iNote < -1` est faux).
-  //
-  // On accepte les deux marqueurs pour que le cas dise ce qu'il veut dire :
-  // « quoi que fasse la migration, l'issue est écrite avant ».
-  const iNote = SOURCE.indexOf("await noterIssue(etat)");
-  const marqueurs = ['appliquer-migrations.sh', '"db:migrate"']
-    .map((m) => SOURCE.indexOf(m))
-    .filter((i) => i >= 0);
-  assert.ok(iNote > 0, "L'issue n'est pas notée du tout.");
-  assert.ok(
-    marqueurs.length > 0,
-    "Plus aucune migration n'est déclenchée par la mise à jour : le code neuf arrivera sur une base vieille."
+cas("version bâtie, aucun veilleur : on ne coupe RIEN", () => {
+  const r = issueApresMiseAJour({
+    versionBatie: true,
+    veilleurPresent: false,
+    suffixeVersion: " · c35be23",
+  });
+  assert.equal(
+    r.couperLeServeur,
+    false,
+    "on couperait l'application du patron sans personne pour la relever : il resterait devant un écran mort"
   );
-  assert.ok(
-    iNote < Math.min(...marqueurs),
-    "L'issue est notée après la migration : si la réponse est coupée pendant celle-ci, elle est perdue — exactement le cas du 7 août."
-  );
-});
-
-cas("l'échec inattendu laisse lui aussi une trace, avec sa raison", () => {
+  assert.doesNotMatch(r.message, /se recompile/, "promesse impossible sur une version bâtie");
   assert.match(
-    SOURCE,
-    /catch[\s\S]{0,200}noterIssue\(`impossible/,
-    "Un échec ne note rien : l'écran affichera l'issue de l'essai PRÉCÉDENT, ce qui est pire qu'aucune."
+    r.message,
+    /rouvrez l'espace/,
+    "on ne dit pas le seul geste qui reste : rouvrir l'espace de travail"
   );
 });
 
-console.log("\n=== Le journal ne doit jamais salir le dépôt ===");
-
-cas("un fichier déposé à la racine bloquerait toutes les mises à jour suivantes", () => {
-  // Ce cas ne relit pas le code : il DÉMONTRE la panne évitée, sur un vrai
-  // dépôt git, avec le vrai script. Sans cette démonstration, « on a mis le
-  // fichier dans /tmp » reste une intention, pas une garantie.
-  const racine = mkdtempSync(join(tmpdir(), "atlas-issue-"));
-  try {
-    const git = (...args: string[]) => execFileSync("git", args, { cwd: racine, encoding: "utf8" });
-    git("init", "--quiet", "-b", "main");
-    git("config", "user.email", "essai@atlas.local");
-    git("config", "user.name", "Essai");
-    writeFileSync(join(racine, "fichier.txt"), "contenu\n");
-    git("add", "-A");
-    git("commit", "--quiet", "-m", "premier");
-
-    const propre = git("status", "--porcelain").trim();
-    assert.equal(propre, "", "Le dépôt d'essai n'est pas propre au départ : le cas ne prouverait rien.");
-
-    // Ce que le remède aurait fait s'il avait écrit à la racine.
-    writeFileSync(join(racine, "atlas-mise-a-jour.txt"), "07:46 — faite\n");
-    assert.notEqual(
-      git("status", "--porcelain").trim(),
-      "",
-      "Un fichier neuf à la racine devrait salir l'arbre : sans cela ce cas ne démontre rien."
-    );
-
-    // …et `mettre-a-jour.sh` refuse alors, définitivement.
-    const scriptRacine = new URL("../.devcontainer/mettre-a-jour.sh", import.meta.url).pathname;
-    const issue = execFileSync("bash", [scriptRacine, racine], { encoding: "utf8" }).trim();
-    assert.match(
-      issue,
-      /modifications non enregistrées/,
-      `Le script répond « ${issue} » : le cas n'éprouve plus ce qu'il croit éprouver.`
-    );
-  } finally {
-    rmSync(racine, { recursive: true, force: true });
+cas("le suffixe de version est toujours repris, quel que soit le cas", () => {
+  for (const versionBatie of [false, true]) {
+    for (const veilleurPresent of [false, true]) {
+      const r = issueApresMiseAJour({ versionBatie, veilleurPresent, suffixeVersion: " · abc1234" });
+      assert.match(
+        r.message,
+        /abc1234/,
+        `la version manque (bâtie=${versionBatie}, veilleur=${veilleurPresent}) — c'est elle qui prouve la mise à jour`
+      );
+    }
   }
 });
 
-cas("le journal vit donc dans /tmp, et le code le dit", () => {
-  assert.match(
-    SOURCE,
-    /"\/tmp\/atlas-mise-a-jour\.txt"/,
-    "Le journal n'est pas dans /tmp : voir le cas précédent pour ce que cela coûte."
-  );
-  assert.ok(
-    !existsSync(new URL("../atlas-mise-a-jour.txt", import.meta.url).pathname),
-    "Un journal traîne à la racine du dépôt : il bloquera la prochaine mise à jour."
-  );
+cas("sans version connue, le message reste une phrase lisible", () => {
+  const r = issueApresMiseAJour({ versionBatie: true, veilleurPresent: true, suffixeVersion: "" });
+  assert.doesNotMatch(r.message, /\s\./, "une ponctuation orpheline traîne là où la version manquait");
+  assert.ok(r.message.length > 40, "le message s'est effondré quand le dépôt n'a pas répondu");
 });
 
-console.log(`\n${echecs === 0 ? "✅" : "❌"} Issue de mise à jour — ${echecs} échec(s).`);
-if (echecs > 0) process.exit(1);
+console.log(`\n${echecs === 0 ? "✅" : "❌"} Issue de la mise à jour — ${echecs} échec(s).`);
+process.exit(echecs === 0 ? 0 : 1);

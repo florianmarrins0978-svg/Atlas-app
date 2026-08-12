@@ -28,6 +28,20 @@ const executer = promisify(execFile);
  * donc à chaque affichage. Quelques millisecondes, sur un écran consulté trois
  * fois par semaine.
  *
+ * **Et la BRANCHE se dit, pas seulement la date — c'est le défaut du 11 août
+ * 2026 au soir.** Le bouton « Nouveau chantier » venait d'être livré sur une
+ * branche de travail ; l'espace du patron, lui, suit `main`, où le bouton
+ * n'était pas. Il a ouvert Réglages, lu une date de la même heure — `main`
+ * avançait en parallèle — et conclu, à juste titre : *« j'ai la nouvelle
+ * dernière mise à jour »*. Puis : *« la modification n'est pas effectuée »*.
+ *
+ * Les deux affirmations étaient vraies. Son espace était parfaitement à jour, et
+ * le travail était ailleurs. Une date et un commit court ne pouvaient pas
+ * l'arbitrer : deux branches vivantes le même soir portent la même heure et des
+ * empreintes également illisibles sur six pouces. **Le nom de la branche est le
+ * seul mot de cette ligne qui répond vraiment à « est-ce que j'ai ce qui vient
+ * d'être fait ».**
+ *
  * `safe.directory` est passé à l'appel : dans un conteneur, le dossier de
  * travail appartient souvent à un autre compte que celui qui exécute, et git
  * refuse alors de répondre — panne muette qui aurait ramené « inconnue » par un
@@ -59,33 +73,22 @@ async function versionDuDepot(racine: string): Promise<string | null> {
       ["-c", `safe.directory=${racine}`, "log", "-1", "--date=format:%d/%m/%Y %H:%M", "--format=%cd · %h"],
       { cwd: racine, timeout: 5_000 }
     );
-    const commit = stdout.trim();
-    if (!commit) return null;
+    const version = stdout.trim();
+    if (!version) return null;
     const branche = await brancheDuDepot(racine);
-    return branche ? `${commit} · ${branche}` : commit;
+    return branche ? `${version} · ${branche}` : version;
   } catch {
     return null;
   }
 }
 
 /**
- * **La branche suivie — et c'est le manque qui a coûté la matinée du 12 août.**
+ * La branche suivie par le dépôt servi.
  *
- * Le patron a envoyé une capture de son écran de création : c'était celui de la
- * veille. Ni son téléphone ni un cache : `.devcontainer/mettre-a-jour.sh`
- * récupère **la branche sur laquelle l'espace se trouve déjà**, et le travail
- * avait été livré sur une autre. La mise à jour a donc répondu « à jour », en
- * toute honnêteté, en servant du code d'avant-hier.
- *
- * L'écran des réglages existe précisément pour qu'« une capture d'écran réponde
- * à la question sans avoir à la poser ». Il répondait à « quelle version ? » et
- * pas à « quelle branche ? » — or c'est la seconde qui manquait. Le commit seul
- * ne suffit pas : `a1b2c3d` ne dit à personne qu'il vient du mauvais endroit.
- *
- * Rend `null` plutôt que de propager : la version reste affichable sans la
- * branche, et un écran de réglages ne doit pas tomber parce que git s'est tu.
- * `HEAD` détaché rend le mot « HEAD », qui est une réponse — et une réponse
- * utile, puisqu'un espace détaché ne se met plus à jour du tout.
+ * Rend `null` — et non « inconnue » — quand git ne répond pas ou que la tête est
+ * détachée : la ligne Version perd alors son dernier mot, ce qui est exactement
+ * l'état d'avant. Mieux vaut une ligne incomplète qu'une ligne qui affirme une
+ * branche fausse ; c'est précisément la confiance qu'on cherche à rétablir ici.
  */
 async function brancheDuDepot(racine: string): Promise<string | null> {
   try {
@@ -94,7 +97,8 @@ async function brancheDuDepot(racine: string): Promise<string | null> {
       ["-c", `safe.directory=${racine}`, "rev-parse", "--abbrev-ref", "HEAD"],
       { cwd: racine, timeout: 5_000 }
     );
-    return stdout.trim() || null;
+    const branche = stdout.trim();
+    return branche && branche !== "HEAD" ? branche : null;
   } catch {
     return null;
   }

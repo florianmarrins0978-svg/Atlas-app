@@ -6,7 +6,7 @@
 
   **Pourquoi ce script existe.** Le patron, le 11 août 2026 : *« montre-moi avant
   de faire, plutôt que de faire pour revenir en arrière »*. Il avait raison, et
-  c'est la bonne règle : changer dix-huit écrans puis les défaire, c'est lui
+  c'est la bonne règle : changer dix-sept écrans puis les défaire, c'est lui
   faire porter le risque d'un choix qu'il n'a pas encore fait.
 
   Le script ne connaît AUCUNE liste d'écrans par cœur : il parcourt les adresses

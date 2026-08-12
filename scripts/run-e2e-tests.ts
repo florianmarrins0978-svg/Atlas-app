@@ -119,7 +119,45 @@ if (process.argv.includes("--list")) {
   process.exit(0);
 }
 
+/**
+ * Quelque chose écoute-t-il déjà sur le port qu'on s'apprête à prendre ?
+ *
+ * **Ce que ça évite, et qui est arrivé quatre fois le 11 août 2026.** Ce script
+ * lançait son serveur, puis attendait qu'une santé réponde sur le port 3000. Il
+ * ne vérifiait jamais que la réponse venait de SON serveur. Un orphelin d'une
+ * exécution précédente suffisait : le `next dev` lancé ici mourait aussitôt sur
+ * `EADDRINUSE`, sans que personne ne lise sa sortie, et **cinquante suites
+ * travaillaient sur un serveur que la batterie n'avait pas démarré**.
+ *
+ * Le prix payé : un rouge dans `test-prix-e2e` (« '0.00' == '34.50' »), qui
+ * n'avait rien à voir avec le prix — l'occupant compilait, l'enregistrement
+ * n'avait pas le temps de partir. Une batterie qui interroge un serveur
+ * inconnu ne prouve rien, verte OU rouge : c'est le pire des deux états.
+ */
+async function quelquUnEcouteDeja(url: string): Promise<boolean> {
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(3000) });
+    return r.status === 200;
+  } catch {
+    // Personne, ou quelque chose qui ne répond pas comme Atlas : dans les deux
+    // cas, notre serveur dira lui-même s'il n'arrive pas à prendre le port.
+    return false;
+  }
+}
+
 async function main() {
+  // **Avant tout le reste** : un port occupé rend la suite entière ininterprétable.
+  if (await quelquUnEcouteDeja("http://localhost:3000/api/health/live")) {
+    console.error(
+      "❌ Quelque chose écoute DÉJÀ sur le port 3000, et ce n'est pas cette batterie.\n" +
+        "   Refus de continuer : les suites travailleraient sur ce serveur-là — celui d'un autre\n" +
+        "   code, peut-être d'une autre branche — et leur résultat ne voudrait rien dire.\n" +
+        "   Le plus souvent, c'est un orphelin du banc d'essai :\n" +
+        "     pgrep -af 'next-server|next dev'   puis   kill -9 <pid>"
+    );
+    process.exit(1);
+  }
+
   console.log("Seed de la base de développement...");
   const seedResult = spawnSync(NODE, [TSX, "src/server/db/seed.ts"], {
     stdio: "inherit",

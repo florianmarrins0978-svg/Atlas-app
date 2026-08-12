@@ -7,12 +7,935 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-12
+
+### L'écran de connexion accusait le patron pendant qu'un service était couché
+
+**Le 12 août 2026 :** *« Ça ne marche pas, je n'arrive pas à me connecter.
+Occupe-toi-en, moi je ne peux pas le faire. »*
+
+Deux défauts distincts, tous deux trouvés en coupant les services pour de bon
+plutôt qu'en raisonnant dessus.
+
+**1. La base arrêtée lui répondait « Email ou mot de passe incorrect ».** La
+requête qui cherche son compte échouait, Auth.js l'emballait dans une
+`AuthError`, et l'écran les traitait toutes pareil. Il pouvait retaper son mot
+de passe toute la nuit : le message lui disait de recommencer, et recommencer ne
+pouvait rien donner. C'est le défaut que l'en-tête de `src/app/login/actions.ts`
+interdit depuis le 6 août — *ne jamais répondre « mot de passe incorrect » à
+quelqu'un dont le mot de passe est bon* — sous sa **troisième** forme. Un seul
+type d'erreur veut dire « ces identifiants sont faux » ; tous les autres veulent
+dire « on n'a pas pu vérifier », et se rendent désormais par une phrase qui dit
+les deux choses qui comptent : **ce n'est pas vous**, et ça se répare du côté du
+service. Le journal, lui, nomme la cause.
+
+**2. Redis tombé l'enfermait dehors, sans un mot.** `verifierLimite` levait
+`MaxRetriesPerRequestError`, l'action de connexion mourait avec, et la page ne
+bougeait pas. Un limiteur protège d'un ABUS : refuser tout le monde quand son
+magasin tombe, ce n'est pas protéger, c'est infliger soi-même la panne dont on
+se protégeait — et la première victime est celui qui a le droit d'entrer. La
+demande passe donc, et le journal le dit fort. **Ce que ça coûte, franchement :**
+pendant la panne du magasin, la protection contre les essais en rafale n'existe
+plus. Risque accepté et borné à la durée de la panne, contre la certitude
+d'enfermer l'artisan dehors.
+
+**Ce qui manquait vraiment, et qui existe maintenant :**
+`scripts/test-connexion-service-en-panne-e2e.ts` **coupe les services pour de
+bon** — Redis, puis PostgreSQL — et regarde ce que l'écran répond, dans un vrai
+navigateur. C'est le seul contrôle du dépôt qui fasse cela ; tous les autres
+supposent l'environnement debout, et c'est exactement pour cela qu'aucun n'avait
+jamais vu ce message mentir. Il remet chaque service en marche derrière lui, et
+saute proprement le volet base s'il n'a pas de quoi la remonter — le dire plutôt
+que de risquer de la laisser à terre pour les autres suites.
+
+Confronté : en rétablissant l'ancien traitement, deux contrôles rougissent en
+citant l'écran mot pour mot — « Email ou mot de passe incorrect » pendant que la
+base est arrêtée.
+
+---
+
+## 2026-08-11
+
+### Le serveur fantôme du port 3000 : un gardien juste, posé trop tard
+
+Quatre batteries de suite ont fini sur « ❌ Le port 3000 est déjà pris », et
+l'une d'elles a fait accuser le calcul du prix — `'0.00' == '34.50'`, un
+enregistrement qui n'avait pas eu le temps de partir pendant que l'occupant
+compilait. Le prix n'y était pour rien.
+
+**Ce n'était pas une suite oublieuse** — l'hypothèse écrite en premier, et
+fausse. Une sentinelle a noté ce qui tournait au moment où le serveur
+apparaissait : parent déjà mort, aucune suite en cours, le verrou du banc à la
+même minute. Le lanceur était `verifier-connexion-avec-serveur.mts`, qui monte
+un vrai banc puis tue son groupe dès la connexion éprouvée.
+
+`banc.mjs` **sert d'abord et bâtit ensuite** ; ses gestionnaires de `SIGTERM`
+vivaient en fin de fichier, donc **après** la construction. Entre le lancement du
+serveur et leur installation, plusieurs minutes : un signal reçu là tuait le
+script net, et le serveur — détaché, pour d'excellentes raisons — survivait sur
+le port. Le code était juste ; il arrivait en retard.
+
+Ils sont désormais posés ligne suivante après le lancement. Et la batterie
+navigateur **refuse** un port déjà pris au lieu de se rabattre en silence sur
+l'occupant : c'était le plus grave, car cinquante suites avaient travaillé une
+fois sur un serveur qu'elle n'avait pas lancé, sans un mot. Un résultat obtenu
+d'un serveur inconnu ne prouve rien — vert ou rouge, c'est le pire des deux
+états.
+
+**Les deux contrôles savent échouer**, et l'un d'eux a dû être renforcé pour
+cela : sa première version cherchait le nom de la fonction dans le fichier et
+restait verte quand la garde était neutralisée d'un `if (false && …)`. Un
+contrôle qui se contente de trouver un mot ne protège que du mot.
+
+### Un chantier dicté ne pouvait plus jamais être envoyé au client
+
+**Le patron, capture à l'appui :** *« l'encart qui permet d'envoyer aux clients
+par SMS, par e-mail, a disparu. »* La feuille d'envoi était réduite à une
+phrase — « Indiquez d'abord comment joindre ce client — sur sa fiche » — et un
+bouton grisé.
+
+**L'encart n'avait pas disparu ; la porte qu'on lui désignait, si.** L'écran
+« Informations », seul endroit où saisir un téléphone ou un e-mail, avait quitté
+le tiroir de la fiche **quelques heures plus tôt, à sa demande** — c'est donc un
+défaut créé le soir même, en allégeant cet écran. Résultat : un chantier né d'une
+dictée, dont le client reste « non renseigné », ne pouvait plus jamais partir.
+
+Les deux canaux et le champ sont désormais offerts **là où ça bloque**, et la
+coordonnée est écrite sur le client — pas retenue pour ce seul envoi.
+
+**Ce que ça apprend dépasse cet écran, et c'est le vrai enseignement.** Le dépôt
+avait déjà tranché ce point exact le 4 août, pour l'écran d'APRÈS l'envoi :
+*« si la coordonnée manque, elle se saisit sur place — il n'existe aucun autre
+écran pour la renseigner, et renvoyer le patron sur la fiche du client
+l'enverrait vers une porte qui n'existe pas »*. La règle était juste, écrite, et
+n'avait été appliquée qu'à un seul des deux écrans. Une semaine plus tard, le
+second l'a payée. Elle est maintenant générale (`ARCHITECTURE.md` §62) : **un
+écran qui refuse d'avancer offre de lever ce qui l'arrête, ou nomme un endroit
+qui existe** — jamais l'un sans l'autre. Un renvoi écrit dans une phrase se
+périme dès que la navigation bouge, et aucun test ne suit un lien écrit en
+français.
+
+**Pourquoi aucune suite ne l'avait vu :** toutes créaient leur chantier AVEC un
+numéro. Le chemin le plus courant chez lui — créer, laisser le contact vide,
+envoyer — n'était emprunté par personne. Il l'est maintenant, par l'écran, et le
+contrôle va jusqu'à vérifier que la coordonnée est rangée en base : un écran qui
+accepterait la saisie sans la ranger serait vert à l'œil et faux. Confronté au
+code livré : trois rouges.
+
+### Ajouter une photo ne fait plus changer de page — et l'écran Photos disparaît
+
+**Le patron, capture à l'appui :** *« lorsque je suis sur la page chantier et que
+je clique sur l'encadré doré avec le petit plus doré pour ajouter des photos, je
+veux que ça arrête de me faire changer de page […] et que tu me supprimes toutes
+les autres étapes »*.
+
+Ajouter une photo coûtait **quatre gestes et un changement d'écran** : le « + »,
+la page Photos, le bouton « Ajouter une photo », notre feuille « Prendre une
+photo / Choisir dans ma bibliothèque », et **enfin** le menu du téléphone. Il en
+coûte deux : le « + », puis le menu du téléphone.
+
+**Notre feuille maison a disparu parce que le système fait mieux.** Un champ
+`accept="image/*"` **sans `capture`** fait afficher par iOS un menu qui porte
+déjà les trois entrées — *Photothèque*, *Prendre une photo*, *Choisir les
+fichiers*. Les deux chemins que le patron exigeait le 6 août y sont, au même
+endroit, un geste plus tôt. `capture` reste interdit : sur un iPhone il n'exprime
+pas une préférence, il **impose** l'appareil photo et retire l'accès à la
+photothèque.
+
+**L'écran `/chantiers/[id]/photos` n'existe plus** — décision prise avec le
+patron le même jour. Ajouter, regarder et retirer se font désormais dans la
+pellicule du tiroir de la fiche. La route répond 404, et une suite le vérifie :
+un écran à moitié supprimé est un chemin mort qu'on retrouve trois mois plus
+tard sans savoir s'il compte encore. Deux choses ont été supprimées avec lui, à
+dessein : le décompte « 6 photos » (il comptait ce qu'on a sous les yeux) et le
+lien « Passer à la note vocale » (l'anneau est au centre de la fiche depuis la
+veille).
+
+**Deux défauts que le déménagement crée, et qu'aucune relecture n'aurait
+vus** — détail dans `ARCHITECTURE.md` §60 :
+
+- la visionneuse plein écran, rendue **dans** le tiroir, passait **sous** la
+  barre de navigation : le tiroir porte un `z-index` et plafonne ses enfants.
+  Elle sort par un portail, et une suite mesure que la barre est bien couverte ;
+- le tiroir mesurait sa hauteur sur `[photos.length, etapes.length]`. La
+  pellicule ne passant plus par ses propriétés, la mesure ne voyait plus rien :
+  le tiroir des retirés apparaissait **derrière le bord**, « Annuler » hors
+  d'atteinte. Il observe désormais son corps (`ResizeObserver`).
+
+**Ce que la suite tient :** l'adresse **avant et après** l'ajout — c'est la
+demande elle-même, et tout le reste peut être vert pendant que le patron change
+d'écran.
+
+### La ligne « Version » ne disait pas la BRANCHE — et il a cru avoir le bouton
+
+**Le patron :** *« la modification du bouton nouveau chantier n'est pas
+effectuée. Corrige ça. Et pourtant, j'ai la nouvelle dernière mise à jour, celle
+de dix-neuf heures et quelques. »*
+
+**Les deux affirmations étaient vraies, et c'est tout le problème.** Le bouton
+est bien codé, poussé, éprouvé — sur la branche
+`claude/nouveau-chantier-button-design-2vuu9h`. Son espace de travail, lui, suit
+`main`, où il n'a jamais été fusionné. Et `main` avançait ce soir-là en
+parallèle : `19:02`, `19:11`, `19:13`, `19:37`. Il a ouvert Réglages, lu
+« 11/08/2026 19:37 · b45cd5d », et conclu qu'il avait la livraison de dix-neuf
+heures. Il l'avait — ce n'était simplement pas celle-là.
+
+**Rien à l'écran ne pouvait l'arbitrer.** Deux branches vivantes le même soir
+portent la même heure, et sept caractères d'empreinte ne se comparent pas de
+tête sur six pouces. La ligne Version existait précisément pour répondre à
+« est-ce que j'ai les corrections ? » (7 août) ; elle a répondu **oui** à une
+question à laquelle la réponse était **non**.
+
+Elle nomme désormais la branche suivie — `… · b45cd5d · main` — et l'écran dit
+en toutes lettres qu'un correctif livré sur une autre branche n'arrivera jamais
+là, quelle que soit la date et quel que soit le nombre de fois qu'on presse
+« Chercher les dernières corrections ». Ce bouton suit la branche courante : il
+répondra fidèlement « vous étiez déjà à jour » jusqu'à la fin des temps.
+
+**Un second mensonge, trouvé en chemin, dans `.devcontainer/demarrer.sh`.**
+`ATLAS_VERSION` était calculée à la ligne 108 et la mise à jour arrivait à la
+ligne 155 : le bandeau du terminal annonçait donc « Le code a été mis à jour au
+démarrage » puis « Version exécutée : *celle d'avant* ». Elle est relue après la
+mise à jour, avant que le veilleur ne reparte — sans quoi le serveur neuf
+héritait lui aussi de la variable périmée.
+
+Les trois états sont éprouvés, y compris ceux où l'on n'invente rien : hors
+dépôt git (« inconnue »), et tête détachée (la ligne perd son dernier mot
+plutôt que d'affirmer une branche fausse). Confronté à l'ancien code, le
+contrôle rougit et nomme la branche manquante.
+
+**Et le bouton est parti chez lui.** Sur son accord — *« fusionne dans main »* —
+la branche est fusionnée dans `main` en avance rapide (`6059641`), batterie
+complète au vert sur la fusion, 54/54 suites navigateur et connexion réelle
+derrière une origine étrangère. Son espace le prendra au prochain allumage, ou
+tout de suite par « Chercher les dernières corrections ».
+
+### Six façons d'ouvrir un chantier, pour remplacer l'aplat vert
+
+*« J'aime pas le gros bouton nouveau chantier […] ce gros bouton en plein
+milieu, ça ne fait pas très luxe »*, le 11 août 2026, capture à l'appui.
+
+`docs/maquettes/14-le-geste-nouveau-chantier.html` propose six remplaçants au
+même endroit, l'écran restant identique par ailleurs — même en-tête, même fil,
+même perle : **le filet** qui se trace, **le sceau**, **le premier brin**, **le
+cartouche gravé**, **la pastille au pouce**, **la légende sur le trait**.
+Rien n'est codé : l'application porte toujours l'aplat (`TODO.md`, 0 terdecies).
+
+**Trois choix de fabrication qui ont compté.**
+
+1. **Les écrans font 390 × 664**, la dalle réelle du patron (`ECRAN_DU_PATRON`),
+   et non les 852 px d'une fiche technique. C'est ce qui rend le reproche
+   mesurable : l'aplat coûte quatre-vingts pixels, soit **un chantier de moins**
+   visible. L'écran d'aujourd'hui figure sur la page, à côté du constat — on ne
+   compare pas à un souvenir.
+2. **Tout ce qui bouge, bouge sans qu'on le survole.** Le patron regarde depuis
+   un téléphone : un état qui n'existe qu'au survol n'existe pas pour lui. Les
+   six propositions s'animent seules, en CSS, et l'état « doigt posé » est
+   montré en fixe à côté du repos.
+3. **Aucun script**, comme les treize maquettes précédentes : son lecteur n'en
+   exécute pas, et une page engendrée en JavaScript lui arrive vide.
+
+### Un rouge d'enchaînement qui n'en était pas un
+
+`test-devis-e2e` — le total TTC d'un devis — est tombé **une fois** dans un
+balayage complet, puis a repassé au vert sur les trois vérifications suivantes :
+seule, sur `main` seul, et dans un second balayage complet de la même branche
+(51/51). Il n'y avait donc rien à corriger, et c'est écrit ici pour que la
+prochaine conversation ne reprenne pas la chasse.
+
+**Ce que la chasse a quand même appris**, et qui vaut plus que le rouge :
+`main` seul passe à 50/50, la branche à 51/51, et la suite fautive est **la
+même** dans les deux cas quand on la joue isolément. Un balayage rouge une fois
+sur quatre n'est pas une preuve : la machine porte alors un serveur, une base,
+un navigateur et parfois un autre balayage — c'est la charge qui bouge, pas le
+code. Rejouer AVANT d'accuser.
+
+**Une seconde suite se comporte de même, et elle est nommée ici pour la même
+raison** : `test-planning-vers-facture-e2e`, sur son dernier cas — *« clôturé
+AVANT sa date : il quitte le planning pour les terminés »*. Deux balayages
+complets l'ont vue rouge, deux exécutions isolées l'ont vue verte, sur le même
+code. Elle porte déjà sa propre explication, et elle est juste : *« l'écran
+Terminés n'a pas répondu en deux tentatives. C'est le serveur de développement
+qui n'a pas suivi, pas l'écran. »* Un message qui désigne le bon coupable vaut
+la moitié du diagnostic — ne pas le contredire sans preuve.
+
+### L'aplat vert est remplacé — le bouton est CODÉ
+
+Douze jours après le refus (*« ce gros bouton en plein milieu, ça ne fait pas
+très luxe »*) et vingt-quatre maquettes plus tard, `src/app/EcranChantiers.tsx`
+porte enfin le bouton qu'il a arrêté : **« Nouveau chantier » écrit, un anneau
+d'un cheveu à sa droite qui BAT tant qu'on ne l'a pas touché**, et à l'appui
+**trois tours avec onze grains d'or**, puis la feuille 520 ms plus tard.
+
+**Les mesures viennent de la maquette, pas d'un souvenir.** Les onze grains
+sont recopiés un à un depuis `docs/maquettes/24-le-bouton-retenu.html`, avec
+leurs distances irrégulières — onze grains à la même distance dessinent une roue
+de vélo, pas une gerbe. Les réinventer, c'était s'assurer que l'écran et la
+maquette divergent au premier retour.
+
+**Ce que le geste protège, et qui n'est pas décoratif :**
+
+- **l'appui s'enfonce en 140 ms**, bien avant la fin du tour — une demi-seconde
+  sans réponse se lit comme une panne, et on appuie deux fois ;
+- **un second appui pendant le geste est ignoré** — sans quoi deux chantiers
+  naissent là où il n'en voulait qu'un ;
+- **sous « mouvement réduit », la feuille monte tout de suite**, sans battement
+  ni gerbe : attendre une animation qui ne joue pas ferait passer un réglage
+  d'accessibilité pour une lenteur ;
+- **le lien garde son `href`** : sans JavaScript, ou avant l'hydratation, il
+  mène à l'écran entier. C'est le repli, et il est voulu.
+
+`scripts/test-bouton-nouveau-chantier-e2e.ts` mesure la demi-seconde et le
+double appui ; `scripts/capture-bouton-nouveau-chantier.mts` prend les trois
+états — l'attente, le geste figé à mi-course, la feuille — parce que trois
+défauts de ces maquettes n'ont été trouvés que par une capture.
+
+**Une variable de plus dans la palette** : `--or`, le second accent, qui
+n'existait que dans `design-tokens.ts` et pas en CSS.
+
+### Le bouton est arrêté : le mot, le rond qui bat, resserré
+
+Il a retenu la première disposition — *« j'aime bien le premier »* — et demandé
+quatre réglages : une onde d'attente qui va moins loin, un ensemble plus petit,
+un rond plus petit, moins de grains.
+`docs/maquettes/24-le-bouton-retenu.html` ne montre que celui-là, et chiffre
+chaque écart pour qu'il puisse être refait à l'identique dans l'application :
+
+| | avant | après |
+|---|---|---|
+| portée de l'onde | 1,85 × le rond | **1,42 ×** |
+| diamètre du rond | 46 px | **38 px** |
+| taille du « + » | 24 px | **20 px** |
+| écart mot ↔ rond | 16 px | **13 px** |
+| corps du libellé | 9,5 px | **9 px** |
+| nombre de grains | 16 | **11** |
+| portée des grains | 58 px | **46 px** |
+
+Ce qui n'a pas bougé : les trois tours freinés en 560 ms, la demi-seconde avant
+la page, l'arrêt net du battement dès l'appui.
+
+**Le contrôle exigeait au moins trois boutons pressables par page** — une
+habitude prise sur les pages de comparaison. Il refusait donc celle-ci, qui
+n'en montre qu'un, et pour cette seule raison. Un contrôle qui encode une
+habitude finit par refuser ce qui la rompt : le seuil est ramené à un.
+
+### Le mot, le rond qui bat, et la poussière
+
+Il a décrit le mixte pièce par pièce : *« nouveau chantier écrit, le plus à
+droite qui clignote en attente qu'on clique dessus, et une fois qu'on clique,
+il se met à tourner avec les éclats de poussière »*.
+
+`docs/maquettes/23-le-mot-et-le-rond-qui-bat.html` tient le geste fixe — le
+battement d'attente, le tour de trois tours, seize grains d'or, puis la page —
+et ne fait varier que **la place du mot** : à droite du rond, coupé en deux par
+lui (« Nouveau » | rond | « chantier »), en petit doré dessous, réduit à
+**« Ajouter »**, accompagné des deux traits, posé au-dessus, ou **effacé par le
+geste lui-même**.
+
+**Le battement n'est pas un clignotement, et c'est délibéré.** Allumé/éteint,
+c'est un signal d'alarme ; ici une onde d'or naît du bord de l'anneau toutes les
+3,4 secondes et se dissout. Elle s'arrête NET dès l'appui : un objet qui
+continue d'appeler alors qu'on l'a déjà pris n'écoute pas. Et le rythme est lent
+à dessein — un écran qui alerte dix fois par jour finit par être ignoré, ou
+éteint.
+
+**Un défaut vu à la capture :** « le mot dessus » était la copie exacte de « le
+mot dessous ». Le mot était déjà écrit avant le rond dans le balisage, et la
+colonne était en plus inversée — deux inversions valent une identité. Les sept
+contrôles étaient verts, et les deux cartes montraient la même chose.
+
+### Le rond redescend au milieu, entre deux traits
+
+*« Je ne veux pas qu'il soit en haut à droite, je veux qu'il soit vraiment
+centré au milieu, et peut-être avec un petit trait de chaque côté du rond […]
+et lorsqu'on clique, les traits qui s'écartent légèrement. »*
+
+`docs/maquettes/22-le-rond-entre-deux-traits.html` reprend donc l'anneau et son
+« + » — celui qu'il a retenu — mais **au centre**, à la place qu'occupait
+l'aplat vert, flanqué de deux traits de 56 px. À l'appui : trois tours, les
+traits s'écartent de douze pixels, puis la page.
+
+Les six déclinaisons sont les mêmes qu'à la maquette 21, à une près : « le trait
+aspiré » devient **« les traits qui rentrent »** — l'inverse du geste demandé,
+gardé pour qu'il puisse comparer plutôt que me croire sur parole.
+
+**Deux de plus, à sa demande, reprennent l'anneau de la note vocale** : un
+cercle sombre à l'extérieur, un second à l'intérieur — et la dernière remplace
+les traits par **les petits crans de la dictée**. L'argument n'est pas de goût :
+les deux écrans cesseraient d'avoir chacun son vocabulaire. On dicte dans un
+anneau, on ouvre un chantier dans le même, et le troisième geste rond, le jour
+où il faudra, existera déjà.
+
+Deux mesures qui ne se voient pas mais qui décident : le rond passe de 46 à
+52 px quand il porte le second anneau — en dessous, deux cercles concentriques
+se touchent presque et l'ensemble se lit comme un trait épais ; et les sept
+crans ont des hauteurs inégales, parce qu'un peigne régulier se lit comme une
+mire d'imprimeur, pas comme un son.
+
+**Les traits sont DANS le lien, pas à côté.** La cible du doigt fait alors toute
+la largeur du groupe au lieu des quarante-six pixels de l'anneau : sur un
+téléphone, c'est la différence entre viser et toucher.
+
+**Un défaut vu à la capture, invisible au contrôle :** le bloc du titre a perdu
+ses marges en changeant de squelette — elles vivaient dans la grille de la
+maquette précédente, où le « + » était dans l'en-tête. « Bonjour Florian » se
+retrouvait collé au bord de l'écran, et les douze contrôles étaient verts.
+
+### Le bouton est choisi : le « + » au bout du titre
+
+Il l'a désigné sur une capture de la maquette 15 (proposition H) : *« le petit
+plus là que tu vois en haut à droite, c'est celui-là que je veux »*. C'est
+l'anneau d'un cheveu posé sur la ligne de base de « Vos chantiers » — celui qui
+**ne coûte aucune ligne à l'écran**. Ce qu'il demande en plus : *« qu'il se
+mette à tourner à fond et qu'ensuite ça ouvre la page »*.
+
+`docs/maquettes/21-le-plus-du-titre.html` en donne six déclinaisons, toutes
+bâties sur le même tour — trois tours rapides, freinés à la fin, puis la page :
+**le tour franc** (rien d'autre), **le tour et la poussière** (seize grains
+d'or), **l'anneau qui s'ouvre** (il s'agrandit jusqu'à devenir la page — et,
+comme il est en haut à droite, la page naît du coin), **les deux sens** (l'anneau
+contre le signe), **le trait aspiré** (le filet de l'en-tête se rétracte dans
+l'anneau), **le tour appuyé** (l'écran recule d'un cheveu, comme il le fait déjà
+quand une feuille monte).
+
+**Un cercle qui tourne ne se voit pas tourner.** Celui du contre-tour porte donc
+une encoche d'or. C'est exactement l'erreur qui avait rendu invisible la lunette
+du cadran, quatre maquettes plus tôt — et elle serait passée une deuxième fois
+sans la capture.
+
+### Trois défauts du contrôle, dont deux qui accusaient la maquette
+
+Éprouver des gestes de plus en plus vivants a fini par casser l'outil qui les
+éprouve, et chaque fois en accusant le mauvais coupable :
+
+- **Sa fenêtre de mesure partait de l'appui.** Quand le clic mettait cinq
+  secondes à rendre la main, elle était close avant d'avoir commencé : il
+  annonçait « la feuille n'est jamais montée » alors qu'elle l'était depuis
+  longtemps.
+- **Son clic attendait un bouton immobile.** Dès qu'un geste déplace son propre
+  bouton — l'écran qui recule, les lettres qui s'écartent — Playwright rejouait
+  son clic en boucle, et chaque rejeu relançait le geste. Le clic est désormais
+  dispatché sans attendre (`force`).
+- **Il jugeait « ça bouge » en cherchant un `<svg>`**, ce qui refusait toute
+  proposition dont la matière n'a pas de dessin.
+
+### Le rond éclate, et devient la page
+
+*« Un rond avec un plus et lorsque j'appuie, une dynamique un peu style
+explosion, de débris, avec le rond qui s'agrandit. »* Le squelette est donc fixé
+par lui, et ne varie plus : disque plein (vert pin, ou or), « + », gerbe, puis
+agrandissement jusqu'à remplir l'écran. **Aucun fond clair nulle part.**
+
+`docs/maquettes/20-le-rond-qui-eclate.html` ne fait varier que **la nature des
+débris** : la poussière d'or (vingt grains fins), les tessons (c'est le rond
+lui-même qui se fend en six), la braise (treize étincelles qui **retombent**),
+le souffle (aucun débris, trois ondes), l'or plein (disque d'or, gerbe sombre),
+la croix éclatée (c'est le « + » qui se brise en quatre barres).
+
+**La feuille ne monte plus du bas** : elle est posée sous le rond qui grandit et
+se découvre à mesure. Deux mouvements l'un sur l'autre faisaient bégayer le
+geste.
+
+**Trois défauts vus à la capture, et aucun n'aurait été trouvé autrement.**
+Le rond commençait à grandir en même temps que la gerbe : le disque de papier
+recouvrait les débris avant qu'on ait pu les voir — l'explosion existait dans le
+code et nulle part à l'écran. Les débris étaient posés **sous** le disque : on
+ne voyait qu'une poussière collée sur le vert, de la saleté plutôt qu'une
+explosion. Et ils partaient du centre au lieu du bord, si bien que les trois
+quarts de la gerbe restaient cachés.
+
+Les distances de projection sont donc étirées pour le grand format de la planche
+(`--f`) : un débris qui naît au bord d'un disque de 76 px naîtrait au milieu
+d'un disque de 104.
+
+### Retour à la retenue : six gestes tenus
+
+*« Tu as primé sur l'originalité au détriment de l'élégance. »* Le reproche est
+juste, et il est daté : la maquette 18 faisait du spectacle.
+
+`docs/maquettes/19-six-gestes-tenus.html` retire trois choses, et c'est tout le
+sujet : **la gerbe d'éclats** (dix esquilles projetées), **les matières
+simulées** (métal brossé, laque brillante, cire), et **les mouvements
+simultanés** — désormais une seule chose bouge à la fois, le reste de l'écran ne
+bronche pas. Restent la proportion, le cheveu d'or et le temps : les six gestes
+durent entre 500 et 640 ms.
+
+Les six : **le mot** (les lettres s'écartent, l'œil se referme), **la goutte
+d'or** (vingt pixels, le seul aplat de couleur de l'écran), **le disque de
+nuit** (galet mat, le cerceau vient s'y poser), **le cercle qui se ferme** (il
+manque un arc ; l'appui le complète, puis le cercle devient la page), **le filet
+traversé** (le trait qui ferme l'en-tête porte l'œil — rien ne s'ajoute), **les
+deux volets** (la ligne s'écarte en deux, la feuille monte par l'ouverture).
+
+**L'ouverture par agrandissement n'est gardée que sur une seule des six.**
+Répétée partout, elle deviendrait un tic — et c'est exactement ce qui rendait la
+maquette précédente bavarde.
+
+**Un défaut né en cherchant l'élégance, et il en dit long.** L'écartement des
+lettres élargissait le lien de vingt-huit pixels *pendant* le geste : le
+contrôle automatique n'arrivait plus à le presser deux fois de suite. Une cible
+qui grandit sous le doigt est une cible qui se dérobe — la boîte du bouton est
+maintenant fixe, seules les lettres bougent dedans. Et sans `nowrap`, le libellé
+passait sur deux lignes en plein geste.
+
+**Le contrôle ne cherche plus une classe, mais un rôle.** Il visait
+`.pastille`, puis `.geste` ; la maquette suivante l'aurait encore appelé
+autrement, et il serait passé au vert **sans rien presser du tout**. Il vise
+désormais ce que le bouton annonce à qui ne voit pas l'écran :
+`[aria-label="Nouveau chantier"]`.
+
+### Plus aucun fond clair : six matières, et deux boutons qui deviennent la page
+
+*« On s'améliore, mais je n'aime toujours pas. […] J'ai l'impression que le fond
+blanc me dérange. J'ai envie que tu sois innovant […] devancer tout le monde,
+Apple, Amazon. »*
+
+`docs/maquettes/18-six-matieres.html` change d'axe. Aucune des six ne pose de
+disque de papier : **l'iris** (six lames de laque qui s'écartent sur une lumière
+d'or), **l'or brossé** (un anneau de métal dont les stries tournent avec lui),
+**la laque** (un galet profond où un reflet glisse même au repos), **le cachet
+de cire** (bord irrégulier, A en relief, qui s'écrase à l'appui), **le vide**
+(pas de disque du tout — un anneau, et le papier de l'écran au milieu), **le
+noyau** (de l'encre et de l'or qui dérivent, sans aucune marque).
+
+**Et surtout, deux d'entre elles n'ouvrent plus la feuille : elles la
+deviennent.** Sur l'iris et le vide, le bouton s'agrandit jusqu'à remplir
+l'écran, et la page est déjà là quand il a fini. Le geste et l'écran qui arrive
+ne font qu'un seul mouvement — c'est là que se joue l'écart avec ce que font les
+autres, pas dans la couleur.
+
+Tout est fait à la main, sans image ni police : dégradés coniques pour le métal,
+ombres internes pour le relief de la cire, six lames en SVG pour l'iris.
+
+**Deux défauts vus à la capture, et un seul aurait suffi à tout gâcher.** Dans
+un SVG, un « px » de transformation vaut **une unité de la vue** : les lames de
+l'iris, écartées de « 4,2 px », partaient en réalité de treize pixels — le
+disque devenait un carré à l'ouverture. Et le grain de lumière du centre,
+déclaré avant les lames, passait dessous : en SVG c'est l'ordre du balisage qui
+décide, pas l'intention.
+
+**Si une matière est retenue**, la teinte de laque (#10150f → #263025) devra
+entrer dans `src/lib/design-tokens.ts` : une couleur qui ne vit que dans une
+maquette finit par diverger de l'écran.
+
+### Le contrôle mesurait la demi-seconde à l'œil, il la chronomètre
+
+`verifier-maquette-pastille.mjs` regardait « à 200 ms, la feuille est-elle
+fermée ? ». Sur une machine chargée, ce regard arrivait parfois à 520 ms et
+accusait un délai qui n'avait pas bougé — un contrôle qui échoue une fois sur
+dix ne prouve rien et use la confiance de qui le lit. Il **mesure** désormais
+l'instant où la feuille monte. Il ne cherche plus non plus de `<svg>` pour
+juger que « ça bouge » : « le noyau » n'a aucun dessin, sa matière est une nappe
+de dégradés — chercher une forme précise, c'est refuser la proposition suivante.
+
+### Le sceau est retenu, six gravures le disputent
+
+*« J'aime beaucoup la deuxième. Par contre, ce que je n'aime pas, c'est un peu
+le design de la pastille. »*
+
+Le **sceau clair** — disque de papier cerné d'un cheveu d'or — est donc acquis :
+sa taille, sa place, la gerbe et la demi-seconde ne bougent plus.
+`docs/maquettes/17-six-marques.html` ne fait varier que **la gravure** : le
+cadran gradué, le trait pur, le monogramme d'Atlas, la facette, l'anneau et sa
+bille, le point. Les six se pressent — côte à côte pour comparer la marque, puis
+chacun dans l'écran pour le geste entier.
+
+**Le cadran ne fait pas tourner son signe, mais sa lunette.** Une aiguille qui
+tourne se lit comme un chargement ; une lunette qui tourne se lit comme un
+mécanisme. C'est la seule des six où le mouvement veut dire quelque chose.
+
+**Trois défauts vus à la capture, invisibles autrement :** la lunette tournait
+sans que rien ne le montre — soixante graduations identiques sont immobiles quel
+que soit l'angle, il a fallu leur donner un repère ; l'onde d'un grand sceau
+débordait de sa carte et n'y laissait que quatre arcs dans les angles ; et la
+corde horizontale de la facette brouillait la taille de la pierre.
+
+Le contrôle éprouve désormais la **première et la dernière** pastille armée
+d'une page : sur la page fusionnée, ce sont deux maquettes différentes, chacune
+avec son script — n'en éprouver qu'une laissait l'autre silencieusement morte.
+
+### La pastille qui tourne, éclate et ouvre — la première maquette qu'on presse
+
+*« Je veux une sorte de pastille un peu ronde avec un design sympa à
+l'intérieur. Lorsqu'on appuie dessus, je veux qu'elle se mette à tourner super
+vite, qu'elle dégage comme une sorte d'onde ou de petits fragments et qu'au bout
+d'une demi-seconde, ça ouvre la page nouveau chantier. »*
+
+`docs/maquettes/16-la-pastille-qui-tourne.html`. Trois habillages du même
+disque, tous pressables : jeton de vert pin, sceau clair, disque nu — plus le
+même jeton posé sous le pouce. La marque gravée est une **rose des vents** :
+Atlas est un nom de cartes, et les quatre branches longues d'une rose dessinent
+déjà un « + ». Le signe de l'ajout est dans la marque, il n'a pas eu à s'y
+coller.
+
+**C'est la première des seize qui porte un script**, et c'est assumé : une page
+qui ne répond pas au doigt ne prouve rien de ce qu'elle avance. Le geste est
+donc aussi démonté image par image, pour les lecteurs qui n'exécutent rien.
+
+**Ce qui a été trouvé en regardant, et jamais par un contrôle vert :** au
+premier essai, les dix éclats partaient aux bons angles, à la bonne vitesse — et
+restaient invisibles, parce qu'ils pâlissaient dès leur départ. Ils gardent
+maintenant leur plein jusqu'à 64 % de leur course.
+
+`scripts/verifier-maquette-pastille.mjs` presse la pastille pour de bon, dans
+les deux pages (la maquette seule et la page fusionnée) et dans les deux
+réglages de mouvement. Confronté à une demi-seconde supprimée, il refuse — avec
+le bon coupable dans le message.
+
+### Un script de maquette ne pouvait ni balayer sa section, ni échouer seul
+
+La page unique donnait aux scripts un `document` réduit à `getElementById` : la
+maquette 16, qui arme ses pastilles par leur classe, y mourait sur
+« querySelectorAll is not a function ». Pire, l'exception emportait les scripts
+des maquettes suivantes — une page à moitié morte, sans un mot pour dire
+laquelle avait fauté. La portée sait maintenant balayer sa section, et chaque
+script est enfermé dans son propre essai.
+
+### Deuxième tournée : six gestes qui, cette fois, ne se ressemblent pas
+
+*« Je ne suis pas encore hyper convaincu. Propose-moi d'autres choses. »*
+
+Le défaut de la première tournée est nommé dans la page elle-même : six façons
+d'**amincir le bouton** ne font pas six idées, elles font une idée déclinée six
+fois. `docs/maquettes/15-encore-six-gestes.html` change donc de nature à chaque
+fois — l'action prend une ligne d'écriture (**G**, une ligne réglée où bat un
+curseur), se pose sur la ligne de base du titre sans occuper de rang (**H**),
+devient une marque d'imprimeur (**I**), descend au milieu du bandeau (**J**),
+disparaît au profit d'un geste de traction (**K**), ou se range en signet sur la
+tranche droite (**L**).
+
+**Deux réserves écrites dans la maquette plutôt que tues.** J supprime la bulle
+de l'assistant — c'est une décision, pas un détail. Et K, le geste caché, garde
+une porte visible (un « + » au bout de la ligne « En cours ») : élégant le
+premier jour, un geste invisible coûte cher le trentième, quand un remplaçant
+prend le téléphone.
+
+### La page unique acceptait tout, sauf une maquette animée
+
+`fusionner-maquettes.mjs` refusait la maquette 14 avec « sélecteur non confiné
+« 0% » » : son contrôle prenait les pourcentages d'un `@keyframes` pour des
+sélecteurs. Le message accusait la maquette là où le fautif était le contrôle —
+exactement ce que `AGENTS.md` interdit.
+
+**Et un vrai défaut dormait dessous, celui-là silencieux :** un nom d'animation
+est **global**. Deux maquettes déclarant chacune un `@keyframes halo` se le
+seraient disputé, la dernière lue gagnant pour toute la page — le confinement
+par ancêtre ne protège que des sélecteurs. Les noms sont désormais préfixés par
+section (`s14-halo`), comme le sont déjà les identifiants.
+
+Le contrôle a été confronté à l'état qu'il prétend détecter : confinement
+neutralisé, il refuse la fusion sur les quatorze maquettes.
+### « Impossible d'enregistrer la note » ne disait pas pourquoi — et personne ne pouvait le savoir
+
+**Le patron, capture de son téléphone :** *« Pb sur la note vocale, corrige
+ça ! »* L'écran affichait *« Impossible d'enregistrer la note pour l'instant.
+Réessayez. »*
+
+**Ce défaut-ci n'a pas été reproduit ici, et il faut le dire tel quel.** La
+dictée a été rejouée dans un vrai navigateur avec un micro simulé, deux fois :
+en mode développement, puis sur la **version bâtie derrière une origine
+étrangère** — les conditions de son banc. Les deux fois, la note s'est
+enregistrée. Ce qui a donc été corrigé n'est pas la panne : c'est **ce qui
+rendait la panne impossible à nommer**.
+
+Deux choses s'y opposaient :
+
+1. **`catch {}` sans variable**, dans l'anneau comme dans l'écran de dictée. Le
+   message du serveur n'était même pas lu. Les quatre refus possibles — aucun
+   fichier, fichier trop lourd, format non pris en charge, cadence dépassée —
+   portaient chacun leur phrase, et l'écran les jetait toutes pour afficher la
+   même formule creuse.
+2. **Une exception ne traverse pas la version bâtie.** Next.js remplace en
+   production le message d'une action serveur par un identifiant opaque. L'écran
+   d'import de fichier croyait bien faire en affichant `err.message` : sur le
+   banc, il ne pouvait montrer qu'un digest. La documentation du cadre le dit en
+   toutes lettres — *« avoid using try/catch blocks and throw errors. Instead,
+   model expected errors as return values »*.
+
+Les refus attendus sont donc désormais des **valeurs de retour**, qui traversent
+la version bâtie intactes ; les pannes imprévues continuent de lever, mais le
+serveur les **écrit** avant, avec le chantier, le format et la taille. Sans
+cette ligne, une panne chez lui ne laissait aucune trace nulle part.
+
+**Le refus nomme le format reçu.** Si son iPhone produit un format que la liste
+blanche ignore, le message le dit — sans quoi il resterait introuvable, et il
+faudrait le lui demander.
+
+**Trouvé en chemin, et plus grave que le reste :** un enregistrement de zéro
+octet n'était pas refusé. Il descendait jusqu'à la base, qui le rejetait — et ce
+qui remontait à l'écran n'était plus un refus mais **la requête SQL entière,
+noms de tables et identifiant d'entreprise compris**. Il est maintenant arrêté à
+l'entrée, avec une phrase qui dit quoi faire.
+
+`test-note-vocale-refus-e2e.ts` éprouve les deux, par le chemin d'import qui
+emprunte la même action serveur que l'anneau et que l'écran de dictée. Confronté
+à l'ancien code : deux rouges.
+
+**La leçon, puisqu'elle se répète.** Deux diagnostics à distance avaient déjà
+coûté un aller-retour chacun ce jour-là. Cette fois, rien n'a été supposé : la
+dictée a été rejouée dans les conditions du banc avant d'écrire une ligne, et la
+configuration soupçonnée a été vérifiée dans la documentation du cadre — elle
+était juste, l'hypothèse est morte là. Ce qui reste inconnu est écrit comme
+inconnu.
+
+### « Failed to type check » sur l'espace du patron — une course, pas un défaut
+
+**Sur son espace, ce soir :**
+
+> Failed to type check.
+> `.next/dev/types/validator.ts:116:39`
+> Type error: Cannot find module `.../chantiers/[id]/photos/page.js`
+
+Le fichier existait, et la construction passait ici depuis un état propre. Le
+message accusait le code alors que rien n'était cassé — exactement ce que
+`AGENTS.md` interdit de laisser passer.
+
+**La cause :** `npm run banc` sert la version de développement — qui écrit dans
+`.next/dev/` — PENDANT qu'il bâtit la version rapide dans `.next-batie/`. Le
+contrôle de types lisait donc les fichiers de travail d'un autre processus, en
+train d'être réécrits : selon l'instant, ils désignent une route à moitié
+engendrée. D'où une panne intermittente, sur son espace seulement, sur un code
+parfaitement valable.
+
+Ces fichiers sont désormais **exclus** du contrôle de types. Les types de route
+restent vérifiés, par ceux qu'engendre la construction elle-même — qui ne
+bougent pas pendant qu'on les lit.
+
+**Et la réparation ne tenait pas où on l'aurait mise :** `next build` RÉÉCRIT
+`tsconfig.json` et y remet `.next/dev/types/**/*.ts` de lui-même — constaté dans
+l'heure. Retirer la ligne de `include` n'aurait tenu qu'une construction. C'est
+`exclude` qui répare, parce que Next n'y touche pas et qu'il l'emporte.
+
+**Next se protège pourtant de ce cas — son filtre vise simplement le mauvais
+dossier ici.** Sa fonction `runTypeCheck` écarte `<distDir>/dev/types` avant de
+vérifier, en disant explicitement pourquoi : « empêcher des types de
+développement périmés de faire échouer la construction ». Mais le banc bâtit
+dans `.next-batie`, donc le filtre écarte `.next-batie/dev` — pendant que le
+serveur de développement écrit dans `.next/dev`. Ce dossier-là passe entre les
+mailles, et c'est exactement celui que l'erreur du patron désigne. Le garde-fou
+existait ; il visait à côté dès qu'on bâtit ailleurs que dans `.next`.
+
+Reproduit **dans la configuration exacte du banc**, et non dans une approchante
+— `ATLAS_DIST_DIR=.next-batie npx next build`, un reste périmé posé dans
+`.next/dev/types` : rouge sans les exclusions, avec le message du patron au mot
+près, vert avec, le reste périmé toujours en place. La première tentative de
+reproduction, faite avec le dossier par défaut, passait au vert : elle aurait
+fait croire le correctif inutile.
+`scripts/test-tsconfig-sans-restes-dev.ts` refuse le retour en arrière — sans
+lui, la prochaine construction rouvrirait la panne en silence, et elle ne se
+reverrait que chez lui.
+
+**Et il y avait une SECONDE forme du même piège, trouvée en vérifiant la
+première.** `.next/types` — les types d'une construction faite dans le dossier
+par défaut — n'est jamais régénéré ici, puisque le banc bâtit dans
+`.next-batie`. Il ne peut donc qu'être périmé, et il décrit alors des routes
+d'avant : l'écran des photos, supprimé le soir même par une autre session, en est
+l'exemple exact. La construction du banc échouait dessus, au mot près comme sur
+la première forme.
+
+Celui-là ne s'ignore pas, il s'efface : `scripts/banc.mjs` le supprime avant de
+bâtir. Confronté dans les deux sens — avec le reste, la construction échoue ;
+après le nettoyage, elle passe.
+
+
+### Le fil se bloquait à chaque chantier, et montrait sa barre grise
+
+**Le patron, capture de son ordinateur et de son téléphone à l'appui :** *« je
+trouve que ça manque de fluidité. Quand je slide en haut ou en bas, c'est
+saccadé »*, et *« quand on slide, il y a une espèce de bande déroulante grise
+qui apparaît sur le côté à droite. Supprime-moi ça, je ne veux pas voir ça du
+tout, je veux juste que ça slide. »*
+
+Deux causes, sans rapport l'une avec l'autre.
+
+**Le saccadé venait de `scroll-snap-stop: always`**, posé la veille pour qu'un
+geste vif n'avance que d'un chantier. Mais `always` ne ralentit pas l'élan : il
+l'ARRÊTE au premier point rencontré. Le doigt lance la liste, la liste se
+bloque, et il faut recommencer à chaque chantier. Retiré. Ce qui reste —
+`proximity` sur le cadre, `center` sur la ligne — suffit à la perle : l'élan
+court librement et la liste se recale sur un chantier en s'arrêtant. On perd
+« un geste = un chantier », on gagne un défilement qui glisse.
+
+**Le coût de rendu a été mis hors de cause AVANT de toucher à quoi que ce
+soit** — c'est le point qui compte. Trois choses se superposaient sur ce
+défilement, et deux d'entre elles étaient les suspects évidents : le masque en
+dégradé posé sur le cadre, et l'animation d'opacité qui joue sur chaque ligne.
+`scripts/mesurer-fluidite-fil.mts` relève la durée de chaque image rendue et
+sait retirer une cause à la fois dans le navigateur seulement. Verdict : les
+quatre combinaisons mesurent la même chose — 60 images par seconde, médiane
+16,7 ms. Les retirer aurait abîmé l'écran sans rien gagner, et c'est très
+exactement le correctif imaginé que ce dépôt a déjà payé trois fois.
+
+**Et la mesure avait raison, le patron l'a confirmé sur son téléphone le soir
+même** : *« la fluidité de l'iPhone, ça aussi, ça a été corrigé. »* Ce n'était
+pas acquis — le navigateur sans tête ne produit pas l'élan d'un vrai doigt, et
+le masque restait un suspect crédible **sur iOS**, où un cadre masqué se
+recompose à chaque image. Le point était donc laissé ouvert par honnêteté
+(`TODO.md` §0 bis), et il est clos par l'appareil lui-même. Il reste écrit
+plutôt que supprimé : le masque est le suspect qui vient à l'esprit dès qu'on
+parle d'un défilement qui accroche sur iOS, et savoir qu'il a été **innocenté
+sur le vrai téléphone** évitera à quelqu'un de le déplacer pour rien.
+
+**La barre grise, elle, n'était pas un choix : c'était un oubli.** Les trois
+autres zones qui défilent la masquent depuis toujours ; `.atlas-fil-defile`,
+**la plus vue de l'application**, avait été sautée. Rien ne pouvait le dire,
+puisque chaque zone porte la règle chez elle et que personne ne comptait les
+zones. `test-aucune-barre-de-defilement-e2e.ts` les compte désormais sur tout le
+parcours — corriger une ligne aurait réparé ce jour-là, le balayage répare la
+classe entière, y compris la zone qui n'existe pas encore.
+
+### Le devis coupait le texte du patron, et c'est le balayage qui l'a vu
+
+Trouvé par le contrôle précédent, alors qu'il cherchait tout autre chose : une
+barre grise sur une zone de texte du devis. **La barre était le symptôme ; le
+défaut était que le devis cachait ce qu'on venait d'y écrire.**
+
+Les trois zones estimaient leur hauteur, et les trois estimaient mal :
+l'adresse comptait les caractères (`ceil(longueur / 34)`), la description
+comptait les retours à la ligne, les conditions ne comptaient rien (`rows={2}`).
+Or un texte se coupe au MOT, quand il touche le bord : deux lignes estimées en
+font trois à l'écran. Mesuré sur le jeu de démonstration : 46 px affichés pour
+70 px de texte. C'est le défaut même que la zone d'adresse existait pour
+corriger — *« le patron lit une adresse amputée sur son propre devis »* — revenu
+par une autre porte.
+
+Les trois passent par `ZoneQuiGrandit`, qui **mesure au lieu d'estimer**.
+
+**Et un second contrôle est né du premier, parce que le premier pouvait être
+satisfait de travers** : masquer la barre de cette zone aurait rendu le balayage
+vert, et la coupure silencieuse — donc pire. `test-aucun-texte-coupe-e2e.ts`
+écrit un texte long pour de bon et vérifie qu'il tient dans sa boîte. On ne peut
+pas le contenter en cachant quoi que ce soit. Confronté à l'ancien code : il
+nomme les deux zones fautives et le nombre de pixels perdus.
+
+### La case « + » de la pellicule ajoute une photo, au lieu de changer d'écran
+
+**Le patron, le 11 août 2026 :** *« quand je clique sur l'encadré avec le plus
+là des photos, ça me ramène encore sur cette page-là. »*
+
+Sa case était un simple lien vers l'écran Photos. Ajouter une photo depuis la
+fiche demandait donc de changer d'écran d'abord, puis d'appuyer sur un second
+bouton : deux appuis et une navigation pour un geste qu'on fait cent fois par
+jour, sur un chantier, avec des gants.
+
+Elle ouvre désormais le choix « prendre une photo / choisir dans ma
+bibliothèque » **sur place**, et la photo apparaît dans la pellicule sans que
+l'écran bouge. Elle **reste un lien** — sans JavaScript, ou ouverte dans un
+nouvel onglet, elle mène toujours à l'écran Photos, comme « Nouveau chantier »
+sur l'accueil.
+
+Le mécanisme n'a pas été recopié : les deux champs de fichier (dont l'un impose
+l'appareil photo), l'ordre de fermeture de la feuille et la boucle d'envoi
+vivent dans un composant partagé — **AjoutDePhotos**, depuis supprimé (voir
+plus bas) — que l'écran Photos et la fiche partagent. Deux copies auraient divergé au premier correctif
+(`CLAUDE.md` §3).
+
+Sa suite — **test-ajout-photo-fiche-e2e**, supprimée avec elle — éprouvait le
+PARCOURS, pas la règle :
+l'appui n'ouvre pas une page, le choix s'ouvre, la photo part, elle s'affiche
+sans rechargement, elle survit au rechargement, et la porte de secours reste un
+lien. Confronté en rétablissant l'ancien lien : rouge, avec la phrase du patron
+— « on s'est retrouvé sur .../photos ».
+
+**Remplacée le soir même, par arbitrage du patron.** Deux sessions ont traité
+cette demande en parallèle, et leurs réponses divergeaient sur l'essentiel : ici,
+le « + » ouvre **notre** feuille (« prendre une photo / choisir dans ma
+bibliothèque ») ; dans l'autre, il ouvre **le menu du téléphone**, celui que le
+patron avait photographié — *Photothèque · Prendre une photo · Choisir les
+fichiers*. Sa demande disait les deux choses : ne plus changer d'écran, **et**
+« supprime-moi toutes les autres étapes ».
+
+Les deux ne pouvaient pas coexister : le menu du système n'apparaît que si aucun
+champ ne porte `capture`, et c'est précisément ce que la feuille ci-dessus
+suppose. Mis devant le choix, il a tranché pour le menu du téléphone. Ce qui
+disparaît donc avec cette version : le composant **AjoutDePhotos**, la feuille, le second
+champ, et l'écran Photos lui-même (voir l'entrée « Ajouter une photo ne fait plus
+changer de page » ci-dessus). Ce qui en a été **gardé** : son contrôle de
+persistance après rechargement, repris dans `scripts/test-photos-e2e.ts`.
+
+
+### La perle plongeait avant le départ, sur une liste qui défile à peine
+
+**Le patron, le soir, après la fusion :** *« la perle reste accolée en bas au
+numéro dix-huit. »* Il avait raison, et deux fois plutôt qu'une.
+
+La descente s'étalait sur les derniers pixels de défilement — sans vérifier
+qu'il y en avait autant. Sur un écran haut, ou chez un artisan qui a trois
+chantiers, la liste ne défile presque plus : la plongée commençait donc **avant
+le départ**, et la perle arrivait déjà tombée. Et quand la liste tenait
+entièrement dans l'écran, une règle écrite exprès la collait au dernier
+chantier. Mesuré : 1100 px d'écran, 77 px à défiler pour 226 px de descente,
+perle 148 px sous le milieu tout en haut de la liste.
+
+La plongée occupe désormais les derniers pixels **au plus égaux au chemin
+disponible**, et une liste qui ne défile pas laisse la perle au milieu.
+
+**La leçon vaut plus que le correctif, et elle est écrite dans le dépôt :** les
+deux contrôles étaient VERTS. La suite de cas ne donnait jamais une liste au
+chemin trop court ; le contrôle au navigateur ne mesurait qu'un écran de 852 px,
+où la liste de démonstration a quatre fois le chemin nécessaire. Un cas manquant
+ne rougit pas. Quand une règle porte sur un rapport, il faut l'éprouver des deux
+côtés — le contrôle mesure maintenant deux hauteurs d'écran, et la suite a gagné
+la liste courte. Confronté : l'ancienne règle rétablie fait rougir le contrôle
+en nommant le défaut du soir.
+
+
+### La perle du fil était tout en bas de l'écran, à demeure
+
+**Constaté par le patron, capture de son téléphone à l'appui :** *« Lorsqu'on
+est tout en haut, elle devrait être au niveau du vingt-deux, donc bien centré
+sur l'écran. Et en fait là, elle se retrouve constamment tout en bas. »*
+
+La maquette retenue le 10 août fait suivre la perle : elle se tient à
+mi-hauteur, et les chantiers défilent dessous. Le portage avait gardé
+l'intention PRÉCÉDENTE — la perle posée devant le premier chantier « en
+attente » — alors même que `docs/INTEGRER-ORIGINE.md` §3 signalait le
+changement et disait de ne pas le « corriger ». Chez le patron, le chantier en
+attente est le dernier de la liste : d'où un point de couleur immuablement en
+bas, qui ne désignait rien de ce qu'il regardait.
+
+La perle est désormais **premier enfant du fil** et ne bouge plus du milieu —
+sauf tout en bas. Le patron a tranché la fin de liste dans le même échange :
+
+> « Quand on arrive au dernier, là, elle descend et elle se met en face du
+> dernier jour. »
+
+C'est la seule chose que `position: sticky` ne sache pas faire : sur les
+derniers pixels, la perle doit descendre PENDANT que le contenu monte, et une
+accroche ne cloue que dans un sens. Trois montages purement CSS ont été essayés
+avant de le reconnaître. La descente se calcule donc — `src/lib/perle-descente.ts`,
+fonction pure, sept cas de suite — et l'écran ne fait que mesurer et appliquer.
+Si ce calcul ne tourne pas, la perle reste au milieu : une dégradation qui reste
+juste.
+
+Ce que cela coûte, dit franchement : le chantier dont le devis est revenu n'a
+plus de point de couleur. Il garde son libellé « Correction demandée » en
+bronze — c'est le compromis de la maquette, assumé pour la troisième fois.
+
+**Un défaut mérite d'être retenu :** la descente a d'abord été calculée juste et
+**pas dessinée**. `.atlas-perle` est un `span`, donc une boîte en ligne, et une
+transformation ne s'applique pas à une boîte en ligne. `getComputedStyle`
+renvoyait pourtant la bonne matrice. Le contrôle disait « il manque 66 px » en
+désignant le calcul, qui était innocent — il distingue désormais les deux pannes
+et nomme la bonne.
+
+`scripts/capture-accueil-perle.mts` mesure la perle à quatre positions de
+défilement et refuse si elle quitte le milieu ailleurs qu'au bout, si elle
+désigne du vide, si le dernier jour n'est pas atteint, ou si elle ne vise pas le
+même endroit dans la ligne selon l'endroit où l'on est. Confronté trois fois :
+perle déplacée à 20 % → rouge ; `display: block` retiré → rouge en nommant le
+CSS et non le calcul ; descente supprimée dans la fonction pure → rouge.
+
+L'ancienne règle — celle qui posait la perle sur le chantier en attente — et sa
+suite disparaissent : une règle morte qui décrit une intention abandonnée est un
+piège pour la conversation suivante.
+
 ## 2026-08-11
 
 ### La capsule partout — une seule forme d'action dans toute l'application
 
 **Il a répondu « partout ».** Le bouton principal est désormais une capsule sur
-les dix-huit écrans, et la variante rectangulaire n'existe plus.
+les dix-sept écrans, et la variante rectangulaire n'existe plus.
 
 **Le chemin compte autant que la décision.** Il avait posé la règle : *« montre-moi
 avant de faire, plutôt que de faire pour revenir en arrière »*. La capsule a donc
@@ -34,7 +957,7 @@ mordait sur le bouton. Une capsule centrée ne l'atteint plus.
 bouton au plus près : à tailles différentes remises à la même largeur, la
 capsule y paraissait **plus grosse** que le rectangle qu'elle remplace —
 l'inverse exact de la vérité. Elle serait partie ainsi si personne ne l'avait
-regardée. `ARCHITECTURE.md` §60.
+regardée. `ARCHITECTURE.md` §64.
 
 ---
 
@@ -70,7 +993,7 @@ l'ignorer serait l'inverse du défaut.
 même temps dans le bouton, l'un à `opacity:0` : `innerText` les rend TOUJOURS
 tous les deux, donc un contrôle écrit dessus passerait au vert même sur une
 bascule morte. La suite lit le style calculé, et attend la fin du fondu.
-Éprouvée en sabotant : un rouge, et un seul. `ARCHITECTURE.md` §60.
+Éprouvée en sabotant : un rouge, et un seul. `ARCHITECTURE.md` §64.
 
 ---
 
@@ -234,11 +1157,126 @@ exact et les cinq formulations de navigateurs — Safari compris, c'est le sien)
 `scripts/test-reprise-morceau-e2e.ts` (la panne rejouée dans un vrai navigateur,
 à l'écran du patron). Les deux savent échouer : neutraliser la reconnaissance
 rend 8 rouges sur 14, et fait expirer le cas navigateur sur soixante secondes —
-exactement ce qu'il a vécu. `ARCHITECTURE.md` §59.
+exactement ce qu'il a vécu. `ARCHITECTURE.md` §63.
 
 ---
 
 ## 2026-08-10
+
+### Un diagnostic qui regarde l'espace du patron, au lieu de raisonner dessus
+
+**Deux hypothèses avancées pour expliquer son « ça ne marche pas », et les deux
+fausses.** D'abord un service de transcription absent — c'était mon
+environnement, pas le sien. Puis une branche différente de celle où l'on
+pousse — il était bien sur `main`. Chacune lui a coûté un aller-retour pour
+rien.
+
+Le défaut n'est pas de s'être trompé : c'est d'avoir raisonné **à distance** sur
+une machine qu'on ne voit pas, alors que cette machine sait tout.
+
+`npm run diagnostiquer:espace` ne devine rien, il regarde — et il montre la
+seule chose que rien d'autre ne montrait : **le commit RÉELLEMENT SERVI**. La
+ligne « Version » de Réglages lit le dépôt, donc le code *récupéré* ; la version
+rapide est un dossier bâti et figé. Entre les deux il peut y avoir un monde, et
+c'est précisément là que se logeait le malentendu.
+
+Il rend six lignes — branche suivie, code récupéré, **code servi**, serveur,
+veilleur, issue de la dernière mise à jour — puis un verdict dans ses mots :
+retard, fichiers non enregistrés, historique divergé, version bâtie périmée,
+serveur muet. Et quand tout concorde, il le dit aussi, en désignant alors le
+produit plutôt que l'espace.
+
+**Éprouvé dans ses états dégradés**, pas seulement au vert : dépôt sale, version
+bâtie plus ancienne que le code, tête détachée (où « HEAD » ne serait qu'un
+aveu incompréhensible), dépôt distant injoignable.
+
+### « J'ai relancé le banc, ça ne marche pas » — la version rapide ne se recompile jamais
+
+**Le patron, le 11 août 2026 au soir.** Le code neuf était bien tiré, la ligne
+Version affichait le commit neuf, et l'écran servi restait l'ancien. Il pouvait
+recharger cent fois.
+
+**La cause tient en une phrase :** `next start` sert un dossier **bâti**, figé à
+la seconde de sa construction. Tirer du code sous ses pieds n'y change rien. Or
+le bouton « Chercher les dernières corrections » annonçait *« rechargez la page,
+l'application se recompile »* — exact en développement, **impossible** sur la
+version rapide.
+
+C'est la **troisième fois** que ce dépôt paie le même malentendu : *le produit
+paraît cassé alors qu'il est simplement vieux*. Les deux premières ont donné la
+ligne Version, puis ce bouton. Celle-ci donne trois issues distinctes :
+
+| Ce qui tourne | Ce qu'on annonce | Ce qu'on fait |
+|---|---|---|
+| développement | « l'application se recompile » | rien — c'est vrai |
+| version bâtie, veilleur présent | « elle se reconstruit, injoignable une minute » | on coupe le serveur |
+| version bâtie, **sans veilleur** | « arrêtez puis rouvrez l'espace » | **rien** |
+
+**Le troisième cas est le plus important.** Couper sans personne pour relever le
+serveur reviendrait à éteindre l'application du patron pour lui livrer un
+correctif — le remède serait pire que le mal, et il resterait devant un écran
+mort. Le veilleur est donc interrogé par son identifiant de processus, pas par
+l'existence de son fichier verrou.
+
+La règle vit dans `src/lib/issue-mise-a-jour.ts`, en fonction pure : une
+décision qui peut couper le serveur du patron doit s'éprouver sans base, sans
+serveur et sans banc. `scripts/test-issue-mise-a-jour.ts` la tient en cinq
+contrôles, vérifiés rouges sur l'ancien comportement.
+
+**Vérifié aussi, et c'est ce qui a permis de trancher :** le tiroir allégé
+fonctionne bel et bien, sur les quatre états réels d'un chantier — neuf, avec
+dictée, avec devis généré, avec devis envoyé. Ni « Informations » ni « Prix »
+n'y figurent nulle part. Ce que le patron voyait était l'ancien code.
+
+### De l'anneau au devis, en une touche
+
+**Le patron, le 11 août 2026, après avoir essayé six formes du déclencheur :**
+*« ok, j'aime bien le un »* — l'écriture nue sous l'anneau. Puis la question qui
+décidait de tout : *« si je clique dessus, j'arrive directement à la page du
+devis et je ne passe pas par une page intermédiaire ? »*
+
+Oui. Un appui sur l'anneau démarre la dictée, un second l'arrête, et
+**« MON DEVIS → »** naît dessous. Il transcrit, range les informations, cherche
+les prix, rédige, et dépose sur `devis-complet` — la page où il n'y a que le
+devis. Aucun écran entre les deux.
+
+**Le maillon qui manquait était la transcription.** Toute cette chaîne existait
+et était éprouvée depuis le 4 août, mais elle exigeait une transcription **déjà
+faite** — si bien qu'elle ne pouvait vivre que sur l'écran Transcription, à
+quatre écrans de l'endroit où l'on vient de parler. `preparerDevisDepuisDictee`
+la lance désormais elle-même, une seule fois, et seulement s'il y a un son à
+transcrire.
+
+**L'écriture parle en OR, contre l'usage de la charte.** L'or est la voix de ce
+qu'on lit, le vert pin celle de ce qu'on fait (`design-tokens.ts`). C'est la
+seule action de l'application à déroger — et c'est délibéré : en vert, elle
+faisait un second centre à côté de l'anneau, deux objets à regarder là où il
+n'en faut qu'un.
+
+**Trois lignes quittent le tiroir** — Informations, Prix, Devis — à sa demande.
+Elles décrivaient un travail que la chaîne fait seule. Elles sont **déplacées,
+pas supprimées** : les informations se corrigent sur le devis, le prix s'y pose
+ligne à ligne, et les écrans restent joignables par leur adresse. Un contrôle
+l'exige, parce qu'ôter une ligne d'une liste ne doit jamais condamner une page.
+
+**Et le bandeau du tiroir se tait quand la dictée est là.** L'étape suivante
+calculée valait souvent l'une des trois lignes retirées : l'annoncer aurait
+envoyé chercher une porte qu'on venait de condamner.
+
+### Ce que l'écran a dit, et que je n'aurais pas deviné
+
+- **Sans service de transcription raccordé, le geste s'arrête — et il le dit.**
+  C'est l'état réel de l'application (`TODO.md`, décision n°1) : aucun contrat
+  n'est signé. En appuyant aujourd'hui, le patron lit *« aucun prestataire de
+  transcription n'est encore raccordé »*. Un contrôle tient cette phrase :
+  un geste qui ne fait rien **sans rien dire** se lit comme une panne.
+- **L'arrêt d'avant-chiffrage s'ouvre bien sur la fiche.** La dictée d'essai ne
+  disait ni la longueur de haie ni le diamètre du tronc : Atlas demande, sans
+  changer d'écran, et repart de lui-même. C'est ce qui avait été promis.
+- **L'écart sous l'anneau était de 50 px au lieu de 34.** Le compteur, invisible
+  mais présent, en prend seize. Mesuré, pas estimé à l'œil — et resserré à 38,
+  parce que c'est ce qui rattache le geste à l'anneau plutôt que de le laisser
+  flotter : le défaut connu de la forme qu'il a choisie.
 
 ### Le devis à la main s'ouvre depuis la création du chantier
 
@@ -431,6 +1469,30 @@ Un contrôle garde cette frontière (`test-anneau-dictee-e2e.ts`) : *le corps ne
 porte que l'anneau, et le tiroir garde tout le reste*. Il échoue aussi bien si
 l'on remet un bouton dans le corps que si l'on oublie de descendre une entrée
 dans le tiroir.
+
+### `npm run essai` accusait la base pendant qu'Atlas démarrait déjà
+
+**Constaté chez le patron, sur son espace de travail.** Il tape `npm run essai`,
+et l'écran répond :
+
+> ⚠️ Le serveur s'est arrêté avant de répondre.
+> Cause fréquente : la base de données n'est pas montée.
+
+La base n'y était pour rien. L'espace démarre Atlas tout seul à chaque
+allumage ; pendant sa construction, **le banc ne répond pas encore** — le
+garde-fou d'`essai.mjs`, qui demandait « quelqu'un répond-il ? », l'a donc
+laissé passer. Un second serveur est parti, a trouvé le port pris, et est mort
+sur « EADDRINUSE ». Le message affiché envoyait chercher au mauvais endroit, ce
+qui coûte plus cher que pas de message du tout.
+
+`banc.mjs` prend un verrou depuis le même jour, et sa documentation le disait
+déjà : **ce n'est pas le port qu'il faut regarder, c'est l'existence d'un autre
+banc.** `essai.mjs` ne le prenait pas — et c'est par là que le patron est passé.
+Il le prend désormais, et refuse en disant quoi faire : combien de temps
+attendre, quel journal suivre, et quelle ligne attendre.
+
+Éprouvé en reproduisant la situation : un banc tient le verrou, `npm run essai`
+arrive dessus, et refuse au lieu de démarrer.
 
 ### Refaire la démonstration n'efface plus ce que l'artisan a tapé à la main
 

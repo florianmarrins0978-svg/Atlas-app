@@ -106,14 +106,25 @@ async function main() {
     "C'est la valeur corrigée par le patron qui doit être appliquée, jamais celle proposée par la machine"
   );
 
-  // --- Validation finale : la fiche chantier propose « Calculer le prix » ---
+  // --- Validation finale : la fiche dit ce qui reste à faire ---------------
+  //
+  // **Ce contrôle visait « Calculer le prix », et ce libellé a disparu de la
+  // fiche le 11 août 2026** — à la demande du patron : *« informations, prix,
+  // devis peuvent disparaître du petit bandeau »*. Les trois décrivaient un
+  // travail que la chaîne de la dictée fait désormais seule.
+  //
+  // Ce qu'il tenait vraiment n'a pas changé, et reste tenu ici : **une fois les
+  // informations vérifiées, la fiche doit dire ce qui suit.** Elle le dit
+  // maintenant sous l'anneau — « Mon devis → », qui chiffre et rédige d'un
+  // seul geste. L'écran du prix, lui, reste joignable par son adresse ; c'est
+  // `test-anneau-vers-devis-e2e.ts` qui l'éprouve.
   await page.click("text=Valider et calculer le prix");
   await page.waitForURL(/\/prix$/, { timeout: 10000 });
 
   await page.goto(chantierUrl, { waitUntil: "networkidle" });
   assert.ok(
-    await page.locator("text=Calculer le prix").first().isVisible(),
-    "Une fois les informations vérifiées, l'action principale doit devenir « Calculer le prix »"
+    await page.locator('[data-atlas="mon-devis"]').first().isVisible(),
+    "Une fois les informations vérifiées, la fiche ne dit plus ce qui suit : « Mon devis » devrait être sous l'anneau"
   );
 
   await browser.close();

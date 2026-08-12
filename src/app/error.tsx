@@ -12,7 +12,7 @@ import CorpsErreur from "@/components/atlas/CorpsErreur";
 // plus cher que pas de message du tout.
 //
 // Le corps — la carte, la cause en développement, la référence et le bouton —
-// vit dans `CorpsErreur`, partagé par les dix écrans d'erreur. C'est lui qui
+// vit dans `CorpsErreur`, partagé par les neuf écrans d'erreur. C'est lui qui
 // sait qu'un morceau de code manquant ne se répare pas avec « Réessayer » :
 // voir `src/lib/reprise-erreur.ts`.
 

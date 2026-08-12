@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — six gestes tenus</title>
+</head>
+<body>
+<style>
+  /*
+    Six boutons tenus — à presser.
+
+    **Ce qui a été retiré, et c'est tout le sujet.** « Tu as primé sur
+    l'originalité au détriment de l'élégance. » Trois choses sont donc parties :
+
+      · la gerbe d'éclats — dix esquilles projetées, c'était du spectacle ;
+      · les matières simulées — métal brossé, laque brillante, cire ;
+      · les mouvements simultanés — ici, UNE chose bouge à la fois, et le reste
+        de l'écran ne bronche pas.
+
+    Ce qui reste : la proportion, le cheveu d'or, et le temps. Les six gestes
+    durent entre 500 et 640 ms — assez lents pour se voir, assez courts pour ne
+    pas se faire attendre.
+
+    Une seule proposition garde l'ouverture par agrandissement (« le cercle qui
+    se ferme »), et c'est délibéré : répétée six fois, elle deviendrait un tic.
+  */
+
+  :root{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+  }
+  :root[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 90px}
+  .page{max-width:1360px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
+  .intro b{color:var(--encre);font-weight:500}
+  .appui{max-width:52ch;margin:22px auto 0;padding:15px 20px;border:1px solid var(--trait);
+         border-radius:6px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+  .appui b{color:var(--encre);font-weight:500}
+
+  .famille{margin:60px 0 14px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--gris)}
+  .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
+  .famille span::before,.famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
+  .famille span::before{right:100%}
+  .famille span::after{left:100%}
+  .sous-titre{max-width:58ch;margin:0 auto 30px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+
+  .planche{display:flex;flex-wrap:wrap;gap:26px;justify-content:center}
+  .carte{width:236px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .socle{display:grid;place-items:center;overflow:hidden;width:236px;height:172px;border-radius:10px;
+         background:#f5f3ee;border:1px solid var(--trait);
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f;
+         --e-trait:rgba(28,28,26,.12)}
+  .etiquette{color:var(--bronze)}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:52px 40px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:16px;width:412px;max-width:100%}
+  .prop .nom-prop{margin:0;font:400 22px/1.25 ui-serif,Georgia,serif;text-align:center}
+  .prop .dit{margin:0;max-width:37ch;text-align:center;font-size:13px;line-height:1.6;color:var(--gris)}
+  .prop .dit b{color:var(--encre);font-weight:500}
+
+  .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:664px;
+         display:flex;flex-direction:column;
+         background:#f5f3ee;color:#1c1c1a;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f;
+         --e-trait:rgba(28,28,26,.12); --e-trait-doux:rgba(28,28,26,.07)}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .enseigne{padding:26px 0 0;text-align:center;font-size:11px;letter-spacing:.52em}
+  .titre{padding:34px 26px 0}
+  .titre .salut{margin:0;color:var(--e-or)}
+  .titre h1{margin:14px 0 0;font-size:36px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+  .titre .compte{margin:14px 0 0;color:var(--e-gris)}
+  .fermeture{height:1px;background:var(--e-trait);margin:26px 26px 0}
+  .rubrique{display:flex;justify-content:space-between;align-items:center;
+            margin:26px 26px 10px;color:var(--e-gris)}
+
+  .tige{position:relative;margin:0 26px;flex:1 1 auto;min-height:0;overflow:hidden}
+  .tige::before{content:"";position:absolute;left:47px;top:10px;bottom:10px;width:1px;background:var(--e-trait)}
+  .brin{position:relative;display:grid;grid-template-columns:47px 1fr;gap:0 26px;
+        padding:15px 0;text-decoration:none;color:inherit}
+  .brin .jour{grid-row:1 / span 3;text-align:right;padding-right:13px;color:var(--e-gris)}
+  .brin .jour b{display:block;font-weight:400;font-size:19px;line-height:1;color:var(--e-encre);
+                font-family:ui-serif,Georgia,serif}
+  .brin .jour span{display:block;margin-top:4px}
+  .brin .nom{margin:0;font-size:19px;line-height:1.15;font-weight:400}
+  .brin .lieu{margin:3px 0 0;font-size:11.5px;color:var(--e-gris)}
+  .brin .etat{margin:7px 0 0;color:var(--e-gris)}
+  .brin.attend .etat{color:var(--e-or)}
+  .brin.attend::after{content:"";position:absolute;left:44px;top:21px;width:7px;height:7px;
+                      border-radius:99px;background:var(--e-or);box-shadow:0 0 0 4px var(--e-fond)}
+
+  .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;position:relative;z-index:2;
+       background:var(--e-fond)}
+  .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
+  .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-or)}
+
+  /* ══ Six gestes tenus ═══════════════════════════════════════════════════
+     « Tu as primé sur l'originalité au détriment de l'élégance. »
+
+     Ce qui a été retiré, et c'est le fond du sujet :
+
+       · LA GERBE. Dix éclats d'or projetés, c'était du spectacle — la première
+         chose à couper quand on cherche la tenue.
+       · LES MATIÈRES SIMULÉES. Ni métal brossé, ni laque brillante, ni cire :
+         un aplat mat, ou rien du tout.
+       · LES MOUVEMENTS SIMULTANÉS. Ici, UNE seule chose bouge à la fois. Le
+         reste de l'écran ne bronche pas.
+
+     Ce qui reste : la juste proportion, le cheveu d'or, et le temps. Tous les
+     gestes durent entre 500 et 640 ms — assez lents pour se voir, assez courts
+     pour ne pas se faire attendre. */
+  .siege{display:flex;justify-content:center;padding:22px 26px 6px}
+  .siege.filet{padding:26px 26px 0}
+  .siege.volets{padding:24px 26px 4px}
+  .geste{position:relative;display:flex;align-items:center;justify-content:center;
+         text-decoration:none;color:var(--e-encre);-webkit-tap-highlight-color:transparent}
+  /* `nowrap` : sans lui, l'écartement des lettres faisait passer « NOUVEAU
+     CHANTIER » sur deux lignes en plein geste — le bouton changeait de forme
+     au moment précis où il devait rester immobile. */
+  .geste .libelle{color:var(--e-encre);letter-spacing:.28em;white-space:nowrap;
+                  transition:letter-spacing 620ms cubic-bezier(.22,.61,.36,1)}
+  .geste .signe{stroke:var(--e-or);stroke-width:1;fill:none}
+  .geste .signe.clair{stroke:var(--e-or-clair);stroke-width:1.1}
+  .geste .cerne{stroke:var(--e-or);stroke-width:1;fill:none;opacity:.85}
+
+  /* ── 1 · Le mot ────────────────────────────────────────────────────────
+     Les lettres s'écartent, l'œil se referme. Rien d'autre. */
+  /* **La boîte du bouton ne bouge pas, seules les lettres s'écartent dedans.**
+     Sans largeur fixe, l'écartement élargissait le lien de vingt-huit pixels
+     pendant le geste : un contrôle automatique n'arrivait plus à le presser
+     deux fois de suite, et surtout une cible qui grandit sous le doigt est une
+     cible qui se dérobe. Le défaut est né en cherchant l'élégance — il se
+     serait vu à l'usage, pas à l'œil. */
+  .geste.mot{gap:14px;width:236px}
+  .geste.mot .oeil{display:block;width:26px;height:26px}
+  .geste.mot .oeil svg{display:block;width:100%;height:100%;
+                       transition:transform 620ms cubic-bezier(.22,.61,.36,1)}
+  .geste.mot.part .libelle{letter-spacing:.40em}
+  .geste.mot.part .oeil svg{transform:rotate(180deg) scale(.86)}
+  .geste.grand.mot .oeil{width:32px;height:32px}
+  .geste.grand.mot .libelle{font-size:10.5px}
+  .geste.grand.mot{width:224px}
+
+  /* ── 2 · La goutte d'or ────────────────────────────────────────────────
+     Le seul aplat de couleur de l'écran, et il fait vingt pixels. */
+  .geste.goutte{width:64px;height:64px}
+  .geste.goutte .perle{width:20px;height:20px;border-radius:99px;background:var(--e-or);
+                       transition:transform 480ms cubic-bezier(.22,.61,.36,1)}
+  .geste.goutte .halo{position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px 0 0 -10px;
+                      border-radius:99px;border:1px solid var(--e-or);opacity:0}
+  .geste.goutte.part .perle{transform:scale(1.18)}
+  .geste.goutte.part .halo{animation:halo-lent 640ms cubic-bezier(.16,.7,.3,1) both}
+  @keyframes halo-lent{0%{transform:scale(1);opacity:.7}100%{transform:scale(3.6);opacity:0}}
+
+  /* ── 3 · Le disque de nuit ─────────────────────────────────────────────
+     Mat, sans un reflet. Le cerceau vient se poser dessus : deux pièces qui
+     se rejoignent, et c'est tout le geste. */
+  .geste.nuit{width:76px;height:76px}
+  .geste.nuit .galet{display:grid;place-items:center;width:54px;height:54px;border-radius:99px;
+                     background:var(--e-pin);
+                     transition:transform 480ms cubic-bezier(.22,.61,.36,1)}
+  .geste.nuit .galet svg{display:block;width:22px;height:22px}
+  .geste.nuit .cerceau{position:absolute;inset:0;border-radius:99px;border:1px solid var(--e-or);
+                       transition:transform 560ms cubic-bezier(.22,.61,.36,1),opacity 560ms}
+  .geste.nuit.part .cerceau{transform:scale(.72)}
+  .geste.nuit.part .galet{transform:scale(.94)}
+  .geste.grand.nuit{width:96px;height:96px}
+  .geste.grand.nuit .galet{width:68px;height:68px}
+  .geste.grand.nuit .galet svg{width:26px;height:26px}
+
+  /* ── 4 · Le cercle qui se ferme ────────────────────────────────────────
+     Il manque un arc. À l'appui il se complète, puis s'ouvre en grand :
+     ouvrir un chantier, c'est fermer le cercle. */
+  .geste.cercle{width:64px;height:64px}
+  .geste.cercle .anneau{position:absolute;inset:0;width:100%;height:100%;
+                        transform:rotate(-96deg)}
+  .geste.cercle .trace{fill:none;stroke:var(--e-or);stroke-width:1;stroke-linecap:round;
+                       stroke-dasharray:188.5;stroke-dashoffset:47;
+                       transition:stroke-dashoffset 560ms cubic-bezier(.22,.61,.36,1)}
+  .geste.cercle .point{width:5px;height:5px;border-radius:99px;background:var(--e-or);
+                       opacity:.9;transition:transform 480ms cubic-bezier(.22,.61,.36,1)}
+  .geste.cercle.part .trace{stroke-dashoffset:0}
+  .geste.cercle.part .point{transform:scale(.4)}
+  .geste.grand.cercle{width:88px;height:88px}
+
+  /* ── 5 · Le filet traversé ─────────────────────────────────────────────
+     Il REMPLACE le trait qui fermait l'en-tête. Rien ne s'ajoute à l'écran :
+     la ligne était déjà là, elle porte maintenant l'œil. */
+  .geste.filet{width:100%;gap:16px}
+  .geste.filet .brin-g,.geste.filet .brin-d{flex:1;height:1px;background:var(--e-trait);
+                       transition:transform 560ms cubic-bezier(.22,.61,.36,1)}
+  .geste.filet .brin-g{transform-origin:left}
+  .geste.filet .brin-d{transform-origin:right}
+  .geste.filet .oeil{display:block;width:24px;height:24px;
+                     transition:transform 560ms cubic-bezier(.22,.61,.36,1)}
+  .geste.filet .oeil svg{display:block;width:100%;height:100%}
+  .geste.filet.part .brin-g,.geste.filet.part .brin-d{transform:scaleX(.86)}
+  .geste.filet.part .oeil{transform:scale(1.34)}
+  .socle.filet .geste.filet{width:190px}
+
+  /* ── 6 · Les deux volets ───────────────────────────────────────────────
+     Au repos, on ne voit qu'une ligne. À l'appui, elle s'écarte en deux. */
+  .geste.volets{width:100%;gap:18px}
+  .geste.volets .volet-g,.geste.volets .volet-d{flex:1;height:1px;background:var(--e-trait);
+                        transition:transform 620ms cubic-bezier(.22,.61,.36,1),opacity 620ms}
+  .geste.volets.part .volet-g{transform:translateX(-34px);opacity:0}
+  .geste.volets.part .volet-d{transform:translateX(34px);opacity:0}
+  .geste.volets .libelle{color:var(--e-or)}
+  .geste.volets.part .libelle{letter-spacing:.40em}
+  .socle.volets .geste.volets{width:190px}
+
+  /* ── L'ouverture par le cercle, gardée pour UNE seule proposition ───────
+     La répéter sur les six en ferait un tic. Elle n'a de sens que là où le
+     cercle vient de se fermer. */
+  .geste .revelation{position:absolute;left:50%;top:50%;width:74px;height:74px;
+                     margin:-37px 0 0 -37px;z-index:5;border-radius:99px;
+                     background:var(--e-fond);transform:scale(0);opacity:0;pointer-events:none}
+  .geste.part.par-cercle .revelation{animation:revelation 640ms cubic-bezier(.3,.62,.28,1) forwards}
+  @keyframes revelation{0%{transform:scale(0);opacity:1}100%{transform:scale(15);opacity:1}}
+
+
+  /* ── La feuille ────────────────────────────────────────────────────────── */
+  .feuille{position:absolute;left:0;right:0;bottom:0;top:56px;z-index:6;
+           display:flex;flex-direction:column;background:var(--e-fond);
+           border-radius:22px 22px 0 0;box-shadow:0 -22px 50px rgba(20,18,14,.22);
+           transform:translateY(100%);visibility:hidden;
+           transition:transform 560ms cubic-bezier(.22,.61,.36,1),visibility 0s 560ms}
+  .feuille.ouverte{transform:translateY(0);visibility:visible;transition-delay:0s}
+  .ecran[data-ouverture="cercle"] .feuille{top:0;border-radius:0;box-shadow:none;
+                                           transition:opacity 200ms ease,visibility 0s 200ms}
+  .ecran[data-ouverture="cercle"] .feuille.ouverte{transform:none;opacity:1;transition-delay:0s}
+  .ecran[data-ouverture="cercle"] .feuille:not(.ouverte){transform:none;opacity:0}
+  .feuille .poignee{width:38px;height:4px;border-radius:9px;background:var(--e-trait);margin:12px auto 0}
+  .feuille h2{margin:26px 26px 0;font:400 30px/1.05 ui-serif,Georgia,serif;letter-spacing:-.018em}
+  .feuille .quoi{margin:12px 26px 0;color:var(--e-gris);font-size:11.5px;line-height:1.5}
+  .feuille .champ{margin:22px 26px 0}
+  .feuille .champ span{display:block;color:var(--e-gris);margin-bottom:7px}
+  .feuille .champ b{display:block;padding:13px 15px;border-radius:4px;background:var(--e-plage);
+                    font-weight:400;color:var(--e-gris);font-size:15px}
+  .feuille .fermer{display:block;margin:auto 26px 30px;padding:15px;text-align:center;
+                   text-decoration:none;color:var(--e-gris);border-top:1px solid var(--e-trait)}
+
+  .note{max-width:62ch;margin:56px auto 0;padding:20px 22px;border:1px solid var(--trait);
+        border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.7}
+  .note h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
+  .note b{color:var(--encre);font-weight:500}
+  .note p{margin:0 0 12px}
+  .note p:last-child{margin-bottom:0}
+
+  @media (prefers-reduced-motion: reduce){
+    .geste *,.geste{transition:none !important;animation:none !important}
+  }
+</style>
+
+<div class="page">
+  <div class="intro">
+    <p class="sur">Atlas — le bouton, quatrième passe</p>
+    <h1>Six gestes tenus</h1>
+    <p>Vous avez raison : la fois d’avant, j’ai fait du spectacle. <b>La gerbe d’éclats est partie</b>, les matières imitées aussi — métal, laque, cire. Ce qui reste tient en trois choses : la proportion, un cheveu d’or, et le temps.</p>
+    <p><b>Une seule chose bouge à la fois</b>, et le reste de l’écran ne bronche pas. Les six gestes durent entre une demi-seconde et six dixièmes : assez lents pour se voir, assez courts pour ne pas se faire attendre.</p>
+    <p class="appui"><b>Appuyez sur les six.</b> En haut pour les comparer, dessous chacun dans l’écran. Refermez pour recommencer.</p>
+  </div>
+
+  <p class="famille"><span>Les six, côte à côte</span></p>
+  <p class="sous-titre">Regardez d’abord ce qu’ils sont <b>au repos</b> : c’est cet état-là que vous verrez dix fois par jour, pas le geste.</p>
+  <div class="planche">
+<div class="carte">
+      <div class="socle mot">
+        <a class="geste mot grand" href="#" aria-label="Nouveau chantier"
+             data-ouverture="feuille">
+            <span class="oeil" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle class="cerne" cx="12" cy="12" r="11"/>
+                <path class="signe" d="M12 7.4v9.2M7.4 12h9.2"/></svg>
+            </span>
+            <span class="libelle caps">Nouveau chantier</span>
+            <span class="revelation" aria-hidden="true"></span>
+          </a>
+      </div>
+      <p class="etiquette caps">Le mot</p>
+    </div>
+    <div class="carte">
+      <div class="socle goutte">
+        <a class="geste goutte grand" href="#" aria-label="Nouveau chantier"
+             data-ouverture="feuille">
+            <span class="halo" aria-hidden="true"></span>
+            <span class="perle" aria-hidden="true"></span>
+            <span class="revelation" aria-hidden="true"></span>
+          </a>
+      </div>
+      <p class="etiquette caps">La goutte d’or</p>
+    </div>
+    <div class="carte">
+      <div class="socle nuit">
+        <a class="geste nuit grand" href="#" aria-label="Nouveau chantier"
+             data-ouverture="feuille">
+            <span class="cerceau" aria-hidden="true"></span>
+            <span class="galet" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path class="signe clair" d="M12 6.6v10.8M6.6 12h10.8"/></svg>
+            </span>
+            <span class="revelation" aria-hidden="true"></span>
+          </a>
+      </div>
+      <p class="etiquette caps">Le disque de nuit</p>
+    </div>
+    <div class="carte">
+      <div class="socle cercle">
+        <a class="geste cercle grand" href="#" aria-label="Nouveau chantier"
+             data-ouverture="cercle">
+            <svg class="anneau" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="trace" cx="32" cy="32" r="30"/>
+            </svg>
+            <span class="point" aria-hidden="true"></span>
+            <span class="revelation" aria-hidden="true"></span>
+          </a>
+      </div>
+      <p class="etiquette caps">Le cercle qui se ferme</p>
+    </div>
+    <div class="carte">
+      <div class="socle filet">
+        <a class="geste filet grand" href="#" aria-label="Nouveau chantier"
+             data-ouverture="feuille">
+            <span class="brin-g" aria-hidden="true"></span>
+            <span class="oeil" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle class="cerne" cx="12" cy="12" r="11"/>
+                <path class="signe" d="M12 7.8v8.4M7.8 12h8.4"/></svg>
+            </span>
+            <span class="brin-d" aria-hidden="true"></span>
+            <span class="revelation" aria-hidden="true"></span>
+          </a>
+      </div>
+      <p class="etiquette caps">Le filet traversé</p>
+    </div>
+    <div class="carte">
+      <div class="socle volets">
+        <a class="geste volets grand" href="#" aria-label="Nouveau chantier"
+             data-ouverture="feuille">
+            <span class="volet-g" aria-hidden="true"></span>
+            <span class="libelle caps">Nouveau chantier</span>
+            <span class="volet-d" aria-hidden="true"></span>
+            <span class="revelation" aria-hidden="true"></span>
+          </a>
+      </div>
+      <p class="etiquette caps">Les deux volets</p>
+    </div>
+  </div>
+
+  <p class="famille"><span>Chacun dans l’écran</span></p>
+  <p class="sous-titre">Le geste entier, puis la feuille une demi-seconde plus tard.</p>
+  <div class="rangee">
+<div class="prop">
+      <p class="nom-prop">Le mot</p>
+      <p class="dit">Pas d’objet du tout : <b>un mot, et un œil d’un cheveu</b>. À l’appui, les lettres s’écartent lentement et l’œil se referme — rien d’autre ne bouge. C’est ce que fait un hôtel sur un bouton : il écrit.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="fermeture"></div>
+        <div class="siege mot">
+          <a class="geste mot " href="#" aria-label="Nouveau chantier"
+             data-ouverture="feuille">
+            <span class="oeil" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle class="cerne" cx="12" cy="12" r="11"/>
+                <path class="signe" d="M12 7.4v9.2M7.4 12h9.2"/></svg>
+            </span>
+            <span class="libelle caps">Nouveau chantier</span>
+            <span class="revelation" aria-hidden="true"></span>
+          </a>
+        </div>
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>18</b><span>juil.</span></span>
+            <p class="nom serif">Reprise de toiture</p>
+            <p class="lieu">8 impasse du Moulin, Rezé</p>
+            <p class="etat caps">En attente · 9 photos</p>
+          </a>
+        </div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="prop">
+      <p class="nom-prop">La goutte d’or</p>
+      <p class="dit">Vingt pixels d’or plein, et beaucoup de vide autour. <b>C’est le seul aplat de couleur de tout l’écran</b> — il n’a pas besoin d’être grand pour qu’on ne voie que lui. À l’appui, un seul cercle s’en écarte et se dissout.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="fermeture"></div>
+        <div class="siege goutte">
+          <a class="geste goutte " href="#" aria-label="Nouveau chantier"
+             data-ouverture="feuille">
+            <span class="halo" aria-hidden="true"></span>
+            <span class="perle" aria-hidden="true"></span>
+            <span class="revelation" aria-hidden="true"></span>
+          </a>
+        </div>
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>18</b><span>juil.</span></span>
+            <p class="nom serif">Reprise de toiture</p>
+            <p class="lieu">8 impasse du Moulin, Rezé</p>
+            <p class="etat caps">En attente · 9 photos</p>
+          </a>
+        </div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="prop">
+      <p class="nom-prop">Le disque de nuit</p>
+      <p class="dit">Un galet de vert pin <b>mat</b>, sans reflet ni brillance, cerné à distance d’un cheveu d’or. À l’appui, le cercle vient se poser sur le galet : deux pièces qui se rejoignent, un seul mouvement.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="fermeture"></div>
+        <div class="siege nuit">
+          <a class="geste nuit " href="#" aria-label="Nouveau chantier"
+             data-ouverture="feuille">
+            <span class="cerceau" aria-hidden="true"></span>
+            <span class="galet" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path class="signe clair" d="M12 6.6v10.8M6.6 12h10.8"/></svg>
+            </span>
+            <span class="revelation" aria-hidden="true"></span>
+          </a>
+        </div>
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>18</b><span>juil.</span></span>
+            <p class="nom serif">Reprise de toiture</p>
+            <p class="lieu">8 impasse du Moulin, Rezé</p>
+            <p class="etat caps">En attente · 9 photos</p>
+          </a>
+        </div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="prop">
+      <p class="nom-prop">Le cercle qui se ferme</p>
+      <p class="dit">Un anneau resté <b>ouvert</b>, comme un trait qu’on n’a pas fini. À l’appui il se referme — puis il s’ouvre en grand et devient la page. Ouvrir un chantier, c’est fermer le cercle : c’est la seule des six où le geste veut dire quelque chose.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="fermeture"></div>
+        <div class="siege cercle">
+          <a class="geste cercle " href="#" aria-label="Nouveau chantier"
+             data-ouverture="cercle">
+            <svg class="anneau" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="trace" cx="32" cy="32" r="30"/>
+            </svg>
+            <span class="point" aria-hidden="true"></span>
+            <span class="revelation" aria-hidden="true"></span>
+          </a>
+        </div>
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>18</b><span>juil.</span></span>
+            <p class="nom serif">Reprise de toiture</p>
+            <p class="lieu">8 impasse du Moulin, Rezé</p>
+            <p class="etat caps">En attente · 9 photos</p>
+          </a>
+        </div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="prop">
+      <p class="nom-prop">Le filet traversé</p>
+      <p class="dit">Le trait qui ferme l’en-tête <b>passe à travers un œil</b>, posé en son milieu. Rien ne s’ajoute à l’écran : la ligne était déjà là. À l’appui, l’œil s’ouvre et le trait s’écarte de part et d’autre.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="siege filet">
+          <a class="geste filet " href="#" aria-label="Nouveau chantier"
+             data-ouverture="feuille">
+            <span class="brin-g" aria-hidden="true"></span>
+            <span class="oeil" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle class="cerne" cx="12" cy="12" r="11"/>
+                <path class="signe" d="M12 7.8v8.4M7.8 12h8.4"/></svg>
+            </span>
+            <span class="brin-d" aria-hidden="true"></span>
+            <span class="revelation" aria-hidden="true"></span>
+          </a>
+        </div>
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>18</b><span>juil.</span></span>
+            <p class="nom serif">Reprise de toiture</p>
+            <p class="lieu">8 impasse du Moulin, Rezé</p>
+            <p class="etat caps">En attente · 9 photos</p>
+          </a>
+        </div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="prop">
+      <p class="nom-prop">Les deux volets</p>
+      <p class="dit">Le mot est posé sur la ligne, entre deux filets. À l’appui, <b>les filets s’écartent comme deux volets</b> et la feuille monte par l’ouverture. Le plus discret des six au repos — on ne voit qu’une ligne.</p>
+      <div class="tel"><div class="ecran">
+        <div class="enseigne">ATLAS</div>
+        <div class="titre">
+          <p class="salut caps">Bonjour Florian</p>
+          <h1 class="serif">Vos chantiers</h1>
+          <p class="compte caps num">Quatre en cours</p>
+        </div>
+        <div class="fermeture"></div>
+        <div class="siege volets">
+          <a class="geste volets " href="#" aria-label="Nouveau chantier"
+             data-ouverture="feuille">
+            <span class="volet-g" aria-hidden="true"></span>
+            <span class="libelle caps">Nouveau chantier</span>
+            <span class="volet-d" aria-hidden="true"></span>
+            <span class="revelation" aria-hidden="true"></span>
+          </a>
+        </div>
+        <div class="rubrique caps"><span>En cours</span><span class="num">Quatre</span></div>
+        <div class="tige">
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>26</b><span>juil.</span></span>
+            <p class="nom serif">Pose de clôture</p>
+            <p class="lieu">2 route de Vertou, Vertou</p>
+            <p class="etat caps">Brouillon · sans photo</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>24</b><span>juil.</span></span>
+            <p class="nom serif">Rénovation salle de bain</p>
+            <p class="lieu">12 rue des Lilas, Nantes</p>
+            <p class="etat caps">À vérifier · 6 photos</p>
+          </a>
+          <a class="brin attend" href="#">
+            <span class="jour caps num"><b>22</b><span>juil.</span></span>
+            <p class="nom serif">Terrasse bois</p>
+            <p class="lieu">5 allée des Tilleuls, Nantes</p>
+            <p class="etat caps">Devis retourné · 3 photos</p>
+          </a>
+          <a class="brin" href="#">
+            <span class="jour caps num"><b>18</b><span>juil.</span></span>
+            <p class="nom serif">Reprise de toiture</p>
+            <p class="lieu">8 impasse du Moulin, Rezé</p>
+            <p class="etat caps">En attente · 9 photos</p>
+          </a>
+        </div>
+        <nav class="bas">
+          <a class="on caps" href="#">Chantiers</a>
+          <a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a>
+          <a class="caps" href="#">Réglages</a>
+        </nav>
+        <div class="feuille">
+          <span class="poignee" aria-hidden="true"></span>
+          <h2 class="serif">Nouveau chantier</h2>
+          <p class="quoi">Trois champs suffisent. Le reste se remplit en dictant sur place.</p>
+          <div class="champ caps"><span>Nom du chantier</span><b>Pose de clôture</b></div>
+          <div class="champ caps"><span>Adresse</span><b>2 route de Vertou, Vertou</b></div>
+          <div class="champ caps"><span>Date</span><b>26 juillet</b></div>
+          <a class="fermer caps" href="#">Refermer — et recommencer</a>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <h2>Ce que je ferais</h2>
+    <p><b>Le mot.</b> C’est le plus tenu des six, et le seul qui ne demande rien à personne : il est écrit. Un hôtel n’écrit pas « + » sur une porte, il écrit ce qu’il y a derrière. Les lettres qui s’écartent lentement à l’appui suffisent — aucune autre pièce ne bouge, et c’est exactement ce que je cherchais après la fois d’avant.</p>
+    <p><b>Si vous voulez un objet plutôt qu’un mot :</b> la goutte d’or. Vingt pixels d’aplat, beaucoup de vide autour — <b>c’est la seule couleur pleine de tout l’écran</b>, et c’est ce qui la rend précieuse. Un objet rare ne se signale pas par sa taille.</p>
+    <p><b>Si vous voulez que rien ne s’ajoute :</b> le filet traversé. La ligne qui ferme l’en-tête existait déjà ; elle porte maintenant l’œil. L’écran ne gagne pas un seul élément.</p>
+    <p><b>La seule où le geste veut dire quelque chose :</b> le cercle qui se ferme. Il manque un arc au repos ; l’appui le complète, puis le cercle s’ouvre en grand et devient la page. C’est la seule qui garde l’ouverture par agrandissement — la répéter six fois en aurait fait un tic.</p>
+    <p><b>Une réserve, et elle vaut pour trois d’entre eux.</b> Le mot, les volets et le filet n’ont pas de contour : leur cible se touche, mais elle ne se voit pas. Il faudra vérifier au doigt, sur votre téléphone, que la zone est assez large — c’est le genre de chose qu’une maquette ne dit pas, même en la pressant sur un écran d’ordinateur.</p>
+  </div>
+</div>
+
+<script>
+/*
+  Le même script qu'aux maquettes 16, 17 et 18 : il arme les boutons, ouvre la
+  feuille une demi-seconde après l'appui, et referme. Le second appui pendant le
+  geste est ignoré — sinon, dans l'application, ce serait deux chantiers créés
+  au lieu d'un.
+*/
+var gestes = document.querySelectorAll(".geste[href]");
+
+for (var i = 0; i < gestes.length; i++) armer(gestes[i]);
+
+function armer(geste) {
+  var ecran = geste.closest(".ecran");
+  var feuille = ecran ? ecran.querySelector(".feuille") : null;
+  var parCercle = geste.getAttribute("data-ouverture") === "cercle";
+  var enCours = false;
+
+  if (ecran && parCercle) ecran.setAttribute("data-ouverture", "cercle");
+
+  geste.addEventListener("click", function (evenement) {
+    evenement.preventDefault();
+    if (enCours) return;
+    enCours = true;
+
+    var calme = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    geste.classList.add("part");
+    if (parCercle && !calme) geste.classList.add("par-cercle");
+
+    if (feuille) {
+      window.setTimeout(function () {
+        feuille.classList.add("ouverte");
+      }, calme ? 0 : 500);
+    }
+
+    window.setTimeout(function () {
+      geste.classList.remove("part");
+      geste.classList.remove("par-cercle");
+      enCours = false;
+    }, calme ? 0 : 940);
+  });
+
+  if (feuille) {
+    feuille.querySelector(".fermer").addEventListener("click", function (evenement) {
+      evenement.preventDefault();
+      feuille.classList.remove("ouverte");
+    });
+  }
+}
+</script>
+</body>
+</html>

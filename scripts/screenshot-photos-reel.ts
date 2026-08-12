@@ -19,20 +19,22 @@ async function main() {
   await page.fill('input[placeholder="M. Bernard"]', `Chantier capture ${Date.now()}`);
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
-  const photosUrl = `${page.url()}/photos`;
 
-  await page.goto(photosUrl, { waitUntil: "networkidle" });
-  await page.screenshot({ path: `${OUT}/01-grille-vide.png`, fullPage: true });
+  // La pellicule du tiroir a remplacé l'écran Photos le 11 août 2026 : tout se
+  // fait sur la fiche, une fois le tiroir ouvert.
+  await page.click('button[aria-label="Ouvrir le détail du chantier"]');
+  await page.waitForTimeout(700);
+  await page.screenshot({ path: `${OUT}/01-pellicule-vide.png`, fullPage: true });
 
   const [fileChooser] = await Promise.all([
     page.waitForEvent("filechooser"),
-    page.click('button:has-text("Ajouter une photo")'),
+    page.click('button[aria-label="Ajouter des photos"]'),
   ]);
   await fileChooser.setFiles(FIXTURE);
-  await page.waitForSelector("text=1 photo");
-  await page.screenshot({ path: `${OUT}/02-grille-avec-photo-reelle.png`, fullPage: true });
+  await page.waitForSelector('img[src^="/api/fichiers/"]');
+  await page.screenshot({ path: `${OUT}/02-pellicule-avec-photo-reelle.png`, fullPage: true });
 
-  await page.locator('button[aria-label="Voir la photo"]').first().click();
+  await page.locator('button[aria-label^="Voir la photo"]').first().click();
   await page.waitForSelector('button[aria-label="Fermer"]');
   await page.screenshot({ path: `${OUT}/03-visionneuse-photo-reelle.png`, fullPage: true });
 

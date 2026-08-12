@@ -65,6 +65,7 @@ seule avec quinze outils.
 | Correction demandée par le client, avec son message porté au patron | `src/app/devis/[jeton]/formulaire.tsx` + `src/lib/etat-envoi.ts` |
 | Écrire le devis soi-même, sans passer par la proposition de prix | `src/app/chantiers/[id]/informations/InformationsClient.tsx` → `prix?saisie=manuelle` |
 | Transmission au client : messagerie ouverte **au bon destinataire**, canal changeable, coordonnée saisissable sur place | `src/app/chantiers/[id]/export/TransmettreAuClient.tsx` |
+| **Le contact manquant se saisit dans la feuille d'envoi**, au lieu de renvoyer vers un écran retiré du tiroir (11 août 2026, `ARCHITECTURE.md` §62) | `src/app/chantiers/[id]/export/EnvoiAuClient.tsx` |
 | **De la dictée au devis en un seul geste** : prestations, durée, équipe, prix, devis | `src/server/services/devis-depuis-dictee.ts` + `src/app/chantiers/[id]/DevisDepuisDictee.tsx` |
 | La dictée est lue mot à mot quand aucun modèle ne répond — et l'écran le dit | `src/server/ai/lecture-litterale.ts` + `drizzle/0021_lecture_dictee.sql` |
 | Rédiger le devis **entièrement à la main**, depuis la fiche du chantier | `src/app/chantiers/[id]/page.tsx` → `prix?saisie=manuelle` |
@@ -109,11 +110,11 @@ un « Réessayer » qui refait le même rendu, avec les mêmes adresses mortes.
 | Brique | Où c'est |
 |---|---|
 | La décision : reconnaître, recharger une fois, savoir s'arrêter | `src/lib/reprise-erreur.ts` |
-| Le corps commun des dix écrans d'erreur | `src/components/atlas/CorpsErreur.tsx` |
+| Le corps commun des neuf écrans d'erreur | `src/components/atlas/CorpsErreur.tsx` |
 | Contrôles purs, dont son message exact et les cinq formulations de navigateurs | `scripts/test-reprise-erreur.ts` |
 | La panne rejouée dans un vrai navigateur, à l'écran du patron | `scripts/test-reprise-morceau-e2e.ts` |
 | La capture, pour regarder l'écran | `scripts/capture-reprise-morceau.mts` |
-| Le pourquoi, et ce qui n'est pas couvert | `ARCHITECTURE.md` §59 |
+| Le pourquoi, et ce qui n'est pas couvert | `ARCHITECTURE.md` §63 |
 
 ### La session fantôme (10 août 2026)
 
@@ -137,9 +138,21 @@ Le patron a arrêté un écran après une soirée de maquettes
 (`docs/maquettes/`, treize propositions), puis l'a fait poser dans
 l'application. Ce qui est **fait** :
 
-- **L'accueil** : le fil qui porte les jours, la perle d'or sur ce qui attend un
-  geste, le trait qui glisse sous les onglets, et « Nouveau chantier » qui monte
-  en feuille pendant que la liste recule.
+- **L'accueil** : le fil qui porte les jours, la perle d'or qui se tient à
+  mi-hauteur et désigne le chantier qu'on regarde, puis descend sur le dernier
+  jour quand on arrive au bout (corrigé le 11 août 2026 : elle était posée sur le
+  chantier en attente, donc tout en bas chez le patron — `ARCHITECTURE.md` §59),
+  le trait qui glisse sous les onglets, et « Nouveau chantier » qui monte en
+  feuille pendant que la liste recule. **Le fil glisse librement depuis le 11
+  août 2026** : `scroll-snap-stop: always` l'arrêtait à chaque chantier — le
+  patron le lisait comme du saccadé — et aucune zone qui défile ne montre plus
+  sa barre grise. Le masque en dégradé et l'animation d'opacité sont hors de
+  cause, c'est **mesuré** (`scripts/mesurer-fluidite-fil.mts`) : ne pas les
+  accuser sans relancer la mesure.
+- **Le devis à la main** : ses trois zones de texte mesurent leur hauteur au
+  lieu de l'estimer (11 août 2026). Elles comptaient les caractères ou les
+  retours à la ligne, alors qu'un texte se coupe au mot : le devis cachait 24 px
+  de ce que le patron venait d'y écrire.
 - **Planning, Terminés, Réglages, relevé de TVA, fiche chantier** : même
   en-tête, mêmes rayons, mêmes capitales.
 - **Les six écrans d'étape** : en-tête et boutons. Les corps de **Photos**, de
@@ -159,6 +172,12 @@ l'application. Ce qui est **fait** :
   écouter — le compteur suit la lecture réelle et l'onde le volume réellement
   enregistré, pas un décor — et les photos une pellicule dans le tiroir du bas,
   case « + » en tête. `ARCHITECTURE.md` §49.
+- **La pellicule ajoute sur place, et l'écran Photos n'existe plus** (11 août) :
+  le « + » du tiroir ouvre directement le menu du téléphone — *Photothèque ·
+  Prendre une photo · Choisir les fichiers* — au lieu de charger un écran puis
+  d'y poser une feuille maison. Quatre gestes deviennent deux. Ajouter, regarder
+  et retirer se font dans la pellicule ; `/chantiers/[id]/photos` répond 404, et
+  une suite le vérifie. `ARCHITECTURE.md` §60.
 - **Le planning au mois, et les équipes nommées** (10 août, au soir) : sept
   colonnes sans bordure, cinq marques d'occupation, et la journée qui s'ouvre
   sous le calendrier. Réglages laisse nommer les équipes — mais **seulement à
@@ -179,6 +198,13 @@ l'application. Ce qui est **fait** :
   maquette (client en serif **avant** le titre, pastille sur la ligne de la
   flèche, pas de trait de fermeture), par trois réglages **facultatifs** de
   `EnTeteEcran` qui laissent les autres écrans intacts. `ARCHITECTURE.md` §57.
+- **De l'anneau au devis, en une touche** (11 août, soir) : un appui dicte, un
+  second arrête, et « MON DEVIS → » naît sous l'anneau — transcription,
+  informations, prix, rédaction, et l'on arrive sur `devis-complet` sans écran
+  intermédiaire. La chaîne lance elle-même la transcription, ce qui manquait.
+  Le tiroir ne garde que Photos, Note vocale et Devis à la main ; les écrans
+  retirés restent joignables par leur adresse.
+  `scripts/test-anneau-vers-devis-e2e.ts`.
 - **Le devis à la main s'ouvre depuis la création du chantier** (11 août) : un
   lien discret sous « Créer le chantier ». Le chantier est créé, puis le devis
   s'ouvre avec le client déjà en en-tête — nom, adresse, téléphone. La porte du

@@ -34,6 +34,8 @@ async function cas(nom: string, verifier: () => Promise<void>) {
 
 /** Le commit réellement présent sous le dossier de travail — la vérité. */
 const COURT = execFileSync("git", ["log", "-1", "--format=%h"], { encoding: "utf8" }).trim();
+/** Et la branche suivie, qui est l'autre moitié de la réponse. */
+const BRANCHE = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], { encoding: "utf8" }).trim();
 
 async function avec(variables: Record<string, string | undefined>, fn: () => Promise<void>) {
   const avant: Record<string, string | undefined> = {};
@@ -71,18 +73,19 @@ async function main() {
     });
   });
 
-  // **Le manque qui a coûté la matinée du 12 août 2026.** Le patron regardait un
-  // écran de la veille : son espace suivait une autre branche que celle où le
-  // travail avait été livré, et la mise à jour répondait « à jour » — en toute
-  // honnêteté. Le commit seul ne dit rien : « a1b2c3d » ne prévient personne
-  // qu'il vient du mauvais endroit. La branche, si.
-  await cas("la branche suivie est affichée, pas seulement le commit", async () => {
+  await cas("la ligne nomme la BRANCHE, sans quoi elle ne tranche rien", async () => {
+    // Le 11 août 2026 au soir : le bouton « Nouveau chantier » était livré sur
+    // une branche de travail, l'espace du patron suivait `main`, et les deux
+    // avançaient le même soir. Il a lu une date fraîche et conclu qu'il avait
+    // tout — il avait raison sur la date, et il lui manquait le travail. Une
+    // date et sept caractères d'empreinte ne pouvaient pas l'arbitrer.
     await avec({ ATLAS_BANC_ESSAI: "1", ATLAS_VERSION: undefined, RELEASE_VERSION: undefined }, async () => {
       const v = await versionExecutee();
-      const branche = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], { encoding: "utf8" }).trim();
       assert.ok(
-        v?.includes(branche),
-        `La version affichée « ${v} » ne nomme pas la branche servie (${branche}). Une capture de l'écran Réglages ne peut donc pas répondre à « suis-je au bon endroit ? » — la question qui a coûté la matinée du 12 août 2026.`
+        v?.includes(BRANCHE),
+        `La version affichée « ${v} » ne nomme pas la branche servie (${BRANCHE}) : ` +
+          `deux branches vivantes le même soir portent la même heure, et l'écran ne peut ` +
+          `alors plus répondre à « est-ce que j'ai ce qui vient d'être fait ».`
       );
     });
   });

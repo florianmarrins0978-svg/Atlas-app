@@ -6,6 +6,24 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE = path.join(__dirname, "fixtures", "test-photo.jpg");
 
+/**
+ * **Ajouter une photo ne fait plus changer de page.**
+ *
+ * Le patron, le 11 août 2026, capture à l'appui : *« quand je clique sur
+ * l'encadré doré avec le petit plus, que ça arrête de me faire changer de page,
+ * je veux voir apparaître directement le menu photo, et supprime toutes les
+ * autres étapes »*.
+ *
+ * Ce que cette suite tient, et qu'un contrôle d'affichage ne verrait pas :
+ *
+ *   1. l'adresse **ne bouge pas** entre le premier appui et la photo affichée ;
+ *   2. il n'y a **qu'un seul** champ de fichier, et il n'a **pas** `capture` —
+ *      c'est exactement ce qui fait apparaître le menu iOS à trois entrées
+ *      (Photothèque · Prendre une photo · Choisir les fichiers) plutôt que
+ *      d'imposer l'appareil photo ;
+ *   3. notre ancienne feuille maison n'existe plus nulle part ;
+ *   4. l'écran `/photos` répond **404** : il ne survit pas en douce.
+ */
 async function main() {
   const browser = await lancerNavigateur();
   const context = await browser.newContext({ deviceScaleFactor: 3 });
@@ -26,100 +44,131 @@ async function main() {
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const chantierUrl = page.url();
-  const photosUrl = `${chantierUrl}/photos`;
 
-  await page.goto(photosUrl, { waitUntil: "networkidle" });
-  assert.ok(await page.locator("text=Aucune photo pour l'instant").isVisible(), "État vide attendu au départ");
+  // La pellicule vit dans le tiroir : au repos, seule sa prise dépasse.
+  const tiroir = page.locator('[data-atlas="tiroir-fiche"]');
+  await tiroir.waitFor({ state: "visible", timeout: 10000 });
+  await page.click('button[aria-label="Ouvrir le détail du chantier"]');
+  await tiroir.locator('button[aria-label="Ajouter des photos"]').waitFor({ state: "visible", timeout: 10000 });
 
-  // --- Ajout réel d'une photo ---
+  // --- Ce qui est demandé : le « + » n'emmène nulle part ------------------
+  assert.equal(
+    await tiroir.locator("a[href*='/photos']").count(),
+    0,
+    "La pellicule porte encore un lien vers un écran Photos : le « + » ferait changer de page."
+  );
+
+  // --- Ajout réel d'une photo, sur place ---------------------------------
   const [fileChooser] = await Promise.all([
     page.waitForEvent("filechooser"),
-    // Un seul bouton depuis le 6 août 2026 : il ouvre une feuille où le choix
-    // se pose. « Ajouter une photo » puis « Prendre une photo ».
-    (async () => {
-      await page.click('button:has-text("Ajouter une photo")');
-      await page.click('button:has-text("Prendre une photo")');
-    })(),
+    // Un seul appui, et le menu du téléphone. Playwright rend l'événement
+    // `filechooser` là où l'iPhone affiche « Photothèque / Prendre une photo /
+    // Choisir les fichiers » : c'est le même champ qui les ouvre.
+    tiroir.locator('button[aria-label="Ajouter des photos"]').click(),
   ]);
   await fileChooser.setFiles(FIXTURE);
-  await page.waitForSelector("text=1 photo", { timeout: 5000 });
-  assert.ok(await page.locator('img[src^="/api/fichiers/"]').first().isVisible(), "La vignette doit afficher la vraie image");
+
+  await tiroir.locator('img[src^="/api/fichiers/"]').first().waitFor({ state: "visible", timeout: 15000 });
+  assert.equal(
+    page.url(),
+    chantierUrl,
+    `L'adresse a changé pendant l'ajout (${page.url()}) : le patron a été emmené ailleurs.`
+  );
+  console.log("  ✓ la photo s'ajoute sans quitter la fiche");
 
   // Vérifie que l'image servie répond bien (contenu réel, pas un placeholder).
-  const src = await page.locator('img[src^="/api/fichiers/"]').first().getAttribute("src");
+  const src = await tiroir.locator('img[src^="/api/fichiers/"]').first().getAttribute("src");
   const reponse = await page.request.get(`http://localhost:3000${src}`);
   assert.equal(reponse.status(), 200);
   assert.equal(reponse.headers()["content-type"], "image/jpeg");
 
-  // --- Ouverture de la visionneuse ---
-  await page.locator('button[aria-label="Voir la photo"]').first().click();
+  // --- Elle est ENREGISTRÉE, pas seulement affichée ----------------------
+  //
+  // Repris d'une suite écrite le même jour par une autre session
+  // (`test-ajout-photo-fiche-e2e.ts`), retirée par arbitrage du patron : elle
+  // éprouvait une feuille maison qui n'existe plus. Ce contrôle-ci, lui, valait
+  // d'être gardé — un ajout qui ne survit pas au rechargement est un ajout qui
+  // n'a pas eu lieu, et rien d'autre ici ne le disait.
+  await page.reload({ waitUntil: "networkidle" });
+  await page.click('button[aria-label="Ouvrir le détail du chantier"]');
+  await tiroir.locator('img[src^="/api/fichiers/"]').first().waitFor({ state: "visible", timeout: 15000 });
+  assert.equal(
+    await tiroir.locator('img[src^="/api/fichiers/"]').count(),
+    1,
+    "La photo n'a pas survécu au rechargement : elle n'était qu'affichée."
+  );
+  console.log("  ✓ la photo survit au rechargement");
+
+  // --- Le menu du téléphone, et rien d'autre -----------------------------
+  //
+  // `capture` n'est pas une préférence : sur un iPhone, il IMPOSE l'appareil
+  // photo, retire l'accès à la photothèque — et le menu à trois entrées
+  // n'apparaît jamais. Un seul champ, sans lui : les deux chemins sont dans le
+  // menu du système.
+  assert.equal(
+    await page.locator('input[type="file"][capture]').count(),
+    0,
+    "Un champ impose l'appareil photo : le menu du téléphone ne s'ouvrira pas, et la photothèque devient inaccessible."
+  );
+  assert.equal(
+    await page.locator('input[type="file"]').count(),
+    1,
+    "La fiche porte plusieurs champs de fichier : une seule entrée est attendue depuis que le menu du système fait le choix."
+  );
+
+  // Notre feuille maison a disparu : c'était l'étape en trop.
+  for (const libelle of [/Choisir dans ma bibliothèque/i, /Prendre une photo/i]) {
+    assert.equal(
+      await page.getByRole("button", { name: libelle }).count(),
+      0,
+      `La feuille maison est toujours là (« ${libelle.source} ») : c'est l'étape que le patron a demandé de supprimer.`
+    );
+  }
+  console.log("  ✓ un seul champ, sans `capture`, et plus aucune étape maison");
+
+  // --- Regarder, puis retirer, toujours sans changer de page -------------
+  await tiroir.getByRole("button", { name: "Voir la photo" }).first().click();
   await page.waitForSelector('button[aria-label="Fermer"]', { timeout: 5000 });
   assert.ok(await page.locator(`img[src="${src}"]`).last().isVisible(), "La visionneuse doit afficher la même image");
 
-  // --- Retrait réel, SANS panneau de confirmation ---
-  //
-  // Le panneau « Supprimer cette photo ? » a disparu le 10 août 2026 : la
-  // sécurité est passée d'une confirmation avant à une réversibilité après.
-  // Ce que cette suite tient désormais : le retrait se fait d'un seul geste,
-  // et le tiroir s'ouvre pour le rattraper.
+  // **La visionneuse doit couvrir la barre de navigation.** Rendue dans le
+  // tiroir — qui ouvre son propre contexte d'empilement —, elle passait sous
+  // « Chantiers / Planning », en travers de la photo. D'où le portail.
+  const barreCouverte = await page.evaluate(() => {
+    const barre = document.querySelector(".atlas-nav-basse");
+    if (!barre) return "aucune barre";
+    const r = barre.getBoundingClientRect();
+    const dessus = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return dessus && (barre === dessus || barre.contains(dessus)) ? "barre visible" : "couverte";
+  });
+  assert.equal(
+    barreCouverte,
+    "couverte",
+    "La barre de navigation se peint par-dessus la visionneuse : la photo est traversée par les onglets."
+  );
+
+  // Retrait d'un seul geste — la sécurité est une réversibilité APRÈS.
   await page.click('button[aria-label="Retirer cette photo"]');
-  await page.waitForSelector("text=Aucune photo pour l'instant", { timeout: 5000 });
   assert.ok(
     await page.locator(".atlas-tiroir[data-ouvert='oui']").first().isVisible(),
     "Le tiroir des retirés ne s'est pas ouvert : le retrait n'est rattrapable nulle part."
   );
-
-  // Le fichier ne doit plus être accessible immédiatement après confirmation
-  // côté liste (suppression douce actée), même si la purge physique est différée.
-  const encoreDesPhotos = await page.locator('img[src^="/api/fichiers/"]').count();
-  assert.equal(encoreDesPhotos, 0, "Plus aucune vignette ne doit rester affichée");
-
-  // --- Les DEUX chemins vers une photo ------------------------------------
-  //
-  // Le patron, le 6 août 2026 : « lorsque je clique sur ajouter des photos, je
-  // peux simplement prendre une photo. J'ai besoin de pouvoir accéder aux
-  // photos que j'ai déjà prises. Il faut bien évidemment pouvoir faire les
-  // deux. » L'attribut `capture` n'est pas une préférence : sur un iPhone, il
-  // IMPOSE l'appareil photo et retire l'accès à la pellicule. Un artisan qui a
-  // photographié le chantier le matin ne pouvait rien joindre l'après-midi.
-  const appareil = page.locator('input[type="file"][capture]');
-  const pellicule = page.locator('input[type="file"]:not([capture])');
-  assert.equal(await appareil.count(), 1, "Le chemin « prendre une photo » a disparu.");
   assert.equal(
-    await pellicule.count(),
-    1,
-    "Aucun champ sans `capture` : la bibliothèque du téléphone reste inaccessible."
-  );
-
-  // **Un seul bouton visible.** Le patron, le 6 août 2026 : « ça fait trop de
-  // boutons ». Le choix ne s'affiche qu'après l'appui, dans une feuille.
-  const boutonsVisibles = await page.locator("button:visible", { hasText: /photo/i }).count();
-  assert.equal(
-    boutonsVisibles,
-    1,
-    `L'écran propose ${boutonsVisibles} boutons de photo : un seul doit être visible au repos.`
-  );
-
-  await page.click('button:has-text("Ajouter une photo")');
-  assert.ok(
-    await page.getByRole("button", { name: /Prendre une photo/i }).isVisible(),
-    "La feuille doit proposer de prendre une photo."
-  );
-  assert.ok(
-    await page.getByRole("button", { name: /Choisir dans ma bibliothèque/i }).isVisible(),
-    "La feuille doit proposer d'aller chercher une photo déjà prise."
-  );
-  // Une feuille sans sortie est un piège : on doit pouvoir renoncer.
-  //
-  // Visé par son libellé EXACT : depuis que le tiroir des retirés porte lui
-  // aussi un « Annuler », `has-text` en trouve deux et prend le mauvais.
-  await page.getByRole("button", { name: "Annuler", exact: true }).click();
-  assert.equal(
-    await page.getByRole("button", { name: /Choisir dans ma bibliothèque/i }).count(),
+    await tiroir.locator('img[src^="/api/fichiers/"]').count(),
     0,
-    "La feuille ne se referme pas."
+    "Plus aucune vignette ne doit rester affichée"
   );
-  console.log("  ✓ un seul bouton, et le choix des deux chemins à l'appui");
+  assert.equal(page.url(), chantierUrl, "Le retrait a changé de page.");
+  console.log("  ✓ regarder et retirer se font depuis la fiche");
+
+  // --- L'écran Photos n'existe plus --------------------------------------
+  const disparu = await page.request.get(`${chantierUrl}/photos`);
+  assert.equal(
+    disparu.status(),
+    404,
+    "L'écran Photos répond encore : il devait disparaître avec le parcours qu'il portait."
+  );
+  console.log("  ✓ /photos répond 404");
 
   await browser.close();
   console.log("✅ Test bout-en-bout Photos réussi.");

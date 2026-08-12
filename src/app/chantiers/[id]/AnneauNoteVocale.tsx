@@ -206,10 +206,28 @@ export default function AnneauNoteVocale({
     if (!capte) return;
     setEnvoi(true);
     try {
-      await enregistrerNoteVocaleAction(chantierId, formulaireDeNote(capte.blob, capte.secondes));
+      const resultat = await enregistrerNoteVocaleAction(
+        chantierId,
+        formulaireDeNote(capte.blob, capte.secondes)
+      );
+      // **Un refus DIT pourquoi.** Le patron a vu « Impossible d'enregistrer la
+      // note pour l'instant. Réessayez. » sans que personne puisse savoir ce
+      // qui s'était passé — le message du serveur était jeté ici même. Voir
+      // `ResultatNoteVocale` dans note-vocale/actions.ts.
+      if (!resultat.ok) {
+        magnetophone.setErreur(resultat.raison);
+        return;
+      }
       router.refresh();
-    } catch {
-      magnetophone.setErreur("Impossible d'enregistrer la note pour l'instant. Réessayez.");
+    } catch (err) {
+      // Ici, ce n'est plus un refus : c'est que l'aller-retour n'a pas abouti.
+      // Le distinguer compte — « le serveur a dit non » et « le serveur n'a
+      // rien dit » ne se réparent pas au même endroit, et le second est ce
+      // qu'on voit derrière un mandataire qui coupe.
+      console.error("Note vocale : envoi impossible", err);
+      magnetophone.setErreur(
+        "L'enregistrement n'a pas pu être transmis — la connexion a été interrompue. Réessayez."
+      );
     } finally {
       setEnvoi(false);
     }

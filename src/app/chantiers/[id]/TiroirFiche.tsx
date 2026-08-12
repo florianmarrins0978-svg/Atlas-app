@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import Pellicule, { type VignettePhoto } from "./Pellicule";
 
 export type EtapeFiche = { key: string; href: string; label: string; meta: string; done: boolean };
-export type VignettePhoto = { id: string; storageKey: string };
+export type { VignettePhoto };
 
 /**
  * Le tiroir du bas de la fiche chantier — la pellicule et les étapes.
@@ -24,6 +25,11 @@ export type VignettePhoto = { id: string; storageKey: string };
  * **La case « + » vient en PREMIER.** Posée en fin de pellicule, il fallait
  * faire défiler six photos pour la trouver : sur un téléphone, ajouter une
  * photo ne doit pas se mériter.
+ *
+ * **Et elle ne mène plus nulle part : elle ouvre le menu du téléphone sur
+ * place** (11 août 2026, `Pellicule.tsx`). La pellicule est désormais le seul
+ * endroit où l'on ajoute, regarde et retire une photo — l'écran
+ * `/chantiers/[id]/photos` n'existe plus.
  */
 export default function TiroirFiche({
   chantierId,
@@ -65,8 +71,19 @@ export default function TiroirFiche({
     };
     mesurer();
     window.addEventListener("resize", mesurer);
-    return () => window.removeEventListener("resize", mesurer);
-  }, [photos.length, etapes.length]);
+    // **On observe le corps plutôt que de compter les photos.** Depuis que la
+    // pellicule ajoute et retire sans changer de page, ce qu'elle contient ne
+    // passe plus par les propriétés du tiroir : une liste de dépendances ne
+    // pouvait donc plus rien voir. Le tiroir gardait alors la hauteur d'avant
+    // — et le tiroir des retirés, apparu sous la pellicule, restait derrière
+    // le bord, « Annuler » hors d'atteinte.
+    const observateur = new ResizeObserver(mesurer);
+    if (corps.current) observateur.observe(corps.current);
+    return () => {
+      window.removeEventListener("resize", mesurer);
+      observateur.disconnect();
+    };
+  }, []);
 
   // **L'écran de dessous RECULE quand le tiroir monte.** Même geste que la
   // feuille « Nouveau chantier » sur l'accueil : c'est la profondeur qui dit
@@ -142,36 +159,10 @@ export default function TiroirFiche({
           libellé. Vu en capture, jamais autrement — le tiroir défile, donc ce
           talon ne coûte rien d'autre qu'un peu de course. */}
       <div ref={corps} className="px-[26px] pb-[84px] pt-0.5">
-        {/* La pellicule. Les marges négatives la font courir d'un bord à
-            l'autre pendant que son contenu reste aligné sur les 26 px. */}
-        <div className="atlas-pellicule -mx-[26px] mt-0.5 px-[26px] pb-4 pt-0.5">
-          <a
-            href={`/chantiers/${chantierId}/photos`}
-            aria-label="Ajouter des photos"
-            className="atlas-ajouter"
-            style={{ border: `1px solid ${colors.line}`, color: colors.or }}
-          >
-            +
-          </a>
-          {photos.map((p, i) => (
-            // Un lien, pas un bouton : ouvrir une photo est une navigation, et
-            // elle doit rester ouvrable dans un nouvel onglet. Il s'enfonce
-            // sous le doigt comme un bouton (`.atlas-vue:active`).
-            <a
-              key={p.id}
-              href={`/chantiers/${chantierId}/photos`}
-              aria-label={`Photo ${i + 1} sur ${photos.length}`}
-              className="atlas-vue"
-              style={{ backgroundColor: colors.cream }}
-            >
-              {/* Conservé en <img> : `next/image` réécrit le `src` via
-                  `/_next/image`, ce qui romprait la correspondance exacte
-                  attendue par la visionneuse (éprouvée de bout en bout). */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/api/fichiers/${p.storageKey}`} alt="" className="h-full w-full object-cover" />
-            </a>
-          ))}
-        </div>
+        {/* La pellicule : ajouter, regarder, retirer — sans quitter la fiche.
+            Elle porte son propre état depuis le 11 août 2026, l'écran Photos
+            ayant disparu (voir `Pellicule.tsx`). */}
+        <Pellicule chantierId={chantierId} initiales={photos} />
 
         {etapes.map((s) => (
           <a

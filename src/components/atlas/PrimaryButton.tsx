@@ -13,11 +13,11 @@ import { colors, font } from "@/lib/design-tokens";
 //
 //   · **8 écrans du produit**, 11 boutons — création de chantier, informations,
 //     prix, transcription, photos, note vocale (2), devis à envoyer, facture (3) ;
-//   · **10 écrans d'erreur**, servis par un seul bouton dans `CorpsErreur` ;
+//   · **9 écrans d'erreur**, servis par un seul bouton dans `CorpsErreur` ;
 //   · 8 pages `/design/*`, 9 boutons — **hors produit**, découplées depuis le
 //     1er août (voir `smallCaps` dans `design-tokens.ts`).
 //
-// Soit **18 écrans réels**. Pour recompter sans se fier à cette ligne :
+// Soit **17 écrans réels**. Pour recompter sans se fier à cette ligne :
 //
 //     grep -rl PrimaryButton src/ --include="*.tsx"
 //
@@ -77,7 +77,7 @@ export default function PrimaryButton({
 
   // **Le bouton se centre lui-même.** À largeur libre, laissé au fil du texte,
   // il se collerait à gauche ; l'appelant l'oublierait une fois sur deux, et le
-  // défaut passerait pour un choix. Aucun des dix-huit écrans n'a à le savoir.
+  // défaut passerait pour un choix. Aucun des dix-sept écrans n'a à le savoir.
   const centrer = (el: React.ReactElement) => <div className="flex justify-center">{el}</div>;
 
   if (disabled) {

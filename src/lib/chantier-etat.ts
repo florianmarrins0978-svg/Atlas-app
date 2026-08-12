@@ -98,8 +98,11 @@ export function getNextAction(c: EtatChantierPourAction): NextAction | null {
 // Construit l'URL associée à l'action principale pour un chantier donné.
 export function getNextActionHref(id: string, action: NextAction): string {
   switch (action.key) {
+    // **Les photos n'ont plus d'écran à elles** (11 août 2026) : elles vivent
+    // dans la pellicule du tiroir, sur la fiche. Pointer vers un
+    // `/photos` disparu enverrait sur une page introuvable.
     case "photos":
-      return `/chantiers/${id}/photos`;
+      return `/chantiers/${id}`;
     case "note-vocale":
       return `/chantiers/${id}/note-vocale`;
     case "informations":
@@ -137,7 +140,11 @@ export function getSecondarySteps(
       meta:
         c.photosCount > 0 ? `${c.photosCount} photo${c.photosCount > 1 ? "s" : ""}` : "Aucune photo pour l'instant",
       done: c.photosCount > 0,
-      href: `/chantiers/${id}/photos`,
+      // Même raison que ci-dessus : la pellicule de la fiche a remplacé
+      // l'écran Photos. Cette ligne reste construite — les maquettes /design
+      // s'en servent — mais la fiche l'écarte : la pellicule est juste
+      // au-dessus, et deux fois la même chose sur un écran, c'est une de trop.
+      href: `/chantiers/${id}`,
     },
     {
       key: "note-vocale",
