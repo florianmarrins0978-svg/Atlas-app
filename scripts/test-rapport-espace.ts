@@ -11,6 +11,7 @@
 // deux bouts — ce qui doit disparaître, et ce qui doit rester lisible.
 
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { expurger, corpsDuRapport, TITRE_FICHE } from "./rapporter-espace.mjs";
 
 let echecs = 0;
@@ -74,6 +75,38 @@ cas("le titre de la fiche est fixe : une seule fiche, pas une par allumage", () 
   // démarrage ouvrirait une fiche de plus, et le dépôt se remplirait de bruit.
   assert.ok(TITRE_FICHE.length > 10, "le titre de la fiche est vide ou trop court pour être cherché");
   assert.ok(!/\d{4}-\d{2}-\d{2}/.test(TITRE_FICHE), "le titre porte une date : il créera une fiche par jour");
+});
+
+cas("les consignes de reprise DISENT de lire la fiche avant de parler au patron", () => {
+  // **Le canal ne sert à rien si les sessions ne savent pas qu'il existe.** Le
+  // patron en fait tourner trois ou quatre en parallèle ; aucune n'a lu cette
+  // conversation. Ce qui les atteint toutes, c'est `CLAUDE.md`, lu au début de
+  // chacune — d'où ce contrôle, qui refuse que la règle en disparaisse.
+  const regles = readFileSync("CLAUDE.md", "utf8");
+  assert.match(
+    regles,
+    /rapporter-espace\.mjs/,
+    "CLAUDE.md ne dit plus où se trouve la fiche d'état : les autres sessions " +
+      "recommenceront à formuler des hypothèses sur une machine qu'elles ne voient pas"
+  );
+  assert.match(
+    regles,
+    /claude/,
+    "CLAUDE.md ne dit plus de lui faire lancer `claude` quand un geste est nécessaire " +
+      "chez lui : on retombera à lui dicter des commandes depuis un téléphone"
+  );
+});
+
+cas("le veilleur rafraîchit la fiche, il ne la laisse pas vieillir", () => {
+  // Écrite au seul allumage, elle décrirait l'état d'il y a six heures — et une
+  // session qui s'y fie conclut de travers. C'est le reproche exact que ce
+  // dépôt fait à une documentation périmée : on s'y fie encore.
+  const veilleur = readFileSync(".devcontainer/veiller.sh", "utf8");
+  assert.match(
+    veilleur,
+    /rapporter-espace\.mjs/,
+    "le veilleur ne republie plus l'état : la fiche vieillira sans que rien ne le dise"
+  );
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Rapport de l'espace — ${echecs} échec(s).`);

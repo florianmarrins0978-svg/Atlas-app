@@ -41,6 +41,21 @@ puisqu'il est public. Confronté : sans la censure, les trois premiers passent.
 et rend la main — il ne peut pas empêcher le banc de servir. Vérifié ici, où
 `gh` n'existe pas : « ⚠ Rapport non publié », code de sortie 0.
 
+**Et cela vaut pour ses TROIS OU QUATRE sessions à la fois**, puisqu'il en fait
+tourner plusieurs en parallèle. Deux choses ont été posées pour ça, sans quoi le
+canal n'aurait servi qu'à celle qui l'a construit :
+
+- la consigne vit dans **`CLAUDE.md` §1 bis**, lu au début de CHAQUE
+  conversation — pas seulement dans `HANDOVER.md`. Devant un « ça ne marche
+  pas » : lire la fiche, regarder sa date, n'avancer une hypothèse qu'ensuite,
+  et lui faire lancer `claude` si un geste est nécessaire chez lui ;
+- **le veilleur republie la fiche tous les quarts d'heure.** Écrite au seul
+  allumage, elle décrivait l'état d'il y a six heures — et une session qui s'y
+  fie conclut de travers, exactement comme d'une documentation périmée.
+
+Deux contrôles de plus refusent que l'un ou l'autre disparaisse à la prochaine
+réécriture.
+
 Ce que cela ne donne toujours pas : l'écran du patron, et le pouvoir d'agir.
 L'agent verra qu'un service est tombé ; c'est `claude`, installé dans l'espace,
 qui pourra le relever.

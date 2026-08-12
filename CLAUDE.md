@@ -24,6 +24,35 @@ Avant d'écrire une ligne de code dans une nouvelle conversation, dans cet ordre
 Ne jamais demander au patron de rappeler ce qui a été fait. C'est le rôle de ces
 fichiers, et leur défaillance est une défaillance du dépôt, pas de sa mémoire.
 
+## 1 bis. « Ça ne marche pas » : REGARDER sa machine avant de lui parler
+
+**Règle née de la nuit du 11 au 12 août 2026, et elle vaut pour toutes les
+sessions.** Le patron écrit *« ça ne marche pas »*. Quatre allers-retours ont
+suivi, à formuler des hypothèses sur une machine qu'on ne voyait pas — un
+service de transcription absent, une mauvaise branche, un mot de passe : **toutes
+fausses**. Pendant ce temps, sa machine savait tout, et c'est lui qui recopiait
+des terminaux depuis un téléphone.
+
+Son espace **publie désormais son état** sur une fiche GitHub au titre fixe —
+`TITRE_FICHE` dans `scripts/rapporter-espace.mjs` —, réécrite à l'allumage puis
+tous les quarts d'heure par le veilleur. Elle porte le commit récupéré, le
+commit réellement **servi** (ce n'est pas le même, et ce malentendu a coûté deux
+heures), l'état des services et la fin du journal de démarrage.
+
+**Devant une plainte de ce genre, dans cet ordre :**
+
+1. **lire la fiche** — sa date d'abord : périmée, elle ment comme une
+   documentation périmée ;
+2. n'avancer une hypothèse qu'ensuite, et la dire comme telle ;
+3. si un geste sur sa machine est nécessaire, lui faire lancer **`claude`** dans
+   son espace plutôt que de lui dicter dix commandes. L'agent y a accès, pas
+   nous.
+
+**Ce qui est refusé, et ne doit pas être rouvert :** donner à une session le
+pouvoir d'exécuter des commandes chez lui. Une boucle qui lirait des ordres dans
+le dépôt serait une porte dérobée sur une machine qui porte ses identifiants
+GitHub et ses clés d'IA. Le canal est à sens unique — il publie, on lit.
+
 ## 2. Tenir la mémoire à jour, sans qu'on le demande
 
 Après **chaque lot de travail important** — une fonctionnalité, une migration,
