@@ -569,7 +569,7 @@ export default function NoteVocaleClient({
           <button
             onClick={complementEnCours ? arreterComplement : demarrerComplement}
             disabled={enCours}
-            className="mt-4 block w-full rounded-[4px] py-3 text-center text-[15px] font-medium disabled:opacity-40"
+            className="mt-4 block w-full rounded-full py-3 text-center text-[15px] font-medium disabled:opacity-40"
             style={{
               backgroundColor: complementEnCours ? colors.alert : colors.rustTint,
               color: complementEnCours ? "#FFFFFF" : colors.rust,
@@ -625,7 +625,7 @@ export default function NoteVocaleClient({
               <button
                 onClick={confirmerRemplacement}
                 disabled={enCours}
-                className="rounded-[4px] py-3.5 text-[15px] font-medium disabled:opacity-40"
+                className="rounded-full py-3.5 text-[15px] font-medium disabled:opacity-40"
                 style={{ color: colors.alert }}
               >
                 Remplacer

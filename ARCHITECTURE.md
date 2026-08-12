@@ -4814,3 +4814,46 @@ D'autres actions principales sont encore dessinées à la main
 de réglages). Elles ne sont pas converties d'office : le patron a posé la règle
 inverse — *« montre-moi avant de faire, plutôt que de faire pour revenir en
 arrière »*. Voir `TODO.md`.
+
+---
+
+## 67. Une seule forme de bouton, et un contrôle pour qu'elle le reste
+
+**Le patron, le 12 août 2026 :** *« remplace tous les boutons rectangulaires par
+les boutons arrondis »*. Seize boutons du produit portaient encore un rayon de
+4 px, à côté des capsules posées la veille.
+
+### Pourquoi il en restait seize
+
+La capsule avait été posée sur `PrimaryButton`, et **seize boutons dessinaient
+le leur à la main**. Une action dessinée sur place échappe à toute décision
+d'ensemble : elle ne change que si quelqu'un pense à elle. Le balayage règle
+l'instant ; il ne tient pas tout seul — un écran écrit dans six mois reprendra le
+`rounded-[4px]` du voisin.
+
+D'où `scripts/test-boutons-arrondis.ts`, qui nomme le fichier et la ligne du
+coupable. Il porte aussi un **témoin** : un bouton rectangulaire écrit en dur
+qu'il doit continuer de reconnaître. Sans lui, une façon d'écrire les classes qui
+changerait rendrait le contrôle vert sur une application entièrement carrée —
+un contrôle qui ne trouve plus rien ressemble à un contrôle qui passe.
+
+### Ce qui a été changé, et ce qui ne l'a pas été
+
+**Seulement le rayon.** Ni la couleur, ni la taille, ni le composant. Deux de ces
+boutons sont des `type="submit"` — la connexion et les documents légaux — et
+`PrimaryButton` impose `type="button"` : les y faire passer aurait cassé leur
+formulaire sans qu'aucun type ne s'en aperçoive. La connexion a donc été jouée
+pour de vrai après le changement, dans un navigateur.
+
+**Les plages gardent leurs 4 px.** Cartes, champs et tuiles ne sont pas des
+boutons : la charte les veut presque droits, « au-delà de 6 px une plage devient
+un galet ». Le contrôle ne regarde que `<button>` et `<a>`.
+
+### Ce que la capture a révélé, et qui n'était pas demandé
+
+**L'écran de connexion est le seul resté dans l'ancienne identité.** Son bouton
+est en terre cuite `#B5502F` — la couleur abandonnée le 3 août quand
+l'application est passée à Arborea — sur une carte blanche à bordures grises,
+sans serif de titre. C'est le PREMIER écran que le patron voit, et le seul qui
+ne ressemble pas à Atlas. Rien n'a été changé : il n'a pas demandé cet écran, et
+sa règle est de montrer avant de faire. Voir `TODO.md`.

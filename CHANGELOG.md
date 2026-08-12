@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### Tous les boutons arrondis, et un contrôle pour que ça le reste
+
+**Sa demande, en une ligne :** *« remplace tous les boutons rectangulaires par
+les boutons arrondis »*. Seize boutons du produit portaient encore un rayon de
+4 px — tous **dessinés à la main**, donc invisibles à la décision prise la
+veille sur le composant partagé.
+
+**Seul le rayon change.** Ni la couleur, ni la taille, ni le composant : deux de
+ces boutons sont des boutons de formulaire (connexion, documents légaux) et les
+faire passer par le composant partagé aurait cassé leur envoi sans qu'aucun type
+ne s'en aperçoive. La connexion a été jouée pour de vrai après coup, dans un
+navigateur.
+
+**Et un garde-fou, parce qu'un balayage ne tient pas tout seul** :
+`scripts/test-boutons-arrondis.ts` nomme le fichier et la ligne. Il porte un
+témoin — un bouton rectangulaire écrit en dur — pour qu'un motif devenu aveugle
+ne passe pas pour une application propre.
+
+**Vu en capture, et non demandé :** l'écran de connexion est le seul resté dans
+l'ancienne identité — bouton terre cuite, carte blanche, aucune serif. C'est le
+premier écran qu'il voit. Rien n'a été touché ; c'est dans `TODO.md`.
+
+`ARCHITECTURE.md` §67.
+
+---
+
+## 2026-08-12
+
 ### « Mon devis » pouvait attendre indéfiniment une réponse déjà perdue
 
 **Le patron :** *« entre le moment où je clique mon devis et le moment où le

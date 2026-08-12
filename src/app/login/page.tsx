@@ -36,7 +36,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={enCours}
-          className="w-full rounded-[4px] bg-[#B5502F] py-3 text-[15px] font-medium text-white disabled:opacity-50"
+          className="w-full rounded-full bg-[#B5502F] py-3 text-[15px] font-medium text-white disabled:opacity-50"
         >
           {enCours ? "Connexion…" : "Se connecter"}
         </button>

@@ -124,7 +124,7 @@ export default function VocabulaireClient({ initiaux }: { initiaux: Terme[] }) {
           type="button"
           onClick={ajouter}
           disabled={enCours}
-          className="mt-2 w-full rounded-[4px] py-3 text-[15px] font-medium disabled:opacity-40"
+          className="mt-2 w-full rounded-full py-3 text-[15px] font-medium disabled:opacity-40"
           style={{ backgroundColor: colors.rust, color: colors.cream }}
         >
           {enCours ? "Ajout…" : "Ajouter"}
@@ -208,7 +208,7 @@ function ChoixNature({ libelle, actif, onClick }: { libelle: string; actif: bool
       type="button"
       onClick={onClick}
       aria-pressed={actif}
-      className="flex-1 rounded-[4px] py-2.5 text-[14px] font-medium"
+      className="flex-1 rounded-full py-2.5 text-[14px] font-medium"
       style={{ backgroundColor: actif ? colors.rustTint : colors.cream, color: actif ? colors.rust : colors.muted }}
     >
       {libelle}

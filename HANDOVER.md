@@ -174,6 +174,21 @@ de son champ, et le compte « dix-sept écrans » ne comptait que ce qu'il savai
 atteindre. Les conversions restantes sont listées dans `TODO.md` §0 octies, non
 faites d'office : sa règle est *« montre-moi avant de faire »*.
 
+## Tous les boutons sont arrondis (12 août)
+
+Seize boutons dessinés à la main portaient encore un rayon de 4 px. **Seul le
+rayon a changé** — deux d'entre eux sont des `type="submit"` (connexion,
+documents légaux) et `PrimaryButton` impose `type="button"` : les y faire passer
+casserait leur formulaire, en silence.
+
+`scripts/test-boutons-arrondis.ts` garde la forme et nomme le coupable. Il porte
+un témoin : un motif devenu aveugle passerait au vert sur une application
+entièrement carrée.
+
+**Et une trouvaille, non traitée :** l'écran de connexion est le seul resté dans
+l'ancienne identité — terre cuite `#B5502F` écrite en dur, carte blanche, aucune
+serif. C'est le premier écran qu'il voit. `TODO.md` §0 nonies.
+
 ## Ce qui vient d'être terminé
 
 **⚠ SI LE PATRON DIT « ce n'est toujours pas là » : REGARDER LA BRANCHE
