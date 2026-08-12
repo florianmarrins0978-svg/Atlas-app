@@ -267,11 +267,55 @@ par SMS, par e-mail, a disparu. »*
 3. **`devis_absent` reste un arrêt sec, et c'est juste** : aucune saisie ne le
    lève. Ne pas l'aligner sur les deux autres par symétrie.
 
+**« Mon devis » n'attend plus une réponse perdue (12 août).** Le patron :
+*« il s'est passé plus de six minutes et j'ai dû recharger la page. »*
+
+**Trois choses à savoir :**
+
+1. **La chaîne n'est PAS lente — c'est mesuré**, 96 ms et 42 ms sans modèle
+   raccordé, et chaque appel à un modèle est borné à 30 s. Ce qui durait, c'était
+   l'attente d'une réponse qui ne revenait pas. La chaîne journalise désormais sa
+   durée et son statut : **regarder le journal avant de la soupçonner.**
+2. **Quand la réponse se perd, l'écran interroge `/api/chantiers/<id>/devis-pret`**
+   et va au devis dès qu'il existe (`src/lib/attente-devis.ts`). L'attente
+   **renonce** au bout de cinq minutes — ne pas retirer cette limite, une attente
+   sans fin est le défaut qu'on répare.
+3. **Même famille que §63 et §65** : un long aller-retour tenu ouvert est fragile
+   par nature. Devant un quatrième symptôme de ce genre, chercher là.
+
+**⚠ LA NOTE VOCALE PART PAR UNE URL, PLUS JAMAIS PAR UNE ACTION SERVEUR
+(12 août).** C'est la cause — reproduite, pas supposée — des trois signalements
+du patron : *« L'enregistrement n'a pas pu être transmis. »*
+
+Une action serveur porte un **identifiant fabriqué à la construction** et
+inscrit dans la page. Son banc se met à jour tout seul ; une page restée ouverte
+appelle alors un identifiant disparu, et l'envoi échoue **sans atteindre le
+serveur** — donc sans trace, sans refus, avec une phrase qui accuse le réseau.
+
+**La preuve :** `npx tsx scripts/eprouver-page-vieillie.mts` ouvre la fiche,
+redémarre le serveur, puis dicte. Code d'avant → `500` et le message du patron
+mot pour mot, base vide. Par la route → `200`, note rangée.
+
+**Trois choses à ne pas défaire :**
+
+1. **Ne pas ramener l'enregistrement dans une action serveur.**
+   `test-note-vocale-par-url-e2e.ts` rougit si on le fait.
+2. **La règle vit dans `src/server/services/note-vocale-entrante.ts`**, partagée
+   par l'anneau, l'écran de dictée et l'import. Trois copies divergeraient.
+3. **Le raisonnement vaut pour tout envoi de fichier depuis un écran où l'on
+   stationne.** Les photos passent encore par une action : si le patron signale
+   un jour la même chose sur elles, la cause est écrite ici.
+4. **C'est le MÊME phénomène que le §63** — les morceaux de code disparus,
+   trouvés le même soir par une session voisine, sans concertation. Deux
+   symptômes, une seule cause : **son onglet survit à son serveur.** Devant un
+   troisième symptôme du même genre, chercher là, et non dans le réseau ni dans
+   le produit.
+
 **Les refus de note vocale disent pourquoi (11 août, tard).** Le patron voyait
 *« Impossible d'enregistrer la note pour l'instant. Réessayez. »* sans que
 personne puisse savoir ce qui s'était passé.
 
-**Quatre choses à savoir avant d'y toucher :**
+**Cinq choses à savoir avant d'y toucher :**
 
 1. **Un refus ATTENDU est une valeur de retour, jamais une exception.**
    `enregistrerNoteVocaleAction` rend `{ ok: false, raison }`. Ce n'est pas un
@@ -280,15 +324,26 @@ personne puisse savoir ce qui s'était passé.
    bâtie. Une exception ne lui parvient donc jamais lisible. La documentation du
    cadre le prescrit (`node_modules/next/dist/docs/01-app/01-getting-started/
    10-error-handling.md`). **Ne pas revenir à `throw` pour un refus.**
-2. **Les pannes IMPRÉVUES lèvent encore, mais le serveur les écrit d'abord**
-   (`logger.error`, avec chantier, format et taille). Sans cette ligne, une
-   panne chez lui ne laisse aucune trace nulle part — c'est ce qui a manqué.
-3. **Le défaut n'a PAS été reproduit ici**, et c'est écrit tel quel. La dictée a
+2. **CORRIGÉ LE 12 AOÛT : les pannes imprévues ne lèvent plus non plus.** La
+   veille, elles levaient encore — et le patron a rapporté le lendemain la
+   phrase de secours, *« la connexion a été interrompue »*. Le correctif était à
+   moitié fait, et la moitié manquante était celle qui se produisait. Toute
+   panne rend maintenant une phrase qui **nomme le maillon**
+   (`src/lib/panne-note-vocale.ts` : session · cadence · lecture · stockage ·
+   base). Le détail technique reste au journal, jamais à l'écran. **Ne pas
+   revenir à `throw` ici non plus.**
+3. **L'écran ne conclut plus « c'est le réseau », il demande au serveur.**
+   `src/lib/diagnostic-liaison.ts` : si le serveur répond, l'appel a échoué pour
+   une autre raison — presque toujours une **page vieillie** (l'espace se
+   reconstruit, les actions changent d'identifiant, une page déjà ouverte appelle
+   une action disparue ; recharger suffit). Accuser le réseau sans avoir demandé,
+   c'était envoyer chercher au mauvais endroit.
+4. **Le défaut n'a PAS été reproduit ici**, et c'est écrit tel quel. La dictée a
    été rejouée avec un micro simulé en développement, puis sur la version bâtie
-   derrière une origine étrangère : elle passe les deux fois. Ce qui est corrigé,
-   c'est le silence, pas la panne. Si elle revient, l'écran la nommera —
-   **demander la phrase exacte plutôt que de supposer.**
-4. **Un fichier de zéro octet est refusé à l'entrée.** Avant, il descendait
+   derrière une origine étrangère : elle passe à chaque fois. Ce qui est corrigé,
+   c'est le silence, pas la panne. **Demander la phrase exacte plutôt que de
+   supposer** — le tableau des phrases est dans `TODO.md` §0.
+5. **Un fichier de zéro octet est refusé à l'entrée.** Avant, il descendait
    jusqu'à la base, qui le rejetait, et l'écran affichait la requête SQL
    entière — noms de tables et identifiant d'entreprise compris.
 
