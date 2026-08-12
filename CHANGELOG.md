@@ -101,6 +101,36 @@ qui pourra le relever.
 
 ---
 
+### La porte est refaite, et l'adresse ne s'efface plus à chaque erreur
+
+**Sa décision, en trois maquettes :** la ligne d'imprimé de la 32 sans son titre,
+le tour de la 33, la rose des vents de la 34. `src/app/login/page.tsx` porte les
+trois, plus les corrections qui ne dépendaient d'aucun choix : champs à **16 px**
+(en dessous, iOS agrandit la page dès qu'on tape), refus dans le rouge de la
+charte, place du message réservée en permanence.
+
+**Et un défaut trouvé en regardant l'écran, antérieur à la refonte :** sur un
+mot de passe faux, l'adresse était effacée. Toute à retaper, sur un téléphone,
+pour un caractère raté ailleurs. Personne ne l'avait vu parce qu'aucune suite ne
+se trompe de mot de passe — elles entrent toutes par une session fabriquée.
+`scripts/test-porte-e2e.ts` est la première à passer par où il passe.
+
+**Quatre correctifs sont tombés avant le bon** : la remise à zéro de React
+arrive *après* le rendu qui suit l'action, et ni un champ contrôlé, ni un effet,
+ni `defaultValue` n'y survivent. Détail dans `ARCHITECTURE.md` §68.
+
+**Une réserve mesurée, pas supposée :** dans cet environnement, `next dev`
+n'hydrate pas cet écran (sa liaison de rechargement à chaud est refusée par le
+mandataire réseau) et le formulaire part en HTML pur. La suite le détecte et
+annonce les contrôles concernés « non concluants » plutôt que rouges. Sur la
+version bâtie — celle du banc — le sceau tourne, le bouton se désactive et
+l'adresse survit.
+
+**Le tour n'a pas de plancher**, et c'est un arbitrage écrit : il se répète tant
+que la vérification n'a pas répondu, mais un serveur très rapide le coupe en son
+milieu. Le tenir supposerait de retarder la navigation pour une question
+d'allure.
+
 ### Huit gravures pour le sceau, et la bande qui en a fait jeter trois
 
 **Sa réponse à la maquette 33 :** *« j'aime bien le 3. Maintenant propose avec

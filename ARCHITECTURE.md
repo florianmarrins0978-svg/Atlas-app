@@ -4922,6 +4922,53 @@ Elles sont parties avec la refonte, et chacune répare un défaut mesurable :
    elle, l'apparition du refus pousse le bouton d'une ligne, et l'appui suivant
    tombe à côté.
 
+### L'adresse qui s'effaçait à chaque refus
+
+**Défaut ANTÉRIEUR à cette refonte, jamais signalé, trouvé sur une capture.**
+Sur un mot de passe faux, l'écran répondait « Email ou mot de passe incorrect »
+**et vidait le champ de l'adresse** : il fallait la retaper en entier, sur un
+téléphone, pour un caractère raté ailleurs — et s'il réappuyait sans le voir, le
+navigateur lui opposait un « Please fill out this field » en anglais.
+
+Personne ne l'avait vu parce que **aucune suite ne se trompe de mot de passe** :
+toutes entrent par une session fabriquée, parce que c'est plus rapide.
+`scripts/test-porte-e2e.ts` est la première à passer par où il passe.
+
+**Quatre correctifs sont tombés avant le bon, et la raison vaut d'être écrite :**
+React remet le formulaire à zéro *dans le DOM* après une action, et cette remise
+arrive **après** le rendu qui suit. Ne tiennent donc pas :
+
+| Essai | Pourquoi il tombe |
+|---|---|
+| Champ contrôlé (`value=`) | La propriété `value` n'ayant pas changé d'un rendu à l'autre, React n'écrit rien — le DOM reste vide |
+| Remise en place dans un effet | L'effet passe avant l'effacement |
+| `defaultValue={…}` | React ne pose cette valeur **qu'au montage** et ignore ses changements ensuite |
+| Écrire `champ.defaultValue` par une `ref` | Juste, mais dépendant de l'ordre des opérations |
+
+Ce qui tient : **la `ref` qui tient la valeur par défaut à jour, ET une `key`
+qui remonte le champ à chaque envoi**. Un champ neuf naît avec la bonne valeur
+par défaut ; qu'une remise à zéro arrive avant ou après ne change alors plus
+rien. Le mot de passe, lui, reste effacé — c'est celui qu'on vient de rater.
+
+**Ce qui a fait gagner du temps à la fin :** aller lire l'état réel du
+navigateur (`value`, `defaultValue`, présence des clés React) au lieu de
+raisonner sur ce qu'il aurait dû faire.
+
+### Le serveur de développement n'hydrate pas cet écran, ici
+
+**À savoir avant d'accuser un correctif.** Dans cet environnement, la liaison de
+rechargement à chaud de `next dev` est refusée par le mandataire réseau
+(`ERR_INVALID_HTTP_RESPONSE`). L'écran de connexion n'est alors **pas hydraté** :
+le formulaire part en HTML pur, la page se recharge entièrement, et tout champ
+redevient vide **quel que soit le code**. Sur la version BÂTIE — celle du banc du
+patron — l'interception a bien lieu : le sceau tourne, le bouton se désactive, et
+l'adresse survit. Mesuré, pas supposé.
+
+`test-porte-e2e.ts` **compte les navigations complètes** et annonce les deux
+contrôles concernés « non concluants » plutôt que rouges. Un contrôle qui accuse
+à tort coûte plus cher que pas de contrôle du tout — et celui-ci aurait accusé
+un correctif qui fonctionne.
+
 ### Ce qu'on ne touche pas sans regarder ailleurs
 
 `name="email"`, `name="password"` et `type="submit"`. **Vingt scripts de capture

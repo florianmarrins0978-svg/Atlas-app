@@ -221,12 +221,33 @@ entièrement carrée.
 l'ancienne identité — terre cuite `#B5502F` écrite en dur, carte blanche, aucune
 serif. C'est le premier écran qu'il voit. `TODO.md` §0 nonies.
 
+## La porte est refaite (12 août) — et deux pièges à connaître
+
+`src/app/login/page.tsx` porte ses trois choix : ligne d'imprimé, sceau à la
+**rose des vents**, et **le tour** pendant la vérification. `ARCHITECTURE.md` §68.
+
+**Piège A — le serveur de développement n'hydrate pas cet écran, ICI.** Sa
+liaison de rechargement à chaud est refusée par le mandataire réseau, le
+formulaire part en HTML pur, la page se recharge et **tout champ redevient vide
+quel que soit le code**. Quatre correctifs justes ont été déclarés morts pour
+cette raison. Avant d'accuser le code : mesurer sur la version BÂTIE
+(`npm run banc`), pas sur `next dev`. `test-porte-e2e.ts` compte désormais les
+navigations complètes et annonce « non concluant » plutôt que rouge.
+
+**Piège B — React remet le formulaire à zéro APRÈS le rendu qui suit l'action.**
+Ni un champ contrôlé, ni un effet, ni `defaultValue` ne font survivre une valeur
+à cette remise. Ce qui tient : une `ref` qui met la valeur par défaut à jour
+**et** une `key` qui remonte le champ à chaque envoi. Ne pas « simplifier » l'un
+des deux.
+
 ## L'écran de connexion : maquette posée, choix EN ATTENTE (12 août)
 
 `docs/maquettes/32-l-ecran-de-connexion.html` — l'avant reproduit, puis quatre
 après (la carte gardée, sans carte, le sceau, la ligne d'imprimé). **Ne rien
 poser dans `src/app/login/` avant qu'il ait désigné laquelle**, sa règle du
 11 août.
+
+**FAIT le 12 août au soir** — ce qui suit est conservé pour la trace du chemin.
 
 **Il a déjà tranché la mise en page, le 12 août au soir :** la **4** (les champs
 en ligne d'imprimé), **sans le titre « Connexion » ni la sous-ligne**, avec **le

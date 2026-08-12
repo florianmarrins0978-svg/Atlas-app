@@ -27,7 +27,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 nonies. L'écran de connexion est resté dans l'ancienne identité
+### 0 nonies. ~~L'écran de connexion est resté dans l'ancienne identité~~ **fait le 12 août 2026**
 
 **Vu en capture le 12 août 2026**, en vérifiant que les boutons arrondis
 n'avaient rien cassé. `src/app/login/page.tsx` n'a jamais été repris par la
@@ -43,8 +43,10 @@ refonte du 10 août :
 Même remarque pour `src/app/documents-legaux/formulaire.tsx`, qui porte la même
 couleur en dur.
 
-**Non fait :** il n'a pas demandé cet écran, et sa règle est *« montre-moi avant
-de faire »*. Lui montrer une maquette avant/après, puis appliquer.
+**Fait le 12 août 2026** : maquettes 32, 33 et 34, puis `src/app/login/page.tsx`.
+Reste `src/app/documents-legaux/formulaire.tsx`, qui porte la même terre cuite en
+dur et n'a pas été repris — il échappe au parcours pour la même raison que la
+porte (`ARCHITECTURE.md` §68).
 
 **Il a choisi, et demandé une suite le 12 août 2026 au soir :** la proposition 4
 **sans son titre ni sa sous-ligne**, avec **le sceau et ATLAS du modèle 3**, plus
