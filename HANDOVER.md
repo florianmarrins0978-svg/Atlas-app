@@ -4,10 +4,51 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-11 · `claude/migrate-app-atlas-zz31ac`
-
-**Point de reprise :** 2026-08-11 · `claude/new-session-a1l4v9`
+**Point de reprise :** 2026-08-12 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## ⚠ LE PREMIER RÉFLEXE, DEMANDÉ PAR LE PATRON LE 12 AOÛT 2026
+
+> *« Retiens ce problème, et la prochaine fois qu'on a un souci, commence par
+> regarder si ce n'est pas ça. »*
+
+**Devant tout défaut qu'il signale et qui ne se reproduit pas ici, la PREMIÈRE
+question n'est pas « quel écran ? » mais : SA PAGE A-T-ELLE SURVÉCU À SON
+SERVEUR ?**
+
+Son banc redémarre plusieurs fois par soirée — mise à jour automatique, bascule
+développement / version bâtie, veilleur qui relève un serveur tombé. Son onglet,
+lui, reste ouvert des heures. **Tout ce qui a été fabriqué au moment de la
+construction et inscrit dans sa page devient alors périmé sous ses doigts.**
+
+Trois défauts en deux jours, trois symptômes sans rapport apparent, **une seule
+racine** — et deux jours perdus à les traiter séparément :
+
+| Ce qu'il voit | Ce qui a vieilli | Où c'est écrit |
+|---|---|---|
+| « Cette page n'a pas pu s'afficher », et « Réessayer » n'y peut rien | les adresses des morceaux de code | `ARCHITECTURE.md` §63 |
+| « L'enregistrement n'a pas pu être transmis » | l'identifiant de l'action serveur | `ARCHITECTURE.md` §65 |
+| « Atlas prépare le devis… » sans fin, il recharge et le devis est là | rien — la réponse s'est perdue en route | `CHANGELOG.md` 12 août |
+
+**Ce qu'il faut faire, dans cet ordre :**
+
+1. **Lui demander deux choses**, avant toute hypothèse : *depuis combien de
+   temps la page était-elle ouverte ?* et *est-ce qu'un rechargement répare ?*
+   Si recharger répare, la cause est ici — inutile de chercher ailleurs.
+2. **Reproduire sa séquence, pas la nôtre.** Les suites ouvrent une page et
+   agissent dans la seconde ; lui laisse passer du temps.
+   `npx tsx scripts/eprouver-page-vieillie.mts` fait exactement cela : ouvrir,
+   redémarrer le serveur, agir.
+3. **Chercher ce qui est fabriqué à la construction** dans le chemin en cause —
+   identifiant d'action serveur, nom de fichier de code, réponse attendue d'un
+   aller-retour tenu ouvert.
+
+**La règle qui en découle, et qui vaut d'avance :** tout ce qu'on déclenche
+depuis un écran où l'on STATIONNE doit passer par une adresse stable (une URL),
+et ne jamais dépendre d'une seule réponse tenue ouverte. Voir `ARCHITECTURE.md`
+§65.
 
 ---
 
