@@ -877,3 +877,61 @@ body {
     transform: none;
   }
 }
+
+/* ─── La porte : le sceau qui tourne pendant qu'on vérifie ────────────────────
+ *
+ * Retenu par le patron le 12 août 2026 (maquettes 33 et 34) : « un logo
+ * dynamique qui s'enclenche au moment où on valide l'adresse et le mdp ».
+ *
+ * **`infinite` n'est pas un excès de zèle.** Une demi-seconde est la durée d'UN
+ * tour, pas celle de l'attente : le serveur répond quand il répond, et sur un
+ * réseau de chantier cela peut prendre deux secondes. Une marque qui s'arrête
+ * au bout d'un demi-tour pendant que la page attend encore ressemble à une
+ * application plantée — c'est écrit sur la maquette, et c'est ce qui a décidé
+ * du choix entre les six animations.
+ *
+ * **Ce qui n'est PAS tenu, et il faut le savoir avant de s'en étonner :** le
+ * tour n'a pas de plancher. Si la vérification répond en cent millisecondes, le
+ * geste est coupé en son milieu. Le tenir vraiment supposerait de retarder la
+ * navigation côté client, alors que `connexionAction` redirige côté serveur —
+ * on paierait un demi-seconde d'attente réelle à chaque connexion pour une
+ * question d'allure. Arbitrage assumé, pas oubli. */
+.atlas-sceau-en-marche {
+  animation: atlas-sceau-tour 0.5s cubic-bezier(0.55, 0, 0.25, 1) infinite;
+}
+@keyframes atlas-sceau-tour {
+  to { transform: rotate(360deg); }
+}
+
+/* Le champ de la porte : une ligne d'imprimé, pas une plage.
+ *
+ * **16 px, et cela ne se négocie pas** : en dessous, iOS agrandit la page dès
+ * que le champ prend le focus — le patron tapait son adresse et l'écran lui
+ * sautait au visage. Cet écran était en 15 px depuis toujours.
+ *
+ * La ligne passe à l'or sous le champ qu'on remplit : c'est la seule réponse à
+ * « ça n'a pas l'air cliquable » qui ne remette pas une plage sous le texte
+ * (`HANDOVER.md`, piège 18). Sans elle, la proposition retenue serait un
+ * formulaire sans affordance. */
+.atlas-champ-ligne {
+  width: 100%;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  padding: 0 0 10px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.22s ease;
+}
+.atlas-champ-ligne:focus {
+  border-bottom-color: var(--or);
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-sceau-en-marche { animation: none; }
+  .atlas-champ-ligne { transition: none; }
+}

@@ -4857,3 +4857,78 @@ l'application est passée à Arborea — sur une carte blanche à bordures grise
 sans serif de titre. C'est le PREMIER écran que le patron voit, et le seul qui
 ne ressemble pas à Atlas. Rien n'a été changé : il n'a pas demandé cet écran, et
 sa règle est de montrer avant de faire. Voir `TODO.md`.
+
+---
+
+## 68. La porte : pourquoi elle avait été oubliée, et ce qu'elle porte maintenant
+
+**L'écran de connexion est resté neuf jours dans une identité abandonnée** — le
+terre cuite `#B5502F` du 3 août, une carte blanche, aucune serif — pendant que
+tout le reste passait à Arborea. Ce n'est pas un oubli de paresse, et la raison
+mérite d'être écrite parce qu'elle se reproduira :
+
+> **C'est le seul écran qu'on voit AVANT d'être connecté.** Chaque refonte s'est
+> faite en parcourant l'application, donc en partant d'un écran déjà franchi. La
+> porte ne fait pas partie du couloir.
+
+Le même raisonnement vaut pour `src/app/documents-legaux/formulaire.tsx`, qui
+n'est pas encore repris — et pour tout écran futur situé hors du parcours
+ordinaire. **Un balayage d'identité doit partir de la liste des fichiers, jamais
+d'une promenade dans l'application.**
+
+### Ce qu'il a choisi, et en combien d'étapes
+
+Trois maquettes, trois décisions, dans cet ordre (`docs/maquettes/`) :
+
+| | Ce qui était en jeu | Ce qu'il retient |
+|---|---|---|
+| **32** | Quatre mises en page | La **ligne d'imprimé**, sans le titre « Connexion » ni la sous-ligne |
+| **33** | Six animations de la marque à l'entrée | **Le tour** |
+| **34** | Huit gravures dans le rond d'or | **La rose des vents** |
+
+**La rose des vents ne remplace pas la feuille ailleurs.** L'en-tête et la barre
+basse gardent la feuille : c'est une décision de marque, elle n'a pas été prise,
+et `SceauAtlas` porte donc un `motif` dont la valeur par défaut reste la
+feuille.
+
+### Le tour n'a pas de plancher, et c'est un arbitrage
+
+La maquette annonçait une demi-seconde. Ce qui est posé est **un tour d'une
+demi-seconde, répété tant que la vérification n'a pas répondu** :
+
+- **`infinite` est nécessaire.** Le serveur répond quand il répond ; sur un
+  réseau de chantier, deux secondes sont plausibles. Une marque qui s'arrête au
+  bout d'un demi-tour pendant que la page attend encore ressemble à une
+  application plantée.
+- **Le plancher n'est PAS tenu.** Si la vérification répond en cent
+  millisecondes, le geste est coupé en son milieu. Le tenir supposerait de
+  retarder la navigation côté client, alors que `connexionAction` redirige côté
+  serveur : on paierait une demi-seconde d'attente **réelle** à chaque connexion
+  pour une question d'allure. Refusé, et écrit ici pour qu'on ne le « corrige »
+  pas par mégarde.
+
+### Trois corrections qui ne dépendaient d'aucun choix
+
+Elles sont parties avec la refonte, et chacune répare un défaut mesurable :
+
+1. **Les champs passent de 15 à 16 px.** En dessous de 16, iOS agrandit la page
+   dès qu'un champ prend le focus — le patron tapait son adresse et l'écran lui
+   sautait au visage, à charge pour lui de le rétablir. Le jeton
+   `styleChampPlage` l'interdit depuis le 10 août ; cet écran ne s'en servait
+   pas, faute d'avoir été repris.
+2. **Le refus quitte `text-red-600`** — un rouge de bibliothèque — pour
+   `colors.alert`, celui de la charte.
+3. **La place du message est réservée en permanence** (`min-h-[19px]`). Sans
+   elle, l'apparition du refus pousse le bouton d'une ligne, et l'appui suivant
+   tombe à côté.
+
+### Ce qu'on ne touche pas sans regarder ailleurs
+
+`name="email"`, `name="password"` et `type="submit"`. **Vingt scripts de capture
+et `scripts/verifier-connexion.mjs`** — le seul contrôle qui éprouve une vraie
+connexion derrière une origine étrangère — passent par ces trois sélecteurs.
+
+Et le bouton reste **écrit à la main** : `PrimaryButton` impose `type="button"`,
+ce qui casserait l'envoi du formulaire sans qu'aucun type ne s'en aperçoive.
+Seule sa **forme** est partagée, et `scripts/test-boutons-arrondis.ts` la garde
+(voir §67).
