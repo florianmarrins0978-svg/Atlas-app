@@ -4857,3 +4857,116 @@ l'application est passée à Arborea — sur une carte blanche à bordures grise
 sans serif de titre. C'est le PREMIER écran que le patron voit, et le seul qui
 ne ressemble pas à Atlas. Rien n'a été changé : il n'a pas demandé cet écran, et
 sa règle est de montrer avant de faire. Voir `TODO.md`.
+
+---
+
+## 68. Le navigateur du client réécrivait nos pages avant React
+
+**Le 12 août 2026, sur son iPhone :** la page publique d'une facture rend
+« Hydration failed ». Le diff de React ne laissait aucune place à
+l'interprétation — le DOM portait `<a href="tel:2026-0003">` là où le composant
+ne rend que le texte `2026-0003`.
+
+**Aucune page de ce dépôt n'écrit de `tel:` sur un numéro de facture.** Le lien
+ne pouvait donc venir que du navigateur : iOS reconnaît d'office ce qui
+ressemble à un téléphone, une adresse ou un courriel, et **réécrit le HTML avant
+que React ne s'installe dessus**. Un numéro de facture — quatre chiffres, un
+tiret, quatre chiffres — lui ressemble assez.
+
+### Pourquoi ce n'était pas qu'une alerte de développement
+
+React s'en remet (« Recoverable Error ») en refabriquant l'arbre côté client.
+Mais dans l'intervalle, **le numéro devenait un lien d'appel sous le doigt du
+client de l'artisan** — sur les deux écrans qu'il voit, la facture et le devis,
+qui portent tous deux ce numéro en titre. Un client qui appuie sur son numéro de
+devis et voit son téléphone proposer d'appeler « 2026-0003 » n'a pas affaire à
+un outil sérieux.
+
+### Le remède, et son coût
+
+`formatDetection: { telephone: false, address: false, email: false }` dans les
+métadonnées du gabarit racine — donc sur toutes les pages, y compris celles du
+client.
+
+**Les trois, pas seulement le téléphone.** Les deux autres cassent exactement de
+la même façon, et attendre qu'il découvre la suivante lui coûterait un
+aller-retour de plus.
+
+**Rien n'est perdu.** Cela n'éteint que la détection AUTOMATIQUE : les `tel:`
+qu'Atlas écrit lui-même — « appeler » sur la fiche du client — et le bouton
+« Y aller » continuent de fonctionner. C'est éprouvé, et pas seulement affirmé.
+
+### Ce qui ne peut pas être éprouvé ici, et qui est dit comme tel
+
+**La détection est propre à Safari ; cet environnement n'a que Chromium.** La
+panne d'origine ne peut donc pas être rejouée ici, et le correctif ne peut pas
+être vu la faire disparaître. `scripts/test-detection-automatique-e2e.ts` garde
+ce qui peut l'être : l'en-tête part bien sur `/factures/<jeton>`,
+`/devis/<jeton>` et `/login`, un témoin vérifie que ces pages posent toujours un
+numéro nu — sans quoi le contrôle garderait le vide —, et un dernier cas
+constate qu'un `tel:` explicite survit au refus. Confronté au correctif retiré :
+quatre cas passent au rouge, en nommant le bon coupable.
+
+---
+
+## 69. Une déclaration ne répare pas un espace déjà né
+
+**Quatrième fois que ce piège coûte une soirée, et la première où il l'a coûtée
+au patron lui-même.** Le 12 août 2026, il redémarre son espace deux fois pour
+qu'une fiche d'état parte enfin. Elle ne pouvait pas.
+
+### La règle, énoncée une bonne fois
+
+Tout ce que `devcontainer.json` déclare — fonctionnalités, attributs de port —
+et tout ce que `preparer.sh` installe est posé **à la création** d'un espace.
+Un espace existant ne les recevra jamais, quoi qu'on pousse : **redémarrer
+récupère le code, jamais les outils.**
+
+En découlent trois défauts déjà payés :
+
+| Ce qu'il voit | Ce qui manquait | Quand |
+|---|---|---|
+| « bash: gh: command not found » | la fonctionnalité `github-cli` | 10 août |
+| une page blanche depuis son téléphone | le port 3000 revenu privé, faute de `gh` | 11 août |
+| aucune fiche d'état après deux redémarrages | `gh`, encore | 12 août |
+
+**Ce qu'il faut en faire, à chaque fois qu'on ajoute une dépendance
+d'outillage :** se demander *« est-ce que ça marche dans SON espace, celui qui
+existe déjà ? »* Si la réponse est non, soit on supprime la dépendance, soit on
+le lui dit — jamais on ne laisse croire que ça fonctionnera.
+
+### Ce qui a été fait ici : supprimer la dépendance
+
+La fiche est publiée par l'API GitHub avec le jeton que Codespaces pose dans
+chaque terminal. Plus aucun outil à installer, donc plus rien qui dépende de
+l'âge de l'espace. `gh` reste en second recours, pour les machines où un jeton
+n'est pas posé mais où l'on s'est authentifié à la main.
+
+**L'ordre compte, et il est gardé** : tenter `gh` d'abord reviendrait à ne rien
+publier chez la seule personne pour qui la fiche existe.
+
+### Le vrai coupable : rien n'avait jamais joué l'envoi
+
+Les contrôles éprouvaient la censure des secrets et la forme du corps. **Aucun
+n'avait jamais publié quoi que ce soit.** Un contrôle qui ne parcourt pas ce que
+parcourt le patron ne prouve rien — c'est écrit dans `AGENTS.md`, et cela vaut
+pour l'outillage autant que pour le produit.
+
+`scripts/eprouver-publication-fiche.mjs` joue l'envoi pour de bon : il crée une
+fiche jetable, vérifie que le second passage la MET À JOUR au lieu d'en ouvrir
+une seconde — le défaut qui remplirait le dépôt d'une fiche par quart d'heure —,
+puis la referme dans tous les cas, échec compris.
+
+**Il ne peut pas tourner sur la machine de l'agent** : le jeton qu'elle expose
+est un substitut de son mandataire réseau, et GitHub le refuse (401 « Bad
+credentials », constaté). D'où un travail séparé dans `ci.yml`, sans base ni
+navigateur — vingt secondes, et une panne de PostgreSQL ne le fait pas passer
+pour cassé.
+
+### Et la fiche part maintenant AVANT le serveur
+
+La version d'origine attendait jusqu'à dix minutes que l'application réponde
+avant d'écrire quoi que ce soit. Or le cas pour lequel cette fiche existe est
+celui où l'application **ne répond pas** : elle se taisait exactement quand on
+avait besoin d'elle. Elle est désormais publiée deux fois — tout de suite, puis
+à nouveau une fois le serveur debout.

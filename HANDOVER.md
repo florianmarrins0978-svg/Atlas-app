@@ -22,6 +22,16 @@ une fiche GitHub dont le titre est fixe (`TITRE_FICHE` dans
 `scripts/rapporter-espace.mjs`). Elle porte le commit récupéré, le commit
 réellement SERVI, l'état des services et la fin du journal de démarrage.
 
+**Si la fiche est introuvable, ne pas conclure qu'il n'a pas redémarré.** Le
+12 août 2026 elle est restée vide après deux redémarrages, parce que la
+publication passait par `gh` — absent de son conteneur, et impossible à y faire
+entrer : tout ce que `devcontainer.json` déclare est posé **à la naissance** de
+l'espace, et le sien est plus ancien. Redémarrer récupère le code, jamais les
+outils (`ARCHITECTURE.md` §69). La publication passe désormais par l'API avec le
+jeton que Codespaces pose dans chaque terminal, donc sans rien à installer — et
+`scripts/eprouver-publication-fiche.mjs`, joué en CI, vérifie qu'elle part pour
+de bon.
+
 **Devant un « ça ne marche pas », lire cette fiche AVANT de faire taper quoi que
 ce soit au patron.** C'est exactement ce qui a coûté quatre allers-retours dans
 la nuit du 11 au 12 août : des hypothèses formulées à distance, toutes fausses,

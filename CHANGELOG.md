@@ -9,6 +9,79 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### La fiche d'état ne partait pas — et personne n'avait jamais essayé de l'envoyer
+
+**Le patron, après avoir redémarré son espace deux fois :** *« normalement tu es
+censé voir la machine maintenant. Là je viens de le refaire une deuxième fois. »*
+La fiche était toujours introuvable. Zéro fiche dans le dépôt.
+
+**Le code était juste ; c'est le chemin qui ne l'était pas.** La publication
+s'en remettait à `gh`, absent de son conteneur — il n'arrive que par une
+fonctionnalité déclarée dans `devcontainer.json`, et **une déclaration ne répare
+pas un espace déjà né**. Le sien est plus ancien que la ligne : redémarrer
+récupère le code, jamais les outils. Quatrième fois que ce piège coûte une
+soirée à ce dépôt, et cette fois il a coûté deux redémarrages **au patron**.
+
+Trois choses corrigées, et la troisième est la seule qui empêche la récidive :
+
+1. **La publication ne dépend plus de rien.** Codespaces pose un jeton GitHub
+   dans chaque terminal ; l'API suffit. `gh` reste en second recours. L'ordre
+   compte et il est gardé par un contrôle : `gh` d'abord, c'est ne rien publier
+   chez la seule personne pour qui cette fiche existe.
+2. **La fiche part AVANT que le serveur ait répondu**, plus seulement après. La
+   version d'origine attendait jusqu'à dix minutes que l'application réponde —
+   or le cas pour lequel cette fiche existe est précisément celui où elle ne
+   répond pas. Elle se taisait exactement quand elle servait.
+3. **Quelqu'un joue enfin l'envoi pour de bon.** Les contrôles éprouvaient la
+   censure des secrets et la forme du corps ; **aucun n'avait jamais publié**.
+   `scripts/eprouver-publication-fiche.mjs` crée une fiche jetable, vérifie que
+   le second passage la met à jour au lieu d'en ouvrir une seconde, puis la
+   referme — y compris quand l'épreuve échoue.
+
+**Elle ne peut pas tourner sur la machine de l'agent** : le jeton qu'elle expose
+est un substitut de son mandataire réseau, et GitHub le refuse (401 « Bad
+credentials » — constaté, pas supposé). Elle tourne donc en CI, dans un travail
+séparé, où le jeton est réel. C'est le déplacement que `CLAUDE.md` §5 prescrit.
+
+`ARCHITECTURE.md` §69.
+
+---
+
+### Safari fabriquait des liens d'appel dans les pages du client
+
+**Sur son iPhone :** la page publique d'une facture rend « Hydration failed ».
+Le diff de React désignait le coupable sans ambiguïté — le DOM portait
+`<a href="tel:2026-0003">` là où le composant ne rend que le texte `2026-0003`.
+
+Aucune page du dépôt n'écrit de `tel:` sur un numéro de facture : le lien venait
+du navigateur. iOS reconnaît d'office ce qui ressemble à un téléphone, une
+adresse ou un courriel, et **réécrit le HTML avant que React ne s'installe
+dessus**. Un numéro de facture lui ressemble assez.
+
+**Ce n'était pas qu'une alerte de développement.** Le numéro devenait un lien
+d'appel sous le doigt du client de l'artisan — sur la facture comme sur le
+devis, qui le portent tous deux en titre. Un client dont le téléphone propose
+d'appeler « 2026-0003 » n'a pas affaire à un outil sérieux.
+
+Une ligne d'en-tête coupe la détection automatique, sur toutes les pages. **Les
+trois formes, pas seulement le téléphone** : les deux autres cassent de la même
+façon, et attendre la suivante coûterait un aller-retour de plus. **Rien n'est
+perdu au passage** — les `tel:` qu'Atlas écrit lui-même (« appeler » sur la fiche
+du client) et le bouton « Y aller » continuent de fonctionner, et c'est éprouvé.
+
+**Ce qui n'a PAS pu être éprouvé ici, et il faut le savoir :** la détection est
+propre à Safari, cet environnement n'a que Chromium. La panne d'origine ne peut
+pas être rejouée, donc le correctif ne peut pas être vu la faire disparaître.
+`scripts/test-detection-automatique-e2e.ts` garde ce qui peut l'être — l'en-tête
+sur les deux écrans du client, un témoin qui vérifie qu'ils posent toujours un
+numéro nu, et la survie d'un `tel:` explicite. Confronté au correctif retiré :
+quatre cas au rouge, avec le bon coupable nommé. **Le verdict, lui, est sur son
+téléphone.**
+
+`ARCHITECTURE.md` §68.
+
+---
+
 ### « Ça ne marche pas » va désormais chercher la fiche tout seul
 
 **Sa demande :** *« Il faudrait que si j'écris ça ne marche pas, d'elle-même
