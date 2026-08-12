@@ -29,6 +29,36 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Atlas",
   },
+
+  // **Safari fabriquait des liens que personne n'avait écrits.**
+  //
+  // Le 12 août 2026, le patron ouvre la page publique d'une facture sur son
+  // iPhone et reçoit « Hydration failed ». Le diff de React désignait le
+  // coupable sans ambiguïté : le DOM portait
+  // `<a href="tel:2026-0003">` là où le composant ne rend que le texte
+  // `2026-0003`. Or **aucune page de ce dépôt n'écrit de `tel:` sur un numéro
+  // de facture** — le lien ne pouvait venir que du navigateur.
+  //
+  // iOS reconnaît d'office ce qui ressemble à un numéro de téléphone, à une
+  // adresse ou à un courriel, et **réécrit le HTML avant que React ne
+  // s'installe dessus**. Un numéro de facture — huit chiffres et un tiret — lui
+  // ressemble assez. React trouve alors un `<a>` là où il attendait du texte,
+  // annonce une panne, et refabrique tout l'arbre côté client.
+  //
+  // Ce n'est pas qu'une alerte : le numéro devenait un lien d'appel sous le
+  // doigt du client de l'artisan, et le devis complet comme la facture portent
+  // ce numéro en titre.
+  //
+  // Les trois sont coupés, pas seulement le téléphone : les deux autres cassent
+  // de la même façon, et attendre qu'il le découvre lui-même coûterait un
+  // aller-retour de plus. **Rien n'est perdu au passage** — cela n'éteint que la
+  // détection AUTOMATIQUE ; les `tel:` qu'Atlas écrit lui-même (« appeler » sur
+  // la fiche du client) et le bouton « Y aller » continuent de fonctionner.
+  formatDetection: {
+    telephone: false,
+    address: false,
+    email: false,
+  },
 };
 
 export const viewport: Viewport = {

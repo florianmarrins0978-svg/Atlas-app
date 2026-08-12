@@ -184,7 +184,7 @@ l'application. Ce qui est **fait** :
   le planning. Liens universels et jamais `waze://`, qui échoue en silence
   quand l'application manque. Sans adresse, rien ne s'invente : les
   destinations disparaissent et la feuille dit où la saisir. Retenu après
-  quatre maquettes (`docs/maquettes/29` à `32`). `ARCHITECTURE.md` §68.
+  quatre maquettes (`docs/maquettes/29` à `32`). `ARCHITECTURE.md` §70.
   **Réserve transmise au patron :** la ligne porte désormais trois gestes et un
   nom sur 390 px — c'est un de trop, et la maquette validée n'en montrait pas
   deux. Non restructuré sans lui.

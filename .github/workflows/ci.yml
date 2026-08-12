@@ -209,3 +209,36 @@ jobs:
             tail -40 /tmp/essai-connexion.log
             exit 1
           }
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # La fiche d'état part-elle vraiment ?
+  #
+  # **Séparé du reste, et c'est délibéré.** Cette épreuve n'a besoin ni de
+  # PostgreSQL, ni de Redis, ni d'un navigateur : la coller au travail ci-dessus
+  # la ferait attendre huit minutes pour vingt secondes de vérification, et un
+  # échec de la base la ferait passer pour cassée à son tour.
+  #
+  # Elle vit ici parce qu'elle NE PEUT PAS tourner chez l'agent : le jeton que
+  # sa machine expose est un substitut de son mandataire réseau, et GitHub le
+  # refuse. C'est le déplacement que `CLAUDE.md` §5 prescrit — ce qui n'est pas
+  # joignable d'ici s'éprouve là où il l'est.
+  #
+  # Ce qu'elle aurait attrapé : le 12 août 2026, le patron a redémarré son
+  # espace deux fois pour une fiche qui ne pouvait pas partir.
+  fiche-etat:
+    runs-on: ubuntu-latest
+    permissions:
+      # Le strict nécessaire : ouvrir, modifier et refermer une fiche jetable.
+      issues: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: La publication de la fiche d'état fonctionne de bout en bout
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/eprouver-publication-fiche.mjs

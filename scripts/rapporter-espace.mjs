@@ -32,13 +32,41 @@
  * ───────────────────────────────────────────────────────────────────────────
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
 
-/** Le titre EXACT de la fiche : c'est lui qui évite d'en créer une par allumage. */
-export const TITRE_FICHE = "État du banc d'essai — publié par l'espace lui-même";
+/**
+ * Le titre EXACT de la fiche : c'est lui qui évite d'en créer une par allumage.
+ *
+ * Détournable **uniquement pour l'éprouver** (`ATLAS_TITRE_FICHE`) : la
+ * publication ne peut pas être jouée sur la machine de l'agent — son jeton est
+ * un substitut du mandataire, pas un vrai jeton GitHub — et doit donc l'être en
+ * CI, sur une fiche jetable qu'on referme aussitôt. Sans cette porte, la seule
+ * façon d'éprouver serait d'écrire dans la vraie fiche du patron.
+ */
+export const TITRE_FICHE =
+  process.env.ATLAS_TITRE_FICHE || "État du banc d'essai — publié par l'espace lui-même";
 
-const JOURNAL = process.env.ATLAS_JOURNAL ?? "/tmp/essai.log";
-const LIGNES_DE_JOURNAL = 40;
+/**
+ * **Le journal de démarrage NE PART PAS. Décidé par le patron le 12 août 2026.**
+ *
+ * La première version recopiait les quarante dernières lignes du démarrage, en
+ * censurant au jugé ce qui ressemblait à un secret. Puis un détail est apparu
+ * qui change tout : **son dépôt est public.** Une fiche y est lisible par
+ * n'importe qui, et indexée. Une censure faite au jugé laisse forcément passer
+ * l'imprévu — le prix d'un oubli n'est plus une gêne, c'est une clé publiée sur
+ * la place.
+ *
+ * Mis devant le choix, il a tranché : retirer le journal.
+ *
+ * **Ce qu'on y perd, et il faut le savoir avant de le regretter :** devant un
+ * serveur qui refuse de démarrer, la fiche dira qu'il ne répond pas, pas
+ * POURQUOI. Ce qui reste — branche suivie, commit récupéré, commit réellement
+ * servi, services debout ou non — répond à la question qui a coûté le plus
+ * cher : *sur quelle version est-il, et son serveur tourne-t-il ?*
+ *
+ * Si un jour il faut la cause exacte, la reprendre ainsi serait une erreur :
+ * c'est une extraction STRUCTURÉE qu'il faudra écrire (le nom de l'erreur, pas
+ * les lignes autour), pas un retour du journal brut.
+ */
 
 /**
  * Retire d'un texte tout ce qui ressemble à un secret.
@@ -66,7 +94,7 @@ export function expurger(texte) {
 }
 
 /** Le corps de la fiche. Rendu séparément pour être éprouvable sans réseau. */
-export function corpsDuRapport({ diagnostic, journal, quand }) {
+export function corpsDuRapport({ diagnostic, quand }) {
   return [
     "> Fiche écrite automatiquement par l'espace de travail du patron, à chaque",
     "> allumage. Elle existe pour que l'agent voie sa machine sans avoir à lui",
@@ -81,11 +109,9 @@ export function corpsDuRapport({ diagnostic, journal, quand }) {
     diagnostic.trim() || "(le diagnostic n'a rien rendu)",
     "```",
     "",
-    `## Les ${LIGNES_DE_JOURNAL} dernières lignes du démarrage`,
-    "",
-    "```",
-    journal.trim() || "(aucun journal de démarrage)",
-    "```",
+    "> Le journal de démarrage n'est **pas** publié ici : ce dépôt est public, et",
+    "> une censure faite au jugé finirait par laisser passer l'imprévu. Voir",
+    "> l'en-tête de `scripts/rapporter-espace.mjs`.",
   ].join("\n");
 }
 
@@ -97,7 +123,103 @@ function commande(programme, args, options = {}) {
   });
 }
 
-function main() {
+/**
+ * De quel dépôt parle-t-on ? — déduit de l'adresse du dépôt distant.
+ *
+ * Les deux formes existent côte à côte sur la même machine : `git clone` par
+ * HTTPS écrit `https://github.com/o/r.git`, un accès par clé écrit
+ * `git@github.com:o/r.git`. N'en reconnaître qu'une, c'est marcher chez soi et
+ * se taire chez le patron.
+ */
+export function extraireDepot(adresse) {
+  const m = String(adresse ?? "")
+    .trim()
+    .match(/github\.com[/:]([^/]+)\/(.+?)(?:\.git)?\/?$/);
+  return m ? { proprietaire: m[1], depot: m[2] } : null;
+}
+
+/** Retrouve la fiche par son titre EXACT — une recherche approchante en créerait une seconde. */
+export function choisirFiche(fiches, titre) {
+  return (Array.isArray(fiches) ? fiches : []).find((f) => f?.title === titre)?.number;
+}
+
+/**
+ * Publier SANS `gh`, avec le jeton que Codespaces pose déjà dans le terminal.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Écrit le 12 août 2026, après deux redémarrages pour rien.** Le patron
+ * rallume son espace deux fois, et la fiche reste introuvable — parce que `gh`
+ * n'est pas dans son conteneur. Il arrive par une fonctionnalité déclarée dans
+ * `devcontainer.json`, or **une déclaration ne répare pas un espace déjà né**
+ * (`ARCHITECTURE.md` §55). Le sien est plus ancien que la ligne : redémarrer
+ * récupère le code, jamais les outils. C'est la quatrième fois que ce piège
+ * coûte une soirée à ce dépôt.
+ *
+ * D'où ce chemin, qui ne dépend de rien : `GITHUB_TOKEN` est posé par
+ * Codespaces dans chaque terminal, et l'API suffit. `gh` reste en second
+ * recours — il porte son propre jeton là où la variable manque (une machine de
+ * développement où l'on s'est authentifié à la main).
+ * ───────────────────────────────────────────────────────────────────────────
+ */
+async function publierParHttp(corps, jeton) {
+  let origine;
+  try {
+    origine = commande("git", ["remote", "get-url", "origin"]);
+  } catch {
+    return "sans-depot";
+  }
+  const cible = extraireDepot(origine);
+  if (!cible) return "sans-depot";
+
+  const racine = `https://api.github.com/repos/${cible.proprietaire}/${cible.depot}/issues`;
+  const entetes = {
+    Authorization: `Bearer ${jeton}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "Content-Type": "application/json",
+  };
+
+  const liste = await fetch(`${racine}?state=open&per_page=100`, { headers: entetes });
+  if (!liste.ok) throw new Error(`liste des fiches refusée (${liste.status})`);
+  const existante = choisirFiche(await liste.json(), TITRE_FICHE);
+
+  const reponse = existante
+    ? await fetch(`${racine}/${existante}`, {
+        method: "PATCH",
+        headers: entetes,
+        body: JSON.stringify({ body: corps }),
+      })
+    : await fetch(racine, {
+        method: "POST",
+        headers: entetes,
+        body: JSON.stringify({ title: TITRE_FICHE, body: corps }),
+      });
+
+  if (!reponse.ok) {
+    throw new Error(`publication refusée (${reponse.status} ${reponse.statusText})`);
+  }
+  const fiche = await reponse.json();
+  return existante ? `mise à jour #${existante}` : `créée : ${fiche.html_url}`;
+}
+
+/** Le second recours : `gh`, quand il est là et qu'aucun jeton n'est posé. */
+function publierParGh(corps) {
+  const trouvees = commande("gh", [
+    "issue", "list", "--state", "open", "--limit", "50",
+    "--search", TITRE_FICHE, "--json", "number,title",
+  ]);
+  const existante = choisirFiche(JSON.parse(trouvees), TITRE_FICHE);
+  if (existante) {
+    commande("gh", ["issue", "edit", String(existante), "--body-file", "-"], { input: corps });
+    return `mise à jour #${existante}`;
+  }
+  const url = commande("gh", ["issue", "create", "--title", TITRE_FICHE, "--body-file", "-"], {
+    input: corps,
+  }).trim();
+  return `créée : ${url}`;
+}
+
+async function main() {
   // Le diagnostic sort en code 1 quand il a trouvé quelque chose à signaler :
   // c'est justement le cas intéressant. On récupère sa sortie dans les deux cas.
   let diagnostic;
@@ -107,54 +229,52 @@ function main() {
     diagnostic = `${e.stdout ?? ""}${e.stderr ?? ""}` || `(diagnostic impossible : ${e.message})`;
   }
 
-  const journal = existsSync(JOURNAL)
-    ? readFileSync(JOURNAL, "utf8").split("\n").slice(-LIGNES_DE_JOURNAL).join("\n")
-    : "";
-
+  // La censure reste, alors même que le journal ne part plus : le diagnostic
+  // recopie des noms de fichiers modifiés, et rien n'interdit qu'un jour l'un
+  // d'eux porte un secret. Une ceinture ne se retire pas parce qu'on a mis des
+  // bretelles — surtout sur un dépôt public.
   const corps = expurger(
     corpsDuRapport({
       diagnostic,
-      journal,
       // L'heure vient du système : une fiche sans date ne dit pas si l'on
       // regarde l'état d'aujourd'hui ou celui d'avant-hier.
       quand: new Date().toISOString(),
     })
   );
 
-  // `gh` est installé dans l'espace (voir `.devcontainer/devcontainer.json`) et
-  // y trouve son jeton tout seul. Ailleurs — la machine de l'agent, la CI — il
-  // peut manquer : on le dit et on s'arrête sans bruit.
-  let existante;
+  // Le jeton d'abord, `gh` ensuite. L'ordre compte : dans l'espace du patron,
+  // le jeton est là et `gh` ne l'est pas — commencer par `gh` reviendrait à ne
+  // rien publier chez la seule personne pour qui cette fiche existe.
+  const jeton = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "";
+
   try {
-    const trouvees = commande("gh", [
-      "issue", "list", "--state", "open", "--limit", "50",
-      "--search", TITRE_FICHE, "--json", "number,title",
-    ]);
-    existante = JSON.parse(trouvees).find((f) => f.title === TITRE_FICHE)?.number;
+    if (jeton) {
+      const issue = await publierParHttp(corps, jeton);
+      if (issue !== "sans-depot") {
+        console.log(`✅ État publié — fiche ${issue}.`);
+        return 0;
+      }
+    }
   } catch (e) {
-    console.error(`⚠ Rapport non publié : ${String(e.message).split("\n")[0]}`);
-    console.error("  L'espace fonctionne normalement — seule la remontée vers l'agent manque.");
-    return 0;
+    // On ne s'arrête pas là : `gh` peut réussir là où le jeton a été refusé
+    // (un jeton d'espace aux droits restreints, par exemple).
+    console.error(`⚠ Publication directe impossible : ${String(e.message).split("\n")[0]}`);
   }
 
   try {
-    if (existante) {
-      commande("gh", ["issue", "edit", String(existante), "--body-file", "-"], { input: corps });
-      console.log(`✅ État publié sur la fiche #${existante}.`);
-    } else {
-      const url = commande("gh", [
-        "issue", "create", "--title", TITRE_FICHE, "--body-file", "-",
-      ], { input: corps }).trim();
-      console.log(`✅ Fiche créée : ${url}`);
-    }
+    console.log(`✅ État publié — fiche ${publierParGh(corps)}.`);
   } catch (e) {
     console.error(`⚠ Rapport non publié : ${String(e.message).split("\n")[0]}`);
     console.error("  L'espace fonctionne normalement — seule la remontée vers l'agent manque.");
+    console.error("  Sans GITHUB_TOKEN ni `gh`, il n'existe aucun chemin : voir CLAUDE.md §1 bis.");
   }
   return 0;
 }
 
 // Importé par les tests, il ne doit rien publier de lui-même.
 if (process.argv[1] && process.argv[1].endsWith("rapporter-espace.mjs")) {
-  process.exit(main());
+  main().then(
+    (code) => process.exit(code),
+    () => process.exit(0) // Jamais bloquant : voir l'en-tête.
+  );
 }

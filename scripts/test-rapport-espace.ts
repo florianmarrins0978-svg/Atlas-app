@@ -12,7 +12,13 @@
 
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { expurger, corpsDuRapport, TITRE_FICHE } from "./rapporter-espace.mjs";
+import {
+  expurger,
+  corpsDuRapport,
+  TITRE_FICHE,
+  extraireDepot,
+  choisirFiche,
+} from "./rapporter-espace.mjs";
 
 let echecs = 0;
 function cas(nom: string, fn: () => void) {
@@ -58,12 +64,49 @@ cas("le compte de démonstration RESTE lisible : il est public", () => {
   assert.ok(sorti.includes("demo@atlas.local"), "le compte de démonstration a été censuré pour rien");
 });
 
+cas("le journal de démarrage NE PART PAS : le dépôt est public", () => {
+  // **Tranché par le patron le 12 août 2026**, une fois découvert que son dépôt
+  // est public. La fiche y est lisible par n'importe qui et indexée ; une
+  // censure faite au jugé laisse forcément passer l'imprévu, et le prix d'un
+  // oubli n'est plus une gêne de lecture mais une clé publiée sur la place.
+  //
+  // Ce cas existe parce que la tentation reviendra : devant un serveur muet, on
+  // voudra « juste les dernières lignes ». Ce qu'il faudra écrire alors est une
+  // extraction STRUCTURÉE — le nom de l'erreur, pas les lignes autour.
+  const corps = corpsDuRapport({
+    diagnostic: "Serveur : répond",
+    quand: "2026-08-12T06:00:00.000Z",
+  });
+  assert.ok(
+    !/dernières lignes du démarrage/.test(corps),
+    "le journal de démarrage est revenu dans la fiche — sur un dépôt PUBLIC"
+  );
+  assert.match(
+    corps,
+    /journal de démarrage n'est \*\*pas\*\* publié/,
+    "rien n'explique dans la fiche pourquoi le journal en est absent : " +
+      "quelqu'un le remettra en croyant réparer un oubli"
+  );
+
+  // Le témoin : si `corpsDuRapport` acceptait encore un journal et le recopiait
+  // en silence, les deux affirmations ci-dessus resteraient vraies pour rien.
+  const avecJournal = corpsDuRapport({
+    diagnostic: "Serveur : répond",
+    // @ts-expect-error — on passe volontairement ce que la fiche ne doit plus lire.
+    journal: "SECRET_A_NE_PAS_PUBLIER=xyz",
+    quand: "2026-08-12T06:00:00.000Z",
+  });
+  assert.ok(
+    !avecJournal.includes("SECRET_A_NE_PAS_PUBLIER"),
+    "un journal passé à la fonction ressort quand même dans la fiche"
+  );
+});
+
 cas("le rapport dit QUAND il a été écrit, et de ne pas y répondre", () => {
   // Une fiche sans date ne dit pas si l'on regarde l'état d'aujourd'hui ou
   // celui d'avant-hier — c'est précisément la question qu'elle doit trancher.
   const corps = corpsDuRapport({
     diagnostic: "Serveur : répond",
-    journal: "L'application répond",
     quand: "2026-08-12T06:00:00.000Z",
   });
   assert.match(corps, /2026-08-12T06:00:00/, "le rapport ne porte pas sa date");
@@ -106,6 +149,87 @@ cas("le veilleur rafraîchit la fiche, il ne la laisse pas vieillir", () => {
     veilleur,
     /rapporter-espace\.mjs/,
     "le veilleur ne republie plus l'état : la fiche vieillira sans que rien ne le dise"
+  );
+});
+
+cas("la publication ne dépend plus de `gh`", () => {
+  // **Deux redémarrages pour rien, le 12 août 2026.** Le patron rallume son
+  // espace deux fois et la fiche reste introuvable : `gh` n'y est pas. Il
+  // arrive par une fonctionnalité déclarée dans `devcontainer.json`, et **une
+  // déclaration ne répare pas un espace déjà né**. Le sien est plus ancien que
+  // la ligne — redémarrer récupère le code, jamais les outils.
+  //
+  // Le chemin par jeton ne dépend de rien : Codespaces le pose dans chaque
+  // terminal. Ce cas garde l'ORDRE, qui est tout : `gh` d'abord reviendrait à
+  // ne rien publier chez la seule personne pour qui la fiche existe.
+  const source = readFileSync("scripts/rapporter-espace.mjs", "utf8");
+  const parJeton = source.indexOf("publierParHttp(corps, jeton)");
+  const parGh = source.indexOf("publierParGh(corps)");
+  assert.ok(parJeton > 0, "le chemin par jeton a disparu : l'espace du patron redeviendra muet");
+  assert.ok(parGh > 0, "le second recours par `gh` a disparu");
+  assert.ok(
+    parJeton < parGh,
+    "`gh` est tenté avant le jeton : dans l'espace du patron, `gh` n'existe pas — " +
+      "la fiche ne sera plus jamais publiée chez lui"
+  );
+  assert.match(
+    source,
+    /GITHUB_TOKEN/,
+    "le jeton que Codespaces pose dans chaque terminal n'est plus lu"
+  );
+});
+
+cas("l'adresse du dépôt se lit sous ses DEUX formes", () => {
+  // Les deux vivent côte à côte sur la même machine : `git clone` par HTTPS
+  // écrit l'une, un accès par clé écrit l'autre. N'en reconnaître qu'une, c'est
+  // marcher chez soi et se taire chez le patron.
+  const attendu = { proprietaire: "florianmarrins0978-svg", depot: "Atlas-app" };
+  for (const adresse of [
+    "https://github.com/florianmarrins0978-svg/Atlas-app.git",
+    "https://github.com/florianmarrins0978-svg/Atlas-app",
+    "git@github.com:florianmarrins0978-svg/Atlas-app.git",
+    "https://github.com/florianmarrins0978-svg/Atlas-app/\n",
+  ]) {
+    assert.deepEqual(extraireDepot(adresse), attendu, `adresse non reconnue : ${adresse.trim()}`);
+  }
+  assert.equal(extraireDepot("https://exemple.local/depot.git"), null, "un hôte étranger est accepté");
+  assert.equal(extraireDepot(undefined), null, "une adresse absente n'est pas refusée");
+});
+
+cas("la fiche se retrouve par son titre EXACT, jamais par ressemblance", () => {
+  // Une correspondance approchante ouvrirait une SECONDE fiche à chaque
+  // allumage, et le dépôt se remplirait de bruit — c'est ce que le titre fixe
+  // sert précisément à éviter.
+  const fiches = [
+    { number: 7, title: "Autre chose" },
+    { number: 12, title: TITRE_FICHE },
+    { number: 19, title: `${TITRE_FICHE} (ancien)` },
+  ];
+  assert.equal(choisirFiche(fiches, TITRE_FICHE), 12, "la bonne fiche n'est pas retrouvée");
+  assert.equal(choisirFiche([], TITRE_FICHE), undefined, "une liste vide ne rend pas « aucune »");
+  assert.equal(choisirFiche(null, TITRE_FICHE), undefined, "une liste absente fait tomber le script");
+});
+
+cas("la fiche part AVANT que le serveur ait répondu, pas seulement après", () => {
+  // **Le défaut le plus bête, et le plus coûteux.** La première version
+  // attendait que le serveur réponde — jusqu'à dix minutes — avant d'écrire
+  // quoi que ce soit. Or le cas pour lequel cette fiche existe est celui où le
+  // serveur NE répond pas. Elle se taisait exactement quand elle servait.
+  const demarrage = readFileSync(".devcontainer/demarrer.sh", "utf8");
+  const bloc = demarrage.slice(demarrage.indexOf("rapporter-espace.mjs") - 400);
+  const premier = bloc.indexOf("rapporter-espace.mjs");
+  const attente = bloc.indexOf("health/live");
+  assert.ok(premier >= 0 && attente >= 0, "le bloc de publication a changé de forme : cas à revoir");
+  assert.ok(
+    premier < attente,
+    "la fiche n'est plus publiée avant l'attente du serveur : en cas de panne au " +
+      "démarrage — le seul cas qui compte — elle arrivera dix minutes trop tard"
+  );
+  assert.equal(
+    (demarrage.match(/node scripts\/rapporter-espace\.mjs/g) ?? []).length,
+    2,
+    "la seconde publication (une fois le serveur debout) a disparu : la fiche resterait " +
+      "sur un état d'avant démarrage"
   );
 });
 
