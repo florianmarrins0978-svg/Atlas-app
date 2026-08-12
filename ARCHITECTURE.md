@@ -5408,3 +5408,130 @@ le seul bouton sans `onClick`. Il paraissait donc fonctionner. Un contrôle
 confronté à un unique cas — surtout s'il est atypique — n'a rien prouvé : il faut
 l'éprouver sur le cas COURANT, celui qui représente la population qu'il surveille.
 Ici, le témoin porte désormais les deux formes, avec flèche et sans.
+---
+
+## 73. L'agenda iCloud : pourquoi ce n'est pas le raccordement de Google
+
+**Sa demande du 12 août 2026**, capture du Calendrier d'Apple à l'appui : *« je
+peux connecter ce calendrier à mon appli ? »* — puis, aux deux questions
+posées : le compte derrière la vitrine est **iCloud**, et il veut **les deux
+sens**. Enfin : *« code pour qu'on puisse lire et écrire dans cet agenda »*.
+
+### La distinction qui commande tout : le Calendrier d'Apple est une vitrine
+
+Il affiche aussi bien iCloud que Gmail ou un compte professionnel. **Ce qu'on
+relie, c'est le compte derrière**, jamais l'application — et selon lequel, le
+travail va de zéro (Google : le code existait) à un fournisseur entier.
+
+C'est pour cela que la question a été posée **avant** de répondre. Une prochaine
+session qui verrait la même capture doit poser la même question, et non déduire
+« Apple » de l'icône.
+
+### Ce qu'Apple n'a pas, et qui explique le reste
+
+| | Google | iCloud |
+|---|---|---|
+| Consentement | Une page, un bouton, rien à taper | **Aucun équivalent pour l'agenda** |
+| Ce qui autorise | Un jeton, restreint à une portée | Un **mot de passe pour les apps**, recopié à la main |
+| Ce que ça ouvre | L'agenda seul | **Tout l'iCloud** — mail, contacts, fichiers |
+| Révocation | Depuis le compte Google, par application | Depuis le compte Apple |
+| Engagement du fournisseur | Interface publique et versionnée | **Aucun** — CalDAV chez Apple n'est pas documenté publiquement |
+
+« Se connecter avec Apple » existe, mais ne rend qu'une identité : il ne donne
+jamais accès au calendrier. Il n'y a donc **pas** de chemin plus propre à
+trouver — c'était la première hypothèse, et elle est fausse.
+
+**Trois conséquences, écrites dans le code plutôt que dans un commentaire :**
+
+1. le mot de passe est **chiffré au repos** (`secret-au-repos.ts`), comme les
+   jetons Google, et **jamais renvoyé à l'écran** — même dans un message
+   d'erreur (`test-agenda-apple-base.ts` le vérifie sur les octets stockés) ;
+2. l'écran **prévient avant de faire taper**, et le contrôle le vérifie **par la
+   position** du bloc, pas par la présence du texte : une phrase juste placée
+   sous le champ est une phrase lue trop tard ;
+3. l'écriture reste **éteinte** tant que l'artisan ne l'a pas allumée.
+
+### Où vivent les décisions, et pourquoi elles n'ont pas pu vivre ailleurs
+
+Le mandataire réseau de l'environnement de développement refuse
+`caldav.icloud.com`. Tout ce qui *interprète* quelque chose a donc été mis hors
+d'atteinte du réseau :
+
+| Module | Ce qu'il décide | Éprouvé par |
+|---|---|---|
+| `src/lib/ics.ts` | Quelles périodes porte un texte iCalendar, et ce qu'Atlas y écrit | `scripts/test-ics.ts` |
+| `src/lib/caldav.ts` | Quel agenda est le sien, lequel n'est qu'un abonnement, lequel accepte qu'on y écrive | `scripts/test-caldav.ts` |
+| `src/lib/fuseau.ts` | L'heure de pendule → l'instant | les deux |
+| `src/server/agenda/apple.ts` | **Rien.** Trois appels HTTP | *non éprouvé ici* |
+
+Ce qui reste non vérifié chez Apple, ce sont donc des appels réseau — pas une
+seule décision. C'est le même partage que pour Google (`google.ts`), et il n'est
+pas cosmétique : c'est ce qui rend une panne d'Apple diagnosticable.
+
+### Les cinq pièges du format, et ce qu'ils coûtaient
+
+- **Le repliage à 75 octets.** Ne pas déplier ne casse pas bruyamment : cela
+  produit un intitulé coupé au milieu d'un mot et une ligne parasite.
+- **La fin d'un événement « toute la journée » est EXCLUSIVE.** Un congé du 14
+  au 14 s'écrit `DTSTART:20260814`/`DTEND:20260815`. Ne pas reculer d'une
+  seconde barre un jour de plus, à chaque congé de l'année.
+- **`Date.UTC` ne refuse rien, il reporte.** `20261332` — mois treize, jour
+  trente-deux — devenait le 1er février 2027, en silence : une journée barrée un
+  an plus tard, sans raison visible. **Trouvé par le contrôle, pas à la
+  lecture.** Une donnée mal formée doit produire MOINS d'occupation, jamais une
+  occupation inventée.
+- **Les séries récurrentes sont dépliées PAR LE SERVEUR** (`<C:expand>`), qui
+  connaît les exceptions et les occurrences déplacées. Sans lui, une réunion
+  hebdomadaire ne rendrait qu'une occurrence, et toutes les autres semaines
+  paraîtraient libres — donc proposables à un client.
+- **Le fuseau se convertit en deux passes.** Le décalage dépend de l'instant, et
+  l'instant est ce qu'on cherche. Une seule passe se trompe d'une heure sur les
+  dates qui suivent un changement d'heure — deux fois par an, aux seules dates
+  où personne ne pense à regarder.
+
+### L'écriture : ce qui la rend réversible
+
+**L'identifiant de l'événement se déduit du chantier** (`atlas-<id>`). Trois
+conséquences, et ce sont elles qui rendent l'écriture acceptable :
+
+1. **replanifier réécrit** au lieu d'ajouter — sinon l'agenda se constellerait
+   de doublons qu'Atlas serait incapable de retrouver ;
+2. **le préfixe `atlas-` dit ce qu'Atlas a le droit d'effacer.** Tout le reste
+   de l'agenda lui est étranger et le demeure ;
+3. **débrancher retire d'abord, oublie ensuite.** Effacer la ligne en premier
+   perdrait le mot de passe, donc le seul moyen d'aller reprendre les
+   rendez-vous. Et un ménage qui échoue n'empêche pas de débrancher : ce qui est
+   resté est **dit**, ce n'est pas une raison de garder un mot de passe dont
+   l'artisan ne veut plus.
+
+**Le repli est un calendrier séparé, pas « Perso ».** Ce qu'Atlas a posé se
+retire alors d'un geste ; semé parmi ses rendez-vous, il se reprend un par un.
+
+**L'écriture a lieu APRÈS la transaction, jamais dedans** (`src/app/planning/actions.ts`)
+— tenir une transaction PostgreSQL ouverte le temps d'un appel à Apple
+immobiliserait une connexion du pool pour la durée d'un service qu'on ne
+maîtrise pas. Et elle **ne jette pas** : une panne d'Apple ne doit pas faire
+perdre au patron le geste qu'il vient de faire. Ce qui n'a pas pu être écrit est
+inscrit, l'écran le montre, et « Renvoyer mes chantiers » le rattrape.
+
+### Un seul point de fusion, et c'est le point important
+
+`periodesOccupeesExterieures` interroge **les deux fournisseurs de front** et
+rend une seule liste. Laisser chaque appelant décider lesquels consulter
+garantirait qu'un écran en oublie un : le planning tiendrait compte des deux, la
+page du client d'un seul, et **le doublon reviendrait par la porte qu'on croyait
+fermée** — c'est exactement le défaut que le lot du 9 août avait fermé côté
+Google (§ sur `envois-devis`).
+
+`Executeur` a été sorti dans `src/server/repositories/agenda-executeur.ts` pour cela : les
+deux raccordements en ont besoin, et le laisser chez Google aurait fait dépendre
+Apple de Google — ou produit une seconde copie, ce que ce module existe
+justement pour éviter.
+
+### Ce qui n'est PAS vérifié, et qui doit être dit comme tel
+
+**Aucun échange réel avec iCloud n'a eu lieu.** Le réseau d'ici le refuse
+(essayé le 12 août 2026 : connexion refusée). Ce qui reste à éprouver sur son
+banc, avec un vrai mot de passe : la découverte des agendas, la lecture, le
+dépôt, le retrait. Ne pas annoncer le raccordement comme éprouvé avant que cela
+ait tourné une fois pour de bon.

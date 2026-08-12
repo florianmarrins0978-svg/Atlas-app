@@ -867,6 +867,21 @@ la même situation que pour Google, et elle se traite pareil : la logique qui
 décide vit dans un module qui ne parle à personne et qui, lui, s'éprouve
 entièrement ici.
 
+### Ce qui a été fait le jour même
+
+Vous avez répondu *« code pour qu'on puisse lire et écrire dans cet agenda »* —
+c'est écrit. Vous collez votre adresse iCloud et le mot de passe pour les apps ;
+Atlas trouve vos agendas, cesse de proposer les demi-journées déjà prises, et —
+**si vous l'allumez** — pose vos chantiers dans le calendrier que vous désignez.
+Débrancher les retire.
+
+**Ce qui n'a PAS pu être vérifié, et qu'il faut lire comme tel :** aucun échange
+réel avec iCloud n'a eu lieu ici — le réseau de l'environnement de
+développement le refuse. Les contrôles couvrent tout ce qui *décide* ; ce qui
+reste à éprouver, c'est le dialogue avec Apple lui-même, et cela demande votre
+compte. **Attendez-vous à un premier essai qui échoue** : ce sera dit à l'écran,
+avec la phrase d'Apple telle quelle.
+
 ### Ce que ça ne change pas
 
 Ce qui décide quelles demi-journées sont prises, et comment elles se fondent

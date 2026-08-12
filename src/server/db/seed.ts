@@ -206,7 +206,10 @@ async function main() {
     // le fait `withEntreprise`.
     const entreprisesAvant = await tx.select({ id: entreprises.id }).from(entreprises);
     const identifiantsGardes: {
-      fournisseur: "google";
+      // Le type suit la colonne, qui accepte iCloud depuis la 0035 : le figer
+      // sur « google » ferait tomber la compilation à chaque fournisseur ajouté,
+      // pour un tableau qui ne fait que recopier ce qu'il vient de lire.
+      fournisseur: "google" | "apple";
       clientId: string | null;
       clientSecret: string | null;
       redirection: string | null;

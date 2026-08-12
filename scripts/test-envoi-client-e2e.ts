@@ -11,6 +11,22 @@ import { lancerNavigateur } from "./e2e-browser";
 
 const BASE = "http://localhost:3000";
 
+/**
+ * Combien de temps attendre qu'un écran paraisse.
+ *
+ * **Vingt secondes, et le chiffre a une histoire (12 août 2026).** Cette suite
+ * attendait dix secondes là où ses voisines — `test-transmission-e2e`,
+ * `test-devis-parti-signet-e2e` — en attendent quinze à vingt pour LE MÊME
+ * écran. Elle passait seule et tombait en batterie : le serveur y compile à la
+ * demande, avec soixante-deux autres suites qui se disputent quatre cœurs.
+ *
+ * Le rouge n'accusait pas le bon coupable — il nommait « le canal se déduit de
+ * la seule coordonnée renseignée », une règle métier qui n'y était pour rien.
+ * Et un rouge qui tombe au hasard coûte plus cher qu'il ne rapporte : il
+ * apprend à ignorer le rouge.
+ */
+const DELAI_ECRAN_MS = 20_000;
+
 let passed = 0;
 let failed = 0;
 async function test(nom: string, fn: () => Promise<void>) {
@@ -89,7 +105,7 @@ async function main() {
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     await page.click("text=Envoyer au client");
 
-    await page.waitForSelector("text=Comment joindre ce client", { timeout: 10000 });
+    await page.waitForSelector("text=Comment joindre ce client", { timeout: DELAI_ECRAN_MS });
     for (const canal of ["Par SMS", "Par e-mail"]) {
       assert.ok(
         await page.getByRole("button", { name: canal }).isVisible(),
@@ -112,7 +128,7 @@ async function main() {
     });
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     await page.click("text=Envoyer au client");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
 
     assert.ok(
       await page.locator("text=Par e-mail au dupuis@exemple.fr").isVisible(),
@@ -125,7 +141,7 @@ async function main() {
     const url = await creerChantierFacturable(page, "deuxmax");
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     await page.click("text=Envoyer au client");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
 
     const jours = page.locator('button[aria-pressed]');
     const total = await jours.count();
@@ -144,7 +160,7 @@ async function main() {
     const url = await creerChantierFacturable(page, "cycle");
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     await page.click("text=Envoyer au client");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
 
     // Deux dates : c'est le cas qui laisse le client choisir.
     await page.locator('button[aria-pressed]').nth(1).click();
@@ -240,7 +256,7 @@ async function main() {
     const url = await creerChantierFacturable(page, "rejoue");
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     await page.click("text=Envoyer au client");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
 

@@ -27,39 +27,45 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 unvicies. Relier l'agenda iCloud — **la maquette attend son avis**
+### 0 unvicies. ~~Relier l'agenda iCloud~~ — **codé le 12 août 2026**, reste à éprouver chez lui
 
 **Sa question du 12 août 2026**, capture du Calendrier d'Apple à l'appui : *« je
 peux connecter ce calendrier à mon appli ? »* Réponses obtenues : le compte
 derrière la vitrine est **iCloud**, et il veut **les deux sens** — Atlas lit ses
 rendez-vous, Atlas y écrit ses chantiers.
 
-**Rien n'est écrit dans `src/`, et c'est volontaire** (sa règle du 11 août : la
-maquette d'abord). Ce qui existe : `maquettes/atlas-agenda-apple.html` et ses 22
-contrôles. Réponse complète dans `docs/QUESTIONS.md` §14.
+**Codé, éprouvé pour tout ce qui décide, et pas au-delà** — le détail et le
+pourquoi sont dans `ARCHITECTURE.md` §73, la réponse en langage courant dans
+`docs/QUESTIONS.md` §14.
 
-**Le chemin, une fois qu'il aura tranché :**
-
-| | Ce qu'il y a à faire | Remarque |
+| | Fait | Où |
 |---|---|---|
-| 1 | Migration : `fournisseur IN ('google','apple')` | La colonne existe déjà (`0032`), la contrainte non |
-| 2 | Un module CalDAV, à créer à côté de `src/server/agenda/google.ts` : découverte du principal, `calendar-query`, `PUT` d'un `VEVENT` pour écrire | Le mot de passe passe par `src/server/agenda/secret-au-repos.ts`, comme les jetons Google |
-| 3 | Un lecteur d'`.ics` (`VEVENT` → `PeriodeOccupee`) | **Éprouvable ici** sur des fichiers d'exemple : c'est la seule part qui ne parle à personne |
-| 4 | L'écran, d'après la maquette retenue | Rien avant son accord |
-| 5 | Un script de vérification à jouer **sur son banc**, sur le modèle de `scripts/verifier-connexion-avec-serveur.mts` | Voir ci-dessous |
+| 1 | Migration : `fournisseur IN ('google','apple')`, mot de passe chiffré, agendas lus, calendrier d'écriture | `drizzle/0035_agenda_apple.sql` |
+| 2 | CalDAV : découverte, `calendar-query`, `PUT`, `DELETE` | `src/server/agenda/apple.ts` |
+| 3 | Lecture et écriture de l'iCalendar | `src/lib/ics.ts`, `src/lib/caldav.ts` |
+| 4 | L'écran, d'après la maquette | `src/app/reglages/agenda/AgendaAppleClient.tsx` |
+| 5 | Les chantiers montent et redescendent avec le planning | `src/server/repositories/agenda-apple.ts` |
 
-**Ce qui ne peut pas être éprouvé ici :** le réseau refuse `caldav.icloud.com`
-(essayé le 12 août, connexion refusée). Comme pour `pages.yml` et
-`banc-essai.yml`, la vérification se déplace — elle tournera chez lui, avec son
-vrai mot de passe, jamais ici. Ne pas annoncer le raccordement comme éprouvé
-tant que ce script n'a pas tourné une fois pour de bon.
+**CE QUI RESTE, et qui ne peut pas être fait ici :** aucun échange réel avec
+iCloud n'a eu lieu — le réseau refuse `caldav.icloud.com` (essayé le 12 août,
+connexion refusée). Restent à éprouver **sur son banc**, avec un vrai mot de
+passe pour les apps : la découverte des agendas, la lecture, le dépôt, le
+retrait. **Ne pas annoncer le raccordement comme éprouvé avant.**
 
-**Ce que l'écriture ajoute, et qui n'existe nulle part aujourd'hui :** Atlas ne
-fait que LIRE les agendas. Écrire demande un identifiant stable par chantier
-(pour ne jamais poser deux fois le même rendez-vous), et la garantie qu'Atlas ne
-touche jamais un événement qu'il n'a pas posé. Le repli de la maquette — un
-calendrier « Atlas » séparé — n'est pas cosmétique : c'est ce qui rend le
-débranchement possible d'un geste.
+**Ce qui se cassera en premier, si quelque chose casse**, et par où commencer :
+
+1. **la découverte** — iCloud redirige de `caldav.icloud.com` vers le serveur du
+   compte ; les redirections sont suivies à la main pour que `PROPFIND` ne
+   devienne pas `GET` ;
+2. **la double authentification** — sans elle, Apple n'émet pas de mot de passe
+   pour les apps, et le refus arrive en 401 comme un mot de passe faux ;
+3. **le dépôt** — un agenda partagé en lecture seule est déjà écarté de la
+   liste, mais un serveur qui n'annonce pas ses privilèges est supposé
+   inscriptible : le refus n'arriverait alors qu'au `PUT`.
+
+Ce que le patron verra dans les trois cas : la phrase d'Apple, telle quelle, sur
+l'écran des réglages. C'est voulu — une erreur reformulée envoie chercher au
+mauvais endroit.
 
 ### 0 vicies. Le badge de Next recouvre son onglet « Chantiers »
 

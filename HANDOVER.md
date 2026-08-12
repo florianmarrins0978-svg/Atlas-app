@@ -275,7 +275,7 @@ là pour ça, et elle a tué trois propositions — à 29 px avec un trait d'1,5
 tige et trois ovales se rejoignent en pâté quel que soit l'écartement. Une seule
 grande forme tient toujours ; trois petites, jamais.
 
-**Trois choses à ne pas défaire dans cette maquette-là :**
+**Trois choses à ne pas défaire, dans la maquette comme dans l'écran :**
 
 1. **`pointer-events:none` sur `.conn` une fois entré.** Les deux écrans
    occupent la même case de grille ; un écran à `opacity:0` continue
@@ -302,12 +302,25 @@ grande forme tient toujours ; trois petites, jamais.
 connecté, donc le seul qu'aucun parcours de l'application ne traverse. Le même
 raisonnement vaut pour `src/app/documents-legaux/formulaire.tsx`.
 
-## L'agenda iCloud : maquette posée, choix EN ATTENTE (12 août)
+## L'agenda iCloud : CODÉ le 12 août — et ce qui reste à éprouver chez lui
 
-`maquettes/atlas-agenda-apple.html` — deux moments : avant raccordement (les
-trois gestes chez Apple, l'avertissement, les champs), et après (l'écriture
-éteinte, puis le choix du calendrier qu'elle fait paraître). **Ne rien poser
-dans `src/` avant son accord**, sa règle du 11 août.
+**La maquette a été montrée, puis il a tranché :** *« code pour qu'on puisse
+lire et écrire dans cet agenda »*. C'est fait — `ARCHITECTURE.md` §73 porte le
+détail et le pourquoi.
+
+**⚠ CE QUI N'A JAMAIS PARLÉ À APPLE.** Aucun échange réel avec iCloud n'a eu
+lieu : le mandataire réseau d'ici refuse `caldav.icloud.com`. Les trois appels
+HTTP de `src/server/agenda/apple.ts` sont donc **non éprouvés**, et tout le
+reste — ce qui décide — l'est entièrement (`test-ics.ts`, `test-caldav.ts`,
+`test-agenda-apple-base.ts`). **Ne pas lui dire que le raccordement est vérifié
+avant qu'il l'ait branché une fois.**
+
+Si ça échoue chez lui, regarder dans cet ordre : la **découverte** (iCloud
+redirige vers le serveur du compte, et un `PROPFIND` transformé en `GET` rend
+une page au lieu d'un `multistatus`), la **double authentification** (sans elle,
+Apple n'émet pas de mot de passe pour les apps, et refuse en 401 comme un mot de
+passe faux), puis le **dépôt**. Dans les trois cas, la phrase d'Apple est
+affichée telle quelle sur l'écran des réglages : la lire avant de supposer.
 
 **Le contexte, pour ne pas le redécouvrir.** Il a envoyé une capture du
 Calendrier d'Apple : *« je peux connecter ce calendrier à mon appli ? »* Le
@@ -338,10 +351,18 @@ maquette, et pourquoi le contrôle le vérifie **par sa position**.
    doigt. Trouvé par le contrôle, invisible à l'écran. Le même piège dort dans
    les autres maquettes du dossier.
 
-**Ce qui ne pourra pas être éprouvé ici, quoi qu'on fasse :** le mandataire
-réseau refuse `caldav.icloud.com` (essayé, connexion refusée). Le jour où le
-raccordement s'écrit, sa vérification se déplace sur son banc — comme
-`pages.yml` et `banc-essai.yml`. Ne pas l'annoncer éprouvé avant.
+**Un quatrième piège, propre au JSX et trouvé sur une capture :** l'écran
+affichait « votre iCloud**—** pas seulement l'agenda ». Le JSX avale l'espace
+qui suit une balise fermante à cet endroit — l'écran de Google portait déjà un
+`{" "}` pour cette raison, sans que personne l'ait écrit. Quatre phrases du même
+écran portaient le piège. **Aucun test de texte ne l'attrape** : le contrôle
+vise désormais le texte RENDU (`test-agenda-reglages-e2e.ts`).
+
+**Pour diagnostiquer une suite navigateur sans rejouer la batterie :**
+`npm run test:e2e -- --seulement <motif>`. Écrit le 12 août après avoir rejoué
+vingt-cinq minutes pour observer UNE suite — c'est ce coût-là qui pousse à
+supposer une cause au lieu d'aller la lire. Le script dit à voix haute qu'il
+n'est pas la batterie.
 
 ## Ce qui vient d'être terminé
 
