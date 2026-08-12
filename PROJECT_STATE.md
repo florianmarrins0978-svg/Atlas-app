@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-11 · branche `claude/new-session-a1l4v9`
+**Dernière mise à jour :** 2026-08-12 · branche `claude/chantier-phototech-direct-ujt2wv`
 · dernière migration `drizzle/0033_identifiants_google_par_entreprise.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -178,6 +178,15 @@ l'application. Ce qui est **fait** :
   d'y poser une feuille maison. Quatre gestes deviennent deux. Ajouter, regarder
   et retirer se font dans la pellicule ; `/chantiers/[id]/photos` répond 404, et
   une suite le vérifie. `ARCHITECTURE.md` §60.
+- **« Y aller » : l'adresse du chantier jusqu'au GPS** (12 août) : au bout de
+  chaque ligne des chantiers planifiés, un **chevron doré** ouvre une feuille —
+  Plans, Google Maps, Waze, copier l'adresse, appeler le client — sans quitter
+  le planning. Liens universels et jamais `waze://`, qui échoue en silence
+  quand l'application manque. Sans adresse, rien ne s'invente : les
+  destinations disparaissent et la feuille dit où la saisir. Retenu après
+  quatre maquettes (`docs/maquettes/29` à `32`). **Et « Créer la facture » a
+  quitté la ligne pour la feuille**, à sa demande du même jour : la ligne ne
+  garde que le nom, la date, « Déplacer » et le chevron. `ARCHITECTURE.md` §70.
 - **Le planning au mois, et les équipes nommées** (10 août, au soir) : sept
   colonnes sans bordure, cinq marques d'occupation, et la journée qui s'ouvre
   sous le calendrier. Réglages laisse nommer les équipes — mais **seulement à
@@ -232,7 +241,7 @@ l'application. Ce qui est **fait** :
   envoi. Une règle écrite deux fois qui avait divergé. `ARCHITECTURE.md` §66.
 - **L'écran de connexion, dessiné mais PAS posé** (12 août) : le seul écran
   resté dans l'identité d'avant le 3 août, parce qu'il est le seul vu **avant**
-  d'être connecté. `docs/maquettes/32-l-ecran-de-connexion.html` — l'avant, puis
+  d'être connecté. `docs/maquettes/35-l-ecran-de-connexion.html` — l'avant, puis
   quatre après. **Son choix est attendu ; `src/app/login/` n'a pas bougé.**
   Trois corrections partiront quoi qu'il choisisse, dont les champs à 16 px, en
   dessous desquels iOS lui agrandit la page. `TODO.md` §0 nonies.

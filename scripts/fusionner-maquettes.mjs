@@ -205,19 +205,19 @@ const MAQUETTES = [
     retenu: true,
   },
   {
-    fichier: "32-l-ecran-de-connexion.html",
+    fichier: "35-l-ecran-de-connexion.html",
     titre: "L’écran de connexion",
     famille: "La dernière porte",
     quoi: "Le seul écran resté dans l’identité d’avant le 3 août. L’avant, puis quatre après : la carte gardée, sans carte, le sceau, la ligne d’imprimé. Un bouton montre le refus de connexion sur les cinq écrans à la fois.",
   },
   {
-    fichier: "33-le-logo-qui-sanime.html",
+    fichier: "36-le-logo-qui-sanime.html",
     titre: "Le logo qui s’anime",
     famille: "La dernière porte",
     quoi: "La proposition 4 sans son titre, le sceau et ATLAS au-dessus, et la marque qui s’anime une demi-seconde avant d’entrer. Ça s’essaie : on appuie sur « Entrer », l’application arrive. Six animations, l’écran étant identique partout.",
   },
   {
-    fichier: "34-le-motif-du-sceau.html",
+    fichier: "37-le-motif-du-sceau.html",
     titre: "Le motif dans le rond d’or",
     famille: "La dernière porte",
     quoi: "Le tour est retenu ; seule la gravure change. Huit motifs, et une bande en tête qui les montre à leur taille réelle — c’est là que se juge lequel tient encore à six millimètres.",

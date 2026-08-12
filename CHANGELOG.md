@@ -9,6 +9,169 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### Le chevron doré du planning : l'adresse jusqu'au GPS en un doigt
+
+**Sa demande :** *« lorsque je vais sur planning et qu'il y a un chantier
+planifié, en cliquant dessus je puisse avoir un petit truc genre accéder à
+l'adresse, et en cliquant dessus ça met l'adresse toute seule dans le GPS, soit
+Maps, soit Waze »*.
+
+Au bout de chaque chantier planifié, un **chevron doré** ouvre une feuille :
+Plans, Google Maps, Waze, copier l'adresse, appeler le client. Sans quitter le
+planning. Retenu après **quatre maquettes** (`docs/maquettes/29` à `32`), sa
+règle de montrer avant de faire.
+
+**Des liens universels, jamais `waze://`.** Un schéma propre échoue *en silence*
+quand l'application n'est pas installée : le doigt appuie, rien ne bouge. Sur un
+chantier, c'est une adresse qu'on n'a plus. Détail qui ne se devine pas :
+`encodeURIComponent` et non `encodeURI`, sans quoi la virgule d'une adresse
+sépare deux paramètres chez Waze et tronque la destination au numéro de rue.
+
+**Sans adresse, rien ne s'invente** : les trois destinations disparaissent et la
+feuille dit où la saisir.
+
+**Trouvé en regardant la capture, pas par un test :** les 44 px du chevron
+rognaient le nom du chantier — « Chez M. Bernard » devenait « Chez M. … ». Ils
+sont désormais pris sur les marges. Les huit contrôles étaient verts : le nom
+était bien là.
+
+**Puis, sur la capture, il a tranché l'encombrement :** *« il faut que le créer
+la facture, tu le mettes dans le chevron »*. « Créer la facture » a donc quitté
+la ligne pour la feuille. Le nom du chantier passe d'environ 110 px à plus de
+250. Le chemin du planning vers la facture, ouvert le 8 août parce que l'écran
+était un cul-de-sac, coûte un appui de plus — **et trois suites le parcourent
+en entier**, dont une qui vérifie qu'il a bien quitté la ligne.
+
+**Vu sur la même capture, et corrigé :** la feuille affichait « M. Bernard —
+Chez M. Bernard ». Elle collait le client devant un nom que l'application
+fabrique justement à partir du client — le cas le plus courant du produit était
+le plus laid. Aucun test ne pouvait le voir : les deux textes étaient exacts,
+c'est leur mise bout à bout qui ne l'était pas.
+
+`ARCHITECTURE.md` §70.
+
+### La CI était rouge depuis des heures, et personne ne regardait
+
+**Trouvé en allant voir**, après une poussée sur `main` : les exécutions
+échouaient les unes après les autres, 56 suites sur 58. Deux pannes, aucune
+visible depuis la machine de l'agent — c'est précisément pour cela qu'une CI
+existe, et précisément pourquoi il faut la lire.
+
+**1. Une suite lançait un navigateur qui n'existe que chez l'agent.**
+`test-session-perimee-e2e.ts` codait en dur `/opt/pw-browsers/chromium`. En CI,
+Playwright installe le sien ailleurs : « executable doesn't exist », à chaque
+exécution, pendant que la suite passait ici. Elle emprunte désormais le lanceur
+commun, qui sait retomber sur le navigateur installé.
+
+**2. Le badge de développement de Next faisait virer six contrôles au rouge.**
+`test-rien-de-recouvert-e2e.ts` voyait l'onglet « CHANTIERS » recouvert par un
+`<nextjs-portal>` — le badge « 1 Issue », posé en bas à gauche, exactement
+dessus. Il n'apparaît que lorsqu'il a quelque chose à signaler : d'où une CI
+rouge par intermittence et une suite verte ici.
+
+Ce badge **n'est pas le produit** — il n'existe pas dans la version bâtie. La
+suite l'écarte donc nommément, et un témoin vérifie que l'exclusion reste
+étroite : un vrai recouvrement au même endroit est toujours attrapé (éprouvé en
+posant les deux voleurs à la même place). **Un contrôle qui échoue au hasard est
+pire qu'aucun contrôle** : il apprend à ignorer le rouge, et l'on perd alors la
+seule suite qui sache voir un bouton devenu inatteignable.
+
+**Ce que cela ne règle pas, et qui est dans `TODO.md` :** sur le banc du patron,
+qui sert le mode développement, ce badge recouvre bel et bien son onglet
+« Chantiers ». Les quatre coins ont été mesurés — aucun n'est libre — et
+l'éteindre lui ferait perdre le « 1 Issue » par lequel il a justement signalé
+l'erreur d'hydratation de Safari. La bonne réponse est probablement de servir
+une version bâtie sur son banc ; elle n'est pas prise ici.
+
+---
+
+### La fiche d'état ne partait pas — et personne n'avait jamais essayé de l'envoyer
+
+**Le patron, après avoir redémarré son espace deux fois :** *« normalement tu es
+censé voir la machine maintenant. Là je viens de le refaire une deuxième fois. »*
+La fiche était toujours introuvable. Zéro fiche dans le dépôt.
+
+**Le code était juste ; c'est le chemin qui ne l'était pas.** La publication
+s'en remettait à `gh`, absent de son conteneur — il n'arrive que par une
+fonctionnalité déclarée dans `devcontainer.json`, et **une déclaration ne répare
+pas un espace déjà né**. Le sien est plus ancien que la ligne : redémarrer
+récupère le code, jamais les outils. Quatrième fois que ce piège coûte une
+soirée à ce dépôt, et cette fois il a coûté deux redémarrages **au patron**.
+
+Trois choses corrigées, et la troisième est la seule qui empêche la récidive :
+
+1. **La publication ne dépend plus de rien.** Codespaces pose un jeton GitHub
+   dans chaque terminal ; l'API suffit. `gh` reste en second recours. L'ordre
+   compte et il est gardé par un contrôle : `gh` d'abord, c'est ne rien publier
+   chez la seule personne pour qui cette fiche existe.
+2. **La fiche part AVANT que le serveur ait répondu**, plus seulement après. La
+   version d'origine attendait jusqu'à dix minutes que l'application réponde —
+   or le cas pour lequel cette fiche existe est précisément celui où elle ne
+   répond pas. Elle se taisait exactement quand elle servait.
+3. **Quelqu'un joue enfin l'envoi pour de bon.** Les contrôles éprouvaient la
+   censure des secrets et la forme du corps ; **aucun n'avait jamais publié**.
+   `scripts/eprouver-publication-fiche.mjs` crée une fiche jetable, vérifie que
+   le second passage la met à jour au lieu d'en ouvrir une seconde, puis la
+   referme — y compris quand l'épreuve échoue.
+
+**Elle ne peut pas tourner sur la machine de l'agent** : le jeton qu'elle expose
+est un substitut de son mandataire réseau, et GitHub le refuse (401 « Bad
+credentials » — constaté, pas supposé). Elle tourne donc en CI, dans un travail
+séparé, où le jeton est réel. C'est le déplacement que `CLAUDE.md` §5 prescrit.
+
+**Et le journal de démarrage n'y figure plus — décidé par le patron.** En
+regardant son dépôt, un détail est apparu qui change tout : **il est public.**
+Une fiche y est lisible par n'importe qui, et indexée. La censure automatique
+était faite au jugé — acceptable dans un dépôt fermé, pas quand le prix d'un
+oubli passe d'une gêne de lecture à une clé publiée sur la place. Mis devant le
+choix, il a tranché : retirer le journal.
+
+Ce qu'on y perd, et qui est écrit pour qu'on ne le redécouvre pas : devant un
+serveur qui refuse de démarrer, la fiche dira qu'il ne répond pas, **pas
+pourquoi**. Ce qui reste répond à la question qui a coûté le plus cher — *sur
+quelle version est-il, et son serveur tourne-t-il ?* Si la cause exacte devient
+nécessaire, il faudra une extraction **structurée** (le nom de l'erreur, pas les
+lignes autour), jamais un retour du journal brut.
+
+`ARCHITECTURE.md` §69.
+
+---
+
+### Safari fabriquait des liens d'appel dans les pages du client
+
+**Sur son iPhone :** la page publique d'une facture rend « Hydration failed ».
+Le diff de React désignait le coupable sans ambiguïté — le DOM portait
+`<a href="tel:2026-0003">` là où le composant ne rend que le texte `2026-0003`.
+
+Aucune page du dépôt n'écrit de `tel:` sur un numéro de facture : le lien venait
+du navigateur. iOS reconnaît d'office ce qui ressemble à un téléphone, une
+adresse ou un courriel, et **réécrit le HTML avant que React ne s'installe
+dessus**. Un numéro de facture lui ressemble assez.
+
+**Ce n'était pas qu'une alerte de développement.** Le numéro devenait un lien
+d'appel sous le doigt du client de l'artisan — sur la facture comme sur le
+devis, qui le portent tous deux en titre. Un client dont le téléphone propose
+d'appeler « 2026-0003 » n'a pas affaire à un outil sérieux.
+
+Une ligne d'en-tête coupe la détection automatique, sur toutes les pages. **Les
+trois formes, pas seulement le téléphone** : les deux autres cassent de la même
+façon, et attendre la suivante coûterait un aller-retour de plus. **Rien n'est
+perdu au passage** — les `tel:` qu'Atlas écrit lui-même (« appeler » sur la fiche
+du client) et le bouton « Y aller » continuent de fonctionner, et c'est éprouvé.
+
+**Ce qui n'a PAS pu être éprouvé ici, et il faut le savoir :** la détection est
+propre à Safari, cet environnement n'a que Chromium. La panne d'origine ne peut
+pas être rejouée, donc le correctif ne peut pas être vu la faire disparaître.
+`scripts/test-detection-automatique-e2e.ts` garde ce qui peut l'être — l'en-tête
+sur les deux écrans du client, un témoin qui vérifie qu'ils posent toujours un
+numéro nu, et la survie d'un `tel:` explicite. Confronté au correctif retiré :
+quatre cas au rouge, avec le bon coupable nommé. **Le verdict, lui, est sur son
+téléphone.**
+
+`ARCHITECTURE.md` §68.
+
+---
+
 ### « Ça ne marche pas » va désormais chercher la fiche tout seul
 
 **Sa demande :** *« Il faudrait que si j'écris ça ne marche pas, d'elle-même
@@ -117,7 +280,7 @@ se trompe de mot de passe — elles entrent toutes par une session fabriquée.
 
 **Quatre correctifs sont tombés avant le bon** : la remise à zéro de React
 arrive *après* le rendu qui suit l'action, et ni un champ contrôlé, ni un effet,
-ni `defaultValue` n'y survivent. Détail dans `ARCHITECTURE.md` §68.
+ni `defaultValue` n'y survivent. Détail dans `ARCHITECTURE.md` §71.
 
 **Une réserve mesurée, pas supposée :** dans cet environnement, `next dev`
 n'hydrate pas cet écran (sa liaison de rechargement à chaud est refusée par le
@@ -133,9 +296,9 @@ d'allure.
 
 ### Huit gravures pour le sceau, et la bande qui en a fait jeter trois
 
-**Sa réponse à la maquette 33 :** *« j'aime bien le 3. Maintenant propose avec
+**Sa réponse à la maquette 36 :** *« j'aime bien le 3. Maintenant propose avec
 d'autres motifs dans le rond doré, change que le motif à l'intérieur. »* Le tour
-est donc **acquis** ; `docs/maquettes/34-le-motif-du-sceau.html` ne fait varier
+est donc **acquis** ; `docs/maquettes/37-le-motif-du-sceau.html` ne fait varier
 que la gravure — la feuille d'aujourd'hui (en témoin), la feuille seule, le A,
 les cernes et la fente, le conifère, la rose des vents, l'arbre au trait, la
 ligne de crête.
@@ -163,13 +326,13 @@ s'affiche parfaitement et ne répond à rien.
 
 ### L'entrée dans Atlas : six façons d'animer la marque, et un libellé qui ne cochait plus rien
 
-**Sa demande, après la maquette 32 :** *« je veux la 4 sans le Connexion et vos
+**Sa demande, après la maquette 35 :** *« je veux la 4 sans le Connexion et vos
 id. Tu rajoutes le nom Atlas comme sur le modèle 3, et tu me mets un logo
 dynamique qui s'enclenche au moment où on valide l'adresse et le mdp, pendant
 0,5 s avant d'entrer dans l'appli. […] le reste tu touches pas, que le logo qui
 change. »*
 
-`docs/maquettes/33-le-logo-qui-sanime.html` — **l'écran est identique sur les
+`docs/maquettes/36-le-logo-qui-sanime.html` — **l'écran est identique sur les
 six**, seule l'animation change : le cercle qui se ferme, la feuille qui pousse,
 le tour, le battement et l'onde, l'or qui monte, le sceau qui s'imprime. Elle
 **s'essaie** : on tape, on appuie, on entre, « ↺ Recommencer » remet l'écran —
@@ -199,7 +362,7 @@ JavaScript coupé. Éprouvé rouge en retirant l'animation de la proposition 3.
 ### L'écran de connexion : une maquette avant/après, et un défaut trouvé en la dessinant
 
 **Sa réponse à l'offre de la veille :** *« oui, fais-moi une maquette »*.
-`docs/maquettes/32-l-ecran-de-connexion.html` reproduit l'écran d'aujourd'hui,
+`docs/maquettes/35-l-ecran-de-connexion.html` reproduit l'écran d'aujourd'hui,
 puis en propose quatre : la carte gardée, sans carte, le sceau, la ligne
 d'imprimé. **Rien n'est posé dans `src/`** — c'est sa règle du 11 août, et la
 maquette existe précisément pour qu'on n'ait rien à défaire.
@@ -252,7 +415,45 @@ premier écran qu'il voit. Rien n'a été touché ; c'est dans `TODO.md`.
 
 `ARCHITECTURE.md` §67.
 
----
+### Le client recevait sa facture avec les onglets de l'outil du patron dessous
+
+**Le patron, capture à l'appui :** *« lorsque le client reçoit le lien cliquable
+de la facture, s'il clique en dessous sur planning ou chantier, il a accès à mon
+application. Ce n'est pas du tout ce que je veux. »*
+
+**D'abord ce qui est rassurant, parce qu'il ne pouvait pas le savoir : il n'y a
+jamais eu de fuite.** Vérifié dans un navigateur sans session — un appui sur
+« Planning » mène à la page de connexion, et aucune de ses données n'est
+lisible. Le contrôle qui le prouve était d'ailleurs déjà vert AVANT le
+correctif, et il reste en place.
+
+Ce qui était vrai, en revanche : **son client voyait « Chantiers · Planning ·
+Terminés · Réglages » au bas de sa facture.** Une facture n'est pas un écran
+d'application, et une barre de navigation inopérante est pire qu'absente.
+
+**La cause n'était pas un oubli isolé, c'était une duplication.** Deux listes
+tenaient la même vérité, chacune de son côté :
+
+- le middleware savait `/factures` public — il le disait depuis le 6 août ;
+- la mise en page tenait sa **propre** liste d'écrans sans navigation, où
+  `/devis` figurait et `/factures` avait été oublié.
+
+Un écran public ajouté plus tard n'entrait donc que dans l'une des deux. C'est
+mot pour mot le défaut des barres de défilement de la veille : trois zones
+portaient la règle, la quatrième l'avait perdue. **Deux copies de la même règle
+finissent toujours par diverger** (`CLAUDE.md` §3).
+
+La liste vit désormais à un seul endroit (`src/lib/chemins-publics.ts`), lue par
+le contrôle d'accès ET par la mise en page. L'invariant tient par construction :
+**ce qui s'atteint sans compte ne porte jamais la navigation du patron.**
+
+`test-pages-publiques-sans-navigation-e2e.ts` balaie tous les chemins publics
+**déclarés à leur source** — un nouveau chemin y entre et il est éprouvé le jour
+même. Il visite de vraies adresses, avec de vrais jetons : un jeton inventé
+rendrait « lien inconnu », dont la mise en page peut différer, et le contrôle
+serait vert sur du vide. Il vérifie aussi la porte, pas seulement l'enseigne —
+sans compte, les écrans du patron restent fermés. Confronté au code livré : un
+seul rouge, sur la facture, exactement.
 
 ### « Mon devis » pouvait attendre indéfiniment une réponse déjà perdue
 

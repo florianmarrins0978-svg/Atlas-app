@@ -27,6 +27,58 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 vicies. Le badge de Next recouvre son onglet « Chantiers »
+
+**Mesuré le 12 août 2026**, en cherchant pourquoi la CI virait au rouge six
+fois de suite sur `test-rien-de-recouvert-e2e.ts`.
+
+Le badge de développement de Next — celui qui affiche « 1 Issue », et par lequel
+le patron a trouvé l'erreur d'hydratation de Safari — se pose **en bas à
+gauche**, exactement sur l'onglet « CHANTIERS » (mesuré : l'onglet occupe
+x 14→105, y 632→654 ; le badge, 56 px dans le coin, le recouvre). Il
+n'apparaît que lorsqu'il a quelque chose à signaler — d'où une CI rouge par
+intermittence, et une suite verte ici où rien n'était signalé.
+
+**La suite l'écarte désormais nommément** : ce badge n'existe pas dans la
+version bâtie, et un contrôle qui échoue au hasard apprend à ignorer le rouge.
+Le témoin vérifie qu'un vrai recouvrement est toujours attrapé.
+
+**Mais chez lui, le problème est réel** : son banc sert le mode développement,
+donc le badge est sur son écran, sur sa navigation.
+
+Trois pistes, aucune tranchée — et aucune bonne telle quelle :
+
+- le **déplacer** (`devIndicators: { position }`) : les deux coins du bas sont
+  pris par la barre d'onglets, et sur l'accueil les deux coins du haut portent
+  déjà un bouton. Mesuré, pas supposé ;
+- l'**éteindre** (`devIndicators: false`) : on perdrait le « 1 Issue » — or
+  c'est par lui qu'il a signalé la panne de Safari. Mauvais échange ;
+- faire **servir une version bâtie** à son banc, où le badge n'existe pas. C'est
+  probablement la bonne réponse, et elle dépasse ce point.
+
+### 0 quindecies. ~~La ligne « Planifiés » porte un geste de trop~~ — **réglé le 12 août 2026**
+
+Vu en capture en posant le chevron : la ligne portait trois gestes et un nom sur
+390 px, et c'est le nom qui cédait — « Chez M. Bernard » s'affichait
+« Chez M. Be… ».
+
+**Il a tranché le jour même**, en regardant la capture : *« il faut que le créer
+la facture, tu le mettes dans le chevron. Il faut cliquer sur le chevron, la
+page s'ouvre avec le GPS et tout machin, et là tu mets créer la facture. »*
+« Créer la facture » est donc passé dans la feuille ; la ligne ne garde que le
+nom, la date, « Déplacer » et le chevron. Le nom passe d'environ 110 px à plus
+de 250. `ARCHITECTURE.md` §70.
+
+### 0 quaterdecies bis. Un chantier sans adresse n'a plus de chemin pour la saisir
+
+La feuille « Y aller » dit « à saisir sur la fiche du chantier », mais n'y mène
+plus : « Ouvrir la fiche du chantier » a été retiré de la maquette 32, le nom du
+chantier y menant déjà depuis la ligne. Sur un chantier sans adresse, la phrase
+suffit-elle, ou faut-il un bouton **« Saisir l'adresse »** à cet endroit précis ?
+
+**La question lui a été posée avec la maquette et attend sa réponse.** Rien ne
+sera ajouté sans elle.
+
 ### 0 nonies. ~~L'écran de connexion est resté dans l'ancienne identité~~ **fait le 12 août 2026**
 
 **Vu en capture le 12 août 2026**, en vérifiant que les boutons arrondis
@@ -46,17 +98,17 @@ couleur en dur.
 **Fait le 12 août 2026** : maquettes 32, 33 et 34, puis `src/app/login/page.tsx`.
 Reste `src/app/documents-legaux/formulaire.tsx`, qui porte la même terre cuite en
 dur et n'a pas été repris — il échappe au parcours pour la même raison que la
-porte (`ARCHITECTURE.md` §68).
+porte (`ARCHITECTURE.md` §71).
 
 **Il a choisi, et demandé une suite le 12 août 2026 au soir :** la proposition 4
 **sans son titre ni sa sous-ligne**, avec **le sceau et ATLAS du modèle 3**, plus
 **une animation de la marque d'une demi-seconde à l'entrée**. Six animations lui
-sont proposées dans `docs/maquettes/33-le-logo-qui-sanime.html` — **en attente de
+sont proposées dans `docs/maquettes/36-le-logo-qui-sanime.html` — **en attente de
 son numéro**. Rien n'est encore posé.
 
 **Il a retenu « le tour » le 12 août au soir**, et demandé d'autres gravures
 dans le rond d'or : huit motifs dans
-`docs/maquettes/34-le-motif-du-sceau.html` — **son numéro est attendu**.
+`docs/maquettes/37-le-motif-du-sceau.html` — **son numéro est attendu**.
 L'écran, le rond et l'animation n'y bougent plus ; seul le tracé change.
 
 **Ce qu'il faudra trancher avec lui au moment de coder** (écrit sur la maquette) :
@@ -65,7 +117,7 @@ quand il répond ; l'animation ne doit ni être coupée en son milieu, ni se fig
 si la réponse tarde. Les propositions 3, 4 et 6 bouclent d'elles-mêmes ; les 1, 2
 et 5 se dessinent d'un bout à l'autre et demandent une décision explicite.
 
-**Maquette livrée le 12 août 2026 — `docs/maquettes/32-l-ecran-de-connexion.html`**
+**Maquette livrée le 12 août 2026 — `docs/maquettes/35-l-ecran-de-connexion.html`**
 (« oui, fais-moi une maquette avant/après »). L'avant reproduit, puis quatre
 après : la carte gardée, sans carte, le sceau, la ligne d'imprimé. **En attente
 de son choix — `src/` n'a pas été touché.**
@@ -140,6 +192,36 @@ ne se battent plus pour le port ») :
 - et en vrai : le script de connexion rejoué rend le port (`000`), là où il
   laissait un serveur ; la batterie navigateur, lancée sur un port occupé,
   s'arrête en une seconde avec le remède à taper.
+
+### ~~0 sexdecies. Des suites dépassent leur délai en batterie et font rejouer 25 minutes~~ — **CAUSE TROUVÉE le 2026-08-12**
+
+**Quatre faux rouges dans la journée, sur trois suites sans rapport** —
+« clôturé AVANT sa date » (deux fois), « Créer la facture », puis « un appui
+dicte, un second enregistre ». Chacune diagnostiquait la même chose et avait
+raison — le serveur de développement n'avait pas suivi — et chacune passait au
+vert jouée seule. Coût : une batterie complète rejouée à chaque fois.
+
+**Ce n'était pas la machine** : 13 Go libres, charge à 1,2. C'était le
+préchauffage de `run-e2e-tests.ts`, et il avait deux défauts qui n'en font
+qu'un :
+
+1. **il tournait sans session.** Un appel anonyme sur `/termines` est renvoyé
+   vers `/login` par le middleware : la route visée n'est jamais rendue, donc
+   jamais compilée. Il ne préchauffait que `/login` — et faisait croire au
+   contraire ;
+2. **sa liste était incomplète.** `/termines`, justement, n'y figurait pas.
+
+**Les deux venaient d'une deuxième implémentation.** `scripts/prechauffer.mjs`
+sait ouvrir une session et parcourir la liste complète, écrans de chantier
+compris — c'est ce que le banc d'essai fait depuis toujours. La batterie avait
+sa propre version naïve. Deux copies de la même idée finissent toujours par
+diverger, et c'est la plus faible qui servait ici.
+
+La batterie emprunte désormais le même préchauffage que le banc.
+
+**Ce qui reste à surveiller :** si un faux rouge de ce genre revient malgré le
+préchauffage, ne pas allonger les délais — cela cacherait un écran devenu lent
+au lieu de le dire. Mesurer d'abord quel écran, et pourquoi.
 
 ### 0 quaterdecies. Deux maquettes `/design` décrivent un écran supprimé
 

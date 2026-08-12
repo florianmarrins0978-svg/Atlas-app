@@ -3,7 +3,7 @@ import { lancerNavigateur } from "./e2e-browser";
 
 // **La porte d'Atlas, éprouvée par où le patron y passe.**
 //
-// L'écran de connexion a été refait le 12 août 2026 (`ARCHITECTURE.md` §68), et
+// L'écran de connexion a été refait le 12 août 2026 (`ARCHITECTURE.md` §71), et
 // il est le seul de l'application qu'aucune autre suite ne traverse : toutes
 // entrent par une session fabriquée, parce que c'est plus rapide. Personne ne
 // s'y trompe donc jamais de mot de passe — et c'est exactement là qu'était le

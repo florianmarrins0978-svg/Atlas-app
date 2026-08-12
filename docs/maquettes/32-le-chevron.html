@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le chevron du planning</title>
+</head>
+<body>
+<style>
+  /*
+    « PAS CETTE FLÈCHE. JE VEUX LA MÊME QUE CELLE À CÔTÉ DE MAPS, LE PETIT > »
+
+    Sa correction du 12 août 2026. J'avais mis la flèche de navigation — celle
+    de Waze. Il veut le CHEVRON : celui qui est déjà à droite de « Plans », de
+    « Google Maps » et de « Waze », dans la feuille.
+
+    Il a raison, et pour une raison qui se dit en une phrase : les deux signes
+    ne promettent pas la même chose. Une flèche de navigation promet un DÉPART —
+    et sur un chantier sans adresse, elle ne peut pas le tenir (il fallait alors
+    l'éteindre, ce qui ajoutait un cas). Un chevron promet que QUELQUE CHOSE
+    S'OUVRE : c'est vrai des quatre lignes, adresse ou pas. Le cas particulier
+    disparaît avec lui.
+
+    ET C'EST LE MÊME GRIS, écrit une seule fois (`--chevron`) : la feuille et la
+    liste y puisent. Deux gris « presque pareils » sur un écran, ça se voit — et
+    ça se voit mal.
+
+    L'AUTRE CHANGEMENT TIENT TOUJOURS : « Ouvrir la fiche du chantier » a
+    disparu de la feuille, le nom du chantier y menant déjà.
+
+    TROIS FAÇONS DE L'OUVRIR, à essayer au doigt (le choix est en haut) :
+      · DU BAS           — elle monte du bas, freinée à l'arrivée.
+      · PAGE ENTIÈRE     — l'écran bascule tout entier sur « Y aller ».
+      · DEPUIS LE CHEVRON — elle naît du chevron touché et se déplie.
+
+    TOUT EST VIVANT : les trois GPS ouvrent vraiment l'application, « copier »
+    copie, « appeler » appelle. Rien n'est écrit dans l'application.
+  */
+
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --or:#B98B47; --or-clair:#C9A15E; --pin:#2f3b2f;
+    --trait:rgba(28,28,26,.16); --trait-doux:rgba(28,28,26,.07);
+    /* Le chevron est DORÉ, à sa demande du 12 août 2026. Il vaut pour les
+       deux endroits — la liste et la feuille — et c'est ce qui les tient
+       ensemble : le même signe, la même couleur, le même geste. */
+    --chevron:#B98B47;
+    --ombre:0 -18px 44px rgba(20,18,14,.22);
+    --ressort:cubic-bezier(.22,1.02,.36,1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:#e9e6df;color:var(--encre);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-font-smoothing:antialiased}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  /* ─── Le choix de l'ouverture, au-dessus de tout ───────────────────────── */
+  .choix{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;
+         padding:14px 16px 12px;background:#e9e6df}
+  .choix .quoi{width:100%;text-align:center;color:#8a7452;text-transform:uppercase;
+               letter-spacing:.3em;font-size:9.5px;font-weight:500;margin-bottom:2px}
+  .choix button{border:1px solid var(--trait);background:none;border-radius:999px;
+                padding:8px 15px;font:inherit;font-size:12.5px;color:#6f6a5f;cursor:pointer;
+                -webkit-tap-highlight-color:transparent;transition:all .2s}
+  .choix button[aria-pressed="true"]{background:var(--encre);border-color:var(--encre);color:#f5f3ee}
+
+  /* ─── L'écran : plein cadre sur un téléphone, encadré sur un ordinateur ── */
+  .scene{display:flex;justify-content:center;padding:0}
+  .tel{width:100%;background:none;padding:0;border-radius:0;box-shadow:none}
+  .ecran{position:relative;overflow:hidden;width:100%;
+         height:calc(100dvh - 92px);min-height:560px;
+         display:flex;flex-direction:column;background:var(--fond)}
+  @media (min-width:560px){
+    .scene{padding:26px 16px 40px}
+    .tel{width:390px;padding:11px;border-radius:44px;background:#cfccc4;
+         box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
+    .ecran{height:664px;border-radius:34px}
+  }
+
+  .enseigne{padding:22px 0 0;text-align:center;font-size:10.5px;letter-spacing:.52em}
+  .entete{padding:26px 26px 0}
+  .entete h1{margin:0;font-size:34px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+  .entete .mois{margin:11px 0 0;color:var(--gris)}
+  .fermeture{height:1px;background:var(--trait);margin:20px 26px 0}
+
+  .liste{padding:18px 26px 0;overflow-y:auto;flex:1;min-height:0;scrollbar-width:none}
+  .liste::-webkit-scrollbar{display:none}
+  .liste .etiquette{margin:0 0 4px;color:var(--gris)}
+
+  .ligne{display:flex;align-items:center;gap:14px;padding:14px 0;
+         border-bottom:1px solid var(--trait)}
+  .ligne .colonne{min-width:0;flex:1}
+  .ligne .nom{display:block;font-size:16.5px;line-height:1.2;letter-spacing:-.004em;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ligne .quand{display:block;margin-top:3px;font-size:12px;color:var(--gris)}
+  .ligne .sans{display:block;margin-top:3px;font-size:12px;color:var(--gris);font-style:italic}
+
+  /* **Le chevron — exactement celui de la feuille**, à droite de « Google
+     Maps ». Mêmes valeurs, écrites une seule fois plus haut (`--chevron`) :
+     deux gris « presque pareils » sur le même écran, ça se voit, et ça se voit
+     mal.
+
+     Ni rond, ni couleur : un chevron ne promet pas un départ, il promet que
+     QUELQUE CHOSE S'OUVRE — ce qui reste vrai même quand l'adresse manque, la
+     feuille disant alors ce qui manque. C'est pour cela que la ligne sans
+     adresse n'a plus besoin d'un traitement à part.
+
+     Le carré de 44 px est invisible mais il est là : le chevron seul ferait une
+     cible de dix-sept pixels, qu'on rate deux fois sur trois avec des gants. */
+  .aller{flex:0 0 auto;width:44px;height:44px;border:0;background:none;cursor:pointer;
+         display:flex;align-items:center;justify-content:center;padding:0;
+         font:400 17px/1 ui-sans-serif,-apple-system,sans-serif;
+         color:var(--chevron);
+         transition:transform .18s var(--ressort),color .18s;
+         -webkit-tap-highlight-color:transparent}
+  .aller:active{transform:scale(.9);color:var(--or-clair)}
+
+  .barre{margin-top:auto;display:flex;justify-content:space-around;align-items:center;
+         padding:15px 8px calc(18px + env(safe-area-inset-bottom));border-top:1px solid var(--trait)}
+  .barre button{border:0;background:none;cursor:pointer;font:inherit;color:var(--gris);
+                text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500;
+                padding:4px 2px;-webkit-tap-highlight-color:transparent}
+  .barre button.actif{color:var(--encre);position:relative}
+  .barre button.actif::after{content:"";position:absolute;left:0;right:0;bottom:-8px;height:1px;background:var(--or)}
+
+  .aparte{position:absolute;left:26px;right:26px;bottom:92px;padding:11px 14px;
+          background:rgba(28,28,26,.92);color:#f5f3ee;border-radius:8px;
+          font-size:12.5px;text-align:center;opacity:0;pointer-events:none;transition:opacity .24s;z-index:8}
+  .aparte.vu{opacity:1}
+
+  /* ─── LA FEUILLE ──────────────────────────────────────────────────────── */
+  .voile{position:absolute;inset:0;z-index:10;background:rgba(20,18,14,.44);
+         backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+         opacity:0;pointer-events:none;transition:opacity .3s;
+         display:flex;align-items:flex-end;justify-content:center}
+  .voile.ouverte{opacity:1;pointer-events:auto}
+
+  .feuille{width:100%;background:var(--fond);color:var(--encre);
+           border-radius:28px 28px 0 0;box-shadow:var(--ombre);
+           padding:11px 24px calc(20px + env(safe-area-inset-bottom));
+           max-height:100%;overflow-y:auto;scrollbar-width:none}
+  .feuille::-webkit-scrollbar{display:none}
+
+  /* 1 — DU BAS : elle monte, freinée à l'arrivée. */
+  .ouverture-bas .feuille{transform:translateY(101%);transition:transform .42s var(--ressort)}
+  .ouverture-bas .voile.ouverte .feuille{transform:none}
+
+  /* 2 — PAGE ENTIÈRE : l'écran bascule tout entier. */
+  .ouverture-page .voile{background:var(--fond);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .ouverture-page .feuille{border-radius:0;height:100%;max-height:100%;box-shadow:none;
+                           padding-top:calc(30px + env(safe-area-inset-top));
+                           transform:translateY(101%);transition:transform .4s var(--ressort)}
+  .ouverture-page .voile.ouverte .feuille{transform:none}
+  .ouverture-page .poignee{display:none}
+
+  /* 3 — DEPUIS LE CHEVRON : elle naît du bouton touché et se déplie. */
+  .ouverture-plus .feuille{transform:scale(.06);opacity:0;
+                           transform-origin:var(--nx,50%) var(--ny,50%);
+                           transition:transform .46s var(--ressort),opacity .3s}
+  .ouverture-plus .voile.ouverte .feuille{transform:none;opacity:1}
+
+  .poignee{width:38px;height:4px;border-radius:9px;background:rgba(28,28,26,.15);margin:0 auto 18px}
+
+  .ou{margin:0;text-align:center;color:var(--or);text-transform:uppercase;
+      letter-spacing:.3em;font-size:9.5px;font-weight:500}
+  .lieu{margin:10px 0 0;text-align:center;font-size:21.5px;line-height:1.22;letter-spacing:-.008em}
+  .pour{margin:7px 0 0;text-align:center;color:var(--gris);font-size:13.5px}
+  .quandi{margin:5px 0 0;text-align:center;color:var(--gris);font-size:12px}
+  .filet{height:1px;background:var(--trait-doux);margin:16px 0 14px}
+
+  .destinations{display:flex;flex-direction:column;gap:1px;background:var(--trait-doux);
+                border-radius:10px;overflow:hidden}
+  .dest{display:flex;align-items:center;gap:14px;padding:13px 16px;background:var(--plage);
+        color:var(--encre);text-decoration:none;-webkit-tap-highlight-color:transparent;
+        transition:background .16s}
+  .dest:active{background:#f0eee7}
+  .dest .marque{flex:0 0 auto;width:26px;height:26px;display:flex;align-items:center;justify-content:center}
+  .dest .nom{flex:1;font-size:16px}
+  .dest .fleche{color:var(--chevron);font-size:17px}
+  .destinations.eteintes .dest{opacity:.3;pointer-events:none}
+
+  /* Les deux rangs de gestes annexes — leurs mots ENTIERS. Raccourcis en
+     « Copier · Appeler · Le chantier », ils se relisaient « appeler le
+     chantier », c'est-à-dire l'inverse de ce qu'ils font. */
+  .annexes{display:flex;gap:1px;background:var(--trait-doux);border-radius:10px;
+           overflow:hidden;margin-top:10px}
+  .an{flex:1;padding:13px 8px;background:var(--plage);border:0;cursor:pointer;
+      font:inherit;font-size:13.5px;color:var(--encre);text-align:center;text-decoration:none;
+      -webkit-tap-highlight-color:transparent;transition:background .16s}
+  .an:active{background:#f0eee7}
+
+  .memoire{display:flex;align-items:center;justify-content:center;gap:9px;
+           margin-top:14px;font-size:12.5px;color:var(--gris)}
+  .memoire input{accent-color:var(--pin);width:16px;height:16px}
+  .renoncer{display:block;width:100%;margin-top:6px;padding:13px;border:0;background:none;
+            cursor:pointer;font:inherit;font-size:15px;color:var(--gris);
+            -webkit-tap-highlight-color:transparent}
+
+  /* ─── Ce qui explique, SOUS l'écran : on voit l'application d'abord ────── */
+  .dessous{background:#e9e6df;padding:34px 20px 70px}
+  .dessous .dedans{max-width:60ch;margin:0 auto;color:#6f6a5f;font-size:14px;line-height:1.7}
+  .dessous h2{margin:0 0 6px;font-size:11px;letter-spacing:.26em;text-transform:uppercase;
+              color:#8a7452;font-weight:500}
+  .dessous h2:not(:first-child){margin-top:28px}
+  .dessous b{color:var(--encre);font-weight:500}
+  .dessous code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
+                background:#f2efe8;border:1px solid var(--trait);border-radius:4px;padding:1px 5px}
+
+  @media (prefers-reduced-motion:reduce){
+    .voile,.feuille,.plus,.aparte,.choix button{transition:none}
+  }
+</style>
+
+<div class="choix" id="choix">
+  <span class="quoi">Comment la feuille s’ouvre</span>
+  <button type="button" data-ouv="bas" aria-pressed="true">Du bas</button>
+  <button type="button" data-ouv="page" aria-pressed="false">Page entière</button>
+  <button type="button" data-ouv="plus" aria-pressed="false">Depuis le chevron</button>
+</div>
+
+<div class="scene">
+  <div class="tel"><div class="ecran ouverture-bas" id="ecran">
+
+    <div class="enseigne">ATLAS</div>
+    <div class="entete">
+      <h1 class="serif">Planning</h1>
+      <p class="mois caps num">Août 2026</p>
+    </div>
+    <div class="fermeture"></div>
+
+    <div class="liste">
+      <p class="etiquette caps">Planifiés</p>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom serif">Chêne — M. Bernard</span>
+          <span class="quand num">14 août · matin · Équipe A</span>
+        </span>
+        <button class="aller" aria-label="Y aller — Chêne, M. Bernard"
+                data-lieu="12 chemin des Chênes, 33600 Pessac"
+                data-chantier="Abattage de chêne"
+                data-client="M. Bernard"
+                data-quand="Vendredi 14 août · matin · Équipe A"
+                data-tel="+33556000012">›</button>
+      </div>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom serif">Haie — Mme Rivière</span>
+          <span class="quand num">18 août · journée</span>
+        </span>
+        <button class="aller" aria-label="Y aller — Haie, Mme Rivière"
+                data-lieu="4 allée des Tilleuls, 33700 Mérignac"
+                data-chantier="Taille de haie, 40 m"
+                data-client="Mme Rivière"
+                data-quand="Mardi 18 août · journée entière"
+                data-tel="+33556000034">›</button>
+      </div>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom serif">Dessouchage — SCI Verdier</span>
+          <span class="quand num">20 août · après-midi · Équipe B</span>
+        </span>
+        <button class="aller" aria-label="Y aller — Dessouchage, SCI Verdier"
+                data-lieu="27 route de Bayonne, 33140 Villenave-d’Ornon"
+                data-chantier="Dessouchage, 3 souches"
+                data-client="SCI Verdier"
+                data-quand="Jeudi 20 août · après-midi · Équipe B"
+                data-tel="+33556000056">›</button>
+      </div>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom serif">Élagage — M. Aubert</span>
+          <span class="quand num">21 août · après-midi</span>
+          <span class="sans">Adresse non renseignée</span>
+        </span>
+        <button class="aller" aria-label="Y aller — Élagage, M. Aubert"
+                data-lieu="" data-chantier="Élagage de platanes" data-client="M. Aubert"
+                data-quand="Vendredi 21 août · après-midi" data-tel="">›</button>
+      </div>
+    </div>
+
+    <div class="barre">
+      <button data-onglet="Chantiers">Chantiers</button>
+      <button class="actif" data-ici="oui">Planning</button>
+      <button data-onglet="Terminés">Terminés</button>
+      <button data-onglet="Réglages">Réglages</button>
+    </div>
+
+    <p class="aparte" id="aparte"></p>
+
+    <!-- ─── La feuille : tout ce qu'il a demandé, et rien de plus ───────── -->
+    <div class="voile" id="voile" role="dialog" aria-modal="true" aria-labelledby="lieu">
+      <div class="feuille">
+        <div class="poignee"></div>
+
+        <p class="ou">Y aller</p>
+        <p class="lieu serif" id="lieu">12 chemin des Chênes, 33600 Pessac</p>
+        <p class="pour serif" id="client">M. Bernard — Abattage de chêne</p>
+        <p class="quandi num" id="quand">Vendredi 14 août · matin · Équipe A</p>
+
+        <div class="filet"></div>
+
+        <div class="destinations" id="destinations">
+          <a class="dest" id="d-plans" href="#" target="_blank" rel="noopener">
+            <span class="marque">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.5" aria-hidden="true">
+                <path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11z" stroke-linejoin="round"/>
+                <circle cx="12" cy="10" r="2.6"/>
+              </svg>
+            </span>
+            <span class="nom">Plans</span><span class="fleche" aria-hidden="true">›</span>
+          </a>
+          <a class="dest" id="d-google" href="#" target="_blank" rel="noopener">
+            <span class="marque">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.5" aria-hidden="true">
+                <path d="M3.5 6.8 9.2 4.4l5.6 2.4 5.7-2.4v12.8l-5.7 2.4-5.6-2.4-5.7 2.4z" stroke-linejoin="round"/>
+                <path d="M9.2 4.4v14.8M14.8 6.8v14.8" opacity=".55"/>
+              </svg>
+            </span>
+            <span class="nom">Google Maps</span><span class="fleche" aria-hidden="true">›</span>
+          </a>
+          <a class="dest" id="d-waze" href="#" target="_blank" rel="noopener">
+            <span class="marque">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.5" aria-hidden="true">
+                <path d="M20.5 3.5 3.5 10.4l7.4 2.7 2.7 7.4z" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="nom">Waze</span><span class="fleche" aria-hidden="true">›</span>
+          </a>
+        </div>
+
+        <div class="annexes">
+          <button class="an" id="copier" type="button">Copier l’adresse</button>
+          <a class="an" id="appeler" href="tel:+33556000012">Appeler le client</a>
+        </div>
+
+        <label class="memoire">
+          <input type="checkbox" id="toujours">
+          Toujours celle-là, ne plus me demander
+        </label>
+
+        <button class="renoncer" type="button" id="renoncer">Annuler</button>
+      </div>
+    </div>
+
+  </div></div>
+</div>
+
+<div class="dessous">
+  <div class="dedans">
+    <h2>Ce qui a changé depuis la maquette 31</h2>
+    <p><b>Le « + » devient le chevron</b> — celui-là même qui est à droite de
+      « Plans », de « Google Maps » et de « Waze », dans la feuille. Même dessin,
+      même gris, écrit une seule fois pour les deux endroits : deux gris presque
+      pareils sur un écran, ça se voit, et ça se voit mal.</p>
+    <p><b>Et il promet la bonne chose.</b> Une flèche de navigation promet un
+      <i>départ</i> ; sur un chantier sans adresse, elle ne peut pas le tenir —
+      il fallait alors l’éteindre, donc traiter un cas de plus. Un chevron promet
+      que <i>quelque chose s’ouvre</i>, ce qui reste vrai des quatre lignes. Le
+      cas particulier a disparu avec lui.</p>
+    <p><b>« Ouvrir la fiche du chantier » a disparu de la feuille.</b> Sur le
+      planning, le nom du chantier y mène déjà : c’était un second chemin vers le
+      même endroit.</p>
+    <p><b>Une question reste ouverte, et je ne l’ai pas tranchée seul</b> :
+      quand l’adresse manque (dernière ligne), la feuille dit « à saisir sur la
+      fiche du chantier » mais n’y mène plus. Cette phrase suffit-elle, ou
+      faut-il un bouton <b>« Saisir l’adresse »</b> à cet endroit précis ?
+      Dites-le-moi — rien ne sera ajouté sans votre réponse.</p>
+
+    <h2>Trois ouvertures — dites-moi laquelle</h2>
+    <p><b>Du bas.</b> Elle monte et freine à l’arrivée. Le geste que tout le
+      monde connaît ; la liste reste visible derrière, on sait d’où l’on vient.</p>
+    <p><b>Page entière.</b> L’écran bascule sur « Y aller », sans voile. Plus
+      solennel, plus lisible en plein soleil — mais on perd le fil du planning.</p>
+    <p><b>Depuis le chevron.</b> Elle naît du chevron touché et se déplie
+      jusqu’en bas. C’est le geste le plus soigné des trois, et le seul qui dise
+      <i>d’où</i> elle vient.</p>
+
+    <h2>Ce qui est vrai, et ce qui ne l’est pas</h2>
+    <p>Les trois destinations sont de <b>vrais liens</b> : elles ouvrent votre
+      GPS avec l’adresse posée. « Copier » copie pour de bon, « Appeler » est un
+      vrai lien téléphone. <b>Rien n’est écrit dans l’application</b> — vous
+      avez demandé de ne rien coder.</p>
+    <p>Un téléphone ne dit pas quelles applications il possède : impossible de
+      n’afficher que Waze. La case <b>« Toujours celle-là »</b> règle la question
+      dès le deuxième chantier. Et sans adresse — dernière ligne du planning —
+      <b>rien ne s’invente</b> : les destinations s’éteignent et la feuille dit
+      où la saisir. L’adresse existe déjà en base
+      (<code>chantiers.adresse_chantier</code>).</p>
+  </div>
+</div>
+
+<script>
+  /*
+    Les liens universels, et non les schémas propres à chaque application
+    (`waze://`, `comgooglemaps://`) : un schéma propre échoue EN SILENCE quand
+    l'application n'est pas installée — le doigt appuie, rien ne bouge. Ceux-ci
+    ouvrent l'application si elle est là, son site sinon.
+  */
+  function liens(lieu){
+    var q = encodeURIComponent(lieu);
+    return {
+      plans:  "https://maps.apple.com/?daddr=" + q + "&dirflg=d",
+      google: "https://www.google.com/maps/dir/?api=1&destination=" + q,
+      waze:   "https://waze.com/ul?q=" + q + "&navigate=yes"
+    };
+  }
+
+  var ecran = document.getElementById("ecran");
+  var voile = document.getElementById("voile");
+  var dests = document.getElementById("destinations");
+  var appeler = document.getElementById("appeler");
+  var courant = { lieu:"", client:"", chantier:"", tel:"" };
+
+  function ouvrir(bouton){
+    var lieu = bouton.getAttribute("data-lieu");
+    courant = {
+      lieu: lieu,
+      client: bouton.getAttribute("data-client"),
+      chantier: bouton.getAttribute("data-chantier"),
+      tel: bouton.getAttribute("data-tel")
+    };
+
+    document.getElementById("client").textContent = courant.client + " — " + courant.chantier;
+    document.getElementById("quand").textContent = bouton.getAttribute("data-quand");
+
+    if (lieu) {
+      var l = liens(lieu);
+      document.getElementById("lieu").textContent = lieu;
+      document.getElementById("d-plans").href = l.plans;
+      document.getElementById("d-google").href = l.google;
+      document.getElementById("d-waze").href = l.waze;
+      dests.classList.remove("eteintes");
+    } else {
+      // On ne l'invente pas : on dit ce qui manque, et où le saisir.
+      document.getElementById("lieu").textContent = "Adresse non renseignée";
+      document.getElementById("quand").textContent = "À saisir sur la fiche du chantier";
+      dests.classList.add("eteintes");
+    }
+
+    if (courant.tel) {
+      appeler.href = "tel:" + courant.tel;
+      appeler.style.opacity = ""; appeler.style.pointerEvents = "";
+    } else {
+      appeler.removeAttribute("href");
+      appeler.style.opacity = ".3"; appeler.style.pointerEvents = "none";
+    }
+
+    // « Depuis le chevron » : la feuille naît d'où le doigt a touché.
+    var b = bouton.getBoundingClientRect();
+    var e = ecran.getBoundingClientRect();
+    ecran.style.setProperty("--nx", (b.left + b.width/2 - e.left) + "px");
+    ecran.style.setProperty("--ny", (b.top + b.height/2 - e.top) + "px");
+
+    voile.classList.add("ouverte");
+  }
+  function fermer(){ voile.classList.remove("ouverte"); }
+
+  document.querySelectorAll("button.aller").forEach(function(b){
+    b.addEventListener("click", function(){ ouvrir(b); });
+  });
+  document.getElementById("renoncer").addEventListener("click", fermer);
+  voile.addEventListener("click", function(e){ if (e.target === voile) fermer(); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape") fermer(); });
+
+  // Le choix de l'ouverture.
+  document.querySelectorAll("#choix button").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll("#choix button").forEach(function(x){ x.setAttribute("aria-pressed","false"); });
+      b.setAttribute("aria-pressed","true");
+      ecran.classList.remove("ouverture-bas","ouverture-page","ouverture-plus");
+      ecran.classList.add("ouverture-" + b.getAttribute("data-ouv"));
+      fermer();
+    });
+  });
+
+  // « Copier » copie POUR DE BON, et le dit — un bouton muet fait réappuyer.
+  document.getElementById("copier").addEventListener("click", function(){
+    var bouton = this, texte = courant.lieu;
+    var rendre = function(){ bouton.textContent = "Copier l’adresse"; };
+    if (!texte) { bouton.textContent = "Rien à copier"; setTimeout(rendre, 1500); return; }
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(texte).then(
+        function(){ bouton.textContent = "Adresse copiée"; setTimeout(rendre, 1500); },
+        function(){ bouton.textContent = "Impossible"; setTimeout(rendre, 1500); }
+      );
+    } else { bouton.textContent = "Impossible ici"; setTimeout(rendre, 1500); }
+  });
+
+  // Les gestes qui sortent de cette maquette le DISENT, plutôt que rien faire.
+  var aparte = document.getElementById("aparte"), minuteur;
+  function dire(mot){
+    aparte.textContent = mot;
+    aparte.classList.add("vu");
+    clearTimeout(minuteur);
+    minuteur = setTimeout(function(){ aparte.classList.remove("vu"); }, 2000);
+  }
+  document.querySelectorAll(".barre button").forEach(function(b){
+    b.addEventListener("click", function(){
+      if (b.hasAttribute("data-ici")) return;
+      dire("« " + b.getAttribute("data-onglet") + " » n’est pas dans cette maquette.");
+    });
+  });
+</script>
+</body>
+</html>

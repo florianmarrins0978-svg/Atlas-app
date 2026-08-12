@@ -4860,7 +4860,295 @@ sa règle est de montrer avant de faire. Voir `TODO.md`.
 
 ---
 
-## 68. La porte : pourquoi elle avait été oubliée, et ce qu'elle porte maintenant
+## 68. Le navigateur du client réécrivait nos pages avant React
+
+**Le 12 août 2026, sur son iPhone :** la page publique d'une facture rend
+« Hydration failed ». Le diff de React ne laissait aucune place à
+l'interprétation — le DOM portait `<a href="tel:2026-0003">` là où le composant
+ne rend que le texte `2026-0003`.
+
+**Aucune page de ce dépôt n'écrit de `tel:` sur un numéro de facture.** Le lien
+ne pouvait donc venir que du navigateur : iOS reconnaît d'office ce qui
+ressemble à un téléphone, une adresse ou un courriel, et **réécrit le HTML avant
+que React ne s'installe dessus**. Un numéro de facture — quatre chiffres, un
+tiret, quatre chiffres — lui ressemble assez.
+
+### Pourquoi ce n'était pas qu'une alerte de développement
+
+React s'en remet (« Recoverable Error ») en refabriquant l'arbre côté client.
+Mais dans l'intervalle, **le numéro devenait un lien d'appel sous le doigt du
+client de l'artisan** — sur les deux écrans qu'il voit, la facture et le devis,
+qui portent tous deux ce numéro en titre. Un client qui appuie sur son numéro de
+devis et voit son téléphone proposer d'appeler « 2026-0003 » n'a pas affaire à
+un outil sérieux.
+
+### Le remède, et son coût
+
+`formatDetection: { telephone: false, address: false, email: false }` dans les
+métadonnées du gabarit racine — donc sur toutes les pages, y compris celles du
+client.
+
+**Les trois, pas seulement le téléphone.** Les deux autres cassent exactement de
+la même façon, et attendre qu'il découvre la suivante lui coûterait un
+aller-retour de plus.
+
+**Rien n'est perdu.** Cela n'éteint que la détection AUTOMATIQUE : les `tel:`
+qu'Atlas écrit lui-même — « appeler » sur la fiche du client — et le bouton
+« Y aller » continuent de fonctionner. C'est éprouvé, et pas seulement affirmé.
+
+### Ce qui ne peut pas être éprouvé ici, et qui est dit comme tel
+
+**La détection est propre à Safari ; cet environnement n'a que Chromium.** La
+panne d'origine ne peut donc pas être rejouée ici, et le correctif ne peut pas
+être vu la faire disparaître. `scripts/test-detection-automatique-e2e.ts` garde
+ce qui peut l'être : l'en-tête part bien sur `/factures/<jeton>`,
+`/devis/<jeton>` et `/login`, un témoin vérifie que ces pages posent toujours un
+numéro nu — sans quoi le contrôle garderait le vide —, et un dernier cas
+constate qu'un `tel:` explicite survit au refus. Confronté au correctif retiré :
+quatre cas passent au rouge, en nommant le bon coupable.
+
+---
+
+## 69. Une déclaration ne répare pas un espace déjà né
+
+**Quatrième fois que ce piège coûte une soirée, et la première où il l'a coûtée
+au patron lui-même.** Le 12 août 2026, il redémarre son espace deux fois pour
+qu'une fiche d'état parte enfin. Elle ne pouvait pas.
+
+### La règle, énoncée une bonne fois
+
+Tout ce que `devcontainer.json` déclare — fonctionnalités, attributs de port —
+et tout ce que `preparer.sh` installe est posé **à la création** d'un espace.
+Un espace existant ne les recevra jamais, quoi qu'on pousse : **redémarrer
+récupère le code, jamais les outils.**
+
+En découlent trois défauts déjà payés :
+
+| Ce qu'il voit | Ce qui manquait | Quand |
+|---|---|---|
+| « bash: gh: command not found » | la fonctionnalité `github-cli` | 10 août |
+| une page blanche depuis son téléphone | le port 3000 revenu privé, faute de `gh` | 11 août |
+| aucune fiche d'état après deux redémarrages | `gh`, encore | 12 août |
+
+**Ce qu'il faut en faire, à chaque fois qu'on ajoute une dépendance
+d'outillage :** se demander *« est-ce que ça marche dans SON espace, celui qui
+existe déjà ? »* Si la réponse est non, soit on supprime la dépendance, soit on
+le lui dit — jamais on ne laisse croire que ça fonctionnera.
+
+### Ce qui a été fait ici : supprimer la dépendance
+
+La fiche est publiée par l'API GitHub avec le jeton que Codespaces pose dans
+chaque terminal. Plus aucun outil à installer, donc plus rien qui dépende de
+l'âge de l'espace. `gh` reste en second recours, pour les machines où un jeton
+n'est pas posé mais où l'on s'est authentifié à la main.
+
+**L'ordre compte, et il est gardé** : tenter `gh` d'abord reviendrait à ne rien
+publier chez la seule personne pour qui la fiche existe.
+
+### Le vrai coupable : rien n'avait jamais joué l'envoi
+
+Les contrôles éprouvaient la censure des secrets et la forme du corps. **Aucun
+n'avait jamais publié quoi que ce soit.** Un contrôle qui ne parcourt pas ce que
+parcourt le patron ne prouve rien — c'est écrit dans `AGENTS.md`, et cela vaut
+pour l'outillage autant que pour le produit.
+
+`scripts/eprouver-publication-fiche.mjs` joue l'envoi pour de bon : il crée une
+fiche jetable, vérifie que le second passage la MET À JOUR au lieu d'en ouvrir
+une seconde — le défaut qui remplirait le dépôt d'une fiche par quart d'heure —,
+puis la referme dans tous les cas, échec compris.
+
+**Il ne peut pas tourner sur la machine de l'agent** : le jeton qu'elle expose
+est un substitut de son mandataire réseau, et GitHub le refuse (401 « Bad
+credentials », constaté). D'où un travail séparé dans `ci.yml`, sans base ni
+navigateur — vingt secondes, et une panne de PostgreSQL ne le fait pas passer
+pour cassé.
+
+### Et la fiche part maintenant AVANT le serveur
+
+La version d'origine attendait jusqu'à dix minutes que l'application réponde
+avant d'écrire quoi que ce soit. Or le cas pour lequel cette fiche existe est
+celui où l'application **ne répond pas** : elle se taisait exactement quand on
+avait besoin d'elle. Elle est désormais publiée deux fois — tout de suite, puis
+à nouveau une fois le serveur debout.
+
+### Le dépôt est PUBLIC — ce que la fiche a le droit de dire
+
+**Découvert le 12 août 2026, et cela a changé une décision.** La fiche est une
+*issue* de ce dépôt : lisible par n'importe qui, et indexée.
+
+La première version y recopiait les quarante dernières lignes du démarrage, en
+censurant au jugé ce qui ressemblait à un secret. Cette censure était
+délibérément grossière, et c'était le bon arbitrage — **tant que le dépôt était
+supposé fermé**. Public, l'arbitrage s'inverse : une censure au jugé laisse
+forcément passer l'imprévu, et le prix d'un oubli n'est plus une gêne de lecture
+mais une clé publiée sur la place.
+
+Mis devant le choix, le patron a tranché : **retirer le journal.**
+
+Ce que la fiche porte désormais : branche suivie, commit récupéré, commit
+réellement SERVI, état des services, et ce que le diagnostic en conclut.
+
+**Ce qu'on y perd, écrit ici pour qu'on ne le redécouvre pas :** devant un
+serveur qui refuse de démarrer, la fiche dira qu'il ne répond pas, **pas
+pourquoi**. C'est assumé — ce qui reste répond à la question qui a coûté le plus
+cher, *sur quelle version est-il et son serveur tourne-t-il ?*
+
+**Et la tentation qui reviendra :** devant un serveur muet, on voudra « juste
+les dernières lignes ». Ce qu'il faudra écrire alors est une extraction
+**structurée** — le nom de l'erreur, pas les lignes autour. Jamais un retour du
+journal brut. `scripts/test-rapport-espace.ts` garde la décision, et porte un
+témoin : un journal passé de force à la fonction ne doit pas ressortir.
+
+La censure, elle, **reste en place** : le diagnostic recopie des noms de
+fichiers modifiés, et rien n'interdit qu'un jour l'un d'eux porte un secret. Une
+ceinture ne se retire pas parce qu'on a mis des bretelles.
+
+---
+
+## 70. Le chevron doré du planning : l'adresse portée jusqu'au GPS
+
+**Sa demande, le 12 août 2026 :** *« lorsque je vais sur planning et qu'il y a un
+chantier qui est planifié, en cliquant dessus je puisse avoir un petit truc genre
+accéder à l'adresse, et en cliquant dessus ça met l'adresse toute seule dans le
+GPS, soit Maps, soit Waze »*.
+
+Et, dans le même message : *« avant de faire quoi que ce soit, fais-moi une
+maquette visuelle […] en point HTML cliquable »* — la règle `CLAUDE.md` §3 bis,
+appliquée. Quatre maquettes ont été nécessaires avant l'accord
+(`docs/maquettes/29` à `32`).
+
+### Ce que les quatre versions ont coûté, et appris
+
+| | Ce qui était proposé | Ce qu'il a répondu |
+|---|---|---|
+| 29 | Un bouton « Y aller » en toutes lettres | — |
+| 30 | Un « + » sur la ligne, et la feuille | *« il manque tout là en fait »* — la feuille était prisonnière du téléphone dessiné, illisible sur son écran |
+| 31 | La feuille sortie du cadre, mots entiers | *« sans le plus, tu mets une petite flèche »* |
+| 32 | Une flèche de navigation | *« pas cette flèche, je veux la même que celle à côté de maps, le petit `>` »*, puis *« tu mets le chevron en doré »* |
+
+**Sa correction du signe n'était pas une préférence de dessin.** Une flèche de
+navigation promet un DÉPART — et sur un chantier sans adresse, elle ne peut pas
+le tenir : il fallait alors l'éteindre, donc traiter un cas de plus sur la ligne.
+Un chevron promet que QUELQUE CHOSE S'OUVRE, ce qui reste vrai de toutes les
+lignes. **Le cas particulier a disparu avec le choix du signe** — c'est le genre
+d'économie qu'une maquette trouve et qu'un débat d'architecture manque.
+
+### Des liens universels, jamais les schémas propres
+
+`src/lib/itineraire.ts` — fonction pure, éprouvée sans base ni navigateur
+(`scripts/test-itineraire.ts`).
+
+```
+https://maps.apple.com/?daddr=…&dirflg=d
+https://www.google.com/maps/dir/?api=1&destination=…
+https://waze.com/ul?q=…&navigate=yes
+```
+
+`waze://` et `comgooglemaps://` sont plus courts, et ils ont un défaut qu'on ne
+voit pas en les essayant sur une machine qui possède les applications :
+**absente, l'application les fait échouer EN SILENCE**. Le doigt appuie, rien ne
+bouge, rien ne dit pourquoi. Sur un chantier, ce n'est pas un désagrément : c'est
+une adresse qu'on n'a plus. Les liens ci-dessus ouvrent l'application quand elle
+est là, son site sinon.
+
+Deux détails qui ne se devinent pas :
+
+- **`encodeURIComponent`, jamais `encodeURI`.** Une adresse porte une virgule
+  (« 12 chemin des Chênes, 33600 Pessac ») ; `encodeURI` la laisse passer, elle
+  sépare alors deux paramètres chez Waze, et l'adresse est tronquée au numéro de
+  rue. Le GPS s'ouvre — dans une autre commune.
+- **`dirflg=d`.** Sans lui, Plans rouvre le dernier mode utilisé. À pied, s'il a
+  cherché une rue en ville la veille : trente kilomètres, et une estimation
+  absurde qu'il ne pense pas à corriger.
+
+**Un téléphone ne dit pas quelles applications il possède.** Impossible donc de
+n'afficher que Waze parce que c'est la seule installée : les trois sont
+proposées, et le doigt choisit. La case « Toujours celle-là » de la maquette
+n'est **pas** reprise en v1 — mémoriser un choix sans offrir nulle part de le
+défaire enferme le patron dans une application qu'il aura touchée par erreur.
+Elle reviendra avec son interrupteur dans Réglages, ou pas du tout.
+
+### L'adresse descend AVEC la liste
+
+`listerChantiersPourPlanning` remonte désormais `adresseChantier` et
+`clientTelephone`. Pas par confort : le patron ouvre « Y aller » **en voiture**,
+souvent sans réseau. Une feuille qui doit aller chercher l'adresse au moment du
+geste arrive vide exactement là où elle sert.
+
+Les oublier de ce `select` ne casserait rien de visible — la feuille dirait
+« Adresse non renseignée » sur un chantier qui en a une, et il croirait sa base
+vide. D'où un contrôle qui les nomme (`test-planning-repo.ts`), confronté à leur
+absence avant d'être retenu.
+
+### Ce que la capture a corrigé, et qu'aucun test ne voyait
+
+La ligne « Planifiés » portait déjà « Déplacer » et « Créer la facture ». Le
+carré touchable de 44 px du chevron, posé sans précaution, **rognait la seule
+chose qui dit de quel chantier il s'agit** : à 390 px, « Chez M. Bernard »
+devenait « Chez M. … ». Les huit contrôles étaient verts — le nom ÉTAIT là, et
+c'est bien pourquoi aucun ne pouvait le voir.
+
+Les 44 px sont donc pris sur les marges et non sur le nom : la hauteur de la
+ligne (`-my-3`), la gouttière (`-ml-2`) et le retrait droit de l'écran
+(`-mr-[26px]`). La cible reste entière, et elle tombe au bord — là où le pouce
+arrive le plus vite.
+
+**La ligne reste chargée**, et ce n'est pas réparé : trois gestes et un nom sur
+390 px, c'est un de trop. La maquette qu'il a validée ne montrait pas les deux
+autres. Rien n'a été restructuré sans lui (`CLAUDE.md` §3 bis) — la capture lui
+est transmise, la décision est la sienne.
+
+### « Créer la facture » quitte la ligne pour la feuille
+
+**Le même jour, après la première capture :** *« il faut que le créer la
+facture, tu le mettes dans le chevron. Il faut cliquer sur le chevron, la page
+s'ouvre avec le GPS et tout machin, et là tu mets créer la facture. »*
+
+C'est sa réponse à l'encombrement décrit plus haut, et elle règle le fond : la
+ligne ne porte plus que le nom, la date, « Déplacer » et le chevron. Le nom
+passe d'environ 110 px à plus de 250 — mesuré sur capture, avant et après.
+
+**Ce qui ne doit pas se perdre en le déplaçant.** Le planning a été un
+cul-de-sac jusqu'au 8 août 2026 — *« comment je fais pour avoir accès au
+devis ? »* — et ce bouton avait été posé pour cela. Il coûte désormais un appui
+de plus, ce qui est son choix ; il ne doit pas devenir introuvable. **Trois
+suites parcourent le nouveau chemin en entier** (`test-planning-e2e`,
+`test-planning-vers-facture-e2e`, `test-y-aller-e2e`), et la première vérifie
+en plus que le lien a bien QUITTÉ la ligne — sans quoi les deux coexisteraient
+sans que rien ne le dise.
+
+Dans la feuille, il est **séparé des deux rangs au-dessus** par un filet, et
+porté en vert pin. Copier et appeler ne touchent à rien ; celui-ci bâtit un
+document. Collé aux autres, il se toucherait par erreur en visant « Appeler ».
+
+### « M. Bernard — Chez M. Bernard », et la capture qui l'a vu
+
+La feuille collait le nom du client devant le nom du chantier. Or un chantier
+qu'on n'a pas nommé s'appelle **« Chez <le client> »** (`src/lib/nom-chantier.ts`,
+posé le 5 août 2026 quand le champ « nom du chantier » a été retiré) : le cas le
+plus courant du produit était donc le plus laid.
+
+`intituleDuChantier` ne recolle le client que si le nom ne le porte pas déjà.
+La comparaison ignore accents et casse — le nom du client est recopié à la
+création, et l'un des deux peut avoir été corrigé depuis.
+
+**Aucun test ne pouvait le voir** : les deux textes étaient exacts, c'est leur
+mise bout à bout qui ne l'était pas. Quatrième défaut de ce dépôt trouvé en
+regardant l'écran (`CLAUDE.md` §5).
+
+### Ce que les contrôles prouvent, et ce qu'ils ne prouvent pas
+
+`scripts/test-y-aller-e2e.ts` vérifie **le raccord** : que l'adresse arrive
+vraiment jusqu'au `href`. La règle pure resterait verte même si l'écran oubliait
+de la lui passer — c'est le raccord qui se casse, jamais la formule.
+
+Il ne prouve **pas** que le GPS s'ouvre : un navigateur d'essai n'a ni Plans, ni
+Waze. Ce qui est vérifiable ici, c'est que le lien est universel — donc qu'il
+retombe sur un site au lieu d'échouer en silence.
+
+---
+
+## 71. La porte : pourquoi elle avait été oubliée, et ce qu'elle porte maintenant
 
 **L'écran de connexion est resté neuf jours dans une identité abandonnée** — le
 terre cuite `#B5502F` du 3 août, une carte blanche, aucune serif — pendant que

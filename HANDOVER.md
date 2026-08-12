@@ -22,6 +22,16 @@ une fiche GitHub dont le titre est fixe (`TITRE_FICHE` dans
 `scripts/rapporter-espace.mjs`). Elle porte le commit récupéré, le commit
 réellement SERVI, l'état des services et la fin du journal de démarrage.
 
+**Si la fiche est introuvable, ne pas conclure qu'il n'a pas redémarré.** Le
+12 août 2026 elle est restée vide après deux redémarrages, parce que la
+publication passait par `gh` — absent de son conteneur, et impossible à y faire
+entrer : tout ce que `devcontainer.json` déclare est posé **à la naissance** de
+l'espace, et le sien est plus ancien. Redémarrer récupère le code, jamais les
+outils (`ARCHITECTURE.md` §69). La publication passe désormais par l'API avec le
+jeton que Codespaces pose dans chaque terminal, donc sans rien à installer — et
+`scripts/eprouver-publication-fiche.mjs`, joué en CI, vérifie qu'elle part pour
+de bon.
+
 **Devant un « ça ne marche pas », lire cette fiche AVANT de faire taper quoi que
 ce soit au patron.** C'est exactement ce qui a coûté quatre allers-retours dans
 la nuit du 11 au 12 août : des hypothèses formulées à distance, toutes fausses,
@@ -224,7 +234,7 @@ serif. C'est le premier écran qu'il voit. `TODO.md` §0 nonies.
 ## La porte est refaite (12 août) — et deux pièges à connaître
 
 `src/app/login/page.tsx` porte ses trois choix : ligne d'imprimé, sceau à la
-**rose des vents**, et **le tour** pendant la vérification. `ARCHITECTURE.md` §68.
+**rose des vents**, et **le tour** pendant la vérification. `ARCHITECTURE.md` §71.
 
 **Piège A — le serveur de développement n'hydrate pas cet écran, ICI.** Sa
 liaison de rechargement à chaud est refusée par le mandataire réseau, le
@@ -242,7 +252,7 @@ des deux.
 
 ## L'écran de connexion : maquette posée, choix EN ATTENTE (12 août)
 
-`docs/maquettes/32-l-ecran-de-connexion.html` — l'avant reproduit, puis quatre
+`docs/maquettes/35-l-ecran-de-connexion.html` — l'avant reproduit, puis quatre
 après (la carte gardée, sans carte, le sceau, la ligne d'imprimé). **Ne rien
 poser dans `src/app/login/` avant qu'il ait désigné laquelle**, sa règle du
 11 août.
@@ -253,10 +263,10 @@ poser dans `src/app/login/` avant qu'il ait désigné laquelle**, sa règle du
 en ligne d'imprimé), **sans le titre « Connexion » ni la sous-ligne**, avec **le
 sceau et ATLAS de la 3** au-dessus. Ce qui reste ouvert est **l'animation de la
 marque à l'entrée** — six propositions dans
-`docs/maquettes/33-le-logo-qui-sanime.html`, son numéro attendu.
+`docs/maquettes/36-le-logo-qui-sanime.html`, son numéro attendu.
 
-**Puis il a retenu « le tour »** (maquette 33, proposition 3) et demandé
-d'autres gravures : `docs/maquettes/34-le-motif-du-sceau.html`, huit motifs,
+**Puis il a retenu « le tour »** (maquette 36, proposition 3) et demandé
+d'autres gravures : `docs/maquettes/37-le-motif-du-sceau.html`, huit motifs,
 **son numéro attendu**. Le rond d'or, l'écran et l'animation n'y bougent plus.
 
 **La leçon de la 34, qui vaut pour toute icône de ce dépôt :** un motif se juge
@@ -293,6 +303,65 @@ connecté, donc le seul qu'aucun parcours de l'application ne traverse. Le même
 raisonnement vaut pour `src/app/documents-legaux/formulaire.tsx`.
 
 ## Ce qui vient d'être terminé
+
+**Les pages du CLIENT ne portent plus la navigation du patron (12 août).** Sa
+facture affichait « Chantiers · Planning · Terminés · Réglages » au bas de
+l'écran de son client.
+
+**Trois choses à savoir :**
+
+1. **Il n'y a jamais eu de fuite** — un appui menait à la page de connexion, et
+   le contrôle qui le prouve était vert avant même le correctif. Le dire
+   d'emblée si le sujet revient : c'était une gêne d'affichage, pas un défaut de
+   confidentialité.
+2. **La liste des chemins publics vit dans `src/lib/chemins-publics.ts`, et
+   nulle part ailleurs.** Elle était tenue en double — middleware d'un côté,
+   mise en page de l'autre — et les deux ont divergé. **Ne pas en recréer une
+   seconde** : un écran public ajouté plus tard n'entrerait que dans l'une.
+3. **`test-pages-publiques-sans-navigation-e2e.ts` lit cette liste à sa source**
+   et rougit si un chemin déclaré n'y est pas éprouvé. Il visite de vrais
+   jetons : un jeton inventé rendrait « lien inconnu », et le contrôle serait
+   vert sur du vide.
+
+---
+
+### « Y aller » — le chevron doré du planning (12 août 2026)
+
+Au bout de chaque chantier planifié, un chevron doré ouvre une feuille : Plans,
+Google Maps, Waze, copier l'adresse, appeler le client. Sans quitter l'écran.
+
+- `src/lib/itineraire.ts` — la règle pure (liens universels, jamais `waze://`).
+- `src/components/atlas/FeuilleYAller.tsx` — la feuille, sur `BottomSheet`.
+- `src/app/planning/PlanningClient.tsx` — le chevron, et `libelleQuand()` écrit
+  une seule fois pour la ligne ET la feuille.
+- `src/lib/nom-chantier.ts` — `intituleDuChantier` : ne recolle le client que si
+  le nom du chantier ne le porte pas déjà, sans quoi la feuille affiche
+  « M. Bernard — Chez M. Bernard ».
+- `listerChantiersPourPlanning` remonte `adresseChantier` et `clientTelephone`.
+- Contrôles : `scripts/test-itineraire.ts` (10), `scripts/test-y-aller-e2e.ts`
+  (9), quatre de plus dans `scripts/test-nom-chantier.ts`, deux cas de plus dans `scripts/test-planning-repo.ts`. Les trois ont été
+  confrontés au défaut qu'ils prétendent voir avant d'être retenus.
+
+**Deux choses à savoir avant d'y toucher :**
+
+1. **La case « Toujours celle-là » de la maquette n'est PAS implémentée**, et
+   c'est délibéré : mémoriser un choix de GPS sans nulle part où le défaire
+   enferme le patron dans une application touchée par erreur. Elle attend son
+   interrupteur dans Réglages. Ne pas l'ajouter en croyant combler un oubli.
+2. **« Créer la facture » est dans la FEUILLE, plus sur la ligne** — sa
+   décision du 12 août, prise en regardant la capture. Le chemin du planning
+   vers la facture, ouvert le 8 août parce que l'écran était un cul-de-sac,
+   coûte donc un appui de plus. Trois suites le parcourent en entier, et l'une
+   vérifie qu'il a bien quitté la ligne : **le remettre là romprait deux
+   contrôles**, pas un.
+
+**Une question lui est posée et attend sa réponse :** un chantier sans adresse
+n'a plus de chemin pour aller la saisir, la feuille se contentant de dire « à
+saisir sur la fiche du chantier ». Faut-il un bouton « Saisir l'adresse » à cet
+endroit ? Rien ne sera ajouté sans lui.
+
+---
+
 
 **⚠ SI LE PATRON DIT « ce n'est toujours pas là » : REGARDER LA BRANCHE
 D'ABORD.** C'est le défaut du 11 août au soir, et il coûterait le même

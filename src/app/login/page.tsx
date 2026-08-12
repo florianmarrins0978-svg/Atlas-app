@@ -16,10 +16,10 @@ import { colors, font, libelleCaps } from "@/lib/design-tokens";
  * aucune serif.
  *
  * **Le chemin, en trois maquettes** (`docs/maquettes/`) :
- *   · 32 — l'avant et quatre après ; il retient la ligne d'imprimé, *sans* le
+ *   · 35 — l'avant et quatre après ; il retient la ligne d'imprimé, *sans* le
  *     titre « Connexion » ni la sous-ligne, avec le sceau et ATLAS au-dessus ;
- *   · 33 — six animations de la marque à l'entrée ; il retient **le tour** ;
- *   · 34 — huit gravures dans le rond d'or ; il retient **la rose des vents**.
+ *   · 36 — six animations de la marque à l'entrée ; il retient **le tour** ;
+ *   · 37 — huit gravures dans le rond d'or ; il retient **la rose des vents**.
  *
  * **Trois corrections partaient avec n'importe quel choix**, et sont ici :
  *   1. les champs passent de 15 à **16 px** — en dessous, iOS agrandit la page

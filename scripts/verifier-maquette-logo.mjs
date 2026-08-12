@@ -32,7 +32,7 @@ const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PAGES = process.argv.length > 2
   ? process.argv.slice(2).map((p) => resolve(p))
   : [
-      join(RACINE, "docs", "maquettes", "33-le-logo-qui-sanime.html"),
+      join(RACINE, "docs", "maquettes", "36-le-logo-qui-sanime.html"),
       join(RACINE, "docs", "maquettes", "toutes-les-maquettes.html"),
     ];
 

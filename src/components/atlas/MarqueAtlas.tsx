@@ -49,7 +49,7 @@ export function FeuilleAtlas({
 
 /**
  * La rose des vents — le motif que le patron a retenu pour la porte, le 12 août
- * 2026, parmi huit gravures (`docs/maquettes/34-le-motif-du-sceau.html`).
+ * 2026, parmi huit gravures (`docs/maquettes/37-le-motif-du-sceau.html`).
  *
  * **Une étoile à quatre branches, et c'est une raison de plus que l'esthétique :**
  * l'entrée fait TOURNER le sceau, et un motif à quatre branches identiques se
