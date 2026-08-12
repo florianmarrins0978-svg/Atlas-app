@@ -1,6 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-11 · branche `claude/new-session-a1l4v9`
+**Dernière mise à jour :** 2026-08-12 · branche
+`claude/facture-screen-missing-features-a9mnnc`
 · dernière migration `drizzle/0033_identifiants_google_par_entreprise.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -56,6 +57,8 @@ seule avec quinze outils.
 | Reprise d'un devis retourné en nouvelle version | `src/app/chantiers/[id]/export/actions.ts` |
 | Onglet « Terminés » et fin de chantier | `src/app/termines/` |
 | Facture bâtie depuis le devis, arrêt 3 | `src/app/chantiers/[id]/facture/` |
+| **Facture transmise par SMS ou par e-mail**, au choix, coordonnée saisie sur place | `src/app/chantiers/[id]/facture/TransmettreLaFacture.tsx` |
+| **Facture téléchargeable**, sous un nom qui porte son numéro | `src/app/api/factures/[id]/pdf/route.ts` |
 | **Chemin du planning vers la facture**, et rangement en un seul onglet | `src/lib/onglet-chantier.ts`, `src/app/planning/PlanningClient.tsx` |
 | Installation sur téléphone : icône, plein écran, marges de sécurité | `src/app/layout.tsx`, `src/app/globals.css`, `scripts/generer-icones.mjs` |
 | Relevé de TVA collectée, par trimestre | `src/app/termines/tva/` + `src/server/trimestre.ts` |

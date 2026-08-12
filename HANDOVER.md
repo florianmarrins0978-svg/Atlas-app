@@ -176,6 +176,38 @@ faites d'office : sa règle est *« montre-moi avant de faire »*.
 
 ## Ce qui vient d'être terminé
 
+**LA FACTURE PART PAR E-MAIL, ET SE TÉLÉCHARGE (12 août).** Deux des trois
+manques qu'il avait signalés le 10 août (`TODO.md` §8, `ARCHITECTURE.md` §67).
+
+**Cinq choses à savoir avant d'y toucher :**
+
+1. **Le troisième manque est ENCORE OUVERT, et rien ne doit être codé dessus.**
+   Il veut « Ouvrir le SMS tout prêt » **ovale**. Deux variantes l'attendent
+   dans `docs/maquettes/30-le-bouton-de-la-facture.html` — A, la capsule des
+   dix-sept autres écrans ; B, la même cernée d'un filet. **Ce qu'il faut lui
+   dire en même temps :** sa demande date du 10 août, quand tous les boutons
+   étaient carrés ; depuis, il a lui-même choisi la capsule « partout ». Choisir
+   A ne rouvre donc **aucune** décision — c'est un rattrapage, pas un
+   changement de charte.
+2. **Ce bouton était passé au travers parce qu'il est peint à la main dans
+   l'écran** — même cause que la feuille d'envoi du devis (§66). Devant un
+   bouton qui « n'est pas le même », chercher d'abord s'il est dessiné sur
+   place plutôt qu'issu de `PrimaryButton`.
+3. **Le nom du fichier PDF vit à DEUX endroits** — l'attribut `download` du lien
+   et l'en-tête du serveur — et rien ne les relie dans le code. Deux suites les
+   comparent, et elles ont trouvé l'écart au premier jet : après l'arrêt de la
+   facture, sans rechargement, l'écran annonçait un brouillon quand le serveur
+   servait la pièce définitive. **Ne pas retirer cette comparaison.**
+4. **C'est le serveur qui décide du téléchargement**, pas l'attribut `download`
+   du lien : iOS l'ignore selon les versions, et le PDF s'ouvrirait alors dans
+   un onglet — le défaut d'origine, déguisé en correctif.
+5. **Le point §8 n'était nulle part sur `main`.** Il avait été consigné sur
+   `claude/migrate-app-atlas-zz31ac`, restée deux commits derrière, et aucune
+   conversation lisant `TODO.md` ne pouvait le voir. Le patron a dû le
+   redemander. `CLAUDE.md` §6 vaut aussi pour la mémoire : **une ligne poussée
+   sur une branche n'existe pour personne.**
+
+
 **⚠ SI LE PATRON DIT « ce n'est toujours pas là » : REGARDER LA BRANCHE
 D'ABORD.** C'est le défaut du 11 août au soir, et il coûterait le même
 aller-retour à chaque fois. Son espace de travail suit **`main`**, et rien ne

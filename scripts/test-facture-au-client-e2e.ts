@@ -19,6 +19,12 @@ import { Pool } from "pg";
 //   3. le PDF derrière ce lien est celui qui a été archivé à l'arrêt ;
 //   4. **rien ne part tout seul** — le message s'ouvre dans SA messagerie ;
 //   5. un lien inconnu ne dit rien à un visiteur au hasard.
+//
+// **Deux garanties ajoutées le 12 août 2026** (`TODO.md` §8, ses mots du
+// 10 août) : la facture se TÉLÉCHARGE, sous un nom qui porte son numéro ; et
+// elle part par SMS **ou** par e-mail, au choix, y compris quand le client n'a
+// pas d'adresse enregistrée. Le second manque était le plus grave — un client
+// sur deux ne pouvait tout simplement pas être facturé.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const BASE = "http://localhost:3000";
@@ -132,6 +138,67 @@ async function main() {
   assert.equal(envoi.rows.length, 1, "Aucun lien de facture n'a été enregistré.");
   const jeton = envoi.rows[0].jeton;
   assert.ok(adresse.includes(encodeURIComponent(jeton)) || adresse.includes(jeton), "Le message ne porte pas le lien.");
+
+  // --- 2 bis. « Impossible d'enregistrer la facture » ----------------------
+  //
+  // Le patron ne pouvait qu'OUVRIR le PDF, jamais le ranger. Le contrôle porte
+  // sur l'en-tête du serveur et non sur l'attribut `download` du lien : celui-ci
+  // est ignoré par certaines versions d'iOS, et c'est alors le serveur qui
+  // décide. Le nom doit porter le numéro — il en aura des centaines.
+  const telechargement = page.locator("[data-atlas='telecharger-facture']");
+  assert.equal(await telechargement.count(), 1, "Rien ne permet de télécharger la facture.");
+  const cheminPdf = (await telechargement.getAttribute("href")) ?? "";
+  const nomPropose = (await telechargement.getAttribute("download")) ?? "";
+  const range = await page.request.get(`${BASE}${cheminPdf}`);
+  const remise = range.headers()["content-disposition"] ?? "";
+  assert.ok(remise.startsWith("attachment"), `Le PDF s'ouvre au lieu de se ranger : « ${remise} »`);
+  assert.ok(
+    remise.includes(`filename="${nomPropose}"`),
+    `L'écran propose « ${nomPropose} » et le serveur range « ${remise} ».`
+  );
+  assert.match(nomPropose, /^F\d{4}-\d{4}\.pdf$/, `Nom de fichier inexploitable : « ${nomPropose} »`);
+  // Et l'aperçu continue de s'ouvrir : la nouveauté s'ajoute, elle ne remplace pas.
+  const apercu = await page.request.get(`${BASE}${cheminPdf.replace("?telecharger=1", "")}`);
+  assert.ok(
+    (apercu.headers()["content-disposition"] ?? "").startsWith("inline"),
+    "« Voir la facture en PDF » ne s'ouvre plus dans un onglet."
+  );
+  console.log("  ✓ la facture se télécharge, sous un nom qui porte son numéro");
+
+  // --- 2 ter. « On ne propose que le SMS » --------------------------------
+  //
+  // Ce client n'a qu'un numéro. L'écran doit offrir l'autre voie ET permettre
+  // de lever ce qui l'arrête sur place : il n'existe aucun écran de fiche
+  // client où aller saisir l'adresse.
+  const versEmail = page.locator("[data-bascule-canal='email']");
+  assert.equal(await versEmail.count(), 1, "L'écran ne propose pas d'envoyer la facture par e-mail.");
+  await versEmail.click();
+  await page.waitForTimeout(600);
+  const champEmail = page.getByLabel("Adresse e-mail");
+  assert.equal(await champEmail.count(), 1, "L'adresse manquante ne se saisit nulle part : le patron est bloqué.");
+  await champEmail.fill("client@exemple.fr");
+  await page.getByRole("button", { name: /Enregistrer et ouvrir le message/i }).click();
+  const lienMail = page.locator("a[data-transmission='email']");
+  await lienMail.waitFor({ state: "visible", timeout: 20_000 }).catch(() => undefined);
+  assert.equal(await lienMail.count(), 1, "Le message e-mail tout prêt n'apparaît pas.");
+  const adresseMail = (await lienMail.getAttribute("href")) ?? "";
+  assert.ok(adresseMail.startsWith("mailto:"), `Adresse inattendue : ${adresseMail.slice(0, 60)}`);
+  assert.match(adresseMail, /subject=/, "L'e-mail partirait sans objet.");
+  // La coordonnée est écrite SUR LE CLIENT : la ressaisir au chantier suivant
+  // serait le même geste perdu deux fois.
+  const fiche = await pool.query(
+    `SELECT c.email FROM clients c JOIN chantiers ch ON ch.client_id = c.id WHERE ch.id = $1`,
+    [chantierId]
+  );
+  assert.equal(fiche.rows[0]?.email, "client@exemple.fr", "L'adresse saisie n'a pas été conservée.");
+  // Un seul lien pour une seule facture, et un registre qui dit la vérité.
+  const registre = await pool.query(
+    `SELECT ef.canal FROM envois_factures ef JOIN factures f ON f.id = ef.facture_id WHERE f.chantier_id = $1`,
+    [chantierId]
+  );
+  assert.equal(registre.rows.length, 1, "Deux liens pour une même facture : le client ne saurait lequel ouvrir.");
+  assert.equal(registre.rows[0].canal, "email", "Le registre dit « sms » alors que la facture part par courriel.");
+  console.log("  ✓ la facture part par SMS ou par e-mail, et l'adresse manquante se saisit sur place");
 
   // --- 3. Ce que le client voit -------------------------------------------
   const contexteClient = await navigateur.newContext();

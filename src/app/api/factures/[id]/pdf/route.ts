@@ -10,8 +10,18 @@ import { lireObjet } from "@/server/storage";
 // raison : une facture émise est immuable, donc on rend le fichier archivé au
 // moment de l'émission — jamais une reconstruction depuis les données du jour,
 // qui pourrait ne plus être celle que le client a reçue.
-export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+//
+// **`?telecharger=1` range le fichier au lieu de l'ouvrir.** Le patron, le
+// 10 août 2026 : sous « Voir la facture en PDF », il ne pouvait que la
+// regarder, jamais la garder (`TODO.md` §8). C'est le serveur qui tranche, et
+// non le seul attribut `download` du lien : celui-ci est ignoré par certaines
+// versions d'iOS, et le PDF s'ouvrait alors dans un onglet, sans rien ranger.
+//
+// **Et le nom du fichier porte le numéro** — « F2026-0001.pdf ». Il en aura des
+// centaines dans le même dossier ; « facture (17).pdf » ne se retrouve pas.
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const telecharger = new URL(req.url).searchParams.get("telecharger") === "1";
   const ctx = await getCurrentCtx();
 
   const f = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -29,7 +39,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       return new NextResponse(new Uint8Array(octets), {
         headers: {
           "Content-Type": "application/pdf",
-          "Content-Disposition": `inline; filename="facture-${f.numeroCommercial}.pdf"`,
+          "Content-Disposition": remise(telecharger, `${f.numeroCommercial}.pdf`),
         },
       });
     } catch {
@@ -41,7 +51,15 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   return new NextResponse(new Uint8Array(pdfBytes), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="facture-${f.numeroCommercial}-brouillon.pdf"`,
+      // Un brouillon le dit dans son nom : deux fichiers du même numéro
+      // finiraient par cohabiter dans son dossier, et rien ne dirait lequel
+      // le client a reçu.
+      "Content-Disposition": remise(telecharger, `${f.numeroCommercial}-brouillon.pdf`),
     },
   });
+}
+
+/** `attachment` range le fichier, `inline` l'ouvre. Le nom est le même dans les deux cas. */
+function remise(telecharger: boolean, nom: string): string {
+  return `${telecharger ? "attachment" : "inline"}; filename="${nom}"`;
 }

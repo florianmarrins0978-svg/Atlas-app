@@ -9,6 +9,44 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### La facture part enfin par e-mail, et se télécharge
+
+**Trois manques signalés par le patron le 10 août** (`TODO.md` §8), dont deux
+sont réparés. `ARCHITECTURE.md` §67.
+
+**« On ne propose que le SMS » — le plus grave.** L'écran de la facture prenait
+le canal de la fiche du client et n'en démordait plus : un client sans portable
+ne pouvait tout simplement pas être facturé. Les deux voies sont désormais
+offertes à tout moment, et **l'adresse manquante se saisit sur place** — il
+n'existe aucun écran de fiche client où l'envoyer. Le lien reste unique (le
+client n'aura jamais deux adresses pour la même facture), mais le canal inscrit
+au registre est corrigé quand le patron change d'avis : une facture partie par
+courriel ne doit pas rester marquée « SMS ».
+
+**Le même défaut avait été réparé sur le DEVIS le 4 août**, après une phrase
+presque identique. Il a survécu deux semaines ici parce que rien ne relie deux
+écrans qui font la même chose. À retenir : un défaut corrigé quelque part
+mérite qu'on cherche aussitôt son jumeau ailleurs.
+
+**« Impossible d'enregistrer la facture ».** Un lien « Télécharger
+(F2026-0001.pdf) » se pose sous « Voir la facture en PDF ». C'est le **serveur**
+qui range le fichier (`?telecharger=1` → `Content-Disposition: attachment`) :
+l'attribut `download` du lien, seul, est ignoré par certaines versions d'iOS et
+le PDF s'ouvrait alors dans un onglet — le défaut d'origine, déguisé en
+correctif. Le nom porte le numéro de facture ; il en aura des centaines.
+
+**Le troisième manque n'est PAS corrigé, et c'est délibéré.** Il veut le bouton
+« Ouvrir le SMS tout prêt » ovale : une demande d'apparence se dessine avant de
+se coder (`CLAUDE.md` §3 bis). Deux variantes l'attendent dans
+`docs/maquettes/30-le-bouton-de-la-facture.html`, et **`src/` est intact** sur
+ce point.
+
+**Ce que les contrôles ont trouvé, et qu'aucune relecture n'aurait vu :** le nom
+du fichier vit à deux endroits sans lien entre eux — l'attribut du navigateur et
+l'en-tête du serveur. Après l'arrêt de la facture, sans rechargement, l'écran
+annonçait « F2026-0001-brouillon.pdf » quand le serveur servait
+« F2026-0001.pdf ».
+
 ### « Mon devis » pouvait attendre indéfiniment une réponse déjà perdue
 
 **Le patron :** *« entre le moment où je clique mon devis et le moment où le

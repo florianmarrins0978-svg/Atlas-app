@@ -4814,3 +4814,79 @@ D'autres actions principales sont encore dessinées à la main
 de réglages). Elles ne sont pas converties d'office : le patron a posé la règle
 inverse — *« montre-moi avant de faire, plutôt que de faire pour revenir en
 arrière »*. Voir `TODO.md`.
+
+---
+
+## 67. La facture part par SMS **ou** par e-mail, et se télécharge
+
+**Le patron, le 10 août 2026, capture à l'appui** (`TODO.md` §8). Trois manques
+sur l'écran Facture, dont deux sont réparés ici. Le troisième — le dessin du
+bouton — se dessine avant de se coder, et attend son choix.
+
+### « On ne propose que le SMS »
+
+C'était le plus grave des trois, et il se chiffre : **un client sur deux n'a
+pas de portable enregistré**, et l'écran de la facture n'offrait aucune autre
+voie. Le canal venait de la fiche du client et ne se rediscutait plus.
+
+**Le même défaut avait déjà été réparé sur le devis le 4 août** (§13,
+`TransmettreAuClient.tsx`), après une phrase presque identique : *« si je veux
+l'envoyer par e-mail, je ne peux pas revenir le choisir »*. Il est resté ici
+deux semaines de plus, et personne ne l'a vu — parce que **rien ne relie deux
+écrans qui font la même chose**. C'est la leçon utile : quand un défaut est
+corrigé à un endroit, chercher aussitôt son jumeau ailleurs.
+
+`src/app/chantiers/[id]/facture/TransmettreLaFacture.tsx` offre donc les deux voies, à tout moment :
+
+- **la bascule est toujours là**, avant comme après la préparation du lien.
+  Jamais présélectionnée : la voie normale reste celle convenue sur la fiche ;
+- **la coordonnée manquante se saisit sur place**, et elle est écrite **sur le
+  client** — pas retenue pour ce seul envoi. Renvoyer le patron « sur la fiche
+  du client » l'enverrait vers une porte qui n'existe pas (§62) ;
+- **rien n'est recopié du devis** : le message vient de `composerMessageFacture`,
+  l'adresse de `lienTransmission`, l'enregistrement de la coordonnée de
+  `enregistrerCoordonneeClientAction` — la même action que l'écran du devis.
+  Deux implémentations d'un même geste divergent toujours, et c'est le client
+  qui lit la mauvaise (`CLAUDE.md` §3).
+
+**Un seul lien, un registre qui dit vrai.** Basculer après avoir préparé le lien
+ne fabrique pas un second envoi : le client aurait deux adresses pour la même
+facture. Mais le canal inscrit, lui, est corrigé
+(`corrigerCanalEnvoiFacture`) — sans quoi une facture partie par courriel
+resterait inscrite « SMS » pour toujours, et c'est le genre de mensonge
+tranquille qu'on découvre six mois plus tard en cherchant une preuve d'envoi.
+
+### « Impossible d'enregistrer la facture »
+
+Il ne pouvait qu'**ouvrir** le PDF. Un lien « Télécharger (F2026-0001.pdf) » se
+pose sous « Voir la facture en PDF » — les deux gestes coexistent, le second ne
+remplace pas le premier.
+
+**Trois choses à ne pas défaire :**
+
+1. **C'est le SERVEUR qui range le fichier**, pas l'attribut `download` du lien.
+   `?telecharger=1` fait répondre `Content-Disposition: attachment`. L'attribut
+   seul est ignoré par certaines versions d'iOS, et le PDF s'ouvre alors dans un
+   onglet sans que rien ne soit enregistré — c'est-à-dire le défaut d'origine,
+   déguisé en correctif.
+2. **Le nom porte le numéro** — « F2026-0001.pdf », jamais « facture.pdf ». Il
+   en aura des centaines dans le même dossier, et « facture (17).pdf » ne se
+   retrouve pas.
+3. **Le nom vit à DEUX endroits** — l'attribut du lien et l'en-tête du serveur —
+   et rien dans le code ne les relie : l'un ne traverse pas jusqu'à l'autre.
+   Deux suites les comparent (`test-facture-au-client-e2e.ts`,
+   `capture-facture.mts`). **Elles ont trouvé l'écart au premier jet** : après
+   l'arrêt de la facture, sans rechargement, l'écran annonçait encore
+   « F2026-0001-brouillon.pdf » pendant que le serveur servait
+   « F2026-0001.pdf » — parce que le libellé lisait le rendu d'arrivée et non
+   l'état vivant de l'écran.
+
+### Le bouton, lui, n'est pas touché
+
+« Ouvrir le SMS tout prêt » garde ses 4 px de rayon. Le patron le veut ovale ;
+une demande d'apparence se **dessine** avant de se coder (`CLAUDE.md` §3 bis).
+Deux variantes l'attendent dans `docs/maquettes/30-le-bouton-de-la-facture.html`.
+
+**Ce bouton est peint à la main dans l'écran** — c'est pour cela qu'il a manqué
+la capsule du 11 août, exactement comme la feuille d'envoi du devis (§66). Le
+recensement des actions encore dessinées sur place est dans `TODO.md` §0 octies.

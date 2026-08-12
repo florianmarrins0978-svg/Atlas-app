@@ -938,6 +938,47 @@ qu'il ne veut pas revoir.
 Si le sujet revient, c'est **lui** qui le rouvre, et alors c'est « partout »
 ou rien.
 
+### 8. L'écran Facture — trois manques signalés par le patron le 10 août 2026
+
+Constatés par lui sur son banc, capture à l'appui.
+
+**⚠ Ce point avait été consigné sur `claude/migrate-app-atlas-zz31ac` et n'a
+jamais rejoint `main`** : cette branche est restée deux commits derrière une
+après-midi de travail, et le point était donc invisible de toute conversation
+qui lisait `TODO.md`. Il a fallu qu'il le redemande. **La leçon est celle de
+`CLAUDE.md` §6 : rien n'est livré tant que ce n'est pas sur `main`** — pas même
+une ligne de mémoire.
+
+1. ~~**Impossible d'enregistrer la facture.**~~ — **fait le 12 août 2026.**
+   Sous « Voir la facture en PDF », un lien « Télécharger (F2026-0001.pdf) ».
+   Le nom porte le numéro — il en aura des centaines — et dit « brouillon »
+   tant que la facture n'est pas arrêtée. **C'est le SERVEUR qui range le
+   fichier** (`Content-Disposition: attachment` sur `?telecharger=1`) : le seul
+   attribut `download` du lien est ignoré par certaines versions d'iOS, et le
+   PDF s'ouvrait alors dans un onglet sans rien enregistrer.
+2. **« Ouvrir le SMS tout prêt » est carré**, alors qu'il le veut **ovale comme
+   tous les autres**. — **EN ATTENTE DE SON CHOIX, rien n'est codé**
+   (`CLAUDE.md` §3 bis). Deux variantes l'attendent dans
+   `docs/maquettes/30-le-bouton-de-la-facture.html` : **A**, la capsule exacte
+   des dix-sept autres écrans ; **B**, la même capsule cernée d'un filet.
+
+   **Ce qu'il faut lui dire, et qui a changé depuis sa demande :** le 10 août,
+   tous les boutons étaient à 5 px de rayon et « ovale » aurait voulu dire
+   changer la charte entière. Le 11 août au soir il a choisi la capsule, et
+   « partout » — ce bouton-là est simplement passé au travers, parce qu'il est
+   **peint à la main dans l'écran** (`TODO.md` §0 octies, même défaut que la
+   feuille d'envoi du devis). **Choisir A ne rouvre donc aucune décision.**
+
+   *Une capsule pleine largeur avait été dessinée d'abord : mesurée, elle est
+   indiscernable de A — le libellé remplit la carte à deux pixels près. Deux
+   dessins identiques ne font pas un choix, d'où le changement d'axe.*
+3. ~~**On ne propose que le SMS.**~~ — **fait le 12 août 2026, et c'était le
+   plus grave.** Une facture qu'on ne peut pas envoyer par courriel, c'est un
+   client sur deux qu'on ne peut pas facturer. L'écran offre désormais les deux
+   voies (`src/app/chantiers/[id]/facture/TransmettreLaFacture.tsx`), et **la coordonnée manquante se
+   saisit sur place** — il n'existe aucun écran de fiche client où l'envoyer.
+   `ARCHITECTURE.md` §67.
+
 ### 7. Finir la refonte — l'ordre, les pièges, les valeurs
 
 **Ce point existe pour qu'une conversation neuve puisse reprendre le travail
