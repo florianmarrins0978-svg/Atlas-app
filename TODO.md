@@ -52,6 +52,11 @@ de faire »*. Lui montrer une maquette avant/après, puis appliquer.
 sont proposées dans `docs/maquettes/33-le-logo-qui-sanime.html` — **en attente de
 son numéro**. Rien n'est encore posé.
 
+**Il a retenu « le tour » le 12 août au soir**, et demandé d'autres gravures
+dans le rond d'or : huit motifs dans
+`docs/maquettes/34-le-motif-du-sceau.html` — **son numéro est attendu**.
+L'écran, le rond et l'animation n'y bougent plus ; seul le tracé change.
+
 **Ce qu'il faudra trancher avec lui au moment de coder** (écrit sur la maquette) :
 la demi-seconde est un **plancher**, pas la durée de l'attente. Le serveur répond
 quand il répond ; l'animation ne doit ni être coupée en son milieu, ni se figer

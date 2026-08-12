@@ -101,6 +101,36 @@ qui pourra le relever.
 
 ---
 
+### Huit gravures pour le sceau, et la bande qui en a fait jeter trois
+
+**Sa réponse à la maquette 33 :** *« j'aime bien le 3. Maintenant propose avec
+d'autres motifs dans le rond doré, change que le motif à l'intérieur. »* Le tour
+est donc **acquis** ; `docs/maquettes/34-le-motif-du-sceau.html` ne fait varier
+que la gravure — la feuille d'aujourd'hui (en témoin), la feuille seule, le A,
+les cernes et la fente, le conifère, la rose des vents, l'arbre au trait, la
+ligne de crête.
+
+**La bande en tête de page n'est pas une décoration**, c'est le contrôle : les
+huit motifs à leur **taille réelle**, côte à côte. Trois propositions y sont
+mortes — deux brins d'eucalyptus et une branche penchée — parce qu'à six
+millimètres, une tige et trois ovales se rejoignent en pâté quel que soit
+l'écartement. **Aucune ne se voyait fausse sur le dessin agrandi.** C'est la
+troisième fois que ce projet retrouve la même leçon : regarder l'écran, à la
+taille de l'écran.
+
+**Une remarque qui change le classement**, écrite sur la maquette : le tour
+**impose** quelque chose au motif. La rose des vents tourne parfaitement ; les
+cernes ne montreraient rien sans leur trait de fente, un rond concentrique qui
+tourne étant un rond immobile ; et le A est le seul qui passe la tête en bas au
+milieu du geste.
+
+**Et un défaut du générateur, corrigé au passage.** `fusionner-maquettes.mjs`
+préfixait une liste d'identifiants **écrite à la main** : deux maquettes portant
+chacune un `entrer-1` donnaient une page unique où le libellé de la seconde
+cochait la case de la première. Les familles numérotées sont désormais
+reconnues d'elles-mêmes — un oubli de cette sorte ne se voit pas, la page
+s'affiche parfaitement et ne répond à rien.
+
 ### L'entrée dans Atlas : six façons d'animer la marque, et un libellé qui ne cochait plus rien
 
 **Sa demande, après la maquette 32 :** *« je veux la 4 sans le Connexion et vos

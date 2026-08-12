@@ -234,6 +234,16 @@ sceau et ATLAS de la 3** au-dessus. Ce qui reste ouvert est **l'animation de la
 marque à l'entrée** — six propositions dans
 `docs/maquettes/33-le-logo-qui-sanime.html`, son numéro attendu.
 
+**Puis il a retenu « le tour »** (maquette 33, proposition 3) et demandé
+d'autres gravures : `docs/maquettes/34-le-motif-du-sceau.html`, huit motifs,
+**son numéro attendu**. Le rond d'or, l'écran et l'animation n'y bougent plus.
+
+**La leçon de la 34, qui vaut pour toute icône de ce dépôt :** un motif se juge
+**à sa taille réelle**, jamais agrandi. La bande en tête de cette maquette est
+là pour ça, et elle a tué trois propositions — à 29 px avec un trait d'1,5, une
+tige et trois ovales se rejoignent en pâté quel que soit l'écartement. Une seule
+grande forme tient toujours ; trois petites, jamais.
+
 **Trois choses à ne pas défaire dans cette maquette-là :**
 
 1. **`pointer-events:none` sur `.conn` une fois entré.** Les deux écrans

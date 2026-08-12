@@ -3512,6 +3512,119 @@
            letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
 
 
+/* 30 — Le motif dans le rond d’or */
+#s30{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f7f5f0;
+  }
+@media (prefers-color-scheme: dark){
+#s30:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a;
+    }
+
+  
+}
+#s30[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a;
+  }
+#s30, #s30 *{box-sizing:border-box}
+#s30{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+#s30 .page{max-width:1300px;margin:0 auto}
+#s30 .intro{max-width:66ch;margin:0 auto;text-align:center}
+#s30 .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+#s30 .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+#s30 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+#s30 .intro b{color:var(--encre);font-weight:600}
+#s30 .bande{--e-pin:#2f3b2f; --e-or:#B98B47;
+         display:flex;flex-wrap:wrap;justify-content:center;gap:22px 26px;
+         max-width:640px;margin:34px auto 0;padding:24px 20px;
+         border-radius:14px;background:#f5f3ee}
+#s30 .vignette{display:flex;flex-direction:column;align-items:center;gap:9px}
+#s30 .petit-sceau{position:relative;width:60px;height:60px;display:block}
+#s30 .vignette .no{font-size:11px;color:#8a8578;letter-spacing:.1em}
+#s30 .legende-bande{max-width:52ch;margin:14px auto 0;text-align:center;
+                 font-size:12.6px;color:var(--gris);line-height:1.6}
+#s30 .grille{display:flex;flex-wrap:wrap;gap:54px 40px;justify-content:center;
+          align-items:flex-start;margin-top:44px}
+#s30 .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px;width:100%}
+#s30 .legende{text-align:center;max-width:390px;width:100%}
+#s30 .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+              text-transform:uppercase;color:var(--or)}
+#s30 .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+#s30 .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+#s30 .legende p + p{margin-top:9px}
+#s30 .legende .reserve{color:var(--encre);opacity:.82}
+#s30 .legende .reserve b{color:var(--or)}
+#s30 .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+#s30 .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
+    position:relative;width:390px;max-width:100%;height:544px;overflow:hidden;
+    border-radius:32px;background:var(--e-fond);color:var(--e-encre);
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+#s30 .go{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s30 .scene{display:grid;width:100%;height:100%}
+#s30 .scene > *{grid-area:1/1}
+#s30 .conn{display:flex;flex-direction:column;justify-content:center;
+        align-items:center;padding:26px 24px;text-align:center}
+#s30 .bloc{width:100%;max-width:342px}
+#s30 .sceau{position:relative;width:60px;height:60px;margin:0 auto 16px;display:block}
+#s30 .anneau{position:absolute;inset:0;overflow:visible}
+#s30 .anneau circle{fill:none;stroke:var(--e-or);stroke-width:1.5}
+#s30 .feuille{position:absolute;left:50%;top:50%;width:29px;height:29px;transform:translate(-50%,-50%)}
+#s30 .feuille path,#s30 .feuille circle,#s30 .feuille ellipse{
+    fill:none;stroke:var(--e-pin);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+#s30 .mot{display:block;font:400 21px/1 ui-serif,Georgia,serif;letter-spacing:.3em;margin-bottom:32px}
+#s30 .lib{display:block;text-align:left;font:500 9.5px/1 ui-sans-serif,sans-serif;
+       letter-spacing:.28em;text-transform:uppercase;color:var(--e-gris);margin-bottom:8px}
+#s30 .champ{width:100%;font:400 16px/1.4 inherit;color:var(--e-encre);text-align:left;
+         background:transparent;border:0;border-bottom:1px solid var(--e-trait);
+         border-radius:0;padding:0 0 10px;margin-bottom:22px;outline:none;
+         -webkit-appearance:none;appearance:none;transition:border-color .22s ease}
+#s30 .champ:focus{border-bottom-color:var(--e-or)}
+#s30 .capsule{display:inline-flex;align-items:center;justify-content:center;
+           border:0;border-radius:9999px;background:var(--e-pin);color:#faf9f5;
+           padding:13px 36px;font:400 17px/1 ui-serif,Georgia,serif;
+           cursor:pointer;-webkit-tap-highlight-color:transparent;
+           transition:transform .15s ease}
+#s30 .capsule:active{transform:scale(.985)}
+#s30 .centrer{display:flex;justify-content:center}
+#s30 .appli{opacity:0;pointer-events:none;padding:34px 24px;text-align:left}
+#s30 .appli .sur{margin:0 0 12px;font:500 9.5px/1 ui-sans-serif,sans-serif;
+              letter-spacing:.28em;text-transform:uppercase;color:var(--e-or)}
+#s30 .appli h4{margin:0 0 10px;font:400 27px/1.2 ui-serif,Georgia,serif}
+#s30 .appli .filet{width:34px;height:1.5px;background:var(--e-or);margin:0 0 26px}
+#s30 .appli .ligne{padding:15px 0;border-bottom:1px solid var(--e-trait)}
+#s30 .appli .ligne .nom{font:400 18px/1.2 ui-serif,Georgia,serif}
+#s30 .appli .ligne .ou{margin-top:5px;font-size:11.5px;color:var(--e-gris)}
+#s30 .rejouer{display:inline-flex;margin-top:30px;border:1px solid var(--e-trait);
+           border-radius:9999px;padding:9px 20px;font-size:13px;color:var(--e-gris);
+           cursor:pointer;-webkit-tap-highlight-color:transparent}
+@keyframes s30-tour{ to{transform:rotate(360deg)} }
+@keyframes s30-sortir{ to{opacity:0;transform:scale(.985)} }
+@keyframes s30-entrer{ from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+#s30 .go:checked ~ .scene .sceau{animation:s30-tour .5s cubic-bezier(.55,0,.25,1) infinite}
+#s30 .go:checked ~ .scene .conn{animation:s30-sortir .28s ease .52s forwards;pointer-events:none}
+#s30 .go:checked ~ .scene .appli{animation:s30-entrer .34s ease .58s forwards;pointer-events:auto}
+@media (prefers-reduced-motion: reduce){
+#s30 .go:checked ~ .scene .conn{opacity:0;pointer-events:none}
+#s30 .go:checked ~ .scene .appli{opacity:1;pointer-events:auto}
+#s30 .go:checked ~ .scene .sceau{animation:none !important}
+
+  
+}
+#s30 .note{max-width:74ch;margin:62px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+#s30 .note b{color:var(--encre)}
+#s30 .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+
+
 </style>
 
 <div class="enveloppe">
@@ -3646,6 +3759,10 @@
       <a class="item" href="#m29">
         <span class="no">29</span><span class="titre">Le logo qui s’anime</span><span class="fleche">↓</span>
         <span class="quoi">La proposition 4 sans son titre, le sceau et ATLAS au-dessus, et la marque qui s’anime une demi-seconde avant d’entrer. Ça s’essaie : on appuie sur « Entrer », l’application arrive. Six animations, l’écran étant identique partout.</span>
+      </a>
+      <a class="item" href="#m30">
+        <span class="no">30</span><span class="titre">Le motif dans le rond d’or</span><span class="fleche">↓</span>
+        <span class="quoi">Le tour est retenu ; seule la gravure change. Huit motifs, et une bande en tête qui les montre à leur taille réelle — c’est là que se juge lequel tient encore à six millimètres.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -13002,7 +13119,7 @@
     <!-- 1 ————————————————————————————————————————————————————— -->
     <div class="prop p1">
       <div class="tel"><div class="ecran">
-        <input type="checkbox" id="entrer-1" class="go">
+        <input type="checkbox" id="s29-entrer-1" class="go">
         <div class="scene">
           <div class="conn"><div class="bloc">
             <span class="sceau">
@@ -13012,11 +13129,11 @@
               </svg>
             </span>
             <span class="mot">ATLAS</span>
-            <label class="lib" for="adresse-1">Adresse</label>
-            <input class="champ" id="adresse-1" type="email" value="edennature.contact@gmail.com">
-            <label class="lib" for="mdp-1">Mot de passe</label>
-            <input class="champ" id="mdp-1" type="password" value="motdepasse">
-            <div class="centrer"><label class="capsule" for="entrer-1">Entrer</label></div>
+            <label class="lib" for="s29-adresse-1">Adresse</label>
+            <input class="champ" id="s29-adresse-1" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s29-mdp-1">Mot de passe</label>
+            <input class="champ" id="s29-mdp-1" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s29-entrer-1">Entrer</label></div>
           </div></div>
           <div class="appli">
             <p class="sur">Atlas</p>
@@ -13024,7 +13141,7 @@
             <div class="filet"></div>
             <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
             <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
-            <label class="rejouer" for="entrer-1">↺ Recommencer</label>
+            <label class="rejouer" for="s29-entrer-1">↺ Recommencer</label>
           </div>
         </div>
       </div></div>
@@ -13042,7 +13159,7 @@
     <!-- 2 ————————————————————————————————————————————————————— -->
     <div class="prop p2">
       <div class="tel"><div class="ecran">
-        <input type="checkbox" id="entrer-2" class="go">
+        <input type="checkbox" id="s29-entrer-2" class="go">
         <div class="scene">
           <div class="conn"><div class="bloc">
             <span class="sceau">
@@ -13052,11 +13169,11 @@
               </svg>
             </span>
             <span class="mot">ATLAS</span>
-            <label class="lib" for="adresse-2">Adresse</label>
-            <input class="champ" id="adresse-2" type="email" value="edennature.contact@gmail.com">
-            <label class="lib" for="mdp-2">Mot de passe</label>
-            <input class="champ" id="mdp-2" type="password" value="motdepasse">
-            <div class="centrer"><label class="capsule" for="entrer-2">Entrer</label></div>
+            <label class="lib" for="s29-adresse-2">Adresse</label>
+            <input class="champ" id="s29-adresse-2" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s29-mdp-2">Mot de passe</label>
+            <input class="champ" id="s29-mdp-2" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s29-entrer-2">Entrer</label></div>
           </div></div>
           <div class="appli">
             <p class="sur">Atlas</p>
@@ -13064,7 +13181,7 @@
             <div class="filet"></div>
             <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
             <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
-            <label class="rejouer" for="entrer-2">↺ Recommencer</label>
+            <label class="rejouer" for="s29-entrer-2">↺ Recommencer</label>
           </div>
         </div>
       </div></div>
@@ -13082,7 +13199,7 @@
     <!-- 3 ————————————————————————————————————————————————————— -->
     <div class="prop p3">
       <div class="tel"><div class="ecran">
-        <input type="checkbox" id="entrer-3" class="go">
+        <input type="checkbox" id="s29-entrer-3" class="go">
         <div class="scene">
           <div class="conn"><div class="bloc">
             <span class="sceau">
@@ -13092,11 +13209,11 @@
               </svg>
             </span>
             <span class="mot">ATLAS</span>
-            <label class="lib" for="adresse-3">Adresse</label>
-            <input class="champ" id="adresse-3" type="email" value="edennature.contact@gmail.com">
-            <label class="lib" for="mdp-3">Mot de passe</label>
-            <input class="champ" id="mdp-3" type="password" value="motdepasse">
-            <div class="centrer"><label class="capsule" for="entrer-3">Entrer</label></div>
+            <label class="lib" for="s29-adresse-3">Adresse</label>
+            <input class="champ" id="s29-adresse-3" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s29-mdp-3">Mot de passe</label>
+            <input class="champ" id="s29-mdp-3" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s29-entrer-3">Entrer</label></div>
           </div></div>
           <div class="appli">
             <p class="sur">Atlas</p>
@@ -13104,7 +13221,7 @@
             <div class="filet"></div>
             <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
             <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
-            <label class="rejouer" for="entrer-3">↺ Recommencer</label>
+            <label class="rejouer" for="s29-entrer-3">↺ Recommencer</label>
           </div>
         </div>
       </div></div>
@@ -13123,7 +13240,7 @@
     <!-- 4 ————————————————————————————————————————————————————— -->
     <div class="prop p4">
       <div class="tel"><div class="ecran">
-        <input type="checkbox" id="entrer-4" class="go">
+        <input type="checkbox" id="s29-entrer-4" class="go">
         <div class="scene">
           <div class="conn"><div class="bloc">
             <span class="sceau">
@@ -13133,11 +13250,11 @@
               </svg>
             </span>
             <span class="mot">ATLAS</span>
-            <label class="lib" for="adresse-4">Adresse</label>
-            <input class="champ" id="adresse-4" type="email" value="edennature.contact@gmail.com">
-            <label class="lib" for="mdp-4">Mot de passe</label>
-            <input class="champ" id="mdp-4" type="password" value="motdepasse">
-            <div class="centrer"><label class="capsule" for="entrer-4">Entrer</label></div>
+            <label class="lib" for="s29-adresse-4">Adresse</label>
+            <input class="champ" id="s29-adresse-4" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s29-mdp-4">Mot de passe</label>
+            <input class="champ" id="s29-mdp-4" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s29-entrer-4">Entrer</label></div>
           </div></div>
           <div class="appli">
             <p class="sur">Atlas</p>
@@ -13145,7 +13262,7 @@
             <div class="filet"></div>
             <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
             <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
-            <label class="rejouer" for="entrer-4">↺ Recommencer</label>
+            <label class="rejouer" for="s29-entrer-4">↺ Recommencer</label>
           </div>
         </div>
       </div></div>
@@ -13164,7 +13281,7 @@
     <!-- 5 ————————————————————————————————————————————————————— -->
     <div class="prop p5">
       <div class="tel"><div class="ecran">
-        <input type="checkbox" id="entrer-5" class="go">
+        <input type="checkbox" id="s29-entrer-5" class="go">
         <div class="scene">
           <div class="conn"><div class="bloc">
             <span class="sceau">
@@ -13177,11 +13294,11 @@
               </svg>
             </span>
             <span class="mot">ATLAS</span>
-            <label class="lib" for="adresse-5">Adresse</label>
-            <input class="champ" id="adresse-5" type="email" value="edennature.contact@gmail.com">
-            <label class="lib" for="mdp-5">Mot de passe</label>
-            <input class="champ" id="mdp-5" type="password" value="motdepasse">
-            <div class="centrer"><label class="capsule" for="entrer-5">Entrer</label></div>
+            <label class="lib" for="s29-adresse-5">Adresse</label>
+            <input class="champ" id="s29-adresse-5" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s29-mdp-5">Mot de passe</label>
+            <input class="champ" id="s29-mdp-5" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s29-entrer-5">Entrer</label></div>
           </div></div>
           <div class="appli">
             <p class="sur">Atlas</p>
@@ -13189,7 +13306,7 @@
             <div class="filet"></div>
             <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
             <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
-            <label class="rejouer" for="entrer-5">↺ Recommencer</label>
+            <label class="rejouer" for="s29-entrer-5">↺ Recommencer</label>
           </div>
         </div>
       </div></div>
@@ -13207,7 +13324,7 @@
     <!-- 6 ————————————————————————————————————————————————————— -->
     <div class="prop p6">
       <div class="tel"><div class="ecran">
-        <input type="checkbox" id="entrer-6" class="go">
+        <input type="checkbox" id="s29-entrer-6" class="go">
         <div class="scene">
           <div class="conn"><div class="bloc">
             <span class="sceau">
@@ -13217,11 +13334,11 @@
               </svg>
             </span>
             <span class="mot">ATLAS</span>
-            <label class="lib" for="adresse-6">Adresse</label>
-            <input class="champ" id="adresse-6" type="email" value="edennature.contact@gmail.com">
-            <label class="lib" for="mdp-6">Mot de passe</label>
-            <input class="champ" id="mdp-6" type="password" value="motdepasse">
-            <div class="centrer"><label class="capsule" for="entrer-6">Entrer</label></div>
+            <label class="lib" for="s29-adresse-6">Adresse</label>
+            <input class="champ" id="s29-adresse-6" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s29-mdp-6">Mot de passe</label>
+            <input class="champ" id="s29-mdp-6" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s29-entrer-6">Entrer</label></div>
           </div></div>
           <div class="appli">
             <p class="sur">Atlas</p>
@@ -13229,7 +13346,7 @@
             <div class="filet"></div>
             <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
             <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
-            <label class="rejouer" for="entrer-6">↺ Recommencer</label>
+            <label class="rejouer" for="s29-entrer-6">↺ Recommencer</label>
           </div>
         </div>
       </div></div>
@@ -13268,6 +13385,380 @@
     l’entrée est une animation CSS retardée. <b>Aucun fichier de
     <code>src/</code> n’a été touché</b> : vous choisissez un numéro, et c’est
     ensuite seulement que l’écran change.
+  </p>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m30">
+    <div class="etape-tete">
+      <span class="etape-no">30</span>
+      <h2>Le motif dans le rond d’or</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s30">
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">La gravure du sceau</p>
+    <h1>Le motif dans le rond d’or</h1>
+    <p>L’écran et l’animation sont ceux que vous avez retenus — <b>le tour</b>.
+      Ils sont identiques sur les huit : <b>seul le tracé à l’intérieur du rond
+      change</b>.</p>
+    <p><b>Appuyez sur « Entrer »</b> pour voir chaque motif tourner, et
+      « ↺ Recommencer » pour remettre l’écran.</p>
+  </div>
+
+  <div class="bande">
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.5V8"/><path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/><path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/><path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/><path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/></svg>
+        </span>
+        <span class="no">1</span>
+      </div>
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 18.5C7.5 11 12 6.5 18.5 5 17.5 12.5 13 17 5.5 18.5Z"/><path d="M5.5 18.5 18.5 5"/></svg>
+        </span>
+        <span class="no">2</span>
+      </div>
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="17.4" text-anchor="middle" font-family="ui-serif,Georgia,'Iowan Old Style',serif" font-size="16.5" fill="var(--e-pin)" stroke="none">A</text></svg>
+        </span>
+        <span class="no">3</span>
+      </div>
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.8"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/><path d="M12 12V3.2"/></svg>
+        </span>
+        <span class="no">4</span>
+      </div>
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.8 10.6 12 4.4 17.2 10.6"/><path d="M6.2 16.4 12 9.8 17.8 16.4"/><path d="M12 16.6V21.8"/></svg>
+        </span>
+        <span class="no">5</span>
+      </div>
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 13.7 10.3 21.2 12 13.7 13.7 12 21.2 10.3 13.7 2.8 12 10.3 10.3Z"/></svg>
+        </span>
+        <span class="no">6</span>
+      </div>
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.5V12"/><path d="M12 16 6.6 10.6"/><path d="M12 16 17.4 10.6"/><path d="M12 12 9.2 7.8"/><path d="M12 12 14.8 7.8"/></svg>
+        </span>
+        <span class="no">7</span>
+      </div>
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.4 17.2 9.6 8.8 13 13.6 16 9.6 19.6 17.2"/></svg>
+        </span>
+        <span class="no">8</span>
+      </div>
+  </div>
+  <p class="legende-bande">Les huit à leur <b>taille réelle</b>, comme sur votre
+    téléphone. C’est ici que se juge le seul point qui ne pardonne pas : lequel
+    tient encore à six millimètres.</p>
+
+  <div class="grille">
+
+    <div class="prop p1">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s30-entrer-1" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.5V8"/><path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/><path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/><path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/><path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s30-adresse-1">Adresse</label>
+            <input class="champ" id="s30-adresse-1" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s30-mdp-1">Mot de passe</label>
+            <input class="champ" id="s30-mdp-1" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s30-entrer-1">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s30-entrer-1">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 1</h2>
+        <p class="titre">La feuille d’aujourd’hui</p>
+        <p>Celle qui est déjà dans l’application : une tige et trois paires de folioles. Elle est ici pour que vous compariez à ce que vous avez, pas pour être choisie par défaut.</p>
+        <p class="reserve"><b>C’est le témoin.</b> Si aucune des sept autres ne fait mieux qu’elle, on ne change rien — un changement qui n’améliore pas coûte quand même une habitude.</p>
+      </div>
+    </div>
+    <div class="prop p2">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s30-entrer-2" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 18.5C7.5 11 12 6.5 18.5 5 17.5 12.5 13 17 5.5 18.5Z"/><path d="M5.5 18.5 18.5 5"/></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s30-adresse-2">Adresse</label>
+            <input class="champ" id="s30-adresse-2" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s30-mdp-2">Mot de passe</label>
+            <input class="champ" id="s30-mdp-2" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s30-entrer-2">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s30-entrer-2">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 2</h2>
+        <p class="titre">La feuille seule</p>
+        <p>Une seule feuille, grande, en travers du rond, avec sa nervure. Rien d’autre : ni tige, ni voisines.</p>
+        <p class="reserve"><b>C’est la plus lisible des motifs végétaux</b>, et de loin — une grande forme tient à toutes les tailles là où trois petites se rejoignent en pâté. Deux versions du brin d’eucalyptus ont été jetées pour cette raison, vues sur la bande ci-dessus.</p>
+      </div>
+    </div>
+    <div class="prop p3">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s30-entrer-3" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="17.4" text-anchor="middle" font-family="ui-serif,Georgia,'Iowan Old Style',serif" font-size="16.5" fill="var(--e-pin)" stroke="none">A</text></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s30-adresse-3">Adresse</label>
+            <input class="champ" id="s30-adresse-3" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s30-mdp-3">Mot de passe</label>
+            <input class="champ" id="s30-mdp-3" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s30-entrer-3">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s30-entrer-3">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 3</h2>
+        <p class="titre">Le A</p>
+        <p>Le monogramme, dans la serif des titres. Rien d’autre dans le rond : une initiale et son cercle, comme un cachet de cire.</p>
+        <p class="reserve"><b>La plus lisible de toutes à petite taille</b>, et de loin. Réserve : une lettre a un haut et un bas — au milieu du tour, elle passe la tête en bas, ce qu’aucun autre motif ne fait.</p>
+      </div>
+    </div>
+    <div class="prop p4">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s30-entrer-4" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.8"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/><path d="M12 12V3.2"/></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s30-adresse-4">Adresse</label>
+            <input class="champ" id="s30-adresse-4" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s30-mdp-4">Mot de passe</label>
+            <input class="champ" id="s30-mdp-4" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s30-entrer-4">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s30-entrer-4">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 4</h2>
+        <p class="titre">Les cernes, et la fente</p>
+        <p>Un tronc vu de bout : deux cernes de croissance, le cœur, et le trait de la fente qui va du cœur à l’écorce. C’est le geste du métier, pas un arbre de décoration.</p>
+        <p class="reserve"><b>La plus abstraite, et la plus tenue à petite taille</b> — un cercle reste un cercle à n’importe quelle échelle. Le trait de fente est ce qui rend le tour visible : sans lui, un rond qui tourne ne montre rien.</p>
+      </div>
+    </div>
+    <div class="prop p5">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s30-entrer-5" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.8 10.6 12 4.4 17.2 10.6"/><path d="M6.2 16.4 12 9.8 17.8 16.4"/><path d="M12 16.6V21.8"/></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s30-adresse-5">Adresse</label>
+            <input class="champ" id="s30-adresse-5" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s30-mdp-5">Mot de passe</label>
+            <input class="champ" id="s30-mdp-5" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s30-entrer-5">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s30-entrer-5">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 5</h2>
+        <p class="titre">Le conifère</p>
+        <p>Deux étages de branches et un pied. L’arbre le plus reconnaissable qui soit, réduit à trois traits.</p>
+        <p class="reserve"><b>Immédiatement lu comme « arbre »</b> — c’est sa force et sa limite : il dit le sapin, pas l’élagage. À voir si votre métier se reconnaît dedans.</p>
+      </div>
+    </div>
+    <div class="prop p6">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s30-entrer-6" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 13.7 10.3 21.2 12 13.7 13.7 12 21.2 10.3 13.7 2.8 12 10.3 10.3Z"/></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s30-adresse-6">Adresse</label>
+            <input class="champ" id="s30-adresse-6" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s30-mdp-6">Mot de passe</label>
+            <input class="champ" id="s30-mdp-6" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s30-entrer-6">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s30-entrer-6">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 6</h2>
+        <p class="titre">La rose des vents</p>
+        <p>Une étoile à quatre branches, effilée. Atlas, c’est d’abord un recueil de cartes — et c’est le signe que vous aviez déjà retenu pour le bouton des chantiers.</p>
+        <p class="reserve"><b>Elle tourne mieux que toutes les autres</b> : quatre branches identiques, donc un mouvement qui se lit d’un bout à l’autre sans jamais paraître de travers.</p>
+      </div>
+    </div>
+    <div class="prop p7">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s30-entrer-7" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.5V12"/><path d="M12 16 6.6 10.6"/><path d="M12 16 17.4 10.6"/><path d="M12 12 9.2 7.8"/><path d="M12 12 14.8 7.8"/></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s30-adresse-7">Adresse</label>
+            <input class="champ" id="s30-adresse-7" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s30-mdp-7">Mot de passe</label>
+            <input class="champ" id="s30-mdp-7" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s30-entrer-7">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s30-entrer-7">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 7</h2>
+        <p class="titre">L’arbre au trait</p>
+        <p>Un tronc et quatre branches nues, comme une silhouette d’hiver. Pas de feuillage : ce qu’on taille, c’est le bois.</p>
+        <p class="reserve"><b>La plus juste pour un élagueur</b> — un arbre sans feuilles est un arbre sur lequel on travaille. Réserve : quatre traits fins se ferment à petite taille, regardez-le sur le téléphone avant de le choisir.</p>
+      </div>
+    </div>
+    <div class="prop p8">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s30-entrer-8" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.4 17.2 9.6 8.8 13 13.6 16 9.6 19.6 17.2"/></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s30-adresse-8">Adresse</label>
+            <input class="champ" id="s30-adresse-8" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s30-mdp-8">Mot de passe</label>
+            <input class="champ" id="s30-mdp-8" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s30-entrer-8">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s30-entrer-8">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 8</h2>
+        <p class="titre">La ligne de crête</p>
+        <p>Une arête de montagne, d’un seul trait. Atlas est d’abord un massif — et c’est le seul motif du lot qui ne parle pas d’arbre.</p>
+        <p class="reserve"><b>La plus lisible de toutes après le A</b> : un trait continu ne se referme jamais, quelle que soit la taille. Réserve franche : elle dit le paysage, pas le métier. C’est peut-être exactement ce qu’il faut pour un outil qui fera un jour autre chose que de l’élagage — ou exactement ce qu’il ne faut pas.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">
+    <span class="t">Ce que le tour impose au motif</span>
+    L’animation retenue fait <b>tourner</b> le sceau, et tous les motifs ne s’y
+    prêtent pas également. <b>La rose des vents</b> tourne parfaitement : quatre
+    branches identiques, le mouvement se lit d’un bout à l’autre. <b>Les
+    cernes</b> ne montreraient rien du tout sans leur trait de fente — un rond
+    concentrique qui tourne est un rond immobile. Et <b>le A</b> est le seul qui
+    passe la tête en bas au milieu du tour : une fraction de seconde, mais il
+    faut l’avoir vu avant de choisir.
+    <br><br>
+    <span class="t">Ce qui reste identique sur les huit</span>
+    L’écran, le rond d’or et son filet d’1,5 px, ATLAS, les deux champs, la
+    capsule, l’animation. <b>Seule la gravure change</b> — c’est ce que vous avez
+    demandé, et c’est la seule façon de comparer quelque chose.
+    <br><br>
+    <span class="t">Aucun script, et le code n’a pas bougé</span>
+    La capsule est un <code>&lt;label&gt;</code> qui coche une case native.
+    <b>Aucun fichier de <code>src/</code> n’a été touché</b> : vous donnez un
+    numéro, et c’est ensuite seulement que l’écran change.
   </p>
 
 </div>

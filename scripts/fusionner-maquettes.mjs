@@ -216,6 +216,12 @@ const MAQUETTES = [
     famille: "La dernière porte",
     quoi: "La proposition 4 sans son titre, le sceau et ATLAS au-dessus, et la marque qui s’anime une demi-seconde avant d’entrer. Ça s’essaie : on appuie sur « Entrer », l’application arrive. Six animations, l’écran étant identique partout.",
   },
+  {
+    fichier: "34-le-motif-du-sceau.html",
+    titre: "Le motif dans le rond d’or",
+    famille: "La dernière porte",
+    quoi: "Le tour est retenu ; seule la gravure change. Huit motifs, et une bande en tête qui les montre à leur taille réelle — c’est là que se juge lequel tient encore à six millimètres.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
@@ -374,6 +380,24 @@ function sansBlocsOpaques(css) {
 // uniques et référencés par <use>/url() : on n'y touche pas.
 const IDS_A_PREFIXER = ["modele", "duo", "trio", "g1", "g2", "g3", "chartes", "ecran"];
 
+// **Et les familles d'identifiants numérotés**, qui ne peuvent pas s'énumérer :
+// une maquette à huit écrans en pose vingt-quatre, la suivante en posera
+// d'autres. Les nommer un par un dans la liste ci-dessus, c'est se condamner à
+// l'oublier — et l'oubli ne se voit pas : deux maquettes qui portent chacune un
+// `entrer-1` donnent une page unique où le libellé de la seconde coche la case
+// de la PREMIÈRE. Elle s'affiche parfaitement et ne répond à rien. Trouvé le
+// 12 août 2026 en ajoutant la maquette 34 à côté de la 33.
+const FAMILLES_A_PREFIXER = [/^entrer-\d+$/, /^adresse-\d+$/, /^mdp-\d+$/];
+
+/** Les identifiants du corps qui appartiennent à une famille numérotée. */
+function idsDeFamille(corps) {
+  const trouves = new Set();
+  for (const m of corps.matchAll(/id="([^"]+)"/g)) {
+    if (FAMILLES_A_PREFIXER.some((f) => f.test(m[1]))) trouves.add(m[1]);
+  }
+  return [...trouves];
+}
+
 function lire(maquette, indice) {
   const numero = String(indice + 1).padStart(2, "0");
   const hote = `#s${numero}`;
@@ -396,7 +420,7 @@ function lire(maquette, indice) {
     return "";
   });
 
-  for (const id of IDS_A_PREFIXER) {
+  for (const id of [...IDS_A_PREFIXER, ...idsDeFamille(corps)]) {
     corps = corps.replaceAll(`id="${id}"`, `id="s${numero}-${id}"`);
     // **Et le `for` du libellé avec, sinon la case ne se coche plus.** Une
     // maquette sans script peut dépendre d'un identifiant tout autant qu'une
