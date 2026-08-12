@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### La fiche d'état se lisait de travers, faute de dire QUAND elle est écrite
+
+**Le 12 août au soir, premier vrai usage.** Le patron signale « l'appli ne
+s'ouvre plus ». Sa fiche existe enfin, fraîche de trois minutes, et annonce
+« Serveur : NE RÉPOND PAS ». Alarmant — et pourtant parfaitement normal :
+c'était la publication de **l'allumage**, écrite volontairement avant que le
+serveur ait eu le temps de démarrer. Les mêmes mots vingt minutes plus tard sont
+une panne. Rien ne distinguait les deux, et il a fallu recouper des horodatages
+pour le comprendre.
+
+Deux ajouts, tirés de ce seul usage :
+
+1. **La fiche dit à quel moment elle est écrite** — « à l'allumage » (et prévient
+   alors qu'un serveur muet y est attendu), « après démarrage », « par le
+   veilleur », « à la main ». Le contrôle refuse que la fiche du veilleur
+   s'excuse comme celle de l'allumage : excuser une panne réelle la masque.
+2. **La date devient le premier diagnostic**, et le plus rapide de tous. Le
+   veilleur réécrit la fiche tous les quarts d'heure tant que l'espace tourne :
+   passé vingt minutes sans réécriture, ce n'est pas le serveur qui est en
+   panne, c'est **l'espace qui est arrêté**. La fiche le dit désormais
+   elle-même, en tête. Sans cette phrase on cherche dans le produit alors qu'il
+   n'y a plus personne pour le servir — une demi-heure perdue ainsi.
+
+**Et ce que la fiche a permis de trancher du premier coup**, elle : le code de
+`main` n'était pas en cause. Démarré ici sur le commit exact qu'elle annonçait,
+le serveur répond en 5,4 secondes. C'est la première fois de la journée qu'une
+panne signalée est écartée sans lui faire recopier un terminal.
+
+---
+
 ### Le chevron doré du planning : l'adresse jusqu'au GPS en un doigt
 
 **Sa demande :** *« lorsque je vais sur planning et qu'il y a un chantier
