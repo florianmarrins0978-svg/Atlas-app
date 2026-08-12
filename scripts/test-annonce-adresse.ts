@@ -71,6 +71,31 @@ essai("l'adresse ne se dit pas APRÈS la construction", () => {
   );
 });
 
+essai("le banc efface les types d'une AUTRE construction avant de bâtir", () => {
+  // **Le second « Failed to type check » du 11 août 2026 au soir.**
+  // `.next/types` porte les types d'une construction faite dans le dossier par
+  // défaut — que personne ne fait ici, puisque le banc bâtit dans
+  // `.next-batie`. Ce dossier ne peut donc qu'être PÉRIMÉ, et il décrit des
+  // routes d'avant : l'écran des photos, supprimé le soir même, en est
+  // l'exemple. Le filtre de Next ne l'écarte pas — il ne connaît que
+  // `<distDir>/dev/types` — et `tsconfig` ne peut pas l'exclure sans priver la
+  // construction ordinaire de son contrôle.
+  //
+  // Le nettoyage doit donc précéder la construction, et l'ORDRE est tout : posé
+  // après, il ne servirait à rien. On lit donc les positions dans le fichier, et
+  // non un commentaire — c'est une réorganisation qui avait déjà déplacé
+  // l'annonce de l'adresse (contrôle ci-dessus).
+  const banc = readFileSync("scripts/banc.mjs", "utf8");
+  const nettoyage = banc.indexOf('rmSync(".next/types"');
+  const build = banc.indexOf('await jouer("npx", ["next", "build"]');
+  assert.notEqual(nettoyage, -1, "banc.mjs n'efface plus les types d'une autre construction avant de bâtir");
+  assert.notEqual(build, -1, "banc.mjs ne construit plus : ce contrôle n'éprouve plus rien");
+  assert.ok(
+    nettoyage < build,
+    "le nettoyage vient APRÈS la construction : il ne protège plus de rien, et la panne du 11 août revient"
+  );
+});
+
 essai("l'annonce porte le marqueur, quel que soit le régime", () => {
   for (const precision of ["", "version bâtie, chaque écran est immédiat."]) {
     const texte = annoncePrete({ port: "3000", precision });

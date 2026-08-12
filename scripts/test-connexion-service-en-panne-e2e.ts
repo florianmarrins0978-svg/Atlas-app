@@ -137,8 +137,31 @@ async function main() {
         `écran : ${sansBase.texte.replace(/\s+/g, " ").slice(0, 200)}`
       );
     } finally {
+      // **Remettre la base debout, et le VÉRIFIER.**
+      //
+      // Ce contrôle est le seul du dépôt à arrêter PostgreSQL. S'il le laissait
+      // à terre, toutes les suites suivantes échoueraient sur
+      // `connect ECONNREFUSED` — c'est-à-dire qu'un contrôle casserait ce qu'il
+      // vérifie, et son message accuserait n'importe quoi sauf lui. On ne se
+      // contente donc pas de rallumer : on attend que la base réponde, et on
+      // hurle si elle ne revient pas.
       pg("start");
-      await page.waitForTimeout(2500);
+      let revenue = false;
+      for (let essai = 0; essai < 30 && !revenue; essai++) {
+        try {
+          execFileSync("pg_isready", ["-h", "localhost", "-p", "5432"], { stdio: "ignore" });
+          revenue = true;
+        } catch {
+          await page.waitForTimeout(1000);
+        }
+      }
+      verifier(
+        "la base est bien remontée derrière ce contrôle",
+        revenue,
+        "elle est restée à terre : toutes les suites suivantes vont échouer sur " +
+          "« connect ECONNREFUSED », et leur message n'accusera pas ce contrôle-ci. " +
+          "La remonter à la main : source scripts/monter-base-locale.sh"
+      );
     }
   }
 
