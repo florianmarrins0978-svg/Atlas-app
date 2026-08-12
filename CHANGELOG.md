@@ -9,6 +9,43 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### L'espace du patron raconte son état là où l'agent sait lire
+
+**Sa demande :** *« Faut trouver un moyen pour que tu aies accès à mon espace,
+trouve. »*
+
+Il n'y en a pas, et il ne fallait pas en fabriquer un. Aucune route ne relie la
+machine de l'agent à son Codespace. Et la solution qui « marcherait » — une
+boucle qui lirait des ordres dans le dépôt et les exécuterait chez lui — serait
+une porte dérobée sur une machine qui porte ses identifiants GitHub et ses clés
+d'IA : quiconque obtiendrait le dépôt commanderait son ordinateur. **Refusé, et
+écrit ici pour que la question ne se repose pas.**
+
+Le sens inverse est sans danger : **il pousse, l'agent lit.** À chaque allumage,
+son espace publie son état sur une fiche GitHub dédiée — toujours la même, mise
+à jour au lieu d'être multipliée : le commit récupéré, le commit réellement
+SERVI, les services debout ou non, et les quarante dernières lignes du
+démarrage. L'agent lit les fiches du dépôt ; il voit donc la machine du patron
+sans y toucher, et sans lui faire recopier un terminal depuis un téléphone — ce
+qui a coûté quatre allers-retours dans la seule nuit du 11 au 12 août.
+
+**Ce qui ne sort jamais, et c'est éprouvé :** aucune variable d'environnement,
+aucune clé. Le journal est recopié mais toute ligne qui ressemble à un secret est
+remplacée par une mention. La censure est volontairement grossière — une ligne
+innocente retirée ne coûte qu'une gêne de lecture, une clé publiée coûte une
+clé. `scripts/test-rapport-espace.ts` tient les deux bouts : clé d'IA, adresse de
+base et jeton GitHub disparaissent, le compte de démonstration reste lisible
+puisqu'il est public. Confronté : sans la censure, les trois premiers passent.
+
+**Best-effort, et jamais bloquant.** Sans `gh`, ou sans réseau, le script le dit
+et rend la main — il ne peut pas empêcher le banc de servir. Vérifié ici, où
+`gh` n'existe pas : « ⚠ Rapport non publié », code de sortie 0.
+
+Ce que cela ne donne toujours pas : l'écran du patron, et le pouvoir d'agir.
+L'agent verra qu'un service est tombé ; c'est `claude`, installé dans l'espace,
+qui pourra le relever.
+
+
 ### « Mon devis » pouvait attendre indéfiniment une réponse déjà perdue
 
 **Le patron :** *« entre le moment où je clique mon devis et le moment où le

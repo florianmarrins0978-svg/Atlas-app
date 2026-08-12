@@ -11,6 +11,26 @@ sert.
 
 ---
 
+## Voir la machine du patron sans y avoir accès
+
+**Il n'y a aucun accès, et il ne faut pas en fabriquer un.** La question a été
+posée le 12 août 2026 (*« trouve un moyen pour que tu aies accès à mon
+espace »*) et tranchée : une boucle qui exécuterait chez lui des ordres lus dans
+le dépôt serait une porte dérobée sur une machine portant ses identifiants. Ne
+pas la rouvrir en croyant bien faire.
+
+Ce qui existe à la place : **son espace publie son état**, à chaque allumage, sur
+une fiche GitHub dont le titre est fixe (`TITRE_FICHE` dans
+`scripts/rapporter-espace.mjs`). Elle porte le commit récupéré, le commit
+réellement SERVI, l'état des services et la fin du journal de démarrage.
+
+**Devant un « ça ne marche pas », lire cette fiche AVANT de faire taper quoi que
+ce soit au patron.** C'est exactement ce qui a coûté quatre allers-retours dans
+la nuit du 11 au 12 août : des hypothèses formulées à distance, toutes fausses,
+pendant que sa machine savait tout.
+
+---
+
 ## ⚠ Plusieurs conversations travaillent sur ce dépôt EN MÊME TEMPS
 
 **Dit par le patron le 11 août 2026 :** *« sur d'autres sessions, je demande de

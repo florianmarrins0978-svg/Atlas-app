@@ -346,6 +346,28 @@ setsid nohup bash -c "
   cd '$CD' && node scripts/diagnostiquer-banc.mjs > '$VERDICT' 2>&1
 " > /dev/null 2>&1 < /dev/null &
 
+# ─────────────────────────────────────────────────────────────────────────────
+# **L'espace raconte son état là où l'agent sait lire.**
+#
+# Demandé par le patron le 12 août 2026 : *« faut trouver un moyen pour que tu
+# aies accès à mon espace »*. Il n'y en a pas — aucune route ne relie les deux
+# machines — et la solution qui « marcherait » (une boucle qui exécuterait des
+# ordres lus dans le dépôt) serait une porte dérobée sur une machine qui porte
+# ses identifiants. Le sens INVERSE, lui, est sans danger : sa machine publie,
+# l'agent lit.
+#
+# Posé ICI, après le lancement, et détaché : la publication traverse le réseau
+# et attend que le serveur réponde. Elle ne doit jamais retarder ni empêcher le
+# démarrage — le patron n'a pas à perdre son banc parce qu'une fiche n'a pas pu
+# s'écrire.
+setsid nohup bash -c "
+  for _ in \$(seq 1 60); do
+    curl -sf -o /dev/null --max-time 5 http://127.0.0.1:3000/api/health/live && break
+    sleep 10
+  done
+  cd '$CD' && node scripts/rapporter-espace.mjs
+" > /tmp/rapport-espace.log 2>&1 < /dev/null &
+
 echo "──────────────────────────────────────────────"
 echo "  Si l'adresse ne s'ouvre pas, une seule commande"
 echo "  vous dira pourquoi — elle est déjà en train de"
