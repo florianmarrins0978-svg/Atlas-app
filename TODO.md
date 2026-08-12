@@ -46,6 +46,19 @@ couleur en dur.
 **Non fait :** il n'a pas demandé cet écran, et sa règle est *« montre-moi avant
 de faire »*. Lui montrer une maquette avant/après, puis appliquer.
 
+**Maquette livrée le 12 août 2026 — `docs/maquettes/31-l-ecran-de-connexion.html`**
+(« oui, fais-moi une maquette avant/après »). L'avant reproduit, puis quatre
+après : la carte gardée, sans carte, le sceau, la ligne d'imprimé. **En attente
+de son choix — `src/` n'a pas été touché.**
+
+**Et un défaut de plus, trouvé en dessinant :** les champs sont écrits en
+**15 px**, alors que `styleChampPlage` impose 16 px depuis le 10 août précisément
+parce qu'**en dessous, iOS agrandit la page dès qu'un champ prend le focus**. Il
+tape son adresse et l'écran lui saute au visage. Ce défaut-là ne dépend d'aucune
+proposition : il se corrige avec celle qu'il retiendra. Même remarque pour le
+refus de connexion, peint en `text-red-600` (rouge de Tailwind) au lieu du
+`colors.alert` de la charte.
+
 ### 0 octies. Les actions principales encore dessinées à la main
 
 **Trouvé le 12 août 2026, parce que le patron l'a vu avant nous.** La feuille

@@ -189,6 +189,27 @@ entièrement carrée.
 l'ancienne identité — terre cuite `#B5502F` écrite en dur, carte blanche, aucune
 serif. C'est le premier écran qu'il voit. `TODO.md` §0 nonies.
 
+## L'écran de connexion : maquette posée, choix EN ATTENTE (12 août)
+
+`docs/maquettes/31-l-ecran-de-connexion.html` — l'avant reproduit, puis quatre
+après (la carte gardée, sans carte, le sceau, la ligne d'imprimé). **Ne rien
+poser dans `src/app/login/` avant qu'il ait désigné laquelle**, sa règle du
+11 août.
+
+**Ce qui ne dépend PAS de son choix, et qui part avec n'importe laquelle :**
+
+1. **Les champs passent à 16 px.** Ils sont en 15, et en dessous de 16 **iOS
+   agrandit la page dès qu'un champ prend le focus** — le jeton
+   `styleChampPlage` existe depuis le 10 août pour cette raison exacte, et cet
+   écran ne s'en sert pas. C'est un défaut de son téléphone, pas une préférence.
+2. **Le refus passe de `text-red-600` à `colors.alert`.**
+3. **La place du message reste réservée** (`min-height`), sinon le bouton
+   descend d'une ligne au moment où il appuie dessus.
+
+**Pourquoi cet écran échappe à tout :** c'est le seul vu **avant** d'être
+connecté, donc le seul qu'aucun parcours de l'application ne traverse. Le même
+raisonnement vaut pour `src/app/documents-legaux/formulaire.tsx`.
+
 ## Ce qui vient d'être terminé
 
 **⚠ SI LE PATRON DIT « ce n'est toujours pas là » : REGARDER LA BRANCHE

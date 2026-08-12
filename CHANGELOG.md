@@ -9,6 +9,38 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### L'écran de connexion : une maquette avant/après, et un défaut trouvé en la dessinant
+
+**Sa réponse à l'offre de la veille :** *« oui, fais-moi une maquette »*.
+`docs/maquettes/31-l-ecran-de-connexion.html` reproduit l'écran d'aujourd'hui,
+puis en propose quatre : la carte gardée, sans carte, le sceau, la ligne
+d'imprimé. **Rien n'est posé dans `src/`** — c'est sa règle du 11 août, et la
+maquette existe précisément pour qu'on n'ait rien à défaire.
+
+**Pourquoi cet écran avait été oublié**, et ce n'est pas un hasard : c'est le
+seul qu'on voit **avant** d'être connecté. Chaque refonte s'est faite en
+parcourant l'application, donc en partant d'un écran déjà passé. La porte ne
+fait pas partie du couloir.
+
+**Le défaut trouvé en dessinant, et il compte plus que le choix esthétique :**
+ses champs sont en **15 px**. En dessous de 16, iOS agrandit la page dès qu'un
+champ prend le focus — il tape son adresse et l'écran lui saute au visage.
+`design-tokens.ts` l'interdit depuis le 10 août ; l'écran de connexion ne s'est
+jamais servi du jeton. Le refus de connexion, lui, est peint en rouge vif de
+bibliothèque au lieu du rouge sombre de la charte. Les deux se corrigent quelle
+que soit la proposition retenue — c'est écrit sur la maquette.
+
+**La maquette a été REGARDÉE, pas seulement engendrée** : une capture au format
+de son téléphone a montré un débordement horizontal que la vue au large ne
+laissait pas voir. Le bouton « montrer le refus » est une case à cocher native,
+éprouvée JavaScript coupé, dans la page seule **et** dans la page unique.
+
+`TODO.md` §0 nonies · `docs/QUESTIONS.md` question 13.
+
+---
+
+## 2026-08-12
+
 ### Tous les boutons arrondis, et un contrôle pour que ça le reste
 
 **Sa demande, en une ligne :** *« remplace tous les boutons rectangulaires par

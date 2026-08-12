@@ -220,6 +220,22 @@ l'application. Ce qui est **fait** :
   question « qui répondrait au doigt ? » posée à chaque lien, bouton et champ.
   C'est la famille des trois seuls défauts que ce dépôt n'a jamais su attraper
   autrement qu'à l'œil. `ARCHITECTURE.md` §58.
+- **Une seule forme d'action, et un contrôle qui la garde** (12 août) : la
+  capsule est posée sur les dix-sept écrans du produit, et
+  `scripts/test-boutons-arrondis.ts` refuse tout bouton rectangulaire ajouté
+  ensuite — c'est le patron qui avait vu, sur la feuille d'envoi, un carré à
+  côté d'une capsule. Les champs et les cartes gardent leurs 4 px : le rayon
+  distingue ce qu'on touche de ce qu'on lit. `ARCHITECTURE.md` §67.
+- **Le devis qui ne partait pas** (12 août) : le banc d'essai sert une version
+  **bâtie**, donc `NODE_ENV=production` sans qu'aucun déploiement existe — et la
+  seconde barrière du stockage, plus stricte que la première, refusait tout
+  envoi. Une règle écrite deux fois qui avait divergé. `ARCHITECTURE.md` §66.
+- **L'écran de connexion, dessiné mais PAS posé** (12 août) : le seul écran
+  resté dans l'identité d'avant le 3 août, parce qu'il est le seul vu **avant**
+  d'être connecté. `docs/maquettes/31-l-ecran-de-connexion.html` — l'avant, puis
+  quatre après. **Son choix est attendu ; `src/app/login/` n'a pas bougé.**
+  Trois corrections partiront quoi qu'il choisisse, dont les champs à 16 px, en
+  dessous desquels iOS lui agrandit la page. `TODO.md` §0 nonies.
 
 Ce qui **reste**, avec l'ordre, les valeurs, les sept pièges et les deux
 réserves : **`TODO.md` §7**. Le dessin fait foi dans

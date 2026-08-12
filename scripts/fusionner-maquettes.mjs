@@ -204,6 +204,12 @@ const MAQUETTES = [
     quoi: "« Trop gros, carré. » Filet, bandeau fin, plaque gravée, sceau, capsule, double filet, trait d’or, angle adouci. La capsule est retenue.",
     retenu: true,
   },
+  {
+    fichier: "31-l-ecran-de-connexion.html",
+    titre: "L’écran de connexion",
+    famille: "La dernière porte",
+    quoi: "Le seul écran resté dans l’identité d’avant le 3 août. L’avant, puis quatre après : la carte gardée, sans carte, le sceau, la ligne d’imprimé. Un bouton montre le refus de connexion sur les cinq écrans à la fois.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

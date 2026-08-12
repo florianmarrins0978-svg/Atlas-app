@@ -3273,6 +3273,115 @@
 #s27 .pied b{color:var(--encre);font-weight:500}
 
 
+/* 28 — L’écran de connexion */
+#s28{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f7f5f0;
+  }
+@media (prefers-color-scheme: dark){
+#s28:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a;
+    }
+
+  
+}
+#s28[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a;
+  }
+#s28, #s28 *{box-sizing:border-box}
+#s28{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+#s28 .page{max-width:1300px;margin:0 auto}
+#s28 .intro{max-width:66ch;margin:0 auto;text-align:center}
+#s28 .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+#s28 .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+#s28 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+#s28 .intro b{color:var(--encre);font-weight:600}
+#s28 .bascule{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s28 .surbascule{display:flex;justify-content:center;margin:30px 0 4px}
+#s28 .surbascule label{cursor:pointer;-webkit-tap-highlight-color:transparent;
+       border:1px solid var(--trait);border-radius:9999px;padding:9px 22px;
+       font-size:13.5px;color:var(--gris);background:var(--plage);
+       transition:color .2s ease,border-color .2s ease}
+#s28 .surbascule label:active{transform:scale(.985)}
+#s28 .bascule:checked ~ .surbascule label{color:var(--or);border-color:var(--or)}
+#s28 .surbascule .off{display:inline}
+#s28 .surbascule .on{display:none}
+#s28 .bascule:checked ~ .surbascule .off{display:none}
+#s28 .bascule:checked ~ .surbascule .on{display:inline}
+#s28 .famille{max-width:1300px;margin:52px auto 0;text-align:center;
+           font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.32em;
+           text-transform:uppercase;color:var(--or)}
+#s28 .grille{display:flex;flex-wrap:wrap;gap:54px 40px;justify-content:center;
+          align-items:flex-start;margin-top:26px}
+#s28 .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px;width:100%}
+#s28 .legende{text-align:center;max-width:390px;width:100%}
+#s28 .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+              text-transform:uppercase;color:var(--or)}
+#s28 .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+#s28 .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+#s28 .legende p + p{margin-top:9px}
+#s28 .legende .reserve{color:var(--encre);opacity:.82}
+#s28 .legende .reserve b{color:var(--or)}
+#s28 .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+#s28 .ecran{width:390px;max-width:100%;height:544px;overflow:hidden;border-radius:32px;
+         display:flex;align-items:center;justify-content:center;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+#s28 .err{min-height:19px;font-size:13px;opacity:0;transition:opacity .2s ease}
+#s28 .bascule:checked ~ .grille .err{opacity:1}
+#s28 .avant{background:#F4EFE8;color:#1c1c1a;padding:24px}
+#s28 .avant .carte{width:100%;max-width:342px;background:#fff;border-radius:4px;padding:24px;
+                box-shadow:0 1px 2px rgba(0,0,0,.05)}
+#s28 .avant h3{margin:0 0 24px;font:600 22px/1.25 ui-serif,Georgia,serif}
+#s28 .avant .lib{display:block;margin-bottom:4px;font-size:12px;font-weight:500;color:rgba(28,28,26,.6)}
+#s28 .avant .champ{width:100%;border:1px solid rgba(0,0,0,.1);border-radius:4px;padding:10px 16px;
+                font-size:15px;color:#1c1c1a;background:#fff;margin-bottom:16px}
+#s28 .avant .err{color:#dc2626;margin-bottom:16px}
+#s28 .avant .bouton{width:100%;border:0;border-radius:9999px;background:#B5502F;color:#fff;
+                 padding:12px 0;font-size:15px;font-weight:500;text-align:center}
+#s28 .apres{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-alerte:#9C3B2E;
+    --e-trait:rgba(28,28,26,.12);
+    background:var(--e-fond);color:var(--e-encre);padding:26px 24px}
+#s28 .apres .bloc{width:100%;max-width:342px}
+#s28 .apres .lib{display:block;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+              text-transform:uppercase;color:var(--e-gris);margin-bottom:9px}
+#s28 .apres .champ{width:100%;font-size:16px;color:var(--e-encre);margin-bottom:18px}
+#s28 .apres .err{color:var(--e-alerte);margin-bottom:14px}
+#s28 .apres .capsule{display:inline-flex;align-items:center;justify-content:center;
+                  border:0;border-radius:9999px;background:var(--e-pin);color:#faf9f5;
+                  padding:13px 36px;font:400 17px/1 ui-serif,Georgia,serif}
+#s28 .apres .centrer{display:flex;justify-content:center}
+#s28 .p1 .carte{background:var(--e-plage);border-radius:4px;padding:26px 22px}
+#s28 .p1 h3{margin:0 0 22px;font:400 25px/1.2 ui-serif,Georgia,serif}
+#s28 .p1 .champ{border:1px solid var(--e-trait);border-radius:4px;padding:13px 15px;background:transparent}
+#s28 .p2 h3{margin:0 0 12px;font:400 27px/1.2 ui-serif,Georgia,serif}
+#s28 .p2 .filet{width:34px;height:1.5px;background:var(--e-or);margin:0 0 28px}
+#s28 .p2 .champ{border:0;border-radius:4px;padding:14px 15px;background:var(--e-plage)}
+#s28 .p3{text-align:center}
+#s28 .p3 .sceau{width:56px;height:56px;border:1.5px solid var(--e-or);border-radius:9999px;
+             display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+#s28 .p3 .mot{display:block;font:400 21px/1 ui-serif,Georgia,serif;letter-spacing:.3em;margin-bottom:30px}
+#s28 .p3 .lib{text-align:left}
+#s28 .p3 .champ{border:0;border-radius:4px;padding:14px 15px;background:var(--e-plage);text-align:left}
+#s28 .p4 h3{margin:0 0 6px;font:400 27px/1.2 ui-serif,Georgia,serif}
+#s28 .p4 .sous{margin:0 0 30px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+#s28 .p4 .champ{border:0;border-bottom:1px solid var(--e-trait);border-radius:0;padding:0 0 10px;
+             background:transparent;margin-bottom:22px}
+#s28 .p4 .lib{margin-bottom:7px}
+#s28 .p4 .actif{border-bottom-color:var(--e-or)}
+#s28 .note{max-width:74ch;margin:62px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+#s28 .note b{color:var(--encre)}
+#s28 .note .t{display:block;margin-bottom:8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+
+
 </style>
 
 <div class="enveloppe">
@@ -3398,6 +3507,11 @@
       <a class="item retenu" href="#m27">
         <span class="no">27</span><span class="titre">Le bouton, huit façons</span><span class="fleche">↓</span>
         <span class="quoi">« Trop gros, carré. » Filet, bandeau fin, plaque gravée, sceau, capsule, double filet, trait d’or, angle adouci. La capsule est retenue.</span>
+      </a>
+      <p class="famille">La dernière porte</p>
+      <a class="item" href="#m28">
+        <span class="no">28</span><span class="titre">L’écran de connexion</span><span class="fleche">↓</span>
+        <span class="quoi">Le seul écran resté dans l’identité d’avant le 3 août. L’avant, puis quatre après : la carte gardée, sans carte, le sceau, la ligne d’imprimé. Un bouton montre le refus de connexion sur les cinq écrans à la fois.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -12527,6 +12641,203 @@
         rendu final sera plus dessiné.</li>
     </ul>
   </div>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m28">
+    <div class="etape-tete">
+      <span class="etape-no">28</span>
+      <h2>L’écran de connexion</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s28">
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">La dernière porte</p>
+    <h1>L’écran de connexion</h1>
+    <p>C’est le seul écran d’Atlas resté dans l’identité d’avant le 3 août : le
+      terre cuite, la carte blanche, aucune serif. Il a été oublié pour une
+      raison bête — <b>c’est le seul qu’on voit avant d’être connecté</b>, donc
+      le seul qu’aucune refonte ne traverse.</p>
+    <p>Et il porte un défaut qui ne se voit que sur votre téléphone :
+      <b>ses champs sont écrits en 15 px</b>. En dessous de 16, iOS agrandit la
+      page dès que vous tapez dedans. Les quatre propositions sont en 16 px —
+      celui-là se corrige quel que soit votre choix.</p>
+  </div>
+
+  <input type="checkbox" id="refus" class="bascule">
+  <div class="surbascule">
+    <label for="refus">
+      <span class="off">Montrer le mot de passe refusé →</span>
+      <span class="on">← Masquer le refus</span>
+    </label>
+  </div>
+
+  <p class="famille">Aujourd’hui</p>
+  <div class="grille">
+    <div class="prop">
+      <div class="tel"><div class="ecran avant">
+        <div class="carte">
+          <h3>Connexion à Atlas</h3>
+          <span class="lib">Email</span>
+          <div class="champ">edennature.contact@gmail.com</div>
+          <span class="lib">Mot de passe</span>
+          <div class="champ">••••••••••</div>
+          <p class="err">Identifiants incorrects.</p>
+          <div class="bouton">Se connecter</div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Avant</h2>
+        <p class="titre">L’écran d’aujourd’hui</p>
+        <p>Fond #F4EFE8, carte blanche, ombre, bouton terre cuite. La serif du
+          titre est celle du système, en gras — pas Playfair.</p>
+        <p class="reserve"><b>Trois écarts</b> avec le reste de l’application :
+          la couleur d’accent (terre cuite au lieu du vert pin), les champs en
+          15 px, et le refus en rouge vif de bibliothèque plutôt que dans le
+          rouge sombre de la charte.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="famille">Quatre façons de la mettre à la charte</p>
+  <div class="grille">
+
+    <!-- 1 ————————————————————————————————————————————————————— -->
+    <div class="prop">
+      <div class="tel"><div class="ecran apres p1">
+        <div class="bloc"><div class="carte">
+          <h3>Connexion à Atlas</h3>
+          <span class="lib">Adresse</span>
+          <div class="champ">edennature.contact@gmail.com</div>
+          <span class="lib">Mot de passe</span>
+          <div class="champ">••••••••••</div>
+          <p class="err">Identifiants incorrects.</p>
+          <div class="centrer"><div class="capsule">Se connecter</div></div>
+        </div></div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 1</h2>
+        <p class="titre">La carte, gardée</p>
+        <p>Le moins de déplacement possible : même mise en page, habits neufs.
+          Crème, vert pin, Playfair, capsule, libellés en petites capitales.</p>
+        <p class="reserve"><b>Ce qu’elle coûte.</b> Sur une carte déjà claire,
+          un champ ne peut pas être <i>plus</i> clair : il doit porter un filet.
+          Or la charte veut les champs sans bordure, en plage. C’est le prix de
+          garder la carte — et c’est le seul reproche qu’on puisse lui faire.</p>
+      </div>
+    </div>
+
+    <!-- 2 ————————————————————————————————————————————————————— -->
+    <div class="prop">
+      <div class="tel"><div class="ecran apres p2">
+        <div class="bloc">
+          <h3>Connexion</h3>
+          <div class="filet"></div>
+          <span class="lib">Adresse</span>
+          <div class="champ">edennature.contact@gmail.com</div>
+          <span class="lib">Mot de passe</span>
+          <div class="champ">••••••••••</div>
+          <p class="err">Identifiants incorrects.</p>
+          <div class="centrer"><div class="capsule">Se connecter</div></div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 2</h2>
+        <p class="titre">Sans carte</p>
+        <p>La carte disparaît : le formulaire se pose directement sur le crème,
+          comme sur tous les autres écrans d’Atlas. Le champ redevient une
+          plage sans bordure, et le filet d’or sous le titre est celui de
+          l’écran Chantiers.</p>
+        <p class="reserve"><b>C’est la plus fidèle à ce qui existe déjà</b> —
+          rien de neuf n’est inventé, tout est repris ailleurs.</p>
+      </div>
+    </div>
+
+    <!-- 3 ————————————————————————————————————————————————————— -->
+    <div class="prop">
+      <div class="tel"><div class="ecran apres p3">
+        <div class="bloc">
+          <div class="sceau">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f"
+                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 21.5V8"/>
+              <path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/>
+              <path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/>
+              <path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/>
+              <path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/>
+            </svg>
+          </div>
+          <span class="mot">ATLAS</span>
+          <span class="lib">Adresse</span>
+          <div class="champ">edennature.contact@gmail.com</div>
+          <span class="lib">Mot de passe</span>
+          <div class="champ">••••••••••</div>
+          <p class="err">Identifiants incorrects.</p>
+          <div class="centrer"><div class="capsule">Entrer</div></div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 3</h2>
+        <p class="titre">Le sceau</p>
+        <p>La mise en page de la 2, mais la marque au-dessus : la feuille dans
+          son cercle d’or, et ATLAS très espacé. Le titre disparaît — le nom le
+          dit déjà.</p>
+        <p class="reserve"><b>Pourquoi ici et nulle part ailleurs.</b> Le sceau
+          est déjà en tête de l’écran d’accueil ; le remettre partout en ferait
+          un logo d’entreprise. Mais c’est la porte, et une porte porte un nom.</p>
+      </div>
+    </div>
+
+    <!-- 4 ————————————————————————————————————————————————————— -->
+    <div class="prop">
+      <div class="tel"><div class="ecran apres p4">
+        <div class="bloc">
+          <h3>Connexion</h3>
+          <p class="sous">Vos identifiants Atlas.</p>
+          <span class="lib">Adresse</span>
+          <div class="champ actif">edennature.contact@gmail.com</div>
+          <span class="lib">Mot de passe</span>
+          <div class="champ">••••••••••</div>
+          <p class="err">Identifiants incorrects.</p>
+          <div class="centrer"><div class="capsule">Se connecter</div></div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 4</h2>
+        <p class="titre">La ligne, comme sur un imprimé</p>
+        <p>Plus de plage du tout : un simple trait sous chaque champ, qui passe
+          à l’or sous celui qu’on est en train de remplir (montré ici sur
+          l’adresse). C’est la plus dépouillée des quatre.</p>
+        <p class="reserve"><b>Et la plus risquée</b>, franchement : un champ
+          vide sans plage se lit souvent comme « pas cliquable » — c’est un
+          piège déjà rencontré sur cette application, et noté comme tel. Le
+          trait d’or n’y répond qu’une fois qu’on a osé toucher.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="note">
+    <span class="t">Ce qui ne se choisit pas</span>
+    <b>Trois corrections partent avec n’importe laquelle des quatre :</b> les
+    champs passent à 16 px (sans quoi iOS agrandit votre écran dès que vous
+    tapez), le refus passe du rouge vif au rouge sombre de la charte, et la
+    place du message est réservée en permanence — pour que le bouton ne
+    descende pas d’une ligne au moment précis où vous appuyez dessus.
+    <br><br>
+    <span class="t">Une réserve sur les polices</span>
+    Cette page emprunte la serif de votre appareil. L’application, elle, charge
+    Playfair Display : le rendu final sera plus dessiné, surtout sur les titres
+    et sur le mot de la capsule.
+    <br><br>
+    <span class="t">Rien n’est encore posé dans l’application</span>
+    <b>Aucun fichier de <code>src/</code> n’a été touché.</b> Vous choisissez,
+    et c’est ensuite seulement que l’écran change — votre règle du 11 août.
+  </p>
 
 </div>
     </div>
