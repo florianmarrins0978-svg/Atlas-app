@@ -73,13 +73,29 @@ async function main() {
   const context = await browser.newContext();
   const page = await seConnecter(context);
 
-  await test("sans canal convenu, l'envoi est refusé avec la marche à suivre", async () => {
+  // **L'intention de ce cas n'a pas bougé, sa marche à suivre si** (11 août
+  // 2026). Il exigeait la phrase « Indiquez d'abord comment joindre ce client —
+  // sur sa fiche ». Or l'écran « Informations » a quitté le tiroir du chantier
+  // ce jour-là : cette phrase désignait une porte qui n'existe plus, et un
+  // chantier dicté ne pouvait alors plus jamais partir (`ARCHITECTURE.md` §62).
+  //
+  // La marche à suivre est désormais offerte SUR PLACE — les deux canaux et le
+  // champ. Ce qui reste inchangé, et que ce cas continue de tenir : tant que
+  // rien n'est renseigné, **l'envoi n'est pas proposé**. Un bouton actif qui ne
+  // mènerait qu'à un échec vaut moins qu'un bouton gris.
+  await test("sans canal convenu, l'envoi est refusé et la marche à suivre est offerte ici", async () => {
     // Client nommé mais sans aucune coordonnée : le patron n'a rien convenu.
     const url = await creerChantierFacturable(page, "sanscanal", { nom: "M. Sans-Contact" });
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     await page.click("text=Envoyer au client");
 
-    await page.waitForSelector("text=Indiquez d'abord comment joindre ce client", { timeout: 10000 });
+    await page.waitForSelector("text=Comment joindre ce client", { timeout: 10000 });
+    for (const canal of ["Par SMS", "Par e-mail"]) {
+      assert.ok(
+        await page.getByRole("button", { name: canal }).isVisible(),
+        `« ${canal} » manque : le patron ne peut pas lever le blocage sans quitter l'écran`
+      );
+    }
     // Le bouton ne doit pas rester cliquable : il ne mènerait qu'à un échec.
     assert.strictEqual(
       await page.getByRole("button", { name: "Envoyer le devis" }).isDisabled(),

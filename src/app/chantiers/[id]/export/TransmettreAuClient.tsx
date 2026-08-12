@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
 import { composerMessageClient, lienTransmission, type CanalClient } from "@/lib/message-client";
 import { destinataireLisible } from "@/lib/numero-lisible";
@@ -57,7 +58,7 @@ type Props = {
 // que le devis est déjà parti ou non.** « Ouvrir le SMS tout prêt » décrit le
 // premier envoi ; devant un devis que le client a déjà en main, il fait croire
 // qu'on va lui en envoyer un second. C'est « relancer » — le même lien, tel
-// quel — et c'est le mot que le patron a retenu sur la maquette 26.
+// quel — et c'est le mot que le patron a retenu sur la maquette 34.
 const LIBELLE: Record<
   CanalClient,
   { bouton: string; relance: string; bascule: string; champ: string; exemple: string; manque: string; invite: string }
@@ -221,15 +222,12 @@ export default function TransmettreAuClient({
             className="w-full rounded-[4px] border-0 px-4 py-3 outline-none"
             style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
           />
-          <button
-            type="button"
+          <PrimaryButton
             onClick={enregistrerEtOuvrir}
             disabled={enregistrement || saisie.trim() === ""}
-            className="w-full rounded-[4px] py-3 text-[15px] font-medium text-white disabled:opacity-40"
-            style={{ backgroundColor: colors.rust }}
           >
             {enregistrement ? "Enregistrement…" : "Enregistrer et ouvrir le message"}
-          </button>
+          </PrimaryButton>
         </div>
       )}
 
@@ -237,7 +235,7 @@ export default function TransmettreAuClient({
           normale reste celle convenue avec le client sur sa fiche.
 
           **Il a failli disparaître, et ce serait une régression.** Aucune des
-          cinq mises en page de la maquette 26 ne le portait — je l'avais omis.
+          cinq mises en page de la maquette 34 ne le portait — je l'avais omis.
           Or c'est une demande explicite du 4 août : « si je veux l'envoyer par
           e-mail, je ne peux pas revenir le choisir ». Il reprend donc sa place
           juste sous la ligne du destinataire, qui nomme déjà le canal — c'est
@@ -267,7 +265,7 @@ export default function TransmettreAuClient({
 
           « Partager » plutôt que « Partager autrement (WhatsApp…) » : à trois sur
           une ligne de 390 px, la parenthèse débordait. L'arbitrage est dans la
-          maquette 26. */}
+          maquette 34. */}
       <div
         className="mt-3 flex items-center justify-center text-[13px]"
         style={{ color: colors.ink }}

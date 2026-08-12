@@ -34,7 +34,42 @@ export async function verifierLimite(
   cle: string,
   limite: { max: number; fenetreMs: number }
 ): Promise<ResultatVerificationLimite> {
-  const resultat = await getMagasin().verifierEtIncrementer(cle, limite.max, limite.fenetreMs);
+  let resultat;
+  try {
+    resultat = await getMagasin().verifierEtIncrementer(cle, limite.max, limite.fenetreMs);
+  } catch (erreur) {
+    // ─────────────────────────────────────────────────────────────────────────
+    // **Un limiteur en panne ne doit JAMAIS mettre le patron dehors.**
+    //
+    // Le 12 août 2026 : *« ça ne marche pas, je n'arrive pas à me connecter »*.
+    // Redis était tombé sur son espace. Cet appel levait alors
+    // `MaxRetriesPerRequestError`, l'action de connexion mourait avec — et
+    // l'écran restait sur la page de connexion, **sans un mot**. Rien ne
+    // pouvait lui dire que ce n'était ni son mot de passe ni son compte, mais
+    // un service annexe couché.
+    //
+    // Le raisonnement, et il vaut d'être écrit : la limitation protège d'un
+    // ABUS. Refuser tout le monde quand son magasin tombe, ce n'est pas
+    // protéger — c'est infliger soi-même la panne dont on se protégeait, et la
+    // première victime est celui qui a le droit d'entrer.
+    //
+    // **Ce que cela coûte, dit franchement :** pendant la panne du magasin, la
+    // protection contre les essais de mots de passe en rafale n'existe plus.
+    // C'est un risque accepté et BORNÉ — il ne dure que la panne — contre une
+    // certitude : sans cela, l'artisan est enfermé dehors, et il n'a aucun
+    // moyen de le comprendre.
+    //
+    // Le journal, lui, est bruyant : c'est la seule trace qui reste, et c'est
+    // elle qui doit permettre de nommer la cause du premier coup.
+    // ─────────────────────────────────────────────────────────────────────────
+    console.error(
+      "[limite] le magasin de limitation n'a pas répondu — la demande est LAISSÉE PASSER " +
+        "pour ne pas enfermer l'utilisateur dehors. La protection contre les rafales est " +
+        "suspendue jusqu'au retour du service.",
+      { cle, erreur }
+    );
+    return { autorise: true };
+  }
   if (resultat.autorise) return { autorise: true };
   return {
     autorise: false,

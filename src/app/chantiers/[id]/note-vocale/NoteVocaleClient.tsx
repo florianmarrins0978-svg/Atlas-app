@@ -9,13 +9,13 @@ import { useRetraits } from "@/components/atlas/useRetraits";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { ACCEPT_AUDIO } from "@/server/upload-limits";
 import {
-  enregistrerNoteVocaleAction,
   lancerTranscriptionAction,
   supprimerNoteVocaleAction,
   completerNoteVocaleAction,
 } from "./actions";
 import DevisDepuisDictee from "../DevisDepuisDictee";
 import { formulaireDeNote } from "../magnetophone";
+import { envoyerNoteVocale } from "@/lib/envoi-note-vocale";
 
 // « confirmation » ne sert plus qu'au REMPLACEMENT depuis le 10 août 2026 : le
 // retrait, lui, passe par le glissement et le tiroir, sans rien demander avant.
@@ -114,8 +114,9 @@ export default function NoteVocaleClient({
       // rend du mp4, Firefox de l'ogg, Chrome du webm, et deux copies de cette
       // règle finiraient par diverger — l'anneau de la fiche l'emploie aussi.
       const fd = formulaireDeNote(blob, dureeFinale);
-      const resultat = await enregistrerNoteVocaleAction(chantierId, fd);
-      // Un refus dit pourquoi — voir `ResultatNoteVocale` dans ./actions.ts.
+      // Une URL, jamais une action serveur — voir `envoi-note-vocale.ts`.
+      // `envoyerNoteVocale` ne lève pas : tout échec revient en `raison`.
+      const resultat = await envoyerNoteVocale(chantierId, fd);
       if (!resultat.ok) {
         setErreur(resultat.raison);
         setEtat("vide");
@@ -129,11 +130,6 @@ export default function NoteVocaleClient({
       setStatutTranscription("non_demandee");
       setErreurTranscription(null);
       setEtat("note");
-    } catch (err) {
-      // Pas un refus : l'aller-retour n'a pas abouti. Voir AnneauNoteVocale.
-      console.error("Note vocale : envoi impossible", err);
-      setErreur("L'enregistrement n'a pas pu être transmis — la connexion a été interrompue. Réessayez.");
-      setEtat("vide");
     } finally {
       setEnCours(false);
     }
@@ -262,12 +258,12 @@ export default function NoteVocaleClient({
     try {
       const fd = new FormData();
       fd.set("fichier", fichier);
-      const resultat = await enregistrerNoteVocaleAction(chantierId, fd);
       // **Ce chemin CROYAIT déjà montrer le message du serveur** — il lisait
       // `err.message`. Sur la version bâtie du banc, Next.js remplace ce
       // message par un identifiant opaque : le patron n'a jamais pu lire ni la
-      // taille ni le format refusés. Le refus est maintenant une valeur de
-      // retour, qui traverse intacte.
+      // taille ni le format refusés. Il passe désormais par la même URL que la
+      // dictée, et reçoit la même raison, déjà traduite.
+      const resultat = await envoyerNoteVocale(chantierId, fd);
       if (!resultat.ok) {
         setErreur(resultat.raison);
         return;
@@ -280,9 +276,6 @@ export default function NoteVocaleClient({
       setStatutTranscription("non_demandee");
       setErreurTranscription(null);
       setEtat("note");
-    } catch (err) {
-      console.error("Note vocale : import impossible", err);
-      setErreur("Ce fichier n'a pas pu être transmis — la connexion a été interrompue. Réessayez.");
     } finally {
       setEnCours(false);
       if (fichierRef.current) fichierRef.current.value = "";
@@ -576,7 +569,7 @@ export default function NoteVocaleClient({
           <button
             onClick={complementEnCours ? arreterComplement : demarrerComplement}
             disabled={enCours}
-            className="mt-4 block w-full rounded-[4px] py-3 text-center text-[15px] font-medium disabled:opacity-40"
+            className="mt-4 block w-full rounded-full py-3 text-center text-[15px] font-medium disabled:opacity-40"
             style={{
               backgroundColor: complementEnCours ? colors.alert : colors.rustTint,
               color: complementEnCours ? "#FFFFFF" : colors.rust,
@@ -632,7 +625,7 @@ export default function NoteVocaleClient({
               <button
                 onClick={confirmerRemplacement}
                 disabled={enCours}
-                className="rounded-[4px] py-3.5 text-[15px] font-medium disabled:opacity-40"
+                className="rounded-full py-3.5 text-[15px] font-medium disabled:opacity-40"
                 style={{ color: colors.alert }}
               >
                 Remplacer

@@ -28,7 +28,7 @@
 
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { annoncePrete } from "./annonce-adresse.mjs";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
@@ -432,6 +432,44 @@ const surSortie = (code) => {
 };
 serveur.on("exit", surSortie);
 
+// Arrêter ce script doit arrêter le serveur : sans cela il reste en écoute, et
+// la tentative suivante échoue sur un port déjà pris — message qui n'a plus
+// aucun rapport avec la cause.
+//
+// **Le GROUPE, pas le seul enfant.** Depuis que le serveur est détaché (voir
+// `lancerDev`), Ctrl+C ne lui parvient plus tout seul : il faut le lui
+// transmettre, sinon fermer le banc laisserait derrière soi exactement
+// l'orphelin qui a coûté la soirée du 10 août.
+//
+// **POSÉS ICI, LIGNE SUIVANTE — et c'est tout le correctif du 11 août 2026.**
+//
+// Ils vivaient en fin de fichier, c'est-à-dire APRÈS la construction. Or ce
+// script sert d'abord et bâtit ensuite : entre le lancement du serveur et
+// l'installation de ces gardiens, il s'écoule **plusieurs minutes**. Un
+// `SIGTERM` reçu dans cette fenêtre ne rencontre aucun gestionnaire, tue ce
+// script net — et le serveur, DÉTACHÉ, survit et garde le port.
+//
+// Ce n'est pas une hypothèse : c'est ce que fait
+// `scripts/verifier-connexion-avec-serveur.mts`, qui lance `npm run banc` puis
+// tue son groupe dès la connexion éprouvée — sans attendre la construction. Le
+// serveur orphelin restait alors sur le port 3000, et la batterie suivante
+// accusait le calcul du prix (`TODO.md`, « serveur fantôme »).
+//
+// Un gardien installé trop tard ne protège de rien, et ne se voit pas : le code
+// est juste, il arrive en retard.
+for (const signal of ["SIGINT", "SIGTERM"]) {
+  process.on(signal, () => {
+    enBascule = false;
+    tuerLeServeur(serveur);
+    process.exit(0);
+  });
+}
+
+// Même chose pour une sortie ordinaire, ou une exception : un serveur détaché ne
+// meurt plus avec son père, et un orphelin accroché au port est précisément la
+// panne qu'on répare ici.
+process.on("exit", () => tuerLeServeur(serveur));
+
 if (raison) {
   console.log(`\n  Atlas répond déjà, en mode développement.`);
   // Pas d'`await` : le préchauffage, l'annonce et la construction avancent
@@ -439,6 +477,34 @@ if (raison) {
   void annoncerDesQueCaRepond(false);
   prechaufferEcransPublics();
   console.log(`  Sa version rapide se construit en même temps (${raison}) — ne fermez rien.\n`);
+
+  // **Écarter les types laissés par une AUTRE construction, avant de bâtir.**
+  //
+  // Le patron, le 11 août 2026 au soir : « Failed to type check », sur une route
+  // qui existait. Puis une seconde fois, sur une route qui venait d'être
+  // supprimée. Deux formes du même piège.
+  //
+  // Next se protège pourtant : son contrôle de types écarte `<distDir>/dev/types`
+  // — « pour empêcher des types de développement périmés de faire échouer la
+  // construction ». Mais ici `distDir` vaut `.next-batie`, si bien qu'il écarte
+  // `.next-batie/dev` pendant que les restes vivent dans `.next`. Le garde-fou
+  // vise à côté dès qu'on bâtit ailleurs que dans `.next`.
+  //
+  // `tsconfig.json` exclut déjà `.next/dev` — celui-là est réécrit en
+  // permanence par le serveur de développement, on ne peut que l'ignorer.
+  // `.next/types`, lui, ne se régénère pas : personne ne bâtit dans `.next`
+  // ici. Il ne peut donc qu'être **périmé**, et il décrit alors des routes
+  // d'avant — celle des photos, supprimée ce soir-là, en est l'exemple exact.
+  // On l'efface : ce qui n'existe plus ne peut plus accuser à tort.
+  //
+  // Reproduit dans les deux sens avant d'écrire ces lignes : avec ce reste, la
+  // construction du banc échoue au mot près comme chez lui ; sans lui, elle
+  // passe.
+  try {
+    rmSync(".next/types", { recursive: true, force: true });
+  } catch {
+    // Rien à réparer : au pire le dossier n'existait pas, et c'est le cas normal.
+  }
 
   // La construction écrit dans SON dossier : le serveur de développement garde
   // le sien, et les deux ne se marchent jamais dessus.
@@ -548,27 +614,6 @@ if (raison) {
     );
   }
 }
-
-// Arrêter ce script doit arrêter le serveur : sans cela il reste en écoute, et
-// la tentative suivante échoue sur un port déjà pris — message qui n'a plus
-// aucun rapport avec la cause.
-//
-// **Le GROUPE, pas le seul enfant.** Depuis que le serveur est détaché (voir
-// `lancerDev`), Ctrl+C ne lui parvient plus tout seul : il faut le lui
-// transmettre, sinon fermer le banc laisserait derrière soi exactement
-// l'orphelin qui a coûté la soirée du 10 août.
-for (const signal of ["SIGINT", "SIGTERM"]) {
-  process.on(signal, () => {
-    enBascule = false;
-    tuerLeServeur(serveur);
-    process.exit(0);
-  });
-}
-
-// Même chose pour une sortie ordinaire, ou une exception : un serveur détaché ne
-// meurt plus avec son père, et un orphelin accroché au port est précisément la
-// panne qu'on répare ici.
-process.on("exit", () => tuerLeServeur(serveur));
 
 // **ON ATTEND TANT QUE LE SERVEUR VIT — pas trois minutes au chronomètre.**
 //

@@ -327,7 +327,7 @@ export default function BrouillonSection({
                 type="button"
                 onClick={confirmer}
                 disabled={enCours}
-                className={`rounded-[4px] py-3.5 disabled:opacity-40 ${libelleCaps}`}
+                className={`rounded-full py-3.5 disabled:opacity-40 ${libelleCaps}`}
                 style={{ backgroundColor: colors.rustTint, color: colors.rust, minHeight: 48 }}
               >
                 {enCours ? "Application…" : "Confirmer et ajouter au chantier"}

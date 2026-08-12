@@ -3,10 +3,16 @@
 import { useEffect, useState } from "react";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
+import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { jourIso, jourLisible } from "@/lib/jour";
 import Calendrier from "@/components/atlas/Calendrier";
 import { libelleDuree } from "@/server/disponibilites";
-import { preparerEnvoiAction, envoyerAuClientAction, verifierJourProposeAction } from "./actions";
+import {
+  preparerEnvoiAction,
+  envoyerAuClientAction,
+  verifierJourProposeAction,
+  enregistrerCoordonneeClientAction,
+} from "./actions";
 import type { PreparationEnvoi, VerdictJour } from "@/server/repositories/preparation-envoi";
 import BandeDuree from "../BandeDuree";
 
@@ -17,12 +23,38 @@ import BandeDuree from "../BandeDuree";
 // La seule question posée est un RÉGLAGE de l'envoi : une date, ou deux ? Sa
 // réponse déclenche tout le reste.
 
+// **Ce qui s'arrête ici, et ce qui se répare ici.**
+//
+// Le patron, le 11 août 2026, capture à l'appui : *« l'encart qui permet
+// d'envoyer aux clients par SMS, par e-mail, a disparu. »* Il ne voyait plus
+// que « Indiquez d'abord comment joindre ce client — sur sa fiche », et un
+// bouton grisé.
+//
+// **C'était un cul-de-sac, et il s'est refermé le soir même.** L'écran
+// « Informations » — le seul endroit où saisir le téléphone ou l'e-mail d'un
+// client — a quitté le tiroir de la fiche quelques heures plus tôt, à sa
+// demande. La phrase renvoyait donc vers une porte qui n'existe plus, et un
+// chantier né d'une dictée (client « non renseigné ») ne pouvait plus jamais
+// partir.
+//
+// Le dépôt avait pourtant déjà tranché ce point exact le 4 août, pour l'écran
+// d'après : *« si la coordonnée manque, elle se saisit sur place — il n'existe
+// aucun autre écran pour la renseigner, et renvoyer le patron sur la fiche du
+// client l'enverrait vers une porte qui n'existe pas »* (`TransmettreAuClient`).
+// La règle valait ici aussi. Elle y est.
+//
+// Reste `devis_absent`, qui n'est pas du même ordre : rien à saisir ne le
+// résout, et il ne se produit pas depuis ce chemin.
 const MESSAGES_BLOCAGE: Record<string, string> = {
-  canal_absent:
-    "Indiquez d'abord comment joindre ce client — par SMS ou par e-mail — sur sa fiche.",
-  coordonnee_absente: "Ce client n'a pas de coordonnée enregistrée pour le canal choisi.",
+  canal_absent: "Comment joindre ce client ?",
+  coordonnee_absente: "Il manque la coordonnée pour ce canal.",
   devis_absent: "Aucun devis à envoyer pour ce chantier.",
 };
+
+const LIBELLE_CANAL = {
+  sms: { titre: "Par SMS", champ: "Numéro de téléphone", exemple: "06 12 34 56 78" },
+  email: { titre: "Par e-mail", champ: "Adresse e-mail", exemple: "client@exemple.fr" },
+} as const;
 
 type Props = {
   chantierId: string;
@@ -64,6 +96,13 @@ function Contenu({
   const [autreDate, setAutreDate] = useState("");
   const [verdict, setVerdict] = useState<VerdictJour | null>(null);
   const [verification, setVerification] = useState(false);
+  // Le canal et la coordonnée saisis ici même, quand ils manquent. `rejouer`
+  // relance la préparation après l'enregistrement : sans lui, l'écran garderait
+  // le blocage qu'on vient de lever.
+  const [canalChoisi, setCanalChoisi] = useState<"sms" | "email">("sms");
+  const [coordonnee, setCoordonnee] = useState("");
+  const [enregistrement, setEnregistrement] = useState(false);
+  const [rejouer, setRejouer] = useState(0);
 
   useEffect(() => {
     let annule = false;
@@ -83,7 +122,34 @@ function Contenu({
     return () => {
       annule = true;
     };
-  }, [chantierId, dureeChoisie]);
+  }, [chantierId, dureeChoisie, rejouer]);
+
+  /**
+   * Enregistre le canal et la coordonnée, puis relance la préparation.
+   *
+   * Le client est mis à jour pour de bon — pas seulement pour cet envoi : c'est
+   * la même information que la fiche porterait, et la saisir deux fois serait
+   * la saisir une fois de trop.
+   */
+  async function enregistrerContact() {
+    const valeur = coordonnee.trim();
+    if (!valeur || !preparation?.clientId) return;
+    setEnregistrement(true);
+    setErreur(null);
+    try {
+      const r = await enregistrerCoordonneeClientAction(preparation.clientId, canalChoisi, valeur);
+      if (!r.succes) {
+        setErreur("Cette coordonnée n'a pas pu être enregistrée. Vérifiez-la et réessayez.");
+        return;
+      }
+      setPreparation(null);
+      setRejouer((n) => n + 1);
+    } catch {
+      setErreur("L'enregistrement n'a pas abouti — vérifiez votre réseau et réessayez.");
+    } finally {
+      setEnregistrement(false);
+    }
+  }
 
   function basculerJour(jour: string) {
     setSelection((actuelle) => {
@@ -152,6 +218,10 @@ function Contenu({
   }
 
   const blocage = preparation?.blocage ? MESSAGES_BLOCAGE[preparation.blocage] : null;
+  // Deux des trois blocages se lèvent d'une saisie ici même. `devis_absent`,
+  // non : rien à écrire ne le résout.
+  const reparable =
+    preparation?.blocage === "canal_absent" || preparation?.blocage === "coordonnee_absente";
 
   return (
     <>
@@ -166,9 +236,70 @@ function Contenu({
       )}
 
       {preparation && blocage && (
-        <p className="my-5 text-center text-[13px]" style={{ color: colors.rust }}>
+        <p className="mb-3 mt-4 text-center text-[13px]" style={{ color: colors.ink }}>
           {blocage}
         </p>
+      )}
+
+      {/* **On répare, on ne renvoie pas ailleurs.** Les deux voies sont offertes
+          et la coordonnée se saisit ici : c'est le seul endroit atteignable
+          depuis un chantier dicté, dont le client reste « non renseigné ». */}
+      {preparation && reparable && (
+        <div className="mb-5">
+          <div className="mb-2.5 flex gap-2">
+            {(["sms", "email"] as const).map((c) => {
+              const actif = canalChoisi === c;
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCanalChoisi(c)}
+                  aria-pressed={actif}
+                  className="flex-1 rounded-[4px] py-3 text-[15px] font-medium"
+                  style={{
+                    backgroundColor: actif ? colors.rustTint : colors.card,
+                    color: actif ? colors.rust : colors.ink,
+                  }}
+                >
+                  {LIBELLE_CANAL[c].titre}
+                </button>
+              );
+            })}
+          </div>
+
+          <input
+            value={coordonnee}
+            onChange={(e) => setCoordonnee(e.target.value)}
+            // Le clavier du téléphone suit le canal : composer un numéro sur un
+            // clavier de texte est une corvée qu'on peut simplement éviter.
+            type={canalChoisi === "sms" ? "tel" : "email"}
+            inputMode={canalChoisi === "sms" ? "tel" : "email"}
+            autoComplete={canalChoisi === "sms" ? "tel" : "email"}
+            aria-label={LIBELLE_CANAL[canalChoisi].champ}
+            placeholder={LIBELLE_CANAL[canalChoisi].exemple}
+            className="w-full rounded-[4px] px-3.5 py-3 text-[16px] outline-none"
+            style={{ backgroundColor: colors.card, color: colors.ink }}
+          />
+
+          <button
+            type="button"
+            onClick={enregistrerContact}
+            disabled={enregistrement || !coordonnee.trim() || !preparation.clientId}
+            className="mt-2.5 w-full rounded-full py-3 text-[15px] font-medium disabled:opacity-50"
+            style={{ backgroundColor: colors.card, color: colors.rust }}
+          >
+            {enregistrement ? "Enregistrement…" : "Enregistrer et continuer"}
+          </button>
+
+          {/* Sans client rattaché, il n'y a rien à mettre à jour : le dire, au
+              lieu d'offrir un champ qui ne mènerait nulle part. */}
+          {!preparation.clientId && (
+            <p className="mt-2 text-center text-[12px]" style={{ color: colors.muted }}>
+              Ce chantier n&apos;a pas encore de client. Ouvrez le devis pour lui donner un nom,
+              puis revenez ici.
+            </p>
+          )}
+        </div>
       )}
 
       {preparation && !blocage && (
@@ -355,18 +486,22 @@ function Contenu({
         </p>
       )}
 
+      {/* **Ce bouton était écrit à la main, et le patron l'a vu le 12 août 2026 :**
+          *« déjà le bouton, ce n'est pas le même »*. Il avait raison — la
+          capsule avait été posée sur `PrimaryButton`, et cet écran-ci ne s'en
+          servait pas. Une action principale dessinée sur place échappe à toute
+          décision d'ensemble : elle ne change que si quelqu'un pense à elle.
+          C'est le composant qui porte la forme, jamais l'écran. */}
       <div className="flex flex-col gap-2.5">
-        <button
+        <PrimaryButton
           onClick={confirmer}
           disabled={enCours || !preparation || !!blocage || selection.length === 0}
-          className="rounded-[4px] py-3.5 text-[16px] font-medium text-white disabled:opacity-50"
-          style={{ backgroundColor: colors.rust }}
         >
           {enCours ? "Envoi…" : "Envoyer le devis"}
-        </button>
+        </PrimaryButton>
         <button
           onClick={onFermer}
-          className="rounded-[4px] py-3.5 text-[15px] font-medium"
+          className="rounded-full py-3.5 text-[15px] font-medium"
           style={{ color: colors.muted }}
         >
           Annuler

@@ -31,10 +31,37 @@ export type { ObjetStocke } from "./local-storage";
  */
 function choisi() {
   const env = getEnv();
-  // Le module d'environnement (src/server/env.ts) refuse déjà de démarrer en
-  // production si STORAGE_PROVIDER n'est pas "s3" — répété ici comme seconde
-  // barrière, au point d'usage réel du stockage.
-  if (env.nodeEnv === "production" && env.stockageProvider !== "s3") {
+
+  // **`bancDEssai` n'est pas un détail : c'est le correctif du 12 août 2026,
+  // et il a coûté au patron son premier envoi de devis.**
+  //
+  // Il a lu, sur la feuille d'envoi, à la place de son devis :
+  //
+  //     Stockage local sélectionné en production — configuration refusée
+  //
+  // Sa configuration était pourtant juste. Cette barrière ne regardait que
+  // `nodeEnv === "production"`, alors que le banc d'essai SERT UNE VERSION
+  // BÂTIE : `next start` impose `NODE_ENV=production` sans que rien ne soit
+  // déployé. `src/server/env.ts` connaît cette distinction depuis le 10 août —
+  // `exigencesDeDeploiement = exigencesDeProduction && !bancDEssai`, « les deux
+  // seules choses qu'un banc ne peut pas avoir : une clé d'IA facturée et un
+  // compartiment S3 ». Ici, on l'ignorait.
+  //
+  // **Le commentaire qui vivait à cette place affirmait le contraire de la
+  // réalité** — « le module d'environnement refuse déjà de démarrer en
+  // production » — ce qui est faux sur le banc, et c'est précisément pour cela
+  // que personne n'a vu la divergence : la seconde barrière se croyait
+  // redondante alors qu'elle était devenue plus stricte que la première.
+  //
+  // C'est le défaut que `CLAUDE.md` §3 nomme : « Jamais de règle dupliquée…
+  // deux implémentations finissent toujours par diverger. » On ne recopie donc
+  // plus la règle, on reprend **la même notion** que la configuration.
+  //
+  // Ce qui n'est PAS relâché : un déploiement réel, lui, exige toujours S3. Le
+  // stockage local ne persiste pas entre instances, et un devis envoyé dont le
+  // PDF a disparu est pire qu'un envoi refusé.
+  const deploiementReel = env.nodeEnv === "production" && !env.bancDEssai;
+  if (deploiementReel && env.stockageProvider !== "s3") {
     throw new Error("Stockage local sélectionné en production — configuration refusée (voir src/server/env.ts).");
   }
   return env.stockageProvider === "s3" ? s3 : local;

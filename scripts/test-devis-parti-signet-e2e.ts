@@ -9,7 +9,7 @@ import { pool } from "../src/server/db/client";
  * **Pourquoi cette suite existe.** Le patron, le 12 août 2026 : *« je trouve
  * qu'il y a trop d'infos sur cette page »*. Mesuré : l'écran portait onze blocs
  * et débordait de 382 px sur sa dalle. Après cinq propositions
- * (`docs/maquettes/26-le-devis-sur-sa-base.html`) il a retenu l'idée 5 et fixé
+ * (`docs/maquettes/34-le-devis-sur-sa-base.html`) il a retenu l'idée 5 et fixé
  * lui-même le contenu : le nom du devis, le total, un lien « Modifier mon
  * devis » sous le total, et les trois actions en encre foncée.
  *

@@ -2939,214 +2939,548 @@
 }
 
 
-/* 25 — Le devis parti, allégé */
-#s25{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+/* 25 — Les deux portes, côte à côte */
+#s25{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13);
+  }
 @media (prefers-color-scheme: dark){
-#s25:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+#s25:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16);
+    }
 
   
 }
-#s25[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+#s25[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16);
+  }
 #s25, #s25 *{box-sizing:border-box}
 #s25{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
-       padding:44px 16px 90px}
-#s25 .page{max-width:1180px;margin:0 auto}
-#s25 .intro{max-width:64ch;margin:0 auto}
-#s25 .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
-#s25 .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
-#s25 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
-#s25 .intro b{color:var(--encre);font-weight:500}
-#s25 .appui{max-width:54ch;margin:22px auto 0;padding:15px 20px;border:1px solid var(--trait);
-         border-radius:6px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
-#s25 .appui b{color:var(--encre);font-weight:500}
-#s25 .famille{margin:56px 0 14px;text-align:center;font-size:10px;letter-spacing:.3em;
-           text-transform:uppercase;color:var(--gris)}
-#s25 .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
-#s25 .famille span::before,#s25 .famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
-#s25 .famille span::before{right:100%}
-#s25 .famille span::after{left:100%}
-#s25 .sous-titre{max-width:60ch;margin:0 auto 28px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
-#s25 .rangee{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;align-items:flex-start}
-#s25 .cartouche{display:flex;flex-direction:column;align-items:center;gap:13px;max-width:412px}
-#s25 .etiquette{color:var(--bronze);font-size:10px;letter-spacing:.3em;text-transform:uppercase}
-#s25 .cartouche .dit{margin:0;font-size:12.5px;line-height:1.6;color:var(--gris);text-align:center}
-#s25 .cartouche .dit b{color:var(--encre);font-weight:500}
-#s25 .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
-       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
-#s25 .ecran{position:relative;overflow:hidden;border-radius:34px;height:664px;
-         display:flex;flex-direction:column;
-         background:#f5f3ee;color:#1c1c1a;
-         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
-         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
-         --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f;
-         --e-trait:rgba(28,28,26,.16); --e-trait-doux:rgba(28,28,26,.07)}
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+#s25 .page{max-width:1240px;margin:0 auto}
+#s25 .intro{max-width:62ch;margin:0 auto 18px;text-align:center}
+#s25 .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+#s25 .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+#s25 .intro p{margin:0 0 10px;color:var(--gris);font-size:15px}
+#s25 .intro .note{font-size:13.5px}
+#s25 .grille{display:flex;flex-wrap:wrap;gap:56px 44px;justify-content:center;align-items:flex-start;margin-top:46px}
+#s25 .prop{display:flex;flex-direction:column;align-items:center;gap:18px;max-width:412px}
+#s25 .legende{text-align:center;max-width:390px}
+#s25 .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+#s25 .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+#s25 .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+#s25 .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+#s25 .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-or-clair:#C9A15E; --e-papier:#ece9e1;
+    --e-trait:rgba(28,28,26,.12);
+    width:390px;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:26px 0 30px}
 #s25 .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
-#s25 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
 #s25 .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
-#s25 .retour{padding:22px 26px 0;color:var(--e-gris);font-size:12px;text-decoration:none;display:block}
-#s25 .titre{padding:16px 26px 0}
-#s25 .titre .sur{margin:0;color:var(--e-or)}
-#s25 .titre h1{margin:11px 0 0;font-size:36px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
-#s25 .fermeture{height:1px;background:var(--e-trait);margin:20px 26px 0}
-#s25 .corps{flex:1 1 auto;min-height:0;overflow:hidden;padding:0 26px}
-#s25 .corps.defile{overflow:hidden;position:relative}
-#s25 .corps.defile::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56px;
-                       background:linear-gradient(to top,var(--e-fond),transparent);pointer-events:none}
-#s25 .plage{background:var(--e-plage);border-radius:4px;padding:19px 20px;margin-top:16px}
-#s25 .plage.serre{padding:15px 18px}
-#s25 .cle{margin:0 0 4px;color:var(--e-gris)}
-#s25 .val{margin:0;font-size:15px}
-#s25 .separe{border-top:1px solid var(--e-trait);margin:13px 0;height:0}
-#s25 .ligne-devis{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:15px;line-height:1.35}
-#s25 .ligne-devis span:last-child{color:var(--e-gris);line-height:1}
-#s25 .total-gros{margin:0;font:400 32px/1 ui-serif,Georgia,serif;color:var(--e-pin)}
-#s25 .lien-brut{margin:10px 0 0;padding:8px 12px;border-radius:4px;background:var(--e-fond);
-             color:var(--e-gris);font-size:12px;text-align:center;word-break:break-all;line-height:1.45}
-#s25 .doux{display:block;width:100%;margin-top:14px;text-align:center;font-size:14px;
-        color:var(--e-pin);text-decoration:none;font-weight:500;background:none;border:0;
-        font-family:inherit;padding:0;cursor:pointer}
-#s25 .tres-doux{display:block;width:100%;margin-top:9px;text-align:center;font-size:13px;
-             color:var(--e-gris);text-decoration:none;background:none;border:0;font-family:inherit;
-             padding:0;cursor:pointer}
-#s25 .dessous{margin:8px 0 0;text-align:center;font-size:12px;color:var(--e-gris)}
-#s25 .envoi{display:block;width:100%;margin-top:14px;padding:13px;text-align:center;
-         font-size:15px;font-weight:500;color:#fff;text-decoration:none;
-         background:var(--e-pin);border:0;font-family:inherit;cursor:pointer;
-         border-radius:var(--r,4px)}
-#s25 .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
-       border-top:1px solid var(--e-trait);padding:16px 14px 26px;position:relative;z-index:2;
-       background:var(--e-fond)}
-#s25 .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
-#s25 .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-or)}
-#s25 .repli{margin-top:16px;border-top:1px solid var(--e-trait)}
-#s25 .repli summary{list-style:none;cursor:pointer;padding:13px 0 0;color:var(--e-gris);
-                 font-size:13px;display:flex;align-items:center;justify-content:space-between}
-#s25 .repli summary::-webkit-details-marker{display:none}
-#s25 .repli summary .chev{color:var(--e-trait);transition:transform 220ms}
-#s25 .repli[open] summary .chev{transform:rotate(90deg)}
-#s25 .etat-fin{display:flex;align-items:center;gap:11px;margin-top:20px;color:var(--e-or)}
-#s25 .etat-fin::after{content:"";flex:1;height:1px;background:var(--e-trait)}
-#s25 .etat-phrase{margin:9px 0 0;font-size:13.5px;color:var(--e-gris);line-height:1.55}
-#s25 .bande{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;align-items:flex-start}
-#s25 .echantillon{width:236px;padding:22px 20px;border-radius:10px;background:#f5f3ee;
-               border:1px solid var(--trait);text-align:center;
-               --e-pin:#2f3b2f; --e-plage:#faf9f5; --e-gris:#8a8578}
-#s25 .echantillon .rayon{margin:0 0 13px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#8a8578}
-#s25 .echantillon .envoi{margin-top:0}
-#s25 .echantillon .plage{margin-top:11px;padding:11px 13px;text-align:center;font-size:12px;color:#8a8578;
-                      border-radius:var(--r,4px)}
-#s25 .echantillon .quoi{margin:12px 0 0;font-size:12px;line-height:1.55;color:var(--gris)}
-#s25 .note{max-width:64ch;margin:52px auto 0;padding:20px 22px;border:1px solid var(--trait);
-        border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.7}
-#s25 .note h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
-#s25 .note b{color:var(--encre);font-weight:500}
-#s25 .note p{margin:0 0 12px}
-#s25 .note p:last-child{margin-bottom:0}
-#s25 .note table{width:100%;border-collapse:collapse;margin:14px 0 4px;font-size:12.5px}
-#s25 .note th{text-align:left;font-weight:500;color:var(--encre);padding:0 0 7px}
-#s25 .note td{padding:5px 0;border-top:1px solid var(--trait);vertical-align:top}
-#s25 .note td:first-child{white-space:nowrap;padding-right:16px;color:var(--encre)}
+#s25 .libelle{text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600;color:var(--e-gris)}
+#s25 .champ{margin:0 24px 16px}
+#s25 .champ .val{margin-top:7px;border-radius:4px;background:var(--e-plage);
+              padding:14px 15px;font-size:16px;color:var(--e-gris)}
+#s25 .ajout{margin:2px 24px 0;font-size:14px;font-weight:500;color:var(--e-pin)}
+#s25 .actions{margin:26px 24px 0}
+#s25 .p,#s25 .p *{transition:background-color .18s ease,color .18s ease,border-color .18s ease,
+          transform .12s ease,box-shadow .18s ease}
+#s25 .p:active{transform:scale(.985)}
+#s25 .plaque{display:flex;border-radius:5px;overflow:hidden}
+#s25 .plaque .gauche{flex:1 1 62%;background:var(--e-pin);color:#faf9f5;
+                  padding:17px 8px;text-align:center;font-family:ui-serif,Georgia,serif;font-size:18px}
+#s25 .plaque .fil{width:1px;background:var(--e-or)}
+#s25 .plaque .droite{flex:0 0 38%;background:var(--e-papier);color:var(--e-pin);
+                  padding:17px 8px;text-align:center;font-family:ui-serif,Georgia,serif;font-size:18px}
+#s25 .plaque .droite small{display:block;margin-top:3px;color:var(--e-or)}
+#s25 .plaque:active .droite{background:var(--e-or);color:#faf9f5}
+#s25 .plaque:active .droite small{color:#faf9f5}
+#s25 .jumelles{display:flex;gap:10px}
+#s25 .jumelles>*{flex:1;border-radius:5px;padding:16px 6px;text-align:center;
+              font-family:ui-serif,Georgia,serif;font-size:17.5px;line-height:1.25}
+#s25 .jumelles .plein{background:var(--e-pin);color:#faf9f5}
+#s25 .jumelles .cerne{background:transparent;color:var(--e-pin);
+                   box-shadow:inset 0 0 0 1px var(--e-or)}
+#s25 .jumelles .cerne .sous{display:block;margin-top:2px;font-family:inherit;font-size:12px;color:var(--e-or)}
+#s25 .jumelles:active .cerne{background:var(--e-papier)}
+#s25 .diptyque{display:flex;gap:10px}
+#s25 .diptyque .carte{flex:1;border-radius:5px;padding:15px 15px 13px;
+                   display:flex;flex-direction:column;justify-content:space-between;min-height:118px}
+#s25 .diptyque .a{background:var(--e-pin);color:#faf9f5}
+#s25 .diptyque .b{background:var(--e-plage);color:var(--e-encre);box-shadow:inset 0 0 0 1px var(--e-trait)}
+#s25 .diptyque .sur{font-size:9px;letter-spacing:.3em;text-transform:uppercase;font-weight:500}
+#s25 .diptyque .a .sur{color:var(--e-or-clair)}
+#s25 .diptyque .b .sur{color:var(--e-or)}
+#s25 .diptyque .quoi{margin:11px 0 0;font-family:ui-serif,Georgia,serif;font-size:19px;line-height:1.16}
+#s25 .diptyque .fleche{margin-top:12px;text-align:right;font-size:16px}
+#s25 .diptyque .a .fleche{color:var(--e-or-clair)}
+#s25 .diptyque .b .fleche{color:var(--e-or)}
+#s25 .diptyque:active .b{box-shadow:inset 0 0 0 1px var(--e-or)}
+#s25 .bascule input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s25 .bascule .onglets{display:flex;border-bottom:1px solid var(--e-trait);margin-bottom:16px}
+#s25 .bascule label{flex:1;text-align:center;padding:0 0 11px;cursor:pointer;
+                 text-transform:uppercase;letter-spacing:.2em;font-size:10.5px;font-weight:600;
+                 color:var(--e-gris);border-bottom:2px solid transparent;margin-bottom:-1px;
+                 transition:color .18s ease,border-color .18s ease}
+#s25 .bascule .bouton{border-radius:5px;background:var(--e-pin);color:#faf9f5;
+                   padding:17px 8px;text-align:center;font-family:ui-serif,Georgia,serif;font-size:18px}
+#s25 .bascule .bouton .b2{display:none}
+#s25 .bascule #b-dictee:checked ~ .onglets label[for="b-dictee"],#s25 .bascule #b-main:checked   ~ .onglets label[for="b-main"]{color:var(--e-encre);border-bottom-color:var(--e-or)}
+#s25 .bascule #b-main:checked ~ .bouton .b1{display:none}
+#s25 .bascule #b-main:checked ~ .bouton .b2{display:inline}
+#s25 .bascule .bouton:active{transform:scale(.985)}
+#s25 .bascule #c-dictee:checked ~ .onglets label[for="c-dictee"],#s25 .bascule #c-main:checked   ~ .onglets label[for="c-main"]{color:var(--e-encre);border-bottom-color:var(--e-or)}
+#s25 .bascule #c-main:checked ~ .bouton .b1{display:none}
+#s25 .bascule #c-main:checked ~ .bouton .b2{display:inline}
+#s25 .sceau{display:flex;gap:9px;align-items:stretch}
+#s25 .sceau .barre{flex:1;border-radius:5px;background:var(--e-pin);color:#faf9f5;
+                padding:17px 8px;text-align:center;font-family:ui-serif,Georgia,serif;font-size:18px}
+#s25 .sceau .cachet{flex:0 0 78px;border-radius:5px;box-shadow:inset 0 0 0 1px var(--e-or);
+                 display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+                 color:var(--e-pin)}
+#s25 .sceau .cachet .mot{font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--e-or);font-weight:600}
+#s25 .sceau:active .cachet{background:var(--e-papier)}
+#s25 .balance .paire{display:flex;gap:12px}
+#s25 .balance .paire>*{flex:1;border-radius:5px;padding:16px 6px;text-align:center;
+                    font-family:ui-serif,Georgia,serif;font-size:17.5px}
+#s25 .balance .a{background:var(--e-pin);color:#faf9f5}
+#s25 .balance .b{background:var(--e-plage);color:var(--e-pin)}
+#s25 .balance .filet{height:1px;background:var(--e-or);margin:12px 34px 0;opacity:.75}
+#s25 .balance:active .b{background:var(--e-papier)}
+#s25 .pied{max-width:66ch;margin:66px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        color:var(--gris);font-size:13.6px;line-height:1.7}
+#s25 .pied h3{margin:0 0 10px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--or)}
+#s25 .pied ul{margin:0;padding-left:1.1em}
+#s25 .pied li{margin-bottom:7px}
 
 
-/* 26 — Le devis parti, sur sa base */
-#s26{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+/* 26 — La bascule, affinée */
+#s26{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13);
+  }
 @media (prefers-color-scheme: dark){
-#s26:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+#s26:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16);
+    }
 
   
 }
-#s26[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+#s26[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16);
+  }
 #s26, #s26 *{box-sizing:border-box}
 #s26{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+#s26 .page{max-width:1240px;margin:0 auto}
+#s26 .intro{max-width:64ch;margin:0 auto;text-align:center}
+#s26 .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+#s26 .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+#s26 .intro p{margin:0 0 10px;color:var(--gris);font-size:15px}
+#s26 .grille{display:flex;flex-wrap:wrap;gap:56px 44px;justify-content:center;align-items:flex-start;margin-top:46px}
+#s26 .prop{display:flex;flex-direction:column;align-items:center;gap:18px;max-width:412px}
+#s26 .legende{text-align:center;max-width:390px}
+#s26 .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+#s26 .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+#s26 .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+#s26 .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+#s26 .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-or-clair:#C9A15E; --e-papier:#ece9e1;
+    --e-trait:rgba(28,28,26,.12);
+    width:390px;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:26px 0 30px}
+#s26 .champ{margin:0 24px 16px}
+#s26 .champ .libelle{text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600;color:var(--e-gris)}
+#s26 .champ .val{margin-top:7px;border-radius:4px;background:var(--e-plage);
+              padding:14px 15px;font-size:16px;color:var(--e-gris)}
+#s26 .ajout{margin:2px 24px 0;font-size:14px;font-weight:500;color:var(--e-pin)}
+#s26 .actions{margin:26px 24px 0}
+#s26 .bsc input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s26 .bsc label{cursor:pointer;-webkit-tap-highlight-color:transparent}
+#s26 .bsc .bouton{position:relative;border-radius:5px;background:var(--e-pin);color:#faf9f5;
+               padding:17px 8px;text-align:center;font-family:ui-serif,Georgia,serif;font-size:18px;
+               transition:transform .12s ease}
+#s26 .bsc .bouton:active{transform:scale(.985)}
+#s26 .bsc .mots{display:grid}
+#s26 .bsc .mots span{grid-area:1/1;transition:opacity .26s ease}
+#s26 .bsc .mots .m2{opacity:0}
+#s26 .bsc .r2:checked ~ .bouton .mots .m1{opacity:0}
+#s26 .bsc .r2:checked ~ .bouton .mots .m2{opacity:1}
+#s26 .bsc .r2:checked ~ * .bouton .mots .m1{opacity:0}
+#s26 .bsc .r2:checked ~ * .bouton .mots .m2{opacity:1}
+#s26 .bsc .mot{transition:color .26s ease}
+#s26 .d1 .rail{position:relative;display:flex;border-bottom:1px solid var(--e-trait);margin-bottom:18px}
+#s26 .d1 .rail label{flex:1;text-align:center;padding:0 0 13px;
+                  font-family:ui-serif,Georgia,serif;font-size:17px;color:var(--e-gris)}
+#s26 .d1 .curseur{position:absolute;left:0;bottom:-1px;width:50%;height:1.5px;background:var(--e-or);
+               transition:transform .3s cubic-bezier(.4,0,.2,1)}
+#s26 .d1 .r1:checked ~ .rail label:first-of-type,#s26 .d1 .r2:checked ~ .rail label:last-of-type{color:var(--e-encre)}
+#s26 .d1 .r2:checked ~ .rail .curseur{transform:translateX(100%)}
+#s26 .d2 .ligne{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:20px}
+#s26 .d2 .ligne label{position:relative;padding-bottom:11px;
+                   font-family:ui-serif,Georgia,serif;font-size:17.5px;color:var(--e-gris)}
+#s26 .d2 .ligne label::after{content:"";position:absolute;left:50%;bottom:0;width:4px;height:4px;
+                          margin-left:-2px;border-radius:50%;background:var(--e-or);
+                          opacity:0;transform:translateY(3px);transition:opacity .26s ease,transform .26s ease}
+#s26 .d2 .losange{width:4px;height:4px;background:var(--e-or);transform:rotate(45deg);margin-bottom:11px;opacity:.55}
+#s26 .d2 .r1:checked ~ .ligne label:first-of-type,#s26 .d2 .r2:checked ~ .ligne label:last-of-type{color:var(--e-encre)}
+#s26 .d2 .r1:checked ~ .ligne label:first-of-type::after,#s26 .d2 .r2:checked ~ .ligne label:last-of-type::after{opacity:1;transform:translateY(0)}
+#s26 .d3 .piste{position:relative;display:flex;background:var(--e-papier);border-radius:4px;
+             padding:4px;margin-bottom:18px}
+#s26 .d3 .plage{position:absolute;top:4px;left:4px;width:calc(50% - 4px);height:calc(100% - 8px);
+             background:var(--e-plage);border-radius:3px;box-shadow:0 1px 0 var(--e-or);
+             transition:transform .3s cubic-bezier(.4,0,.2,1)}
+#s26 .d3 .piste label{position:relative;flex:1;text-align:center;padding:10px 0;
+                   font-family:ui-serif,Georgia,serif;font-size:16.5px;color:var(--e-gris)}
+#s26 .d3 .r1:checked ~ .piste label:first-of-type,#s26 .d3 .r2:checked ~ .piste label:last-of-type{color:var(--e-encre)}
+#s26 .d3 .r2:checked ~ .piste .plage{transform:translateX(100%)}
+#s26 .d4 .mots-h{display:flex;margin-bottom:10px}
+#s26 .d4 .mots-h label{flex:1;text-align:center;
+                    font-family:ui-serif,Georgia,serif;font-size:17px;color:var(--e-gris)}
+#s26 .d4 .fil{position:relative;height:1px;background:var(--e-trait);margin-bottom:20px}
+#s26 .d4 .perle{position:absolute;top:-3px;left:0;width:50%;
+             transition:transform .32s cubic-bezier(.4,0,.2,1)}
+#s26 .d4 .perle i{display:block;width:7px;height:7px;border-radius:50%;background:var(--e-or);margin:0 auto}
+#s26 .d4 .r1:checked ~ .mots-h label:first-of-type,#s26 .d4 .r2:checked ~ .mots-h label:last-of-type{color:var(--e-encre)}
+#s26 .d4 .r2:checked ~ .fil .perle{transform:translateX(100%)}
+#s26 .d5 .cartouche{display:flex;align-items:center;justify-content:flex-end;gap:12px;
+                 padding-bottom:11px;margin-bottom:14px}
+#s26 .d5 .cartouche label{position:relative;padding-bottom:5px;
+                       font-family:ui-serif,Georgia,serif;font-size:15px;color:var(--e-gris)}
+#s26 .d5 .cartouche label::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+                              background:var(--e-or);transform:scaleX(0);transform-origin:left;
+                              transition:transform .28s cubic-bezier(.4,0,.2,1)}
+#s26 .d5 .cartouche .sep{width:1px;height:13px;background:var(--e-trait);margin-bottom:5px}
+#s26 .d5 .r1:checked ~ .cartouche label:first-of-type,#s26 .d5 .r2:checked ~ .cartouche label:last-of-type{color:var(--e-encre)}
+#s26 .d5 .r1:checked ~ .cartouche label:first-of-type::after,#s26 .d5 .r2:checked ~ .cartouche label:last-of-type::after{transform:scaleX(1)}
+#s26 .d6 .apres{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:15px}
+#s26 .d6 .apres label{position:relative;padding-bottom:6px;
+                   font-family:ui-serif,Georgia,serif;font-size:15.5px;color:var(--e-gris)}
+#s26 .d6 .apres label::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+                          background:var(--e-or);transform:scaleX(0);
+                          transition:transform .28s cubic-bezier(.4,0,.2,1)}
+#s26 .d6 .apres .sep{width:3px;height:3px;background:var(--e-or);transform:rotate(45deg);
+                  margin-bottom:6px;opacity:.5}
+#s26 .d6 .r1:checked ~ .apres label:first-of-type,#s26 .d6 .r2:checked ~ .apres label:last-of-type{color:var(--e-encre)}
+#s26 .d6 .r1:checked ~ .apres label:first-of-type::after,#s26 .d6 .r2:checked ~ .apres label:last-of-type::after{transform:scaleX(1)}
+#s26 .pied{max-width:66ch;margin:66px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        color:var(--gris);font-size:13.6px;line-height:1.7}
+#s26 .pied h3{margin:0 0 10px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--or)}
+#s26 .pied ul{margin:0;padding-left:1.1em}
+#s26 .pied li{margin-bottom:7px}
+
+
+/* 27 — Le bouton, huit façons */
+#s27{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13);
+  }
+@media (prefers-color-scheme: dark){
+#s27:not([data-theme="light"]){ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E; --trait:rgba(233,229,220,.16); }
+
+  
+}
+#s27[data-theme="dark"]{ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E; --trait:rgba(233,229,220,.16); }
+#s27, #s27 *{box-sizing:border-box}
+#s27{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+#s27 .page{max-width:1260px;margin:0 auto}
+#s27 .intro{max-width:64ch;margin:0 auto;text-align:center}
+#s27 .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+#s27 .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+#s27 .intro p{margin:0 0 10px;color:var(--gris);font-size:15px}
+#s27 .grille{display:flex;flex-wrap:wrap;gap:52px 40px;justify-content:center;align-items:flex-start;margin-top:44px}
+#s27 .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px}
+#s27 .legende{text-align:center;max-width:390px}
+#s27 .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+#s27 .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+#s27 .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+#s27 .legende .chiffre{display:block;margin-top:6px;font-size:12px;color:var(--or)}
+#s27 .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+#s27 .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-papier:#ece9e1; --e-trait:rgba(28,28,26,.12);
+    width:390px;overflow:hidden;border-radius:32px;background:var(--e-fond);color:var(--e-encre);
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;padding:26px 0 30px}
+#s27 .champ{margin:0 24px 16px}
+#s27 .champ .libelle{text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600;color:var(--e-gris)}
+#s27 .champ .val{margin-top:7px;border-radius:4px;background:var(--e-plage);padding:14px 15px;font-size:16px;color:var(--e-gris)}
+#s27 .ajout{margin:2px 24px 0;font-size:14px;font-weight:500;color:var(--e-pin)}
+#s27 .actions{margin:26px 24px 0}
+#s27 .bsc input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s27 .bsc label{cursor:pointer;-webkit-tap-highlight-color:transparent}
+#s27 .rail{position:relative;display:flex;border-bottom:1px solid var(--e-trait);margin-bottom:18px}
+#s27 .rail label{flex:1;text-align:center;padding:0 0 13px;font-family:ui-serif,Georgia,serif;font-size:17px;
+              color:var(--e-gris);transition:color .26s ease}
+#s27 .curseur{position:absolute;left:0;bottom:-1px;width:50%;height:1.5px;background:var(--e-or);
+           transition:transform .3s cubic-bezier(.4,0,.2,1)}
+#s27 .bsc .r1:checked ~ .rail label:first-of-type,#s27 .bsc .r2:checked ~ .rail label:last-of-type{color:var(--e-encre)}
+#s27 .bsc .r2:checked ~ .rail .curseur{transform:translateX(100%)}
+#s27 .mots{display:grid;justify-items:center;align-items:center}
+#s27 .mots span{grid-area:1/1;transition:opacity .26s ease;white-space:nowrap}
+#s27 .mots .m2{opacity:0}
+#s27 .bsc .r2:checked ~ .bt .mots .m1,#s27 .bsc .r2:checked ~ .bt-c .bt .mots .m1{opacity:0}
+#s27 .bsc .r2:checked ~ .bt .mots .m2,#s27 .bsc .r2:checked ~ .bt-c .bt .mots .m2{opacity:1}
+#s27 .bt{display:flex;align-items:center;justify-content:center;
+      font-family:ui-serif,Georgia,serif;transition:transform .12s ease,background-color .2s ease,
+      box-shadow .2s ease,color .2s ease}
+#s27 .bt:active{transform:scale(.985)}
+#s27 .b1{height:52px;border-radius:4px;color:var(--e-pin);font-size:17.5px;
+      box-shadow:inset 0 0 0 1px var(--e-pin)}
+#s27 .b1:active{background:var(--e-papier)}
+#s27 .b2{height:44px;border-radius:3px;background:var(--e-pin);color:#faf9f5;
+      font-family:inherit;font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase}
+#s27 .b3{position:relative;height:54px;border-radius:4px;background:var(--e-pin);color:#faf9f5;font-size:17.5px}
+#s27 .b3::after{content:"";position:absolute;inset:5px;border:1px solid rgba(201,161,94,.5);border-radius:2px;
+             pointer-events:none}
+#s27 .b4{position:relative;height:54px;border-radius:4px;background:var(--e-pin);color:#faf9f5;font-size:17.5px}
+#s27 .b4 .disque{position:absolute;right:11px;top:50%;margin-top:-14px;width:28px;height:28px;border-radius:50%;
+              display:flex;align-items:center;justify-content:center;font-size:14px;
+              color:var(--e-or);box-shadow:inset 0 0 0 1px rgba(201,161,94,.65)}
+#s27 .bt-c{display:flex;justify-content:center}
+#s27 .b5{height:50px;padding:0 34px;border-radius:26px;background:var(--e-pin);color:#faf9f5;font-size:17px}
+#s27 .b6{height:54px;color:var(--e-pin);font-size:18px;
+      border-top:1px solid var(--e-trait);border-bottom:1px solid var(--e-trait)}
+#s27 .b6:active{background:var(--e-papier)}
+#s27 .b7{height:46px;color:var(--e-pin);font-size:19px}
+#s27 .b7 .mots span{padding-bottom:7px;border-bottom:1.5px solid var(--e-or)}
+#s27 .b8{height:52px;border-radius:14px;background:var(--e-pin);color:#faf9f5;font-size:17.5px;
+      box-shadow:0 6px 18px rgba(47,59,47,.22)}
+#s27 .b8:active{box-shadow:0 3px 9px rgba(47,59,47,.26)}
+#s27 .pied{max-width:68ch;margin:64px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        color:var(--gris);font-size:13.6px;line-height:1.7}
+#s27 .pied h3{margin:0 0 10px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+#s27 .pied ul{margin:0;padding-left:1.1em}
+#s27 .pied li{margin-bottom:7px}
+#s27 .pied b{color:var(--encre);font-weight:500}
+
+
+/* 28 — Le devis parti, allégé */
+#s28{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+@media (prefers-color-scheme: dark){
+#s28:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  
+}
+#s28[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+#s28, #s28 *{box-sizing:border-box}
+#s28{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:44px 16px 90px}
-#s26 .page{max-width:1180px;margin:0 auto}
-#s26 .intro{max-width:64ch;margin:0 auto}
-#s26 .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
-#s26 .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
-#s26 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
-#s26 .intro b{color:var(--encre);font-weight:500}
-#s26 .appui{max-width:56ch;margin:22px auto 0;padding:15px 20px;border:1px solid var(--trait);
+#s28 .page{max-width:1180px;margin:0 auto}
+#s28 .intro{max-width:64ch;margin:0 auto}
+#s28 .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
+#s28 .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
+#s28 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
+#s28 .intro b{color:var(--encre);font-weight:500}
+#s28 .appui{max-width:54ch;margin:22px auto 0;padding:15px 20px;border:1px solid var(--trait);
          border-radius:6px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
-#s26 .appui b{color:var(--encre);font-weight:500}
-#s26 .famille{margin:56px 0 14px;text-align:center;font-size:10px;letter-spacing:.3em;
+#s28 .appui b{color:var(--encre);font-weight:500}
+#s28 .famille{margin:56px 0 14px;text-align:center;font-size:10px;letter-spacing:.3em;
            text-transform:uppercase;color:var(--gris)}
-#s26 .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
-#s26 .famille span::before,#s26 .famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
-#s26 .famille span::before{right:100%}
-#s26 .famille span::after{left:100%}
-#s26 .sous-titre{max-width:60ch;margin:0 auto 28px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
-#s26 .rangee{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;align-items:flex-start}
-#s26 .cartouche{display:flex;flex-direction:column;align-items:center;gap:13px;max-width:412px}
-#s26 .etiquette{color:var(--bronze);font-size:10px;letter-spacing:.3em;text-transform:uppercase}
-#s26 .cartouche .dit{margin:0;font-size:12.5px;line-height:1.6;color:var(--gris);text-align:center}
-#s26 .cartouche .dit b{color:var(--encre);font-weight:500}
-#s26 .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+#s28 .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
+#s28 .famille span::before,#s28 .famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
+#s28 .famille span::before{right:100%}
+#s28 .famille span::after{left:100%}
+#s28 .sous-titre{max-width:60ch;margin:0 auto 28px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s28 .rangee{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;align-items:flex-start}
+#s28 .cartouche{display:flex;flex-direction:column;align-items:center;gap:13px;max-width:412px}
+#s28 .etiquette{color:var(--bronze);font-size:10px;letter-spacing:.3em;text-transform:uppercase}
+#s28 .cartouche .dit{margin:0;font-size:12.5px;line-height:1.6;color:var(--gris);text-align:center}
+#s28 .cartouche .dit b{color:var(--encre);font-weight:500}
+#s28 .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
        box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
-#s26 .ecran{position:relative;overflow:hidden;border-radius:34px;height:664px;
+#s28 .ecran{position:relative;overflow:hidden;border-radius:34px;height:664px;
          display:flex;flex-direction:column;
          background:#f5f3ee;color:#1c1c1a;
          font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
          --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
          --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f;
          --e-trait:rgba(28,28,26,.16); --e-trait-doux:rgba(28,28,26,.07)}
-#s26 .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
-#s26 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
-#s26 .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
-#s26 .retour{padding:22px 26px 0;color:var(--e-gris);font-size:12px;text-decoration:none;display:block}
-#s26 .titre{padding:16px 26px 0}
-#s26 .titre .sur{margin:0;color:var(--e-or)}
-#s26 .titre h1{margin:11px 0 0;font-size:36px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
-#s26 .fermeture{height:1px;background:var(--e-trait);margin:20px 26px 0}
-#s26 .corps{flex:1 1 auto;min-height:0;overflow:hidden;padding:0 26px;display:flex;flex-direction:column}
-#s26 .plage{background:var(--e-plage);border-radius:4px;padding:20px;margin-top:18px}
-#s26 .nom-devis{margin:0;color:var(--e-gris);font-size:13px}
-#s26 .montant{margin:9px 0 0;font:400 40px/1 ui-serif,Georgia,serif;color:var(--e-pin);letter-spacing:-.015em}
-#s26 .montant.moyen{font-size:32px}
-#s26 .montant.geant{font-size:52px}
-#s26 .sous-total{display:block;margin-top:16px;padding-top:14px;border-top:1px solid var(--e-trait);
-              color:var(--e-encre);font-size:14px;text-decoration:none;font-weight:500}
-#s26 .sous-total .fl{float:right;color:var(--e-gris);font-weight:400}
-#s26 .etat-fin{display:flex;align-items:center;gap:11px;color:var(--e-or)}
-#s26 .etat-fin::after{content:"";flex:1;height:1px;background:var(--e-trait)}
-#s26 .etat-phrase{margin:9px 0 0;font-size:13.5px;color:var(--e-gris);line-height:1.55}
-#s26 .envoi{display:block;width:100%;padding:13px;text-align:center;
+#s28 .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+#s28 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+#s28 .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+#s28 .retour{padding:22px 26px 0;color:var(--e-gris);font-size:12px;text-decoration:none;display:block}
+#s28 .titre{padding:16px 26px 0}
+#s28 .titre .sur{margin:0;color:var(--e-or)}
+#s28 .titre h1{margin:11px 0 0;font-size:36px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+#s28 .fermeture{height:1px;background:var(--e-trait);margin:20px 26px 0}
+#s28 .corps{flex:1 1 auto;min-height:0;overflow:hidden;padding:0 26px}
+#s28 .corps.defile{overflow:hidden;position:relative}
+#s28 .corps.defile::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56px;
+                       background:linear-gradient(to top,var(--e-fond),transparent);pointer-events:none}
+#s28 .plage{background:var(--e-plage);border-radius:4px;padding:19px 20px;margin-top:16px}
+#s28 .plage.serre{padding:15px 18px}
+#s28 .cle{margin:0 0 4px;color:var(--e-gris)}
+#s28 .val{margin:0;font-size:15px}
+#s28 .separe{border-top:1px solid var(--e-trait);margin:13px 0;height:0}
+#s28 .ligne-devis{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:15px;line-height:1.35}
+#s28 .ligne-devis span:last-child{color:var(--e-gris);line-height:1}
+#s28 .total-gros{margin:0;font:400 32px/1 ui-serif,Georgia,serif;color:var(--e-pin)}
+#s28 .lien-brut{margin:10px 0 0;padding:8px 12px;border-radius:4px;background:var(--e-fond);
+             color:var(--e-gris);font-size:12px;text-align:center;word-break:break-all;line-height:1.45}
+#s28 .doux{display:block;width:100%;margin-top:14px;text-align:center;font-size:14px;
+        color:var(--e-pin);text-decoration:none;font-weight:500;background:none;border:0;
+        font-family:inherit;padding:0;cursor:pointer}
+#s28 .tres-doux{display:block;width:100%;margin-top:9px;text-align:center;font-size:13px;
+             color:var(--e-gris);text-decoration:none;background:none;border:0;font-family:inherit;
+             padding:0;cursor:pointer}
+#s28 .dessous{margin:8px 0 0;text-align:center;font-size:12px;color:var(--e-gris)}
+#s28 .envoi{display:block;width:100%;margin-top:14px;padding:13px;text-align:center;
          font-size:15px;font-weight:500;color:#fff;text-decoration:none;
          background:var(--e-pin);border:0;font-family:inherit;cursor:pointer;
          border-radius:var(--r,4px)}
-#s26 .dessous{margin:8px 0 0;text-align:center;font-size:12px;color:var(--e-gris)}
-#s26 .trois{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;
-         font-size:13px;line-height:2.1}
-#s26 .trois a{color:var(--e-encre);text-decoration:none;font-weight:500;padding:0 9px}
-#s26 .trois i{color:var(--e-trait);font-style:normal}
-#s26 .pile{margin-top:4px}
-#s26 .pile a{display:flex;align-items:center;justify-content:space-between;
-          padding:13px 0;border-top:1px solid var(--e-trait);
-          color:var(--e-encre);text-decoration:none;font-size:14px;font-weight:500}
-#s26 .pile a .fl{color:var(--e-trait);font-weight:400}
-#s26 .ecran.serre .pile a{padding:11px 0}
-#s26 .ecran.serre .etat-phrase{margin-top:6px}
-#s26 .ecran.serre .plage{margin-top:12px;padding:17px 20px}
-#s26 .ecran.serre .sous-total{margin-top:13px;padding-top:12px}
-#s26 .pied{margin-top:auto;padding-bottom:4px}
-#s26 .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
+#s28 .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
        border-top:1px solid var(--e-trait);padding:16px 14px 26px;position:relative;z-index:2;
        background:var(--e-fond)}
-#s26 .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
-#s26 .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-or)}
-#s26 .signet{position:relative;padding-left:17px;margin-top:22px}
-#s26 .signet::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:2px;background:var(--e-or)}
-#s26 .note{max-width:64ch;margin:52px auto 0;padding:20px 22px;border:1px solid var(--trait);
+#s28 .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
+#s28 .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-or)}
+#s28 .repli{margin-top:16px;border-top:1px solid var(--e-trait)}
+#s28 .repli summary{list-style:none;cursor:pointer;padding:13px 0 0;color:var(--e-gris);
+                 font-size:13px;display:flex;align-items:center;justify-content:space-between}
+#s28 .repli summary::-webkit-details-marker{display:none}
+#s28 .repli summary .chev{color:var(--e-trait);transition:transform 220ms}
+#s28 .repli[open] summary .chev{transform:rotate(90deg)}
+#s28 .etat-fin{display:flex;align-items:center;gap:11px;margin-top:20px;color:var(--e-or)}
+#s28 .etat-fin::after{content:"";flex:1;height:1px;background:var(--e-trait)}
+#s28 .etat-phrase{margin:9px 0 0;font-size:13.5px;color:var(--e-gris);line-height:1.55}
+#s28 .bande{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;align-items:flex-start}
+#s28 .echantillon{width:236px;padding:22px 20px;border-radius:10px;background:#f5f3ee;
+               border:1px solid var(--trait);text-align:center;
+               --e-pin:#2f3b2f; --e-plage:#faf9f5; --e-gris:#8a8578}
+#s28 .echantillon .rayon{margin:0 0 13px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#8a8578}
+#s28 .echantillon .envoi{margin-top:0}
+#s28 .echantillon .plage{margin-top:11px;padding:11px 13px;text-align:center;font-size:12px;color:#8a8578;
+                      border-radius:var(--r,4px)}
+#s28 .echantillon .quoi{margin:12px 0 0;font-size:12px;line-height:1.55;color:var(--gris)}
+#s28 .note{max-width:64ch;margin:52px auto 0;padding:20px 22px;border:1px solid var(--trait);
         border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.7}
-#s26 .note h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
-#s26 .note b{color:var(--encre);font-weight:500}
-#s26 .note p{margin:0 0 12px}
-#s26 .note p:last-child{margin-bottom:0}
-#s26 .note table{width:100%;border-collapse:collapse;margin:14px 0 4px;font-size:12.5px}
-#s26 .note th{text-align:left;font-weight:500;color:var(--encre);padding:0 0 7px}
-#s26 .note td{padding:5px 0;border-top:1px solid var(--trait);vertical-align:top}
-#s26 .note td:first-child{white-space:nowrap;padding-right:16px;color:var(--encre)}
+#s28 .note h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
+#s28 .note b{color:var(--encre);font-weight:500}
+#s28 .note p{margin:0 0 12px}
+#s28 .note p:last-child{margin-bottom:0}
+#s28 .note table{width:100%;border-collapse:collapse;margin:14px 0 4px;font-size:12.5px}
+#s28 .note th{text-align:left;font-weight:500;color:var(--encre);padding:0 0 7px}
+#s28 .note td{padding:5px 0;border-top:1px solid var(--trait);vertical-align:top}
+#s28 .note td:first-child{white-space:nowrap;padding-right:16px;color:var(--encre)}
+
+
+/* 29 — Le devis parti, sur sa base */
+#s29{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+@media (prefers-color-scheme: dark){
+#s29:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  
+}
+#s29[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+#s29, #s29 *{box-sizing:border-box}
+#s29{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 90px}
+#s29 .page{max-width:1180px;margin:0 auto}
+#s29 .intro{max-width:64ch;margin:0 auto}
+#s29 .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
+#s29 .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
+#s29 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
+#s29 .intro b{color:var(--encre);font-weight:500}
+#s29 .appui{max-width:56ch;margin:22px auto 0;padding:15px 20px;border:1px solid var(--trait);
+         border-radius:6px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s29 .appui b{color:var(--encre);font-weight:500}
+#s29 .famille{margin:56px 0 14px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--gris)}
+#s29 .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
+#s29 .famille span::before,#s29 .famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
+#s29 .famille span::before{right:100%}
+#s29 .famille span::after{left:100%}
+#s29 .sous-titre{max-width:60ch;margin:0 auto 28px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s29 .rangee{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;align-items:flex-start}
+#s29 .cartouche{display:flex;flex-direction:column;align-items:center;gap:13px;max-width:412px}
+#s29 .etiquette{color:var(--bronze);font-size:10px;letter-spacing:.3em;text-transform:uppercase}
+#s29 .cartouche .dit{margin:0;font-size:12.5px;line-height:1.6;color:var(--gris);text-align:center}
+#s29 .cartouche .dit b{color:var(--encre);font-weight:500}
+#s29 .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
+#s29 .ecran{position:relative;overflow:hidden;border-radius:34px;height:664px;
+         display:flex;flex-direction:column;
+         background:#f5f3ee;color:#1c1c1a;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f;
+         --e-trait:rgba(28,28,26,.16); --e-trait-doux:rgba(28,28,26,.07)}
+#s29 .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+#s29 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+#s29 .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+#s29 .retour{padding:22px 26px 0;color:var(--e-gris);font-size:12px;text-decoration:none;display:block}
+#s29 .titre{padding:16px 26px 0}
+#s29 .titre .sur{margin:0;color:var(--e-or)}
+#s29 .titre h1{margin:11px 0 0;font-size:36px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+#s29 .fermeture{height:1px;background:var(--e-trait);margin:20px 26px 0}
+#s29 .corps{flex:1 1 auto;min-height:0;overflow:hidden;padding:0 26px;display:flex;flex-direction:column}
+#s29 .plage{background:var(--e-plage);border-radius:4px;padding:20px;margin-top:18px}
+#s29 .nom-devis{margin:0;color:var(--e-gris);font-size:13px}
+#s29 .montant{margin:9px 0 0;font:400 40px/1 ui-serif,Georgia,serif;color:var(--e-pin);letter-spacing:-.015em}
+#s29 .montant.moyen{font-size:32px}
+#s29 .montant.geant{font-size:52px}
+#s29 .sous-total{display:block;margin-top:16px;padding-top:14px;border-top:1px solid var(--e-trait);
+              color:var(--e-encre);font-size:14px;text-decoration:none;font-weight:500}
+#s29 .sous-total .fl{float:right;color:var(--e-gris);font-weight:400}
+#s29 .etat-fin{display:flex;align-items:center;gap:11px;color:var(--e-or)}
+#s29 .etat-fin::after{content:"";flex:1;height:1px;background:var(--e-trait)}
+#s29 .etat-phrase{margin:9px 0 0;font-size:13.5px;color:var(--e-gris);line-height:1.55}
+#s29 .envoi{display:block;width:100%;padding:13px;text-align:center;
+         font-size:15px;font-weight:500;color:#fff;text-decoration:none;
+         background:var(--e-pin);border:0;font-family:inherit;cursor:pointer;
+         border-radius:var(--r,4px)}
+#s29 .dessous{margin:8px 0 0;text-align:center;font-size:12px;color:var(--e-gris)}
+#s29 .trois{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;
+         font-size:13px;line-height:2.1}
+#s29 .trois a{color:var(--e-encre);text-decoration:none;font-weight:500;padding:0 9px}
+#s29 .trois i{color:var(--e-trait);font-style:normal}
+#s29 .pile{margin-top:4px}
+#s29 .pile a{display:flex;align-items:center;justify-content:space-between;
+          padding:13px 0;border-top:1px solid var(--e-trait);
+          color:var(--e-encre);text-decoration:none;font-size:14px;font-weight:500}
+#s29 .pile a .fl{color:var(--e-trait);font-weight:400}
+#s29 .ecran.serre .pile a{padding:11px 0}
+#s29 .ecran.serre .etat-phrase{margin-top:6px}
+#s29 .ecran.serre .plage{margin-top:12px;padding:17px 20px}
+#s29 .ecran.serre .sous-total{margin-top:13px;padding-top:12px}
+#s29 .pied{margin-top:auto;padding-bottom:4px}
+#s29 .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;position:relative;z-index:2;
+       background:var(--e-fond)}
+#s29 .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
+#s29 .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-or)}
+#s29 .signet{position:relative;padding-left:17px;margin-top:22px}
+#s29 .signet::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:2px;background:var(--e-or)}
+#s29 .note{max-width:64ch;margin:52px auto 0;padding:20px 22px;border:1px solid var(--trait);
+        border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.7}
+#s29 .note h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
+#s29 .note b{color:var(--encre);font-weight:500}
+#s29 .note p{margin:0 0 12px}
+#s29 .note p:last-child{margin-bottom:0}
+#s29 .note table{width:100%;border-collapse:collapse;margin:14px 0 4px;font-size:12.5px}
+#s29 .note th{text-align:left;font-weight:500;color:var(--encre);padding:0 0 7px}
+#s29 .note td{padding:5px 0;border-top:1px solid var(--trait);vertical-align:top}
+#s29 .note td:first-child{white-space:nowrap;padding-right:16px;color:var(--encre)}
 
 
 </style>
@@ -3262,13 +3596,26 @@
         <span class="no">24</span><span class="titre">Le bouton retenu, resserré</span><span class="fleche">↓</span>
         <span class="quoi">Celui qu’il a gardé, et lui seul : le mot, le rond qui bat à sa droite. Onde ramenée de 1,85 à 1,42 fois le rond, rond de 46 à 38 px, gerbe de seize grains à onze.</span>
       </a>
-      <p class="famille">Dire moins sur l’écran du devis</p>
+      <p class="famille">Les deux portes de la création</p>
       <a class="item retenu" href="#m25">
-        <span class="no">25</span><span class="titre">Le devis parti, allégé</span><span class="fleche">↓</span>
-        <span class="quoi">« Trop d’infos sur cette page » : l’écran en porte onze blocs et déborde de 382 px. Quatre façons de retrancher — l’adresse effacée, l’état monté dans le titre, le devis replié, ou le geste seul sous le pouce — et la question du bouton « carré », mesurée : il est déjà au rayon des cartes.</span>
+        <span class="no">25</span><span class="titre">Les deux portes, côte à côte</span><span class="fleche">↓</span>
+        <span class="quoi">Six façons de montrer « créer le chantier » ET « devis à la main » d’un seul coup d’œil. La 4 bascule pour de bon, sans script.</span>
       </a>
       <a class="item retenu" href="#m26">
-        <span class="no">26</span><span class="titre">Le devis parti, sur sa base</span><span class="fleche">↓</span>
+        <span class="no">26</span><span class="titre">La bascule, affinée</span><span class="fleche">↓</span>
+        <span class="quoi">Six déclinaisons de la proposition 4 : le trait qui glisse, le point d’or, la plage, la perle, le cartouche, la bascule en pied.</span>
+      </a>
+      <a class="item retenu" href="#m27">
+        <span class="no">27</span><span class="titre">Le bouton, huit façons</span><span class="fleche">↓</span>
+        <span class="quoi">« Trop gros, carré. » Filet, bandeau fin, plaque gravée, sceau, capsule, double filet, trait d’or, angle adouci. La capsule est retenue.</span>
+      </a>
+      <p class="famille">Dire moins sur l’écran du devis</p>
+      <a class="item retenu" href="#m28">
+        <span class="no">28</span><span class="titre">Le devis parti, allégé</span><span class="fleche">↓</span>
+        <span class="quoi">« Trop d’infos sur cette page » : l’écran en porte onze blocs et déborde de 382 px. Quatre façons de retrancher — l’adresse effacée, l’état monté dans le titre, le devis replié, ou le geste seul sous le pouce — et la question du bouton « carré », mesurée : il est déjà au rayon des cartes.</span>
+      </a>
+      <a class="item retenu" href="#m29">
+        <span class="no">29</span><span class="titre">Le devis parti, sur sa base</span><span class="fleche">↓</span>
         <span class="quoi">Ce qu’il a arrêté : le nom du devis et le total, plus de lignes, « Modifier mon devis » sous le total, et les trois actions en encre foncée. Sa base au mot près, puis quatre façons de la tenir — sans carte, dans le titre, les actions empilées, ou le signet d’or.</span>
       </a>
     <p class="note">
@@ -11683,14 +12030,738 @@
   <section class="etape" id="m25">
     <div class="etape-tete">
       <span class="etape-no">25</span>
-      <h2>Le devis parti, allégé</h2>
+      <h2>Les deux portes, côte à côte</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s25">
 <div class="page">
 
   <div class="intro">
-    <p class="sur">Maquette 25</p>
+    <p class="sur">Atlas · 11 août 2026</p>
+    <h1>Les deux portes, enfin côte à côte</h1>
+    <p>« On ne voit que <em>Créer le chantier</em>, on ne voit pas <em>devis à la
+      main</em>. » Six façons de montrer les deux d'un seul coup d'œil, sans que
+      l'écran devienne un tableau de bord.</p>
+    <p class="note">Rien à installer, rien à ouvrir : <strong>appuyez sur les
+      propositions</strong>, elles répondent. La n° 4 bascule pour de bon —
+      touchez ses deux onglets.</p>
+  </div>
+
+  <div class="grille">
+
+    <!-- ─────────────────────────────── 1 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 1</h2>
+        <p class="titre">La plaque partagée</p>
+        <p>Un seul objet, fendu d'un cheveu d'or. Le regard le prend d'un coup,
+          comme une plaque de porte gravée — et les deux issues y sont
+          lisibles ensemble.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <div class="p plaque">
+            <div class="gauche">Créer le chantier&nbsp;→</div>
+            <div class="fil"></div>
+            <div class="droite">Devis<small>à la main</small></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 2 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 2</h2>
+        <p class="titre">Les plaques jumelles</p>
+        <p>Deux blocs de même hauteur, dix pixels d'écart. La hiérarchie ne se
+          joue plus sur la taille mais sur la matière : l'un est plein, l'autre
+          est cerné d'un trait d'or.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <div class="p jumelles">
+            <div class="plein">Créer le<br>chantier&nbsp;→</div>
+            <div class="cerne">Le devis<span class="sous">à la main&nbsp;→</span></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 3 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 3</h2>
+        <p class="titre">Le diptyque</p>
+        <p>Deux cartes hautes, chacune avec son intitulé en capitales, sa ligne
+          en serif et sa flèche. La plus « papeterie » : le même soin aux deux
+          chemins, sans leur donner le même poids.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <div class="p diptyque">
+            <div class="carte a">
+              <div class="sur">Le plus souvent</div>
+              <p class="quoi">Créer le chantier</p>
+              <div class="fleche">→</div>
+            </div>
+            <div class="carte b">
+              <div class="sur">Je sais déjà</div>
+              <p class="quoi">Le devis à la main</p>
+              <div class="fleche">→</div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 4 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 4 · elle bouge</h2>
+        <p class="titre">La bascule d'or</p>
+        <p>Deux onglets, un filet d'or qui glisse dessous, et <strong>un seul</strong>
+          bouton dont le libellé change. Les deux chemins se voient sans qu'il
+          faille choisir entre deux boutons. <strong>Touchez-la.</strong></p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bascule" data-bascule="1">
+          <input type="radio" name="porte" id="b-dictee" checked>
+          <input type="radio" name="porte" id="b-main">
+          <div class="onglets">
+            <label for="b-dictee">Je dicterai</label>
+            <label for="b-main">Je l'écris</label>
+          </div>
+          <div class="p bouton">
+            <span class="b1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="b2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 4 bis ─────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 4 · l'autre état</h2>
+        <p class="titre">La bascule, côté « je l'écris »</p>
+        <p>Le même écran, l'autre onglet retenu — pour voir les deux états sans
+          avoir à toucher. Le filet d'or a glissé, le bouton a changé de mot.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bascule" data-bascule="1">
+          <input type="radio" name="porte2" id="c-dictee">
+          <input type="radio" name="porte2" id="c-main" checked>
+          <div class="onglets">
+            <label for="c-dictee">Je dicterai</label>
+            <label for="c-main">Je l'écris</label>
+          </div>
+          <div class="p bouton">
+            <span class="b1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="b2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 5 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 5</h2>
+        <p class="titre">Le sceau</p>
+        <p>La sortie devient un cachet posé au bout de la barre, cerné d'or, avec
+          une plume. La plus luxueuse — et la plus risquée : un pictogramme seul
+          ne se lit pas toujours, d'où les trois lettres dessous.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <div class="p sceau">
+            <div class="barre">Créer le chantier&nbsp;→</div>
+            <div class="cachet">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B98B47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 20l3.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20z"></path>
+                <path d="M13.5 6.5l4 4"></path>
+              </svg>
+              <span class="mot">À la main</span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 6 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 6</h2>
+        <p class="titre">La balance</p>
+        <p>Deux moitiés strictement égales, et un filet d'or qui court dessous
+          pour les relier. Le plus sobre : rien n'est cerné, la couleur seule
+          fait la différence.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <div class="p balance">
+            <div class="paire">
+              <div class="a">Créer le<br>chantier&nbsp;→</div>
+              <div class="b">Le devis<br>à la main&nbsp;→</div>
+            </div>
+            <div class="filet"></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="pied">
+    <h3>Ce qu'il faut savoir avant de choisir</h3>
+    <ul>
+      <li><strong>Le geste ne change pas.</strong> Dans les six, « créer le
+        chantier » reste le geste évident : neuf fois sur dix, la réponse est
+        « je dicterai ». Ce qui change, c'est que l'autre porte se voit.</li>
+      <li><strong>Deux boutons à égalité font choisir tout le monde.</strong>
+        C'est la raison pour laquelle le lien discret avait été retenu le
+        11 août. Les propositions 1, 3, 5 et 6 gardent une hiérarchie ; la 2 la
+        réduit ; la <strong>4</strong> est la seule qui montre les deux sans
+        rien demander — un seul bouton, dont le mot suit l'onglet.</li>
+      <li><strong>La plume de la 5 est un pari.</strong> Un pictogramme seul se
+        lit mal quand on ne le connaît pas ; les trois lettres dessous sont ce
+        qui le sauve, et elles ne doivent pas disparaître.</li>
+      <li><strong>Le doigt.</strong> Les six respectent 44 px de hauteur utile,
+        le minimum d'Apple. La 5 est la plus étroite à droite (78 px), et reste
+        au-dessus.</li>
+    </ul>
+  </div>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m26">
+    <div class="etape-tete">
+      <span class="etape-no">26</span>
+      <h2>La bascule, affinée</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s26">
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Atlas · 11 août 2026</p>
+    <h1>La bascule, affinée</h1>
+    <p>Six déclinaisons de la proposition 4. Ce qui ne bouge pas : les deux
+      chemins se voient, et il n'y a qu'un bouton à toucher. Ce qui change :
+      la façon dont le choix se dessine.</p>
+    <p><strong>Touchez les deux mots</strong> de chaque écran — le repère glisse,
+      et le mot du bouton se fond. Rien à installer, aucun script.</p>
+  </div>
+
+  <div class="grille">
+
+    <!-- ─────────────────────────────── 1 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Déclinaison 1</h2>
+        <p class="titre">Le trait qui glisse</p>
+        <p>La 14, débarrassée de ses capitales et de son saut. Deux mots en
+          serif sur un cheveu continu, et un segment d'or qui glisse de l'un à
+          l'autre.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc d1" data-bascule="1">
+          <input class="r1" type="radio" name="d1" id="d1a" checked>
+          <input class="r2" type="radio" name="d1" id="d1b">
+          <div class="rail">
+            <label class="mot" for="d1a">Je dicterai</label>
+            <label class="mot" for="d1b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bouton"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 2 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Déclinaison 2</h2>
+        <p class="titre">Le point d'or</p>
+        <p>Aucun rail, aucune boîte. Deux mots séparés d'un losange minuscule ;
+          sous le mot retenu, un point apparaît. La plus discrète — de loin, on
+          ne voit qu'une ligne de texte.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc d2" data-bascule="1">
+          <input class="r1" type="radio" name="d2" id="d2a" checked>
+          <input class="r2" type="radio" name="d2" id="d2b">
+          <div class="ligne">
+            <label class="mot" for="d2a">Je dicterai</label>
+            <span class="losange"></span>
+            <label class="mot" for="d2b">Je l'écris</label>
+          </div>
+          <div class="bouton"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 3 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Déclinaison 3</h2>
+        <p class="titre">La plage qui glisse</p>
+        <p>Une plage claire glisse sous le mot retenu, sur un fond papier. La
+          plus « moderne », mais tenue par la charte : rayon 4 px, pas de galet,
+          et un cheveu d'or au pied de la plage.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc d3" data-bascule="1">
+          <input class="r1" type="radio" name="d3" id="d3a" checked>
+          <input class="r2" type="radio" name="d3" id="d3b">
+          <div class="piste">
+            <span class="plage"></span>
+            <label class="mot" for="d3a">Je dicterai</label>
+            <label class="mot" for="d3b">Je l'écris</label>
+          </div>
+          <div class="bouton"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 4 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Déclinaison 4</h2>
+        <p class="titre">Le rail et la perle</p>
+        <p>Un cheveu tendu d'un bord à l'autre, et une perle d'or qui court
+          dessus. C'est le geste que l'écran des chantiers emploie déjà — la
+          même main, au même endroit du parcours.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc d4" data-bascule="1">
+          <input class="r1" type="radio" name="d4" id="d4a" checked>
+          <input class="r2" type="radio" name="d4" id="d4b">
+          <div class="mots-h">
+            <label class="mot" for="d4a">Je dicterai</label>
+            <label class="mot" for="d4b">Je l'écris</label>
+          </div>
+          <div class="fil"><span class="perle"><i></i></span></div>
+          <div class="bouton"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 5 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Déclinaison 5</h2>
+        <p class="titre">Le cartouche</p>
+        <p>Le choix ne prend plus de ligne à lui : il s'aligne à droite,
+          au-dessus du bouton, en petit. La plus économe en hauteur — et sur
+          votre écran, la hauteur est ce qui manque.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc d5" data-bascule="1">
+          <input class="r1" type="radio" name="d5" id="d5a" checked>
+          <input class="r2" type="radio" name="d5" id="d5b">
+          <div class="cartouche">
+            <label class="mot" for="d5a">Je dicterai</label>
+            <span class="sep"></span>
+            <label class="mot" for="d5b">Je l'écris</label>
+          </div>
+          <div class="bouton"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 6 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Déclinaison 6</h2>
+        <p class="titre">La bascule en pied</p>
+        <p>L'ordre s'inverse : le bouton d'abord, le choix dessous. Ce qu'on
+          voit en premier reste l'action ; le choix se lit après, comme une note
+          — et il se voit quand même.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc d6" data-bascule="1">
+          <input class="r1" type="radio" name="d6" id="d6a" checked>
+          <input class="r2" type="radio" name="d6" id="d6b">
+          <div class="bouton"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </span></div>
+          <div class="apres">
+            <label class="mot" for="d6a">Je dicterai</label>
+            <span class="sep"></span>
+            <label class="mot" for="d6b">Je l'écris</label>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="pied">
+    <h3>Ce qui les sépare vraiment</h3>
+    <ul>
+      <li><strong>La hauteur.</strong> La 5 coûte 40 px, la 2 et la 6 environ
+        50, la 1 et la 3 environ 60, la 4 environ 65. Sur un écran où la barre
+        du navigateur mange déjà deux cents pixels, ce n'est pas un détail.</li>
+      <li><strong>Le bruit.</strong> La 2 est la plus muette : sans la toucher,
+        elle passe pour une ligne de texte. La 3 est la plus démonstrative — on
+        voit qu'il y a un choix, même de loin. Les autres sont entre les deux.</li>
+      <li><strong>La parenté.</strong> La 4 emprunte le fil et la perle de
+        l'écran des chantiers : c'est la seule qui rappelle un geste que vous
+        connaissez déjà ailleurs dans l'application.</li>
+      <li><strong>Ce qu'aucune ne change.</strong> Le geste : un seul appui, sur
+        un seul bouton. Et la porte du tiroir sur la fiche chantier reste — ce
+        sont deux moments, pas deux chemins.</li>
+      <li><strong>Une réserve honnête sur les polices.</strong> Ces pages
+        empruntent la serif de votre appareil. L'application, elle, charge
+        Playfair Display : le rendu final sera plus dessiné que ce que vous
+        voyez ici.</li>
+    </ul>
+  </div>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m27">
+    <div class="etape-tete">
+      <span class="etape-no">27</span>
+      <h2>Le bouton, huit façons</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s27">
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Atlas · 11 août 2026</p>
+    <h1>Le bouton, huit façons</h1>
+    <p>« Trop gros, carré, pas esthétique ». La bascule retenue reste identique
+      sur les huit — seul le bouton change.</p>
+    <p><strong>Touchez-les</strong> : ils répondent, et la bascule marche aussi.</p>
+  </div>
+
+  <div class="grille">
+
+    <!-- ── 1 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 1</h2>
+        <p class="titre">Le filet</p>
+        <p>On retire l'aplat, on garde le contour. Le bouton cesse d'être une
+          masse et devient un cadre.</p>
+        <span class="chiffre">52 px · sans fond</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b1" id="b1a" checked>
+          <input class="r2" type="radio" name="b1" id="b1b">
+          <div class="rail">
+            <label for="b1a">Je dicterai</label><label for="b1b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt b1"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ── 2 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 2</h2>
+        <p class="titre">Le bandeau fin</p>
+        <p>L'aplat reste, la hauteur tombe de 58 à 44, et la serif cède la place
+          à des capitales espacées. Une bande imprimée.</p>
+        <span class="chiffre">44 px · plein</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b2" id="b2a" checked>
+          <input class="r2" type="radio" name="b2" id="b2b">
+          <div class="rail">
+            <label for="b2a">Je dicterai</label><label for="b2b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt b2"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier</span>
+            <span class="m2" data-mot>Ouvrir le devis</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ── 3 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 3</h2>
+        <p class="titre">La plaque gravée</p>
+        <p>Un liseré d'or court à l'intérieur, à cinq pixels des bords. La masse
+          ne change pas ; c'est le détail qui la rachète.</p>
+        <span class="chiffre">54 px · plein</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b3" id="b3a" checked>
+          <input class="r2" type="radio" name="b3" id="b3b">
+          <div class="rail">
+            <label for="b3a">Je dicterai</label><label for="b3b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt b3"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ── 4 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 4</h2>
+        <p class="titre">Le sceau au bout</p>
+        <p>Un disque d'or à droite, la flèche dedans. L'œil s'accroche au disque
+          plutôt qu'au bloc, et le geste a une cible.</p>
+        <span class="chiffre">54 px · plein</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b4" id="b4a" checked>
+          <input class="r2" type="radio" name="b4" id="b4b">
+          <div class="rail">
+            <label for="b4a">Je dicterai</label><label for="b4b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt b4">
+            <span class="mots">
+              <span class="m1" data-mot>Créer le chantier</span>
+              <span class="m2" data-mot>Ouvrir le devis</span></span>
+            <span class="disque" aria-hidden="true">→</span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ── 5 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 5</h2>
+        <p class="titre">La capsule</p>
+        <p>Il lâche la pleine largeur. Un bouton qui ne touche plus les marges
+          est tenu par le blanc autour de lui, et cesse aussitôt de peser.</p>
+        <span class="chiffre">50 px · largeur libre</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b5" id="b5a" checked>
+          <input class="r2" type="radio" name="b5" id="b5b">
+          <div class="rail">
+            <label for="b5a">Je dicterai</label><label for="b5b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt-c">
+            <div class="bt b5"><span class="mots">
+              <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+              <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span></span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ── 6 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 6</h2>
+        <p class="titre">Le double filet</p>
+        <p>Ni fond ni cadre : un cheveu au-dessus, un cheveu en dessous, et le
+          texte entre les deux. La plus « papeterie ».</p>
+        <span class="chiffre">54 px · sans fond</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b6" id="b6a" checked>
+          <input class="r2" type="radio" name="b6" id="b6b">
+          <div class="rail">
+            <label for="b6a">Je dicterai</label><label for="b6b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt b6"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ── 7 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 7</h2>
+        <p class="titre">Le trait d'or</p>
+        <p>Plus de boîte du tout : le texte, et un cheveu d'or dessous, à la
+          largeur du mot. Le plus léger possible.</p>
+        <span class="chiffre">46 px · sans fond</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b7" id="b7a" checked>
+          <input class="r2" type="radio" name="b7" id="b7b">
+          <div class="rail">
+            <label for="b7a">Je dicterai</label><label for="b7b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt b7"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ── 8 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 8</h2>
+        <p class="titre">L'angle adouci</p>
+        <p>La réponse littérale à « trop carré » : rayon 14, hauteur 52, une
+          ombre douce. <b>C'est celle qui revient sur la décision du 10 août</b>
+          — le rayon droit avait été choisi pour ne pas ressembler à une
+          application.</p>
+        <span class="chiffre">52 px · plein · rayon 14</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b8" id="b8a" checked>
+          <input class="r2" type="radio" name="b8" id="b8b">
+          <div class="rail">
+            <label for="b8a">Je dicterai</label><label for="b8b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt b8"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="pied">
+    <h3>Ce qu'il faut peser</h3>
+    <ul>
+      <li><b>Un bouton sans fond appelle moins le doigt.</b> Les 1, 6 et 7 sont
+        les plus élégantes et les plus risquées : sur un écran qu'on parcourt
+        vite, un aplat se trouve sans réfléchir, un contour se cherche. La 7 est
+        la limite — elle ressemble à un lien plus qu'à l'action principale.</li>
+      <li><b>Le doigt, mesuré.</b> Les huit tiennent les 44 px de hauteur utile
+        d'Apple. La 2 est exactement à la borne : rien en dessous.</li>
+      <li><b>Ce bouton est sur vingt-sept écrans.</b> Le changer ici, c'est le
+        changer partout — devis, facture, planning. C'est voulu : une seule
+        forme d'action principale dans toute l'application. Mais le choix
+        dépasse l'écran de création.</li>
+      <li><b>La réserve sur la 8.</b> Le rayon droit a été retenu le 10 août
+        pour que le bouton se lise « comme une pièce imprimée » et non comme un
+        bouton d'application. La 8 rouvre ce point ; c'est légitime, mais ce
+        n'est pas un détail de finition.</li>
+      <li><b>Une réserve honnête sur les polices.</b> Cette page emprunte la
+        serif de votre appareil ; l'application charge Playfair Display, le
+        rendu final sera plus dessiné.</li>
+    </ul>
+  </div>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m28">
+    <div class="etape-tete">
+      <span class="etape-no">28</span>
+      <h2>Le devis parti, allégé</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s28">
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Maquette 33</p>
     <h1>Le devis parti, allégé</h1>
     <p><b>« Je trouve qu'il y a trop d'infos sur cette page. »</b> Cet écran porte
     aujourd'hui onze blocs, et il faut faire défiler pour les voir tous.</p>
@@ -12048,17 +13119,17 @@
     </div>
   </section>
 
-  <section class="etape" id="m26">
+  <section class="etape" id="m29">
     <div class="etape-tete">
-      <span class="etape-no">26</span>
+      <span class="etape-no">29</span>
       <h2>Le devis parti, sur sa base</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s26">
+    <div class="cadre" id="s29">
 <div class="page">
 
   <div class="intro">
-    <p class="sur">Maquette 26</p>
+    <p class="sur">Maquette 34</p>
     <h1>Le devis parti, sur votre base</h1>
     <p>Ce que vous avez arrêté : <b>le nom du devis et le total</b>, plus de lignes de
     prestations, un lien <b>« Modifier mon devis »</b> sous le total, et les trois actions
@@ -12335,7 +13406,7 @@
 
     <p><b>Le rayon du bouton reste ouvert.</b> Tout est dessiné au rayon d'aujourd'hui,
     4 px, pour ne rien présumer. La bande de comparaison — 4, 8, 12, pilule — est au bas de
-    la maquette 25 et reste valable.</p>
+    la maquette 33 et reste valable.</p>
 
     <p><b>Ce que je n'ai pas retiré, et pourquoi.</b> La phrase « Parti il y a 2 jours chez
     Florian Martin » : c'est la seule chose de l'écran qui dise <b>depuis quand</b> vous

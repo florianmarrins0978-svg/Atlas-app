@@ -27,50 +27,146 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 quindecies. Une suite laisse un serveur sur le port 3000, et la batterie accuse le mauvais coupable
+### 0 vicies. Le badge de Next recouvre son onglet « Chantiers »
 
-**Vu le 11 août 2026, sur une batterie qui venait de passer entièrement au
-vert.** La même commande, rejouée sur le même code, a donné deux rouges :
+**Mesuré le 12 août 2026**, en cherchant pourquoi la CI virait au rouge six
+fois de suite sur `test-rien-de-recouvert-e2e.ts`.
+
+Le badge de développement de Next — celui qui affiche « 1 Issue », et par lequel
+le patron a trouvé l'erreur d'hydratation de Safari — se pose **en bas à
+gauche**, exactement sur l'onglet « CHANTIERS » (mesuré : l'onglet occupe
+x 14→105, y 632→654 ; le badge, 56 px dans le coin, le recouvre). Il
+n'apparaît que lorsqu'il a quelque chose à signaler — d'où une CI rouge par
+intermittence, et une suite verte ici où rien n'était signalé.
+
+**La suite l'écarte désormais nommément** : ce badge n'existe pas dans la
+version bâtie, et un contrôle qui échoue au hasard apprend à ignorer le rouge.
+Le témoin vérifie qu'un vrai recouvrement est toujours attrapé.
+
+**Mais chez lui, le problème est réel** : son banc sert le mode développement,
+donc le badge est sur son écran, sur sa navigation.
+
+Trois pistes, aucune tranchée — et aucune bonne telle quelle :
+
+- le **déplacer** (`devIndicators: { position }`) : les deux coins du bas sont
+  pris par la barre d'onglets, et sur l'accueil les deux coins du haut portent
+  déjà un bouton. Mesuré, pas supposé ;
+- l'**éteindre** (`devIndicators: false`) : on perdrait le « 1 Issue » — or
+  c'est par lui qu'il a signalé la panne de Safari. Mauvais échange ;
+- faire **servir une version bâtie** à son banc, où le badge n'existe pas. C'est
+  probablement la bonne réponse, et elle dépasse ce point.
+
+### 0 nonies. L'écran de connexion est resté dans l'ancienne identité
+
+**Vu en capture le 12 août 2026**, en vérifiant que les boutons arrondis
+n'avaient rien cassé. `src/app/login/page.tsx` n'a jamais été repris par la
+refonte du 10 août :
+
+- son bouton est en **terre cuite `#B5502F`**, couleur abandonnée le 3 août
+  quand l'application est passée à Arborea — écrite en dur, hors
+  `design-tokens.ts` ;
+- carte blanche, bordures grises, aucune serif de titre, aucun jeton de la
+  charte.
+
+**C'est le PREMIER écran qu'il voit**, et le seul qui ne ressemble pas à Atlas.
+Même remarque pour `src/app/documents-legaux/formulaire.tsx`, qui porte la même
+couleur en dur.
+
+**Non fait :** il n'a pas demandé cet écran, et sa règle est *« montre-moi avant
+de faire »*. Lui montrer une maquette avant/après, puis appliquer.
+
+### 0 octies. Les actions principales encore dessinées à la main
+
+**Trouvé le 12 août 2026, parce que le patron l'a vu avant nous.** La feuille
+d'envoi du devis dessinait son bouton sur place ; la capsule ne l'avait donc
+jamais atteinte. Corrigé pour le parcours d'envoi (`EnvoiAuClient`,
+`TransmettreAuClient`).
+
+**Restent, repérées mais NON converties :** `DevisDepuisDictee`,
+`BrouillonSection` (informations), `PropositionPrixSection` (prix), et les
+écrans de réglages (agenda, vocabulaire, import de tarifs). Chacune est un
+`<button>` peint en `colors.rust` au lieu d'un `PrimaryButton`.
+
+**Pourquoi ce n'est pas fait d'office :** sa règle du 11 août — *« montre-moi
+avant de faire, plutôt que de faire pour revenir en arrière »*. Il faut donc lui
+montrer ces écrans avant/après, puis convertir. `scripts/capture-bouton-partout.mjs`
+sait le faire pour les écrans qui ont une ADRESSE ; les feuilles qui montent sur
+un geste demandent d'ouvrir le tiroir — c'est ce qui manque au script, et c'est
+exactement le trou par lequel ce défaut est passé.
+
+### ~~0 quindecies. Un serveur fantôme sur le port 3000, et la batterie accusait le prix~~ — **corrigé le 11 août 2026**
+
+**Vu sur une batterie qui venait de passer entièrement au vert.** La même
+commande, rejouée sur le même code, a donné deux rouges :
 
 | Ce qu'on lisait | Ce que c'était |
 |---|---|
-| `test-prix-e2e` : `'0.00' == '34.50'` | un enregistrement qui n'a pas eu le temps de partir — le serveur était occupé à recompiler |
+| `test-prix-e2e` : `'0.00' == '34.50'` | un enregistrement qui n'a pas eu le temps de partir — l'occupant du port compilait |
 | `❌ Le port 3000 est déjà pris.` | la vraie cause, mais annoncée **en dernier**, deux étapes trop tard |
 
-**Ce qui est établi, et pas supposé.** Un `next dev -H 0.0.0.0 -p 3000` tenait
-le port. Trois pièces le datent et le rattachent :
+**La cause, établie et non supposée.** Une sentinelle a noté ce qui tournait au
+moment où le serveur apparaissait : parent déjà mort (`ppid = 1`), aucune suite
+en cours, `/tmp/atlas-banc.pid` à la même minute. Ce n'était donc **pas** une
+suite oublieuse — l'hypothèse écrite d'abord, et fausse — mais
+`verifier-connexion-avec-serveur.mts`, qui lance `npm run banc` puis tue son
+groupe dès la connexion éprouvée.
 
-- il a démarré à **18:59:50**, en pleine batterie ;
-- `/tmp/atlas-banc.pid` porte la **même minute** : c'est donc bien
-  `scripts/banc.mjs` qui a été lancé, pas un serveur d'essai ;
-- au moment du constat, **son parent n'existait plus** (`ppid = 1`) alors que
-  l'enfant tournait toujours.
+Pourquoi le serveur survivait : `banc.mjs` **sert d'abord et bâtit ensuite**, et
+ses gestionnaires de `SIGTERM` vivaient en **fin de fichier**, c'est-à-dire après
+la construction. Entre le lancement du serveur et leur installation, il
+s'écoulait plusieurs minutes ; un signal reçu dans cette fenêtre tuait le script
+net, et le serveur — **détaché**, pour d'excellentes raisons — survivait,
+accroché au port. Un gardien juste, arrivé en retard.
 
-C'est le revers exact d'un correctif antérieur : `banc.mjs` **détache**
-volontairement son serveur pour pouvoir tuer son GROUPE (commit « Détacher le
-serveur du banc, et tuer son GROUPE plutôt que l'enfant »). Détaché, il survit à
-un parent tué brutalement — un délai de suite dépassé suffit. Reste à trouver
-**qui** lance un vrai banc pendant la batterie : les six suites qui exercent
-`banc.mjs` / `essai.mjs` le lisent au lieu de l'exécuter, la piste n'est donc
-pas close.
+**Corrigé en deux endroits :**
 
-**Pourquoi ça coûte cher, et pas seulement une exécution :** les suites
-navigateur suivantes ne se sont pas plaintes. Elles ont trouvé un serveur en vie
-sur le port attendu et ont travaillé dessus — plus lentement, d'où le rouge du
-prix. Une batterie qui interroge un serveur qu'elle n'a pas démarré ne le dit
-nulle part : c'est exactement le genre de vert (ou de rouge) qui ne prouve rien.
+1. `scripts/banc.mjs` — les gardiens sont posés **ligne suivante après le
+   lancement**, avant toute attente.
+2. `scripts/run-e2e-tests.ts` — la batterie **refuse** désormais un port déjà
+   pris, au lieu de se rabattre en silence sur l'occupant. C'était le plus grave
+   : cinquante suites avaient travaillé, une fois, sur un serveur qu'elle
+   n'avait pas lancé, **sans un mot**.
 
-**Ce qu'il faut**, dans cet ordre — le second seul suffirait à ne plus jamais
-être trompé :
+**Éprouvé, dans les deux sens** (`test-prechauffage.ts`, section « deux serveurs
+ne se battent plus pour le port ») :
 
-1. que `run-e2e-tests.ts` **refuse** de continuer si le port est déjà pris,
-   plutôt que de se rabattre en silence sur l'occupant. `scripts/banc.mjs` sait
-   déjà interroger un port (`essai.listen`) : le savoir-faire est là, il n'est
-   pas employé au bon endroit ;
-2. que le lanceur du banc soit identifié et refermé.
+- gardiens remis en fin de fichier → rouge, en nommant la fenêtre ;
+- garde neutralisée d'un `if (false && …)` → rouge. La première version du
+  contrôle cherchait le nom de la fonction et restait verte : **un contrôle qui
+  se contente de trouver un mot ne protège que du mot** ;
+- et en vrai : le script de connexion rejoué rend le port (`000`), là où il
+  laissait un serveur ; la batterie navigateur, lancée sur un port occupé,
+  s'arrête en une seconde avec le remède à taper.
 
-**Reproduit deux fois sur deux batteries consécutives** — ce n'est pas un
-caprice de machine chargée.
+### ~~0 sexdecies. Des suites dépassent leur délai en batterie et font rejouer 25 minutes~~ — **CAUSE TROUVÉE le 2026-08-12**
+
+**Quatre faux rouges dans la journée, sur trois suites sans rapport** —
+« clôturé AVANT sa date » (deux fois), « Créer la facture », puis « un appui
+dicte, un second enregistre ». Chacune diagnostiquait la même chose et avait
+raison — le serveur de développement n'avait pas suivi — et chacune passait au
+vert jouée seule. Coût : une batterie complète rejouée à chaque fois.
+
+**Ce n'était pas la machine** : 13 Go libres, charge à 1,2. C'était le
+préchauffage de `run-e2e-tests.ts`, et il avait deux défauts qui n'en font
+qu'un :
+
+1. **il tournait sans session.** Un appel anonyme sur `/termines` est renvoyé
+   vers `/login` par le middleware : la route visée n'est jamais rendue, donc
+   jamais compilée. Il ne préchauffait que `/login` — et faisait croire au
+   contraire ;
+2. **sa liste était incomplète.** `/termines`, justement, n'y figurait pas.
+
+**Les deux venaient d'une deuxième implémentation.** `scripts/prechauffer.mjs`
+sait ouvrir une session et parcourir la liste complète, écrans de chantier
+compris — c'est ce que le banc d'essai fait depuis toujours. La batterie avait
+sa propre version naïve. Deux copies de la même idée finissent toujours par
+diverger, et c'est la plus faible qui servait ici.
+
+La batterie emprunte désormais le même préchauffage que le banc.
+
+**Ce qui reste à surveiller :** si un faux rouge de ce genre revient malgré le
+préchauffage, ne pas allonger les délais — cela cacherait un écran devenu lent
+au lieu de le dire. Mesurer d'abord quel écran, et pourquoi.
 
 ### 0 quaterdecies. Deux maquettes `/design` décrivent un écran supprimé
 
@@ -90,11 +186,12 @@ caprice de machine chargée.
 pas ce qui n'était pas demandé. À trancher : les supprimer, ou les marquer
 « maquette historique ».
 
+### ~~0. « Impossible d'enregistrer la note »~~ — **CAUSE TROUVÉE ET REPRODUITE le 2026-08-12**
 ### ~~0 septdecies. L'écran du devis parti~~ — **codé et éprouvé le 2026-08-12**
 
 *« Code le 5 »* — le signet d'or. `ExportClient.tsx`, `TransmettreAuClient.tsx`,
 `src/lib/numero-lisible.ts`, `scripts/test-devis-parti-signet-e2e.ts`. Les mesures
-viennent de `docs/maquettes/26-le-devis-sur-sa-base.html` : **les reprendre de là**
+viennent de `docs/maquettes/34-le-devis-sur-sa-base.html` : **les reprendre de là**
 si on y retouche, jamais de mémoire.
 
 **Cinq choses à ne pas défaire, chacune payée par un défaut réel :**
@@ -116,7 +213,7 @@ si on y retouche, jamais de mémoire.
 
 **Ce qui reste ouvert, et n'a pas été tranché :** le rayon du bouton. Tout est au
 rayon d'aujourd'hui (4 px). La bande de comparaison — 4, 8, 12, pilule — est au
-bas de `docs/maquettes/25-le-devis-parti-allege.html`. Son choix vaudra pour
+bas de `docs/maquettes/33-le-devis-parti-allege.html`. Son choix vaudra pour
 **vingt-sept écrans** (`PrimaryButton`) : ne pas le poser sur ce seul écran.
 
 *Ce qui suit est l'énoncé d'origine, gardé parce qu'il porte la mesure.*
@@ -131,7 +228,7 @@ bas de `docs/maquettes/25-le-devis-parti-allege.html`. Son choix vaudra pour
 - « Télécharger le PDF », « Copier le lien », « Partager » **en encre foncée**,
   visiblement cliquables.
 
-`docs/maquettes/26-le-devis-sur-sa-base.html` : sa base au mot près, plus quatre
+`docs/maquettes/34-le-devis-sur-sa-base.html` : sa base au mot près, plus quatre
 mises en page du même contenu (sans carte · dans le titre · actions empilées ·
 signet d'or). **Rien n'est codé** tant qu'il n'a pas donné un numéro.
 
@@ -142,7 +239,7 @@ signet d'or). **Rien n'est codé** tant qu'il n'a pas donné un numéro.
    phrase courte, une seule fois, est proposée — pas décidée.
 2. **« Partager autrement (WhatsApp… ) » ne tient pas** à trois sur une ligne. Il
    devient « Partager », ou les trois s'empilent (idée 4). Son choix.
-3. **Le rayon du bouton reste sans réponse** (bande de la maquette 25 : 4, 8, 12,
+3. **Le rayon du bouton reste sans réponse** (bande de la maquette 33 : 4, 8, 12,
    pilule). Tout est dessiné à 4 px pour ne rien présumer.
 
 ### ~~0 sexdecies. L'écran du devis parti : quatre maquettes~~ — **dépassée le 2026-08-12 par la 26**
@@ -153,7 +250,7 @@ signet d'or). **Rien n'est codé** tant qu'il n'a pas donné un numéro.
 (`CLAUDE.md` §3 bis). Il a demandé la maquette explicitement : *« fabrique-moi la
 maquette et montre-la-moi avant de coder quoi que ce soit »*.
 
-`docs/maquettes/25-le-devis-parti-allege.html`. Mesuré : l'écran porte **onze
+`docs/maquettes/33-le-devis-parti-allege.html`. Mesuré : l'écran porte **onze
 blocs** et déborde de **382 px** sur sa dalle.
 
 | | Blocs | Ce qu'elle retranche | Ce qu'elle coûte |
@@ -192,47 +289,107 @@ pas renvoyé à l'accueil pour la seule bonne raison : **il n'est jamais parti d
 la page**.
 
 ### 0. Si « Impossible d'enregistrer la note » revient : lire la phrase, ne pas la deviner
-
 **Ouvert le 11 août 2026, et volontairement laissé ouvert.** Le patron a signalé
 ce message ; il n'a **pas pu être reproduit ici** — la dictée passe avec un micro
 simulé, en développement comme sur la version bâtie derrière une origine
 étrangère. Ce qui a été corrigé, c'est le silence : l'écran nommait le refus
 « Impossible… Réessayez » quelle qu'en fût la cause, et rien n'était journalisé.
 
-Désormais, l'écran distingue trois choses, et il faut **lui demander laquelle
-il voit** :
+**Le 12 août, le patron a rapporté la phrase — et elle accusait le mauvais
+coupable.** Il a lu *« L'enregistrement n'a pas pu être transmis — la connexion
+a été interrompue »*. C'était la branche `catch` de l'écran, c'est-à-dire la
+seule catégorie que le correctif de la veille avait laissée muette : les refus
+ATTENDUS étaient devenus bavards, les pannes IMPRÉVUES continuaient de lever.
+**Le correctif était à moitié fait, et la moitié manquante était exactement
+celle qui se produisait.**
+
+Pire que muet : cette phrase désignait le réseau alors que l'aller-retour avait
+peut-être très bien eu lieu. Elle envoyait chercher au mauvais endroit.
+
+Deux choses ont changé le 12 août :
+
+1. **L'action ne lève plus rien.** Toute panne rend une phrase qui **nomme le
+   maillon** — session, cadence, lecture, stockage, base (`src/lib/panne-note-vocale.ts`).
+   Le disque plein, le droit d'écriture refusé et le service absent ont leur
+   propre phrase, parce qu'ils appellent chacun un geste différent.
+2. **L'écran ne conclut plus, il demande.** Quand l'appel lui-même échoue, il
+   interroge le serveur avant de parler (`src/lib/diagnostic-liaison.ts`) :
+   s'il répond, ce n'était pas la connexion mais une **page vieillie** — le cas
+   le plus probable sur ce banc, où l'espace se reconstruit et où les actions
+   changent d'identifiant sous une page déjà ouverte.
+
+**Puis la cause a été trouvée, le 12 août, en reproduisant son parcours plutôt
+qu'en raisonnant dessus.** Une action serveur porte un identifiant fabriqué à la
+construction ; son banc se met à jour tout seul ; une page restée ouverte appelle
+un identifiant disparu, et l'envoi échoue sans atteindre le serveur.
+`scripts/eprouver-page-vieillie.mts` le rejoue : code d'avant, `500` et le
+message du patron mot pour mot. L'enregistrement passe désormais par une URL
+(`ARCHITECTURE.md`, `HANDOVER.md`).
+
+**Ce qui reste utile si une panne d'un autre ordre survient :** les phrases
+ci-dessous désignent chacune un endroit différent, et aucune ne demande de
+deviner.
 
 | Ce qu'il lit | Ce que ça désigne |
 |---|---|
-| une phrase précise (format, taille, cadence, enregistrement vide) | le serveur a refusé, et la raison est dedans — le format reçu est nommé |
-| « la connexion a été interrompue » | l'aller-retour n'a pas abouti : mandataire, réseau, session expirée |
-| plus rien, la note s'enregistre | c'était l'un des refus ci-dessus |
+| « (étape : session) » | sa session a expiré — recharger et se reconnecter |
+| « (étape : stockage) », disque plein | l'espace de travail n'a plus de place |
+| « (étape : cadence) » ou un service qui ne répond pas | Redis absent — l'espace est à relancer |
+| « (étape : base) » | la fiche n'a pas pu être mise à jour — le journal porte le détail |
+| « cette page a été ouverte avant la dernière mise à jour » | il suffit de recharger |
+| « le serveur est injoignable depuis ce téléphone » | c'est bien le réseau, cette fois |
 
-Le journal du serveur porte les pannes imprévues avec le chantier, le format et
-la taille. **Ne rien supposer avant d'avoir la phrase** : deux diagnostics à
-distance ont déjà coûté un aller-retour chacun ce jour-là.
+**Ne rien supposer avant d'avoir la phrase** : trois diagnostics à distance ont
+déjà coûté un aller-retour chacun.
+
+**Ce qui n'est toujours pas fait, et qui coûte à chaque échec :** la note captée
+est **perdue** quand l'envoi échoue — il faut tout redicter. La garder en local
+(IndexedDB) et la reproposer au retour serait le vrai confort ; ce n'est pas
+fait, et ce n'est pas un détail pour quelqu'un qui dicte debout sur un chantier.
 
 
-### 0 bis. Si le fil accroche ENCORE chez le patron : le masque, sur iOS
+### ~~0 bis. Si le fil accroche ENCORE chez le patron : le masque, sur iOS~~ — **close le 2026-08-11 par le patron lui-même**
 
-**Ouvert le 11 août 2026, et volontairement laissé ouvert.** Le saccadé signalé
-ce soir-là avait pour cause `scroll-snap-stop: always`, retiré ; la mesure a mis
-le masque en dégradé et l'animation d'opacité hors de cause — mais **elle a
-mesuré Chromium sans tête sur cette machine**, pas Safari sur son iPhone, et
-elle n'a pas pu produire l'élan d'un vrai doigt.
+**Ouvert puis refermé le même soir, et c'est le refermer qui compte.** Le
+saccadé avait pour cause `scroll-snap-stop: always`, retiré ; la mesure
+(`scripts/mesurer-fluidite-fil.mts`) mettait le masque en dégradé et l'animation
+d'opacité hors de cause — mais elle avait mesuré **Chromium sans tête sur cette
+machine**, pas Safari sur son iPhone, et elle ne pouvait pas produire l'élan d'un
+vrai doigt. Ce point restait donc ouvert par honnêteté, pas par doute.
 
-Si la plainte revient, le suspect suivant est le `mask-image` de
-`.atlas-fil-defile` : sur iOS, un cadre masqué se recompose à chaque image du
-défilement. Le correctif est écrit d'avance et ne coûte rien à l'œil —
-**déplacer le fondu sur `.atlas-ecran`**, en deux dégradés posés PAR-DESSUS
-(couleur `--card`, `pointer-events: none`), plutôt qu'en masque SUR le cadre qui
-défile. Alléger, c'est déplacer.
+**Le patron a tranché, sur son téléphone :** *« la fluidité de l'iPhone, ça
+aussi, ça a été corrigé. »* Le retrait de l'accroche suffisait ; le masque
+n'était pour rien dans la plainte.
 
-Deux précautions à ce moment-là : les dégradés doivent être placés aux bords de
-la zone qui défile, pas du cadre (l'en-tête n'est pas dedans), et une capture
-avant/après doit être identique — sinon on aura échangé un défaut contre un
-autre.
+**Ce qu'il faut en retenir, et pourquoi ce point reste écrit plutôt que
+supprimé :** le `mask-image` de `.atlas-fil-defile` est **hors de cause, vérifié
+sur le vrai appareil**. Quelqu'un finira par le soupçonner — c'est le suspect
+qui vient à l'esprit dès qu'on parle de défilement qui accroche sur iOS. Le
+déplacer coûterait du travail et du risque pour rien. Le correctif de repli
+reste décrit ci-dessous **au cas où une plainte NOUVELLE apparaîtrait**, pas
+pour celle-ci, qui est réglée.
 
+Repli, si et seulement si le sujet revient : **déplacer le fondu sur
+`.atlas-ecran`**, en deux dégradés posés PAR-DESSUS (couleur `--card`,
+`pointer-events: none`), plutôt qu'en masque SUR le cadre qui défile. Deux
+précautions alors : les dégradés se placent aux bords de la zone qui défile, pas
+du cadre (l'en-tête n'est pas dedans), et une capture avant/après doit être
+identique — sinon on aura échangé un défaut contre un autre.
+
+### ~~0 septies. Les deux portes de la création~~ — **close le 2026-08-11**
+
+Il a choisi, maquettes en main : la **bascule « le trait qui glisse »**
+(`docs/maquettes/26-la-bascule-affinee.html`, déclinaison 1) et le bouton **« la
+capsule »** (`docs/maquettes/28-le-bouton.html`, proposition 5). Les deux sont en
+place sur l'écran de création, et « Je l'écris » mène à la page du devis entier
+avec le client déjà en en-tête. Le raisonnement complet est dans
+`ARCHITECTURE.md` §64.
+
+**Tranché le 11 août au soir : « partout ».** La capsule est la seule forme
+d'action principale de l'application, sur les dix-sept écrans, et la variante
+rectangulaire a été retirée. Elle lui a été montrée **sur ses vrais écrans avant
+d'être posée** — sa règle : « montre-moi avant de faire, plutôt que de faire pour
+revenir en arrière ». `scripts/capture-bouton-partout.mjs` refait la planche.
 
 ### ~~0 ter. Les suites navigateur mesuraient un écran que personne ne possède~~ — **close le 2026-08-11**
 
@@ -339,17 +496,14 @@ un second serveur, et construction possible sans les secrets de production.
   un banc neuf à chaque fois ; le défaut des migrations du 9 août est passé par
   ce trou, et un autre y passera. Il faut un banc qui existe déjà, qui reçoit du
   code neuf, migrations comprises.
-- **Le navigateur d'essai manque au conteneur.** `npm run verifier:connexion`
-  tombe sur une pile Playwright illisible au lieu d'une phrase. À installer, et
-  à faire dire une ligne claire quand il manque.
-  **Précision du 9 août** : dans l'espace de travail de l'agent, le navigateur
-  EST installé — mais sous `/opt/pw-browsers/chromium-1194`, alors que la
-  version de Playwright du dépôt en réclame un autre numéro de build. Le
-  message « Executable doesn't exist… run npx playwright install » envoie donc
-  chercher une installation absente au lieu d'une version qui ne correspond
-  pas. Contournement éprouvé : `chromium.launch({ executablePath:
-  "/opt/pw-browsers/chromium" })` — c'est ce que fait
-  `scripts/verifier-maquettes-page-unique.mjs`.
+- ~~**Le navigateur d'essai manque au conteneur.**~~ — **réglé le 2026-08-12.**
+  Il s'installe dans la commande du workflow (`npx playwright install --with-deps
+  chromium`), et non dans l'image : l'espace du patron ne porte pas trois cents
+  mégaoctets dont il ne se sert jamais, la machine de GitHub les paie une fois
+  par exécution. Ce qui l'a débloqué : `.devcontainer/verifier.sh` **se connecte
+  désormais pour de vrai** sur le banc, derrière une origine étrangère — le
+  contrôle qui manquait quand le patron a écrit « je n'arrive pas à me
+  connecter ».
 - **Les PDF et la dictée ne sont pas mesurés** — le premier exige un vrai
   stockage, la seconde un appel facturé. Dit plutôt que supposé.
 

@@ -138,7 +138,7 @@ export default function ExportClient({
           pour voir la moitié.
 
           La mise en page de l'écran d'attente est celle qu'il a désignée dans
-          `docs/maquettes/26-le-devis-sur-sa-base.html` — l'idée 5, « le signet
+          `docs/maquettes/34-le-devis-sur-sa-base.html` — l'idée 5, « le signet
           d'or » : un filet d'or pour l'état, le montant seul au centre, le geste
           en bas sous le pouce. Les mesures viennent de là ; les reprendre de là
           si on y retouche, jamais de mémoire. */}
@@ -184,7 +184,7 @@ export default function ExportClient({
                 type="button"
                 onClick={reprendre}
                 disabled={reprise}
-                className="mt-4 block w-full rounded-[4px] py-3 text-[15px] font-medium text-white disabled:opacity-50"
+                className="mt-4 block w-full rounded-full py-3 text-[15px] font-medium text-white disabled:opacity-50"
                 style={{ backgroundColor: colors.rust }}
               >
                 {reprise
@@ -409,7 +409,7 @@ function AvertissementModification({
 /**
  * L'écran d'un devis déjà parti — « le signet d'or ».
  *
- * Retenu par le patron le 12 août 2026 (maquette 26, idée 5), après cinq
+ * Retenu par le patron le 12 août 2026 (maquette 34, idée 5), après cinq
  * propositions et une mesure : l'écran d'avant portait onze blocs et débordait
  * de 382 px sur sa dalle.
  *

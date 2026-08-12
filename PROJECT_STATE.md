@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-10 · branche `claude/migrate-app-atlas-zz31ac`
+**Dernière mise à jour :** 2026-08-11 · branche `claude/new-session-a1l4v9`
 · dernière migration `drizzle/0033_identifiants_google_par_entreprise.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -65,6 +65,7 @@ seule avec quinze outils.
 | Correction demandée par le client, avec son message porté au patron | `src/app/devis/[jeton]/formulaire.tsx` + `src/lib/etat-envoi.ts` |
 | Écrire le devis soi-même, sans passer par la proposition de prix | `src/app/chantiers/[id]/informations/InformationsClient.tsx` → `prix?saisie=manuelle` |
 | Transmission au client : messagerie ouverte **au bon destinataire**, canal changeable, coordonnée saisissable sur place | `src/app/chantiers/[id]/export/TransmettreAuClient.tsx` |
+| **Le contact manquant se saisit dans la feuille d'envoi**, au lieu de renvoyer vers un écran retiré du tiroir (11 août 2026, `ARCHITECTURE.md` §62) | `src/app/chantiers/[id]/export/EnvoiAuClient.tsx` |
 | **De la dictée au devis en un seul geste** : prestations, durée, équipe, prix, devis | `src/server/services/devis-depuis-dictee.ts` + `src/app/chantiers/[id]/DevisDepuisDictee.tsx` |
 | La dictée est lue mot à mot quand aucun modèle ne répond — et l'écran le dit | `src/server/ai/lecture-litterale.ts` + `drizzle/0021_lecture_dictee.sql` |
 | Rédiger le devis **entièrement à la main**, depuis la fiche du chantier | `src/app/chantiers/[id]/page.tsx` → `prix?saisie=manuelle` |
@@ -99,6 +100,21 @@ seule avec quinze outils.
 | Purge de l'audio après transcription réussie | `src/server/retention.ts` |
 | Export des données d'un client | `src/server/repositories/donnees-client.ts` |
 | Effacement d'un client, respectant la conservation légale | idem |
+
+### L'écran d'erreur qui ne menait nulle part (11 août 2026)
+
+Un serveur redémarré sous un onglet resté ouvert, et les morceaux de code
+changent de nom. Le patron a lu « Failed to load chunk » avec pour seul recours
+un « Réessayer » qui refait le même rendu, avec les mêmes adresses mortes.
+
+| Brique | Où c'est |
+|---|---|
+| La décision : reconnaître, recharger une fois, savoir s'arrêter | `src/lib/reprise-erreur.ts` |
+| Le corps commun des neuf écrans d'erreur | `src/components/atlas/CorpsErreur.tsx` |
+| Contrôles purs, dont son message exact et les cinq formulations de navigateurs | `scripts/test-reprise-erreur.ts` |
+| La panne rejouée dans un vrai navigateur, à l'écran du patron | `scripts/test-reprise-morceau-e2e.ts` |
+| La capture, pour regarder l'écran | `scripts/capture-reprise-morceau.mts` |
+| Le pourquoi, et ce qui n'est pas couvert | `ARCHITECTURE.md` §63 |
 
 ### La session fantôme (10 août 2026)
 
