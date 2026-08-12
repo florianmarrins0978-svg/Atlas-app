@@ -41,7 +41,10 @@
     --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
     --or:#B98B47; --or-clair:#C9A15E; --pin:#2f3b2f;
     --trait:rgba(28,28,26,.16); --trait-doux:rgba(28,28,26,.07);
-    --chevron:rgba(28,28,26,.3);
+    /* Le chevron est DORÉ, à sa demande du 12 août 2026. Il vaut pour les
+       deux endroits — la liste et la feuille — et c'est ce qui les tient
+       ensemble : le même signe, la même couleur, le même geste. */
+    --chevron:#B98B47;
     --ombre:0 -18px 44px rgba(20,18,14,.22);
     --ressort:cubic-bezier(.22,1.02,.36,1);
   }
@@ -113,7 +116,7 @@
          color:var(--chevron);
          transition:transform .18s var(--ressort),color .18s;
          -webkit-tap-highlight-color:transparent}
-  .aller:active{transform:scale(.9);color:var(--or)}
+  .aller:active{transform:scale(.9);color:var(--or-clair)}
 
   .barre{margin-top:auto;display:flex;justify-content:space-around;align-items:center;
          padding:15px 8px calc(18px + env(safe-area-inset-bottom));border-top:1px solid var(--trait)}

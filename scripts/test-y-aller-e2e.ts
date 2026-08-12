@@ -1,0 +1,231 @@
+import assert from "node:assert";
+import type { Page, BrowserContext } from "playwright";
+import { lancerNavigateur } from "./e2e-browser";
+import { pool } from "../src/server/db/client";
+
+/**
+ * « Y aller » — le chevron doré du planning, et la feuille qu'il ouvre.
+ *
+ * *Le patron, le 12 août 2026 : « lorsque je vais sur planning et qu'il y a un
+ * chantier planifié, en cliquant dessus je puisse avoir un petit truc genre
+ * accéder à l'adresse, et en cliquant dessus ça met l'adresse toute seule dans
+ * le GPS, soit Maps, soit Waze ».* Retenu sur maquette
+ * (`docs/maquettes/32-le-chevron.html`) après quatre versions.
+ *
+ * **Ce que cette suite regarde, et qu'aucun test unitaire ne peut voir :** que
+ * l'adresse arrive VRAIMENT jusqu'au `href`. La règle pure est éprouvée à part
+ * (`test-itineraire.ts`) et elle serait verte même si l'écran oubliait de lui
+ * passer l'adresse — la feuille s'ouvrirait alors sur « Adresse non
+ * renseignée » pour un chantier qui en a une, et le patron croirait sa base
+ * vide. C'est le raccord qui se casse, jamais la formule.
+ *
+ * **Ce qu'elle ne prouve pas, et il faut le savoir :** que le GPS s'ouvre. Un
+ * navigateur d'essai n'a ni Plans, ni Waze. Ce qui est vérifiable ici, c'est
+ * que le lien est universel (`https://`) — donc qu'il retombe sur un site
+ * plutôt que d'échouer en silence, ce que fait un `waze://` sans application.
+ */
+
+const BASE = "http://localhost:3000";
+const ADRESSE = "12 chemin des Chênes, 33600 Pessac";
+
+let passed = 0;
+let failed = 0;
+async function test(nom: string, fn: () => Promise<void>) {
+  try {
+    await fn();
+    console.log(`✅ ${nom}`);
+    passed++;
+  } catch (err) {
+    console.error(`❌ ${nom}`);
+    console.error(`   ${err instanceof Error ? err.message : err}`);
+    failed++;
+  }
+}
+
+async function seConnecter(context: BrowserContext): Promise<Page> {
+  const page = await context.newPage();
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await page.fill('input[name="email"]', "demo@atlas.local");
+  await page.fill('input[name="password"]', "demo1234");
+  await page.click('button[type="submit"]');
+  await page.waitForURL(`${BASE}/`, { timeout: 15000 });
+  return page;
+}
+
+/**
+ * Un chantier planifié, avec ou sans adresse.
+ *
+ * Le devis et la date sont posés **en base** plutôt qu'à l'écran : le parcours
+ * complet du devis est déjà éprouvé ailleurs (`test-planning-vers-facture-e2e`),
+ * et le rejouer ici ajouterait deux minutes à la batterie pour ne rien
+ * apprendre de neuf sur le chevron.
+ */
+async function chantierPlanifie(page: Page, suffixe: string, adresse: string | null) {
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+  const client = `M. Bernard ${suffixe} ${Date.now()}`;
+  await page.fill('input[placeholder="M. Bernard"]', client);
+  await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 12");
+  await page.click('button:has-text("Créer le chantier")');
+  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
+  const chantierId = page.url().split("/").pop()!;
+
+  const r = await pool.query(
+    `UPDATE chantiers
+        SET devis_envoye_at = now(),
+            date_planifiee  = CURRENT_DATE + 3,
+            adresse_chantier = $2
+      WHERE id = $1`,
+    [chantierId, adresse]
+  );
+  if (r.rowCount !== 1) {
+    throw new Error(
+      "Le montage n'a pas pu poser le devis et la date : le rôle de test ne traverse " +
+        "probablement plus RLS (voir CLAUDE.md §5)."
+    );
+  }
+  const nom = (await pool.query(`SELECT nom FROM chantiers WHERE id = $1`, [chantierId])).rows[0].nom as string;
+  return { chantierId, nom, client };
+}
+
+async function ouvrirLaFeuille(page: Page, nom: string) {
+  await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
+  await page.waitForSelector('h1:has-text("Planning")', { timeout: 30_000 });
+  await page.getByRole("button", { name: `Y aller — ${nom}` }).click();
+  await page.waitForSelector("text=Y aller", { timeout: 10_000 });
+}
+
+async function main() {
+  const browser = await lancerNavigateur();
+  // Le presse-papier est refusé par défaut hors d'un geste de confiance : sans
+  // cette permission, « Copier l'adresse » afficherait « Copie impossible » et
+  // le contrôle accuserait le code d'un défaut du navigateur d'essai.
+  const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
+  const page = await seConnecter(context);
+
+  const avec = await chantierPlanifie(page, "avec-adresse", ADRESSE);
+  const sans = await chantierPlanifie(page, "sans-adresse", null);
+
+  await test("Le chevron ouvre la feuille SANS quitter le planning", async () => {
+    await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector('h1:has-text("Planning")', { timeout: 30_000 });
+    const avant = page.url();
+    await page.getByRole("button", { name: `Y aller — ${avec.nom}` }).click();
+    await page.waitForSelector(`text=${ADRESSE}`, { timeout: 10_000 });
+    assert.equal(page.url(), avant, "toucher le chevron ne doit pas changer de page");
+  });
+
+  await test("Les trois destinations portent l'adresse du chantier", async () => {
+    await ouvrirLaFeuille(page, avec.nom);
+    const attendus = {
+      Plans: "maps.apple.com",
+      "Google Maps": "google.com/maps",
+      Waze: "waze.com",
+    } as const;
+    for (const [nom, hote] of Object.entries(attendus)) {
+      const href = await page.getByRole("link", { name: nom, exact: true }).getAttribute("href");
+      assert.ok(href, `« ${nom} » n'a pas de lien`);
+      assert.ok(href.includes(hote), `« ${nom} » ne vise pas ${hote} : ${href}`);
+      // Le raccord, et c'est tout l'objet de cette suite : l'adresse doit se
+      // relire ENTIÈRE depuis le lien, virgule et accents compris.
+      const valeurs = [...new URL(href).searchParams.values()];
+      assert.ok(
+        valeurs.includes(ADRESSE),
+        `« ${nom} » ne porte pas l'adresse du chantier (reçu : ${valeurs.join(" | ")})`
+      );
+    }
+  });
+
+  await test("Aucun lien de GPS n'est un schéma propre — ils retombent tous sur un site", async () => {
+    await ouvrirLaFeuille(page, avec.nom);
+    for (const nom of ["Plans", "Google Maps", "Waze"]) {
+      const href = await page.getByRole("link", { name: nom, exact: true }).getAttribute("href");
+      assert.ok(
+        href?.startsWith("https://"),
+        `« ${nom} » échouerait en silence sans l'application installée : ${href}`
+      );
+    }
+  });
+
+  await test("Le numéro du client mène à un vrai appel", async () => {
+    await ouvrirLaFeuille(page, avec.nom);
+    const href = await page.getByRole("link", { name: "Appeler le client" }).getAttribute("href");
+    assert.equal(href, "tel:0556000012");
+  });
+
+  await test("« Copier l'adresse » copie pour de bon, et le dit", async () => {
+    await ouvrirLaFeuille(page, avec.nom);
+    await page.getByRole("button", { name: "Copier l’adresse" }).click();
+    await page.waitForSelector("text=Adresse copiée", { timeout: 5000 });
+    const presse = await page.evaluate(() => navigator.clipboard.readText());
+    assert.equal(presse, ADRESSE);
+  });
+
+  // **On n'invente pas d'adresse** (`CLAUDE.md` §4). Un chantier dicté à la
+  // va-vite n'en a pas toujours : la feuille dit alors ce qui manque et où le
+  // saisir, au lieu d'ouvrir un GPS sur rien.
+  await test("Sans adresse, la feuille le dit et n'offre aucune destination", async () => {
+    await ouvrirLaFeuille(page, sans.nom);
+    await page.waitForSelector("text=Adresse non renseignée", { timeout: 10_000 });
+    assert.ok(
+      (await page.locator("text=À saisir sur la fiche du chantier").count()) > 0,
+      "la feuille doit dire OÙ saisir l'adresse, sinon le patron ne sait pas quoi faire"
+    );
+    for (const nom of ["Plans", "Google Maps", "Waze"]) {
+      assert.equal(
+        await page.getByRole("link", { name: nom, exact: true }).count(),
+        0,
+        `« ${nom} » ne doit pas être un lien quand il n'y a pas d'adresse`
+      );
+    }
+  });
+
+  await test("Le chevron ne mange pas les gestes voisins de la ligne", async () => {
+    await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector('h1:has-text("Planning")', { timeout: 30_000 });
+    // Le carré de 44 px est invisible : posé sans précaution, il recouvre
+    // « Créer la facture » et la ligne devient injoignable — un défaut qu'aucun
+    // test de rendu ne voit, puisque les deux éléments SONT là.
+    const facture = page.locator(`a[href="/chantiers/${avec.chantierId}/facture"]`);
+    // **Amener à l'écran d'abord, et ce n'est pas une politesse.** `elementFromPoint`
+    // lit des coordonnées de FENÊTRE : sur une ligne restée sous le pli, elle
+    // interroge un point vide et le contrôle accuse le chevron de recouvrir ce
+    // qu'il n'a jamais touché. Ce même appel attend en prime que la ligne ait
+    // une boîte — mesurée trop tôt, elle en est encore dépourvue.
+    await facture.scrollIntoViewIfNeeded();
+    const boite = await facture.boundingBox();
+    assert.ok(boite, "« Créer la facture » doit rester à l'écran");
+    const dessus = await page.evaluate(
+      ([x, y]) => {
+        const el = document.elementFromPoint(x as number, y as number);
+        return el?.closest("a,button")?.getAttribute("aria-label") ?? el?.textContent ?? "";
+      },
+      [boite.x + boite.width / 2, boite.y + boite.height / 2]
+    );
+    assert.ok(
+      /facture/i.test(dessus),
+      `au centre de « Créer la facture », le doigt touche « ${dessus} » — le chevron la recouvre`
+    );
+  });
+
+  await test("« Annuler » referme la feuille et rend le planning", async () => {
+    await ouvrirLaFeuille(page, avec.nom);
+    await page.getByRole("button", { name: "Annuler", exact: true }).click();
+    await page.waitForSelector(`text=${ADRESSE}`, { state: "detached", timeout: 5000 });
+    assert.ok(
+      (await page.locator('h1:has-text("Planning")').count()) > 0,
+      "le planning doit être là, dessous, intact"
+    );
+  });
+
+  await context.close();
+  await browser.close();
+  console.log(`\n${passed} réussis, ${failed} échoués`);
+  await pool.end();
+  if (failed > 0) process.exit(1);
+}
+
+main().catch(async (err) => {
+  console.error(err);
+  await pool.end();
+  process.exit(1);
+});

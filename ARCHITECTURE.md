@@ -4857,3 +4857,108 @@ l'application est passée à Arborea — sur une carte blanche à bordures grise
 sans serif de titre. C'est le PREMIER écran que le patron voit, et le seul qui
 ne ressemble pas à Atlas. Rien n'a été changé : il n'a pas demandé cet écran, et
 sa règle est de montrer avant de faire. Voir `TODO.md`.
+
+---
+
+## 68. Le chevron doré du planning : l'adresse portée jusqu'au GPS
+
+**Sa demande, le 12 août 2026 :** *« lorsque je vais sur planning et qu'il y a un
+chantier qui est planifié, en cliquant dessus je puisse avoir un petit truc genre
+accéder à l'adresse, et en cliquant dessus ça met l'adresse toute seule dans le
+GPS, soit Maps, soit Waze »*.
+
+Et, dans le même message : *« avant de faire quoi que ce soit, fais-moi une
+maquette visuelle […] en point HTML cliquable »* — la règle `CLAUDE.md` §3 bis,
+appliquée. Quatre maquettes ont été nécessaires avant l'accord
+(`docs/maquettes/29` à `32`).
+
+### Ce que les quatre versions ont coûté, et appris
+
+| | Ce qui était proposé | Ce qu'il a répondu |
+|---|---|---|
+| 29 | Un bouton « Y aller » en toutes lettres | — |
+| 30 | Un « + » sur la ligne, et la feuille | *« il manque tout là en fait »* — la feuille était prisonnière du téléphone dessiné, illisible sur son écran |
+| 31 | La feuille sortie du cadre, mots entiers | *« sans le plus, tu mets une petite flèche »* |
+| 32 | Une flèche de navigation | *« pas cette flèche, je veux la même que celle à côté de maps, le petit `>` »*, puis *« tu mets le chevron en doré »* |
+
+**Sa correction du signe n'était pas une préférence de dessin.** Une flèche de
+navigation promet un DÉPART — et sur un chantier sans adresse, elle ne peut pas
+le tenir : il fallait alors l'éteindre, donc traiter un cas de plus sur la ligne.
+Un chevron promet que QUELQUE CHOSE S'OUVRE, ce qui reste vrai de toutes les
+lignes. **Le cas particulier a disparu avec le choix du signe** — c'est le genre
+d'économie qu'une maquette trouve et qu'un débat d'architecture manque.
+
+### Des liens universels, jamais les schémas propres
+
+`src/lib/itineraire.ts` — fonction pure, éprouvée sans base ni navigateur
+(`scripts/test-itineraire.ts`).
+
+```
+https://maps.apple.com/?daddr=…&dirflg=d
+https://www.google.com/maps/dir/?api=1&destination=…
+https://waze.com/ul?q=…&navigate=yes
+```
+
+`waze://` et `comgooglemaps://` sont plus courts, et ils ont un défaut qu'on ne
+voit pas en les essayant sur une machine qui possède les applications :
+**absente, l'application les fait échouer EN SILENCE**. Le doigt appuie, rien ne
+bouge, rien ne dit pourquoi. Sur un chantier, ce n'est pas un désagrément : c'est
+une adresse qu'on n'a plus. Les liens ci-dessus ouvrent l'application quand elle
+est là, son site sinon.
+
+Deux détails qui ne se devinent pas :
+
+- **`encodeURIComponent`, jamais `encodeURI`.** Une adresse porte une virgule
+  (« 12 chemin des Chênes, 33600 Pessac ») ; `encodeURI` la laisse passer, elle
+  sépare alors deux paramètres chez Waze, et l'adresse est tronquée au numéro de
+  rue. Le GPS s'ouvre — dans une autre commune.
+- **`dirflg=d`.** Sans lui, Plans rouvre le dernier mode utilisé. À pied, s'il a
+  cherché une rue en ville la veille : trente kilomètres, et une estimation
+  absurde qu'il ne pense pas à corriger.
+
+**Un téléphone ne dit pas quelles applications il possède.** Impossible donc de
+n'afficher que Waze parce que c'est la seule installée : les trois sont
+proposées, et le doigt choisit. La case « Toujours celle-là » de la maquette
+n'est **pas** reprise en v1 — mémoriser un choix sans offrir nulle part de le
+défaire enferme le patron dans une application qu'il aura touchée par erreur.
+Elle reviendra avec son interrupteur dans Réglages, ou pas du tout.
+
+### L'adresse descend AVEC la liste
+
+`listerChantiersPourPlanning` remonte désormais `adresseChantier` et
+`clientTelephone`. Pas par confort : le patron ouvre « Y aller » **en voiture**,
+souvent sans réseau. Une feuille qui doit aller chercher l'adresse au moment du
+geste arrive vide exactement là où elle sert.
+
+Les oublier de ce `select` ne casserait rien de visible — la feuille dirait
+« Adresse non renseignée » sur un chantier qui en a une, et il croirait sa base
+vide. D'où un contrôle qui les nomme (`test-planning-repo.ts`), confronté à leur
+absence avant d'être retenu.
+
+### Ce que la capture a corrigé, et qu'aucun test ne voyait
+
+La ligne « Planifiés » portait déjà « Déplacer » et « Créer la facture ». Le
+carré touchable de 44 px du chevron, posé sans précaution, **rognait la seule
+chose qui dit de quel chantier il s'agit** : à 390 px, « Chez M. Bernard »
+devenait « Chez M. … ». Les huit contrôles étaient verts — le nom ÉTAIT là, et
+c'est bien pourquoi aucun ne pouvait le voir.
+
+Les 44 px sont donc pris sur les marges et non sur le nom : la hauteur de la
+ligne (`-my-3`), la gouttière (`-ml-2`) et le retrait droit de l'écran
+(`-mr-[26px]`). La cible reste entière, et elle tombe au bord — là où le pouce
+arrive le plus vite.
+
+**La ligne reste chargée**, et ce n'est pas réparé : trois gestes et un nom sur
+390 px, c'est un de trop. La maquette qu'il a validée ne montrait pas les deux
+autres. Rien n'a été restructuré sans lui (`CLAUDE.md` §3 bis) — la capture lui
+est transmise, la décision est la sienne.
+
+### Ce que les contrôles prouvent, et ce qu'ils ne prouvent pas
+
+`scripts/test-y-aller-e2e.ts` vérifie **le raccord** : que l'adresse arrive
+vraiment jusqu'au `href`. La règle pure resterait verte même si l'écran oubliait
+de la lui passer — c'est le raccord qui se casse, jamais la formule.
+
+Il ne prouve **pas** que le GPS s'ouvre : un navigateur d'essai n'a ni Plans, ni
+Waze. Ce qui est vérifiable ici, c'est que le lien est universel — donc qu'il
+retombe sur un site au lieu d'échouer en silence.

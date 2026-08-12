@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-11 · branche `claude/new-session-a1l4v9`
+**Dernière mise à jour :** 2026-08-12 · branche `claude/chantier-phototech-direct-ujt2wv`
 · dernière migration `drizzle/0033_identifiants_google_par_entreprise.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -178,6 +178,16 @@ l'application. Ce qui est **fait** :
   d'y poser une feuille maison. Quatre gestes deviennent deux. Ajouter, regarder
   et retirer se font dans la pellicule ; `/chantiers/[id]/photos` répond 404, et
   une suite le vérifie. `ARCHITECTURE.md` §60.
+- **« Y aller » : l'adresse du chantier jusqu'au GPS** (12 août) : au bout de
+  chaque ligne des chantiers planifiés, un **chevron doré** ouvre une feuille —
+  Plans, Google Maps, Waze, copier l'adresse, appeler le client — sans quitter
+  le planning. Liens universels et jamais `waze://`, qui échoue en silence
+  quand l'application manque. Sans adresse, rien ne s'invente : les
+  destinations disparaissent et la feuille dit où la saisir. Retenu après
+  quatre maquettes (`docs/maquettes/29` à `32`). `ARCHITECTURE.md` §68.
+  **Réserve transmise au patron :** la ligne porte désormais trois gestes et un
+  nom sur 390 px — c'est un de trop, et la maquette validée n'en montrait pas
+  deux. Non restructuré sans lui.
 - **Le planning au mois, et les équipes nommées** (10 août, au soir) : sept
   colonnes sans bordure, cinq marques d'occupation, et la journée qui s'ouvre
   sous le calendrier. Réglages laisse nommer les équipes — mais **seulement à

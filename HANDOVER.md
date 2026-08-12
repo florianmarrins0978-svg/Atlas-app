@@ -223,6 +223,40 @@ serif. C'est le premier écran qu'il voit. `TODO.md` §0 nonies.
 
 ## Ce qui vient d'être terminé
 
+### « Y aller » — le chevron doré du planning (12 août 2026)
+
+Au bout de chaque chantier planifié, un chevron doré ouvre une feuille : Plans,
+Google Maps, Waze, copier l'adresse, appeler le client. Sans quitter l'écran.
+
+- `src/lib/itineraire.ts` — la règle pure (liens universels, jamais `waze://`).
+- `src/components/atlas/FeuilleYAller.tsx` — la feuille, sur `BottomSheet`.
+- `src/app/planning/PlanningClient.tsx` — le chevron, et `libelleQuand()` écrit
+  une seule fois pour la ligne ET la feuille.
+- `listerChantiersPourPlanning` remonte `adresseChantier` et `clientTelephone`.
+- Contrôles : `scripts/test-itineraire.ts` (10), `scripts/test-y-aller-e2e.ts`
+  (8), deux cas de plus dans `scripts/test-planning-repo.ts`. Les trois ont été
+  confrontés au défaut qu'ils prétendent voir avant d'être retenus.
+
+**Deux choses à savoir avant d'y toucher :**
+
+1. **La case « Toujours celle-là » de la maquette n'est PAS implémentée**, et
+   c'est délibéré : mémoriser un choix de GPS sans nulle part où le défaire
+   enferme le patron dans une application touchée par erreur. Elle attend son
+   interrupteur dans Réglages. Ne pas l'ajouter en croyant combler un oubli.
+2. **La ligne « Planifiés » est trop chargée**, et ce n'est pas réparé : trois
+   gestes (« Déplacer », « Créer la facture », le chevron) plus le nom sur
+   390 px. La maquette qu'il a validée ne montrait pas les deux premiers. La
+   capture lui a été transmise — **ne rien restructurer avant sa réponse**
+   (`CLAUDE.md` §3 bis).
+
+**Une question lui est posée et attend sa réponse :** un chantier sans adresse
+n'a plus de chemin pour aller la saisir, la feuille se contentant de dire « à
+saisir sur la fiche du chantier ». Faut-il un bouton « Saisir l'adresse » à cet
+endroit ? Rien ne sera ajouté sans lui.
+
+---
+
+
 **⚠ SI LE PATRON DIT « ce n'est toujours pas là » : REGARDER LA BRANCHE
 D'ABORD.** C'est le défaut du 11 août au soir, et il coûterait le même
 aller-retour à chaque fois. Son espace de travail suit **`main`**, et rien ne

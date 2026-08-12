@@ -9,6 +9,38 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### Le chevron doré du planning : l'adresse jusqu'au GPS en un doigt
+
+**Sa demande :** *« lorsque je vais sur planning et qu'il y a un chantier
+planifié, en cliquant dessus je puisse avoir un petit truc genre accéder à
+l'adresse, et en cliquant dessus ça met l'adresse toute seule dans le GPS, soit
+Maps, soit Waze »*.
+
+Au bout de chaque chantier planifié, un **chevron doré** ouvre une feuille :
+Plans, Google Maps, Waze, copier l'adresse, appeler le client. Sans quitter le
+planning. Retenu après **quatre maquettes** (`docs/maquettes/29` à `32`), sa
+règle de montrer avant de faire.
+
+**Des liens universels, jamais `waze://`.** Un schéma propre échoue *en silence*
+quand l'application n'est pas installée : le doigt appuie, rien ne bouge. Sur un
+chantier, c'est une adresse qu'on n'a plus. Détail qui ne se devine pas :
+`encodeURIComponent` et non `encodeURI`, sans quoi la virgule d'une adresse
+sépare deux paramètres chez Waze et tronque la destination au numéro de rue.
+
+**Sans adresse, rien ne s'invente** : les trois destinations disparaissent et la
+feuille dit où la saisir.
+
+**Trouvé en regardant la capture, pas par un test :** les 44 px du chevron
+rognaient le nom du chantier — « Chez M. Bernard » devenait « Chez M. … ». Ils
+sont désormais pris sur les marges. Les huit contrôles étaient verts : le nom
+était bien là.
+
+**Non résolu, et transmis :** la ligne porte trois gestes et un nom sur 390 px,
+c'est un de trop. La maquette validée n'en montrait pas deux. Rien n'a été
+restructuré sans lui.
+
+`ARCHITECTURE.md` §68.
+
 ### « Ça ne marche pas » va désormais chercher la fiche tout seul
 
 **Sa demande :** *« Il faudrait que si j'écris ça ne marche pas, d'elle-même

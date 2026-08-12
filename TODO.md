@@ -27,6 +27,32 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quindecies. La ligne « Planifiés » porte un geste de trop
+
+**Vu en capture le 12 août 2026**, en posant le chevron « Y aller ». La ligne
+d'un chantier planifié porte maintenant **trois gestes et un nom** sur 390 px :
+« Déplacer », « Créer la facture », le chevron. Le nom cède — « Chez M. Bernard »
+s'affiche « Chez M. Be… ».
+
+Les 44 px du chevron ont été pris sur les marges plutôt que sur le nom, ce qui
+rend quelques caractères ; **le fond du problème reste**. La maquette qu'il a
+validée (`docs/maquettes/32-le-chevron.html`) ne montrait ni « Déplacer » ni
+« Créer la facture » : elle n'a donc pas tranché cette question-là.
+
+**Ne rien restructurer avant sa réponse** (`CLAUDE.md` §3 bis). Ce qui se
+dessinerait, le jour où il le demande : le nom sur toute la largeur, les trois
+gestes sur une seconde ligne — ou « Déplacer » repoussé dans la feuille.
+
+### 0 quaterdecies bis. Un chantier sans adresse n'a plus de chemin pour la saisir
+
+La feuille « Y aller » dit « à saisir sur la fiche du chantier », mais n'y mène
+plus : « Ouvrir la fiche du chantier » a été retiré de la maquette 32, le nom du
+chantier y menant déjà depuis la ligne. Sur un chantier sans adresse, la phrase
+suffit-elle, ou faut-il un bouton **« Saisir l'adresse »** à cet endroit précis ?
+
+**La question lui a été posée avec la maquette et attend sa réponse.** Rien ne
+sera ajouté sans elle.
+
 ### 0 nonies. L'écran de connexion est resté dans l'ancienne identité
 
 **Vu en capture le 12 août 2026**, en vérifiant que les boutons arrondis
