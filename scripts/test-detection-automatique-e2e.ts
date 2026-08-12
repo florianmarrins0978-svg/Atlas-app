@@ -8,6 +8,12 @@
 // ressemble à un téléphone et **réécrit le HTML avant que React ne s'installe
 // dessus**.
 //
+// **La signature, obtenue le soir même.** Le patron renvoie l'erreur entière,
+// depuis `/devis/<jeton>` cette fois : le lien inséré porte
+// `x-apple-data-detectors="true"` et `x-apple-data-detectors-type="telephone"`.
+// Ce n'est donc plus une déduction — c'est iOS, nommément, et sur les DEUX
+// écrans que voit le client de l'artisan.
+//
 // Le remède est une seule ligne d'en-tête. Ce qui suit garde cette ligne, sur
 // les deux écrans qui portent un numéro sous les yeux d'un client :
 // `/factures/<jeton>` et `/devis/<jeton>`.
