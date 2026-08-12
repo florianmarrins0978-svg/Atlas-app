@@ -19,6 +19,9 @@ import {
   extraireDepot,
   choisirFiche,
 } from "./rapporter-espace.mjs";
+// Importé statiquement — donc ce module ne DOIT rien exécuter à l'import,
+// et c'est éprouvé par le simple fait que cette suite démarre.
+import { numeroDepuisSortie } from "./eprouver-publication-fiche.mjs";
 
 let echecs = 0;
 function cas(nom: string, fn: () => void) {
@@ -208,6 +211,31 @@ cas("la fiche se retrouve par son titre EXACT, jamais par ressemblance", () => {
   assert.equal(choisirFiche(fiches, TITRE_FICHE), 12, "la bonne fiche n'est pas retrouvée");
   assert.equal(choisirFiche([], TITRE_FICHE), undefined, "une liste vide ne rend pas « aucune »");
   assert.equal(choisirFiche(null, TITRE_FICHE), undefined, "une liste absente fait tomber le script");
+});
+
+cas("le numéro de la fiche se lit dans ce que le script vient d'écrire", () => {
+  // **Leçon payée en CI le 12 août 2026.** La fiche avait bien été créée — le
+  // script le disait — mais la liste demandée une seconde plus tard ne la
+  // contenait pas encore : GitHub la sert depuis une réplique qui retarde.
+  // L'épreuve a conclu à un échec ET laissé une fiche ouverte dans un dépôt
+  // PUBLIC, faute de savoir laquelle refermer. La sortie du script, elle, ne
+  // retarde pas — c'est elle qui fait foi pour le ménage.
+  assert.equal(
+    numeroDepuisSortie("✅ État publié — fiche créée : https://github.com/o/r/issues/41."),
+    41,
+    "le numéro d'une fiche CRÉÉE n'est pas lu : elle resterait ouverte après une épreuve ratée"
+  );
+  assert.equal(
+    numeroDepuisSortie("✅ État publié — fiche mise à jour #41."),
+    41,
+    "le numéro d'une fiche MISE À JOUR n'est pas lu"
+  );
+  assert.equal(
+    numeroDepuisSortie("⚠ Rapport non publié : spawnSync gh ENOENT"),
+    undefined,
+    "un numéro est inventé là où rien n'a été publié"
+  );
+  assert.equal(numeroDepuisSortie(""), undefined, "une sortie vide rend un numéro");
 });
 
 cas("la fiche part AVANT que le serveur ait répondu, pas seulement après", () => {
