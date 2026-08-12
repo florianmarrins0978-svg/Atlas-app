@@ -528,6 +528,25 @@ ne répare pas la panne : il fait qu'elle se désigne. Et la note captée reste
 **perdue** quand l'envoi échoue (`TODO.md` §0).
 
 ---
+### Un contrôle qui s'effaçait lui-même son témoin
+
+`test-detection-automatique-e2e` échouait sur « les `tel:` écrits par Atlas
+restent des liens » — quarante-cinq secondes d'attente sur un `#temoin`
+introuvable.
+
+**Vérifié sur `main` seul avant de rien conclure : il échouait pareil.** Ce
+n'était donc pas le lot en cours — et c'est la deuxième fois de la journée que
+cette vérification évite d'accuser à tort.
+
+La cause, reproduite puis comprise : le cas écrivait son témoin par `setContent`
+dans la page qui venait de servir `/login`. Or `setContent` ne réécrit que le
+document — **l'application, elle, tourne toujours**. Next réinjectait son
+`<title>Atlas</title>` dans le `<head>` fraîchement écrit, et emportait tantôt
+le témoin avec. Le contrôle accusait la détection automatique là où le fautif
+était son propre décor.
+
+Le témoin vit maintenant sur une page neuve, où aucune application ne tourne.
+
 ### Le contrôle des boutons ronds ne voyait presque rien
 
 **Trouvé en lui livrant un bouton carré de plus.** `test-boutons-arrondis.ts`,
