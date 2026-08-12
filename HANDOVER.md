@@ -72,6 +72,18 @@ est encore valable.
 
 ## Ce qui vient d'être terminé
 
+**⚠ L'ÉCRAN DU DEVIS ATTEND UNE LETTRE — ne rien coder avant (12 août).**
+Quatre maquettes dans `docs/maquettes/25-le-devis-parti-allege.html`, plus le
+choix du rayon du bouton. Le détail, avec ce que chacune coûte, est dans
+`TODO.md` 0 sexdecies. Il a demandé la maquette en toutes lettres : *« fabrique-
+moi la maquette et montre-la-moi avant de coder quoi que ce soit »*.
+
+**Et NE PAS chercher une panne d'envoi de devis.** Elle a été signalée puis
+démentie par lui le même jour : sa messagerie s'ouvrait bien, l'adresse du
+client était fausse. `TODO.md` 0 quindecies bis dit ce qui a été vérifié — CSP,
+longueur de l'adresse — pour qu'on ne le refasse pas.
+
+
 **⚠ SI LE PATRON DIT « ce n'est toujours pas là » : REGARDER LA BRANCHE
 D'ABORD.** C'est le défaut du 11 août au soir, et il coûterait le même
 aller-retour à chaque fois. Son espace de travail suit **`main`**, et rien ne

@@ -183,6 +183,13 @@ const MAQUETTES = [
     quoi: "Celui qu’il a gardé, et lui seul : le mot, le rond qui bat à sa droite. Onde ramenée de 1,85 à 1,42 fois le rond, rond de 46 à 38 px, gerbe de seize grains à onze.",
     retenu: true,
   },
+  {
+    fichier: "25-le-devis-parti-allege.html",
+    titre: "Le devis parti, allégé",
+    famille: "Dire moins sur l’écran du devis",
+    quoi: "« Trop d’infos sur cette page » : l’écran en porte onze blocs et déborde de 382 px. Quatre façons de retrancher — l’adresse effacée, l’état monté dans le titre, le devis replié, ou le geste seul sous le pouce — et la question du bouton « carré », mesurée : il est déjà au rayon des cartes.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

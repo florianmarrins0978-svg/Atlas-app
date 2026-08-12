@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — le devis parti, allégé</title>
+</head>
+<body>
+<style>
+  /*
+    L'ÉCRAN DU DEVIS PARTI, ALLÉGÉ — quatre façons de dire moins.
+
+    Le patron, le 12 août 2026, capture à l'appui : « je trouve qu'il y a trop
+    d'infos sur cette page, crée moi une maquette optimisée pour cette page ».
+
+    Ce que l'écran porte aujourd'hui, dans cet état précis (devis parti, client
+    n'ayant pas encore répondu) : deux cartes de rappel, une carte de total, un
+    lien PDF, puis une carte d'état qui contient à elle seule SIX choses — une
+    phrase d'état, une phrase de relance, l'adresse complète du lien sur trois
+    lignes, « Copier le lien », le bouton d'envoi, le destinataire, et deux
+    autres canaux. Onze blocs, et il faut faire défiler pour les voir.
+
+    Les quatre propositions ne sont pas quatre habillages du même écran : elles
+    retranchent à des endroits différents, et il faut choisir CE QU'ON PERD.
+
+    Le témoin est là exprès, en tête. Une proposition ne se juge pas seule.
+  */
+
+  :root{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+  }
+  :root[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 90px}
+  .page{max-width:1180px;margin:0 auto}
+
+  .intro{max-width:64ch;margin:0 auto}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
+  .intro b{color:var(--encre);font-weight:500}
+  .appui{max-width:54ch;margin:22px auto 0;padding:15px 20px;border:1px solid var(--trait);
+         border-radius:6px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+  .appui b{color:var(--encre);font-weight:500}
+
+  .famille{margin:56px 0 14px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--gris)}
+  .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
+  .famille span::before,.famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
+  .famille span::before{right:100%}
+  .famille span::after{left:100%}
+  .sous-titre{max-width:60ch;margin:0 auto 28px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;align-items:flex-start}
+  .cartouche{display:flex;flex-direction:column;align-items:center;gap:13px;max-width:412px}
+  .etiquette{color:var(--bronze);font-size:10px;letter-spacing:.3em;text-transform:uppercase}
+  .cartouche .dit{margin:0;font-size:12.5px;line-height:1.6;color:var(--gris);text-align:center}
+  .cartouche .dit b{color:var(--encre);font-weight:500}
+
+  .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:664px;
+         display:flex;flex-direction:column;
+         background:#f5f3ee;color:#1c1c1a;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f;
+         --e-trait:rgba(28,28,26,.16); --e-trait-doux:rgba(28,28,26,.07)}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  /* ── L'en-tête commun, celui de tous les écrans profonds ────────────────── */
+  .retour{padding:22px 26px 0;color:var(--e-gris);font-size:12px;text-decoration:none;display:block}
+  .titre{padding:16px 26px 0}
+  .titre .sur{margin:0;color:var(--e-or)}
+  .titre h1{margin:11px 0 0;font-size:36px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+  .fermeture{height:1px;background:var(--e-trait);margin:20px 26px 0}
+
+  .corps{flex:1 1 auto;min-height:0;overflow:hidden;padding:0 26px}
+  .corps.defile{overflow:hidden;position:relative}
+  /* Le voile du bas dit « ça continue en dessous » — c'est justement ce que le
+     patron reproche au témoin, et il faut donc le VOIR. */
+  .corps.defile::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56px;
+                       background:linear-gradient(to top,var(--e-fond),transparent);pointer-events:none}
+
+  .plage{background:var(--e-plage);border-radius:4px;padding:19px 20px;margin-top:16px}
+  .plage.serre{padding:15px 18px}
+  .cle{margin:0 0 4px;color:var(--e-gris)}
+  .val{margin:0;font-size:15px}
+  .separe{border-top:1px solid var(--e-trait);margin:13px 0;height:0}
+
+  /* `line-height:1` sur le montant, et ce n'est pas un détail : en serif 21 px,
+     la place réservée aux jambages creusait un vide de cinquante pixels sous le
+     total, à l'intérieur de la carte. Invisible dans le code, flagrant sur la
+     capture. */
+  .ligne-devis{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:15px;line-height:1.35}
+  .ligne-devis span:last-child{color:var(--e-gris);line-height:1}
+  .total-gros{margin:0;font:400 32px/1 ui-serif,Georgia,serif;color:var(--e-pin)}
+
+  .lien-brut{margin:10px 0 0;padding:8px 12px;border-radius:4px;background:var(--e-fond);
+             color:var(--e-gris);font-size:12px;text-align:center;word-break:break-all;line-height:1.45}
+
+  .doux{display:block;width:100%;margin-top:14px;text-align:center;font-size:14px;
+        color:var(--e-pin);text-decoration:none;font-weight:500;background:none;border:0;
+        font-family:inherit;padding:0;cursor:pointer}
+  .tres-doux{display:block;width:100%;margin-top:9px;text-align:center;font-size:13px;
+             color:var(--e-gris);text-decoration:none;background:none;border:0;font-family:inherit;
+             padding:0;cursor:pointer}
+  .dessous{margin:8px 0 0;text-align:center;font-size:12px;color:var(--e-gris)}
+
+  /* Le bouton d'envoi. `--r` porte le rayon : c'est la seule chose qui change
+     d'une vignette à l'autre dans la bande du bas. */
+  .envoi{display:block;width:100%;margin-top:14px;padding:13px;text-align:center;
+         font-size:15px;font-weight:500;color:#fff;text-decoration:none;
+         background:var(--e-pin);border:0;font-family:inherit;cursor:pointer;
+         border-radius:var(--r,4px)}
+
+  .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;position:relative;z-index:2;
+       background:var(--e-fond)}
+  .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
+  .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-or)}
+
+  /* ── Le repli : « Le détail » qui s'ouvre ───────────────────────────────── */
+  .repli{margin-top:16px;border-top:1px solid var(--e-trait)}
+  .repli summary{list-style:none;cursor:pointer;padding:13px 0 0;color:var(--e-gris);
+                 font-size:13px;display:flex;align-items:center;justify-content:space-between}
+  .repli summary::-webkit-details-marker{display:none}
+  .repli summary .chev{color:var(--e-trait);transition:transform 220ms}
+  .repli[open] summary .chev{transform:rotate(90deg)}
+
+  /* ── L'état, quand il n'est plus une carte ──────────────────────────────── */
+  .etat-fin{display:flex;align-items:center;gap:11px;margin-top:20px;color:var(--e-or)}
+  .etat-fin::after{content:"";flex:1;height:1px;background:var(--e-trait)}
+  .etat-phrase{margin:9px 0 0;font-size:13.5px;color:var(--e-gris);line-height:1.55}
+
+  /* ── La bande des rayons ────────────────────────────────────────────────── */
+  .bande{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;align-items:flex-start}
+  /* Les teintes de l'écran sont déclarées sur `.ecran` : hors du téléphone,
+     `--e-pin` n'existait pas, le fond du bouton tombait à « transparent » et
+     ses lettres blanches disparaissaient sur le fond clair. On les redéclare
+     ici. Le code était juste ; la capture, elle, montrait quatre vignettes
+     vides. */
+  .echantillon{width:236px;padding:22px 20px;border-radius:10px;background:#f5f3ee;
+               border:1px solid var(--trait);text-align:center;
+               --e-pin:#2f3b2f; --e-plage:#faf9f5; --e-gris:#8a8578}
+  .echantillon .rayon{margin:0 0 13px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#8a8578}
+  .echantillon .envoi{margin-top:0}
+  .echantillon .plage{margin-top:11px;padding:11px 13px;text-align:center;font-size:12px;color:#8a8578;
+                      border-radius:var(--r,4px)}
+  .echantillon .quoi{margin:12px 0 0;font-size:12px;line-height:1.55;color:var(--gris)}
+
+  .note{max-width:64ch;margin:52px auto 0;padding:20px 22px;border:1px solid var(--trait);
+        border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.7}
+  .note h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
+  .note b{color:var(--encre);font-weight:500}
+  .note p{margin:0 0 12px}
+  .note p:last-child{margin-bottom:0}
+  .note table{width:100%;border-collapse:collapse;margin:14px 0 4px;font-size:12.5px}
+  .note th{text-align:left;font-weight:500;color:var(--encre);padding:0 0 7px}
+  .note td{padding:5px 0;border-top:1px solid var(--trait);vertical-align:top}
+  .note td:first-child{white-space:nowrap;padding-right:16px;color:var(--encre)}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Maquette 25</p>
+    <h1>Le devis parti, allégé</h1>
+    <p><b>« Je trouve qu'il y a trop d'infos sur cette page. »</b> Cet écran porte
+    aujourd'hui onze blocs, et il faut faire défiler pour les voir tous.</p>
+    <p>Quatre façons de retrancher — et elles ne retranchent pas au même endroit.
+    Ce n'est donc pas quatre habillages : c'est quatre <b>choix de ce qu'on perd</b>.
+    Le témoin est en tête, parce qu'une proposition ne se juge pas seule.</p>
+    <div class="appui">
+      Tout ce qui suit est à la taille de votre écran — <b>390 × 664</b>.
+      Ce qui tient sans défiler ici tiendra sans défiler chez vous.
+    </div>
+  </div>
+
+  <!-- ══ TÉMOIN ══════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>Ce que vous voyez aujourd'hui</span></p>
+  <p class="sous-titre">Onze blocs. La capture s'arrête au bas de l'écran, et il en reste
+    dessous — c'est exactement ce que vous avez signalé.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Témoin</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps defile">
+          <div class="plage">
+            <p class="cle caps">Chantier</p>
+            <p class="val">Taille haie de laurier — 12 rue des Ormes</p>
+            <div class="separe"></div>
+            <p class="cle caps">Client</p>
+            <p class="val">Florian Martin — 06 79 98 45 14</p>
+          </div>
+
+          <div class="plage">
+            <p class="cle caps" style="margin-bottom:10px">Lignes du devis</p>
+            <p class="ligne-devis"><span>Taille haie de laurier</span><span class="num">700,00 €</span></p>
+          </div>
+
+          <div class="plage" style="text-align:center">
+            <p class="cle caps" style="margin-bottom:6px">Total</p>
+            <p class="total-gros num serif">840,00 €</p>
+          </div>
+
+          <a class="doux" href="#">Télécharger le PDF</a>
+
+          <div class="plage">
+            <p class="cle caps" style="color:#2f3b2f;text-align:center;margin-bottom:6px">En attente de réponse</p>
+            <p class="dessous" style="font-size:14px">Le client choisit sa date. Le chantier attend sa réponse.</p>
+            <p class="dessous" style="font-size:13px;color:#1c1c1a;margin-top:12px">Le lien est toujours actif — renvoyez-le tel quel pour relancer.</p>
+            <p class="lien-brut">https://reimagined-space-yodel-jr4j6wwg6vjg34rv-3000.app.github.dev/devis/rgp1DZ4Lg_2nxG1SrpkC9Wo60S1MNdm5tQDveIFUdv8</p>
+            <button class="doux" type="button">Copier le lien</button>
+            <a class="envoi" href="#">Ouvrir le SMS tout prêt</a>
+            <p class="dessous">Au 0679984514 — c'est vous qui l'envoyez.</p>
+            <button class="doux" type="button">Plutôt par e-mail →</button>
+            <button class="tres-doux" type="button">Partager autrement (WhatsApp…)</button>
+          </div>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Onze blocs.</b> Trois lignes d'adresse illisible, deux phrases qui
+      disent la même chose, quatre façons d'envoyer empilées l'une sous l'autre.</p>
+    </div>
+  </div>
+
+  <!-- ══ A ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>A · On efface l'adresse</span></p>
+  <p class="sous-titre">La retouche la plus courte : les trois lignes d'adresse disparaissent,
+    et la phrase en double aussi. Rien ne change de place — tous vos repères restent où ils sont.
+    <b>Mesuré : cela ne suffisait pas.</b> Il fallait retirer aussi la carte « Chantier / Client »,
+    qui redisait le numéro affiché deux blocs plus bas.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Proposition A</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <div class="plage">
+            <p class="cle caps" style="margin-bottom:10px">Lignes du devis</p>
+            <p class="ligne-devis"><span>Taille haie de laurier</span><span class="num">700,00 €</span></p>
+            <div class="separe"></div>
+            <p class="ligne-devis" style="font-size:16px"><span>Total</span><span class="num serif" style="color:#2f3b2f;font-size:21px">840,00 €</span></p>
+          </div>
+
+          <div class="plage">
+            <p class="cle caps" style="color:#2f3b2f;text-align:center;margin-bottom:6px">En attente de réponse</p>
+            <p class="dessous" style="font-size:13.5px">Le lien reste actif : renvoyez-le tel quel pour relancer.</p>
+            <a class="envoi" href="#" style="--r:4px">Ouvrir le SMS tout prêt</a>
+            <p class="dessous">Au 06 79 98 45 14 — c'est vous qui l'envoyez.</p>
+            <button class="doux" type="button">Plutôt par e-mail →</button>
+          </div>
+
+          <a class="tres-doux" href="#">Télécharger le PDF · Copier le lien · Partager autrement</a>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Six blocs, et tout tient sans défiler.</b> L'adresse existe encore —
+      « Copier le lien » la met dans le presse-papier — elle n'occupe simplement plus l'écran.
+      <br><br><b>Ce qu'on perd :</b> vous ne relisez plus l'adresse à l'œil, et le nom du client
+      n'est plus rappelé en haut — seulement son numéro, sous le bouton.</p>
+    </div>
+  </div>
+
+  <!-- ══ B ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>B · L'état monte dans le titre</span></p>
+  <p class="sous-titre">« En attente de réponse » n'est pas une action : c'est une situation.
+    Elle rejoint donc le titre, là où l'écran dit déjà de quoi il parle — et la carte d'état
+    disparaît complètement. Ne reste, en bas, que le geste.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Proposition B</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+          <p class="caps" style="margin:13px 0 0;color:#B98B47">En attente de réponse</p>
+          <p class="etat-phrase" style="margin-top:7px">Envoyé il y a 2 jours. Le client choisit sa date.</p>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <div class="plage">
+            <p class="ligne-devis"><span>Taille haie de laurier</span><span class="num">700,00 €</span></p>
+            <div class="separe"></div>
+            <p class="ligne-devis" style="font-size:16px"><span>Total</span><span class="num serif" style="color:#2f3b2f;font-size:21px">840,00 €</span></p>
+          </div>
+
+          <a class="envoi" href="#" style="--r:4px;margin-top:20px">Relancer par SMS</a>
+          <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+
+          <details class="repli">
+            <summary><span>Autrement</span><span class="chev">›</span></summary>
+            <button class="doux" type="button" style="margin-top:12px">Plutôt par e-mail →</button>
+            <button class="tres-doux" type="button">Copier le lien</button>
+            <button class="tres-doux" type="button">Partager autrement (WhatsApp…)</button>
+            <a class="tres-doux" href="#">Télécharger le PDF</a>
+          </details>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Quatre blocs.</b> Le titre porte l'état — et gagne au passage
+      <b>« il y a 2 jours »</b>, que l'écran ne disait nulle part. Un seul bouton, et son
+      libellé dit ce qu'il fait vraiment : <b>relancer</b>, pas « ouvrir ».
+      <br><br><b>Ce qu'on perd :</b> les autres canaux demandent un appui de plus.</p>
+    </div>
+  </div>
+
+  <!-- ══ C ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>C · Le devis se replie</span></p>
+  <p class="sous-titre">Une fois le devis parti, son contenu ne vous sert plus qu'en cas de
+    doute : vous venez ici pour relancer, pas pour relire. Le devis se réduit donc à une
+    ligne, et s'ouvre si vous le demandez.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Proposition C</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <div class="etat-fin"><span class="caps">En attente de réponse</span></div>
+          <p class="etat-phrase">Parti il y a 2 jours chez <b style="color:#1c1c1a;font-weight:400">Florian Martin</b>.
+            Il consulte le devis et choisit sa date.</p>
+
+          <div class="plage" style="margin-top:22px">
+            <p class="ligne-devis" style="font-size:16px">
+              <span style="color:#8a8578">Devis nº 2026-014</span>
+              <span class="num serif" style="color:#2f3b2f;font-size:26px">840,00 €</span>
+            </p>
+            <details class="repli" style="margin-top:13px">
+              <summary><span>Le détail et le PDF</span><span class="chev">›</span></summary>
+              <p class="ligne-devis" style="margin-top:13px"><span>Taille haie de laurier</span><span class="num">700,00 €</span></p>
+              <a class="tres-doux" href="#" style="margin-top:11px">Télécharger le PDF</a>
+            </details>
+          </div>
+
+          <a class="envoi" href="#" style="--r:4px;margin-top:22px">Relancer par SMS</a>
+          <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+          <button class="doux" type="button">Plutôt par e-mail →</button>
+          <button class="tres-doux" type="button">Copier le lien · Partager autrement</button>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Cinq blocs, et beaucoup de vide.</b> L'état n'est plus une carte mais
+      <b>un filet</b> — les cartes sont réservées à ce qui a un contenu. Le montant reste gros :
+      c'est la seule chose qu'on relit vraiment.
+      <br><br><b>Ce qu'on perd :</b> le détail des lignes demande un appui.</p>
+    </div>
+  </div>
+
+  <!-- ══ D ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>D · Une chose à faire, et rien d'autre</span></p>
+  <p class="sous-titre">Le plus radical. L'écran ne montre que ce que vous êtes venu chercher :
+    où en est ce devis, et le geste pour le relancer. Tout le reste — le détail, le PDF, le lien,
+    les autres canaux — vit derrière une seule ligne.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Proposition D</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps" style="display:flex;flex-direction:column">
+          <div style="margin-top:34px;text-align:center">
+            <p class="caps" style="margin:0;color:#B98B47">En attente de réponse</p>
+            <p class="num serif" style="margin:18px 0 0;font-size:44px;line-height:1;color:#2f3b2f">840,00 €</p>
+            <p class="etat-phrase" style="margin-top:16px">Parti il y a 2 jours chez Florian Martin.<br>Il choisit sa date.</p>
+          </div>
+
+          <div style="margin-top:auto;padding-bottom:6px">
+            <a class="envoi" href="#" style="--r:4px">Relancer par SMS</a>
+            <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+            <details class="repli">
+              <summary><span>Le devis, le PDF, les autres envois</span><span class="chev">›</span></summary>
+              <p class="ligne-devis" style="margin-top:13px"><span>Taille haie de laurier</span><span class="num">700,00 €</span></p>
+              <button class="doux" type="button" style="margin-top:12px">Plutôt par e-mail →</button>
+              <button class="tres-doux" type="button">Copier le lien</button>
+              <a class="tres-doux" href="#">Télécharger le PDF</a>
+            </details>
+          </div>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Trois blocs.</b> Le montant devient la pièce maîtresse, le geste est
+      posé <b>en bas, sous le pouce</b>. C'est la mise en page d'un écran d'attente — pas
+      d'un tableau de bord.
+      <br><br><b>Ce qu'on perd :</b> le plus. Rien du devis n'est visible sans un appui.</p>
+    </div>
+  </div>
+
+  <!-- ══ LE RAYON ════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>Et le bouton « carré »</span></p>
+  <p class="sous-titre">Vous l'avez dit : <b>« le bouton est toujours carré, pas arrondi comme
+    tous les autres »</b>. Voici ce que j'ai mesuré avant de dessiner — et pourquoi vous avez
+    raison sans que le bouton soit en cause.</p>
+
+  <div class="appui" style="max-width:64ch;text-align:left">
+    <b>Ce bouton a déjà exactement le même rayon que les cartes : 4 px.</b> Ce n'est donc pas
+    un oubli. Mais un rayon de 4 px sur un <b>aplat vert foncé</b> ne se voit pas : le coin
+    est franc, l'œil lit un carré. Sur une carte crème posée sur un fond crème, le même
+    rayon se lit — le contraste est cent fois plus faible, et le coin fond dans la page.
+    <br><br>
+    Autrement dit : pour <b>paraître</b> aussi arrondi qu'une carte, un bouton plein doit
+    être <b>plus</b> arrondi qu'elle. Choisissez ci-dessous — la carte grise sous chaque
+    bouton porte le même rayon, pour que vous jugiez les deux ensemble.
+  </div>
+
+  <div class="bande" style="margin-top:32px">
+    <div class="echantillon" style="--r:4px">
+      <p class="rayon">4 px — aujourd'hui</p>
+      <a class="envoi" href="#">Relancer par SMS</a>
+      <div class="plage">la carte, au même rayon</div>
+      <p class="quoi">Le rayon actuel, partout dans l'application. Sur le vert, il ne se voit pas.</p>
+    </div>
+    <div class="echantillon" style="--r:8px">
+      <p class="rayon">8 px</p>
+      <a class="envoi" href="#">Relancer par SMS</a>
+      <div class="plage">la carte, au même rayon</div>
+      <p class="quoi">Le coin devient perceptible sans que l'écran perde sa tenue de pièce imprimée.</p>
+    </div>
+    <div class="echantillon" style="--r:12px">
+      <p class="rayon">12 px</p>
+      <a class="envoi" href="#">Relancer par SMS</a>
+      <div class="plage">la carte, au même rayon</div>
+      <p class="quoi">Franchement arrondi. On commence à retrouver l'allure « application » que vous aviez écartée le 10 août.</p>
+    </div>
+    <div class="echantillon" style="--r:999px">
+      <p class="rayon">Pilule</p>
+      <a class="envoi" href="#">Relancer par SMS</a>
+      <div class="plage">la carte, au même rayon</div>
+      <p class="quoi">La forme que l'application avait avant le 10 août, et que vous aviez fait retirer.</p>
+    </div>
+  </div>
+
+  <div class="appui" style="max-width:64ch;margin-top:26px">
+    <b>Si vous choisissez un rayon</b>, il ne s'appliquera pas qu'ici : ce bouton est sur
+    vingt-sept écrans. C'est voulu — deux formes de bouton dans la même application, c'est
+    exactement ce qu'on vient de finir de démêler.
+  </div>
+
+  <!-- ══ NOTE ═══════════════════════════════════════════════════════════ -->
+  <div class="note">
+    <h2>Ce qu'il faut me dire</h2>
+    <p><b>Une lettre, et un rayon.</b> A, B, C ou D — et 4, 8, 12 ou pilule. Rien d'autre
+    n'est nécessaire ; si vous voulez panacher (« le D, mais garde le détail visible comme
+    dans le C »), dites-le, c'est prévu.</p>
+
+    <table>
+      <tr><th>Proposition</th><th>Blocs</th><th>Ce qu'elle vous fait gagner</th><th>Ce qu'elle vous coûte</th></tr>
+      <tr><td>Témoin</td><td>11</td><td>—</td><td>Il faut défiler pour tout voir</td></tr>
+      <tr><td>A</td><td>6</td><td>Plus d'adresse illisible, plus de phrase en double</td><td>Vous ne relisez plus l'adresse à l'œil</td></tr>
+      <tr><td>B</td><td>4</td><td>L'état dans le titre, et « il y a 2 jours » enfin dit</td><td>Un appui pour les autres canaux</td></tr>
+      <tr><td>C</td><td>5</td><td>L'état devient un filet, le montant reste gros</td><td>Un appui pour le détail des lignes</td></tr>
+      <tr><td>D</td><td>3</td><td>Le geste sous le pouce, rien pour distraire</td><td>Rien du devis n'est visible sans un appui</td></tr>
+    </table>
+
+    <p style="margin-top:16px"><b>Trois choses que je n'ai pas décidées à votre place.</b>
+    « Il y a 2 jours » suppose qu'on retienne la date d'envoi — elle est en base, elle n'est
+    simplement jamais affichée. Le libellé passe d'« Ouvrir le SMS tout prêt » à
+    « Relancer par SMS » dans B, C et D, parce que le devis est déjà parti — mais il redevient
+    « Envoyer par SMS » au premier envoi. Et le numéro s'écrit désormais espacé
+    (06 79 98 45 14) : il s'affichait collé, ce qui ne se relit pas.</p>
+
+    <p><b>Ce que cette maquette ne montre pas :</b> les autres états de cet écran — devis
+    refusé, correction demandée, devis pas encore parti. Ils portent les mêmes blocs, et
+    suivront le choix fait ici. Inutile de les dessiner avant.</p>
+
+    <p><b>Une réserve sur les polices.</b> Cette page emprunte la serif de votre appareil.
+    L'application, elle, charge Playfair Display : le rendu final sera plus dessiné.</p>
+  </div>
+
+</div>
+</body>
+</html>

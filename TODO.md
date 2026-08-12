@@ -90,6 +90,50 @@ caprice de machine chargée.
 pas ce qui n'était pas demandé. À trancher : les supprimer, ou les marquer
 « maquette historique ».
 
+### 0 sexdecies. L'écran du devis parti : quatre maquettes attendent son choix
+
+**Rien n'est codé, et rien ne doit l'être avant qu'il ait désigné une lettre**
+(`CLAUDE.md` §3 bis). Il a demandé la maquette explicitement : *« fabrique-moi la
+maquette et montre-la-moi avant de coder quoi que ce soit »*.
+
+`docs/maquettes/25-le-devis-parti-allege.html`. Mesuré : l'écran porte **onze
+blocs** et déborde de **382 px** sur sa dalle.
+
+| | Blocs | Ce qu'elle retranche | Ce qu'elle coûte |
+|---|---|---|---|
+| A | 6 | l'adresse illisible, la phrase en double, la carte Chantier/Client | il ne relit plus l'adresse à l'œil |
+| B | 4 | la carte d'état, montée dans le titre | un appui pour les autres canaux |
+| C | 5 | le devis replié derrière une ligne | un appui pour le détail |
+| D | 3 | tout sauf le montant et le geste | rien du devis sans un appui |
+
+**Trois choses que la maquette propose et qui ne sont PAS acquises :** « il y a
+2 jours » (la date d'envoi est en base, jamais affichée) ; le libellé qui passe
+d'« Ouvrir le SMS tout prêt » à « Relancer par SMS » une fois le devis parti ; et
+le numéro écrit espacé plutôt que collé.
+
+**Et le rayon du bouton, qui se choisit en même temps.** Il a dit *« le bouton
+est toujours carré »*. Vérifié : il est **déjà au rayon des cartes** (4 px,
+`radius.card`, posé le 10 août à sa demande). Ce n'est pas un oubli — c'est que
+sur un aplat vert foncé, 4 px ne se voient pas. La bande du bas de la maquette
+montre 4 / 8 / 12 / pilule. **Son choix vaudra pour vingt-sept écrans**
+(`PrimaryButton`) : ne pas le poser sur ce seul écran, deux formes de bouton
+dans la même application est précisément ce qui vient d'être démêlé.
+
+### ~~0 quindecies bis. « Le mail n'est pas parti »~~ — **ce n'était pas un défaut, 2026-08-12**
+
+**Ne pas rouvrir, et surtout ne rien « réparer ».** Signalé comme une panne —
+*« lorsque le mail est parti je n'ai pas de message qui prouve qu'il est bien
+parti, la page reste figée »* — puis démenti par lui-même dans la foulée :
+*« en fait le mail n'était pas parti […] il y avait une faute sur l'adresse
+mail »*.
+
+Sa messagerie s'est bien ouverte ; l'adresse du destinataire était fausse.
+Vérifié avant de conclure : la CSP ne régit pas la navigation `mailto:`
+(`next.config.ts`), et l'adresse construite pour son cas exact fait
+574 caractères — très en deçà de toute limite. `useRetourDeMessagerie` n'a donc
+pas renvoyé à l'accueil pour la seule bonne raison : **il n'est jamais parti de
+la page**.
+
 ### 0. Si « Impossible d'enregistrer la note » revient : lire la phrase, ne pas la deviner
 
 **Ouvert le 11 août 2026, et volontairement laissé ouvert.** Le patron a signalé

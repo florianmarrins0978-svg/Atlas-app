@@ -7,6 +7,65 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-12
+
+### « Trop d'infos sur cette page » — quatre façons de retrancher, dessinées
+
+Le patron, capture à l'appui : *« je trouve qu'il y a trop d'infos sur cette
+page, crée moi une maquette optimisée »*, puis : *« fabrique-moi la maquette et
+montre-la-moi avant de coder quoi que ce soit »*. `src/` n'est pas touché
+(`CLAUDE.md` §3 bis).
+
+**Mesuré avant d'être dessiné.** L'écran du devis parti porte **onze blocs** et
+déborde de **382 px** — il faut défiler, et c'est exactement ce qu'il signale.
+La carte d'état porte à elle seule six choses, dont l'adresse complète du lien
+sur trois lignes illisibles.
+
+`docs/maquettes/25-le-devis-parti-allege.html` propose quatre retranchements qui
+ne portent pas au même endroit — l'adresse effacée (6 blocs), l'état monté dans
+le titre (4), le devis replié derrière une ligne (5), le geste seul sous le
+pouce (3). Chacune dit **ce qu'elle coûte**, parce que c'est cela qui se choisit.
+
+**Un contrôle qui a servi tout de suite.** La proposition A annonçait « tout
+tient sans défiler » et débordait de 84 px : le texte était faux, et l'œil ne le
+voyait pas. Il a fallu retirer aussi la carte « Chantier / Client », qui redisait
+le numéro affiché deux blocs plus bas. Deux autres défauts n'ont été vus que sur
+la capture — cinquante pixels de vide sous le total (les jambages d'une serif de
+21 px), et quatre vignettes de bouton **vides**, leurs teintes n'existant que
+dans le cadre du téléphone.
+
+### Le bouton « carré » : il est déjà au rayon des cartes
+
+*« Le bouton est toujours carré, pas arrondi comme tous les autres. »* Mesuré
+avant de corriger : ce bouton porte **exactement le rayon des cartes**, 4 px
+(`radius.card`), posé le 10 août à sa demande — *« un rectangle presque droit se
+lit comme une pièce imprimée »*.
+
+Il a pourtant raison de le voir carré, et la raison n'est pas dans le code :
+**sur un aplat vert foncé, un rayon de 4 px ne se voit pas**, le contraste est
+franc et l'œil lit un angle droit ; sur une carte crème posée sur un fond crème,
+le même rayon se lit, parce que le coin fond dans la page. Pour *paraître* aussi
+arrondi qu'une carte, un bouton plein doit être *plus* arrondi qu'elle.
+
+La maquette montre donc le même bouton à 4, 8, 12 px et en pilule, chacun
+au-dessus d'une carte au même rayon. Le choix lui revient — et il vaudra pour
+**vingt-sept écrans** (`PrimaryButton`), ce qui est écrit noir sur blanc sur la
+page.
+
+### L'envoi du devis n'est pas en panne — et il ne faut pas le « réparer »
+
+Signalé d'abord comme un défaut : *« lorsque le mail est parti je n'ai pas de
+message qui prouve qu'il est bien parti, la page reste figée »*. Puis, de
+lui-même : *« en fait le mail n'était pas parti […] il y avait une faute sur
+l'adresse mail, c'est pour ça »*.
+
+**Sa messagerie s'est bien ouverte. Le message n'est pas parti parce que
+l'adresse était fausse.** Rien n'a donc été modifié, et c'est délibéré : la CSP
+a été relue (elle ne régit pas la navigation `mailto:`), et l'adresse construite
+pour son cas exact a été fabriquée et mesurée — 574 caractères, très en deçà de
+toute limite. Écrit ici pour qu'une prochaine conversation ne parte pas réparer
+une panne qui n'a pas eu lieu (`TODO.md`, 0 sexdecies).
+
 ## 2026-08-11
 
 ### Ajouter une photo ne fait plus changer de page — et l'écran Photos disparaît
