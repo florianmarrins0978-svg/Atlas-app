@@ -18,9 +18,30 @@ moderne. »* — `docs/maquettes/31-le-bouton-de-la-facture-a-lessai.html`.
 Cinq gestes qui **changent de nature** plutôt que de décliner un même objet :
 la capsule nue, la lueur qui traverse la laque, le cachet qui tourne et sème
 onze grains d'or, l'encre qui remplit le fond, le trait qui s'ouvre. Chacun
-respecte les quatre règles payées par « Nouveau chantier » — enfoncement
-immédiat, second appui ignoré, mouvement réduit honoré, libellé stable.
+respecte les règles payées par « Nouveau chantier » — enfoncement immédiat,
+demi-seconde avant la messagerie, mouvement réduit honoré, libellé stable.
 **Rien n'est codé** : `src/` est intact, c'est sa règle.
+
+### Et cette maquette n'affichait RIEN chez lui
+
+*« Rien apparaît sur ta maquette. »* La première version **engendrait ses cinq
+téléphones en JavaScript**. Éprouvée ici dans un navigateur complet, elle
+passait ; script coupé — visionneuse, aperçu, page qui bloque l'exécution — elle
+ne montrait plus rien. Mesuré après coup : **zéro écran, zéro bouton.**
+
+Le contrôle qui l'accompagnait pressait donc cinq boutons qui, pour lui,
+n'existaient pas. Et le dépôt avait déjà payé cette leçon sur les maquettes 25
+et 26, où `verifier-maquette-bascule.mjs` joue les huit bascules **JavaScript
+coupé** — la règle existait, elle n'a pas été appliquée.
+
+**Réécrite sans une ligne de script** : une case à cocher invisible par écran et
+des règles `:checked ~` portent le geste, la demi-seconde, la messagerie qui
+monte et la reprise. Le contrôle tourne désormais `javaScriptEnabled: false`, et
+sa première ligne compte les cinq écrans — un retour au script le rend rouge.
+
+*Une seule chose diffère de l'application, et la maquette le dit : ici un second
+appui referme, pour pouvoir réessayer. Dans le code il est ignoré, sinon le
+message partirait deux fois.*
 
 **Deux pièges de mesure, et le second vaut d'être retenu.**
 

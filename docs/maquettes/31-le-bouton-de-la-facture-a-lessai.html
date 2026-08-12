@@ -8,27 +8,45 @@
 <body>
 <style>
   /*
-    CINQ BOUTONS QUI SE PRESSENT VRAIMENT.
+    CINQ BOUTONS QUI SE PRESSENT VRAIMENT — ET SANS UNE LIGNE DE SCRIPT.
 
     « Sors-moi une maquette avec plusieurs versions cliquables et dynamiques.
       Tout en gardant à l'esprit que c'est une appli hyper luxe et moderne. »
       — le patron, le 12 août 2026
 
-    La maquette 30 montrait deux dessins IMMOBILES. Celle-ci ne vaut que par ce
-    qui se passe quand un doigt se pose : appuyez sur chacun des cinq boutons.
+    ─── LE DÉFAUT DE LA PREMIÈRE VERSION, ET POURQUOI IL NE DOIT PAS REVENIR ──
+
+    Elle ENGENDRAIT ses cinq téléphones en JavaScript. Chez le patron : page
+    vide. « Rien apparaît sur ta maquette. » Éprouvée ici dans un navigateur
+    complet, elle passait ; script coupé — visionneuse, aperçu, page qui bloque
+    l'exécution — elle ne montrait plus rien du tout. Mesuré après coup : zéro
+    écran, zéro bouton.
+
+    Le dépôt s'était pourtant déjà donné la règle, pour les maquettes 25 et 26 :
+    **aucun script, et c'est éprouvé** (`scripts/verifier-maquette-bascule.mjs`
+    joue les huit bascules JavaScript COUPÉ). Une maquette est une chose qu'on
+    ouvre n'importe où — c'est même tout son intérêt.
+
+    Tout ce qui suit tient donc en HTML et CSS : une case à cocher invisible par
+    écran, et des règles `:checked ~`. Le geste, la demi-seconde, la messagerie
+    qui monte, la reprise — tout est du style.
 
     ─── Ce qui n'est PAS négociable, et pourquoi ────────────────────────────
 
-    Chaque geste respecte quatre règles payées par des défauts réels
+    Chaque geste respecte les règles payées par des défauts réels
     (`HANDOVER.md`, bouton « Nouveau chantier ») :
 
-      · l'enfoncement est IMMÉDIAT (140 ms) — sans lui, la demi-seconde qui
-        suit passe pour une panne ;
-      · un SECOND appui pendant le geste est ignoré — sinon le message part
-        deux fois ;
-      · sous « mouvement réduit », la messagerie s'ouvre TOUT DE SUITE — un
-        réglage d'accessibilité ne doit pas passer pour une lenteur ;
+      · l'enfoncement est IMMÉDIAT — sans lui, la demi-seconde qui suit passe
+        pour une panne ;
+      · la messagerie monte 520 ms plus tard, jamais avant ;
+      · sous « mouvement réduit », elle monte TOUT DE SUITE — un réglage
+        d'accessibilité ne doit pas passer pour une lenteur ;
       · le libellé ne change jamais de sens en cours de route.
+
+    **Une seule chose diffère de l'application, et il faut le savoir :** ici, un
+    second appui REFERME, pour qu'on puisse réessayer. Dans le code, il est
+    ignoré — sinon le message partirait deux fois. Une maquette ne doit pas
+    faire croire à une règle qu'elle n'éprouve pas.
 
     ─── Le luxe, ici, n'est pas un ornement de plus ─────────────────────────
 
@@ -37,40 +55,38 @@
     rien, et « l'originalité au détriment de l'élégance » est un mauvais
     échange. Une seule chose bouge à la fois, jamais deux.
 
-    Et la matière reste celle de la charte : laque vert pin (#2f3b2f) pour ce
+    La matière reste celle de la charte : laque vert pin (#2f3b2f) pour ce
     qu'on FAIT, or (#B98B47) pour ce qu'on LIT. L'or clair (#C9A15E) est
     précisément réservé aux traits et cercles POSÉS SUR le vert pin — les
-    éclats des versions C et D sont donc dans la charte, pas contre elle.
+    éclats des versions B et C sont donc dans la charte, pas contre elle.
 
-    ─── Cette page est volontairement hors de la planche unique ─────────────
+    ─── Cette page reste hors de la planche unique ──────────────────────────
 
-    Elle porte un script et cinq écrans qui se répondent : fusionnée avec les
-    autres, son `document` serait restreint à sa section et le script mourrait
-    sans bruit. Ne pas l'ajouter à `MAQUETTES` en croyant réparer un oubli —
-    c'est la même raison que le banc d'essai de la bascule (maquette 27).
+    Cinq écrans qui se répondent, et une case commune qui les presse tous : la
+    fusion réécrit les sélecteurs et casserait ces liens. Ne pas l'ajouter à
+    `MAQUETTES` en croyant réparer un oubli — même raison que le banc d'essai
+    de la bascule (maquette 27).
 
-    Éprouvée au doigt par : node scripts/verifier-maquette-bouton-facture.mjs
+    Éprouvée au doigt, script coupé :
+      node scripts/verifier-maquette-bouton-facture.mjs
   */
 
   :root{
     --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
-    --pin:#2f3b2f; --pin-clair:#4f5f4c; --or:#B98B47; --or-clair:#C9A15E;
-    --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
-    --ombre:rgba(20,18,14,.20);
+    --pin:#2f3b2f; --or:#B98B47; --or-clair:#C9A15E;
+    --trait:rgba(28,28,26,.12); --ombre:rgba(20,18,14,.20); --chassis:#cfccc4;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
       --fond:#15140f; --carte:#1d1c17; --encre:#ece8de; --gris:#8f8a7d;
-      --pin:#3b4a3a; --pin-clair:#5d6f59; --or:#C9A15E; --or-clair:#DDBB78;
-      --trait:rgba(236,232,222,.16); --trait-doux:rgba(236,232,222,.09);
-      --ombre:rgba(0,0,0,.55);
+      --pin:#3b4a3a; --or:#C9A15E; --or-clair:#DDBB78;
+      --trait:rgba(236,232,222,.16); --ombre:rgba(0,0,0,.55); --chassis:#33312b;
     }
   }
   :root[data-theme="dark"]{
     --fond:#15140f; --carte:#1d1c17; --encre:#ece8de; --gris:#8f8a7d;
-    --pin:#3b4a3a; --pin-clair:#5d6f59; --or:#C9A15E; --or-clair:#DDBB78;
-    --trait:rgba(236,232,222,.16); --trait-doux:rgba(236,232,222,.09);
-    --ombre:rgba(0,0,0,.55);
+    --pin:#3b4a3a; --or:#C9A15E; --or-clair:#DDBB78;
+    --trait:rgba(236,232,222,.16); --ombre:rgba(0,0,0,.55); --chassis:#33312b;
   }
 
   *{box-sizing:border-box}
@@ -79,7 +95,6 @@
        padding:52px 16px 110px;-webkit-font-smoothing:antialiased}
   .page{max-width:1320px;margin:0 auto}
 
-  /* ─── En-tête ──────────────────────────────────────────────────────────── */
   .intro{max-width:64ch;margin:0 auto;text-align:center}
   .intro .sur{margin:0 0 18px;font-size:10px;letter-spacing:.36em;text-transform:uppercase;color:var(--or)}
   .intro h1{margin:0 0 6px;font:400 clamp(30px,4vw,40px)/1.14 ui-serif,Georgia,"Iowan Old Style",serif;
@@ -87,16 +102,15 @@
   .regle{width:56px;height:1px;background:var(--or);margin:20px auto 22px;opacity:.75}
   .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
   .intro b{color:var(--encre);font-weight:500}
-
   .appui{max-width:62ch;margin:26px auto 0;padding:16px 22px;border:1px solid var(--trait);
          border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.68;text-align:left}
   .appui b{color:var(--encre);font-weight:500}
 
-  .barre{display:flex;gap:12px;justify-content:center;align-items:center;margin:30px 0 4px;flex-wrap:wrap}
-  .rejouer{appearance:none;background:transparent;border:1px solid var(--trait);border-radius:9999px;
-           padding:9px 22px;font:500 13px/1 ui-serif,Georgia,serif;color:var(--encre);cursor:pointer;
-           transition:border-color .22s ease,color .22s ease}
-  .rejouer:hover{border-color:var(--or);color:var(--or)}
+  .barre{display:flex;gap:14px;justify-content:center;align-items:center;margin:30px 0 4px;flex-wrap:wrap}
+  .tout{background:transparent;border:1px solid var(--trait);border-radius:9999px;
+        padding:10px 24px;font:500 13px/1 ui-serif,Georgia,serif;color:var(--encre);cursor:pointer;
+        transition:border-color .22s ease,color .22s ease;user-select:none}
+  .tout:hover{border-color:var(--or);color:var(--or)}
   .note-mouvement{font-size:12px;color:var(--gris)}
 
   .famille{margin:62px 0 6px;text-align:center;font-size:10px;letter-spacing:.3em;
@@ -114,13 +128,15 @@
           text-transform:uppercase;color:var(--gris)}
 
   /* ─── Le téléphone, à la place réelle d'une page : 390 × 664 ───────────── */
-  .tel{width:344px;max-width:100%;border-radius:42px;padding:10px;background:#cfccc4;
+  .tel{width:344px;max-width:100%;border-radius:42px;padding:10px;background:var(--chassis);
        box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 62px var(--ombre)}
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]) .tel{background:#33312b}
-  }
   .ecran{position:relative;overflow:hidden;border-radius:33px;height:556px;background:var(--fond);
          display:flex;flex-direction:column;padding:20px 17px}
+
+  /* La case qui porte tout l'état de l'écran. Invisible, mais PAS
+     `display:none` : un champ retiré du rendu n'est plus atteignable au
+     clavier, et la maquette deviendrait inutilisable sans souris. */
+  .declencheur{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;margin:0}
 
   .surtitre{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--or);margin:0 0 6px}
   .titre{margin:0 0 14px;font:400 29px/1.1 ui-serif,Georgia,serif}
@@ -131,7 +147,7 @@
   .ligne{display:flex;justify-content:space-between;font-size:12.5px;margin:2px 0}
   .ligne span:first-child{color:var(--gris)}
   .ttc{margin-top:11px;padding-top:11px;border-top:1px solid var(--trait);text-align:center}
-  .ttc .mot{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--gris);margin:0}
+  .ttc .mot-ttc{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--gris);margin:0}
   .ttc .somme{margin:5px 0 0;font:600 26px/1 ui-serif,Georgia,serif;color:var(--or)}
 
   .arretee{text-align:center;font-size:12.5px;margin:0 0 3px}
@@ -141,86 +157,98 @@
   .bascule{display:block;text-align:center;font-size:12.5px;font-weight:500;color:var(--pin);margin-top:9px}
 
   /* ─── Le tronc commun des cinq boutons ─────────────────────────────────── */
-  .action{position:relative;display:block;width:100%;appearance:none;border:0;background:none;
-          padding:0;cursor:pointer;color:inherit;font:inherit;
+  .action{position:relative;display:block;width:100%;cursor:pointer;user-select:none;
           -webkit-tap-highlight-color:transparent}
   .action .corps{position:relative;display:flex;align-items:center;justify-content:center;gap:9px;
                  overflow:hidden;transition:transform .14s cubic-bezier(.32,.72,0,1)}
   .action .mot{position:relative;z-index:2;font:500 15px/1 ui-serif,Georgia,serif;letter-spacing:.004em}
-  /* L'enfoncement, immédiat et commun à tous : sans lui la demi-seconde
-     qui suit se lit comme une panne. 140 ms, mesurés le 11 août. */
-  .action.pressee .corps{transform:scale(.978)}
-  .action[data-en-cours="1"]{cursor:default}
 
-  /* ─── A · la capsule, telle qu'elle est partout ────────────────────────── */
   .v-a .corps{border-radius:9999px;padding:13px 26px;background:var(--pin);color:#f5f3ee}
-
-  /* ─── B · la lueur — une lumière traverse la laque, une fois ───────────── */
   .v-b .corps{border-radius:9999px;padding:13px 26px;background:var(--pin);color:#f5f3ee}
-  .v-b .lueur{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;
-              background:linear-gradient(105deg,transparent 34%,rgba(201,161,94,.00) 40%,
-                        rgba(201,161,94,.55) 50%,rgba(201,161,94,.00) 60%,transparent 66%);
-              transform:translateX(-85%)}
-  /* **`linear`, et non une courbe d'accélération.** Avec un `cubic-bezier`,
-     la lumière franchissait le bouton en soixante millisecondes au milieu du
-     geste : photographiée à 200 ms elle était là, à 330 ms déjà sortie — donc
-     invisible à l'œil, qui ne regardait pas au bon instant. Un balayage se lit
-     à vitesse constante, comme la lumière sur une laque qu'on incline. */
-  .v-b.pressee .lueur{opacity:1;animation:traverser .52s linear forwards}
-  /* **La course est bornée à ±85 %, et ce n'est pas un réglage de goût.** À
-     ±120 %, la bande passait l'essentiel du geste HORS du bouton : mesuré,
-     l'œil ne disposait que de 160 ms pour la voir. Raccourcir la course sans
-     toucher à la durée double ce temps, et la lumière sort toujours par la
-     droite — sa demi-largeur suffit à la faire disparaître. */
+  .v-c .corps{border-radius:9999px;padding:11px 13px 11px 24px;background:var(--pin);color:#f5f3ee}
+  .v-d .corps{border-radius:9999px;padding:12px 26px;background:transparent;color:var(--pin);
+              box-shadow:inset 0 0 0 1px var(--or)}
+  .v-e .corps{padding:11px 8px;background:transparent;color:var(--pin);flex-direction:column;gap:9px}
+  .v-e .mot{font-size:16px}
+
+  .lueur{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;
+         background:linear-gradient(105deg,transparent 34%,rgba(201,161,94,.00) 40%,
+                   rgba(201,161,94,.55) 50%,rgba(201,161,94,.00) 60%,transparent 66%);
+         transform:translateX(-85%)}
+  .sceau{position:relative;z-index:2;flex:0 0 auto;width:30px;height:30px;border-radius:9999px;
+         border:1px solid rgba(201,161,94,.55);display:flex;align-items:center;justify-content:center;
+         color:var(--or-clair);font:500 15px/1 ui-serif,Georgia,serif;
+         transition:transform .52s cubic-bezier(.3,.7,0,1)}
+  .gerbe{position:absolute;z-index:3;right:28px;top:50%;width:0;height:0;pointer-events:none}
+  .gerbe i{position:absolute;width:3px;height:3px;border-radius:9999px;background:var(--or-clair);opacity:0}
+  .encre{position:absolute;inset:0;z-index:1;background:var(--pin);transform:scaleX(0);
+         transform-origin:left center;border-radius:9999px}
+  .rail{position:relative;width:100%;height:1px;background:var(--trait)}
+  .rail i{position:absolute;left:50%;top:0;width:0;height:1px;background:var(--or);transform:translateX(-50%)}
+
+  /* ─── L'APPUI ───────────────────────────────────────────────────────────
+     Deux déclencheurs mènent aux mêmes règles : la case de l'écran, et la case
+     commune du haut qui les presse tous les cinq. `:is()` évite de réécrire
+     chaque règle deux fois — deux copies finiraient par diverger, et une seule
+     des deux serait corrigée. */
+  :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) .action .corps{transform:scale(.978)}
+
+  /* B — la lumière traverse. `linear`, et non une courbe d'accélération : avec
+     une courbe, la bande franchissait le bouton en quatre-vingts millisecondes
+     au milieu du geste — mesuré, donc invisible à l'œil. Et la course est
+     bornée à ±85 % pour doubler le temps de visibilité, sans rien changer à la
+     durée. */
+  :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) .lueur{
+    opacity:1;animation:traverser .52s linear forwards}
   @keyframes traverser{ to{ transform:translateX(85%) } }
 
-  /* ─── C · le cachet — un sceau tourne et sème l'or ─────────────────────── */
-  .v-c .corps{border-radius:9999px;padding:11px 13px 11px 24px;background:var(--pin);color:#f5f3ee}
-  .v-c .sceau{position:relative;z-index:2;flex:0 0 auto;width:30px;height:30px;border-radius:9999px;
-              border:1px solid rgba(201,161,94,.55);display:flex;align-items:center;justify-content:center;
-              color:var(--or-clair);font:500 15px/1 ui-serif,Georgia,serif;
-              transition:transform .52s cubic-bezier(.3,.7,0,1)}
-  .v-c.pressee .sceau{transform:rotate(1080deg)}
-  .v-c .grain{position:absolute;z-index:3;width:3px;height:3px;border-radius:9999px;
-              background:var(--or-clair);pointer-events:none;opacity:0}
-  .v-c .grain.jete{animation:semer .58s cubic-bezier(.2,.7,.3,1) forwards}
+  /* C — le sceau tourne, et sème. */
+  :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) .sceau{transform:rotate(1080deg)}
+  :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) .gerbe i{
+    animation:semer .58s cubic-bezier(.2,.7,.3,1) forwards}
   @keyframes semer{
     0%{opacity:1;transform:translate(0,0) scale(1)}
     100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.4)}
   }
 
-  /* ─── D · l'encre qui gagne — le fond se remplit sous le mot ───────────── */
-  .v-d .corps{border-radius:9999px;padding:12px 26px;background:transparent;color:var(--pin);
-              box-shadow:inset 0 0 0 1px var(--or)}
-  .v-d .encre{position:absolute;inset:0;z-index:1;background:var(--pin);transform:scaleX(0);
-              transform-origin:left center;border-radius:9999px}
-  .v-d.pressee .encre{animation:remplir .5s cubic-bezier(.5,0,.1,1) forwards}
-  .v-d.pressee .mot{color:#f5f3ee;transition:color .34s ease .16s}
+  /* D — l'encre gagne le fond, et le mot passe au clair derrière elle. */
+  :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) .encre{
+    animation:remplir .5s cubic-bezier(.5,0,.1,1) forwards}
+  :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) .v-d .mot{
+    color:#f5f3ee;transition:color .34s ease .16s}
   @keyframes remplir{ to{ transform:scaleX(1) } }
 
-  /* ─── E · le trait qui s'ouvre — aucune capsule, le mot seul ───────────── */
-  .v-e .corps{padding:11px 8px;background:transparent;color:var(--pin);flex-direction:column;gap:9px}
-  .v-e .mot{font-size:16px}
-  .v-e .rail{position:relative;width:100%;height:1px;background:var(--trait)}
-  .v-e .rail i{position:absolute;left:50%;top:0;width:0;height:1px;background:var(--or);
-               transform:translateX(-50%)}
-  .v-e.pressee .rail i{animation:ouvrir .46s cubic-bezier(.4,0,.2,1) forwards}
+  /* E — le cheveu s'ouvre depuis le centre. */
+  :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) .rail i{
+    animation:ouvrir .46s cubic-bezier(.4,0,.2,1) forwards}
   @keyframes ouvrir{ to{ width:100% } }
 
-  /* ─── La messagerie qui monte ──────────────────────────────────────────── */
+  /* ─── La messagerie qui monte, une demi-seconde plus tard ──────────────── */
   .feuille{position:absolute;left:0;right:0;bottom:0;z-index:9;background:var(--carte);
            border-top:1px solid var(--trait);border-radius:18px 18px 33px 33px;
            padding:20px 18px 22px;transform:translateY(102%);
            transition:transform .42s cubic-bezier(.32,.72,0,1);
            box-shadow:0 -18px 44px rgba(20,18,14,.14)}
-  .feuille.ouverte{transform:translateY(0)}
+  /* Le RETARD porte la demi-seconde : c'est lui qui fait exister l'attente,
+     et c'est lui que « mouvement réduit » annule plus bas. */
+  :is(.declencheur:checked ~ .feuille, #tous:checked ~ .rangee .feuille){
+    transform:translateY(0);transition-delay:.52s}
   .feuille .app{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--or);margin:0 0 9px;text-align:center}
   .feuille .a{font-size:11.5px;color:var(--gris);margin:0 0 9px}
   .feuille .corps-msg{font-size:12.5px;line-height:1.55;margin:0;color:var(--encre)}
   .feuille .corps-msg span{color:var(--or)}
-  .feuille .refermer{display:block;margin:16px auto 0;appearance:none;background:transparent;
-                     border:1px solid var(--trait);border-radius:9999px;padding:8px 20px;
-                     font:500 12.5px/1 ui-serif,Georgia,serif;color:var(--encre);cursor:pointer}
+  .refermer{display:block;width:max-content;margin:16px auto 0;background:transparent;
+            border:1px solid var(--trait);border-radius:9999px;padding:8px 20px;
+            font:500 12.5px/1 ui-serif,Georgia,serif;color:var(--encre);cursor:pointer;user-select:none}
+  /* Quand les cinq sont pressés d'un coup, « Refermer » ne pourrait plus rien :
+     une case ne peut pas en décocher une autre sans script. On le retire plutôt
+     que de laisser un bouton mort — c'est « Tout refermer », en haut, qui rend
+     la main. */
+  #tous:checked ~ .rangee .refermer{display:none}
+
+  .mot-refermer{display:none}
+  #tous:checked ~ .barre .mot-presser{display:none}
+  #tous:checked ~ .barre .mot-refermer{display:inline}
 
   table{border-collapse:collapse;margin:44px auto 0;font-size:13px;max-width:900px;width:100%}
   th,td{border-bottom:1px solid var(--trait);padding:10px 12px;text-align:left;vertical-align:top}
@@ -229,8 +257,12 @@
   td b{color:var(--encre);font-weight:500}
 
   @media (prefers-reduced-motion: reduce){
-    .action .corps,.v-c .sceau,.feuille{transition-duration:.01ms}
-    .v-b.pressee .lueur,.v-c .grain.jete,.v-d.pressee .encre,.v-e.pressee .rail i{animation-duration:.01ms}
+    .action .corps,.sceau,.feuille{transition-duration:.01ms}
+    /* La demi-seconde disparaît : sous « mouvement réduit », attendre serait lu
+       comme une lenteur, pas comme une intention. */
+    :is(.declencheur:checked ~ .feuille, #tous:checked ~ .rangee .feuille){transition-delay:0s}
+    :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) :is(.lueur,.gerbe i,.encre,.rail i){
+      animation-duration:.01ms}
   }
 </style>
 
@@ -249,28 +281,230 @@
 
     <div class="appui">
       <b>Ce qui est commun aux cinq, et ne se négocie pas.</b> L’enfoncement est
-      immédiat — sans lui, la demi-seconde qui suit se lit comme une panne. Un
-      second appui pendant le geste est ignoré, sinon le message part deux fois.
-      Et si votre téléphone est réglé sur « mouvement réduit », la messagerie
+      immédiat — sans lui, la demi-seconde qui suit se lit comme une panne. Et
+      si votre téléphone est réglé sur « mouvement réduit », la messagerie
       s’ouvre <b>tout de suite</b> : un réglage d’accessibilité ne doit jamais
       passer pour de la lenteur.
+      <br><br>
+      <b>Une seule chose diffère de l’application :</b> ici, un second appui
+      referme, pour que vous puissiez réessayer. Dans le code, il est ignoré —
+      sinon le message partirait deux fois.
       <br><br>
       <b>Rien n’est codé.</b> L’application affiche toujours le bouton carré.
       C’est votre règle : la maquette d’abord.
     </div>
+  </div>
 
-    <div class="barre">
-      <button type="button" class="rejouer" data-rejouer>Presser les cinq d’un coup</button>
-      <button type="button" class="rejouer" data-tout-refermer>Tout refermer</button>
-      <span class="note-mouvement">— pour comparer les gestes côte à côte</span>
-    </div>
+  <input type="checkbox" id="tous" class="declencheur">
+
+  <div class="barre">
+    <label class="tout" for="tous">
+      <span class="mot-presser">Presser les cinq d’un coup</span>
+      <span class="mot-refermer">Tout refermer</span>
+    </label>
+    <span class="note-mouvement">— pour comparer les gestes côte à côte</span>
   </div>
 
   <p class="famille">Les cinq</p>
   <p class="sous-titre">Chaque téléphone est à la place réelle d’une page :
      390 px de large, barre du navigateur déduite.</p>
 
-  <div class="rangee" id="rangee"></div>
+  <div class="rangee">
+
+    <!-- ═══ A · la capsule ═══════════════════════════════════════════════ -->
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="A">
+        <input type="checkbox" id="e-a" class="declencheur">
+        <p class="surtitre">Chez M. Bernard</p>
+        <h2 class="titre">Facture</h2>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiquette">Facture F2026-0001</p>
+          <div class="ligne"><span>Total HT</span><span>800,00 €</span></div>
+          <div class="ligne"><span>TVA 20 %</span><span>160,00 €</span></div>
+          <div class="ttc"><p class="mot-ttc">Total TTC</p><p class="somme">960,00 €</p></div>
+        </div>
+        <div class="carte">
+          <p class="arretee">Facture F2026-0001 arrêtée.</p>
+          <p class="apres">Elle figure au relevé de TVA collectée et ne peut plus être modifiée.</p>
+          <div class="separation"></div>
+          <label class="action v-a" for="e-a" data-essai aria-label="Ouvrir le SMS tout prêt"><span class="corps"><span class="mot">Ouvrir le SMS tout prêt →</span></span></label>
+          <p class="dessous">Au 06 12 34 56 78 — c’est vous qui l’envoyez.</p>
+          <span class="bascule">Plutôt par e-mail →</span>
+        </div>
+        <div class="feuille">
+          <p class="app">Messages</p>
+          <p class="a">À : 06 12 34 56 78</p>
+          <p class="corps-msg">Bonjour M. Bernard,<br><br>Voici votre facture F2026-0001.
+             Vous pouvez la consulter et la télécharger ici :<br><span>atlas.app/factures/…</span></p>
+          <label class="refermer" for="e-a">Refermer</label>
+        </div>
+      </div></div>
+      <figcaption>
+        <span class="tete"><span class="lettre">A</span> · la capsule</span>
+        Le bouton exact des dix-sept autres écrans. Rien ne bouge que
+        l’enfoncement — <b>c’est une proposition, pas un défaut</b> : la retenue
+        est ce qui a fini par l’emporter à chaque tournée.
+        <span class="marque">Rien d’autre ne bouge</span>
+      </figcaption>
+    </figure>
+
+    <!-- ═══ B · la lueur ═════════════════════════════════════════════════ -->
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="B">
+        <input type="checkbox" id="e-b" class="declencheur">
+        <p class="surtitre">Chez M. Bernard</p>
+        <h2 class="titre">Facture</h2>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiquette">Facture F2026-0001</p>
+          <div class="ligne"><span>Total HT</span><span>800,00 €</span></div>
+          <div class="ligne"><span>TVA 20 %</span><span>160,00 €</span></div>
+          <div class="ttc"><p class="mot-ttc">Total TTC</p><p class="somme">960,00 €</p></div>
+        </div>
+        <div class="carte">
+          <p class="arretee">Facture F2026-0001 arrêtée.</p>
+          <p class="apres">Elle figure au relevé de TVA collectée et ne peut plus être modifiée.</p>
+          <div class="separation"></div>
+          <label class="action v-b" for="e-b" data-essai aria-label="Ouvrir le SMS tout prêt"><span class="corps"><span class="lueur"></span><span class="mot">Ouvrir le SMS tout prêt →</span></span></label>
+          <p class="dessous">Au 06 12 34 56 78 — c’est vous qui l’envoyez.</p>
+          <span class="bascule">Plutôt par e-mail →</span>
+        </div>
+        <div class="feuille">
+          <p class="app">Messages</p>
+          <p class="a">À : 06 12 34 56 78</p>
+          <p class="corps-msg">Bonjour M. Bernard,<br><br>Voici votre facture F2026-0001.
+             Vous pouvez la consulter et la télécharger ici :<br><span>atlas.app/factures/…</span></p>
+          <label class="refermer" for="e-b">Refermer</label>
+        </div>
+      </div></div>
+      <figcaption>
+        <span class="tete"><span class="lettre">B</span> · la lueur</span>
+        Une lumière traverse la laque, une seule fois, en biais. C’est le geste
+        de la <b>matière</b> : rien ne s’ajoute à l’écran, c’est la surface qui
+        répond.
+        <span class="marque">Le luxe par la lumière</span>
+      </figcaption>
+    </figure>
+
+    <!-- ═══ C · le cachet ════════════════════════════════════════════════ -->
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="C">
+        <input type="checkbox" id="e-c" class="declencheur">
+        <p class="surtitre">Chez M. Bernard</p>
+        <h2 class="titre">Facture</h2>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiquette">Facture F2026-0001</p>
+          <div class="ligne"><span>Total HT</span><span>800,00 €</span></div>
+          <div class="ligne"><span>TVA 20 %</span><span>160,00 €</span></div>
+          <div class="ttc"><p class="mot-ttc">Total TTC</p><p class="somme">960,00 €</p></div>
+        </div>
+        <div class="carte">
+          <p class="arretee">Facture F2026-0001 arrêtée.</p>
+          <p class="apres">Elle figure au relevé de TVA collectée et ne peut plus être modifiée.</p>
+          <div class="separation"></div>
+          <!-- Les onze grains sont ÉCRITS, pas engendrés : c'est ce qui permet à
+               la gerbe d'exister sans une ligne de script. Chacun porte sa
+               direction ; au repos ils sont à opacité zéro, donc invisibles. -->
+          <label class="action v-c" for="e-c" data-essai aria-label="Ouvrir le SMS tout prêt"><span class="corps"><span class="mot">Ouvrir le SMS tout prêt</span><span class="sceau" aria-hidden="true">→</span><span class="gerbe" aria-hidden="true"><i style="--dx:20px;--dy:0px"></i><i style="--dx:22px;--dy:14px"></i><i style="--dx:15px;--dy:26px"></i><i style="--dx:3px;--dy:27px"></i><i style="--dx:-11px;--dy:19px"></i><i style="--dx:-24px;--dy:12px"></i><i style="--dx:-27px;--dy:-3px"></i><i style="--dx:-19px;--dy:-15px"></i><i style="--dx:-10px;--dy:-24px"></i><i style="--dx:5px;--dy:-26px"></i><i style="--dx:18px;--dy:-13px"></i></span></span></label>
+          <p class="dessous">Au 06 12 34 56 78 — c’est vous qui l’envoyez.</p>
+          <span class="bascule">Plutôt par e-mail →</span>
+        </div>
+        <div class="feuille">
+          <p class="app">Messages</p>
+          <p class="a">À : 06 12 34 56 78</p>
+          <p class="corps-msg">Bonjour M. Bernard,<br><br>Voici votre facture F2026-0001.
+             Vous pouvez la consulter et la télécharger ici :<br><span>atlas.app/factures/…</span></p>
+          <label class="refermer" for="e-c">Refermer</label>
+        </div>
+      </div></div>
+      <figcaption>
+        <span class="tete"><span class="lettre">C</span> · le cachet</span>
+        Un sceau tourne trois tours et sème onze grains d’or. <b>C’est exactement
+        le geste de « Nouveau chantier »</b> — la seule proposition qui ne repose
+        pas sur un goût : les deux écrans partageraient enfin le même
+        vocabulaire.
+        <span class="marque">Un vocabulaire commun</span>
+      </figcaption>
+    </figure>
+
+    <!-- ═══ D · l'encre ══════════════════════════════════════════════════ -->
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="D">
+        <input type="checkbox" id="e-d" class="declencheur">
+        <p class="surtitre">Chez M. Bernard</p>
+        <h2 class="titre">Facture</h2>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiquette">Facture F2026-0001</p>
+          <div class="ligne"><span>Total HT</span><span>800,00 €</span></div>
+          <div class="ligne"><span>TVA 20 %</span><span>160,00 €</span></div>
+          <div class="ttc"><p class="mot-ttc">Total TTC</p><p class="somme">960,00 €</p></div>
+        </div>
+        <div class="carte">
+          <p class="arretee">Facture F2026-0001 arrêtée.</p>
+          <p class="apres">Elle figure au relevé de TVA collectée et ne peut plus être modifiée.</p>
+          <div class="separation"></div>
+          <label class="action v-d" for="e-d" data-essai aria-label="Ouvrir le SMS tout prêt"><span class="corps"><span class="encre"></span><span class="mot">Ouvrir le SMS tout prêt →</span></span></label>
+          <p class="dessous">Au 06 12 34 56 78 — c’est vous qui l’envoyez.</p>
+          <span class="bascule">Plutôt par e-mail →</span>
+        </div>
+        <div class="feuille">
+          <p class="app">Messages</p>
+          <p class="a">À : 06 12 34 56 78</p>
+          <p class="corps-msg">Bonjour M. Bernard,<br><br>Voici votre facture F2026-0001.
+             Vous pouvez la consulter et la télécharger ici :<br><span>atlas.app/factures/…</span></p>
+          <label class="refermer" for="e-d">Refermer</label>
+        </div>
+      </div></div>
+      <figcaption>
+        <span class="tete"><span class="lettre">D</span> · l’encre qui gagne</span>
+        Cerclée d’un filet d’or, elle se <b>remplit</b> de vert pin sous le mot,
+        de gauche à droite. Le message s’écrit avant de partir.
+        <span class="marque">Une exception à assumer</span>
+      </figcaption>
+    </figure>
+
+    <!-- ═══ E · le trait ═════════════════════════════════════════════════ -->
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="E">
+        <input type="checkbox" id="e-e" class="declencheur">
+        <p class="surtitre">Chez M. Bernard</p>
+        <h2 class="titre">Facture</h2>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiquette">Facture F2026-0001</p>
+          <div class="ligne"><span>Total HT</span><span>800,00 €</span></div>
+          <div class="ligne"><span>TVA 20 %</span><span>160,00 €</span></div>
+          <div class="ttc"><p class="mot-ttc">Total TTC</p><p class="somme">960,00 €</p></div>
+        </div>
+        <div class="carte">
+          <p class="arretee">Facture F2026-0001 arrêtée.</p>
+          <p class="apres">Elle figure au relevé de TVA collectée et ne peut plus être modifiée.</p>
+          <div class="separation"></div>
+          <label class="action v-e" for="e-e" data-essai aria-label="Ouvrir le SMS tout prêt"><span class="corps"><span class="mot">Ouvrir le SMS tout prêt</span><span class="rail"><i></i></span></span></label>
+          <p class="dessous">Au 06 12 34 56 78 — c’est vous qui l’envoyez.</p>
+          <span class="bascule">Plutôt par e-mail →</span>
+        </div>
+        <div class="feuille">
+          <p class="app">Messages</p>
+          <p class="a">À : 06 12 34 56 78</p>
+          <p class="corps-msg">Bonjour M. Bernard,<br><br>Voici votre facture F2026-0001.
+             Vous pouvez la consulter et la télécharger ici :<br><span>atlas.app/factures/…</span></p>
+          <label class="refermer" for="e-e">Refermer</label>
+        </div>
+      </div></div>
+      <figcaption>
+        <span class="tete"><span class="lettre">E</span> · le trait qui s’ouvre</span>
+        Aucune capsule : le mot seul, et un cheveu d’or qui s’ouvre depuis le
+        centre. <b>La plus discrète, et la plus risquée</b> — un geste qui ne
+        ressemble pas à un bouton se cherche.
+        <span class="marque">La retenue poussée loin</span>
+      </figcaption>
+    </figure>
+
+  </div>
 
   <table>
     <tr><th>Ce qui les sépare</th><th>Ce qui bouge</th><th>Ce que ça coûte</th></tr>
@@ -282,169 +516,5 @@
   </table>
 
 </div>
-
-<script>
-/*
-  Un seul script pour les cinq. Le dessin de chaque geste vit dans la feuille de
-  style ; ici on ne fait que trois choses, et ce sont les trois qui se sont
-  déjà mal passées dans l'application :
-
-    1. marquer l'appui TOUT DE SUITE ;
-    2. refuser le second appui tant que le premier n'a pas abouti ;
-    3. ouvrir la messagerie — après 520 ms, ou immédiatement si le téléphone
-       demande moins de mouvement.
-
-  Les cinq écrans sont ENGENDRÉS depuis un seul gabarit : les recopier à la
-  main, c'est se réveiller avec cinq cartes qui ne disent plus la même chose,
-  et comparer des boutons dans des écrans différents ne compare rien.
-*/
-const DEMI_SECONDE = 520;
-const calme = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-const VERSIONS = [
-  {
-    cle: "a", lettre: "A", nom: "la capsule",
-    tete: "A · la capsule, telle qu’ailleurs",
-    quoi: "Le bouton exact des dix-sept autres écrans. Rien ne bouge que l’enfoncement — <b>c’est une proposition, pas un défaut</b> : la retenue est ce qui a fini par l’emporter à chaque tournée.",
-    marque: "Rien d’autre ne bouge",
-    dedans: '<span class="mot">Ouvrir le SMS tout prêt →</span>',
-  },
-  {
-    cle: "b", lettre: "B", nom: "la lueur",
-    tete: "B · la lueur",
-    quoi: "Une lumière traverse la laque, une seule fois, en biais. C’est le geste de la <b>matière</b> : rien ne s’ajoute à l’écran, c’est la surface qui répond.",
-    marque: "Le luxe par la lumière",
-    dedans: '<span class="lueur"></span><span class="mot">Ouvrir le SMS tout prêt →</span>',
-  },
-  {
-    cle: "c", lettre: "C", nom: "le cachet",
-    tete: "C · le cachet",
-    quoi: "Un sceau tourne trois tours et sème onze grains d’or. <b>C’est exactement le geste de « Nouveau chantier »</b> — la seule proposition qui ne repose pas sur un goût : les deux écrans partageraient enfin le même vocabulaire.",
-    marque: "Un vocabulaire commun",
-    dedans: '<span class="mot">Ouvrir le SMS tout prêt</span><span class="sceau" aria-hidden="true">→</span>',
-  },
-  {
-    cle: "d", lettre: "D", nom: "l’encre",
-    tete: "D · l’encre qui gagne",
-    quoi: "Cerclée d’un filet d’or, elle se <b>remplit</b> de vert pin sous le mot, de gauche à droite. Le message s’écrit avant de partir.",
-    marque: "Une exception à assumer",
-    dedans: '<span class="encre"></span><span class="mot">Ouvrir le SMS tout prêt →</span>',
-  },
-  {
-    cle: "e", lettre: "E", nom: "le trait",
-    tete: "E · le trait qui s’ouvre",
-    quoi: "Aucune capsule : le mot seul, et un cheveu d’or qui s’ouvre depuis le centre. <b>La plus discrète, et la plus risquée</b> — un geste qui ne ressemble pas à un bouton se cherche.",
-    marque: "La retenue poussée loin",
-    dedans: '<span class="mot">Ouvrir le SMS tout prêt</span><span class="rail"><i></i></span>',
-  },
-];
-
-const CARTE_FACTURE = `
-  <p class="surtitre">Chez M. Bernard</p>
-  <h2 class="titre">Facture</h2>
-  <div class="filet"></div>
-  <div class="carte">
-    <p class="etiquette">Facture</p>
-    <div class="ligne"><span>Total HT</span><span>800,00 €</span></div>
-    <div class="ligne"><span>TVA 20 %</span><span>160,00 €</span></div>
-    <div class="ttc"><p class="mot">Total TTC</p><p class="somme">960,00 €</p></div>
-  </div>`;
-
-const rangee = document.getElementById("rangee");
-rangee.innerHTML = VERSIONS.map((v) => `
-  <figure>
-    <div class="tel"><div class="ecran" data-variante="${v.lettre}">
-      ${CARTE_FACTURE}
-      <div class="carte">
-        <p class="arretee">Facture F2026-0001 arrêtée.</p>
-        <p class="apres">Elle figure au relevé de TVA collectée et ne peut plus être modifiée.</p>
-        <div class="separation"></div>
-        <button type="button" class="action v-${v.cle}" data-essai
-                aria-label="Ouvrir le SMS tout prêt"><span class="corps">${v.dedans}</span></button>
-        <p class="dessous">Au 06 12 34 56 78 — c’est vous qui l’envoyez.</p>
-        <span class="bascule">Plutôt par e-mail →</span>
-      </div>
-      <div class="feuille">
-        <p class="app">Messages</p>
-        <p class="a">À : 06 12 34 56 78</p>
-        <p class="corps-msg">Bonjour M. Bernard,<br><br>Voici votre facture
-           F2026-0001. Vous pouvez la consulter et la télécharger ici :<br>
-           <span>atlas.app/factures/…</span></p>
-        <button type="button" class="refermer" data-refermer>Refermer</button>
-      </div>
-    </div></div>
-    <figcaption>
-      <span class="tete"><span class="lettre">${v.lettre}</span> · ${v.nom}</span>
-      ${v.quoi}
-      <span class="marque">${v.marque}</span>
-    </figcaption>
-  </figure>`).join("");
-
-/**
- * Onze grains d'or, jetés autour du sceau.
- *
- * Engendrés à l'appui plutôt qu'écrits dans la page : onze `<span>` immobiles
- * dans le HTML seraient onze poussières visibles avant tout geste.
- */
-function semer(bouton) {
-  const sceau = bouton.querySelector(".sceau");
-  if (!sceau) return;
-  const corps = bouton.querySelector(".corps");
-  const b = sceau.getBoundingClientRect();
-  const r = corps.getBoundingClientRect();
-  const cx = b.left - r.left + b.width / 2;
-  const cy = b.top - r.top + b.height / 2;
-  for (let i = 0; i < 11; i++) {
-    const angle = (i / 11) * Math.PI * 2;
-    const loin = 20 + (i % 3) * 7;
-    const grain = document.createElement("span");
-    grain.className = "grain jete";
-    grain.style.left = cx + "px";
-    grain.style.top = cy + "px";
-    grain.style.setProperty("--dx", (Math.cos(angle) * loin).toFixed(1) + "px");
-    grain.style.setProperty("--dy", (Math.sin(angle) * loin).toFixed(1) + "px");
-    corps.appendChild(grain);
-    setTimeout(() => grain.remove(), 900);
-  }
-}
-
-function presser(bouton) {
-  // **Le second appui est ignoré, pas mis en file.** Sans cela, deux messages
-  // partent — c'est le défaut qui avait été corrigé sur « Nouveau chantier »,
-  // où deux chantiers naissaient au lieu d'un.
-  if (bouton.dataset.enCours === "1") return;
-  bouton.dataset.enCours = "1";
-  bouton.classList.add("pressee");
-  if (!calme) semer(bouton);
-  const ecran = bouton.closest(".ecran");
-  setTimeout(() => {
-    ecran.querySelector(".feuille").classList.add("ouverte");
-  }, calme ? 0 : DEMI_SECONDE);
-}
-
-function refermer(ecran) {
-  ecran.querySelector(".feuille").classList.remove("ouverte");
-  const bouton = ecran.querySelector("[data-essai]");
-  bouton.classList.remove("pressee");
-  // Rendu au repos, et pas seulement caché : sans cela, on n'essaie qu'une
-  // fois — et une maquette qu'on n'essaie qu'une fois ne se compare pas.
-  delete bouton.dataset.enCours;
-}
-
-document.addEventListener("click", (e) => {
-  const bouton = e.target.closest("[data-essai]");
-  if (bouton) { presser(bouton); return; }
-  const fermeture = e.target.closest("[data-refermer]");
-  if (fermeture) { refermer(fermeture.closest(".ecran")); return; }
-  if (e.target.closest("[data-rejouer]")) {
-    document.querySelectorAll(".ecran").forEach((ec) => refermer(ec));
-    document.querySelectorAll("[data-essai]").forEach((b) => presser(b));
-    return;
-  }
-  if (e.target.closest("[data-tout-refermer]")) {
-    document.querySelectorAll(".ecran").forEach((ec) => refermer(ec));
-  }
-});
-</script>
 </body>
 </html>

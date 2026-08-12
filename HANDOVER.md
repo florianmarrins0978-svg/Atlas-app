@@ -193,6 +193,16 @@ manques qu'il avait signalés le 10 août (`TODO.md` §8, `ARCHITECTURE.md` §67
    **le cachet est la seule proposition qui ne repose pas sur un goût** : c'est
    le geste de « Nouveau chantier », donc un vocabulaire partagé.
 
+   **⚠ UNE MAQUETTE NE PORTE PAS DE SCRIPT.** La première version de la 31
+   engendrait ses cinq téléphones en JavaScript : chez le patron, page vide —
+   *« rien apparaît sur ta maquette »*. Elle passait ici, dans un navigateur
+   complet ; script coupé, zéro écran. La règle existait déjà pour les
+   maquettes 25 et 26 (`scripts/verifier-maquette-bascule.mjs` joue les huit
+   bascules JavaScript COUPÉ) et n'a pas été appliquée. **Tout contrôle de
+   maquette tourne désormais `javaScriptEnabled: false`** — une case à cocher
+   et des règles `:checked ~` suffisent à tout, y compris à une demi-seconde
+   d'attente (`transition-delay`).
+
    **Un piège de MESURE qui a failli faire livrer un geste mort**, et qui
    resservira à chaque maquette animée : `locator.screenshot()` attend que
    l'élément soit **stable**, c'est-à-dire que l'animation soit finie — il

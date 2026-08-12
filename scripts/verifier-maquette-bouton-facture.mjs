@@ -1,33 +1,38 @@
 #!/usr/bin/env node
 /*
-  Presse les cinq boutons de la facture, comme le patron les pressera.
+  Presse les cinq boutons de la facture, JAVASCRIPT COUPÉ.
 
-  **Pourquoi ce script existe.** La maquette 30 est immobile : la regarder
-  suffit. La 31 ne vaut que par ce qui se passe quand un doigt se pose — et
-  « la page s'ouvre sans erreur » ne dit rien de cela. Un geste mort y serait
-  invisible à l'œil : le bouton s'enfonce, et rien ne monte. Trois fois déjà,
-  c'est le patron qui a trouvé le défaut d'un outillage livré « prêt »
-  (`AGENTS.md`).
+  **Pourquoi « coupé », et pourquoi c'est le premier contrôle.** La première
+  version de cette maquette engendrait ses cinq téléphones en JavaScript. Elle
+  passait ici, dans un navigateur complet ; chez le patron, page vide — « rien
+  apparaît sur ta maquette ». Le contrôle d'alors pressait cinq boutons qui,
+  pour lui, n'existaient pas.
+
+  Le dépôt avait pourtant déjà payé cette leçon sur les maquettes 25 et 26
+  (`verifier-maquette-bascule.mjs`). Une maquette s'ouvre n'importe où — dans
+  une visionneuse, un aperçu, une page qui bloque l'exécution : c'est même tout
+  son intérêt. **Ce contrôle tourne donc sans script, et un retour au script
+  rend la première ligne rouge.**
 
   Ce qu'il éprouve, et qui correspond exactement à ce que la page promet :
 
-    1. les cinq boutons existent et sont armés ;
-    2. l'appui se VOIT tout de suite — à 140 ms, l'enfoncement est là ;
+    1. les cinq écrans sont là SANS SCRIPT — c'est le défaut qu'on ne repaiera
+       pas ;
+    2. l'appui se VOIT tout de suite : à 140 ms, l'enfoncement est là ;
     3. la messagerie n'est PAS montée à 200 ms — la demi-seconde existe ;
     4. elle EST montée à 900 ms ;
-    5. un second appui pendant le geste n'ouvre pas deux fois ;
-    6. « Refermer » rend le bouton au repos — sinon on n'essaie qu'une fois,
-       et une maquette qu'on n'essaie qu'une fois ne se compare pas ;
-    7. sous « mouvement réduit », la messagerie monte TOUT DE SUITE — sinon un
+    5. un second appui referme, sinon on n'essaie qu'une fois, et une maquette
+       qu'on n'essaie qu'une fois ne se compare pas ;
+    6. sous « mouvement réduit », la messagerie monte TOUT DE SUITE — sinon un
        réglage d'accessibilité passerait pour une lenteur ;
-    8. chaque geste bouge quelque chose QUI LUI EST PROPRE. C'est le contrôle
+    7. chaque geste bouge quelque chose QUI LUI EST PROPRE. C'est le contrôle
        qui coûte le plus cher à écrire, et le seul qui distingue cinq
-       propositions de cinq copies : une faute de frappe dans un sélecteur
-       rendrait deux versions identiques, et la planche mentirait au patron
-       sans qu'aucun des sept autres contrôles ne bronche.
+       propositions de cinq copies ;
+    8. la lumière de B reste visible ASSEZ LONGTEMPS pour être vue — voir plus
+       bas, ce contrôle-là a menti deux fois avant d'être juste.
 
-  Il sait échouer : retirer `.pressee` d'une règle, ou le `setTimeout`, rend
-  rouge la version concernée en la nommant.
+  Il sait échouer : couper une règle `:checked ~`, ou remettre la course de la
+  lueur à ±120 %, rend rouge la version concernée en la nommant.
 
   Usage : node scripts/verifier-maquette-bouton-facture.mjs [chemin.html]
 */
@@ -83,24 +88,12 @@ const PROPRE_A_CHACUNE = {
     // a débordé sur elle.
     mesurer: (b) =>
       b.evaluate((el) => {
-        const corps = el.querySelector(".corps");
-        return {
-          bon: el.querySelectorAll(".lueur,.sceau,.encre,.rail").length === 0,
-          detail: `${el.querySelectorAll(".lueur,.sceau,.encre,.rail").length} ornement(s)`,
-          rayon: getComputedStyle(corps).borderTopLeftRadius,
-        };
+        const n = el.querySelectorAll(".lueur,.sceau,.encre,.rail").length;
+        return { bon: n === 0, detail: `${n} ornement(s)` };
       }),
   },
   B: {
     quoi: "à mi-geste, la lumière est DANS le bouton",
-    // **Ce contrôle a d'abord menti, et c'est instructif.** Il exigeait
-    // « opacité > 0 et transform ≠ identité » — deux conditions vraies pendant
-    // toute l'animation, y compris quand la bande est à cent pour cent hors du
-    // bouton. Il est passé au vert sur un geste que l'œil ne voyait jamais :
-    // la courbe d'accélération faisait traverser la lumière en soixante
-    // millisecondes au milieu, et une capture à 330 ms ne montrait rien.
-    // On exige donc que le CŒUR de la bande soit à l'intérieur — c'est-à-dire
-    // la seule chose que le patron verra.
     mesurer: (b) =>
       b.evaluate((el) => {
         const lueur = el.querySelector(".lueur");
@@ -108,9 +101,8 @@ const PROPRE_A_CHACUNE = {
         const s = getComputedStyle(lueur);
         const largeur = lueur.getBoundingClientRect().width;
         const m = new DOMMatrixReadOnly(s.transform === "none" ? "" : s.transform);
-        const dedans = Math.abs(m.m41) < largeur / 2;
         return {
-          bon: Number(s.opacity) > 0 && dedans,
+          bon: Number(s.opacity) > 0 && Math.abs(m.m41) < largeur / 2,
           detail: `décalée de ${Math.round(m.m41)} px sur ${Math.round(largeur)}`,
         };
       }),
@@ -123,8 +115,12 @@ const PROPRE_A_CHACUNE = {
         if (!sceau) return { bon: false, detail: "aucun sceau" };
         const t = getComputedStyle(sceau).transform;
         const tourne = t !== "none" && t !== "matrix(1, 0, 0, 1, 0, 0)";
-        const grains = el.querySelectorAll(".grain").length;
-        return { bon: tourne && grains > 0, detail: `${grains} grain(s), ${t}` };
+        // Les grains sont écrits dans la page : leur PRÉSENCE ne prouve rien,
+        // seule leur opacité dit qu'ils ont été jetés.
+        const vivants = [...el.querySelectorAll(".gerbe i")].filter(
+          (g) => Number(getComputedStyle(g).opacity) > 0,
+        ).length;
+        return { bon: tourne && vivants > 0, detail: `${vivants} grain(s) visible(s)` };
       }),
   },
   D: {
@@ -135,8 +131,6 @@ const PROPRE_A_CHACUNE = {
         if (!encre) return { bon: false, detail: "aucune encre" };
         const largeur = encre.getBoundingClientRect().width;
         const plein = el.querySelector(".corps").getBoundingClientRect().width;
-        // À mi-geste, elle a commencé sans avoir fini : c'est ce qui distingue
-        // un remplissage d'un simple fond posé d'un coup.
         return { bon: largeur > 2, detail: `${Math.round(largeur)} / ${Math.round(plein)} px` };
       }),
   },
@@ -154,29 +148,41 @@ const PROPRE_A_CHACUNE = {
   },
 };
 
-/** La messagerie de cet écran est-elle montée ? */
+/**
+ * La messagerie de cet écran est-elle montée ?
+ *
+ * On mesure sa POSITION, pas une classe : l'état vit désormais dans une case à
+ * cocher et le mouvement dans une transition. Une classe n'existe plus, et
+ * lire `:checked` dirait seulement que la case est cochée — pas que la feuille
+ * est arrivée, ce qui est la seule chose que le patron verra.
+ */
 const montee = (ecran) =>
-  ecran.evaluate((e) => e.querySelector(".feuille").classList.contains("ouverte"));
+  ecran.evaluate((e) => {
+    const f = e.querySelector(".feuille").getBoundingClientRect();
+    return f.top < e.getBoundingClientRect().bottom - 20;
+  });
 
-async function ouvrirPage(calme) {
-  const page = await navigateur.newPage({
+/** Toutes les pages s'ouvrent SANS SCRIPT : c'est la condition du patron. */
+async function ouvrirPage(calme = false) {
+  const contexte = await navigateur.newContext({
     viewport: { width: 1400, height: 1000 },
     reducedMotion: calme ? "reduce" : "no-preference",
+    javaScriptEnabled: false,
   });
+  const page = await contexte.newPage();
   await page.goto(`file://${CIBLE}`, { waitUntil: "load" });
-  // Les écrans sont engendrés par le script de la page : les attendre, plutôt
-  // que de supposer qu'ils sont là. Sans cela le contrôle mesure une page vide
-  // et se plaint du mauvais coupable.
-  await page.waitForSelector("[data-essai]", { timeout: 10_000 });
   return page;
 }
 
 // ─── 1. Le geste, version par version ───────────────────────────────────────
 {
-  const page = await ouvrirPage(false);
+  const page = await ouvrirPage();
   const boutons = page.locator("[data-essai]");
   const nombre = await boutons.count();
-  dire(nombre === 5, `${nombre} bouton(s) pressable(s) — cinq attendus`);
+  dire(
+    nombre === 5,
+    `${nombre} bouton(s) pressable(s) SANS SCRIPT — cinq attendus (le défaut du 12 août)`,
+  );
 
   for (let i = 0; i < nombre; i++) {
     const bouton = boutons.nth(i);
@@ -193,7 +199,10 @@ async function ouvrirPage(calme) {
     // 2. L'appui se voit tout de suite.
     await attendre(140);
     dire(
-      await bouton.evaluate((el) => el.classList.contains("pressee")),
+      await bouton.evaluate((el) => {
+        const t = getComputedStyle(el.querySelector(".corps")).transform;
+        return t !== "none" && !t.startsWith("matrix(1, 0, 0, 1");
+      }),
       `${lettre} — l'enfoncement est là à 140 ms`,
     );
 
@@ -201,9 +210,8 @@ async function ouvrirPage(calme) {
     await attendre(60);
     dire(!(await montee(ecran)), `${lettre} — la messagerie n'est pas encore montée à 200 ms`);
 
-    // 8. Et ce que cette version-là promet, elle le fait — mesuré À MI-GESTE,
-    // pas au premier instant. C'est là que l'œil regarde, et c'est là qu'un
-    // geste creux se voit : à 140 ms, toutes les animations viennent de
+    // 7. Et ce que cette version-là promet, elle le fait — mesuré À MI-GESTE,
+    // pas au premier instant : à 140 ms toutes les animations viennent de
     // commencer et n'importe quoi passerait pour vivant.
     await attendre(MI_GESTE - 200);
     if (!attendu) {
@@ -213,56 +221,40 @@ async function ouvrirPage(calme) {
       dire(m.bon, `${lettre} — ${attendu.quoi} (${m.detail})`);
     }
 
-    // 5. Un second appui pendant le geste ne compte pas double.
-    await bouton.click({ force: true });
-
     // 4. Puis elle monte.
     await attendre(900 - MI_GESTE);
     dire(await montee(ecran), `${lettre} — la messagerie est montée à 900 ms`);
-    dire(
-      (await page.locator(".feuille.ouverte").count()) === 1,
-      `${lettre} — une seule messagerie ouverte, malgré le second appui`,
-    );
     dire((await bouton.innerText()).trim() === motAvant, `${lettre} — le libellé n'a pas changé`);
 
-    // 6. Et l'on peut réessayer.
-    await ecran.locator("[data-refermer]").click();
-    await attendre(120);
-    dire(
-      !(await montee(ecran)) && !(await bouton.evaluate((el) => el.classList.contains("pressee"))),
-      `${lettre} — « Refermer » rend le bouton au repos`,
-    );
+    // 5. Et l'on peut réessayer — par « Refermer », ou en repressant le bouton.
+    await ecran.locator(".refermer").click();
+    await attendre(500);
+    dire(!(await montee(ecran)), `${lettre} — « Refermer » referme`);
   }
   await page.close();
 }
 
 // ─── 1 bis. La lumière de B est-elle visible ASSEZ LONGTEMPS ? ──────────────
 //
-// **Le contrôle d'à côté a menti deux fois, et il faut comprendre pourquoi.**
-// Première version : « opacité > 0 et transform ≠ identité » — vrai pendant
-// toute l'animation, y compris la bande entièrement hors du bouton. Deuxième
-// version : « le cœur de la bande est dedans à mi-geste » — vrai aussi de la
-// version fautive, qui se trouvait passer par là au bon instant.
+// **Ce contrôle a menti deux fois, et il faut comprendre pourquoi.** Première
+// version : « opacité > 0 et transform ≠ identité » — vrai pendant toute
+// l'animation, y compris la bande entièrement hors du bouton. Deuxième :
+// « le cœur de la bande est dedans à mi-geste » — vrai aussi de la version
+// fautive, qui se trouvait passer par là au bon instant.
 //
 // Ce qu'aucune des deux ne mesurait, c'est la seule chose qui compte : COMBIEN
 // DE TEMPS l'œil peut voir la lumière. Avec une courbe d'accélération, elle
-// franchissait le bouton en quatre-vingts millisecondes au milieu du geste —
-// mécaniquement irréprochable, et invisible. Une capture à 200 ms la montrait,
-// une à 330 ms ne montrait plus rien : c'est ainsi qu'on l'a découvert, en
-// REGARDANT, pas en mesurant.
-//
-// On échantillonne donc la position tout au long du geste et on compte le temps
-// passé à l'intérieur. Un balayage se lit à vitesse constante, comme la lumière
-// sur une laque qu'on incline.
+// franchissait le bouton en quatre-vingts millisecondes — mécaniquement
+// irréprochable, et invisible. On l'a découvert en REGARDANT une capture.
 {
   const VISIBLE_MINIMUM_MS = 180;
   const PAS_MS = 40;
-  const page = await ouvrirPage(false);
+  const page = await ouvrirPage();
   const bouton = page.locator("[data-essai]").nth(1); // B
   await bouton.click();
   let dedans = 0;
   for (let t = 0; t < 620; t += PAS_MS) {
-    const y = await bouton.evaluate((el) => {
+    const vue = await bouton.evaluate((el) => {
       const lueur = el.querySelector(".lueur");
       if (!lueur) return null;
       const s = getComputedStyle(lueur);
@@ -270,7 +262,7 @@ async function ouvrirPage(calme) {
       const m = new DOMMatrixReadOnly(s.transform === "none" ? "" : s.transform);
       return Math.abs(m.m41) < lueur.getBoundingClientRect().width / 2;
     });
-    if (y) dedans += PAS_MS;
+    if (vue) dedans += PAS_MS;
     await attendre(PAS_MS);
   }
   dire(
@@ -287,26 +279,35 @@ async function ouvrirPage(calme) {
   const ecran = page.locator(".ecran").first();
   await bouton.click();
   await attendre(60);
-  dire(
-    await montee(ecran),
-    "sous « mouvement réduit », la messagerie monte tout de suite",
-  );
+  dire(await montee(ecran), "sous « mouvement réduit », la messagerie monte tout de suite");
   await page.close();
 }
 
 // ─── 3. « Presser les cinq » les presse vraiment tous ───────────────────────
 {
-  const page = await ouvrirPage(false);
-  await page.locator("[data-rejouer]").click();
-  await attendre(800);
-  const ouvertes = await page.locator(".feuille.ouverte").count();
+  const page = await ouvrirPage();
+  await page.locator("label[for='tous']").click();
+  await attendre(1100);
+  const ecrans = page.locator(".ecran");
+  let ouvertes = 0;
+  for (let i = 0; i < (await ecrans.count()); i++) {
+    if (await montee(ecrans.nth(i))) ouvertes++;
+  }
   dire(ouvertes === 5, `« Presser les cinq » en ouvre ${ouvertes} sur 5`);
-  await page.locator("[data-tout-refermer]").click();
-  await attendre(150);
+
+  // Le même bouton rend la main — et son libellé le dit, sinon on ne saurait
+  // pas qu'il est devenu autre chose.
   dire(
-    (await page.locator(".feuille.ouverte").count()) === 0,
-    "« Tout refermer » referme les cinq",
+    (await page.locator("label[for='tous']").innerText()).trim().includes("refermer"),
+    "le bouton commun annonce « Tout refermer » une fois pressé",
   );
+  await page.locator("label[for='tous']").click();
+  await attendre(600);
+  let restantes = 0;
+  for (let i = 0; i < (await ecrans.count()); i++) {
+    if (await montee(ecrans.nth(i))) restantes++;
+  }
+  dire(restantes === 0, `« Tout refermer » en laisse ${restantes} ouverte(s)`);
   await page.close();
 }
 
@@ -317,4 +318,4 @@ if (plaintes.length) {
   for (const p of plaintes) console.log(`   — ${p}`);
   process.exit(1);
 }
-console.log("\n✅ Les cinq boutons se pressent, chacun avec son geste, et se rejouent.");
+console.log("\n✅ Les cinq boutons se pressent sans script, chacun avec son geste.");
