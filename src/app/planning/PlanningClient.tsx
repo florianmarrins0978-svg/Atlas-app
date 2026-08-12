@@ -30,6 +30,7 @@ import {
   type MarqueJour,
 } from "@/lib/mois";
 import { equipesAffichees, libelleEquipe } from "@/lib/equipes";
+import FeuilleYAller from "@/components/atlas/FeuilleYAller";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
@@ -65,6 +66,9 @@ type ChantierPlanning = {
   dureePrevue?: string | null;
   /** Le rang de l'équipe qui le tient. `null` = pas encore attribué. */
   rangEquipe: number | null;
+  /** L'adresse du chantier, telle qu'elle est en base — jamais devinée. */
+  adresseChantier?: string | null;
+  clientTelephone?: string | null;
   envoiEnvoyeAt: Date | string | null;
   envoiExpireAt: Date | string | null;
   envoiReponse: "acceptee" | "refusee" | null;
@@ -181,6 +185,28 @@ export default function PlanningClient({
 
   const cases = useMemo(() => grilleDuMois(curseur.annee, curseur.mois), [curseur]);
   const lignesEquipes = equipesAffichees(equipesNommees, nombreEquipes);
+
+  /** Le chantier dont la feuille « Y aller » est ouverte, ou `null`. */
+  const [yAllerId, setYAllerId] = useState<string | null>(null);
+  const yAller = planifies.find((c) => c.id === yAllerId) ?? null;
+
+  /**
+   * « 14 août · matin · Équipe A » — écrit **une seule fois**, parce que la
+   * ligne du planning et la feuille « Y aller » disent la même chose. Deux
+   * constructions de la même phrase finissent toujours par diverger, et l'écart
+   * se voit à l'endroit précis où le patron compare les deux.
+   */
+  function libelleQuand(c: ChantierPlanning): string {
+    const jour = new Date(`${c.datePlanifiee}T12:00:00Z`).toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "short",
+      timeZone: "UTC",
+    });
+    const moment =
+      c.creneauDebut === "matin" || c.creneauDebut === "apres_midi" ? LIBELLE_MOMENT[c.creneauDebut] : null;
+    const equipe = libelleEquipe(lignesEquipes.find((e) => e.rang === c.rangEquipe) ?? null, nombreEquipes);
+    return [jour, moment, equipe].filter(Boolean).join(" · ");
+  }
 
   /**
    * **Ouvrir ET amener à l'écran.** C'est le comportement que la maquette
@@ -537,17 +563,7 @@ export default function PlanningClient({
                     {c.nom}
                   </span>
                   <span className="block text-[12px]" style={{ color: colors.muted }}>
-                    {new Date(`${c.datePlanifiee}T12:00:00Z`).toLocaleDateString("fr-FR", {
-                      day: "numeric",
-                      month: "short",
-                      timeZone: "UTC",
-                    })}
-                    {c.creneauDebut === "matin" || c.creneauDebut === "apres_midi"
-                      ? ` · ${LIBELLE_MOMENT[c.creneauDebut]}`
-                      : ""}
-                    {libelleEquipe(lignesEquipes.find((e) => e.rang === c.rangEquipe) ?? null, nombreEquipes)
-                      ? ` · ${libelleEquipe(lignesEquipes.find((e) => e.rang === c.rangEquipe) ?? null, nombreEquipes)}`
-                      : ""}
+                    {libelleQuand(c)}
                   </span>
                 </Link>
                 {/* Aucune barrière de date, comme sur la fiche : c'est le patron
@@ -572,18 +588,73 @@ export default function PlanningClient({
                   >
                     Déplacer
                   </button>
-                  <Link
-                    href={`/chantiers/${c.id}/facture`}
-                    aria-label={`Créer la facture — ${c.nom}`}
-                    className={`whitespace-nowrap ${libelleCaps}`}
+                  {/* **« Créer la facture » a quitté la ligne le 12 août 2026,
+                      à sa demande** : *« il faut que le créer la facture, tu le
+                      mettes dans le chevron. Il faut cliquer sur le chevron, la
+                      page s'ouvre avec le GPS et tout machin, et là tu mets
+                      créer la facture »*. Il est désormais dans la feuille.
+
+                      Le chemin du planning vers la facture, ouvert le 8 août
+                      2026 parce que l'écran était un cul-de-sac, n'est PAS
+                      refermé — il passe par un appui de plus, et trois suites
+                      le parcourent jusqu'au bout. Le rendre invisible serait
+                      retomber dans le défaut d'origine ; c'est pourquoi la
+                      feuille le porte en toutes lettres. */}
+
+                  {/* **Le chevron doré — retenu sur maquette le 12 août 2026**
+                      (`docs/maquettes/32-le-chevron.html`), après qu'il eut
+                      écarté la flèche de navigation : *« je veux la même que
+                      celle à côté de maps, le petit > »*.
+
+                      Un chevron ne promet pas un DÉPART, il promet que quelque
+                      chose S'OUVRE — ce qui reste vrai des chantiers sans
+                      adresse, la feuille disant alors ce qui manque. Le cas
+                      particulier a disparu avec le choix du signe.
+
+                      Les 44 px sont invisibles mais ils sont là : le chevron
+                      seul ferait une cible de dix-sept pixels, qu'on rate deux
+                      fois sur trois avec des gants.
+
+                      **Et ils sont pris SUR LES MARGES, pas sur le nom.** Quand
+                      la ligne portait encore « Créer la facture », un
+                      quarante-quatrième pixel de plus rognait la seule chose
+                      qui dit de quel chantier il s'agit — vu sur capture à
+                      390 px, « Chez M. Bernard » devenait « Chez M. … ». Les
+                      marges négatives reprennent la hauteur de la ligne
+                      (`-my-3`), la gouttière de 16 px (`-ml-2`) et le retrait
+                      droit de l'écran (`-mr-[26px]`). Elles restent utiles
+                      maintenant que la ligne s'est allégée : le carré touchable
+                      tombe au bord de l'écran, là où le pouce arrive le plus
+                      vite, sans rien coûter au nom. */}
+                  <button
+                    type="button"
+                    aria-label={`Y aller — ${c.nom}`}
+                    onClick={() => setYAllerId(c.id)}
+                    className="-my-3 -ml-2 -mr-[26px] flex h-11 w-11 flex-shrink-0 items-center justify-center self-center text-[17px]"
                     style={{ color: colors.or }}
                   >
-                    Créer la facture
-                  </Link>
+                    <span aria-hidden="true">›</span>
+                  </button>
                 </span>
               </div>
             ))}
           </div>
+        )}
+
+        {/* La feuille « Y aller », posée hors de la boucle : une par ligne
+            créerait autant de calques que de chantiers planifiés, tous montés
+            en même temps pour n'en montrer qu'un. */}
+        {yAller && (
+          <FeuilleYAller
+            ouverte
+            onFermer={() => setYAllerId(null)}
+            chantierId={yAller.id}
+            nomChantier={yAller.nom}
+            clientNom={yAller.clientNom}
+            adresse={yAller.adresseChantier ?? null}
+            telephone={yAller.clientTelephone ?? null}
+            quand={libelleQuand(yAller)}
+          />
         )}
 
         {/* Un refus du serveur ramène la ligne : le dire, sinon elle

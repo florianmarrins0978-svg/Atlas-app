@@ -128,9 +128,19 @@ async function main() {
     // détection automatique là où le fautif était son propre décor.
     //
     // Reproduit et compris avant d'être corrigé : le témoin passait seul, et
-    // seulement après une visite de l'application. Une page neuve n'a aucune
-    // application vivante dessus, et le cas ne dépend plus de rien d'autre que
-    // de ce qu'il éprouve.
+    // échouait seulement après une visite de l'application. Une page neuve n'a
+    // aucune application vivante dessus, et le cas ne dépend plus de rien
+    // d'autre que de ce qu'il éprouve.
+    //
+    // **Une autre session a soigné le même mal autrement**, en passant
+    // `waitUntil: "domcontentloaded"` à `setContent` : elle avait relevé que
+    // l'événement `load` attend que le réseau de l'onglet se taise, et que le
+    // serveur de développement garde ouverte sa liaison de rechargement à
+    // chaud. Le constat est juste et vaut d'être gardé. Il ne suffisait
+    // pourtant pas : mesuré ici, `setContent` rendait la main en 1,9 s même par
+    // défaut — ce qui effaçait le témoin, c'était bien le rendu de
+    // l'application par-dessus. Sur une page neuve, les deux causes tombent
+    // ensemble.
     const vierge = await contexte.newPage();
     try {
       await vierge.setContent(

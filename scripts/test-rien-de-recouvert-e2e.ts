@@ -55,7 +55,7 @@ async function cas(nom: string, verifier: () => Promise<void>) {
  * l'atteindrait. Une erreur qui accuse à tort coûte plus cher que pas d'erreur
  * du tout (`AGENTS.md`).
  *
- * Trois précautions de plus, chacune payée par un faux positif :
+ * Quatre précautions de plus, chacune payée par un faux positif :
  *
  *   - **on ne juge que ce qui est visible.** Un panneau replié, un tiroir fermé
  *     portent des boutons hors écran : les compter reviendrait à crier sur des
@@ -69,6 +69,11 @@ async function cas(nom: string, verifier: () => Promise<void>) {
  *     rognés par un `overflow: hidden`. Onze d'entre eux étaient accusés d'être
  *     recouverts alors qu'ils n'étaient pas à l'écran du tout. On remonte donc
  *     la parenté et l'on écarte ce qui tombe hors de son découpage.
+ *   - **ni la barre d'outils de Next.js.** Son `<nextjs-portal>` n'existe pas
+ *     dans la version bâtie, et il ne se montre que lorsqu'il a quelque chose à
+ *     signaler : il accusait six écrans de cacher l'onglet « Chantiers », au
+ *     hasard des exécutions. Le détail, et ce que cela ne règle pas côté banc du
+ *     patron, sont dans `TODO.md`.
  */
 const SONDE = `(async () => {
   const attendre = (ms) => new Promise((r) => setTimeout(r, ms));

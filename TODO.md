@@ -56,7 +56,30 @@ Trois pistes, aucune tranchée — et aucune bonne telle quelle :
 - faire **servir une version bâtie** à son banc, où le badge n'existe pas. C'est
   probablement la bonne réponse, et elle dépasse ce point.
 
-### 0 nonies. L'écran de connexion est resté dans l'ancienne identité
+### 0 quindecies. ~~La ligne « Planifiés » porte un geste de trop~~ — **réglé le 12 août 2026**
+
+Vu en capture en posant le chevron : la ligne portait trois gestes et un nom sur
+390 px, et c'est le nom qui cédait — « Chez M. Bernard » s'affichait
+« Chez M. Be… ».
+
+**Il a tranché le jour même**, en regardant la capture : *« il faut que le créer
+la facture, tu le mettes dans le chevron. Il faut cliquer sur le chevron, la
+page s'ouvre avec le GPS et tout machin, et là tu mets créer la facture. »*
+« Créer la facture » est donc passé dans la feuille ; la ligne ne garde que le
+nom, la date, « Déplacer » et le chevron. Le nom passe d'environ 110 px à plus
+de 250. `ARCHITECTURE.md` §70.
+
+### 0 quaterdecies bis. Un chantier sans adresse n'a plus de chemin pour la saisir
+
+La feuille « Y aller » dit « à saisir sur la fiche du chantier », mais n'y mène
+plus : « Ouvrir la fiche du chantier » a été retiré de la maquette 32, le nom du
+chantier y menant déjà depuis la ligne. Sur un chantier sans adresse, la phrase
+suffit-elle, ou faut-il un bouton **« Saisir l'adresse »** à cet endroit précis ?
+
+**La question lui a été posée avec la maquette et attend sa réponse.** Rien ne
+sera ajouté sans elle.
+
+### 0 nonies. ~~L'écran de connexion est resté dans l'ancienne identité~~ **fait le 12 août 2026**
 
 **Vu en capture le 12 août 2026**, en vérifiant que les boutons arrondis
 n'avaient rien cassé. `src/app/login/page.tsx` n'a jamais été repris par la
@@ -72,8 +95,40 @@ refonte du 10 août :
 Même remarque pour `src/app/documents-legaux/formulaire.tsx`, qui porte la même
 couleur en dur.
 
-**Non fait :** il n'a pas demandé cet écran, et sa règle est *« montre-moi avant
-de faire »*. Lui montrer une maquette avant/après, puis appliquer.
+**Fait le 12 août 2026** : maquettes 32, 33 et 34, puis `src/app/login/page.tsx`.
+Reste `src/app/documents-legaux/formulaire.tsx`, qui porte la même terre cuite en
+dur et n'a pas été repris — il échappe au parcours pour la même raison que la
+porte (`ARCHITECTURE.md` §71).
+
+**Il a choisi, et demandé une suite le 12 août 2026 au soir :** la proposition 4
+**sans son titre ni sa sous-ligne**, avec **le sceau et ATLAS du modèle 3**, plus
+**une animation de la marque d'une demi-seconde à l'entrée**. Six animations lui
+sont proposées dans `docs/maquettes/36-le-logo-qui-sanime.html` — **en attente de
+son numéro**. Rien n'est encore posé.
+
+**Il a retenu « le tour » le 12 août au soir**, et demandé d'autres gravures
+dans le rond d'or : huit motifs dans
+`docs/maquettes/37-le-motif-du-sceau.html` — **son numéro est attendu**.
+L'écran, le rond et l'animation n'y bougent plus ; seul le tracé change.
+
+**Ce qu'il faudra trancher avec lui au moment de coder** (écrit sur la maquette) :
+la demi-seconde est un **plancher**, pas la durée de l'attente. Le serveur répond
+quand il répond ; l'animation ne doit ni être coupée en son milieu, ni se figer
+si la réponse tarde. Les propositions 3, 4 et 6 bouclent d'elles-mêmes ; les 1, 2
+et 5 se dessinent d'un bout à l'autre et demandent une décision explicite.
+
+**Maquette livrée le 12 août 2026 — `docs/maquettes/35-l-ecran-de-connexion.html`**
+(« oui, fais-moi une maquette avant/après »). L'avant reproduit, puis quatre
+après : la carte gardée, sans carte, le sceau, la ligne d'imprimé. **En attente
+de son choix — `src/` n'a pas été touché.**
+
+**Et un défaut de plus, trouvé en dessinant :** les champs sont écrits en
+**15 px**, alors que `styleChampPlage` impose 16 px depuis le 10 août précisément
+parce qu'**en dessous, iOS agrandit la page dès qu'un champ prend le focus**. Il
+tape son adresse et l'écran lui saute au visage. Ce défaut-là ne dépend d'aucune
+proposition : il se corrige avec celle qu'il retiendra. Même remarque pour le
+refus de connexion, peint en `text-red-600` (rouge de Tailwind) au lieu du
+`colors.alert` de la charte.
 
 ### 0 octies. Les actions principales encore dessinées à la main
 

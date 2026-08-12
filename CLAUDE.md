@@ -159,6 +159,12 @@ Elle enchaîne, dans cet ordre — les contrôles rapides d'abord :
 Elle ne s'arrête pas à la première erreur : savoir que trois choses cassent, et
 lesquelles, vaut mieux que de les découvrir une par une.
 
+**Ne jamais la faire passer par `tail`.** Elle écrit son verdict à la fin, mais
+le nom de la suite tombée, lui, est écrit au milieu — parmi les cinquante-huit.
+Tronquée à ses dernières lignes, elle annonce « 57/58 » sans dire laquelle, et
+il ne reste qu'à tout rejouer pour l'apprendre. Rediriger vers un fichier
+(`> /tmp/…/batterie.log 2>&1`), puis y chercher. Payé le 12 août 2026.
+
 **La dernière étape mérite son existence.** Toutes les autres interrogent
 `127.0.0.1`, où l'en-tête `Origin` et l'hôte coïncident. Le patron, lui, passe
 par un proxy où ils diffèrent — et Next.js refuse alors toute action serveur, à

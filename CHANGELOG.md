@@ -9,6 +9,47 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### Le chevron doré du planning : l'adresse jusqu'au GPS en un doigt
+
+**Sa demande :** *« lorsque je vais sur planning et qu'il y a un chantier
+planifié, en cliquant dessus je puisse avoir un petit truc genre accéder à
+l'adresse, et en cliquant dessus ça met l'adresse toute seule dans le GPS, soit
+Maps, soit Waze »*.
+
+Au bout de chaque chantier planifié, un **chevron doré** ouvre une feuille :
+Plans, Google Maps, Waze, copier l'adresse, appeler le client. Sans quitter le
+planning. Retenu après **quatre maquettes** (`docs/maquettes/29` à `32`), sa
+règle de montrer avant de faire.
+
+**Des liens universels, jamais `waze://`.** Un schéma propre échoue *en silence*
+quand l'application n'est pas installée : le doigt appuie, rien ne bouge. Sur un
+chantier, c'est une adresse qu'on n'a plus. Détail qui ne se devine pas :
+`encodeURIComponent` et non `encodeURI`, sans quoi la virgule d'une adresse
+sépare deux paramètres chez Waze et tronque la destination au numéro de rue.
+
+**Sans adresse, rien ne s'invente** : les trois destinations disparaissent et la
+feuille dit où la saisir.
+
+**Trouvé en regardant la capture, pas par un test :** les 44 px du chevron
+rognaient le nom du chantier — « Chez M. Bernard » devenait « Chez M. … ». Ils
+sont désormais pris sur les marges. Les huit contrôles étaient verts : le nom
+était bien là.
+
+**Puis, sur la capture, il a tranché l'encombrement :** *« il faut que le créer
+la facture, tu le mettes dans le chevron »*. « Créer la facture » a donc quitté
+la ligne pour la feuille. Le nom du chantier passe d'environ 110 px à plus de
+250. Le chemin du planning vers la facture, ouvert le 8 août parce que l'écran
+était un cul-de-sac, coûte un appui de plus — **et trois suites le parcourent
+en entier**, dont une qui vérifie qu'il a bien quitté la ligne.
+
+**Vu sur la même capture, et corrigé :** la feuille affichait « M. Bernard —
+Chez M. Bernard ». Elle collait le client devant un nom que l'application
+fabrique justement à partir du client — le cas le plus courant du produit était
+le plus laid. Aucun test ne pouvait le voir : les deux textes étaient exacts,
+c'est leur mise bout à bout qui ne l'était pas.
+
+`ARCHITECTURE.md` §70.
+
 ### La CI était rouge depuis des heures, et personne ne regardait
 
 **Trouvé en allant voir**, après une poussée sur `main` : les exécutions
@@ -222,6 +263,133 @@ L'agent verra qu'un service est tombé ; c'est `claude`, installé dans l'espace
 qui pourra le relever.
 
 ---
+
+### La porte est refaite, et l'adresse ne s'efface plus à chaque erreur
+
+**Sa décision, en trois maquettes :** la ligne d'imprimé de la 32 sans son titre,
+le tour de la 33, la rose des vents de la 34. `src/app/login/page.tsx` porte les
+trois, plus les corrections qui ne dépendaient d'aucun choix : champs à **16 px**
+(en dessous, iOS agrandit la page dès qu'on tape), refus dans le rouge de la
+charte, place du message réservée en permanence.
+
+**Et un défaut trouvé en regardant l'écran, antérieur à la refonte :** sur un
+mot de passe faux, l'adresse était effacée. Toute à retaper, sur un téléphone,
+pour un caractère raté ailleurs. Personne ne l'avait vu parce qu'aucune suite ne
+se trompe de mot de passe — elles entrent toutes par une session fabriquée.
+`scripts/test-porte-e2e.ts` est la première à passer par où il passe.
+
+**Quatre correctifs sont tombés avant le bon** : la remise à zéro de React
+arrive *après* le rendu qui suit l'action, et ni un champ contrôlé, ni un effet,
+ni `defaultValue` n'y survivent. Détail dans `ARCHITECTURE.md` §71.
+
+**Une réserve mesurée, pas supposée :** dans cet environnement, `next dev`
+n'hydrate pas cet écran (sa liaison de rechargement à chaud est refusée par le
+mandataire réseau) et le formulaire part en HTML pur. La suite le détecte et
+annonce les contrôles concernés « non concluants » plutôt que rouges. Sur la
+version bâtie — celle du banc — le sceau tourne, le bouton se désactive et
+l'adresse survit.
+
+**Le tour n'a pas de plancher**, et c'est un arbitrage écrit : il se répète tant
+que la vérification n'a pas répondu, mais un serveur très rapide le coupe en son
+milieu. Le tenir supposerait de retarder la navigation pour une question
+d'allure.
+
+### Huit gravures pour le sceau, et la bande qui en a fait jeter trois
+
+**Sa réponse à la maquette 36 :** *« j'aime bien le 3. Maintenant propose avec
+d'autres motifs dans le rond doré, change que le motif à l'intérieur. »* Le tour
+est donc **acquis** ; `docs/maquettes/37-le-motif-du-sceau.html` ne fait varier
+que la gravure — la feuille d'aujourd'hui (en témoin), la feuille seule, le A,
+les cernes et la fente, le conifère, la rose des vents, l'arbre au trait, la
+ligne de crête.
+
+**La bande en tête de page n'est pas une décoration**, c'est le contrôle : les
+huit motifs à leur **taille réelle**, côte à côte. Trois propositions y sont
+mortes — deux brins d'eucalyptus et une branche penchée — parce qu'à six
+millimètres, une tige et trois ovales se rejoignent en pâté quel que soit
+l'écartement. **Aucune ne se voyait fausse sur le dessin agrandi.** C'est la
+troisième fois que ce projet retrouve la même leçon : regarder l'écran, à la
+taille de l'écran.
+
+**Une remarque qui change le classement**, écrite sur la maquette : le tour
+**impose** quelque chose au motif. La rose des vents tourne parfaitement ; les
+cernes ne montreraient rien sans leur trait de fente, un rond concentrique qui
+tourne étant un rond immobile ; et le A est le seul qui passe la tête en bas au
+milieu du geste.
+
+**Et un défaut du générateur, corrigé au passage.** `fusionner-maquettes.mjs`
+préfixait une liste d'identifiants **écrite à la main** : deux maquettes portant
+chacune un `entrer-1` donnaient une page unique où le libellé de la seconde
+cochait la case de la première. Les familles numérotées sont désormais
+reconnues d'elles-mêmes — un oubli de cette sorte ne se voit pas, la page
+s'affiche parfaitement et ne répond à rien.
+
+### L'entrée dans Atlas : six façons d'animer la marque, et un libellé qui ne cochait plus rien
+
+**Sa demande, après la maquette 35 :** *« je veux la 4 sans le Connexion et vos
+id. Tu rajoutes le nom Atlas comme sur le modèle 3, et tu me mets un logo
+dynamique qui s'enclenche au moment où on valide l'adresse et le mdp, pendant
+0,5 s avant d'entrer dans l'appli. […] le reste tu touches pas, que le logo qui
+change. »*
+
+`docs/maquettes/36-le-logo-qui-sanime.html` — **l'écran est identique sur les
+six**, seule l'animation change : le cercle qui se ferme, la feuille qui pousse,
+le tour, le battement et l'onde, l'or qui monte, le sceau qui s'imprime. Elle
+**s'essaie** : on tape, on appuie, on entre, « ↺ Recommencer » remet l'écran —
+et **sans un seul script**, la capsule étant un `<label>` qui coche une case.
+
+**Ce qu'il faudra trancher avec lui avant de coder**, et qui est écrit sur la
+maquette : la demi-seconde est un *plancher*, pas une durée d'attente. Le
+serveur répond quand il répond, et l'animation doit pouvoir continuer au-delà —
+une marque figée deux secondes ressemble à une application plantée. Les six
+bouclent, exprès, pour qu'il en juge aussi.
+
+**Deux défauts trouvés par le contrôle, aucun visible à l'œil :**
+
+1. **L'écran de connexion effacé continuait d'intercepter le doigt.** Les deux
+   écrans occupent la même case ; sans `pointer-events:none`, « Recommencer »
+   ne répondait pas — l'appui allait dans la page invisible. C'est la famille
+   des trois seuls défauts que ce dépôt n'a jamais su attraper autrement.
+2. **`fusionner-maquettes.mjs` préfixait les `id` sans préfixer les `for`.** Un
+   `<label for="g1">` restait donc orphelin dans la page unique : la page
+   s'affichait parfaitement et ne répondait à rien. Corrigé pour toutes les
+   maquettes, présentes et futures.
+
+`scripts/verifier-maquette-logo.mjs` tient les trois promesses — ça s'anime, on
+entre, on recommence — sur les douze écrans (fichier seul **et** page unique),
+JavaScript coupé. Éprouvé rouge en retirant l'animation de la proposition 3.
+
+### L'écran de connexion : une maquette avant/après, et un défaut trouvé en la dessinant
+
+**Sa réponse à l'offre de la veille :** *« oui, fais-moi une maquette »*.
+`docs/maquettes/35-l-ecran-de-connexion.html` reproduit l'écran d'aujourd'hui,
+puis en propose quatre : la carte gardée, sans carte, le sceau, la ligne
+d'imprimé. **Rien n'est posé dans `src/`** — c'est sa règle du 11 août, et la
+maquette existe précisément pour qu'on n'ait rien à défaire.
+
+**Pourquoi cet écran avait été oublié**, et ce n'est pas un hasard : c'est le
+seul qu'on voit **avant** d'être connecté. Chaque refonte s'est faite en
+parcourant l'application, donc en partant d'un écran déjà passé. La porte ne
+fait pas partie du couloir.
+
+**Le défaut trouvé en dessinant, et il compte plus que le choix esthétique :**
+ses champs sont en **15 px**. En dessous de 16, iOS agrandit la page dès qu'un
+champ prend le focus — il tape son adresse et l'écran lui saute au visage.
+`design-tokens.ts` l'interdit depuis le 10 août ; l'écran de connexion ne s'est
+jamais servi du jeton. Le refus de connexion, lui, est peint en rouge vif de
+bibliothèque au lieu du rouge sombre de la charte. Les deux se corrigent quelle
+que soit la proposition retenue — c'est écrit sur la maquette.
+
+**La maquette a été REGARDÉE, pas seulement engendrée** : une capture au format
+de son téléphone a montré un débordement horizontal que la vue au large ne
+laissait pas voir. Le bouton « montrer le refus » est une case à cocher native,
+éprouvée JavaScript coupé, dans la page seule **et** dans la page unique.
+
+`TODO.md` §0 nonies · `docs/QUESTIONS.md` question 13.
+
+---
+
+## 2026-08-12
 
 ### Tous les boutons arrondis, et un contrôle pour que ça le reste
 

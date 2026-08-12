@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La ligne du planning — trois façons</title>
+</head>
+<body>
+<style>
+  /*
+    « MONTRE MOI LA DIFFÉRENCE EN PHOTO, JE VEUX VOIR AVANT DE PRENDRE UNE
+    DÉCISION » — sa réponse du 12 août 2026.
+
+    Le chevron « Y aller » est posé, et la ligne d'un chantier planifié porte
+    désormais TROIS gestes plus son nom, sur 390 px : « Déplacer », « Créer la
+    facture », le chevron. Le nom cède — c'est pourtant la seule chose qui dit
+    de quel chantier il s'agit.
+
+    Les trois façons ci-dessous sont à la MÊME largeur que son téléphone, avec
+    les MÊMES noms de chantier. Rien n'est codé : aucune n'existe dans
+    l'application, sauf la première — qui est ce qu'il a aujourd'hui.
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --or:#B98B47; --trait:rgba(28,28,26,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:#e9e6df;color:var(--encre);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-font-smoothing:antialiased}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .titre{max-width:60ch;margin:0 auto;padding:26px 20px 6px}
+  .titre h1{margin:0;font-size:24px;font-weight:400;letter-spacing:-.01em}
+  .titre p{margin:8px 0 0;color:#6f6a5f;font-size:14px;line-height:1.7}
+
+  .lot{max-width:60ch;margin:0 auto;padding:20px}
+  .etiq{margin:0 0 4px;color:#8a7452;text-transform:uppercase;letter-spacing:.3em;
+        font-size:9.5px;font-weight:500}
+  .dit{margin:0 0 14px;color:#6f6a5f;font-size:13.5px;line-height:1.65}
+  .dit b{color:var(--encre);font-weight:500}
+
+  /* L'écran, à la largeur exacte de son téléphone. */
+  .ecran{width:390px;max-width:100%;background:var(--fond);padding:14px 26px 18px;
+         border-radius:14px;box-shadow:0 1px 3px rgba(20,18,14,.10),0 14px 34px rgba(20,18,14,.10)}
+  .ecran .chapeau{margin:0 0 10px;color:var(--gris)}
+
+  .ligne{display:flex;align-items:baseline;gap:14px;padding:11px 0;
+         border-bottom:1px solid var(--trait)}
+  .ligne .colonne{min-width:0;flex:1}
+  .nom{display:block;font-size:16px;line-height:1.2;
+       white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .quand{display:block;font-size:12px;color:var(--gris)}
+  .gestes{display:flex;flex-shrink:0;align-items:baseline;gap:16px}
+  .deplacer{font-size:12px;color:var(--gris);white-space:nowrap}
+  .facturer{color:var(--or);white-space:nowrap}
+  .aller{flex:0 0 auto;width:44px;height:44px;margin:-12px -26px -12px -8px;
+         display:flex;align-items:center;justify-content:center;align-self:center;
+         font-size:17px;color:var(--or)}
+
+  /* B — le nom prend toute la largeur, les gestes passent dessous. */
+  .b .ligne{display:block;padding:12px 0}
+  .b .nom{white-space:normal}
+  .b .dessous{display:flex;align-items:baseline;justify-content:space-between;
+              gap:12px;margin-top:7px}
+  .b .gestes{gap:18px}
+  .b .aller{margin:-12px -26px -12px -4px}
+
+  .mesure{margin:10px 0 0;font-size:12px;color:#8a7452;font-style:italic}
+
+  .fin{max-width:60ch;margin:0 auto;padding:10px 20px 70px;color:#6f6a5f;
+       font-size:14px;line-height:1.7}
+  .fin h2{margin:26px 0 6px;font-size:11px;letter-spacing:.26em;text-transform:uppercase;
+          color:#8a7452;font-weight:500}
+  .fin b{color:var(--encre);font-weight:500}
+</style>
+
+<div class="titre">
+  <h1 class="serif">La ligne du planning, trois façons</h1>
+  <p>Même largeur que votre téléphone, mêmes chantiers. <b>Rien n’est codé</b> :
+     seule la première existe aujourd’hui dans l’application.</p>
+</div>
+
+<div class="lot">
+  <p class="etiq">A — ce que vous avez aujourd’hui</p>
+  <p class="dit">Le chevron est posé, et le nom du chantier <b>cède la place</b> :
+     il ne reste que le début. C’est pourtant lui qui dit de quel chantier il s’agit.</p>
+  <div class="ecran">
+    <p class="chapeau caps">Planifiés</p>
+    <div class="ligne">
+      <span class="colonne">
+        <span class="nom serif">Chez M. Bernard — Abatt…</span>
+        <span class="quand">14 août · matin · Équipe A</span>
+      </span>
+      <span class="gestes">
+        <span class="deplacer">Déplacer</span>
+        <span class="facturer caps">Créer la facture</span>
+        <span class="aller">›</span>
+      </span>
+    </div>
+    <div class="ligne">
+      <span class="colonne">
+        <span class="nom serif">Chez Mme Rivière — Tail…</span>
+        <span class="quand">18 août · journée</span>
+      </span>
+      <span class="gestes">
+        <span class="deplacer">Déplacer</span>
+        <span class="facturer caps">Créer la facture</span>
+        <span class="aller">›</span>
+      </span>
+    </div>
+  </div>
+  <p class="mesure">Le nom dispose d’environ 110 px sur 390.</p>
+</div>
+
+<div class="lot b">
+  <p class="etiq">B — le nom sur sa propre ligne</p>
+  <p class="dit">Le nom prend <b>toute la largeur</b> et se lit en entier ; la date
+     et les trois gestes passent dessous. La ligne est plus haute d’environ
+     18 px — soit un chantier de moins par écran.</p>
+  <div class="ecran">
+    <p class="chapeau caps">Planifiés</p>
+    <div class="ligne">
+      <span class="nom serif">Chez M. Bernard — Abattage de chêne</span>
+      <span class="dessous">
+        <span class="quand">14 août · matin · Équipe A</span>
+        <span class="gestes">
+          <span class="deplacer">Déplacer</span>
+          <span class="facturer caps">Créer la facture</span>
+          <span class="aller">›</span>
+        </span>
+      </span>
+    </div>
+    <div class="ligne">
+      <span class="nom serif">Chez Mme Rivière — Taille de haie, 40 m</span>
+      <span class="dessous">
+        <span class="quand">18 août · journée</span>
+        <span class="gestes">
+          <span class="deplacer">Déplacer</span>
+          <span class="facturer caps">Créer la facture</span>
+          <span class="aller">›</span>
+        </span>
+      </span>
+    </div>
+  </div>
+  <p class="mesure">Le nom dispose des 338 px utiles. Rien n’est perdu, rien n’est déplacé.</p>
+</div>
+
+<div class="lot">
+  <p class="etiq">C — « Déplacer » s’en va dans la feuille</p>
+  <p class="dit">La ligne ne garde que <b>« Créer la facture »</b> et le chevron ;
+     déplacer un chantier se fait depuis la feuille « Y aller », qui s’ouvre au
+     chevron. Un geste de moins sous les yeux — mais <b>un geste de plus</b> le
+     jour où vous déplacez.</p>
+  <div class="ecran">
+    <p class="chapeau caps">Planifiés</p>
+    <div class="ligne">
+      <span class="colonne">
+        <span class="nom serif">Chez M. Bernard — Abattage de chêne</span>
+        <span class="quand">14 août · matin · Équipe A</span>
+      </span>
+      <span class="gestes">
+        <span class="facturer caps">Créer la facture</span>
+        <span class="aller">›</span>
+      </span>
+    </div>
+    <div class="ligne">
+      <span class="colonne">
+        <span class="nom serif">Chez Mme Rivière — Taille de haie</span>
+        <span class="quand">18 août · journée</span>
+      </span>
+      <span class="gestes">
+        <span class="facturer caps">Créer la facture</span>
+        <span class="aller">›</span>
+      </span>
+    </div>
+  </div>
+  <p class="mesure">Le nom dispose d’environ 165 px. Il se lit, sans tenir toujours en entier.</p>
+</div>
+
+<div class="fin">
+  <h2>Ce que chacune coûte</h2>
+  <p><b>A</b> — rien à faire, et le nom reste rogné à chaque coup d’œil.</p>
+  <p><b>B</b> — le nom se lit toujours ; vous voyez un chantier de moins sans
+     faire défiler. C’est la seule qui ne retire aucun geste.</p>
+  <p><b>C</b> — l’écran respire, mais « Déplacer » se paie d’un appui de plus,
+     et il n’est plus visible : on peut oublier qu’il existe.</p>
+  <h2>Ce que je ne fais pas sans vous</h2>
+  <p>Je n’en code aucune tant que vous n’avez pas choisi. Dites-moi la lettre.</p>
+</div>
+</body>
+</html>

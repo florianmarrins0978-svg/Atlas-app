@@ -81,6 +81,7 @@
 <li><a href="#10-qui-voit-quoi--moi-mes-clients-leurs-salariés-">Qui voit quoi : moi, mes clients, leurs salariés ?</a></li>
 <li><a href="#11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-">Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?</a></li>
 <li><a href="#12-lagenda-google--mes-artisans-auront-ils-des-identifiants-à-saisir-">L'agenda Google : mes artisans auront-ils des identifiants à saisir ?</a></li>
+<li><a href="#13-pourquoi-tous-les-boutons-ont-ils-la-même-forme-">Pourquoi tous les boutons ont-ils la même forme ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -569,6 +570,68 @@
 <p><strong>Une réserve, écrite parce qu'elle compte.</strong> À ma connaissance, l'agenda relève des permissions dites « sensibles » — vérification gratuite mais longue — et non des « restreintes », qui exigent en plus un audit de sécurité payant. <strong>Je n'ai pas pu le confirmer</strong> : le réseau de l'environnement de développement refuse les pages de Google. À vérifier avant d'annoncer une date de lancement.</p>
 <h3 id="ce-quil-faut-en-retenir-pour-le-calendrier">Ce qu'il faut en retenir pour le calendrier</h3>
 <p><strong>Lancez la demande de vérification tôt</strong>, pas la semaine où vous voulez vendre. C'est le genre de délai qui ne se rattrape pas.</p>
+<hr>
+<h2 id="13-pourquoi-tous-les-boutons-ont-ils-la-même-forme-">13. Pourquoi tous les boutons ont-ils la même forme ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Posée le 11 août 2026 :</em> « comment ça ce bouton est sur vingt-sept écrans ? tu peux m'expliquer » — puis, le lendemain, en voyant sur la feuille d'envoi de son devis un bouton carré à côté d'une capsule : « remplace tous les boutons rectangulaires par les boutons arrondis ».</p>
+<h3 id="la-réponse-courte">La réponse courte</h3>
+<p><strong>Parce qu'une forme est une phrase.</strong> Dans Atlas, la capsule pleine, en vert pin, veut dire exactement une chose : <em>appuie ici, c'est l'action de cet écran</em>. Si deux écrans la disent avec deux dessins différents, il faut la réapprendre à chaque fois — et surtout, on doute : <em>est-ce que celui-là fait vraiment la même chose ?</em></p>
+<p>C'est aussi pour cela que <strong>les champs et les cartes gardent leurs coins presque droits</strong> (4 px). Le rayon n'est pas une décoration, c'est un panneau : arrondi plein = on touche, presque droit = on lit. Tout arrondir aurait effacé la distinction.</p>
+<h3 id="une-correction-parce-que-je-vous-ai-donné-un-faux-chiffre">Une correction, parce que je vous ai donné un faux chiffre</h3>
+<p><strong>« Vingt-sept écrans » était faux, et c'est moi qui l'ai écrit.</strong> J'avais compté les fichiers, pas les écrans — les huit maquettes de travail (<code>/design/…</code>), qui ne sont pas votre application, étaient dans le tas.</p>
+<p>Le vrai décompte, au 12 août 2026 :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Combien</th>
+</tr></thead><tbody>
+<tr>
+<td>Écrans du produit qui portent le bouton partagé</td>
+<td><strong>8</strong> (11 boutons)</td>
+</tr>
+<tr>
+<td>Écrans d'erreur, qui le prennent par une pièce commune</td>
+<td><strong>9</strong> (1 bouton)</td>
+</tr>
+<tr>
+<td>Maquettes de travail, hors application</td>
+<td>8</td>
+</tr>
+<tr>
+<td><strong>Total réel dans votre application</strong></td>
+<td><strong>17 écrans</strong></td>
+</tr>
+</tbody></table></div>
+<p>Le code ne porte plus le chiffre, il porte <strong>la commande pour le recompter</strong> — un nombre écrit à la main dans un commentaire est faux le mois suivant, et personne ne le vérifie.</p>
+<h3 id="pourquoi-la-capsule-et-pas-autre-chose">Pourquoi la capsule, et pas autre chose</h3>
+<p>Vous avez choisi la cinquième de huit propositions dessinées le 11 août (maquette 28). Le bouton d'avant pesait par <strong>trois</strong> choses à la fois, et vous n'en avez nommé qu'une — « trop gros, carré, pas esthétique » :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui pesait</th>
+<th>Avant</th>
+<th>La capsule</th>
+</tr></thead><tbody>
+<tr>
+<td>La hauteur</td>
+<td>58 px, près d'un dixième de votre écran</td>
+<td>43 px</td>
+</tr>
+<tr>
+<td>La largeur</td>
+<td>il touchait les deux marges, donc rien ne le contenait</td>
+<td>juste la largeur du mot</td>
+</tr>
+<tr>
+<td>La forme</td>
+<td>presque droite, 5 px de rayon</td>
+<td>pleinement arrondie</td>
+</tr>
+</tbody></table></div>
+<p>Elle est <strong>plus petite que ce qu'elle remplace</strong>, alors qu'elle a l'air plus présente : c'est la largeur libre qui fait ça, pas la taille.</p>
+<p><strong>Une chose à savoir sur la comparaison que je vous avais montrée d'abord : elle mentait.</strong> J'avais découpé chaque bouton au ras, et deux boutons de largeurs différentes affichés dans deux colonnes de même largeur donnent l'impression inverse de la vérité — la capsule paraissait plus grosse. La planche a été refaite en photographiant l'écran entier.</p>
+<h3 id="ce-qui-empêche-que-ça-reparte-dans-tous-les-sens">Ce qui empêche que ça reparte dans tous les sens</h3>
+<p>Le 12 août, trois écrans dessinaient encore leur bouton à la main : ils avaient été écrits avant la capsule et ne l'avaient jamais su. <strong>C'est vous qui l'avez vu, pas nous</strong> — d'où un contrôle automatique (<code>scripts/test-boutons-arrondis.ts</code>) qui refuse désormais tout bouton rectangulaire ajouté dans l'application. Il tourne à chaque livraison.</p>
+<p>Il ne regarde que <strong>la forme</strong>, volontairement : deux boutons (la connexion, les documents légaux) doivent rester des boutons de formulaire, et les forcer à passer par la pièce commune casserait leur envoi. La forme, elle, est la même pour tous.</p>
+<h3 id="ce-que-ça-vous-coûte-quand-vous-changez-davis">Ce que ça vous coûte quand vous changez d'avis</h3>
+<p><strong>Un seul fichier à toucher</strong>, <code>src/components/atlas/PrimaryButton.tsx</code> : les 17 écrans suivent. C'est tout l'intérêt d'avoir une pièce commune plutôt que dix-sept dessins — le jour où la capsule ne vous plaît plus, ce n'est pas dix-sept corrections, c'en est une.</p>
 </main>
 </body>
 </html>

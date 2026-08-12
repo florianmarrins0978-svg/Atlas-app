@@ -231,6 +231,77 @@ entièrement carrée.
 l'ancienne identité — terre cuite `#B5502F` écrite en dur, carte blanche, aucune
 serif. C'est le premier écran qu'il voit. `TODO.md` §0 nonies.
 
+## La porte est refaite (12 août) — et deux pièges à connaître
+
+`src/app/login/page.tsx` porte ses trois choix : ligne d'imprimé, sceau à la
+**rose des vents**, et **le tour** pendant la vérification. `ARCHITECTURE.md` §71.
+
+**Piège A — le serveur de développement n'hydrate pas cet écran, ICI.** Sa
+liaison de rechargement à chaud est refusée par le mandataire réseau, le
+formulaire part en HTML pur, la page se recharge et **tout champ redevient vide
+quel que soit le code**. Quatre correctifs justes ont été déclarés morts pour
+cette raison. Avant d'accuser le code : mesurer sur la version BÂTIE
+(`npm run banc`), pas sur `next dev`. `test-porte-e2e.ts` compte désormais les
+navigations complètes et annonce « non concluant » plutôt que rouge.
+
+**Piège B — React remet le formulaire à zéro APRÈS le rendu qui suit l'action.**
+Ni un champ contrôlé, ni un effet, ni `defaultValue` ne font survivre une valeur
+à cette remise. Ce qui tient : une `ref` qui met la valeur par défaut à jour
+**et** une `key` qui remonte le champ à chaque envoi. Ne pas « simplifier » l'un
+des deux.
+
+## L'écran de connexion : maquette posée, choix EN ATTENTE (12 août)
+
+`docs/maquettes/35-l-ecran-de-connexion.html` — l'avant reproduit, puis quatre
+après (la carte gardée, sans carte, le sceau, la ligne d'imprimé). **Ne rien
+poser dans `src/app/login/` avant qu'il ait désigné laquelle**, sa règle du
+11 août.
+
+**FAIT le 12 août au soir** — ce qui suit est conservé pour la trace du chemin.
+
+**Il a déjà tranché la mise en page, le 12 août au soir :** la **4** (les champs
+en ligne d'imprimé), **sans le titre « Connexion » ni la sous-ligne**, avec **le
+sceau et ATLAS de la 3** au-dessus. Ce qui reste ouvert est **l'animation de la
+marque à l'entrée** — six propositions dans
+`docs/maquettes/36-le-logo-qui-sanime.html`, son numéro attendu.
+
+**Puis il a retenu « le tour »** (maquette 36, proposition 3) et demandé
+d'autres gravures : `docs/maquettes/37-le-motif-du-sceau.html`, huit motifs,
+**son numéro attendu**. Le rond d'or, l'écran et l'animation n'y bougent plus.
+
+**La leçon de la 34, qui vaut pour toute icône de ce dépôt :** un motif se juge
+**à sa taille réelle**, jamais agrandi. La bande en tête de cette maquette est
+là pour ça, et elle a tué trois propositions — à 29 px avec un trait d'1,5, une
+tige et trois ovales se rejoignent en pâté quel que soit l'écartement. Une seule
+grande forme tient toujours ; trois petites, jamais.
+
+**Trois choses à ne pas défaire dans cette maquette-là :**
+
+1. **`pointer-events:none` sur `.conn` une fois entré.** Les deux écrans
+   occupent la même case de grille ; un écran à `opacity:0` continue
+   d'intercepter le doigt, et « Recommencer » ne répondait pas. Invisible sur
+   toute capture.
+2. **La demi-seconde est un plancher, pas une attente.** Voir `TODO.md`
+   §0 nonies : au moment de coder, décider ce que fait l'animation quand le
+   serveur tarde. Les six bouclent dans la maquette, exprès.
+3. **`scripts/verifier-maquette-logo.mjs` doit rester joué** après toute
+   retouche : il éprouve les douze écrans (fichier seul et page unique)
+   JavaScript coupé, et il sait échouer.
+
+**Ce qui ne dépend PAS de son choix, et qui part avec n'importe laquelle :**
+
+1. **Les champs passent à 16 px.** Ils sont en 15, et en dessous de 16 **iOS
+   agrandit la page dès qu'un champ prend le focus** — le jeton
+   `styleChampPlage` existe depuis le 10 août pour cette raison exacte, et cet
+   écran ne s'en sert pas. C'est un défaut de son téléphone, pas une préférence.
+2. **Le refus passe de `text-red-600` à `colors.alert`.**
+3. **La place du message reste réservée** (`min-height`), sinon le bouton
+   descend d'une ligne au moment où il appuie dessus.
+
+**Pourquoi cet écran échappe à tout :** c'est le seul vu **avant** d'être
+connecté, donc le seul qu'aucun parcours de l'application ne traverse. Le même
+raisonnement vaut pour `src/app/documents-legaux/formulaire.tsx`.
+
 ## Ce qui vient d'être terminé
 
 **Les pages du CLIENT ne portent plus la navigation du patron (12 août).** Sa
@@ -271,6 +342,46 @@ moi la maquette et montre-la-moi avant de coder quoi que ce soit »*.
 démentie par lui le même jour : sa messagerie s'ouvrait bien, l'adresse du
 client était fausse. `TODO.md` 0 quindecies bis dit ce qui a été vérifié — CSP,
 longueur de l'adresse — pour qu'on ne le refasse pas.
+
+---
+
+### « Y aller » — le chevron doré du planning (12 août 2026)
+
+Au bout de chaque chantier planifié, un chevron doré ouvre une feuille : Plans,
+Google Maps, Waze, copier l'adresse, appeler le client. Sans quitter l'écran.
+
+- `src/lib/itineraire.ts` — la règle pure (liens universels, jamais `waze://`).
+- `src/components/atlas/FeuilleYAller.tsx` — la feuille, sur `BottomSheet`.
+- `src/app/planning/PlanningClient.tsx` — le chevron, et `libelleQuand()` écrit
+  une seule fois pour la ligne ET la feuille.
+- `src/lib/nom-chantier.ts` — `intituleDuChantier` : ne recolle le client que si
+  le nom du chantier ne le porte pas déjà, sans quoi la feuille affiche
+  « M. Bernard — Chez M. Bernard ».
+- `listerChantiersPourPlanning` remonte `adresseChantier` et `clientTelephone`.
+- Contrôles : `scripts/test-itineraire.ts` (10), `scripts/test-y-aller-e2e.ts`
+  (9), quatre de plus dans `scripts/test-nom-chantier.ts`, deux cas de plus dans `scripts/test-planning-repo.ts`. Les trois ont été
+  confrontés au défaut qu'ils prétendent voir avant d'être retenus.
+
+**Deux choses à savoir avant d'y toucher :**
+
+1. **La case « Toujours celle-là » de la maquette n'est PAS implémentée**, et
+   c'est délibéré : mémoriser un choix de GPS sans nulle part où le défaire
+   enferme le patron dans une application touchée par erreur. Elle attend son
+   interrupteur dans Réglages. Ne pas l'ajouter en croyant combler un oubli.
+2. **« Créer la facture » est dans la FEUILLE, plus sur la ligne** — sa
+   décision du 12 août, prise en regardant la capture. Le chemin du planning
+   vers la facture, ouvert le 8 août parce que l'écran était un cul-de-sac,
+   coûte donc un appui de plus. Trois suites le parcourent en entier, et l'une
+   vérifie qu'il a bien quitté la ligne : **le remettre là romprait deux
+   contrôles**, pas un.
+
+**Une question lui est posée et attend sa réponse :** un chantier sans adresse
+n'a plus de chemin pour aller la saisir, la feuille se contentant de dire « à
+saisir sur la fiche du chantier ». Faut-il un bouton « Saisir l'adresse » à cet
+endroit ? Rien ne sera ajouté sans lui.
+
+---
+
 
 **⚠ SI LE PATRON DIT « ce n'est toujours pas là » : REGARDER LA BRANCHE
 D'ABORD.** C'est le défaut du 11 août au soir, et il coûterait le même

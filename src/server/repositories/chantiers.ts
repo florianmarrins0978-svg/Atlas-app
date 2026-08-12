@@ -360,6 +360,12 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
         // Le RANG de l'équipe, jamais son identifiant : c'est le rang qui porte
         // la lettre de repli, et l'écran n'a rien à faire d'une clé étrangère.
         rangEquipe: equipes.rang,
+        // L'adresse et le téléphone descendent avec la liste, et non derrière un
+        // second aller-retour au moment du geste : le patron ouvre « Y aller »
+        // sur un chantier, en voiture, souvent sans réseau. Une feuille qui doit
+        // aller chercher l'adresse arrive vide exactement là où elle sert.
+        adresseChantier: chantiers.adresseChantier,
+        clientTelephone: clients.telephone,
         ...DERNIER_ENVOI,
       })
       .from(chantiers)
