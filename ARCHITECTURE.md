@@ -4745,3 +4745,72 @@ Trois bénéfices s'ajoutent, indépendants de cette cause, et qui suffiraient :
 **Ce qui reste à faire, et qui n'est pas un détail :** les photos passent encore
 par une action serveur, depuis le même écran où l'on stationne. Le raisonnement
 vaut pour elles ; rien ne le prouve encore de leur côté.
+
+---
+---
+
+## 66. Le devis qui ne partait pas, et le bouton qui n'était pas le bon
+
+**Le patron, le 12 août 2026, capture à l'appui.** Deux défauts sur la même
+image, sans rapport l'un avec l'autre — et c'est justement ce qui les rendait
+tous deux invisibles.
+
+### « Je ne peux pas envoyer mon devis, ni par SMS ni par mail »
+
+Sur la feuille d'envoi, à la place de son devis :
+
+```
+Stockage local sélectionné en production — configuration refusée (voir src/server/env.ts)
+```
+
+Sa configuration était juste. **`src/server/storage/index.ts` ne regardait que
+`NODE_ENV === "production"`** — or le banc d'essai SERT UNE VERSION BÂTIE, et
+`next start` impose `NODE_ENV=production` sans que rien ne soit déployé.
+
+`src/server/env.ts` connaissait pourtant la distinction depuis le 10 août :
+`exigencesDeDeploiement = exigencesDeProduction && !bancDEssai`, « les deux
+seules choses qu'un banc ne peut pas avoir : une clé d'IA facturée et un
+compartiment S3 ». La seconde barrière l'ignorait.
+
+**Et son commentaire affirmait le contraire de la réalité** — « le module
+d'environnement refuse déjà de démarrer en production » — ce qui est faux sur le
+banc. C'est ce qui a caché la divergence pendant des semaines : la barrière se
+croyait redondante alors qu'elle était devenue **plus stricte que la première**.
+`CLAUDE.md` §3 le nomme : « jamais de règle dupliquée, deux implémentations
+finissent toujours par diverger ». On ne recopie donc plus la règle, on reprend
+la même notion.
+
+**Ce qui n'est pas relâché :** un déploiement réel exige toujours S3. Le stockage
+local ne persiste pas entre instances, et un devis envoyé dont le PDF a disparu
+est pire qu'un envoi refusé. `scripts/test-stockage-banc.ts` tient les deux
+bouts — et sa deuxième vérification pose une configuration de production
+**valide de bout en bout**, sinon le refus viendrait d'ailleurs (« LLM_PROVIDER
+vaut dev en production ») et l'on croirait éprouver le stockage en éprouvant
+autre chose.
+
+### « Le bouton, ce n'est pas le même »
+
+Il avait raison. La capsule avait été posée sur `PrimaryButton` — et la feuille
+d'envoi **dessinait son bouton à la main** :
+
+```tsx
+<button className="rounded-[4px] py-3.5 …" style={{ backgroundColor: colors.rust }}>
+```
+
+**Une action principale dessinée sur place échappe à toute décision d'ensemble :
+elle ne change que si quelqu'un pense à elle.** C'est le composant qui porte la
+forme, jamais l'écran.
+
+**Pourquoi la planche du 11 août ne l'avait pas vue :**
+`capture-bouton-partout.mjs` parcourt des ADRESSES. La feuille d'envoi n'en a
+pas — c'est un tiroir qui monte sur un geste. Tout ce qui ne s'ouvre pas par une
+URL était donc hors de son champ, et le compte « dix-sept écrans » ne comptait
+que ce qu'elle savait atteindre.
+
+### Ce qui reste vrai, et ce qui reste à faire
+
+D'autres actions principales sont encore dessinées à la main
+(`DevisDepuisDictee`, `BrouillonSection`, `PropositionPrixSection`, les écrans
+de réglages). Elles ne sont pas converties d'office : le patron a posé la règle
+inverse — *« montre-moi avant de faire, plutôt que de faire pour revenir en
+arrière »*. Voir `TODO.md`.

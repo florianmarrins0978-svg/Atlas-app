@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
 import { composerMessageClient, lienTransmission, type CanalClient } from "@/lib/message-client";
 import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
@@ -199,15 +200,12 @@ export default function TransmettreAuClient({
             className="w-full rounded-[4px] border-0 px-4 py-3 outline-none"
             style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
           />
-          <button
-            type="button"
+          <PrimaryButton
             onClick={enregistrerEtOuvrir}
             disabled={enregistrement || saisie.trim() === ""}
-            className="w-full rounded-[4px] py-3 text-[15px] font-medium text-white disabled:opacity-40"
-            style={{ backgroundColor: colors.rust }}
           >
             {enregistrement ? "Enregistrement…" : "Enregistrer et ouvrir le message"}
-          </button>
+          </PrimaryButton>
         </div>
       )}
 

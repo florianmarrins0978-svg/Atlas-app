@@ -4,9 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-11 · `claude/migrate-app-atlas-zz31ac`
-
-**Point de reprise :** 2026-08-11 · `claude/new-session-a1l4v9`
+**Point de reprise :** 2026-08-12 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -35,6 +33,54 @@ lui-même dès qu'il signale une panne — dans cette session comme dans les tro
 ou quatre autres qu'il fait tourner en parallèle. Il ajoute du contexte, il ne
 bloque rien, et devant le moindre doute il se tait : un rappel qui parle à tort
 finit ignoré, et le garde-fou se perd sans bruit.
+
+---
+
+## ⚠ LE PREMIER RÉFLEXE, DEMANDÉ PAR LE PATRON LE 12 AOÛT 2026
+
+**À faire juste après avoir lu la fiche ci-dessus** : la fiche dit dans quel
+état est sa machine, la question ci-dessous dit dans quel état est son onglet.
+Les deux se lisent avant la moindre hypothèse, et pour la même raison — regarder
+coûte une minute, supposer a coûté deux jours.
+
+> *« Retiens ce problème, et la prochaine fois qu'on a un souci, commence par
+> regarder si ce n'est pas ça. »*
+
+**Devant tout défaut qu'il signale et qui ne se reproduit pas ici, la PREMIÈRE
+question n'est pas « quel écran ? » mais : SA PAGE A-T-ELLE SURVÉCU À SON
+SERVEUR ?**
+
+Son banc redémarre plusieurs fois par soirée — mise à jour automatique, bascule
+développement / version bâtie, veilleur qui relève un serveur tombé. Son onglet,
+lui, reste ouvert des heures. **Tout ce qui a été fabriqué au moment de la
+construction et inscrit dans sa page devient alors périmé sous ses doigts.**
+
+Trois défauts en deux jours, trois symptômes sans rapport apparent, **une seule
+racine** — et deux jours perdus à les traiter séparément :
+
+| Ce qu'il voit | Ce qui a vieilli | Où c'est écrit |
+|---|---|---|
+| « Cette page n'a pas pu s'afficher », et « Réessayer » n'y peut rien | les adresses des morceaux de code | `ARCHITECTURE.md` §63 |
+| « L'enregistrement n'a pas pu être transmis » | l'identifiant de l'action serveur | `ARCHITECTURE.md` §65 |
+| « Atlas prépare le devis… » sans fin, il recharge et le devis est là | rien — la réponse s'est perdue en route | `CHANGELOG.md` 12 août |
+
+**Ce qu'il faut faire, dans cet ordre :**
+
+1. **Lui demander deux choses**, avant toute hypothèse : *depuis combien de
+   temps la page était-elle ouverte ?* et *est-ce qu'un rechargement répare ?*
+   Si recharger répare, la cause est ici — inutile de chercher ailleurs.
+2. **Reproduire sa séquence, pas la nôtre.** Les suites ouvrent une page et
+   agissent dans la seconde ; lui laisse passer du temps.
+   `npx tsx scripts/eprouver-page-vieillie.mts` fait exactement cela : ouvrir,
+   redémarrer le serveur, agir.
+3. **Chercher ce qui est fabriqué à la construction** dans le chemin en cause —
+   identifiant d'action serveur, nom de fichier de code, réponse attendue d'un
+   aller-retour tenu ouvert.
+
+**La règle qui en découle, et qui vaut d'avance :** tout ce qu'on déclenche
+depuis un écran où l'on STATIONNE doit passer par une adresse stable (une URL),
+et ne jamais dépendre d'une seule réponse tenue ouverte. Voir `ARCHITECTURE.md`
+§65.
 
 ---
 
@@ -130,6 +176,35 @@ la bonne.
 2. **Ne jamais dire « c'est livré » sans dire OÙ.** Une branche poussée n'est pas
    une application mise à jour. Tant que le travail n'est pas sur la branche que
    son espace suit, il n'existe pas pour lui.
+
+## Le 12 août : deux défauts sur une seule capture
+
+**« Je ne peux pas envoyer mon devis, ni par SMS ni par mail. »** La feuille
+d'envoi affichait *« Stockage local sélectionné en production — configuration
+refusée »*. `src/server/storage/index.ts` ne regardait que `NODE_ENV`, alors que
+le banc **sert une version bâtie** et que `next start` impose
+`NODE_ENV=production` sans rien déployer. La configuration connaissait la
+distinction (`bancDEssai`) ; cette barrière-là l'ignorait.
+
+**La leçon, plus large que le correctif :** son commentaire affirmait « le module
+d'environnement refuse déjà… », ce qui était FAUX sur le banc. Une barrière qui
+se croit redondante et ne l'est plus est invisible — personne ne relit une
+duplication supposée fidèle. `CLAUDE.md` §3 : jamais de règle dupliquée.
+
+**« Le bouton, ce n'est pas le même. »** La feuille d'envoi dessinait son bouton
+à la main. **Une action principale dessinée sur place échappe à toute décision
+d'ensemble.** Avant de dire « le bouton est partout », chercher les boutons
+peints à la main :
+
+```sh
+grep -rn "backgroundColor: colors.rust" src/app src/components --include="*.tsx"
+```
+
+**Et le trou du script de capture :** `capture-bouton-partout.mjs` parcourt des
+ADRESSES. Une feuille qui monte sur un geste n'en a pas — elle était donc hors
+de son champ, et le compte « dix-sept écrans » ne comptait que ce qu'il savait
+atteindre. Les conversions restantes sont listées dans `TODO.md` §0 octies, non
+faites d'office : sa règle est *« montre-moi avant de faire »*.
 
 ## Ce qui vient d'être terminé
 
