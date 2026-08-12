@@ -182,13 +182,26 @@ manques qu'il avait signalés le 10 août (`TODO.md` §8, `ARCHITECTURE.md` §67
 **Cinq choses à savoir avant d'y toucher :**
 
 1. **Le troisième manque est ENCORE OUVERT, et rien ne doit être codé dessus.**
-   Il veut « Ouvrir le SMS tout prêt » **ovale**. Deux variantes l'attendent
-   dans `docs/maquettes/30-le-bouton-de-la-facture.html` — A, la capsule des
-   dix-sept autres écrans ; B, la même cernée d'un filet. **Ce qu'il faut lui
-   dire en même temps :** sa demande date du 10 août, quand tous les boutons
-   étaient carrés ; depuis, il a lui-même choisi la capsule « partout ». Choisir
-   A ne rouvre donc **aucune** décision — c'est un rattrapage, pas un
-   changement de charte.
+   Il veut « Ouvrir le SMS tout prêt » **ovale**. Deux planches l'attendent :
+   `docs/maquettes/30-le-bouton-de-la-facture.html` (deux dessins immobiles) et
+   `docs/maquettes/31-le-bouton-de-la-facture-a-lessai.html` — **cinq gestes
+   qui se pressent**, demandés le 12 août : la capsule nue, la lueur, le
+   cachet, l'encre, le trait. **Ce qu'il faut lui dire en même temps :** sa
+   demande date du 10 août, quand tous les boutons étaient carrés ; depuis, il
+   a lui-même choisi la capsule « partout ». Choisir la capsule ne rouvre donc
+   **aucune** décision — c'est un rattrapage, pas un changement de charte. Et
+   **le cachet est la seule proposition qui ne repose pas sur un goût** : c'est
+   le geste de « Nouveau chantier », donc un vocabulaire partagé.
+
+   **Un piège de MESURE qui a failli faire livrer un geste mort**, et qui
+   resservira à chaque maquette animée : `locator.screenshot()` attend que
+   l'élément soit **stable**, c'est-à-dire que l'animation soit finie — il
+   photographie donc toujours l'après, jamais le pendant. Passer par
+   `page.screenshot({ clip })`. Et surtout : **le contrôle de la lueur est
+   passé au vert deux fois sur un geste que l'œil ne voyait jamais** (opacité
+   et transform étaient irréprochables ; la lumière traversait le bouton en
+   quatre-vingts millisecondes). Ce qu'il faut mesurer, c'est **combien de
+   temps** une chose est visible, pas qu'elle bouge.
 2. **Ce bouton était passé au travers parce qu'il est peint à la main dans
    l'écran** — même cause que la feuille d'envoi du devis (§66). Devant un
    bouton qui « n'est pas le même », chercher d'abord s'il est dessiné sur

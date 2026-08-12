@@ -958,9 +958,21 @@ une ligne de mémoire.
    PDF s'ouvrait alors dans un onglet sans rien enregistrer.
 2. **« Ouvrir le SMS tout prêt » est carré**, alors qu'il le veut **ovale comme
    tous les autres**. — **EN ATTENTE DE SON CHOIX, rien n'est codé**
-   (`CLAUDE.md` §3 bis). Deux variantes l'attendent dans
-   `docs/maquettes/30-le-bouton-de-la-facture.html` : **A**, la capsule exacte
-   des dix-sept autres écrans ; **B**, la même capsule cernée d'un filet.
+   (`CLAUDE.md` §3 bis). Deux planches l'attendent :
+
+   - `docs/maquettes/30-le-bouton-de-la-facture.html` — deux dessins immobiles :
+     **A**, la capsule exacte des dix-sept autres écrans ; **B**, la même
+     capsule cernée d'un filet ;
+   - `docs/maquettes/31-le-bouton-de-la-facture-a-lessai.html` — **cinq gestes
+     qui se pressent pour de vrai**, demandés le 12 août : *« plusieurs versions
+     cliquables et dynamiques […] une appli hyper luxe et moderne »*. A la
+     capsule nue, B la lueur qui traverse la laque, C le cachet qui tourne et
+     sème l'or, D l'encre qui remplit, E le trait qui s'ouvre. Éprouvée au doigt
+     par `scripts/verifier-maquette-bouton-facture.mjs`.
+
+   **C est la seule qui ne repose pas sur un goût** : c'est le geste de
+   « Nouveau chantier », et les deux écrans partageraient enfin le même
+   vocabulaire. À dire s'il hésite.
 
    **Ce qu'il faut lui dire, et qui a changé depuis sa demande :** le 10 août,
    tous les boutons étaient à 5 px de rayon et « ovale » aurait voulu dire

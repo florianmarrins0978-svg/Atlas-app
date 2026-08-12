@@ -9,6 +9,35 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### Cinq boutons de facture qui se pressent pour de vrai
+
+**Sa demande :** *« sors-moi une maquette avec plusieurs versions cliquables et
+dynamiques. Tout en gardant à l'esprit que c'est une appli hyper luxe et
+moderne. »* — `docs/maquettes/31-le-bouton-de-la-facture-a-lessai.html`.
+
+Cinq gestes qui **changent de nature** plutôt que de décliner un même objet :
+la capsule nue, la lueur qui traverse la laque, le cachet qui tourne et sème
+onze grains d'or, l'encre qui remplit le fond, le trait qui s'ouvre. Chacun
+respecte les quatre règles payées par « Nouveau chantier » — enfoncement
+immédiat, second appui ignoré, mouvement réduit honoré, libellé stable.
+**Rien n'est codé** : `src/` est intact, c'est sa règle.
+
+**Deux pièges de mesure, et le second vaut d'être retenu.**
+
+`locator.screenshot()` attend que l'élément soit **stable** — donc que
+l'animation soit finie. Il montrait l'après, jamais le pendant, et la lueur
+paraissait morte.
+
+Surtout : **le contrôle de cette lueur est passé au vert deux fois sur un geste
+que l'œil ne voyait jamais.** Il exigeait « opacité > 0 et transform ≠
+identité » — vrai même quand la bande est entièrement hors du bouton — puis
+« la bande est dedans à mi-geste », vrai aussi de la version fautive, qui se
+trouvait passer là au bon instant. La courbe d'accélération faisait traverser
+la lumière en quatre-vingts millisecondes. Ce qui se mesure désormais, c'est
+**combien de temps** elle est visible : 240 ms, contre 180 exigées. Le défaut a
+été trouvé en REGARDANT une capture, pas en lisant un voyant vert — troisième
+fois que cela arrive dans ce dépôt.
+
 ### La facture part enfin par e-mail, et se télécharge
 
 **Trois manques signalés par le patron le 10 août** (`TODO.md` §8), dont deux
