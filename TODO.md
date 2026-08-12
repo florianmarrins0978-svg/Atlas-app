@@ -27,6 +27,35 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 vicies. Le badge de Next recouvre son onglet « Chantiers »
+
+**Mesuré le 12 août 2026**, en cherchant pourquoi la CI virait au rouge six
+fois de suite sur `test-rien-de-recouvert-e2e.ts`.
+
+Le badge de développement de Next — celui qui affiche « 1 Issue », et par lequel
+le patron a trouvé l'erreur d'hydratation de Safari — se pose **en bas à
+gauche**, exactement sur l'onglet « CHANTIERS » (mesuré : l'onglet occupe
+x 14→105, y 632→654 ; le badge, 56 px dans le coin, le recouvre). Il
+n'apparaît que lorsqu'il a quelque chose à signaler — d'où une CI rouge par
+intermittence, et une suite verte ici où rien n'était signalé.
+
+**La suite l'écarte désormais nommément** : ce badge n'existe pas dans la
+version bâtie, et un contrôle qui échoue au hasard apprend à ignorer le rouge.
+Le témoin vérifie qu'un vrai recouvrement est toujours attrapé.
+
+**Mais chez lui, le problème est réel** : son banc sert le mode développement,
+donc le badge est sur son écran, sur sa navigation.
+
+Trois pistes, aucune tranchée — et aucune bonne telle quelle :
+
+- le **déplacer** (`devIndicators: { position }`) : les deux coins du bas sont
+  pris par la barre d'onglets, et sur l'accueil les deux coins du haut portent
+  déjà un bouton. Mesuré, pas supposé ;
+- l'**éteindre** (`devIndicators: false`) : on perdrait le « 1 Issue » — or
+  c'est par lui qu'il a signalé la panne de Safari. Mauvais échange ;
+- faire **servir une version bâtie** à son banc, où le badge n'existe pas. C'est
+  probablement la bonne réponse, et elle dépasse ce point.
+
 ### 0 nonies. L'écran de connexion est resté dans l'ancienne identité
 
 **Vu en capture le 12 août 2026**, en vérifiant que les boutons arrondis
