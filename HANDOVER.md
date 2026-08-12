@@ -228,6 +228,25 @@ après (la carte gardée, sans carte, le sceau, la ligne d'imprimé). **Ne rien
 poser dans `src/app/login/` avant qu'il ait désigné laquelle**, sa règle du
 11 août.
 
+**Il a déjà tranché la mise en page, le 12 août au soir :** la **4** (les champs
+en ligne d'imprimé), **sans le titre « Connexion » ni la sous-ligne**, avec **le
+sceau et ATLAS de la 3** au-dessus. Ce qui reste ouvert est **l'animation de la
+marque à l'entrée** — six propositions dans
+`docs/maquettes/33-le-logo-qui-sanime.html`, son numéro attendu.
+
+**Trois choses à ne pas défaire dans cette maquette-là :**
+
+1. **`pointer-events:none` sur `.conn` une fois entré.** Les deux écrans
+   occupent la même case de grille ; un écran à `opacity:0` continue
+   d'intercepter le doigt, et « Recommencer » ne répondait pas. Invisible sur
+   toute capture.
+2. **La demi-seconde est un plancher, pas une attente.** Voir `TODO.md`
+   §0 nonies : au moment de coder, décider ce que fait l'animation quand le
+   serveur tarde. Les six bouclent dans la maquette, exprès.
+3. **`scripts/verifier-maquette-logo.mjs` doit rester joué** après toute
+   retouche : il éprouve les douze écrans (fichier seul et page unique)
+   JavaScript coupé, et il sait échouer.
+
 **Ce qui ne dépend PAS de son choix, et qui part avec n'importe laquelle :**
 
 1. **Les champs passent à 16 px.** Ils sont en 15, et en dessous de 16 **iOS

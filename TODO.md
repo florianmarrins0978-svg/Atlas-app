@@ -46,6 +46,18 @@ couleur en dur.
 **Non fait :** il n'a pas demandé cet écran, et sa règle est *« montre-moi avant
 de faire »*. Lui montrer une maquette avant/après, puis appliquer.
 
+**Il a choisi, et demandé une suite le 12 août 2026 au soir :** la proposition 4
+**sans son titre ni sa sous-ligne**, avec **le sceau et ATLAS du modèle 3**, plus
+**une animation de la marque d'une demi-seconde à l'entrée**. Six animations lui
+sont proposées dans `docs/maquettes/33-le-logo-qui-sanime.html` — **en attente de
+son numéro**. Rien n'est encore posé.
+
+**Ce qu'il faudra trancher avec lui au moment de coder** (écrit sur la maquette) :
+la demi-seconde est un **plancher**, pas la durée de l'attente. Le serveur répond
+quand il répond ; l'animation ne doit ni être coupée en son milieu, ni se figer
+si la réponse tarde. Les propositions 3, 4 et 6 bouclent d'elles-mêmes ; les 1, 2
+et 5 se dessinent d'un bout à l'autre et demandent une décision explicite.
+
 **Maquette livrée le 12 août 2026 — `docs/maquettes/32-l-ecran-de-connexion.html`**
 (« oui, fais-moi une maquette avant/après »). L'avant reproduit, puis quatre
 après : la carte gardée, sans carte, le sceau, la ligne d'imprimé. **En attente

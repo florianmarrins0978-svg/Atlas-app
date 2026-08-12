@@ -210,6 +210,12 @@ const MAQUETTES = [
     famille: "La dernière porte",
     quoi: "Le seul écran resté dans l’identité d’avant le 3 août. L’avant, puis quatre après : la carte gardée, sans carte, le sceau, la ligne d’imprimé. Un bouton montre le refus de connexion sur les cinq écrans à la fois.",
   },
+  {
+    fichier: "33-le-logo-qui-sanime.html",
+    titre: "Le logo qui s’anime",
+    famille: "La dernière porte",
+    quoi: "La proposition 4 sans son titre, le sceau et ATLAS au-dessus, et la marque qui s’anime une demi-seconde avant d’entrer. Ça s’essaie : on appuie sur « Entrer », l’application arrive. Six animations, l’écran étant identique partout.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
@@ -392,6 +398,14 @@ function lire(maquette, indice) {
 
   for (const id of IDS_A_PREFIXER) {
     corps = corps.replaceAll(`id="${id}"`, `id="s${numero}-${id}"`);
+    // **Et le `for` du libellé avec, sinon la case ne se coche plus.** Une
+    // maquette sans script peut dépendre d'un identifiant tout autant qu'une
+    // autre : `<label for="g1">` sur `<input id="g1">` est ce qui rend une
+    // bascule ou un bouton utilisable sans JavaScript. Préfixer l'un sans
+    // l'autre laisse une page qui s'affiche parfaitement et ne répond à rien —
+    // la pire des pannes, parce qu'aucune capture ne la montre. Trouvé le
+    // 12 août 2026 sur la maquette du logo, par le contrôle et non à l'œil.
+    corps = corps.replaceAll(`for="${id}"`, `for="s${numero}-${id}"`);
   }
 
   return {

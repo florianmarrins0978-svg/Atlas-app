@@ -101,6 +101,41 @@ qui pourra le relever.
 
 ---
 
+### L'entrée dans Atlas : six façons d'animer la marque, et un libellé qui ne cochait plus rien
+
+**Sa demande, après la maquette 32 :** *« je veux la 4 sans le Connexion et vos
+id. Tu rajoutes le nom Atlas comme sur le modèle 3, et tu me mets un logo
+dynamique qui s'enclenche au moment où on valide l'adresse et le mdp, pendant
+0,5 s avant d'entrer dans l'appli. […] le reste tu touches pas, que le logo qui
+change. »*
+
+`docs/maquettes/33-le-logo-qui-sanime.html` — **l'écran est identique sur les
+six**, seule l'animation change : le cercle qui se ferme, la feuille qui pousse,
+le tour, le battement et l'onde, l'or qui monte, le sceau qui s'imprime. Elle
+**s'essaie** : on tape, on appuie, on entre, « ↺ Recommencer » remet l'écran —
+et **sans un seul script**, la capsule étant un `<label>` qui coche une case.
+
+**Ce qu'il faudra trancher avec lui avant de coder**, et qui est écrit sur la
+maquette : la demi-seconde est un *plancher*, pas une durée d'attente. Le
+serveur répond quand il répond, et l'animation doit pouvoir continuer au-delà —
+une marque figée deux secondes ressemble à une application plantée. Les six
+bouclent, exprès, pour qu'il en juge aussi.
+
+**Deux défauts trouvés par le contrôle, aucun visible à l'œil :**
+
+1. **L'écran de connexion effacé continuait d'intercepter le doigt.** Les deux
+   écrans occupent la même case ; sans `pointer-events:none`, « Recommencer »
+   ne répondait pas — l'appui allait dans la page invisible. C'est la famille
+   des trois seuls défauts que ce dépôt n'a jamais su attraper autrement.
+2. **`fusionner-maquettes.mjs` préfixait les `id` sans préfixer les `for`.** Un
+   `<label for="g1">` restait donc orphelin dans la page unique : la page
+   s'affichait parfaitement et ne répondait à rien. Corrigé pour toutes les
+   maquettes, présentes et futures.
+
+`scripts/verifier-maquette-logo.mjs` tient les trois promesses — ça s'anime, on
+entre, on recommence — sur les douze écrans (fichier seul **et** page unique),
+JavaScript coupé. Éprouvé rouge en retirant l'animation de la proposition 3.
+
 ### L'écran de connexion : une maquette avant/après, et un défaut trouvé en la dessinant
 
 **Sa réponse à l'offre de la veille :** *« oui, fais-moi une maquette »*.
