@@ -111,9 +111,17 @@ async function main() {
   // automatique — mais rien ne remplace de le constater, et une régression ici
   // rendrait muet le bouton « appeler » de la fiche du client.
   await cas("les `tel:` écrits par Atlas restent des liens", async () => {
+    // **`domcontentloaded`, et non l'événement `load` par défaut.** Ce morceau
+    // de page ne charge rien du tout ; attendre `load` fait pourtant attendre
+    // que le RÉSEAU de l'onglet se taise — or le serveur de développement garde
+    // une liaison ouverte pour le rechargement à chaud, et il ne se tait jamais.
+    // Le contrôle a dépassé les 45 secondes en pleine batterie le 12 août 2026,
+    // et fut vert seul l'instant d'après : un contrôle qui échoue au hasard
+    // apprend à ignorer le rouge, et l'on perd la suite entière avec lui.
     await page.setContent(
       '<meta name="format-detection" content="telephone=no,address=no,email=no">' +
-        '<a href="tel:0612345678" id="temoin">06 12 34 56 78</a>'
+        '<a href="tel:0612345678" id="temoin">06 12 34 56 78</a>',
+      { waitUntil: "domcontentloaded" }
     );
     const href = await page.locator("#temoin").getAttribute("href");
     assert.equal(href, "tel:0612345678", "un `tel:` explicite a été altéré par le refus");
