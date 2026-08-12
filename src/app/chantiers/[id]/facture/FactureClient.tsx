@@ -267,7 +267,7 @@ export default function FactureClient({
                 <a
                   href={adresseMessagerie}
                   onClick={() => marquerDepartMessagerie("facture", initialFacture.clientNom ?? "")}
-                  className="block rounded-[4px] py-3 text-center text-[15px] font-medium"
+                  className="block rounded-full py-3 text-center text-[15px] font-medium"
                   style={{ backgroundColor: colors.rust, color: colors.cream }}
                 >
                   Ouvrir le {canal === "sms" ? "SMS" : "e-mail"} tout prêt →

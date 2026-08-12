@@ -528,6 +528,28 @@ ne répare pas la panne : il fait qu'elle se désigne. Et la note captée reste
 **perdue** quand l'envoi échoue (`TODO.md` §0).
 
 ---
+### Le contrôle des boutons ronds ne voyait presque rien
+
+**Trouvé en lui livrant un bouton carré de plus.** `test-boutons-arrondis.ts`,
+écrit le 12 août après sa demande — *« remplace tous les boutons rectangulaires
+par les boutons arrondis »* —, cherchait la forme avec une classe niée `[^>]`.
+
+Or **la flèche d'une fonction porte un chevron**. Tout bouton écrit
+`onClick={() => …}` — c'est-à-dire l'immense majorité — passait donc sous le
+radar. Le contrôle avait rougi une fois, sur le seul bouton dépourvu de
+`onClick`, et en laissait passer **douze** à côté : quatre dans le devis dicté,
+**trois sur la feuille d'envoi elle-même** — l'écran précis où il avait vu « un
+bouton carré à côté d'une capsule » —, un sur la facture, un sur la note
+vocale, deux sur l'assistant, un sur le calendrier.
+
+Un contrôle qui attrape le cas rare et manque le cas courant est pire
+qu'aucun : il fait croire que c'est propre. Le motif accepte désormais `=>`, et
+les treize boutons portent la capsule. Sa règle du 12 août n'était appliquée
+qu'à moitié ; elle l'est maintenant.
+
+Le contrôle a été confronté à l'état qu'il prétend détecter — un bouton
+rectangulaire témoin, avec et sans flèche.
+
 ### L'écran du devis parti est codé — « le signet d'or »
 
 *« Code le 5. »* Retenu après onze blocs mesurés et cinq propositions

@@ -388,7 +388,7 @@ function AvertissementModification({
           type="button"
           onClick={onConfirmer}
           disabled={enCours}
-          className="mt-6 block w-full rounded-[4px] py-3 text-center text-[15px] font-medium text-white disabled:opacity-50"
+          className="mt-6 block w-full rounded-full py-3 text-center text-[15px] font-medium text-white disabled:opacity-50"
           style={{ backgroundColor: colors.rust }}
         >
           {enCours ? "Ouverture…" : "Modifier quand même"}

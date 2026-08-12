@@ -5126,3 +5126,20 @@ Et quand un contrôle tombe sur un changement voulu, la question n'est pas
 pas obliger à regénérer un devis*. Réécrit ainsi, il éprouve le geste de relance
 et le nombre de versions en base — et il ne dépend plus de rien qui puisse
 changer sans qu'on le veuille.
+### Une classe niée `[^>]` ne traverse pas une flèche
+
+**Le 12 août 2026 au soir**, `test-boutons-arrondis.ts` laissait passer douze
+boutons carrés sur treize. Son motif — `<(?:button|a)\b[^>]*?rounded-\[…\]` —
+s'arrête au premier chevron, **et `() =>` en porte un**. Tout bouton muni d'un
+`onClick` lui était donc invisible.
+
+C'est le piège général, et il vaut au-delà de ce contrôle : **en JSX, une classe
+niée sur `>` ne délimite pas une balise.** Les accolades y contiennent du
+JavaScript, donc des flèches, des comparaisons, des génériques. Écrire
+`(?:[^>]|=>)` couvre le cas courant ; au-delà, il faut analyser, pas filtrer.
+
+**Et la leçon qui compte davantage :** ce contrôle avait déjà rougi une fois, sur
+le seul bouton sans `onClick`. Il paraissait donc fonctionner. Un contrôle
+confronté à un unique cas — surtout s'il est atypique — n'a rien prouvé : il faut
+l'éprouver sur le cas COURANT, celui qui représente la population qu'il surveille.
+Ici, le témoin porte désormais les deux formes, avec flèche et sans.
