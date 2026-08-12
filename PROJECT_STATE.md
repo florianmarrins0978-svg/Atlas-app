@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-10 · branche `claude/migrate-app-atlas-zz31ac`
+**Dernière mise à jour :** 2026-08-11 · branche `claude/new-session-a1l4v9`
 · dernière migration `drizzle/0033_identifiants_google_par_entreprise.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -100,6 +100,21 @@ seule avec quinze outils.
 | Purge de l'audio après transcription réussie | `src/server/retention.ts` |
 | Export des données d'un client | `src/server/repositories/donnees-client.ts` |
 | Effacement d'un client, respectant la conservation légale | idem |
+
+### L'écran d'erreur qui ne menait nulle part (11 août 2026)
+
+Un serveur redémarré sous un onglet resté ouvert, et les morceaux de code
+changent de nom. Le patron a lu « Failed to load chunk » avec pour seul recours
+un « Réessayer » qui refait le même rendu, avec les mêmes adresses mortes.
+
+| Brique | Où c'est |
+|---|---|
+| La décision : reconnaître, recharger une fois, savoir s'arrêter | `src/lib/reprise-erreur.ts` |
+| Le corps commun des neuf écrans d'erreur | `src/components/atlas/CorpsErreur.tsx` |
+| Contrôles purs, dont son message exact et les cinq formulations de navigateurs | `scripts/test-reprise-erreur.ts` |
+| La panne rejouée dans un vrai navigateur, à l'écran du patron | `scripts/test-reprise-morceau-e2e.ts` |
+| La capture, pour regarder l'écran | `scripts/capture-reprise-morceau.mts` |
+| Le pourquoi, et ce qui n'est pas couvert | `ARCHITECTURE.md` §63 |
 
 ### La session fantôme (10 août 2026)
 

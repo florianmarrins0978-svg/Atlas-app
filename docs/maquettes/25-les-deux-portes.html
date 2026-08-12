@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Les deux portes, côte à côte</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    LES DEUX PORTES — six façons de montrer les deux sorties en même temps
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande du 11 août 2026, au soir : « on ne voit que Créer le chantier,
+    on ne voit pas devis à la main ». C'est juste — le lien en capitales d'or
+    est sous le bouton, dans la zone où l'œil ne revient pas après avoir trouvé
+    ce qu'il cherchait. Et sur son écran, la barre du navigateur mange le bas.
+
+    AUCUN SCRIPT DANS CETTE PAGE. C'est la vraie cause de « Je ne peux pas
+    ouvrir ça », dit trois fois : son lecteur n'exécute pas le JavaScript, et
+    les maquettes qui engendraient leurs écrans en script lui rendaient une page
+    blanche. Ce qui bouge ici bouge en CSS pur — l'appui du doigt, et la bascule
+    de la proposition 4, faite avec des cases à cocher natives. Tout fonctionne
+    sur un iPhone, hors ligne, sans rien installer.
+
+    La charte est ORIGINE, celle que l'application porte déjà : crème, encre,
+    vert pin pour ce qu'on FAIT, or pour ce qu'on LIT. Les valeurs sont celles
+    de `src/lib/design-tokens.ts`, pas des approximations à l'œil.
+
+    Les écrans font 390 px de large — la largeur réelle de son téléphone.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:1240px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 18px;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 10px;color:var(--gris);font-size:15px}
+  .intro .note{font-size:13.5px}
+
+  .grille{display:flex;flex-wrap:wrap;gap:56px 44px;justify-content:center;align-items:flex-start;margin-top:46px}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:18px;max-width:412px}
+  .legende{text-align:center;max-width:390px}
+  .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+
+  /* ── Le téléphone ────────────────────────────────────────────────────── */
+  .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+
+  /* L'écran garde la charte Origine quel que soit le thème de la page :
+     l'application est claire, et la montrer en sombre serait montrer un écran
+     qui n'existe pas. */
+  .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-or-clair:#C9A15E; --e-papier:#ece9e1;
+    --e-trait:rgba(28,28,26,.12);
+    width:390px;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:26px 0 30px}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+  .libelle{text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600;color:var(--e-gris)}
+
+  /* Le haut de formulaire, identique partout : c'est le BAS qui change, et
+     seul le bas doit se comparer. */
+  .champ{margin:0 24px 16px}
+  .champ .val{margin-top:7px;border-radius:4px;background:var(--e-plage);
+              padding:14px 15px;font-size:16px;color:var(--e-gris)}
+  .ajout{margin:2px 24px 0;font-size:14px;font-weight:500;color:var(--e-pin)}
+  .actions{margin:26px 24px 0}
+
+  /* ── Ce qui bouge, et qui bouge sans script ──────────────────────────── */
+  .p,.p *{transition:background-color .18s ease,color .18s ease,border-color .18s ease,
+          transform .12s ease,box-shadow .18s ease}
+  .p:active{transform:scale(.985)}
+
+  /* ═══ 1 — LA PLAQUE PARTAGÉE ═══════════════════════════════════════════
+     Un seul objet, fendu d'un cheveu d'or. Ce n'est pas « deux boutons » :
+     c'est une plaque, comme une plaque de porte gravée, et le regard la prend
+     d'un coup. */
+  .plaque{display:flex;border-radius:5px;overflow:hidden}
+  .plaque .gauche{flex:1 1 62%;background:var(--e-pin);color:#faf9f5;
+                  padding:17px 8px;text-align:center;font-family:ui-serif,Georgia,serif;font-size:18px}
+  .plaque .fil{width:1px;background:var(--e-or)}
+  .plaque .droite{flex:0 0 38%;background:var(--e-papier);color:var(--e-pin);
+                  padding:17px 8px;text-align:center;font-family:ui-serif,Georgia,serif;font-size:18px}
+  .plaque .droite small{display:block;margin-top:3px;color:var(--e-or)}
+  .plaque:active .droite{background:var(--e-or);color:#faf9f5}
+  .plaque:active .droite small{color:#faf9f5}
+
+  /* ═══ 2 — LES DEUX PLAQUES JUMELLES ════════════════════════════════════
+     Deux blocs distincts, de même hauteur, séparés de dix pixels. La
+     hiérarchie ne se joue plus sur la taille mais sur la matière : l'un est
+     plein, l'autre est cerné d'un trait d'or. */
+  .jumelles{display:flex;gap:10px}
+  .jumelles>*{flex:1;border-radius:5px;padding:16px 6px;text-align:center;
+              font-family:ui-serif,Georgia,serif;font-size:17.5px;line-height:1.25}
+  .jumelles .plein{background:var(--e-pin);color:#faf9f5}
+  .jumelles .cerne{background:transparent;color:var(--e-pin);
+                   box-shadow:inset 0 0 0 1px var(--e-or)}
+  .jumelles .cerne .sous{display:block;margin-top:2px;font-family:inherit;font-size:12px;color:var(--e-or)}
+  .jumelles:active .cerne{background:var(--e-papier)}
+
+  /* ═══ 3 — LE DIPTYQUE ══════════════════════════════════════════════════
+     Deux cartes hautes, chacune avec son intitulé en capitales, sa ligne en
+     serif et sa flèche en bas. C'est la proposition la plus « papeterie » :
+     elle donne aux deux chemins le même soin, sans leur donner le même poids. */
+  .diptyque{display:flex;gap:10px}
+  .diptyque .carte{flex:1;border-radius:5px;padding:15px 15px 13px;
+                   display:flex;flex-direction:column;justify-content:space-between;min-height:118px}
+  .diptyque .a{background:var(--e-pin);color:#faf9f5}
+  .diptyque .b{background:var(--e-plage);color:var(--e-encre);box-shadow:inset 0 0 0 1px var(--e-trait)}
+  .diptyque .sur{font-size:9px;letter-spacing:.3em;text-transform:uppercase;font-weight:500}
+  .diptyque .a .sur{color:var(--e-or-clair)}
+  .diptyque .b .sur{color:var(--e-or)}
+  .diptyque .quoi{margin:11px 0 0;font-family:ui-serif,Georgia,serif;font-size:19px;line-height:1.16}
+  .diptyque .fleche{margin-top:12px;text-align:right;font-size:16px}
+  .diptyque .a .fleche{color:var(--e-or-clair)}
+  .diptyque .b .fleche{color:var(--e-or)}
+  .diptyque:active .b{box-shadow:inset 0 0 0 1px var(--e-or)}
+
+  /* ═══ 4 — LA BASCULE D'OR ══════════════════════════════════════════════
+     LA SEULE QUI BOUGE VRAIMENT — et sans une ligne de JavaScript. Deux cases
+     radio natives, cachées ; le trait d'or glisse sous le mot choisi, et le
+     bouton du dessous change de libellé tout seul.
+
+     Ce qu'elle résout et que les autres ne résolvent pas : elle montre les deux
+     chemins SANS demander de choisir entre deux boutons. Le geste reste un
+     seul appui sur une seule action — ce qui était la raison de garder un lien
+     discret, le 11 août. Ici on ne perd ni la visibilité ni le geste unique. */
+  .bascule input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+  .bascule .onglets{display:flex;border-bottom:1px solid var(--e-trait);margin-bottom:16px}
+  .bascule label{flex:1;text-align:center;padding:0 0 11px;cursor:pointer;
+                 text-transform:uppercase;letter-spacing:.2em;font-size:10.5px;font-weight:600;
+                 color:var(--e-gris);border-bottom:2px solid transparent;margin-bottom:-1px;
+                 transition:color .18s ease,border-color .18s ease}
+  .bascule .bouton{border-radius:5px;background:var(--e-pin);color:#faf9f5;
+                   padding:17px 8px;text-align:center;font-family:ui-serif,Georgia,serif;font-size:18px}
+  .bascule .bouton .b2{display:none}
+  .bascule #b-dictee:checked ~ .onglets label[for="b-dictee"],
+  .bascule #b-main:checked   ~ .onglets label[for="b-main"]{color:var(--e-encre);border-bottom-color:var(--e-or)}
+  .bascule #b-main:checked ~ .bouton .b1{display:none}
+  .bascule #b-main:checked ~ .bouton .b2{display:inline}
+  .bascule .bouton:active{transform:scale(.985)}
+  /* La page unique ne peut pas porter deux fois le même identifiant : cette
+     seconde bascule sert à MONTRER l'état « à la main » déjà choisi, sans
+     demander au lecteur de toucher quoi que ce soit. */
+  .bascule #c-dictee:checked ~ .onglets label[for="c-dictee"],
+  .bascule #c-main:checked   ~ .onglets label[for="c-main"]{color:var(--e-encre);border-bottom-color:var(--e-or)}
+  .bascule #c-main:checked ~ .bouton .b1{display:none}
+  .bascule #c-main:checked ~ .bouton .b2{display:inline}
+
+  /* ═══ 5 — LE SCEAU ═════════════════════════════════════════════════════
+     La sortie de secours devient un cachet posé au bout de la barre : un carré
+     cerné d'or, avec une plume. C'est la proposition la plus luxueuse, et la
+     plus risquée — un pictogramme seul ne se lit pas toujours, d'où les trois
+     lettres sous la plume. */
+  .sceau{display:flex;gap:9px;align-items:stretch}
+  .sceau .barre{flex:1;border-radius:5px;background:var(--e-pin);color:#faf9f5;
+                padding:17px 8px;text-align:center;font-family:ui-serif,Georgia,serif;font-size:18px}
+  .sceau .cachet{flex:0 0 78px;border-radius:5px;box-shadow:inset 0 0 0 1px var(--e-or);
+                 display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+                 color:var(--e-pin)}
+  .sceau .cachet .mot{font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--e-or);font-weight:600}
+  .sceau:active .cachet{background:var(--e-papier)}
+
+  /* ═══ 6 — LA BALANCE ═══════════════════════════════════════════════════
+     Deux moitiés strictement égales, séparées par un simple blanc, et un fin
+     filet d'or qui court sous les deux pour les relier. Le plus sobre : rien
+     n'est cerné, rien n'est plein à droite — la couleur seule fait la
+     différence, et le filet dit que ce sont deux issues du même geste. */
+  .balance .paire{display:flex;gap:12px}
+  .balance .paire>*{flex:1;border-radius:5px;padding:16px 6px;text-align:center;
+                    font-family:ui-serif,Georgia,serif;font-size:17.5px}
+  .balance .a{background:var(--e-pin);color:#faf9f5}
+  .balance .b{background:var(--e-plage);color:var(--e-pin)}
+  .balance .filet{height:1px;background:var(--e-or);margin:12px 34px 0;opacity:.75}
+  .balance:active .b{background:var(--e-papier)}
+
+  .pied{max-width:66ch;margin:66px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        color:var(--gris);font-size:13.6px;line-height:1.7}
+  .pied h3{margin:0 0 10px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--or)}
+  .pied ul{margin:0;padding-left:1.1em}
+  .pied li{margin-bottom:7px}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Atlas · 11 août 2026</p>
+    <h1>Les deux portes, enfin côte à côte</h1>
+    <p>« On ne voit que <em>Créer le chantier</em>, on ne voit pas <em>devis à la
+      main</em>. » Six façons de montrer les deux d'un seul coup d'œil, sans que
+      l'écran devienne un tableau de bord.</p>
+    <p class="note">Rien à installer, rien à ouvrir : <strong>appuyez sur les
+      propositions</strong>, elles répondent. La n° 4 bascule pour de bon —
+      touchez ses deux onglets.</p>
+  </div>
+
+  <div class="grille">
+
+    <!-- ─────────────────────────────── 1 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 1</h2>
+        <p class="titre">La plaque partagée</p>
+        <p>Un seul objet, fendu d'un cheveu d'or. Le regard le prend d'un coup,
+          comme une plaque de porte gravée — et les deux issues y sont
+          lisibles ensemble.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <div class="p plaque">
+            <div class="gauche">Créer le chantier&nbsp;→</div>
+            <div class="fil"></div>
+            <div class="droite">Devis<small>à la main</small></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 2 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 2</h2>
+        <p class="titre">Les plaques jumelles</p>
+        <p>Deux blocs de même hauteur, dix pixels d'écart. La hiérarchie ne se
+          joue plus sur la taille mais sur la matière : l'un est plein, l'autre
+          est cerné d'un trait d'or.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <div class="p jumelles">
+            <div class="plein">Créer le<br>chantier&nbsp;→</div>
+            <div class="cerne">Le devis<span class="sous">à la main&nbsp;→</span></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 3 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 3</h2>
+        <p class="titre">Le diptyque</p>
+        <p>Deux cartes hautes, chacune avec son intitulé en capitales, sa ligne
+          en serif et sa flèche. La plus « papeterie » : le même soin aux deux
+          chemins, sans leur donner le même poids.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <div class="p diptyque">
+            <div class="carte a">
+              <div class="sur">Le plus souvent</div>
+              <p class="quoi">Créer le chantier</p>
+              <div class="fleche">→</div>
+            </div>
+            <div class="carte b">
+              <div class="sur">Je sais déjà</div>
+              <p class="quoi">Le devis à la main</p>
+              <div class="fleche">→</div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 4 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 4 · elle bouge</h2>
+        <p class="titre">La bascule d'or</p>
+        <p>Deux onglets, un filet d'or qui glisse dessous, et <strong>un seul</strong>
+          bouton dont le libellé change. Les deux chemins se voient sans qu'il
+          faille choisir entre deux boutons. <strong>Touchez-la.</strong></p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bascule" data-bascule="1">
+          <input type="radio" name="porte" id="b-dictee" checked>
+          <input type="radio" name="porte" id="b-main">
+          <div class="onglets">
+            <label for="b-dictee">Je dicterai</label>
+            <label for="b-main">Je l'écris</label>
+          </div>
+          <div class="p bouton">
+            <span class="b1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="b2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 4 bis ─────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 4 · l'autre état</h2>
+        <p class="titre">La bascule, côté « je l'écris »</p>
+        <p>Le même écran, l'autre onglet retenu — pour voir les deux états sans
+          avoir à toucher. Le filet d'or a glissé, le bouton a changé de mot.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bascule" data-bascule="1">
+          <input type="radio" name="porte2" id="c-dictee">
+          <input type="radio" name="porte2" id="c-main" checked>
+          <div class="onglets">
+            <label for="c-dictee">Je dicterai</label>
+            <label for="c-main">Je l'écris</label>
+          </div>
+          <div class="p bouton">
+            <span class="b1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="b2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 5 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 5</h2>
+        <p class="titre">Le sceau</p>
+        <p>La sortie devient un cachet posé au bout de la barre, cerné d'or, avec
+          une plume. La plus luxueuse — et la plus risquée : un pictogramme seul
+          ne se lit pas toujours, d'où les trois lettres dessous.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <div class="p sceau">
+            <div class="barre">Créer le chantier&nbsp;→</div>
+            <div class="cachet">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B98B47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 20l3.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20z"></path>
+                <path d="M13.5 6.5l4 4"></path>
+              </svg>
+              <span class="mot">À la main</span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 6 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 6</h2>
+        <p class="titre">La balance</p>
+        <p>Deux moitiés strictement égales, et un filet d'or qui court dessous
+          pour les relier. Le plus sobre : rien n'est cerné, la couleur seule
+          fait la différence.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <div class="p balance">
+            <div class="paire">
+              <div class="a">Créer le<br>chantier&nbsp;→</div>
+              <div class="b">Le devis<br>à la main&nbsp;→</div>
+            </div>
+            <div class="filet"></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="pied">
+    <h3>Ce qu'il faut savoir avant de choisir</h3>
+    <ul>
+      <li><strong>Le geste ne change pas.</strong> Dans les six, « créer le
+        chantier » reste le geste évident : neuf fois sur dix, la réponse est
+        « je dicterai ». Ce qui change, c'est que l'autre porte se voit.</li>
+      <li><strong>Deux boutons à égalité font choisir tout le monde.</strong>
+        C'est la raison pour laquelle le lien discret avait été retenu le
+        11 août. Les propositions 1, 3, 5 et 6 gardent une hiérarchie ; la 2 la
+        réduit ; la <strong>4</strong> est la seule qui montre les deux sans
+        rien demander — un seul bouton, dont le mot suit l'onglet.</li>
+      <li><strong>La plume de la 5 est un pari.</strong> Un pictogramme seul se
+        lit mal quand on ne le connaît pas ; les trois lettres dessous sont ce
+        qui le sauve, et elles ne doivent pas disparaître.</li>
+      <li><strong>Le doigt.</strong> Les six respectent 44 px de hauteur utile,
+        le minimum d'Apple. La 5 est la plus étroite à droite (78 px), et reste
+        au-dessus.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

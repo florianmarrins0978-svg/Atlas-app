@@ -183,6 +183,27 @@ const MAQUETTES = [
     quoi: "Celui qu’il a gardé, et lui seul : le mot, le rond qui bat à sa droite. Onde ramenée de 1,85 à 1,42 fois le rond, rond de 46 à 38 px, gerbe de seize grains à onze.",
     retenu: true,
   },
+  {
+    fichier: "25-les-deux-portes.html",
+    titre: "Les deux portes, côte à côte",
+    famille: "Les deux portes de la création",
+    quoi: "Six façons de montrer « créer le chantier » ET « devis à la main » d’un seul coup d’œil. La 4 bascule pour de bon, sans script.",
+    retenu: true,
+  },
+  {
+    fichier: "26-la-bascule-affinee.html",
+    titre: "La bascule, affinée",
+    famille: "Les deux portes de la création",
+    quoi: "Six déclinaisons de la proposition 4 : le trait qui glisse, le point d’or, la plage, la perle, le cartouche, la bascule en pied.",
+    retenu: true,
+  },
+  {
+    fichier: "28-le-bouton.html",
+    titre: "Le bouton, huit façons",
+    famille: "Les deux portes de la création",
+    quoi: "« Trop gros, carré. » Filet, bandeau fin, plaque gravée, sceau, capsule, double filet, trait d’or, angle adouci. La capsule est retenue.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
