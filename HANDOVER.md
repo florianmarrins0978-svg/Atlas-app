@@ -185,6 +185,25 @@ variantes du même geste, ce n'est pas proposer six idées. Il l'a renvoyée d'u
 chaque proposition, et c'est ce qu'il faudra refaire si une troisième est
 demandée.
 
+**Le contact du client se saisit dans la feuille d'envoi (11 août, tard).**
+`ARCHITECTURE.md` §62. Le patron : *« l'encart qui permet d'envoyer aux clients
+par SMS, par e-mail, a disparu. »*
+
+**Trois choses à savoir avant d'y toucher :**
+
+1. **Ne jamais rétablir le renvoi « sur sa fiche ».** L'écran « Informations » a
+   quitté le tiroir du chantier le même soir : cette phrase désigne une porte
+   qui n'existe plus, et un chantier dicté (client « non renseigné ») ne pouvait
+   alors plus jamais partir. La règle vaut pour tout arrêt du parcours : **un
+   écran qui refuse d'avancer offre de lever ce qui l'arrête, ou nomme un
+   endroit qui existe.** Jamais l'un sans l'autre.
+2. **La coordonnée est écrite SUR LE CLIENT**, pas retenue pour cet envoi — même
+   information que la fiche portait. Et la feuille **rejoue la préparation**
+   après l'enregistrement : l'état vient du serveur, jamais d'un blocage effacé
+   à la main.
+3. **`devis_absent` reste un arrêt sec, et c'est juste** : aucune saisie ne le
+   lève. Ne pas l'aligner sur les deux autres par symétrie.
+
 **Les refus de note vocale disent pourquoi (11 août, tard).** Le patron voyait
 *« Impossible d'enregistrer la note pour l'instant. Réessayez. »* sans que
 personne puisse savoir ce qui s'était passé.
@@ -228,13 +247,14 @@ juste que ça slide. »*
    images par seconde, médiane 16,7 ms. Ce sont les deux suspects évidents ; les
    retirer abîmerait l'écran sans rien gagner. **Relancer la mesure avant de les
    accuser à nouveau.**
-3. **Ce qui n'a PAS pu être éprouvé ici, et qu'il faut dire** : l'élan d'un vrai
-   doigt. Le navigateur sans tête ne produit pas de lancer avec inertie — la
-   mesure porte sur le coût de rendu, pas sur la sensation du geste. Si le
-   patron trouve encore que ça accroche, le suspect suivant est le masque **sur
-   iOS**, où un cadre masqué se recompose à chaque image ; le déplacer sur
-   `.atlas-ecran` en surimpression garderait le fondu sans masquer le cadre qui
-   défile.
+3. **CONFIRMÉ SUR SON IPHONE, le soir même :** *« la fluidité de l'iPhone, ça
+   aussi, ça a été corrigé. »* Le retrait de l'accroche a suffi. La mesure faite
+   ici ne portait que sur Chromium sans tête — le navigateur ne produit pas
+   l'élan d'un vrai doigt — et ce point restait donc ouvert par honnêteté ; il
+   est clos par l'appareil lui-même. **Le `mask-image` est hors de cause, sur le
+   vrai téléphone**, et non plus seulement dans une mesure de laboratoire : ne
+   pas le déplacer « au cas où ». Le repli reste décrit dans `TODO.md` §0 bis,
+   pour une plainte NOUVELLE, pas pour celle-là.
 4. **Aucune zone qui défile ne montre sa barre, et un balayage y veille.**
    `test-aucune-barre-de-defilement-e2e.ts` parcourt douze écrans et exige
    `scrollbar-width: none` sur toute zone qui déborde vraiment. Il lit la

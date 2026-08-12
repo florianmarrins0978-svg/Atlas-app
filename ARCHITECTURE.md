@@ -4375,3 +4375,54 @@ un travail que le patron dit ne pas voir, vérifier qu'il l'a. Une commande :
 ```sh
 git show origin/main:<le fichier> | grep <la marque du travail>
 ```
+
+---
+
+## 62. Ce qui bloque un envoi se répare là où ça bloque
+
+**Le patron, le 11 août 2026 au soir :** *« l'encart qui permet d'envoyer aux
+clients par SMS, par e-mail, a disparu. »* Sa capture montre la feuille d'envoi
+réduite à une phrase — « Indiquez d'abord comment joindre ce client — par SMS ou
+par e-mail — sur sa fiche » — et un bouton grisé.
+
+**L'encart n'avait pas disparu : la porte qu'on lui désignait, si.** L'écran
+« Informations » — le seul endroit où saisir un téléphone ou un e-mail — avait
+quitté le tiroir de la fiche quelques heures plus tôt, à sa demande (« il faut
+juste photo et note vocale »). La feuille renvoyait donc vers un écran devenu
+inatteignable, et **un chantier né d'une dictée ne pouvait plus jamais partir** :
+son client reste « non renseigné » jusqu'à ce que quelqu'un le renseigne, et
+plus personne ne le pouvait.
+
+**Ce que ce défaut apprend, et qui dépasse cet écran.** Le dépôt avait déjà
+tranché ce point exact le 4 août, pour l'écran d'APRÈS l'envoi
+(`TransmettreAuClient`) : *« si la coordonnée manque, elle se saisit sur place —
+il n'existe aucun autre écran pour la renseigner, et renvoyer le patron sur la
+fiche du client l'enverrait vers une porte qui n'existe pas »*. La règle était
+juste et écrite ; elle n'avait été appliquée qu'à un seul des deux écrans. Un
+mois plus tard, le second l'a payée.
+
+**La règle, donc, et pour tout arrêt du parcours :** un écran qui refuse
+d'avancer offre de lever ce qui l'arrête, ou nomme un endroit qui existe. Jamais
+l'un sans l'autre. Un renvoi vers « sa fiche », « les réglages », « l'écran
+précédent » se périme dès que la navigation bouge — et rien ne le signale, parce
+qu'aucun test ne suit un lien écrit dans une phrase.
+
+**Ce qui est en place :**
+
+- `PreparationEnvoi` porte `clientId`, sans quoi l'écran ne peut rien réparer ;
+- `EnvoiAuClient` offre les deux canaux et le champ, puis **rejoue la
+  préparation** — l'état affiché vient toujours du serveur, jamais d'un blocage
+  qu'on aurait effacé à la main ;
+- la coordonnée est écrite **sur le client**, pas retenue pour cet envoi : c'est
+  la même information que la fiche portait, et la saisir deux fois serait la
+  saisir une fois de trop ;
+- `devis_absent` reste un arrêt sec, et c'est juste : aucune saisie ne le lève.
+
+**Pourquoi aucune suite ne l'avait vu.** Toutes créaient leur chantier **avec**
+un numéro — `test-envoi-raison-e2e` remplit le champ téléphone dès la création.
+Le chemin le plus courant chez le patron — créer, laisser le contact vide,
+envoyer — n'était emprunté par personne.
+`scripts/test-envoi-contact-sur-place-e2e.ts` l'emprunte, par l'écran, et va
+jusqu'à vérifier que la coordonnée est **rangée en base** : un écran qui
+accepterait la saisie sans la ranger serait vert à l'œil et faux — elle serait à
+ressaisir au prochain envoi. Confronté au code livré : trois rouges.
