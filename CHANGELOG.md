@@ -80,6 +80,52 @@ c'est leur mise bout à bout qui ne l'était pas.
 
 `ARCHITECTURE.md` §70.
 
+### La carte de réponse mène enfin là où est le geste
+
+**Le patron :** *« si le chantier il est accepté par le client, il faut qu'à la
+place de "ouvrir le chantier", on puisse ouvrir le devis — et le devis validé,
+pas le devis en construction. Par contre, si le devis n'est pas validé et il
+nous revient pour une modification, il faut qu'on puisse ouvrir le devis, mais
+pour pouvoir le modifier. »*
+
+Les quatre cartes menaient toutes à la fiche du chantier — **et leur propre
+texte disait déjà autre chose** : « le devis peut être repris et renvoyé ». Un
+écran qui annonce un geste et conduit ailleurs fait douter de tout le reste.
+
+Deux destinations, et ce n'est pas une préférence : c'est ce que l'application
+permet.
+
+- **Accepté** → `devis-complet`, qui affiche le devis **figé**, tel que le client
+  l'a reçu. Un devis parti est immuable (trigger
+  `empecher_modification_devis_envoye`) : c'est donc bien « le devis validé », et
+  jamais le brouillon.
+- **Correction, refus, lien périmé** → l'écran d'envoi, qui porte « Corriger et
+  renvoyer » et « Reprendre le devis ». Le mener sur le document paraîtrait plus
+  direct, mais **celui-ci refuserait sa première frappe** sans qu'il comprenne
+  pourquoi : modifier suppose de reprendre, ce qui ouvre une nouvelle version, et
+  c'est SON geste — pas le nôtre.
+
+La règle vit dans une fonction pure (`src/lib/suite-de-la-reponse.ts`), éprouvée
+sans navigateur. Mais une adresse juste ne prouve rien : un contrôle de bout en
+bout joue les deux parcours entiers — devis envoyé, réponse du client — et
+vérifie que **l'écran visé porte réellement ce que le lien promet**. Le devis
+accepté s'ouvre bien figé, sans un seul champ modifiable ; l'écran de correction
+porte bien le bouton, et le message du client avec.
+
+**Deux pièges rencontrés en écrivant ce contrôle, tous deux dans le contrôle :**
+
+1. Il cherchait la carte par le **nom du chantier** — qui figure aussi dans la
+   liste juste dessous. Il lisait donc la ligne de la liste et accusait le
+   produit d'un défaut qu'on venait de corriger. Les cartes portent maintenant
+   une étiquette de code (`data-atlas="carte-reponse"`), qui ne se réécrit pas
+   comme un libellé.
+2. Il faisait accepter le client sur **une date proposée** — et aucune carte
+   n'apparaissait. C'est délibéré et documenté : cette acceptation-là ne surprend
+   personne, la signaler noierait celles qui appellent un geste. La carte que le
+   patron a photographiée portait d'ailleurs « AUTRE DATE PROPOSÉE ».
+
+Confronté à l'ancien lien : deux rouges, en nommant l'adresse et le libellé.
+
 ### La CI était rouge depuis des heures, et personne ne regardait
 
 **Trouvé en allant voir**, après une poussée sur `main` : les exécutions

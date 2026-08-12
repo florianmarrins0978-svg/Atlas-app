@@ -304,6 +304,26 @@ raisonnement vaut pour `src/app/documents-legaux/formulaire.tsx`.
 
 ## Ce qui vient d'être terminé
 
+**La carte de réponse mène là où est le geste (12 août).** Le patron : *« si
+c'est accepté, ouvrir le devis validé, pas le devis en construction ; si le
+client demande une modification, ouvrir le devis pour pouvoir le modifier. »*
+
+**Trois choses à savoir :**
+
+1. **La règle vit dans `src/lib/suite-de-la-reponse.ts`**, pas dans le
+   composant : accepté → `devis-complet` (le document figé, tel que le client
+   l'a reçu) ; correction, refus, lien périmé → l'écran d'envoi, qui porte la
+   reprise. **Ne pas mener un devis à corriger sur `devis-complet`** : il est
+   immuable une fois parti, et le patron se retrouverait devant un document qui
+   refuse sa frappe.
+2. **Ne jamais reprendre à sa place.** La reprise ouvre une NOUVELLE version du
+   devis : c'est sa décision. On mène à l'écran qui la propose, on ne la déclenche
+   pas.
+3. **Une acceptation sur une date PROPOSÉE ne fait aucune carte**, et c'est
+   voulu (`notificationsPatron`). Seuls un refus, une correction, une
+   contre-proposition de date ou un message du client en font une. Un contrôle
+   qui l'ignore cherche une carte qui n'existera jamais — vécu le jour même.
+
 **Les pages du CLIENT ne portent plus la navigation du patron (12 août).** Sa
 facture affichait « Chantiers · Planning · Terminés · Réglages » au bas de
 l'écran de son client.
