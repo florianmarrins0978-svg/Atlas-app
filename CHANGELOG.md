@@ -247,7 +247,45 @@ premier écran qu'il voit. Rien n'a été touché ; c'est dans `TODO.md`.
 
 `ARCHITECTURE.md` §67.
 
----
+### Le client recevait sa facture avec les onglets de l'outil du patron dessous
+
+**Le patron, capture à l'appui :** *« lorsque le client reçoit le lien cliquable
+de la facture, s'il clique en dessous sur planning ou chantier, il a accès à mon
+application. Ce n'est pas du tout ce que je veux. »*
+
+**D'abord ce qui est rassurant, parce qu'il ne pouvait pas le savoir : il n'y a
+jamais eu de fuite.** Vérifié dans un navigateur sans session — un appui sur
+« Planning » mène à la page de connexion, et aucune de ses données n'est
+lisible. Le contrôle qui le prouve était d'ailleurs déjà vert AVANT le
+correctif, et il reste en place.
+
+Ce qui était vrai, en revanche : **son client voyait « Chantiers · Planning ·
+Terminés · Réglages » au bas de sa facture.** Une facture n'est pas un écran
+d'application, et une barre de navigation inopérante est pire qu'absente.
+
+**La cause n'était pas un oubli isolé, c'était une duplication.** Deux listes
+tenaient la même vérité, chacune de son côté :
+
+- le middleware savait `/factures` public — il le disait depuis le 6 août ;
+- la mise en page tenait sa **propre** liste d'écrans sans navigation, où
+  `/devis` figurait et `/factures` avait été oublié.
+
+Un écran public ajouté plus tard n'entrait donc que dans l'une des deux. C'est
+mot pour mot le défaut des barres de défilement de la veille : trois zones
+portaient la règle, la quatrième l'avait perdue. **Deux copies de la même règle
+finissent toujours par diverger** (`CLAUDE.md` §3).
+
+La liste vit désormais à un seul endroit (`src/lib/chemins-publics.ts`), lue par
+le contrôle d'accès ET par la mise en page. L'invariant tient par construction :
+**ce qui s'atteint sans compte ne porte jamais la navigation du patron.**
+
+`test-pages-publiques-sans-navigation-e2e.ts` balaie tous les chemins publics
+**déclarés à leur source** — un nouveau chemin y entre et il est éprouvé le jour
+même. Il visite de vraies adresses, avec de vrais jetons : un jeton inventé
+rendrait « lien inconnu », dont la mise en page peut différer, et le contrôle
+serait vert sur du vide. Il vérifie aussi la porte, pas seulement l'enseigne —
+sans compte, les écrans du patron restent fermés. Confronté au code livré : un
+seul rouge, sur la facture, exactement.
 
 ### « Mon devis » pouvait attendre indéfiniment une réponse déjà perdue
 

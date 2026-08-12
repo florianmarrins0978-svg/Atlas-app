@@ -73,14 +73,33 @@ async function main() {
   await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 15000 });
 
   // Créer la facture, puis arrêt de l'envoi.
+  //
+  // **Attendre l'ÉTAT, jamais un délai fixe.** Cette suite portait déjà la règle
+  // plus bas, pour le lien de la messagerie — mais pas ici, sur le geste qui la
+  // précède. Deux secondes suffisent quand la suite est jouée seule ; sous
+  // cinquante suites enchaînées, la préparation de la facture les dépasse, et
+  // le contrôle accusait alors le produit de n'avoir pas arrêté la facture. Faux
+  // rouge constaté le 12 août 2026, vert dans la foulée joué seul.
   await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: /Créer la facture|Confirmer le départ/i }).first().click();
-  await page.waitForTimeout(2000);
+
   const confirmer = page.getByRole("button", { name: /Confirmer le départ/i });
+  // Le bouton de confirmation apparaît quand la facture est préparée. S'il ne
+  // vient pas, l'écran est peut-être déjà passé à l'étape suivante : on ne fait
+  // donc pas de son absence un échec, c'est l'assertion qui suit qui tranche.
+  await confirmer
+    .first()
+    .waitFor({ state: "visible", timeout: 30_000 })
+    .catch(() => undefined);
   if (await confirmer.count()) {
     await confirmer.first().click();
-    await page.waitForTimeout(2500);
   }
+  // Ce qu'on attend vraiment : que l'écran dise la facture arrêtée.
+  await page
+    .getByText(/arrêtée/i)
+    .first()
+    .waitFor({ state: "visible", timeout: 30_000 })
+    .catch(() => undefined);
 
   // --- 1. « Arrêtée » n'est pas « partie » ---------------------------------
   const ecran = await page.locator("body").innerText();

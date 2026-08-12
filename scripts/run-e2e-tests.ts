@@ -82,16 +82,72 @@ async function serveurVivant(url: string, tentatives = 6, delaiMs = 10_000): Pro
  * Ne fait jamais échouer la batterie : si un écran ne répond pas ici, la suite
  * qui en dépend le dira mieux, avec son propre message.
  */
+/**
+ * Préchauffer les écrans — **avec une session, sinon on ne préchauffe rien.**
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Trois faux rouges en une journée, le 12 août 2026**, sur trois suites sans
+ * rapport : « clôturé AVANT sa date » (deux fois), « Créer la facture », puis
+ * « un appui dicte, un second enregistre ». Chacune diagnostiquait la même
+ * chose et avait raison — le serveur de développement n'avait pas suivi — et
+ * chacune passait au vert jouée seule. Coût : une batterie complète rejouée à
+ * chaque fois, vingt-cinq minutes, quatre fois dans la journée.
+ *
+ * **La cause n'était pas la machine** — 13 Go libres, charge à 1,2 — mais deux
+ * défauts de ce préchauffage :
+ *
+ *   1. **il tournait SANS session.** Un appel anonyme sur `/termines` est
+ *      renvoyé vers `/login` par le middleware : la route visée n'est jamais
+ *      rendue, donc jamais compilée. Il ne préchauffait en vérité que `/login`,
+ *      et faisait croire au contraire ;
+ *   2. **sa liste était incomplète** — `/termines`, justement, n'y figurait pas,
+ *      alors que c'est l'écran qui a dépassé son délai deux fois.
+ *
+ * **Et les deux défauts avaient la même origine : une deuxième implémentation.**
+ * `scripts/prechauffer.mjs` sait ouvrir une session et parcourir la liste
+ * complète, écrans de chantier compris — c'est ce que fait le banc d'essai
+ * depuis toujours. La batterie, elle, avait sa propre version naïve. Deux
+ * copies de la même idée finissent toujours par diverger, et c'est la plus
+ * faible qui servait ici (`CLAUDE.md` §3).
+ *
+ * Enveloppé en entier : un préchauffage qui échoue ne doit pas empêcher la
+ * batterie de tourner. Au pire, le premier appel repaie son coût — c'est-à-dire
+ * la situation d'avant.
+ */
 async function prechaufferLesEcrans(): Promise<void> {
-  const ecrans = ["/login", "/", "/chantiers/nouveau", "/planning", "/reglages"];
-  console.log("Préchauffage des écrans (compilation à la demande)...");
-  for (const ecran of ecrans) {
-    try {
-      await fetch(`http://localhost:3000${ecran}`, { signal: AbortSignal.timeout(120_000) });
-    } catch {
-      // Un écran qui ne répond pas ici n'est pas une raison d'arrêter : la
-      // suite qui le vise l'expliquera mieux que nous.
+  try {
+    const { cookieDeSession, ecransDeChantier, ECRANS_A_PRECHAUFFER, prechauffer } = await import(
+      "./prechauffer.mjs"
+    );
+    let motif: string | null = null;
+    const cookie = await cookieDeSession({
+      databaseUrl: process.env.DATABASE_URL,
+      authSecret: process.env.AUTH_SECRET,
+      nodeEnv: process.env.NODE_ENV,
+      ecrire: (raison: string) => {
+        motif = raison;
+      },
+    });
+    if (!cookie) {
+      // **Dire la VRAIE raison.** Un préchauffage muet laisserait croire qu'il a
+      // eu lieu, et les faux rouges reviendraient sans qu'on sache pourquoi.
+      console.log(`⚠ Préchauffage sans session : ${motif ?? "raison inconnue"}`);
+      return;
     }
+    const base = "http://localhost:3000";
+    const ecrans = [...ECRANS_A_PRECHAUFFER, ...(await ecransDeChantier({ base, cookie }))];
+    console.log(`Préchauffage de ${ecrans.length} écrans (compilation à la demande)...`);
+    const bilan = await prechauffer({ base, cookie, ecrans });
+    console.log(
+      `Préchauffage terminé : ${bilan.reussis} écran(s) prêts` +
+        (bilan.echoues ? `, ${bilan.echoues} en échec` : "") +
+        ` — ${bilan.secondes} s.`
+    );
+  } catch (err) {
+    console.log(
+      `⚠ Préchauffage impossible : ${err instanceof Error ? err.message : String(err)}. ` +
+        "La batterie continue — le premier appel de chaque écran paiera sa compilation."
+    );
   }
 }
 
