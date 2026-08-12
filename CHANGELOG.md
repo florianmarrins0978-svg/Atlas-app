@@ -204,8 +204,6 @@ adresses, et une feuille qui monte sur un geste n'en a pas. Le compte
 
 ---
 
-## 2026-08-12
-
 ### L'écran de connexion accusait le patron pendant qu'un service était couché
 
 **Le 12 août 2026 :** *« Ça ne marche pas, je n'arrive pas à me connecter.
@@ -1219,8 +1217,6 @@ CSS et non le calcul ; descente supprimée dans la fonction pure → rouge.
 L'ancienne règle — celle qui posait la perle sur le chantier en attente — et sa
 suite disparaissent : une règle morte qui décrit une intention abandonnée est un
 piège pour la conversation suivante.
-
-## 2026-08-11
 
 ### La capsule partout — une seule forme d'action dans toute l'application
 

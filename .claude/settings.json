@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node scripts/rappel-panne.mjs",
+            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/scripts/rappel-panne.mjs\"",
             "timeout": 10
           }
         ]
