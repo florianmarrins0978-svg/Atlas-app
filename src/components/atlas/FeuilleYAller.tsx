@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import { liensItineraire, lienAppel } from "@/lib/itineraire";
+import { intituleDuChantier } from "@/lib/nom-chantier";
 
 /**
  * « Y aller » — l'adresse d'un chantier portée jusqu'au GPS, en un doigt.
@@ -24,10 +26,22 @@ import { liensItineraire, lienAppel } from "@/lib/itineraire";
  * **« Ouvrir la fiche du chantier » n'y est pas non plus** : sur le planning,
  * le nom du chantier y mène déjà — c'était un second chemin vers le même
  * endroit, sur la même ligne.
+ *
+ * **« Créer la facture », en revanche, a quitté la ligne pour venir ici** le
+ * 12 août 2026 : *« il faut cliquer sur le chevron, la page s'ouvre avec le GPS
+ * et tout machin, et là tu mets créer la facture »*. La ligne du planning s'en
+ * trouve allégée d'un geste, et le nom du chantier respire.
+ *
+ * **Ce qui ne doit PAS se perdre en le déplaçant.** Le planning a été un
+ * cul-de-sac jusqu'au 8 août 2026 — *« comment je fais pour avoir accès au
+ * devis ? »* — et le chemin vers la facture a été ouvert pour cela. Il passe
+ * désormais par un appui de plus, ce qui est son choix ; il ne doit pas devenir
+ * introuvable. Trois suites le parcourent en entier, depuis le planning.
  */
 export default function FeuilleYAller({
   ouverte,
   onFermer,
+  chantierId,
   nomChantier,
   clientNom,
   adresse,
@@ -36,6 +50,7 @@ export default function FeuilleYAller({
 }: {
   ouverte: boolean;
   onFermer: () => void;
+  chantierId: string;
   nomChantier: string;
   clientNom: string | null;
   adresse: string | null;
@@ -84,8 +99,12 @@ export default function FeuilleYAller({
       >
         {adresse ?? "Adresse non renseignée"}
       </p>
+      {/* **Jamais « M. Bernard — Chez M. Bernard ».** Un chantier qu'on n'a pas
+          nommé s'appelle « Chez <le client> » (`nomDuChantier`) : recoller le
+          client devant produisait un doublon dans le cas le PLUS courant du
+          produit. Vu sur capture, le 12 août 2026. */}
       <p className="mt-[7px] text-center text-[13.5px]" style={{ color: colors.muted }}>
-        {clientNom ? `${clientNom} — ${nomChantier}` : nomChantier}
+        {intituleDuChantier(clientNom, nomChantier)}
       </p>
       <p className="mt-[5px] text-center text-[12px]" style={{ color: colors.muted }}>
         {adresse ? quand : "À saisir sur la fiche du chantier"}
@@ -135,6 +154,29 @@ export default function FeuilleYAller({
           </span>
         )}
       </div>
+
+      {/* **« Créer la facture » vit ici depuis le 12 août 2026, à sa demande :**
+          *« il faut cliquer sur le chevron, la page s'ouvre avec le GPS et tout
+          machin, et là tu mets créer la facture »*.
+
+          **Il est SÉPARÉ des deux rangs au-dessus, et ce n'est pas décoratif.**
+          Copier et appeler ne touchent à rien ; celui-ci bâtit un document.
+          Collé aux autres, il se toucherait par erreur en visant « Appeler ».
+          Le filet et le vert pin disent qu'on change de nature — la charte
+          réserve le pin à ce qu'on FAIT (`design-tokens.ts`).
+
+          Créer n'est toujours pas envoyer : l'arrêt 3 reste en travers du
+          chemin, et rien ne part sans un geste de plus (`docs/AGENT.md` §6). */}
+      <div className="mt-4 h-px" style={{ backgroundColor: colors.lineSoft }} />
+      <Link
+        href={`/chantiers/${chantierId}/facture`}
+        aria-label={`Créer la facture — ${nomChantier}`}
+        onClick={fermer}
+        className="mt-4 block w-full rounded-md py-[14px] text-center text-[15px]"
+        style={{ backgroundColor: colors.rust, color: colors.cream }}
+      >
+        Créer la facture
+      </Link>
 
       <button
         type="button"

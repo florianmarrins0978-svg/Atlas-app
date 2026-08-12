@@ -214,16 +214,25 @@ async function main() {
     );
   });
 
-  await test("« Créer la facture » est sur la ligne du planning, et prépare la facture", async () => {
+  await test("« Créer la facture » s'atteint depuis le planning, et prépare la facture", async () => {
     // « avoir un bouton à côté fin de chantier pour que ça crée automatiquement
-    // la facturation ». Le bouton est sur la carte ; ce qu'il crée est un
-    // brouillon, jamais une facture partie — l'arrêt 3 reste (AGENT.md §2.3).
-    const { chantierId } = await chantierPlanifie(page, "bouton", -6);
+    // la facturation ». Ce qu'il crée est un brouillon, jamais une facture
+    // partie — l'arrêt 3 reste (AGENT.md §2.3).
+    //
+    // **Le bouton est passé de la ligne à la feuille le 12 août 2026**, à sa
+    // demande : *« il faut cliquer sur le chevron, la page s'ouvre avec le GPS
+    // et tout machin, et là tu mets créer la facture »*. Ce que cette suite
+    // garde est inchangé : depuis le planning, et sans passer par la fiche, on
+    // atteint la facture. C'est le cul-de-sac du 8 août qu'elle empêche de
+    // revenir, pas une position à l'écran.
+    const { chantierId, nom } = await chantierPlanifie(page, "bouton", -6);
     await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
 
-    // Le lien de clôture porté par LA carte de ce chantier, et non le premier
-    // de l'écran : avec plusieurs chantiers au planning, viser le premier
-    // clôturerait celui du voisin sans que le contrôle s'en aperçoive.
+    // Le chevron de CE chantier, et non le premier de l'écran : avec plusieurs
+    // chantiers au planning, viser le premier clôturerait celui du voisin sans
+    // que le contrôle s'en aperçoive.
+    await page.getByRole("button", { name: `Y aller — ${nom}` }).click();
+    await page.waitForSelector("text=Y aller", { timeout: 10000 });
     await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).click();
     await page.waitForSelector("text=Le chantier est réalisé ?", { timeout: 15000 });
 

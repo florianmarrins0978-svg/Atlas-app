@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { nomDuChantier } from "../src/lib/nom-chantier";
+import { nomDuChantier, intituleDuChantier } from "../src/lib/nom-chantier";
 
 // Comment un chantier s'appelle, quand personne ne le nomme.
 //
@@ -85,6 +85,37 @@ cas("un même client deux fois donne le même nom — aucune fantaisie", () => {
     nomDuChantier({ nomClient: "M. Bernard", jour: JOUR }),
     nomDuChantier({ nomClient: "M. Bernard", jour: "2026-09-01" })
   );
+});
+
+// ─── L'intitulé qui accompagne l'adresse, dans la feuille « Y aller » ────────
+//
+// **Né d'une capture, le 12 août 2026** : la feuille affichait « M. Bernard —
+// Chez M. Bernard ». Elle collait le client devant un nom que `nomDuChantier`
+// fabrique justement à partir du client — donc le cas le plus courant du
+// produit était le plus laid. Aucun test ne pouvait le voir : les deux textes
+// étaient exacts, c'est leur mise bout à bout qui ne l'était pas.
+
+cas("le nom porte déjà le client : on ne le répète pas", () => {
+  assert.equal(intituleDuChantier("M. Bernard", "Chez M. Bernard"), "Chez M. Bernard");
+});
+
+cas("un nom donné à la main reçoit le client devant", () => {
+  assert.equal(
+    intituleDuChantier("M. Bernard", "Abattage de chêne"),
+    "M. Bernard — Abattage de chêne"
+  );
+});
+
+cas("deux graphies du même homme ne se lisent pas en double", () => {
+  // Le nom du client est recopié dans le nom du chantier à la création ; l'un
+  // des deux peut avoir été corrigé depuis.
+  assert.equal(intituleDuChantier("M. BERNARD", "Chez M. Bernard"), "Chez M. Bernard");
+  assert.equal(intituleDuChantier("Mme Rivière", "Chez Mme Riviere"), "Chez Mme Riviere");
+});
+
+cas("sans client, le nom du chantier suffit", () => {
+  assert.equal(intituleDuChantier(null, "12 rue des Lilas"), "12 rue des Lilas");
+  assert.equal(intituleDuChantier("   ", "Chantier du 12 août"), "Chantier du 12 août");
 });
 
 if (echecs > 0) {

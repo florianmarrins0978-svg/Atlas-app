@@ -38,3 +38,35 @@ export function nomDuChantier({ nomClient, adresseChantier, jour }: SourceNomCha
   // d'un autre le jour où il y en a trois.
   return `Chantier du ${jourLisible(jour)}`;
 }
+
+/**
+ * « M. Bernard — Abattage de chêne », ou le nom seul quand il porte déjà le
+ * client.
+ *
+ * **Né d'une capture, le 12 août 2026.** La feuille « Y aller » affichait
+ * « M. Bernard — Chez M. Bernard » : elle collait le nom du client devant le
+ * nom du chantier, sans savoir que `nomDuChantier` ci-dessus fabrique justement
+ * ce nom À PARTIR du client. Le cas le plus courant du produit — un chantier
+ * qu'on n'a pas nommé — était donc le plus laid.
+ *
+ * La comparaison est faite sans les accents ni la casse : le nom du client est
+ * saisi une fois, recopié dans le nom du chantier, mais l'un peut avoir été
+ * corrigé depuis (« M. BERNARD » d'un côté, « M. Bernard » de l'autre) et deux
+ * graphies du même homme se liraient alors en double.
+ */
+export function intituleDuChantier(nomClient: string | null | undefined, nomChantier: string): string {
+  const client = nomClient?.trim();
+  if (!client) return nomChantier;
+
+  const aplati = (t: string) =>
+    t
+      .normalize("NFD")
+      // Les signes combinants, écrits en clair : la même classe posée avec de
+      // vrais accents ne se relit pas, et se casse au premier outil qui
+      // normalise le fichier.
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+  if (aplati(nomChantier).includes(aplati(client))) return nomChantier;
+  return `${client} — ${nomChantier}`;
+}

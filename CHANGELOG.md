@@ -35,9 +35,18 @@ rognaient le nom du chantier — « Chez M. Bernard » devenait « Chez M. … �
 sont désormais pris sur les marges. Les huit contrôles étaient verts : le nom
 était bien là.
 
-**Non résolu, et transmis :** la ligne porte trois gestes et un nom sur 390 px,
-c'est un de trop. La maquette validée n'en montrait pas deux. Rien n'a été
-restructuré sans lui.
+**Puis, sur la capture, il a tranché l'encombrement :** *« il faut que le créer
+la facture, tu le mettes dans le chevron »*. « Créer la facture » a donc quitté
+la ligne pour la feuille. Le nom du chantier passe d'environ 110 px à plus de
+250. Le chemin du planning vers la facture, ouvert le 8 août parce que l'écran
+était un cul-de-sac, coûte un appui de plus — **et trois suites le parcourent
+en entier**, dont une qui vérifie qu'il a bien quitté la ligne.
+
+**Vu sur la même capture, et corrigé :** la feuille affichait « M. Bernard —
+Chez M. Bernard ». Elle collait le client devant un nom que l'application
+fabrique justement à partir du client — le cas le plus courant du produit était
+le plus laid. Aucun test ne pouvait le voir : les deux textes étaient exacts,
+c'est leur mise bout à bout qui ne l'était pas.
 
 `ARCHITECTURE.md` §70.
 

@@ -242,9 +242,12 @@ Google Maps, Waze, copier l'adresse, appeler le client. Sans quitter l'écran.
 - `src/components/atlas/FeuilleYAller.tsx` — la feuille, sur `BottomSheet`.
 - `src/app/planning/PlanningClient.tsx` — le chevron, et `libelleQuand()` écrit
   une seule fois pour la ligne ET la feuille.
+- `src/lib/nom-chantier.ts` — `intituleDuChantier` : ne recolle le client que si
+  le nom du chantier ne le porte pas déjà, sans quoi la feuille affiche
+  « M. Bernard — Chez M. Bernard ».
 - `listerChantiersPourPlanning` remonte `adresseChantier` et `clientTelephone`.
 - Contrôles : `scripts/test-itineraire.ts` (10), `scripts/test-y-aller-e2e.ts`
-  (8), deux cas de plus dans `scripts/test-planning-repo.ts`. Les trois ont été
+  (9), quatre de plus dans `scripts/test-nom-chantier.ts`, deux cas de plus dans `scripts/test-planning-repo.ts`. Les trois ont été
   confrontés au défaut qu'ils prétendent voir avant d'être retenus.
 
 **Deux choses à savoir avant d'y toucher :**
@@ -253,11 +256,12 @@ Google Maps, Waze, copier l'adresse, appeler le client. Sans quitter l'écran.
    c'est délibéré : mémoriser un choix de GPS sans nulle part où le défaire
    enferme le patron dans une application touchée par erreur. Elle attend son
    interrupteur dans Réglages. Ne pas l'ajouter en croyant combler un oubli.
-2. **La ligne « Planifiés » est trop chargée**, et ce n'est pas réparé : trois
-   gestes (« Déplacer », « Créer la facture », le chevron) plus le nom sur
-   390 px. La maquette qu'il a validée ne montrait pas les deux premiers. La
-   capture lui a été transmise — **ne rien restructurer avant sa réponse**
-   (`CLAUDE.md` §3 bis).
+2. **« Créer la facture » est dans la FEUILLE, plus sur la ligne** — sa
+   décision du 12 août, prise en regardant la capture. Le chemin du planning
+   vers la facture, ouvert le 8 août parce que l'écran était un cul-de-sac,
+   coûte donc un appui de plus. Trois suites le parcourent en entier, et l'une
+   vérifie qu'il a bien quitté la ligne : **le remettre là romprait deux
+   contrôles**, pas un.
 
 **Une question lui est posée et attend sa réponse :** un chantier sans adresse
 n'a plus de chemin pour aller la saisir, la feuille se contentant de dire « à

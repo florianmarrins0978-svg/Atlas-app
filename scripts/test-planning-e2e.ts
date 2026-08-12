@@ -107,13 +107,29 @@ async function main() {
     `la carte planifiée mène à ${page.url()} au lieu de la fiche du chantier`
   );
 
-  // Et la clôture est à portée depuis le planning, sans passer par la fiche.
+  // Et la clôture reste à portée depuis le planning, sans passer par la fiche.
+  //
+  // **Elle a changé de place le 12 août 2026, jamais d'existence.** Le patron :
+  // *« il faut cliquer sur le chevron, la page s'ouvre avec le GPS et tout
+  // machin, et là tu mets créer la facture »*. Un appui de plus, c'est son
+  // choix ; ce qui ne doit pas revenir, c'est le cul-de-sac du 8 août — le
+  // planning d'où l'on ne pouvait rien faire. Le contrôle suit donc le NOUVEAU
+  // chemin en entier, plutôt que de disparaître avec l'ancien.
   await page.goto("http://localhost:3000/planning", { waitUntil: "networkidle" });
   assert.equal(
     await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).count(),
-    1,
-    "« Créer la facture » manque sur la ligne du chantier planifié"
+    0,
+    "« Créer la facture » ne doit plus encombrer la ligne : il est passé dans la feuille"
   );
+  await page.getByRole("button", { name: `Y aller — Chez ${nomUnique}` }).click();
+  await page.waitForSelector("text=Y aller", { timeout: 10000 });
+  assert.equal(
+    await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).count(),
+    1,
+    "« Créer la facture » manque dans la feuille du chevron : le planning redevient un cul-de-sac"
+  );
+  await page.getByRole("button", { name: "Annuler", exact: true }).click();
+  await page.waitForTimeout(300);
 
   // --- Déplacer un chantier déjà posé ---
   //

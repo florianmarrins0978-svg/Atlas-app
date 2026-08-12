@@ -179,21 +179,21 @@ async function main() {
     }
   });
 
-  await test("Le chevron ne mange pas les gestes voisins de la ligne", async () => {
+  await test("Le chevron ne mange pas le geste voisin de la ligne", async () => {
     await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
     await page.waitForSelector('h1:has-text("Planning")', { timeout: 30_000 });
     // Le carré de 44 px est invisible : posé sans précaution, il recouvre
-    // « Créer la facture » et la ligne devient injoignable — un défaut qu'aucun
-    // test de rendu ne voit, puisque les deux éléments SONT là.
-    const facture = page.locator(`a[href="/chantiers/${avec.chantierId}/facture"]`);
+    // « Déplacer » et le geste devient injoignable — un défaut qu'aucun test de
+    // rendu ne voit, puisque les deux éléments SONT là.
+    const deplacer = page.getByRole("button", { name: `Déplacer le chantier ${avec.nom}` });
     // **Amener à l'écran d'abord, et ce n'est pas une politesse.** `elementFromPoint`
     // lit des coordonnées de FENÊTRE : sur une ligne restée sous le pli, elle
     // interroge un point vide et le contrôle accuse le chevron de recouvrir ce
     // qu'il n'a jamais touché. Ce même appel attend en prime que la ligne ait
     // une boîte — mesurée trop tôt, elle en est encore dépourvue.
-    await facture.scrollIntoViewIfNeeded();
-    const boite = await facture.boundingBox();
-    assert.ok(boite, "« Créer la facture » doit rester à l'écran");
+    await deplacer.scrollIntoViewIfNeeded();
+    const boite = await deplacer.boundingBox();
+    assert.ok(boite, "« Déplacer » doit rester à l'écran");
     const dessus = await page.evaluate(
       ([x, y]) => {
         const el = document.elementFromPoint(x as number, y as number);
@@ -202,8 +202,22 @@ async function main() {
       [boite.x + boite.width / 2, boite.y + boite.height / 2]
     );
     assert.ok(
-      /facture/i.test(dessus),
-      `au centre de « Créer la facture », le doigt touche « ${dessus} » — le chevron la recouvre`
+      /déplacer/i.test(dessus),
+      `au centre de « Déplacer », le doigt touche « ${dessus} » — le chevron le recouvre`
+    );
+  });
+
+  // **Le planning ne doit pas redevenir un cul-de-sac** (8 août 2026 : « comment
+  // je fais pour avoir accès au devis ? »). « Créer la facture » a quitté la
+  // ligne le 12 août pour la feuille, à sa demande — un appui de plus, jamais un
+  // chemin en moins.
+  await test("« Créer la facture » est dans la feuille, et mène à la facture", async () => {
+    await ouvrirLaFeuille(page, avec.nom);
+    const facture = page.locator(`a[href="/chantiers/${avec.chantierId}/facture"]`);
+    assert.equal(await facture.count(), 1, "« Créer la facture » manque dans la feuille");
+    assert.equal(
+      await page.locator(`a[href="/chantiers/${avec.chantierId}/facture"]`).textContent(),
+      "Créer la facture"
     );
   });
 

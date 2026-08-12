@@ -5098,6 +5098,44 @@ arrive le plus vite.
 autres. Rien n'a été restructuré sans lui (`CLAUDE.md` §3 bis) — la capture lui
 est transmise, la décision est la sienne.
 
+### « Créer la facture » quitte la ligne pour la feuille
+
+**Le même jour, après la première capture :** *« il faut que le créer la
+facture, tu le mettes dans le chevron. Il faut cliquer sur le chevron, la page
+s'ouvre avec le GPS et tout machin, et là tu mets créer la facture. »*
+
+C'est sa réponse à l'encombrement décrit plus haut, et elle règle le fond : la
+ligne ne porte plus que le nom, la date, « Déplacer » et le chevron. Le nom
+passe d'environ 110 px à plus de 250 — mesuré sur capture, avant et après.
+
+**Ce qui ne doit pas se perdre en le déplaçant.** Le planning a été un
+cul-de-sac jusqu'au 8 août 2026 — *« comment je fais pour avoir accès au
+devis ? »* — et ce bouton avait été posé pour cela. Il coûte désormais un appui
+de plus, ce qui est son choix ; il ne doit pas devenir introuvable. **Trois
+suites parcourent le nouveau chemin en entier** (`test-planning-e2e`,
+`test-planning-vers-facture-e2e`, `test-y-aller-e2e`), et la première vérifie
+en plus que le lien a bien QUITTÉ la ligne — sans quoi les deux coexisteraient
+sans que rien ne le dise.
+
+Dans la feuille, il est **séparé des deux rangs au-dessus** par un filet, et
+porté en vert pin. Copier et appeler ne touchent à rien ; celui-ci bâtit un
+document. Collé aux autres, il se toucherait par erreur en visant « Appeler ».
+
+### « M. Bernard — Chez M. Bernard », et la capture qui l'a vu
+
+La feuille collait le nom du client devant le nom du chantier. Or un chantier
+qu'on n'a pas nommé s'appelle **« Chez <le client> »** (`src/lib/nom-chantier.ts`,
+posé le 5 août 2026 quand le champ « nom du chantier » a été retiré) : le cas le
+plus courant du produit était donc le plus laid.
+
+`intituleDuChantier` ne recolle le client que si le nom ne le porte pas déjà.
+La comparaison ignore accents et casse — le nom du client est recopié à la
+création, et l'un des deux peut avoir été corrigé depuis.
+
+**Aucun test ne pouvait le voir** : les deux textes étaient exacts, c'est leur
+mise bout à bout qui ne l'était pas. Quatrième défaut de ce dépôt trouvé en
+regardant l'écran (`CLAUDE.md` §5).
+
 ### Ce que les contrôles prouvent, et ce qu'ils ne prouvent pas
 
 `scripts/test-y-aller-e2e.ts` vérifie **le raccord** : que l'adresse arrive

@@ -588,14 +588,19 @@ export default function PlanningClient({
                   >
                     Déplacer
                   </button>
-                  <Link
-                    href={`/chantiers/${c.id}/facture`}
-                    aria-label={`Créer la facture — ${c.nom}`}
-                    className={`whitespace-nowrap ${libelleCaps}`}
-                    style={{ color: colors.or }}
-                  >
-                    Créer la facture
-                  </Link>
+                  {/* **« Créer la facture » a quitté la ligne le 12 août 2026,
+                      à sa demande** : *« il faut que le créer la facture, tu le
+                      mettes dans le chevron. Il faut cliquer sur le chevron, la
+                      page s'ouvre avec le GPS et tout machin, et là tu mets
+                      créer la facture »*. Il est désormais dans la feuille.
+
+                      Le chemin du planning vers la facture, ouvert le 8 août
+                      2026 parce que l'écran était un cul-de-sac, n'est PAS
+                      refermé — il passe par un appui de plus, et trois suites
+                      le parcourent jusqu'au bout. Le rendre invisible serait
+                      retomber dans le défaut d'origine ; c'est pourquoi la
+                      feuille le porte en toutes lettres. */}
+
                   {/* **Le chevron doré — retenu sur maquette le 12 août 2026**
                       (`docs/maquettes/32-le-chevron.html`), après qu'il eut
                       écarté la flèche de navigation : *« je veux la même que
@@ -610,15 +615,17 @@ export default function PlanningClient({
                       seul ferait une cible de dix-sept pixels, qu'on rate deux
                       fois sur trois avec des gants.
 
-                      **Et ils sont pris SUR LES MARGES, pas sur le nom.** La
-                      ligne porte déjà « Déplacer » et « Créer la facture » ; un
+                      **Et ils sont pris SUR LES MARGES, pas sur le nom.** Quand
+                      la ligne portait encore « Créer la facture », un
                       quarante-quatrième pixel de plus rognait la seule chose
                       qui dit de quel chantier il s'agit — vu sur capture à
                       390 px, « Chez M. Bernard » devenait « Chez M. … ». Les
                       marges négatives reprennent la hauteur de la ligne
                       (`-my-3`), la gouttière de 16 px (`-ml-2`) et le retrait
-                      droit de l'écran (`-mr-[26px]`) : le carré touchable reste
-                      entier, il ne coûte plus que quelques pixels au nom. */}
+                      droit de l'écran (`-mr-[26px]`). Elles restent utiles
+                      maintenant que la ligne s'est allégée : le carré touchable
+                      tombe au bord de l'écran, là où le pouce arrive le plus
+                      vite, sans rien coûter au nom. */}
                   <button
                     type="button"
                     aria-label={`Y aller — ${c.nom}`}
@@ -641,6 +648,7 @@ export default function PlanningClient({
           <FeuilleYAller
             ouverte
             onFermer={() => setYAllerId(null)}
+            chantierId={yAller.id}
             nomChantier={yAller.nom}
             clientNom={yAller.clientNom}
             adresse={yAller.adresseChantier ?? null}

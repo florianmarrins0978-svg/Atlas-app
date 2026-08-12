@@ -184,10 +184,9 @@ l'application. Ce qui est **fait** :
   le planning. Liens universels et jamais `waze://`, qui échoue en silence
   quand l'application manque. Sans adresse, rien ne s'invente : les
   destinations disparaissent et la feuille dit où la saisir. Retenu après
-  quatre maquettes (`docs/maquettes/29` à `32`). `ARCHITECTURE.md` §70.
-  **Réserve transmise au patron :** la ligne porte désormais trois gestes et un
-  nom sur 390 px — c'est un de trop, et la maquette validée n'en montrait pas
-  deux. Non restructuré sans lui.
+  quatre maquettes (`docs/maquettes/29` à `32`). **Et « Créer la facture » a
+  quitté la ligne pour la feuille**, à sa demande du même jour : la ligne ne
+  garde que le nom, la date, « Déplacer » et le chevron. `ARCHITECTURE.md` §70.
 - **Le planning au mois, et les équipes nommées** (10 août, au soir) : sept
   colonnes sans bordure, cinq marques d'occupation, et la journée qui s'ouvre
   sous le calendrier. Réglages laisse nommer les équipes — mais **seulement à

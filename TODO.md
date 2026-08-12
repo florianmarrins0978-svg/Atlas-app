@@ -56,21 +56,18 @@ Trois pistes, aucune tranchée — et aucune bonne telle quelle :
 - faire **servir une version bâtie** à son banc, où le badge n'existe pas. C'est
   probablement la bonne réponse, et elle dépasse ce point.
 
-### 0 quindecies. La ligne « Planifiés » porte un geste de trop
+### 0 quindecies. ~~La ligne « Planifiés » porte un geste de trop~~ — **réglé le 12 août 2026**
 
-**Vu en capture le 12 août 2026**, en posant le chevron « Y aller ». La ligne
-d'un chantier planifié porte maintenant **trois gestes et un nom** sur 390 px :
-« Déplacer », « Créer la facture », le chevron. Le nom cède — « Chez M. Bernard »
-s'affiche « Chez M. Be… ».
+Vu en capture en posant le chevron : la ligne portait trois gestes et un nom sur
+390 px, et c'est le nom qui cédait — « Chez M. Bernard » s'affichait
+« Chez M. Be… ».
 
-Les 44 px du chevron ont été pris sur les marges plutôt que sur le nom, ce qui
-rend quelques caractères ; **le fond du problème reste**. La maquette qu'il a
-validée (`docs/maquettes/32-le-chevron.html`) ne montrait ni « Déplacer » ni
-« Créer la facture » : elle n'a donc pas tranché cette question-là.
-
-**Ne rien restructurer avant sa réponse** (`CLAUDE.md` §3 bis). Ce qui se
-dessinerait, le jour où il le demande : le nom sur toute la largeur, les trois
-gestes sur une seconde ligne — ou « Déplacer » repoussé dans la feuille.
+**Il a tranché le jour même**, en regardant la capture : *« il faut que le créer
+la facture, tu le mettes dans le chevron. Il faut cliquer sur le chevron, la
+page s'ouvre avec le GPS et tout machin, et là tu mets créer la facture. »*
+« Créer la facture » est donc passé dans la feuille ; la ligne ne garde que le
+nom, la date, « Déplacer » et le chevron. Le nom passe d'environ 110 px à plus
+de 250. `ARCHITECTURE.md` §70.
 
 ### 0 quaterdecies bis. Un chantier sans adresse n'a plus de chemin pour la saisir
 
