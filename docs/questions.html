@@ -82,6 +82,7 @@
 <li><a href="#11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-">Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?</a></li>
 <li><a href="#12-lagenda-google--mes-artisans-auront-ils-des-identifiants-à-saisir-">L'agenda Google : mes artisans auront-ils des identifiants à saisir ?</a></li>
 <li><a href="#13-pourquoi-tous-les-boutons-ont-ils-la-même-forme-">Pourquoi tous les boutons ont-ils la même forme ?</a></li>
+<li><a href="#14-le-calendrier-dapple--puis-je-le-relier-comme-lagenda-google-">Le Calendrier d'Apple : puis-je le relier comme l'agenda Google ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -632,6 +633,69 @@
 <p>Il ne regarde que <strong>la forme</strong>, volontairement : deux boutons (la connexion, les documents légaux) doivent rester des boutons de formulaire, et les forcer à passer par la pièce commune casserait leur envoi. La forme, elle, est la même pour tous.</p>
 <h3 id="ce-que-ça-vous-coûte-quand-vous-changez-davis">Ce que ça vous coûte quand vous changez d'avis</h3>
 <p><strong>Un seul fichier à toucher</strong>, <code>src/components/atlas/PrimaryButton.tsx</code> : les 17 écrans suivent. C'est tout l'intérêt d'avoir une pièce commune plutôt que dix-sept dessins — le jour où la capsule ne vous plaît plus, ce n'est pas dix-sept corrections, c'en est une.</p>
+<hr>
+<h2 id="14-le-calendrier-dapple--puis-je-le-relier-comme-lagenda-google-">14. Le Calendrier d'Apple : puis-je le relier comme l'agenda Google ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Posée le 12 août 2026</em>, capture du Calendrier d'Apple à l'appui : « je peux connecter ce calendrier à mon appli ? »</p>
+<h3 id="oui--mais-ce-nest-pas-le-même-travail-que-google">Oui — mais ce n'est pas le même travail que Google</h3>
+<p><strong>D'abord, une distinction qui change tout : le Calendrier d'Apple n'est qu'une vitrine.</strong> Il affiche aussi bien un compte iCloud qu'un compte Gmail ou un compte professionnel. Ce n'est donc pas « le Calendrier » qu'on relie, c'est le compte qui est derrière.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qu'il y a derrière la vitrine</th>
+<th>Ce que ça coûte</th>
+</tr></thead><tbody>
+<tr>
+<td>Un compte <strong>Google</strong></td>
+<td><strong>Rien à écrire.</strong> Le code existe déjà ; il reste vos identifiants Google (<a href="A-FAIRE.md" target="_blank" rel="noopener">A-FAIRE §7</a>)</td>
+</tr>
+<tr>
+<td><strong>iCloud</strong></td>
+<td>Un fournisseur en plus, et un parcours moins confortable — voir ci-dessous</td>
+</tr>
+<tr>
+<td><strong>Outlook / Exchange</strong></td>
+<td>Un troisième raccordement, encore différent</td>
+</tr>
+</tbody></table></div>
+<p><strong>Vous avez répondu iCloud</strong>, et vous voulez <strong>les deux sens</strong> : qu'Atlas lise vos rendez-vous, et qu'il y écrive vos chantiers.</p>
+<h3 id="pourquoi-apple-demande-plus-de-gestes-que-google">Pourquoi Apple demande plus de gestes que Google</h3>
+<p>Chez Google, l'artisan appuie sur un bouton, l'écran de Google s'ouvre, il accepte, c'est fini — il n'a rien à taper (voir question 12).</p>
+<p><strong>Apple n'offre pas d'équivalent pour l'agenda.</strong> Le bouton « Se connecter avec Apple » existe, mais il ne donne accès qu'à une identité, jamais au calendrier. Le seul chemin praticable est le protocole <em>CalDAV</em>, avec un <strong>mot de passe spécifique à l'application</strong> que vous générez sur votre compte Apple.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Google</th>
+<th>iCloud</th>
+</tr></thead><tbody>
+<tr>
+<td>Ce que l'artisan fait</td>
+<td>Il appuie, il accepte</td>
+<td>Il va sur son compte Apple, génère un mot de passe de 16 caractères, le recopie dans Atlas</td>
+</tr>
+<tr>
+<td>Ce qu'Apple exige</td>
+<td>—</td>
+<td>La double authentification activée sur le compte</td>
+</tr>
+<tr>
+<td>Écrire dans l'agenda</td>
+<td>Possible, permission à part</td>
+<td>Possible, sans permission supplémentaire</td>
+</tr>
+<tr>
+<td>Portée de l'accès</td>
+<td><strong>L'agenda seul</strong></td>
+<td><strong>Tout l'iCloud</strong> — mail, contacts, fichiers</td>
+</tr>
+</tbody></table></div>
+<h3 id="les-trois-réserves-écrites-parce-quelles-comptent">Les trois réserves, écrites parce qu'elles comptent</h3>
+<p><strong>1. Le mot de passe ouvre tout l'iCloud, pas seulement l'agenda.</strong> Apple ne sait pas restreindre un mot de passe spécifique à un seul service. Atlas le chiffre au repos comme il chiffre les jetons Google (<code>src/server/agenda/secret-au-repos.ts</code>), mais le chiffrement protège d'une sauvegarde recopiée, pas de l'étendue de ce que la clé ouvre. C'est la vraie différence avec Google, et elle ne se corrige pas côté Atlas.</p>
+<p><strong>2. Apple ne documente pas publiquement ce canal.</strong> Il fonctionne depuis des années et de nombreux logiciels s'en servent, mais il n'y a <strong>aucun engagement</strong> d'Apple : cela peut cesser du jour au lendemain, sans préavis. Le raccordement Google, lui, repose sur une interface publique et versionnée.</p>
+<p><strong>3. Écrire est un geste qui ne se reprend pas tout seul.</strong> Atlas posera des rendez-vous dans votre agenda personnel. Il ne touchera <strong>jamais</strong> ce qui ne vient pas de lui, et ce qu'il a posé se retire d'un geste — mais c'est une décision, pas un réglage par défaut.</p>
+<h3 id="ce-que-ça-coûte-en-argent--rien">Ce que ça coûte en argent : rien</h3>
+<p>Et sur ce point, <strong>Apple est moins cher que Google</strong> : pas de compte développeur, pas d'écran de consentement à faire valider, pas de plafond de cent comptes de test, <strong>pas de semaines d'attente</strong>. Là où Google impose une vérification avant de commercialiser (<a href="A-FAIRE.md" target="_blank" rel="noopener">A-FAIRE §8</a>), iCloud ne demande la permission de personne.</p>
+<h3 id="ce-que-je-nai-pas-pu-vérifier-dici">Ce que je n'ai pas pu vérifier d'ici</h3>
+<p><strong>Le réseau de l'environnement de développement refuse <code>caldav.icloud.com</code></strong> — essayé le 12 août 2026, connexion refusée. Tout ce qui touche au comportement réel d'Apple devra donc être éprouvé <strong>sur votre banc d'essai</strong>, pas ici. C'est la même situation que pour Google, et elle se traite pareil : la logique qui décide vit dans un module qui ne parle à personne et qui, lui, s'éprouve entièrement ici.</p>
+<h3 id="ce-que-ça-ne-change-pas">Ce que ça ne change pas</h3>
+<p>Ce qui décide quelles demi-journées sont prises, et comment elles se fondent dans votre planning, est <strong>commun à tous les agendas</strong> et ne bouge pas d'une ligne (<code>src/lib/agenda-externe.ts</code>). Le nouveau code n'ajoute qu'une chose : la manière d'aller chercher les rendez-vous. Deux fournisseurs, une seule règle — c'est ce qui évite que le planning finisse par répondre différemment selon le calendrier branché.</p>
 </main>
 </body>
 </html>

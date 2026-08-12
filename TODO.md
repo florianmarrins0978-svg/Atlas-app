@@ -27,6 +27,40 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 unvicies. Relier l'agenda iCloud — **la maquette attend son avis**
+
+**Sa question du 12 août 2026**, capture du Calendrier d'Apple à l'appui : *« je
+peux connecter ce calendrier à mon appli ? »* Réponses obtenues : le compte
+derrière la vitrine est **iCloud**, et il veut **les deux sens** — Atlas lit ses
+rendez-vous, Atlas y écrit ses chantiers.
+
+**Rien n'est écrit dans `src/`, et c'est volontaire** (sa règle du 11 août : la
+maquette d'abord). Ce qui existe : `maquettes/atlas-agenda-apple.html` et ses 22
+contrôles. Réponse complète dans `docs/QUESTIONS.md` §14.
+
+**Le chemin, une fois qu'il aura tranché :**
+
+| | Ce qu'il y a à faire | Remarque |
+|---|---|---|
+| 1 | Migration : `fournisseur IN ('google','apple')` | La colonne existe déjà (`0032`), la contrainte non |
+| 2 | Un module CalDAV, à créer à côté de `src/server/agenda/google.ts` : découverte du principal, `calendar-query`, `PUT` d'un `VEVENT` pour écrire | Le mot de passe passe par `src/server/agenda/secret-au-repos.ts`, comme les jetons Google |
+| 3 | Un lecteur d'`.ics` (`VEVENT` → `PeriodeOccupee`) | **Éprouvable ici** sur des fichiers d'exemple : c'est la seule part qui ne parle à personne |
+| 4 | L'écran, d'après la maquette retenue | Rien avant son accord |
+| 5 | Un script de vérification à jouer **sur son banc**, sur le modèle de `scripts/verifier-connexion-avec-serveur.mts` | Voir ci-dessous |
+
+**Ce qui ne peut pas être éprouvé ici :** le réseau refuse `caldav.icloud.com`
+(essayé le 12 août, connexion refusée). Comme pour `pages.yml` et
+`banc-essai.yml`, la vérification se déplace — elle tournera chez lui, avec son
+vrai mot de passe, jamais ici. Ne pas annoncer le raccordement comme éprouvé
+tant que ce script n'a pas tourné une fois pour de bon.
+
+**Ce que l'écriture ajoute, et qui n'existe nulle part aujourd'hui :** Atlas ne
+fait que LIRE les agendas. Écrire demande un identifiant stable par chantier
+(pour ne jamais poser deux fois le même rendez-vous), et la garantie qu'Atlas ne
+touche jamais un événement qu'il n'a pas posé. Le repli de la maquette — un
+calendrier « Atlas » séparé — n'est pas cosmétique : c'est ce qui rend le
+débranchement possible d'un geste.
+
 ### 0 vicies. Le badge de Next recouvre son onglet « Chantiers »
 
 **Mesuré le 12 août 2026**, en cherchant pourquoi la CI virait au rouge six

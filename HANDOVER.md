@@ -302,6 +302,47 @@ grande forme tient toujours ; trois petites, jamais.
 connecté, donc le seul qu'aucun parcours de l'application ne traverse. Le même
 raisonnement vaut pour `src/app/documents-legaux/formulaire.tsx`.
 
+## L'agenda iCloud : maquette posée, choix EN ATTENTE (12 août)
+
+`maquettes/atlas-agenda-apple.html` — deux moments : avant raccordement (les
+trois gestes chez Apple, l'avertissement, les champs), et après (l'écriture
+éteinte, puis le choix du calendrier qu'elle fait paraître). **Ne rien poser
+dans `src/` avant son accord**, sa règle du 11 août.
+
+**Le contexte, pour ne pas le redécouvrir.** Il a envoyé une capture du
+Calendrier d'Apple : *« je peux connecter ce calendrier à mon appli ? »* Le
+Calendrier n'étant qu'une **vitrine** — il affiche iCloud comme Gmail —, la
+question a été posée avant de répondre. Ses deux réponses : le compte est
+**iCloud**, et il veut **les deux sens**. Réponse complète et chiffrée dans
+`docs/QUESTIONS.md` §14, chemin de mise en œuvre dans `TODO.md` §0 unvicies.
+
+**Ce qui change tout par rapport à Google** : Apple n'a **aucun** bouton
+« accepter » pour l'agenda. Il faut CalDAV et un **mot de passe spécifique à
+l'app**, généré sur son compte Apple — et ce mot de passe **ouvre tout
+l'iCloud**, mail et fichiers compris, parce qu'Apple ne sait pas le restreindre
+à un service. Ce n'est pas un détail à ranger en petits caractères : c'est la
+raison pour laquelle l'avertissement est **au-dessus** du champ dans la
+maquette, et pourquoi le contrôle le vérifie **par sa position**.
+
+**Trois choses à ne pas défaire dans cette maquette-là :**
+
+1. **L'interrupteur d'écriture reste éteint au départ**, et le choix du
+   calendrier n'existe pas tant qu'il l'est. Écrire dans son agenda personnel
+   est une décision ; un réglage allumé d'office la lui prend.
+2. **Le repli est un calendrier « Atlas » séparé**, pas « Perso ». Ce qu'Atlas a
+   posé se retire alors d'un geste au débranchement — semé dans « Perso », il se
+   reprend un par un.
+3. **Pas de raccourci `font:` avec `inherit`.** `font:400 16px/1.4 inherit` est
+   **invalide** et la déclaration entière tombe : les champs repassaient à
+   13,3 px (donc le zoom de Safari) et les boutons à 43 px, sous les 44 px du
+   doigt. Trouvé par le contrôle, invisible à l'écran. Le même piège dort dans
+   les autres maquettes du dossier.
+
+**Ce qui ne pourra pas être éprouvé ici, quoi qu'on fasse :** le mandataire
+réseau refuse `caldav.icloud.com` (essayé, connexion refusée). Le jour où le
+raccordement s'écrit, sa vérification se déplace sur son banc — comme
+`pages.yml` et `banc-essai.yml`. Ne pas l'annoncer éprouvé avant.
+
 ## Ce qui vient d'être terminé
 
 **Les pages du CLIENT ne portent plus la navigation du patron (12 août).** Sa

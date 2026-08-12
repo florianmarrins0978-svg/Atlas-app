@@ -9,6 +9,46 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### Relier l'agenda iCloud : la maquette, la réponse, et rien dans `src/`
+
+**Sa question, capture du Calendrier d'Apple à l'appui :** *« je peux connecter
+ce calendrier à mon appli ? »* — puis, aux deux questions posées : le compte
+derrière la vitrine est **iCloud**, et il veut **les deux sens** (Atlas lit ses
+rendez-vous, Atlas y écrit ses chantiers).
+
+**Le Calendrier d'Apple n'est qu'une vitrine**, et c'est la distinction qui
+commande tout : il affiche aussi bien iCloud que Gmail ou Exchange. Derrière du
+Google, il n'y aurait rien eu à écrire — le raccordement existe
+(`src/server/agenda/google.ts`). Derrière de l'iCloud, c'est un fournisseur en
+plus, et un parcours moins confortable : Apple n'offre **aucun** équivalent au
+bouton « accepter » de Google pour l'agenda. Reste CalDAV et un **mot de passe
+spécifique à l'app**, recopié à la main.
+
+**Ce qui est livré : une maquette, pas du code** (`maquettes/atlas-agenda-apple.html`,
+22 contrôles). Sa règle du 11 août — dessiner avant de toucher à `src/`. Elle
+tient deux règles qu'un écran de raccordement peut rater sans que rien ne
+proteste :
+
+- **on prévient avant de faire taper.** Ce mot de passe ouvre *tout* l'iCloud —
+  mail, contacts, fichiers — et Apple ne sait pas le restreindre à l'agenda. Le
+  contrôle vérifie l'avertissement **par sa position**, pas par sa présence :
+  une phrase juste placée sous le champ est une phrase lue trop tard ;
+- **écrire est une décision.** L'interrupteur est éteint au départ, et le choix
+  du calendrier n'existe pas tant qu'il l'est. Le repli est un calendrier
+  « Atlas » séparé : ce qu'Atlas a posé se retire alors d'un geste, là où des
+  chantiers semés dans « Perso » se reprennent un par un.
+
+**Deux défauts trouvés par les contrôles, pas à l'œil :** `font:400 16px/1.4
+inherit` est une déclaration **invalide** — `inherit` n'est pas admis dans le
+raccourci `font` — donc entièrement ignorée. Les champs retombaient à 13,3 px,
+soit exactement le zoom de Safari que la ligne prétendait éviter, et les boutons
+à 43 px, sous les 44 px du doigt. À l'écran, rien ne se voyait.
+
+**Ce qui n'a pas pu être vérifié, et qui est écrit comme tel :** le réseau de
+cet environnement refuse `caldav.icloud.com` (essayé, connexion refusée). Le
+comportement réel d'Apple ne s'éprouvera que sur son banc. Réponse complète,
+avec ce que ça coûte et ce que ça expose, dans `docs/QUESTIONS.md` §14.
+
 ### Le chevron doré du planning : l'adresse jusqu'au GPS en un doigt
 
 **Sa demande :** *« lorsque je vais sur planning et qu'il y a un chantier

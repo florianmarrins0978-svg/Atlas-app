@@ -305,6 +305,13 @@ Voir `TODO.md` pour le détail et l'ordre.
 - **Agenda Google** — la connexion du compte demande des identifiants que je n'ai
   pas ; le reste (lecture des disponibilités, écriture de l'intervention) est
   codable.
+- **Agenda iCloud** — demandé le 12 août 2026, **dans les deux sens**. Rien
+  n'est écrit dans `src/` : la maquette (`maquettes/atlas-agenda-apple.html`)
+  attend son avis, sa règle étant de dessiner d'abord. Apple n'a pas
+  d'équivalent au bouton de Google : il faut CalDAV et un mot de passe
+  spécifique à l'app, qui ouvre **tout** l'iCloud — la réserve est écrite dans
+  `docs/QUESTIONS.md` §14 et le chemin dans `TODO.md` §0 unvicies. Le réseau
+  d'ici refuse `caldav.icloud.com` : la vérification devra tourner sur son banc.
 - **Code SMS en renfort de l'acceptation** — l'empreinte, l'horodatage et
   l'adresse sont déjà conservés. **Sans objet en l'état**, pour la même raison.
 - **Relance automatique** — l'état « à relancer » existe et s'affiche, le lien
