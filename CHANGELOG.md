@@ -41,6 +41,21 @@ restructuré sans lui.
 
 `ARCHITECTURE.md` §68.
 
+### La barre d'outils de Next.js accusait six écrans
+
+**Trouvé en jouant la batterie, et reproduit sur `main` avant de toucher quoi
+que ce soit** — le défaut n'était pas celui du lot en cours.
+
+`test-rien-de-recouvert-e2e.ts` déclarait l'onglet « Chantiers » hors d'atteinte
+du doigt sur six écrans. Le coupable désigné : `NEXTJS-PORTAL`, la pastille de
+développement de Next.js — qui **n'existe pas dans la version bâtie** que sert
+le banc du patron. Le contrôle envoyait donc chercher un défaut d'interface là
+où il n'y en a pas, et rougissait la batterie entière.
+
+Le porteur est désormais écarté, jamais la cible : un vrai calque d'Atlas posé
+au même endroit reste attrapé — vérifié en en posant un exprès (12 échecs), puis
+en le retirant (0).
+
 ### « Ça ne marche pas » va désormais chercher la fiche tout seul
 
 **Sa demande :** *« Il faudrait que si j'écris ça ne marche pas, d'elle-même

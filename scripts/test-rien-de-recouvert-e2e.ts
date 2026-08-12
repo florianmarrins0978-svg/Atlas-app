@@ -55,7 +55,7 @@ async function cas(nom: string, verifier: () => Promise<void>) {
  * l'atteindrait. Une erreur qui accuse à tort coûte plus cher que pas d'erreur
  * du tout (`AGENTS.md`).
  *
- * Trois précautions de plus, chacune payée par un faux positif :
+ * Quatre précautions de plus, chacune payée par un faux positif :
  *
  *   - **on ne juge que ce qui est visible.** Un panneau replié, un tiroir fermé
  *     portent des boutons hors écran : les compter reviendrait à crier sur des
@@ -69,6 +69,10 @@ async function cas(nom: string, verifier: () => Promise<void>) {
  *     rognés par un `overflow: hidden`. Onze d'entre eux étaient accusés d'être
  *     recouverts alors qu'ils n'étaient pas à l'écran du tout. On remonte donc
  *     la parenté et l'on écarte ce qui tombe hors de son découpage.
+ *   - **ni la barre d'outils de Next.js.** Son `<nextjs-portal>` n'existe que
+ *     sous `next dev` ; le banc du patron sert une version bâtie, où la
+ *     pastille n'est pas dans la page. Elle accusait six écrans de cacher
+ *     l'onglet « Chantiers » sous un badge que personne ne verra jamais.
  */
 const SONDE = `(async () => {
   const attendre = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -110,6 +114,23 @@ const SONDE = `(async () => {
     const dessus = document.elementFromPoint(x, y);
     if (!dessus) continue;
     if (dessus === cible || cible.contains(dessus) || dessus.contains(cible)) continue;
+
+    // **La barre d'outils de Next.js n'est pas du mobilier d'Atlas.**
+    // Le <nextjs-portal> n'existe QUE sous \`next dev\` : le banc du patron sert
+    // une version bâtie, où cette pastille n'est pas dans la page. Six écrans
+    // étaient accusés de cacher l'onglet « Chantiers » sous un badge que
+    // personne ne verra jamais — une erreur qui envoie chercher au mauvais
+    // endroit coûte plus cher que pas d'erreur du tout (\`AGENTS.md\`).
+    //
+    // On écarte le porteur, pas la cible : un vrai calque d'Atlas posé au même
+    // endroit reste attrapé.
+    let porteur = dessus;
+    let dev = false;
+    while (porteur) {
+      if (porteur.tagName === "NEXTJS-PORTAL") { dev = true; break; }
+      porteur = porteur.parentElement;
+    }
+    if (dev) continue;
 
     const nom = (cible.innerText || cible.getAttribute("aria-label") || cible.getAttribute("placeholder") || cible.tagName).replace(/\\s+/g, " ").trim().slice(0, 48);
     const voleur = (dessus.getAttribute("data-atlas") || dessus.className || dessus.tagName).toString().replace(/\\s+/g, " ").trim().slice(0, 48);
