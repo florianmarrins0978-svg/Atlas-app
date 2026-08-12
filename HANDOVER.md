@@ -29,6 +29,13 @@ ce soit au patron.** C'est exactement ce qui a coûté quatre allers-retours dan
 la nuit du 11 au 12 août : des hypothèses formulées à distance, toutes fausses,
 pendant que sa machine savait tout.
 
+Cette phrase-là n'est plus à retenir : `.claude/settings.json` branche
+`scripts/rappel-panne.mjs` sur chaque message reçu, et le rappel réapparaît de
+lui-même dès qu'il signale une panne — dans cette session comme dans les trois
+ou quatre autres qu'il fait tourner en parallèle. Il ajoute du contexte, il ne
+bloque rien, et devant le moindre doute il se tait : un rappel qui parle à tort
+finit ignoré, et le garde-fou se perd sans bruit.
+
 ---
 
 ## ⚠ Plusieurs conversations travaillent sur ce dépôt EN MÊME TEMPS

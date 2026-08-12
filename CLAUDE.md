@@ -48,6 +48,20 @@ heures), l'état des services et la fin du journal de démarrage.
    son espace plutôt que de lui dicter dix commandes. L'agent y a accès, pas
    nous.
 
+**Cette consigne ne dépend plus de la mémoire de personne.** Elle se lisait au
+début d'une conversation et s'oubliait au bout de trois heures — or c'est au
+bout de trois heures qu'il signale une panne. `.claude/settings.json` branche
+donc `scripts/rappel-panne.mjs` sur chaque message reçu : dès qu'une tournure
+comme « ça ne marche pas » apparaît, le rappel ci-dessus est remis sous les yeux
+de la session, **quelle qu'elle soit** — il en fait tourner trois ou quatre en
+parallèle, et aucune n'a lu les autres.
+
+Le déclencheur **n'interdit rien et ne bloque rien** : il ajoute du contexte.
+Devant le moindre doute il se tait, et c'est délibéré : un rappel qui parle à
+tort s'apprend à être ignoré, et l'on perd alors le garde-fou sans s'en
+apercevoir. Ses tournures sont relevées de ses vrais messages, jamais inventées
+(`scripts/test-rappel-panne.ts`).
+
 **Ce qui est refusé, et ne doit pas être rouvert :** donner à une session le
 pouvoir d'exécuter des commandes chez lui. Une boucle qui lirait des ordres dans
 le dépôt serait une porte dérobée sur une machine qui porte ses identifiants

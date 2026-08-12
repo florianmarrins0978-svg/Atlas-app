@@ -9,6 +9,45 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### « Ça ne marche pas » va désormais chercher la fiche tout seul
+
+**Sa demande :** *« Il faudrait que si j'écris ça ne marche pas, d'elle-même
+elle aille regarder la fiche. »*
+
+La consigne existait déjà en toutes lettres (`CLAUDE.md` §1 bis, écrit le matin
+même). Elle ne suffisait pas, et pour une raison qui n'a rien à voir avec la
+bonne volonté : **une consigne en prose se lit au début d'une conversation et
+s'oublie au bout de trois heures** — or c'est au bout de trois heures qu'il
+signale une panne, jamais au début.
+
+`.claude/settings.json` branche donc `scripts/rappel-panne.mjs` sur chaque
+message reçu. Dès qu'une tournure comme « ça ne marche pas » apparaît, le rappel
+est remis sous les yeux de la session **au moment exact où il sert** : lire la
+fiche d'état de son espace, regarder sa date d'abord, ne supposer qu'ensuite, et
+lui faire lancer `claude` chez lui plutôt que de lui dicter dix commandes depuis
+un téléphone.
+
+**Il vaut pour ses trois ou quatre sessions à la fois**, et sans qu'aucune ait
+rien à retenir : le fichier est dans le dépôt, donc chacune l'applique. C'est ce
+qu'il demandait la veille — *« je veux que si je leur dis ça ne marche pas,
+qu'elles se débrouillent »*.
+
+**Il n'interdit rien et ne bloque rien** : il ajoute du contexte, et devant le
+moindre doute il se tait. Ce n'est pas de la prudence de façade — un rappel qui
+parle à tort s'apprend à être ignoré, et le garde-fou se perd alors sans que
+personne s'en aperçoive. D'où deux garde-fous symétriques dans
+`scripts/test-rappel-panne.ts` : les tournures qu'il a **réellement écrites**
+les 11 et 12 août déclenchent (aucune n'est inventée), et les demandes
+ordinaires — « corrige l'erreur de type », « est-ce que la CI est passée ? »,
+« ça fonctionne ? » — ne déclenchent rien. Le câblage lui-même est vérifié : un
+script juste que rien n'appelle ne protège personne, et son absence ne se voit
+nulle part.
+
+Confronté à l'état dégradé : réglages vidés de leur crochet, le contrôle passe
+au rouge en nommant le bon coupable. Une entrée illisible, elle, laisse le
+déclencheur muet et en succès — il gêne chaque message du patron ou il ne gêne
+rien.
+
 ### L'espace du patron raconte son état là où l'agent sait lire
 
 **Sa demande :** *« Faut trouver un moyen pour que tu aies accès à mon espace,
