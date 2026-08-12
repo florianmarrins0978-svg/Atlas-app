@@ -10,6 +10,29 @@ import { logger } from "@/server/logger";
 const MESSAGE_GENERIQUE = "Email ou mot de passe incorrect.";
 
 /**
+ * Ce qu'on répond quand on n'a **pas pu** vérifier — ce qui n'est pas du tout la
+ * même chose que « c'est faux ».
+ *
+ * **Le 12 août 2026 :** *« ça ne marche pas, je n'arrive pas à me connecter »*.
+ * La base de données de son espace était arrêtée. La requête qui cherche son
+ * compte échouait, Auth.js l'emballait dans une `AuthError` — et cet écran,
+ * qui les traitait toutes pareil, lui répondait **« Email ou mot de passe
+ * incorrect »**. Il pouvait retaper son mot de passe toute la nuit.
+ *
+ * C'est le défaut que l'en-tête de ce fichier interdit déjà, sous sa troisième
+ * forme : *ne jamais répondre « mot de passe incorrect » à quelqu'un dont le mot
+ * de passe est bon.* On l'avait réparé pour le blocage par tentatives ; la panne
+ * d'un service, elle, retombait encore dans le même piège.
+ *
+ * Le message ne nomme pas la pièce en panne — il n'a pas à révéler l'intérieur —
+ * mais il dit les deux choses qui comptent : **ce n'est pas vous**, et ça se
+ * répare du côté du service. Le journal, lui, dit tout.
+ */
+const MESSAGE_SERVICE_INDISPONIBLE =
+  "Impossible de vérifier vos identifiants : un service d'Atlas ne répond pas. " +
+  "Ce n'est pas votre mot de passe. Réessayez dans un instant.";
+
+/**
  * **Ne jamais répondre « mot de passe incorrect » à quelqu'un dont le mot de
  * passe est bon.**
  *
@@ -84,7 +107,22 @@ export async function connexionAction(
     await signIn("credentials", { email, password, redirect: false });
   } catch (err) {
     if (err instanceof AuthError) {
-      return { erreur: MESSAGE_GENERIQUE };
+      // **Un seul type d'erreur veut dire « ces identifiants sont faux ».**
+      // Tous les autres veulent dire « on n'a pas pu vérifier » — base de
+      // données arrêtée, secret manquant, panne du fournisseur. Les confondre,
+      // c'est accuser le patron de se tromper de mot de passe pendant qu'un
+      // service est couché, et il n'a alors aucun moyen de le comprendre.
+      if (err.type === "CredentialsSignin") {
+        return { erreur: MESSAGE_GENERIQUE };
+      }
+      // Bruyant à dessein : c'est la seule trace qui restera, et le message
+      // rendu à l'écran ne dit volontairement pas ce qui est en panne.
+      logger.error("Connexion impossible : la vérification des identifiants a échoué", {
+        email,
+        type: err.type,
+        cause: err.cause instanceof Error ? err.cause.message : String(err.cause ?? ""),
+      });
+      return { erreur: MESSAGE_SERVICE_INDISPONIBLE };
     }
     throw err;
   }

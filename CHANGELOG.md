@@ -7,6 +7,53 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-12
+
+### L'écran de connexion accusait le patron pendant qu'un service était couché
+
+**Le 12 août 2026 :** *« Ça ne marche pas, je n'arrive pas à me connecter.
+Occupe-toi-en, moi je ne peux pas le faire. »*
+
+Deux défauts distincts, tous deux trouvés en coupant les services pour de bon
+plutôt qu'en raisonnant dessus.
+
+**1. La base arrêtée lui répondait « Email ou mot de passe incorrect ».** La
+requête qui cherche son compte échouait, Auth.js l'emballait dans une
+`AuthError`, et l'écran les traitait toutes pareil. Il pouvait retaper son mot
+de passe toute la nuit : le message lui disait de recommencer, et recommencer ne
+pouvait rien donner. C'est le défaut que l'en-tête de `src/app/login/actions.ts`
+interdit depuis le 6 août — *ne jamais répondre « mot de passe incorrect » à
+quelqu'un dont le mot de passe est bon* — sous sa **troisième** forme. Un seul
+type d'erreur veut dire « ces identifiants sont faux » ; tous les autres veulent
+dire « on n'a pas pu vérifier », et se rendent désormais par une phrase qui dit
+les deux choses qui comptent : **ce n'est pas vous**, et ça se répare du côté du
+service. Le journal, lui, nomme la cause.
+
+**2. Redis tombé l'enfermait dehors, sans un mot.** `verifierLimite` levait
+`MaxRetriesPerRequestError`, l'action de connexion mourait avec, et la page ne
+bougeait pas. Un limiteur protège d'un ABUS : refuser tout le monde quand son
+magasin tombe, ce n'est pas protéger, c'est infliger soi-même la panne dont on
+se protégeait — et la première victime est celui qui a le droit d'entrer. La
+demande passe donc, et le journal le dit fort. **Ce que ça coûte, franchement :**
+pendant la panne du magasin, la protection contre les essais en rafale n'existe
+plus. Risque accepté et borné à la durée de la panne, contre la certitude
+d'enfermer l'artisan dehors.
+
+**Ce qui manquait vraiment, et qui existe maintenant :**
+`scripts/test-connexion-service-en-panne-e2e.ts` **coupe les services pour de
+bon** — Redis, puis PostgreSQL — et regarde ce que l'écran répond, dans un vrai
+navigateur. C'est le seul contrôle du dépôt qui fasse cela ; tous les autres
+supposent l'environnement debout, et c'est exactement pour cela qu'aucun n'avait
+jamais vu ce message mentir. Il remet chaque service en marche derrière lui, et
+saute proprement le volet base s'il n'a pas de quoi la remonter — le dire plutôt
+que de risquer de la laisser à terre pour les autres suites.
+
+Confronté : en rétablissant l'ancien traitement, deux contrôles rougissent en
+citant l'écran mot pour mot — « Email ou mot de passe incorrect » pendant que la
+base est arrêtée.
+
+---
+
 ## 2026-08-11
 
 ### Le serveur fantôme du port 3000 : un gardien juste, posé trop tard
