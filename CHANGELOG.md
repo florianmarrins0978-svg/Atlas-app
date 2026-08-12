@@ -41,20 +41,40 @@ restructuré sans lui.
 
 `ARCHITECTURE.md` §70.
 
-### La barre d'outils de Next.js accusait six écrans
+### La CI était rouge depuis des heures, et personne ne regardait
 
-**Trouvé en jouant la batterie, et reproduit sur `main` avant de toucher quoi
-que ce soit** — le défaut n'était pas celui du lot en cours.
+**Trouvé en allant voir**, après une poussée sur `main` : les exécutions
+échouaient les unes après les autres, 56 suites sur 58. Deux pannes, aucune
+visible depuis la machine de l'agent — c'est précisément pour cela qu'une CI
+existe, et précisément pourquoi il faut la lire.
 
-`test-rien-de-recouvert-e2e.ts` déclarait l'onglet « Chantiers » hors d'atteinte
-du doigt sur six écrans. Le coupable désigné : `NEXTJS-PORTAL`, la pastille de
-développement de Next.js — qui **n'existe pas dans la version bâtie** que sert
-le banc du patron. Le contrôle envoyait donc chercher un défaut d'interface là
-où il n'y en a pas, et rougissait la batterie entière.
+**1. Une suite lançait un navigateur qui n'existe que chez l'agent.**
+`test-session-perimee-e2e.ts` codait en dur `/opt/pw-browsers/chromium`. En CI,
+Playwright installe le sien ailleurs : « executable doesn't exist », à chaque
+exécution, pendant que la suite passait ici. Elle emprunte désormais le lanceur
+commun, qui sait retomber sur le navigateur installé.
 
-Le porteur est désormais écarté, jamais la cible : un vrai calque d'Atlas posé
-au même endroit reste attrapé — vérifié en en posant un exprès (12 échecs), puis
-en le retirant (0).
+**2. Le badge de développement de Next faisait virer six contrôles au rouge.**
+`test-rien-de-recouvert-e2e.ts` voyait l'onglet « CHANTIERS » recouvert par un
+`<nextjs-portal>` — le badge « 1 Issue », posé en bas à gauche, exactement
+dessus. Il n'apparaît que lorsqu'il a quelque chose à signaler : d'où une CI
+rouge par intermittence et une suite verte ici.
+
+Ce badge **n'est pas le produit** — il n'existe pas dans la version bâtie. La
+suite l'écarte donc nommément, et un témoin vérifie que l'exclusion reste
+étroite : un vrai recouvrement au même endroit est toujours attrapé (éprouvé en
+posant les deux voleurs à la même place). **Un contrôle qui échoue au hasard est
+pire qu'aucun contrôle** : il apprend à ignorer le rouge, et l'on perd alors la
+seule suite qui sache voir un bouton devenu inatteignable.
+
+**Ce que cela ne règle pas, et qui est dans `TODO.md` :** sur le banc du patron,
+qui sert le mode développement, ce badge recouvre bel et bien son onglet
+« Chantiers ». Les quatre coins ont été mesurés — aucun n'est libre — et
+l'éteindre lui ferait perdre le « 1 Issue » par lequel il a justement signalé
+l'erreur d'hydratation de Safari. La bonne réponse est probablement de servir
+une version bâtie sur son banc ; elle n'est pas prise ici.
+
+---
 
 ### La fiche d'état ne partait pas — et personne n'avait jamais essayé de l'envoyer
 

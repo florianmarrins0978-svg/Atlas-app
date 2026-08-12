@@ -179,9 +179,23 @@ async function publierParHttp(corps, jeton) {
     "Content-Type": "application/json",
   };
 
-  const liste = await fetch(`${racine}?state=open&per_page=100`, { headers: entetes });
-  if (!liste.ok) throw new Error(`liste des fiches refusée (${liste.status})`);
-  const existante = choisirFiche(await liste.json(), TITRE_FICHE);
+  const lister = async () => {
+    const r = await fetch(`${racine}?state=open&per_page=100`, { headers: entetes });
+    if (!r.ok) throw new Error(`liste des fiches refusée (${r.status})`);
+    return choisirFiche(await r.json(), TITRE_FICHE);
+  };
+
+  // **On regarde DEUX fois avant de créer, et c'est un vrai défaut évité.**
+  // Constaté en CI le 12 août 2026 : la fiche venait d'être créée, et la liste
+  // renvoyée une seconde plus tard ne la contenait pas encore — GitHub sert
+  // cette liste depuis une réplique, qui retarde. Créer sur ce silence
+  // ouvrirait une SECONDE fiche, et le titre fixe ne servirait plus à rien.
+  // Le démarrage publie justement deux fois à quelques secondes d'écart.
+  let existante = await lister();
+  if (!existante) {
+    await new Promise((r) => setTimeout(r, 3000));
+    existante = await lister();
+  }
 
   const reponse = existante
     ? await fetch(`${racine}/${existante}`, {
