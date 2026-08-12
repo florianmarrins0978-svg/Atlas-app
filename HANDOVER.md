@@ -238,6 +238,22 @@ par SMS, par e-mail, a disparu. »*
 3. **`devis_absent` reste un arrêt sec, et c'est juste** : aucune saisie ne le
    lève. Ne pas l'aligner sur les deux autres par symétrie.
 
+**« Mon devis » n'attend plus une réponse perdue (12 août).** Le patron :
+*« il s'est passé plus de six minutes et j'ai dû recharger la page. »*
+
+**Trois choses à savoir :**
+
+1. **La chaîne n'est PAS lente — c'est mesuré**, 96 ms et 42 ms sans modèle
+   raccordé, et chaque appel à un modèle est borné à 30 s. Ce qui durait, c'était
+   l'attente d'une réponse qui ne revenait pas. La chaîne journalise désormais sa
+   durée et son statut : **regarder le journal avant de la soupçonner.**
+2. **Quand la réponse se perd, l'écran interroge `/api/chantiers/<id>/devis-pret`**
+   et va au devis dès qu'il existe (`src/lib/attente-devis.ts`). L'attente
+   **renonce** au bout de cinq minutes — ne pas retirer cette limite, une attente
+   sans fin est le défaut qu'on répare.
+3. **Même famille que §63 et §65** : un long aller-retour tenu ouvert est fragile
+   par nature. Devant un quatrième symptôme de ce genre, chercher là.
+
 **⚠ LA NOTE VOCALE PART PAR UNE URL, PLUS JAMAIS PAR UNE ACTION SERVEUR
 (12 août).** C'est la cause — reproduite, pas supposée — des trois signalements
 du patron : *« L'enregistrement n'a pas pu être transmis. »*

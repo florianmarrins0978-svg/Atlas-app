@@ -9,6 +9,45 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### « Mon devis » pouvait attendre indéfiniment une réponse déjà perdue
+
+**Le patron :** *« entre le moment où je clique mon devis et le moment où le
+devis apparaît, la première fois il s'est passé plus de six minutes et j'ai dû
+recharger la page pour que le devis arrive. »*
+
+**Le serveur, lui, avait fini depuis longtemps.** Mesuré ici : la chaîne met
+**96 ms et 42 ms** sans modèle raccordé, et chaque appel à un modèle est borné à
+trente secondes — elle ne peut pas durer six minutes. Ce qui a duré six minutes,
+c'est **son attente** : la réponse de l'action n'est jamais revenue jusqu'à sa
+page, et le bouton est resté sur « Atlas prépare le devis… », indéfiniment. Son
+rechargement n'a rien réparé — il a montré un devis déjà écrit.
+
+C'est la même famille que les deux défauts de la veille (`ARCHITECTURE.md` §63
+et §65) : **un long aller-retour tenu ouvert est fragile par nature.** Un
+mandataire qui coupe suffit à le perdre, et le travail continue sans personne
+pour en recueillir le résultat.
+
+**On cesse d'en dépendre.** Quand la réponse se perd, l'écran demande
+périodiquement si le devis est là (`/api/chantiers/<id>/devis-pret`, sur le
+témoin `devisGenereAt` posé quand le devis ET ses lignes sont écrits) et y va
+dès qu'il l'est. Recharger la page n'est plus le travail du patron.
+
+Trois précautions, chacune contre un défaut vécu :
+
+- **l'attente sait renoncer.** Une attente sans fin est le défaut qu'on répare,
+  pas celui qu'on déplace : passé cinq minutes, l'écran dit quoi faire ;
+- **le compteur monte à l'écran.** « Atlas prépare toujours le devis… (48 s) » —
+  un écran qui répète la même chose se lit comme un écran figé, et c'est ce qui
+  l'a poussé à recharger ;
+- **une réponse qui n'est pas du JSON ne passe pas pour un « prêt »**. Derrière
+  un mandataire, une session expirée rend une page HTML, parfois avec un code
+  200 : l'emmener alors sur un devis inexistant serait pire que l'attente.
+
+**Et la chaîne dit maintenant sa durée au journal**, avec le statut obtenu. Le
+raisonnement disait « six minutes, impossible » — mais personne ne l'avait
+mesuré chez lui, et raisonner à distance sur une machine qu'on ne voit pas a
+déjà coûté cher à ce dépôt. La prochaine fois, le journal tranchera.
+
 ### L'écran de connexion accusait le patron pendant qu'un service était couché
 
 **Le 12 août 2026 :** *« Ça ne marche pas, je n'arrive pas à me connecter.
