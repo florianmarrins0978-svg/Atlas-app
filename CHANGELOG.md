@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### Le devis repart, et le bouton de l'envoi devient enfin le bon
+
+**Deux défauts sur une seule capture**, signalés le 12 août au matin.
+
+**Le bloquant :** « je ne peux pas envoyer mon devis, ni par SMS ni par mail ».
+La feuille d'envoi affichait *« Stockage local sélectionné en production —
+configuration refusée »*. Sa configuration était juste : la barrière ne regardait
+que `NODE_ENV`, or son banc sert une version BÂTIE et `next start` impose
+`NODE_ENV=production` sans que rien ne soit déployé. La configuration connaissait
+cette distinction depuis le 10 août ; cette barrière-là l'ignorait, et se croyait
+redondante alors qu'elle était devenue plus stricte. Un déploiement réel exige
+toujours S3 — rien n'est relâché de ce côté.
+
+**Le second :** « le bouton, ce n'est pas le même ». Exact. La feuille d'envoi
+dessinait son bouton à la main au lieu d'employer le composant partagé. Une
+action principale dessinée sur place échappe à toute décision d'ensemble : elle
+ne change que si quelqu'un pense à elle.
+
+**Et pourquoi la planche de la veille ne l'avait pas vu :** elle parcourt des
+adresses, et une feuille qui monte sur un geste n'en a pas. Le compte
+« dix-sept écrans » ne comptait que ce qu'elle savait atteindre.
+
+`ARCHITECTURE.md` §65.
+
+---
+
+## 2026-08-12
+
 ### L'écran de connexion accusait le patron pendant qu'un service était couché
 
 **Le 12 août 2026 :** *« Ça ne marche pas, je n'arrive pas à me connecter.

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
+import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { jourIso, jourLisible } from "@/lib/jour";
 import Calendrier from "@/components/atlas/Calendrier";
 import { libelleDuree } from "@/server/disponibilites";
@@ -485,15 +486,19 @@ function Contenu({
         </p>
       )}
 
+      {/* **Ce bouton était écrit à la main, et le patron l'a vu le 12 août 2026 :**
+          *« déjà le bouton, ce n'est pas le même »*. Il avait raison — la
+          capsule avait été posée sur `PrimaryButton`, et cet écran-ci ne s'en
+          servait pas. Une action principale dessinée sur place échappe à toute
+          décision d'ensemble : elle ne change que si quelqu'un pense à elle.
+          C'est le composant qui porte la forme, jamais l'écran. */}
       <div className="flex flex-col gap-2.5">
-        <button
+        <PrimaryButton
           onClick={confirmer}
           disabled={enCours || !preparation || !!blocage || selection.length === 0}
-          className="rounded-[4px] py-3.5 text-[16px] font-medium text-white disabled:opacity-50"
-          style={{ backgroundColor: colors.rust }}
         >
           {enCours ? "Envoi…" : "Envoyer le devis"}
-        </button>
+        </PrimaryButton>
         <button
           onClick={onFermer}
           className="rounded-[4px] py-3.5 text-[15px] font-medium"

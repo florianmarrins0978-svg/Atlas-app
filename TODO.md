@@ -27,6 +27,25 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 octies. Les actions principales encore dessinées à la main
+
+**Trouvé le 12 août 2026, parce que le patron l'a vu avant nous.** La feuille
+d'envoi du devis dessinait son bouton sur place ; la capsule ne l'avait donc
+jamais atteinte. Corrigé pour le parcours d'envoi (`EnvoiAuClient`,
+`TransmettreAuClient`).
+
+**Restent, repérées mais NON converties :** `DevisDepuisDictee`,
+`BrouillonSection` (informations), `PropositionPrixSection` (prix), et les
+écrans de réglages (agenda, vocabulaire, import de tarifs). Chacune est un
+`<button>` peint en `colors.rust` au lieu d'un `PrimaryButton`.
+
+**Pourquoi ce n'est pas fait d'office :** sa règle du 11 août — *« montre-moi
+avant de faire, plutôt que de faire pour revenir en arrière »*. Il faut donc lui
+montrer ces écrans avant/après, puis convertir. `scripts/capture-bouton-partout.mjs`
+sait le faire pour les écrans qui ont une ADRESSE ; les feuilles qui montent sur
+un geste demandent d'ouvrir le tiroir — c'est ce qui manque au script, et c'est
+exactement le trou par lequel ce défaut est passé.
+
 ### ~~0 quindecies. Un serveur fantôme sur le port 3000, et la batterie accusait le prix~~ — **corrigé le 11 août 2026**
 
 **Vu sur une batterie qui venait de passer entièrement au vert.** La même

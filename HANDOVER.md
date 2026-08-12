@@ -104,6 +104,35 @@ la bonne.
    une application mise à jour. Tant que le travail n'est pas sur la branche que
    son espace suit, il n'existe pas pour lui.
 
+## Le 12 août : deux défauts sur une seule capture
+
+**« Je ne peux pas envoyer mon devis, ni par SMS ni par mail. »** La feuille
+d'envoi affichait *« Stockage local sélectionné en production — configuration
+refusée »*. `src/server/storage/index.ts` ne regardait que `NODE_ENV`, alors que
+le banc **sert une version bâtie** et que `next start` impose
+`NODE_ENV=production` sans rien déployer. La configuration connaissait la
+distinction (`bancDEssai`) ; cette barrière-là l'ignorait.
+
+**La leçon, plus large que le correctif :** son commentaire affirmait « le module
+d'environnement refuse déjà… », ce qui était FAUX sur le banc. Une barrière qui
+se croit redondante et ne l'est plus est invisible — personne ne relit une
+duplication supposée fidèle. `CLAUDE.md` §3 : jamais de règle dupliquée.
+
+**« Le bouton, ce n'est pas le même. »** La feuille d'envoi dessinait son bouton
+à la main. **Une action principale dessinée sur place échappe à toute décision
+d'ensemble.** Avant de dire « le bouton est partout », chercher les boutons
+peints à la main :
+
+```sh
+grep -rn "backgroundColor: colors.rust" src/app src/components --include="*.tsx"
+```
+
+**Et le trou du script de capture :** `capture-bouton-partout.mjs` parcourt des
+ADRESSES. Une feuille qui monte sur un geste n'en a pas — elle était donc hors
+de son champ, et le compte « dix-sept écrans » ne comptait que ce qu'il savait
+atteindre. Les conversions restantes sont listées dans `TODO.md` §0 octies, non
+faites d'office : sa règle est *« montre-moi avant de faire »*.
+
 ## Ce qui vient d'être terminé
 
 **⚠ SI LE PATRON DIT « ce n'est toujours pas là » : REGARDER LA BRANCHE
