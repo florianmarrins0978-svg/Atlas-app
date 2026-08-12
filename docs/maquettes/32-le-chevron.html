@@ -3,38 +3,35 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>La flèche d’itinéraire</title>
+<title>Le chevron du planning</title>
 </head>
 <body>
 <style>
   /*
-    « SANS LE PLUS, TU METS UNE PETITE FLÈCHE D'ITINÉRAIRE À LA PLACE. ET TU
-      RETIRES OUVRIR LA FICHE DU CHANTIER. »
+    « PAS CETTE FLÈCHE. JE VEUX LA MÊME QUE CELLE À CÔTÉ DE MAPS, LE PETIT > »
 
-    Sa demande du 12 août 2026, après la maquette 31. Deux changements, et rien
-    d'autre — le reste avait été retenu tel quel.
+    Sa correction du 12 août 2026. J'avais mis la flèche de navigation — celle
+    de Waze. Il veut le CHEVRON : celui qui est déjà à droite de « Plans », de
+    « Google Maps » et de « Waze », dans la feuille.
 
-      1. LE « + » DEVIENT UNE FLÈCHE. Le « + » venait de la pellicule des
-         photos, où il AJOUTE quelque chose. Ici on n'ajoute rien : on part.
-         La flèche est celle de Waze et de Plans, et c'est la même que celle qui
-         figure dans la feuille, trois lignes plus bas — le signe du départ, pas
-         celui de l'ajout.
+    Il a raison, et pour une raison qui se dit en une phrase : les deux signes
+    ne promettent pas la même chose. Une flèche de navigation promet un DÉPART —
+    et sur un chantier sans adresse, elle ne peut pas le tenir (il fallait alors
+    l'éteindre, ce qui ajoutait un cas). Un chevron promet que QUELQUE CHOSE
+    S'OUVRE : c'est vrai des quatre lignes, adresse ou pas. Le cas particulier
+    disparaît avec lui.
 
-      2. « OUVRIR LA FICHE DU CHANTIER » DISPARAÎT. Sur le planning, le nom du
-         chantier mène DÉJÀ à sa fiche (`PlanningClient.tsx`) : le bouton
-         proposait un second chemin vers le même endroit. Deux gestes clairs
-         valent mieux qu'un doublon — le nom mène au chantier, la flèche fait
-         partir.
+    ET C'EST LE MÊME GRIS, écrit une seule fois (`--chevron`) : la feuille et la
+    liste y puisent. Deux gris « presque pareils » sur un écran, ça se voit — et
+    ça se voit mal.
 
-    CE QUI RESTE À TRANCHER, ET QUI N'EST PAS INVENTÉ ICI : quand l'adresse
-    manque, la feuille dit « à saisir sur la fiche du chantier » mais n'y mène
-    plus. La phrase suffit-elle, ou faut-il un bouton « Saisir l'adresse » à
-    cet endroit précis ? Sa réponse décidera — rien n'est ajouté sans elle.
+    L'AUTRE CHANGEMENT TIENT TOUJOURS : « Ouvrir la fiche du chantier » a
+    disparu de la feuille, le nom du chantier y menant déjà.
 
     TROIS FAÇONS DE L'OUVRIR, à essayer au doigt (le choix est en haut) :
-      · DU BAS        — elle monte du bas, freinée à l'arrivée. Le geste connu.
-      · PAGE ENTIÈRE  — l'écran bascule tout entier sur « Y aller ».
-      · DEPUIS LA FLÈCHE — elle naît de la flèche touchée et se déplie.
+      · DU BAS           — elle monte du bas, freinée à l'arrivée.
+      · PAGE ENTIÈRE     — l'écran bascule tout entier sur « Y aller ».
+      · DEPUIS LE CHEVRON — elle naît du chevron touché et se déplie.
 
     TOUT EST VIVANT : les trois GPS ouvrent vraiment l'application, « copier »
     copie, « appeler » appelle. Rien n'est écrit dans l'application.
@@ -44,6 +41,7 @@
     --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
     --or:#B98B47; --or-clair:#C9A15E; --pin:#2f3b2f;
     --trait:rgba(28,28,26,.16); --trait-doux:rgba(28,28,26,.07);
+    --chevron:rgba(28,28,26,.3);
     --ombre:0 -18px 44px rgba(20,18,14,.22);
     --ressort:cubic-bezier(.22,1.02,.36,1);
   }
@@ -97,21 +95,25 @@
   .ligne .quand{display:block;margin-top:3px;font-size:12px;color:var(--gris)}
   .ligne .sans{display:block;margin-top:3px;font-size:12px;color:var(--gris);font-style:italic}
 
-  /* **La flèche d'itinéraire** — le signe du DÉPART, et non celui de l'ajout.
-     C'est le même dessin que le Waze de la feuille : ce qu'on touche ici est ce
-     qu'on retrouve trois lignes plus bas. */
-  .aller{flex:0 0 auto;width:36px;height:36px;border-radius:50%;
-         border:1px solid var(--trait);background:none;cursor:pointer;
+  /* **Le chevron — exactement celui de la feuille**, à droite de « Google
+     Maps ». Mêmes valeurs, écrites une seule fois plus haut (`--chevron`) :
+     deux gris « presque pareils » sur le même écran, ça se voit, et ça se voit
+     mal.
+
+     Ni rond, ni couleur : un chevron ne promet pas un départ, il promet que
+     QUELQUE CHOSE S'OUVRE — ce qui reste vrai même quand l'adresse manque, la
+     feuille disant alors ce qui manque. C'est pour cela que la ligne sans
+     adresse n'a plus besoin d'un traitement à part.
+
+     Le carré de 44 px est invisible mais il est là : le chevron seul ferait une
+     cible de dix-sept pixels, qu'on rate deux fois sur trois avec des gants. */
+  .aller{flex:0 0 auto;width:44px;height:44px;border:0;background:none;cursor:pointer;
          display:flex;align-items:center;justify-content:center;padding:0;
-         transition:transform .18s var(--ressort),border-color .18s,background .18s;
+         font:400 17px/1 ui-sans-serif,-apple-system,sans-serif;
+         color:var(--chevron);
+         transition:transform .18s var(--ressort),color .18s;
          -webkit-tap-highlight-color:transparent}
-  .aller svg{display:block}
-  .aller path{fill:none;stroke:var(--or);stroke-width:1.7;stroke-linejoin:round}
-  .aller:active{transform:scale(.92);border-color:var(--or);background:rgba(185,139,71,.08)}
-  /* Sans adresse, la flèche ne peut pas tenir sa promesse : elle s'éteint.
-     Elle reste touchable — la feuille dira ce qui manque, et où le saisir. */
-  .aller.eteinte path{stroke:var(--gris)}
-  .aller.eteinte{border-color:var(--trait-doux)}
+  .aller:active{transform:scale(.9);color:var(--or)}
 
   .barre{margin-top:auto;display:flex;justify-content:space-around;align-items:center;
          padding:15px 8px calc(18px + env(safe-area-inset-bottom));border-top:1px solid var(--trait)}
@@ -151,7 +153,7 @@
   .ouverture-page .voile.ouverte .feuille{transform:none}
   .ouverture-page .poignee{display:none}
 
-  /* 3 — DEPUIS LA FLÈCHE : elle naît du bouton touché et se déplie. */
+  /* 3 — DEPUIS LE CHEVRON : elle naît du bouton touché et se déplie. */
   .ouverture-plus .feuille{transform:scale(.06);opacity:0;
                            transform-origin:var(--nx,50%) var(--ny,50%);
                            transition:transform .46s var(--ressort),opacity .3s}
@@ -174,7 +176,7 @@
   .dest:active{background:#f0eee7}
   .dest .marque{flex:0 0 auto;width:26px;height:26px;display:flex;align-items:center;justify-content:center}
   .dest .nom{flex:1;font-size:16px}
-  .dest .fleche{color:rgba(28,28,26,.3);font-size:17px}
+  .dest .fleche{color:var(--chevron);font-size:17px}
   .destinations.eteintes .dest{opacity:.3;pointer-events:none}
 
   /* Les deux rangs de gestes annexes — leurs mots ENTIERS. Raccourcis en
@@ -213,7 +215,7 @@
   <span class="quoi">Comment la feuille s’ouvre</span>
   <button type="button" data-ouv="bas" aria-pressed="true">Du bas</button>
   <button type="button" data-ouv="page" aria-pressed="false">Page entière</button>
-  <button type="button" data-ouv="plus" aria-pressed="false">Depuis la flèche</button>
+  <button type="button" data-ouv="plus" aria-pressed="false">Depuis le chevron</button>
 </div>
 
 <div class="scene">
@@ -239,7 +241,7 @@
                 data-chantier="Abattage de chêne"
                 data-client="M. Bernard"
                 data-quand="Vendredi 14 août · matin · Équipe A"
-                data-tel="+33556000012"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M14 2 2 7.2l5 1.8 1.8 5z"/></svg></button>
+                data-tel="+33556000012">›</button>
       </div>
 
       <div class="ligne">
@@ -252,7 +254,7 @@
                 data-chantier="Taille de haie, 40 m"
                 data-client="Mme Rivière"
                 data-quand="Mardi 18 août · journée entière"
-                data-tel="+33556000034"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M14 2 2 7.2l5 1.8 1.8 5z"/></svg></button>
+                data-tel="+33556000034">›</button>
       </div>
 
       <div class="ligne">
@@ -265,7 +267,7 @@
                 data-chantier="Dessouchage, 3 souches"
                 data-client="SCI Verdier"
                 data-quand="Jeudi 20 août · après-midi · Équipe B"
-                data-tel="+33556000056"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M14 2 2 7.2l5 1.8 1.8 5z"/></svg></button>
+                data-tel="+33556000056">›</button>
       </div>
 
       <div class="ligne">
@@ -274,9 +276,9 @@
           <span class="quand num">21 août · après-midi</span>
           <span class="sans">Adresse non renseignée</span>
         </span>
-        <button class="aller eteinte" aria-label="Y aller — Élagage, M. Aubert : adresse manquante"
+        <button class="aller" aria-label="Y aller — Élagage, M. Aubert"
                 data-lieu="" data-chantier="Élagage de platanes" data-client="M. Aubert"
-                data-quand="Vendredi 21 août · après-midi" data-tel=""><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M14 2 2 7.2l5 1.8 1.8 5z"/></svg></button>
+                data-quand="Vendredi 21 août · après-midi" data-tel="">›</button>
       </div>
     </div>
 
@@ -350,32 +352,31 @@
 <div class="dessous">
   <div class="dedans">
     <h2>Ce qui a changé depuis la maquette 31</h2>
-    <p><b>Le « + » devient une flèche d’itinéraire.</b> Le « + » venait de la
-      pellicule des photos, où il <i>ajoute</i> quelque chose. Ici on n’ajoute
-      rien : on part. La flèche est celle de Waze et de Plans — et c’est
-      exactement le même dessin que celui de la feuille, trois lignes plus bas.</p>
-    <p><b>« Ouvrir la fiche du chantier » a disparu.</b> Sur le planning, le nom
-      du chantier mène <i>déjà</i> à sa fiche : le bouton proposait un second
-      chemin vers le même endroit. Deux gestes clairs valent mieux qu’un
-      doublon — le nom mène au chantier, la flèche fait partir.</p>
-    <p><b>Une conséquence de ce changement, à voir sur la dernière ligne.</b>
-      Une flèche dorée <i>promet</i> un départ ; sur un chantier sans adresse,
-      elle ne peut pas le tenir. La sienne est donc grise. Elle reste touchable —
-      la feuille dit ce qui manque. Le « + », lui, ne promettait rien : c’est le
-      seul prix de la flèche, et il est payé ici.</p>
+    <p><b>Le « + » devient le chevron</b> — celui-là même qui est à droite de
+      « Plans », de « Google Maps » et de « Waze », dans la feuille. Même dessin,
+      même gris, écrit une seule fois pour les deux endroits : deux gris presque
+      pareils sur un écran, ça se voit, et ça se voit mal.</p>
+    <p><b>Et il promet la bonne chose.</b> Une flèche de navigation promet un
+      <i>départ</i> ; sur un chantier sans adresse, elle ne peut pas le tenir —
+      il fallait alors l’éteindre, donc traiter un cas de plus. Un chevron promet
+      que <i>quelque chose s’ouvre</i>, ce qui reste vrai des quatre lignes. Le
+      cas particulier a disparu avec lui.</p>
+    <p><b>« Ouvrir la fiche du chantier » a disparu de la feuille.</b> Sur le
+      planning, le nom du chantier y mène déjà : c’était un second chemin vers le
+      même endroit.</p>
     <p><b>Une question reste ouverte, et je ne l’ai pas tranchée seul</b> :
-      quand l’adresse manque (dernière ligne du planning), la feuille dit
-      « à saisir sur la fiche du chantier » mais n’y mène plus. Cette phrase
-      suffit-elle, ou faut-il un bouton <b>« Saisir l’adresse »</b> à cet endroit
-      précis ? Dites-le-moi — rien ne sera ajouté sans votre réponse.</p>
+      quand l’adresse manque (dernière ligne), la feuille dit « à saisir sur la
+      fiche du chantier » mais n’y mène plus. Cette phrase suffit-elle, ou
+      faut-il un bouton <b>« Saisir l’adresse »</b> à cet endroit précis ?
+      Dites-le-moi — rien ne sera ajouté sans votre réponse.</p>
 
     <h2>Trois ouvertures — dites-moi laquelle</h2>
     <p><b>Du bas.</b> Elle monte et freine à l’arrivée. Le geste que tout le
       monde connaît ; la liste reste visible derrière, on sait d’où l’on vient.</p>
     <p><b>Page entière.</b> L’écran bascule sur « Y aller », sans voile. Plus
       solennel, plus lisible en plein soleil — mais on perd le fil du planning.</p>
-    <p><b>Depuis la flèche.</b> Elle naît du bouton touché et se déplie jusqu’en
-      bas. C’est le geste le plus soigné des trois, et le seul qui dise
+    <p><b>Depuis le chevron.</b> Elle naît du chevron touché et se déplie
+      jusqu’en bas. C’est le geste le plus soigné des trois, et le seul qui dise
       <i>d’où</i> elle vient.</p>
 
     <h2>Ce qui est vrai, et ce qui ne l’est pas</h2>
@@ -448,7 +449,7 @@
       appeler.style.opacity = ".3"; appeler.style.pointerEvents = "none";
     }
 
-    // « Depuis la flèche » : la feuille naît d'où le doigt a touché.
+    // « Depuis le chevron » : la feuille naît d'où le doigt a touché.
     var b = bouton.getBoundingClientRect();
     var e = ecran.getBoundingClientRect();
     ecran.style.setProperty("--nx", (b.left + b.width/2 - e.left) + "px");
