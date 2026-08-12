@@ -4970,3 +4970,35 @@ avant d'écrire quoi que ce soit. Or le cas pour lequel cette fiche existe est
 celui où l'application **ne répond pas** : elle se taisait exactement quand on
 avait besoin d'elle. Elle est désormais publiée deux fois — tout de suite, puis
 à nouveau une fois le serveur debout.
+
+### Le dépôt est PUBLIC — ce que la fiche a le droit de dire
+
+**Découvert le 12 août 2026, et cela a changé une décision.** La fiche est une
+*issue* de ce dépôt : lisible par n'importe qui, et indexée.
+
+La première version y recopiait les quarante dernières lignes du démarrage, en
+censurant au jugé ce qui ressemblait à un secret. Cette censure était
+délibérément grossière, et c'était le bon arbitrage — **tant que le dépôt était
+supposé fermé**. Public, l'arbitrage s'inverse : une censure au jugé laisse
+forcément passer l'imprévu, et le prix d'un oubli n'est plus une gêne de lecture
+mais une clé publiée sur la place.
+
+Mis devant le choix, le patron a tranché : **retirer le journal.**
+
+Ce que la fiche porte désormais : branche suivie, commit récupéré, commit
+réellement SERVI, état des services, et ce que le diagnostic en conclut.
+
+**Ce qu'on y perd, écrit ici pour qu'on ne le redécouvre pas :** devant un
+serveur qui refuse de démarrer, la fiche dira qu'il ne répond pas, **pas
+pourquoi**. C'est assumé — ce qui reste répond à la question qui a coûté le plus
+cher, *sur quelle version est-il et son serveur tourne-t-il ?*
+
+**Et la tentation qui reviendra :** devant un serveur muet, on voudra « juste
+les dernières lignes ». Ce qu'il faudra écrire alors est une extraction
+**structurée** — le nom de l'erreur, pas les lignes autour. Jamais un retour du
+journal brut. `scripts/test-rapport-espace.ts` garde la décision, et porte un
+témoin : un journal passé de force à la fonction ne doit pas ressortir.
+
+La censure, elle, **reste en place** : le diagnostic recopie des noms de
+fichiers modifiés, et rien n'interdit qu'un jour l'un d'eux porte un secret. Une
+ceinture ne se retire pas parce qu'on a mis des bretelles.

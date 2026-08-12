@@ -64,12 +64,49 @@ cas("le compte de démonstration RESTE lisible : il est public", () => {
   assert.ok(sorti.includes("demo@atlas.local"), "le compte de démonstration a été censuré pour rien");
 });
 
+cas("le journal de démarrage NE PART PAS : le dépôt est public", () => {
+  // **Tranché par le patron le 12 août 2026**, une fois découvert que son dépôt
+  // est public. La fiche y est lisible par n'importe qui et indexée ; une
+  // censure faite au jugé laisse forcément passer l'imprévu, et le prix d'un
+  // oubli n'est plus une gêne de lecture mais une clé publiée sur la place.
+  //
+  // Ce cas existe parce que la tentation reviendra : devant un serveur muet, on
+  // voudra « juste les dernières lignes ». Ce qu'il faudra écrire alors est une
+  // extraction STRUCTURÉE — le nom de l'erreur, pas les lignes autour.
+  const corps = corpsDuRapport({
+    diagnostic: "Serveur : répond",
+    quand: "2026-08-12T06:00:00.000Z",
+  });
+  assert.ok(
+    !/dernières lignes du démarrage/.test(corps),
+    "le journal de démarrage est revenu dans la fiche — sur un dépôt PUBLIC"
+  );
+  assert.match(
+    corps,
+    /journal de démarrage n'est \*\*pas\*\* publié/,
+    "rien n'explique dans la fiche pourquoi le journal en est absent : " +
+      "quelqu'un le remettra en croyant réparer un oubli"
+  );
+
+  // Le témoin : si `corpsDuRapport` acceptait encore un journal et le recopiait
+  // en silence, les deux affirmations ci-dessus resteraient vraies pour rien.
+  const avecJournal = corpsDuRapport({
+    diagnostic: "Serveur : répond",
+    // @ts-expect-error — on passe volontairement ce que la fiche ne doit plus lire.
+    journal: "SECRET_A_NE_PAS_PUBLIER=xyz",
+    quand: "2026-08-12T06:00:00.000Z",
+  });
+  assert.ok(
+    !avecJournal.includes("SECRET_A_NE_PAS_PUBLIER"),
+    "un journal passé à la fonction ressort quand même dans la fiche"
+  );
+});
+
 cas("le rapport dit QUAND il a été écrit, et de ne pas y répondre", () => {
   // Une fiche sans date ne dit pas si l'on regarde l'état d'aujourd'hui ou
   // celui d'avant-hier — c'est précisément la question qu'elle doit trancher.
   const corps = corpsDuRapport({
     diagnostic: "Serveur : répond",
-    journal: "L'application répond",
     quand: "2026-08-12T06:00:00.000Z",
   });
   assert.match(corps, /2026-08-12T06:00:00/, "le rapport ne porte pas sa date");

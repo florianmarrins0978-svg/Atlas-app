@@ -32,7 +32,6 @@
  * ───────────────────────────────────────────────────────────────────────────
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
 
 /**
  * Le titre EXACT de la fiche : c'est lui qui évite d'en créer une par allumage.
@@ -46,8 +45,28 @@ import { existsSync, readFileSync } from "node:fs";
 export const TITRE_FICHE =
   process.env.ATLAS_TITRE_FICHE || "État du banc d'essai — publié par l'espace lui-même";
 
-const JOURNAL = process.env.ATLAS_JOURNAL ?? "/tmp/essai.log";
-const LIGNES_DE_JOURNAL = 40;
+/**
+ * **Le journal de démarrage NE PART PAS. Décidé par le patron le 12 août 2026.**
+ *
+ * La première version recopiait les quarante dernières lignes du démarrage, en
+ * censurant au jugé ce qui ressemblait à un secret. Puis un détail est apparu
+ * qui change tout : **son dépôt est public.** Une fiche y est lisible par
+ * n'importe qui, et indexée. Une censure faite au jugé laisse forcément passer
+ * l'imprévu — le prix d'un oubli n'est plus une gêne, c'est une clé publiée sur
+ * la place.
+ *
+ * Mis devant le choix, il a tranché : retirer le journal.
+ *
+ * **Ce qu'on y perd, et il faut le savoir avant de le regretter :** devant un
+ * serveur qui refuse de démarrer, la fiche dira qu'il ne répond pas, pas
+ * POURQUOI. Ce qui reste — branche suivie, commit récupéré, commit réellement
+ * servi, services debout ou non — répond à la question qui a coûté le plus
+ * cher : *sur quelle version est-il, et son serveur tourne-t-il ?*
+ *
+ * Si un jour il faut la cause exacte, la reprendre ainsi serait une erreur :
+ * c'est une extraction STRUCTURÉE qu'il faudra écrire (le nom de l'erreur, pas
+ * les lignes autour), pas un retour du journal brut.
+ */
 
 /**
  * Retire d'un texte tout ce qui ressemble à un secret.
@@ -75,7 +94,7 @@ export function expurger(texte) {
 }
 
 /** Le corps de la fiche. Rendu séparément pour être éprouvable sans réseau. */
-export function corpsDuRapport({ diagnostic, journal, quand }) {
+export function corpsDuRapport({ diagnostic, quand }) {
   return [
     "> Fiche écrite automatiquement par l'espace de travail du patron, à chaque",
     "> allumage. Elle existe pour que l'agent voie sa machine sans avoir à lui",
@@ -90,11 +109,9 @@ export function corpsDuRapport({ diagnostic, journal, quand }) {
     diagnostic.trim() || "(le diagnostic n'a rien rendu)",
     "```",
     "",
-    `## Les ${LIGNES_DE_JOURNAL} dernières lignes du démarrage`,
-    "",
-    "```",
-    journal.trim() || "(aucun journal de démarrage)",
-    "```",
+    "> Le journal de démarrage n'est **pas** publié ici : ce dépôt est public, et",
+    "> une censure faite au jugé finirait par laisser passer l'imprévu. Voir",
+    "> l'en-tête de `scripts/rapporter-espace.mjs`.",
   ].join("\n");
 }
 
@@ -212,14 +229,13 @@ async function main() {
     diagnostic = `${e.stdout ?? ""}${e.stderr ?? ""}` || `(diagnostic impossible : ${e.message})`;
   }
 
-  const journal = existsSync(JOURNAL)
-    ? readFileSync(JOURNAL, "utf8").split("\n").slice(-LIGNES_DE_JOURNAL).join("\n")
-    : "";
-
+  // La censure reste, alors même que le journal ne part plus : le diagnostic
+  // recopie des noms de fichiers modifiés, et rien n'interdit qu'un jour l'un
+  // d'eux porte un secret. Une ceinture ne se retire pas parce qu'on a mis des
+  // bretelles — surtout sur un dépôt public.
   const corps = expurger(
     corpsDuRapport({
       diagnostic,
-      journal,
       // L'heure vient du système : une fiche sans date ne dit pas si l'on
       // regarde l'état d'aujourd'hui ou celui d'avant-hier.
       quand: new Date().toISOString(),

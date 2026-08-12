@@ -43,6 +43,20 @@ est un substitut de son mandataire réseau, et GitHub le refuse (401 « Bad
 credentials » — constaté, pas supposé). Elle tourne donc en CI, dans un travail
 séparé, où le jeton est réel. C'est le déplacement que `CLAUDE.md` §5 prescrit.
 
+**Et le journal de démarrage n'y figure plus — décidé par le patron.** En
+regardant son dépôt, un détail est apparu qui change tout : **il est public.**
+Une fiche y est lisible par n'importe qui, et indexée. La censure automatique
+était faite au jugé — acceptable dans un dépôt fermé, pas quand le prix d'un
+oubli passe d'une gêne de lecture à une clé publiée sur la place. Mis devant le
+choix, il a tranché : retirer le journal.
+
+Ce qu'on y perd, et qui est écrit pour qu'on ne le redécouvre pas : devant un
+serveur qui refuse de démarrer, la fiche dira qu'il ne répond pas, **pas
+pourquoi**. Ce qui reste répond à la question qui a coûté le plus cher — *sur
+quelle version est-il, et son serveur tourne-t-il ?* Si la cause exacte devient
+nécessaire, il faudra une extraction **structurée** (le nom de l'erreur, pas les
+lignes autour), jamais un retour du journal brut.
+
 `ARCHITECTURE.md` §69.
 
 ---
