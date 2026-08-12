@@ -111,25 +111,33 @@ la taille. **Ne rien supposer avant d'avoir la phrase** : deux diagnostics à
 distance ont déjà coûté un aller-retour chacun ce jour-là.
 
 
-### 0 bis. Si le fil accroche ENCORE chez le patron : le masque, sur iOS
+### ~~0 bis. Si le fil accroche ENCORE chez le patron : le masque, sur iOS~~ — **close le 2026-08-11 par le patron lui-même**
 
-**Ouvert le 11 août 2026, et volontairement laissé ouvert.** Le saccadé signalé
-ce soir-là avait pour cause `scroll-snap-stop: always`, retiré ; la mesure a mis
-le masque en dégradé et l'animation d'opacité hors de cause — mais **elle a
-mesuré Chromium sans tête sur cette machine**, pas Safari sur son iPhone, et
-elle n'a pas pu produire l'élan d'un vrai doigt.
+**Ouvert puis refermé le même soir, et c'est le refermer qui compte.** Le
+saccadé avait pour cause `scroll-snap-stop: always`, retiré ; la mesure
+(`scripts/mesurer-fluidite-fil.mts`) mettait le masque en dégradé et l'animation
+d'opacité hors de cause — mais elle avait mesuré **Chromium sans tête sur cette
+machine**, pas Safari sur son iPhone, et elle ne pouvait pas produire l'élan d'un
+vrai doigt. Ce point restait donc ouvert par honnêteté, pas par doute.
 
-Si la plainte revient, le suspect suivant est le `mask-image` de
-`.atlas-fil-defile` : sur iOS, un cadre masqué se recompose à chaque image du
-défilement. Le correctif est écrit d'avance et ne coûte rien à l'œil —
-**déplacer le fondu sur `.atlas-ecran`**, en deux dégradés posés PAR-DESSUS
-(couleur `--card`, `pointer-events: none`), plutôt qu'en masque SUR le cadre qui
-défile. Alléger, c'est déplacer.
+**Le patron a tranché, sur son téléphone :** *« la fluidité de l'iPhone, ça
+aussi, ça a été corrigé. »* Le retrait de l'accroche suffisait ; le masque
+n'était pour rien dans la plainte.
 
-Deux précautions à ce moment-là : les dégradés doivent être placés aux bords de
-la zone qui défile, pas du cadre (l'en-tête n'est pas dedans), et une capture
-avant/après doit être identique — sinon on aura échangé un défaut contre un
-autre.
+**Ce qu'il faut en retenir, et pourquoi ce point reste écrit plutôt que
+supprimé :** le `mask-image` de `.atlas-fil-defile` est **hors de cause, vérifié
+sur le vrai appareil**. Quelqu'un finira par le soupçonner — c'est le suspect
+qui vient à l'esprit dès qu'on parle de défilement qui accroche sur iOS. Le
+déplacer coûterait du travail et du risque pour rien. Le correctif de repli
+reste décrit ci-dessous **au cas où une plainte NOUVELLE apparaîtrait**, pas
+pour celle-ci, qui est réglée.
+
+Repli, si et seulement si le sujet revient : **déplacer le fondu sur
+`.atlas-ecran`**, en deux dégradés posés PAR-DESSUS (couleur `--card`,
+`pointer-events: none`), plutôt qu'en masque SUR le cadre qui défile. Deux
+précautions alors : les dégradés se placent aux bords de la zone qui défile, pas
+du cadre (l'en-tête n'est pas dedans), et une capture avant/après doit être
+identique — sinon on aura échangé un défaut contre un autre.
 
 
 ### ~~0 ter. Les suites navigateur mesuraient un écran que personne ne possède~~ — **close le 2026-08-11**

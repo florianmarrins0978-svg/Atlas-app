@@ -710,6 +710,16 @@ quatre combinaisons mesurent la même chose — 60 images par seconde, médiane
 16,7 ms. Les retirer aurait abîmé l'écran sans rien gagner, et c'est très
 exactement le correctif imaginé que ce dépôt a déjà payé trois fois.
 
+**Et la mesure avait raison, le patron l'a confirmé sur son téléphone le soir
+même** : *« la fluidité de l'iPhone, ça aussi, ça a été corrigé. »* Ce n'était
+pas acquis — le navigateur sans tête ne produit pas l'élan d'un vrai doigt, et
+le masque restait un suspect crédible **sur iOS**, où un cadre masqué se
+recompose à chaque image. Le point était donc laissé ouvert par honnêteté
+(`TODO.md` §0 bis), et il est clos par l'appareil lui-même. Il reste écrit
+plutôt que supprimé : le masque est le suspect qui vient à l'esprit dès qu'on
+parle d'un défilement qui accroche sur iOS, et savoir qu'il a été **innocenté
+sur le vrai téléphone** évitera à quelqu'un de le déplacer pour rien.
+
 **La barre grise, elle, n'était pas un choix : c'était un oubli.** Les trois
 autres zones qui défilent la masquent depuis toujours ; `.atlas-fil-defile`,
 **la plus vue de l'application**, avait été sautée. Rien ne pouvait le dire,

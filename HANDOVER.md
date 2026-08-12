@@ -247,13 +247,14 @@ juste que ça slide. »*
    images par seconde, médiane 16,7 ms. Ce sont les deux suspects évidents ; les
    retirer abîmerait l'écran sans rien gagner. **Relancer la mesure avant de les
    accuser à nouveau.**
-3. **Ce qui n'a PAS pu être éprouvé ici, et qu'il faut dire** : l'élan d'un vrai
-   doigt. Le navigateur sans tête ne produit pas de lancer avec inertie — la
-   mesure porte sur le coût de rendu, pas sur la sensation du geste. Si le
-   patron trouve encore que ça accroche, le suspect suivant est le masque **sur
-   iOS**, où un cadre masqué se recompose à chaque image ; le déplacer sur
-   `.atlas-ecran` en surimpression garderait le fondu sans masquer le cadre qui
-   défile.
+3. **CONFIRMÉ SUR SON IPHONE, le soir même :** *« la fluidité de l'iPhone, ça
+   aussi, ça a été corrigé. »* Le retrait de l'accroche a suffi. La mesure faite
+   ici ne portait que sur Chromium sans tête — le navigateur ne produit pas
+   l'élan d'un vrai doigt — et ce point restait donc ouvert par honnêteté ; il
+   est clos par l'appareil lui-même. **Le `mask-image` est hors de cause, sur le
+   vrai téléphone**, et non plus seulement dans une mesure de laboratoire : ne
+   pas le déplacer « au cas où ». Le repli reste décrit dans `TODO.md` §0 bis,
+   pour une plainte NOUVELLE, pas pour celle-là.
 4. **Aucune zone qui défile ne montre sa barre, et un balayage y veille.**
    `test-aucune-barre-de-defilement-e2e.ts` parcourt douze écrans et exige
    `scrollbar-width: none` sur toute zone qui déborde vraiment. Il lit la
