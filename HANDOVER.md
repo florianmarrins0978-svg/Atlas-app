@@ -43,6 +43,38 @@ est encore valable.
 
 ---
 
+## Le piège du 12 août : à jour, et pourtant vieux
+
+**Le patron envoie une capture de l'écran de création. C'est celui d'AVANT** —
+bouton pleine largeur, lien en capitales, phrase de pied. Tout ce qui a été
+livré la veille est invisible chez lui.
+
+**La cause n'est ni son téléphone ni un cache.** `.devcontainer/mettre-a-jour.sh`
+récupère **la branche sur laquelle l'espace se trouve déjà** :
+
+```sh
+BRANCHE="$(git rev-parse --abbrev-ref HEAD)"
+git fetch --quiet origin "$BRANCHE"
+```
+
+Le travail était sur `claude/new-session-a1l4v9` ; son espace est ailleurs. La
+mise à jour fonctionne donc parfaitement, **et rend « à jour »** — sur une
+branche qui ne recevra jamais ce travail. C'est exactement la classe de
+malentendus que « Chercher les dernières corrections » existait pour éteindre
+(voir l'en-tête de `BoutonMiseAJour.tsx`, trois soirées perdues), revenue par une
+autre porte : ce n'est plus le code qui est vieux, c'est la BRANCHE qui n'est pas
+la bonne.
+
+**Ce qu'il faut faire avant de livrer quoi que ce soit à essayer :**
+
+1. **Vérifier où est son espace.** Une capture de l'écran Réglages donne la
+   version (`versionExecutee`) — mais **pas la branche**. C'est le trou : une
+   capture ne peut pas répondre à « suis-je sur la bonne branche ? ». Poser le
+   nom de la branche à côté de la version fermerait ce trou définitivement.
+2. **Ne jamais dire « c'est livré » sans dire OÙ.** Une branche poussée n'est pas
+   une application mise à jour. Tant que le travail n'est pas sur la branche que
+   son espace suit, il n'existe pas pour lui.
+
 ## Ce qui vient d'être terminé
 
 **La bascule et la capsule sont EN PLACE sur l'écran de création (11 août, tard).**
