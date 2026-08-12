@@ -40,6 +40,13 @@ export const metadata: Metadata = {
   // `2026-0003`. Or **aucune page de ce dépôt n'écrit de `tel:` sur un numéro
   // de facture** — le lien ne pouvait venir que du navigateur.
   //
+  // **Confirmé le soir même, signature comprise.** Le patron renvoie l'erreur
+  // entière, cette fois depuis `/devis/<jeton>` : le lien inséré porte
+  // `x-apple-data-detectors="true"` et
+  // `x-apple-data-detectors-type="telephone"`. Ce n'était donc plus une
+  // déduction à partir d'un diff partiel : c'est iOS, nommément, et sur les
+  // DEUX écrans que voit le client de l'artisan — la facture et le devis.
+  //
   // iOS reconnaît d'office ce qui ressemble à un numéro de téléphone, à une
   // adresse ou à un courriel, et **réécrit le HTML avant que React ne
   // s'installe dessus**. Un numéro de facture — huit chiffres et un tiret — lui
