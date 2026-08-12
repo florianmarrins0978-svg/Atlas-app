@@ -90,7 +90,33 @@ caprice de machine chargée.
 pas ce qui n'était pas demandé. À trancher : les supprimer, ou les marquer
 « maquette historique ».
 
-### 0 sexdecies. L'écran du devis parti : quatre maquettes attendent son choix
+### 0 septdecies. L'écran du devis : le CONTENU est arrêté, la mise en page attend un numéro
+
+**Arrêté par lui le 12 août** — c'est acquis, ne pas le rediscuter :
+
+- ne garder que **le nom du devis et le total** ;
+- **retirer les lignes de prestations** ;
+- un lien **« Modifier mon devis »** sous le total, qui ramène au devis ;
+- « Télécharger le PDF », « Copier le lien », « Partager » **en encre foncée**,
+  visiblement cliquables.
+
+`docs/maquettes/26-le-devis-sur-sa-base.html` : sa base au mot près, plus quatre
+mises en page du même contenu (sans carte · dans le titre · actions empilées ·
+signet d'or). **Rien n'est codé** tant qu'il n'a pas donné un numéro.
+
+**Trois points ouverts, à ne pas trancher seul :**
+
+1. **Reprendre un devis déjà parti crée une nouvelle version** et rend l'ancien
+   lien caduc. Faut-il le prévenir au clic sur « Modifier mon devis » ? Une
+   phrase courte, une seule fois, est proposée — pas décidée.
+2. **« Partager autrement (WhatsApp… ) » ne tient pas** à trois sur une ligne. Il
+   devient « Partager », ou les trois s'empilent (idée 4). Son choix.
+3. **Le rayon du bouton reste sans réponse** (bande de la maquette 25 : 4, 8, 12,
+   pilule). Tout est dessiné à 4 px pour ne rien présumer.
+
+### ~~0 sexdecies. L'écran du devis parti : quatre maquettes~~ — **dépassée le 2026-08-12 par la 26**
+
+*Gardée parce qu'elle porte la mesure d'origine : onze blocs, 382 px de trop.*
 
 **Rien n'est codé, et rien ne doit l'être avant qu'il ait désigné une lettre**
 (`CLAUDE.md` §3 bis). Il a demandé la maquette explicitement : *« fabrique-moi la

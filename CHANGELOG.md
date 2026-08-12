@@ -9,6 +9,30 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### Le devis parti, sur sa base — cinq façons de tenir ce qu'il a arrêté
+
+Après la maquette 25, il tranche le **contenu** : ne garder que le nom du devis
+et le total, retirer les lignes de prestations, poser sous le total un lien
+**« Modifier mon devis »** qui ramène au devis, et passer « Télécharger le PDF »
+et les deux autres **en encre foncée**, visiblement cliquables.
+
+`docs/maquettes/26-le-devis-sur-sa-base.html` : sa base au mot près, puis quatre
+façons de la tenir à contenu identique — le montant à même la page (52 px, sans
+carte), le montant monté dans le titre, les trois actions empilées, et le signet
+d'or. Ce qui se choisit n'est donc plus quoi montrer, mais comment le poser.
+
+**Deux choses réglées en dessinant, et elles ne sont pas décoratives.**
+« Partager autrement (WhatsApp…) » ne tient pas à trois sur une ligne : il
+devient « Partager », ou bien les trois s'empilent (idée 4), ce qui rend chaque
+cible large comme le pouce. Et l'idée 4 débordait de 23 px — resserrée à 11 px
+de hauteur de ligne plutôt qu'en retirant « Parti il y a 2 jours », qui est la
+seule chose de l'écran disant depuis quand on attend.
+
+**Une question posée, pas tranchée :** reprendre un devis déjà parti en crée une
+nouvelle version et rend l'ancien lien caduc. Faut-il le prévenir au clic ?
+
+`src/` n'est toujours pas touché.
+
 ### « Trop d'infos sur cette page » — quatre façons de retrancher, dessinées
 
 Le patron, capture à l'appui : *« je trouve qu'il y a trop d'infos sur cette

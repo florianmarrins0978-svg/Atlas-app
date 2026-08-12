@@ -190,6 +190,13 @@ const MAQUETTES = [
     quoi: "« Trop d’infos sur cette page » : l’écran en porte onze blocs et déborde de 382 px. Quatre façons de retrancher — l’adresse effacée, l’état monté dans le titre, le devis replié, ou le geste seul sous le pouce — et la question du bouton « carré », mesurée : il est déjà au rayon des cartes.",
     retenu: true,
   },
+  {
+    fichier: "26-le-devis-sur-sa-base.html",
+    titre: "Le devis parti, sur sa base",
+    famille: "Dire moins sur l’écran du devis",
+    quoi: "Ce qu’il a arrêté : le nom du devis et le total, plus de lignes, « Modifier mon devis » sous le total, et les trois actions en encre foncée. Sa base au mot près, puis quatre façons de la tenir — sans carte, dans le titre, les actions empilées, ou le signet d’or.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

@@ -3049,6 +3049,106 @@
 #s25 .note td:first-child{white-space:nowrap;padding-right:16px;color:var(--encre)}
 
 
+/* 26 — Le devis parti, sur sa base */
+#s26{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+@media (prefers-color-scheme: dark){
+#s26:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  
+}
+#s26[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+#s26, #s26 *{box-sizing:border-box}
+#s26{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 90px}
+#s26 .page{max-width:1180px;margin:0 auto}
+#s26 .intro{max-width:64ch;margin:0 auto}
+#s26 .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
+#s26 .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
+#s26 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
+#s26 .intro b{color:var(--encre);font-weight:500}
+#s26 .appui{max-width:56ch;margin:22px auto 0;padding:15px 20px;border:1px solid var(--trait);
+         border-radius:6px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s26 .appui b{color:var(--encre);font-weight:500}
+#s26 .famille{margin:56px 0 14px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--gris)}
+#s26 .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
+#s26 .famille span::before,#s26 .famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
+#s26 .famille span::before{right:100%}
+#s26 .famille span::after{left:100%}
+#s26 .sous-titre{max-width:60ch;margin:0 auto 28px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s26 .rangee{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;align-items:flex-start}
+#s26 .cartouche{display:flex;flex-direction:column;align-items:center;gap:13px;max-width:412px}
+#s26 .etiquette{color:var(--bronze);font-size:10px;letter-spacing:.3em;text-transform:uppercase}
+#s26 .cartouche .dit{margin:0;font-size:12.5px;line-height:1.6;color:var(--gris);text-align:center}
+#s26 .cartouche .dit b{color:var(--encre);font-weight:500}
+#s26 .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
+#s26 .ecran{position:relative;overflow:hidden;border-radius:34px;height:664px;
+         display:flex;flex-direction:column;
+         background:#f5f3ee;color:#1c1c1a;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f;
+         --e-trait:rgba(28,28,26,.16); --e-trait-doux:rgba(28,28,26,.07)}
+#s26 .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+#s26 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+#s26 .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+#s26 .retour{padding:22px 26px 0;color:var(--e-gris);font-size:12px;text-decoration:none;display:block}
+#s26 .titre{padding:16px 26px 0}
+#s26 .titre .sur{margin:0;color:var(--e-or)}
+#s26 .titre h1{margin:11px 0 0;font-size:36px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+#s26 .fermeture{height:1px;background:var(--e-trait);margin:20px 26px 0}
+#s26 .corps{flex:1 1 auto;min-height:0;overflow:hidden;padding:0 26px;display:flex;flex-direction:column}
+#s26 .plage{background:var(--e-plage);border-radius:4px;padding:20px;margin-top:18px}
+#s26 .nom-devis{margin:0;color:var(--e-gris);font-size:13px}
+#s26 .montant{margin:9px 0 0;font:400 40px/1 ui-serif,Georgia,serif;color:var(--e-pin);letter-spacing:-.015em}
+#s26 .montant.moyen{font-size:32px}
+#s26 .montant.geant{font-size:52px}
+#s26 .sous-total{display:block;margin-top:16px;padding-top:14px;border-top:1px solid var(--e-trait);
+              color:var(--e-encre);font-size:14px;text-decoration:none;font-weight:500}
+#s26 .sous-total .fl{float:right;color:var(--e-gris);font-weight:400}
+#s26 .etat-fin{display:flex;align-items:center;gap:11px;color:var(--e-or)}
+#s26 .etat-fin::after{content:"";flex:1;height:1px;background:var(--e-trait)}
+#s26 .etat-phrase{margin:9px 0 0;font-size:13.5px;color:var(--e-gris);line-height:1.55}
+#s26 .envoi{display:block;width:100%;padding:13px;text-align:center;
+         font-size:15px;font-weight:500;color:#fff;text-decoration:none;
+         background:var(--e-pin);border:0;font-family:inherit;cursor:pointer;
+         border-radius:var(--r,4px)}
+#s26 .dessous{margin:8px 0 0;text-align:center;font-size:12px;color:var(--e-gris)}
+#s26 .trois{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;
+         font-size:13px;line-height:2.1}
+#s26 .trois a{color:var(--e-encre);text-decoration:none;font-weight:500;padding:0 9px}
+#s26 .trois i{color:var(--e-trait);font-style:normal}
+#s26 .pile{margin-top:4px}
+#s26 .pile a{display:flex;align-items:center;justify-content:space-between;
+          padding:13px 0;border-top:1px solid var(--e-trait);
+          color:var(--e-encre);text-decoration:none;font-size:14px;font-weight:500}
+#s26 .pile a .fl{color:var(--e-trait);font-weight:400}
+#s26 .ecran.serre .pile a{padding:11px 0}
+#s26 .ecran.serre .etat-phrase{margin-top:6px}
+#s26 .ecran.serre .plage{margin-top:12px;padding:17px 20px}
+#s26 .ecran.serre .sous-total{margin-top:13px;padding-top:12px}
+#s26 .pied{margin-top:auto;padding-bottom:4px}
+#s26 .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;position:relative;z-index:2;
+       background:var(--e-fond)}
+#s26 .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
+#s26 .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-or)}
+#s26 .signet{position:relative;padding-left:17px;margin-top:22px}
+#s26 .signet::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:2px;background:var(--e-or)}
+#s26 .note{max-width:64ch;margin:52px auto 0;padding:20px 22px;border:1px solid var(--trait);
+        border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.7}
+#s26 .note h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
+#s26 .note b{color:var(--encre);font-weight:500}
+#s26 .note p{margin:0 0 12px}
+#s26 .note p:last-child{margin-bottom:0}
+#s26 .note table{width:100%;border-collapse:collapse;margin:14px 0 4px;font-size:12.5px}
+#s26 .note th{text-align:left;font-weight:500;color:var(--encre);padding:0 0 7px}
+#s26 .note td{padding:5px 0;border-top:1px solid var(--trait);vertical-align:top}
+#s26 .note td:first-child{white-space:nowrap;padding-right:16px;color:var(--encre)}
+
+
 </style>
 
 <div class="enveloppe">
@@ -3166,6 +3266,10 @@
       <a class="item retenu" href="#m25">
         <span class="no">25</span><span class="titre">Le devis parti, allégé</span><span class="fleche">↓</span>
         <span class="quoi">« Trop d’infos sur cette page » : l’écran en porte onze blocs et déborde de 382 px. Quatre façons de retrancher — l’adresse effacée, l’état monté dans le titre, le devis replié, ou le geste seul sous le pouce — et la question du bouton « carré », mesurée : il est déjà au rayon des cartes.</span>
+      </a>
+      <a class="item retenu" href="#m26">
+        <span class="no">26</span><span class="titre">Le devis parti, sur sa base</span><span class="fleche">↓</span>
+        <span class="quoi">Ce qu’il a arrêté : le nom du devis et le total, plus de lignes, « Modifier mon devis » sous le total, et les trois actions en encre foncée. Sa base au mot près, puis quatre façons de la tenir — sans carte, dans le titre, les actions empilées, ou le signet d’or.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -11935,6 +12039,308 @@
     <p><b>Ce que cette maquette ne montre pas :</b> les autres états de cet écran — devis
     refusé, correction demandée, devis pas encore parti. Ils portent les mêmes blocs, et
     suivront le choix fait ici. Inutile de les dessiner avant.</p>
+
+    <p><b>Une réserve sur les polices.</b> Cette page emprunte la serif de votre appareil.
+    L'application, elle, charge Playfair Display : le rendu final sera plus dessiné.</p>
+  </div>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m26">
+    <div class="etape-tete">
+      <span class="etape-no">26</span>
+      <h2>Le devis parti, sur sa base</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s26">
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Maquette 26</p>
+    <h1>Le devis parti, sur votre base</h1>
+    <p>Ce que vous avez arrêté : <b>le nom du devis et le total</b>, plus de lignes de
+    prestations, un lien <b>« Modifier mon devis »</b> sous le total, et les trois actions
+    du bas <b>en encre foncée</b>.</p>
+    <p>La première vignette est votre base, au mot près. Les quatre suivantes portent
+    <b>exactement le même contenu</b> — elles ne le tiennent pas de la même façon. Ce qui
+    se choisit ici n'est donc plus quoi montrer, mais <b>comment le poser</b>.</p>
+    <div class="appui">
+      À la taille de votre écran — <b>390 × 664</b>. Les cinq tiennent sans défiler,
+      mesuré et non jugé à l'œil.
+    </div>
+  </div>
+
+  <!-- ══ 1 · SA BASE ═════════════════════════════════════════════════════ -->
+  <p class="famille"><span>1 · Votre base, au mot près</span></p>
+  <p class="sous-titre">Rien de plus que ce que vous avez demandé. C'est la référence :
+    tout ce qui suit s'en écarte sur un point, et un seul.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Votre base</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <div class="etat-fin" style="margin-top:22px"><span class="caps">En attente de réponse</span></div>
+          <p class="etat-phrase">Parti il y a 2 jours chez Florian Martin.<br>Il consulte le devis et choisit sa date.</p>
+
+          <div class="plage">
+            <p class="nom-devis">Devis nº 2026-014</p>
+            <p class="montant num serif">840,00 €</p>
+            <a class="sous-total" href="#">Modifier mon devis<span class="fl">›</span></a>
+          </div>
+
+          <a class="envoi" href="#" style="--r:4px;margin-top:20px">Relancer par SMS</a>
+          <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+
+          <p class="trois" style="margin-top:18px">
+            <a href="#">Télécharger le PDF</a><i>·</i><a href="#">Copier le lien</a><i>·</i><a href="#">Partager</a>
+          </p>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Quatre blocs.</b> « Partager autrement (WhatsApp…) » est raccourci en
+      <b>« Partager »</b> : à trois sur une ligne, la parenthèse débordait. Dites-moi si vous
+      préférez la garder — il faudra alors les empiler, comme au nº 4.</p>
+    </div>
+  </div>
+
+  <!-- ══ 2 · SANS CARTE ══════════════════════════════════════════════════ -->
+  <p class="famille"><span>2 · Sans carte — le montant à même la page</span></p>
+  <p class="sous-titre">La carte disparaît. Le montant est posé directement sur le fond,
+    entre deux cheveux. C'est la mise en page d'une <b>pièce</b>, pas d'une application —
+    et c'est ce qui donne l'air le plus cher, parce que rien n'est encadré.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Idée 2</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <div class="etat-fin" style="margin-top:22px"><span class="caps">En attente de réponse</span></div>
+          <p class="etat-phrase">Parti il y a 2 jours chez Florian Martin.</p>
+
+          <div style="margin-top:30px;padding:22px 0;border-top:1px solid rgba(28,28,26,.16);border-bottom:1px solid rgba(28,28,26,.16)">
+            <p class="nom-devis">Devis nº 2026-014</p>
+            <p class="montant num serif geant">840,00 €</p>
+          </div>
+          <a class="sous-total" href="#" style="border-top:0;padding-top:13px;margin-top:0">Modifier mon devis<span class="fl">›</span></a>
+
+          <a class="envoi" href="#" style="--r:4px;margin-top:24px">Relancer par SMS</a>
+          <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+
+          <p class="trois" style="margin-top:18px">
+            <a href="#">Télécharger le PDF</a><i>·</i><a href="#">Copier le lien</a><i>·</i><a href="#">Partager</a>
+          </p>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Le montant passe de 40 à 52 px.</b> Sans carte pour le contenir, il
+      peut respirer — et c'est lui qu'on lit de l'autre bout de la pièce.
+      <br><br><b>Ce qu'on perd :</b> « Modifier mon devis » n'est plus visiblement rattaché
+      au devis ; il flotte sous les cheveux.</p>
+    </div>
+  </div>
+
+  <!-- ══ 3 · LE MONTANT DANS LE TITRE ════════════════════════════════════ -->
+  <p class="famille"><span>3 · Le montant dans le titre</span></p>
+  <p class="sous-titre">« Devis » et « 840,00 € » sont la même information : le titre de la
+    page. Ils se réunissent donc, et l'en-tête devient une <b>page de garde</b>. Le corps
+    n'a plus alors qu'une chose à faire : le geste.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Idée 3</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+          <p class="montant num serif" style="margin-top:14px">840,00 €</p>
+          <p class="nom-devis" style="margin-top:10px">Devis nº 2026-014 · en attente de réponse</p>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <a class="sous-total" href="#" style="border-top:0;padding-top:0;margin-top:20px">Modifier mon devis<span class="fl">›</span></a>
+
+          <p class="etat-phrase" style="margin-top:22px">Parti il y a 2 jours chez Florian Martin.
+            Il consulte le devis et choisit sa date d'intervention.</p>
+
+          <div class="pied">
+            <a class="envoi" href="#" style="--r:4px">Relancer par SMS</a>
+            <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+            <p class="trois" style="margin-top:16px">
+              <a href="#">Télécharger le PDF</a><i>·</i><a href="#">Copier le lien</a><i>·</i><a href="#">Partager</a>
+            </p>
+          </div>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Trois blocs, et le geste tombe sous le pouce.</b> Le numéro et l'état
+      se rangent sur une seule ligne grise sous le montant — ce sont des <b>références</b>,
+      pas des annonces.
+      <br><br><b>Ce qu'on perd :</b> l'état n'est plus en or, il passe en gris. Il se
+      remarque moins.</p>
+    </div>
+  </div>
+
+  <!-- ══ 4 · LES TROIS EMPILÉES ══════════════════════════════════════════ -->
+  <p class="famille"><span>4 · Les trois actions empilées</span></p>
+  <p class="sous-titre">Vous les vouliez cliquables. Sur une ligne, trois mots serrés se
+    touchent du pouce à un cheveu près. Empilées, chacune a sa ligne, son cheveu et sa
+    flèche — <b>et « Partager autrement (WhatsApp…) » retrouve son nom entier</b>.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Idée 4</span>
+      <div class="tel"><div class="ecran serre">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <div class="etat-fin" style="margin-top:20px"><span class="caps">En attente de réponse</span></div>
+          <p class="etat-phrase">Parti il y a 2 jours chez Florian Martin.</p>
+
+          <div class="plage" style="margin-top:16px">
+            <p class="nom-devis">Devis nº 2026-014</p>
+            <p class="montant num serif moyen">840,00 €</p>
+            <a class="sous-total" href="#">Modifier mon devis<span class="fl">›</span></a>
+          </div>
+
+          <a class="envoi" href="#" style="--r:4px;margin-top:14px">Relancer par SMS</a>
+          <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+
+          <div class="pile" style="margin-top:14px">
+            <a href="#">Télécharger le PDF<span class="fl">›</span></a>
+            <a href="#">Copier le lien<span class="fl">›</span></a>
+            <a href="#">Partager autrement (WhatsApp…)<span class="fl">›</span></a>
+          </div>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Chaque action fait toute la largeur du pouce.</b> C'est la seule des
+      cinq où l'on ne peut pas se tromper de lien — et la seule où le nom complet tient.
+      <br><br><b>Ce qu'on perd :</b> trois lignes au lieu d'une. L'écran est plus rempli.</p>
+    </div>
+  </div>
+
+  <!-- ══ 5 · LE SIGNET D'OR ══════════════════════════════════════════════ -->
+  <p class="famille"><span>5 · Le signet d'or</span></p>
+  <p class="sous-titre">L'état ne s'annonce plus en capitales : il est marqué par
+    <b>un filet d'or vertical</b>, comme un signet dans un registre. Le montant reste seul
+    en scène, et l'or ne sert qu'à une chose sur tout l'écran.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Idée 5</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <div class="signet">
+            <p style="margin:0;font-size:14px;color:#1c1c1a">En attente de réponse</p>
+            <p class="etat-phrase" style="margin-top:4px">Parti il y a 2 jours chez Florian Martin.</p>
+          </div>
+
+          <div style="margin-top:34px;text-align:center">
+            <p class="nom-devis">Devis nº 2026-014</p>
+            <p class="montant num serif geant">840,00 €</p>
+            <a class="sous-total" href="#" style="border-top:0;padding-top:0;margin-top:14px;text-align:center">
+              Modifier mon devis ›
+            </a>
+          </div>
+
+          <div class="pied">
+            <a class="envoi" href="#" style="--r:4px">Relancer par SMS</a>
+            <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+            <p class="trois" style="margin-top:16px">
+              <a href="#">Télécharger le PDF</a><i>·</i><a href="#">Copier le lien</a><i>·</i><a href="#">Partager</a>
+            </p>
+          </div>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Le montant est centré, et il est seul.</b> C'est la plus calme des
+      cinq : un filet, un chiffre, un geste.
+      <br><br><b>Ce qu'on perd :</b> l'état, écrit en petit à gauche, se remarque moins qu'en
+      capitales d'or.</p>
+    </div>
+  </div>
+
+  <!-- ══ NOTE ═══════════════════════════════════════════════════════════ -->
+  <div class="note">
+    <h2>Ce qu'il faut me dire</h2>
+    <p><b>Un numéro.</b> 1, 2, 3, 4 ou 5. Panacher est prévu — « le 5, mais avec les trois
+    actions empilées du 4 » se code aussi bien.</p>
+
+    <table>
+      <tr><th>Idée</th><th>Ce qui change</th><th>Ce que ça coûte</th></tr>
+      <tr><td>1 · votre base</td><td>la référence, au mot près</td><td>« Partager » perd sa parenthèse</td></tr>
+      <tr><td>2 · sans carte</td><td>le montant à même la page, 52 px</td><td>« Modifier » flotte sous les cheveux</td></tr>
+      <tr><td>3 · dans le titre</td><td>l'en-tête devient page de garde, geste sous le pouce</td><td>l'état passe en gris</td></tr>
+      <tr><td>4 · empilées</td><td>trois vraies lignes, nom complet, rien à rater du pouce</td><td>l'écran est plus rempli</td></tr>
+      <tr><td>5 · le signet</td><td>un filet d'or, un chiffre, un geste</td><td>l'état se remarque moins</td></tr>
+    </table>
+
+    <p style="margin-top:16px"><b>Où mène « Modifier mon devis ».</b> À l'écran du devis à la
+    main, celui qui porte les lignes et les prix. Une chose à trancher, et je ne l'ai pas
+    faite à votre place : ce devis est <b>parti chez le client</b>. Le reprendre en crée
+    une <b>nouvelle version</b> qu'il faudra renvoyer — l'ancien lien devient caduc. Faut-il
+    vous le dire avant, ou vous laisser passer ? Je penche pour une phrase courte, une seule
+    fois, au moment du clic.</p>
+
+    <p><b>Le rayon du bouton reste ouvert.</b> Tout est dessiné au rayon d'aujourd'hui,
+    4 px, pour ne rien présumer. La bande de comparaison — 4, 8, 12, pilule — est au bas de
+    la maquette 25 et reste valable.</p>
+
+    <p><b>Ce que je n'ai pas retiré, et pourquoi.</b> La phrase « Parti il y a 2 jours chez
+    Florian Martin » : c'est la seule chose de l'écran qui dise <b>depuis quand</b> vous
+    attendez, et c'est ce qui vous fait décider de relancer ou non. Dites-le si vous la
+    voulez dehors aussi.</p>
 
     <p><b>Une réserve sur les polices.</b> Cette page emprunte la serif de votre appareil.
     L'application, elle, charge Playfair Display : le rendu final sera plus dessiné.</p>
