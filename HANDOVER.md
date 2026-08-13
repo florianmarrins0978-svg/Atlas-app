@@ -534,6 +534,27 @@ l'ancien prix.
 
 **Ce qui reste ouvert :** le rayon du bouton (4, 8, 12 ou pilule — bande au bas de
 la maquette 33). Son choix vaudra pour vingt-sept écrans. Il a demandé la maquette en toutes lettres : *« fabrique-
+**⚠ SI LE PATRON MONTRE « An unexpected response was received from the server. »**
+Regarder d'abord **quelle version son banc sert**. Si la pile d'appel contient
+`.next/dev`, il est sur la version LENTE : chaque écran s'y compile au premier
+appel, et le relais de GitHub abandonne au bout d'une minute en rendant sa
+propre page d'erreur — le navigateur reçoit du HTML là où il attendait une
+réponse. Ce n'est pas un défaut du code, c'est un banc qui n'a pas fini de se
+construire. Depuis le 12 août, l'écran Réglages le dit lui-même, et un veilleur
+(`src/components/atlas/VeilleReponseServeur.tsx`) pose une phrase française avec
+un bouton « Recharger ».
+
+**Ne pas élargir ce veilleur.** Il ne reconnaît que quatre formulations, et il
+doit continuer de REFUSER tout le reste : habiller un défaut du code en
+« le serveur se prépare » ferait recharger une page qui ne guérira pas, et
+masquerait le défaut. `scripts/test-reponse-illisible.ts` tient ce refus.
+
+
+**⚠ L'ÉCRAN DU DEVIS ATTEND UNE LETTRE — ne rien coder avant (12 août).**
+Le CONTENU est arrêté (nom du devis, total, « Modifier mon devis », trois actions
+en encre) ; c'est la MISE EN PAGE qui attend un numéro —
+`docs/maquettes/26-le-devis-sur-sa-base.html`, cinq propositions. Le détail et les
+trois points ouverts sont dans `TODO.md` 0 septdecies. Il a demandé la maquette en toutes lettres : *« fabrique-
 moi la maquette et montre-la-moi avant de coder quoi que ce soit »*.
 
 **Et NE PAS chercher une panne d'envoi de devis.** Elle a été signalée puis

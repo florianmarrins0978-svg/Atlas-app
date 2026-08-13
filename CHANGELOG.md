@@ -1151,6 +1151,49 @@ Un troisième exigeait la phrase « Le lien est toujours actif », et s'appelait
 l'affichage mais le fait que **relancer réutilise le même lien** : il s'appelle
 maintenant ainsi, et le vérifie sur le geste de relance et sur le nombre de
 versions en base.
+### « An unexpected response was received from the server. » — en français, et seulement quand c'est vrai
+
+**Sa capture, à 14 h 04 :** un panneau rouge en anglais, une pile d'appel dans
+`node_modules`, rien sur ce qui s'est passé ni sur quoi faire.
+
+**Ce que la capture disait et qu'il fallait lire :** le chemin commençait par
+`.next/dev` — **son banc servait la version LENTE**. En version lente, chaque
+écran se compile au premier appel — trente à cent secondes, davantage sur son
+disque — et **le relais de GitHub abandonne au bout d'une minute** en rendant sa
+propre page d'erreur. Le navigateur reçoit du HTML là où il attendait une
+réponse d'Atlas : c'est exactement ce message.
+
+**Ce qui n'a PAS été fait, et pourquoi.** La cause n'a pas été reproduite ici :
+le bouton de mise à jour, joué dans les conditions du banc avec le code changé
+sous la page ouverte, s'est comporté correctement. Rien n'a donc été « corrigé »
+au jugé — la seconde faute que ce dépôt s'interdit après avoir accusé à tort.
+
+Deux choses ont été faites, toutes deux vérifiables :
+
+1. **Le défaut parle.** `src/lib/reponse-illisible.ts` reconnaît cette famille
+   d'échec — quatre formulations, selon le navigateur et la version du cadre —
+   et un veilleur posé dans la coque affiche une phrase française avec le seul
+   geste utile : **Recharger**. Sur la version rapide, ce panneau n'existe même
+   pas : l'échec y est muet, le bouton pressé ne fait rien. Des deux, le silence
+   était le pire.
+2. **L'écran dit qu'il est lent.** Réglages annonce désormais, en toutes
+   lettres, que la version servie est celle qui se construit encore — et que
+   c'est elle qui produit « une réponse inattendue du serveur ». Rien ne le
+   disait ; il ne pouvait pas relier les deux.
+
+**Ce que le veilleur REFUSE de faire compte autant.** Un défaut ordinaire du
+code n'est jamais habillé en lenteur : l'y habiller enverrait recharger une page
+qui ne guérira pas, et masquerait le défaut. Six messages réels — dont
+« Invalid Server Actions request. » et une erreur d'hydratation — sont éprouvés
+comme devant rester tels quels.
+
+**Trouvé par la suite navigateur, avant lui :** le veilleur n'était monté que
+sur les écrans à barre de navigation. **L'écran de connexion en était dépourvu**
+— c'est-à-dire précisément l'écran où une réponse coupée est la plus probable,
+puisque c'est le premier appel, celui qui compile tout, et le seul où il n'a
+aucun autre repère.
+
+
 
 ### Le devis parti, sur sa base — cinq façons de tenir ce qu'il a arrêté
 
