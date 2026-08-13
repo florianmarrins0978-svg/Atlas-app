@@ -7,6 +7,16 @@ export type ChantierStatut =
   | "brouillon"
   | "a_verifier"
   | "verifie"
+  /**
+   * Le devis est écrit, il n'attend plus que d'être envoyé.
+   *
+   * **Il manquait, et son absence mentait (13 août 2026).** Un devis rédigé à
+   * la main — donc sans passer par l'écran « Informations » — laissait le
+   * chantier affiché « Brouillon », c'est-à-dire « rien n'a été fait ». Le
+   * patron, revenu sur sa fiche après un retour malencontreux, y a lu qu'il
+   * était au point de départ alors qu'il n'avait plus qu'un geste à faire.
+   */
+  | "devis_pret"
   | "devis_envoye"
   | "en_attente_client"
   | "a_relancer"
@@ -21,6 +31,7 @@ export const statutLabel: Record<ChantierStatut, string> = {
   brouillon: "Brouillon",
   a_verifier: "À vérifier",
   verifie: "Vérifié",
+  devis_pret: "Devis prêt à envoyer",
   devis_envoye: "Devis envoyé",
   en_attente_client: "En attente de réponse",
   a_relancer: "À relancer",
@@ -66,33 +77,50 @@ export type EtatChantierPourAction = {
 };
 
 export function getNextAction(c: EtatChantierPourAction): NextAction | null {
-  // La progression métier prime sur la présence des pièces d'entrée. Une fois
-  // les informations vérifiées, supprimer la note vocale ne doit jamais
-  // ramener le chantier à « Enregistrer une note vocale » : le travail de
-  // saisie est fait, et redemander une dictée donnerait l'impression d'avoir
-  // tout perdu. Les étapes amont restent accessibles via getSecondarySteps.
-  if (!c.informationsVerifieesAt) {
-    if (c.photosCount === 0 && !c.aUneNoteVocale) {
-      return { key: "photos", label: "Ajouter des photos" };
-    }
-    if (!c.aUneNoteVocale) {
-      return { key: "note-vocale", label: "Enregistrer une note vocale" };
-    }
-    return { key: "informations", label: "Vérifier les informations" };
-  }
-  if (!c.prixValideAt) {
-    return { key: "prix", label: "Calculer le prix" };
-  }
-  if (!c.devisGenereAt) {
-    return { key: "devis-preparer", label: "Préparer le devis" };
-  }
-  if (!c.devisEnvoyeAt) {
-    return { key: "devis-consulter", label: "Consulter le devis" };
-  }
-  if (!c.datePlanifiee) {
-    return { key: "planifier", label: "Planifier le chantier" };
-  }
-  return null; // Rien à faire — le chantier est planifié, aucune action immédiate requise.
+  // **On repart du point le plus AVANCÉ, jamais du premier maillon manquant.**
+  //
+  // ─────────────────────────────────────────────────────────────────────────
+  // Le défaut, dans ses mots, le 13 août 2026 : *« il n'y a pas de mémoire dans
+  // les actions. J'étais en train de rédiger le devis, [...] j'ai fait retour
+  // sans faire exprès. Si maintenant je reclique sur mon chantier, je suis
+  // obligé de refaire toutes les étapes une à une, alors que j'étais déjà
+  // arrivé à la toute fin, il ne me manquait plus qu'à envoyer le devis. »*
+  //
+  // Cette fonction lisait la chaîne DEPUIS LE DÉBUT et s'arrêtait au premier
+  // trou. Or il avait écrit son devis à la main, sans passer par l'écran
+  // « Informations » : `informationsVerifieesAt` était donc resté vide, et la
+  // fiche d'un chantier **dont le devis n'attendait plus que son envoi**
+  // proposait « Ajouter des photos ». Reproduit et vu à l'écran avant d'être
+  // corrigé — le devis était bien là, rangé dans le tiroir sous « généré, non
+  // envoyé », pendant que l'écran invitait à dicter un chantier déjà chiffré.
+  //
+  // **Ce qui était perdu n'était pas son travail, c'était sa place.** Le pire
+  // des deux : rien ne le lui disait, et l'écran ressemblait trait pour trait à
+  // celui d'un chantier neuf.
+  //
+  // La chaîne est donc parcourue **à l'envers**, du plus avancé au plus
+  // ancien : le premier jalon franchi commande, et ce qui manque en amont ne
+  // ramène plus personne au départ. Les étapes sautées restent joignables par
+  // `getSecondarySteps` — sauter n'est pas interdit, c'est même la voie normale
+  // depuis que la chaîne va de la dictée au devis d'un seul geste.
+  //
+  // La règle qui existait déjà — « une fois les informations vérifiées,
+  // supprimer la note vocale ne doit pas ramener à la dictée » — n'est pas
+  // supprimée : elle devient un cas particulier de celle-ci, qui la généralise
+  // à tous les jalons.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  if (c.datePlanifiee) return null; // Planifié : plus rien à faire ici.
+  if (c.devisEnvoyeAt) return { key: "planifier", label: "Planifier le chantier" };
+  // **Le libellé dit ce qui reste à faire, pas où l'on va.** « Consulter le
+  // devis » décrivait une lecture ; ce qui l'attend est un envoi, et c'est le
+  // seul geste qui manquait quand il a perdu sa place.
+  if (c.devisGenereAt) return { key: "devis-consulter", label: "Envoyer le devis au client" };
+  if (c.prixValideAt) return { key: "devis-preparer", label: "Préparer le devis" };
+  if (c.informationsVerifieesAt) return { key: "prix", label: "Calculer le prix" };
+  if (c.aUneNoteVocale) return { key: "informations", label: "Vérifier les informations" };
+  if (c.photosCount > 0) return { key: "note-vocale", label: "Enregistrer une note vocale" };
+  return { key: "photos", label: "Ajouter des photos" };
 }
 
 // Construit l'URL associée à l'action principale pour un chantier donné.
@@ -249,6 +277,13 @@ export type EtatPourStatutAffiche = {
   photosCount: number;
   aUneNoteVocale: boolean;
   informationsVerifieesAt: Date | string | null;
+  /**
+   * **Obligatoire, et non « facultatif comme les autres ajouts ».** Un appelant
+   * qui l'oublierait retomberait sur « Brouillon » pour un devis prêt à partir
+   * — c'est-à-dire exactement le défaut du 13 août 2026. Le compilateur doit
+   * donc désigner chaque écran, plutôt que de laisser un silence le rejouer.
+   */
+  devisGenereAt: Date | string | null;
   devisEnvoyeAt: Date | string | null;
   datePlanifiee: string | null;
   // Le dernier envoi, quand il existe. Absent des anciens appels : le statut
@@ -293,6 +328,11 @@ export function getStatutAffiche(c: EtatPourStatutAffiche, maintenant: Date = ne
   if (etat === "en_attente") return "en_attente_client";
 
   if (c.devisEnvoyeAt) return "devis_envoye";
+  // **Du plus avancé au plus ancien, comme `getNextAction`.** Sans cette
+  // ligne, un devis rédigé et généré retombait sur « Brouillon » dès que les
+  // informations n'avaient pas été validées — et la liste des chantiers
+  // annonçait « rien n'a été fait » sur un devis prêt à partir.
+  if (c.devisGenereAt) return "devis_pret";
   if (c.informationsVerifieesAt) return "verifie";
   if (c.aUneNoteVocale || c.photosCount > 0) return "a_verifier";
   return "brouillon";
@@ -319,4 +359,54 @@ export function trierParDatePlanifiee<T extends { datePlanifiee?: string | null 
     if (!b.datePlanifiee) return -1;
     return a.datePlanifiee < b.datePlanifiee ? -1 : a.datePlanifiee > b.datePlanifiee ? 1 : 0;
   });
+}
+
+/**
+ * Où l'on retombe en rouvrant un chantier depuis la liste.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa demande, le 13 août 2026, et il a fallu deux essais pour la
+ * comprendre :** *« il faut absolument que si je me suis arrêté à l'étape
+ * d'envoyer le devis, si je fais retour et que je retombe sur la catégorie
+ * chantier puis que je reclique sur mon client en attente, que ça me renvoie à
+ * l'étape où je me suis arrêté. Donc là, en l'occurrence, j'étais sur la page
+ * où je devais ouvrir le SMS pour envoyer le devis. Ça doit m'envoyer là. Si je
+ * me suis arrêté à mettre des photos et à rédiger la note vocale, il faut que
+ * ça me remette à cette page-là. Et ainsi de suite. »*
+ *
+ * **Le premier essai avait corrigé autre chose** : la fiche annonçait
+ * « Brouillon » et proposait « Ajouter des photos » sur un devis prêt à partir
+ * (§78 d'`ARCHITECTURE.md`). C'était un vrai défaut, mais ce n'était pas
+ * celui-là. Ce qu'il demande ici n'est pas que la fiche dise mieux : c'est de
+ * **ne plus repasser par la fiche du tout**.
+ *
+ * La liste ne mène donc plus à la fiche, mais **à l'écran où le travail s'est
+ * arrêté**. Rouvrir un chantier, c'est reprendre — pas recommencer.
+ *
+ * **Ce qui reste sur la fiche, et pourquoi ce n'est pas un oubli.** Deux états
+ * n'ont aucun écran où reprendre : un devis parti dont on attend la réponse du
+ * client, et un chantier déjà planifié. Le renvoyer vers le planning général
+ * l'éloignerait de son chantier au lieu de l'y ramener. Dans ces deux cas, la
+ * fiche EST l'endroit : elle porte l'état, le tiroir et la sortie vers la
+ * facture.
+ *
+ * **Et la fiche reste à un doigt**, toujours : la flèche de retour de chaque
+ * écran y mène. Reprendre au bon endroit ne ferme aucune porte.
+ * ───────────────────────────────────────────────────────────────────────────
+ */
+export function lienDeReprise(id: string, c: EtatChantierPourAction): string {
+  const action = getNextAction(c);
+  if (!action) return `/chantiers/${id}`;
+  // **Trois étapes se reprennent SUR la fiche**, et ce n'est pas un repli :
+  //
+  //   · les photos et la dictée y vivent pour de bon — la pellicule et
+  //     l'anneau sont au milieu de l'écran depuis sa demande du 11 août
+  //     (« il est en plein milieu et dès qu'on arrive sur la page, il y est »).
+  //     C'est bien « cette page-là » qu'il décrit ;
+  //   · un chantier planifié n'a rien à reprendre : l'envoyer vers le planning
+  //     général l'éloignerait de son chantier au lieu de l'y ramener.
+  if (action.key === "photos" || action.key === "note-vocale" || action.key === "planifier") {
+    return `/chantiers/${id}`;
+  }
+  return getNextActionHref(id, action);
 }

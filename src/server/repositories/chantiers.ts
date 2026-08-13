@@ -106,6 +106,15 @@ export async function listerChantiersPourAffichage(ctx: Ctx) {
         // celui qu'il a ouvert en premier.
         majAt: chantiers.updatedAt,
         informationsVerifieesAt: chantiers.informationsVerifieesAt,
+        // **Le jalon qui manquait à la LISTE (13 août 2026).** Sans lui,
+        // `getStatutAffiche` ne pouvait pas savoir qu'un devis était écrit, et
+        // annonçait « Brouillon » sur un chantier qui n'attendait plus que son
+        // envoi. C'est ce que le patron a lu sur sa propre liste.
+        // `prixValideAt` sert la REPRISE : sans lui, un chantier chiffré mais
+        // sans devis ramènerait le patron à la dictée au lieu de l'écran du
+        // prix (`lienDeReprise`).
+        prixValideAt: chantiers.prixValideAt,
+        devisGenereAt: chantiers.devisGenereAt,
         devisEnvoyeAt: chantiers.devisEnvoyeAt,
         datePlanifiee: chantiers.datePlanifiee,
         termineAt: chantiers.termineAt,

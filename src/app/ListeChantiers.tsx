@@ -51,6 +51,16 @@ export type BrinChantier = {
   /** Ce chantier attend-il un geste du patron ? Lui seul porte la couleur. */
   attend: boolean;
   /**
+   * Où l'on retombe en touchant cette ligne — **l'écran où le travail s'est
+   * arrêté**, pas la fiche.
+   *
+   * Sa demande du 13 août 2026 : *« si je me suis arrêté à l'étape d'envoyer le
+   * devis [...] que ça me renvoie à l'étape où je me suis arrêté ».* Le lien
+   * est calculé au serveur (`lienDeReprise`) : l'écran ne décide de rien, il
+   * suit — même règle partout, et une seule à corriger le jour venu.
+   */
+  reprise: string;
+  /**
    * Compte-t-il dans « Huit en cours » ? Tous les chantiers de la liste n'y
    * entrent pas — un chantier au planning s'affiche sans être compté. Sans ce
    * drapeau, le décompte ne pourrait pas suivre un retrait sans redemander la
@@ -216,7 +226,7 @@ export default function ListeChantiers({
           {/* Ce qui glisse : le nom, le lieu, l'état. Le fil et la date
               restent en place — une ligne qui part d'un bloc coupe le nom en
               plein mot et laisse le fil traverser les lettres. */}
-          <Link href={`/chantiers/${c.id}`} className="atlas-brin block">
+          <Link href={c.reprise} className="atlas-brin block">
             <h2 className="truncate text-[19px] font-normal leading-[1.15]" style={{ fontFamily: font.display }}>
               {c.nom}
             </h2>

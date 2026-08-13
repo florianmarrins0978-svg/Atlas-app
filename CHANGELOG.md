@@ -185,7 +185,82 @@ maquette, et la connexion réelle dans un vrai navigateur derrière une origine
 
 ---
 
+## 2026-08-13
+
+### Rouvrir un chantier, c'est REPRENDRE — la liste mène là où il s'est arrêté
+
+**Sa demande, redite plus précisément après un premier correctif à côté :** *« si
+je me suis arrêté à l'étape d'envoyer le devis [...] que ça me renvoie à l'étape
+où je me suis arrêté. [...] Si je me suis arrêté à mettre des photos et à
+rédiger la note vocale, il faut que ça me remette à cette page-là. Et ainsi de
+suite. »*
+
+Il ne demandait pas que la fiche dise mieux : **il demandait de ne plus y
+repasser.** La liste des chantiers ouvre désormais l'écran où le travail s'est
+arrêté — l'envoi s'il était sur l'envoi, le prix s'il était sur le prix, la
+fiche tant qu'il n'y a que des photos et une dictée (elles y vivent).
+
+La règle est bâtie **sur** l'étape suivante, jamais à côté : deux règles pour la
+même question finiraient par se contredire, la fiche proposant un geste et la
+liste en ouvrant un autre. Éprouvée sur sa séquence exacte dans un vrai
+navigateur, retour par mégarde compris. `ARCHITECTURE.md` §78.
+
+**Ce qui n'a PAS été touché, sur sa consigne :** le centre de la fiche. La
+maquette dessinée entre-temps reste au placard.
+
+### « Il n'y a pas de mémoire dans les actions » : on repart du plus avancé
+
+**Son défaut, dans ses mots :** *« J'étais en train de rédiger le devis, [...]
+j'ai fait retour sans faire exprès. Si maintenant je reclique sur mon chantier,
+je suis obligé de refaire toutes les étapes une à une, alors que j'étais déjà
+arrivé à la toute fin, il ne me manquait plus qu'à envoyer le devis. »*
+
+**Rien n'était perdu — sa PLACE l'était**, et rien ne le lui disait. Sa fiche
+proposait « Ajouter des photos » et sa liste annonçait « Brouillon », sur un
+chantier dont le devis était écrit et n'attendait que son envoi.
+
+**La cause :** les deux règles lisaient la chaîne depuis le début et s'arrêtaient
+au premier trou. Il avait rédigé son devis **à la main**, donc sans passer par
+l'écran « Informations » — le jalon manquait, et tout retombait au départ. Or
+sauter des étapes n'est pas une anomalie : c'est la voie normale depuis que la
+chaîne va de la dictée au devis d'un seul geste.
+
+**La chaîne se lit désormais à l'envers**, du plus avancé au plus ancien : le
+premier jalon franchi commande. Un état manquait au passage — « Devis prêt à
+envoyer » —, sans lequel un devis écrit n'avait aucun état à lui.
+
+**Et la liste des chantiers ne lisait même pas ce jalon** : le compilateur l'a
+désigné dès que le champ est devenu obligatoire. C'était l'écran de sa capture.
+
+Reproduit à l'écran avant correction, revu à l'écran après (`ARCHITECTURE.md`
+§78). **Le corps de la fiche, lui, n'est pas touché** : il a demandé le jour
+même de ne pas y toucher, et la maquette dessinée entre-temps reste au placard.
+
+---
+
 ## 2026-08-12
+
+### Le faux rouge de la batterie : un tuyau de 64 Ko, pas un écran lent
+
+**Trois faux rouges avaient été attribués au préchauffage le matin même** — et
+le préchauffage n'y était pour rien. La cause est mécanique, et elle se mesure :
+
+`run-e2e-tests.ts` recueillait la sortie du serveur de développement par un
+**tuyau**, drainé par un écouteur de son propre processus. Or il lance chaque
+suite avec `spawnSync`, **qui bloque sa boucle d'événements** jusqu'à la fin de
+la suite. Pendant tout ce temps, personne ne vide le tuyau. Le noyau lui accorde
+64 Ko : la suite la plus lourde de la batterie les dépasse, et **le serveur se
+bloque alors en écriture**. Il ne répond plus, la navigation suivante dépasse
+ses 45 secondes, et le message accuse l'écran qui avait le malheur de venir
+après — « /planning », « /termines », selon la fois.
+
+La sortie va désormais dans un **fichier**, par descripteur passé à l'enfant :
+le noyau écrit sans jamais rien attendre de nous.
+
+**Mesuré des deux côtés**, comme l'exige le dépôt : rouge 3 fois sur 3 avec le
+tuyau, vert avec le fichier, à code applicatif identique. Ce qui explique aussi
+pourquoi la suite passait toujours jouée à la main — le serveur écrivait alors
+dans un terminal, que personne ne bloque.
 
 ### L'agenda iCloud est relié — lecture ET écriture
 

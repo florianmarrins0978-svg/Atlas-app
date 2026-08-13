@@ -1,4 +1,10 @@
-import { chantierEnCours, getStatutAffiche, statutLabel, type ChantierStatut } from "@/lib/chantier-etat";
+import {
+  chantierEnCours,
+  getStatutAffiche,
+  lienDeReprise,
+  statutLabel,
+  type ChantierStatut,
+} from "@/lib/chantier-etat";
 import { ongletDuChantier } from "@/lib/onglet-chantier";
 import { auth } from "@/auth";
 import { getCurrentCtx } from "@/server/session-ctx";
@@ -66,6 +72,10 @@ export default async function ChantiersPage() {
       // c'est la forme retenue, et elle tient là où deux lignes débordaient.
       etat: `${statutLabel[c.statut]} · ${photos}`,
       attend: ETATS_EN_ATTENTE.includes(c.statut),
+      // **Toucher un chantier, c'est REPRENDRE — pas recommencer.** Sa demande
+      // du 13 août 2026, après s'être retrouvé à refaire toutes les étapes
+      // alors qu'il ne lui restait qu'à envoyer son devis.
+      reprise: lienDeReprise(c.id, c),
       // Le décompte doit suivre un retrait sans redemander la page : l'écran
       // ne peut le faire que s'il sait, ligne par ligne, laquelle compte.
       enCours: chantierEnCours(c.statut),
