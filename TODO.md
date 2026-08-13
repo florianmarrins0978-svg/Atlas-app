@@ -102,6 +102,33 @@ technique — et rien ne sera ajouté sans son accord (`CLAUDE.md` §4).
 **Et une seconde question, liée :** le message qui part chez son client dit
 toujours « Bonjour Martins ». Faut-il qu'il dise « Bonjour Monsieur Martins » ?
 Rien n'a été touché : c'est ce que ses clients lisent.
+### ~~0 octodecies. Le message du devis figé désignait une porte invisible~~ — **codé le 2026-08-13 (proposition A)**
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis). Le patron, le 13 août, capture à
+l'appui : *« le message dit de consulter la case devis mais aucune case devis
+existe »*, et il demande un avis — créer la case, ou retirer le message ?
+
+**Ce qui est vrai, vérifié dans le code :** l'écran Devis existe bien
+(`/chantiers/[id]/export`, `chantier-etat.ts` le pose comme étape « Devis »),
+mais il vit dans le **tiroir** de la fiche, et **aucune porte n'y mène depuis
+`devis-complet`** — où le message s'affiche. De plus, **deux écrans s'appellent
+« Devis »** de son point de vue : celui qu'il regarde, et celui où l'on corrige.
+
+`docs/maquettes/40-le-message-du-devis-fige.html` — témoin + trois façons :
+
+| | Ce que c'est | Ce que ça coûte |
+|---|---|---|
+| A | le message devient la porte (lien sous la phrase) | rien — la retouche la plus courte |
+| B | un vrai bouton en capsule | il attire l'œil avant le devis qu'on vient lire |
+| C | plus de message du tout | le jour où il touche un prix, rien ne se passe et rien ne le dit |
+
+**Mon avis, donné et assumé : A.** Ne PAS créer de nouvelle case — l'écran
+existe, et lui donner un second accès permanent ferait deux portes vers la même
+pièce, ce qu'on vient d'éviter sur l'écran du devis.
+
+**Les mots ne sont pas tranchés** : « Le corriger et le renvoyer », « Corriger
+ce devis », « Reprendre le devis ». Ils lui appartiennent.
+
 
 ### 0 unvicies. ~~Relier l'agenda iCloud~~ — **codé le 12 août 2026**, reste à éprouver chez lui
 
