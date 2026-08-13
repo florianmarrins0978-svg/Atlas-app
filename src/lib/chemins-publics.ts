@@ -51,3 +51,30 @@ export const CHEMINS_PUBLICS = [
 export function estCheminPublic(chemin: string): boolean {
   return CHEMINS_PUBLICS.some((p) => chemin === p || chemin.startsWith(`${p}/`));
 }
+
+/**
+ * Les deux pages que le CLIENT DE L'ARTISAN reçoit — et elles seules.
+ *
+ * **Public ne veut pas dire « pour le client ».** `/login` est public aussi,
+ * mais c'est l'écran du patron : ce qui lui parle d'Atlas, de mises à jour ou
+ * de son banc y est chez lui. Sur le devis et la facture, non — celui qui les
+ * ouvre n'a jamais entendu parler de l'outil, et n'a rien à faire de son état.
+ *
+ * **Écrit le 13 août 2026, sur une remarque du patron :** *« s'il clique sur
+ * les cases en bas, il est dans l'application. Or il doit recevoir simplement
+ * sa facture en PDF. »* La barre était déjà retirée ; en le vérifiant, j'ai
+ * trouvé que le veilleur des réponses illisibles, posé la veille, aurait
+ * annoncé à son client qu'« Atlas est en train de se préparer après une mise à
+ * jour ». Même faute, un cran plus bas.
+ *
+ * Distinct de `CHEMINS_PUBLICS` à dessein : mélanger les deux ferait qu'un
+ * futur chemin public — une page d'aide, un mode d'emploi — deviendrait
+ * « page client » sans que personne l'ait décidé.
+ */
+export const CHEMINS_DU_CLIENT = ["/devis", "/factures"] as const;
+
+/** Cette page est-elle celle que le client de l'artisan reçoit ? */
+export function estPageDuClient(chemin: string | null): boolean {
+  if (!chemin) return false;
+  return CHEMINS_DU_CLIENT.some((p) => chemin === p || chemin.startsWith(`${p}/`));
+}

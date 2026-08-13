@@ -187,6 +187,31 @@ maquette, et la connexion réelle dans un vrai navigateur derrière une origine
 
 ## 2026-08-13
 
+### La page du client ne parle plus la langue du patron
+
+**Le patron, capture à l'appui :** *« lorsque j'envoie la facture au client,
+voilà le lien auquel il a accès. Et s'il clique sur les cases en bas, il est
+dans l'application. Or il doit recevoir simplement sa facture en PDF. »*
+
+**La barre était déjà retirée** — corrigée le 12 août, et tenue par
+`test-pages-publiques-sans-navigation-e2e`. Vérifié plutôt qu'affirmé : la suite
+passe sur les trois adresses publiques réelles. Sa capture vient d'une version
+d'avant.
+
+**Mais en le vérifiant, j'ai trouvé ma propre faute, d'un cran plus bas.** Le
+veilleur des réponses illisibles, posé la veille, était monté sur SES pages : au
+premier serveur lent, son client aurait lu qu'« Atlas est en train de se
+préparer après une mise à jour ». Une barre en moins, un bandeau en plus.
+
+**« Public » ne veut pas dire « pour le client ».** `/login` est public aussi,
+mais c'est l'écran du patron : ce qui lui parle d'Atlas y est chez lui. D'où
+`estPageDuClient`, distinct de `estCheminPublic` — mélanger les deux ferait
+qu'une future page d'aide deviendrait « page client » sans que personne l'ait
+décidé.
+
+Le contrôle a été confronté à l'état qu'il prétend détecter : veilleur remis
+partout, il rougit sur les deux pages, en citant ce que le client lirait.
+
 ### Le message du devis figé est devenu la porte
 
 **Le patron, capture à l'appui :** *« le message dit de consulter la case devis
