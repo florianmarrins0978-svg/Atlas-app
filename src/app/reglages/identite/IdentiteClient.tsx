@@ -191,7 +191,19 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
 
 function Bloc({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (
-    <section className="mx-[26px] mt-[30px] pt-[18px]" style={{ borderTop: `1px solid ${colors.line}` }}>
+    // `[&>*:last-child]:border-b-0` : LA DERNIÈRE LIGNE PERD SON FILET. Sans
+    // cela, elle en pose un que le trait du bloc suivant redouble trente pixels
+    // plus bas — deux traits, et une bande vide entre les deux. Vu sur la
+    // capture de l'écran réel, jamais par un test (`CLAUDE.md` §5) ; c'est le
+    // même défaut que `maquettes/charte.mjs` fait rougir sur les planches.
+    // ET LE PREMIER BLOC NE PORTE PAS DE TRAIT : le cheveu de l'en-tête ferme
+    // déjà au-dessus de lui, et les deux dessinaient deux filets séparés par
+    // trente pixels de vide. Vu sur la capture de l'écran réel — c'est le même
+    // défaut que sur la première planche (`ARCHITECTURE.md` §80).
+    <section
+      className="mx-[26px] mt-[30px] border-t pt-[18px] first-of-type:mt-[26px] first-of-type:border-t-0 first-of-type:pt-0 [&>*:last-child]:border-b-0"
+      style={{ borderColor: colors.line }}
+    >
       <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
         {titre}
       </p>
@@ -229,7 +241,7 @@ function Champ({
   } as const;
 
   return (
-    <label className="block py-[13px]" style={{ borderBottom: `1px solid ${teinte}` }}>
+    <label className="block border-b py-[13px]" style={{ borderColor: teinte }}>
       <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: manquant ? colors.alert : colors.muted }}>
         {etiquette}
         {manquant ? " — manquant" : ""}
@@ -262,8 +274,8 @@ function Choix({
       type="button"
       onClick={onChoix}
       aria-pressed={pris}
-      className="flex w-full items-start gap-[13px] py-[14px] text-left"
-      style={{ borderBottom: `1px solid ${colors.line}`, minHeight: 54 }}
+      className="flex w-full items-start gap-[13px] border-b py-[14px] text-left"
+      style={{ borderColor: colors.line, minHeight: 54 }}
     >
       <span
         aria-hidden="true"

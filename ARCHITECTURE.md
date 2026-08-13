@@ -6861,3 +6861,28 @@ accusait la facture ; le coupable était le test.
 
 La suite a ensuite été confrontée à l'ancien code — la déduction par le taux
 remise en place — et elle rougit sur les deux cas exacts que ce lot corrige.
+
+
+### Et deux défauts vus sur l'écran RÉEL, que les planches interdisaient déjà
+
+L'écran codé a été **regardé**, pas seulement compilé — `scripts/capture-identite.mts`
+prend trois vues : rempli, en franchise, et **vierge**. Cette dernière compte
+autant que les autres : c'est celle du premier jour d'un artisan, et personne ne
+l'avait jamais vue (§81).
+
+Deux défauts en sont sortis, **tous deux déjà interdits sur les planches** et
+qu'aucun test ne voyait :
+
+1. **Le dernier champ d'un bloc gardait son filet**, que le trait du bloc suivant
+   redoublait trente pixels plus bas. La correction n'est pas cosmétique dans sa
+   forme : la bordure passe en CLASSE (`border-b`) pour que
+   `[&>*:last-child]:border-b-0` puisse l'effacer — un style en ligne l'aurait
+   emporté, et la règle n'aurait jamais rien fait.
+2. **Le premier bloc portait un trait** sous le cheveu qui ferme déjà l'en-tête.
+
+**Ce que cela apprend, et qui vaut pour les lots de code à venir :** les règles
+tenues par `maquettes/charte.mjs` ne se transportent pas toutes seules dans
+`src/`. Les planches sont contrôlées, l'application ne l'est pas — et les mêmes
+défauts y reviennent. Le seul rempart est celui que `CLAUDE.md` §5 nomme :
+prendre une capture des écrans touchés fait partie du travail, pas de la
+finition.
