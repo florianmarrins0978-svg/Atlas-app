@@ -5,11 +5,6 @@
 
 ---
 
-**Dernière mise à jour :** 2026-08-12 · branche `claude/chantier-phototech-direct-ujt2wv`
-· dernière migration `drizzle/0036_achats_tva.sql`
-
----
-
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -230,6 +225,11 @@ l'application. Ce qui est **fait** :
   confirme qui compte. Un crédit de TVA s'affiche en négatif, signe et phrase.
   **NON VÉRIFIÉ ICI : la lecture d'un vrai ticket** — aucune clé dans cet
   environnement. `ARCHITECTURE.md` §84.
+- **Un ticket daté d'un autre mois ne disparaît plus** (13 août) : le patron
+  ajoute un ticket du 24 juillet depuis l'écran d'août ; il était enregistré —
+  dans juillet — et **invisible**, l'écran ne montrant qu'une période. La
+  feuille annonce désormais la destination avant qu'il appuie, et l'écran l'y
+  emmène après. `scripts/test-achat-hors-periode-e2e.ts`, `ARCHITECTURE.md` §85.
 - **La TVA au mois ou au trimestre, et son calendrier** (12 août) : Réglages
   porte le choix, le mois coché d'avance — c'est le défaut légal (déclaration
   CA3 mensuelle ; le trimestre est une option sous 4 000 € de TVA due). L'écran

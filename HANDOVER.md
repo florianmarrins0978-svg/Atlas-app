@@ -514,7 +514,7 @@ Détail complet : `ARCHITECTURE.md` §81.
 `src/server/repositories/achats-tva.ts`, l'écran `src/app/termines/tva/` et
 `src/server/ai/services/lire-ticket.ts`.
 
-**Cinq choses à ne pas défaire :**
+**Six choses à ne pas défaire :**
 
 1. **La TVA d'un ticket se RETIRE du total, elle ne s'y ajoute pas.** 120 € à
    20 % contiennent 20 € de TVA, pas 24. Un contrôle affirme l'inégalité
@@ -531,6 +531,14 @@ Détail complet : `ARCHITECTURE.md` §81.
 5. **Ce que la lecture rend est une PROPOSITION.** Les champs arrivent
    pré-remplis ; c'est la valeur CONFIRMÉE qui part en base. Ne jamais
    enregistrer directement ce que le modèle a lu.
+6. **Un achat daté hors de la période regardée doit se DIRE, puis EMMENER**
+   (ajouté le 13 août 2026, sur son signalement). La feuille annonce la
+   destination avant l'appui, et l'écran navigue vers elle après. Sans ça,
+   l'achat est enregistré au bon endroit et **disparaît** : l'écran ne montre
+   qu'une période, aucun des trois chiffres ne bouge, et le patron conclut que
+   rien n'a été pris — c'est exactement ce qui s'est produit avec son ticket du
+   24 juillet ajouté en août. `scripts/test-achat-hors-periode-e2e.ts` le garde,
+   et **piège 19** dit pourquoi le premier correctif ne corrigeait rien.
 
 **NON VÉRIFIÉ, et ça ne peut pas l'être ici :** la lecture d'un vrai ticket.
 Aucune clé dans cet environnement. Si le patron signale une lecture fautive, le
@@ -2131,7 +2139,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les dix-huit pièges de ce dépôt
+### Les dix-neuf pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -2316,6 +2324,23 @@ site publié à son adresse réelle.
     cible tactile se mesure (44 px), elle ne se déduit pas. Et `innerText`
     **n'inclut pas le contenu des champs** : un contrôle qui l'interroge pour
     vérifier l'ordre d'un formulaire ne voit rien du tout.
+
+19. **`router.refresh()` juste après `router.push()` ANNULE la navigation.**
+    `refresh` redemande au serveur l'adresse **courante** ; le `push` en cours
+    retombe dessus. Aucune erreur, aucune trace : l'écran ne bouge simplement
+    pas. Le 13 août 2026, ce doublet a rendu inopérant le correctif du ticket
+    daté d'un autre mois — le code était écrit, la ligne bien en base, et le
+    défaut du patron intact. Il a fallu une sonde imprimant l'adresse et le
+    titre après l'appui pour le voir. **Un `push` suffit** : une page
+    `force-dynamic` est refaite côté serveur à chaque navigation. Le `refresh`
+    ne se garde que sur la branche qui reste sur place. `ARCHITECTURE.md` §85.
+
+    *Corollaire de méthode, et c'est le vrai enseignement :* un écran qui écrit
+    dans une période et en affiche une autre ne se voit dans **aucune** suite
+    qui regarde une moitié. Le dépôt était juste, les bornes étaient justes,
+    tout était vert — le trou était dans le raccord. Là où deux couches se
+    passent une valeur, il faut une suite qui traverse **du doigt jusqu'au
+    chiffre** (`scripts/test-achat-hors-periode-e2e.ts`).
 
 ### Le vocabulaire
 

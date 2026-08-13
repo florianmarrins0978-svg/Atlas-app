@@ -151,3 +151,30 @@ export function lirePeriode(
   if (!Number.isInteger(n) || n < 1 || n > nombreDePeriodes(periodicite)) return null;
   return periodeTva(periodicite, a, n);
 }
+
+/**
+ * Dans quelle période tombe un jour donné.
+ *
+ * **Née d'un défaut réel, le 13 août 2026.** Le patron scanne un ticket de
+ * gazole du 24 juillet depuis l'écran d'août : l'achat est enregistré — au bon
+ * endroit, dans juillet — et **disparaît de sa vue**. La TVA déductible d'août
+ * ne bouge pas, et il conclut, à raison de son point de vue, que rien n'a été
+ * pris.
+ *
+ * L'écran ne montrait qu'une période et n'avait aucun moyen de dire « c'est
+ * rangé, mais ailleurs ». Cette fonction lui donne ce moyen : elle dit où un
+ * achat atterrit, avant de le confirmer comme après.
+ */
+export function periodeContenant(periodicite: PeriodiciteTva, jourIso: string): PeriodeTva | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(jourIso)) return null;
+  const annee = Number(jourIso.slice(0, 4));
+  const mois = Number(jourIso.slice(5, 7));
+  if (!Number.isInteger(annee) || mois < 1 || mois > 12) return null;
+  const numero = periodicite === "mensuelle" ? mois : Math.floor((mois - 1) / 3) + 1;
+  return periodeTva(periodicite, annee, numero);
+}
+
+/** Ce jour tombe-t-il dans cette période ? Bornes incluses des deux côtés. */
+export function dansLaPeriode(p: PeriodeTva, jourIso: string): boolean {
+  return jourIso >= p.debut && jourIso <= p.fin;
+}

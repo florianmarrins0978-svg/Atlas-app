@@ -9,6 +9,39 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### Un ticket daté d'un autre mois ne disparaît plus sous les yeux du patron
+
+**Son signalement, photo à l'appui :** *« J'ai ajouté ce ticket via phototech
+dans l'application TVA, mais il n'est jamais apparu dans la TVA déductible. »*
+Ticket de gazole du **24 juillet**, ajouté le 13 août depuis l'écran d'**août**.
+
+**Rien n'était perdu** : l'achat était en base, dans juillet, exactement où il
+devait aller. Mais l'écran ne montre qu'une période — total collecté, total
+déductible, liste des achats, les trois tirés des mêmes bornes. Aucun des trois
+chiffres ne bougeait, et rien ne disait pourquoi. De son point de vue, le geste
+n'avait rien produit.
+
+**Ce qui change.** La feuille annonce la destination *avant* qu'il appuie
+(« il ira dans Juillet 2026, pas dans Août 2026 »), et l'écran l'y **emmène**
+après l'ajout — pas un message à lire puis à suivre : le chiffre est sous ses
+yeux.
+
+**Ce que ça évite :** de conclure qu'une saisie n'a pas été prise alors qu'elle
+l'a été, et de la refaire. Un doublon de TVA déductible ne se voit pas non plus
+à l'écran — il se voit chez le comptable.
+
+**Un correctif qui ne corrigeait rien, attrapé de justesse.** La première
+version faisait `router.push(...)` puis `router.refresh()` : les deux
+s'annulaient, `refresh` redemandant l'adresse courante. L'écran ne bougeait pas,
+sans la moindre erreur. Vu à la sonde uniquement (`ARCHITECTURE.md` §85).
+
+**Nouveau contrôle :** `scripts/test-achat-hors-periode-e2e.ts` traverse le
+parcours entier et rougit sur quatre cas quand on retire la réparation.
+
+---
+
+## 2026-08-13
+
 ### Cesser de rejouer soixante suites pour du code qui ne nous concerne pas
 
 **Sa décision, en quatre mots :** *« seulement quand le code touche »*.

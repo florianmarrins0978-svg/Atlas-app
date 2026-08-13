@@ -6539,3 +6539,96 @@ fait le plein et quand il travaille. `test-export-entreprise.ts` a réclamé la
 table avant que quiconque y pense : l'omission serait partie en silence.
 
 ---
+
+## 85. Le ticket de juillet ajouté depuis août : rangé juste, et invisible
+
+**Son signalement du 13 août 2026, avec la photo du ticket :** *« J'ai ajouté ce
+ticket via phototech dans l'application TVA, mais il n'est jamais apparu dans la
+TVA déductible. Corrige ce problème. »*
+
+Le ticket : une station LAFON, **le 24 juillet**, 97,39 € de gazole, 16,23 € de
+TVA. Il l'a photographié le 13 août, depuis l'écran d'**août**.
+
+**Rien n'était perdu.** L'achat était en base, avec sa date, dans la bonne
+période — juillet — exactement là où il devait aller (§84 : *la date de l'ACHAT,
+jamais celle de la saisie*). Le défaut n'était pas dans l'enregistrement, il
+était dans ce que l'écran laissait croire.
+
+### Un écran qui ne montre qu'une période, et ne le dit pas
+
+L'écran de TVA affiche **une** période à la fois : le total collecté, le total
+déductible, la liste des achats — les trois tirés des mêmes bornes. Un achat
+daté hors de ces bornes ne peut donc apparaître nulle part, et **aucun des trois
+chiffres ne bouge**. Du point de vue du patron, le geste n'a rien produit.
+
+Il avait raison de conclure ça. C'est le seul retour que l'application lui
+donnait.
+
+**Pourquoi aucun contrôle ne l'a vu.** Les suites étaient vertes, et justes :
+`test-achats-tva-repo.ts` éprouvait que le dépôt rend un achat entre deux bornes
+et jamais au-delà, `test-periode-tva.ts` que les bornes sont bonnes. Chacune
+regardait sa moitié. Le défaut vivait dans le raccord — l'écran écrivait dans
+une période et en affichait une autre — et un raccord ne se voit qu'en
+traversant le parcours entier, du doigt jusqu'au chiffre.
+
+### La réparation : le dire avant, et l'emmener après
+
+Deux gestes, et il faut les deux :
+
+1. **Avant l'appui**, la feuille annonce la destination : « Ce ticket est daté du
+   24 juillet : il ira dans **Juillet 2026**, pas dans Août 2026. L'écran vous y
+   emmènera. » Un ticket du mois dernier n'est pas une faute — c'est le cas
+   normal, on ne saisit pas ses tickets le jour même. Ce qui serait fautif, c'est
+   de le laisser partir à l'aveugle.
+2. **Après l'ajout**, l'écran navigue vers cette période. Pas un message qu'il
+   faudrait lire puis suivre : le chiffre est sous ses yeux. Ce qui a coûté
+   l'aller-retour, c'est précisément d'avoir laissé le patron devant l'écran
+   qu'il regardait déjà.
+
+Les deux s'appuient sur `periodeContenant` et `dansLaPeriode`
+(`src/server/periode-tva.ts`), fonctions pures — la même paire sert à écrire
+l'avertissement et à décider la navigation, jamais deux implémentations
+(`CLAUDE.md` §3).
+
+### Le piège qui a failli laisser passer un correctif qui ne corrigeait rien
+
+La première version enchaînait :
+
+```ts
+router.push(`/termines/tva?annee=${cible.annee}&t=${cible.numero}`);
+router.refresh();   // ← annule le push
+```
+
+**Les deux se sont annulés.** `router.refresh()` redemande au serveur l'adresse
+**courante** ; la navigation en cours retombait dessus. L'écran restait sur
+août, le ticket restait invisible — le correctif était écrit, poussé nulle part,
+et **il ne corrigeait rien**.
+
+Rien ne le disait : pas d'erreur, pas de trace, la ligne bien en base. Il a
+fallu une sonde qui imprime l'adresse et le titre après l'appui pour le voir.
+C'est exactement le cas décrit dans `AGENTS.md` — *devant un défaut muet, la
+première livraison est de rendre le défaut bavard*. Le commentaire est resté
+dans le code : la ligne supprimée est celle qu'on rajoute par réflexe.
+
+### Le contrôle qui manquait, et qu'on a vu rougir
+
+`scripts/test-achat-hors-periode-e2e.ts` traverse le parcours : depuis l'écran
+du mois en cours, on écrit un achat daté du 24 du mois précédent, on vérifie que
+l'avertissement nomme les deux périodes, que l'écran emmène, que l'achat est
+dans la liste, que le total déductible l'a pris — **et qu'il ne compte pas
+double** dans le mois d'où il vient.
+
+Deux précautions sans lesquelles il serait vert pour rien :
+
+- **il pose la périodicité au mois** avant de commencer. Au trimestre, le
+  24 juillet et le 13 août tombent dans la même période : le défaut ne se
+  produirait pas, et la suite passerait sans rien traverser. Une autre suite
+  déplace ce réglage — on ne suppose pas son état ;
+- **la date est calculée depuis aujourd'hui**, jamais figée au 24 juillet 2026,
+  qui cesserait d'être « le mois dernier » dès septembre.
+
+Confronté au défaut — navigation retirée, avertissement éteint — il rougit sur
+quatre cas, dont « la colonne Déductible affiche 0.00 € : le ticket n'y est
+pas ». C'est le mot exact du patron, rendu par une machine.
+
+---
