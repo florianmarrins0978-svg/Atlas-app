@@ -219,6 +219,39 @@ maquette, et la connexion réelle dans un vrai navigateur derrière une origine
 
 ---
 
+## 2026-08-13
+
+### Le message du devis figé est devenu la porte
+
+**Le patron, capture à l'appui :** *« le message dit de consulter la case devis
+mais aucune case devis existe »*. Puis, plus utile encore : *« j'aimerais avoir
+ton avis — est-ce utile de créer une case, ou est-ce qu'on retire le message ? »*
+
+**Il avait raison sur le fond.** L'écran Devis existe bien
+(`/chantiers/[id]/export`) — mais il vit dans le **tiroir** de la fiche, et
+**aucune porte n'y menait** depuis la page du devis. La phrase décrivait donc un
+itinéraire à reconstituer seul. Pire : deux écrans s'appellent « Devis » de son
+point de vue, celui qu'il regarde et celui où l'on corrige. « Ouvrez l'écran
+Devis » était introuvable **et** ambigu.
+
+**Ni l'un ni l'autre : le message devient la porte.** Quatre lignes deviennent
+deux — ce qui se passe, puis un lien qui y mène.
+
+Pourquoi **pas de nouvelle case** : l'écran existe déjà et vit dans le tiroir de
+la fiche ; un second accès permanent ferait deux portes vers la même pièce, ce
+qu'on venait justement d'éviter sur l'écran du devis.
+
+Pourquoi **pas de retrait** : cet écran est celui où l'on RÉDIGE. Sans cette
+phrase, toucher un prix ne ferait rien et rien ne dirait pourquoi — le silence
+que ce dépôt combat depuis le début. Il l'a arbitré lui-même après avoir vu les
+trois façons dessinées (`docs/maquettes/40-le-message-du-devis-fige.html`).
+
+`scripts/test-devis-fige-porte-e2e.ts` tient le lien plutôt que la phrase :
+**une phrase qui décrit un chemin se dégrade en silence le jour où le chemin
+bouge ; un lien qui mène ailleurs se voit tout de suite.** La suite vérifie
+aussi que les mots signalés ont disparu, que la porte s'ouvre pour de bon, et
+qu'un devis pas encore parti ne s'annonce jamais figé.
+
 ## 2026-08-12
 
 ### L'agenda iCloud est relié — lecture ET écriture

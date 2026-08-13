@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
 import { colors, font } from "@/lib/design-tokens";
 import { adressesDuDocument } from "@/lib/adresses";
@@ -162,11 +163,37 @@ export default function DevisCompletClient(props: Props) {
         </p>
       )}
 
+      {/* **Le message EST la porte — et ce n'était pas le cas.**
+          Le patron, le 13 août 2026, capture à l'appui : *« le message dit de
+          consulter la case devis mais aucune case devis existe »*. Il avait
+          raison sur le fond : l'écran Devis existe bien
+          (`/chantiers/[id]/export`), mais il vit dans le tiroir de la fiche —
+          **aucune porte n'y menait d'ici**, et la phrase décrivait donc un
+          itinéraire à reconstituer seul.
+
+          Pire : deux écrans s'appellent « Devis » de son point de vue — celui
+          qu'il regarde, et celui où l'on corrige. « Ouvrez l'écran Devis »
+          était donc introuvable ET ambigu.
+
+          Il a choisi la proposition A de
+          `docs/maquettes/40-le-message-du-devis-fige.html` : la phrase dit
+          pourquoi c'est figé, la ligne dessous y emmène. Quatre lignes
+          deviennent deux, et le mot « écran Devis » disparaît.
+
+          **Le message reste**, et c'était l'autre branche de sa question. Cet
+          écran est celui où l'on RÉDIGE : le jour où il touche un prix, sans
+          cette phrase il ne se passerait rien et rien ne dirait pourquoi. */}
       {fige && (
-        <p className="mb-6 rounded-lg px-4 py-3 text-[13px]" style={{ backgroundColor: colors.rustTint, color: colors.rust }}>
-          Ce devis est parti chez votre client : il ne se modifie plus. Pour le corriger, ouvrez l&apos;écran Devis et
-          choisissez « Corriger et renvoyer ».
-        </p>
+        <div className="mb-6 rounded-lg px-4 py-3" style={{ backgroundColor: colors.rustTint, color: colors.rust }}>
+          <p className="text-[13px]">Ce devis est parti chez votre client : il ne se modifie plus.</p>
+          <Link
+            href={`/chantiers/${props.chantierId}/export`}
+            className="mt-2 block text-[13px] font-semibold"
+            style={{ color: colors.rust }}
+          >
+            Le corriger et le renvoyer →
+          </Link>
+        </div>
       )}
 
       {/* --- En-tête : l'entreprise à gauche, les références à droite -------- */}
