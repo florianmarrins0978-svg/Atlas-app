@@ -6114,3 +6114,52 @@ Deux règles, pour toute suite qui ralentit volontairement un serveur :
 2. **la relâcher APRÈS la fin de l'échange retenu** — la couper en vol laisse un
    appel à moitié traité, et l'outil répond « Route is already handled! », une
    erreur qui n'apprend rien sur ce qu'on éprouve.
+
+### Une attente sans fin ne renseigne pas plus qu'une attente immobile
+
+La question était restée ouverte, et le patron l'a tranchée d'un « oui fait ça » :
+*une vague qui souffle depuis trente secondes redevient une vague qui ne dit
+rien.* Un geste rassure les dix premières secondes, puis il inquiète — parce
+qu'il dit exactement la même chose à la trentième qu'à la première.
+
+L'écran a donc **trois temps** (`src/lib/attente-longue.ts`) : il travaille, puis
+il reconnaît que c'est anormalement long, puis il rend la main. Les seuils et les
+phrases vivent dans une fonction pure — l'écran affiche, il ne décide pas — et
+l'étape se calcule sur le **temps écoulé**, jamais posée en dur : un téléphone
+qui s'endort étire ses minuteries, et un réveil de douze secondes qui tombe à la
+cinquantième doit rendre la main, pas annoncer « c'est un peu long ».
+
+**Renoncer n'annule rien**, et c'est la décision qui compte ici. L'appel continue ;
+s'il finit par répondre, les champs vides se remplissent. Le couper aurait obligé
+à tout redicter alors que la réponse était peut-être à une seconde. En revanche,
+rendre la main crée un cas qui n'existait pas : le patron peut redicter pendant
+que la première réponse court encore, et celle-ci, en revenant, remettrait l'écran
+au repos **au milieu du nouvel enregistrement**. D'où un numéro de tour : une
+réponse ne touche l'écran que si elle est encore celle qu'on attend.
+
+### La place d'une phrase est une contrainte, au même titre que son sens
+
+**Le défaut, et il ne s'est vu qu'à la capture.** La première phrase des douze
+secondes disait aussi « vous pouvez déjà saisir, rien ne sera écrasé » — vrai,
+utile, et cent caractères. Dans la colonne de 190 px où vivent ces phrases, elle
+prenait toute la largeur et **cassait « Un chantier » en deux lignes**, en plein
+milieu de l'attente. Un écran qui se réorganise pendant qu'on patiente inquiète
+plus qu'il ne rassure.
+
+Mesuré ensuite dans la vraie page, sur son écran de 390 px : **31 caractères font
+163 px et tiennent sur une ligne ; 33 en font 181 et passent à deux.** La règle
+n'est donc pas « soyez concis » : c'est *une ligne*, et elle se mesure.
+
+Deux contrôles gardent la règle, et **le second existe parce que le premier a
+dormi** :
+
+| Contrôle | Où | Ce qu'il a appris |
+|---|---|---|
+| plafond de 31 caractères | `test-attente-longue.ts`, sans navigateur | posé d'abord à 60, il laissait passer la phrase de l'abandon — **un plafond trop généreux est un contrôle qui dort** |
+| nombre de lignes du titre | `test-attente-dictee-e2e.ts`, sur son écran | posé au seul état des douze secondes, il n'a rien vu de l'abandon — **un contrôle posé à un seul endroit d'un parcours n'éprouve que cet endroit-là** |
+
+**Et la mesure a dénoncé un défaut plus ancien que ce travail :** le message de
+fin, « 1 information reprise — relisez avant de créer. », fait 47 caractères et
+casse le titre à **chaque dictée réussie**. Il n'a pas été touché — c'est une
+phrase que le patron voit depuis des jours sans s'en plaindre, et la raccourcir
+change ce qu'elle lui dit (`TODO.md`).

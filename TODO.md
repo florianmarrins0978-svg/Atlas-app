@@ -139,9 +139,61 @@ Trouvé en **affichant les images présentes** plutôt qu'en supposant : elles
    `locator.screenshot()`) ; et le retour du résultat est **décoché par
    défaut**, sans quoi on jugerait cinq gestes sur quatre secondes chacun.
 
-**Ce qui reste ouvert et n'est pas dans la planche :** ce que l'écran fait quand
-le traitement s'éternise. Une vague qui tourne depuis trente secondes redevient
-une vague qui ne dit rien.
+### 0 quatervicies quater. ~~L'attente qui s'éternise~~ — **faite le 13 août 2026**
+
+Sa réponse à la question laissée ouverte : *« oui fait ça »*. Une vague qui
+souffle depuis trente secondes redevient une vague qui ne dit rien.
+
+**Trois temps**, dans `src/lib/attente-longue.ts` — fonction pure, éprouvée sans
+navigateur :
+
+| | Ce que l'écran dit | Pourquoi ce moment-là |
+|---|---|---|
+| 0 s | « Atlas rédige… » | la chaîne prend deux à dix secondes |
+| 12 s | « C'est plus long que d'habitude. » | au-delà de la bande normale, sans être soupçonneux |
+| 45 s | « Pas de réponse. Réessayez. » + le micro revient | assez long pour qu'une chaîne lente aboutisse |
+
+**Trois choses à ne pas défaire :**
+
+1. **Renoncer n'interrompt PAS l'appel.** S'il répond enfin, les champs vides se
+   remplissent. Le couper obligerait à tout redicter alors que la réponse était
+   peut-être à une seconde.
+2. **Une réponse en retard ne touche l'écran que si elle est encore attendue**
+   (`tour` dans `DicterCoordonnees`). Sans ce garde-fou, la première dictée, en
+   revenant, remettait l'écran au repos **au milieu du nouvel enregistrement**.
+3. **L'étape se calcule sur le temps ÉCOULÉ**, jamais posée en dur : un téléphone
+   qui s'endort étire ses minuteries, et le réveil des douze secondes peut tomber
+   à la cinquantième — il faut alors rendre la main, pas dire « c'est un peu
+   long ».
+
+**LE DÉFAUT À RETENIR, et il ne se voyait qu'à la capture.** La première phrase
+des douze secondes faisait cent caractères. Dans la colonne de 190 px, elle
+prenait toute la largeur et **cassait « Un chantier » en deux lignes**, en plein
+milieu de l'attente. Mesuré ensuite dans la vraie page, sur son écran de 390 px :
+31 caractères font 163 px et tiennent sur une ligne, 33 en font 181 et passent à
+deux.
+
+Deux contrôles en sont nés, et le second existe parce que le premier a dormi :
+
+- un **plafond de 31 caractères**, sans navigateur, qui rougit à l'écriture de la
+  phrase. Posé d'abord à 60, il laissait passer la phrase de l'abandon — *un
+  plafond trop généreux est un contrôle qui dort* ;
+- le **nombre de lignes du titre**, mesuré à l'écran **dans les deux états**.
+  Posé au seul état des douze secondes, il n'a rien vu de l'abandon : un contrôle
+  posé à un seul endroit d'un parcours n'éprouve que cet endroit-là.
+
+### 0 quatervicies quinquies. Le message de fin de dictée casse le titre, lui aussi
+
+**Trouvé le 13 août 2026 en mesurant les phrases d'attente**, et **antérieur à ce
+travail** : « 1 information reprise — relisez avant de créer. » fait 47 caractères
+et 184 px — donc deux lignes, donc « Un chantier » cassé en deux. À chaque dictée
+réussie.
+
+**Non touché, et c'est délibéré** : c'est une phrase que le patron voit depuis
+des jours sans s'en plaindre, et la raccourcir change ce qu'elle lui dit. À lui
+de trancher. Une piste s'il le veut : « 3 informations reprises — relisez. »
+(35 caractères), ou déplacer la ligne sous l'en-tête, où elle aurait toute la
+largeur.
 
 ### 0 quatervicies bis. Les contrôles de maquette ne sont joués par personne
 

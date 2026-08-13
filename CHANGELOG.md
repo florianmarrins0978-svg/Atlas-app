@@ -32,6 +32,32 @@ encadrée de 32 px, que la capsule transformerait en pastille ronde.
 
 ---
 
+### L'attente qui s'éternise rend la main, au lieu de souffler dans le vide
+
+**Sa réponse à la question laissée ouverte : « oui fait ça ».** Un geste rassure
+les dix premières secondes, puis il inquiète — il dit la même chose à la
+trentième qu'à la première. L'écran a donc trois temps : il travaille, il
+reconnaît à douze secondes que c'est anormalement long, et il rend la main à
+quarante-cinq. `ARCHITECTURE.md` §80.
+
+**Renoncer n'interrompt pas l'appel** : s'il répond enfin, les champs vides se
+remplissent. Mais rendre la main crée un cas qui n'existait pas — redicter
+pendant que la première réponse court encore —, et celle-ci remettait l'écran au
+repos au milieu du nouvel enregistrement. Une réponse ne touche donc l'écran que
+si elle est encore celle qu'on attend.
+
+**Un défaut visible seulement à la capture, et la leçon qui va avec.** La
+première phrase des douze secondes faisait cent caractères : elle cassait « Un
+chantier » en deux lignes, en plein milieu de l'attente. Mesuré dans la vraie
+page : 31 caractères tiennent sur une ligne, 33 non. Deux contrôles en sont nés,
+et le second existe parce que le premier a dormi — un plafond posé trop haut
+laissait passer la phrase de l'abandon, et le compteur de lignes, posé à un seul
+instant du parcours, n'éprouvait que cet instant-là.
+
+**La mesure a dénoncé un défaut plus ancien :** le message de fin de dictée
+casse le titre lui aussi, à chaque réussite. Non touché — c'est une phrase que le
+patron voit depuis des jours, et la raccourcir change ce qu'elle dit (`TODO.md`).
+
 ### L'attente de la dictée souffle, et le dit — proposition C
 
 **Il a répondu « code la C ».** Les trois points enflent et se rétractent l'un

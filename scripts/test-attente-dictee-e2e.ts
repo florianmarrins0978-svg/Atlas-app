@@ -1,4 +1,5 @@
 import { lancerNavigateur } from "./e2e-browser";
+import type { Page } from "playwright";
 import assert from "node:assert";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -55,6 +56,32 @@ async function cas(nom: string, verifier: () => Promise<void>) {
 }
 
 const attendre = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * « Un chantier » tient-il toujours sur une ligne ?
+ *
+ * **C'est la vraie règle**, dont le plafond de caractères de
+ * `test-attente-longue.ts` n'est que la sentinelle rapide. Une phrase d'attente
+ * qui passe à deux lignes prend toute la colonne de 190 px et casse le titre —
+ * l'écran se réorganise sous les yeux du patron pendant qu'il attend. Vu à la
+ * capture, jamais à la mesure, jusqu'à ce contrôle.
+ */
+async function titreIntact(page: Page, quand: string) {
+  const lignes = await page.evaluate(() => {
+    const titre = [...document.querySelectorAll("h1,h2")].find((e) =>
+      e.textContent?.includes("chantier"),
+    )!;
+    return Math.round(
+      titre.getBoundingClientRect().height / parseFloat(getComputedStyle(titre).lineHeight),
+    );
+  });
+  assert.strictEqual(
+    lignes,
+    1,
+    `${quand}, le titre s'est cassé en ${lignes} lignes : la phrase d'attente prend sa place, ` +
+      "et l'écran se réorganise pendant que le patron attend",
+  );
+}
 const etendue = (v: number[]) => Math.max(...v) - Math.min(...v);
 
 async function main() {
@@ -204,6 +231,88 @@ async function main() {
       `l'écran dit encore « ${phrase} » alors que la dictée est revenue`,
     );
   });
+
+  // ═══ L'attente qui s'ÉTERNISE ════════════════════════════════════════════
+  //
+  // Sa question, tranchée d'un « oui fait ça » le 13 août : une vague qui
+  // souffle depuis trente secondes redevient une vague qui ne dit rien.
+  //
+  // **Cette partie prend une minute, et c'est irréductible.** Les seuils sont
+  // à 12 s et 45 s ; les raccourcir pour la commodité du contrôle éprouverait
+  // des seuils que le patron ne verra jamais. Les règles elles-mêmes sont
+  // éprouvées sans navigateur (`scripts/test-attente-longue.ts`) ; ici on
+  // vérifie seulement qu'elles arrivent bien jusqu'à l'écran.
+  {
+    const page2 = await contexte.newPage();
+    await page2.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+
+    // La réponse est GELÉE : c'est la chaîne qui ne revient pas, exactement le
+    // cas où les points souffleraient dans le vide jusqu'à la fin des temps.
+    let relacher = () => {};
+    const gele = new Promise<void>((r) => {
+      relacher = r;
+    });
+    await page2.route(
+      (url) => url.pathname === "/chantiers/nouveau",
+      async (route, requete) => {
+        if (requete.method() !== "POST") return route.continue();
+        await gele;
+        return route.abort();
+      },
+    );
+
+    await page2.locator('button[aria-label="Dicter les informations du client"]').click();
+    await attendre(700);
+    await page2.locator('button[aria-label="Arrêter la dictée"]').click();
+
+    const ligne = page2.locator('p[role="status"]');
+
+    await attendre(6_000);
+    await cas("à 6 s, l'écran n'alarme pas encore — la bande normale est respectée", async () => {
+      const p = await ligne.innerText();
+      assert.ok(
+        p.includes("rédige"),
+        `l'écran dit « ${p} » au bout de six secondes : il s'inquiète trop tôt`,
+      );
+    });
+
+    await attendre(8_000); // ~14 s
+    await cas("passé douze secondes, il dit que c'est plus long que d'habitude", async () => {
+      const p = await ligne.innerText();
+      assert.ok(
+        p.includes("plus long que d'habitude"),
+        `l'écran dit encore « ${p} » : l'attente s'éternise sans le dire`,
+      );
+      await titreIntact(page2, "à 14 s");
+    });
+
+    await cas("et il souffle toujours : rien n'est figé pendant qu'on patiente", async () => {
+      const points = page2.locator(".atlas-souffle i");
+      assert.strictEqual(await points.count(), 3, "les points ont disparu avant l'heure");
+    });
+
+    await attendre(33_000); // ~47 s
+    await cas("passé quarante-cinq secondes, il rend la main", async () => {
+      const p = await ligne.innerText();
+      assert.ok(
+        p.includes("Pas de réponse"),
+        `l'écran dit « ${p} » : il fait toujours attendre devant une chaîne muette`,
+      );
+      // Le micro revient ET se presse : rendre la main sans rendre le geste
+      // laisserait le patron devant un écran qu'il ne peut plus quitter.
+      const micro = page2.locator('button[aria-label="Dicter les informations du client"]');
+      assert.ok(await micro.isVisible(), "le micro n'est pas revenu");
+      assert.ok(await micro.isEnabled(), "le micro est revenu, mais il ne se presse pas");
+      // **Ici aussi.** Mesuré au seul état des douze secondes, ce contrôle a
+      // laissé passer la phrase de l'abandon, qui cassait le titre exactement
+      // pareil — un contrôle posé à un seul endroit d'un parcours n'éprouve que
+      // cet endroit-là.
+      await titreIntact(page2, "à 47 s");
+    });
+
+    relacher();
+    await page2.close();
+  }
 
   await navigateur.close();
 

@@ -373,6 +373,20 @@ l'autre, sans se déplacer. `ARCHITECTURE.md` §80 porte le détail.
 le bouton qui **ne redevient pas** à demi effacé, et la phrase « Atlas rédige… »,
 qui est la seule des trois moitiés à parvenir à qui n'a pas les yeux sur l'écran.
 
+**L'attente qui s'éternise rend la main** (« oui fait ça ») : « Atlas rédige… »,
+puis à 12 s « C'est plus long que d'habitude. », puis à 45 s « Pas de réponse.
+Réessayez. » et le micro revient. **Renoncer n'interrompt pas l'appel** — et
+comme il peut redicter pendant que la première réponse court encore, un numéro
+de tour empêche celle-ci de remettre l'écran au repos au milieu du nouvel
+enregistrement.
+
+**⚠ Une phrase d'attente tient sur UNE LIGNE — 31 caractères, mesurés.** Au-delà
+elle prend toute la colonne de 190 px et casse « Un chantier » en deux, en plein
+milieu de l'attente. Deux contrôles la gardent, et le second existe parce que le
+premier a dormi (`TODO.md` §0 quatervicies quater). **Le message de fin de dictée
+a le même défaut, et il est antérieur** : 47 caractères, non touché, c'est son
+choix.
+
 **La photo souffle aussi**, tranché par lui le jour même : *« oui souffle aussi
 pour la photo »*. Le bouton d'ajout portait le même caractère immobile. Les
 points y sont **or** et non vert sans qu'une mesure ait été recopiée — ils
