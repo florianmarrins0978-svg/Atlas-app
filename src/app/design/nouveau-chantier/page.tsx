@@ -50,7 +50,7 @@ export default function NouveauChantierMockup() {
               erreur plus sûrement qu'une maquette absente. */}
           <Field
             label="Nom du client (facultatif)"
-            placeholder="M. Bernard"
+            placeholder="Bernard"
             big
             value={nomClient}
             onChange={setNomClient}

@@ -56,7 +56,7 @@ await page.waitForURL(`${BASE}/`, { timeout: 120_000 });
 // Un chantier neuf pour les écrans du parcours, et les chantiers de
 // démonstration pour ceux qui demandent un devis déjà parti.
 await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-await page.fill('input[placeholder="M. Bernard"]', `Capture bouton ${Date.now()}`);
+await page.fill('input[placeholder="Bernard"]', `Capture bouton ${Date.now()}`);
 await page.locator('[data-atlas="action-creation"] button').click();
 await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}$/, { timeout: 120_000 });
 const neuf = page.url().split("/").pop();

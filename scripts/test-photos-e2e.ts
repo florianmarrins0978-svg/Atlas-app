@@ -40,7 +40,7 @@ async function main() {
   // Crée un chantier dédié pour ce test, pour ne pas dépendre du contenu du seed.
   const nomUnique = `Chantier photos e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nomUnique);
+  await page.fill('input[placeholder="Bernard"]', nomUnique);
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const chantierUrl = page.url();

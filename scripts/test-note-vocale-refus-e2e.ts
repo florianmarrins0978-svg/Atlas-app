@@ -61,7 +61,7 @@ async function main() {
   // refusait alors, à très juste titre, et le contrôle accusait l'application
   // d'un défaut qui n'existait pas.
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', `Refus note ${Date.now()}`);
+  await page.fill('input[placeholder="Bernard"]', `Refus note ${Date.now()}`);
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
   const chantier = page.url().split("/").pop()!.split("?")[0];

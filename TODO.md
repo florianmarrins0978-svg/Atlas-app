@@ -85,7 +85,24 @@ le seul des trois de son groupe à clôturer un chantier **avant** sa date — p
 rendre le message honnête sur ce qu'il sait et ce qu'il suppose. Les six autres
 cas de la suite passent toujours.
 
-### 0 duovicies. La civilité du client — **à trancher avec lui**
+### ~~0 duovicies. La civilité du client~~ — **tranchée et codée le 13 août 2026**
+
+**Sa décision, le soir même :** *« Tu as raison, il faut intégrer une case
+monsieur-madame. Mais je veux que ça soit sous la forme Mr Mme, en cliquable, on
+choisit au-dessus du nom. »* C'est fait — deux pastilles à la création et sur
+l'écran du devis, `ARCHITECTURE.md` §80.
+
+**Ce qui reste ouvert, et qui n'a PAS été décidé pour lui :** il n'y a que deux
+pastilles. Une société se dit donc en n'en touchant aucune — l'application
+reconnaît alors « SARL », « SCI », « Mairie »… et se tait. Cela suffit
+aujourd'hui : ses clients sont des particuliers. **À rouvrir le jour où il
+facture des entreprises**, où une troisième pastille dirait la chose au lieu de
+la laisser deviner. Qui peut le faire : lui.
+
+*Ce qui suit est gardé parce que le raisonnement resservira le jour de cette
+question-là.*
+
+### ~~0 duovicies bis. La civilité du client — l'arbitrage d'origine~~
 
 Le 13 août 2026, il a demandé que le devis dise « Mr. Martins » et non « Chez
 Martins ». C'est **fait**, écran et message tout prêt compris

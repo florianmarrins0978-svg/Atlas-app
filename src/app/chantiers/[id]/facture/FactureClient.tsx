@@ -9,6 +9,7 @@ import { type CanalClient } from "@/lib/message-client";
 import { useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import TransmettreLaFacture from "./TransmettreLaFacture";
 import { terminerChantierAction, emettreFactureAction } from "./actions";
+import { avecCivilite } from "@/lib/civilite";
 
 // Arrêt 3 (docs/AGENT.md §2.3). Cet écran EST le contrôle : les montants du
 // devis sont déjà là, il n'y a rien à saisir. Franchissable en un geste quand
@@ -26,6 +27,8 @@ export type FacturePourEcran = {
   numeroCommercial: string;
   statut: "brouillon" | "emise";
   clientNom: string | null;
+  /** Recopiée sur la facture à son établissement (migration 0038). */
+  clientCivilite: "mr" | "mme" | null;
   dateEcheance: string | null;
   tauxTva: string;
   totalHt: string;
@@ -134,7 +137,8 @@ export default function FactureClient({
           Facture
         </p>
         <p className="text-[15px]" style={{ color: colors.ink }}>
-          {initialFacture.numeroCommercial} — {initialFacture.clientNom ?? "Client non renseigné"}
+          {initialFacture.numeroCommercial} —{" "}
+          {avecCivilite(initialFacture.clientNom, initialFacture.clientCivilite) || "Client non renseigné"}
         </p>
         {initialFacture.dateEcheance && (
           <p className="mt-1 text-[13px]" style={{ color: colors.muted }}>
@@ -249,6 +253,7 @@ export default function FactureClient({
               factureId={initialFacture.id}
               clientId={clientId}
               clientNom={initialFacture.clientNom ?? ""}
+              clientCivilite={initialFacture.clientCivilite}
               entrepriseNom={entrepriseNom}
               numeroFacture={initialFacture.numeroCommercial}
               echeanceLisible={

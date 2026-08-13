@@ -6004,3 +6004,94 @@ lui ajoute « Monsieur ». Une égalité stricte aurait laissé le doublon passe
 **Ce que ce défaut rappelle :** retirer un mot d'un libellé peut faire entrer
 deux autres en collision. Un changement d'affichage se REGARDE, sur l'écran, y
 compris là où il n'était pas censé porter.
+
+---
+
+## 80. La civilité devient une donnée : « Mr » / « Mme », au-dessus du nom
+
+**Le patron, le 13 août 2026, le soir même où il avait fait poser « Mr. »
+partout :** *« Tu as raison, il faut intégrer une case monsieur-madame. Mais je
+veux que ça soit sous la forme Mr Mme, en cliquable, on choisit au-dessus du
+nom. »*
+
+C'est la réserve du §77 qu'il tranche : jusque-là, « Mr. » était un **défaut**
+posé sur tout patronyme nu — y compris dans le SMS qui part chez le client. Une
+cliente lisait « Bonjour Mr. Roux ».
+
+### Trois états, et NULL est le plus courant
+
+`clients.civilite` vaut `'mr'`, `'mme'`, ou **NULL** (migration 0038). NULL
+n'est pas « inconnu par erreur » : une société n'est ni l'un ni l'autre, et un
+client saisi à la volée n'a pas toujours eu droit à un appui de plus. Forcer un
+défaut en base rendrait son silence indiscernable d'un choix — la leçon de
+`equipes.nom` (§51).
+
+**Ce que NULL vaut à l'affichage est décidé dans `avecCivilite`, jamais en
+base** : la règle du matin s'y applique encore (civilité par défaut sur un
+patronyme nu, rien sur une société). C'est ce qui fait que **ses clients
+existants n'ont pas changé d'apparence du jour au lendemain** — le jour où la
+case est apparue, aucune fiche ne la portait.
+
+### L'ordre des questions, et le piège qu'il évite
+
+`avecCivilite(nom, civilite)` tranche dans cet ordre, et il n'est pas
+indifférent :
+
+1. **Le nom porte-t-il DÉJÀ une civilité écrite ?** Alors on n'en pose pas une
+   seconde, choix ou non. Sans cette priorité, toucher « Mme » sur « Mme Roux »
+   écrivait « Mme Mme Roux ».
+2. **A-t-il choisi ?** Alors c'est lui qui a raison — y compris contre la
+   détection de société. « Mme Boulangerie du Bourg » est une cliente, pas une
+   raison sociale, et la détection n'existe que pour combler son silence.
+3. **Sinon**, la règle d'avant : défaut sur un patronyme nu, rien sur une
+   société.
+
+Les deux questions — « a-t-il sa civilité ? » et « est-ce une société ? » —
+étaient mêlées dans une seule fonction ; c'est en donnant la priorité au choix
+que le doublon est apparu. D'où `aDejaUneCivilite`, séparée.
+
+### Deux portes, et pourquoi la seconde n'est pas un luxe
+
+- **À la création** (`FormulaireNouveauChantier`), au-dessus du nom, comme il l'a
+  demandé.
+- **Sur l'écran du devis** (`DevisCompletClient`). Sans elle, une cliente saisie
+  « Roux » avant la case — ou avec une pastille oubliée — resterait « Mr. Roux »
+  **pour toujours**, y compris dans le message qui part chez elle. Il n'existe
+  aucun autre écran de fiche client.
+
+**Le composant est le même** (`src/components/atlas/ChoixCivilite.tsx`), avec
+`sansLegende` sur le devis : cet écran est « à l'image du papier », tous ses
+champs y sont nus, et une étiquette en petites capitales au milieu du bloc
+« Client » y ressemblait à un formulaire collé sur une lettre. **Vu en capture,
+jamais par un contrôle** — d'où `scripts/capture-choix-civilite.mts`.
+
+Deux décisions de dessin qui se paieraient si on les défaisait :
+
+- **Rien n'est présélectionné.** Cocher « Mr » d'avance remettrait en base la
+  supposition qu'on vient de retirer.
+- **Un second appui DÉSÉLECTIONNE.** Il n'y a que deux pastilles — il en a
+  demandé deux — donc pas de troisième bouton « ni l'un ni l'autre » ; sans le
+  second appui, une pastille touchée par erreur ne se reprendrait plus, et la
+  société est très exactement ce cas-là.
+
+### Le document en garde une COPIE
+
+`devis.client_civilite` et `factures.client_civilite` sont recopiées à
+l'établissement, comme `client_nom` l'était déjà. Sans cela, corriger une fiche
+client réécrirait la façon dont un devis **déjà parti** s'adresse à son
+destinataire — ce que le déclencheur `empecher_modification_devis_envoye`
+interdit par ailleurs.
+
+Le PDF passe par la même règle (`document-commun.ts`) : recopiée là, elle aurait
+fini par dire « Mme Roux » à l'écran et « Mr. Roux » sur le papier qu'elle garde.
+
+### Un effet de bord assumé : le champ d'exemple change
+
+Le nom du client proposait « M. Bernard » en exemple. Sous une pastille
+« Mr / Mme », cet exemple invitait à retaper la civilité dans le nom — auquel
+cas la pastille ne servait plus à rien (§1 de l'ordre ci-dessus). Il vaut donc
+« Bernard », et **54 fichiers de contrôle** visaient ce texte. Ils ont suivi.
+
+**Attention au sélecteur** : `getByPlaceholder("Bernard")` cherche une
+sous-chaîne et attrape aussi « bernard@exemple.fr ». Les suites emploient
+`input[placeholder="Bernard"]`, qui est exact.

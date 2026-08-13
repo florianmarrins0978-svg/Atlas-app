@@ -89,7 +89,7 @@ async function main() {
   const adresse = "8 chemin des Peupliers, Nantes";
 
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', client);
+  await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0699887766");
   await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', adresse);
 
@@ -168,7 +168,7 @@ async function main() {
   // touche rien, et l'on doit arriver sur la fiche.
   await cas("sans toucher la bascule, le bouton mène toujours à la fiche", async () => {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-    await page.fill('input[placeholder="M. Bernard"]', `M. Ordinaire ${Date.now()}`);
+    await page.fill('input[placeholder="Bernard"]', `M. Ordinaire ${Date.now()}`);
     await page.click('button:has-text("Créer le chantier")');
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}$/, { timeout: 30_000 });
     assert.ok(

@@ -366,6 +366,31 @@ n'est pas la batterie.
 
 ## Ce qui vient d'être terminé
 
+**LA CIVILITÉ EST DEVENUE UNE DONNÉE (13 août, au soir).** Deux pastilles
+« Mr » / « Mme » au-dessus du nom, à la création **et** sur l'écran du devis.
+`clients.civilite`, recopiée sur le devis et la facture (migration 0038).
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **NULL est un état normal, et le plus courant.** Une société n'est ni l'un ni
+   l'autre. Ce que NULL vaut à l'écran est décidé dans `avecCivilite`, jamais en
+   base : la règle d'avant s'y applique encore, et **c'est ce qui a évité que
+   tous ses clients existants changent d'apparence du jour au lendemain**.
+2. **L'ordre des questions dans `avecCivilite` n'est pas indifférent** : une
+   civilité déjà écrite prime sur tout, puis son choix, puis la détection de
+   société. Inverser les deux premiers redonne « Mme Mme Roux ».
+3. **Le document garde une COPIE.** Corriger une fiche client ne doit pas
+   réécrire un devis déjà parti.
+4. **Le placeholder du nom vaut « Bernard », plus « M. Bernard »** — 54 fichiers
+   de contrôle le visaient. `getByPlaceholder("Bernard")` attrape aussi
+   « bernard@exemple.fr » : viser `input[placeholder="Bernard"]`.
+
+**Ce qui reste ouvert et lui appartient** (`TODO.md`) : il n'y a que deux
+pastilles, donc rien pour dire « c'est une société » autrement qu'en n'en
+touchant aucune. Suffisant aujourd'hui ; à rouvrir s'il facture des entreprises.
+
+Détail complet : `ARCHITECTURE.md` §80.
+
 **« MONSIEUR MARTINS », ET LE TIRET RETIRÉ (13 août).** Sa capture de l'écran
 Devis. Le nom du chantier ne dit plus « Chez … », la ligne du client porte sa
 civilité, et le détail passe **sous** le nom au lieu d'être collé par un tiret.
