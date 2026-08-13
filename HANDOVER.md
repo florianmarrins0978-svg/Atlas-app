@@ -428,7 +428,11 @@ civilité, et le détail passe **sous** le nom au lieu d'être collé par un tir
 **Quatre choses à savoir avant d'y toucher :**
 
 1. **La civilité vit dans `src/lib/civilite.ts`, et nulle part ailleurs.** Trois
-   endroits l'appellent. « Monsieur » est un **défaut, pas une donnée** : il n'y
+   endroits l'appellent — dont le message qui part chez le client. Le MOT vit
+   dans `CIVILITE_PAR_DEFAUT` et a déjà changé une fois en une journée
+   (« Monsieur », puis « Mr. ») : les contrôles le demandent à la règle plutôt
+   que de le recopier, sauf un qui l'épingle en clair. La civilité est un
+   **défaut, pas une donnée** : il n'y
    a aucun champ de civilité dans la fiche client, donc une cliente sera mal
    nommée. Le vrai remède — un choix à la création — n'a pas été ajouté sans son
    accord. **À lui poser.**

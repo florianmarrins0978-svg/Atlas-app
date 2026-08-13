@@ -192,8 +192,15 @@ d'action, d'où l'hésitation.
 **Constaté le 13 août 2026, en éprouvant autre chose.** Le dernier cas de cette
 suite — *« clôturé AVANT sa date : il quitte le planning pour les terminés »* —
 échoue **par intermittence** sur `page.goto` au bout de 45 s, tantôt sur
-`/termines`, tantôt sur `/planning`. Sur quatre exécutions ce jour-là : trois
-rouges, une verte.
+`/termines`, tantôt sur `/planning`. Sur **six exécutions** ce jour-là : quatre
+rouges, deux vertes.
+
+**Et « le serveur est chargé » n'explique plus.** `ouvrir()` fait déjà DEUX
+tentatives de 45 s : la page reste donc muette **plus de quatre-vingt-dix
+secondes**, alors qu'elle répond en 333 ms mesurées hors batterie. Ce n'est pas
+de la lenteur, c'est un blocage. Piste non écartée, faute de l'avoir creusée :
+l'épuisement du bassin de connexions (`poolMax`) en fin de batterie — cette
+suite bâtit sept chantiers avec devis et PDF, et c'est la plus lourde du lot.
 
 **Ce n'est PAS la civilité** : vérifié en remisant toutes les modifications du
 jour et en rejouant la suite sur `main` intact — même échec, au même endroit.
@@ -213,28 +220,30 @@ cas de la suite passent toujours.
 
 ### 0 duovicies. La civilité du client — **à trancher avec lui**
 
-Le 13 août 2026, il a demandé que le devis dise « Monsieur Martins » et non
-« Chez Martins ». C'est **fait** (`ARCHITECTURE.md` §77). Mais la fiche client
-ne porte **aucun champ de civilité** : « Monsieur » est un défaut posé sur tout
-nom qui n'en annonce pas d'autre.
+Le 13 août 2026, il a demandé que le devis dise « Mr. Martins » et non « Chez
+Martins ». C'est **fait**, écran et message tout prêt compris
+(`ARCHITECTURE.md` §77). Mais la fiche client ne porte **aucun champ de
+civilité** : « Mr. » est un défaut posé sur tout nom qui n'en annonce pas
+d'autre.
 
 **Ce que ça veut dire concrètement, et pourquoi ça ne peut pas rester ainsi
-indéfiniment :** une cliente saisie « Roux » verra « Monsieur Roux » sur son
-devis. L'application sait déjà se taire devant « Mme Roux » ou « SARL Untel » —
+indéfiniment :** une cliente saisie « Roux » verra « Mr. Roux » sur son devis,
+**et le message qui part chez elle dira « Bonjour Mr. Roux »**. L'application sait déjà se taire devant « Mme Roux » ou « SARL Untel » —
 ces deux cas sont couverts — mais elle ne devine pas un patronyme nu.
 
 | | Piste | Ce que ça vaut |
 |---|---|---|
-| a | **Un choix à la création du client** : trois pastilles — Monsieur, Madame, ni l'un ni l'autre (société). Un appui. | La seule qui dise la vérité. Coûte une colonne, une migration, et trois pastilles sur un écran déjà chargé. |
+| a | **Un choix à la création du client** : trois pastilles — Mr., Mme, ni l'un ni l'autre (société). Un appui. | La seule qui dise la vérité. Coûte une colonne, une migration, et trois pastilles sur un écran déjà chargé. |
 | b | Laisser le patron écrire « Mme Roux » lui-même dans le nom | Gratuit, marche déjà — mais il faut qu'il y pense à chaque fois, et un oubli part chez la cliente. |
 | c | Ne rien mettre du tout et revenir au nom nu | Annule sa demande du 13 août. |
 
 **Qui peut le faire : lui seul.** C'est un arbitrage de produit, pas un choix
 technique — et rien ne sera ajouté sans son accord (`CLAUDE.md` §4).
 
-**Et une seconde question, liée :** le message qui part chez son client dit
-toujours « Bonjour Martins ». Faut-il qu'il dise « Bonjour Monsieur Martins » ?
-Rien n'a été touché : c'est ce que ses clients lisent.
+*(La seconde question — le message qui part chez le client — a été tranchée le
+soir même : il dit désormais « Bonjour Mr. Martins ». C'est ce que ses clients
+lisent, et c'est donc là que l'erreur de civilité se verra en premier.)*
+
 ### ~~0 octodecies. Le message du devis figé désignait une porte invisible~~ — **codé le 2026-08-13 (proposition A)**
 
 **Rien n'est codé** (`CLAUDE.md` §3 bis). Le patron, le 13 août, capture à
