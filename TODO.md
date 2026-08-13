@@ -27,6 +27,65 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 duovicies. Les trois points de la dictée — MAQUETTE POSÉE, son numéro attendu
+
+**Sa demande du 13 août 2026**, capture de l'écran « Un chantier » à l'appui :
+*« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce qui se passe.
+Les trois petits points sont fixes […] on ne sait pas si ça bug ou non. Si les
+trois petits points se mettent en mouvement et font des vagues pour dire que
+c'est en train de rédiger, là, on sait qu'il se passe quelque chose. »*
+
+**Ce n'est pas une animation qui s'est arrêtée.** C'est le caractère « … », un
+seul glyphe posé tel quel — `DicterCoordonnees.tsx:114`. Il n'y a rien qui
+puisse bouger : trois points séparés sont à écrire pour qu'une vague existe.
+
+**Deux choses aggravent l'attente**, qu'il n'a pas nommées mais qui tiennent au
+même instant, et qui comptent peut-être plus que la vague :
+
+1. le bouton passe à `opacity: 0.5` — le vocabulaire d'un bouton **éteint**,
+   pas d'un bouton qui travaille ;
+2. **aucune phrase ne s'affiche.** L'écran parle quand il écoute (« J'écoute —
+   touchez pour arrêter. ») et quand il a fini (« 1 information reprise… »), et
+   il se tait exactement pendant le seul moment où l'on se demande s'il est en
+   panne. Les mots disent ce qu'aucune animation ne dira.
+
+**Maquette : `docs/maquettes/40-les-trois-points-qui-attendent.html`** — l'avant,
+puis cinq attentes : A la vague (4 px), B la vague ample (7 px), C le souffle,
+D le point qui court, E l'anneau qui tourne. **Rien n'est touché dans `src/`
+tant qu'il n'a pas donné sa lettre** (`CLAUDE.md` §3 bis).
+
+**Trois choses à savoir avant d'y toucher :**
+
+1. **Une image fixe ne peut pas montrer un mouvement.**
+   `scripts/animer-maquette-points.mjs` fabrique un GIF par proposition, sans
+   ffmpeg (absent d'ici) — et il relit ce qu'il vient d'écrire, parce qu'au
+   premier jet il annonçait « ✓ » sur une image FIXE : `pageHeight` passé à côté
+   de `raw` au lieu de dedans est ignoré **en silence**. Un script qui ne relit
+   pas sa sortie certifie exactement le défaut qu'il répare.
+2. **Le contrôle mesure une VAGUE, pas un mouvement.**
+   `scripts/verifier-maquette-points.mjs` exige un déphasage entre le premier et
+   le troisième point : trois points qui montent **ensemble** bougent de 4 px,
+   passeraient tout contrôle d'amplitude, et ne feraient aucune vague. Éprouvé
+   en cassant les délais — il rougit en nommant A.
+3. **L'avant sert de témoin, dans les deux outils.** Il doit rester immobile ;
+   s'il bouge, c'est la mesure qui ment. Le GIF le prouve tout seul : l'encodeur
+   fusionne les images identiques, et l'avant se réduit à **une seule**.
+
+**Ce qui reste ouvert et n'est pas dans la planche :** ce que l'écran fait quand
+le traitement s'éternise. Une vague qui tourne depuis trente secondes redevient
+une vague qui ne dit rien.
+
+### 0 duovicies bis. Les contrôles de maquette ne sont joués par personne
+
+`scripts/verifier-maquette-*.mjs` (pastille, logo, bascule, bouton de la facture,
+et désormais les points) ne sont appelés **ni par la batterie, ni par la CI** :
+ils se lancent à la main. Un contrôle que personne ne joue est un contrôle qui
+n'existe pas — il rougira le jour où plus personne ne saura pourquoi.
+
+Non fait d'office : les brancher allonge `verifier:avant-livraison` de plusieurs
+minutes pour éprouver des pages qui ne partent pas en production. Le bon endroit
+est vraisemblablement la CI, sur les seuls fichiers touchés.
+
 ### 0 unvicies. ~~Relier l'agenda iCloud~~ — **codé le 12 août 2026**, reste à éprouver chez lui
 
 **Sa question du 12 août 2026**, capture du Calendrier d'Apple à l'appui : *« je

@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### Les trois points de la dictée : la maquette, pas encore le code
+
+**Sa demande :** *« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce
+qui se passe. Les trois petits points sont fixes […] on ne sait pas si ça bug ou
+non. »*
+
+**Rien n'a changé dans l'application, et c'est délibéré** — une demande de geste
+se dessine avant de se coder (`CLAUDE.md` §3 bis). Cinq attentes sont proposées
+dans `docs/maquettes/40-les-trois-points-qui-attendent.html` ; son numéro est
+attendu (`TODO.md` §0 duovicies).
+
+**Ce que le diagnostic a trouvé, et qui n'était pas dans sa demande.** Ces points
+ne sont pas une animation arrêtée : c'est le caractère « … », un seul glyphe
+(`DicterCoordonnees.tsx:114`). Et deux choses aggravent l'attente au même
+instant — le bouton passe à moitié effacé, ce qui est le vocabulaire d'un bouton
+**éteint**, et **aucune phrase n'est affichée**. L'écran parle quand il écoute et
+quand il a fini ; il se tait pendant le seul moment où l'on se demande s'il est
+en panne.
+
+**Deux outils naissent avec la planche, et chacun a payé sa leçon :**
+
+- `scripts/verifier-maquette-points.mjs` mesure une **vague**, pas un mouvement :
+  il exige que le premier et le troisième point soient déphasés. Trois points qui
+  montent ensemble bougent de 4 px et ne font aucune vague — vérifié en cassant
+  les délais, il rougit alors en nommant la version ;
+- `scripts/animer-maquette-points.mjs` fabrique les images animées sans ffmpeg,
+  absent d'ici. **Il relit ce qu'il vient d'écrire** : au premier jet il annonçait
+  « ✓ » sur une image FIXE, `pageHeight` étant ignoré en silence quand il est
+  passé à côté de `raw` au lieu de dedans. Un script qui ne relit pas sa sortie
+  certifie le défaut même qu'il répare.
+
 ### « Corriger le devis » ouvre enfin le devis, et non l'écran d'à côté
 
 **Sa demande, capture à l'appui :** *« lorsque je clique sur corriger le devis,
