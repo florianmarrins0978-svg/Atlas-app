@@ -6007,7 +6007,117 @@ compris là où il n'était pas censé porter.
 
 ---
 
-## 80. La civilité devient une donnée : « Mr » / « Mme », au-dessus du nom
+## 80. Une attente qui ne dit rien passe pour une panne
+
+**Le patron, le 13 août 2026**, capture de l'écran « Un chantier » à l'appui :
+*« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce qui se passe.
+Les trois petits points sont fixes et on attend […] mais on ne sait pas si ça
+bug ou non. Or, si les trois petits points se mettent en mouvement et font des
+vagues pour dire que c'est en train de rédiger, là, on sait qu'il se passe
+quelque chose. »*
+
+### Ce n'était pas une animation arrêtée
+
+`DicterCoordonnees.tsx` affichait `<span>…</span>` : **le caractère de points de
+suspension, un seul glyphe**. Il n'y avait rien à remettre en marche — il
+fallait trois points séparés pour qu'un geste puisse exister.
+
+La distinction n'est pas une finesse : elle change le diagnostic. Devant « ça ne
+bouge plus », le réflexe est de chercher une animation cassée, une classe
+perdue, un `prefers-reduced-motion` mal placé. Ici il n'y en avait jamais eu.
+
+### Le silence comptait davantage que l'immobilité
+
+Trois choses tenaient au même instant, et **le patron n'en avait nommé qu'une** :
+
+| Ce que l'écran faisait | Ce que ça racontait |
+|---|---|
+| trois points immobiles | rien ne travaille |
+| le bouton à `opacity: 0.5` | le bouton est **éteint** |
+| **aucune phrase** | — |
+
+La troisième est la plus lourde, et c'est la seule qui ne se voyait pas : l'écran
+**parle** quand il écoute (« J'écoute — touchez pour arrêter. ») et **parle**
+quand il a fini (« 1 information reprise… »), et il se taisait exactement pendant
+le seul moment où l'on se demande s'il est en panne. Aucune animation ne dit ce
+que des mots disent — et elle est la seule des trois à parvenir à qui n'a pas les
+yeux sur l'écran (`role="status"`).
+
+**La règle qui en sort, et qui vaut d'avance :** un écran qui fait attendre dit
+ce qu'il fait, en toutes lettres. Le geste accompagne la phrase ; il ne la
+remplace pas.
+
+### Le geste retenu, et pourquoi il vit dans un composant
+
+Cinq attentes lui ont été montrées (`docs/maquettes/40-…` et `41-…`), et il a
+répondu **« code la C »** : les points enflent et se rétractent l'un après
+l'autre, **sans se déplacer**. Rien ne sort du rond de 44 px, donc rien ne peut
+cogner le titre d'à côté.
+
+Les mesures vivent dans `globals.css` (`.atlas-souffle`), le geste dans
+`src/components/atlas/PointsQuiSoufflent.tsx` — **pas dans l'écran**. Ce dépôt a
+payé deux fois le geste dessiné sur place : la feuille d'envoi du devis (§66) et
+le bouton de la facture (§73), tous deux passés à côté d'une décision d'ensemble
+parce qu'ils étaient peints chez eux.
+
+**Et le composant a servi le jour même.** Le bouton d'ajout de photo
+(`Pellicule.tsx`) portait le même caractère « … » immobile, à la lettre près ; le
+patron a tranché en une phrase : *« oui souffle aussi pour la photo »*. Les
+points y sont **or** et non vert sans qu'une seule mesure ait été recopiée — ils
+héritent de `currentColor`, donc de la couleur du bouton qui les porte. C'est la
+raison pour laquelle la couleur n'est pas écrite dans le composant : deux
+attentes du même produit doivent se dire de la même façon, sans se peindre
+pareil.
+
+### Ce que la vérification a dû apprendre
+
+**Un contrôle qui court plus vite que l'attente ne voit jamais l'attente.**
+`test-attente-dictee-e2e.ts` retient donc la réponse du serveur trois secondes :
+c'est le seul moyen d'observer l'état qu'il prétend éprouver, et c'est aussi la
+situation réelle du patron.
+
+**Et il mesure le geste, jamais la présence d'une classe** — une classe posée sur
+un élément dont plus aucune règle ne parle est une mort silencieuse. Le souffle
+est relevé image par image sur la taille calculée des points, et le déplacement
+est exigé **nul** : c'est ce qui distingue la C de la vague, et sans cette
+seconde mesure les cinq propositions seraient interchangeables aux yeux du
+contrôle.
+
+**Deux leçons de rédaction, payées au premier jet :**
+
+1. **L'instant du relevé fait partie du contrôle.** L'encre du bouton, mesurée
+   après l'échantillonnage, arrivait une fois la réponse revenue : l'échec
+   sortait en « Timeout » sur un libellé introuvable — une erreur qui accuse le
+   sélecteur là où le fautif est le moment.
+2. **Une absence se raconte, elle ne se laisse pas expirer.** L'absence des
+   points sortait en trace d'outil et **arrêtait tout** : les deux autres
+   moitiés du correctif n'étaient plus mesurées. Elle est désormais un défaut
+   nommé, et les quatre points rougissent ensemble.
+
+### Ralentir le serveur a un prix, et il se paie ailleurs
+
+Les deux suites — la dictée et les photos — retiennent la réponse du serveur
+pour rendre l'attente observable. **Router une adresse dans Playwright désactive
+le cache HTTP de la page entière**, pas seulement des requêtes visées.
+
+Sur les photos, la visionneuse repartait donc du réseau pour une image déjà
+affichée : au moment du contrôle, son `<img>` n'avait pas fini de charger, sa
+boîte faisait zéro pixel, et Playwright la déclarait invisible. **L'échec
+accusait la visionneuse, qui n'y était pour rien** — et il n'a été compris qu'en
+AFFICHANT les images réellement présentes : elles étaient là, toutes les deux, au
+bon endroit. Le supposer aurait coûté la demi-journée que `AGENTS.md` décrit.
+
+Deux règles, pour toute suite qui ralentit volontairement un serveur :
+
+1. **relâcher la route dès la mesure faite** (`page.unroute`), sans quoi son
+   effet de bord traverse tout le reste du parcours ;
+2. **la relâcher APRÈS la fin de l'échange retenu** — la couper en vol laisse un
+   appel à moitié traité, et l'outil répond « Route is already handled! », une
+   erreur qui n'apprend rien sur ce qu'on éprouve.
+
+---
+
+## 81. La civilité devient une donnée : « Mr » / « Mme », au-dessus du nom
 
 **Le patron, le 13 août 2026, le soir même où il avait fait poser « Mr. »
 partout :** *« Tu as raison, il faut intégrer une case monsieur-madame. Mais je

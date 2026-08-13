@@ -46,7 +46,7 @@ part chez elle : il n'existe aucun autre écran de fiche client.
    civilité dans le nom, auquel cas la pastille ne servait plus à rien. Il vaut
    « Bernard », et les 54 fichiers de contrôle qui visaient ce texte ont suivi.
 
-`ARCHITECTURE.md` §80.
+`ARCHITECTURE.md` §81.
 
 
 ### La capsule descend jusqu'aux écrans du client — il a tranché
@@ -71,6 +71,82 @@ qu'une, le chevron de retour, sur lequel il ne s'est pas prononcé — une icôn
 encadrée de 32 px, que la capsule transformerait en pastille ronde.
 
 ---
+
+### L'attente de la dictée souffle, et le dit — proposition C
+
+**Il a répondu « code la C ».** Les trois points enflent et se rétractent l'un
+après l'autre, sans se déplacer : rien ne sort du rond de 44 px, donc rien ne
+peut cogner le titre d'à côté. Le détail et le pourquoi sont dans
+`ARCHITECTURE.md` §80.
+
+**Trois choses ont changé au même endroit, et elles ne se remplacent pas.** Le
+geste, oui — mais aussi le **bouton qui reste à pleine encre** (le
+demi-effacement d'avant était le vocabulaire d'un bouton éteint) et surtout **une
+phrase, « Atlas rédige… »**. C'est elle qui compte le plus : l'écran parlait
+quand il écoutait et quand il avait fini, et se taisait pendant le seul moment où
+l'on se demande s'il est en panne. C'est aussi la seule des trois qui parvienne à
+qui n'a pas les yeux sur l'écran.
+
+**Le geste vit dans `PointsQuiSoufflent`, pas dans l'écran** : ce dépôt a payé
+deux fois le geste peint sur place (§66, §73). **Et il a servi le jour même** —
+le bouton d'ajout de photo portait le même caractère immobile, et il a tranché
+d'une phrase : *« oui souffle aussi pour la photo »*. Les points y sont **or** et
+non vert sans qu'une mesure ait été recopiée : ils prennent la couleur du bouton
+qui les porte.
+
+**Un piège d'outillage payé au passage.** Router une adresse dans Playwright
+désactive le cache HTTP de **toute** la page : la visionneuse repartait du réseau
+pour une image déjà affichée, son `<img>` n'avait pas fini de charger, et l'échec
+accusait la visionneuse — qui n'y était pour rien. Compris en affichant les
+images réellement présentes, pas en le supposant. La route se relâche désormais
+dès la mesure faite, et seulement une fois l'envoi terminé.
+
+**La suite retient la réponse du serveur trois secondes**, sinon elle courrait
+plus vite que l'attente et passerait au vert sans avoir rien regardé. Confrontée
+au défaut d'origine, ses quatre points rougissent en nommant chacun son coupable
+— au second jet : le premier sortait un « Timeout » sur un sélecteur, ce qui
+envoie lire le contrôle au lieu de l'écran.
+
+### Les trois points de la dictée : la maquette, pas encore le code
+
+**Sa demande :** *« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce
+qui se passe. Les trois petits points sont fixes […] on ne sait pas si ça bug ou
+non. »*
+
+**Rien n'a changé dans l'application, et c'est délibéré** — une demande de geste
+se dessine avant de se coder (`CLAUDE.md` §3 bis). Cinq attentes sont proposées ;
+son numéro est attendu (`TODO.md` §0 duovicies).
+
+**Deux planches, parce qu'il a demandé à ESSAYER** — *« juste des points que je
+puisse cliquer dessus, enfin le dictaphone, puis je l'arrête et les points se
+mettent à bouger »*. La 40 expose les gestes côte à côte ; la **41** joue la
+séquence entière sous son doigt : le micro, l'écoute, l'arrêt, l'attente, et le
+retour du résultat s'il le demande. Trois états sans une ligne de script — des
+boutons radio et des étiquettes qui pointent vers l'état suivant, parce que son
+lecteur n'exécute rien et que les pages engendrées en JavaScript lui arrivent
+vides. La page est elle-même **écrite par un script**
+(`engendrer-maquette-sequence.mjs`), qui refuse de la livrer s'il y trouve la
+moindre balise `<script>`.
+
+**Ce que le diagnostic a trouvé, et qui n'était pas dans sa demande.** Ces points
+ne sont pas une animation arrêtée : c'est le caractère « … », un seul glyphe
+(`DicterCoordonnees.tsx:114`). Et deux choses aggravent l'attente au même
+instant — le bouton passe à moitié effacé, ce qui est le vocabulaire d'un bouton
+**éteint**, et **aucune phrase n'est affichée**. L'écran parle quand il écoute et
+quand il a fini ; il se tait pendant le seul moment où l'on se demande s'il est
+en panne.
+
+**Deux outils naissent avec la planche, et chacun a payé sa leçon :**
+
+- `scripts/verifier-maquette-points.mjs` mesure une **vague**, pas un mouvement :
+  il exige que le premier et le troisième point soient déphasés. Trois points qui
+  montent ensemble bougent de 4 px et ne font aucune vague — vérifié en cassant
+  les délais, il rougit alors en nommant la version ;
+- `scripts/animer-maquette-points.mjs` fabrique les images animées sans ffmpeg,
+  absent d'ici. **Il relit ce qu'il vient d'écrire** : au premier jet il annonçait
+  « ✓ » sur une image FIXE, `pageHeight` étant ignoré en silence quand il est
+  passé à côté de `raw` au lieu de dedans. Un script qui ne relit pas sa sortie
+  certifie le défaut même qu'il répare.
 
 ### La poignée de la feuille la referme, et « Créer la facture » devient une capsule
 
@@ -314,6 +390,31 @@ pas sur un 390. `ARCHITECTURE.md` §78.
 ---
 
 ## 2026-08-13
+
+### La page du client ne parle plus la langue du patron
+
+**Le patron, capture à l'appui :** *« lorsque j'envoie la facture au client,
+voilà le lien auquel il a accès. Et s'il clique sur les cases en bas, il est
+dans l'application. Or il doit recevoir simplement sa facture en PDF. »*
+
+**La barre était déjà retirée** — corrigée le 12 août, et tenue par
+`test-pages-publiques-sans-navigation-e2e`. Vérifié plutôt qu'affirmé : la suite
+passe sur les trois adresses publiques réelles. Sa capture vient d'une version
+d'avant.
+
+**Mais en le vérifiant, j'ai trouvé ma propre faute, d'un cran plus bas.** Le
+veilleur des réponses illisibles, posé la veille, était monté sur SES pages : au
+premier serveur lent, son client aurait lu qu'« Atlas est en train de se
+préparer après une mise à jour ». Une barre en moins, un bandeau en plus.
+
+**« Public » ne veut pas dire « pour le client ».** `/login` est public aussi,
+mais c'est l'écran du patron : ce qui lui parle d'Atlas y est chez lui. D'où
+`estPageDuClient`, distinct de `estCheminPublic` — mélanger les deux ferait
+qu'une future page d'aide deviendrait « page client » sans que personne l'ait
+décidé.
+
+Le contrôle a été confronté à l'état qu'il prétend détecter : veilleur remis
+partout, il rougit sur les deux pages, en citant ce que le client lirait.
 
 ### Le message du devis figé est devenu la porte
 
