@@ -42,6 +42,32 @@ son devis **depuis ses SMS** — pas depuis Safari, le chemin compte — et dire
 doigt. Sans cette réponse, ce défaut n'est pas clos : c'est la deuxième
 tentative sur le même, et la première paraissait juste elle aussi.
 
+### 0 unvicies. Cinq boutons carrés, hors des écrans du patron — à trancher
+
+**Trouvé le 13 août 2026**, en réparant le contrôle des boutons arrondis : son
+motif ne regardait ni les `<Link>`, ni les rayons NOMMÉS de Tailwind. Réparé, il
+dénonce **six** boutons. Un seul était celui que le patron signalait (« Créer la
+facture »), corrigé le jour même. Les cinq autres n'ont jamais été arbitrés :
+
+- `src/app/devis/[jeton]/formulaire.tsx` — trois boutons `rounded-xl` : accepter,
+  demander une correction, refuser. **Écran du CLIENT**, autre identité
+  (vert pin), délibérément distincte de l'outil de travail ;
+- `src/app/factures/[jeton]/page.tsx` — le téléchargement du PDF, `rounded-xl`.
+  Écran du client également ;
+- `src/components/ScreenHeader.tsx` — le chevron de retour, 32 × 32 en
+  `rounded-md`. Une icône encadrée, pas un bouton d'action : l'arrondir
+  entièrement en ferait une pastille ronde, ce qui n'a été demandé nulle part.
+
+Ils sont **déclarés comme exceptions nommées** dans
+`scripts/test-boutons-arrondis.ts`, chacune avec sa raison : un bouton NEUF écrit
+carré ailleurs fait toujours rougir le contrôle.
+
+**La question à lui poser :** la capsule s'arrête-t-elle à ses écrans, ou
+descend-elle jusqu'aux pages que voit son client ? Sa demande du 12 août
+(« remplace tous les boutons rectangulaires ») portait sur son application ; rien
+ne dit qu'elle visait la feuille de devis de son client.
+
+
 ### 0 tervicies. `test-planning-vers-facture-e2e` échoue par intermittence, et son message est trop affirmatif
 
 **Constaté le 13 août 2026, en éprouvant autre chose.** Le dernier cas de cette
@@ -90,6 +116,33 @@ technique — et rien ne sera ajouté sans son accord (`CLAUDE.md` §4).
 **Et une seconde question, liée :** le message qui part chez son client dit
 toujours « Bonjour Martins ». Faut-il qu'il dise « Bonjour Monsieur Martins » ?
 Rien n'a été touché : c'est ce que ses clients lisent.
+### 0 octodecies. Le message du devis figé désigne une porte invisible — trois maquettes attendent
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis). Le patron, le 13 août, capture à
+l'appui : *« le message dit de consulter la case devis mais aucune case devis
+existe »*, et il demande un avis — créer la case, ou retirer le message ?
+
+**Ce qui est vrai, vérifié dans le code :** l'écran Devis existe bien
+(`/chantiers/[id]/export`, `chantier-etat.ts` le pose comme étape « Devis »),
+mais il vit dans le **tiroir** de la fiche, et **aucune porte n'y mène depuis
+`devis-complet`** — où le message s'affiche. De plus, **deux écrans s'appellent
+« Devis »** de son point de vue : celui qu'il regarde, et celui où l'on corrige.
+
+`docs/maquettes/40-le-message-du-devis-fige.html` — témoin + trois façons :
+
+| | Ce que c'est | Ce que ça coûte |
+|---|---|---|
+| A | le message devient la porte (lien sous la phrase) | rien — la retouche la plus courte |
+| B | un vrai bouton en capsule | il attire l'œil avant le devis qu'on vient lire |
+| C | plus de message du tout | le jour où il touche un prix, rien ne se passe et rien ne le dit |
+
+**Mon avis, donné et assumé : A.** Ne PAS créer de nouvelle case — l'écran
+existe, et lui donner un second accès permanent ferait deux portes vers la même
+pièce, ce qu'on vient d'éviter sur l'écran du devis.
+
+**Les mots ne sont pas tranchés** : « Le corriger et le renvoyer », « Corriger
+ce devis », « Reprendre le devis ». Ils lui appartiennent.
+
 
 ### 0 unvicies. ~~Relier l'agenda iCloud~~ — **codé le 12 août 2026**, reste à éprouver chez lui
 
