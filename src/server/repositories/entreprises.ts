@@ -69,6 +69,7 @@ export async function mettreAJourEntreprise(
   data: {
     nom?: string;
     nombreEquipes?: number;
+    periodiciteTva?: "mensuelle" | "trimestrielle";
     adresse?: string | null;
     siret?: string | null;
     telephone?: string | null;
@@ -86,6 +87,14 @@ export async function mettreAJourEntreprise(
     }
     if (data.nombreEquipes !== undefined) {
       valeurs.nombreEquipes = Math.min(20, Math.max(1, Math.trunc(data.nombreEquipes)));
+    }
+    // **Une valeur inattendue est ignorée, jamais écrite.** La base porte déjà
+    // un `CHECK`, mais il lèverait une exception — et le message d'une exception
+    // levée par une action serveur n'atteint jamais l'écran du patron
+    // (`AGENTS.md`). Le refus se fait donc ici, en silence et sans casse : la
+    // périodicité reste celle d'avant, et le réglage n'a simplement pas bougé.
+    if (data.periodiciteTva === "mensuelle" || data.periodiciteTva === "trimestrielle") {
+      valeurs.periodiciteTva = data.periodiciteTva;
     }
     const [e] = await tx
       .update(entreprises)

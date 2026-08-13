@@ -36,6 +36,7 @@ qui ne se résoudra pas en codant.
 6. [Choisir l'outil qui émet les factures](#6-choisir-loutil-qui-émet-les-factures)
 7. [Créer les identifiants Google, pour qui veut relier son agenda](#7-créer-les-identifiants-google-pour-qui-veut-relier-son-agenda)
 8. [Faire valider l'application par Google — AVANT de commercialiser](#8-faire-valider-lapplication-par-google--avant-de-commercialiser)
+9. [Demander à votre comptable : TVA au mois ou au trimestre ?](#9-demander-à-votre-comptable--tva-au-mois-ou-au-trimestre-)
 
 ---
 
@@ -680,3 +681,45 @@ de Google. À vérifier vous-même dans la console avant de vous engager.
 Ni l'essai, ni la finition, ni vos premiers artisans. Ce point bloque
 **uniquement** le passage à l'échelle — et il le bloque d'un coup, sans
 prévenir, le jour où vous dépasserez la centaine.
+
+---
+
+## 9. Demander à votre comptable : TVA au mois ou au trimestre ?
+
+**Qui peut le faire :** vous, en une question à votre comptable.
+**Ce que ça débloque :** rien de technique — l'application marche dans les deux
+cas. Mais elle affiche aujourd'hui le rythme que vous lui avez indiqué, et
+personne n'a encore vérifié que c'est le bon.
+
+### Ce qui est déjà fait
+
+Le réglage existe : **Réglages → Votre TVA**, « Tous les mois » ou « Tous les
+trimestres ». Le mois est coché d'avance, parce que c'est le défaut légal — la
+déclaration CA3 est mensuelle.
+
+### Pourquoi je ne peux pas répondre à votre place
+
+Le trimestre est une **option**, ouverte seulement si votre TVA **due** de
+l'année précédente est inférieure à 4 000 €. La TVA due, c'est ce que vous avez
+collecté *moins* ce que vous déduisez sur vos achats — et Atlas ne voit que la
+première. Il ne voit ni votre gazole, ni votre matériel, ni votre assurance.
+
+Il ne peut donc **pas** calculer si vous y avez droit, et il ne doit pas faire
+semblant. C'est la même règle que pour les prix : sans source fiable, on n'écrit
+pas.
+
+### La question exacte à poser
+
+> « Je déclare ma TVA au mois ou au trimestre ? Et est-ce que ça change cette
+> année ? »
+
+Puis cochez la bonne case dans Réglages. C'est tout.
+
+### À savoir pour 2027
+
+Le régime réel simplifié — déclaration annuelle avec deux acomptes — **disparaît
+au 1er janvier 2027**. Si vous y êtes aujourd'hui, votre comptable vous fera
+basculer au mois ou au trimestre. L'application est déjà prête pour les deux :
+il n'y aura rien à changer, sinon la case.
+
+*Ajouté le 2026-08-12, à votre demande.*
