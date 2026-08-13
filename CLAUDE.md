@@ -41,8 +41,13 @@ heures), l'état des services et la fin du journal de démarrage.
 
 **Devant une plainte de ce genre, dans cet ordre :**
 
-1. **lire la fiche** — sa date d'abord : périmée, elle ment comme une
-   documentation périmée ;
+1. **lire la fiche** — sa date d'abord, et elle tranche à elle seule : le
+   veilleur la réécrit **tous les quarts d'heure** tant que l'espace tourne.
+   Plus de vingt minutes sans réécriture, ce n'est pas le serveur qui est en
+   panne, c'est **l'espace qui est arrêté** — inutile de chercher dans le
+   produit, il n'y a plus personne pour le servir. Et lire **à quel moment**
+   elle a été écrite : « à l'allumage », un serveur muet est normal ; « par le
+   veilleur », c'est une vraie panne ;
 2. n'avancer une hypothèse qu'ensuite, et la dire comme telle ;
 3. si un geste sur sa machine est nécessaire, lui faire lancer **`claude`** dans
    son espace plutôt que de lui dicter dix commandes. L'agent y a accès, pas

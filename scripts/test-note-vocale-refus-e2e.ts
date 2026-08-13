@@ -77,7 +77,21 @@ async function main() {
       throw new Error("aucun champ de fichier sur l'écran de dictée — rien n'a été éprouvé");
     }
     await entree.setInputFiles({ name: nom, mimeType, buffer: octets });
-    await page.waitForTimeout(2500);
+
+    // **Attendre que l'écran ait FINI, pas deux secondes et demie.** Le 12 août
+    // 2026 au soir, en batterie : le contrôle lisait « Ajout en cours… » et
+    // concluait que le format refusé n'était pas nommé. Il l'était — l'écran
+    // n'avait simplement pas encore répondu. Le message accusait donc le
+    // produit d'un défaut qui n'existait pas, ce qui coûte plus cher que pas
+    // d'erreur du tout (`AGENTS.md`).
+    await page
+      .getByRole("button", { name: /Ajout en cours/i })
+      .waitFor({ state: "hidden" })
+      .catch(() => {
+        // Le bouton peut n'être jamais passé par cet état si le refus est
+        // immédiat : ce n'est pas une panne, et lever ici masquerait le vrai
+        // verdict que l'appelant s'apprête à rendre.
+      });
     return await page.locator("body").innerText();
   }
 

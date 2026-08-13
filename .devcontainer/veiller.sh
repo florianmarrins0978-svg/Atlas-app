@@ -125,7 +125,7 @@ while true; do
   DEPUIS_RAPPORT=$((${DEPUIS_RAPPORT:-0} + INTERVALLE))
   if [ "$DEPUIS_RAPPORT" -ge 900 ]; then
     DEPUIS_RAPPORT=0
-    ( cd "$DEPOT" && node scripts/rapporter-espace.mjs >> "$JOURNAL" 2>&1 ) &
+    ( cd "$DEPOT" && ATLAS_MOMENT=veille node scripts/rapporter-espace.mjs >> "$JOURNAL" 2>&1 ) &
   fi
 
   sleep "$INTERVALLE"

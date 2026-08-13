@@ -23,7 +23,12 @@ async function main() {
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="M. Bernard"]', nomUnique);
   await page.click('button:has-text("Créer le chantier")');
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
+  // **Pas de délai écrit à la main ici.** Cinq secondes suffisent quand la
+  // suite est jouée seule ; sous soixante suites enchaînées, la création d'un
+  // chantier ne les tient pas, et le rouge accuse le produit au lieu de la
+  // machine. Le délai commun — quarante-cinq secondes, posé par
+  // `lancerNavigateur` — existe exactement pour cela (`e2e-browser.ts`).
+  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
   const prixUrl = `${page.url()}/prix`;
 
   // --- État vide ---

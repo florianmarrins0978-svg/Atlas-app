@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — le bouton de la facture, à l'essai</title>
+</head>
+<body>
+<style>
+  /*
+    CINQ BOUTONS QUI SE PRESSENT VRAIMENT — ET SANS UNE LIGNE DE SCRIPT.
+
+    « Sors-moi une maquette avec plusieurs versions cliquables et dynamiques.
+      Tout en gardant à l'esprit que c'est une appli hyper luxe et moderne. »
+      — le patron, le 12 août 2026
+
+    ─── LE DÉFAUT DE LA PREMIÈRE VERSION, ET POURQUOI IL NE DOIT PAS REVENIR ──
+
+    Elle ENGENDRAIT ses cinq téléphones en JavaScript. Chez le patron : page
+    vide. « Rien apparaît sur ta maquette. » Éprouvée ici dans un navigateur
+    complet, elle passait ; script coupé — visionneuse, aperçu, page qui bloque
+    l'exécution — elle ne montrait plus rien du tout. Mesuré après coup : zéro
+    écran, zéro bouton.
+
+    Le dépôt s'était pourtant déjà donné la règle, pour les maquettes 25 et 26 :
+    **aucun script, et c'est éprouvé** (`scripts/verifier-maquette-bascule.mjs`
+    joue les huit bascules JavaScript COUPÉ). Une maquette est une chose qu'on
+    ouvre n'importe où — c'est même tout son intérêt.
+
+    Tout ce qui suit tient donc en HTML et CSS : une case à cocher invisible par
+    écran, et des règles `:checked ~`. Le geste, la demi-seconde, la messagerie
+    qui monte, la reprise — tout est du style.
+
+    ─── Ce qui n'est PAS négociable, et pourquoi ────────────────────────────
+
+    Chaque geste respecte les règles payées par des défauts réels
+    (`HANDOVER.md`, bouton « Nouveau chantier ») :
+
+      · l'enfoncement est IMMÉDIAT — sans lui, la demi-seconde qui suit passe
+        pour une panne ;
+      · la messagerie monte 520 ms plus tard, jamais avant ;
+      · sous « mouvement réduit », elle monte TOUT DE SUITE — un réglage
+        d'accessibilité ne doit pas passer pour une lenteur ;
+      · le libellé ne change jamais de sens en cours de route.
+
+    **Une seule chose diffère de l'application, et il faut le savoir :** ici, un
+    second appui REFERME, pour qu'on puisse réessayer. Dans le code, il est
+    ignoré — sinon le message partirait deux fois. Une maquette ne doit pas
+    faire croire à une règle qu'elle n'éprouve pas.
+
+    ─── Le luxe, ici, n'est pas un ornement de plus ─────────────────────────
+
+    Les cinq propositions ne déclinent pas un même objet : elles changent de
+    NATURE. C'est la leçon des quatre refus du 11 août — décliner ne sauve
+    rien, et « l'originalité au détriment de l'élégance » est un mauvais
+    échange. Une seule chose bouge à la fois, jamais deux.
+
+    La matière reste celle de la charte : laque vert pin (#2f3b2f) pour ce
+    qu'on FAIT, or (#B98B47) pour ce qu'on LIT. L'or clair (#C9A15E) est
+    précisément réservé aux traits et cercles POSÉS SUR le vert pin — les
+    éclats des versions B et C sont donc dans la charte, pas contre elle.
+
+    ─── Cette page reste hors de la planche unique ──────────────────────────
+
+    Cinq écrans qui se répondent, et une case commune qui les presse tous : la
+    fusion réécrit les sélecteurs et casserait ces liens. Ne pas l'ajouter à
+    `MAQUETTES` en croyant réparer un oubli — même raison que le banc d'essai
+    de la bascule (maquette 27).
+
+    Éprouvée au doigt, script coupé :
+      node scripts/verifier-maquette-bouton-facture.mjs
+  */
+
+  :root{
+    --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --pin:#2f3b2f; --or:#B98B47; --or-clair:#C9A15E;
+    --trait:rgba(28,28,26,.12); --ombre:rgba(20,18,14,.20); --chassis:#cfccc4;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#15140f; --carte:#1d1c17; --encre:#ece8de; --gris:#8f8a7d;
+      --pin:#3b4a3a; --or:#C9A15E; --or-clair:#DDBB78;
+      --trait:rgba(236,232,222,.16); --ombre:rgba(0,0,0,.55); --chassis:#33312b;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#15140f; --carte:#1d1c17; --encre:#ece8de; --gris:#8f8a7d;
+    --pin:#3b4a3a; --or:#C9A15E; --or-clair:#DDBB78;
+    --trait:rgba(236,232,222,.16); --ombre:rgba(0,0,0,.55); --chassis:#33312b;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:52px 16px 110px;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto}
+
+  .intro{max-width:64ch;margin:0 auto;text-align:center}
+  .intro .sur{margin:0 0 18px;font-size:10px;letter-spacing:.36em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 6px;font:400 clamp(30px,4vw,40px)/1.14 ui-serif,Georgia,"Iowan Old Style",serif;
+            letter-spacing:-.014em;text-wrap:balance}
+  .regle{width:56px;height:1px;background:var(--or);margin:20px auto 22px;opacity:.75}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro b{color:var(--encre);font-weight:500}
+  .appui{max-width:62ch;margin:26px auto 0;padding:16px 22px;border:1px solid var(--trait);
+         border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.68;text-align:left}
+  .appui b{color:var(--encre);font-weight:500}
+
+  .barre{display:flex;gap:14px;justify-content:center;align-items:center;margin:30px 0 4px;flex-wrap:wrap}
+  .tout{background:transparent;border:1px solid var(--trait);border-radius:9999px;
+        padding:10px 24px;font:500 13px/1 ui-serif,Georgia,serif;color:var(--encre);cursor:pointer;
+        transition:border-color .22s ease,color .22s ease;user-select:none}
+  .tout:hover{border-color:var(--or);color:var(--or)}
+  .note-mouvement{font-size:12px;color:var(--gris)}
+
+  .famille{margin:62px 0 6px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--or)}
+  .sous-titre{margin:0 auto 34px;max-width:62ch;text-align:center;color:var(--gris);font-size:14px}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:38px;justify-content:center;align-items:flex-start}
+  figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:16px}
+  figcaption{max-width:32ch;text-align:center;font-size:13px;color:var(--gris);line-height:1.62}
+  figcaption .tete{display:block;color:var(--encre);font-weight:500;font-size:13.5px;margin-bottom:5px}
+  figcaption .lettre{color:var(--or)}
+  figcaption b{color:var(--encre);font-weight:500}
+  .marque{display:inline-block;margin-top:11px;padding:3px 11px;border-radius:9999px;
+          border:1px solid var(--trait);font-size:10.5px;letter-spacing:.12em;
+          text-transform:uppercase;color:var(--gris)}
+
+  /* ─── Le téléphone, à la place réelle d'une page : 390 × 664 ───────────── */
+  .tel{width:344px;max-width:100%;border-radius:42px;padding:10px;background:var(--chassis);
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 62px var(--ombre)}
+  .ecran{position:relative;overflow:hidden;border-radius:33px;height:556px;background:var(--fond);
+         display:flex;flex-direction:column;padding:20px 17px}
+
+  /* La case qui porte tout l'état de l'écran. Invisible, mais PAS
+     `display:none` : un champ retiré du rendu n'est plus atteignable au
+     clavier, et la maquette deviendrait inutilisable sans souris. */
+  .declencheur{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;margin:0}
+
+  .surtitre{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--or);margin:0 0 6px}
+  .titre{margin:0 0 14px;font:400 29px/1.1 ui-serif,Georgia,serif}
+  .filet{height:1px;background:var(--trait);margin:0 0 14px}
+
+  .carte{background:var(--carte);border-radius:4px;padding:15px 16px 17px;margin-bottom:11px}
+  .etiquette{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--gris);margin:0 0 7px}
+  .ligne{display:flex;justify-content:space-between;font-size:12.5px;margin:2px 0}
+  .ligne span:first-child{color:var(--gris)}
+  .ttc{margin-top:11px;padding-top:11px;border-top:1px solid var(--trait);text-align:center}
+  .ttc .mot-ttc{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--gris);margin:0}
+  .ttc .somme{margin:5px 0 0;font:600 26px/1 ui-serif,Georgia,serif;color:var(--or)}
+
+  .arretee{text-align:center;font-size:12.5px;margin:0 0 3px}
+  .apres{text-align:center;font-size:11px;color:var(--gris);margin:0 0 13px;line-height:1.5}
+  .separation{height:1px;background:var(--trait);margin:0 0 15px}
+  .dessous{text-align:center;font-size:11px;color:var(--gris);margin:11px 0 0}
+  .bascule{display:block;text-align:center;font-size:12.5px;font-weight:500;color:var(--pin);margin-top:9px}
+
+  /* ─── Le tronc commun des cinq boutons ─────────────────────────────────── */
+  .action{position:relative;display:block;width:100%;cursor:pointer;user-select:none;
+          -webkit-tap-highlight-color:transparent}
+  .action .corps{position:relative;display:flex;align-items:center;justify-content:center;gap:9px;
+                 overflow:hidden;transition:transform .14s cubic-bezier(.32,.72,0,1)}
+  .action .mot{position:relative;z-index:2;font:500 15px/1 ui-serif,Georgia,serif;letter-spacing:.004em}
+
+  .v-a .corps{border-radius:9999px;padding:13px 26px;background:var(--pin);color:#f5f3ee}
+  .v-b .corps{border-radius:9999px;padding:13px 26px;background:var(--pin);color:#f5f3ee}
+  .v-c .corps{border-radius:9999px;padding:11px 13px 11px 24px;background:var(--pin);color:#f5f3ee}
+  .v-d .corps{border-radius:9999px;padding:12px 26px;background:transparent;color:var(--pin);
+              box-shadow:inset 0 0 0 1px var(--or)}
+  .v-e .corps{padding:11px 8px;background:transparent;color:var(--pin);flex-direction:column;gap:9px}
+  .v-e .mot{font-size:16px}
+
+  .lueur{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;
+         background:linear-gradient(105deg,transparent 34%,rgba(201,161,94,.00) 40%,
+                   rgba(201,161,94,.55) 50%,rgba(201,161,94,.00) 60%,transparent 66%);
+         transform:translateX(-85%)}
+  .sceau{position:relative;z-index:2;flex:0 0 auto;width:30px;height:30px;border-radius:9999px;
+         border:1px solid rgba(201,161,94,.55);display:flex;align-items:center;justify-content:center;
+         color:var(--or-clair);font:500 15px/1 ui-serif,Georgia,serif;
+         transition:transform .52s cubic-bezier(.3,.7,0,1)}
+  .gerbe{position:absolute;z-index:3;right:28px;top:50%;width:0;height:0;pointer-events:none}
+  .gerbe i{position:absolute;width:3px;height:3px;border-radius:9999px;background:var(--or-clair);opacity:0}
+  .encre{position:absolute;inset:0;z-index:1;background:var(--pin);transform:scaleX(0);
+         transform-origin:left center;border-radius:9999px}
+  .rail{position:relative;width:100%;height:1px;background:var(--trait)}
+  .rail i{position:absolute;left:50%;top:0;width:0;height:1px;background:var(--or);transform:translateX(-50%)}
+
+  /* ─── L'APPUI ───────────────────────────────────────────────────────────
+     Deux déclencheurs mènent aux mêmes règles : la case de l'écran, et la case
+     commune du haut qui les presse tous les cinq. `:is()` évite de réécrire
+     chaque règle deux fois — deux copies finiraient par diverger, et une seule
+     des deux serait corrigée. */
+  :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) .action .corps{transform:scale(.978)}
+
+  /* B — la lumière traverse. `linear`, et non une courbe d'accélération : avec
+     une courbe, la bande franchissait le bouton en quatre-vingts millisecondes
+     au milieu du geste — mesuré, donc invisible à l'œil. Et la course est
+     bornée à ±85 % pour doubler le temps de visibilité, sans rien changer à la
+     durée. */
+  :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) .lueur{
+    opacity:1;animation:traverser .52s linear forwards}
+  @keyframes traverser{ to{ transform:translateX(85%) } }
+
+  /* C — le sceau tourne, et sème. */
+  :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) .sceau{transform:rotate(1080deg)}
+  :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) .gerbe i{
+    animation:semer .58s cubic-bezier(.2,.7,.3,1) forwards}
+  @keyframes semer{
+    0%{opacity:1;transform:translate(0,0) scale(1)}
+    100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.4)}
+  }
+
+  /* D — l'encre gagne le fond, et le mot passe au clair derrière elle. */
+  :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) .encre{
+    animation:remplir .5s cubic-bezier(.5,0,.1,1) forwards}
+  :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) .v-d .mot{
+    color:#f5f3ee;transition:color .34s ease .16s}
+  @keyframes remplir{ to{ transform:scaleX(1) } }
+
+  /* E — le cheveu s'ouvre depuis le centre. */
+  :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) .rail i{
+    animation:ouvrir .46s cubic-bezier(.4,0,.2,1) forwards}
+  @keyframes ouvrir{ to{ width:100% } }
+
+  /* ─── La messagerie qui monte, une demi-seconde plus tard ──────────────── */
+  .feuille{position:absolute;left:0;right:0;bottom:0;z-index:9;background:var(--carte);
+           border-top:1px solid var(--trait);border-radius:18px 18px 33px 33px;
+           padding:20px 18px 22px;transform:translateY(102%);
+           transition:transform .42s cubic-bezier(.32,.72,0,1);
+           box-shadow:0 -18px 44px rgba(20,18,14,.14)}
+  /* Le RETARD porte la demi-seconde : c'est lui qui fait exister l'attente,
+     et c'est lui que « mouvement réduit » annule plus bas. */
+  :is(.declencheur:checked ~ .feuille, #tous:checked ~ .rangee .feuille){
+    transform:translateY(0);transition-delay:.52s}
+  .feuille .app{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--or);margin:0 0 9px;text-align:center}
+  .feuille .a{font-size:11.5px;color:var(--gris);margin:0 0 9px}
+  .feuille .corps-msg{font-size:12.5px;line-height:1.55;margin:0;color:var(--encre)}
+  .feuille .corps-msg span{color:var(--or)}
+  .refermer{display:block;width:max-content;margin:16px auto 0;background:transparent;
+            border:1px solid var(--trait);border-radius:9999px;padding:8px 20px;
+            font:500 12.5px/1 ui-serif,Georgia,serif;color:var(--encre);cursor:pointer;user-select:none}
+  /* Quand les cinq sont pressés d'un coup, « Refermer » ne pourrait plus rien :
+     une case ne peut pas en décocher une autre sans script. On le retire plutôt
+     que de laisser un bouton mort — c'est « Tout refermer », en haut, qui rend
+     la main. */
+  #tous:checked ~ .rangee .refermer{display:none}
+
+  .mot-refermer{display:none}
+  #tous:checked ~ .barre .mot-presser{display:none}
+  #tous:checked ~ .barre .mot-refermer{display:inline}
+
+  table{border-collapse:collapse;margin:44px auto 0;font-size:13px;max-width:900px;width:100%}
+  th,td{border-bottom:1px solid var(--trait);padding:10px 12px;text-align:left;vertical-align:top}
+  th{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--or);font-weight:400}
+  td{color:var(--gris)}
+  td b{color:var(--encre);font-weight:500}
+
+  @media (prefers-reduced-motion: reduce){
+    .action .corps,.sceau,.feuille{transition-duration:.01ms}
+    /* La demi-seconde disparaît : sous « mouvement réduit », attendre serait lu
+       comme une lenteur, pas comme une intention. */
+    :is(.declencheur:checked ~ .feuille, #tous:checked ~ .rangee .feuille){transition-delay:0s}
+    :is(.declencheur:checked ~ .carte, #tous:checked ~ .rangee) :is(.lueur,.gerbe i,.encre,.rail i){
+      animation-duration:.01ms}
+  }
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Écran facture · le message tout prêt</p>
+    <h1>Cinq boutons, et chacun se presse</h1>
+    <div class="regle"></div>
+    <p>Le geste qui ouvre le SMS — ou l’e-mail — au bas d’une facture arrêtée.
+       <b>Appuyez sur les cinq</b> : la messagerie monte une demi-seconde plus
+       tard, comme elle le fera pour de vrai.</p>
+    <p>Ils ne déclinent pas le même objet : ils <b>changent de nature</b>.
+       Décliner n’a jamais rien sauvé — c’est la leçon des quatre refus du
+       11 août.</p>
+
+    <div class="appui">
+      <b>Ce qui est commun aux cinq, et ne se négocie pas.</b> L’enfoncement est
+      immédiat — sans lui, la demi-seconde qui suit se lit comme une panne. Et
+      si votre téléphone est réglé sur « mouvement réduit », la messagerie
+      s’ouvre <b>tout de suite</b> : un réglage d’accessibilité ne doit jamais
+      passer pour de la lenteur.
+      <br><br>
+      <b>Une seule chose diffère de l’application :</b> ici, un second appui
+      referme, pour que vous puissiez réessayer. Dans le code, il est ignoré —
+      sinon le message partirait deux fois.
+      <br><br>
+      <b>Rien n’est codé.</b> L’application affiche toujours le bouton carré.
+      C’est votre règle : la maquette d’abord.
+    </div>
+  </div>
+
+  <input type="checkbox" id="tous" class="declencheur">
+
+  <div class="barre">
+    <label class="tout" for="tous">
+      <span class="mot-presser">Presser les cinq d’un coup</span>
+      <span class="mot-refermer">Tout refermer</span>
+    </label>
+    <span class="note-mouvement">— pour comparer les gestes côte à côte</span>
+  </div>
+
+  <p class="famille">Les cinq</p>
+  <p class="sous-titre">Chaque téléphone est à la place réelle d’une page :
+     390 px de large, barre du navigateur déduite.</p>
+
+  <div class="rangee">
+
+    <!-- ═══ A · la capsule ═══════════════════════════════════════════════ -->
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="A">
+        <input type="checkbox" id="e-a" class="declencheur">
+        <p class="surtitre">Chez M. Bernard</p>
+        <h2 class="titre">Facture</h2>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiquette">Facture F2026-0001</p>
+          <div class="ligne"><span>Total HT</span><span>800,00 €</span></div>
+          <div class="ligne"><span>TVA 20 %</span><span>160,00 €</span></div>
+          <div class="ttc"><p class="mot-ttc">Total TTC</p><p class="somme">960,00 €</p></div>
+        </div>
+        <div class="carte">
+          <p class="arretee">Facture F2026-0001 arrêtée.</p>
+          <p class="apres">Elle figure au relevé de TVA collectée et ne peut plus être modifiée.</p>
+          <div class="separation"></div>
+          <label class="action v-a" for="e-a" data-essai aria-label="Ouvrir le SMS tout prêt"><span class="corps"><span class="mot">Ouvrir le SMS tout prêt →</span></span></label>
+          <p class="dessous">Au 06 12 34 56 78 — c’est vous qui l’envoyez.</p>
+          <span class="bascule">Plutôt par e-mail →</span>
+        </div>
+        <div class="feuille">
+          <p class="app">Messages</p>
+          <p class="a">À : 06 12 34 56 78</p>
+          <p class="corps-msg">Bonjour M. Bernard,<br><br>Voici votre facture F2026-0001.
+             Vous pouvez la consulter et la télécharger ici :<br><span>atlas.app/factures/…</span></p>
+          <label class="refermer" for="e-a">Refermer</label>
+        </div>
+      </div></div>
+      <figcaption>
+        <span class="tete"><span class="lettre">A</span> · la capsule</span>
+        Le bouton exact des dix-sept autres écrans. Rien ne bouge que
+        l’enfoncement — <b>c’est une proposition, pas un défaut</b> : la retenue
+        est ce qui a fini par l’emporter à chaque tournée.
+        <span class="marque">Rien d’autre ne bouge</span>
+      </figcaption>
+    </figure>
+
+    <!-- ═══ B · la lueur ═════════════════════════════════════════════════ -->
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="B">
+        <input type="checkbox" id="e-b" class="declencheur">
+        <p class="surtitre">Chez M. Bernard</p>
+        <h2 class="titre">Facture</h2>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiquette">Facture F2026-0001</p>
+          <div class="ligne"><span>Total HT</span><span>800,00 €</span></div>
+          <div class="ligne"><span>TVA 20 %</span><span>160,00 €</span></div>
+          <div class="ttc"><p class="mot-ttc">Total TTC</p><p class="somme">960,00 €</p></div>
+        </div>
+        <div class="carte">
+          <p class="arretee">Facture F2026-0001 arrêtée.</p>
+          <p class="apres">Elle figure au relevé de TVA collectée et ne peut plus être modifiée.</p>
+          <div class="separation"></div>
+          <label class="action v-b" for="e-b" data-essai aria-label="Ouvrir le SMS tout prêt"><span class="corps"><span class="lueur"></span><span class="mot">Ouvrir le SMS tout prêt →</span></span></label>
+          <p class="dessous">Au 06 12 34 56 78 — c’est vous qui l’envoyez.</p>
+          <span class="bascule">Plutôt par e-mail →</span>
+        </div>
+        <div class="feuille">
+          <p class="app">Messages</p>
+          <p class="a">À : 06 12 34 56 78</p>
+          <p class="corps-msg">Bonjour M. Bernard,<br><br>Voici votre facture F2026-0001.
+             Vous pouvez la consulter et la télécharger ici :<br><span>atlas.app/factures/…</span></p>
+          <label class="refermer" for="e-b">Refermer</label>
+        </div>
+      </div></div>
+      <figcaption>
+        <span class="tete"><span class="lettre">B</span> · la lueur</span>
+        Une lumière traverse la laque, une seule fois, en biais. C’est le geste
+        de la <b>matière</b> : rien ne s’ajoute à l’écran, c’est la surface qui
+        répond.
+        <span class="marque">Le luxe par la lumière</span>
+      </figcaption>
+    </figure>
+
+    <!-- ═══ C · le cachet ════════════════════════════════════════════════ -->
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="C">
+        <input type="checkbox" id="e-c" class="declencheur">
+        <p class="surtitre">Chez M. Bernard</p>
+        <h2 class="titre">Facture</h2>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiquette">Facture F2026-0001</p>
+          <div class="ligne"><span>Total HT</span><span>800,00 €</span></div>
+          <div class="ligne"><span>TVA 20 %</span><span>160,00 €</span></div>
+          <div class="ttc"><p class="mot-ttc">Total TTC</p><p class="somme">960,00 €</p></div>
+        </div>
+        <div class="carte">
+          <p class="arretee">Facture F2026-0001 arrêtée.</p>
+          <p class="apres">Elle figure au relevé de TVA collectée et ne peut plus être modifiée.</p>
+          <div class="separation"></div>
+          <!-- Les onze grains sont ÉCRITS, pas engendrés : c'est ce qui permet à
+               la gerbe d'exister sans une ligne de script. Chacun porte sa
+               direction ; au repos ils sont à opacité zéro, donc invisibles. -->
+          <label class="action v-c" for="e-c" data-essai aria-label="Ouvrir le SMS tout prêt"><span class="corps"><span class="mot">Ouvrir le SMS tout prêt</span><span class="sceau" aria-hidden="true">→</span><span class="gerbe" aria-hidden="true"><i style="--dx:20px;--dy:0px"></i><i style="--dx:22px;--dy:14px"></i><i style="--dx:15px;--dy:26px"></i><i style="--dx:3px;--dy:27px"></i><i style="--dx:-11px;--dy:19px"></i><i style="--dx:-24px;--dy:12px"></i><i style="--dx:-27px;--dy:-3px"></i><i style="--dx:-19px;--dy:-15px"></i><i style="--dx:-10px;--dy:-24px"></i><i style="--dx:5px;--dy:-26px"></i><i style="--dx:18px;--dy:-13px"></i></span></span></label>
+          <p class="dessous">Au 06 12 34 56 78 — c’est vous qui l’envoyez.</p>
+          <span class="bascule">Plutôt par e-mail →</span>
+        </div>
+        <div class="feuille">
+          <p class="app">Messages</p>
+          <p class="a">À : 06 12 34 56 78</p>
+          <p class="corps-msg">Bonjour M. Bernard,<br><br>Voici votre facture F2026-0001.
+             Vous pouvez la consulter et la télécharger ici :<br><span>atlas.app/factures/…</span></p>
+          <label class="refermer" for="e-c">Refermer</label>
+        </div>
+      </div></div>
+      <figcaption>
+        <span class="tete"><span class="lettre">C</span> · le cachet</span>
+        Un sceau tourne trois tours et sème onze grains d’or. <b>C’est exactement
+        le geste de « Nouveau chantier »</b> — la seule proposition qui ne repose
+        pas sur un goût : les deux écrans partageraient enfin le même
+        vocabulaire.
+        <span class="marque">Un vocabulaire commun</span>
+      </figcaption>
+    </figure>
+
+    <!-- ═══ D · l'encre ══════════════════════════════════════════════════ -->
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="D">
+        <input type="checkbox" id="e-d" class="declencheur">
+        <p class="surtitre">Chez M. Bernard</p>
+        <h2 class="titre">Facture</h2>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiquette">Facture F2026-0001</p>
+          <div class="ligne"><span>Total HT</span><span>800,00 €</span></div>
+          <div class="ligne"><span>TVA 20 %</span><span>160,00 €</span></div>
+          <div class="ttc"><p class="mot-ttc">Total TTC</p><p class="somme">960,00 €</p></div>
+        </div>
+        <div class="carte">
+          <p class="arretee">Facture F2026-0001 arrêtée.</p>
+          <p class="apres">Elle figure au relevé de TVA collectée et ne peut plus être modifiée.</p>
+          <div class="separation"></div>
+          <label class="action v-d" for="e-d" data-essai aria-label="Ouvrir le SMS tout prêt"><span class="corps"><span class="encre"></span><span class="mot">Ouvrir le SMS tout prêt →</span></span></label>
+          <p class="dessous">Au 06 12 34 56 78 — c’est vous qui l’envoyez.</p>
+          <span class="bascule">Plutôt par e-mail →</span>
+        </div>
+        <div class="feuille">
+          <p class="app">Messages</p>
+          <p class="a">À : 06 12 34 56 78</p>
+          <p class="corps-msg">Bonjour M. Bernard,<br><br>Voici votre facture F2026-0001.
+             Vous pouvez la consulter et la télécharger ici :<br><span>atlas.app/factures/…</span></p>
+          <label class="refermer" for="e-d">Refermer</label>
+        </div>
+      </div></div>
+      <figcaption>
+        <span class="tete"><span class="lettre">D</span> · l’encre qui gagne</span>
+        Cerclée d’un filet d’or, elle se <b>remplit</b> de vert pin sous le mot,
+        de gauche à droite. Le message s’écrit avant de partir.
+        <span class="marque">Une exception à assumer</span>
+      </figcaption>
+    </figure>
+
+    <!-- ═══ E · le trait ═════════════════════════════════════════════════ -->
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="E">
+        <input type="checkbox" id="e-e" class="declencheur">
+        <p class="surtitre">Chez M. Bernard</p>
+        <h2 class="titre">Facture</h2>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiquette">Facture F2026-0001</p>
+          <div class="ligne"><span>Total HT</span><span>800,00 €</span></div>
+          <div class="ligne"><span>TVA 20 %</span><span>160,00 €</span></div>
+          <div class="ttc"><p class="mot-ttc">Total TTC</p><p class="somme">960,00 €</p></div>
+        </div>
+        <div class="carte">
+          <p class="arretee">Facture F2026-0001 arrêtée.</p>
+          <p class="apres">Elle figure au relevé de TVA collectée et ne peut plus être modifiée.</p>
+          <div class="separation"></div>
+          <label class="action v-e" for="e-e" data-essai aria-label="Ouvrir le SMS tout prêt"><span class="corps"><span class="mot">Ouvrir le SMS tout prêt</span><span class="rail"><i></i></span></span></label>
+          <p class="dessous">Au 06 12 34 56 78 — c’est vous qui l’envoyez.</p>
+          <span class="bascule">Plutôt par e-mail →</span>
+        </div>
+        <div class="feuille">
+          <p class="app">Messages</p>
+          <p class="a">À : 06 12 34 56 78</p>
+          <p class="corps-msg">Bonjour M. Bernard,<br><br>Voici votre facture F2026-0001.
+             Vous pouvez la consulter et la télécharger ici :<br><span>atlas.app/factures/…</span></p>
+          <label class="refermer" for="e-e">Refermer</label>
+        </div>
+      </div></div>
+      <figcaption>
+        <span class="tete"><span class="lettre">E</span> · le trait qui s’ouvre</span>
+        Aucune capsule : le mot seul, et un cheveu d’or qui s’ouvre depuis le
+        centre. <b>La plus discrète, et la plus risquée</b> — un geste qui ne
+        ressemble pas à un bouton se cherche.
+        <span class="marque">La retenue poussée loin</span>
+      </figcaption>
+    </figure>
+
+  </div>
+
+  <table>
+    <tr><th>Ce qui les sépare</th><th>Ce qui bouge</th><th>Ce que ça coûte</th></tr>
+    <tr><td><b>A · la capsule</b></td><td>rien que l’enfoncement</td><td>rien : le composant existe déjà, sur dix-sept écrans</td></tr>
+    <tr><td><b>B · la lueur</b></td><td>une lumière traverse la laque, une fois</td><td>vingt lignes de style, aucune règle nouvelle</td></tr>
+    <tr><td><b>C · le cachet</b></td><td>un sceau tourne, onze grains d’or</td><td>le même geste que « Nouveau chantier » — deux écrans, un vocabulaire</td></tr>
+    <tr><td><b>D · l’encre</b></td><td>le fond se remplit sous le mot</td><td>une action cernée de plus dans une charte qui n’en a pas</td></tr>
+    <tr><td><b>E · le trait</b></td><td>un cheveu d’or s’ouvre du centre</td><td>plus de bouton du tout : à retrouver du regard</td></tr>
+  </table>
+
+</div>
+</body>
+</html>

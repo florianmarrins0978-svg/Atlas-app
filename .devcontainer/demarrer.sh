@@ -369,12 +369,12 @@ setsid nohup bash -c "
 # l'agent en était réduit à supposer. La première passe dit « voilà l'état, le
 # serveur n'a pas encore répondu » ; la seconde la remplace une fois debout.
 setsid nohup bash -c "
-  cd '$CD' && node scripts/rapporter-espace.mjs
+  cd '$CD' && ATLAS_MOMENT=allumage node scripts/rapporter-espace.mjs
   for _ in \$(seq 1 60); do
     curl -sf -o /dev/null --max-time 5 http://127.0.0.1:3000/api/health/live && break
     sleep 10
   done
-  cd '$CD' && node scripts/rapporter-espace.mjs
+  cd '$CD' && ATLAS_MOMENT=demarre node scripts/rapporter-espace.mjs
 " > /tmp/rapport-espace.log 2>&1 < /dev/null &
 
 echo "──────────────────────────────────────────────"

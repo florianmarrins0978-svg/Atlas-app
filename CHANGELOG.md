@@ -7,6 +7,53 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-13
+
+### Six branches réunies dans `main`, et ce que la réunion a coûté
+
+**Sa demande, le 13 août :** *« Fusionne. »* Six branches vivaient à côté de
+`main`, dont trois portaient du code produit — l'agenda iCloud, l'écran de la
+facture, et le lien cliquable du message au client. Les trois autres ne
+portaient que de la mémoire.
+
+Une branche qui vit deux jours de son côté n'est pas une branche en retard :
+c'est une **seconde version du dépôt**. Le vrai coût n'a pas été le code — il
+n'y a eu qu'un seul conflit dans un fichier de code — mais les six fichiers de
+mémoire, que chaque branche avait fait avancer de son côté. Trois pièges, tous
+payés ici, et qui reviendront à chaque fusion :
+
+1. **Deux branches numérotent la même section.** `ARCHITECTURE.md` avait deux
+   §67 et deux §68. Renuméroter ne suffit pas : **onze renvois** pointaient
+   vers ces numéros à travers `CHANGELOG.md`, `HANDOVER.md`, `TODO.md`,
+   `PROJECT_STATE.md` et jusque dans un commentaire de
+   `scripts/test-envoi-client-e2e.ts`. Un renvoi qui désigne la mauvaise section
+   est pire qu'un renvoi absent : on le suit. La facture a pris §73 et §74,
+   l'agenda iCloud §75.
+2. **Le même bloc rangé à deux endroits fait un doublon silencieux.** Une autre
+   conversation avait fusionné le même travail dans `main` en le plaçant
+   ailleurs : `git` voyait deux ajouts, pas un déplacement. Garder « les deux
+   côtés » aurait écrit deux fois la même chose dans `HANDOVER.md` et
+   `CHANGELOG.md`.
+3. **Une mémoire fusionnée peut se contredire elle-même.** La branche
+   esthétique décrivait `scroll-snap-stop: always` comme la règle à tenir ;
+   `main` l'avait **retiré le 11 août** parce que le patron lisait l'arrêt à
+   chaque chantier comme du saccadé. Les deux phrases se sont retrouvées dans
+   `PROJECT_STATE.md`. De même, `HANDOVER.md` annonçait encore « rien de tout
+   cela n'est dans l'application » pour une refonte codée depuis deux jours.
+   Les trois passages disent maintenant ce qui fait foi — le code — et pourquoi.
+
+**La règle qui en sort, et qui vaut pour la prochaine fusion :** quand deux
+côtés décrivent le même sujet, la question n'est pas « lequel garder » mais
+**« lequel est encore vrai »**. Une documentation périmée est pire qu'absente,
+parce qu'on s'y fie encore (`CLAUDE.md` §1).
+
+**Vérifié avant de pousser, la batterie entière :** types, lint, mémoire,
+**124/124** suites base, **65/65** suites navigateur, les 23 contrôles de
+maquette, et la connexion réelle dans un vrai navigateur derrière une origine
+étrangère. Aucune régression.
+
+---
+
 ## 2026-08-12
 
 ### Le faux rouge de la batterie : un tuyau de 64 Ko, pas un écran lent
@@ -70,7 +117,7 @@ reprendre les rendez-vous.
 avec iCloud n'a eu lieu — le réseau d'ici refuse `caldav.icloud.com`. Restent à
 éprouver sur son banc : la découverte, la lecture, le dépôt, le retrait. Tout ce
 qui *décide* vit dans `src/lib/ics.ts` et `src/lib/caldav.ts`, qui ne parlent à
-personne et sont couverts entièrement (`ARCHITECTURE.md` §73).
+personne et sont couverts entièrement (`ARCHITECTURE.md` §75).
 
 **Au passage**, deux corrections sans rapport avec Apple : `--seulement <motif>`
 sur les suites navigateur — diagnostiquer un rouge coûtait vingt-cinq minutes de
@@ -118,6 +165,174 @@ soit exactement le zoom de Safari que la ligne prétendait éviter, et les bouto
 cet environnement refuse `caldav.icloud.com` (essayé, connexion refusée). Le
 comportement réel d'Apple ne s'éprouvera que sur son banc. Réponse complète,
 avec ce que ça coûte et ce que ça expose, dans `docs/QUESTIONS.md` §14.
+### Deux dates se choisissent enfin à même le calendrier
+
+**Le patron :** *« dès que je choisis à même le planning, je ne peux choisir
+qu'un seul jour. Or je dois pouvoir proposer deux jours au client. »*
+`ARCHITECTURE.md` §74.
+
+La feuille d'envoi portait la sélection à **deux endroits** : un tableau — ce
+qui part réellement — et une **chaîne unique** pour le jour choisi au
+calendrier. Le calendrier ne recevait que la seconde : choisir un second jour
+effaçait le premier sous ses yeux. Le plus traître était l'autre moitié du
+défaut : **rappuyer sur le premier jour le remettait au lieu de le retirer.**
+
+Le calendrier marque désormais toute la sélection — ce qu'il voit est ce que son
+client recevra. Et la règle « une ou deux, jamais trois » cesse d'être écrite en
+double : elle vivait déjà dans `src/lib/calendrier.ts`, éprouvée sans
+navigateur, et l'écran en avait sa propre copie.
+
+**Pourquoi aucune suite ne l'avait vu :** celle qui existe choisit UNE date au
+calendrier et vérifie qu'elle part. Personne n'avait jamais essayé d'en choisir
+deux. Un parcours à moitié joué ne prouve que la moitié qu'on joue — quand un
+écran offre un maximum, l'éprouver à un seul exemplaire ne dit rien du second.
+
+**Deux suites voisines ont été réparées au passage**, pour deux raisons
+opposées : l'une accusait à tort (elle comptait des boutons pressés, or un même
+jour est désormais marqué à deux endroits) ; l'autre **empruntait son chantier à
+une autre suite** et ne savait pas tourner seule — ajouter une suite ailleurs a
+suffi à changer l'ordre des lignes et à la faire rougir en désignant le mauvais
+coupable. Chacune possède maintenant ses données.
+
+### Le bouton de la facture prend la capsule — son choix, la variante A
+
+*« Code la A. »* Après deux planches (30, puis 31 à sa demande), « Ouvrir le SMS
+tout prêt » quitte son aplat à 4 px de rayon et passe par **`PrimaryButton`**,
+la capsule des dix-sept autres écrans. `ARCHITECTURE.md` §73.
+
+**Il passe par le composant, jamais par un dessin recopié sur place** — c'est le
+défaut même qu'on répare : une action principale peinte dans un écran échappe à
+toute décision d'ensemble, et c'est ce qui lui avait fait manquer la capsule du
+11 août. Deux suites mesurent désormais le rayon calculé du bouton : le
+repeindre à la main les rend rouges.
+
+**Deux réglages facultatifs ajoutés à `PrimaryButton`, aucun d'apparence.**
+`onClick` est enfin honoré sur la variante `href` — elle le perdait en silence,
+et ce bouton-là est un lien qui doit AUSSI retenir le départ vers la messagerie.
+`repere` pose un `data-atlas`, pour qu'une suite ne désigne pas ce lien par son
+seul texte : « Ouvrir le SMS tout prêt » et « Ouvrir l'e-mail tout prêt » se
+ressemblent assez pour qu'un contrôle passe au vert sur le mauvais.
+
+Les quatre gestes écartés — la lueur, le cachet, l'encre, le trait — restent
+dans la maquette 39.
+
+### Cinq boutons de facture qui se pressent pour de vrai
+
+**Sa demande :** *« sors-moi une maquette avec plusieurs versions cliquables et
+dynamiques. Tout en gardant à l'esprit que c'est une appli hyper luxe et
+moderne. »* — `docs/maquettes/39-le-bouton-de-la-facture-a-lessai.html`.
+
+Cinq gestes qui **changent de nature** plutôt que de décliner un même objet :
+la capsule nue, la lueur qui traverse la laque, le cachet qui tourne et sème
+onze grains d'or, l'encre qui remplit le fond, le trait qui s'ouvre. Chacun
+respecte les règles payées par « Nouveau chantier » — enfoncement immédiat,
+demi-seconde avant la messagerie, mouvement réduit honoré, libellé stable.
+**Rien n'est codé** : `src/` est intact, c'est sa règle.
+
+### Et cette maquette n'affichait RIEN chez lui
+
+*« Rien apparaît sur ta maquette. »* La première version **engendrait ses cinq
+téléphones en JavaScript**. Éprouvée ici dans un navigateur complet, elle
+passait ; script coupé — visionneuse, aperçu, page qui bloque l'exécution — elle
+ne montrait plus rien. Mesuré après coup : **zéro écran, zéro bouton.**
+
+Le contrôle qui l'accompagnait pressait donc cinq boutons qui, pour lui,
+n'existaient pas. Et le dépôt avait déjà payé cette leçon sur les maquettes 25
+et 26, où `verifier-maquette-bascule.mjs` joue les huit bascules **JavaScript
+coupé** — la règle existait, elle n'a pas été appliquée.
+
+**Réécrite sans une ligne de script** : une case à cocher invisible par écran et
+des règles `:checked ~` portent le geste, la demi-seconde, la messagerie qui
+monte et la reprise. Le contrôle tourne désormais `javaScriptEnabled: false`, et
+sa première ligne compte les cinq écrans — un retour au script le rend rouge.
+
+*Une seule chose diffère de l'application, et la maquette le dit : ici un second
+appui referme, pour pouvoir réessayer. Dans le code il est ignoré, sinon le
+message partirait deux fois.*
+
+**Deux pièges de mesure, et le second vaut d'être retenu.**
+
+`locator.screenshot()` attend que l'élément soit **stable** — donc que
+l'animation soit finie. Il montrait l'après, jamais le pendant, et la lueur
+paraissait morte.
+
+Surtout : **le contrôle de cette lueur est passé au vert deux fois sur un geste
+que l'œil ne voyait jamais.** Il exigeait « opacité > 0 et transform ≠
+identité » — vrai même quand la bande est entièrement hors du bouton — puis
+« la bande est dedans à mi-geste », vrai aussi de la version fautive, qui se
+trouvait passer là au bon instant. La courbe d'accélération faisait traverser
+la lumière en quatre-vingts millisecondes. Ce qui se mesure désormais, c'est
+**combien de temps** elle est visible : 240 ms, contre 180 exigées. Le défaut a
+été trouvé en REGARDANT une capture, pas en lisant un voyant vert — troisième
+fois que cela arrive dans ce dépôt.
+
+### La facture part enfin par e-mail, et se télécharge
+
+**Trois manques signalés par le patron le 10 août** (`TODO.md` §8), dont deux
+sont réparés. `ARCHITECTURE.md` §73.
+
+**« On ne propose que le SMS » — le plus grave.** L'écran de la facture prenait
+le canal de la fiche du client et n'en démordait plus : un client sans portable
+ne pouvait tout simplement pas être facturé. Les deux voies sont désormais
+offertes à tout moment, et **l'adresse manquante se saisit sur place** — il
+n'existe aucun écran de fiche client où l'envoyer. Le lien reste unique (le
+client n'aura jamais deux adresses pour la même facture), mais le canal inscrit
+au registre est corrigé quand le patron change d'avis : une facture partie par
+courriel ne doit pas rester marquée « SMS ».
+
+**Le même défaut avait été réparé sur le DEVIS le 4 août**, après une phrase
+presque identique. Il a survécu deux semaines ici parce que rien ne relie deux
+écrans qui font la même chose. À retenir : un défaut corrigé quelque part
+mérite qu'on cherche aussitôt son jumeau ailleurs.
+
+**« Impossible d'enregistrer la facture ».** Un lien « Télécharger
+(F2026-0001.pdf) » se pose sous « Voir la facture en PDF ». C'est le **serveur**
+qui range le fichier (`?telecharger=1` → `Content-Disposition: attachment`) :
+l'attribut `download` du lien, seul, est ignoré par certaines versions d'iOS et
+le PDF s'ouvrait alors dans un onglet — le défaut d'origine, déguisé en
+correctif. Le nom porte le numéro de facture ; il en aura des centaines.
+
+**Le troisième manque n'est PAS corrigé, et c'est délibéré.** Il veut le bouton
+« Ouvrir le SMS tout prêt » ovale : une demande d'apparence se dessine avant de
+se coder (`CLAUDE.md` §3 bis). Deux variantes l'attendent dans
+`docs/maquettes/38-le-bouton-de-la-facture.html`, et **`src/` est intact** sur
+ce point.
+
+**Ce que les contrôles ont trouvé, et qu'aucune relecture n'aurait vu :** le nom
+du fichier vit à deux endroits sans lien entre eux — l'attribut du navigateur et
+l'en-tête du serveur. Après l'arrêt de la facture, sans rechargement, l'écran
+annonçait « F2026-0001-brouillon.pdf » quand le serveur servait
+« F2026-0001.pdf ».
+
+### La fiche d'état se lisait de travers, faute de dire QUAND elle est écrite
+
+**Le 12 août au soir, premier vrai usage.** Le patron signale « l'appli ne
+s'ouvre plus ». Sa fiche existe enfin, fraîche de trois minutes, et annonce
+« Serveur : NE RÉPOND PAS ». Alarmant — et pourtant parfaitement normal :
+c'était la publication de **l'allumage**, écrite volontairement avant que le
+serveur ait eu le temps de démarrer. Les mêmes mots vingt minutes plus tard sont
+une panne. Rien ne distinguait les deux, et il a fallu recouper des horodatages
+pour le comprendre.
+
+Deux ajouts, tirés de ce seul usage :
+
+1. **La fiche dit à quel moment elle est écrite** — « à l'allumage » (et prévient
+   alors qu'un serveur muet y est attendu), « après démarrage », « par le
+   veilleur », « à la main ». Le contrôle refuse que la fiche du veilleur
+   s'excuse comme celle de l'allumage : excuser une panne réelle la masque.
+2. **La date devient le premier diagnostic**, et le plus rapide de tous. Le
+   veilleur réécrit la fiche tous les quarts d'heure tant que l'espace tourne :
+   passé vingt minutes sans réécriture, ce n'est pas le serveur qui est en
+   panne, c'est **l'espace qui est arrêté**. La fiche le dit désormais
+   elle-même, en tête. Sans cette phrase on cherche dans le produit alors qu'il
+   n'y a plus personne pour le servir — une demi-heure perdue ainsi.
+
+**Et ce que la fiche a permis de trancher du premier coup**, elle : le code de
+`main` n'était pas en cause. Démarré ici sur le commit exact qu'elle annonçait,
+le serveur répond en 5,4 secondes. C'est la première fois de la journée qu'une
+panne signalée est écartée sans lui faire recopier un terminal.
+
+---
 
 ### Le chevron doré du planning : l'adresse jusqu'au GPS en un doigt
 
@@ -159,6 +374,52 @@ le plus laid. Aucun test ne pouvait le voir : les deux textes étaient exacts,
 c'est leur mise bout à bout qui ne l'était pas.
 
 `ARCHITECTURE.md` §70.
+
+### La carte de réponse mène enfin là où est le geste
+
+**Le patron :** *« si le chantier il est accepté par le client, il faut qu'à la
+place de "ouvrir le chantier", on puisse ouvrir le devis — et le devis validé,
+pas le devis en construction. Par contre, si le devis n'est pas validé et il
+nous revient pour une modification, il faut qu'on puisse ouvrir le devis, mais
+pour pouvoir le modifier. »*
+
+Les quatre cartes menaient toutes à la fiche du chantier — **et leur propre
+texte disait déjà autre chose** : « le devis peut être repris et renvoyé ». Un
+écran qui annonce un geste et conduit ailleurs fait douter de tout le reste.
+
+Deux destinations, et ce n'est pas une préférence : c'est ce que l'application
+permet.
+
+- **Accepté** → `devis-complet`, qui affiche le devis **figé**, tel que le client
+  l'a reçu. Un devis parti est immuable (trigger
+  `empecher_modification_devis_envoye`) : c'est donc bien « le devis validé », et
+  jamais le brouillon.
+- **Correction, refus, lien périmé** → l'écran d'envoi, qui porte « Corriger et
+  renvoyer » et « Reprendre le devis ». Le mener sur le document paraîtrait plus
+  direct, mais **celui-ci refuserait sa première frappe** sans qu'il comprenne
+  pourquoi : modifier suppose de reprendre, ce qui ouvre une nouvelle version, et
+  c'est SON geste — pas le nôtre.
+
+La règle vit dans une fonction pure (`src/lib/suite-de-la-reponse.ts`), éprouvée
+sans navigateur. Mais une adresse juste ne prouve rien : un contrôle de bout en
+bout joue les deux parcours entiers — devis envoyé, réponse du client — et
+vérifie que **l'écran visé porte réellement ce que le lien promet**. Le devis
+accepté s'ouvre bien figé, sans un seul champ modifiable ; l'écran de correction
+porte bien le bouton, et le message du client avec.
+
+**Deux pièges rencontrés en écrivant ce contrôle, tous deux dans le contrôle :**
+
+1. Il cherchait la carte par le **nom du chantier** — qui figure aussi dans la
+   liste juste dessous. Il lisait donc la ligne de la liste et accusait le
+   produit d'un défaut qu'on venait de corriger. Les cartes portent maintenant
+   une étiquette de code (`data-atlas="carte-reponse"`), qui ne se réécrit pas
+   comme un libellé.
+2. Il faisait accepter le client sur **une date proposée** — et aucune carte
+   n'apparaissait. C'est délibéré et documenté : cette acceptation-là ne surprend
+   personne, la signaler noierait celles qui appellent un geste. La carte que le
+   patron a photographiée portait d'ailleurs « AUTRE DATE PROPOSÉE ».
+
+Confronté à l'ancien lien : deux rouges, en nommant l'adresse et le libellé.
 
 ### La CI était rouge depuis des heures, et personne ne regardait
 
@@ -3283,6 +3544,30 @@ tels qu'écrits dans le code. Et le compteur de l'accueil était accusé à tort
 avec la liste depuis le 10 août. Aucun de ces trois n'était un défaut du
 produit, et le premier réflexe — croire le contrôle — aurait coûté une heure.
 
+### Le lien du client n'était pas cliquable
+
+*« Le lien n'est pas cliquable, je suis obligé de le copier et de le coller
+dans une page internet. »*
+
+Le lien était bien seul sur sa ligne, mais **collé sous la phrase qui
+l'annonce**. Beaucoup de messageries lisent alors les deux comme un seul
+paragraphe : elles n'y reconnaissent plus une adresse, et n'en font pas un
+lien. Isolé entre deux lignes vides, il redevient une adresse à leurs yeux.
+
+Corrigé pour le devis **et** pour la facture, qui avait le même défaut sans
+que personne l'ait encore vu.
+
+**Ce qu'on ne peut pas faire mieux aujourd'hui, et pourquoi.** Le message part
+par `mailto:`, qui ne transporte que du texte brut — donc pas de vrai bouton.
+Le jour où Atlas enverra lui-même (`docs/A-FAIRE.md` §5), ce sera un bouton.
+
+`scripts/test-lien-cliquable.ts` tient la règle, et **sait échouer** : remis
+dans l'état d'avant, il dit « pas de ligne vide AVANT le lien ».
+
+**Une réserve honnête** : je ne peux pas reproduire ici la messagerie du
+patron. C'est le correctif standard pour le texte brut, mais c'est lui qui
+dira s'il tient.
+
 ### Le devis rejoint la charte : la terre cuite s'efface
 
 *« Oui, harmonise aussi le devis. »* La teinte terre cuite des documents, tenue
@@ -5705,6 +5990,23 @@ Le cas est écrit, en tête de la section de dépannage puisque c'est la premiè
 chose qu'il voit : recharger, rouvrir depuis `github.com/codespaces`, et surtout
 aller droit à `https://<nom-de-l-espace>-3000.app.github.dev` sans attendre
 l'éditeur.
+### Deux concurrents directs, trouvés en cherchant un nom
+
+Le patron a demandé quel nom donner à l'application. « Atlas » n'avait jamais
+été choisi ni vérifié — c'était un nom de travail, et le mot s'est révélé
+massivement occupé dans les classes de marque du logiciel.
+
+En vérifiant l'occupation des candidats, deux **concurrents directs** sont
+apparus : `ouvra.app`, qui a pris un métier (plombiers-chauffagistes, catalogue
+et TVA du secteur pré-remplis), et `fabro.app`, qui a pris l'absence de réseau
+(100 % hors ligne, données sur le téléphone).
+
+Consigné dans `PROJECT_STATE.md` parce que ce n'est pas une anecdote de
+recherche de nom : une conversation qui croit le créneau vierge se trompera
+d'arbitrage. Notre angle — la dictée et l'agent — reste distinct des deux, mais
+il n'est plus une évidence qu'on peut laisser sans défense.
+
+Le nom définitif n'est pas tranché : rien n'a été renommé.
 
 ### Le devis est enfin celui du patron
 
