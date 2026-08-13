@@ -8,6 +8,7 @@ import {
   SuppressionChantierRefusee,
   CreneauIndisponible,
 } from "@/server/repositories/chantiers";
+import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 
 /**
  * Poser un chantier : la date, la demi-journée, et l'équipe.
@@ -31,6 +32,12 @@ export async function planifierChantierAction(
   const ctx = await getCurrentCtx();
   try {
     await planifierChantier(ctx, chantierId, datePlanifiee, choix);
+    // **APRÈS la transaction, jamais dedans.** Tenir une transaction PostgreSQL
+    // ouverte le temps d'un appel à Apple immobiliserait une connexion du pool
+    // pour la durée d'un service qu'on ne maîtrise pas. Et cette fonction ne
+    // jette pas : une panne d'Apple ne doit pas faire perdre au patron le geste
+    // qu'il vient de faire — elle s'inscrit dans l'écran des réglages.
+    await porterChantierDansAgenda(ctx, chantierId);
     return { succes: true };
   } catch (e) {
     if (e instanceof CreneauIndisponible) return { succes: false, erreur: e.message };
@@ -40,7 +47,12 @@ export async function planifierChantierAction(
 
 export async function deplanifierChantierAction(chantierId: string) {
   const ctx = await getCurrentCtx();
-  return deplanifierChantier(ctx, chantierId);
+  const resultat = await deplanifierChantier(ctx, chantierId);
+  // Le pendant obligatoire de l'écriture : sans ce retrait, un chantier
+  // déplanifié resterait dans son téléphone pour toujours — et il se fierait à
+  // un agenda qui ment.
+  await porterChantierDansAgenda(ctx, chantierId);
+  return resultat;
 }
 
 /**
@@ -56,6 +68,9 @@ export async function supprimerChantierAction(chantierId: string): Promise<Resul
   const ctx = await getCurrentCtx();
   try {
     await supprimerChantier(ctx, chantierId);
+    // Supprimé ici, donc supprimé là-bas. `porterChantierDansAgenda` ne trouve
+    // plus le chantier et retire ce qu'Atlas avait posé.
+    await porterChantierDansAgenda(ctx, chantierId);
     return { succes: true };
   } catch (e) {
     if (e instanceof SuppressionChantierRefusee) {

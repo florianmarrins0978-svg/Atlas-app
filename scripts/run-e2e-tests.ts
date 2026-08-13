@@ -164,9 +164,27 @@ async function attendreServeurPret(url: string, tentativesMax = 30): Promise<boo
   return false;
 }
 
+/**
+ * `--seulement <motif>` : ne jouer que les suites dont le nom le contient.
+ *
+ * **Écrit le 12 août 2026, après avoir rejoué vingt-cinq minutes de batterie
+ * pour observer UNE suite.** Diagnostiquer un rouge ne doit pas coûter le prix
+ * de la batterie entière — c'est ce coût-là qui pousse à supposer la cause au
+ * lieu d'aller la lire, et le dépôt a déjà payé cher les pannes imaginées
+ * (`AGENTS.md`).
+ *
+ * Ce filtre ne remplace jamais la batterie : elle reste ce qui autorise une
+ * livraison, et le script le dit à voix haute dès qu'il en écarte une.
+ */
+const motifDemande = (() => {
+  const i = process.argv.indexOf("--seulement");
+  return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : null;
+})();
+
 if (process.argv.includes("--list")) {
   const fichiers = readdirSync(DOSSIER)
     .filter((f) => f.endsWith("-e2e.ts") || SUITES_SERVEUR.includes(f))
+    .filter((f) => (motifDemande === null ? true : f.includes(motifDemande)))
     .sort();
   console.log("Suites e2e découvertes :");
   for (const fichier of fichiers) {
@@ -274,6 +292,7 @@ async function main() {
 
   const fichiers = readdirSync(DOSSIER)
     .filter((f) => f.endsWith("-e2e.ts") || SUITES_SERVEUR.includes(f))
+    .filter((f) => (motifDemande === null ? true : f.includes(motifDemande)))
     .sort();
 
   if (process.argv.includes("--list")) {
@@ -282,6 +301,21 @@ async function main() {
       console.log(fichier);
     }
     process.exit(0);
+  }
+
+  // **Dire ce qui est écarté, toujours.** Un filtre silencieux ferait passer
+  // « 1/1 suite réussie » pour une batterie verte — exactement le genre de
+  // vert qui ne prouve rien.
+  if (motifDemande !== null) {
+    console.log(
+      `⚠ Filtre « ${motifDemande} » : ${fichiers.length} suite(s) retenue(s). ` +
+        `Ce n'est PAS la batterie — elle se rejoue en entier sans --seulement.`
+    );
+    if (fichiers.length === 0) {
+      console.error(`❌ Aucune suite ne correspond à « ${motifDemande} ».`);
+      process.kill(-serveur.pid!);
+      process.exit(1);
+    }
   }
 
   await prechaufferLesEcrans();

@@ -9,27 +9,204 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
-### « Chez Martins » devient « Martins »
+### La poignée de la feuille la referme, et « Créer la facture » devient une capsule
 
-**Le patron, capture à l'appui :** *« corrige le nom, Mr Martins, pas chez
-Martins ! »* Le préfixe se voulait sa phrase à lui ; en tête d'une liste qu'on
-parcourt du pouce, il fait lire « Chez » avant de lire QUI.
+**Ses deux signalements du 13 août, capture à l'appui :** *« si j'appuie sur le
+petit trait gris au-dessus de "y aller", c'est censé refermer la page, sauf que
+ça ne marche pas »* et *« le bouton créer la facture est encore carré alors qu'il
+devrait être arrondi comme tous les autres »*.
 
-**La civilité vient de lui, jamais de nous** : « M. » déduit d'un patronyme
-supposerait un genre — « Martins » peut être une femme. Le champ de création
-propose « M. Bernard » en exemple ; ce qu'il tape s'affiche tel quel.
+**La poignée n'était qu'un trait dessiné — et pire.** Posée dans le panneau qui
+arrête les appuis pour que la feuille ne se ferme pas sous les doigts, elle
+ABSORBAIT le geste sans rien en faire. Elle est désormais un vrai bouton, nommé
+« Refermer », et sa zone touchable fait **342 × 28 px** au lieu des 4 px du
+trait : quatre pixels ne s'atteignent pas au doigt, et il aurait conclu « ça ne
+marche pas » sur un code pourtant juste.
 
-**Une migration accompagne le code**, sinon la correction n'aurait valu que pour
-les chantiers à venir : le nom est écrit une fois, à la création, et jamais
-retouché. Elle ne défait que les étiquettes que nous avons fabriquées — jamais
-un nom qu'il aurait saisi. `ARCHITECTURE.md` §75.
+**Le garde-fou du correctif est éprouvé aussi** : le contenu de la feuille ne la
+ferme toujours pas — sinon elle se déroberait en visant « Waze » — et le fond
+continue de la fermer. Confronté à la poignée débranchée : un cas au rouge.
+
+**Le bouton carré, lui, dit quelque chose sur nos contrôles.** Il portait
+`rounded-md`, et `scripts/test-boutons-arrondis.ts` ne l'a pas vu — **deux
+angles morts à la fois** : son motif ne connaissait ni la balise `<Link>` (la
+façon normale d'écrire un bouton qui mène quelque part, ici) ni les rayons
+NOMMÉS de Tailwind. C'est la troisième fois que ce contrôle attrape le cas rare
+et manque le cas courant, et c'est encore le patron qui l'a vu.
+
+Le motif est élargi, avec **quatre témoins** — un par angle mort déjà payé — et
+un cinquième qui vérifie qu'une capsule n'est jamais dénoncée à tort. Un
+sixième est né sur-le-champ : en arrondissant le bouton, le commentaire écrit
+juste au-dessus citait le rayon retiré, et le contrôle a dénoncé un bouton
+parfaitement rond. Il ignore désormais les commentaires.
+
+Réparé, il dénonce six boutons. Cinq sont sur les écrans du CLIENT ou le chevron
+de retour, jamais arbitrés : **déclarés en exceptions nommées, chacune avec sa
+raison**, et portés dans `TODO.md` pour sa décision. Les restyler en silence
+aurait changé l'apparence d'écrans qu'il n'a pas demandés.
+
+---
+
+### « Monsieur Martins », et le tiret qui collait deux choses différentes
+
+**Sa capture, ce matin :** *« il faut qu'il y ait écrit monsieur Martins et pas
+chez Martins. Ensuite tu me retires le tiret entre le nom et l'adresse […]
+d'abord le nom, ensuite à la ligne l'adresse. Pour le client, c'est pareil. »*
+
+Trois corrections, et **la deuxième a coûté bien plus cher que la première.**
+
+**1. La civilité.** Le nom du chantier était fabriqué par l'application —
+« Chez » suivi du client. C'est la phrase par laquelle un artisan désigne un
+chantier ; en tête d'un document, on nomme quelqu'un. `src/lib/civilite.ts` pose
+« Monsieur » devant un nom nu, et **jamais** devant un nom qui porte déjà sa
+civilité (« Mme Roux ») ni devant une raison sociale (« SARL Untel »). Un seul
+fichier sert les trois endroits où le client est nommé.
+
+Ce que ça coûte, écrit plutôt que tu : il n'existe **aucun champ de civilité**
+dans la fiche client. « Monsieur » est un défaut, pas une donnée — une cliente
+sera mal nommée. Le vrai remède est un choix à la création du client ; il n'a
+pas été ajouté sans son accord.
+
+**2. Une migration qui ne changeait rien, et le disait au vert.** Le nom du
+chantier est écrit en base à la création : corriger la règle seule aurait laissé
+« Chez Martins » sur l'écran même qu'il photographiait. D'où une migration. La
+première version — un `UPDATE` ordinaire — **s'est appliquée sans erreur et n'a
+touché aucune ligne** : `chantiers` porte la RLS en mode forcé, le propriétaire
+y compris, et sans contexte d'entreprise posé aucune ligne n'est visible. C'est
+le piège que `CLAUDE.md` §3 décrit, rencontré pour la première fois dans une
+migration ; les précédentes ne modifiaient que `termes_metier`, table sans RLS
+forcée.
+
+La version retenue **ne désactive rien** : elle boucle sur les entreprises en
+posant le contexte de chacune, comme la file `audios_a_purger`. Et un contrôle
+rejoue la migration puis vérifie le **résultat**, parce qu'un « 1 migration
+appliquée » ne prouve rien. Ce contrôle a lui-même été un faux vert — il posait
+le contexte pour ses propres insertions, dont la migration héritait — et il ne
+l'est plus : confronté à la version défaillante, il rougit.
+
+**3. Le tiret.** Il réunissait deux choses de nature différente, qui et où. Sur
+les 390 px de son iPhone la phrase se repliait déjà, mais **au mauvais
+endroit** : au milieu de l'adresse, jamais entre le nom et elle. Deux
+paragraphes désormais, et la suite **mesure les rectangles** — le détail sous le
+nom, à la même marge — parce qu'un contrôle qui compte les lignes serait passé
+au vert sur ce défaut-là.
+
+**Ce qui n'a pas été touché, à dessein :** le message qui part chez son client
+dit toujours « Bonjour <nom> ». Changer la façon dont ses clients sont abordés
+est un geste qui lui appartient.
+
+`ARCHITECTURE.md` §77.
+
+### « Corriger le devis » ouvre enfin le devis, et non l'écran d'à côté
+
+**Sa demande, capture à l'appui :** *« lorsque je clique sur corriger le devis,
+je dois arriver directement sur la page du devis pour pouvoir le corriger. Et
+aujourd'hui, ce n'est pas le cas. »*
+
+La veille, ce bouton menait à l'écran d'envoi — celui qui porte « Corriger et
+renvoyer » — par crainte de reprendre le devis à sa place. **La crainte visait
+juste, mais pas ici : c'est lui qui appuie**, sur un bouton qui annonce la
+correction. Le geste était déjà le sien ; l'en priver ne le protégeait de rien
+et lui coûtait un écran de plus, puis un second appui, pour arriver là où il
+voulait aller d'emblée.
+
+Le bouton reprend donc le devis puis ouvre le document, prêt à être corrigé.
+Reprendre ne l'empile pas : un brouillon déjà ouvert est réutilisé tel quel, et
+une reprise depuis un devis parti garde le même numéro commercial en montant
+d'une version. Appuyer deux fois ne fabrique pas deux devis.
+
+**Ce qui n'a PAS changé, et c'est délibéré.** Un devis **accepté** ne se reprend
+jamais d'office : ce serait remplacer sans le dire le document sur lequel le
+client et lui se sont mis d'accord. Un **refus** ou un **silence** continuent de
+mener à l'écran d'envoi : après un refus, la suite n'est pas forcément de
+refaire le devis — elle peut être d'abandonner le chantier ou d'appeler le
+client, et ouvrir une version à chaque coup d'œil encombrerait l'historique.
+
+**Éprouvé, et pas seulement écrit.** La règle pure distingue désormais la
+destination et la reprise, et refuse qu'on ouvre le document figé sans reprise —
+c'est l'ancien défaut, et il reste interdit. La suite navigateur presse le
+bouton pour de vrai, suit la navigation, et vérifie que le devis obtenu est
+**réellement modifiable** : pas seulement l'absence du bandeau « il ne se
+modifie plus », mais un champ de ligne qui accepte la frappe. Confronté au
+correctif retiré : deux cas au rouge. Écran capturé, et le devis s'ouvre bien
+sans bandeau.
+
+**Un cinquième piège d'attente corrigé au passage** : la préparation du décor de
+cette suite patientait trois secondes et demie après l'envoi du devis, puis
+accusait le produit — « le devis n'est pas parti » — d'une impatience. Quatre
+autres suites étaient tombées sur exactement ce piège la veille.
+
+---
+
+## 2026-08-13
+
+### Six branches réunies dans `main`, et ce que la réunion a coûté
+
+**Sa demande, le 13 août :** *« Fusionne. »* Six branches vivaient à côté de
+`main`, dont trois portaient du code produit — l'agenda iCloud, l'écran de la
+facture, et le lien cliquable du message au client. Les trois autres ne
+portaient que de la mémoire.
+
+Une branche qui vit deux jours de son côté n'est pas une branche en retard :
+c'est une **seconde version du dépôt**. Le vrai coût n'a pas été le code — il
+n'y a eu qu'un seul conflit dans un fichier de code — mais les six fichiers de
+mémoire, que chaque branche avait fait avancer de son côté. Trois pièges, tous
+payés ici, et qui reviendront à chaque fusion :
+
+1. **Deux branches numérotent la même section.** `ARCHITECTURE.md` avait deux
+   §67 et deux §68. Renuméroter ne suffit pas : **onze renvois** pointaient
+   vers ces numéros à travers `CHANGELOG.md`, `HANDOVER.md`, `TODO.md`,
+   `PROJECT_STATE.md` et jusque dans un commentaire de
+   `scripts/test-envoi-client-e2e.ts`. Un renvoi qui désigne la mauvaise section
+   est pire qu'un renvoi absent : on le suit. La facture a pris §73 et §74,
+   l'agenda iCloud §75.
+2. **Le même bloc rangé à deux endroits fait un doublon silencieux.** Une autre
+   conversation avait fusionné le même travail dans `main` en le plaçant
+   ailleurs : `git` voyait deux ajouts, pas un déplacement. Garder « les deux
+   côtés » aurait écrit deux fois la même chose dans `HANDOVER.md` et
+   `CHANGELOG.md`.
+3. **Une mémoire fusionnée peut se contredire elle-même.** La branche
+   esthétique décrivait `scroll-snap-stop: always` comme la règle à tenir ;
+   `main` l'avait **retiré le 11 août** parce que le patron lisait l'arrêt à
+   chaque chantier comme du saccadé. Les deux phrases se sont retrouvées dans
+   `PROJECT_STATE.md`. De même, `HANDOVER.md` annonçait encore « rien de tout
+   cela n'est dans l'application » pour une refonte codée depuis deux jours.
+   Les trois passages disent maintenant ce qui fait foi — le code — et pourquoi.
+
+**La règle qui en sort, et qui vaut pour la prochaine fusion :** quand deux
+côtés décrivent le même sujet, la question n'est pas « lequel garder » mais
+**« lequel est encore vrai »**. Une documentation périmée est pire qu'absente,
+parce qu'on s'y fie encore (`CLAUDE.md` §1).
+
+**Vérifié avant de pousser, la batterie entière :** types, lint, mémoire,
+**124/124** suites base, **65/65** suites navigateur, les 23 contrôles de
+maquette, et la connexion réelle dans un vrai navigateur derrière une origine
+étrangère. Aucune régression.
+
+### Deux sessions ont corrigé « Chez Martins » le même jour — et c'est la leur qui tient
+
+Il l'a demandé aux deux, à quelques heures d'écart : *« corrige le nom, Mr
+Martins, pas chez Martins ! »* d'un côté, *« il faut qu'il y ait écrit monsieur
+Martins et pas chez Martins »* de l'autre.
+
+**Ma version rendait le nom nu** — « Martins » — au motif qu'ajouter « M. »
+supposerait un genre. **La sienne écrit « Monsieur Martins »**, et il a levé
+cette réserve en connaissance de cause (`src/lib/civilite.ts`). C'est la sienne
+qui est retenue : elle fait ce qu'il a demandé au mot près, et elle était sur
+`main` la première.
+
+**Et elle a trouvé ce que la mienne ratait.** Ma migration était un `UPDATE …
+FROM clients …` tout simple. Sous la RLS forcée, sans contexte d'entreprise
+posé, il ne voit **aucune ligne** : il s'applique, rapporte un succès, et ne
+change rien — en silence. La sienne procède entreprise par entreprise.
+`ARCHITECTURE.md` §77. Ma migration a été retirée.
 
 ### La ligne sous le nom dit ce qui est parti, et quand
 
 **Son choix, devant les cinq propositions :** *« j'aime bien le D, mais en
 dessous de "devis envoyé" je veux qu'il y ait marqué la date à laquelle on l'a
 envoyé. »* La liste porte donc « DEVIS ENVOYÉ · SANS RÉPONSE » en or, et sous
-lui « Envoyé le jeudi 13 août. » `ARCHITECTURE.md` §77.
+lui « Envoyé le jeudi 13 août. » `ARCHITECTURE.md` §79.
 
 **La date n'est jamais devinée** : sans envoi enregistré, la seconde ligne
 n'existe pas. Le repli tentant — la dernière modification du chantier, celle qui
@@ -55,12 +232,99 @@ qu'Inter dans l'application — au dessin, même le libellé ACTUEL passait sur 
 lignes alors qu'il tient sur une chez lui. La mesure sur l'écran réel a révélé
 mieux qu'un oui/non : **la largeur de son téléphone fait partie de la
 décision.** Le libellé actuel est déjà à la limite — il tient sur un 430 px,
-pas sur un 390. `ARCHITECTURE.md` §76.
+pas sur un 390. `ARCHITECTURE.md` §78.
 
 ---
 
 ## 2026-08-12
 
+### L'agenda iCloud est relié — lecture ET écriture
+
+**Après la maquette (ci-dessous), sa décision :** *« code pour qu'on puisse lire
+et écrire dans cet agenda »*.
+
+**Ce qui marche désormais.** L'artisan colle son adresse iCloud et un mot de
+passe pour les apps ; Atlas découvre ses agendas, en lit les créneaux occupés —
+et **ne les propose plus** à ses clients. S'il allume l'écriture et désigne un
+calendrier, ses chantiers y sont posés, retirés quand il déplanifie, effacés
+quand il débranche.
+
+**Les deux fournisseurs se fondent en une seule carte d'occupation**
+(`periodesOccupeesExterieures`). Un artisan peut relier Google *et* iCloud ; le
+point de fusion est unique, parce que laisser chaque écran choisir garantirait
+qu'un des deux oublie un agenda — et le doublon reviendrait par la porte qu'on
+croyait fermée.
+
+**Ce qui rend l'écriture réversible :** l'identifiant de l'événement se déduit du
+chantier, donc replanifier réécrit au lieu d'ajouter, et le préfixe `atlas-` dit
+ce qu'Atlas a le droit d'effacer. Débrancher **retire d'abord, oublie ensuite** :
+effacer la ligne en premier perdrait le mot de passe, donc le seul moyen d'aller
+reprendre les rendez-vous.
+
+**Trois défauts trouvés par les contrôles, aucun à la lecture :**
+
+- `Date.UTC` ne refuse rien, il **reporte** : `20261332` — mois treize, jour
+  trente-deux — devenait le 1er février 2027 en silence, et Atlas barrait une
+  journée travaillée un an plus tard, sans raison visible ;
+- l'écran affichait « votre iCloud**—** pas seulement l'agenda » : le JSX avale
+  l'espace qui suit une balise fermante à cet endroit. **Vu sur une capture**,
+  pas par un test — quatre autres phrases du même écran portaient le piège ;
+- la suite de l'écran des réglages comptait les boutons de **toute la page** et
+  rougissait sur « Relier mon agenda Apple », pourtant légitime : iCloud ne
+  demande aucune configuration préalable, c'est toute la différence.
+
+**Ce qui n'est PAS vérifié, et qui est écrit comme tel :** aucun échange réel
+avec iCloud n'a eu lieu — le réseau d'ici refuse `caldav.icloud.com`. Restent à
+éprouver sur son banc : la découverte, la lecture, le dépôt, le retrait. Tout ce
+qui *décide* vit dans `src/lib/ics.ts` et `src/lib/caldav.ts`, qui ne parlent à
+personne et sont couverts entièrement (`ARCHITECTURE.md` §75).
+
+**Au passage**, deux corrections sans rapport avec Apple : `--seulement <motif>`
+sur les suites navigateur — diagnostiquer un rouge coûtait vingt-cinq minutes de
+batterie, et c'est ce prix-là qui pousse à supposer une cause au lieu d'aller la
+lire ; et `test-envoi-client-e2e` attendait dix secondes là où ses voisines en
+attendent vingt pour le même écran, d'où un rouge intermittent qui accusait une
+règle métier étrangère à la panne.
+
+### Relier l'agenda iCloud : la maquette, la réponse, et rien dans `src/`
+
+**Sa question, capture du Calendrier d'Apple à l'appui :** *« je peux connecter
+ce calendrier à mon appli ? »* — puis, aux deux questions posées : le compte
+derrière la vitrine est **iCloud**, et il veut **les deux sens** (Atlas lit ses
+rendez-vous, Atlas y écrit ses chantiers).
+
+**Le Calendrier d'Apple n'est qu'une vitrine**, et c'est la distinction qui
+commande tout : il affiche aussi bien iCloud que Gmail ou Exchange. Derrière du
+Google, il n'y aurait rien eu à écrire — le raccordement existe
+(`src/server/agenda/google.ts`). Derrière de l'iCloud, c'est un fournisseur en
+plus, et un parcours moins confortable : Apple n'offre **aucun** équivalent au
+bouton « accepter » de Google pour l'agenda. Reste CalDAV et un **mot de passe
+spécifique à l'app**, recopié à la main.
+
+**Ce qui est livré : une maquette, pas du code** (`maquettes/atlas-agenda-apple.html`,
+22 contrôles). Sa règle du 11 août — dessiner avant de toucher à `src/`. Elle
+tient deux règles qu'un écran de raccordement peut rater sans que rien ne
+proteste :
+
+- **on prévient avant de faire taper.** Ce mot de passe ouvre *tout* l'iCloud —
+  mail, contacts, fichiers — et Apple ne sait pas le restreindre à l'agenda. Le
+  contrôle vérifie l'avertissement **par sa position**, pas par sa présence :
+  une phrase juste placée sous le champ est une phrase lue trop tard ;
+- **écrire est une décision.** L'interrupteur est éteint au départ, et le choix
+  du calendrier n'existe pas tant qu'il l'est. Le repli est un calendrier
+  « Atlas » séparé : ce qu'Atlas a posé se retire alors d'un geste, là où des
+  chantiers semés dans « Perso » se reprennent un par un.
+
+**Deux défauts trouvés par les contrôles, pas à l'œil :** `font:400 16px/1.4
+inherit` est une déclaration **invalide** — `inherit` n'est pas admis dans le
+raccourci `font` — donc entièrement ignorée. Les champs retombaient à 13,3 px,
+soit exactement le zoom de Safari que la ligne prétendait éviter, et les boutons
+à 43 px, sous les 44 px du doigt. À l'écran, rien ne se voyait.
+
+**Ce qui n'a pas pu être vérifié, et qui est écrit comme tel :** le réseau de
+cet environnement refuse `caldav.icloud.com` (essayé, connexion refusée). Le
+comportement réel d'Apple ne s'éprouvera que sur son banc. Réponse complète,
+avec ce que ça coûte et ce que ça expose, dans `docs/QUESTIONS.md` §14.
 ### Deux dates se choisissent enfin à même le calendrier
 
 **Le patron :** *« dès que je choisis à même le planning, je ne peux choisir
@@ -1069,6 +1333,49 @@ Un troisième exigeait la phrase « Le lien est toujours actif », et s'appelait
 l'affichage mais le fait que **relancer réutilise le même lien** : il s'appelle
 maintenant ainsi, et le vérifie sur le geste de relance et sur le nombre de
 versions en base.
+### « An unexpected response was received from the server. » — en français, et seulement quand c'est vrai
+
+**Sa capture, à 14 h 04 :** un panneau rouge en anglais, une pile d'appel dans
+`node_modules`, rien sur ce qui s'est passé ni sur quoi faire.
+
+**Ce que la capture disait et qu'il fallait lire :** le chemin commençait par
+`.next/dev` — **son banc servait la version LENTE**. En version lente, chaque
+écran se compile au premier appel — trente à cent secondes, davantage sur son
+disque — et **le relais de GitHub abandonne au bout d'une minute** en rendant sa
+propre page d'erreur. Le navigateur reçoit du HTML là où il attendait une
+réponse d'Atlas : c'est exactement ce message.
+
+**Ce qui n'a PAS été fait, et pourquoi.** La cause n'a pas été reproduite ici :
+le bouton de mise à jour, joué dans les conditions du banc avec le code changé
+sous la page ouverte, s'est comporté correctement. Rien n'a donc été « corrigé »
+au jugé — la seconde faute que ce dépôt s'interdit après avoir accusé à tort.
+
+Deux choses ont été faites, toutes deux vérifiables :
+
+1. **Le défaut parle.** `src/lib/reponse-illisible.ts` reconnaît cette famille
+   d'échec — quatre formulations, selon le navigateur et la version du cadre —
+   et un veilleur posé dans la coque affiche une phrase française avec le seul
+   geste utile : **Recharger**. Sur la version rapide, ce panneau n'existe même
+   pas : l'échec y est muet, le bouton pressé ne fait rien. Des deux, le silence
+   était le pire.
+2. **L'écran dit qu'il est lent.** Réglages annonce désormais, en toutes
+   lettres, que la version servie est celle qui se construit encore — et que
+   c'est elle qui produit « une réponse inattendue du serveur ». Rien ne le
+   disait ; il ne pouvait pas relier les deux.
+
+**Ce que le veilleur REFUSE de faire compte autant.** Un défaut ordinaire du
+code n'est jamais habillé en lenteur : l'y habiller enverrait recharger une page
+qui ne guérira pas, et masquerait le défaut. Six messages réels — dont
+« Invalid Server Actions request. » et une erreur d'hydratation — sont éprouvés
+comme devant rester tels quels.
+
+**Trouvé par la suite navigateur, avant lui :** le veilleur n'était monté que
+sur les écrans à barre de navigation. **L'écran de connexion en était dépourvu**
+— c'est-à-dire précisément l'écran où une réponse coupée est la plus probable,
+puisque c'est le premier appel, celui qui compile tout, et le seul où il n'a
+aucun autre repère.
+
+
 
 ### Le devis parti, sur sa base — cinq façons de tenir ce qu'il a arrêté
 
@@ -3439,6 +3746,30 @@ tels qu'écrits dans le code. Et le compteur de l'accueil était accusé à tort
 `a[href^="/chantiers/"]` comptait aussi le lien d'une notification, qui défile
 avec la liste depuis le 10 août. Aucun de ces trois n'était un défaut du
 produit, et le premier réflexe — croire le contrôle — aurait coûté une heure.
+
+### Le lien du client n'était pas cliquable
+
+*« Le lien n'est pas cliquable, je suis obligé de le copier et de le coller
+dans une page internet. »*
+
+Le lien était bien seul sur sa ligne, mais **collé sous la phrase qui
+l'annonce**. Beaucoup de messageries lisent alors les deux comme un seul
+paragraphe : elles n'y reconnaissent plus une adresse, et n'en font pas un
+lien. Isolé entre deux lignes vides, il redevient une adresse à leurs yeux.
+
+Corrigé pour le devis **et** pour la facture, qui avait le même défaut sans
+que personne l'ait encore vu.
+
+**Ce qu'on ne peut pas faire mieux aujourd'hui, et pourquoi.** Le message part
+par `mailto:`, qui ne transporte que du texte brut — donc pas de vrai bouton.
+Le jour où Atlas enverra lui-même (`docs/A-FAIRE.md` §5), ce sera un bouton.
+
+`scripts/test-lien-cliquable.ts` tient la règle, et **sait échouer** : remis
+dans l'état d'avant, il dit « pas de ligne vide AVANT le lien ».
+
+**Une réserve honnête** : je ne peux pas reproduire ici la messagerie du
+patron. C'est le correctif standard pour le texte brut, mais c'est lui qui
+dira s'il tient.
 
 ### Le devis rejoint la charte : la terre cuite s'efface
 
@@ -5862,6 +6193,23 @@ Le cas est écrit, en tête de la section de dépannage puisque c'est la premiè
 chose qu'il voit : recharger, rouvrir depuis `github.com/codespaces`, et surtout
 aller droit à `https://<nom-de-l-espace>-3000.app.github.dev` sans attendre
 l'éditeur.
+### Deux concurrents directs, trouvés en cherchant un nom
+
+Le patron a demandé quel nom donner à l'application. « Atlas » n'avait jamais
+été choisi ni vérifié — c'était un nom de travail, et le mot s'est révélé
+massivement occupé dans les classes de marque du logiciel.
+
+En vérifiant l'occupation des candidats, deux **concurrents directs** sont
+apparus : `ouvra.app`, qui a pris un métier (plombiers-chauffagistes, catalogue
+et TVA du secteur pré-remplis), et `fabro.app`, qui a pris l'absence de réseau
+(100 % hors ligne, données sur le téléphone).
+
+Consigné dans `PROJECT_STATE.md` parce que ce n'est pas une anecdote de
+recherche de nom : une conversation qui croit le créneau vierge se trompera
+d'arbitrage. Notre angle — la dictée et l'agent — reste distinct des deux, mais
+il n'est plus une évidence qu'on peut laisser sans défense.
+
+Le nom définitif n'est pas tranché : rien n'a été renommé.
 
 ### Le devis est enfin celui du patron
 

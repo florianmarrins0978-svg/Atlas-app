@@ -5584,48 +5584,310 @@ maintenant son propre chantier, du client au devis parti.
 **La règle qui en sort :** une suite qui dépend des restes d'une autre n'éprouve
 pas ce qu'elle croit — et le jour où elle rougit, elle désigne le mauvais
 coupable.
+---
+
+## 75. L'agenda iCloud : pourquoi ce n'est pas le raccordement de Google
+
+**Sa demande du 12 août 2026**, capture du Calendrier d'Apple à l'appui : *« je
+peux connecter ce calendrier à mon appli ? »* — puis, aux deux questions
+posées : le compte derrière la vitrine est **iCloud**, et il veut **les deux
+sens**. Enfin : *« code pour qu'on puisse lire et écrire dans cet agenda »*.
+
+### La distinction qui commande tout : le Calendrier d'Apple est une vitrine
+
+Il affiche aussi bien iCloud que Gmail ou un compte professionnel. **Ce qu'on
+relie, c'est le compte derrière**, jamais l'application — et selon lequel, le
+travail va de zéro (Google : le code existait) à un fournisseur entier.
+
+C'est pour cela que la question a été posée **avant** de répondre. Une prochaine
+session qui verrait la même capture doit poser la même question, et non déduire
+« Apple » de l'icône.
+
+### Ce qu'Apple n'a pas, et qui explique le reste
+
+| | Google | iCloud |
+|---|---|---|
+| Consentement | Une page, un bouton, rien à taper | **Aucun équivalent pour l'agenda** |
+| Ce qui autorise | Un jeton, restreint à une portée | Un **mot de passe pour les apps**, recopié à la main |
+| Ce que ça ouvre | L'agenda seul | **Tout l'iCloud** — mail, contacts, fichiers |
+| Révocation | Depuis le compte Google, par application | Depuis le compte Apple |
+| Engagement du fournisseur | Interface publique et versionnée | **Aucun** — CalDAV chez Apple n'est pas documenté publiquement |
+
+« Se connecter avec Apple » existe, mais ne rend qu'une identité : il ne donne
+jamais accès au calendrier. Il n'y a donc **pas** de chemin plus propre à
+trouver — c'était la première hypothèse, et elle est fausse.
+
+**Trois conséquences, écrites dans le code plutôt que dans un commentaire :**
+
+1. le mot de passe est **chiffré au repos** (`secret-au-repos.ts`), comme les
+   jetons Google, et **jamais renvoyé à l'écran** — même dans un message
+   d'erreur (`test-agenda-apple-base.ts` le vérifie sur les octets stockés) ;
+2. l'écran **prévient avant de faire taper**, et le contrôle le vérifie **par la
+   position** du bloc, pas par la présence du texte : une phrase juste placée
+   sous le champ est une phrase lue trop tard ;
+3. l'écriture reste **éteinte** tant que l'artisan ne l'a pas allumée.
+
+### Où vivent les décisions, et pourquoi elles n'ont pas pu vivre ailleurs
+
+Le mandataire réseau de l'environnement de développement refuse
+`caldav.icloud.com`. Tout ce qui *interprète* quelque chose a donc été mis hors
+d'atteinte du réseau :
+
+| Module | Ce qu'il décide | Éprouvé par |
+|---|---|---|
+| `src/lib/ics.ts` | Quelles périodes porte un texte iCalendar, et ce qu'Atlas y écrit | `scripts/test-ics.ts` |
+| `src/lib/caldav.ts` | Quel agenda est le sien, lequel n'est qu'un abonnement, lequel accepte qu'on y écrive | `scripts/test-caldav.ts` |
+| `src/lib/fuseau.ts` | L'heure de pendule → l'instant | les deux |
+| `src/server/agenda/apple.ts` | **Rien.** Trois appels HTTP | *non éprouvé ici* |
+
+Ce qui reste non vérifié chez Apple, ce sont donc des appels réseau — pas une
+seule décision. C'est le même partage que pour Google (`google.ts`), et il n'est
+pas cosmétique : c'est ce qui rend une panne d'Apple diagnosticable.
+
+### Les cinq pièges du format, et ce qu'ils coûtaient
+
+- **Le repliage à 75 octets.** Ne pas déplier ne casse pas bruyamment : cela
+  produit un intitulé coupé au milieu d'un mot et une ligne parasite.
+- **La fin d'un événement « toute la journée » est EXCLUSIVE.** Un congé du 14
+  au 14 s'écrit `DTSTART:20260814`/`DTEND:20260815`. Ne pas reculer d'une
+  seconde barre un jour de plus, à chaque congé de l'année.
+- **`Date.UTC` ne refuse rien, il reporte.** `20261332` — mois treize, jour
+  trente-deux — devenait le 1er février 2027, en silence : une journée barrée un
+  an plus tard, sans raison visible. **Trouvé par le contrôle, pas à la
+  lecture.** Une donnée mal formée doit produire MOINS d'occupation, jamais une
+  occupation inventée.
+- **Les séries récurrentes sont dépliées PAR LE SERVEUR** (`<C:expand>`), qui
+  connaît les exceptions et les occurrences déplacées. Sans lui, une réunion
+  hebdomadaire ne rendrait qu'une occurrence, et toutes les autres semaines
+  paraîtraient libres — donc proposables à un client.
+- **Le fuseau se convertit en deux passes.** Le décalage dépend de l'instant, et
+  l'instant est ce qu'on cherche. Une seule passe se trompe d'une heure sur les
+  dates qui suivent un changement d'heure — deux fois par an, aux seules dates
+  où personne ne pense à regarder.
+
+### L'écriture : ce qui la rend réversible
+
+**L'identifiant de l'événement se déduit du chantier** (`atlas-<id>`). Trois
+conséquences, et ce sont elles qui rendent l'écriture acceptable :
+
+1. **replanifier réécrit** au lieu d'ajouter — sinon l'agenda se constellerait
+   de doublons qu'Atlas serait incapable de retrouver ;
+2. **le préfixe `atlas-` dit ce qu'Atlas a le droit d'effacer.** Tout le reste
+   de l'agenda lui est étranger et le demeure ;
+3. **débrancher retire d'abord, oublie ensuite.** Effacer la ligne en premier
+   perdrait le mot de passe, donc le seul moyen d'aller reprendre les
+   rendez-vous. Et un ménage qui échoue n'empêche pas de débrancher : ce qui est
+   resté est **dit**, ce n'est pas une raison de garder un mot de passe dont
+   l'artisan ne veut plus.
+
+**Le repli est un calendrier séparé, pas « Perso ».** Ce qu'Atlas a posé se
+retire alors d'un geste ; semé parmi ses rendez-vous, il se reprend un par un.
+
+**L'écriture a lieu APRÈS la transaction, jamais dedans** (`src/app/planning/actions.ts`)
+— tenir une transaction PostgreSQL ouverte le temps d'un appel à Apple
+immobiliserait une connexion du pool pour la durée d'un service qu'on ne
+maîtrise pas. Et elle **ne jette pas** : une panne d'Apple ne doit pas faire
+perdre au patron le geste qu'il vient de faire. Ce qui n'a pas pu être écrit est
+inscrit, l'écran le montre, et « Renvoyer mes chantiers » le rattrape.
+
+### Un seul point de fusion, et c'est le point important
+
+`periodesOccupeesExterieures` interroge **les deux fournisseurs de front** et
+rend une seule liste. Laisser chaque appelant décider lesquels consulter
+garantirait qu'un écran en oublie un : le planning tiendrait compte des deux, la
+page du client d'un seul, et **le doublon reviendrait par la porte qu'on croyait
+fermée** — c'est exactement le défaut que le lot du 9 août avait fermé côté
+Google (§ sur `envois-devis`).
+
+`Executeur` a été sorti dans `src/server/repositories/agenda-executeur.ts` pour cela : les
+deux raccordements en ont besoin, et le laisser chez Google aurait fait dépendre
+Apple de Google — ou produit une seconde copie, ce que ce module existe
+justement pour éviter.
+
+### Ce qui n'est PAS vérifié, et qui doit être dit comme tel
+
+**Aucun échange réel avec iCloud n'a eu lieu.** Le réseau d'ici le refuse
+(essayé le 12 août 2026 : connexion refusée). Ce qui reste à éprouver sur son
+banc, avec un vrai mot de passe : la découverte des agendas, la lecture, le
+dépôt, le retrait. Ne pas annoncer le raccordement comme éprouvé avant que cela
+ait tourné une fois pour de bon.
+## 76. « Une réponse inattendue du serveur » : un état du banc, pas un défaut du code
+
+**Sa capture du 12 août 2026, 14 h 04.** Panneau rouge, anglais, pile d'appel
+dans `node_modules` : *« An unexpected response was received from the
+server. »*
+
+### Ce que la capture disait, et qu'il fallait lire
+
+Le chemin de la pile commençait par **`.next/dev`** : son banc servait la
+version LENTE. Or c'est tout le sujet de `banc.mjs` (§45) — en développement,
+Next ne compile un écran qu'au premier appel : trente à cent secondes ici,
+davantage sur son disque. **Le relais de GitHub, lui, abandonne au bout d'une
+minute** et rend sa propre page d'erreur. Le navigateur reçoit alors du HTML là
+où il attendait une réponse d'Atlas, et le cadre dit exactement cette phrase.
+
+Trois causes produisent ce message, dans l'ordre de fréquence sur son banc : le
+relais qui abandonne, l'application qui se recompile sous la page ouverte après
+une mise à jour, ou le serveur coupé et pas encore relevé. **Aucune n'est
+réparable depuis le navigateur, et toutes se résolvent en rechargeant.**
+
+### Ce qui n'a pas été fait, et pourquoi c'est la décision principale
+
+La cause **n'a pas été reproduite ici**. Le bouton de mise à jour, joué dans les
+conditions du banc — code changé sous la page ouverte, recompilation, appui —
+s'est comporté correctement. Rien n'a donc été corrigé au jugé : c'est la faute
+que ce dépôt paie le plus cher, et elle avait déjà été commise deux fois dans la
+même journée (voir §72 et le CHANGELOG du 11 août).
+
+Ce qui a été livré, c'est ce que la doctrine prescrit devant un défaut muet :
+**le rendre bavard** (`AGENTS.md`).
+
+### Deux dispositifs, et ce qu'ils refusent
+
+**`src/lib/reponse-illisible.ts`** — fonction pure. Quatre formulations
+reconnues, selon le navigateur et la version du cadre. Elle **refuse tout le
+reste**, et c'est le point important : habiller en « le serveur se prépare » un
+défaut venu du code enverrait recharger une page qui ne guérira pas, et
+masquerait le défaut. Six messages réels sont éprouvés comme devant rester tels
+quels — dont « Invalid Server Actions request. », qui appartient à une autre
+famille et appelle un autre geste (§34).
+
+**`VeilleReponseServeur`** — posé dans la coque, **hors du choix
+avec/sans barre de navigation**. Il y était d'abord dans la seule branche à
+barre : l'écran de connexion en était dépourvu, c'est-à-dire l'écran où une
+réponse coupée est la plus probable — premier appel, compilation de tout, et
+aucun autre repère pour le patron. La suite navigateur l'a montré avant que
+quiconque ne le lise.
+
+**Et l'écran Réglages dit qu'il sert la version lente.** `NODE_ENV` tranche sans
+ambiguïté — `next start` impose `production` (`demarrer.sh`), la même règle que
+`issueApresMiseAJour`. Sans cette ligne, le patron ne pouvait pas relier son
+panneau rouge à l'état de son banc.
+
+### La règle générale
+
+**Un message du cadre en anglais n'est jamais une livraison.** Soit on connaît
+la famille d'échec et on la dit en français avec le geste, soit on ne la connaît
+pas — et il faut alors la laisser passer intacte plutôt que de l'habiller. Une
+phrase rassurante posée sur un vrai défaut vaut moins que pas de phrase du tout.
 
 ---
 
-## 75. Le nom d'un chantier, c'est le nom de son client — sans « Chez »
+## 77. « Monsieur Martins », et la migration qui ne changeait rien en silence
 
-**Le patron, le 13 août 2026, capture à l'appui :** *« corrige le nom, Mr
-Martins, pas chez Martins ! »*
+**Le patron, le 13 août 2026, capture de son écran Devis à l'appui :**
 
-`nomDuChantier` fabriquait « Chez <client> » depuis le 5 août. L'intention était
-juste — c'est ainsi qu'un élagueur en parle — mais à l'écran, en tête d'une
-liste qu'on parcourt du pouce, le préfixe fait lire **« Chez » avant de lire
-QUI**, et repousse le nom d'un mot vers la droite. Le nom du client s'affiche
-désormais tel qu'il l'a écrit.
+> *« Il faut qu'il y ait écrit monsieur Martins et pas chez Martins. Ensuite tu
+> me retires le tiret entre le nom et l'adresse et il faut qu'il soit l'un
+> au-dessus de l'autre. D'abord le nom, ensuite à la ligne l'adresse. Pour le
+> client, c'est pareil. C'est M. Martins, puis le numéro de téléphone en
+> dessous, sans les tirets. »*
 
-### La civilité vient de lui, jamais de nous
+### La civilité vit dans un seul fichier
 
-Écrire « M. Martins » à sa place supposerait un genre — « Martins » peut être
-une femme. C'est très exactement ce qu'interdit `CLAUDE.md` §4 : ne rien
-inventer. Le champ de création propose déjà « M. Bernard » en exemple ; pour
-lire « Mr Martins », il écrit « Mr Martins ».
+`src/lib/civilite.ts` — `avecCivilite(nom)`. Elle sert au nom du chantier à sa
+création (`nomDuChantier`), à la ligne « Client » de l'écran Devis, et à la
+phrase « Devis prêt pour … ». Trois endroits, une règle : recopiée, on aurait lu
+« Monsieur Martins » en tête d'un écran et « Martins » trois lignes plus bas.
 
-### Pourquoi une migration, et pourquoi elle est aussi étroite
+**Ce qu'elle suppose, et qu'il faut assumer plutôt que taire.** Il n'existe
+aucun champ de civilité dans `clients`. Quand le patron tape « Martins », rien
+ne dit si c'est un homme, une femme ou une société : **« Monsieur » est un
+défaut, pas une donnée**. Une cliente sera donc mal nommée. Le patron l'a
+demandé en sachant qu'il n'avait saisi qu'un patronyme ; le vrai remède est un
+choix de civilité à la création du client, qui n'existe pas encore.
 
-`chantiers.nom` est **écrit une fois, à la création**, et jamais modifié
-ensuite : sans migration, la correction n'aurait valu que pour les chantiers à
-venir, et celui qu'il a sous les yeux aurait gardé son « Chez ». Il aurait dit —
-à raison — que rien n'a été corrigé.
+Ce que la fonction sait éviter, en revanche : « Monsieur Mme Roux » (une
+civilité déjà écrite n'en reçoit pas une seconde, quelle qu'en soit la graphie)
+et « Monsieur SARL Untel » (une raison sociale n'est pas une personne). Elle est
+**idempotente** — l'appliquer deux fois donne le même résultat, ce qui permet de
+la poser sur un nom déjà stocké.
 
-`0035_nom_chantier_sans_chez.sql` ne retire le préfixe **que lorsque le reste du
-nom est exactement le nom du client rattaché**, c'est-à-dire uniquement les
-étiquettes que nous avons fabriquées. Un `LIKE 'Chez %'` seul aurait aussi
-réécrit « Chez les Dupont, portail du fond » s'il l'avait un jour saisi : il ne
-le peut pas aujourd'hui, mais une migration se relit dans six mois, quand un
-écran de renommage existera peut-être. **Réécrire ce qu'un patron a tapé n'est
-pas une correction, c'est une perte.**
+**Un invariant du dépôt a été levé par cette demande, et c'est écrit.**
+`nom-chantier.ts` tenait que chaque mot du nom venait de la saisie ; ce n'est
+plus vrai. Ne pas « rétablir » l'ancienne règle sans lui : elle a été levée, pas
+oubliée (`scripts/test-nom-chantier.ts`, cas INVARIANT).
 
-`intituleDuChantier` n'a pas bougé : elle continue de reconnaître les anciens
-noms (« Chez M. Bernard ») pour ne pas afficher le client en double.
+### La leçon qui vaut au-delà de cet écran : une migration de DONNÉES sur une table sous RLS
+
+`nomDuChantier` ne tourne qu'à la création : le nom est ensuite écrit dans
+`chantiers.nom`. Corriger la fonction seule aurait laissé « Chez Martins » sur
+tous les chantiers en cours — c'est-à-dire sur l'écran même que le patron
+photographiait. D'où `drizzle/0036_monsieur_plutot_que_chez.sql`.
+
+**Première version : un `UPDATE chantiers … FROM clients …` ordinaire. Elle
+s'est appliquée sans erreur, a rapporté un succès, et n'a rien changé.**
+Constaté sur quatre chantiers d'épreuve, tous restés « Chez … ».
+
+`chantiers` et `clients` portent la RLS en mode **forcé**
+(`relforcerowsecurity`), avec la politique `tenant_isolation` :
+
+```sql
+entreprise_id = NULLIF(current_setting('app.entreprise_id', true), '')::uuid
+```
+
+Le propriétaire lui-même y est soumis. Sans contexte posé, `current_setting`
+rend la chaîne vide, le prédicat vaut NULL, **aucune ligne n'est visible**, et
+l'UPDATE passe dans le vide sans un mot. C'est le piège que `CLAUDE.md` §3
+décrit — *« une requête hors de ce cadre ne renvoie rien, silencieusement »* —
+rencontré ici pour la première fois **dans une migration**.
+
+**Ce que fait la version retenue, et ce qu'on ne fait surtout pas.** On ne
+désactive pas la RLS (`CLAUDE.md` §4). La migration boucle sur `entreprises` et
+pose `app.entreprise_id` pour chacune — la même mécanique que la file
+`audios_a_purger`. Elle efface le contexte en sortant.
+
+**Les migrations précédentes qui modifiaient des données ne touchaient que
+`termes_metier`, table sans RLS forcée.** Rien dans le dépôt n'avait donc
+rencontré ce cas. Toute migration future qui écrit dans une table portant
+`entreprise_id` doit faire de même — ou ne rien faire, en silence.
+
+### Deux contrôles, et pourquoi ils sont deux
+
+- **`scripts/test-civilite.ts`, « la migration et la fonction disent la même
+  chose »** — la règle existe deux fois, en TypeScript et en SQL, parce que le
+  lanceur de migrations ne sait exécuter que du SQL. Ne pouvant n'en garder
+  qu'une, on les **confronte** sur un même corpus. Le prédicat SQL n'est pas
+  recopié dans le test : il est **extrait du fichier de migration**, entre les
+  repères `-- <predicat-civilite>` … `-- </predicat-civilite>`. Ne pas déplacer
+  ces repères sans mettre le contrôle au courant.
+- **`scripts/test-civilite.ts`, « la migration renomme vraiment »** — rejoue la
+  migration dans une transaction annulée et vérifie le RÉSULTAT. Un « 1
+  migration appliquée » ne prouve rien : c'est exactement ce que disait la
+  version qui ne changeait rien.
+
+  **Ce contrôle-là a d'abord été un faux vert**, et le noter vaut mieux que le
+  taire : il posait lui-même `app.entreprise_id` pour ses insertions, la
+  migration en héritait (un `set_config` local vaut pour toute la transaction),
+  et il passait donc au vert même sur la migration défaillante. Il **efface
+  maintenant le contexte avant de jouer la migration**. Confronté à la version
+  sans contexte, il rougit et nomme le bon coupable.
+
+### L'écran, et ce qu'un test ne pouvait pas voir
+
+Le tiret cadratin réunissait deux choses de nature différente — qui, et où — en
+une phrase qui n'en est pas une. Sur les 390 px du patron, elle se repliait de
+toute façon sur deux lignes, mais **au mauvais endroit** : la coupure tombait au
+milieu de l'adresse, jamais entre le nom et elle. Un contrôle qui aurait compté
+les lignes serait passé au vert sur ce défaut.
+
+`Row` (`ExportClient.tsx`) rend donc **deux paragraphes** — le nom, puis le
+détail — et non un texte à retour à la ligne : la coupure ne doit pas dépendre
+de la largeur. `scripts/test-synthese-devis-e2e.ts` **mesure les rectangles**
+(le détail sous le nom, même marge à un pixel près), et
+`scripts/capture-synthese-devis.mts` rend l'image sur son iPhone.
+
+**Ce qui n'a PAS été touché, et c'est délibéré** : le message qui part chez le
+client dit toujours « Bonjour <nom> » (`src/lib/message-client.ts`). Changer la
+façon dont ses clients sont abordés est un geste qui lui appartient, et il ne
+l'a pas demandé.
 
 ---
 
-## 76. Mesurer un libellé sur l'écran, jamais sur une maquette
+
+---
+
+## 78. Mesurer un libellé sur l'écran, jamais sur une maquette
 
 **Né de sa demande du 13 août** : *« il faut le notifier sous le nom […] je te
 laisse libre de proposer des alternatives »*. Cinq libellés étaient en jeu pour
@@ -5666,10 +5928,10 @@ le texte partait sur un nœud détaché. **Une capture s'inspecte comme un écra
 
 ---
 
-## 77. La ligne sous le nom : ce qui est parti, et quand
+## 79. La ligne sous le nom : ce qui est parti, et quand
 
 **Son choix du 13 août 2026**, devant les cinq propositions photographiées
-(§76) : *« j'aime bien le D, mais en dessous de "devis envoyé" je veux qu'il y
+(§78) : *« j'aime bien le D, mais en dessous de "devis envoyé" je veux qu'il y
 ait marqué la date à laquelle on l'a envoyé. »*
 
 La liste des chantiers porte donc, pour un devis parti sans réponse :
@@ -5705,14 +5967,19 @@ Envoyé le jeudi 13 août.
 ### Le doublon né du retrait de « Chez »
 
 Vu **à l'œil sur une capture**, jamais par un contrôle. Quand « Chez Martins »
-est devenu « Martins » (§75), un chantier SANS adresse affichait le même mot
+est devenu « Monsieur Martins » (§77), un chantier SANS adresse affichait le même mot
 deux fois de suite — le titre, puis la ligne du lieu, qui se rabattait sur le
 nom du client.
 
 `lieuDuChantier` ne se rabat désormais sur le client **que s'il apprend quelque
 chose** ; sinon elle écrit « Adresse non renseignée », qui est une information,
-et qui appelle un geste. La comparaison ignore casse et accents, comme
-`intituleDuChantier` : deux graphies du même homme ne comptent pas pour deux.
+et qui appelle un geste.
+
+**La comparaison est un `includes`, pas une égalité**, et c'est tout le point :
+depuis §77 le titre PORTE le nom du client sans lui être identique, puisqu'il
+lui ajoute « Monsieur ». Une égalité stricte aurait laissé le doublon passer.
+`intituleDuChantier`, dans le même fichier, compare déjà ainsi — la leçon avait
+été payée une fois, elle ne l'a pas été deux.
 
 **Ce que ce défaut rappelle :** retirer un mot d'un libellé peut faire entrer
 deux autres en collision. Un changement d'affichage se REGARDE, sur l'écran, y

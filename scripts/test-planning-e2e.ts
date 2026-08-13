@@ -1,4 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
+// Le nom du chantier se DÉDUIT du client (`src/lib/nom-chantier.ts`) : on
+// applique la même règle que le produit plutôt que de recomposer « Chez … ».
+import { avecCivilite } from "../src/lib/civilite";
 import assert from "node:assert";
 import { Pool } from "pg";
 
@@ -121,9 +124,7 @@ async function main() {
     0,
     "« Créer la facture » ne doit plus encombrer la ligne : il est passé dans la feuille"
   );
-  // Le nom du chantier EST celui du client depuis le 13 août — plus de « Chez »
-  // (`src/lib/nom-chantier.ts`), et `intituleDuChantier` ne le répète donc pas.
-  await page.getByRole("button", { name: `Y aller — ${nomUnique}` }).click();
+  await page.getByRole("button", { name: `Y aller — ${avecCivilite(nomUnique)}` }).click();
   await page.waitForSelector("text=Y aller", { timeout: 10000 });
   assert.equal(
     await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).count(),
@@ -138,7 +139,7 @@ async function main() {
   // Le sélecteur de date a disparu avec l'ancien écran ; changer une date se
   // fait désormais avec le MÊME geste que poser — « Déplacer », puis un jour,
   // une demi-journée, et le bouton s'arme.
-  await page.getByRole("button", { name: `Déplacer le chantier ${nomUnique}` }).click();
+  await page.getByRole("button", { name: `Déplacer le chantier ${avecCivilite(nomUnique)}` }).click();
   await page.waitForTimeout(400);
   for (let i = 0; i < 24; i++) {
     if ((await page.locator('[data-atlas="grille-mois"] button[data-jour="2027-01-15"]').count()) > 0) break;

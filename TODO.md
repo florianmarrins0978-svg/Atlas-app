@@ -27,6 +27,121 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 unvicies. Cinq boutons carrés, hors des écrans du patron — à trancher
+
+**Trouvé le 13 août 2026**, en réparant le contrôle des boutons arrondis : son
+motif ne regardait ni les `<Link>`, ni les rayons NOMMÉS de Tailwind. Réparé, il
+dénonce **six** boutons. Un seul était celui que le patron signalait (« Créer la
+facture »), corrigé le jour même. Les cinq autres n'ont jamais été arbitrés :
+
+- `src/app/devis/[jeton]/formulaire.tsx` — trois boutons `rounded-xl` : accepter,
+  demander une correction, refuser. **Écran du CLIENT**, autre identité
+  (vert pin), délibérément distincte de l'outil de travail ;
+- `src/app/factures/[jeton]/page.tsx` — le téléchargement du PDF, `rounded-xl`.
+  Écran du client également ;
+- `src/components/ScreenHeader.tsx` — le chevron de retour, 32 × 32 en
+  `rounded-md`. Une icône encadrée, pas un bouton d'action : l'arrondir
+  entièrement en ferait une pastille ronde, ce qui n'a été demandé nulle part.
+
+Ils sont **déclarés comme exceptions nommées** dans
+`scripts/test-boutons-arrondis.ts`, chacune avec sa raison : un bouton NEUF écrit
+carré ailleurs fait toujours rougir le contrôle.
+
+**La question à lui poser :** la capsule s'arrête-t-elle à ses écrans, ou
+descend-elle jusqu'aux pages que voit son client ? Sa demande du 12 août
+(« remplace tous les boutons rectangulaires ») portait sur son application ; rien
+ne dit qu'elle visait la feuille de devis de son client.
+
+
+### 0 tervicies. `test-planning-vers-facture-e2e` échoue par intermittence, et son message est trop affirmatif
+
+**Constaté le 13 août 2026, en éprouvant autre chose.** Le dernier cas de cette
+suite — *« clôturé AVANT sa date : il quitte le planning pour les terminés »* —
+échoue **par intermittence** sur `page.goto` au bout de 45 s, tantôt sur
+`/termines`, tantôt sur `/planning`. Sur quatre exécutions ce jour-là : trois
+rouges, une verte.
+
+**Ce n'est PAS la civilité** : vérifié en remisant toutes les modifications du
+jour et en rejouant la suite sur `main` intact — même échec, au même endroit.
+Le défaut lui est antérieur.
+
+**Et son message n'explique pas tout.** Il affirme : *« C'est le serveur de
+développement qui n'a pas suivi, pas l'écran : il répond en quelques centaines
+de millisecondes hors batterie »*. Or **la suite a aussi échoué jouée seule**,
+sans aucune autre en parallèle — la charge de la batterie ne suffit donc pas à
+l'expliquer. Un message qui donne une cause certaine là où elle ne l'est pas
+envoie chercher au mauvais endroit (`AGENTS.md`).
+
+**Ce qui reste à faire :** trouver ce que ce cas-là fait de particulier — c'est
+le seul des trois de son groupe à clôturer un chantier **avant** sa date — puis
+rendre le message honnête sur ce qu'il sait et ce qu'il suppose. Les six autres
+cas de la suite passent toujours.
+
+### 0 duovicies. La civilité du client — **à trancher avec lui**
+
+Le 13 août 2026, il a demandé que le devis dise « Monsieur Martins » et non
+« Chez Martins ». C'est **fait** (`ARCHITECTURE.md` §77). Mais la fiche client
+ne porte **aucun champ de civilité** : « Monsieur » est un défaut posé sur tout
+nom qui n'en annonce pas d'autre.
+
+**Ce que ça veut dire concrètement, et pourquoi ça ne peut pas rester ainsi
+indéfiniment :** une cliente saisie « Roux » verra « Monsieur Roux » sur son
+devis. L'application sait déjà se taire devant « Mme Roux » ou « SARL Untel » —
+ces deux cas sont couverts — mais elle ne devine pas un patronyme nu.
+
+| | Piste | Ce que ça vaut |
+|---|---|---|
+| a | **Un choix à la création du client** : trois pastilles — Monsieur, Madame, ni l'un ni l'autre (société). Un appui. | La seule qui dise la vérité. Coûte une colonne, une migration, et trois pastilles sur un écran déjà chargé. |
+| b | Laisser le patron écrire « Mme Roux » lui-même dans le nom | Gratuit, marche déjà — mais il faut qu'il y pense à chaque fois, et un oubli part chez la cliente. |
+| c | Ne rien mettre du tout et revenir au nom nu | Annule sa demande du 13 août. |
+
+**Qui peut le faire : lui seul.** C'est un arbitrage de produit, pas un choix
+technique — et rien ne sera ajouté sans son accord (`CLAUDE.md` §4).
+
+**Et une seconde question, liée :** le message qui part chez son client dit
+toujours « Bonjour Martins ». Faut-il qu'il dise « Bonjour Monsieur Martins » ?
+Rien n'a été touché : c'est ce que ses clients lisent.
+
+### 0 unvicies. ~~Relier l'agenda iCloud~~ — **codé le 12 août 2026**, reste à éprouver chez lui
+
+**Sa question du 12 août 2026**, capture du Calendrier d'Apple à l'appui : *« je
+peux connecter ce calendrier à mon appli ? »* Réponses obtenues : le compte
+derrière la vitrine est **iCloud**, et il veut **les deux sens** — Atlas lit ses
+rendez-vous, Atlas y écrit ses chantiers.
+
+**Codé, éprouvé pour tout ce qui décide, et pas au-delà** — le détail et le
+pourquoi sont dans `ARCHITECTURE.md` §75, la réponse en langage courant dans
+`docs/QUESTIONS.md` §14.
+
+| | Fait | Où |
+|---|---|---|
+| 1 | Migration : `fournisseur IN ('google','apple')`, mot de passe chiffré, agendas lus, calendrier d'écriture | `drizzle/0035_agenda_apple.sql` |
+| 2 | CalDAV : découverte, `calendar-query`, `PUT`, `DELETE` | `src/server/agenda/apple.ts` |
+| 3 | Lecture et écriture de l'iCalendar | `src/lib/ics.ts`, `src/lib/caldav.ts` |
+| 4 | L'écran, d'après la maquette | `src/app/reglages/agenda/AgendaAppleClient.tsx` |
+| 5 | Les chantiers montent et redescendent avec le planning | `src/server/repositories/agenda-apple.ts` |
+
+**CE QUI RESTE, et qui ne peut pas être fait ici :** aucun échange réel avec
+iCloud n'a eu lieu — le réseau refuse `caldav.icloud.com` (essayé le 12 août,
+connexion refusée). Restent à éprouver **sur son banc**, avec un vrai mot de
+passe pour les apps : la découverte des agendas, la lecture, le dépôt, le
+retrait. **Ne pas annoncer le raccordement comme éprouvé avant.**
+
+**Ce qui se cassera en premier, si quelque chose casse**, et par où commencer :
+
+1. **la découverte** — iCloud redirige de `caldav.icloud.com` vers le serveur du
+   compte ; les redirections sont suivies à la main pour que `PROPFIND` ne
+   devienne pas `GET` ;
+2. **la double authentification** — sans elle, Apple n'émet pas de mot de passe
+   pour les apps, et le refus arrive en 401 comme un mot de passe faux ;
+3. **le dépôt** — un agenda partagé en lecture seule est déjà écarté de la
+   liste, mais un serveur qui n'annonce pas ses privilèges est supposé
+   inscriptible : le refus n'arriverait alors qu'au `PUT`.
+
+Ce que le patron verra dans les trois cas : la phrase d'Apple, telle quelle, sur
+l'écran des réglages. C'est voulu — une erreur reformulée envoie chercher au
+mauvais endroit.
+
 ### 0 vicies. Le badge de Next recouvre son onglet « Chantiers »
 
 **Mesuré le 12 août 2026**, en cherchant pourquoi la CI virait au rouge six
@@ -967,11 +1082,21 @@ lui est antérieur. Reste à savoir s'il tient au harnais (`run-e2e-tests` monte
 son propre serveur et son propre jeu de données) ou à la suite elle-même. À
 reproduire d'abord par `npm run test:e2e` complet avant de conclure.
 
-### 0 bis. L'agent qui apprend — le vrai sujet
+### 0 bis. L'agent qui apprend — LA SUITE, demandée explicitement
 
-Le tapis roulant (dictée → devis, d'un seul geste) est en place, et l'arrêt
-d'avant-chiffrage aussi (§0 ter). La suite, dans l'ordre décidé avec le patron
-le 5 août 2026 :
+**Consigne du patron, le 6 août 2026, après la fusion de la mémoire des
+corrections :** *« Ok, garde ça en mémoire et on fera ça après. N'oublie pas de
+le faire. »*
+
+C'est donc **le prochain travail**, pas une liste d'idées. Une conversation qui
+reprend à froid enchaîne sur (b), puis (c), puis (d) — sans reposer la question.
+C'est la deuxième fois qu'il demande expressément qu'un point soit consigné
+plutôt que retenu (la première : la sauvegarde, §0) ; le lui faire répéter une
+troisième serait une défaillance de ce fichier.
+
+Le tapis roulant (dictée → devis, d'un seul geste) est en place, l'arrêt
+d'avant-chiffrage aussi (§0 ter), et la mémoire des corrections également
+(§0 quater). Reste, dans l'ordre décidé avec lui le 5 août 2026 :
 
 | | Quoi | Pourquoi maintenant |
 |---|---|---|
@@ -980,6 +1105,13 @@ le 5 août 2026 :
 | b | **Entretien de départ.** Il n'a aucun ancien devis à donner en référence — c'est donc l'agent qui l'interroge une fois et écrit ses règles. | Sans ça, l'agent démarre en ne sachant rien et apprend aux frais du patron. |
 | c | **Écart devis / facture.** Les données existent déjà des deux côtés. | La meilleure leçon qui soit : ce qui avait été mal estimé s'y voit tout seul. |
 | d | **Photos ↔ prix.** Conserver le lien entre les photos d'un chantier et le devis qui a suivi. | Objectif du patron : « à force de comparer les photos des arbres et les devis, il devra proposer un prix juste ». Impossible aujourd'hui — mais **l'accumulation doit commencer maintenant**, sinon dans six mois il n'y aura toujours rien à apprendre. |
+
+**Et un cinquième point, né du lot du 6 août :** le **rapport entre techniques**
+(×1,67, ×2,33 — `docs/EXEMPLE-DICTEE.md` §9a). Il ne s'écrit pas en dur : c'est
+une moyenne mobile, recalculée sur les devis réellement faits. Il ne peut donc
+exister qu'à partir de plusieurs chantiers comparables — `lecons_prix` les
+accumule depuis le 6 août. **À reprendre quand la mémoire est fournie**, pas
+avant : un rapport tiré d'une seule observation serait une règle inventée.
 
 **Réserve levée le 5 août 2026.** Un prix déduit d'une photo est une estimation,
 ce que `docs/AGENT.md` §3 interdisait. Le patron a tranché : *« rien ne sera
@@ -1182,7 +1314,7 @@ penses qu'il faudrait rajouter d'autres informations à ce niveau-là. »*
 **Il a retenu D**, en remplaçant le délai par la date : « DEVIS ENVOYÉ · SANS
 RÉPONSE » en or, et dessous « Envoyé le jeudi 13 août. » La règle vit dans
 `ligneEtatChantier` (`src/lib/chantier-etat.ts`), éprouvée sans base ni
-navigateur. `ARCHITECTURE.md` §77.
+navigateur. `ARCHITECTURE.md` §79.
 
 **Les quatre autres restent dans la planche** — `docs/maquettes/40-la-ligne-sous-le-nom.html`,
 engendrée par `scripts/engendrer-maquette-ligne-chantier.mts`. Si le sujet se
@@ -1197,7 +1329,7 @@ rouvre, repartir de là :
 | E | avec le montant | lequel rappeler en premier |
 
 **Ce qui contraint le choix, et qui a été MESURÉ sur l'écran** (`ARCHITECTURE.md`
-§76) : le libellé actuel tient sur une ligne à 430 px — la largeur de son
+§78) : le libellé actuel tient sur une ligne à 430 px — la largeur de son
 téléphone — et déborde à 390. A et B tiennent chez lui ; C et E débordent
 partout.
 
@@ -1214,6 +1346,26 @@ par l'écran d'accueil).
 
 ### 8. L'écran Facture — trois manques signalés par le patron le 10 août 2026
 
+Constatés par lui sur son banc, capture à l'appui. Aucun n'est corrigé.
+
+1. **Impossible d'enregistrer la facture.** Sous « Voir la facture en PDF », il
+   veut **un petit lien pour la télécharger** sur son téléphone ou son
+   ordinateur. Aujourd'hui il ne peut que l'ouvrir. Un `<a download>` vers la
+   route du PDF suffit, avec un nom de fichier qui porte le numéro de facture —
+   « F2026-0001.pdf », pas « facture.pdf » : il en aura des centaines.
+2. **« Ouvrir le SMS tout prêt » est carré**, alors qu'il le veut **ovale comme
+   tous les autres**. À éclaircir avant de coder : depuis le 10 août tous les
+   boutons sont à 5 px de rayon (`radius.button`). Lui montrer deux variantes
+   plutôt que deviner — et si c'est bien un bouton en gélule qu'il veut,
+   **c'est la charte entière qui change**, pas ce bouton-là.
+3. **On ne propose que le SMS.** Il veut pouvoir **envoyer la facture par
+   e-mail**. `composerMessageFacture` et `lienTransmission` savent déjà faire
+   les deux (`src/lib/message-client.ts`, canal `"email"`) : c'est l'écran de
+   la facture qui n'offre pas le choix. Voir comment l'écran du devis propose
+   SMS **ou** e-mail, et faire pareil.
+
+Le troisième est le plus important : une facture qu'on ne peut pas envoyer par
+courriel, c'est un client sur deux qu'on ne peut pas facturer.
 Constatés par lui sur son banc, capture à l'appui.
 
 **⚠ Ce point avait été consigné sur `claude/migrate-app-atlas-zz31ac` et n'a

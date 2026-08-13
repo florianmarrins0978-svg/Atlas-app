@@ -2,7 +2,9 @@ import Link from "next/link";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { etatAgenda } from "@/server/repositories/agendas-externes";
+import { etatAgendaApple } from "@/server/repositories/agenda-apple";
 import AgendaClient from "./AgendaClient";
+import AgendaAppleClient from "./AgendaAppleClient";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +22,11 @@ export default async function AgendaPage({
   searchParams: Promise<{ issue?: string }>;
 }) {
   const ctx = await getCurrentCtx();
-  const [etat, params] = await Promise.all([etatAgenda(ctx), searchParams]);
+  const [etat, etatApple, params] = await Promise.all([
+    etatAgenda(ctx),
+    etatAgendaApple(ctx),
+    searchParams,
+  ]);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -51,7 +57,17 @@ export default async function AgendaPage({
           </p>
         </div>
 
+        {/*
+          **Deux raccordements sur le même écran, et Google d'abord.** Ce n'est
+          pas une préférence : le raccordement Google existait, et déplacer un
+          écran qu'il connaît pour faire de la place au nouveau lui ferait
+          chercher. iCloud vient donc dessous, avec son propre en-tête.
+        */}
         <AgendaClient etat={etat} issue={params.issue ?? null} />
+        <div className="mt-8 px-6">
+          <div style={{ height: 1, backgroundColor: colors.line }} />
+        </div>
+        <AgendaAppleClient etat={etatApple} />
       </div>
     </div>
   );

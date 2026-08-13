@@ -1,8 +1,14 @@
-import { and, eq, sql } from "drizzle-orm";
-import { db } from "../db/client";
+import { and, eq } from "drizzle-orm";
 import type { PeriodeOccupee } from "../../lib/agenda-externe";
 import { agendasExternes } from "../db/schema";
 import { withEntreprise } from "../db/with-entreprise";
+import { periodesApple } from "./agenda-apple";
+import {
+  executeurDeSession,
+  executeurParEntreprise,
+  messageDePanne,
+  type Executeur,
+} from "./agenda-executeur";
 import {
   adresseDuCompte,
   configurationGoogle,
@@ -273,23 +279,9 @@ export async function enregistrerIdentifiants(
  * consulter l'agenda : le client se verrait alors proposer un jour où le patron
  * est pris, c'est-à-dire précisément le défaut que tout ce lot répare.
  */
-type Executeur = <T>(fn: (tx: Parameters<Parameters<typeof withEntreprise>[2]>[0]) => Promise<T>) => Promise<T>;
-
-function executeurDeSession(ctx: Ctx): Executeur {
-  return (fn) => withEntreprise(ctx.utilisateurId, ctx.entrepriseId, fn);
-}
-
-/**
- * L'exécuteur de la page publique : le contexte vient du jeton, jamais d'une
- * donnée envoyée par le client.
- */
-function executeurParEntreprise(entrepriseId: string): Executeur {
-  return (fn) =>
-    db.transaction(async (tx) => {
-      await tx.execute(sql`SELECT set_config('app.entreprise_id', ${entrepriseId}, true)`);
-      return fn(tx);
-    });
-}
+// Sorti dans `./agenda-executeur` le 12 août 2026, quand l'agenda iCloud est
+// venu s'ajouter : les deux raccordements en ont besoin, et le laisser ici
+// aurait fait dépendre Apple de Google — ou produit une seconde copie.
 
 /**
  * Les périodes occupées de l'artisan sur une fenêtre, ou une liste vide.
@@ -309,7 +301,35 @@ export async function periodesOccupeesExterieures(
   debut: Date,
   fin: Date
 ): Promise<PeriodeOccupee[]> {
-  return periodes(executeurDeSession(ctx), ctx.entrepriseId, debut, fin);
+  return tousLesAgendas(executeurDeSession(ctx), ctx.entrepriseId, debut, fin);
+}
+
+/**
+ * Les périodes de TOUS les agendas reliés, fondues en une seule liste.
+ *
+ * **Le point de fusion est ici, et nulle part ailleurs.** Un artisan peut avoir
+ * relié Google *et* iCloud — le premier pour son agenda professionnel, le
+ * second pour sa vie. Laisser chaque appelant décider lesquels consulter
+ * garantirait qu'un écran en oublie un : le planning tiendrait compte des deux,
+ * la page du client d'un seul, et le doublon reviendrait par la porte qu'on
+ * croyait fermée.
+ *
+ * **Les deux lectures sont menées de front** : elles interrogent deux services
+ * qui ne se connaissent pas, et les enchaîner ferait attendre le patron deux
+ * fois. Aucune des deux ne jette — chacune note sa propre panne — donc
+ * l'absence d'un agenda ne fait pas taire l'autre.
+ */
+async function tousLesAgendas(
+  executer: Executeur,
+  entrepriseId: string,
+  debut: Date,
+  fin: Date
+): Promise<PeriodeOccupee[]> {
+  const [google, apple] = await Promise.all([
+    periodes(executer, entrepriseId, debut, fin),
+    periodesApple(executer, entrepriseId, debut, fin),
+  ]);
+  return [...google, ...apple];
 }
 
 /**
@@ -326,7 +346,7 @@ export async function periodesOccupeesPourEntreprise(
   debut: Date,
   fin: Date
 ): Promise<PeriodeOccupee[]> {
-  return periodes(executeurParEntreprise(entrepriseId), entrepriseId, debut, fin);
+  return tousLesAgendas(executeurParEntreprise(entrepriseId), entrepriseId, debut, fin);
 }
 
 async function periodes(
@@ -366,7 +386,7 @@ async function periodes(
     await noterLecture(executer, entrepriseId, null);
     return occupees;
   } catch (e) {
-    await noterLecture(executer, entrepriseId, message(e));
+    await noterLecture(executer, entrepriseId, messageDePanne(e));
     return [];
   }
 }
@@ -422,14 +442,6 @@ async function noterLecture(
   });
 }
 
-/**
- * Le message d'une panne, tronqué, tel que le service l'a écrit.
- *
- * Reproduire le message du serveur plutôt que l'idée qu'on s'en fait est une
- * règle du dépôt payée d'une demi-journée (`AGENTS.md`) : trois correctifs
- * d'affilée sont passés au vert en réparant une panne imaginée.
- */
-function message(e: unknown): string {
-  const texte = e instanceof Error ? e.message : String(e);
-  return texte.slice(0, 500);
-}
+// `messageDePanne` vit dans `./agenda-executeur` : les deux fournisseurs
+// tronquent leurs pannes de la même façon, et deux copies finiraient par
+// diverger sur la longueur — donc sur ce que l'artisan lit.

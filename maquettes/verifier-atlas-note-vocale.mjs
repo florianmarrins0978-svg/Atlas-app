@@ -73,6 +73,19 @@ for (const s of ECRANS) {
     const nom = await page.$eval(`${ec} .anneaux`, (e) => e.getAttribute("aria-label") || "");
     verifie(`${S} · elle porte un nom accessible`, /note vocale/i.test(nom), nom);
 
+    // Le trait du bandeau doit tomber sous L'ONGLET ACTIF. Recopié d'un écran à
+    // l'autre il reste sous le premier et désigne le mauvais mot — défaut vu par
+    // le patron sur le planning, invisible au contrôle du libellé.
+    const sl = await page.$eval(ec, (r) => {
+      const t = r.querySelector(".bas i").getBoundingClientRect();
+      const a = r.querySelector(".bas .actif");
+      const g = document.createRange(); g.selectNodeContents(a);
+      const m = g.getBoundingClientRect();
+      return { ecart: (t.x + t.width / 2) - (m.x + m.width / 2), mot: a.textContent.trim() };
+    });
+    verifie(`${S} · le trait tombe sous l'onglet actif`, Math.abs(sl.ecart) < 8,
+      `${sl.mot} : ${sl.ecart.toFixed(1)} px`);
+
     // 2) Sa place : après le pavé, avant le tiroir, et centrée.
     const calme = await rect(`${ec} .calme`);
     const icone = await rect(`${ec} .anneaux`);
