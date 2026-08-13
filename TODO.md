@@ -49,8 +49,14 @@ même instant, et qui comptent peut-être plus que la vague :
    il se tait exactement pendant le seul moment où l'on se demande s'il est en
    panne. Les mots disent ce qu'aucune animation ne dira.
 
-**Maquette : `docs/maquettes/40-les-trois-points-qui-attendent.html`** — l'avant,
-puis cinq attentes : A la vague (4 px), B la vague ample (7 px), C le souffle,
+**Deux planches, et c'est la seconde qui tranche :**
+
+| | Fichier | Ce qu'elle sert |
+|---|---|---|
+| 40 | `docs/maquettes/40-les-trois-points-qui-attendent.html` | Les cinq gestes côte à côte, et l'exposé du défaut. Doublée d'images animées (`docs/maquettes/images/`), pour la conversation |
+| **41** | `docs/maquettes/41-l-attente-a-lessai.html` | **Celle qu'il manipule** — il appuie sur le micro, arrête, les points bougent. Sa demande du 13 août : *« juste des points que je puisse cliquer dessus […] pour voir comment ça rend »*. Engendrée par `scripts/engendrer-maquette-sequence.mjs` |
+
+Les cinq attentes : A la vague (4 px), B la vague ample (7 px), C le souffle,
 D le point qui court, E l'anneau qui tourne. **Rien n'est touché dans `src/`
 tant qu'il n'a pas donné sa lettre** (`CLAUDE.md` §3 bis).
 
@@ -67,9 +73,18 @@ tant qu'il n'a pas donné sa lettre** (`CLAUDE.md` §3 bis).
    le troisième point : trois points qui montent **ensemble** bougent de 4 px,
    passeraient tout contrôle d'amplitude, et ne feraient aucune vague. Éprouvé
    en cassant les délais — il rougit en nommant A.
-3. **L'avant sert de témoin, dans les deux outils.** Il doit rester immobile ;
-   s'il bouge, c'est la mesure qui ment. Le GIF le prouve tout seul : l'encodeur
-   fusionne les images identiques, et l'avant se réduit à **une seule**.
+3. **L'avant sert de témoin, dans les trois outils.** Il doit rester immobile
+   **et à demi effacé** — le montrer à pleine encre le ferait paraître moins
+   mauvais qu'il n'est, et fausserait la comparaison en sa faveur. S'il bouge,
+   c'est la mesure qui ment. Le GIF le prouve tout seul : l'encodeur fusionne
+   les images identiques, et l'avant se réduit à **une seule**.
+4. **La 41 se PARCOURT, elle ne se constate pas.**
+   `scripts/verifier-maquette-sequence.mjs` joue les deux appuis puis
+   « Recommencer », sur les six. Un parcours à moitié joué ne prouve que la
+   moitié qu'on joue. Deux pièges y sont écrits : le bouton d'arrêt **bat**,
+   donc Playwright refuse d'appuyer dessus (`{ force: true }`, même famille que
+   `locator.screenshot()`) ; et le retour du résultat est **décoché par
+   défaut**, sans quoi on jugerait cinq gestes sur quatre secondes chacun.
 
 **Ce qui reste ouvert et n'est pas dans la planche :** ce que l'écran fait quand
 le traitement s'éternise. Une vague qui tourne depuis trente secondes redevient

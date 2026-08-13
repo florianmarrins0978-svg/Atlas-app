@@ -16,9 +16,19 @@ qui se passe. Les trois petits points sont fixes […] on ne sait pas si ça bug
 non. »*
 
 **Rien n'a changé dans l'application, et c'est délibéré** — une demande de geste
-se dessine avant de se coder (`CLAUDE.md` §3 bis). Cinq attentes sont proposées
-dans `docs/maquettes/40-les-trois-points-qui-attendent.html` ; son numéro est
-attendu (`TODO.md` §0 duovicies).
+se dessine avant de se coder (`CLAUDE.md` §3 bis). Cinq attentes sont proposées ;
+son numéro est attendu (`TODO.md` §0 duovicies).
+
+**Deux planches, parce qu'il a demandé à ESSAYER** — *« juste des points que je
+puisse cliquer dessus, enfin le dictaphone, puis je l'arrête et les points se
+mettent à bouger »*. La 40 expose les gestes côte à côte ; la **41** joue la
+séquence entière sous son doigt : le micro, l'écoute, l'arrêt, l'attente, et le
+retour du résultat s'il le demande. Trois états sans une ligne de script — des
+boutons radio et des étiquettes qui pointent vers l'état suivant, parce que son
+lecteur n'exécute rien et que les pages engendrées en JavaScript lui arrivent
+vides. La page est elle-même **écrite par un script**
+(`engendrer-maquette-sequence.mjs`), qui refuse de la livrer s'il y trouve la
+moindre balise `<script>`.
 
 **Ce que le diagnostic a trouvé, et qui n'était pas dans sa demande.** Ces points
 ne sont pas une animation arrêtée : c'est le caractère « … », un seul glyphe

@@ -370,9 +370,11 @@ n'est pas la batterie.
 qui se passe. Les trois petits points sont fixes […] on ne sait pas si ça bug ou
 non. »*
 
-`docs/maquettes/40-les-trois-points-qui-attendent.html` — l'avant, puis cinq
-attentes (A la vague, B la vague ample, C le souffle, D le point qui court,
-E l'anneau qui tourne). **`src/` est intact** : c'est sa règle du 11 août.
+Deux planches — la **40** expose les cinq gestes côte à côte, la **41** est celle
+qu'il MANIPULE (il appuie sur le micro, arrête, les points bougent), et c'est
+elle qui tranchera. Cinq attentes : A la vague, B la vague ample, C le souffle,
+D le point qui court, E l'anneau qui tourne. **`src/` est intact** : c'est sa
+règle du 11 août.
 
 **Trois choses à ne pas redécouvrir :**
 
