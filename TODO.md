@@ -1189,6 +1189,29 @@ qu'il ne veut pas revoir.
 Si le sujet revient, c'est **lui** qui le rouvre, et alors c'est « partout »
 ou rien.
 
+### 8. L'écran Facture — trois manques signalés par le patron le 10 août 2026
+
+Constatés par lui sur son banc, capture à l'appui. Aucun n'est corrigé.
+
+1. **Impossible d'enregistrer la facture.** Sous « Voir la facture en PDF », il
+   veut **un petit lien pour la télécharger** sur son téléphone ou son
+   ordinateur. Aujourd'hui il ne peut que l'ouvrir. Un `<a download>` vers la
+   route du PDF suffit, avec un nom de fichier qui porte le numéro de facture —
+   « F2026-0001.pdf », pas « facture.pdf » : il en aura des centaines.
+2. **« Ouvrir le SMS tout prêt » est carré**, alors qu'il le veut **ovale comme
+   tous les autres**. À éclaircir avant de coder : depuis le 10 août tous les
+   boutons sont à 5 px de rayon (`radius.button`). Lui montrer deux variantes
+   plutôt que deviner — et si c'est bien un bouton en gélule qu'il veut,
+   **c'est la charte entière qui change**, pas ce bouton-là.
+3. **On ne propose que le SMS.** Il veut pouvoir **envoyer la facture par
+   e-mail**. `composerMessageFacture` et `lienTransmission` savent déjà faire
+   les deux (`src/lib/message-client.ts`, canal `"email"`) : c'est l'écran de
+   la facture qui n'offre pas le choix. Voir comment l'écran du devis propose
+   SMS **ou** e-mail, et faire pareil.
+
+Le troisième est le plus important : une facture qu'on ne peut pas envoyer par
+courriel, c'est un client sur deux qu'on ne peut pas facturer.
+
 ### 7. Finir la refonte — l'ordre, les pièges, les valeurs
 
 **Ce point existe pour qu'une conversation neuve puisse reprendre le travail

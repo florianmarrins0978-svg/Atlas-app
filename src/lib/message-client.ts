@@ -46,6 +46,18 @@ export function composerMessageClient(params: {
       bonjour,
       "",
       "Voici votre devis. Vous pouvez le consulter et choisir votre date d'intervention en suivant ce lien :",
+      // **Une ligne vide de chaque côté, et le lien SEUL sur la sienne.**
+      // Le patron, le 10 août 2026 : *« le lien n'est pas cliquable, je suis
+      // obligé de le copier »*. Collé juste sous sa phrase, un lien est lu par
+      // beaucoup de messageries comme la suite du paragraphe : elles n'y
+      // reconnaissent plus une adresse et ne le rendent pas cliquable. Isolé
+      // entre deux lignes vides, il redevient une adresse à leurs yeux.
+      //
+      // Rien de mieux n'est possible tant que le message part en texte brut :
+      // `mailto:` ne transporte pas de HTML, donc pas de vrai lien habillé.
+      // Le jour où Atlas enverra lui-même (docs/A-FAIRE.md §5), ce sera un
+      // bouton.
+      "",
       lien,
       "",
       "Si aucune des dates proposées ne vous convient, vous pourrez en proposer une autre.",
@@ -80,9 +92,12 @@ export function composerMessageFacture(params: {
       bonjour,
       "",
       `Voici votre facture ${numeroFacture}. Vous pouvez la consulter et la télécharger ici :`,
-      lien,
-      ...(echeanceLisible ? ["", `Elle est à régler avant le ${echeanceLisible}.`] : []),
+      // Isolé entre deux lignes vides, comme pour le devis, et pour la même
+      // raison : sans cela les messageries ne le rendent pas cliquable.
       "",
+      lien,
+      "",
+      ...(echeanceLisible ? [`Elle est à régler avant le ${echeanceLisible}.`, ""] : []),
       "Bien à vous,",
       entrepriseNom,
     ].join("\n"),

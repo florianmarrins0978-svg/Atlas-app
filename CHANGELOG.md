@@ -3219,6 +3219,30 @@ tels qu'écrits dans le code. Et le compteur de l'accueil était accusé à tort
 avec la liste depuis le 10 août. Aucun de ces trois n'était un défaut du
 produit, et le premier réflexe — croire le contrôle — aurait coûté une heure.
 
+### Le lien du client n'était pas cliquable
+
+*« Le lien n'est pas cliquable, je suis obligé de le copier et de le coller
+dans une page internet. »*
+
+Le lien était bien seul sur sa ligne, mais **collé sous la phrase qui
+l'annonce**. Beaucoup de messageries lisent alors les deux comme un seul
+paragraphe : elles n'y reconnaissent plus une adresse, et n'en font pas un
+lien. Isolé entre deux lignes vides, il redevient une adresse à leurs yeux.
+
+Corrigé pour le devis **et** pour la facture, qui avait le même défaut sans
+que personne l'ait encore vu.
+
+**Ce qu'on ne peut pas faire mieux aujourd'hui, et pourquoi.** Le message part
+par `mailto:`, qui ne transporte que du texte brut — donc pas de vrai bouton.
+Le jour où Atlas enverra lui-même (`docs/A-FAIRE.md` §5), ce sera un bouton.
+
+`scripts/test-lien-cliquable.ts` tient la règle, et **sait échouer** : remis
+dans l'état d'avant, il dit « pas de ligne vide AVANT le lien ».
+
+**Une réserve honnête** : je ne peux pas reproduire ici la messagerie du
+patron. C'est le correctif standard pour le texte brut, mais c'est lui qui
+dira s'il tient.
+
 ### Le devis rejoint la charte : la terre cuite s'efface
 
 *« Oui, harmonise aussi le devis. »* La teinte terre cuite des documents, tenue
