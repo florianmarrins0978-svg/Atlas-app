@@ -5136,6 +5136,33 @@ création, et l'un des deux peut avoir été corrigé depuis.
 mise bout à bout qui ne l'était pas. Quatrième défaut de ce dépôt trouvé en
 regardant l'écran (`CLAUDE.md` §5).
 
+### Le chantier sans adresse a désormais un chemin
+
+**Retenu sur maquette le 13 août 2026** (`docs/maquettes/34`, variante B) :
+*« ça, c'est au cas où la fiche entière n'a pas été rentrée. Dans ce cas-là, tu
+peux faire ça, mais avec le bouton, tu le mets arrondi. »*
+
+La feuille disait où saisir l'adresse **sans y mener** : il fallait refermer,
+toucher le nom du chantier, et savoir que le nom ouvre la fiche. Trois gestes,
+et une connaissance qui ne s'écrit nulle part.
+
+Trois décisions dans ce petit bouton :
+
+- **Il n'apparaît QUE sans adresse.** La feuille porte déjà « Créer la
+  facture » ; un bouton permanent de plus la chargerait onze fois sur douze
+  pour rien.
+- **Il mène au DEVIS COMPLET, pas à la fiche.** C'est le seul écran où
+  l'adresse s'édite (`mettreAJourAdresseChantier`, rouverte le 10 août — elle ne
+  se saisissait qu'à la création). L'envoyer vers la fiche l'obligerait à
+  chercher.
+- **Pastille creuse, et non pleine.** Le geste principal de cette feuille reste
+  de PARTIR ; celui-ci répare ce qui manque.
+
+**Et la ligne au-dessus a changé avec lui.** Elle annonçait « À saisir sur la
+fiche du chantier » — devenu faux (c'est le devis) et redondant (le bouton le
+dit). Elle porte la date, comme sur tous les autres chantiers : le titre annonce
+ce qui manque, le bouton offre de le réparer.
+
 ### Ce que les contrôles prouvent, et ce qu'ils ne prouvent pas
 
 `scripts/test-y-aller-e2e.ts` vérifie **le raccord** : que l'adresse arrive

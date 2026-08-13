@@ -212,15 +212,15 @@ page s'ouvre avec le GPS et tout machin, et là tu mets créer la facture. »*
 nom, la date, « Déplacer » et le chevron. Le nom passe d'environ 110 px à plus
 de 250. `ARCHITECTURE.md` §70.
 
-### 0 quaterdecies bis. Un chantier sans adresse n'a plus de chemin pour la saisir
+### 0 quaterdecies bis. ~~Un chantier sans adresse n'a plus de chemin pour la saisir~~ — **réglé le 13 août 2026**
 
-La feuille « Y aller » dit « à saisir sur la fiche du chantier », mais n'y mène
-plus : « Ouvrir la fiche du chantier » a été retiré de la maquette 32, le nom du
-chantier y menant déjà depuis la ligne. Sur un chantier sans adresse, la phrase
-suffit-elle, ou faut-il un bouton **« Saisir l'adresse »** à cet endroit précis ?
+Il a tranché sur maquette (`docs/maquettes/34`, variante B) : *« ça, c'est au cas
+où la fiche entière n'a pas été rentrée. Dans ce cas-là, tu peux faire ça, mais
+avec le bouton, tu le mets arrondi. »*
 
-**La question lui a été posée avec la maquette et attend sa réponse.** Rien ne
-sera ajouté sans elle.
+Un bouton **« Saisir l'adresse »** en pastille creuse, qui n'apparaît que sans
+adresse et mène au devis complet — seul écran où elle s'édite.
+`ARCHITECTURE.md` §70.
 
 ### 0 nonies. ~~L'écran de connexion est resté dans l'ancienne identité~~ **fait le 12 août 2026**
 
