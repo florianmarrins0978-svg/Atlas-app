@@ -63,7 +63,7 @@ async function seConnecter(context: BrowserContext): Promise<Page> {
 async function chantierPlanifie(page: Page, suffixe: string, adresse: string | null) {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   const client = `M. Bernard ${suffixe} ${Date.now()}`;
-  await page.fill('input[placeholder="M. Bernard"]', client);
+  await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 12");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });

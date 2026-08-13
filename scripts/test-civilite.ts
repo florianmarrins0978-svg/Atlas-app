@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { Pool } from "pg";
-import { avecCivilite, porteDejaSonAppellation, CIVILITE_PAR_DEFAUT } from "../src/lib/civilite";
+import {
+  avecCivilite,
+  porteDejaSonAppellation,
+  CIVILITE_PAR_DEFAUT,
+  CIVILITES,
+} from "../src/lib/civilite";
 
 // **Comment on nomme un client sur un document qui part chez lui.**
 //
@@ -134,6 +139,71 @@ cas("et ce mot est CELUI QU'IL A DEMANDÉ", () => {
   // vert. Le patron, le 13 août 2026 : *« Mr. Martins, pas Monsieur. »*
   assert.equal(CIVILITE_PAR_DEFAUT, "Mr.");
   assert.equal(avecCivilite("Martins"), "Mr. Martins");
+});
+
+
+// ─── Depuis le 13 août au soir, la civilité est CHOISIE ──────────────────────
+//
+// *« Tu as raison, il faut intégrer une case monsieur-madame. Mais je veux que
+// ça soit sous la forme Mr Mme, en cliquable, on choisit au-dessus du nom. »*
+//
+// Ce qui change : « Mr. » n'est plus une supposition posée sur tout patronyme,
+// c'est ce qu'il a touché. Ce qui NE change pas : quand il n'a rien touché, la
+// règle du matin s'applique encore — sans quoi tous ses clients existants
+// changeraient d'apparence du jour au lendemain.
+
+console.log("\n=== Ce qu'il CHOISIT prime sur ce qu'on devine ===");
+
+cas("« Mme » choisi : la cliente est nommée comme il l'a dit", () => {
+  assert.equal(avecCivilite("Roux", "mme"), "Mme Roux");
+  assert.equal(avecCivilite("Martins", "mme"), "Mme Martins");
+});
+
+cas("« Mr » choisi : le même mot que le défaut, mais assumé cette fois", () => {
+  assert.equal(avecCivilite("Martins", "mr"), `${CIVILITES.mr} Martins`);
+});
+
+cas("rien de choisi : la règle du matin s'applique encore", () => {
+  // **C'est ce qui protège ses clients d'avant.** Le jour où la case est
+  // apparue, aucune fiche ne la portait : si l'absence de choix avait effacé la
+  // civilité, tous ses devis en cours auraient changé d'en-tête d'un coup.
+  assert.equal(avecCivilite("Martins", null), `${CIVILITE_PAR_DEFAUT} Martins`);
+  assert.equal(avecCivilite("Martins", undefined), `${CIVILITE_PAR_DEFAUT} Martins`);
+  assert.equal(avecCivilite("SARL Untel", null), "SARL Untel");
+});
+
+cas("un choix prime sur la DÉTECTION DE SOCIÉTÉ, jamais l'inverse", () => {
+  // « Mme Boulangerie du Bourg » : la liste des marqueurs attrape « Boulangerie
+  // du Bourg » comme une raison sociale. S'il a touché « Mme », c'est LUI qui a
+  // raison — la détection ne comble qu'un silence, elle ne le contredit pas.
+  assert.equal(avecCivilite("Ville Dubois", "mme"), "Mme Ville Dubois");
+  assert.equal(avecCivilite("Ville Dubois", null), "Ville Dubois");
+});
+
+cas("un choix ne DOUBLE JAMAIS une civilité déjà écrite", () => {
+  // Le piège du jour : les deux questions — « a-t-il déjà sa civilité ? » et
+  // « est-ce une société ? » — étaient mêlées dans une seule fonction. Le choix
+  // primant sur elle, toucher « Mme » sur « Mme Roux » écrivait « Mme Mme Roux ».
+  assert.equal(avecCivilite("Mme Roux", "mme"), "Mme Roux");
+  assert.equal(avecCivilite("Mme Roux", "mr"), "Mme Roux");
+  assert.equal(avecCivilite("M. Bernard", "mme"), "M. Bernard");
+});
+
+cas("un choix reste stable si on l'applique deux fois", () => {
+  for (const c of ["mr", "mme"] as const) {
+    const une = avecCivilite("Martins", c);
+    assert.equal(avecCivilite(une, c), une, `« ${c} » n'est pas stable`);
+  }
+});
+
+cas("sans nom, un choix ne fabrique personne", () => {
+  // « Mme » tout court serait un devis adressé à personne.
+  assert.equal(avecCivilite("", "mme"), "");
+  assert.equal(avecCivilite(null, "mr"), "");
+});
+
+cas("les deux mots sont ceux qu'il a écrits", () => {
+  assert.deepEqual(CIVILITES, { mr: "Mr.", mme: "Mme" });
 });
 
 // ─── La migration et la fonction disent la même chose ────────────────────────

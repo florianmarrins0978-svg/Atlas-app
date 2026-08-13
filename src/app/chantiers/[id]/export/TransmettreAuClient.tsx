@@ -7,6 +7,7 @@ import { composerMessageClient, lienTransmission, type CanalClient } from "@/lib
 import { destinataireLisible } from "@/lib/numero-lisible";
 import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { enregistrerCoordonneeClientAction } from "./actions";
+import type { Civilite } from "@/lib/civilite";
 
 // Ouvre l'application de messagerie du patron, message prêt à partir, **au bon
 // destinataire**.
@@ -41,6 +42,8 @@ import { enregistrerCoordonneeClientAction } from "./actions";
 type Props = {
   clientId: string | null;
   clientNom: string;
+  /** Ce qu'il a choisi au-dessus du nom (migration 0038). */
+  clientCivilite: Civilite | null;
   entrepriseNom: string;
   /** Le canal convenu sur la fiche du client — un défaut, pas une contrainte. */
   canal: CanalClient;
@@ -86,6 +89,7 @@ const LIBELLE: Record<
 export default function TransmettreAuClient({
   clientId,
   clientNom,
+  clientCivilite,
   entrepriseNom,
   canal,
   telephone,
@@ -117,7 +121,7 @@ export default function TransmettreAuClient({
   // sans jamais être parti.
   useRetourDeMessagerie();
 
-  const message = composerMessageClient({ clientNom, entrepriseNom, lien });
+  const message = composerMessageClient({ clientNom, clientCivilite, entrepriseNom, lien });
   const autre: CanalClient = canalChoisi === "sms" ? "email" : "sms";
   const destinataire = coordonnees[canalChoisi];
 

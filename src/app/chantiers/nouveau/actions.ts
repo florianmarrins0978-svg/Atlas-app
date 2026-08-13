@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { creerChantier } from "@/server/repositories/chantiers";
 import { creerClient, type CanalClient } from "@/server/repositories/clients";
 import { nomDuChantier } from "@/lib/nom-chantier";
+import type { Civilite } from "@/lib/civilite";
 import { jourIso } from "@/lib/jour";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { verifierTailleFichier, verifierTypeAudio } from "@/server/upload-limits";
@@ -11,6 +12,9 @@ import { lireCoordonneesDictees } from "@/server/ai/services/coordonnees-service
 
 export type CreerChantierInput = {
   nomClient?: string;
+  /** « Mr » ou « Mme », s'il l'a choisi. Absent : il n'a rien dit, et ce
+   *  silence se garde tel quel (migration 0038). */
+  civilite?: Civilite;
   telephone?: string;
   email?: string;
   /** Canal convenu avec le client pour recevoir son devis (docs/AGENT.md §2.1). */
@@ -42,6 +46,7 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
 
     const client = await creerClient(ctx, {
       nom: nomClient,
+      civilite: data.civilite,
       telephone,
       email,
       canalCommunication: canal,
@@ -67,6 +72,7 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
   const chantier = await creerChantier(ctx, {
     nom: nomDuChantier({
       nomClient,
+      civilite: data.civilite,
       adresseChantier: data.adresseChantier,
       jour: jourIso(new Date()),
     }),

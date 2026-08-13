@@ -72,7 +72,7 @@ async function chantierRealise(page: Page, suffixe: string) {
   // porte la marque unique, et le repère suit.
   const client = `M. Bernard ${suffixe} ${Date.now()}`;
   const nom = avecCivilite(client);
-  await page.fill('input[placeholder="M. Bernard"]', client);
+  await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });

@@ -59,7 +59,7 @@ async function main() {
   // délibérément laissé vide — c'est tout l'objet de cette suite.
   const nom = `Contact sur place ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nom);
+  await page.fill('input[placeholder="Bernard"]', nom);
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
   const chantierId = page.url().split("/").pop()!.split("?")[0];

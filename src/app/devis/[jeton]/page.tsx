@@ -99,7 +99,7 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
               qu'il ouvre juste après ferait douter qu'elle lui soit
               destinée. */}
           {d.clientNom && (
-            <p className="mt-1 text-[14px] text-ink/70">Pour {avecCivilite(d.clientNom)}</p>
+            <p className="mt-1 text-[14px] text-ink/70">Pour {avecCivilite(d.clientNom, d.clientCivilite)}</p>
           )}
           {d.adresseChantier && <p className="text-[13px] text-ink/50">{d.adresseChantier}</p>}
 

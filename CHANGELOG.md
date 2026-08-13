@@ -40,6 +40,45 @@ ligne. Il reste intact dans le PDF, dans le SMS et en base.
 d'Apple absent d'ici. Les contrôles vérifient que le texte offert à ce logiciel
 ne contient plus de suite de chiffres appelable — pas ce qu'il en fera. Seul son
 iPhone tranchera. Détail : `ARCHITECTURE.md` §81.
+### La civilité se choisit, au lieu d'être devinée
+
+*« Tu as raison, il faut intégrer une case monsieur-madame. Mais je veux que ça
+soit sous la forme Mr Mme, en cliquable, on choisit au-dessus du nom. »*
+
+C'est la réserve posée le matin même qu'il tranche. Jusque-là « Mr. » était un
+**défaut** collé sur tout patronyme nu — y compris dans le SMS qui part chez le
+client : une cliente lisait « Bonjour Mr. Roux ». Deux pastilles au-dessus du
+nom, et le choix traverse tout : le nom du chantier, l'écran du devis, le PDF,
+le message tout prêt, et la page qu'elle ouvre.
+
+**Ce qui ne change pas, et c'est la garantie qui compte :** un client sur lequel
+il n'a rien touché garde exactement l'apparence qu'il avait ce matin. Le jour où
+la case est apparue, aucune fiche ne la portait ; si l'absence de choix avait
+effacé la civilité, tous ses devis en cours auraient changé d'en-tête d'un coup.
+
+**Deux portes, et la seconde n'est pas un luxe.** À la création, et sur l'écran
+du devis. Sans celle-ci, une cliente saisie avant la case — ou avec une pastille
+oubliée — resterait « Mr. Roux » pour toujours, y compris dans le message qui
+part chez elle : il n'existe aucun autre écran de fiche client.
+
+**Trois pièges, tous payés en le faisant :**
+
+1. **Le choix primant sur la détection, il doublait les civilités déjà
+   écrites** : toucher « Mme » sur « Mme Roux » donnait « Mme Mme Roux ». Les
+   deux questions — « a-t-il déjà sa civilité ? » et « est-ce une société ? » —
+   étaient mêlées dans une seule fonction ; elles sont séparées, et l'ordre est
+   désormais écrit noir sur blanc.
+2. **Le devis n'est pas un formulaire.** L'étiquette « CIVILITÉ (FACULTATIF) »
+   au milieu du bloc « Client » ressemblait à un bout de formulaire collé sur
+   une lettre — cet écran est à l'image du papier, tous ses champs y sont nus.
+   **Vu en capture, jamais par un contrôle.**
+3. **L'exemple du champ contredisait la pastille.** Le nom proposait
+   « M. Bernard » : sous une case Mr/Mme, cet exemple invitait à retaper la
+   civilité dans le nom, auquel cas la pastille ne servait plus à rien. Il vaut
+   « Bernard », et les 54 fichiers de contrôle qui visaient ce texte ont suivi.
+
+`ARCHITECTURE.md` §81.
+
 
 ### La capsule descend jusqu'aux écrans du client — il a tranché
 
@@ -446,7 +485,7 @@ refus de l'absurde, le repli sur la saisie à la main.
 l'export RGPD. Les tickets d'un artisan disent où il fait le plein et quand il
 travaille ; ils partent avec le reste de ses données.
 
-`ARCHITECTURE.md` §83.
+`ARCHITECTURE.md` §84.
 
 ---
 
@@ -769,7 +808,7 @@ suffisent.
 trimestre », au pied de Terminés, additionnait TOUS les mois du fil. Le chiffre
 était juste, sa légende mentait.
 
-`ARCHITECTURE.md` §82.
+`ARCHITECTURE.md` §83.
 
 ---
 
