@@ -459,8 +459,35 @@
 <h3 id="-sans-les-prix--ne-peut-pas-être-un-masquage-à-lécran">« Sans les prix » ne peut pas être un masquage à l'écran</h3>
 <p>Le point sur lequel il ne faut pas transiger. Cacher un montant dans la page ne le retire pas de ce que la page a reçu : un salarié qui ouvre l'adresse du PDF, ou qui regarde ce que son téléphone a téléchargé, verrait tout.</p>
 <p><strong>Les montants ne doivent pas sortir du serveur</strong> pour qui n'a pas le droit de les voir — ni dans la page, ni dans le PDF, ni dans une réponse d'API. C'est plus de travail qu'un test dans l'affichage, et c'est la seule version honnête : un salarié qui découvre votre marge parce qu'il a su regarder, c'est pire que pas de restriction du tout, puisque vous vous croyiez protégé.</p>
-<h3 id="ce-qui-reste-à-trancher">Ce qui reste à trancher</h3>
-<p><strong>Le salarié voit-il le planning de toute l'entreprise, ou seulement ses chantiers à lui ?</strong> Question posée le 7 août 2026, réponse remise à plus tard : <em>« attends, fais déjà tout le reste, on en reparle après. »</em> Elle change le travail et elle change ce qui se vend.</p>
+<h3 id="tranché-le-13-août-2026--quatre-rôles-et-une-portée-qui-se-règle-par-personne">Tranché le 13 août 2026 : quatre rôles, et une portée qui se règle par personne</h3>
+<p><strong>Le salarié voit-il le planning de toute l'entreprise, ou seulement ses chantiers à lui ?</strong> Question posée le 7 août, réponse remise (<em>« attends, fais déjà tout le reste, on en reparle après »</em>), puis donnée le 13 août :</p>
+<blockquote><em>« Accès à tout, mais le patron choisira s'il a accès qu'à ses chantiers ou à tout. »</em></blockquote>
+<p><strong>Ce n'est ni l'une ni l'autre des deux options proposées.</strong> C'est un réglage <strong>par personne</strong>, posé sous le rôle du salarié : deux salariés peuvent ne pas voir la même chose. Et <strong>le défaut est « tout »</strong> — un salarié invité ce matin voit le planning entier tant que son patron n'a rien restreint. Restreindre est un geste, pas un état de départ.</p>
+<p><strong>Un quatrième rôle est ajouté le même jour : le commercial.</strong> Il vend, il n'engage pas.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Qui</th>
+<th>Ce qu'il voit</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Vous, l'éditeur</strong></td>
+<td>Tout, <strong>plus</strong> le vocabulaire du métier</td>
+</tr>
+<tr>
+<td><strong>Le patron</strong> — <em>ce qui se vend</em></td>
+<td>Toute son entreprise, sans exception</td>
+</tr>
+<tr>
+<td><strong>Le commercial</strong></td>
+<td>Les chantiers, le planning, les devis <strong>et les prix</strong> — il en a besoin pour vendre. Ni les factures, ni la TVA, ni l'IBAN, ni les accès, ni l'abonnement. Il lit les tarifs, il ne les change pas</td>
+</tr>
+<tr>
+<td><strong>Le salarié</strong></td>
+<td>Le planning et ses chantiers, les devis <strong>sans aucun montant</strong>. Le patron choisit s'il voit tout le planning ou ses seuls chantiers</td>
+</tr>
+</tbody></table></div>
+<p><strong>Attention à un mot qui trompe :</strong> dans Atlas, une « équipe » n'est pas un groupe de personnes, c'est une <strong>file du planning</strong> — combien de chantiers partent en même temps. « Équipe B » peut désigner deux ouvriers qui n'ouvriront jamais l'application ; un commercial a un compte et ne conduit aucun chantier. Les réglages tiennent donc <strong>deux listes séparées</strong> : <em>qui a accès</em>, et <em>vos équipes</em>.</p>
+<h3 id="ce-qui-reste-vrai-et-qui-nest-pas-encore-fait">Ce qui reste vrai, et qui n'est pas encore fait</h3>
+<p><strong>Rien de ce tableau n'est en place au 13 août 2026.</strong> La base ne connaît que deux rôles (propriétaire et membre), aucun écran ne permet de donner un accès, et surtout <strong>rien ne filtre ce qui est envoyé</strong> : un membre voit aujourd'hui tous les prix et tous les montants. Le dessin de ces écrans existe (<code>maquettes/atlas-reglages-equipe.html</code>) ; le code, non.</p>
 <hr>
 <h2 id="11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-">11. Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>

@@ -6384,13 +6384,28 @@ Même arbitrage que pour les équipes (§51) : à une seule personne, aucun choi
 rôle n'est proposé et le bloc des files disparaît. Proposer d'arbitrer des
 permissions quand il n'y a personne à distinguer serait un piège.
 
-### La question qui reste ouverte depuis le 7 août
+### La question du 7 août, tranchée le 13 — et autrement que prévu
 
 *« Le salarié voit-il le planning de toute l'entreprise, ou seulement ses
-chantiers à lui ? »* — réponse remise par le patron : *« attends, fais déjà tout
-le reste, on en reparle après »* (`docs/QUESTIONS.md` §10). Elle change le
-travail et elle change ce qui se vend. La planche la repose sans y répondre à sa
-place.
+chantiers à lui ? »* — réponse remise le 7 août, donnée le 13 :
+
+> *« Accès à tout, mais le patron choisira s'il a accès qu'à ses chantiers ou à
+> tout. »*
+
+**Ce n'est ni l'une ni l'autre des deux options proposées**, et c'est la leçon :
+la question posée en « ou bien / ou bien » appelait un troisième terme. C'est un
+**réglage par personne**, posé sous le rôle du salarié — deux salariés peuvent
+ne pas voir la même chose.
+
+**Le défaut est « tout le planning ».** Un salarié invité ce matin voit
+l'ensemble tant que son patron n'a rien restreint : restreindre est un geste,
+pas un état de départ. Le contrôle tient ce défaut explicitement — inverser la
+valeur par défaut le ferait rougir, parce qu'un réglage de confidentialité qui
+change de sens en silence ne se remarque jamais.
+
+**Le rôle « commercial » est validé le même jour**, tel qu'il est dessiné.
+`docs/QUESTIONS.md` §10 porte désormais le tableau des quatre rôles, et
+`docs/A-FAIRE.md` §9 ce qui bloque la commercialisation.
 
 ### Le défaut vu à l'œil, et le contrôle qui en naît
 

@@ -36,8 +36,14 @@ Et l'écran d'un salarié **ne laisse aucune place pour un montant** : pas de
 colonne de prix, pas d'emplacement vide. Un blanc dirait « il y a un chiffre
 ici, on te le refuse », et le premier réflexe serait d'ouvrir le PDF.
 
-**La question du 7 août reste ouverte** et la planche la repose : le salarié
-voit-il le planning de toute l'entreprise, ou seulement ses chantiers ?
+**La question du 7 août est tranchée le 13, et autrement que prévu.** À
+*« le salarié voit-il tout le planning, ou seulement ses chantiers ? »*, le
+patron répond : *« accès à tout, mais le patron choisira s'il a accès qu'à ses
+chantiers ou à tout »*. Ni l'une ni l'autre des deux options : un **réglage par
+personne**, et **le défaut est « tout »** — restreindre est un geste, pas un
+état de départ. Le rôle « commercial » est validé tel que dessiné.
+`docs/QUESTIONS.md` §10 porte le tableau des quatre rôles ; `docs/A-FAIRE.md`
+§9, ajouté à sa demande, porte ce qui bloque la commercialisation.
 
 **Défaut vu à l'œil :** un bloc imbriqué reprenait la marge de son parent et se
 retrouvait à 52 px, décalé de tout le reste. Le contrôle du retrait mesure

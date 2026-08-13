@@ -39,7 +39,7 @@ Ordre convenu, qui suit ses quatre priorités du 13 août 2026 :
 |---|---|---|---|
 | 1 | **Le plan** | Deux niveaux, trois rôles, l'interrupteur | **dessiné le 13 août — attend son accord** |
 | 2 | Identité de l'entreprise | Nom, adresse, SIRET/SIREN, TVA, IBAN | **dessiné le 13 août** (`ARCHITECTURE.md` §81) |
-| 3 | Équipe et rôles | Qui a accès, et à quoi | **dessiné le 13 août** (`ARCHITECTURE.md` §82) — **le rôle « commercial » reste à trancher** |
+| 3 | Équipe et rôles | Qui a accès, et à quoi | **dessiné et validé le 13 août** (`ARCHITECTURE.md` §82) |
 | 4 | Tarifs & catalogue | Prestations, main-d'œuvre, matériel | à dessiner — l'écran existe déjà en partie |
 | 5 | Documents | Conditions, acompte, logo, texte de bas de page | à dessiner — **le plus lourd**, voir ci-dessous |
 | 6 | Notifications | Huit familles d'alertes, canal par canal | à dessiner |
@@ -104,9 +104,11 @@ Manquent aussi en base, et la maquette les montre : **forme juridique** et
 - **aucun parcours d'invitation n'existe** : `membres-entreprise.ts` sait
   ajouter et retirer un membre, aucun écran ne l'appelle, et rien n'envoie
   d'invitation. Un patron ne peut donner aucun accès aujourd'hui ;
-- **la question du 7 août est toujours ouverte** : le salarié voit-il le
-  planning de toute l'entreprise, ou seulement ses chantiers ? Elle change le
-  travail et ce qui se vend (`docs/QUESTIONS.md` §10) ;
+- ~~la question du 7 août sur la portée du salarié~~ — **tranchée le 13 août
+  2026** : accès à tout par défaut, et le patron restreint **personne par
+  personne** à ses seuls chantiers. Le rôle « commercial » est validé tel que
+  dessiné. Il faut donc une colonne de portée sur `membres_entreprise`, en plus
+  du quatrième rôle (`docs/QUESTIONS.md` §10) ;
 - **le logo sur le devis n'existe pas** : `document-commun.ts` ne pose aucune
   image. Extraire un logo d'une photo déposée est faisable (pdf-lib sait
   incorporer un PNG) ; **remplacer entièrement le devis par un modèle importé ne

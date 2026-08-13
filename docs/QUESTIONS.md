@@ -552,12 +552,45 @@ plus de travail qu'un test dans l'affichage, et c'est la seule version honnête 
 un salarié qui découvre votre marge parce qu'il a su regarder, c'est pire que
 pas de restriction du tout, puisque vous vous croyiez protégé.
 
-### Ce qui reste à trancher
+### Tranché le 13 août 2026 : quatre rôles, et une portée qui se règle par personne
 
 **Le salarié voit-il le planning de toute l'entreprise, ou seulement ses
-chantiers à lui ?** Question posée le 7 août 2026, réponse remise à plus tard :
-*« attends, fais déjà tout le reste, on en reparle après. »* Elle change le
-travail et elle change ce qui se vend.
+chantiers à lui ?** Question posée le 7 août, réponse remise (*« attends, fais
+déjà tout le reste, on en reparle après »*), puis donnée le 13 août :
+
+> *« Accès à tout, mais le patron choisira s'il a accès qu'à ses chantiers ou à
+> tout. »*
+
+**Ce n'est ni l'une ni l'autre des deux options proposées.** C'est un réglage
+**par personne**, posé sous le rôle du salarié : deux salariés peuvent ne pas
+voir la même chose. Et **le défaut est « tout »** — un salarié invité ce matin
+voit le planning entier tant que son patron n'a rien restreint. Restreindre est
+un geste, pas un état de départ.
+
+**Un quatrième rôle est ajouté le même jour : le commercial.** Il vend, il
+n'engage pas.
+
+| Qui | Ce qu'il voit |
+|---|---|
+| **Vous, l'éditeur** | Tout, **plus** le vocabulaire du métier |
+| **Le patron** — *ce qui se vend* | Toute son entreprise, sans exception |
+| **Le commercial** | Les chantiers, le planning, les devis **et les prix** — il en a besoin pour vendre. Ni les factures, ni la TVA, ni l'IBAN, ni les accès, ni l'abonnement. Il lit les tarifs, il ne les change pas |
+| **Le salarié** | Le planning et ses chantiers, les devis **sans aucun montant**. Le patron choisit s'il voit tout le planning ou ses seuls chantiers |
+
+**Attention à un mot qui trompe :** dans Atlas, une « équipe » n'est pas un
+groupe de personnes, c'est une **file du planning** — combien de chantiers
+partent en même temps. « Équipe B » peut désigner deux ouvriers qui n'ouvriront
+jamais l'application ; un commercial a un compte et ne conduit aucun chantier.
+Les réglages tiennent donc **deux listes séparées** : *qui a accès*, et *vos
+équipes*.
+
+### Ce qui reste vrai, et qui n'est pas encore fait
+
+**Rien de ce tableau n'est en place au 13 août 2026.** La base ne connaît que
+deux rôles (propriétaire et membre), aucun écran ne permet de donner un accès,
+et surtout **rien ne filtre ce qui est envoyé** : un membre voit aujourd'hui
+tous les prix et tous les montants. Le dessin de ces écrans existe
+(`maquettes/atlas-reglages-equipe.html`) ; le code, non.
 
 ---
 

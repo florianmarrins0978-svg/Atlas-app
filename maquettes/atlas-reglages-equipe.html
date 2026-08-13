@@ -52,14 +52,23 @@
        c'est un écran qui n'a jamais reçu les montants.
 
     ─────────────────────────────────────────────────────────────────────────
-    CE QUI RESTE À TRANCHER, ET QUI EST ÉCRIT DEPUIS LE 7 AOÛT
+    TRANCHÉ LE 13 AOÛT 2026 : LA PORTÉE DU SALARIÉ SE RÈGLE PAR PERSONNE
     ─────────────────────────────────────────────────────────────────────────
 
     « Le salarié voit-il le planning de toute l'entreprise, ou seulement ses
-    chantiers à lui ? » — question posée au patron, réponse remise :
-    *« attends, fais déjà tout le reste, on en reparle après »*
-    (`docs/QUESTIONS.md` §10). Elle change le travail et elle change ce qui se
-    vend. La planche la repose, sans y répondre à sa place.
+    chantiers à lui ? » — question posée le 7 août, réponse remise à plus tard
+    (`docs/QUESTIONS.md` §10). Le patron a répondu le 13 août, et **ce n'est ni
+    l'une ni l'autre des deux options proposées** :
+
+      *« Accès à tout, mais le patron choisira s'il a accès qu'à ses chantiers
+      ou à tout. »*
+
+    C'est donc un RÉGLAGE PAR PERSONNE, posé sous le rôle « salarié » — deux
+    salariés peuvent ne pas voir la même chose. **Et le défaut est « tout »** :
+    un salarié fraîchement invité voit le planning entier tant que son patron
+    n'a rien restreint. Restreindre est un geste, pas un état de départ.
+
+    Le rôle « commercial » est validé le même jour, tel qu'il est dessiné ici.
   */
 
   /* La charte de l'application, recopiée de `src/lib/design-tokens.ts` et
@@ -200,6 +209,20 @@
   #r-commercial:checked ~ .choix .o-commercial .rond,
   #r-salarie:checked ~ .choix .o-salarie .rond{box-shadow:inset 0 0 0 6px var(--e-bronze)}
 
+  /* ═══ Ce que le patron choisit, personne par personne ════════════════ */
+  /* SA DÉCISION DU 13 AOÛT 2026, qui tranche la question laissée ouverte le
+     7 août (`docs/QUESTIONS.md` §10) : *« accès à tout, mais le patron choisira
+     s'il a accès qu'à ses chantiers ou à tout »*.
+
+     Ce n'est donc NI l'une NI l'autre des deux options qui lui étaient
+     proposées : c'est un réglage PAR PERSONNE, et le défaut est « tout ». Un
+     salarié nouvellement invité voit le planning entier tant que son patron
+     n'a rien restreint — restreindre est un geste, pas un état de départ. */
+  .fin-choix{margin:0}
+  .fin-choix .opt{padding-left:0}
+  #p-tout:checked ~ .choix .s-salarie .o-tout .rond,
+  #p-siens:checked ~ .choix .s-salarie .o-siens .rond{box-shadow:inset 0 0 0 6px var(--e-bronze)}
+
   /* Ce que le rôle choisi change, écrit en toutes lettres. Un tableau de
      permissions à cocher serait illisible sur un téléphone, et personne ne
      saurait ce que « lecture seule sur les documents » veut dire pour lui. */
@@ -332,6 +355,8 @@
           <input class="interrupteur" type="radio" name="role" id="r-patron">
           <input class="interrupteur" type="radio" name="role" id="r-commercial" checked>
           <input class="interrupteur" type="radio" name="role" id="r-salarie">
+          <input class="interrupteur" type="radio" name="planning" id="p-tout" checked>
+          <input class="interrupteur" type="radio" name="planning" id="p-siens">
 
           <div class="bloc choix">
             <p class="t caps">Son rôle</p>
@@ -400,6 +425,26 @@
                 envoyés.</b> Masquer à l&apos;écran ne protège de rien — le PDF,
                 lui, s&apos;ouvre.
               </p>
+
+              <div class="bloc fin-choix" data-s="portee">
+                <p class="t caps">Ce qu&apos;il voit du planning</p>
+                <label class="opt o-tout" for="p-tout">
+                  <span class="rond"></span>
+                  <span class="txt"><span class="nom">Tout le planning</span>
+                    <span class="dit">Il voit où en est l&apos;entreprise, et
+                      qui part où.</span></span>
+                </label>
+                <label class="opt o-siens" for="p-siens">
+                  <span class="rond"></span>
+                  <span class="txt"><span class="nom">Ses chantiers seulement</span>
+                    <span class="dit">Il ne voit que les demi-journées où il est
+                      affecté.</span></span>
+                </label>
+                <p class="mot" data-s="par-personne">
+                  <b>Ce choix se fait personne par personne</b>, et pas une fois
+                  pour toutes : deux salariés peuvent ne pas voir la même chose.
+                </p>
+              </div>
             </div>
 
           </div>

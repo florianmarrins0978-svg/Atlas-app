@@ -150,6 +150,32 @@ try {
     /pas envoyés|ne lui sont pas envoyés/i.test(pasMasque), pasMasque.slice(0, 60));
   verifie("et pourquoi masquer ne protégerait de rien", /PDF/i.test(pasMasque));
 
+  // SA DÉCISION DU 13 AOÛT : la portée du planning se règle PAR PERSONNE, et
+  // le défaut est « tout ». Restreindre est un geste, pas un état de départ —
+  // un salarié invité ce matin doit voir le planning entier.
+  verifie("le salarié porte un choix de portée du planning", await vu(`${ROLE} [data-s="portee"]`));
+  const options = await page.$$eval(`${ROLE} [data-s="portee"] .opt .nom`, (l) =>
+    l.map((e) => e.textContent.trim()));
+  verifie("les deux portées sont nommées, et pas trois",
+    options.join("|") === "Tout le planning|Ses chantiers seulement", options.join("|"));
+  const parDefaut = await page.$$eval(`${ROLE} [data-s="portee"] .opt`, (l) =>
+    l.filter((e) => getComputedStyle(e.querySelector(".rond")).boxShadow.includes("6px"))
+     .map((e) => e.querySelector(".nom").textContent.trim()));
+  verifie("et le défaut est « tout le planning », jamais la restriction",
+    parDefaut.join("|") === "Tout le planning", parDefaut.join("|"));
+
+  await page.click(`${ROLE} .o-siens`);
+  await page.waitForTimeout(300);
+  const apres = await page.$$eval(`${ROLE} [data-s="portee"] .opt`, (l) =>
+    l.filter((e) => getComputedStyle(e.querySelector(".rond")).boxShadow.includes("6px"))
+     .map((e) => e.querySelector(".nom").textContent.trim()));
+  verifie("restreindre déplace la marque, sans en laisser deux",
+    apres.join("|") === "Ses chantiers seulement", apres.join("|"));
+  verifie("et l'écran dit que ce choix se fait personne par personne",
+    /personne par personne/i.test(await txt(`${ROLE} [data-s="par-personne"]`)));
+  await page.click(`${ROLE} .o-tout`);
+  await page.waitForTimeout(240);
+
   const marque = await page.$eval(`${ROLE} .o-salarie .rond`, (x) => getComputedStyle(x).boxShadow);
   const autre = await page.$eval(`${ROLE} .o-patron .rond`, (x) => getComputedStyle(x).boxShadow);
   verifie("la marque se déplace, sans en laisser deux", marque !== autre);

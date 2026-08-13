@@ -77,6 +77,7 @@
 <li><a href="#6-choisir-loutil-qui-émet-les-factures">Choisir l'outil qui émet les factures</a></li>
 <li><a href="#7-créer-les-identifiants-google-pour-qui-veut-relier-son-agenda">Créer les identifiants Google, pour qui veut relier son agenda</a></li>
 <li><a href="#8-faire-valider-lapplication-par-google--avant-de-commercialiser">Faire valider l'application par Google — AVANT de commercialiser</a></li>
+<li><a href="#9-le-premier-jour-dun-artisan--ce-qui-manque-pour-lui-confier-atlas">Le premier jour d'un artisan : ce qui manque pour lui confier Atlas</a></li>
 </ol>
 <hr>
 <h2 id="1-choisir-les-fournisseurs-dia-définitifs">1. Choisir les fournisseurs d'IA définitifs</h2>
@@ -504,6 +505,60 @@
 <p><strong>Réserve, dite plutôt que tue.</strong> À ma connaissance, l'agenda relève des permissions « sensibles » — vérification gratuite — et non des « restreintes », qui exigent en plus un audit de sécurité facturé par un tiers. <strong>Je n'ai pas pu le confirmer</strong> : le réseau de l'environnement de développement refuse les pages de Google. À vérifier vous-même dans la console avant de vous engager.</p>
 <h3 id="ce-que-ça-ne-bloque-pas">Ce que ça ne bloque pas</h3>
 <p>Ni l'essai, ni la finition, ni vos premiers artisans. Ce point bloque <strong>uniquement</strong> le passage à l'échelle — et il le bloque d'un coup, sans prévenir, le jour où vous dépasserez la centaine.</p>
+<hr>
+<h2 id="9-le-premier-jour-dun-artisan--ce-qui-manque-pour-lui-confier-atlas">9. Le premier jour d'un artisan : ce qui manque pour lui confier Atlas</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Qui : moi.</strong> C'est du code, pas une décision — mais c'est ici parce que <strong>ça bloque la commercialisation</strong>, exactement comme l'hébergement ou l'outil de facturation. Vous devez savoir que c'est là.</p>
+<p><em>Ajouté le 13 août 2026, à votre demande, après votre remarque : « quand l'application sera commercialisée, le devis ne comportera aucune information, il sera vierge, et c'est avec ces informations-là qu'il devra se remplir automatiquement ».</em></p>
+<h3 id="le-point-de-départ">Le point de départ</h3>
+<p>Vous avez raison, et c'est plus lourd que ça n'en a l'air. J'ai vérifié dans le code : <strong>rien n'est prévu pour un artisan qui arrive les mains vides.</strong></p>
+<h3 id="ce-qui-manque-dans-lordre-où-ça-se-voit">Ce qui manque, dans l'ordre où ça se voit</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qui se passe aujourd'hui</th>
+<th>Ce que ça donne pour lui</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td><strong>Votre banc d'essai démarre avec une entreprise déjà remplie</strong> — nom, SIRET, adresse, IBAN</td>
+<td>Vous n'avez jamais vu l'écran d'un vrai débutant, et moi non plus</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Aucun écran ne permet de créer son entreprise</strong></td>
+<td>Il ne peut pas commencer</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Son identité ne se saisit que dans « le devis écrit à la main »</strong></td>
+<td>S'il suit le parcours normal — dicter, chiffrer, envoyer — il ne la saisit jamais</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Rien ne vérifie son identité avant l'envoi</strong></td>
+<td>Son premier devis part <strong>sans SIRET, sans adresse, sans IBAN</strong>, sans un mot</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Quand son nom manque, l'application écrit poliment « Votre entreprise »</td>
+<td>Le manque est maquillé au lieu d'être signalé</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Chaque devis fige ses informations le jour où il est créé</strong></td>
+<td>Compléter son SIRET ce soir ne répare <strong>aucun</strong> devis déjà fait — et rien ne le prévient</td>
+</tr>
+</tbody></table></div>
+<p>Le point 6 mérite d'être compris, parce que c'est du <strong>bon</strong> travail : une pièce comptable doit garder l'identité qu'elle portait le jour de son émission. Ce qui manque n'est pas le mécanisme, c'est <strong>la phrase qui l'explique</strong>.</p>
+<h3 id="ce-que-ça-coûte">Ce que ça coûte</h3>
+<p>Rien, en argent. En travail : <strong>les écrans sont dessinés</strong> (<code>maquettes/atlas-reglages-identite.html</code>), la décision est prise, il reste à coder — la création d'entreprise, les champs d'identité dans les réglages, le garde-fou avant l'envoi. C'est un lot de quelques jours, pas un chantier.</p>
+<h3 id="la-question-que-je-vous-pose-et-qui-vous-appartient">La question que je vous pose, et qui vous appartient</h3>
+<p><strong>Faut-il EMPÊCHER l'envoi d'un devis tant que l'identité est incomplète, ou seulement avertir ?</strong></p>
+<p>Mon avis : <strong>empêcher l'envoi</strong>, jamais la rédaction. Un devis irrégulier parti chez un client ne se rattrape pas, et l'artisan ne saura même pas qu'il l'a envoyé. Mais c'est vous qui décidez : c'est votre produit qui bloquera un utilisateur pressé.</p>
+<h3 id="ce-qui-est-lié-et-qui-nest-pas-fait-non-plus">Ce qui est lié, et qui n'est pas fait non plus</h3>
+<p><strong>Les accès de ses salariés.</strong> Un patron ne peut donner aucun accès aujourd'hui — l'écran n'existe pas —, et surtout <strong>rien ne filtre ce que chacun reçoit</strong> : un salarié verrait tous vos prix et toutes vos marges. La règle a été posée le 7 août (<a href="QUESTIONS.md" target="_blank" rel="noopener">QUESTIONS.md</a> question 10) et complétée le 13 : quatre rôles, et une portée du planning réglée salarié par salarié. <strong>Le dessin existe ; le code, non.</strong> Tant que ce n'est pas fait, Atlas ne peut être confié qu'à un artisan qui travaille seul.</p>
+<h3 id="ce-que-ça-ne-bloque-pas">Ce que ça ne bloque pas</h3>
+<p>Ni votre usage à vous, ni la suite du développement. Ce point bloque <strong>le jour où vous confiez Atlas à quelqu'un d'autre que vous</strong> — et il le bloque entièrement.</p>
 </main>
 </body>
 </html>
