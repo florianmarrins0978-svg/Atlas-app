@@ -27,7 +27,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 quatervicies. Les réglages : neuf rubriques encore à dessiner
+### 0 quatervicies. Les réglages : les dix rubriques sont dessinées, rien n'est codé
 
 **Le plan est dessiné et attend son accord** — `maquettes/atlas-reglages-plan.html`
 (`ARCHITECTURE.md` §80). Les deux niveaux, les quatre rôles et la forme de
@@ -43,7 +43,7 @@ Ordre convenu, qui suit ses quatre priorités du 13 août 2026 :
 | 4 | Tarifs & catalogue | Prestations, main-d'œuvre, matériel | **dessiné le 13 août** (`ARCHITECTURE.md` §83) |
 | 5 | Documents | Conditions, acompte, logo, texte de bas de page | **dessiné le 13 août** (`ARCHITECTURE.md` §85) |
 | 6 | Notifications | Huit familles d'alertes, canal par canal | **dessiné le 13 août** (`ARCHITECTURE.md` §86) — **rien n'est envoyé aujourd'hui** |
-| 7 | Le reste | Atlas IA, intégrations, apparence, abonnement, sécurité | à dessiner |
+| 7 | Le reste | Atlas IA, intégrations, apparence, abonnement, sécurité | **dessiné le 13 août** (`ARCHITECTURE.md` §87) |
 
 **La charte, depuis le 13 août :** *« toujours en respectant le style de l'appli
 ultra luxe et très moderne »*. `atlas-reglages-plan.html` recopie les jetons de

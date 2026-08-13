@@ -57,7 +57,6 @@ const rect = async (s) => page.$eval(s, (e) => {
   return { x: r.x, y: r.y, w: r.width, h: r.height };
 }).catch(() => null);
 const txt = async (s) => page.$eval(s, (e) => e.innerText.trim()).catch(() => "");
-const vu = async (s) => page.$eval(s, (e) => e.checkVisibility({ opacityProperty: true, visibilityProperty: true })).catch(() => false);
 const cadrer = async (s) => { await (await page.$(s)).scrollIntoViewIfNeeded(); await page.waitForTimeout(240); };
 
 fs.mkdirSync(SORTIE, { recursive: true });

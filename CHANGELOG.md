@@ -9,6 +9,28 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### Réglages, lot 7 : les cinq dernières rubriques — le dessin est complet
+
+`maquettes/atlas-reglages-reste.html` : Atlas IA, intégrations, apparence,
+sécurité, abonnement. **Les dix rubriques qu'il a demandées sont dessinées.**
+
+Quatre arbitrages. **Les trois arrêts de l'agent ne se coupent pas** — envoyer un
+devis, poser une date, émettre une facture portent « Toujours vous » à la place
+où l'on chercherait leur interrupteur. **Un interrupteur mort est pire qu'une
+absence** : le mode sombre porte « Bientôt » et aucune bascule. **L'apparence
+montre** quatre pastilles de couleur réelles, sans un adjectif. Et **« tout est
+effacé » serait faux** : les factures se conservent dix ans, dit avant le geste,
+pas après.
+
+Un mot qui trompe désamorcé au passage : sur l'écran d'abonnement, « vos
+factures » désigne celles qu'Atlas envoie, pas celles de ses clients.
+
+**Quinze planches, 923 contrôles au vert.** Le dessin est fini ; le code, lui,
+ne l'est pas — le tableau des dix rubriques et de leur état réel est dans
+`ARCHITECTURE.md` §87.
+
+---
+
 ### Réglages, lot 6 : les notifications — huit familles, une seule qui existe
 
 `maquettes/atlas-reglages-notifications.html`, trois écrans. Rien dans `src/`.

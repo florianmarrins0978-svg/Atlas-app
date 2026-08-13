@@ -6733,3 +6733,57 @@ l'éteindre, c'est accepter de ne plus savoir qu'on n'est pas payé.
 de l'accueil restent, c'est seulement Atlas qui cesse de déranger. Sans cette
 phrase, un artisan qui veut le calme croirait avoir tout perdu et rallumerait au
 hasard.
+
+
+---
+
+## 87. Les cinq dernières rubriques, et pourquoi elles tiennent sur une planche
+
+**Septième et dernier lot de dessin, le 13 août 2026** —
+`maquettes/atlas-reglages-reste.html` : Atlas IA, intégrations, apparence,
+sécurité, abonnement. Rien dans `src/`. **Les dix rubriques demandées sont
+désormais toutes dessinées.**
+
+Les réunir n'est pas de la paresse : deux existent déjà presque entièrement
+(l'IA et les intégrations), deux sont marquées « bientôt » depuis le lot 1, et la
+cinquième est faite de gestes rares. Aucune ne demandait quatre écrans.
+
+### Les quatre arbitrages
+
+**LES TROIS ARRÊTS DE L'AGENT NE SE COUPENT PAS.** `docs/AGENT.md` les pose comme
+non négociables : envoyer un devis, poser une date au client, émettre une
+facture. Ils portent la marque « Toujours vous », à la place où l'on chercherait
+leur interrupteur — même grammaire que les mentions légales du lot 1. Un
+interrupteur qui les supprimerait ferait partir un devis sans qu'il l'ait vu, ce
+que `CLAUDE.md` §4 interdit.
+
+**UN INTERRUPTEUR MORT EST PIRE QU'UNE ABSENCE.** Le mode sombre n'existe pas :
+il porte donc « Bientôt » et **aucune bascule**. Un bouton qu'on touche et qui ne
+fait rien se lit comme une panne, et fait douter du reste de l'écran.
+
+**L'APPARENCE MONTRE, ELLE NE DÉCRIT PAS.** Quatre pastilles de couleur réelles,
+44 px, sans un mot. Personne ne choisit une teinte sur l'adjectif « sobre ». Le
+fond crème, lui, ne change pas — c'est lui qui donne son calme à l'application,
+et le dire évite qu'on cherche à le changer.
+
+**« TOUT EST EFFACÉ » SERAIT FAUX.** La suppression de l'entreprise est le seul
+geste vraiment irréversible : il vit **seul, en bas, après un trait**, séparé de
+ce qui se règle. Et il dit ce que la loi impose de garder — **dix ans pour les
+factures** — avant le geste, pas après. Une promesse d'effacement total serait un
+mensonge, et se découvrirait au pire moment.
+
+**Un mot qui trompe, désamorcé :** sur l'écran d'abonnement, « vos factures »
+désigne celles qu'Atlas lui envoie, pas celles de ses clients. Les confondre
+serait le premier appel au secours ; l'écran le dit sur place.
+
+### Les dix rubriques, et où elles en sont
+
+| Rubrique | Planche | État du code |
+|---|---|---|
+| Le plan, les rôles, l'interrupteur | `atlas-reglages-plan.html` | rien |
+| Identité, TVA, banque | `atlas-reglages-identite.html` | **bloquant** (§81) |
+| Équipe et rôles | `atlas-reglages-equipe.html` | rien, et le cloisonnement manque (§82) |
+| Tarifs, grilles, coûts | `atlas-reglages-tarifs.html` | partiel (§83) |
+| Documents | `atlas-reglages-documents.html` | rien (§85) |
+| Notifications | `atlas-reglages-notifications.html` | une famille sur huit (§86) |
+| IA, intégrations, apparence, sécurité, abonnement | `atlas-reglages-reste.html` | IA et intégrations partiels |
