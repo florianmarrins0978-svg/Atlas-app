@@ -223,7 +223,7 @@ entrer deux autres en collision.**
 ### Cinq libellés pour la ligne sous le nom — à son choix
 
 Il veut y lire que le devis est parti et qu'on attend. Cinq propositions
-l'attendent dans `docs/maquettes/40-la-ligne-sous-le-nom.html`, **rien n'est
+l'attendent dans `docs/maquettes/41-la-ligne-sous-le-nom.html`, **rien n'est
 codé**.
 
 **La planche n'est pas dessinée, elle est photographiée.** La première version

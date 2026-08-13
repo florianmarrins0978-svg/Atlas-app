@@ -5917,7 +5917,7 @@ déborde ailleurs que chez lui.
 
 `scripts/engendrer-maquette-ligne-chantier.mts` joue donc chaque libellé DANS
 l'application, le photographie aux deux largeurs, et embarque les captures dans
-la planche (`docs/maquettes/40-la-ligne-sous-le-nom.html`). Ce ne sont pas des
+la planche (`docs/maquettes/41-la-ligne-sous-le-nom.html`). Ce ne sont pas des
 dessins : c'est l'écran.
 
 **Un défaut vu à l'œil sur la planche assemblée**, et qu'aucun contrôle ne

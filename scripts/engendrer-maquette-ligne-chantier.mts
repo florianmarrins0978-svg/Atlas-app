@@ -1,4 +1,4 @@
-// Engendre `docs/maquettes/40-la-ligne-sous-le-nom.html` à partir de VRAIES
+// Engendre `docs/maquettes/41-la-ligne-sous-le-nom.html` à partir de VRAIES
 // captures de l'application.
 //
 // **Pourquoi engendrer plutôt que dessiner.** Le patron, le 13 août 2026 :
@@ -26,7 +26,7 @@ import { join } from "node:path";
 import { lancerNavigateur } from "./e2e-browser";
 
 const BASE = "http://localhost:3000";
-const SORTIE = "docs/maquettes/40-la-ligne-sous-le-nom.html";
+const SORTIE = "docs/maquettes/41-la-ligne-sous-le-nom.html";
 const LARGEURS = [430, 390] as const;
 
 type Variante = {

@@ -1343,7 +1343,7 @@ RÉPONSE » en or, et dessous « Envoyé le jeudi 13 août. » La règle vit dan
 `ligneEtatChantier` (`src/lib/chantier-etat.ts`), éprouvée sans base ni
 navigateur. `ARCHITECTURE.md` §79.
 
-**Les quatre autres restent dans la planche** — `docs/maquettes/40-la-ligne-sous-le-nom.html`,
+**Les quatre autres restent dans la planche** — `docs/maquettes/41-la-ligne-sous-le-nom.html`,
 engendrée par `scripts/engendrer-maquette-ligne-chantier.mts`. Si le sujet se
 rouvre, repartir de là :
 

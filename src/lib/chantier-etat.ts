@@ -40,7 +40,7 @@ export const statutLabel: Record<ChantierStatut, string> = {
  * et il n'a toujours pas eu de réponse […] il faut le notifier sous le nom »*,
  * puis, devant les cinq propositions : *« j'aime bien le D, mais en dessous de
  * "devis envoyé" je veux qu'il y ait marqué la date à laquelle on l'a
- * envoyé »* (`docs/maquettes/40-la-ligne-sous-le-nom.html`, `TODO.md` §9).
+ * envoyé »* (`docs/maquettes/41-la-ligne-sous-le-nom.html`, `TODO.md` §9).
  *
  * Sa ligne disait « En attente de réponse » : vrai, mais elle ne disait pas
  * **ce qui** attend — un devis parti, ou un client qu'on n'a pas rappelé.
