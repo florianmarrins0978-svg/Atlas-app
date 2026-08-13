@@ -27,6 +27,54 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quatervicies nonies. L'icône installée est un A, et personne ne l'avait vu
+
+Trouvé le 13 août 2026 en dessinant les planches du nom (ci-dessous), pas
+cherché : `public/icone-source.svg` est **un A** — « un A bâti comme un chevron
+de charpente », dit son propre en-tête, posé comme provisoire et jamais
+remplacé. Elle est de surcroît restée en **terre cuite `#C0621F`**, la couleur
+d'avant la charte vert pin du 3 août.
+
+Deux conséquences, et elles ne dépendent pas l'une de l'autre :
+
+- **Si un autre nom est retenu**, l'icône devient fausse — un A sur l'écran
+  d'accueil d'un outil qui ne s'appelle plus Atlas. Ce serait le seul des quatre
+  fichiers à reprendre qui demande un **dessin**, pas un remplacement de mot.
+- **Même si le nom ne change pas**, elle est hors charte depuis dix jours.
+
+Le remplacement est mécanique : un fichier, puis `npm run icones` régénère les
+PNG. Ce qui manque est la décision de dessin. Les planches 45 proposent le
+**sceau de la porte** — rose des vents dans son rond d'or sur crème —, ce qui
+ferait de la porte et de l'écran d'accueil la même image. **Rien n'est décidé.**
+
+### 0 quatervicies octies. Trois noms proposés — Gunzi, Goonzi, Gunzy
+
+Sa demande du 13 août : *« fais-moi une maquette avec comme nom Gunzi à la place
+d'Atlas. Ne code rien. »*, puis les deux autres noms. Trois planches identiques
+au mot près, avec un passage de l'une à l'autre en tête :
+`docs/maquettes/45-le-nom-{gunzi,goonzi,gunzy}.html`.
+
+**Rien n'est codé, et c'est la consigne** (`CLAUDE.md` §3 bis). Ce qu'il faudra
+toucher le jour où un nom est arrêté, pour ne pas le rechercher :
+
+| Où | Quoi |
+|---|---|
+| `src/components/atlas/MarqueAtlas.tsx` | `MotAtlas` — le mot sous le sceau |
+| `public/manifest.json` | `name` et `short_name` — l'écran d'accueil |
+| `src/app/layout.tsx` | le titre de l'onglet et la carte de partage |
+| `public/icone-source.svg` | l'icône, qui est un A — voir ci-dessus |
+| `src/server/documents-legaux/versions.ts` | les CGU citent le nom, et **une version acceptée ne se modifie jamais** : renommer y fait naître une version de plus, à réaccepter |
+
+**Ce que la planche a établi, et qui n'était pas su :** le nom ne se voit qu'à
+**trois endroits** dans tout le produit, et **le client de l'artisan ne le voit
+nulle part** — ni la page publique d'un devis, ni celle d'une facture, ni leurs
+PDF ne portent de marque (vérifié fichier par fichier). Renommer ne demande donc
+de prévenir personne. Le seul coût qui grandit avec le temps est celui des CGU :
+nul aujourd'hui, puisque personne n'a encore accepté la `canevas-1`.
+
+Les largeurs sont **mesurées à l'écran**, pas estimées : ATLAS et GUNZI font
+97 px, GUNZY 105, GOONZI 118. Cinq lettres ne veut pas dire la même largeur.
+
 ### 0 quatervicies septies. La page qui rassemble les maquettes a décroché
 
 `scripts/fusionner-maquettes.mjs` n'inscrit plus que la 40 et la 44. Les 41, 42

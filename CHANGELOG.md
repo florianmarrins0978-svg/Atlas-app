@@ -9,6 +9,45 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### Trois noms à essayer — Gunzi, Goonzi, Gunzy — et l'icône qui est un A
+
+**Sa demande :** *« fais-moi une maquette avec comme nom Gunzi à la place
+d'Atlas. Ne code rien. »*, puis les deux autres noms.
+`docs/maquettes/45-le-nom-{gunzi,goonzi,gunzy}.html`, trois planches identiques
+au mot près, avec un passage de l'une à l'autre en tête de page.
+
+**Rien n'est codé** — `src/` n'est pas touché, c'est `CLAUDE.md` §3 bis. Ce qui
+serait à reprendre le jour d'un choix est écrit dans `TODO.md`, avec les
+fichiers, pour ne pas le rechercher.
+
+**Ce que faire ces planches a appris, et qui n'était pas su :**
+
+- **L'icône installée est un A.** `public/icone-source.svg` le dit lui-même —
+  « un A bâti comme un chevron de charpente », provisoire, jamais remplacé, et
+  resté en terre cuite `#C0621F`, la couleur d'avant la charte du 3 août. Un
+  autre nom la rendrait fausse ; elle est déjà hors charte. Fiche à part dans
+  `TODO.md`, parce qu'elle ne dépend pas du nom.
+- **Le client de l'artisan ne voit le nom nulle part** — ni la page publique
+  d'un devis, ni celle d'une facture, ni leurs PDF ne portent de marque, vérifié
+  fichier par fichier. Renommer ne demande de prévenir personne.
+- **Le seul coût qui grandit est celui des CGU** : elles citent le nom, et une
+  version acceptée ne se modifie jamais. Gratuit aujourd'hui — personne n'a
+  accepté la `canevas-1` —, payant dans six mois.
+
+**Les largeurs sont mesurées, pas estimées**, et la mesure a corrigé ce qui
+avait d'abord été écrit : ATLAS et GUNZI font 97 px, GUNZY **105** malgré ses
+cinq lettres, GOONZI 118. Compter les lettres ne dit pas la largeur.
+
+**Et un défaut vu sur une capture, jamais par un contrôle** : en thème sombre,
+les deux sceaux de la dernière planche disparaissaient — gravure vert pin sur
+fond sombre. Ils portent désormais leur propre fond crème, celui de la porte.
+Éprouvé aussi **JavaScript coupé** et à 390 px : aucun script, pas de
+débordement horizontal, l'entrée et « ↺ Recommencer » répondent.
+
+---
+
+## 2026-08-13
+
 ### Cesser de rejouer soixante suites pour du code qui ne nous concerne pas
 
 **Sa décision, en quatre mots :** *« seulement quand le code touche »*.
