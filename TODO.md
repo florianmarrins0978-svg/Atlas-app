@@ -1281,10 +1281,10 @@ une ligne de mémoire.
 
    *Les planches restent, elles racontent le chemin :*
 
-   - `docs/maquettes/30-le-bouton-de-la-facture.html` — deux dessins immobiles :
+   - `docs/maquettes/38-le-bouton-de-la-facture.html` — deux dessins immobiles :
      **A**, la capsule exacte des dix-sept autres écrans ; **B**, la même
      capsule cernée d'un filet ;
-   - `docs/maquettes/31-le-bouton-de-la-facture-a-lessai.html` — **cinq gestes
+   - `docs/maquettes/39-le-bouton-de-la-facture-a-lessai.html` — **cinq gestes
      qui se pressent pour de vrai**, demandés le 12 août : *« plusieurs versions
      cliquables et dynamiques […] une appli hyper luxe et moderne »*. A la
      capsule nue, B la lueur qui traverse la laque, C le cachet qui tourne et

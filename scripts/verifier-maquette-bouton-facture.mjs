@@ -47,7 +47,7 @@ const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 // et Playwright répondait « ERR_INVALID_URL » — une erreur qui accuse l'adresse
 // là où le fautif est le chemin.
 const CIBLE = resolve(
-  process.argv[2] ?? join(RACINE, "docs", "maquettes", "31-le-bouton-de-la-facture-a-lessai.html"),
+  process.argv[2] ?? join(RACINE, "docs", "maquettes", "39-le-bouton-de-la-facture-a-lessai.html"),
 );
 
 if (!existsSync(CIBLE)) {

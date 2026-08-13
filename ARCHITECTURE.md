@@ -5408,6 +5408,9 @@ le seul bouton sans `onClick`. Il paraissait donc fonctionner. Un contrôle
 confronté à un unique cas — surtout s'il est atypique — n'a rien prouvé : il faut
 l'éprouver sur le cas COURANT, celui qui représente la population qu'il surveille.
 Ici, le témoin porte désormais les deux formes, avec flèche et sans.
+
+---
+
 ## 73. La facture part par SMS **ou** par e-mail, et se télécharge
 
 **Le patron, le 10 août 2026, capture à l'appui** (`TODO.md` §8). Trois manques
@@ -5480,8 +5483,8 @@ remplace pas le premier.
 principale dessinée sur place échappe à toute décision d'ensemble.
 
 Une demande d'apparence se **dessine** avant de se coder (`CLAUDE.md` §3 bis).
-Deux planches l'ont précédé : `30-le-bouton-de-la-facture.html` (deux dessins
-immobiles) puis, à sa demande, `31-le-bouton-de-la-facture-a-lessai.html` —
+Deux planches l'ont précédé : `38-le-bouton-de-la-facture.html` (deux dessins
+immobiles) puis, à sa demande, `39-le-bouton-de-la-facture-a-lessai.html` —
 cinq gestes qui se pressent. **Il a retenu A, la capsule nue**, et le bouton
 passe désormais par `PrimaryButton`.
 
@@ -5502,7 +5505,7 @@ d'action », qui est le sujet même de ce composant :
 `capture-facture.mts`) : un retour au dessin local les rend rouges. Le
 recensement des actions encore dessinées sur place est dans `TODO.md` §0 octies.
 
-**Les quatre gestes écartés restent dans la maquette 31** — la lueur, le cachet,
+**Les quatre gestes écartés restent dans la maquette 39** — la lueur, le cachet,
 l'encre, le trait. Si le sujet se rouvre, c'est de là qu'il faut repartir : les
 redessiner serait refaire un chemin déjà parcouru.
 
