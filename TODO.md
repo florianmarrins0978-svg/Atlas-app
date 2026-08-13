@@ -40,7 +40,7 @@ Ordre convenu, qui suit ses quatre priorités du 13 août 2026 :
 | 1 | **Le plan** | Deux niveaux, trois rôles, l'interrupteur | **dessiné le 13 août — attend son accord** |
 | 2 | Identité de l'entreprise | Nom, adresse, SIRET/SIREN, TVA, IBAN | **dessiné le 13 août** (`ARCHITECTURE.md` §81) |
 | 3 | Équipe et rôles | Qui a accès, et à quoi | **dessiné et validé le 13 août** (`ARCHITECTURE.md` §82) |
-| 4 | Tarifs & catalogue | Prestations, main-d'œuvre, matériel | à dessiner — l'écran existe déjà en partie |
+| 4 | Tarifs & catalogue | Prestations, main-d'œuvre, matériel | **dessiné le 13 août** (`ARCHITECTURE.md` §83) |
 | 5 | Documents | Conditions, acompte, logo, texte de bas de page | à dessiner — **le plus lourd**, voir ci-dessous |
 | 6 | Notifications | Huit familles d'alertes, canal par canal | à dessiner |
 | 7 | Le reste | Atlas IA, intégrations, apparence, abonnement, sécurité | à dessiner |
@@ -88,6 +88,12 @@ dessin** (`ARCHITECTURE.md` §81) :
 
 Manquent aussi en base, et la maquette les montre : **forme juridique** et
 **titulaire du compte**.
+
+**Ce que le lot 4 ajoute à cette liste :** `tarifs` n'a **aucune colonne de
+famille** — prestations, main-d'œuvre et matériel n'existent pas —, et rien ne
+signale un tarif **sans unité**, alors qu'un prix sans unité n'est pas un prix.
+Les cinq grilles n'affichent pas **combien de prix elles ont appris**, ni la
+phrase qui dit qu'une grille vide n'est pas une panne (`ARCHITECTURE.md` §83).
 
 **Ce qui n'est PAS acquis, et ne doit pas être codé sur la foi de la maquette :**
 

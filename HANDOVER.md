@@ -303,8 +303,13 @@ la rubrique tient donc deux listes séparées ; et **le cloisonnement en lecture
 n'existe pas** : `getRole` n'est appelé dans aucun écran, un membre voit tous
 les montants.
 
+**Lot 4 fait le 13 août : tarifs et catalogue** — les quatre priorités du
+patron sont dessinées (`ARCHITECTURE.md` §83). À retenir : **ses tarifs** lui
+appartiennent, **le catalogue est partagé** et ne porte aucun prix, et **les
+cinq grilles apprennent de ses devis** au lieu de se saisir.
+
 L'ordre des lots est dans `TODO.md` §0 quatervicies ; le pourquoi dans
-`ARCHITECTURE.md` §80, §81 et §82.
+`ARCHITECTURE.md` §80 à §83.
 
 **Deux conventions posées le 13 août, qui valent pour toutes les planches à
 venir.** Les couleurs sont **recopiées de `src/lib/design-tokens.ts`** et le

@@ -6417,3 +6417,63 @@ la règle vaut pour les trois planches.
 
 Corrigé au passage : le titre disait « ce que ça ouvre » au-dessus d'une liste
 qui contient aussi des refus. Il dit « ce que ça change ».
+
+
+---
+
+## 83. Tarifs et catalogue : trois familles, et ce qui n'appartient pas à l'artisan
+
+**Quatrième lot des réglages, dessiné le 13 août 2026** —
+`maquettes/atlas-reglages-tarifs.html`, quatre écrans, contrôlée par
+`maquettes/verifier-atlas-reglages-tarifs.mjs`. Rien dans `src/`. C'est la
+dernière des quatre priorités du patron.
+
+### Trois choses existaient déjà, et elles n'étaient pas distinguées
+
+| | Où c'est | Ce que c'est |
+|---|---|---|
+| **Ses tarifs** | `tarifs` (intitulé, prix, unité) | Une liste **plate**, à lui, éditée sur l'écran des réglages |
+| **Cinq grilles de prix** | `src/lib/grille-prix.ts`, `/reglages/prix` | Elles naissent **vides** et apprennent de ses devis (`lecons-prix.ts`) |
+| **Le catalogue** | `catalogue_prestations`, `catalogue_materiels` | **Partagé**, tenu par l'éditeur, le même chez tous — les mots, jamais les prix |
+
+**La distinction entre le premier et le troisième n'était écrite nulle part**, et
+l'écran des réglages les mettait côte à côte sans le dire : un artisan qui
+modifie « ses tarifs » ne savait pas s'il touchait quelque chose qui lui
+appartient. La planche le dit à l'écran plutôt que dans une documentation que
+personne n'ouvre.
+
+### Ce que la planche tranche
+
+**Trois familles — prestations, main-d'œuvre, matériel — et la colonne n'existe
+pas en base.** `tarifs` porte un intitulé, un prix et une unité, rien qui les
+range.
+
+**L'unité SUIT la famille.** Une main-d'œuvre se compte en temps (heure,
+demi-journée, journée), un matériel à la journée, une prestation au forfait ou à
+l'unité. Proposer les mêmes vingt unités aux trois obligerait à chercher
+« heure » dans une liste longue, et à se tromper une fois sur dix — l'erreur ne
+se voyant que sur le devis du client. Le contrôle vérifie que **les jeux
+diffèrent** : s'ils devenaient identiques, la famille ne servirait plus à rien.
+
+**Un prix sans unité n'est pas un prix.** « Évacuation 90 € » ne dit pas si
+c'est par mètre cube ou par voyage. Le manque est signalé **sur la ligne**, dans
+la couleur d'alerte — même grammaire que le SIRET manquant du §81.
+
+**Une grille vide se dit vide, et dit pourquoi.** C'est l'état normal du premier
+jour : Atlas n'a pas encore vu de haie passer. Sans un mot, une grille vide se
+lit comme une panne — et la phrase reprend la règle du produit dans ses termes :
+*il préfère se taire qu'inventer*.
+
+### Le contrôle des bandes vides, élargi — et le faux positif qu'il a fallu ôter
+
+Il ne surveillait qu'UN écran par planche, et la planche des tarifs en a laissé
+passer une sur un autre. Élargi à tous les écrans, **il a immédiatement trouvé
+un vrai défaut sur la planche de l'équipe** (30 px de vide entre le dernier
+choix de rôle et le bloc suivant) — mais aussi **cinq faux positifs** : une
+liste dont chaque ligne porte un filet met 39 px entre deux traits, et c'est
+normal.
+
+Le contrôle regarde donc désormais **s'il y a du texte entre les deux filets**,
+et pas seulement l'écart. Sans cette précaution il accusait à tort sur une
+planche saine — et une alerte qui désigne le mauvais coupable coûte plus cher
+que pas d'alerte (`AGENTS.md`).

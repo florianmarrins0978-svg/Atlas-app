@@ -122,21 +122,6 @@ export async function controlerGrammaire(page, selecteur, verifie) {
   verifie("les titres de section sont gris, pas dorés",
     titreSection === "rgb(138, 133, 120)", titreSection);
 
-  // Deux filets qui se suivent à moins de 48 px dessinent une bande vide. Le
-  // défaut a été vu à l'œil sur la première planche, jamais par un contrôle.
-  const bandes = await page.$eval(`${selecteur} .corps`, (c) => {
-    const traits = [];
-    for (const e of c.querySelectorAll("*")) {
-      const g = getComputedStyle(e), r = e.getBoundingClientRect();
-      if (r.width < 40) continue;
-      if (parseFloat(g.borderTopWidth) > 0) traits.push(Math.round(r.y));
-      if (parseFloat(g.borderBottomWidth) > 0) traits.push(Math.round(r.y + r.height));
-    }
-    traits.sort((a, b) => a - b);
-    return traits.filter((v, i) => i && v - traits[i - 1] > 12 && v - traits[i - 1] < 48).length;
-  });
-  verifie("aucune bande vide entre deux filets qui se suivent", bandes === 0, `${bandes}`);
-
   const b = await page.$$eval(`${selecteur} .bas span`, (l) =>
     l.map((e) => {
       const r = document.createRange(); r.selectNodeContents(e);
@@ -197,4 +182,42 @@ export async function controlerRetrait(page, verifie) {
     }));
   verifie("tous les blocs partent du même retrait, imbriqués compris",
     decales.length === 0, decales.join(" | "));
+
+  // DEUX FILETS SÉPARÉS PAR DU VIDE dessinent une bande morte. Ce contrôle ne
+  // portait que sur UN écran, et la planche des tarifs en a laissé passer une
+  // sur un autre — vue à l'œil le 13 août 2026.
+  //
+  // IL FAUT REGARDER S'IL Y A DU TEXTE ENTRE LES DEUX, et pas seulement mesurer
+  // l'écart : une liste dont chaque ligne porte un filet met 39 px entre deux
+  // traits, et c'est normal. Élargi sans cette précaution, le contrôle accusait
+  // cinq fois à tort sur une planche saine — et une alerte qui désigne le
+  // mauvais coupable coûte plus cher que pas d'alerte (`AGENTS.md`).
+  const bandes = await page.$$eval(".ecran .corps", (corps) =>
+    corps.flatMap((c) => {
+      const visible = (e) => e.checkVisibility({ opacityProperty: true, visibilityProperty: true });
+      const traits = [];
+      const textes = [];
+      for (const e of c.querySelectorAll("*")) {
+        if (!visible(e)) continue;
+        const g = getComputedStyle(e), r = e.getBoundingClientRect();
+        // Une feuille qui porte du texte : c'est elle qui remplit l'espace.
+        if (e.children.length === 0 && e.textContent.trim() !== "" && r.height > 0) {
+          textes.push([r.y, r.y + r.height]);
+        }
+        if (r.width < 40) continue;
+        if (parseFloat(g.borderTopWidth) > 0) traits.push(Math.round(r.y));
+        if (parseFloat(g.borderBottomWidth) > 0) traits.push(Math.round(r.y + r.height));
+      }
+      traits.sort((a, b) => a - b);
+      const sorties = [];
+      for (let i = 1; i < traits.length; i++) {
+        const [haut, bas] = [traits[i - 1], traits[i]];
+        if (bas - haut <= 12 || bas - haut >= 48) continue;
+        const rempli = textes.some(([y1, y2]) => y2 > haut + 2 && y1 < bas - 2);
+        if (!rempli) sorties.push(`${bas - haut} px de vide entre deux filets`);
+      }
+      return sorties;
+    }));
+  verifie("aucune bande vide entre deux filets qui se suivent",
+    bandes.length === 0, bandes.slice(0, 3).join(" | "));
 }

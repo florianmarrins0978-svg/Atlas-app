@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### Réglages, lot 4 : tarifs et catalogue — les quatre priorités sont dessinées
+
+`maquettes/atlas-reglages-tarifs.html`, quatre écrans : ses tarifs rangés en
+trois familles, la famille qui commande l'unité, ses cinq grilles, et le premier
+jour. Rien dans `src/`.
+
+**Trois choses existaient déjà sans être distinguées :** ses **tarifs** (une
+liste plate, à lui), ses **cinq grilles de prix** (qui naissent vides et
+apprennent de ses devis), et le **catalogue** — partagé, tenu par l'éditeur, le
+même chez tous, et qui ne porte aucun prix. L'écran des réglages les mettait
+côte à côte sans le dire : un artisan ne savait pas s'il touchait quelque chose
+qui lui appartient.
+
+**Ce que la planche tranche.** Trois familles — prestations, main-d'œuvre,
+matériel —, et **la colonne n'existe pas en base**. **L'unité suit la famille** :
+une main-d'œuvre se compte en temps, un matériel à la journée ; proposer les
+mêmes vingt unités aux trois, c'est se tromper une fois sur dix, et l'erreur ne
+se voit que sur le devis du client. **Un prix sans unité est signalé sur sa
+ligne** — « 90 € » ne dit pas si c'est par mètre cube ou par voyage. Et **une
+grille vide se dit vide** en disant pourquoi : c'est l'état normal du premier
+jour, et Atlas préfère se taire qu'inventer.
+
+**Le contrôle des bandes vides, élargi à tous les écrans**, a trouvé un vrai
+défaut sur la planche de l'équipe — et cinq faux positifs : une liste dont
+chaque ligne porte un filet met 39 px entre deux traits, et c'est normal. Il
+regarde désormais **s'il y a du texte entre les deux filets**. Une alerte qui
+accuse à tort coûte plus cher que pas d'alerte.
+
+---
+
 ### Réglages, lot 3 : l'équipe et les rôles — le mot était déjà pris
 
 `maquettes/atlas-reglages-equipe.html`, quatre écrans : qui a accès, le rôle et

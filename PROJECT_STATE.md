@@ -508,7 +508,10 @@ Voir `TODO.md` pour le détail et l'ordre.
   **Lot 3 dessiné le 13 août** (l'équipe) : « équipe » désigne déjà une file du
   planning et non un compte — deux listes séparées —, et le **cloisonnement en
   lecture n'existe pas** : `getRole` n'est appelé dans aucun écran, un membre
-  voit aujourd'hui tous les montants (`ARCHITECTURE.md` §82).
+  voit aujourd'hui tous les montants (`ARCHITECTURE.md` §82). **Lot 4 dessiné le
+  13 août** (tarifs) : **les quatre priorités du patron sont dessinées**. Restent
+  à coder la colonne de famille sur `tarifs`, le signalement d'une unité
+  manquante, et le nombre de prix appris par grille (`ARCHITECTURE.md` §83).
 
 - **Agenda Google** — la connexion du compte demande des identifiants que je n'ai
   pas ; le reste (lecture des disponibilités, écriture de l'intervention) est
