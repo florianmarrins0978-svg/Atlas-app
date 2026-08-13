@@ -12,6 +12,14 @@ import {
   debrancherAgenda,
   enregistrerIdentifiants,
 } from "@/server/repositories/agendas-externes";
+import {
+  basculerAgendaApple,
+  debrancherAgendaApple,
+  listerAgendasApple,
+  reglerEcritureApple,
+  relierAgendaApple,
+  resynchroniserAgendaApple,
+} from "@/server/repositories/agenda-apple";
 import { TEMOIN_ETAT_AGENDA } from "./temoin";
 
 
@@ -102,4 +110,116 @@ export async function enregistrerIdentifiantsAction(saisie: {
 
   await enregistrerIdentifiants(ctx, { clientId, clientSecret: clientSecret || null, redirection });
   return { ok: true };
+}
+
+// ─── L'agenda iCloud ───────────────────────────────────────────────────────
+//
+// **Pourquoi ces actions rendent une valeur au lieu de jeter.** Le message
+// d'une exception levée par une action serveur n'arrive JAMAIS jusqu'au patron :
+// Next.js le remplace en production par un identifiant opaque, et son banc sert
+// une version bâtie (`AGENTS.md`, `HANDOVER.md` piège 0 ter). Un refus attendu
+// — mot de passe recopié de travers, double authentification absente — se rend
+// donc en valeur de retour, sans quoi l'écran afficherait « Une erreur est
+// survenue » sur une panne qu'Apple avait pourtant nommée.
+
+/** Ce qu'un agenda iCloud montre à l'écran de choix. */
+export type AgendaProposé = { href: string; nom: string; inscriptible: boolean };
+
+export type ResultatApple =
+  | { ok: true; agendas: AgendaProposé[] }
+  | { ok: false; motif: string };
+
+/**
+ * Relie le compte iCloud à partir du mot de passe pour les apps.
+ *
+ * **Le mot de passe n'est jamais renvoyé à l'écran**, ni en écho, ni dans un
+ * message d'erreur : ce qui remonte est ce qu'Apple a répondu, pas ce qui a été
+ * tapé.
+ */
+export async function relierAppleAction(saisie: {
+  compte: string;
+  motDePasse: string;
+}): Promise<ResultatApple> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "relier un agenda iCloud");
+  try {
+    const agendas = await relierAgendaApple(ctx, saisie);
+    return { ok: true, agendas: agendas.map(pourLEcran) };
+  } catch (e) {
+    return { ok: false, motif: motifLisible(e) };
+  }
+}
+
+/** Redemande la liste des agendas, pour rouvrir le choix sans rebrancher. */
+export async function listerAgendasAppleAction(): Promise<ResultatApple> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "consulter les agendas iCloud");
+  try {
+    return { ok: true, agendas: (await listerAgendasApple(ctx)).map(pourLEcran) };
+  } catch (e) {
+    return { ok: false, motif: motifLisible(e) };
+  }
+}
+
+/**
+ * Allume ou éteint l'écriture, et dit où écrire.
+ *
+ * Allumer déclenche la reprise : sans elle, l'artisan verrait un agenda vide et
+ * croirait le raccordement mort alors qu'il venait de l'établir.
+ */
+export async function reglerEcritureAppleAction(reglage: {
+  active: boolean;
+  calendrier?: { href: string; nom: string } | null;
+}): Promise<{ ok: true } | { ok: false; motif: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "régler l'écriture dans l'agenda");
+  try {
+    await reglerEcritureApple(ctx, reglage);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, motif: motifLisible(e) };
+  }
+}
+
+/** Renvoie tous les chantiers planifiés dans l'agenda, après une panne. */
+export async function resynchroniserAppleAction(): Promise<
+  { ok: true; poses: number } | { ok: false; motif: string }
+> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "renvoyer les chantiers dans l'agenda");
+  const r = await resynchroniserAgendaApple(ctx);
+  // `resynchroniser` ne jette pas : il rend ce qu'il a réussi à poser AVANT
+  // l'échec. « 7 sur 12, puis Apple a refusé » se corrige ; « ça n'a pas
+  // marché » n'apprend rien.
+  if (r.erreur) return { ok: false, motif: r.erreur };
+  return { ok: true, poses: r.poses };
+}
+
+/** Coupe la lecture de l'agenda iCloud sans effacer le raccordement. */
+export async function basculerAppleAction(actif: boolean): Promise<void> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "activer ou couper l'agenda iCloud");
+  await basculerAgendaApple(ctx, actif);
+}
+
+/**
+ * Débranche iCloud : retire ce qu'Atlas a posé, puis oublie le mot de passe.
+ *
+ * Rend ce qui n'a PAS pu être retiré, s'il y a lieu. Taire des restes serait
+ * lui laisser croire à un ménage qui n'a pas eu lieu — et il les découvrirait
+ * un mois plus tard dans son téléphone, sans savoir d'où ils viennent.
+ */
+export async function debrancherAppleAction(): Promise<{ restes: string | null }> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "débrancher l'agenda iCloud");
+  return debrancherAgendaApple(ctx);
+}
+
+function pourLEcran(a: { href: string; nom: string; inscriptible: boolean }): AgendaProposé {
+  return { href: a.href, nom: a.nom, inscriptible: a.inscriptible };
+}
+
+function motifLisible(e: unknown): string {
+  const texte = e instanceof Error ? e.message : String(e);
+  return texte.slice(0, 400);
 }

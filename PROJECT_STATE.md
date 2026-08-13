@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-13 · branche `main`, six branches fusionnées
-· dernière migration `drizzle/0033_identifiants_google_par_entreprise.sql`
+· dernière migration `drizzle/0035_agenda_apple.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -81,6 +81,7 @@ seule avec quinze outils.
 | **L'adresse se propose pendant la frappe** et se choisit d'un doigt — Base Adresse Nationale, jamais Google, et le champ reste libre | `src/components/atlas/ChampAdresse.tsx` + `src/server/adresses/base-adresse-nationale.ts` |
 | **La note vocale lit un numéro et un e-mail dictés en toutes lettres**, sans qu'il ait à les annoncer | `src/lib/nombres-dictes.ts` + `src/lib/coordonnees-dictees.ts` |
 | **L'agenda extérieur, au choix de l'artisan** — Atlas tient compte d'un agenda Google s'il le relie, lit ses créneaux occupés **et leurs intitulés**, et les affiche sur le planning. Ses identifiants Google se collent dans l'application. Sans raccordement, rien ne change | `src/lib/agenda-externe.ts` + `src/server/agenda/` + `src/app/reglages/agenda/` + `drizzle/0032_agendas_externes.sql` + `drizzle/0033_identifiants_google_par_entreprise.sql` |
+| **L'agenda iCloud, dans les deux sens** — Atlas lit les créneaux occupés du compte Apple et **n'y propose plus** de date ; s'il l'allume, il pose ses chantiers dans le calendrier qu'il désigne et les retire quand il déplanifie. Les deux fournisseurs se fondent en une seule carte d'occupation. **Réserve : aucun échange réel avec iCloud n'a eu lieu ici** (réseau refusé) — voir `ARCHITECTURE.md` §75 | `src/lib/ics.ts` + `src/lib/caldav.ts` + `src/server/agenda/apple.ts` + `src/server/repositories/agenda-apple.ts` + `drizzle/0035_agenda_apple.sql` |
 | **Le vocabulaire du métier**, écrit une fois et envoyé avec chaque dictée — réservé à l'éditeur. Vingt-sept entrées tirées de devis réels (huit règles, dix-neuf mots) ; budget de 9 000 caractères dont un quart réservé à ses corrections, et tout tient aujourd'hui à cinq cents caractères près | `src/app/reglages/vocabulaire/` + `src/lib/consigne-metier.ts` + `drizzle/0030_vocabulaire_devis_reels.sql` + `drizzle/0031_vocabulaire_corrige.sql` |
 | **Le devis se découpe en lignes vendables** : abattage + broyage + évacuation ensemble, la fente à part, sans point-virgule | `src/lib/lignes-vendables.ts` |
 | **Cinq grilles de prix** — abattage (technique × diamètre), fendage (hauteur × diamètre), dessouchage (diamètre), haie (au ml), grumes (à la tonne) — nées vides et remplies par ses devis | `src/lib/grille-prix.ts` + `src/app/reglages/prix/` + `drizzle/0029_grumes_a_la_tonne.sql` |
@@ -483,6 +484,13 @@ Voir `TODO.md` pour le détail et l'ordre.
 - **Agenda Google** — la connexion du compte demande des identifiants que je n'ai
   pas ; le reste (lecture des disponibilités, écriture de l'intervention) est
   codable.
+- **Agenda iCloud** — demandé le 12 août 2026 **dans les deux sens**, et
+  **codé le jour même** : lecture des créneaux occupés, écriture des chantiers,
+  retrait au débranchement (`ARCHITECTURE.md` §75). Ce qui **reste** : aucun
+  échange réel avec iCloud n'a eu lieu — le réseau d'ici refuse
+  `caldav.icloud.com`. Les trois appels HTTP ne seront éprouvés que sur son banc,
+  avec un vrai mot de passe pour les apps. Tout ce qui décide, lui, est couvert
+  ici. Ne pas l'annoncer vérifié avant.
 - **Code SMS en renfort de l'acceptation** — l'empreinte, l'horodatage et
   l'adresse sont déjà conservés. **Sans objet en l'état**, pour la même raison.
 - **Relance automatique** — l'état « à relancer » existe et s'affiche, le lien

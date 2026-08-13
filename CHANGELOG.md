@@ -9,6 +9,94 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### L'agenda iCloud est relié — lecture ET écriture
+
+**Après la maquette (ci-dessous), sa décision :** *« code pour qu'on puisse lire
+et écrire dans cet agenda »*.
+
+**Ce qui marche désormais.** L'artisan colle son adresse iCloud et un mot de
+passe pour les apps ; Atlas découvre ses agendas, en lit les créneaux occupés —
+et **ne les propose plus** à ses clients. S'il allume l'écriture et désigne un
+calendrier, ses chantiers y sont posés, retirés quand il déplanifie, effacés
+quand il débranche.
+
+**Les deux fournisseurs se fondent en une seule carte d'occupation**
+(`periodesOccupeesExterieures`). Un artisan peut relier Google *et* iCloud ; le
+point de fusion est unique, parce que laisser chaque écran choisir garantirait
+qu'un des deux oublie un agenda — et le doublon reviendrait par la porte qu'on
+croyait fermée.
+
+**Ce qui rend l'écriture réversible :** l'identifiant de l'événement se déduit du
+chantier, donc replanifier réécrit au lieu d'ajouter, et le préfixe `atlas-` dit
+ce qu'Atlas a le droit d'effacer. Débrancher **retire d'abord, oublie ensuite** :
+effacer la ligne en premier perdrait le mot de passe, donc le seul moyen d'aller
+reprendre les rendez-vous.
+
+**Trois défauts trouvés par les contrôles, aucun à la lecture :**
+
+- `Date.UTC` ne refuse rien, il **reporte** : `20261332` — mois treize, jour
+  trente-deux — devenait le 1er février 2027 en silence, et Atlas barrait une
+  journée travaillée un an plus tard, sans raison visible ;
+- l'écran affichait « votre iCloud**—** pas seulement l'agenda » : le JSX avale
+  l'espace qui suit une balise fermante à cet endroit. **Vu sur une capture**,
+  pas par un test — quatre autres phrases du même écran portaient le piège ;
+- la suite de l'écran des réglages comptait les boutons de **toute la page** et
+  rougissait sur « Relier mon agenda Apple », pourtant légitime : iCloud ne
+  demande aucune configuration préalable, c'est toute la différence.
+
+**Ce qui n'est PAS vérifié, et qui est écrit comme tel :** aucun échange réel
+avec iCloud n'a eu lieu — le réseau d'ici refuse `caldav.icloud.com`. Restent à
+éprouver sur son banc : la découverte, la lecture, le dépôt, le retrait. Tout ce
+qui *décide* vit dans `src/lib/ics.ts` et `src/lib/caldav.ts`, qui ne parlent à
+personne et sont couverts entièrement (`ARCHITECTURE.md` §75).
+
+**Au passage**, deux corrections sans rapport avec Apple : `--seulement <motif>`
+sur les suites navigateur — diagnostiquer un rouge coûtait vingt-cinq minutes de
+batterie, et c'est ce prix-là qui pousse à supposer une cause au lieu d'aller la
+lire ; et `test-envoi-client-e2e` attendait dix secondes là où ses voisines en
+attendent vingt pour le même écran, d'où un rouge intermittent qui accusait une
+règle métier étrangère à la panne.
+
+### Relier l'agenda iCloud : la maquette, la réponse, et rien dans `src/`
+
+**Sa question, capture du Calendrier d'Apple à l'appui :** *« je peux connecter
+ce calendrier à mon appli ? »* — puis, aux deux questions posées : le compte
+derrière la vitrine est **iCloud**, et il veut **les deux sens** (Atlas lit ses
+rendez-vous, Atlas y écrit ses chantiers).
+
+**Le Calendrier d'Apple n'est qu'une vitrine**, et c'est la distinction qui
+commande tout : il affiche aussi bien iCloud que Gmail ou Exchange. Derrière du
+Google, il n'y aurait rien eu à écrire — le raccordement existe
+(`src/server/agenda/google.ts`). Derrière de l'iCloud, c'est un fournisseur en
+plus, et un parcours moins confortable : Apple n'offre **aucun** équivalent au
+bouton « accepter » de Google pour l'agenda. Reste CalDAV et un **mot de passe
+spécifique à l'app**, recopié à la main.
+
+**Ce qui est livré : une maquette, pas du code** (`maquettes/atlas-agenda-apple.html`,
+22 contrôles). Sa règle du 11 août — dessiner avant de toucher à `src/`. Elle
+tient deux règles qu'un écran de raccordement peut rater sans que rien ne
+proteste :
+
+- **on prévient avant de faire taper.** Ce mot de passe ouvre *tout* l'iCloud —
+  mail, contacts, fichiers — et Apple ne sait pas le restreindre à l'agenda. Le
+  contrôle vérifie l'avertissement **par sa position**, pas par sa présence :
+  une phrase juste placée sous le champ est une phrase lue trop tard ;
+- **écrire est une décision.** L'interrupteur est éteint au départ, et le choix
+  du calendrier n'existe pas tant qu'il l'est. Le repli est un calendrier
+  « Atlas » séparé : ce qu'Atlas a posé se retire alors d'un geste, là où des
+  chantiers semés dans « Perso » se reprennent un par un.
+
+**Deux défauts trouvés par les contrôles, pas à l'œil :** `font:400 16px/1.4
+inherit` est une déclaration **invalide** — `inherit` n'est pas admis dans le
+raccourci `font` — donc entièrement ignorée. Les champs retombaient à 13,3 px,
+soit exactement le zoom de Safari que la ligne prétendait éviter, et les boutons
+à 43 px, sous les 44 px du doigt. À l'écran, rien ne se voyait.
+
+**Ce qui n'a pas pu être vérifié, et qui est écrit comme tel :** le réseau de
+cet environnement refuse `caldav.icloud.com` (essayé, connexion refusée). Le
+comportement réel d'Apple ne s'éprouvera que sur son banc. Réponse complète,
+avec ce que ça coûte et ce que ça expose, dans `docs/QUESTIONS.md` §14.
+
 ### Le chevron doré du planning : l'adresse jusqu'au GPS en un doigt
 
 **Sa demande :** *« lorsque je vais sur planning et qu'il y a un chantier

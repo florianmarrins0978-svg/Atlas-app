@@ -27,6 +27,46 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 unvicies. ~~Relier l'agenda iCloud~~ — **codé le 12 août 2026**, reste à éprouver chez lui
+
+**Sa question du 12 août 2026**, capture du Calendrier d'Apple à l'appui : *« je
+peux connecter ce calendrier à mon appli ? »* Réponses obtenues : le compte
+derrière la vitrine est **iCloud**, et il veut **les deux sens** — Atlas lit ses
+rendez-vous, Atlas y écrit ses chantiers.
+
+**Codé, éprouvé pour tout ce qui décide, et pas au-delà** — le détail et le
+pourquoi sont dans `ARCHITECTURE.md` §75, la réponse en langage courant dans
+`docs/QUESTIONS.md` §14.
+
+| | Fait | Où |
+|---|---|---|
+| 1 | Migration : `fournisseur IN ('google','apple')`, mot de passe chiffré, agendas lus, calendrier d'écriture | `drizzle/0035_agenda_apple.sql` |
+| 2 | CalDAV : découverte, `calendar-query`, `PUT`, `DELETE` | `src/server/agenda/apple.ts` |
+| 3 | Lecture et écriture de l'iCalendar | `src/lib/ics.ts`, `src/lib/caldav.ts` |
+| 4 | L'écran, d'après la maquette | `src/app/reglages/agenda/AgendaAppleClient.tsx` |
+| 5 | Les chantiers montent et redescendent avec le planning | `src/server/repositories/agenda-apple.ts` |
+
+**CE QUI RESTE, et qui ne peut pas être fait ici :** aucun échange réel avec
+iCloud n'a eu lieu — le réseau refuse `caldav.icloud.com` (essayé le 12 août,
+connexion refusée). Restent à éprouver **sur son banc**, avec un vrai mot de
+passe pour les apps : la découverte des agendas, la lecture, le dépôt, le
+retrait. **Ne pas annoncer le raccordement comme éprouvé avant.**
+
+**Ce qui se cassera en premier, si quelque chose casse**, et par où commencer :
+
+1. **la découverte** — iCloud redirige de `caldav.icloud.com` vers le serveur du
+   compte ; les redirections sont suivies à la main pour que `PROPFIND` ne
+   devienne pas `GET` ;
+2. **la double authentification** — sans elle, Apple n'émet pas de mot de passe
+   pour les apps, et le refus arrive en 401 comme un mot de passe faux ;
+3. **le dépôt** — un agenda partagé en lecture seule est déjà écarté de la
+   liste, mais un serveur qui n'annonce pas ses privilèges est supposé
+   inscriptible : le refus n'arriverait alors qu'au `PUT`.
+
+Ce que le patron verra dans les trois cas : la phrase d'Apple, telle quelle, sur
+l'écran des réglages. C'est voulu — une erreur reformulée envoie chercher au
+mauvais endroit.
+
 ### 0 vicies. Le badge de Next recouvre son onglet « Chantiers »
 
 **Mesuré le 12 août 2026**, en cherchant pourquoi la CI virait au rouge six

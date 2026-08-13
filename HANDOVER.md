@@ -275,7 +275,7 @@ là pour ça, et elle a tué trois propositions — à 29 px avec un trait d'1,5
 tige et trois ovales se rejoignent en pâté quel que soit l'écartement. Une seule
 grande forme tient toujours ; trois petites, jamais.
 
-**Trois choses à ne pas défaire dans cette maquette-là :**
+**Trois choses à ne pas défaire, dans la maquette comme dans l'écran :**
 
 1. **`pointer-events:none` sur `.conn` une fois entré.** Les deux écrans
    occupent la même case de grille ; un écran à `opacity:0` continue
@@ -301,6 +301,68 @@ grande forme tient toujours ; trois petites, jamais.
 **Pourquoi cet écran échappe à tout :** c'est le seul vu **avant** d'être
 connecté, donc le seul qu'aucun parcours de l'application ne traverse. Le même
 raisonnement vaut pour `src/app/documents-legaux/formulaire.tsx`.
+
+## L'agenda iCloud : CODÉ le 12 août — et ce qui reste à éprouver chez lui
+
+**La maquette a été montrée, puis il a tranché :** *« code pour qu'on puisse
+lire et écrire dans cet agenda »*. C'est fait — `ARCHITECTURE.md` §75 porte le
+détail et le pourquoi.
+
+**⚠ CE QUI N'A JAMAIS PARLÉ À APPLE.** Aucun échange réel avec iCloud n'a eu
+lieu : le mandataire réseau d'ici refuse `caldav.icloud.com`. Les trois appels
+HTTP de `src/server/agenda/apple.ts` sont donc **non éprouvés**, et tout le
+reste — ce qui décide — l'est entièrement (`test-ics.ts`, `test-caldav.ts`,
+`test-agenda-apple-base.ts`). **Ne pas lui dire que le raccordement est vérifié
+avant qu'il l'ait branché une fois.**
+
+Si ça échoue chez lui, regarder dans cet ordre : la **découverte** (iCloud
+redirige vers le serveur du compte, et un `PROPFIND` transformé en `GET` rend
+une page au lieu d'un `multistatus`), la **double authentification** (sans elle,
+Apple n'émet pas de mot de passe pour les apps, et refuse en 401 comme un mot de
+passe faux), puis le **dépôt**. Dans les trois cas, la phrase d'Apple est
+affichée telle quelle sur l'écran des réglages : la lire avant de supposer.
+
+**Le contexte, pour ne pas le redécouvrir.** Il a envoyé une capture du
+Calendrier d'Apple : *« je peux connecter ce calendrier à mon appli ? »* Le
+Calendrier n'étant qu'une **vitrine** — il affiche iCloud comme Gmail —, la
+question a été posée avant de répondre. Ses deux réponses : le compte est
+**iCloud**, et il veut **les deux sens**. Réponse complète et chiffrée dans
+`docs/QUESTIONS.md` §14, chemin de mise en œuvre dans `TODO.md` §0 unvicies.
+
+**Ce qui change tout par rapport à Google** : Apple n'a **aucun** bouton
+« accepter » pour l'agenda. Il faut CalDAV et un **mot de passe spécifique à
+l'app**, généré sur son compte Apple — et ce mot de passe **ouvre tout
+l'iCloud**, mail et fichiers compris, parce qu'Apple ne sait pas le restreindre
+à un service. Ce n'est pas un détail à ranger en petits caractères : c'est la
+raison pour laquelle l'avertissement est **au-dessus** du champ dans la
+maquette, et pourquoi le contrôle le vérifie **par sa position**.
+
+**Trois choses à ne pas défaire dans cette maquette-là :**
+
+1. **L'interrupteur d'écriture reste éteint au départ**, et le choix du
+   calendrier n'existe pas tant qu'il l'est. Écrire dans son agenda personnel
+   est une décision ; un réglage allumé d'office la lui prend.
+2. **Le repli est un calendrier « Atlas » séparé**, pas « Perso ». Ce qu'Atlas a
+   posé se retire alors d'un geste au débranchement — semé dans « Perso », il se
+   reprend un par un.
+3. **Pas de raccourci `font:` avec `inherit`.** `font:400 16px/1.4 inherit` est
+   **invalide** et la déclaration entière tombe : les champs repassaient à
+   13,3 px (donc le zoom de Safari) et les boutons à 43 px, sous les 44 px du
+   doigt. Trouvé par le contrôle, invisible à l'écran. Le même piège dort dans
+   les autres maquettes du dossier.
+
+**Un quatrième piège, propre au JSX et trouvé sur une capture :** l'écran
+affichait « votre iCloud**—** pas seulement l'agenda ». Le JSX avale l'espace
+qui suit une balise fermante à cet endroit — l'écran de Google portait déjà un
+`{" "}` pour cette raison, sans que personne l'ait écrit. Quatre phrases du même
+écran portaient le piège. **Aucun test de texte ne l'attrape** : le contrôle
+vise désormais le texte RENDU (`test-agenda-reglages-e2e.ts`).
+
+**Pour diagnostiquer une suite navigateur sans rejouer la batterie :**
+`npm run test:e2e -- --seulement <motif>`. Écrit le 12 août après avoir rejoué
+vingt-cinq minutes pour observer UNE suite — c'est ce coût-là qui pousse à
+supposer une cause au lieu d'aller la lire. Le script dit à voix haute qu'il
+n'est pas la batterie.
 
 ## Ce qui vient d'être terminé
 
