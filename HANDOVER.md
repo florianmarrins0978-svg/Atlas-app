@@ -96,6 +96,17 @@ et ne jamais dépendre d'une seule réponse tenue ouverte. Voir `ARCHITECTURE.md
 
 ## ⚠ Plusieurs conversations travaillent sur ce dépôt EN MÊME TEMPS
 
+**Sa décision du 13 août 2026 — ne PAS rejouer la batterie à chaque fusion.**
+*« Seulement quand le code touche. »* Un lot déjà éprouvé au vert n'a pas à
+repasser soixante suites parce qu'une autre session a poussé du code sans
+rapport. Le tableau qui dit ce qui compte comme « ça touche » est dans
+`CLAUDE.md` §6 — et **une migration arrivée par la fusion s'applique d'abord**,
+sans quoi la batterie rend des dizaines de rouges qui n'accusent que la base.
+
+**Ce que ça ne relâche pas** : la batterie complète reste obligatoire avant la
+PREMIÈRE poussée d'un lot, sur son propre code.
+
+
 **Dit par le patron le 11 août 2026 :** *« sur d'autres sessions, je demande de
 faire d'autres corrections. »* Ce n'est donc pas une hypothèse : `main` bouge
 pendant qu'on travaille, et il a bougé de trois commits en une après-midi.
