@@ -489,14 +489,24 @@ client demande une modification, ouvrir le devis pour pouvoir le modifier. »*
 **Trois choses à savoir :**
 
 1. **La règle vit dans `src/lib/suite-de-la-reponse.ts`**, pas dans le
-   composant : accepté → `devis-complet` (le document figé, tel que le client
-   l'a reçu) ; correction, refus, lien périmé → l'écran d'envoi, qui porte la
-   reprise. **Ne pas mener un devis à corriger sur `devis-complet`** : il est
-   immuable une fois parti, et le patron se retrouverait devant un document qui
-   refuse sa frappe.
-2. **Ne jamais reprendre à sa place.** La reprise ouvre une NOUVELLE version du
-   devis : c'est sa décision. On mène à l'écran qui la propose, on ne la déclenche
-   pas.
+   composant : accepté → `devis-complet` figé, tel que le client l'a reçu ;
+   **correction → `devis-complet` AUSSI, mais après reprise** (drapeau
+   `reprendreAvant`) ; refus et lien périmé → l'écran d'envoi, qui laisse le
+   choix. **Ne jamais mener un devis à corriger sur `devis-complet` SANS la
+   reprise** : il est immuable une fois parti, et le patron se retrouverait
+   devant un document qui refuse sa frappe.
+2. **Corrigé le 13 août 2026, par lui :** *« lorsque je clique sur corriger le
+   devis, je dois arriver directement sur la page du devis pour pouvoir le
+   corriger. »* La veille, la correction passait par l'écran d'envoi, au nom de
+   « ne jamais reprendre à sa place ». Le principe reste juste — **mais il ne
+   s'appliquait pas ici : c'est LUI qui appuie**, sur un bouton qui annonce
+   « Corriger le devis ». Le geste est le sien ; l'en priver lui coûtait un
+   écran et un second appui.
+
+   Il vaut toujours ailleurs : un devis **accepté** ne se reprend jamais
+   d'office (ce serait remplacer sans le dire le document sur lequel les deux
+   se sont mis d'accord), et un **refus** ou un **silence** n'appellent pas
+   forcément un nouveau devis — la suite peut être d'abandonner le chantier.
 3. **Une acceptation sur une date PROPOSÉE ne fait aucune carte**, et c'est
    voulu (`notificationsPatron`). Seuls un refus, une correction, une
    contre-proposition de date ou un message du client en font une. Un contrôle
