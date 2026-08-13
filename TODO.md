@@ -39,7 +39,7 @@ Ordre convenu, qui suit ses quatre priorités du 13 août 2026 :
 |---|---|---|---|
 | 1 | **Le plan** | Deux niveaux, trois rôles, l'interrupteur | **dessiné le 13 août — attend son accord** |
 | 2 | Identité de l'entreprise | Nom, adresse, SIRET/SIREN, TVA, IBAN | **dessiné le 13 août** (`ARCHITECTURE.md` §81) |
-| 3 | Équipe et rôles | Qui a accès, et à quoi | à dessiner — **suppose la décision sur le rôle « commercial »** |
+| 3 | Équipe et rôles | Qui a accès, et à quoi | **dessiné le 13 août** (`ARCHITECTURE.md` §82) — **le rôle « commercial » reste à trancher** |
 | 4 | Tarifs & catalogue | Prestations, main-d'œuvre, matériel | à dessiner — l'écran existe déjà en partie |
 | 5 | Documents | Conditions, acompte, logo, texte de bas de page | à dessiner — **le plus lourd**, voir ci-dessous |
 | 6 | Notifications | Huit familles d'alertes, canal par canal | à dessiner |
@@ -95,10 +95,18 @@ Manquent aussi en base, et la maquette les montre : **forme juridique** et
   connaît que `proprietaire` et `membre` ; `docs/QUESTIONS.md` §10 décrit
   l'éditeur, le patron et le salarié. L'ajouter suppose une migration **et**
   une décision, pas seulement un écran ;
-- **le cloisonnement par rôle est aujourd'hui inexistant** côté serveur. Un
-  écran qui n'affiche pas une rubrique ne protège rien : `QUESTIONS.md` §10 exige
-  que la donnée ne SORTE pas. C'est le vrai coût de ce lot, et il est en base et
-  dans les dépôts, pas dans l'affichage ;
+- **le cloisonnement par rôle est aujourd'hui inexistant** côté serveur, et le
+  lot 3 l'a mesuré : `exigerProprietaire` protège **vingt-trois points
+  d'écriture**, mais `getRole` n'est appelé dans **aucun écran** — rien ne filtre
+  la LECTURE. Un « membre » voit tous les prix, tous les devis, tous les
+  montants. `QUESTIONS.md` §10 exige que la donnée ne SORTE pas du serveur :
+  c'est le vrai coût de ce lot, et il est dans les dépôts, pas dans l'affichage ;
+- **aucun parcours d'invitation n'existe** : `membres-entreprise.ts` sait
+  ajouter et retirer un membre, aucun écran ne l'appelle, et rien n'envoie
+  d'invitation. Un patron ne peut donner aucun accès aujourd'hui ;
+- **la question du 7 août est toujours ouverte** : le salarié voit-il le
+  planning de toute l'entreprise, ou seulement ses chantiers ? Elle change le
+  travail et ce qui se vend (`docs/QUESTIONS.md` §10) ;
 - **le logo sur le devis n'existe pas** : `document-commun.ts` ne pose aucune
   image. Extraire un logo d'une photo déposée est faisable (pdf-lib sait
   incorporer un PNG) ; **remplacer entièrement le devis par un modèle importé ne

@@ -505,6 +505,10 @@ Voir `TODO.md` pour le détail et l'ordre.
   à la main, et rien ne la vérifie avant l'envoi — le premier devis d'un vrai
   artisan partirait sans SIRET ni IBAN. **C'est bloquant pour la
   commercialisation**, au même titre que les points de `docs/A-FAIRE.md`.
+  **Lot 3 dessiné le 13 août** (l'équipe) : « équipe » désigne déjà une file du
+  planning et non un compte — deux listes séparées —, et le **cloisonnement en
+  lecture n'existe pas** : `getRole` n'est appelé dans aucun écran, un membre
+  voit aujourd'hui tous les montants (`ARCHITECTURE.md` §82).
 
 - **Agenda Google** — la connexion du compte demande des identifiants que je n'ai
   pas ; le reste (lecture des disponibilités, écriture de l'intervention) est

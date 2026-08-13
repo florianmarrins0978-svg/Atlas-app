@@ -9,6 +9,42 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### Réglages, lot 3 : l'équipe et les rôles — le mot était déjà pris
+
+`maquettes/atlas-reglages-equipe.html`, quatre écrans : qui a accès, le rôle et
+ce qu'il change, le devis vu par un salarié, et l'état « seul ». Rien dans
+`src/`.
+
+**« Équipe » désigne déjà autre chose dans Atlas** : une file du planning —
+combien de chantiers partent en même temps —, pas un compte. Les deux ne se
+recouvrent pas : une file peut s'appeler « Équipe B », deux ouvriers qui
+n'ouvriront jamais l'application ; un commercial a un compte et ne conduit aucun
+chantier. La rubrique tient donc **deux listes séparées**, et le dit. Les fondre
+aurait produit la question insoluble « pourquoi mon commercial est-il dans le
+planning ? ».
+
+**Trois réserves, vérifiées dans le code :** le rôle « commercial » n'existe pas
+en base ; **aucun parcours d'invitation** n'existe (le dépôt sait ajouter un
+membre, aucun écran ne l'appelle) ; et surtout **le cloisonnement en lecture
+n'est pas codé** — `exigerProprietaire` protège vingt-trois écritures, mais
+`getRole` n'est appelé dans aucun écran : **un membre voit aujourd'hui tous les
+prix et tous les montants**, ce que `QUESTIONS.md` §10 refuse expressément.
+
+**Deux décisions de forme.** Un rôle dit **ce qu'il ferme**, pas seulement ce
+qu'il ouvre — n'énumérer que les droits laisse croire que le reste est permis.
+Et l'écran d'un salarié **ne laisse aucune place pour un montant** : pas de
+colonne de prix, pas d'emplacement vide. Un blanc dirait « il y a un chiffre
+ici, on te le refuse », et le premier réflexe serait d'ouvrir le PDF.
+
+**La question du 7 août reste ouverte** et la planche la repose : le salarié
+voit-il le planning de toute l'entreprise, ou seulement ses chantiers ?
+
+**Défaut vu à l'œil :** un bloc imbriqué reprenait la marge de son parent et se
+retrouvait à 52 px, décalé de tout le reste. Le contrôle du retrait mesure
+désormais tous les blocs, et vaut pour les trois planches.
+
+---
+
 ### Réglages, lot 2 : l'identité — et trois manques qu'elle a révélés
 
 `maquettes/atlas-reglages-identite.html`, cinq écrans : identité, SIRET, régime

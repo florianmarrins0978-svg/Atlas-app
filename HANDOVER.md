@@ -296,8 +296,15 @@ d'après le taux appliqué et se trompe dans les deux sens ; le numéro de TVA
 intracommunautaire n'existe nulle part ; le téléphone et l'e-mail sont saisis et
 ne s'impriment sur aucun document. Ils sont dans `TODO.md` §0 quatervicies.
 
+**Lot 3 fait le 13 août : l'équipe et les rôles**
+(`maquettes/atlas-reglages-equipe.html`, `ARCHITECTURE.md` §82). Deux choses à
+ne pas rater : **« équipe » désigne déjà une FILE DU PLANNING**, pas un compte —
+la rubrique tient donc deux listes séparées ; et **le cloisonnement en lecture
+n'existe pas** : `getRole` n'est appelé dans aucun écran, un membre voit tous
+les montants.
+
 L'ordre des lots est dans `TODO.md` §0 quatervicies ; le pourquoi dans
-`ARCHITECTURE.md` §80 et §81.
+`ARCHITECTURE.md` §80, §81 et §82.
 
 **Deux conventions posées le 13 août, qui valent pour toutes les planches à
 venir.** Les couleurs sont **recopiées de `src/lib/design-tokens.ts`** et le

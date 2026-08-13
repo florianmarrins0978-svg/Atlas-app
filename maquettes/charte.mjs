@@ -181,4 +181,20 @@ export async function controlerRetrait(page, verifie) {
     }));
   verifie("rien ne dépasse le retrait de 26 px, encarts compris",
     hors.length === 0, hors.join(" | "));
+
+  // ET AUCUN BLOC N'EST DÉCALÉ VERS L'INTÉRIEUR. Un bloc imbriqué qui reprend
+  // la marge de son parent se retrouve à 52 px, décalé de tout le reste — vu
+  // sur une capture le 13 août 2026. Le contrôle ci-dessus ne regarde que les
+  // enfants directs du corps et ne pouvait pas l'attraper.
+  const decales = await page.$$eval(".ecran .corps", (corps) =>
+    corps.flatMap((c) => {
+      const r = c.getBoundingClientRect();
+      return [...c.querySelectorAll(".bloc")]
+        .filter((e) => e.checkVisibility({ opacityProperty: true, visibilityProperty: true }))
+        .map((e) => ({ e, x: e.getBoundingClientRect().x - r.x }))
+        .filter(({ x }) => Math.abs(x - 26) > 1.5)
+        .map(({ x }) => `un bloc à ${x.toFixed(0)} px`);
+    }));
+  verifie("tous les blocs partent du même retrait, imbriqués compris",
+    decales.length === 0, decales.join(" | "));
 }

@@ -6325,3 +6325,80 @@ Deux écrans de plus dans `atlas-reglages-identite.html` :
 saisit qu'au détour d'un devis manuel, Atlas ne peut pas être confié à un
 artisan : son premier document partirait irrégulier. `TODO.md` §0 quatervicies
 le porte, et c'est désormais le point le plus lourd de la série.
+
+
+---
+
+## 82. L'équipe et les rôles : le mot était déjà pris, et le cloisonnement n'existe pas
+
+**Troisième lot des réglages, dessiné le 13 août 2026** —
+`maquettes/atlas-reglages-equipe.html`, quatre écrans, contrôlée par
+`maquettes/verifier-atlas-reglages-equipe.mjs`. Rien dans `src/`.
+
+### « Équipe » désigne déjà autre chose, et les fondre serait une faute
+
+Dans Atlas, une **équipe** est une FILE DE PLANNING : combien de chantiers
+partent en même temps (`entreprises.nombre_equipes`, 1 à 20), avec un nom
+facultatif (§51). **Ce n'est pas un compte.**
+
+Les deux ne se recouvrent pas, et c'est structurel : une file peut s'appeler
+« Malik » — une personne — ou « Équipe B », deux ouvriers qui n'ouvriront jamais
+l'application ; à l'inverse un commercial a un compte et ne conduit aucun
+chantier. La rubrique tient donc **deux listes séparées**, et l'écran le dit :
+« une équipe n'est pas un compte ». Les fondre aurait produit la question
+insoluble *« pourquoi mon commercial apparaît-il dans le planning ? »*.
+
+Le contrôle tient la distinction par une mesure simple : **une file du planning
+ne porte aucun rôle.** Si un jour les deux listes fusionnent, il rougit.
+
+### Trois réserves, toutes vérifiées dans le code
+
+1. **Le rôle « commercial » n'existe pas.** `membres_entreprise.role` ne connaît
+   que `proprietaire` et `membre`.
+2. **Aucun parcours d'invitation.** `src/server/repositories/membres-entreprise.ts`
+   sait ajouter et retirer un membre ; aucun écran ne l'appelle, et rien
+   n'envoie d'invitation. Un patron ne peut pas donner un accès.
+3. **Le cloisonnement en LECTURE n'est pas codé, et c'est le plus grave.**
+   `exigerProprietaire` protège vingt-trois points d'écriture ; `getRole` n'est
+   appelé dans **aucun** écran. **Un « membre » voit aujourd'hui tous les prix,
+   tous les devis, tous les montants.** C'est exactement ce que
+   `docs/QUESTIONS.md` §10 refuse.
+
+### Deux décisions de forme, qui portent la règle du §10
+
+**Un rôle dit ce qu'il FERME, pas seulement ce qu'il ouvre.** Une liste qui
+n'énumère que les droits laisse croire que le reste est permis. Le patron, lui,
+n'a aucune ligne de refus — une croix chez lui serait fausse — mais l'écran
+prévient qu'un second patron peut tout défaire, coordonnées bancaires
+comprises.
+
+**L'écran d'un salarié ne laisse AUCUNE PLACE pour un montant.** Pas de colonne
+de prix, pas de total, et surtout **pas d'emplacement vide** : un blanc à la
+place d'un chiffre dirait « il y a un montant ici, on te le refuse », et le
+premier réflexe serait d'ouvrir le PDF — qui, lui, s'ouvre. La phrase de
+clôture le dit dans ces termes : *le serveur ne les a pas envoyés*.
+
+### Seul, on ne parle pas de rôles
+
+Même arbitrage que pour les équipes (§51) : à une seule personne, aucun choix de
+rôle n'est proposé et le bloc des files disparaît. Proposer d'arbitrer des
+permissions quand il n'y a personne à distinguer serait un piège.
+
+### La question qui reste ouverte depuis le 7 août
+
+*« Le salarié voit-il le planning de toute l'entreprise, ou seulement ses
+chantiers à lui ? »* — réponse remise par le patron : *« attends, fais déjà tout
+le reste, on en reparle après »* (`docs/QUESTIONS.md` §10). Elle change le
+travail et elle change ce qui se vend. La planche la repose sans y répondre à sa
+place.
+
+### Le défaut vu à l'œil, et le contrôle qui en naît
+
+Un `.bloc` imbriqué dans un autre reprenait sa marge de 26 px et se retrouvait à
+**52** — la liste « ce que ça change » était décalée à droite de tout le reste.
+`controlerRetrait` ne regardait que les enfants directs du corps et ne pouvait
+pas l'attraper ; il mesure désormais **tous** les blocs, imbriqués compris, et
+la règle vaut pour les trois planches.
+
+Corrigé au passage : le titre disait « ce que ça ouvre » au-dessus d'une liste
+qui contient aussi des refus. Il dit « ce que ça change ».
