@@ -71,7 +71,7 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
           href={`/factures/${encodeURIComponent(jeton)}/pdf`}
           target="_blank"
           rel="noopener"
-          className="mt-6 block rounded-xl bg-[#8C4A2F] px-5 py-3 text-[15px] font-medium text-white"
+          className="mt-6 block rounded-full bg-[#8C4A2F] px-5 py-3 text-[15px] font-medium text-white"
         >
           Voir la facture en PDF
         </a>
