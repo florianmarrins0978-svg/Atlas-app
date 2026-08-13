@@ -5711,10 +5711,69 @@ justement pour éviter.
 banc, avec un vrai mot de passe : la découverte des agendas, la lecture, le
 dépôt, le retrait. Ne pas annoncer le raccordement comme éprouvé avant que cela
 ait tourné une fois pour de bon.
+## 76. « Une réponse inattendue du serveur » : un état du banc, pas un défaut du code
+
+**Sa capture du 12 août 2026, 14 h 04.** Panneau rouge, anglais, pile d'appel
+dans `node_modules` : *« An unexpected response was received from the
+server. »*
+
+### Ce que la capture disait, et qu'il fallait lire
+
+Le chemin de la pile commençait par **`.next/dev`** : son banc servait la
+version LENTE. Or c'est tout le sujet de `banc.mjs` (§45) — en développement,
+Next ne compile un écran qu'au premier appel : trente à cent secondes ici,
+davantage sur son disque. **Le relais de GitHub, lui, abandonne au bout d'une
+minute** et rend sa propre page d'erreur. Le navigateur reçoit alors du HTML là
+où il attendait une réponse d'Atlas, et le cadre dit exactement cette phrase.
+
+Trois causes produisent ce message, dans l'ordre de fréquence sur son banc : le
+relais qui abandonne, l'application qui se recompile sous la page ouverte après
+une mise à jour, ou le serveur coupé et pas encore relevé. **Aucune n'est
+réparable depuis le navigateur, et toutes se résolvent en rechargeant.**
+
+### Ce qui n'a pas été fait, et pourquoi c'est la décision principale
+
+La cause **n'a pas été reproduite ici**. Le bouton de mise à jour, joué dans les
+conditions du banc — code changé sous la page ouverte, recompilation, appui —
+s'est comporté correctement. Rien n'a donc été corrigé au jugé : c'est la faute
+que ce dépôt paie le plus cher, et elle avait déjà été commise deux fois dans la
+même journée (voir §72 et le CHANGELOG du 11 août).
+
+Ce qui a été livré, c'est ce que la doctrine prescrit devant un défaut muet :
+**le rendre bavard** (`AGENTS.md`).
+
+### Deux dispositifs, et ce qu'ils refusent
+
+**`src/lib/reponse-illisible.ts`** — fonction pure. Quatre formulations
+reconnues, selon le navigateur et la version du cadre. Elle **refuse tout le
+reste**, et c'est le point important : habiller en « le serveur se prépare » un
+défaut venu du code enverrait recharger une page qui ne guérira pas, et
+masquerait le défaut. Six messages réels sont éprouvés comme devant rester tels
+quels — dont « Invalid Server Actions request. », qui appartient à une autre
+famille et appelle un autre geste (§34).
+
+**`VeilleReponseServeur`** — posé dans la coque, **hors du choix
+avec/sans barre de navigation**. Il y était d'abord dans la seule branche à
+barre : l'écran de connexion en était dépourvu, c'est-à-dire l'écran où une
+réponse coupée est la plus probable — premier appel, compilation de tout, et
+aucun autre repère pour le patron. La suite navigateur l'a montré avant que
+quiconque ne le lise.
+
+**Et l'écran Réglages dit qu'il sert la version lente.** `NODE_ENV` tranche sans
+ambiguïté — `next start` impose `production` (`demarrer.sh`), la même règle que
+`issueApresMiseAJour`. Sans cette ligne, le patron ne pouvait pas relier son
+panneau rouge à l'état de son banc.
+
+### La règle générale
+
+**Un message du cadre en anglais n'est jamais une livraison.** Soit on connaît
+la famille d'échec et on la dit en français avec le geste, soit on ne la connaît
+pas — et il faut alors la laisser passer intacte plutôt que de l'habiller. Une
+phrase rassurante posée sur un vrai défaut vaut moins que pas de phrase du tout.
 
 ---
 
-## 76. « Monsieur Martins », et la migration qui ne changeait rien en silence
+## 77. « Monsieur Martins », et la migration qui ne changeait rien en silence
 
 **Le patron, le 13 août 2026, capture de son écran Devis à l'appui :**
 

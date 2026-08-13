@@ -53,7 +53,7 @@ la suite passent.
 ### 0 duovicies. La civilité du client — **à trancher avec lui**
 
 Le 13 août 2026, il a demandé que le devis dise « Monsieur Martins » et non
-« Chez Martins ». C'est **fait** (`ARCHITECTURE.md` §76). Mais la fiche client
+« Chez Martins ». C'est **fait** (`ARCHITECTURE.md` §77). Mais la fiche client
 ne porte **aucun champ de civilité** : « Monsieur » est un défaut posé sur tout
 nom qui n'en annonce pas d'autre.
 

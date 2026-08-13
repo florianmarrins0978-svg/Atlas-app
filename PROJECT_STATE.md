@@ -157,7 +157,7 @@ l'application. Ce qui est **fait** :
   au-dessus du détail au lieu de les coller par un tiret. La civilité vit dans
   `src/lib/civilite.ts` — **et c'est un défaut, pas une donnée** : sans champ de
   civilité sur la fiche client, une cliente est nommée « Monsieur ». À trancher
-  avec lui. `ARCHITECTURE.md` §76.
+  avec lui. `ARCHITECTURE.md` §77.
 - **Le devis à la main** : ses trois zones de texte mesurent leur hauteur au
   lieu de l'estimer (11 août 2026). Elles comptaient les caractères ou les
   retours à la ligne, alors qu'un texte se coupe au mot : le devis cachait 24 px
