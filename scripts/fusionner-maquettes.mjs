@@ -236,6 +236,12 @@ const MAQUETTES = [
     famille: "La dernière porte",
     quoi: "Le tour est retenu ; seule la gravure change. Huit motifs, et une bande en tête qui les montre à leur taille réelle — c’est là que se juge lequel tient encore à six millimètres.",
   },
+  {
+    fichier: "40-la-feuille-denvoi.html",
+    titre: "La feuille d’envoi : un seul geste à la fois",
+    famille: "La feuille d’envoi",
+    quoi: "Deux boutons pleins l’un sous l’autre sur la feuille d’un devis corrigé. Deux lectures du retrait, montrées dans les deux moments — avant et après l’envoi — et trois dosages de « Plutôt par e-mail ».",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

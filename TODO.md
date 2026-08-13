@@ -27,6 +27,33 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 unvicies. La feuille d'envoi montre deux boutons pleins à la fois
+
+**Sa capture du 13 août 2026**, sur un devis dont le client demandait une
+correction : « Ouvrir le SMS tout prêt » et « Corriger et renvoyer », l'un sous
+l'autre, tous deux pleins. *« Il faut qu'il y ait juste qu'un seul bouton. »*
+
+**Le second n'est pas un doublon, et c'est ce qui rend l'arbitrage réel :**
+`ExportClient` le rend dès que `etatEnvoi` vaut `retourne`, `a_corriger` ou
+`caduc` — et **c'est le seul endroit d'Atlas où naît une version corrigée**. La
+carte du chantier dit « Corriger le devis » et mène ici
+(`src/lib/suite-de-la-reponse.ts`, qui explique pourquoi elle ne reprend pas à
+sa place). Le retirer purement et simplement supprime la correction.
+
+**Le vrai défaut est ailleurs** : après un envoi réussi, `etatEnvoi` n'est pas
+recalculé — l'écran reste sur l'état d'avant et propose de corriger un devis
+qu'on vient de corriger et d'envoyer.
+
+**Deux autres demandes, elles, ne se discutent pas :** « Copier le lien » quitte
+la rangée des trois actions, et « Plutôt par e-mail → » passe du gris 13 px à
+l'or, en gras, un peu plus gros.
+
+**Maquette `docs/maquettes/40-la-feuille-denvoi.html`** — deux lectures (A : le
+bouton quitte la page ; B : un seul bouton par moment) montrées dans les DEUX
+moments, plus trois dosages de la ligne dorée. **En attente de sa lettre et de
+son numéro. Rien n'est posé dans `src/`.**
+
+
 ### 0 unvicies. ~~Relier l'agenda iCloud~~ — **codé le 12 août 2026**, reste à éprouver chez lui
 
 **Sa question du 12 août 2026**, capture du Calendrier d'Apple à l'appui : *« je

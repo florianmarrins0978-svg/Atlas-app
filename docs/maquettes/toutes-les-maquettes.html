@@ -3835,6 +3835,102 @@
            letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
 
 
+/* 33 — La feuille d’envoi : un seul geste à la fois */
+#s33{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f7f5f0;
+  }
+@media (prefers-color-scheme: dark){
+#s33:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a;
+    }
+
+  
+}
+#s33[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a;
+  }
+#s33, #s33 *{box-sizing:border-box}
+#s33{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+#s33 .page{max-width:1300px;margin:0 auto}
+#s33 .intro{max-width:66ch;margin:0 auto;text-align:center}
+#s33 .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+#s33 .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+#s33 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+#s33 .intro b{color:var(--encre);font-weight:600}
+#s33 .famille{max-width:1300px;margin:52px auto 0;text-align:center;
+           font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.32em;
+           text-transform:uppercase;color:var(--or)}
+#s33 .sous-famille{max-width:60ch;margin:10px auto 0;text-align:center;
+                font-size:13.4px;color:var(--gris);line-height:1.6}
+#s33 .sous-famille b{color:var(--encre)}
+#s33 .grille{display:flex;flex-wrap:wrap;gap:54px 40px;justify-content:center;
+          align-items:flex-start;margin-top:26px}
+#s33 .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px;width:100%}
+#s33 .legende{text-align:center;max-width:390px;width:100%}
+#s33 .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+              text-transform:uppercase;color:var(--or)}
+#s33 .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+#s33 .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+#s33 .legende p + p{margin-top:9px}
+#s33 .legende .reserve{color:var(--encre);opacity:.82}
+#s33 .legende .reserve b{color:var(--or)}
+#s33 .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+#s33 .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
+    width:390px;max-width:100%;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);padding:22px 0 26px;
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+#s33 .retour{margin:0 24px;width:38px;height:38px;border-radius:9999px;
+          background:var(--e-plage);display:flex;align-items:center;justify-content:center;
+          color:var(--e-gris);font-size:17px}
+#s33 .eyebrow{margin:16px 24px 0;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--e-or)}
+#s33 .titre-ecran{margin:12px 24px 0;font:400 34px/1.1 ui-serif,Georgia,serif}
+#s33 .filet{margin:16px 24px 0;height:1px;background:var(--e-trait)}
+#s33 .etat{margin:18px 24px 0;padding-left:12px;border-left:2px solid var(--e-or)}
+#s33 .etat .quoi{font-size:15px}
+#s33 .etat .pourquoi{margin-top:2px;font-size:14px;color:var(--e-gris)}
+#s33 .citation{margin:12px 24px 0;padding-left:12px;border-left:2px solid var(--e-pin);font-size:15px}
+#s33 .total{margin:24px 24px 0;text-align:center}
+#s33 .total .no{font-size:14px;color:var(--e-gris)}
+#s33 .total .montant{margin-top:6px;font:400 38px/1 ui-serif,Georgia,serif;color:var(--e-pin)}
+#s33 .capsule-large{display:block;margin:26px 24px 0;border-radius:9999px;
+                 background:var(--e-pin);color:#faf9f5;padding:15px 0;
+                 text-align:center;font-size:16px;font-weight:500}
+#s33 .destinataire{margin:10px 24px 0;text-align:center;font-size:12px;color:var(--e-gris)}
+#s33 .bascule{margin:12px 24px 0;text-align:center;font-size:13px;color:var(--e-gris)}
+#s33 .bascule.or{color:var(--e-or);font-weight:600;font-size:15px}
+#s33 .bascule.or-filet{color:var(--e-or);font-weight:600;font-size:15px}
+#s33 .bascule.or-filet span{border-bottom:1px solid rgba(185,139,71,.45);padding-bottom:3px}
+#s33 .bascule.caps{color:var(--e-or);font:600 12px/1 ui-sans-serif,sans-serif;
+                letter-spacing:.16em;text-transform:uppercase}
+#s33 .rangee{margin:16px 24px 0;display:flex;align-items:center;justify-content:center;
+          font-size:13px;color:var(--e-encre)}
+#s33 .rangee a,#s33 .rangee span.act{padding:0 8px;font-weight:500}
+#s33 .rangee .pt{color:var(--e-trait)}
+#s33 .reprise{display:block;margin:16px 24px 0;border-radius:9999px;
+           background:var(--e-pin);color:#faf9f5;padding:13px 0;
+           text-align:center;font-size:15px;font-weight:500}
+#s33 .rature{position:relative}
+#s33 .rature::after{content:"";position:absolute;left:24px;right:24px;top:50%;
+                 height:2px;background:#9C3B2E;opacity:.75}
+#s33 .marque-retire{margin:8px 24px 0;text-align:center;font-size:11.5px;color:#9C3B2E}
+#s33 .vide{margin:22px 24px 0;padding:14px 12px;border:1px dashed var(--e-trait);
+        border-radius:4px;text-align:center;font-size:12.5px;color:var(--e-gris)}
+#s33 .note{max-width:74ch;margin:62px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+#s33 .note b{color:var(--encre)}
+#s33 .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+
+
 </style>
 
 <div class="enveloppe">
@@ -3982,6 +4078,11 @@
       <a class="item" href="#m32">
         <span class="no">32</span><span class="titre">Le motif dans le rond d’or</span><span class="fleche">↓</span>
         <span class="quoi">Le tour est retenu ; seule la gravure change. Huit motifs, et une bande en tête qui les montre à leur taille réelle — c’est là que se juge lequel tient encore à six millimètres.</span>
+      </a>
+      <p class="famille">La feuille d’envoi</p>
+      <a class="item" href="#m33">
+        <span class="no">33</span><span class="titre">La feuille d’envoi : un seul geste à la fois</span><span class="fleche">↓</span>
+        <span class="quoi">Deux boutons pleins l’un sous l’autre sur la feuille d’un devis corrigé. Deux lectures du retrait, montrées dans les deux moments — avant et après l’envoi — et trois dosages de « Plutôt par e-mail ».</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -14648,6 +14749,306 @@
     La capsule est un <code>&lt;label&gt;</code> qui coche une case native.
     <b>Aucun fichier de <code>src/</code> n’a été touché</b> : vous donnez un
     numéro, et c’est ensuite seulement que l’écran change.
+  </p>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m33">
+    <div class="etape-tete">
+      <span class="etape-no">33</span>
+      <h2>La feuille d’envoi : un seul geste à la fois</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s33">
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">La feuille d’envoi</p>
+    <h1>Un seul geste à la fois</h1>
+    <p><b>Deux de vos trois demandes sont dans toutes les propositions</b> :
+      « Copier le lien » quitte la rangée, et « Plutôt par e-mail → » cesse
+      d’être un gris de bas de page.</p>
+    <p>La troisième — retirer « Corriger et renvoyer » — a un coût, et c’est
+      l’objet de cette page. <b>C’est le seul endroit d’Atlas où naît une
+      version corrigée</b> : la carte du chantier dit « Corriger le devis » et
+      mène exactement ici.</p>
+  </div>
+
+  <p class="famille">Aujourd’hui — après l’envoi de la correction</p>
+  <p class="sous-famille">Votre capture du 13 août, reproduite. Deux boutons
+    pleins, et celui du bas propose de corriger un devis que vous venez de
+    corriger et d’envoyer.</p>
+  <div class="grille">
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Chez Martins</p>
+        <h3 class="titre-ecran">Devis</h3>
+        <div class="filet"></div>
+        <div class="etat">
+          <div class="quoi">Devis prêt</div>
+          <div class="pourquoi">Devis prêt pour Martins.</div>
+        </div>
+        <div class="citation">« Trop chère »</div>
+        <div class="total">
+          <div class="no">Devis n° 2026-0007</div>
+          <div class="montant">420,00 €</div>
+        </div>
+        <div class="capsule-large">Ouvrir le SMS tout prêt</div>
+        <p class="destinataire">Au 06 79 98 45 14 — c’est vous qui l’envoyez.</p>
+        <p class="bascule">Plutôt par e-mail →</p>
+        <div class="rangee">
+          <a>Télécharger le PDF</a><span class="pt">·</span>
+          <span class="act">Copier le lien</span><span class="pt">·</span>
+          <span class="act">Partager</span>
+        </div>
+        <div class="reprise">Corriger et renvoyer</div>
+      </div></div>
+      <div class="legende">
+        <h2>Avant</h2>
+        <p class="titre">L’écran d’aujourd’hui</p>
+        <p>Deux boutons pleins l’un sous l’autre, et rien ne dit lequel est le
+          geste attendu.</p>
+        <p class="reserve"><b>Pourquoi le second est là :</b> l’écran a été
+          composé quand le devis était « à corriger », et cette information
+          n’est pas recalculée après l’envoi. Il est resté sur l’état d’avant.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="famille">Proposition A — le bouton retiré de la page</p>
+  <p class="sous-famille">Exactement ce que vous avez demandé. <b>Les deux
+    moments sont montrés</b> : après l’envoi, c’est parfait ; avant, il ne reste
+    plus aucun geste pour corriger.</p>
+  <div class="grille">
+
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Chez Martins</p>
+        <h3 class="titre-ecran">Devis</h3>
+        <div class="filet"></div>
+        <div class="etat">
+          <div class="quoi">Devis prêt</div>
+          <div class="pourquoi">Devis prêt pour Martins.</div>
+        </div>
+        <div class="citation">« Trop chère »</div>
+        <div class="total">
+          <div class="no">Devis n° 2026-0007</div>
+          <div class="montant">420,00 €</div>
+        </div>
+        <div class="capsule-large">Ouvrir le SMS tout prêt</div>
+        <p class="destinataire">Au 06 79 98 45 14 — c’est vous qui l’envoyez.</p>
+        <p class="bascule or">Plutôt par e-mail →</p>
+        <div class="rangee">
+          <a>Télécharger le PDF</a><span class="pt">·</span>
+          <span class="act">Partager</span>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>A · après l’envoi</h2>
+        <p class="titre">Un seul bouton</p>
+        <p>Un geste plein, et rien d’autre. « Copier le lien » est parti,
+          « Plutôt par e-mail → » est en or et plus grand.</p>
+        <p class="reserve"><b>Sur ce moment-là, c’est juste</b> — et c’est ce
+          que vous aviez sous les yeux en le demandant.</p>
+      </div>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Chez Martins</p>
+        <h3 class="titre-ecran">Devis</h3>
+        <div class="filet"></div>
+        <div class="etat">
+          <div class="quoi">Correction demandée</div>
+          <div class="pourquoi">Le client a signalé quelque chose à corriger.</div>
+        </div>
+        <div class="citation">« Trop chère »</div>
+        <div class="total">
+          <div class="no">Devis n° 2026-0007</div>
+          <div class="montant">420,00 €</div>
+        </div>
+        <div class="vide">Aucun geste sur cet écran.<br>
+          La carte du chantier vous a envoyé ici pour corriger — et il n’y a
+          plus rien à toucher.</div>
+        <div class="rangee">
+          <a>Télécharger le PDF</a><span class="pt">·</span>
+          <span class="act">Partager</span>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>A · avant l’envoi</h2>
+        <p class="titre">Le même écran, une minute plus tôt</p>
+        <p>Le client vient de demander une correction. Vous appuyez sur
+          « Corriger le devis » depuis la carte du chantier, vous arrivez ici…</p>
+        <p class="reserve"><b>…et il n’y a plus de bouton.</b> C’est le prix du
+          retrait pur et simple : la correction n’a plus de porte d’entrée.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="famille">Proposition B — un seul bouton, mais celui du moment</p>
+  <p class="sous-famille">La même page qu’en A après l’envoi. <b>La différence
+    est avant</b> : le bouton de correction s’y trouve, seul, et disparaît une
+    fois la correction partie. À aucun instant vous n’avez deux boutons.</p>
+  <div class="grille">
+
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Chez Martins</p>
+        <h3 class="titre-ecran">Devis</h3>
+        <div class="filet"></div>
+        <div class="etat">
+          <div class="quoi">Correction demandée</div>
+          <div class="pourquoi">Le client a signalé quelque chose à corriger.</div>
+        </div>
+        <div class="citation">« Trop chère »</div>
+        <div class="total">
+          <div class="no">Devis n° 2026-0007</div>
+          <div class="montant">420,00 €</div>
+        </div>
+        <div class="capsule-large">Corriger et renvoyer</div>
+        <div class="rangee">
+          <a>Télécharger le PDF</a><span class="pt">·</span>
+          <span class="act">Partager</span>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>B · avant l’envoi</h2>
+        <p class="titre">Le seul geste du moment</p>
+        <p>Le bouton de correction prend la place — et la forme — du geste
+          principal. Pas d’envoi proposé : il n’y a rien à envoyer encore.</p>
+        <p class="reserve"><b>Rien n’est perdu</b>, et l’écran ne montre jamais
+          qu’un seul bouton, exactement comme vous le demandez.</p>
+      </div>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Chez Martins</p>
+        <h3 class="titre-ecran">Devis</h3>
+        <div class="filet"></div>
+        <div class="etat">
+          <div class="quoi">Devis prêt</div>
+          <div class="pourquoi">Devis prêt pour Martins.</div>
+        </div>
+        <div class="citation">« Trop chère »</div>
+        <div class="total">
+          <div class="no">Devis n° 2026-0007</div>
+          <div class="montant">420,00 €</div>
+        </div>
+        <div class="capsule-large">Ouvrir le SMS tout prêt</div>
+        <p class="destinataire">Au 06 79 98 45 14 — c’est vous qui l’envoyez.</p>
+        <p class="bascule or">Plutôt par e-mail →</p>
+        <div class="rangee">
+          <a>Télécharger le PDF</a><span class="pt">·</span>
+          <span class="act">Partager</span>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>B · après l’envoi</h2>
+        <p class="titre">Identique à la A</p>
+        <p>Une fois la correction partie, le bouton de reprise s’efface. Il ne
+          reste que le geste qui compte.</p>
+        <p class="reserve"><b>C’est ce que je recommande</b> — vous obtenez
+          exactement l’écran que vous vouliez, sans perdre la correction.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="famille">« Plutôt par e-mail » — trois façons de le rendre visible</p>
+  <p class="sous-famille">Il est aujourd’hui en gris, 13 px, sous la ligne du
+    destinataire. Vous le voulez <b>en or, en gras, un peu plus gros que les
+    textes noirs (13 px) mais moins que le bouton (16 px)</b>. Voici trois
+    dosages — seule cette ligne change.</p>
+  <div class="grille">
+
+    <div class="prop">
+      <div class="tel"><div class="ecran" style="padding:26px 0 24px">
+        <div class="capsule-large" style="margin-top:0">Ouvrir le SMS tout prêt</div>
+        <p class="destinataire">Au 06 79 98 45 14 — c’est vous qui l’envoyez.</p>
+        <p class="bascule or">Plutôt par e-mail →</p>
+        <div class="rangee">
+          <a>Télécharger le PDF</a><span class="pt">·</span>
+          <span class="act">Partager</span>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Ligne 1</h2>
+        <p class="titre">L’or, en gras, 15 px</p>
+        <p>Le dosage le plus simple : la couleur de ce qu’on lit, la graisse
+          d’un geste, et deux points de plus que la rangée du dessous.</p>
+        <p class="reserve"><b>Le plus proche de votre demande, mot pour mot.</b></p>
+      </div>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran" style="padding:26px 0 24px">
+        <div class="capsule-large" style="margin-top:0">Ouvrir le SMS tout prêt</div>
+        <p class="destinataire">Au 06 79 98 45 14 — c’est vous qui l’envoyez.</p>
+        <p class="bascule or-filet"><span>Plutôt par e-mail →</span></p>
+        <div class="rangee">
+          <a>Télécharger le PDF</a><span class="pt">·</span>
+          <span class="act">Partager</span>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Ligne 2</h2>
+        <p class="titre">L’or souligné d’un filet</p>
+        <p>La même, avec un cheveu doré dessous. Le soulignement dit « ça se
+          touche » sans ajouter ni cadre ni aplat.</p>
+        <p class="reserve"><b>La plus lisible de loin</b> — et la seule qui
+          annonce clairement un lien plutôt qu’un titre.</p>
+      </div>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran" style="padding:26px 0 24px">
+        <div class="capsule-large" style="margin-top:0">Ouvrir le SMS tout prêt</div>
+        <p class="destinataire">Au 06 79 98 45 14 — c’est vous qui l’envoyez.</p>
+        <p class="bascule caps">Plutôt par e-mail →</p>
+        <div class="rangee">
+          <a>Télécharger le PDF</a><span class="pt">·</span>
+          <span class="act">Partager</span>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Ligne 3</h2>
+        <p class="titre">Les petites capitales dorées</p>
+        <p>La voix des libellés de la charte, en doré. Plus discrète que les
+          deux autres, mais parfaitement dans le langage de l’application.</p>
+        <p class="reserve"><b>Réserve franche :</b> c’est la moins voyante des
+          trois — l’inverse de ce que vous demandez si le but est qu’elle saute
+          aux yeux.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="note">
+    <span class="t">Ce qui part dans toutes les propositions</span>
+    <b>« Copier le lien » quitte la rangée.</b> Vous ne vous en servez pas, et
+    le lien part de toute façon par le SMS, par l’e-mail ou par « Partager ».
+    Il reste donc « Télécharger le PDF · Partager ».
+    <br><br>
+    <span class="t">Ce qu’il faut trancher</span>
+    <b>A ou B.</b> La A est votre demande à la lettre : le bouton quitte la
+    page. Mais alors, quand le client demande une correction, l’écran où sa
+    carte vous envoie n’a plus aucun geste — et il n’existe nulle part ailleurs
+    dans Atlas. La B vous donne le même écran après l’envoi, un seul bouton à
+    chaque instant, et garde la porte de la correction.
+    <br><br>
+    <span class="t">Rien n’est posé dans l’application</span>
+    <b>Aucun fichier de <code>src/</code> n’a été touché.</b> Vous donnez une
+    lettre et un numéro de ligne, et c’est ensuite seulement que l’écran change.
   </p>
 
 </div>
