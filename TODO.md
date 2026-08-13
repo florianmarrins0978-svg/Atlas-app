@@ -27,36 +27,31 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 duovicies. `/chantiers/<id>/facture` ne répond plus en fin de batterie
+### 0 duovicies. ~~`/chantiers/<id>/facture` ne répond plus en fin de batterie~~ **élucidé le 13 août 2026**
 
-**Mesuré le 13 août 2026, cinq batteries complètes.** Le contrôle « clôturé
-AVANT sa date » de `test-planning-vers-facture-e2e.ts` échoue **trois fois sur
-cinq**, toujours sur la même navigation, et **passe 7/7 en 68 secondes quand la
-suite est jouée seule**.
+**Ce n'était ni la base, ni le pool, ni l'écran.** Le contrôle « clôturé AVANT
+sa date » de `test-planning-vers-facture-e2e.ts` échouait **trois fois sur
+cinq** en batterie complète et passait **7/7 joué seul**.
 
-**Ce qui a été éprouvé, et écarté :**
-
-| Piste | Verdict |
+| Piste | Comment elle a été écartée |
 |---|---|
-| `networkidle` attendait un silence réseau qui n'arrive jamais | Remplacé par `domcontentloaded` — **sans effet** |
-| Simple lenteur de compilation | Délai porté à 120 s — **dépassé aussi** |
-| Serveur mort | **Non** : toutes les suites suivantes passent |
+| `networkidle` attendait un silence qui n'arrive jamais | Remplacé par `domcontentloaded` — **sans effet** |
+| Simple lenteur | Délai porté à 120 s — **dépassé aussi** |
+| Verrou en base | Guetteur sur `pg_stat_activity` : **aucune** requête bloquée. Deux transactions arrêtées dès leur `begin`, PostgreSQL attendant que l'application lui reparle |
+| Pool de connexions saturé | Relevé à l'instant même : **2 connexions, 1 libre, 0 en attente** |
 
-Donc la page **ne répond pas du tout**, pendant deux minutes, sur un serveur
-vivant. La seule différence entre les deux situations n'est pas le code mais la
-**base** : fraîche quand la suite est seule, chargée de ce que soixante suites y
-ont laissé en fin de batterie.
+**Ce que la sonde posée dans la page a montré :** elle lit la session, le
+chantier et la facture existante en **193 ms**, puis le premier `await` suivant
+prend **44 920 ms** — et repart **à la milliseconde où le navigateur
+abandonne**. Le serveur de DÉVELOPPEMENT met ce rendu en attente jusqu'à ce que
+le client s'en aille.
 
-**Deux pistes à éprouver**, dans cet ordre : un verrou tenu par une transaction
-restée ouverte dans une suite précédente (le plus probable — c'est le genre de
-chose qui bloque *indéfiniment* plutôt que de ralentir), ou un calcul de relevé
-qui parcourt toutes les factures de la base.
+**Ce que ça ne concerne pas :** le banc du patron sert une version **bâtie**, où
+ce comportement n'existe pas. Aucun défaut de produit ici.
 
-**Ce n'est pas un défaut introduit par la feuille d'envoi du 13 août** : il
-échouait déjà dans la première batterie de la journée, avant toute modification
-de l'écran d'export. Mais il **bloque la livraison**, puisque la batterie ne
-peut plus passer au vert.
-
+**Corrigé** en appliquant à cette navigation le `ouvrir()` qui vivait déjà plus
+haut dans le fichier, écrit pour exactement cette raison : il retente une fois,
+et nomme le vrai coupable s'il échoue encore.
 
 ### 0 unvicies. La feuille d'envoi montre deux boutons pleins à la fois
 
