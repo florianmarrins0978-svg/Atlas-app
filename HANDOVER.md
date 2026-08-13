@@ -1564,6 +1564,35 @@ au volume du patron coûterait **2 à 8 $**, transcription comprise.
 
 Détail dans `CHANGELOG.md`, état complet dans `PROJECT_STATE.md`.
 
+**Et, en dernier lieu, l'esthétique — sur maquettes, pas dans le code.** Le
+patron a arrêté **cinq** choix le 2026-08-10 : la charte **Origine** (ivoire et
+bronze, qui remplace le vert pin d'Arborea), le **trait G** au bandeau, la
+**perle** qui suit le défilement, l'**écran qui recule** à l'ouverture de
+« Nouveau chantier », et le **tiroir des retirés** pour supprimer une ligne.
+
+S'y ajoutent, le même jour, deux écrans : le **planning** (le mois, les
+demi-journées, une ligne par équipe) et **Réglages · vos équipes**. Ce dernier
+porte une règle à ne pas défaire : **à une seule équipe, le planning n'écrit
+aucun nom d'équipe** — le patron l'a demandé mot pour mot. À deux et plus, le
+champ vide affiche déjà « Équipe A » en gris. On n'invente jamais un nom, et on
+ne laisse jamais deux lignes indiscernables (`docs/INTEGRER-ORIGINE.md` §6 ter).
+
+**Ce paragraphe décrivait un état révolu, et le laisser tel quel aurait coûté :**
+au 10 août la refonte n'était que sur maquettes, mais elle est **portée dans
+l'application depuis le 11 août 2026** — `design-tokens.ts` est en Origine, le
+fil, la perle, le tiroir des retirés et le bandeau y sont. Une conversation qui
+lirait « rien n'est encore codé » referait le travail. Le détail est dans
+`PROJECT_STATE.md` et `CHANGELOG.md` ; `docs/INTEGRER-ORIGINE.md` reste la
+spécification d'origine, pas l'état du code.
+
+Deux contraintes à ne pas redécouvrir : **les maquettes envoyées au patron ne
+doivent contenir aucun JavaScript** (son lecteur n'en exécute pas — les pages
+engendrées en script lui arrivaient vides), et **il faut regarder les captures**.
+Sur ce lot, quatre défauts se sont vus à l'écran et aucun aux contrôles : des
+cases à cocher bleues d'iOS en pleine page ivoire, une ligne d'en-tête effacée
+par une classe homonyme, un nom coupé en plein mot par le glissement, et
+« CHANTIERS » qui touchait « PLANNING ».
+
 ## Où reprendre
 
 **`TODO.md` §0 bis — l'agent qui apprend. Le patron l'a demandé expressément le

@@ -298,6 +298,182 @@ production les demande.
 
 ---
 
+## Le lecteur du patron n'exécute pas JavaScript — les maquettes doivent s'en passer
+
+**Constaté le 2026-08-10, et payé une fois.** Trois bancs d'essai lui ont été
+envoyés avec leurs barres d'onglets construites en JavaScript. Chez lui, ils
+arrivaient **vides** : les textes s'affichaient, les téléphones étaient des
+rectangles nus. La contrainte était déjà écrite dans son propre fichier de
+maquettes — « son lecteur n'en exécute pas ; les pages engendrées en JavaScript
+lui arrivaient vides » — et n'existait nulle part ici.
+
+Ce que cela impose à **toute maquette qui lui est destinée** :
+
+- **Aucune balise `<script>`, aucun gestionnaire en ligne.** Le contrôle est
+  mécanique : chercher `<script`, ` on…=`, `javascript:` dans la source.
+- **Ce qui doit réagir au doigt se fait en CSS.** Une barre d'onglets se bâtit
+  avec quatre `input[type=radio]`, des `label`, et
+  `input:nth-of-type(n):checked ~ .trait`. Les colonnes étant égales, un onglet
+  vaut exactement `translateX(100%)` : rien à mesurer.
+- **Un repère qui suit le défilement se fait avec `position: sticky`**, pas
+  avec un calcul. Une pastille collée à `top: 50%` dans la liste **est**, par
+  construction, sur l'élément centré ; avec `scroll-snap-align: center` sur
+  chaque ligne, celui-ci vient se caler dessous. Rien à mesurer, et surtout
+  rien qui puisse se désynchroniser du défilement — ce qu'un suivi image par
+  image finit toujours par faire sur un téléphone chargé. Trois pièges,
+  éprouvés le 2026-08-10 :
+  - **Le point d'ancrage détermine la position au repos.** Placé en tête de
+    liste, le repère est déjà au centre avant tout défilement ; placé dans le
+    flux à hauteur d'une ligne précise, il s'y tient jusqu'à ce qu'elle
+    remonte. C'est ce second placement que le patron demande.
+  - **Le `50 %` se calcule sur la boîte de contenu de la zone de défilement.**
+    Un rembourrage bas posé sur cette zone la rétrécit et décale le repère de
+    la moitié — la marge de fin qui permet à la dernière ligne d'atteindre le
+    centre doit donc être posée sur le **contenu**, jamais sur le conteneur.
+  - **`scroll-snap-stop: always` a été RETIRÉ de l'application le 11 août 2026,
+    et il ne faut pas le remettre.** Il tenait bien « un élément à la fois »
+    dans la maquette, mais chez le patron il arrêtait le fil à chaque chantier
+    et il l'a lu comme du saccadé — *« je trouve que ça manque de fluidité […]
+    c'est saccadé »*. L'accroche reste, en `proximity` : la ligne se recentre,
+    mais le geste ne se fait plus couper. Ce paragraphe décrit donc la maquette
+    d'origine, pas le code d'aujourd'hui.
+  - **L'accroche ne se vérifie pas à la molette synthétique.** Chromium sans
+    interface ne l'applique pas : le contrôle rend la même valeur quelle que
+    soit la correction. L'éprouver par un défilement programmé, auquel le
+    moteur applique bien l'accroche.
+- **Éprouver avec `javaScriptEnabled: false`.** Une page bâtie en JS passe tous
+  les contrôles ordinaires et arrive quand même vide chez lui. Le contrôle
+  ouvre la page dans ce mode, compte les onglets, et **charge en contre-épreuve
+  une page bâtie en JS pour vérifier qu'il y en trouve zéro** — sans quoi il ne
+  prouverait rien. Aucun script du dépôt ne le fait à ce jour : il vit dans
+  l'espace de travail de la conversation, et devra être rapatrié ici le jour où
+  des maquettes seront produites depuis le dépôt.
+
+Cela ne concerne pas l'application elle-même, qui est un Next.js qu'il ouvre
+dans Safari. Uniquement ce qu'on lui **transmet à lire**.
+
+---
+
+## Une identité visuelle est en cours de remplacement — ne pas se fier au code seul
+
+**Constaté le 2026-08-10, hors du dépôt**, puis précisé en lisant ses maquettes.
+Le patron explore une identité que rien ici ne mentionne. Elle est engendrée de
+son côté par un script nommé `engendrer-maquette-fil.mjs`, **absent du dépôt**,
+et ses pages portent la consigne « ne pas les modifier à la main ».
+
+**Quatre chartes**, pas une, et l'accent n'est jamais le vert pin d'Arborea :
+
+| Charte | Fond | Encre | Accent |
+|---|---|---|---|
+| Origine | `#edece6` | `#16170f` | `#8f7130` |
+| Ivoire | `#efece6` | `#221f1a` | `#8a7452` |
+| Sylve (sombre) | `#16241c` | `#e6e6da` | `#c3b184` |
+| Océan | `#e6ecf2` | `#0d1b2c` | `#1e4f86` |
+
+**Trois formes de liste** sont mises en concurrence : *le fil* (une tige
+verticale porte les jours, une seule perle sur ce qui attend une réponse),
+*l'ourlet* (un cheveu vertical qui prend la couleur d'attente là où un geste est
+dû), *la plage amincie*.
+
+Ce que cela change pour le code, et pourquoi c'est écrit ici :
+
+- **La navigation basse perd ses icônes.** Quatre libellés en petites capitales
+  — 9,5 px, `letter-spacing: .28em`, graisse 500 — en grille de quatre colonnes
+  égales. L'onglet actif prend la couleur d'encre et **un trait d'un pixel sur
+  toute la largeur de sa colonne** (`box-shadow: inset 0 -1px 0`), pas sous le
+  seul mot. `AtlasBottomNav` code aujourd'hui l'inverse : icône + libellé,
+  accent porté par la couleur du texte.
+- **Deux refus explicites, à ne pas défaire :** aucun cheveu sous « ATLAS » —
+  seul reste celui qui ferme l'en-tête, au-dessus de « Nouveau chantier » ; et
+  la couleur ne décore pas, elle ne se pose que là où un geste est attendu.
+- `src/lib/design-tokens.ts` et `docs/DESIGN_SYSTEM.md` décrivent donc une
+  identité que le patron est en train de quitter.
+
+### Ce que le patron a arrêté le 2026-08-10, sur maquettes
+
+Cinq choix faits, après avoir touché chaque variante sur son téléphone :
+
+| | Retenu | Ce que ça veut dire |
+|---|---|---|
+| Charte | **Origine** | fond `#edece6`, encre `#16170f`, bronze `#8f7130` |
+| Trait du bandeau | **G** | il dépasse sa cible et revient ; le mot choisi monte de 2 px, le mot quitté redescend |
+| La perle du fil | **elle suit** | posée devant le 22 juillet au repos, accrochée à mi-hauteur dès que ce chantier remonte, **un chantier par glissement** |
+| « Nouveau chantier » | **l'écran recule** | la liste passe à 93 % et s'assombrit, la feuille monte devant, son contenu arrive après elle dans l'ordre de lecture |
+| Retirer un chantier | **le tiroir des retirés** (P) | on fait glisser **le texte** de la ligne vers la gauche, « Retirer » se découvre ; la ligne **tombe** et un tiroir s'ouvre au-dessus du bandeau : « Retiré à l'instant — Annuler » |
+
+**Ce que le retrait retenu suppose.** Le geste n'efface pas : il déplace vers
+un état réversible tant qu'on est sur l'écran. Trois règles en découlent, et
+elles ont été payées à l'essai sur la maquette :
+
+- **La date et le fil ne glissent pas avec le texte.** Faire partir la ligne
+  d'un bloc coupe le nom en plein mot et laisse le fil traverser les lettres :
+  ça se lit comme un défaut d'affichage, pas comme un geste. Seule la colonne
+  du texte bouge, et un voile de 16 px la fait se **dissoudre** au bord plutôt
+  que d'être tranchée. La marge négative du glisseur et le retrait intérieur du
+  volet s'annulent, sinon la première lettre est mangée **au repos**.
+- **« Annuler » doit viser la ligne réellement retirée.** Un libellé unique
+  pointant toujours la même case rend la première ligne quand on retire la
+  deuxième — l'annulation *supprime*. Chaque ligne porte son libellé, et on
+  n'affiche que celui du dernier retrait, détecté par
+  `:has(#cN:checked ~ .sup:checked)`.
+- **Le décompte suit ce qui reste.** « Huit en cours » au-dessus de six lignes
+  est le genre de détail qui décide seul du sentiment de soin. Sans script, une
+  chaîne de `~ .sup:checked` compte les cases cochées.
+
+**Réserve :** le tiroir et le décompte reposent sur `:has()`. S'il manque, la
+ligne part quand même mais le tiroir ne s'ouvre pas — dégradation acceptable,
+à confirmer sur l'iPhone du patron. Dans l'application, le tiroir devra porter
+un délai réel avant l'écriture en base ; la maquette, elle, ne fait que cacher.
+
+**Aucun chantier facturé n'apparaît sur cet écran** — ils vivent sous
+« Terminés ». Le refus (« sa facture figure au relevé de TVA ») se joue donc
+là-bas, et c'est là qu'il faudra l'écrire.
+
+**Conséquence assumée sur la perle**, signalée deux fois et maintenue : elle ne
+désigne plus le chantier dont le devis est revenu, puisqu'elle suit le doigt.
+Seul reste le libellé « Devis retourné », en bronze. Ne pas « corriger » cela
+par erreur en croyant retrouver l'intention d'origine.
+
+**Réserve non levée :** « Nouveau chantier » est aujourd'hui une **page**
+(`/chantiers/nouveau`, avec sa flèche de retour vers la liste), pas une
+feuille modale. L'ouverture retenue raconte une feuille. Soit l'écran devient
+une vraie feuille — et la flèche cède la place à un geste de fermeture vers le
+bas —, soit l'ouverture devra changer le jour de l'intégration. Le patron a
+tranché sur le style ; ce point de produit reste ouvert.
+
+### Le planning, et les équipes nommées — 2026-08-10
+
+Deux écrans de plus ont été arrêtés le même jour, sur maquettes :
+`maquettes/atlas-planning.html` (le mois, les demi-journées, les équipes) et
+`maquettes/atlas-equipes.html` (Réglages : nommer les équipes). Les deux sont
+tenus par `npm run verifier:maquette` ; la spécification d'intégration est dans
+`docs/INTEGRER-ORIGINE.md` §6 ter, la suite technique dans `TODO.md` §5.
+
+**La règle du nommage, qui n'est pas un détail d'affichage** — elle vient d'une
+demande explicite du patron : *« s'il n'a pas d'équipe et qu'il ne met rien, il
+ne faut pas qu'il y ait quand même écrit équipe A équipe B »*.
+
+- **À une équipe**, le planning n'écrit **aucun nom d'équipe** : une
+  demi-journée est libre, ou elle porte le nom de son chantier. Réglages ne
+  propose même pas de la nommer — offrir un champ dont la valeur ne sera jamais
+  lue est un piège.
+- **À deux et plus**, chaque équipe a sa ligne dans Réglages. Le champ vide
+  affiche déjà « Équipe A » en gris : le repli est **montré** avant d'être subi.
+
+Le principe qui tient les deux cas : **on n'invente jamais un nom, et on ne
+laisse jamais deux lignes indiscernables.** Conséquence pour la base :
+`equipes.nom` sera **nullable** — un nom absent est un état normal, pas une
+donnée manquante — et **une seule fonction pure** décidera du libellé, pour le
+planning comme pour la revalidation.
+
+**Rien d'autre n'est tranché, et rien n'a été codé dans ce sens.** Mais une conversation
+qui lirait le dépôt seul repartirait en vert pin avec des icônes, c'est-à-dire à
+contresens. Quand le choix sera arrêté, ce sont `design-tokens.ts`,
+`globals.css`, `manifest.json`, `AtlasBottomNav` et `docs/DESIGN_SYSTEM.md` qui
+changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet.
+
+---
+
 ## Ce qui reste, et que je peux faire seul
 
 Voir `TODO.md` pour le détail et l'ordre.
