@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### Le numéro du devis redevenait un lien d'appel — l'en-tête ne suffisait pas
+
+**Sa capture, aujourd'hui :** « Hydration failed » sur le devis ouvert depuis un
+SMS, avec la signature d'iOS — `x-apple-data-detectors-type="telephone"`. Le
+même défaut que la veille, sur un banc qui servait pourtant le correctif de la
+veille (fiche d'état de 14 h 55, `main` à `5a6e999`).
+
+**Pourquoi le premier remède ne pouvait pas marcher.** `format-detection` est
+une **demande** faite au navigateur, et Safari l'écoute. Mais un lien touché
+depuis Messages ne s'ouvre pas dans Safari : il s'ouvre dans une vue intégrée
+où cette en-tête n'est pas lue — et c'est **le seul chemin** par lequel le
+client de l'artisan arrive sur son devis.
+
+**Le remède, cette fois, ne demande plus rien.** Le numéro est écrit en morceaux
+dont aucun ne porte assez de chiffres pour être un téléphone
+(`src/lib/numero-document.ts`, `NumeroDeDocument`). Ce qui répare n'est pas le
+découpage mais l'`inline-flex` qui l'accompagne : un détecteur lit le texte
+**aplati** de la page, et seuls les blocs le coupent. Mesuré avant d'écrire une
+ligne — entourer chaque moitié d'un `<span>`, la recette qui circule pour ce
+défaut, ne change rien du tout.
+
+Appliqué aux six endroits où un numéro s'affiche, pas aux deux signalés : il
+consulte son atelier depuis le même téléphone.
+
+**Ce que ça coûte :** un numéro copié depuis l'écran emporte des retours à la
+ligne. Il reste intact dans le PDF, dans le SMS et en base.
+
+**Ce qui n'est pas prouvé, et se dit :** la détection appartient à un logiciel
+d'Apple absent d'ici. Les contrôles vérifient que le texte offert à ce logiciel
+ne contient plus de suite de chiffres appelable — pas ce qu'il en fera. Seul son
+iPhone tranchera. Détail : `ARCHITECTURE.md` §81.
 ### La civilité se choisit, au lieu d'être devinée
 
 *« Tu as raison, il faut intégrer une case monsieur-madame. Mais je veux que ça

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font, smallCaps, couleursDocument } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
+import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { jourLisible } from "@/lib/jour";
 import { type CanalClient } from "@/lib/message-client";
 import { useRetourDeMessagerie } from "@/lib/depart-messagerie";
@@ -137,7 +138,7 @@ export default function FactureClient({
           Facture
         </p>
         <p className="text-[15px]" style={{ color: colors.ink }}>
-          {initialFacture.numeroCommercial} —{" "}
+          <NumeroDeDocument valeur={initialFacture.numeroCommercial} /> —{" "}
           {avecCivilite(initialFacture.clientNom, initialFacture.clientCivilite) || "Client non renseigné"}
         </p>
         {initialFacture.dateEcheance && (
@@ -236,7 +237,7 @@ export default function FactureClient({
       {emise ? (
         <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
           <p className="text-center text-[15px]" style={{ color: colors.ink }}>
-            Facture {initialFacture.numeroCommercial} arrêtée.
+            Facture <NumeroDeDocument valeur={initialFacture.numeroCommercial} /> arrêtée.
           </p>
           <p className="mt-2 text-center text-[13px]" style={{ color: colors.muted }}>
             Elle figure au relevé de TVA collectée et ne peut plus être modifiée

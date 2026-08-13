@@ -7,6 +7,7 @@ import { adressesDuDocument } from "@/lib/adresses";
 import { enEuros } from "@/lib/euros";
 import { jourNumerique } from "@/lib/jour";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
+import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import ChoixCivilite from "@/components/atlas/ChoixCivilite";
@@ -218,7 +219,7 @@ export default function DevisCompletClient(props: Props) {
         </div>
 
         <div className="w-full sm:w-[280px] sm:shrink-0">
-          <Reference libelle="Devis n°" valeur={props.numeroCommercial} />
+          <Reference libelle="Devis n°" valeur={<NumeroDeDocument valeur={props.numeroCommercial} />} />
           <Reference libelle="Date" valeur={jourNumerique(props.dateEmission)} />
           <Reference libelle="Validité" valeur={props.validite} />
         </div>
@@ -779,7 +780,7 @@ function Cellule({ libelle, children }: { libelle: string; children: React.React
   );
 }
 
-function Reference({ libelle, valeur }: { libelle: string; valeur: string }) {
+function Reference({ libelle, valeur }: { libelle: string; valeur: React.ReactNode }) {
   return (
     <div
       className="flex items-baseline justify-between gap-4 py-1"
