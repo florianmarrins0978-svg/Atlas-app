@@ -291,6 +291,16 @@ cibles paraîtraient confortables, sans que ce soit vrai sur son iPhone. La loup
 est éteinte en iPhone 13, ce qui laisse les contrôles mesurer juste — un contrôle
 le vérifie, et c'est lui qu'il ne faut pas retirer.
 
+**Et la grammaire est celle des ÉCRANS, relevée dans le code des composants :**
+retrait de **26 px** (et non les 24 de `spacing.pageX`, qui est l'ancienne
+échelle — seuls `error.tsx`, `loading.tsx` et `Notifications.tsx` y sont
+restés), titre de 36 px, **un cheveu qui ferme l'en-tête**, titres de section
+**gris précédés d'un trait**, barre basse à 9,5 px / 0,28 em. Et l'écran de la
+planche doit mesurer **390 px** : sous 520 px la coque du téléphone s'efface,
+sinon il n'en fait que 336 et la barre basse de l'application n'y tient pas —
+c'est ce qui avait fait rapetisser sa chasse dans les planches précédentes
+(`ARCHITECTURE.md` §80).
+
 **Piège payé sur cette planche :** éprouver qu'un contrôle sait échouer écrit
 ses captures dans `maquettes/vues/` comme une exécution normale. La planche a
 été relue sur une image produite par la version **cassée**. Relancer le contrôle

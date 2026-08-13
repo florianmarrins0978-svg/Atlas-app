@@ -295,6 +295,77 @@ try {
     l.filter((e) => { const r = e.getBoundingClientRect(); return r.width > 2 || r.height > 2; }).length);
   verifie("aucune case native visible", grosses === 0, `${grosses}`);
 
+  // ── La grammaire des ÉCRANS, pas celle des documents ──────────────────
+  //
+  // Sa consigne du 13 août 2026 : « garde le style de toutes les pages, pas du
+  // devis et facture ». Ces mesures sont celles d'`EnTeteEcran` et
+  // d'`AtlasBottomNav`, relevées dans le code, pas approchées à l'œil.
+  await cadrer(PATRON);
+  const ecran = await rect(PATRON);
+  verifie("l'écran fait la largeur d'un iPhone, pas celle qui reste après la coque",
+    ecran.w >= 390, `${ecran.w.toFixed(0)} px`);
+
+  const tete = await page.$eval(`${PATRON}`, (r) => {
+    const h = r.querySelector(".tete h1"), s = r.querySelector(".tete .sur");
+    const c = r.querySelector(".cheveu");
+    const g = getComputedStyle(h);
+    return {
+      retrait: h.getBoundingClientRect().x - r.getBoundingClientRect().x,
+      corps: parseFloat(g.fontSize),
+      surtitre: getComputedStyle(s).color,
+      cheveu: c ? c.getBoundingClientRect().width : null,
+      largeur: r.getBoundingClientRect().width,
+    };
+  });
+  verifie("le titre est en retrait de 26 px, comme tous les écrans refaits",
+    Math.abs(tete.retrait - 26) < 1.5, `${tete.retrait.toFixed(1)} px`);
+  verifie("et fait 36 px, la mesure d'`EnTeteEcran`", Math.abs(tete.corps - 36) < 0.6, `${tete.corps} px`);
+  // Le cheveu qui FERME l'en-tête. Il manquait : sans lui, le titre flottait
+  // au-dessus de la première liste, et l'écran ne ressemblait à aucun autre.
+  verifie("un cheveu ferme l'en-tête, en retrait de 26 px des deux bords",
+    tete.cheveu !== null && Math.abs(tete.cheveu - (tete.largeur - 52)) < 2,
+    `${tete.cheveu?.toFixed(0)} px pour ${(tete.largeur - 52).toFixed(0)} attendus`);
+
+  // Le titre d'une section est GRIS, jamais or : l'or porte les statuts, pas
+  // les intertitres. C'était la grammaire des vieilles planches.
+  const titreSection = await page.$eval(`${PATRON} .bloc .t`, (e) => getComputedStyle(e).color);
+  verifie("les titres de section sont gris, pas dorés",
+    titreSection === "rgb(138, 133, 120)", titreSection);
+
+  // Deux filets qui se suivent à 30 px d'écart dessinent une bande vide. Vu sur
+  // la capture ; ce contrôle est là pour que ça ne revienne pas.
+  const bandes = await page.$eval(`${PATRON} .corps`, (c) => {
+    const traits = [];
+    for (const e of c.querySelectorAll("*")) {
+      const g = getComputedStyle(e), r = e.getBoundingClientRect();
+      if (r.width < 40) continue;
+      if (parseFloat(g.borderTopWidth) > 0) traits.push(Math.round(r.y));
+      if (parseFloat(g.borderBottomWidth) > 0) traits.push(Math.round(r.y + r.height));
+    }
+    traits.sort((a, b) => a - b);
+    return traits.filter((v, i) => i && v - traits[i - 1] > 12 && v - traits[i - 1] < 48).length;
+  });
+  verifie("aucune bande vide entre deux filets qui se suivent", bandes === 0, `${bandes}`);
+
+  // Le contrôle qui manquait, et qui aurait vu la barre basse déborder.
+  const b = await page.$$eval(`${PATRON} .bas span`, (l) =>
+    l.map((e) => { const r = document.createRange(); r.selectNodeContents(e);
+      const q = r.getBoundingClientRect(); return { g: q.x, d: q.x + q.width, t: e.textContent.trim() }; }));
+  let pire = { ecart: 1e9, ou: "" };
+  for (let i = 1; i < b.length; i++) {
+    const w = b[i].g - b[i - 1].d;
+    if (w < pire.ecart) pire = { ecart: w, ou: `${b[i - 1].t}|${b[i].t}` };
+  }
+  verifie("les libellés du bandeau ne se touchent pas", pire.ecart >= 6,
+    `${pire.ecart.toFixed(1)} px — ${pire.ou}`);
+  const chasse = await page.$eval(`${PATRON} .bas span`, (e) => {
+    const g = getComputedStyle(e);
+    return { corps: parseFloat(g.fontSize), chasse: g.letterSpacing };
+  });
+  verifie("et ils portent la chasse de l'application, pas une chasse rétrécie",
+    Math.abs(chasse.corps - 9.5) < 0.3 && parseFloat(chasse.chasse) > 2.5,
+    `${chasse.corps} px / ${chasse.chasse}`);
+
   const deborde = await page.evaluate(
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
   verifie("aucun débordement horizontal", !deborde);

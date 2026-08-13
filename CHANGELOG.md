@@ -64,6 +64,30 @@ Display et Inter (faux depuis le 10 août — polices du système) et la terre c
 sur les documents (faux depuis le 10 août — l'or). On ne respecte pas une charte
 dont la documentation ment.
 
+**La planche parle la grammaire des ÉCRANS** — *« garde le style de toutes les
+pages, pas du devis et facture »*. Quatre écarts relevés **dans le code** des
+composants réels, pas à l'œil : le retrait de page est de 26 px et non 24 ; le
+titre fait 36 px ; un **cheveu ferme l'en-tête** et manquait ; les titres de
+section sont **gris avec un trait au-dessus**, et non dorés avec un filet à
+droite ; la barre basse porte 9,5 px / 0,28 em, l'onglet actif monté de deux
+pixels.
+
+**La cause commune des libellés rétrécis :** l'écran de la planche ne mesurait
+que 336 px au lieu de 390 — le cadre du téléphone lui prenait 54 px. La barre
+basse de l'application n'y tenait pas, alors les planches successives avaient
+rapetissé sa chasse jusqu'à 9 px, en le justifiant par un commentaire recopié de
+l'une à l'autre. **On validait une barre plus petite que la vraie.** Sous 520 px,
+la coque s'efface et l'écran occupe toute la largeur du téléphone.
+
+**Deux doublons de filets, vus à l'œil :** le cheveu de l'en-tête au-dessus du
+trait du premier bloc, et le filet de la dernière ligne d'une liste au-dessus du
+trait de la section suivante — deux traits séparés par 30 px de vide. Un filet
+qui ne sépare plus rien n'est pas un filet.
+
+**Aucune de ces quatre corrections n'avait été vue par un contrôle** : la
+planche était verte sur soixante-deux points pendant qu'elle parlait une autre
+grammaire. Huit contrôles neufs tiennent désormais chacune d'elles.
+
 **Les planches se lisent en gros plan** — *« que je les voie mieux, mais tout
 dans un .html comme d'habitude »*. C'est une **loupe** (`zoom`), pas un téléphone
 élargi : les proportions restent celles d'un iPhone, et une cible de 44 px reste

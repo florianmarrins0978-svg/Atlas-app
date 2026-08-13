@@ -128,7 +128,7 @@
   }
 
   .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
-  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:390px;max-width:100%}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:412px;max-width:100%}
 
   /* ═══ LE GROS PLAN ═══════════════════════════════════════════════════
      Demandé le 13 août 2026 : « fais-moi les planches en gros plan que je les
@@ -182,7 +182,7 @@
         border-top:1px solid var(--trait);padding-top:10px}
   .note b{color:var(--encre);font-weight:600}
 
-  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+  .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
        box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
   .ecran{position:relative;overflow:hidden;border-radius:34px;height:720px;
          display:flex;flex-direction:column;
@@ -202,31 +202,54 @@
 
   .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
 
-  .tete{padding:26px 24px 0;flex:none}
+  /* `EnTeteEcran`, valeur pour valeur : 34 px au-dessus, 26 px sur les côtés,
+     le surtitre en or, le titre à 36 px sur 1,02 et −0,018 em, puis LE CHEVEU
+     QUI FERME L'EN-TÊTE — le seul trait qu'un écran porte à cet endroit, et il
+     manquait à cette planche. Jamais de trait AU-DESSUS du titre : le patron
+     l'a refusé explicitement sur l'accueil. */
+  .tete{padding:34px 26px 0;flex:none}
   .tete .sur{margin:0;color:var(--e-bronze)}
-  .tete h1{margin:9px 0 0;font:400 34px/1 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .tete h1{margin:14px 0 0;font:400 36px/1.02 ui-serif,Georgia,serif;letter-spacing:-.018em}
+  .cheveu{flex:none;height:1px;margin:26px 26px 0;background:var(--e-trait)}
   .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
 
   .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
-       border-top:1px solid var(--e-trait);padding:16px 14px 26px;background:var(--e-fond)}
-  /* 9 px et .15em : la chasse de la charte (.28em) donne 86 px pour une
-     colonne de 85, et « CHANTIERS » vient coller « PLANNING ». */
+       border-top:1px solid var(--e-trait);padding:18px 14px 26px;background:var(--e-fond)}
+  /* 9,5 px et 0,28 em : la chasse de la charte, celle d'`AtlasBottomNav`. Les
+     planches d'avant la rapetissaient à 9 px / 0,15 em pour faire tenir
+     « CHANTIERS » — parce que leur écran mesurait 368 px au lieu de 390. On
+     validait donc une barre plus petite que la vraie. L'écran fait désormais
+     390 px, et la chasse de l'application y tient. */
   .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
-            font-size:9px;letter-spacing:.15em;text-transform:uppercase}
-  .bas span.actif{color:var(--e-encre)}
+            font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  /* L'onglet courant monte de deux pixels à la rencontre de son trait : c'est
+     le mouvement que le patron a nommé « trait G ». */
+  .bas span.actif{color:var(--e-encre);transform:translateY(-2px)}
   .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;background:var(--e-bronze)}
   .bas i.q4{left:calc(14px + 3*(100% - 28px)/4)}
 
   /* ═══ Le plan des réglages ═══════════════════════════════════════════ */
   /* Registre commun aux autres écrans : des filets, pas des cadres ; du serif
      pour ce qui compte ; presque pas de mots. */
-  .bloc{margin:32px 24px 0}
-  .bloc .t{display:flex;align-items:center;gap:12px;margin:0 0 4px;color:var(--e-gris)}
-  .bloc .t i{flex:1;height:1px;background:var(--e-trait)}
+  /* La grammaire d'une section, relevée sur le planning et les terminés :
+     30 px de blanc, UN TRAIT SUR TOUTE LA LARGEUR, 18 px de retrait, puis le
+     titre en petites capitales GRISES. Cette planche portait un titre en or
+     suivi d'un filet qui s'étirait à sa droite — c'est la grammaire des vieilles
+     maquettes, celle qu'aucun écran refait n'emploie. */
+  .bloc{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--e-trait)}
+  .bloc .t{margin:0 0 10px;color:var(--e-gris)}
+  /* LE PREMIER BLOC NE PORTE PAS DE TRAIT : le cheveu de l'en-tête ferme déjà
+     au-dessus de lui, et les deux dessinaient deux filets séparés par 30 px de
+     vide. Vu sur la capture, jamais par un contrôle. */
+  .corps > .bloc:first-of-type{border-top:0;padding-top:0}
+  /* ET LA DERNIÈRE LIGNE D'UNE LISTE NON PLUS : son filet inférieur tombait
+     30 px au-dessus du trait de la section suivante. Le filet SÉPARE des
+     lignes ; sous la dernière, il ne sépare plus rien. */
+  .bloc .rub:last-child, .bloc .reg:last-child, .bloc .scelle:last-child{border-bottom:0}
 
   /* Une rubrique. Toute la ligne se touche — 44 px au minimum, c'est la cible
      d'Apple et c'est ce qui a été mesuré sur les écrans précédents. */
-  .rub{display:flex;align-items:center;gap:14px;padding:14px 0;min-height:56px;
+  .rub{display:flex;align-items:center;gap:14px;padding:14px 0;min-height:54px;
        border-bottom:1px solid var(--e-trait);-webkit-tap-highlight-color:transparent;
        transition:border-color .24s}
   .rub:active{border-bottom-color:var(--e-bronze)}
@@ -247,7 +270,7 @@
 
   /* Le mot qui clôt un écran : pourquoi il n'y a rien de plus en dessous.
      Un écran court sans explication se lit comme un écran cassé. */
-  .fin{margin:28px 24px 0;padding-top:16px;border-top:1px solid var(--e-trait);
+  .fin{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--e-trait);
        font-size:11.5px;line-height:1.75;color:var(--e-gris)}
   .fin b{color:var(--e-encre);font-weight:400}
 
@@ -297,6 +320,18 @@
   .scelle .nom{color:var(--e-encre)}
   .oblig{flex:none;color:var(--e-bronze);padding-top:4px}
   .pourquoi{margin:0 0 16px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  /* SUR TÉLÉPHONE, LE CADRE S'EFFACE. Il coûtait 54 px — 32 de marge de page,
+     22 de coque — et l'écran ne mesurait plus que 336 px au lieu de 390. C'est
+     ce qui avait fait rapetisser les libellés de la barre basse dans les
+     planches précédentes : ils ne tenaient pas dans un écran trop étroit, et on
+     validait une barre plus petite que la vraie. Sans coque, l'écran fait
+     exactement la largeur du téléphone qui le regarde. */
+  @media (max-width:520px){
+    body{padding:26px 0 72px}
+    .intro,.sous,.note{padding-left:16px;padding-right:16px}
+    .tel{width:100%;padding:0;background:none;box-shadow:none;border-radius:0}
+    .ecran{border-radius:0}
+  }
 </style>
 
 <div class="page">
@@ -326,10 +361,11 @@
       <p class="sous">Le patron</p>
       <div class="tel"><div class="ecran" data-s="patron">
         <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Réglages</h1></div>
+        <div class="cheveu"></div>
         <div class="corps">
 
           <div class="bloc">
-            <p class="t caps">Moi<i></i></p>
+            <p class="t caps">Moi</p>
             <div class="rub"><span class="txt"><span class="nom">Mon compte</span><span class="dit">Nom, e-mail, téléphone</span></span><span class="chev"></span></div>
             <div class="rub"><span class="txt"><span class="nom">Connexion</span><span class="dit">Mot de passe, appareils connectés</span></span><span class="chev"></span></div>
             <div class="rub"><span class="txt"><span class="nom">Notifications</span><span class="dit">Ce que je reçois, et comment</span></span><span class="chev"></span></div>
@@ -337,7 +373,7 @@
           </div>
 
           <div class="bloc">
-            <p class="t caps">Mon entreprise<i></i></p>
+            <p class="t caps">Mon entreprise</p>
             <div class="rub"><span class="txt"><span class="nom">Identité</span><span class="dit">Nom, adresse, SIRET, TVA</span></span><span class="chev"></span></div>
             <div class="rub"><span class="txt"><span class="nom">Informations bancaires</span><span class="dit">L'IBAN imprimé sur les factures</span></span><span class="chev"></span></div>
             <div class="rub"><span class="txt"><span class="nom">Équipe</span><span class="dit">Qui a accès, et à quoi</span></span><span class="chev"></span></div>
@@ -364,10 +400,11 @@
       <p class="sous">Le commercial</p>
       <div class="tel"><div class="ecran" data-s="commercial">
         <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Réglages</h1></div>
+        <div class="cheveu"></div>
         <div class="corps">
 
           <div class="bloc">
-            <p class="t caps">Moi<i></i></p>
+            <p class="t caps">Moi</p>
             <div class="rub"><span class="txt"><span class="nom">Mon compte</span><span class="dit">Nom, e-mail, téléphone</span></span><span class="chev"></span></div>
             <div class="rub"><span class="txt"><span class="nom">Connexion</span><span class="dit">Mot de passe, appareils connectés</span></span><span class="chev"></span></div>
             <div class="rub"><span class="txt"><span class="nom">Notifications</span><span class="dit">Ce que je reçois, et comment</span></span><span class="chev"></span></div>
@@ -375,7 +412,7 @@
           </div>
 
           <div class="bloc">
-            <p class="t caps">Mon entreprise<i></i></p>
+            <p class="t caps">Mon entreprise</p>
             <div class="rub"><span class="txt"><span class="nom">Tarifs &amp; catalogue</span><span class="dit">Consultation — les prix ne se modifient pas ici</span></span><span class="chev"></span></div>
             <div class="rub"><span class="txt"><span class="nom">Documents</span><span class="dit">Consultation — conditions et mentions du devis</span></span><span class="chev"></span></div>
           </div>
@@ -401,10 +438,11 @@
       <p class="sous">Le salarié</p>
       <div class="tel"><div class="ecran" data-s="salarie">
         <div class="tete"><p class="sur caps">Mon compte</p><h1>Réglages</h1></div>
+        <div class="cheveu"></div>
         <div class="corps">
 
           <div class="bloc">
-            <p class="t caps">Moi<i></i></p>
+            <p class="t caps">Moi</p>
             <div class="rub"><span class="txt"><span class="nom">Mon compte</span><span class="dit">Nom, e-mail, téléphone</span></span><span class="chev"></span></div>
             <div class="rub"><span class="txt"><span class="nom">Connexion</span><span class="dit">Mot de passe, appareils connectés</span></span><span class="chev"></span></div>
             <div class="rub"><span class="txt"><span class="nom">Notifications</span><span class="dit">Mes chantiers, mes horaires</span></span><span class="chev"></span></div>
@@ -432,10 +470,11 @@
       <p class="sous">L'interrupteur</p>
       <div class="tel"><div class="ecran" data-s="bascule">
         <div class="tete"><p class="sur caps">Documents</p><h1>Le devis</h1></div>
+        <div class="cheveu"></div>
         <div class="corps">
 
           <div class="bloc">
-            <p class="t caps">Ce qui s'imprime<i></i></p>
+            <p class="t caps">Ce qui s'imprime</p>
 
             <div class="reg" data-s="acompte">
               <input class="interrupteur" type="checkbox" id="b-acompte" checked>

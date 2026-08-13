@@ -6143,3 +6143,52 @@ plaque en haut ; le décalage qui l'aligne sur le **surtitre** de l'écran — e
 non sur le bord du cadre — se calcule à 37 px multipliés par la loupe, puisque
 celle-ci agrandit le téléphone et pas la colonne de texte. Deux contrôles neufs
 tiennent l'un et l'autre.
+
+
+### « Le style de toutes les pages, pas du devis et facture »
+
+**Sa consigne du 13 août 2026.** Elle a valu quatre corrections, toutes vraies,
+et **aucune n'avait été vue par un contrôle** — la planche était verte sur
+soixante-deux points pendant qu'elle parlait une autre grammaire que les écrans.
+
+**Ce qui a été relevé dans le code, et non approché à l'œil**
+(`src/components/atlas/EnTeteEcran.tsx`, `AtlasBottomNav.tsx`,
+`src/app/planning/PlanningClient.tsx`, `src/app/termines/FilTermines.tsx`) :
+
+| | La planche disait | Les écrans disent |
+|---|---|---|
+| Retrait de page | 24 px | **26 px** |
+| Titre | 34 px / 1,0 / −0,02 em | **36 px / 1,02 / −0,018 em** |
+| Fin de l'en-tête | rien | **un cheveu**, en retrait de 26 px des deux bords |
+| Titre de section | or, suivi d'un filet qui s'étire à droite | **gris**, précédé d'un trait sur toute la largeur |
+| Barre basse | 9 px / 0,15 em | **9,5 px / 0,28 em**, l'onglet actif monté de 2 px |
+
+**Le retrait de 26 px contredit `spacing.pageX`, qui vaut `px-6` — 24 px.** Ce
+n'est pas une erreur des écrans : `spacing` est l'ANCIENNE échelle, et les
+écrans refondus le 10 août emploient tous `px-[26px]`. Seuls les écrans jamais
+repris (`error.tsx`, `loading.tsx`, `Notifications.tsx`) sont restés à 24. Une
+prochaine session qui lirait `spacing.pageX` de bonne foi se tromperait — d'où
+cette ligne.
+
+**La cause commune des libellés rétrécis : l'écran de la planche était trop
+étroit.** Le cadre du téléphone lui prenait 54 px — 32 de marge de page, 22 de
+coque — et il ne mesurait plus que 336 px au lieu de 390. La barre basse de
+l'application n'y tenait pas, alors les planches successives ont rapetissé sa
+chasse jusqu'à 9 px / 0,15 em, en le justifiant par un commentaire recopié de
+planche en planche. **On validait une barre plus petite que la vraie.** Sous
+520 px, la coque s'efface donc et l'écran occupe toute la largeur du téléphone
+qui le regarde ; la chasse de l'application y tient sans rien rétrécir.
+
+**Deux filets qui se suivent dessinent une bande vide.** Le cheveu de l'en-tête
+tombait 30 px au-dessus du trait du premier bloc, et le filet de la dernière
+ligne d'une liste 30 px au-dessus du trait de la section suivante. Le premier
+bloc ne porte donc plus de trait, et la dernière ligne plus de filet — un filet
+qui ne sépare plus rien n'est pas un filet. **Vu sur la capture, jamais par un
+contrôle** ; il en existe un désormais, qui mesure l'écart entre filets
+successifs.
+
+**Une règle juste, placée trop tôt, ne s'applique pas.** La règle qui efface la
+coque avait été posée avant `.tel{padding:11px}` : à spécificité égale, la
+dernière déclaration l'emporte, et l'écran restait à 368 px. Le contrôle a
+désigné le bon coupable en une ligne — « 368 px » — parce qu'il mesurait la
+largeur au lieu de vérifier la présence de la règle.
