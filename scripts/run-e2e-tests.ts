@@ -1,4 +1,5 @@
-import { readdirSync } from "node:fs";
+import { openSync, readdirSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { spawnSync, spawn } from "node:child_process";
 import path from "node:path";
 import Redis from "ioredis";
@@ -251,25 +252,37 @@ async function main() {
   }
 
   console.log("Démarrage du serveur (mode développement)...");
+
+  /**
+   * **La sortie du serveur va dans un FICHIER, jamais dans un tuyau — et c'est
+   * un correctif, pas un rangement (12 août 2026).**
+   *
+   * Elle était jusqu'ici `pipe`, et drainée par un écouteur de CE processus.
+   * Or ce processus lance chaque suite avec `spawnSync`, qui **bloque sa boucle
+   * d'événements** jusqu'à la fin de la suite. Pendant tout ce temps, personne
+   * ne vide le tuyau. Le noyau lui accorde 64 Ko : la suite la plus lourde de
+   * la batterie — sept chantiers bâtis de bout en bout, chacun avec son devis
+   * et son PDF — les dépasse, et **le serveur se bloque alors en écriture**.
+   * Il ne répond plus à rien, la navigation suivante dépasse ses 45 secondes,
+   * et le message accuse l'écran qui avait le malheur de venir après.
+   *
+   * C'est ce qui produisait le rouge intermittent de
+   * `test-planning-vers-facture-e2e` — « deux fois sur cinq batteries », dit
+   * son propre commentaire, qui l'attribuait à la lourdeur du montage. Mesuré
+   * ici : la suite passe systématiquement quand le serveur écrit dans un
+   * fichier, et échoue systématiquement quand il écrit dans un tuyau non
+   * drainé, à code identique.
+   *
+   * Le descripteur est passé directement à l'enfant : le noyau écrit dans le
+   * fichier sans jamais rien attendre de nous.
+   */
+  const JOURNAL_SERVEUR = path.join(tmpdir(), "atlas-serveur-e2e.log");
+  const journalFd = openSync(JOURNAL_SERVEUR, "w");
   const serveur = spawn(NPM, ["run", "dev", "--", "-p", "3000"], {
     env: process.env,
-    stdio: ["ignore", "pipe", "pipe"],
+    stdio: ["ignore", journalFd, journalFd],
     detached: true,
   });
-
-  // La sortie du serveur était jusqu'ici jetée. Quand il meurt en cours de
-  // route, les suites suivantes échouent toutes sur un banal dépassement de
-  // délai à /login, et rien n'indique la cause réelle. On garde donc ses
-  // dernières lignes pour pouvoir les montrer au moment où ça compte.
-  const journalServeur: string[] = [];
-  const retenir = (donnees: Buffer) => {
-    for (const ligne of donnees.toString().split("\n")) {
-      if (ligne.trim()) journalServeur.push(ligne);
-    }
-    if (journalServeur.length > 200) journalServeur.splice(0, journalServeur.length - 200);
-  };
-  serveur.stdout?.on("data", retenir);
-  serveur.stderr?.on("data", retenir);
 
   let serveurTermine: string | null = null;
   serveur.on("exit", (code, signal) => {
@@ -278,7 +291,16 @@ async function main() {
 
   function montrerJournalServeur() {
     console.error("\n--- Dernières lignes du serveur de développement ---");
-    for (const ligne of journalServeur.slice(-60)) console.error(`  ${ligne}`);
+    let lignes: string[] = [];
+    try {
+      lignes = readFileSync(JOURNAL_SERVEUR, "utf8").split("\n").filter((l) => l.trim());
+    } catch {
+      // Le journal est un confort de diagnostic : ne pas pouvoir le lire ne
+      // doit pas remplacer la vraie panne par une panne de lecture de fichier.
+      console.error("  (journal illisible)");
+    }
+    for (const ligne of lignes.slice(-60)) console.error(`  ${ligne}`);
+    console.error(`--- journal complet : ${JOURNAL_SERVEUR}`);
     console.error("---------------------------------------------------\n");
   }
 

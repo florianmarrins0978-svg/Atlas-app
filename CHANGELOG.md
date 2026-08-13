@@ -9,6 +9,28 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### Le faux rouge de la batterie : un tuyau de 64 Ko, pas un écran lent
+
+**Trois faux rouges avaient été attribués au préchauffage le matin même** — et
+le préchauffage n'y était pour rien. La cause est mécanique, et elle se mesure :
+
+`run-e2e-tests.ts` recueillait la sortie du serveur de développement par un
+**tuyau**, drainé par un écouteur de son propre processus. Or il lance chaque
+suite avec `spawnSync`, **qui bloque sa boucle d'événements** jusqu'à la fin de
+la suite. Pendant tout ce temps, personne ne vide le tuyau. Le noyau lui accorde
+64 Ko : la suite la plus lourde de la batterie les dépasse, et **le serveur se
+bloque alors en écriture**. Il ne répond plus, la navigation suivante dépasse
+ses 45 secondes, et le message accuse l'écran qui avait le malheur de venir
+après — « /planning », « /termines », selon la fois.
+
+La sortie va désormais dans un **fichier**, par descripteur passé à l'enfant :
+le noyau écrit sans jamais rien attendre de nous.
+
+**Mesuré des deux côtés**, comme l'exige le dépôt : rouge 3 fois sur 3 avec le
+tuyau, vert avec le fichier, à code applicatif identique. Ce qui explique aussi
+pourquoi la suite passait toujours jouée à la main — le serveur écrivait alors
+dans un terminal, que personne ne bloque.
+
 ### L'agenda iCloud est relié — lecture ET écriture
 
 **Après la maquette (ci-dessous), sa décision :** *« code pour qu'on puisse lire

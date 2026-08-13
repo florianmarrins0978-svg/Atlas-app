@@ -358,6 +358,15 @@ qui suit une balise fermante à cet endroit — l'écran de Google portait déj�
 écran portaient le piège. **Aucun test de texte ne l'attrape** : le contrôle
 vise désormais le texte RENDU (`test-agenda-reglages-e2e.ts`).
 
+**⚠ Le faux rouge qui a coûté quatre batteries le 12 août n'était PAS le
+préchauffage.** `run-e2e-tests.ts` recueillait la sortie du serveur par un
+tuyau, et lance chaque suite avec `spawnSync` — qui bloque sa boucle
+d'événements. Personne ne vidait le tuyau pendant une suite ; à 64 Ko, **le
+serveur se bloquait en écriture** et ne répondait plus. Le rouge tombait alors
+sur l'écran suivant, au hasard. La sortie va dans un fichier depuis. Si un
+dépassement de délai inexplicable revient sur une suite lourde, vérifier
+d'abord que rien n'est repassé en `pipe`.
+
 **Pour diagnostiquer une suite navigateur sans rejouer la batterie :**
 `npm run test:e2e -- --seulement <motif>`. Écrit le 12 août après avoir rejoué
 vingt-cinq minutes pour observer UNE suite — c'est ce coût-là qui pousse à
