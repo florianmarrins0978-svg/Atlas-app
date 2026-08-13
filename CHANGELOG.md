@@ -9,6 +9,29 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### Réglages, lot 6 : les notifications — huit familles, une seule qui existe
+
+`maquettes/atlas-reglages-notifications.html`, trois écrans. Rien dans `src/`.
+
+**L'état réel, dit à l'écran :** aucune notification ne sort de l'application
+aujourd'hui. Une seule famille existe — ce qu'est devenu un devis parti — et
+elle s'affiche seulement sur l'accueil. **Le SMS est écarté**, et c'était déjà
+tranché le 4 août : le porter comme « bientôt » serait promettre ce qui a été
+refusé.
+
+**Huit familles rangées en trois groupes, l'argent d'abord** — huit
+interrupteurs à la file font une liste qu'on parcourt sans lire. Le canal se lit
+**sur la ligne**, pas dans une grille de seize cases. Et **la phrase exacte est
+montrée** : « Facture Martin, 1 240 €. En retard depuis 7 jours. » se juge, « une
+alerte d'impayé » non.
+
+**L'impayé se coupe, mais prévient** : l'éteindre, c'est accepter de ne plus
+savoir qu'on n'est pas payé. Rien n'est verrouillé — une notification ne pose ni
+problème juridique ni problème moral. Et **tout éteindre ne coupe pas d'Atlas** :
+les cartes de l'accueil restent, c'est seulement Atlas qui cesse de déranger.
+
+---
+
 ### Réglages, lot 5 : les documents — et le modèle qu'on ne remplace pas
 
 `maquettes/atlas-reglages-documents.html`, quatre écrans : les conditions à

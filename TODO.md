@@ -42,7 +42,7 @@ Ordre convenu, qui suit ses quatre priorités du 13 août 2026 :
 | 3 | Équipe et rôles | Qui a accès, et à quoi | **dessiné et validé le 13 août** (`ARCHITECTURE.md` §82) |
 | 4 | Tarifs & catalogue | Prestations, main-d'œuvre, matériel | **dessiné le 13 août** (`ARCHITECTURE.md` §83) |
 | 5 | Documents | Conditions, acompte, logo, texte de bas de page | **dessiné le 13 août** (`ARCHITECTURE.md` §85) |
-| 6 | Notifications | Huit familles d'alertes, canal par canal | à dessiner |
+| 6 | Notifications | Huit familles d'alertes, canal par canal | **dessiné le 13 août** (`ARCHITECTURE.md` §86) — **rien n'est envoyé aujourd'hui** |
 | 7 | Le reste | Atlas IA, intégrations, apparence, abonnement, sécurité | à dessiner |
 
 **La charte, depuis le 13 août :** *« toujours en respectant le style de l'appli

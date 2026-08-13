@@ -6687,3 +6687,49 @@ fondre en un seul champ produirait un texte imprimé deux fois, ou nulle part.
 **Le rappel des pénalités sur le devis part éteint, et l'écran dit pourquoi** :
 certains clients le lisent comme une méfiance. Un défaut choisi se justifie —
 sans quoi il passe pour un oubli.
+
+
+---
+
+## 86. Les notifications : huit familles, et une seule qui existe
+
+**Sixième lot, dessiné le 13 août 2026** —
+`maquettes/atlas-reglages-notifications.html`, trois écrans. Rien dans `src/`.
+
+### L'état réel, qui change la lecture de cet écran
+
+**Aucune notification ne sort de l'application aujourd'hui.** Il en existe UNE
+famille (`src/app/Notifications.tsx`) : ce qu'est devenu un devis parti. Elle
+s'affiche **sur l'écran d'accueil**, et seulement là. Rien n'est envoyé, ni sur
+le téléphone ni par e-mail.
+
+**Le SMS est écarté, et c'était déjà tranché** — `docs/A-FAIRE.md` §5, le
+4 août 2026. Le porter comme « bientôt » serait promettre ce qui a été refusé.
+Il ne figure donc nulle part, et l'écran dit pourquoi plutôt que de laisser
+chercher.
+
+### Ce que la planche tranche
+
+**Huit familles, rangées en trois groupes — l'argent d'abord.** Huit
+interrupteurs à la file font une liste qu'on parcourt sans lire. Groupés par ce
+qu'ils servent (son argent, ses journées, ses clients), ils se choisissent d'un
+coup d'œil. L'ordre n'est pas neutre : ce qu'un artisan vient chercher en
+premier, c'est ce qui lui coûte cher de rater.
+
+**Le canal se lit sur la ligne**, en or, à côté de l'interrupteur. Une grille
+famille × canal serait illisible sur un téléphone, et personne ne remplit un
+tableau de seize cases.
+
+**La phrase exacte est montrée, pas décrite.** « Une alerte d'impayé » ne se juge
+pas ; *« Facture Martin, 1 240 €. En retard depuis 7 jours. »* si — c'est elle
+qu'il lira à sept heures du matin.
+
+**Une alerte qui coûte de l'argent se coupe avec un mot.** L'impayé n'est pas
+verrouillé — sa règle dit « seulement ce qui pose un problème juridique ou
+moral », et une notification ne pose ni l'un ni l'autre — mais l'écran prévient :
+l'éteindre, c'est accepter de ne plus savoir qu'on n'est pas payé.
+
+**Tout éteindre ne coupe pas d'Atlas.** Le troisième écran le dit : les cartes
+de l'accueil restent, c'est seulement Atlas qui cesse de déranger. Sans cette
+phrase, un artisan qui veut le calme croirait avoir tout perdu et rallumerait au
+hasard.
