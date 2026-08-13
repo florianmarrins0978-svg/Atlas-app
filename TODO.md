@@ -31,7 +31,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 **Livré le 13 août 2026, non éprouvé ici, et ça ne peut pas l'être.** Le numéro
 du devis et celui de la facture s'écrivent désormais de façon qu'un détecteur
-d'Apple n'y voie plus un téléphone (`ARCHITECTURE.md` §80). Cet environnement
+d'Apple n'y voie plus un téléphone (`ARCHITECTURE.md` §81). Cet environnement
 n'a que Chromium, qui n'a jamais fait cette détection : les suites vérifient que
 le texte aplati ne contient plus de suite de chiffres appelable, pas ce
 qu'iOS en fera.

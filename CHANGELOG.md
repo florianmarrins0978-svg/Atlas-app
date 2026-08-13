@@ -39,7 +39,7 @@ ligne. Il reste intact dans le PDF, dans le SMS et en base.
 **Ce qui n'est pas prouvé, et se dit :** la détection appartient à un logiciel
 d'Apple absent d'ici. Les contrôles vérifient que le texte offert à ce logiciel
 ne contient plus de suite de chiffres appelable — pas ce qu'il en fera. Seul son
-iPhone tranchera. Détail : `ARCHITECTURE.md` §80.
+iPhone tranchera. Détail : `ARCHITECTURE.md` §81.
 
 ### La capsule descend jusqu'aux écrans du client — il a tranché
 

@@ -448,7 +448,7 @@ passe sur le même défaut, et la première ne pouvait pas marcher.
    fermé d'Apple, absent d'ici. Les suites vérifient que le texte offert à ce
    logiciel ne contient plus de suite de chiffres appelable ; elles ne peuvent
    pas vérifier ce qu'il en fera. **Lui demander de rouvrir le lien depuis ses
-   SMS**, et de dire ce qu'il voit. Détail : `ARCHITECTURE.md` §80.
+   SMS**, et de dire ce qu'il voit. Détail : `ARCHITECTURE.md` §81.
 
 **« MONSIEUR MARTINS », ET LE TIRET RETIRÉ (13 août).** Sa capture de l'écran
 Devis. Le nom du chantier ne dit plus « Chez … », la ligne du client porte sa

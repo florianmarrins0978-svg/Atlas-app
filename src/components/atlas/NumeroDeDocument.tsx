@@ -5,7 +5,7 @@ import { decouperNumeroDocument } from "@/lib/numero-document";
  * voie pas un numéro d'appel.
  *
  * **Pourquoi ce composant existe** — le récit complet est en tête de
- * `src/lib/numero-document.ts` et dans `ARCHITECTURE.md` §68 puis §80. En deux
+ * `src/lib/numero-document.ts` et dans `ARCHITECTURE.md` §68 puis §81. En deux
  * lignes : iOS réécrit nos pages avant React, le numéro devient un lien
  * d'appel sous le doigt du client de l'artisan, et React refabrique tout
  * l'arbre en annonçant « Hydration failed ». L'en-tête `format-detection` du

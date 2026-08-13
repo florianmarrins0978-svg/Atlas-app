@@ -119,7 +119,7 @@ arrive sur la page.
 | Ce qui répare vraiment — la coupure du texte aplati par `inline-flex` | `src/components/atlas/NumeroDeDocument.tsx` |
 | Contrôles purs, sans navigateur | `scripts/test-numero-document.ts` |
 | Le texte réellement aplati, lu sur un VRAI devis | `scripts/test-detection-automatique-e2e.ts` |
-| Le pourquoi, le coût assumé et ce qui reste non prouvé | `ARCHITECTURE.md` §80 |
+| Le pourquoi, le coût assumé et ce qui reste non prouvé | `ARCHITECTURE.md` §81 |
 
 **Non éprouvé ici, et ça ne peut pas l'être** : la détection appartient à un
 logiciel fermé d'Apple, absent de cet environnement. À faire confirmer par le
