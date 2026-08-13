@@ -376,7 +376,7 @@ n'est pas la batterie.
 ## ⚠ Rouvrir un chantier, c'est REPRENDRE (13 août) — et la leçon qui va avec
 
 La liste des chantiers ne mène plus à la fiche mais **à l'écran où le travail
-s'est arrêté** (`lienDeReprise`, `ARCHITECTURE.md` §76). Sa demande, mot pour
+s'est arrêté** (`lienDeReprise`, `ARCHITECTURE.md` §78). Sa demande, mot pour
 mot : *« que ça me renvoie à l'étape où je me suis arrêté ».*
 
 **La leçon, et elle vaut au-delà de ce point.** Le premier correctif a traité un
@@ -396,6 +396,41 @@ chantier »* — c'est la LIGNE DE LA LISTE qu'il désignait, pas la fiche.
 dans `src/`.
 
 ## Ce qui vient d'être terminé
+
+**« MONSIEUR MARTINS », ET LE TIRET RETIRÉ (13 août).** Sa capture de l'écran
+Devis. Le nom du chantier ne dit plus « Chez … », la ligne du client porte sa
+civilité, et le détail passe **sous** le nom au lieu d'être collé par un tiret.
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **La civilité vit dans `src/lib/civilite.ts`, et nulle part ailleurs.** Trois
+   endroits l'appellent. « Monsieur » est un **défaut, pas une donnée** : il n'y
+   a aucun champ de civilité dans la fiche client, donc une cliente sera mal
+   nommée. Le vrai remède — un choix à la création — n'a pas été ajouté sans son
+   accord. **À lui poser.**
+2. **Un invariant a été levé, pas oublié.** `nom-chantier.ts` tenait que chaque
+   mot du nom venait de la saisie ; « Monsieur » rompt cette règle, et le patron
+   l'a demandé en connaissance de cause. Ne pas la rétablir sans lui.
+3. **UNE MIGRATION DE DONNÉES SUR UNE TABLE SOUS RLS NE FAIT RIEN, EN SILENCE.**
+   C'est la leçon qui ressert le plus. `chantiers` et `clients` portent la RLS
+   en mode **forcé** : le propriétaire y est soumis, et sans `app.entreprise_id`
+   posé, `current_setting` rend une chaîne vide, le prédicat vaut NULL et
+   **aucune ligne n'est visible**. Le premier `UPDATE` écrit s'est appliqué sans
+   erreur, a rapporté un succès, et n'a touché aucune ligne. La migration 0036
+   boucle donc sur les entreprises en posant le contexte de chacune — jamais en
+   désactivant la RLS. Les migrations d'avant ne modifiaient que
+   `termes_metier`, sans RLS forcée : ce cas était neuf.
+4. **Un « 1 migration appliquée » ne prouve rien.** Le contrôle rejoue la
+   migration et vérifie le résultat. Il a d'abord été un **faux vert** : il
+   posait lui-même le contexte pour ses insertions, la migration en héritait, et
+   il passait au vert sur la version défaillante. Il efface maintenant le
+   contexte avant de jouer la migration.
+
+**Et un rappel que cette journée redonne :** trois suites navigateur recopiaient
+« Chez … » au lieu d'appeler la règle. Elles sont passées au rouge le jour où le
+mot a changé. Elles appellent maintenant `nomDuChantier` / `avecCivilite`.
+
+Détail complet : `ARCHITECTURE.md` §77.
 
 **SIX BRANCHES RÉUNIES DANS `main` (13 août).** Sa demande : *« Fusionne. »*
 `main` porte désormais l'agenda iCloud, l'écran de la facture (SMS **ou**
@@ -520,14 +555,24 @@ client demande une modification, ouvrir le devis pour pouvoir le modifier. »*
 **Trois choses à savoir :**
 
 1. **La règle vit dans `src/lib/suite-de-la-reponse.ts`**, pas dans le
-   composant : accepté → `devis-complet` (le document figé, tel que le client
-   l'a reçu) ; correction, refus, lien périmé → l'écran d'envoi, qui porte la
-   reprise. **Ne pas mener un devis à corriger sur `devis-complet`** : il est
-   immuable une fois parti, et le patron se retrouverait devant un document qui
-   refuse sa frappe.
-2. **Ne jamais reprendre à sa place.** La reprise ouvre une NOUVELLE version du
-   devis : c'est sa décision. On mène à l'écran qui la propose, on ne la déclenche
-   pas.
+   composant : accepté → `devis-complet` figé, tel que le client l'a reçu ;
+   **correction → `devis-complet` AUSSI, mais après reprise** (drapeau
+   `reprendreAvant`) ; refus et lien périmé → l'écran d'envoi, qui laisse le
+   choix. **Ne jamais mener un devis à corriger sur `devis-complet` SANS la
+   reprise** : il est immuable une fois parti, et le patron se retrouverait
+   devant un document qui refuse sa frappe.
+2. **Corrigé le 13 août 2026, par lui :** *« lorsque je clique sur corriger le
+   devis, je dois arriver directement sur la page du devis pour pouvoir le
+   corriger. »* La veille, la correction passait par l'écran d'envoi, au nom de
+   « ne jamais reprendre à sa place ». Le principe reste juste — **mais il ne
+   s'appliquait pas ici : c'est LUI qui appuie**, sur un bouton qui annonce
+   « Corriger le devis ». Le geste est le sien ; l'en priver lui coûtait un
+   écran et un second appui.
+
+   Il vaut toujours ailleurs : un devis **accepté** ne se reprend jamais
+   d'office (ce serait remplacer sans le dire le document sur lequel les deux
+   se sont mis d'accord), et un **refus** ou un **silence** n'appellent pas
+   forcément un nouveau devis — la suite peut être d'abandonner le chantier.
 3. **Une acceptation sur une date PROPOSÉE ne fait aucune carte**, et c'est
    voulu (`notificationsPatron`). Seuls un refus, une correction, une
    contre-proposition de date ou un message du client en font une. Un contrôle
@@ -565,6 +610,27 @@ l'ancien prix.
 
 **Ce qui reste ouvert :** le rayon du bouton (4, 8, 12 ou pilule — bande au bas de
 la maquette 33). Son choix vaudra pour vingt-sept écrans. Il a demandé la maquette en toutes lettres : *« fabrique-
+**⚠ SI LE PATRON MONTRE « An unexpected response was received from the server. »**
+Regarder d'abord **quelle version son banc sert**. Si la pile d'appel contient
+`.next/dev`, il est sur la version LENTE : chaque écran s'y compile au premier
+appel, et le relais de GitHub abandonne au bout d'une minute en rendant sa
+propre page d'erreur — le navigateur reçoit du HTML là où il attendait une
+réponse. Ce n'est pas un défaut du code, c'est un banc qui n'a pas fini de se
+construire. Depuis le 12 août, l'écran Réglages le dit lui-même, et un veilleur
+(`src/components/atlas/VeilleReponseServeur.tsx`) pose une phrase française avec
+un bouton « Recharger ».
+
+**Ne pas élargir ce veilleur.** Il ne reconnaît que quatre formulations, et il
+doit continuer de REFUSER tout le reste : habiller un défaut du code en
+« le serveur se prépare » ferait recharger une page qui ne guérira pas, et
+masquerait le défaut. `scripts/test-reponse-illisible.ts` tient ce refus.
+
+
+**⚠ L'ÉCRAN DU DEVIS ATTEND UNE LETTRE — ne rien coder avant (12 août).**
+Le CONTENU est arrêté (nom du devis, total, « Modifier mon devis », trois actions
+en encre) ; c'est la MISE EN PAGE qui attend un numéro —
+`docs/maquettes/26-le-devis-sur-sa-base.html`, cinq propositions. Le détail et les
+trois points ouverts sont dans `TODO.md` 0 septdecies. Il a demandé la maquette en toutes lettres : *« fabrique-
 moi la maquette et montre-la-moi avant de coder quoi que ce soit »*.
 
 **Et NE PAS chercher une panne d'envoi de devis.** Elle a été signalée puis

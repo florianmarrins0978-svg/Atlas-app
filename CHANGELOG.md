@@ -9,6 +9,99 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### « Monsieur Martins », et le tiret qui collait deux choses différentes
+
+**Sa capture, ce matin :** *« il faut qu'il y ait écrit monsieur Martins et pas
+chez Martins. Ensuite tu me retires le tiret entre le nom et l'adresse […]
+d'abord le nom, ensuite à la ligne l'adresse. Pour le client, c'est pareil. »*
+
+Trois corrections, et **la deuxième a coûté bien plus cher que la première.**
+
+**1. La civilité.** Le nom du chantier était fabriqué par l'application —
+« Chez » suivi du client. C'est la phrase par laquelle un artisan désigne un
+chantier ; en tête d'un document, on nomme quelqu'un. `src/lib/civilite.ts` pose
+« Monsieur » devant un nom nu, et **jamais** devant un nom qui porte déjà sa
+civilité (« Mme Roux ») ni devant une raison sociale (« SARL Untel »). Un seul
+fichier sert les trois endroits où le client est nommé.
+
+Ce que ça coûte, écrit plutôt que tu : il n'existe **aucun champ de civilité**
+dans la fiche client. « Monsieur » est un défaut, pas une donnée — une cliente
+sera mal nommée. Le vrai remède est un choix à la création du client ; il n'a
+pas été ajouté sans son accord.
+
+**2. Une migration qui ne changeait rien, et le disait au vert.** Le nom du
+chantier est écrit en base à la création : corriger la règle seule aurait laissé
+« Chez Martins » sur l'écran même qu'il photographiait. D'où une migration. La
+première version — un `UPDATE` ordinaire — **s'est appliquée sans erreur et n'a
+touché aucune ligne** : `chantiers` porte la RLS en mode forcé, le propriétaire
+y compris, et sans contexte d'entreprise posé aucune ligne n'est visible. C'est
+le piège que `CLAUDE.md` §3 décrit, rencontré pour la première fois dans une
+migration ; les précédentes ne modifiaient que `termes_metier`, table sans RLS
+forcée.
+
+La version retenue **ne désactive rien** : elle boucle sur les entreprises en
+posant le contexte de chacune, comme la file `audios_a_purger`. Et un contrôle
+rejoue la migration puis vérifie le **résultat**, parce qu'un « 1 migration
+appliquée » ne prouve rien. Ce contrôle a lui-même été un faux vert — il posait
+le contexte pour ses propres insertions, dont la migration héritait — et il ne
+l'est plus : confronté à la version défaillante, il rougit.
+
+**3. Le tiret.** Il réunissait deux choses de nature différente, qui et où. Sur
+les 390 px de son iPhone la phrase se repliait déjà, mais **au mauvais
+endroit** : au milieu de l'adresse, jamais entre le nom et elle. Deux
+paragraphes désormais, et la suite **mesure les rectangles** — le détail sous le
+nom, à la même marge — parce qu'un contrôle qui compte les lignes serait passé
+au vert sur ce défaut-là.
+
+**Ce qui n'a pas été touché, à dessein :** le message qui part chez son client
+dit toujours « Bonjour <nom> ». Changer la façon dont ses clients sont abordés
+est un geste qui lui appartient.
+
+`ARCHITECTURE.md` §77.
+
+### « Corriger le devis » ouvre enfin le devis, et non l'écran d'à côté
+
+**Sa demande, capture à l'appui :** *« lorsque je clique sur corriger le devis,
+je dois arriver directement sur la page du devis pour pouvoir le corriger. Et
+aujourd'hui, ce n'est pas le cas. »*
+
+La veille, ce bouton menait à l'écran d'envoi — celui qui porte « Corriger et
+renvoyer » — par crainte de reprendre le devis à sa place. **La crainte visait
+juste, mais pas ici : c'est lui qui appuie**, sur un bouton qui annonce la
+correction. Le geste était déjà le sien ; l'en priver ne le protégeait de rien
+et lui coûtait un écran de plus, puis un second appui, pour arriver là où il
+voulait aller d'emblée.
+
+Le bouton reprend donc le devis puis ouvre le document, prêt à être corrigé.
+Reprendre ne l'empile pas : un brouillon déjà ouvert est réutilisé tel quel, et
+une reprise depuis un devis parti garde le même numéro commercial en montant
+d'une version. Appuyer deux fois ne fabrique pas deux devis.
+
+**Ce qui n'a PAS changé, et c'est délibéré.** Un devis **accepté** ne se reprend
+jamais d'office : ce serait remplacer sans le dire le document sur lequel le
+client et lui se sont mis d'accord. Un **refus** ou un **silence** continuent de
+mener à l'écran d'envoi : après un refus, la suite n'est pas forcément de
+refaire le devis — elle peut être d'abandonner le chantier ou d'appeler le
+client, et ouvrir une version à chaque coup d'œil encombrerait l'historique.
+
+**Éprouvé, et pas seulement écrit.** La règle pure distingue désormais la
+destination et la reprise, et refuse qu'on ouvre le document figé sans reprise —
+c'est l'ancien défaut, et il reste interdit. La suite navigateur presse le
+bouton pour de vrai, suit la navigation, et vérifie que le devis obtenu est
+**réellement modifiable** : pas seulement l'absence du bandeau « il ne se
+modifie plus », mais un champ de ligne qui accepte la frappe. Confronté au
+correctif retiré : deux cas au rouge. Écran capturé, et le devis s'ouvre bien
+sans bandeau.
+
+**Un cinquième piège d'attente corrigé au passage** : la préparation du décor de
+cette suite patientait trois secondes et demie après l'envoi du devis, puis
+accusait le produit — « le devis n'est pas parti » — d'une impatience. Quatre
+autres suites étaient tombées sur exactement ce piège la veille.
+
+---
+
+## 2026-08-13
+
 ### Six branches réunies dans `main`, et ce que la réunion a coûté
 
 **Sa demande, le 13 août :** *« Fusionne. »* Six branches vivaient à côté de
@@ -72,7 +165,7 @@ fiche tant qu'il n'y a que des photos et une dictée (elles y vivent).
 La règle est bâtie **sur** l'étape suivante, jamais à côté : deux règles pour la
 même question finiraient par se contredire, la fiche proposant un geste et la
 liste en ouvrant un autre. Éprouvée sur sa séquence exacte dans un vrai
-navigateur, retour par mégarde compris. `ARCHITECTURE.md` §76.
+navigateur, retour par mégarde compris. `ARCHITECTURE.md` §78.
 
 **Ce qui n'a PAS été touché, sur sa consigne :** le centre de la fiche. La
 maquette dessinée entre-temps reste au placard.
@@ -102,8 +195,8 @@ envoyer » —, sans lequel un devis écrit n'avait aucun état à lui.
 désigné dès que le champ est devenu obligatoire. C'était l'écran de sa capture.
 
 Reproduit à l'écran avant correction, revu à l'écran après (`ARCHITECTURE.md`
-§76). **Ce qui reste ouvert et ne se décide pas sans lui :** le corps de la
-fiche montre toujours l'anneau de dictée sur un chantier déjà chiffré.
+§78). **Le corps de la fiche, lui, n'est pas touché** : il a demandé le jour
+même de ne pas y toucher, et la maquette dessinée entre-temps reste au placard.
 
 ---
 
@@ -1226,6 +1319,49 @@ Un troisième exigeait la phrase « Le lien est toujours actif », et s'appelait
 l'affichage mais le fait que **relancer réutilise le même lien** : il s'appelle
 maintenant ainsi, et le vérifie sur le geste de relance et sur le nombre de
 versions en base.
+### « An unexpected response was received from the server. » — en français, et seulement quand c'est vrai
+
+**Sa capture, à 14 h 04 :** un panneau rouge en anglais, une pile d'appel dans
+`node_modules`, rien sur ce qui s'est passé ni sur quoi faire.
+
+**Ce que la capture disait et qu'il fallait lire :** le chemin commençait par
+`.next/dev` — **son banc servait la version LENTE**. En version lente, chaque
+écran se compile au premier appel — trente à cent secondes, davantage sur son
+disque — et **le relais de GitHub abandonne au bout d'une minute** en rendant sa
+propre page d'erreur. Le navigateur reçoit du HTML là où il attendait une
+réponse d'Atlas : c'est exactement ce message.
+
+**Ce qui n'a PAS été fait, et pourquoi.** La cause n'a pas été reproduite ici :
+le bouton de mise à jour, joué dans les conditions du banc avec le code changé
+sous la page ouverte, s'est comporté correctement. Rien n'a donc été « corrigé »
+au jugé — la seconde faute que ce dépôt s'interdit après avoir accusé à tort.
+
+Deux choses ont été faites, toutes deux vérifiables :
+
+1. **Le défaut parle.** `src/lib/reponse-illisible.ts` reconnaît cette famille
+   d'échec — quatre formulations, selon le navigateur et la version du cadre —
+   et un veilleur posé dans la coque affiche une phrase française avec le seul
+   geste utile : **Recharger**. Sur la version rapide, ce panneau n'existe même
+   pas : l'échec y est muet, le bouton pressé ne fait rien. Des deux, le silence
+   était le pire.
+2. **L'écran dit qu'il est lent.** Réglages annonce désormais, en toutes
+   lettres, que la version servie est celle qui se construit encore — et que
+   c'est elle qui produit « une réponse inattendue du serveur ». Rien ne le
+   disait ; il ne pouvait pas relier les deux.
+
+**Ce que le veilleur REFUSE de faire compte autant.** Un défaut ordinaire du
+code n'est jamais habillé en lenteur : l'y habiller enverrait recharger une page
+qui ne guérira pas, et masquerait le défaut. Six messages réels — dont
+« Invalid Server Actions request. » et une erreur d'hydratation — sont éprouvés
+comme devant rester tels quels.
+
+**Trouvé par la suite navigateur, avant lui :** le veilleur n'était monté que
+sur les écrans à barre de navigation. **L'écran de connexion en était dépourvu**
+— c'est-à-dire précisément l'écran où une réponse coupée est la plus probable,
+puisque c'est le premier appel, celui qui compile tout, et le seul où il n'a
+aucun autre repère.
+
+
 
 ### Le devis parti, sur sa base — cinq façons de tenir ce qu'il a arrêté
 

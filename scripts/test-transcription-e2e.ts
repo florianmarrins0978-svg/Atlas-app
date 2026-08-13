@@ -20,7 +20,7 @@ async function main() {
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   // **L'adresse d'arrivée n'est plus forcément la fiche (13 août 2026).** La
   // liste ramène désormais à l'écran où le travail s'est arrêté
-  // (`lienDeReprise`, `ARCHITECTURE.md` §76) : ce chantier de démonstration a
+  // (`lienDeReprise`, `ARCHITECTURE.md` §78) : ce chantier de démonstration a
   // une dictée, donc on atterrit sur `/informations`. Déduire l'adresse de la
   // fiche en recopiant l'URL courante donnait `/informations/transcription`,
   // c'est-à-dire une page qui n'existe pas — et le rouge accusait la
