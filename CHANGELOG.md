@@ -9,6 +9,47 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### Réglages, lot 2 : l'identité — et trois manques qu'elle a révélés
+
+`maquettes/atlas-reglages-identite.html`, cinq écrans : identité, SIRET, régime
+de TVA, coordonnées et banque, puis l'état où les champs manquent. Rien dans
+`src/` (`CLAUDE.md` §3 bis).
+
+**Dessiner cette rubrique a obligé à relire ce que la base porte et ce que le
+PDF imprime. Trois écarts en sont sortis, aucun cosmétique :**
+
+1. **Le régime de TVA est deviné.** `facture-pdf.ts` imprime la mention de
+   l'article 293 B quand le taux vaut zéro — il déduit donc le régime fiscal
+   d'un chiffre saisi chantier par chantier. Les deux sens sont faux : une
+   franchise perd sa mention si 20 % traîne dans un devis, un assujetti voit
+   s'imprimer une phrase qui ne le concerne pas. Le régime doit être **déclaré
+   une fois**.
+2. **Le numéro de TVA intracommunautaire n'existe nulle part** — ni en base, ni
+   sur le document. *Réserve : les mentions obligatoires n'ont pas pu être
+   vérifiées à leur source d'ici (le réseau refuse les sites publics). L'écran
+   le dit et renvoie au comptable. Ne pas coder sur la foi de cette planche.*
+3. **Le téléphone et l'e-mail sont saisis et ne s'impriment nulle part.** Le
+   bloc « Émetteur » porte trois lignes : nom, adresse, SIRET. Un client qui
+   veut appeler n'a pas de numéro sous les yeux.
+
+**Deux décisions de forme.** Le **SIREN ne se saisit pas** : il est les neuf
+premiers chiffres du SIRET, et l'écran le montre au lieu de le redemander — deux
+saisies seraient deux façons de se contredire. Et le **manque se signale sur la
+ligne** (« SIRET — manquant », trait rouge) en disant ce qu'il empêche : « vos
+factures ne sont pas conformes », jamais « champ requis ». Le champ reste vide :
+un exemple plausible finirait imprimé sur une pièce comptable.
+
+**La charte devient un module partagé**, `maquettes/charte.mjs` : couleurs
+comparées aux jetons, absence d'ombre, grammaire des écrans, retrait de 26 px.
+Une seule implémentation pour toutes les planches (`CLAUDE.md` §3).
+
+**Deux défauts trouvés sans test, et un test qui accusait à tort.** L'encart
+d'alerte touchait les bords de l'écran ; la dernière ligne manquante perdait son
+trait rouge ; et la mesure des cibles comptait une ligne repliée, faisant rougir
+un écran sain.
+
+---
+
 ### Les réglages : le plan dessiné avant les dix rubriques
 
 **Il a listé dix rubriques d'un coup** — entreprise, équipe, tarifs, documents,

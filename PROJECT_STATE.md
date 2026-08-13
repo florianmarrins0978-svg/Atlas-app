@@ -494,7 +494,12 @@ Voir `TODO.md` pour le détail et l'ordre.
   **commercial** n'existe ni en base (`membres_entreprise.role` : propriétaire
   ou membre) ni dans les décisions écrites, et **le cloisonnement par rôle n'est
   pas codé** — un écran qui n'affiche pas une rubrique ne protège rien
-  (`docs/QUESTIONS.md` §10). L'ordre des lots est dans `TODO.md` §0 duovicies.
+  (`docs/QUESTIONS.md` §10). L'ordre des lots est dans `TODO.md` §0 quatervicies.
+  **Lot 2 dessiné le 13 août** (l'identité) : il a révélé que le **régime de TVA
+  est deviné d'après le taux appliqué** — donc faux dans les deux sens sur une
+  pièce comptable —, que le **numéro de TVA intracommunautaire n'existe nulle
+  part**, et que le **téléphone et l'e-mail ne s'impriment sur aucun document**
+  (`ARCHITECTURE.md` §81).
 
 - **Agenda Google** — la connexion du compte demande des identifiants que je n'ai
   pas ; le reste (lecture des disponibilités, écriture de l'intervention) est

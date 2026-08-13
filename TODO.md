@@ -27,7 +27,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 duovicies. Les réglages : neuf rubriques encore à dessiner
+### 0 quatervicies. Les réglages : neuf rubriques encore à dessiner
 
 **Le plan est dessiné et attend son accord** — `maquettes/atlas-reglages-plan.html`
 (`ARCHITECTURE.md` §80). Les deux niveaux, les quatre rôles et la forme de
@@ -38,7 +38,7 @@ Ordre convenu, qui suit ses quatre priorités du 13 août 2026 :
 | Lot | Rubrique | Ce qu'elle porte | État |
 |---|---|---|---|
 | 1 | **Le plan** | Deux niveaux, trois rôles, l'interrupteur | **dessiné le 13 août — attend son accord** |
-| 2 | Identité de l'entreprise | Nom, adresse, SIRET/SIREN, TVA, IBAN | à dessiner |
+| 2 | Identité de l'entreprise | Nom, adresse, SIRET/SIREN, TVA, IBAN | **dessiné le 13 août** (`ARCHITECTURE.md` §81) |
 | 3 | Équipe et rôles | Qui a accès, et à quoi | à dessiner — **suppose la décision sur le rôle « commercial »** |
 | 4 | Tarifs & catalogue | Prestations, main-d'œuvre, matériel | à dessiner — l'écran existe déjà en partie |
 | 5 | Documents | Conditions, acompte, logo, texte de bas de page | à dessiner — **le plus lourd**, voir ci-dessous |
@@ -53,6 +53,23 @@ gardent l'ancien nuancier** (crème `#edece6`, bronze `#8f7130`) : les reprendre
 d'un coup mêlerait un changement d'identité à un changement mécanique sur des
 écrans déjà validés. Elles passent à la charte **quand leur sujet est rouvert**,
 pas avant (`ARCHITECTURE.md` §80).
+
+**Trois manques révélés en dessinant le lot 2, et qui sont du CODE, pas du
+dessin** (`ARCHITECTURE.md` §81) :
+
+- **le régime de TVA est deviné** — `facture-pdf.ts` imprime la mention de
+  l'article 293 B quand le taux vaut zéro. Il déduit donc le régime fiscal d'un
+  chiffre saisi chantier par chantier, et se trompe dans les deux sens. Il faut
+  une colonne `regime_tva` sur `entreprises`, et que le PDF la lise ;
+- **le numéro de TVA intracommunautaire n'existe pas**, ni en base ni sur le
+  document. *Réserve : les mentions obligatoires n'ont pas pu être vérifiées à
+  leur source d'ici. À faire confirmer avant de coder ;*
+- **le téléphone et l'e-mail ne s'impriment nulle part** : le bloc ÉMETTEUR de
+  `document-commun.ts` porte le nom, l'adresse et le SIRET, rien d'autre. Le
+  client n'a aucun moyen d'appeler l'artisan depuis son devis.
+
+Manquent aussi en base, et la maquette les montre : **forme juridique** et
+**titulaire du compte**.
 
 **Ce qui n'est PAS acquis, et ne doit pas être codé sur la foi de la maquette :**
 

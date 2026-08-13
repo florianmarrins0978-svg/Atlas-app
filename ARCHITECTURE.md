@@ -6101,7 +6101,7 @@ page passent de 26 à 24 px (`spacing.pageX`).
 l'ancien nuancier. Les reprendre d'un coup mêlerait un changement d'identité à
 un changement mécanique sur des écrans déjà validés — c'est exactement ce que
 `design-tokens.ts` a refusé de faire pour le nom `rust`. Elles passeront à la
-charte quand leur sujet sera rouvert. `TODO.md` §0 duovicies le porte.
+charte quand leur sujet sera rouvert. `TODO.md` §0 quatervicies le porte.
 
 **Corrigé au passage, parce qu'on ne respecte pas une charte dont la
 documentation ment :** `docs/DESIGN_SYSTEM.md` annonçait encore Playfair Display
@@ -6192,3 +6192,82 @@ coque avait été posée avant `.tel{padding:11px}` : à spécificité égale, l
 dernière déclaration l'emporte, et l'écran restait à 368 px. Le contrôle a
 désigné le bon coupable en une ligne — « 368 px » — parce qu'il mesurait la
 largeur au lieu de vérifier la présence de la règle.
+
+
+---
+
+## 81. L'identité de l'entreprise : trois manques que la maquette a révélés
+
+**Deuxième lot des réglages, dessiné le 13 août 2026** —
+`maquettes/atlas-reglages-identite.html`, cinq écrans, contrôlée par
+`maquettes/verifier-atlas-reglages-identite.mjs`. Rien dans `src/`.
+
+Dessiner cette rubrique a obligé à relire ce que la base porte et ce que le PDF
+imprime. **Trois écarts en sont sortis, et aucun n'est cosmétique.**
+
+### 1. Le régime de TVA est DEVINÉ, et une pièce comptable en dépend
+
+`facture-pdf.ts` imprime « TVA non applicable, art. 293 B du CGI » quand le taux
+appliqué vaut zéro. Le régime fiscal de l'entreprise est donc **déduit d'un
+chiffre saisi chantier par chantier**.
+
+Les deux sens sont faux : un artisan en franchise qui laisse 20 % par mégarde
+perd une mention obligatoire ; un assujetti qui pose 0 % voit s'imprimer sur sa
+facture une phrase qui ne le concerne pas. Le régime doit être **déclaré une
+fois** et commander le reste — c'est ce que dessine le troisième écran.
+
+### 2. Le numéro de TVA intracommunautaire n'existe pas
+
+Ni en base, ni sur le document. Pour une entreprise assujettie, c'est une
+mention attendue sur la facture.
+
+**Réserve, et elle est de la même nature que celle de `docs/A-FAIRE.md` §6 :**
+le détail des mentions obligatoires n'a pas pu être vérifié à sa source depuis
+cet environnement — le mandataire réseau refuse les sites publics. La maquette le
+dit à l'écran, et renvoie à son comptable. Ne pas coder sur la foi de cette
+planche.
+
+### 3. Le téléphone et l'e-mail sont saisis, et ne s'impriment nulle part
+
+Le bloc ÉMETTEUR de `document-commun.ts` porte trois lignes : le nom, l'adresse,
+« SIRET … ». C'est tout. Les deux coordonnées sont donc saisies dans les
+réglages, stockées, et invisibles pour le client — **qui n'a aucun moyen
+d'appeler l'artisan depuis le devis qu'il vient de recevoir**.
+
+### Deux décisions de forme, qui valent pour les rubriques suivantes
+
+**Le SIREN ne se saisit pas.** Il EST les neuf premiers chiffres du SIRET.
+L'écran le montre sous le champ plutôt que de le redemander : deux saisies, ce
+serait deux façons de se contredire, et c'est celui qui saisit qui paierait
+l'écart. Le contrôle vérifie la correspondance des neuf chiffres.
+
+**Le manque se signale sur la LIGNE, et dit ce qu'il empêche.** Un champ vide
+garde son étiquette (« SIRET — manquant »), son trait passe à la couleur
+d'alerte, et la phrase dit « vos factures ne sont pas conformes » plutôt que
+« champ requis » — qui ne fait agir personne. Et le champ **reste vide** : un
+exemple plausible glissé à la place d'une donnée absente finirait imprimé sur
+une pièce comptable (`docs/AGENT.md` §3).
+
+**Conséquence sur les filets :** la règle « la dernière ligne d'une liste perd
+son filet » vaut pour un SÉPARATEUR. Sur une ligne en manque, le trait n'est plus
+un séparateur mais le signalement lui-même — il reste. Deux lignes vides dont une
+seule soulignée se lisaient comme un défaut d'affichage.
+
+### La charte est désormais un module, pas une copie par planche
+
+`maquettes/charte.mjs` porte les trois contrôles communs — couleurs comparées
+aux jetons, absence d'ombre, grammaire des écrans — et le retrait de 26 px.
+Recopier ces règles dans chaque vérificateur aurait produit ce que `CLAUDE.md`
+§3 interdit : deux implémentations qui divergent. Le jour où un jeton change, un
+seul fichier bouge.
+
+**Un défaut vu à l'œil, encore :** l'encart d'alerte, posé hors d'un bloc,
+touchait les deux bords de l'écran pendant que tout le reste s'arrêtait à 26 px.
+Le contrôle du retrait est né de là, et il balaie tous les écrans des deux
+planches.
+
+**Et un contrôle juste qui accusait à tort :** la mesure des cibles de 44 px
+comptait les lignes REPLIÉES — le numéro de TVA, caché tant que la franchise est
+choisie, mesurait 0 px et faisait rougir un écran sain. Une ligne qu'on ne peut
+pas toucher n'a pas de cible à tenir. Une alerte qui accuse à tort coûte plus
+cher que pas d'alerte (`AGENTS.md`).

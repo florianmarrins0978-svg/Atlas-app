@@ -278,8 +278,15 @@ numérotation continue, conservation légale).
    entier par un modèle importé n'est pas possible sans perdre les totaux, la
    TVA et la numérotation — à dire avant de dessiner le lot « Documents ».
 
-L'ordre des lots est dans `TODO.md` §0 duovicies ; le pourquoi dans
-`ARCHITECTURE.md` §80.
+**Lot 2 fait le 13 août : l'identité de l'entreprise**
+(`maquettes/atlas-reglages-identite.html`, `ARCHITECTURE.md` §81). Il a révélé
+**trois manques qui sont du code, pas du dessin** : le régime de TVA est deviné
+d'après le taux appliqué et se trompe dans les deux sens ; le numéro de TVA
+intracommunautaire n'existe nulle part ; le téléphone et l'e-mail sont saisis et
+ne s'impriment sur aucun document. Ils sont dans `TODO.md` §0 quatervicies.
+
+L'ordre des lots est dans `TODO.md` §0 quatervicies ; le pourquoi dans
+`ARCHITECTURE.md` §80 et §81.
 
 **Deux conventions posées le 13 août, qui valent pour toutes les planches à
 venir.** Les couleurs sont **recopiées de `src/lib/design-tokens.ts`** et le
