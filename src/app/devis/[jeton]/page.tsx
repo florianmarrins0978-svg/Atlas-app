@@ -2,6 +2,7 @@ import { lireParJeton } from "@/server/repositories/envois-devis";
 import { aujourdHuiIso } from "@/server/repositories/envois-devis";
 import FormulaireReponse from "./formulaire";
 import { jourLisible } from "@/lib/jour";
+import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 
 // Seule page publique du produit : consultée sans compte, depuis un lien reçu
 // par SMS ou e-mail (docs/AGENT.md §2.2 bis).
@@ -89,7 +90,7 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
             className="mt-1 text-[20px] font-semibold text-ink"
             style={{ fontFamily: "ui-serif, Georgia, serif" }}
           >
-            Devis n° {d.numeroCommercial}
+            Devis n° <NumeroDeDocument valeur={d.numeroCommercial} />
           </h1>
           {d.clientNom && <p className="mt-1 text-[14px] text-ink/70">Pour {d.clientNom}</p>}
           {d.adresseChantier && <p className="text-[13px] text-ink/50">{d.adresseChantier}</p>}

@@ -5881,3 +5881,85 @@ de la largeur. `scripts/test-synthese-devis-e2e.ts` **mesure les rectangles**
 client dit toujours « Bonjour <nom> » (`src/lib/message-client.ts`). Changer la
 façon dont ses clients sont abordés est un geste qui lui appartient, et il ne
 l'a pas demandé.
+
+---
+
+## 78. Une en-tête n'est qu'une demande — le SMS ne la lit pas
+
+**Le même défaut, deux jours de suite, et le second était une leçon.** Le
+12 août 2026, iOS transformait le numéro de facture en lien d'appel et React
+répondait « Hydration failed » (§68). Le remède posé ce jour-là —
+`formatDetection` dans les métadonnées du gabarit racine — était juste, et il a
+été annoncé comme réglé.
+
+**Le 13 août, le patron ouvre le lien de son devis reçu par SMS. Même erreur,
+même signature :**
+
+```
++ 2026-0007
+- <a href="tel:2026-0007" x-apple-data-detectors="true"
+     x-apple-data-detectors-type="telephone">
+```
+
+Ce n'était pas un banc en retard : sa fiche d'état, réécrite à 14 h 55, donnait
+`main` à `5a6e999` — le commit portant l'en-tête, servi pour de bon.
+
+### Ce que le 12 août avait manqué
+
+**Un lien touché depuis Messages ne s'ouvre pas dans Safari.** Il s'ouvre dans
+une vue intégrée, dont la détection de données est réglée par l'application
+hôte : `format-detection` y est sans effet. Or c'est **le seul chemin par lequel
+le client de l'artisan arrive sur ces pages** — le devis et la facture partent
+par SMS, et §68 protégeait précisément le chemin que personne n'emprunte.
+
+La leçon dépasse ce défaut : une en-tête HTML est une **demande** au navigateur.
+Elle vaut ce que vaut la bonne volonté d'en face. Un correctif qui repose
+dessus, et qui ne peut être éprouvé nulle part, ne devrait jamais être écrit
+comme acquis — §68 l'avait pourtant été.
+
+### Le remède : ne plus rien avoir à détecter
+
+`src/lib/numero-document.ts` découpe « 2026-0007 » en morceaux dont aucun ne
+porte assez de chiffres pour être un téléphone (quatre au plus, contre sept au
+minimum pour le plus court des numéros). `NumeroDeDocument` les rend.
+
+**Et c'est `inline-flex` qui répare, pas le découpage.** Un détecteur ne lit pas
+le DOM : il lit le TEXTE APLATI de la page. Mesuré dans un navigateur avant
+d'écrire le composant, sur « Devis n° 2026-0007 » :
+
+| Écriture | Texte aplati |
+|---|---|
+| nu | `Devis n° 2026-0007` |
+| deux `<span>` en ligne | `Devis n° 2026-0007` |
+| deux `<span>` en `inline-block` | `Devis n° 2026-0007` |
+| parent en `inline-flex` | `Devis n° ⏎2026-⏎0007` |
+
+**La recette qui circule pour ce défaut — « entourez chaque moitié d'un span » —
+ne sert donc à rien.** Seuls les blocs coupent le texte aplati, et les enfants
+d'une boîte flexible sont blockifiés par CSS quel que soit leur `display`. C'est
+tout ce qui sépare un correctif d'un placebo, et cela ne se voit sur aucun écran.
+
+### Ce que ça coûte, écrit plutôt que tu
+
+Un numéro **copié depuis l'écran** emporte les retours à la ligne
+(« 2026-⏎0007 »). C'est le prix exact de ce qui protège — la même coupure sert
+les deux — payé sur un geste rare, quand le défaut, lui, frappait chaque client.
+Le numéro reste intact partout où il compte : dans le PDF, dans le SMS, en base.
+
+Appliqué aux **six** endroits où un numéro s'affiche, pas aux deux signalés : le
+patron consulte son atelier depuis le même iPhone, et attendre qu'il découvre
+l'écran suivant coûterait un aller-retour de plus.
+
+### Ce qui garde le remède, et ce qu'aucun contrôle ne prouvera
+
+`test-numero-document.ts` éprouve la règle sans navigateur.
+`test-detection-automatique-e2e.ts` ouvre un **vrai** devis et lit le texte que
+le navigateur aplatit : remplacer `NumeroDeDocument` par un `<span>` ordinaire —
+ou son `inline-flex` par un `display` en ligne — ne se verrait sur aucune
+capture, et rend cette suite rouge. Les deux ont été vues échouer sur le vrai
+défaut, message à l'appui.
+
+**Ce qui reste non prouvé, et doit être dit :** la détection appartient à un
+logiciel fermé d'Apple, absent d'ici. Ce dépôt vérifie que le texte offert à ce
+logiciel ne contient plus de suite de chiffres appelable ; il ne peut pas
+vérifier ce que le logiciel en fera. Seul le téléphone du patron le dira.

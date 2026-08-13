@@ -27,6 +27,21 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quatervicies. Faire confirmer par le patron que le numéro n'est plus un lien d'appel
+
+**Livré le 13 août 2026, non éprouvé ici, et ça ne peut pas l'être.** Le numéro
+du devis et celui de la facture s'écrivent désormais de façon qu'un détecteur
+d'Apple n'y voie plus un téléphone (`ARCHITECTURE.md` §78). Cet environnement
+n'a que Chromium, qui n'a jamais fait cette détection : les suites vérifient que
+le texte aplati ne contient plus de suite de chiffres appelable, pas ce
+qu'iOS en fera.
+
+**Ce qu'il faut lui demander**, une fois le lot sur `main` : rouvrir le lien de
+son devis **depuis ses SMS** — pas depuis Safari, le chemin compte — et dire si
+« Hydration failed » revient, et si le numéro reste un texte ordinaire sous le
+doigt. Sans cette réponse, ce défaut n'est pas clos : c'est la deuxième
+tentative sur le même, et la première paraissait juste elle aussi.
+
 ### 0 tervicies. `test-planning-vers-facture-e2e` échoue par intermittence, et son message est trop affirmatif
 
 **Constaté le 13 août 2026, en éprouvant autre chose.** Le dernier cas de cette
