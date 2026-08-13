@@ -6630,3 +6630,60 @@ relecture** : devant chaque rubrique de réglages, se demander *ce qu'Atlas
 pourrait apprendre à la place de le demander*. Les cinq grilles sont le modèle —
 elles ne se saisissent pas, elles se remplissent. Un réglage qu'on peut déduire
 d'un geste déjà fait ne devrait pas être un champ de formulaire.
+
+
+---
+
+## 85. Les documents : ce qui se règle, et le modèle qu'on ne remplace pas
+
+**Cinquième lot, dessiné le 13 août 2026** —
+`maquettes/atlas-reglages-documents.html`, quatre écrans, contrôlée par
+`maquettes/verifier-atlas-reglages-documents.mjs`. Rien dans `src/`.
+
+### L'état du code, à ne pas redécouvrir
+
+- La validité « 30 jours » est **écrite en dur** (`devis-pdf.ts`, constante
+  `VALIDITE`).
+- Les mentions de la facture sont **en dur** (`facture-pdf.ts`), et c'est bien.
+- Il n'existe qu'**un seul champ libre**, `conditionsPaiement` — tout ce qu'il
+  demande y tiendrait en vrac, ce qu'il refuse explicitement.
+- **Aucune image n'est posée dans le PDF** : `document-commun.ts` n'écrit que du
+  texte et des traits.
+
+### Sa question sur le modèle : la réponse est NON, et l'écran dit pourquoi
+
+*« Ou alors de complètement changer son devis par le devis par défaut, si c'est
+possible sans casser toute la structure automatisée créée. »* **Il avait posé
+lui-même la bonne réserve**, et elle tranche : ce n'est pas possible.
+
+Un devis n'est pas une feuille : c'est un document **calculé**. Le nombre de
+lignes change, les totaux se déplacent, la TVA se recalcule, la page suivante
+reprend l'en-tête. Un modèle importé ne saurait pas où poser un total qui bouge,
+et le premier devis de dix lignes sortirait faux.
+
+**L'écran ne se contente pas de refuser** : il nomme d'abord ce qui EST possible
+— logo, conditions, textes —, puis l'unique point refusé, puis **les deux côtés
+de l'échange** : ce qu'on y gagne (numérotation intacte, totaux justes, même
+pièce impeccable à chaque fois) et ce qu'on y perd (la mise en page n'est pas la
+sienne). Un refus sans raison se lit comme une paresse ; un refus qui s'échange
+se comprend.
+
+**« Extraire le logo d'une photo » revient à déposer une image**, sans l'étape
+incertaine du découpage automatique. C'est le même geste pour lui, et un pas de
+moins qui peut rater.
+
+### Deux décisions de forme
+
+**Le logo est montré à sa taille RÉELLE** — 26 mm sur le papier, environ 74 px à
+l'écran. Un aperçu deux fois trop grand ferait valider un logo illisible une fois
+imprimé : c'est le piège de §78 sous un autre visage, et le contrôle borne la
+taille.
+
+**Les deux textes libres ne vont pas au même endroit, et l'écran le dit.** Les
+conditions particulières valent pour CE devis et se lisent avec les prix ; le
+texte de bas de page revient sur TOUTES les pièces, devis comme factures. Les
+fondre en un seul champ produirait un texte imprimé deux fois, ou nulle part.
+
+**Le rappel des pénalités sur le devis part éteint, et l'écran dit pourquoi** :
+certains clients le lisent comme une méfiance. Un défaut choisi se justifie —
+sans quoi il passe pour un oubli.

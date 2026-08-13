@@ -41,7 +41,7 @@ Ordre convenu, qui suit ses quatre priorités du 13 août 2026 :
 | 2 | Identité de l'entreprise | Nom, adresse, SIRET/SIREN, TVA, IBAN | **dessiné le 13 août** (`ARCHITECTURE.md` §81) |
 | 3 | Équipe et rôles | Qui a accès, et à quoi | **dessiné et validé le 13 août** (`ARCHITECTURE.md` §82) |
 | 4 | Tarifs & catalogue | Prestations, main-d'œuvre, matériel | **dessiné le 13 août** (`ARCHITECTURE.md` §83) |
-| 5 | Documents | Conditions, acompte, logo, texte de bas de page | à dessiner — **le plus lourd**, voir ci-dessous |
+| 5 | Documents | Conditions, acompte, logo, texte de bas de page | **dessiné le 13 août** (`ARCHITECTURE.md` §85) |
 | 6 | Notifications | Huit familles d'alertes, canal par canal | à dessiner |
 | 7 | Le reste | Atlas IA, intégrations, apparence, abonnement, sécurité | à dessiner |
 
@@ -139,10 +139,10 @@ phrase qui dit qu'une grille vide n'est pas une panne (`ARCHITECTURE.md` §83).
   dessiné. Il faut donc une colonne de portée sur `membres_entreprise`, en plus
   du quatrième rôle (`docs/QUESTIONS.md` §10) ;
 - **le logo sur le devis n'existe pas** : `document-commun.ts` ne pose aucune
-  image. Extraire un logo d'une photo déposée est faisable (pdf-lib sait
-  incorporer un PNG) ; **remplacer entièrement le devis par un modèle importé ne
-  l'est pas** sans perdre les totaux, la TVA et la numérotation, qui sont
-  calculés. À dire au patron avant de dessiner le lot 5 ;
+  image. `pdf-lib` sait incorporer un PNG — c'est un lot court. ~~À dire au
+  patron avant de dessiner le lot 5~~ : **dit et dessiné le 13 août**, et
+  « remplacer le devis par le sien » est **refusé avec sa raison** à l'écran
+  (`ARCHITECTURE.md` §85) ;
 - **les conditions sont aujourd'hui en dur** : « 30 jours » dans
   `devis-pdf.ts`, la mention légale dans `facture-pdf.ts`, et un seul champ
   libre `conditionsPaiement`. Les rendre réglables demande une table, pas un

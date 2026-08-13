@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### Réglages, lot 5 : les documents — et le modèle qu'on ne remplace pas
+
+`maquettes/atlas-reglages-documents.html`, quatre écrans : les conditions à
+interrupteurs, les deux textes libres, le logo, et la réponse à sa question sur
+le modèle. Rien dans `src/`.
+
+**Sa question, et il avait posé lui-même la bonne réserve** — *« changer son
+devis par le sien, si c'est possible sans casser toute la structure automatisée
+créée »*. Ce n'est pas possible : un devis n'est pas une feuille, c'est un
+document **calculé**. Le nombre de lignes change, les totaux se déplacent, la
+page suivante reprend l'en-tête ; un modèle importé ne saurait pas où poser un
+total qui bouge.
+
+**L'écran ne se contente pas de refuser :** il nomme d'abord ce qui est possible
+— logo, conditions, textes —, puis l'unique point refusé, puis **les deux côtés
+de l'échange**, ce qu'on y gagne et ce qu'on y perd. Un refus sans raison se lit
+comme une paresse.
+
+**Le logo est montré à sa taille réelle** (26 mm sur le papier) : un aperçu deux
+fois trop grand ferait valider un logo illisible imprimé. Et **« extraire le logo
+d'une photo » revient à déposer une image** — même geste pour lui, un pas de
+moins qui peut rater.
+
+**Les deux textes libres sont distingués** : les conditions particulières valent
+pour CE devis, le bas de page revient sur toutes les pièces. Les fondre en un
+champ produirait un texte imprimé deux fois, ou nulle part. Enfin, **le rappel
+des pénalités sur le devis part éteint**, et l'écran dit pourquoi : certains
+clients le lisent comme une méfiance. Un défaut choisi se justifie.
+
+---
+
 ### La direction : un deuxième cerveau, et l'état réel de sa mémoire
 
 **Posé par le patron :** *« créer un deuxième cerveau au sein de l'application,
