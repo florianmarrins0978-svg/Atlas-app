@@ -5773,7 +5773,7 @@ phrase rassurante posée sur un vrai défaut vaut moins que pas de phrase du tou
 
 ---
 
-## 77. « Monsieur Martins », et la migration qui ne changeait rien en silence
+## 77. « Mr. Martins », et la migration qui ne changeait rien en silence
 
 **Le patron, le 13 août 2026, capture de son écran Devis à l'appui :**
 
@@ -5788,16 +5788,25 @@ phrase rassurante posée sur un vrai défaut vaut moins que pas de phrase du tou
 `src/lib/civilite.ts` — `avecCivilite(nom)`. Elle sert au nom du chantier à sa
 création (`nomDuChantier`), à la ligne « Client » de l'écran Devis, et à la
 phrase « Devis prêt pour … ». Trois endroits, une règle : recopiée, on aurait lu
-« Monsieur Martins » en tête d'un écran et « Martins » trois lignes plus bas.
+« Mr. Martins » en tête d'un écran et « Martins » trois lignes plus bas.
+
+**Le mot lui-même a changé le jour même, et c'est pour cela qu'il est une
+constante.** D'abord « Monsieur », puis, une fois vu à l'écran : *« Mr. Martins,
+pas Monsieur. »* `CIVILITE_PAR_DEFAUT` est le seul endroit où il s'écrit, et
+**les contrôles construisent leurs attentes à partir d'elle** au lieu de le
+recopier — sinon un mot changé par le patron rougirait dix suites sans rien
+apprendre à personne. Un cas, et un seul, épingle le mot en clair
+(`test-civilite`, « et ce mot est CELUI QU'IL A DEMANDÉ ») : sans lui, la
+constante pourrait valoir n'importe quoi et tout resterait vert.
 
 **Ce qu'elle suppose, et qu'il faut assumer plutôt que taire.** Il n'existe
 aucun champ de civilité dans `clients`. Quand le patron tape « Martins », rien
-ne dit si c'est un homme, une femme ou une société : **« Monsieur » est un
+ne dit si c'est un homme, une femme ou une société : **la civilité est un
 défaut, pas une donnée**. Une cliente sera donc mal nommée. Le patron l'a
 demandé en sachant qu'il n'avait saisi qu'un patronyme ; le vrai remède est un
 choix de civilité à la création du client, qui n'existe pas encore.
 
-Ce que la fonction sait éviter, en revanche : « Monsieur Mme Roux » (une
+Ce que la fonction sait éviter, en revanche : « Mr. Mme Roux » (une
 civilité déjà écrite n'en reçoit pas une seconde, quelle qu'en soit la graphie)
 et « Monsieur SARL Untel » (une raison sociale n'est pas une personne). Elle est
 **idempotente** — l'appliquer deux fois donne le même résultat, ce qui permet de
@@ -5877,13 +5886,24 @@ de la largeur. `scripts/test-synthese-devis-e2e.ts` **mesure les rectangles**
 (le détail sous le nom, même marge à un pixel près), et
 `scripts/capture-synthese-devis.mts` rend l'image sur son iPhone.
 
-**Ce qui n'a PAS été touché, et c'est délibéré** : le message qui part chez le
-client dit toujours « Bonjour <nom> » (`src/lib/message-client.ts`). Changer la
-façon dont ses clients sont abordés est un geste qui lui appartient, et il ne
-l'a pas demandé.
+### Le message qui part chez le client, et l'encart qui n'invitait pas
 
----
+Le même soir, il a demandé les deux dernières pièces :
 
+- **« Bonjour Mr. Martins », et non « Bonjour Martins ».** Le message tout prêt
+  passe donc par `avecCivilite`, devis **et** facture. Deux règles séparées
+  feraient douter le client que les deux viennent du même artisan.
+- **« vous POUVEZ en proposer une autre »**, et non « vous pourrez ». Le futur
+  repoussait le geste à plus tard, comme s'il fallait d'abord faire autre chose ;
+  le présent dit que c'est possible sur la page qu'il vient d'ouvrir.
+- **Une phrase qui invite à écrire, sur l'encart du client.** L'intitulé posait
+  une question — « Une erreur, une question, une précision ? » — sans dire qu'on
+  avait le droit d'y répondre. Ce n'est pas de la politesse : un client qui
+  repère une faute et n'ose pas l'écrire touche « Je ne donne pas suite », et le
+  patron lit un refus là où il n'y avait qu'une coquille. La phrase est
+  **au-dessus** du champ (une invitation lue après coup n'invite plus personne),
+  et elle ne promet **aucune réponse** — le client n'a aucun moyen d'en recevoir
+  une ici. La suite mesure les deux : la position, et l'absence de promesse.
 
 ---
 
