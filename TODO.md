@@ -27,30 +27,31 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 unvicies. Cinq boutons carrés, hors des écrans du patron — à trancher
+### 0 unvicies. Le chevron de retour, dernier bouton hors charte
 
 **Trouvé le 13 août 2026**, en réparant le contrôle des boutons arrondis : son
 motif ne regardait ni les `<Link>`, ni les rayons NOMMÉS de Tailwind. Réparé, il
 dénonce **six** boutons. Un seul était celui que le patron signalait (« Créer la
 facture »), corrigé le jour même. Les cinq autres n'ont jamais été arbitrés :
 
-- `src/app/devis/[jeton]/formulaire.tsx` — trois boutons `rounded-xl` : accepter,
-  demander une correction, refuser. **Écran du CLIENT**, autre identité
-  (vert pin), délibérément distincte de l'outil de travail ;
-- `src/app/factures/[jeton]/page.tsx` — le téléchargement du PDF, `rounded-xl`.
-  Écran du client également ;
+- ~~`src/app/devis/[jeton]/formulaire.tsx` — accepter, demander une correction,
+  refuser~~ et ~~`src/app/factures/[jeton]/page.tsx` — le téléchargement du
+  PDF~~ : **tranché par le patron le 13 août 2026**, capture des deux écrans à
+  l'appui. « Oui » : ses clients voient la capsule eux aussi. Les couleurs
+  propres à ces écrans restent — c'est l'identité qui devait rester distincte,
+  pas la forme du geste ;
 - `src/components/ScreenHeader.tsx` — le chevron de retour, 32 × 32 en
-  `rounded-md`. Une icône encadrée, pas un bouton d'action : l'arrondir
-  entièrement en ferait une pastille ronde, ce qui n'a été demandé nulle part.
+  `rounded-md`. **Seul point restant.** Une icône encadrée, pas un bouton
+  d'action : l'arrondir entièrement en ferait une pastille ronde, ce qui n'a
+  été demandé nulle part. Question posée le 13 août, sans réponse à ce jour.
 
 Ils sont **déclarés comme exceptions nommées** dans
 `scripts/test-boutons-arrondis.ts`, chacune avec sa raison : un bouton NEUF écrit
 carré ailleurs fait toujours rougir le contrôle.
 
-**La question à lui poser :** la capsule s'arrête-t-elle à ses écrans, ou
-descend-elle jusqu'aux pages que voit son client ? Sa demande du 12 août
-(« remplace tous les boutons rectangulaires ») portait sur son application ; rien
-ne dit qu'elle visait la feuille de devis de son client.
+**Répondu le 13 août 2026 :** la capsule descend jusqu'à son client. Reste le
+chevron, sur lequel il ne s'est pas prononcé — et qui n'est pas un bouton
+d'action, d'où l'hésitation.
 
 
 ### 0 tervicies. `test-planning-vers-facture-e2e` échoue par intermittence, et son message est trop affirmatif
