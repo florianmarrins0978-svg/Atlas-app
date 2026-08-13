@@ -27,7 +27,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 duovicies. Les trois points de la dictée — MAQUETTE POSÉE, son numéro attendu
+### 0 duovicies. ~~Les trois points de la dictée~~ — **CODÉ le 13 août 2026 (proposition C)**
 
 **Sa demande du 13 août 2026**, capture de l'écran « Un chantier » à l'appui :
 *« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce qui se passe.
@@ -56,9 +56,49 @@ même instant, et qui comptent peut-être plus que la vague :
 | 40 | `docs/maquettes/40-les-trois-points-qui-attendent.html` | Les cinq gestes côte à côte, et l'exposé du défaut. Doublée d'images animées (`docs/maquettes/images/`), pour la conversation |
 | **41** | `docs/maquettes/41-l-attente-a-lessai.html` | **Celle qu'il manipule** — il appuie sur le micro, arrête, les points bougent. Sa demande du 13 août : *« juste des points que je puisse cliquer dessus […] pour voir comment ça rend »*. Engendrée par `scripts/engendrer-maquette-sequence.mjs` |
 
-Les cinq attentes : A la vague (4 px), B la vague ample (7 px), C le souffle,
-D le point qui court, E l'anneau qui tourne. **Rien n'est touché dans `src/`
-tant qu'il n'a pas donné sa lettre** (`CLAUDE.md` §3 bis).
+Les cinq attentes : A la vague (4 px), B la vague ample (7 px), **C le souffle**,
+D le point qui court, E l'anneau qui tourne. **Il a répondu « code la C »** le
+13 août — les quatre autres restent dans les planches, à reprendre de là si le
+sujet se rouvre plutôt qu'à redessiner.
+
+**Ce qui a été porté dans l'application :**
+
+| | Fait | Où |
+|---|---|---|
+| 1 | Le geste, partagé | `src/components/atlas/PointsQuiSoufflent.tsx` |
+| 2 | Les mesures (0,72 → 1,5 ; 1,25 s ; décalages 0,16 et 0,32) | `globals.css`, `.atlas-souffle` |
+| 3 | L'écran | `src/app/chantiers/nouveau/DicterCoordonnees.tsx` |
+| 4 | La suite qui le tient | `scripts/test-attente-dictee-e2e.ts` |
+
+**Quatre choses à ne pas défaire**, chacune payée par un vrai défaut :
+
+1. **Le geste vit dans un composant, pas dans l'écran.** Une attente recopiée
+   divergerait comme les boutons peints à la main l'ont fait deux fois
+   (`ARCHITECTURE.md` §66 et §73).
+2. **Le bouton ne redevient PAS à demi effacé.** C'était la moitié du défaut :
+   le vocabulaire d'un bouton éteint. Il reste hors d'atteinte (`disabled`) —
+   ne pas le rendre pressable, un second appui lancerait une seconde dictée.
+3. **La phrase reste.** C'est la seule des trois moitiés qui parvienne à qui n'a
+   pas les yeux sur l'écran (`role="status"`), et probablement la plus utile.
+4. **Sous « mouvement réduit », les points respirent encore.** Tout couper
+   rendrait le défaut d'origine à qui a activé ce réglage.
+
+**La suite RALENTIT le serveur de trois secondes**, sinon elle courrait plus vite
+que l'attente et passerait au vert sans avoir rien regardé. Elle a été confrontée
+au défaut d'origine : les quatre points rougissent, chacun **en nommant son
+coupable** — et c'est le second jet, le premier sortait un « Timeout » sur un
+sélecteur, ce qui envoie lire le contrôle au lieu de l'écran.
+
+### 0 duovicies ter. La même attente immobile existe sur le bouton d'ajout de photo
+
+`Pellicule.tsx:124` affiche `{enCours ? "…" : "+"}` pendant l'envoi d'une photo :
+exactement le défaut qu'il a signalé le 13 août sur la dictée, au même caractère
+près. `PointsQuiSoufflent` est déjà écrit pour être partagé — il n'y a qu'à s'en
+servir.
+
+**Non fait d'office** : sa règle est *« montre-moi avant de faire »*, et il n'a
+parlé que du dictaphone. Mais si la même plainte revient sur les photos, la cause
+est écrite ici.
 
 **Trois choses à savoir avant d'y toucher :**
 

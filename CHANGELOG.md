@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### L'attente de la dictée souffle, et le dit — proposition C
+
+**Il a répondu « code la C ».** Les trois points enflent et se rétractent l'un
+après l'autre, sans se déplacer : rien ne sort du rond de 44 px, donc rien ne
+peut cogner le titre d'à côté. Le détail et le pourquoi sont dans
+`ARCHITECTURE.md` §77.
+
+**Trois choses ont changé au même endroit, et elles ne se remplacent pas.** Le
+geste, oui — mais aussi le **bouton qui reste à pleine encre** (le
+demi-effacement d'avant était le vocabulaire d'un bouton éteint) et surtout **une
+phrase, « Atlas rédige… »**. C'est elle qui compte le plus : l'écran parlait
+quand il écoutait et quand il avait fini, et se taisait pendant le seul moment où
+l'on se demande s'il est en panne. C'est aussi la seule des trois qui parvienne à
+qui n'a pas les yeux sur l'écran.
+
+**Le geste vit dans `PointsQuiSoufflent`, pas dans l'écran** : ce dépôt a payé
+deux fois le geste peint sur place (§66, §73). Une seconde attente immobile dort
+d'ailleurs sur le bouton d'ajout de photo — non touchée, sa règle étant
+« montre-moi avant de faire », et signalée dans `TODO.md`.
+
+**La suite retient la réponse du serveur trois secondes**, sinon elle courrait
+plus vite que l'attente et passerait au vert sans avoir rien regardé. Confrontée
+au défaut d'origine, ses quatre points rougissent en nommant chacun son coupable
+— au second jet : le premier sortait un « Timeout » sur un sélecteur, ce qui
+envoie lire le contrôle au lieu de l'écran.
+
 ### Les trois points de la dictée : la maquette, pas encore le code
 
 **Sa demande :** *« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce

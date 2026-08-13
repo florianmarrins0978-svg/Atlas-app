@@ -364,29 +364,47 @@ vingt-cinq minutes pour observer UNE suite — c'est ce coût-là qui pousse à
 supposer une cause au lieu d'aller la lire. Le script dit à voix haute qu'il
 n'est pas la batterie.
 
-## ⚠ LES TROIS POINTS DE LA DICTÉE ATTENDENT UNE LETTRE — ne rien coder avant (13 août)
+## L'ATTENTE DE LA DICTÉE EST CODÉE — « le souffle » (13 août)
+
+Il a répondu **« code la C »**. Les points enflent et se rétractent l'un après
+l'autre, sans se déplacer. `ARCHITECTURE.md` §77 porte le détail.
+
+**Quatre choses à ne pas défaire**, listées dans `TODO.md` §0 duovicies — dont
+le bouton qui **ne redevient pas** à demi effacé, et la phrase « Atlas rédige… »,
+qui est la seule des trois moitiés à parvenir à qui n'a pas les yeux sur l'écran.
+
+**Et une trouvaille, non traitée :** la même attente immobile — le caractère
+« … » — vit sur le bouton d'ajout de photo (`Pellicule.tsx:124`).
+`PointsQuiSoufflent` est écrit pour être partagé ; rien n'a été fait d'office,
+sa règle étant *« montre-moi avant de faire »*. `TODO.md` §0 duovicies ter.
+
+*Ce qui suit est l'historique du choix, gardé pour ne pas rouvrir ce qui est clos.*
+
+## Les cinq attentes proposées (13 août)
 
 **Sa demande :** *« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce
 qui se passe. Les trois petits points sont fixes […] on ne sait pas si ça bug ou
 non. »*
 
 Deux planches — la **40** expose les cinq gestes côte à côte, la **41** est celle
-qu'il MANIPULE (il appuie sur le micro, arrête, les points bougent), et c'est
-elle qui tranchera. Cinq attentes : A la vague, B la vague ample, C le souffle,
-D le point qui court, E l'anneau qui tourne. **`src/` est intact** : c'est sa
-règle du 11 août.
+qu'il a MANIPULÉE (il appuie sur le micro, arrête, les points bougent), et c'est
+elle qui a tranché. Cinq attentes : A la vague, B la vague ample, **C le
+souffle** (retenue), D le point qui court, E l'anneau qui tourne. Les quatre
+écartées restent dans les planches : s'il rouvre le sujet, repartir de là plutôt
+que de redessiner.
 
 **Trois choses à ne pas redécouvrir :**
 
-1. **Ce ne sont pas des points arrêtés, c'est le caractère « … »** —
-   `DicterCoordonnees.tsx:114`, un seul glyphe. Il n'y a rien à remettre en
-   marche ; trois points séparés sont à écrire.
-2. **Le vrai silence n'est pas l'animation, c'est la PHRASE ABSENTE.** L'écran
-   parle quand il écoute et quand il a fini, et se tait pendant le seul moment
-   où l'on se demande s'il est en panne. Le bouton passe en plus à
-   `opacity: 0.5` — le vocabulaire d'un bouton éteint. Ces deux points-là ne
-   sont pas dans sa demande ; ils sont dans les cinq propositions, à lui de les
-   refuser.
+1. **Ce n'étaient pas des points arrêtés, c'était le caractère « … »** — un seul
+   glyphe. Il n'y avait rien à remettre en marche ; trois points séparés étaient
+   à écrire. Devant un « ça ne bouge plus », vérifier d'abord qu'une animation
+   a seulement existé.
+2. **Le vrai silence n'était pas l'animation, c'était la PHRASE ABSENTE.**
+   L'écran parle quand il écoute et quand il a fini, et se taisait pendant le
+   seul moment où l'on se demande s'il est en panne. Le bouton passait en plus à
+   `opacity: 0.5` — le vocabulaire d'un bouton éteint. Ces deux points-là
+   n'étaient pas dans sa demande ; ils lui ont été montrés dans les cinq
+   propositions, et il ne les a pas refusés.
 3. **Une image fixe ne montre pas un mouvement.** `animer-maquette-points.mjs`
    fabrique un GIF par proposition (sans ffmpeg, absent d'ici) — et il **relit
    sa sortie**, parce qu'au premier jet il certifiait « ✓ » une image fixe.

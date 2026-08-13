@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { colors } from "@/lib/design-tokens";
+import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import type { CoordonneesDictees } from "@/lib/coordonnees-dictees";
 import { dicterCoordonneesAction } from "./actions";
 
@@ -26,6 +27,25 @@ import { dicterCoordonneesAction } from "./actions";
  * que la dictée n'en dit rien, il reste. Si la dictée en donne un et que le
  * champ est vide, il se remplit. Perdre une saisie parce qu'on a dicté ensuite
  * serait la pire façon d'aider.
+ *
+ * **L'ATTENTE, refaite le 13 août 2026.** Il avait signalé : *« une fois qu'on a
+ * appuyé sur le dictaphone, on ne sait pas ce qui se passe. Les trois petits
+ * points sont fixes […] on ne sait pas si ça bug ou non. »* Ce n'était pas une
+ * animation arrêtée — c'était le caractère « … », un seul glyphe : il n'y avait
+ * rien qui pût bouger.
+ *
+ * Trois choses ont changé au même endroit, et **elles ne se remplacent pas** :
+ *
+ * 1. les points **soufflent** — proposition C de
+ *    `docs/maquettes/41-l-attente-a-lessai.html`, qu'il a désignée ;
+ * 2. le bouton **reste à pleine encre**. Le demi-effacement d'avant était le
+ *    vocabulaire d'un bouton éteint ;
+ * 3. **une phrase le dit en toutes lettres.** C'est la seule des trois qui
+ *    parvient à qui n'a pas les yeux sur l'écran, et probablement la plus utile
+ *    des trois : l'écran se taisait pendant le seul moment où l'on se demande
+ *    s'il est en panne.
+ *
+ * `scripts/test-attente-dictee-e2e.ts` mesure le souffle et exige la phrase.
  */
 export default function DicterCoordonnees({
   onCoordonnees,
@@ -102,16 +122,27 @@ export default function DicterCoordonnees({
         type="button"
         onClick={enCours ? arreter : demarrer}
         disabled={etat === "traite"}
-        aria-label={enCours ? "Arrêter la dictée" : "Dicter les informations du client"}
+        aria-label={
+          enCours
+            ? "Arrêter la dictée"
+            : etat === "traite"
+              ? "Atlas reprend ce que vous avez dit"
+              : "Dicter les informations du client"
+        }
         className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full"
         style={{
           backgroundColor: enCours ? colors.alert : colors.rustTint,
           color: enCours ? "#FFFFFF" : colors.rust,
-          opacity: etat === "traite" ? 0.5 : 1,
+          // **Pas de demi-effacement pendant le traitement.** Il y en avait un,
+          // et c'était la moitié du défaut signalé le 13 août : un bouton à
+          // moitié effacé, c'est le vocabulaire d'un bouton ÉTEINT, pas d'un
+          // bouton qui travaille. L'écran disait « rien ne se passe » deux fois
+          // — par les points immobiles, et par là. Il ne se presse toujours pas
+          // (`disabled`), mais il n'a plus l'air mort.
         }}
       >
         {etat === "traite" ? (
-          <span className="text-[11px] font-semibold">…</span>
+          <PointsQuiSoufflent />
         ) : (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
             <rect x="9" y="3" width="6" height="11" rx="3" />
@@ -120,9 +151,26 @@ export default function DicterCoordonnees({
           </svg>
         )}
       </button>
-      {(enCours || message) && (
-        <p className="mt-2 max-w-[190px] text-right text-[12px] leading-snug" style={{ color: colors.muted }}>
-          {enCours ? "J'écoute — touchez pour arrêter." : message}
+      {/*
+        **La phrase du traitement est la moitié du correctif, et peut-être la
+        plus utile.** L'écran parlait quand il écoutait et quand il avait fini,
+        et il se taisait exactement pendant le seul moment où l'on se demande
+        s'il est en panne. Aucune animation ne dit ce que des mots disent.
+
+        `role="status"` : le changement est annoncé à qui n'a pas les yeux sur
+        l'écran. Les points, eux, sont décoratifs et se taisent.
+      */}
+      {(enCours || etat === "traite" || message) && (
+        <p
+          role="status"
+          className="mt-2 max-w-[190px] text-right text-[12px] leading-snug"
+          style={{ color: colors.muted }}
+        >
+          {enCours
+            ? "J'écoute — touchez pour arrêter."
+            : etat === "traite"
+              ? "Atlas rédige…"
+              : message}
         </p>
       )}
     </div>

@@ -5770,3 +5770,85 @@ panneau rouge à l'état de son banc.
 la famille d'échec et on la dit en français avec le geste, soit on ne la connaît
 pas — et il faut alors la laisser passer intacte plutôt que de l'habiller. Une
 phrase rassurante posée sur un vrai défaut vaut moins que pas de phrase du tout.
+
+---
+
+## 77. Une attente qui ne dit rien passe pour une panne
+
+**Le patron, le 13 août 2026**, capture de l'écran « Un chantier » à l'appui :
+*« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce qui se passe.
+Les trois petits points sont fixes et on attend […] mais on ne sait pas si ça
+bug ou non. Or, si les trois petits points se mettent en mouvement et font des
+vagues pour dire que c'est en train de rédiger, là, on sait qu'il se passe
+quelque chose. »*
+
+### Ce n'était pas une animation arrêtée
+
+`DicterCoordonnees.tsx` affichait `<span>…</span>` : **le caractère de points de
+suspension, un seul glyphe**. Il n'y avait rien à remettre en marche — il
+fallait trois points séparés pour qu'un geste puisse exister.
+
+La distinction n'est pas une finesse : elle change le diagnostic. Devant « ça ne
+bouge plus », le réflexe est de chercher une animation cassée, une classe
+perdue, un `prefers-reduced-motion` mal placé. Ici il n'y en avait jamais eu.
+
+### Le silence comptait davantage que l'immobilité
+
+Trois choses tenaient au même instant, et **le patron n'en avait nommé qu'une** :
+
+| Ce que l'écran faisait | Ce que ça racontait |
+|---|---|
+| trois points immobiles | rien ne travaille |
+| le bouton à `opacity: 0.5` | le bouton est **éteint** |
+| **aucune phrase** | — |
+
+La troisième est la plus lourde, et c'est la seule qui ne se voyait pas : l'écran
+**parle** quand il écoute (« J'écoute — touchez pour arrêter. ») et **parle**
+quand il a fini (« 1 information reprise… »), et il se taisait exactement pendant
+le seul moment où l'on se demande s'il est en panne. Aucune animation ne dit ce
+que des mots disent — et elle est la seule des trois à parvenir à qui n'a pas les
+yeux sur l'écran (`role="status"`).
+
+**La règle qui en sort, et qui vaut d'avance :** un écran qui fait attendre dit
+ce qu'il fait, en toutes lettres. Le geste accompagne la phrase ; il ne la
+remplace pas.
+
+### Le geste retenu, et pourquoi il vit dans un composant
+
+Cinq attentes lui ont été montrées (`docs/maquettes/40-…` et `41-…`), et il a
+répondu **« code la C »** : les points enflent et se rétractent l'un après
+l'autre, **sans se déplacer**. Rien ne sort du rond de 44 px, donc rien ne peut
+cogner le titre d'à côté.
+
+Les mesures vivent dans `globals.css` (`.atlas-souffle`), le geste dans
+`src/components/atlas/PointsQuiSoufflent.tsx` — **pas dans l'écran**. Ce dépôt a
+payé deux fois le geste dessiné sur place : la feuille d'envoi du devis (§66) et
+le bouton de la facture (§73), tous deux passés à côté d'une décision d'ensemble
+parce qu'ils étaient peints chez eux. Une seconde attente immobile dort d'ailleurs
+déjà sur le bouton d'ajout de photo (`Pellicule.tsx`) — le composant est écrit
+pour elle.
+
+### Ce que la vérification a dû apprendre
+
+**Un contrôle qui court plus vite que l'attente ne voit jamais l'attente.**
+`test-attente-dictee-e2e.ts` retient donc la réponse du serveur trois secondes :
+c'est le seul moyen d'observer l'état qu'il prétend éprouver, et c'est aussi la
+situation réelle du patron.
+
+**Et il mesure le geste, jamais la présence d'une classe** — une classe posée sur
+un élément dont plus aucune règle ne parle est une mort silencieuse. Le souffle
+est relevé image par image sur la taille calculée des points, et le déplacement
+est exigé **nul** : c'est ce qui distingue la C de la vague, et sans cette
+seconde mesure les cinq propositions seraient interchangeables aux yeux du
+contrôle.
+
+**Deux leçons de rédaction, payées au premier jet :**
+
+1. **L'instant du relevé fait partie du contrôle.** L'encre du bouton, mesurée
+   après l'échantillonnage, arrivait une fois la réponse revenue : l'échec
+   sortait en « Timeout » sur un libellé introuvable — une erreur qui accuse le
+   sélecteur là où le fautif est le moment.
+2. **Une absence se raconte, elle ne se laisse pas expirer.** L'absence des
+   points sortait en trace d'outil et **arrêtait tout** : les deux autres
+   moitiés du correctif n'étaient plus mesurées. Elle est désormais un défaut
+   nommé, et les quatre points rougissent ensemble.
