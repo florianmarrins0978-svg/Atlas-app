@@ -27,6 +27,37 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 duovicies. `/chantiers/<id>/facture` ne répond plus en fin de batterie
+
+**Mesuré le 13 août 2026, cinq batteries complètes.** Le contrôle « clôturé
+AVANT sa date » de `test-planning-vers-facture-e2e.ts` échoue **trois fois sur
+cinq**, toujours sur la même navigation, et **passe 7/7 en 68 secondes quand la
+suite est jouée seule**.
+
+**Ce qui a été éprouvé, et écarté :**
+
+| Piste | Verdict |
+|---|---|
+| `networkidle` attendait un silence réseau qui n'arrive jamais | Remplacé par `domcontentloaded` — **sans effet** |
+| Simple lenteur de compilation | Délai porté à 120 s — **dépassé aussi** |
+| Serveur mort | **Non** : toutes les suites suivantes passent |
+
+Donc la page **ne répond pas du tout**, pendant deux minutes, sur un serveur
+vivant. La seule différence entre les deux situations n'est pas le code mais la
+**base** : fraîche quand la suite est seule, chargée de ce que soixante suites y
+ont laissé en fin de batterie.
+
+**Deux pistes à éprouver**, dans cet ordre : un verrou tenu par une transaction
+restée ouverte dans une suite précédente (le plus probable — c'est le genre de
+chose qui bloque *indéfiniment* plutôt que de ralentir), ou un calcul de relevé
+qui parcourt toutes les factures de la base.
+
+**Ce n'est pas un défaut introduit par la feuille d'envoi du 13 août** : il
+échouait déjà dans la première batterie de la journée, avant toute modification
+de l'écran d'export. Mais il **bloque la livraison**, puisque la batterie ne
+peut plus passer au vert.
+
+
 ### 0 unvicies. La feuille d'envoi montre deux boutons pleins à la fois
 
 **Sa capture du 13 août 2026**, sur un devis dont le client demandait une

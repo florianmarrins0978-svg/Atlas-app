@@ -329,7 +329,33 @@ async function main() {
     // terminés, et la facture en brouillon n'était plus joignable que par son
     // adresse.
     const { nom, chantierId } = await chantierPlanifie(page, "avance", -10);
-    await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
+    // **Deux corrections successives ici, le 13 août 2026, et la seconde seule
+    // a suffi — ce qui vaut d'être écrit noir sur blanc.**
+    //
+    // Ce contrôle a dépassé les 45 secondes sur CETTE navigation dans trois
+    // batteries complètes sur cinq, et passe 7/7 en 68 secondes quand la suite
+    // est jouée seule. Le produit n'y est pour rien.
+    //
+    // 1. `networkidle` a d'abord été remplacé par `domcontentloaded` : attendre
+    //    le SILENCE du réseau n'a pas de sens quand le serveur de
+    //    développement compile encore des écrans à la demande. C'est la règle
+    //    déjà écrite en tête de ce fichier, qui n'avait pas été appliquée ici.
+    //    **Ça n'a rien changé** — la mesure l'a dit, pas le raisonnement.
+    // 2. Le délai a ensuite été porté à 120 secondes, en supposant une simple
+    //    lenteur de compilation. **Ça n'a rien changé non plus** : la
+    //    navigation a dépassé les 120 secondes à son tour. Ce n'est donc pas
+    //    lent, ça ne répond PAS — alors que le serveur est bien vivant, les
+    //    suites suivantes passant toutes.
+    //
+    // **Ce qui reste à trouver, et qui n'appartient pas à cet écran.** La
+    // différence entre les deux situations n'est pas le code mais la BASE :
+    // seule, la suite trouve une base fraîche ; en fin de batterie, elle porte
+    // ce que soixante suites y ont laissé. Piste à éprouver — un verrou tenu
+    // par une transaction restée ouverte ailleurs, ou un calcul de relevé qui
+    // parcourt toutes les factures. Noté dans `TODO.md` ; le délai est ramené à
+    // sa valeur ordinaire, un chiffre plus grand ne faisant qu'échouer plus
+    // tard.
+    await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "domcontentloaded" });
     await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
 
