@@ -27,6 +27,80 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 unvicies. Cinq boutons carrés, hors des écrans du patron — à trancher
+
+**Trouvé le 13 août 2026**, en réparant le contrôle des boutons arrondis : son
+motif ne regardait ni les `<Link>`, ni les rayons NOMMÉS de Tailwind. Réparé, il
+dénonce **six** boutons. Un seul était celui que le patron signalait (« Créer la
+facture »), corrigé le jour même. Les cinq autres n'ont jamais été arbitrés :
+
+- `src/app/devis/[jeton]/formulaire.tsx` — trois boutons `rounded-xl` : accepter,
+  demander une correction, refuser. **Écran du CLIENT**, autre identité
+  (vert pin), délibérément distincte de l'outil de travail ;
+- `src/app/factures/[jeton]/page.tsx` — le téléchargement du PDF, `rounded-xl`.
+  Écran du client également ;
+- `src/components/ScreenHeader.tsx` — le chevron de retour, 32 × 32 en
+  `rounded-md`. Une icône encadrée, pas un bouton d'action : l'arrondir
+  entièrement en ferait une pastille ronde, ce qui n'a été demandé nulle part.
+
+Ils sont **déclarés comme exceptions nommées** dans
+`scripts/test-boutons-arrondis.ts`, chacune avec sa raison : un bouton NEUF écrit
+carré ailleurs fait toujours rougir le contrôle.
+
+**La question à lui poser :** la capsule s'arrête-t-elle à ses écrans, ou
+descend-elle jusqu'aux pages que voit son client ? Sa demande du 12 août
+(« remplace tous les boutons rectangulaires ») portait sur son application ; rien
+ne dit qu'elle visait la feuille de devis de son client.
+
+
+### 0 tervicies. `test-planning-vers-facture-e2e` échoue par intermittence, et son message est trop affirmatif
+
+**Constaté le 13 août 2026, en éprouvant autre chose.** Le dernier cas de cette
+suite — *« clôturé AVANT sa date : il quitte le planning pour les terminés »* —
+échoue **par intermittence** sur `page.goto` au bout de 45 s, tantôt sur
+`/termines`, tantôt sur `/planning`. Sur quatre exécutions ce jour-là : trois
+rouges, une verte.
+
+**Ce n'est PAS la civilité** : vérifié en remisant toutes les modifications du
+jour et en rejouant la suite sur `main` intact — même échec, au même endroit.
+Le défaut lui est antérieur.
+
+**Et son message n'explique pas tout.** Il affirme : *« C'est le serveur de
+développement qui n'a pas suivi, pas l'écran : il répond en quelques centaines
+de millisecondes hors batterie »*. Or **la suite a aussi échoué jouée seule**,
+sans aucune autre en parallèle — la charge de la batterie ne suffit donc pas à
+l'expliquer. Un message qui donne une cause certaine là où elle ne l'est pas
+envoie chercher au mauvais endroit (`AGENTS.md`).
+
+**Ce qui reste à faire :** trouver ce que ce cas-là fait de particulier — c'est
+le seul des trois de son groupe à clôturer un chantier **avant** sa date — puis
+rendre le message honnête sur ce qu'il sait et ce qu'il suppose. Les six autres
+cas de la suite passent toujours.
+
+### 0 duovicies. La civilité du client — **à trancher avec lui**
+
+Le 13 août 2026, il a demandé que le devis dise « Monsieur Martins » et non
+« Chez Martins ». C'est **fait** (`ARCHITECTURE.md` §77). Mais la fiche client
+ne porte **aucun champ de civilité** : « Monsieur » est un défaut posé sur tout
+nom qui n'en annonce pas d'autre.
+
+**Ce que ça veut dire concrètement, et pourquoi ça ne peut pas rester ainsi
+indéfiniment :** une cliente saisie « Roux » verra « Monsieur Roux » sur son
+devis. L'application sait déjà se taire devant « Mme Roux » ou « SARL Untel » —
+ces deux cas sont couverts — mais elle ne devine pas un patronyme nu.
+
+| | Piste | Ce que ça vaut |
+|---|---|---|
+| a | **Un choix à la création du client** : trois pastilles — Monsieur, Madame, ni l'un ni l'autre (société). Un appui. | La seule qui dise la vérité. Coûte une colonne, une migration, et trois pastilles sur un écran déjà chargé. |
+| b | Laisser le patron écrire « Mme Roux » lui-même dans le nom | Gratuit, marche déjà — mais il faut qu'il y pense à chaque fois, et un oubli part chez la cliente. |
+| c | Ne rien mettre du tout et revenir au nom nu | Annule sa demande du 13 août. |
+
+**Qui peut le faire : lui seul.** C'est un arbitrage de produit, pas un choix
+technique — et rien ne sera ajouté sans son accord (`CLAUDE.md` §4).
+
+**Et une seconde question, liée :** le message qui part chez son client dit
+toujours « Bonjour Martins ». Faut-il qu'il dise « Bonjour Monsieur Martins » ?
+Rien n'a été touché : c'est ce que ses clients lisent.
 ### 0 octodecies. Le message du devis figé désigne une porte invisible — trois maquettes attendent
 
 **Rien n'est codé** (`CLAUDE.md` §3 bis). Le patron, le 13 août, capture à
@@ -53,7 +127,6 @@ pièce, ce qu'on vient d'éviter sur l'écran du devis.
 
 **Les mots ne sont pas tranchés** : « Le corriger et le renvoyer », « Corriger
 ce devis », « Reprendre le devis ». Ils lui appartiennent.
-
 
 
 ### 0 unvicies. ~~Relier l'agenda iCloud~~ — **codé le 12 août 2026**, reste à éprouver chez lui

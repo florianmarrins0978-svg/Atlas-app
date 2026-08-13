@@ -9,6 +9,7 @@ import { etatEnvoiExplication, etatEnvoiLabel, type EtatEnvoi } from "@/lib/etat
 import { reprendreDevisAction } from "./actions";
 import EnvoiAuClient from "./EnvoiAuClient";
 import { enEuros } from "@/lib/euros";
+import { avecCivilite } from "@/lib/civilite";
 
 
 export default function ExportClient({
@@ -145,7 +146,15 @@ export default function ExportClient({
       {envoye || lienClient ? (
         <EcranDevisParti
           etat={lienClient ? "Devis prêt" : etatEnvoiLabel[etatEnvoi]}
-          phrase={lienClient ? `Devis prêt pour ${clientNom}.` : etatEnvoiExplication[etatEnvoi]}
+          // La même civilité que la synthèse ci-dessous : lire « Monsieur
+          // Martins » avant l'envoi et « Martins » juste après ferait douter
+          // qu'il s'agisse du même client.
+          //
+          // **Le message qui part chez le client, lui, n'est pas touché** — il
+          // dit toujours « Bonjour <nom> » (`src/lib/message-client.ts`).
+          // Changer la façon dont ses clients sont abordés est un geste qui lui
+          // appartient, et il ne l'a pas demandé.
+          phrase={lienClient ? `Devis prêt pour ${avecCivilite(clientNom)}.` : etatEnvoiExplication[etatEnvoi]}
           messageClient={messageClient}
           numeroDevis={numeroDevis}
           totalTtc={totalTtc}
@@ -204,8 +213,20 @@ export default function ExportClient({
         <div className="atlas-colonne-defile flex flex-col gap-4 px-6 pb-6 pt-6">
           {/* Synthèse — lecture seule, aucune édition sur cet écran */}
           <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
-            <Row label="Chantier" value={`${chantierNom} — ${adresseChantier}`} />
-            <Row label="Client" value={`${clientNom} — ${clientTelephone}`} last />
+            {/* **La civilité vient de `src/lib/civilite.ts`, jamais d'ici.** Le
+                nom du chantier la porte déjà — il est fabriqué à la création
+                (`nomDuChantier`) — mais le nom du client, lui, est brut. La
+                poser à l'affichage sur le second seulement garderait les deux
+                lignes d'accord ; l'écrire à la main les ferait diverger au
+                premier changement (`CLAUDE.md` §3). */}
+            <Row label="Chantier" nom={chantierNom} detail={adresseChantier} repere="ligne-chantier" />
+            <Row
+              label="Client"
+              nom={avecCivilite(clientNom)}
+              detail={clientTelephone}
+              repere="ligne-client"
+              last
+            />
           </div>
 
           {/* Le devis lui-même : ce qui sera imprimé, avec les montants.
@@ -526,15 +547,58 @@ function EcranDevisParti({
   );
 }
 
-function Row({ label, value, last = false }: { label: string; value: string; last?: boolean }) {
+/**
+ * Une ligne de la synthèse : son intitulé, puis **le nom, puis le détail à la
+ * ligne**.
+ *
+ * **Le patron, le 13 août 2026, capture à l'appui :** *« tu me retires le tiret
+ * entre le nom et l'adresse et il faut qu'il soit l'un au-dessus de l'autre.
+ * D'abord le nom, ensuite à la ligne l'adresse. Pour le client, c'est pareil. »*
+ *
+ * Le tiret cadratin réunissait deux choses de nature différente — qui, et où —
+ * en une phrase qui n'en est pas une. Sur son écran de 390 px, « Chez Martins —
+ * 10 rues d'enfer rocheux ros 78 200 nantes la jolie » se repliait sur deux
+ * lignes de toute façon, mais **au mauvais endroit** : la coupure tombait au
+ * milieu de l'adresse, jamais entre le nom et elle.
+ *
+ * Deux paragraphes plutôt qu'un `\n` : la coupure ne doit pas dépendre de la
+ * largeur, et le nom porte son propre poids visuel.
+ */
+function Row({
+  label,
+  nom,
+  detail,
+  repere,
+  last = false,
+}: {
+  label: string;
+  nom: string;
+  /** Adresse, téléphone : ce qui se lit sous le nom. Vide : rien ne s'affiche. */
+  detail: string;
+  /** Repère de suite, posé en `data-atlas`. Jamais lu par le produit. */
+  repere: string;
+  last?: boolean;
+}) {
   return (
-    <div className={last ? "" : "mb-3 border-b pb-3"} style={{ borderColor: colors.line }}>
+    <div
+      data-atlas={repere}
+      className={last ? "" : "mb-3 border-b pb-3"}
+      style={{ borderColor: colors.line }}
+    >
       <p className={smallCaps} style={{ color: colors.muted, marginBottom: 4 }}>
         {label}
       </p>
-      <p className="text-[15px]" style={{ color: colors.ink }}>
-        {value}
+      <p data-atlas={`${repere}-nom`} className="text-[15px]" style={{ color: colors.ink }}>
+        {nom}
       </p>
+      {/* Une seconde ligne vide vaudrait un blanc inexpliqué sous le nom : un
+          chantier sans adresse ni un client sans téléphone ne doivent pas
+          creuser un trou dans la carte. */}
+      {detail.trim() !== "" && (
+        <p data-atlas={`${repere}-detail`} className="mt-1 text-[15px]" style={{ color: colors.muted }}>
+          {detail}
+        </p>
+      )}
     </div>
   );
 }
