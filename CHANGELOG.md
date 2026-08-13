@@ -9,6 +9,49 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### « Corriger le devis » ouvre enfin le devis, et non l'écran d'à côté
+
+**Sa demande, capture à l'appui :** *« lorsque je clique sur corriger le devis,
+je dois arriver directement sur la page du devis pour pouvoir le corriger. Et
+aujourd'hui, ce n'est pas le cas. »*
+
+La veille, ce bouton menait à l'écran d'envoi — celui qui porte « Corriger et
+renvoyer » — par crainte de reprendre le devis à sa place. **La crainte visait
+juste, mais pas ici : c'est lui qui appuie**, sur un bouton qui annonce la
+correction. Le geste était déjà le sien ; l'en priver ne le protégeait de rien
+et lui coûtait un écran de plus, puis un second appui, pour arriver là où il
+voulait aller d'emblée.
+
+Le bouton reprend donc le devis puis ouvre le document, prêt à être corrigé.
+Reprendre ne l'empile pas : un brouillon déjà ouvert est réutilisé tel quel, et
+une reprise depuis un devis parti garde le même numéro commercial en montant
+d'une version. Appuyer deux fois ne fabrique pas deux devis.
+
+**Ce qui n'a PAS changé, et c'est délibéré.** Un devis **accepté** ne se reprend
+jamais d'office : ce serait remplacer sans le dire le document sur lequel le
+client et lui se sont mis d'accord. Un **refus** ou un **silence** continuent de
+mener à l'écran d'envoi : après un refus, la suite n'est pas forcément de
+refaire le devis — elle peut être d'abandonner le chantier ou d'appeler le
+client, et ouvrir une version à chaque coup d'œil encombrerait l'historique.
+
+**Éprouvé, et pas seulement écrit.** La règle pure distingue désormais la
+destination et la reprise, et refuse qu'on ouvre le document figé sans reprise —
+c'est l'ancien défaut, et il reste interdit. La suite navigateur presse le
+bouton pour de vrai, suit la navigation, et vérifie que le devis obtenu est
+**réellement modifiable** : pas seulement l'absence du bandeau « il ne se
+modifie plus », mais un champ de ligne qui accepte la frappe. Confronté au
+correctif retiré : deux cas au rouge. Écran capturé, et le devis s'ouvre bien
+sans bandeau.
+
+**Un cinquième piège d'attente corrigé au passage** : la préparation du décor de
+cette suite patientait trois secondes et demie après l'envoi du devis, puis
+accusait le produit — « le devis n'est pas parti » — d'une impatience. Quatre
+autres suites étaient tombées sur exactement ce piège la veille.
+
+---
+
+## 2026-08-13
+
 ### Six branches réunies dans `main`, et ce que la réunion a coûté
 
 **Sa demande, le 13 août :** *« Fusionne. »* Six branches vivaient à côté de
