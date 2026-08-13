@@ -236,6 +236,13 @@ const MAQUETTES = [
     famille: "La dernière porte",
     quoi: "Le tour est retenu ; seule la gravure change. Huit motifs, et une bande en tête qui les montre à leur taille réelle — c’est là que se juge lequel tient encore à six millimètres.",
   },
+  {
+    fichier: "40-le-message-du-devis-fige.html",
+    titre: "Le message du devis figé",
+    famille: "Dire moins sur l’écran du devis",
+    quoi: "« Le message dit de consulter la case devis, mais aucune case devis n’existe. » Le témoin, puis trois façons : le message devient la porte, un vrai bouton, ou plus de message du tout.",
+    retenu: true,
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
