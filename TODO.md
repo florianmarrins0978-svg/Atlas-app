@@ -110,7 +110,7 @@ technique — et rien ne sera ajouté sans son accord (`CLAUDE.md` §4).
 soir même : il dit désormais « Bonjour Mr. Martins ». C'est ce que ses clients
 lisent, et c'est donc là que l'erreur de civilité se verra en premier.)*
 
-### 0 octodecies. Le message du devis figé désigne une porte invisible — trois maquettes attendent
+### ~~0 octodecies. Le message du devis figé désignait une porte invisible~~ — **codé le 2026-08-13 (proposition A)**
 
 **Rien n'est codé** (`CLAUDE.md` §3 bis). Le patron, le 13 août, capture à
 l'appui : *« le message dit de consulter la case devis mais aucune case devis
@@ -1339,6 +1339,46 @@ qu'il ne veut pas revoir.
 
 Si le sujet revient, c'est **lui** qui le rouvre, et alors c'est « partout »
 ou rien.
+
+### ~~9. La ligne sous le nom, dans la liste des chantiers~~ — **tranché et codé le 13 août 2026 : le D, avec la date d'envoi**
+
+**Le patron, le 13 août 2026 :** *« le devis a été envoyé et il n'a toujours pas
+eu de réponse […] tu marques quelque chose du style devis envoyé, attente de
+réponse, je te laisse libre de choisir et de proposer des alternatives si tu
+penses qu'il faudrait rajouter d'autres informations à ce niveau-là. »*
+
+**Il a retenu D**, en remplaçant le délai par la date : « DEVIS ENVOYÉ · SANS
+RÉPONSE » en or, et dessous « Envoyé le jeudi 13 août. » La règle vit dans
+`ligneEtatChantier` (`src/lib/chantier-etat.ts`), éprouvée sans base ni
+navigateur. `ARCHITECTURE.md` §79.
+
+**Les quatre autres restent dans la planche** — `docs/maquettes/41-la-ligne-sous-le-nom.html`,
+engendrée par `scripts/engendrer-maquette-ligne-chantier.mts`. Si le sujet se
+rouvre, repartir de là :
+
+| | Libellé | Ce qu'elle apprend |
+|---|---|---|
+| A | « Devis envoyé · en attente de réponse » | ses mots, au plus court |
+| B | « Envoyé il y a 3 jours · sans réponse » | **le délai — la seule chose qui décide une relance** |
+| C | « Envoyé le 10 août · valable jusqu'au 24 » | quand le devis cessera d'être ouvrable |
+| D | deux lignes, la seconde en clair | ce qu'il y a à faire, en toutes lettres |
+| E | avec le montant | lequel rappeler en premier |
+
+**Ce qui contraint le choix, et qui a été MESURÉ sur l'écran** (`ARCHITECTURE.md`
+§78) : le libellé actuel tient sur une ligne à 430 px — la largeur de son
+téléphone — et déborde à 390. A et B tiennent chez lui ; C et E débordent
+partout.
+
+**Deux points à lui redire quand il tranchera :**
+
+- la mention « sans photo » n'a plus d'utilité une fois le devis parti : elle
+  disparaît dans toutes les propositions ;
+- l'or est réservé à ce qui **attend un geste de lui**. Un devis parti sans
+  réponse n'attend rien de lui, d'où le gris. **D est la seule qui rouvre ce
+  choix**, et c'est délibéré.
+
+E est la seule qui coûte une sous-requête de plus (le montant n'est pas chargé
+par l'écran d'accueil).
 
 ### 8. L'écran Facture — trois manques signalés par le patron le 10 août 2026
 

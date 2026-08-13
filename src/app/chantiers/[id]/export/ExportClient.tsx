@@ -146,14 +146,11 @@ export default function ExportClient({
       {envoye || lienClient ? (
         <EcranDevisParti
           etat={lienClient ? "Devis prêt" : etatEnvoiLabel[etatEnvoi]}
-          // La même civilité que la synthèse ci-dessous : lire « Monsieur
-          // Martins » avant l'envoi et « Martins » juste après ferait douter
-          // qu'il s'agisse du même client.
-          //
-          // **Le message qui part chez le client, lui, n'est pas touché** — il
-          // dit toujours « Bonjour <nom> » (`src/lib/message-client.ts`).
-          // Changer la façon dont ses clients sont abordés est un geste qui lui
-          // appartient, et il ne l'a pas demandé.
+          // La même civilité que la synthèse ci-dessous : lire « Mr. Martins »
+          // avant l'envoi et « Martins » juste après ferait douter qu'il
+          // s'agisse du même client. Le message qui part chez le client
+          // l'aborde de la même façon depuis le 13 août au soir
+          // (`src/lib/message-client.ts`).
           phrase={lienClient ? `Devis prêt pour ${avecCivilite(clientNom)}.` : etatEnvoiExplication[etatEnvoi]}
           messageClient={messageClient}
           numeroDevis={numeroDevis}

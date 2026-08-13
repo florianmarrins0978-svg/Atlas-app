@@ -89,3 +89,40 @@ export function intituleDuChantier(nomClient: string | null | undefined, nomChan
   if (aplati(nomChantier).includes(aplati(client))) return nomChantier;
   return `${client} — ${nomChantier}`;
 }
+
+/**
+ * Ce qui s'écrit sous le nom, dans la liste : le lieu — jamais le nom deux fois.
+ *
+ * **Né du retrait de « Chez », le 13 août 2026.** Le titre valait « Chez
+ * Martins » et la ligne du dessous « Martins » : proches, mais distincts. Le
+ * titre étant devenu « Mr. Martins », un chantier SANS adresse affichait
+ * deux fois le même homme, à une civilité près — vu à l'œil sur une capture,
+ * jamais par un contrôle.
+ *
+ * **La comparaison est un `includes`, pas une égalité**, et c'est tout le
+ * point : le titre PORTE le nom du client sans lui être identique, puisqu'il
+ * lui ajoute sa civilité (`avecCivilite`). Une égalité stricte aurait laissé
+ * le doublon passer, et ce fichier a déjà payé cette leçon une fois —
+ * `intituleDuChantier`, juste au-dessus, compare de la même façon.
+ *
+ * Quand il n'y a pas d'adresse, dire qu'elle manque vaut mieux que répéter :
+ * c'est une information, et elle appelle un geste.
+ */
+export function lieuDuChantier(
+  nomChantier: string,
+  adresseChantier?: string | null,
+  nomClient?: string | null
+): string {
+  const adresse = adresseChantier?.trim();
+  if (adresse) return adresse;
+
+  // Le repli sur le client ne vaut que s'il apprend quelque chose. Casse et
+  // accents ignorés, comme `intituleDuChantier` : « M. BERNARD » et
+  // « M. Bernard » sont le même homme.
+  const client = nomClient?.trim();
+  const aplati = (t: string) =>
+    t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (client && !aplati(nomChantier).includes(aplati(client))) return client;
+
+  return "Adresse non renseignée";
+}

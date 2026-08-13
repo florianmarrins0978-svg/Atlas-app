@@ -10,9 +10,10 @@ import { avecCivilite, porteDejaSonAppellation, CIVILITE_PAR_DEFAUT } from "../s
 // Le patron, le 13 août 2026, capture de son devis à l'appui : *« il faut qu'il
 // y ait écrit monsieur Martins et pas chez Martins »*.
 //
-// Ce qui est tenu ici n'est pas l'orthographe du mot « Monsieur », c'est ce que
-// la civilité ne doit JAMAIS produire : « Monsieur Mme Roux », « Monsieur SARL
-// Untel », ou un « Monsieur » posé deux fois sur un nom déjà stocké.
+// Ce qui est tenu ici n'est pas l'orthographe du mot — il a changé le jour même,
+// « Monsieur » puis « Mr. » — mais ce que la civilité ne doit JAMAIS produire :
+// « Mr. Mme Roux », « Mr. SARL Untel », ou une civilité posée deux fois sur un
+// nom déjà stocké.
 //
 // **Et le dernier cas est le plus important de tous.** La même règle existe
 // deux fois — en TypeScript ici, en SQL dans `drizzle/0036_…` — parce que le
