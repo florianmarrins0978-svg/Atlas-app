@@ -128,16 +128,41 @@ export default async function ReleveTvaPage({
               crédit de TVA. Le borner à zéro cacherait le mois où le patron a
               le plus besoin de savoir. */}
           <div
-            className="mt-px flex items-center justify-between gap-3 rounded-b-[10px] px-4 py-4"
+            className="mt-px rounded-b-[10px] px-4 py-4"
             style={{ backgroundColor: colors.card }}
           >
-            <span className="text-[14px]">Reste à payer</span>
-            <span
-              className="text-[26px] font-semibold"
-              style={{ fontFamily: font.display, color: colors.rust, fontVariantNumeric: "tabular-nums" }}
-            >
-              {formatEuros.format(reste)}
-            </span>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-[14px]">Reste à payer</span>
+              <span
+                className="text-[26px] font-semibold"
+                style={{ fontFamily: font.display, color: colors.rust, fontVariantNumeric: "tabular-nums" }}
+              >
+                {/* **Un vrai signe moins (−), pas le trait d'union du clavier.**
+                    Sa demande du 13 août 2026 : « si le reste à payer est
+                    négatif, il faut qu'il le marque négativement ». Le trait
+                    d'union rendu par le formatage est deux fois plus court et
+                    posé plus bas : à 26 px, sur un écran au soleil, il se lit
+                    comme une poussière. Le signe moins est à la hauteur des
+                    chiffres, et de leur épaisseur. */}
+                {reste < 0
+                  ? `\u2212 ${formatEuros.format(Math.abs(reste))}`
+                  : formatEuros.format(reste)}
+              </span>
+            </div>
+            {/* **Et le signe seul ne suffit pas à dire ce que ça VEUT dire.**
+                « Reste à payer − 20 € » se lit mal : on ne paie rien, c'est
+                l'inverse. La phrase le dit en clair — et elle n'apparaît que
+                dans ce cas, pour ne pas encombrer les onze mois où le montant
+                est positif. */}
+            {reste < 0 && (
+              /* **À GAUCHE, sous le libellé.** Alignée à droite, sa fin
+                 passait sous la bulle de l'assistant, qui flotte dans ce coin
+                 sur tous les écrans — « c'est l'État qui vous… ». Vu sur
+                 capture, jamais autrement. */
+              <p className="mt-1.5 text-[12px]" style={{ color: colors.or }}>
+                Crédit de TVA — c’est l’État qui vous doit.
+              </p>
+            )}
           </div>
         </div>
 
