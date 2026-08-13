@@ -4,14 +4,23 @@ import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { releveTvaCollectee } from "@/server/repositories/factures";
+import { getEntreprise } from "@/server/repositories/entreprises";
 import {
-  libelleTrimestre,
-  trimestre,
-  trimestreCourant,
-  trimestrePrecedent,
-  trimestreSuivant,
-} from "@/server/trimestre";
+  libellePeriode,
+  lirePeriode,
+  periodeCourante,
+  periodePrecedente,
+  periodeSuivante,
+  PERIODICITE_TVA_PAR_DEFAUT,
+} from "@/server/periode-tva";
 import { jourLisible } from "@/lib/jour";
+import CalendrierPeriodes from "./CalendrierPeriodes";
+import RythmeTva from "./RythmeTva";
+import MontantCopiable from "./MontantCopiable";
+import AchatsTva from "./AchatsTva";
+import { listerAchatsTva, totalTvaDeductible } from "@/server/repositories/achats-tva";
+import { tvaDue } from "@/lib/achat-tva";
+import { jourIso } from "@/lib/jour";
 
 export const dynamic = "force-dynamic";
 
@@ -35,21 +44,30 @@ export default async function ReleveTvaPage({
 }) {
   const { annee, t } = await searchParams;
 
-  // Une année ou un trimestre illisible ramène au trimestre courant : un
-  // paramètre bricolé dans la barre d'adresse ne doit pas produire d'écran vide
-  // et inexplicable.
-  const anneeNum = Number(annee);
-  const numeroNum = Number(t);
-  const periode =
-    Number.isInteger(anneeNum) && anneeNum > 2000 && Number.isInteger(numeroNum) && numeroNum >= 1 && numeroNum <= 4
-      ? trimestre(anneeNum, numeroNum)
-      : trimestreCourant();
-
   const ctx = await getCurrentCtx();
-  const releve = await releveTvaCollectee(ctx, periode.debut, periode.fin);
 
-  const precedent = trimestrePrecedent(periode);
-  const suivant = trimestreSuivant(periode);
+  // **La périodicité vient de l'entreprise, jamais de l'adresse.** Elle
+  // commande le découpage ET la lecture du numéro : « 12 » est un mois valide
+  // et un trimestre absurde. La lire ici, avant tout le reste, évite qu'un
+  // réglage changé laisse passer une adresse qui ne veut plus rien dire.
+  const entreprise = await getEntreprise(ctx);
+  const periodicite = entreprise?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT;
+
+  // Une adresse illisible ramène à la période courante : un paramètre bricolé
+  // à la main ne doit pas produire d'écran vide et inexplicable.
+  const periode = lirePeriode(periodicite, annee, t) ?? periodeCourante(periodicite);
+  const courante = periodeCourante(periodicite);
+
+  const [releve, deductible, achats] = await Promise.all([
+    releveTvaCollectee(ctx, periode.debut, periode.fin),
+    totalTvaDeductible(ctx, periode.debut, periode.fin),
+    listerAchatsTva(ctx, periode.debut, periode.fin),
+  ]);
+  const collectee = Number(releve.totalTva);
+  const reste = tvaDue(collectee, deductible);
+
+  const precedent = periodePrecedente(periode);
+  const suivant = periodeSuivante(periode);
   const lien = (p: { annee: number; numero: number }) => `/termines/tva?annee=${p.annee}&t=${p.numero}`;
 
   return (
@@ -68,37 +86,104 @@ export default async function ReleveTvaPage({
           </Link>
         </div>
 
-        <EnTeteEcran surtitre="TVA collectée" titre={libelleTrimestre(periode)} />
+        {/* **Le rythme en haut, à sa demande du 13 août 2026.** Il vit aussi
+            dans Réglages ; c'est ici qu'on se pose la question. */}
+        <RythmeTva actuelle={periodicite} />
 
-        <div className="mt-5 flex items-center justify-between px-6 text-[14px] font-medium">
-          <Link href={lien(precedent)} style={{ color: colors.rust }}>
-            ← {libelleTrimestre(precedent)}
+        <EnTeteEcran surtitre="Ma TVA" titre={libellePeriode(periode)} />
+
+        {/* **Le calendrier se glisse ENTRE les deux flèches**, à sa demande du
+            12 août 2026. Sans lui, remonter au 1er trimestre 2025 demandait
+            sept appuis — et sept chargements, chaque flèche étant un lien. */}
+        <div className="mt-5 flex items-center justify-between gap-2.5 px-6 text-[14px] font-medium">
+          <Link href={lien(precedent)} className="whitespace-nowrap" style={{ color: colors.rust }}>
+            ← {libellePeriode(precedent)}
           </Link>
-          <Link href={lien(suivant)} style={{ color: colors.rust }}>
-            {libelleTrimestre(suivant)} →
+          <CalendrierPeriodes
+            periodicite={periodicite}
+            annee={periode.annee}
+            numero={periode.numero}
+            anneeCourante={courante.annee}
+            numeroCourant={courante.numero}
+          />
+          <Link href={lien(suivant)} className="whitespace-nowrap" style={{ color: colors.rust }}>
+            {libellePeriode(suivant)} →
           </Link>
         </div>
 
-        <div className="mt-6 flex flex-col gap-4 px-6">
-          <div className="rounded-[4px] px-5 py-6 text-center" style={{ backgroundColor: colors.card }}>
-            <p className={smallCaps} style={{ color: colors.muted, marginBottom: 6 }}>
-              TVA collectée
-            </p>
-            <p
-              className="text-[36px] font-semibold leading-none"
-              style={{ fontFamily: font.display, color: colors.rust }}
-            >
-              {formatEuros.format(Number(releve.totalTva))}
-            </p>
-            <p className="mt-3 text-[13px]" style={{ color: colors.muted }}>
-              sur {formatEuros.format(Number(releve.totalHt))} hors taxes
-            </p>
+        <div className="mt-5 px-6">
+          {/* **Les deux colonnes, retenues par le patron le 12 août 2026** parmi
+              trois présentations (`docs/maquettes/37`). Les trois chiffres
+              portent le même poids et la même encre : la déductible était en
+              gris, elle avait l'air d'un chiffre de second rang alors que c'est
+              celui qu'il va chercher. */}
+          <div
+            className="flex gap-px overflow-hidden rounded-t-[10px]"
+            style={{ backgroundColor: colors.lineSoft }}
+          >
+            <MontantCopiable libelle="Collectée" montant={formatEuros.format(collectee)} />
+            <MontantCopiable libelle="Déductible" montant={formatEuros.format(deductible)} />
           </div>
+          {/* **Le reste peut être NÉGATIF, et c'est un état normal** : le mois
+              où l'on achète une machine sans facturer grand-chose donne un
+              crédit de TVA. Le borner à zéro cacherait le mois où le patron a
+              le plus besoin de savoir. */}
+          <div
+            className="mt-px rounded-b-[10px] px-4 py-4"
+            style={{ backgroundColor: colors.card }}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-[14px]">Reste à payer</span>
+              <span
+                className="text-[26px] font-semibold"
+                style={{ fontFamily: font.display, color: colors.rust, fontVariantNumeric: "tabular-nums" }}
+              >
+                {/* **Un vrai signe moins (−), pas le trait d'union du clavier.**
+                    Sa demande du 13 août 2026 : « si le reste à payer est
+                    négatif, il faut qu'il le marque négativement ». Le trait
+                    d'union rendu par le formatage est deux fois plus court et
+                    posé plus bas : à 26 px, sur un écran au soleil, il se lit
+                    comme une poussière. Le signe moins est à la hauteur des
+                    chiffres, et de leur épaisseur. */}
+                {reste < 0
+                  ? `\u2212 ${formatEuros.format(Math.abs(reste))}`
+                  : formatEuros.format(reste)}
+              </span>
+            </div>
+            {/* **Et le signe seul ne suffit pas à dire ce que ça VEUT dire.**
+                « Reste à payer − 20 € » se lit mal : on ne paie rien, c'est
+                l'inverse. La phrase le dit en clair — et elle n'apparaît que
+                dans ce cas, pour ne pas encombrer les onze mois où le montant
+                est positif. */}
+            {reste < 0 && (
+              /* **À GAUCHE, sous le libellé.** Alignée à droite, sa fin
+                 passait sous la bulle de l'assistant, qui flotte dans ce coin
+                 sur tous les écrans — « c'est l'État qui vous… ». Vu sur
+                 capture, jamais autrement. */
+              <p className="mt-1.5 text-[12px]" style={{ color: colors.or }}>
+                Crédit de TVA — c’est l’État qui vous doit.
+              </p>
+            )}
+          </div>
+        </div>
 
+        <AchatsTva
+          achats={achats.map((a) => ({
+            id: a.id,
+            dateAchat: a.dateAchat,
+            fournisseur: a.fournisseur,
+            totalTtc: a.totalTtc,
+            tvaDeductible: a.tvaDeductible,
+            saisie: a.saisie,
+          }))}
+          aujourdHui={jourIso(new Date())}
+        />
+
+        <div className="mt-6 flex flex-col gap-4 px-6">
           {releve.lignes.length === 0 ? (
             <div className="rounded-[4px] px-5 py-8 text-center" style={{ backgroundColor: colors.card }}>
               <p className="text-[14px]" style={{ color: colors.muted }}>
-                Aucune facture émise sur ce trimestre.
+                Aucune facture émise sur cette période.
               </p>
             </div>
           ) : (

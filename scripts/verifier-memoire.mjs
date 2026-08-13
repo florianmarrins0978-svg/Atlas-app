@@ -40,6 +40,29 @@ for (const fichier of FICHIERS) {
   if (!existsSync(fichier)) continue;
   const contenu = readFileSync(fichier, "utf8");
 
+  // **Un conflit de fusion avalé, committé, et poussé.**
+  //
+  // Trouvé le 13 août 2026 sur `main` : `ARCHITECTURE.md` y portait ses
+  // `<<<<<<< HEAD` en clair, sur quatre-vingts lignes. Plusieurs sessions
+  // écrivent ce dépôt en même temps (`CLAUDE.md` §6) ; l'une d'elles a résolu à
+  // moitié, et personne ne l'a vu — la mémoire du dépôt était cassée en ligne,
+  // et c'est le fichier qu'on lit en arrivant.
+  //
+  // Aucun contrôle ne regardait cela : ni le typage, ni le lint, ni les suites
+  // ne lisent le Markdown. Celui-ci coûte trois lignes.
+  for (const marqueur of ["<<<<<<<", "=======", ">>>>>>>"]) {
+    const ligne = contenu.split("\n").findIndex((l) => l.startsWith(marqueur));
+    // `=======` seul est un soulignement Markdown légitime ; on ne le compte
+    // que s'il accompagne un vrai marqueur de conflit.
+    if (ligne !== -1 && (marqueur !== "=======" || /^<<<<<<< /m.test(contenu))) {
+      problemes.push(
+        `${fichier} — marqueur de conflit « ${marqueur} » ligne ${ligne + 1} : ` +
+          "une fusion a été résolue à moitié puis committée."
+      );
+      break;
+    }
+  }
+
   // Liens Markdown relatifs.
   for (const [, cible] of contenu.matchAll(/\]\(([^)#][^)]*)\)/g)) {
     if (/^(https?:|mailto:)/.test(cible)) continue;
@@ -106,33 +129,6 @@ for (const rappel of RAPPELS_ATTENDUS) {
     problemes.push(
       `${rappel.fichier} — la section des rappels ne porte plus son déclencheur ` +
         `« ${rappel.declencheur} » : ${rappel.pourquoi}`
-    );
-  }
-}
-
-// ─── Un conflit resté ouvert ────────────────────────────────────────────────
-//
-// **Payé le 13 août 2026 :** `ARCHITECTURE.md` est arrivé sur `main` avec trois
-// marqueurs de conflit dedans — une session avait poussé une fusion sans la
-// refermer. Personne ne l'a vu : ni les types, ni le lint, ni les suites ne
-// lisent ces fichiers, et la documentation, elle, se lit surtout par recherche.
-//
-// C'est le pire état possible pour un fichier de mémoire : il a l'air complet,
-// il porte les DEUX versions d'un passage, et le lecteur ne sait pas laquelle
-// fait foi. Le contrôle coûte trois lignes ; l'avoir manqué a coûté une fusion.
-for (const fichier of FICHIERS) {
-  // Le script se lance depuis la racine — comme les deux contrôles au-dessus,
-  // qui lisent déjà `fichier` tel quel.
-  if (!existsSync(fichier)) continue;
-  const lignes = readFileSync(fichier, "utf8").split("\n");
-  const marqueurs = lignes
-    .map((l, i) => ({ l, n: i + 1 }))
-    .filter(({ l }) => /^<{7} |^={7}$|^>{7} /.test(l));
-  if (marqueurs.length > 0) {
-    problemes.push(
-      `${fichier} — ${marqueurs.length} marqueur(s) de conflit non refermé(s), ` +
-        `à partir de la ligne ${marqueurs[0].n} : le fichier porte DEUX versions du même ` +
-        "passage, et rien ne dit laquelle fait foi"
     );
   }
 }

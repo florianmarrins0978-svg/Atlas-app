@@ -4747,7 +4747,6 @@ par une action serveur, depuis le même écran où l'on stationne. Le raisonneme
 vaut pour elles ; rien ne le prouve encore de leur côté.
 
 ---
----
 
 ## 66. Le devis qui ne partait pas, et le bouton qui n'était pas le bon
 
@@ -6254,6 +6253,9 @@ cas la pastille ne servait plus à rien (§1 de l'ordre ci-dessus). Il vaut donc
 **Attention au sélecteur** : `getByPlaceholder("Bernard")` cherche une
 sous-chaîne et attrape aussi « bernard@exemple.fr ». Les suites emploient
 `input[placeholder="Bernard"]`, qui est exact.
+
+---
+
 ## 82. Une en-tête n'est qu'une demande — le SMS ne la lit pas
 
 **Le même défaut, deux jours de suite, et le second était une leçon.** Le
@@ -6333,3 +6335,185 @@ défaut, message à l'appui.
 logiciel fermé d'Apple, absent d'ici. Ce dépôt vérifie que le texte offert à ce
 logiciel ne contient plus de suite de chiffres appelable ; il ne peut pas
 vérifier ce que le logiciel en fera. Seul le téléphone du patron le dira.
+
+---
+
+## 83. La TVA se découpe au mois — et le trimestre devient une option
+
+**Sa remarque du 12 août 2026 :** *« la TVA collectée, ça doit être mois par
+mois et pas trimestre par trimestre. Après tu peux essayer de te renseigner,
+mais pour moi la TVA on doit la donner tous les mois. […] Et si jamais c'est à
+nous de choisir, dans ce cas-là il faut que l'utilisateur ait le choix.
+Renseigne-toi d'abord et ensuite reviens me voir. »*
+
+Il avait raison, et le dépôt n'avait rien à opposer : **l'écran ne connaissait
+que le trimestre, et aucune ligne n'expliquait pourquoi.** C'était un défaut par
+défaut — le genre qui survit parce que personne ne l'a jamais écrit noir sur
+blanc.
+
+### La règle, vérifiée avant d'être codée
+
+La déclaration au régime réel normal (formulaire CA3) est **mensuelle par
+défaut**. Le trimestre est une **option**, ouverte seulement quand la TVA due de
+l'année précédente est inférieure à 4 000 € ; au-delà, la périodicité redevient
+mensuelle.
+
+Le régime réel simplifié — déclaration annuelle et deux acomptes — **disparaît
+au 1er janvier 2027** (article 38 de la loi de finances pour 2025, loi
+n° 2025-127 du 14 février 2025 ; modalités ajustées par la loi de finances pour
+2026). À partir de là, « mensuel ou trimestriel » est la seule question qui se
+pose : l'axe retenu ici couvre donc l'après-2027 sans rien à reprendre.
+
+### Ce que l'application refuse de calculer, et pourquoi c'est structurant
+
+**Le droit au trimestre.** Le seuil porte sur la TVA *due* — collectée moins
+déductible — et **Atlas ne connaît que la collectée**. Il ne voit ni le gazole,
+ni la tronçonneuse, ni l'assurance : aucune facture d'achat n'entre dans ce
+produit.
+
+Il serait tentant de « rendre service » en signalant un franchissement de seuil
+à partir de la seule TVA collectée. Ce serait faux la moitié du temps, et faux
+d'une façon coûteuse : le patron déclarerait au mauvais rythme sur la foi d'un
+écran. La colonne `entreprises.periodicite_tva` enregistre donc une
+**déclaration du patron**, faite sur la foi de son comptable, jamais une
+déduction (`CLAUDE.md` §4). L'écran de Réglages le dit en toutes lettres, et une
+suite vérifie qu'il ne se met pas à conseiller.
+
+### Ce qui a été généralisé, et ce qui reste
+
+`src/server/periode-tva.ts` remplace `trimestre.ts` : mêmes bornes en UTC, mais
+paramétrées par la périodicité. Deux détails qui ne se devinent pas :
+
+- **`lirePeriode` dépend de la périodicité.** « 12 » est un mois valide et un
+  trimestre absurde. Lire l'adresse sans connaître le réglage laisserait passer
+  un douzième trimestre le jour où le patron change de rythme.
+- **L'invariant qui compte n'est pas la borne, c'est la couverture.** Une
+  facture émise n'importe quel jour doit tomber dans exactement une période.
+  `test-periode-tva.ts` parcourt l'année entière et vérifie que chaque période
+  commence où la précédente s'arrête, et que décembre se referme au 31 — un trou
+  d'un jour ne se verrait sur aucune capture.
+
+### Le calendrier, et ce qu'il remplace
+
+Retenu sur maquette (`docs/maquettes/35`). Remonter au 1er trimestre 2025
+depuis le 3e trimestre 2026 demandait **sept appuis** sur « ← » — et sept
+chargements d'écran, chaque flèche étant un lien. Deux appuis suffisent.
+
+**Sa forme suit la périodicité et ne se règle pas** : douze pavés en mensuel,
+quatre en trimestriel. Un réglage de plus n'apporterait rien — personne ne
+cherche un mois dans une grille de trimestres. Le pavé plein dit ce qu'on
+REGARDE, le point doré ce qui est aujourd'hui : deux repères qui ne se
+confondent pas.
+
+### Trouvé en chemin, et corrigé
+
+**« Facturé ce trimestre », au pied de « Terminés », mentait.**
+`totalFacture(mois)` additionne TOUS les mois du fil, depuis toujours — jamais
+un trimestre. Le chiffre était juste, sa légende ne l'était pas, et rien ne
+pouvait le révéler sans aller lire la fonction. Il dit désormais ce qu'il
+compte.
+
+---
+
+## 84. La TVA due : les achats du patron, et le ticket qu'on photographie
+
+**Sa demande du 12 août 2026 :** *« je veux également qu'on puisse intégrer la
+TVA due, donc les essences, les tronçonneuses. Et pour ça j'avais pensé à un
+petit scanner en ouvrant l'appareil photo : on passe les tickets gazoil devant,
+il les scanne et les intègre automatiquement. »*
+
+Retenu sur maquette (`docs/maquettes/36` puis `37`), après quatre corrections de
+sa main : les deux colonnes, tous les chiffres en gras, la pastille au lieu du
+rectangle, et le petit carré qui copie.
+
+### Le piège qui coûte un cinquième
+
+La TVA d'un ticket de 120 € à 20 % **n'est pas 24 € mais 20 €**. Le total est
+TTC : la taxe est dedans, pas dessus. C'est le calcul qu'on fait de tête, et il
+est faux.
+
+Un relevé faux de ce facteur affiche un total parfaitement plausible — rien, à
+l'écran, ne distingue 20,00 € de 24,00 €. On s'en aperçoit devant le comptable,
+un an plus tard. D'où `tvaDepuisTtc` en fonction pure, et un contrôle qui
+affirme explicitement l'inégalité (`scripts/test-achat-tva.ts`).
+
+### Ce que cette table n'est pas, et ne deviendra pas
+
+Elle ne porte pas les achats du patron : elle porte **la TVA de ses achats,
+telle qu'il l'a confirmée**. Pas de catégorie de dépense, pas de rapprochement
+bancaire, pas de plan comptable — Atlas prépare un relevé, il ne tient pas les
+comptes (`docs/AGENT.md` §6).
+
+Et **aucune règle de déductibilité n'y est encodée.** Ce qui est déductible
+dépend de la dépense et du véhicule ; Atlas n'a pas de source pour en juger. Il
+additionne ce que le patron confirme, son comptable fait le tri (`CLAUDE.md`
+§4).
+
+`tva_deductible` est le seul montant obligatoire. Un ticket de station n'affiche
+pas toujours son total ni son taux, et certains n'ont qu'une ligne « TVA
+3,20 € » : exiger davantage reviendrait à **refuser l'achat plutôt qu'à
+l'enregistrer incomplet**, et un achat refusé est une TVA qu'il ne récupérera
+pas.
+
+### Le crédit de TVA, et pourquoi il s'affiche
+
+`tvaDue` peut rendre un montant négatif, et l'écran l'écrit — *« si le reste à
+payer est négatif, il faut qu'il le marque négativement »*, le 13 août. Le mois
+où l'on achète une machine sans facturer donne un crédit. Le borner à zéro
+cacherait précisément le mois où le patron a le plus besoin de savoir.
+
+Deux détails, tous deux nés d'une capture : un **vrai signe moins** (U+2212) et
+non le trait d'union du formatage, deux fois plus court et posé plus bas — à
+26 px, au soleil, il se lit comme une poussière ; et une phrase qui dit ce que
+ça veut dire, « Reste à payer − 90 € » se lisant mal puisqu'on ne paie rien.
+Calée à GAUCHE : à droite, sa fin passait sous la bulle de l'assistant.
+
+### La lecture d'un ticket : ce que l'IA du dépôt ne savait pas faire
+
+Le patron a posé ses clés Anthropic et OpenAI. Restait que **la couche IA ne
+manipulait que du texte** — `genererTexte(systeme, message)`, aucun passage
+d'image. La vision existe chez les deux fournisseurs ; notre code ne la leur
+demandait pas.
+
+`lireImage` est **optionnelle**, comme `genererAvecOutils` avant elle : un
+fournisseur qui ne la porte pas reste valide, et l'écran retombe sur la saisie à
+la main — un parcours entier, pas une panne. Les deux implémentations diffèrent
+sur un détail que l'interface commune existe pour cacher : Anthropic veut les
+octets nus, OpenAI une URL `data:`.
+
+`temperature: 0` dans les deux. Lire un chiffre n'est pas une tâche créative, et
+deux lectures du même ticket doivent donner le même montant — sans quoi le
+patron verrait son total changer en rescannant.
+
+### Trois travers de modèles, trois défenses
+
+Éprouvés sans clé ni réseau (`scripts/test-lecture-ticket.ts`), parce que c'est
+là que vivent les vrais pièges — pas dans l'appel HTTP :
+
+1. **Il entoure son objet** de balises ou d'une phrase de politesse. On extrait
+   le premier objet accoladé plutôt que d'exiger un JSON nu.
+2. **Il rend des chaînes** là où on attend des nombres — « 96,00 € ». On les
+   convertit plutôt que de jeter une lecture juste.
+3. **Il invente pour ne pas laisser un champ vide.** Montant négatif, taux à
+   250 %, date de l'an 3000 : chacun retombe à `null`. Et **une TVA supérieure
+   au total est écartée** — la laisser passer ferait grossir le relevé d'un
+   montant imaginaire.
+
+Une TVA absente du ticket est recalculée depuis le taux, **et l'écran le dit** :
+le patron doit savoir que ce chiffre-là vient d'un calcul et non de son papier.
+
+### Ce qui n'a pas pu être éprouvé ici
+
+**La lecture d'un vrai ticket.** Cet environnement n'a aucune clé ; celles du
+patron sont sur son espace. La transformation de la réponse en champs l'est
+entièrement, le repli sans clé aussi. Le reste attend son banc, et s'écrit
+« non vérifié » jusque-là (`AGENTS.md`).
+
+### Ce que le contrôle d'exhaustivité a rattrapé
+
+`achats_tva` manquait à l'export RGPD. Le patron a le droit d'emporter TOUTES
+ses données, et ses tickets sont parmi les plus personnelles — ils disent où il
+fait le plein et quand il travaille. `test-export-entreprise.ts` a réclamé la
+table avant que quiconque y pense : l'omission serait partie en silence.
+
+---

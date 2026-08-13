@@ -83,6 +83,15 @@ export const entreprises = pgTable("entreprises", {
   // Combien de chantiers menés de front. 1 par défaut — le comportement d'avant
   // la migration 0019, où une seule équipe était supposée sans le dire.
   nombreEquipes: integer("nombre_equipes").notNull().default(1),
+  // Comment le relevé de TVA découpe l'année. **Le mois est le défaut LÉGAL**
+  // (déclaration CA3 mensuelle ; le trimestre est une option sous condition de
+  // TVA due), pas une préférence d'écran — voir `drizzle/0035_periodicite_tva.sql`.
+  //
+  // C'est une DÉCLARATION du patron, jamais une déduction : le seuil qui ouvre
+  // le trimestre porte sur la TVA due, et Atlas ne connaît que la collectée.
+  periodiciteTva: text("periodicite_tva", { enum: ["mensuelle", "trimestrielle"] })
+    .notNull()
+    .default("mensuelle"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -1185,3 +1194,41 @@ export const agendasExternes = pgTable(
   },
   (t) => [unique("agendas_externes_entreprise_fournisseur_uk").on(t.entrepriseId, t.fournisseur)]
 );
+
+/**
+ * Les achats du patron, et la TVA qu'il peut déduire.
+ *
+ * **Elle ne porte pas ses achats : elle porte la TVA de ses achats, telle
+ * qu'il l'a CONFIRMÉE.** Aucune règle de déductibilité n'est encodée — elles
+ * dépendent de la dépense et du véhicule, et Atlas n'a pas de source pour en
+ * juger. Il additionne ce qu'il confirme, son comptable fait le tri
+ * (`drizzle/0036_achats_tva.sql`).
+ *
+ * `tvaDeductible` est le seul montant obligatoire : un ticket de station
+ * n'affiche pas toujours son total ni son taux, et refuser l'achat serait
+ * perdre la TVA.
+ */
+export const achatsTva = pgTable("achats_tva", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  /** La date de l'ACHAT, jamais celle de la saisie : c'est elle qui range la
+   *  ligne dans une période. Un ticket de juillet scanné en septembre reste
+   *  un achat de juillet. */
+  dateAchat: date("date_achat").notNull(),
+  fournisseur: text("fournisseur").notNull(),
+  totalTtc: numeric("total_ttc", { precision: 12, scale: 2 }),
+  tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
+  tvaDeductible: numeric("tva_deductible", { precision: 12, scale: 2 }).notNull(),
+  /** Le ticket photographié, dans le stockage. `null` pour une saisie à la main. */
+  photoCle: text("photo_cle"),
+  /** Par où il est entré. Sert le jour où une lecture automatique se révèle
+   *  fautive : il faut pouvoir retrouver ce qui vient de la machine sans
+   *  toucher à ce que le patron a écrit lui-même. */
+  saisie: text("saisie", { enum: ["scan", "main"] }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  createdBy: uuid("created_by").references(() => users.id),
+});

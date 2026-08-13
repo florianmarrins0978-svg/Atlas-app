@@ -1,5 +1,6 @@
 "use server";
 
+import { PERIODICITE_TVA_PAR_DEFAUT } from "@/server/periode-tva";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { creerTarif, listerTarifs, modifierTarif, supprimerTarif } from "@/server/repositories/tarifs";
 import { lireFichierTarifs } from "@/server/import/lire-fichier-tarifs";
@@ -162,6 +163,30 @@ export async function appliquerImportTarifsAction(choix: {
  * 6 août ». La borne est appliquée dans le dépôt, pas ici : zéro équipe rendrait
  * tout jour indisponible sans qu'aucun écran ne dise pourquoi.
  */
+/**
+ * La périodicité du relevé de TVA : au mois, ou au trimestre.
+ *
+ * **Ce que cette action enregistre est une DÉCLARATION du patron, pas une
+ * déduction de l'application.** Le trimestre n'est ouvert que si la TVA due de
+ * l'année précédente est inférieure à 4 000 € — et la TVA due est la collectée
+ * MOINS la déductible. Atlas ne connaît que la collectée : il ne voit ni le
+ * gazole, ni la tronçonneuse, ni l'assurance. Il ne peut donc pas savoir si le
+ * patron y a droit, et il ne doit rien en laisser croire (`CLAUDE.md` §4).
+ *
+ * C'est son comptable qui sait ; l'écran obéit.
+ *
+ * **Le retour dit ce que la base porte, jamais ce qui a été demandé.** Une
+ * valeur inattendue est ignorée par le dépôt : l'écran doit donc pouvoir
+ * revenir sur son affichage optimiste plutôt que de montrer un réglage que la
+ * base n'a pas pris.
+ */
+export async function mettreAJourPeriodiciteTvaAction(periodiciteTva: "mensuelle" | "trimestrielle") {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "modifier la périodicité du relevé de TVA");
+  const e = await mettreAJourEntreprise(ctx, { periodiciteTva });
+  return { periodiciteTva: e?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT };
+}
+
 export async function mettreAJourNombreEquipesAction(nombreEquipes: number) {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "modifier le nombre d'équipes");

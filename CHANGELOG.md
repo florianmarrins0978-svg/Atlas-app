@@ -114,9 +114,14 @@ et jamais sur les marqueurs vingt lignes plus haut. Le fichier avait l'air
 complet, en portant **les deux versions** du même passage : plus trompeur qu'une
 section absente.
 
-Le contrôle coûte trois lignes, nomme le fichier, le compte et la première ligne,
-et a été éprouvé en réintroduisant l'état exact qui était passé. Le doublon de
-section qu'il avait entraîné — deux `## 81` — est défait au passage.
+Le contrôle coûte trois lignes, nomme le fichier, le marqueur et sa ligne, et a
+été éprouvé en réintroduisant l'état exact qui était passé. Le doublon de section
+qu'il avait entraîné — deux `## 81` — est défait au passage.
+
+**Deux sessions l'ont écrit le même jour sans se voir.** Celui qui est resté est
+celui qui était déjà sur `main` : il gère en plus un faux positif — `=======`
+seul est un soulignement Markdown légitime. Le second a été retiré plutôt
+qu'empilé, deux contrôles pour la même chose finissant par diverger.
 
 ### L'attente qui s'éternise rend la main, au lieu de souffler dans le vide
 
@@ -488,6 +493,49 @@ décidé.
 Le contrôle a été confronté à l'état qu'il prétend détecter : veilleur remis
 partout, il rougit sur les deux pages, en citant ce que le client lirait.
 
+---
+
+### La TVA due entre dans l'application, et les tickets se photographient
+
+**Sa demande :** *« je veux également qu'on puisse intégrer la TVA due, donc les
+essences, les tronçonneuses. Et pour ça j'avais pensé à un petit scanner en
+ouvrant l'appareil photo. »*
+
+L'écran de TVA porte désormais **trois chiffres** : collectée, déductible, et ce
+qu'il reste à payer. Chacun des deux premiers se copie d'un appui. Les achats
+s'ajoutent de deux façons — **scanner un ticket, ou l'écrire à la main** — parce
+qu'un ticket perdu, une facture reçue par e-mail et un achat noté sur un coin de
+table échappent tous les trois à l'objectif.
+
+**Le piège qui coûte un cinquième :** la TVA d'un ticket de 120 € à 20 % n'est
+pas 24 € mais 20 €. Le total est TTC, la taxe est dedans. Un relevé faux de ce
+facteur affiche un total parfaitement plausible ; on s'en aperçoit devant le
+comptable, un an plus tard.
+
+**« Si le reste à payer est négatif, il faut qu'il le marque négativement. »**
+C'est fait, avec un vrai signe moins et une phrase qui dit ce que ça veut dire —
+« Crédit de TVA, c'est l'État qui vous doit ». Le mois où l'on achète une machine
+sans facturer ne se cache plus derrière un zéro.
+
+**La lecture des tickets est branchée sur ses clés Anthropic et OpenAI.** Il a
+fallu apprendre la vision à la couche IA du dépôt, qui ne manipulait que du
+texte. Ce qu'elle rend est une **proposition** : les champs arrivent
+pré-remplis, et c'est la valeur qu'il confirme qui part en base. Une TVA
+supérieure au total est écartée, une TVA absente est recalculée **en le disant**.
+
+**NON VÉRIFIÉ ICI :** la lecture d'un vrai ticket. Cet environnement n'a aucune
+clé. Tout ce qui l'entoure l'est — la transformation de la réponse en champs, le
+refus de l'absurde, le repli sur la saisie à la main.
+
+**Rattrapé par un contrôle, avant nous :** la table des achats manquait à
+l'export RGPD. Les tickets d'un artisan disent où il fait le plein et quand il
+travaille ; ils partent avec le reste de ses données.
+
+`ARCHITECTURE.md` §84.
+
+---
+
+
 ### Le message du devis figé est devenu la porte
 
 **Le patron, capture à l'appui :** *« le message dit de consulter la case devis
@@ -518,6 +566,9 @@ trois façons dessinées (`docs/maquettes/40-le-message-du-devis-fige.html`).
 bouge ; un lien qui mène ailleurs se voit tout de suite.** La suite vérifie
 aussi que les mots signalés ont disparu, que la porte s'ouvre pour de bon, et
 qu'un devis pas encore parti ne s'annonce jamais figé.
+
+---
+
 
 ## 2026-08-12
 
@@ -776,6 +827,37 @@ le serveur répond en 5,4 secondes. C'est la première fois de la journée qu'un
 panne signalée est écartée sans lui faire recopier un terminal.
 
 ---
+
+### La TVA se lit au mois, ou au trimestre — et c'est vous qui le dites
+
+**Sa remarque :** *« la TVA collectée, ça doit être mois par mois et pas
+trimestre par trimestre […] renseigne-toi d'abord et ensuite reviens me voir. »*
+
+Il avait raison. La déclaration CA3 est **mensuelle par défaut** ; le trimestre
+est une option, ouverte quand la TVA due de l'année précédente reste sous
+4 000 €. L'écran ne connaissait que le trimestre, posé sans qu'aucune ligne du
+dépôt n'explique pourquoi.
+
+**Réglages → Votre TVA** porte désormais le choix, le mois coché d'avance
+puisque c'est le défaut légal. L'écran de TVA et son calendrier suivent.
+
+**Et l'application ne dira jamais lequel s'applique** : le seuil porte sur la
+TVA *due* — collectée moins déductible — et Atlas ne connaît que la collectée.
+Prétendre conseiller ici serait inventer une donnée. L'écran renvoie au
+comptable, et une suite vérifie qu'il ne se met pas à donner des avis.
+
+**Le calendrier arrive avec** (`docs/maquettes/35`) : remonter au 1er trimestre
+2025 demandait sept appuis sur « ← » et sept chargements d'écran. Deux appuis
+suffisent.
+
+**Corrigé en chemin, trouvé en cherchant autre chose :** « Facturé ce
+trimestre », au pied de Terminés, additionnait TOUS les mois du fil. Le chiffre
+était juste, sa légende mentait.
+
+`ARCHITECTURE.md` §83.
+
+---
+
 
 ### Le chevron doré du planning : l'adresse jusqu'au GPS en un doigt
 

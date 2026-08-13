@@ -39,8 +39,16 @@ les marqueurs vingt lignes plus haut. Le fichier avait l'air complet — il port
 même **les deux versions** du passage, sans que rien ne dise laquelle fait foi.
 C'est le pire état pour une mémoire : plus trompeur qu'une section absente.
 
-**`verifier:memoire` les refuse désormais**, et nomme le fichier, le compte et la
-première ligne. Éprouvé en réintroduisant l'état exact qui était passé.
+**`verifier:memoire` les refuse désormais**, et nomme le fichier, le marqueur et
+sa ligne. Éprouvé en réintroduisant l'état exact qui était passé.
+
+**Deux sessions l'ont écrit le même jour, sans se voir** — c'est le sujet de
+`CLAUDE.md` §6 en action. Celui qui est resté est **celui qui était déjà sur
+`main`** : il gère en plus un faux positif que l'autre ignorait (`=======` seul
+est un soulignement Markdown parfaitement légitime, et ne compte que s'il
+accompagne un vrai marqueur). Le second a été retiré plutôt qu'empilé : deux
+contrôles pour la même chose finissent par diverger, et l'on ne sait plus lequel
+fait foi.
 
 Le doublon de section qu'il avait entraîné est défait au passage : deux `## 81`
 coexistaient (la civilité, l'en-tête du SMS). La première garde son numéro,
@@ -459,15 +467,15 @@ page s'ouvre avec le GPS et tout machin, et là tu mets créer la facture. »*
 nom, la date, « Déplacer » et le chevron. Le nom passe d'environ 110 px à plus
 de 250. `ARCHITECTURE.md` §70.
 
-### 0 quaterdecies bis. Un chantier sans adresse n'a plus de chemin pour la saisir
+### 0 quaterdecies bis. ~~Un chantier sans adresse n'a plus de chemin pour la saisir~~ — **réglé le 13 août 2026**
 
-La feuille « Y aller » dit « à saisir sur la fiche du chantier », mais n'y mène
-plus : « Ouvrir la fiche du chantier » a été retiré de la maquette 32, le nom du
-chantier y menant déjà depuis la ligne. Sur un chantier sans adresse, la phrase
-suffit-elle, ou faut-il un bouton **« Saisir l'adresse »** à cet endroit précis ?
+Il a tranché sur maquette (`docs/maquettes/34`, variante B) : *« ça, c'est au cas
+où la fiche entière n'a pas été rentrée. Dans ce cas-là, tu peux faire ça, mais
+avec le bouton, tu le mets arrondi. »*
 
-**La question lui a été posée avec la maquette et attend sa réponse.** Rien ne
-sera ajouté sans elle.
+Un bouton **« Saisir l'adresse »** en pastille creuse, qui n'apparaît que sans
+adresse et mène au devis complet — seul écran où elle s'édite.
+`ARCHITECTURE.md` §70.
 
 ### 0 nonies. ~~L'écran de connexion est resté dans l'ancienne identité~~ **fait le 12 août 2026**
 
