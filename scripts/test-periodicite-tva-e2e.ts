@@ -52,16 +52,31 @@ async function choisir(page: Page, libelle: "Tous les mois" | "Tous les trimestr
   await page.goto(`${BASE}/reglages`, { waitUntil: "domcontentloaded" });
   await page.waitForSelector("text=Votre TVA", { timeout: 30_000 });
   await page.getByRole("button", { name: libelle, exact: true }).click();
-  // Le réglage part en action serveur : on attend qu'il soit ENREGISTRÉ, pas
-  // que le bouton ait changé de couleur — l'affichage est optimiste.
-  await page.waitForFunction(
-    (l) => {
-      const b = [...document.querySelectorAll("button")].find((x) => x.textContent?.trim() === l);
-      return b?.getAttribute("aria-pressed") === "true";
-    },
-    libelle,
-    { timeout: 10_000 }
-  );
+
+  // **On RECHARGE pour vérifier, au lieu de croire le bouton.** L'écran coche
+  // la case avant que le serveur réponde — c'est voulu, le doigt doit voir tout
+  // de suite. Mais attendre `aria-pressed` revient alors à attendre l'optimisme
+  // de l'écran, pas l'enregistrement : le 13 août 2026, ce contrôle est passé à
+  // l'écran suivant avant que la base ait bougé, et a lu « 3e trimestre » après
+  // avoir demandé le mois.
+  //
+  // Après rechargement, la case cochée vient du SERVEUR. On laisse trois
+  // chances, en donnant à l'action le temps qu'il lui faut sous la charge des
+  // cinquante suites.
+  let enregistre = false;
+  for (const essai of [1, 2, 3]) {
+    await page.waitForTimeout(essai * 400);
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForSelector("text=Votre TVA", { timeout: 30_000 });
+    const coche = await page
+      .getByRole("button", { name: libelle, exact: true })
+      .getAttribute("aria-pressed");
+    if (coche === "true") {
+      enregistre = true;
+      break;
+    }
+  }
+  if (!enregistre) throw new Error(`« ${libelle} » n'a pas été enregistré : la case n'est pas cochée après rechargement.`);
 }
 
 async function titreTva(page: Page): Promise<string> {
