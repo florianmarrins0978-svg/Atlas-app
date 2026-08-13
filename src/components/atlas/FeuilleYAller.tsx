@@ -172,7 +172,11 @@ export default function FeuilleYAller({
         href={`/chantiers/${chantierId}/facture`}
         aria-label={`Créer la facture — ${nomChantier}`}
         onClick={fermer}
-        className="mt-4 block w-full rounded-md py-[14px] text-center text-[15px]"
+        // **La capsule, comme partout ailleurs.** Il était resté en `rounded-md`
+        // — et le contrôle des boutons arrondis ne l'a pas vu, deux fois : il ne
+        // regardait ni les `<Link>`, ni les rayons NOMMÉS de Tailwind. C'est le
+        // patron qui l'a repéré, le 13 août 2026, sur sa capture.
+        className="mt-4 block w-full rounded-full py-[14px] text-center text-[15px]"
         style={{ backgroundColor: colors.rust, color: colors.cream }}
       >
         Créer la facture

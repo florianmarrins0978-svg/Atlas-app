@@ -9,6 +9,44 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### La poignée de la feuille la referme, et « Créer la facture » devient une capsule
+
+**Ses deux signalements du 13 août, capture à l'appui :** *« si j'appuie sur le
+petit trait gris au-dessus de "y aller", c'est censé refermer la page, sauf que
+ça ne marche pas »* et *« le bouton créer la facture est encore carré alors qu'il
+devrait être arrondi comme tous les autres »*.
+
+**La poignée n'était qu'un trait dessiné — et pire.** Posée dans le panneau qui
+arrête les appuis pour que la feuille ne se ferme pas sous les doigts, elle
+ABSORBAIT le geste sans rien en faire. Elle est désormais un vrai bouton, nommé
+« Refermer », et sa zone touchable fait **342 × 28 px** au lieu des 4 px du
+trait : quatre pixels ne s'atteignent pas au doigt, et il aurait conclu « ça ne
+marche pas » sur un code pourtant juste.
+
+**Le garde-fou du correctif est éprouvé aussi** : le contenu de la feuille ne la
+ferme toujours pas — sinon elle se déroberait en visant « Waze » — et le fond
+continue de la fermer. Confronté à la poignée débranchée : un cas au rouge.
+
+**Le bouton carré, lui, dit quelque chose sur nos contrôles.** Il portait
+`rounded-md`, et `scripts/test-boutons-arrondis.ts` ne l'a pas vu — **deux
+angles morts à la fois** : son motif ne connaissait ni la balise `<Link>` (la
+façon normale d'écrire un bouton qui mène quelque part, ici) ni les rayons
+NOMMÉS de Tailwind. C'est la troisième fois que ce contrôle attrape le cas rare
+et manque le cas courant, et c'est encore le patron qui l'a vu.
+
+Le motif est élargi, avec **quatre témoins** — un par angle mort déjà payé — et
+un cinquième qui vérifie qu'une capsule n'est jamais dénoncée à tort. Un
+sixième est né sur-le-champ : en arrondissant le bouton, le commentaire écrit
+juste au-dessus citait le rayon retiré, et le contrôle a dénoncé un bouton
+parfaitement rond. Il ignore désormais les commentaires.
+
+Réparé, il dénonce six boutons. Cinq sont sur les écrans du CLIENT ou le chevron
+de retour, jamais arbitrés : **déclarés en exceptions nommées, chacune avec sa
+raison**, et portés dans `TODO.md` pour sa décision. Les restyler en silence
+aurait changé l'apparence d'écrans qu'il n'a pas demandés.
+
+---
+
 ### « Monsieur Martins », et le tiret qui collait deux choses différentes
 
 **Sa capture, ce matin :** *« il faut qu'il y ait écrit monsieur Martins et pas
