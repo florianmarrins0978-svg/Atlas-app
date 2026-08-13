@@ -373,6 +373,17 @@ vingt-cinq minutes pour observer UNE suite — c'est ce coût-là qui pousse à
 supposer une cause au lieu d'aller la lire. Le script dit à voix haute qu'il
 n'est pas la batterie.
 
+## Ce qu'il reste à lui montrer : le corps de la fiche (13 août)
+
+L'état et l'étape suivante disent désormais la vérité sur un chantier avancé
+(`ARCHITECTURE.md` §76). **Mais le grand geste au centre de l'écran raconte
+encore un chantier neuf** : l'anneau de dictée et « Appuyez et décrivez le
+chantier » s'affichent sur une fiche dont le devis est écrit et prêt à partir.
+
+C'est une question d'apparence : elle **se dessine avant de se coder**
+(`CLAUDE.md` §3 bis), et elle attend son avis. Ne rien poser dans
+`src/app/chantiers/[id]/page.tsx` avant qu'il ait choisi.
+
 ## Ce qui vient d'être terminé
 
 **SIX BRANCHES RÉUNIES DANS `main` (13 août).** Sa demande : *« Fusionne. »*

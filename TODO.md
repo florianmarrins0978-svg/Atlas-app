@@ -27,6 +27,22 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 duovicies. Le corps de la fiche montre encore un chantier neuf — **maquette à faire**
+
+**Trouvé en corrigeant son défaut du 13 août** (`ARCHITECTURE.md` §76), et
+laissé ouvert exprès. L'état dit maintenant « Devis prêt à envoyer » et l'étape
+suivante « Envoyer le devis au client » — mais **le centre de l'écran affiche
+toujours l'anneau de dictée** et « Appuyez et décrivez le chantier », sur un
+chantier dont le devis est écrit.
+
+C'est de l'apparence : **la maquette d'abord**, sa règle du 11 août. Ne rien
+poser dans `src/app/chantiers/[id]/page.tsx` avant son choix.
+
+Ce qui est déjà su, et qui cadre le dessin : l'étape suivante ne vit que dans le
+tiroir, replié par défaut. Un chantier avancé devrait probablement porter son
+geste au centre, là où l'anneau se trouve — mais c'est lui qui tranche.
+
+
 ### 0 unvicies. ~~Relier l'agenda iCloud~~ — **codé le 12 août 2026**, reste à éprouver chez lui
 
 **Sa question du 12 août 2026**, capture du Calendrier d'Apple à l'appui : *« je

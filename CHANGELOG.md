@@ -54,6 +54,38 @@ maquette, et la connexion réelle dans un vrai navigateur derrière une origine
 
 ---
 
+## 2026-08-13
+
+### « Il n'y a pas de mémoire dans les actions » : on repart du plus avancé
+
+**Son défaut, dans ses mots :** *« J'étais en train de rédiger le devis, [...]
+j'ai fait retour sans faire exprès. Si maintenant je reclique sur mon chantier,
+je suis obligé de refaire toutes les étapes une à une, alors que j'étais déjà
+arrivé à la toute fin, il ne me manquait plus qu'à envoyer le devis. »*
+
+**Rien n'était perdu — sa PLACE l'était**, et rien ne le lui disait. Sa fiche
+proposait « Ajouter des photos » et sa liste annonçait « Brouillon », sur un
+chantier dont le devis était écrit et n'attendait que son envoi.
+
+**La cause :** les deux règles lisaient la chaîne depuis le début et s'arrêtaient
+au premier trou. Il avait rédigé son devis **à la main**, donc sans passer par
+l'écran « Informations » — le jalon manquait, et tout retombait au départ. Or
+sauter des étapes n'est pas une anomalie : c'est la voie normale depuis que la
+chaîne va de la dictée au devis d'un seul geste.
+
+**La chaîne se lit désormais à l'envers**, du plus avancé au plus ancien : le
+premier jalon franchi commande. Un état manquait au passage — « Devis prêt à
+envoyer » —, sans lequel un devis écrit n'avait aucun état à lui.
+
+**Et la liste des chantiers ne lisait même pas ce jalon** : le compilateur l'a
+désigné dès que le champ est devenu obligatoire. C'était l'écran de sa capture.
+
+Reproduit à l'écran avant correction, revu à l'écran après (`ARCHITECTURE.md`
+§76). **Ce qui reste ouvert et ne se décide pas sans lui :** le corps de la
+fiche montre toujours l'anneau de dictée sur un chantier déjà chiffré.
+
+---
+
 ## 2026-08-12
 
 ### Le faux rouge de la batterie : un tuyau de 64 Ko, pas un écran lent
