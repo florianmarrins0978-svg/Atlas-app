@@ -27,6 +27,46 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 duovicies. Les réglages : neuf rubriques encore à dessiner
+
+**Le plan est dessiné et attend son accord** — `maquettes/atlas-reglages-plan.html`
+(`ARCHITECTURE.md` §80). Les deux niveaux, les quatre rôles et la forme de
+l'interrupteur y sont tranchés ; **aucune rubrique n'y est ouverte**.
+
+Ordre convenu, qui suit ses quatre priorités du 13 août 2026 :
+
+| Lot | Rubrique | Ce qu'elle porte | État |
+|---|---|---|---|
+| 1 | **Le plan** | Deux niveaux, trois rôles, l'interrupteur | **dessiné le 13 août — attend son accord** |
+| 2 | Identité de l'entreprise | Nom, adresse, SIRET/SIREN, TVA, IBAN | à dessiner |
+| 3 | Équipe et rôles | Qui a accès, et à quoi | à dessiner — **suppose la décision sur le rôle « commercial »** |
+| 4 | Tarifs & catalogue | Prestations, main-d'œuvre, matériel | à dessiner — l'écran existe déjà en partie |
+| 5 | Documents | Conditions, acompte, logo, texte de bas de page | à dessiner — **le plus lourd**, voir ci-dessous |
+| 6 | Notifications | Huit familles d'alertes, canal par canal | à dessiner |
+| 7 | Le reste | Atlas IA, intégrations, apparence, abonnement, sécurité | à dessiner |
+
+**Ce qui n'est PAS acquis, et ne doit pas être codé sur la foi de la maquette :**
+
+- **le rôle « commercial » n'existe nulle part.** `membres_entreprise.role` ne
+  connaît que `proprietaire` et `membre` ; `docs/QUESTIONS.md` §10 décrit
+  l'éditeur, le patron et le salarié. L'ajouter suppose une migration **et**
+  une décision, pas seulement un écran ;
+- **le cloisonnement par rôle est aujourd'hui inexistant** côté serveur. Un
+  écran qui n'affiche pas une rubrique ne protège rien : `QUESTIONS.md` §10 exige
+  que la donnée ne SORTE pas. C'est le vrai coût de ce lot, et il est en base et
+  dans les dépôts, pas dans l'affichage ;
+- **le logo sur le devis n'existe pas** : `document-commun.ts` ne pose aucune
+  image. Extraire un logo d'une photo déposée est faisable (pdf-lib sait
+  incorporer un PNG) ; **remplacer entièrement le devis par un modèle importé ne
+  l'est pas** sans perdre les totaux, la TVA et la numérotation, qui sont
+  calculés. À dire au patron avant de dessiner le lot 5 ;
+- **les conditions sont aujourd'hui en dur** : « 30 jours » dans
+  `devis-pdf.ts`, la mention légale dans `facture-pdf.ts`, et un seul champ
+  libre `conditionsPaiement`. Les rendre réglables demande une table, pas un
+  champ de plus.
+
+---
+
 ### 0 unvicies. Le chevron de retour, dernier bouton hors charte
 
 **Trouvé le 13 août 2026**, en réparant le contrôle des boutons arrondis : son

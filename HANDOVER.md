@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-12 · `main`
+**Point de reprise :** 2026-08-13 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -249,6 +249,44 @@ Ni un champ contrôlé, ni un effet, ni `defaultValue` ne font survivre une vale
 à cette remise. Ce qui tient : une `ref` qui met la valeur par défaut à jour
 **et** une `key` qui remonte le champ à chaque envoi. Ne pas « simplifier » l'un
 des deux.
+
+## Les réglages : le PLAN posé, les rubriques EN ATTENTE (13 août)
+
+`maquettes/atlas-reglages-plan.html` — quatre écrans : les réglages vus par le
+**patron**, par le **commercial**, par le **salarié**, et **l'interrupteur**.
+Contrôlé par `maquettes/verifier-atlas-reglages-plan.mjs`, branché dans
+`npm run verifier:maquette`. **Rien dans `src/`** — sa règle du 11 août.
+
+**Ce que ce lot tranche, et qui vaut pour les neuf rubriques suivantes :** les
+deux ensembles « Moi » / « Mon entreprise » ; le fait qu'une rubrique interdite
+soit **absente** et non masquée ; et la liste de ce qui n'aura **jamais**
+d'interrupteur (mentions légales de la facture, identité de l'émetteur,
+numérotation continue, conservation légale).
+
+**Trois choses à ne pas croire acquises :**
+
+1. **Le rôle « commercial » n'existe nulle part** — ni en base
+   (`membres_entreprise.role` : `proprietaire` | `membre`), ni dans
+   `docs/QUESTIONS.md` §10, qui connaît l'éditeur, le patron et le salarié.
+   Il est dessiné pour être tranché.
+2. **Le cloisonnement par rôle n'est pas codé.** Ne pas conclure de la maquette
+   qu'un salarié ne voit pas les prix : `QUESTIONS.md` §10 exige que la donnée
+   ne SORTE pas du serveur, et rien de tel n'est en place aujourd'hui.
+3. **Le logo et les conditions réglables n'existent pas.**
+   `document-commun.ts` ne pose aucune image ; « 30 jours » est en dur dans
+   `devis-pdf.ts`, la mention légale dans `facture-pdf.ts`. Remplacer le devis
+   entier par un modèle importé n'est pas possible sans perdre les totaux, la
+   TVA et la numérotation — à dire avant de dessiner le lot « Documents ».
+
+L'ordre des lots est dans `TODO.md` §0 duovicies ; le pourquoi dans
+`ARCHITECTURE.md` §80.
+
+**Piège payé sur cette planche :** éprouver qu'un contrôle sait échouer écrit
+ses captures dans `maquettes/vues/` comme une exécution normale. La planche a
+été relue sur une image produite par la version **cassée**. Relancer le contrôle
+sur le fichier sain avant de regarder.
+
+---
 
 ## L'écran de connexion : maquette posée, choix EN ATTENTE (12 août)
 

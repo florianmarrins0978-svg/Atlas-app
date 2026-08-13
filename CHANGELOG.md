@@ -9,6 +9,50 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### Les réglages : le plan dessiné avant les dix rubriques
+
+**Il a listé dix rubriques d'un coup** — entreprise, équipe, tarifs, documents,
+Atlas IA, notifications, intégrations, style, abonnement, sécurité — puis :
+*« à toi de décider si on fait tout d'un coup ou rubrique par rubrique pour
+qu'il n'y ait pas de problème »*.
+
+**Décision : par lots, et le plan d'abord.** Les dix rubriques héritent des
+mêmes trois choix — les deux niveaux, le rôle qui voit, la forme de
+l'interrupteur. Les figer sans les regarder aurait condamné les neuf suivantes
+à être refaites le jour où l'un d'eux bougeait.
+
+`maquettes/atlas-reglages-plan.html` porte donc quatre écrans : les réglages vus
+par le **patron**, par le **commercial**, par le **salarié**, et l'écran de
+**l'interrupteur**. Rien dans `src/` (`CLAUDE.md` §3 bis).
+
+**Ce qui s'y décide, et attend son accord :**
+
+- **Deux ensembles, « Moi » et « Mon entreprise »**, dans cet ordre — sa phrase
+  du 13 août sur le salarié qui change son mot de passe mais pas les tarifs ;
+- **une rubrique absente n'est pas une rubrique masquée.** Ce qu'un rôle n'a pas
+  le droit de voir ne sort pas du serveur (`QUESTIONS.md` §10, 7 août). Le
+  contrôle cherche les mots interdits dans TOUT le texte de l'écran, pas dans
+  ses lignes visibles ;
+- **le rôle « commercial » est neuf et n'est acquis nulle part** : la base ne
+  connaît que `proprietaire` et `membre`, et les décisions écrites que
+  l'éditeur, le patron et le salarié. Il est dessiné pour être tranché ;
+- **ce qui n'aura jamais d'interrupteur** : les mentions légales de la facture,
+  l'identité de l'émetteur, la numérotation continue, la conservation légale. La
+  ligne scellée reste DANS la liste, avec sa raison — c'est là qu'il cherchera
+  le bouton.
+
+**Un défaut trouvé à l'œil, pas par un contrôle.** Le champ de l'acompte
+affichait « soit 1 044 € sur 3 480 € » : une maquette sans script ne recalcule
+pas, et taper 15 laissait le montant de 30 % à côté. Cinquante contrôles au vert
+pendant que l'écran se contredisait. Retiré, et un contrôle posé pour que ça ne
+revienne pas.
+
+**Les lots suivants**, dans l'ordre de ses priorités : identité de l'entreprise,
+équipe et rôles, tarifs, documents (conditions, logo, mentions), notifications,
+puis le reste.
+
+---
+
 ### La capsule descend jusqu'aux écrans du client — il a tranché
 
 **Question posée avec deux captures**, la sienne et celle de son client :

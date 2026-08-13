@@ -1,0 +1,266 @@
+/*
+  Contrôle du plan des réglages — JavaScript coupé, iPhone 13, meta viewport
+  injectée.
+
+  Le sujet n'est pas l'allure de l'écran, ce sont SES TROIS RÈGLES :
+
+    · CE QU'UN RÔLE N'A PAS LE DROIT DE VOIR N'EST PAS DANS SA LISTE. Le
+      contrôle ne regarde pas si la ligne est masquée : il cherche le MOT dans
+      tout l'écran (`innerText`), parce que `QUESTIONS.md` §10 a tranché que
+      cacher ne suffit pas. Un jour où la ligne serait rendue puis grisée, ce
+      contrôle rougirait — c'est exactement ce qu'on lui demande ;
+    · UN INTERRUPTEUR ÉTEINT NE DÉPLIE RIEN. Le champ n'existe pas tant que le
+      réglage est coupé ;
+    · LA LIGNE OBLIGATOIRE NE PORTE AUCUN INTERRUPTEUR, et le dit à sa place
+      dans la liste.
+
+  Chacun sait échouer : ajouter « IBAN » dans l'écran du salarié rougit le
+  premier, retirer `.interrupteur:checked ~ .deplie{display:block}` rougit le
+  deuxième, poser une case dans `.scelle` rougit le troisième.
+*/
+import fs from "node:fs";
+import path from "node:path";
+import { chromium, devices } from "playwright";
+
+const FICHIER = process.argv[2] || "maquettes/atlas-reglages-plan.html";
+const SORTIE = "maquettes/vues";
+
+const echecs = [], ok = [];
+const verifie = (n, c, d = "") => (c ? ok.push(n) : echecs.push(`${n}${d ? " — " + d : ""}`));
+
+const source = fs.readFileSync(FICHIER, "utf8");
+verifie("aucune balise <script>", !/<script/i.test(source));
+verifie("aucun gestionnaire en ligne", !/\son[a-z]+\s*=/i.test(source));
+// Contrôle de source : Chromium active un <label> sans `cursor:pointer`, Safari non.
+verifie("les libellés portent cursor:pointer (Safari l'exige)",
+  /(^|[\s,{}])label\s*\{[^}]*cursor:\s*pointer/m.test(source.split("</style>")[0]));
+
+const ESSAI = FICHIER.replace(/\.html$/, "-essai.html");
+fs.writeFileSync(ESSAI, '<meta name="viewport" content="width=device-width, initial-scale=1">\n' + source);
+
+const nav = await chromium.launch(
+  process.env.CHROMIUM_BIN === "playwright"
+    ? {}
+    : { executablePath: process.env.CHROMIUM_BIN || "/opt/pw-browsers/chromium" }
+);
+const ctx = await nav.newContext({ ...devices["iPhone 13"], javaScriptEnabled: false, colorScheme: "light" });
+const page = await ctx.newPage();
+await page.goto("file://" + path.resolve(ESSAI));
+
+const PATRON = '[data-s="patron"]', COM = '[data-s="commercial"]', SAL = '[data-s="salarie"]',
+      BASC = '[data-s="bascule"]';
+const rect = async (s) => page.$eval(s, (e) => {
+  const r = e.getBoundingClientRect();
+  return { x: r.x, y: r.y, w: r.width, h: r.height };
+}).catch(() => null);
+const txt = async (s) => page.$eval(s, (e) => e.innerText.trim()).catch(() => "");
+const vu = async (s) => page.$eval(s, (e) => e.checkVisibility({ opacityProperty: true, visibilityProperty: true })).catch(() => false);
+const cadrer = async (s) => { await (await page.$(s)).scrollIntoViewIfNeeded(); await page.waitForTimeout(240); };
+const rubriques = async (s) => page.$$eval(`${s} .rub .nom`, (l) => l.map((e) => e.textContent.trim()));
+
+fs.mkdirSync(SORTIE, { recursive: true });
+
+// ── 1. Le patron : les deux niveaux, et les quatre priorités en tête ─────
+try {
+  await cadrer(PATRON);
+  const titres = await page.$$eval(`${PATRON} .bloc .t`, (l) => l.map((e) => e.textContent.trim()));
+  verifie("le patron a les deux ensembles, dans cet ordre",
+    titres.length === 2 && titres[0] === "Moi" && titres[1] === "Mon entreprise", titres.join(" | "));
+
+  const r = await rubriques(PATRON);
+  verifie("ses réglages personnels viennent en premier",
+    r.slice(0, 4).join("|") === "Mon compte|Connexion|Notifications|Apparence", r.slice(0, 4).join("|"));
+  // Ses quatre priorités du 13 août 2026 : entreprise, équipe, tarifs, documents.
+  // Elles ouvrent l'ensemble « Mon entreprise » — pas au milieu d'une liste de neuf.
+  const ent = r.slice(4);
+  verifie("les quatre priorités ouvrent l'ensemble de l'entreprise",
+    ent.slice(0, 5).join("|") === "Identité|Informations bancaires|Équipe|Tarifs & catalogue|Documents",
+    ent.slice(0, 5).join("|"));
+  verifie("les dix rubriques demandées sont toutes là", r.length === 13, `${r.length}`);
+
+  // « Bientôt » ne se met que là où le module ne fait rien : le mettre partout
+  // ferait de l'écran une promesse, l'oublier ferait une panne.
+  const tard = await page.$$eval(`${PATRON} .rub.plus_tard .nom`, (l) => l.map((e) => e.textContent.trim()));
+  verifie("« Bientôt » ne marque que ce qui ne marche pas encore",
+    tard.join("|") === "Apparence|Abonnement", tard.join("|"));
+  const marques = await page.$$eval(`${PATRON} .rub.plus_tard .marque`, (l) => l.map((e) => e.textContent.trim()));
+  verifie("et chacune porte le mot en clair", marques.length === 2 && marques.every((m) => /bientôt/i.test(m)),
+    marques.join("|"));
+
+  const sansChevron = await page.$$eval(`${PATRON} .rub`, (l) =>
+    l.filter((e) => !e.querySelector(".chev")).length);
+  verifie("chaque rubrique porte son chevron — aucune ne mène nulle part", sansChevron === 0, `${sansChevron}`);
+  await (await page.$(PATRON)).screenshot({ path: `${SORTIE}/reglages-plan-patron.png` });
+} catch (e) { echecs.push("patron · interrompu — " + String(e.message).split("\n")[0]); }
+
+// ── 2. Le commercial : ce qu'il vend, jamais ce qui engage ───────────────
+try {
+  await cadrer(COM);
+  const r = await rubriques(COM);
+  verifie("le commercial garde ses quatre réglages personnels",
+    r.slice(0, 4).join("|") === "Mon compte|Connexion|Notifications|Apparence", r.slice(0, 4).join("|"));
+  verifie("il voit les tarifs et les documents, et rien d'autre de l'entreprise",
+    r.slice(4).join("|") === "Tarifs & catalogue|Documents", r.slice(4).join("|"));
+  verifie("l'écran dit que c'est une consultation",
+    /consultation/i.test(await txt(`${COM} .bloc:nth-of-type(2)`)));
+  verifie("et il dit pourquoi sa liste s'arrête là", /IBAN|abonnement/i.test(await txt(`${COM} .fin`)));
+  await (await page.$(COM)).screenshot({ path: `${SORTIE}/reglages-plan-commercial.png` });
+} catch (e) { echecs.push("commercial · interrompu — " + String(e.message).split("\n")[0]); }
+
+// ── 3. Le salarié : ses réglages, et rien de l'entreprise ────────────────
+try {
+  await cadrer(SAL);
+  const titres = await page.$$eval(`${SAL} .bloc .t`, (l) => l.map((e) => e.textContent.trim()));
+  verifie("le salarié n'a qu'un seul ensemble", titres.length === 1 && titres[0] === "Moi", titres.join(" | "));
+  const r = await rubriques(SAL);
+  verifie("quatre rubriques, toutes à lui",
+    r.join("|") === "Mon compte|Connexion|Notifications|Apparence", r.join("|"));
+  verifie("son surtitre ne dit pas « mon entreprise »",
+    (await txt(`${SAL} .tete .sur`)).toLowerCase() === "mon compte", await txt(`${SAL} .tete .sur`));
+  verifie("l'écran court dit pourquoi il est court", /montant/i.test(await txt(`${SAL} .fin`)));
+} catch (e) { echecs.push("salarié · interrompu — " + String(e.message).split("\n")[0]); }
+
+// ── 4. LA règle : ce qu'un rôle ne doit pas voir n'est écrit NULLE PART ──
+//
+// On cherche dans tout le texte de l'écran, pas dans les lignes visibles : une
+// ligne rendue puis masquée passerait un contrôle de visibilité, et c'est
+// précisément ce que `QUESTIONS.md` §10 refuse.
+try {
+  const interdits = [
+    [SAL, "salarié", ["IBAN", "bancaire", "Tarifs", "Abonnement", "Équipe", "SIRET", "RGPD"]],
+    [COM, "commercial", ["Abonnement", "Équipe", "SIRET", "RGPD"]],
+  ];
+  for (const [sel, qui, mots] of interdits) {
+    await cadrer(sel);
+    const t = await txt(sel);
+    // La phrase de clôture NOMME ce qu'il ne verra pas : c'est voulu, et elle
+    // ne doit donc pas être comptée comme une fuite. Le contrôle porte sur les
+    // rubriques, pas sur l'explication.
+    const listes = (await page.$$eval(`${sel} .bloc`, (l) => l.map((e) => e.innerText))).join(" ");
+    const fuite = mots.filter((m) => new RegExp(m, "i").test(listes));
+    verifie(`aucune rubrique interdite dans la liste du ${qui}`, fuite.length === 0, fuite.join(", "));
+    verifie(`et l'écran du ${qui} n'est pas vide pour autant`, t.length > 120, `${t.length} caractères`);
+  }
+  // À l'inverse : le patron, lui, DOIT les voir. Sans cette contrepartie, un
+  // écran vide passerait les quatre contrôles ci-dessus.
+  const chezLui = await txt(`${PATRON}`);
+  const manquants = ["IBAN", "Équipe", "SIRET", "Abonnement", "RGPD"].filter(
+    (m) => !new RegExp(m, "i").test(chezLui));
+  verifie("le patron, lui, a bien tout", manquants.length === 0, manquants.join(", "));
+} catch (e) { echecs.push("cloisonnement · interrompu — " + String(e.message).split("\n")[0]); }
+
+// ── 5. L'interrupteur bascule pour de bon, et déplie ce qu'il commande ───
+try {
+  await cadrer(BASC);
+  verifie("l'acompte s'ouvre allumé", await vu('[data-s="acompte"] .deplie'));
+  // Le CENTRE de la pastille, pas son bord gauche : à 26 px de large sur une
+  // piste de 52, son bord gauche reste en deçà du milieu même tout à droite.
+  const pastille = async () => {
+    const b = await rect('[data-s="acompte"] .piste b');
+    const p = await rect('[data-s="acompte"] .piste');
+    return { centre: b.x + b.w / 2, milieu: p.x + p.w / 2 };
+  };
+  const debut = await pastille();
+  verifie("allumée, la pastille est du côté droit de sa piste",
+    debut.centre > debut.milieu, `${(debut.centre - debut.milieu).toFixed(0)} px après le milieu`);
+  const avant = debut.centre;
+
+  await page.click('[data-s="acompte"] .bat');
+  await page.waitForTimeout(320);
+  verifie("éteint, le champ de l'acompte n'existe plus", !(await vu('[data-s="acompte"] .deplie')));
+  const eteinte = await pastille();
+  verifie("et la pastille est repassée à gauche", eteinte.centre < eteinte.milieu,
+    `${(eteinte.centre - eteinte.milieu).toFixed(0)} px après le milieu`);
+  verifie("elle a bien glissé, ce n'est pas la piste qui a changé de couleur seule",
+    Math.abs(eteinte.centre - avant) > 12, `${(eteinte.centre - avant).toFixed(0)} px`);
+
+  await page.click('[data-s="acompte"] .bat');
+  await page.waitForTimeout(320);
+  verifie("rallumé, il revient avec sa valeur", await vu('[data-s="acompte"] .deplie'));
+  verifie("la part de l'acompte se saisit, et se lit",
+    (await page.$eval('[data-s="acompte"] .valeur', (e) => e.value)) === "30");
+  await page.fill('[data-s="acompte"] .valeur', "15");
+  await page.waitForTimeout(200);
+  verifie("elle se change au doigt",
+    (await page.$eval('[data-s="acompte"] .valeur', (e) => e.value)) === "15");
+
+  // ET RIEN À CÔTÉ NE DOIT DÉPENDRE DE CE CHIFFRE. « soit 1 044 € sur 3 480 € »
+  // était écrit là : une maquette sans script ne recalcule pas, et l'écran se
+  // contredisait dès la première frappe. Trouvé en regardant la capture, pas par
+  // un contrôle — celui-ci existe pour que ça ne revienne pas.
+  const aCote = await page.$$eval(`${BASC} .apres`, (l) => l.map((e) => e.textContent.trim()));
+  const mois = /janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre/i;
+  const suiveurs = aCote.filter((t) => /€|\d/.test(t) || mois.test(t));
+  verifie("rien à côté du champ ne prétend suivre sa valeur", suiveurs.length === 0, suiveurs.join(" | "));
+
+  // Le texte de bas de page part ÉTEINT : c'est le cas qu'il faut voir, celui
+  // où l'on ne propose pas un champ vide à remplir sans raison.
+  verifie("le texte de bas de page part éteint, et ne déplie rien",
+    !(await vu('[data-s="bas"] .deplie')));
+  await page.click('[data-s="bas"] .bat');
+  await page.waitForTimeout(320);
+  verifie("touché, il ouvre sa zone de texte", await vu('[data-s="bas"] .libre'));
+  const corps = await page.$eval('[data-s="bas"] .libre', (e) => parseFloat(getComputedStyle(e).fontSize));
+  verifie("qui ne fait pas zoomer Safari", corps >= 16, `${corps} px de corps`);
+  await (await page.$(BASC)).screenshot({ path: `${SORTIE}/reglages-plan-interrupteur.png` });
+} catch (e) { echecs.push("interrupteur · interrompu — " + String(e.message).split("\n")[0]); }
+
+// ── 6. Ce qui n'a pas d'interrupteur, et le dit à sa place ───────────────
+try {
+  await cadrer(BASC);
+  const cases = await page.$$eval('[data-s="scelle"] input', (l) => l.length);
+  verifie("la mention légale ne porte AUCUNE case à cocher", cases === 0, `${cases}`);
+  const pistes = await page.$$eval('[data-s="scelle"] .piste', (l) => l.length);
+  verifie("ni la moindre piste d'interrupteur", pistes === 0, `${pistes}`);
+  verifie("elle est marquée obligatoire", /obligatoire/i.test(await txt('[data-s="scelle"] .oblig')));
+  const pourquoi = await txt('[data-s="scelle"] .pourquoi');
+  verifie("et la raison est écrite là, pas ailleurs",
+    (await vu('[data-s="scelle"] .pourquoi')) && /irrégulière|légal/i.test(pourquoi), pourquoi.slice(0, 60));
+  // Elle est DANS la liste, à la place où l'on chercherait son bouton — pas
+  // reléguée en pied d'écran, où personne ne va lire une explication.
+  const dedans = await page.$eval('[data-s="scelle"]', (e) => e.parentElement.classList.contains("bloc"));
+  verifie("elle est dans la liste, à sa place, et non reléguée en bas", dedans);
+} catch (e) { echecs.push("ligne scellée · interrompu — " + String(e.message).split("\n")[0]); }
+
+// ── 7. Cibles et mise en page ────────────────────────────────────────────
+try {
+  for (const [nom, sel] of [["patron", PATRON], ["commercial", COM], ["salarié", SAL], ["bascule", BASC]]) {
+    await cadrer(sel);
+    verifie(`le bandeau de « ${nom} » désigne les réglages`,
+      (await txt(`${sel} .bas .actif`)).toLowerCase() === "réglages");
+    // Le trait doit tomber sous L'ONGLET ACTIF : recopié d'un écran à l'autre,
+    // il reste sous le premier onglet et désigne le mauvais mot. Mesurer
+    // l'étendue du TEXTE — la boîte du libellé vaut sa colonne entière.
+    const sl = await page.$eval(sel, (r) => {
+      const t = r.querySelector(".bas i").getBoundingClientRect();
+      const a = r.querySelector(".bas .actif");
+      const g = document.createRange(); g.selectNodeContents(a);
+      const m = g.getBoundingClientRect();
+      return (t.x + t.width / 2) - (m.x + m.width / 2);
+    });
+    verifie(`et son trait tombe sous « Réglages » (${nom})`, Math.abs(sl) < 8, `${sl.toFixed(1)} px`);
+  }
+
+  await cadrer(PATRON);
+  const petites = await page.$$eval(`${PATRON} .rub`, (l) =>
+    l.filter((e) => e.getBoundingClientRect().height < 44).length);
+  verifie("aucune rubrique sous la cible de 44 px", petites === 0, `${petites}`);
+  await cadrer(BASC);
+  const p = await rect('[data-s="validite"] .bat');
+  verifie("la ligne d'un interrupteur se touche", p.w >= 200 && p.h >= 44, `${p.w.toFixed(0)} × ${p.h.toFixed(0)} px`);
+  const grosses = await page.$$eval('.ecran input[type="checkbox"]', (l) =>
+    l.filter((e) => { const r = e.getBoundingClientRect(); return r.width > 2 || r.height > 2; }).length);
+  verifie("aucune case native visible", grosses === 0, `${grosses}`);
+
+  const deborde = await page.evaluate(
+    () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+  verifie("aucun débordement horizontal", !deborde);
+  const coupe = await page.$$eval(".ecran .corps", (l) =>
+    l.filter((e) => e.scrollWidth > e.clientWidth + 1).length);
+  verifie("aucun écran ne déborde sur le côté", coupe === 0, `${coupe}`);
+} catch (e) { echecs.push("mise en page · interrompu — " + String(e.message).split("\n")[0]); }
+
+await nav.close();
+console.log(`\n${ok.length} contrôles au vert`);
+if (echecs.length) { console.log(`\n${echecs.length} ROUGE(S) :`); for (const e of echecs) console.log("  ✗ " + e); process.exit(1); }
+console.log("Tout est vert.");

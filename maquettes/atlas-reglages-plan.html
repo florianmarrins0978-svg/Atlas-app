@@ -1,0 +1,420 @@
+<title>Atlas — Réglages : le plan, les rôles, et l'interrupteur</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT pour la page.
+
+    RÉGLAGES — LE PLAN D'ENSEMBLE. Premier lot d'une série.
+
+    Le patron, le 13 août 2026, a listé dix rubriques d'un coup — entreprise,
+    équipe, tarifs, documents, IA, notifications, intégrations, style,
+    abonnement, sécurité — puis : « à toi de décider si on fait tout d'un coup
+    ou rubrique par rubrique pour qu'il n'y ait pas de problème ».
+
+    CE LOT NE DESSINE AUCUNE RUBRIQUE. Il dessine ce dont les dix héritent, et
+    qui ne peut donc pas être tranché après elles :
+
+      1. LES DEUX NIVEAUX. « Je séparerais Réglages personnels et Réglages de
+         l'entreprise : un salarié peut changer ses notifications ou son mot de
+         passe, mais il ne doit évidemment pas pouvoir modifier les tarifs ou
+         les coordonnées bancaires. » C'est sa phrase, et c'est l'ossature.
+      2. QUI VOIT QUOI. Trois écrans côte à côte, un par rôle. Ce n'est pas une
+         variante d'affichage : `docs/QUESTIONS.md` §10 a tranché le 7 août que
+         « sans les prix » ne peut PAS être un masquage à l'écran — ce qu'un
+         rôle n'a pas le droit de voir ne doit pas sortir du serveur. Une
+         rubrique absente ici est une rubrique que le serveur ne rendra pas.
+      3. LA FORME DE L'INTERRUPTEUR, et surtout CE QUI N'EN A PAS.
+
+    LE QUATRIÈME RÔLE EST NEUF. `docs/QUESTIONS.md` §10 connaît trois niveaux
+    (l'éditeur, le patron, le salarié) et la base deux seulement
+    (`membres_entreprise.role` : `proprietaire` | `membre`). Le « commercial »
+    demandé le 13 août n'existe nulle part — ni en base, ni dans les décisions
+    écrites. Il est dessiné ici pour être tranché, pas parce qu'il est acquis.
+
+    LA RÈGLE DES INTERRUPTEURS, telle qu'il l'a posée : « seulement à celles où
+    la désactivation n'entraîne pas de problème juridique ou moral ou de
+    dysfonctionnement à l'appli ». D'où le quatrième écran, qui montre les deux
+    cas dans la même liste — parce que les montrer séparément laisserait croire
+    qu'un interrupteur manquant est un oubli.
+
+    CE QUI PORTE UN INTERRUPTEUR : ce qui s'imprime en plus (acompte, pénalités
+    rappelées sur le DEVIS, conditions particulières, texte de bas de page,
+    logo), une notification, une intégration, une suggestion de l'agent.
+
+    CE QUI N'EN PORTERA JAMAIS, et le quatrième écran le dit à l'endroit exact
+    où on le chercherait :
+      · les mentions légales de la FACTURE — pénalité au taux de trois fois le
+        taux d'intérêt légal, indemnité forfaitaire de 40 €, et la franchise de
+        l'art. 293 B quand le taux appliqué est nul. Elles sont aujourd'hui
+        écrites en dur (`src/server/pdf/facture-pdf.ts`), et c'est bien ;
+      · le nom, l'adresse et le SIRET de l'émetteur ;
+      · la numérotation continue des factures (`entreprise_compteurs`) ;
+      · la conservation légale, et les traces du RGPD.
+
+    Un interrupteur sur l'un de ces cinq points ne serait pas un réglage : ce
+    serait un bouton « rendre ma facture irrégulière », posé dans un écran où
+    l'on vient changer la couleur de l'application.
+
+    CE QUI N'EST PAS DESSINÉ ICI, et se fera aux lots suivants : l'intérieur de
+    chaque rubrique. L'ordre proposé suit ses quatre priorités — entreprise,
+    équipe, tarifs, documents — puis notifications, puis le reste.
+  */
+
+  :root{
+    --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c;
+    --bronze:#8f7130; --trait:rgba(22,23,15,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`.
+     Deux fois de suite : « rien ne s'ouvre quand je touche ». Chromium s'en
+     passe — les contrôles restaient au vert pendant que l'écran ne répondait
+     pas sous son doigt. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1700px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 34px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:390px;max-width:100%}
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:720px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#edece6; --e-plage:#f7f6f2; --e-encre:#16170f; --e-gris:#83867c;
+         --e-bronze:#8f7130; --e-trait:rgba(22,23,15,.13); --e-plein:#2a3a2e;
+         --e-plein-encre:#f2f1ea; --e-signe:#c2a05f}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  .tete{padding:26px 26px 0;flex:none}
+  .tete .sur{margin:0;color:var(--e-bronze)}
+  .tete h1{margin:9px 0 0;font:400 34px/1 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
+
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;background:var(--e-fond)}
+  /* 9 px et .15em : la chasse de la charte (.28em) donne 86 px pour une
+     colonne de 85, et « CHANTIERS » vient coller « PLANNING ». */
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9px;letter-spacing:.15em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre)}
+  .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;background:var(--e-bronze)}
+  .bas i.q4{left:calc(14px + 3*(100% - 28px)/4)}
+
+  /* ═══ Le plan des réglages ═══════════════════════════════════════════ */
+  /* Registre commun aux autres écrans : des filets, pas des cadres ; du serif
+     pour ce qui compte ; presque pas de mots. */
+  .bloc{margin:30px 26px 0}
+  .bloc .t{display:flex;align-items:center;gap:12px;margin:0 0 4px;color:var(--e-gris)}
+  .bloc .t i{flex:1;height:1px;background:var(--e-trait)}
+
+  /* Une rubrique. Toute la ligne se touche — 44 px au minimum, c'est la cible
+     d'Apple et c'est ce qui a été mesuré sur les écrans précédents. */
+  .rub{display:flex;align-items:center;gap:14px;padding:14px 0;min-height:56px;
+       border-bottom:1px solid var(--e-trait);-webkit-tap-highlight-color:transparent;
+       transition:border-color .24s}
+  .rub:active{border-bottom-color:var(--e-bronze)}
+  .rub .txt{flex:1;min-width:0}
+  .rub .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif;color:var(--e-encre)}
+  .rub .dit{display:block;margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--e-gris)}
+  /* Le chevron est une affordance, pas un ornement : il dit « ça s'ouvre ».
+     Une rubrique sans chevron n'irait nulle part, et il n'y en a aucune ici. */
+  .rub .chev{flex:none;width:8px;height:8px;border-right:1.5px solid var(--e-trait);
+             border-top:1.5px solid var(--e-trait);transform:rotate(45deg)}
+
+  /* « BIENTÔT » n'est pas un ornement non plus : c'est la règle du dépôt —
+     ne jamais laisser croire qu'une chose marche quand elle ne marche pas.
+     La rubrique se voit (il saura qu'elle vient), et elle ne ment pas. */
+  .plus_tard .nom{color:var(--e-gris)}
+  .plus_tard .chev{opacity:.4}
+  .marque{flex:none;color:var(--e-bronze);opacity:.9}
+
+  /* Le mot qui clôt un écran : pourquoi il n'y a rien de plus en dessous.
+     Un écran court sans explication se lit comme un écran cassé. */
+  .fin{margin:26px 26px 0;padding-top:16px;border-top:1px solid var(--e-trait);
+       font-size:13px;line-height:1.7;color:var(--e-gris)}
+  .fin b{color:var(--e-encre);font-weight:400}
+
+  /* ═══ L'interrupteur ═════════════════════════════════════════════════ */
+  .reg{border-bottom:1px solid var(--e-trait)}
+  .bat{display:flex;align-items:center;gap:14px;padding:15px 0;min-height:56px;
+       -webkit-tap-highlight-color:transparent}
+  .bat .txt{flex:1;min-width:0}
+  .bat .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif}
+  .bat .dit{display:block;margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--e-gris)}
+  /* 52 × 32 : la piste tient la cible de 44 px avec la hauteur de sa ligne,
+     et reste sous le pouce sans écraser le libellé. */
+  .piste{position:relative;flex:none;width:52px;height:32px;border-radius:99px;
+         background:var(--e-trait);transition:background .24s}
+  .piste b{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:99px;
+           background:var(--e-fond);box-shadow:0 1px 2px rgba(20,18,14,.28);
+           transition:left .24s}
+  .interrupteur:checked ~ .bat .piste{background:var(--e-plein)}
+  .interrupteur:checked ~ .bat .piste b{left:23px}
+
+  /* Ce qui se déplie n'existe que si l'interrupteur est allumé. Montrer un
+     champ grisé sous un réglage éteint invite à le remplir pour rien. */
+  .deplie{display:none;padding:0 0 16px}
+  .interrupteur:checked ~ .deplie{display:block}
+  .chiffrer{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:6px;
+            background:var(--e-plage);box-shadow:inset 0 0 0 1px var(--e-trait)}
+  /* 17 px : en dessous de 16, Safari zoome à la mise au point et l'écran saute. */
+  .valeur{width:4ch;border:0;background:transparent;padding:0;margin:0;
+          -webkit-appearance:none;appearance:none;border-radius:0;
+          font:400 17px/1.3 ui-serif,Georgia,serif;color:var(--e-encre);
+          font-variant-numeric:tabular-nums}
+  .valeur:focus{outline:none}
+  .unite{font:400 17px/1.3 ui-serif,Georgia,serif;color:var(--e-bronze)}
+  .apres{flex:1;min-width:0;text-align:right;font-size:12.5px;color:var(--e-gris)}
+  .libre{width:100%;border:0;background:var(--e-plage);box-shadow:inset 0 0 0 1px var(--e-trait);
+         border-radius:6px;padding:12px 14px;-webkit-appearance:none;appearance:none;
+         font:400 16px/1.5 ui-sans-serif,-apple-system,sans-serif;color:var(--e-encre);
+         resize:none;height:76px}
+  .libre:focus{outline:none}
+
+  /* La ligne qui n'a pas d'interrupteur, et qui dit pourquoi. Elle est posée
+     DANS la même liste, à sa place naturelle : c'est là qu'il ira chercher le
+     bouton, et c'est donc là que la réponse doit être. */
+  .scelle{border-bottom:1px solid var(--e-trait)}
+  .scelle .bat{align-items:flex-start}
+  .scelle .nom{color:var(--e-encre)}
+  .oblig{flex:none;color:var(--e-bronze);padding-top:4px}
+  .pourquoi{margin:0 0 15px;font-size:12.5px;line-height:1.55;color:var(--e-gris)}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Réglages — le plan, avant les rubriques</p>
+    <h1>Ce dont les dix rubriques héritent</h1>
+    <p>
+      Trois écrans, <strong>un par rôle</strong> : ce qu'une personne n'a pas le
+      droit de voir n'apparaît pas dans sa liste — et ne sortira pas du serveur.
+      Le quatrième écran porte <strong>l'interrupteur</strong> : touchez-le, il
+      allume et déplie. La dernière ligne, elle, n'en a pas — et dit pourquoi à
+      l'endroit exact où vous l'auriez cherché.
+    </p>
+  </div>
+
+  <div class="rangee">
+
+    <!-- ── 1. Le patron : tout ────────────────────────────────────────── -->
+    <div class="prop">
+      <p class="sous">Le patron</p>
+      <div class="tel"><div class="ecran" data-s="patron">
+        <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Réglages</h1></div>
+        <div class="corps">
+
+          <div class="bloc">
+            <p class="t caps">Moi<i></i></p>
+            <div class="rub"><span class="txt"><span class="nom">Mon compte</span><span class="dit">Nom, e-mail, téléphone</span></span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Connexion</span><span class="dit">Mot de passe, appareils connectés</span></span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Notifications</span><span class="dit">Ce que je reçois, et comment</span></span><span class="chev"></span></div>
+            <div class="rub plus_tard"><span class="txt"><span class="nom">Apparence</span><span class="dit">Clair, sombre, couleurs</span></span><span class="marque caps">Bientôt</span><span class="chev"></span></div>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Mon entreprise<i></i></p>
+            <div class="rub"><span class="txt"><span class="nom">Identité</span><span class="dit">Nom, adresse, SIRET, TVA</span></span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Informations bancaires</span><span class="dit">L'IBAN imprimé sur les factures</span></span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Équipe</span><span class="dit">Qui a accès, et à quoi</span></span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Tarifs &amp; catalogue</span><span class="dit">Prestations, main-d'œuvre, matériel</span></span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Documents</span><span class="dit">Devis, factures, conditions</span></span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Atlas IA</span><span class="dit">Qui écoute, qui rédige</span></span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Intégrations</span><span class="dit">Agenda, comptabilité</span></span><span class="chev"></span></div>
+            <div class="rub plus_tard"><span class="txt"><span class="nom">Abonnement</span><span class="dit">Offre, paiement, factures</span></span><span class="marque caps">Bientôt</span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Sécurité &amp; données</span><span class="dit">Export, effacement, RGPD</span></span><span class="chev"></span></div>
+          </div>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Les quatre priorités qu'il a fixées — <b>identité, équipe, tarifs,
+        documents</b> — sont en haut de leur ensemble. « Bientôt » ne cache
+        rien : la rubrique existe, elle ne marche pas encore.
+      </p>
+    </div>
+
+    <!-- ── 2. Le commercial : ce qu'il vend, pas ce qui l'engage ──────── -->
+    <div class="prop">
+      <p class="sous">Le commercial</p>
+      <div class="tel"><div class="ecran" data-s="commercial">
+        <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Réglages</h1></div>
+        <div class="corps">
+
+          <div class="bloc">
+            <p class="t caps">Moi<i></i></p>
+            <div class="rub"><span class="txt"><span class="nom">Mon compte</span><span class="dit">Nom, e-mail, téléphone</span></span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Connexion</span><span class="dit">Mot de passe, appareils connectés</span></span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Notifications</span><span class="dit">Ce que je reçois, et comment</span></span><span class="chev"></span></div>
+            <div class="rub plus_tard"><span class="txt"><span class="nom">Apparence</span><span class="dit">Clair, sombre, couleurs</span></span><span class="marque caps">Bientôt</span><span class="chev"></span></div>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Mon entreprise<i></i></p>
+            <div class="rub"><span class="txt"><span class="nom">Tarifs &amp; catalogue</span><span class="dit">Consultation — les prix ne se modifient pas ici</span></span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Documents</span><span class="dit">Consultation — conditions et mentions du devis</span></span><span class="chev"></span></div>
+          </div>
+
+          <p class="fin">
+            Il vend, il ne signe pas. <b>L'IBAN, l'équipe, l'abonnement et les
+            données</b> ne figurent pas dans sa liste — et le serveur ne les lui
+            envoie pas.
+          </p>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Ce rôle est neuf, et n'est acquis nulle part.</b> Les décisions
+        écrites (`QUESTIONS.md` §10) connaissent le patron et le salarié ; la
+        base ne connaît que propriétaire et membre.
+      </p>
+    </div>
+
+    <!-- ── 3. Le salarié : ses réglages, et rien de l'entreprise ──────── -->
+    <div class="prop">
+      <p class="sous">Le salarié</p>
+      <div class="tel"><div class="ecran" data-s="salarie">
+        <div class="tete"><p class="sur caps">Mon compte</p><h1>Réglages</h1></div>
+        <div class="corps">
+
+          <div class="bloc">
+            <p class="t caps">Moi<i></i></p>
+            <div class="rub"><span class="txt"><span class="nom">Mon compte</span><span class="dit">Nom, e-mail, téléphone</span></span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Connexion</span><span class="dit">Mot de passe, appareils connectés</span></span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Notifications</span><span class="dit">Mes chantiers, mes horaires</span></span><span class="chev"></span></div>
+            <div class="rub plus_tard"><span class="txt"><span class="nom">Apparence</span><span class="dit">Clair, sombre, couleurs</span></span><span class="marque caps">Bientôt</span><span class="chev"></span></div>
+          </div>
+
+          <p class="fin">
+            Rien de l'entreprise ici, et ce n'est pas un écran vide : il voit le
+            planning et ses chantiers, <b>jamais un montant</b>. Le surtitre
+            dit « Mon compte », pas « Mon entreprise » — elle ne lui appartient
+            pas.
+          </p>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Sa liste est <b>courte par construction</b>. Une rubrique de l'entreprise
+        grisée serait pire : elle dirait qu'il existe quelque chose à obtenir.
+      </p>
+    </div>
+
+    <!-- ── 4. L'interrupteur, et ce qui n'en a pas ─────────────────────── -->
+    <div class="prop">
+      <p class="sous">L'interrupteur</p>
+      <div class="tel"><div class="ecran" data-s="bascule">
+        <div class="tete"><p class="sur caps">Documents</p><h1>Le devis</h1></div>
+        <div class="corps">
+
+          <div class="bloc">
+            <p class="t caps">Ce qui s'imprime<i></i></p>
+
+            <div class="reg" data-s="acompte">
+              <input class="interrupteur" type="checkbox" id="b-acompte" checked>
+              <label class="bat" for="b-acompte">
+                <span class="txt"><span class="nom">Acompte à la commande</span><span class="dit">Écrit sous le total du devis</span></span>
+                <span class="piste"><b></b></span>
+              </label>
+              <div class="deplie">
+                <span class="chiffrer">
+                  <input class="valeur" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="30" aria-label="Part de l'acompte, en pour cent">
+                  <span class="unite">%</span>
+                  <!-- CE QUI SUIT NE DOIT PAS ÊTRE UN CALCUL. Un « soit 1 044 €
+                       sur 3 480 € » était écrit ici : dès qu'on tape 15 à la
+                       place de 30, la maquette — qui n'a aucun script — garde
+                       le montant de 30 % et se contredit sous les yeux. Vu en
+                       regardant la capture, jamais par un contrôle vert
+                       (`CLAUDE.md` §5). Ne reste donc que ce qui ne dépend pas
+                       du chiffre. Dans l'application, le montant se recalcule —
+                       et il sera juste. -->
+                  <span class="apres">à la signature du devis</span>
+                </span>
+              </div>
+            </div>
+
+            <div class="reg" data-s="validite">
+              <input class="interrupteur" type="checkbox" id="b-validite" checked>
+              <label class="bat" for="b-validite">
+                <span class="txt"><span class="nom">Durée de validité</span><span class="dit">En tête du devis, sous son numéro</span></span>
+                <span class="piste"><b></b></span>
+              </label>
+              <div class="deplie">
+                <span class="chiffrer">
+                  <input class="valeur" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" value="30" aria-label="Durée de validité, en jours">
+                  <span class="unite">jours</span>
+                  <!-- Même raison qu'au-dessus : « jusqu'au 12 septembre » se
+                       serait démenti au premier chiffre changé. -->
+                  <span class="apres">à compter de l'envoi</span>
+                </span>
+              </div>
+            </div>
+
+            <div class="reg" data-s="bas">
+              <input class="interrupteur" type="checkbox" id="b-bas">
+              <label class="bat" for="b-bas">
+                <span class="txt"><span class="nom">Texte en bas du devis</span><span class="dit">Ajouté à chaque document, tel quel</span></span>
+                <span class="piste"><b></b></span>
+              </label>
+              <div class="deplie">
+                <textarea class="libre" spellcheck="false" aria-label="Texte ajouté en bas de chaque devis" placeholder="Sous réserve d'accès au chantier. Évacuation des déchets comprise."></textarea>
+              </div>
+            </div>
+
+            <div class="scelle" data-s="scelle">
+              <span class="bat">
+                <span class="txt"><span class="nom">Mentions légales de la facture</span><span class="dit">Pénalités de retard, indemnité de 40 €</span></span>
+                <span class="oblig caps">Obligatoire</span>
+              </span>
+              <p class="pourquoi">
+                Pas d'interrupteur, et ce n'est pas un oubli : les retirer rendrait
+                la facture irrégulière. Elles s'écrivent seules, et s'adaptent au
+                taux de TVA appliqué.
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Éteint, <b>rien ne se déplie</b> : un champ sous un réglage coupé invite
+        à le remplir pour rien. Et la ligne scellée est <b>dans la liste</b>, à
+        sa place — c'est là qu'il cherchera le bouton.
+      </p>
+    </div>
+
+  </div>
+</div>

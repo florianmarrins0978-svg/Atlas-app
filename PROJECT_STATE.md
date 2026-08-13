@@ -487,6 +487,15 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 
 Voir `TODO.md` pour le détail et l'ordre.
 
+- **Les réglages, dix rubriques** — **le plan est dessiné, aucune rubrique ne
+  l'est** (`maquettes/atlas-reglages-plan.html`, `ARCHITECTURE.md` §80). Ce qui
+  y est tranché : les deux niveaux « Moi » / « Mon entreprise », qui voit quoi,
+  et ce qui n'aura jamais d'interrupteur. Ce qui ne l'est pas : le rôle
+  **commercial** n'existe ni en base (`membres_entreprise.role` : propriétaire
+  ou membre) ni dans les décisions écrites, et **le cloisonnement par rôle n'est
+  pas codé** — un écran qui n'affiche pas une rubrique ne protège rien
+  (`docs/QUESTIONS.md` §10). L'ordre des lots est dans `TODO.md` §0 duovicies.
+
 - **Agenda Google** — la connexion du compte demande des identifiants que je n'ai
   pas ; le reste (lecture des disponibilités, écriture de l'intervention) est
   codable.

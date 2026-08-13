@@ -5984,3 +5984,83 @@ lui ajoute « Monsieur ». Une égalité stricte aurait laissé le doublon passe
 **Ce que ce défaut rappelle :** retirer un mot d'un libellé peut faire entrer
 deux autres en collision. Un changement d'affichage se REGARDE, sur l'écran, y
 compris là où il n'était pas censé porter.
+
+---
+
+## 80. Les réglages : deux niveaux, quatre rôles, et ce qui n'a pas d'interrupteur
+
+**Maquette du 13 août 2026, premier lot d'une série** —
+`maquettes/atlas-reglages-plan.html`, contrôlée par
+`maquettes/verifier-atlas-reglages-plan.mjs`. Aucune ligne de `src/` n'a été
+touchée : c'est la règle `CLAUDE.md` §3 bis.
+
+### Pourquoi le plan d'abord, et pas la première rubrique
+
+Le patron a listé dix rubriques d'un coup, puis : *« à toi de décider si on
+fait tout d'un coup ou rubrique par rubrique pour qu'il n'y ait pas de
+problème »*. Les dix héritent des trois mêmes choix — les deux niveaux, le rôle
+qui voit, la forme de l'interrupteur. Dessiner une rubrique d'abord aurait figé
+ces trois choix sans qu'ils soient regardés, et les neuf suivantes auraient été
+à refaire le jour où l'un d'eux bougeait.
+
+### Les deux niveaux
+
+Sa phrase : *« un salarié peut changer ses notifications ou son mot de passe,
+mais il ne doit évidemment pas pouvoir modifier les tarifs de l'entreprise ou
+les coordonnées bancaires. »* D'où **« Moi »** et **« Mon entreprise »**, dans
+cet ordre : ce qui appartient à la personne vient avant ce qui appartient à
+l'entreprise, parce que c'est le seul ensemble que tout le monde possède.
+
+### Une rubrique absente n'est pas une rubrique masquée
+
+`docs/QUESTIONS.md` §10 a tranché le 7 août que « sans les prix » ne peut pas
+être un masquage à l'écran : ce qu'un rôle n'a pas le droit de voir **ne doit
+pas sortir du serveur**. La même règle vaut ici, et le contrôle la tient : il
+cherche les mots interdits dans **tout le texte** de l'écran, pas dans ses
+lignes visibles. Une rubrique rendue puis grisée le ferait rougir.
+
+C'est aussi pourquoi la liste du salarié est **courte, et dit pourquoi**. Une
+rubrique d'entreprise grisée serait pire que son absence : elle annoncerait
+qu'il existe quelque chose à obtenir.
+
+### Le quatrième rôle n'est acquis nulle part
+
+`membres_entreprise.role` ne connaît que `proprietaire` et `membre` ;
+`QUESTIONS.md` §10 décrit trois niveaux (l'éditeur, le patron, le salarié). Le
+**commercial** demandé le 13 août n'existe ni en base, ni dans les décisions
+écrites. Il est **dessiné pour être tranché**, et la maquette le dit en toutes
+lettres sous son écran. Le voir sur une planche ne vaut pas décision.
+
+### Ce qui porte un interrupteur, et ce qui n'en portera jamais
+
+Sa règle : *« seulement à celles où la désactivation n'entraîne pas de problème
+juridique ou moral ou de dysfonctionnement à l'appli »*.
+
+| Porte un interrupteur | N'en portera jamais |
+|---|---|
+| Ce qui s'imprime **en plus** : acompte, durée de validité, conditions particulières, texte de bas de page, logo | Les mentions légales de la **facture** — pénalités au taux de trois fois le taux légal, indemnité forfaitaire de 40 €, franchise de l'art. 293 B quand le taux est nul (`src/server/pdf/facture-pdf.ts`) |
+| Une notification, canal par canal | Le nom, l'adresse et le SIRET de l'émetteur |
+| Une intégration extérieure | La numérotation continue des factures (`entreprise_compteurs`) |
+| Une suggestion de l'agent | La conservation légale et les traces du RGPD |
+
+**La ligne scellée est posée DANS la liste, à sa place**, avec le mot
+« Obligatoire » et sa raison en une phrase. La reléguer en pied d'écran l'aurait
+rendue invisible là où il ira chercher le bouton — et un réglage introuvable se
+lit comme un réglage oublié.
+
+### Deux leçons payées sur cette maquette
+
+**Un exemple chiffré à côté d'un champ est un mensonge en attente.** Le champ de
+l'acompte affichait « soit 1 044 € sur 3 480 € ». Une maquette sans script ne
+recalcule pas : taper 15 laissait le montant de 30 % à côté. **Vu en regardant
+la capture, jamais par un contrôle vert** (`CLAUDE.md` §5) — les cinquante
+contrôles étaient au vert pendant que l'écran se contredisait. Un contrôle
+existe maintenant pour que ça ne revienne pas : rien, à côté d'un champ, ne doit
+contenir un montant, un chiffre ou un mois.
+
+**Une capture peut être écrite par une casse volontaire.** Éprouver qu'un
+contrôle sait échouer écrit ses captures dans `maquettes/vues/` comme une
+exécution normale. La planche a été relue sur une image produite par la version
+cassée, où la ligne scellée portait un interrupteur — exactement ce qu'elle
+interdit. **Regarder l'écran suppose de savoir quelle exécution l'a écrit :**
+relancer le contrôle sur le fichier sain avant de conclure.
