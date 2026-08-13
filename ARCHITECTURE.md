@@ -5711,3 +5711,406 @@ justement pour éviter.
 banc, avec un vrai mot de passe : la découverte des agendas, la lecture, le
 dépôt, le retrait. Ne pas annoncer le raccordement comme éprouvé avant que cela
 ait tourné une fois pour de bon.
+## 76. « Une réponse inattendue du serveur » : un état du banc, pas un défaut du code
+
+**Sa capture du 12 août 2026, 14 h 04.** Panneau rouge, anglais, pile d'appel
+dans `node_modules` : *« An unexpected response was received from the
+server. »*
+
+### Ce que la capture disait, et qu'il fallait lire
+
+Le chemin de la pile commençait par **`.next/dev`** : son banc servait la
+version LENTE. Or c'est tout le sujet de `banc.mjs` (§45) — en développement,
+Next ne compile un écran qu'au premier appel : trente à cent secondes ici,
+davantage sur son disque. **Le relais de GitHub, lui, abandonne au bout d'une
+minute** et rend sa propre page d'erreur. Le navigateur reçoit alors du HTML là
+où il attendait une réponse d'Atlas, et le cadre dit exactement cette phrase.
+
+Trois causes produisent ce message, dans l'ordre de fréquence sur son banc : le
+relais qui abandonne, l'application qui se recompile sous la page ouverte après
+une mise à jour, ou le serveur coupé et pas encore relevé. **Aucune n'est
+réparable depuis le navigateur, et toutes se résolvent en rechargeant.**
+
+### Ce qui n'a pas été fait, et pourquoi c'est la décision principale
+
+La cause **n'a pas été reproduite ici**. Le bouton de mise à jour, joué dans les
+conditions du banc — code changé sous la page ouverte, recompilation, appui —
+s'est comporté correctement. Rien n'a donc été corrigé au jugé : c'est la faute
+que ce dépôt paie le plus cher, et elle avait déjà été commise deux fois dans la
+même journée (voir §72 et le CHANGELOG du 11 août).
+
+Ce qui a été livré, c'est ce que la doctrine prescrit devant un défaut muet :
+**le rendre bavard** (`AGENTS.md`).
+
+### Deux dispositifs, et ce qu'ils refusent
+
+**`src/lib/reponse-illisible.ts`** — fonction pure. Quatre formulations
+reconnues, selon le navigateur et la version du cadre. Elle **refuse tout le
+reste**, et c'est le point important : habiller en « le serveur se prépare » un
+défaut venu du code enverrait recharger une page qui ne guérira pas, et
+masquerait le défaut. Six messages réels sont éprouvés comme devant rester tels
+quels — dont « Invalid Server Actions request. », qui appartient à une autre
+famille et appelle un autre geste (§34).
+
+**`VeilleReponseServeur`** — posé dans la coque, **hors du choix
+avec/sans barre de navigation**. Il y était d'abord dans la seule branche à
+barre : l'écran de connexion en était dépourvu, c'est-à-dire l'écran où une
+réponse coupée est la plus probable — premier appel, compilation de tout, et
+aucun autre repère pour le patron. La suite navigateur l'a montré avant que
+quiconque ne le lise.
+
+**Et l'écran Réglages dit qu'il sert la version lente.** `NODE_ENV` tranche sans
+ambiguïté — `next start` impose `production` (`demarrer.sh`), la même règle que
+`issueApresMiseAJour`. Sans cette ligne, le patron ne pouvait pas relier son
+panneau rouge à l'état de son banc.
+
+### La règle générale
+
+**Un message du cadre en anglais n'est jamais une livraison.** Soit on connaît
+la famille d'échec et on la dit en français avec le geste, soit on ne la connaît
+pas — et il faut alors la laisser passer intacte plutôt que de l'habiller. Une
+phrase rassurante posée sur un vrai défaut vaut moins que pas de phrase du tout.
+
+---
+
+## 77. « Mr. Martins », et la migration qui ne changeait rien en silence
+
+**Le patron, le 13 août 2026, capture de son écran Devis à l'appui :**
+
+> *« Il faut qu'il y ait écrit monsieur Martins et pas chez Martins. Ensuite tu
+> me retires le tiret entre le nom et l'adresse et il faut qu'il soit l'un
+> au-dessus de l'autre. D'abord le nom, ensuite à la ligne l'adresse. Pour le
+> client, c'est pareil. C'est M. Martins, puis le numéro de téléphone en
+> dessous, sans les tirets. »*
+
+### La civilité vit dans un seul fichier
+
+`src/lib/civilite.ts` — `avecCivilite(nom)`. Elle sert au nom du chantier à sa
+création (`nomDuChantier`), à la ligne « Client » de l'écran Devis, et à la
+phrase « Devis prêt pour … ». Trois endroits, une règle : recopiée, on aurait lu
+« Mr. Martins » en tête d'un écran et « Martins » trois lignes plus bas.
+
+**Le mot lui-même a changé le jour même, et c'est pour cela qu'il est une
+constante.** D'abord « Monsieur », puis, une fois vu à l'écran : *« Mr. Martins,
+pas Monsieur. »* `CIVILITE_PAR_DEFAUT` est le seul endroit où il s'écrit, et
+**les contrôles construisent leurs attentes à partir d'elle** au lieu de le
+recopier — sinon un mot changé par le patron rougirait dix suites sans rien
+apprendre à personne. Un cas, et un seul, épingle le mot en clair
+(`test-civilite`, « et ce mot est CELUI QU'IL A DEMANDÉ ») : sans lui, la
+constante pourrait valoir n'importe quoi et tout resterait vert.
+
+**Ce qu'elle suppose, et qu'il faut assumer plutôt que taire.** Il n'existe
+aucun champ de civilité dans `clients`. Quand le patron tape « Martins », rien
+ne dit si c'est un homme, une femme ou une société : **la civilité est un
+défaut, pas une donnée**. Une cliente sera donc mal nommée. Le patron l'a
+demandé en sachant qu'il n'avait saisi qu'un patronyme ; le vrai remède est un
+choix de civilité à la création du client, qui n'existe pas encore.
+
+Ce que la fonction sait éviter, en revanche : « Mr. Mme Roux » (une
+civilité déjà écrite n'en reçoit pas une seconde, quelle qu'en soit la graphie)
+et « Monsieur SARL Untel » (une raison sociale n'est pas une personne). Elle est
+**idempotente** — l'appliquer deux fois donne le même résultat, ce qui permet de
+la poser sur un nom déjà stocké.
+
+**Un invariant du dépôt a été levé par cette demande, et c'est écrit.**
+`nom-chantier.ts` tenait que chaque mot du nom venait de la saisie ; ce n'est
+plus vrai. Ne pas « rétablir » l'ancienne règle sans lui : elle a été levée, pas
+oubliée (`scripts/test-nom-chantier.ts`, cas INVARIANT).
+
+### La leçon qui vaut au-delà de cet écran : une migration de DONNÉES sur une table sous RLS
+
+`nomDuChantier` ne tourne qu'à la création : le nom est ensuite écrit dans
+`chantiers.nom`. Corriger la fonction seule aurait laissé « Chez Martins » sur
+tous les chantiers en cours — c'est-à-dire sur l'écran même que le patron
+photographiait. D'où `drizzle/0036_monsieur_plutot_que_chez.sql`.
+
+**Première version : un `UPDATE chantiers … FROM clients …` ordinaire. Elle
+s'est appliquée sans erreur, a rapporté un succès, et n'a rien changé.**
+Constaté sur quatre chantiers d'épreuve, tous restés « Chez … ».
+
+`chantiers` et `clients` portent la RLS en mode **forcé**
+(`relforcerowsecurity`), avec la politique `tenant_isolation` :
+
+```sql
+entreprise_id = NULLIF(current_setting('app.entreprise_id', true), '')::uuid
+```
+
+Le propriétaire lui-même y est soumis. Sans contexte posé, `current_setting`
+rend la chaîne vide, le prédicat vaut NULL, **aucune ligne n'est visible**, et
+l'UPDATE passe dans le vide sans un mot. C'est le piège que `CLAUDE.md` §3
+décrit — *« une requête hors de ce cadre ne renvoie rien, silencieusement »* —
+rencontré ici pour la première fois **dans une migration**.
+
+**Ce que fait la version retenue, et ce qu'on ne fait surtout pas.** On ne
+désactive pas la RLS (`CLAUDE.md` §4). La migration boucle sur `entreprises` et
+pose `app.entreprise_id` pour chacune — la même mécanique que la file
+`audios_a_purger`. Elle efface le contexte en sortant.
+
+**Les migrations précédentes qui modifiaient des données ne touchaient que
+`termes_metier`, table sans RLS forcée.** Rien dans le dépôt n'avait donc
+rencontré ce cas. Toute migration future qui écrit dans une table portant
+`entreprise_id` doit faire de même — ou ne rien faire, en silence.
+
+### Deux contrôles, et pourquoi ils sont deux
+
+- **`scripts/test-civilite.ts`, « la migration et la fonction disent la même
+  chose »** — la règle existe deux fois, en TypeScript et en SQL, parce que le
+  lanceur de migrations ne sait exécuter que du SQL. Ne pouvant n'en garder
+  qu'une, on les **confronte** sur un même corpus. Le prédicat SQL n'est pas
+  recopié dans le test : il est **extrait du fichier de migration**, entre les
+  repères `-- <predicat-civilite>` … `-- </predicat-civilite>`. Ne pas déplacer
+  ces repères sans mettre le contrôle au courant.
+- **`scripts/test-civilite.ts`, « la migration renomme vraiment »** — rejoue la
+  migration dans une transaction annulée et vérifie le RÉSULTAT. Un « 1
+  migration appliquée » ne prouve rien : c'est exactement ce que disait la
+  version qui ne changeait rien.
+
+  **Ce contrôle-là a d'abord été un faux vert**, et le noter vaut mieux que le
+  taire : il posait lui-même `app.entreprise_id` pour ses insertions, la
+  migration en héritait (un `set_config` local vaut pour toute la transaction),
+  et il passait donc au vert même sur la migration défaillante. Il **efface
+  maintenant le contexte avant de jouer la migration**. Confronté à la version
+  sans contexte, il rougit et nomme le bon coupable.
+
+### L'écran, et ce qu'un test ne pouvait pas voir
+
+Le tiret cadratin réunissait deux choses de nature différente — qui, et où — en
+une phrase qui n'en est pas une. Sur les 390 px du patron, elle se repliait de
+toute façon sur deux lignes, mais **au mauvais endroit** : la coupure tombait au
+milieu de l'adresse, jamais entre le nom et elle. Un contrôle qui aurait compté
+les lignes serait passé au vert sur ce défaut.
+
+`Row` (`ExportClient.tsx`) rend donc **deux paragraphes** — le nom, puis le
+détail — et non un texte à retour à la ligne : la coupure ne doit pas dépendre
+de la largeur. `scripts/test-synthese-devis-e2e.ts` **mesure les rectangles**
+(le détail sous le nom, même marge à un pixel près), et
+`scripts/capture-synthese-devis.mts` rend l'image sur son iPhone.
+
+### Le message qui part chez le client, et l'encart qui n'invitait pas
+
+Le même soir, il a demandé les deux dernières pièces :
+
+- **« Bonjour Mr. Martins », et non « Bonjour Martins ».** Le message tout prêt
+  passe donc par `avecCivilite`, devis **et** facture. Deux règles séparées
+  feraient douter le client que les deux viennent du même artisan.
+- **« vous POUVEZ en proposer une autre »**, et non « vous pourrez ». Le futur
+  repoussait le geste à plus tard, comme s'il fallait d'abord faire autre chose ;
+  le présent dit que c'est possible sur la page qu'il vient d'ouvrir.
+- **Une phrase qui invite à écrire, sur l'encart du client.** L'intitulé posait
+  une question — « Une erreur, une question, une précision ? » — sans dire qu'on
+  avait le droit d'y répondre. Ce n'est pas de la politesse : un client qui
+  repère une faute et n'ose pas l'écrire touche « Je ne donne pas suite », et le
+  patron lit un refus là où il n'y avait qu'une coquille. La phrase est
+  **au-dessus** du champ (une invitation lue après coup n'invite plus personne),
+  et elle ne promet **aucune réponse** — le client n'a aucun moyen d'en recevoir
+  une ici. La suite mesure les deux : la position, et l'absence de promesse.
+
+---
+
+## 78. Mesurer un libellé sur l'écran, jamais sur une maquette
+
+**Né de sa demande du 13 août** : *« il faut le notifier sous le nom […] je te
+laisse libre de proposer des alternatives »*. Cinq libellés étaient en jeu pour
+la troisième ligne de la liste des chantiers.
+
+**La première planche était dessinée à la main, et elle mentait.** Une page HTML
+ordinaire rend ces mots plus larges qu'Inter dans l'application : au dessin,
+même le libellé ACTUEL passait sur deux lignes, alors qu'il tient sur une chez
+lui. La maquette aurait donc découragé les libellés longs pour une raison
+fausse.
+
+**Ce qui a tranché, c'est la mesure sur l'écran réel** — et elle a révélé mieux
+qu'un oui/non :
+
+| Libellé | 390 px | 430 px (son téléphone) |
+|---|---|---|
+| « En attente de réponse · sans photo » (actuel) | 2 lignes | 1 ligne |
+| « Devis envoyé · en attente de réponse » | 2 | 1 |
+| « Devis envoyé · sans réponse » | 1 | 1 |
+| « Envoyé il y a 3 jours · sans réponse » | 2 | 1 |
+| « Envoyé le 10 août · valable jusqu'au 24 » | 2 | 2 |
+| « Devis 1 240 € envoyé · sans réponse depuis 3 jours » | 2 | 2 |
+
+**La largeur de son téléphone fait partie de la décision.** Le libellé actuel est
+déjà à la limite : il tient sur un 430 px, pas sur un 390. Toute rallonge
+déborde ailleurs que chez lui.
+
+`scripts/engendrer-maquette-ligne-chantier.mts` joue donc chaque libellé DANS
+l'application, le photographie aux deux largeurs, et embarque les captures dans
+la planche (`docs/maquettes/41-la-ligne-sous-le-nom.html`). Ce ne sont pas des
+dessins : c'est l'écran.
+
+**Un défaut vu à l'œil sur la planche assemblée**, et qu'aucun contrôle ne
+cherchait : la variante E affichait le libellé de D. Le script désignait la
+ligne d'état AVANT de retirer celle injectée par la variante précédente —
+`p:last-of-type` tombait alors sur cette ligne-là, qu'on retirait aussitôt, et
+le texte partait sur un nœud détaché. **Une capture s'inspecte comme un écran.**
+
+---
+
+## 79. La ligne sous le nom : ce qui est parti, et quand
+
+**Son choix du 13 août 2026**, devant les cinq propositions photographiées
+(§78) : *« j'aime bien le D, mais en dessous de "devis envoyé" je veux qu'il y
+ait marqué la date à laquelle on l'a envoyé. »*
+
+La liste des chantiers porte donc, pour un devis parti sans réponse :
+
+```
+Mr Martins
+Adresse non renseignée
+DEVIS ENVOYÉ · SANS RÉPONSE          ← en or
+Envoyé le jeudi 13 août.
+```
+
+### Quatre décisions, et elles vivent dans une fonction pure
+
+`ligneEtatChantier` (`src/lib/chantier-etat.ts`) — l'écran n'a qu'à afficher
+(`CLAUDE.md` §3), et la règle s'éprouve sans base ni navigateur
+(`test-ligne-etat-chantier.ts`).
+
+1. **« En attente de réponse » devient « Devis envoyé · sans réponse ».**
+   L'ancienne phrase était vraie mais ne disait pas **ce qui** attend : un devis
+   parti, ou un client qu'on n'a pas rappelé ?
+2. **La date d'envoi n'est jamais devinée.** Sans envoi enregistré, la seconde
+   ligne n'existe pas. Le repli tentant — la dernière modification du chantier
+   (`majAt`, celle qui s'affiche à gauche) — n'est PAS la date d'envoi : une
+   photo ajoutée la déplace. Il compte ses jours d'attente dessus.
+3. **La mention des photos disparaît une fois le devis parti.** Elle sert à
+   savoir s'il reste de quoi chiffrer ; après, elle occupe la place.
+4. **L'or, contre la règle d'avant.** Il était réservé à ce qui attend un geste
+   DE LUI ; un devis parti sans réponse n'en attend aucun. Il a retenu la
+   variante dorée en connaissance de cause — c'était écrit sur la planche. Si la
+   liste devient trop dorée à l'usage, `APPELLE_UN_GESTE` se défait sur une
+   ligne.
+
+### Le doublon né du retrait de « Chez »
+
+Vu **à l'œil sur une capture**, jamais par un contrôle. Quand « Chez Martins »
+est devenu « Monsieur Martins » (§77), un chantier SANS adresse affichait le même mot
+deux fois de suite — le titre, puis la ligne du lieu, qui se rabattait sur le
+nom du client.
+
+`lieuDuChantier` ne se rabat désormais sur le client **que s'il apprend quelque
+chose** ; sinon elle écrit « Adresse non renseignée », qui est une information,
+et qui appelle un geste.
+
+**La comparaison est un `includes`, pas une égalité**, et c'est tout le point :
+depuis §77 le titre PORTE le nom du client sans lui être identique, puisqu'il
+lui ajoute « Monsieur ». Une égalité stricte aurait laissé le doublon passer.
+`intituleDuChantier`, dans le même fichier, compare déjà ainsi — la leçon avait
+été payée une fois, elle ne l'a pas été deux.
+
+**Ce que ce défaut rappelle :** retirer un mot d'un libellé peut faire entrer
+deux autres en collision. Un changement d'affichage se REGARDE, sur l'écran, y
+compris là où il n'était pas censé porter.
+
+---
+
+## 80. Une attente qui ne dit rien passe pour une panne
+
+**Le patron, le 13 août 2026**, capture de l'écran « Un chantier » à l'appui :
+*« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce qui se passe.
+Les trois petits points sont fixes et on attend […] mais on ne sait pas si ça
+bug ou non. Or, si les trois petits points se mettent en mouvement et font des
+vagues pour dire que c'est en train de rédiger, là, on sait qu'il se passe
+quelque chose. »*
+
+### Ce n'était pas une animation arrêtée
+
+`DicterCoordonnees.tsx` affichait `<span>…</span>` : **le caractère de points de
+suspension, un seul glyphe**. Il n'y avait rien à remettre en marche — il
+fallait trois points séparés pour qu'un geste puisse exister.
+
+La distinction n'est pas une finesse : elle change le diagnostic. Devant « ça ne
+bouge plus », le réflexe est de chercher une animation cassée, une classe
+perdue, un `prefers-reduced-motion` mal placé. Ici il n'y en avait jamais eu.
+
+### Le silence comptait davantage que l'immobilité
+
+Trois choses tenaient au même instant, et **le patron n'en avait nommé qu'une** :
+
+| Ce que l'écran faisait | Ce que ça racontait |
+|---|---|
+| trois points immobiles | rien ne travaille |
+| le bouton à `opacity: 0.5` | le bouton est **éteint** |
+| **aucune phrase** | — |
+
+La troisième est la plus lourde, et c'est la seule qui ne se voyait pas : l'écran
+**parle** quand il écoute (« J'écoute — touchez pour arrêter. ») et **parle**
+quand il a fini (« 1 information reprise… »), et il se taisait exactement pendant
+le seul moment où l'on se demande s'il est en panne. Aucune animation ne dit ce
+que des mots disent — et elle est la seule des trois à parvenir à qui n'a pas les
+yeux sur l'écran (`role="status"`).
+
+**La règle qui en sort, et qui vaut d'avance :** un écran qui fait attendre dit
+ce qu'il fait, en toutes lettres. Le geste accompagne la phrase ; il ne la
+remplace pas.
+
+### Le geste retenu, et pourquoi il vit dans un composant
+
+Cinq attentes lui ont été montrées (`docs/maquettes/40-…` et `41-…`), et il a
+répondu **« code la C »** : les points enflent et se rétractent l'un après
+l'autre, **sans se déplacer**. Rien ne sort du rond de 44 px, donc rien ne peut
+cogner le titre d'à côté.
+
+Les mesures vivent dans `globals.css` (`.atlas-souffle`), le geste dans
+`src/components/atlas/PointsQuiSoufflent.tsx` — **pas dans l'écran**. Ce dépôt a
+payé deux fois le geste dessiné sur place : la feuille d'envoi du devis (§66) et
+le bouton de la facture (§73), tous deux passés à côté d'une décision d'ensemble
+parce qu'ils étaient peints chez eux.
+
+**Et le composant a servi le jour même.** Le bouton d'ajout de photo
+(`Pellicule.tsx`) portait le même caractère « … » immobile, à la lettre près ; le
+patron a tranché en une phrase : *« oui souffle aussi pour la photo »*. Les
+points y sont **or** et non vert sans qu'une seule mesure ait été recopiée — ils
+héritent de `currentColor`, donc de la couleur du bouton qui les porte. C'est la
+raison pour laquelle la couleur n'est pas écrite dans le composant : deux
+attentes du même produit doivent se dire de la même façon, sans se peindre
+pareil.
+
+### Ce que la vérification a dû apprendre
+
+**Un contrôle qui court plus vite que l'attente ne voit jamais l'attente.**
+`test-attente-dictee-e2e.ts` retient donc la réponse du serveur trois secondes :
+c'est le seul moyen d'observer l'état qu'il prétend éprouver, et c'est aussi la
+situation réelle du patron.
+
+**Et il mesure le geste, jamais la présence d'une classe** — une classe posée sur
+un élément dont plus aucune règle ne parle est une mort silencieuse. Le souffle
+est relevé image par image sur la taille calculée des points, et le déplacement
+est exigé **nul** : c'est ce qui distingue la C de la vague, et sans cette
+seconde mesure les cinq propositions seraient interchangeables aux yeux du
+contrôle.
+
+**Deux leçons de rédaction, payées au premier jet :**
+
+1. **L'instant du relevé fait partie du contrôle.** L'encre du bouton, mesurée
+   après l'échantillonnage, arrivait une fois la réponse revenue : l'échec
+   sortait en « Timeout » sur un libellé introuvable — une erreur qui accuse le
+   sélecteur là où le fautif est le moment.
+2. **Une absence se raconte, elle ne se laisse pas expirer.** L'absence des
+   points sortait en trace d'outil et **arrêtait tout** : les deux autres
+   moitiés du correctif n'étaient plus mesurées. Elle est désormais un défaut
+   nommé, et les quatre points rougissent ensemble.
+
+### Ralentir le serveur a un prix, et il se paie ailleurs
+
+Les deux suites — la dictée et les photos — retiennent la réponse du serveur
+pour rendre l'attente observable. **Router une adresse dans Playwright désactive
+le cache HTTP de la page entière**, pas seulement des requêtes visées.
+
+Sur les photos, la visionneuse repartait donc du réseau pour une image déjà
+affichée : au moment du contrôle, son `<img>` n'avait pas fini de charger, sa
+boîte faisait zéro pixel, et Playwright la déclarait invisible. **L'échec
+accusait la visionneuse, qui n'y était pour rien** — et il n'a été compris qu'en
+AFFICHANT les images réellement présentes : elles étaient là, toutes les deux, au
+bon endroit. Le supposer aurait coûté la demi-journée que `AGENTS.md` décrit.
+
+Deux règles, pour toute suite qui ralentit volontairement un serveur :
+
+1. **relâcher la route dès la mesure faite** (`page.unroute`), sans quoi son
+   effet de bord traverse tout le reste du parcours ;
+2. **la relâcher APRÈS la fin de l'échange retenu** — la couper en vol laisse un
+   appel à moitié traité, et l'outil répond « Route is already handled! », une
+   erreur qui n'apprend rien sur ce qu'on éprouve.

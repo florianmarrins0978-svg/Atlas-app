@@ -27,6 +27,249 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quatervicies. ~~Les trois points de la dictée~~ — **CODÉ le 13 août 2026 (proposition C)**
+
+**Sa demande du 13 août 2026**, capture de l'écran « Un chantier » à l'appui :
+*« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce qui se passe.
+Les trois petits points sont fixes […] on ne sait pas si ça bug ou non. Si les
+trois petits points se mettent en mouvement et font des vagues pour dire que
+c'est en train de rédiger, là, on sait qu'il se passe quelque chose. »*
+
+**Ce n'est pas une animation qui s'est arrêtée.** C'est le caractère « … », un
+seul glyphe posé tel quel — `DicterCoordonnees.tsx:114`. Il n'y a rien qui
+puisse bouger : trois points séparés sont à écrire pour qu'une vague existe.
+
+**Deux choses aggravent l'attente**, qu'il n'a pas nommées mais qui tiennent au
+même instant, et qui comptent peut-être plus que la vague :
+
+1. le bouton passe à `opacity: 0.5` — le vocabulaire d'un bouton **éteint**,
+   pas d'un bouton qui travaille ;
+2. **aucune phrase ne s'affiche.** L'écran parle quand il écoute (« J'écoute —
+   touchez pour arrêter. ») et quand il a fini (« 1 information reprise… »), et
+   il se tait exactement pendant le seul moment où l'on se demande s'il est en
+   panne. Les mots disent ce qu'aucune animation ne dira.
+
+**Deux planches, et c'est la seconde qui tranche :**
+
+| | Fichier | Ce qu'elle sert |
+|---|---|---|
+| 42 | `docs/maquettes/42-les-trois-points-qui-attendent.html` | Les cinq gestes côte à côte, et l'exposé du défaut. Doublée d'images animées (`docs/maquettes/images/`), pour la conversation |
+| **43** | `docs/maquettes/43-l-attente-a-lessai.html` | **Celle qu'il manipule** — il appuie sur le micro, arrête, les points bougent. Sa demande du 13 août : *« juste des points que je puisse cliquer dessus […] pour voir comment ça rend »*. Engendrée par `scripts/engendrer-maquette-sequence.mjs` |
+
+Les cinq attentes : A la vague (4 px), B la vague ample (7 px), **C le souffle**,
+D le point qui court, E l'anneau qui tourne. **Il a répondu « code la C »** le
+13 août — les quatre autres restent dans les planches, à reprendre de là si le
+sujet se rouvre plutôt qu'à redessiner.
+
+**Ce qui a été porté dans l'application :**
+
+| | Fait | Où |
+|---|---|---|
+| 1 | Le geste, partagé | `src/components/atlas/PointsQuiSoufflent.tsx` |
+| 2 | Les mesures (0,72 → 1,5 ; 1,25 s ; décalages 0,16 et 0,32) | `globals.css`, `.atlas-souffle` |
+| 3 | L'écran | `src/app/chantiers/nouveau/DicterCoordonnees.tsx` |
+| 4 | La suite qui le tient | `scripts/test-attente-dictee-e2e.ts` |
+
+**Quatre choses à ne pas défaire**, chacune payée par un vrai défaut :
+
+1. **Le geste vit dans un composant, pas dans l'écran.** Une attente recopiée
+   divergerait comme les boutons peints à la main l'ont fait deux fois
+   (`ARCHITECTURE.md` §66 et §73).
+2. **Le bouton ne redevient PAS à demi effacé.** C'était la moitié du défaut :
+   le vocabulaire d'un bouton éteint. Il reste hors d'atteinte (`disabled`) —
+   ne pas le rendre pressable, un second appui lancerait une seconde dictée.
+3. **La phrase reste.** C'est la seule des trois moitiés qui parvienne à qui n'a
+   pas les yeux sur l'écran (`role="status"`), et probablement la plus utile.
+4. **Sous « mouvement réduit », les points respirent encore.** Tout couper
+   rendrait le défaut d'origine à qui a activé ce réglage.
+
+**La suite RALENTIT le serveur de trois secondes**, sinon elle courrait plus vite
+que l'attente et passerait au vert sans avoir rien regardé. Elle a été confrontée
+au défaut d'origine : les quatre points rougissent, chacun **en nommant son
+coupable** — et c'est le second jet, le premier sortait un « Timeout » sur un
+sélecteur, ce qui envoie lire le contrôle au lieu de l'écran.
+
+### 0 quatervicies ter. ~~La même attente immobile sur le bouton d'ajout de photo~~ — **fait le 13 août 2026**
+
+Signalé en passant, puis tranché par lui le jour même : *« oui souffle aussi pour
+la photo »*. `Pellicule.tsx` portait le même caractère « … » immobile que la
+dictée, à la lettre près — donc le même défaut. Il prend le même composant, et
+les points y sont **or** et non vert : ils héritent de `currentColor`, donc de la
+couleur du bouton qui les porte. Le libellé annonce l'envoi pendant l'envoi, au
+lieu de continuer à proposer d'ajouter.
+
+**Un piège d'outillage payé ici, et qui resservira à toute suite qui RALENTIT le
+serveur :** router une adresse dans Playwright **désactive le cache HTTP de toute
+la page**, pas seulement des requêtes visées. La visionneuse repartait donc du
+réseau pour une image déjà affichée, son `<img>` n'avait pas fini de charger, sa
+boîte faisait zéro pixel — et l'échec accusait la visionneuse, qui n'y était pour
+rien. Deux règles en sortent :
+
+1. **relâcher la route dès la mesure faite** (`page.unroute`) ;
+2. **la relâcher APRÈS que l'envoi soit terminé** — la couper en vol laisse un
+   appel à moitié traité, et Playwright répond « Route is already handled! », une
+   erreur qui n'apprend rien sur ce qu'on éprouve.
+
+Trouvé en **affichant les images présentes** plutôt qu'en supposant : elles
+étaient là, toutes les deux, au bon endroit.
+
+**Trois choses à savoir avant d'y toucher :**
+
+1. **Une image fixe ne peut pas montrer un mouvement.**
+   `scripts/animer-maquette-points.mjs` fabrique un GIF par proposition, sans
+   ffmpeg (absent d'ici) — et il relit ce qu'il vient d'écrire, parce qu'au
+   premier jet il annonçait « ✓ » sur une image FIXE : `pageHeight` passé à côté
+   de `raw` au lieu de dedans est ignoré **en silence**. Un script qui ne relit
+   pas sa sortie certifie exactement le défaut qu'il répare.
+2. **Le contrôle mesure une VAGUE, pas un mouvement.**
+   `scripts/verifier-maquette-points.mjs` exige un déphasage entre le premier et
+   le troisième point : trois points qui montent **ensemble** bougent de 4 px,
+   passeraient tout contrôle d'amplitude, et ne feraient aucune vague. Éprouvé
+   en cassant les délais — il rougit en nommant A.
+3. **L'avant sert de témoin, dans les trois outils.** Il doit rester immobile
+   **et à demi effacé** — le montrer à pleine encre le ferait paraître moins
+   mauvais qu'il n'est, et fausserait la comparaison en sa faveur. S'il bouge,
+   c'est la mesure qui ment. Le GIF le prouve tout seul : l'encodeur fusionne
+   les images identiques, et l'avant se réduit à **une seule**.
+4. **La 41 se PARCOURT, elle ne se constate pas.**
+   `scripts/verifier-maquette-sequence.mjs` joue les deux appuis puis
+   « Recommencer », sur les six. Un parcours à moitié joué ne prouve que la
+   moitié qu'on joue. Deux pièges y sont écrits : le bouton d'arrêt **bat**,
+   donc Playwright refuse d'appuyer dessus (`{ force: true }`, même famille que
+   `locator.screenshot()`) ; et le retour du résultat est **décoché par
+   défaut**, sans quoi on jugerait cinq gestes sur quatre secondes chacun.
+
+**Ce qui reste ouvert et n'est pas dans la planche :** ce que l'écran fait quand
+le traitement s'éternise. Une vague qui tourne depuis trente secondes redevient
+une vague qui ne dit rien.
+
+### 0 quatervicies bis. Les contrôles de maquette ne sont joués par personne
+
+`scripts/verifier-maquette-*.mjs` (pastille, logo, bascule, bouton de la facture,
+et désormais les points) ne sont appelés **ni par la batterie, ni par la CI** :
+ils se lancent à la main. Un contrôle que personne ne joue est un contrôle qui
+n'existe pas — il rougira le jour où plus personne ne saura pourquoi.
+
+Non fait d'office : les brancher allonge `verifier:avant-livraison` de plusieurs
+minutes pour éprouver des pages qui ne partent pas en production. Le bon endroit
+est vraisemblablement la CI, sur les seuls fichiers touchés.
+
+### 0 quinvicies. Le chevron de retour, dernier bouton hors charte
+
+<!-- Renuméroté le 13 août 2026 : « 0 unvicies » désignait DÉJÀ le raccordement
+     de l'agenda iCloud, plus bas, et `HANDOVER.md` le vise sous ce numéro. Deux
+     sessions avaient posé le même. C'est l'aîné qui garde le sien — la règle du
+     HANDOVER, « celle qui est déjà là garde son numéro ». Aucun renvoi ne
+     visait celui-ci. -->
+
+**Trouvé le 13 août 2026**, en réparant le contrôle des boutons arrondis : son
+motif ne regardait ni les `<Link>`, ni les rayons NOMMÉS de Tailwind. Réparé, il
+dénonce **six** boutons. Un seul était celui que le patron signalait (« Créer la
+facture »), corrigé le jour même. Les cinq autres n'ont jamais été arbitrés :
+
+- ~~`src/app/devis/[jeton]/formulaire.tsx` — accepter, demander une correction,
+  refuser~~ et ~~`src/app/factures/[jeton]/page.tsx` — le téléchargement du
+  PDF~~ : **tranché par le patron le 13 août 2026**, capture des deux écrans à
+  l'appui. « Oui » : ses clients voient la capsule eux aussi. Les couleurs
+  propres à ces écrans restent — c'est l'identité qui devait rester distincte,
+  pas la forme du geste ;
+- `src/components/ScreenHeader.tsx` — le chevron de retour, 32 × 32 en
+  `rounded-md`. **Seul point restant.** Une icône encadrée, pas un bouton
+  d'action : l'arrondir entièrement en ferait une pastille ronde, ce qui n'a
+  été demandé nulle part. Question posée le 13 août, sans réponse à ce jour.
+
+Ils sont **déclarés comme exceptions nommées** dans
+`scripts/test-boutons-arrondis.ts`, chacune avec sa raison : un bouton NEUF écrit
+carré ailleurs fait toujours rougir le contrôle.
+
+**Répondu le 13 août 2026 :** la capsule descend jusqu'à son client. Reste le
+chevron, sur lequel il ne s'est pas prononcé — et qui n'est pas un bouton
+d'action, d'où l'hésitation.
+
+
+### 0 tervicies. `test-planning-vers-facture-e2e` échoue par intermittence, et son message est trop affirmatif
+
+**Constaté le 13 août 2026, en éprouvant autre chose.** Le dernier cas de cette
+suite — *« clôturé AVANT sa date : il quitte le planning pour les terminés »* —
+échoue **par intermittence** sur `page.goto` au bout de 45 s, tantôt sur
+`/termines`, tantôt sur `/planning`. Sur **six exécutions** ce jour-là : quatre
+rouges, deux vertes.
+
+**Et « le serveur est chargé » n'explique plus.** `ouvrir()` fait déjà DEUX
+tentatives de 45 s : la page reste donc muette **plus de quatre-vingt-dix
+secondes**, alors qu'elle répond en 333 ms mesurées hors batterie. Ce n'est pas
+de la lenteur, c'est un blocage. Piste non écartée, faute de l'avoir creusée :
+l'épuisement du bassin de connexions (`poolMax`) en fin de batterie — cette
+suite bâtit sept chantiers avec devis et PDF, et c'est la plus lourde du lot.
+
+**Ce n'est PAS la civilité** : vérifié en remisant toutes les modifications du
+jour et en rejouant la suite sur `main` intact — même échec, au même endroit.
+Le défaut lui est antérieur.
+
+**Et son message n'explique pas tout.** Il affirme : *« C'est le serveur de
+développement qui n'a pas suivi, pas l'écran : il répond en quelques centaines
+de millisecondes hors batterie »*. Or **la suite a aussi échoué jouée seule**,
+sans aucune autre en parallèle — la charge de la batterie ne suffit donc pas à
+l'expliquer. Un message qui donne une cause certaine là où elle ne l'est pas
+envoie chercher au mauvais endroit (`AGENTS.md`).
+
+**Ce qui reste à faire :** trouver ce que ce cas-là fait de particulier — c'est
+le seul des trois de son groupe à clôturer un chantier **avant** sa date — puis
+rendre le message honnête sur ce qu'il sait et ce qu'il suppose. Les six autres
+cas de la suite passent toujours.
+
+### 0 duovicies. La civilité du client — **à trancher avec lui**
+
+Le 13 août 2026, il a demandé que le devis dise « Mr. Martins » et non « Chez
+Martins ». C'est **fait**, écran et message tout prêt compris
+(`ARCHITECTURE.md` §77). Mais la fiche client ne porte **aucun champ de
+civilité** : « Mr. » est un défaut posé sur tout nom qui n'en annonce pas
+d'autre.
+
+**Ce que ça veut dire concrètement, et pourquoi ça ne peut pas rester ainsi
+indéfiniment :** une cliente saisie « Roux » verra « Mr. Roux » sur son devis,
+**et le message qui part chez elle dira « Bonjour Mr. Roux »**. L'application sait déjà se taire devant « Mme Roux » ou « SARL Untel » —
+ces deux cas sont couverts — mais elle ne devine pas un patronyme nu.
+
+| | Piste | Ce que ça vaut |
+|---|---|---|
+| a | **Un choix à la création du client** : trois pastilles — Mr., Mme, ni l'un ni l'autre (société). Un appui. | La seule qui dise la vérité. Coûte une colonne, une migration, et trois pastilles sur un écran déjà chargé. |
+| b | Laisser le patron écrire « Mme Roux » lui-même dans le nom | Gratuit, marche déjà — mais il faut qu'il y pense à chaque fois, et un oubli part chez la cliente. |
+| c | Ne rien mettre du tout et revenir au nom nu | Annule sa demande du 13 août. |
+
+**Qui peut le faire : lui seul.** C'est un arbitrage de produit, pas un choix
+technique — et rien ne sera ajouté sans son accord (`CLAUDE.md` §4).
+
+*(La seconde question — le message qui part chez le client — a été tranchée le
+soir même : il dit désormais « Bonjour Mr. Martins ». C'est ce que ses clients
+lisent, et c'est donc là que l'erreur de civilité se verra en premier.)*
+
+### ~~0 octodecies. Le message du devis figé désignait une porte invisible~~ — **codé le 2026-08-13 (proposition A)**
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis). Le patron, le 13 août, capture à
+l'appui : *« le message dit de consulter la case devis mais aucune case devis
+existe »*, et il demande un avis — créer la case, ou retirer le message ?
+
+**Ce qui est vrai, vérifié dans le code :** l'écran Devis existe bien
+(`/chantiers/[id]/export`, `chantier-etat.ts` le pose comme étape « Devis »),
+mais il vit dans le **tiroir** de la fiche, et **aucune porte n'y mène depuis
+`devis-complet`** — où le message s'affiche. De plus, **deux écrans s'appellent
+« Devis »** de son point de vue : celui qu'il regarde, et celui où l'on corrige.
+
+`docs/maquettes/40-le-message-du-devis-fige.html` — témoin + trois façons :
+
+| | Ce que c'est | Ce que ça coûte |
+|---|---|---|
+| A | le message devient la porte (lien sous la phrase) | rien — la retouche la plus courte |
+| B | un vrai bouton en capsule | il attire l'œil avant le devis qu'on vient lire |
+| C | plus de message du tout | le jour où il touche un prix, rien ne se passe et rien ne le dit |
+
+**Mon avis, donné et assumé : A.** Ne PAS créer de nouvelle case — l'écran
+existe, et lui donner un second accès permanent ferait deux portes vers la même
+pièce, ce qu'on vient d'éviter sur l'écran du devis.
+
+**Les mots ne sont pas tranchés** : « Le corriger et le renvoyer », « Corriger
+ce devis », « Reprendre le devis ». Ils lui appartiennent.
 ### 0 duovicies. ~~`/chantiers/<id>/facture` ne répond plus en fin de batterie~~ **élucidé le 13 août 2026**
 
 **Ce n'était ni la base, ni le pool, ni l'écran.** Le contrôle « clôturé AVANT
@@ -74,7 +317,7 @@ qu'on vient de corriger et d'envoyer.
 la rangée des trois actions, et « Plutôt par e-mail → » passe du gris 13 px à
 l'or, en gras, un peu plus gros.
 
-**Maquette `docs/maquettes/40-la-feuille-denvoi.html`** — deux lectures (A : le
+**Maquette `docs/maquettes/44-la-feuille-denvoi.html`** — deux lectures (A : le
 bouton quitte la page ; B : un seul bouton par moment) montrées dans les DEUX
 moments, plus trois dosages de la ligne dorée. **En attente de sa lettre et de
 son numéro. Rien n'est posé dans `src/`.**
@@ -1281,6 +1524,46 @@ qu'il ne veut pas revoir.
 
 Si le sujet revient, c'est **lui** qui le rouvre, et alors c'est « partout »
 ou rien.
+
+### ~~9. La ligne sous le nom, dans la liste des chantiers~~ — **tranché et codé le 13 août 2026 : le D, avec la date d'envoi**
+
+**Le patron, le 13 août 2026 :** *« le devis a été envoyé et il n'a toujours pas
+eu de réponse […] tu marques quelque chose du style devis envoyé, attente de
+réponse, je te laisse libre de choisir et de proposer des alternatives si tu
+penses qu'il faudrait rajouter d'autres informations à ce niveau-là. »*
+
+**Il a retenu D**, en remplaçant le délai par la date : « DEVIS ENVOYÉ · SANS
+RÉPONSE » en or, et dessous « Envoyé le jeudi 13 août. » La règle vit dans
+`ligneEtatChantier` (`src/lib/chantier-etat.ts`), éprouvée sans base ni
+navigateur. `ARCHITECTURE.md` §79.
+
+**Les quatre autres restent dans la planche** — `docs/maquettes/41-la-ligne-sous-le-nom.html`,
+engendrée par `scripts/engendrer-maquette-ligne-chantier.mts`. Si le sujet se
+rouvre, repartir de là :
+
+| | Libellé | Ce qu'elle apprend |
+|---|---|---|
+| A | « Devis envoyé · en attente de réponse » | ses mots, au plus court |
+| B | « Envoyé il y a 3 jours · sans réponse » | **le délai — la seule chose qui décide une relance** |
+| C | « Envoyé le 10 août · valable jusqu'au 24 » | quand le devis cessera d'être ouvrable |
+| D | deux lignes, la seconde en clair | ce qu'il y a à faire, en toutes lettres |
+| E | avec le montant | lequel rappeler en premier |
+
+**Ce qui contraint le choix, et qui a été MESURÉ sur l'écran** (`ARCHITECTURE.md`
+§78) : le libellé actuel tient sur une ligne à 430 px — la largeur de son
+téléphone — et déborde à 390. A et B tiennent chez lui ; C et E débordent
+partout.
+
+**Deux points à lui redire quand il tranchera :**
+
+- la mention « sans photo » n'a plus d'utilité une fois le devis parti : elle
+  disparaît dans toutes les propositions ;
+- l'or est réservé à ce qui **attend un geste de lui**. Un devis parti sans
+  réponse n'attend rien de lui, d'où le gris. **D est la seule qui rouvre ce
+  choix**, et c'est délibéré.
+
+E est la seule qui coûte une sous-requête de plus (le montant n'est pas chargé
+par l'écran d'accueil).
 
 ### 8. L'écran Facture — trois manques signalés par le patron le 10 août 2026
 

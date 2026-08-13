@@ -364,7 +364,101 @@ vingt-cinq minutes pour observer UNE suite — c'est ce coût-là qui pousse à
 supposer une cause au lieu d'aller la lire. Le script dit à voix haute qu'il
 n'est pas la batterie.
 
+## L'ATTENTE DE LA DICTÉE EST CODÉE — « le souffle » (13 août)
+
+Il a répondu **« code la C »**. Les points enflent et se rétractent l'un après
+l'autre, sans se déplacer. `ARCHITECTURE.md` §80 porte le détail.
+
+**Quatre choses à ne pas défaire**, listées dans `TODO.md` §0 quatervicies — dont
+le bouton qui **ne redevient pas** à demi effacé, et la phrase « Atlas rédige… »,
+qui est la seule des trois moitiés à parvenir à qui n'a pas les yeux sur l'écran.
+
+**La photo souffle aussi**, tranché par lui le jour même : *« oui souffle aussi
+pour la photo »*. Le bouton d'ajout portait le même caractère immobile. Les
+points y sont **or** et non vert sans qu'une mesure ait été recopiée — ils
+prennent `currentColor`. C'est pour cela que la couleur n'est pas écrite dans le
+composant : ne pas l'y remettre.
+
+**⚠ Un piège d'outillage à connaître avant d'écrire une suite qui RALENTIT le
+serveur** (les deux le font, pour rendre l'attente observable) : router une
+adresse dans Playwright **désactive le cache HTTP de toute la page**. La
+visionneuse des photos repartait du réseau pour une image déjà affichée, son
+`<img>` n'avait pas fini de charger, et **l'échec accusait la visionneuse** qui
+n'y était pour rien. Relâcher la route dès la mesure faite, et seulement une fois
+l'échange retenu terminé — la couper en vol donne « Route is already handled! ».
+`TODO.md` §0 quatervicies ter.
+
+*Ce qui suit est l'historique du choix, gardé pour ne pas rouvrir ce qui est clos.*
+
+## Les cinq attentes proposées (13 août)
+
+**Sa demande :** *« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce
+qui se passe. Les trois petits points sont fixes […] on ne sait pas si ça bug ou
+non. »*
+
+Deux planches — la **42** expose les cinq gestes côte à côte, la **43** est celle
+qu'il a MANIPULÉE (il appuie sur le micro, arrête, les points bougent), et c'est
+elle qui a tranché. Cinq attentes : A la vague, B la vague ample, **C le
+souffle** (retenue), D le point qui court, E l'anneau qui tourne. Les quatre
+écartées restent dans les planches : s'il rouvre le sujet, repartir de là plutôt
+que de redessiner.
+
+**Trois choses à ne pas redécouvrir :**
+
+1. **Ce n'étaient pas des points arrêtés, c'était le caractère « … »** — un seul
+   glyphe. Il n'y avait rien à remettre en marche ; trois points séparés étaient
+   à écrire. Devant un « ça ne bouge plus », vérifier d'abord qu'une animation
+   a seulement existé.
+2. **Le vrai silence n'était pas l'animation, c'était la PHRASE ABSENTE.**
+   L'écran parle quand il écoute et quand il a fini, et se taisait pendant le
+   seul moment où l'on se demande s'il est en panne. Le bouton passait en plus à
+   `opacity: 0.5` — le vocabulaire d'un bouton éteint. Ces deux points-là
+   n'étaient pas dans sa demande ; ils lui ont été montrés dans les cinq
+   propositions, et il ne les a pas refusés.
+3. **Une image fixe ne montre pas un mouvement.** `animer-maquette-points.mjs`
+   fabrique un GIF par proposition (sans ffmpeg, absent d'ici) — et il **relit
+   sa sortie**, parce qu'au premier jet il certifiait « ✓ » une image fixe.
+
 ## Ce qui vient d'être terminé
+
+**« MONSIEUR MARTINS », ET LE TIRET RETIRÉ (13 août).** Sa capture de l'écran
+Devis. Le nom du chantier ne dit plus « Chez … », la ligne du client porte sa
+civilité, et le détail passe **sous** le nom au lieu d'être collé par un tiret.
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **La civilité vit dans `src/lib/civilite.ts`, et nulle part ailleurs.** Trois
+   endroits l'appellent — dont le message qui part chez le client. Le MOT vit
+   dans `CIVILITE_PAR_DEFAUT` et a déjà changé une fois en une journée
+   (« Monsieur », puis « Mr. ») : les contrôles le demandent à la règle plutôt
+   que de le recopier, sauf un qui l'épingle en clair. La civilité est un
+   **défaut, pas une donnée** : il n'y
+   a aucun champ de civilité dans la fiche client, donc une cliente sera mal
+   nommée. Le vrai remède — un choix à la création — n'a pas été ajouté sans son
+   accord. **À lui poser.**
+2. **Un invariant a été levé, pas oublié.** `nom-chantier.ts` tenait que chaque
+   mot du nom venait de la saisie ; « Monsieur » rompt cette règle, et le patron
+   l'a demandé en connaissance de cause. Ne pas la rétablir sans lui.
+3. **UNE MIGRATION DE DONNÉES SUR UNE TABLE SOUS RLS NE FAIT RIEN, EN SILENCE.**
+   C'est la leçon qui ressert le plus. `chantiers` et `clients` portent la RLS
+   en mode **forcé** : le propriétaire y est soumis, et sans `app.entreprise_id`
+   posé, `current_setting` rend une chaîne vide, le prédicat vaut NULL et
+   **aucune ligne n'est visible**. Le premier `UPDATE` écrit s'est appliqué sans
+   erreur, a rapporté un succès, et n'a touché aucune ligne. La migration 0036
+   boucle donc sur les entreprises en posant le contexte de chacune — jamais en
+   désactivant la RLS. Les migrations d'avant ne modifiaient que
+   `termes_metier`, sans RLS forcée : ce cas était neuf.
+4. **Un « 1 migration appliquée » ne prouve rien.** Le contrôle rejoue la
+   migration et vérifie le résultat. Il a d'abord été un **faux vert** : il
+   posait lui-même le contexte pour ses insertions, la migration en héritait, et
+   il passait au vert sur la version défaillante. Il efface maintenant le
+   contexte avant de jouer la migration.
+
+**Et un rappel que cette journée redonne :** trois suites navigateur recopiaient
+« Chez … » au lieu d'appeler la règle. Elles sont passées au rouge le jour où le
+mot a changé. Elles appellent maintenant `nomDuChantier` / `avecCivilite`.
+
+Détail complet : `ARCHITECTURE.md` §77.
 
 **SIX BRANCHES RÉUNIES DANS `main` (13 août).** Sa demande : *« Fusionne. »*
 `main` porte désormais l'agenda iCloud, l'écran de la facture (SMS **ou**
@@ -392,6 +486,40 @@ travail que `main` n'ait pas.
 Batterie entière au vert avant de pousser : types, lint, mémoire, 124/124
 suites base, 65/65 suites navigateur, 23 contrôles de maquette, et la connexion
 réelle derrière une origine étrangère.
+
+**⚠ LE NOM DU CHANTIER A ÉTÉ CORRIGÉ DEUX FOIS LE MÊME JOUR, PAR DEUX
+SESSIONS.** Il l'a demandé aux deux. La version retenue est celle de `main` —
+« Monsieur Martins » (`ARCHITECTURE.md` §77, `src/lib/civilite.ts`) — et non la
+mienne, qui rendait le nom nu. **Ne pas la « rétablir »** : il a levé la règle
+du « rien d'inventé » pour la civilité, en le sachant.
+
+**Ce que la collision a appris, et qui vaut pour toute migration à venir :** un
+`UPDATE` de données sans contexte d'entreprise ne voit AUCUNE ligne sous la RLS
+forcée. Il s'applique, rapporte un succès, et ne change rien — en silence. Ma
+migration faisait exactement cela. Traiter entreprise par entreprise.
+
+**LA LIGNE SOUS LE NOM EST TRANCHÉE ET CODÉE** — le D, avec la date d'envoi
+(`ARCHITECTURE.md` §77). Trois choses à ne pas défaire :
+
+- **la date d'envoi ne se devine pas.** Sans envoi enregistré, pas de seconde
+  ligne. Le repli tentant — `majAt`, la date affichée à gauche — n'est PAS la
+  date d'envoi : une photo ajoutée la déplace ;
+- **l'or sur un devis parti est SA décision**, contre la règle d'avant (l'or
+  pour ce qui attend un geste de lui). C'était écrit sur la planche qu'il a
+  choisie. Si la liste devient trop dorée, `APPELLE_UN_GESTE` se défait sur une
+  ligne ;
+- **le lieu ne répète jamais le nom.** Défaut né du retrait de « Chez », vu à
+  l'œil sur une capture : retirer un mot d'un libellé peut faire entrer deux
+  autres en collision.
+
+**Et une règle qui vaut au-delà de ce lot : un libellé se mesure SUR L'ÉCRAN.**
+Une maquette HTML rend les mots plus larges qu'Inter dans l'application — la
+première planche faisait passer sur deux lignes un libellé qui tient sur une
+chez lui, et aurait donc écarté les bons libellés pour une raison fausse.
+`scripts/engendrer-maquette-ligne-chantier.mts` joue chaque libellé dans
+l'application et le photographie à 430 px (son téléphone) **et** à 390 px. La
+largeur de son téléphone fait partie de la décision : le libellé actuel est
+déjà à la limite.
 
 **LE CALENDRIER D'ENVOI NE MARQUAIT QU'UN JOUR (12 août).** Il ne pouvait
 proposer qu'une date dès qu'il la prenait au calendrier, alors que son client
@@ -489,14 +617,24 @@ client demande une modification, ouvrir le devis pour pouvoir le modifier. »*
 **Trois choses à savoir :**
 
 1. **La règle vit dans `src/lib/suite-de-la-reponse.ts`**, pas dans le
-   composant : accepté → `devis-complet` (le document figé, tel que le client
-   l'a reçu) ; correction, refus, lien périmé → l'écran d'envoi, qui porte la
-   reprise. **Ne pas mener un devis à corriger sur `devis-complet`** : il est
-   immuable une fois parti, et le patron se retrouverait devant un document qui
-   refuse sa frappe.
-2. **Ne jamais reprendre à sa place.** La reprise ouvre une NOUVELLE version du
-   devis : c'est sa décision. On mène à l'écran qui la propose, on ne la déclenche
-   pas.
+   composant : accepté → `devis-complet` figé, tel que le client l'a reçu ;
+   **correction → `devis-complet` AUSSI, mais après reprise** (drapeau
+   `reprendreAvant`) ; refus et lien périmé → l'écran d'envoi, qui laisse le
+   choix. **Ne jamais mener un devis à corriger sur `devis-complet` SANS la
+   reprise** : il est immuable une fois parti, et le patron se retrouverait
+   devant un document qui refuse sa frappe.
+2. **Corrigé le 13 août 2026, par lui :** *« lorsque je clique sur corriger le
+   devis, je dois arriver directement sur la page du devis pour pouvoir le
+   corriger. »* La veille, la correction passait par l'écran d'envoi, au nom de
+   « ne jamais reprendre à sa place ». Le principe reste juste — **mais il ne
+   s'appliquait pas ici : c'est LUI qui appuie**, sur un bouton qui annonce
+   « Corriger le devis ». Le geste est le sien ; l'en priver lui coûtait un
+   écran et un second appui.
+
+   Il vaut toujours ailleurs : un devis **accepté** ne se reprend jamais
+   d'office (ce serait remplacer sans le dire le document sur lequel les deux
+   se sont mis d'accord), et un **refus** ou un **silence** n'appellent pas
+   forcément un nouveau devis — la suite peut être d'abandonner le chantier.
 3. **Une acceptation sur une date PROPOSÉE ne fait aucune carte**, et c'est
    voulu (`notificationsPatron`). Seuls un refus, une correction, une
    contre-proposition de date ou un message du client en font une. Un contrôle
@@ -534,6 +672,27 @@ l'ancien prix.
 
 **Ce qui reste ouvert :** le rayon du bouton (4, 8, 12 ou pilule — bande au bas de
 la maquette 33). Son choix vaudra pour vingt-sept écrans. Il a demandé la maquette en toutes lettres : *« fabrique-
+**⚠ SI LE PATRON MONTRE « An unexpected response was received from the server. »**
+Regarder d'abord **quelle version son banc sert**. Si la pile d'appel contient
+`.next/dev`, il est sur la version LENTE : chaque écran s'y compile au premier
+appel, et le relais de GitHub abandonne au bout d'une minute en rendant sa
+propre page d'erreur — le navigateur reçoit du HTML là où il attendait une
+réponse. Ce n'est pas un défaut du code, c'est un banc qui n'a pas fini de se
+construire. Depuis le 12 août, l'écran Réglages le dit lui-même, et un veilleur
+(`src/components/atlas/VeilleReponseServeur.tsx`) pose une phrase française avec
+un bouton « Recharger ».
+
+**Ne pas élargir ce veilleur.** Il ne reconnaît que quatre formulations, et il
+doit continuer de REFUSER tout le reste : habiller un défaut du code en
+« le serveur se prépare » ferait recharger une page qui ne guérira pas, et
+masquerait le défaut. `scripts/test-reponse-illisible.ts` tient ce refus.
+
+
+**⚠ L'ÉCRAN DU DEVIS ATTEND UNE LETTRE — ne rien coder avant (12 août).**
+Le CONTENU est arrêté (nom du devis, total, « Modifier mon devis », trois actions
+en encre) ; c'est la MISE EN PAGE qui attend un numéro —
+`docs/maquettes/26-le-devis-sur-sa-base.html`, cinq propositions. Le détail et les
+trois points ouverts sont dans `TODO.md` 0 septdecies. Il a demandé la maquette en toutes lettres : *« fabrique-
 moi la maquette et montre-la-moi avant de coder quoi que ce soit »*.
 
 **Et NE PAS chercher une panne d'envoi de devis.** Elle a été signalée puis

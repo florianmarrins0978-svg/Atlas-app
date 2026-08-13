@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import "./globals.css";
 import AtlasBottomNav from "@/components/atlas/AtlasBottomNav";
 import { estCheminPublic } from "@/lib/chemins-publics";
+import VeilleReponseServeur from "@/components/atlas/VeilleReponseServeur";
 import AssistantSidebar from "@/components/atlas/AssistantSidebar";
 import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
 
@@ -146,6 +147,19 @@ export default async function RootLayout({
             <AssistantSidebar />
           </div>
         )}
+
+        {/* **HORS du choix ci-dessus, et c'est un correctif.** Quand la réponse
+            du serveur n'a pas pu être lue, une phrase en français plutôt qu'un
+            panneau anglais — ou, sur la version rapide, plutôt que rien du
+            tout.
+
+            Il était d'abord posé dans la seule branche à barre de navigation :
+            l'écran de CONNEXION en était donc dépourvu. C'est précisément
+            l'écran où une réponse coupée est la plus probable — c'est le
+            premier appel, celui qui compile tout — et le seul où le patron n'a
+            aucun autre repère. La suite navigateur l'a montré avant que
+            quiconque ne le lise. */}
+        <VeilleReponseServeur />
       </body>
     </html>
   );

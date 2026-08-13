@@ -1,6 +1,11 @@
 import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
+// Le nom du chantier se DÉDUIT du client (`src/lib/nom-chantier.ts`) : on
+// applique la même règle que le produit plutôt que de recomposer « Chez … ».
+// Recopié ici, ce contrôle est passé au rouge le 13 août 2026, le jour où le
+// patron a fait retirer ce mot.
+import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
 
 // **Du planning à la facture, en partant d'où le patron se trouve.**
@@ -78,7 +83,7 @@ async function chantierPlanifie(
 ) {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   const client = `Mme Costa ${suffixe} ${Date.now()}`;
-  const nom = `Chez ${client}`;
+  const nom = avecCivilite(client);
   await page.fill('input[placeholder="M. Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
   await page.click('button:has-text("Créer le chantier")');

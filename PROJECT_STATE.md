@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-13 · branche `main`, six branches fusionnées
-· dernière migration `drizzle/0035_agenda_apple.sql`
+**Dernière mise à jour :** 2026-08-13 · branche `main`
+· dernière migration `drizzle/0036_monsieur_plutot_que_chez.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -152,6 +152,14 @@ l'application. Ce qui est **fait** :
   sa barre grise. Le masque en dégradé et l'animation d'opacité sont hors de
   cause, c'est **mesuré** (`scripts/mesurer-fluidite-fil.mts`) : ne pas les
   accuser sans relancer la mesure.
+- **Le devis, en tête et dans sa synthèse** (13 août) : le chantier ne s'appelle
+  plus « Chez Martins » mais « Mr. Martins », et la carte pose le nom
+  au-dessus du détail au lieu de les coller par un tiret. La civilité vit dans
+  `src/lib/civilite.ts` — **et c'est un défaut, pas une donnée** : sans champ de
+  civilité sur la fiche client, une cliente est nommée « Mr. ». À trancher
+  avec lui. Le message tout prêt l'aborde de la même façon (« Bonjour
+  Mr. Martins »), et l'encart du client porte une phrase qui l'invite à écrire.
+  `ARCHITECTURE.md` §77.
 - **Le devis à la main** : ses trois zones de texte mesurent leur hauteur au
   lieu de l'estimer (11 août 2026). Elles comptaient les caractères ou les
   retours à la ligne, alors qu'un texte se coupe au mot : le devis cachait 24 px

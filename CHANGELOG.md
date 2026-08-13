@@ -9,6 +9,250 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### La capsule descend jusqu'aux écrans du client — il a tranché
+
+**Question posée avec deux captures**, la sienne et celle de son client :
+la capsule s'arrête-t-elle à ses écrans, ou descend-elle jusqu'aux pages que
+voit son client ? **Réponse : oui**, elle descend.
+
+Quatre boutons changent de forme, tous sur les écrans que reçoit le client de
+l'artisan : accepter le devis, demander une correction, ne pas donner suite, et
+télécharger la facture. **Leurs couleurs ne bougent pas** — le vert pin et la
+terre cuite de ces pages restent : ce qui devait rester distinct de l'outil de
+travail, c'est l'identité, pas la forme du geste.
+
+**Le champ de saisie de la même page garde ses coins doux.** La charte ne donne
+la capsule qu'à ce qu'on APPUIE, jamais à ce qu'on remplit — et un champ
+entièrement arrondi se confondrait avec un bouton.
+
+L'exception qui protégeait ces écrans dans `scripts/test-boutons-arrondis.ts`
+est **levée** : ils sont désormais gardés comme les autres. Il n'en reste
+qu'une, le chevron de retour, sur lequel il ne s'est pas prononcé — une icône
+encadrée de 32 px, que la capsule transformerait en pastille ronde.
+
+---
+
+### L'attente de la dictée souffle, et le dit — proposition C
+
+**Il a répondu « code la C ».** Les trois points enflent et se rétractent l'un
+après l'autre, sans se déplacer : rien ne sort du rond de 44 px, donc rien ne
+peut cogner le titre d'à côté. Le détail et le pourquoi sont dans
+`ARCHITECTURE.md` §80.
+
+**Trois choses ont changé au même endroit, et elles ne se remplacent pas.** Le
+geste, oui — mais aussi le **bouton qui reste à pleine encre** (le
+demi-effacement d'avant était le vocabulaire d'un bouton éteint) et surtout **une
+phrase, « Atlas rédige… »**. C'est elle qui compte le plus : l'écran parlait
+quand il écoutait et quand il avait fini, et se taisait pendant le seul moment où
+l'on se demande s'il est en panne. C'est aussi la seule des trois qui parvienne à
+qui n'a pas les yeux sur l'écran.
+
+**Le geste vit dans `PointsQuiSoufflent`, pas dans l'écran** : ce dépôt a payé
+deux fois le geste peint sur place (§66, §73). **Et il a servi le jour même** —
+le bouton d'ajout de photo portait le même caractère immobile, et il a tranché
+d'une phrase : *« oui souffle aussi pour la photo »*. Les points y sont **or** et
+non vert sans qu'une mesure ait été recopiée : ils prennent la couleur du bouton
+qui les porte.
+
+**Un piège d'outillage payé au passage.** Router une adresse dans Playwright
+désactive le cache HTTP de **toute** la page : la visionneuse repartait du réseau
+pour une image déjà affichée, son `<img>` n'avait pas fini de charger, et l'échec
+accusait la visionneuse — qui n'y était pour rien. Compris en affichant les
+images réellement présentes, pas en le supposant. La route se relâche désormais
+dès la mesure faite, et seulement une fois l'envoi terminé.
+
+**La suite retient la réponse du serveur trois secondes**, sinon elle courrait
+plus vite que l'attente et passerait au vert sans avoir rien regardé. Confrontée
+au défaut d'origine, ses quatre points rougissent en nommant chacun son coupable
+— au second jet : le premier sortait un « Timeout » sur un sélecteur, ce qui
+envoie lire le contrôle au lieu de l'écran.
+
+### Les trois points de la dictée : la maquette, pas encore le code
+
+**Sa demande :** *« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce
+qui se passe. Les trois petits points sont fixes […] on ne sait pas si ça bug ou
+non. »*
+
+**Rien n'a changé dans l'application, et c'est délibéré** — une demande de geste
+se dessine avant de se coder (`CLAUDE.md` §3 bis). Cinq attentes sont proposées ;
+son numéro est attendu (`TODO.md` §0 duovicies).
+
+**Deux planches, parce qu'il a demandé à ESSAYER** — *« juste des points que je
+puisse cliquer dessus, enfin le dictaphone, puis je l'arrête et les points se
+mettent à bouger »*. La 40 expose les gestes côte à côte ; la **41** joue la
+séquence entière sous son doigt : le micro, l'écoute, l'arrêt, l'attente, et le
+retour du résultat s'il le demande. Trois états sans une ligne de script — des
+boutons radio et des étiquettes qui pointent vers l'état suivant, parce que son
+lecteur n'exécute rien et que les pages engendrées en JavaScript lui arrivent
+vides. La page est elle-même **écrite par un script**
+(`engendrer-maquette-sequence.mjs`), qui refuse de la livrer s'il y trouve la
+moindre balise `<script>`.
+
+**Ce que le diagnostic a trouvé, et qui n'était pas dans sa demande.** Ces points
+ne sont pas une animation arrêtée : c'est le caractère « … », un seul glyphe
+(`DicterCoordonnees.tsx:114`). Et deux choses aggravent l'attente au même
+instant — le bouton passe à moitié effacé, ce qui est le vocabulaire d'un bouton
+**éteint**, et **aucune phrase n'est affichée**. L'écran parle quand il écoute et
+quand il a fini ; il se tait pendant le seul moment où l'on se demande s'il est
+en panne.
+
+**Deux outils naissent avec la planche, et chacun a payé sa leçon :**
+
+- `scripts/verifier-maquette-points.mjs` mesure une **vague**, pas un mouvement :
+  il exige que le premier et le troisième point soient déphasés. Trois points qui
+  montent ensemble bougent de 4 px et ne font aucune vague — vérifié en cassant
+  les délais, il rougit alors en nommant la version ;
+- `scripts/animer-maquette-points.mjs` fabrique les images animées sans ffmpeg,
+  absent d'ici. **Il relit ce qu'il vient d'écrire** : au premier jet il annonçait
+  « ✓ » sur une image FIXE, `pageHeight` étant ignoré en silence quand il est
+  passé à côté de `raw` au lieu de dedans. Un script qui ne relit pas sa sortie
+  certifie le défaut même qu'il répare.
+
+### La poignée de la feuille la referme, et « Créer la facture » devient une capsule
+
+**Ses deux signalements du 13 août, capture à l'appui :** *« si j'appuie sur le
+petit trait gris au-dessus de "y aller", c'est censé refermer la page, sauf que
+ça ne marche pas »* et *« le bouton créer la facture est encore carré alors qu'il
+devrait être arrondi comme tous les autres »*.
+
+**La poignée n'était qu'un trait dessiné — et pire.** Posée dans le panneau qui
+arrête les appuis pour que la feuille ne se ferme pas sous les doigts, elle
+ABSORBAIT le geste sans rien en faire. Elle est désormais un vrai bouton, nommé
+« Refermer », et sa zone touchable fait **342 × 28 px** au lieu des 4 px du
+trait : quatre pixels ne s'atteignent pas au doigt, et il aurait conclu « ça ne
+marche pas » sur un code pourtant juste.
+
+**Le garde-fou du correctif est éprouvé aussi** : le contenu de la feuille ne la
+ferme toujours pas — sinon elle se déroberait en visant « Waze » — et le fond
+continue de la fermer. Confronté à la poignée débranchée : un cas au rouge.
+
+**Le bouton carré, lui, dit quelque chose sur nos contrôles.** Il portait
+`rounded-md`, et `scripts/test-boutons-arrondis.ts` ne l'a pas vu — **deux
+angles morts à la fois** : son motif ne connaissait ni la balise `<Link>` (la
+façon normale d'écrire un bouton qui mène quelque part, ici) ni les rayons
+NOMMÉS de Tailwind. C'est la troisième fois que ce contrôle attrape le cas rare
+et manque le cas courant, et c'est encore le patron qui l'a vu.
+
+Le motif est élargi, avec **quatre témoins** — un par angle mort déjà payé — et
+un cinquième qui vérifie qu'une capsule n'est jamais dénoncée à tort. Un
+sixième est né sur-le-champ : en arrondissant le bouton, le commentaire écrit
+juste au-dessus citait le rayon retiré, et le contrôle a dénoncé un bouton
+parfaitement rond. Il ignore désormais les commentaires.
+
+Réparé, il dénonce six boutons. Cinq sont sur les écrans du CLIENT ou le chevron
+de retour, jamais arbitrés : **déclarés en exceptions nommées, chacune avec sa
+raison**, et portés dans `TODO.md` pour sa décision. Les restyler en silence
+aurait changé l'apparence d'écrans qu'il n'a pas demandés.
+
+---
+
+### « Mr. Martins », et le tiret qui collait deux choses différentes
+
+**Sa capture, ce matin :** *« il faut qu'il y ait écrit monsieur Martins et pas
+chez Martins. Ensuite tu me retires le tiret entre le nom et l'adresse […]
+d'abord le nom, ensuite à la ligne l'adresse. Pour le client, c'est pareil. »*
+
+Trois corrections, et **la deuxième a coûté bien plus cher que la première.**
+
+**1. La civilité.** Le nom du chantier était fabriqué par l'application —
+« Chez » suivi du client. C'est la phrase par laquelle un artisan désigne un
+chantier ; en tête d'un document, on nomme quelqu'un. `src/lib/civilite.ts` pose
+« Monsieur » devant un nom nu, et **jamais** devant un nom qui porte déjà sa
+civilité (« Mme Roux ») ni devant une raison sociale (« SARL Untel »). Un seul
+fichier sert les trois endroits où le client est nommé.
+
+**Le mot a changé le jour même** : « Monsieur » d'abord, puis, une fois vu à
+l'écran, *« Mr. Martins, pas Monsieur »*. Il ne s'écrit donc qu'à un seul
+endroit, et les contrôles le demandent à la règle au lieu de le recopier — sans
+quoi la moindre correction de sa part rougirait dix suites sans rien apprendre.
+
+Ce que ça coûte, écrit plutôt que tu : il n'existe **aucun champ de civilité**
+dans la fiche client. La civilité est un défaut, pas une donnée — une cliente
+sera mal nommée. Le vrai remède est un choix à la création du client ; il n'a
+pas été ajouté sans son accord.
+
+**2. Une migration qui ne changeait rien, et le disait au vert.** Le nom du
+chantier est écrit en base à la création : corriger la règle seule aurait laissé
+« Chez Martins » sur l'écran même qu'il photographiait. D'où une migration. La
+première version — un `UPDATE` ordinaire — **s'est appliquée sans erreur et n'a
+touché aucune ligne** : `chantiers` porte la RLS en mode forcé, le propriétaire
+y compris, et sans contexte d'entreprise posé aucune ligne n'est visible. C'est
+le piège que `CLAUDE.md` §3 décrit, rencontré pour la première fois dans une
+migration ; les précédentes ne modifiaient que `termes_metier`, table sans RLS
+forcée.
+
+La version retenue **ne désactive rien** : elle boucle sur les entreprises en
+posant le contexte de chacune, comme la file `audios_a_purger`. Et un contrôle
+rejoue la migration puis vérifie le **résultat**, parce qu'un « 1 migration
+appliquée » ne prouve rien. Ce contrôle a lui-même été un faux vert — il posait
+le contexte pour ses propres insertions, dont la migration héritait — et il ne
+l'est plus : confronté à la version défaillante, il rougit.
+
+**3. Le tiret.** Il réunissait deux choses de nature différente, qui et où. Sur
+les 390 px de son iPhone la phrase se repliait déjà, mais **au mauvais
+endroit** : au milieu de l'adresse, jamais entre le nom et elle. Deux
+paragraphes désormais, et la suite **mesure les rectangles** — le détail sous le
+nom, à la même marge — parce qu'un contrôle qui compte les lignes serait passé
+au vert sur ce défaut-là.
+
+**4. Le message tout prêt, et l'encart du client.** Demandés dans la foulée, sa
+capture du SMS à l'appui. Le message dit maintenant « Bonjour Mr. Martins » —
+devis et facture, par la même règle — et « vous **pouvez** en proposer une
+autre » au lieu de « vous pourrez » : le futur repoussait le geste à plus tard.
+
+Et l'encart où le client écrit porte enfin une phrase qui l'y invite. L'intitulé
+posait une question sans dire qu'on avait le droit d'y répondre. Ce n'est pas de
+la politesse : un client qui repère une faute et n'ose pas l'écrire touche « Je
+ne donne pas suite », et le patron lit un refus là où il n'y avait qu'une
+coquille. La phrase est au-dessus du champ — lue après coup, elle n'inviterait
+plus personne — et elle **ne promet aucune réponse**, que rien ici ne
+permettrait de tenir.
+
+`ARCHITECTURE.md` §77.
+
+### « Corriger le devis » ouvre enfin le devis, et non l'écran d'à côté
+
+**Sa demande, capture à l'appui :** *« lorsque je clique sur corriger le devis,
+je dois arriver directement sur la page du devis pour pouvoir le corriger. Et
+aujourd'hui, ce n'est pas le cas. »*
+
+La veille, ce bouton menait à l'écran d'envoi — celui qui porte « Corriger et
+renvoyer » — par crainte de reprendre le devis à sa place. **La crainte visait
+juste, mais pas ici : c'est lui qui appuie**, sur un bouton qui annonce la
+correction. Le geste était déjà le sien ; l'en priver ne le protégeait de rien
+et lui coûtait un écran de plus, puis un second appui, pour arriver là où il
+voulait aller d'emblée.
+
+Le bouton reprend donc le devis puis ouvre le document, prêt à être corrigé.
+Reprendre ne l'empile pas : un brouillon déjà ouvert est réutilisé tel quel, et
+une reprise depuis un devis parti garde le même numéro commercial en montant
+d'une version. Appuyer deux fois ne fabrique pas deux devis.
+
+**Ce qui n'a PAS changé, et c'est délibéré.** Un devis **accepté** ne se reprend
+jamais d'office : ce serait remplacer sans le dire le document sur lequel le
+client et lui se sont mis d'accord. Un **refus** ou un **silence** continuent de
+mener à l'écran d'envoi : après un refus, la suite n'est pas forcément de
+refaire le devis — elle peut être d'abandonner le chantier ou d'appeler le
+client, et ouvrir une version à chaque coup d'œil encombrerait l'historique.
+
+**Éprouvé, et pas seulement écrit.** La règle pure distingue désormais la
+destination et la reprise, et refuse qu'on ouvre le document figé sans reprise —
+c'est l'ancien défaut, et il reste interdit. La suite navigateur presse le
+bouton pour de vrai, suit la navigation, et vérifie que le devis obtenu est
+**réellement modifiable** : pas seulement l'absence du bandeau « il ne se
+modifie plus », mais un champ de ligne qui accepte la frappe. Confronté au
+correctif retiré : deux cas au rouge. Écran capturé, et le devis s'ouvre bien
+sans bandeau.
+
+**Un cinquième piège d'attente corrigé au passage** : la préparation du décor de
+cette suite patientait trois secondes et demie après l'envoi du devis, puis
+accusait le produit — « le devis n'est pas parti » — d'une impatience. Quatre
+autres suites étaient tombées sur exactement ce piège la veille.
+
+---
+
+## 2026-08-13
+
 ### Six branches réunies dans `main`, et ce que la réunion a coûté
 
 **Sa demande, le 13 août :** *« Fusionne. »* Six branches vivaient à côté de
@@ -52,7 +296,91 @@ parce qu'on s'y fie encore (`CLAUDE.md` §1).
 maquette, et la connexion réelle dans un vrai navigateur derrière une origine
 étrangère. Aucune régression.
 
+### Deux sessions ont corrigé « Chez Martins » le même jour — et c'est la leur qui tient
+
+Il l'a demandé aux deux, à quelques heures d'écart : *« corrige le nom, Mr
+Martins, pas chez Martins ! »* d'un côté, *« il faut qu'il y ait écrit monsieur
+Martins et pas chez Martins »* de l'autre.
+
+**Ma version rendait le nom nu** — « Martins » — au motif qu'ajouter « M. »
+supposerait un genre. **La sienne écrit « Monsieur Martins »**, et il a levé
+cette réserve en connaissance de cause (`src/lib/civilite.ts`). C'est la sienne
+qui est retenue : elle fait ce qu'il a demandé au mot près, et elle était sur
+`main` la première.
+
+**Et elle a trouvé ce que la mienne ratait.** Ma migration était un `UPDATE …
+FROM clients …` tout simple. Sous la RLS forcée, sans contexte d'entreprise
+posé, il ne voit **aucune ligne** : il s'applique, rapporte un succès, et ne
+change rien — en silence. La sienne procède entreprise par entreprise.
+`ARCHITECTURE.md` §77. Ma migration a été retirée.
+
+### La ligne sous le nom dit ce qui est parti, et quand
+
+**Son choix, devant les cinq propositions :** *« j'aime bien le D, mais en
+dessous de "devis envoyé" je veux qu'il y ait marqué la date à laquelle on l'a
+envoyé. »* La liste porte donc « DEVIS ENVOYÉ · SANS RÉPONSE » en or, et sous
+lui « Envoyé le jeudi 13 août. » `ARCHITECTURE.md` §79.
+
+**La date n'est jamais devinée** : sans envoi enregistré, la seconde ligne
+n'existe pas. Le repli tentant — la dernière modification du chantier, celle qui
+s'affiche à gauche — n'est PAS la date d'envoi : une photo ajoutée la déplace,
+et c'est sur elle qu'il compte ses jours d'attente.
+
+**Un doublon né du retrait de « Chez », vu à l'œil sur une capture.** Le titre
+étant devenu « Martins », un chantier sans adresse affichait le même mot deux
+fois de suite — la ligne du lieu se rabattait sur le nom du client. Elle ne s'y
+rabat plus que si elle apprend quelque chose ; sinon elle écrit « Adresse non
+renseignée », qui est une information. **Retirer un mot d'un libellé peut faire
+entrer deux autres en collision.**
+
+### Cinq libellés pour la ligne sous le nom — à son choix
+
+Il veut y lire que le devis est parti et qu'on attend. Cinq propositions
+l'attendent dans `docs/maquettes/41-la-ligne-sous-le-nom.html`, **rien n'est
+codé**.
+
+**La planche n'est pas dessinée, elle est photographiée.** La première version
+l'était, et elle mentait : une page HTML ordinaire rend ces mots plus larges
+qu'Inter dans l'application — au dessin, même le libellé ACTUEL passait sur deux
+lignes alors qu'il tient sur une chez lui. La mesure sur l'écran réel a révélé
+mieux qu'un oui/non : **la largeur de son téléphone fait partie de la
+décision.** Le libellé actuel est déjà à la limite — il tient sur un 430 px,
+pas sur un 390. `ARCHITECTURE.md` §78.
+
 ---
+
+## 2026-08-13
+
+### Le message du devis figé est devenu la porte
+
+**Le patron, capture à l'appui :** *« le message dit de consulter la case devis
+mais aucune case devis existe »*. Puis, plus utile encore : *« j'aimerais avoir
+ton avis — est-ce utile de créer une case, ou est-ce qu'on retire le message ? »*
+
+**Il avait raison sur le fond.** L'écran Devis existe bien
+(`/chantiers/[id]/export`) — mais il vit dans le **tiroir** de la fiche, et
+**aucune porte n'y menait** depuis la page du devis. La phrase décrivait donc un
+itinéraire à reconstituer seul. Pire : deux écrans s'appellent « Devis » de son
+point de vue, celui qu'il regarde et celui où l'on corrige. « Ouvrez l'écran
+Devis » était introuvable **et** ambigu.
+
+**Ni l'un ni l'autre : le message devient la porte.** Quatre lignes deviennent
+deux — ce qui se passe, puis un lien qui y mène.
+
+Pourquoi **pas de nouvelle case** : l'écran existe déjà et vit dans le tiroir de
+la fiche ; un second accès permanent ferait deux portes vers la même pièce, ce
+qu'on venait justement d'éviter sur l'écran du devis.
+
+Pourquoi **pas de retrait** : cet écran est celui où l'on RÉDIGE. Sans cette
+phrase, toucher un prix ne ferait rien et rien ne dirait pourquoi — le silence
+que ce dépôt combat depuis le début. Il l'a arbitré lui-même après avoir vu les
+trois façons dessinées (`docs/maquettes/40-le-message-du-devis-fige.html`).
+
+`scripts/test-devis-fige-porte-e2e.ts` tient le lien plutôt que la phrase :
+**une phrase qui décrit un chemin se dégrade en silence le jour où le chemin
+bouge ; un lien qui mène ailleurs se voit tout de suite.** La suite vérifie
+aussi que les mots signalés ont disparu, que la porte s'ouvre pour de bon, et
+qu'un devis pas encore parti ne s'annonce jamais figé.
 
 ## 2026-08-12
 
@@ -1151,6 +1479,49 @@ Un troisième exigeait la phrase « Le lien est toujours actif », et s'appelait
 l'affichage mais le fait que **relancer réutilise le même lien** : il s'appelle
 maintenant ainsi, et le vérifie sur le geste de relance et sur le nombre de
 versions en base.
+### « An unexpected response was received from the server. » — en français, et seulement quand c'est vrai
+
+**Sa capture, à 14 h 04 :** un panneau rouge en anglais, une pile d'appel dans
+`node_modules`, rien sur ce qui s'est passé ni sur quoi faire.
+
+**Ce que la capture disait et qu'il fallait lire :** le chemin commençait par
+`.next/dev` — **son banc servait la version LENTE**. En version lente, chaque
+écran se compile au premier appel — trente à cent secondes, davantage sur son
+disque — et **le relais de GitHub abandonne au bout d'une minute** en rendant sa
+propre page d'erreur. Le navigateur reçoit du HTML là où il attendait une
+réponse d'Atlas : c'est exactement ce message.
+
+**Ce qui n'a PAS été fait, et pourquoi.** La cause n'a pas été reproduite ici :
+le bouton de mise à jour, joué dans les conditions du banc avec le code changé
+sous la page ouverte, s'est comporté correctement. Rien n'a donc été « corrigé »
+au jugé — la seconde faute que ce dépôt s'interdit après avoir accusé à tort.
+
+Deux choses ont été faites, toutes deux vérifiables :
+
+1. **Le défaut parle.** `src/lib/reponse-illisible.ts` reconnaît cette famille
+   d'échec — quatre formulations, selon le navigateur et la version du cadre —
+   et un veilleur posé dans la coque affiche une phrase française avec le seul
+   geste utile : **Recharger**. Sur la version rapide, ce panneau n'existe même
+   pas : l'échec y est muet, le bouton pressé ne fait rien. Des deux, le silence
+   était le pire.
+2. **L'écran dit qu'il est lent.** Réglages annonce désormais, en toutes
+   lettres, que la version servie est celle qui se construit encore — et que
+   c'est elle qui produit « une réponse inattendue du serveur ». Rien ne le
+   disait ; il ne pouvait pas relier les deux.
+
+**Ce que le veilleur REFUSE de faire compte autant.** Un défaut ordinaire du
+code n'est jamais habillé en lenteur : l'y habiller enverrait recharger une page
+qui ne guérira pas, et masquerait le défaut. Six messages réels — dont
+« Invalid Server Actions request. » et une erreur d'hydratation — sont éprouvés
+comme devant rester tels quels.
+
+**Trouvé par la suite navigateur, avant lui :** le veilleur n'était monté que
+sur les écrans à barre de navigation. **L'écran de connexion en était dépourvu**
+— c'est-à-dire précisément l'écran où une réponse coupée est la plus probable,
+puisque c'est le premier appel, celui qui compile tout, et le seul où il n'a
+aucun autre repère.
+
+
 
 ### Le devis parti, sur sa base — cinq façons de tenir ce qu'il a arrêté
 
