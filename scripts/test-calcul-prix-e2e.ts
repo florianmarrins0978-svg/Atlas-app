@@ -136,7 +136,15 @@ async function main() {
   // exacte dépend d'un timing extérieur à ce lot. Ce qui est vérifié ici, et qui
   // relève bien du calcul du prix : le chantier a franchi l'étape Prix et ne
   // propose plus de la refaire.
-  const etapesDevisAcceptees = ["Préparer le devis", "Consulter le devis"];
+  // « Consulter le devis » est devenu « Envoyer le devis au client » le 13 août
+  // 2026 : le libellé dit désormais le GESTE qui reste, pas l'écran où il mène
+  // (`ARCHITECTURE.md` §76). L'intention de ce contrôle — l'étape suivante doit
+  // concerner le devis — n'a pas bougé d'un pouce.
+  const etapesDevisAcceptees = [
+    "Préparer le devis",
+    "Consulter le devis",
+    "Envoyer le devis au client",
+  ];
   await page.goto(chantierUrl, { waitUntil: "networkidle" });
   // Lecture du texte réellement rendu : plus robuste que le moteur `text=` face
   // au libellé découpé en deux nœuds (`{label} →`), et le contenu obtenu sert
