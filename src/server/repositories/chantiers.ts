@@ -110,6 +110,10 @@ export async function listerChantiersPourAffichage(ctx: Ctx) {
         // `getStatutAffiche` ne pouvait pas savoir qu'un devis était écrit, et
         // annonçait « Brouillon » sur un chantier qui n'attendait plus que son
         // envoi. C'est ce que le patron a lu sur sa propre liste.
+        // `prixValideAt` sert la REPRISE : sans lui, un chantier chiffré mais
+        // sans devis ramènerait le patron à la dictée au lieu de l'écran du
+        // prix (`lienDeReprise`).
+        prixValideAt: chantiers.prixValideAt,
         devisGenereAt: chantiers.devisGenereAt,
         devisEnvoyeAt: chantiers.devisEnvoyeAt,
         datePlanifiee: chantiers.datePlanifiee,

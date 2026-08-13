@@ -373,16 +373,27 @@ vingt-cinq minutes pour observer UNE suite — c'est ce coût-là qui pousse à
 supposer une cause au lieu d'aller la lire. Le script dit à voix haute qu'il
 n'est pas la batterie.
 
-## Ce qu'il reste à lui montrer : le corps de la fiche (13 août)
+## ⚠ Rouvrir un chantier, c'est REPRENDRE (13 août) — et la leçon qui va avec
 
-L'état et l'étape suivante disent désormais la vérité sur un chantier avancé
-(`ARCHITECTURE.md` §76). **Mais le grand geste au centre de l'écran raconte
-encore un chantier neuf** : l'anneau de dictée et « Appuyez et décrivez le
-chantier » s'affichent sur une fiche dont le devis est écrit et prêt à partir.
+La liste des chantiers ne mène plus à la fiche mais **à l'écran où le travail
+s'est arrêté** (`lienDeReprise`, `ARCHITECTURE.md` §76). Sa demande, mot pour
+mot : *« que ça me renvoie à l'étape où je me suis arrêté ».*
 
-C'est une question d'apparence : elle **se dessine avant de se coder**
-(`CLAUDE.md` §3 bis), et elle attend son avis. Ne rien poser dans
-`src/app/chantiers/[id]/page.tsx` avant qu'il ait choisi.
+**La leçon, et elle vaut au-delà de ce point.** Le premier correctif a traité un
+défaut RÉEL mais pas le sien : la fiche annonçait « Brouillon » et proposait
+« Ajouter des photos » sur un devis prêt à partir. C'était juste à corriger, et
+ce n'était pas ce qu'il demandait. Il a dû le redire : *« non non, mais ne
+touche pas au centre en fait. Tu n'as pas compris ma requête. »*
+
+Ce qui l'avait fait dévier : sa plainte décrivait un SYMPTÔME (« je suis obligé
+de refaire toutes les étapes »), et le premier écran regardé portait bien un
+défaut. **Trouver un défaut sur le chemin ne prouve pas que c'est le sien.** La
+phrase qui tranchait était pourtant dans son message : *« si je reclique sur mon
+chantier »* — c'est la LIGNE DE LA LISTE qu'il désignait, pas la fiche.
+
+**Ne pas rouvrir le centre de la fiche** sans qu'il le demande. La maquette
+`maquettes/atlas-centre-de-la-fiche.html` reste au placard, et n'a rien changé
+dans `src/`.
 
 ## Ce qui vient d'être terminé
 

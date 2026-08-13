@@ -360,3 +360,53 @@ export function trierParDatePlanifiee<T extends { datePlanifiee?: string | null 
     return a.datePlanifiee < b.datePlanifiee ? -1 : a.datePlanifiee > b.datePlanifiee ? 1 : 0;
   });
 }
+
+/**
+ * Où l'on retombe en rouvrant un chantier depuis la liste.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa demande, le 13 août 2026, et il a fallu deux essais pour la
+ * comprendre :** *« il faut absolument que si je me suis arrêté à l'étape
+ * d'envoyer le devis, si je fais retour et que je retombe sur la catégorie
+ * chantier puis que je reclique sur mon client en attente, que ça me renvoie à
+ * l'étape où je me suis arrêté. Donc là, en l'occurrence, j'étais sur la page
+ * où je devais ouvrir le SMS pour envoyer le devis. Ça doit m'envoyer là. Si je
+ * me suis arrêté à mettre des photos et à rédiger la note vocale, il faut que
+ * ça me remette à cette page-là. Et ainsi de suite. »*
+ *
+ * **Le premier essai avait corrigé autre chose** : la fiche annonçait
+ * « Brouillon » et proposait « Ajouter des photos » sur un devis prêt à partir
+ * (§76 d'`ARCHITECTURE.md`). C'était un vrai défaut, mais ce n'était pas
+ * celui-là. Ce qu'il demande ici n'est pas que la fiche dise mieux : c'est de
+ * **ne plus repasser par la fiche du tout**.
+ *
+ * La liste ne mène donc plus à la fiche, mais **à l'écran où le travail s'est
+ * arrêté**. Rouvrir un chantier, c'est reprendre — pas recommencer.
+ *
+ * **Ce qui reste sur la fiche, et pourquoi ce n'est pas un oubli.** Deux états
+ * n'ont aucun écran où reprendre : un devis parti dont on attend la réponse du
+ * client, et un chantier déjà planifié. Le renvoyer vers le planning général
+ * l'éloignerait de son chantier au lieu de l'y ramener. Dans ces deux cas, la
+ * fiche EST l'endroit : elle porte l'état, le tiroir et la sortie vers la
+ * facture.
+ *
+ * **Et la fiche reste à un doigt**, toujours : la flèche de retour de chaque
+ * écran y mène. Reprendre au bon endroit ne ferme aucune porte.
+ * ───────────────────────────────────────────────────────────────────────────
+ */
+export function lienDeReprise(id: string, c: EtatChantierPourAction): string {
+  const action = getNextAction(c);
+  if (!action) return `/chantiers/${id}`;
+  // **Trois étapes se reprennent SUR la fiche**, et ce n'est pas un repli :
+  //
+  //   · les photos et la dictée y vivent pour de bon — la pellicule et
+  //     l'anneau sont au milieu de l'écran depuis sa demande du 11 août
+  //     (« il est en plein milieu et dès qu'on arrive sur la page, il y est »).
+  //     C'est bien « cette page-là » qu'il décrit ;
+  //   · un chantier planifié n'a rien à reprendre : l'envoyer vers le planning
+  //     général l'éloignerait de son chantier au lieu de l'y ramener.
+  if (action.key === "photos" || action.key === "note-vocale" || action.key === "planifier") {
+    return `/chantiers/${id}`;
+  }
+  return getNextActionHref(id, action);
+}

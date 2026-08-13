@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import {
   getNextAction,
   getStatutAffiche,
+  getNextActionHref,
+  lienDeReprise,
   statutLabel,
   type EtatChantierPourAction,
 } from "../src/lib/chantier-etat";
@@ -213,6 +215,84 @@ cas("l'attente d'une réponse du client prime sur « prêt à envoyer »", () =>
     ),
     "en_attente_client"
   );
+});
+
+
+// ─── SA DEMANDE, la vraie : rouvrir un chantier, c'est REPRENDRE ───────────
+//
+// *« Il faut absolument que si je me suis arrêté à l'étape d'envoyer le devis,
+// si je fais retour et que je retombe sur la catégorie chantier puis que je
+// reclique sur mon client en attente, que ça me renvoie à l'étape où je me suis
+// arrêté. [...] Si je me suis arrêté à mettre des photos et à rédiger la note
+// vocale, il faut que ça me remette à cette page-là. Et ainsi de suite. »*
+
+const CHANTIER = "3f2a5b7c-1111-2222-3333-444455556666";
+
+cas("SON CAS : la liste mène à l'écran d'ENVOI, pas à la fiche", () => {
+  // C'est là qu'il s'était arrêté : « la page où je devais ouvrir le SMS ».
+  assert.equal(
+    lienDeReprise(CHANTIER, { ...NEUF, prixValideAt: JADIS, devisGenereAt: JADIS }),
+    `/chantiers/${CHANTIER}/export`
+  );
+});
+
+cas("chaque arrêt a son écran de reprise, et « ainsi de suite »", () => {
+  const attendus: [Partial<EtatChantierPourAction>, string][] = [
+    // Rien fait, ou seulement des photos et une dictée : la fiche EST l'écran —
+    // l'anneau et la pellicule y vivent. C'est son deuxième exemple.
+    [{}, ""],
+    // Photos et dictée se reprennent SUR la fiche : la pellicule et l'anneau y
+    // sont, au milieu de l'écran. C'est « cette page-là », dans ses mots.
+    [{ photosCount: 2 }, ""],
+    [{ aUneNoteVocale: true }, "/informations"],
+    [{ informationsVerifieesAt: JADIS }, "/prix"],
+    [{ prixValideAt: JADIS }, "/export"],
+    [{ devisGenereAt: JADIS }, "/export"],
+  ];
+  for (const [jalon, suffixe] of attendus) {
+    assert.equal(
+      lienDeReprise(CHANTIER, { ...NEUF, ...jalon }),
+      `/chantiers/${CHANTIER}${suffixe}`,
+      `${JSON.stringify(jalon)} ne reprend pas au bon endroit`
+    );
+  }
+});
+
+cas("un devis parti ou un chantier planifié restent sur leur fiche", () => {
+  // **Le planning général n'est PAS un écran de reprise.** L'y envoyer
+  // l'éloignerait de son chantier au lieu de l'y ramener — et il n'y a rien à
+  // reprendre : c'est le client qu'on attend.
+  assert.equal(lienDeReprise(CHANTIER, { ...NEUF, devisEnvoyeAt: JADIS }), `/chantiers/${CHANTIER}`);
+  assert.equal(
+    lienDeReprise(CHANTIER, { ...NEUF, devisEnvoyeAt: JADIS, datePlanifiee: "2026-09-01" }),
+    `/chantiers/${CHANTIER}`
+  );
+});
+
+cas("la reprise et l'étape suivante ne peuvent pas diverger", () => {
+  // Deux règles pour une même question finiraient par se contredire : la fiche
+  // proposerait un geste et la liste en ouvrirait un autre. `lienDeReprise` est
+  // donc bâtie SUR `getNextAction`, et ce contrôle tient la promesse.
+  const etats: Partial<EtatChantierPourAction>[] = [
+    {},
+    { photosCount: 1 },
+    { aUneNoteVocale: true },
+    { informationsVerifieesAt: JADIS },
+    { prixValideAt: JADIS },
+    { devisGenereAt: JADIS },
+  ];
+  for (const jalon of etats) {
+    const etat = { ...NEUF, ...jalon };
+    const action = getNextAction(etat);
+    assert.ok(action, "un chantier non planifié a toujours une étape suivante");
+    const reprise = lienDeReprise(CHANTIER, etat);
+    // La reprise est SOIT la fiche (pour ce qui s'y fait déjà), SOIT exactement
+    // l'écran de l'étape suivante. Jamais un troisième endroit inventé.
+    assert.ok(
+      reprise === `/chantiers/${CHANTIER}` || reprise === getNextActionHref(CHANTIER, action),
+      `la liste ouvre « ${reprise} » là où la fiche propose « ${getNextActionHref(CHANTIER, action)} »`
+    );
+  }
 });
 
 console.log(

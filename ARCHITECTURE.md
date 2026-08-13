@@ -5783,10 +5783,48 @@ rejouerait le défaut en silence. Le compilateur a d'ailleurs immédiatement
 désigné le coupable — `src/app/page.tsx`, l'écran de sa capture : **la liste des
 chantiers ne lisait même pas ce jalon**.
 
+### Ce qu'il demandait vraiment : ne plus repasser par la fiche
+
+**Le premier correctif traitait le mauvais symptôme.** Ce qui précède est un vrai
+défaut — la fiche mentait sur l'état et sur l'étape — mais ce n'était pas sa
+demande. Il l'a redite, plus précisément : *« il faut absolument que si je me
+suis arrêté à l'étape d'envoyer le devis, si je fais retour et que je retombe
+sur la catégorie chantier puis que je reclique sur mon client en attente, que ça
+me renvoie à l'étape où je me suis arrêté. [...] Si je me suis arrêté à mettre
+des photos et à rédiger la note vocale, il faut que ça me remette à cette
+page-là. Et ainsi de suite. »*
+
+Il ne veut pas que la fiche dise mieux. **Il veut ne plus y repasser.**
+
+`lienDeReprise` porte cette règle : la liste des chantiers ne mène plus à la
+fiche, mais **à l'écran où le travail s'est arrêté**.
+
+| Où il s'est arrêté | Où la ligne le ramène |
+|---|---|
+| rien, ou des photos, ou une dictée | la fiche — **la pellicule et l'anneau y sont** |
+| informations vérifiées | l'écran du prix |
+| prix posé, ou devis écrit | **l'écran d'envoi** |
+| devis parti, chantier planifié | la fiche — il n'y a rien à reprendre |
+
+**Bâtie SUR `getNextAction`, jamais à côté.** Deux règles pour une même question
+finiraient par se contredire : la fiche proposerait un geste et la liste en
+ouvrirait un autre. Un contrôle tient cette promesse
+(`test-reprendre-ou-il-en-etait.ts`).
+
+**Le planning général n'est pas un écran de reprise**, et c'est le seul endroit
+où l'on s'écarte de l'étape suivante : y envoyer quelqu'un qui touche SON
+chantier l'éloignerait au lieu de l'y ramener.
+
+**Et la fiche reste à un doigt** : la flèche de retour de chaque écran y mène.
+Reprendre au bon endroit ne ferme aucune porte — un contrôle navigateur le
+vérifie, sur sa séquence exacte, retour par mégarde compris
+(`test-reprise-chantier-e2e.ts`).
+
 ### Ce qui reste ouvert, et qui ne se décide pas ici
 
 Le corps de la fiche continue d'afficher l'anneau de dictée — « Appuyez et
-décrivez le chantier » — sur un chantier dont le devis est écrit. L'état et
-l'étape suivante disent désormais la vérité, mais **le grand geste au centre de
-l'écran raconte encore un chantier neuf**. C'est une question d'apparence : elle
-se dessine avant de se coder (`CLAUDE.md` §3 bis), et elle attend son avis.
+décrivez le chantier » — sur un chantier dont le devis est écrit. **Il a dit de
+ne pas y toucher** (« ne touche pas au centre en fait »), et la maquette
+`maquettes/atlas-centre-de-la-fiche.html` reste au placard : elle n'a rien
+changé dans `src/`. Le sujet peut se rouvrir un jour ; il n'est pas ouvert
+aujourd'hui.

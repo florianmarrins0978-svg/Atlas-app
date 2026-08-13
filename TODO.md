@@ -27,7 +27,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 duovicies. Le corps de la fiche montre encore un chantier neuf — **maquette à faire**
+### 0 duovicies. ~~Le corps de la fiche montre encore un chantier neuf~~ — **CLOS le 13 août : « ne touche pas au centre »**
 
 **Trouvé en corrigeant son défaut du 13 août** (`ARCHITECTURE.md` §76), et
 laissé ouvert exprès. L'état dit maintenant « Devis prêt à envoyer » et l'étape
@@ -35,8 +35,13 @@ suivante « Envoyer le devis au client » — mais **le centre de l'écran affic
 toujours l'anneau de dictée** et « Appuyez et décrivez le chantier », sur un
 chantier dont le devis est écrit.
 
-C'est de l'apparence : **la maquette d'abord**, sa règle du 11 août. Ne rien
-poser dans `src/app/chantiers/[id]/page.tsx` avant son choix.
+**Il a tranché le jour même : « non non, mais ne touche pas au centre en fait.
+Tu n'as pas compris ma requête ».** Ce qu'il voulait était ailleurs — que la
+liste le ramène à l'écran où il s'est arrêté (`ARCHITECTURE.md` §76), et c'est
+fait. La maquette `maquettes/atlas-centre-de-la-fiche.html` reste au placard :
+elle n'a rien changé dans `src/`, et elle raconte le chemin.
+
+**Ne pas rouvrir ce point sans qu'il le demande.**
 
 Ce qui est déjà su, et qui cadre le dessin : l'étape suivante ne vit que dans le
 tiroir, replié par défaut. Un chantier avancé devrait probablement porter son

@@ -56,6 +56,27 @@ maquette, et la connexion réelle dans un vrai navigateur derrière une origine
 
 ## 2026-08-13
 
+### Rouvrir un chantier, c'est REPRENDRE — la liste mène là où il s'est arrêté
+
+**Sa demande, redite plus précisément après un premier correctif à côté :** *« si
+je me suis arrêté à l'étape d'envoyer le devis [...] que ça me renvoie à l'étape
+où je me suis arrêté. [...] Si je me suis arrêté à mettre des photos et à
+rédiger la note vocale, il faut que ça me remette à cette page-là. Et ainsi de
+suite. »*
+
+Il ne demandait pas que la fiche dise mieux : **il demandait de ne plus y
+repasser.** La liste des chantiers ouvre désormais l'écran où le travail s'est
+arrêté — l'envoi s'il était sur l'envoi, le prix s'il était sur le prix, la
+fiche tant qu'il n'y a que des photos et une dictée (elles y vivent).
+
+La règle est bâtie **sur** l'étape suivante, jamais à côté : deux règles pour la
+même question finiraient par se contredire, la fiche proposant un geste et la
+liste en ouvrant un autre. Éprouvée sur sa séquence exacte dans un vrai
+navigateur, retour par mégarde compris. `ARCHITECTURE.md` §76.
+
+**Ce qui n'a PAS été touché, sur sa consigne :** le centre de la fiche. La
+maquette dessinée entre-temps reste au placard.
+
 ### « Il n'y a pas de mémoire dans les actions » : on repart du plus avancé
 
 **Son défaut, dans ses mots :** *« J'étais en train de rédiger le devis, [...]
