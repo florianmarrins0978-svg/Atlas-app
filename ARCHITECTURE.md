@@ -5824,9 +5824,16 @@ Les mesures vivent dans `globals.css` (`.atlas-souffle`), le geste dans
 `src/components/atlas/PointsQuiSoufflent.tsx` — **pas dans l'écran**. Ce dépôt a
 payé deux fois le geste dessiné sur place : la feuille d'envoi du devis (§66) et
 le bouton de la facture (§73), tous deux passés à côté d'une décision d'ensemble
-parce qu'ils étaient peints chez eux. Une seconde attente immobile dort d'ailleurs
-déjà sur le bouton d'ajout de photo (`Pellicule.tsx`) — le composant est écrit
-pour elle.
+parce qu'ils étaient peints chez eux.
+
+**Et le composant a servi le jour même.** Le bouton d'ajout de photo
+(`Pellicule.tsx`) portait le même caractère « … » immobile, à la lettre près ; le
+patron a tranché en une phrase : *« oui souffle aussi pour la photo »*. Les
+points y sont **or** et non vert sans qu'une seule mesure ait été recopiée — ils
+héritent de `currentColor`, donc de la couleur du bouton qui les porte. C'est la
+raison pour laquelle la couleur n'est pas écrite dans le composant : deux
+attentes du même produit doivent se dire de la même façon, sans se peindre
+pareil.
 
 ### Ce que la vérification a dû apprendre
 
@@ -5852,3 +5859,24 @@ contrôle.
    points sortait en trace d'outil et **arrêtait tout** : les deux autres
    moitiés du correctif n'étaient plus mesurées. Elle est désormais un défaut
    nommé, et les quatre points rougissent ensemble.
+
+### Ralentir le serveur a un prix, et il se paie ailleurs
+
+Les deux suites — la dictée et les photos — retiennent la réponse du serveur
+pour rendre l'attente observable. **Router une adresse dans Playwright désactive
+le cache HTTP de la page entière**, pas seulement des requêtes visées.
+
+Sur les photos, la visionneuse repartait donc du réseau pour une image déjà
+affichée : au moment du contrôle, son `<img>` n'avait pas fini de charger, sa
+boîte faisait zéro pixel, et Playwright la déclarait invisible. **L'échec
+accusait la visionneuse, qui n'y était pour rien** — et il n'a été compris qu'en
+AFFICHANT les images réellement présentes : elles étaient là, toutes les deux, au
+bon endroit. Le supposer aurait coûté la demi-journée que `AGENTS.md` décrit.
+
+Deux règles, pour toute suite qui ralentit volontairement un serveur :
+
+1. **relâcher la route dès la mesure faite** (`page.unroute`), sans quoi son
+   effet de bord traverse tout le reste du parcours ;
+2. **la relâcher APRÈS la fin de l'échange retenu** — la couper en vol laisse un
+   appel à moitié traité, et l'outil répond « Route is already handled! », une
+   erreur qui n'apprend rien sur ce qu'on éprouve.

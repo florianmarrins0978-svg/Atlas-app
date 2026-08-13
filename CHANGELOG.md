@@ -25,9 +25,18 @@ l'on se demande s'il est en panne. C'est aussi la seule des trois qui parvienne 
 qui n'a pas les yeux sur l'écran.
 
 **Le geste vit dans `PointsQuiSoufflent`, pas dans l'écran** : ce dépôt a payé
-deux fois le geste peint sur place (§66, §73). Une seconde attente immobile dort
-d'ailleurs sur le bouton d'ajout de photo — non touchée, sa règle étant
-« montre-moi avant de faire », et signalée dans `TODO.md`.
+deux fois le geste peint sur place (§66, §73). **Et il a servi le jour même** —
+le bouton d'ajout de photo portait le même caractère immobile, et il a tranché
+d'une phrase : *« oui souffle aussi pour la photo »*. Les points y sont **or** et
+non vert sans qu'une mesure ait été recopiée : ils prennent la couleur du bouton
+qui les porte.
+
+**Un piège d'outillage payé au passage.** Router une adresse dans Playwright
+désactive le cache HTTP de **toute** la page : la visionneuse repartait du réseau
+pour une image déjà affichée, son `<img>` n'avait pas fini de charger, et l'échec
+accusait la visionneuse — qui n'y était pour rien. Compris en affichant les
+images réellement présentes, pas en le supposant. La route se relâche désormais
+dès la mesure faite, et seulement une fois l'envoi terminé.
 
 **La suite retient la réponse du serveur trois secondes**, sinon elle courrait
 plus vite que l'attente et passerait au vert sans avoir rien regardé. Confrontée

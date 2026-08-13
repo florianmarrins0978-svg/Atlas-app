@@ -373,10 +373,20 @@ l'autre, sans se déplacer. `ARCHITECTURE.md` §77 porte le détail.
 le bouton qui **ne redevient pas** à demi effacé, et la phrase « Atlas rédige… »,
 qui est la seule des trois moitiés à parvenir à qui n'a pas les yeux sur l'écran.
 
-**Et une trouvaille, non traitée :** la même attente immobile — le caractère
-« … » — vit sur le bouton d'ajout de photo (`Pellicule.tsx:124`).
-`PointsQuiSoufflent` est écrit pour être partagé ; rien n'a été fait d'office,
-sa règle étant *« montre-moi avant de faire »*. `TODO.md` §0 duovicies ter.
+**La photo souffle aussi**, tranché par lui le jour même : *« oui souffle aussi
+pour la photo »*. Le bouton d'ajout portait le même caractère immobile. Les
+points y sont **or** et non vert sans qu'une mesure ait été recopiée — ils
+prennent `currentColor`. C'est pour cela que la couleur n'est pas écrite dans le
+composant : ne pas l'y remettre.
+
+**⚠ Un piège d'outillage à connaître avant d'écrire une suite qui RALENTIT le
+serveur** (les deux le font, pour rendre l'attente observable) : router une
+adresse dans Playwright **désactive le cache HTTP de toute la page**. La
+visionneuse des photos repartait du réseau pour une image déjà affichée, son
+`<img>` n'avait pas fini de charger, et **l'échec accusait la visionneuse** qui
+n'y était pour rien. Relâcher la route dès la mesure faite, et seulement une fois
+l'échange retenu terminé — la couper en vol donne « Route is already handled! ».
+`TODO.md` §0 duovicies ter.
 
 *Ce qui suit est l'historique du choix, gardé pour ne pas rouvrir ce qui est clos.*
 

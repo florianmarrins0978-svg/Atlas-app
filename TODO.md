@@ -89,16 +89,29 @@ au défaut d'origine : les quatre points rougissent, chacun **en nommant son
 coupable** — et c'est le second jet, le premier sortait un « Timeout » sur un
 sélecteur, ce qui envoie lire le contrôle au lieu de l'écran.
 
-### 0 duovicies ter. La même attente immobile existe sur le bouton d'ajout de photo
+### 0 duovicies ter. ~~La même attente immobile sur le bouton d'ajout de photo~~ — **fait le 13 août 2026**
 
-`Pellicule.tsx:124` affiche `{enCours ? "…" : "+"}` pendant l'envoi d'une photo :
-exactement le défaut qu'il a signalé le 13 août sur la dictée, au même caractère
-près. `PointsQuiSoufflent` est déjà écrit pour être partagé — il n'y a qu'à s'en
-servir.
+Signalé en passant, puis tranché par lui le jour même : *« oui souffle aussi pour
+la photo »*. `Pellicule.tsx` portait le même caractère « … » immobile que la
+dictée, à la lettre près — donc le même défaut. Il prend le même composant, et
+les points y sont **or** et non vert : ils héritent de `currentColor`, donc de la
+couleur du bouton qui les porte. Le libellé annonce l'envoi pendant l'envoi, au
+lieu de continuer à proposer d'ajouter.
 
-**Non fait d'office** : sa règle est *« montre-moi avant de faire »*, et il n'a
-parlé que du dictaphone. Mais si la même plainte revient sur les photos, la cause
-est écrite ici.
+**Un piège d'outillage payé ici, et qui resservira à toute suite qui RALENTIT le
+serveur :** router une adresse dans Playwright **désactive le cache HTTP de toute
+la page**, pas seulement des requêtes visées. La visionneuse repartait donc du
+réseau pour une image déjà affichée, son `<img>` n'avait pas fini de charger, sa
+boîte faisait zéro pixel — et l'échec accusait la visionneuse, qui n'y était pour
+rien. Deux règles en sortent :
+
+1. **relâcher la route dès la mesure faite** (`page.unroute`) ;
+2. **la relâcher APRÈS que l'envoi soit terminé** — la couper en vol laisse un
+   appel à moitié traité, et Playwright répond « Route is already handled! », une
+   erreur qui n'apprend rien sur ce qu'on éprouve.
+
+Trouvé en **affichant les images présentes** plutôt qu'en supposant : elles
+étaient là, toutes les deux, au bon endroit.
 
 **Trois choses à savoir avant d'y toucher :**
 
