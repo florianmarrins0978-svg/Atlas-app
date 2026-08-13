@@ -27,6 +27,20 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quatervicies septies. La page qui rassemble les maquettes a décroché
+
+`scripts/fusionner-maquettes.mjs` n'inscrit plus que la 40 et la 44. Les 41, 42
+et 43 — la ligne sous le nom, et les deux planches de l'attente — n'y sont pas :
+plusieurs sessions ont livré leur maquette sans l'y ajouter, le même jour.
+
+**Sans conséquence pour le patron** : les planches s'ouvrent une par une, et
+c'est ainsi qu'elles lui sont envoyées. Ce qui se perd, c'est la page unique où
+l'on compare — celle qui sert quand on rouvre un sujet trois mois plus tard.
+
+Non fait d'office : c'est de l'outillage partagé, et l'y toucher au moment de
+pousser un lot déjà éprouvé rouvrirait la batterie complète (`CLAUDE.md` §6).
+À reprendre à froid, avec `verifier-maquettes-page-unique.mjs`.
+
 ### 0 quatervicies sexies. ~~Un conflit non refermé était arrivé sur `main`~~ — **contrôlé depuis le 13 août 2026**
 
 **Constaté en refusionnant :** `ARCHITECTURE.md` portait **trois marqueurs de
