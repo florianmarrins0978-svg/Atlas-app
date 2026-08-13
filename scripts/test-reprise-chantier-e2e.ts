@@ -44,7 +44,13 @@ async function main() {
 
   console.log("--- Rouvrir un chantier, c'est reprendre ---");
 
-  const client = `M. Martins ${Date.now()}`;
+  // **Repéré par un fragment du nom du CLIENT, jamais par le libellé du
+  // chantier.** Le 13 août 2026, `main` a changé la façon de nommer un chantier
+  // — « Monsieur Martins » remplace « Chez M. Martins » (`ARCHITECTURE.md`
+  // §77) — et cette suite, écrite le même jour sur une autre branche, cherchait
+  // « Chez … ». Elle rougissait alors sur la reprise, qui n'y était pour rien.
+  const marque = `Martins ${Date.now()}`;
+  const client = `M. ${marque}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="M. Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
@@ -57,7 +63,7 @@ async function main() {
     // Son deuxième exemple : « si je me suis arrêté à mettre des photos et à
     // rédiger la note vocale, il faut que ça me remette à cette page-là ».
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
-    const lien = page.locator(`a:has-text("Chez ${client}")`).first();
+    const lien = page.locator(`a:has-text("${marque}")`).first();
     await lien.waitFor({ state: "visible", timeout: 20000 });
     assert.equal(await lien.getAttribute("href"), `/chantiers/${id}`);
   });
@@ -78,7 +84,7 @@ async function main() {
     // « J'ai fait retour sans faire exprès. »
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
 
-    const lien = page.locator(`a:has-text("Chez ${client}")`).first();
+    const lien = page.locator(`a:has-text("${marque}")`).first();
     await lien.waitFor({ state: "visible", timeout: 20000 });
     assert.equal(
       await lien.getAttribute("href"),
