@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### Cesser de rejouer soixante suites pour du code qui ne nous concerne pas
+
+**Sa décision, en quatre mots :** *« seulement quand le code touche »*.
+
+**Ce qu'elle corrige.** Le 13 août au soir, un écran fini et vérifié a mis des
+heures à lui parvenir — non par difficulté, mais par une course : `main` a bougé
+**cinq fois** pendant la vérification (30, puis 4, 11, 20 commits), et chaque
+fusion relançait une batterie de dix minutes que la fusion suivante périmait
+aussitôt.
+
+`CLAUDE.md` §6 porte désormais un tableau qui dit sans jugement ce qui compte
+comme « ça touche » : un fichier commun au lot, une migration, une pièce
+partagée (`design-tokens`, `PrimaryButton`, `EnTeteEcran`, `globals.css`,
+`layout.tsx`, `middleware.ts`), l'outillage employé. Le reste se contente des
+types, du lint, de la mémoire et des suites du domaine.
+
+**Deux garde-fous, écrits avec la règle :** la batterie complète reste
+obligatoire **avant la première poussée** d'un lot, et le doute tranche vers la
+batterie — une fusion qui ne se lit pas d'un coup d'œil se rejoue en entier.
+
+**Et une migration arrivée par la fusion s'applique AVANT de juger quoi que ce
+soit** : le même soir, trois migrations manquantes ont rendu **160 rouges** d'un
+coup, qui n'accusaient que la base locale.
+
+---
+
+## 2026-08-13
+
 ### Le numéro du devis redevenait un lien d'appel — l'en-tête ne suffisait pas
 
 **Sa capture, aujourd'hui :** « Hydration failed » sur le devis ouvert depuis un
