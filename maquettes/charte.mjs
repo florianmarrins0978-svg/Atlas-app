@@ -220,4 +220,33 @@ export async function controlerRetrait(page, verifie) {
     }));
   verifie("aucune bande vide entre deux filets qui se suivent",
     bandes.length === 0, bandes.slice(0, 3).join(" | "));
+
+  // UN MOT MIS EN GRAS NE SE DÉTACHE PAS DE SA PHRASE. Posé dans une boîte
+  // `display:flex`, chaque `<b>` devient un élément de la boîte : le texte
+  // s'éclate en colonnes, avec des trous entre les mots. Vu sur une capture le
+  // 13 août 2026 ; aucun contrôle ne le voyait.
+  const eclates = await page.$$eval(".ecran .corps", (corps) =>
+    corps.flatMap((c) =>
+      [...c.querySelectorAll("b, strong")]
+        .filter((b) => b.checkVisibility({ opacityProperty: true, visibilityProperty: true }))
+        .filter((b) => {
+          const p = b.previousSibling;
+          if (!p || p.nodeType !== 3 || !p.textContent.trim()) return false;
+          const r = document.createRange();
+          r.selectNodeContents(p);
+          const avant = [...r.getClientRects()].pop();
+          const gras = b.getBoundingClientRect();
+          if (!avant) return false;
+          // LE CRITÈRE EST LE CHEVAUCHEMENT VERTICAL, pas l'égalité des hauteurs.
+          // Éclaté en colonnes, le gras n'est PAS à la même hauteur que la fin
+          // du texte voisin — celui-ci s'étant replié sur deux lignes. Un test
+          // sur `top` égal laissait donc passer le défaut qu'il devait attraper.
+          // Un texte qui passe simplement à la ligne ne chevauche pas, et ne
+          // déclenche rien.
+          const chevauche = avant.bottom > gras.top + 2 && avant.top < gras.bottom - 2;
+          return chevauche && gras.x - (avant.x + avant.width) > 12;
+        })
+        .map((b) => `« ${b.textContent.trim().slice(0, 24)} » détaché de sa phrase`)));
+  verifie("aucun mot en gras détaché de sa phrase",
+    eclates.length === 0, eclates.slice(0, 2).join(" | "));
 }

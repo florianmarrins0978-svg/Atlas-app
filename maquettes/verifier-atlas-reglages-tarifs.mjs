@@ -51,7 +51,8 @@ const page = await ctx.newPage();
 await page.goto("file://" + path.resolve(ESSAI));
 
 const TARIFS = '[data-s="tarifs"]', FAM = '[data-s="famille"]',
-      GRILLES = '[data-s="grilles"]', VIDE = '[data-s="vide"]';
+      GRILLES = '[data-s="grilles"]', VIDE = '[data-s="vide"]',
+      PARAM = '[data-s="parametres"]';
 const rect = async (s) => page.$eval(s, (e) => {
   const r = e.getBoundingClientRect();
   return { x: r.x, y: r.y, w: r.width, h: r.height };
@@ -257,10 +258,50 @@ try {
   await (await page.$(VIDE)).screenshot({ path: `${SORTIE}/reglages-tarifs-vide.png` });
 } catch (e) { echecs.push("premier jour · interrompu — " + String(e.message).split("\n")[0]); }
 
+// ── 4 bis. LES CHIFFRES QUI FONT LE PRIX, ET QUE PERSONNE NE VOIT ───────
+//
+// Sa question du 13 août 2026 : « mais l'IA se servira de ces infos pour
+// constituer les devis ? » En y répondant, on a trouvé `parametres_chiffrage` —
+// cinq valeurs en base, qui décident du prix proposé, et AUCUN écran pour les
+// changer. Un artisan dont l'ouvrier coûte 260 € par jour verra des prix trop
+// bas sans jamais savoir d'où ils viennent.
+try {
+  await cadrer(PARAM);
+  // L'ORDRE DE RECHERCHE EST CELUI DU CODE, et il doit le rester : c'est la
+  // seule chose qui réponde vraiment à sa question.
+  const pas = await page.$$eval(`${PARAM} [data-s="marche"] li`, (l) =>
+    l.map((e) => e.textContent.replace(/\s+/g, " ").trim()));
+  verifie("l'écran dit en quatre pas comment Atlas trouve un prix",
+    pas.length === 4, `${pas.length}`);
+  verifie("il cherche d'abord dans ses tarifs", /tarifs/i.test(pas[0]), pas[0]);
+  // Le point qui compte : devant plusieurs tarifs, il NE CHOISIT PAS.
+  verifie("devant plusieurs tarifs, il ne choisit pas",
+    /ne choisit pas/i.test(pas[1]), pas[1]);
+  verifie("sans tarif, il calcule avec ses coûts", /calcule/i.test(pas[2]), pas[2]);
+  // Et s'il ne peut pas calculer, il SE TAIT — jamais un prix inventé.
+  verifie("et s'il ne peut pas, il se tait au lieu d'inventer",
+    /renseigner|se tait/i.test(pas[3]), pas[3]);
+
+  const champs = await page.$$eval(`${PARAM} .ch .et`, (l) => l.map((e) => e.textContent.trim()));
+  verifie("les quatre chiffres du moteur sont là",
+    champs.length === 4, champs.join(" | "));
+  verifie("dont le coût d'un ouvrier et la marge",
+    champs.some((c) => /ouvrier/i.test(c)) && champs.some((c) => /marge/i.test(c)),
+    champs.join(" | "));
+
+  const dit = await txt(`${PARAM} [data-s="invisibles"]`);
+  verifie("l'écran dit que ces chiffres agissent DÉJÀ",
+    /déjà/i.test(dit), dit.slice(0, 60));
+  verifie("et qu'aucun écran ne permet de les changer aujourd'hui",
+    /aucun écran/i.test(dit), dit.slice(0, 120));
+  await (await page.$(PARAM)).screenshot({ path: `${SORTIE}/reglages-tarifs-couts.png` });
+} catch (e) { echecs.push("coûts · interrompu — " + String(e.message).split("\n")[0]); }
+
 // ── 5. La grammaire des écrans, et les cibles ────────────────────────────
 try {
   for (const [nom, sel] of [["tarifs", TARIFS], ["famille", FAM],
-                            ["grilles", GRILLES], ["premier jour", VIDE]]) {
+                            ["grilles", GRILLES], ["premier jour", VIDE],
+                            ["mes coûts", PARAM]]) {
     await cadrer(sel);
     verifie(`le bandeau de « ${nom} » désigne les réglages`,
       (await txt(`${sel} .bas .actif`)).toLowerCase() === "réglages");
@@ -311,7 +352,7 @@ try {
   const large = await pg.$eval(TARIFS, (e) => e.getBoundingClientRect().width);
   verifie("sur grand écran, la loupe agrandit pour de bon", large > 520, `${large.toFixed(0)} px`);
   const hauteurs = await pg.$$eval(".prop", (l) => l.map((e) => Math.round(e.getBoundingClientRect().y)));
-  verifie("une planche par rangée, et non quatre de front",
+  verifie("une planche par rangée, et non cinq de front",
     new Set(hauteurs).size === hauteurs.length, hauteurs.join(" | "));
   const deborde = await pg.evaluate(
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);

@@ -512,6 +512,9 @@ Voir `TODO.md` pour le détail et l'ordre.
   13 août** (tarifs) : **les quatre priorités du patron sont dessinées**. Restent
   à coder la colonne de famille sur `tarifs`, le signalement d'une unité
   manquante, et le nombre de prix appris par grille (`ARCHITECTURE.md` §83).
+  **Et surtout : `parametres_chiffrage` — cinq valeurs qui décident du prix
+  proposé — n'a aucun écran.** Un artisan dont l'ouvrier coûte 260 €/jour verra
+  des prix trop bas sans savoir d'où ils viennent.
 
 - **Agenda Google** — la connexion du compte demande des identifiants que je n'ai
   pas ; le reste (lecture des disponibilités, écriture de l'intervention) est

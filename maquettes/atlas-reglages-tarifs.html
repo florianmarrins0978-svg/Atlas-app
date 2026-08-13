@@ -267,6 +267,26 @@
   .va:focus{outline:none}
   .ch:has(.va:focus){border-bottom-color:var(--e-bronze)}
 
+  /* ═══ Comment Atlas trouve un prix ════════════════════════════════════ */
+  /* L'ORDRE EST CELUI DU CODE, pas une reformulation : `proposition-builder.ts`
+     cherche un tarif, refuse de choisir s'il en trouve plusieurs, calcule s'il
+     n'en trouve aucun, et se tait s'il ne peut pas calculer. Le montrer répond
+     à la seule question que le patron a posée sur ces écrans — « l'IA se
+     servira de ces infos pour constituer les devis ? ». */
+  .marche{margin:0;padding:0;list-style:none;counter-reset:pas}
+  /* SURTOUT PAS `display:flex` SUR LE `li` : chaque `<b>` devient alors un
+     élément de la boîte et le texte s'éclate en colonnes, avec des trous entre
+     les mots. Vu sur la capture, jamais par un contrôle — il en existe un
+     maintenant. Le numéro est posé en absolu, le texte coule normalement. */
+  .marche li{position:relative;padding:11px 0 11px 32px;font-size:13px;line-height:1.5;
+             border-bottom:1px solid var(--e-trait)}
+  .marche li:last-child{border-bottom:0}
+  .marche li::before{counter-increment:pas;content:counter(pas);
+                     position:absolute;left:0;top:11px;width:19px;
+                     text-align:center;color:var(--e-bronze);
+                     font:400 15px/1.35 ui-serif,Georgia,serif}
+  .marche b{font-weight:600;color:var(--e-encre)}
+
   /* ═══ Ce qui se dit sans crier ════════════════════════════════════════ */
   .corps > .mot{margin-left:26px;margin-right:26px}
   .mot{margin:14px 0 0;padding:13px 15px;border-radius:4px;background:var(--e-plage);
@@ -534,6 +554,78 @@
       <p class="note">
         <b>Même leçon qu'au lot 2</b> : le jeu de départ pose déjà des tarifs, et
         cet écran-là n'a jamais été vu.
+      </p>
+    </div>
+
+    <!-- ── 5. Les cinq chiffres qui font le prix, et que personne ne voit ─ -->
+    <div class="prop">
+      <p class="sous">Ce qui fait le prix</p>
+      <div class="tel"><div class="ecran" data-s="parametres">
+        <div class="tete"><p class="sur caps">Tarifs</p><h1>Mes coûts</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <!-- CE QUI A ÉTÉ TROUVÉ EN RÉPONDANT À SA QUESTION DU 13 AOÛT 2026 :
+               « mais l'IA se servira de ces infos pour constituer les devis ? »
+
+               `parametres_chiffrage` existe en base depuis le lot IA, avec CINQ
+               valeurs par défaut — 200 €/jour l'ouvrier, 280 € le chef, 35 € le
+               déplacement, 20 % de marge, 20 % de TVA. **AUCUN écran ne permet
+               de les changer.**
+
+               Ces cinq chiffres décident du prix qu'Atlas propose chaque fois
+               qu'aucun tarif ne correspond. Un artisan dont l'ouvrier coûte
+               260 € par jour verra donc des prix trop bas, sans jamais savoir
+               d'où ils viennent. C'est pire qu'un réglage manquant : c'est un
+               réglage qui existe, qui agit, et qu'on ne peut pas voir. -->
+          <div class="bloc">
+            <p class="t caps">Comment Atlas trouve un prix</p>
+            <ol class="marche" data-s="marche">
+              <li>Il cherche dans <b>vos tarifs</b>. Un seul correspond : il le prend, tel quel.</li>
+              <li>Plusieurs correspondent : <b>il ne choisit pas</b>, il vous les montre.</li>
+              <li>Aucun ne correspond : il <b>calcule</b> avec vos coûts ci-dessous.</li>
+              <li>Il ne peut pas calculer : il écrit <b>« prix à renseigner »</b> et se tait.</li>
+            </ol>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Vos coûts</p>
+            <label class="ch">
+              <span class="et caps">Un ouvrier, à la journée</span>
+              <input class="va" type="text" inputmode="decimal" autocomplete="off" value="200,00 €" aria-label="Coût journalier d'un ouvrier">
+            </label>
+            <label class="ch">
+              <span class="et caps">Un chef d&apos;équipe, à la journée</span>
+              <input class="va" type="text" inputmode="decimal" autocomplete="off" value="280,00 €" aria-label="Coût journalier d'un chef d'équipe">
+            </label>
+            <label class="ch">
+              <span class="et caps">Déplacement, au forfait</span>
+              <input class="va" type="text" inputmode="decimal" autocomplete="off" value="35,00 €" aria-label="Forfait de déplacement">
+            </label>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Ce que vous prenez dessus</p>
+            <label class="ch">
+              <span class="et caps">Votre marge</span>
+              <input class="va" type="text" inputmode="decimal" autocomplete="off" value="20 %" aria-label="Marge cible">
+            </label>
+          </div>
+
+          <p class="mot grave" data-s="invisibles">
+            <b>Ces quatre chiffres existent déjà et agissent déjà</b>, avec ces
+            valeurs-là. Aucun écran ne permet de les changer : un artisan dont
+            l&apos;ouvrier coûte 260 € verra des prix trop bas sans savoir
+            pourquoi.
+          </p>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Trouvé en répondant à sa question</b> du 13 août : « l&apos;IA se
+        servira de ces infos pour constituer les devis ? » Oui — et de
+        quatre chiffres qu&apos;il n&apos;a jamais vus.
       </p>
     </div>
 

@@ -6510,3 +6510,61 @@ touchés : ils gardent le prix qu'ils portaient le jour où ils ont été écrit
 **Le taire aurait suffi à bloquer l'artisan** — personne n'ose supprimer un
 tarif dans le doute, et il aurait gardé une liste qui grossit sans jamais
 maigrir.
+
+
+### « L'IA se servira de ces infos pour constituer les devis ? » — oui, et quatre chiffres invisibles avec
+
+**Sa question du 13 août 2026.** Y répondre a demandé de lire le pipeline, et a
+mis au jour un réglage qui agit sans être visible nulle part.
+
+### L'ordre exact, tel que `proposition-builder.ts` l'exécute
+
+1. **Il cherche dans ses tarifs.** Un seul correspond → il le prend, tel quel
+   (`sourcePrix: "tarif"`).
+2. **Plusieurs correspondent → il ne choisit pas** (`"tarifs_ambigus"`), il les
+   énumère et laisse trancher. Le commentaire du fichier le dit :
+   *« jamais de prix inventé, jamais de choix arbitraire »*.
+3. **Aucun ne correspond → le moteur calcule** (`"chiffrage"`) : durée × nombre
+   d'ouvriers × coût journalier, + le chef s'il y en a un, + le déplacement,
+   + la marge.
+4. **Il ne peut pas calculer → il se tait** (`"aucun"`) : « Prix à renseigner ».
+
+### Ce qui sert au modèle, et ce qui ne lui est jamais envoyé
+
+| Ce qu'il règle | Ce que ça fait |
+|---|---|
+| **Ses tarifs** | Cherchés en premier, repris tels quels |
+| **Les cinq grilles** | Apprises de ses devis, rappelées sur un chantier comparable |
+| **Le vocabulaire du métier** | Les mots, pour comprendre la dictée |
+| **Son identité — SIRET, IBAN, adresse** | **Jamais envoyée au modèle.** Elle est recopiée dans le document au moment de sa création (§81) |
+
+Ce dernier point mérite d'être su : ce qui identifie l'entreprise et sa banque ne
+part chez aucun fournisseur d'IA.
+
+### Le réglage qui agit sans exister à l'écran
+
+**`parametres_chiffrage` porte cinq valeurs par entreprise** — 200 €/jour
+l'ouvrier, 280 € le chef d'équipe, 35 € le déplacement, 20 % de marge, 20 % de
+TVA par défaut — **et aucun écran ne permet de les changer.**
+
+Ces chiffres décident du prix proposé chaque fois qu'aucun tarif ne correspond.
+Un artisan dont l'ouvrier coûte 260 € par jour verra donc des prix trop bas,
+**sans jamais savoir d'où ils viennent**. C'est pire qu'un réglage manquant :
+c'est un réglage qui existe, qui agit, et qu'on ne peut pas voir.
+
+Un cinquième écran est ajouté à la planche des tarifs — « Mes coûts » — avec
+l'ordre de recherche en quatre pas, parce que c'est la seule chose qui réponde
+vraiment à sa question.
+
+### Un mot en gras détaché de sa phrase
+
+`display:flex` posé sur un `li` fait de chaque `<b>` un élément de la boîte : le
+texte s'éclate en colonnes, avec des trous entre les mots. **Vu sur la capture,
+jamais par un contrôle.**
+
+Le contrôle qui en naît a d'abord été écrit faux : il exigeait que le gras soit à
+la **même hauteur** que la fin du texte voisin. Or, éclaté, le texte voisin se
+replie sur deux lignes et le gras se retrouve plus haut — le contrôle laissait
+donc passer exactement ce qu'il devait attraper. Il mesure désormais le
+**chevauchement vertical**, et il a été confronté à la version cassée pour
+qu'on sache qu'il rougit.

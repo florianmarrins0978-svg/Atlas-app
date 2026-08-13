@@ -31,6 +31,20 @@ ligne** — « 90 € » ne dit pas si c'est par mètre cube ou par voyage. Et *
 grille vide se dit vide** en disant pourquoi : c'est l'état normal du premier
 jour, et Atlas préfère se taire qu'inventer.
 
+**Sa question — « mais l'IA se servira de ces infos pour constituer les
+devis ? » — a mis au jour un réglage invisible.** La réponse est oui, et dans un
+ordre précis : Atlas cherche d'abord dans ses **tarifs** ; si plusieurs
+correspondent **il ne choisit pas** et les montre ; si aucun ne correspond il
+**calcule** ; s'il ne peut pas calculer il **se tait** et écrit « prix à
+renseigner ». Son identité — SIRET, IBAN, adresse — n'est **jamais envoyée au
+modèle** : elle est recopiée dans le document.
+
+Mais le calcul du point 3 s'appuie sur `parametres_chiffrage` : **cinq valeurs
+par entreprise — 200 €/jour l'ouvrier, 280 € le chef, 35 € le déplacement, 20 %
+de marge — et aucun écran ne permet de les changer.** Un artisan dont l'ouvrier
+coûte 260 € verra des prix trop bas sans savoir d'où ils viennent. Un cinquième
+écran, « Mes coûts », les montre avec l'ordre de recherche en quatre pas.
+
 **Ajouter et supprimer, demandés le même jour** — *« pouvoir aussi ajouter ou
 supprimer du matériel, ou un prix, ou un machin »*. **Un geste d'ajout par
 famille**, qui la nomme et ferme sa liste : « Ajouter » tout court obligerait à

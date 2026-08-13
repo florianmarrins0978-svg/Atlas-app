@@ -308,6 +308,13 @@ patron sont dessinées (`ARCHITECTURE.md` §83). À retenir : **ses tarifs** lui
 appartiennent, **le catalogue est partagé** et ne porte aucun prix, et **les
 cinq grilles apprennent de ses devis** au lieu de se saisir.
 
+**⚠ `parametres_chiffrage` agit sans être visible.** Cinq valeurs par
+entreprise — 200 €/jour l'ouvrier, 280 € le chef, 35 € le déplacement, 20 % de
+marge, 20 % de TVA — décident du prix proposé dès qu'aucun tarif ne correspond,
+et **aucun écran ne permet de les changer**. Trouvé le 13 août en répondant à sa
+question « l'IA se servira de ces infos ? ». Ne pas le redécouvrir
+(`ARCHITECTURE.md` §83).
+
 L'ordre des lots est dans `TODO.md` §0 quatervicies ; le pourquoi dans
 `ARCHITECTURE.md` §80 à §83.
 

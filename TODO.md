@@ -89,6 +89,13 @@ dessin** (`ARCHITECTURE.md` §81) :
 Manquent aussi en base, et la maquette les montre : **forme juridique** et
 **titulaire du compte**.
 
+**LE RÉGLAGE QUI AGIT SANS EXISTER À L'ÉCRAN**, trouvé le 13 août en répondant
+à sa question sur l'IA : `parametres_chiffrage` porte **cinq valeurs par
+entreprise** — 200 €/jour l'ouvrier, 280 € le chef, 35 € le déplacement, 20 % de
+marge, 20 % de TVA — et **aucun écran ne permet de les changer**. Elles décident
+du prix proposé dès qu'aucun tarif ne correspond. Un artisan dont l'ouvrier coûte
+260 € verra des prix trop bas sans savoir pourquoi (`ARCHITECTURE.md` §83).
+
 **Ce que le lot 4 ajoute à cette liste :** `tarifs` n'a **aucune colonne de
 famille** — prestations, main-d'œuvre et matériel n'existent pas —, et rien ne
 signale un tarif **sans unité**, alors qu'un prix sans unité n'est pas un prix.
