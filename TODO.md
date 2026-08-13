@@ -27,28 +27,29 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 tervicies. `test-planning-vers-facture-e2e` échoue, et son message accuse à tort
+### 0 tervicies. `test-planning-vers-facture-e2e` échoue par intermittence, et son message est trop affirmatif
 
 **Constaté le 13 août 2026, en éprouvant autre chose.** Le dernier cas de cette
 suite — *« clôturé AVANT sa date : il quitte le planning pour les terminés »* —
-échoue sur `page.goto` au bout de 45 s, tantôt sur `/termines`, tantôt sur
-`/planning`.
+échoue **par intermittence** sur `page.goto` au bout de 45 s, tantôt sur
+`/termines`, tantôt sur `/planning`. Sur quatre exécutions ce jour-là : trois
+rouges, une verte.
 
 **Ce n'est PAS la civilité** : vérifié en remisant toutes les modifications du
 jour et en rejouant la suite sur `main` intact — même échec, au même endroit.
 Le défaut lui est antérieur.
 
-**Et son message envoie chercher au mauvais endroit** — ce que `AGENTS.md`
-interdit explicitement. Il affirme : *« C'est le serveur de développement qui
-n'a pas suivi, pas l'écran : il répond en quelques centaines de millisecondes
-hors batterie »*. Or **la suite échoue aussi jouée seule**, sans aucune autre
-en parallèle. L'explication de charge est donc fausse, et elle a déjà coûté un
-aller-retour.
+**Et son message n'explique pas tout.** Il affirme : *« C'est le serveur de
+développement qui n'a pas suivi, pas l'écran : il répond en quelques centaines
+de millisecondes hors batterie »*. Or **la suite a aussi échoué jouée seule**,
+sans aucune autre en parallèle — la charge de la batterie ne suffit donc pas à
+l'expliquer. Un message qui donne une cause certaine là où elle ne l'est pas
+envoie chercher au mauvais endroit (`AGENTS.md`).
 
 **Ce qui reste à faire :** trouver ce que ce cas-là fait de particulier — c'est
 le seul des trois de son groupe à clôturer un chantier **avant** sa date — puis
-corriger le message pour qu'il désigne le vrai coupable. Les six autres cas de
-la suite passent.
+rendre le message honnête sur ce qu'il sait et ce qu'il suppose. Les six autres
+cas de la suite passent toujours.
 
 ### 0 duovicies. La civilité du client — **à trancher avec lui**
 
