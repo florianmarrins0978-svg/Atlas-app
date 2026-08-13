@@ -27,7 +27,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 quatervicies. Faire confirmer par le patron que le numéro n'est plus un lien d'appel
+### 0 sexvicies. Faire confirmer par le patron que le numéro n'est plus un lien d'appel
 
 **Livré le 13 août 2026, non éprouvé ici, et ça ne peut pas l'être.** Le numéro
 du devis et celui de la facture s'écrivent désormais de façon qu'un détecteur
@@ -43,6 +43,141 @@ doigt. Sans cette réponse, ce défaut n'est pas clos : c'est la deuxième
 tentative sur le même, et la première paraissait juste elle aussi.
 
 ### 0 unvicies. Le chevron de retour, dernier bouton hors charte
+
+### 0 quatervicies. ~~Les trois points de la dictée~~ — **CODÉ le 13 août 2026 (proposition C)**
+
+**Sa demande du 13 août 2026**, capture de l'écran « Un chantier » à l'appui :
+*« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce qui se passe.
+Les trois petits points sont fixes […] on ne sait pas si ça bug ou non. Si les
+trois petits points se mettent en mouvement et font des vagues pour dire que
+c'est en train de rédiger, là, on sait qu'il se passe quelque chose. »*
+
+**Ce n'est pas une animation qui s'est arrêtée.** C'est le caractère « … », un
+seul glyphe posé tel quel — `DicterCoordonnees.tsx:114`. Il n'y a rien qui
+puisse bouger : trois points séparés sont à écrire pour qu'une vague existe.
+
+**Deux choses aggravent l'attente**, qu'il n'a pas nommées mais qui tiennent au
+même instant, et qui comptent peut-être plus que la vague :
+
+1. le bouton passe à `opacity: 0.5` — le vocabulaire d'un bouton **éteint**,
+   pas d'un bouton qui travaille ;
+2. **aucune phrase ne s'affiche.** L'écran parle quand il écoute (« J'écoute —
+   touchez pour arrêter. ») et quand il a fini (« 1 information reprise… »), et
+   il se tait exactement pendant le seul moment où l'on se demande s'il est en
+   panne. Les mots disent ce qu'aucune animation ne dira.
+
+**Deux planches, et c'est la seconde qui tranche :**
+
+| | Fichier | Ce qu'elle sert |
+|---|---|---|
+| 42 | `docs/maquettes/42-les-trois-points-qui-attendent.html` | Les cinq gestes côte à côte, et l'exposé du défaut. Doublée d'images animées (`docs/maquettes/images/`), pour la conversation |
+| **43** | `docs/maquettes/43-l-attente-a-lessai.html` | **Celle qu'il manipule** — il appuie sur le micro, arrête, les points bougent. Sa demande du 13 août : *« juste des points que je puisse cliquer dessus […] pour voir comment ça rend »*. Engendrée par `scripts/engendrer-maquette-sequence.mjs` |
+
+Les cinq attentes : A la vague (4 px), B la vague ample (7 px), **C le souffle**,
+D le point qui court, E l'anneau qui tourne. **Il a répondu « code la C »** le
+13 août — les quatre autres restent dans les planches, à reprendre de là si le
+sujet se rouvre plutôt qu'à redessiner.
+
+**Ce qui a été porté dans l'application :**
+
+| | Fait | Où |
+|---|---|---|
+| 1 | Le geste, partagé | `src/components/atlas/PointsQuiSoufflent.tsx` |
+| 2 | Les mesures (0,72 → 1,5 ; 1,25 s ; décalages 0,16 et 0,32) | `globals.css`, `.atlas-souffle` |
+| 3 | L'écran | `src/app/chantiers/nouveau/DicterCoordonnees.tsx` |
+| 4 | La suite qui le tient | `scripts/test-attente-dictee-e2e.ts` |
+
+**Quatre choses à ne pas défaire**, chacune payée par un vrai défaut :
+
+1. **Le geste vit dans un composant, pas dans l'écran.** Une attente recopiée
+   divergerait comme les boutons peints à la main l'ont fait deux fois
+   (`ARCHITECTURE.md` §66 et §73).
+2. **Le bouton ne redevient PAS à demi effacé.** C'était la moitié du défaut :
+   le vocabulaire d'un bouton éteint. Il reste hors d'atteinte (`disabled`) —
+   ne pas le rendre pressable, un second appui lancerait une seconde dictée.
+3. **La phrase reste.** C'est la seule des trois moitiés qui parvienne à qui n'a
+   pas les yeux sur l'écran (`role="status"`), et probablement la plus utile.
+4. **Sous « mouvement réduit », les points respirent encore.** Tout couper
+   rendrait le défaut d'origine à qui a activé ce réglage.
+
+**La suite RALENTIT le serveur de trois secondes**, sinon elle courrait plus vite
+que l'attente et passerait au vert sans avoir rien regardé. Elle a été confrontée
+au défaut d'origine : les quatre points rougissent, chacun **en nommant son
+coupable** — et c'est le second jet, le premier sortait un « Timeout » sur un
+sélecteur, ce qui envoie lire le contrôle au lieu de l'écran.
+
+### 0 quatervicies ter. ~~La même attente immobile sur le bouton d'ajout de photo~~ — **fait le 13 août 2026**
+
+Signalé en passant, puis tranché par lui le jour même : *« oui souffle aussi pour
+la photo »*. `Pellicule.tsx` portait le même caractère « … » immobile que la
+dictée, à la lettre près — donc le même défaut. Il prend le même composant, et
+les points y sont **or** et non vert : ils héritent de `currentColor`, donc de la
+couleur du bouton qui les porte. Le libellé annonce l'envoi pendant l'envoi, au
+lieu de continuer à proposer d'ajouter.
+
+**Un piège d'outillage payé ici, et qui resservira à toute suite qui RALENTIT le
+serveur :** router une adresse dans Playwright **désactive le cache HTTP de toute
+la page**, pas seulement des requêtes visées. La visionneuse repartait donc du
+réseau pour une image déjà affichée, son `<img>` n'avait pas fini de charger, sa
+boîte faisait zéro pixel — et l'échec accusait la visionneuse, qui n'y était pour
+rien. Deux règles en sortent :
+
+1. **relâcher la route dès la mesure faite** (`page.unroute`) ;
+2. **la relâcher APRÈS que l'envoi soit terminé** — la couper en vol laisse un
+   appel à moitié traité, et Playwright répond « Route is already handled! », une
+   erreur qui n'apprend rien sur ce qu'on éprouve.
+
+Trouvé en **affichant les images présentes** plutôt qu'en supposant : elles
+étaient là, toutes les deux, au bon endroit.
+
+**Trois choses à savoir avant d'y toucher :**
+
+1. **Une image fixe ne peut pas montrer un mouvement.**
+   `scripts/animer-maquette-points.mjs` fabrique un GIF par proposition, sans
+   ffmpeg (absent d'ici) — et il relit ce qu'il vient d'écrire, parce qu'au
+   premier jet il annonçait « ✓ » sur une image FIXE : `pageHeight` passé à côté
+   de `raw` au lieu de dedans est ignoré **en silence**. Un script qui ne relit
+   pas sa sortie certifie exactement le défaut qu'il répare.
+2. **Le contrôle mesure une VAGUE, pas un mouvement.**
+   `scripts/verifier-maquette-points.mjs` exige un déphasage entre le premier et
+   le troisième point : trois points qui montent **ensemble** bougent de 4 px,
+   passeraient tout contrôle d'amplitude, et ne feraient aucune vague. Éprouvé
+   en cassant les délais — il rougit en nommant A.
+3. **L'avant sert de témoin, dans les trois outils.** Il doit rester immobile
+   **et à demi effacé** — le montrer à pleine encre le ferait paraître moins
+   mauvais qu'il n'est, et fausserait la comparaison en sa faveur. S'il bouge,
+   c'est la mesure qui ment. Le GIF le prouve tout seul : l'encodeur fusionne
+   les images identiques, et l'avant se réduit à **une seule**.
+4. **La 41 se PARCOURT, elle ne se constate pas.**
+   `scripts/verifier-maquette-sequence.mjs` joue les deux appuis puis
+   « Recommencer », sur les six. Un parcours à moitié joué ne prouve que la
+   moitié qu'on joue. Deux pièges y sont écrits : le bouton d'arrêt **bat**,
+   donc Playwright refuse d'appuyer dessus (`{ force: true }`, même famille que
+   `locator.screenshot()`) ; et le retour du résultat est **décoché par
+   défaut**, sans quoi on jugerait cinq gestes sur quatre secondes chacun.
+
+**Ce qui reste ouvert et n'est pas dans la planche :** ce que l'écran fait quand
+le traitement s'éternise. Une vague qui tourne depuis trente secondes redevient
+une vague qui ne dit rien.
+
+### 0 quatervicies bis. Les contrôles de maquette ne sont joués par personne
+
+`scripts/verifier-maquette-*.mjs` (pastille, logo, bascule, bouton de la facture,
+et désormais les points) ne sont appelés **ni par la batterie, ni par la CI** :
+ils se lancent à la main. Un contrôle que personne ne joue est un contrôle qui
+n'existe pas — il rougira le jour où plus personne ne saura pourquoi.
+
+Non fait d'office : les brancher allonge `verifier:avant-livraison` de plusieurs
+minutes pour éprouver des pages qui ne partent pas en production. Le bon endroit
+est vraisemblablement la CI, sur les seuls fichiers touchés.
+
+### 0 quinvicies. Le chevron de retour, dernier bouton hors charte
+
+<!-- Renuméroté le 13 août 2026 : « 0 unvicies » désignait DÉJÀ le raccordement
+     de l'agenda iCloud, plus bas, et `HANDOVER.md` le vise sous ce numéro. Deux
+     sessions avaient posé le même. C'est l'aîné qui garde le sien — la règle du
+     HANDOVER, « celle qui est déjà là garde son numéro ». Aucun renvoi ne
+     visait celui-ci. -->
 
 **Trouvé le 13 août 2026**, en réparant le contrôle des boutons arrondis : son
 motif ne regardait ni les `<Link>`, ni les rayons NOMMÉS de Tailwind. Réparé, il
