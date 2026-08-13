@@ -1211,6 +1211,67 @@ Constatés par lui sur son banc, capture à l'appui. Aucun n'est corrigé.
 
 Le troisième est le plus important : une facture qu'on ne peut pas envoyer par
 courriel, c'est un client sur deux qu'on ne peut pas facturer.
+Constatés par lui sur son banc, capture à l'appui.
+
+**⚠ Ce point avait été consigné sur `claude/migrate-app-atlas-zz31ac` et n'a
+jamais rejoint `main`** : cette branche est restée deux commits derrière une
+après-midi de travail, et le point était donc invisible de toute conversation
+qui lisait `TODO.md`. Il a fallu qu'il le redemande. **La leçon est celle de
+`CLAUDE.md` §6 : rien n'est livré tant que ce n'est pas sur `main`** — pas même
+une ligne de mémoire.
+
+1. ~~**Impossible d'enregistrer la facture.**~~ — **fait le 12 août 2026.**
+   Sous « Voir la facture en PDF », un lien « Télécharger (F2026-0001.pdf) ».
+   Le nom porte le numéro — il en aura des centaines — et dit « brouillon »
+   tant que la facture n'est pas arrêtée. **C'est le SERVEUR qui range le
+   fichier** (`Content-Disposition: attachment` sur `?telecharger=1`) : le seul
+   attribut `download` du lien est ignoré par certaines versions d'iOS, et le
+   PDF s'ouvrait alors dans un onglet sans rien enregistrer.
+2. ~~**« Ouvrir le SMS tout prêt » est carré**, alors qu'il le veut **ovale
+   comme tous les autres**.~~ — **tranché et codé le 12 août 2026 : « code la
+   A », la capsule.** Le bouton passe par `PrimaryButton`, jamais par un dessin
+   recopié sur place : c'est le défaut même qu'on répare (§0 octies), et le
+   repeindre à la main le ferait revenir au prochain changement de charte.
+
+   **Deux réglages facultatifs ont été ajoutés à `PrimaryButton`**, sans
+   toucher au dessin : `onClick` est désormais honoré sur la variante `href`
+   (elle le perdait en silence — le départ vers la messagerie n'aurait plus été
+   retenu), et `repere` pose un `data-atlas` pour que les suites désignent ce
+   lien autrement que par son texte.
+
+   *Les planches restent, elles racontent le chemin :*
+
+   - `docs/maquettes/30-le-bouton-de-la-facture.html` — deux dessins immobiles :
+     **A**, la capsule exacte des dix-sept autres écrans ; **B**, la même
+     capsule cernée d'un filet ;
+   - `docs/maquettes/31-le-bouton-de-la-facture-a-lessai.html` — **cinq gestes
+     qui se pressent pour de vrai**, demandés le 12 août : *« plusieurs versions
+     cliquables et dynamiques […] une appli hyper luxe et moderne »*. A la
+     capsule nue, B la lueur qui traverse la laque, C le cachet qui tourne et
+     sème l'or, D l'encre qui remplit, E le trait qui s'ouvre. Éprouvée au doigt
+     par `scripts/verifier-maquette-bouton-facture.mjs`.
+
+   **Il a retenu A**, la capsule nue — la retenue, encore une fois, comme à
+   chaque tournée depuis le 11 août. Les quatre gestes écartés (la lueur, le
+   cachet, l'encre, le trait) restent dans la maquette : s'il rouvre le sujet,
+   c'est là qu'il faut repartir, et non les redessiner.
+
+   **Ce qu'il faut lui dire, et qui a changé depuis sa demande :** le 10 août,
+   tous les boutons étaient à 5 px de rayon et « ovale » aurait voulu dire
+   changer la charte entière. Le 11 août au soir il a choisi la capsule, et
+   « partout » — ce bouton-là est simplement passé au travers, parce qu'il est
+   **peint à la main dans l'écran** (`TODO.md` §0 octies, même défaut que la
+   feuille d'envoi du devis). **Choisir A ne rouvre donc aucune décision.**
+
+   *Une capsule pleine largeur avait été dessinée d'abord : mesurée, elle est
+   indiscernable de A — le libellé remplit la carte à deux pixels près. Deux
+   dessins identiques ne font pas un choix, d'où le changement d'axe.*
+3. ~~**On ne propose que le SMS.**~~ — **fait le 12 août 2026, et c'était le
+   plus grave.** Une facture qu'on ne peut pas envoyer par courriel, c'est un
+   client sur deux qu'on ne peut pas facturer. L'écran offre désormais les deux
+   voies (`src/app/chantiers/[id]/facture/TransmettreLaFacture.tsx`), et **la coordonnée manquante se
+   saisit sur place** — il n'existe aucun écran de fiche client où l'envoyer.
+   `ARCHITECTURE.md` §73.
 
 ### 7. Finir la refonte — l'ordre, les pièges, les valeurs
 

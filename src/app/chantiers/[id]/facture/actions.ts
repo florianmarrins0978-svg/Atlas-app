@@ -7,7 +7,11 @@ import {
   FactureDejaEmiseError,
   FinChantierImpossibleError,
 } from "@/server/repositories/factures";
-import { creerEnvoiFacture, dernierEnvoiFacture } from "@/server/repositories/envois-factures";
+import {
+  creerEnvoiFacture,
+  dernierEnvoiFacture,
+  corrigerCanalEnvoiFacture,
+} from "@/server/repositories/envois-factures";
 
 // Arrêt 3 du parcours (docs/AGENT.md §2.3) : le patron confirme le départ de
 // la facture. Décidé, pas optionnel — un chantier finit rarement exactement
@@ -81,6 +85,10 @@ export async function preparerLienFactureAction(
     // deux adresses pour la même facture, et l'artisan ne saurait plus laquelle
     // il a envoyée.
     if (existant && existant.expireAt.getTime() > Date.now()) {
+      // En revanche, le CANAL peut avoir changé depuis : le patron bascule de
+      // SMS vers e-mail après avoir préparé le lien. Le jeton reste le même,
+      // seul le registre se met d'accord avec ce qui va réellement partir.
+      if (existant.canal !== canal) await corrigerCanalEnvoiFacture(ctx, existant.id, canal);
       return { succes: true, jeton: existant.jeton };
     }
     const envoi = await creerEnvoiFacture(ctx, factureId, canal);

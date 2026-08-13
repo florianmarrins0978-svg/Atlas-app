@@ -401,6 +401,94 @@ saisir sur la fiche du chantier ». Faut-il un bouton « Saisir l'adresse » à 
 endroit ? Rien ne sera ajouté sans lui.
 
 ---
+**LE CALENDRIER D'ENVOI NE MARQUAIT QU'UN JOUR (12 août).** Il ne pouvait
+proposer qu'une date dès qu'il la prenait au calendrier, alors que son client
+doit pouvoir choisir entre deux (`ARCHITECTURE.md` §74).
+
+**Deux leçons qui resserviront, et qui ne sont pas propres à cet écran :**
+
+1. **Un état parallèle à la vérité finit toujours par mentir.** L'écran gardait
+   la date du calendrier dans une chaîne à part, à côté de la sélection réelle.
+   Le symptôme visible n'était pas le pire : rappuyer sur un jour retenu le
+   **remettait** au lieu de l'enlever, parce que le geste se comparait à l'état
+   parallèle. Devant un écran où « ça ne se désélectionne pas », chercher
+   d'abord s'il existe deux états pour une seule chose.
+2. **Un parcours à moitié joué ne prouve que la moitié qu'on joue.**
+   `test-date-lointaine-e2e` choisissait UNE date au calendrier, et passait.
+   Quand un écran offre un maximum — deux dates, trois photos, cinq lignes —
+   l'éprouver à un seul exemplaire ne dit rien du second, et c'est au second que
+   les états parallèles se révèlent.
+
+**Et la règle des deux dates était écrite en double** : `basculerJour` existait
+depuis le 9 août dans `src/lib/calendrier.ts`, pure et éprouvée, sans que
+personne s'en serve. L'écran avait sa copie. C'est le §3 de `CLAUDE.md` — devant
+une règle métier dans un composant, vérifier d'abord si le dépôt ne la porte pas
+déjà.
+
+**⚠ Deux suites voisines ont dû être réparées au passage, et la seconde vaut un
+réflexe.** `test-retour-messagerie-e2e` **empruntait** son chantier à une autre
+suite (`WHERE reponse IS NULL LIMIT 1`, sans `ORDER BY` ni propriétaire) : il ne
+savait pas tourner seul, et ajouter une suite ailleurs a suffi à changer l'ordre
+des lignes et à le faire rougir — en accusant le retour de messagerie, qui n'y
+était pour rien. **Devant une suite qui rougit sans rapport avec ce qu'on vient
+de toucher, regarder d'abord si elle possède ses données ou si elle les
+emprunte.** Chacune fabrique désormais les siennes.
+
+
+**LA FACTURE PART PAR E-MAIL, ET SE TÉLÉCHARGE (12 août).** Deux des trois
+manques qu'il avait signalés le 10 août (`TODO.md` §8, `ARCHITECTURE.md` §73).
+
+**Cinq choses à savoir avant d'y toucher :**
+
+1. **Les TROIS manques sont réglés.** Le bouton a pris la capsule le 12 août —
+   *« code la A »*, après deux planches (`docs/maquettes/30-…` puis `31-…`, cinq
+   gestes qui se pressent). Il passe par `PrimaryButton`, **jamais par un
+   dessin recopié sur place** : c'est le défaut qu'on répare, et le repeindre à
+   la main le ferait revenir au prochain changement de charte. Deux suites
+   mesurent son rayon calculé et rougissent si cela arrive.
+
+   **Les quatre gestes écartés restent dans la maquette 31** — la lueur, le
+   cachet, l'encre, le trait. S'il rouvre le sujet, repartir de là plutôt que
+   de redessiner. Et se souvenir que **le cachet était la seule proposition qui
+   ne reposait pas sur un goût** : c'est le geste de « Nouveau chantier », donc
+   un vocabulaire partagé entre deux écrans.
+
+   **⚠ UNE MAQUETTE NE PORTE PAS DE SCRIPT.** La première version de la 31
+   engendrait ses cinq téléphones en JavaScript : chez le patron, page vide —
+   *« rien apparaît sur ta maquette »*. Elle passait ici, dans un navigateur
+   complet ; script coupé, zéro écran. La règle existait déjà pour les
+   maquettes 25 et 26 (`scripts/verifier-maquette-bascule.mjs` joue les huit
+   bascules JavaScript COUPÉ) et n'a pas été appliquée. **Tout contrôle de
+   maquette tourne désormais `javaScriptEnabled: false`** — une case à cocher
+   et des règles `:checked ~` suffisent à tout, y compris à une demi-seconde
+   d'attente (`transition-delay`).
+
+   **Un piège de MESURE qui a failli faire livrer un geste mort**, et qui
+   resservira à chaque maquette animée : `locator.screenshot()` attend que
+   l'élément soit **stable**, c'est-à-dire que l'animation soit finie — il
+   photographie donc toujours l'après, jamais le pendant. Passer par
+   `page.screenshot({ clip })`. Et surtout : **le contrôle de la lueur est
+   passé au vert deux fois sur un geste que l'œil ne voyait jamais** (opacité
+   et transform étaient irréprochables ; la lumière traversait le bouton en
+   quatre-vingts millisecondes). Ce qu'il faut mesurer, c'est **combien de
+   temps** une chose est visible, pas qu'elle bouge.
+2. **Ce bouton était passé au travers parce qu'il est peint à la main dans
+   l'écran** — même cause que la feuille d'envoi du devis (§66). Devant un
+   bouton qui « n'est pas le même », chercher d'abord s'il est dessiné sur
+   place plutôt qu'issu de `PrimaryButton`.
+3. **Le nom du fichier PDF vit à DEUX endroits** — l'attribut `download` du lien
+   et l'en-tête du serveur — et rien ne les relie dans le code. Deux suites les
+   comparent, et elles ont trouvé l'écart au premier jet : après l'arrêt de la
+   facture, sans rechargement, l'écran annonçait un brouillon quand le serveur
+   servait la pièce définitive. **Ne pas retirer cette comparaison.**
+4. **C'est le serveur qui décide du téléchargement**, pas l'attribut `download`
+   du lien : iOS l'ignore selon les versions, et le PDF s'ouvrirait alors dans
+   un onglet — le défaut d'origine, déguisé en correctif.
+5. **Le point §8 n'était nulle part sur `main`.** Il avait été consigné sur
+   `claude/migrate-app-atlas-zz31ac`, restée deux commits derrière, et aucune
+   conversation lisant `TODO.md` ne pouvait le voir. Le patron a dû le
+   redemander. `CLAUDE.md` §6 vaut aussi pour la mémoire : **une ligne poussée
+   sur une branche n'existe pour personne.**
 
 
 **⚠ SI LE PATRON DIT « ce n'est toujours pas là » : REGARDER LA BRANCHE

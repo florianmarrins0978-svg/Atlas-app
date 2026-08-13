@@ -5408,3 +5408,176 @@ le seul bouton sans `onClick`. Il paraissait donc fonctionner. Un contrôle
 confronté à un unique cas — surtout s'il est atypique — n'a rien prouvé : il faut
 l'éprouver sur le cas COURANT, celui qui représente la population qu'il surveille.
 Ici, le témoin porte désormais les deux formes, avec flèche et sans.
+## 73. La facture part par SMS **ou** par e-mail, et se télécharge
+
+**Le patron, le 10 août 2026, capture à l'appui** (`TODO.md` §8). Trois manques
+sur l'écran Facture, dont deux sont réparés ici. Le troisième — le dessin du
+bouton — se dessine avant de se coder, et attend son choix.
+
+### « On ne propose que le SMS »
+
+C'était le plus grave des trois, et il se chiffre : **un client sur deux n'a
+pas de portable enregistré**, et l'écran de la facture n'offrait aucune autre
+voie. Le canal venait de la fiche du client et ne se rediscutait plus.
+
+**Le même défaut avait déjà été réparé sur le devis le 4 août** (§13,
+`TransmettreAuClient.tsx`), après une phrase presque identique : *« si je veux
+l'envoyer par e-mail, je ne peux pas revenir le choisir »*. Il est resté ici
+deux semaines de plus, et personne ne l'a vu — parce que **rien ne relie deux
+écrans qui font la même chose**. C'est la leçon utile : quand un défaut est
+corrigé à un endroit, chercher aussitôt son jumeau ailleurs.
+
+`src/app/chantiers/[id]/facture/TransmettreLaFacture.tsx` offre donc les deux voies, à tout moment :
+
+- **la bascule est toujours là**, avant comme après la préparation du lien.
+  Jamais présélectionnée : la voie normale reste celle convenue sur la fiche ;
+- **la coordonnée manquante se saisit sur place**, et elle est écrite **sur le
+  client** — pas retenue pour ce seul envoi. Renvoyer le patron « sur la fiche
+  du client » l'enverrait vers une porte qui n'existe pas (§62) ;
+- **rien n'est recopié du devis** : le message vient de `composerMessageFacture`,
+  l'adresse de `lienTransmission`, l'enregistrement de la coordonnée de
+  `enregistrerCoordonneeClientAction` — la même action que l'écran du devis.
+  Deux implémentations d'un même geste divergent toujours, et c'est le client
+  qui lit la mauvaise (`CLAUDE.md` §3).
+
+**Un seul lien, un registre qui dit vrai.** Basculer après avoir préparé le lien
+ne fabrique pas un second envoi : le client aurait deux adresses pour la même
+facture. Mais le canal inscrit, lui, est corrigé
+(`corrigerCanalEnvoiFacture`) — sans quoi une facture partie par courriel
+resterait inscrite « SMS » pour toujours, et c'est le genre de mensonge
+tranquille qu'on découvre six mois plus tard en cherchant une preuve d'envoi.
+
+### « Impossible d'enregistrer la facture »
+
+Il ne pouvait qu'**ouvrir** le PDF. Un lien « Télécharger (F2026-0001.pdf) » se
+pose sous « Voir la facture en PDF » — les deux gestes coexistent, le second ne
+remplace pas le premier.
+
+**Trois choses à ne pas défaire :**
+
+1. **C'est le SERVEUR qui range le fichier**, pas l'attribut `download` du lien.
+   `?telecharger=1` fait répondre `Content-Disposition: attachment`. L'attribut
+   seul est ignoré par certaines versions d'iOS, et le PDF s'ouvre alors dans un
+   onglet sans que rien ne soit enregistré — c'est-à-dire le défaut d'origine,
+   déguisé en correctif.
+2. **Le nom porte le numéro** — « F2026-0001.pdf », jamais « facture.pdf ». Il
+   en aura des centaines dans le même dossier, et « facture (17).pdf » ne se
+   retrouve pas.
+3. **Le nom vit à DEUX endroits** — l'attribut du lien et l'en-tête du serveur —
+   et rien dans le code ne les relie : l'un ne traverse pas jusqu'à l'autre.
+   Deux suites les comparent (`test-facture-au-client-e2e.ts`,
+   `capture-facture.mts`). **Elles ont trouvé l'écart au premier jet** : après
+   l'arrêt de la facture, sans rechargement, l'écran annonçait encore
+   « F2026-0001-brouillon.pdf » pendant que le serveur servait
+   « F2026-0001.pdf » — parce que le libellé lisait le rendu d'arrivée et non
+   l'état vivant de l'écran.
+
+### Le bouton : dessiné, montré, puis codé — dans cet ordre
+
+« Ouvrir le SMS tout prêt » gardait ses 4 px de rayon parce qu'il était **peint
+à la main dans l'écran** : c'est ce qui lui avait fait manquer la capsule du
+11 août, exactement comme la feuille d'envoi du devis (§66). Une action
+principale dessinée sur place échappe à toute décision d'ensemble.
+
+Une demande d'apparence se **dessine** avant de se coder (`CLAUDE.md` §3 bis).
+Deux planches l'ont précédé : `30-le-bouton-de-la-facture.html` (deux dessins
+immobiles) puis, à sa demande, `31-le-bouton-de-la-facture-a-lessai.html` —
+cinq gestes qui se pressent. **Il a retenu A, la capsule nue**, et le bouton
+passe désormais par `PrimaryButton`.
+
+**Deux réglages facultatifs ont été ajoutés à `PrimaryButton`, et aucun ne
+touche au dessin** — en ajouter un d'apparence rouvrirait « une seule forme
+d'action », qui est le sujet même de ce composant :
+
+- **`onClick` est honoré sur la variante `href`.** Elle le perdait en silence.
+  Ce bouton-là est un lien (`sms:`, `mailto:`) qui doit AUSSI retenir le départ
+  vers la messagerie ; sans ce correctif, le retour n'aurait plus ramené à
+  l'accueil avec un mot (`src/lib/annonce-transmission.ts`).
+- **`repere` pose un `data-atlas`.** Sans lui, une suite ne peut désigner ce
+  lien que par son texte — et « Ouvrir le SMS tout prêt » ressemble assez à
+  « Ouvrir l'e-mail tout prêt » pour qu'un contrôle passe au vert sur le
+  mauvais.
+
+**Deux suites mesurent le RAYON CALCULÉ** (`test-facture-au-client-e2e.ts`,
+`capture-facture.mts`) : un retour au dessin local les rend rouges. Le
+recensement des actions encore dessinées sur place est dans `TODO.md` §0 octies.
+
+**Les quatre gestes écartés restent dans la maquette 31** — la lueur, le cachet,
+l'encre, le trait. Si le sujet se rouvre, c'est de là qu'il faut repartir : les
+redessiner serait refaire un chemin déjà parcouru.
+
+---
+
+## 74. Le calendrier ne marquait qu'un jour, et il en fallait deux
+
+**Le patron, le 12 août 2026, capture à l'appui :** *« je ne peux pas choisir
+deux jours à partir du planning […] En fait je ne peux choisir que deux jours si
+c'est les premières propositions qu'il y a tout en haut. Mais dès que je choisis
+à même le planning, je ne peux choisir qu'un seul jour. Or je dois pouvoir
+proposer deux jours au client. »*
+
+### Deux états pour une seule vérité
+
+`EnvoiAuClient` portait la sélection à **deux endroits** :
+
+- `selection`, un tableau — ce qui part réellement au client ;
+- `autreDate`, **une chaîne**, pour le jour choisi au calendrier.
+
+Et le calendrier ne recevait que la seconde : `retenus={autreDate ? [autreDate] : []}`.
+Choisir un second jour effaçait donc le premier **sous ses yeux**. Rien ne lui
+disait que les deux étaient retenus — et il en concluait, à raison, qu'il ne
+pouvait en proposer qu'un.
+
+**La conséquence la plus traître était l'autre :** rappuyer sur le premier jour
+pour le retirer le **remettait**. Le geste de retrait ne fonctionnait que sur le
+dernier jour touché, parce qu'il se comparait à `autreDate` et non à ce qui était
+réellement retenu.
+
+**`selection` fait désormais foi, et elle seule.** Ce qui reste de `autreDate`
+— renommé `jourInterroge` — ne sert plus qu'à afficher la phrase du serveur sous
+le calendrier. Le calendrier reçoit `retenus={selection}` : ce que le patron voit
+est exactement ce que son client recevra, jours de la liste du haut compris.
+
+### La règle des deux dates était écrite deux fois
+
+`src/lib/calendrier.ts` porte `basculerJour(retenus, jour, maximum)` depuis le
+9 août — pure, éprouvée sans navigateur, et **personne ne s'en servait**.
+L'écran avait sa propre copie, à trois lignes près la même. C'est très exactement
+ce que `CLAUDE.md` §3 interdit : *« deux implémentations finissent toujours par
+diverger »*. L'écran appelle maintenant la fonction du dépôt.
+
+### Pourquoi aucune suite ne l'avait vu
+
+`test-date-lointaine-e2e` choisit **une** date au calendrier et vérifie qu'elle
+part — ce qu'elle faisait parfaitement. Personne n'avait jamais essayé d'en
+choisir deux.
+
+**Un parcours à moitié joué ne prouve que la moitié qu'on joue.** Quand un écran
+offre un maximum (deux dates, trois photos, cinq lignes), l'éprouver à un seul
+exemplaire ne dit rien du second — et c'est au second que les états parallèles se
+révèlent. `test-deux-dates-calendrier-e2e.ts` rejoue son geste entier : deux
+jours pris au calendrier, un retiré, un troisième qui chasse le plus ancien, et
+les deux qui partent en base. Confronté au code d'avant, il échoue sur sa phrase
+exacte — « le calendrier ne marque que […] ».
+
+### Deux suites voisines ont dû être corrigées, et pour deux raisons opposées
+
+**`test-envoi-client-e2e` accusait à tort.** Il comptait `button[aria-pressed="true"]`
+sur tout l'écran et annonçait « 4 dates retenues au lieu de 2 » — sur une
+sélection parfaitement juste. Depuis que le calendrier marque la sélection, un
+même jour est légitimement pressé à deux endroits : sa ligne dans la liste, et
+sa case au calendrier. Il compte désormais des **jours** (les lignes portant
+« proposée »), pas des boutons.
+
+**`test-retour-messagerie-e2e` tirait au sort.** Il empruntait un chantier à une
+autre suite — `SELECT … WHERE reponse IS NULL LIMIT 1`, sans `ORDER BY` ni
+propriétaire — et le jeu de démonstration n'en fournit aucun : son unique devis
+envoyé porte déjà une réponse. Il ne pouvait donc pas tourner seul, et **ajouter
+une suite ailleurs a suffi à changer l'ordre physique des lignes** et à le faire
+tomber sur un chantier dont l'écran d'envoi ne monte pas le mécanisme du retour.
+Il accusait alors le retour de messagerie, qui n'y était pour rien. Il fabrique
+maintenant son propre chantier, du client au devis parti.
+
+**La règle qui en sort :** une suite qui dépend des restes d'une autre n'éprouve
+pas ce qu'elle croit — et le jour où elle rougit, elle désigne le mauvais
+coupable.

@@ -500,6 +500,144 @@ rendrait « lien inconnu », dont la mise en page peut différer, et le contrôl
 serait vert sur du vide. Il vérifie aussi la porte, pas seulement l'enseigne —
 sans compte, les écrans du patron restent fermés. Confronté au code livré : un
 seul rouge, sur la facture, exactement.
+### Deux dates se choisissent enfin à même le calendrier
+
+**Le patron :** *« dès que je choisis à même le planning, je ne peux choisir
+qu'un seul jour. Or je dois pouvoir proposer deux jours au client. »*
+`ARCHITECTURE.md` §74.
+
+La feuille d'envoi portait la sélection à **deux endroits** : un tableau — ce
+qui part réellement — et une **chaîne unique** pour le jour choisi au
+calendrier. Le calendrier ne recevait que la seconde : choisir un second jour
+effaçait le premier sous ses yeux. Le plus traître était l'autre moitié du
+défaut : **rappuyer sur le premier jour le remettait au lieu de le retirer.**
+
+Le calendrier marque désormais toute la sélection — ce qu'il voit est ce que son
+client recevra. Et la règle « une ou deux, jamais trois » cesse d'être écrite en
+double : elle vivait déjà dans `src/lib/calendrier.ts`, éprouvée sans
+navigateur, et l'écran en avait sa propre copie.
+
+**Pourquoi aucune suite ne l'avait vu :** celle qui existe choisit UNE date au
+calendrier et vérifie qu'elle part. Personne n'avait jamais essayé d'en choisir
+deux. Un parcours à moitié joué ne prouve que la moitié qu'on joue — quand un
+écran offre un maximum, l'éprouver à un seul exemplaire ne dit rien du second.
+
+**Deux suites voisines ont été réparées au passage**, pour deux raisons
+opposées : l'une accusait à tort (elle comptait des boutons pressés, or un même
+jour est désormais marqué à deux endroits) ; l'autre **empruntait son chantier à
+une autre suite** et ne savait pas tourner seule — ajouter une suite ailleurs a
+suffi à changer l'ordre des lignes et à la faire rougir en désignant le mauvais
+coupable. Chacune possède maintenant ses données.
+
+### Le bouton de la facture prend la capsule — son choix, la variante A
+
+*« Code la A. »* Après deux planches (30, puis 31 à sa demande), « Ouvrir le SMS
+tout prêt » quitte son aplat à 4 px de rayon et passe par **`PrimaryButton`**,
+la capsule des dix-sept autres écrans. `ARCHITECTURE.md` §73.
+
+**Il passe par le composant, jamais par un dessin recopié sur place** — c'est le
+défaut même qu'on répare : une action principale peinte dans un écran échappe à
+toute décision d'ensemble, et c'est ce qui lui avait fait manquer la capsule du
+11 août. Deux suites mesurent désormais le rayon calculé du bouton : le
+repeindre à la main les rend rouges.
+
+**Deux réglages facultatifs ajoutés à `PrimaryButton`, aucun d'apparence.**
+`onClick` est enfin honoré sur la variante `href` — elle le perdait en silence,
+et ce bouton-là est un lien qui doit AUSSI retenir le départ vers la messagerie.
+`repere` pose un `data-atlas`, pour qu'une suite ne désigne pas ce lien par son
+seul texte : « Ouvrir le SMS tout prêt » et « Ouvrir l'e-mail tout prêt » se
+ressemblent assez pour qu'un contrôle passe au vert sur le mauvais.
+
+Les quatre gestes écartés — la lueur, le cachet, l'encre, le trait — restent
+dans la maquette 31.
+
+### Cinq boutons de facture qui se pressent pour de vrai
+
+**Sa demande :** *« sors-moi une maquette avec plusieurs versions cliquables et
+dynamiques. Tout en gardant à l'esprit que c'est une appli hyper luxe et
+moderne. »* — `docs/maquettes/31-le-bouton-de-la-facture-a-lessai.html`.
+
+Cinq gestes qui **changent de nature** plutôt que de décliner un même objet :
+la capsule nue, la lueur qui traverse la laque, le cachet qui tourne et sème
+onze grains d'or, l'encre qui remplit le fond, le trait qui s'ouvre. Chacun
+respecte les règles payées par « Nouveau chantier » — enfoncement immédiat,
+demi-seconde avant la messagerie, mouvement réduit honoré, libellé stable.
+**Rien n'est codé** : `src/` est intact, c'est sa règle.
+
+### Et cette maquette n'affichait RIEN chez lui
+
+*« Rien apparaît sur ta maquette. »* La première version **engendrait ses cinq
+téléphones en JavaScript**. Éprouvée ici dans un navigateur complet, elle
+passait ; script coupé — visionneuse, aperçu, page qui bloque l'exécution — elle
+ne montrait plus rien. Mesuré après coup : **zéro écran, zéro bouton.**
+
+Le contrôle qui l'accompagnait pressait donc cinq boutons qui, pour lui,
+n'existaient pas. Et le dépôt avait déjà payé cette leçon sur les maquettes 25
+et 26, où `verifier-maquette-bascule.mjs` joue les huit bascules **JavaScript
+coupé** — la règle existait, elle n'a pas été appliquée.
+
+**Réécrite sans une ligne de script** : une case à cocher invisible par écran et
+des règles `:checked ~` portent le geste, la demi-seconde, la messagerie qui
+monte et la reprise. Le contrôle tourne désormais `javaScriptEnabled: false`, et
+sa première ligne compte les cinq écrans — un retour au script le rend rouge.
+
+*Une seule chose diffère de l'application, et la maquette le dit : ici un second
+appui referme, pour pouvoir réessayer. Dans le code il est ignoré, sinon le
+message partirait deux fois.*
+
+**Deux pièges de mesure, et le second vaut d'être retenu.**
+
+`locator.screenshot()` attend que l'élément soit **stable** — donc que
+l'animation soit finie. Il montrait l'après, jamais le pendant, et la lueur
+paraissait morte.
+
+Surtout : **le contrôle de cette lueur est passé au vert deux fois sur un geste
+que l'œil ne voyait jamais.** Il exigeait « opacité > 0 et transform ≠
+identité » — vrai même quand la bande est entièrement hors du bouton — puis
+« la bande est dedans à mi-geste », vrai aussi de la version fautive, qui se
+trouvait passer là au bon instant. La courbe d'accélération faisait traverser
+la lumière en quatre-vingts millisecondes. Ce qui se mesure désormais, c'est
+**combien de temps** elle est visible : 240 ms, contre 180 exigées. Le défaut a
+été trouvé en REGARDANT une capture, pas en lisant un voyant vert — troisième
+fois que cela arrive dans ce dépôt.
+
+### La facture part enfin par e-mail, et se télécharge
+
+**Trois manques signalés par le patron le 10 août** (`TODO.md` §8), dont deux
+sont réparés. `ARCHITECTURE.md` §73.
+
+**« On ne propose que le SMS » — le plus grave.** L'écran de la facture prenait
+le canal de la fiche du client et n'en démordait plus : un client sans portable
+ne pouvait tout simplement pas être facturé. Les deux voies sont désormais
+offertes à tout moment, et **l'adresse manquante se saisit sur place** — il
+n'existe aucun écran de fiche client où l'envoyer. Le lien reste unique (le
+client n'aura jamais deux adresses pour la même facture), mais le canal inscrit
+au registre est corrigé quand le patron change d'avis : une facture partie par
+courriel ne doit pas rester marquée « SMS ».
+
+**Le même défaut avait été réparé sur le DEVIS le 4 août**, après une phrase
+presque identique. Il a survécu deux semaines ici parce que rien ne relie deux
+écrans qui font la même chose. À retenir : un défaut corrigé quelque part
+mérite qu'on cherche aussitôt son jumeau ailleurs.
+
+**« Impossible d'enregistrer la facture ».** Un lien « Télécharger
+(F2026-0001.pdf) » se pose sous « Voir la facture en PDF ». C'est le **serveur**
+qui range le fichier (`?telecharger=1` → `Content-Disposition: attachment`) :
+l'attribut `download` du lien, seul, est ignoré par certaines versions d'iOS et
+le PDF s'ouvrait alors dans un onglet — le défaut d'origine, déguisé en
+correctif. Le nom porte le numéro de facture ; il en aura des centaines.
+
+**Le troisième manque n'est PAS corrigé, et c'est délibéré.** Il veut le bouton
+« Ouvrir le SMS tout prêt » ovale : une demande d'apparence se dessine avant de
+se coder (`CLAUDE.md` §3 bis). Deux variantes l'attendent dans
+`docs/maquettes/30-le-bouton-de-la-facture.html`, et **`src/` est intact** sur
+ce point.
+
+**Ce que les contrôles ont trouvé, et qu'aucune relecture n'aurait vu :** le nom
+du fichier vit à deux endroits sans lien entre eux — l'attribut du navigateur et
+l'en-tête du serveur. Après l'arrêt de la facture, sans rechargement, l'écran
+annonçait « F2026-0001-brouillon.pdf » quand le serveur servait
+« F2026-0001.pdf ».
 
 ### « Mon devis » pouvait attendre indéfiniment une réponse déjà perdue
 
