@@ -174,11 +174,13 @@ l'application. Ce qui est **fait** :
   cause, c'est **mesuré** (`scripts/mesurer-fluidite-fil.mts`) : ne pas les
   accuser sans relancer la mesure.
 - **Le devis, en tête et dans sa synthèse** (13 août) : le chantier ne s'appelle
-  plus « Chez Martins » mais « Monsieur Martins », et la carte pose le nom
+  plus « Chez Martins » mais « Mr. Martins », et la carte pose le nom
   au-dessus du détail au lieu de les coller par un tiret. La civilité vit dans
   `src/lib/civilite.ts` — **et c'est un défaut, pas une donnée** : sans champ de
-  civilité sur la fiche client, une cliente est nommée « Monsieur ». À trancher
-  avec lui. `ARCHITECTURE.md` §77.
+  civilité sur la fiche client, une cliente est nommée « Mr. ». À trancher
+  avec lui. Le message tout prêt l'aborde de la même façon (« Bonjour
+  Mr. Martins »), et l'encart du client porte une phrase qui l'invite à écrire.
+  `ARCHITECTURE.md` §77.
 - **Le devis à la main** : ses trois zones de texte mesurent leur hauteur au
   lieu de l'estimer (11 août 2026). Elles comptaient les caractères ou les
   retours à la ligne, alors qu'un texte se coupe au mot : le devis cachait 24 px

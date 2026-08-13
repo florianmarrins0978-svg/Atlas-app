@@ -102,7 +102,7 @@ aurait changé l'apparence d'écrans qu'il n'a pas demandés.
 
 ---
 
-### « Monsieur Martins », et le tiret qui collait deux choses différentes
+### « Mr. Martins », et le tiret qui collait deux choses différentes
 
 **Sa capture, ce matin :** *« il faut qu'il y ait écrit monsieur Martins et pas
 chez Martins. Ensuite tu me retires le tiret entre le nom et l'adresse […]
@@ -117,8 +117,13 @@ chantier ; en tête d'un document, on nomme quelqu'un. `src/lib/civilite.ts` pos
 civilité (« Mme Roux ») ni devant une raison sociale (« SARL Untel »). Un seul
 fichier sert les trois endroits où le client est nommé.
 
+**Le mot a changé le jour même** : « Monsieur » d'abord, puis, une fois vu à
+l'écran, *« Mr. Martins, pas Monsieur »*. Il ne s'écrit donc qu'à un seul
+endroit, et les contrôles le demandent à la règle au lieu de le recopier — sans
+quoi la moindre correction de sa part rougirait dix suites sans rien apprendre.
+
 Ce que ça coûte, écrit plutôt que tu : il n'existe **aucun champ de civilité**
-dans la fiche client. « Monsieur » est un défaut, pas une donnée — une cliente
+dans la fiche client. La civilité est un défaut, pas une donnée — une cliente
 sera mal nommée. Le vrai remède est un choix à la création du client ; il n'a
 pas été ajouté sans son accord.
 
@@ -146,9 +151,18 @@ paragraphes désormais, et la suite **mesure les rectangles** — le détail sou
 nom, à la même marge — parce qu'un contrôle qui compte les lignes serait passé
 au vert sur ce défaut-là.
 
-**Ce qui n'a pas été touché, à dessein :** le message qui part chez son client
-dit toujours « Bonjour <nom> ». Changer la façon dont ses clients sont abordés
-est un geste qui lui appartient.
+**4. Le message tout prêt, et l'encart du client.** Demandés dans la foulée, sa
+capture du SMS à l'appui. Le message dit maintenant « Bonjour Mr. Martins » —
+devis et facture, par la même règle — et « vous **pouvez** en proposer une
+autre » au lieu de « vous pourrez » : le futur repoussait le geste à plus tard.
+
+Et l'encart où le client écrit porte enfin une phrase qui l'y invite. L'intitulé
+posait une question sans dire qu'on avait le droit d'y répondre. Ce n'est pas de
+la politesse : un client qui repère une faute et n'ose pas l'écrire touche « Je
+ne donne pas suite », et le patron lit un refus là où il n'y avait qu'une
+coquille. La phrase est au-dessus du champ — lue après coup, elle n'inviterait
+plus personne — et elle **ne promet aucune réponse**, que rien ici ne
+permettrait de tenir.
 
 `ARCHITECTURE.md` §77.
 

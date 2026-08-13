@@ -16,7 +16,7 @@ import { avecCivilite } from "./civilite";
 //
 // **Une réserve levée par lui le 13 août 2026, et qu'il faut connaître.**
 // Jusque-là, ce fichier tenait que rien n'était fabriqué : chaque mot du nom
-// venait de la saisie. La civilité rompt cette règle — « Monsieur » n'est pas
+// venait de la saisie. La civilité rompt cette règle — « Mr. » n'est pas
 // une donnée du client, c'est un défaut. Le patron l'a demandé en sachant qu'il
 // n'avait tapé que « Martins ». Ce que ça coûte, et les deux cas où ça se voit
 // (une cliente, une société sous un nom nu), sont écrits dans
@@ -34,7 +34,7 @@ export type SourceNomChantier = {
 };
 
 export function nomDuChantier({ nomClient, adresseChantier, jour }: SourceNomChantier): string {
-  // **« Monsieur Bernard », et non plus « Chez M. Bernard ».** Le patron, le
+  // **« Mr. Bernard », et non plus « Chez M. Bernard ».** Le patron, le
   // 13 août 2026, devant son devis : *« il faut qu'il y ait écrit monsieur
   // Martins et pas chez Martins »*. « Chez » est la phrase par laquelle un
   // artisan désigne un chantier ; sur un document qui part chez le client, on
@@ -95,13 +95,13 @@ export function intituleDuChantier(nomClient: string | null | undefined, nomChan
  *
  * **Né du retrait de « Chez », le 13 août 2026.** Le titre valait « Chez
  * Martins » et la ligne du dessous « Martins » : proches, mais distincts. Le
- * titre étant devenu « Monsieur Martins », un chantier SANS adresse affichait
+ * titre étant devenu « Mr. Martins », un chantier SANS adresse affichait
  * deux fois le même homme, à une civilité près — vu à l'œil sur une capture,
  * jamais par un contrôle.
  *
  * **La comparaison est un `includes`, pas une égalité**, et c'est tout le
  * point : le titre PORTE le nom du client sans lui être identique, puisqu'il
- * lui ajoute « Monsieur » (`avecCivilite`). Une égalité stricte aurait laissé
+ * lui ajoute sa civilité (`avecCivilite`). Une égalité stricte aurait laissé
  * le doublon passer, et ce fichier a déjà payé cette leçon une fois —
  * `intituleDuChantier`, juste au-dessus, compare de la même façon.
  *
