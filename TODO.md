@@ -45,6 +45,15 @@ Ordre convenu, qui suit ses quatre priorités du 13 août 2026 :
 | 6 | Notifications | Huit familles d'alertes, canal par canal | à dessiner |
 | 7 | Le reste | Atlas IA, intégrations, apparence, abonnement, sécurité | à dessiner |
 
+**La charte, depuis le 13 août :** *« toujours en respectant le style de l'appli
+ultra luxe et très moderne »*. `atlas-reglages-plan.html` recopie les jetons de
+`src/lib/design-tokens.ts`, et son contrôle lit le fichier de jetons pour les
+comparer — un écart rougit en nommant le jeton. **Les neuf planches antérieures
+gardent l'ancien nuancier** (crème `#edece6`, bronze `#8f7130`) : les reprendre
+d'un coup mêlerait un changement d'identité à un changement mécanique sur des
+écrans déjà validés. Elles passent à la charte **quand leur sujet est rouvert**,
+pas avant (`ARCHITECTURE.md` §80).
+
 **Ce qui n'est PAS acquis, et ne doit pas être codé sur la foi de la maquette :**
 
 - **le rôle « commercial » n'existe nulle part.** `membres_entreprise.role` ne

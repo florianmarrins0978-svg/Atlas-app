@@ -6064,3 +6064,47 @@ exécution normale. La planche a été relue sur une image produite par la versi
 cassée, où la ligne scellée portait un interrupteur — exactement ce qu'elle
 interdit. **Regarder l'écran suppose de savoir quelle exécution l'a écrit :**
 relancer le contrôle sur le fichier sain avant de conclure.
+
+
+### Les planches portent désormais la charte de l'application, valeur pour valeur
+
+**Sa consigne, le 13 août 2026 :** *« toujours en respectant le style de l'appli
+ultra luxe et très moderne ».*
+
+Les maquettes du dépôt portaient jusque-là **un nuancier à elles** — crème
+`#edece6`, bronze `#8f7130` — proche des jetons sans leur être égal. Deux crèmes
+côte à côte, ça se voit ; et surtout, une planche qui n'est pas dans la couleur
+de l'écran fait **valider une allure qui ne sera pas la sienne**.
+
+`atlas-reglages-plan.html` recopie donc les jetons de `src/lib/design-tokens.ts`
+— crème `#f5f3ee`, plage `#faf9f5`, encre `#1c1c1a`, gris `#8a8578`, or
+`#b98b47`, vert pin `#2f3b2f`, filet `rgba(28,28,26,.12)` — et **le contrôle lit
+le fichier de jetons pour les comparer**. Changer une couleur ici sans la
+changer là-bas rougit, en nommant le jeton et la valeur attendue.
+
+**Ce que « ultra luxe » veut dire dans CETTE charte, et c'est contre-intuitif :**
+ce qu'elle refuse. `cardShadow` vaut « none » depuis le 10 août — l'écran qu'il a
+retenu n'a pas une seule ombre ; `radius.card` vaut 4 px ; `champPlage` n'a
+aucune bordure ; il y a deux accents, et le partage de leurs rôles n'est pas
+décoratif (le vert pin pour ce qu'on FAIT, l'or pour ce qu'on LIT). Un dégradé
+ou une ombre portée ajoutés « pour faire haut de gamme » iraient donc **contre**
+son choix. Un second contrôle interdit toute ombre dans l'écran — celle du
+cadre du téléphone, qui n'est pas l'écran, est nommée comme exception.
+
+**Trois retouches qui en découlent, et qui valent pour les planches suivantes :**
+les plages de saisie perdent leur liseré (la charte tient par des filets, jamais
+par des cadres) ; la ligne grise sous un intitulé passe de 12,5 à 11,5 px
+(`texteSituation`), sans quoi elle dispute la place au serif ; les marges de
+page passent de 26 à 24 px (`spacing.pageX`).
+
+**Dette laissée en l'état, et assumée :** les neuf planches antérieures gardent
+l'ancien nuancier. Les reprendre d'un coup mêlerait un changement d'identité à
+un changement mécanique sur des écrans déjà validés — c'est exactement ce que
+`design-tokens.ts` a refusé de faire pour le nom `rust`. Elles passeront à la
+charte quand leur sujet sera rouvert. `TODO.md` §0 duovicies le porte.
+
+**Corrigé au passage, parce qu'on ne respecte pas une charte dont la
+documentation ment :** `docs/DESIGN_SYSTEM.md` annonçait encore Playfair Display
+et Inter rapatriées par `next/font` (faux depuis le 10 août : polices du
+système), et la terre cuite `#B25A2E` sur les documents (faux depuis le 10 août :
+l'or). Le code fait foi, `CLAUDE.md` §1.

@@ -47,6 +47,23 @@ pas, et taper 15 laissait le montant de 30 % à côté. Cinquante contrôles au 
 pendant que l'écran se contredisait. Retiré, et un contrôle posé pour que ça ne
 revienne pas.
 
+**La planche porte la charte de l'application, valeur pour valeur.** Sa consigne
+du même jour : *« toujours en respectant le style de l'appli ultra luxe et très
+moderne »*. Les maquettes portaient un nuancier à elles — proche des jetons,
+jamais égal. Celle-ci recopie `src/lib/design-tokens.ts`, et **le contrôle lit le
+fichier de jetons pour comparer** : un écart rougit en nommant le jeton et la
+valeur attendue.
+
+Dans cette charte, le luxe est fait de ce qu'elle REFUSE — aucune ombre, 4 px de
+rayon, aucune bordure sur les plages, deux accents aux rôles distincts. Un
+dégradé ajouté « pour faire haut de gamme » irait contre ce qu'il a retenu le
+10 août ; un contrôle interdit désormais toute ombre dans l'écran.
+
+**Corrigé au passage :** `docs/DESIGN_SYSTEM.md` annonçait encore Playfair
+Display et Inter (faux depuis le 10 août — polices du système) et la terre cuite
+sur les documents (faux depuis le 10 août — l'or). On ne respecte pas une charte
+dont la documentation ment.
+
 **Les lots suivants**, dans l'ordre de ses priorités : identité de l'entreprise,
 équipe et rôles, tarifs, documents (conditions, logo, mentions), notifications,
 puis le reste.

@@ -35,6 +35,49 @@ verifie("aucun gestionnaire en ligne", !/\son[a-z]+\s*=/i.test(source));
 verifie("les libellés portent cursor:pointer (Safari l'exige)",
   /(^|[\s,{}])label\s*\{[^}]*cursor:\s*pointer/m.test(source.split("</style>")[0]));
 
+// ── La charte de l'application, comparée AU FICHIER, pas à l'œil ─────────
+//
+// Sa consigne du 13 août 2026 : « toujours en respectant le style de l'appli ».
+// Une planche « à peu près » de la bonne couleur fait valider une allure qui ne
+// sera pas celle de son écran — les maquettes d'avant portaient un crème et un
+// bronze à elles, proches des jetons sans leur être égaux.
+//
+// Ce contrôle lit `src/lib/design-tokens.ts` et exige que les six couleurs de
+// l'écran en viennent. Il sait échouer : changer un seul chiffre dans le bloc
+// `.ecran{}` le rougit, et il désigne alors le jeton et la valeur attendue.
+{
+  const jetons = fs.readFileSync("src/lib/design-tokens.ts", "utf8");
+  const lire = (nom) => (jetons.match(new RegExp(`\\b${nom}:\\s*"([^"]+)"`)) || [])[1];
+  // rgba(28, 28, 26, 0.12) et rgba(28,28,26,.12) sont la même couleur : la
+  // comparaison porte sur la couleur, pas sur sa ponctuation.
+  const meme = (a, b) => a && b &&
+    a.toLowerCase().replace(/[\s]/g, "").replace(/0\./g, ".") ===
+    b.toLowerCase().replace(/[\s]/g, "").replace(/0\./g, ".");
+
+  const bloc = (source.match(/\.ecran\{[\s\S]*?\n\s*--e-plein-encre:[^;}]+[;}]/) || [""])[0];
+  const dansEcran = (nom) => (bloc.match(new RegExp(`--e-${nom}:\\s*([^;}]+)`)) || [])[1];
+
+  const attendus = [
+    ["fond", "cream"], ["plage", "card"], ["encre", "ink"],
+    ["gris", "muted"], ["bronze", "or"], ["plein", "rust"], ["trait", "line"],
+  ];
+  const ecarts = attendus
+    .filter(([e, j]) => !meme(dansEcran(e), lire(j)))
+    .map(([e, j]) => `--e-${e} vaut ${dansEcran(e)}, ${j} vaut ${lire(j)}`);
+  verifie("les couleurs de l'écran sortent des jetons de l'application",
+    ecarts.length === 0, ecarts.join(" · "));
+
+  // Le luxe de cette charte tient à ce qu'elle REFUSE : `cardShadow` vaut
+  // « none » depuis le 10 août, et l'écran retenu n'a pas une seule ombre. Une
+  // ombre posée « pour faire haut de gamme » remet le contenu au-dessus de la
+  // page au lieu de dedans — c'est l'aspect que le patron a écarté.
+  const styles = source.split("</style>")[0];
+  const ombres = (styles.match(/box-shadow:\s*(?!none|inset)[^;}]+/g) || [])
+    .filter((o) => !/^box-shadow:\s*0 1px 3px rgba\(20,18,14/.test(o)); // le cadre du téléphone, pas l'écran
+  verifie("aucune ombre portée dans l'écran — la charte n'en a pas une seule",
+    ombres.length === 0, ombres.join(" | "));
+}
+
 const ESSAI = FICHIER.replace(/\.html$/, "-essai.html");
 fs.writeFileSync(ESSAI, '<meta name="viewport" content="width=device-width, initial-scale=1">\n' + source);
 

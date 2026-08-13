@@ -60,19 +60,46 @@
     équipe, tarifs, documents — puis notifications, puis le reste.
   */
 
+  /* ═══ LA CHARTE DE L'APPLICATION, VALEUR POUR VALEUR ═════════════════
+     Sa consigne du 13 août 2026 : « toujours en respectant le style de l'appli,
+     ultra luxe et très moderne ».
+
+     Les maquettes précédentes portaient un nuancier à elles (#edece6, bronze
+     #8f7130) — proche, jamais identique. Deux crèmes côte à côte, ça se voit ;
+     et une planche qui n'est pas dans la couleur de l'écran fait valider une
+     allure qui ne sera pas celle qu'il aura sous les yeux.
+
+     Ces valeurs sont donc RECOPIÉES de `src/lib/design-tokens.ts`, elles-mêmes
+     relevées au navigateur sur le site d'Arborea (`ARCHITECTURE.md` §17). Le
+     contrôle les compare au fichier de jetons : les changer ici sans les
+     changer là-bas rougit.
+
+     Le luxe, dans cette charte, est fait de RETENUE — c'est ce que disent les
+     jetons eux-mêmes, et c'est ce qui a été retenu le 10 août : aucune ombre
+     (`cardShadow` vaut « none »), presque aucun rayon (4 px), aucune bordure
+     sur les plages de saisie, deux accents et pas trois. Ajouter une ombre ou
+     un dégradé pour « faire haut de gamme » irait contre ce qu'il a choisi. */
   :root{
-    --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c;
-    --bronze:#8f7130; --trait:rgba(22,23,15,.12);
+    --fond:#f5f3ee;   /* --paper / colors.cream */
+    --plage:#faf9f5;  /* --card  / colors.card  */
+    --encre:#1c1c1a;  /* --ink   / colors.ink   */
+    --gris:#8a8578;   /* colors.muted */
+    --bronze:#b98b47; /* --or : ce qu'on LIT */
+    --trait:rgba(28,28,26,.12); /* --line */
   }
+  /* La PLANCHE suit le thème du lecteur, pour se relire au lit sans être
+     éblouie. L'ÉCRAN, lui, reste clair en toutes circonstances : l'application
+     n'a pas encore de mode sombre, et en montrer un serait dessiner un écran
+     qui n'existe pas. C'est la rubrique « Apparence », marquée « Bientôt ». */
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
       --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
-      --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+      --bronze:#c9a15e; --trait:rgba(232,231,221,.15);
     }
   }
   :root[data-theme="dark"]{
     --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
-    --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+    --bronze:#c9a15e; --trait:rgba(232,231,221,.15);
   }
 
   /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`.
@@ -106,14 +133,21 @@
          display:flex;flex-direction:column;
          background:var(--e-fond);color:var(--e-encre);
          font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
-         --e-fond:#edece6; --e-plage:#f7f6f2; --e-encre:#16170f; --e-gris:#83867c;
-         --e-bronze:#8f7130; --e-trait:rgba(22,23,15,.13); --e-plein:#2a3a2e;
-         --e-plein-encre:#f2f1ea; --e-signe:#c2a05f}
+         /* Les six jetons de l'application, sans un écart. `--e-plein` est le
+            vert pin : il porte ce qu'on FAIT — ici, l'interrupteur allumé.
+            `--e-bronze` est l'or : il porte ce qu'on LIT. Les mélanger rendrait
+            l'écran bavard, et c'est l'aspect « tableau de bord » qu'il refuse
+            (`src/lib/design-tokens.ts`). */
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-bronze:#b98b47; --e-trait:rgba(28,28,26,.12); --e-plein:#2f3b2f;
+         --e-plein-encre:#f5f3ee}
+  /* `libelleCaps`, mot pour mot : 9,5 px, 0,28 em, graisse 500. C'est ce qui
+     distingue un repère d'une phrase. */
   .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
 
   .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
 
-  .tete{padding:26px 26px 0;flex:none}
+  .tete{padding:26px 24px 0;flex:none}
   .tete .sur{margin:0;color:var(--e-bronze)}
   .tete h1{margin:9px 0 0;font:400 34px/1 ui-serif,Georgia,serif;letter-spacing:-.02em}
   .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
@@ -131,7 +165,7 @@
   /* ═══ Le plan des réglages ═══════════════════════════════════════════ */
   /* Registre commun aux autres écrans : des filets, pas des cadres ; du serif
      pour ce qui compte ; presque pas de mots. */
-  .bloc{margin:30px 26px 0}
+  .bloc{margin:32px 24px 0}
   .bloc .t{display:flex;align-items:center;gap:12px;margin:0 0 4px;color:var(--e-gris)}
   .bloc .t i{flex:1;height:1px;background:var(--e-trait)}
 
@@ -143,7 +177,7 @@
   .rub:active{border-bottom-color:var(--e-bronze)}
   .rub .txt{flex:1;min-width:0}
   .rub .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif;color:var(--e-encre)}
-  .rub .dit{display:block;margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--e-gris)}
+  .rub .dit{display:block;margin-top:4px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
   /* Le chevron est une affordance, pas un ornement : il dit « ça s'ouvre ».
      Une rubrique sans chevron n'irait nulle part, et il n'y en a aucune ici. */
   .rub .chev{flex:none;width:8px;height:8px;border-right:1.5px solid var(--e-trait);
@@ -158,8 +192,8 @@
 
   /* Le mot qui clôt un écran : pourquoi il n'y a rien de plus en dessous.
      Un écran court sans explication se lit comme un écran cassé. */
-  .fin{margin:26px 26px 0;padding-top:16px;border-top:1px solid var(--e-trait);
-       font-size:13px;line-height:1.7;color:var(--e-gris)}
+  .fin{margin:28px 24px 0;padding-top:16px;border-top:1px solid var(--e-trait);
+       font-size:11.5px;line-height:1.75;color:var(--e-gris)}
   .fin b{color:var(--e-encre);font-weight:400}
 
   /* ═══ L'interrupteur ═════════════════════════════════════════════════ */
@@ -168,14 +202,15 @@
        -webkit-tap-highlight-color:transparent}
   .bat .txt{flex:1;min-width:0}
   .bat .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif}
-  .bat .dit{display:block;margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--e-gris)}
+  .bat .dit{display:block;margin-top:4px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
   /* 52 × 32 : la piste tient la cible de 44 px avec la hauteur de sa ligne,
      et reste sous le pouce sans écraser le libellé. */
   .piste{position:relative;flex:none;width:52px;height:32px;border-radius:99px;
          background:var(--e-trait);transition:background .24s}
   .piste b{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:99px;
-           background:var(--e-fond);box-shadow:0 1px 2px rgba(20,18,14,.28);
-           transition:left .24s}
+           background:var(--e-plage);box-shadow:inset 0 0 0 1px var(--e-trait);
+           transition:left .26s cubic-bezier(.32,.72,0,1),box-shadow .26s}
+  .interrupteur:checked ~ .bat .piste b{box-shadow:none}
   .interrupteur:checked ~ .bat .piste{background:var(--e-plein)}
   .interrupteur:checked ~ .bat .piste b{left:23px}
 
@@ -183,8 +218,8 @@
      champ grisé sous un réglage éteint invite à le remplir pour rien. */
   .deplie{display:none;padding:0 0 16px}
   .interrupteur:checked ~ .deplie{display:block}
-  .chiffrer{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:6px;
-            background:var(--e-plage);box-shadow:inset 0 0 0 1px var(--e-trait)}
+  .chiffrer{display:flex;align-items:center;gap:10px;padding:12px 15px;border-radius:4px;
+            background:var(--e-plage)}
   /* 17 px : en dessous de 16, Safari zoome à la mise au point et l'écran saute. */
   .valeur{width:4ch;border:0;background:transparent;padding:0;margin:0;
           -webkit-appearance:none;appearance:none;border-radius:0;
@@ -192,9 +227,9 @@
           font-variant-numeric:tabular-nums}
   .valeur:focus{outline:none}
   .unite{font:400 17px/1.3 ui-serif,Georgia,serif;color:var(--e-bronze)}
-  .apres{flex:1;min-width:0;text-align:right;font-size:12.5px;color:var(--e-gris)}
-  .libre{width:100%;border:0;background:var(--e-plage);box-shadow:inset 0 0 0 1px var(--e-trait);
-         border-radius:6px;padding:12px 14px;-webkit-appearance:none;appearance:none;
+  .apres{flex:1;min-width:0;text-align:right;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  .libre{width:100%;border:0;background:var(--e-plage);
+         border-radius:4px;padding:12px 15px;-webkit-appearance:none;appearance:none;
          font:400 16px/1.5 ui-sans-serif,-apple-system,sans-serif;color:var(--e-encre);
          resize:none;height:76px}
   .libre:focus{outline:none}
@@ -206,7 +241,7 @@
   .scelle .bat{align-items:flex-start}
   .scelle .nom{color:var(--e-encre)}
   .oblig{flex:none;color:var(--e-bronze);padding-top:4px}
-  .pourquoi{margin:0 0 15px;font-size:12.5px;line-height:1.55;color:var(--e-gris)}
+  .pourquoi{margin:0 0 16px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
 </style>
 
 <div class="page">
