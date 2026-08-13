@@ -6,6 +6,7 @@ import { enregistrerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { verifierTailleFichier } from "@/server/upload-limits";
 import { achatComplet, montantSaisi, type SaisieAchat } from "@/lib/achat-tva";
+import { lireTicket, type TicketLu } from "@/server/ai/services/lire-ticket";
 
 /**
  * Enregistrer un achat, et le retirer.
@@ -67,7 +68,9 @@ export async function supprimerAchatAction(id: string): Promise<{ ok: boolean }>
   return { ok: Boolean(ligne) };
 }
 
-export type ResultatTicket = { ok: true; cle: string } | { ok: false; raison: string };
+export type ResultatTicket =
+  | { ok: true; cle: string; lu: TicketLu | null; lecture: string | null }
+  | { ok: false; raison: string };
 
 /**
  * Ranger la photo d'un ticket, et rendre sa clé.
@@ -98,5 +101,28 @@ export async function rangerTicketAction(formData: FormData): Promise<ResultatTi
   const octets = Buffer.from(await fichier.arrayBuffer());
   const ext = fichier.type === "image/png" ? ".png" : fichier.type === "image/webp" ? ".webp" : ".jpg";
   const objet = await enregistrerObjet(`entreprises/${ctx.entrepriseId}/tickets`, octets, ext);
-  return { ok: true, cle: objet.storageKey };
+
+  // **La photo est rangée AVANT la lecture, et le reste quoi qu'elle donne.**
+  // Si le fournisseur d'IA est absent, refuse ou se trompe, le patron garde sa
+  // preuve et saisit les montants : le geste n'est jamais perdu pour une panne
+  // qui n'est pas la sienne.
+  let lu: TicketLu | null = null;
+  let lecture: string | null = null;
+  try {
+    const r = await lireTicket(octets.toString("base64"), fichier.type);
+    if (r.ok) {
+      lu = r.ticket;
+      lecture = r.ticket.reserve;
+    } else {
+      lecture = r.raison;
+    }
+  } catch (err) {
+    // **On journalise avant de se taire.** Un défaut muet est un défaut qu'on
+    // répare à l'aveugle (`AGENTS.md`) — et celui-ci se produira chez le patron,
+    // pas ici.
+    console.error("Lecture du ticket échouée :", err);
+    lecture = "La lecture automatique n’a pas abouti. Recopiez les montants.";
+  }
+
+  return { ok: true, cle: objet.storageKey, lu, lecture };
 }

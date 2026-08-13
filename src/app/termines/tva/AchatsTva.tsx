@@ -7,6 +7,15 @@ import BottomSheet from "@/components/atlas/BottomSheet";
 import { montantSaisi, tvaDepuisTtc } from "@/lib/achat-tva";
 import { ajouterAchatAction, rangerTicketAction } from "./actions";
 
+/** Ce que la lecture propose — jamais ce qui est enregistré. */
+type TicketLuAffiche = {
+  fournisseur: string | null;
+  date: string | null;
+  totalTtc: number | null;
+  tauxTva: number | null;
+  tvaDeductible: number | null;
+};
+
 /**
  * Les achats de la période, et les deux façons d'en ajouter un.
  *
@@ -19,12 +28,22 @@ import { ajouterAchatAction, rangerTicketAction } from "./actions";
  * noté sur un coin de table. D'où deux entrées côte à côte, et non un bouton
  * principal avec un repli discret.
  *
- * **La lecture automatique n'est pas branchée, et l'écran le DIT.** Elle
- * demande un service d'IA, et le fournisseur n'est pas choisi (`docs/A-FAIRE.md`
- * point 1). Le ticket est donc photographié et rangé — la preuve est gardée —
- * puis les montants se saisissent. Faire semblant d'avoir lu serait pire que
- * de ne rien lire : un chiffre faux entré tout seul coûte plus cher que pas de
- * chiffre du tout.
+ * **La lecture est branchée depuis le 13 août 2026**, le patron ayant posé ses
+ * clés Anthropic et OpenAI. Ce qu'elle rend est une PROPOSITION : les champs
+ * arrivent pré-remplis, et c'est la valeur qu'il CONFIRME qui part en base. Un
+ * ticket thermique pâlit, se froisse et sort du fond d'une poche ; la lecture
+ * se trompera, et un chiffre faux entré tout seul coûterait plus cher que pas
+ * de chiffre du tout.
+ *
+ * **La photo est rangée avant la lecture, et le reste quoi qu'elle donne.**
+ * Clé absente, quota dépassé, ticket illisible : le patron garde sa preuve et
+ * saisit les montants. Le geste n'est jamais perdu pour une panne qui n'est pas
+ * la sienne — et l'écran DIT laquelle, au lieu d'un « réessayez » unique pour
+ * trois causes différentes.
+ *
+ * **Ce qui n'a pas pu être éprouvé ici** : la lecture d'un vrai ticket. Cet
+ * environnement n'a aucune clé. La transformation de la réponse en champs, elle,
+ * l'est entièrement (`scripts/test-lecture-ticket.ts`).
  */
 
 export type LigneAchat = {
@@ -59,6 +78,8 @@ export default function AchatsTva({ achats, aujourdHui }: { achats: LigneAchat[]
   const [enCours, setEnCours] = useState(false);
   const [refus, setRefus] = useState<string | null>(null);
   const [photoCle, setPhotoCle] = useState<string | null>(null);
+  /** Ce que la lecture a su faire, ou n'a pas su — dit au patron tel quel. */
+  const [lecture, setLecture] = useState<string | null>(null);
 
   const [fournisseur, setFournisseur] = useState("");
   const [date, setDate] = useState(aujourdHui);
@@ -69,14 +90,24 @@ export default function AchatsTva({ achats, aujourdHui }: { achats: LigneAchat[]
   // fait foi, pas notre calcul.
   const [tvaEcrite, setTvaEcrite] = useState(false);
 
-  function ouvrir(cle: string | null) {
-    setFournisseur("");
-    setDate(aujourdHui);
-    setTtc("");
-    setTaux("20");
-    setTva("");
-    setTvaEcrite(false);
+  /**
+   * Ouvrir la feuille, éventuellement pré-remplie par la lecture.
+   *
+   * **Ce que la lecture rend est une PROPOSITION, jamais un enregistrement.**
+   * Un ticket thermique pâlit et se froisse ; elle se trompera. Le patron voit
+   * ce qui a été lu, corrige d'un doigt, et c'est SA valeur qui part en base.
+   */
+  function ouvrir(cle: string | null, lu?: TicketLuAffiche | null, mot?: string | null) {
+    setFournisseur(lu?.fournisseur ?? "");
+    setDate(lu?.date ?? aujourdHui);
+    setTtc(lu?.totalTtc != null ? String(lu.totalTtc).replace(".", ",") : "");
+    setTaux(lu?.tauxTva != null ? String(lu.tauxTva).replace(".", ",") : "20");
+    setTva(lu?.tvaDeductible != null ? lu.tvaDeductible.toFixed(2).replace(".", ",") : "");
+    // Une TVA venue de la lecture ne doit pas être écrasée par le calcul si le
+    // patron corrige ensuite le total : elle vient de son ticket.
+    setTvaEcrite(lu?.tvaDeductible != null);
     setRefus(null);
+    setLecture(mot ?? null);
     setPhotoCle(cle);
     setOuverte(true);
   }
@@ -101,7 +132,7 @@ export default function AchatsTva({ achats, aujourdHui }: { achats: LigneAchat[]
       setOuverte(true);
       return;
     }
-    ouvrir(r.cle);
+    ouvrir(r.cle, r.lu, r.lecture);
   }
 
   async function enregistrer() {
@@ -165,7 +196,7 @@ export default function AchatsTva({ achats, aujourdHui }: { achats: LigneAchat[]
         </button>
         <button
           type="button"
-          onClick={() => ouvrir(null)}
+          onClick={() => ouvrir(null, null, null)}
           className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[15px] text-[12.5px]"
           style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}`, color: colors.ink }}
         >
@@ -285,7 +316,7 @@ export default function AchatsTva({ achats, aujourdHui }: { achats: LigneAchat[]
           style={{ backgroundColor: "rgba(185,139,71,0.10)", color: "#7d6234" }}
         >
           {photoCle
-            ? "Le ticket est rangé. La lecture automatique n’est pas encore branchée : recopiez ses montants. Gardez le papier — la photo ne le remplace pas."
+            ? `${lecture ? `${lecture} ` : "Ticket lu. Vérifiez les montants avant d’ajouter. "}Gardez le papier — la photo ne le remplace pas.`
             : "La TVA se calcule depuis le total et le taux. Si votre ticket en affiche une autre, écrivez la sienne : c’est elle qui fait foi."}
         </p>
 
