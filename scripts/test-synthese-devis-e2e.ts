@@ -62,7 +62,7 @@ async function main() {
   const TELEPHONE = "0679984514";
 
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', NOM_CLIENT);
+  await page.fill('input[placeholder="Bernard"]', NOM_CLIENT);
   await page.fill('input[placeholder="06 12 34 56 78"]', TELEPHONE);
   // Le champ est libre et sans `name` (`ChampAdresse`) : on le vise par son
   // libellé, qui est ce que le patron lit.

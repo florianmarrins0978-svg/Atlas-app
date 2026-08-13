@@ -2,6 +2,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { clients } from "../db/schema";
 import type { Ctx } from "./context";
+import type { Civilite } from "@/lib/civilite";
 
 export async function listerClients(ctx: Ctx) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
@@ -26,6 +27,8 @@ export async function creerClient(
   ctx: Ctx,
   data: {
     nom: string;
+    /** « Mr » / « Mme », ou absent : les trois états (migration 0038). */
+    civilite?: Civilite;
     telephone?: string;
     adresse?: string;
     email?: string;
@@ -55,6 +58,7 @@ export async function mettreAJourClient(
   id: string,
   data: {
     nom?: string;
+    civilite?: Civilite | null;
     telephone?: string | null;
     adresse?: string | null;
     email?: string | null;

@@ -9,7 +9,7 @@ import { etatEnvoiExplication, etatEnvoiLabel, type EtatEnvoi } from "@/lib/etat
 import { reprendreDevisAction } from "./actions";
 import EnvoiAuClient from "./EnvoiAuClient";
 import { enEuros } from "@/lib/euros";
-import { avecCivilite } from "@/lib/civilite";
+import { avecCivilite, type Civilite } from "@/lib/civilite";
 
 
 export default function ExportClient({
@@ -19,6 +19,7 @@ export default function ExportClient({
   chantierNom,
   adresseChantier,
   clientNom,
+  clientCivilite,
   clientTelephone,
   clientEmail,
   entrepriseNom,
@@ -40,6 +41,8 @@ export default function ExportClient({
   chantierNom: string;
   adresseChantier: string;
   clientNom: string;
+  /** Ce qu'il a choisi au-dessus du nom, recopié sur le devis. */
+  clientCivilite: Civilite | null;
   clientTelephone: string;
   clientEmail: string;
   entrepriseNom: string;
@@ -163,7 +166,7 @@ export default function ExportClient({
           // s'agisse du même client. Le message qui part chez le client
           // l'aborde de la même façon depuis le 13 août au soir
           // (`src/lib/message-client.ts`).
-          phrase={lienClient ? `Devis prêt pour ${avecCivilite(clientNom)}.` : etatEnvoiExplication[etatEnvoi]}
+          phrase={lienClient ? `Devis prêt pour ${avecCivilite(clientNom, clientCivilite)}.` : etatEnvoiExplication[etatEnvoi]}
           messageClient={messageClient}
           numeroDevis={numeroDevis}
           totalTtc={totalTtc}
@@ -175,6 +178,7 @@ export default function ExportClient({
               <TransmettreAuClient
                 clientId={clientId}
                 clientNom={clientNom}
+                clientCivilite={clientCivilite}
                 entrepriseNom={entrepriseNom}
                 canal={canalClient}
                 telephone={clientTelephone}
@@ -231,7 +235,7 @@ export default function ExportClient({
             <Row label="Chantier" nom={chantierNom} detail={adresseChantier} repere="ligne-chantier" />
             <Row
               label="Client"
-              nom={avecCivilite(clientNom)}
+              nom={avecCivilite(clientNom, clientCivilite)}
               detail={clientTelephone}
               repere="ligne-client"
               last

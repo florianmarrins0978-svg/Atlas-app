@@ -1,5 +1,5 @@
 import { jourLisible } from "./jour";
-import { avecCivilite } from "./civilite";
+import { avecCivilite, type CiviliteChoisie } from "./civilite";
 
 // Comment un chantier s'appelle, quand personne ne le nomme.
 //
@@ -28,12 +28,14 @@ import { avecCivilite } from "./civilite";
 
 export type SourceNomChantier = {
   nomClient?: string | null;
+  /** Ce qu'il a choisi au-dessus du nom. Absent : la règle d'avant s'applique. */
+  civilite?: CiviliteChoisie;
   adresseChantier?: string | null;
   /** Jour de création, au format « AAAA-MM-JJ ». */
   jour: string;
 };
 
-export function nomDuChantier({ nomClient, adresseChantier, jour }: SourceNomChantier): string {
+export function nomDuChantier({ nomClient, civilite, adresseChantier, jour }: SourceNomChantier): string {
   // **« Mr. Bernard », et non plus « Chez M. Bernard ».** Le patron, le
   // 13 août 2026, devant son devis : *« il faut qu'il y ait écrit monsieur
   // Martins et pas chez Martins »*. « Chez » est la phrase par laquelle un
@@ -46,7 +48,7 @@ export function nomDuChantier({ nomClient, adresseChantier, jour }: SourceNomCha
   // qu'elle ne peut pas savoir. Un nom qui la porte déjà ne la reçoit pas deux
   // fois, une raison sociale ne la reçoit pas du tout.
   const client = nomClient?.trim();
-  if (client) return avecCivilite(client);
+  if (client) return avecCivilite(client, civilite);
 
   // Pas de client nommé : le lieu identifie le chantier aussi bien.
   const adresse = adresseChantier?.trim();

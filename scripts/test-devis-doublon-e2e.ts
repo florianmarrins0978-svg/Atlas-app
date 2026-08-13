@@ -33,7 +33,7 @@ async function main() {
 
   const nom = `Chantier doublon e2e ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nom);
+  await page.fill('input[placeholder="Bernard"]', nom);
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
   const chantierUrl = page.url();

@@ -2,6 +2,7 @@ import { lireParJeton } from "@/server/repositories/envois-devis";
 import { aujourdHuiIso } from "@/server/repositories/envois-devis";
 import FormulaireReponse from "./formulaire";
 import { jourLisible } from "@/lib/jour";
+import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { avecCivilite } from "@/lib/civilite";
 
 // Seule page publique du produit : consultée sans compte, depuis un lien reçu
@@ -90,7 +91,7 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
             className="mt-1 text-[20px] font-semibold text-ink"
             style={{ fontFamily: "ui-serif, Georgia, serif" }}
           >
-            Devis n° {d.numeroCommercial}
+            Devis n° <NumeroDeDocument valeur={d.numeroCommercial} />
           </h1>
           {/* **La même civilité que partout ailleurs** (`src/lib/civilite.ts`).
               Le client lit « Bonjour Mr. Martins » dans le message qui lui
@@ -98,7 +99,7 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
               qu'il ouvre juste après ferait douter qu'elle lui soit
               destinée. */}
           {d.clientNom && (
-            <p className="mt-1 text-[14px] text-ink/70">Pour {avecCivilite(d.clientNom)}</p>
+            <p className="mt-1 text-[14px] text-ink/70">Pour {avecCivilite(d.clientNom, d.clientCivilite)}</p>
           )}
           {d.adresseChantier && <p className="text-[13px] text-ink/50">{d.adresseChantier}</p>}
 

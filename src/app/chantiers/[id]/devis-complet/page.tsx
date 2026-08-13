@@ -106,6 +106,7 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
         clientId={chantier.clientId ?? null}
         client={{
           nom: client?.nom ?? "",
+          civilite: client?.civilite ?? null,
           adresse: client?.adresse ?? "",
           telephone: client?.telephone ?? "",
           email: client?.email ?? "",

@@ -10,6 +10,7 @@ import { noterRetenu } from "@/server/repositories/termes-metier";
 import { apprendrePrixGrille } from "@/server/services/apprendre-grille";
 import { mettreAJourAdresseChantier } from "@/server/repositories/chantiers";
 import { mettreAJourEnTeteDevis } from "@/server/repositories/devis";
+import type { Civilite } from "@/lib/civilite";
 
 // Le devis écrit à la main : chaque champ du document part vers SA source.
 //
@@ -33,7 +34,7 @@ export async function majEmetteurAction(data: {
 
 export async function majClientDuDevisAction(
   clientId: string,
-  data: { nom?: string; adresse?: string; telephone?: string; email?: string }
+  data: { nom?: string; civilite?: Civilite | null; adresse?: string; telephone?: string; email?: string }
 ) {
   const ctx = await getCurrentCtx();
   await mettreAJourClient(ctx, clientId, data);
