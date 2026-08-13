@@ -23,6 +23,9 @@ import { lancerNavigateur } from "./e2e-browser";
 // Le nom du client est saisi **nu**, exprès : c'est le cas du patron.
 
 import { devices } from "playwright";
+// La civilité vient de la règle, jamais recopiée : le patron peut changer le
+// mot (il l'a fait le 13 août, « Monsieur » puis « Mr. ») sans rougir la suite.
+import { avecCivilite } from "../src/lib/civilite";
 
 const BASE = "http://localhost:3000";
 const ECRAN_DU_PATRON = devices["iPhone 13"];
@@ -81,14 +84,14 @@ async function main() {
   await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
   await page.waitForSelector('[data-atlas="ligne-chantier"]', { timeout: 30_000 });
 
-  await cas("l'en-tête dit « Monsieur … », plus jamais « Chez … »", async () => {
+  await cas("l'en-tête porte la civilité, plus jamais « Chez … »", async () => {
     const ecran = await page.locator("body").innerText();
     if (new RegExp(`Chez\\s+${NOM_CLIENT}`, "i").test(ecran)) {
       throw new Error(`l'écran porte encore « Chez ${NOM_CLIENT} »`);
     }
-    if (!new RegExp(`Monsieur\\s+${NOM_CLIENT}`, "i").test(ecran)) {
+    if (!ecran.includes(avecCivilite(NOM_CLIENT))) {
       throw new Error(
-        "« Monsieur » est absent de l'écran.\n      " +
+        `« ${avecCivilite(NOM_CLIENT)} » est absent de l'écran.\n      ` +
           ecran.split("\n").filter((l) => l.trim()).slice(0, 12).join("\n      ")
       );
     }
@@ -129,10 +132,12 @@ async function main() {
     await verifierEmpilement("ligne-chantier", ADRESSE);
   });
 
-  await cas("client : « Monsieur … », puis le téléphone dessous, sans tiret", async () => {
+  await cas("client : la civilité, puis le téléphone dessous, sans tiret", async () => {
     await verifierEmpilement("ligne-client", TELEPHONE);
     const nom = await page.locator('[data-atlas="ligne-client-nom"]').innerText();
-    if (!/^Monsieur /.test(nom.trim())) throw new Error(`la ligne du client dit « ${nom.trim()} »`);
+    if (nom.trim() !== avecCivilite(NOM_CLIENT)) {
+      throw new Error(`la ligne du client dit « ${nom.trim()} » au lieu de « ${avecCivilite(NOM_CLIENT)} »`);
+    }
   });
 
   await cas("rien ne déborde de son écran", async () => {

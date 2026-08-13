@@ -161,11 +161,13 @@ l'application. Ce qui est **fait** :
   cause, c'est **mesuré** (`scripts/mesurer-fluidite-fil.mts`) : ne pas les
   accuser sans relancer la mesure.
 - **Le devis, en tête et dans sa synthèse** (13 août) : le chantier ne s'appelle
-  plus « Chez Martins » mais « Monsieur Martins », et la carte pose le nom
+  plus « Chez Martins » mais « Mr. Martins », et la carte pose le nom
   au-dessus du détail au lieu de les coller par un tiret. La civilité vit dans
   `src/lib/civilite.ts` — **et c'est un défaut, pas une donnée** : sans champ de
-  civilité sur la fiche client, une cliente est nommée « Monsieur ». À trancher
-  avec lui. `ARCHITECTURE.md` §77.
+  civilité sur la fiche client, une cliente est nommée « Mr. ». À trancher
+  avec lui. Le message tout prêt l'aborde de la même façon (« Bonjour
+  Mr. Martins »), et l'encart du client porte une phrase qui l'invite à écrire.
+  `ARCHITECTURE.md` §77.
 - **Le devis à la main** : ses trois zones de texte mesurent leur hauteur au
   lieu de l'estimer (11 août 2026). Elles comptaient les caractères ou les
   retours à la ligne, alors qu'un texte se coupe au mot : le devis cachait 24 px
@@ -203,14 +205,14 @@ l'application. Ce qui est **fait** :
   manipulait que du texte. Ce qu'elle rend est une proposition : c'est ce qu'il
   confirme qui compte. Un crédit de TVA s'affiche en négatif, signe et phrase.
   **NON VÉRIFIÉ ICI : la lecture d'un vrai ticket** — aucune clé dans cet
-  environnement. `ARCHITECTURE.md` §81.
+  environnement. `ARCHITECTURE.md` §82.
 - **La TVA au mois ou au trimestre, et son calendrier** (12 août) : Réglages
   porte le choix, le mois coché d'avance — c'est le défaut légal (déclaration
   CA3 mensuelle ; le trimestre est une option sous 4 000 € de TVA due). L'écran
   de TVA et son calendrier suivent : douze pavés ou quatre. **Atlas ne dit
   jamais lequel s'applique** — le seuil porte sur la TVA due, or il ne connaît
   que la collectée. Migration `drizzle/0035_periodicite_tva.sql`.
-  `ARCHITECTURE.md` §80.
+  `ARCHITECTURE.md` §81.
 - **« Y aller » : l'adresse du chantier jusqu'au GPS** (12 août) : au bout de
   chaque ligne des chantiers planifiés, un **chevron doré** ouvre une feuille —
   Plans, Google Maps, Waze, copier l'adresse, appeler le client — sans quitter

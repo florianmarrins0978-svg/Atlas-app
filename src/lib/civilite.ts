@@ -12,30 +12,42 @@
  *
  * ── CE QUE CETTE FONCTION SUPPOSE, ET QU'IL FAUT SAVOIR ─────────────────────
  *
- * **« Monsieur » est un défaut, pas une donnée.** Il n'existe aucun champ de
+ * **La civilité est un défaut, pas une donnée.** Il n'existe aucun champ de
  * civilité dans `clients` : quand le patron tape « Martins », rien ne dit si
- * c'est un homme, une femme ou une société. Écrire « Monsieur » là où il
- * faudrait « Madame » est une faute visible par le client — c'est le prix de ce
- * choix, et il est assumé parce que le patron l'a demandé en connaissance du
- * nom qu'il avait saisi.
+ * c'est un homme, une femme ou une société. Écrire « Mr. » là où il faudrait
+ * « Mme » est une faute visible par le client — c'est le prix de ce choix, et
+ * il est assumé parce que le patron l'a demandé en connaissance du nom qu'il
+ * avait saisi.
  *
  * Ce que la fonction sait éviter, en revanche, et qui serait pire :
  *
- * - **« Monsieur Mme Roux »** — un nom qui porte déjà sa civilité la garde,
+ * - **« Mr. Mme Roux »** — un nom qui porte déjà sa civilité la garde,
  *   quelle qu'en soit la graphie (`M.`, `Mr`, `Mme`, `Mlle`, `Dr`…).
- * - **« Monsieur SARL Untel »** — une raison sociale n'est pas une personne.
+ * - **« Mr. SARL Untel »** — une raison sociale n'est pas une personne.
  *   La liste des marqueurs est volontairement courte et explicite : mieux vaut
  *   la compléter le jour où un cas passe que deviner large et se tromper sur un
  *   vrai patronyme.
  *
  * **Une seule définition, et elle sert partout** (`CLAUDE.md` §3) : le nom du
  * chantier à la création, la fiche du devis, la ligne du client. Deux copies de
- * cette règle finiraient par diverger, et le patron lirait « Monsieur Martins »
- * en tête d'un écran et « Martins » trois lignes plus bas.
+ * cette règle finiraient par diverger, et le patron lirait « Mr. Martins » en
+ * tête d'un écran et « Martins » trois lignes plus bas.
  */
 
-/** Le mot posé devant un nom nu. Un seul endroit pour en changer. */
-export const CIVILITE_PAR_DEFAUT = "Monsieur";
+/**
+ * Le mot posé devant un nom nu. Un seul endroit pour en changer — et il A
+ * changé.
+ *
+ * **Le patron, le 13 août 2026, après avoir vu « Monsieur Martins » à l'écran :**
+ * *« Mr. Martins, pas Monsieur. »* C'est sa forme, sur ses documents ; l'usage
+ * français écrirait « M. », mais c'est lui qui signe les devis.
+ *
+ * Tout ce qui affiche un client passe par ici : changer ce mot suffit, et les
+ * contrôles construisent leurs attentes à partir de cette constante plutôt que
+ * de recopier le mot — sans quoi la moindre correction de sa part rougirait une
+ * dizaine de suites sans rien apprendre à personne.
+ */
+export const CIVILITE_PAR_DEFAUT = "Mr.";
 
 /**
  * Civilités déjà écrites, sous les graphies qu'un artisan tape vraiment.
@@ -122,13 +134,12 @@ export function porteDejaSonAppellation(nom: string): boolean {
 }
 
 /**
- * « Martins » → « Monsieur Martins ». « Mme Roux » et « SARL Untel » ne bougent
- * pas.
+ * « Martins » → « Mr. Martins ». « Mme Roux » et « SARL Untel » ne bougent pas.
  *
  * **Idempotente** : l'appliquer deux fois donne le même résultat. C'est ce qui
- * permet de la poser sur un nom déjà stocké sans risquer « Monsieur Monsieur
- * Martins » — cas réel, puisque les chantiers créés avant le 13 août 2026
- * portent leur nom en base.
+ * permet de la poser sur un nom déjà stocké sans risquer « Mr. Mr. Martins » —
+ * cas réel, puisque les chantiers créés avant le 13 août 2026 portent leur nom
+ * en base.
  *
  * @param nom Ce que le patron a saisi. Vide ou absent : rien n'est fabriqué.
  */

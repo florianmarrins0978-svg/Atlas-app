@@ -32,6 +32,82 @@ encadrée de 32 px, que la capsule transformerait en pastille ronde.
 
 ---
 
+### L'attente de la dictée souffle, et le dit — proposition C
+
+**Il a répondu « code la C ».** Les trois points enflent et se rétractent l'un
+après l'autre, sans se déplacer : rien ne sort du rond de 44 px, donc rien ne
+peut cogner le titre d'à côté. Le détail et le pourquoi sont dans
+`ARCHITECTURE.md` §80.
+
+**Trois choses ont changé au même endroit, et elles ne se remplacent pas.** Le
+geste, oui — mais aussi le **bouton qui reste à pleine encre** (le
+demi-effacement d'avant était le vocabulaire d'un bouton éteint) et surtout **une
+phrase, « Atlas rédige… »**. C'est elle qui compte le plus : l'écran parlait
+quand il écoutait et quand il avait fini, et se taisait pendant le seul moment où
+l'on se demande s'il est en panne. C'est aussi la seule des trois qui parvienne à
+qui n'a pas les yeux sur l'écran.
+
+**Le geste vit dans `PointsQuiSoufflent`, pas dans l'écran** : ce dépôt a payé
+deux fois le geste peint sur place (§66, §73). **Et il a servi le jour même** —
+le bouton d'ajout de photo portait le même caractère immobile, et il a tranché
+d'une phrase : *« oui souffle aussi pour la photo »*. Les points y sont **or** et
+non vert sans qu'une mesure ait été recopiée : ils prennent la couleur du bouton
+qui les porte.
+
+**Un piège d'outillage payé au passage.** Router une adresse dans Playwright
+désactive le cache HTTP de **toute** la page : la visionneuse repartait du réseau
+pour une image déjà affichée, son `<img>` n'avait pas fini de charger, et l'échec
+accusait la visionneuse — qui n'y était pour rien. Compris en affichant les
+images réellement présentes, pas en le supposant. La route se relâche désormais
+dès la mesure faite, et seulement une fois l'envoi terminé.
+
+**La suite retient la réponse du serveur trois secondes**, sinon elle courrait
+plus vite que l'attente et passerait au vert sans avoir rien regardé. Confrontée
+au défaut d'origine, ses quatre points rougissent en nommant chacun son coupable
+— au second jet : le premier sortait un « Timeout » sur un sélecteur, ce qui
+envoie lire le contrôle au lieu de l'écran.
+
+### Les trois points de la dictée : la maquette, pas encore le code
+
+**Sa demande :** *« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce
+qui se passe. Les trois petits points sont fixes […] on ne sait pas si ça bug ou
+non. »*
+
+**Rien n'a changé dans l'application, et c'est délibéré** — une demande de geste
+se dessine avant de se coder (`CLAUDE.md` §3 bis). Cinq attentes sont proposées ;
+son numéro est attendu (`TODO.md` §0 duovicies).
+
+**Deux planches, parce qu'il a demandé à ESSAYER** — *« juste des points que je
+puisse cliquer dessus, enfin le dictaphone, puis je l'arrête et les points se
+mettent à bouger »*. La 40 expose les gestes côte à côte ; la **41** joue la
+séquence entière sous son doigt : le micro, l'écoute, l'arrêt, l'attente, et le
+retour du résultat s'il le demande. Trois états sans une ligne de script — des
+boutons radio et des étiquettes qui pointent vers l'état suivant, parce que son
+lecteur n'exécute rien et que les pages engendrées en JavaScript lui arrivent
+vides. La page est elle-même **écrite par un script**
+(`engendrer-maquette-sequence.mjs`), qui refuse de la livrer s'il y trouve la
+moindre balise `<script>`.
+
+**Ce que le diagnostic a trouvé, et qui n'était pas dans sa demande.** Ces points
+ne sont pas une animation arrêtée : c'est le caractère « … », un seul glyphe
+(`DicterCoordonnees.tsx:114`). Et deux choses aggravent l'attente au même
+instant — le bouton passe à moitié effacé, ce qui est le vocabulaire d'un bouton
+**éteint**, et **aucune phrase n'est affichée**. L'écran parle quand il écoute et
+quand il a fini ; il se tait pendant le seul moment où l'on se demande s'il est
+en panne.
+
+**Deux outils naissent avec la planche, et chacun a payé sa leçon :**
+
+- `scripts/verifier-maquette-points.mjs` mesure une **vague**, pas un mouvement :
+  il exige que le premier et le troisième point soient déphasés. Trois points qui
+  montent ensemble bougent de 4 px et ne font aucune vague — vérifié en cassant
+  les délais, il rougit alors en nommant la version ;
+- `scripts/animer-maquette-points.mjs` fabrique les images animées sans ffmpeg,
+  absent d'ici. **Il relit ce qu'il vient d'écrire** : au premier jet il annonçait
+  « ✓ » sur une image FIXE, `pageHeight` étant ignoré en silence quand il est
+  passé à côté de `raw` au lieu de dedans. Un script qui ne relit pas sa sortie
+  certifie le défaut même qu'il répare.
+
 ### La poignée de la feuille la referme, et « Créer la facture » devient une capsule
 
 **Ses deux signalements du 13 août, capture à l'appui :** *« si j'appuie sur le
@@ -70,7 +146,7 @@ aurait changé l'apparence d'écrans qu'il n'a pas demandés.
 
 ---
 
-### « Monsieur Martins », et le tiret qui collait deux choses différentes
+### « Mr. Martins », et le tiret qui collait deux choses différentes
 
 **Sa capture, ce matin :** *« il faut qu'il y ait écrit monsieur Martins et pas
 chez Martins. Ensuite tu me retires le tiret entre le nom et l'adresse […]
@@ -85,8 +161,13 @@ chantier ; en tête d'un document, on nomme quelqu'un. `src/lib/civilite.ts` pos
 civilité (« Mme Roux ») ni devant une raison sociale (« SARL Untel »). Un seul
 fichier sert les trois endroits où le client est nommé.
 
+**Le mot a changé le jour même** : « Monsieur » d'abord, puis, une fois vu à
+l'écran, *« Mr. Martins, pas Monsieur »*. Il ne s'écrit donc qu'à un seul
+endroit, et les contrôles le demandent à la règle au lieu de le recopier — sans
+quoi la moindre correction de sa part rougirait dix suites sans rien apprendre.
+
 Ce que ça coûte, écrit plutôt que tu : il n'existe **aucun champ de civilité**
-dans la fiche client. « Monsieur » est un défaut, pas une donnée — une cliente
+dans la fiche client. La civilité est un défaut, pas une donnée — une cliente
 sera mal nommée. Le vrai remède est un choix à la création du client ; il n'a
 pas été ajouté sans son accord.
 
@@ -114,9 +195,18 @@ paragraphes désormais, et la suite **mesure les rectangles** — le détail sou
 nom, à la même marge — parce qu'un contrôle qui compte les lignes serait passé
 au vert sur ce défaut-là.
 
-**Ce qui n'a pas été touché, à dessein :** le message qui part chez son client
-dit toujours « Bonjour <nom> ». Changer la façon dont ses clients sont abordés
-est un geste qui lui appartient.
+**4. Le message tout prêt, et l'encart du client.** Demandés dans la foulée, sa
+capture du SMS à l'appui. Le message dit maintenant « Bonjour Mr. Martins » —
+devis et facture, par la même règle — et « vous **pouvez** en proposer une
+autre » au lieu de « vous pourrez » : le futur repoussait le geste à plus tard.
+
+Et l'encart où le client écrit porte enfin une phrase qui l'y invite. L'intitulé
+posait une question sans dire qu'on avait le droit d'y répondre. Ce n'est pas de
+la politesse : un client qui repère une faute et n'ose pas l'écrire touche « Je
+ne donne pas suite », et le patron lit un refus là où il n'y avait qu'une
+coquille. La phrase est au-dessus du champ — lue après coup, elle n'inviterait
+plus personne — et elle **ne promet aucune réponse**, que rien ici ne
+permettrait de tenir.
 
 `ARCHITECTURE.md` §77.
 
@@ -297,7 +387,7 @@ refus de l'absurde, le repli sur la saisie à la main.
 l'export RGPD. Les tickets d'un artisan disent où il fait le plein et quand il
 travaille ; ils partent avec le reste de ses données.
 
-`ARCHITECTURE.md` §81.
+`ARCHITECTURE.md` §82.
 
 ### Le message du devis figé est devenu la porte
 
@@ -617,7 +707,7 @@ suffisent.
 trimestre », au pied de Terminés, additionnait TOUS les mois du fil. Le chiffre
 était juste, sa légende mentait.
 
-`ARCHITECTURE.md` §80.
+`ARCHITECTURE.md` §81.
 
 ---
 
