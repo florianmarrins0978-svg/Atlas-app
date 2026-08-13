@@ -283,6 +283,35 @@ chevron, sur lequel il ne s'est pas prononcé — et qui n'est pas un bouton
 d'action, d'où l'hésitation.
 
 
+### 0 quinvicies. Deux migrations portent le même numéro — à ranger avant que ça morde
+
+**Constaté le 13 août 2026, en fusionnant.** `drizzle/` contient deux `0035` et
+deux `0036` :
+
+```
+0035_agenda_apple.sql          0036_achats_tva.sql
+0035_periodicite_tva.sql       0036_monsieur_plutot_que_chez.sql
+```
+
+Nées de sessions parallèles qui ont pris le numéro suivant chacune de leur côté.
+
+**Ce n'est pas cassé aujourd'hui**, et il faut le dire aussi : le lanceur trie
+sur le nom de fichier ENTIER, donc l'ordre est déterministe, et ces quatre-là
+touchent des tables différentes. Toutes se sont appliquées.
+
+**Ce qui mordra un jour :** deux migrations de même numéro qui toucheraient la
+même table s'appliqueraient dans un ordre décidé par l'alphabet du libellé —
+« achats » avant « monsieur » — et non par celui où elles ont été écrites. Une
+conversation qui lit `ls drizzle/ | tail -1` pour trouver « la dernière » se
+trompera aussi.
+
+**Ce qu'on ne fait pas :** renuméroter. Ces fichiers sont **déjà appliqués**,
+ici et peut-être sur son banc ; un fichier renommé serait rejoué de zéro.
+
+**Ce qui reste à faire :** un contrôle qui refuse deux migrations de même
+numéro, pour que la prochaine collision se voie à l'écriture et non six mois
+plus tard. Une demi-heure. Qui peut le faire : n'importe quelle conversation.
+
 ### 0 tervicies. `test-planning-vers-facture-e2e` échoue par intermittence, et son message est trop affirmatif
 
 **Constaté le 13 août 2026, en éprouvant autre chose.** Le dernier cas de cette
@@ -321,8 +350,15 @@ monsieur-madame. Mais je veux que ça soit sous la forme Mr Mme, en cliquable, o
 choisit au-dessus du nom. »* C'est fait — deux pastilles à la création et sur
 l'écran du devis, `ARCHITECTURE.md` §81.
 
-**Ce qui reste ouvert, et qui n'a PAS été décidé pour lui :** il n'y a que deux
-pastilles. Une société se dit donc en n'en touchant aucune — l'application
+**Ce qui reste ouvert, et qu'il faudra lui poser un jour :** une civilité choisie
+de travers **ne se corrige plus** après la création. Les pastilles avaient été
+posées sur l'écran du devis pour cela ; il les y a fait retirer le jour même —
+*« il ne faut pas qu'il y ait les pastilles cliquables sur le devis »* — et il a
+raison sur le fond : cet écran est le document, pas la fiche. Il manque donc un
+**écran de fiche client**, qui n'existe nulle part aujourd'hui. Tant qu'il ne le
+demande pas, on ne l'invente pas. Qui peut le faire : lui.
+
+**Et un second point ouvert :** il n'y a que deux pastilles. Une société se dit donc en n'en touchant aucune — l'application
 reconnaît alors « SARL », « SCI », « Mairie »… et se tait. Cela suffit
 aujourd'hui : ses clients sont des particuliers. **À rouvrir le jour où il
 facture des entreprises**, où une troisième pastille dirait la chose au lieu de
@@ -383,6 +419,57 @@ pièce, ce qu'on vient d'éviter sur l'écran du devis.
 
 **Les mots ne sont pas tranchés** : « Le corriger et le renvoyer », « Corriger
 ce devis », « Reprendre le devis ». Ils lui appartiennent.
+### 0 duovicies. ~~`/chantiers/<id>/facture` ne répond plus en fin de batterie~~ **élucidé le 13 août 2026**
+
+**Ce n'était ni la base, ni le pool, ni l'écran.** Le contrôle « clôturé AVANT
+sa date » de `test-planning-vers-facture-e2e.ts` échouait **trois fois sur
+cinq** en batterie complète et passait **7/7 joué seul**.
+
+| Piste | Comment elle a été écartée |
+|---|---|
+| `networkidle` attendait un silence qui n'arrive jamais | Remplacé par `domcontentloaded` — **sans effet** |
+| Simple lenteur | Délai porté à 120 s — **dépassé aussi** |
+| Verrou en base | Guetteur sur `pg_stat_activity` : **aucune** requête bloquée. Deux transactions arrêtées dès leur `begin`, PostgreSQL attendant que l'application lui reparle |
+| Pool de connexions saturé | Relevé à l'instant même : **2 connexions, 1 libre, 0 en attente** |
+
+**Ce que la sonde posée dans la page a montré :** elle lit la session, le
+chantier et la facture existante en **193 ms**, puis le premier `await` suivant
+prend **44 920 ms** — et repart **à la milliseconde où le navigateur
+abandonne**. Le serveur de DÉVELOPPEMENT met ce rendu en attente jusqu'à ce que
+le client s'en aille.
+
+**Ce que ça ne concerne pas :** le banc du patron sert une version **bâtie**, où
+ce comportement n'existe pas. Aucun défaut de produit ici.
+
+**Corrigé** en appliquant à cette navigation le `ouvrir()` qui vivait déjà plus
+haut dans le fichier, écrit pour exactement cette raison : il retente une fois,
+et nomme le vrai coupable s'il échoue encore.
+
+### 0 unvicies. La feuille d'envoi montre deux boutons pleins à la fois
+
+**Sa capture du 13 août 2026**, sur un devis dont le client demandait une
+correction : « Ouvrir le SMS tout prêt » et « Corriger et renvoyer », l'un sous
+l'autre, tous deux pleins. *« Il faut qu'il y ait juste qu'un seul bouton. »*
+
+**Le second n'est pas un doublon, et c'est ce qui rend l'arbitrage réel :**
+`ExportClient` le rend dès que `etatEnvoi` vaut `retourne`, `a_corriger` ou
+`caduc` — et **c'est le seul endroit d'Atlas où naît une version corrigée**. La
+carte du chantier dit « Corriger le devis » et mène ici
+(`src/lib/suite-de-la-reponse.ts`, qui explique pourquoi elle ne reprend pas à
+sa place). Le retirer purement et simplement supprime la correction.
+
+**Le vrai défaut est ailleurs** : après un envoi réussi, `etatEnvoi` n'est pas
+recalculé — l'écran reste sur l'état d'avant et propose de corriger un devis
+qu'on vient de corriger et d'envoyer.
+
+**Deux autres demandes, elles, ne se discutent pas :** « Copier le lien » quitte
+la rangée des trois actions, et « Plutôt par e-mail → » passe du gris 13 px à
+l'or, en gras, un peu plus gros.
+
+**Maquette `docs/maquettes/44-la-feuille-denvoi.html`** — deux lectures (A : le
+bouton quitte la page ; B : un seul bouton par moment) montrées dans les DEUX
+moments, plus trois dosages de la ligne dorée. **En attente de sa lettre et de
+son numéro. Rien n'est posé dans `src/`.**
 
 
 ### 0 unvicies. ~~Relier l'agenda iCloud~~ — **codé le 12 août 2026**, reste à éprouver chez lui

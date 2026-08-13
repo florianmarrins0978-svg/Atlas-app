@@ -96,6 +96,17 @@ et ne jamais dépendre d'une seule réponse tenue ouverte. Voir `ARCHITECTURE.md
 
 ## ⚠ Plusieurs conversations travaillent sur ce dépôt EN MÊME TEMPS
 
+**Sa décision du 13 août 2026 — ne PAS rejouer la batterie à chaque fusion.**
+*« Seulement quand le code touche. »* Un lot déjà éprouvé au vert n'a pas à
+repasser soixante suites parce qu'une autre session a poussé du code sans
+rapport. Le tableau qui dit ce qui compte comme « ça touche » est dans
+`CLAUDE.md` §6 — et **une migration arrivée par la fusion s'applique d'abord**,
+sans quoi la batterie rend des dizaines de rouges qui n'accusent que la base.
+
+**Ce que ça ne relâche pas** : la batterie complète reste obligatoire avant la
+PREMIÈRE poussée d'un lot, sur son propre code.
+
+
 **Dit par le patron le 11 août 2026 :** *« sur d'autres sessions, je demande de
 faire d'autres corrections. »* Ce n'est donc pas une hypothèse : `main` bouge
 pendant qu'on travaille, et il a bougé de trois commits en une après-midi.
@@ -464,8 +475,15 @@ passe sur le même défaut, et la première ne pouvait pas marcher.
    pas vérifier ce qu'il en fera. **Lui demander de rouvrir le lien depuis ses
    SMS**, et de dire ce qu'il voit. Détail : `ARCHITECTURE.md` §81.
 **LA CIVILITÉ EST DEVENUE UNE DONNÉE (13 août, au soir).** Deux pastilles
-« Mr » / « Mme » au-dessus du nom, à la création **et** sur l'écran du devis.
+« Mr » / « Mme » au-dessus du nom, **à la création seulement**.
 `clients.civilite`, recopiée sur le devis et la facture (migration 0038).
+
+**Elles ont été posées sur l'écran du devis, puis retirées le jour même, à sa
+demande** — *« il ne faut pas qu'il y ait les pastilles cliquables sur le
+devis »*. Le devis est le DOCUMENT, pas la fiche : le mot y est du texte, écrit
+devant le nom. **Ne pas les y remettre sans lui.** Conséquence assumée, et qu'il
+connaît : une civilité choisie de travers ne se corrige plus après la création,
+faute d'écran de fiche client.
 
 **Quatre choses à savoir avant d'y toucher :**
 

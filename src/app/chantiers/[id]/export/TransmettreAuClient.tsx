@@ -100,7 +100,6 @@ export default function TransmettreAuClient({
   relance,
 }: Props) {
   const [erreur, setErreur] = useState<string | null>(null);
-  const [copie, setCopie] = useState(false);
   const [coordonnees, setCoordonnees] = useState<Record<CanalClient, string>>({ sms: telephone, email });
   // Le canal retenu ici prime sur celui de la fiche : le patron change d'avis
   // au moment d'envoyer, pas au moment de créer le chantier.
@@ -251,17 +250,29 @@ export default function TransmettreAuClient({
           setSaisie("");
           setErreur(null);
         }}
-        className="mt-2 block w-full text-center text-[13px]"
-        style={{ color: colors.muted }}
+        className="mt-3 block w-full text-center text-[15px] font-semibold"
+        // **L'or, et non le gris — sa demande du 13 août.** Il était en gris
+        // 13 px sous la ligne du destinataire, et se lisait comme une mention
+        // légale : « il faut le mettre en gras ou en doré, et légèrement plus
+        // gros ». L'or est la couleur de ce qu'on LIT dans la charte, mais
+        // c'est ici le seul endroit où il porte un geste — assumé : cette ligne
+        // n'est pas une action de plus, c'est la MÊME action par l'autre voie.
+        // Quinze pixels : deux de plus que la rangée du dessous, un de moins
+        // que le bouton plein. Elle se voit sans disputer la place.
+        style={{ color: colors.or }}
       >
         {LIBELLE[autre].bascule} →
       </button>
 
-      {/* **Les trois actions, en encre foncée — sa demande du 12 août.**
+      {/* **Les actions secondaires, en encre foncée — sa demande du 12 août.**
           Elles étaient dispersées : « Copier le lien » vivait dans l'écran,
-          « Partager » ici, et le PDF plus haut. Trois endroits pour trois gestes
-          de même nature, c'est trois endroits à retoucher le jour où l'un
-          change. Elles tiennent maintenant une seule ligne.
+          « Partager » ici, et le PDF plus haut. Autant d'endroits à retoucher
+          le jour où l'un change. Elles tiennent maintenant une seule ligne.
+
+          **Elles ne sont plus que deux depuis le 13 août** : *« je pense qu'il
+          faudrait aussi retirer copier le lien, ça ne sert à rien »*. Il a
+          raison — le lien part par le SMS, par l'e-mail ou par « Partager », et
+          le presse-papier n'était qu'un quatrième chemin vers la même chose.
 
           Le point médian n'est pas un ornement : trois libellés séparés par du
           blanc se lisent comme une phrase découpée, et on ne sait plus où finit
@@ -281,25 +292,6 @@ export default function TransmettreAuClient({
         >
           Télécharger le PDF
         </a>
-        <span aria-hidden="true" style={{ color: colors.line }}>
-          ·
-        </span>
-        <button
-          type="button"
-          onClick={async () => {
-            try {
-              await navigator.clipboard.writeText(lien);
-              setCopie(true);
-            } catch {
-              // Presse-papier refusé : le lien part quand même par le bouton
-              // ci-dessus, et par le partage. Rien n'est perdu, donc rien à dire.
-            }
-          }}
-          className="px-2 font-medium"
-          style={{ color: colors.ink }}
-        >
-          {copie ? "Lien copié" : "Copier le lien"}
-        </button>
         <span aria-hidden="true" style={{ color: colors.line }}>
           ·
         </span>

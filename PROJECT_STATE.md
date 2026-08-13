@@ -186,8 +186,9 @@ l'application. Ce qui est **fait** :
   au-dessus du détail au lieu de les coller par un tiret. La civilité vit dans
   `src/lib/civilite.ts` — **et c'est un défaut, pas une donnée** : sans champ de
   civilité sur la fiche client, une cliente était nommée « Mr. ». **Tranché le
-  soir même** : deux pastilles « Mr » / « Mme » au-dessus du nom, à la création
-  et sur l'écran du devis, recopiées sur le devis et la facture. Un client sur
+  soir même** : deux pastilles « Mr » / « Mme » au-dessus du nom, **à la création
+  seulement** — sur le devis, le mot s'écrit, il ne se choisit pas (le devis est
+  le document, pas la fiche). Recopiées sur le devis et la facture. Un client sur
   lequel il n'a rien touché garde l'apparence qu'il avait avant. Le message tout prêt l'aborde de la même façon (« Bonjour
   Mr. Martins »), et l'encart du client porte une phrase qui l'invite à écrire.
   `ARCHITECTURE.md` §77.

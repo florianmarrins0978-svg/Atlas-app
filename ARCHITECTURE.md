@@ -6208,20 +6208,42 @@ Les deux questions — « a-t-il sa civilité ? » et « est-ce une société ? 
 étaient mêlées dans une seule fonction ; c'est en donnant la priorité au choix
 que le doublon est apparu. D'où `aDejaUneCivilite`, séparée.
 
-### Deux portes, et pourquoi la seconde n'est pas un luxe
+### UNE seule porte, et c'est lui qui l'a tranché
 
-- **À la création** (`FormulaireNouveauChantier`), au-dessus du nom, comme il l'a
-  demandé.
-- **Sur l'écran du devis** (`DevisCompletClient`). Sans elle, une cliente saisie
-  « Roux » avant la case — ou avec une pastille oubliée — resterait « Mr. Roux »
-  **pour toujours**, y compris dans le message qui part chez elle. Il n'existe
-  aucun autre écran de fiche client.
+Les pastilles avaient d'abord été posées à **deux** endroits : à la création, et
+sur l'écran du devis — pour offrir une seconde porte, celle qui corrige un
+client déjà créé. Il les a fait retirer du devis le jour même :
 
-**Le composant est le même** (`src/components/atlas/ChoixCivilite.tsx`), avec
-`sansLegende` sur le devis : cet écran est « à l'image du papier », tous ses
-champs y sont nus, et une étiquette en petites capitales au milieu du bloc
-« Client » y ressemblait à un formulaire collé sur une lettre. **Vu en capture,
-jamais par un contrôle** — d'où `scripts/capture-choix-civilite.mts`.
+> *« Il ne faut pas qu'il y ait les pastilles cliquables sur le devis. En gros
+> quand on rentre les informations dans la fiche client, si on clique sur
+> monsieur, sur le devis ça sera marqué monsieur. »*
+
+**Son raisonnement se tient, et il vaut au-delà de ce champ :** le devis est le
+DOCUMENT, pas la fiche. Il montre ce qui partira ; il ne se remplit pas comme un
+formulaire. Un réglage posé là fait douter de la nature de l'écran.
+
+- **À la création** (`FormulaireNouveauChantier`), au-dessus du nom : les
+  pastilles, et rien qu'ici (`src/components/atlas/ChoixCivilite.tsx`).
+- **Sur le devis** (`DevisCompletClient`), le mot est **du texte**, écrit devant
+  le nom sur la même ligne — `ChampNu`, propriété `prefixe`.
+
+**Le mot est À CÔTÉ du champ, jamais dedans.** Dans le champ, il deviendrait
+modifiable et s'enregistrerait comme nom du client : le document suivant
+porterait « Mme Mme Roux ». `items-baseline`, pour que les deux reposent sur la
+même ligne d'écriture comme sur le papier.
+
+**Ce que ce retrait coûte, et qui est assumé :** faute d'écran de fiche client,
+une civilité choisie de travers **ne se corrige plus** après la création. Il en
+a été informé ; c'est dans `TODO.md`.
+
+Une trace de l'aller-retour, gardée parce qu'elle resservira : tant que les
+pastilles étaient sur le devis, il a fallu leur retirer leur étiquette
+(« CIVILITÉ (FACULTATIF) » en petites capitales au milieu du bloc « Client »)
+parce que cet écran est « à l'image du papier » et que tous ses champs y sont
+nus. **Vu en capture, jamais par un contrôle** — d'où
+`scripts/capture-choix-civilite.mts`. Le retrait complet a rendu la question
+sans objet, mais la règle demeure : **rien de ce qui ressemble à un formulaire
+n'a sa place sur cet écran.**
 
 Deux décisions de dessin qui se paieraient si on les défaisait :
 
