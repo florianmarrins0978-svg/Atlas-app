@@ -7,6 +7,53 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-13
+
+### Six branches réunies dans `main`, et ce que la réunion a coûté
+
+**Sa demande, le 13 août :** *« Fusionne. »* Six branches vivaient à côté de
+`main`, dont trois portaient du code produit — l'agenda iCloud, l'écran de la
+facture, et le lien cliquable du message au client. Les trois autres ne
+portaient que de la mémoire.
+
+Une branche qui vit deux jours de son côté n'est pas une branche en retard :
+c'est une **seconde version du dépôt**. Le vrai coût n'a pas été le code — il
+n'y a eu qu'un seul conflit dans un fichier de code — mais les six fichiers de
+mémoire, que chaque branche avait fait avancer de son côté. Trois pièges, tous
+payés ici, et qui reviendront à chaque fusion :
+
+1. **Deux branches numérotent la même section.** `ARCHITECTURE.md` avait deux
+   §67 et deux §68. Renuméroter ne suffit pas : **onze renvois** pointaient
+   vers ces numéros à travers `CHANGELOG.md`, `HANDOVER.md`, `TODO.md`,
+   `PROJECT_STATE.md` et jusque dans un commentaire de
+   `scripts/test-envoi-client-e2e.ts`. Un renvoi qui désigne la mauvaise section
+   est pire qu'un renvoi absent : on le suit. La facture a pris §73 et §74,
+   l'agenda iCloud §75.
+2. **Le même bloc rangé à deux endroits fait un doublon silencieux.** Une autre
+   conversation avait fusionné le même travail dans `main` en le plaçant
+   ailleurs : `git` voyait deux ajouts, pas un déplacement. Garder « les deux
+   côtés » aurait écrit deux fois la même chose dans `HANDOVER.md` et
+   `CHANGELOG.md`.
+3. **Une mémoire fusionnée peut se contredire elle-même.** La branche
+   esthétique décrivait `scroll-snap-stop: always` comme la règle à tenir ;
+   `main` l'avait **retiré le 11 août** parce que le patron lisait l'arrêt à
+   chaque chantier comme du saccadé. Les deux phrases se sont retrouvées dans
+   `PROJECT_STATE.md`. De même, `HANDOVER.md` annonçait encore « rien de tout
+   cela n'est dans l'application » pour une refonte codée depuis deux jours.
+   Les trois passages disent maintenant ce qui fait foi — le code — et pourquoi.
+
+**La règle qui en sort, et qui vaut pour la prochaine fusion :** quand deux
+côtés décrivent le même sujet, la question n'est pas « lequel garder » mais
+**« lequel est encore vrai »**. Une documentation périmée est pire qu'absente,
+parce qu'on s'y fie encore (`CLAUDE.md` §1).
+
+**Vérifié avant de pousser, la batterie entière :** types, lint, mémoire,
+**124/124** suites base, **65/65** suites navigateur, les 23 contrôles de
+maquette, et la connexion réelle dans un vrai navigateur derrière une origine
+étrangère. Aucune régression.
+
+---
+
 ## 2026-08-12
 
 ### L'agenda iCloud est relié — lecture ET écriture

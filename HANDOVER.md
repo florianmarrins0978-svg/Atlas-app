@@ -366,6 +366,33 @@ n'est pas la batterie.
 
 ## Ce qui vient d'être terminé
 
+**SIX BRANCHES RÉUNIES DANS `main` (13 août).** Sa demande : *« Fusionne. »*
+`main` porte désormais l'agenda iCloud, l'écran de la facture (SMS **ou**
+e-mail, et le téléchargement), le lien cliquable du message au client, et toute
+la mémoire qui vivait à côté. Plus aucune branche `claude/*` ne détient de
+travail que `main` n'ait pas.
+
+**Trois pièges à connaître avant la prochaine fusion**, tous payés celle-ci :
+
+1. **Deux branches numérotent la même section d'`ARCHITECTURE.md`.** Il y avait
+   deux §67 et deux §68. Renuméroter ne suffit pas — **onze renvois** les
+   visaient depuis quatre fichiers de mémoire et jusque dans un commentaire de
+   suite. Chercher `§NN` dans tout le dépôt après toute renumérotation, et
+   trancher renvoi par renvoi : ceux de `main` ne bougent pas.
+2. **Le même bloc rangé à deux endroits fait un doublon silencieux**, parce que
+   `git` voit deux ajouts et non un déplacement. Avant de « garder les deux
+   côtés » d'un conflit de mémoire, vérifier que ce ne sont pas deux
+   exemplaires du même texte.
+3. **Une mémoire fusionnée peut se contredire.** Ici, `scroll-snap-stop:
+   always` était donné pour règle par une branche et **retiré depuis le 11
+   août** dans `main` (le patron lisait l'arrêt comme du saccadé) ; et
+   `HANDOVER.md` annonçait encore « rien n'est codé » pour une refonte livrée.
+   La question n'est pas « lequel garder » mais **« lequel est encore vrai »**.
+
+Batterie entière au vert avant de pousser : types, lint, mémoire, 124/124
+suites base, 65/65 suites navigateur, 23 contrôles de maquette, et la connexion
+réelle derrière une origine étrangère.
+
 **LE CALENDRIER D'ENVOI NE MARQUAIT QU'UN JOUR (12 août).** Il ne pouvait
 proposer qu'une date dès qu'il la prenait au calendrier, alors que son client
 doit pouvoir choisir entre deux (`ARCHITECTURE.md` §74).
