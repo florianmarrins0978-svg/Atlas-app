@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Les deux colonnes, copier, et la saisie à la main</title>
+</head>
+<body>
+<style>
+  /*
+    SES QUATRE CORRECTIONS SUR LA 36, le 12 août 2026 :
+
+    1. « J'aime bien les deux colonnes » → c'est la seule présentation retenue
+       ici. Les deux autres ont disparu : une maquette qui garde ce qui a été
+       écarté fait rechoisir.
+    2. « Il faut que tous les chiffres soient en gras. Il y en a un qui est un
+       peu clair. » → la TVA déductible était en gris. Les trois chiffres
+       portent désormais le même poids et la même encre.
+    3. « Il y a un encadré vers le bouton, il est encore rectangulaire, il faut
+       qu'il soit arrondi comme tous les autres. » → il avait 6 px de rayon,
+       seul de tout le produit. La charte n'a qu'une forme de bouton : la
+       pastille pleine (`ARCHITECTURE.md` §67, sa demande du 12 août).
+    4. « On doit pouvoir copier le montant de la TVA collectée et de la TVA
+       déductible » → TROIS FAÇONS à essayer, le choix est en haut. Et ça copie
+       POUR DE BON : collez dans n'importe quel champ pour vérifier.
+
+    ET IL FAUT AUSSI POUVOIR ÉCRIRE UN TICKET À LA MAIN. Deux entrées côte à
+    côte, désormais : scanner, ou écrire. La TVA se calcule toute seule pendant
+    la frappe, et reste corrigeable.
+
+    RIEN N'EST CODÉ DANS L'APPLICATION.
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --or:#B98B47; --or-clair:#C9A15E; --pin:#2f3b2f; --teinte:#ece9e1;
+    --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --ressort:cubic-bezier(.22,1.02,.36,1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:#e9e6df;color:var(--encre);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-font-smoothing:antialiased}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .choix{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;
+         padding:14px 16px 6px;background:#e9e6df}
+  .choix:last-of-type{padding-bottom:12px}
+  .choix .quoi{width:100%;text-align:center;color:#8a7452;text-transform:uppercase;
+               letter-spacing:.3em;font-size:9.5px;font-weight:500;margin-bottom:2px}
+  .choix button{border:1px solid var(--trait);background:none;border-radius:999px;
+                padding:8px 15px;font:inherit;font-size:12.5px;color:#6f6a5f;cursor:pointer;
+                -webkit-tap-highlight-color:transparent;transition:all .2s}
+  .choix button[aria-pressed="true"]{background:var(--encre);border-color:var(--encre);color:#f5f3ee}
+
+  .scene{display:flex;justify-content:center}
+  .tel{width:100%}
+  .ecran{position:relative;overflow:hidden;width:100%;
+         height:calc(100dvh - 132px);min-height:620px;
+         display:flex;flex-direction:column;background:var(--fond)}
+  @media (min-width:560px){
+    .scene{padding:26px 16px 40px}
+    .tel{width:390px;padding:11px;border-radius:44px;background:#cfccc4;
+         box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
+    .ecran{height:740px;border-radius:34px}
+  }
+  .corps{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none}
+  .corps::-webkit-scrollbar{display:none}
+
+  .retour{margin:24px 0 0 24px;width:40px;height:40px;border:0;border-radius:999px;
+          background:var(--teinte);display:flex;align-items:center;justify-content:center}
+  .surtitre{margin:24px 0 0;padding:0 24px;color:var(--or)}
+  .titre{margin:9px 0 0;padding:0 24px;font-size:33px;line-height:1.04;font-weight:400;letter-spacing:-.018em}
+  .filet{height:1px;background:var(--trait);margin:18px 24px 0}
+
+  .rangee{display:flex;align-items:center;justify-content:space-between;gap:10px;
+          margin-top:18px;padding:0 24px;font-size:13.5px;font-weight:500}
+  .rangee button.fleche{border:0;background:none;color:var(--pin);font:inherit;font-weight:500;
+                        cursor:pointer;white-space:nowrap;padding:0;-webkit-tap-highlight-color:transparent}
+  .cal{flex:0 0 auto;width:44px;height:44px;margin:-12px 0;border:0;background:none;
+       display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+       -webkit-tap-highlight-color:transparent}
+
+  /* ─── LES DEUX COLONNES — la présentation qu'il a retenue ────────────────── */
+  .bloc{margin:20px 24px 0}
+  .colonnes{display:flex;gap:1px;background:var(--trait-doux);border-radius:10px 10px 0 0;overflow:hidden}
+  .col{flex:1;background:var(--plage);padding:17px 10px 14px;text-align:center;position:relative}
+  .col .q{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.22em;
+          color:var(--gris);margin-bottom:8px}
+  /* **TOUS LES CHIFFRES EN GRAS, ET DE LA MÊME ENCRE.** La déductible était en
+     gris : elle avait l'air d'un chiffre de second rang, alors que c'est celui
+     qu'il va chercher. */
+  .col .v{display:block;font-size:19.5px;font-weight:600;color:var(--encre);letter-spacing:-.01em}
+  .reste{margin-top:1px;background:var(--plage);border-radius:0 0 10px 10px;padding:16px 16px;
+         display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .reste .q{font-size:14px}
+  .reste .v{font-size:26px;font-weight:600;color:var(--pin)}
+
+  /* ─── COPIER — trois façons ──────────────────────────────────────────────── */
+  /* A — le petit carré */
+  .carre{margin:7px auto 0;width:30px;height:30px;border:1px solid var(--trait);border-radius:999px;
+         background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;
+         -webkit-tap-highlight-color:transparent;transition:all .18s var(--ressort)}
+  .carre:active{transform:scale(.9);background:var(--teinte)}
+  /* B — le mot */
+  .mot{margin:7px auto 0;display:block;border:0;background:none;cursor:pointer;font:inherit;
+       font-size:10px;text-transform:uppercase;letter-spacing:.22em;color:var(--or);
+       padding:4px 6px;-webkit-tap-highlight-color:transparent}
+  /* C — le chiffre lui-même */
+  .col.touchable{cursor:pointer}
+  .col.touchable .v{border-bottom:1px dashed var(--trait);display:inline-block;padding-bottom:2px}
+  .col .fait{position:absolute;left:0;right:0;bottom:6px;font-size:10px;letter-spacing:.14em;
+             text-transform:uppercase;color:var(--pin);opacity:0;transition:opacity .2s}
+  .col .fait.vu{opacity:1}
+
+  .avis{margin:10px 24px 0;font-size:12px;color:var(--gris);text-align:center;line-height:1.6}
+
+  /* ─── Les deux entrées : scanner, ou écrire ──────────────────────────────── */
+  .achats{margin:20px 24px 0}
+  .tete{margin-bottom:9px;color:var(--gris)}
+  .entrees{display:flex;gap:9px}
+  .entree{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;
+          padding:15px 8px;border:1px solid var(--trait);border-radius:12px;background:var(--plage);
+          cursor:pointer;font:inherit;font-size:12.5px;color:var(--encre);
+          -webkit-tap-highlight-color:transparent;transition:all .18s var(--ressort)}
+  .entree:active{transform:scale(.98);background:var(--teinte)}
+
+  .ticket{display:flex;align-items:center;gap:13px;padding:12px 0;border-top:1px solid var(--trait-doux)}
+  .ticket:first-of-type{margin-top:6px}
+  .ticket .vign{flex:0 0 auto;width:34px;height:34px;border-radius:999px;background:var(--teinte);
+                display:flex;align-items:center;justify-content:center;font-size:15px}
+  .ticket .col2{flex:1;min-width:0}
+  .ticket .n{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ticket .d{display:block;margin-top:2px;font-size:11.5px;color:var(--gris)}
+  .ticket .m{flex:0 0 auto;font-size:14.5px;font-weight:600;color:var(--pin)}
+  .vide{padding:16px 0;font-size:13px;color:var(--gris);text-align:center;line-height:1.6}
+
+  .mention{padding:18px 26px 26px;text-align:center;font-size:11.5px;color:var(--gris);line-height:1.65}
+
+  .barre{display:flex;justify-content:space-around;align-items:center;
+         padding:14px 8px calc(16px + env(safe-area-inset-bottom));border-top:1px solid var(--trait)}
+  .barre span{color:var(--gris);text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+  .barre span.actif{color:var(--encre);position:relative}
+  .barre span.actif::after{content:"";position:absolute;left:0;right:0;bottom:-8px;height:1px;background:var(--or)}
+
+  .voile{position:absolute;inset:0;z-index:10;background:rgba(20,18,14,.46);
+         backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+         opacity:0;pointer-events:none;transition:opacity .28s;
+         display:flex;align-items:flex-end;justify-content:center}
+  .voile.ouvert{opacity:1;pointer-events:auto}
+  .feuille{width:100%;background:var(--fond);border-radius:26px 26px 0 0;
+           box-shadow:0 -18px 44px rgba(20,18,14,.22);
+           padding:11px 22px calc(18px + env(safe-area-inset-bottom));
+           max-height:100%;overflow-y:auto;scrollbar-width:none;
+           transform:translateY(101%);transition:transform .38s var(--ressort)}
+  .feuille::-webkit-scrollbar{display:none}
+  .voile.ouvert .feuille{transform:none}
+  .poignee{width:38px;height:4px;border-radius:9px;background:rgba(28,28,26,.15);margin:0 auto 16px}
+
+  .lu{display:flex;flex-direction:column;gap:1px;background:var(--trait-doux);
+      border-radius:12px;overflow:hidden}
+  .champ{display:flex;align-items:center;justify-content:space-between;gap:12px;
+         padding:13px 15px;background:var(--plage)}
+  .champ .q{font-size:13px;color:var(--gris);flex:0 0 auto}
+  .champ .v{font-size:15.5px;text-align:right}
+  .champ input{border:0;background:none;font:inherit;font-size:15.5px;text-align:right;
+               color:var(--encre);width:100%;outline:0;
+               font-variant-numeric:tabular-nums}
+  .champ input::placeholder{color:rgba(28,28,26,.28)}
+  .champ .v[contenteditable]{outline:0;border-bottom:1px dashed var(--trait);padding-bottom:1px;min-width:70px}
+  .champ .v[contenteditable]:focus{border-bottom-color:var(--or)}
+  .champ.calcule{background:#f2efe8}
+  .champ.calcule .q{color:var(--or)}
+
+  .doute{display:flex;align-items:flex-start;gap:8px;margin-top:10px;padding:11px 13px;border-radius:12px;
+         background:rgba(185,139,71,.10);font-size:12.5px;color:#7d6234;line-height:1.5}
+
+  /* **LA PASTILLE PLEINE — la seule forme de bouton de la charte.**
+     Elle avait 6 px de rayon dans la 36 : seule forme carrée de tout l'écran. */
+  .plein{display:block;width:100%;margin-top:12px;padding:15px;border:0;border-radius:999px;
+         background:var(--pin);color:#f5f3ee;font:inherit;font-size:15px;cursor:pointer;
+         font-family:ui-serif,Georgia,serif;
+         -webkit-tap-highlight-color:transparent;transition:transform .16s var(--ressort)}
+  .plein:active{transform:scale(.985)}
+  .plein[disabled]{opacity:.35;cursor:default}
+  .creux{display:block;width:100%;margin-top:6px;padding:12px;border:0;background:none;
+         font:inherit;font-size:14.5px;color:var(--gris);cursor:pointer;border-radius:999px}
+
+  .objectif{position:absolute;inset:0;z-index:20;background:#14120e;color:#f5f3ee;
+            opacity:0;pointer-events:none;transition:opacity .3s;display:flex;flex-direction:column}
+  .objectif.ouvert{opacity:1;pointer-events:auto}
+  .visee{flex:1;position:relative;display:flex;align-items:center;justify-content:center;
+         background:radial-gradient(120% 80% at 50% 40%,#2a2620 0%,#14120e 70%)}
+  .papier{width:186px;background:#f6f2e8;color:#2b2823;border-radius:3px;padding:14px 13px;
+          font:11px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+          transform:rotate(-1.4deg);box-shadow:0 12px 30px rgba(0,0,0,.5)}
+  .papier .sep{border-top:1px dashed rgba(43,40,35,.35);margin:7px 0}
+  .cadre{position:absolute;inset:12% 10%;pointer-events:none}
+  .cadre i{position:absolute;width:26px;height:26px;border:2px solid var(--or-clair);opacity:.9}
+  .cadre i:nth-child(1){top:0;left:0;border-right:0;border-bottom:0;border-radius:12px 0 0 0}
+  .cadre i:nth-child(2){top:0;right:0;border-left:0;border-bottom:0;border-radius:0 12px 0 0}
+  .cadre i:nth-child(3){bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 12px}
+  .cadre i:nth-child(4){bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 12px 0}
+  .balayage{position:absolute;left:10%;right:10%;height:2px;
+            background:linear-gradient(90deg,transparent,var(--or-clair),transparent);opacity:0;top:12%}
+  .objectif.lit .balayage{animation:balaye 1.15s ease-in-out infinite;opacity:1}
+  @keyframes balaye{0%{top:14%}50%{top:84%}100%{top:14%}}
+  .dit-objectif{padding:0 24px 6px;text-align:center;font-size:13px;color:rgba(245,243,238,.72)}
+  .pied-objectif{padding:14px 24px calc(22px + env(safe-area-inset-bottom));text-align:center}
+  .declic{width:66px;height:66px;border-radius:999px;border:3px solid rgba(245,243,238,.9);
+          background:#f5f3ee;cursor:pointer;-webkit-tap-highlight-color:transparent;
+          transition:transform .16s var(--ressort)}
+  .declic:active{transform:scale(.92)}
+  .ecrire-plutot{display:block;width:100%;margin-top:12px;border:0;background:none;
+                 color:var(--or-clair);font:inherit;font-size:13.5px;cursor:pointer}
+  .renoncer-objectif{display:block;width:100%;margin-top:8px;border:0;background:none;
+                     color:rgba(245,243,238,.6);font:inherit;font-size:14px;cursor:pointer}
+
+  .aparte{position:absolute;left:24px;right:24px;bottom:84px;padding:11px 14px;
+          background:rgba(28,28,26,.93);color:#f5f3ee;border-radius:999px;font-size:12.5px;
+          text-align:center;opacity:0;pointer-events:none;transition:opacity .24s;z-index:30}
+  .aparte.vu{opacity:1}
+
+  .dessous{background:#e9e6df;padding:34px 20px 80px}
+  .dessous .dedans{max-width:62ch;margin:0 auto;color:#6f6a5f;font-size:14px;line-height:1.75}
+  .dessous h2{margin:30px 0 8px;font-size:11px;letter-spacing:.26em;text-transform:uppercase;
+              color:#8a7452;font-weight:500}
+  .dessous h2:first-child{margin-top:0}
+  .dessous b{color:var(--encre);font-weight:500}
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+</style>
+
+<div class="choix" id="choix-copier">
+  <span class="quoi">Comment on copie un montant</span>
+  <button type="button" data-c="carre" aria-pressed="true">Le petit carré</button>
+  <button type="button" data-c="mot" aria-pressed="false">Le mot « copier »</button>
+  <button type="button" data-c="chiffre" aria-pressed="false">Le chiffre lui-même</button>
+</div>
+<div class="choix" id="choix-rythme">
+  <span class="quoi">Votre rythme</span>
+  <button type="button" data-p="mensuelle" aria-pressed="true">Tous les mois</button>
+  <button type="button" data-p="trimestrielle" aria-pressed="false">Tous les trimestres</button>
+</div>
+
+<div class="scene">
+  <div class="tel"><div class="ecran" id="ecran">
+
+    <div class="corps">
+      <button class="retour" aria-label="Retour">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="2.4">
+          <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+
+      <p class="surtitre caps">Ma TVA</p>
+      <h1 class="titre serif" id="titre">Août 2026</h1>
+      <div class="filet"></div>
+
+      <div class="rangee">
+        <button class="fleche" id="prec">← <span id="prec-t"></span></button>
+        <button class="cal" id="cal" aria-label="Choisir une période">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.6">
+            <rect x="3.2" y="5" width="17.6" height="15.4" rx="2.4"/><path d="M3.2 9.6h17.6"/>
+            <path d="M8 3.4v3.2M16 3.4v3.2" stroke-linecap="round"/></svg>
+        </button>
+        <button class="fleche" id="suiv"><span id="suiv-t"></span> →</button>
+      </div>
+
+      <div class="bloc" id="bloc"></div>
+      <p class="avis" id="avis"></p>
+
+      <div class="achats">
+        <p class="tete caps">Vos achats</p>
+        <div class="entrees">
+          <button class="entree" id="scanner">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.6">
+              <path d="M4 8.4V6.2A2.2 2.2 0 0 1 6.2 4h2.2M15.6 4h2.2A2.2 2.2 0 0 1 20 6.2v2.2M20 15.6v2.2a2.2 2.2 0 0 1-2.2 2.2h-2.2M8.4 20H6.2A2.2 2.2 0 0 1 4 17.8v-2.2" stroke-linecap="round"/>
+              <path d="M4 12h16" stroke-linecap="round"/></svg>
+            Scanner un ticket
+          </button>
+          <!-- **Écrire à la main, à sa demande du 12 août.** Un ticket perdu,
+               une facture reçue par e-mail, un achat noté sur un coin de
+               table : l'objectif ne peut rien pour ces trois-là. -->
+          <button class="entree" id="ecrire">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.6">
+              <path d="M4 20h4.2L19 9.2a2 2 0 0 0 0-2.8l-1.4-1.4a2 2 0 0 0-2.8 0L4 15.8V20z" stroke-linejoin="round"/>
+              <path d="M13.6 6.6l3.8 3.8" stroke-linecap="round"/></svg>
+            Écrire à la main
+          </button>
+        </div>
+        <div id="tickets"></div>
+      </div>
+
+      <p class="mention">Atlas prépare ce relevé à partir de vos factures et des achats que
+        vous confirmez. <b>Il ne vaut pas déclaration</b> : celle-ci reste à faire par votre
+        outil comptable.</p>
+    </div>
+
+    <div class="barre">
+      <span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Réglages</span>
+    </div>
+
+    <div class="voile" id="voile-cal" role="dialog" aria-modal="true">
+      <div class="feuille">
+        <div class="poignee"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <button type="button" id="a-moins" aria-label="Année précédente"
+                  style="width:44px;height:44px;border:0;background:none;font-size:20px;color:var(--pin);cursor:pointer">‹</button>
+          <span class="serif num" id="a-n" style="font-size:23px">2026</span>
+          <button type="button" id="a-plus" aria-label="Année suivante"
+                  style="width:44px;height:44px;border:0;background:none;font-size:20px;color:var(--pin);cursor:pointer">›</button>
+        </div>
+        <div id="grille"></div>
+        <button class="creux" id="fermer-cal">Annuler</button>
+      </div>
+    </div>
+
+    <!-- Confirmation d'un ticket LU -->
+    <div class="voile" id="voile-lu" role="dialog" aria-modal="true">
+      <div class="feuille">
+        <div class="poignee"></div>
+        <p class="caps" style="text-align:center;color:var(--or);margin:0">Ticket lu</p>
+        <p class="serif" id="lu-titre" style="text-align:center;font-size:20px;margin:9px 0 14px"></p>
+        <div class="lu">
+          <div class="champ"><span class="q">Date</span><span class="v num" id="lu-date"></span></div>
+          <div class="champ"><span class="q">Total payé</span><span class="v num" id="lu-ttc"></span></div>
+          <div class="champ"><span class="q">Taux</span><span class="v num" id="lu-taux"></span></div>
+          <div class="champ"><span class="q">TVA déductible</span><span class="v num" contenteditable="true" id="lu-tva"></span></div>
+        </div>
+        <div class="doute" id="lu-doute"><span aria-hidden="true">⚠</span><span id="lu-doute-txt"></span></div>
+        <button class="plein" id="lu-ok">Ajouter aux achats</button>
+        <button class="creux" id="lu-non">Ce n'est pas ça — recommencer</button>
+      </div>
+    </div>
+
+    <!-- ÉCRIRE À LA MAIN -->
+    <div class="voile" id="voile-main" role="dialog" aria-modal="true">
+      <div class="feuille">
+        <div class="poignee"></div>
+        <p class="caps" style="text-align:center;color:var(--or);margin:0">Écrire un achat</p>
+        <p class="serif" style="text-align:center;font-size:20px;margin:9px 0 14px">À la main</p>
+        <div class="lu">
+          <div class="champ"><span class="q">Où</span><input id="m-qui" placeholder="Station, magasin…"></div>
+          <div class="champ"><span class="q">Date</span><input id="m-date" placeholder="12 août 2026"></div>
+          <div class="champ"><span class="q">Total payé</span><input id="m-ttc" inputmode="decimal" placeholder="0,00 €"></div>
+          <div class="champ"><span class="q">Taux</span><input id="m-taux" inputmode="decimal" placeholder="20 %"></div>
+          <!-- **La TVA se calcule pendant la frappe, et reste corrigeable.**
+               C'est le seul chiffre qui compte pour le relevé : le lui faire
+               calculer de tête sur un coin de camionnette, c'est le lui faire
+               écrire faux. -->
+          <div class="champ calcule"><span class="q">TVA déductible</span><input id="m-tva" inputmode="decimal" placeholder="calculée"></div>
+        </div>
+        <div class="doute" style="display:flex"><span aria-hidden="true">✎</span>
+          <span>La TVA se calcule toute seule depuis le total et le taux. Si votre ticket
+            en affiche une autre, écrivez la sienne : c'est elle qui fait foi.</span></div>
+        <button class="plein" id="m-ok" disabled>Ajouter aux achats</button>
+        <button class="creux" id="m-non">Annuler</button>
+      </div>
+    </div>
+
+    <div class="objectif" id="objectif">
+      <div class="visee">
+        <div class="papier" id="papier"></div>
+        <div class="cadre"><i></i><i></i><i></i><i></i></div>
+        <div class="balayage"></div>
+      </div>
+      <p class="dit-objectif" id="dit-objectif">Posez le ticket à plat, bien dans le cadre.</p>
+      <div class="pied-objectif">
+        <button class="declic" id="declic" aria-label="Scanner"></button>
+        <button class="ecrire-plutot" id="ecrire-plutot">L'écrire à la main plutôt</button>
+        <button class="renoncer-objectif" id="renoncer-objectif">Annuler</button>
+      </div>
+    </div>
+
+    <p class="aparte" id="aparte"></p>
+  </div></div>
+</div>
+
+<div class="dessous">
+  <div class="dedans">
+    <h2>Vos quatre corrections</h2>
+    <p><b>Les deux colonnes seules.</b> Les deux autres présentations ont disparu : une
+      maquette qui garde ce qui a été écarté fait rechoisir au lieu d’avancer.</p>
+    <p><b>Les trois chiffres en gras, et de la même encre.</b> La TVA déductible était en
+      gris : elle avait l’air d’un chiffre de second rang, alors que c’est justement celui
+      que vous allez chercher.</p>
+    <p><b>Le bouton est redevenu une pastille.</b> Il portait 6 px de rayon — la seule forme
+      carrée de tout l’écran, alors que la charte n’a qu’une forme de bouton depuis votre
+      demande de ce matin.</p>
+    <p><b>Copier : trois façons, et ça copie pour de bon.</b> Collez dans n’importe quel champ
+      pour vérifier. Chacune le dit quand c’est fait — un bouton muet se fait appuyer trois
+      fois, et on finit par croire que rien n’a été copié.</p>
+
+    <h2>Écrire à la main — et pourquoi ce n’est pas un repli</h2>
+    <p>Trois cas où l’objectif ne peut rien : le <b>ticket perdu</b> dont vous vous souvenez,
+      la <b>facture reçue par e-mail</b> qui n’existe pas sur papier, et l’achat <b>noté sur
+      un coin de table</b>. La saisie n’est pas la roue de secours du scanner : c’est l’autre
+      moitié du geste.</p>
+    <p>Elle est aussi <b>proposée depuis l’objectif</b> — « l’écrire à la main plutôt » —,
+      pour le ticket illisible qu’on découvre une fois l’appareil ouvert. Sinon il faut
+      annuler, revenir, et retrouver le bon bouton.</p>
+    <p><b>La TVA se calcule pendant que vous tapez</b>, depuis le total et le taux, et reste
+      corrigeable. Vous la faire calculer de tête sur un coin de camionnette, c’est vous la
+      faire écrire fausse.</p>
+
+    <h2>Les trois façons de copier, et ce qu’elles coûtent</h2>
+    <p><b>Le petit carré.</b> Discret, il ne dit pas ce qu’il fait tant qu’on ne l’a pas
+      touché. C’est le geste des applications bancaires.</p>
+    <p><b>Le mot « copier ».</b> Personne ne peut se tromper. Deux mots de plus sous chaque
+      chiffre, et l’écran est un peu moins calme.</p>
+    <p><b>Le chiffre lui-même.</b> La plus grande cible des trois, et rien n’est ajouté à
+      l’écran. En revanche <b>rien ne dit qu’il est touchable</b> avant qu’on essaie — le
+      trait pointillé sous le montant est la seule indication.</p>
+
+    <h2>Ce qui n’est pas codé</h2>
+    <p><b>Rien.</b> Dites-moi laquelle des trois pour copier, et je code l’ensemble.</p>
+  </div>
+</div>
+
+<script>
+  var MOIS=["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+  var COURTS=["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+  var RANG=["1er","2e","3e","4e"];
+
+  var facon="carre", periodicite="mensuelle";
+  var vu={annee:2026,numero:8}, AUJ={annee:2026,mois:8,trim:3}, anneePanneau=2026;
+  var COLLECTEE=164.00;
+  var tickets=[
+    {qui:"Station Total — Pessac",d:"12 août",ttc:96.00,tva:16.00,icone:"⛽"},
+    {qui:"Espace Émeraude — chaîne",d:"8 août",ttc:78.00,tva:13.00,icone:"🪚"}
+  ];
+  var ATTRAPES=[
+    {qui:"Station Total — Pessac",d:"12 août 2026",ttc:96.00,taux:20,tva:16.00,icone:"⛽",doute:""},
+    {qui:"Espace Émeraude",d:"11 août 2026",ttc:214.80,taux:20,tva:35.80,icone:"🪚",doute:""},
+    {qui:"Ticket pâli",d:"10 août 2026",ttc:42.50,taux:20,tva:7.08,icone:"🧾",
+     doute:"La TVA n'était pas lisible sur le ticket : elle a été recalculée depuis le taux. Vérifiez-la, ou écrivez la bonne."},
+    {qui:"Leroy Merlin — Mérignac",d:"9 août 2026",ttc:63.90,taux:20,tva:10.65,icone:"🔩",doute:""}
+  ];
+  var prochain=0, enCours=null;
+
+  function euros(n){ return n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €"; }
+  function nombre(t){ var n=parseFloat(String(t).replace(/[^\d,.-]/g,"").replace(",",".")); return isNaN(n)?null:n; }
+  function combien(){ return periodicite==="mensuelle"?12:4; }
+  function libelle(p){ return periodicite==="mensuelle" ? MOIS[p.numero-1]+" "+p.annee : RANG[p.numero-1]+" trimestre "+p.annee; }
+  function court(n){ return periodicite==="mensuelle"?MOIS[n-1]:RANG[n-1]+" trimestre"; }
+  function moisDe(n){ return periodicite==="mensuelle"?"":COURTS[(n-1)*3]+" – "+COURTS[(n-1)*3+2]; }
+  function pas(p,s){ var n=p.numero+s,a=p.annee,c=combien(); if(n<1){n=c;a--;} else if(n>c){n=1;a++;} return {annee:a,numero:n}; }
+  function deductible(){ return tickets.reduce(function(s,t){return s+t.tva;},0); }
+
+  var ICONE_COPIER='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.7">'+
+    '<rect x="9" y="9" width="11" height="11" rx="2.4"/><path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14" stroke-linecap="round"/></svg>';
+
+  function affordance(quoi){
+    if (facon==="carre") return '<button class="carre" data-copier="'+quoi+'" aria-label="Copier la TVA '+quoi+'">'+ICONE_COPIER+'</button>';
+    if (facon==="mot")   return '<button class="mot" data-copier="'+quoi+'">Copier</button>';
+    return "";
+  }
+
+  function peindre(){
+    document.getElementById("titre").textContent=libelle(vu);
+    document.getElementById("prec-t").textContent=libelle(pas(vu,-1));
+    document.getElementById("suiv-t").textContent=libelle(pas(vu,1));
+
+    var d=deductible(), r=COLLECTEE-d;
+    var touchable = facon==="chiffre" ? " touchable" : "";
+    document.getElementById("bloc").innerHTML=
+      '<div class="colonnes">'+
+        '<div class="col'+touchable+'" data-copier="collectée"><span class="q">Collectée</span>'+
+          '<span class="v num serif">'+euros(COLLECTEE)+'</span>'+affordance("collectée")+
+          '<span class="fait">copié</span></div>'+
+        '<div class="col'+touchable+'" data-copier="déductible"><span class="q">Déductible</span>'+
+          '<span class="v num serif">'+euros(d)+'</span>'+affordance("déductible")+
+          '<span class="fait">copié</span></div>'+
+      '</div>'+
+      '<div class="reste"><span class="q">Reste à payer</span><span class="v num serif">'+euros(r)+'</span></div>';
+
+    document.getElementById("avis").textContent = tickets.length===0
+      ? "Aucun achat enregistré : ce montant est votre TVA collectée entière."
+      : tickets.length+" achat"+(tickets.length>1?"s":"")+" confirmé"+(tickets.length>1?"s":"")+" sur cette période.";
+
+    var l=document.getElementById("tickets");
+    l.innerHTML = tickets.length===0
+      ? '<p class="vide">Rien encore.<br>Scannez un ticket, ou écrivez-le.</p>'
+      : tickets.map(function(t){
+          return '<div class="ticket"><span class="vign">'+t.icone+'</span>'+
+            '<span class="col2"><span class="n">'+t.qui+'</span>'+
+            '<span class="d num">'+t.d+' · '+euros(t.ttc)+'</span></span>'+
+            '<span class="m num">'+euros(t.tva)+'</span></div>';
+        }).join("");
+
+    brancherCopie();
+  }
+
+  function brancherCopie(){
+    document.querySelectorAll("[data-copier]").forEach(function(el){
+      if (el.classList.contains("col") && facon!=="chiffre") return;
+      el.addEventListener("click", function(e){
+        e.stopPropagation();
+        var quoi = el.getAttribute("data-copier");
+        var colonne = el.closest(".col") || el;
+        var montant = colonne.querySelector(".v").textContent.trim();
+        copier(montant, colonne, quoi);
+      });
+    });
+  }
+
+  // **Copier, et le DIRE.** Un bouton muet se fait appuyer trois fois, et on
+  // finit par croire que rien n'a été copié — puis on colle du vide.
+  function copier(texte, colonne, quoi){
+    var fait = colonne.querySelector(".fait");
+    var montrer = function(mot){
+      if (fait) { fait.textContent = mot; fait.classList.add("vu"); setTimeout(function(){ fait.classList.remove("vu"); }, 1500); }
+      dire(mot === "copié" ? "TVA "+quoi+" copiée : "+texte : "Copie impossible ici.");
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texte).then(function(){ montrer("copié"); }, function(){ montrer("échec"); });
+    } else { montrer("échec"); }
+  }
+
+  function peindreGrille(){
+    document.getElementById("a-n").textContent=anneePanneau;
+    var g=document.createElement("div");
+    g.style.display="grid"; g.style.gap="8px";
+    g.style.gridTemplateColumns = periodicite==="mensuelle" ? "repeat(3,1fr)" : "1fr 1fr";
+    for(var n=1;n<=combien();n++)(function(n){
+      var b=document.createElement("button"); b.type="button";
+      b.style.cssText="border:1px solid var(--trait);background:var(--plage);border-radius:10px;padding:12px 6px;cursor:pointer;font:inherit;text-align:center;position:relative";
+      var m=moisDe(n);
+      b.innerHTML="<span class='serif' style='font-size:15.5px'>"+court(n)+"</span>"+(m?"<span style='display:block;margin-top:2px;font-size:10.5px;color:var(--gris)'>"+m+"</span>":"");
+      if(anneePanneau===vu.annee&&n===vu.numero){ b.style.background="var(--pin)"; b.style.borderColor="var(--pin)"; b.style.color="#f5f3ee"; }
+      b.addEventListener("click",function(){ vu={annee:anneePanneau,numero:n};
+        document.getElementById("voile-cal").classList.remove("ouvert"); peindre(); });
+      g.appendChild(b);
+    })(n);
+    var h=document.getElementById("grille"); h.innerHTML=""; h.appendChild(g);
+  }
+
+  document.getElementById("prec").addEventListener("click",function(){ vu=pas(vu,-1); peindre(); });
+  document.getElementById("suiv").addEventListener("click",function(){ vu=pas(vu,1); peindre(); });
+  var voileCal=document.getElementById("voile-cal");
+  document.getElementById("cal").addEventListener("click",function(){ anneePanneau=vu.annee; peindreGrille(); voileCal.classList.add("ouvert"); });
+  document.getElementById("fermer-cal").addEventListener("click",function(){ voileCal.classList.remove("ouvert"); });
+  voileCal.addEventListener("click",function(e){ if(e.target===voileCal) voileCal.classList.remove("ouvert"); });
+  document.getElementById("a-moins").addEventListener("click",function(){ anneePanneau--; peindreGrille(); });
+  document.getElementById("a-plus").addEventListener("click",function(){ anneePanneau++; peindreGrille(); });
+
+  document.querySelectorAll("#choix-copier button").forEach(function(b){
+    b.addEventListener("click",function(){
+      document.querySelectorAll("#choix-copier button").forEach(function(x){x.setAttribute("aria-pressed","false");});
+      b.setAttribute("aria-pressed","true"); facon=b.getAttribute("data-c"); peindre();
+    });
+  });
+  document.querySelectorAll("#choix-rythme button").forEach(function(b){
+    b.addEventListener("click",function(){
+      document.querySelectorAll("#choix-rythme button").forEach(function(x){x.setAttribute("aria-pressed","false");});
+      b.setAttribute("aria-pressed","true"); periodicite=b.getAttribute("data-p");
+      vu = periodicite==="mensuelle" ? {annee:2026,numero:AUJ.mois} : {annee:2026,numero:AUJ.trim};
+      peindre();
+    });
+  });
+
+  // ── Le scanner ───────────────────────────────────────────────────────────
+  var objectif=document.getElementById("objectif");
+  function dessinerPapier(t){
+    document.getElementById("papier").innerHTML=
+      "<b>"+t.qui.toUpperCase()+"</b><div class='sep'></div>"+t.d+"<br>GAZOLE B7&nbsp;&nbsp;48,00 L"+
+      "<div class='sep'></div>TOTAL TTC<b style='float:right'>"+euros(t.ttc)+"</b><br>"+
+      (t.doute?"&nbsp;":"DONT TVA "+t.taux+"%<b style='float:right'>"+euros(t.tva)+"</b>")+
+      "<div class='sep'></div><span style='opacity:.55'>MERCI DE VOTRE VISITE</span>";
+  }
+  document.getElementById("scanner").addEventListener("click",function(){
+    enCours=ATTRAPES[prochain%ATTRAPES.length]; prochain++;
+    dessinerPapier(enCours); objectif.classList.remove("lit");
+    document.getElementById("dit-objectif").textContent="Posez le ticket à plat, bien dans le cadre.";
+    objectif.classList.add("ouvert");
+  });
+  document.getElementById("renoncer-objectif").addEventListener("click",function(){ objectif.classList.remove("ouvert","lit"); });
+  document.getElementById("ecrire-plutot").addEventListener("click",function(){
+    objectif.classList.remove("ouvert","lit"); ouvrirMain();
+  });
+  document.getElementById("declic").addEventListener("click",function(){
+    objectif.classList.add("lit");
+    document.getElementById("dit-objectif").textContent="Lecture…";
+    setTimeout(function(){
+      objectif.classList.remove("ouvert","lit");
+      document.getElementById("lu-titre").textContent=enCours.qui;
+      document.getElementById("lu-date").textContent=enCours.d;
+      document.getElementById("lu-ttc").textContent=euros(enCours.ttc);
+      document.getElementById("lu-taux").textContent=enCours.taux+" %";
+      document.getElementById("lu-tva").textContent=euros(enCours.tva);
+      var d=document.getElementById("lu-doute");
+      if(enCours.doute){ d.style.display="flex"; document.getElementById("lu-doute-txt").textContent=enCours.doute; }
+      else d.style.display="none";
+      document.getElementById("voile-lu").classList.add("ouvert");
+    },1500);
+  });
+  document.getElementById("lu-ok").addEventListener("click",function(){
+    var lu=nombre(document.getElementById("lu-tva").textContent);
+    tickets.unshift({qui:enCours.qui,d:enCours.d.replace(" 2026",""),ttc:enCours.ttc,
+                     tva:lu===null?enCours.tva:lu,icone:enCours.icone});
+    document.getElementById("voile-lu").classList.remove("ouvert");
+    peindre(); dire("Achat ajouté. Le reste à payer a changé.");
+  });
+  document.getElementById("lu-non").addEventListener("click",function(){
+    document.getElementById("voile-lu").classList.remove("ouvert");
+    document.getElementById("scanner").click();
+  });
+
+  // ── Écrire à la main ─────────────────────────────────────────────────────
+  var voileMain=document.getElementById("voile-main");
+  function ouvrirMain(){
+    ["m-qui","m-date","m-ttc","m-taux","m-tva"].forEach(function(i){ document.getElementById(i).value=""; });
+    document.getElementById("m-taux").value="20 %";
+    armer(); voileMain.classList.add("ouvert");
+    setTimeout(function(){ document.getElementById("m-qui").focus(); }, 320);
+  }
+  document.getElementById("ecrire").addEventListener("click", ouvrirMain);
+  document.getElementById("m-non").addEventListener("click",function(){ voileMain.classList.remove("ouvert"); });
+  voileMain.addEventListener("click",function(e){ if(e.target===voileMain) voileMain.classList.remove("ouvert"); });
+
+  var tvaTouchee=false;
+  document.getElementById("m-tva").addEventListener("input",function(){ tvaTouchee=true; armer(); });
+  ["m-qui","m-date","m-ttc","m-taux"].forEach(function(i){
+    document.getElementById(i).addEventListener("input",function(){ calculer(); armer(); });
+  });
+  function calculer(){
+    if (tvaTouchee) return;   // il l'a écrite lui-même : on ne l'écrase pas
+    var ttc=nombre(document.getElementById("m-ttc").value);
+    var taux=nombre(document.getElementById("m-taux").value);
+    if(ttc===null||taux===null||taux<=0){ document.getElementById("m-tva").value=""; return; }
+    document.getElementById("m-tva").value=euros(ttc-ttc/(1+taux/100));
+  }
+  function armer(){
+    var ok = document.getElementById("m-qui").value.trim() !== "" && nombre(document.getElementById("m-tva").value) !== null;
+    document.getElementById("m-ok").disabled = !ok;
+  }
+  document.getElementById("m-ok").addEventListener("click",function(){
+    var tva=nombre(document.getElementById("m-tva").value);
+    var ttc=nombre(document.getElementById("m-ttc").value);
+    tickets.unshift({
+      qui: document.getElementById("m-qui").value.trim(),
+      d: document.getElementById("m-date").value.trim() || "sans date",
+      ttc: ttc===null?0:ttc, tva: tva, icone:"✎"
+    });
+    tvaTouchee=false;
+    voileMain.classList.remove("ouvert");
+    peindre(); dire("Achat écrit à la main, ajouté.");
+  });
+
+  var aparte=document.getElementById("aparte"), minuteur;
+  function dire(mot){
+    aparte.textContent=mot; aparte.classList.add("vu");
+    clearTimeout(minuteur); minuteur=setTimeout(function(){ aparte.classList.remove("vu"); },2200);
+  }
+  document.addEventListener("keydown",function(e){
+    if(e.key!=="Escape") return;
+    voileCal.classList.remove("ouvert");
+    document.getElementById("voile-lu").classList.remove("ouvert");
+    voileMain.classList.remove("ouvert");
+    objectif.classList.remove("ouvert","lit");
+  });
+
+  peindre();
+</script>
+</body>
+</html>

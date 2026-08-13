@@ -116,7 +116,12 @@ export default function CalendrierPeriodes({
                 type="button"
                 onClick={() => aller(n)}
                 aria-current={regarde ? "true" : undefined}
-                className="relative rounded-lg px-2 py-3.5 text-center"
+                // **La capsule, y compris ici.** Le patron, le 12 août 2026 :
+                // « il faut qu'il soit arrondi comme tous les autres ». Sa
+                // maquette (35) montrait des pavés à coins arrondis, mais sa
+                // règle est postérieure et vaut pour tout ce qui se touche —
+                // `scripts/test-boutons-arrondis.ts` l'a rappelé avant lui.
+                className="relative rounded-full px-2 py-3.5 text-center"
                 style={{
                   // Le pavé plein dit ce qu'on REGARDE ; le point doré, ce qui
                   // est aujourd'hui. Deux repères qui ne se confondent pas —

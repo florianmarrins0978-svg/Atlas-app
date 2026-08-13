@@ -63,7 +63,7 @@ export default function PeriodiciteTvaReglage({ initiale }: { initiale: Periodic
               type="button"
               onClick={() => choisir(v)}
               aria-pressed={actif}
-              className="flex-1 rounded-md px-3 py-3 text-[15px]"
+              className="flex-1 rounded-full px-3 py-3 text-[15px]"
               style={{
                 backgroundColor: actif ? colors.rust : colors.card,
                 border: `1px solid ${actif ? colors.rust : colors.line}`,
