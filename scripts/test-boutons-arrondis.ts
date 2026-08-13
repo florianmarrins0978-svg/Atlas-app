@@ -93,15 +93,15 @@ function fichiers(dossier: string): string[] {
  * Ces cinq points sont dans `TODO.md`, en attente de sa décision.
  */
 const HORS_CHARTE: Array<{ motif: RegExp; pourquoi: string }> = [
-  {
-    // Les écrans du CLIENT de l'artisan, pas les siens. Ils portent une autre
-    // identité, délibérément (vert pin et terre cuite plutôt que la charte
-    // Arborea) : une feuille de devis ne doit pas ressembler à l'outil de
-    // travail. Étendre la capsule jusque-là est une décision de dessin, et elle
-    // lui appartient.
-    motif: /^src[/\\]app[/\\](devis|factures)[/\\]\[jeton\]/,
-    pourquoi: "écran du client, autre identité — non arbitré",
-  },
+  // **L'exception des écrans du CLIENT a été LEVÉE le 13 août 2026**, et c'est
+  // lui qui a tranché : capture des deux écrans côte à côte, question posée,
+  // réponse « oui ». Les quatre boutons que voit son client — accepter,
+  // demander une correction, refuser, télécharger la facture — portent
+  // désormais la capsule comme les siens. Ils gardent leurs couleurs propres :
+  // ce qui devait rester distinct, c'est l'identité, pas la forme du geste.
+  //
+  // Le champ de saisie de la même page, lui, garde ses coins doux : la charte
+  // ne donne la capsule qu'à ce qu'on APPUIE, jamais à ce qu'on remplit.
   {
     // Le chevron de retour : 32 × 32, une icône dans un cadre, pas un bouton
     // d'action. La charte réserve la capsule à ce qu'on FAIT ; l'arrondir

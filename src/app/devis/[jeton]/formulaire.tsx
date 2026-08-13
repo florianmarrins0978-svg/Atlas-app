@@ -169,7 +169,7 @@ export default function FormulaireReponse({
           name="decision"
           value="accepte"
           disabled={enCours}
-          className="rounded-xl bg-[#2F3B2F] py-3.5 text-[16px] font-medium text-white disabled:opacity-50"
+          className="rounded-full bg-[#2F3B2F] py-3.5 text-[16px] font-medium text-white disabled:opacity-50"
         >
           {enCours ? "Envoi…" : "J'accepte ce devis"}
         </button>
@@ -179,7 +179,7 @@ export default function FormulaireReponse({
           value="correction"
           disabled={enCours || precision.trim() === ""}
           title={precision.trim() === "" ? "Écrivez d'abord ce qui doit être corrigé." : undefined}
-          className="rounded-xl border border-[#2F3B2F]/30 py-3 text-[15px] font-medium text-[#2F3B2F] disabled:opacity-40"
+          className="rounded-full border border-[#2F3B2F]/30 py-3 text-[15px] font-medium text-[#2F3B2F] disabled:opacity-40"
         >
           Une correction avant d&apos;accepter
         </button>
@@ -193,7 +193,7 @@ export default function FormulaireReponse({
           name="decision"
           value="refuse"
           disabled={enCours}
-          className="rounded-xl border border-black/15 py-3 text-[15px] text-ink/70 disabled:opacity-50"
+          className="rounded-full border border-black/15 py-3 text-[15px] text-ink/70 disabled:opacity-50"
         >
           Je ne donne pas suite
         </button>
