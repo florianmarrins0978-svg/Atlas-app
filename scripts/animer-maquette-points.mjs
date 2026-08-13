@@ -31,7 +31,7 @@ import { fileURLToPath } from "node:url";
 import { existsSync, mkdirSync } from "node:fs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
-const CIBLE = join(RACINE, "docs", "maquettes", "40-les-trois-points-qui-attendent.html");
+const CIBLE = join(RACINE, "docs", "maquettes", "42-les-trois-points-qui-attendent.html");
 const SORTIE = resolve(process.argv[2] ?? join(RACINE, "docs", "maquettes", "images"));
 mkdirSync(SORTIE, { recursive: true });
 
@@ -88,7 +88,7 @@ for (const lettre of ["0", "A", "B", "C", "D", "E"]) {
   // et le script annonce « ✓ » sur une image FIXE — c'est-à-dire sur le défaut
   // même qu'on est en train de corriger. C'est ce qui s'est passé au premier
   // jet, et c'est la raison du contrôle juste en dessous.
-  const fichier = join(SORTIE, `40-attente-${lettre}.gif`);
+  const fichier = join(SORTIE, `42-attente-${lettre}.gif`);
   await sharp(bande, {
     raw: { width, height: height * IMAGES, channels: 4, pageHeight: height },
   })
@@ -114,7 +114,7 @@ for (const lettre of ["0", "A", "B", "C", "D", "E"]) {
     process.exitCode = 1;
   } else {
     console.log(
-      `  ✓ 40-attente-${lettre}.gif — ${relu.pages} image(s)${attenduImmobile ? " (l'avant, immobile — c'est voulu)" : ""}, ${width}×${height}`,
+      `  ✓ 42-attente-${lettre}.gif — ${relu.pages} image(s)${attenduImmobile ? " (l'avant, immobile — c'est voulu)" : ""}, ${width}×${height}`,
     );
   }
 }

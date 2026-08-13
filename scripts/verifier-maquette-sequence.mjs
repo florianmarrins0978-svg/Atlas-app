@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  Parcourt la séquence entière de la maquette 41, téléphone par téléphone, et
+  Parcourt la séquence entière de la maquette 43, téléphone par téléphone, et
   JAVASCRIPT COUPÉ : appuyer sur le micro, arrêter, regarder bouger, recommencer.
 
   **Pourquoi parcourir plutôt que constater.** La 40 montrait l'attente ; la 41
@@ -34,7 +34,7 @@ import { existsSync } from "node:fs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CIBLE = resolve(
-  process.argv[2] ?? join(RACINE, "docs", "maquettes", "41-l-attente-a-lessai.html"),
+  process.argv[2] ?? join(RACINE, "docs", "maquettes", "43-l-attente-a-lessai.html"),
 );
 
 if (!existsSync(CIBLE)) {

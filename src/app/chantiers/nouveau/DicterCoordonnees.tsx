@@ -37,7 +37,7 @@ import { dicterCoordonneesAction } from "./actions";
  * Trois choses ont changé au même endroit, et **elles ne se remplacent pas** :
  *
  * 1. les points **soufflent** — proposition C de
- *    `docs/maquettes/41-l-attente-a-lessai.html`, qu'il a désignée ;
+ *    `docs/maquettes/43-l-attente-a-lessai.html`, qu'il a désignée ;
  * 2. le bouton **reste à pleine encre**. Le demi-effacement d'avant était le
  *    vocabulaire d'un bouton éteint ;
  * 3. **une phrase le dit en toutes lettres.** C'est la seule des trois qui

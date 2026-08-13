@@ -27,7 +27,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 duovicies. ~~Les trois points de la dictée~~ — **CODÉ le 13 août 2026 (proposition C)**
+### 0 quatervicies. ~~Les trois points de la dictée~~ — **CODÉ le 13 août 2026 (proposition C)**
 
 **Sa demande du 13 août 2026**, capture de l'écran « Un chantier » à l'appui :
 *« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce qui se passe.
@@ -53,8 +53,8 @@ même instant, et qui comptent peut-être plus que la vague :
 
 | | Fichier | Ce qu'elle sert |
 |---|---|---|
-| 40 | `docs/maquettes/40-les-trois-points-qui-attendent.html` | Les cinq gestes côte à côte, et l'exposé du défaut. Doublée d'images animées (`docs/maquettes/images/`), pour la conversation |
-| **41** | `docs/maquettes/41-l-attente-a-lessai.html` | **Celle qu'il manipule** — il appuie sur le micro, arrête, les points bougent. Sa demande du 13 août : *« juste des points que je puisse cliquer dessus […] pour voir comment ça rend »*. Engendrée par `scripts/engendrer-maquette-sequence.mjs` |
+| 42 | `docs/maquettes/42-les-trois-points-qui-attendent.html` | Les cinq gestes côte à côte, et l'exposé du défaut. Doublée d'images animées (`docs/maquettes/images/`), pour la conversation |
+| **43** | `docs/maquettes/43-l-attente-a-lessai.html` | **Celle qu'il manipule** — il appuie sur le micro, arrête, les points bougent. Sa demande du 13 août : *« juste des points que je puisse cliquer dessus […] pour voir comment ça rend »*. Engendrée par `scripts/engendrer-maquette-sequence.mjs` |
 
 Les cinq attentes : A la vague (4 px), B la vague ample (7 px), **C le souffle**,
 D le point qui court, E l'anneau qui tourne. **Il a répondu « code la C »** le
@@ -89,7 +89,7 @@ au défaut d'origine : les quatre points rougissent, chacun **en nommant son
 coupable** — et c'est le second jet, le premier sortait un « Timeout » sur un
 sélecteur, ce qui envoie lire le contrôle au lieu de l'écran.
 
-### 0 duovicies ter. ~~La même attente immobile sur le bouton d'ajout de photo~~ — **fait le 13 août 2026**
+### 0 quatervicies ter. ~~La même attente immobile sur le bouton d'ajout de photo~~ — **fait le 13 août 2026**
 
 Signalé en passant, puis tranché par lui le jour même : *« oui souffle aussi pour
 la photo »*. `Pellicule.tsx` portait le même caractère « … » immobile que la
@@ -143,7 +143,7 @@ Trouvé en **affichant les images présentes** plutôt qu'en supposant : elles
 le traitement s'éternise. Une vague qui tourne depuis trente secondes redevient
 une vague qui ne dit rien.
 
-### 0 duovicies bis. Les contrôles de maquette ne sont joués par personne
+### 0 quatervicies bis. Les contrôles de maquette ne sont joués par personne
 
 `scripts/verifier-maquette-*.mjs` (pastille, logo, bascule, bouton de la facture,
 et désormais les points) ne sont appelés **ni par la batterie, ni par la CI** :
@@ -153,6 +153,108 @@ n'existe pas — il rougira le jour où plus personne ne saura pourquoi.
 Non fait d'office : les brancher allonge `verifier:avant-livraison` de plusieurs
 minutes pour éprouver des pages qui ne partent pas en production. Le bon endroit
 est vraisemblablement la CI, sur les seuls fichiers touchés.
+
+### 0 unvicies. Cinq boutons carrés, hors des écrans du patron — à trancher
+
+**Trouvé le 13 août 2026**, en réparant le contrôle des boutons arrondis : son
+motif ne regardait ni les `<Link>`, ni les rayons NOMMÉS de Tailwind. Réparé, il
+dénonce **six** boutons. Un seul était celui que le patron signalait (« Créer la
+facture »), corrigé le jour même. Les cinq autres n'ont jamais été arbitrés :
+
+- `src/app/devis/[jeton]/formulaire.tsx` — trois boutons `rounded-xl` : accepter,
+  demander une correction, refuser. **Écran du CLIENT**, autre identité
+  (vert pin), délibérément distincte de l'outil de travail ;
+- `src/app/factures/[jeton]/page.tsx` — le téléchargement du PDF, `rounded-xl`.
+  Écran du client également ;
+- `src/components/ScreenHeader.tsx` — le chevron de retour, 32 × 32 en
+  `rounded-md`. Une icône encadrée, pas un bouton d'action : l'arrondir
+  entièrement en ferait une pastille ronde, ce qui n'a été demandé nulle part.
+
+Ils sont **déclarés comme exceptions nommées** dans
+`scripts/test-boutons-arrondis.ts`, chacune avec sa raison : un bouton NEUF écrit
+carré ailleurs fait toujours rougir le contrôle.
+
+**La question à lui poser :** la capsule s'arrête-t-elle à ses écrans, ou
+descend-elle jusqu'aux pages que voit son client ? Sa demande du 12 août
+(« remplace tous les boutons rectangulaires ») portait sur son application ; rien
+ne dit qu'elle visait la feuille de devis de son client.
+
+
+### 0 tervicies. `test-planning-vers-facture-e2e` échoue par intermittence, et son message est trop affirmatif
+
+**Constaté le 13 août 2026, en éprouvant autre chose.** Le dernier cas de cette
+suite — *« clôturé AVANT sa date : il quitte le planning pour les terminés »* —
+échoue **par intermittence** sur `page.goto` au bout de 45 s, tantôt sur
+`/termines`, tantôt sur `/planning`. Sur quatre exécutions ce jour-là : trois
+rouges, une verte.
+
+**Ce n'est PAS la civilité** : vérifié en remisant toutes les modifications du
+jour et en rejouant la suite sur `main` intact — même échec, au même endroit.
+Le défaut lui est antérieur.
+
+**Et son message n'explique pas tout.** Il affirme : *« C'est le serveur de
+développement qui n'a pas suivi, pas l'écran : il répond en quelques centaines
+de millisecondes hors batterie »*. Or **la suite a aussi échoué jouée seule**,
+sans aucune autre en parallèle — la charge de la batterie ne suffit donc pas à
+l'expliquer. Un message qui donne une cause certaine là où elle ne l'est pas
+envoie chercher au mauvais endroit (`AGENTS.md`).
+
+**Ce qui reste à faire :** trouver ce que ce cas-là fait de particulier — c'est
+le seul des trois de son groupe à clôturer un chantier **avant** sa date — puis
+rendre le message honnête sur ce qu'il sait et ce qu'il suppose. Les six autres
+cas de la suite passent toujours.
+
+### 0 duovicies. La civilité du client — **à trancher avec lui**
+
+Le 13 août 2026, il a demandé que le devis dise « Monsieur Martins » et non
+« Chez Martins ». C'est **fait** (`ARCHITECTURE.md` §77). Mais la fiche client
+ne porte **aucun champ de civilité** : « Monsieur » est un défaut posé sur tout
+nom qui n'en annonce pas d'autre.
+
+**Ce que ça veut dire concrètement, et pourquoi ça ne peut pas rester ainsi
+indéfiniment :** une cliente saisie « Roux » verra « Monsieur Roux » sur son
+devis. L'application sait déjà se taire devant « Mme Roux » ou « SARL Untel » —
+ces deux cas sont couverts — mais elle ne devine pas un patronyme nu.
+
+| | Piste | Ce que ça vaut |
+|---|---|---|
+| a | **Un choix à la création du client** : trois pastilles — Monsieur, Madame, ni l'un ni l'autre (société). Un appui. | La seule qui dise la vérité. Coûte une colonne, une migration, et trois pastilles sur un écran déjà chargé. |
+| b | Laisser le patron écrire « Mme Roux » lui-même dans le nom | Gratuit, marche déjà — mais il faut qu'il y pense à chaque fois, et un oubli part chez la cliente. |
+| c | Ne rien mettre du tout et revenir au nom nu | Annule sa demande du 13 août. |
+
+**Qui peut le faire : lui seul.** C'est un arbitrage de produit, pas un choix
+technique — et rien ne sera ajouté sans son accord (`CLAUDE.md` §4).
+
+**Et une seconde question, liée :** le message qui part chez son client dit
+toujours « Bonjour Martins ». Faut-il qu'il dise « Bonjour Monsieur Martins » ?
+Rien n'a été touché : c'est ce que ses clients lisent.
+### ~~0 octodecies. Le message du devis figé désignait une porte invisible~~ — **codé le 2026-08-13 (proposition A)**
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis). Le patron, le 13 août, capture à
+l'appui : *« le message dit de consulter la case devis mais aucune case devis
+existe »*, et il demande un avis — créer la case, ou retirer le message ?
+
+**Ce qui est vrai, vérifié dans le code :** l'écran Devis existe bien
+(`/chantiers/[id]/export`, `chantier-etat.ts` le pose comme étape « Devis »),
+mais il vit dans le **tiroir** de la fiche, et **aucune porte n'y mène depuis
+`devis-complet`** — où le message s'affiche. De plus, **deux écrans s'appellent
+« Devis »** de son point de vue : celui qu'il regarde, et celui où l'on corrige.
+
+`docs/maquettes/40-le-message-du-devis-fige.html` — témoin + trois façons :
+
+| | Ce que c'est | Ce que ça coûte |
+|---|---|---|
+| A | le message devient la porte (lien sous la phrase) | rien — la retouche la plus courte |
+| B | un vrai bouton en capsule | il attire l'œil avant le devis qu'on vient lire |
+| C | plus de message du tout | le jour où il touche un prix, rien ne se passe et rien ne le dit |
+
+**Mon avis, donné et assumé : A.** Ne PAS créer de nouvelle case — l'écran
+existe, et lui donner un second accès permanent ferait deux portes vers la même
+pièce, ce qu'on vient d'éviter sur l'écran du devis.
+
+**Les mots ne sont pas tranchés** : « Le corriger et le renvoyer », « Corriger
+ce devis », « Reprendre le devis ». Ils lui appartiennent.
+
 
 ### 0 unvicies. ~~Relier l'agenda iCloud~~ — **codé le 12 août 2026**, reste à éprouver chez lui
 
@@ -1355,6 +1457,46 @@ qu'il ne veut pas revoir.
 
 Si le sujet revient, c'est **lui** qui le rouvre, et alors c'est « partout »
 ou rien.
+
+### ~~9. La ligne sous le nom, dans la liste des chantiers~~ — **tranché et codé le 13 août 2026 : le D, avec la date d'envoi**
+
+**Le patron, le 13 août 2026 :** *« le devis a été envoyé et il n'a toujours pas
+eu de réponse […] tu marques quelque chose du style devis envoyé, attente de
+réponse, je te laisse libre de choisir et de proposer des alternatives si tu
+penses qu'il faudrait rajouter d'autres informations à ce niveau-là. »*
+
+**Il a retenu D**, en remplaçant le délai par la date : « DEVIS ENVOYÉ · SANS
+RÉPONSE » en or, et dessous « Envoyé le jeudi 13 août. » La règle vit dans
+`ligneEtatChantier` (`src/lib/chantier-etat.ts`), éprouvée sans base ni
+navigateur. `ARCHITECTURE.md` §79.
+
+**Les quatre autres restent dans la planche** — `docs/maquettes/41-la-ligne-sous-le-nom.html`,
+engendrée par `scripts/engendrer-maquette-ligne-chantier.mts`. Si le sujet se
+rouvre, repartir de là :
+
+| | Libellé | Ce qu'elle apprend |
+|---|---|---|
+| A | « Devis envoyé · en attente de réponse » | ses mots, au plus court |
+| B | « Envoyé il y a 3 jours · sans réponse » | **le délai — la seule chose qui décide une relance** |
+| C | « Envoyé le 10 août · valable jusqu'au 24 » | quand le devis cessera d'être ouvrable |
+| D | deux lignes, la seconde en clair | ce qu'il y a à faire, en toutes lettres |
+| E | avec le montant | lequel rappeler en premier |
+
+**Ce qui contraint le choix, et qui a été MESURÉ sur l'écran** (`ARCHITECTURE.md`
+§78) : le libellé actuel tient sur une ligne à 430 px — la largeur de son
+téléphone — et déborde à 390. A et B tiennent chez lui ; C et E débordent
+partout.
+
+**Deux points à lui redire quand il tranchera :**
+
+- la mention « sans photo » n'a plus d'utilité une fois le devis parti : elle
+  disparaît dans toutes les propositions ;
+- l'or est réservé à ce qui **attend un geste de lui**. Un devis parti sans
+  réponse n'attend rien de lui, d'où le gris. **D est la seule qui rouvre ce
+  choix**, et c'est délibéré.
+
+E est la seule qui coûte une sous-requête de plus (le montant n'est pas chargé
+par l'écran d'accueil).
 
 ### 8. L'écran Facture — trois manques signalés par le patron le 10 août 2026
 

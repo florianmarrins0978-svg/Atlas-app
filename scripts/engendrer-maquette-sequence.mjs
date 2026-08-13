@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  Écrit `docs/maquettes/41-l-attente-a-lessai.html` — la planche que le patron
+  Écrit `docs/maquettes/43-l-attente-a-lessai.html` — la planche que le patron
   MANIPULE : il appuie sur le micro, parle, rappuie, et les points se mettent à
   bouger. La séquence entière, comme sous son doigt.
 
@@ -38,7 +38,7 @@ import { fileURLToPath } from "node:url";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SORTIE = resolve(
-  process.argv[2] ?? join(RACINE, "docs", "maquettes", "41-l-attente-a-lessai.html"),
+  process.argv[2] ?? join(RACINE, "docs", "maquettes", "43-l-attente-a-lessai.html"),
 );
 
 /**
@@ -392,7 +392,7 @@ const PAGE = `<!doctype html>
 <div class="page">
 
   <div class="intro">
-    <p class="sur">Maquette 41 · 13 août 2026</p>
+    <p class="sur">Maquette 43 · 13 août 2026</p>
     <h1>L'attente, à l'essai</h1>
     <p>Six téléphones, six façons d'attendre. <b>Ils se manipulent</b> — c'est tout l'objet.</p>
     <div class="marche">

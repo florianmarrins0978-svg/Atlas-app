@@ -5773,7 +5773,221 @@ phrase rassurante posée sur un vrai défaut vaut moins que pas de phrase du tou
 
 ---
 
-## 77. Une attente qui ne dit rien passe pour une panne
+## 77. « Monsieur Martins », et la migration qui ne changeait rien en silence
+
+**Le patron, le 13 août 2026, capture de son écran Devis à l'appui :**
+
+> *« Il faut qu'il y ait écrit monsieur Martins et pas chez Martins. Ensuite tu
+> me retires le tiret entre le nom et l'adresse et il faut qu'il soit l'un
+> au-dessus de l'autre. D'abord le nom, ensuite à la ligne l'adresse. Pour le
+> client, c'est pareil. C'est M. Martins, puis le numéro de téléphone en
+> dessous, sans les tirets. »*
+
+### La civilité vit dans un seul fichier
+
+`src/lib/civilite.ts` — `avecCivilite(nom)`. Elle sert au nom du chantier à sa
+création (`nomDuChantier`), à la ligne « Client » de l'écran Devis, et à la
+phrase « Devis prêt pour … ». Trois endroits, une règle : recopiée, on aurait lu
+« Monsieur Martins » en tête d'un écran et « Martins » trois lignes plus bas.
+
+**Ce qu'elle suppose, et qu'il faut assumer plutôt que taire.** Il n'existe
+aucun champ de civilité dans `clients`. Quand le patron tape « Martins », rien
+ne dit si c'est un homme, une femme ou une société : **« Monsieur » est un
+défaut, pas une donnée**. Une cliente sera donc mal nommée. Le patron l'a
+demandé en sachant qu'il n'avait saisi qu'un patronyme ; le vrai remède est un
+choix de civilité à la création du client, qui n'existe pas encore.
+
+Ce que la fonction sait éviter, en revanche : « Monsieur Mme Roux » (une
+civilité déjà écrite n'en reçoit pas une seconde, quelle qu'en soit la graphie)
+et « Monsieur SARL Untel » (une raison sociale n'est pas une personne). Elle est
+**idempotente** — l'appliquer deux fois donne le même résultat, ce qui permet de
+la poser sur un nom déjà stocké.
+
+**Un invariant du dépôt a été levé par cette demande, et c'est écrit.**
+`nom-chantier.ts` tenait que chaque mot du nom venait de la saisie ; ce n'est
+plus vrai. Ne pas « rétablir » l'ancienne règle sans lui : elle a été levée, pas
+oubliée (`scripts/test-nom-chantier.ts`, cas INVARIANT).
+
+### La leçon qui vaut au-delà de cet écran : une migration de DONNÉES sur une table sous RLS
+
+`nomDuChantier` ne tourne qu'à la création : le nom est ensuite écrit dans
+`chantiers.nom`. Corriger la fonction seule aurait laissé « Chez Martins » sur
+tous les chantiers en cours — c'est-à-dire sur l'écran même que le patron
+photographiait. D'où `drizzle/0036_monsieur_plutot_que_chez.sql`.
+
+**Première version : un `UPDATE chantiers … FROM clients …` ordinaire. Elle
+s'est appliquée sans erreur, a rapporté un succès, et n'a rien changé.**
+Constaté sur quatre chantiers d'épreuve, tous restés « Chez … ».
+
+`chantiers` et `clients` portent la RLS en mode **forcé**
+(`relforcerowsecurity`), avec la politique `tenant_isolation` :
+
+```sql
+entreprise_id = NULLIF(current_setting('app.entreprise_id', true), '')::uuid
+```
+
+Le propriétaire lui-même y est soumis. Sans contexte posé, `current_setting`
+rend la chaîne vide, le prédicat vaut NULL, **aucune ligne n'est visible**, et
+l'UPDATE passe dans le vide sans un mot. C'est le piège que `CLAUDE.md` §3
+décrit — *« une requête hors de ce cadre ne renvoie rien, silencieusement »* —
+rencontré ici pour la première fois **dans une migration**.
+
+**Ce que fait la version retenue, et ce qu'on ne fait surtout pas.** On ne
+désactive pas la RLS (`CLAUDE.md` §4). La migration boucle sur `entreprises` et
+pose `app.entreprise_id` pour chacune — la même mécanique que la file
+`audios_a_purger`. Elle efface le contexte en sortant.
+
+**Les migrations précédentes qui modifiaient des données ne touchaient que
+`termes_metier`, table sans RLS forcée.** Rien dans le dépôt n'avait donc
+rencontré ce cas. Toute migration future qui écrit dans une table portant
+`entreprise_id` doit faire de même — ou ne rien faire, en silence.
+
+### Deux contrôles, et pourquoi ils sont deux
+
+- **`scripts/test-civilite.ts`, « la migration et la fonction disent la même
+  chose »** — la règle existe deux fois, en TypeScript et en SQL, parce que le
+  lanceur de migrations ne sait exécuter que du SQL. Ne pouvant n'en garder
+  qu'une, on les **confronte** sur un même corpus. Le prédicat SQL n'est pas
+  recopié dans le test : il est **extrait du fichier de migration**, entre les
+  repères `-- <predicat-civilite>` … `-- </predicat-civilite>`. Ne pas déplacer
+  ces repères sans mettre le contrôle au courant.
+- **`scripts/test-civilite.ts`, « la migration renomme vraiment »** — rejoue la
+  migration dans une transaction annulée et vérifie le RÉSULTAT. Un « 1
+  migration appliquée » ne prouve rien : c'est exactement ce que disait la
+  version qui ne changeait rien.
+
+  **Ce contrôle-là a d'abord été un faux vert**, et le noter vaut mieux que le
+  taire : il posait lui-même `app.entreprise_id` pour ses insertions, la
+  migration en héritait (un `set_config` local vaut pour toute la transaction),
+  et il passait donc au vert même sur la migration défaillante. Il **efface
+  maintenant le contexte avant de jouer la migration**. Confronté à la version
+  sans contexte, il rougit et nomme le bon coupable.
+
+### L'écran, et ce qu'un test ne pouvait pas voir
+
+Le tiret cadratin réunissait deux choses de nature différente — qui, et où — en
+une phrase qui n'en est pas une. Sur les 390 px du patron, elle se repliait de
+toute façon sur deux lignes, mais **au mauvais endroit** : la coupure tombait au
+milieu de l'adresse, jamais entre le nom et elle. Un contrôle qui aurait compté
+les lignes serait passé au vert sur ce défaut.
+
+`Row` (`ExportClient.tsx`) rend donc **deux paragraphes** — le nom, puis le
+détail — et non un texte à retour à la ligne : la coupure ne doit pas dépendre
+de la largeur. `scripts/test-synthese-devis-e2e.ts` **mesure les rectangles**
+(le détail sous le nom, même marge à un pixel près), et
+`scripts/capture-synthese-devis.mts` rend l'image sur son iPhone.
+
+**Ce qui n'a PAS été touché, et c'est délibéré** : le message qui part chez le
+client dit toujours « Bonjour <nom> » (`src/lib/message-client.ts`). Changer la
+façon dont ses clients sont abordés est un geste qui lui appartient, et il ne
+l'a pas demandé.
+
+---
+
+
+---
+
+## 78. Mesurer un libellé sur l'écran, jamais sur une maquette
+
+**Né de sa demande du 13 août** : *« il faut le notifier sous le nom […] je te
+laisse libre de proposer des alternatives »*. Cinq libellés étaient en jeu pour
+la troisième ligne de la liste des chantiers.
+
+**La première planche était dessinée à la main, et elle mentait.** Une page HTML
+ordinaire rend ces mots plus larges qu'Inter dans l'application : au dessin,
+même le libellé ACTUEL passait sur deux lignes, alors qu'il tient sur une chez
+lui. La maquette aurait donc découragé les libellés longs pour une raison
+fausse.
+
+**Ce qui a tranché, c'est la mesure sur l'écran réel** — et elle a révélé mieux
+qu'un oui/non :
+
+| Libellé | 390 px | 430 px (son téléphone) |
+|---|---|---|
+| « En attente de réponse · sans photo » (actuel) | 2 lignes | 1 ligne |
+| « Devis envoyé · en attente de réponse » | 2 | 1 |
+| « Devis envoyé · sans réponse » | 1 | 1 |
+| « Envoyé il y a 3 jours · sans réponse » | 2 | 1 |
+| « Envoyé le 10 août · valable jusqu'au 24 » | 2 | 2 |
+| « Devis 1 240 € envoyé · sans réponse depuis 3 jours » | 2 | 2 |
+
+**La largeur de son téléphone fait partie de la décision.** Le libellé actuel est
+déjà à la limite : il tient sur un 430 px, pas sur un 390. Toute rallonge
+déborde ailleurs que chez lui.
+
+`scripts/engendrer-maquette-ligne-chantier.mts` joue donc chaque libellé DANS
+l'application, le photographie aux deux largeurs, et embarque les captures dans
+la planche (`docs/maquettes/41-la-ligne-sous-le-nom.html`). Ce ne sont pas des
+dessins : c'est l'écran.
+
+**Un défaut vu à l'œil sur la planche assemblée**, et qu'aucun contrôle ne
+cherchait : la variante E affichait le libellé de D. Le script désignait la
+ligne d'état AVANT de retirer celle injectée par la variante précédente —
+`p:last-of-type` tombait alors sur cette ligne-là, qu'on retirait aussitôt, et
+le texte partait sur un nœud détaché. **Une capture s'inspecte comme un écran.**
+
+---
+
+## 79. La ligne sous le nom : ce qui est parti, et quand
+
+**Son choix du 13 août 2026**, devant les cinq propositions photographiées
+(§78) : *« j'aime bien le D, mais en dessous de "devis envoyé" je veux qu'il y
+ait marqué la date à laquelle on l'a envoyé. »*
+
+La liste des chantiers porte donc, pour un devis parti sans réponse :
+
+```
+Mr Martins
+Adresse non renseignée
+DEVIS ENVOYÉ · SANS RÉPONSE          ← en or
+Envoyé le jeudi 13 août.
+```
+
+### Quatre décisions, et elles vivent dans une fonction pure
+
+`ligneEtatChantier` (`src/lib/chantier-etat.ts`) — l'écran n'a qu'à afficher
+(`CLAUDE.md` §3), et la règle s'éprouve sans base ni navigateur
+(`test-ligne-etat-chantier.ts`).
+
+1. **« En attente de réponse » devient « Devis envoyé · sans réponse ».**
+   L'ancienne phrase était vraie mais ne disait pas **ce qui** attend : un devis
+   parti, ou un client qu'on n'a pas rappelé ?
+2. **La date d'envoi n'est jamais devinée.** Sans envoi enregistré, la seconde
+   ligne n'existe pas. Le repli tentant — la dernière modification du chantier
+   (`majAt`, celle qui s'affiche à gauche) — n'est PAS la date d'envoi : une
+   photo ajoutée la déplace. Il compte ses jours d'attente dessus.
+3. **La mention des photos disparaît une fois le devis parti.** Elle sert à
+   savoir s'il reste de quoi chiffrer ; après, elle occupe la place.
+4. **L'or, contre la règle d'avant.** Il était réservé à ce qui attend un geste
+   DE LUI ; un devis parti sans réponse n'en attend aucun. Il a retenu la
+   variante dorée en connaissance de cause — c'était écrit sur la planche. Si la
+   liste devient trop dorée à l'usage, `APPELLE_UN_GESTE` se défait sur une
+   ligne.
+
+### Le doublon né du retrait de « Chez »
+
+Vu **à l'œil sur une capture**, jamais par un contrôle. Quand « Chez Martins »
+est devenu « Monsieur Martins » (§77), un chantier SANS adresse affichait le même mot
+deux fois de suite — le titre, puis la ligne du lieu, qui se rabattait sur le
+nom du client.
+
+`lieuDuChantier` ne se rabat désormais sur le client **que s'il apprend quelque
+chose** ; sinon elle écrit « Adresse non renseignée », qui est une information,
+et qui appelle un geste.
+
+**La comparaison est un `includes`, pas une égalité**, et c'est tout le point :
+depuis §77 le titre PORTE le nom du client sans lui être identique, puisqu'il
+lui ajoute « Monsieur ». Une égalité stricte aurait laissé le doublon passer.
+`intituleDuChantier`, dans le même fichier, compare déjà ainsi — la leçon avait
+été payée une fois, elle ne l'a pas été deux.
+
+**Ce que ce défaut rappelle :** retirer un mot d'un libellé peut faire entrer
+deux autres en collision. Un changement d'affichage se REGARDE, sur l'écran, y
+compris là où il n'était pas censé porter.
+
+---
+
+## 80. Une attente qui ne dit rien passe pour une panne
 
 **Le patron, le 13 août 2026**, capture de l'écran « Un chantier » à l'appui :
 *« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce qui se passe.

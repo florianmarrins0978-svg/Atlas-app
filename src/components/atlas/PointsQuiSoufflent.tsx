@@ -11,7 +11,7 @@
  * (`Pellicule.tsx`), qui attend son tour.
  *
  * **Le geste vient de lui.** Proposition C de
- * `docs/maquettes/41-l-attente-a-lessai.html`, désignée le 13 août 2026 : ils
+ * `docs/maquettes/43-l-attente-a-lessai.html`, désignée le 13 août 2026 : ils
  * n'avancent pas, ils respirent sur place. Rien ne sort du rond de 44 px, donc
  * rien ne peut cogner ce qui est à côté. Les mesures vivent dans
  * `globals.css` (`.atlas-souffle`) — les y reprendre, jamais de mémoire.

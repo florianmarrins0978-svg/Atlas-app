@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  Éprouve les cinq attentes de la maquette 40, JAVASCRIPT COUPÉ.
+  Éprouve les cinq attentes de la maquette 42, JAVASCRIPT COUPÉ.
 
   **Pourquoi « coupé ».** Une maquette s'ouvre n'importe où — un aperçu, une
   visionneuse, une page qui bloque l'exécution. La 31 avait engendré ses écrans
@@ -48,7 +48,7 @@ import { existsSync } from "node:fs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CIBLE = resolve(
-  process.argv[2] ?? join(RACINE, "docs", "maquettes", "40-les-trois-points-qui-attendent.html"),
+  process.argv[2] ?? join(RACINE, "docs", "maquettes", "42-les-trois-points-qui-attendent.html"),
 );
 
 if (!existsSync(CIBLE)) {

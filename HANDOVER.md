@@ -367,9 +367,9 @@ n'est pas la batterie.
 ## L'ATTENTE DE LA DICTÉE EST CODÉE — « le souffle » (13 août)
 
 Il a répondu **« code la C »**. Les points enflent et se rétractent l'un après
-l'autre, sans se déplacer. `ARCHITECTURE.md` §77 porte le détail.
+l'autre, sans se déplacer. `ARCHITECTURE.md` §80 porte le détail.
 
-**Quatre choses à ne pas défaire**, listées dans `TODO.md` §0 duovicies — dont
+**Quatre choses à ne pas défaire**, listées dans `TODO.md` §0 quatervicies — dont
 le bouton qui **ne redevient pas** à demi effacé, et la phrase « Atlas rédige… »,
 qui est la seule des trois moitiés à parvenir à qui n'a pas les yeux sur l'écran.
 
@@ -386,7 +386,7 @@ visionneuse des photos repartait du réseau pour une image déjà affichée, son
 `<img>` n'avait pas fini de charger, et **l'échec accusait la visionneuse** qui
 n'y était pour rien. Relâcher la route dès la mesure faite, et seulement une fois
 l'échange retenu terminé — la couper en vol donne « Route is already handled! ».
-`TODO.md` §0 duovicies ter.
+`TODO.md` §0 quatervicies ter.
 
 *Ce qui suit est l'historique du choix, gardé pour ne pas rouvrir ce qui est clos.*
 
@@ -396,7 +396,7 @@ l'échange retenu terminé — la couper en vol donne « Route is already handle
 qui se passe. Les trois petits points sont fixes […] on ne sait pas si ça bug ou
 non. »*
 
-Deux planches — la **40** expose les cinq gestes côte à côte, la **41** est celle
+Deux planches — la **42** expose les cinq gestes côte à côte, la **43** est celle
 qu'il a MANIPULÉE (il appuie sur le micro, arrête, les points bougent), et c'est
 elle qui a tranché. Cinq attentes : A la vague, B la vague ample, **C le
 souffle** (retenue), D le point qui court, E l'anneau qui tourne. Les quatre
@@ -420,6 +420,41 @@ que de redessiner.
    sa sortie**, parce qu'au premier jet il certifiait « ✓ » une image fixe.
 
 ## Ce qui vient d'être terminé
+
+**« MONSIEUR MARTINS », ET LE TIRET RETIRÉ (13 août).** Sa capture de l'écran
+Devis. Le nom du chantier ne dit plus « Chez … », la ligne du client porte sa
+civilité, et le détail passe **sous** le nom au lieu d'être collé par un tiret.
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **La civilité vit dans `src/lib/civilite.ts`, et nulle part ailleurs.** Trois
+   endroits l'appellent. « Monsieur » est un **défaut, pas une donnée** : il n'y
+   a aucun champ de civilité dans la fiche client, donc une cliente sera mal
+   nommée. Le vrai remède — un choix à la création — n'a pas été ajouté sans son
+   accord. **À lui poser.**
+2. **Un invariant a été levé, pas oublié.** `nom-chantier.ts` tenait que chaque
+   mot du nom venait de la saisie ; « Monsieur » rompt cette règle, et le patron
+   l'a demandé en connaissance de cause. Ne pas la rétablir sans lui.
+3. **UNE MIGRATION DE DONNÉES SUR UNE TABLE SOUS RLS NE FAIT RIEN, EN SILENCE.**
+   C'est la leçon qui ressert le plus. `chantiers` et `clients` portent la RLS
+   en mode **forcé** : le propriétaire y est soumis, et sans `app.entreprise_id`
+   posé, `current_setting` rend une chaîne vide, le prédicat vaut NULL et
+   **aucune ligne n'est visible**. Le premier `UPDATE` écrit s'est appliqué sans
+   erreur, a rapporté un succès, et n'a touché aucune ligne. La migration 0036
+   boucle donc sur les entreprises en posant le contexte de chacune — jamais en
+   désactivant la RLS. Les migrations d'avant ne modifiaient que
+   `termes_metier`, sans RLS forcée : ce cas était neuf.
+4. **Un « 1 migration appliquée » ne prouve rien.** Le contrôle rejoue la
+   migration et vérifie le résultat. Il a d'abord été un **faux vert** : il
+   posait lui-même le contexte pour ses insertions, la migration en héritait, et
+   il passait au vert sur la version défaillante. Il efface maintenant le
+   contexte avant de jouer la migration.
+
+**Et un rappel que cette journée redonne :** trois suites navigateur recopiaient
+« Chez … » au lieu d'appeler la règle. Elles sont passées au rouge le jour où le
+mot a changé. Elles appellent maintenant `nomDuChantier` / `avecCivilite`.
+
+Détail complet : `ARCHITECTURE.md` §77.
 
 **SIX BRANCHES RÉUNIES DANS `main` (13 août).** Sa demande : *« Fusionne. »*
 `main` porte désormais l'agenda iCloud, l'écran de la facture (SMS **ou**
@@ -447,6 +482,40 @@ travail que `main` n'ait pas.
 Batterie entière au vert avant de pousser : types, lint, mémoire, 124/124
 suites base, 65/65 suites navigateur, 23 contrôles de maquette, et la connexion
 réelle derrière une origine étrangère.
+
+**⚠ LE NOM DU CHANTIER A ÉTÉ CORRIGÉ DEUX FOIS LE MÊME JOUR, PAR DEUX
+SESSIONS.** Il l'a demandé aux deux. La version retenue est celle de `main` —
+« Monsieur Martins » (`ARCHITECTURE.md` §77, `src/lib/civilite.ts`) — et non la
+mienne, qui rendait le nom nu. **Ne pas la « rétablir »** : il a levé la règle
+du « rien d'inventé » pour la civilité, en le sachant.
+
+**Ce que la collision a appris, et qui vaut pour toute migration à venir :** un
+`UPDATE` de données sans contexte d'entreprise ne voit AUCUNE ligne sous la RLS
+forcée. Il s'applique, rapporte un succès, et ne change rien — en silence. Ma
+migration faisait exactement cela. Traiter entreprise par entreprise.
+
+**LA LIGNE SOUS LE NOM EST TRANCHÉE ET CODÉE** — le D, avec la date d'envoi
+(`ARCHITECTURE.md` §77). Trois choses à ne pas défaire :
+
+- **la date d'envoi ne se devine pas.** Sans envoi enregistré, pas de seconde
+  ligne. Le repli tentant — `majAt`, la date affichée à gauche — n'est PAS la
+  date d'envoi : une photo ajoutée la déplace ;
+- **l'or sur un devis parti est SA décision**, contre la règle d'avant (l'or
+  pour ce qui attend un geste de lui). C'était écrit sur la planche qu'il a
+  choisie. Si la liste devient trop dorée, `APPELLE_UN_GESTE` se défait sur une
+  ligne ;
+- **le lieu ne répète jamais le nom.** Défaut né du retrait de « Chez », vu à
+  l'œil sur une capture : retirer un mot d'un libellé peut faire entrer deux
+  autres en collision.
+
+**Et une règle qui vaut au-delà de ce lot : un libellé se mesure SUR L'ÉCRAN.**
+Une maquette HTML rend les mots plus larges qu'Inter dans l'application — la
+première planche faisait passer sur deux lignes un libellé qui tient sur une
+chez lui, et aurait donc écarté les bons libellés pour une raison fausse.
+`scripts/engendrer-maquette-ligne-chantier.mts` joue chaque libellé dans
+l'application et le photographie à 430 px (son téléphone) **et** à 390 px. La
+largeur de son téléphone fait partie de la décision : le libellé actuel est
+déjà à la limite.
 
 **LE CALENDRIER D'ENVOI NE MARQUAIT QU'UN JOUR (12 août).** Il ne pouvait
 proposer qu'une date dès qu'il la prenait au calendrier, alors que son client
