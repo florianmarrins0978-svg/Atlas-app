@@ -481,6 +481,47 @@ touchant aucune. Suffisant aujourd'hui ; à rouvrir s'il facture des entreprises
 
 Détail complet : `ARCHITECTURE.md` §81.
 
+---
+
+### La TVA due, les achats et la lecture des tickets (13 août 2026)
+
+`src/lib/achat-tva.ts`, `drizzle/0036_achats_tva.sql`,
+`src/server/repositories/achats-tva.ts`, l'écran `src/app/termines/tva/` et
+`src/server/ai/services/lire-ticket.ts`.
+
+**Cinq choses à ne pas défaire :**
+
+1. **La TVA d'un ticket se RETIRE du total, elle ne s'y ajoute pas.** 120 € à
+   20 % contiennent 20 € de TVA, pas 24. Un contrôle affirme l'inégalité
+   explicitement — le corriger « dans l'autre sens » fausserait tout le relevé
+   sans que rien ne se voie.
+2. **`tva_deductible` est le seul montant obligatoire.** Exiger le total
+   reviendrait à refuser les tickets qui n'affichent qu'une ligne de TVA, donc à
+   perdre cette TVA.
+3. **Aucune règle de déductibilité n'est encodée, et il ne faut pas en
+   ajouter.** Elles dépendent de la dépense et du véhicule ; le comptable
+   tranche.
+4. **Le reste à payer peut être négatif** — c'est un crédit de TVA, et il
+   s'affiche. Le borner à zéro cacherait le mois qui compte le plus.
+5. **Ce que la lecture rend est une PROPOSITION.** Les champs arrivent
+   pré-remplis ; c'est la valeur CONFIRMÉE qui part en base. Ne jamais
+   enregistrer directement ce que le modèle a lu.
+
+**NON VÉRIFIÉ, et ça ne peut pas l'être ici :** la lecture d'un vrai ticket.
+Aucune clé dans cet environnement. Si le patron signale une lecture fautive, le
+plus utile est **la photo du ticket ET ce que l'écran a proposé** : c'est
+l'écart entre les deux qui dit quoi corriger. Tout ce qui entoure la lecture est
+éprouvé (`scripts/test-lecture-ticket.ts`, onze cas, sans réseau).
+
+**Un piège d'outillage payé deux fois le 13 août :** ne jamais jouer une suite
+base ni éditer un fichier PENDANT `verifier:avant-livraison`. `nettoyerBase()`
+vide la base sous les pieds des cinquante autres suites, et une édition en cours
+casse la compilation de celles qui n'ont pas encore démarré. Les deux batteries
+rouges de la journée étaient cela, pas des défauts du code.
+
+---
+
+
 **« MONSIEUR MARTINS », ET LE TIRET RETIRÉ (13 août).** Sa capture de l'écran
 Devis. Le nom du chantier ne dit plus « Chez … », la ligne du client porte sa
 civilité, et le détail passe **sous** le nom au lieu d'être collé par un tiret.
@@ -699,6 +740,32 @@ client demande une modification, ouvrir le devis pour pouvoir le modifier. »*
    voulu (`notificationsPatron`). Seuls un refus, une correction, une
    contre-proposition de date ou un message du client en font une. Un contrôle
    qui l'ignore cherche une carte qui n'existera jamais — vécu le jour même.
+
+---
+
+### La TVA au mois ou au trimestre (12 août 2026)
+
+`src/server/periode-tva.ts` (règle pure), `drizzle/0035_periodicite_tva.sql`,
+Réglages → « Votre TVA », et le calendrier
+`src/app/termines/tva/CalendrierPeriodes.tsx`.
+
+**Trois choses à ne pas défaire :**
+
+1. **Le mois est le défaut LÉGAL, pas une préférence.** La déclaration CA3 est
+   mensuelle ; le trimestre est une option ouverte sous 4 000 € de TVA due.
+   Repasser le défaut au trimestre serait un retour au défaut d'avant.
+2. **Atlas ne calcule JAMAIS le droit au trimestre.** Le seuil porte sur la TVA
+   *due* — collectée moins déductible — et ce produit ne voit aucune facture
+   d'achat. Un écran qui conseillerait inventerait une donnée ; une suite
+   (`test-periodicite-tva-e2e.ts`) rougit s'il s'y met.
+3. **`lirePeriode` dépend de la périodicité** : « 12 » est un mois valide et un
+   trimestre absurde. Lire l'adresse sans le réglage laisserait passer un
+   douzième trimestre.
+
+`src/server/trimestre.ts` subsiste, employé par `test-factures.ts` seul. Il n'a
+plus d'appelant dans `src/`.
+
+---
 
 **Les pages du CLIENT ne portent plus la navigation du patron (12 août).** Sa
 facture affichait « Chantiers · Planning · Terminés · Réglages » au bas de

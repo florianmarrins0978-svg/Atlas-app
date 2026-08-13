@@ -12,6 +12,8 @@ import { nomFichierSauvegarde } from "@/lib/nom-sauvegarde";
 import { estEditeur } from "@/server/editeur";
 import ReglagesClient from "./ReglagesClient";
 import VosEquipes from "./VosEquipes";
+import PeriodiciteTvaReglage from "./PeriodiciteTva";
+import { PERIODICITE_TVA_PAR_DEFAUT } from "@/server/periode-tva";
 import BoutonMiseAJour from "./BoutonMiseAJour";
 import { derniereIssueMiseAJour } from "./actions";
 
@@ -53,6 +55,10 @@ export default async function ReglagesPage() {
           initialNombreEquipes={entreprise?.nombreEquipes ?? 1}
           initialNoms={equipes.map((e) => ({ rang: e.rang, nom: e.nom }))}
         />
+
+        {/* La TVA juste après les équipes : deux réglages qu'on vient chercher
+            précisément, avant les tarifs qu'on parcourt. */}
+        <PeriodiciteTvaReglage initiale={entreprise?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT} />
 
         <ReglagesClient
           initialTarifs={tarifs.map((t) => ({ id: t.id, intitule: t.intitule, prix: t.prix, unite: t.unite }))}

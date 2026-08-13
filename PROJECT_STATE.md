@@ -3,6 +3,14 @@
 **Dernière mise à jour :** 2026-08-13 · branche `main`
 · dernière migration `drizzle/0038_civilite_du_client.sql`
 
+---
+
+**Dernière mise à jour :** 2026-08-12 · branche `claude/chantier-phototech-direct-ujt2wv`
+· dernière migration `drizzle/0036_achats_tva.sql`
+
+---
+
+
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 --oneline -20` le dit sans risque de se tromper.)*
@@ -213,6 +221,22 @@ l'application. Ce qui est **fait** :
   d'y poser une feuille maison. Quatre gestes deviennent deux. Ajouter, regarder
   et retirer se font dans la pellicule ; `/chantiers/[id]/photos` répond 404, et
   une suite le vérifie. `ARCHITECTURE.md` §60.
+- **La TVA due, les achats et le scanner de tickets** (13 août) : l'écran porte
+  collectée, déductible et reste à payer — chacun copiable. Les achats entrent
+  par l'appareil photo ou au clavier (`achats_tva`, migration
+  `drizzle/0036_achats_tva.sql`). La lecture d'un ticket est branchée sur les
+  clés du patron ; **la vision a dû être ajoutée à la couche IA**, qui ne
+  manipulait que du texte. Ce qu'elle rend est une proposition : c'est ce qu'il
+  confirme qui compte. Un crédit de TVA s'affiche en négatif, signe et phrase.
+  **NON VÉRIFIÉ ICI : la lecture d'un vrai ticket** — aucune clé dans cet
+  environnement. `ARCHITECTURE.md` §84.
+- **La TVA au mois ou au trimestre, et son calendrier** (12 août) : Réglages
+  porte le choix, le mois coché d'avance — c'est le défaut légal (déclaration
+  CA3 mensuelle ; le trimestre est une option sous 4 000 € de TVA due). L'écran
+  de TVA et son calendrier suivent : douze pavés ou quatre. **Atlas ne dit
+  jamais lequel s'applique** — le seuil porte sur la TVA due, or il ne connaît
+  que la collectée. Migration `drizzle/0035_periodicite_tva.sql`.
+  `ARCHITECTURE.md` §83.
 - **« Y aller » : l'adresse du chantier jusqu'au GPS** (12 août) : au bout de
   chaque ligne des chantiers planifiés, un **chevron doré** ouvre une feuille —
   Plans, Google Maps, Waze, copier l'adresse, appeler le client — sans quitter
