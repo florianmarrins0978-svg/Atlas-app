@@ -967,11 +967,21 @@ lui est antérieur. Reste à savoir s'il tient au harnais (`run-e2e-tests` monte
 son propre serveur et son propre jeu de données) ou à la suite elle-même. À
 reproduire d'abord par `npm run test:e2e` complet avant de conclure.
 
-### 0 bis. L'agent qui apprend — le vrai sujet
+### 0 bis. L'agent qui apprend — LA SUITE, demandée explicitement
 
-Le tapis roulant (dictée → devis, d'un seul geste) est en place, et l'arrêt
-d'avant-chiffrage aussi (§0 ter). La suite, dans l'ordre décidé avec le patron
-le 5 août 2026 :
+**Consigne du patron, le 6 août 2026, après la fusion de la mémoire des
+corrections :** *« Ok, garde ça en mémoire et on fera ça après. N'oublie pas de
+le faire. »*
+
+C'est donc **le prochain travail**, pas une liste d'idées. Une conversation qui
+reprend à froid enchaîne sur (b), puis (c), puis (d) — sans reposer la question.
+C'est la deuxième fois qu'il demande expressément qu'un point soit consigné
+plutôt que retenu (la première : la sauvegarde, §0) ; le lui faire répéter une
+troisième serait une défaillance de ce fichier.
+
+Le tapis roulant (dictée → devis, d'un seul geste) est en place, l'arrêt
+d'avant-chiffrage aussi (§0 ter), et la mémoire des corrections également
+(§0 quater). Reste, dans l'ordre décidé avec lui le 5 août 2026 :
 
 | | Quoi | Pourquoi maintenant |
 |---|---|---|
@@ -980,6 +990,13 @@ le 5 août 2026 :
 | b | **Entretien de départ.** Il n'a aucun ancien devis à donner en référence — c'est donc l'agent qui l'interroge une fois et écrit ses règles. | Sans ça, l'agent démarre en ne sachant rien et apprend aux frais du patron. |
 | c | **Écart devis / facture.** Les données existent déjà des deux côtés. | La meilleure leçon qui soit : ce qui avait été mal estimé s'y voit tout seul. |
 | d | **Photos ↔ prix.** Conserver le lien entre les photos d'un chantier et le devis qui a suivi. | Objectif du patron : « à force de comparer les photos des arbres et les devis, il devra proposer un prix juste ». Impossible aujourd'hui — mais **l'accumulation doit commencer maintenant**, sinon dans six mois il n'y aura toujours rien à apprendre. |
+
+**Et un cinquième point, né du lot du 6 août :** le **rapport entre techniques**
+(×1,67, ×2,33 — `docs/EXEMPLE-DICTEE.md` §9a). Il ne s'écrit pas en dur : c'est
+une moyenne mobile, recalculée sur les devis réellement faits. Il ne peut donc
+exister qu'à partir de plusieurs chantiers comparables — `lecons_prix` les
+accumule depuis le 6 août. **À reprendre quand la mémoire est fournie**, pas
+avant : un rapport tiré d'une seule observation serait une règle inventée.
 
 **Réserve levée le 5 août 2026.** Un prix déduit d'une photo est une estimation,
 ce que `docs/AGENT.md` §3 interdisait. Le patron a tranché : *« rien ne sera
