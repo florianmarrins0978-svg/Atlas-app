@@ -101,7 +101,7 @@ technique — et rien ne sera ajouté sans son accord (`CLAUDE.md` §4).
 **Et une seconde question, liée :** le message qui part chez son client dit
 toujours « Bonjour Martins ». Faut-il qu'il dise « Bonjour Monsieur Martins » ?
 Rien n'a été touché : c'est ce que ses clients lisent.
-### 0 octodecies. Le message du devis figé désigne une porte invisible — trois maquettes attendent
+### ~~0 octodecies. Le message du devis figé désignait une porte invisible~~ — **codé le 2026-08-13 (proposition A)**
 
 **Rien n'est codé** (`CLAUDE.md` §3 bis). Le patron, le 13 août, capture à
 l'appui : *« le message dit de consulter la case devis mais aucune case devis
