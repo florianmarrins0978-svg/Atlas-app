@@ -206,6 +206,57 @@ parce qu'on s'y fie encore (`CLAUDE.md` §1).
 maquette, et la connexion réelle dans un vrai navigateur derrière une origine
 étrangère. Aucune régression.
 
+### Deux sessions ont corrigé « Chez Martins » le même jour — et c'est la leur qui tient
+
+Il l'a demandé aux deux, à quelques heures d'écart : *« corrige le nom, Mr
+Martins, pas chez Martins ! »* d'un côté, *« il faut qu'il y ait écrit monsieur
+Martins et pas chez Martins »* de l'autre.
+
+**Ma version rendait le nom nu** — « Martins » — au motif qu'ajouter « M. »
+supposerait un genre. **La sienne écrit « Monsieur Martins »**, et il a levé
+cette réserve en connaissance de cause (`src/lib/civilite.ts`). C'est la sienne
+qui est retenue : elle fait ce qu'il a demandé au mot près, et elle était sur
+`main` la première.
+
+**Et elle a trouvé ce que la mienne ratait.** Ma migration était un `UPDATE …
+FROM clients …` tout simple. Sous la RLS forcée, sans contexte d'entreprise
+posé, il ne voit **aucune ligne** : il s'applique, rapporte un succès, et ne
+change rien — en silence. La sienne procède entreprise par entreprise.
+`ARCHITECTURE.md` §77. Ma migration a été retirée.
+
+### La ligne sous le nom dit ce qui est parti, et quand
+
+**Son choix, devant les cinq propositions :** *« j'aime bien le D, mais en
+dessous de "devis envoyé" je veux qu'il y ait marqué la date à laquelle on l'a
+envoyé. »* La liste porte donc « DEVIS ENVOYÉ · SANS RÉPONSE » en or, et sous
+lui « Envoyé le jeudi 13 août. » `ARCHITECTURE.md` §79.
+
+**La date n'est jamais devinée** : sans envoi enregistré, la seconde ligne
+n'existe pas. Le repli tentant — la dernière modification du chantier, celle qui
+s'affiche à gauche — n'est PAS la date d'envoi : une photo ajoutée la déplace,
+et c'est sur elle qu'il compte ses jours d'attente.
+
+**Un doublon né du retrait de « Chez », vu à l'œil sur une capture.** Le titre
+étant devenu « Martins », un chantier sans adresse affichait le même mot deux
+fois de suite — la ligne du lieu se rabattait sur le nom du client. Elle ne s'y
+rabat plus que si elle apprend quelque chose ; sinon elle écrit « Adresse non
+renseignée », qui est une information. **Retirer un mot d'un libellé peut faire
+entrer deux autres en collision.**
+
+### Cinq libellés pour la ligne sous le nom — à son choix
+
+Il veut y lire que le devis est parti et qu'on attend. Cinq propositions
+l'attendent dans `docs/maquettes/41-la-ligne-sous-le-nom.html`, **rien n'est
+codé**.
+
+**La planche n'est pas dessinée, elle est photographiée.** La première version
+l'était, et elle mentait : une page HTML ordinaire rend ces mots plus larges
+qu'Inter dans l'application — au dessin, même le libellé ACTUEL passait sur deux
+lignes alors qu'il tient sur une chez lui. La mesure sur l'écran réel a révélé
+mieux qu'un oui/non : **la largeur de son téléphone fait partie de la
+décision.** Le libellé actuel est déjà à la limite — il tient sur un 430 px,
+pas sur un 390. `ARCHITECTURE.md` §78.
+
 ---
 
 ## 2026-08-13

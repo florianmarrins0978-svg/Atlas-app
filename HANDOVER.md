@@ -428,6 +428,40 @@ Batterie entière au vert avant de pousser : types, lint, mémoire, 124/124
 suites base, 65/65 suites navigateur, 23 contrôles de maquette, et la connexion
 réelle derrière une origine étrangère.
 
+**⚠ LE NOM DU CHANTIER A ÉTÉ CORRIGÉ DEUX FOIS LE MÊME JOUR, PAR DEUX
+SESSIONS.** Il l'a demandé aux deux. La version retenue est celle de `main` —
+« Monsieur Martins » (`ARCHITECTURE.md` §77, `src/lib/civilite.ts`) — et non la
+mienne, qui rendait le nom nu. **Ne pas la « rétablir »** : il a levé la règle
+du « rien d'inventé » pour la civilité, en le sachant.
+
+**Ce que la collision a appris, et qui vaut pour toute migration à venir :** un
+`UPDATE` de données sans contexte d'entreprise ne voit AUCUNE ligne sous la RLS
+forcée. Il s'applique, rapporte un succès, et ne change rien — en silence. Ma
+migration faisait exactement cela. Traiter entreprise par entreprise.
+
+**LA LIGNE SOUS LE NOM EST TRANCHÉE ET CODÉE** — le D, avec la date d'envoi
+(`ARCHITECTURE.md` §77). Trois choses à ne pas défaire :
+
+- **la date d'envoi ne se devine pas.** Sans envoi enregistré, pas de seconde
+  ligne. Le repli tentant — `majAt`, la date affichée à gauche — n'est PAS la
+  date d'envoi : une photo ajoutée la déplace ;
+- **l'or sur un devis parti est SA décision**, contre la règle d'avant (l'or
+  pour ce qui attend un geste de lui). C'était écrit sur la planche qu'il a
+  choisie. Si la liste devient trop dorée, `APPELLE_UN_GESTE` se défait sur une
+  ligne ;
+- **le lieu ne répète jamais le nom.** Défaut né du retrait de « Chez », vu à
+  l'œil sur une capture : retirer un mot d'un libellé peut faire entrer deux
+  autres en collision.
+
+**Et une règle qui vaut au-delà de ce lot : un libellé se mesure SUR L'ÉCRAN.**
+Une maquette HTML rend les mots plus larges qu'Inter dans l'application — la
+première planche faisait passer sur deux lignes un libellé qui tient sur une
+chez lui, et aurait donc écarté les bons libellés pour une raison fausse.
+`scripts/engendrer-maquette-ligne-chantier.mts` joue chaque libellé dans
+l'application et le photographie à 430 px (son téléphone) **et** à 390 px. La
+largeur de son téléphone fait partie de la décision : le libellé actuel est
+déjà à la limite.
+
 **LE CALENDRIER D'ENVOI NE MARQUAIT QU'UN JOUR (12 août).** Il ne pouvait
 proposer qu'une date dès qu'il la prenait au calendrier, alors que son client
 doit pouvoir choisir entre deux (`ARCHITECTURE.md` §74).

@@ -124,9 +124,18 @@ async function main() {
 
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     const carte = page.locator(`text=${nom}`).first().locator("xpath=ancestor::a[1]");
+    // **Le libellé a changé le 13 août 2026, à sa demande** : « en attente de
+    // réponse » était vrai mais ne disait pas CE QUI attend — un devis parti,
+    // ou un client qu'on n'a pas rappelé (`ARCHITECTURE.md` §77).
     assert.ok(
-      (await carte.locator("text=En attente de réponse").count()) > 0,
-      "la liste ne dit pas que le chantier attend le client"
+      (await carte.locator("text=Devis envoyé").count()) > 0,
+      "la liste ne dit pas que le devis est parti"
+    );
+    // Et la date d'envoi, en clair, sous l'état : c'est ce qu'il a demandé de
+    // voir. Sans elle, il ne sait pas depuis combien de temps il attend.
+    assert.ok(
+      (await carte.locator("text=/Envoyé le /").count()) > 0,
+      "la liste ne dit pas QUAND le devis est parti"
     );
 
     // Planifier soi-même une date que le client s'apprête à choisir préparerait
