@@ -119,9 +119,64 @@
   .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
   .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
   .intro strong{color:var(--encre);font-weight:600}
+  /* La loupe ne concerne que le grand écran : l'annoncer sur un téléphone, où
+     elle n'agit pas, serait décrire une page que le lecteur n'a pas. */
+  .loupe{display:none}
+  @media (min-width:1000px){
+    .loupe{display:block;margin:18px auto 0;padding-top:14px;max-width:56ch;
+           border-top:1px solid var(--trait);font-size:13.5px;color:var(--gris)}
+  }
 
   .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
   .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:390px;max-width:100%}
+
+  /* ═══ LE GROS PLAN ═══════════════════════════════════════════════════
+     Demandé le 13 août 2026 : « fais-moi les planches en gros plan que je les
+     voie mieux, mais tout dans un .html comme d'habitude ».
+
+     C'EST UNE LOUPE, PAS UN REDESSIN. `zoom` agrandit l'écran ENTIER dans ses
+     proportions — l'écran continue de mesurer 390 px pour lui-même, et une
+     cible de 44 px reste une cible de 44 px. Élargir le téléphone à 560 px
+     aurait donné la même impression et un mensonge : les libellés auraient
+     tenu sur une ligne, les cibles auraient paru confortables, et rien de tout
+     cela n'aurait été vrai sur son téléphone. C'est exactement le piège de
+     `ARCHITECTURE.md` §78 — mesurer sur une planche au lieu de l'écran.
+
+     ELLE NE S'APPLIQUE QU'AU-DESSUS DE 1000 px, et c'est ce qui protège les
+     contrôles : ils tournent en iPhone 13 (390 px), où la loupe est éteinte, et
+     mesurent donc les vraies dimensions. Un contrôle le vérifie explicitement —
+     sans quoi une loupe étendue par mégarde rendrait toute la planche
+     ininterprétable sans que rien ne rougisse.
+
+     Une planche par rangée, et son texte à côté : la hauteur gagnée par la
+     loupe est reprise par la colonne de droite, au lieu de laisser un vide. */
+  @media (min-width:1000px){
+    .rangee{flex-direction:column;flex-wrap:nowrap;gap:80px;align-items:center}
+    /* LA TROISIÈME RANGÉE, VIDE, N'EST PAS DE L'ORNEMENT. Sans elle, les deux
+       rangées se répartissent la hauteur du téléphone et le texte se retrouve
+       flottant au milieu du vide, à mi-hauteur de l'écran — vu sur la capture,
+       jamais par un contrôle. Le `1fr` absorbe toute la hauteur restante et
+       plaque le libellé et la note en haut, en regard du titre de l'écran. */
+    .prop{display:grid;width:auto;max-width:none;column-gap:52px;
+          grid-template-columns:auto 320px;
+          grid-template-rows:auto auto 1fr;
+          grid-template-areas:"tel sous" "tel note" "tel .";
+          justify-items:start}
+    .prop .tel{grid-area:tel;zoom:1.35}
+    /* Le libellé s'aligne sur le SURTITRE de l'écran, pas sur le bord du cadre :
+       37 px (11 du cadre + 26 du retrait de l'en-tête) multipliés par la loupe,
+       puisqu'elle agrandit le téléphone et pas la colonne de texte. Collé en
+       haut sans ce décalage, il rasait le bord et se lisait comme un titre de
+       page. */
+    .prop .sous{grid-area:sous;text-align:left;align-self:start;padding-top:50px}
+    .prop .note{grid-area:note;text-align:left;max-width:none;align-self:start;
+                font-size:14px;line-height:1.7}
+  }
+  @media (min-width:1500px){
+    .prop{grid-template-columns:auto 360px}
+    .prop .tel{zoom:1.6}
+    .prop .sous{padding-top:59px}
+  }
   .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
   .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
         border-top:1px solid var(--trait);padding-top:10px}
@@ -255,6 +310,12 @@
       Le quatrième écran porte <strong>l'interrupteur</strong> : touchez-le, il
       allume et déplie. La dernière ligne, elle, n'en a pas — et dit pourquoi à
       l'endroit exact où vous l'auriez cherché.
+    </p>
+    <p class="loupe">
+      Sur grand écran, les téléphones sont <strong>agrandis à la loupe</strong> :
+      les proportions restent celles d'un iPhone, et une cible de 44 px reste une
+      cible de 44 px. Élargir le téléphone aurait fait tenir les libellés sur une
+      ligne — et menti sur ce que vous aurez sous le pouce.
     </p>
   </div>
 

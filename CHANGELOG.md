@@ -64,6 +64,15 @@ Display et Inter (faux depuis le 10 août — polices du système) et la terre c
 sur les documents (faux depuis le 10 août — l'or). On ne respecte pas une charte
 dont la documentation ment.
 
+**Les planches se lisent en gros plan** — *« que je les voie mieux, mais tout
+dans un .html comme d'habitude »*. C'est une **loupe** (`zoom`), pas un téléphone
+élargi : les proportions restent celles d'un iPhone, et une cible de 44 px reste
+une cible de 44 px. Élargir le cadre aurait fait tenir les libellés sur une ligne
+et menti sur ce qu'il aura sous le pouce. La loupe n'agit qu'au-dessus de
+1000 px, ce qui laisse les contrôles mesurer les vraies dimensions — et un
+contrôle vérifie précisément cela, sans quoi une cible de 30 px passerait pour
+44. Une planche par rangée, son texte à côté.
+
 **Les lots suivants**, dans l'ordre de ses priorités : identité de l'entreprise,
 équipe et rôles, tarifs, documents (conditions, logo, mentions), notifications,
 puis le reste.

@@ -6108,3 +6108,38 @@ documentation ment :** `docs/DESIGN_SYSTEM.md` annonçait encore Playfair Displa
 et Inter rapatriées par `next/font` (faux depuis le 10 août : polices du
 système), et la terre cuite `#B25A2E` sur les documents (faux depuis le 10 août :
 l'or). Le code fait foi, `CLAUDE.md` §1.
+
+
+### Le gros plan : une loupe, jamais un téléphone élargi
+
+**Sa demande, le 13 août 2026 :** *« fais-moi les planches en gros plan que je
+les voie mieux, mais tout dans un .html comme d'habitude ».*
+
+**La solution évidente était la mauvaise.** Élargir le téléphone à 560 px aurait
+donné exactement la même impression de confort — et un mensonge : les libellés
+auraient tenu sur une ligne, les cibles auraient paru généreuses, et rien de
+cela n'aurait été vrai sur son iPhone. C'est le piège de §78, sous un autre
+visage : mesurer sur une planche au lieu de mesurer sur l'écran.
+
+`zoom` agrandit l'écran **entier, dans ses proportions**. L'écran continue de
+mesurer 390 px pour lui-même : une cible de 44 px reste une cible de 44 px, un
+libellé qui passe à la ligne y passe encore.
+
+**La loupe ne s'applique qu'au-dessus de 1000 px, et c'est ce qui protège les
+soixante contrôles.** Ils tournent en iPhone 13, où elle est éteinte, et
+mesurent donc les vraies dimensions. Un contrôle le vérifie explicitement —
+c'est le plus important des deux : une loupe étendue par mégarde ferait passer
+une cible de 30 px pour 44 sans que rien ne rougisse. Un second contexte, en
+1600 px, vérifie qu'elle agit bel et bien et écrit la capture en gros plan.
+
+**Une planche par rangée, son texte à côté.** Quatre téléphones de front
+restent quatre miniatures, loupe ou pas. La colonne de droite reprend la hauteur
+que la loupe a gagnée, au lieu de laisser un vide.
+
+**Le défaut vu à l'œil, encore une fois :** sans une troisième rangée souple
+sous le texte, la grille répartissait la hauteur du téléphone entre ses deux
+rangées et le libellé flottait à mi-écran, seul au milieu du vide. Le `1fr` le
+plaque en haut ; le décalage qui l'aligne sur le **surtitre** de l'écran — et
+non sur le bord du cadre — se calcule à 37 px multipliés par la loupe, puisque
+celle-ci agrandit le téléphone et pas la colonne de texte. Deux contrôles neufs
+tiennent l'un et l'autre.

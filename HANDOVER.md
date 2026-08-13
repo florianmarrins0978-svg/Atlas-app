@@ -281,6 +281,16 @@ numérotation continue, conservation légale).
 L'ordre des lots est dans `TODO.md` §0 duovicies ; le pourquoi dans
 `ARCHITECTURE.md` §80.
 
+**Deux conventions posées le 13 août, qui valent pour toutes les planches à
+venir.** Les couleurs sont **recopiées de `src/lib/design-tokens.ts`** et le
+contrôle lit ce fichier pour les comparer (les neuf planches antérieures gardent
+l'ancien nuancier : elles passeront à la charte quand leur sujet sera rouvert).
+Et le gros plan se fait à la **loupe** (`zoom` au-dessus de 1000 px), jamais en
+élargissant le téléphone : sinon les libellés tiendraient sur une ligne et les
+cibles paraîtraient confortables, sans que ce soit vrai sur son iPhone. La loupe
+est éteinte en iPhone 13, ce qui laisse les contrôles mesurer juste — un contrôle
+le vérifie, et c'est lui qu'il ne faut pas retirer.
+
 **Piège payé sur cette planche :** éprouver qu'un contrôle sait échouer écrit
 ses captures dans `maquettes/vues/` comme une exécution normale. La planche a
 été relue sur une image produite par la version **cassée**. Relancer le contrôle

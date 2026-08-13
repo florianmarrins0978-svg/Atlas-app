@@ -303,6 +303,67 @@ try {
   verifie("aucun écran ne déborde sur le côté", coupe === 0, `${coupe}`);
 } catch (e) { echecs.push("mise en page · interrompu — " + String(e.message).split("\n")[0]); }
 
+// ── 8. La loupe : éteinte sur téléphone, allumée sur grand écran ─────────
+//
+// « Fais-moi les planches en gros plan que je les voie mieux » (13 août 2026).
+// La loupe agrandit l'écran ENTIER dans ses proportions ; élargir le téléphone
+// aurait fait tenir les libellés sur une ligne et menti sur ce qu'il aura.
+//
+// CE CONTRÔLE-CI EST LE PLUS IMPORTANT DES DEUX : si la loupe s'appliquait
+// aussi à 390 px, les cinquante-cinq mesures ci-dessus porteraient sur un écran
+// agrandi — une cible de 30 px passerait pour 44, et rien ne rougirait.
+try {
+  const t = await rect(`${PATRON}`);
+  verifie("sur téléphone, la loupe est éteinte — les mesures ci-dessus sont vraies",
+    t.w <= 390, `${t.w.toFixed(0)} px de large`);
+} catch (e) { echecs.push("loupe éteinte · interrompu — " + String(e.message).split("\n")[0]); }
+
+try {
+  const grand = await nav.newContext({ viewport: { width: 1600, height: 1200 }, colorScheme: "light" });
+  const pg = await grand.newPage();
+  await pg.goto("file://" + path.resolve(ESSAI));
+  await pg.waitForTimeout(300);
+
+  const large = await pg.$eval(PATRON, (e) => e.getBoundingClientRect().width);
+  verifie("sur grand écran, la loupe agrandit pour de bon", large > 520, `${large.toFixed(0)} px de large`);
+
+  // Une planche par rangée : c'est cela, le gros plan. Quatre côte à côte
+  // resteraient quatre miniatures, loupe ou pas.
+  const hauteurs = await pg.$$eval(".prop", (l) => l.map((e) => Math.round(e.getBoundingClientRect().y)));
+  const empilees = new Set(hauteurs).size === hauteurs.length;
+  verifie("une planche par rangée, et non quatre de front", empilees, hauteurs.join(" | "));
+
+  // Le texte passe à droite, pour reprendre la hauteur que la loupe a gagnée.
+  const cote = await pg.$eval(".prop", (e) => {
+    const t = e.querySelector(".tel").getBoundingClientRect();
+    const n = e.querySelector(".note").getBoundingClientRect();
+    return n.x - (t.x + t.width);
+  });
+  verifie("la note est posée à côté de l'écran, pas dessous", cote > -1, `${cote.toFixed(0)} px`);
+
+  // ET EN HAUT, en regard du titre. Sans une rangée souple sous elle, la grille
+  // répartit la hauteur du téléphone entre ses deux rangées et le texte flotte
+  // à mi-écran, seul au milieu du vide. Vu sur la capture, pas par un contrôle.
+  const enHaut = await pg.$eval(".prop", (e) => {
+    const t = e.querySelector(".tel").getBoundingClientRect();
+    const s = e.querySelector(".sous").getBoundingClientRect();
+    return (s.y - t.y) / t.height;
+  });
+  verifie("et en haut, en regard du titre de l'écran — pas flottante à mi-hauteur",
+    enHaut < 0.15, `à ${(enHaut * 100).toFixed(0)} % de la hauteur`);
+  verifie("et la page dit que c'est une loupe, pas un écran plus large",
+    await pg.$eval(".loupe", (e) => e.checkVisibility()));
+
+  const deborde = await pg.evaluate(
+    () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+  verifie("rien ne déborde en largeur, en gros plan", !deborde);
+
+  await pg.$eval(PATRON, (e) => e.scrollIntoView());
+  await pg.waitForTimeout(200);
+  await (await pg.$(".prop")).screenshot({ path: `${SORTIE}/reglages-plan-gros-plan.png` });
+  await grand.close();
+} catch (e) { echecs.push("gros plan · interrompu — " + String(e.message).split("\n")[0]); }
+
 await nav.close();
 console.log(`\n${ok.length} contrôles au vert`);
 if (echecs.length) { console.log(`\n${echecs.length} ROUGE(S) :`); for (const e of echecs) console.log("  ✗ " + e); process.exit(1); }
