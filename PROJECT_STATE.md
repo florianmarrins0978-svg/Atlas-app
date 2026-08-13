@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-12 · branche `claude/chantier-phototech-direct-ujt2wv`
-· dernière migration `drizzle/0033_identifiants_google_par_entreprise.sql`
+· dernière migration `drizzle/0035_periodicite_tva.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -178,6 +178,13 @@ l'application. Ce qui est **fait** :
   d'y poser une feuille maison. Quatre gestes deviennent deux. Ajouter, regarder
   et retirer se font dans la pellicule ; `/chantiers/[id]/photos` répond 404, et
   une suite le vérifie. `ARCHITECTURE.md` §60.
+- **La TVA au mois ou au trimestre, et son calendrier** (12 août) : Réglages
+  porte le choix, le mois coché d'avance — c'est le défaut légal (déclaration
+  CA3 mensuelle ; le trimestre est une option sous 4 000 € de TVA due). L'écran
+  de TVA et son calendrier suivent : douze pavés ou quatre. **Atlas ne dit
+  jamais lequel s'applique** — le seuil porte sur la TVA due, or il ne connaît
+  que la collectée. Migration `drizzle/0035_periodicite_tva.sql`.
+  `ARCHITECTURE.md` §71.
 - **« Y aller » : l'adresse du chantier jusqu'au GPS** (12 août) : au bout de
   chaque ligne des chantiers planifiés, un **chevron doré** ouvre une feuille —
   Plans, Google Maps, Waze, copier l'adresse, appeler le client — sans quitter

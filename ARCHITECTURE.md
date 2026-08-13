@@ -5145,3 +5145,80 @@ de la lui passer — c'est le raccord qui se casse, jamais la formule.
 Il ne prouve **pas** que le GPS s'ouvre : un navigateur d'essai n'a ni Plans, ni
 Waze. Ce qui est vérifiable ici, c'est que le lien est universel — donc qu'il
 retombe sur un site au lieu d'échouer en silence.
+
+---
+
+## 71. La TVA se découpe au mois — et le trimestre devient une option
+
+**Sa remarque du 12 août 2026 :** *« la TVA collectée, ça doit être mois par
+mois et pas trimestre par trimestre. Après tu peux essayer de te renseigner,
+mais pour moi la TVA on doit la donner tous les mois. […] Et si jamais c'est à
+nous de choisir, dans ce cas-là il faut que l'utilisateur ait le choix.
+Renseigne-toi d'abord et ensuite reviens me voir. »*
+
+Il avait raison, et le dépôt n'avait rien à opposer : **l'écran ne connaissait
+que le trimestre, et aucune ligne n'expliquait pourquoi.** C'était un défaut par
+défaut — le genre qui survit parce que personne ne l'a jamais écrit noir sur
+blanc.
+
+### La règle, vérifiée avant d'être codée
+
+La déclaration au régime réel normal (formulaire CA3) est **mensuelle par
+défaut**. Le trimestre est une **option**, ouverte seulement quand la TVA due de
+l'année précédente est inférieure à 4 000 € ; au-delà, la périodicité redevient
+mensuelle.
+
+Le régime réel simplifié — déclaration annuelle et deux acomptes — **disparaît
+au 1er janvier 2027** (article 38 de la loi de finances pour 2025, loi
+n° 2025-127 du 14 février 2025 ; modalités ajustées par la loi de finances pour
+2026). À partir de là, « mensuel ou trimestriel » est la seule question qui se
+pose : l'axe retenu ici couvre donc l'après-2027 sans rien à reprendre.
+
+### Ce que l'application refuse de calculer, et pourquoi c'est structurant
+
+**Le droit au trimestre.** Le seuil porte sur la TVA *due* — collectée moins
+déductible — et **Atlas ne connaît que la collectée**. Il ne voit ni le gazole,
+ni la tronçonneuse, ni l'assurance : aucune facture d'achat n'entre dans ce
+produit.
+
+Il serait tentant de « rendre service » en signalant un franchissement de seuil
+à partir de la seule TVA collectée. Ce serait faux la moitié du temps, et faux
+d'une façon coûteuse : le patron déclarerait au mauvais rythme sur la foi d'un
+écran. La colonne `entreprises.periodicite_tva` enregistre donc une
+**déclaration du patron**, faite sur la foi de son comptable, jamais une
+déduction (`CLAUDE.md` §4). L'écran de Réglages le dit en toutes lettres, et une
+suite vérifie qu'il ne se met pas à conseiller.
+
+### Ce qui a été généralisé, et ce qui reste
+
+`src/server/periode-tva.ts` remplace `trimestre.ts` : mêmes bornes en UTC, mais
+paramétrées par la périodicité. Deux détails qui ne se devinent pas :
+
+- **`lirePeriode` dépend de la périodicité.** « 12 » est un mois valide et un
+  trimestre absurde. Lire l'adresse sans connaître le réglage laisserait passer
+  un douzième trimestre le jour où le patron change de rythme.
+- **L'invariant qui compte n'est pas la borne, c'est la couverture.** Une
+  facture émise n'importe quel jour doit tomber dans exactement une période.
+  `test-periode-tva.ts` parcourt l'année entière et vérifie que chaque période
+  commence où la précédente s'arrête, et que décembre se referme au 31 — un trou
+  d'un jour ne se verrait sur aucune capture.
+
+### Le calendrier, et ce qu'il remplace
+
+Retenu sur maquette (`docs/maquettes/35`). Remonter au 1er trimestre 2025
+depuis le 3e trimestre 2026 demandait **sept appuis** sur « ← » — et sept
+chargements d'écran, chaque flèche étant un lien. Deux appuis suffisent.
+
+**Sa forme suit la périodicité et ne se règle pas** : douze pavés en mensuel,
+quatre en trimestriel. Un réglage de plus n'apporterait rien — personne ne
+cherche un mois dans une grille de trimestres. Le pavé plein dit ce qu'on
+REGARDE, le point doré ce qui est aujourd'hui : deux repères qui ne se
+confondent pas.
+
+### Trouvé en chemin, et corrigé
+
+**« Facturé ce trimestre », au pied de « Terminés », mentait.**
+`totalFacture(mois)` additionne TOUS les mois du fil, depuis toujours — jamais
+un trimestre. Le chiffre était juste, sa légende ne l'était pas, et rien ne
+pouvait le révéler sans aller lire la fonction. Il dit désormais ce qu'il
+compte.

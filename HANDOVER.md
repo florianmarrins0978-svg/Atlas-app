@@ -233,6 +233,31 @@ serif. C'est le premier écran qu'il voit. `TODO.md` §0 nonies.
 
 ## Ce qui vient d'être terminé
 
+### La TVA au mois ou au trimestre (12 août 2026)
+
+`src/server/periode-tva.ts` (règle pure), `drizzle/0035_periodicite_tva.sql`,
+Réglages → « Votre TVA », et le calendrier
+`src/app/termines/tva/CalendrierPeriodes.tsx`.
+
+**Trois choses à ne pas défaire :**
+
+1. **Le mois est le défaut LÉGAL, pas une préférence.** La déclaration CA3 est
+   mensuelle ; le trimestre est une option ouverte sous 4 000 € de TVA due.
+   Repasser le défaut au trimestre serait un retour au défaut d'avant.
+2. **Atlas ne calcule JAMAIS le droit au trimestre.** Le seuil porte sur la TVA
+   *due* — collectée moins déductible — et ce produit ne voit aucune facture
+   d'achat. Un écran qui conseillerait inventerait une donnée ; une suite
+   (`test-periodicite-tva-e2e.ts`) rougit s'il s'y met.
+3. **`lirePeriode` dépend de la périodicité** : « 12 » est un mois valide et un
+   trimestre absurde. Lire l'adresse sans le réglage laisserait passer un
+   douzième trimestre.
+
+`src/server/trimestre.ts` subsiste, employé par `test-factures.ts` seul. Il n'a
+plus d'appelant dans `src/`.
+
+---
+
+
 **Les pages du CLIENT ne portent plus la navigation du patron (12 août).** Sa
 facture affichait « Chantiers · Planning · Terminés · Réglages » au bas de
 l'écran de son client.

@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-12
 
+### La TVA se lit au mois, ou au trimestre — et c'est vous qui le dites
+
+**Sa remarque :** *« la TVA collectée, ça doit être mois par mois et pas
+trimestre par trimestre […] renseigne-toi d'abord et ensuite reviens me voir. »*
+
+Il avait raison. La déclaration CA3 est **mensuelle par défaut** ; le trimestre
+est une option, ouverte quand la TVA due de l'année précédente reste sous
+4 000 €. L'écran ne connaissait que le trimestre, posé sans qu'aucune ligne du
+dépôt n'explique pourquoi.
+
+**Réglages → Votre TVA** porte désormais le choix, le mois coché d'avance
+puisque c'est le défaut légal. L'écran de TVA et son calendrier suivent.
+
+**Et l'application ne dira jamais lequel s'applique** : le seuil porte sur la
+TVA *due* — collectée moins déductible — et Atlas ne connaît que la collectée.
+Prétendre conseiller ici serait inventer une donnée. L'écran renvoie au
+comptable, et une suite vérifie qu'il ne se met pas à donner des avis.
+
+**Le calendrier arrive avec** (`docs/maquettes/35`) : remonter au 1er trimestre
+2025 demandait sept appuis sur « ← » et sept chargements d'écran. Deux appuis
+suffisent.
+
+**Corrigé en chemin, trouvé en cherchant autre chose :** « Facturé ce
+trimestre », au pied de Terminés, additionnait TOUS les mois du fil. Le chiffre
+était juste, sa légende mentait.
+
+`ARCHITECTURE.md` §71.
+
 ### Le chevron doré du planning : l'adresse jusqu'au GPS en un doigt
 
 **Sa demande :** *« lorsque je vais sur planning et qu'il y a un chantier
