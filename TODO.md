@@ -27,6 +27,109 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 vicies. Le badge de Next recouvre son onglet « Chantiers »
+
+**Mesuré le 12 août 2026**, en cherchant pourquoi la CI virait au rouge six
+fois de suite sur `test-rien-de-recouvert-e2e.ts`.
+
+Le badge de développement de Next — celui qui affiche « 1 Issue », et par lequel
+le patron a trouvé l'erreur d'hydratation de Safari — se pose **en bas à
+gauche**, exactement sur l'onglet « CHANTIERS » (mesuré : l'onglet occupe
+x 14→105, y 632→654 ; le badge, 56 px dans le coin, le recouvre). Il
+n'apparaît que lorsqu'il a quelque chose à signaler — d'où une CI rouge par
+intermittence, et une suite verte ici où rien n'était signalé.
+
+**La suite l'écarte désormais nommément** : ce badge n'existe pas dans la
+version bâtie, et un contrôle qui échoue au hasard apprend à ignorer le rouge.
+Le témoin vérifie qu'un vrai recouvrement est toujours attrapé.
+
+**Mais chez lui, le problème est réel** : son banc sert le mode développement,
+donc le badge est sur son écran, sur sa navigation.
+
+Trois pistes, aucune tranchée — et aucune bonne telle quelle :
+
+- le **déplacer** (`devIndicators: { position }`) : les deux coins du bas sont
+  pris par la barre d'onglets, et sur l'accueil les deux coins du haut portent
+  déjà un bouton. Mesuré, pas supposé ;
+- l'**éteindre** (`devIndicators: false`) : on perdrait le « 1 Issue » — or
+  c'est par lui qu'il a signalé la panne de Safari. Mauvais échange ;
+- faire **servir une version bâtie** à son banc, où le badge n'existe pas. C'est
+  probablement la bonne réponse, et elle dépasse ce point.
+
+### 0 quindecies. ~~La ligne « Planifiés » porte un geste de trop~~ — **réglé le 12 août 2026**
+
+Vu en capture en posant le chevron : la ligne portait trois gestes et un nom sur
+390 px, et c'est le nom qui cédait — « Chez M. Bernard » s'affichait
+« Chez M. Be… ».
+
+**Il a tranché le jour même**, en regardant la capture : *« il faut que le créer
+la facture, tu le mettes dans le chevron. Il faut cliquer sur le chevron, la
+page s'ouvre avec le GPS et tout machin, et là tu mets créer la facture. »*
+« Créer la facture » est donc passé dans la feuille ; la ligne ne garde que le
+nom, la date, « Déplacer » et le chevron. Le nom passe d'environ 110 px à plus
+de 250. `ARCHITECTURE.md` §70.
+
+### 0 quaterdecies bis. Un chantier sans adresse n'a plus de chemin pour la saisir
+
+La feuille « Y aller » dit « à saisir sur la fiche du chantier », mais n'y mène
+plus : « Ouvrir la fiche du chantier » a été retiré de la maquette 32, le nom du
+chantier y menant déjà depuis la ligne. Sur un chantier sans adresse, la phrase
+suffit-elle, ou faut-il un bouton **« Saisir l'adresse »** à cet endroit précis ?
+
+**La question lui a été posée avec la maquette et attend sa réponse.** Rien ne
+sera ajouté sans elle.
+
+### 0 nonies. ~~L'écran de connexion est resté dans l'ancienne identité~~ **fait le 12 août 2026**
+
+**Vu en capture le 12 août 2026**, en vérifiant que les boutons arrondis
+n'avaient rien cassé. `src/app/login/page.tsx` n'a jamais été repris par la
+refonte du 10 août :
+
+- son bouton est en **terre cuite `#B5502F`**, couleur abandonnée le 3 août
+  quand l'application est passée à Arborea — écrite en dur, hors
+  `design-tokens.ts` ;
+- carte blanche, bordures grises, aucune serif de titre, aucun jeton de la
+  charte.
+
+**C'est le PREMIER écran qu'il voit**, et le seul qui ne ressemble pas à Atlas.
+Même remarque pour `src/app/documents-legaux/formulaire.tsx`, qui porte la même
+couleur en dur.
+
+**Fait le 12 août 2026** : maquettes 32, 33 et 34, puis `src/app/login/page.tsx`.
+Reste `src/app/documents-legaux/formulaire.tsx`, qui porte la même terre cuite en
+dur et n'a pas été repris — il échappe au parcours pour la même raison que la
+porte (`ARCHITECTURE.md` §71).
+
+**Il a choisi, et demandé une suite le 12 août 2026 au soir :** la proposition 4
+**sans son titre ni sa sous-ligne**, avec **le sceau et ATLAS du modèle 3**, plus
+**une animation de la marque d'une demi-seconde à l'entrée**. Six animations lui
+sont proposées dans `docs/maquettes/36-le-logo-qui-sanime.html` — **en attente de
+son numéro**. Rien n'est encore posé.
+
+**Il a retenu « le tour » le 12 août au soir**, et demandé d'autres gravures
+dans le rond d'or : huit motifs dans
+`docs/maquettes/37-le-motif-du-sceau.html` — **son numéro est attendu**.
+L'écran, le rond et l'animation n'y bougent plus ; seul le tracé change.
+
+**Ce qu'il faudra trancher avec lui au moment de coder** (écrit sur la maquette) :
+la demi-seconde est un **plancher**, pas la durée de l'attente. Le serveur répond
+quand il répond ; l'animation ne doit ni être coupée en son milieu, ni se figer
+si la réponse tarde. Les propositions 3, 4 et 6 bouclent d'elles-mêmes ; les 1, 2
+et 5 se dessinent d'un bout à l'autre et demandent une décision explicite.
+
+**Maquette livrée le 12 août 2026 — `docs/maquettes/35-l-ecran-de-connexion.html`**
+(« oui, fais-moi une maquette avant/après »). L'avant reproduit, puis quatre
+après : la carte gardée, sans carte, le sceau, la ligne d'imprimé. **En attente
+de son choix — `src/` n'a pas été touché.**
+
+**Et un défaut de plus, trouvé en dessinant :** les champs sont écrits en
+**15 px**, alors que `styleChampPlage` impose 16 px depuis le 10 août précisément
+parce qu'**en dessous, iOS agrandit la page dès qu'un champ prend le focus**. Il
+tape son adresse et l'écran lui saute au visage. Ce défaut-là ne dépend d'aucune
+proposition : il se corrige avec celle qu'il retiendra. Même remarque pour le
+refus de connexion, peint en `text-red-600` (rouge de Tailwind) au lieu du
+`colors.alert` de la charte.
+
 ### 0 octies. Les actions principales encore dessinées à la main
 
 **Trouvé le 12 août 2026, parce que le patron l'a vu avant nous.** La feuille
@@ -90,6 +193,36 @@ ne se battent plus pour le port ») :
   laissait un serveur ; la batterie navigateur, lancée sur un port occupé,
   s'arrête en une seconde avec le remède à taper.
 
+### ~~0 sexdecies. Des suites dépassent leur délai en batterie et font rejouer 25 minutes~~ — **CAUSE TROUVÉE le 2026-08-12**
+
+**Quatre faux rouges dans la journée, sur trois suites sans rapport** —
+« clôturé AVANT sa date » (deux fois), « Créer la facture », puis « un appui
+dicte, un second enregistre ». Chacune diagnostiquait la même chose et avait
+raison — le serveur de développement n'avait pas suivi — et chacune passait au
+vert jouée seule. Coût : une batterie complète rejouée à chaque fois.
+
+**Ce n'était pas la machine** : 13 Go libres, charge à 1,2. C'était le
+préchauffage de `run-e2e-tests.ts`, et il avait deux défauts qui n'en font
+qu'un :
+
+1. **il tournait sans session.** Un appel anonyme sur `/termines` est renvoyé
+   vers `/login` par le middleware : la route visée n'est jamais rendue, donc
+   jamais compilée. Il ne préchauffait que `/login` — et faisait croire au
+   contraire ;
+2. **sa liste était incomplète.** `/termines`, justement, n'y figurait pas.
+
+**Les deux venaient d'une deuxième implémentation.** `scripts/prechauffer.mjs`
+sait ouvrir une session et parcourir la liste complète, écrans de chantier
+compris — c'est ce que le banc d'essai fait depuis toujours. La batterie avait
+sa propre version naïve. Deux copies de la même idée finissent toujours par
+diverger, et c'est la plus faible qui servait ici.
+
+La batterie emprunte désormais le même préchauffage que le banc.
+
+**Ce qui reste à surveiller :** si un faux rouge de ce genre revient malgré le
+préchauffage, ne pas allonger les délais — cela cacherait un écran devenu lent
+au lieu de le dire. Mesurer d'abord quel écran, et pourquoi.
+
 ### 0 quaterdecies. Deux maquettes `/design` décrivent un écran supprimé
 
 **Né le 11 août 2026**, en supprimant `/chantiers/[id]/photos` (`ARCHITECTURE.md`
@@ -109,7 +242,108 @@ pas ce qui n'était pas demandé. À trancher : les supprimer, ou les marquer
 « maquette historique ».
 
 ### ~~0. « Impossible d'enregistrer la note »~~ — **CAUSE TROUVÉE ET REPRODUITE le 2026-08-12**
+### ~~0 septdecies. L'écran du devis parti~~ — **codé et éprouvé le 2026-08-12**
 
+*« Code le 5 »* — le signet d'or. `ExportClient.tsx`, `TransmettreAuClient.tsx`,
+`src/lib/numero-lisible.ts`, `scripts/test-devis-parti-signet-e2e.ts`. Les mesures
+viennent de `docs/maquettes/34-le-devis-sur-sa-base.html` : **les reprendre de là**
+si on y retouche, jamais de mémoire.
+
+**Cinq choses à ne pas défaire, chacune payée par un défaut réel :**
+
+1. **`atlas-ecran` sur la page, pas de hauteur écrite à la main.** Deux
+   tentatives ont débordé avant — un en-tête « mesuré » à 232 px, puis
+   `min-h-screen` + `pb-16` qui comptait deux fois la barre du bas
+   (`main.atlas-contenu` la réserve déjà). 100 px, puis 68.
+2. **L'avertissement de « Modifier mon devis ».** Rouvrir un devis parti crée une
+   version mais **n'annule pas l'envoi** : le client voit toujours celle qu'il a
+   reçue et peut l'accepter au prix d'avant. Refuser ne doit créer AUCUNE version.
+3. **Le voile de la feuille est `aria-hidden`** — sinon deux boutons s'appellent
+   « Annuler », et qui ne voit pas l'écran en entend deux.
+4. **La bascule de canal reste.** Elle manquait à mes cinq maquettes ; la livrer
+   ainsi aurait défait sa demande du 4 août.
+5. **`numeroLisible` refuse de grouper ce qu'elle ne reconnaît pas.** Un numéro
+   étranger découpé par paires aurait l'air juste sans l'être — pire que rien sur
+   une ligne dont le seul rôle est la vérification.
+
+**Ce qui reste ouvert, et n'a pas été tranché :** le rayon du bouton. Tout est au
+rayon d'aujourd'hui (4 px). La bande de comparaison — 4, 8, 12, pilule — est au
+bas de `docs/maquettes/33-le-devis-parti-allege.html`. Son choix vaudra pour
+**vingt-sept écrans** (`PrimaryButton`) : ne pas le poser sur ce seul écran.
+
+*Ce qui suit est l'énoncé d'origine, gardé parce qu'il porte la mesure.*
+
+### ~~0 septdecies bis. L'énoncé~~ — le CONTENU arrêté par lui le 12 août
+
+**Arrêté par lui le 12 août** — c'est acquis, ne pas le rediscuter :
+
+- ne garder que **le nom du devis et le total** ;
+- **retirer les lignes de prestations** ;
+- un lien **« Modifier mon devis »** sous le total, qui ramène au devis ;
+- « Télécharger le PDF », « Copier le lien », « Partager » **en encre foncée**,
+  visiblement cliquables.
+
+`docs/maquettes/34-le-devis-sur-sa-base.html` : sa base au mot près, plus quatre
+mises en page du même contenu (sans carte · dans le titre · actions empilées ·
+signet d'or). **Rien n'est codé** tant qu'il n'a pas donné un numéro.
+
+**Trois points ouverts, à ne pas trancher seul :**
+
+1. **Reprendre un devis déjà parti crée une nouvelle version** et rend l'ancien
+   lien caduc. Faut-il le prévenir au clic sur « Modifier mon devis » ? Une
+   phrase courte, une seule fois, est proposée — pas décidée.
+2. **« Partager autrement (WhatsApp… ) » ne tient pas** à trois sur une ligne. Il
+   devient « Partager », ou les trois s'empilent (idée 4). Son choix.
+3. **Le rayon du bouton reste sans réponse** (bande de la maquette 33 : 4, 8, 12,
+   pilule). Tout est dessiné à 4 px pour ne rien présumer.
+
+### ~~0 sexdecies. L'écran du devis parti : quatre maquettes~~ — **dépassée le 2026-08-12 par la 26**
+
+*Gardée parce qu'elle porte la mesure d'origine : onze blocs, 382 px de trop.*
+
+**Rien n'est codé, et rien ne doit l'être avant qu'il ait désigné une lettre**
+(`CLAUDE.md` §3 bis). Il a demandé la maquette explicitement : *« fabrique-moi la
+maquette et montre-la-moi avant de coder quoi que ce soit »*.
+
+`docs/maquettes/33-le-devis-parti-allege.html`. Mesuré : l'écran porte **onze
+blocs** et déborde de **382 px** sur sa dalle.
+
+| | Blocs | Ce qu'elle retranche | Ce qu'elle coûte |
+|---|---|---|---|
+| A | 6 | l'adresse illisible, la phrase en double, la carte Chantier/Client | il ne relit plus l'adresse à l'œil |
+| B | 4 | la carte d'état, montée dans le titre | un appui pour les autres canaux |
+| C | 5 | le devis replié derrière une ligne | un appui pour le détail |
+| D | 3 | tout sauf le montant et le geste | rien du devis sans un appui |
+
+**Trois choses que la maquette propose et qui ne sont PAS acquises :** « il y a
+2 jours » (la date d'envoi est en base, jamais affichée) ; le libellé qui passe
+d'« Ouvrir le SMS tout prêt » à « Relancer par SMS » une fois le devis parti ; et
+le numéro écrit espacé plutôt que collé.
+
+**Et le rayon du bouton, qui se choisit en même temps.** Il a dit *« le bouton
+est toujours carré »*. Vérifié : il est **déjà au rayon des cartes** (4 px,
+`radius.card`, posé le 10 août à sa demande). Ce n'est pas un oubli — c'est que
+sur un aplat vert foncé, 4 px ne se voient pas. La bande du bas de la maquette
+montre 4 / 8 / 12 / pilule. **Son choix vaudra pour vingt-sept écrans**
+(`PrimaryButton`) : ne pas le poser sur ce seul écran, deux formes de bouton
+dans la même application est précisément ce qui vient d'être démêlé.
+
+### ~~0 quindecies bis. « Le mail n'est pas parti »~~ — **ce n'était pas un défaut, 2026-08-12**
+
+**Ne pas rouvrir, et surtout ne rien « réparer ».** Signalé comme une panne —
+*« lorsque le mail est parti je n'ai pas de message qui prouve qu'il est bien
+parti, la page reste figée »* — puis démenti par lui-même dans la foulée :
+*« en fait le mail n'était pas parti […] il y avait une faute sur l'adresse
+mail »*.
+
+Sa messagerie s'est bien ouverte ; l'adresse du destinataire était fausse.
+Vérifié avant de conclure : la CSP ne régit pas la navigation `mailto:`
+(`next.config.ts`), et l'adresse construite pour son cas exact fait
+574 caractères — très en deçà de toute limite. `useRetourDeMessagerie` n'a donc
+pas renvoyé à l'accueil pour la seule bonne raison : **il n'est jamais parti de
+la page**.
+
+### 0. Si « Impossible d'enregistrer la note » revient : lire la phrase, ne pas la deviner
 **Ouvert le 11 août 2026, et volontairement laissé ouvert.** Le patron a signalé
 ce message ; il n'a **pas pu être reproduit ici** — la dictée passe avec un micro
 simulé, en développement comme sur la version bâtie derrière une origine
@@ -970,10 +1204,10 @@ une ligne de mémoire.
 
    *Les planches restent, elles racontent le chemin :*
 
-   - `docs/maquettes/30-le-bouton-de-la-facture.html` — deux dessins immobiles :
+   - `docs/maquettes/38-le-bouton-de-la-facture.html` — deux dessins immobiles :
      **A**, la capsule exacte des dix-sept autres écrans ; **B**, la même
      capsule cernée d'un filet ;
-   - `docs/maquettes/31-le-bouton-de-la-facture-a-lessai.html` — **cinq gestes
+   - `docs/maquettes/39-le-bouton-de-la-facture-a-lessai.html` — **cinq gestes
      qui se pressent pour de vrai**, demandés le 12 août : *« plusieurs versions
      cliquables et dynamiques […] une appli hyper luxe et moderne »*. A la
      capsule nue, B la lueur qui traverse la laque, C le cachet qui tourne et
@@ -1000,7 +1234,7 @@ une ligne de mémoire.
    client sur deux qu'on ne peut pas facturer. L'écran offre désormais les deux
    voies (`src/app/chantiers/[id]/facture/TransmettreLaFacture.tsx`), et **la coordonnée manquante se
    saisit sur place** — il n'existe aucun écran de fiche client où l'envoyer.
-   `ARCHITECTURE.md` §67.
+   `ARCHITECTURE.md` §73.
 
 ### 7. Finir la refonte — l'ordre, les pièges, les valeurs
 

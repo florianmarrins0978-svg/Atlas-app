@@ -9,7 +9,49 @@ sert.
 
 ---
 
+## Voir la machine du patron sans y avoir accès
+
+**Il n'y a aucun accès, et il ne faut pas en fabriquer un.** La question a été
+posée le 12 août 2026 (*« trouve un moyen pour que tu aies accès à mon
+espace »*) et tranchée : une boucle qui exécuterait chez lui des ordres lus dans
+le dépôt serait une porte dérobée sur une machine portant ses identifiants. Ne
+pas la rouvrir en croyant bien faire.
+
+Ce qui existe à la place : **son espace publie son état**, à chaque allumage, sur
+une fiche GitHub dont le titre est fixe (`TITRE_FICHE` dans
+`scripts/rapporter-espace.mjs`). Elle porte le commit récupéré, le commit
+réellement SERVI, l'état des services et la fin du journal de démarrage.
+
+**Si la fiche est introuvable, ne pas conclure qu'il n'a pas redémarré.** Le
+12 août 2026 elle est restée vide après deux redémarrages, parce que la
+publication passait par `gh` — absent de son conteneur, et impossible à y faire
+entrer : tout ce que `devcontainer.json` déclare est posé **à la naissance** de
+l'espace, et le sien est plus ancien. Redémarrer récupère le code, jamais les
+outils (`ARCHITECTURE.md` §69). La publication passe désormais par l'API avec le
+jeton que Codespaces pose dans chaque terminal, donc sans rien à installer — et
+`scripts/eprouver-publication-fiche.mjs`, joué en CI, vérifie qu'elle part pour
+de bon.
+
+**Devant un « ça ne marche pas », lire cette fiche AVANT de faire taper quoi que
+ce soit au patron.** C'est exactement ce qui a coûté quatre allers-retours dans
+la nuit du 11 au 12 août : des hypothèses formulées à distance, toutes fausses,
+pendant que sa machine savait tout.
+
+Cette phrase-là n'est plus à retenir : `.claude/settings.json` branche
+`scripts/rappel-panne.mjs` sur chaque message reçu, et le rappel réapparaît de
+lui-même dès qu'il signale une panne — dans cette session comme dans les trois
+ou quatre autres qu'il fait tourner en parallèle. Il ajoute du contexte, il ne
+bloque rien, et devant le moindre doute il se tait : un rappel qui parle à tort
+finit ignoré, et le garde-fou se perd sans bruit.
+
+---
+
 ## ⚠ LE PREMIER RÉFLEXE, DEMANDÉ PAR LE PATRON LE 12 AOÛT 2026
+
+**À faire juste après avoir lu la fiche ci-dessus** : la fiche dit dans quel
+état est sa machine, la question ci-dessous dit dans quel état est son onglet.
+Les deux se lisent avant la moindre hypothèse, et pour la même raison — regarder
+coûte une minute, supposer a coûté deux jours.
 
 > *« Retiens ce problème, et la prochaine fois qu'on a un souci, commence par
 > regarder si ce n'est pas ça. »*
@@ -174,11 +216,97 @@ de son champ, et le compte « dix-sept écrans » ne comptait que ce qu'il savai
 atteindre. Les conversions restantes sont listées dans `TODO.md` §0 octies, non
 faites d'office : sa règle est *« montre-moi avant de faire »*.
 
+## Tous les boutons sont arrondis (12 août)
+
+Seize boutons dessinés à la main portaient encore un rayon de 4 px. **Seul le
+rayon a changé** — deux d'entre eux sont des `type="submit"` (connexion,
+documents légaux) et `PrimaryButton` impose `type="button"` : les y faire passer
+casserait leur formulaire, en silence.
+
+`scripts/test-boutons-arrondis.ts` garde la forme et nomme le coupable. Il porte
+un témoin : un motif devenu aveugle passerait au vert sur une application
+entièrement carrée.
+
+**Et une trouvaille, non traitée :** l'écran de connexion est le seul resté dans
+l'ancienne identité — terre cuite `#B5502F` écrite en dur, carte blanche, aucune
+serif. C'est le premier écran qu'il voit. `TODO.md` §0 nonies.
+
+## La porte est refaite (12 août) — et deux pièges à connaître
+
+`src/app/login/page.tsx` porte ses trois choix : ligne d'imprimé, sceau à la
+**rose des vents**, et **le tour** pendant la vérification. `ARCHITECTURE.md` §71.
+
+**Piège A — le serveur de développement n'hydrate pas cet écran, ICI.** Sa
+liaison de rechargement à chaud est refusée par le mandataire réseau, le
+formulaire part en HTML pur, la page se recharge et **tout champ redevient vide
+quel que soit le code**. Quatre correctifs justes ont été déclarés morts pour
+cette raison. Avant d'accuser le code : mesurer sur la version BÂTIE
+(`npm run banc`), pas sur `next dev`. `test-porte-e2e.ts` compte désormais les
+navigations complètes et annonce « non concluant » plutôt que rouge.
+
+**Piège B — React remet le formulaire à zéro APRÈS le rendu qui suit l'action.**
+Ni un champ contrôlé, ni un effet, ni `defaultValue` ne font survivre une valeur
+à cette remise. Ce qui tient : une `ref` qui met la valeur par défaut à jour
+**et** une `key` qui remonte le champ à chaque envoi. Ne pas « simplifier » l'un
+des deux.
+
+## L'écran de connexion : maquette posée, choix EN ATTENTE (12 août)
+
+`docs/maquettes/35-l-ecran-de-connexion.html` — l'avant reproduit, puis quatre
+après (la carte gardée, sans carte, le sceau, la ligne d'imprimé). **Ne rien
+poser dans `src/app/login/` avant qu'il ait désigné laquelle**, sa règle du
+11 août.
+
+**FAIT le 12 août au soir** — ce qui suit est conservé pour la trace du chemin.
+
+**Il a déjà tranché la mise en page, le 12 août au soir :** la **4** (les champs
+en ligne d'imprimé), **sans le titre « Connexion » ni la sous-ligne**, avec **le
+sceau et ATLAS de la 3** au-dessus. Ce qui reste ouvert est **l'animation de la
+marque à l'entrée** — six propositions dans
+`docs/maquettes/36-le-logo-qui-sanime.html`, son numéro attendu.
+
+**Puis il a retenu « le tour »** (maquette 36, proposition 3) et demandé
+d'autres gravures : `docs/maquettes/37-le-motif-du-sceau.html`, huit motifs,
+**son numéro attendu**. Le rond d'or, l'écran et l'animation n'y bougent plus.
+
+**La leçon de la 34, qui vaut pour toute icône de ce dépôt :** un motif se juge
+**à sa taille réelle**, jamais agrandi. La bande en tête de cette maquette est
+là pour ça, et elle a tué trois propositions — à 29 px avec un trait d'1,5, une
+tige et trois ovales se rejoignent en pâté quel que soit l'écartement. Une seule
+grande forme tient toujours ; trois petites, jamais.
+
+**Trois choses à ne pas défaire dans cette maquette-là :**
+
+1. **`pointer-events:none` sur `.conn` une fois entré.** Les deux écrans
+   occupent la même case de grille ; un écran à `opacity:0` continue
+   d'intercepter le doigt, et « Recommencer » ne répondait pas. Invisible sur
+   toute capture.
+2. **La demi-seconde est un plancher, pas une attente.** Voir `TODO.md`
+   §0 nonies : au moment de coder, décider ce que fait l'animation quand le
+   serveur tarde. Les six bouclent dans la maquette, exprès.
+3. **`scripts/verifier-maquette-logo.mjs` doit rester joué** après toute
+   retouche : il éprouve les douze écrans (fichier seul et page unique)
+   JavaScript coupé, et il sait échouer.
+
+**Ce qui ne dépend PAS de son choix, et qui part avec n'importe laquelle :**
+
+1. **Les champs passent à 16 px.** Ils sont en 15, et en dessous de 16 **iOS
+   agrandit la page dès qu'un champ prend le focus** — le jeton
+   `styleChampPlage` existe depuis le 10 août pour cette raison exacte, et cet
+   écran ne s'en sert pas. C'est un défaut de son téléphone, pas une préférence.
+2. **Le refus passe de `text-red-600` à `colors.alert`.**
+3. **La place du message reste réservée** (`min-height`), sinon le bouton
+   descend d'une ligne au moment où il appuie dessus.
+
+**Pourquoi cet écran échappe à tout :** c'est le seul vu **avant** d'être
+connecté, donc le seul qu'aucun parcours de l'application ne traverse. Le même
+raisonnement vaut pour `src/app/documents-legaux/formulaire.tsx`.
+
 ## Ce qui vient d'être terminé
 
 **LE CALENDRIER D'ENVOI NE MARQUAIT QU'UN JOUR (12 août).** Il ne pouvait
 proposer qu'une date dès qu'il la prenait au calendrier, alors que son client
-doit pouvoir choisir entre deux (`ARCHITECTURE.md` §68).
+doit pouvoir choisir entre deux (`ARCHITECTURE.md` §74).
 
 **Deux leçons qui resserviront, et qui ne sont pas propres à cet écran :**
 
@@ -211,18 +339,18 @@ emprunte.** Chacune fabrique désormais les siennes.
 
 
 **LA FACTURE PART PAR E-MAIL, ET SE TÉLÉCHARGE (12 août).** Deux des trois
-manques qu'il avait signalés le 10 août (`TODO.md` §8, `ARCHITECTURE.md` §67).
+manques qu'il avait signalés le 10 août (`TODO.md` §8, `ARCHITECTURE.md` §73).
 
 **Cinq choses à savoir avant d'y toucher :**
 
 1. **Les TROIS manques sont réglés.** Le bouton a pris la capsule le 12 août —
-   *« code la A »*, après deux planches (`docs/maquettes/30-…` puis `31-…`, cinq
+   *« code la A »*, après deux planches (`docs/maquettes/38-…` puis `31-…`, cinq
    gestes qui se pressent). Il passe par `PrimaryButton`, **jamais par un
    dessin recopié sur place** : c'est le défaut qu'on répare, et le repeindre à
    la main le ferait revenir au prochain changement de charte. Deux suites
    mesurent son rayon calculé et rougissent si cela arrive.
 
-   **Les quatre gestes écartés restent dans la maquette 31** — la lueur, le
+   **Les quatre gestes écartés restent dans la maquette 39** — la lueur, le
    cachet, l'encre, le trait. S'il rouvre le sujet, repartir de là plutôt que
    de redessiner. Et se souvenir que **le cachet était la seule proposition qui
    ne reposait pas sur un goût** : c'est le geste de « Nouveau chantier », donc
@@ -264,6 +392,104 @@ manques qu'il avait signalés le 10 août (`TODO.md` §8, `ARCHITECTURE.md` §67
    conversation lisant `TODO.md` ne pouvait le voir. Le patron a dû le
    redemander. `CLAUDE.md` §6 vaut aussi pour la mémoire : **une ligne poussée
    sur une branche n'existe pour personne.**
+
+**La carte de réponse mène là où est le geste (12 août).** Le patron : *« si
+c'est accepté, ouvrir le devis validé, pas le devis en construction ; si le
+client demande une modification, ouvrir le devis pour pouvoir le modifier. »*
+
+**Trois choses à savoir :**
+
+1. **La règle vit dans `src/lib/suite-de-la-reponse.ts`**, pas dans le
+   composant : accepté → `devis-complet` (le document figé, tel que le client
+   l'a reçu) ; correction, refus, lien périmé → l'écran d'envoi, qui porte la
+   reprise. **Ne pas mener un devis à corriger sur `devis-complet`** : il est
+   immuable une fois parti, et le patron se retrouverait devant un document qui
+   refuse sa frappe.
+2. **Ne jamais reprendre à sa place.** La reprise ouvre une NOUVELLE version du
+   devis : c'est sa décision. On mène à l'écran qui la propose, on ne la déclenche
+   pas.
+3. **Une acceptation sur une date PROPOSÉE ne fait aucune carte**, et c'est
+   voulu (`notificationsPatron`). Seuls un refus, une correction, une
+   contre-proposition de date ou un message du client en font une. Un contrôle
+   qui l'ignore cherche une carte qui n'existera jamais — vécu le jour même.
+
+**Les pages du CLIENT ne portent plus la navigation du patron (12 août).** Sa
+facture affichait « Chantiers · Planning · Terminés · Réglages » au bas de
+l'écran de son client.
+
+**Trois choses à savoir :**
+
+1. **Il n'y a jamais eu de fuite** — un appui menait à la page de connexion, et
+   le contrôle qui le prouve était vert avant même le correctif. Le dire
+   d'emblée si le sujet revient : c'était une gêne d'affichage, pas un défaut de
+   confidentialité.
+2. **La liste des chemins publics vit dans `src/lib/chemins-publics.ts`, et
+   nulle part ailleurs.** Elle était tenue en double — middleware d'un côté,
+   mise en page de l'autre — et les deux ont divergé. **Ne pas en recréer une
+   seconde** : un écran public ajouté plus tard n'entrerait que dans l'une.
+3. **`test-pages-publiques-sans-navigation-e2e.ts` lit cette liste à sa source**
+   et rougit si un chemin déclaré n'y est pas éprouvé. Il visite de vrais
+   jetons : un jeton inventé rendrait « lien inconnu », et le contrôle serait
+   vert sur du vide.
+**L'ÉCRAN DU DEVIS PARTI EST CODÉ — « le signet d'or » (12 août).** Il a répondu
+« code le 5 ». Un filet d'or pour l'état, le nom du devis et le montant seuls au
+centre, « Modifier mon devis » sous le total, et en bas le geste puis les trois
+actions en encre. Les lignes de prestations restent AVANT l'envoi et disparaissent
+après : ce sont deux écrans, pas un avec des variantes.
+
+**Cinq choses à ne pas défaire** sont listées dans `TODO.md` 0 septdecies — dont
+`atlas-ecran` (deux tentatives de hauteur écrite à la main ont débordé de 100 puis
+68 px) et l'avertissement de « Modifier mon devis », qui protège un engagement
+réel : rouvrir un devis parti n'annule pas l'envoi, le client peut encore accepter
+l'ancien prix.
+
+**Ce qui reste ouvert :** le rayon du bouton (4, 8, 12 ou pilule — bande au bas de
+la maquette 33). Son choix vaudra pour vingt-sept écrans. Il a demandé la maquette en toutes lettres : *« fabrique-
+moi la maquette et montre-la-moi avant de coder quoi que ce soit »*.
+
+**Et NE PAS chercher une panne d'envoi de devis.** Elle a été signalée puis
+démentie par lui le même jour : sa messagerie s'ouvrait bien, l'adresse du
+client était fausse. `TODO.md` 0 quindecies bis dit ce qui a été vérifié — CSP,
+longueur de l'adresse — pour qu'on ne le refasse pas.
+
+---
+
+### « Y aller » — le chevron doré du planning (12 août 2026)
+
+Au bout de chaque chantier planifié, un chevron doré ouvre une feuille : Plans,
+Google Maps, Waze, copier l'adresse, appeler le client. Sans quitter l'écran.
+
+- `src/lib/itineraire.ts` — la règle pure (liens universels, jamais `waze://`).
+- `src/components/atlas/FeuilleYAller.tsx` — la feuille, sur `BottomSheet`.
+- `src/app/planning/PlanningClient.tsx` — le chevron, et `libelleQuand()` écrit
+  une seule fois pour la ligne ET la feuille.
+- `src/lib/nom-chantier.ts` — `intituleDuChantier` : ne recolle le client que si
+  le nom du chantier ne le porte pas déjà, sans quoi la feuille affiche
+  « M. Bernard — Chez M. Bernard ».
+- `listerChantiersPourPlanning` remonte `adresseChantier` et `clientTelephone`.
+- Contrôles : `scripts/test-itineraire.ts` (10), `scripts/test-y-aller-e2e.ts`
+  (9), quatre de plus dans `scripts/test-nom-chantier.ts`, deux cas de plus dans `scripts/test-planning-repo.ts`. Les trois ont été
+  confrontés au défaut qu'ils prétendent voir avant d'être retenus.
+
+**Deux choses à savoir avant d'y toucher :**
+
+1. **La case « Toujours celle-là » de la maquette n'est PAS implémentée**, et
+   c'est délibéré : mémoriser un choix de GPS sans nulle part où le défaire
+   enferme le patron dans une application touchée par erreur. Elle attend son
+   interrupteur dans Réglages. Ne pas l'ajouter en croyant combler un oubli.
+2. **« Créer la facture » est dans la FEUILLE, plus sur la ligne** — sa
+   décision du 12 août, prise en regardant la capture. Le chemin du planning
+   vers la facture, ouvert le 8 août parce que l'écran était un cul-de-sac,
+   coûte donc un appui de plus. Trois suites le parcourent en entier, et l'une
+   vérifie qu'il a bien quitté la ligne : **le remettre là romprait deux
+   contrôles**, pas un.
+
+**Une question lui est posée et attend sa réponse :** un chantier sans adresse
+n'a plus de chemin pour aller la saisir, la feuille se contentant de dire « à
+saisir sur la fiche du chantier ». Faut-il un bouton « Saisir l'adresse » à cet
+endroit ? Rien ne sera ajouté sans lui.
+
+---
 
 
 **⚠ SI LE PATRON DIT « ce n'est toujours pas là » : REGARDER LA BRANCHE

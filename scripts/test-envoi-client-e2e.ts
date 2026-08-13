@@ -137,7 +137,7 @@ async function main() {
 
     // **On compte des JOURS, pas des boutons pressés.** Depuis le 12 août 2026,
     // le calendrier marque toute la sélection et non plus la dernière date
-    // touchée (`ARCHITECTURE.md` §68) : un même jour est donc légitimement
+    // touchée (`ARCHITECTURE.md` §74) : un même jour est donc légitimement
     // pressé à deux endroits — sa ligne dans la liste, et sa case au
     // calendrier. Ce contrôle annonçait « 4 dates retenues au lieu de 2 » sur
     // une sélection parfaitement juste, c'est-à-dire qu'il accusait à tort.
@@ -212,9 +212,23 @@ async function main() {
     }
     await page.screenshot({ path: "/tmp/atlas-devis-pret.png", fullPage: true });
 
-    const lien = await page.locator("text=/\\/devis\\/[A-Za-z0-9_-]+/").first().innerText();
-    const chemin = lien.slice(lien.indexOf("/devis/"));
-    assert.ok(chemin.startsWith("/devis/"), `lien inattendu : ${lien}`);
+    // **Le chemin se lit dans le GESTE, plus dans l'adresse affichée.**
+    //
+    // Il se lisait dans l'adresse complète, écrite en toutes lettres sous le
+    // total. Le patron l'a fait retirer le 12 août — trois lignes de caractères
+    // illisibles qu'il ne relisait jamais, et que « Copier le lien » met de
+    // toute façon dans le presse-papier.
+    //
+    // On le prend maintenant là où il compte vraiment : dans le message que le
+    // patron va envoyer. C'est un meilleur contrôle que l'ancien — il éprouve
+    // le lien que le CLIENT recevra, et non celui qui était affiché à côté.
+    const adresse = decodeURIComponent(
+      (await page.locator("a[data-transmission]").getAttribute("href")) ?? ""
+    );
+    const debut = adresse.indexOf("/devis/");
+    assert.ok(debut >= 0, `le message à envoyer ne porte aucun lien de devis : « ${adresse.slice(0, 90)} »`);
+    const chemin = adresse.slice(debut).split(/\s/)[0];
+    assert.ok(chemin.startsWith("/devis/"), `lien inattendu : ${chemin}`);
 
     // Ouvert dans un contexte vierge : c'est bien la situation du client, qui
     // n'a ni session ni cookie de l'application.

@@ -34,6 +34,7 @@ relues à chaque session) :
 10. [Qui voit quoi : moi, mes clients, leurs salariés ?](#10-qui-voit-quoi--moi-mes-clients-leurs-salariés-)
 11. [Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?](#11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-)
 12. [L'agenda Google : mes artisans auront-ils des identifiants à saisir ?](#12-lagenda-google--mes-artisans-auront-ils-des-identifiants-à-saisir-)
+13. [Pourquoi tous les boutons ont-ils la même forme ?](#13-pourquoi-tous-les-boutons-ont-ils-la-même-forme-)
 
 ---
 
@@ -706,3 +707,85 @@ pages de Google. À vérifier avant d'annoncer une date de lancement.
 
 **Lancez la demande de vérification tôt**, pas la semaine où vous voulez vendre.
 C'est le genre de délai qui ne se rattrape pas.
+
+---
+
+## 13. Pourquoi tous les boutons ont-ils la même forme ?
+
+*Posée le 11 août 2026 :* « comment ça ce bouton est sur vingt-sept écrans ? tu
+peux m'expliquer » — puis, le lendemain, en voyant sur la feuille d'envoi de son
+devis un bouton carré à côté d'une capsule : « remplace tous les boutons
+rectangulaires par les boutons arrondis ».
+
+### La réponse courte
+
+**Parce qu'une forme est une phrase.** Dans Atlas, la capsule pleine, en vert
+pin, veut dire exactement une chose : *appuie ici, c'est l'action de cet écran*.
+Si deux écrans la disent avec deux dessins différents, il faut la réapprendre à
+chaque fois — et surtout, on doute : *est-ce que celui-là fait vraiment la même
+chose ?*
+
+C'est aussi pour cela que **les champs et les cartes gardent leurs coins presque
+droits** (4 px). Le rayon n'est pas une décoration, c'est un panneau : arrondi
+plein = on touche, presque droit = on lit. Tout arrondir aurait effacé la
+distinction.
+
+### Une correction, parce que je vous ai donné un faux chiffre
+
+**« Vingt-sept écrans » était faux, et c'est moi qui l'ai écrit.** J'avais compté
+les fichiers, pas les écrans — les huit maquettes de travail (`/design/…`), qui
+ne sont pas votre application, étaient dans le tas.
+
+Le vrai décompte, au 12 août 2026 :
+
+| | Combien |
+|---|---|
+| Écrans du produit qui portent le bouton partagé | **8** (11 boutons) |
+| Écrans d'erreur, qui le prennent par une pièce commune | **9** (1 bouton) |
+| Maquettes de travail, hors application | 8 |
+| **Total réel dans votre application** | **17 écrans** |
+
+Le code ne porte plus le chiffre, il porte **la commande pour le recompter** —
+un nombre écrit à la main dans un commentaire est faux le mois suivant, et
+personne ne le vérifie.
+
+### Pourquoi la capsule, et pas autre chose
+
+Vous avez choisi la cinquième de huit propositions dessinées le 11 août
+(maquette 28). Le bouton d'avant pesait par **trois** choses à la fois, et vous
+n'en avez nommé qu'une — « trop gros, carré, pas esthétique » :
+
+| Ce qui pesait | Avant | La capsule |
+|---|---|---|
+| La hauteur | 58 px, près d'un dixième de votre écran | 43 px |
+| La largeur | il touchait les deux marges, donc rien ne le contenait | juste la largeur du mot |
+| La forme | presque droite, 5 px de rayon | pleinement arrondie |
+
+Elle est **plus petite que ce qu'elle remplace**, alors qu'elle a l'air plus
+présente : c'est la largeur libre qui fait ça, pas la taille.
+
+**Une chose à savoir sur la comparaison que je vous avais montrée d'abord :
+elle mentait.** J'avais découpé chaque bouton au ras, et deux boutons de
+largeurs différentes affichés dans deux colonnes de même largeur donnent
+l'impression inverse de la vérité — la capsule paraissait plus grosse. La
+planche a été refaite en photographiant l'écran entier.
+
+### Ce qui empêche que ça reparte dans tous les sens
+
+Le 12 août, trois écrans dessinaient encore leur bouton à la main : ils avaient
+été écrits avant la capsule et ne l'avaient jamais su. **C'est vous qui l'avez
+vu, pas nous** — d'où un contrôle automatique
+(`scripts/test-boutons-arrondis.ts`) qui refuse désormais tout bouton
+rectangulaire ajouté dans l'application. Il tourne à chaque livraison.
+
+Il ne regarde que **la forme**, volontairement : deux boutons (la connexion, les
+documents légaux) doivent rester des boutons de formulaire, et les forcer à
+passer par la pièce commune casserait leur envoi. La forme, elle, est la même
+pour tous.
+
+### Ce que ça vous coûte quand vous changez d'avis
+
+**Un seul fichier à toucher**, `src/components/atlas/PrimaryButton.tsx` : les 17
+écrans suivent. C'est tout l'intérêt d'avoir une pièce commune plutôt que
+dix-sept dessins — le jour où la capsule ne vous plaît plus, ce n'est pas
+dix-sept corrections, c'en est une.

@@ -59,13 +59,25 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
   const origine = hote ? `${protocole}://${hote}` : "";
 
   return (
-    <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
-      <div className="pb-16">
-        <EnTeteEcran
-          retour={{ href: `/chantiers/${id}`, libelle: "Retour à la fiche du chantier" }}
-          surtitre={chantier.nom}
-          titre="Devis"
-        />
+    // **`atlas-ecran`, la convention de l'écran d'accueil — pas une soustraction
+    // écrite ici.**
+    //
+    // L'écran d'un devis parti pose son geste en bas, sous le pouce. Deux
+    // tentatives ont échoué avant celle-ci, et la suite les a attrapées toutes
+    // les deux : `min-height: calc(100vh - 232px)` (l'en-tête « mesuré » — faux
+    // dès qu'un titre gagne un mot), puis `min-h-screen` + `pb-16` — qui
+    // comptait DEUX FOIS la barre du bas, `main.atlas-contenu` la réservant
+    // déjà (`globals.css`). L'écran débordait alors de 68 px.
+    //
+    // `atlas-ecran` fait exactement ce qu'il faut et le fait déjà pour l'écran
+    // des chantiers : hauteur de la fenêtre moins la barre et la marge haute,
+    // colonne, rien qui dépasse. Une seule définition à tenir à jour.
+    <div className="atlas-ecran" style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body }}>
+      <EnTeteEcran
+        retour={{ href: `/chantiers/${id}`, libelle: "Retour à la fiche du chantier" }}
+        surtitre={chantier.nom}
+        titre="Devis"
+      />
 
         <ExportClient
           chantierId={id}
@@ -94,9 +106,8 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
           etatEnvoi={etat}
           messageClient={envoi?.precisionClient ?? null}
           lienEnvoi={envoi && !envoi.reponse ? `/devis/${envoi.jeton}` : null}
-          origine={origine}
-        />
-      </div>
+        origine={origine}
+      />
     </div>
   );
 }

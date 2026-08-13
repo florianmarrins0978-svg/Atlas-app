@@ -1,7 +1,8 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-12 · branche
-`claude/facture-screen-missing-features-a9mnnc`
+**Dernière mise à jour :** 2026-08-12 · branches
+`claude/facture-screen-missing-features-a9mnnc` et
+`claude/chantier-phototech-direct-ujt2wv`, fusionnées le même jour
 · dernière migration `drizzle/0033_identifiants_google_par_entreprise.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -181,6 +182,15 @@ l'application. Ce qui est **fait** :
   d'y poser une feuille maison. Quatre gestes deviennent deux. Ajouter, regarder
   et retirer se font dans la pellicule ; `/chantiers/[id]/photos` répond 404, et
   une suite le vérifie. `ARCHITECTURE.md` §60.
+- **« Y aller » : l'adresse du chantier jusqu'au GPS** (12 août) : au bout de
+  chaque ligne des chantiers planifiés, un **chevron doré** ouvre une feuille —
+  Plans, Google Maps, Waze, copier l'adresse, appeler le client — sans quitter
+  le planning. Liens universels et jamais `waze://`, qui échoue en silence
+  quand l'application manque. Sans adresse, rien ne s'invente : les
+  destinations disparaissent et la feuille dit où la saisir. Retenu après
+  quatre maquettes (`docs/maquettes/29` à `32`). **Et « Créer la facture » a
+  quitté la ligne pour la feuille**, à sa demande du même jour : la ligne ne
+  garde que le nom, la date, « Déplacer » et le chevron. `ARCHITECTURE.md` §70.
 - **Le planning au mois, et les équipes nommées** (10 août, au soir) : sept
   colonnes sans bordure, cinq marques d'occupation, et la journée qui s'ouvre
   sous le calendrier. Réglages laisse nommer les équipes — mais **seulement à
@@ -223,6 +233,22 @@ l'application. Ce qui est **fait** :
   question « qui répondrait au doigt ? » posée à chaque lien, bouton et champ.
   C'est la famille des trois seuls défauts que ce dépôt n'a jamais su attraper
   autrement qu'à l'œil. `ARCHITECTURE.md` §58.
+- **Une seule forme d'action, et un contrôle qui la garde** (12 août) : la
+  capsule est posée sur les dix-sept écrans du produit, et
+  `scripts/test-boutons-arrondis.ts` refuse tout bouton rectangulaire ajouté
+  ensuite — c'est le patron qui avait vu, sur la feuille d'envoi, un carré à
+  côté d'une capsule. Les champs et les cartes gardent leurs 4 px : le rayon
+  distingue ce qu'on touche de ce qu'on lit. `ARCHITECTURE.md` §67.
+- **Le devis qui ne partait pas** (12 août) : le banc d'essai sert une version
+  **bâtie**, donc `NODE_ENV=production` sans qu'aucun déploiement existe — et la
+  seconde barrière du stockage, plus stricte que la première, refusait tout
+  envoi. Une règle écrite deux fois qui avait divergé. `ARCHITECTURE.md` §66.
+- **L'écran de connexion, dessiné mais PAS posé** (12 août) : le seul écran
+  resté dans l'identité d'avant le 3 août, parce qu'il est le seul vu **avant**
+  d'être connecté. `docs/maquettes/35-l-ecran-de-connexion.html` — l'avant, puis
+  quatre après. **Son choix est attendu ; `src/app/login/` n'a pas bougé.**
+  Trois corrections partiront quoi qu'il choisisse, dont les champs à 16 px, en
+  dessous desquels iOS lui agrandit la page. `TODO.md` §0 nonies.
 
 Ce qui **reste**, avec l'ordre, les valeurs, les sept pièges et les deux
 réserves : **`TODO.md` §7**. Le dessin fait foi dans

@@ -69,7 +69,7 @@ export default function FormulaireAcceptation({ documents }: { documents: Docume
       <button
         type="submit"
         disabled={enCours}
-        className="rounded-[4px] bg-[#B5502F] py-3 text-[15px] font-medium text-white disabled:opacity-50"
+        className="rounded-full bg-[#B5502F] py-3 text-[15px] font-medium text-white disabled:opacity-50"
       >
         {enCours ? "Enregistrement…" : "Continuer"}
       </button>

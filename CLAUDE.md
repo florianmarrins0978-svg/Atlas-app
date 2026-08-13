@@ -24,6 +24,54 @@ Avant d'écrire une ligne de code dans une nouvelle conversation, dans cet ordre
 Ne jamais demander au patron de rappeler ce qui a été fait. C'est le rôle de ces
 fichiers, et leur défaillance est une défaillance du dépôt, pas de sa mémoire.
 
+## 1 bis. « Ça ne marche pas » : REGARDER sa machine avant de lui parler
+
+**Règle née de la nuit du 11 au 12 août 2026, et elle vaut pour toutes les
+sessions.** Le patron écrit *« ça ne marche pas »*. Quatre allers-retours ont
+suivi, à formuler des hypothèses sur une machine qu'on ne voyait pas — un
+service de transcription absent, une mauvaise branche, un mot de passe : **toutes
+fausses**. Pendant ce temps, sa machine savait tout, et c'est lui qui recopiait
+des terminaux depuis un téléphone.
+
+Son espace **publie désormais son état** sur une fiche GitHub au titre fixe —
+`TITRE_FICHE` dans `scripts/rapporter-espace.mjs` —, réécrite à l'allumage puis
+tous les quarts d'heure par le veilleur. Elle porte le commit récupéré, le
+commit réellement **servi** (ce n'est pas le même, et ce malentendu a coûté deux
+heures), l'état des services et la fin du journal de démarrage.
+
+**Devant une plainte de ce genre, dans cet ordre :**
+
+1. **lire la fiche** — sa date d'abord, et elle tranche à elle seule : le
+   veilleur la réécrit **tous les quarts d'heure** tant que l'espace tourne.
+   Plus de vingt minutes sans réécriture, ce n'est pas le serveur qui est en
+   panne, c'est **l'espace qui est arrêté** — inutile de chercher dans le
+   produit, il n'y a plus personne pour le servir. Et lire **à quel moment**
+   elle a été écrite : « à l'allumage », un serveur muet est normal ; « par le
+   veilleur », c'est une vraie panne ;
+2. n'avancer une hypothèse qu'ensuite, et la dire comme telle ;
+3. si un geste sur sa machine est nécessaire, lui faire lancer **`claude`** dans
+   son espace plutôt que de lui dicter dix commandes. L'agent y a accès, pas
+   nous.
+
+**Cette consigne ne dépend plus de la mémoire de personne.** Elle se lisait au
+début d'une conversation et s'oubliait au bout de trois heures — or c'est au
+bout de trois heures qu'il signale une panne. `.claude/settings.json` branche
+donc `scripts/rappel-panne.mjs` sur chaque message reçu : dès qu'une tournure
+comme « ça ne marche pas » apparaît, le rappel ci-dessus est remis sous les yeux
+de la session, **quelle qu'elle soit** — il en fait tourner trois ou quatre en
+parallèle, et aucune n'a lu les autres.
+
+Le déclencheur **n'interdit rien et ne bloque rien** : il ajoute du contexte.
+Devant le moindre doute il se tait, et c'est délibéré : un rappel qui parle à
+tort s'apprend à être ignoré, et l'on perd alors le garde-fou sans s'en
+apercevoir. Ses tournures sont relevées de ses vrais messages, jamais inventées
+(`scripts/test-rappel-panne.ts`).
+
+**Ce qui est refusé, et ne doit pas être rouvert :** donner à une session le
+pouvoir d'exécuter des commandes chez lui. Une boucle qui lirait des ordres dans
+le dépôt serait une porte dérobée sur une machine qui porte ses identifiants
+GitHub et ses clés d'IA. Le canal est à sens unique — il publie, on lit.
+
 ## 2. Tenir la mémoire à jour, sans qu'on le demande
 
 Après **chaque lot de travail important** — une fonctionnalité, une migration,
@@ -115,6 +163,12 @@ Elle enchaîne, dans cet ordre — les contrôles rapides d'abord :
 
 Elle ne s'arrête pas à la première erreur : savoir que trois choses cassent, et
 lesquelles, vaut mieux que de les découvrir une par une.
+
+**Ne jamais la faire passer par `tail`.** Elle écrit son verdict à la fin, mais
+le nom de la suite tombée, lui, est écrit au milieu — parmi les cinquante-huit.
+Tronquée à ses dernières lignes, elle annonce « 57/58 » sans dire laquelle, et
+il ne reste qu'à tout rejouer pour l'apprendre. Rediriger vers un fichier
+(`> /tmp/…/batterie.log 2>&1`), puis y chercher. Payé le 12 août 2026.
 
 **La dernière étape mérite son existence.** Toutes les autres interrogent
 `127.0.0.1`, où l'en-tête `Origin` et l'hôte coïncident. Le patron, lui, passe

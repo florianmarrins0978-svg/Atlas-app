@@ -299,7 +299,7 @@ function Contenu({
                   type="button"
                   onClick={() => setCanalChoisi(c)}
                   aria-pressed={actif}
-                  className="flex-1 rounded-[4px] py-3 text-[15px] font-medium"
+                  className="flex-1 rounded-full py-3 text-[15px] font-medium"
                   style={{
                     backgroundColor: actif ? colors.rustTint : colors.card,
                     color: actif ? colors.rust : colors.ink,
@@ -329,7 +329,7 @@ function Contenu({
             type="button"
             onClick={enregistrerContact}
             disabled={enregistrement || !coordonnee.trim() || !preparation.clientId}
-            className="mt-2.5 w-full rounded-[4px] py-3 text-[15px] font-medium disabled:opacity-50"
+            className="mt-2.5 w-full rounded-full py-3 text-[15px] font-medium disabled:opacity-50"
             style={{ backgroundColor: colors.card, color: colors.rust }}
           >
             {enregistrement ? "Enregistrement…" : "Enregistrer et continuer"}
@@ -392,7 +392,7 @@ function Contenu({
                   type="button"
                   onClick={() => basculer(jour)}
                   aria-pressed={choisi}
-                  className="flex items-center justify-between rounded-[4px] px-4 py-3 text-[15px]"
+                  className="flex items-center justify-between rounded-full px-4 py-3 text-[15px]"
                   style={{
                     backgroundColor: choisi ? colors.rustTint : colors.card,
                     color: colors.ink,
@@ -510,7 +510,7 @@ function Contenu({
                     type="button"
                     onClick={() => basculer(jour)}
                     aria-pressed
-                    className="flex items-center justify-between rounded-[4px] px-4 py-3 text-[15px]"
+                    className="flex items-center justify-between rounded-full px-4 py-3 text-[15px]"
                     style={{ backgroundColor: colors.rustTint, color: colors.ink }}
                   >
                     <span>{jourLisible(jour)}</span>
@@ -551,7 +551,7 @@ function Contenu({
         </PrimaryButton>
         <button
           onClick={onFermer}
-          className="rounded-[4px] py-3.5 text-[15px] font-medium"
+          className="rounded-full py-3.5 text-[15px] font-medium"
           style={{ color: colors.muted }}
         >
           Annuler

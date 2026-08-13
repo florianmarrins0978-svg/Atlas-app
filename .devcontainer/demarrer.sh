@@ -346,6 +346,37 @@ setsid nohup bash -c "
   cd '$CD' && node scripts/diagnostiquer-banc.mjs > '$VERDICT' 2>&1
 " > /dev/null 2>&1 < /dev/null &
 
+# ─────────────────────────────────────────────────────────────────────────────
+# **L'espace raconte son état là où l'agent sait lire.**
+#
+# Demandé par le patron le 12 août 2026 : *« faut trouver un moyen pour que tu
+# aies accès à mon espace »*. Il n'y en a pas — aucune route ne relie les deux
+# machines — et la solution qui « marcherait » (une boucle qui exécuterait des
+# ordres lus dans le dépôt) serait une porte dérobée sur une machine qui porte
+# ses identifiants. Le sens INVERSE, lui, est sans danger : sa machine publie,
+# l'agent lit.
+#
+# Posé ICI, après le lancement, et détaché : la publication traverse le réseau
+# et attend que le serveur réponde. Elle ne doit jamais retarder ni empêcher le
+# démarrage — le patron n'a pas à perdre son banc parce qu'une fiche n'a pas pu
+# s'écrire.
+#
+# **Publiée DEUX fois, et la première tout de suite.** Corrigé le 12 août 2026 :
+# la version d'origine attendait que le serveur réponde avant d'écrire quoi que
+# ce soit — jusqu'à dix minutes. Or le cas pour lequel cette fiche existe est
+# précisément celui où le serveur NE répond pas : « mon application ne s'ouvre
+# plus ». Elle se taisait donc exactement quand on avait besoin d'elle, et
+# l'agent en était réduit à supposer. La première passe dit « voilà l'état, le
+# serveur n'a pas encore répondu » ; la seconde la remplace une fois debout.
+setsid nohup bash -c "
+  cd '$CD' && ATLAS_MOMENT=allumage node scripts/rapporter-espace.mjs
+  for _ in \$(seq 1 60); do
+    curl -sf -o /dev/null --max-time 5 http://127.0.0.1:3000/api/health/live && break
+    sleep 10
+  done
+  cd '$CD' && ATLAS_MOMENT=demarre node scripts/rapporter-espace.mjs
+" > /tmp/rapport-espace.log 2>&1 < /dev/null &
+
 echo "──────────────────────────────────────────────"
 echo "  Si l'adresse ne s'ouvre pas, une seule commande"
 echo "  vous dira pourquoi — elle est déjà en train de"

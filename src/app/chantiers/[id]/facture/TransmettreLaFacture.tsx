@@ -25,7 +25,7 @@ import { preparerLienFactureAction } from "./actions";
 //
 // **Le bouton est la capsule, et c'est son choix du 12 août 2026** — « code
 // la A », parmi les cinq gestes de
-// `docs/maquettes/31-le-bouton-de-la-facture-a-lessai.html` (`TODO.md` §8,
+// `docs/maquettes/39-le-bouton-de-la-facture-a-lessai.html` (`TODO.md` §8,
 // point 2). Il était le dernier de cet écran dessiné sur place, ce qui l'avait
 // fait manquer la décision du 11 août. **Ne pas le repeindre ici** : une action
 // principale dessinée à la main échappe à toute décision d'ensemble, et c'est
@@ -201,7 +201,7 @@ export default function TransmettreLaFacture({
               facture n'attend pas de réponse.
 
               **La capsule, choisie par le patron le 12 août 2026** parmi les
-              cinq gestes de `docs/maquettes/31-le-bouton-de-la-facture-a-lessai.html`.
+              cinq gestes de `docs/maquettes/39-le-bouton-de-la-facture-a-lessai.html`.
               Ce bouton était le dernier de l'écran à être dessiné SUR PLACE —
               un aplat à 4 px de rayon — et c'est pour cela qu'il avait manqué
               la décision du 11 août (« la capsule, partout »). Il passe donc

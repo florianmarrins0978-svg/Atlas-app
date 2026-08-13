@@ -105,5 +105,28 @@ while true; do
   else
     MUET=0
   fi
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # **Rafraîchir la fiche d'état, sinon elle devient un piège.**
+  #
+  # Elle s'écrivait au seul allumage. Un espace qui tourne depuis six heures
+  # publiait donc l'état qu'il avait à son réveil — et une conversation qui s'y
+  # fie conclut de travers. C'est le reproche exact que ce dépôt fait à une
+  # documentation périmée : *on s'y fie encore*.
+  #
+  # Une fois par quart d'heure : assez frais pour qu'une session appelée à
+  # l'aide voie la machine telle qu'elle est, assez rare pour ne pas noyer le
+  # dépôt de modifications. La fiche porte sa date de toute façon — mieux vaut
+  # qu'elle soit juste ET datée.
+  #
+  # Détaché et muet : la publication traverse le réseau, et le veilleur a une
+  # seule raison d'être — relever le serveur. Rien de ce qui est écrit ici ne
+  # doit pouvoir l'en empêcher.
+  DEPUIS_RAPPORT=$((${DEPUIS_RAPPORT:-0} + INTERVALLE))
+  if [ "$DEPUIS_RAPPORT" -ge 900 ]; then
+    DEPUIS_RAPPORT=0
+    ( cd "$DEPOT" && ATLAS_MOMENT=veille node scripts/rapporter-espace.mjs >> "$JOURNAL" 2>&1 ) &
+  fi
+
   sleep "$INTERVALLE"
 done

@@ -55,7 +55,7 @@ async function cas(nom: string, verifier: () => Promise<void>) {
  * l'atteindrait. Une erreur qui accuse à tort coûte plus cher que pas d'erreur
  * du tout (`AGENTS.md`).
  *
- * Trois précautions de plus, chacune payée par un faux positif :
+ * Quatre précautions de plus, chacune payée par un faux positif :
  *
  *   - **on ne juge que ce qui est visible.** Un panneau replié, un tiroir fermé
  *     portent des boutons hors écran : les compter reviendrait à crier sur des
@@ -69,6 +69,11 @@ async function cas(nom: string, verifier: () => Promise<void>) {
  *     rognés par un `overflow: hidden`. Onze d'entre eux étaient accusés d'être
  *     recouverts alors qu'ils n'étaient pas à l'écran du tout. On remonte donc
  *     la parenté et l'on écarte ce qui tombe hors de son découpage.
+ *   - **ni la barre d'outils de Next.js.** Son `<nextjs-portal>` n'existe pas
+ *     dans la version bâtie, et il ne se montre que lorsqu'il a quelque chose à
+ *     signaler : il accusait six écrans de cacher l'onglet « Chantiers », au
+ *     hasard des exécutions. Le détail, et ce que cela ne règle pas côté banc du
+ *     patron, sont dans `TODO.md`.
  */
 const SONDE = `(async () => {
   const attendre = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -110,6 +115,23 @@ const SONDE = `(async () => {
     const dessus = document.elementFromPoint(x, y);
     if (!dessus) continue;
     if (dessus === cible || cible.contains(dessus) || dessus.contains(cible)) continue;
+
+    // **L'outillage de Next n'est pas le produit.** Son badge de développement
+    // — un \`<nextjs-portal>\` — se pose en bas à gauche, exactement sur
+    // l'onglet « CHANTIERS ». Il n'apparaît que lorsqu'il a quelque chose à
+    // signaler, et il n'existe PAS dans la version bâtie : le 12 août 2026, la
+    // CI a viré au rouge six fois pour lui, pendant que la suite passait ici où
+    // rien n'était signalé.
+    //
+    // **Un contrôle qui échoue au hasard est pire qu'aucun contrôle** : il
+    // apprend à ignorer le rouge, et c'est ainsi qu'on perd la seule suite qui
+    // sache voir un bouton inatteignable. On l'écarte donc, nommément — pas en
+    // relâchant la mesure, qui continue de tout attraper d'autre.
+    //
+    // Ce que cela ne règle PAS, et qui est dans \`TODO.md\` : sur le banc du
+    // patron, qui sert le mode développement, ce badge recouvre bel et bien son
+    // onglet « Chantiers » dès qu'il a un signalement.
+    if (/^NEXTJS-/.test(dessus.tagName) || dessus.closest("nextjs-portal")) continue;
 
     const nom = (cible.innerText || cible.getAttribute("aria-label") || cible.getAttribute("placeholder") || cible.tagName).replace(/\\s+/g, " ").trim().slice(0, 48);
     const voleur = (dessus.getAttribute("data-atlas") || dessus.className || dessus.tagName).toString().replace(/\\s+/g, " ").trim().slice(0, 48);

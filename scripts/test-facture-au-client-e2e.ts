@@ -64,14 +64,32 @@ async function main() {
   await page.waitForTimeout(800);
   await page.locator("button[aria-pressed]").nth(1).click();
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForTimeout(2000);
 
-  const jetonDevis = (
-    await pool.query(
-      `SELECT e.jeton FROM envois_devis e JOIN devis d ON d.id = e.devis_id WHERE d.chantier_id = $1`,
-      [chantierId]
-    )
-  ).rows[0].jeton;
+  // **Attendre l'ÉTAT, jamais un délai fixe** — la règle que ce fichier énonce
+  // quarante lignes plus bas, et qui manquait ICI, sur le geste qui la précède.
+  //
+  // Le 12 août 2026 au soir, en batterie : `TypeError: Cannot read properties
+  // of undefined (reading 'jeton')`. Deux secondes suffisent quand la suite est
+  // jouée seule ; sous soixante suites enchaînées, l'envoi ne les tient pas, la
+  // ligne n'existe pas encore, et l'erreur accuse un `undefined` au lieu de
+  // dire que l'envoi n'a pas eu le temps. Un contrôle qui échoue au hasard
+  // apprend à ignorer le rouge.
+  let jetonDevis: string | undefined;
+  for (let i = 0; i < 60 && !jetonDevis; i++) {
+    jetonDevis = (
+      await pool.query(
+        `SELECT e.jeton FROM envois_devis e JOIN devis d ON d.id = e.devis_id WHERE d.chantier_id = $1`,
+        [chantierId]
+      )
+    ).rows[0]?.jeton;
+    if (!jetonDevis) await page.waitForTimeout(500);
+  }
+  if (!jetonDevis) {
+    throw new Error(
+      "Le devis n'est jamais parti : aucune ligne dans `envois_devis` après trente secondes. " +
+        "Ce n'est pas un défaut d'attente — c'est l'envoi lui-même qui a échoué."
+    );
+  }
   await page.goto(`${BASE}/devis/${jetonDevis}`, { waitUntil: "networkidle" });
   // La date se choisit avant d'accepter — c'est le parcours réel du client.
   await page.locator('input[name="choixDate"]').first().check();
@@ -79,14 +97,33 @@ async function main() {
   await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 15000 });
 
   // Créer la facture, puis arrêt de l'envoi.
+  //
+  // **Attendre l'ÉTAT, jamais un délai fixe.** Cette suite portait déjà la règle
+  // plus bas, pour le lien de la messagerie — mais pas ici, sur le geste qui la
+  // précède. Deux secondes suffisent quand la suite est jouée seule ; sous
+  // cinquante suites enchaînées, la préparation de la facture les dépasse, et
+  // le contrôle accusait alors le produit de n'avoir pas arrêté la facture. Faux
+  // rouge constaté le 12 août 2026, vert dans la foulée joué seul.
   await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: /Créer la facture|Confirmer le départ/i }).first().click();
-  await page.waitForTimeout(2000);
+
   const confirmer = page.getByRole("button", { name: /Confirmer le départ/i });
+  // Le bouton de confirmation apparaît quand la facture est préparée. S'il ne
+  // vient pas, l'écran est peut-être déjà passé à l'étape suivante : on ne fait
+  // donc pas de son absence un échec, c'est l'assertion qui suit qui tranche.
+  await confirmer
+    .first()
+    .waitFor({ state: "visible", timeout: 30_000 })
+    .catch(() => undefined);
   if (await confirmer.count()) {
     await confirmer.first().click();
-    await page.waitForTimeout(2500);
   }
+  // Ce qu'on attend vraiment : que l'écran dise la facture arrêtée.
+  await page
+    .getByText(/arrêtée/i)
+    .first()
+    .waitFor({ state: "visible", timeout: 30_000 })
+    .catch(() => undefined);
 
   // --- 1. « Arrêtée » n'est pas « partie » ---------------------------------
   const ecran = await page.locator("body").innerText();

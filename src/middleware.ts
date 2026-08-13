@@ -2,21 +2,19 @@ import NextAuth from "next-auth";
 import { authConfig } from "@/auth.config";
 import { NextResponse } from "next/server";
 import { estBancDEssai } from "@/profil-banc";
+import { estCheminPublic } from "@/lib/chemins-publics";
 
 const { auth } = NextAuth(authConfig);
 
 // Routes publiques : la page de connexion elle-même, la route Auth.js, et les
-// assets Next.js. Tout le reste de l'application exige une session valide.
-// `/devis` est la page de réponse du client : consultée sans compte, depuis un
-// lien reçu par SMS ou e-mail. Elle n'est pas « ouverte » pour autant — son
-// seul accès est un jeton imprévisible, contrôlé en base par une politique
-// dédiée (migration 0015). Sans jeton exact, aucune ligne n'est lisible.
+// pages que le CLIENT de l'artisan atteint par un jeton. Tout le reste exige
+// une session valide.
 //
-// `/factures` suit exactement la même logique depuis le 6 août 2026 : le
-// patron a constaté que sa facture arrêtée ne parvenait jamais à son client,
-// faute de tout chemin vers lui. Même garde-fou, migration 0024 — le jeton est
-// la seule clé, et il est imprévisible.
-const CHEMINS_PUBLICS = ["/login", "/api/auth", "/api/cron", "/api/session-perimee", "/devis", "/factures"];
+// **La liste vit dans `src/lib/chemins-publics.ts`, et pas ici.** Elle était
+// tenue en double — le middleware d'un côté, la mise en page de l'autre pour
+// décider qui porte la barre de navigation — et les deux ont divergé : la
+// facture du client affichait les onglets de l'outil du patron. Une seule
+// source, donc, pour que l'invariant tienne par construction (`CLAUDE.md` §3).
 
 // Le chemin courant n'est pas accessible depuis un layout ou une page (seuls
 // les paramètres de route le sont). Le middleware le transmet donc en en-tête,
@@ -102,7 +100,7 @@ function suivantAvecChemin(request: { headers: Headers }, pathname: string) {
 
 export default auth((request) => {
   const { pathname } = request.nextUrl;
-  const estPublic = CHEMINS_PUBLICS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  const estPublic = estCheminPublic(pathname);
   if (estPublic) return suivantAvecChemin(request, pathname);
 
   if (!request.auth) {

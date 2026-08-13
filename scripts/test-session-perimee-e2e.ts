@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { encode } from "next-auth/jwt";
-import { chromium } from "playwright";
+import { lancerNavigateur } from "./e2e-browser";
 
 // **La panne qui a tenu une soirée entière, tenue par un contrôle.**
 //
@@ -212,9 +212,13 @@ async function main() {
   //    Les quatre contrôles ci-dessus lisent des en-têtes ; celui-ci regarde
   //    ce que le patron verrait. JavaScript coupé délibérément : c'est ce qui
   //    distingue un vrai 307 d'un renvoi joué après coup.
-  const navigateur = await chromium.launch({
-    executablePath: process.env.ATLAS_CHROMIUM ?? "/opt/pw-browsers/chromium",
-  });
+  // **Passe par `lancerNavigateur`, et non par `chromium.launch` en direct.**
+  // Cette ligne codait le chemin du navigateur de l'agent
+  // (`/opt/pw-browsers/chromium`). Il n'existe pas en CI, où Playwright
+  // installe le sien ailleurs : la suite y échouait à chaque exécution
+  // — « executable doesn't exist » — pendant qu'elle passait ici. Le
+  // lanceur commun sait retomber sur le navigateur installé.
+  const navigateur = await lancerNavigateur();
   try {
     const contexte = await navigateur.newContext({ javaScriptEnabled: false });
     const hote = new URL(BASE);

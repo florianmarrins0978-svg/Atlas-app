@@ -4817,7 +4817,601 @@ arrière »*. Voir `TODO.md`.
 
 ---
 
-## 67. La facture part par SMS **ou** par e-mail, et se télécharge
+## 67. Une seule forme de bouton, et un contrôle pour qu'elle le reste
+
+**Le patron, le 12 août 2026 :** *« remplace tous les boutons rectangulaires par
+les boutons arrondis »*. Seize boutons du produit portaient encore un rayon de
+4 px, à côté des capsules posées la veille.
+
+### Pourquoi il en restait seize
+
+La capsule avait été posée sur `PrimaryButton`, et **seize boutons dessinaient
+le leur à la main**. Une action dessinée sur place échappe à toute décision
+d'ensemble : elle ne change que si quelqu'un pense à elle. Le balayage règle
+l'instant ; il ne tient pas tout seul — un écran écrit dans six mois reprendra le
+`rounded-[4px]` du voisin.
+
+D'où `scripts/test-boutons-arrondis.ts`, qui nomme le fichier et la ligne du
+coupable. Il porte aussi un **témoin** : un bouton rectangulaire écrit en dur
+qu'il doit continuer de reconnaître. Sans lui, une façon d'écrire les classes qui
+changerait rendrait le contrôle vert sur une application entièrement carrée —
+un contrôle qui ne trouve plus rien ressemble à un contrôle qui passe.
+
+### Ce qui a été changé, et ce qui ne l'a pas été
+
+**Seulement le rayon.** Ni la couleur, ni la taille, ni le composant. Deux de ces
+boutons sont des `type="submit"` — la connexion et les documents légaux — et
+`PrimaryButton` impose `type="button"` : les y faire passer aurait cassé leur
+formulaire sans qu'aucun type ne s'en aperçoive. La connexion a donc été jouée
+pour de vrai après le changement, dans un navigateur.
+
+**Les plages gardent leurs 4 px.** Cartes, champs et tuiles ne sont pas des
+boutons : la charte les veut presque droits, « au-delà de 6 px une plage devient
+un galet ». Le contrôle ne regarde que `<button>` et `<a>`.
+
+### Ce que la capture a révélé, et qui n'était pas demandé
+
+**L'écran de connexion est le seul resté dans l'ancienne identité.** Son bouton
+est en terre cuite `#B5502F` — la couleur abandonnée le 3 août quand
+l'application est passée à Arborea — sur une carte blanche à bordures grises,
+sans serif de titre. C'est le PREMIER écran que le patron voit, et le seul qui
+ne ressemble pas à Atlas. Rien n'a été changé : il n'a pas demandé cet écran, et
+sa règle est de montrer avant de faire. Voir `TODO.md`.
+
+---
+
+## 68. Le navigateur du client réécrivait nos pages avant React
+
+**Le 12 août 2026, sur son iPhone :** la page publique d'une facture rend
+« Hydration failed ». Le diff de React ne laissait aucune place à
+l'interprétation — le DOM portait `<a href="tel:2026-0003">` là où le composant
+ne rend que le texte `2026-0003`.
+
+**Aucune page de ce dépôt n'écrit de `tel:` sur un numéro de facture.** Le lien
+ne pouvait donc venir que du navigateur : iOS reconnaît d'office ce qui
+ressemble à un téléphone, une adresse ou un courriel, et **réécrit le HTML avant
+que React ne s'installe dessus**. Un numéro de facture — quatre chiffres, un
+tiret, quatre chiffres — lui ressemble assez.
+
+### Pourquoi ce n'était pas qu'une alerte de développement
+
+React s'en remet (« Recoverable Error ») en refabriquant l'arbre côté client.
+Mais dans l'intervalle, **le numéro devenait un lien d'appel sous le doigt du
+client de l'artisan** — sur les deux écrans qu'il voit, la facture et le devis,
+qui portent tous deux ce numéro en titre. Un client qui appuie sur son numéro de
+devis et voit son téléphone proposer d'appeler « 2026-0003 » n'a pas affaire à
+un outil sérieux.
+
+### Le remède, et son coût
+
+`formatDetection: { telephone: false, address: false, email: false }` dans les
+métadonnées du gabarit racine — donc sur toutes les pages, y compris celles du
+client.
+
+**Les trois, pas seulement le téléphone.** Les deux autres cassent exactement de
+la même façon, et attendre qu'il découvre la suivante lui coûterait un
+aller-retour de plus.
+
+**Rien n'est perdu.** Cela n'éteint que la détection AUTOMATIQUE : les `tel:`
+qu'Atlas écrit lui-même — « appeler » sur la fiche du client — et le bouton
+« Y aller » continuent de fonctionner. C'est éprouvé, et pas seulement affirmé.
+
+### Ce qui ne peut pas être éprouvé ici, et qui est dit comme tel
+
+**La détection est propre à Safari ; cet environnement n'a que Chromium.** La
+panne d'origine ne peut donc pas être rejouée ici, et le correctif ne peut pas
+être vu la faire disparaître. `scripts/test-detection-automatique-e2e.ts` garde
+ce qui peut l'être : l'en-tête part bien sur `/factures/<jeton>`,
+`/devis/<jeton>` et `/login`, un témoin vérifie que ces pages posent toujours un
+numéro nu — sans quoi le contrôle garderait le vide —, et un dernier cas
+constate qu'un `tel:` explicite survit au refus. Confronté au correctif retiré :
+quatre cas passent au rouge, en nommant le bon coupable.
+
+---
+
+## 69. Une déclaration ne répare pas un espace déjà né
+
+**Quatrième fois que ce piège coûte une soirée, et la première où il l'a coûtée
+au patron lui-même.** Le 12 août 2026, il redémarre son espace deux fois pour
+qu'une fiche d'état parte enfin. Elle ne pouvait pas.
+
+### La règle, énoncée une bonne fois
+
+Tout ce que `devcontainer.json` déclare — fonctionnalités, attributs de port —
+et tout ce que `preparer.sh` installe est posé **à la création** d'un espace.
+Un espace existant ne les recevra jamais, quoi qu'on pousse : **redémarrer
+récupère le code, jamais les outils.**
+
+En découlent trois défauts déjà payés :
+
+| Ce qu'il voit | Ce qui manquait | Quand |
+|---|---|---|
+| « bash: gh: command not found » | la fonctionnalité `github-cli` | 10 août |
+| une page blanche depuis son téléphone | le port 3000 revenu privé, faute de `gh` | 11 août |
+| aucune fiche d'état après deux redémarrages | `gh`, encore | 12 août |
+
+**Ce qu'il faut en faire, à chaque fois qu'on ajoute une dépendance
+d'outillage :** se demander *« est-ce que ça marche dans SON espace, celui qui
+existe déjà ? »* Si la réponse est non, soit on supprime la dépendance, soit on
+le lui dit — jamais on ne laisse croire que ça fonctionnera.
+
+### Ce qui a été fait ici : supprimer la dépendance
+
+La fiche est publiée par l'API GitHub avec le jeton que Codespaces pose dans
+chaque terminal. Plus aucun outil à installer, donc plus rien qui dépende de
+l'âge de l'espace. `gh` reste en second recours, pour les machines où un jeton
+n'est pas posé mais où l'on s'est authentifié à la main.
+
+**L'ordre compte, et il est gardé** : tenter `gh` d'abord reviendrait à ne rien
+publier chez la seule personne pour qui la fiche existe.
+
+### Le vrai coupable : rien n'avait jamais joué l'envoi
+
+Les contrôles éprouvaient la censure des secrets et la forme du corps. **Aucun
+n'avait jamais publié quoi que ce soit.** Un contrôle qui ne parcourt pas ce que
+parcourt le patron ne prouve rien — c'est écrit dans `AGENTS.md`, et cela vaut
+pour l'outillage autant que pour le produit.
+
+`scripts/eprouver-publication-fiche.mjs` joue l'envoi pour de bon : il crée une
+fiche jetable, vérifie que le second passage la MET À JOUR au lieu d'en ouvrir
+une seconde — le défaut qui remplirait le dépôt d'une fiche par quart d'heure —,
+puis la referme dans tous les cas, échec compris.
+
+**Il ne peut pas tourner sur la machine de l'agent** : le jeton qu'elle expose
+est un substitut de son mandataire réseau, et GitHub le refuse (401 « Bad
+credentials », constaté). D'où un travail séparé dans `ci.yml`, sans base ni
+navigateur — vingt secondes, et une panne de PostgreSQL ne le fait pas passer
+pour cassé.
+
+### Et la fiche part maintenant AVANT le serveur
+
+La version d'origine attendait jusqu'à dix minutes que l'application réponde
+avant d'écrire quoi que ce soit. Or le cas pour lequel cette fiche existe est
+celui où l'application **ne répond pas** : elle se taisait exactement quand on
+avait besoin d'elle. Elle est désormais publiée deux fois — tout de suite, puis
+à nouveau une fois le serveur debout.
+
+### Le dépôt est PUBLIC — ce que la fiche a le droit de dire
+
+**Découvert le 12 août 2026, et cela a changé une décision.** La fiche est une
+*issue* de ce dépôt : lisible par n'importe qui, et indexée.
+
+La première version y recopiait les quarante dernières lignes du démarrage, en
+censurant au jugé ce qui ressemblait à un secret. Cette censure était
+délibérément grossière, et c'était le bon arbitrage — **tant que le dépôt était
+supposé fermé**. Public, l'arbitrage s'inverse : une censure au jugé laisse
+forcément passer l'imprévu, et le prix d'un oubli n'est plus une gêne de lecture
+mais une clé publiée sur la place.
+
+Mis devant le choix, le patron a tranché : **retirer le journal.**
+
+Ce que la fiche porte désormais : branche suivie, commit récupéré, commit
+réellement SERVI, état des services, et ce que le diagnostic en conclut.
+
+**Ce qu'on y perd, écrit ici pour qu'on ne le redécouvre pas :** devant un
+serveur qui refuse de démarrer, la fiche dira qu'il ne répond pas, **pas
+pourquoi**. C'est assumé — ce qui reste répond à la question qui a coûté le plus
+cher, *sur quelle version est-il et son serveur tourne-t-il ?*
+
+**Et la tentation qui reviendra :** devant un serveur muet, on voudra « juste
+les dernières lignes ». Ce qu'il faudra écrire alors est une extraction
+**structurée** — le nom de l'erreur, pas les lignes autour. Jamais un retour du
+journal brut. `scripts/test-rapport-espace.ts` garde la décision, et porte un
+témoin : un journal passé de force à la fonction ne doit pas ressortir.
+
+La censure, elle, **reste en place** : le diagnostic recopie des noms de
+fichiers modifiés, et rien n'interdit qu'un jour l'un d'eux porte un secret. Une
+ceinture ne se retire pas parce qu'on a mis des bretelles.
+
+---
+
+## 70. Le chevron doré du planning : l'adresse portée jusqu'au GPS
+
+**Sa demande, le 12 août 2026 :** *« lorsque je vais sur planning et qu'il y a un
+chantier qui est planifié, en cliquant dessus je puisse avoir un petit truc genre
+accéder à l'adresse, et en cliquant dessus ça met l'adresse toute seule dans le
+GPS, soit Maps, soit Waze »*.
+
+Et, dans le même message : *« avant de faire quoi que ce soit, fais-moi une
+maquette visuelle […] en point HTML cliquable »* — la règle `CLAUDE.md` §3 bis,
+appliquée. Quatre maquettes ont été nécessaires avant l'accord
+(`docs/maquettes/29` à `32`).
+
+### Ce que les quatre versions ont coûté, et appris
+
+| | Ce qui était proposé | Ce qu'il a répondu |
+|---|---|---|
+| 29 | Un bouton « Y aller » en toutes lettres | — |
+| 30 | Un « + » sur la ligne, et la feuille | *« il manque tout là en fait »* — la feuille était prisonnière du téléphone dessiné, illisible sur son écran |
+| 31 | La feuille sortie du cadre, mots entiers | *« sans le plus, tu mets une petite flèche »* |
+| 32 | Une flèche de navigation | *« pas cette flèche, je veux la même que celle à côté de maps, le petit `>` »*, puis *« tu mets le chevron en doré »* |
+
+**Sa correction du signe n'était pas une préférence de dessin.** Une flèche de
+navigation promet un DÉPART — et sur un chantier sans adresse, elle ne peut pas
+le tenir : il fallait alors l'éteindre, donc traiter un cas de plus sur la ligne.
+Un chevron promet que QUELQUE CHOSE S'OUVRE, ce qui reste vrai de toutes les
+lignes. **Le cas particulier a disparu avec le choix du signe** — c'est le genre
+d'économie qu'une maquette trouve et qu'un débat d'architecture manque.
+
+### Des liens universels, jamais les schémas propres
+
+`src/lib/itineraire.ts` — fonction pure, éprouvée sans base ni navigateur
+(`scripts/test-itineraire.ts`).
+
+```
+https://maps.apple.com/?daddr=…&dirflg=d
+https://www.google.com/maps/dir/?api=1&destination=…
+https://waze.com/ul?q=…&navigate=yes
+```
+
+`waze://` et `comgooglemaps://` sont plus courts, et ils ont un défaut qu'on ne
+voit pas en les essayant sur une machine qui possède les applications :
+**absente, l'application les fait échouer EN SILENCE**. Le doigt appuie, rien ne
+bouge, rien ne dit pourquoi. Sur un chantier, ce n'est pas un désagrément : c'est
+une adresse qu'on n'a plus. Les liens ci-dessus ouvrent l'application quand elle
+est là, son site sinon.
+
+Deux détails qui ne se devinent pas :
+
+- **`encodeURIComponent`, jamais `encodeURI`.** Une adresse porte une virgule
+  (« 12 chemin des Chênes, 33600 Pessac ») ; `encodeURI` la laisse passer, elle
+  sépare alors deux paramètres chez Waze, et l'adresse est tronquée au numéro de
+  rue. Le GPS s'ouvre — dans une autre commune.
+- **`dirflg=d`.** Sans lui, Plans rouvre le dernier mode utilisé. À pied, s'il a
+  cherché une rue en ville la veille : trente kilomètres, et une estimation
+  absurde qu'il ne pense pas à corriger.
+
+**Un téléphone ne dit pas quelles applications il possède.** Impossible donc de
+n'afficher que Waze parce que c'est la seule installée : les trois sont
+proposées, et le doigt choisit. La case « Toujours celle-là » de la maquette
+n'est **pas** reprise en v1 — mémoriser un choix sans offrir nulle part de le
+défaire enferme le patron dans une application qu'il aura touchée par erreur.
+Elle reviendra avec son interrupteur dans Réglages, ou pas du tout.
+
+### L'adresse descend AVEC la liste
+
+`listerChantiersPourPlanning` remonte désormais `adresseChantier` et
+`clientTelephone`. Pas par confort : le patron ouvre « Y aller » **en voiture**,
+souvent sans réseau. Une feuille qui doit aller chercher l'adresse au moment du
+geste arrive vide exactement là où elle sert.
+
+Les oublier de ce `select` ne casserait rien de visible — la feuille dirait
+« Adresse non renseignée » sur un chantier qui en a une, et il croirait sa base
+vide. D'où un contrôle qui les nomme (`test-planning-repo.ts`), confronté à leur
+absence avant d'être retenu.
+
+### Ce que la capture a corrigé, et qu'aucun test ne voyait
+
+La ligne « Planifiés » portait déjà « Déplacer » et « Créer la facture ». Le
+carré touchable de 44 px du chevron, posé sans précaution, **rognait la seule
+chose qui dit de quel chantier il s'agit** : à 390 px, « Chez M. Bernard »
+devenait « Chez M. … ». Les huit contrôles étaient verts — le nom ÉTAIT là, et
+c'est bien pourquoi aucun ne pouvait le voir.
+
+Les 44 px sont donc pris sur les marges et non sur le nom : la hauteur de la
+ligne (`-my-3`), la gouttière (`-ml-2`) et le retrait droit de l'écran
+(`-mr-[26px]`). La cible reste entière, et elle tombe au bord — là où le pouce
+arrive le plus vite.
+
+**La ligne reste chargée**, et ce n'est pas réparé : trois gestes et un nom sur
+390 px, c'est un de trop. La maquette qu'il a validée ne montrait pas les deux
+autres. Rien n'a été restructuré sans lui (`CLAUDE.md` §3 bis) — la capture lui
+est transmise, la décision est la sienne.
+
+### « Créer la facture » quitte la ligne pour la feuille
+
+**Le même jour, après la première capture :** *« il faut que le créer la
+facture, tu le mettes dans le chevron. Il faut cliquer sur le chevron, la page
+s'ouvre avec le GPS et tout machin, et là tu mets créer la facture. »*
+
+C'est sa réponse à l'encombrement décrit plus haut, et elle règle le fond : la
+ligne ne porte plus que le nom, la date, « Déplacer » et le chevron. Le nom
+passe d'environ 110 px à plus de 250 — mesuré sur capture, avant et après.
+
+**Ce qui ne doit pas se perdre en le déplaçant.** Le planning a été un
+cul-de-sac jusqu'au 8 août 2026 — *« comment je fais pour avoir accès au
+devis ? »* — et ce bouton avait été posé pour cela. Il coûte désormais un appui
+de plus, ce qui est son choix ; il ne doit pas devenir introuvable. **Trois
+suites parcourent le nouveau chemin en entier** (`test-planning-e2e`,
+`test-planning-vers-facture-e2e`, `test-y-aller-e2e`), et la première vérifie
+en plus que le lien a bien QUITTÉ la ligne — sans quoi les deux coexisteraient
+sans que rien ne le dise.
+
+Dans la feuille, il est **séparé des deux rangs au-dessus** par un filet, et
+porté en vert pin. Copier et appeler ne touchent à rien ; celui-ci bâtit un
+document. Collé aux autres, il se toucherait par erreur en visant « Appeler ».
+
+### « M. Bernard — Chez M. Bernard », et la capture qui l'a vu
+
+La feuille collait le nom du client devant le nom du chantier. Or un chantier
+qu'on n'a pas nommé s'appelle **« Chez <le client> »** (`src/lib/nom-chantier.ts`,
+posé le 5 août 2026 quand le champ « nom du chantier » a été retiré) : le cas le
+plus courant du produit était donc le plus laid.
+
+`intituleDuChantier` ne recolle le client que si le nom ne le porte pas déjà.
+La comparaison ignore accents et casse — le nom du client est recopié à la
+création, et l'un des deux peut avoir été corrigé depuis.
+
+**Aucun test ne pouvait le voir** : les deux textes étaient exacts, c'est leur
+mise bout à bout qui ne l'était pas. Quatrième défaut de ce dépôt trouvé en
+regardant l'écran (`CLAUDE.md` §5).
+
+### Ce que les contrôles prouvent, et ce qu'ils ne prouvent pas
+
+`scripts/test-y-aller-e2e.ts` vérifie **le raccord** : que l'adresse arrive
+vraiment jusqu'au `href`. La règle pure resterait verte même si l'écran oubliait
+de la lui passer — c'est le raccord qui se casse, jamais la formule.
+
+Il ne prouve **pas** que le GPS s'ouvre : un navigateur d'essai n'a ni Plans, ni
+Waze. Ce qui est vérifiable ici, c'est que le lien est universel — donc qu'il
+retombe sur un site au lieu d'échouer en silence.
+
+---
+
+## 71. La porte : pourquoi elle avait été oubliée, et ce qu'elle porte maintenant
+
+**L'écran de connexion est resté neuf jours dans une identité abandonnée** — le
+terre cuite `#B5502F` du 3 août, une carte blanche, aucune serif — pendant que
+tout le reste passait à Arborea. Ce n'est pas un oubli de paresse, et la raison
+mérite d'être écrite parce qu'elle se reproduira :
+
+> **C'est le seul écran qu'on voit AVANT d'être connecté.** Chaque refonte s'est
+> faite en parcourant l'application, donc en partant d'un écran déjà franchi. La
+> porte ne fait pas partie du couloir.
+
+Le même raisonnement vaut pour `src/app/documents-legaux/formulaire.tsx`, qui
+n'est pas encore repris — et pour tout écran futur situé hors du parcours
+ordinaire. **Un balayage d'identité doit partir de la liste des fichiers, jamais
+d'une promenade dans l'application.**
+
+### Ce qu'il a choisi, et en combien d'étapes
+
+Trois maquettes, trois décisions, dans cet ordre (`docs/maquettes/`) :
+
+| | Ce qui était en jeu | Ce qu'il retient |
+|---|---|---|
+| **32** | Quatre mises en page | La **ligne d'imprimé**, sans le titre « Connexion » ni la sous-ligne |
+| **33** | Six animations de la marque à l'entrée | **Le tour** |
+| **34** | Huit gravures dans le rond d'or | **La rose des vents** |
+
+**La rose des vents ne remplace pas la feuille ailleurs.** L'en-tête et la barre
+basse gardent la feuille : c'est une décision de marque, elle n'a pas été prise,
+et `SceauAtlas` porte donc un `motif` dont la valeur par défaut reste la
+feuille.
+
+### Le tour n'a pas de plancher, et c'est un arbitrage
+
+La maquette annonçait une demi-seconde. Ce qui est posé est **un tour d'une
+demi-seconde, répété tant que la vérification n'a pas répondu** :
+
+- **`infinite` est nécessaire.** Le serveur répond quand il répond ; sur un
+  réseau de chantier, deux secondes sont plausibles. Une marque qui s'arrête au
+  bout d'un demi-tour pendant que la page attend encore ressemble à une
+  application plantée.
+- **Le plancher n'est PAS tenu.** Si la vérification répond en cent
+  millisecondes, le geste est coupé en son milieu. Le tenir supposerait de
+  retarder la navigation côté client, alors que `connexionAction` redirige côté
+  serveur : on paierait une demi-seconde d'attente **réelle** à chaque connexion
+  pour une question d'allure. Refusé, et écrit ici pour qu'on ne le « corrige »
+  pas par mégarde.
+
+### Trois corrections qui ne dépendaient d'aucun choix
+
+Elles sont parties avec la refonte, et chacune répare un défaut mesurable :
+
+1. **Les champs passent de 15 à 16 px.** En dessous de 16, iOS agrandit la page
+   dès qu'un champ prend le focus — le patron tapait son adresse et l'écran lui
+   sautait au visage, à charge pour lui de le rétablir. Le jeton
+   `styleChampPlage` l'interdit depuis le 10 août ; cet écran ne s'en servait
+   pas, faute d'avoir été repris.
+2. **Le refus quitte `text-red-600`** — un rouge de bibliothèque — pour
+   `colors.alert`, celui de la charte.
+3. **La place du message est réservée en permanence** (`min-h-[19px]`). Sans
+   elle, l'apparition du refus pousse le bouton d'une ligne, et l'appui suivant
+   tombe à côté.
+
+### L'adresse qui s'effaçait à chaque refus
+
+**Défaut ANTÉRIEUR à cette refonte, jamais signalé, trouvé sur une capture.**
+Sur un mot de passe faux, l'écran répondait « Email ou mot de passe incorrect »
+**et vidait le champ de l'adresse** : il fallait la retaper en entier, sur un
+téléphone, pour un caractère raté ailleurs — et s'il réappuyait sans le voir, le
+navigateur lui opposait un « Please fill out this field » en anglais.
+
+Personne ne l'avait vu parce que **aucune suite ne se trompe de mot de passe** :
+toutes entrent par une session fabriquée, parce que c'est plus rapide.
+`scripts/test-porte-e2e.ts` est la première à passer par où il passe.
+
+**Quatre correctifs sont tombés avant le bon, et la raison vaut d'être écrite :**
+React remet le formulaire à zéro *dans le DOM* après une action, et cette remise
+arrive **après** le rendu qui suit. Ne tiennent donc pas :
+
+| Essai | Pourquoi il tombe |
+|---|---|
+| Champ contrôlé (`value=`) | La propriété `value` n'ayant pas changé d'un rendu à l'autre, React n'écrit rien — le DOM reste vide |
+| Remise en place dans un effet | L'effet passe avant l'effacement |
+| `defaultValue={…}` | React ne pose cette valeur **qu'au montage** et ignore ses changements ensuite |
+| Écrire `champ.defaultValue` par une `ref` | Juste, mais dépendant de l'ordre des opérations |
+
+Ce qui tient : **la `ref` qui tient la valeur par défaut à jour, ET une `key`
+qui remonte le champ à chaque envoi**. Un champ neuf naît avec la bonne valeur
+par défaut ; qu'une remise à zéro arrive avant ou après ne change alors plus
+rien. Le mot de passe, lui, reste effacé — c'est celui qu'on vient de rater.
+
+**Ce qui a fait gagner du temps à la fin :** aller lire l'état réel du
+navigateur (`value`, `defaultValue`, présence des clés React) au lieu de
+raisonner sur ce qu'il aurait dû faire.
+
+### Le serveur de développement n'hydrate pas cet écran, ici
+
+**À savoir avant d'accuser un correctif.** Dans cet environnement, la liaison de
+rechargement à chaud de `next dev` est refusée par le mandataire réseau
+(`ERR_INVALID_HTTP_RESPONSE`). L'écran de connexion n'est alors **pas hydraté** :
+le formulaire part en HTML pur, la page se recharge entièrement, et tout champ
+redevient vide **quel que soit le code**. Sur la version BÂTIE — celle du banc du
+patron — l'interception a bien lieu : le sceau tourne, le bouton se désactive, et
+l'adresse survit. Mesuré, pas supposé.
+
+`test-porte-e2e.ts` **compte les navigations complètes** et annonce les deux
+contrôles concernés « non concluants » plutôt que rouges. Un contrôle qui accuse
+à tort coûte plus cher que pas de contrôle du tout — et celui-ci aurait accusé
+un correctif qui fonctionne.
+
+### Ce qu'on ne touche pas sans regarder ailleurs
+
+`name="email"`, `name="password"` et `type="submit"`. **Vingt scripts de capture
+et `scripts/verifier-connexion.mjs`** — le seul contrôle qui éprouve une vraie
+connexion derrière une origine étrangère — passent par ces trois sélecteurs.
+
+Et le bouton reste **écrit à la main** : `PrimaryButton` impose `type="button"`,
+ce qui casserait l'envoi du formulaire sans qu'aucun type ne s'en aperçoive.
+Seule sa **forme** est partagée, et `scripts/test-boutons-arrondis.ts` la garde
+(voir §67).
+## 72. L'écran d'un devis parti : deux écrans, pas un avec des variantes
+
+**Le 12 août 2026, capture à l'appui :** *« je trouve qu'il y a trop d'infos sur
+cette page »*. Mesuré avant de dessiner : **onze blocs**, et **382 px de
+débordement** sur sa dalle. La carte d'état portait à elle seule six choses,
+dont l'adresse complète du lien sur trois lignes illisibles.
+
+### La décision, et elle n'est pas graphique
+
+Le même écran servait deux moments qui n'ont rien en commun :
+
+- **avant l'envoi**, le patron VÉRIFIE — il a besoin des lignes, du total, de
+  l'aperçu, du rappel du client ;
+- **après l'envoi**, il ATTEND — il vient voir où ça en est, et relancer.
+
+Un empilement de cartes qui sert les deux sert mal les deux. `ExportClient` rend
+donc désormais **deux mises en page distinctes**, et non une avec des conditions.
+Les lignes de prestations vivent du côté « avant » : c'est là qu'on vérifie ce
+qui part, pas après.
+
+La mise en page de l'écran d'attente est **la sienne** — idée 5 de
+`docs/maquettes/34-le-devis-sur-sa-base.html`, « le signet d'or » : un filet d'or
+vertical pour l'état, le nom du devis et le montant seuls au centre, « Modifier
+mon devis » sous le total, le geste et les trois actions en bas sous le pouce.
+
+### La hauteur ne s'écrit pas à la main — deux échecs pour l'apprendre
+
+Le geste doit être **en bas**, sous le pouce. Deux tentatives ont débordé, et
+**c'est la suite qui les a trouvées, pas l'œil** :
+
+| Tentative | Ce qu'elle valait |
+|---|---|
+| `min-height: calc(100vh - 232px)` | 232 = l'en-tête « mesuré ». Débordait de **100 px**, et serait devenu faux au premier mot ajouté à un titre |
+| `min-h-screen` + `pb-16` | Comptait **deux fois** la barre du bas : `main.atlas-contenu` réserve déjà `--atlas-barre`. Débordait de **68 px** |
+
+La bonne réponse existait depuis toujours : **`atlas-ecran`**, la classe de
+l'écran des chantiers — `height: calc(100dvh - var(--atlas-barre) -
+env(safe-area-inset-top))`, colonne, rien qui dépasse. Une seule définition à
+tenir à jour, et elle est déjà juste.
+
+Ce qu'elle impose, et qui est fait : `overflow: hidden` signifie qu'une zone
+doit défiler à l'intérieur, sinon le bas est **coupé sans que rien ne le dise**.
+D'où `.atlas-colonne-defile` — écrite pour être réutilisée, parce que la
+cinquième zone recopiée aurait fini par oublier de masquer sa barre grise, comme
+c'est déjà arrivé au fil des chantiers le 11 août.
+
+**Règle générale, puisqu'elle s'est vérifiée deux fois de suite :** un nombre qui
+décrit la hauteur d'un autre élément est un défaut en attente. Faire partager la
+hauteur, ne pas la soustraire.
+
+### « Modifier mon devis » engage quelque chose, donc il prévient
+
+Le patron a demandé un lien sous le total. Ce lien n'existait pas : jusqu'ici,
+« Devis à la main » **disparaissait** une fois le devis parti, et le rouvrir
+passait par « Corriger et renvoyer » — réservé à un refus.
+
+Vérifié dans le dépôt avant d'écrire l'écran, et c'est ce qui a décidé de la
+forme : `getOuCreerDevisBrouillon` crée bien une nouvelle version dès que la
+dernière est partie, **mais l'envoi déjà fait n'est pas annulé**. La page
+publique sert `envoi.devis` — la version que le client a reçue. Il continue donc
+de la voir, et **peut l'accepter au prix d'avant**, tant qu'une nouvelle n'est
+pas envoyée.
+
+Le taire, c'est laisser le patron croire qu'il a corrigé un prix que son client
+peut encore accepter à l'ancien. Une feuille le dit en trois lignes, une seule
+fois, et se refuse — **et refuser ne crée aucune version**, ce que la suite
+vérifie explicitement (`CLAUDE.md` §4 : rien ne s'engage sans un geste).
+
+**Deux portes vers la même pièce seraient une de trop.** Quand le client a
+refusé, demandé une correction, ou laissé le lien expirer, reprendre le devis EST
+l'action principale : elle garde son bouton plein et « Modifier mon devis »
+s'efface. Tant qu'il réfléchit, c'est l'inverse.
+
+### Ce que la maquette avait perdu, et que le code a rattrapé
+
+**« Plutôt par e-mail » ne figurait dans AUCUNE des cinq propositions.** Ni lui
+ni moi ne l'avions vu. Le livrer ainsi aurait défait sa demande du 4 août —
+*« si je veux l'envoyer par e-mail, je ne peux pas revenir le choisir »*. Il
+reprend sa place sous la ligne du destinataire, qui nomme déjà le canal : c'est
+là qu'on s'aperçoit qu'on s'est trompé de voie.
+
+**Leçon : une maquette validée n'est pas un cahier des charges complet.** Ce
+qu'elle ne montre pas peut être ce qu'on efface sans le savoir. Avant de coder
+d'après une maquette, relire ce que l'écran portait — et nommer ce qui disparaît.
+
+### Le numéro se relit, ou il ne sert à rien
+
+`src/lib/numero-lisible.ts` espace le numéro du destinataire : `0679984514` →
+`06 79 98 45 14`. Ce n'est pas une coquetterie. Cette ligne est **la dernière
+chose que le patron voit avant d'ouvrir sa messagerie**, et le 12 août son devis
+n'est pas parti à cause d'une faute dans une adresse qu'il n'avait pas relue.
+
+**Elle refuse de grouper tout ce qu'elle ne reconnaît pas** — indicatif
+international, poste à quatre chiffres, saisie en cours. Un numéro étranger
+découpé par paires aurait l'apparence d'un numéro français normal tout en étant
+faux : sur une ligne dont l'unique rôle est la vérification, c'est le pire
+résultat possible, pire que de ne rien faire.
+
+**Le lien `sms:` continue de porter le numéro brut** : c'est `lienTransmission`
+qui retire les séparateurs, et jamais l'affichage. Les deux assertions
+coexistent dans `test-transmission-e2e` — le jour où l'affichage contaminerait le
+lien, la première rougirait.
+
+### Ce qu'un écran retire, six contrôles le pleurent
+
+Retirer l'adresse affichée a fait tomber **six contrôles** répartis dans deux
+suites — et aucun ne portait sur l'affichage. Ils lisaient simplement le jeton
+du devis là où il était commode de le lire : à l'écran.
+
+C'est un défaut de contrôle, pas de produit. Un contrôle qui prélève une donnée
+sur un détail d'affichage se lie à ce détail, et rougira le jour où il change —
+en accusant l'écran, jamais lui-même.
+
+**La règle qui en sort :** un contrôle prend ce dont il a besoin **là où la
+chose existe pour de bon** — la base, ou le geste que le doigt touche. Jamais
+dans un texte affiché à côté, à moins que ce texte ne soit précisément ce qu'il
+éprouve.
+
+Et quand un contrôle tombe sur un changement voulu, la question n'est pas
+« comment le faire repasser » mais **« que défendait-il, au juste ? »**. Ici,
+« un devis en attente affiche son lien » défendait en réalité *relancer ne doit
+pas obliger à regénérer un devis*. Réécrit ainsi, il éprouve le geste de relance
+et le nombre de versions en base — et il ne dépend plus de rien qui puisse
+changer sans qu'on le veuille.
+### Une classe niée `[^>]` ne traverse pas une flèche
+
+**Le 12 août 2026 au soir**, `test-boutons-arrondis.ts` laissait passer douze
+boutons carrés sur treize. Son motif — `<(?:button|a)\b[^>]*?rounded-\[…\]` —
+s'arrête au premier chevron, **et `() =>` en porte un**. Tout bouton muni d'un
+`onClick` lui était donc invisible.
+
+C'est le piège général, et il vaut au-delà de ce contrôle : **en JSX, une classe
+niée sur `>` ne délimite pas une balise.** Les accolades y contiennent du
+JavaScript, donc des flèches, des comparaisons, des génériques. Écrire
+`(?:[^>]|=>)` couvre le cas courant ; au-delà, il faut analyser, pas filtrer.
+
+**Et la leçon qui compte davantage :** ce contrôle avait déjà rougi une fois, sur
+le seul bouton sans `onClick`. Il paraissait donc fonctionner. Un contrôle
+confronté à un unique cas — surtout s'il est atypique — n'a rien prouvé : il faut
+l'éprouver sur le cas COURANT, celui qui représente la population qu'il surveille.
+Ici, le témoin porte désormais les deux formes, avec flèche et sans.
+
+---
+
+## 73. La facture part par SMS **ou** par e-mail, et se télécharge
 
 **Le patron, le 10 août 2026, capture à l'appui** (`TODO.md` §8). Trois manques
 sur l'écran Facture, dont deux sont réparés ici. Le troisième — le dessin du
@@ -4889,8 +5483,8 @@ remplace pas le premier.
 principale dessinée sur place échappe à toute décision d'ensemble.
 
 Une demande d'apparence se **dessine** avant de se coder (`CLAUDE.md` §3 bis).
-Deux planches l'ont précédé : `30-le-bouton-de-la-facture.html` (deux dessins
-immobiles) puis, à sa demande, `31-le-bouton-de-la-facture-a-lessai.html` —
+Deux planches l'ont précédé : `38-le-bouton-de-la-facture.html` (deux dessins
+immobiles) puis, à sa demande, `39-le-bouton-de-la-facture-a-lessai.html` —
 cinq gestes qui se pressent. **Il a retenu A, la capsule nue**, et le bouton
 passe désormais par `PrimaryButton`.
 
@@ -4911,13 +5505,13 @@ d'action », qui est le sujet même de ce composant :
 `capture-facture.mts`) : un retour au dessin local les rend rouges. Le
 recensement des actions encore dessinées sur place est dans `TODO.md` §0 octies.
 
-**Les quatre gestes écartés restent dans la maquette 31** — la lueur, le cachet,
+**Les quatre gestes écartés restent dans la maquette 39** — la lueur, le cachet,
 l'encre, le trait. Si le sujet se rouvre, c'est de là qu'il faut repartir : les
 redessiner serait refaire un chemin déjà parcouru.
 
 ---
 
-## 68. Le calendrier ne marquait qu'un jour, et il en fallait deux
+## 74. Le calendrier ne marquait qu'un jour, et il en fallait deux
 
 **Le patron, le 12 août 2026, capture à l'appui :** *« je ne peux pas choisir
 deux jours à partir du planning […] En fait je ne peux choisir que deux jours si

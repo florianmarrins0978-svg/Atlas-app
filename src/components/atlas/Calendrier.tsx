@@ -135,7 +135,7 @@ export default function Calendrier({
                 aria-pressed={etat === "retenu"}
                 aria-label={etat === "occupe" ? `${lisible} — ${libelleOccupe}` : lisible}
                 onClick={() => !inactif && onBasculer(c.jour)}
-                className="flex h-11 items-center justify-center rounded-[4px] text-[15px] transition-colors"
+                className="flex h-11 items-center justify-center rounded-full text-[15px] transition-colors"
                 style={
                   !c.duMois
                     ? { opacity: 0.18 }

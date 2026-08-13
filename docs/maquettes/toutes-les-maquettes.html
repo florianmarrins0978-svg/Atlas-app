@@ -3273,6 +3273,568 @@
 #s27 .pied b{color:var(--encre);font-weight:500}
 
 
+/* 28 — Le devis parti, allégé */
+#s28{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+@media (prefers-color-scheme: dark){
+#s28:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  
+}
+#s28[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+#s28, #s28 *{box-sizing:border-box}
+#s28{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 90px}
+#s28 .page{max-width:1180px;margin:0 auto}
+#s28 .intro{max-width:64ch;margin:0 auto}
+#s28 .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
+#s28 .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
+#s28 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
+#s28 .intro b{color:var(--encre);font-weight:500}
+#s28 .appui{max-width:54ch;margin:22px auto 0;padding:15px 20px;border:1px solid var(--trait);
+         border-radius:6px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s28 .appui b{color:var(--encre);font-weight:500}
+#s28 .famille{margin:56px 0 14px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--gris)}
+#s28 .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
+#s28 .famille span::before,#s28 .famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
+#s28 .famille span::before{right:100%}
+#s28 .famille span::after{left:100%}
+#s28 .sous-titre{max-width:60ch;margin:0 auto 28px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s28 .rangee{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;align-items:flex-start}
+#s28 .cartouche{display:flex;flex-direction:column;align-items:center;gap:13px;max-width:412px}
+#s28 .etiquette{color:var(--bronze);font-size:10px;letter-spacing:.3em;text-transform:uppercase}
+#s28 .cartouche .dit{margin:0;font-size:12.5px;line-height:1.6;color:var(--gris);text-align:center}
+#s28 .cartouche .dit b{color:var(--encre);font-weight:500}
+#s28 .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
+#s28 .ecran{position:relative;overflow:hidden;border-radius:34px;height:664px;
+         display:flex;flex-direction:column;
+         background:#f5f3ee;color:#1c1c1a;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f;
+         --e-trait:rgba(28,28,26,.16); --e-trait-doux:rgba(28,28,26,.07)}
+#s28 .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+#s28 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+#s28 .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+#s28 .retour{padding:22px 26px 0;color:var(--e-gris);font-size:12px;text-decoration:none;display:block}
+#s28 .titre{padding:16px 26px 0}
+#s28 .titre .sur{margin:0;color:var(--e-or)}
+#s28 .titre h1{margin:11px 0 0;font-size:36px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+#s28 .fermeture{height:1px;background:var(--e-trait);margin:20px 26px 0}
+#s28 .corps{flex:1 1 auto;min-height:0;overflow:hidden;padding:0 26px}
+#s28 .corps.defile{overflow:hidden;position:relative}
+#s28 .corps.defile::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56px;
+                       background:linear-gradient(to top,var(--e-fond),transparent);pointer-events:none}
+#s28 .plage{background:var(--e-plage);border-radius:4px;padding:19px 20px;margin-top:16px}
+#s28 .plage.serre{padding:15px 18px}
+#s28 .cle{margin:0 0 4px;color:var(--e-gris)}
+#s28 .val{margin:0;font-size:15px}
+#s28 .separe{border-top:1px solid var(--e-trait);margin:13px 0;height:0}
+#s28 .ligne-devis{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:15px;line-height:1.35}
+#s28 .ligne-devis span:last-child{color:var(--e-gris);line-height:1}
+#s28 .total-gros{margin:0;font:400 32px/1 ui-serif,Georgia,serif;color:var(--e-pin)}
+#s28 .lien-brut{margin:10px 0 0;padding:8px 12px;border-radius:4px;background:var(--e-fond);
+             color:var(--e-gris);font-size:12px;text-align:center;word-break:break-all;line-height:1.45}
+#s28 .doux{display:block;width:100%;margin-top:14px;text-align:center;font-size:14px;
+        color:var(--e-pin);text-decoration:none;font-weight:500;background:none;border:0;
+        font-family:inherit;padding:0;cursor:pointer}
+#s28 .tres-doux{display:block;width:100%;margin-top:9px;text-align:center;font-size:13px;
+             color:var(--e-gris);text-decoration:none;background:none;border:0;font-family:inherit;
+             padding:0;cursor:pointer}
+#s28 .dessous{margin:8px 0 0;text-align:center;font-size:12px;color:var(--e-gris)}
+#s28 .envoi{display:block;width:100%;margin-top:14px;padding:13px;text-align:center;
+         font-size:15px;font-weight:500;color:#fff;text-decoration:none;
+         background:var(--e-pin);border:0;font-family:inherit;cursor:pointer;
+         border-radius:var(--r,4px)}
+#s28 .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;position:relative;z-index:2;
+       background:var(--e-fond)}
+#s28 .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
+#s28 .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-or)}
+#s28 .repli{margin-top:16px;border-top:1px solid var(--e-trait)}
+#s28 .repli summary{list-style:none;cursor:pointer;padding:13px 0 0;color:var(--e-gris);
+                 font-size:13px;display:flex;align-items:center;justify-content:space-between}
+#s28 .repli summary::-webkit-details-marker{display:none}
+#s28 .repli summary .chev{color:var(--e-trait);transition:transform 220ms}
+#s28 .repli[open] summary .chev{transform:rotate(90deg)}
+#s28 .etat-fin{display:flex;align-items:center;gap:11px;margin-top:20px;color:var(--e-or)}
+#s28 .etat-fin::after{content:"";flex:1;height:1px;background:var(--e-trait)}
+#s28 .etat-phrase{margin:9px 0 0;font-size:13.5px;color:var(--e-gris);line-height:1.55}
+#s28 .bande{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;align-items:flex-start}
+#s28 .echantillon{width:236px;padding:22px 20px;border-radius:10px;background:#f5f3ee;
+               border:1px solid var(--trait);text-align:center;
+               --e-pin:#2f3b2f; --e-plage:#faf9f5; --e-gris:#8a8578}
+#s28 .echantillon .rayon{margin:0 0 13px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#8a8578}
+#s28 .echantillon .envoi{margin-top:0}
+#s28 .echantillon .plage{margin-top:11px;padding:11px 13px;text-align:center;font-size:12px;color:#8a8578;
+                      border-radius:var(--r,4px)}
+#s28 .echantillon .quoi{margin:12px 0 0;font-size:12px;line-height:1.55;color:var(--gris)}
+#s28 .note{max-width:64ch;margin:52px auto 0;padding:20px 22px;border:1px solid var(--trait);
+        border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.7}
+#s28 .note h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
+#s28 .note b{color:var(--encre);font-weight:500}
+#s28 .note p{margin:0 0 12px}
+#s28 .note p:last-child{margin-bottom:0}
+#s28 .note table{width:100%;border-collapse:collapse;margin:14px 0 4px;font-size:12.5px}
+#s28 .note th{text-align:left;font-weight:500;color:var(--encre);padding:0 0 7px}
+#s28 .note td{padding:5px 0;border-top:1px solid var(--trait);vertical-align:top}
+#s28 .note td:first-child{white-space:nowrap;padding-right:16px;color:var(--encre)}
+
+
+/* 29 — Le devis parti, sur sa base */
+#s29{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+@media (prefers-color-scheme: dark){
+#s29:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  
+}
+#s29[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+#s29, #s29 *{box-sizing:border-box}
+#s29{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 90px}
+#s29 .page{max-width:1180px;margin:0 auto}
+#s29 .intro{max-width:64ch;margin:0 auto}
+#s29 .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
+#s29 .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
+#s29 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
+#s29 .intro b{color:var(--encre);font-weight:500}
+#s29 .appui{max-width:56ch;margin:22px auto 0;padding:15px 20px;border:1px solid var(--trait);
+         border-radius:6px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s29 .appui b{color:var(--encre);font-weight:500}
+#s29 .famille{margin:56px 0 14px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--gris)}
+#s29 .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
+#s29 .famille span::before,#s29 .famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
+#s29 .famille span::before{right:100%}
+#s29 .famille span::after{left:100%}
+#s29 .sous-titre{max-width:60ch;margin:0 auto 28px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s29 .rangee{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;align-items:flex-start}
+#s29 .cartouche{display:flex;flex-direction:column;align-items:center;gap:13px;max-width:412px}
+#s29 .etiquette{color:var(--bronze);font-size:10px;letter-spacing:.3em;text-transform:uppercase}
+#s29 .cartouche .dit{margin:0;font-size:12.5px;line-height:1.6;color:var(--gris);text-align:center}
+#s29 .cartouche .dit b{color:var(--encre);font-weight:500}
+#s29 .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
+#s29 .ecran{position:relative;overflow:hidden;border-radius:34px;height:664px;
+         display:flex;flex-direction:column;
+         background:#f5f3ee;color:#1c1c1a;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f;
+         --e-trait:rgba(28,28,26,.16); --e-trait-doux:rgba(28,28,26,.07)}
+#s29 .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+#s29 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+#s29 .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+#s29 .retour{padding:22px 26px 0;color:var(--e-gris);font-size:12px;text-decoration:none;display:block}
+#s29 .titre{padding:16px 26px 0}
+#s29 .titre .sur{margin:0;color:var(--e-or)}
+#s29 .titre h1{margin:11px 0 0;font-size:36px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+#s29 .fermeture{height:1px;background:var(--e-trait);margin:20px 26px 0}
+#s29 .corps{flex:1 1 auto;min-height:0;overflow:hidden;padding:0 26px;display:flex;flex-direction:column}
+#s29 .plage{background:var(--e-plage);border-radius:4px;padding:20px;margin-top:18px}
+#s29 .nom-devis{margin:0;color:var(--e-gris);font-size:13px}
+#s29 .montant{margin:9px 0 0;font:400 40px/1 ui-serif,Georgia,serif;color:var(--e-pin);letter-spacing:-.015em}
+#s29 .montant.moyen{font-size:32px}
+#s29 .montant.geant{font-size:52px}
+#s29 .sous-total{display:block;margin-top:16px;padding-top:14px;border-top:1px solid var(--e-trait);
+              color:var(--e-encre);font-size:14px;text-decoration:none;font-weight:500}
+#s29 .sous-total .fl{float:right;color:var(--e-gris);font-weight:400}
+#s29 .etat-fin{display:flex;align-items:center;gap:11px;color:var(--e-or)}
+#s29 .etat-fin::after{content:"";flex:1;height:1px;background:var(--e-trait)}
+#s29 .etat-phrase{margin:9px 0 0;font-size:13.5px;color:var(--e-gris);line-height:1.55}
+#s29 .envoi{display:block;width:100%;padding:13px;text-align:center;
+         font-size:15px;font-weight:500;color:#fff;text-decoration:none;
+         background:var(--e-pin);border:0;font-family:inherit;cursor:pointer;
+         border-radius:var(--r,4px)}
+#s29 .dessous{margin:8px 0 0;text-align:center;font-size:12px;color:var(--e-gris)}
+#s29 .trois{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;
+         font-size:13px;line-height:2.1}
+#s29 .trois a{color:var(--e-encre);text-decoration:none;font-weight:500;padding:0 9px}
+#s29 .trois i{color:var(--e-trait);font-style:normal}
+#s29 .pile{margin-top:4px}
+#s29 .pile a{display:flex;align-items:center;justify-content:space-between;
+          padding:13px 0;border-top:1px solid var(--e-trait);
+          color:var(--e-encre);text-decoration:none;font-size:14px;font-weight:500}
+#s29 .pile a .fl{color:var(--e-trait);font-weight:400}
+#s29 .ecran.serre .pile a{padding:11px 0}
+#s29 .ecran.serre .etat-phrase{margin-top:6px}
+#s29 .ecran.serre .plage{margin-top:12px;padding:17px 20px}
+#s29 .ecran.serre .sous-total{margin-top:13px;padding-top:12px}
+#s29 .pied{margin-top:auto;padding-bottom:4px}
+#s29 .bas{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;position:relative;z-index:2;
+       background:var(--e-fond)}
+#s29 .bas a{text-align:center;text-decoration:none;color:var(--e-gris);padding-bottom:8px}
+#s29 .bas a.on{color:var(--e-encre);box-shadow:inset 0 -1px 0 var(--e-or)}
+#s29 .signet{position:relative;padding-left:17px;margin-top:22px}
+#s29 .signet::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:2px;background:var(--e-or)}
+#s29 .note{max-width:64ch;margin:52px auto 0;padding:20px 22px;border:1px solid var(--trait);
+        border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.7}
+#s29 .note h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
+#s29 .note b{color:var(--encre);font-weight:500}
+#s29 .note p{margin:0 0 12px}
+#s29 .note p:last-child{margin-bottom:0}
+#s29 .note table{width:100%;border-collapse:collapse;margin:14px 0 4px;font-size:12.5px}
+#s29 .note th{text-align:left;font-weight:500;color:var(--encre);padding:0 0 7px}
+#s29 .note td{padding:5px 0;border-top:1px solid var(--trait);vertical-align:top}
+#s29 .note td:first-child{white-space:nowrap;padding-right:16px;color:var(--encre)}
+
+
+/* 30 — L’écran de connexion */
+#s30{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f7f5f0;
+  }
+@media (prefers-color-scheme: dark){
+#s30:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a;
+    }
+
+  
+}
+#s30[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a;
+  }
+#s30, #s30 *{box-sizing:border-box}
+#s30{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+#s30 .page{max-width:1300px;margin:0 auto}
+#s30 .intro{max-width:66ch;margin:0 auto;text-align:center}
+#s30 .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+#s30 .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+#s30 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+#s30 .intro b{color:var(--encre);font-weight:600}
+#s30 .bascule{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s30 .surbascule{display:flex;justify-content:center;margin:30px 0 4px}
+#s30 .surbascule label{cursor:pointer;-webkit-tap-highlight-color:transparent;
+       border:1px solid var(--trait);border-radius:9999px;padding:9px 22px;
+       font-size:13.5px;color:var(--gris);background:var(--plage);
+       transition:color .2s ease,border-color .2s ease}
+#s30 .surbascule label:active{transform:scale(.985)}
+#s30 .bascule:checked ~ .surbascule label{color:var(--or);border-color:var(--or)}
+#s30 .surbascule .off{display:inline}
+#s30 .surbascule .on{display:none}
+#s30 .bascule:checked ~ .surbascule .off{display:none}
+#s30 .bascule:checked ~ .surbascule .on{display:inline}
+#s30 .famille{max-width:1300px;margin:52px auto 0;text-align:center;
+           font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.32em;
+           text-transform:uppercase;color:var(--or)}
+#s30 .grille{display:flex;flex-wrap:wrap;gap:54px 40px;justify-content:center;
+          align-items:flex-start;margin-top:26px}
+#s30 .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px;width:100%}
+#s30 .legende{text-align:center;max-width:390px;width:100%}
+#s30 .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+              text-transform:uppercase;color:var(--or)}
+#s30 .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+#s30 .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+#s30 .legende p + p{margin-top:9px}
+#s30 .legende .reserve{color:var(--encre);opacity:.82}
+#s30 .legende .reserve b{color:var(--or)}
+#s30 .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+#s30 .ecran{width:390px;max-width:100%;height:544px;overflow:hidden;border-radius:32px;
+         display:flex;align-items:center;justify-content:center;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+#s30 .err{min-height:19px;font-size:13px;opacity:0;transition:opacity .2s ease}
+#s30 .bascule:checked ~ .grille .err{opacity:1}
+#s30 .avant{background:#F4EFE8;color:#1c1c1a;padding:24px}
+#s30 .avant .carte{width:100%;max-width:342px;background:#fff;border-radius:4px;padding:24px;
+                box-shadow:0 1px 2px rgba(0,0,0,.05)}
+#s30 .avant h3{margin:0 0 24px;font:600 22px/1.25 ui-serif,Georgia,serif}
+#s30 .avant .lib{display:block;margin-bottom:4px;font-size:12px;font-weight:500;color:rgba(28,28,26,.6)}
+#s30 .avant .champ{width:100%;border:1px solid rgba(0,0,0,.1);border-radius:4px;padding:10px 16px;
+                font-size:15px;color:#1c1c1a;background:#fff;margin-bottom:16px}
+#s30 .avant .err{color:#dc2626;margin-bottom:16px}
+#s30 .avant .bouton{width:100%;border:0;border-radius:9999px;background:#B5502F;color:#fff;
+                 padding:12px 0;font-size:15px;font-weight:500;text-align:center}
+#s30 .apres{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-alerte:#9C3B2E;
+    --e-trait:rgba(28,28,26,.12);
+    background:var(--e-fond);color:var(--e-encre);padding:26px 24px}
+#s30 .apres .bloc{width:100%;max-width:342px}
+#s30 .apres .lib{display:block;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+              text-transform:uppercase;color:var(--e-gris);margin-bottom:9px}
+#s30 .apres .champ{width:100%;font-size:16px;color:var(--e-encre);margin-bottom:18px}
+#s30 .apres .err{color:var(--e-alerte);margin-bottom:14px}
+#s30 .apres .capsule{display:inline-flex;align-items:center;justify-content:center;
+                  border:0;border-radius:9999px;background:var(--e-pin);color:#faf9f5;
+                  padding:13px 36px;font:400 17px/1 ui-serif,Georgia,serif}
+#s30 .apres .centrer{display:flex;justify-content:center}
+#s30 .p1 .carte{background:var(--e-plage);border-radius:4px;padding:26px 22px}
+#s30 .p1 h3{margin:0 0 22px;font:400 25px/1.2 ui-serif,Georgia,serif}
+#s30 .p1 .champ{border:1px solid var(--e-trait);border-radius:4px;padding:13px 15px;background:transparent}
+#s30 .p2 h3{margin:0 0 12px;font:400 27px/1.2 ui-serif,Georgia,serif}
+#s30 .p2 .filet{width:34px;height:1.5px;background:var(--e-or);margin:0 0 28px}
+#s30 .p2 .champ{border:0;border-radius:4px;padding:14px 15px;background:var(--e-plage)}
+#s30 .p3{text-align:center}
+#s30 .p3 .sceau{width:56px;height:56px;border:1.5px solid var(--e-or);border-radius:9999px;
+             display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+#s30 .p3 .mot{display:block;font:400 21px/1 ui-serif,Georgia,serif;letter-spacing:.3em;margin-bottom:30px}
+#s30 .p3 .lib{text-align:left}
+#s30 .p3 .champ{border:0;border-radius:4px;padding:14px 15px;background:var(--e-plage);text-align:left}
+#s30 .p4 h3{margin:0 0 6px;font:400 27px/1.2 ui-serif,Georgia,serif}
+#s30 .p4 .sous{margin:0 0 30px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+#s30 .p4 .champ{border:0;border-bottom:1px solid var(--e-trait);border-radius:0;padding:0 0 10px;
+             background:transparent;margin-bottom:22px}
+#s30 .p4 .lib{margin-bottom:7px}
+#s30 .p4 .actif{border-bottom-color:var(--e-or)}
+#s30 .note{max-width:74ch;margin:62px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+#s30 .note b{color:var(--encre)}
+#s30 .note .t{display:block;margin-bottom:8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+
+
+/* 31 — Le logo qui s’anime */
+#s31{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f7f5f0;
+  }
+@media (prefers-color-scheme: dark){
+#s31:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a;
+    }
+
+  
+}
+#s31[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a;
+  }
+#s31, #s31 *{box-sizing:border-box}
+#s31{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+#s31 .page{max-width:1300px;margin:0 auto}
+#s31 .intro{max-width:66ch;margin:0 auto;text-align:center}
+#s31 .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+#s31 .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+#s31 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+#s31 .intro b{color:var(--encre);font-weight:600}
+#s31 .grille{display:flex;flex-wrap:wrap;gap:54px 40px;justify-content:center;
+          align-items:flex-start;margin-top:40px}
+#s31 .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px;width:100%}
+#s31 .legende{text-align:center;max-width:390px;width:100%}
+#s31 .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+              text-transform:uppercase;color:var(--or)}
+#s31 .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+#s31 .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+#s31 .legende p + p{margin-top:9px}
+#s31 .legende .reserve{color:var(--encre);opacity:.82}
+#s31 .legende .reserve b{color:var(--or)}
+#s31 .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+#s31 .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
+    position:relative;width:390px;max-width:100%;height:544px;overflow:hidden;
+    border-radius:32px;background:var(--e-fond);color:var(--e-encre);
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+#s31 .go{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s31 .scene{display:grid;width:100%;height:100%}
+#s31 .scene > *{grid-area:1/1}
+#s31 .conn{display:flex;flex-direction:column;justify-content:center;
+        align-items:center;padding:26px 24px;text-align:center}
+#s31 .bloc{width:100%;max-width:342px}
+#s31 .sceau{position:relative;width:60px;height:60px;margin:0 auto 16px;display:block}
+#s31 .anneau{position:absolute;inset:0;overflow:visible}
+#s31 .anneau circle{fill:none;stroke:var(--e-or);stroke-width:1.5}
+#s31 .feuille{position:absolute;left:50%;top:50%;width:29px;height:29px;transform:translate(-50%,-50%)}
+#s31 .feuille path{fill:none;stroke:var(--e-pin);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+#s31 .feuille.or path{stroke:var(--e-or)}
+#s31 .feuille.or{clip-path:inset(100% 0 0 0)}
+#s31 .mot{display:block;font:400 21px/1 ui-serif,Georgia,serif;letter-spacing:.3em;margin-bottom:32px}
+#s31 .lib{display:block;text-align:left;font:500 9.5px/1 ui-sans-serif,sans-serif;
+       letter-spacing:.28em;text-transform:uppercase;color:var(--e-gris);margin-bottom:8px}
+#s31 .champ{width:100%;font:400 16px/1.4 inherit;color:var(--e-encre);text-align:left;
+         background:transparent;border:0;border-bottom:1px solid var(--e-trait);
+         border-radius:0;padding:0 0 10px;margin-bottom:22px;outline:none;
+         -webkit-appearance:none;appearance:none;transition:border-color .22s ease}
+#s31 .champ:focus{border-bottom-color:var(--e-or)}
+#s31 .capsule{display:inline-flex;align-items:center;justify-content:center;
+           border:0;border-radius:9999px;background:var(--e-pin);color:#faf9f5;
+           padding:13px 36px;font:400 17px/1 ui-serif,Georgia,serif;
+           cursor:pointer;-webkit-tap-highlight-color:transparent;
+           transition:transform .15s ease}
+#s31 .capsule:active{transform:scale(.985)}
+#s31 .centrer{display:flex;justify-content:center}
+#s31 .appli{opacity:0;pointer-events:none;padding:34px 24px;text-align:left}
+#s31 .appli .sur{margin:0 0 12px;font:500 9.5px/1 ui-sans-serif,sans-serif;
+              letter-spacing:.28em;text-transform:uppercase;color:var(--e-or)}
+#s31 .appli h4{margin:0 0 10px;font:400 27px/1.2 ui-serif,Georgia,serif}
+#s31 .appli .filet{width:34px;height:1.5px;background:var(--e-or);margin:0 0 26px}
+#s31 .appli .ligne{padding:15px 0;border-bottom:1px solid var(--e-trait)}
+#s31 .appli .ligne .nom{font:400 18px/1.2 ui-serif,Georgia,serif}
+#s31 .appli .ligne .ou{margin-top:5px;font-size:11.5px;color:var(--e-gris)}
+#s31 .rejouer{display:inline-flex;margin-top:30px;border:1px solid var(--e-trait);
+           border-radius:9999px;padding:9px 20px;font-size:13px;color:var(--e-gris);
+           cursor:pointer;-webkit-tap-highlight-color:transparent}
+@keyframes s31-sortir{ to{opacity:0;transform:scale(.985)} }
+@keyframes s31-entrer{ from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+#s31 .go:checked ~ .scene .conn{animation:s31-sortir .28s ease .52s forwards;pointer-events:none}
+#s31 .go:checked ~ .scene .appli{animation:s31-entrer .34s ease .58s forwards;pointer-events:auto}
+@media (prefers-reduced-motion: reduce){
+#s31 .go:checked ~ .scene .conn{opacity:0;pointer-events:none}
+#s31 .go:checked ~ .scene .appli{opacity:1;pointer-events:auto}
+#s31 .go:checked ~ .scene .sceau *{animation:none !important}
+
+  
+}
+@keyframes s31-tracer{ from{stroke-dashoffset:1} to{stroke-dashoffset:0} }
+#s31 .p1 .go:checked ~ .scene .anneau circle{
+    stroke-dasharray:1;transform:rotate(-90deg);transform-origin:center;
+    animation:s31-tracer .5s cubic-bezier(.4,0,.2,1) infinite}
+#s31 .p2 .go:checked ~ .scene .feuille path{
+    stroke-dasharray:1;animation:s31-tracer .5s ease-out infinite}
+#s31 .p2 .go:checked ~ .scene .feuille path:nth-child(1){animation-duration:.2s}
+#s31 .p2 .go:checked ~ .scene .feuille path:nth-child(2),#s31 .p2 .go:checked ~ .scene .feuille path:nth-child(3){animation-duration:.3s;animation-delay:.16s}
+#s31 .p2 .go:checked ~ .scene .feuille path:nth-child(4),#s31 .p2 .go:checked ~ .scene .feuille path:nth-child(5){animation-duration:.28s;animation-delay:.26s}
+@keyframes s31-tour{ to{transform:rotate(360deg)} }
+#s31 .p3 .go:checked ~ .scene .sceau{animation:s31-tour .5s cubic-bezier(.55,0,.25,1) infinite}
+@keyframes s31-battre{ 0%{transform:scale(1)} 40%{transform:scale(1.09)} 100%{transform:scale(1)} }
+@keyframes s31-onde{ 0%{transform:scale(1);opacity:.55} 100%{transform:scale(1.7);opacity:0} }
+#s31 .p4 .sceau::after{content:"";position:absolute;inset:0;border-radius:9999px;
+                    border:1.5px solid var(--e-or);opacity:0}
+#s31 .p4 .go:checked ~ .scene .sceau{animation:s31-battre .5s ease-out infinite}
+#s31 .p4 .go:checked ~ .scene .sceau::after{animation:s31-onde .5s ease-out infinite}
+@keyframes s31-monter{ from{clip-path:inset(100% 0 0 0)} to{clip-path:inset(0 0 0 0)} }
+#s31 .p5 .go:checked ~ .scene .feuille.or{animation:s31-monter .5s cubic-bezier(.4,0,.2,1) infinite}
+@keyframes s31-frapper{
+    0%{transform:scale(1.22);opacity:.25}
+    55%{transform:scale(.97);opacity:1}
+    75%{transform:scale(1.02)}
+    100%{transform:scale(1);opacity:1} }
+@keyframes s31-encrer{ 0%{stroke:var(--e-or)} 100%{stroke:var(--e-pin)} }
+#s31 .p6 .go:checked ~ .scene .sceau{animation:s31-frapper .5s cubic-bezier(.3,1.4,.5,1) infinite}
+#s31 .p6 .go:checked ~ .scene .feuille path{animation:s31-encrer .5s ease-out infinite}
+#s31 .note{max-width:74ch;margin:62px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+#s31 .note b{color:var(--encre)}
+#s31 .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+
+
+/* 32 — Le motif dans le rond d’or */
+#s32{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f7f5f0;
+  }
+@media (prefers-color-scheme: dark){
+#s32:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a;
+    }
+
+  
+}
+#s32[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a;
+  }
+#s32, #s32 *{box-sizing:border-box}
+#s32{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+#s32 .page{max-width:1300px;margin:0 auto}
+#s32 .intro{max-width:66ch;margin:0 auto;text-align:center}
+#s32 .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+#s32 .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+#s32 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+#s32 .intro b{color:var(--encre);font-weight:600}
+#s32 .bande{--e-pin:#2f3b2f; --e-or:#B98B47;
+         display:flex;flex-wrap:wrap;justify-content:center;gap:22px 26px;
+         max-width:640px;margin:34px auto 0;padding:24px 20px;
+         border-radius:14px;background:#f5f3ee}
+#s32 .vignette{display:flex;flex-direction:column;align-items:center;gap:9px}
+#s32 .petit-sceau{position:relative;width:60px;height:60px;display:block}
+#s32 .vignette .no{font-size:11px;color:#8a8578;letter-spacing:.1em}
+#s32 .legende-bande{max-width:52ch;margin:14px auto 0;text-align:center;
+                 font-size:12.6px;color:var(--gris);line-height:1.6}
+#s32 .grille{display:flex;flex-wrap:wrap;gap:54px 40px;justify-content:center;
+          align-items:flex-start;margin-top:44px}
+#s32 .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px;width:100%}
+#s32 .legende{text-align:center;max-width:390px;width:100%}
+#s32 .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+              text-transform:uppercase;color:var(--or)}
+#s32 .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+#s32 .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+#s32 .legende p + p{margin-top:9px}
+#s32 .legende .reserve{color:var(--encre);opacity:.82}
+#s32 .legende .reserve b{color:var(--or)}
+#s32 .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+#s32 .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
+    position:relative;width:390px;max-width:100%;height:544px;overflow:hidden;
+    border-radius:32px;background:var(--e-fond);color:var(--e-encre);
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+#s32 .go{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s32 .scene{display:grid;width:100%;height:100%}
+#s32 .scene > *{grid-area:1/1}
+#s32 .conn{display:flex;flex-direction:column;justify-content:center;
+        align-items:center;padding:26px 24px;text-align:center}
+#s32 .bloc{width:100%;max-width:342px}
+#s32 .sceau{position:relative;width:60px;height:60px;margin:0 auto 16px;display:block}
+#s32 .anneau{position:absolute;inset:0;overflow:visible}
+#s32 .anneau circle{fill:none;stroke:var(--e-or);stroke-width:1.5}
+#s32 .feuille{position:absolute;left:50%;top:50%;width:29px;height:29px;transform:translate(-50%,-50%)}
+#s32 .feuille path,#s32 .feuille circle,#s32 .feuille ellipse{
+    fill:none;stroke:var(--e-pin);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+#s32 .mot{display:block;font:400 21px/1 ui-serif,Georgia,serif;letter-spacing:.3em;margin-bottom:32px}
+#s32 .lib{display:block;text-align:left;font:500 9.5px/1 ui-sans-serif,sans-serif;
+       letter-spacing:.28em;text-transform:uppercase;color:var(--e-gris);margin-bottom:8px}
+#s32 .champ{width:100%;font:400 16px/1.4 inherit;color:var(--e-encre);text-align:left;
+         background:transparent;border:0;border-bottom:1px solid var(--e-trait);
+         border-radius:0;padding:0 0 10px;margin-bottom:22px;outline:none;
+         -webkit-appearance:none;appearance:none;transition:border-color .22s ease}
+#s32 .champ:focus{border-bottom-color:var(--e-or)}
+#s32 .capsule{display:inline-flex;align-items:center;justify-content:center;
+           border:0;border-radius:9999px;background:var(--e-pin);color:#faf9f5;
+           padding:13px 36px;font:400 17px/1 ui-serif,Georgia,serif;
+           cursor:pointer;-webkit-tap-highlight-color:transparent;
+           transition:transform .15s ease}
+#s32 .capsule:active{transform:scale(.985)}
+#s32 .centrer{display:flex;justify-content:center}
+#s32 .appli{opacity:0;pointer-events:none;padding:34px 24px;text-align:left}
+#s32 .appli .sur{margin:0 0 12px;font:500 9.5px/1 ui-sans-serif,sans-serif;
+              letter-spacing:.28em;text-transform:uppercase;color:var(--e-or)}
+#s32 .appli h4{margin:0 0 10px;font:400 27px/1.2 ui-serif,Georgia,serif}
+#s32 .appli .filet{width:34px;height:1.5px;background:var(--e-or);margin:0 0 26px}
+#s32 .appli .ligne{padding:15px 0;border-bottom:1px solid var(--e-trait)}
+#s32 .appli .ligne .nom{font:400 18px/1.2 ui-serif,Georgia,serif}
+#s32 .appli .ligne .ou{margin-top:5px;font-size:11.5px;color:var(--e-gris)}
+#s32 .rejouer{display:inline-flex;margin-top:30px;border:1px solid var(--e-trait);
+           border-radius:9999px;padding:9px 20px;font-size:13px;color:var(--e-gris);
+           cursor:pointer;-webkit-tap-highlight-color:transparent}
+@keyframes s32-tour{ to{transform:rotate(360deg)} }
+@keyframes s32-sortir{ to{opacity:0;transform:scale(.985)} }
+@keyframes s32-entrer{ from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+#s32 .go:checked ~ .scene .sceau{animation:s32-tour .5s cubic-bezier(.55,0,.25,1) infinite}
+#s32 .go:checked ~ .scene .conn{animation:s32-sortir .28s ease .52s forwards;pointer-events:none}
+#s32 .go:checked ~ .scene .appli{animation:s32-entrer .34s ease .58s forwards;pointer-events:auto}
+@media (prefers-reduced-motion: reduce){
+#s32 .go:checked ~ .scene .conn{opacity:0;pointer-events:none}
+#s32 .go:checked ~ .scene .appli{opacity:1;pointer-events:auto}
+#s32 .go:checked ~ .scene .sceau{animation:none !important}
+
+  
+}
+#s32 .note{max-width:74ch;margin:62px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+#s32 .note b{color:var(--encre)}
+#s32 .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+
+
 </style>
 
 <div class="enveloppe">
@@ -3398,6 +3960,28 @@
       <a class="item retenu" href="#m27">
         <span class="no">27</span><span class="titre">Le bouton, huit façons</span><span class="fleche">↓</span>
         <span class="quoi">« Trop gros, carré. » Filet, bandeau fin, plaque gravée, sceau, capsule, double filet, trait d’or, angle adouci. La capsule est retenue.</span>
+      </a>
+      <p class="famille">Dire moins sur l’écran du devis</p>
+      <a class="item retenu" href="#m28">
+        <span class="no">28</span><span class="titre">Le devis parti, allégé</span><span class="fleche">↓</span>
+        <span class="quoi">« Trop d’infos sur cette page » : l’écran en porte onze blocs et déborde de 382 px. Quatre façons de retrancher — l’adresse effacée, l’état monté dans le titre, le devis replié, ou le geste seul sous le pouce — et la question du bouton « carré », mesurée : il est déjà au rayon des cartes.</span>
+      </a>
+      <a class="item retenu" href="#m29">
+        <span class="no">29</span><span class="titre">Le devis parti, sur sa base</span><span class="fleche">↓</span>
+        <span class="quoi">Ce qu’il a arrêté : le nom du devis et le total, plus de lignes, « Modifier mon devis » sous le total, et les trois actions en encre foncée. Sa base au mot près, puis quatre façons de la tenir — sans carte, dans le titre, les actions empilées, ou le signet d’or.</span>
+      </a>
+      <p class="famille">La dernière porte</p>
+      <a class="item" href="#m30">
+        <span class="no">30</span><span class="titre">L’écran de connexion</span><span class="fleche">↓</span>
+        <span class="quoi">Le seul écran resté dans l’identité d’avant le 3 août. L’avant, puis quatre après : la carte gardée, sans carte, le sceau, la ligne d’imprimé. Un bouton montre le refus de connexion sur les cinq écrans à la fois.</span>
+      </a>
+      <a class="item" href="#m31">
+        <span class="no">31</span><span class="titre">Le logo qui s’anime</span><span class="fleche">↓</span>
+        <span class="quoi">La proposition 4 sans son titre, le sceau et ATLAS au-dessus, et la marque qui s’anime une demi-seconde avant d’entrer. Ça s’essaie : on appuie sur « Entrer », l’application arrive. Six animations, l’écran étant identique partout.</span>
+      </a>
+      <a class="item" href="#m32">
+        <span class="no">32</span><span class="titre">Le motif dans le rond d’or</span><span class="fleche">↓</span>
+        <span class="quoi">Le tour est retenu ; seule la gravure change. Huit motifs, et une bande en tête qui les montre à leur taille réelle — c’est là que se juge lequel tient encore à six millimètres.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -12527,6 +13111,1544 @@
         rendu final sera plus dessiné.</li>
     </ul>
   </div>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m28">
+    <div class="etape-tete">
+      <span class="etape-no">28</span>
+      <h2>Le devis parti, allégé</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s28">
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Maquette 33</p>
+    <h1>Le devis parti, allégé</h1>
+    <p><b>« Je trouve qu'il y a trop d'infos sur cette page. »</b> Cet écran porte
+    aujourd'hui onze blocs, et il faut faire défiler pour les voir tous.</p>
+    <p>Quatre façons de retrancher — et elles ne retranchent pas au même endroit.
+    Ce n'est donc pas quatre habillages : c'est quatre <b>choix de ce qu'on perd</b>.
+    Le témoin est en tête, parce qu'une proposition ne se juge pas seule.</p>
+    <div class="appui">
+      Tout ce qui suit est à la taille de votre écran — <b>390 × 664</b>.
+      Ce qui tient sans défiler ici tiendra sans défiler chez vous.
+    </div>
+  </div>
+
+  <!-- ══ TÉMOIN ══════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>Ce que vous voyez aujourd'hui</span></p>
+  <p class="sous-titre">Onze blocs. La capture s'arrête au bas de l'écran, et il en reste
+    dessous — c'est exactement ce que vous avez signalé.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Témoin</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps defile">
+          <div class="plage">
+            <p class="cle caps">Chantier</p>
+            <p class="val">Taille haie de laurier — 12 rue des Ormes</p>
+            <div class="separe"></div>
+            <p class="cle caps">Client</p>
+            <p class="val">Florian Martin — 06 79 98 45 14</p>
+          </div>
+
+          <div class="plage">
+            <p class="cle caps" style="margin-bottom:10px">Lignes du devis</p>
+            <p class="ligne-devis"><span>Taille haie de laurier</span><span class="num">700,00 €</span></p>
+          </div>
+
+          <div class="plage" style="text-align:center">
+            <p class="cle caps" style="margin-bottom:6px">Total</p>
+            <p class="total-gros num serif">840,00 €</p>
+          </div>
+
+          <a class="doux" href="#">Télécharger le PDF</a>
+
+          <div class="plage">
+            <p class="cle caps" style="color:#2f3b2f;text-align:center;margin-bottom:6px">En attente de réponse</p>
+            <p class="dessous" style="font-size:14px">Le client choisit sa date. Le chantier attend sa réponse.</p>
+            <p class="dessous" style="font-size:13px;color:#1c1c1a;margin-top:12px">Le lien est toujours actif — renvoyez-le tel quel pour relancer.</p>
+            <p class="lien-brut">https://reimagined-space-yodel-jr4j6wwg6vjg34rv-3000.app.github.dev/devis/rgp1DZ4Lg_2nxG1SrpkC9Wo60S1MNdm5tQDveIFUdv8</p>
+            <button class="doux" type="button">Copier le lien</button>
+            <a class="envoi" href="#">Ouvrir le SMS tout prêt</a>
+            <p class="dessous">Au 0679984514 — c'est vous qui l'envoyez.</p>
+            <button class="doux" type="button">Plutôt par e-mail →</button>
+            <button class="tres-doux" type="button">Partager autrement (WhatsApp…)</button>
+          </div>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Onze blocs.</b> Trois lignes d'adresse illisible, deux phrases qui
+      disent la même chose, quatre façons d'envoyer empilées l'une sous l'autre.</p>
+    </div>
+  </div>
+
+  <!-- ══ A ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>A · On efface l'adresse</span></p>
+  <p class="sous-titre">La retouche la plus courte : les trois lignes d'adresse disparaissent,
+    et la phrase en double aussi. Rien ne change de place — tous vos repères restent où ils sont.
+    <b>Mesuré : cela ne suffisait pas.</b> Il fallait retirer aussi la carte « Chantier / Client »,
+    qui redisait le numéro affiché deux blocs plus bas.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Proposition A</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <div class="plage">
+            <p class="cle caps" style="margin-bottom:10px">Lignes du devis</p>
+            <p class="ligne-devis"><span>Taille haie de laurier</span><span class="num">700,00 €</span></p>
+            <div class="separe"></div>
+            <p class="ligne-devis" style="font-size:16px"><span>Total</span><span class="num serif" style="color:#2f3b2f;font-size:21px">840,00 €</span></p>
+          </div>
+
+          <div class="plage">
+            <p class="cle caps" style="color:#2f3b2f;text-align:center;margin-bottom:6px">En attente de réponse</p>
+            <p class="dessous" style="font-size:13.5px">Le lien reste actif : renvoyez-le tel quel pour relancer.</p>
+            <a class="envoi" href="#" style="--r:4px">Ouvrir le SMS tout prêt</a>
+            <p class="dessous">Au 06 79 98 45 14 — c'est vous qui l'envoyez.</p>
+            <button class="doux" type="button">Plutôt par e-mail →</button>
+          </div>
+
+          <a class="tres-doux" href="#">Télécharger le PDF · Copier le lien · Partager autrement</a>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Six blocs, et tout tient sans défiler.</b> L'adresse existe encore —
+      « Copier le lien » la met dans le presse-papier — elle n'occupe simplement plus l'écran.
+      <br><br><b>Ce qu'on perd :</b> vous ne relisez plus l'adresse à l'œil, et le nom du client
+      n'est plus rappelé en haut — seulement son numéro, sous le bouton.</p>
+    </div>
+  </div>
+
+  <!-- ══ B ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>B · L'état monte dans le titre</span></p>
+  <p class="sous-titre">« En attente de réponse » n'est pas une action : c'est une situation.
+    Elle rejoint donc le titre, là où l'écran dit déjà de quoi il parle — et la carte d'état
+    disparaît complètement. Ne reste, en bas, que le geste.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Proposition B</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+          <p class="caps" style="margin:13px 0 0;color:#B98B47">En attente de réponse</p>
+          <p class="etat-phrase" style="margin-top:7px">Envoyé il y a 2 jours. Le client choisit sa date.</p>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <div class="plage">
+            <p class="ligne-devis"><span>Taille haie de laurier</span><span class="num">700,00 €</span></p>
+            <div class="separe"></div>
+            <p class="ligne-devis" style="font-size:16px"><span>Total</span><span class="num serif" style="color:#2f3b2f;font-size:21px">840,00 €</span></p>
+          </div>
+
+          <a class="envoi" href="#" style="--r:4px;margin-top:20px">Relancer par SMS</a>
+          <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+
+          <details class="repli">
+            <summary><span>Autrement</span><span class="chev">›</span></summary>
+            <button class="doux" type="button" style="margin-top:12px">Plutôt par e-mail →</button>
+            <button class="tres-doux" type="button">Copier le lien</button>
+            <button class="tres-doux" type="button">Partager autrement (WhatsApp…)</button>
+            <a class="tres-doux" href="#">Télécharger le PDF</a>
+          </details>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Quatre blocs.</b> Le titre porte l'état — et gagne au passage
+      <b>« il y a 2 jours »</b>, que l'écran ne disait nulle part. Un seul bouton, et son
+      libellé dit ce qu'il fait vraiment : <b>relancer</b>, pas « ouvrir ».
+      <br><br><b>Ce qu'on perd :</b> les autres canaux demandent un appui de plus.</p>
+    </div>
+  </div>
+
+  <!-- ══ C ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>C · Le devis se replie</span></p>
+  <p class="sous-titre">Une fois le devis parti, son contenu ne vous sert plus qu'en cas de
+    doute : vous venez ici pour relancer, pas pour relire. Le devis se réduit donc à une
+    ligne, et s'ouvre si vous le demandez.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Proposition C</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <div class="etat-fin"><span class="caps">En attente de réponse</span></div>
+          <p class="etat-phrase">Parti il y a 2 jours chez <b style="color:#1c1c1a;font-weight:400">Florian Martin</b>.
+            Il consulte le devis et choisit sa date.</p>
+
+          <div class="plage" style="margin-top:22px">
+            <p class="ligne-devis" style="font-size:16px">
+              <span style="color:#8a8578">Devis nº 2026-014</span>
+              <span class="num serif" style="color:#2f3b2f;font-size:26px">840,00 €</span>
+            </p>
+            <details class="repli" style="margin-top:13px">
+              <summary><span>Le détail et le PDF</span><span class="chev">›</span></summary>
+              <p class="ligne-devis" style="margin-top:13px"><span>Taille haie de laurier</span><span class="num">700,00 €</span></p>
+              <a class="tres-doux" href="#" style="margin-top:11px">Télécharger le PDF</a>
+            </details>
+          </div>
+
+          <a class="envoi" href="#" style="--r:4px;margin-top:22px">Relancer par SMS</a>
+          <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+          <button class="doux" type="button">Plutôt par e-mail →</button>
+          <button class="tres-doux" type="button">Copier le lien · Partager autrement</button>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Cinq blocs, et beaucoup de vide.</b> L'état n'est plus une carte mais
+      <b>un filet</b> — les cartes sont réservées à ce qui a un contenu. Le montant reste gros :
+      c'est la seule chose qu'on relit vraiment.
+      <br><br><b>Ce qu'on perd :</b> le détail des lignes demande un appui.</p>
+    </div>
+  </div>
+
+  <!-- ══ D ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>D · Une chose à faire, et rien d'autre</span></p>
+  <p class="sous-titre">Le plus radical. L'écran ne montre que ce que vous êtes venu chercher :
+    où en est ce devis, et le geste pour le relancer. Tout le reste — le détail, le PDF, le lien,
+    les autres canaux — vit derrière une seule ligne.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Proposition D</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps" style="display:flex;flex-direction:column">
+          <div style="margin-top:34px;text-align:center">
+            <p class="caps" style="margin:0;color:#B98B47">En attente de réponse</p>
+            <p class="num serif" style="margin:18px 0 0;font-size:44px;line-height:1;color:#2f3b2f">840,00 €</p>
+            <p class="etat-phrase" style="margin-top:16px">Parti il y a 2 jours chez Florian Martin.<br>Il choisit sa date.</p>
+          </div>
+
+          <div style="margin-top:auto;padding-bottom:6px">
+            <a class="envoi" href="#" style="--r:4px">Relancer par SMS</a>
+            <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+            <details class="repli">
+              <summary><span>Le devis, le PDF, les autres envois</span><span class="chev">›</span></summary>
+              <p class="ligne-devis" style="margin-top:13px"><span>Taille haie de laurier</span><span class="num">700,00 €</span></p>
+              <button class="doux" type="button" style="margin-top:12px">Plutôt par e-mail →</button>
+              <button class="tres-doux" type="button">Copier le lien</button>
+              <a class="tres-doux" href="#">Télécharger le PDF</a>
+            </details>
+          </div>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Trois blocs.</b> Le montant devient la pièce maîtresse, le geste est
+      posé <b>en bas, sous le pouce</b>. C'est la mise en page d'un écran d'attente — pas
+      d'un tableau de bord.
+      <br><br><b>Ce qu'on perd :</b> le plus. Rien du devis n'est visible sans un appui.</p>
+    </div>
+  </div>
+
+  <!-- ══ LE RAYON ════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>Et le bouton « carré »</span></p>
+  <p class="sous-titre">Vous l'avez dit : <b>« le bouton est toujours carré, pas arrondi comme
+    tous les autres »</b>. Voici ce que j'ai mesuré avant de dessiner — et pourquoi vous avez
+    raison sans que le bouton soit en cause.</p>
+
+  <div class="appui" style="max-width:64ch;text-align:left">
+    <b>Ce bouton a déjà exactement le même rayon que les cartes : 4 px.</b> Ce n'est donc pas
+    un oubli. Mais un rayon de 4 px sur un <b>aplat vert foncé</b> ne se voit pas : le coin
+    est franc, l'œil lit un carré. Sur une carte crème posée sur un fond crème, le même
+    rayon se lit — le contraste est cent fois plus faible, et le coin fond dans la page.
+    <br><br>
+    Autrement dit : pour <b>paraître</b> aussi arrondi qu'une carte, un bouton plein doit
+    être <b>plus</b> arrondi qu'elle. Choisissez ci-dessous — la carte grise sous chaque
+    bouton porte le même rayon, pour que vous jugiez les deux ensemble.
+  </div>
+
+  <div class="bande" style="margin-top:32px">
+    <div class="echantillon" style="--r:4px">
+      <p class="rayon">4 px — aujourd'hui</p>
+      <a class="envoi" href="#">Relancer par SMS</a>
+      <div class="plage">la carte, au même rayon</div>
+      <p class="quoi">Le rayon actuel, partout dans l'application. Sur le vert, il ne se voit pas.</p>
+    </div>
+    <div class="echantillon" style="--r:8px">
+      <p class="rayon">8 px</p>
+      <a class="envoi" href="#">Relancer par SMS</a>
+      <div class="plage">la carte, au même rayon</div>
+      <p class="quoi">Le coin devient perceptible sans que l'écran perde sa tenue de pièce imprimée.</p>
+    </div>
+    <div class="echantillon" style="--r:12px">
+      <p class="rayon">12 px</p>
+      <a class="envoi" href="#">Relancer par SMS</a>
+      <div class="plage">la carte, au même rayon</div>
+      <p class="quoi">Franchement arrondi. On commence à retrouver l'allure « application » que vous aviez écartée le 10 août.</p>
+    </div>
+    <div class="echantillon" style="--r:999px">
+      <p class="rayon">Pilule</p>
+      <a class="envoi" href="#">Relancer par SMS</a>
+      <div class="plage">la carte, au même rayon</div>
+      <p class="quoi">La forme que l'application avait avant le 10 août, et que vous aviez fait retirer.</p>
+    </div>
+  </div>
+
+  <div class="appui" style="max-width:64ch;margin-top:26px">
+    <b>Si vous choisissez un rayon</b>, il ne s'appliquera pas qu'ici : ce bouton est sur
+    vingt-sept écrans. C'est voulu — deux formes de bouton dans la même application, c'est
+    exactement ce qu'on vient de finir de démêler.
+  </div>
+
+  <!-- ══ NOTE ═══════════════════════════════════════════════════════════ -->
+  <div class="note">
+    <h2>Ce qu'il faut me dire</h2>
+    <p><b>Une lettre, et un rayon.</b> A, B, C ou D — et 4, 8, 12 ou pilule. Rien d'autre
+    n'est nécessaire ; si vous voulez panacher (« le D, mais garde le détail visible comme
+    dans le C »), dites-le, c'est prévu.</p>
+
+    <table>
+      <tr><th>Proposition</th><th>Blocs</th><th>Ce qu'elle vous fait gagner</th><th>Ce qu'elle vous coûte</th></tr>
+      <tr><td>Témoin</td><td>11</td><td>—</td><td>Il faut défiler pour tout voir</td></tr>
+      <tr><td>A</td><td>6</td><td>Plus d'adresse illisible, plus de phrase en double</td><td>Vous ne relisez plus l'adresse à l'œil</td></tr>
+      <tr><td>B</td><td>4</td><td>L'état dans le titre, et « il y a 2 jours » enfin dit</td><td>Un appui pour les autres canaux</td></tr>
+      <tr><td>C</td><td>5</td><td>L'état devient un filet, le montant reste gros</td><td>Un appui pour le détail des lignes</td></tr>
+      <tr><td>D</td><td>3</td><td>Le geste sous le pouce, rien pour distraire</td><td>Rien du devis n'est visible sans un appui</td></tr>
+    </table>
+
+    <p style="margin-top:16px"><b>Trois choses que je n'ai pas décidées à votre place.</b>
+    « Il y a 2 jours » suppose qu'on retienne la date d'envoi — elle est en base, elle n'est
+    simplement jamais affichée. Le libellé passe d'« Ouvrir le SMS tout prêt » à
+    « Relancer par SMS » dans B, C et D, parce que le devis est déjà parti — mais il redevient
+    « Envoyer par SMS » au premier envoi. Et le numéro s'écrit désormais espacé
+    (06 79 98 45 14) : il s'affichait collé, ce qui ne se relit pas.</p>
+
+    <p><b>Ce que cette maquette ne montre pas :</b> les autres états de cet écran — devis
+    refusé, correction demandée, devis pas encore parti. Ils portent les mêmes blocs, et
+    suivront le choix fait ici. Inutile de les dessiner avant.</p>
+
+    <p><b>Une réserve sur les polices.</b> Cette page emprunte la serif de votre appareil.
+    L'application, elle, charge Playfair Display : le rendu final sera plus dessiné.</p>
+  </div>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m29">
+    <div class="etape-tete">
+      <span class="etape-no">29</span>
+      <h2>Le devis parti, sur sa base</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s29">
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Maquette 34</p>
+    <h1>Le devis parti, sur votre base</h1>
+    <p>Ce que vous avez arrêté : <b>le nom du devis et le total</b>, plus de lignes de
+    prestations, un lien <b>« Modifier mon devis »</b> sous le total, et les trois actions
+    du bas <b>en encre foncée</b>.</p>
+    <p>La première vignette est votre base, au mot près. Les quatre suivantes portent
+    <b>exactement le même contenu</b> — elles ne le tiennent pas de la même façon. Ce qui
+    se choisit ici n'est donc plus quoi montrer, mais <b>comment le poser</b>.</p>
+    <div class="appui">
+      À la taille de votre écran — <b>390 × 664</b>. Les cinq tiennent sans défiler,
+      mesuré et non jugé à l'œil.
+    </div>
+  </div>
+
+  <!-- ══ 1 · SA BASE ═════════════════════════════════════════════════════ -->
+  <p class="famille"><span>1 · Votre base, au mot près</span></p>
+  <p class="sous-titre">Rien de plus que ce que vous avez demandé. C'est la référence :
+    tout ce qui suit s'en écarte sur un point, et un seul.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Votre base</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <div class="etat-fin" style="margin-top:22px"><span class="caps">En attente de réponse</span></div>
+          <p class="etat-phrase">Parti il y a 2 jours chez Florian Martin.<br>Il consulte le devis et choisit sa date.</p>
+
+          <div class="plage">
+            <p class="nom-devis">Devis nº 2026-014</p>
+            <p class="montant num serif">840,00 €</p>
+            <a class="sous-total" href="#">Modifier mon devis<span class="fl">›</span></a>
+          </div>
+
+          <a class="envoi" href="#" style="--r:4px;margin-top:20px">Relancer par SMS</a>
+          <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+
+          <p class="trois" style="margin-top:18px">
+            <a href="#">Télécharger le PDF</a><i>·</i><a href="#">Copier le lien</a><i>·</i><a href="#">Partager</a>
+          </p>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Quatre blocs.</b> « Partager autrement (WhatsApp…) » est raccourci en
+      <b>« Partager »</b> : à trois sur une ligne, la parenthèse débordait. Dites-moi si vous
+      préférez la garder — il faudra alors les empiler, comme au nº 4.</p>
+    </div>
+  </div>
+
+  <!-- ══ 2 · SANS CARTE ══════════════════════════════════════════════════ -->
+  <p class="famille"><span>2 · Sans carte — le montant à même la page</span></p>
+  <p class="sous-titre">La carte disparaît. Le montant est posé directement sur le fond,
+    entre deux cheveux. C'est la mise en page d'une <b>pièce</b>, pas d'une application —
+    et c'est ce qui donne l'air le plus cher, parce que rien n'est encadré.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Idée 2</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <div class="etat-fin" style="margin-top:22px"><span class="caps">En attente de réponse</span></div>
+          <p class="etat-phrase">Parti il y a 2 jours chez Florian Martin.</p>
+
+          <div style="margin-top:30px;padding:22px 0;border-top:1px solid rgba(28,28,26,.16);border-bottom:1px solid rgba(28,28,26,.16)">
+            <p class="nom-devis">Devis nº 2026-014</p>
+            <p class="montant num serif geant">840,00 €</p>
+          </div>
+          <a class="sous-total" href="#" style="border-top:0;padding-top:13px;margin-top:0">Modifier mon devis<span class="fl">›</span></a>
+
+          <a class="envoi" href="#" style="--r:4px;margin-top:24px">Relancer par SMS</a>
+          <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+
+          <p class="trois" style="margin-top:18px">
+            <a href="#">Télécharger le PDF</a><i>·</i><a href="#">Copier le lien</a><i>·</i><a href="#">Partager</a>
+          </p>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Le montant passe de 40 à 52 px.</b> Sans carte pour le contenir, il
+      peut respirer — et c'est lui qu'on lit de l'autre bout de la pièce.
+      <br><br><b>Ce qu'on perd :</b> « Modifier mon devis » n'est plus visiblement rattaché
+      au devis ; il flotte sous les cheveux.</p>
+    </div>
+  </div>
+
+  <!-- ══ 3 · LE MONTANT DANS LE TITRE ════════════════════════════════════ -->
+  <p class="famille"><span>3 · Le montant dans le titre</span></p>
+  <p class="sous-titre">« Devis » et « 840,00 € » sont la même information : le titre de la
+    page. Ils se réunissent donc, et l'en-tête devient une <b>page de garde</b>. Le corps
+    n'a plus alors qu'une chose à faire : le geste.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Idée 3</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+          <p class="montant num serif" style="margin-top:14px">840,00 €</p>
+          <p class="nom-devis" style="margin-top:10px">Devis nº 2026-014 · en attente de réponse</p>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <a class="sous-total" href="#" style="border-top:0;padding-top:0;margin-top:20px">Modifier mon devis<span class="fl">›</span></a>
+
+          <p class="etat-phrase" style="margin-top:22px">Parti il y a 2 jours chez Florian Martin.
+            Il consulte le devis et choisit sa date d'intervention.</p>
+
+          <div class="pied">
+            <a class="envoi" href="#" style="--r:4px">Relancer par SMS</a>
+            <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+            <p class="trois" style="margin-top:16px">
+              <a href="#">Télécharger le PDF</a><i>·</i><a href="#">Copier le lien</a><i>·</i><a href="#">Partager</a>
+            </p>
+          </div>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Trois blocs, et le geste tombe sous le pouce.</b> Le numéro et l'état
+      se rangent sur une seule ligne grise sous le montant — ce sont des <b>références</b>,
+      pas des annonces.
+      <br><br><b>Ce qu'on perd :</b> l'état n'est plus en or, il passe en gris. Il se
+      remarque moins.</p>
+    </div>
+  </div>
+
+  <!-- ══ 4 · LES TROIS EMPILÉES ══════════════════════════════════════════ -->
+  <p class="famille"><span>4 · Les trois actions empilées</span></p>
+  <p class="sous-titre">Vous les vouliez cliquables. Sur une ligne, trois mots serrés se
+    touchent du pouce à un cheveu près. Empilées, chacune a sa ligne, son cheveu et sa
+    flèche — <b>et « Partager autrement (WhatsApp…) » retrouve son nom entier</b>.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Idée 4</span>
+      <div class="tel"><div class="ecran serre">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <div class="etat-fin" style="margin-top:20px"><span class="caps">En attente de réponse</span></div>
+          <p class="etat-phrase">Parti il y a 2 jours chez Florian Martin.</p>
+
+          <div class="plage" style="margin-top:16px">
+            <p class="nom-devis">Devis nº 2026-014</p>
+            <p class="montant num serif moyen">840,00 €</p>
+            <a class="sous-total" href="#">Modifier mon devis<span class="fl">›</span></a>
+          </div>
+
+          <a class="envoi" href="#" style="--r:4px;margin-top:14px">Relancer par SMS</a>
+          <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+
+          <div class="pile" style="margin-top:14px">
+            <a href="#">Télécharger le PDF<span class="fl">›</span></a>
+            <a href="#">Copier le lien<span class="fl">›</span></a>
+            <a href="#">Partager autrement (WhatsApp…)<span class="fl">›</span></a>
+          </div>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Chaque action fait toute la largeur du pouce.</b> C'est la seule des
+      cinq où l'on ne peut pas se tromper de lien — et la seule où le nom complet tient.
+      <br><br><b>Ce qu'on perd :</b> trois lignes au lieu d'une. L'écran est plus rempli.</p>
+    </div>
+  </div>
+
+  <!-- ══ 5 · LE SIGNET D'OR ══════════════════════════════════════════════ -->
+  <p class="famille"><span>5 · Le signet d'or</span></p>
+  <p class="sous-titre">L'état ne s'annonce plus en capitales : il est marqué par
+    <b>un filet d'or vertical</b>, comme un signet dans un registre. Le montant reste seul
+    en scène, et l'or ne sert qu'à une chose sur tout l'écran.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Idée 5</span>
+      <div class="tel"><div class="ecran">
+        <a class="retour" href="#">← Retour à la fiche du chantier</a>
+        <div class="titre">
+          <p class="sur caps">Taille haie de laurier</p>
+          <h1 class="serif">Devis</h1>
+        </div>
+        <div class="fermeture"></div>
+
+        <div class="corps">
+          <div class="signet">
+            <p style="margin:0;font-size:14px;color:#1c1c1a">En attente de réponse</p>
+            <p class="etat-phrase" style="margin-top:4px">Parti il y a 2 jours chez Florian Martin.</p>
+          </div>
+
+          <div style="margin-top:34px;text-align:center">
+            <p class="nom-devis">Devis nº 2026-014</p>
+            <p class="montant num serif geant">840,00 €</p>
+            <a class="sous-total" href="#" style="border-top:0;padding-top:0;margin-top:14px;text-align:center">
+              Modifier mon devis ›
+            </a>
+          </div>
+
+          <div class="pied">
+            <a class="envoi" href="#" style="--r:4px">Relancer par SMS</a>
+            <p class="dessous">Au 06 79 98 45 14 — le même lien, tel quel.</p>
+            <p class="trois" style="margin-top:16px">
+              <a href="#">Télécharger le PDF</a><i>·</i><a href="#">Copier le lien</a><i>·</i><a href="#">Partager</a>
+            </p>
+          </div>
+        </div>
+
+        <div class="bas">
+          <a class="caps on" href="#">Chantiers</a><a class="caps" href="#">Planning</a>
+          <a class="caps" href="#">Terminés</a><a class="caps" href="#">Réglages</a>
+        </div>
+      </div></div>
+      <p class="dit"><b>Le montant est centré, et il est seul.</b> C'est la plus calme des
+      cinq : un filet, un chiffre, un geste.
+      <br><br><b>Ce qu'on perd :</b> l'état, écrit en petit à gauche, se remarque moins qu'en
+      capitales d'or.</p>
+    </div>
+  </div>
+
+  <!-- ══ NOTE ═══════════════════════════════════════════════════════════ -->
+  <div class="note">
+    <h2>Ce qu'il faut me dire</h2>
+    <p><b>Un numéro.</b> 1, 2, 3, 4 ou 5. Panacher est prévu — « le 5, mais avec les trois
+    actions empilées du 4 » se code aussi bien.</p>
+
+    <table>
+      <tr><th>Idée</th><th>Ce qui change</th><th>Ce que ça coûte</th></tr>
+      <tr><td>1 · votre base</td><td>la référence, au mot près</td><td>« Partager » perd sa parenthèse</td></tr>
+      <tr><td>2 · sans carte</td><td>le montant à même la page, 52 px</td><td>« Modifier » flotte sous les cheveux</td></tr>
+      <tr><td>3 · dans le titre</td><td>l'en-tête devient page de garde, geste sous le pouce</td><td>l'état passe en gris</td></tr>
+      <tr><td>4 · empilées</td><td>trois vraies lignes, nom complet, rien à rater du pouce</td><td>l'écran est plus rempli</td></tr>
+      <tr><td>5 · le signet</td><td>un filet d'or, un chiffre, un geste</td><td>l'état se remarque moins</td></tr>
+    </table>
+
+    <p style="margin-top:16px"><b>Où mène « Modifier mon devis ».</b> À l'écran du devis à la
+    main, celui qui porte les lignes et les prix. Une chose à trancher, et je ne l'ai pas
+    faite à votre place : ce devis est <b>parti chez le client</b>. Le reprendre en crée
+    une <b>nouvelle version</b> qu'il faudra renvoyer — l'ancien lien devient caduc. Faut-il
+    vous le dire avant, ou vous laisser passer ? Je penche pour une phrase courte, une seule
+    fois, au moment du clic.</p>
+
+    <p><b>Le rayon du bouton reste ouvert.</b> Tout est dessiné au rayon d'aujourd'hui,
+    4 px, pour ne rien présumer. La bande de comparaison — 4, 8, 12, pilule — est au bas de
+    la maquette 33 et reste valable.</p>
+
+    <p><b>Ce que je n'ai pas retiré, et pourquoi.</b> La phrase « Parti il y a 2 jours chez
+    Florian Martin » : c'est la seule chose de l'écran qui dise <b>depuis quand</b> vous
+    attendez, et c'est ce qui vous fait décider de relancer ou non. Dites-le si vous la
+    voulez dehors aussi.</p>
+
+    <p><b>Une réserve sur les polices.</b> Cette page emprunte la serif de votre appareil.
+    L'application, elle, charge Playfair Display : le rendu final sera plus dessiné.</p>
+  </div>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m30">
+    <div class="etape-tete">
+      <span class="etape-no">30</span>
+      <h2>L’écran de connexion</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s30">
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">La dernière porte</p>
+    <h1>L’écran de connexion</h1>
+    <p>C’est le seul écran d’Atlas resté dans l’identité d’avant le 3 août : le
+      terre cuite, la carte blanche, aucune serif. Il a été oublié pour une
+      raison bête — <b>c’est le seul qu’on voit avant d’être connecté</b>, donc
+      le seul qu’aucune refonte ne traverse.</p>
+    <p>Et il porte un défaut qui ne se voit que sur votre téléphone :
+      <b>ses champs sont écrits en 15 px</b>. En dessous de 16, iOS agrandit la
+      page dès que vous tapez dedans. Les quatre propositions sont en 16 px —
+      celui-là se corrige quel que soit votre choix.</p>
+  </div>
+
+  <input type="checkbox" id="refus" class="bascule">
+  <div class="surbascule">
+    <label for="refus">
+      <span class="off">Montrer le mot de passe refusé →</span>
+      <span class="on">← Masquer le refus</span>
+    </label>
+  </div>
+
+  <p class="famille">Aujourd’hui</p>
+  <div class="grille">
+    <div class="prop">
+      <div class="tel"><div class="ecran avant">
+        <div class="carte">
+          <h3>Connexion à Atlas</h3>
+          <span class="lib">Email</span>
+          <div class="champ">edennature.contact@gmail.com</div>
+          <span class="lib">Mot de passe</span>
+          <div class="champ">••••••••••</div>
+          <p class="err">Identifiants incorrects.</p>
+          <div class="bouton">Se connecter</div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Avant</h2>
+        <p class="titre">L’écran d’aujourd’hui</p>
+        <p>Fond #F4EFE8, carte blanche, ombre, bouton terre cuite. La serif du
+          titre est celle du système, en gras — pas Playfair.</p>
+        <p class="reserve"><b>Trois écarts</b> avec le reste de l’application :
+          la couleur d’accent (terre cuite au lieu du vert pin), les champs en
+          15 px, et le refus en rouge vif de bibliothèque plutôt que dans le
+          rouge sombre de la charte.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="famille">Quatre façons de la mettre à la charte</p>
+  <div class="grille">
+
+    <!-- 1 ————————————————————————————————————————————————————— -->
+    <div class="prop">
+      <div class="tel"><div class="ecran apres p1">
+        <div class="bloc"><div class="carte">
+          <h3>Connexion à Atlas</h3>
+          <span class="lib">Adresse</span>
+          <div class="champ">edennature.contact@gmail.com</div>
+          <span class="lib">Mot de passe</span>
+          <div class="champ">••••••••••</div>
+          <p class="err">Identifiants incorrects.</p>
+          <div class="centrer"><div class="capsule">Se connecter</div></div>
+        </div></div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 1</h2>
+        <p class="titre">La carte, gardée</p>
+        <p>Le moins de déplacement possible : même mise en page, habits neufs.
+          Crème, vert pin, Playfair, capsule, libellés en petites capitales.</p>
+        <p class="reserve"><b>Ce qu’elle coûte.</b> Sur une carte déjà claire,
+          un champ ne peut pas être <i>plus</i> clair : il doit porter un filet.
+          Or la charte veut les champs sans bordure, en plage. C’est le prix de
+          garder la carte — et c’est le seul reproche qu’on puisse lui faire.</p>
+      </div>
+    </div>
+
+    <!-- 2 ————————————————————————————————————————————————————— -->
+    <div class="prop">
+      <div class="tel"><div class="ecran apres p2">
+        <div class="bloc">
+          <h3>Connexion</h3>
+          <div class="filet"></div>
+          <span class="lib">Adresse</span>
+          <div class="champ">edennature.contact@gmail.com</div>
+          <span class="lib">Mot de passe</span>
+          <div class="champ">••••••••••</div>
+          <p class="err">Identifiants incorrects.</p>
+          <div class="centrer"><div class="capsule">Se connecter</div></div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 2</h2>
+        <p class="titre">Sans carte</p>
+        <p>La carte disparaît : le formulaire se pose directement sur le crème,
+          comme sur tous les autres écrans d’Atlas. Le champ redevient une
+          plage sans bordure, et le filet d’or sous le titre est celui de
+          l’écran Chantiers.</p>
+        <p class="reserve"><b>C’est la plus fidèle à ce qui existe déjà</b> —
+          rien de neuf n’est inventé, tout est repris ailleurs.</p>
+      </div>
+    </div>
+
+    <!-- 3 ————————————————————————————————————————————————————— -->
+    <div class="prop">
+      <div class="tel"><div class="ecran apres p3">
+        <div class="bloc">
+          <div class="sceau">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f"
+                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 21.5V8"/>
+              <path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/>
+              <path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/>
+              <path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/>
+              <path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/>
+            </svg>
+          </div>
+          <span class="mot">ATLAS</span>
+          <span class="lib">Adresse</span>
+          <div class="champ">edennature.contact@gmail.com</div>
+          <span class="lib">Mot de passe</span>
+          <div class="champ">••••••••••</div>
+          <p class="err">Identifiants incorrects.</p>
+          <div class="centrer"><div class="capsule">Entrer</div></div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 3</h2>
+        <p class="titre">Le sceau</p>
+        <p>La mise en page de la 2, mais la marque au-dessus : la feuille dans
+          son cercle d’or, et ATLAS très espacé. Le titre disparaît — le nom le
+          dit déjà.</p>
+        <p class="reserve"><b>Pourquoi ici et nulle part ailleurs.</b> Le sceau
+          est déjà en tête de l’écran d’accueil ; le remettre partout en ferait
+          un logo d’entreprise. Mais c’est la porte, et une porte porte un nom.</p>
+      </div>
+    </div>
+
+    <!-- 4 ————————————————————————————————————————————————————— -->
+    <div class="prop">
+      <div class="tel"><div class="ecran apres p4">
+        <div class="bloc">
+          <h3>Connexion</h3>
+          <p class="sous">Vos identifiants Atlas.</p>
+          <span class="lib">Adresse</span>
+          <div class="champ actif">edennature.contact@gmail.com</div>
+          <span class="lib">Mot de passe</span>
+          <div class="champ">••••••••••</div>
+          <p class="err">Identifiants incorrects.</p>
+          <div class="centrer"><div class="capsule">Se connecter</div></div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 4</h2>
+        <p class="titre">La ligne, comme sur un imprimé</p>
+        <p>Plus de plage du tout : un simple trait sous chaque champ, qui passe
+          à l’or sous celui qu’on est en train de remplir (montré ici sur
+          l’adresse). C’est la plus dépouillée des quatre.</p>
+        <p class="reserve"><b>Et la plus risquée</b>, franchement : un champ
+          vide sans plage se lit souvent comme « pas cliquable » — c’est un
+          piège déjà rencontré sur cette application, et noté comme tel. Le
+          trait d’or n’y répond qu’une fois qu’on a osé toucher.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="note">
+    <span class="t">Ce qui ne se choisit pas</span>
+    <b>Trois corrections partent avec n’importe laquelle des quatre :</b> les
+    champs passent à 16 px (sans quoi iOS agrandit votre écran dès que vous
+    tapez), le refus passe du rouge vif au rouge sombre de la charte, et la
+    place du message est réservée en permanence — pour que le bouton ne
+    descende pas d’une ligne au moment précis où vous appuyez dessus.
+    <br><br>
+    <span class="t">Une réserve sur les polices</span>
+    Cette page emprunte la serif de votre appareil. L’application, elle, charge
+    Playfair Display : le rendu final sera plus dessiné, surtout sur les titres
+    et sur le mot de la capsule.
+    <br><br>
+    <span class="t">Rien n’est encore posé dans l’application</span>
+    <b>Aucun fichier de <code>src/</code> n’a été touché.</b> Vous choisissez,
+    et c’est ensuite seulement que l’écran change — votre règle du 11 août.
+  </p>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m31">
+    <div class="etape-tete">
+      <span class="etape-no">31</span>
+      <h2>Le logo qui s’anime</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s31">
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">L’entrée</p>
+    <h1>Le logo qui s’anime</h1>
+    <p>La proposition 4 sans son titre, avec le sceau et ATLAS du modèle 3 :
+      <b>l’écran est le même sur les six</b>, seule l’animation de la marque
+      change.</p>
+    <p><b>Ça s’essaie.</b> Tapez dans les champs — la ligne passe à l’or —, puis
+      appuyez sur « Entrer ». La marque s’anime une demi-seconde, et
+      l’application arrive. « ↺ Recommencer » remet l’écran.</p>
+  </div>
+
+  <div class="grille">
+
+    <!-- 1 ————————————————————————————————————————————————————— -->
+    <div class="prop p1">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s31-entrer-1" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25" pathLength="1"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 21.5V8"/><path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/><path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/><path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/><path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/>
+              </svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s31-adresse-1">Adresse</label>
+            <input class="champ" id="s31-adresse-1" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s31-mdp-1">Mot de passe</label>
+            <input class="champ" id="s31-mdp-1" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s31-entrer-1">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s31-entrer-1">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 1</h2>
+        <p class="titre">Le cercle qui se ferme</p>
+        <p>Le filet d’or se trace autour de la feuille, en partant du haut. La
+          marque ne bouge pas : c’est le cercle qui l’enferme.</p>
+        <p class="reserve"><b>La plus sobre</b>, et celle qui ressemble le plus à
+          une attente honnête — le cercle qui se referme se lit comme « je
+          travaille ». Elle se redessine tant que le serveur n’a pas répondu.</p>
+      </div>
+    </div>
+
+    <!-- 2 ————————————————————————————————————————————————————— -->
+    <div class="prop p2">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s31-entrer-2" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25" pathLength="1"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 21.5V8"/><path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/><path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/><path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/><path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/>
+              </svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s31-adresse-2">Adresse</label>
+            <input class="champ" id="s31-adresse-2" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s31-mdp-2">Mot de passe</label>
+            <input class="champ" id="s31-mdp-2" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s31-entrer-2">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s31-entrer-2">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 2</h2>
+        <p class="titre">La feuille qui pousse</p>
+        <p>La tige d’abord, puis les trois paires de folioles, de bas en haut.
+          La marque se dessine sous vos yeux comme au trait de plume.</p>
+        <p class="reserve"><b>La plus belle et la plus difficile à voir</b> :
+          quatre gestes en une demi-seconde, c’est court. Elle mériterait sept
+          dixièmes — dites-le si vous la choisissez, ça se règle.</p>
+      </div>
+    </div>
+
+    <!-- 3 ————————————————————————————————————————————————————— -->
+    <div class="prop p3">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s31-entrer-3" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25" pathLength="1"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 21.5V8"/><path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/><path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/><path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/><path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/>
+              </svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s31-adresse-3">Adresse</label>
+            <input class="champ" id="s31-adresse-3" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s31-mdp-3">Mot de passe</label>
+            <input class="champ" id="s31-mdp-3" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s31-entrer-3">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s31-entrer-3">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 3</h2>
+        <p class="titre">Le tour</p>
+        <p>Le sceau entier fait un tour sur lui-même, lancé sec et posé
+          doucement. C’est le geste que vous aviez déjà retenu pour le « + » des
+          chantiers.</p>
+        <p class="reserve"><b>Elle a un avantage sur les autres :</b> elle boucle
+          sans qu’on y pense. Si le serveur met deux secondes, le sceau tourne
+          deux secondes, et personne ne croit à une panne.</p>
+      </div>
+    </div>
+
+    <!-- 4 ————————————————————————————————————————————————————— -->
+    <div class="prop p4">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s31-entrer-4" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25" pathLength="1"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 21.5V8"/><path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/><path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/><path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/><path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/>
+              </svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s31-adresse-4">Adresse</label>
+            <input class="champ" id="s31-adresse-4" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s31-mdp-4">Mot de passe</label>
+            <input class="champ" id="s31-mdp-4" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s31-entrer-4">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s31-entrer-4">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 4</h2>
+        <p class="titre">Le battement et l’onde</p>
+        <p>Le sceau enfle d’un souffle, et un second cercle d’or s’en échappe
+          vers l’extérieur en s’effaçant. Comme un cœur, ou une pierre dans
+          l’eau.</p>
+        <p class="reserve"><b>La plus vivante</b>, et celle qui se voit le mieux
+          à bout de bras. Elle boucle aussi, mais un battement répété douze fois
+          devient inquiet — à réserver si l’attente est courte.</p>
+      </div>
+    </div>
+
+    <!-- 5 ————————————————————————————————————————————————————— -->
+    <div class="prop p5">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s31-entrer-5" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25" pathLength="1"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 21.5V8"/><path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/><path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/><path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/><path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/>
+              </svg>
+              <svg class="feuille or" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 21.5V8"/><path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/><path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/><path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/><path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/>
+              </svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s31-adresse-5">Adresse</label>
+            <input class="champ" id="s31-adresse-5" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s31-mdp-5">Mot de passe</label>
+            <input class="champ" id="s31-mdp-5" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s31-entrer-5">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s31-entrer-5">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 5</h2>
+        <p class="titre">L’or qui monte</p>
+        <p>La feuille se remplit d’or de bas en haut, comme une sève. Rien ne
+          bouge, rien ne tourne : seule la couleur monte.</p>
+        <p class="reserve"><b>La plus calme des six</b> — et la seule où l’or
+          entre pour de bon dans la marque plutôt que de rester autour. C’est
+          aussi la plus discrète : à bout de bras, on peut la manquer.</p>
+      </div>
+    </div>
+
+    <!-- 6 ————————————————————————————————————————————————————— -->
+    <div class="prop p6">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s31-entrer-6" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25" pathLength="1"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 21.5V8"/><path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/><path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/><path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/><path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/>
+              </svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s31-adresse-6">Adresse</label>
+            <input class="champ" id="s31-adresse-6" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s31-mdp-6">Mot de passe</label>
+            <input class="champ" id="s31-mdp-6" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s31-entrer-6">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s31-entrer-6">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 6</h2>
+        <p class="titre">Le sceau qui s’imprime</p>
+        <p>Le sceau arrive de trop haut, pâle et trop grand, et se pose d’un
+          coup sec — la feuille passe de l’or au vert pin en touchant le papier.
+          Un tampon qu’on abat.</p>
+        <p class="reserve"><b>La plus affirmée</b> : c’est un geste de signature,
+          pas une attente. Elle dit « c’est validé » mieux que les autres — et
+          dit donc moins bien « patientez ».</p>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="note">
+    <span class="t">La demi-seconde n’est pas l’attente</span>
+    L’animation dure une demi-seconde ; <b>le serveur, lui, répond quand il
+    répond</b> — parfois en un clin d’œil, parfois en deux secondes sur un
+    réseau de chantier. La demi-seconde est donc un <b>plancher</b> : on ne coupe
+    pas le geste au milieu même si la réponse arrive tout de suite, parce qu’un
+    geste tranché se lit comme un raté. Et il faut que la marque puisse
+    <b>continuer</b> au-delà : les six bouclent ici, exprès, pour que vous
+    jugiez aussi de ça. Une marque figée pendant deux secondes ressemble à une
+    application plantée.
+    <br><br>
+    <span class="t">Ce qui reste identique sur les six</span>
+    Le sceau, ATLAS, les deux champs en ligne d’imprimé, la capsule, les
+    couleurs, les tailles. <b>Seule l’animation change</b> — c’est ce que vous
+    avez demandé, et c’est la seule façon de comparer quelque chose.
+    <br><br>
+    <span class="t">Aucun script, et l’écran de connexion n’a pas bougé</span>
+    La capsule est un <code>&lt;label&gt;</code> qui coche une case native ;
+    l’entrée est une animation CSS retardée. <b>Aucun fichier de
+    <code>src/</code> n’a été touché</b> : vous choisissez un numéro, et c’est
+    ensuite seulement que l’écran change.
+  </p>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m32">
+    <div class="etape-tete">
+      <span class="etape-no">32</span>
+      <h2>Le motif dans le rond d’or</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s32">
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">La gravure du sceau</p>
+    <h1>Le motif dans le rond d’or</h1>
+    <p>L’écran et l’animation sont ceux que vous avez retenus — <b>le tour</b>.
+      Ils sont identiques sur les huit : <b>seul le tracé à l’intérieur du rond
+      change</b>.</p>
+    <p><b>Appuyez sur « Entrer »</b> pour voir chaque motif tourner, et
+      « ↺ Recommencer » pour remettre l’écran.</p>
+  </div>
+
+  <div class="bande">
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.5V8"/><path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/><path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/><path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/><path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/></svg>
+        </span>
+        <span class="no">1</span>
+      </div>
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 18.5C7.5 11 12 6.5 18.5 5 17.5 12.5 13 17 5.5 18.5Z"/><path d="M5.5 18.5 18.5 5"/></svg>
+        </span>
+        <span class="no">2</span>
+      </div>
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="17.4" text-anchor="middle" font-family="ui-serif,Georgia,'Iowan Old Style',serif" font-size="16.5" fill="var(--e-pin)" stroke="none">A</text></svg>
+        </span>
+        <span class="no">3</span>
+      </div>
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.8"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/><path d="M12 12V3.2"/></svg>
+        </span>
+        <span class="no">4</span>
+      </div>
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.8 10.6 12 4.4 17.2 10.6"/><path d="M6.2 16.4 12 9.8 17.8 16.4"/><path d="M12 16.6V21.8"/></svg>
+        </span>
+        <span class="no">5</span>
+      </div>
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 13.7 10.3 21.2 12 13.7 13.7 12 21.2 10.3 13.7 2.8 12 10.3 10.3Z"/></svg>
+        </span>
+        <span class="no">6</span>
+      </div>
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.5V12"/><path d="M12 16 6.6 10.6"/><path d="M12 16 17.4 10.6"/><path d="M12 12 9.2 7.8"/><path d="M12 12 14.8 7.8"/></svg>
+        </span>
+        <span class="no">7</span>
+      </div>
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.4 17.2 9.6 8.8 13 13.6 16 9.6 19.6 17.2"/></svg>
+        </span>
+        <span class="no">8</span>
+      </div>
+  </div>
+  <p class="legende-bande">Les huit à leur <b>taille réelle</b>, comme sur votre
+    téléphone. C’est ici que se juge le seul point qui ne pardonne pas : lequel
+    tient encore à six millimètres.</p>
+
+  <div class="grille">
+
+    <div class="prop p1">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s32-entrer-1" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.5V8"/><path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/><path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/><path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/><path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s32-adresse-1">Adresse</label>
+            <input class="champ" id="s32-adresse-1" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s32-mdp-1">Mot de passe</label>
+            <input class="champ" id="s32-mdp-1" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s32-entrer-1">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s32-entrer-1">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 1</h2>
+        <p class="titre">La feuille d’aujourd’hui</p>
+        <p>Celle qui est déjà dans l’application : une tige et trois paires de folioles. Elle est ici pour que vous compariez à ce que vous avez, pas pour être choisie par défaut.</p>
+        <p class="reserve"><b>C’est le témoin.</b> Si aucune des sept autres ne fait mieux qu’elle, on ne change rien — un changement qui n’améliore pas coûte quand même une habitude.</p>
+      </div>
+    </div>
+    <div class="prop p2">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s32-entrer-2" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 18.5C7.5 11 12 6.5 18.5 5 17.5 12.5 13 17 5.5 18.5Z"/><path d="M5.5 18.5 18.5 5"/></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s32-adresse-2">Adresse</label>
+            <input class="champ" id="s32-adresse-2" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s32-mdp-2">Mot de passe</label>
+            <input class="champ" id="s32-mdp-2" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s32-entrer-2">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s32-entrer-2">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 2</h2>
+        <p class="titre">La feuille seule</p>
+        <p>Une seule feuille, grande, en travers du rond, avec sa nervure. Rien d’autre : ni tige, ni voisines.</p>
+        <p class="reserve"><b>C’est la plus lisible des motifs végétaux</b>, et de loin — une grande forme tient à toutes les tailles là où trois petites se rejoignent en pâté. Deux versions du brin d’eucalyptus ont été jetées pour cette raison, vues sur la bande ci-dessus.</p>
+      </div>
+    </div>
+    <div class="prop p3">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s32-entrer-3" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="17.4" text-anchor="middle" font-family="ui-serif,Georgia,'Iowan Old Style',serif" font-size="16.5" fill="var(--e-pin)" stroke="none">A</text></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s32-adresse-3">Adresse</label>
+            <input class="champ" id="s32-adresse-3" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s32-mdp-3">Mot de passe</label>
+            <input class="champ" id="s32-mdp-3" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s32-entrer-3">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s32-entrer-3">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 3</h2>
+        <p class="titre">Le A</p>
+        <p>Le monogramme, dans la serif des titres. Rien d’autre dans le rond : une initiale et son cercle, comme un cachet de cire.</p>
+        <p class="reserve"><b>La plus lisible de toutes à petite taille</b>, et de loin. Réserve : une lettre a un haut et un bas — au milieu du tour, elle passe la tête en bas, ce qu’aucun autre motif ne fait.</p>
+      </div>
+    </div>
+    <div class="prop p4">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s32-entrer-4" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.8"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/><path d="M12 12V3.2"/></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s32-adresse-4">Adresse</label>
+            <input class="champ" id="s32-adresse-4" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s32-mdp-4">Mot de passe</label>
+            <input class="champ" id="s32-mdp-4" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s32-entrer-4">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s32-entrer-4">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 4</h2>
+        <p class="titre">Les cernes, et la fente</p>
+        <p>Un tronc vu de bout : deux cernes de croissance, le cœur, et le trait de la fente qui va du cœur à l’écorce. C’est le geste du métier, pas un arbre de décoration.</p>
+        <p class="reserve"><b>La plus abstraite, et la plus tenue à petite taille</b> — un cercle reste un cercle à n’importe quelle échelle. Le trait de fente est ce qui rend le tour visible : sans lui, un rond qui tourne ne montre rien.</p>
+      </div>
+    </div>
+    <div class="prop p5">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s32-entrer-5" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.8 10.6 12 4.4 17.2 10.6"/><path d="M6.2 16.4 12 9.8 17.8 16.4"/><path d="M12 16.6V21.8"/></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s32-adresse-5">Adresse</label>
+            <input class="champ" id="s32-adresse-5" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s32-mdp-5">Mot de passe</label>
+            <input class="champ" id="s32-mdp-5" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s32-entrer-5">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s32-entrer-5">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 5</h2>
+        <p class="titre">Le conifère</p>
+        <p>Deux étages de branches et un pied. L’arbre le plus reconnaissable qui soit, réduit à trois traits.</p>
+        <p class="reserve"><b>Immédiatement lu comme « arbre »</b> — c’est sa force et sa limite : il dit le sapin, pas l’élagage. À voir si votre métier se reconnaît dedans.</p>
+      </div>
+    </div>
+    <div class="prop p6">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s32-entrer-6" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 13.7 10.3 21.2 12 13.7 13.7 12 21.2 10.3 13.7 2.8 12 10.3 10.3Z"/></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s32-adresse-6">Adresse</label>
+            <input class="champ" id="s32-adresse-6" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s32-mdp-6">Mot de passe</label>
+            <input class="champ" id="s32-mdp-6" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s32-entrer-6">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s32-entrer-6">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 6</h2>
+        <p class="titre">La rose des vents</p>
+        <p>Une étoile à quatre branches, effilée. Atlas, c’est d’abord un recueil de cartes — et c’est le signe que vous aviez déjà retenu pour le bouton des chantiers.</p>
+        <p class="reserve"><b>Elle tourne mieux que toutes les autres</b> : quatre branches identiques, donc un mouvement qui se lit d’un bout à l’autre sans jamais paraître de travers.</p>
+      </div>
+    </div>
+    <div class="prop p7">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s32-entrer-7" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.5V12"/><path d="M12 16 6.6 10.6"/><path d="M12 16 17.4 10.6"/><path d="M12 12 9.2 7.8"/><path d="M12 12 14.8 7.8"/></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s32-adresse-7">Adresse</label>
+            <input class="champ" id="s32-adresse-7" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s32-mdp-7">Mot de passe</label>
+            <input class="champ" id="s32-mdp-7" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s32-entrer-7">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s32-entrer-7">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 7</h2>
+        <p class="titre">L’arbre au trait</p>
+        <p>Un tronc et quatre branches nues, comme une silhouette d’hiver. Pas de feuillage : ce qu’on taille, c’est le bois.</p>
+        <p class="reserve"><b>La plus juste pour un élagueur</b> — un arbre sans feuilles est un arbre sur lequel on travaille. Réserve : quatre traits fins se ferment à petite taille, regardez-le sur le téléphone avant de le choisir.</p>
+      </div>
+    </div>
+    <div class="prop p8">
+      <div class="tel"><div class="ecran">
+        <input type="checkbox" id="s32-entrer-8" class="go">
+        <div class="scene">
+          <div class="conn"><div class="bloc">
+            <span class="sceau">
+              <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+              <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.4 17.2 9.6 8.8 13 13.6 16 9.6 19.6 17.2"/></svg>
+            </span>
+            <span class="mot">ATLAS</span>
+            <label class="lib" for="s32-adresse-8">Adresse</label>
+            <input class="champ" id="s32-adresse-8" type="email" value="edennature.contact@gmail.com">
+            <label class="lib" for="s32-mdp-8">Mot de passe</label>
+            <input class="champ" id="s32-mdp-8" type="password" value="motdepasse">
+            <div class="centrer"><label class="capsule" for="s32-entrer-8">Entrer</label></div>
+          </div></div>
+          <div class="appli">
+            <p class="sur">Atlas</p>
+            <h4>Vos chantiers</h4>
+            <div class="filet"></div>
+            <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+            <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+            <label class="rejouer" for="s32-entrer-8">↺ Recommencer</label>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Motif 8</h2>
+        <p class="titre">La ligne de crête</p>
+        <p>Une arête de montagne, d’un seul trait. Atlas est d’abord un massif — et c’est le seul motif du lot qui ne parle pas d’arbre.</p>
+        <p class="reserve"><b>La plus lisible de toutes après le A</b> : un trait continu ne se referme jamais, quelle que soit la taille. Réserve franche : elle dit le paysage, pas le métier. C’est peut-être exactement ce qu’il faut pour un outil qui fera un jour autre chose que de l’élagage — ou exactement ce qu’il ne faut pas.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">
+    <span class="t">Ce que le tour impose au motif</span>
+    L’animation retenue fait <b>tourner</b> le sceau, et tous les motifs ne s’y
+    prêtent pas également. <b>La rose des vents</b> tourne parfaitement : quatre
+    branches identiques, le mouvement se lit d’un bout à l’autre. <b>Les
+    cernes</b> ne montreraient rien du tout sans leur trait de fente — un rond
+    concentrique qui tourne est un rond immobile. Et <b>le A</b> est le seul qui
+    passe la tête en bas au milieu du tour : une fraction de seconde, mais il
+    faut l’avoir vu avant de choisir.
+    <br><br>
+    <span class="t">Ce qui reste identique sur les huit</span>
+    L’écran, le rond d’or et son filet d’1,5 px, ATLAS, les deux champs, la
+    capsule, l’animation. <b>Seule la gravure change</b> — c’est ce que vous avez
+    demandé, et c’est la seule façon de comparer quelque chose.
+    <br><br>
+    <span class="t">Aucun script, et le code n’a pas bougé</span>
+    La capsule est un <code>&lt;label&gt;</code> qui coche une case native.
+    <b>Aucun fichier de <code>src/</code> n’a été touché</b> : vous donnez un
+    numéro, et c’est ensuite seulement que l’écran change.
+  </p>
 
 </div>
     </div>

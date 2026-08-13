@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { jourLisible } from "@/lib/jour";
+import { suiteDeLaReponse, type SuiteDeLaReponse } from "@/lib/suite-de-la-reponse";
 import { marquerReponseVueAction } from "./actions";
 import type { NotificationPatron, EnvoiCaduc } from "@/server/repositories/envois-devis";
 
@@ -34,6 +35,16 @@ type Carte = {
    * trop.
    */
   messageClient?: string | null;
+  /**
+   * Où mène la carte, et ce que le lien annonce.
+   *
+   * **Les quatre cartes menaient toutes à la fiche du chantier**, alors qu'elles
+   * n'appellent pas le même geste — et que leur propre texte disait déjà le
+   * contraire (« le devis peut être repris et renvoyé »). Le patron l'a relevé
+   * le 12 août 2026. La règle vit dans `src/lib/suite-de-la-reponse.ts`, pas
+   * ici : elle est éprouvable sans navigateur.
+   */
+  suite: SuiteDeLaReponse;
 };
 
 /**
@@ -68,6 +79,7 @@ function versCarte(n: NotificationPatron): Carte {
     titre,
     texte,
     messageClient: n.precisionClient,
+    suite: suiteDeLaReponse(n.chantierId, n.reponse),
   };
 }
 
@@ -81,6 +93,8 @@ function caducVersCarte(e: EnvoiCaduc): Carte {
     texte:
       "Le lien a expiré sans réponse. Le client n'a rien dit — ni oui, ni non. " +
       "Le devis peut être repris et renvoyé.",
+    // Personne n'a répondu : le silence appelle la même reprise qu'un refus.
+    suite: suiteDeLaReponse(e.chantierId, null),
   };
 }
 
@@ -118,6 +132,12 @@ export default function Notifications({
         return (
           <div
             key={n.envoiId}
+            // **Une étiquette de code, pas un libellé.** Le nom du chantier
+            // apparaît AUSSI dans la liste en dessous : une suite qui vise le
+            // nom attrape la ligne de la liste et croit lire la carte. Vécu le
+            // 12 août 2026, sur le contrôle de ce lien même.
+            data-atlas="carte-reponse"
+            data-chantier={n.chantierId}
             className="rounded-[18px] px-5 py-4"
             style={{ backgroundColor: n.urgent ? colors.rustTint : colors.card }}
           >
@@ -144,12 +164,17 @@ export default function Notifications({
             )}
 
             <div className="mt-3 flex items-center gap-4">
+              {/* **Le lien mène là où est le geste**, et l'annonce. Voir
+                  `suite-de-la-reponse.ts` : un devis accepté s'ouvre figé, tel
+                  que le client l'a reçu ; un devis à corriger mène à l'écran
+                  qui sait le reprendre — le document, lui, refuserait la
+                  première frappe sans dire pourquoi. */}
               <Link
-                href={`/chantiers/${n.chantierId}`}
+                href={n.suite.href}
                 className="text-[14px] font-medium"
                 style={{ color: colors.rust }}
               >
-                Ouvrir le chantier
+                {n.suite.libelle}
               </Link>
               <button
                 type="button"
