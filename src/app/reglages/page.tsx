@@ -241,6 +241,29 @@ export default async function ReglagesPage() {
               branche n&apos;arrivera pas ici, même en cherchant les corrections.
             </p>
           )}
+          {/* **La version LENTE se dit, parce qu'elle explique ses propres
+              pannes.**
+
+              Le 12 août 2026 à 14 h 04, le patron photographie « An unexpected
+              response was received from the server. » — et sa pile d'appel
+              commence par `.next/dev` : son banc servait la version lente. En
+              version lente, chaque écran se compile au premier appel, et le
+              relais de GitHub abandonne au bout d'une minute en rendant sa
+              propre page d'erreur. Ce panneau rouge était donc le symptôme de
+              cet état-là, que rien à l'écran n'annonçait.
+
+              `NODE_ENV` tranche sans ambiguïté : `next start` impose
+              `production`, c'est écrit dans `demarrer.sh` — la même règle que
+              `issueApresMiseAJour`. */}
+          {process.env.ATLAS_BANC_ESSAI === "1" && process.env.NODE_ENV !== "production" && (
+            <p className="mt-3 text-[12px] leading-snug" style={{ color: colors.alert }}>
+              Vous êtes sur la <b>version lente</b>, celle qui se construit encore. Chaque écran
+              peut mettre jusqu&apos;à une minute la première fois, et l&apos;adresse de GitHub
+              abandonne avant — c&apos;est ce qui fait apparaître « une réponse inattendue du
+              serveur ». La version rapide prend le relais dès que la construction aboutit.
+            </p>
+          )}
+
           {/* Sur le banc d'essai seulement : une application déployée ne va pas
               chercher son propre code, ce serait une porte d'entrée. */}
           {process.env.ATLAS_BANC_ESSAI === "1" && <BoutonMiseAJour derniereIssue={await derniereIssueMiseAJour()} />}

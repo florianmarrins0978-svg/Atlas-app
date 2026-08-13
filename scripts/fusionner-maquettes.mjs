@@ -204,6 +204,38 @@ const MAQUETTES = [
     quoi: "« Trop gros, carré. » Filet, bandeau fin, plaque gravée, sceau, capsule, double filet, trait d’or, angle adouci. La capsule est retenue.",
     retenu: true,
   },
+  {
+    fichier: "33-le-devis-parti-allege.html",
+    titre: "Le devis parti, allégé",
+    famille: "Dire moins sur l’écran du devis",
+    quoi: "« Trop d’infos sur cette page » : l’écran en porte onze blocs et déborde de 382 px. Quatre façons de retrancher — l’adresse effacée, l’état monté dans le titre, le devis replié, ou le geste seul sous le pouce — et la question du bouton « carré », mesurée : il est déjà au rayon des cartes.",
+    retenu: true,
+  },
+  {
+    fichier: "34-le-devis-sur-sa-base.html",
+    titre: "Le devis parti, sur sa base",
+    famille: "Dire moins sur l’écran du devis",
+    quoi: "Ce qu’il a arrêté : le nom du devis et le total, plus de lignes, « Modifier mon devis » sous le total, et les trois actions en encre foncée. Sa base au mot près, puis quatre façons de la tenir — sans carte, dans le titre, les actions empilées, ou le signet d’or.",
+    retenu: true,
+  },
+  {
+    fichier: "35-l-ecran-de-connexion.html",
+    titre: "L’écran de connexion",
+    famille: "La dernière porte",
+    quoi: "Le seul écran resté dans l’identité d’avant le 3 août. L’avant, puis quatre après : la carte gardée, sans carte, le sceau, la ligne d’imprimé. Un bouton montre le refus de connexion sur les cinq écrans à la fois.",
+  },
+  {
+    fichier: "36-le-logo-qui-sanime.html",
+    titre: "Le logo qui s’anime",
+    famille: "La dernière porte",
+    quoi: "La proposition 4 sans son titre, le sceau et ATLAS au-dessus, et la marque qui s’anime une demi-seconde avant d’entrer. Ça s’essaie : on appuie sur « Entrer », l’application arrive. Six animations, l’écran étant identique partout.",
+  },
+  {
+    fichier: "37-le-motif-du-sceau.html",
+    titre: "Le motif dans le rond d’or",
+    famille: "La dernière porte",
+    quoi: "Le tour est retenu ; seule la gravure change. Huit motifs, et une bande en tête qui les montre à leur taille réelle — c’est là que se juge lequel tient encore à six millimètres.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
@@ -362,6 +394,24 @@ function sansBlocsOpaques(css) {
 // uniques et référencés par <use>/url() : on n'y touche pas.
 const IDS_A_PREFIXER = ["modele", "duo", "trio", "g1", "g2", "g3", "chartes", "ecran"];
 
+// **Et les familles d'identifiants numérotés**, qui ne peuvent pas s'énumérer :
+// une maquette à huit écrans en pose vingt-quatre, la suivante en posera
+// d'autres. Les nommer un par un dans la liste ci-dessus, c'est se condamner à
+// l'oublier — et l'oubli ne se voit pas : deux maquettes qui portent chacune un
+// `entrer-1` donnent une page unique où le libellé de la seconde coche la case
+// de la PREMIÈRE. Elle s'affiche parfaitement et ne répond à rien. Trouvé le
+// 12 août 2026 en ajoutant la maquette 34 à côté de la 33.
+const FAMILLES_A_PREFIXER = [/^entrer-\d+$/, /^adresse-\d+$/, /^mdp-\d+$/];
+
+/** Les identifiants du corps qui appartiennent à une famille numérotée. */
+function idsDeFamille(corps) {
+  const trouves = new Set();
+  for (const m of corps.matchAll(/id="([^"]+)"/g)) {
+    if (FAMILLES_A_PREFIXER.some((f) => f.test(m[1]))) trouves.add(m[1]);
+  }
+  return [...trouves];
+}
+
 function lire(maquette, indice) {
   const numero = String(indice + 1).padStart(2, "0");
   const hote = `#s${numero}`;
@@ -384,8 +434,16 @@ function lire(maquette, indice) {
     return "";
   });
 
-  for (const id of IDS_A_PREFIXER) {
+  for (const id of [...IDS_A_PREFIXER, ...idsDeFamille(corps)]) {
     corps = corps.replaceAll(`id="${id}"`, `id="s${numero}-${id}"`);
+    // **Et le `for` du libellé avec, sinon la case ne se coche plus.** Une
+    // maquette sans script peut dépendre d'un identifiant tout autant qu'une
+    // autre : `<label for="g1">` sur `<input id="g1">` est ce qui rend une
+    // bascule ou un bouton utilisable sans JavaScript. Préfixer l'un sans
+    // l'autre laisse une page qui s'affiche parfaitement et ne répond à rien —
+    // la pire des pannes, parce qu'aucune capture ne la montre. Trouvé le
+    // 12 août 2026 sur la maquette du logo, par le contrôle et non à l'œil.
+    corps = corps.replaceAll(`for="${id}"`, `for="s${numero}-${id}"`);
   }
 
   return {

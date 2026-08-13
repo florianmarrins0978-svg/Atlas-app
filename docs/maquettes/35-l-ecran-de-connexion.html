@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — L’écran de connexion</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    L’ÉCRAN DE CONNEXION — l’avant, et quatre après
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 12 août 2026, après le balayage des boutons : « oui, fais-moi
+    une maquette avant/après ».
+
+    POURQUOI CET ÉCRAN A ÉTÉ OUBLIÉ, et ce n'est pas un hasard : c'est le SEUL
+    écran qu'on voit AVANT d'être connecté. Chaque refonte s'est faite en
+    parcourant l'application — donc en partant d'un écran déjà passé. La porte
+    ne fait pas partie du couloir, et personne n'a eu à la traverser deux fois.
+
+    Il porte encore, seul, l'identité d'avant le 3 août 2026 : le terre cuite
+    #B5502F, la carte blanche, aucune serif. `src/lib/design-tokens.ts` raconte
+    l'arbitrage — « le patron a comparé les deux le 3 août 2026 et décidé :
+    l'application reprend Arborea ».
+
+    ————————————————————————————————————————————————————————————————
+    ET IL Y A UN DÉFAUT QUI NE SE VOIT PAS SUR CETTE PAGE, seulement sur son
+    téléphone : les champs sont écrits en 15 px. En dessous de 16 px, iOS
+    AGRANDIT la page dès qu'un champ prend le focus — il tape son adresse et
+    l'écran lui saute au visage, à charge pour lui de le rétablir à la main.
+
+    `src/lib/design-tokens.ts` le dit noir sur blanc depuis le 10 août
+    (`styleChampPlage`, « deux choses à ne pas défaire ») ; l'écran de connexion
+    ne s'en est jamais servi. Les quatre propositions sont toutes en 16 px.
+
+    Ce défaut-là ne se choisit pas : quelle que soit la proposition retenue, il
+    se corrige.
+
+    ————————————————————————————————————————————————————————————————
+    LE REFUS DE CONNEXION est en rouge brut (`text-red-600`, une couleur de
+    Tailwind), et non dans le rouge de la charte (`alert #9C3B2E`, « gardée en
+    terre cuite sombre, car une alerte en vert se confondrait avec l'accent
+    ordinaire »). Le bouton en haut de page le montre sur les cinq écrans à la
+    fois — c'est le seul moyen de comparer ce qu'on ne voit qu'en se trompant.
+
+    ————————————————————————————————————————————————————————————————
+    AUCUN SCRIPT. Le bouton « montrer le refus » est une case à cocher native ;
+    le reste est du CSS. Cette page se lit entièrement JavaScript coupé.
+
+    Les écrans font 390 px — la largeur réelle de son téléphone.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f7f5f0;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:1300px;margin:0 auto}
+
+  .intro{max-width:66ch;margin:0 auto;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro b{color:var(--encre);font-weight:600}
+
+  /* ── Le bouton « montrer le refus », en case à cocher native ──────────── */
+  .bascule{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+  .surbascule{display:flex;justify-content:center;margin:30px 0 4px}
+  .surbascule label{cursor:pointer;-webkit-tap-highlight-color:transparent;
+       border:1px solid var(--trait);border-radius:9999px;padding:9px 22px;
+       font-size:13.5px;color:var(--gris);background:var(--plage);
+       transition:color .2s ease,border-color .2s ease}
+  .surbascule label:active{transform:scale(.985)}
+  .bascule:checked ~ .surbascule label{color:var(--or);border-color:var(--or)}
+  .surbascule .off{display:inline}
+  .surbascule .on{display:none}
+  .bascule:checked ~ .surbascule .off{display:none}
+  .bascule:checked ~ .surbascule .on{display:inline}
+
+  /* ── Les rangées ──────────────────────────────────────────────────────── */
+  .famille{max-width:1300px;margin:52px auto 0;text-align:center;
+           font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.32em;
+           text-transform:uppercase;color:var(--or)}
+  .grille{display:flex;flex-wrap:wrap;gap:54px 40px;justify-content:center;
+          align-items:flex-start;margin-top:26px}
+  /* `max-width:100%` sur les deux : sans lui, une largeur fixe de 390 px
+     dépasse le corps de page une fois ses 18 px de marge retirés, et le patron
+     lit cette page sur un téléphone de 390 px. Le débordement ne se voyait pas
+     au large — seule la capture au bon format l'a montré. */
+  .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px;width:100%}
+  .legende{text-align:center;max-width:390px;width:100%}
+  .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+              text-transform:uppercase;color:var(--or)}
+  .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+  .legende p + p{margin-top:9px}
+  .legende .reserve{color:var(--encre);opacity:.82}
+  .legende .reserve b{color:var(--or)}
+
+  .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{width:390px;max-width:100%;height:544px;overflow:hidden;border-radius:32px;
+         display:flex;align-items:center;justify-content:center;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+  /* Le refus : la place est TOUJOURS réservée, cochée ou non. Un message qui
+     pousse le bouton vers le bas au moment où l'on vient d'appuyer dessus fait
+     rater le second appui — c'est le même soin que sur l'écran de création. */
+  .err{min-height:19px;font-size:13px;opacity:0;transition:opacity .2s ease}
+  /* Les deux rangées sont des frères de la case à cocher : un seul sélecteur
+     les allume ensemble, ce qui est tout l'intérêt — le rouge vif et le rouge
+     sombre côte à côte, sinon on compare de mémoire. */
+  .bascule:checked ~ .grille .err{opacity:1}
+
+  /* ————————————————————————————————————————————————————————————————
+     AVANT — l'écran d'aujourd'hui, reproduit au pixel près
+     ———————————————————————————————————————————————————————————————— */
+  .avant{background:#F4EFE8;color:#1c1c1a;padding:24px}
+  .avant .carte{width:100%;max-width:342px;background:#fff;border-radius:4px;padding:24px;
+                box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .avant h3{margin:0 0 24px;font:600 22px/1.25 ui-serif,Georgia,serif}
+  .avant .lib{display:block;margin-bottom:4px;font-size:12px;font-weight:500;color:rgba(28,28,26,.6)}
+  .avant .champ{width:100%;border:1px solid rgba(0,0,0,.1);border-radius:4px;padding:10px 16px;
+                font-size:15px;color:#1c1c1a;background:#fff;margin-bottom:16px}
+  .avant .err{color:#dc2626;margin-bottom:16px}
+  .avant .bouton{width:100%;border:0;border-radius:9999px;background:#B5502F;color:#fff;
+                 padding:12px 0;font-size:15px;font-weight:500;text-align:center}
+
+  /* ————————————————————————————————————————————————————————————————
+     Le vocabulaire commun aux quatre après — celui de la charte
+     ———————————————————————————————————————————————————————————————— */
+  .apres{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-alerte:#9C3B2E;
+    --e-trait:rgba(28,28,26,.12);
+    background:var(--e-fond);color:var(--e-encre);padding:26px 24px}
+  .apres .bloc{width:100%;max-width:342px}
+  /* 9,5 px et 0,28 em : la voix des libellés, `libelleCaps` dans le code. */
+  .apres .lib{display:block;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+              text-transform:uppercase;color:var(--e-gris);margin-bottom:9px}
+  /* 16 px, sans quoi iOS agrandit l'écran au premier appui. */
+  .apres .champ{width:100%;font-size:16px;color:var(--e-encre);margin-bottom:18px}
+  .apres .err{color:var(--e-alerte);margin-bottom:14px}
+  .apres .capsule{display:inline-flex;align-items:center;justify-content:center;
+                  border:0;border-radius:9999px;background:var(--e-pin);color:#faf9f5;
+                  padding:13px 36px;font:400 17px/1 ui-serif,Georgia,serif}
+  .apres .centrer{display:flex;justify-content:center}
+
+  /* ── 1 · la carte gardée ─────────────────────────────────────────────── */
+  .p1 .carte{background:var(--e-plage);border-radius:4px;padding:26px 22px}
+  .p1 h3{margin:0 0 22px;font:400 25px/1.2 ui-serif,Georgia,serif}
+  .p1 .champ{border:1px solid var(--e-trait);border-radius:4px;padding:13px 15px;background:transparent}
+
+  /* ── 2 · sans carte ──────────────────────────────────────────────────── */
+  .p2 h3{margin:0 0 12px;font:400 27px/1.2 ui-serif,Georgia,serif}
+  .p2 .filet{width:34px;height:1.5px;background:var(--e-or);margin:0 0 28px}
+  .p2 .champ{border:0;border-radius:4px;padding:14px 15px;background:var(--e-plage)}
+
+  /* ── 3 · le sceau ────────────────────────────────────────────────────── */
+  .p3{text-align:center}
+  .p3 .sceau{width:56px;height:56px;border:1.5px solid var(--e-or);border-radius:9999px;
+             display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+  .p3 .mot{display:block;font:400 21px/1 ui-serif,Georgia,serif;letter-spacing:.3em;margin-bottom:30px}
+  .p3 .lib{text-align:left}
+  .p3 .champ{border:0;border-radius:4px;padding:14px 15px;background:var(--e-plage);text-align:left}
+
+  /* ── 4 · la ligne, comme sur un imprimé ──────────────────────────────── */
+  .p4 h3{margin:0 0 6px;font:400 27px/1.2 ui-serif,Georgia,serif}
+  .p4 .sous{margin:0 0 30px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  .p4 .champ{border:0;border-bottom:1px solid var(--e-trait);border-radius:0;padding:0 0 10px;
+             background:transparent;margin-bottom:22px}
+  .p4 .lib{margin-bottom:7px}
+  /* La ligne passe à l'or sous le champ que l'on vient de toucher : c'est la
+     seule réponse possible à « ça n'a pas l'air cliquable » sans remettre une
+     plage. Ici, le premier champ est montré au moment de la saisie. */
+  .p4 .actif{border-bottom-color:var(--e-or)}
+
+  .note{max-width:74ch;margin:62px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+  .note b{color:var(--encre)}
+  .note .t{display:block;margin-bottom:8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">La dernière porte</p>
+    <h1>L’écran de connexion</h1>
+    <p>C’est le seul écran d’Atlas resté dans l’identité d’avant le 3 août : le
+      terre cuite, la carte blanche, aucune serif. Il a été oublié pour une
+      raison bête — <b>c’est le seul qu’on voit avant d’être connecté</b>, donc
+      le seul qu’aucune refonte ne traverse.</p>
+    <p>Et il porte un défaut qui ne se voit que sur votre téléphone :
+      <b>ses champs sont écrits en 15 px</b>. En dessous de 16, iOS agrandit la
+      page dès que vous tapez dedans. Les quatre propositions sont en 16 px —
+      celui-là se corrige quel que soit votre choix.</p>
+  </div>
+
+  <input type="checkbox" id="refus" class="bascule">
+  <div class="surbascule">
+    <label for="refus">
+      <span class="off">Montrer le mot de passe refusé →</span>
+      <span class="on">← Masquer le refus</span>
+    </label>
+  </div>
+
+  <p class="famille">Aujourd’hui</p>
+  <div class="grille">
+    <div class="prop">
+      <div class="tel"><div class="ecran avant">
+        <div class="carte">
+          <h3>Connexion à Atlas</h3>
+          <span class="lib">Email</span>
+          <div class="champ">edennature.contact@gmail.com</div>
+          <span class="lib">Mot de passe</span>
+          <div class="champ">••••••••••</div>
+          <p class="err">Identifiants incorrects.</p>
+          <div class="bouton">Se connecter</div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Avant</h2>
+        <p class="titre">L’écran d’aujourd’hui</p>
+        <p>Fond #F4EFE8, carte blanche, ombre, bouton terre cuite. La serif du
+          titre est celle du système, en gras — pas Playfair.</p>
+        <p class="reserve"><b>Trois écarts</b> avec le reste de l’application :
+          la couleur d’accent (terre cuite au lieu du vert pin), les champs en
+          15 px, et le refus en rouge vif de bibliothèque plutôt que dans le
+          rouge sombre de la charte.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="famille">Quatre façons de la mettre à la charte</p>
+  <div class="grille">
+
+    <!-- 1 ————————————————————————————————————————————————————— -->
+    <div class="prop">
+      <div class="tel"><div class="ecran apres p1">
+        <div class="bloc"><div class="carte">
+          <h3>Connexion à Atlas</h3>
+          <span class="lib">Adresse</span>
+          <div class="champ">edennature.contact@gmail.com</div>
+          <span class="lib">Mot de passe</span>
+          <div class="champ">••••••••••</div>
+          <p class="err">Identifiants incorrects.</p>
+          <div class="centrer"><div class="capsule">Se connecter</div></div>
+        </div></div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 1</h2>
+        <p class="titre">La carte, gardée</p>
+        <p>Le moins de déplacement possible : même mise en page, habits neufs.
+          Crème, vert pin, Playfair, capsule, libellés en petites capitales.</p>
+        <p class="reserve"><b>Ce qu’elle coûte.</b> Sur une carte déjà claire,
+          un champ ne peut pas être <i>plus</i> clair : il doit porter un filet.
+          Or la charte veut les champs sans bordure, en plage. C’est le prix de
+          garder la carte — et c’est le seul reproche qu’on puisse lui faire.</p>
+      </div>
+    </div>
+
+    <!-- 2 ————————————————————————————————————————————————————— -->
+    <div class="prop">
+      <div class="tel"><div class="ecran apres p2">
+        <div class="bloc">
+          <h3>Connexion</h3>
+          <div class="filet"></div>
+          <span class="lib">Adresse</span>
+          <div class="champ">edennature.contact@gmail.com</div>
+          <span class="lib">Mot de passe</span>
+          <div class="champ">••••••••••</div>
+          <p class="err">Identifiants incorrects.</p>
+          <div class="centrer"><div class="capsule">Se connecter</div></div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 2</h2>
+        <p class="titre">Sans carte</p>
+        <p>La carte disparaît : le formulaire se pose directement sur le crème,
+          comme sur tous les autres écrans d’Atlas. Le champ redevient une
+          plage sans bordure, et le filet d’or sous le titre est celui de
+          l’écran Chantiers.</p>
+        <p class="reserve"><b>C’est la plus fidèle à ce qui existe déjà</b> —
+          rien de neuf n’est inventé, tout est repris ailleurs.</p>
+      </div>
+    </div>
+
+    <!-- 3 ————————————————————————————————————————————————————— -->
+    <div class="prop">
+      <div class="tel"><div class="ecran apres p3">
+        <div class="bloc">
+          <div class="sceau">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f"
+                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 21.5V8"/>
+              <path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/>
+              <path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/>
+              <path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/>
+              <path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/>
+            </svg>
+          </div>
+          <span class="mot">ATLAS</span>
+          <span class="lib">Adresse</span>
+          <div class="champ">edennature.contact@gmail.com</div>
+          <span class="lib">Mot de passe</span>
+          <div class="champ">••••••••••</div>
+          <p class="err">Identifiants incorrects.</p>
+          <div class="centrer"><div class="capsule">Entrer</div></div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 3</h2>
+        <p class="titre">Le sceau</p>
+        <p>La mise en page de la 2, mais la marque au-dessus : la feuille dans
+          son cercle d’or, et ATLAS très espacé. Le titre disparaît — le nom le
+          dit déjà.</p>
+        <p class="reserve"><b>Pourquoi ici et nulle part ailleurs.</b> Le sceau
+          est déjà en tête de l’écran d’accueil ; le remettre partout en ferait
+          un logo d’entreprise. Mais c’est la porte, et une porte porte un nom.</p>
+      </div>
+    </div>
+
+    <!-- 4 ————————————————————————————————————————————————————— -->
+    <div class="prop">
+      <div class="tel"><div class="ecran apres p4">
+        <div class="bloc">
+          <h3>Connexion</h3>
+          <p class="sous">Vos identifiants Atlas.</p>
+          <span class="lib">Adresse</span>
+          <div class="champ actif">edennature.contact@gmail.com</div>
+          <span class="lib">Mot de passe</span>
+          <div class="champ">••••••••••</div>
+          <p class="err">Identifiants incorrects.</p>
+          <div class="centrer"><div class="capsule">Se connecter</div></div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 4</h2>
+        <p class="titre">La ligne, comme sur un imprimé</p>
+        <p>Plus de plage du tout : un simple trait sous chaque champ, qui passe
+          à l’or sous celui qu’on est en train de remplir (montré ici sur
+          l’adresse). C’est la plus dépouillée des quatre.</p>
+        <p class="reserve"><b>Et la plus risquée</b>, franchement : un champ
+          vide sans plage se lit souvent comme « pas cliquable » — c’est un
+          piège déjà rencontré sur cette application, et noté comme tel. Le
+          trait d’or n’y répond qu’une fois qu’on a osé toucher.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="note">
+    <span class="t">Ce qui ne se choisit pas</span>
+    <b>Trois corrections partent avec n’importe laquelle des quatre :</b> les
+    champs passent à 16 px (sans quoi iOS agrandit votre écran dès que vous
+    tapez), le refus passe du rouge vif au rouge sombre de la charte, et la
+    place du message est réservée en permanence — pour que le bouton ne
+    descende pas d’une ligne au moment précis où vous appuyez dessus.
+    <br><br>
+    <span class="t">Une réserve sur les polices</span>
+    Cette page emprunte la serif de votre appareil. L’application, elle, charge
+    Playfair Display : le rendu final sera plus dessiné, surtout sur les titres
+    et sur le mot de la capsule.
+    <br><br>
+    <span class="t">Rien n’est encore posé dans l’application</span>
+    <b>Aucun fichier de <code>src/</code> n’a été touché.</b> Vous choisissez,
+    et c’est ensuite seulement que l’écran change — votre règle du 11 août.
+  </p>
+
+</div>
+</body>
+</html>

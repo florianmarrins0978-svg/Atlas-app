@@ -188,7 +188,11 @@ function raisonLisible(err: unknown): string {
 }
 
 /**
- * Enregistre la coordonnée manquante d'un client, depuis l'écran Devis.
+ * Enregistre la coordonnée manquante d'un client, depuis l'écran Devis —
+ * **et depuis l'écran Facture** (`facture/TransmettreLaFacture.tsx`), qui offre
+ * le même choix de canal depuis le 12 août 2026 et importe cette action plutôt
+ * que d'en écrire une seconde : deux copies finiraient par diverger, et l'une
+ * des deux oublierait de mettre à jour le canal convenu.
  *
  * **Pourquoi ici.** Il n'existe aucun écran de fiche client : le téléphone et
  * l'e-mail ne se saisissent qu'à la création du chantier. Un patron qui veut

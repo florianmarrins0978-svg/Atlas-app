@@ -6,6 +6,7 @@ import BottomSheet from "@/components/atlas/BottomSheet";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { jourIso, jourLisible } from "@/lib/jour";
 import Calendrier from "@/components/atlas/Calendrier";
+import { basculerJour } from "@/lib/calendrier";
 import { libelleDuree } from "@/server/disponibilites";
 import {
   preparerEnvoiAction,
@@ -51,6 +52,15 @@ const MESSAGES_BLOCAGE: Record<string, string> = {
   devis_absent: "Aucun devis à envoyer pour ce chantier.",
 };
 
+/**
+ * Une date, ou deux — jamais trois (`docs/AGENT.md` §2.2).
+ *
+ * Le nombre vit ici et la RÈGLE dans `src/lib/calendrier.ts` : au-delà du
+ * maximum, c'est le plus ancien choix qui cède la place, plutôt qu'un bouton
+ * qui ne répond pas — ce qui se lit comme une panne.
+ */
+const DATES_AU_MAXIMUM = 2;
+
 const LIBELLE_CANAL = {
   sms: { titre: "Par SMS", champ: "Numéro de téléphone", exemple: "06 12 34 56 78" },
   email: { titre: "Par e-mail", champ: "Adresse e-mail", exemple: "client@exemple.fr" },
@@ -90,10 +100,20 @@ function Contenu({
   // `undefined` tant que le patron n'a rien corrigé : le serveur déduit alors
   // la durée de la dictée. Une valeur ici veut dire « c'est lui qui a tranché ».
   const [dureeChoisie, setDureeChoisie] = useState<number | undefined>(undefined);
-  // La date que le patron choisit lui-même, et ce que le serveur en dit.
-  // Séparée de `selection` tant qu'elle n'est pas retenable : proposer un jour
-  // que l'envoi refusera ensuite coûte un aller-retour avec son client.
-  const [autreDate, setAutreDate] = useState("");
+  // **Le dernier jour INTERROGÉ au calendrier, et ce que le serveur en a dit.**
+  //
+  // Il ne porte plus la sélection — c'était le défaut du 12 août 2026, signalé
+  // par le patron : *« dès que je choisis à même le planning, je ne peux
+  // choisir qu'un seul jour. Or je dois pouvoir proposer deux jours au
+  // client. »* Cet état était une chaîne unique, et le calendrier n'en
+  // recevait qu'un seul jour à marquer : choisir un second effaçait le premier
+  // sous ses yeux. Il n'avait aucune raison de croire que les deux étaient
+  // retenus — et rappuyer sur le premier pour le retirer le remettait au lieu
+  // de l'enlever.
+  //
+  // **`selection` fait foi, et elle seule.** Ce qui reste ici ne sert qu'à
+  // afficher la phrase du serveur sous le calendrier.
+  const [jourInterroge, setJourInterroge] = useState("");
   const [verdict, setVerdict] = useState<VerdictJour | null>(null);
   const [verification, setVerification] = useState(false);
   // Le canal et la coordonnée saisis ici même, quand ils manquent. `rejouer`
@@ -151,26 +171,50 @@ function Contenu({
     }
   }
 
-  function basculerJour(jour: string) {
-    setSelection((actuelle) => {
-      if (actuelle.includes(jour)) return actuelle.filter((j) => j !== jour);
-      // Jamais plus de deux : au-delà, le client ne choisit plus, il hésite.
-      if (actuelle.length >= 2) return [actuelle[1], jour];
-      return [...actuelle, jour];
-    });
+  /**
+   * Ajoute ou retire un jour de la sélection.
+   *
+   * La règle « une ou deux, jamais plus » n'est PAS écrite ici : elle vit dans
+   * `src/lib/calendrier.ts`, où elle est éprouvée sans navigateur et où le
+   * serveur la retrouvera. Elle l'était en double jusqu'au 12 août 2026 — deux
+   * copies d'une même règle finissent toujours par diverger, et l'écart se voit
+   * chez le client.
+   */
+  function basculer(jour: string) {
+    setSelection((actuelle) => basculerJour(actuelle, jour, DATES_AU_MAXIMUM));
   }
 
-  async function verifierAutreDate(jour: string) {
-    setAutreDate(jour);
+  /**
+   * Un jour touché AU CALENDRIER.
+   *
+   * Déjà retenu → on le retire tout de suite : il est passé par le serveur, et
+   * le redemander pour l'enlever serait attendre pour rien.
+   *
+   * Sinon → on demande d'abord au serveur, et on ne le retient que s'il tient.
+   * Le calendrier ne connaît que la fenêtre proche : au-delà, lui seul sait si
+   * la journée est libre (`verifierJourPropose`). Proposer un jour que l'envoi
+   * refuserait ensuite coûte un aller-retour avec le client.
+   */
+  async function toucherAuCalendrier(jour: string) {
+    if (selection.includes(jour)) {
+      basculer(jour);
+      // La phrase du serveur portait sur ce jour-là : la garder après l'avoir
+      // retiré laisserait « retenue » sous un jour qui ne l'est plus.
+      if (jourInterroge === jour) {
+        setJourInterroge("");
+        setVerdict(null);
+      }
+      return;
+    }
+    setJourInterroge(jour);
     setVerdict(null);
-    if (!jour) return;
     setVerification(true);
     try {
       const v = await verifierJourProposeAction(chantierId, jour, preparation?.dureeDemiJournees);
       setVerdict(v);
-      // Retenue tout de suite quand elle tient : un second geste pour confirmer
-      // ce qu'on vient de choisir n'apprend rien à personne.
-      if (v.retenable) basculerJour(jour);
+      // Retenu tout de suite quand il tient : un second geste pour confirmer ce
+      // qu'on vient de choisir n'apprend rien à personne.
+      if (v.retenable) basculer(jour);
     } catch {
       setVerdict({
         jour,
@@ -255,7 +299,7 @@ function Contenu({
                   type="button"
                   onClick={() => setCanalChoisi(c)}
                   aria-pressed={actif}
-                  className="flex-1 rounded-[4px] py-3 text-[15px] font-medium"
+                  className="flex-1 rounded-full py-3 text-[15px] font-medium"
                   style={{
                     backgroundColor: actif ? colors.rustTint : colors.card,
                     color: actif ? colors.rust : colors.ink,
@@ -346,9 +390,9 @@ function Contenu({
                 <button
                   key={jour}
                   type="button"
-                  onClick={() => basculerJour(jour)}
+                  onClick={() => basculer(jour)}
                   aria-pressed={choisi}
-                  className="flex items-center justify-between rounded-[4px] px-4 py-3 text-[15px]"
+                  className="flex items-center justify-between rounded-full px-4 py-3 text-[15px]"
                   style={{
                     backgroundColor: choisi ? colors.rustTint : colors.card,
                     color: colors.ink,
@@ -403,14 +447,20 @@ function Contenu({
               Ou une autre date
             </p>
             <div className="rounded-[4px] px-3 py-3" style={{ backgroundColor: colors.card }}>
+              {/* **Le calendrier marque TOUTE la sélection, pas la dernière
+                  date touchée.** Il ne recevait qu'un seul jour : en choisir un
+                  second effaçait le premier, et le patron en concluait — à
+                  raison — qu'il ne pouvait en proposer qu'un. Ce qu'il voit ici
+                  est désormais exactement ce que son client recevra, y compris
+                  les jours pris dans la liste au-dessus. */}
               <Calendrier
                 debut={preparation.horizon.debut}
                 fin={preparation.horizon.fin}
                 occupes={preparation.joursOccupes}
-                retenus={autreDate ? [autreDate] : []}
+                retenus={selection}
                 aujourdHui={jourIso(new Date())}
                 libelleOccupe="votre planning est complet ce jour-là"
-                onBasculer={(jour) => verifierAutreDate(autreDate === jour ? "" : jour)}
+                onBasculer={toucherAuCalendrier}
               />
             </div>
             {verification && (
@@ -430,7 +480,7 @@ function Contenu({
                     {" "}
                     <button
                       type="button"
-                      onClick={() => verifierAutreDate(verdict.alternative!)}
+                      onClick={() => toucherAuCalendrier(verdict.alternative!)}
                       className="font-medium underline"
                       style={{ color: colors.rust }}
                     >
@@ -458,9 +508,9 @@ function Contenu({
                   <button
                     key={jour}
                     type="button"
-                    onClick={() => basculerJour(jour)}
+                    onClick={() => basculer(jour)}
                     aria-pressed
-                    className="flex items-center justify-between rounded-[4px] px-4 py-3 text-[15px]"
+                    className="flex items-center justify-between rounded-full px-4 py-3 text-[15px]"
                     style={{ backgroundColor: colors.rustTint, color: colors.ink }}
                   >
                     <span>{jourLisible(jour)}</span>

@@ -57,16 +57,36 @@ import { colors, font } from "@/lib/design-tokens";
 // « Confirmer le départ de la facture ». Aucun libellé ne déborde. Le dernier
 // occupe 92 % de la largeur et redevient pleine largeur de fait — ce n'est pas
 // un défaut : c'est le geste le plus irréversible de l'application.
+//
+// ─── Deux réglages ajoutés le 12 août 2026, pour le message de la facture ────
+//
+// Ce bouton-là est un LIEN (`sms:` ou `mailto:`) et non un geste : il ouvre la
+// messagerie du patron. Jusqu'ici la variante `href` perdait `onClick` en
+// silence, et le départ vers la messagerie n'était donc plus retenu — le retour
+// ne ramenait plus à l'accueil avec un mot (`src/lib/annonce-transmission.ts`).
+// D'où `onClick` honoré des deux côtés.
+//
+// `repere` pose un `data-atlas` : sans lui, une suite ne peut désigner ce lien
+// que par son texte, et « Ouvrir le SMS tout prêt » / « Ouvrir l'e-mail tout
+// prêt » se ressemblent assez pour qu'un contrôle passe au vert sur le mauvais.
+// C'est la convention du dépôt, pas une invention pour l'occasion.
+//
+// **Aucun des deux ne touche au DESSIN.** Ajouter un réglage d'apparence ici
+// serait rouvrir « une seule forme d'action », qui est le sujet même de ce
+// fichier.
 export default function PrimaryButton({
   children,
   onClick,
   href,
   disabled = false,
+  repere,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   href?: string;
   disabled?: boolean;
+  /** Repère de suite, posé en `data-atlas`. Jamais lu par le produit. */
+  repere?: string;
 }) {
   // La capsule ne prend que la place de son texte : c'est tout son intérêt.
   // 13 px de retrait vertical sur un corps de 17 la posent à 50 px de haut —
@@ -98,13 +118,13 @@ export default function PrimaryButton({
 
   if (href) {
     return centrer(
-      <a href={href} className={className} style={style}>
+      <a href={href} onClick={onClick} data-atlas={repere} className={className} style={style}>
         {children}
       </a>
     );
   }
   return centrer(
-    <button type="button" onClick={onClick} className={className} style={style}>
+    <button type="button" onClick={onClick} data-atlas={repere} className={className} style={style}>
       {children}
     </button>
   );

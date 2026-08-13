@@ -4,6 +4,7 @@ import { useState } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
 import { composerMessageClient, lienTransmission, type CanalClient } from "@/lib/message-client";
+import { destinataireLisible } from "@/lib/numero-lisible";
 import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { enregistrerCoordonneeClientAction } from "./actions";
 
@@ -46,14 +47,25 @@ type Props = {
   telephone: string;
   email: string;
   lien: string;
+  /** Le PDF du devis, pour la ligne des trois actions. */
+  lienPdf: string;
+  nomFichierPdf: string;
+  /** Le devis est-il DÉJÀ chez le client ? Commande le libellé du bouton. */
+  relance: boolean;
 };
 
+// **Le libellé dit ce que le geste FAIT, et ce n'est pas la même chose selon
+// que le devis est déjà parti ou non.** « Ouvrir le SMS tout prêt » décrit le
+// premier envoi ; devant un devis que le client a déjà en main, il fait croire
+// qu'on va lui en envoyer un second. C'est « relancer » — le même lien, tel
+// quel — et c'est le mot que le patron a retenu sur la maquette 34.
 const LIBELLE: Record<
   CanalClient,
-  { bouton: string; bascule: string; champ: string; exemple: string; manque: string; invite: string }
+  { bouton: string; relance: string; bascule: string; champ: string; exemple: string; manque: string; invite: string }
 > = {
   sms: {
     bouton: "Ouvrir le SMS tout prêt",
+    relance: "Relancer par SMS",
     bascule: "Plutôt par SMS",
     champ: "Numéro de téléphone",
     exemple: "06 12 34 56 78",
@@ -62,6 +74,7 @@ const LIBELLE: Record<
   },
   email: {
     bouton: "Ouvrir l'e-mail tout prêt",
+    relance: "Relancer par e-mail",
     bascule: "Plutôt par e-mail",
     champ: "Adresse e-mail",
     exemple: "client@exemple.fr",
@@ -78,8 +91,12 @@ export default function TransmettreAuClient({
   telephone,
   email,
   lien,
+  lienPdf,
+  nomFichierPdf,
+  relance,
 }: Props) {
   const [erreur, setErreur] = useState<string | null>(null);
+  const [copie, setCopie] = useState(false);
   const [coordonnees, setCoordonnees] = useState<Record<CanalClient, string>>({ sms: telephone, email });
   // Le canal retenu ici prime sur celui de la fiche : le patron change d'avis
   // au moment d'envoyer, pas au moment de créer le chantier.
@@ -165,18 +182,23 @@ export default function TransmettreAuClient({
             href={adresse(canalChoisi, destinataire)}
             data-transmission={canalChoisi}
             onClick={() => marquerDepartMessagerie("devis", clientNom)}
-            className="mt-3 block w-full rounded-[4px] py-3 text-center text-[15px] font-medium text-white"
+            className="block w-full rounded-full py-3 text-center text-[15px] font-medium text-white"
             style={{ backgroundColor: colors.rust }}
           >
-            {LIBELLE[canalChoisi].bouton}
+            {relance ? LIBELLE[canalChoisi].relance : LIBELLE[canalChoisi].bouton}
           </a>
           {/* Dire à qui : le patron doit voir le destinataire AVANT d'ouvrir sa
               messagerie, pas le découvrir dedans.
               La phrase est d'un seul tenant : coupée en morceaux, JSX avalait
               l'espace avant le tiret et affichait « Au 0679984514— c'est vous ».
-              Même défaut que « Créer la facture » en haut de la fiche. */}
+              Même défaut que « Créer la facture » en haut de la fiche.
+
+              **Le numéro est espacé** (`numeroLisible`) : collé, il se vérifiait
+              chiffre par chiffre ou pas du tout. Le lien `sms:`, lui, continue
+              de porter le numéro brut — c'est `lienTransmission` qui retire les
+              espaces, et non cette ligne. */}
           <p className="mt-2 text-center text-[12px]" style={{ color: colors.muted }}>
-            {`${canalChoisi === "sms" ? "Au" : "À"} ${destinataire} — c'est vous qui l'envoyez.`}
+            {`${canalChoisi === "sms" ? "Au" : "À"} ${destinataireLisible(canalChoisi, destinataire)} — c'est vous qui l'envoyez.`}
           </p>
         </>
       ) : (
@@ -210,7 +232,14 @@ export default function TransmettreAuClient({
       )}
 
       {/* Changer d'avis. Toujours présent, jamais présélectionné : la voie
-          normale reste celle convenue avec le client sur sa fiche. */}
+          normale reste celle convenue avec le client sur sa fiche.
+
+          **Il a failli disparaître, et ce serait une régression.** Aucune des
+          cinq mises en page de la maquette 34 ne le portait — je l'avais omis.
+          Or c'est une demande explicite du 4 août : « si je veux l'envoyer par
+          e-mail, je ne peux pas revenir le choisir ». Il reprend donc sa place
+          juste sous la ligne du destinataire, qui nomme déjà le canal — c'est
+          là qu'on se rend compte qu'on s'est trompé de voie. */}
       <button
         type="button"
         onClick={() => {
@@ -218,20 +247,67 @@ export default function TransmettreAuClient({
           setSaisie("");
           setErreur(null);
         }}
-        className="mt-3 block w-full text-center text-[14px] font-medium"
-        style={{ color: colors.rust }}
+        className="mt-2 block w-full text-center text-[13px]"
+        style={{ color: colors.muted }}
       >
         {LIBELLE[autre].bascule} →
       </button>
 
-      <button
-        type="button"
-        onClick={partagerAutrement}
-        className="mt-2 block w-full text-center text-[13px]"
-        style={{ color: colors.muted }}
+      {/* **Les trois actions, en encre foncée — sa demande du 12 août.**
+          Elles étaient dispersées : « Copier le lien » vivait dans l'écran,
+          « Partager » ici, et le PDF plus haut. Trois endroits pour trois gestes
+          de même nature, c'est trois endroits à retoucher le jour où l'un
+          change. Elles tiennent maintenant une seule ligne.
+
+          Le point médian n'est pas un ornement : trois libellés séparés par du
+          blanc se lisent comme une phrase découpée, et on ne sait plus où finit
+          l'un. Il est `aria-hidden` — un lecteur d'écran annoncerait « point ».
+
+          « Partager » plutôt que « Partager autrement (WhatsApp…) » : à trois sur
+          une ligne de 390 px, la parenthèse débordait. L'arbitrage est dans la
+          maquette 34. */}
+      <div
+        className="mt-3 flex items-center justify-center text-[13px]"
+        style={{ color: colors.ink }}
       >
-        Partager autrement (WhatsApp…)
-      </button>
+        <a
+          href={lienPdf}
+          download={nomFichierPdf}
+          className="px-2 font-medium"
+        >
+          Télécharger le PDF
+        </a>
+        <span aria-hidden="true" style={{ color: colors.line }}>
+          ·
+        </span>
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(lien);
+              setCopie(true);
+            } catch {
+              // Presse-papier refusé : le lien part quand même par le bouton
+              // ci-dessus, et par le partage. Rien n'est perdu, donc rien à dire.
+            }
+          }}
+          className="px-2 font-medium"
+          style={{ color: colors.ink }}
+        >
+          {copie ? "Lien copié" : "Copier le lien"}
+        </button>
+        <span aria-hidden="true" style={{ color: colors.line }}>
+          ·
+        </span>
+        <button
+          type="button"
+          onClick={partagerAutrement}
+          className="px-2 font-medium"
+          style={{ color: colors.ink }}
+        >
+          Partager
+        </button>
+      </div>
 
       {erreur && (
         <p role="alert" className="mt-2 text-center text-[13px]" style={{ color: colors.rust }}>

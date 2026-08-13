@@ -206,14 +206,14 @@ export default function AssistantSidebar() {
                             <button
                               onClick={() => appliquerPropositions(i)}
                               disabled={enCours}
-                              className="flex-1 rounded-[4px] py-2 text-[13px] font-medium text-white disabled:opacity-40"
+                              className="flex-1 rounded-full py-2 text-[13px] font-medium text-white disabled:opacity-40"
                               style={{ backgroundColor: colors.rust }}
                             >
                               Appliquer les modifications
                             </button>
                             <button
                               onClick={() => annulerPropositions(i)}
-                              className="flex-1 rounded-[4px] py-2 text-[13px] font-medium"
+                              className="flex-1 rounded-full py-2 text-[13px] font-medium"
                               style={{ backgroundColor: colors.line, color: colors.ink }}
                             >
                               Annuler

@@ -117,20 +117,41 @@ async function main() {
   // automatique — mais rien ne remplace de le constater, et une régression ici
   // rendrait muet le bouton « appeler » de la fiche du client.
   await cas("les `tel:` écrits par Atlas restent des liens", async () => {
-    // **`domcontentloaded`, et non l'événement `load` par défaut.** Ce morceau
-    // de page ne charge rien du tout ; attendre `load` fait pourtant attendre
-    // que le RÉSEAU de l'onglet se taise — or le serveur de développement garde
-    // une liaison ouverte pour le rechargement à chaud, et il ne se tait jamais.
-    // Le contrôle a dépassé les 45 secondes en pleine batterie le 12 août 2026,
-    // et fut vert seul l'instant d'après : un contrôle qui échoue au hasard
-    // apprend à ignorer le rouge, et l'on perd la suite entière avec lui.
-    await page.setContent(
-      '<meta name="format-detection" content="telephone=no,address=no,email=no">' +
-        '<a href="tel:0612345678" id="temoin">06 12 34 56 78</a>',
-      { waitUntil: "domcontentloaded" }
-    );
-    const href = await page.locator("#temoin").getAttribute("href");
-    assert.equal(href, "tel:0612345678", "un `tel:` explicite a été altéré par le refus");
+    // **Sur une page NEUVE, et c'est un correctif, pas une précaution.**
+    //
+    // Ce cas écrivait son témoin dans la page qui venait de servir `/login`.
+    // Or `setContent` ne fait que réécrire le document : **l'application, elle,
+    // tourne toujours**. Next.js réinjectait son `<title>Atlas</title>` dans le
+    // `<head>` fraîchement écrit — on le voyait à l'œil dans le contenu rendu —
+    // et emportait tantôt le témoin avec. Le contrôle échouait alors sur
+    // « #temoin introuvable » pendant quarante-cinq secondes, en accusant la
+    // détection automatique là où le fautif était son propre décor.
+    //
+    // Reproduit et compris avant d'être corrigé : le témoin passait seul, et
+    // échouait seulement après une visite de l'application. Une page neuve n'a
+    // aucune application vivante dessus, et le cas ne dépend plus de rien
+    // d'autre que de ce qu'il éprouve.
+    //
+    // **Une autre session a soigné le même mal autrement**, en passant
+    // `waitUntil: "domcontentloaded"` à `setContent` : elle avait relevé que
+    // l'événement `load` attend que le réseau de l'onglet se taise, et que le
+    // serveur de développement garde ouverte sa liaison de rechargement à
+    // chaud. Le constat est juste et vaut d'être gardé. Il ne suffisait
+    // pourtant pas : mesuré ici, `setContent` rendait la main en 1,9 s même par
+    // défaut — ce qui effaçait le témoin, c'était bien le rendu de
+    // l'application par-dessus. Sur une page neuve, les deux causes tombent
+    // ensemble.
+    const vierge = await contexte.newPage();
+    try {
+      await vierge.setContent(
+        '<meta name="format-detection" content="telephone=no,address=no,email=no">' +
+          '<a href="tel:0612345678" id="temoin">06 12 34 56 78</a>'
+      );
+      const href = await vierge.locator("#temoin").getAttribute("href", { timeout: 10_000 });
+      assert.equal(href, "tel:0612345678", "un `tel:` explicite a été altéré par le refus");
+    } finally {
+      await vierge.close();
+    }
   });
 
   await contexte.close();

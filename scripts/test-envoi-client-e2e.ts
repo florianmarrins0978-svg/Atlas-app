@@ -11,6 +11,22 @@ import { lancerNavigateur } from "./e2e-browser";
 
 const BASE = "http://localhost:3000";
 
+/**
+ * Combien de temps attendre qu'un écran paraisse.
+ *
+ * **Vingt secondes, et le chiffre a une histoire (12 août 2026).** Cette suite
+ * attendait dix secondes là où ses voisines — `test-transmission-e2e`,
+ * `test-devis-parti-signet-e2e` — en attendent quinze à vingt pour LE MÊME
+ * écran. Elle passait seule et tombait en batterie : le serveur y compile à la
+ * demande, avec soixante-deux autres suites qui se disputent quatre cœurs.
+ *
+ * Le rouge n'accusait pas le bon coupable — il nommait « le canal se déduit de
+ * la seule coordonnée renseignée », une règle métier qui n'y était pour rien.
+ * Et un rouge qui tombe au hasard coûte plus cher qu'il ne rapporte : il
+ * apprend à ignorer le rouge.
+ */
+const DELAI_ECRAN_MS = 20_000;
+
 let passed = 0;
 let failed = 0;
 async function test(nom: string, fn: () => Promise<void>) {
@@ -89,7 +105,7 @@ async function main() {
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     await page.click("text=Envoyer au client");
 
-    await page.waitForSelector("text=Comment joindre ce client", { timeout: 10000 });
+    await page.waitForSelector("text=Comment joindre ce client", { timeout: DELAI_ECRAN_MS });
     for (const canal of ["Par SMS", "Par e-mail"]) {
       assert.ok(
         await page.getByRole("button", { name: canal }).isVisible(),
@@ -112,7 +128,7 @@ async function main() {
     });
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     await page.click("text=Envoyer au client");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
 
     assert.ok(
       await page.locator("text=Par e-mail au dupuis@exemple.fr").isVisible(),
@@ -125,7 +141,7 @@ async function main() {
     const url = await creerChantierFacturable(page, "deuxmax");
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     await page.click("text=Envoyer au client");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
 
     const jours = page.locator('button[aria-pressed]');
     const total = await jours.count();
@@ -135,7 +151,19 @@ async function main() {
     await jours.nth(1).click();
     await jours.nth(2).click();
 
-    const selectionnes = await page.locator('button[aria-pressed="true"]').count();
+    // **On compte des JOURS, pas des boutons pressés.** Depuis le 12 août 2026,
+    // le calendrier marque toute la sélection et non plus la dernière date
+    // touchée (`ARCHITECTURE.md` §74) : un même jour est donc légitimement
+    // pressé à deux endroits — sa ligne dans la liste, et sa case au
+    // calendrier. Ce contrôle annonçait « 4 dates retenues au lieu de 2 » sur
+    // une sélection parfaitement juste, c'est-à-dire qu'il accusait à tort.
+    //
+    // « proposée » n'est écrit que sur les lignes de la sélection : une case du
+    // calendrier ne porte que son numéro.
+    const selectionnes = await page
+      .locator('button[aria-pressed="true"]')
+      .filter({ hasText: /proposée/ })
+      .count();
     assert.strictEqual(selectionnes, 2, `${selectionnes} dates retenues au lieu de 2`);
     await page.click('button:has-text("Annuler")');
   });
@@ -144,7 +172,7 @@ async function main() {
     const url = await creerChantierFacturable(page, "cycle");
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     await page.click("text=Envoyer au client");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
 
     // Deux dates : c'est le cas qui laisse le client choisir.
     await page.locator('button[aria-pressed]').nth(1).click();
@@ -200,9 +228,23 @@ async function main() {
     }
     await page.screenshot({ path: "/tmp/atlas-devis-pret.png", fullPage: true });
 
-    const lien = await page.locator("text=/\\/devis\\/[A-Za-z0-9_-]+/").first().innerText();
-    const chemin = lien.slice(lien.indexOf("/devis/"));
-    assert.ok(chemin.startsWith("/devis/"), `lien inattendu : ${lien}`);
+    // **Le chemin se lit dans le GESTE, plus dans l'adresse affichée.**
+    //
+    // Il se lisait dans l'adresse complète, écrite en toutes lettres sous le
+    // total. Le patron l'a fait retirer le 12 août — trois lignes de caractères
+    // illisibles qu'il ne relisait jamais, et que « Copier le lien » met de
+    // toute façon dans le presse-papier.
+    //
+    // On le prend maintenant là où il compte vraiment : dans le message que le
+    // patron va envoyer. C'est un meilleur contrôle que l'ancien — il éprouve
+    // le lien que le CLIENT recevra, et non celui qui était affiché à côté.
+    const adresse = decodeURIComponent(
+      (await page.locator("a[data-transmission]").getAttribute("href")) ?? ""
+    );
+    const debut = adresse.indexOf("/devis/");
+    assert.ok(debut >= 0, `le message à envoyer ne porte aucun lien de devis : « ${adresse.slice(0, 90)} »`);
+    const chemin = adresse.slice(debut).split(/\s/)[0];
+    assert.ok(chemin.startsWith("/devis/"), `lien inattendu : ${chemin}`);
 
     // Ouvert dans un contexte vierge : c'est bien la situation du client, qui
     // n'a ni session ni cookie de l'application.
@@ -226,7 +268,7 @@ async function main() {
     const url = await creerChantierFacturable(page, "rejoue");
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     await page.click("text=Envoyer au client");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
 

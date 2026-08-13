@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
+import { numeroLisible } from "../src/lib/numero-lisible";
 
 // Le dernier mètre : le message part-il au bon destinataire ?
 //
@@ -120,10 +121,17 @@ async function main() {
   // ligne, et cette sous-ligne a affiché « Au 0679984514— c'est vous qui
   // l'envoyez. » Même défaut que « Fin de chantieren haut » sur la fiche —
   // deux fois le même piège, donc un contrôle plutôt qu'une vigilance.
+  //
+  // **Et le numéro est ESPACÉ** depuis le 12 août (`src/lib/numero-lisible.ts`) :
+  // collé, il ne se vérifiait pas d'un coup d'œil, et c'est pourtant la dernière
+  // occasion de voir qu'on s'adresse au mauvais client. Le lien `sms:` ci-dessus,
+  // lui, porte toujours le numéro brut — les deux assertions se tiennent, et
+  // c'est voulu : le jour où l'affichage contaminerait le lien, la première
+  // rougirait.
   const sousLigne = await page.locator("text=/c'est vous qui l'envoyez/").first().innerText();
   assert.equal(
     sousLigne.replace(/\s+/g, " ").trim(),
-    `Au ${TELEPHONE} — c'est vous qui l'envoyez.`,
+    `Au ${numeroLisible(TELEPHONE)} — c'est vous qui l'envoyez.`,
     `La phrase du destinataire est mal composée : « ${sousLigne} »`
   );
   console.log("  ✓ le destinataire est annoncé sur l'écran, phrase entière");

@@ -231,7 +231,323 @@ entièrement carrée.
 l'ancienne identité — terre cuite `#B5502F` écrite en dur, carte blanche, aucune
 serif. C'est le premier écran qu'il voit. `TODO.md` §0 nonies.
 
+## La porte est refaite (12 août) — et deux pièges à connaître
+
+`src/app/login/page.tsx` porte ses trois choix : ligne d'imprimé, sceau à la
+**rose des vents**, et **le tour** pendant la vérification. `ARCHITECTURE.md` §71.
+
+**Piège A — le serveur de développement n'hydrate pas cet écran, ICI.** Sa
+liaison de rechargement à chaud est refusée par le mandataire réseau, le
+formulaire part en HTML pur, la page se recharge et **tout champ redevient vide
+quel que soit le code**. Quatre correctifs justes ont été déclarés morts pour
+cette raison. Avant d'accuser le code : mesurer sur la version BÂTIE
+(`npm run banc`), pas sur `next dev`. `test-porte-e2e.ts` compte désormais les
+navigations complètes et annonce « non concluant » plutôt que rouge.
+
+**Piège B — React remet le formulaire à zéro APRÈS le rendu qui suit l'action.**
+Ni un champ contrôlé, ni un effet, ni `defaultValue` ne font survivre une valeur
+à cette remise. Ce qui tient : une `ref` qui met la valeur par défaut à jour
+**et** une `key` qui remonte le champ à chaque envoi. Ne pas « simplifier » l'un
+des deux.
+
+## L'écran de connexion : maquette posée, choix EN ATTENTE (12 août)
+
+`docs/maquettes/35-l-ecran-de-connexion.html` — l'avant reproduit, puis quatre
+après (la carte gardée, sans carte, le sceau, la ligne d'imprimé). **Ne rien
+poser dans `src/app/login/` avant qu'il ait désigné laquelle**, sa règle du
+11 août.
+
+**FAIT le 12 août au soir** — ce qui suit est conservé pour la trace du chemin.
+
+**Il a déjà tranché la mise en page, le 12 août au soir :** la **4** (les champs
+en ligne d'imprimé), **sans le titre « Connexion » ni la sous-ligne**, avec **le
+sceau et ATLAS de la 3** au-dessus. Ce qui reste ouvert est **l'animation de la
+marque à l'entrée** — six propositions dans
+`docs/maquettes/36-le-logo-qui-sanime.html`, son numéro attendu.
+
+**Puis il a retenu « le tour »** (maquette 36, proposition 3) et demandé
+d'autres gravures : `docs/maquettes/37-le-motif-du-sceau.html`, huit motifs,
+**son numéro attendu**. Le rond d'or, l'écran et l'animation n'y bougent plus.
+
+**La leçon de la 34, qui vaut pour toute icône de ce dépôt :** un motif se juge
+**à sa taille réelle**, jamais agrandi. La bande en tête de cette maquette est
+là pour ça, et elle a tué trois propositions — à 29 px avec un trait d'1,5, une
+tige et trois ovales se rejoignent en pâté quel que soit l'écartement. Une seule
+grande forme tient toujours ; trois petites, jamais.
+
+**Trois choses à ne pas défaire, dans la maquette comme dans l'écran :**
+
+1. **`pointer-events:none` sur `.conn` une fois entré.** Les deux écrans
+   occupent la même case de grille ; un écran à `opacity:0` continue
+   d'intercepter le doigt, et « Recommencer » ne répondait pas. Invisible sur
+   toute capture.
+2. **La demi-seconde est un plancher, pas une attente.** Voir `TODO.md`
+   §0 nonies : au moment de coder, décider ce que fait l'animation quand le
+   serveur tarde. Les six bouclent dans la maquette, exprès.
+3. **`scripts/verifier-maquette-logo.mjs` doit rester joué** après toute
+   retouche : il éprouve les douze écrans (fichier seul et page unique)
+   JavaScript coupé, et il sait échouer.
+
+**Ce qui ne dépend PAS de son choix, et qui part avec n'importe laquelle :**
+
+1. **Les champs passent à 16 px.** Ils sont en 15, et en dessous de 16 **iOS
+   agrandit la page dès qu'un champ prend le focus** — le jeton
+   `styleChampPlage` existe depuis le 10 août pour cette raison exacte, et cet
+   écran ne s'en sert pas. C'est un défaut de son téléphone, pas une préférence.
+2. **Le refus passe de `text-red-600` à `colors.alert`.**
+3. **La place du message reste réservée** (`min-height`), sinon le bouton
+   descend d'une ligne au moment où il appuie dessus.
+
+**Pourquoi cet écran échappe à tout :** c'est le seul vu **avant** d'être
+connecté, donc le seul qu'aucun parcours de l'application ne traverse. Le même
+raisonnement vaut pour `src/app/documents-legaux/formulaire.tsx`.
+
+## L'agenda iCloud : CODÉ le 12 août — et ce qui reste à éprouver chez lui
+
+**La maquette a été montrée, puis il a tranché :** *« code pour qu'on puisse
+lire et écrire dans cet agenda »*. C'est fait — `ARCHITECTURE.md` §75 porte le
+détail et le pourquoi.
+
+**⚠ CE QUI N'A JAMAIS PARLÉ À APPLE.** Aucun échange réel avec iCloud n'a eu
+lieu : le mandataire réseau d'ici refuse `caldav.icloud.com`. Les trois appels
+HTTP de `src/server/agenda/apple.ts` sont donc **non éprouvés**, et tout le
+reste — ce qui décide — l'est entièrement (`test-ics.ts`, `test-caldav.ts`,
+`test-agenda-apple-base.ts`). **Ne pas lui dire que le raccordement est vérifié
+avant qu'il l'ait branché une fois.**
+
+Si ça échoue chez lui, regarder dans cet ordre : la **découverte** (iCloud
+redirige vers le serveur du compte, et un `PROPFIND` transformé en `GET` rend
+une page au lieu d'un `multistatus`), la **double authentification** (sans elle,
+Apple n'émet pas de mot de passe pour les apps, et refuse en 401 comme un mot de
+passe faux), puis le **dépôt**. Dans les trois cas, la phrase d'Apple est
+affichée telle quelle sur l'écran des réglages : la lire avant de supposer.
+
+**Le contexte, pour ne pas le redécouvrir.** Il a envoyé une capture du
+Calendrier d'Apple : *« je peux connecter ce calendrier à mon appli ? »* Le
+Calendrier n'étant qu'une **vitrine** — il affiche iCloud comme Gmail —, la
+question a été posée avant de répondre. Ses deux réponses : le compte est
+**iCloud**, et il veut **les deux sens**. Réponse complète et chiffrée dans
+`docs/QUESTIONS.md` §14, chemin de mise en œuvre dans `TODO.md` §0 unvicies.
+
+**Ce qui change tout par rapport à Google** : Apple n'a **aucun** bouton
+« accepter » pour l'agenda. Il faut CalDAV et un **mot de passe spécifique à
+l'app**, généré sur son compte Apple — et ce mot de passe **ouvre tout
+l'iCloud**, mail et fichiers compris, parce qu'Apple ne sait pas le restreindre
+à un service. Ce n'est pas un détail à ranger en petits caractères : c'est la
+raison pour laquelle l'avertissement est **au-dessus** du champ dans la
+maquette, et pourquoi le contrôle le vérifie **par sa position**.
+
+**Trois choses à ne pas défaire dans cette maquette-là :**
+
+1. **L'interrupteur d'écriture reste éteint au départ**, et le choix du
+   calendrier n'existe pas tant qu'il l'est. Écrire dans son agenda personnel
+   est une décision ; un réglage allumé d'office la lui prend.
+2. **Le repli est un calendrier « Atlas » séparé**, pas « Perso ». Ce qu'Atlas a
+   posé se retire alors d'un geste au débranchement — semé dans « Perso », il se
+   reprend un par un.
+3. **Pas de raccourci `font:` avec `inherit`.** `font:400 16px/1.4 inherit` est
+   **invalide** et la déclaration entière tombe : les champs repassaient à
+   13,3 px (donc le zoom de Safari) et les boutons à 43 px, sous les 44 px du
+   doigt. Trouvé par le contrôle, invisible à l'écran. Le même piège dort dans
+   les autres maquettes du dossier.
+
+**Un quatrième piège, propre au JSX et trouvé sur une capture :** l'écran
+affichait « votre iCloud**—** pas seulement l'agenda ». Le JSX avale l'espace
+qui suit une balise fermante à cet endroit — l'écran de Google portait déjà un
+`{" "}` pour cette raison, sans que personne l'ait écrit. Quatre phrases du même
+écran portaient le piège. **Aucun test de texte ne l'attrape** : le contrôle
+vise désormais le texte RENDU (`test-agenda-reglages-e2e.ts`).
+
+**Pour diagnostiquer une suite navigateur sans rejouer la batterie :**
+`npm run test:e2e -- --seulement <motif>`. Écrit le 12 août après avoir rejoué
+vingt-cinq minutes pour observer UNE suite — c'est ce coût-là qui pousse à
+supposer une cause au lieu d'aller la lire. Le script dit à voix haute qu'il
+n'est pas la batterie.
+
 ## Ce qui vient d'être terminé
+
+**« MONSIEUR MARTINS », ET LE TIRET RETIRÉ (13 août).** Sa capture de l'écran
+Devis. Le nom du chantier ne dit plus « Chez … », la ligne du client porte sa
+civilité, et le détail passe **sous** le nom au lieu d'être collé par un tiret.
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **La civilité vit dans `src/lib/civilite.ts`, et nulle part ailleurs.** Trois
+   endroits l'appellent. « Monsieur » est un **défaut, pas une donnée** : il n'y
+   a aucun champ de civilité dans la fiche client, donc une cliente sera mal
+   nommée. Le vrai remède — un choix à la création — n'a pas été ajouté sans son
+   accord. **À lui poser.**
+2. **Un invariant a été levé, pas oublié.** `nom-chantier.ts` tenait que chaque
+   mot du nom venait de la saisie ; « Monsieur » rompt cette règle, et le patron
+   l'a demandé en connaissance de cause. Ne pas la rétablir sans lui.
+3. **UNE MIGRATION DE DONNÉES SUR UNE TABLE SOUS RLS NE FAIT RIEN, EN SILENCE.**
+   C'est la leçon qui ressert le plus. `chantiers` et `clients` portent la RLS
+   en mode **forcé** : le propriétaire y est soumis, et sans `app.entreprise_id`
+   posé, `current_setting` rend une chaîne vide, le prédicat vaut NULL et
+   **aucune ligne n'est visible**. Le premier `UPDATE` écrit s'est appliqué sans
+   erreur, a rapporté un succès, et n'a touché aucune ligne. La migration 0036
+   boucle donc sur les entreprises en posant le contexte de chacune — jamais en
+   désactivant la RLS. Les migrations d'avant ne modifiaient que
+   `termes_metier`, sans RLS forcée : ce cas était neuf.
+4. **Un « 1 migration appliquée » ne prouve rien.** Le contrôle rejoue la
+   migration et vérifie le résultat. Il a d'abord été un **faux vert** : il
+   posait lui-même le contexte pour ses insertions, la migration en héritait, et
+   il passait au vert sur la version défaillante. Il efface maintenant le
+   contexte avant de jouer la migration.
+
+**Et un rappel que cette journée redonne :** trois suites navigateur recopiaient
+« Chez … » au lieu d'appeler la règle. Elles sont passées au rouge le jour où le
+mot a changé. Elles appellent maintenant `nomDuChantier` / `avecCivilite`.
+
+Détail complet : `ARCHITECTURE.md` §77.
+
+**SIX BRANCHES RÉUNIES DANS `main` (13 août).** Sa demande : *« Fusionne. »*
+`main` porte désormais l'agenda iCloud, l'écran de la facture (SMS **ou**
+e-mail, et le téléchargement), le lien cliquable du message au client, et toute
+la mémoire qui vivait à côté. Plus aucune branche `claude/*` ne détient de
+travail que `main` n'ait pas.
+
+**Trois pièges à connaître avant la prochaine fusion**, tous payés celle-ci :
+
+1. **Deux branches numérotent la même section d'`ARCHITECTURE.md`.** Il y avait
+   deux §67 et deux §68. Renuméroter ne suffit pas — **onze renvois** les
+   visaient depuis quatre fichiers de mémoire et jusque dans un commentaire de
+   suite. Chercher `§NN` dans tout le dépôt après toute renumérotation, et
+   trancher renvoi par renvoi : ceux de `main` ne bougent pas.
+2. **Le même bloc rangé à deux endroits fait un doublon silencieux**, parce que
+   `git` voit deux ajouts et non un déplacement. Avant de « garder les deux
+   côtés » d'un conflit de mémoire, vérifier que ce ne sont pas deux
+   exemplaires du même texte.
+3. **Une mémoire fusionnée peut se contredire.** Ici, `scroll-snap-stop:
+   always` était donné pour règle par une branche et **retiré depuis le 11
+   août** dans `main` (le patron lisait l'arrêt comme du saccadé) ; et
+   `HANDOVER.md` annonçait encore « rien n'est codé » pour une refonte livrée.
+   La question n'est pas « lequel garder » mais **« lequel est encore vrai »**.
+
+Batterie entière au vert avant de pousser : types, lint, mémoire, 124/124
+suites base, 65/65 suites navigateur, 23 contrôles de maquette, et la connexion
+réelle derrière une origine étrangère.
+
+**LE CALENDRIER D'ENVOI NE MARQUAIT QU'UN JOUR (12 août).** Il ne pouvait
+proposer qu'une date dès qu'il la prenait au calendrier, alors que son client
+doit pouvoir choisir entre deux (`ARCHITECTURE.md` §74).
+
+**Deux leçons qui resserviront, et qui ne sont pas propres à cet écran :**
+
+1. **Un état parallèle à la vérité finit toujours par mentir.** L'écran gardait
+   la date du calendrier dans une chaîne à part, à côté de la sélection réelle.
+   Le symptôme visible n'était pas le pire : rappuyer sur un jour retenu le
+   **remettait** au lieu de l'enlever, parce que le geste se comparait à l'état
+   parallèle. Devant un écran où « ça ne se désélectionne pas », chercher
+   d'abord s'il existe deux états pour une seule chose.
+2. **Un parcours à moitié joué ne prouve que la moitié qu'on joue.**
+   `test-date-lointaine-e2e` choisissait UNE date au calendrier, et passait.
+   Quand un écran offre un maximum — deux dates, trois photos, cinq lignes —
+   l'éprouver à un seul exemplaire ne dit rien du second, et c'est au second que
+   les états parallèles se révèlent.
+
+**Et la règle des deux dates était écrite en double** : `basculerJour` existait
+depuis le 9 août dans `src/lib/calendrier.ts`, pure et éprouvée, sans que
+personne s'en serve. L'écran avait sa copie. C'est le §3 de `CLAUDE.md` — devant
+une règle métier dans un composant, vérifier d'abord si le dépôt ne la porte pas
+déjà.
+
+**⚠ Deux suites voisines ont dû être réparées au passage, et la seconde vaut un
+réflexe.** `test-retour-messagerie-e2e` **empruntait** son chantier à une autre
+suite (`WHERE reponse IS NULL LIMIT 1`, sans `ORDER BY` ni propriétaire) : il ne
+savait pas tourner seul, et ajouter une suite ailleurs a suffi à changer l'ordre
+des lignes et à le faire rougir — en accusant le retour de messagerie, qui n'y
+était pour rien. **Devant une suite qui rougit sans rapport avec ce qu'on vient
+de toucher, regarder d'abord si elle possède ses données ou si elle les
+emprunte.** Chacune fabrique désormais les siennes.
+
+
+**LA FACTURE PART PAR E-MAIL, ET SE TÉLÉCHARGE (12 août).** Deux des trois
+manques qu'il avait signalés le 10 août (`TODO.md` §8, `ARCHITECTURE.md` §73).
+
+**Cinq choses à savoir avant d'y toucher :**
+
+1. **Les TROIS manques sont réglés.** Le bouton a pris la capsule le 12 août —
+   *« code la A »*, après deux planches (`docs/maquettes/38-…` puis `31-…`, cinq
+   gestes qui se pressent). Il passe par `PrimaryButton`, **jamais par un
+   dessin recopié sur place** : c'est le défaut qu'on répare, et le repeindre à
+   la main le ferait revenir au prochain changement de charte. Deux suites
+   mesurent son rayon calculé et rougissent si cela arrive.
+
+   **Les quatre gestes écartés restent dans la maquette 39** — la lueur, le
+   cachet, l'encre, le trait. S'il rouvre le sujet, repartir de là plutôt que
+   de redessiner. Et se souvenir que **le cachet était la seule proposition qui
+   ne reposait pas sur un goût** : c'est le geste de « Nouveau chantier », donc
+   un vocabulaire partagé entre deux écrans.
+
+   **⚠ UNE MAQUETTE NE PORTE PAS DE SCRIPT.** La première version de la 31
+   engendrait ses cinq téléphones en JavaScript : chez le patron, page vide —
+   *« rien apparaît sur ta maquette »*. Elle passait ici, dans un navigateur
+   complet ; script coupé, zéro écran. La règle existait déjà pour les
+   maquettes 25 et 26 (`scripts/verifier-maquette-bascule.mjs` joue les huit
+   bascules JavaScript COUPÉ) et n'a pas été appliquée. **Tout contrôle de
+   maquette tourne désormais `javaScriptEnabled: false`** — une case à cocher
+   et des règles `:checked ~` suffisent à tout, y compris à une demi-seconde
+   d'attente (`transition-delay`).
+
+   **Un piège de MESURE qui a failli faire livrer un geste mort**, et qui
+   resservira à chaque maquette animée : `locator.screenshot()` attend que
+   l'élément soit **stable**, c'est-à-dire que l'animation soit finie — il
+   photographie donc toujours l'après, jamais le pendant. Passer par
+   `page.screenshot({ clip })`. Et surtout : **le contrôle de la lueur est
+   passé au vert deux fois sur un geste que l'œil ne voyait jamais** (opacité
+   et transform étaient irréprochables ; la lumière traversait le bouton en
+   quatre-vingts millisecondes). Ce qu'il faut mesurer, c'est **combien de
+   temps** une chose est visible, pas qu'elle bouge.
+2. **Ce bouton était passé au travers parce qu'il est peint à la main dans
+   l'écran** — même cause que la feuille d'envoi du devis (§66). Devant un
+   bouton qui « n'est pas le même », chercher d'abord s'il est dessiné sur
+   place plutôt qu'issu de `PrimaryButton`.
+3. **Le nom du fichier PDF vit à DEUX endroits** — l'attribut `download` du lien
+   et l'en-tête du serveur — et rien ne les relie dans le code. Deux suites les
+   comparent, et elles ont trouvé l'écart au premier jet : après l'arrêt de la
+   facture, sans rechargement, l'écran annonçait un brouillon quand le serveur
+   servait la pièce définitive. **Ne pas retirer cette comparaison.**
+4. **C'est le serveur qui décide du téléchargement**, pas l'attribut `download`
+   du lien : iOS l'ignore selon les versions, et le PDF s'ouvrirait alors dans
+   un onglet — le défaut d'origine, déguisé en correctif.
+5. **Le point §8 n'était nulle part sur `main`.** Il avait été consigné sur
+   `claude/migrate-app-atlas-zz31ac`, restée deux commits derrière, et aucune
+   conversation lisant `TODO.md` ne pouvait le voir. Le patron a dû le
+   redemander. `CLAUDE.md` §6 vaut aussi pour la mémoire : **une ligne poussée
+   sur une branche n'existe pour personne.**
+
+**La carte de réponse mène là où est le geste (12 août).** Le patron : *« si
+c'est accepté, ouvrir le devis validé, pas le devis en construction ; si le
+client demande une modification, ouvrir le devis pour pouvoir le modifier. »*
+
+**Trois choses à savoir :**
+
+1. **La règle vit dans `src/lib/suite-de-la-reponse.ts`**, pas dans le
+   composant : accepté → `devis-complet` figé, tel que le client l'a reçu ;
+   **correction → `devis-complet` AUSSI, mais après reprise** (drapeau
+   `reprendreAvant`) ; refus et lien périmé → l'écran d'envoi, qui laisse le
+   choix. **Ne jamais mener un devis à corriger sur `devis-complet` SANS la
+   reprise** : il est immuable une fois parti, et le patron se retrouverait
+   devant un document qui refuse sa frappe.
+2. **Corrigé le 13 août 2026, par lui :** *« lorsque je clique sur corriger le
+   devis, je dois arriver directement sur la page du devis pour pouvoir le
+   corriger. »* La veille, la correction passait par l'écran d'envoi, au nom de
+   « ne jamais reprendre à sa place ». Le principe reste juste — **mais il ne
+   s'appliquait pas ici : c'est LUI qui appuie**, sur un bouton qui annonce
+   « Corriger le devis ». Le geste est le sien ; l'en priver lui coûtait un
+   écran et un second appui.
+
+   Il vaut toujours ailleurs : un devis **accepté** ne se reprend jamais
+   d'office (ce serait remplacer sans le dire le document sur lequel les deux
+   se sont mis d'accord), et un **refus** ou un **silence** n'appellent pas
+   forcément un nouveau devis — la suite peut être d'abandonner le chantier.
+3. **Une acceptation sur une date PROPOSÉE ne fait aucune carte**, et c'est
+   voulu (`notificationsPatron`). Seuls un refus, une correction, une
+   contre-proposition de date ou un message du client en font une. Un contrôle
+   qui l'ignore cherche une carte qui n'existera jamais — vécu le jour même.
+
+---
 
 ### La TVA au mois ou au trimestre (12 août 2026)
 
@@ -257,7 +573,6 @@ plus d'appelant dans `src/`.
 
 ---
 
-
 **Les pages du CLIENT ne portent plus la navigation du patron (12 août).** Sa
 facture affichait « Chantiers · Planning · Terminés · Réglages » au bas de
 l'écran de son client.
@@ -276,6 +591,47 @@ l'écran de son client.
    et rougit si un chemin déclaré n'y est pas éprouvé. Il visite de vrais
    jetons : un jeton inventé rendrait « lien inconnu », et le contrôle serait
    vert sur du vide.
+**L'ÉCRAN DU DEVIS PARTI EST CODÉ — « le signet d'or » (12 août).** Il a répondu
+« code le 5 ». Un filet d'or pour l'état, le nom du devis et le montant seuls au
+centre, « Modifier mon devis » sous le total, et en bas le geste puis les trois
+actions en encre. Les lignes de prestations restent AVANT l'envoi et disparaissent
+après : ce sont deux écrans, pas un avec des variantes.
+
+**Cinq choses à ne pas défaire** sont listées dans `TODO.md` 0 septdecies — dont
+`atlas-ecran` (deux tentatives de hauteur écrite à la main ont débordé de 100 puis
+68 px) et l'avertissement de « Modifier mon devis », qui protège un engagement
+réel : rouvrir un devis parti n'annule pas l'envoi, le client peut encore accepter
+l'ancien prix.
+
+**Ce qui reste ouvert :** le rayon du bouton (4, 8, 12 ou pilule — bande au bas de
+la maquette 33). Son choix vaudra pour vingt-sept écrans. Il a demandé la maquette en toutes lettres : *« fabrique-
+**⚠ SI LE PATRON MONTRE « An unexpected response was received from the server. »**
+Regarder d'abord **quelle version son banc sert**. Si la pile d'appel contient
+`.next/dev`, il est sur la version LENTE : chaque écran s'y compile au premier
+appel, et le relais de GitHub abandonne au bout d'une minute en rendant sa
+propre page d'erreur — le navigateur reçoit du HTML là où il attendait une
+réponse. Ce n'est pas un défaut du code, c'est un banc qui n'a pas fini de se
+construire. Depuis le 12 août, l'écran Réglages le dit lui-même, et un veilleur
+(`src/components/atlas/VeilleReponseServeur.tsx`) pose une phrase française avec
+un bouton « Recharger ».
+
+**Ne pas élargir ce veilleur.** Il ne reconnaît que quatre formulations, et il
+doit continuer de REFUSER tout le reste : habiller un défaut du code en
+« le serveur se prépare » ferait recharger une page qui ne guérira pas, et
+masquerait le défaut. `scripts/test-reponse-illisible.ts` tient ce refus.
+
+
+**⚠ L'ÉCRAN DU DEVIS ATTEND UNE LETTRE — ne rien coder avant (12 août).**
+Le CONTENU est arrêté (nom du devis, total, « Modifier mon devis », trois actions
+en encre) ; c'est la MISE EN PAGE qui attend un numéro —
+`docs/maquettes/26-le-devis-sur-sa-base.html`, cinq propositions. Le détail et les
+trois points ouverts sont dans `TODO.md` 0 septdecies. Il a demandé la maquette en toutes lettres : *« fabrique-
+moi la maquette et montre-la-moi avant de coder quoi que ce soit »*.
+
+**Et NE PAS chercher une panne d'envoi de devis.** Elle a été signalée puis
+démentie par lui le même jour : sa messagerie s'ouvrait bien, l'adresse du
+client était fausse. `TODO.md` 0 quindecies bis dit ce qui a été vérifié — CSP,
+longueur de l'adresse — pour qu'on ne le refasse pas.
 
 ---
 
@@ -1478,11 +1834,51 @@ au volume du patron coûterait **2 à 8 $**, transcription comprise.
 
 Détail dans `CHANGELOG.md`, état complet dans `PROJECT_STATE.md`.
 
+**Et, en dernier lieu, l'esthétique — sur maquettes, pas dans le code.** Le
+patron a arrêté **cinq** choix le 2026-08-10 : la charte **Origine** (ivoire et
+bronze, qui remplace le vert pin d'Arborea), le **trait G** au bandeau, la
+**perle** qui suit le défilement, l'**écran qui recule** à l'ouverture de
+« Nouveau chantier », et le **tiroir des retirés** pour supprimer une ligne.
+
+S'y ajoutent, le même jour, deux écrans : le **planning** (le mois, les
+demi-journées, une ligne par équipe) et **Réglages · vos équipes**. Ce dernier
+porte une règle à ne pas défaire : **à une seule équipe, le planning n'écrit
+aucun nom d'équipe** — le patron l'a demandé mot pour mot. À deux et plus, le
+champ vide affiche déjà « Équipe A » en gris. On n'invente jamais un nom, et on
+ne laisse jamais deux lignes indiscernables (`docs/INTEGRER-ORIGINE.md` §6 ter).
+
+**Ce paragraphe décrivait un état révolu, et le laisser tel quel aurait coûté :**
+au 10 août la refonte n'était que sur maquettes, mais elle est **portée dans
+l'application depuis le 11 août 2026** — `design-tokens.ts` est en Origine, le
+fil, la perle, le tiroir des retirés et le bandeau y sont. Une conversation qui
+lirait « rien n'est encore codé » referait le travail. Le détail est dans
+`PROJECT_STATE.md` et `CHANGELOG.md` ; `docs/INTEGRER-ORIGINE.md` reste la
+spécification d'origine, pas l'état du code.
+
+Deux contraintes à ne pas redécouvrir : **les maquettes envoyées au patron ne
+doivent contenir aucun JavaScript** (son lecteur n'en exécute pas — les pages
+engendrées en script lui arrivaient vides), et **il faut regarder les captures**.
+Sur ce lot, quatre défauts se sont vus à l'écran et aucun aux contrôles : des
+cases à cocher bleues d'iOS en pleine page ivoire, une ligne d'en-tête effacée
+par une classe homonyme, un nom coupé en plein mot par le glissement, et
+« CHANTIERS » qui touchait « PLANNING ».
+
 ## Où reprendre
 
-`TODO.md`, dans l'ordre. Le premier point codable seul aujourd'hui est
-l'**agenda Google** — et encore, partiellement : la connexion du compte demande
-des identifiants que le patron doit fournir.
+**`TODO.md` §0 bis — l'agent qui apprend. Le patron l'a demandé expressément le
+6 août 2026 :** *« Ok, garde ça en mémoire et on fera ça après. N'oublie pas de
+le faire. »*
+
+Ce n'est donc pas une liste d'idées : c'est le prochain travail, et il ne doit
+pas avoir à le redemander. Dans l'ordre — l'**entretien de départ**, l'**écart
+devis / facture**, puis **photos ↔ prix**. Le rapport entre techniques (×1,67,
+×2,33) vient après, quand `lecons_prix` aura de quoi le calculer.
+
+Ce qui est déjà fait de cette série : le tapis roulant, l'arrêt d'avant-chiffrage
+(§0 ter) et la mémoire des corrections (§0 quater).
+
+Le reste de `TODO.md` ensuite. L'**agenda Google** est partiellement bloqué : la
+connexion du compte demande des identifiants que le patron doit fournir.
 
 **Avant de proposer autre chose,** lire `docs/A-FAIRE.md` : **cinq** points
 bloquent un usage réel et **aucun ne s'avance en codant**. Ne pas les

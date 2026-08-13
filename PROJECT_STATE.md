@@ -1,7 +1,15 @@
 # État du projet
 
+**Dernière mise à jour :** 2026-08-13 · branche `main`
+· dernière migration `drizzle/0036_monsieur_plutot_que_chez.sql`
+
+---
+
 **Dernière mise à jour :** 2026-08-12 · branche `claude/chantier-phototech-direct-ujt2wv`
 · dernière migration `drizzle/0035_periodicite_tva.sql`
+
+---
+
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -56,6 +64,8 @@ seule avec quinze outils.
 | Reprise d'un devis retourné en nouvelle version | `src/app/chantiers/[id]/export/actions.ts` |
 | Onglet « Terminés » et fin de chantier | `src/app/termines/` |
 | Facture bâtie depuis le devis, arrêt 3 | `src/app/chantiers/[id]/facture/` |
+| **Facture transmise par SMS ou par e-mail**, au choix, coordonnée saisie sur place | `src/app/chantiers/[id]/facture/TransmettreLaFacture.tsx` |
+| **Facture téléchargeable**, sous un nom qui porte son numéro | `src/app/api/factures/[id]/pdf/route.ts` |
 | **Chemin du planning vers la facture**, et rangement en un seul onglet | `src/lib/onglet-chantier.ts`, `src/app/planning/PlanningClient.tsx` |
 | Installation sur téléphone : icône, plein écran, marges de sécurité | `src/app/layout.tsx`, `src/app/globals.css`, `scripts/generer-icones.mjs` |
 | Relevé de TVA collectée, par trimestre | `src/app/termines/tva/` + `src/server/trimestre.ts` |
@@ -79,6 +89,7 @@ seule avec quinze outils.
 | **L'adresse se propose pendant la frappe** et se choisit d'un doigt — Base Adresse Nationale, jamais Google, et le champ reste libre | `src/components/atlas/ChampAdresse.tsx` + `src/server/adresses/base-adresse-nationale.ts` |
 | **La note vocale lit un numéro et un e-mail dictés en toutes lettres**, sans qu'il ait à les annoncer | `src/lib/nombres-dictes.ts` + `src/lib/coordonnees-dictees.ts` |
 | **L'agenda extérieur, au choix de l'artisan** — Atlas tient compte d'un agenda Google s'il le relie, lit ses créneaux occupés **et leurs intitulés**, et les affiche sur le planning. Ses identifiants Google se collent dans l'application. Sans raccordement, rien ne change | `src/lib/agenda-externe.ts` + `src/server/agenda/` + `src/app/reglages/agenda/` + `drizzle/0032_agendas_externes.sql` + `drizzle/0033_identifiants_google_par_entreprise.sql` |
+| **L'agenda iCloud, dans les deux sens** — Atlas lit les créneaux occupés du compte Apple et **n'y propose plus** de date ; s'il l'allume, il pose ses chantiers dans le calendrier qu'il désigne et les retire quand il déplanifie. Les deux fournisseurs se fondent en une seule carte d'occupation. **Réserve : aucun échange réel avec iCloud n'a eu lieu ici** (réseau refusé) — voir `ARCHITECTURE.md` §75 | `src/lib/ics.ts` + `src/lib/caldav.ts` + `src/server/agenda/apple.ts` + `src/server/repositories/agenda-apple.ts` + `drizzle/0035_agenda_apple.sql` |
 | **Le vocabulaire du métier**, écrit une fois et envoyé avec chaque dictée — réservé à l'éditeur. Vingt-sept entrées tirées de devis réels (huit règles, dix-neuf mots) ; budget de 9 000 caractères dont un quart réservé à ses corrections, et tout tient aujourd'hui à cinq cents caractères près | `src/app/reglages/vocabulaire/` + `src/lib/consigne-metier.ts` + `drizzle/0030_vocabulaire_devis_reels.sql` + `drizzle/0031_vocabulaire_corrige.sql` |
 | **Le devis se découpe en lignes vendables** : abattage + broyage + évacuation ensemble, la fente à part, sans point-virgule | `src/lib/lignes-vendables.ts` |
 | **Cinq grilles de prix** — abattage (technique × diamètre), fendage (hauteur × diamètre), dessouchage (diamètre), haie (au ml), grumes (à la tonne) — nées vides et remplies par ses devis | `src/lib/grille-prix.ts` + `src/app/reglages/prix/` + `drizzle/0029_grumes_a_la_tonne.sql` |
@@ -149,6 +160,12 @@ l'application. Ce qui est **fait** :
   sa barre grise. Le masque en dégradé et l'animation d'opacité sont hors de
   cause, c'est **mesuré** (`scripts/mesurer-fluidite-fil.mts`) : ne pas les
   accuser sans relancer la mesure.
+- **Le devis, en tête et dans sa synthèse** (13 août) : le chantier ne s'appelle
+  plus « Chez Martins » mais « Monsieur Martins », et la carte pose le nom
+  au-dessus du détail au lieu de les coller par un tiret. La civilité vit dans
+  `src/lib/civilite.ts` — **et c'est un défaut, pas une donnée** : sans champ de
+  civilité sur la fiche client, une cliente est nommée « Monsieur ». À trancher
+  avec lui. `ARCHITECTURE.md` §77.
 - **Le devis à la main** : ses trois zones de texte mesurent leur hauteur au
   lieu de l'estimer (11 août 2026). Elles comptaient les caractères ou les
   retours à la ligne, alors qu'un texte se coupe au mot : le devis cachait 24 px
@@ -184,7 +201,7 @@ l'application. Ce qui est **fait** :
   de TVA et son calendrier suivent : douze pavés ou quatre. **Atlas ne dit
   jamais lequel s'applique** — le seuil porte sur la TVA due, or il ne connaît
   que la collectée. Migration `drizzle/0035_periodicite_tva.sql`.
-  `ARCHITECTURE.md` §71.
+  `ARCHITECTURE.md` §78.
 - **« Y aller » : l'adresse du chantier jusqu'au GPS** (12 août) : au bout de
   chaque ligne des chantiers planifiés, un **chevron doré** ouvre une feuille —
   Plans, Google Maps, Waze, copier l'adresse, appeler le client — sans quitter
@@ -236,6 +253,22 @@ l'application. Ce qui est **fait** :
   question « qui répondrait au doigt ? » posée à chaque lien, bouton et champ.
   C'est la famille des trois seuls défauts que ce dépôt n'a jamais su attraper
   autrement qu'à l'œil. `ARCHITECTURE.md` §58.
+- **Une seule forme d'action, et un contrôle qui la garde** (12 août) : la
+  capsule est posée sur les dix-sept écrans du produit, et
+  `scripts/test-boutons-arrondis.ts` refuse tout bouton rectangulaire ajouté
+  ensuite — c'est le patron qui avait vu, sur la feuille d'envoi, un carré à
+  côté d'une capsule. Les champs et les cartes gardent leurs 4 px : le rayon
+  distingue ce qu'on touche de ce qu'on lit. `ARCHITECTURE.md` §67.
+- **Le devis qui ne partait pas** (12 août) : le banc d'essai sert une version
+  **bâtie**, donc `NODE_ENV=production` sans qu'aucun déploiement existe — et la
+  seconde barrière du stockage, plus stricte que la première, refusait tout
+  envoi. Une règle écrite deux fois qui avait divergé. `ARCHITECTURE.md` §66.
+- **L'écran de connexion, dessiné mais PAS posé** (12 août) : le seul écran
+  resté dans l'identité d'avant le 3 août, parce qu'il est le seul vu **avant**
+  d'être connecté. `docs/maquettes/35-l-ecran-de-connexion.html` — l'avant, puis
+  quatre après. **Son choix est attendu ; `src/app/login/` n'a pas bougé.**
+  Trois corrections partiront quoi qu'il choisisse, dont les champs à 16 px, en
+  dessous desquels iOS lui agrandit la page. `TODO.md` §0 nonies.
 
 Ce qui **reste**, avec l'ordre, les valeurs, les sept pièges et les deux
 réserves : **`TODO.md` §7**. Le dessin fait foi dans
@@ -289,6 +322,182 @@ production les demande.
 
 ---
 
+## Le lecteur du patron n'exécute pas JavaScript — les maquettes doivent s'en passer
+
+**Constaté le 2026-08-10, et payé une fois.** Trois bancs d'essai lui ont été
+envoyés avec leurs barres d'onglets construites en JavaScript. Chez lui, ils
+arrivaient **vides** : les textes s'affichaient, les téléphones étaient des
+rectangles nus. La contrainte était déjà écrite dans son propre fichier de
+maquettes — « son lecteur n'en exécute pas ; les pages engendrées en JavaScript
+lui arrivaient vides » — et n'existait nulle part ici.
+
+Ce que cela impose à **toute maquette qui lui est destinée** :
+
+- **Aucune balise `<script>`, aucun gestionnaire en ligne.** Le contrôle est
+  mécanique : chercher `<script`, ` on…=`, `javascript:` dans la source.
+- **Ce qui doit réagir au doigt se fait en CSS.** Une barre d'onglets se bâtit
+  avec quatre `input[type=radio]`, des `label`, et
+  `input:nth-of-type(n):checked ~ .trait`. Les colonnes étant égales, un onglet
+  vaut exactement `translateX(100%)` : rien à mesurer.
+- **Un repère qui suit le défilement se fait avec `position: sticky`**, pas
+  avec un calcul. Une pastille collée à `top: 50%` dans la liste **est**, par
+  construction, sur l'élément centré ; avec `scroll-snap-align: center` sur
+  chaque ligne, celui-ci vient se caler dessous. Rien à mesurer, et surtout
+  rien qui puisse se désynchroniser du défilement — ce qu'un suivi image par
+  image finit toujours par faire sur un téléphone chargé. Trois pièges,
+  éprouvés le 2026-08-10 :
+  - **Le point d'ancrage détermine la position au repos.** Placé en tête de
+    liste, le repère est déjà au centre avant tout défilement ; placé dans le
+    flux à hauteur d'une ligne précise, il s'y tient jusqu'à ce qu'elle
+    remonte. C'est ce second placement que le patron demande.
+  - **Le `50 %` se calcule sur la boîte de contenu de la zone de défilement.**
+    Un rembourrage bas posé sur cette zone la rétrécit et décale le repère de
+    la moitié — la marge de fin qui permet à la dernière ligne d'atteindre le
+    centre doit donc être posée sur le **contenu**, jamais sur le conteneur.
+  - **`scroll-snap-stop: always` a été RETIRÉ de l'application le 11 août 2026,
+    et il ne faut pas le remettre.** Il tenait bien « un élément à la fois »
+    dans la maquette, mais chez le patron il arrêtait le fil à chaque chantier
+    et il l'a lu comme du saccadé — *« je trouve que ça manque de fluidité […]
+    c'est saccadé »*. L'accroche reste, en `proximity` : la ligne se recentre,
+    mais le geste ne se fait plus couper. Ce paragraphe décrit donc la maquette
+    d'origine, pas le code d'aujourd'hui.
+  - **L'accroche ne se vérifie pas à la molette synthétique.** Chromium sans
+    interface ne l'applique pas : le contrôle rend la même valeur quelle que
+    soit la correction. L'éprouver par un défilement programmé, auquel le
+    moteur applique bien l'accroche.
+- **Éprouver avec `javaScriptEnabled: false`.** Une page bâtie en JS passe tous
+  les contrôles ordinaires et arrive quand même vide chez lui. Le contrôle
+  ouvre la page dans ce mode, compte les onglets, et **charge en contre-épreuve
+  une page bâtie en JS pour vérifier qu'il y en trouve zéro** — sans quoi il ne
+  prouverait rien. Aucun script du dépôt ne le fait à ce jour : il vit dans
+  l'espace de travail de la conversation, et devra être rapatrié ici le jour où
+  des maquettes seront produites depuis le dépôt.
+
+Cela ne concerne pas l'application elle-même, qui est un Next.js qu'il ouvre
+dans Safari. Uniquement ce qu'on lui **transmet à lire**.
+
+---
+
+## Une identité visuelle est en cours de remplacement — ne pas se fier au code seul
+
+**Constaté le 2026-08-10, hors du dépôt**, puis précisé en lisant ses maquettes.
+Le patron explore une identité que rien ici ne mentionne. Elle est engendrée de
+son côté par un script nommé `engendrer-maquette-fil.mjs`, **absent du dépôt**,
+et ses pages portent la consigne « ne pas les modifier à la main ».
+
+**Quatre chartes**, pas une, et l'accent n'est jamais le vert pin d'Arborea :
+
+| Charte | Fond | Encre | Accent |
+|---|---|---|---|
+| Origine | `#edece6` | `#16170f` | `#8f7130` |
+| Ivoire | `#efece6` | `#221f1a` | `#8a7452` |
+| Sylve (sombre) | `#16241c` | `#e6e6da` | `#c3b184` |
+| Océan | `#e6ecf2` | `#0d1b2c` | `#1e4f86` |
+
+**Trois formes de liste** sont mises en concurrence : *le fil* (une tige
+verticale porte les jours, une seule perle sur ce qui attend une réponse),
+*l'ourlet* (un cheveu vertical qui prend la couleur d'attente là où un geste est
+dû), *la plage amincie*.
+
+Ce que cela change pour le code, et pourquoi c'est écrit ici :
+
+- **La navigation basse perd ses icônes.** Quatre libellés en petites capitales
+  — 9,5 px, `letter-spacing: .28em`, graisse 500 — en grille de quatre colonnes
+  égales. L'onglet actif prend la couleur d'encre et **un trait d'un pixel sur
+  toute la largeur de sa colonne** (`box-shadow: inset 0 -1px 0`), pas sous le
+  seul mot. `AtlasBottomNav` code aujourd'hui l'inverse : icône + libellé,
+  accent porté par la couleur du texte.
+- **Deux refus explicites, à ne pas défaire :** aucun cheveu sous « ATLAS » —
+  seul reste celui qui ferme l'en-tête, au-dessus de « Nouveau chantier » ; et
+  la couleur ne décore pas, elle ne se pose que là où un geste est attendu.
+- `src/lib/design-tokens.ts` et `docs/DESIGN_SYSTEM.md` décrivent donc une
+  identité que le patron est en train de quitter.
+
+### Ce que le patron a arrêté le 2026-08-10, sur maquettes
+
+Cinq choix faits, après avoir touché chaque variante sur son téléphone :
+
+| | Retenu | Ce que ça veut dire |
+|---|---|---|
+| Charte | **Origine** | fond `#edece6`, encre `#16170f`, bronze `#8f7130` |
+| Trait du bandeau | **G** | il dépasse sa cible et revient ; le mot choisi monte de 2 px, le mot quitté redescend |
+| La perle du fil | **elle suit** | posée devant le 22 juillet au repos, accrochée à mi-hauteur dès que ce chantier remonte, **un chantier par glissement** |
+| « Nouveau chantier » | **l'écran recule** | la liste passe à 93 % et s'assombrit, la feuille monte devant, son contenu arrive après elle dans l'ordre de lecture |
+| Retirer un chantier | **le tiroir des retirés** (P) | on fait glisser **le texte** de la ligne vers la gauche, « Retirer » se découvre ; la ligne **tombe** et un tiroir s'ouvre au-dessus du bandeau : « Retiré à l'instant — Annuler » |
+
+**Ce que le retrait retenu suppose.** Le geste n'efface pas : il déplace vers
+un état réversible tant qu'on est sur l'écran. Trois règles en découlent, et
+elles ont été payées à l'essai sur la maquette :
+
+- **La date et le fil ne glissent pas avec le texte.** Faire partir la ligne
+  d'un bloc coupe le nom en plein mot et laisse le fil traverser les lettres :
+  ça se lit comme un défaut d'affichage, pas comme un geste. Seule la colonne
+  du texte bouge, et un voile de 16 px la fait se **dissoudre** au bord plutôt
+  que d'être tranchée. La marge négative du glisseur et le retrait intérieur du
+  volet s'annulent, sinon la première lettre est mangée **au repos**.
+- **« Annuler » doit viser la ligne réellement retirée.** Un libellé unique
+  pointant toujours la même case rend la première ligne quand on retire la
+  deuxième — l'annulation *supprime*. Chaque ligne porte son libellé, et on
+  n'affiche que celui du dernier retrait, détecté par
+  `:has(#cN:checked ~ .sup:checked)`.
+- **Le décompte suit ce qui reste.** « Huit en cours » au-dessus de six lignes
+  est le genre de détail qui décide seul du sentiment de soin. Sans script, une
+  chaîne de `~ .sup:checked` compte les cases cochées.
+
+**Réserve :** le tiroir et le décompte reposent sur `:has()`. S'il manque, la
+ligne part quand même mais le tiroir ne s'ouvre pas — dégradation acceptable,
+à confirmer sur l'iPhone du patron. Dans l'application, le tiroir devra porter
+un délai réel avant l'écriture en base ; la maquette, elle, ne fait que cacher.
+
+**Aucun chantier facturé n'apparaît sur cet écran** — ils vivent sous
+« Terminés ». Le refus (« sa facture figure au relevé de TVA ») se joue donc
+là-bas, et c'est là qu'il faudra l'écrire.
+
+**Conséquence assumée sur la perle**, signalée deux fois et maintenue : elle ne
+désigne plus le chantier dont le devis est revenu, puisqu'elle suit le doigt.
+Seul reste le libellé « Devis retourné », en bronze. Ne pas « corriger » cela
+par erreur en croyant retrouver l'intention d'origine.
+
+**Réserve non levée :** « Nouveau chantier » est aujourd'hui une **page**
+(`/chantiers/nouveau`, avec sa flèche de retour vers la liste), pas une
+feuille modale. L'ouverture retenue raconte une feuille. Soit l'écran devient
+une vraie feuille — et la flèche cède la place à un geste de fermeture vers le
+bas —, soit l'ouverture devra changer le jour de l'intégration. Le patron a
+tranché sur le style ; ce point de produit reste ouvert.
+
+### Le planning, et les équipes nommées — 2026-08-10
+
+Deux écrans de plus ont été arrêtés le même jour, sur maquettes :
+`maquettes/atlas-planning.html` (le mois, les demi-journées, les équipes) et
+`maquettes/atlas-equipes.html` (Réglages : nommer les équipes). Les deux sont
+tenus par `npm run verifier:maquette` ; la spécification d'intégration est dans
+`docs/INTEGRER-ORIGINE.md` §6 ter, la suite technique dans `TODO.md` §5.
+
+**La règle du nommage, qui n'est pas un détail d'affichage** — elle vient d'une
+demande explicite du patron : *« s'il n'a pas d'équipe et qu'il ne met rien, il
+ne faut pas qu'il y ait quand même écrit équipe A équipe B »*.
+
+- **À une équipe**, le planning n'écrit **aucun nom d'équipe** : une
+  demi-journée est libre, ou elle porte le nom de son chantier. Réglages ne
+  propose même pas de la nommer — offrir un champ dont la valeur ne sera jamais
+  lue est un piège.
+- **À deux et plus**, chaque équipe a sa ligne dans Réglages. Le champ vide
+  affiche déjà « Équipe A » en gris : le repli est **montré** avant d'être subi.
+
+Le principe qui tient les deux cas : **on n'invente jamais un nom, et on ne
+laisse jamais deux lignes indiscernables.** Conséquence pour la base :
+`equipes.nom` sera **nullable** — un nom absent est un état normal, pas une
+donnée manquante — et **une seule fonction pure** décidera du libellé, pour le
+planning comme pour la revalidation.
+
+**Rien d'autre n'est tranché, et rien n'a été codé dans ce sens.** Mais une conversation
+qui lirait le dépôt seul repartirait en vert pin avec des icônes, c'est-à-dire à
+contresens. Quand le choix sera arrêté, ce sont `design-tokens.ts`,
+`globals.css`, `manifest.json`, `AtlasBottomNav` et `docs/DESIGN_SYSTEM.md` qui
+changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet.
+
+---
+
 ## Ce qui reste, et que je peux faire seul
 
 Voir `TODO.md` pour le détail et l'ordre.
@@ -296,6 +505,13 @@ Voir `TODO.md` pour le détail et l'ordre.
 - **Agenda Google** — la connexion du compte demande des identifiants que je n'ai
   pas ; le reste (lecture des disponibilités, écriture de l'intervention) est
   codable.
+- **Agenda iCloud** — demandé le 12 août 2026 **dans les deux sens**, et
+  **codé le jour même** : lecture des créneaux occupés, écriture des chantiers,
+  retrait au débranchement (`ARCHITECTURE.md` §75). Ce qui **reste** : aucun
+  échange réel avec iCloud n'a eu lieu — le réseau d'ici refuse
+  `caldav.icloud.com`. Les trois appels HTTP ne seront éprouvés que sur son banc,
+  avec un vrai mot de passe pour les apps. Tout ce qui décide, lui, est couvert
+  ici. Ne pas l'annoncer vérifié avant.
 - **Code SMS en renfort de l'acceptation** — l'empreinte, l'horodatage et
   l'adresse sont déjà conservés. **Sans objet en l'état**, pour la même raison.
 - **Relance automatique** — l'état « à relancer » existe et s'affiche, le lien
@@ -339,6 +555,37 @@ qu'on le rouvre.
    choix. Deux obligations distinctes en dépendent — la conformité des factures
    des artisans à qui Atlas sera vendu, et celle d'Eden Nature pour ses propres
    factures, qu'Atlas existe ou non.
+
+---
+
+## Le terrain n'est pas vierge : deux concurrents directs
+
+Découverts le 2026-08-03 **en cherchant un nom** — pas au cours d'une étude de
+marché. C'est écrit ici parce qu'une conversation qui l'ignore raisonnerait
+comme si le créneau était libre, et il ne l'est pas.
+
+| Concurrent | Ce qu'il a pris | Ce qu'on en apprend |
+|---|---|---|
+| [`ouvra.app`](https://ouvra.app/) — SAS Automate, Paris | **Un métier** : plombiers-chauffagistes uniquement. Devis signé sur place, Factur-X 2026, relances automatiques. Catalogue de prestations pré-rempli, TVA du secteur. | Se restreindre à un métier permet de livrer un catalogue et des mentions légales *déjà justes*. C'est exactement ce que notre §3 d'`AGENT.md` refuse de deviner. |
+| [`fabro.app`](https://fabro.app/en/) — app iOS artisans | **L'absence de réseau** : 100 % hors ligne, données sur le téléphone, multi-pays. | Sur un chantier, il n'y a pas de réseau. Notre parcours suppose l'inverse à chaque étape. |
+
+**Notre angle reste distinct** : ni l'un ni l'autre ne part de la **dictée** ni
+ne fait travailler un **agent** entre la note vocale et la facture. Ils
+numérisent un formulaire ; nous supprimons le formulaire. Mais l'angle n'est
+plus une évidence à ne pas défendre.
+
+## Le nom « Atlas » est provisoire, et probablement indéposable
+
+« Atlas » n'a jamais été choisi ni vérifié : c'est un nom de travail. Le mot est
+massivement occupé dans les classes 9 et 42, ce qui rend le dépôt de marque et
+la visibilité App Store douteux. **Un nom définitif est en cours d'arbitrage
+avec le patron** (branche `claude/app-name-choice-hk5jz4`) ; rien n'est renommé
+tant qu'il n'a pas tranché.
+
+Onze candidats ont déjà été écartés sur occupation vérifiée — Silex, Ouvra,
+Vulcain, Sève, Orme, Fabro, Amadou, Braise (voisin de Braze), entre autres. La
+leçon vaut pour les suivants : **vérifier l'occupation avant de proposer**, un
+mot ordinaire libre en classes 9/42 est devenu l'exception.
 
 ---
 

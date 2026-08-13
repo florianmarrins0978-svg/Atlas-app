@@ -1123,7 +1123,7 @@ export const agendasExternes = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     entrepriseId: uuid("entreprise_id").notNull(),
-    fournisseur: text("fournisseur", { enum: ["google"] }).notNull(),
+    fournisseur: text("fournisseur", { enum: ["google", "apple"] }).notNull(),
     /**
      * Les identifiants de l'application chez Google, saisis par l'artisan
      * lui-même (migration 0033, sur sa demande du 9 août 2026).
@@ -1148,6 +1148,34 @@ export const agendasExternes = pgTable(
      */
     derniereLectureAt: timestamp("derniere_lecture_at", { withTimezone: true }),
     derniereErreur: text("derniere_erreur"),
+    /**
+     * Le mot de passe spécifique à l'app, chez Apple — **chiffré** (0035).
+     *
+     * Apple n'a pas d'équivalent au consentement de Google pour l'agenda : le
+     * seul chemin est CalDAV avec ce mot de passe. **Il ouvre tout l'iCloud**,
+     * mail et fichiers compris, parce qu'Apple ne sait pas le restreindre à un
+     * service — d'où l'avertissement posé AVANT le champ à l'écran.
+     */
+    motDePasse: text("mot_de_passe"),
+    /**
+     * Les agendas qu'Atlas LIT, par leur adresse CalDAV.
+     *
+     * Plusieurs : un compte iCloud en porte souvent trois ou quatre, et être
+     * pris le mardi matin ne dépend pas de celui où le rendez-vous est noté.
+     * Le tableau vide vaut « tous ceux qu'on a trouvés ».
+     */
+    agendasLus: jsonb("agendas_lus").$type<string[]>().notNull().default([]),
+    /** L'agenda où Atlas ÉCRIT ses chantiers, et son nom pour l'écran. */
+    calendrierEcriture: text("calendrier_ecriture"),
+    calendrierEcritureNom: text("calendrier_ecriture_nom"),
+    /**
+     * **Éteinte par défaut, et ce n'est pas une prudence de façade.** Écrire
+     * dans l'agenda personnel de quelqu'un est une décision qui lui appartient.
+     */
+    ecritureActive: boolean("ecriture_active").notNull().default(false),
+    /** Une écriture qui a cessé de fonctionner doit se VOIR, comme la lecture. */
+    derniereEcritureAt: timestamp("derniere_ecriture_at", { withTimezone: true }),
+    derniereErreurEcriture: text("derniere_erreur_ecriture"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

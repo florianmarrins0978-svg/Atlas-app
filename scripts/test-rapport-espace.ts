@@ -116,6 +116,48 @@ cas("le rapport dit QUAND il a été écrit, et de ne pas y répondre", () => {
   assert.match(corps, /réécrite entièrement/, "rien ne prévient qu'une réponse serait effacée");
 });
 
+cas("la fiche dit à QUEL MOMENT elle a été écrite, et que sa date est un diagnostic", () => {
+  // **Le 12 août 2026 au soir, la fiche s'est lue de travers.** Le patron
+  // signale « l'appli ne s'ouvre plus » ; sa fiche, fraîche de trois minutes,
+  // annonce « Serveur : NE RÉPOND PAS ». Alarmant — et pourtant normal :
+  // c'était la publication de l'ALLUMAGE, écrite volontairement avant que le
+  // serveur ait eu le temps de démarrer. Les mêmes mots vingt minutes plus tard
+  // sont une panne. Il a fallu recouper des horodatages pour trancher.
+  const allumage = corpsDuRapport({
+    diagnostic: "Serveur : NE RÉPOND PAS",
+    quand: "2026-08-12T20:07:44.000Z",
+    moment: "allumage",
+  });
+  assert.match(
+    allumage,
+    /n'a pas encore eu le temps de démarrer/,
+    "la fiche d'allumage ne prévient plus qu'un serveur muet y est NORMAL : " +
+      "elle fera chercher une panne là où il n'y en a pas"
+  );
+
+  const veille = corpsDuRapport({
+    diagnostic: "Serveur : NE RÉPOND PAS",
+    quand: "2026-08-12T20:22:00.000Z",
+    moment: "veille",
+  });
+  assert.match(veille, /veilleur/, "la fiche du veilleur ne se nomme plus");
+  assert.ok(
+    !/n'a pas encore eu le temps/.test(veille),
+    "la fiche du veilleur s'excuse comme celle de l'allumage : un serveur muet " +
+      "au quart d'heure est une vraie panne, et l'excuser la masque"
+  );
+
+  // **La date EST un diagnostic, et c'est le plus rapide de tous.** Une fiche
+  // qui a vieilli ne dit pas « le serveur va mal » : elle dit « la machine est
+  // arrêtée ». Sans cette phrase, on cherche la panne dans le produit alors
+  // qu'il n'y a plus personne pour la produire — perdu une demi-heure ainsi.
+  assert.match(
+    allumage,
+    /vingt\s+\n?>?\s*minutes|arrêté/,
+    "rien ne dit plus qu'une fiche vieillie signifie un espace ARRÊTÉ"
+  );
+});
+
 cas("le titre de la fiche est fixe : une seule fiche, pas une par allumage", () => {
   // C'est ce titre qui sert à la retrouver. S'il devenait variable, chaque
   // démarrage ouvrirait une fiche de plus, et le dépôt se remplirait de bruit.

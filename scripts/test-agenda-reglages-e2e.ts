@@ -75,11 +75,21 @@ async function main() {
     );
   });
 
-  await cas("et il ne propose AUCUN bouton qui mènerait à une erreur", async () => {
+  await cas("et il ne propose AUCUN bouton GOOGLE qui mènerait à une erreur", async () => {
     // Le point qui compte. Un bouton « Relier » sans identifiants envoie
     // l'artisan chez Google avec un client vide : il lit un message d'erreur en
     // anglais et croit qu'Atlas est cassé.
-    const boutons = await page.getByRole("button", { name: /Relier|Rebrancher|Débrancher|pause/i }).count();
+    //
+    // **Recadré sur Google le 12 août 2026**, quand iCloud est venu sur le même
+    // écran. Le compte ne portait aucun nom de fournisseur et rougissait sur le
+    // bouton « Relier mon agenda Apple » — lequel, lui, est parfaitement
+    // légitime : le raccordement iCloud ne demande aucune configuration
+    // préalable, c'est toute la différence entre les deux (`QUESTIONS.md` §14).
+    // Les commandes iCloud (pause, débrancher) n'existent qu'une fois relié :
+    // le compte reste donc à zéro ici, et il le vérifie.
+    const boutons = await page
+      .getByRole("button", { name: /mon agenda Google|Débrancher et effacer|Mettre en pause/i })
+      .count();
     assert.equal(boutons, 0, `${boutons} bouton(s) de raccordement proposés alors que rien n'est configuré`);
   });
 
@@ -110,6 +120,84 @@ async function main() {
   await cas("l'écran dit où créer les identifiants, sans faire chercher", async () => {
     const texte = await page.locator("body").innerText();
     assert.match(texte, /console\.cloud\.google\.com/i, "l'adresse de la console Google n'est pas donnée");
+  });
+
+  // ─── iCloud : le second raccordement, et ses deux règles ────────────────
+  //
+  // Sa demande du 12 août 2026, capture du Calendrier d'Apple à l'appui, puis
+  // « code pour qu'on puisse lire et écrire dans cet agenda ». Le raccordement
+  // lui-même ne peut pas être joué ici — le réseau refuse `caldav.icloud.com` —
+  // mais l'écran, lui, est celui qu'il verra, et il porte deux règles qu'aucun
+  // test de texte ne tiendrait.
+
+  await cas("iCloud se relie sans configuration préalable, contrairement à Google", async () => {
+    await page.goto(`${BASE}/reglages/agenda`, { waitUntil: "domcontentloaded" });
+    await page.getByRole("heading", { name: "Mon agenda" }).waitFor({ timeout: 15000 });
+    await page
+      .getByRole("button", { name: /Relier mon agenda Apple/i })
+      .waitFor({ state: "visible", timeout: 15000 });
+  });
+
+  await cas("l'avertissement est AU-DESSUS du champ, pas en dessous", async () => {
+    // **La règle que cet écran ne peut pas se permettre de rater.** Le mot de
+    // passe pour les apps ouvre TOUT l'iCloud — mail, contacts, fichiers —,
+    // Apple ne sachant pas le restreindre à un service. Prévenir après la
+    // frappe, c'est prévenir trop tard.
+    //
+    // Vérifié par les POSITIONS et non par la présence du texte : une phrase
+    // juste, placée au mauvais endroit, laisse un contrôle de texte au vert.
+    const avertissement = await page
+      .locator("text=Ce mot de passe ouvre tout votre iCloud")
+      .first()
+      .boundingBox();
+    const champ = await page.getByLabel("Mot de passe pour les apps").boundingBox();
+    assert.ok(avertissement && champ, "l'avertissement ou le champ manque à l'écran");
+    assert.ok(
+      avertissement.y + avertissement.height <= champ.y,
+      `l'avertissement finit à ${Math.round(avertissement.y + avertissement.height)} et le champ commence à ${Math.round(champ.y)}`
+    );
+  });
+
+  await cas("le mot de passe iCloud est masqué, et ne fait pas zoomer iOS", async () => {
+    const champ = page.getByLabel("Mot de passe pour les apps");
+    assert.equal(await champ.getAttribute("type"), "password", "le mot de passe s'affiche en clair");
+    // En dessous de 16 px, iOS agrandit la page dès la mise au point et l'écran
+    // part de travers sous son doigt.
+    const corps = await champ.evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+    assert.ok(corps >= 16, `${corps} px : iOS zoomera à la mise au point`);
+  });
+
+  await cas("l'écriture n'est pas proposée tant que rien n'est relié", async () => {
+    // **Écrire est une décision**, et on ne propose pas de décider de ce qui
+    // n'existe pas encore. L'interrupteur n'apparaît qu'une fois le compte
+    // branché — sinon il laisserait croire que des chantiers partent déjà.
+    const interrupteurs = await page.getByRole("switch").count();
+    assert.equal(interrupteurs, 0, `${interrupteurs} interrupteur(s) d'écriture avant tout raccordement`);
+  });
+
+  await cas("l'avertissement se lit d'une phrase, sans mot recollé au suivant", async () => {
+    // **Trouvé sur une capture, pas par un test (12 août 2026) :** l'écran
+    // affichait « votre iCloud— pas seulement l'agenda ». Le JSX avale l'espace
+    // qui suit une balise fermante à cet endroit — l'écran de Google portait
+    // déjà un `{" "}` pour cette raison, sans que personne l'ait écrit.
+    //
+    // Le contrôle vise le TEXTE RENDU, pas la source : c'est le seul endroit où
+    // la différence se voit.
+    const phrase = await page
+      .locator("text=Ce mot de passe ouvre tout votre iCloud")
+      .first()
+      .evaluate((e) => (e.closest("p") ?? e).textContent ?? "");
+    assert.match(
+      phrase,
+      /tout votre iCloud — pas seulement l'agenda/,
+      `mot recollé au suivant : « ${phrase.slice(0, 80)} »`
+    );
+  });
+
+  await cas("l'écran dit où générer le mot de passe, sans faire chercher", async () => {
+    const texte = await page.locator("body").innerText();
+    assert.match(texte, /account\.apple\.com/i, "l'adresse du compte Apple n'est pas donnée");
+    assert.match(texte, /Mots de passe pour les apps/i, "le nom exact du réglage chez Apple manque");
   });
 
   await cas("le planning propose de relier l'agenda, là où le manque se constate", async () => {

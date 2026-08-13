@@ -49,6 +49,9 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
           chantierId={id}
           origine={origine}
           entrepriseNom={entreprise?.nom ?? ""}
+          // Sans lui, une coordonnée manquante ne peut se saisir nulle part :
+          // il n'existe aucun écran de fiche client (voir `TransmettreLaFacture`).
+          clientId={chantier.clientId ?? null}
           clientTelephone={client?.telephone ?? null}
           clientEmail={client?.email ?? null}
           canalClient={(client?.canalCommunication as "sms" | "email" | null) ?? null}

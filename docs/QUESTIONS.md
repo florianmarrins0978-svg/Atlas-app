@@ -34,6 +34,8 @@ relues à chaque session) :
 10. [Qui voit quoi : moi, mes clients, leurs salariés ?](#10-qui-voit-quoi--moi-mes-clients-leurs-salariés-)
 11. [Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?](#11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-)
 12. [L'agenda Google : mes artisans auront-ils des identifiants à saisir ?](#12-lagenda-google--mes-artisans-auront-ils-des-identifiants-à-saisir-)
+13. [Pourquoi tous les boutons ont-ils la même forme ?](#13-pourquoi-tous-les-boutons-ont-ils-la-même-forme-)
+14. [Le Calendrier d'Apple : puis-je le relier comme l'agenda Google ?](#14-le-calendrier-dapple--puis-je-le-relier-comme-lagenda-google-)
 
 ---
 
@@ -709,7 +711,187 @@ C'est le genre de délai qui ne se rattrape pas.
 
 ---
 
-## 13. Ma TVA, je la déclare tous les mois ou tous les trimestres ?
+## 13. Pourquoi tous les boutons ont-ils la même forme ?
+
+*Posée le 11 août 2026 :* « comment ça ce bouton est sur vingt-sept écrans ? tu
+peux m'expliquer » — puis, le lendemain, en voyant sur la feuille d'envoi de son
+devis un bouton carré à côté d'une capsule : « remplace tous les boutons
+rectangulaires par les boutons arrondis ».
+
+### La réponse courte
+
+**Parce qu'une forme est une phrase.** Dans Atlas, la capsule pleine, en vert
+pin, veut dire exactement une chose : *appuie ici, c'est l'action de cet écran*.
+Si deux écrans la disent avec deux dessins différents, il faut la réapprendre à
+chaque fois — et surtout, on doute : *est-ce que celui-là fait vraiment la même
+chose ?*
+
+C'est aussi pour cela que **les champs et les cartes gardent leurs coins presque
+droits** (4 px). Le rayon n'est pas une décoration, c'est un panneau : arrondi
+plein = on touche, presque droit = on lit. Tout arrondir aurait effacé la
+distinction.
+
+### Une correction, parce que je vous ai donné un faux chiffre
+
+**« Vingt-sept écrans » était faux, et c'est moi qui l'ai écrit.** J'avais compté
+les fichiers, pas les écrans — les huit maquettes de travail (`/design/…`), qui
+ne sont pas votre application, étaient dans le tas.
+
+Le vrai décompte, au 12 août 2026 :
+
+| | Combien |
+|---|---|
+| Écrans du produit qui portent le bouton partagé | **8** (11 boutons) |
+| Écrans d'erreur, qui le prennent par une pièce commune | **9** (1 bouton) |
+| Maquettes de travail, hors application | 8 |
+| **Total réel dans votre application** | **17 écrans** |
+
+Le code ne porte plus le chiffre, il porte **la commande pour le recompter** —
+un nombre écrit à la main dans un commentaire est faux le mois suivant, et
+personne ne le vérifie.
+
+### Pourquoi la capsule, et pas autre chose
+
+Vous avez choisi la cinquième de huit propositions dessinées le 11 août
+(maquette 28). Le bouton d'avant pesait par **trois** choses à la fois, et vous
+n'en avez nommé qu'une — « trop gros, carré, pas esthétique » :
+
+| Ce qui pesait | Avant | La capsule |
+|---|---|---|
+| La hauteur | 58 px, près d'un dixième de votre écran | 43 px |
+| La largeur | il touchait les deux marges, donc rien ne le contenait | juste la largeur du mot |
+| La forme | presque droite, 5 px de rayon | pleinement arrondie |
+
+Elle est **plus petite que ce qu'elle remplace**, alors qu'elle a l'air plus
+présente : c'est la largeur libre qui fait ça, pas la taille.
+
+**Une chose à savoir sur la comparaison que je vous avais montrée d'abord :
+elle mentait.** J'avais découpé chaque bouton au ras, et deux boutons de
+largeurs différentes affichés dans deux colonnes de même largeur donnent
+l'impression inverse de la vérité — la capsule paraissait plus grosse. La
+planche a été refaite en photographiant l'écran entier.
+
+### Ce qui empêche que ça reparte dans tous les sens
+
+Le 12 août, trois écrans dessinaient encore leur bouton à la main : ils avaient
+été écrits avant la capsule et ne l'avaient jamais su. **C'est vous qui l'avez
+vu, pas nous** — d'où un contrôle automatique
+(`scripts/test-boutons-arrondis.ts`) qui refuse désormais tout bouton
+rectangulaire ajouté dans l'application. Il tourne à chaque livraison.
+
+Il ne regarde que **la forme**, volontairement : deux boutons (la connexion, les
+documents légaux) doivent rester des boutons de formulaire, et les forcer à
+passer par la pièce commune casserait leur envoi. La forme, elle, est la même
+pour tous.
+
+### Ce que ça vous coûte quand vous changez d'avis
+
+**Un seul fichier à toucher**, `src/components/atlas/PrimaryButton.tsx` : les 17
+écrans suivent. C'est tout l'intérêt d'avoir une pièce commune plutôt que
+dix-sept dessins — le jour où la capsule ne vous plaît plus, ce n'est pas
+dix-sept corrections, c'en est une.
+
+---
+
+## 14. Le Calendrier d'Apple : puis-je le relier comme l'agenda Google ?
+
+*Posée le 12 août 2026*, capture du Calendrier d'Apple à l'appui : « je peux
+connecter ce calendrier à mon appli ? »
+
+### Oui — mais ce n'est pas le même travail que Google
+
+**D'abord, une distinction qui change tout : le Calendrier d'Apple n'est qu'une
+vitrine.** Il affiche aussi bien un compte iCloud qu'un compte Gmail ou un compte
+professionnel. Ce n'est donc pas « le Calendrier » qu'on relie, c'est le compte
+qui est derrière.
+
+| Ce qu'il y a derrière la vitrine | Ce que ça coûte |
+|---|---|
+| Un compte **Google** | **Rien à écrire.** Le code existe déjà ; il reste vos identifiants Google ([A-FAIRE §7](A-FAIRE.md)) |
+| **iCloud** | Un fournisseur en plus, et un parcours moins confortable — voir ci-dessous |
+| **Outlook / Exchange** | Un troisième raccordement, encore différent |
+
+**Vous avez répondu iCloud**, et vous voulez **les deux sens** : qu'Atlas lise
+vos rendez-vous, et qu'il y écrive vos chantiers.
+
+### Pourquoi Apple demande plus de gestes que Google
+
+Chez Google, l'artisan appuie sur un bouton, l'écran de Google s'ouvre, il
+accepte, c'est fini — il n'a rien à taper (voir question 12).
+
+**Apple n'offre pas d'équivalent pour l'agenda.** Le bouton « Se connecter avec
+Apple » existe, mais il ne donne accès qu'à une identité, jamais au calendrier.
+Le seul chemin praticable est le protocole *CalDAV*, avec un **mot de passe
+spécifique à l'application** que vous générez sur votre compte Apple.
+
+| | Google | iCloud |
+|---|---|---|
+| Ce que l'artisan fait | Il appuie, il accepte | Il va sur son compte Apple, génère un mot de passe de 16 caractères, le recopie dans Atlas |
+| Ce qu'Apple exige | — | La double authentification activée sur le compte |
+| Écrire dans l'agenda | Possible, permission à part | Possible, sans permission supplémentaire |
+| Portée de l'accès | **L'agenda seul** | **Tout l'iCloud** — mail, contacts, fichiers |
+
+### Les trois réserves, écrites parce qu'elles comptent
+
+**1. Le mot de passe ouvre tout l'iCloud, pas seulement l'agenda.** Apple ne
+sait pas restreindre un mot de passe spécifique à un seul service. Atlas le
+chiffre au repos comme il chiffre les jetons Google
+(`src/server/agenda/secret-au-repos.ts`), mais le chiffrement protège d'une
+sauvegarde recopiée, pas de l'étendue de ce que la clé ouvre. C'est la vraie
+différence avec Google, et elle ne se corrige pas côté Atlas.
+
+**2. Apple ne documente pas publiquement ce canal.** Il fonctionne depuis des
+années et de nombreux logiciels s'en servent, mais il n'y a **aucun engagement**
+d'Apple : cela peut cesser du jour au lendemain, sans préavis. Le raccordement
+Google, lui, repose sur une interface publique et versionnée.
+
+**3. Écrire est un geste qui ne se reprend pas tout seul.** Atlas posera des
+rendez-vous dans votre agenda personnel. Il ne touchera **jamais** ce qui ne
+vient pas de lui, et ce qu'il a posé se retire d'un geste — mais c'est une
+décision, pas un réglage par défaut.
+
+### Ce que ça coûte en argent : rien
+
+Et sur ce point, **Apple est moins cher que Google** : pas de compte
+développeur, pas d'écran de consentement à faire valider, pas de plafond de cent
+comptes de test, **pas de semaines d'attente**. Là où Google impose une
+vérification avant de commercialiser ([A-FAIRE §8](A-FAIRE.md)), iCloud ne
+demande la permission de personne.
+
+### Ce que je n'ai pas pu vérifier d'ici
+
+**Le réseau de l'environnement de développement refuse `caldav.icloud.com`** —
+essayé le 12 août 2026, connexion refusée. Tout ce qui touche au comportement
+réel d'Apple devra donc être éprouvé **sur votre banc d'essai**, pas ici. C'est
+la même situation que pour Google, et elle se traite pareil : la logique qui
+décide vit dans un module qui ne parle à personne et qui, lui, s'éprouve
+entièrement ici.
+
+### Ce qui a été fait le jour même
+
+Vous avez répondu *« code pour qu'on puisse lire et écrire dans cet agenda »* —
+c'est écrit. Vous collez votre adresse iCloud et le mot de passe pour les apps ;
+Atlas trouve vos agendas, cesse de proposer les demi-journées déjà prises, et —
+**si vous l'allumez** — pose vos chantiers dans le calendrier que vous désignez.
+Débrancher les retire.
+
+**Ce qui n'a PAS pu être vérifié, et qu'il faut lire comme tel :** aucun échange
+réel avec iCloud n'a eu lieu ici — le réseau de l'environnement de
+développement le refuse. Les contrôles couvrent tout ce qui *décide* ; ce qui
+reste à éprouver, c'est le dialogue avec Apple lui-même, et cela demande votre
+compte. **Attendez-vous à un premier essai qui échoue** : ce sera dit à l'écran,
+avec la phrase d'Apple telle quelle.
+
+### Ce que ça ne change pas
+
+Ce qui décide quelles demi-journées sont prises, et comment elles se fondent
+dans votre planning, est **commun à tous les agendas** et ne bouge pas d'une
+ligne (`src/lib/agenda-externe.ts`). Le nouveau code n'ajoute qu'une chose : la
+manière d'aller chercher les rendez-vous. Deux fournisseurs, une seule règle —
+c'est ce qui évite que le planning finisse par répondre différemment selon le
+calendrier branché.
+
+## 15. Ma TVA, je la déclare tous les mois ou tous les trimestres ?
 
 *Posée le 2026-08-12.* Vous aviez raison de le demander : l'écran était découpé
 en trimestres, et personne n'avait écrit pourquoi.
@@ -750,3 +932,4 @@ on n'écrit pas. **Votre comptable tranche ; l'application obéit.**
 trimestres ». Le mois est coché d'avance, puisque c'est le défaut légal. L'écran
 de TVA et son calendrier suivent votre choix — douze mois d'un côté, quatre
 trimestres de l'autre.
+
