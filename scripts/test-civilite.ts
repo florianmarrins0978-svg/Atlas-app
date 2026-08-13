@@ -50,22 +50,25 @@ async function casAsync(nom: string, verifier: () => Promise<void>) {
  * porte déjà son appellation — c'est cette seconde colonne que le SQL de la
  * migration doit retrouver, mot pour mot.
  */
+const nomme = (n: string) => `${CIVILITE_PAR_DEFAUT} ${n}`;
+
 const CORPUS: { saisi: string; attendu: string }[] = [
   // Le cas du patron, celui de la capture.
-  { saisi: "Martins", attendu: "Monsieur Martins" },
-  { saisi: "Bernard", attendu: "Monsieur Bernard" },
-  { saisi: "Rivière", attendu: "Monsieur Rivière" },
-  { saisi: "Jean-Marie Dubois", attendu: "Monsieur Jean-Marie Dubois" },
+  { saisi: "Martins", attendu: nomme("Martins") },
+  { saisi: "Bernard", attendu: nomme("Bernard") },
+  { saisi: "Rivière", attendu: nomme("Rivière") },
+  { saisi: "Jean-Marie Dubois", attendu: nomme("Jean-Marie Dubois") },
   // **« Merlin » commence par un m, et n'est pas un « M. ».** C'est le piège
   // qu'une comparaison de préfixe sans séparateur laisse passer.
-  { saisi: "Merlin", attendu: "Monsieur Merlin" },
-  { saisi: "Mathieu Dubois", attendu: "Monsieur Mathieu Dubois" },
-  { saisi: "Meunier", attendu: "Monsieur Meunier" },
+  { saisi: "Merlin", attendu: nomme("Merlin") },
+  { saisi: "Mathieu Dubois", attendu: nomme("Mathieu Dubois") },
+  { saisi: "Meunier", attendu: nomme("Meunier") },
   // Civilités déjà écrites : on n'en pose pas une seconde.
   { saisi: "M. Bernard", attendu: "M. Bernard" },
   { saisi: "Mme Roux", attendu: "Mme Roux" },
   { saisi: "Madame Roux", attendu: "Madame Roux" },
   { saisi: "Monsieur Martins", attendu: "Monsieur Martins" },
+  { saisi: "Mr. Martins", attendu: "Mr. Martins" },
   { saisi: "Mlle Petit", attendu: "Mlle Petit" },
   { saisi: "Dr Lemoine", attendu: "Dr Lemoine" },
   { saisi: "Me Fabre", attendu: "Me Fabre" },
@@ -120,6 +123,16 @@ cas("le nom saisi survit intact — accents, casse, traits d'union", () => {
 cas("un seul mot posé, et c'est celui qu'on croit", () => {
   const ajout = avecCivilite("Martins").replace("Martins", "").trim();
   assert.equal(ajout, CIVILITE_PAR_DEFAUT);
+});
+
+cas("et ce mot est CELUI QU'IL A DEMANDÉ", () => {
+  // **Le seul endroit où le mot est écrit en clair, et c'est voulu.** Partout
+  // ailleurs les attentes se construisent à partir de la constante, pour qu'un
+  // changement de sa part n'ait pas à traverser dix suites. Mais si personne ne
+  // l'épingle une fois, la constante peut valoir n'importe quoi et tout reste
+  // vert. Le patron, le 13 août 2026 : *« Mr. Martins, pas Monsieur. »*
+  assert.equal(CIVILITE_PAR_DEFAUT, "Mr.");
+  assert.equal(avecCivilite("Martins"), "Mr. Martins");
 });
 
 // ─── La migration et la fonction disent la même chose ────────────────────────
@@ -216,8 +229,14 @@ async function main() {
 
   console.log("\n=== La migration renomme vraiment, malgré la RLS forcée ===");
 
-  await casAsync("« Chez X » devient « Monsieur X », et rien d'autre ne bouge", async () => {
-    const sql = readFileSync(path.join(__dirname, "..", "drizzle", "0036_monsieur_plutot_que_chez.sql"), "utf-8");
+  await casAsync("« Chez X » devient la civilité, et rien d'autre ne bouge", async () => {
+    // **Les DEUX migrations, dans l'ordre.** La 0036 retire « Chez » et pose
+    // « Monsieur » ; la 0037 remplace ce mot par celui qu'il a demandé. Jouer
+    // la première seule laisserait croire que la base et le code s'accordent
+    // alors qu'ils diraient deux mots différents.
+    const sql = ["0036_monsieur_plutot_que_chez.sql", "0037_mr_plutot_que_monsieur.sql"]
+      .map((f) => readFileSync(path.join(__dirname, "..", "drizzle", f), "utf-8"))
+      .join("\n");
     const client = await pool.connect();
     try {
       // Tout se joue dans une transaction annulée : le contrôle ne laisse
@@ -227,13 +246,17 @@ async function main() {
       assert.ok(ent[0], "aucune entreprise en base : jouer `npm run db:seed` d'abord");
       await client.query("SELECT set_config('app.entreprise_id', $1, true)", [ent[0].id]);
 
+      // **Ce que la base doit contenir, dit par la FONCTION.** Écrire les
+      // résultats en dur ici rendrait le contrôle muet le jour où le patron
+      // change de civilité : il rougirait sur le mot au lieu de vérifier que
+      // les deux implémentations s'accordent, ce qui est son seul sujet.
       const attendu: Record<string, string> = {
         // Le cas du patron.
-        "Zzz Martins": "Monsieur Zzz Martins",
+        "Zzz Martins": avecCivilite("Zzz Martins"),
         // « Chez » disparaît, la civilité déjà là ne double pas.
-        "Mme Zzz Roux": "Mme Zzz Roux",
-        // Une société ne devient jamais « Monsieur ».
-        "SARL Zzz Untel": "SARL Zzz Untel",
+        "Mme Zzz Roux": avecCivilite("Mme Zzz Roux"),
+        // Une société ne reçoit jamais de civilité.
+        "SARL Zzz Untel": avecCivilite("SARL Zzz Untel"),
       };
       for (const nomClient of Object.keys(attendu)) {
         const { rows } = await client.query(

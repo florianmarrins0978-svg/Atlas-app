@@ -16,7 +16,7 @@ import { avecCivilite } from "./civilite";
 //
 // **Une réserve levée par lui le 13 août 2026, et qu'il faut connaître.**
 // Jusque-là, ce fichier tenait que rien n'était fabriqué : chaque mot du nom
-// venait de la saisie. La civilité rompt cette règle — « Monsieur » n'est pas
+// venait de la saisie. La civilité rompt cette règle — « Mr. » n'est pas
 // une donnée du client, c'est un défaut. Le patron l'a demandé en sachant qu'il
 // n'avait tapé que « Martins ». Ce que ça coûte, et les deux cas où ça se voit
 // (une cliente, une société sous un nom nu), sont écrits dans
@@ -34,7 +34,7 @@ export type SourceNomChantier = {
 };
 
 export function nomDuChantier({ nomClient, adresseChantier, jour }: SourceNomChantier): string {
-  // **« Monsieur Bernard », et non plus « Chez M. Bernard ».** Le patron, le
+  // **« Mr. Bernard », et non plus « Chez M. Bernard ».** Le patron, le
   // 13 août 2026, devant son devis : *« il faut qu'il y ait écrit monsieur
   // Martins et pas chez Martins »*. « Chez » est la phrase par laquelle un
   // artisan désigne un chantier ; sur un document qui part chez le client, on

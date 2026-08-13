@@ -131,6 +131,20 @@ export default function FormulaireReponse({
         <label className="block text-[13px] font-medium text-ink/60" htmlFor="precision">
           Une erreur, une question, une précision&nbsp;?
         </label>
+        {/* **La phrase qui dit que c'est permis.** Le patron, le 13 août 2026 :
+            *« écris une petite phrase sur l'encart pour laisser un mot, qu'il
+            sache qu'il peut le faire »*. L'intitulé ci-dessus posait une
+            question ; il ne disait pas qu'on avait le droit d'y répondre. Un
+            client qui repère une faute et n'ose pas l'écrire touche « Je ne
+            donne pas suite », et le patron lit un refus là où il n'y avait
+            qu'une coquille — c'est très exactement le chantier perdu que ce
+            champ existe pour éviter.
+
+            Elle est AU-DESSUS du champ, jamais en dessous : une invitation lue
+            après coup n'invite plus personne. */}
+        <p className="mt-1 text-[13px] text-ink/70">
+          Vous pouvez laisser un mot à votre artisan : il le lira tel quel.
+        </p>
         <textarea
           id="precision"
           name="precision"
@@ -141,9 +155,6 @@ export default function FormulaireReponse({
           placeholder="« Mon nom est mal écrit », « plutôt le matin », « il manque le broyage »…"
           className="mt-2 w-full resize-y rounded-xl border border-black/10 px-3 py-2 text-[15px]"
         />
-        <p className="mt-1.5 text-[12px] text-ink/50">
-          Votre artisan lira ce message tel quel.
-        </p>
       </section>
 
       {etat && "erreur" in etat && (
