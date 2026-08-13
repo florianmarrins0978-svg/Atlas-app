@@ -204,6 +204,35 @@ chevron, sur lequel il ne s'est pas prononcé — et qui n'est pas un bouton
 d'action, d'où l'hésitation.
 
 
+### 0 quinvicies. Deux migrations portent le même numéro — à ranger avant que ça morde
+
+**Constaté le 13 août 2026, en fusionnant.** `drizzle/` contient deux `0035` et
+deux `0036` :
+
+```
+0035_agenda_apple.sql          0036_achats_tva.sql
+0035_periodicite_tva.sql       0036_monsieur_plutot_que_chez.sql
+```
+
+Nées de sessions parallèles qui ont pris le numéro suivant chacune de leur côté.
+
+**Ce n'est pas cassé aujourd'hui**, et il faut le dire aussi : le lanceur trie
+sur le nom de fichier ENTIER, donc l'ordre est déterministe, et ces quatre-là
+touchent des tables différentes. Toutes se sont appliquées.
+
+**Ce qui mordra un jour :** deux migrations de même numéro qui toucheraient la
+même table s'appliqueraient dans un ordre décidé par l'alphabet du libellé —
+« achats » avant « monsieur » — et non par celui où elles ont été écrites. Une
+conversation qui lit `ls drizzle/ | tail -1` pour trouver « la dernière » se
+trompera aussi.
+
+**Ce qu'on ne fait pas :** renuméroter. Ces fichiers sont **déjà appliqués**,
+ici et peut-être sur son banc ; un fichier renommé serait rejoué de zéro.
+
+**Ce qui reste à faire :** un contrôle qui refuse deux migrations de même
+numéro, pour que la prochaine collision se voie à l'écriture et non six mois
+plus tard. Une demi-heure. Qui peut le faire : n'importe quelle conversation.
+
 ### 0 tervicies. `test-planning-vers-facture-e2e` échoue par intermittence, et son message est trop affirmatif
 
 **Constaté le 13 août 2026, en éprouvant autre chose.** Le dernier cas de cette
