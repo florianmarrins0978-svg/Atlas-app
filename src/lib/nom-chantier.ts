@@ -81,3 +81,33 @@ export function intituleDuChantier(nomClient: string | null | undefined, nomChan
   if (aplati(nomChantier).includes(aplati(client))) return nomChantier;
   return `${client} — ${nomChantier}`;
 }
+
+/**
+ * Ce qui s'écrit sous le nom, dans la liste : le lieu — jamais le nom deux fois.
+ *
+ * **Né du retrait de « Chez », le 13 août 2026.** Le titre valait « Chez
+ * Martins » et la ligne du dessous « Martins » : proches, mais distincts. Le
+ * titre étant devenu « Martins », un chantier SANS adresse affichait le même
+ * mot deux fois de suite — vu à l'œil sur une capture, jamais par un contrôle.
+ *
+ * Quand il n'y a pas d'adresse, dire qu'elle manque vaut mieux que répéter :
+ * c'est une information, et elle appelle un geste.
+ */
+export function lieuDuChantier(
+  nomChantier: string,
+  adresseChantier?: string | null,
+  nomClient?: string | null
+): string {
+  const adresse = adresseChantier?.trim();
+  if (adresse) return adresse;
+
+  // Le repli sur le client ne vaut que s'il apprend quelque chose. La
+  // comparaison ignore la casse et les accents, comme `intituleDuChantier` :
+  // « M. BERNARD » et « M. Bernard » sont le même homme.
+  const client = nomClient?.trim();
+  const aplati = (t: string) =>
+    t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (client && aplati(client) !== aplati(nomChantier)) return client;
+
+  return "Adresse non renseignée";
+}

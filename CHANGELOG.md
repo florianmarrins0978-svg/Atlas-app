@@ -24,6 +24,25 @@ les chantiers à venir : le nom est écrit une fois, à la création, et jamais
 retouché. Elle ne défait que les étiquettes que nous avons fabriquées — jamais
 un nom qu'il aurait saisi. `ARCHITECTURE.md` §75.
 
+### La ligne sous le nom dit ce qui est parti, et quand
+
+**Son choix, devant les cinq propositions :** *« j'aime bien le D, mais en
+dessous de "devis envoyé" je veux qu'il y ait marqué la date à laquelle on l'a
+envoyé. »* La liste porte donc « DEVIS ENVOYÉ · SANS RÉPONSE » en or, et sous
+lui « Envoyé le jeudi 13 août. » `ARCHITECTURE.md` §77.
+
+**La date n'est jamais devinée** : sans envoi enregistré, la seconde ligne
+n'existe pas. Le repli tentant — la dernière modification du chantier, celle qui
+s'affiche à gauche — n'est PAS la date d'envoi : une photo ajoutée la déplace,
+et c'est sur elle qu'il compte ses jours d'attente.
+
+**Un doublon né du retrait de « Chez », vu à l'œil sur une capture.** Le titre
+étant devenu « Martins », un chantier sans adresse affichait le même mot deux
+fois de suite — la ligne du lieu se rabattait sur le nom du client. Elle ne s'y
+rabat plus que si elle apprend quelque chose ; sinon elle écrit « Adresse non
+renseignée », qui est une information. **Retirer un mot d'un libellé peut faire
+entrer deux autres en collision.**
+
 ### Cinq libellés pour la ligne sous le nom — à son choix
 
 Il veut y lire que le devis est parti et qu'on attend. Cinq propositions

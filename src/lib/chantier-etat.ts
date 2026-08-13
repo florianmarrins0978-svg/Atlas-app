@@ -1,4 +1,5 @@
 import { attendLeClient, etatEnvoi } from "./etat-envoi";
+import { jourLisible } from "./jour";
 
 // Statut d'un chantier et libellés associés — définis ici (pas dans
 // mock-data.ts) car utilisés par les écrans réels ; réexportés depuis
@@ -31,6 +32,86 @@ export const statutLabel: Record<ChantierStatut, string> = {
   termine: "À facturer",
   facture: "Facturé",
 };
+
+/**
+ * Ce qui s'écrit SOUS le nom d'un chantier, dans la liste.
+ *
+ * **Le patron, le 13 août 2026, capture à l'appui :** *« le devis a été envoyé
+ * et il n'a toujours pas eu de réponse […] il faut le notifier sous le nom »*,
+ * puis, devant les cinq propositions : *« j'aime bien le D, mais en dessous de
+ * "devis envoyé" je veux qu'il y ait marqué la date à laquelle on l'a
+ * envoyé »* (`docs/maquettes/40-la-ligne-sous-le-nom.html`, `TODO.md` §9).
+ *
+ * Sa ligne disait « En attente de réponse » : vrai, mais elle ne disait pas
+ * **ce qui** attend — un devis parti, ou un client qu'on n'a pas rappelé.
+ *
+ * ─── Trois décisions portées ici, et pas dans l'écran ────────────────────
+ *
+ * 1. **La mention des photos disparaît une fois le devis parti.** Elle sert à
+ *    savoir s'il reste de quoi chiffrer ; après l'envoi, elle occupe la place
+ *    de ce qui compte. C'est la forme qu'il a retenue sur la planche.
+ *
+ * 2. **La date d'envoi n'est jamais devinée.** Sans envoi enregistré, la
+ *    seconde ligne n'existe pas — plutôt qu'une date approchée tirée de la
+ *    dernière modification du chantier, qui n'est PAS la date d'envoi et le
+ *    tromperait le jour où il compte ses jours d'attente (`CLAUDE.md` §4).
+ *
+ * 3. **L'or.** Il était réservé à ce qui attend un geste DE LUI ; un devis
+ *    parti sans réponse n'en attend aucun. Il a retenu la variante dorée en
+ *    connaissance de cause — c'était écrit sur la planche. Si la liste devient
+ *    trop dorée à l'usage, c'est ici que cela se défait, sur une seule ligne.
+ *
+ * La règle vit dans une fonction pure pour être éprouvée sans base ni
+ * navigateur, et pour que l'écran n'ait qu'à afficher (`CLAUDE.md` §3).
+ */
+export type LigneEtatChantier = {
+  /** La ligne en petites capitales : l'état. */
+  etat: string;
+  /** La ligne en clair sous elle, ou rien du tout. */
+  precision: string | null;
+  /** Vrai quand la ligne se met en or. */
+  enOr: boolean;
+};
+
+/** Un devis est parti, et le client n'a pas encore répondu. */
+const DEVIS_PARTI_SANS_REPONSE: ChantierStatut[] = ["devis_envoye", "en_attente_client", "a_relancer"];
+
+/**
+ * Ce qui appelle un geste de lui — et se met donc en or.
+ *
+ * `a_relancer` y figure aussi via `DEVIS_PARTI_SANS_REPONSE` : les deux listes
+ * se recoupent volontairement, chacune répond à une question différente.
+ */
+const APPELLE_UN_GESTE: ChantierStatut[] = [
+  "devis_envoye",
+  "en_attente_client",
+  "a_relancer",
+  "devis_retourne",
+  "devis_a_corriger",
+  "devis_caduc",
+];
+
+export function ligneEtatChantier(params: {
+  statut: ChantierStatut;
+  photosCount: number;
+  /** Le jour où le devis est RÉELLEMENT parti, « AAAA-MM-JJ ». `null` si aucun envoi. */
+  envoyeLe?: string | null;
+  aujourdHui?: Date;
+}): LigneEtatChantier {
+  const { statut, photosCount, envoyeLe, aujourdHui } = params;
+  const enOr = APPELLE_UN_GESTE.includes(statut);
+
+  if (DEVIS_PARTI_SANS_REPONSE.includes(statut)) {
+    return {
+      etat: statut === "a_relancer" ? "Devis envoyé · à relancer" : "Devis envoyé · sans réponse",
+      precision: envoyeLe ? `Envoyé le ${jourLisible(envoyeLe, aujourdHui)}.` : null,
+      enOr,
+    };
+  }
+
+  const photos = photosCount > 0 ? `${photosCount} photo${photosCount > 1 ? "s" : ""}` : "sans photo";
+  return { etat: `${statutLabel[statut]} · ${photos}`, precision: null, enOr };
+}
 
 // Détermine l'unique action principale à proposer sur la fiche chantier.
 // Règle absolue : cet état est calculé uniquement à partir des champs réellement

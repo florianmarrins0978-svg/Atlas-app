@@ -316,8 +316,19 @@ raisonnement vaut pour `src/app/documents-legaux/formulaire.tsx`.
    étroite — elle ne défait que ce que nous avons fabriqué. Devant un futur
    écran de renommage, s'en souvenir.
 
-**⚠ EN ATTENTE DE SON CHOIX : la ligne sous le nom.** Cinq libellés dans
-`docs/maquettes/40-la-ligne-sous-le-nom.html`, rien n'est codé.
+**LA LIGNE SOUS LE NOM EST TRANCHÉE ET CODÉE** — le D, avec la date d'envoi
+(`ARCHITECTURE.md` §77). Trois choses à ne pas défaire :
+
+- **la date d'envoi ne se devine pas.** Sans envoi enregistré, pas de seconde
+  ligne. Le repli tentant — `majAt`, la date affichée à gauche — n'est PAS la
+  date d'envoi : une photo ajoutée la déplace ;
+- **l'or sur un devis parti est SA décision**, contre la règle d'avant (l'or
+  pour ce qui attend un geste de lui). C'était écrit sur la planche qu'il a
+  choisie. Si la liste devient trop dorée, `APPELLE_UN_GESTE` se défait sur une
+  ligne ;
+- **le lieu ne répète jamais le nom.** Défaut né du retrait de « Chez », vu à
+  l'œil sur une capture : retirer un mot d'un libellé peut faire entrer deux
+  autres en collision.
 
 **Et une règle qui vaut au-delà de ce lot : un libellé se mesure SUR L'ÉCRAN.**
 Une maquette HTML rend les mots plus larges qu'Inter dans l'application — la

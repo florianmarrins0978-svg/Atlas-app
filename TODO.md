@@ -1172,15 +1172,21 @@ qu'il ne veut pas revoir.
 Si le sujet revient, c'est **lui** qui le rouvre, et alors c'est « partout »
 ou rien.
 
-### 9. La ligne sous le nom, dans la liste des chantiers — EN ATTENTE DE SON CHOIX
+### ~~9. La ligne sous le nom, dans la liste des chantiers~~ — **tranché et codé le 13 août 2026 : le D, avec la date d'envoi**
 
 **Le patron, le 13 août 2026 :** *« le devis a été envoyé et il n'a toujours pas
 eu de réponse […] tu marques quelque chose du style devis envoyé, attente de
 réponse, je te laisse libre de choisir et de proposer des alternatives si tu
 penses qu'il faudrait rajouter d'autres informations à ce niveau-là. »*
 
-**Cinq propositions, rien de codé** — `docs/maquettes/40-la-ligne-sous-le-nom.html`,
-engendrée par `scripts/engendrer-maquette-ligne-chantier.mts` :
+**Il a retenu D**, en remplaçant le délai par la date : « DEVIS ENVOYÉ · SANS
+RÉPONSE » en or, et dessous « Envoyé le jeudi 13 août. » La règle vit dans
+`ligneEtatChantier` (`src/lib/chantier-etat.ts`), éprouvée sans base ni
+navigateur. `ARCHITECTURE.md` §77.
+
+**Les quatre autres restent dans la planche** — `docs/maquettes/40-la-ligne-sous-le-nom.html`,
+engendrée par `scripts/engendrer-maquette-ligne-chantier.mts`. Si le sujet se
+rouvre, repartir de là :
 
 | | Libellé | Ce qu'elle apprend |
 |---|---|---|

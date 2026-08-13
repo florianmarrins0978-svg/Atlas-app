@@ -5663,3 +5663,57 @@ cherchait : la variante E affichait le libellé de D. Le script désignait la
 ligne d'état AVANT de retirer celle injectée par la variante précédente —
 `p:last-of-type` tombait alors sur cette ligne-là, qu'on retirait aussitôt, et
 le texte partait sur un nœud détaché. **Une capture s'inspecte comme un écran.**
+
+---
+
+## 77. La ligne sous le nom : ce qui est parti, et quand
+
+**Son choix du 13 août 2026**, devant les cinq propositions photographiées
+(§76) : *« j'aime bien le D, mais en dessous de "devis envoyé" je veux qu'il y
+ait marqué la date à laquelle on l'a envoyé. »*
+
+La liste des chantiers porte donc, pour un devis parti sans réponse :
+
+```
+Mr Martins
+Adresse non renseignée
+DEVIS ENVOYÉ · SANS RÉPONSE          ← en or
+Envoyé le jeudi 13 août.
+```
+
+### Quatre décisions, et elles vivent dans une fonction pure
+
+`ligneEtatChantier` (`src/lib/chantier-etat.ts`) — l'écran n'a qu'à afficher
+(`CLAUDE.md` §3), et la règle s'éprouve sans base ni navigateur
+(`test-ligne-etat-chantier.ts`).
+
+1. **« En attente de réponse » devient « Devis envoyé · sans réponse ».**
+   L'ancienne phrase était vraie mais ne disait pas **ce qui** attend : un devis
+   parti, ou un client qu'on n'a pas rappelé ?
+2. **La date d'envoi n'est jamais devinée.** Sans envoi enregistré, la seconde
+   ligne n'existe pas. Le repli tentant — la dernière modification du chantier
+   (`majAt`, celle qui s'affiche à gauche) — n'est PAS la date d'envoi : une
+   photo ajoutée la déplace. Il compte ses jours d'attente dessus.
+3. **La mention des photos disparaît une fois le devis parti.** Elle sert à
+   savoir s'il reste de quoi chiffrer ; après, elle occupe la place.
+4. **L'or, contre la règle d'avant.** Il était réservé à ce qui attend un geste
+   DE LUI ; un devis parti sans réponse n'en attend aucun. Il a retenu la
+   variante dorée en connaissance de cause — c'était écrit sur la planche. Si la
+   liste devient trop dorée à l'usage, `APPELLE_UN_GESTE` se défait sur une
+   ligne.
+
+### Le doublon né du retrait de « Chez »
+
+Vu **à l'œil sur une capture**, jamais par un contrôle. Quand « Chez Martins »
+est devenu « Martins » (§75), un chantier SANS adresse affichait le même mot
+deux fois de suite — le titre, puis la ligne du lieu, qui se rabattait sur le
+nom du client.
+
+`lieuDuChantier` ne se rabat désormais sur le client **que s'il apprend quelque
+chose** ; sinon elle écrit « Adresse non renseignée », qui est une information,
+et qui appelle un geste. La comparaison ignore casse et accents, comme
+`intituleDuChantier` : deux graphies du même homme ne comptent pas pour deux.
+
+**Ce que ce défaut rappelle :** retirer un mot d'un libellé peut faire entrer
+deux autres en collision. Un changement d'affichage se REGARDE, sur l'écran, y
+compris là où il n'était pas censé porter.
