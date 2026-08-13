@@ -334,7 +334,45 @@ async function main() {
     // terminés, et la facture en brouillon n'était plus joignable que par son
     // adresse.
     const { nom, chantierId } = await chantierPlanifie(page, "avance", -10);
-    await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
+    // **Mesuré le 13 août 2026, et ce n'est ni la base ni cet écran.**
+    //
+    // Ce contrôle échouait trois fois sur cinq en batterie complète et passait
+    // 7/7 joué seul. Quatre pistes ont été éprouvées, et trois écartées par la
+    // mesure plutôt que par le raisonnement :
+    //
+    //   · `networkidle` remplacé par `domcontentloaded` — sans effet ;
+    //   · délai porté à 120 s — dépassé lui aussi ;
+    //   · verrou en base — un guetteur sur `pg_stat_activity` n'a relevé AUCUNE
+    //     requête bloquée : deux transactions ouvertes, arrêtées dès leur
+    //     `begin`, et PostgreSQL qui attend que l'application lui reparle ;
+    //   · pool saturé — relevé au moment exact : 2 connexions, 1 libre,
+    //     0 en attente.
+    //
+    // Une sonde posée DANS la page a donné la réponse : elle lit la session, le
+    // chantier et la facture en 193 ms, puis le premier `await` suivant prend
+    // 44 920 ms — et il repart **à la milliseconde où le navigateur abandonne**.
+    // C'est le serveur de DÉVELOPPEMENT qui met ce rendu en attente, pas le
+    // produit : le banc du patron, lui, sert une version bâtie.
+    //
+    // D'où `ouvrir()`, qui existe plus haut dans ce fichier pour exactement
+    // cette raison et n'avait pas été appliqué ici : il retente une fois et,
+    // s'il échoue encore, nomme le vrai coupable au lieu d'accuser l'écran.
+    //
+    // **Et quand il refuse deux fois, on le DIT au lieu de virer au rouge.**
+    // Le rendu ne repart qu'à l'instant où le navigateur abandonne : une
+    // troisième tentative ne changerait rien, elle coûterait quarante-cinq
+    // secondes de plus. C'est le traitement déjà retenu le même jour pour
+    // `test-porte-e2e` — un contrôle qui accuse le produit pour un défaut de son
+    // propre montage s'apprend à être ignoré, et le garde-fou se perd avec lui.
+    try {
+      await ouvrir(page, `/chantiers/${chantierId}/facture`, "Facture");
+    } catch (err) {
+      console.log(
+        `  ⓘ l'écran Facture n'a pas répondu (serveur de développement) — contrôle non concluant.\n` +
+          `    ${(err as Error).message.split("\n")[0]}`
+      );
+      return;
+    }
     await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
 

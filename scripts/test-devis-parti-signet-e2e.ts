@@ -160,14 +160,22 @@ async function main() {
       "rgb(28, 28, 26)",
       `Les trois actions doivent être en encre foncée (#1c1c1a) — mesuré « ${couleur} ». Sa demande du 12 août : « mets-les en noir foncé ».`
     );
-    for (const nom of ["Copier le lien", "Partager"]) {
-      assert.equal(
-        await page.getByRole("button", { name: nom, exact: true }).count(),
-        1,
-        `« ${nom} » manque à la ligne des trois actions.`
-      );
-    }
-    console.log("  ✓ les trois actions sont là, en encre foncée");
+    assert.equal(
+      await page.getByRole("button", { name: "Partager", exact: true }).count(),
+      1,
+      "« Partager » manque à la ligne des actions."
+    );
+    // **« Copier le lien » a été retiré le 13 août, à sa demande** : « je pense
+    // qu'il faudrait aussi retirer copier le lien, ça ne sert à rien ». Le lien
+    // part par le SMS, par l'e-mail ou par « Partager » — le presse-papier
+    // n'était qu'un quatrième chemin vers la même chose. Le contrôle tient ce
+    // retrait, sans quoi il reviendrait au premier écran recopié d'un voisin.
+    assert.equal(
+      await page.getByRole("button", { name: "Copier le lien", exact: true }).count(),
+      0,
+      "« Copier le lien » est revenu dans la rangée : il a été retiré le 13 août 2026."
+    );
+    console.log("  ✓ les deux actions sont là, en encre foncée, et « Copier le lien » a bien disparu");
 
     // ── 5 · On peut encore changer de canal ───────────────────────────────
     assert.equal(
