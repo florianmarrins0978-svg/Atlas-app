@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-13 · branche `main`
-· dernière migration `drizzle/0036_monsieur_plutot_que_chez.sql`
+· dernière migration `drizzle/0037_identite_entreprise.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -503,8 +503,10 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 
 Voir `TODO.md` pour le détail et l'ordre.
 
-- **Les réglages, dix rubriques** — **le plan est dessiné, aucune rubrique ne
-  l'est** (`maquettes/atlas-reglages-plan.html`, `ARCHITECTURE.md` §80). Ce qui
+- **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
+  (`ARCHITECTURE.md` §88) : `/reglages/identite` existe, et le **régime de TVA
+  se déclare au lieu d'être deviné d'après le taux**. Ce qui suit décrit l'état
+  d'avant ce lot, et reste vrai pour les neuf autres rubriques : (`maquettes/atlas-reglages-plan.html`, `ARCHITECTURE.md` §80). Ce qui
   y est tranché : les deux niveaux « Moi » / « Mon entreprise », qui voit quoi,
   et ce qui n'aura jamais d'interrupteur. Ce qui ne l'est pas : le rôle
   **commercial** n'existe ni en base (`membres_entreprise.role` : propriétaire

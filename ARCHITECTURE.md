@@ -6787,3 +6787,77 @@ serait le premier appel au secours ; l'écran le dit sur place.
 | Documents | `atlas-reglages-documents.html` | rien (§85) |
 | Notifications | `atlas-reglages-notifications.html` | une famille sur huit (§86) |
 | IA, intégrations, apparence, sécurité, abonnement | `atlas-reglages-reste.html` | IA et intégrations partiels |
+
+
+---
+
+## 88. Premier lot CODÉ : l'identité de l'entreprise, et le régime de TVA qui cesse d'être deviné
+
+**13 août 2026, en autonomie** — migration `0037_identite_entreprise.sql`,
+écran `/reglages/identite`, suite `scripts/test-identite-entreprise.ts`.
+C'est le premier lot des réglages qui passe du dessin au code, et c'est celui
+qui **bloquait la commercialisation** (§81).
+
+### Ce que la migration ajoute, et pourquoi chaque colonne
+
+| Colonne | Pourquoi |
+|---|---|
+| `forme_juridique` | Figure sur les documents, ne se saisissait nulle part |
+| `regime_tva` | **Le point qui compte** — voir ci-dessous |
+| `numero_tva` | Attendu sur la facture d'un assujetti |
+| `titulaire_compte` | Un IBAN à un autre nom inquiète au lieu de rassurer |
+
+### LE RÉGIME DE TVA SE DÉCLARE, IL NE SE DEVINE PLUS
+
+`facture-pdf.ts` imprimait « TVA non applicable, art. 293 B du CGI » **quand le
+taux appliqué valait zéro**. La situation fiscale de l'entreprise se déduisait
+donc d'un chiffre saisi chantier par chantier, et **se trompait dans les deux
+sens** : un artisan en franchise qui laissait 20 % par mégarde perdait une
+mention obligatoire ; un assujetti qui posait 0 % voyait s'imprimer, sur une
+pièce comptable, une phrase qui ne le concernait pas.
+
+**Trois décisions autour de ce changement :**
+
+1. **Le défaut est `assujettie`**, et ce n'est pas anodin : c'est celui qui ne
+   change RIEN au comportement observé jusqu'ici pour une entreprise qui
+   facture la TVA. Poser « franchise » aurait fait apparaître la mention sur les
+   prochaines factures d'artisans qui la facturent.
+2. **Le régime est FIGÉ DANS LA FACTURE** (`factures.entreprise_regime_tva`),
+   comme le reste de l'identité (§81) : une facture émise sous franchise garde
+   sa mention même si l'artisan devient assujetti l'année suivante. La lire en
+   direct réécrirait le passé sur une pièce comptable.
+3. **Le repli sur le taux demeure, et doit demeurer.** Les factures antérieures
+   à la migration n'ont pas de régime figé ; le retirer réécrirait leur
+   historique. La migration recopie d'ailleurs la déduction une dernière fois
+   (`UPDATE … CASE WHEN taux_tva = 0`) pour que les factures déjà émises gardent
+   exactement ce qu'elles ont imprimé.
+
+### L'écran, et ce qu'il refuse
+
+`/reglages/identite` **refuse un non-propriétaire plutôt que de masquer** : les
+valeurs ne sont pas lues du tout. Une rubrique cachée ne protège rien
+(`docs/QUESTIONS.md` §10).
+
+**Le SIREN se montre, il ne se demande pas** — `sirenDepuisSiret` prend les neuf
+premiers chiffres et les affiche sous le champ. **Un champ manquant reste vide
+et se signale sur SA ligne**, en disant ce que l'absence empêche : « Vos factures
+ne sont pas conformes sans lui », jamais « champ requis ».
+
+**Le refus est rendu en VALEUR, jamais levé.** Le message d'une exception d'action
+serveur n'arrive jamais au patron — Next.js le remplace par un identifiant
+opaque (`HANDOVER.md`, piège 0 ter). Et la panne imprévue est journalisée **avant**
+d'être rendue : un défaut muet ne se répare pas.
+
+### Deux erreurs de MA suite de tests, et ce qu'elles enseignent
+
+**Elle lisait `t.texte` là où la trace écrit `t.contenu`.** Deux cas rougissaient
+à tort — et un TROISIÈME passait pour une mauvaise raison : il vérifiait une
+absence dans un texte qui n'avait jamais été lu. **Un test vert sur une chaîne
+vide ne prouve rien**, et c'est le plus dangereux des deux symptômes.
+
+**Elle comparait une FONCTION au lieu de son résultat** (`test(mots)` au lieu de
+`test(mots(trace))`), après une réécriture automatique maladroite. Le message
+accusait la facture ; le coupable était le test.
+
+La suite a ensuite été confrontée à l'ancien code — la déduction par le taux
+remise en place — et elle rougit sur les deux cas exacts que ce lot corrige.

@@ -9,6 +9,39 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### CODÉ : l'identité de l'entreprise, et le régime de TVA qui cesse d'être deviné
+
+**Premier lot des réglages qui passe du dessin au code** — et c'est celui qui
+bloquait la commercialisation. Migration `0037`, écran `/reglages/identite`,
+suite `scripts/test-identite-entreprise.ts`. **128/128 suites base au vert.**
+
+**L'identité se saisit enfin dans les réglages.** Elle ne s'écrivait que depuis
+« le devis rédigé à la main » : un artisan qui dictait, chiffrait et envoyait
+n'avait jamais l'occasion de saisir son SIRET, et son premier devis partait sans
+SIRET ni IBAN, sans un mot.
+
+**Le régime de TVA se déclare.** Il était DEVINÉ — « le taux vaut zéro, donc
+c'est une franchise » — et se trompait dans les deux sens : une franchise perdait
+sa mention obligatoire dès qu'un 20 % traînait, un assujetti voyait s'imprimer
+« TVA non applicable » sur une pièce comptable.
+
+Trois précautions autour de ce changement. **Le défaut est « assujettie »**,
+celui qui ne change rien au comportement d'avant. **Le régime est figé dans la
+facture**, comme le reste de l'identité : une facture émise sous franchise garde
+sa mention même si l'artisan devient assujetti ensuite. Et **le repli sur le taux
+demeure** pour les factures antérieures — la migration recopie même cette
+déduction une dernière fois, pour que les factures déjà émises gardent
+exactement ce qu'elles ont imprimé.
+
+**Deux erreurs de ma propre suite de tests, gardées en mémoire** : elle lisait le
+mauvais champ de la trace — deux cas rougissaient à tort, et un troisième
+**passait pour une mauvaise raison**, vérifiant une absence dans un texte jamais
+lu. Puis elle comparait une fonction au lieu de son résultat. La suite a ensuite
+été confrontée à l'ancien code, et elle rougit sur les deux cas exacts que ce lot
+corrige.
+
+---
+
 ### Réglages, lot 7 : les cinq dernières rubriques — le dessin est complet
 
 `maquettes/atlas-reglages-reste.html` : Atlas IA, intégrations, apparence,

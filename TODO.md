@@ -64,7 +64,7 @@ automatiquement ».* Six faits vérifiés, qui s'enchaînent (`ARCHITECTURE.md`
 |---|---|---|
 | 1 | `seed.ts` pose « Atelier Démo » **complet, IBAN compris** — son banc ne montre jamais l'état vierge | un jeu de départ qui sache démarrer à vide |
 | 2 | **Aucun parcours d'inscription** : `creerEntreprise` n'est appelé que par le seed et les tests | la création d'entreprise, depuis l'application |
-| 3 | L'identité ne s'écrit que depuis `chantiers/[id]/devis-complet/` — **au milieu d'un devis à la main** | les champs d'identité **dans les réglages** |
+| 3 | ~~L'identité ne s'écrit que depuis le devis à la main~~ — **fait le 13 août 2026** : `/reglages/identite` | ~~les champs d'identité dans les réglages~~ |
 | 4 | **Rien ne vérifie l'identité avant l'envoi** d'un devis | un garde-fou à l'envoi, pas à la rédaction |
 | 5 | `src/app/chantiers/[id]/export/page.tsx` écrit `entrepriseNom ?? "Votre entreprise"` | un manque se signale, il ne se maquille pas |
 | 6 | Le devis **fige** l'identité à sa création (`devis.ts`) — c'est juste, mais muet | l'avertissement : corriger vaut pour les **prochains** devis |
@@ -75,13 +75,13 @@ artisan** : son premier document partirait irrégulier, sans un mot.
 **Trois manques révélés en dessinant le lot 2, et qui sont du CODE, pas du
 dessin** (`ARCHITECTURE.md` §81) :
 
-- **le régime de TVA est deviné** — `facture-pdf.ts` imprime la mention de
-  l'article 293 B quand le taux vaut zéro. Il déduit donc le régime fiscal d'un
-  chiffre saisi chantier par chantier, et se trompe dans les deux sens. Il faut
-  une colonne `regime_tva` sur `entreprises`, et que le PDF la lise ;
-- **le numéro de TVA intracommunautaire n'existe pas**, ni en base ni sur le
-  document. *Réserve : les mentions obligatoires n'ont pas pu être vérifiées à
-  leur source d'ici. À faire confirmer avant de coder ;*
+- ~~le régime de TVA est deviné~~ — **fait le 13 août 2026** (migration 0037,
+  `ARCHITECTURE.md` §88) : il se déclare, il est figé dans la facture, et le
+  repli sur le taux demeure pour les factures antérieures ;
+- **le numéro de TVA intracommunautaire** existe en base et se saisit depuis le
+  13 août — **mais rien ne l'imprime encore**. *Réserve : les mentions
+  obligatoires n'ont pas pu être vérifiées à leur source d'ici. À faire
+  confirmer avant de le poser sur le document ;*
 - **le téléphone et l'e-mail ne s'impriment nulle part** : le bloc ÉMETTEUR de
   `document-commun.ts` porte le nom, l'adresse et le SIRET, rien d'autre. Le
   client n'a aucun moyen d'appeler l'artisan depuis son devis.

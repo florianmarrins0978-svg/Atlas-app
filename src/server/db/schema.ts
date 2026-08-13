@@ -80,6 +80,27 @@ export const entreprises = pgTable("entreprises", {
   telephone: text("telephone"),
   email: text("email"),
   iban: text("iban"),
+  /** « SASU », « EI », « EURL »… Figure sur les documents (migration 0037). */
+  formeJuridique: text("forme_juridique"),
+  /**
+   * Le régime de TVA, **déclaré et jamais déduit** (migration 0037).
+   *
+   * `facture-pdf.ts` devinait jusqu'ici la franchise en regardant si le taux
+   * appliqué valait zéro — donc il tirait une situation fiscale d'un chiffre
+   * saisi chantier par chantier. Les deux sens étaient faux : une franchise
+   * perdait sa mention obligatoire dès qu'un 20 % traînait, un assujetti voyait
+   * s'imprimer « TVA non applicable » sur une pièce comptable.
+   *
+   * Le défaut est « assujettie » : c'est celui qui ne change rien au
+   * comportement observé jusqu'ici, et une franchise se déclare d'un geste.
+   */
+  regimeTva: text("regime_tva", { enum: ["assujettie", "franchise"] })
+    .notNull()
+    .default("assujettie"),
+  /** Numéro de TVA intracommunautaire — attendu sur la facture d'un assujetti. */
+  numeroTva: text("numero_tva"),
+  /** Un IBAN à un nom différent de l'entreprise inquiète au lieu de rassurer. */
+  titulaireCompte: text("titulaire_compte"),
   // Combien de chantiers menés de front. 1 par défaut — le comportement d'avant
   // la migration 0019, où une seule équipe était supposée sans le dire.
   nombreEquipes: integer("nombre_equipes").notNull().default(1),
@@ -889,6 +910,18 @@ export const factures = pgTable(
     entrepriseNom: text("entreprise_nom").notNull(),
     entrepriseAdresse: text("entreprise_adresse"),
     entrepriseSiret: text("entreprise_siret"),
+    /**
+     * Le régime de TVA **au jour de l'émission** (migration 0037).
+     *
+     * Figé ici, et non lu en direct : une facture émise sous franchise garde sa
+     * mention « art. 293 B » même si l'artisan devient assujetti l'année
+     * suivante. La lire dans `entreprises` réécrirait le passé sur une pièce
+     * comptable.
+     *
+     * Nul pour les factures antérieures à la migration : le PDF se rabat alors
+     * sur le taux appliqué, exactement comme avant.
+     */
+    entrepriseRegimeTva: text("entreprise_regime_tva", { enum: ["assujettie", "franchise"] }),
     entrepriseEmail: text("entreprise_email"),
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),

@@ -46,6 +46,21 @@ export default async function ReglagesPage() {
       <div className="pb-24">
         <EnTeteEcran surtitre="Mon entreprise" titre="Réglages" />
 
+        {/*
+          **L'identité, en tête — c'est le préalable à tout le reste.**
+
+          Jusqu'au 13 août 2026, elle ne se saisissait QUE depuis « le devis
+          écrit à la main » : un artisan qui suivait le parcours normal — dicter,
+          chiffrer, envoyer — n'avait jamais l'occasion de saisir son SIRET, et
+          son premier devis partait sans SIRET ni IBAN, sans un mot
+          (`ARCHITECTURE.md` §81).
+        */}
+        <div className="px-[26px] pt-6">
+          <Link href="/reglages/identite" className="text-[14px] font-medium" style={{ color: colors.rust }}>
+            Mon identité : ce qui remplit mes devis et mes factures →
+          </Link>
+        </div>
+
         {/* Les équipes viennent AVANT les tarifs : c'est le réglage qui
             commande le planning, et celui que le patron vient rarement mais
             précisément chercher. */}
