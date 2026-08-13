@@ -9,6 +9,29 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### La capsule descend jusqu'aux écrans du client — il a tranché
+
+**Question posée avec deux captures**, la sienne et celle de son client :
+la capsule s'arrête-t-elle à ses écrans, ou descend-elle jusqu'aux pages que
+voit son client ? **Réponse : oui**, elle descend.
+
+Quatre boutons changent de forme, tous sur les écrans que reçoit le client de
+l'artisan : accepter le devis, demander une correction, ne pas donner suite, et
+télécharger la facture. **Leurs couleurs ne bougent pas** — le vert pin et la
+terre cuite de ces pages restent : ce qui devait rester distinct de l'outil de
+travail, c'est l'identité, pas la forme du geste.
+
+**Le champ de saisie de la même page garde ses coins doux.** La charte ne donne
+la capsule qu'à ce qu'on APPUIE, jamais à ce qu'on remplit — et un champ
+entièrement arrondi se confondrait avec un bouton.
+
+L'exception qui protégeait ces écrans dans `scripts/test-boutons-arrondis.ts`
+est **levée** : ils sont désormais gardés comme les autres. Il n'en reste
+qu'une, le chevron de retour, sur lequel il ne s'est pas prononcé — une icône
+encadrée de 32 px, que la capsule transformerait en pastille ronde.
+
+---
+
 ### La poignée de la feuille la referme, et « Créer la facture » devient une capsule
 
 **Ses deux signalements du 13 août, capture à l'appui :** *« si j'appuie sur le
