@@ -6271,3 +6271,57 @@ comptait les lignes REPLIÉES — le numéro de TVA, caché tant que la franchis
 choisie, mesurait 0 px et faisait rougir un écran sain. Une ligne qu'on ne peut
 pas toucher n'a pas de cible à tenir. Une alerte qui accuse à tort coûte plus
 cher que pas d'alerte (`AGENTS.md`).
+
+
+### Le premier jour d'un artisan : six faits qui rendent ce lot urgent
+
+**Sa remarque du 13 août 2026 :** *« quand l'application sera commercialisée, le
+devis ne comportera aucune information, il sera vierge, et c'est avec ces
+informations-là que le devis devra se remplir automatiquement ».*
+
+Elle a été vérifiée dans le code, et elle est plus lourde qu'elle n'en a l'air.
+**Six faits, tous constatés, qui s'enchaînent :**
+
+1. **Son banc ne montre JAMAIS l'état vierge.** `src/server/db/seed.ts` crée
+   « Atelier Démo » avec SIRET, adresse, téléphone, e-mail **et** IBAN. Tout ce
+   qu'il éprouve part donc d'une entreprise complète — l'écran du premier jour
+   n'a jamais été vu par personne, ni par lui, ni par nous.
+2. **Il n'existe aucun parcours d'inscription.** `creerEntreprise` n'est appelé
+   que par le jeu de départ et les suites de tests. `src/app/` ne porte que
+   `/login`. Un artisan ne peut pas créer son entreprise depuis l'application.
+3. **L'identité ne se saisit nulle part dans les réglages.** Les seuls champs
+   qui écrivent `entreprises` sont dans
+   `src/app/chantiers/[id]/devis-complet/` — c'est-à-dire **au milieu de la
+   rédaction d'un devis à la main**. Un artisan qui suit le parcours normal
+   (dictée → prix → devis) n'a jamais l'occasion de saisir son SIRET.
+4. **Rien ne vérifie l'identité avant l'envoi.** Aucun garde-fou dans
+   `chantiers/[id]/export/`. Le premier devis peut partir sans SIRET, sans
+   adresse et sans IBAN, **sans un mot**.
+5. **Un repli poli masque déjà le manque :** `src/app/chantiers/[id]/export/page.tsx` écrit
+   `entrepriseNom ?? "Votre entreprise"` dans le message au client. Le devis
+   d'un artisan sans nom part donc au nom de « Votre entreprise ».
+6. **Le devis FIGE l'identité au moment de sa création** (`devis.ts`, le devis
+   recopie `entreprise.nom`, `.siret`, `.iban`…). C'est **la bonne décision** —
+   une pièce comptable doit garder l'identité qu'elle portait le jour de son
+   émission, et non suivre les corrections d'après. Mais la conséquence n'est
+   écrite nulle part : **compléter son SIRET ce soir ne répare aucun devis déjà
+   créé**. Sans avertissement, l'artisan corrige, rouvre son ancien devis, et
+   conclut à une panne.
+
+### Ce que la planche en tire
+
+Deux écrans de plus dans `atlas-reglages-identite.html` :
+
+- **« Le premier jour »** — les réglages d'un compte neuf. Trois rubriques
+  marquées « À REMPLIR », et une phrase qui dit le mécanisme dans ses mots :
+  *« votre devis se remplira tout seul avec ce que vous mettez ici »*. Ce qui
+  peut attendre — tarifs, équipe — n'est **pas** mis sur le même plan : tout
+  marquer en rouge ferait un écran qui crie, et qu'on cesse de lire.
+- **« Ce qui est figé »** — un devis déjà créé, son SIRET absent nommé sur sa
+  ligne, et l'avertissement qui dit que la correction vaudra pour les
+  **prochains** devis.
+
+**Ce lot cesse d'être une rubrique de confort.** Tant que l'identité ne se
+saisit qu'au détour d'un devis manuel, Atlas ne peut pas être confié à un
+artisan : son premier document partirait irrégulier. `TODO.md` §0 quatervicies
+le porte, et c'est désormais le point le plus lourd de la série.

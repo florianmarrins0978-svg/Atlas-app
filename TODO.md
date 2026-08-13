@@ -54,6 +54,24 @@ d'un coup mêlerait un changement d'identité à un changement mécanique sur de
 écrans déjà validés. Elles passent à la charte **quand leur sujet est rouvert**,
 pas avant (`ARCHITECTURE.md` §80).
 
+**LE PREMIER JOUR D'UN ARTISAN — le point le plus lourd de la série.** Sa
+remarque du 13 août 2026 : *« quand l'application sera commercialisée, le devis
+sera vierge, et c'est avec ces informations-là qu'il devra se remplir
+automatiquement ».* Six faits vérifiés, qui s'enchaînent (`ARCHITECTURE.md`
+§81) :
+
+| | Ce qui est constaté | Ce qu'il faut écrire |
+|---|---|---|
+| 1 | `seed.ts` pose « Atelier Démo » **complet, IBAN compris** — son banc ne montre jamais l'état vierge | un jeu de départ qui sache démarrer à vide |
+| 2 | **Aucun parcours d'inscription** : `creerEntreprise` n'est appelé que par le seed et les tests | la création d'entreprise, depuis l'application |
+| 3 | L'identité ne s'écrit que depuis `chantiers/[id]/devis-complet/` — **au milieu d'un devis à la main** | les champs d'identité **dans les réglages** |
+| 4 | **Rien ne vérifie l'identité avant l'envoi** d'un devis | un garde-fou à l'envoi, pas à la rédaction |
+| 5 | `src/app/chantiers/[id]/export/page.tsx` écrit `entrepriseNom ?? "Votre entreprise"` | un manque se signale, il ne se maquille pas |
+| 6 | Le devis **fige** l'identité à sa création (`devis.ts`) — c'est juste, mais muet | l'avertissement : corriger vaut pour les **prochains** devis |
+
+**Tant que 2, 3 et 4 ne sont pas faits, Atlas ne peut pas être confié à un
+artisan** : son premier document partirait irrégulier, sans un mot.
+
 **Trois manques révélés en dessinant le lot 2, et qui sont du CODE, pas du
 dessin** (`ARCHITECTURE.md` §81) :
 

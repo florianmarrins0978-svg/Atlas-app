@@ -278,6 +278,17 @@ numérotation continue, conservation légale).
    entier par un modèle importé n'est pas possible sans perdre les totaux, la
    TVA et la numérotation — à dire avant de dessiner le lot « Documents ».
 
+**⚠ LE PREMIER JOUR D'UN ARTISAN N'A JAMAIS ÉTÉ VU.** Sa remarque du 13 août :
+*« quand l'application sera commercialisée, le devis sera vierge, et c'est avec
+ces informations-là qu'il devra se remplir automatiquement ».* Ne pas la sous-
+estimer : `seed.ts` pose une entreprise **complète** (« Atelier Démo », SIRET,
+IBAN), donc tout ce qui est éprouvé ici et sur son banc part d'un état rempli.
+Or **il n'existe aucun parcours d'inscription**, **l'identité ne se saisit que
+dans le devis écrit à la main**, et **rien ne la vérifie avant l'envoi**. Le
+premier devis d'un vrai artisan partirait sans SIRET ni IBAN, sans un mot. Le
+détail des six faits est dans `ARCHITECTURE.md` §81, la liste de travail dans
+`TODO.md` §0 quatervicies.
+
 **Lot 2 fait le 13 août : l'identité de l'entreprise**
 (`maquettes/atlas-reglages-identite.html`, `ARCHITECTURE.md` §81). Il a révélé
 **trois manques qui sont du code, pas du dessin** : le régime de TVA est deviné

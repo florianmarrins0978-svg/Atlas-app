@@ -159,6 +159,7 @@
             font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
   .bas span.actif{color:var(--e-encre);transform:translateY(-2px)}
   .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;background:var(--e-bronze)}
+  .bas i.q1{left:14px}
   .bas i.q4{left:calc(14px + 3*(100% - 28px)/4)}
 
   /* ═══ Un bloc de section ═════════════════════════════════════════════ */
@@ -179,6 +180,7 @@
   .va{display:block;width:100%;border:0;background:transparent;padding:0;margin:0;
       -webkit-appearance:none;appearance:none;border-radius:0;
       font:400 17px/1.35 ui-serif,Georgia,serif;color:var(--e-encre)}
+  .va.pale{color:var(--e-gris)}
   .va::placeholder{color:var(--e-gris);opacity:.66}
   .va:focus{outline:none}
   .ch:has(.va:focus){border-bottom-color:var(--e-bronze)}
@@ -221,6 +223,24 @@
   .mot b{color:var(--e-encre);font-weight:600}
   .mot.grave{border-left-color:var(--e-alerte)}
   .mot.grave b{color:var(--e-alerte)}
+
+  /* ═══ La liste d'un compte neuf ═══════════════════════════════════════ */
+  /* Reprise de la grammaire du lot 1 : une rubrique, son chevron, sa ligne de
+     situation. S'y ajoute l'ÉTAT — rempli, ou manquant — parce qu'à la première
+     ouverture, c'est la seule chose que l'artisan a besoin de savoir. */
+  .rub{display:flex;align-items:center;gap:14px;padding:14px 0;min-height:54px;
+       border-bottom:1px solid var(--e-trait)}
+  .bloc .rub:last-child{border-bottom:0}
+  .rub .txt{flex:1;min-width:0}
+  .rub .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif;color:var(--e-encre)}
+  .rub .dit{display:block;margin-top:4px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  .rub .chev{flex:none;width:8px;height:8px;border-right:1.5px solid var(--e-trait);
+             border-top:1.5px solid var(--e-trait);transform:rotate(45deg)}
+  .rub .etat{flex:none;color:var(--e-bronze)}
+  /* Le manque porte la couleur d'alerte ET le mot : une information qui n'existe
+     qu'en couleur n'existe pas pour tout le monde. */
+  .rub.vide .etat{color:var(--e-alerte)}
+  .rub.vide .nom{color:var(--e-encre)}
 
   /* Un champ qu'il faut remplir, et qui ne l'est pas. Le manque se voit sur la
      LIGNE, pas seulement dans une phrase en bas d'écran. */
@@ -518,6 +538,101 @@
         Le manque se voit <b>sur la ligne</b>, pas seulement dans une phrase en
         bas d&apos;écran — celle-ci se lit après avoir défilé, la ligne se voit
         tout de suite.
+      </p>
+    </div>
+
+    <!-- ── 6. À la première ouverture : tout est vierge ────────────────── -->
+    <div class="prop">
+      <p class="sous">Le premier jour</p>
+      <div class="tel"><div class="ecran" data-s="neuf">
+        <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Réglages</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <!-- CE QUE LE PATRON A RAPPELÉ LE 13 AOÛT 2026 : « quand
+               l'application sera commercialisée, le devis ne comportera aucune
+               information, il sera vierge, et c'est avec ces informations-là
+               qu'il devra se remplir automatiquement ».
+
+               Son banc d'essai ne montre JAMAIS cet état : le jeu de départ
+               pose « Atelier Démo » avec son SIRET, son adresse et son IBAN
+               (`src/server/db/seed.ts`). L'écran qu'il regarde est donc
+               toujours rempli, et le premier jour d'un vrai artisan n'a jamais
+               été vu par personne. -->
+          <p class="mot grave" data-s="premier">
+            <b>Votre devis se remplira tout seul avec ce que vous mettez ici.</b>
+            Tant que ces lignes sont vides, elles manqueront sur chaque
+            document — Atlas n&apos;invente rien à votre place.
+          </p>
+
+          <div class="bloc">
+            <p class="t caps">Avant votre premier devis</p>
+            <div class="rub vide"><span class="txt"><span class="nom">Identité</span><span class="dit">Nom, adresse, SIRET</span></span><span class="etat caps">À remplir</span><span class="chev"></span></div>
+            <div class="rub vide"><span class="txt"><span class="nom">TVA</span><span class="dit">Franchise, ou assujettie</span></span><span class="etat caps">À remplir</span><span class="chev"></span></div>
+            <div class="rub vide"><span class="txt"><span class="nom">Informations bancaires</span><span class="dit">L&apos;IBAN sur lequel vous serez payé</span></span><span class="etat caps">À remplir</span><span class="chev"></span></div>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Quand vous voudrez</p>
+            <div class="rub"><span class="txt"><span class="nom">Tarifs &amp; catalogue</span><span class="dit">Se remplira aussi de vos devis</span></span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Équipe</span><span class="dit">Vous seul, pour l&apos;instant</span></span><span class="chev"></span></div>
+          </div>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Cet écran n&apos;existe nulle part aujourd&apos;hui.</b> L&apos;identité
+        ne se saisit que depuis « le devis écrit à la main » — donc au milieu de
+        la rédaction d&apos;un devis, jamais avant.
+      </p>
+    </div>
+
+    <!-- ── 7. Le piège : le devis fige ce qu'il a trouvé ───────────────── -->
+    <div class="prop">
+      <p class="sous">Ce qui est figé</p>
+      <div class="tel"><div class="ecran" data-s="fige">
+        <div class="tete"><p class="sur caps">Devis nº 2026-004</p><h1>Envoyer</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <!-- LE PIÈGE, ET IL EST DANS LE CODE : `devis.ts` recopie l'identité
+               de l'entreprise DANS le devis au moment où il est créé. C'est la
+               bonne décision — une pièce comptable doit garder l'identité
+               qu'elle portait le jour de son émission, et non suivre les
+               corrections d'après.
+
+               Mais la conséquence n'est écrite nulle part : compléter son SIRET
+               ce soir ne répare AUCUN devis déjà créé. Sans cet avertissement,
+               l'artisan corrige, regarde son ancien devis, et croit à une
+               panne. -->
+          <div class="bloc">
+            <p class="t caps">Ce que votre client recevra</p>
+            <div class="ch">
+              <span class="et caps">Émetteur</span>
+              <span class="va" data-s="fige-nom">Arborea</span>
+              <span class="deduit">12 route des Coteaux, 78200 Mantes-la-Jolie</span>
+            </div>
+            <div class="ch creux" data-s="fige-siret">
+              <span class="et caps">SIRET — absent de ce devis</span>
+              <span class="va pale">Non renseigné le jour de sa création</span>
+            </div>
+          </div>
+
+          <p class="mot grave" data-s="avert">
+            <b>Ce devis a figé vos informations le jour où il a été créé.</b>
+            Compléter votre SIRET maintenant vaudra pour les <b>prochains</b>
+            devis — celui-ci garde ce qu&apos;il avait, parce qu&apos;une pièce
+            déjà remise ne se réécrit pas.
+          </p>
+
+        </div>
+        <div class="bas"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span><i class="q1"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Rien n&apos;avertit de cela aujourd&apos;hui</b>, et rien ne vérifie
+        l&apos;identité avant l&apos;envoi. Le premier devis d&apos;un artisan
+        peut partir sans SIRET ni IBAN, sans un mot.
       </p>
     </div>
 

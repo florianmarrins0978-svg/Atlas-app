@@ -499,7 +499,12 @@ Voir `TODO.md` pour le détail et l'ordre.
   est deviné d'après le taux appliqué** — donc faux dans les deux sens sur une
   pièce comptable —, que le **numéro de TVA intracommunautaire n'existe nulle
   part**, et que le **téléphone et l'e-mail ne s'impriment sur aucun document**
-  (`ARCHITECTURE.md` §81).
+  (`ARCHITECTURE.md` §81). **Et surtout : le premier jour d'un artisan n'a
+  jamais été vu.** Le jeu de départ pose une entreprise complète, il n'existe
+  aucun parcours d'inscription, l'identité ne se saisit que dans le devis écrit
+  à la main, et rien ne la vérifie avant l'envoi — le premier devis d'un vrai
+  artisan partirait sans SIRET ni IBAN. **C'est bloquant pour la
+  commercialisation**, au même titre que les points de `docs/A-FAIRE.md`.
 
 - **Agenda Google** — la connexion du compte demande des identifiants que je n'ai
   pas ; le reste (lecture des disponibilités, écriture de l'intervention) est

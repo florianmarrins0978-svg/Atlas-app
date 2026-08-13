@@ -39,6 +39,22 @@ ligne** (« SIRET — manquant », trait rouge) en disant ce qu'il empêche : «
 factures ne sont pas conformes », jamais « champ requis ». Le champ reste vide :
 un exemple plausible finirait imprimé sur une pièce comptable.
 
+**Rappel du patron le même jour, et il change le poids de ce lot :** *« quand
+l'application sera commercialisée, le devis sera vierge, et c'est avec ces
+informations-là qu'il devra se remplir automatiquement ».* Vérifié dans le code,
+et l'enchaînement est lourd — **son banc ne montre jamais cet état** (le jeu de
+départ pose « Atelier Démo » complet, IBAN compris) ; **il n'existe aucun
+parcours d'inscription** ; **l'identité ne se saisit que dans le devis écrit à
+la main**, jamais dans les réglages ; **rien ne la vérifie avant l'envoi** ; un
+repli poli écrit déjà « Votre entreprise » à la place d'un nom absent ; et **le
+devis fige l'identité à sa création**, si bien que corriger son SIRET ce soir ne
+répare aucun devis déjà fait.
+
+Deux écrans de plus le montrent : **« Le premier jour »** (compte neuf, trois
+rubriques « À REMPLIR », et ce qui peut attendre laissé au calme) et **« Ce qui
+est figé »** (un devis dont le SIRET manque, et pourquoi la correction ne vaudra
+que pour les suivants).
+
 **La charte devient un module partagé**, `maquettes/charte.mjs` : couleurs
 comparées aux jetons, absence d'ombre, grammaire des écrans, retrait de 26 px.
 Une seule implémentation pour toutes les planches (`CLAUDE.md` §3).

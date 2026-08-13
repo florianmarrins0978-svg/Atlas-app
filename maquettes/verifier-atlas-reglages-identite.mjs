@@ -52,7 +52,8 @@ const page = await ctx.newPage();
 await page.goto("file://" + path.resolve(ESSAI));
 
 const IDENT = '[data-s="identite"]', SIRET = '[data-s="siret"]', TVA = '[data-s="tva"]',
-      BANQUE = '[data-s="banque"]', MANQUE = '[data-s="manque"]';
+      BANQUE = '[data-s="banque"]', MANQUE = '[data-s="manque"]',
+      NEUF = '[data-s="neuf"]', FIGE = '[data-s="fige"]';
 const rect = async (s) => page.$eval(s, (e) => {
   const r = e.getBoundingClientRect();
   return { x: r.x, y: r.y, w: r.width, h: r.height };
@@ -190,10 +191,85 @@ try {
   await (await page.$(MANQUE)).screenshot({ path: `${SORTIE}/reglages-identite-manque.png` });
 } catch (e) { echecs.push("manque · interrompu — " + String(e.message).split("\n")[0]); }
 
-// ── 6. La grammaire des écrans, et les cibles ────────────────────────────
+// ── 6. LE PREMIER JOUR : tout est vierge, et le devis s'en remplira ──────
+//
+// Sa remarque du 13 août 2026 : « quand l'application sera commercialisée, le
+// devis ne comportera aucune information, il sera vierge, et c'est avec ces
+// informations-là qu'il devra se remplir automatiquement ».
+//
+// Son banc ne montre JAMAIS cet état : `src/server/db/seed.ts` pose « Atelier
+// Démo » avec SIRET, adresse et IBAN. L'écran qu'il regarde est toujours
+// rempli — d'où le besoin de dessiner celui-là, que personne n'a jamais vu.
+try {
+  await cadrer(NEUF);
+  const dit = await txt(`${NEUF} [data-s="premier"]`);
+  verifie("le premier écran dit que le devis se remplira de ces informations",
+    /devis.*(remplira|remplir)/i.test(dit), dit.slice(0, 60));
+  verifie("et qu'Atlas n'invente rien à la place", /invente/i.test(dit));
+
+  const aRemplir = await page.$$eval(`${NEUF} .rub.vide`, (l) =>
+    l.map((e) => ({
+      nom: e.querySelector(".nom").textContent.trim(),
+      etat: e.querySelector(".etat")?.textContent.trim() ?? "",
+    })));
+  verifie("les trois rubriques à remplir avant le premier devis sont nommées",
+    aRemplir.map((r) => r.nom).join("|") === "Identité|TVA|Informations bancaires",
+    aRemplir.map((r) => r.nom).join("|"));
+  // Le manque porte un MOT, pas seulement une couleur : un écran qui ne dit
+  // « vide » qu'en rouge ne le dit pas à tout le monde.
+  verifie("et chacune porte le mot, pas seulement la couleur",
+    aRemplir.length === 3 && aRemplir.every((r) => /à remplir/i.test(r.etat)),
+    aRemplir.map((r) => r.etat).join("|"));
+  const couleur = await page.$eval(`${NEUF} .rub.vide .etat`, (e) => getComputedStyle(e).color);
+  verifie("dans la couleur d'alerte de la charte", couleur === "rgb(156, 59, 46)", couleur);
+
+  // Ce qui n'est pas un préalable ne doit pas être mis sur le même plan : tout
+  // marquer « à remplir » ferait un écran qui crie, et qu'on cesse de lire.
+  const plusTard = await page.$$eval(`${NEUF} .rub:not(.vide) .nom`, (l) =>
+    l.map((e) => e.textContent.trim()));
+  verifie("et ce qui peut attendre n'est pas mis sur le même plan",
+    plusTard.length > 0 && plusTard.every((n) => !/identité|TVA|bancaire/i.test(n)),
+    plusTard.join("|"));
+  await (await page.$(NEUF)).screenshot({ path: `${SORTIE}/reglages-identite-premier-jour.png` });
+} catch (e) { echecs.push("premier jour · interrompu — " + String(e.message).split("\n")[0]); }
+
+// ── 7. LE DEVIS FIGE CE QU'IL A TROUVÉ ───────────────────────────────────
+//
+// `src/server/repositories/devis.ts` recopie l'identité DANS le devis à sa
+// création. C'est la bonne décision — une pièce comptable garde l'identité
+// qu'elle portait le jour de son émission. Mais la conséquence n'est écrite
+// nulle part : compléter son SIRET ce soir ne répare aucun devis déjà créé, et
+// sans un mot l'artisan croira à une panne.
+try {
+  await cadrer(FIGE);
+  const avert = await txt(`${FIGE} [data-s="avert"]`);
+  verifie("l'écran dit que le devis a figé les informations",
+    /figé/i.test(avert), avert.slice(0, 50));
+  verifie("et que la correction vaudra pour les PROCHAINS devis",
+    /prochain/i.test(avert), avert.slice(0, 80));
+  verifie("le SIRET absent est nommé sur sa ligne, pas seulement en bas",
+    /absent|manquant/i.test(await txt(`${FIGE} [data-s="fige-siret"] .et`)));
+
+  // Le bandeau doit désigner l'écran où l'on EST : celui-ci est une fiche de
+  // chantier, pas un réglage. Un trait sous le mauvais mot désigne un écran où
+  // l'on n'est pas (`ARCHITECTURE.md` §78).
+  verifie("le bandeau désigne les chantiers, pas les réglages",
+    (await txt(`${FIGE} .bas .actif`)).toLowerCase() === "chantiers");
+  const sl = await page.$eval(FIGE, (r) => {
+    const t = r.querySelector(".bas i").getBoundingClientRect();
+    const a = r.querySelector(".bas .actif");
+    const g = document.createRange(); g.selectNodeContents(a);
+    const m = g.getBoundingClientRect();
+    return (t.x + t.width / 2) - (m.x + m.width / 2);
+  });
+  verifie("et son trait tombe sous « Chantiers »", Math.abs(sl) < 8, `${sl.toFixed(1)} px`);
+  await (await page.$(FIGE)).screenshot({ path: `${SORTIE}/reglages-identite-fige.png` });
+} catch (e) { echecs.push("devis figé · interrompu — " + String(e.message).split("\n")[0]); }
+
+// ── 8. La grammaire des écrans, et les cibles ────────────────────────────
 try {
   for (const [nom, sel] of [["identité", IDENT], ["SIRET", SIRET], ["TVA", TVA],
-                            ["banque", BANQUE], ["manque", MANQUE]]) {
+                            ["banque", BANQUE], ["manque", MANQUE], ["premier jour", NEUF]]) {
     await cadrer(sel);
     verifie(`le bandeau de « ${nom} » désigne les réglages`,
       (await txt(`${sel} .bas .actif`)).toLowerCase() === "réglages");
@@ -249,7 +325,7 @@ try {
   const large = await pg.$eval(IDENT, (e) => e.getBoundingClientRect().width);
   verifie("sur grand écran, la loupe agrandit pour de bon", large > 520, `${large.toFixed(0)} px`);
   const hauteurs = await pg.$$eval(".prop", (l) => l.map((e) => Math.round(e.getBoundingClientRect().y)));
-  verifie("une planche par rangée, et non cinq de front",
+  verifie("une planche par rangée, et non sept de front",
     new Set(hauteurs).size === hauteurs.length, hauteurs.join(" | "));
   const deborde = await pg.evaluate(
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
