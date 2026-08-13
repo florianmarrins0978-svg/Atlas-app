@@ -5641,6 +5641,23 @@ Le cas est écrit, en tête de la section de dépannage puisque c'est la premiè
 chose qu'il voit : recharger, rouvrir depuis `github.com/codespaces`, et surtout
 aller droit à `https://<nom-de-l-espace>-3000.app.github.dev` sans attendre
 l'éditeur.
+### Deux concurrents directs, trouvés en cherchant un nom
+
+Le patron a demandé quel nom donner à l'application. « Atlas » n'avait jamais
+été choisi ni vérifié — c'était un nom de travail, et le mot s'est révélé
+massivement occupé dans les classes de marque du logiciel.
+
+En vérifiant l'occupation des candidats, deux **concurrents directs** sont
+apparus : `ouvra.app`, qui a pris un métier (plombiers-chauffagistes, catalogue
+et TVA du secteur pré-remplis), et `fabro.app`, qui a pris l'absence de réseau
+(100 % hors ligne, données sur le téléphone).
+
+Consigné dans `PROJECT_STATE.md` parce que ce n'est pas une anecdote de
+recherche de nom : une conversation qui croit le créneau vierge se trompera
+d'arbitrage. Notre angle — la dictée et l'agent — reste distinct des deux, mais
+il n'est plus une évidence qu'on peut laisser sans défense.
+
+Le nom définitif n'est pas tranché : rien n'a été renommé.
 
 ### Le devis est enfin celui du patron
 

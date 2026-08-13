@@ -351,6 +351,37 @@ qu'on le rouvre.
 
 ---
 
+## Le terrain n'est pas vierge : deux concurrents directs
+
+Découverts le 2026-08-03 **en cherchant un nom** — pas au cours d'une étude de
+marché. C'est écrit ici parce qu'une conversation qui l'ignore raisonnerait
+comme si le créneau était libre, et il ne l'est pas.
+
+| Concurrent | Ce qu'il a pris | Ce qu'on en apprend |
+|---|---|---|
+| [`ouvra.app`](https://ouvra.app/) — SAS Automate, Paris | **Un métier** : plombiers-chauffagistes uniquement. Devis signé sur place, Factur-X 2026, relances automatiques. Catalogue de prestations pré-rempli, TVA du secteur. | Se restreindre à un métier permet de livrer un catalogue et des mentions légales *déjà justes*. C'est exactement ce que notre §3 d'`AGENT.md` refuse de deviner. |
+| [`fabro.app`](https://fabro.app/en/) — app iOS artisans | **L'absence de réseau** : 100 % hors ligne, données sur le téléphone, multi-pays. | Sur un chantier, il n'y a pas de réseau. Notre parcours suppose l'inverse à chaque étape. |
+
+**Notre angle reste distinct** : ni l'un ni l'autre ne part de la **dictée** ni
+ne fait travailler un **agent** entre la note vocale et la facture. Ils
+numérisent un formulaire ; nous supprimons le formulaire. Mais l'angle n'est
+plus une évidence à ne pas défendre.
+
+## Le nom « Atlas » est provisoire, et probablement indéposable
+
+« Atlas » n'a jamais été choisi ni vérifié : c'est un nom de travail. Le mot est
+massivement occupé dans les classes 9 et 42, ce qui rend le dépôt de marque et
+la visibilité App Store douteux. **Un nom définitif est en cours d'arbitrage
+avec le patron** (branche `claude/app-name-choice-hk5jz4`) ; rien n'est renommé
+tant qu'il n'a pas tranché.
+
+Onze candidats ont déjà été écartés sur occupation vérifiée — Silex, Ouvra,
+Vulcain, Sève, Orme, Fabro, Amadou, Braise (voisin de Braze), entre autres. La
+leçon vaut pour les suivants : **vérifier l'occupation avant de proposer**, un
+mot ordinaire libre en classes 9/42 est devenu l'exception.
+
+---
+
 ## Réserves assumées, à ne pas « corriger » par erreur
 
 - **Atlas prépare, il n'émet pas.** La facture et le relevé de TVA sont
