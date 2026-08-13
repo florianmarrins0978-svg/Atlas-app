@@ -7,6 +7,39 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-13
+
+### « Chez Martins » devient « Martins »
+
+**Le patron, capture à l'appui :** *« corrige le nom, Mr Martins, pas chez
+Martins ! »* Le préfixe se voulait sa phrase à lui ; en tête d'une liste qu'on
+parcourt du pouce, il fait lire « Chez » avant de lire QUI.
+
+**La civilité vient de lui, jamais de nous** : « M. » déduit d'un patronyme
+supposerait un genre — « Martins » peut être une femme. Le champ de création
+propose « M. Bernard » en exemple ; ce qu'il tape s'affiche tel quel.
+
+**Une migration accompagne le code**, sinon la correction n'aurait valu que pour
+les chantiers à venir : le nom est écrit une fois, à la création, et jamais
+retouché. Elle ne défait que les étiquettes que nous avons fabriquées — jamais
+un nom qu'il aurait saisi. `ARCHITECTURE.md` §75.
+
+### Cinq libellés pour la ligne sous le nom — à son choix
+
+Il veut y lire que le devis est parti et qu'on attend. Cinq propositions
+l'attendent dans `docs/maquettes/40-la-ligne-sous-le-nom.html`, **rien n'est
+codé**.
+
+**La planche n'est pas dessinée, elle est photographiée.** La première version
+l'était, et elle mentait : une page HTML ordinaire rend ces mots plus larges
+qu'Inter dans l'application — au dessin, même le libellé ACTUEL passait sur deux
+lignes alors qu'il tient sur une chez lui. La mesure sur l'écran réel a révélé
+mieux qu'un oui/non : **la largeur de son téléphone fait partie de la
+décision.** Le libellé actuel est déjà à la limite — il tient sur un 430 px,
+pas sur un 390. `ARCHITECTURE.md` §76.
+
+---
+
 ## 2026-08-12
 
 ### Deux dates se choisissent enfin à même le calendrier

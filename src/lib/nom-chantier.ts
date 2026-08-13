@@ -25,9 +25,20 @@ export type SourceNomChantier = {
 };
 
 export function nomDuChantier({ nomClient, adresseChantier, jour }: SourceNomChantier): string {
-  // « Chez M. Bernard » : c'est la phrase de l'artisan, pas celle d'un logiciel.
+  // **Le nom du client, tel qu'il l'a écrit — sans « Chez ».**
+  //
+  // Le patron, le 13 août 2026, capture à l'appui : *« corrige le nom, Mr
+  // Martins, pas chez Martins ! »* Le préfixe se voulait sa phrase à lui
+  // (« chez M. Bernard ») ; à l'écran, en tête de liste, il repousse le nom
+  // d'un mot et fait lire « Chez » avant de lire QUI. Sur une liste qu'on
+  // parcourt du pouce, c'est le nom qu'on cherche.
+  //
+  // **La civilité vient de lui, jamais de nous.** « M. » déduit d'un patronyme
+  // suppose un genre : « Martins » peut être une femme, et c'est exactement ce
+  // qu'interdit `CLAUDE.md` §4 — ne rien inventer. Le champ de création propose
+  // déjà « M. Bernard » en exemple : ce qu'il tape s'affiche tel quel.
   const client = nomClient?.trim();
-  if (client) return `Chez ${client}`;
+  if (client) return client;
 
   // Pas de client nommé : le lieu identifie le chantier aussi bien.
   const adresse = adresseChantier?.trim();

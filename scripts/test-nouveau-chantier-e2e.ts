@@ -55,11 +55,12 @@ async function main() {
   // La page hub relit le chantier depuis la base — si ces valeurs s'affichent,
   // la création a bien été persistée (pas de simulation restante).
   //
-  // Le nom attendu est celui que déduit `src/lib/nom-chantier.ts` : « Chez
-  // <client> ». C'est la phrase de l'artisan, pas celle d'un logiciel.
-  await page.waitForSelector(`text=Chez ${client}`, { timeout: 5000 });
+  // Le nom attendu est celui que déduit `src/lib/nom-chantier.ts` : **le nom du
+  // client, tel qu'il l'a écrit**. Le « Chez » a sauté le 13 août 2026, sur sa
+  // capture — « corrige le nom, Mr Martins, pas chez Martins ! ».
+  await page.waitForSelector(`text=${client}`, { timeout: 5000 });
   assert.ok(
-    await page.locator(`text=Chez ${client}`).isVisible(),
+    await page.locator(`text=${client}`).first().isVisible(),
     "Le chantier n'a pas pris le nom de son client : il est devenu impossible à reconnaître."
   );
   assert.ok(await page.locator("text=Ajouter des photos").isVisible(), "Un chantier neuf doit proposer 'Ajouter des photos'");
@@ -67,8 +68,8 @@ async function main() {
   // Revérifie via la liste (autre écran, autre requête) que le chantier y figure aussi.
   await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
   assert.ok(
-    await page.locator(`text=Chez ${client}`).isVisible(),
-    "Le nouveau chantier doit apparaître dans la liste, sous son nom déduit"
+    await page.locator(`text=${client}`).first().isVisible(),
+    "Le nouveau chantier doit apparaître dans la liste, sous le nom de son client"
   );
 
   // --- Sans rien du tout ---------------------------------------------------

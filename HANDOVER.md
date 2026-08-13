@@ -304,6 +304,31 @@ raisonnement vaut pour `src/app/documents-legaux/formulaire.tsx`.
 
 ## Ce qui vient d'être terminé
 
+**LE NOM DU CHANTIER PERD SON « CHEZ » (13 août).** « Chez Martins » devient
+« Martins » (`ARCHITECTURE.md` §75).
+
+**Deux choses à ne pas défaire :**
+
+1. **La civilité vient de lui.** Ne jamais préfixer « M. » : cela supposerait un
+   genre. Le champ de création propose « M. Bernard » en exemple.
+2. **Une migration accompagne le changement** (`0035`), parce que `chantiers.nom`
+   est écrit une fois à la création et jamais retouché. Elle est volontairement
+   étroite — elle ne défait que ce que nous avons fabriqué. Devant un futur
+   écran de renommage, s'en souvenir.
+
+**⚠ EN ATTENTE DE SON CHOIX : la ligne sous le nom.** Cinq libellés dans
+`docs/maquettes/40-la-ligne-sous-le-nom.html`, rien n'est codé.
+
+**Et une règle qui vaut au-delà de ce lot : un libellé se mesure SUR L'ÉCRAN.**
+Une maquette HTML rend les mots plus larges qu'Inter dans l'application — la
+première planche faisait passer sur deux lignes un libellé qui tient sur une
+chez lui, et aurait donc écarté les bons libellés pour une raison fausse.
+`scripts/engendrer-maquette-ligne-chantier.mts` joue chaque libellé dans
+l'application et le photographie à 430 px (son téléphone) **et** à 390 px. La
+largeur de son téléphone fait partie de la décision : le libellé actuel est
+déjà à la limite.
+
+
 **LE CALENDRIER D'ENVOI NE MARQUAIT QU'UN JOUR (12 août).** Il ne pouvait
 proposer qu'une date dès qu'il la prenait au calendrier, alors que son client
 doit pouvoir choisir entre deux (`ARCHITECTURE.md` §74).

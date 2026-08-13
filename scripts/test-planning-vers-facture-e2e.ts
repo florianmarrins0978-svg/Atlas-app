@@ -78,7 +78,7 @@ async function chantierPlanifie(
 ) {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   const client = `Mme Costa ${suffixe} ${Date.now()}`;
-  const nom = `Chez ${client}`;
+  const nom = client;
   await page.fill('input[placeholder="M. Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
   await page.click('button:has-text("Créer le chantier")');

@@ -5584,3 +5584,82 @@ maintenant son propre chantier, du client au devis parti.
 **La règle qui en sort :** une suite qui dépend des restes d'une autre n'éprouve
 pas ce qu'elle croit — et le jour où elle rougit, elle désigne le mauvais
 coupable.
+
+---
+
+## 75. Le nom d'un chantier, c'est le nom de son client — sans « Chez »
+
+**Le patron, le 13 août 2026, capture à l'appui :** *« corrige le nom, Mr
+Martins, pas chez Martins ! »*
+
+`nomDuChantier` fabriquait « Chez <client> » depuis le 5 août. L'intention était
+juste — c'est ainsi qu'un élagueur en parle — mais à l'écran, en tête d'une
+liste qu'on parcourt du pouce, le préfixe fait lire **« Chez » avant de lire
+QUI**, et repousse le nom d'un mot vers la droite. Le nom du client s'affiche
+désormais tel qu'il l'a écrit.
+
+### La civilité vient de lui, jamais de nous
+
+Écrire « M. Martins » à sa place supposerait un genre — « Martins » peut être
+une femme. C'est très exactement ce qu'interdit `CLAUDE.md` §4 : ne rien
+inventer. Le champ de création propose déjà « M. Bernard » en exemple ; pour
+lire « Mr Martins », il écrit « Mr Martins ».
+
+### Pourquoi une migration, et pourquoi elle est aussi étroite
+
+`chantiers.nom` est **écrit une fois, à la création**, et jamais modifié
+ensuite : sans migration, la correction n'aurait valu que pour les chantiers à
+venir, et celui qu'il a sous les yeux aurait gardé son « Chez ». Il aurait dit —
+à raison — que rien n'a été corrigé.
+
+`0035_nom_chantier_sans_chez.sql` ne retire le préfixe **que lorsque le reste du
+nom est exactement le nom du client rattaché**, c'est-à-dire uniquement les
+étiquettes que nous avons fabriquées. Un `LIKE 'Chez %'` seul aurait aussi
+réécrit « Chez les Dupont, portail du fond » s'il l'avait un jour saisi : il ne
+le peut pas aujourd'hui, mais une migration se relit dans six mois, quand un
+écran de renommage existera peut-être. **Réécrire ce qu'un patron a tapé n'est
+pas une correction, c'est une perte.**
+
+`intituleDuChantier` n'a pas bougé : elle continue de reconnaître les anciens
+noms (« Chez M. Bernard ») pour ne pas afficher le client en double.
+
+---
+
+## 76. Mesurer un libellé sur l'écran, jamais sur une maquette
+
+**Né de sa demande du 13 août** : *« il faut le notifier sous le nom […] je te
+laisse libre de proposer des alternatives »*. Cinq libellés étaient en jeu pour
+la troisième ligne de la liste des chantiers.
+
+**La première planche était dessinée à la main, et elle mentait.** Une page HTML
+ordinaire rend ces mots plus larges qu'Inter dans l'application : au dessin,
+même le libellé ACTUEL passait sur deux lignes, alors qu'il tient sur une chez
+lui. La maquette aurait donc découragé les libellés longs pour une raison
+fausse.
+
+**Ce qui a tranché, c'est la mesure sur l'écran réel** — et elle a révélé mieux
+qu'un oui/non :
+
+| Libellé | 390 px | 430 px (son téléphone) |
+|---|---|---|
+| « En attente de réponse · sans photo » (actuel) | 2 lignes | 1 ligne |
+| « Devis envoyé · en attente de réponse » | 2 | 1 |
+| « Devis envoyé · sans réponse » | 1 | 1 |
+| « Envoyé il y a 3 jours · sans réponse » | 2 | 1 |
+| « Envoyé le 10 août · valable jusqu'au 24 » | 2 | 2 |
+| « Devis 1 240 € envoyé · sans réponse depuis 3 jours » | 2 | 2 |
+
+**La largeur de son téléphone fait partie de la décision.** Le libellé actuel est
+déjà à la limite : il tient sur un 430 px, pas sur un 390. Toute rallonge
+déborde ailleurs que chez lui.
+
+`scripts/engendrer-maquette-ligne-chantier.mts` joue donc chaque libellé DANS
+l'application, le photographie aux deux largeurs, et embarque les captures dans
+la planche (`docs/maquettes/40-la-ligne-sous-le-nom.html`). Ce ne sont pas des
+dessins : c'est l'écran.
+
+**Un défaut vu à l'œil sur la planche assemblée**, et qu'aucun contrôle ne
+cherchait : la variante E affichait le libellé de D. Le script désignait la
+ligne d'état AVANT de retirer celle injectée par la variante précédente —
+`p:last-of-type` tombait alors sur cette ligne-là, qu'on retirait aussitôt, et
+le texte partait sur un nœud détaché. **Une capture s'inspecte comme un écran.**

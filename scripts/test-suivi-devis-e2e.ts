@@ -54,7 +54,7 @@ async function devisParti(page: Page, suffixe: string) {
   // (« Chez … », voir `src/lib/nom-chantier.ts`). C'est donc le client qui
   // porte la marque unique, et le repère suit.
   const client = `M. Bernard ${suffixe} ${Date.now()}`;
-  const nom = `Chez ${client}`;
+  const nom = client;
   await page.fill('input[placeholder="M. Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
   await page.click('button:has-text("Créer le chantier")');

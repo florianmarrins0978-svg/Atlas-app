@@ -28,14 +28,23 @@ const JOUR = "2026-08-05";
 
 console.log("=== Le nom se déduit de ce qui a été donné ===");
 
-cas("un client nommé donne « Chez M. Bernard »", () => {
-  assert.equal(nomDuChantier({ nomClient: "M. Bernard", jour: JOUR }), "Chez M. Bernard");
+cas("un client nommé donne son nom, tel qu'il l'a écrit", () => {
+  // **Plus de « Chez », depuis le 13 août 2026** — sa capture : « corrige le
+  // nom, Mr Martins, pas chez Martins ! ». Le préfixe repoussait le nom d'un
+  // mot et faisait lire « Chez » avant de lire QUI.
+  assert.equal(nomDuChantier({ nomClient: "M. Bernard", jour: JOUR }), "M. Bernard");
+});
+
+cas("aucune civilité n'est ajoutée à un patronyme nu", () => {
+  // « M. » déduit d'un nom suppose un genre : « Martins » peut être une femme.
+  // Ce qu'il tape s'affiche, rien de plus (`CLAUDE.md` §4).
+  assert.equal(nomDuChantier({ nomClient: "Martins", jour: JOUR }), "Martins");
 });
 
 cas("le client prime sur l'adresse — c'est ainsi qu'il en parle", () => {
   assert.equal(
     nomDuChantier({ nomClient: "M. Bernard", adresseChantier: "12 rue des Lilas", jour: JOUR }),
-    "Chez M. Bernard"
+    "M. Bernard"
   );
 });
 
@@ -59,7 +68,7 @@ cas("null et undefined se traversent sans planter", () => {
 
 cas("INVARIANT — rien n'apparaît qui n'ait été donné", () => {
   // Le nom rendu ne contient que des mots venus de la saisie (ou le mot
-  // « Chez »/« Chantier du » et la date, qui n'affirment rien de faux).
+  // « Chantier du » et la date, qui n'affirment rien de faux).
   const donnees = [
     { nomClient: "Mme Roux", jour: JOUR },
     { adresseChantier: "3 chemin du Bois", jour: JOUR },
