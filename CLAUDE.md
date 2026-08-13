@@ -255,6 +255,25 @@ compte `postgres` du système. Les migrations tournent sous le rôle
 **propriétaire** : `atlas_app` n'a aucun droit de DDL, et l'oublier produit un
 « permission denied for schema public » qui envoie chercher au mauvais endroit.
 
+**Et l'inverse est pire, parce qu'il RÉUSSIT.** Migrer avec le rôle `postgres`
+— un raccourci tentant, puisqu'il traverse la RLS et qu'on l'a déjà sous la main
+pour les suites navigateur — ne se plaint de rien : les tables se créent,
+appartenant à `postgres`, et les `GRANT` de la migration passent. Le défaut
+n'apparaît qu'**à la suite suivante, ailleurs**, sous la forme d'un « permission
+denied for table … » sur une table qu'on n'a pas touchée. Cinquante suites
+rouges d'un coup, et l'erreur désigne la table plutôt que la migration qui l'a
+mal créée. Payé le 13 août 2026.
+
+**Donc : toujours `DATABASE_URL="$DATABASE_ADMIN_URL" npm run db:migrate`**, ce
+que fait déjà `monter-base-locale.sh`. En cas de doute, la question qui tranche :
+
+```bash
+psql … -tAc "SELECT tablename FROM pg_tables
+             WHERE schemaname='public' AND tableowner <> 'atlas_owner';"
+```
+
+Une seule ligne de réponse, et la base a dérivé.
+
 Croire l'inverse a coûté cher : « c'est la CI qui vérifiera » a été dit trois
 fois alors que la CI n'avait jamais tourné.
 
