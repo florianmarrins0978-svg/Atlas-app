@@ -66,7 +66,12 @@ async function choisir(page: Page, libelle: "Tous les mois" | "Tous les trimestr
 
 async function titreTva(page: Page): Promise<string> {
   await page.goto(`${BASE}/termines/tva`, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector("text=TVA collectée", { timeout: 30_000 });
+  // **« Reste à payer », et non le surtitre.** Celui-ci est passé de « TVA
+  // collectée » à « Ma TVA » le 13 août 2026, l'écran portant désormais trois
+  // chiffres et non plus un seul — ce contrôle a attendu trente secondes un
+  // texte disparu. Un repère d'attente doit viser ce que l'écran EST, pas
+  // comment il s'appelait.
+  await page.waitForSelector("text=Reste à payer", { timeout: 30_000 });
   return (await page.locator("h1").first().textContent())?.trim() ?? "";
 }
 
@@ -131,7 +136,7 @@ async function main() {
   await test("Une période impossible ramène à la période en cours, sans écran mort", async () => {
     await choisir(page, "Tous les trimestres");
     await page.goto(`${BASE}/termines/tva?annee=2026&t=12`, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector("text=TVA collectée", { timeout: 30_000 });
+    await page.waitForSelector("text=Reste à payer", { timeout: 30_000 });
     const titre = (await page.locator("h1").first().textContent())?.trim() ?? "";
     assert.ok(/^[1-4](er|e) trimestre \d{4}$/.test(titre), `titre inattendu : « ${titre} »`);
     await choisir(page, "Tous les mois");

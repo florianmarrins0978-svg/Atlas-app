@@ -366,6 +366,45 @@ n'est pas la batterie.
 
 ## Ce qui vient d'être terminé
 
+### La TVA due, les achats et la lecture des tickets (13 août 2026)
+
+`src/lib/achat-tva.ts`, `drizzle/0036_achats_tva.sql`,
+`src/server/repositories/achats-tva.ts`, l'écran `src/app/termines/tva/` et
+`src/server/ai/services/lire-ticket.ts`.
+
+**Cinq choses à ne pas défaire :**
+
+1. **La TVA d'un ticket se RETIRE du total, elle ne s'y ajoute pas.** 120 € à
+   20 % contiennent 20 € de TVA, pas 24. Un contrôle affirme l'inégalité
+   explicitement — le corriger « dans l'autre sens » fausserait tout le relevé
+   sans que rien ne se voie.
+2. **`tva_deductible` est le seul montant obligatoire.** Exiger le total
+   reviendrait à refuser les tickets qui n'affichent qu'une ligne de TVA, donc à
+   perdre cette TVA.
+3. **Aucune règle de déductibilité n'est encodée, et il ne faut pas en
+   ajouter.** Elles dépendent de la dépense et du véhicule ; le comptable
+   tranche.
+4. **Le reste à payer peut être négatif** — c'est un crédit de TVA, et il
+   s'affiche. Le borner à zéro cacherait le mois qui compte le plus.
+5. **Ce que la lecture rend est une PROPOSITION.** Les champs arrivent
+   pré-remplis ; c'est la valeur CONFIRMÉE qui part en base. Ne jamais
+   enregistrer directement ce que le modèle a lu.
+
+**NON VÉRIFIÉ, et ça ne peut pas l'être ici :** la lecture d'un vrai ticket.
+Aucune clé dans cet environnement. Si le patron signale une lecture fautive, le
+plus utile est **la photo du ticket ET ce que l'écran a proposé** : c'est
+l'écart entre les deux qui dit quoi corriger. Tout ce qui entoure la lecture est
+éprouvé (`scripts/test-lecture-ticket.ts`, onze cas, sans réseau).
+
+**Un piège d'outillage payé deux fois le 13 août :** ne jamais jouer une suite
+base ni éditer un fichier PENDANT `verifier:avant-livraison`. `nettoyerBase()`
+vide la base sous les pieds des cinquante autres suites, et une édition en cours
+casse la compilation de celles qui n'ont pas encore démarré. Les deux batteries
+rouges de la journée étaient cela, pas des défauts du code.
+
+---
+
+
 **« MONSIEUR MARTINS », ET LE TIRET RETIRÉ (13 août).** Sa capture de l'écran
 Devis. Le nom du chantier ne dit plus « Chez … », la ligne du client porte sa
 civilité, et le détail passe **sous** le nom au lieu d'être collé par un tiret.

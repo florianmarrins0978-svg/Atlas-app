@@ -185,6 +185,48 @@ maquette, et la connexion réelle dans un vrai navigateur derrière une origine
 
 ---
 
+## 2026-08-13
+
+### La TVA due entre dans l'application, et les tickets se photographient
+
+**Sa demande :** *« je veux également qu'on puisse intégrer la TVA due, donc les
+essences, les tronçonneuses. Et pour ça j'avais pensé à un petit scanner en
+ouvrant l'appareil photo. »*
+
+L'écran de TVA porte désormais **trois chiffres** : collectée, déductible, et ce
+qu'il reste à payer. Chacun des deux premiers se copie d'un appui. Les achats
+s'ajoutent de deux façons — **scanner un ticket, ou l'écrire à la main** — parce
+qu'un ticket perdu, une facture reçue par e-mail et un achat noté sur un coin de
+table échappent tous les trois à l'objectif.
+
+**Le piège qui coûte un cinquième :** la TVA d'un ticket de 120 € à 20 % n'est
+pas 24 € mais 20 €. Le total est TTC, la taxe est dedans. Un relevé faux de ce
+facteur affiche un total parfaitement plausible ; on s'en aperçoit devant le
+comptable, un an plus tard.
+
+**« Si le reste à payer est négatif, il faut qu'il le marque négativement. »**
+C'est fait, avec un vrai signe moins et une phrase qui dit ce que ça veut dire —
+« Crédit de TVA, c'est l'État qui vous doit ». Le mois où l'on achète une machine
+sans facturer ne se cache plus derrière un zéro.
+
+**La lecture des tickets est branchée sur ses clés Anthropic et OpenAI.** Il a
+fallu apprendre la vision à la couche IA du dépôt, qui ne manipulait que du
+texte. Ce qu'elle rend est une **proposition** : les champs arrivent
+pré-remplis, et c'est la valeur qu'il confirme qui part en base. Une TVA
+supérieure au total est écartée, une TVA absente est recalculée **en le disant**.
+
+**NON VÉRIFIÉ ICI :** la lecture d'un vrai ticket. Cet environnement n'a aucune
+clé. Tout ce qui l'entoure l'est — la transformation de la réponse en champs, le
+refus de l'absurde, le repli sur la saisie à la main.
+
+**Rattrapé par un contrôle, avant nous :** la table des achats manquait à
+l'export RGPD. Les tickets d'un artisan disent où il fait le plein et quand il
+travaille ; ils partent avec le reste de ses données.
+
+`ARCHITECTURE.md` §79.
+
+---
+
 ## 2026-08-12
 
 ### L'agenda iCloud est relié — lecture ET écriture

@@ -6,7 +6,7 @@
 ---
 
 **Dernière mise à jour :** 2026-08-12 · branche `claude/chantier-phototech-direct-ujt2wv`
-· dernière migration `drizzle/0035_periodicite_tva.sql`
+· dernière migration `drizzle/0036_achats_tva.sql`
 
 ---
 
@@ -195,6 +195,15 @@ l'application. Ce qui est **fait** :
   d'y poser une feuille maison. Quatre gestes deviennent deux. Ajouter, regarder
   et retirer se font dans la pellicule ; `/chantiers/[id]/photos` répond 404, et
   une suite le vérifie. `ARCHITECTURE.md` §60.
+- **La TVA due, les achats et le scanner de tickets** (13 août) : l'écran porte
+  collectée, déductible et reste à payer — chacun copiable. Les achats entrent
+  par l'appareil photo ou au clavier (`achats_tva`, migration
+  `drizzle/0036_achats_tva.sql`). La lecture d'un ticket est branchée sur les
+  clés du patron ; **la vision a dû être ajoutée à la couche IA**, qui ne
+  manipulait que du texte. Ce qu'elle rend est une proposition : c'est ce qu'il
+  confirme qui compte. Un crédit de TVA s'affiche en négatif, signe et phrase.
+  **NON VÉRIFIÉ ICI : la lecture d'un vrai ticket** — aucune clé dans cet
+  environnement. `ARCHITECTURE.md` §79.
 - **La TVA au mois ou au trimestre, et son calendrier** (12 août) : Réglages
   porte le choix, le mois coché d'avance — c'est le défaut légal (déclaration
   CA3 mensuelle ; le trimestre est une option sous 4 000 € de TVA due). L'écran
