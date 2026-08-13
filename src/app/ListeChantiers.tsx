@@ -48,6 +48,15 @@ export type BrinChantier = {
   lieu: string;
   /** L'état et le nombre de photos, sur une ligne : « Brouillon · 3 photos ». */
   etat: string;
+  /**
+   * La ligne en clair sous l'état, ou rien : « Envoyé le lundi 10 août. »
+   *
+   * Sa demande du 13 août 2026, devant la planche des cinq libellés : *« j'aime
+   * bien le D, mais en dessous de "devis envoyé" je veux qu'il y ait marqué la
+   * date à laquelle on l'a envoyé »*. Elle n'existe que quand un envoi est
+   * réellement enregistré — jamais une date approchée (`chantier-etat.ts`).
+   */
+  precision?: string | null;
   /** Ce chantier attend-il un geste du patron ? Lui seul porte la couleur. */
   attend: boolean;
   /**
@@ -229,6 +238,14 @@ export default function ListeChantiers({
             >
               {c.etat}
             </p>
+            {c.precision && (
+              /* En clair, et non en petites capitales : deux lignes espacées
+                 à 0.28em se liraient comme un pavé. L'œil doit accrocher
+                 l'état, puis lire la date s'il la cherche. */
+              <p className="mt-[4px] truncate text-[11.5px]" style={{ color: colors.muted }}>
+                {c.precision}
+              </p>
+            )}
           </Link>
         </LigneRetirable>
       ))}

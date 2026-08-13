@@ -203,14 +203,14 @@ l'application. Ce qui est **fait** :
   manipulait que du texte. Ce qu'elle rend est une proposition : c'est ce qu'il
   confirme qui compte. Un crédit de TVA s'affiche en négatif, signe et phrase.
   **NON VÉRIFIÉ ICI : la lecture d'un vrai ticket** — aucune clé dans cet
-  environnement. `ARCHITECTURE.md` §79.
+  environnement. `ARCHITECTURE.md` §81.
 - **La TVA au mois ou au trimestre, et son calendrier** (12 août) : Réglages
   porte le choix, le mois coché d'avance — c'est le défaut légal (déclaration
   CA3 mensuelle ; le trimestre est une option sous 4 000 € de TVA due). L'écran
   de TVA et son calendrier suivent : douze pavés ou quatre. **Atlas ne dit
   jamais lequel s'applique** — le seuil porte sur la TVA due, or il ne connaît
   que la collectée. Migration `drizzle/0035_periodicite_tva.sql`.
-  `ARCHITECTURE.md` §78.
+  `ARCHITECTURE.md` §80.
 - **« Y aller » : l'adresse du chantier jusqu'au GPS** (12 août) : au bout de
   chaque ligne des chantiers planifiés, un **chevron doré** ouvre une feuille —
   Plans, Google Maps, Waze, copier l'adresse, appeler le client — sans quitter

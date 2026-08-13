@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { nomDuChantier, intituleDuChantier } from "../src/lib/nom-chantier";
+import { nomDuChantier, intituleDuChantier, lieuDuChantier } from "../src/lib/nom-chantier";
 import { CIVILITE_PAR_DEFAUT } from "../src/lib/civilite";
 
 // Comment un chantier s'appelle, quand personne ne le nomme.
@@ -138,6 +138,36 @@ cas("deux graphies du même homme ne se lisent pas en double", () => {
 cas("sans client, le nom du chantier suffit", () => {
   assert.equal(intituleDuChantier(null, "12 rue des Lilas"), "12 rue des Lilas");
   assert.equal(intituleDuChantier("   ", "Chantier du 12 août"), "Chantier du 12 août");
+});
+
+
+console.log("\n=== Le lieu, sous le nom, ne répète jamais le nom ===");
+
+cas("une adresse s'affiche telle quelle", () => {
+  assert.equal(lieuDuChantier("Monsieur Bernard", "12 rue des Lilas, Nantes", "Bernard"), "12 rue des Lilas, Nantes");
+});
+
+cas("sans adresse, le client NE SE RÉPÈTE PAS sous lui-même", () => {
+  // Le défaut né du retrait de « Chez », vu à l'œil sur une capture : le titre
+  // valait « Monsieur Martins » et la ligne du dessous « Martins ».
+  // **Une égalité stricte l'aurait laissé passer** — le titre porte le nom
+  // sans lui être identique, puisqu'il ajoute la civilité.
+  assert.equal(lieuDuChantier("Monsieur Martins", null, "Martins"), "Adresse non renseignée");
+  assert.equal(lieuDuChantier("Mr Martins", null, "Mr Martins"), "Adresse non renseignée");
+});
+
+cas("deux graphies du même homme ne comptent pas pour deux", () => {
+  assert.equal(lieuDuChantier("Monsieur Bernard", null, "BERNARD"), "Adresse non renseignée");
+  assert.equal(lieuDuChantier("Madame Riviere", null, "Rivière"), "Adresse non renseignée");
+});
+
+cas("le client s'affiche quand il apprend quelque chose", () => {
+  // Chantier nommé par son adresse d'origine, client renseigné après coup.
+  assert.equal(lieuDuChantier("3 chemin du Bois", null, "Mme Roux"), "Mme Roux");
+});
+
+cas("ni adresse ni client : on dit ce qui manque", () => {
+  assert.equal(lieuDuChantier("Chantier du mercredi 5 août", null, null), "Adresse non renseignée");
 });
 
 if (echecs > 0) {

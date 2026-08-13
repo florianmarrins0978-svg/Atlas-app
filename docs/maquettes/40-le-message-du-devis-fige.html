@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — le message du devis figé</title>
+</head>
+<body>
+<style>
+  /*
+    LE MESSAGE EN HAUT DU DEVIS PARTI — quatre façons de le poser.
+
+    Le patron, le 13 août 2026, capture à l'appui : « le message dit de
+    consulter la case devis mais aucune case devis existe ». Il demande si l'on
+    crée cette case, ou si l'on retire le message.
+
+    Ce qui est vrai : l'écran Devis existe bien (`/chantiers/…/export`), mais
+    depuis CETTE page il n'y a aucune porte — le message décrit un chemin qu'il
+    doit retrouver seul. Et deux écrans s'appellent « Devis » de son point de
+    vue : celui qu'il regarde, et celui où l'on corrige.
+
+    Les quatre vignettes montrent le même bloc, en haut du document. Le reste de
+    la page ne bouge pas.
+  */
+
+  :root{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+  }
+  :root[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 90px}
+  .page{max-width:1120px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
+  .intro b{color:var(--encre);font-weight:500}
+  .appui{max-width:56ch;margin:22px auto 0;padding:15px 20px;border:1px solid var(--trait);
+         border-radius:6px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+  .appui b{color:var(--encre);font-weight:500}
+
+  .famille{margin:52px 0 12px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--gris)}
+  .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
+  .famille span::before,.famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
+  .famille span::before{right:100%}
+  .famille span::after{left:100%}
+  .sous-titre{max-width:58ch;margin:0 auto 24px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;align-items:flex-start}
+  .cartouche{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:412px}
+  .etiquette{color:var(--bronze);font-size:10px;letter-spacing:.3em;text-transform:uppercase}
+  .cartouche .dit{margin:0;font-size:12.5px;line-height:1.6;color:var(--gris);text-align:center}
+  .cartouche .dit b{color:var(--encre);font-weight:500}
+
+  /* ── Le haut de la page du devis, à sa taille ─────────────────────────── */
+  .tel{width:412px;max-width:100%;border-radius:30px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 22px 50px rgba(20,18,14,.18)}
+  .ecran{overflow:hidden;border-radius:22px;background:#f5f3ee;color:#1c1c1a;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         padding:16px 14px 20px;
+         --e-encre:#1c1c1a; --e-gris:#8a8578; --e-pin:#2f3b2f; --e-teinte:#ece9e1;
+         --e-trait:rgba(28,28,26,.16)}
+  .retour{color:var(--e-gris);font-size:19px;line-height:1;margin:2px 0 12px 4px}
+
+  .doc{background:#faf9f5;border-radius:10px;padding:20px 18px;
+       box-shadow:0 12px 40px rgba(28,28,26,.10)}
+
+  /* Le bandeau — la seule chose qui change d'une vignette à l'autre. */
+  .bandeau{border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.5;
+           background:var(--e-teinte);color:var(--e-pin);margin-bottom:20px}
+  .bandeau a{color:var(--e-pin);font-weight:600;text-decoration:none}
+  .bandeau .porte{display:block;margin-top:9px}
+  .bandeau .pilule{display:inline-block;margin-top:11px;padding:9px 16px;border-radius:99px;
+                   background:var(--e-pin);color:#fff;font-size:13px;font-weight:500;text-decoration:none}
+
+  .marque{margin:0;font:400 26px/1.15 ui-serif,Georgia,serif}
+  .coord{margin:5px 0 0;font-size:14px;color:var(--e-encre)}
+  .refs{margin-top:16px}
+  .ref{display:flex;justify-content:space-between;align-items:baseline;
+       border-bottom:1px solid var(--e-trait);padding:9px 0;font-size:14px}
+  .ref span:first-child{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--e-gris)}
+  .barre{height:2px;background:var(--e-encre);margin:18px 0 0}
+  .mot-devis{margin:16px 0 0;text-align:center;font:400 26px/1 ui-serif,Georgia,serif;letter-spacing:.06em}
+
+  .note{max-width:62ch;margin:48px auto 0;padding:20px 22px;border:1px solid var(--trait);
+        border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.7}
+  .note h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
+  .note b{color:var(--encre);font-weight:500}
+  .note p{margin:0 0 12px}
+  .note p:last-child{margin-bottom:0}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Maquette 40</p>
+    <h1>Le message du devis figé</h1>
+    <p><b>« Le message dit de consulter la case devis, mais aucune case devis
+    n'existe. »</b> L'écran Devis existe pourtant — c'est celui du suivi et de
+    l'envoi. Mais depuis cette page, <b>aucune porte n'y mène</b> : le message
+    décrit un chemin à retrouver seul.</p>
+    <p>Voici le témoin, puis trois façons de le poser. Seul ce bloc change ; le
+    reste du document ne bouge pas.</p>
+    <div class="appui">
+      À la largeur de votre écran — <b>390 px</b>. Le haut du document
+      seulement : c'est là que tout se joue.
+    </div>
+  </div>
+
+  <!-- ══ TÉMOIN ══════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>Ce que vous voyez aujourd'hui</span></p>
+  <p class="sous-titre">Une phrase qui décrit un itinéraire. Rien à toucher.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Témoin</span>
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <div class="doc">
+          <div class="bandeau">
+            Ce devis est parti chez votre client : il ne se modifie plus. Pour le corriger,
+            ouvrez l'écran Devis et choisissez « Corriger et renvoyer ».
+          </div>
+          <p class="marque">Atelier Démo</p>
+          <p class="coord">02 40 00 00 00</p>
+          <p class="coord">contact@atelier-demo.fr</p>
+          <div class="refs">
+            <div class="ref"><span>Devis nº</span><span>2026-0007</span></div>
+            <div class="ref"><span>Date</span><span>13/08/2026</span></div>
+            <div class="ref"><span>Validité</span><span>30 jours</span></div>
+          </div>
+          <div class="barre"></div>
+          <p class="mot-devis">DEVIS</p>
+        </div>
+      </div></div>
+      <p class="dit"><b>Quatre lignes, et aucune porte.</b> « L'écran Devis » désigne un écran
+      que vous ne voyez pas d'ici — et vous êtes en train de regarder un devis.</p>
+    </div>
+  </div>
+
+  <!-- ══ A ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>A · Le message devient la porte</span></p>
+  <p class="sous-titre">C'est ce que je vous proposais. La phrase dit ce qui se passe,
+    la ligne dessous <b>vous y emmène</b>. Plus d'itinéraire à retenir.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Proposition A</span>
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <div class="doc">
+          <div class="bandeau">
+            Ce devis est parti chez votre client : il ne se modifie plus.
+            <a class="porte" href="#">Le corriger et le renvoyer →</a>
+          </div>
+          <p class="marque">Atelier Démo</p>
+          <p class="coord">02 40 00 00 00</p>
+          <p class="coord">contact@atelier-demo.fr</p>
+          <div class="refs">
+            <div class="ref"><span>Devis nº</span><span>2026-0007</span></div>
+            <div class="ref"><span>Date</span><span>13/08/2026</span></div>
+            <div class="ref"><span>Validité</span><span>30 jours</span></div>
+          </div>
+          <div class="barre"></div>
+          <p class="mot-devis">DEVIS</p>
+        </div>
+      </div></div>
+      <p class="dit"><b>Deux lignes au lieu de quatre.</b> Le mot « écran Devis » disparaît —
+      vous n'avez plus à savoir où est quoi.
+      <br><br><b>Ce que ça coûte :</b> rien. C'est la retouche la plus courte.</p>
+    </div>
+  </div>
+
+  <!-- ══ B ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>B · Un vrai bouton</span></p>
+  <p class="sous-titre">Le même contenu, mais le geste prend la forme d'un bouton —
+    la capsule de toute l'application. Plus visible, plus lourd aussi.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Proposition B</span>
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <div class="doc">
+          <div class="bandeau">
+            Ce devis est parti chez votre client : il ne se modifie plus.
+            <a class="pilule" href="#">Corriger et renvoyer</a>
+          </div>
+          <p class="marque">Atelier Démo</p>
+          <p class="coord">02 40 00 00 00</p>
+          <p class="coord">contact@atelier-demo.fr</p>
+          <div class="refs">
+            <div class="ref"><span>Devis nº</span><span>2026-0007</span></div>
+            <div class="ref"><span>Date</span><span>13/08/2026</span></div>
+            <div class="ref"><span>Validité</span><span>30 jours</span></div>
+          </div>
+          <div class="barre"></div>
+          <p class="mot-devis">DEVIS</p>
+        </div>
+      </div></div>
+      <p class="dit"><b>Impossible à rater.</b> C'est la même capsule que partout ailleurs.
+      <br><br><b>Ce que ça coûte :</b> un bouton plein en haut d'un document que vous venez
+      surtout <b>lire</b> — il attire l'œil avant le devis lui-même.</p>
+    </div>
+  </div>
+
+  <!-- ══ C ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>C · Rien du tout</span></p>
+  <p class="sous-titre">L'autre branche de votre question : on retire le message.
+    Le document s'ouvre nu, comme une pièce qu'on consulte.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Proposition C</span>
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <div class="doc">
+          <p class="marque">Atelier Démo</p>
+          <p class="coord">02 40 00 00 00</p>
+          <p class="coord">contact@atelier-demo.fr</p>
+          <div class="refs">
+            <div class="ref"><span>Devis nº</span><span>2026-0007</span></div>
+            <div class="ref"><span>Date</span><span>13/08/2026</span></div>
+            <div class="ref"><span>Validité</span><span>30 jours</span></div>
+          </div>
+          <div class="barre"></div>
+          <p class="mot-devis">DEVIS</p>
+        </div>
+      </div></div>
+      <p class="dit"><b>Le plus calme, et c'est vrai.</b> Vous venez ici pour lire.
+      <br><br><b>Ce que ça coûte, et c'est mon seul désaccord :</b> cet écran est celui où
+      l'on RÉDIGE. Le jour où vous toucherez un prix, il ne se passera rien — et rien ne
+      dira pourquoi.</p>
+    </div>
+  </div>
+
+  <!-- ══ NOTE ═══════════════════════════════════════════════════════════ -->
+  <div class="note">
+    <h2>Ce que j'en pense, en deux lignes</h2>
+    <p><b>A.</b> Le message ne coûte que deux lignes, il répond à la seule question qu'on
+    se pose ici (« pourquoi je ne peux rien changer ? »), et il devient le chemin au lieu
+    de le décrire.</p>
+    <p><b>Pourquoi pas une nouvelle case :</b> l'écran Devis existe déjà, et il est dans le
+    tiroir de la fiche du chantier. Lui donner un second accès permanent, c'est deux portes
+    vers la même pièce — ce qu'on vient justement d'éviter sur l'écran du devis.</p>
+    <p><b>Une chose que je n'ai pas décidée :</b> les mots. « Le corriger et le renvoyer »,
+    « Corriger ce devis », « Reprendre le devis » — dites-moi lesquels vous parlent, ce sont
+    les vôtres.</p>
+    <p><b>Une réserve sur les polices.</b> Cette page emprunte la serif de votre appareil.
+    L'application charge Playfair Display : le rendu final sera plus dessiné.</p>
+  </div>
+
+</div>
+</body>
+</html>

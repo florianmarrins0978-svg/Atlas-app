@@ -9,6 +9,29 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### La capsule descend jusqu'aux écrans du client — il a tranché
+
+**Question posée avec deux captures**, la sienne et celle de son client :
+la capsule s'arrête-t-elle à ses écrans, ou descend-elle jusqu'aux pages que
+voit son client ? **Réponse : oui**, elle descend.
+
+Quatre boutons changent de forme, tous sur les écrans que reçoit le client de
+l'artisan : accepter le devis, demander une correction, ne pas donner suite, et
+télécharger la facture. **Leurs couleurs ne bougent pas** — le vert pin et la
+terre cuite de ces pages restent : ce qui devait rester distinct de l'outil de
+travail, c'est l'identité, pas la forme du geste.
+
+**Le champ de saisie de la même page garde ses coins doux.** La charte ne donne
+la capsule qu'à ce qu'on APPUIE, jamais à ce qu'on remplit — et un champ
+entièrement arrondi se confondrait avec un bouton.
+
+L'exception qui protégeait ces écrans dans `scripts/test-boutons-arrondis.ts`
+est **levée** : ils sont désormais gardés comme les autres. Il n'en reste
+qu'une, le chevron de retour, sur lequel il ne s'est pas prononcé — une icône
+encadrée de 32 px, que la capsule transformerait en pastille ronde.
+
+---
+
 ### La poignée de la feuille la referme, et « Créer la facture » devient une capsule
 
 **Ses deux signalements du 13 août, capture à l'appui :** *« si j'appuie sur le
@@ -183,6 +206,57 @@ parce qu'on s'y fie encore (`CLAUDE.md` §1).
 maquette, et la connexion réelle dans un vrai navigateur derrière une origine
 étrangère. Aucune régression.
 
+### Deux sessions ont corrigé « Chez Martins » le même jour — et c'est la leur qui tient
+
+Il l'a demandé aux deux, à quelques heures d'écart : *« corrige le nom, Mr
+Martins, pas chez Martins ! »* d'un côté, *« il faut qu'il y ait écrit monsieur
+Martins et pas chez Martins »* de l'autre.
+
+**Ma version rendait le nom nu** — « Martins » — au motif qu'ajouter « M. »
+supposerait un genre. **La sienne écrit « Monsieur Martins »**, et il a levé
+cette réserve en connaissance de cause (`src/lib/civilite.ts`). C'est la sienne
+qui est retenue : elle fait ce qu'il a demandé au mot près, et elle était sur
+`main` la première.
+
+**Et elle a trouvé ce que la mienne ratait.** Ma migration était un `UPDATE …
+FROM clients …` tout simple. Sous la RLS forcée, sans contexte d'entreprise
+posé, il ne voit **aucune ligne** : il s'applique, rapporte un succès, et ne
+change rien — en silence. La sienne procède entreprise par entreprise.
+`ARCHITECTURE.md` §77. Ma migration a été retirée.
+
+### La ligne sous le nom dit ce qui est parti, et quand
+
+**Son choix, devant les cinq propositions :** *« j'aime bien le D, mais en
+dessous de "devis envoyé" je veux qu'il y ait marqué la date à laquelle on l'a
+envoyé. »* La liste porte donc « DEVIS ENVOYÉ · SANS RÉPONSE » en or, et sous
+lui « Envoyé le jeudi 13 août. » `ARCHITECTURE.md` §79.
+
+**La date n'est jamais devinée** : sans envoi enregistré, la seconde ligne
+n'existe pas. Le repli tentant — la dernière modification du chantier, celle qui
+s'affiche à gauche — n'est PAS la date d'envoi : une photo ajoutée la déplace,
+et c'est sur elle qu'il compte ses jours d'attente.
+
+**Un doublon né du retrait de « Chez », vu à l'œil sur une capture.** Le titre
+étant devenu « Martins », un chantier sans adresse affichait le même mot deux
+fois de suite — la ligne du lieu se rabattait sur le nom du client. Elle ne s'y
+rabat plus que si elle apprend quelque chose ; sinon elle écrit « Adresse non
+renseignée », qui est une information. **Retirer un mot d'un libellé peut faire
+entrer deux autres en collision.**
+
+### Cinq libellés pour la ligne sous le nom — à son choix
+
+Il veut y lire que le devis est parti et qu'on attend. Cinq propositions
+l'attendent dans `docs/maquettes/41-la-ligne-sous-le-nom.html`, **rien n'est
+codé**.
+
+**La planche n'est pas dessinée, elle est photographiée.** La première version
+l'était, et elle mentait : une page HTML ordinaire rend ces mots plus larges
+qu'Inter dans l'application — au dessin, même le libellé ACTUEL passait sur deux
+lignes alors qu'il tient sur une chez lui. La mesure sur l'écran réel a révélé
+mieux qu'un oui/non : **la largeur de son téléphone fait partie de la
+décision.** Le libellé actuel est déjà à la limite — il tient sur un 430 px,
+pas sur un 390. `ARCHITECTURE.md` §78.
+
 ---
 
 ## 2026-08-13
@@ -223,9 +297,41 @@ refus de l'absurde, le repli sur la saisie à la main.
 l'export RGPD. Les tickets d'un artisan disent où il fait le plein et quand il
 travaille ; ils partent avec le reste de ses données.
 
-`ARCHITECTURE.md` §79.
+`ARCHITECTURE.md` §81.
+
+### Le message du devis figé est devenu la porte
+
+**Le patron, capture à l'appui :** *« le message dit de consulter la case devis
+mais aucune case devis existe »*. Puis, plus utile encore : *« j'aimerais avoir
+ton avis — est-ce utile de créer une case, ou est-ce qu'on retire le message ? »*
+
+**Il avait raison sur le fond.** L'écran Devis existe bien
+(`/chantiers/[id]/export`) — mais il vit dans le **tiroir** de la fiche, et
+**aucune porte n'y menait** depuis la page du devis. La phrase décrivait donc un
+itinéraire à reconstituer seul. Pire : deux écrans s'appellent « Devis » de son
+point de vue, celui qu'il regarde et celui où l'on corrige. « Ouvrez l'écran
+Devis » était introuvable **et** ambigu.
+
+**Ni l'un ni l'autre : le message devient la porte.** Quatre lignes deviennent
+deux — ce qui se passe, puis un lien qui y mène.
+
+Pourquoi **pas de nouvelle case** : l'écran existe déjà et vit dans le tiroir de
+la fiche ; un second accès permanent ferait deux portes vers la même pièce, ce
+qu'on venait justement d'éviter sur l'écran du devis.
+
+Pourquoi **pas de retrait** : cet écran est celui où l'on RÉDIGE. Sans cette
+phrase, toucher un prix ne ferait rien et rien ne dirait pourquoi — le silence
+que ce dépôt combat depuis le début. Il l'a arbitré lui-même après avoir vu les
+trois façons dessinées (`docs/maquettes/40-le-message-du-devis-fige.html`).
+
+`scripts/test-devis-fige-porte-e2e.ts` tient le lien plutôt que la phrase :
+**une phrase qui décrit un chemin se dégrade en silence le jour où le chemin
+bouge ; un lien qui mène ailleurs se voit tout de suite.** La suite vérifie
+aussi que les mots signalés ont disparu, que la porte s'ouvre pour de bon, et
+qu'un devis pas encore parti ne s'annonce jamais figé.
 
 ---
+
 
 ## 2026-08-12
 
@@ -511,7 +617,7 @@ suffisent.
 trimestre », au pied de Terminés, additionnait TOUS les mois du fil. Le chiffre
 était juste, sa légende mentait.
 
-`ARCHITECTURE.md` §78.
+`ARCHITECTURE.md` §80.
 
 ---
 
