@@ -157,6 +157,11 @@ export const clients = pgTable(
       .notNull()
       .references(() => entreprises.id, { onDelete: "cascade" }),
     nom: text("nom").notNull(),
+    // **NULL est un état normal, pas une donnée manquante** — une société n'est
+    // ni « Mr » ni « Mme », et un client saisi à la volée n'a pas toujours eu
+    // droit à un appui de plus. Ce que NULL vaut à l'écran est décidé dans
+    // `src/lib/civilite.ts`, jamais ici (migration 0038).
+    civilite: text("civilite", { enum: ["mr", "mme"] }),
     telephone: text("telephone"),
     adresse: text("adresse"),
     email: text("email"),
@@ -462,6 +467,10 @@ export const devis = pgTable(
     entrepriseIban: text("entreprise_iban"),
 
     clientNom: text("client_nom"),
+    // Recopiée comme le nom : un document dit comment on s'adressait à son
+    // destinataire LE JOUR OÙ il a été établi. Corriger une fiche client ne
+    // doit pas réécrire un devis déjà parti (migration 0038).
+    clientCivilite: text("client_civilite", { enum: ["mr", "mme"] }),
     clientAdresse: text("client_adresse"),
     clientTelephone: text("client_telephone"),
     clientEmail: text("client_email"),
@@ -894,6 +903,10 @@ export const factures = pgTable(
     entrepriseIban: text("entreprise_iban"),
 
     clientNom: text("client_nom"),
+    // Recopiée comme le nom : un document dit comment on s'adressait à son
+    // destinataire LE JOUR OÙ il a été établi. Corriger une fiche client ne
+    // doit pas réécrire un devis déjà parti (migration 0038).
+    clientCivilite: text("client_civilite", { enum: ["mr", "mme"] }),
     clientAdresse: text("client_adresse"),
     clientTelephone: text("client_telephone"),
     clientEmail: text("client_email"),

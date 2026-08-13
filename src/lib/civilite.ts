@@ -35,8 +35,23 @@
  */
 
 /**
- * Le mot posé devant un nom nu. Un seul endroit pour en changer — et il A
- * changé.
+ * Les deux civilités qu'il peut choisir, et le mot qui les écrit.
+ *
+ * **Sa demande du 13 août 2026, au soir :** *« il faut intégrer une case
+ * monsieur-madame, sous la forme Mr Mme, en cliquable, on choisit au-dessus du
+ * nom. »* Depuis, la civilité est une **donnée** : elle vit sur la fiche client
+ * (migration 0038) et se recopie sur le devis et la facture.
+ */
+export const CIVILITES = { mr: "Mr.", mme: "Mme" } as const;
+
+export type Civilite = keyof typeof CIVILITES;
+
+/** Ce qu'il a choisi, ou `null` s'il n'a rien choisi. Les trois états. */
+export type CiviliteChoisie = Civilite | null | undefined;
+
+/**
+ * Le mot posé devant un nom nu **quand il n'a rien choisi**. Un seul endroit
+ * pour en changer — et il A changé.
  *
  * **Le patron, le 13 août 2026, après avoir vu « Monsieur Martins » à l'écran :**
  * *« Mr. Martins, pas Monsieur. »* C'est sa forme, sur ses documents ; l'usage
@@ -47,7 +62,7 @@
  * de recopier le mot — sans quoi la moindre correction de sa part rougirait une
  * dizaine de suites sans rien apprendre à personne.
  */
-export const CIVILITE_PAR_DEFAUT = "Mr.";
+export const CIVILITE_PAR_DEFAUT = CIVILITES.mr;
 
 /**
  * Civilités déjà écrites, sous les graphies qu'un artisan tape vraiment.
@@ -119,14 +134,27 @@ function aplati(texte: string): string {
     .toLowerCase();
 }
 
+/**
+ * Le nom porte-t-il DÉJÀ une civilité écrite à la main ?
+ *
+ * Séparée de la détection de société depuis le 13 août 2026, et ce n'est pas
+ * un rangement : un choix explicite doit primer sur « ça ressemble à une
+ * société », **jamais** sur « la civilité y est déjà ». Les deux questions
+ * mêlées, toucher « Mme » sur « Mme Roux » écrivait « Mme Mme Roux ».
+ */
+export function aDejaUneCivilite(nom: string): boolean {
+  const mots = aplati(nom.trim()).split(/[^0-9a-z]+/).filter(Boolean);
+  if (mots.length === 0) return true;
+  // La civilité ne compte que **devant** : « Jean-Marie » n'en est pas une, et
+  // « Dupont Me Untel » non plus.
+  return CIVILITES_CONNUES.includes(mots[0]);
+}
+
 /** Le nom porte-t-il déjà une civilité, ou est-ce une raison sociale ? */
 export function porteDejaSonAppellation(nom: string): boolean {
   const mots = aplati(nom.trim()).split(/[^0-9a-z]+/).filter(Boolean);
   if (mots.length === 0) return true;
-
-  // La civilité ne compte que **devant** : « Jean-Marie » n'en est pas une, et
-  // « Dupont Me Untel » non plus.
-  if (CIVILITES_CONNUES.includes(mots[0])) return true;
+  if (aDejaUneCivilite(nom)) return true;
 
   // Un marqueur de société, lui, peut se trouver n'importe où — « Untel SARL »
   // se rencontre autant que « SARL Untel ».
@@ -134,18 +162,31 @@ export function porteDejaSonAppellation(nom: string): boolean {
 }
 
 /**
- * « Martins » → « Mr. Martins ». « Mme Roux » et « SARL Untel » ne bougent pas.
+ * « Martins » → « Mr. Martins », ou « Mme Martins » s'il l'a choisi.
  *
  * **Idempotente** : l'appliquer deux fois donne le même résultat. C'est ce qui
  * permet de la poser sur un nom déjà stocké sans risquer « Mr. Mr. Martins » —
  * cas réel, puisque les chantiers créés avant le 13 août 2026 portent leur nom
  * en base.
  *
+ * **Un choix explicite prime sur tout le reste, y compris sur la détection.**
+ * S'il a touché « Mme » pour une cliente que la liste des sociétés attrapait à
+ * tort (« Mme Boulangerie du Bourg »), c'est lui qui a raison : la détection
+ * n'existe que pour combler son silence, pas pour le contredire. Un nom qui
+ * porte DÉJÀ sa civilité n'en reçoit pas une seconde, choix ou non — sans quoi
+ * « Mme Roux » deviendrait « Mme Mme Roux » au premier appui.
+ *
  * @param nom Ce que le patron a saisi. Vide ou absent : rien n'est fabriqué.
+ * @param civilite Ce qu'il a CHOISI, ou `null`/`undefined` s'il n'a rien dit —
+ *   auquel cas la règle d'avant le 13 août 2026 s'applique encore : civilité
+ *   par défaut sur un patronyme nu, rien sur une société. C'est ce qui fait que
+ *   les clients d'avant ne changent pas d'apparence du jour au lendemain.
  */
-export function avecCivilite(nom: string | null | undefined): string {
+export function avecCivilite(nom: string | null | undefined, civilite?: CiviliteChoisie): string {
   const propre = nom?.trim() ?? "";
   if (propre === "") return "";
+  if (aDejaUneCivilite(propre)) return propre;
+  if (civilite) return `${CIVILITES[civilite]} ${propre}`;
   if (porteDejaSonAppellation(propre)) return propre;
   return `${CIVILITE_PAR_DEFAUT} ${propre}`;
 }

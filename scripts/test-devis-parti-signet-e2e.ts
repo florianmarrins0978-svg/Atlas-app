@@ -55,7 +55,7 @@ async function seConnecter(contexte: BrowserContext): Promise<Page> {
 /** Un chantier neuf dont le devis vient de partir chez le client. */
 async function devisParti(page: Page): Promise<{ chantierId: string; url: string }> {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', `M. Signet ${Date.now()}`);
+  await page.fill('input[placeholder="Bernard"]', `M. Signet ${Date.now()}`);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 79 98 45 14");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 20_000 });

@@ -43,7 +43,7 @@ await page.click('button[type="submit"]');
 await page.waitForURL(`${BASE}/`, { timeout: 60_000 });
 
 await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-await page.fill('input[placeholder="M. Bernard"]', CLIENT);
+await page.fill('input[placeholder="Bernard"]', CLIENT);
 await page.fill('input[placeholder="06 12 34 56 78"]', "0679984514");
 await page.click('button:has-text("Créer le chantier")');
 await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });

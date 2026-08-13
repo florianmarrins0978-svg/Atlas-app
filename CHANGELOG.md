@@ -9,6 +9,77 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### Le numéro du devis redevenait un lien d'appel — l'en-tête ne suffisait pas
+
+**Sa capture, aujourd'hui :** « Hydration failed » sur le devis ouvert depuis un
+SMS, avec la signature d'iOS — `x-apple-data-detectors-type="telephone"`. Le
+même défaut que la veille, sur un banc qui servait pourtant le correctif de la
+veille (fiche d'état de 14 h 55, `main` à `5a6e999`).
+
+**Pourquoi le premier remède ne pouvait pas marcher.** `format-detection` est
+une **demande** faite au navigateur, et Safari l'écoute. Mais un lien touché
+depuis Messages ne s'ouvre pas dans Safari : il s'ouvre dans une vue intégrée
+où cette en-tête n'est pas lue — et c'est **le seul chemin** par lequel le
+client de l'artisan arrive sur son devis.
+
+**Le remède, cette fois, ne demande plus rien.** Le numéro est écrit en morceaux
+dont aucun ne porte assez de chiffres pour être un téléphone
+(`src/lib/numero-document.ts`, `NumeroDeDocument`). Ce qui répare n'est pas le
+découpage mais l'`inline-flex` qui l'accompagne : un détecteur lit le texte
+**aplati** de la page, et seuls les blocs le coupent. Mesuré avant d'écrire une
+ligne — entourer chaque moitié d'un `<span>`, la recette qui circule pour ce
+défaut, ne change rien du tout.
+
+Appliqué aux six endroits où un numéro s'affiche, pas aux deux signalés : il
+consulte son atelier depuis le même téléphone.
+
+**Ce que ça coûte :** un numéro copié depuis l'écran emporte des retours à la
+ligne. Il reste intact dans le PDF, dans le SMS et en base.
+
+**Ce qui n'est pas prouvé, et se dit :** la détection appartient à un logiciel
+d'Apple absent d'ici. Les contrôles vérifient que le texte offert à ce logiciel
+ne contient plus de suite de chiffres appelable — pas ce qu'il en fera. Seul son
+iPhone tranchera. Détail : `ARCHITECTURE.md` §81.
+### La civilité se choisit, au lieu d'être devinée
+
+*« Tu as raison, il faut intégrer une case monsieur-madame. Mais je veux que ça
+soit sous la forme Mr Mme, en cliquable, on choisit au-dessus du nom. »*
+
+C'est la réserve posée le matin même qu'il tranche. Jusque-là « Mr. » était un
+**défaut** collé sur tout patronyme nu — y compris dans le SMS qui part chez le
+client : une cliente lisait « Bonjour Mr. Roux ». Deux pastilles au-dessus du
+nom, et le choix traverse tout : le nom du chantier, l'écran du devis, le PDF,
+le message tout prêt, et la page qu'elle ouvre.
+
+**Ce qui ne change pas, et c'est la garantie qui compte :** un client sur lequel
+il n'a rien touché garde exactement l'apparence qu'il avait ce matin. Le jour où
+la case est apparue, aucune fiche ne la portait ; si l'absence de choix avait
+effacé la civilité, tous ses devis en cours auraient changé d'en-tête d'un coup.
+
+**Deux portes, et la seconde n'est pas un luxe.** À la création, et sur l'écran
+du devis. Sans celle-ci, une cliente saisie avant la case — ou avec une pastille
+oubliée — resterait « Mr. Roux » pour toujours, y compris dans le message qui
+part chez elle : il n'existe aucun autre écran de fiche client.
+
+**Trois pièges, tous payés en le faisant :**
+
+1. **Le choix primant sur la détection, il doublait les civilités déjà
+   écrites** : toucher « Mme » sur « Mme Roux » donnait « Mme Mme Roux ». Les
+   deux questions — « a-t-il déjà sa civilité ? » et « est-ce une société ? » —
+   étaient mêlées dans une seule fonction ; elles sont séparées, et l'ordre est
+   désormais écrit noir sur blanc.
+2. **Le devis n'est pas un formulaire.** L'étiquette « CIVILITÉ (FACULTATIF) »
+   au milieu du bloc « Client » ressemblait à un bout de formulaire collé sur
+   une lettre — cet écran est à l'image du papier, tous ses champs y sont nus.
+   **Vu en capture, jamais par un contrôle.**
+3. **L'exemple du champ contredisait la pastille.** Le nom proposait
+   « M. Bernard » : sous une case Mr/Mme, cet exemple invitait à retaper la
+   civilité dans le nom, auquel cas la pastille ne servait plus à rien. Il vaut
+   « Bernard », et les 54 fichiers de contrôle qui visaient ce texte ont suivi.
+
+`ARCHITECTURE.md` §81.
+
+
 ### La capsule descend jusqu'aux écrans du client — il a tranché
 
 **Question posée avec deux captures**, la sienne et celle de son client :
@@ -31,6 +102,21 @@ qu'une, le chevron de retour, sur lequel il ne s'est pas prononcé — une icôn
 encadrée de 32 px, que la capsule transformerait en pastille ronde.
 
 ---
+
+### `verifier:memoire` refuse un conflit resté ouvert
+
+**Constaté sur `main` le 13 août 2026 :** `ARCHITECTURE.md` y portait trois
+marqueurs de conflit, poussés par une session qui n'avait pas refermé sa fusion.
+
+Ni les types, ni le lint, ni les suites ne lisent les fichiers de mémoire — et
+une documentation se consulte par recherche, donc on tombe sur le passage voulu
+et jamais sur les marqueurs vingt lignes plus haut. Le fichier avait l'air
+complet, en portant **les deux versions** du même passage : plus trompeur qu'une
+section absente.
+
+Le contrôle coûte trois lignes, nomme le fichier, le compte et la première ligne,
+et a été éprouvé en réintroduisant l'état exact qui était passé. Le doublon de
+section qu'il avait entraîné — deux `## 81` — est défait au passage.
 
 ### L'attente qui s'éternise rend la main, au lieu de souffler dans le vide
 
@@ -376,6 +462,31 @@ pas sur un 390. `ARCHITECTURE.md` §78.
 ---
 
 ## 2026-08-13
+
+### La page du client ne parle plus la langue du patron
+
+**Le patron, capture à l'appui :** *« lorsque j'envoie la facture au client,
+voilà le lien auquel il a accès. Et s'il clique sur les cases en bas, il est
+dans l'application. Or il doit recevoir simplement sa facture en PDF. »*
+
+**La barre était déjà retirée** — corrigée le 12 août, et tenue par
+`test-pages-publiques-sans-navigation-e2e`. Vérifié plutôt qu'affirmé : la suite
+passe sur les trois adresses publiques réelles. Sa capture vient d'une version
+d'avant.
+
+**Mais en le vérifiant, j'ai trouvé ma propre faute, d'un cran plus bas.** Le
+veilleur des réponses illisibles, posé la veille, était monté sur SES pages : au
+premier serveur lent, son client aurait lu qu'« Atlas est en train de se
+préparer après une mise à jour ». Une barre en moins, un bandeau en plus.
+
+**« Public » ne veut pas dire « pour le client ».** `/login` est public aussi,
+mais c'est l'écran du patron : ce qui lui parle d'Atlas y est chez lui. D'où
+`estPageDuClient`, distinct de `estCheminPublic` — mélanger les deux ferait
+qu'une future page d'aide deviendrait « page client » sans que personne l'ait
+décidé.
+
+Le contrôle a été confronté à l'état qu'il prétend détecter : veilleur remis
+partout, il rougit sur les deux pages, en citant ce que le client lirait.
 
 ### Le message du devis figé est devenu la porte
 

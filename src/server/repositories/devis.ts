@@ -102,6 +102,9 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       entrepriseTelephone: entreprise.telephone,
       entrepriseIban: entreprise.iban,
       clientNom: client?.nom,
+      // Recopiée comme le nom : le document dit comment on s'adressait à son
+      // destinataire CE JOUR-LÀ (migration 0038).
+      clientCivilite: client?.civilite ?? null,
       clientAdresse: client?.adresse,
       clientTelephone: client?.telephone,
       clientEmail: client?.email,
@@ -203,6 +206,7 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
       // le client reçoit un devis qu'il ne peut pas payer.
       entrepriseIban: d.entrepriseIban,
       clientNom: d.clientNom,
+      clientCivilite: d.clientCivilite,
       clientAdresse: d.clientAdresse,
       clientTelephone: d.clientTelephone,
       adresseChantier: d.adresseChantier,
@@ -245,6 +249,7 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
       entrepriseEmail: avant.entrepriseEmail,
       entrepriseIban: avant.entrepriseIban,
       clientNom: avant.clientNom,
+      clientCivilite: avant.clientCivilite,
       clientAdresse: avant.clientAdresse,
       clientTelephone: avant.clientTelephone,
       adresseChantier: avant.adresseChantier,

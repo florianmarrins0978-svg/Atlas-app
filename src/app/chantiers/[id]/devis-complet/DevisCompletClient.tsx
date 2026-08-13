@@ -7,8 +7,11 @@ import { adressesDuDocument } from "@/lib/adresses";
 import { enEuros } from "@/lib/euros";
 import { jourNumerique } from "@/lib/jour";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
+import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
+import ChoixCivilite from "@/components/atlas/ChoixCivilite";
+import type { Civilite } from "@/lib/civilite";
 import {
   majEmetteurAction,
   majClientDuDevisAction,
@@ -52,7 +55,7 @@ type Props = {
   statut: "brouillon" | "envoye";
   emetteur: { nom: string; adresse: string; siret: string; telephone: string; email: string; iban: string };
   clientId: string | null;
-  client: { nom: string; adresse: string; telephone: string; email: string };
+  client: { nom: string; civilite: Civilite | null; adresse: string; telephone: string; email: string };
   adresseChantier: string;
   lignesInitiales: Ligne[];
   tauxTva: string;
@@ -216,7 +219,7 @@ export default function DevisCompletClient(props: Props) {
         </div>
 
         <div className="w-full sm:w-[280px] sm:shrink-0">
-          <Reference libelle="Devis n°" valeur={props.numeroCommercial} />
+          <Reference libelle="Devis n°" valeur={<NumeroDeDocument valeur={props.numeroCommercial} />} />
           <Reference libelle="Date" valeur={jourNumerique(props.dateEmission)} />
           <Reference libelle="Validité" valeur={props.validite} />
         </div>
@@ -244,6 +247,23 @@ export default function DevisCompletClient(props: Props) {
           <Intertitre>Client</Intertitre>
           {props.clientId ? (
             <>
+              {/* **La civilité, au-dessus du nom** — le même geste qu'à la
+                  création (`ChoixCivilite`). C'est ici qu'il corrige un client
+                  d'avant le 13 août 2026, ou une pastille oubliée : sans cette
+                  seconde porte, une cliente saisie « Roux » resterait
+                  « Mr. Roux » pour toujours, y compris dans le message qui
+                  part chez elle. */}
+              <ChoixCivilite
+                valeur={client.civilite}
+                fige={fige}
+                sansLegende
+                onChange={(v) => {
+                  setClient({ ...client, civilite: v });
+                  // Enregistré sur-le-champ : une pastille n'a pas de « fin de
+                  // frappe » où se raccrocher, contrairement aux champs.
+                  void majClientDuDevisAction(props.clientId!, { civilite: v });
+                }}
+              />
               <ChampNu valeur={client.nom} fige={fige} placeholder="Nom complet" aria="Nom du client"
                 onChange={(v) => setClient({ ...client, nom: v })}
                 onFini={() => majClientDuDevisAction(props.clientId!, { nom: client.nom })} />
@@ -760,7 +780,7 @@ function Cellule({ libelle, children }: { libelle: string; children: React.React
   );
 }
 
-function Reference({ libelle, valeur }: { libelle: string; valeur: string }) {
+function Reference({ libelle, valeur }: { libelle: string; valeur: React.ReactNode }) {
   return (
     <div
       className="flex items-baseline justify-between gap-4 py-1"

@@ -115,6 +115,7 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
         entrepriseTelephone: devisSource.entrepriseTelephone,
         entrepriseIban: devisSource.entrepriseIban,
         clientNom: devisSource.clientNom,
+        clientCivilite: devisSource.clientCivilite,
         clientAdresse: devisSource.clientAdresse,
         clientTelephone: devisSource.clientTelephone,
         clientEmail: devisSource.clientEmail,
@@ -214,6 +215,7 @@ function donneesFacture(
     entrepriseEmail: f.entrepriseEmail,
     entrepriseIban: f.entrepriseIban,
     clientNom: f.clientNom,
+    clientCivilite: f.clientCivilite,
     clientAdresse: f.clientAdresse,
     clientTelephone: f.clientTelephone,
     adresseChantier: f.adresseChantier,
@@ -332,6 +334,7 @@ export type ChantierTermine = {
   id: string;
   nom: string;
   clientNom: string | null;
+  clientCivilite: "mr" | "mme" | null;
   datePlanifiee: string | null;
   termineAt: Date | null;
   factureEnvoyeeAt: Date | null;
@@ -366,6 +369,7 @@ export async function listerChantiersTermines(ctx: Ctx, aujourdHui: string = jou
         id: chantiers.id,
         nom: chantiers.nom,
         clientNom: clients.nom,
+        clientCivilite: clients.civilite,
         datePlanifiee: chantiers.datePlanifiee,
         termineAt: chantiers.termineAt,
         factureEnvoyeeAt: chantiers.factureEnvoyeeAt,

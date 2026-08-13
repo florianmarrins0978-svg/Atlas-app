@@ -63,7 +63,7 @@ async function main() {
   await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
 
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', `Anneau devis ${Date.now()}`);
+  await page.fill('input[placeholder="Bernard"]', `Anneau devis ${Date.now()}`);
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}$/, { timeout: 30_000 });
   const fiche = page.url();

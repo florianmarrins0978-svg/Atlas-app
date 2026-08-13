@@ -110,6 +110,33 @@ for (const rappel of RAPPELS_ATTENDUS) {
   }
 }
 
+// ─── Un conflit resté ouvert ────────────────────────────────────────────────
+//
+// **Payé le 13 août 2026 :** `ARCHITECTURE.md` est arrivé sur `main` avec trois
+// marqueurs de conflit dedans — une session avait poussé une fusion sans la
+// refermer. Personne ne l'a vu : ni les types, ni le lint, ni les suites ne
+// lisent ces fichiers, et la documentation, elle, se lit surtout par recherche.
+//
+// C'est le pire état possible pour un fichier de mémoire : il a l'air complet,
+// il porte les DEUX versions d'un passage, et le lecteur ne sait pas laquelle
+// fait foi. Le contrôle coûte trois lignes ; l'avoir manqué a coûté une fusion.
+for (const fichier of FICHIERS) {
+  // Le script se lance depuis la racine — comme les deux contrôles au-dessus,
+  // qui lisent déjà `fichier` tel quel.
+  if (!existsSync(fichier)) continue;
+  const lignes = readFileSync(fichier, "utf8").split("\n");
+  const marqueurs = lignes
+    .map((l, i) => ({ l, n: i + 1 }))
+    .filter(({ l }) => /^<{7} |^={7}$|^>{7} /.test(l));
+  if (marqueurs.length > 0) {
+    problemes.push(
+      `${fichier} — ${marqueurs.length} marqueur(s) de conflit non refermé(s), ` +
+        `à partir de la ligne ${marqueurs[0].n} : le fichier porte DEUX versions du même ` +
+        "passage, et rien ne dit laquelle fait foi"
+    );
+  }
+}
+
 if (problemes.length > 0) {
   console.error("❌ La mémoire du dépôt pointe dans le vide :\n");
   for (const p of problemes) console.error(`   ${p}`);

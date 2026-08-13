@@ -27,6 +27,42 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quatervicies sexies. ~~Un conflit non refermé était arrivé sur `main`~~ — **contrôlé depuis le 13 août 2026**
+
+**Constaté en refusionnant :** `ARCHITECTURE.md` portait **trois marqueurs de
+conflit** sur `main` — une session avait poussé une fusion sans la refermer.
+
+**Pourquoi personne ne l'a vu, et c'est le cœur du sujet.** Ni les types, ni le
+lint, ni les suites ne lisent les fichiers de mémoire, et la documentation se
+consulte surtout par recherche : on tombe sur le passage qu'on cherche, pas sur
+les marqueurs vingt lignes plus haut. Le fichier avait l'air complet — il portait
+même **les deux versions** du passage, sans que rien ne dise laquelle fait foi.
+C'est le pire état pour une mémoire : plus trompeur qu'une section absente.
+
+**`verifier:memoire` les refuse désormais**, et nomme le fichier, le compte et la
+première ligne. Éprouvé en réintroduisant l'état exact qui était passé.
+
+Le doublon de section qu'il avait entraîné est défait au passage : deux `## 81`
+coexistaient (la civilité, l'en-tête du SMS). La première garde son numéro,
+la seconde devient `## 82` — aucun renvoi ne la visait, vérifié avant de renommer.
+
+### 0 sexvicies. Faire confirmer par le patron que le numéro n'est plus un lien d'appel
+
+**Livré le 13 août 2026, non éprouvé ici, et ça ne peut pas l'être.** Le numéro
+du devis et celui de la facture s'écrivent désormais de façon qu'un détecteur
+d'Apple n'y voie plus un téléphone (`ARCHITECTURE.md` §81). Cet environnement
+n'a que Chromium, qui n'a jamais fait cette détection : les suites vérifient que
+le texte aplati ne contient plus de suite de chiffres appelable, pas ce
+qu'iOS en fera.
+
+**Ce qu'il faut lui demander**, une fois le lot sur `main` : rouvrir le lien de
+son devis **depuis ses SMS** — pas depuis Safari, le chemin compte — et dire si
+« Hydration failed » revient, et si le numéro reste un texte ordinaire sous le
+doigt. Sans cette réponse, ce défaut n'est pas clos : c'est la deuxième
+tentative sur le même, et la première paraissait juste elle aussi.
+
+### 0 unvicies. Le chevron de retour, dernier bouton hors charte
+
 ### 0 quatervicies. ~~Les trois points de la dictée~~ — **CODÉ le 13 août 2026 (proposition C)**
 
 **Sa demande du 13 août 2026**, capture de l'écran « Un chantier » à l'appui :
@@ -270,7 +306,24 @@ le seul des trois de son groupe à clôturer un chantier **avant** sa date — p
 rendre le message honnête sur ce qu'il sait et ce qu'il suppose. Les six autres
 cas de la suite passent toujours.
 
-### 0 duovicies. La civilité du client — **à trancher avec lui**
+### ~~0 duovicies. La civilité du client~~ — **tranchée et codée le 13 août 2026**
+
+**Sa décision, le soir même :** *« Tu as raison, il faut intégrer une case
+monsieur-madame. Mais je veux que ça soit sous la forme Mr Mme, en cliquable, on
+choisit au-dessus du nom. »* C'est fait — deux pastilles à la création et sur
+l'écran du devis, `ARCHITECTURE.md` §81.
+
+**Ce qui reste ouvert, et qui n'a PAS été décidé pour lui :** il n'y a que deux
+pastilles. Une société se dit donc en n'en touchant aucune — l'application
+reconnaît alors « SARL », « SCI », « Mairie »… et se tait. Cela suffit
+aujourd'hui : ses clients sont des particuliers. **À rouvrir le jour où il
+facture des entreprises**, où une troisième pastille dirait la chose au lieu de
+la laisser deviner. Qui peut le faire : lui.
+
+*Ce qui suit est gardé parce que le raisonnement resservira le jour de cette
+question-là.*
+
+### ~~0 duovicies bis. La civilité du client — l'arbitrage d'origine~~
 
 Le 13 août 2026, il a demandé que le devis dise « Mr. Martins » et non « Chez
 Martins ». C'est **fait**, écran et message tout prêt compris

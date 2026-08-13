@@ -62,7 +62,7 @@ async function main() {
 
   // Un chantier NEUF : ni photo, ni dictée — exactement le sien.
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', `Anneau e2e ${Date.now()}`);
+  await page.fill('input[placeholder="Bernard"]', `Anneau e2e ${Date.now()}`);
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 20_000 });
   const fiche = page.url();

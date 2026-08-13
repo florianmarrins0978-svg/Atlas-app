@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-13 · branche `main`
-· dernière migration `drizzle/0036_monsieur_plutot_que_chez.sql`
+· dernière migration `drizzle/0038_civilite_du_client.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -104,6 +104,27 @@ seule avec quinze outils.
 | Export des données d'un client | `src/server/repositories/donnees-client.ts` |
 | Effacement d'un client, respectant la conservation légale | idem |
 
+### Le numéro du client, pris pour un téléphone (13 août 2026)
+
+Deuxième passe sur le même défaut. Le 12 août, l'en-tête `format-detection`
+avait été posée et annoncée comme réglant l'affaire ; le 13, le patron ouvre son
+devis **depuis un SMS** et reçoit la même « Hydration failed », signature d'iOS
+comprise — sur un banc à jour, vérifié par sa fiche d'état. Une vue intégrée à
+Messages ne lit pas cette en-tête, et c'est le seul chemin par lequel son client
+arrive sur la page.
+
+| Brique | Où c'est |
+|---|---|
+| La règle : découper un numéro pour qu'il ne ressemble plus à un téléphone | `src/lib/numero-document.ts` |
+| Ce qui répare vraiment — la coupure du texte aplati par `inline-flex` | `src/components/atlas/NumeroDeDocument.tsx` |
+| Contrôles purs, sans navigateur | `scripts/test-numero-document.ts` |
+| Le texte réellement aplati, lu sur un VRAI devis | `scripts/test-detection-automatique-e2e.ts` |
+| Le pourquoi, le coût assumé et ce qui reste non prouvé | `ARCHITECTURE.md` §81 |
+
+**Non éprouvé ici, et ça ne peut pas l'être** : la détection appartient à un
+logiciel fermé d'Apple, absent de cet environnement. À faire confirmer par le
+patron, depuis ses SMS (`TODO.md`).
+
 ### L'écran d'erreur qui ne menait nulle part (11 août 2026)
 
 Un serveur redémarré sous un onglet resté ouvert, et les morceaux de code
@@ -156,8 +177,10 @@ l'application. Ce qui est **fait** :
   plus « Chez Martins » mais « Mr. Martins », et la carte pose le nom
   au-dessus du détail au lieu de les coller par un tiret. La civilité vit dans
   `src/lib/civilite.ts` — **et c'est un défaut, pas une donnée** : sans champ de
-  civilité sur la fiche client, une cliente est nommée « Mr. ». À trancher
-  avec lui. Le message tout prêt l'aborde de la même façon (« Bonjour
+  civilité sur la fiche client, une cliente était nommée « Mr. ». **Tranché le
+  soir même** : deux pastilles « Mr » / « Mme » au-dessus du nom, à la création
+  et sur l'écran du devis, recopiées sur le devis et la facture. Un client sur
+  lequel il n'a rien touché garde l'apparence qu'il avait avant. Le message tout prêt l'aborde de la même façon (« Bonjour
   Mr. Martins »), et l'encart du client porte une phrase qui l'invite à écrire.
   `ARCHITECTURE.md` §77.
 - **Le devis à la main** : ses trois zones de texte mesurent leur hauteur au

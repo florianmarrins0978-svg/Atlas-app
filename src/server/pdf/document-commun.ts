@@ -2,6 +2,7 @@ import { adressesDuDocument } from "../../lib/adresses";
 import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb, RGB } from "pdf-lib";
 import Decimal from "decimal.js";
 import { couleursDocument } from "@/lib/design-tokens";
+import { avecCivilite } from "@/lib/civilite";
 
 // Le moteur commun des pièces que le client reçoit : devis et facture.
 //
@@ -272,6 +273,8 @@ export type DonneesDocument = {
   entrepriseEmail?: string | null;
   entrepriseIban?: string | null;
   clientNom?: string | null;
+  /** Recopiée sur le document au moment où il est établi (migration 0038). */
+  clientCivilite?: "mr" | "mme" | null;
   clientAdresse?: string | null;
   clientTelephone?: string | null;
   adresseChantier?: string | null;
@@ -398,7 +401,10 @@ export async function composerDocument(
     .flatMap((l) => enLignes(l, ctx.sans, 9, largeurColonne));
 
   const client = [
-    data.clientNom,
+    // **Le papier nomme le client comme l'écran et le message.** Une seule
+    // règle (`src/lib/civilite.ts`) : recopiée ici, elle aurait fini par dire
+    // « Mme Roux » à l'écran et « Mr. Roux » sur le PDF qu'elle garde.
+    avecCivilite(data.clientNom, data.clientCivilite),
     // L'adresse du client — ou, à défaut, celle du chantier, sans étiquette.
     // La ligne « Chantier : … » ne subsiste que si les travaux ont lieu
     // ailleurs. Même fonction qu'à l'écran (`src/lib/adresses.ts`) : deux

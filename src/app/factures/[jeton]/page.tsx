@@ -1,5 +1,6 @@
 import { factureParJeton } from "@/server/repositories/envois-factures";
 import { jourLisible } from "@/lib/jour";
+import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 
 // La page que voit le client quand il touche le lien de sa facture.
 //
@@ -55,7 +56,7 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
       <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-sm">
         <p className="text-[12px] font-semibold uppercase tracking-[0.12em] opacity-50">Facture</p>
         <h1 className="mt-1 text-[20px] font-semibold" style={{ fontFamily: "ui-serif, Georgia, serif" }}>
-          {facture.numeroCommercial}
+          <NumeroDeDocument valeur={facture.numeroCommercial} />
         </h1>
         <p className="mt-1 text-[14px] opacity-70">{facture.entrepriseNom}</p>
 

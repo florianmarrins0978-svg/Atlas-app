@@ -18,7 +18,7 @@ async function main() {
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   // Client et coordonnée : sans canal d'envoi convenu, l'écran devis refuse
   // — à juste titre — de partir chez le client.
-  await page.fill('input[placeholder="M. Bernard"]', client);
+  await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });

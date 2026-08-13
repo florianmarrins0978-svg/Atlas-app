@@ -6115,6 +6115,8 @@ Deux règles, pour toute suite qui ralentit volontairement un serveur :
    appel à moitié traité, et l'outil répond « Route is already handled! », une
    erreur qui n'apprend rien sur ce qu'on éprouve.
 
+---
+
 ### Une attente sans fin ne renseigne pas plus qu'une attente immobile
 
 La question était restée ouverte, et le patron l'a tranchée d'un « oui fait ça » :
@@ -6163,3 +6165,171 @@ fin, « 1 information reprise — relisez avant de créer. », fait 47 caractèr
 casse le titre à **chaque dictée réussie**. Il n'a pas été touché — c'est une
 phrase que le patron voit depuis des jours sans s'en plaindre, et la raccourcir
 change ce qu'elle lui dit (`TODO.md`).
+
+## 81. La civilité devient une donnée : « Mr » / « Mme », au-dessus du nom
+
+**Le patron, le 13 août 2026, le soir même où il avait fait poser « Mr. »
+partout :** *« Tu as raison, il faut intégrer une case monsieur-madame. Mais je
+veux que ça soit sous la forme Mr Mme, en cliquable, on choisit au-dessus du
+nom. »*
+
+C'est la réserve du §77 qu'il tranche : jusque-là, « Mr. » était un **défaut**
+posé sur tout patronyme nu — y compris dans le SMS qui part chez le client. Une
+cliente lisait « Bonjour Mr. Roux ».
+
+### Trois états, et NULL est le plus courant
+
+`clients.civilite` vaut `'mr'`, `'mme'`, ou **NULL** (migration 0038). NULL
+n'est pas « inconnu par erreur » : une société n'est ni l'un ni l'autre, et un
+client saisi à la volée n'a pas toujours eu droit à un appui de plus. Forcer un
+défaut en base rendrait son silence indiscernable d'un choix — la leçon de
+`equipes.nom` (§51).
+
+**Ce que NULL vaut à l'affichage est décidé dans `avecCivilite`, jamais en
+base** : la règle du matin s'y applique encore (civilité par défaut sur un
+patronyme nu, rien sur une société). C'est ce qui fait que **ses clients
+existants n'ont pas changé d'apparence du jour au lendemain** — le jour où la
+case est apparue, aucune fiche ne la portait.
+
+### L'ordre des questions, et le piège qu'il évite
+
+`avecCivilite(nom, civilite)` tranche dans cet ordre, et il n'est pas
+indifférent :
+
+1. **Le nom porte-t-il DÉJÀ une civilité écrite ?** Alors on n'en pose pas une
+   seconde, choix ou non. Sans cette priorité, toucher « Mme » sur « Mme Roux »
+   écrivait « Mme Mme Roux ».
+2. **A-t-il choisi ?** Alors c'est lui qui a raison — y compris contre la
+   détection de société. « Mme Boulangerie du Bourg » est une cliente, pas une
+   raison sociale, et la détection n'existe que pour combler son silence.
+3. **Sinon**, la règle d'avant : défaut sur un patronyme nu, rien sur une
+   société.
+
+Les deux questions — « a-t-il sa civilité ? » et « est-ce une société ? » —
+étaient mêlées dans une seule fonction ; c'est en donnant la priorité au choix
+que le doublon est apparu. D'où `aDejaUneCivilite`, séparée.
+
+### Deux portes, et pourquoi la seconde n'est pas un luxe
+
+- **À la création** (`FormulaireNouveauChantier`), au-dessus du nom, comme il l'a
+  demandé.
+- **Sur l'écran du devis** (`DevisCompletClient`). Sans elle, une cliente saisie
+  « Roux » avant la case — ou avec une pastille oubliée — resterait « Mr. Roux »
+  **pour toujours**, y compris dans le message qui part chez elle. Il n'existe
+  aucun autre écran de fiche client.
+
+**Le composant est le même** (`src/components/atlas/ChoixCivilite.tsx`), avec
+`sansLegende` sur le devis : cet écran est « à l'image du papier », tous ses
+champs y sont nus, et une étiquette en petites capitales au milieu du bloc
+« Client » y ressemblait à un formulaire collé sur une lettre. **Vu en capture,
+jamais par un contrôle** — d'où `scripts/capture-choix-civilite.mts`.
+
+Deux décisions de dessin qui se paieraient si on les défaisait :
+
+- **Rien n'est présélectionné.** Cocher « Mr » d'avance remettrait en base la
+  supposition qu'on vient de retirer.
+- **Un second appui DÉSÉLECTIONNE.** Il n'y a que deux pastilles — il en a
+  demandé deux — donc pas de troisième bouton « ni l'un ni l'autre » ; sans le
+  second appui, une pastille touchée par erreur ne se reprendrait plus, et la
+  société est très exactement ce cas-là.
+
+### Le document en garde une COPIE
+
+`devis.client_civilite` et `factures.client_civilite` sont recopiées à
+l'établissement, comme `client_nom` l'était déjà. Sans cela, corriger une fiche
+client réécrirait la façon dont un devis **déjà parti** s'adresse à son
+destinataire — ce que le déclencheur `empecher_modification_devis_envoye`
+interdit par ailleurs.
+
+Le PDF passe par la même règle (`document-commun.ts`) : recopiée là, elle aurait
+fini par dire « Mme Roux » à l'écran et « Mr. Roux » sur le papier qu'elle garde.
+
+### Un effet de bord assumé : le champ d'exemple change
+
+Le nom du client proposait « M. Bernard » en exemple. Sous une pastille
+« Mr / Mme », cet exemple invitait à retaper la civilité dans le nom — auquel
+cas la pastille ne servait plus à rien (§1 de l'ordre ci-dessus). Il vaut donc
+« Bernard », et **54 fichiers de contrôle** visaient ce texte. Ils ont suivi.
+
+**Attention au sélecteur** : `getByPlaceholder("Bernard")` cherche une
+sous-chaîne et attrape aussi « bernard@exemple.fr ». Les suites emploient
+`input[placeholder="Bernard"]`, qui est exact.
+## 82. Une en-tête n'est qu'une demande — le SMS ne la lit pas
+
+**Le même défaut, deux jours de suite, et le second était une leçon.** Le
+12 août 2026, iOS transformait le numéro de facture en lien d'appel et React
+répondait « Hydration failed » (§68). Le remède posé ce jour-là —
+`formatDetection` dans les métadonnées du gabarit racine — était juste, et il a
+été annoncé comme réglé.
+
+**Le 13 août, le patron ouvre le lien de son devis reçu par SMS. Même erreur,
+même signature :**
+
+```
++ 2026-0007
+- <a href="tel:2026-0007" x-apple-data-detectors="true"
+     x-apple-data-detectors-type="telephone">
+```
+
+Ce n'était pas un banc en retard : sa fiche d'état, réécrite à 14 h 55, donnait
+`main` à `5a6e999` — le commit portant l'en-tête, servi pour de bon.
+
+### Ce que le 12 août avait manqué
+
+**Un lien touché depuis Messages ne s'ouvre pas dans Safari.** Il s'ouvre dans
+une vue intégrée, dont la détection de données est réglée par l'application
+hôte : `format-detection` y est sans effet. Or c'est **le seul chemin par lequel
+le client de l'artisan arrive sur ces pages** — le devis et la facture partent
+par SMS, et §68 protégeait précisément le chemin que personne n'emprunte.
+
+La leçon dépasse ce défaut : une en-tête HTML est une **demande** au navigateur.
+Elle vaut ce que vaut la bonne volonté d'en face. Un correctif qui repose
+dessus, et qui ne peut être éprouvé nulle part, ne devrait jamais être écrit
+comme acquis — §68 l'avait pourtant été.
+
+### Le remède : ne plus rien avoir à détecter
+
+`src/lib/numero-document.ts` découpe « 2026-0007 » en morceaux dont aucun ne
+porte assez de chiffres pour être un téléphone (quatre au plus, contre sept au
+minimum pour le plus court des numéros). `NumeroDeDocument` les rend.
+
+**Et c'est `inline-flex` qui répare, pas le découpage.** Un détecteur ne lit pas
+le DOM : il lit le TEXTE APLATI de la page. Mesuré dans un navigateur avant
+d'écrire le composant, sur « Devis n° 2026-0007 » :
+
+| Écriture | Texte aplati |
+|---|---|
+| nu | `Devis n° 2026-0007` |
+| deux `<span>` en ligne | `Devis n° 2026-0007` |
+| deux `<span>` en `inline-block` | `Devis n° 2026-0007` |
+| parent en `inline-flex` | `Devis n° ⏎2026-⏎0007` |
+
+**La recette qui circule pour ce défaut — « entourez chaque moitié d'un span » —
+ne sert donc à rien.** Seuls les blocs coupent le texte aplati, et les enfants
+d'une boîte flexible sont blockifiés par CSS quel que soit leur `display`. C'est
+tout ce qui sépare un correctif d'un placebo, et cela ne se voit sur aucun écran.
+
+### Ce que ça coûte, écrit plutôt que tu
+
+Un numéro **copié depuis l'écran** emporte les retours à la ligne
+(« 2026-⏎0007 »). C'est le prix exact de ce qui protège — la même coupure sert
+les deux — payé sur un geste rare, quand le défaut, lui, frappait chaque client.
+Le numéro reste intact partout où il compte : dans le PDF, dans le SMS, en base.
+
+Appliqué aux **six** endroits où un numéro s'affiche, pas aux deux signalés : le
+patron consulte son atelier depuis le même iPhone, et attendre qu'il découvre
+l'écran suivant coûterait un aller-retour de plus.
+
+### Ce qui garde le remède, et ce qu'aucun contrôle ne prouvera
+
+`test-numero-document.ts` éprouve la règle sans navigateur.
+`test-detection-automatique-e2e.ts` ouvre un **vrai** devis et lit le texte que
+le navigateur aplatit : remplacer `NumeroDeDocument` par un `<span>` ordinaire —
+ou son `inline-flex` par un `display` en ligne — ne se verrait sur aucune
+capture, et rend cette suite rouge. Les deux ont été vues échouer sur le vrai
+défaut, message à l'appui.
+
+**Ce qui reste non prouvé, et doit être dit :** la détection appartient à un
+logiciel fermé d'Apple, absent d'ici. Ce dépôt vérifie que le texte offert à ce
+logiciel ne contient plus de suite de chiffres appelable ; il ne peut pas
+vérifier ce que le logiciel en fera. Seul le téléphone du patron le dira.

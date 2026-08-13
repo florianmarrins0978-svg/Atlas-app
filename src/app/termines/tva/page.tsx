@@ -1,5 +1,6 @@
 import Link from "next/link";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { releveTvaCollectee } from "@/server/repositories/factures";
@@ -110,7 +111,8 @@ export default async function ReleveTvaPage({
                   <li key={l.numeroCommercial} className="flex items-baseline justify-between gap-4">
                     <div className="min-w-0">
                       <p className="truncate text-[15px]" style={{ color: colors.ink }}>
-                        {l.numeroCommercial} — {l.clientNom ?? "Client non renseigné"}
+                        <NumeroDeDocument valeur={l.numeroCommercial} /> —{" "}
+                        {l.clientNom ?? "Client non renseigné"}
                       </p>
                       <p className="mt-0.5 text-[12px]" style={{ color: colors.muted }}>
                         {jourLisible(l.dateEmission)}
