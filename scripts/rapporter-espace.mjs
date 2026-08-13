@@ -93,8 +93,26 @@ export function expurger(texte) {
     .join("\n");
 }
 
+/**
+ * À quel moment cette fiche a-t-elle été écrite ?
+ *
+ * **Sans cela, la fiche se lit de travers — vécu le 12 août 2026 au soir.** Le
+ * patron signale « l'appli ne s'ouvre plus » ; sa fiche, fraîche de trois
+ * minutes, dit « Serveur : NE RÉPOND PAS ». Alarmant — et pourtant normal :
+ * c'était la publication de l'ALLUMAGE, écrite volontairement avant que le
+ * serveur ait eu le temps de démarrer. Les mêmes mots, vingt minutes plus tard,
+ * sont une panne. Rien ne permettait de distinguer les deux, et il a fallu
+ * recouper des horodatages pour le comprendre.
+ */
+const MOMENTS = {
+  allumage: "à l'allumage — **le serveur n'a pas encore eu le temps de démarrer**",
+  demarre: "après démarrage — le serveur a répondu, ou a cessé d'être attendu",
+  veille: "par le veilleur, au quart d'heure",
+  main: "à la main",
+};
+
 /** Le corps de la fiche. Rendu séparément pour être éprouvable sans réseau. */
-export function corpsDuRapport({ diagnostic, quand }) {
+export function corpsDuRapport({ diagnostic, quand, moment = "main" }) {
   return [
     "> Fiche écrite automatiquement par l'espace de travail du patron, à chaque",
     "> allumage. Elle existe pour que l'agent voie sa machine sans avoir à lui",
@@ -102,6 +120,18 @@ export function corpsDuRapport({ diagnostic, quand }) {
     "> est réécrite entièrement à chaque publication.**",
     "",
     `**Dernière publication :** ${quand}`,
+    `**Écrite :** ${MOMENTS[moment] ?? MOMENTS.main}`,
+    "",
+    // **La date EST un diagnostic, et c'est le plus rapide de tous.** Le
+    // veilleur republie tous les quarts d'heure tant que l'espace tourne : une
+    // fiche qui a vieilli ne dit pas « le serveur va mal », elle dit « la
+    // machine entière est arrêtée ». Sans cette phrase, on cherche la panne
+    // dans le produit alors qu'il n'y a plus personne pour la produire.
+    "> **Regardez cette date AVANT tout le reste.** Le veilleur réécrit cette",
+    "> fiche tous les quarts d'heure tant que l'espace tourne. Passé vingt",
+    "> minutes sans réécriture, ce n'est pas le serveur qui est en panne : c'est",
+    "> l'espace qui est **arrêté**, et il faut le rallumer depuis",
+    "> github.com/codespaces.",
     "",
     "## Ce que l'espace dit de lui-même",
     "",
@@ -253,6 +283,10 @@ async function main() {
       // L'heure vient du système : une fiche sans date ne dit pas si l'on
       // regarde l'état d'aujourd'hui ou celui d'avant-hier.
       quand: new Date().toISOString(),
+      // Posé par qui appelle : `demarrer.sh` distingue ses deux passages, le
+      // veilleur se nomme, et un appel à la main ne prétend être ni l'un ni
+      // l'autre.
+      moment: process.env.ATLAS_MOMENT,
     })
   );
 

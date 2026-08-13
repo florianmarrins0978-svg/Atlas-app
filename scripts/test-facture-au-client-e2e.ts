@@ -64,14 +64,32 @@ async function main() {
   await page.waitForTimeout(800);
   await page.locator("button[aria-pressed]").nth(1).click();
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForTimeout(2000);
 
-  const jetonDevis = (
-    await pool.query(
-      `SELECT e.jeton FROM envois_devis e JOIN devis d ON d.id = e.devis_id WHERE d.chantier_id = $1`,
-      [chantierId]
-    )
-  ).rows[0].jeton;
+  // **Attendre l'ÉTAT, jamais un délai fixe** — la règle que ce fichier énonce
+  // quarante lignes plus bas, et qui manquait ICI, sur le geste qui la précède.
+  //
+  // Le 12 août 2026 au soir, en batterie : `TypeError: Cannot read properties
+  // of undefined (reading 'jeton')`. Deux secondes suffisent quand la suite est
+  // jouée seule ; sous soixante suites enchaînées, l'envoi ne les tient pas, la
+  // ligne n'existe pas encore, et l'erreur accuse un `undefined` au lieu de
+  // dire que l'envoi n'a pas eu le temps. Un contrôle qui échoue au hasard
+  // apprend à ignorer le rouge.
+  let jetonDevis: string | undefined;
+  for (let i = 0; i < 60 && !jetonDevis; i++) {
+    jetonDevis = (
+      await pool.query(
+        `SELECT e.jeton FROM envois_devis e JOIN devis d ON d.id = e.devis_id WHERE d.chantier_id = $1`,
+        [chantierId]
+      )
+    ).rows[0]?.jeton;
+    if (!jetonDevis) await page.waitForTimeout(500);
+  }
+  if (!jetonDevis) {
+    throw new Error(
+      "Le devis n'est jamais parti : aucune ligne dans `envois_devis` après trente secondes. " +
+        "Ce n'est pas un défaut d'attente — c'est l'envoi lui-même qui a échoué."
+    );
+  }
   await page.goto(`${BASE}/devis/${jetonDevis}`, { waitUntil: "networkidle" });
   // La date se choisit avant d'accepter — c'est le parcours réel du client.
   await page.locator('input[name="choixDate"]').first().check();
