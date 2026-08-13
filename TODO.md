@@ -27,6 +27,54 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 tervicies. `test-planning-vers-facture-e2e` échoue, et son message accuse à tort
+
+**Constaté le 13 août 2026, en éprouvant autre chose.** Le dernier cas de cette
+suite — *« clôturé AVANT sa date : il quitte le planning pour les terminés »* —
+échoue sur `page.goto` au bout de 45 s, tantôt sur `/termines`, tantôt sur
+`/planning`.
+
+**Ce n'est PAS la civilité** : vérifié en remisant toutes les modifications du
+jour et en rejouant la suite sur `main` intact — même échec, au même endroit.
+Le défaut lui est antérieur.
+
+**Et son message envoie chercher au mauvais endroit** — ce que `AGENTS.md`
+interdit explicitement. Il affirme : *« C'est le serveur de développement qui
+n'a pas suivi, pas l'écran : il répond en quelques centaines de millisecondes
+hors batterie »*. Or **la suite échoue aussi jouée seule**, sans aucune autre
+en parallèle. L'explication de charge est donc fausse, et elle a déjà coûté un
+aller-retour.
+
+**Ce qui reste à faire :** trouver ce que ce cas-là fait de particulier — c'est
+le seul des trois de son groupe à clôturer un chantier **avant** sa date — puis
+corriger le message pour qu'il désigne le vrai coupable. Les six autres cas de
+la suite passent.
+
+### 0 duovicies. La civilité du client — **à trancher avec lui**
+
+Le 13 août 2026, il a demandé que le devis dise « Monsieur Martins » et non
+« Chez Martins ». C'est **fait** (`ARCHITECTURE.md` §76). Mais la fiche client
+ne porte **aucun champ de civilité** : « Monsieur » est un défaut posé sur tout
+nom qui n'en annonce pas d'autre.
+
+**Ce que ça veut dire concrètement, et pourquoi ça ne peut pas rester ainsi
+indéfiniment :** une cliente saisie « Roux » verra « Monsieur Roux » sur son
+devis. L'application sait déjà se taire devant « Mme Roux » ou « SARL Untel » —
+ces deux cas sont couverts — mais elle ne devine pas un patronyme nu.
+
+| | Piste | Ce que ça vaut |
+|---|---|---|
+| a | **Un choix à la création du client** : trois pastilles — Monsieur, Madame, ni l'un ni l'autre (société). Un appui. | La seule qui dise la vérité. Coûte une colonne, une migration, et trois pastilles sur un écran déjà chargé. |
+| b | Laisser le patron écrire « Mme Roux » lui-même dans le nom | Gratuit, marche déjà — mais il faut qu'il y pense à chaque fois, et un oubli part chez la cliente. |
+| c | Ne rien mettre du tout et revenir au nom nu | Annule sa demande du 13 août. |
+
+**Qui peut le faire : lui seul.** C'est un arbitrage de produit, pas un choix
+technique — et rien ne sera ajouté sans son accord (`CLAUDE.md` §4).
+
+**Et une seconde question, liée :** le message qui part chez son client dit
+toujours « Bonjour Martins ». Faut-il qu'il dise « Bonjour Monsieur Martins » ?
+Rien n'a été touché : c'est ce que ses clients lisent.
+
 ### 0 unvicies. ~~Relier l'agenda iCloud~~ — **codé le 12 août 2026**, reste à éprouver chez lui
 
 **Sa question du 12 août 2026**, capture du Calendrier d'Apple à l'appui : *« je

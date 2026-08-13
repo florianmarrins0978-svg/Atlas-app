@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { nomDuChantier, intituleDuChantier } from "../src/lib/nom-chantier";
+import { CIVILITE_PAR_DEFAUT } from "../src/lib/civilite";
 
 // Comment un chantier s'appelle, quand personne ne le nomme.
 //
@@ -28,14 +29,20 @@ const JOUR = "2026-08-05";
 
 console.log("=== Le nom se déduit de ce qui a été donné ===");
 
-cas("un client nommé donne « Chez M. Bernard »", () => {
-  assert.equal(nomDuChantier({ nomClient: "M. Bernard", jour: JOUR }), "Chez M. Bernard");
+cas("un client nommé donne son nom, avec sa civilité", () => {
+  // **Changé le 13 août 2026 :** le nom valait « Chez M. Bernard ». Le patron,
+  // capture de son devis à l'appui : *« il faut qu'il y ait écrit monsieur
+  // Martins et pas chez Martins »*. « Chez » est la phrase par laquelle un
+  // artisan désigne un chantier ; en tête d'un document, on nomme quelqu'un.
+  assert.equal(nomDuChantier({ nomClient: "Martins", jour: JOUR }), "Monsieur Martins");
+  // Une civilité déjà saisie n'en reçoit pas une seconde.
+  assert.equal(nomDuChantier({ nomClient: "M. Bernard", jour: JOUR }), "M. Bernard");
 });
 
 cas("le client prime sur l'adresse — c'est ainsi qu'il en parle", () => {
   assert.equal(
     nomDuChantier({ nomClient: "M. Bernard", adresseChantier: "12 rue des Lilas", jour: JOUR }),
-    "Chez M. Bernard"
+    "M. Bernard"
   );
 });
 
@@ -57,11 +64,20 @@ cas("null et undefined se traversent sans planter", () => {
   assert.equal(nomDuChantier({ nomClient: null, adresseChantier: undefined, jour: JOUR }), "Chantier du mercredi 5 août");
 });
 
-cas("INVARIANT — rien n'apparaît qui n'ait été donné", () => {
-  // Le nom rendu ne contient que des mots venus de la saisie (ou le mot
-  // « Chez »/« Chantier du » et la date, qui n'affirment rien de faux).
+cas("INVARIANT — la saisie survit intacte, et rien d'autre ne s'ajoute", () => {
+  // **Cet invariant a été ASSOUPLI le 13 août 2026, et il faut le savoir.**
+  //
+  // Il tenait jusque-là que chaque mot du nom venait de la saisie. La civilité
+  // rompt cette règle : « Monsieur » n'est pas une donnée du client, c'est un
+  // défaut, et le patron l'a demandé en sachant qu'il n'avait tapé que
+  // « Martins » (`src/lib/civilite.ts`). Ne pas « rétablir » l'ancien
+  // invariant sans lui : il a été levé, pas oublié.
+  //
+  // Ce qui reste tenu, et qui est l'essentiel : **la saisie n'est jamais
+  // altérée**, et le seul mot qui puisse s'ajouter est celui-là.
   const donnees = [
     { nomClient: "Mme Roux", jour: JOUR },
+    { nomClient: "Martins", jour: JOUR },
     { adresseChantier: "3 chemin du Bois", jour: JOUR },
     { nomClient: "SARL Untel", adresseChantier: "zone artisanale", jour: JOUR },
   ];
@@ -71,7 +87,9 @@ cas("INVARIANT — rien n'apparaît qui n'ait été donné", () => {
     const inconnus = nom
       .toLowerCase()
       .split(/[^0-9a-zà-öø-ÿ]+/i)
-      .filter((m) => m.length > 0 && m !== "chez" && m !== "chantier" && m !== "du")
+      .filter(
+        (m) => m.length > 0 && m !== "chantier" && m !== "du" && m !== CIVILITE_PAR_DEFAUT.toLowerCase()
+      )
       .filter((m) => !saisi.includes(m));
     assert.deepEqual(inconnus, [], `Le nom « ${nom} » contient des mots que le patron n'a pas donnés.`);
   }
@@ -96,7 +114,11 @@ cas("un même client deux fois donne le même nom — aucune fantaisie", () => {
 // étaient exacts, c'est leur mise bout à bout qui ne l'était pas.
 
 cas("le nom porte déjà le client : on ne le répète pas", () => {
+  assert.equal(intituleDuChantier("M. Bernard", "M. Bernard"), "M. Bernard");
+  // Et les chantiers d'avant le 13 août 2026, restés « Chez … » en base tant
+  // que la migration 0036 n'a pas tourné, se lisent toujours sans doublon.
   assert.equal(intituleDuChantier("M. Bernard", "Chez M. Bernard"), "Chez M. Bernard");
+  assert.equal(intituleDuChantier("Martins", "Monsieur Martins"), "Monsieur Martins");
 });
 
 cas("un nom donné à la main reçoit le client devant", () => {
