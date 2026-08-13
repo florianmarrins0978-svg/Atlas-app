@@ -178,6 +178,45 @@
      par arbre ou par heure, et c'est sur le devis que l'écart se paiera. */
   .tar.sans .comment{color:var(--e-alerte)}
 
+  /* ═══ Ajouter, et supprimer ═══════════════════════════════════════════ */
+  /* Demandé le 13 août 2026 : « pouvoir aussi ajouter ou supprimer du matériel,
+     ou un prix, ou un machin ».
+
+     UN GESTE PAR FAMILLE, et non un seul en haut d'écran. La famille commande
+     l'unité : partir de « Ajouter un matériel » fait arriver sur la fiche avec
+     les bonnes unités déjà proposées. Un « + » unique obligerait à choisir la
+     famille d'abord, sur un écran de plus. */
+  .ajout{display:flex;align-items:center;gap:12px;padding:15px 0;min-height:54px;color:var(--e-plein)}
+  .ajout .plus{flex:none;width:19px;text-align:center;font:400 19px/1 ui-serif,Georgia,serif}
+  .ajout .nom{font:400 17px/1.25 ui-serif,Georgia,serif}
+
+  /* La suppression vit au BAS de la fiche, jamais dans la liste : une corbeille
+     posée sur chaque ligne se touche du pouce en faisant défiler. Et elle est
+     en texte, pas en bouton plein — un aplat rouge dans un écran de réglages
+     attire l'œil avant tout le reste. */
+  .retirer{display:block;margin:30px 26px 0;padding-top:18px;
+           border-top:1px solid var(--e-trait);
+           font:400 17px/1.25 ui-serif,Georgia,serif;color:var(--e-alerte);
+           -webkit-tap-highlight-color:transparent}
+
+  /* La feuille de confirmation. Fermée, elle n'existe pas — pas de panneau
+     grisé qui traîne sous l'écran. */
+  .voile{display:none;position:absolute;inset:0;background:rgba(28,28,26,.28)}
+  .feuille{display:none;position:absolute;left:0;right:0;bottom:0;
+           background:var(--e-fond);border-radius:16px 16px 0 0;padding:26px 26px 30px}
+  #confirmer:checked ~ .voile,
+  #confirmer:checked ~ .feuille{display:block}
+  .feuille h2{margin:0 0 10px;font:400 24px/1.15 ui-serif,Georgia,serif;letter-spacing:-.01em}
+  .feuille p{margin:0 0 20px;font-size:11.5px;line-height:1.6;color:var(--e-gris)}
+  .feuille p b{color:var(--e-encre);font-weight:600}
+  .gestes{display:flex;flex-direction:column;gap:10px}
+  /* Capsules : la charte ne donne que cette forme à ce qu'on appuie
+     (`docs/QUESTIONS.md` §13). */
+  .bouton{display:block;text-align:center;padding:15px 20px;border-radius:99px;
+          font-size:15px;font-weight:500;-webkit-tap-highlight-color:transparent}
+  .bouton.detruire{background:var(--e-alerte);color:var(--e-plein-encre)}
+  .bouton.renoncer{color:var(--e-encre);box-shadow:inset 0 0 0 1px var(--e-trait)}
+
   /* ═══ Une grille, et ce qu'elle a appris ══════════════════════════════ */
   .gri{display:flex;align-items:center;gap:14px;padding:14px 0;min-height:54px;
        border-bottom:1px solid var(--e-trait)}
@@ -287,18 +326,21 @@
                  l'écart se paiera. Signalé sur la ligne, comme le SIRET au
                  lot 2 — pas dans une phrase en bas d'écran. -->
             <div class="tar sans" data-s="sans-unite"><span class="quoi"><span class="nom">Évacuation</span><span class="comment">unité manquante</span></span><span class="prix">90,00 <i>€</i></span></div>
+            <div class="ajout"><span class="plus">+</span><span class="nom">Ajouter une prestation</span></div>
           </div>
 
           <div class="bloc">
             <p class="t caps">Main-d'œuvre</p>
             <div class="tar"><span class="quoi"><span class="nom">Élagueur</span><span class="comment">à l'heure</span></span><span class="prix">45,00 <i>€</i></span></div>
             <div class="tar"><span class="quoi"><span class="nom">Homme de pied</span><span class="comment">à la journée</span></span><span class="prix">280,00 <i>€</i></span></div>
+            <div class="ajout"><span class="plus">+</span><span class="nom">Ajouter une main-d&apos;œuvre</span></div>
           </div>
 
           <div class="bloc">
             <p class="t caps">Matériel</p>
             <div class="tar"><span class="quoi"><span class="nom">Nacelle</span><span class="comment">à la journée</span></span><span class="prix">320,00 <i>€</i></span></div>
             <div class="tar"><span class="quoi"><span class="nom">Broyeur</span><span class="comment">à la demi-journée</span></span><span class="prix">110,00 <i>€</i></span></div>
+            <div class="ajout" data-s="ajout-materiel"><span class="plus">+</span><span class="nom">Ajouter un matériel</span></div>
           </div>
 
           <p class="mot" data-s="a-lui">
@@ -372,8 +414,36 @@
             </div>
           </div>
 
+          <!-- LA SUPPRESSION NE S'EXÉCUTE PAS AU PREMIER APPUI. Elle vit au bas
+               de la fiche — une corbeille posée sur chaque ligne de la liste se
+               touche du pouce en faisant défiler — et elle demande confirmation,
+               parce qu'un tarif effacé par mégarde ne se retrouve pas à l'écran.
+               (En base, `supprimerTarif` pose `deletedAt` : rien n'est
+               réellement effacé. Mais l'artisan, lui, ne le sait pas.) -->
+          <label class="retirer" for="confirmer" data-s="retirer">Supprimer ce matériel</label>
+
         </div>
         <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+
+        <input class="interrupteur" type="checkbox" id="confirmer">
+        <label class="voile" for="confirmer" aria-label="Renoncer"></label>
+        <div class="feuille" data-s="feuille">
+          <h2>Supprimer « Nacelle » ?</h2>
+          <!-- CE QUI N'EST PAS TOUCHÉ, dit avant le geste. Vérifié dans le
+               code : aucune ligne de devis ne pointe vers un tarif — elles
+               copient le libellé et le prix au moment où elles sont écrites.
+               Un devis déjà fait ne bouge donc pas. Le taire laisserait croire
+               le contraire, et personne n'ose supprimer dans le doute. -->
+          <p>
+            <b>Vos devis et vos factures n&apos;en seront pas touchés</b> : ils
+            gardent le prix qu&apos;ils portaient le jour où ils ont été écrits.
+            Ce tarif cessera seulement d&apos;être proposé.
+          </p>
+          <div class="gestes">
+            <label class="bouton detruire" for="confirmer" data-s="detruire">Supprimer</label>
+            <label class="bouton renoncer" for="confirmer">Annuler</label>
+          </div>
+        </div>
       </div></div>
       <p class="note">
         Une main-d'œuvre se vend au temps, un matériel à la journée, une

@@ -6477,3 +6477,36 @@ Le contrôle regarde donc désormais **s'il y a du texte entre les deux filets**
 et pas seulement l'écart. Sans cette précaution il accusait à tort sur une
 planche saine — et une alerte qui désigne le mauvais coupable coûte plus cher
 que pas d'alerte (`AGENTS.md`).
+
+
+### Ajouter et supprimer un tarif — et ce que la suppression ne casse pas
+
+**Sa demande du 13 août 2026 :** *« pouvoir aussi ajouter ou supprimer du
+matériel, ou un prix, ou un machin ».* Les deux gestes manquaient à la planche.
+
+**UN GESTE D'AJOUT PAR FAMILLE, et qui nomme la famille.** « Ajouter un
+matériel » ferme la liste du matériel ; « Ajouter » tout court, en tête d'écran,
+obligerait à choisir la famille sur un écran de plus — alors que c'est
+précisément elle qui commande les unités proposées ensuite (§83). Le contrôle
+vérifie que chaque geste **nomme** ce qu'il ajoute et **ferme** la liste de sa
+famille.
+
+**LA SUPPRESSION VIT AU BAS DE LA FICHE, jamais dans la liste.** Une corbeille
+posée sur chaque ligne se touche du pouce en faisant défiler. Elle est en texte
+et non en aplat : un bouton rouge plein dans un écran de réglages attire l'œil
+avant tout le reste, et le rouge de cette charte est réservé à **une seule
+chose** — confirmer une action destructive.
+
+**Et elle demande confirmation, en disant ce qu'elle NE casse PAS.** C'est le
+point qui compte, et il est vérifié dans le code plutôt que supposé :
+
+- `supprimerTarif` pose `deletedAt` — **rien n'est réellement effacé** ;
+- **aucune ligne de devis ne pointe vers un tarif** : `lignes_prix` copie le
+  libellé et le prix au moment où elle est écrite. Un devis déjà fait ne bouge
+  donc pas, et une facture non plus.
+
+La feuille l'écrit avant le geste : *« Vos devis et vos factures n'en seront pas
+touchés : ils gardent le prix qu'ils portaient le jour où ils ont été écrits. »*
+**Le taire aurait suffi à bloquer l'artisan** — personne n'ose supprimer un
+tarif dans le doute, et il aurait gardé une liste qui grossit sans jamais
+maigrir.

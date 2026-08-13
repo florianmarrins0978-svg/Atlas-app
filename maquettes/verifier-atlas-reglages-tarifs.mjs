@@ -139,6 +139,75 @@ try {
   await (await page.$(FAM)).screenshot({ path: `${SORTIE}/reglages-tarifs-famille.png` });
 } catch (e) { echecs.push("famille · interrompu — " + String(e.message).split("\n")[0]); }
 
+// ── 2 bis. AJOUTER ET SUPPRIMER ──────────────────────────────────────────
+//
+// Sa demande du 13 août 2026 : « pouvoir aussi ajouter ou supprimer du
+// matériel, ou un prix, ou un machin ».
+//
+// UN GESTE PAR FAMILLE, et qui NOMME la famille : « Ajouter » tout court
+// obligerait à choisir la famille sur un écran de plus, alors que c'est elle qui
+// commande les unités proposées.
+try {
+  await cadrer(TARIFS);
+  const ajouts = await page.$$eval(`${TARIFS} .ajout .nom`, (l) => l.map((e) => e.textContent.trim()));
+  verifie("chaque famille porte son propre geste d'ajout",
+    ajouts.length === 3, `${ajouts.length}`);
+  verifie("et chacun nomme ce qu'il ajoute, jamais « Ajouter » tout court",
+    ajouts.every((a) => a.split(" ").length >= 3), ajouts.join(" | "));
+  // Le geste se pose SOUS la liste de sa famille, pas en tête d'écran.
+  const places = await page.$$eval(`${TARIFS} .bloc`, (l) =>
+    l.map((b) => {
+      const a = b.querySelector(".ajout");
+      if (!a) return "aucun";
+      return b.lastElementChild === a ? "en bas" : "au milieu";
+    }));
+  verifie("il ferme la liste de sa famille", places.every((p) => p === "en bas"), places.join(" | "));
+
+  // LA SUPPRESSION NE S'EXÉCUTE PAS AU PREMIER APPUI.
+  await cadrer(FAM);
+  verifie("la fiche porte un geste de suppression", await vu(`${FAM} [data-s="retirer"]`));
+  const bas = await page.$eval(FAM, (r) => {
+    const c = r.querySelector(".corps"), x = r.querySelector('[data-s="retirer"]');
+    return x.getBoundingClientRect().y - c.getBoundingClientRect().y;
+  });
+  verifie("posé au bas de la fiche, pas sur chaque ligne de la liste", bas > 200, `${bas.toFixed(0)} px`);
+  verifie("aucune corbeille sur les lignes de la liste",
+    (await page.$$eval(`${TARIFS} .tar .retirer`, (l) => l.length)) === 0);
+
+  verifie("rien ne s'ouvre tant qu'on n'a pas touché", !(await vu(`${FAM} [data-s="feuille"]`)));
+  await page.click(`${FAM} [data-s="retirer"]`);
+  await page.waitForTimeout(320);
+  verifie("le geste demande confirmation", await vu(`${FAM} [data-s="feuille"]`));
+  const dit = await txt(`${FAM} [data-s="feuille"]`);
+  verifie("et la feuille nomme ce qu'elle va supprimer", /Nacelle/.test(dit), dit.slice(0, 40));
+
+  // CE QUI N'EST PAS TOUCHÉ, dit AVANT le geste. Vérifié dans le code : aucune
+  // ligne de devis ne pointe vers un tarif. Le taire laisserait croire le
+  // contraire, et personne n'ose supprimer dans le doute.
+  verifie("elle dit que les devis déjà faits n'en seront pas touchés",
+    /pas touchés/i.test(dit), dit.slice(0, 120));
+  verifie("et pourquoi : ils gardent le prix qu'ils portaient",
+    /gardent le prix/i.test(dit));
+
+  const gestes = await page.$$eval(`${FAM} .feuille .bouton`, (l) =>
+    l.map((e) => ({ t: e.textContent.trim(), fond: getComputedStyle(e).backgroundColor,
+                    rayon: parseFloat(getComputedStyle(e).borderRadius) })));
+  verifie("deux issues, et renoncer est possible",
+    gestes.map((g) => g.t).join("|") === "Supprimer|Annuler", gestes.map((g) => g.t).join("|"));
+  verifie("les deux sont des capsules, comme tous les boutons",
+    gestes.every((g) => g.rayon >= 20), JSON.stringify(gestes.map((g) => g.rayon)));
+  // Le rouge ne sert QU'À CELA dans la charte : confirmer une action
+  // destructive. Un second aplat rouge à l'écran le banaliserait.
+  verifie("seul le geste destructeur porte le rouge de la charte",
+    gestes[0].fond === "rgb(156, 59, 46)" && gestes[1].fond !== gestes[0].fond,
+    JSON.stringify(gestes.map((g) => g.fond)));
+  await (await page.$(FAM)).screenshot({ path: `${SORTIE}/reglages-tarifs-supprimer.png` });
+
+  await page.click(`${FAM} .feuille .renoncer`);
+  await page.waitForTimeout(320);
+  verifie("renoncer referme la feuille", !(await vu(`${FAM} [data-s="feuille"]`)));
+} catch (e) { echecs.push("ajouter/supprimer · interrompu — " + String(e.message).split("\n")[0]); }
+
 // ── 3. Une grille vide se dit vide, et dit pourquoi ──────────────────────
 try {
   await cadrer(GRILLES);

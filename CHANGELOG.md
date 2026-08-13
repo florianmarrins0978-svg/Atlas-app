@@ -31,6 +31,16 @@ ligne** — « 90 € » ne dit pas si c'est par mètre cube ou par voyage. Et *
 grille vide se dit vide** en disant pourquoi : c'est l'état normal du premier
 jour, et Atlas préfère se taire qu'inventer.
 
+**Ajouter et supprimer, demandés le même jour** — *« pouvoir aussi ajouter ou
+supprimer du matériel, ou un prix, ou un machin »*. **Un geste d'ajout par
+famille**, qui la nomme et ferme sa liste : « Ajouter » tout court obligerait à
+choisir la famille sur un écran de plus. **La suppression vit au bas de la
+fiche** — une corbeille sur chaque ligne se touche du pouce en faisant défiler —
+et **demande confirmation en disant ce qu'elle ne casse pas** : vérifié dans le
+code, `supprimerTarif` pose `deletedAt` et aucune ligne de devis ne pointe vers
+un tarif. Un devis déjà fait garde son prix. Le taire aurait suffi à bloquer
+l'artisan : personne n'ose supprimer dans le doute.
+
 **Le contrôle des bandes vides, élargi à tous les écrans**, a trouvé un vrai
 défaut sur la planche de l'équipe — et cinq faux positifs : une liste dont
 chaque ligne porte un filet met 39 px entre deux traits, et c'est normal. Il
