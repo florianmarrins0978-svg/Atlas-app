@@ -83,6 +83,8 @@
 <li><a href="#12-lagenda-google--mes-artisans-auront-ils-des-identifiants-à-saisir-">L'agenda Google : mes artisans auront-ils des identifiants à saisir ?</a></li>
 <li><a href="#13-pourquoi-tous-les-boutons-ont-ils-la-même-forme-">Pourquoi tous les boutons ont-ils la même forme ?</a></li>
 <li><a href="#14-le-calendrier-dapple--puis-je-le-relier-comme-lagenda-google-">Le Calendrier d'Apple : puis-je le relier comme l'agenda Google ?</a></li>
+<li><a href="#15-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-">L'IA se sert-elle de mes réglages pour faire les devis ?</a></li>
+<li><a href="#16-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien">Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -726,6 +728,107 @@
 <p><strong>Ce qui n'a PAS pu être vérifié, et qu'il faut lire comme tel :</strong> aucun échange réel avec iCloud n'a eu lieu ici — le réseau de l'environnement de développement le refuse. Les contrôles couvrent tout ce qui <em>décide</em> ; ce qui reste à éprouver, c'est le dialogue avec Apple lui-même, et cela demande votre compte. <strong>Attendez-vous à un premier essai qui échoue</strong> : ce sera dit à l'écran, avec la phrase d'Apple telle quelle.</p>
 <h3 id="ce-que-ça-ne-change-pas">Ce que ça ne change pas</h3>
 <p>Ce qui décide quelles demi-journées sont prises, et comment elles se fondent dans votre planning, est <strong>commun à tous les agendas</strong> et ne bouge pas d'une ligne (<code>src/lib/agenda-externe.ts</code>). Le nouveau code n'ajoute qu'une chose : la manière d'aller chercher les rendez-vous. Deux fournisseurs, une seule règle — c'est ce qui évite que le planning finisse par répondre différemment selon le calendrier branché.</p>
+<hr>
+<h2 id="15-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-">15. L'IA se sert-elle de mes réglages pour faire les devis ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Question posée le 13 août 2026, en dessinant l'écran des tarifs.</em></p>
+<h3 id="oui--et-dans-un-ordre-précis-qui-ne-laisse-aucune-place-à-linvention">Oui — et dans un ordre précis, qui ne laisse aucune place à l'invention</h3>
+<p>Quand Atlas doit mettre un prix sur une ligne, il fait toujours la même chose, dans cet ordre :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qu'il fait</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>Il cherche dans <strong>vos tarifs</strong>. Un seul correspond : il le prend, tel quel</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>Plusieurs correspondent : <strong>il ne choisit pas</strong>. Il vous les montre et vous laissez trancher</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>Aucun ne correspond : il <strong>calcule</strong> avec vos coûts (durée × ouvriers × coût journalier, + le chef, + le déplacement, + votre marge)</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td>Il ne peut pas calculer : il écrit <strong>« prix à renseigner »</strong> et se tait</td>
+</tr>
+</tbody></table></div>
+<p>Le code le dit dans ces mots : <em>« jamais de prix inventé, jamais de choix arbitraire »</em>.</p>
+<h3 id="ce-qui-ne-part-jamais-chez-un-fournisseur-dia">Ce qui ne part JAMAIS chez un fournisseur d'IA</h3>
+<p><strong>Votre identité — nom, adresse, SIRET, IBAN — n'est jamais envoyée au modèle.</strong> Elle est recopiée dans le document au moment où il est créé, c'est tout. Ce qui identifie votre entreprise et votre banque ne sort pas de chez vous.</p>
+<p>Ce qui sert au modèle, en revanche : <strong>le vocabulaire du métier</strong> (les mots, pour comprendre votre dictée) et <strong>ce que vous avez chiffré par le passé</strong>.</p>
+<h3 id="le-problème-que-cette-question-a-fait-apparaître">Le problème que cette question a fait apparaître</h3>
+<p>Le calcul du point 3 s'appuie sur <strong>cinq chiffres enregistrés pour votre entreprise</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Valeur posée aujourd'hui</th>
+</tr></thead><tbody>
+<tr>
+<td>Un ouvrier, à la journée</td>
+<td>200 €</td>
+</tr>
+<tr>
+<td>Un chef d'équipe, à la journée</td>
+<td>280 €</td>
+</tr>
+<tr>
+<td>Déplacement, au forfait</td>
+<td>35 €</td>
+</tr>
+<tr>
+<td>Votre marge</td>
+<td>20 %</td>
+</tr>
+<tr>
+<td>TVA par défaut</td>
+<td>20 %</td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucun écran ne permet de les changer.</strong> Ils décident pourtant du prix proposé chaque fois qu'aucun tarif ne correspond. Un artisan dont l'ouvrier coûte 260 € par jour verra donc des prix trop bas — <strong>sans jamais savoir d'où ils viennent</strong>.</p>
+<p>C'est pire qu'un réglage absent : c'est un réglage qui existe, qui agit, et qu'on ne peut pas voir. L'écran est dessiné (<code>maquettes/atlas-reglages-tarifs.html</code>) ; il reste à le coder.</p>
+<hr>
+<h2 id="16-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien">16. Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Direction posée par le patron le 13 août 2026 :</em></p>
+<blockquote><em>« L'idée, c'est de créer un deuxième cerveau au sein de l'application, pour qu'elle s'utilise comme un assistant de gestion / devis, facture, planning. Elle doit apprendre, enregistrer, s'améliorer, s'auto-alimenter. »</em></blockquote>
+<p>C'est la suite d'une phrase plus ancienne, et il faut les lire ensemble : <em>« si l'appli n'a aucune mémoire, comment l'IA va enregistrer et se souvenir ? Pour s'améliorer, elle a besoin de mémoire. »</em></p>
+<h3 id="le-piège-déjà-payé-une-fois-et-quil-ne-faut-pas-refaire">Le piège déjà payé une fois, et qu'il ne faut pas refaire</h3>
+<p>Une table <code>historique_prix</code> existait. Le chiffrage la <strong>lisait</strong>. Et <strong>l'application ne l'écrivait jamais</strong>. Une mémoire que personne n'alimente n'est pas une mémoire — c'est du décor.</p>
+<p><strong>La bonne question n'est donc pas « avons-nous une base pour retenir ? », mais « qui l'écrit, et quand ? »</strong> Chaque fois qu'on parlera d'apprentissage, c'est cette question-là qu'il faudra poser en premier.</p>
+<h3 id="ce-qui-apprend-vraiment-aujourdhui">Ce qui apprend vraiment aujourd'hui</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui apprend</th>
+<th>Ce qu'il retient</th>
+<th>Alimenté ?</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>La mémoire des prix</strong></td>
+<td>Ce que vous avez <strong>réellement</strong> facturé sur un chantier comparable — rappelé sur le suivant</td>
+<td><strong>oui</strong></td>
+</tr>
+<tr>
+<td><strong>Les cinq grilles</strong></td>
+<td>Abattage, fendage, dessouchage, haie, grumes : elles se remplissent de vos devis</td>
+<td><strong>oui</strong></td>
+</tr>
+<tr>
+<td><strong>La base documentaire</strong></td>
+<td>Des fragments de texte indexés, réutilisables par l'agent</td>
+<td><strong>oui</strong></td>
+</tr>
+</tbody></table></div>
+<p>Un point de méthode important : le prix retenu est présenté comme un <strong>rappel</strong>, jamais comme un calcul. <em>« Vous aviez facturé 180 € »</em> se vérifie d'un coup d'œil ; <em>« ça fait 180 € »</em> demande qu'on fasse confiance.</p>
+<h3 id="ce-qui-ne-retient-rien-et-qui-manque-au-deuxième-cerveau">Ce qui ne retient rien, et qui manque au deuxième cerveau</h3>
+<ul>
+<li><strong>Vos coûts</strong> (question 15) : figés à des valeurs d'usine, ni réglables ni apprises.</li>
+<li><strong>Le temps réel des chantiers.</strong> Rien n'enregistre combien de temps un chantier a <em>vraiment</em> pris. Atlas ne peut donc pas savoir si ses estimations de durée sont justes — or c'est la durée qui fait le prix au point 3. <strong>C'est le manque le plus lourd</strong>, et le plus facile à combler : une question à la clôture d'un chantier suffirait.</li>
+<li><strong>Les délais de paiement.</strong> Rien ne retient qu'un client règle à 45 jours quand il en a promis 30.</li>
+<li><strong>Ce que le client refuse.</strong> Un devis corrigé ou refusé porte une information de prix ; elle n'est pas retenue.</li>
+</ul>
+<h3 id="ce-que-ça-veut-dire-concrètement">Ce que ça veut dire concrètement</h3>
+<p>Le deuxième cerveau <strong>existe déjà en partie</strong> : les prix, les grilles, les documents. Ce qui lui manque, ce ne sont pas des idées, ce sont <strong>des moments où l'application demande</strong> : à la fin d'un chantier, à la réception d'un paiement, au refus d'un devis. Chaque moment est un lot de quelques jours ; chacun rend l'agent plus juste sur le devis suivant.</p>
 </main>
 </body>
 </html>

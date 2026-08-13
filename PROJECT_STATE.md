@@ -14,6 +14,22 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ## Ce qu'est Atlas
 
+**La direction, dans ses mots (13 août 2026) :** *« créer un deuxième cerveau au
+sein de l'application, pour qu'elle s'utilise comme un assistant de gestion /
+devis, facture, planning. Elle doit apprendre, enregistrer, s'améliorer,
+s'auto-alimenter. »*
+
+**Ce qui apprend déjà :** la mémoire des prix facturés (`lecons_prix`), les cinq
+grilles (remplies par les devis réels), la base documentaire. **Ce qui ne retient
+rien, par ordre de poids :** le temps réel d'un chantier — donc Atlas ignore si
+ses estimations de durée sont justes, alors que c'est la durée qui fait le prix —,
+les coûts de chiffrage, les délais de paiement réels, et ce qu'un client refuse.
+Le détail est dans `ARCHITECTURE.md` §84 et `docs/QUESTIONS.md` §16.
+
+**La leçon qui commande ce chantier :** `historique_prix` était lue et jamais
+écrite. Devant toute idée d'apprentissage, la question n'est pas « avons-nous une
+table ? » mais **« qui l'écrit, et à quel moment du parcours ? »**
+
 Un agent au service de l'artisan patron, « comme un comptable » : il prépare les
 devis, les envoie au client avec une proposition de date, recueille la réponse,
 planifie le chantier, construit la facture à la fin, et tient le relevé de TVA

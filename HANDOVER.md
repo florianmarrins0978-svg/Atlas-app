@@ -308,6 +308,16 @@ patron sont dessinées (`ARCHITECTURE.md` §83). À retenir : **ses tarifs** lui
 appartiennent, **le catalogue est partagé** et ne porte aucun prix, et **les
 cinq grilles apprennent de ses devis** au lieu de se saisir.
 
+**LA DIRECTION DU PRODUIT, posée le 13 août 2026 :** *« créer un deuxième
+cerveau au sein de l'application — elle doit apprendre, enregistrer, s'améliorer,
+s'auto-alimenter »*. Ce qui apprend déjà : `lecons_prix`, les cinq grilles, la
+base documentaire. Ce qui manque le plus : **le temps réel d'un chantier n'est
+enregistré nulle part**, donc Atlas ignore si ses estimations de durée sont
+justes — alors que c'est la durée qui fait le prix. **Et la leçon qui commande
+tout :** `historique_prix` était lue et jamais écrite ; devant toute idée
+d'apprentissage, demander **qui l'écrit et à quel moment**, jamais « avons-nous
+une table ? » (`ARCHITECTURE.md` §84, `docs/QUESTIONS.md` §16).
+
 **⚠ `parametres_chiffrage` agit sans être visible.** Cinq valeurs par
 entreprise — 200 €/jour l'ouvrier, 280 € le chef, 35 € le déplacement, 20 % de
 marge, 20 % de TVA — décident du prix proposé dès qu'aucun tarif ne correspond,

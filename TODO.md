@@ -89,6 +89,22 @@ dessin** (`ARCHITECTURE.md` §81) :
 Manquent aussi en base, et la maquette les montre : **forme juridique** et
 **titulaire du compte**.
 
+**LE DEUXIÈME CERVEAU : CE QUI NE RETIENT RIEN.** Direction posée le 13 août
+2026 (`ARCHITECTURE.md` §84, `docs/QUESTIONS.md` §16). Ce qui apprend déjà est
+bien alimenté — `lecons_prix`, les cinq grilles, la base documentaire. Ce qui
+manque, par ordre de poids :
+
+| | Ce qui n'est pas retenu | Le moment qui existe déjà pour le demander |
+|---|---|---|
+| 1 | **Le temps réel d'un chantier** — aucune colonne nulle part. Atlas ignore donc si ses estimations de durée sont justes, alors que **c'est la durée qui fait le prix** quand aucun tarif ne correspond | la clôture d'un chantier (`src/app/termines/`) |
+| 2 | Les coûts de chiffrage, figés aux valeurs d'usine | l'écran « Mes coûts », dessiné mais pas codé |
+| 3 | Les délais de paiement réels | l'encaissement d'une facture |
+| 4 | Ce qu'un client refuse ou fait corriger | l'état existe déjà (`src/lib/etat-envoi.ts`) |
+
+**La règle avant de coder l'un d'eux :** ne pas demander « quelle table ? » mais
+**« qui l'écrit, et à quel moment ? »**. `historique_prix` était lue et jamais
+écrite — une mémoire que personne n'alimente est du décor.
+
 **LE RÉGLAGE QUI AGIT SANS EXISTER À L'ÉCRAN**, trouvé le 13 août en répondant
 à sa question sur l'IA : `parametres_chiffrage` porte **cinq valeurs par
 entreprise** — 200 €/jour l'ouvrier, 280 € le chef, 35 € le déplacement, 20 % de

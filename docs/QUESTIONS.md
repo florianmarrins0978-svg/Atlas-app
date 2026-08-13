@@ -36,6 +36,8 @@ relues à chaque session) :
 12. [L'agenda Google : mes artisans auront-ils des identifiants à saisir ?](#12-lagenda-google--mes-artisans-auront-ils-des-identifiants-à-saisir-)
 13. [Pourquoi tous les boutons ont-ils la même forme ?](#13-pourquoi-tous-les-boutons-ont-ils-la-même-forme-)
 14. [Le Calendrier d'Apple : puis-je le relier comme l'agenda Google ?](#14-le-calendrier-dapple--puis-je-le-relier-comme-lagenda-google-)
+15. [L'IA se sert-elle de mes réglages pour faire les devis ?](#15-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-)
+16. [Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien](#16-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien)
 
 ---
 
@@ -923,3 +925,113 @@ ligne (`src/lib/agenda-externe.ts`). Le nouveau code n'ajoute qu'une chose : la
 manière d'aller chercher les rendez-vous. Deux fournisseurs, une seule règle —
 c'est ce qui évite que le planning finisse par répondre différemment selon le
 calendrier branché.
+
+
+---
+
+## 15. L'IA se sert-elle de mes réglages pour faire les devis ?
+
+*Question posée le 13 août 2026, en dessinant l'écran des tarifs.*
+
+### Oui — et dans un ordre précis, qui ne laisse aucune place à l'invention
+
+Quand Atlas doit mettre un prix sur une ligne, il fait toujours la même chose,
+dans cet ordre :
+
+| | Ce qu'il fait |
+|---|---|
+| **1** | Il cherche dans **vos tarifs**. Un seul correspond : il le prend, tel quel |
+| **2** | Plusieurs correspondent : **il ne choisit pas**. Il vous les montre et vous laissez trancher |
+| **3** | Aucun ne correspond : il **calcule** avec vos coûts (durée × ouvriers × coût journalier, + le chef, + le déplacement, + votre marge) |
+| **4** | Il ne peut pas calculer : il écrit **« prix à renseigner »** et se tait |
+
+Le code le dit dans ces mots : *« jamais de prix inventé, jamais de choix
+arbitraire »*.
+
+### Ce qui ne part JAMAIS chez un fournisseur d'IA
+
+**Votre identité — nom, adresse, SIRET, IBAN — n'est jamais envoyée au modèle.**
+Elle est recopiée dans le document au moment où il est créé, c'est tout. Ce qui
+identifie votre entreprise et votre banque ne sort pas de chez vous.
+
+Ce qui sert au modèle, en revanche : **le vocabulaire du métier** (les mots, pour
+comprendre votre dictée) et **ce que vous avez chiffré par le passé**.
+
+### Le problème que cette question a fait apparaître
+
+Le calcul du point 3 s'appuie sur **cinq chiffres enregistrés pour votre
+entreprise** :
+
+| | Valeur posée aujourd'hui |
+|---|---|
+| Un ouvrier, à la journée | 200 € |
+| Un chef d'équipe, à la journée | 280 € |
+| Déplacement, au forfait | 35 € |
+| Votre marge | 20 % |
+| TVA par défaut | 20 % |
+
+**Aucun écran ne permet de les changer.** Ils décident pourtant du prix proposé
+chaque fois qu'aucun tarif ne correspond. Un artisan dont l'ouvrier coûte 260 €
+par jour verra donc des prix trop bas — **sans jamais savoir d'où ils viennent**.
+
+C'est pire qu'un réglage absent : c'est un réglage qui existe, qui agit, et qu'on
+ne peut pas voir. L'écran est dessiné
+(`maquettes/atlas-reglages-tarifs.html`) ; il reste à le coder.
+
+---
+
+## 16. Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien
+
+*Direction posée par le patron le 13 août 2026 :*
+
+> *« L'idée, c'est de créer un deuxième cerveau au sein de l'application, pour
+> qu'elle s'utilise comme un assistant de gestion / devis, facture, planning.
+> Elle doit apprendre, enregistrer, s'améliorer, s'auto-alimenter. »*
+
+C'est la suite d'une phrase plus ancienne, et il faut les lire ensemble :
+*« si l'appli n'a aucune mémoire, comment l'IA va enregistrer et se souvenir ?
+Pour s'améliorer, elle a besoin de mémoire. »*
+
+### Le piège déjà payé une fois, et qu'il ne faut pas refaire
+
+Une table `historique_prix` existait. Le chiffrage la **lisait**. Et
+**l'application ne l'écrivait jamais**. Une mémoire que personne n'alimente n'est
+pas une mémoire — c'est du décor.
+
+**La bonne question n'est donc pas « avons-nous une base pour retenir ? », mais
+« qui l'écrit, et quand ? »** Chaque fois qu'on parlera d'apprentissage, c'est
+cette question-là qu'il faudra poser en premier.
+
+### Ce qui apprend vraiment aujourd'hui
+
+| Ce qui apprend | Ce qu'il retient | Alimenté ? |
+|---|---|---|
+| **La mémoire des prix** | Ce que vous avez **réellement** facturé sur un chantier comparable — rappelé sur le suivant | **oui** |
+| **Les cinq grilles** | Abattage, fendage, dessouchage, haie, grumes : elles se remplissent de vos devis | **oui** |
+| **La base documentaire** | Des fragments de texte indexés, réutilisables par l'agent | **oui** |
+
+Un point de méthode important : le prix retenu est présenté comme un **rappel**,
+jamais comme un calcul. *« Vous aviez facturé 180 € »* se vérifie d'un coup
+d'œil ; *« ça fait 180 € »* demande qu'on fasse confiance.
+
+### Ce qui ne retient rien, et qui manque au deuxième cerveau
+
+- **Vos coûts** (question 15) : figés à des valeurs d'usine, ni réglables ni
+  apprises.
+- **Le temps réel des chantiers.** Rien n'enregistre combien de temps un chantier
+  a *vraiment* pris. Atlas ne peut donc pas savoir si ses estimations de durée
+  sont justes — or c'est la durée qui fait le prix au point 3. **C'est le manque
+  le plus lourd**, et le plus facile à combler : une question à la clôture d'un
+  chantier suffirait.
+- **Les délais de paiement.** Rien ne retient qu'un client règle à 45 jours quand
+  il en a promis 30.
+- **Ce que le client refuse.** Un devis corrigé ou refusé porte une information
+  de prix ; elle n'est pas retenue.
+
+### Ce que ça veut dire concrètement
+
+Le deuxième cerveau **existe déjà en partie** : les prix, les grilles, les
+documents. Ce qui lui manque, ce ne sont pas des idées, ce sont **des moments où
+l'application demande** : à la fin d'un chantier, à la réception d'un paiement,
+au refus d'un devis. Chaque moment est un lot de quelques jours ; chacun rend
+l'agent plus juste sur le devis suivant.

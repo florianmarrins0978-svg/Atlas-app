@@ -6568,3 +6568,65 @@ replie sur deux lignes et le gras se retrouve plus haut — le contrôle laissai
 donc passer exactement ce qu'il devait attraper. Il mesure désormais le
 **chevauchement vertical**, et il a été confronté à la version cassée pour
 qu'on sache qu'il rougit.
+
+
+---
+
+## 84. Le « deuxième cerveau » : la direction, et l'état réel de la mémoire
+
+**Posé par le patron le 13 août 2026 :**
+
+> *« L'idée, c'est de créer un deuxième cerveau au sein de l'application, pour
+> qu'elle s'utilise comme un assistant de gestion / devis, facture, planning.
+> Elle doit apprendre, enregistrer, s'améliorer, s'auto-alimenter. »*
+
+À lire avec sa phrase antérieure, qui dit la même chose autrement : *« si l'appli
+n'a aucune mémoire, comment l'IA va enregistrer et se souvenir ? Pour s'améliorer
+elle a besoin de mémoire. »*
+
+### LA LEÇON DÉJÀ PAYÉE, et qui commande tout le reste
+
+`historique_prix` existait. Le chiffrage la **lisait**. **L'application ne
+l'écrivait jamais** (`src/lib/lecons-prix.ts`). Une mémoire que personne
+n'alimente n'est pas une mémoire.
+
+**La question à poser devant toute proposition d'apprentissage n'est donc pas
+« avons-nous une table ? » mais « QUI L'ÉCRIT, ET À QUEL MOMENT ? »** Un lot
+d'apprentissage qui ne désigne pas un geste du parcours — une clôture, un
+paiement, un refus — est un lot qui produira du décor.
+
+### Ce qui apprend, vérifié dans le code le 13 août 2026
+
+| Où | Ce qui est retenu | Écrit par |
+|---|---|---|
+| `lecons_prix` | Le prix réellement facturé, rapproché par signature de métier | `src/server/repositories/lecons-prix.ts` |
+| `grille_prix` | Les cinq grilles, remplies par les devis réels | `src/server/services/apprendre-grille.ts` |
+| `fragments_documents` | Fragments indexés de la base documentaire | `src/server/repositories/documents.ts` |
+
+**Le prix retenu est rendu comme un RAPPEL, jamais comme un calcul**
+(`docs/EXEMPLE-DICTEE.md` §9c) : *« vous aviez facturé 180 € »* se vérifie d'un
+coup d'œil ; *« ça fait 180 € »* demande qu'on fasse confiance. Cette nuance est
+la différence entre un second cerveau et une boîte noire.
+
+### Ce qui ne retient rien — les manques, par ordre de poids
+
+1. **LE TEMPS RÉEL D'UN CHANTIER.** Aucune colonne de durée réelle nulle part.
+   Atlas ne peut donc pas savoir si ses estimations sont justes — **or c'est la
+   durée qui fait le prix** quand aucun tarif ne correspond (§83). C'est le
+   manque le plus lourd, et le moins coûteux à combler : une question à la
+   clôture suffit, et le moment existe déjà dans le parcours.
+2. **Les coûts de chiffrage** (§83) : figés aux valeurs d'usine, ni réglables ni
+   appris.
+3. **Les délais de paiement réels** : rien ne retient qu'un client règle à
+   45 jours quand il en a promis 30.
+4. **Ce qu'un client refuse ou fait corriger** : l'information de prix que porte
+   un devis retourné n'est pas retenue, alors que l'état existe déjà
+   (`src/lib/etat-envoi.ts`).
+
+### Ce que cette direction change pour les lots à venir
+
+Elle ne change pas les écrans déjà dessinés, mais elle **ajoute un critère de
+relecture** : devant chaque rubrique de réglages, se demander *ce qu'Atlas
+pourrait apprendre à la place de le demander*. Les cinq grilles sont le modèle —
+elles ne se saisissent pas, elles se remplissent. Un réglage qu'on peut déduire
+d'un geste déjà fait ne devrait pas être un champ de formulaire.

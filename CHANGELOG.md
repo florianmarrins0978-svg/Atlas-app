@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### La direction : un deuxième cerveau, et l'état réel de sa mémoire
+
+**Posé par le patron :** *« créer un deuxième cerveau au sein de l'application,
+pour qu'elle s'utilise comme un assistant de gestion / devis, facture, planning.
+Elle doit apprendre, enregistrer, s'améliorer, s'auto-alimenter. »*
+
+Écrit dans le dépôt avant d'aller plus loin, avec **le recensement de ce qui
+apprend vraiment** : la mémoire des prix facturés, les cinq grilles remplies par
+les devis réels, la base documentaire — les trois sont bien alimentées.
+
+**Et ce qui ne retient rien**, par ordre de poids : **le temps réel d'un
+chantier** (Atlas ignore donc si ses estimations de durée sont justes, alors que
+c'est la durée qui fait le prix), les coûts de chiffrage, les délais de paiement
+réels, et ce qu'un client refuse.
+
+**La leçon qui commande ce chantier, et qui a déjà été payée :**
+`historique_prix` existait, le chiffrage la lisait, et l'application ne
+l'écrivait jamais. Devant toute idée d'apprentissage, la question n'est pas
+« avons-nous une table ? » mais **« qui l'écrit, et à quel moment du
+parcours ? »** Un lot qui ne désigne pas un geste — une clôture, un paiement, un
+refus — produira du décor.
+
+`docs/QUESTIONS.md` gagne deux entrées : **15**, ce dont l'IA se sert pour faire
+un devis (et ce qui ne part jamais chez un fournisseur : nom, adresse, SIRET,
+IBAN) ; **16**, le deuxième cerveau.
+
+---
+
 ### Réglages, lot 4 : tarifs et catalogue — les quatre priorités sont dessinées
 
 `maquettes/atlas-reglages-tarifs.html`, quatre écrans : ses tarifs rangés en
