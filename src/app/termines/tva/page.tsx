@@ -3,14 +3,17 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { releveTvaCollectee } from "@/server/repositories/factures";
+import { getEntreprise } from "@/server/repositories/entreprises";
 import {
-  libelleTrimestre,
-  trimestre,
-  trimestreCourant,
-  trimestrePrecedent,
-  trimestreSuivant,
-} from "@/server/trimestre";
+  libellePeriode,
+  lirePeriode,
+  periodeCourante,
+  periodePrecedente,
+  periodeSuivante,
+  PERIODICITE_TVA_PAR_DEFAUT,
+} from "@/server/periode-tva";
 import { jourLisible } from "@/lib/jour";
+import CalendrierPeriodes from "./CalendrierPeriodes";
 
 export const dynamic = "force-dynamic";
 
@@ -34,21 +37,24 @@ export default async function ReleveTvaPage({
 }) {
   const { annee, t } = await searchParams;
 
-  // Une année ou un trimestre illisible ramène au trimestre courant : un
-  // paramètre bricolé dans la barre d'adresse ne doit pas produire d'écran vide
-  // et inexplicable.
-  const anneeNum = Number(annee);
-  const numeroNum = Number(t);
-  const periode =
-    Number.isInteger(anneeNum) && anneeNum > 2000 && Number.isInteger(numeroNum) && numeroNum >= 1 && numeroNum <= 4
-      ? trimestre(anneeNum, numeroNum)
-      : trimestreCourant();
-
   const ctx = await getCurrentCtx();
+
+  // **La périodicité vient de l'entreprise, jamais de l'adresse.** Elle
+  // commande le découpage ET la lecture du numéro : « 12 » est un mois valide
+  // et un trimestre absurde. La lire ici, avant tout le reste, évite qu'un
+  // réglage changé laisse passer une adresse qui ne veut plus rien dire.
+  const entreprise = await getEntreprise(ctx);
+  const periodicite = entreprise?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT;
+
+  // Une adresse illisible ramène à la période courante : un paramètre bricolé
+  // à la main ne doit pas produire d'écran vide et inexplicable.
+  const periode = lirePeriode(periodicite, annee, t) ?? periodeCourante(periodicite);
+  const courante = periodeCourante(periodicite);
+
   const releve = await releveTvaCollectee(ctx, periode.debut, periode.fin);
 
-  const precedent = trimestrePrecedent(periode);
-  const suivant = trimestreSuivant(periode);
+  const precedent = periodePrecedente(periode);
+  const suivant = periodeSuivante(periode);
   const lien = (p: { annee: number; numero: number }) => `/termines/tva?annee=${p.annee}&t=${p.numero}`;
 
   return (
@@ -67,14 +73,24 @@ export default async function ReleveTvaPage({
           </Link>
         </div>
 
-        <EnTeteEcran surtitre="TVA collectée" titre={libelleTrimestre(periode)} />
+        <EnTeteEcran surtitre="TVA collectée" titre={libellePeriode(periode)} />
 
-        <div className="mt-5 flex items-center justify-between px-6 text-[14px] font-medium">
-          <Link href={lien(precedent)} style={{ color: colors.rust }}>
-            ← {libelleTrimestre(precedent)}
+        {/* **Le calendrier se glisse ENTRE les deux flèches**, à sa demande du
+            12 août 2026. Sans lui, remonter au 1er trimestre 2025 demandait
+            sept appuis — et sept chargements, chaque flèche étant un lien. */}
+        <div className="mt-5 flex items-center justify-between gap-2.5 px-6 text-[14px] font-medium">
+          <Link href={lien(precedent)} className="whitespace-nowrap" style={{ color: colors.rust }}>
+            ← {libellePeriode(precedent)}
           </Link>
-          <Link href={lien(suivant)} style={{ color: colors.rust }}>
-            {libelleTrimestre(suivant)} →
+          <CalendrierPeriodes
+            periodicite={periodicite}
+            annee={periode.annee}
+            numero={periode.numero}
+            anneeCourante={courante.annee}
+            numeroCourant={courante.numero}
+          />
+          <Link href={lien(suivant)} className="whitespace-nowrap" style={{ color: colors.rust }}>
+            {libellePeriode(suivant)} →
           </Link>
         </div>
 
@@ -97,7 +113,7 @@ export default async function ReleveTvaPage({
           {releve.lignes.length === 0 ? (
             <div className="rounded-[4px] px-5 py-8 text-center" style={{ backgroundColor: colors.card }}>
               <p className="text-[14px]" style={{ color: colors.muted }}>
-                Aucune facture émise sur ce trimestre.
+                Aucune facture émise sur cette période.
               </p>
             </div>
           ) : (

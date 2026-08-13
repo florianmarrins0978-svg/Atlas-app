@@ -83,6 +83,15 @@ export const entreprises = pgTable("entreprises", {
   // Combien de chantiers menés de front. 1 par défaut — le comportement d'avant
   // la migration 0019, où une seule équipe était supposée sans le dire.
   nombreEquipes: integer("nombre_equipes").notNull().default(1),
+  // Comment le relevé de TVA découpe l'année. **Le mois est le défaut LÉGAL**
+  // (déclaration CA3 mensuelle ; le trimestre est une option sous condition de
+  // TVA due), pas une préférence d'écran — voir `drizzle/0035_periodicite_tva.sql`.
+  //
+  // C'est une DÉCLARATION du patron, jamais une déduction : le seuil qui ouvre
+  // le trimestre porte sur la TVA due, et Atlas ne connaît que la collectée.
+  periodiciteTva: text("periodicite_tva", { enum: ["mensuelle", "trimestrielle"] })
+    .notNull()
+    .default("mensuelle"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
