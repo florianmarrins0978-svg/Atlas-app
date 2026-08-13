@@ -71,7 +71,19 @@
 
   .retour{margin:24px 0 0 24px;width:40px;height:40px;border:0;border-radius:999px;
           background:var(--teinte);display:flex;align-items:center;justify-content:center}
-  .surtitre{margin:24px 0 0;padding:0 24px;color:var(--or)}
+  .rythme{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:22px 0 0;padding:0 24px}
+  .rythme .caps{color:var(--gris);width:100%;margin-bottom:-2px}
+  .rythme button{border:0;background:none;padding:6px 0;font:inherit;font-size:14px;cursor:pointer;
+                 color:var(--gris);text-decoration:underline;text-underline-offset:5px;
+                 text-decoration-thickness:1px;text-decoration-color:var(--trait);
+                 -webkit-tap-highlight-color:transparent;transition:color .18s}
+  /* Celui qu'on suit : l'encre pleine et un trait doré. L'autre reste lisible
+     et touchable — un réglage grisé se prend pour un réglage indisponible. */
+  .rythme button[aria-current="true"]{color:var(--encre);
+                 text-decoration-color:var(--or);text-decoration-thickness:1.5px}
+  .rythme .sep{color:var(--trait);font-size:14px}
+
+  .surtitre{margin:20px 0 0;padding:0 24px;color:var(--or)}
   .titre{margin:9px 0 0;padding:0 24px;font-size:33px;line-height:1.04;font-weight:400;letter-spacing:-.018em}
   .filet{height:1px;background:var(--trait);margin:18px 24px 0}
 
@@ -157,7 +169,16 @@
            transform:translateY(101%);transition:transform .38s var(--ressort)}
   .feuille::-webkit-scrollbar{display:none}
   .voile.ouvert .feuille{transform:none}
-  .poignee{width:38px;height:4px;border-radius:9px;background:rgba(28,28,26,.15);margin:0 auto 16px}
+  /* **LA POIGNÉE FERME LA FEUILLE**, à sa demande du 13 août 2026 — elle le
+     fait déjà dans l'application depuis ce matin, c'est la maquette qui était
+     en retard. Le trait dessine 4 px ; la CIBLE en fait 44, invisible autour de
+     lui. Un doigt qui vise un trait de quatre pixels le rate. */
+  .poignee{display:block;width:100%;height:44px;border:0;background:none;padding:0;margin:-11px 0 5px;
+           cursor:pointer;-webkit-tap-highlight-color:transparent;
+           display:flex;align-items:center;justify-content:center}
+  .poignee i{display:block;width:38px;height:4px;border-radius:9px;background:rgba(28,28,26,.15);
+             transition:background .16s}
+  .poignee:active i{background:rgba(28,28,26,.30)}
 
   .lu{display:flex;flex-direction:column;gap:1px;background:var(--trait-doux);
       border-radius:12px;overflow:hidden}
@@ -238,11 +259,6 @@
   <button type="button" data-c="mot" aria-pressed="false">Le mot « copier »</button>
   <button type="button" data-c="chiffre" aria-pressed="false">Le chiffre lui-même</button>
 </div>
-<div class="choix" id="choix-rythme">
-  <span class="quoi">Votre rythme</span>
-  <button type="button" data-p="mensuelle" aria-pressed="true">Tous les mois</button>
-  <button type="button" data-p="trimestrielle" aria-pressed="false">Tous les trimestres</button>
-</div>
 
 <div class="scene">
   <div class="tel"><div class="ecran" id="ecran">
@@ -252,6 +268,18 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="2.4">
           <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
+
+      <!-- **LE RYTHME EN HAUT, ÉCRIT ET SOULIGNÉ**, à sa demande du 13 août
+           2026. Il vivait dans Réglages, à deux écrans d'ici : or c'est ICI
+           qu'on se demande « et si je regardais au trimestre ? ». Deux mots
+           soulignés plutôt que deux pastilles — la charte ne pose du plein que
+           sur ce qu'on FAIT, et changer de lunette n'est pas une action. -->
+      <p class="rythme">
+        <span class="caps">Votre rythme</span>
+        <button type="button" data-p="mensuelle">Tous les mois</button>
+        <span class="sep" aria-hidden="true">·</span>
+        <button type="button" data-p="trimestrielle">Tous les trois mois</button>
+      </p>
 
       <p class="surtitre caps">Ma TVA</p>
       <h1 class="titre serif" id="titre">Août 2026</h1>
@@ -303,7 +331,7 @@
 
     <div class="voile" id="voile-cal" role="dialog" aria-modal="true">
       <div class="feuille">
-        <div class="poignee"></div>
+        <button class="poignee" aria-label="Refermer"><i></i></button>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <button type="button" id="a-moins" aria-label="Année précédente"
                   style="width:44px;height:44px;border:0;background:none;font-size:20px;color:var(--pin);cursor:pointer">‹</button>
@@ -319,7 +347,7 @@
     <!-- Confirmation d'un ticket LU -->
     <div class="voile" id="voile-lu" role="dialog" aria-modal="true">
       <div class="feuille">
-        <div class="poignee"></div>
+        <button class="poignee" aria-label="Refermer"><i></i></button>
         <p class="caps" style="text-align:center;color:var(--or);margin:0">Ticket lu</p>
         <p class="serif" id="lu-titre" style="text-align:center;font-size:20px;margin:9px 0 14px"></p>
         <div class="lu">
@@ -337,7 +365,7 @@
     <!-- ÉCRIRE À LA MAIN -->
     <div class="voile" id="voile-main" role="dialog" aria-modal="true">
       <div class="feuille">
-        <div class="poignee"></div>
+        <button class="poignee" aria-label="Refermer"><i></i></button>
         <p class="caps" style="text-align:center;color:var(--or);margin:0">Écrire un achat</p>
         <p class="serif" style="text-align:center;font-size:20px;margin:9px 0 14px">À la main</p>
         <div class="lu">
@@ -458,6 +486,7 @@
   }
 
   function peindre(){
+    peindreRythme();
     document.getElementById("titre").textContent=libelle(vu);
     document.getElementById("prec-t").textContent=libelle(pas(vu,-1));
     document.getElementById("suiv-t").textContent=libelle(pas(vu,1));
@@ -551,14 +580,21 @@
       b.setAttribute("aria-pressed","true"); facon=b.getAttribute("data-c"); peindre();
     });
   });
-  document.querySelectorAll("#choix-rythme button").forEach(function(b){
+  document.querySelectorAll(".rythme button").forEach(function(b){
     b.addEventListener("click",function(){
-      document.querySelectorAll("#choix-rythme button").forEach(function(x){x.setAttribute("aria-pressed","false");});
-      b.setAttribute("aria-pressed","true"); periodicite=b.getAttribute("data-p");
+      periodicite=b.getAttribute("data-p");
+      // On repart de la période d'AUJOURD'HUI, pas du même numéro : le 8e mois
+      // n'a pas de sens en trimestres, et le 3e trimestre n'est pas mars.
       vu = periodicite==="mensuelle" ? {annee:2026,numero:AUJ.mois} : {annee:2026,numero:AUJ.trim};
       peindre();
     });
   });
+
+  function peindreRythme(){
+    document.querySelectorAll(".rythme button").forEach(function(b){
+      b.setAttribute("aria-current", b.getAttribute("data-p")===periodicite ? "true" : "false");
+    });
+  }
 
   // ── Le scanner ───────────────────────────────────────────────────────────
   var objectif=document.getElementById("objectif");
@@ -659,6 +695,15 @@
     document.getElementById("voile-lu").classList.remove("ouvert");
     voileMain.classList.remove("ouvert");
     objectif.classList.remove("ouvert","lit");
+  });
+
+  // **La poignée referme la feuille qui la porte.** Elle le fait déjà dans
+  // l'application depuis ce matin ; c'était la maquette qui ne suivait pas.
+  document.querySelectorAll(".poignee").forEach(function(p){
+    p.addEventListener("click", function(){
+      var voile = p.closest(".voile");
+      if (voile) voile.classList.remove("ouvert");
+    });
   });
 
   peindre();
