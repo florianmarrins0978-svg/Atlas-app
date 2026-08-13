@@ -9,7 +9,9 @@
 // `test-choix-civilite-e2e` ; ici on regarde.
 //
 // Trois images : l'écran de création au repos, le même avec « Mme » pris, et
-// l'écran du devis — la seconde porte, celle qui corrige un client d'avant.
+// l'écran du devis — où le mot s'ÉCRIT, sans pastille. Le patron les y a fait
+// retirer le 13 août 2026 : *« il ne faut pas qu'il y ait les pastilles
+// cliquables sur le devis. »*
 //
 // `localhost`, jamais `127.0.0.1` : Next refuse ses ressources de développement
 // à une origine étrangère, et la page n'arrive alors jamais hydratée.
@@ -54,14 +56,15 @@ await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
 const chantierId = page.url().split("/").pop()!.split("?")[0];
 
 await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
-await page.waitForSelector('[data-atlas="civilite-mme"]', { timeout: 40_000 });
-await page.locator('[data-atlas="civilite-mme"]').scrollIntoViewIfNeeded();
+await page.waitForSelector("text=Total TTC", { timeout: 40_000 });
+await page.getByLabel("Nom du client").scrollIntoViewIfNeeded();
 await page.waitForTimeout(400);
 await page.screenshot({ path: `${dossier}/civilite-sur-le-devis.png` });
 
 // **Le script sait échouer**, et il nomme le défaut plutôt que l'écran.
-if ((await page.locator('[data-atlas="civilite-mme"]').getAttribute("aria-pressed")) !== "true") {
-  echecs.push("le devis ne rappelle pas le choix : la pastille y est éteinte alors que « Mme » a été pris");
+const pastilles = await page.locator('[data-atlas^="civilite-"]').count();
+if (pastilles > 0) {
+  echecs.push(`${pastilles} pastille(s) sur l'écran du devis : le patron n'en veut aucune`);
 }
 // **Ce que cet écran montre, et ce qu'il ne montre pas.** Il est l'ATELIER du
 // devis : le nom s'y saisit nu, dans son champ, et la civilité se prend à la
@@ -79,11 +82,14 @@ const ecran = await page.locator("body").innerText();
 if (/CIVILITÉ/i.test(ecran)) {
   echecs.push("l'étiquette « Civilité » est revenue sur l'écran du devis, qui est à l'image du papier");
 }
+if (!/\bMme\b/.test(ecran)) {
+  echecs.push("le devis n'écrit pas « Mme » : le retrait des pastilles a emporté la civilité avec lui");
+}
 
 console.log(`Captures dans ${dossier}/ :`);
 console.log("  civilite-au-repos.png      l'écran de création, rien de pris");
 console.log("  civilite-mme-prise.png     « Mme » choisi, au-dessus du nom");
-console.log("  civilite-sur-le-devis.png  la seconde porte, pour corriger");
+console.log("  civilite-sur-le-devis.png  le mot écrit devant le nom, sans pastille");
 
 await navigateur.close();
 
@@ -92,4 +98,4 @@ if (echecs.length > 0) {
   for (const e of echecs) console.error(`   • ${e}`);
   process.exit(1);
 }
-console.log("\n✅ Les deux pastilles sont au-dessus du nom, et le choix se relit sur le devis.");
+console.log("\n✅ Les pastilles sont à la création seule, et le devis écrit le mot choisi.");

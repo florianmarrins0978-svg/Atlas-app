@@ -450,8 +450,15 @@ passe sur le même défaut, et la première ne pouvait pas marcher.
    pas vérifier ce qu'il en fera. **Lui demander de rouvrir le lien depuis ses
    SMS**, et de dire ce qu'il voit. Détail : `ARCHITECTURE.md` §81.
 **LA CIVILITÉ EST DEVENUE UNE DONNÉE (13 août, au soir).** Deux pastilles
-« Mr » / « Mme » au-dessus du nom, à la création **et** sur l'écran du devis.
+« Mr » / « Mme » au-dessus du nom, **à la création seulement**.
 `clients.civilite`, recopiée sur le devis et la facture (migration 0038).
+
+**Elles ont été posées sur l'écran du devis, puis retirées le jour même, à sa
+demande** — *« il ne faut pas qu'il y ait les pastilles cliquables sur le
+devis »*. Le devis est le DOCUMENT, pas la fiche : le mot y est du texte, écrit
+devant le nom. **Ne pas les y remettre sans lui.** Conséquence assumée, et qu'il
+connaît : une civilité choisie de travers ne se corrige plus après la création,
+faute d'écran de fiche client.
 
 **Quatre choses à savoir avant d'y toucher :**
 

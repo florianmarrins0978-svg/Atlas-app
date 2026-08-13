@@ -56,10 +56,21 @@ il n'a rien touché garde exactement l'apparence qu'il avait ce matin. Le jour o
 la case est apparue, aucune fiche ne la portait ; si l'absence de choix avait
 effacé la civilité, tous ses devis en cours auraient changé d'en-tête d'un coup.
 
-**Deux portes, et la seconde n'est pas un luxe.** À la création, et sur l'écran
-du devis. Sans celle-ci, une cliente saisie avant la case — ou avec une pastille
-oubliée — resterait « Mr. Roux » pour toujours, y compris dans le message qui
-part chez elle : il n'existe aucun autre écran de fiche client.
+**Les pastilles sont à la création, et là seulement.** Elles avaient d'abord été
+posées aussi sur l'écran du devis, pour offrir une seconde porte — corriger un
+client déjà créé. Il les y a fait retirer dans la foulée : *« il ne faut pas
+qu'il y ait les pastilles cliquables sur le devis. En gros quand on rentre les
+informations dans la fiche client, si on clique sur monsieur, sur le devis ça
+sera marqué monsieur. »*
+
+Son raisonnement vaut au-delà de ce champ : **le devis est le document, pas la
+fiche.** Il montre ce qui partira, il ne se remplit pas comme un formulaire. Le
+mot y est donc du texte, écrit devant le nom — et à côté du champ, jamais
+dedans : dedans, il s'enregistrerait comme nom du client et le document suivant
+porterait « Mme Mme Roux ».
+
+**Ce que ce retrait coûte, et qu'il sait :** faute d'écran de fiche client, une
+civilité choisie de travers ne se corrige plus après la création.
 
 **Trois pièges, tous payés en le faisant :**
 

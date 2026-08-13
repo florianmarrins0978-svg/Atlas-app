@@ -16,6 +16,23 @@ import { CIVILITES, type Civilite, type CiviliteChoisie } from "@/lib/civilite";
  * client. Une cliente lisait donc « Bonjour Mr. Roux ». La civilité était un
  * DÉFAUT ; elle devient une donnée qu'il choisit.
  *
+ * ── OÙ ELLE SE CHOISIT, ET OÙ ELLE NE SE CHOISIT PAS ────────────────────────
+ *
+ * **Ici, et nulle part ailleurs.** Les pastilles avaient d'abord été posées
+ * aussi sur l'écran du devis, pour offrir une seconde porte — corriger un
+ * client déjà créé. Le patron les y a retirées le jour même : *« il ne faut pas
+ * qu'il y ait les pastilles cliquables sur le devis. En gros quand on rentre
+ * les informations dans la fiche client, si on clique sur monsieur, sur le
+ * devis ça sera marqué monsieur. »*
+ *
+ * Son raisonnement se tient : le devis est le DOCUMENT, pas la fiche. Il montre
+ * ce qui partira, il ne se remplit pas comme un formulaire. Le mot y est donc
+ * du texte, écrit devant le nom (`ChampNu`, propriété `prefixe`).
+ *
+ * **Ce que cela coûte, et qui est assumé :** faute d'écran de fiche client, une
+ * civilité choisie de travers ne se corrige plus après la création. Signalé au
+ * patron le 13 août 2026 ; à rouvrir le jour où il le demande.
+ *
  * ── Trois décisions de dessin, et leur pourquoi ─────────────────────────────
  *
  * - **Rien n'est présélectionné.** Cocher « Mr » d'avance rendrait son silence

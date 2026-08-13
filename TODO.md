@@ -242,8 +242,15 @@ monsieur-madame. Mais je veux que ça soit sous la forme Mr Mme, en cliquable, o
 choisit au-dessus du nom. »* C'est fait — deux pastilles à la création et sur
 l'écran du devis, `ARCHITECTURE.md` §81.
 
-**Ce qui reste ouvert, et qui n'a PAS été décidé pour lui :** il n'y a que deux
-pastilles. Une société se dit donc en n'en touchant aucune — l'application
+**Ce qui reste ouvert, et qu'il faudra lui poser un jour :** une civilité choisie
+de travers **ne se corrige plus** après la création. Les pastilles avaient été
+posées sur l'écran du devis pour cela ; il les y a fait retirer le jour même —
+*« il ne faut pas qu'il y ait les pastilles cliquables sur le devis »* — et il a
+raison sur le fond : cet écran est le document, pas la fiche. Il manque donc un
+**écran de fiche client**, qui n'existe nulle part aujourd'hui. Tant qu'il ne le
+demande pas, on ne l'invente pas. Qui peut le faire : lui.
+
+**Et un second point ouvert :** il n'y a que deux pastilles. Une société se dit donc en n'en touchant aucune — l'application
 reconnaît alors « SARL », « SCI », « Mairie »… et se tait. Cela suffit
 aujourd'hui : ses clients sont des particuliers. **À rouvrir le jour où il
 facture des entreprises**, où une troisième pastille dirait la chose au lieu de

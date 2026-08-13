@@ -113,12 +113,33 @@ async function main() {
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Total TTC", { timeout: 30_000 });
 
-  await cas("l'écran du devis rappelle le choix, et sait le corriger", async () => {
-    const mme = page.locator('[data-atlas="civilite-mme"]');
-    if ((await mme.count()) === 0) throw new Error("aucune pastille sur l'écran du devis");
-    if ((await mme.getAttribute("aria-pressed")) !== "true") {
-      throw new Error("« Mme » n'y est pas rappelée : le choix ne se relit pas");
+  await cas("le devis ÉCRIT « Mme », et ne propose AUCUNE pastille", async () => {
+    // **Le patron, le 13 août 2026 :** *« il ne faut pas qu'il y ait les
+    // pastilles cliquables sur le devis. En gros quand on rentre les
+    // informations dans la fiche client, si on clique sur monsieur, sur le
+    // devis ça sera marqué monsieur. »*
+    //
+    // Les pastilles y avaient été posées le jour même pour offrir une seconde
+    // porte ; il les a retirées. Le devis est le document, pas la fiche : il
+    // MONTRE ce qui partira.
+    const pastilles = await page.locator('[data-atlas^="civilite-"]').count();
+    if (pastilles > 0) {
+      throw new Error(`${pastilles} pastille(s) sur l'écran du devis : il n'en veut aucune`);
     }
+    // Et le mot doit bien y être, sans quoi le retrait aurait emporté la
+    // civilité avec lui — c'est le défaut que ce contrôle existe pour empêcher.
+    const bloc = await page.getByText("Client", { exact: true }).locator("..").innerText();
+    if (!/\bMme\b/.test(bloc)) {
+      throw new Error(`le bloc « Client » n'écrit pas « Mme » : ${bloc.replace(/\s+/g, " ").slice(0, 120)}`);
+    }
+  });
+
+  await cas("et le nom reste seul dans son champ, sans la civilité", async () => {
+    // **Le mot est écrit À CÔTÉ du champ, jamais dedans.** Dans le champ, il
+    // deviendrait modifiable et s'enregistrerait comme nom du client : le
+    // document suivant porterait « Mme Mme Roux ».
+    const saisi = await page.getByLabel("Nom du client").inputValue();
+    if (saisi !== CLIENTE) throw new Error(`le champ du nom porte « ${saisi} »`);
   });
 
   await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
