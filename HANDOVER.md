@@ -421,6 +421,37 @@ que de redessiner.
 
 ## Ce qui vient d'être terminé
 
+**LE NUMÉRO DU DEVIS N'EST PLUS UN NUMÉRO DE TÉLÉPHONE (13 août).** Deuxième
+passe sur le même défaut, et la première ne pouvait pas marcher.
+
+1. **Ce qui s'est passé.** Il ouvre le lien de son devis reçu **par SMS** et
+   reçoit « Hydration failed », avec la signature d'iOS
+   (`x-apple-data-detectors-type="telephone"`) — la veille, un correctif avait
+   été annoncé pour exactement cela.
+2. **Son banc n'était pas en retard.** Vérifié avant toute hypothèse, par la
+   fiche d'état (§ ci-dessus) : réécrite à 14 h 55, `main` à `5a6e999`, donc le
+   correctif de la veille bel et bien servi. **C'est ce contrôle-là qui a évité
+   de repartir sur une fausse piste.**
+3. **Pourquoi l'en-tête ne suffisait pas.** `format-detection` est une DEMANDE
+   au navigateur. Safari l'écoute ; la vue intégrée qui s'ouvre depuis Messages,
+   non — et c'est le seul chemin par lequel son client arrive sur le devis.
+4. **Ce qui répare est `inline-flex`, pas le découpage.** Un détecteur lit le
+   texte APLATI de la page, pas le DOM. Entourer chaque moitié du numéro d'un
+   `<span>` — la recette qui circule — ne change RIEN à ce texte ; mesuré avant
+   d'écrire le composant. Seuls les blocs le coupent, et les enfants d'une boîte
+   flexible sont blockifiés. **Ne pas « simplifier » `NumeroDeDocument` :** le
+   rendu serait identique au pixel près et le défaut reviendrait en silence.
+5. **Ce que ça coûte, et qu'il faut savoir avant qu'il le remarque :** un numéro
+   copié depuis l'écran emporte des retours à la ligne. Intact dans le PDF, le
+   SMS et la base.
+6. **Ce qui reste à éprouver chez lui.** La détection appartient à un logiciel
+   fermé d'Apple, absent d'ici. Les suites vérifient que le texte offert à ce
+   logiciel ne contient plus de suite de chiffres appelable ; elles ne peuvent
+   pas vérifier ce qu'il en fera. **Lui demander de rouvrir le lien depuis ses
+   SMS**, et de dire ce qu'il voit. Détail : `ARCHITECTURE.md` §81.
+
+---
+
 ### La TVA due, les achats et la lecture des tickets (13 août 2026)
 
 `src/lib/achat-tva.ts`, `drizzle/0036_achats_tva.sql`,
