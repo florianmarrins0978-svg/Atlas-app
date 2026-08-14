@@ -40,6 +40,17 @@ les deux dernières.***
 | **Mon compte** | Nom, e-mail, initiales | Rien à créer : `users.nom` et `users.email` existent |
 | **Connexion** | Changer son mot de passe | Rien à créer : `users.password_hash` existe, haché |
 
+**Ce qu'il a tranché le 14 août 2026, et qui n'est plus discutable :** *« il faut
+pouvoir confirmer son mdp 2× avant de le changer et met le petit œil à côté pour
+afficher ou non le mdp »*. Ma première planche proposait l'œil **à la place** de
+la seconde saisie ; il veut **les deux**, et il a raison : l'œil se touche après
+coup, la confirmation attrape la faute au moment où elle se fait.
+
+L'œil est sur **les trois champs** — une confirmation qu'on ne peut pas relire ne
+confirme rien. Il est **gris**, et bronze une fois ouvert : un pictogramme plein
+au bord d'un champ se lirait comme un bouton d'envoi, et le seul plein de
+l'écran doit rester « Changer mon mot de passe ».
+
 **Et DEUX QUESTIONS, parce que le sommaire promet ce qui n'existe pas :**
 
 | | La promesse | Le fait | Les deux réponses |
