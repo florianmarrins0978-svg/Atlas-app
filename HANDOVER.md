@@ -2391,7 +2391,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les dix-neuf pièges de ce dépôt
+### Les vingt pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -2593,6 +2593,26 @@ site publié à son adresse réelle.
     tout était vert — le trou était dans le raccord. Là où deux couches se
     passent une valeur, il faut une suite qui traverse **du doigt jusqu'au
     chiffre** (`scripts/test-achat-hors-periode-e2e.ts`).
+
+20. **Une liste d'écrans écrite à la main vieillit en silence.**
+    `ECRANS_A_PRECHAUFFER` (`scripts/prechauffer.mjs`) dit quels écrans le banc
+    compile d'avance. Réglages a été découpé en sept sous-écrans (§96) sans que
+    la liste bouge : **aucun des sept n'était préchauffé**, et le patron a trouvé
+    le défaut avant nous — *« Surtout la page équipe »*, le 14 août 2026. Sur ses
+    deux cœurs, un écran non préchauffé ouvert pendant la construction dépasse la
+    minute que le relais de GitHub accepte d'attendre : la page n'arrive jamais.
+    Rien ne rougissait, et rien ne pouvait rougir. `test-prechauffage.ts`
+    confronte désormais la liste aux dossiers réels de `src/app/reglages`.
+    **Ajouter un écran de premier rang, c'est l'ajouter à cette liste** —
+    `ARCHITECTURE.md` §100.
+
+    *Deux corollaires du même jour.* **Une fonction prévue et jamais branchée ne
+    se voit pas :** `prechauffer.mjs` portait un rappel `avancer` et
+    `/api/health/banc` savait lire le fichier qu'il devait produire — personne ne
+    le lui passait, et la page de diagnostic répondait « pas encore commencé »
+    depuis cinq jours. Et **`nice` ne règle rien ici :** faire bâtir en priorité
+    basse a été mesuré (16,2 s → 17,4 s à la connexion, construction 69 s → 67 s)
+    et **écarté** — la contention est le disque, pas le processeur.
 
 ### Le vocabulaire
 

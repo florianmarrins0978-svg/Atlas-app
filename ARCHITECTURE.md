@@ -8190,3 +8190,97 @@ moyens de paiement, le rappel des pénalités et le texte de pied sont réglés,
 enregistrés et montrés en aperçu — mais ils ne s'impriment pas encore : ils
 doivent d'abord passer par le même figement que la validité, sans quoi corriger
 un réglage réécrirait les conditions d'un devis déjà parti. C'est le lot suivant.
+
+---
+
+## 100. « Surtout la page équipe » : une liste de préchauffage qui avait vieilli
+
+**Son signalement du 14 août 2026 :** *« La connexion est au ralenti sur
+l'appli. Les nouvelles pages ne chargent mal ou pas du tout. »* Puis, à la
+question de savoir lesquelles : ***« Surtout la page équipe. »***
+
+**Sa précision était exacte, et c'est elle qui a désigné le défaut.** Rien
+n'était lent « en général ».
+
+### Ce qui se passe pendant qu'un banc bâtit
+
+Quand le code change, `scripts/banc.mjs` sert d'abord en mode développement et
+construit la version rapide à côté (§ *servir d'abord, bâtir ensuite*). En mode
+développement, un écran n'est compilé **qu'au moment où on l'ouvre**. Mesuré ici,
+sur quatre cœurs au repos, en première ouverture :
+
+| Écran | À froid | Ensuite |
+|---|---|---|
+| Connexion | 6,6 s | — |
+| Planning | 2,8 s | 0,6 s |
+| Réglages | 1,9 s | 0,2 s |
+| Terminés | 1,8 s | 0,3 s |
+| TVA | 1,4 s | 0,2 s |
+
+Sur ses **deux** cœurs, avec la construction qui les occupe, ces secondes
+deviennent des dizaines — au-delà de la minute que le relais de GitHub accepte
+d'attendre. D'où la règle qui décide tout : **un écran déjà ouvert répond ; un
+écran ouvert pour la première fois peut ne jamais arriver.**
+
+C'est précisément ce que `prechauffer.mjs` existe pour éviter : il ouvre les
+écrans depuis l'intérieur, où rien n'abandonne, pour que le patron n'ait plus à
+payer cette première fois.
+
+### Le défaut : une liste écrite à la main, et une refonte ailleurs
+
+`ECRANS_A_PRECHAUFFER` nommait `/reglages`, `/reglages/agenda`,
+`/reglages/prix`, `/reglages/vocabulaire`. Entre-temps, Réglages a été **découpé
+en sept sous-écrans** (§96) : `identite`, `equipe`, `tarifs`, `documents`,
+`planning`, `ia`, `donnees`. **Aucun des sept n'était préchauffé.**
+
+Il ouvrait donc « Équipe » à froid, pendant la construction, et la page
+n'arrivait pas. Sa phrase désignait le seul écran que la liste ne connaissait
+pas.
+
+**Et rien ne pouvait rougir.** Une liste écrite à la main ne se met pas à jour
+quand on ajoute un écran ailleurs ; le seul symptôme est une page qui ne s'ouvre
+pas, chez lui. `scripts/test-prechauffage.ts` la confronte désormais aux
+dossiers réellement présents sous `src/app/reglages` et refuse qu'un sous-écran
+y manque. Confronté au défaut — `/reglages/equipe` retiré — il nomme l'écran :
+*« jamais compilé(s) d'avance, donc hors d'atteinte sur son banc :
+/reglages/equipe »*.
+
+### Ce qui manquait aussi : une phrase
+
+Depuis son téléphone, **rien ne distingue « ça bâtit » de « c'est en panne »**.
+Le seul endroit qui le savait était le terminal de l'éditeur — celui où il ne va
+pas : *« Va regarder toi-même, je peux pas te l'envoyer »* (9 août 2026).
+
+Un bandeau le dit désormais, en haut de l'écran, avec le compte :
+« Version rapide en construction — 12 écrans sur 19 déjà prêts. » Retenu sur
+maquette (`docs/maquettes/46`, proposition A). Il est **dans le flux** — il
+pousse le contenu de quarante pixels au lieu de le couvrir, trois défauts réels
+de ce dépôt venant d'éléments flottants qui cachaient un geste — et il
+**s'efface tout seul** dès que tout est prêt.
+
+**Le chiffre existait déjà et n'était écrit nulle part.** `prechauffer.mjs`
+portait un rappel `avancer` depuis le 9 août, `/api/health/banc` savait lire le
+fichier qu'il devait produire — et **personne ne le lui passait**. La page de
+diagnostic répondait « le préchauffage n'a pas encore commencé » du début à la
+fin. Une fonction prévue, documentée, éprouvée, et jamais branchée : une ligne
+manquait.
+
+### Ce qui a été essayé, mesuré, et ÉCARTÉ
+
+Faire bâtir en priorité basse (`nice -n 19`), pour que la construction cesse de
+disputer ses deux cœurs au serveur. Éprouvé en bornant les deux processus à deux
+cœurs :
+
+| | Priorité normale | Priorité basse |
+|---|---|---|
+| Connexion | 16,2 s | **17,4 s** |
+| Planning | 3,8 s | 3,6 s |
+| Réglages | 3,3 s | 3,3 s |
+| La construction elle-même | 69 s | 67 s |
+
+**Aucun gain.** La contention n'est pas le processeur mais le disque — que
+Next.js signale lui-même comme lent sur ces machines. L'idée était plausible et
+fausse ; elle n'est pas livrée. Une réparation supposée présentée comme acquise
+coûte au patron l'essai, puis l'aller-retour (`AGENTS.md`).
+
+---

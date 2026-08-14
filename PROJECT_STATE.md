@@ -244,6 +244,15 @@ l'application. Ce qui est **fait** :
   dans juillet — et **invisible**, l'écran ne montrant qu'une période. La
   feuille annonce désormais la destination avant qu'il appuie, et l'écran l'y
   emmène après. `scripts/test-achat-hors-periode-e2e.ts`, `ARCHITECTURE.md` §91.
+- **« Surtout la page équipe » : l'écran jamais préparé d'avance** (14 août) :
+  le banc compile ses écrans à l'avance, mais la liste — écrite à la main —
+  ignorait les **sept sous-écrans de Réglages** créés depuis. « Équipe »
+  s'ouvrait donc à froid pendant la construction, au-delà de la minute que le
+  relais de GitHub accepte. La liste est désormais confrontée aux dossiers
+  réels. Et un **bandeau** dit « Version rapide en construction — 12 écrans sur
+  19 » puis s'efface seul, pour ne plus confondre « ça bâtit » et « c'est
+  cassé ». **Écarté après mesure : bâtir en priorité basse** (aucun gain, la
+  contention est le disque). `ARCHITECTURE.md` §100, `docs/maquettes/46`.
 - **La TVA au mois ou au trimestre, et son calendrier** (12 août) : Réglages
   porte le choix, le mois coché d'avance — c'est le défaut légal (déclaration
   CA3 mensuelle ; le trimestre est une option sous 4 000 € de TVA due). L'écran

@@ -55,6 +55,12 @@ const eslintConfig = defineConfig([
     // banc : une fois `npm run banc` joué, `npm run lint` recrachait
     // 1 271 erreurs venues de code généré. Un contrôle noyé ne se lit plus.
     ".next-batie/**",
+    // Le même piège, une seconde fois : le serveur au profil « banc » monté par
+    // `scripts/test-bandeau-banc-e2e.ts` a besoin de son propre dossier — Next.js
+    // 16 refuse deux serveurs de développement dans un même répertoire. Sans
+    // cette ligne, `npm run lint` passait de zéro à 1 116 erreurs dès que cette
+    // suite avait tourné une fois, toutes venues de code généré.
+    ".next-banc-essai/**",
     // appli/ est un projet distinct (HTML/JS statique navigateur + scripts
     // Node, sans React ni TypeScript) : les règles Next.js n'y ont pas de sens
     // et rejetteraient par exemple le `require()` de sa batterie de tests.

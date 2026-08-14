@@ -9,6 +9,46 @@ Format : le plus récent en tête.
 
 ## 2026-08-14
 
+### « Surtout la page équipe » : l'écran qui n'était jamais préparé d'avance
+
+**Son signalement :** *« La connexion est au ralenti sur l'appli. Les nouvelles
+pages ne chargent mal ou pas du tout. »* Puis, précis : *« Surtout la page
+équipe. »*
+
+**Sa précision était le diagnostic.** Le banc compile ses écrans d'avance pour
+qu'ils s'ouvrent du premier coup — mais la liste de ces écrans était écrite à la
+main, et Réglages avait été découpé en sept sous-écrans depuis. Aucun des sept
+n'y figurait. « Équipe » s'ouvrait donc à froid, pendant que la construction
+occupait ses deux cœurs, et le relais de GitHub abandonnait avant que la page
+n'arrive.
+
+**Ce que ça évite :** une page qui ne s'ouvre pas et qu'aucun contrôle ne voit.
+La liste est désormais confrontée aux écrans réellement présents — un sous-écran
+ajouté sans y être inscrit fait rougir `test-prechauffage.ts`, qui le nomme.
+
+### Et une phrase, pour ne plus confondre « ça bâtit » avec « c'est cassé »
+
+Depuis son téléphone, rien ne distinguait les deux : il fallait ouvrir
+l'éditeur. Un bandeau le dit maintenant, avec le compte — « Version rapide en
+construction, 12 écrans sur 19 déjà prêts » — et **s'efface tout seul** quand
+tout est prêt. Il n'existe que sur son banc, jamais ailleurs, et un contrôle
+l'éprouve dans les deux sens (`docs/maquettes/46`, `ARCHITECTURE.md` §100).
+
+Le chiffre existait déjà : le préchauffage le comptait, et personne ne l'écrivait
+nulle part — la page de diagnostic répondait « pas encore commencé » du début à
+la fin.
+
+### Écarté après mesure : bâtir en priorité basse
+
+Plausible et faux. Sur deux cœurs : connexion 16,2 s à priorité normale,
+**17,4 s en priorité basse** ; construction 69 s contre 67 s. La contention est
+le disque, pas le processeur. **Non livré** — annoncer une réparation supposée
+coûte l'essai puis l'aller-retour.
+
+---
+
+## 2026-08-14
+
 ### L'unité d'un tarif se choisit dans un bandeau, au lieu de se taper
 
 Sa demande du 13 août, capture des tarifs à l'appui : *« crée-moi un bandeau
