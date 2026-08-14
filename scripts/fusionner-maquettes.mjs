@@ -242,10 +242,18 @@ const MAQUETTES = [
     famille: "Dire moins sur l’écran du devis",
     quoi: "« Le message dit de consulter la case devis, mais aucune case devis n’existe. » Le témoin, puis trois façons : le message devient la porte, un vrai bouton, ou plus de message du tout.",
     retenu: true,
+  },
+  {
     fichier: "44-la-feuille-denvoi.html",
     titre: "La feuille d’envoi : un seul geste à la fois",
     famille: "La feuille d’envoi",
     quoi: "Deux boutons pleins l’un sous l’autre sur la feuille d’un devis corrigé. Deux lectures du retrait, montrées dans les deux moments — avant et après l’envoi — et trois dosages de « Plutôt par e-mail ».",
+  },
+  {
+    fichier: "45-modifier-son-devis.html",
+    titre: "Le devis : le reprendre avant de l’envoyer",
+    famille: "Le devis avant l’envoi",
+    quoi: "Tout est là pour vérifier, rien pour corriger : « Modifier mon devis » n’existe qu’APRÈS l’envoi. Son idée — le mot « Devis » cliquable — dessinée telle quelle, et quatre autres façons d’y arriver.",
   },
 ];
 

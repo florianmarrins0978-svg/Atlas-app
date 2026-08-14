@@ -318,6 +318,39 @@ Détail et raisons : `ARCHITECTURE.md` §95.
 
 ## 2026-08-13
 
+### Deux maquettes perdues en silence dans la page unique
+
+**Trouvé en ajoutant la planche du devis modifiable.** `fusionner-maquettes.mjs`
+tient la liste des maquettes à assembler. Deux entrées — la 40 et la 44 —
+avaient fusionné en **un seul objet** : le `},{` qui les séparait manquait.
+JavaScript ne s'en plaint pas, il garde la dernière valeur de chaque clé.
+
+Résultat : **la maquette 40 avait disparu de la page unique**, celle qu'on lui
+envoie. Le script annonçait « 33 maquettes fusionnées » et le contrôle
+« 33 titres cliqués, 33 sections peintes » — deux chiffres cohérents entre eux
+et faux tous les deux, puisqu'ils comptaient la liste, pas le dossier.
+
+Le sommaire portait le même genre de faute : l'entrée 40 n'était pas refermée,
+si bien que le titre de famille suivant devenait un morceau de lien.
+
+Réparé : **35** maquettes, la 40 revenue et la 45 ajoutée.
+
+**Ce qui resterait à faire, et qui n'est pas de ce lot :** un contrôle qui
+compare la liste au contenu de `docs/maquettes/`. Tant qu'il n'existe pas, une
+maquette oubliée dans la liste ne se voit qu'à l'œil.
+
+### Le devis modifiable avant l'envoi — cinq propositions dessinées
+
+**Sa capture de 21 h 00 :** *« si je veux modifier mon devis avant de l'envoyer,
+je peux pas »*. Il a raison : « Modifier mon devis » n'existe que sur l'écran du
+devis PARTI. Avant l'envoi, aucun chemin ne mène au devis modifiable.
+
+Sa demande — rendre le mot « Devis » cliquable — est dessinée telle quelle,
+avec la marque qui la rend trouvable, à côté de quatre autres façons
+(`docs/maquettes/45-modifier-son-devis.html`). **Rien n'est codé** : il choisit
+d'abord (`CLAUDE.md` §3 bis).
+
+
 ### CODÉ : l'identité de l'entreprise, et le régime de TVA qui cesse d'être deviné
 
 **Premier lot des réglages qui passe du dessin au code** — et c'est celui qui
