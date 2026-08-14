@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Reprendre son devis avant de l’envoyer</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    REPRENDRE SON DEVIS AVANT DE L'ENVOYER
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 13 août 2026 au soir, capture à l'appui :
+
+      « J'ai un devis sur le feu. En cliquant sur Mme Félicie, voilà où
+        j'arrive, mais si je veux modifier mon devis avant de l'envoyer, je
+        peux pas. Fais en sorte qu'en cliquant sur le mot devis en haut à
+        gauche j'arrive sur la page de mon devis pour la modifier. Crée-moi des
+        visuels avant de coder, et il faut que ce soit intuitif. »
+
+    IL A RAISON, ET LE MANQUE EST RÉEL. Le lien « Modifier mon devis » existe
+    dans l'application — mais seulement APRÈS l'envoi, sur l'écran du devis
+    parti. Avant l'envoi, c'est-à-dire au moment précis où l'on veut encore
+    corriger, aucun chemin ne mène à `/devis-complet`. Il n'y arrive
+    aujourd'hui qu'en passant par la création d'un chantier.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE CETTE PAGE DÉBAT, ET POURQUOI ELLE NE SE CONTENTE PAS DE SA PHRASE
+
+    Sa proposition — rendre le mot « Devis » cliquable — coûte zéro place et se
+    code en cinq minutes. Mais un titre qui est secrètement un lien n'est pas
+    intuitif : RIEN NE DIT QU'ON PEUT LE TOUCHER. Il le saurait, lui ; un
+    remplaçant qui prend le téléphone dans six mois, non.
+
+    La proposition A la dessine donc telle qu'il l'a demandée, avec la seule
+    chose qui la rende trouvable : une petite marque à côté du mot. Les quatre
+    autres cherchent ailleurs — et l'une d'elles (C) répond à une question qu'il
+    n'a pas posée mais qui décide de tout : ON TOUCHE CE QU'ON VEUT CHANGER.
+
+    Rien n'est codé. C'est `CLAUDE.md` §3 bis : une demande d'apparence se
+    dessine avant de se coder.
+
+    ————————————————————————————————————————————————————————————————
+    Aucun script — son lecteur n'en exécute pas. Les écrans font 390 px, la
+    dalle de son téléphone. L'écran reproduit est sa capture de 21 h 00.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f7f5f0; --alerte:#9C3B2E;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --alerte:#C4614F;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --alerte:#C4614F;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:1300px;margin:0 auto}
+
+  .intro{max-width:66ch;margin:0 auto;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro b{color:var(--encre);font-weight:600}
+
+  .famille{max-width:1300px;margin:56px auto 0;text-align:center;
+           font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.32em;
+           text-transform:uppercase;color:var(--or)}
+  .sous-famille{max-width:62ch;margin:10px auto 0;text-align:center;
+                font-size:13.4px;color:var(--gris);line-height:1.6}
+  .sous-famille b{color:var(--encre)}
+  .grille{display:flex;flex-wrap:wrap;gap:54px 40px;justify-content:center;
+          align-items:flex-start;margin-top:26px}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px;width:100%}
+  .legende{text-align:center;max-width:390px;width:100%}
+  .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+              text-transform:uppercase;color:var(--or)}
+  .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+  .legende p + p{margin-top:9px}
+  .legende .pour{color:var(--encre);opacity:.86}
+  .legende .contre{color:var(--alerte);opacity:.92}
+  .legende b{color:var(--encre)}
+
+  .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+
+  /* ————————————————————————————————————————————————————————————————
+     L'ÉCRAN — sa capture du 13 août, 21 h 00, reprise au pixel
+     ———————————————————————————————————————————————————————————————— */
+  .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
+    width:390px;max-width:100%;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);padding:22px 0 24px;
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+  .retour{margin:0 24px;width:38px;height:38px;border-radius:9999px;
+          background:var(--e-plage);display:flex;align-items:center;justify-content:center;
+          color:var(--e-gris);font-size:17px}
+  .eyebrow{margin:16px 24px 0;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--e-or)}
+  .titre-ecran{margin:12px 24px 0;font:400 34px/1.1 ui-serif,Georgia,serif}
+  .filet{margin:16px 24px 0;height:1px;background:var(--e-trait)}
+
+  /* La ligne du titre quand elle porte une action à droite (proposition B). */
+  .ligne-titre{margin:12px 24px 0;display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+  .ligne-titre h3{margin:0;font:400 34px/1.1 ui-serif,Georgia,serif}
+  .action-titre{font-size:15px;font-weight:600;color:var(--e-or);white-space:nowrap}
+
+  /* Le titre qui devient lui-même la porte (proposition A). */
+  .titre-porte{display:inline-flex;align-items:center;gap:10px}
+  .titre-porte .crayon{font-size:17px;color:var(--e-or);
+                       transform:translateY(-6px)}
+  .titre-porte.souligne h3{border-bottom:1px solid rgba(185,139,71,.5);padding-bottom:2px}
+
+  .carte{margin:16px 24px 0;border-radius:4px;background:var(--e-plage);padding:18px 20px}
+  .carte + .carte{margin-top:14px}
+  .etiq{font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+        text-transform:uppercase;color:var(--e-gris)}
+  .val{margin-top:7px;font-size:15px}
+  .val.gris{margin-top:3px;color:var(--e-gris)}
+  .sep{margin:14px 0;height:1px;background:var(--e-trait)}
+
+  .en-tete-carte{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  .en-tete-carte .agir{font-size:13.5px;font-weight:600;color:var(--e-or);white-space:nowrap}
+  .en-tete-carte .chevron{font-size:16px;color:var(--e-or)}
+
+  .ligne-devis{margin-top:11px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:15px}
+  .ligne-devis .prix{color:var(--e-gris)}
+
+  .total-carte{margin:16px 24px 0;border-radius:4px;background:var(--e-plage);
+               padding:18px 20px;text-align:center}
+  .total-carte .etiq{letter-spacing:.28em}
+  .total-carte .montant{margin-top:8px;font:400 32px/1 ui-serif,Georgia,serif;color:var(--e-pin)}
+
+  .sous-total{margin:15px 24px 0;text-align:center;font-size:14px;color:var(--e-encre)}
+  .sous-total .lien{color:var(--e-encre)}
+  .sous-total .or{color:var(--e-or);font-weight:600}
+  .sous-total .pt{color:var(--e-gris);opacity:.6;padding:0 9px}
+
+  .capsule{display:block;margin:16px 24px 0;border-radius:9999px;
+           background:var(--e-pin);color:#faf9f5;padding:14px 0;
+           text-align:center;font-size:16px;font-weight:500}
+  .capsule.creuse{background:transparent;color:var(--e-pin);
+                  box-shadow:inset 0 0 0 1px rgba(47,59,47,.35);font-weight:500}
+
+  /* La carte entièrement touchable (proposition E). */
+  .carte.touchable{position:relative;padding-right:38px;
+                   box-shadow:inset 0 0 0 1px rgba(185,139,71,.28)}
+  .carte.touchable .fleche{position:absolute;right:16px;top:50%;
+                           transform:translateY(-50%);font-size:18px;color:var(--e-or)}
+
+  .rien{margin:16px 24px 0;padding:13px 12px;border:1px dashed var(--e-trait);
+        border-radius:4px;text-align:center;font-size:12.5px;color:var(--e-gris)}
+
+  .note{max-width:74ch;margin:64px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+  .note b{color:var(--encre)}
+  .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .note ul{margin:10px 0 0;padding-left:18px}
+  .note li{margin:6px 0}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Le devis sur le feu</p>
+    <h1>Le reprendre avant de l’envoyer</h1>
+    <p><b>Vous avez raison, et le manque est réel.</b> « Modifier mon devis »
+      existe dans Atlas — mais seulement <b>après</b> l’envoi. Avant, c’est-à-dire
+      au moment précis où l’on veut encore corriger, aucun chemin ne mène au
+      devis modifiable.</p>
+    <p>Votre idée — rendre le mot « Devis » cliquable — est la <b>A</b>. Elle
+      ne coûte rien. Mais un titre qui est secrètement un lien ne s’annonce pas :
+      vous le sauriez, un remplaçant non. Les quatre autres cherchent
+      <b>où le doigt va naturellement</b>.</p>
+  </div>
+
+  <!-- ————————————————————————————————————————————————————————————
+       AUJOURD'HUI — sa capture, pour juger sur pièce
+       ———————————————————————————————————————————————————————— -->
+  <p class="famille">Aujourd’hui — votre capture de 21 h 00</p>
+  <p class="sous-famille">Tout est là pour <b>vérifier</b>, rien pour
+    <b>corriger</b>. Le seul geste offert est l’envoi.</p>
+  <div class="grille">
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Mme Félicie</p>
+        <h3 class="titre-ecran">Devis</h3>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiq">Chantier</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">Rue du Tourigou 29950 Bénodet</p>
+          <div class="sep"></div>
+          <p class="etiq">Client</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">0679984514</p>
+        </div>
+        <div class="carte">
+          <p class="etiq">Lignes du devis</p>
+          <div class="ligne-devis"><span>Haie de laurier — 20 ml</span><span class="prix">50,00 €</span></div>
+        </div>
+        <div class="total-carte">
+          <p class="etiq">Total</p>
+          <p class="montant">60,00 €</p>
+        </div>
+        <p class="sous-total"><span class="lien">Aperçu du PDF</span></p>
+        <span class="capsule">Envoyer au client</span>
+        <div class="rien">Aucun chemin vers le devis modifiable.</div>
+      </div></div>
+      <div class="legende">
+        <h2>L’existant</h2>
+        <p class="contre">C’est le défaut que vous avez trouvé.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ————————————————————————————————————————————————————————————
+       LES CINQ PROPOSITIONS
+       ———————————————————————————————————————————————————————— -->
+  <p class="famille">Cinq façons d’y arriver</p>
+  <p class="sous-famille">Toutes mènent au même écran — le devis modifiable —
+    et <b>aucune ne déplace « Envoyer au client »</b>.</p>
+
+  <div class="grille">
+
+    <!-- A — SON IDÉE : le titre devient la porte -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Mme Félicie</p>
+        <div style="margin:12px 24px 0">
+          <span class="titre-porte souligne">
+            <h3 style="margin:0;font:400 34px/1.1 ui-serif,Georgia,serif">Devis</h3>
+            <span class="crayon">✎</span>
+          </span>
+        </div>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiq">Chantier</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">Rue du Tourigou 29950 Bénodet</p>
+          <div class="sep"></div>
+          <p class="etiq">Client</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">0679984514</p>
+        </div>
+        <div class="carte">
+          <p class="etiq">Lignes du devis</p>
+          <div class="ligne-devis"><span>Haie de laurier — 20 ml</span><span class="prix">50,00 €</span></div>
+        </div>
+        <div class="total-carte">
+          <p class="etiq">Total</p>
+          <p class="montant">60,00 €</p>
+        </div>
+        <p class="sous-total"><span class="lien">Aperçu du PDF</span></p>
+        <span class="capsule">Envoyer au client</span>
+      </div></div>
+      <div class="legende">
+        <h2>A — votre idée</h2>
+        <p class="titre">Le mot « Devis » ouvre le devis</p>
+        <p class="pour">Zéro place prise. Le titre reste le titre, et le geste
+          est là où votre doigt l’a cherché.</p>
+        <p class="contre"><b>Sans le crayon et le filet doré, rien ne dirait
+          qu’on peut le toucher.</b> Ils sont donc dessinés ici — un titre nu ne
+          s’annonce pas.</p>
+      </div>
+    </div>
+
+    <!-- B — « Modifier » à droite du titre -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Mme Félicie</p>
+        <div class="ligne-titre">
+          <h3>Devis</h3>
+          <span class="action-titre">Modifier</span>
+        </div>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiq">Chantier</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">Rue du Tourigou 29950 Bénodet</p>
+          <div class="sep"></div>
+          <p class="etiq">Client</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">0679984514</p>
+        </div>
+        <div class="carte">
+          <p class="etiq">Lignes du devis</p>
+          <div class="ligne-devis"><span>Haie de laurier — 20 ml</span><span class="prix">50,00 €</span></div>
+        </div>
+        <div class="total-carte">
+          <p class="etiq">Total</p>
+          <p class="montant">60,00 €</p>
+        </div>
+        <p class="sous-total"><span class="lien">Aperçu du PDF</span></p>
+        <span class="capsule">Envoyer au client</span>
+      </div></div>
+      <div class="legende">
+        <h2>B — le mot dit le geste</h2>
+        <p class="titre">« Modifier », en face du titre</p>
+        <p class="pour">Se lit sans avoir rien à deviner, et occupe une place
+          qui était vide. Même hauteur que le titre, aligné sur sa ligne
+          d’écriture.</p>
+        <p class="contre">Un mot de plus tout en haut, là où l’écran était le
+          plus calme.</p>
+      </div>
+    </div>
+
+    <!-- C — on touche ce qu'on veut changer -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Mme Félicie</p>
+        <h3 class="titre-ecran">Devis</h3>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiq">Chantier</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">Rue du Tourigou 29950 Bénodet</p>
+          <div class="sep"></div>
+          <p class="etiq">Client</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">0679984514</p>
+        </div>
+        <div class="carte">
+          <div class="en-tete-carte">
+            <p class="etiq">Lignes du devis</p>
+            <span class="agir">Modifier</span>
+          </div>
+          <div class="ligne-devis"><span>Haie de laurier — 20 ml</span><span class="prix">50,00 €</span></div>
+        </div>
+        <div class="total-carte">
+          <p class="etiq">Total</p>
+          <p class="montant">60,00 €</p>
+        </div>
+        <p class="sous-total"><span class="lien">Aperçu du PDF</span></p>
+        <span class="capsule">Envoyer au client</span>
+      </div></div>
+      <div class="legende">
+        <h2>C — au bon endroit</h2>
+        <p class="titre">« Modifier » sur les lignes</p>
+        <p class="pour"><b>On touche ce qu’on veut changer.</b> Quand un prix
+          cloche, l’œil est déjà sur cette carte : le geste s’y trouve, sans
+          remonter en haut de l’écran.</p>
+        <p class="contre">Ne se voit pas tant qu’on n’a pas descendu l’écran —
+          mais c’est justement là qu’on regarde avant d’envoyer.</p>
+      </div>
+    </div>
+
+    <!-- D — sous le total, à côté de l'aperçu -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Mme Félicie</p>
+        <h3 class="titre-ecran">Devis</h3>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiq">Chantier</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">Rue du Tourigou 29950 Bénodet</p>
+          <div class="sep"></div>
+          <p class="etiq">Client</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">0679984514</p>
+        </div>
+        <div class="carte">
+          <p class="etiq">Lignes du devis</p>
+          <div class="ligne-devis"><span>Haie de laurier — 20 ml</span><span class="prix">50,00 €</span></div>
+        </div>
+        <div class="total-carte">
+          <p class="etiq">Total</p>
+          <p class="montant">60,00 €</p>
+        </div>
+        <p class="sous-total">
+          <span class="or">Modifier le devis</span>
+          <span class="pt">·</span>
+          <span class="lien">Aperçu du PDF</span>
+        </p>
+        <span class="capsule">Envoyer au client</span>
+      </div></div>
+      <div class="legende">
+        <h2>D — la place existe déjà</h2>
+        <p class="titre">À côté de « Aperçu du PDF »</p>
+        <p class="pour">Aucune place nouvelle : cette ligne existe. Les deux
+          gestes de vérification — <b>relire</b> et <b>corriger</b> — se
+          retrouvent côte à côte, juste avant l’envoi.</p>
+        <p class="contre">Deux liens serrés sur une ligne, et le doigt doit
+          viser.</p>
+      </div>
+    </div>
+
+    <!-- E — toute la carte est la porte -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Mme Félicie</p>
+        <h3 class="titre-ecran">Devis</h3>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiq">Chantier</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">Rue du Tourigou 29950 Bénodet</p>
+          <div class="sep"></div>
+          <p class="etiq">Client</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">0679984514</p>
+        </div>
+        <div class="carte touchable">
+          <p class="etiq">Lignes du devis</p>
+          <div class="ligne-devis"><span>Haie de laurier — 20 ml</span><span class="prix">50,00 €</span></div>
+          <span class="fleche">›</span>
+        </div>
+        <div class="total-carte">
+          <p class="etiq">Total</p>
+          <p class="montant">60,00 €</p>
+        </div>
+        <p class="sous-total"><span class="lien">Aperçu du PDF</span></p>
+        <span class="capsule">Envoyer au client</span>
+      </div></div>
+      <div class="legende">
+        <h2>E — la carte entière</h2>
+        <p class="titre">Toucher les lignes ouvre le devis</p>
+        <p class="pour">La cible la plus large de toutes : <b>on ne peut pas la
+          rater avec un gant</b>. Le chevron doré dit qu’il y a une suite, comme
+          ailleurs dans Atlas.</p>
+        <p class="contre">Un liseré autour de la carte, donc un peu de mobilier
+          en plus sur un écran qui n’en avait pas.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ————————————————————————————————————————————————————————————
+       CE QUI NE SE DÉCIDE PAS À L'ŒIL
+       ———————————————————————————————————————————————————————— -->
+  <div class="note">
+    <span class="t">Trois choses à savoir avant de choisir</span>
+    <ul>
+      <li><b>Toutes mènent au même endroit</b> — l’écran du devis modifiable,
+        celui où vous écrivez les lignes et les prix. Le retour vous ramène
+        ici. Rien d’autre ne change.</li>
+      <li><b>Aucune ne touche à l’envoi.</b> « Envoyer au client » reste où il
+        est, et reste le seul bouton plein de l’écran : c’est lui l’action
+        principale, et corriger n’est qu’un détour.</li>
+      <li><b>Ce chemin ne s’ouvre qu’AVANT l’envoi.</b> Une fois le devis parti,
+        il ne se modifie plus : il se <i>reprend</i>, ce qui crée une nouvelle
+        version — et c’est votre geste, pas celui de l’application. L’écran
+        d’après l’envoi garde donc son propre libellé.</li>
+    </ul>
+    <p style="margin-top:14px"><b>Ma préférence, et pourquoi.</b> <b>C</b> — le
+      mot sur la carte des lignes. C’est là que l’œil se pose quand un prix
+      cloche, et le geste s’y trouve sans remonter. Si vous voulez que ça se
+      voie dès l’arrivée sans descendre l’écran, <b>B</b> fait ça très bien, et
+      les deux peuvent d’ailleurs coexister.</p>
+    <p style="margin-top:10px">Votre <b>A</b> est dessinée telle que vous l’avez
+      dite. Si c’est elle que vous retenez, gardez au moins le crayon : sans
+      lui, personne ne devine qu’un titre s’ouvre.</p>
+    <p style="margin-top:14px"><b>Dites-moi laquelle, et je la code.</b> Rien
+      n’est encore touché dans l’application.</p>
+  </div>
+
+</div>
+</body>
+</html>

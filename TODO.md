@@ -501,6 +501,37 @@ Non fait d'office : les brancher allonge `verifier:avant-livraison` de plusieurs
 minutes pour éprouver des pages qui ne partent pas en production. Le bon endroit
 est vraisemblablement la CI, sur les seuls fichiers touchés.
 
+### 0 sexvicies. Le chemin vers le devis modifiable — **maquettes prêtes, son choix attendu**
+
+**Sa capture du 13 août 2026, 21 h 00 :** *« J'ai un devis sur le feu. En
+cliquant sur Mme Félicie, voilà où j'arrive, mais si je veux modifier mon devis
+avant de l'envoyer, je peux pas. Fais en sorte qu'en cliquant sur le mot devis
+en haut à gauche j'arrive sur la page de mon devis pour la modifier. Crée-moi
+des visuels avant de coder, et il faut que ce soit intuitif. »*
+
+**Le manque est réel, et vérifié dans le code.** `ExportClient` n'offre
+« Modifier mon devis » que sur `EcranDevisParti`, c'est-à-dire APRÈS l'envoi.
+Avant — au moment précis où l'on corrige — aucun chemin ne mène à
+`/chantiers/<id>/devis-complet` depuis cet écran.
+
+**Cinq propositions dessinées**, `docs/maquettes/45-modifier-son-devis.html` :
+
+| | Où le geste se pose | Ce qu'elle vaut |
+|---|---|---|
+| A | Le mot « Devis » devient la porte — **son idée** | Zéro place. Mais un titre qui est secrètement un lien ne s'annonce pas : dessinée avec un crayon et un filet doré, sans quoi personne ne devine |
+| B | « Modifier » en face du titre | Se lit sans deviner, place jusque-là vide |
+| C | « Modifier » sur la carte des lignes | **On touche ce qu'on veut changer** — c'est là que l'œil est quand un prix cloche |
+| D | À côté de « Aperçu du PDF » | Aucune place nouvelle : relire et corriger côte à côte |
+| E | La carte des lignes entière, chevron doré | La cible la plus large ; un peu de mobilier en plus |
+
+**Rien n'est codé.** `CLAUDE.md` §3 bis : une demande d'apparence se dessine
+avant de se coder. **Il reste à en désigner une.**
+
+**Ce qu'elle coûtera, une fois choisie** : un `<Link>` dans `ExportClient`, sur
+la branche d'AVANT l'envoi uniquement — après, le devis ne se modifie plus, il
+se *reprend*, et c'est un autre geste (`ARCHITECTURE.md` §66). Plus une suite
+qui vérifie que le chemin existe avant l'envoi et **pas** après. Une heure.
+
 ### 0 quinvicies. Le chevron de retour, dernier bouton hors charte
 
 <!-- Renuméroté le 13 août 2026 : « 0 unvicies » désignait DÉJÀ le raccordement
