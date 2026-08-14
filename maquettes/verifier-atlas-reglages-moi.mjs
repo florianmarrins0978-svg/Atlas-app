@@ -97,10 +97,51 @@ try {
 // ── 2. Connexion : le mot de passe, et le geste qui compte ───────────────
 try {
   await cadrer('[data-s="connexion"]');
+  // LES TROIS CHAMPS, ET LA CONFIRMATION EN FAIT PARTIE. Sa demande du 14 août
+  // 2026 : « il faut pouvoir confirmer son mdp 2× avant de le changer ». Ma
+  // première planche l'avait remplacée par l'œil seul — l'œil se touche après
+  // coup, la confirmation attrape la faute au moment où elle se fait.
+  const etiquettes = await page.$$eval('[data-s="connexion"] .champ .et',
+    (l) => l.map((e) => e.textContent.trim().toLowerCase()));
+  verifie("le nouveau mot de passe se saisit DEUX FOIS",
+    etiquettes.filter((e) => /nouveau mot de passe/.test(e)).length === 2, etiquettes.join(" | "));
+
   const masques = await page.$$eval('[data-s="connexion"] .va.masque',
     (l) => l.map((e) => e.textContent.trim()));
-  verifie("les mots de passe sont montrés masqués, jamais en clair",
-    masques.length >= 2 && masques.every((m) => /^[•]+$/.test(m)), masques.join(" | "));
+  verifie("les trois mots de passe sont montrés masqués au repos",
+    masques.length === 3 && masques.every((m) => /^[•]+$/.test(m)), masques.join(" | "));
+
+  // ── L'ŒIL, ET QU'IL FASSE QUELQUE CHOSE ────────────────────────────────
+  // Un œil dessiné qui n'ouvre rien se valide sans qu'on voie qu'il est mort :
+  // c'est le geste qu'il a demandé, pas le pictogramme.
+  const clairsAuRepos = await page.$$eval('[data-s="connexion"] .va.clair',
+    (l) => l.filter((e) => e.checkVisibility({ opacityProperty: true, visibilityProperty: true })).length);
+  verifie("au repos, AUCUN mot de passe n'est lisible", clairsAuRepos === 0, `${clairsAuRepos}`);
+
+  const yeux = await page.$$eval('[data-s="connexion"] .oeil.ferme', (l) =>
+    l.map((e) => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height }; }));
+  verifie("chaque champ porte son œil — une confirmation qu'on ne relit pas ne confirme rien",
+    yeux.length === 3, `${yeux.length}`);
+  verifie("et chaque œil tient la cible de 44 px",
+    yeux.every((o) => o.w >= 43.5 && o.h >= 43.5),
+    yeux.map((o) => `${o.w.toFixed(0)}×${o.h.toFixed(0)}`).join(" "));
+
+  await page.click('[data-s="nouveau"] label.rang');
+  await page.waitForTimeout(220);
+  const revele = await page.$eval('[data-s="nouveau"] .va.clair',
+    (e) => (e.checkVisibility({ opacityProperty: true, visibilityProperty: true }) ? e.textContent.trim() : ""));
+  verifie("touché, l'œil affiche le mot de passe pour de bon",
+    revele.length > 3 && !/^[•]+$/.test(revele), revele || "rien");
+  verifie("et l'œil se barre — sans quoi rien ne dit qu'il est ouvert",
+    await page.$eval('[data-s="nouveau"] .oeil.ouvert',
+      (e) => e.checkVisibility({ opacityProperty: true, visibilityProperty: true })));
+  // UN SEUL CHAMP S'OUVRE : montrer les trois d'un coup ferait valider un écran
+  // qui affiche tous les mots de passe dès qu'on touche un œil.
+  verifie("et lui seul — les autres champs restent masqués",
+    await page.$eval('[data-s="actuel"] .va.masque',
+      (e) => e.checkVisibility({ opacityProperty: true, visibilityProperty: true })));
+  await page.click('[data-s="nouveau"] label.rang');
+  await page.waitForTimeout(220);
 
   const dit = await texte('[data-s="connexion"]');
   verifie("« Me déconnecter partout » est proposé",
@@ -227,6 +268,20 @@ try {
     await pg.waitForTimeout(200);
     await props[i].screenshot({ path: `${SORTIE}/reglages-moi-${i + 1}.png` });
   }
+
+  // ET UNE CAPTURE L'ŒIL OUVERT. Sans elle, la planche envoyée montre trois
+  // rangées de points : le geste qu'il a demandé n'y est pas visible, et il
+  // devrait ouvrir la page pour le voir.
+  await pg.click('[data-s="nouveau"] label.rang');
+  await pg.waitForTimeout(260);
+  const ouvert = await pg.$eval('[data-s="nouveau"] .va.clair',
+    (e) => e.checkVisibility({ opacityProperty: true, visibilityProperty: true }));
+  verifie("la capture du geste montre bien le mot de passe affiché", ouvert);
+  const co = await pg.$('[data-s="connexion"]');
+  await co.scrollIntoViewIfNeeded();
+  await pg.waitForTimeout(200);
+  await co.screenshot({ path: `${SORTIE}/reglages-moi-3-oeil-ouvert.png` });
+
   await grand.close();
 } catch (e) { echecs.push("gros plan · interrompu — " + String(e.message).split("\n")[0]); }
 
