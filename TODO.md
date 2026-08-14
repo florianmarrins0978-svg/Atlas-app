@@ -27,7 +27,31 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 sexvicies. L'écran du catalogue : sa flèche, et sa mémoire morte
+### 0 octovicies. Mon compte et Connexion : dessinés, avec DEUX QUESTIONS
+
+*`maquettes/atlas-reglages-moi.html`, le 14 août 2026 — quatre écrans, 53
+contrôles. **Les onze autres rubriques du sommaire ont leur planche ; c'étaient
+les deux dernières.***
+
+**Ce qui se code dès son accord, sans rien décider :**
+
+| Écran | Ce qu'il porte | Ce qu'il faut |
+|---|---|---|
+| **Mon compte** | Nom, e-mail, initiales | Rien à créer : `users.nom` et `users.email` existent |
+| **Connexion** | Changer son mot de passe | Rien à créer : `users.password_hash` existe, haché |
+
+**Et DEUX QUESTIONS, parce que le sommaire promet ce qui n'existe pas :**
+
+| | La promesse | Le fait | Les deux réponses |
+|---|---|---|---|
+| **1** | « Nom, e-mail et **téléphone** » | `users` n'a pas de colonne téléphone, et rien n'appellerait ce numéro : ni SMS ni e-mail sortant (tranché le 4 août) | **A** retirer le mot du libellé · **B** créer la colonne |
+| **2** | « Mot de passe et **appareils** » | `src/auth.ts` pose `session: {strategy: "jwt"}` — **aucune session n'est en base**, il n'y a rien à lister | **A** juste « me déconnecter partout » (une colonne) · **B** la vraie liste (une table, 2-3 jours) |
+
+**Ne pas dessiner d'appareils en attendant.** Une liste plausible — « iPhone ·
+il y a 2 h » — se valide en dix secondes et le défaut n'apparaît qu'au moment de
+coder. Le contrôle de la planche l'interdit explicitement, et il sait rougir.
+
+### 0 octovicies bis. L'écran du catalogue : sa flèche, et sa mémoire morte
 
 *Les deux défauts sont sortis d'une capture du patron, le 14 août 2026 — pas
 d'une suite verte. Ils sont expliqués en langage courant dans

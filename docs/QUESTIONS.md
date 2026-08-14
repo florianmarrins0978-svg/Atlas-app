@@ -1139,5 +1139,5 @@ mémoire vide, et annonce donc fidèlement qu'elle est vide. Vos prix sont bien
 retenus — c'est cet écran-là qui regarde au mauvais endroit.
 
 **Ce qu'il reste à faire :** remettre la flèche, et rebrancher l'écran sur la
-bonne mémoire. Les deux sont inscrits dans `TODO.md`, en attente de votre feu
-vert — rien n'a encore été touché.
+bonne mémoire. Les deux sont inscrits dans `TODO.md` §0 octovicies bis, en
+attente de votre feu vert — rien n'a encore été touché.

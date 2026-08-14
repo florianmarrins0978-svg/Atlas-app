@@ -261,6 +261,28 @@ Ni un champ contrôlé, ni un effet, ni `defaultValue` ne font survivre une vale
 **et** une `key` qui remonte le champ à chaque envoi. Ne pas « simplifier » l'un
 des deux.
 
+## Les treize rubriques ont toutes leur planche (14 août)
+
+`maquettes/atlas-reglages-moi.html` a fermé la série : **Mon compte** et
+**Connexion** étaient les deux dernières jamais dessinées. Huit rubriques sont
+codées, cinq attendent.
+
+**La planche pose DEUX QUESTIONS, et il faut les lui poser avant de coder** —
+parce que le sommaire promet deux choses qui n'existent nulle part :
+
+| La promesse du sommaire | Ce que la base porte vraiment |
+|---|---|
+| « Nom, e-mail et **téléphone** » | `users` : `email`, `nom`, `image`, `password_hash`. **Pas de téléphone**, et rien ne l'appellerait — ni SMS ni e-mail sortant (tranché le 4 août) |
+| « Mot de passe et **appareils** » | `src/auth.ts` : `session: {strategy: "jwt"}`. **Aucune session en base**, donc rien à lister — il faudrait l'écrire |
+
+**Ne pas dessiner d'appareils plausibles en attendant sa réponse.** « iPhone ·
+Mantes-la-Jolie · il y a 2 h » se valide en dix secondes, et le défaut
+n'apparaît qu'au moment de coder. Le contrôle de la planche le refuse
+explicitement, et il sait rougir.
+
+Le détail, les deux réponses possibles et leur coût sont dans `TODO.md`
+§0 octovicies.
+
 ## Les réglages : le PLAN posé, les rubriques EN ATTENTE (13 août)
 
 `maquettes/atlas-reglages-plan.html` — quatre écrans : les réglages vus par le
@@ -283,11 +305,19 @@ numérotation continue, conservation légale).
 2. **Le cloisonnement par rôle n'est pas codé.** Ne pas conclure de la maquette
    qu'un salarié ne voit pas les prix : `QUESTIONS.md` §10 exige que la donnée
    ne SORTE pas du serveur, et rien de tel n'est en place aujourd'hui.
-3. **Le logo et les conditions réglables n'existent pas.**
-   `document-commun.ts` ne pose aucune image ; « 30 jours » est en dur dans
-   `devis-pdf.ts`, la mention légale dans `facture-pdf.ts`. Remplacer le devis
-   entier par un modèle importé n'est pas possible sans perdre les totaux, la
-   TVA et la numérotation — à dire avant de dessiner le lot « Documents ».
+3. **Le logo n'existe pas** — `document-commun.ts` ne pose aucune image.
+   Remplacer le devis entier par un modèle importé n'est pas possible sans
+   perdre les totaux, la TVA et la numérotation — à dire avant d'y revenir.
+
+   **Les conditions, elles, se règlent depuis le 14 août 2026**
+   (`ARCHITECTURE.md` §102) : « 30 jours » n'est plus en dur dans
+   `devis-pdf.ts`, il vient de la rubrique « Devis & factures » et se **fige**
+   dans `devis.validite_jours` à la création — corriger le réglage ne réécrit
+   pas un devis déjà parti. **Attention : seule la validité atteint le PDF.**
+   L'acompte, le délai, les moyens de paiement, le rappel des pénalités et le
+   texte de pied sont enregistrés et montrés en aperçu, mais ne s'impriment pas
+   encore (`TODO.md` §0 quinvicies bis). Les mentions légales de la FACTURE
+   restent scellées en dur dans `facture-pdf.ts`, et c'est délibéré.
 
 **⚠ LE PREMIER JOUR D'UN ARTISAN N'A JAMAIS ÉTÉ VU.** Sa remarque du 13 août :
 *« quand l'application sera commercialisée, le devis sera vierge, et c'est avec
