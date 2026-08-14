@@ -5,7 +5,6 @@ import { getOuCreerDevisBrouillon, envoyerDevis } from "@/server/repositories/de
 import { listerPrestations } from "@/server/repositories/prestations";
 import { ingererDevis } from "@/server/documents/ingestion";
 import { preparerEnvoi, verifierJourPropose } from "@/server/repositories/preparation-envoi";
-import { refusIdentiteIncomplete } from "@/lib/identite-entreprise";
 import { creerEnvoi, DatesProposeesInvalidesError } from "@/server/repositories/envois-devis";
 import { mettreAJourClient } from "@/server/repositories/clients";
 
@@ -101,20 +100,6 @@ export async function envoyerAuClientAction(
   const ctx = await getCurrentCtx();
 
   const preparation = await preparerEnvoi(ctx, chantierId, new Date(), dureeDemiJournees);
-
-  // **LE SERVEUR REFUSE AUSSI, et pas seulement l'écran.** Décision du patron le
-  // 14 août 2026 : on bloque l'ENVOI d'un devis dont l'identité est incomplète,
-  // jamais sa rédaction (`ARCHITECTURE.md` §97). Un bouton grisé ne protège
-  // rien — l'action s'appelle depuis une page rouverte après coup, depuis un
-  // onglet resté ouvert pendant qu'on vidait un champ, depuis n'importe quoi
-  // qui sait poster. Et la faute serait irréparable : un devis fige l'identité
-  // de l'émetteur au moment où il part.
-  //
-  // Le refus est une VALEUR DE RETOUR : le message d'une exception levée par une
-  // action serveur n'arrive jamais jusqu'au patron (`AGENTS.md`).
-  if (preparation.blocage === "identite_incomplete") {
-    return { succes: false, erreur: refusIdentiteIncomplete(preparation.manquesIdentite) };
-  }
   if (preparation.blocage === "canal_absent") {
     return {
       succes: false,

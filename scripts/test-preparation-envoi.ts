@@ -36,18 +36,8 @@ const LUNDI = new Date("2026-03-02T09:00:00Z");
 const dans = (n: number) => versJourIso(ajouterJours(LUNDI, n));
 
 async function contexte(email: string) {
-  // **L'identité est complète, et c'est délibéré.** Depuis le 14 août 2026 un
-  // devis ne part pas sans nom, adresse, SIRET ni IBAN (`ARCHITECTURE.md` §97),
-  // et ce blocage passe AVANT ceux du canal. Une entreprise à moitié remplie
-  // ferait donc rougir les trois contrôles ci-dessous en accusant l'identité,
-  // alors que le sujet de cette suite est le canal du client.
   const { entreprise, utilisateurId } = await entreprisesRepo.creerEntreprise(
-    {
-      nom: "Atelier",
-      adresse: "10 rue des Artisans, Nantes",
-      siret: "12345678900012",
-      iban: "FR7630001007941234567890185",
-    },
+    { nom: "Atelier" },
     { email }
   );
   return { utilisateurId, entrepriseId: entreprise.id };

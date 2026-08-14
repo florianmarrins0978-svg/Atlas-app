@@ -765,30 +765,29 @@ Rien, en argent. En travail : **les écrans sont dessinés**
 coder — la création d'entreprise, les champs d'identité dans les réglages, le
 garde-fou avant l'envoi. C'est un lot de quelques jours, pas un chantier.
 
-### ~~La question que je vous pose, et qui vous appartient~~ — **tranchée le 14 août 2026**
+### ~~La question que je vous pose, et qui vous appartient~~ — **close le 14 août 2026**
 
 ~~Faut-il EMPÊCHER l'envoi d'un devis tant que l'identité est incomplète, ou
 seulement avertir ?~~
 
-**Votre réponse, le 14 août 2026, planche en main : EMPÊCHER l'envoi.**
+**Votre réponse finale : ni l'un ni l'autre.** Vous aviez d'abord choisi
+d'empêcher l'envoi, et je l'ai codé. En voyant l'écran, vous avez tranché
+autrement : *« l'IBAN et le SIRET, c'est des choses que l'utilisateur va devoir
+renseigner dans la bonne catégorie. Une fois que c'est enregistré, il faut que
+ça s'ajoute automatiquement à la page du devis, mais c'est tout. Rien de plus,
+rien de moins. »* Tout ce que j'avais ajouté a été retiré.
 
-C'est fait, et voici ce que ça donne concrètement. Tant qu'il manque le **nom**,
-l'**adresse**, le **SIRET** ou l'**IBAN**, l'écran d'envoi affiche ces lignes-là
-— chacune disant ce que son absence empêche —, le bouton d'envoi reste éteint,
-et un lien mène droit à « Mon entreprise ». **Le devis, lui, n'est jamais
-bloqué à l'écriture** : il est gardé tel quel et part dès que les lignes sont
-remplies.
+**Ce que vous demandiez existait déjà**, et je l'ai vérifié dans le code : ce
+que vous saisissez dans « Mon entreprise » — nom, adresse, SIRET, téléphone,
+e-mail, IBAN — se recopie tout seul dans le devis, et un devis pas encore envoyé
+rafraîchit cette copie **chaque fois que vous l'ouvrez**. Un SIRET saisi ce soir
+apparaît donc sur vos devis en cours dès demain. Seuls les devis **déjà partis**
+gardent ce qu'ils portaient, et c'est voulu : une pièce comptable ne se réécrit
+pas après coup.
 
-Deux précisions qui comptent. Le **serveur refuse aussi**, pas seulement
-l'écran : un bouton grisé ne protège de rien si la page a été rouverte ou
-laissée ouverte pendant qu'un champ se vidait. Et les champs qui n'empêchent
-rien — téléphone, e-mail, forme juridique, numéro de TVA — **ne bloquent pas** :
-un garde-fou qui agace finit contourné.
-
-Les points 3 et 4 du tableau ci-dessus sont donc réglés. **Restent les points 1,
-2 et 5** : votre banc démarre toujours avec une entreprise déjà remplie, aucun
-écran ne permet encore de créer son entreprise, et le nom manquant s'écrit
-toujours « Votre entreprise » au lieu d'être signalé.
+**Ce qui reste vrai, et que vous savez :** si vous n'avez pas saisi votre SIRET,
+le devis part sans, et rien ne vous prévient. C'est votre choix, pris en
+connaissance de cause.
 
 ### Ce qui est lié, et qui n'est pas fait non plus
 

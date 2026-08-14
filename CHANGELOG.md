@@ -22,40 +22,33 @@ zéro entre deux suites que s'il vit dans Redis.
 coupable. La batterie officielle et la CI posaient déjà la variable : c'est
 l'appel à la main qui ne l'avait pas. Raisons : `ARCHITECTURE.md` §96.
 
-### CODÉ : un devis ne part plus sans identité — sa décision, planche en main
+### DÉCIDÉ, CODÉ, PUIS RETIRÉ : le blocage d'un devis sans SIRET
 
-**Sa réponse du 14 août 2026, question 3 : « A », bloquer l'envoi.** La question
-attendait dans `docs/A-FAIRE.md` §10 depuis le 13. Tant qu'il manque le **nom**,
-l'**adresse**, le **SIRET** ou l'**IBAN**, l'écran d'envoi liste ces lignes —
-chacune disant ce que son absence empêche —, le bouton reste éteint, et un lien
-mène droit à « Mon entreprise ». **Le devis n'est jamais bloqué à l'écriture** :
-il est gardé tel quel.
+**Le matin**, planche en main, le patron répond « A » à la question 3 : bloquer
+l'envoi d'un devis dont l'identité est incomplète. C'est codé — quatre champs
+bloquants, refus côté serveur, écran qui liste les manques — et deux captures
+lui sont envoyées.
 
-**Pourquoi bloquer plutôt que prévenir, et cette raison seule tranche :** un
-devis fige l'identité de l'émetteur au moment où il part. La corriger le
-lendemain ne change pas celui que le client a sous les yeux. Un avertissement se
-lit une fois, se contourne d'un doigt, et se paie deux semaines plus tard.
+**Le même jour, en voyant l'écran, il tranche l'inverse :** *« il ne faut pas
+commencer à modifier les autres rubriques. L'IBAN et le SIRET, c'est des choses
+que l'utilisateur va devoir renseigner dans la bonne catégorie. Une fois que
+c'est enregistré, il faut que ça s'ajoute automatiquement à la page du devis,
+mais c'est tout. Rien de plus, rien de moins. »*
 
-**Le serveur refuse aussi**, avant toute écriture : un bouton grisé ne protège
-rien si la page a été rouverte, ou laissée ouverte pendant qu'un champ se
-vidait. Et le refus est une valeur de retour, jamais une exception — dont le
-message n'arriverait pas jusqu'au patron.
+**Ce qu'il refuse est le PÉRIMÈTRE, pas le garde-fou.** Un lot parti des
+réglages qui finit par modifier le parcours d'envoi a débordé, quelle que soit
+la qualité de ce qu'il ajoute. Tout a été retiré : la règle, le blocage, le
+refus serveur, l'écran et leurs suites.
 
-**Quatre champs, pas un de plus.** Téléphone, e-mail, forme juridique et numéro
-de TVA ne bloquent rien : un garde-fou qui agace finit contourné.
+**Ce qu'il demande existe déjà**, vérifié dans le code : le devis recopie
+l'entreprise — nom, adresse, SIRET, e-mail, téléphone, IBAN — et un brouillon
+rafraîchit cette copie à chaque ouverture. Un SIRET saisi ce soir apparaît sur
+le devis dès qu'on le rouvre. Seuls les devis déjà envoyés gardent ce qu'ils
+portaient, et c'est voulu.
 
-**La règle est écrite une seule fois** (`src/lib/identite-entreprise.ts`) et
-sert aux trois endroits qui la posent — l'écran de l'identité, l'écran d'envoi,
-l'action serveur. Les quatre phrases « ce que ça empêche » y vivent aussi :
-recopiées, elles auraient fini par donner deux raisons pour un même champ.
-
-**Une suite montait une entreprise vide** et s'est mise à rougir en accusant
-l'identité — elle avait raison : une entreprise sans SIRET ne devrait jamais
-atteindre la question du canal. Son sujet étant le canal, elle pose désormais
-une identité complète.
-
-Nouveau : `src/lib/identite-entreprise.ts`, `scripts/test-identite-avant-envoi.ts`
-(12 contrôles, éprouvés rouges). Détail : `ARCHITECTURE.md` §97.
+**Ce qui reste vrai :** un devis part sans SIRET si le patron n'en a pas saisi,
+et rien ne l'en avertit. Risque assumé, argument donné. Détail :
+`ARCHITECTURE.md` §97.
 
 ### DESSINÉ : les trois décisions qui restent, deux écrans chacune
 

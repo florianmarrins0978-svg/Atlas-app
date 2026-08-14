@@ -7707,77 +7707,45 @@ de la fournir.
 
 ---
 
-## 97. Un devis ne part pas sans identité — sa décision du 14 août 2026
+## 97. Bloquer l'envoi sans SIRET : décidé, codé, puis RETIRÉ le même jour
 
-**Le patron, planche en main** (`maquettes/atlas-trois-questions.html`,
-question 3, réponse « A ») : **on bloque l'ENVOI d'un devis dont l'identité est
-incomplète, jamais sa rédaction.** La question était ouverte dans
-`docs/A-FAIRE.md` §10 depuis le 13 août.
+**Ce paragraphe existe pour qu'on ne le recode pas dans trois mois.** La question
+« faut-il empêcher l'envoi d'un devis dont l'identité est incomplète ? » a été
+posée au patron, tranchée par lui, codée, montrée — et retirée à sa demande dans
+la journée. Sans cette trace, une session la rouvrirait en croyant réparer un
+oubli.
 
-**Pourquoi ce parti, et pourquoi un simple avertissement ne suffisait pas.** Un
-devis **fige l'identité de l'émetteur au moment où il part** (§94) : le corriger
-le lendemain ne change ni celui que le client a sous les yeux, ni le PDF qu'il a
-téléchargé. Un avertissement se lit une fois, se contourne d'un doigt, et se
-paie deux semaines plus tard — quand le client réclame le SIRET. La faute est
-**irréversible**, et c'est cela qui tranche : partout ailleurs, prévenir
-suffirait.
+**Le 14 août 2026 au matin**, planche `atlas-trois-questions.html` en main,
+question 3 : il répond **« A »**, bloquer l'envoi. C'est codé — quatre champs
+bloquants, refus côté serveur, écran qui liste les manques — et deux captures
+lui sont envoyées.
 
-### Quatre champs, et pas un de plus
+**Le même jour, en voyant l'écran, il tranche l'inverse :** *« il ne faut pas
+commencer à modifier les autres rubriques. L'IBAN et le SIRET, c'est des choses
+que l'utilisateur va devoir renseigner dans la bonne catégorie. Une fois que
+c'est enregistré, il faut que ça s'ajoute automatiquement à la page du devis,
+mais c'est tout. Rien de plus, rien de moins. »*
 
-| Champ | Ce que son absence empêche |
-|---|---|
-| Nom | Sans nom, vos documents n'ont pas d'émetteur. |
-| Adresse du siège | Elle figure en tête de chaque devis et de chaque facture. |
-| SIRET | Vos factures ne sont pas conformes sans lui. |
-| IBAN | Sans lui, votre client reçoit un devis qu'il ne peut pas payer. |
+**Ce qu'il refuse n'est pas le garde-fou, c'est le PÉRIMÈTRE.** Les réglages
+alimentent le devis ; ils ne commandent pas ce que l'écran d'envoi a le droit de
+faire. Un lot parti des réglages qui finit par modifier le parcours d'envoi est
+un lot qui a débordé, quelle que soit la qualité de ce qu'il ajoute.
 
-**Ce qui n'y est PAS, et c'est délibéré :** forme juridique, téléphone, e-mail,
-numéro de TVA intracommunautaire, titulaire du compte. Ils manquent souvent et
-n'empêchent rien — un devis sans téléphone reste un devis valable. Les ajouter
-transformerait un garde-fou en corvée, et **un garde-fou qui agace finit
-contourné**.
+**Ce qu'il demande existe déjà, et c'est vérifié dans le code** —
+`getOuCreerDevisBrouillon` (`src/server/repositories/devis.ts`) recopie
+`entreprises` dans le devis : nom, adresse, SIRET, e-mail, téléphone, IBAN. Et
+**un brouillon rafraîchit sa copie à chaque ouverture** : un SIRET saisi ce soir
+apparaît sur le devis dès qu'on le rouvre. Seuls les devis DÉJÀ ENVOYÉS gardent
+ce qu'ils portaient — c'est voulu, une pièce comptable ne se réécrit pas (§94).
 
-### La règle est écrite une fois, dans `src/lib/identite-entreprise.ts`
+**Ce qui a été retiré, intégralement :** la règle pure qui listait les manques,
+le blocage `identite_incomplete` de `preparerEnvoi`, le refus de
+`envoyerAuClientAction`, la liste des manques sur l'écran d'envoi, et leurs
+suites. `test-preparation-envoi.ts` retrouve son entreprise minimale.
 
-Trois endroits posent la même question : l'écran de l'identité (qui signale
-champ par champ), l'écran d'envoi (qui refuse), et l'action serveur (qui refuse
-aussi). `CLAUDE.md` §3 l'interdit formellement — *jamais de règle dupliquée
-entre l'affichage et la vérification*. Ici la divergence aurait une forme
-précise : un devis parti sans SIRET pendant que l'écran affirmait le contraire.
-**Les quatre phrases « ce que ça empêche » viennent donc du même fichier**, et
-l'écran de l'identité les importe au lieu de les porter.
+**Ce qui reste vrai et n'a pas bougé :** un devis part toujours sans SIRET si le
+patron n'en a pas saisi, et **rien ne l'en avertit**. C'est un risque assumé par
+lui, en connaissance de cause — l'argument lui a été donné (un devis fige son
+émetteur, le corriger ensuite ne rattrape rien) et il a tranché. Ne pas le
+rouvrir sans qu'il le demande.
 
-### Le serveur refuse, pas seulement le bouton
-
-`envoyerAuClientAction` rend un refus **avant toute écriture**. Un bouton grisé
-ne protège de rien : l'action s'appelle depuis une page rouverte après coup,
-depuis un onglet resté ouvert pendant qu'on vidait un champ, depuis n'importe
-quoi qui sait poster. Et le refus est une **valeur de retour**, jamais une
-exception — le message d'une exception levée par une action serveur n'arrive
-jamais jusqu'au patron (`AGENTS.md`).
-
-### L'identité passe avant le canal du client
-
-`preparerEnvoi` classe désormais : `devis_absent`, puis `identite_incomplete`,
-puis `canal_absent`, puis `coordonnee_absente`. Ce n'est pas un ordre
-esthétique : **l'identité se règle une fois pour toute l'entreprise**, quand le
-canal se repose à chaque client. Signalée après, elle ne serait corrigée qu'au
-dixième envoi — et les neuf premiers devis seraient partis sans SIRET.
-
-**Et `manquesIdentite` est renvoyé même quand le blocage est autre** : sans
-cela, le patron corrigerait son canal, reviendrait, et découvrirait le SIRET
-seulement là.
-
-### Ce que la mise en place a révélé dans les suites
-
-**`test-preparation-envoi.ts` montait une entreprise vide** — `{ nom: "Atelier" }`
-et rien d'autre. Ses trois contrôles du canal se sont donc mis à rougir en
-accusant l'identité. Ils avaient raison : une entreprise sans SIRET ne devrait
-jamais atteindre la question du canal. La suite pose maintenant une identité
-complète, parce que **son sujet est le canal**, pas l'identité.
-
-Et cela dit quelque chose du jeu de démonstration : il porte, lui, une identité
-complète depuis toujours (`seed.ts`) — c'est-à-dire que **le premier jour d'un
-artisan n'a jamais été joué par une suite**, exactement le trou décrit au §87.
-Ce lot le comble d'un côté seulement : le devis ne part plus, mais rien ne
-permet encore de CRÉER son entreprise (`docs/A-FAIRE.md` §10, points 1, 2 et 5).

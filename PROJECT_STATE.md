@@ -585,14 +585,13 @@ Voir `TODO.md` pour le détail et l'ordre.
   (`ARCHITECTURE.md` §87). **Et surtout : le premier jour d'un artisan n'a
   jamais été vu.** Le jeu de départ pose une entreprise complète, il n'existe
   aucun parcours d'inscription, l'identité ne se saisit que dans le devis écrit
-  à la main, et rien ne la vérifiait avant l'envoi — le premier devis d'un vrai
-  artisan partait sans SIRET ni IBAN. **Depuis le 14 août, il NE PART PLUS** :
-  sa décision, planche en main (`ARCHITECTURE.md` §97). L'écran d'envoi liste ce
-  qui manque en disant ce que chaque absence empêche, le bouton reste éteint, le
-  serveur refuse aussi — et le devis n'est jamais bloqué à l'écriture. **Restent
-  bloquants pour la commercialisation** : aucun écran ne permet de créer son
-  entreprise, le jeu de départ en pose une déjà remplie, et le nom manquant
-  s'écrit encore « Votre entreprise » au lieu d'être signalé
+  à la main, et **rien ne la vérifie avant l'envoi** — le premier devis d'un vrai
+  artisan part sans SIRET ni IBAN. Un blocage a été codé le 14 août puis
+  **retiré le même jour à sa demande** : *« rien de plus, rien de moins »*
+  (`ARCHITECTURE.md` §97). Ce n'est donc pas un oubli, c'est un risque qu'il
+  assume. **Restent bloquants pour la commercialisation** : aucun écran ne
+  permet de créer son entreprise, le jeu de départ en pose une déjà remplie, et
+  le nom manquant s'écrit encore « Votre entreprise » au lieu d'être signalé
   (`docs/A-FAIRE.md` §10).
   **Lot 3 dessiné le 13 août** (l'équipe) : « équipe » désigne déjà une file du
   planning et non un compte — deux listes séparées —, et le **cloisonnement en

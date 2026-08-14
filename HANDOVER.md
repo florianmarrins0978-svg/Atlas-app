@@ -300,20 +300,18 @@ premier devis d'un vrai artisan partirait sans SIRET ni IBAN, sans un mot. Le
 détail des six faits est dans `ARCHITECTURE.md` §87, la liste de travail dans
 `TODO.md` §0 quatervicies.
 
-**Un devis ne part plus sans identité, depuis le 14 août 2026**
-(`ARCHITECTURE.md` §97). Sa décision, planche en main. Trois choses à ne pas
-rater :
+**Le blocage de l'envoi sans SIRET a été codé PUIS RETIRÉ le 14 août 2026**
+(`ARCHITECTURE.md` §97). Le patron l'avait choisi le matin, planche en main ; en
+voyant l'écran il a tranché l'inverse : *« rien de plus, rien de moins »* — les
+réglages alimentent le devis, ils ne commandent pas l'écran d'envoi.
 
-1. **La règle vit dans `src/lib/identite-entreprise.ts`**, et elle est la seule.
-   L'écran de l'identité, l'écran d'envoi et l'action serveur l'appellent tous
-   les trois — y compris pour les phrases « ce que ça empêche ». Ne pas en
-   recopier une.
-2. **Quatre champs bloquent** : nom, adresse, SIRET, IBAN. Téléphone, e-mail,
-   forme juridique et numéro de TVA ne bloquent rien, et c'est délibéré.
-3. **Toute suite qui envoie un devis a besoin d'une entreprise complète.**
-   `test-preparation-envoi.ts` montait une entreprise vide et s'est mise à
-   rougir en accusant l'identité. Devant un rouge « identite_incomplete »
-   inattendu, regarder la FIXTURE avant le code.
+**Ne pas le recoder en croyant réparer un oubli.** Aujourd'hui un devis part
+sans SIRET si le patron n'en a pas saisi, et rien ne l'en avertit : c'est un
+risque qu'il assume, l'argument lui ayant été donné.
+
+**Ce qu'il voulait, en revanche, existe déjà** : `getOuCreerDevisBrouillon`
+recopie l'entreprise dans le devis, et un brouillon rafraîchit sa copie à chaque
+ouverture — un SIRET saisi ce soir apparaît dès qu'on rouvre le devis.
 
 **Les réglages ont été REFONDUS le 14 août 2026** (`ARCHITECTURE.md` §96), à sa
 demande : *« je veux que tu recrées entièrement la page de réglage »*. L'écran

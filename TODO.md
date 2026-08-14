@@ -27,18 +27,15 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 quatervicies novies. ~~Bloquer l'envoi d'un devis sans identité~~ — fait le 2026-08-14
+### 0 quatervicies novies. NE PAS recoder le blocage de l'envoi sans SIRET
 
-Sa décision (planche `atlas-trois-questions.html`, question 3, réponse « A ») est
-codée : `ARCHITECTURE.md` §97. Quatre champs bloquent, le serveur refuse aussi,
-et le devis n'est jamais bloqué à l'écriture.
+Décidé par le patron le matin du 14 août 2026, codé, montré — puis **retiré le
+même jour à sa demande** : *« rien de plus, rien de moins »* (`ARCHITECTURE.md`
+§97). Les réglages alimentent le devis ; ils ne commandent pas l'écran d'envoi.
 
-**Ce qui reste du même sujet, et qui n'est PAS fait** (`docs/A-FAIRE.md` §10) :
-le jeu de départ pose toujours une entreprise complète — donc le premier jour
-d'un artisan n'est joué par aucune suite —, **aucun écran ne permet de créer son
-entreprise**, et le nom manquant s'écrit encore poliment « Votre entreprise »
-au lieu d'être signalé.
-
+**Cette ligne existe pour empêcher qu'on le refasse.** Un devis part aujourd'hui
+sans SIRET si le patron n'en a pas saisi, et rien ne l'en avertit : ce n'est pas
+un oubli, c'est un risque qu'il assume, l'argument lui ayant été donné.
 
 ### 0 quatervicies octies. ~~CODER le sommaire des réglages~~ — fait le 2026-08-14
 
