@@ -32,7 +32,7 @@ Depuis son téléphone, rien ne distinguait les deux : il fallait ouvrir
 l'éditeur. Un bandeau le dit maintenant, avec le compte — « Version rapide en
 construction, 12 écrans sur 19 déjà prêts » — et **s'efface tout seul** quand
 tout est prêt. Il n'existe que sur son banc, jamais ailleurs, et un contrôle
-l'éprouve dans les deux sens (`docs/maquettes/46`, `ARCHITECTURE.md` §100).
+l'éprouve dans les deux sens (`docs/maquettes/46`, `ARCHITECTURE.md` §103).
 
 Le chiffre existait déjà : le préchauffage le comptait, et personne ne l'écrivait
 nulle part — la page de diagnostic répondait « pas encore commencé » du début à
@@ -357,6 +357,32 @@ Détail et raisons : `ARCHITECTURE.md` §95.
 ---
 
 ## 2026-08-13
+
+### Le devis se reprend enfin AVANT de partir
+
+*« J'ai un devis sur le feu […] mais si je veux modifier mon devis avant de
+l'envoyer, je peux pas. »* Il avait raison : « Modifier mon devis » n'existait
+que sur l'écran du devis **parti**. Avant l'envoi — au moment précis où l'on
+corrige — aucun chemin ne menait au devis modifiable.
+
+Cinq propositions lui ont été dessinées avant d'en coder une ; il a retenu
+**« Modifier » en or, en face du titre**. Sa première idée — le mot « Devis »
+lui-même cliquable — a été écartée par lui après les avoir vues : un titre qui
+est secrètement un lien ne s'annonce pas.
+
+**Ce que ça évite, et qui n'est pas la place du mot :** le lien n'apparaît
+qu'avant l'envoi. Un devis parti ne se modifie plus — la base refuse la première
+frappe — il se *reprend*, ce qui ouvre une nouvelle version, et c'est un geste
+qu'il décide. Offrir « Modifier » après l'envoi l'aurait mené sur un document
+mort sans lui dire pourquoi.
+
+Le contrôle a été confronté aux **deux** états dégradés — lien absent, puis lien
+survivant à l'envoi — et rougit sur chacun. Il vérifie en plus que l'écran
+d'après l'envoi garde son propre geste : sans cela, on passerait au vert en
+retirant le lien partout.
+
+`ARCHITECTURE.md` §104.
+
 
 ### Deux maquettes perdues en silence dans la page unique
 

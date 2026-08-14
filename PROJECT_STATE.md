@@ -252,7 +252,7 @@ l'application. Ce qui est **fait** :
   réels. Et un **bandeau** dit « Version rapide en construction — 12 écrans sur
   19 » puis s'efface seul, pour ne plus confondre « ça bâtit » et « c'est
   cassé ». **Écarté après mesure : bâtir en priorité basse** (aucun gain, la
-  contention est le disque). `ARCHITECTURE.md` §100, `docs/maquettes/46`.
+  contention est le disque). `ARCHITECTURE.md` §103, `docs/maquettes/46`.
 - **La TVA au mois ou au trimestre, et son calendrier** (12 août) : Réglages
   porte le choix, le mois coché d'avance — c'est le défaut légal (déclaration
   CA3 mensuelle ; le trimestre est une option sous 4 000 € de TVA due). L'écran
