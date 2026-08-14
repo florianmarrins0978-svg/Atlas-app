@@ -1,0 +1,413 @@
+<title>Atlas — Mon entreprise : quatre saisies à refaire</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT pour la page. Les listes s'ouvrent avec des cases
+    masquées et des <label> — c'est la contrainte de toutes ces planches, et
+    elle oblige à dessiner un geste qui tient sans code.
+
+    QUATRE DEMANDES DU PATRON, le 14 août 2026, capture de l'écran à l'appui :
+
+      1. « Pour l'adresse, ça serait bien d'avoir le même principe que lorsqu'on
+         rentre les informations du client : lorsqu'on tape l'adresse, on a déjà
+         des adresses préécrites qui apparaissent. »
+      2. « Quelque chose d'un peu plus professionnel pour le téléphone, avec le
+         drapeau du pays qu'on peut changer, avec le +33. Et lorsqu'on écrit le
+         numéro, il se met exactement comme il faut avec les bons espacements. »
+      3. « Pareil pour la forme juridique : un bandeau déroulant avec toutes les
+         formes juridiques, et qu'on n'ait qu'à sélectionner et cliquer. »
+      4. « Il manque un petit bouton save en bas pour sauvegarder la page. »
+
+    LE POINT 1 N'EST PAS UN DÉVELOPPEMENT : `ChampAdresse` existe et fait
+    exactement cela depuis le 7 août (Base Adresse Nationale, jamais Google, et
+    le champ reste libre pour un lieu-dit). Il n'avait simplement pas été posé
+    sur cet écran-ci. La planche le montre pour qu'il vérifie que c'est bien ce
+    qu'il veut, pas pour trancher.
+
+    LE POINT 4 CACHE UNE VRAIE QUESTION, et c'est la seule de cette planche :
+    aujourd'hui chaque champ s'enregistre TOUT SEUL en quittant la ligne. Un
+    bouton « Enregistrer » posé par-dessus donnerait deux vérités — il croirait
+    perdre ce qu'il n'a pas « sauvé », alors que c'est déjà écrit. Le cinquième
+    écran montre le parti retenu : le bouton dit CE QUI EST, il ne fabrique pas
+    un second mécanisme.
+  */
+
+  /* ═══ LA CHARTE, RECOPIÉE DE `src/lib/design-tokens.ts` ═══════════════ */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --bronze:#b98b47; --trait:rgba(28,28,26,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c9a15e; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c9a15e; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`. Deux fois
+     de suite : « rien ne s'ouvre quand je touche ». */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1700px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 34px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:412px;max-width:100%}
+
+  /* ═══ LE GROS PLAN ═══════════════════════════════════════════════════
+     `zoom` agrandit l'écran ENTIER dans ses proportions : il continue de
+     mesurer 390 px pour lui-même, et une cible de 44 px reste une cible de
+     44 px. Éteinte sous 1000 px — donc éteinte là où les contrôles mesurent. */
+  @media (min-width:1000px){
+    .rangee{flex-direction:column;flex-wrap:nowrap;gap:80px;align-items:center}
+    .prop{display:grid;width:auto;max-width:none;column-gap:52px;
+          grid-template-columns:auto 320px;
+          grid-template-rows:auto auto 1fr;
+          grid-template-areas:"tel sous" "tel note" "tel .";
+          justify-items:start}
+    .prop .tel{grid-area:tel;zoom:1.35}
+    .prop .sous{grid-area:sous;text-align:left;align-self:start;padding-top:50px}
+    .prop .note{grid-area:note;text-align:left;max-width:none;align-self:start;
+                font-size:14px;line-height:1.7}
+  }
+  @media (min-width:1500px){
+    .prop{grid-template-columns:auto 360px}
+    .prop .tel{zoom:1.6}
+    .prop .sous{padding-top:59px}
+  }
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:720px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-bronze:#b98b47; --e-trait:rgba(28,28,26,.12); --e-plein:#2f3b2f;
+         --e-plein-encre:#f5f3ee}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  /* `EnTeteEcran`, valeur pour valeur. */
+  .tete{padding:34px 26px 0;flex:none}
+  .tete .sur{margin:0;color:var(--e-bronze)}
+  .tete h1{margin:14px 0 0;font:400 36px/1.02 ui-serif,Georgia,serif;letter-spacing:-.018em}
+  .cheveu{flex:none;height:1px;margin:26px 26px 0;background:var(--e-trait)}
+  .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
+
+  /* La barre de l'application : elle EST sur cet écran, sa capture du 14 août
+     le montre. L'oublier aurait fait valider une hauteur utile qui n'existe
+     pas — et surtout aurait laissé le bouton d'enregistrement se poser là où
+     la navigation se trouve. */
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:18px 14px 26px;background:var(--e-fond)}
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre);transform:translateY(-2px)}
+  .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;background:var(--e-bronze)}
+  .bas i.q4{left:calc(14px + 3*(100% - 28px)/4)}
+
+  /* La grammaire de l'écran d'identité : un bloc, un titre gris, des champs
+     séparés par un filet, et LA DERNIÈRE LIGNE SANS FILET — sinon le trait du
+     bloc suivant le redouble trente pixels plus bas (`ARCHITECTURE.md` §94). */
+  .bloc{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--e-trait)}
+  .corps > .bloc:first-of-type{border-top:0;padding-top:0;margin-top:26px}
+  .bloc .t{margin:0 0 10px;color:var(--e-gris)}
+  .champ{padding:12px 0;border-bottom:1px solid var(--e-trait)}
+  .bloc .champ:last-child{border-bottom:0}
+  .champ .et{display:block;margin-bottom:5px;color:var(--e-gris);
+             text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+  /* 17 px : en dessous de 16, Safari zoome à la mise au point et l'écran saute. */
+  .champ .va{display:block;font:400 17px/1.35 ui-serif,Georgia,serif;color:var(--e-encre)}
+  .champ .va.creux{color:var(--e-gris)}
+  .champ .sous_champ{display:block;margin-top:5px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  /* ═══ 1. L'adresse qui propose ═══════════════════════════════════════
+     La liste d'un champ d'adresse : elle AIDE, elle n'enferme pas. Le champ
+     reste libre — un chemin de campagne ou « derrière la scierie » ne figure
+     dans aucune base, et refuser ce que la base ignore rendrait l'application
+     inutilisable là où il travaille (`ChampAdresse`). */
+  .liste{margin-top:8px;border-radius:4px;background:var(--e-plage);overflow:hidden}
+  .liste .item{display:block;padding:11px 14px;min-height:44px;font-size:14.5px;
+               border-bottom:1px solid var(--e-trait)}
+  .liste .item:last-child{border-bottom:0}
+  .liste .item b{font-weight:500}
+  .liste .item span{display:block;margin-top:2px;font-size:11.5px;color:var(--e-gris)}
+  .curseur{display:inline-block;width:1.5px;height:17px;vertical-align:-3px;
+           margin-left:1px;background:var(--e-bronze)}
+
+  /* ═══ 2. Le téléphone ════════════════════════════════════════════════
+     L'indicatif se TOUCHE : c'est une pastille de 44 px, pas un menu caché
+     derrière le champ. Le drapeau se lit d'un coup d'œil, l'indicatif se lit
+     quand on doute. */
+  .tel_ligne{display:flex;align-items:center;gap:10px}
+  .pays{display:flex;align-items:center;gap:7px;padding:9px 12px;min-height:44px;
+        border-radius:99px;background:var(--e-plage)}
+  .pays .drapeau{font-size:19px;line-height:1}
+  .pays .ind{font:400 16px/1.2 ui-serif,Georgia,serif;font-variant-numeric:tabular-nums}
+  .pays .fleche{width:7px;height:7px;border-right:1.5px solid var(--e-gris);
+                border-bottom:1.5px solid var(--e-gris);transform:rotate(45deg);margin-top:-3px}
+  .numero{flex:1;min-width:0;font:400 17px/1.35 ui-serif,Georgia,serif;
+          font-variant-numeric:tabular-nums;letter-spacing:.02em}
+
+  /* La liste des pays ne s'ouvre que si l'on touche la pastille. Montrée
+     dépliée en permanence, elle ferait croire à un écran de choix du pays. */
+  .deplie{display:none}
+  .interrupteur:checked ~ .deplie{display:block}
+  .drapeaux .item{display:flex;align-items:center;gap:12px}
+  .drapeaux .item .nom{flex:1}
+  .drapeaux .item .ind{color:var(--e-gris);font-variant-numeric:tabular-nums}
+  .drapeaux .item.pris{background:var(--e-trait)}
+
+  /* ═══ 3. La forme juridique ══════════════════════════════════════════ */
+  .choix{display:flex;align-items:center;gap:12px;padding:12px 14px;min-height:46px;
+         border-bottom:1px solid var(--e-trait)}
+  .choix:last-child{border-bottom:0}
+  .choix .nom{flex:1;font:400 16px/1.3 ui-serif,Georgia,serif}
+  .choix .quoi{font-size:11.5px;color:var(--e-gris)}
+  .choix.pris{background:var(--e-trait)}
+  .choix .rond{flex:none;width:16px;height:16px;border-radius:99px;
+               box-shadow:inset 0 0 0 1.5px var(--e-trait)}
+  .choix.pris .rond{box-shadow:inset 0 0 0 5px var(--e-bronze)}
+  .chercher{margin:0 0 10px;padding:11px 14px;border-radius:4px;background:var(--e-plage);
+            font-size:14.5px;color:var(--e-gris)}
+
+  /* ═══ 4. Le bouton du bas ════════════════════════════════════════════
+     Il est POSÉ SUR L'ÉCRAN, pas au bout du défilement : sur une page de neuf
+     champs, un bouton en pied de page ne se voit qu'après avoir tout parcouru,
+     et c'est précisément quand on n'a plus rien à faire. */
+  .barre{flex:none;padding:14px 26px 16px;background:var(--e-fond);
+         border-top:1px solid var(--e-trait)}
+  .bouton{display:block;width:100%;padding:15px;border-radius:99px;text-align:center;
+          font:400 16px/1.2 ui-sans-serif,-apple-system,sans-serif;
+          background:var(--e-plein);color:var(--e-plein-encre)}
+  /* Rien à enregistrer : le bouton ne disparaît pas, il DIT l'état. Un bouton
+     qui s'efface laisse croire qu'on a perdu quelque chose. */
+  .bouton.fait{background:var(--e-plage);color:var(--e-gris);
+               box-shadow:inset 0 0 0 1px var(--e-trait)}
+  .barre .mot{margin:8px 0 0;text-align:center;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  .barre .mot b{color:var(--e-encre);font-weight:500}
+
+  /* SUR TÉLÉPHONE, LE CADRE S'EFFACE — il coûtait 54 px, et l'écran ne mesurait
+     plus que 336 px au lieu de 390. Règle posée EN DERNIER dans la feuille :
+     placée plus haut, `.tel{padding:11px}` la reprenait à égalité de
+     spécificité (`ARCHITECTURE.md` §86). */
+  @media (max-width:520px){
+    body{padding:26px 0 72px}
+    .intro,.sous,.note{padding-left:16px;padding-right:16px}
+    .tel{width:100%;padding:0;background:none;box-shadow:none;border-radius:0}
+    .ecran{border-radius:0}
+  }
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Mon entreprise — la saisie</p>
+    <h1>Vos quatre demandes, écran par écran</h1>
+    <p>
+      <strong>Touchez l'indicatif</strong> du troisième écran : la liste des pays
+      s'ouvre. Le reste se lit. La seule vraie question est sur le
+      <strong>dernier écran</strong> — et elle est écrite dessous.
+    </p>
+  </div>
+
+  <div class="rangee">
+
+    <!-- ── 1. L'adresse qui propose ────────────────────────────────────── -->
+    <div class="prop">
+      <p class="sous">1 — L'adresse propose, comme chez le client</p>
+      <div class="tel"><div class="ecran" data-s="adresse">
+        <div class="tete"><p class="sur caps">Réglages</p><h1>Mon entreprise</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="bloc">
+            <p class="t caps">Où vous êtes établi</p>
+            <div class="champ">
+              <span class="et">Adresse du siège</span>
+              <span class="va">10 rue denfert<span class="curseur"></span></span>
+              <div class="liste">
+                <span class="item"><b>10 Rue Denfert Rochereau</b><span>78200 Mantes-la-Jolie</span></span>
+                <span class="item"><b>10 Rue Denfert Rochereau</b><span>92100 Boulogne-Billancourt</span></span>
+                <span class="item"><b>10 Rue Denfert Rochereau</b><span>44000 Nantes</span></span>
+                <span class="item"><b>10 Rue Denfert</b><span>69004 Lyon</span></span>
+              </div>
+              <span class="sous_champ">
+                Rien ne vous oblige à choisir dans la liste : un lieu-dit s'écrit à la main.
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Ce composant existe déjà</b> — c'est celui du client, depuis le 7 août.
+        Il interroge la Base Adresse Nationale, jamais Google, et <b>le champ
+        reste libre</b> : « derrière la scierie » ne figure dans aucune base.
+      </p>
+    </div>
+
+    <!-- ── 2. Le téléphone, au repos ───────────────────────────────────── -->
+    <div class="prop">
+      <p class="sous">2 — Le téléphone : drapeau, indicatif, espacement</p>
+      <div class="tel"><div class="ecran" data-s="telephone">
+        <div class="tete"><p class="sur caps">Réglages</p><h1>Mon entreprise</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="bloc">
+            <p class="t caps">Pour vous joindre</p>
+            <div class="champ">
+              <span class="et">Téléphone</span>
+              <span class="tel_ligne">
+                <span class="pays"><span class="drapeau">🇫🇷</span><span class="ind">+33</span><i class="fleche"></i></span>
+                <span class="numero">06 79 98 45 14</span>
+              </span>
+              <span class="sous_champ">
+                Les espaces se posent tout seuls pendant la frappe.
+              </span>
+            </div>
+            <div class="champ">
+              <span class="et">Adresse e-mail</span>
+              <span class="va">Florian.Martins0978@laposte.net</span>
+            </div>
+          </div>
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Tapé <b>0679984514</b>, il s'écrit <b>06 79 98 45 14</b> sous le doigt.
+        Avec un autre indicatif, le découpage suit celui du pays — l'espacement
+        français n'est pas universel.
+      </p>
+    </div>
+
+    <!-- ── 3. Le choix du pays, ouvert ─────────────────────────────────── -->
+    <div class="prop">
+      <p class="sous">3 — L'indicatif se touche</p>
+      <div class="tel"><div class="ecran" data-s="pays">
+        <div class="tete"><p class="sur caps">Réglages</p><h1>Mon entreprise</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="bloc">
+            <p class="t caps">Pour vous joindre</p>
+            <div class="champ">
+              <span class="et">Téléphone</span>
+              <input class="interrupteur" type="checkbox" id="ouvrir-pays">
+              <label class="tel_ligne" for="ouvrir-pays">
+                <span class="pays"><span class="drapeau">🇫🇷</span><span class="ind">+33</span><i class="fleche"></i></span>
+                <span class="numero">06 79 98 45 14</span>
+              </label>
+              <div class="deplie">
+                <div class="liste drapeaux">
+                  <span class="item pris"><span class="drapeau">🇫🇷</span><span class="nom">France</span><span class="ind">+33</span></span>
+                  <span class="item"><span class="drapeau">🇧🇪</span><span class="nom">Belgique</span><span class="ind">+32</span></span>
+                  <span class="item"><span class="drapeau">🇨🇭</span><span class="nom">Suisse</span><span class="ind">+41</span></span>
+                  <span class="item"><span class="drapeau">🇱🇺</span><span class="nom">Luxembourg</span><span class="ind">+352</span></span>
+                  <span class="item"><span class="drapeau">🇪🇸</span><span class="nom">Espagne</span><span class="ind">+34</span></span>
+                  <span class="item"><span class="drapeau">🇵🇹</span><span class="nom">Portugal</span><span class="ind">+351</span></span>
+                  <span class="item"><span class="drapeau">🇲🇦</span><span class="nom">Maroc</span><span class="ind">+212</span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Sept pays, la France en tête. <b>Touchez l'indicatif pour ouvrir la
+        liste.</b> Elle s'allongera si vous le demandez — mais une liste de deux
+        cents pays se parcourt mal quand on en emploie un.
+      </p>
+    </div>
+
+    <!-- ── 4. La forme juridique ───────────────────────────────────────── -->
+    <div class="prop">
+      <p class="sous">4 — La forme juridique se choisit</p>
+      <div class="tel"><div class="ecran" data-s="forme">
+        <div class="tete"><p class="sur caps">Réglages</p><h1>Forme juridique</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="bloc">
+            <p class="chercher">Chercher…</p>
+            <div class="choix pris"><i class="rond"></i><span class="nom">SAS</span><span class="quoi">Société par actions simplifiée</span></div>
+            <div class="choix"><i class="rond"></i><span class="nom">SASU</span><span class="quoi">SAS à associé unique</span></div>
+            <div class="choix"><i class="rond"></i><span class="nom">EURL</span><span class="quoi">SARL à associé unique</span></div>
+            <div class="choix"><i class="rond"></i><span class="nom">SARL</span><span class="quoi">Responsabilité limitée</span></div>
+            <div class="choix"><i class="rond"></i><span class="nom">EI</span><span class="quoi">Entreprise individuelle</span></div>
+            <div class="choix"><i class="rond"></i><span class="nom">Micro-entreprise</span><span class="quoi">Régime de l'EI</span></div>
+            <div class="choix"><i class="rond"></i><span class="nom">SA</span><span class="quoi">Société anonyme</span></div>
+            <div class="choix"><i class="rond"></i><span class="nom">SNC</span><span class="quoi">Société en nom collectif</span></div>
+            <div class="choix"><i class="rond"></i><span class="nom">SCOP</span><span class="quoi">Société coopérative</span></div>
+            <div class="choix"><i class="rond"></i><span class="nom">Autre</span><span class="quoi">À écrire vous-même</span></div>
+          </div>
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Les formes du bâtiment d'abord, et <b>« Autre » en dernier</b> : une
+        liste fermée finirait par exclure quelqu'un. Le sigle est en gros, son
+        nom complet à côté — <b>« EURL » se retient mal</b>.
+      </p>
+    </div>
+
+    <!-- ── 5. Le bouton du bas ─────────────────────────────────────────── -->
+    <div class="prop">
+      <p class="sous">5 — Le bouton du bas, et ce qu'il dit</p>
+      <div class="tel"><div class="ecran" data-s="enregistrer">
+        <div class="tete"><p class="sur caps">Réglages</p><h1>Mon entreprise</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="bloc">
+            <p class="t caps">Pour être payé</p>
+            <div class="champ">
+              <span class="et">IBAN</span>
+              <span class="va">FR76 3000 1000 0000 0000 0000 000</span>
+            </div>
+            <div class="champ">
+              <span class="et">Titulaire du compte</span>
+              <span class="va">Gunzy</span>
+            </div>
+          </div>
+          <div class="bloc">
+            <p class="t caps">Ce qui est écrit</p>
+            <div class="champ">
+              <span class="va creux">Vos modifications sont déjà enregistrées.</span>
+            </div>
+          </div>
+        </div>
+        <div class="barre">
+          <span class="bouton">Enregistrer</span>
+          <p class="mot">
+            Devient <b>« Enregistré ✓ »</b> quand il n'y a plus rien à écrire.
+          </p>
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Attention, c'est la seule vraie question de la planche.</b> Vos champs
+        s'enregistrent DÉJÀ tout seuls en quittant la ligne. Un bouton qui
+        prétendrait sauver par-dessus créerait deux vérités — et vous croiriez
+        perdre ce qui est déjà écrit.
+      </p>
+    </div>
+
+  </div>
+</div>

@@ -22,6 +22,26 @@ zéro entre deux suites que s'il vit dans Redis.
 coupable. La batterie officielle et la CI posaient déjà la variable : c'est
 l'appel à la main qui ne l'avait pas. Raisons : `ARCHITECTURE.md` §96.
 
+### DESSINÉ : les quatre saisies de « Mon entreprise »
+
+Ses demandes, capture à l'appui : l'adresse qui propose comme chez le client, un
+téléphone avec drapeau, indicatif et espacement automatique, la forme juridique
+en liste, et un bouton d'enregistrement en bas.
+`maquettes/atlas-identite-saisie.html` — **50 contrôles au vert**, deux éprouvés
+rouges.
+
+**Le premier point n'est pas un développement** : `ChampAdresse` fait déjà cela
+depuis le 7 août, il n'avait pas été posé sur cet écran.
+
+**Le quatrième cache la seule vraie question :** les champs s'enregistrent DÉJÀ
+seuls en quittant la ligne. Un bouton qui prétendrait sauver par-dessus
+donnerait deux vérités, et le patron croirait perdre ce qui est écrit. Le parti
+dessiné : le bouton **dit** l'état — « Enregistrer », puis « Enregistré ✓ ».
+
+**La barre de navigation manquait aux écrans de la planche**, alors que sa
+capture la montre. L'oublier aurait validé une hauteur utile qui n'existe pas,
+et laissé le bouton se poser là où les onglets se trouvent.
+
 ### DÉCIDÉ, CODÉ, PUIS RETIRÉ : le blocage d'un devis sans SIRET
 
 **Le matin**, planche en main, le patron répond « A » à la question 3 : bloquer
