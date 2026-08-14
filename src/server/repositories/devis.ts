@@ -98,7 +98,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
     const snapshotEnTete = {
       // **La validité se fige ici**, avec l'identité : lire le réglage au moment
       // de composer le PDF ferait changer la durée d'engagement d'un devis déjà
-      // envoyé (`ARCHITECTURE.md` §101).
+      // envoyé (`ARCHITECTURE.md` §102).
       validiteJours: conditionsDepuisEntreprise(entreprise).validiteJours,
       entrepriseNom: entreprise.nom,
       entrepriseAdresse: entreprise.adresse,

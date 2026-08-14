@@ -36,7 +36,7 @@ export type DevisPdfData = DonneesDocument & {
  *
  * Elle était écrite en dur — « 30 jours », la même pour tous les artisans, et
  * aucun écran ne la montrait. Un couvreur qui tient ses prix quinze jours
- * envoyait donc un devis qui l'engageait trente (`ARCHITECTURE.md` §101).
+ * envoyait donc un devis qui l'engageait trente (`ARCHITECTURE.md` §102).
  *
  * **Elle est recopiée dans le devis à sa création**, comme l'identité : un
  * document garde ce qu'il portait. Les devis d'avant la migration 0040 valent

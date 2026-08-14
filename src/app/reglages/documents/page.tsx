@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
  * **Ce qu'elle débloque.** « Validité : 30 jours » était une constante de
  * `devis-pdf.ts`, la même pour tous les artisans, qu'aucun écran ne montrait :
  * un couvreur qui tient ses prix quinze jours envoyait un devis qui l'engageait
- * trente (`ARCHITECTURE.md` §101).
+ * trente (`ARCHITECTURE.md` §102).
  *
  * **L'écran refuse un non-propriétaire avant de lire quoi que ce soit** : ces
  * conditions engagent l'entreprise sur un document que le client garde

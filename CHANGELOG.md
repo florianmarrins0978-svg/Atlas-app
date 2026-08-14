@@ -9,6 +9,30 @@ Format : le plus récent en tête.
 
 ## 2026-08-14
 
+### L'unité d'un tarif se choisit dans un bandeau, au lieu de se taper
+
+Sa demande du 13 août, capture des tarifs à l'appui : *« crée-moi un bandeau
+déroulant avec infos à choisir, jours/hommes, m² etc. »*, puis *« fais celle-là »*
+devant la forme 1 de la maquette.
+
+**Ce que ça évite, et qui ne se voyait nulle part.** L'unité désigne un tarif de
+main d'œuvre et autorise la multiplication par une quantité — par son **texte, à
+la lettre près**. « jour/homme » est reconnu, « jours/homme » ne l'est pas ;
+« m2 » et « m² » sont deux unités différentes. Une faute de frappe ne produisait
+donc aucune erreur : elle produisait un tarif qui cessait d'être trouvé, en
+silence, sur un devis parti chez le client.
+
+**La case reste libre** : le bandeau se termine par une ligne d'écriture. Le
+stère, l'arbre, la tonne de grumes — aucune liste ne les devinera, et les
+retirer aurait été un recul déguisé en confort.
+
+Deux choses de la maquette ont dû changer, et le pourquoi compte :
+« forfait — ne se multiplie pas » était **faux** (un forfait porté par une
+quantité confirmée se multiplie ; ce qui ne se multiplie jamais, c'est un tarif
+*sans* unité — d'où la ligne « Aucune unité » qui, au passage, permet enfin de
+vider un champ pourtant facultatif) ; et le bandeau ne peut pas être posé en
+surimpression sur la carte, qui le trancherait. Raisons : `ARCHITECTURE.md` §101.
+
 ### La batterie navigateur refuse de partir sans Redis, au lieu de mentir vingt minutes
 
 Lancée sans `REDIS_URL`, elle rendait **vingt rouges qui disaient tous la même
@@ -24,7 +48,7 @@ l'appel à la main qui ne l'avait pas. Raisons : `ARCHITECTURE.md` §96.
 
 ### CODÉ : les conditions du devis, réglées au lieu d'être en dur
 
-Rubrique **Devis & factures**, migration `0040`. Détail : `ARCHITECTURE.md` §101.
+Rubrique **Devis & factures**, migration `0040`. Détail : `ARCHITECTURE.md` §102.
 
 **Ce que ça remplace :** `const VALIDITE = "30 jours"` — une constante, la même
 pour tous les artisans, qu'aucun écran ne montrait. Un couvreur qui tient ses

@@ -8032,7 +8032,103 @@ feuille — ce qui rend la place disponible.
 
 ---
 
-## 101. Les conditions du devis : réglées au lieu d'être en dur, et FIGÉES
+## 101. L'unité d'un tarif se choisit, et la case reste libre
+
+**Sa demande, le 13 août 2026**, capture des tarifs à l'appui : *« crée-moi un
+bandeau déroulant avec infos à choisir, jours/hommes, m² etc. »* Deux formes ont
+été dessinées (`maquettes/atlas-unite-deroulante.html`) ; il a répondu *« fais
+celle-là »* devant la **forme 1**, le bandeau qui se déplie.
+
+### Ce que la case libre coûtait, et qui ne se voyait nulle part
+
+L'unité n'est pas décorative. C'est elle qui autorise la multiplication par une
+quantité confirmée au moment du chiffrage (`proposition-prix.ts`), et c'est elle
+— **elle seule** — qui désigne un tarif de main d'œuvre : le rapprochement par
+intitulé ne trouve rien entre « Main d'œuvre (jour/homme) » et « Abattage d'un
+cèdre mort », d'où `tarif-main-oeuvre.ts` (§ du 7 août 2026).
+
+Or ce rapprochement se fait **sur le texte, à la lettre près**. « jour/homme »
+est reconnu ; « jours/homme » ne l'est pas. Une faute de frappe ne produit donc
+aucune erreur : elle produit un tarif qui cesse d'être trouvé, **en silence**,
+sur un devis qui part chez le client. « m2 », « m² », « M2 » sont trois unités
+distinctes pour la machine.
+
+### Ce qui ne se discute pas : la liste ne ferme rien
+
+Un élagueur a des unités qu'aucune liste ne devinera — le stère, l'arbre, la
+tonne de grumes. Le bandeau se termine donc par une ligne libre. Enfermer le
+choix lui **retirerait ce qu'il a aujourd'hui** : un recul déguisé en confort,
+et le seul vrai risque de ce lot. `test-unites-tarif.ts` et la suite navigateur
+montent la garde dessus, chacune de son côté.
+
+### Deux corrections que la maquette ne pouvait pas voir
+
+**« forfait — ne se multiplie pas » était FAUX.** La maquette le disait ainsi ;
+le code ne le tient pas — un forfait porté par une quantité confirmée se
+multiplie comme les autres. L'écran aurait installé une croyance que le produit
+dément. Ce qui ne se multiplie jamais, c'est un tarif **sans** unité : d'où la
+ligne « Aucune unité — le tarif est repris tel quel », qui rend au passage un
+geste qui manquait (le champ est facultatif, et rien ne pouvait le vider).
+
+**Le bandeau ne peut PAS être posé en surimpression sur la carte.** La maquette
+le dessinait ainsi ; impossible ici. La carte d'un tarif vit dans un
+`LigneRetirable`, dont l'enveloppe masque ce qui dépasse (`.atlas-ligne
+{overflow:hidden}`) pour pouvoir se refermer au retrait, et dont la colonne du
+texte est une zone qui défile (`.atlas-glisse {overflow-x:auto}`). Posé dedans,
+il est **tranché aux deux bords** — mesuré : coupé à 504 px quand il en
+demandait 863, les trois dernières unités hors d'atteinte.
+
+D'où la séparation en deux pièces (`ChoixUnite.tsx`) : `CaseUnite` dans la
+carte, `BandeauUnites` juste en dessous, **hors** de l'enveloppe. L'autre voie —
+relever la hauteur de repli de la ligne pendant l'ouverture — a été essayée et
+écartée : cette hauteur s'anime (0,44 s après 0,2 s d'attente), le bandeau se
+serait dévoilé par le haut une demi-seconde après le doigt.
+
+### Et une troisième, trouvée sur une capture
+
+Un tarif se règle en bas de la liste aussi souvent qu'en haut. Le bandeau
+s'ouvrait alors **sous le bord de l'écran** : toucher la case ne montrait rien,
+le geste paraissait sans effet. Il se fait donc venir tout seul
+(`scrollIntoView`), avec une marge basse de 96 px — sans quoi la barre de
+navigation, posée par-dessus la page, recouvre la ligne libre : celle qui sert
+justement à écrire son unité à soi.
+
+### Une exception à la capsule, et pourquoi elle est légitime
+
+`test-boutons-arrondis.ts` a dénoncé la case de l'unité : c'est un `<button>`,
+et la charte veut la capsule sur les boutons. **L'exception a été nommée plutôt
+que la forme changée**, parce que la charte elle-même tranche dans ce sens :
+« elle ne donne la capsule qu'à ce qu'on APPUIE, jamais à ce qu'on remplit ». La
+case est un **champ** — elle se tient dans la même grille que « Prix (€) » et
+porte ses 4 px comme lui ; en capsule, elle serait le seul galet d'une rangée de
+champs droits.
+
+Elle est écrite en `<button>` et non en `<input>` parce que sa valeur se
+**choisit** : c'est ce que la balise doit dire à qui n'emploie pas ses yeux. La
+forme et la balise ne se commandent pas l'une l'autre.
+
+Ce que l'exception coûte : elle porte sur le fichier entier, donc un vrai bouton
+d'action écrit un jour dans `ChoixUnite.tsx` ne serait plus dénoncé.
+
+### Ce qui est éprouvé, et par quoi
+
+| Ce qui est tenu | Où |
+|---|---|
+| « jour/homme » proposé EST celui que le chiffrage reconnaît | `test-unites-tarif.ts` |
+| « m2 » n'est pas confondu avec « m² » | `test-unites-tarif.ts` |
+| le stère, l'arbre, la tonne restent écrivables | les deux suites |
+| le bandeau n'est pas tranché par l'enveloppe | `test-unite-tarif-e2e.ts` |
+| il ne passe pas sous la barre basse (sur SON écran, 390 × 664) | `test-unite-tarif-e2e.ts` |
+| le choix arrive en base et survit au rechargement | `test-unite-tarif-e2e.ts` |
+
+**Ce qui n'est PAS fait, et c'est délibéré :** les unités déjà saisies ne sont
+pas corrigées. « m2 » enregistré reste « m2 ». Réécrire ses données à son insu
+pour les faire entrer dans notre liste changerait des prix sans qu'il l'ait
+demandé.
+
+---
+
+## 102. Les conditions du devis : réglées au lieu d'être en dur, et FIGÉES
 
 *Dessiné le 13 août 2026 (`maquettes/atlas-reglages-documents.html`), codé le
 14. Rubrique « Devis & factures », migration `0040`.*

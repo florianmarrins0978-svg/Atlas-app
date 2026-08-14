@@ -25,7 +25,7 @@ const DEVIS: DevisPdfData = {
   statut: "envoye",
   dateEmission: "2026-08-03",
   // **La validité est portée par le DEVIS depuis la migration 0040**, elle
-  // n'est plus une constante du composeur (`ARCHITECTURE.md` §101). Trente
+  // n'est plus une constante du composeur (`ARCHITECTURE.md` §102). Trente
   // jours : ce que la constante écrivait, et ce que le rattrapage a posé sur
   // les devis existants. Absente, aucune ligne « Validité » ne s'imprime — un
   // artisan peut l'avoir retirée, et une ligne « Validité : — » ferait croire à

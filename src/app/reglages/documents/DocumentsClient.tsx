@@ -14,7 +14,7 @@ import { majConditionsAction } from "./actions";
  * « Devis & factures » — ce qui s'imprime en plus, et ce qui ne se coupe pas.
  *
  * *Dessiné le 13 août 2026 (`maquettes/atlas-reglages-documents.html`), codé le
- * 14. `ARCHITECTURE.md` §101.*
+ * 14. `ARCHITECTURE.md` §102.*
  *
  * **Un interrupteur éteint ne déplie rien.** Montrer un champ grisé sous un
  * réglage coupé invite à le remplir pour rien — c'est le parti arrêté sur la

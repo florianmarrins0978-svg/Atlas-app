@@ -529,7 +529,7 @@ export const devis = pgTable(
      * Lire le réglage au moment de composer le PDF ferait changer la durée
      * d'engagement d'un devis déjà envoyé, simplement parce que l'artisan a
      * corrigé ses réglages entre-temps — pendant que le client a une autre
-     * feuille sous les yeux (`ARCHITECTURE.md` §101).
+     * feuille sous les yeux (`ARCHITECTURE.md` §102).
      */
     validiteJours: integer("validite_jours"),
     conditionsPaiement: text("conditions_paiement"),
