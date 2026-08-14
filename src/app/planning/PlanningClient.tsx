@@ -34,7 +34,7 @@ import FeuilleYAller from "@/components/atlas/FeuilleYAller";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
-import { planifierChantierAction, supprimerChantierAction } from "./actions";
+import { planifierChantierAction, supprimerChantierAction, changerEquipeChantierAction } from "./actions";
 
 /**
  * Le planning — le mois, et la journée qui s'ouvre dessous.
@@ -630,7 +630,22 @@ export default function PlanningClient({
                     type="button"
                     aria-label={`Y aller — ${c.nom}`}
                     onClick={() => setYAllerId(c.id)}
-                    className="-my-3 -ml-2 -mr-[26px] flex h-11 w-11 flex-shrink-0 items-center justify-center self-center text-[17px]"
+                    // **`-mr-[2px]` depuis le 14 août 2026, à sa demande** :
+                    // *« il faut déplacer d'un cm le "Déplacer" avec le chevron
+                    // vers la gauche, le chevron doit être légèrement plus gros
+                    // aussi »*. Le carré rentre dans le retrait au lieu de
+                    // tomber au bord de l'écran — 24 px gagnés, mesurés sur la
+                    // planche (`atlas-planning-equipe.html`).
+                    //
+                    // **Ces 24 px sont pris À LA COLONNE DU NOM**, et c'est le
+                    // piège que ce commentaire notait depuis le 12 août : à
+                    // 390 px, un nom long se coupe. Le contrôle de la planche
+                    // le vérifie, et la ligne s'est allégée entre-temps.
+                    //
+                    // Les 44 px du carré NE BOUGENT PAS : c'est la cible, et le
+                    // signe plus gros ne doit pas la rétrécir — on la rate deux
+                    // fois sur trois avec des gants.
+                    className="-my-3 -ml-2 -mr-[2px] flex h-11 w-11 flex-shrink-0 items-center justify-center self-center text-[21px]"
                     style={{ color: colors.or }}
                   >
                     <span aria-hidden="true">›</span>
@@ -654,6 +669,29 @@ export default function PlanningClient({
             adresse={yAller.adresseChantier ?? null}
             telephone={yAller.clientTelephone ?? null}
             quand={libelleQuand(yAller)}
+            // **Vide à une seule équipe** : `equipesAffichees` ne rend rien à
+            // distinguer, et la feuille n'affiche alors aucune ligne d'équipe.
+            equipes={
+              nombreEquipes > 1
+                ? equipesAffichees(lignesEquipes, nombreEquipes).map((e) => ({
+                    rang: e.rang,
+                    libelle: libelleEquipe(e, nombreEquipes) ?? `Équipe ${e.rang}`,
+                  }))
+                : []
+            }
+            rangEquipe={yAller.rangEquipe ?? null}
+            onChangerEquipe={async (rang) => {
+              const r = await changerEquipeChantierAction(yAller.id, rang);
+              // La ligne du planning porte le nom de l'équipe : sans cette
+              // écriture locale, elle garderait l'ancienne jusqu'au prochain
+              // rechargement, et il croirait que rien n'a été pris.
+              if (r.succes) {
+                setChantiers((cur) =>
+                  cur.map((c) => (c.id === yAller.id ? { ...c, rangEquipe: rang } : c))
+                );
+              }
+              return r;
+            }}
           />
         )}
 

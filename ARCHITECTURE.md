@@ -7978,3 +7978,54 @@ dit désormais : *« Les noms apparaissent à partir de deux. »*
 peut être logiquement bien placée et introuvable quand même. Le libellé de
 « Équipe » promettait par ailleurs « Utilisateurs, rôles et permissions » —
 trois choses qui n'existent pas. Il dit maintenant ce qu'on y trouve.
+
+---
+
+## 100. Affilier une équipe à un chantier déjà posé, sans toucher à sa date
+
+**Le patron, le 14 août 2026** (planche `maquettes/atlas-planning-equipe.html`,
+approuvée) : *« on devait pouvoir affilier une équipe à un chantier ajouté au
+planning une fois que le client a validé le devis »*.
+
+**Le geste existait à moitié.** `planifierChantier` choisit déjà l'équipe — mais
+seulement au moment de poser le chantier sur un jour. Or **un chantier que le
+client a validé est justement celui qu'on ne veut plus déplacer** : changer
+d'équipe passait donc par un changement de date, c'est-à-dire par un mensonge au
+client. `changerEquipeChantier` ne touche ni au jour, ni à la demi-journée, et
+l'écran le promet en toutes lettres.
+
+### Le refus porte sur les CRÉNEAUX, pas sur le jour
+
+Deux chantiers d'une demi-journée tiennent sur la même équipe le même jour —
+l'un le matin, l'autre l'après-midi. Un chantier d'une journée entière, non :
+il occupe les deux. La comparaison se fait donc créneau par créneau, et le
+chantier courant est exclu du décompte, sinon **se remettre sur sa propre équipe
+se refuserait lui-même**.
+
+**`EquipeIndisponible` est distinct de `CreneauIndisponible`**, et les confondre
+serait une erreur qui accuse à tort : le premier dit que CETTE équipe est prise,
+le second que l'entreprise entière est pleine. Le patron lirait « aucune place ce
+matin » devant un planning à moitié vide et chercherait du mauvais côté.
+
+**Une suite a rougi, et elle avait raison** : elle posait deux chantiers sans
+durée et s'attendait à ce que l'après-midi reste libre. Sans durée dictée, un
+chantier occupe la **journée entière** (`DUREE_PAR_DEFAUT_DEMI_JOURNEES` vaut 2).
+C'est le test qui se trompait. Le contrôle inverse a été ajouté pour que le
+premier ne passe pas par hasard.
+
+### La ligne du planning, ramenée de 24 px
+
+Sa seconde demande : *« il faut déplacer d'un cm le "Déplacer" avec le chevron
+vers la gauche, le chevron doit être légèrement plus gros aussi »*. Le carré
+touchable passe de `-mr-[26px]` à `-mr-[2px]` — il tombait jusqu'au bord de
+l'écran — et le signe de 17 à 21 px.
+
+**Les 44 px du carré ne bougent pas.** Grossir le signe ne doit pas rétrécir la
+cible : on la rate deux fois sur trois avec des gants, et il le rapporterait
+comme « ça ne marche pas ».
+
+**Ces 24 px sont pris à la colonne du nom**, et c'est le piège que le code notait
+depuis le 12 août : à 390 px, « Chez M. Bernard » devenait « Chez M. … ». Le
+contrôle de la planche mesure donc l'écart ET vérifie qu'aucun nom n'est coupé.
+La ligne s'est allégée entre-temps — « Créer la facture » est parti dans la
+feuille — ce qui rend la place disponible.

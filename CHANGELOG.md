@@ -22,6 +22,32 @@ zéro entre deux suites que s'il vit dans Redis.
 coupable. La batterie officielle et la CI posaient déjà la variable : c'est
 l'appel à la main qui ne l'avait pas. Raisons : `ARCHITECTURE.md` §96.
 
+### CODÉ : l'équipe d'un chantier validé, et la ligne du planning
+
+Ses deux demandes du 14 août, approuvées sur planche. Détail :
+`ARCHITECTURE.md` §100.
+
+**Affilier une équipe sans toucher à la date.** Le geste existait à moitié :
+en posant un chantier sur un jour, on choisissait déjà son équipe. Mais un
+chantier que le client a validé est celui qu'on ne veut plus déplacer — changer
+d'équipe passait donc par un changement de date, c'est-à-dire par un mensonge au
+client. La ligne vit dans la feuille du chevron, à côté de « Y aller » et
+« Créer la facture », et ne paraît qu'à partir de deux équipes.
+
+**Le refus porte sur les créneaux**, pas sur le jour : deux demi-journées
+tiennent sur la même équipe, une journée entière non. Et `EquipeIndisponible`
+est distinct de `CreneauIndisponible` — dire « aucune place » devant un planning
+à moitié vide enverrait chercher du mauvais côté.
+
+**La ligne du planning** : le chevron rentre de 24 px et passe de 17 à 21 px.
+Sa cible reste à 44 px — grossir le signe ne doit pas rétrécir le geste.
+
+**Une suite a rougi en ayant raison** : sans durée dictée, un chantier occupe la
+journée ENTIÈRE, pas une demi. Le test se trompait, pas le serveur ; le contrôle
+inverse a été ajouté pour que le premier ne passe pas par hasard.
+
+Nouveau : `scripts/test-changer-equipe.ts` (7 contrôles).
+
 ### Les équipes reviennent sous « Équipe », et le planning s'explique
 
 **Sa question, le 14 août :** *« les équipes n'apparaissent plus, pourquoi ?
