@@ -89,9 +89,15 @@ async function ecrans(): Promise<Array<[string, string]>> {
     ["le planning", "/planning"],
     ["les terminés", "/termines"],
     ["les réglages", "/reglages"],
+    ["les tarifs", "/reglages/tarifs"],
+    ["le planning réglé", "/reglages/planning"],
+    ["Atlas IA", "/reglages/ia"],
     ["mes prix", "/reglages/prix"],
     ["mon agenda", "/reglages/agenda"],
-    ["mes données", "/reglages/mes-donnees"],
+    // « /reglages/mes-donnees » n'a JAMAIS existé : cette ligne éprouvait une
+    // page d'erreur en croyant éprouver un écran. La rubrique s'appelle
+    // « /reglages/donnees » depuis le 14 août 2026 (`ARCHITECTURE.md` §96).
+    ["mes données", "/reglages/donnees"],
     ["un nouveau chantier", "/chantiers/nouveau"],
   ];
   if (chantier) {

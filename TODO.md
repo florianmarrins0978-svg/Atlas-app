@@ -27,6 +27,31 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quatervicies novies. NE PAS recoder le blocage de l'envoi sans SIRET
+
+Décidé par le patron le matin du 14 août 2026, codé, montré — puis **retiré le
+même jour à sa demande** : *« rien de plus, rien de moins »* (`ARCHITECTURE.md`
+§97). Les réglages alimentent le devis ; ils ne commandent pas l'écran d'envoi.
+
+**Cette ligne existe pour empêcher qu'on le refasse.** Un devis part aujourd'hui
+sans SIRET si le patron n'en a pas saisi, et rien ne l'en avertit : ce n'est pas
+un oubli, c'est un risque qu'il assume, l'argument lui ayant été donné.
+
+### 0 quatervicies octies. ~~CODER le sommaire des réglages~~ — fait le 2026-08-14
+
+Le sommaire est en place (`ARCHITECTURE.md` §96), en filets et dans la charte,
+et tout ce qui s'empilait sur l'écran est parti dans sa rubrique.
+
+**Ce qui reste sous « Bientôt », et qui est du vrai travail** — six rubriques :
+mon compte, notifications, connexion, apparence, l'équipe au sens des COMPTES
+(§88), et « Devis & factures » (les conditions, la numérotation et les mentions
+sont encore écrites en dur, §91). Elles se voient à l'écran, marquées, et ne
+mentent pas.
+
+**Et le cloisonnement n'est posé QUE là.** Les réglages refusent un membre ;
+les chantiers, les devis et les factures lui montrent encore tous les montants.
+Ne pas lire la §96 comme si le sujet était clos.
+
 ### 0 quatervicies septies. La page qui rassemble les maquettes a décroché
 
 `scripts/fusionner-maquettes.mjs` n'inscrit plus que la 40 et la 44. Les 41, 42
@@ -82,6 +107,129 @@ son devis **depuis ses SMS** — pas depuis Safari, le chemin compte — et dire
 « Hydration failed » revient, et si le numéro reste un texte ordinaire sous le
 doigt. Sans cette réponse, ce défaut n'est pas clos : c'est la deuxième
 tentative sur le même, et la première paraissait juste elle aussi.
+
+### 0 quatervicies. Les réglages : les dix rubriques sont dessinées, rien n'est codé
+
+**Le plan est dessiné et attend son accord** — `maquettes/atlas-reglages-plan.html`
+(`ARCHITECTURE.md` §86). Les deux niveaux, les quatre rôles et la forme de
+l'interrupteur y sont tranchés ; **aucune rubrique n'y est ouverte**.
+
+Ordre convenu, qui suit ses quatre priorités du 13 août 2026 :
+
+| Lot | Rubrique | Ce qu'elle porte | État |
+|---|---|---|---|
+| 1 | **Le plan** | Deux niveaux, trois rôles, l'interrupteur | **dessiné le 13 août — attend son accord** |
+| 2 | Identité de l'entreprise | Nom, adresse, SIRET/SIREN, TVA, IBAN | **dessiné le 13 août** (`ARCHITECTURE.md` §87) |
+| 3 | Équipe et rôles | Qui a accès, et à quoi | **dessiné et validé le 13 août** (`ARCHITECTURE.md` §88) |
+| 4 | Tarifs & catalogue | Prestations, main-d'œuvre, matériel | **dessiné le 13 août** (`ARCHITECTURE.md` §89) |
+| 5 | Documents | Conditions, acompte, logo, texte de bas de page | **dessiné le 13 août** (`ARCHITECTURE.md` §91) |
+| 6 | Notifications | Huit familles d'alertes, canal par canal | **dessiné le 13 août** (`ARCHITECTURE.md` §92) — **rien n'est envoyé aujourd'hui** |
+| 7 | Le reste | Atlas IA, intégrations, apparence, abonnement, sécurité | **dessiné le 13 août** (`ARCHITECTURE.md` §93) |
+
+**La charte, depuis le 13 août :** *« toujours en respectant le style de l'appli
+ultra luxe et très moderne »*. `atlas-reglages-plan.html` recopie les jetons de
+`src/lib/design-tokens.ts`, et son contrôle lit le fichier de jetons pour les
+comparer — un écart rougit en nommant le jeton. **Les neuf planches antérieures
+gardent l'ancien nuancier** (crème `#edece6`, bronze `#8f7130`) : les reprendre
+d'un coup mêlerait un changement d'identité à un changement mécanique sur des
+écrans déjà validés. Elles passent à la charte **quand leur sujet est rouvert**,
+pas avant (`ARCHITECTURE.md` §86).
+
+**LE PREMIER JOUR D'UN ARTISAN — le point le plus lourd de la série.** Sa
+remarque du 13 août 2026 : *« quand l'application sera commercialisée, le devis
+sera vierge, et c'est avec ces informations-là qu'il devra se remplir
+automatiquement ».* Six faits vérifiés, qui s'enchaînent (`ARCHITECTURE.md`
+§81) :
+
+| | Ce qui est constaté | Ce qu'il faut écrire |
+|---|---|---|
+| 1 | `seed.ts` pose « Atelier Démo » **complet, IBAN compris** — son banc ne montre jamais l'état vierge | un jeu de départ qui sache démarrer à vide |
+| 2 | **Aucun parcours d'inscription** : `creerEntreprise` n'est appelé que par le seed et les tests | la création d'entreprise, depuis l'application |
+| 3 | ~~L'identité ne s'écrit que depuis le devis à la main~~ — **fait le 13 août 2026** : `/reglages/identite` | ~~les champs d'identité dans les réglages~~ |
+| 4 | **Rien ne vérifie l'identité avant l'envoi** d'un devis | un garde-fou à l'envoi, pas à la rédaction |
+| 5 | `src/app/chantiers/[id]/export/page.tsx` écrit `entrepriseNom ?? "Votre entreprise"` | un manque se signale, il ne se maquille pas |
+| 6 | Le devis **fige** l'identité à sa création (`devis.ts`) — c'est juste, mais muet | l'avertissement : corriger vaut pour les **prochains** devis |
+
+**Tant que 2, 3 et 4 ne sont pas faits, Atlas ne peut pas être confié à un
+artisan** : son premier document partirait irrégulier, sans un mot.
+
+**Trois manques révélés en dessinant le lot 2, et qui sont du CODE, pas du
+dessin** (`ARCHITECTURE.md` §81) :
+
+- ~~le régime de TVA est deviné~~ — **fait le 13 août 2026** (migration 0039,
+  `ARCHITECTURE.md` §94) : il se déclare, il est figé dans la facture, et le
+  repli sur le taux demeure pour les factures antérieures ;
+- **le numéro de TVA intracommunautaire** existe en base et se saisit depuis le
+  13 août — **mais rien ne l'imprime encore**. *Réserve : les mentions
+  obligatoires n'ont pas pu être vérifiées à leur source d'ici. À faire
+  confirmer avant de le poser sur le document ;*
+- **le téléphone et l'e-mail ne s'impriment nulle part** : le bloc ÉMETTEUR de
+  `document-commun.ts` porte le nom, l'adresse et le SIRET, rien d'autre. Le
+  client n'a aucun moyen d'appeler l'artisan depuis son devis.
+
+Manquent aussi en base, et la maquette les montre : **forme juridique** et
+**titulaire du compte**.
+
+**LE DEUXIÈME CERVEAU : CE QUI NE RETIENT RIEN.** Direction posée le 13 août
+2026 (`ARCHITECTURE.md` §90, `docs/QUESTIONS.md` §17). Ce qui apprend déjà est
+bien alimenté — `lecons_prix`, les cinq grilles, la base documentaire. Ce qui
+manque, par ordre de poids :
+
+| | Ce qui n'est pas retenu | Le moment qui existe déjà pour le demander |
+|---|---|---|
+| 1 | **Le temps réel d'un chantier** — aucune colonne nulle part. Atlas ignore donc si ses estimations de durée sont justes, alors que **c'est la durée qui fait le prix** quand aucun tarif ne correspond | la clôture d'un chantier (`src/app/termines/`) |
+| 2 | Les coûts de chiffrage, figés aux valeurs d'usine | l'écran « Mes coûts », dessiné mais pas codé |
+| 3 | Les délais de paiement réels | l'encaissement d'une facture |
+| 4 | Ce qu'un client refuse ou fait corriger | l'état existe déjà (`src/lib/etat-envoi.ts`) |
+
+**La règle avant de coder l'un d'eux :** ne pas demander « quelle table ? » mais
+**« qui l'écrit, et à quel moment ? »**. `historique_prix` était lue et jamais
+écrite — une mémoire que personne n'alimente est du décor.
+
+**LE RÉGLAGE QUI AGIT SANS EXISTER À L'ÉCRAN**, trouvé le 13 août en répondant
+à sa question sur l'IA : `parametres_chiffrage` porte **cinq valeurs par
+entreprise** — 200 €/jour l'ouvrier, 280 € le chef, 35 € le déplacement, 20 % de
+marge, 20 % de TVA — et **aucun écran ne permet de les changer**. Elles décident
+du prix proposé dès qu'aucun tarif ne correspond. Un artisan dont l'ouvrier coûte
+260 € verra des prix trop bas sans savoir pourquoi (`ARCHITECTURE.md` §89).
+
+**Ce que le lot 4 ajoute à cette liste :** `tarifs` n'a **aucune colonne de
+famille** — prestations, main-d'œuvre et matériel n'existent pas —, et rien ne
+signale un tarif **sans unité**, alors qu'un prix sans unité n'est pas un prix.
+Les cinq grilles n'affichent pas **combien de prix elles ont appris**, ni la
+phrase qui dit qu'une grille vide n'est pas une panne (`ARCHITECTURE.md` §89).
+
+**Ce qui n'est PAS acquis, et ne doit pas être codé sur la foi de la maquette :**
+
+- **le rôle « commercial » n'existe nulle part.** `membres_entreprise.role` ne
+  connaît que `proprietaire` et `membre` ; `docs/QUESTIONS.md` §10 décrit
+  l'éditeur, le patron et le salarié. L'ajouter suppose une migration **et**
+  une décision, pas seulement un écran ;
+- **le cloisonnement par rôle est aujourd'hui inexistant** côté serveur, et le
+  lot 3 l'a mesuré : `exigerProprietaire` protège **vingt-trois points
+  d'écriture**, mais `getRole` n'est appelé dans **aucun écran** — rien ne filtre
+  la LECTURE. Un « membre » voit tous les prix, tous les devis, tous les
+  montants. `QUESTIONS.md` §10 exige que la donnée ne SORTE pas du serveur :
+  c'est le vrai coût de ce lot, et il est dans les dépôts, pas dans l'affichage ;
+- **aucun parcours d'invitation n'existe** : `membres-entreprise.ts` sait
+  ajouter et retirer un membre, aucun écran ne l'appelle, et rien n'envoie
+  d'invitation. Un patron ne peut donner aucun accès aujourd'hui ;
+- ~~la question du 7 août sur la portée du salarié~~ — **tranchée le 13 août
+  2026** : accès à tout par défaut, et le patron restreint **personne par
+  personne** à ses seuls chantiers. Le rôle « commercial » est validé tel que
+  dessiné. Il faut donc une colonne de portée sur `membres_entreprise`, en plus
+  du quatrième rôle (`docs/QUESTIONS.md` §10) ;
+- **le logo sur le devis n'existe pas** : `document-commun.ts` ne pose aucune
+  image. `pdf-lib` sait incorporer un PNG — c'est un lot court. ~~À dire au
+  patron avant de dessiner le lot 5~~ : **dit et dessiné le 13 août**, et
+  « remplacer le devis par le sien » est **refusé avec sa raison** à l'écran
+  (`ARCHITECTURE.md` §91) ;
+- **les conditions sont aujourd'hui en dur** : « 30 jours » dans
+  `devis-pdf.ts`, la mention légale dans `facture-pdf.ts`, et un seul champ
+  libre `conditionsPaiement`. Les rendre réglables demande une table, pas un
+  champ de plus.
+
+---
 
 ### 0 unvicies. Le chevron de retour, dernier bouton hors charte
 
@@ -273,7 +421,7 @@ est vraisemblablement la CI, sur les seuls fichiers touchés.
      visait celui-ci. -->
 ### 0 quattuorvicies. ~~Le corps de la fiche montre encore un chantier neuf~~ — **CLOS le 13 août : « ne touche pas au centre »**
 
-**Trouvé en corrigeant son défaut du 13 août** (`ARCHITECTURE.md` §86), et
+**Trouvé en corrigeant son défaut du 13 août** (`ARCHITECTURE.md` §98), et
 laissé ouvert exprès. L'état dit maintenant « Devis prêt à envoyer » et l'étape
 suivante « Envoyer le devis au client » — mais **le centre de l'écran affiche
 toujours l'anneau de dictée** et « Appuyez et décrivez le chantier », sur un
@@ -281,7 +429,7 @@ chantier dont le devis est écrit.
 
 **Il a tranché le jour même : « non non, mais ne touche pas au centre en fait.
 Tu n'as pas compris ma requête ».** Ce qu'il voulait était ailleurs — que la
-liste le ramène à l'écran où il s'est arrêté (`ARCHITECTURE.md` §86), et c'est
+liste le ramène à l'écran où il s'est arrêté (`ARCHITECTURE.md` §98), et c'est
 fait. La maquette `maquettes/atlas-centre-de-la-fiche.html` reste au placard :
 elle n'a rien changé dans `src/`, et elle raconte le chemin.
 

@@ -159,7 +159,7 @@ async function main() {
   // propose plus de la refaire.
   // « Consulter le devis » est devenu « Envoyer le devis au client » le 13 août
   // 2026 : le libellé dit désormais le GESTE qui reste, pas l'écran où il mène
-  // (`ARCHITECTURE.md` §86). L'intention de ce contrôle — l'étape suivante doit
+  // (`ARCHITECTURE.md` §98). L'intention de ce contrôle — l'étape suivante doit
   // concerner le devis — n'a pas bougé d'un pouce.
   const etapesDevisAcceptees = [
     "Préparer le devis",

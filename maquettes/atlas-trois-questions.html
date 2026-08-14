@@ -1,0 +1,634 @@
+<title>Atlas — Trois décisions à prendre, deux écrans chacune</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT pour la page.
+
+    TROIS QUESTIONS RESTÉES OUVERTES, dessinées pour qu'il y réponde en
+    regardant plutôt qu'en imaginant. Sa demande du 14 août 2026 : « fais-moi
+    des visuels pour que je te réponde ».
+
+      1. LE SOMMAIRE DES RÉGLAGES — en filets ou en cartes. Il a tranché les
+         COULEURS (« crème, comme le reste ») et jamais le registre ; l'écran a
+         donc été codé en filets, la grammaire de tous les autres écrans. La
+         question reste entière, et le coût de revenir en arrière est faible :
+         c'est le même composant.
+      2. LES PRIX — trois écrans réunis sous un titre, ou un seul écran. C'est
+         moi qui ai gardé trois écrans, contre sa demande de supprimer les
+         doublons, et j'ai dit pourquoi ; il n'a pas encore répondu.
+      3. LE DEVIS SANS SIRET — bloquer l'envoi, ou prévenir seulement. Ouverte
+         dans `docs/A-FAIRE.md` §10 depuis le 13 août.
+
+    CHAQUE QUESTION PORTE LES MÊMES DONNÉES DES DEUX CÔTÉS, et un contrôle le
+    vérifie. Sans cela, il comparerait deux contenus au lieu de comparer deux
+    partis, et choisirait une allure en croyant en choisir une autre.
+
+    LA RECOMMANDATION EST ÉCRITE SOUS CHAQUE PAIRE, et elle est assumée : « à
+    vous de voir » est une non-réponse qui lui rend le travail d'analyse. Elle
+    est écrite APRÈS les deux écrans, pour qu'il regarde avant de lire.
+  */
+
+  /* ═══ LA CHARTE, RECOPIÉE DE `src/lib/design-tokens.ts` ═══════════════ */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --bronze:#b98b47; --trait:rgba(28,28,26,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c9a15e; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c9a15e; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1700px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 20px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  /* Le titre d'une question. Il porte son numéro : c'est ce qu'il citera pour
+     répondre, et « la deuxième » vaut mieux que « celle des prix » quand on
+     répond d'un téléphone. */
+  .q{max-width:62ch;margin:56px auto 26px;text-align:center;
+     padding-top:26px;border-top:1px solid var(--trait)}
+  .q .num{margin:0 0 12px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .q h2{margin:0 0 12px;font:400 24px/1.3 ui-serif,Georgia,serif}
+  .q p{margin:0;color:var(--gris);font-size:14.5px}
+  .q strong{color:var(--encre);font-weight:600}
+
+  /* La recommandation, sous la paire. Un filet à gauche : c'est une voix, pas
+     une légende — elle engage celui qui l'écrit. */
+  .avis{max-width:60ch;margin:26px auto 0;padding-left:16px;
+        border-left:2px solid var(--bronze);font-size:14px;line-height:1.75;color:var(--gris)}
+  .avis b{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:412px;max-width:100%}
+
+  /* ═══ LE GROS PLAN ═══════════════════════════════════════════════════
+     `zoom` agrandit l'écran ENTIER dans ses proportions : il continue de
+     mesurer 390 px pour lui-même, et une cible de 44 px reste une cible de
+     44 px. Éteinte sous 1000 px — donc éteinte là où les contrôles mesurent.
+
+     ICI, DEUX PAR RANGÉE et non une : la question est une COMPARAISON, et
+     deux écrans qu'on ne voit pas ensemble ne se comparent pas. La loupe est
+     donc plus modeste que sur les autres planches. */
+  @media (min-width:1000px){
+    .rangee{gap:56px 40px}
+    .prop .tel{zoom:1.18}
+    .prop{width:auto}
+    .prop .note{max-width:44ch}
+  }
+  @media (min-width:1500px){
+    .prop .tel{zoom:1.42}
+  }
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:720px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-bronze:#b98b47; --e-trait:rgba(28,28,26,.12); --e-plein:#2f3b2f;
+         --e-alerte:#9C3B2E}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  /* `EnTeteEcran`, valeur pour valeur. */
+  .tete{padding:34px 26px 0;flex:none}
+  .tete .sur{margin:0;color:var(--e-bronze)}
+  .tete h1{margin:14px 0 0;font:400 36px/1.02 ui-serif,Georgia,serif;letter-spacing:-.018em}
+  .cheveu{flex:none;height:1px;margin:26px 26px 0;background:var(--e-trait)}
+  .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
+
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:18px 14px 26px;background:var(--e-fond)}
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre);transform:translateY(-2px)}
+  .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;background:var(--e-bronze)}
+  .bas i.q4{left:calc(14px + 3*(100% - 28px)/4)}
+  .bas i.q1{left:14px}
+
+  /* ═══ La grammaire commune ═══════════════════════════════════════════ */
+  .bloc{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--e-trait)}
+  .bloc .t{margin:0 0 10px;color:var(--e-gris)}
+  .corps > .bloc:first-of-type{border-top:0;padding-top:0;margin-top:26px}
+  .bloc .rub:last-child, .bloc .lg:last-child{border-bottom:0}
+
+  .ico{flex:none;display:block;width:22px;height:22px;color:var(--e-bronze)}
+  .ico svg{display:block;width:22px;height:22px;fill:none;stroke:currentColor;
+           stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+
+  /* Registre EN FILETS — celui de tous les écrans refaits. */
+  .rub{display:flex;align-items:center;gap:15px;padding:13px 0;min-height:56px;
+       border-bottom:1px solid var(--e-trait);-webkit-tap-highlight-color:transparent}
+  .rub .txt{flex:1;min-width:0}
+  .rub .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif;color:var(--e-encre)}
+  .rub .dit{display:block;margin-top:3px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  .rub .chev{flex:none;width:8px;height:8px;border-right:1.5px solid var(--e-trait);
+             border-top:1.5px solid var(--e-trait);transform:rotate(45deg)}
+
+  /* Registre EN CARTES — sa planche du 14 août, traduite en crème. Pas
+     d'ombre et 4 px de rayon : la charte n'en a aucune. */
+  .crt{display:flex;align-items:center;gap:15px;padding:14px 15px;min-height:60px;
+       margin-bottom:8px;border-radius:4px;background:var(--e-plage);
+       -webkit-tap-highlight-color:transparent}
+  .crt:last-child{margin-bottom:0}
+  .crt .txt{flex:1;min-width:0}
+  .crt .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif;color:var(--e-encre)}
+  .crt .dit{display:block;margin-top:3px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  .crt .chev{flex:none;width:8px;height:8px;border-right:1.5px solid var(--e-trait);
+             border-top:1.5px solid var(--e-trait);transform:rotate(45deg)}
+
+  .plus_tard .nom{color:var(--e-gris)}
+  .plus_tard .ico{opacity:.45}
+  .marque{flex:none;color:var(--e-bronze);opacity:.9}
+
+  /* ═══ Question 2 : les prix ══════════════════════════════════════════ */
+  /* Une ligne de tarif, comme sur l'écran codé : une plage par valeur. */
+  .tarif{display:flex;align-items:center;gap:10px;padding:11px 13px;margin-bottom:8px;
+         border-radius:4px;background:var(--e-plage)}
+  .tarif .n{flex:1;min-width:0;font-size:14.5px}
+  .tarif .p{font:400 15px/1.2 ui-serif,Georgia,serif;font-variant-numeric:tabular-nums}
+  .tarif .u{width:9ch;text-align:right;font-size:12px;color:var(--e-gris)}
+
+  /* La grille de prix, telle qu'elle est : un tableau qu'on parcourt. C'est
+     tout l'argument du parti « trois écrans », et il ne se raconte pas — il se
+     montre. */
+  .grille{width:100%;border-collapse:collapse;font-size:11.5px;
+          font-variant-numeric:tabular-nums}
+  .grille th{font-weight:500;color:var(--e-gris);text-align:right;padding:5px 4px;
+             font-size:9.5px;letter-spacing:.1em;text-transform:uppercase}
+  .grille td{text-align:right;padding:6px 4px;border-top:1px solid var(--e-trait)}
+  .grille th:first-child, .grille td:first-child{text-align:left}
+  .grille .vide{color:var(--e-gris);opacity:.55}
+
+  .lg{display:flex;align-items:center;gap:15px;padding:13px 0;min-height:56px;
+      border-bottom:1px solid var(--e-trait)}
+  .lg .txt{flex:1;min-width:0}
+  .lg .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif}
+  .lg .dit{display:block;margin-top:3px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  .lg .chev{flex:none;width:8px;height:8px;border-right:1.5px solid var(--e-trait);
+            border-top:1.5px solid var(--e-trait);transform:rotate(45deg)}
+
+  .mot{margin:14px 0 0;font-size:11.5px;line-height:1.65;color:var(--e-gris)}
+  .mot b{color:var(--e-encre);font-weight:500}
+
+  /* ═══ Question 3 : le devis sans SIRET ═══════════════════════════════ */
+  .recap{margin:0 0 4px;font-size:13px;line-height:1.7;color:var(--e-gris)}
+  .recap b{color:var(--e-encre);font-weight:500}
+
+  /* Ce qui manque, ligne à ligne — la forme retenue sur l'écran d'identité :
+     le champ dit ce que son absence EMPÊCHE, au lieu d'un « obligatoire » qui
+     n'apprend rien. */
+  .manque{display:flex;align-items:flex-start;gap:12px;padding:12px 0;
+          border-bottom:1px solid var(--e-trait)}
+  .manque:last-of-type{border-bottom:0}
+  .manque .quoi{flex:1;min-width:0}
+  .manque .champ{display:block;font:400 15px/1.3 ui-serif,Georgia,serif}
+  .manque .pourquoi{display:block;margin-top:3px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  .manque .etat{flex:none;color:var(--e-alerte)}
+
+  .aller{display:inline-block;margin-top:14px;font-size:13.5px;font-weight:500;color:var(--e-plein)}
+
+  /* Le geste principal. Vert pin : c'est ce qu'on FAIT. */
+  .geste{display:block;width:100%;margin-top:20px;padding:15px;border-radius:99px;
+         border:0;background:var(--e-plein);color:var(--e-fond);
+         font:400 16px/1.2 ui-sans-serif,-apple-system,sans-serif;text-align:center}
+  /* Empêché : il reste À SA PLACE et se voit, plutôt que de disparaître — un
+     bouton absent laisse chercher, un bouton éteint explique. */
+  .geste.eteint{background:var(--e-trait);color:var(--e-gris)}
+  .sous_geste{margin:8px 0 0;font-size:11.5px;line-height:1.6;color:var(--e-gris);text-align:center}
+  .sous_geste b{color:var(--e-encre);font-weight:500}
+
+  /* L'avertissement du parti « prévenir » : il se voit sans barrer la route. */
+  .prevenir{margin:0;padding:12px 14px;border-radius:4px;background:var(--e-plage);
+            border-left:3px solid var(--e-alerte);font-size:12px;line-height:1.6;color:var(--e-gris)}
+  .prevenir b{color:var(--e-encre);font-weight:500}
+
+  /* SUR TÉLÉPHONE, LE CADRE S'EFFACE — il coûtait 54 px, et l'écran ne mesurait
+     plus que 336 px au lieu de 390. Règle posée EN DERNIER dans la feuille :
+     placée plus haut, `.tel{padding:11px}` la reprenait à égalité de
+     spécificité (`ARCHITECTURE.md` §86). */
+  @media (max-width:520px){
+    body{padding:26px 0 72px}
+    .intro,.sous,.note,.q,.avis{padding-left:16px;padding-right:16px}
+    .tel{width:100%;padding:0;background:none;box-shadow:none;border-radius:0}
+    .ecran{border-radius:0}
+  }
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Trois décisions</p>
+    <h1>Deux écrans chacune, à regarder puis à trancher</h1>
+    <p>
+      Chaque question porte <strong>exactement les mêmes données des deux
+      côtés</strong> : ce qui change d'un écran à l'autre est le parti, jamais
+      le contenu. Ma recommandation est écrite <strong>sous</strong> chaque
+      paire — regardez d'abord.
+    </p>
+  </div>
+
+  <!-- ══════════ QUESTION 1 ══════════════════════════════════════════ -->
+  <div class="q">
+    <p class="num">Question 1</p>
+    <h2>Le sommaire des réglages : en filets, ou en cartes ?</h2>
+    <p>
+      C'est le seul point de votre planche du 14 août que vous n'avez pas
+      tranché : vous avez choisi les couleurs, pas le registre. L'écran est
+      aujourd'hui <strong>en filets</strong>.
+    </p>
+  </div>
+
+  <div class="rangee">
+
+    <div class="prop">
+      <p class="sous">A — En filets (ce qui est codé)</p>
+      <div class="tel"><div class="ecran" data-s="q1a">
+        <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Réglages</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="bloc">
+            <p class="t caps">L'entreprise</p>
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M3.5 20.5V4.6a1 1 0 0 1 1-1H13a1 1 0 0 1 1 1v15.9"/><path d="M14 9.5h6a1 1 0 0 1 1 1v10"/><path d="M2.5 20.5h19"/><path d="M6.5 8h1M10 8h1M6.5 12h1M10 12h1M6.5 16h1M10 16h1M17 13.5h1M17 17h1"/></svg></span>
+              <span class="txt"><span class="nom">Mon entreprise</span><span class="dit">Identité, coordonnées et informations légales</span></span>
+              <span class="chev"></span>
+            </div>
+            <div class="rub plus_tard">
+              <span class="ico"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M2.8 19.8c0-3.3 2.8-5.2 6.2-5.2s6.2 1.9 6.2 5.2"/><path d="M16.2 5.7a3.2 3.2 0 0 1 0 6.2"/><path d="M17.6 14.3c2.1.6 3.6 2.2 3.6 4.6"/></svg></span>
+              <span class="txt"><span class="nom">Équipe</span><span class="dit">Utilisateurs, rôles et permissions</span></span>
+              <span class="marque caps">Bientôt</span>
+            </div>
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M3.2 11.4V4.2a1 1 0 0 1 1-1h7.2a1 1 0 0 1 .7.3l8.4 8.4a1 1 0 0 1 0 1.4l-7.2 7.2a1 1 0 0 1-1.4 0L3.5 12.1a1 1 0 0 1-.3-.7Z"/><circle cx="7.6" cy="7.6" r="1.3"/></svg></span>
+              <span class="txt"><span class="nom">Tarifs &amp; catalogue</span><span class="dit">Prestations, main-d'œuvre, matériel et marges</span></span>
+              <span class="chev"></span>
+            </div>
+            <div class="rub plus_tard">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M13.2 3H6.4A1.4 1.4 0 0 0 5 4.4v15.2A1.4 1.4 0 0 0 6.4 21h11.2a1.4 1.4 0 0 0 1.4-1.4V8.8z"/><path d="M13.2 3v5.8H19"/><path d="M8.4 13h7.2M8.4 16.6h5"/></svg></span>
+              <span class="txt"><span class="nom">Devis &amp; factures</span><span class="dit">Conditions, numérotation et mentions</span></span>
+              <span class="marque caps">Bientôt</span>
+            </div>
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="1.5"/><path d="M3.5 9.8h17"/><path d="M8 3.2v3.6M16 3.2v3.6"/><path d="M7.8 13.4h1.2M11.4 13.4h1.2M15 13.4h1.2M7.8 16.9h1.2M11.4 16.9h1.2"/></svg></span>
+              <span class="txt"><span class="nom">Planning</span><span class="dit">Horaires, équipes et disponibilités</span></span>
+              <span class="chev"></span>
+            </div>
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M9.6 3.4 11.6 9l5.6 2-5.6 2-2 5.6-2-5.6L2 11l5.6-2z"/><path d="M18 3v3.8M16.1 4.9h3.8"/></svg></span>
+              <span class="txt"><span class="nom">Atlas IA</span><span class="dit">Automatisations et suggestions</span></span>
+              <span class="chev"></span>
+            </div>
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M9.2 3.6a2.1 2.1 0 0 1 4.2 0c0 .8-.5 1.2-.5 1.7 0 .5.4.8.9.8h2.6a1 1 0 0 1 1 1v2.7c0 .5.3.9.8.9.5 0 .9-.5 1.7-.5a2.1 2.1 0 0 1 0 4.2c-.8 0-1.2-.5-1.7-.5-.5 0-.8.4-.8.9V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7.1a1 1 0 0 1 1-1h2.8c.5 0 .9-.3.9-.8 0-.5-.5-.9-.5-1.7Z"/></svg></span>
+              <span class="txt"><span class="nom">Intégrations</span><span class="dit">Calendrier, comptabilité et services connectés</span></span>
+              <span class="chev"></span>
+            </div>
+            <div class="rub plus_tard">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M3.2 7.8 6.6 15.4h10.8l3.4-7.6-4.6 3-4.2-6.6-4.2 6.6z"/><path d="M6.6 18.8h10.8"/></svg></span>
+              <span class="txt"><span class="nom">Abonnement</span><span class="dit">Offre, paiement et factures</span></span>
+              <span class="marque caps">Bientôt</span>
+            </div>
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3.2 5.2 5.9v5.3c0 4.2 2.8 7.9 6.8 9.1 4-1.2 6.8-4.9 6.8-9.1V5.9z"/><path d="M9.3 12.1l1.9 1.9 3.6-3.7"/></svg></span>
+              <span class="txt"><span class="nom">Sécurité &amp; données</span><span class="dit">Export, effacement et RGPD</span></span>
+              <span class="chev"></span>
+            </div>
+          </div>
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Neuf rubriques tiennent <b>sans faire défiler</b>. C'est la grammaire de
+        vos vingt autres écrans — accueil, planning, terminés.
+      </p>
+    </div>
+
+    <div class="prop">
+      <p class="sous">B — En cartes (votre planche)</p>
+      <div class="tel"><div class="ecran" data-s="q1b">
+        <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Réglages</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="bloc">
+            <p class="t caps">L'entreprise</p>
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M3.5 20.5V4.6a1 1 0 0 1 1-1H13a1 1 0 0 1 1 1v15.9"/><path d="M14 9.5h6a1 1 0 0 1 1 1v10"/><path d="M2.5 20.5h19"/><path d="M6.5 8h1M10 8h1M6.5 12h1M10 12h1M6.5 16h1M10 16h1M17 13.5h1M17 17h1"/></svg></span>
+              <span class="txt"><span class="nom">Mon entreprise</span><span class="dit">Identité, coordonnées et informations légales</span></span>
+              <span class="chev"></span>
+            </div>
+            <div class="crt plus_tard">
+              <span class="ico"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M2.8 19.8c0-3.3 2.8-5.2 6.2-5.2s6.2 1.9 6.2 5.2"/><path d="M16.2 5.7a3.2 3.2 0 0 1 0 6.2"/><path d="M17.6 14.3c2.1.6 3.6 2.2 3.6 4.6"/></svg></span>
+              <span class="txt"><span class="nom">Équipe</span><span class="dit">Utilisateurs, rôles et permissions</span></span>
+              <span class="marque caps">Bientôt</span>
+            </div>
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M3.2 11.4V4.2a1 1 0 0 1 1-1h7.2a1 1 0 0 1 .7.3l8.4 8.4a1 1 0 0 1 0 1.4l-7.2 7.2a1 1 0 0 1-1.4 0L3.5 12.1a1 1 0 0 1-.3-.7Z"/><circle cx="7.6" cy="7.6" r="1.3"/></svg></span>
+              <span class="txt"><span class="nom">Tarifs &amp; catalogue</span><span class="dit">Prestations, main-d'œuvre, matériel et marges</span></span>
+              <span class="chev"></span>
+            </div>
+            <div class="crt plus_tard">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M13.2 3H6.4A1.4 1.4 0 0 0 5 4.4v15.2A1.4 1.4 0 0 0 6.4 21h11.2a1.4 1.4 0 0 0 1.4-1.4V8.8z"/><path d="M13.2 3v5.8H19"/><path d="M8.4 13h7.2M8.4 16.6h5"/></svg></span>
+              <span class="txt"><span class="nom">Devis &amp; factures</span><span class="dit">Conditions, numérotation et mentions</span></span>
+              <span class="marque caps">Bientôt</span>
+            </div>
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="1.5"/><path d="M3.5 9.8h17"/><path d="M8 3.2v3.6M16 3.2v3.6"/><path d="M7.8 13.4h1.2M11.4 13.4h1.2M15 13.4h1.2M7.8 16.9h1.2M11.4 16.9h1.2"/></svg></span>
+              <span class="txt"><span class="nom">Planning</span><span class="dit">Horaires, équipes et disponibilités</span></span>
+              <span class="chev"></span>
+            </div>
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M9.6 3.4 11.6 9l5.6 2-5.6 2-2 5.6-2-5.6L2 11l5.6-2z"/><path d="M18 3v3.8M16.1 4.9h3.8"/></svg></span>
+              <span class="txt"><span class="nom">Atlas IA</span><span class="dit">Automatisations et suggestions</span></span>
+              <span class="chev"></span>
+            </div>
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M9.2 3.6a2.1 2.1 0 0 1 4.2 0c0 .8-.5 1.2-.5 1.7 0 .5.4.8.9.8h2.6a1 1 0 0 1 1 1v2.7c0 .5.3.9.8.9.5 0 .9-.5 1.7-.5a2.1 2.1 0 0 1 0 4.2c-.8 0-1.2-.5-1.7-.5-.5 0-.8.4-.8.9V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7.1a1 1 0 0 1 1-1h2.8c.5 0 .9-.3.9-.8 0-.5-.5-.9-.5-1.7Z"/></svg></span>
+              <span class="txt"><span class="nom">Intégrations</span><span class="dit">Calendrier, comptabilité et services connectés</span></span>
+              <span class="chev"></span>
+            </div>
+            <div class="crt plus_tard">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M3.2 7.8 6.6 15.4h10.8l3.4-7.6-4.6 3-4.2-6.6-4.2 6.6z"/><path d="M6.6 18.8h10.8"/></svg></span>
+              <span class="txt"><span class="nom">Abonnement</span><span class="dit">Offre, paiement et factures</span></span>
+              <span class="marque caps">Bientôt</span>
+            </div>
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3.2 5.2 5.9v5.3c0 4.2 2.8 7.9 6.8 9.1 4-1.2 6.8-4.9 6.8-9.1V5.9z"/><path d="M9.3 12.1l1.9 1.9 3.6-3.7"/></svg></span>
+              <span class="txt"><span class="nom">Sécurité &amp; données</span><span class="dit">Export, effacement et RGPD</span></span>
+              <span class="chev"></span>
+            </div>
+          </div>
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Chaque rubrique se détache mieux, et <b>une de moins tient à l'écran</b>.
+        C'est le registre de votre planche — le seul de l'application.
+      </p>
+    </div>
+
+  </div>
+
+  <p class="avis">
+    <b>Je recommande A, les filets</b> — mais faiblement, et le coût de changer
+    d'avis est d'une heure : c'est le même composant. La seule vraie raison de
+    préférer A est la <b>cohérence</b> : vos vingt autres écrans sont en filets,
+    et un écran en cartes se lit comme une pièce rapportée. Si les cartes vous
+    plaisent davantage, la conséquence honnête n'est pas « on change les
+    réglages » mais <b>« on passe toute l'application en cartes »</b> — et
+    c'est un autre chantier.
+  </p>
+
+  <!-- ══════════ QUESTION 2 ══════════════════════════════════════════ -->
+  <div class="q">
+    <p class="num">Question 2</p>
+    <h2>Les prix : trois écrans réunis, ou un seul ?</h2>
+    <p>
+      Vous m'avez dit de supprimer les doublons. J'ai <strong>réuni</strong> vos
+      tarifs, vos grilles de prix et le catalogue sous un même titre, sans les
+      <strong>fondre</strong>. Voici ce que serait l'écran unique.
+    </p>
+  </div>
+
+  <div class="rangee">
+
+    <div class="prop">
+      <p class="sous">A — Réunis, trois écrans (ce qui est codé)</p>
+      <div class="tel"><div class="ecran" data-s="q2a">
+        <div class="tete"><p class="sur caps">Réglages</p><h1>Tarifs &amp; catalogue</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="bloc">
+            <p class="t caps">Mes tarifs</p>
+            <div class="tarif"><span class="n">Main-d'œuvre</span><span class="p">280,00 €</span><span class="u">jour/homme</span></div>
+            <div class="tarif"><span class="n">Dépose carrelage</span><span class="p">18,00 €</span><span class="u">m²</span></div>
+            <div class="tarif"><span class="n">Pose faïence</span><span class="p">45,00 €</span><span class="u">m²</span></div>
+            <div class="tarif"><span class="n">Forfait déplacement</span><span class="p">35,00 €</span><span class="u">—</span></div>
+            <p class="mot">Sans tarif correspondant, le prix est calculé à partir de vos paramètres de chiffrage.</p>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Main-d'œuvre, machine et matière</p>
+            <div class="lg">
+              <span class="txt"><span class="nom">Mes prix</span><span class="dit">Abattre, fendre, dessoucher, tailler — le montant par diamètre, par hauteur et par technique.</span></span>
+              <span class="chev"></span>
+            </div>
+            <div class="lg">
+              <span class="txt"><span class="nom">Le catalogue</span><span class="dit">Le vocabulaire du métier, partagé. Il ne porte aucun prix.</span></span>
+              <span class="chev"></span>
+            </div>
+          </div>
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Un écran court : on voit <b>tout ce qu'il y a</b> d'un coup d'œil, et on
+        entre dans le tableau seulement quand on le cherche.
+      </p>
+    </div>
+
+    <div class="prop">
+      <p class="sous">B — Tout sur un seul écran</p>
+      <div class="tel"><div class="ecran" data-s="q2b">
+        <div class="tete"><p class="sur caps">Réglages</p><h1>Tarifs &amp; catalogue</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="bloc">
+            <p class="t caps">Mes tarifs</p>
+            <div class="tarif"><span class="n">Main-d'œuvre</span><span class="p">280,00 €</span><span class="u">jour/homme</span></div>
+            <div class="tarif"><span class="n">Dépose carrelage</span><span class="p">18,00 €</span><span class="u">m²</span></div>
+            <div class="tarif"><span class="n">Pose faïence</span><span class="p">45,00 €</span><span class="u">m²</span></div>
+            <div class="tarif"><span class="n">Forfait déplacement</span><span class="p">35,00 €</span><span class="u">—</span></div>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Abattage — par technique et diamètre</p>
+            <table class="grille">
+              <tr><th>Diamètre</th><th>Pied</th><th>Démont.</th><th>Nacelle</th></tr>
+              <tr><td>20–30 cm</td><td>180</td><td>320</td><td class="vide">—</td></tr>
+              <tr><td>30–40 cm</td><td>240</td><td>420</td><td>560</td></tr>
+              <tr><td>40–50 cm</td><td>310</td><td>540</td><td>700</td></tr>
+              <tr><td>50–60 cm</td><td class="vide">—</td><td>680</td><td>880</td></tr>
+              <tr><td>60–80 cm</td><td class="vide">—</td><td>900</td><td class="vide">—</td></tr>
+              <tr><td>80 cm et +</td><td class="vide">—</td><td class="vide">—</td><td>1 400</td></tr>
+            </table>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Fente — par diamètre et hauteur</p>
+            <table class="grille">
+              <tr><th>Diamètre</th><th>1 m</th><th>2 m</th><th>3 m</th></tr>
+              <tr><td>20–30 cm</td><td>45</td><td>80</td><td class="vide">—</td></tr>
+              <tr><td>30–40 cm</td><td>60</td><td>110</td><td>160</td></tr>
+              <tr><td>40–50 cm</td><td class="vide">—</td><td>145</td><td>210</td></tr>
+            </table>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Dessouchage — par diamètre</p>
+            <table class="grille">
+              <tr><th>Diamètre</th><th>Rogneuse</th><th>Pelle</th></tr>
+              <tr><td>20–30 cm</td><td>90</td><td>140</td></tr>
+              <tr><td>30–40 cm</td><td>130</td><td>190</td></tr>
+              <tr><td>40–50 cm</td><td class="vide">—</td><td>260</td></tr>
+            </table>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Le catalogue partagé</p>
+            <div class="tarif"><span class="n">Abattage</span><span class="u">prestation</span></div>
+            <div class="tarif"><span class="n">Élagage</span><span class="u">prestation</span></div>
+            <div class="tarif"><span class="n">Broyeur de branches</span><span class="u">matériel</span></div>
+            <div class="tarif"><span class="n">Nacelle 16 m</span><span class="u">matériel</span></div>
+            <p class="mot">Ces mots sont <b>partagés entre tous les artisans</b> et ne portent aucun prix.</p>
+          </div>
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Tout est là, sans un appui de plus — mais l'écran fait <b>plus du double
+        de la hauteur</b> du précédent, avec trois grilles sur cinq seulement, et
+        le catalogue, qui n'est pas à vous, est posé sous vos prix.
+      </p>
+    </div>
+
+  </div>
+
+  <p class="avis">
+    <b>Je recommande A, fermement.</b> Trois raisons, et la troisième est la
+    seule qui compte vraiment. D'abord la hauteur : l'écran ci-contre n'en
+    montre que trois sur cinq et double déjà, et cinq grilles font un écran
+    qu'on ne parcourt plus. Ensuite l'usage : vos tarifs se modifient à la main,
+    les grilles se remplissent <b>toutes seules à partir de vos devis</b> — les
+    mettre au même niveau invite à les remplir d'avance, pour rien. Enfin, et
+    c'est décisif : <b>le catalogue n'est pas à vous.</b> C'est du vocabulaire
+    partagé entre tous les artisans, sans aucun prix. Posé sous vos tarifs, il
+    laisserait croire qu'un prix y est attaché — et une donnée inventée sur un
+    devis coûte plus cher qu'un appui de plus.
+  </p>
+
+  <!-- ══════════ QUESTION 3 ══════════════════════════════════════════ -->
+  <div class="q">
+    <p class="num">Question 3</p>
+    <h2>Un devis sans SIRET : bloquer l'envoi, ou seulement prévenir ?</h2>
+    <p>
+      Aujourd'hui, <strong>rien n'arrête</strong> un devis dont l'identité est
+      incomplète : il part sans SIRET ni IBAN, sans un mot. Dans les deux
+      écrans, le devis est <strong>écrit et prêt</strong> — ce qui manque est
+      votre identité, pas son travail.
+    </p>
+  </div>
+
+  <div class="rangee">
+
+    <div class="prop">
+      <p class="sous">A — Bloquer l'envoi</p>
+      <div class="tel"><div class="ecran" data-s="q3a">
+        <div class="tete"><p class="sur caps">M. Bernard</p><h1>Envoyer le devis</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="bloc">
+            <p class="recap">
+              Devis <b>D-2026-0042</b> — Abattage de deux chênes, 12 rue des Lilas.
+              <b>3 480,00 € TTC</b>, une date proposée : <b>vendredi 22 août</b>.
+            </p>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Ce qui manque à votre entreprise</p>
+            <div class="manque">
+              <span class="quoi"><span class="champ">SIRET</span><span class="pourquoi">Un devis sans SIRET n'est pas conforme.</span></span>
+              <span class="etat caps">Empêche</span>
+            </div>
+            <div class="manque">
+              <span class="quoi"><span class="champ">IBAN</span><span class="pourquoi">Votre client n'aurait pas où vous payer.</span></span>
+              <span class="etat caps">Empêche</span>
+            </div>
+            <a class="aller">Compléter mon entreprise — 2 minutes →</a>
+
+            <span class="geste eteint">Envoyer à M. Bernard</span>
+            <p class="sous_geste">
+              <b>Votre devis est gardé tel quel.</b> Il partira dès que ces deux
+              lignes seront remplies.
+            </p>
+          </div>
+        </div>
+        <div class="bas"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span><i class="q1"></i></div>
+      </div></div>
+      <p class="note">
+        Le devis <b>n'est jamais bloqué à l'écriture</b> : c'est le départ qui
+        attend. Et l'écran mène là où ça se répare.
+      </p>
+    </div>
+
+    <div class="prop">
+      <p class="sous">B — Prévenir seulement</p>
+      <div class="tel"><div class="ecran" data-s="q3b">
+        <div class="tete"><p class="sur caps">M. Bernard</p><h1>Envoyer le devis</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="bloc">
+            <p class="recap">
+              Devis <b>D-2026-0042</b> — Abattage de deux chênes, 12 rue des Lilas.
+              <b>3 480,00 € TTC</b>, une date proposée : <b>vendredi 22 août</b>.
+            </p>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Ce qui manque à votre entreprise</p>
+            <p class="prevenir">
+              Ce devis partira <b>sans SIRET et sans IBAN</b>. Il ne sera pas
+              conforme, et votre client n'aura pas où vous payer.
+            </p>
+            <a class="aller">Compléter mon entreprise — 2 minutes →</a>
+
+            <span class="geste">Envoyer quand même</span>
+            <p class="sous_geste">
+              Une fois parti, <b>le document garde ce qu'il portait</b> : le
+              corriger ensuite ne change pas celui que le client a reçu.
+            </p>
+          </div>
+        </div>
+        <div class="bas"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span><i class="q1"></i></div>
+      </div></div>
+      <p class="note">
+        Vous restez maître de l'envoi — mais un devis <b>figé sans SIRET</b> ne
+        se rattrape plus : il faut le refaire et le renvoyer.
+      </p>
+    </div>
+
+  </div>
+
+  <p class="avis">
+    <b>Je recommande A, bloquer l'ENVOI — jamais la rédaction.</b> La raison
+    tient à une chose que vous connaissez déjà : <b>un devis fige votre identité
+    au moment où il part.</b> Le corriger le lendemain ne change pas celui que
+    le client a sous les yeux, ni le PDF qu'il a téléchargé. Un simple
+    avertissement se lit une fois, se contourne d'un doigt, et se paie deux
+    semaines plus tard quand un client demande le SIRET. Deux minutes de saisie,
+    une fois, contre un devis à refaire — et l'écran de blocage n'est pas un
+    mur : il vous emmène là où ça se répare, et vous rend votre devis intact.
+  </p>
+
+</div>

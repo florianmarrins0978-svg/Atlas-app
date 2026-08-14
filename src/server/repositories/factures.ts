@@ -6,6 +6,7 @@ import {
   chantiers,
   clients,
   devis,
+  entreprises,
   factures,
   lignesDevis,
   lignesFacture,
@@ -95,6 +96,15 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
       .where(eq(lignesDevis.devisId, devisSource.id))
       .orderBy(asc(lignesDevis.ordre));
 
+    // Le régime de TVA se lit MAINTENANT, pour être figé dans la facture — une
+    // pièce comptable garde ce qu'elle portait le jour de son émission
+    // (migration 0039).
+    const [entrepriseCourante] = await tx
+      .select({ regimeTva: entreprises.regimeTva })
+      .from(entreprises)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .limit(1);
+
     const numeroCommercial = await attribuerNumeroFacture(tx, ctx.entrepriseId);
     const echeance = new Date(maintenant.getTime() + DELAI_PAIEMENT_JOURS * 86_400_000);
 
@@ -111,6 +121,11 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
         entrepriseNom: devisSource.entrepriseNom,
         entrepriseAdresse: devisSource.entrepriseAdresse,
         entrepriseSiret: devisSource.entrepriseSiret,
+        // Le régime au jour de l'émission, figé comme le reste de l'identité
+        // (migration 0039). Lu sur l'entreprise et non sur le devis : un devis
+        // n'imprime pas la mention de l'article 293 B, il n'avait donc aucune
+        // raison de la porter.
+        entrepriseRegimeTva: entrepriseCourante?.regimeTva ?? null,
         entrepriseEmail: devisSource.entrepriseEmail,
         entrepriseTelephone: devisSource.entrepriseTelephone,
         entrepriseIban: devisSource.entrepriseIban,
@@ -209,6 +224,7 @@ function donneesFacture(
     dateEcheance: f.dateEcheance,
     numeroDevis,
     entrepriseNom: f.entrepriseNom,
+    regimeTva: f.entrepriseRegimeTva,
     entrepriseAdresse: f.entrepriseAdresse,
     entrepriseSiret: f.entrepriseSiret,
     entrepriseTelephone: f.entrepriseTelephone,

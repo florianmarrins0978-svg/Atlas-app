@@ -457,7 +457,7 @@ export function trierParDatePlanifiee<T extends { datePlanifiee?: string | null 
  *
  * **Le premier essai avait corrigé autre chose** : la fiche annonçait
  * « Brouillon » et proposait « Ajouter des photos » sur un devis prêt à partir
- * (§86 d'`ARCHITECTURE.md`). C'était un vrai défaut, mais ce n'était pas
+ * (§98 d'`ARCHITECTURE.md`). C'était un vrai défaut, mais ce n'était pas
  * celui-là. Ce qu'il demande ici n'est pas que la fiche dise mieux : c'est de
  * **ne plus repasser par la fiche du tout**.
  *

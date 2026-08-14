@@ -40,7 +40,9 @@ async function main() {
   await page.waitForURL(`${BASE}/`);
 
   // --- 1. On la trouve depuis les réglages ---------------------------------
-  await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
+  // Depuis le 14 août 2026, les prix vivent sous « Tarifs & catalogue » —
+  // main-d'œuvre, machine et matière au même endroit (`ARCHITECTURE.md` §96).
+  await page.goto(`${BASE}/reglages/tarifs`, { waitUntil: "networkidle" });
   const lien = page.getByRole("link", { name: /Mes prix/i });
   assert.equal(await lien.count(), 1, "Aucun lien vers les grilles dans les réglages : l'écran est introuvable.");
   await lien.click();

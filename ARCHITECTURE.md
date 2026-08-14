@@ -6632,6 +6632,1123 @@ quatre cas, dont « la colonne Déductible affiche 0.00 € : le ticket n'y est
 pas ». C'est le mot exact du patron, rendu par une machine.
 
 ---
+
+## 86. Les réglages : deux niveaux, quatre rôles, et ce qui n'a pas d'interrupteur
+
+**Maquette du 13 août 2026, premier lot d'une série** —
+`maquettes/atlas-reglages-plan.html`, contrôlée par
+`maquettes/verifier-atlas-reglages-plan.mjs`. Aucune ligne de `src/` n'a été
+touchée : c'est la règle `CLAUDE.md` §3 bis.
+
+### Pourquoi le plan d'abord, et pas la première rubrique
+
+Le patron a listé dix rubriques d'un coup, puis : *« à toi de décider si on
+fait tout d'un coup ou rubrique par rubrique pour qu'il n'y ait pas de
+problème »*. Les dix héritent des trois mêmes choix — les deux niveaux, le rôle
+qui voit, la forme de l'interrupteur. Dessiner une rubrique d'abord aurait figé
+ces trois choix sans qu'ils soient regardés, et les neuf suivantes auraient été
+à refaire le jour où l'un d'eux bougeait.
+
+### Les deux niveaux
+
+Sa phrase : *« un salarié peut changer ses notifications ou son mot de passe,
+mais il ne doit évidemment pas pouvoir modifier les tarifs de l'entreprise ou
+les coordonnées bancaires. »* D'où **« Moi »** et **« Mon entreprise »**, dans
+cet ordre : ce qui appartient à la personne vient avant ce qui appartient à
+l'entreprise, parce que c'est le seul ensemble que tout le monde possède.
+
+### Une rubrique absente n'est pas une rubrique masquée
+
+`docs/QUESTIONS.md` §10 a tranché le 7 août que « sans les prix » ne peut pas
+être un masquage à l'écran : ce qu'un rôle n'a pas le droit de voir **ne doit
+pas sortir du serveur**. La même règle vaut ici, et le contrôle la tient : il
+cherche les mots interdits dans **tout le texte** de l'écran, pas dans ses
+lignes visibles. Une rubrique rendue puis grisée le ferait rougir.
+
+C'est aussi pourquoi la liste du salarié est **courte, et dit pourquoi**. Une
+rubrique d'entreprise grisée serait pire que son absence : elle annoncerait
+qu'il existe quelque chose à obtenir.
+
+### Le quatrième rôle n'est acquis nulle part
+
+`membres_entreprise.role` ne connaît que `proprietaire` et `membre` ;
+`QUESTIONS.md` §10 décrit trois niveaux (l'éditeur, le patron, le salarié). Le
+**commercial** demandé le 13 août n'existe ni en base, ni dans les décisions
+écrites. Il est **dessiné pour être tranché**, et la maquette le dit en toutes
+lettres sous son écran. Le voir sur une planche ne vaut pas décision.
+
+### Ce qui porte un interrupteur, et ce qui n'en portera jamais
+
+Sa règle : *« seulement à celles où la désactivation n'entraîne pas de problème
+juridique ou moral ou de dysfonctionnement à l'appli »*.
+
+| Porte un interrupteur | N'en portera jamais |
+|---|---|
+| Ce qui s'imprime **en plus** : acompte, durée de validité, conditions particulières, texte de bas de page, logo | Les mentions légales de la **facture** — pénalités au taux de trois fois le taux légal, indemnité forfaitaire de 40 €, franchise de l'art. 293 B quand le taux est nul (`src/server/pdf/facture-pdf.ts`) |
+| Une notification, canal par canal | Le nom, l'adresse et le SIRET de l'émetteur |
+| Une intégration extérieure | La numérotation continue des factures (`entreprise_compteurs`) |
+| Une suggestion de l'agent | La conservation légale et les traces du RGPD |
+
+**La ligne scellée est posée DANS la liste, à sa place**, avec le mot
+« Obligatoire » et sa raison en une phrase. La reléguer en pied d'écran l'aurait
+rendue invisible là où il ira chercher le bouton — et un réglage introuvable se
+lit comme un réglage oublié.
+
+### Deux leçons payées sur cette maquette
+
+**Un exemple chiffré à côté d'un champ est un mensonge en attente.** Le champ de
+l'acompte affichait « soit 1 044 € sur 3 480 € ». Une maquette sans script ne
+recalcule pas : taper 15 laissait le montant de 30 % à côté. **Vu en regardant
+la capture, jamais par un contrôle vert** (`CLAUDE.md` §5) — les cinquante
+contrôles étaient au vert pendant que l'écran se contredisait. Un contrôle
+existe maintenant pour que ça ne revienne pas : rien, à côté d'un champ, ne doit
+contenir un montant, un chiffre ou un mois.
+
+**Une capture peut être écrite par une casse volontaire.** Éprouver qu'un
+contrôle sait échouer écrit ses captures dans `maquettes/vues/` comme une
+exécution normale. La planche a été relue sur une image produite par la version
+cassée, où la ligne scellée portait un interrupteur — exactement ce qu'elle
+interdit. **Regarder l'écran suppose de savoir quelle exécution l'a écrit :**
+relancer le contrôle sur le fichier sain avant de conclure.
+
+
+### Les planches portent désormais la charte de l'application, valeur pour valeur
+
+**Sa consigne, le 13 août 2026 :** *« toujours en respectant le style de l'appli
+ultra luxe et très moderne ».*
+
+Les maquettes du dépôt portaient jusque-là **un nuancier à elles** — crème
+`#edece6`, bronze `#8f7130` — proche des jetons sans leur être égal. Deux crèmes
+côte à côte, ça se voit ; et surtout, une planche qui n'est pas dans la couleur
+de l'écran fait **valider une allure qui ne sera pas la sienne**.
+
+`atlas-reglages-plan.html` recopie donc les jetons de `src/lib/design-tokens.ts`
+— crème `#f5f3ee`, plage `#faf9f5`, encre `#1c1c1a`, gris `#8a8578`, or
+`#b98b47`, vert pin `#2f3b2f`, filet `rgba(28,28,26,.12)` — et **le contrôle lit
+le fichier de jetons pour les comparer**. Changer une couleur ici sans la
+changer là-bas rougit, en nommant le jeton et la valeur attendue.
+
+**Ce que « ultra luxe » veut dire dans CETTE charte, et c'est contre-intuitif :**
+ce qu'elle refuse. `cardShadow` vaut « none » depuis le 10 août — l'écran qu'il a
+retenu n'a pas une seule ombre ; `radius.card` vaut 4 px ; `champPlage` n'a
+aucune bordure ; il y a deux accents, et le partage de leurs rôles n'est pas
+décoratif (le vert pin pour ce qu'on FAIT, l'or pour ce qu'on LIT). Un dégradé
+ou une ombre portée ajoutés « pour faire haut de gamme » iraient donc **contre**
+son choix. Un second contrôle interdit toute ombre dans l'écran — celle du
+cadre du téléphone, qui n'est pas l'écran, est nommée comme exception.
+
+**Trois retouches qui en découlent, et qui valent pour les planches suivantes :**
+les plages de saisie perdent leur liseré (la charte tient par des filets, jamais
+par des cadres) ; la ligne grise sous un intitulé passe de 12,5 à 11,5 px
+(`texteSituation`), sans quoi elle dispute la place au serif ; les marges de
+page passent de 26 à 24 px (`spacing.pageX`).
+
+**Dette laissée en l'état, et assumée :** les neuf planches antérieures gardent
+l'ancien nuancier. Les reprendre d'un coup mêlerait un changement d'identité à
+un changement mécanique sur des écrans déjà validés — c'est exactement ce que
+`design-tokens.ts` a refusé de faire pour le nom `rust`. Elles passeront à la
+charte quand leur sujet sera rouvert. `TODO.md` §0 quatervicies le porte.
+
+**Corrigé au passage, parce qu'on ne respecte pas une charte dont la
+documentation ment :** `docs/DESIGN_SYSTEM.md` annonçait encore Playfair Display
+et Inter rapatriées par `next/font` (faux depuis le 10 août : polices du
+système), et la terre cuite `#B25A2E` sur les documents (faux depuis le 10 août :
+l'or). Le code fait foi, `CLAUDE.md` §1.
+
+
+### Le gros plan : une loupe, jamais un téléphone élargi
+
+**Sa demande, le 13 août 2026 :** *« fais-moi les planches en gros plan que je
+les voie mieux, mais tout dans un .html comme d'habitude ».*
+
+**La solution évidente était la mauvaise.** Élargir le téléphone à 560 px aurait
+donné exactement la même impression de confort — et un mensonge : les libellés
+auraient tenu sur une ligne, les cibles auraient paru généreuses, et rien de
+cela n'aurait été vrai sur son iPhone. C'est le piège de §78, sous un autre
+visage : mesurer sur une planche au lieu de mesurer sur l'écran.
+
+`zoom` agrandit l'écran **entier, dans ses proportions**. L'écran continue de
+mesurer 390 px pour lui-même : une cible de 44 px reste une cible de 44 px, un
+libellé qui passe à la ligne y passe encore.
+
+**La loupe ne s'applique qu'au-dessus de 1000 px, et c'est ce qui protège les
+soixante contrôles.** Ils tournent en iPhone 13, où elle est éteinte, et
+mesurent donc les vraies dimensions. Un contrôle le vérifie explicitement —
+c'est le plus important des deux : une loupe étendue par mégarde ferait passer
+une cible de 30 px pour 44 sans que rien ne rougisse. Un second contexte, en
+1600 px, vérifie qu'elle agit bel et bien et écrit la capture en gros plan.
+
+**Une planche par rangée, son texte à côté.** Quatre téléphones de front
+restent quatre miniatures, loupe ou pas. La colonne de droite reprend la hauteur
+que la loupe a gagnée, au lieu de laisser un vide.
+
+**Le défaut vu à l'œil, encore une fois :** sans une troisième rangée souple
+sous le texte, la grille répartissait la hauteur du téléphone entre ses deux
+rangées et le libellé flottait à mi-écran, seul au milieu du vide. Le `1fr` le
+plaque en haut ; le décalage qui l'aligne sur le **surtitre** de l'écran — et
+non sur le bord du cadre — se calcule à 37 px multipliés par la loupe, puisque
+celle-ci agrandit le téléphone et pas la colonne de texte. Deux contrôles neufs
+tiennent l'un et l'autre.
+
+
+### « Le style de toutes les pages, pas du devis et facture »
+
+**Sa consigne du 13 août 2026.** Elle a valu quatre corrections, toutes vraies,
+et **aucune n'avait été vue par un contrôle** — la planche était verte sur
+soixante-deux points pendant qu'elle parlait une autre grammaire que les écrans.
+
+**Ce qui a été relevé dans le code, et non approché à l'œil**
+(`src/components/atlas/EnTeteEcran.tsx`, `AtlasBottomNav.tsx`,
+`src/app/planning/PlanningClient.tsx`, `src/app/termines/FilTermines.tsx`) :
+
+| | La planche disait | Les écrans disent |
+|---|---|---|
+| Retrait de page | 24 px | **26 px** |
+| Titre | 34 px / 1,0 / −0,02 em | **36 px / 1,02 / −0,018 em** |
+| Fin de l'en-tête | rien | **un cheveu**, en retrait de 26 px des deux bords |
+| Titre de section | or, suivi d'un filet qui s'étire à droite | **gris**, précédé d'un trait sur toute la largeur |
+| Barre basse | 9 px / 0,15 em | **9,5 px / 0,28 em**, l'onglet actif monté de 2 px |
+
+**Le retrait de 26 px contredit `spacing.pageX`, qui vaut `px-6` — 24 px.** Ce
+n'est pas une erreur des écrans : `spacing` est l'ANCIENNE échelle, et les
+écrans refondus le 10 août emploient tous `px-[26px]`. Seuls les écrans jamais
+repris (`error.tsx`, `loading.tsx`, `Notifications.tsx`) sont restés à 24. Une
+prochaine session qui lirait `spacing.pageX` de bonne foi se tromperait — d'où
+cette ligne.
+
+**La cause commune des libellés rétrécis : l'écran de la planche était trop
+étroit.** Le cadre du téléphone lui prenait 54 px — 32 de marge de page, 22 de
+coque — et il ne mesurait plus que 336 px au lieu de 390. La barre basse de
+l'application n'y tenait pas, alors les planches successives ont rapetissé sa
+chasse jusqu'à 9 px / 0,15 em, en le justifiant par un commentaire recopié de
+planche en planche. **On validait une barre plus petite que la vraie.** Sous
+520 px, la coque s'efface donc et l'écran occupe toute la largeur du téléphone
+qui le regarde ; la chasse de l'application y tient sans rien rétrécir.
+
+**Deux filets qui se suivent dessinent une bande vide.** Le cheveu de l'en-tête
+tombait 30 px au-dessus du trait du premier bloc, et le filet de la dernière
+ligne d'une liste 30 px au-dessus du trait de la section suivante. Le premier
+bloc ne porte donc plus de trait, et la dernière ligne plus de filet — un filet
+qui ne sépare plus rien n'est pas un filet. **Vu sur la capture, jamais par un
+contrôle** ; il en existe un désormais, qui mesure l'écart entre filets
+successifs.
+
+**Une règle juste, placée trop tôt, ne s'applique pas.** La règle qui efface la
+coque avait été posée avant `.tel{padding:11px}` : à spécificité égale, la
+dernière déclaration l'emporte, et l'écran restait à 368 px. Le contrôle a
+désigné le bon coupable en une ligne — « 368 px » — parce qu'il mesurait la
+largeur au lieu de vérifier la présence de la règle.
+
+
+---
+
+## 87. L'identité de l'entreprise : trois manques que la maquette a révélés
+
+**Deuxième lot des réglages, dessiné le 13 août 2026** —
+`maquettes/atlas-reglages-identite.html`, cinq écrans, contrôlée par
+`maquettes/verifier-atlas-reglages-identite.mjs`. Rien dans `src/`.
+
+Dessiner cette rubrique a obligé à relire ce que la base porte et ce que le PDF
+imprime. **Trois écarts en sont sortis, et aucun n'est cosmétique.**
+
+### 1. Le régime de TVA est DEVINÉ, et une pièce comptable en dépend
+
+`facture-pdf.ts` imprime « TVA non applicable, art. 293 B du CGI » quand le taux
+appliqué vaut zéro. Le régime fiscal de l'entreprise est donc **déduit d'un
+chiffre saisi chantier par chantier**.
+
+Les deux sens sont faux : un artisan en franchise qui laisse 20 % par mégarde
+perd une mention obligatoire ; un assujetti qui pose 0 % voit s'imprimer sur sa
+facture une phrase qui ne le concerne pas. Le régime doit être **déclaré une
+fois** et commander le reste — c'est ce que dessine le troisième écran.
+
+### 2. Le numéro de TVA intracommunautaire n'existe pas
+
+Ni en base, ni sur le document. Pour une entreprise assujettie, c'est une
+mention attendue sur la facture.
+
+**Réserve, et elle est de la même nature que celle de `docs/A-FAIRE.md` §6 :**
+le détail des mentions obligatoires n'a pas pu être vérifié à sa source depuis
+cet environnement — le mandataire réseau refuse les sites publics. La maquette le
+dit à l'écran, et renvoie à son comptable. Ne pas coder sur la foi de cette
+planche.
+
+### 3. Le téléphone et l'e-mail sont saisis, et ne s'impriment nulle part
+
+Le bloc ÉMETTEUR de `document-commun.ts` porte trois lignes : le nom, l'adresse,
+« SIRET … ». C'est tout. Les deux coordonnées sont donc saisies dans les
+réglages, stockées, et invisibles pour le client — **qui n'a aucun moyen
+d'appeler l'artisan depuis le devis qu'il vient de recevoir**.
+
+### Deux décisions de forme, qui valent pour les rubriques suivantes
+
+**Le SIREN ne se saisit pas.** Il EST les neuf premiers chiffres du SIRET.
+L'écran le montre sous le champ plutôt que de le redemander : deux saisies, ce
+serait deux façons de se contredire, et c'est celui qui saisit qui paierait
+l'écart. Le contrôle vérifie la correspondance des neuf chiffres.
+
+**Le manque se signale sur la LIGNE, et dit ce qu'il empêche.** Un champ vide
+garde son étiquette (« SIRET — manquant »), son trait passe à la couleur
+d'alerte, et la phrase dit « vos factures ne sont pas conformes » plutôt que
+« champ requis » — qui ne fait agir personne. Et le champ **reste vide** : un
+exemple plausible glissé à la place d'une donnée absente finirait imprimé sur
+une pièce comptable (`docs/AGENT.md` §3).
+
+**Conséquence sur les filets :** la règle « la dernière ligne d'une liste perd
+son filet » vaut pour un SÉPARATEUR. Sur une ligne en manque, le trait n'est plus
+un séparateur mais le signalement lui-même — il reste. Deux lignes vides dont une
+seule soulignée se lisaient comme un défaut d'affichage.
+
+### La charte est désormais un module, pas une copie par planche
+
+`maquettes/charte.mjs` porte les trois contrôles communs — couleurs comparées
+aux jetons, absence d'ombre, grammaire des écrans — et le retrait de 26 px.
+Recopier ces règles dans chaque vérificateur aurait produit ce que `CLAUDE.md`
+§3 interdit : deux implémentations qui divergent. Le jour où un jeton change, un
+seul fichier bouge.
+
+**Un défaut vu à l'œil, encore :** l'encart d'alerte, posé hors d'un bloc,
+touchait les deux bords de l'écran pendant que tout le reste s'arrêtait à 26 px.
+Le contrôle du retrait est né de là, et il balaie tous les écrans des deux
+planches.
+
+**Et un contrôle juste qui accusait à tort :** la mesure des cibles de 44 px
+comptait les lignes REPLIÉES — le numéro de TVA, caché tant que la franchise est
+choisie, mesurait 0 px et faisait rougir un écran sain. Une ligne qu'on ne peut
+pas toucher n'a pas de cible à tenir. Une alerte qui accuse à tort coûte plus
+cher que pas d'alerte (`AGENTS.md`).
+
+
+### Le premier jour d'un artisan : six faits qui rendent ce lot urgent
+
+**Sa remarque du 13 août 2026 :** *« quand l'application sera commercialisée, le
+devis ne comportera aucune information, il sera vierge, et c'est avec ces
+informations-là que le devis devra se remplir automatiquement ».*
+
+Elle a été vérifiée dans le code, et elle est plus lourde qu'elle n'en a l'air.
+**Six faits, tous constatés, qui s'enchaînent :**
+
+1. **Son banc ne montre JAMAIS l'état vierge.** `src/server/db/seed.ts` crée
+   « Atelier Démo » avec SIRET, adresse, téléphone, e-mail **et** IBAN. Tout ce
+   qu'il éprouve part donc d'une entreprise complète — l'écran du premier jour
+   n'a jamais été vu par personne, ni par lui, ni par nous.
+2. **Il n'existe aucun parcours d'inscription.** `creerEntreprise` n'est appelé
+   que par le jeu de départ et les suites de tests. `src/app/` ne porte que
+   `/login`. Un artisan ne peut pas créer son entreprise depuis l'application.
+3. **L'identité ne se saisit nulle part dans les réglages.** Les seuls champs
+   qui écrivent `entreprises` sont dans
+   `src/app/chantiers/[id]/devis-complet/` — c'est-à-dire **au milieu de la
+   rédaction d'un devis à la main**. Un artisan qui suit le parcours normal
+   (dictée → prix → devis) n'a jamais l'occasion de saisir son SIRET.
+4. **Rien ne vérifie l'identité avant l'envoi.** Aucun garde-fou dans
+   `chantiers/[id]/export/`. Le premier devis peut partir sans SIRET, sans
+   adresse et sans IBAN, **sans un mot**.
+5. **Un repli poli masque déjà le manque :** `src/app/chantiers/[id]/export/page.tsx` écrit
+   `entrepriseNom ?? "Votre entreprise"` dans le message au client. Le devis
+   d'un artisan sans nom part donc au nom de « Votre entreprise ».
+6. **Le devis FIGE l'identité au moment de sa création** (`devis.ts`, le devis
+   recopie `entreprise.nom`, `.siret`, `.iban`…). C'est **la bonne décision** —
+   une pièce comptable doit garder l'identité qu'elle portait le jour de son
+   émission, et non suivre les corrections d'après. Mais la conséquence n'est
+   écrite nulle part : **compléter son SIRET ce soir ne répare aucun devis déjà
+   créé**. Sans avertissement, l'artisan corrige, rouvre son ancien devis, et
+   conclut à une panne.
+
+### Ce que la planche en tire
+
+Deux écrans de plus dans `atlas-reglages-identite.html` :
+
+- **« Le premier jour »** — les réglages d'un compte neuf. Trois rubriques
+  marquées « À REMPLIR », et une phrase qui dit le mécanisme dans ses mots :
+  *« votre devis se remplira tout seul avec ce que vous mettez ici »*. Ce qui
+  peut attendre — tarifs, équipe — n'est **pas** mis sur le même plan : tout
+  marquer en rouge ferait un écran qui crie, et qu'on cesse de lire.
+- **« Ce qui est figé »** — un devis déjà créé, son SIRET absent nommé sur sa
+  ligne, et l'avertissement qui dit que la correction vaudra pour les
+  **prochains** devis.
+
+**Ce lot cesse d'être une rubrique de confort.** Tant que l'identité ne se
+saisit qu'au détour d'un devis manuel, Atlas ne peut pas être confié à un
+artisan : son premier document partirait irrégulier. `TODO.md` §0 quatervicies
+le porte, et c'est désormais le point le plus lourd de la série.
+
+
+---
+
+## 88. L'équipe et les rôles : le mot était déjà pris, et le cloisonnement n'existe pas
+
+**Troisième lot des réglages, dessiné le 13 août 2026** —
+`maquettes/atlas-reglages-equipe.html`, quatre écrans, contrôlée par
+`maquettes/verifier-atlas-reglages-equipe.mjs`. Rien dans `src/`.
+
+### « Équipe » désigne déjà autre chose, et les fondre serait une faute
+
+Dans Atlas, une **équipe** est une FILE DE PLANNING : combien de chantiers
+partent en même temps (`entreprises.nombre_equipes`, 1 à 20), avec un nom
+facultatif (§51). **Ce n'est pas un compte.**
+
+Les deux ne se recouvrent pas, et c'est structurel : une file peut s'appeler
+« Malik » — une personne — ou « Équipe B », deux ouvriers qui n'ouvriront jamais
+l'application ; à l'inverse un commercial a un compte et ne conduit aucun
+chantier. La rubrique tient donc **deux listes séparées**, et l'écran le dit :
+« une équipe n'est pas un compte ». Les fondre aurait produit la question
+insoluble *« pourquoi mon commercial apparaît-il dans le planning ? »*.
+
+Le contrôle tient la distinction par une mesure simple : **une file du planning
+ne porte aucun rôle.** Si un jour les deux listes fusionnent, il rougit.
+
+### Trois réserves, toutes vérifiées dans le code
+
+1. **Le rôle « commercial » n'existe pas.** `membres_entreprise.role` ne connaît
+   que `proprietaire` et `membre`.
+2. **Aucun parcours d'invitation.** `src/server/repositories/membres-entreprise.ts`
+   sait ajouter et retirer un membre ; aucun écran ne l'appelle, et rien
+   n'envoie d'invitation. Un patron ne peut pas donner un accès.
+3. **Le cloisonnement en LECTURE n'est pas codé, et c'est le plus grave.**
+   `exigerProprietaire` protège vingt-trois points d'écriture ; `getRole` n'est
+   appelé dans **aucun** écran. **Un « membre » voit aujourd'hui tous les prix,
+   tous les devis, tous les montants.** C'est exactement ce que
+   `docs/QUESTIONS.md` §10 refuse.
+
+### Deux décisions de forme, qui portent la règle du §10
+
+**Un rôle dit ce qu'il FERME, pas seulement ce qu'il ouvre.** Une liste qui
+n'énumère que les droits laisse croire que le reste est permis. Le patron, lui,
+n'a aucune ligne de refus — une croix chez lui serait fausse — mais l'écran
+prévient qu'un second patron peut tout défaire, coordonnées bancaires
+comprises.
+
+**L'écran d'un salarié ne laisse AUCUNE PLACE pour un montant.** Pas de colonne
+de prix, pas de total, et surtout **pas d'emplacement vide** : un blanc à la
+place d'un chiffre dirait « il y a un montant ici, on te le refuse », et le
+premier réflexe serait d'ouvrir le PDF — qui, lui, s'ouvre. La phrase de
+clôture le dit dans ces termes : *le serveur ne les a pas envoyés*.
+
+### Seul, on ne parle pas de rôles
+
+Même arbitrage que pour les équipes (§51) : à une seule personne, aucun choix de
+rôle n'est proposé et le bloc des files disparaît. Proposer d'arbitrer des
+permissions quand il n'y a personne à distinguer serait un piège.
+
+### La question du 7 août, tranchée le 13 — et autrement que prévu
+
+*« Le salarié voit-il le planning de toute l'entreprise, ou seulement ses
+chantiers à lui ? »* — réponse remise le 7 août, donnée le 13 :
+
+> *« Accès à tout, mais le patron choisira s'il a accès qu'à ses chantiers ou à
+> tout. »*
+
+**Ce n'est ni l'une ni l'autre des deux options proposées**, et c'est la leçon :
+la question posée en « ou bien / ou bien » appelait un troisième terme. C'est un
+**réglage par personne**, posé sous le rôle du salarié — deux salariés peuvent
+ne pas voir la même chose.
+
+**Le défaut est « tout le planning ».** Un salarié invité ce matin voit
+l'ensemble tant que son patron n'a rien restreint : restreindre est un geste,
+pas un état de départ. Le contrôle tient ce défaut explicitement — inverser la
+valeur par défaut le ferait rougir, parce qu'un réglage de confidentialité qui
+change de sens en silence ne se remarque jamais.
+
+**Le rôle « commercial » est validé le même jour**, tel qu'il est dessiné.
+`docs/QUESTIONS.md` §10 porte désormais le tableau des quatre rôles, et
+`docs/A-FAIRE.md` §10 ce qui bloque la commercialisation.
+
+### Le défaut vu à l'œil, et le contrôle qui en naît
+
+Un `.bloc` imbriqué dans un autre reprenait sa marge de 26 px et se retrouvait à
+**52** — la liste « ce que ça change » était décalée à droite de tout le reste.
+`controlerRetrait` ne regardait que les enfants directs du corps et ne pouvait
+pas l'attraper ; il mesure désormais **tous** les blocs, imbriqués compris, et
+la règle vaut pour les trois planches.
+
+Corrigé au passage : le titre disait « ce que ça ouvre » au-dessus d'une liste
+qui contient aussi des refus. Il dit « ce que ça change ».
+
+
+---
+
+## 89. Tarifs et catalogue : trois familles, et ce qui n'appartient pas à l'artisan
+
+**Quatrième lot des réglages, dessiné le 13 août 2026** —
+`maquettes/atlas-reglages-tarifs.html`, quatre écrans, contrôlée par
+`maquettes/verifier-atlas-reglages-tarifs.mjs`. Rien dans `src/`. C'est la
+dernière des quatre priorités du patron.
+
+### Trois choses existaient déjà, et elles n'étaient pas distinguées
+
+| | Où c'est | Ce que c'est |
+|---|---|---|
+| **Ses tarifs** | `tarifs` (intitulé, prix, unité) | Une liste **plate**, à lui, éditée sur l'écran des réglages |
+| **Cinq grilles de prix** | `src/lib/grille-prix.ts`, `/reglages/prix` | Elles naissent **vides** et apprennent de ses devis (`lecons-prix.ts`) |
+| **Le catalogue** | `catalogue_prestations`, `catalogue_materiels` | **Partagé**, tenu par l'éditeur, le même chez tous — les mots, jamais les prix |
+
+**La distinction entre le premier et le troisième n'était écrite nulle part**, et
+l'écran des réglages les mettait côte à côte sans le dire : un artisan qui
+modifie « ses tarifs » ne savait pas s'il touchait quelque chose qui lui
+appartient. La planche le dit à l'écran plutôt que dans une documentation que
+personne n'ouvre.
+
+### Ce que la planche tranche
+
+**Trois familles — prestations, main-d'œuvre, matériel — et la colonne n'existe
+pas en base.** `tarifs` porte un intitulé, un prix et une unité, rien qui les
+range.
+
+**L'unité SUIT la famille.** Une main-d'œuvre se compte en temps (heure,
+demi-journée, journée), un matériel à la journée, une prestation au forfait ou à
+l'unité. Proposer les mêmes vingt unités aux trois obligerait à chercher
+« heure » dans une liste longue, et à se tromper une fois sur dix — l'erreur ne
+se voyant que sur le devis du client. Le contrôle vérifie que **les jeux
+diffèrent** : s'ils devenaient identiques, la famille ne servirait plus à rien.
+
+**Un prix sans unité n'est pas un prix.** « Évacuation 90 € » ne dit pas si
+c'est par mètre cube ou par voyage. Le manque est signalé **sur la ligne**, dans
+la couleur d'alerte — même grammaire que le SIRET manquant du §87.
+
+**Une grille vide se dit vide, et dit pourquoi.** C'est l'état normal du premier
+jour : Atlas n'a pas encore vu de haie passer. Sans un mot, une grille vide se
+lit comme une panne — et la phrase reprend la règle du produit dans ses termes :
+*il préfère se taire qu'inventer*.
+
+### Le contrôle des bandes vides, élargi — et le faux positif qu'il a fallu ôter
+
+Il ne surveillait qu'UN écran par planche, et la planche des tarifs en a laissé
+passer une sur un autre. Élargi à tous les écrans, **il a immédiatement trouvé
+un vrai défaut sur la planche de l'équipe** (30 px de vide entre le dernier
+choix de rôle et le bloc suivant) — mais aussi **cinq faux positifs** : une
+liste dont chaque ligne porte un filet met 39 px entre deux traits, et c'est
+normal.
+
+Le contrôle regarde donc désormais **s'il y a du texte entre les deux filets**,
+et pas seulement l'écart. Sans cette précaution il accusait à tort sur une
+planche saine — et une alerte qui désigne le mauvais coupable coûte plus cher
+que pas d'alerte (`AGENTS.md`).
+
+
+### Ajouter et supprimer un tarif — et ce que la suppression ne casse pas
+
+**Sa demande du 13 août 2026 :** *« pouvoir aussi ajouter ou supprimer du
+matériel, ou un prix, ou un machin ».* Les deux gestes manquaient à la planche.
+
+**UN GESTE D'AJOUT PAR FAMILLE, et qui nomme la famille.** « Ajouter un
+matériel » ferme la liste du matériel ; « Ajouter » tout court, en tête d'écran,
+obligerait à choisir la famille sur un écran de plus — alors que c'est
+précisément elle qui commande les unités proposées ensuite (§89). Le contrôle
+vérifie que chaque geste **nomme** ce qu'il ajoute et **ferme** la liste de sa
+famille.
+
+**LA SUPPRESSION VIT AU BAS DE LA FICHE, jamais dans la liste.** Une corbeille
+posée sur chaque ligne se touche du pouce en faisant défiler. Elle est en texte
+et non en aplat : un bouton rouge plein dans un écran de réglages attire l'œil
+avant tout le reste, et le rouge de cette charte est réservé à **une seule
+chose** — confirmer une action destructive.
+
+**Et elle demande confirmation, en disant ce qu'elle NE casse PAS.** C'est le
+point qui compte, et il est vérifié dans le code plutôt que supposé :
+
+- `supprimerTarif` pose `deletedAt` — **rien n'est réellement effacé** ;
+- **aucune ligne de devis ne pointe vers un tarif** : `lignes_prix` copie le
+  libellé et le prix au moment où elle est écrite. Un devis déjà fait ne bouge
+  donc pas, et une facture non plus.
+
+La feuille l'écrit avant le geste : *« Vos devis et vos factures n'en seront pas
+touchés : ils gardent le prix qu'ils portaient le jour où ils ont été écrits. »*
+**Le taire aurait suffi à bloquer l'artisan** — personne n'ose supprimer un
+tarif dans le doute, et il aurait gardé une liste qui grossit sans jamais
+maigrir.
+
+
+### « L'IA se servira de ces infos pour constituer les devis ? » — oui, et quatre chiffres invisibles avec
+
+**Sa question du 13 août 2026.** Y répondre a demandé de lire le pipeline, et a
+mis au jour un réglage qui agit sans être visible nulle part.
+
+### L'ordre exact, tel que `proposition-builder.ts` l'exécute
+
+1. **Il cherche dans ses tarifs.** Un seul correspond → il le prend, tel quel
+   (`sourcePrix: "tarif"`).
+2. **Plusieurs correspondent → il ne choisit pas** (`"tarifs_ambigus"`), il les
+   énumère et laisse trancher. Le commentaire du fichier le dit :
+   *« jamais de prix inventé, jamais de choix arbitraire »*.
+3. **Aucun ne correspond → le moteur calcule** (`"chiffrage"`) : durée × nombre
+   d'ouvriers × coût journalier, + le chef s'il y en a un, + le déplacement,
+   + la marge.
+4. **Il ne peut pas calculer → il se tait** (`"aucun"`) : « Prix à renseigner ».
+
+### Ce qui sert au modèle, et ce qui ne lui est jamais envoyé
+
+| Ce qu'il règle | Ce que ça fait |
+|---|---|
+| **Ses tarifs** | Cherchés en premier, repris tels quels |
+| **Les cinq grilles** | Apprises de ses devis, rappelées sur un chantier comparable |
+| **Le vocabulaire du métier** | Les mots, pour comprendre la dictée |
+| **Son identité — SIRET, IBAN, adresse** | **Jamais envoyée au modèle.** Elle est recopiée dans le document au moment de sa création (§87) |
+
+Ce dernier point mérite d'être su : ce qui identifie l'entreprise et sa banque ne
+part chez aucun fournisseur d'IA.
+
+### Le réglage qui agit sans exister à l'écran
+
+**`parametres_chiffrage` porte cinq valeurs par entreprise** — 200 €/jour
+l'ouvrier, 280 € le chef d'équipe, 35 € le déplacement, 20 % de marge, 20 % de
+TVA par défaut — **et aucun écran ne permet de les changer.**
+
+Ces chiffres décident du prix proposé chaque fois qu'aucun tarif ne correspond.
+Un artisan dont l'ouvrier coûte 260 € par jour verra donc des prix trop bas,
+**sans jamais savoir d'où ils viennent**. C'est pire qu'un réglage manquant :
+c'est un réglage qui existe, qui agit, et qu'on ne peut pas voir.
+
+Un cinquième écran est ajouté à la planche des tarifs — « Mes coûts » — avec
+l'ordre de recherche en quatre pas, parce que c'est la seule chose qui réponde
+vraiment à sa question.
+
+### Un mot en gras détaché de sa phrase
+
+`display:flex` posé sur un `li` fait de chaque `<b>` un élément de la boîte : le
+texte s'éclate en colonnes, avec des trous entre les mots. **Vu sur la capture,
+jamais par un contrôle.**
+
+Le contrôle qui en naît a d'abord été écrit faux : il exigeait que le gras soit à
+la **même hauteur** que la fin du texte voisin. Or, éclaté, le texte voisin se
+replie sur deux lignes et le gras se retrouve plus haut — le contrôle laissait
+donc passer exactement ce qu'il devait attraper. Il mesure désormais le
+**chevauchement vertical**, et il a été confronté à la version cassée pour
+qu'on sache qu'il rougit.
+
+
+---
+
+## 90. Le « deuxième cerveau » : la direction, et l'état réel de la mémoire
+
+**Posé par le patron le 13 août 2026 :**
+
+> *« L'idée, c'est de créer un deuxième cerveau au sein de l'application, pour
+> qu'elle s'utilise comme un assistant de gestion / devis, facture, planning.
+> Elle doit apprendre, enregistrer, s'améliorer, s'auto-alimenter. »*
+
+À lire avec sa phrase antérieure, qui dit la même chose autrement : *« si l'appli
+n'a aucune mémoire, comment l'IA va enregistrer et se souvenir ? Pour s'améliorer
+elle a besoin de mémoire. »*
+
+### LA LEÇON DÉJÀ PAYÉE, et qui commande tout le reste
+
+`historique_prix` existait. Le chiffrage la **lisait**. **L'application ne
+l'écrivait jamais** (`src/lib/lecons-prix.ts`). Une mémoire que personne
+n'alimente n'est pas une mémoire.
+
+**La question à poser devant toute proposition d'apprentissage n'est donc pas
+« avons-nous une table ? » mais « QUI L'ÉCRIT, ET À QUEL MOMENT ? »** Un lot
+d'apprentissage qui ne désigne pas un geste du parcours — une clôture, un
+paiement, un refus — est un lot qui produira du décor.
+
+### Ce qui apprend, vérifié dans le code le 13 août 2026
+
+| Où | Ce qui est retenu | Écrit par |
+|---|---|---|
+| `lecons_prix` | Le prix réellement facturé, rapproché par signature de métier | `src/server/repositories/lecons-prix.ts` |
+| `grille_prix` | Les cinq grilles, remplies par les devis réels | `src/server/services/apprendre-grille.ts` |
+| `fragments_documents` | Fragments indexés de la base documentaire | `src/server/repositories/documents.ts` |
+
+**Le prix retenu est rendu comme un RAPPEL, jamais comme un calcul**
+(`docs/EXEMPLE-DICTEE.md` §9c) : *« vous aviez facturé 180 € »* se vérifie d'un
+coup d'œil ; *« ça fait 180 € »* demande qu'on fasse confiance. Cette nuance est
+la différence entre un second cerveau et une boîte noire.
+
+### Ce qui ne retient rien — les manques, par ordre de poids
+
+1. **LE TEMPS RÉEL D'UN CHANTIER.** Aucune colonne de durée réelle nulle part.
+   Atlas ne peut donc pas savoir si ses estimations sont justes — **or c'est la
+   durée qui fait le prix** quand aucun tarif ne correspond (§89). C'est le
+   manque le plus lourd, et le moins coûteux à combler : une question à la
+   clôture suffit, et le moment existe déjà dans le parcours.
+2. **Les coûts de chiffrage** (§83) : figés aux valeurs d'usine, ni réglables ni
+   appris.
+3. **Les délais de paiement réels** : rien ne retient qu'un client règle à
+   45 jours quand il en a promis 30.
+4. **Ce qu'un client refuse ou fait corriger** : l'information de prix que porte
+   un devis retourné n'est pas retenue, alors que l'état existe déjà
+   (`src/lib/etat-envoi.ts`).
+
+### Ce que cette direction change pour les lots à venir
+
+Elle ne change pas les écrans déjà dessinés, mais elle **ajoute un critère de
+relecture** : devant chaque rubrique de réglages, se demander *ce qu'Atlas
+pourrait apprendre à la place de le demander*. Les cinq grilles sont le modèle —
+elles ne se saisissent pas, elles se remplissent. Un réglage qu'on peut déduire
+d'un geste déjà fait ne devrait pas être un champ de formulaire.
+
+
+---
+
+## 91. Les documents : ce qui se règle, et le modèle qu'on ne remplace pas
+
+**Cinquième lot, dessiné le 13 août 2026** —
+`maquettes/atlas-reglages-documents.html`, quatre écrans, contrôlée par
+`maquettes/verifier-atlas-reglages-documents.mjs`. Rien dans `src/`.
+
+### L'état du code, à ne pas redécouvrir
+
+- La validité « 30 jours » est **écrite en dur** (`devis-pdf.ts`, constante
+  `VALIDITE`).
+- Les mentions de la facture sont **en dur** (`facture-pdf.ts`), et c'est bien.
+- Il n'existe qu'**un seul champ libre**, `conditionsPaiement` — tout ce qu'il
+  demande y tiendrait en vrac, ce qu'il refuse explicitement.
+- **Aucune image n'est posée dans le PDF** : `document-commun.ts` n'écrit que du
+  texte et des traits.
+
+### Sa question sur le modèle : la réponse est NON, et l'écran dit pourquoi
+
+*« Ou alors de complètement changer son devis par le devis par défaut, si c'est
+possible sans casser toute la structure automatisée créée. »* **Il avait posé
+lui-même la bonne réserve**, et elle tranche : ce n'est pas possible.
+
+Un devis n'est pas une feuille : c'est un document **calculé**. Le nombre de
+lignes change, les totaux se déplacent, la TVA se recalcule, la page suivante
+reprend l'en-tête. Un modèle importé ne saurait pas où poser un total qui bouge,
+et le premier devis de dix lignes sortirait faux.
+
+**L'écran ne se contente pas de refuser** : il nomme d'abord ce qui EST possible
+— logo, conditions, textes —, puis l'unique point refusé, puis **les deux côtés
+de l'échange** : ce qu'on y gagne (numérotation intacte, totaux justes, même
+pièce impeccable à chaque fois) et ce qu'on y perd (la mise en page n'est pas la
+sienne). Un refus sans raison se lit comme une paresse ; un refus qui s'échange
+se comprend.
+
+**« Extraire le logo d'une photo » revient à déposer une image**, sans l'étape
+incertaine du découpage automatique. C'est le même geste pour lui, et un pas de
+moins qui peut rater.
+
+### Deux décisions de forme
+
+**Le logo est montré à sa taille RÉELLE** — 26 mm sur le papier, environ 74 px à
+l'écran. Un aperçu deux fois trop grand ferait valider un logo illisible une fois
+imprimé : c'est le piège de §78 sous un autre visage, et le contrôle borne la
+taille.
+
+**Les deux textes libres ne vont pas au même endroit, et l'écran le dit.** Les
+conditions particulières valent pour CE devis et se lisent avec les prix ; le
+texte de bas de page revient sur TOUTES les pièces, devis comme factures. Les
+fondre en un seul champ produirait un texte imprimé deux fois, ou nulle part.
+
+**Le rappel des pénalités sur le devis part éteint, et l'écran dit pourquoi** :
+certains clients le lisent comme une méfiance. Un défaut choisi se justifie —
+sans quoi il passe pour un oubli.
+
+
+---
+
+## 92. Les notifications : huit familles, et une seule qui existe
+
+**Sixième lot, dessiné le 13 août 2026** —
+`maquettes/atlas-reglages-notifications.html`, trois écrans. Rien dans `src/`.
+
+### L'état réel, qui change la lecture de cet écran
+
+**Aucune notification ne sort de l'application aujourd'hui.** Il en existe UNE
+famille (`src/app/Notifications.tsx`) : ce qu'est devenu un devis parti. Elle
+s'affiche **sur l'écran d'accueil**, et seulement là. Rien n'est envoyé, ni sur
+le téléphone ni par e-mail.
+
+**Le SMS est écarté, et c'était déjà tranché** — `docs/A-FAIRE.md` §5, le
+4 août 2026. Le porter comme « bientôt » serait promettre ce qui a été refusé.
+Il ne figure donc nulle part, et l'écran dit pourquoi plutôt que de laisser
+chercher.
+
+### Ce que la planche tranche
+
+**Huit familles, rangées en trois groupes — l'argent d'abord.** Huit
+interrupteurs à la file font une liste qu'on parcourt sans lire. Groupés par ce
+qu'ils servent (son argent, ses journées, ses clients), ils se choisissent d'un
+coup d'œil. L'ordre n'est pas neutre : ce qu'un artisan vient chercher en
+premier, c'est ce qui lui coûte cher de rater.
+
+**Le canal se lit sur la ligne**, en or, à côté de l'interrupteur. Une grille
+famille × canal serait illisible sur un téléphone, et personne ne remplit un
+tableau de seize cases.
+
+**La phrase exacte est montrée, pas décrite.** « Une alerte d'impayé » ne se juge
+pas ; *« Facture Martin, 1 240 €. En retard depuis 7 jours. »* si — c'est elle
+qu'il lira à sept heures du matin.
+
+**Une alerte qui coûte de l'argent se coupe avec un mot.** L'impayé n'est pas
+verrouillé — sa règle dit « seulement ce qui pose un problème juridique ou
+moral », et une notification ne pose ni l'un ni l'autre — mais l'écran prévient :
+l'éteindre, c'est accepter de ne plus savoir qu'on n'est pas payé.
+
+**Tout éteindre ne coupe pas d'Atlas.** Le troisième écran le dit : les cartes
+de l'accueil restent, c'est seulement Atlas qui cesse de déranger. Sans cette
+phrase, un artisan qui veut le calme croirait avoir tout perdu et rallumerait au
+hasard.
+
+
+---
+
+## 93. Les cinq dernières rubriques, et pourquoi elles tiennent sur une planche
+
+**Septième et dernier lot de dessin, le 13 août 2026** —
+`maquettes/atlas-reglages-reste.html` : Atlas IA, intégrations, apparence,
+sécurité, abonnement. Rien dans `src/`. **Les dix rubriques demandées sont
+désormais toutes dessinées.**
+
+Les réunir n'est pas de la paresse : deux existent déjà presque entièrement
+(l'IA et les intégrations), deux sont marquées « bientôt » depuis le lot 1, et la
+cinquième est faite de gestes rares. Aucune ne demandait quatre écrans.
+
+### Les quatre arbitrages
+
+**LES TROIS ARRÊTS DE L'AGENT NE SE COUPENT PAS.** `docs/AGENT.md` les pose comme
+non négociables : envoyer un devis, poser une date au client, émettre une
+facture. Ils portent la marque « Toujours vous », à la place où l'on chercherait
+leur interrupteur — même grammaire que les mentions légales du lot 1. Un
+interrupteur qui les supprimerait ferait partir un devis sans qu'il l'ait vu, ce
+que `CLAUDE.md` §4 interdit.
+
+**UN INTERRUPTEUR MORT EST PIRE QU'UNE ABSENCE.** Le mode sombre n'existe pas :
+il porte donc « Bientôt » et **aucune bascule**. Un bouton qu'on touche et qui ne
+fait rien se lit comme une panne, et fait douter du reste de l'écran.
+
+**L'APPARENCE MONTRE, ELLE NE DÉCRIT PAS.** Quatre pastilles de couleur réelles,
+44 px, sans un mot. Personne ne choisit une teinte sur l'adjectif « sobre ». Le
+fond crème, lui, ne change pas — c'est lui qui donne son calme à l'application,
+et le dire évite qu'on cherche à le changer.
+
+**« TOUT EST EFFACÉ » SERAIT FAUX.** La suppression de l'entreprise est le seul
+geste vraiment irréversible : il vit **seul, en bas, après un trait**, séparé de
+ce qui se règle. Et il dit ce que la loi impose de garder — **dix ans pour les
+factures** — avant le geste, pas après. Une promesse d'effacement total serait un
+mensonge, et se découvrirait au pire moment.
+
+**Un mot qui trompe, désamorcé :** sur l'écran d'abonnement, « vos factures »
+désigne celles qu'Atlas lui envoie, pas celles de ses clients. Les confondre
+serait le premier appel au secours ; l'écran le dit sur place.
+
+### Les dix rubriques, et où elles en sont
+
+| Rubrique | Planche | État du code |
+|---|---|---|
+| Le plan, les rôles, l'interrupteur | `atlas-reglages-plan.html` | rien |
+| Identité, TVA, banque | `atlas-reglages-identite.html` | **bloquant** (§87) |
+| Équipe et rôles | `atlas-reglages-equipe.html` | rien, et le cloisonnement manque (§88) |
+| Tarifs, grilles, coûts | `atlas-reglages-tarifs.html` | partiel (§89) |
+| Documents | `atlas-reglages-documents.html` | rien (§91) |
+| Notifications | `atlas-reglages-notifications.html` | une famille sur huit (§92) |
+| IA, intégrations, apparence, sécurité, abonnement | `atlas-reglages-reste.html` | IA et intégrations partiels |
+
+
+---
+
+## 94. Premier lot CODÉ : l'identité de l'entreprise, et le régime de TVA qui cesse d'être deviné
+
+**13 août 2026, en autonomie** — migration `0039_identite_entreprise.sql`,
+écran `/reglages/identite`, suite `scripts/test-identite-entreprise.ts`.
+C'est le premier lot des réglages qui passe du dessin au code, et c'est celui
+qui **bloquait la commercialisation** (§87).
+
+### Ce que la migration ajoute, et pourquoi chaque colonne
+
+| Colonne | Pourquoi |
+|---|---|
+| `forme_juridique` | Figure sur les documents, ne se saisissait nulle part |
+| `regime_tva` | **Le point qui compte** — voir ci-dessous |
+| `numero_tva` | Attendu sur la facture d'un assujetti |
+| `titulaire_compte` | Un IBAN à un autre nom inquiète au lieu de rassurer |
+
+### LE RÉGIME DE TVA SE DÉCLARE, IL NE SE DEVINE PLUS
+
+`facture-pdf.ts` imprimait « TVA non applicable, art. 293 B du CGI » **quand le
+taux appliqué valait zéro**. La situation fiscale de l'entreprise se déduisait
+donc d'un chiffre saisi chantier par chantier, et **se trompait dans les deux
+sens** : un artisan en franchise qui laissait 20 % par mégarde perdait une
+mention obligatoire ; un assujetti qui posait 0 % voyait s'imprimer, sur une
+pièce comptable, une phrase qui ne le concernait pas.
+
+**Trois décisions autour de ce changement :**
+
+1. **Le défaut est `assujettie`**, et ce n'est pas anodin : c'est celui qui ne
+   change RIEN au comportement observé jusqu'ici pour une entreprise qui
+   facture la TVA. Poser « franchise » aurait fait apparaître la mention sur les
+   prochaines factures d'artisans qui la facturent.
+2. **Le régime est FIGÉ DANS LA FACTURE** (`factures.entreprise_regime_tva`),
+   comme le reste de l'identité (§87) : une facture émise sous franchise garde
+   sa mention même si l'artisan devient assujetti l'année suivante. La lire en
+   direct réécrirait le passé sur une pièce comptable.
+3. **Le repli sur le taux demeure, et doit demeurer.** Les factures antérieures
+   à la migration n'ont pas de régime figé ; le retirer réécrirait leur
+   historique. La migration recopie d'ailleurs la déduction une dernière fois
+   (`UPDATE … CASE WHEN taux_tva = 0`) pour que les factures déjà émises gardent
+   exactement ce qu'elles ont imprimé.
+
+### L'écran, et ce qu'il refuse
+
+`/reglages/identite` **refuse un non-propriétaire plutôt que de masquer** : les
+valeurs ne sont pas lues du tout. Une rubrique cachée ne protège rien
+(`docs/QUESTIONS.md` §10).
+
+**Le SIREN se montre, il ne se demande pas** — `sirenDepuisSiret` prend les neuf
+premiers chiffres et les affiche sous le champ. **Un champ manquant reste vide
+et se signale sur SA ligne**, en disant ce que l'absence empêche : « Vos factures
+ne sont pas conformes sans lui », jamais « champ requis ».
+
+**Le refus est rendu en VALEUR, jamais levé.** Le message d'une exception d'action
+serveur n'arrive jamais au patron — Next.js le remplace par un identifiant
+opaque (`HANDOVER.md`, piège 0 ter). Et la panne imprévue est journalisée **avant**
+d'être rendue : un défaut muet ne se répare pas.
+
+### Deux erreurs de MA suite de tests, et ce qu'elles enseignent
+
+**Elle lisait `t.texte` là où la trace écrit `t.contenu`.** Deux cas rougissaient
+à tort — et un TROISIÈME passait pour une mauvaise raison : il vérifiait une
+absence dans un texte qui n'avait jamais été lu. **Un test vert sur une chaîne
+vide ne prouve rien**, et c'est le plus dangereux des deux symptômes.
+
+**Elle comparait une FONCTION au lieu de son résultat** (`test(mots)` au lieu de
+`test(mots(trace))`), après une réécriture automatique maladroite. Le message
+accusait la facture ; le coupable était le test.
+
+La suite a ensuite été confrontée à l'ancien code — la déduction par le taux
+remise en place — et elle rougit sur les deux cas exacts que ce lot corrige.
+
+
+### Et deux défauts vus sur l'écran RÉEL, que les planches interdisaient déjà
+
+L'écran codé a été **regardé**, pas seulement compilé — `scripts/capture-identite.mts`
+prend trois vues : rempli, en franchise, et **vierge**. Cette dernière compte
+autant que les autres : c'est celle du premier jour d'un artisan, et personne ne
+l'avait jamais vue (§87).
+
+Deux défauts en sont sortis, **tous deux déjà interdits sur les planches** et
+qu'aucun test ne voyait :
+
+1. **Le dernier champ d'un bloc gardait son filet**, que le trait du bloc suivant
+   redoublait trente pixels plus bas. La correction n'est pas cosmétique dans sa
+   forme : la bordure passe en CLASSE (`border-b`) pour que
+   `[&>*:last-child]:border-b-0` puisse l'effacer — un style en ligne l'aurait
+   emporté, et la règle n'aurait jamais rien fait.
+2. **Le premier bloc portait un trait** sous le cheveu qui ferme déjà l'en-tête.
+
+**Ce que cela apprend, et qui vaut pour les lots de code à venir :** les règles
+tenues par `maquettes/charte.mjs` ne se transportent pas toutes seules dans
+`src/`. Les planches sont contrôlées, l'application ne l'est pas — et les mêmes
+défauts y reviennent. Le seul rempart est celui que `CLAUDE.md` §5 nomme :
+prendre une capture des écrans touchés fait partie du travail, pas de la
+finition.
+
+---
+
+## 95. Le sommaire des réglages : sa planche à lui, et le seul choix qui restait
+
+**Le 14 août 2026, le patron a envoyé une planche qu'il n'avait pas demandée** —
+un sommaire noir et or, dix rubriques, une icône chacune — avec ce seul mot :
+« c'est ça que je voulais ! ». Ses libellés ne figuraient nulle part dans le
+dépôt : elle vient d'ailleurs, et c'est une consigne, pas une livraison.
+
+**Ce qu'elle apporte, et que mes sept planches n'avaient pas :**
+
+| Sa planche | Ce qu'elle corrige |
+|---|---|
+| une **icône par rubrique** | treize lignes de texte se parcourent mal ; le pictogramme est ce qui permet de retrouver « Tarifs » sans lire |
+| « **Devis & factures** » | personne ne cherche « Documents » pour changer un acompte |
+| « **Planning** » | il figurait dans ses quatre priorités du 13 août, et j'avais oublié de lui donner une rubrique |
+
+**Ce qu'elle ne dit pas, et qui a dû être demandé : les couleurs.** Un écran
+sombre au milieu de vingt écrans crème se lit comme un écran d'une autre
+application. Interrogé, il a répondu **« crème, comme le reste »**. Le mode
+sombre reste donc la rubrique « Apparence », marquée *Bientôt* — et
+`design-tokens.ts` porte déjà la note qui dit où l'empêcher de partir jusque
+sur le devis du client.
+
+**Ce qu'elle ne dit pas non plus, et qui ne se demande pas : QUI VOIT QUOI.**
+Sa liste de dix est plate. Or c'est lui qui a posé la règle le 13 août — « un
+salarié peut changer ses notifications ou son mot de passe, mais il ne doit
+évidemment pas pouvoir modifier les tarifs ou les coordonnées bancaires » — et
+`docs/QUESTIONS.md` §10 va plus loin : ce qu'un rôle n'a pas le droit de voir ne
+doit pas **sortir du serveur**. D'où les deux ensembles, « Moi » et
+« L'entreprise », qui n'existent pas sur sa planche : sans eux, il n'y a nulle
+part où couper. Les quatre lignes de « Moi » sont exactement ce qu'un salarié
+garde ; les neuf autres ne lui sont pas grisées, elles lui sont **absentes**.
+
+**`maquettes/atlas-reglages-sommaire.html` — trois écrans, dont deux à choisir :**
+
+1. **en filets**, la grammaire de tous les écrans refaits ;
+2. **en cartes**, sa planche traduite en crème — chaque rubrique posée sur
+   `colors.card`, sans ombre et au rayon de 4 px ;
+3. **le même écran pour un salarié**, qui n'est pas une variante d'affichage.
+
+**Les deux registres portent la MÊME liste, et c'est le contrôle le plus
+important du vérificateur.** S'ils divergeaient d'une rubrique, la comparaison
+porterait sur autre chose que le registre, et il choisirait une allure en
+croyant en choisir une autre.
+
+**Le deuxième contrôle qui mérite son existence :** *aucune icône n'est le
+doublon d'une autre*. Dix pictogrammes recopiés passeraient tout le reste — la
+liste serait complète, alignée, dorée, et parfaitement illisible.
+
+**Un contrôle a d'abord accusé à tort, et la correction est instructive.** La
+recherche de la coquille de sa planche (« confidentbilité », qu'il ne fallait
+pas recopier) portait sur le FICHIER : elle rougissait sur le commentaire
+d'en-tête qui cite la faute pour dire qu'on l'a vue. Elle porte désormais sur le
+**texte affiché**. Une règle qui interdit un mot doit regarder là où le mot
+serait lu, pas là où on en parle.
+
+---
+
+## 96. Les réglages refondus : un sommaire, et chaque chose rangée dessous
+
+**Le 14 août 2026, le patron :** *« je veux que tu recrées entièrement la page
+de réglage. La modifier totalement. Et ce qu'on a déjà, soit tu crées les
+catégories qu'il y a besoin pour les implémenter, soit s'il va y avoir des
+doublons, tu supprimes. Exemple, les prix de main-d'œuvre et de machine, eh bien
+ça, tu l'intègres directement dans la partie tarif. »*
+
+### Ce que l'écran était devenu
+
+Une page à défilement où s'empilait tout ce qui n'avait trouvé sa place nulle
+part : un lien vers l'identité, le nombre d'équipes, la périodicité de TVA, la
+liste des tarifs, un lien vers le catalogue, un lien vers les grilles de prix,
+un lien vers l'agenda, un lien vers le vocabulaire, l'état de l'IA, le
+téléchargement des données, la version, le bouton de mise à jour. **Douze blocs,
+sans hiérarchie**, chacun ajouté au bas du précédent le jour où il est né.
+
+Le coût n'était pas esthétique. Changer un prix demandait de faire défiler
+quatre écrans ; et deux réglages fiscaux — *suis-je en franchise* et *à quel
+rythme je déclare* — vivaient à deux endroits séparés par tout le reste.
+
+### Où chaque chose est partie, et pourquoi là
+
+| Ce qui traînait sur l'écran | Sa rubrique | La raison |
+|---|---|---|
+| identité, SIRET, TVA, IBAN | **Mon entreprise** (`/reglages/identite`) | déjà un écran (§94) |
+| **périodicité de TVA** | **Mon entreprise** | c'est la moitié de la même question que le régime — les séparer obligeait à savoir lequel était où |
+| tarifs, import de tarifs | **Tarifs & catalogue** (`/reglages/tarifs`) | sa demande, mot pour mot |
+| **grilles de prix**, **catalogue** | **Tarifs & catalogue** | « combien je facture ça » posait trois adresses |
+| nombre et noms d'équipes | **Planning** (`/reglages/planning`) | « équipe » désigne ici une FILE DU PLANNING, pas un compte (§88) |
+| état de l'IA, **vocabulaire du métier** | **Atlas IA** (`/reglages/ia`) | le vocabulaire est ce que l'IA reconnaît d'une dictée |
+| agenda | **Intégrations** (`/reglages/agenda`) | inchangé, seulement renommé dans le sommaire |
+| téléchargement des données | **Sécurité & données** (`/reglages/donnees`) | — |
+| version, mise à jour | **reste sur le sommaire** | ce n'est pas un réglage : c'est la réponse à « mes correctifs sont-ils arrivés », et une capture doit y répondre sans qu'on pose la question (`CLAUDE.md` §6) |
+
+**Les trois façons de dire un prix n'ont PAS été fusionnées**, et c'est
+délibéré : un tarif est une ligne libre qu'il écrit ; une grille de prix
+s'apprend de ses devis, case par case ; le catalogue est du vocabulaire partagé
+entre tous les artisans et ne porte aucun prix (§89). Les mêler ferait croire
+qu'un prix du catalogue est le sien — c'est-à-dire inventerait une donnée.
+
+### La liste est une fonction pure, et ce n'est pas du rangement
+
+`src/lib/rubriques-reglages.ts` porte les rubriques, leur ordre, leur icône et
+**qui les voit**. La même liste dessine le sommaire et dit quelles adresses un
+rôle peut ouvrir : deux implémentations d'une même règle finissent toujours par
+diverger (`CLAUDE.md` §3), et ici la divergence serait un salarié qui voit les
+coordonnées bancaires.
+
+**Premier endroit d'Atlas où `getRole` décide de ce qu'un écran RESTITUE.**
+Jusqu'ici il n'était appelé dans aucun écran (§88) : un membre voyait tout. Le
+sommaire ne rend à un membre que l'ensemble « Moi » — pas grisé, pas masqué :
+absent. Et chaque rubrique de l'entreprise refuse un non-propriétaire **avant de
+lire la moindre valeur**, parce qu'une adresse se tape (`docs/QUESTIONS.md`
+§10).
+
+**Ce que cela ne règle pas, et qu'il ne faut pas croire acquis :** le reste de
+l'application ne cloisonne toujours rien. Un membre voit encore tous les
+montants sur les chantiers, les devis et les factures. Ce lot pose la pièce, il
+ne ferme pas le sujet.
+
+### Deux choix d'écran qui s'écartent de sa planche
+
+1. **L'entreprise passe AVANT « Moi ».** Sur sa planche, les rubriques
+   personnelles ouvraient la liste ; à l'écran, leurs quatre lignes sont encore
+   à venir, et quatre rubriques inertes en tête font paraître l'écran cassé. Le
+   patron ouvre les réglages pour ses tarifs et son identité. Pour un salarié,
+   « Moi » est le seul ensemble et ouvre donc naturellement.
+2. **Une rubrique non codée n'est pas un lien.** Elle garde son icône, en
+   retrait, et porte « Bientôt » à la place du chevron. Un chevron sur une ligne
+   qui ne mène nulle part promet une page — et le patron a déjà appuyé deux fois
+   sur des choses qui ne répondaient pas.
+
+### Ce que la refonte a révélé dans les suites
+
+**`/reglages/mes-donnees` n'a jamais existé.** Deux suites navigateur —
+« aucune barre de défilement » et « rien de recouvert » — la parcouraient dans
+leur liste d'écrans : elles éprouvaient une page d'erreur en croyant éprouver un
+écran, et elles étaient vertes. La bonne adresse est `/reglages/donnees`.
+
+**Et le contrôle du vocabulaire serait devenu vert par accident.** Il vérifie
+qu'un compte ordinaire ne se voit pas proposer le vocabulaire du métier, en
+lisant l'écran des réglages ; le renvoi ayant déménagé sous « Atlas IA », le
+contrôle aurait continué à passer en cherchant à un endroit où plus personne ne
+le met. Il regarde désormais là où le renvoi serait.
+
+### Le piège qui a coûté vingt rouges pour rien
+
+**Lancer les suites navigateur sans `REDIS_URL` sabote la batterie à la sixième
+suite, et pas un seul message ne le dit.** Le limiteur de connexion n'accepte
+que **cinq connexions par quart d'heure** pour un même couple (compte, adresse
+IP) ; toutes les suites se connectent avec `demo@atlas.local` depuis
+`127.0.0.1`. Le lanceur remet le compteur à zéro entre deux suites — mais il ne
+peut le faire que si le compteur vit dans Redis : celui de l'adaptateur mémoire
+est enfermé dans le processus serveur, hors d'atteinte. Sans la variable,
+`reinitialiserLimiteConnexion` se taisait et rendait la main.
+
+Le 14 août 2026, vingt suites sont donc tombées **en disant toutes la même
+chose** : « dépassement de délai en attendant la redirection après la
+connexion ». C'est-à-dire : *le formulaire de connexion est cassé*. Il allait
+très bien. Vingt minutes de batterie pour un verdict faux qui envoyait chercher
+au mauvais endroit — précisément ce que `AGENTS.md` interdit.
+
+`run-e2e-tests.ts` **refuse désormais de partir** sans `REDIS_URL`, et son
+message nomme le vrai coupable. La batterie officielle
+(`verifier-avant-livraison.ts`) et la CI la posaient déjà : c'est l'appel à la
+main qui ne l'avait pas.
+
+Et `monter-base-locale.sh` continue de ne PAS la poser, ce qui n'est pas une
+contradiction : avec elle, les suites BASE laissent une connexion ioredis
+ouverte et ne rendent jamais la main. C'est à l'appelant des suites navigateur
+de la fournir.
+
+---
+
+## 97. Bloquer l'envoi sans SIRET : décidé, codé, puis RETIRÉ le même jour
+
+**Ce paragraphe existe pour qu'on ne le recode pas dans trois mois.** La question
+« faut-il empêcher l'envoi d'un devis dont l'identité est incomplète ? » a été
+posée au patron, tranchée par lui, codée, montrée — et retirée à sa demande dans
+la journée. Sans cette trace, une session la rouvrirait en croyant réparer un
+oubli.
+
+**Le 14 août 2026 au matin**, planche `atlas-trois-questions.html` en main,
+question 3 : il répond **« A »**, bloquer l'envoi. C'est codé — quatre champs
+bloquants, refus côté serveur, écran qui liste les manques — et deux captures
+lui sont envoyées.
+
+**Le même jour, en voyant l'écran, il tranche l'inverse :** *« il ne faut pas
+commencer à modifier les autres rubriques. L'IBAN et le SIRET, c'est des choses
+que l'utilisateur va devoir renseigner dans la bonne catégorie. Une fois que
+c'est enregistré, il faut que ça s'ajoute automatiquement à la page du devis,
+mais c'est tout. Rien de plus, rien de moins. »*
+
+**Ce qu'il refuse n'est pas le garde-fou, c'est le PÉRIMÈTRE.** Les réglages
+alimentent le devis ; ils ne commandent pas ce que l'écran d'envoi a le droit de
+faire. Un lot parti des réglages qui finit par modifier le parcours d'envoi est
+un lot qui a débordé, quelle que soit la qualité de ce qu'il ajoute.
+
+**Ce qu'il demande existe déjà, et c'est vérifié dans le code** —
+`getOuCreerDevisBrouillon` (`src/server/repositories/devis.ts`) recopie
+`entreprises` dans le devis : nom, adresse, SIRET, e-mail, téléphone, IBAN. Et
+**un brouillon rafraîchit sa copie à chaque ouverture** : un SIRET saisi ce soir
+apparaît sur le devis dès qu'on le rouvre. Seuls les devis DÉJÀ ENVOYÉS gardent
+ce qu'ils portaient — c'est voulu, une pièce comptable ne se réécrit pas (§94).
+
+**Ce qui a été retiré, intégralement :** la règle pure qui listait les manques,
+le blocage `identite_incomplete` de `preparerEnvoi`, le refus de
+`envoyerAuClientAction`, la liste des manques sur l'écran d'envoi, et leurs
+suites. `test-preparation-envoi.ts` retrouve son entreprise minimale.
+
+**Ce qui reste vrai et n'a pas bougé :** un devis part toujours sans SIRET si le
+patron n'en a pas saisi, et **rien ne l'en avertit**. C'est un risque assumé par
+lui, en connaissance de cause — l'argument lui a été donné (un devis fige son
+émetteur, le corriger ensuite ne rattrape rien) et il a tranché. Ne pas le
+rouvrir sans qu'il le demande.
+
 **Ce qui n'a PAS été touché, et c'est délibéré** : le message qui part chez le
 client dit toujours « Bonjour <nom> » (`src/lib/message-client.ts`). Changer la
 façon dont ses clients sont abordés est un geste qui lui appartient, et il ne
@@ -6641,7 +7758,7 @@ l'a pas demandé.
 
 ---
 
-## 86. La chaîne se lit à l'envers : on repart du plus avancé
+## 98. La chaîne se lit à l'envers : on repart du plus avancé
 
 **Son défaut, le 13 août 2026 :** *« il n'y a pas de mémoire dans les actions.
 J'étais en train de rédiger le devis, [...] j'ai fait retour sans faire exprès.

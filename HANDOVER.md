@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-12 · `main`
+**Point de reprise :** 2026-08-13 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -261,6 +261,161 @@ Ni un champ contrôlé, ni un effet, ni `defaultValue` ne font survivre une vale
 **et** une `key` qui remonte le champ à chaque envoi. Ne pas « simplifier » l'un
 des deux.
 
+## Les réglages : le PLAN posé, les rubriques EN ATTENTE (13 août)
+
+`maquettes/atlas-reglages-plan.html` — quatre écrans : les réglages vus par le
+**patron**, par le **commercial**, par le **salarié**, et **l'interrupteur**.
+Contrôlé par `maquettes/verifier-atlas-reglages-plan.mjs`, branché dans
+`npm run verifier:maquette`. **Rien dans `src/`** — sa règle du 11 août.
+
+**Ce que ce lot tranche, et qui vaut pour les neuf rubriques suivantes :** les
+deux ensembles « Moi » / « Mon entreprise » ; le fait qu'une rubrique interdite
+soit **absente** et non masquée ; et la liste de ce qui n'aura **jamais**
+d'interrupteur (mentions légales de la facture, identité de l'émetteur,
+numérotation continue, conservation légale).
+
+**Trois choses à ne pas croire acquises :**
+
+1. **Le rôle « commercial » n'existe nulle part** — ni en base
+   (`membres_entreprise.role` : `proprietaire` | `membre`), ni dans
+   `docs/QUESTIONS.md` §10, qui connaît l'éditeur, le patron et le salarié.
+   Il est dessiné pour être tranché.
+2. **Le cloisonnement par rôle n'est pas codé.** Ne pas conclure de la maquette
+   qu'un salarié ne voit pas les prix : `QUESTIONS.md` §10 exige que la donnée
+   ne SORTE pas du serveur, et rien de tel n'est en place aujourd'hui.
+3. **Le logo et les conditions réglables n'existent pas.**
+   `document-commun.ts` ne pose aucune image ; « 30 jours » est en dur dans
+   `devis-pdf.ts`, la mention légale dans `facture-pdf.ts`. Remplacer le devis
+   entier par un modèle importé n'est pas possible sans perdre les totaux, la
+   TVA et la numérotation — à dire avant de dessiner le lot « Documents ».
+
+**⚠ LE PREMIER JOUR D'UN ARTISAN N'A JAMAIS ÉTÉ VU.** Sa remarque du 13 août :
+*« quand l'application sera commercialisée, le devis sera vierge, et c'est avec
+ces informations-là qu'il devra se remplir automatiquement ».* Ne pas la sous-
+estimer : `seed.ts` pose une entreprise **complète** (« Atelier Démo », SIRET,
+IBAN), donc tout ce qui est éprouvé ici et sur son banc part d'un état rempli.
+Or **il n'existe aucun parcours d'inscription**, **l'identité ne se saisit que
+dans le devis écrit à la main**, et **rien ne la vérifie avant l'envoi**. Le
+premier devis d'un vrai artisan partirait sans SIRET ni IBAN, sans un mot. Le
+détail des six faits est dans `ARCHITECTURE.md` §87, la liste de travail dans
+`TODO.md` §0 quatervicies.
+
+**Le blocage de l'envoi sans SIRET a été codé PUIS RETIRÉ le 14 août 2026**
+(`ARCHITECTURE.md` §97). Le patron l'avait choisi le matin, planche en main ; en
+voyant l'écran il a tranché l'inverse : *« rien de plus, rien de moins »* — les
+réglages alimentent le devis, ils ne commandent pas l'écran d'envoi.
+
+**Ne pas le recoder en croyant réparer un oubli.** Aujourd'hui un devis part
+sans SIRET si le patron n'en a pas saisi, et rien ne l'en avertit : c'est un
+risque qu'il assume, l'argument lui ayant été donné.
+
+**Ce qu'il voulait, en revanche, existe déjà** : `getOuCreerDevisBrouillon`
+recopie l'entreprise dans le devis, et un brouillon rafraîchit sa copie à chaque
+ouverture — un SIRET saisi ce soir apparaît dès qu'on rouvre le devis.
+
+**Les réglages ont été REFONDUS le 14 août 2026** (`ARCHITECTURE.md` §96), à sa
+demande : *« je veux que tu recrées entièrement la page de réglage »*. L'écran
+est devenu un **sommaire** de treize rubriques en deux ensembles, et tout ce qui
+s'y empilait est parti dans sa rubrique. **Quatre choses à savoir avant d'y
+toucher :**
+
+1. **Les adresses ont bougé.** Les tarifs sont sur `/reglages/tarifs`, les
+   équipes du planning sur `/reglages/planning`, l'IA sur `/reglages/ia`, les
+   données sur `/reglages/donnees`, et la périodicité de TVA a rejoint le régime
+   sur `/reglages/identite`. Cinq suites navigateur ont dû être redirigées.
+2. **La liste vit dans `src/lib/rubriques-reglages.ts`**, pas dans l'écran. Y
+   ajouter une rubrique la fait apparaître ; changer son rôle change ce que le
+   serveur rend. Ne pas dupliquer cette liste ailleurs.
+3. **C'est le premier écran où `getRole` décide de ce qui est RENDU**, et cela
+   ne vaut QUE pour les réglages : chantiers, devis et factures montrent encore
+   tous les montants à un membre. Ne pas lire ce lot comme si le cloisonnement
+   était fait.
+4. **Six rubriques sont marquées « Bientôt »** et ne sont pas des liens : mon
+   compte, notifications, connexion, apparence, l'équipe au sens des comptes, et
+   « Devis & factures ». Leur donner un `href` suffit à les ouvrir.
+
+**Le sommaire lui-même, dessiné le 14 août** — et il vient d'une planche que le
+patron a envoyée sans qu'on la demande, noir et or, avec ce seul mot : « c'est
+ça que je voulais ! ». `maquettes/atlas-reglages-sommaire.html`,
+`ARCHITECTURE.md` §95. **Trois choses à ne pas rater si l'on reprend ce sujet
+à froid :**
+
+1. **Il reste un choix à obtenir : filets ou cartes.** Les deux registres sont
+   sur la planche, côte à côte, avec la même liste. Ne pas trancher à sa place.
+2. **Les couleurs ont été demandées, pas devinées.** Sa planche était sombre ;
+   il a répondu « crème, comme le reste ». Le mode sombre reste « Apparence »,
+   marquée *Bientôt*. Ne pas rouvrir sans lui.
+3. **Les deux ensembles « Moi » / « L'entreprise » ne sont pas décoratifs** : sa
+   liste de dix était plate, et sans eux il n'y a nulle part où couper pour le
+   salarié. Coder cet écran suppose donc le cloisonnement par rôle EN LECTURE,
+   qui n'existe pas encore (`getRole` n'est appelé dans aucun écran).
+
+**Lot 2 fait le 13 août : l'identité de l'entreprise**
+(`maquettes/atlas-reglages-identite.html`, `ARCHITECTURE.md` §87). Il a révélé
+**trois manques qui sont du code, pas du dessin** : le régime de TVA est deviné
+d'après le taux appliqué et se trompe dans les deux sens ; le numéro de TVA
+intracommunautaire n'existe nulle part ; le téléphone et l'e-mail sont saisis et
+ne s'impriment sur aucun document. Ils sont dans `TODO.md` §0 quatervicies.
+
+**Lot 3 fait le 13 août : l'équipe et les rôles**
+(`maquettes/atlas-reglages-equipe.html`, `ARCHITECTURE.md` §88). Deux choses à
+ne pas rater : **« équipe » désigne déjà une FILE DU PLANNING**, pas un compte —
+la rubrique tient donc deux listes séparées ; et **le cloisonnement en lecture
+n'existe pas** : `getRole` n'est appelé dans aucun écran, un membre voit tous
+les montants.
+
+**Lot 4 fait le 13 août : tarifs et catalogue** — les quatre priorités du
+patron sont dessinées (`ARCHITECTURE.md` §89). À retenir : **ses tarifs** lui
+appartiennent, **le catalogue est partagé** et ne porte aucun prix, et **les
+cinq grilles apprennent de ses devis** au lieu de se saisir.
+
+**LA DIRECTION DU PRODUIT, posée le 13 août 2026 :** *« créer un deuxième
+cerveau au sein de l'application — elle doit apprendre, enregistrer, s'améliorer,
+s'auto-alimenter »*. Ce qui apprend déjà : `lecons_prix`, les cinq grilles, la
+base documentaire. Ce qui manque le plus : **le temps réel d'un chantier n'est
+enregistré nulle part**, donc Atlas ignore si ses estimations de durée sont
+justes — alors que c'est la durée qui fait le prix. **Et la leçon qui commande
+tout :** `historique_prix` était lue et jamais écrite ; devant toute idée
+d'apprentissage, demander **qui l'écrit et à quel moment**, jamais « avons-nous
+une table ? » (`ARCHITECTURE.md` §90, `docs/QUESTIONS.md` §17).
+
+**⚠ `parametres_chiffrage` agit sans être visible.** Cinq valeurs par
+entreprise — 200 €/jour l'ouvrier, 280 € le chef, 35 € le déplacement, 20 % de
+marge, 20 % de TVA — décident du prix proposé dès qu'aucun tarif ne correspond,
+et **aucun écran ne permet de les changer**. Trouvé le 13 août en répondant à sa
+question « l'IA se servira de ces infos ? ». Ne pas le redécouvrir
+(`ARCHITECTURE.md` §83).
+
+L'ordre des lots est dans `TODO.md` §0 quatervicies ; le pourquoi dans
+`ARCHITECTURE.md` §80 à §83.
+
+**Deux conventions posées le 13 août, qui valent pour toutes les planches à
+venir.** Les couleurs sont **recopiées de `src/lib/design-tokens.ts`** et le
+contrôle lit ce fichier pour les comparer (les neuf planches antérieures gardent
+l'ancien nuancier : elles passeront à la charte quand leur sujet sera rouvert).
+Et le gros plan se fait à la **loupe** (`zoom` au-dessus de 1000 px), jamais en
+élargissant le téléphone : sinon les libellés tiendraient sur une ligne et les
+cibles paraîtraient confortables, sans que ce soit vrai sur son iPhone. La loupe
+est éteinte en iPhone 13, ce qui laisse les contrôles mesurer juste — un contrôle
+le vérifie, et c'est lui qu'il ne faut pas retirer.
+
+**Et la grammaire est celle des ÉCRANS, relevée dans le code des composants :**
+retrait de **26 px** (et non les 24 de `spacing.pageX`, qui est l'ancienne
+échelle — seuls `error.tsx`, `loading.tsx` et `Notifications.tsx` y sont
+restés), titre de 36 px, **un cheveu qui ferme l'en-tête**, titres de section
+**gris précédés d'un trait**, barre basse à 9,5 px / 0,28 em. Et l'écran de la
+planche doit mesurer **390 px** : sous 520 px la coque du téléphone s'efface,
+sinon il n'en fait que 336 et la barre basse de l'application n'y tient pas —
+c'est ce qui avait fait rapetisser sa chasse dans les planches précédentes
+(`ARCHITECTURE.md` §86).
+
+**Piège payé sur cette planche :** éprouver qu'un contrôle sait échouer écrit
+ses captures dans `maquettes/vues/` comme une exécution normale. La planche a
+été relue sur une image produite par la version **cassée**. Relancer le contrôle
+sur le fichier sain avant de regarder.
+
+---
+
 ## L'écran de connexion : maquette posée, choix EN ATTENTE (12 août)
 
 `docs/maquettes/35-l-ecran-de-connexion.html` — l'avant reproduit, puis quatre
@@ -455,7 +610,7 @@ que de redessiner.
 ## ⚠ Rouvrir un chantier, c'est REPRENDRE (13 août) — et la leçon qui va avec
 
 La liste des chantiers ne mène plus à la fiche mais **à l'écran où le travail
-s'est arrêté** (`lienDeReprise`, `ARCHITECTURE.md` §86). Sa demande, mot pour
+s'est arrêté** (`lienDeReprise`, `ARCHITECTURE.md` §98). Sa demande, mot pour
 mot : *« que ça me renvoie à l'étape où je me suis arrêté ».*
 
 **La leçon, et elle vaut au-delà de ce point.** Le premier correctif a traité un
