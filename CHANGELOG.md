@@ -22,6 +22,28 @@ zéro entre deux suites que s'il vit dans Redis.
 coupable. La batterie officielle et la CI posaient déjà la variable : c'est
 l'appel à la main qui ne l'avait pas. Raisons : `ARCHITECTURE.md` §96.
 
+### DESSINÉ : les trois décisions qui restent, deux écrans chacune
+
+Sa demande : *« fais-moi des visuels pour que je te réponde »*.
+`maquettes/atlas-trois-questions.html` — le sommaire en filets ou en cartes,
+les prix en trois écrans ou en un seul, et le devis sans SIRET bloqué ou
+seulement signalé. **54 contrôles au vert**, deux éprouvés rouges.
+
+**La règle de la planche, et le contrôle qui la tient :** les deux écrans d'une
+question portent **exactement les mêmes données**. Sans cela il comparerait deux
+contenus au lieu de comparer deux partis — et choisirait une allure en croyant
+en choisir une autre.
+
+**Un contrôle a attrapé une exagération dans mon propre texte.** La note
+annonçait « cinq fois la hauteur » pour l'écran unique des prix ; le rapport
+mesuré valait 2,1. Une planche qui gonfle son propre argument fait pencher le
+patron sur un chiffre faux. Le seuil est désormais mesuré, et la note dit ce
+qu'elle montre.
+
+Chaque question porte une **recommandation assumée** — « à vous de voir » est
+une non-réponse qui lui rend le travail d'analyse —, écrite **sous** les écrans
+pour qu'il regarde avant de lire.
+
 ### CODÉ : les réglages refondus — un sommaire, et chaque chose rangée dessous
 
 **Sa demande, le 14 août 2026 :** *« je veux que tu recrées entièrement la page
