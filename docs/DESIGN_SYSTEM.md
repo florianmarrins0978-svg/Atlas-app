@@ -39,20 +39,47 @@ l'autre.
 Aucune autre couleur n'est introduite. Le statut ne se distingue jamais par une
 couleur différente — toujours par une icône, jamais par plusieurs teintes.
 
-**Une exception, délibérée : les documents que le client reçoit.** Devis et
-facture gardent la terre cuite (`couleursDocument.accent`, `#B25A2E`), choisie
-et maintenue par le patron le 3 août. Un devis n'est pas un écran : c'est la
-pièce que son client garde, imprime et signe, et elle porte sa propre teinte.
+**Les documents que le client reçoit suivent la même identité**, depuis le
+10 août 2026 : *« oui, harmonise aussi le devis »*. Leur accent est **l'or**
+(`couleursDocument.accent`, `#B98B47`) — celui qui porte partout ailleurs ce
+qu'on LIT, et un intertitre « ÉMETTEUR » est exactement cela. Le vert pin aurait
+été le mauvais choix : il porte ce qu'on FAIT, et il n'y a rien à faire sur un
+devis imprimé.
+
+*(La terre cuite `#B25A2E`, choisie le 3 août et décrite ici jusqu'au 13, est
+abandonnée. Le bloc `couleursDocument` demeure et doit demeurer : le jour où
+l'écran passera au sombre, c'est là qu'on empêchera le devis de partir en noir
+chez le client.)*
 
 ## Typographie
 
-- **Playfair Display** (`font.display`, classe `.font-display`) — titres de page et noms de chantier. C'est l'élément qui capte le regard en premier.
-- **Inter** (`font.body`) — tout le reste : meta, boutons, navigation, corps de texte.
-- **Petites capitales** (constante `smallCaps` : 11px, `tracking-[0.18em]`, couleur accent) — pour tout libellé de statut ou eyebrow. Jamais de pastille colorée pleine.
+**Les polices du système, et non Playfair Display — décidé le 10 août 2026.**
+Le patron a comparé sa maquette et l'application : *« t'es sûr que t'as pas
+modifié la typographie ? »* Les caractères n'avaient pas bougé — mais la
+maquette, page autonome, ne pouvait charger aucune police et empruntait donc
+celles de son iPhone. **C'est ce dessin-là qu'il a retenu.**
 
-Les deux polices sont rapatriées au *build* par `next/font` et servies depuis
-notre propre origine : la politique de sécurité (`default-src 'self'`)
-interdirait de les charger chez Google.
+- **`font.display`** → `ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", serif`
+  — titres de page et noms de chantier, en graisse **400** : la serif du système
+  est déjà dense, et la passer en 500 la ferait synthétiser par le navigateur.
+- **`font.body`** → `ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif`
+  — tout le reste.
+- **`libelleCaps`** (9,5 px, `tracking-[0.28em]`, graisse 500) — la voix des
+  libellés : ce qui nomme sans être un titre. C'est elle qu'un écran refondu
+  emploie. `smallCaps` (11 px, `0.18em`) est l'ANCIENNE voix : elle survit parce
+  que les maquettes `/design/*` s'en servent, et ne doit pas servir au neuf.
+- **`texteSituation`** (11,5 px sur 1,5) — la voix de ce qui se lit sans se
+  toucher : l'adresse sous un nom, ce que change une durée.
+
+**Aucune police n'est plus téléchargée.** L'application s'affiche
+instantanément, sans le clignotement du remplacement de police. En contrepartie
+le dessin dépend de l'appareil — Iowan Old Style sur iPhone, Georgia sur
+Windows, Noto Serif sur Android : proches, pas identiques. C'est le prix de ce
+qu'il a choisi, et il est assumé.
+
+*(Ce paragraphe décrivait Playfair Display et Inter rapatriées par `next/font`
+jusqu'au 13 août 2026. C'était faux depuis le 10 : le code fait foi,
+`src/app/globals.css`.)*
 
 Les tailles de texte sont fixes et ne se réinventent pas d'un écran à l'autre : 36px pour un titre de page, 20-22px pour un titre de carte, 14px pour le texte courant, 11px pour les libellés.
 

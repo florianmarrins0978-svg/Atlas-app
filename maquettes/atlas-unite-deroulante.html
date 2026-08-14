@@ -1,0 +1,327 @@
+<title>Atlas — L'unité d'un tarif : un bandeau déroulant</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT — et pourtant vivante sous le doigt.
+
+    L'UNITÉ D'UN TARIF, À CHOISIR AU LIEU DE LA TAPER.
+
+    Le patron, le 13 août 2026, capture des tarifs à l'appui : *« crée-moi un
+    bandeau déroulant avec infos à choisir, jours/hommes, m² etc. »*
+
+    CE QU'IL Y A AUJOURD'HUI : une case libre, avec « m², heure… » en exemple.
+    Elle marche, et elle a deux défauts qu'on ne voit qu'à l'usage :
+
+      · **il faut la taper**, au doigt, sur un chantier — « m² » demande un
+        clavier de symboles, « jour/homme » quinze frappes ;
+      · **rien ne garantit deux fois la même orthographe.** « m2 », « m² »,
+        « M2 » sont trois unités différentes pour la machine. Or l'unité est ce
+        qui autorise la multiplication par une quantité au moment du chiffrage :
+        une unité mal écrite est un tarif qui cesse de se multiplier, sans que
+        rien ne le dise.
+
+    D'OÙ DEUX FORMES, et le choix lui revient.
+
+    CE QUI NE SE DISCUTE PAS, ET QUI EST COMMUN AUX DEUX : la case reste
+    LIBRE. Un élagueur a des unités qu'aucune liste ne devinera — « la tonne »,
+    « le stère », « l'arbre ». Une liste qui enfermerait lui retirerait ce qu'il
+    a aujourd'hui, et ce serait un recul déguisé en confort.
+  */
+
+  :root{
+    --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c;
+    --bronze:#8f7130; --trait:rgba(22,23,15,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1400px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 34px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:390px;max-width:100%}
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:44ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:700px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         /* La charte Arborea, relevée dans `src/lib/design-tokens.ts`. */
+         --e-fond:#f5f3ee; --e-plage:#ece9e1; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-trait:rgba(28,28,26,.12); --e-pin:#2f3b2f; --e-pin-encre:#faf9f5;
+         --e-or:#B98B47; --e-blanc:#faf9f5}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  .tete{padding:24px 26px 12px;flex:none}
+  .tete .sur{margin:0;color:var(--e-or)}
+  .tete h1{margin:8px 0 0;font:400 30px/1.05 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .corps{flex:1;min-height:0;overflow-y:auto;padding:0 26px 20px}
+
+  /* ═══ La carte d'un tarif, comme sur sa capture ═══════════════════════ */
+  .tarif{margin-top:16px;padding:14px;border-radius:4px;background:var(--e-blanc)}
+  .nom{width:100%;padding:12px 14px;border:0;border-radius:4px;background:var(--e-plage);
+       font-family:inherit;font-size:16px;color:var(--e-encre)}
+  .deux{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+  .champ .et{display:block;margin-bottom:5px;font-size:9.5px;letter-spacing:.28em;
+             text-transform:uppercase;color:var(--e-gris)}
+  .prix{width:100%;padding:12px 14px;border:0;border-radius:4px;background:var(--e-plage);
+        font-family:inherit;font-size:16px;text-align:right;color:var(--e-encre)}
+
+  /* ═══ Forme 1 — le bandeau qui se déplie sous la case ════════════════ */
+  /* 16 px de corps : en dessous, iOS agrandit la page à la mise au point. */
+  .case{display:flex;align-items:center;justify-content:space-between;gap:8px;
+        width:100%;padding:12px 14px;border-radius:4px;background:var(--e-plage);
+        font-size:16px;color:var(--e-encre);-webkit-tap-highlight-color:transparent}
+  .case .creux{color:var(--e-gris)}
+  .case .chev{color:var(--e-gris);font-size:12px}
+
+  /* **Le bandeau déborde sa demi-colonne**, et ce n'est pas cosmétique : à la
+     largeur du champ, « jour/homme — main d'œuvre » se casse en deux lignes et
+     la liste devient un mur. Il s'étend donc sur toute la carte du tarif,
+     ancré à droite, comme le fait n'importe quel menu déroulant. Vu sur une
+     capture — les contrôles, eux, étaient au vert. */
+  .champ{position:relative}
+  .bandeau{display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:3;
+           width:calc(200% + 8px);border-radius:4px;background:var(--e-blanc);
+           box-shadow:0 6px 18px rgba(20,18,14,.16),inset 0 0 0 1px var(--e-trait);overflow:hidden}
+  #ouvert:checked ~ .bandeau{display:block}
+  #ouvert:checked ~ .case .chev{transform:rotate(180deg)}
+
+  .opt{display:flex;align-items:center;justify-content:space-between;gap:10px;
+       padding:13px 14px;border-bottom:1px solid var(--e-trait);font-size:15.5px;
+       -webkit-tap-highlight-color:transparent}
+  .opt:last-child{border-bottom:0}
+  .opt .quoi{color:var(--e-gris);font-size:12.5px}
+  /* La marque du choix courant : elle ne s'invente pas, elle suit le bouton. */
+  .opt .marque{color:var(--e-pin);opacity:0}
+  #u1:checked ~ .corps .opt.o1 .marque,
+  #u2:checked ~ .corps .opt.o2 .marque,
+  #u3:checked ~ .corps .opt.o3 .marque,
+  #u4:checked ~ .corps .opt.o4 .marque,
+  #u5:checked ~ .corps .opt.o5 .marque,
+  #u6:checked ~ .corps .opt.o6 .marque{opacity:1}
+
+  /* Ce que la case affiche : le choix courant, et lui seul. */
+  .case .valeur b{display:none;font-weight:400}
+  #u1:checked ~ .corps .case .valeur b.v1,
+  #u2:checked ~ .corps .case .valeur b.v2,
+  #u3:checked ~ .corps .case .valeur b.v3,
+  #u4:checked ~ .corps .case .valeur b.v4,
+  #u5:checked ~ .corps .case .valeur b.v5,
+  #u6:checked ~ .corps .case .valeur b.v6{display:inline}
+  #u0:checked ~ .corps .case .valeur b.v0{display:inline;color:var(--e-gris)}
+
+  /* La sortie de secours : écrire la sienne. Elle ferme la liste. */
+  .libre{padding:12px 14px;background:var(--e-plage)}
+  .libre span{display:block;margin-bottom:6px;font-size:12.5px;color:var(--e-gris)}
+  .libre input{width:100%;padding:11px 12px;border:0;border-radius:4px;background:var(--e-blanc);
+               font-family:inherit;font-size:16px;color:var(--e-encre)}
+
+  /* ═══ Forme 2 — les unités en pastilles, tout de suite visibles ══════ */
+  .pastilles{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+  .past{padding:9px 14px;border-radius:999px;font-size:14px;color:var(--e-gris);
+        box-shadow:inset 0 0 0 1px var(--e-trait);-webkit-tap-highlight-color:transparent}
+  #p1:checked ~ .corps .past.q1,
+  #p2:checked ~ .corps .past.q2,
+  #p3:checked ~ .corps .past.q3,
+  #p4:checked ~ .corps .past.q4,
+  #p5:checked ~ .corps .past.q5,
+  #p6:checked ~ .corps .past.q6{background:var(--e-pin);color:var(--e-pin-encre);box-shadow:none}
+  .autre{margin-top:10px}
+  .autre span{display:block;margin-bottom:5px;font-size:9.5px;letter-spacing:.28em;
+              text-transform:uppercase;color:var(--e-gris)}
+  .autre input{width:100%;padding:12px 14px;border:0;border-radius:4px;background:var(--e-plage);
+               font-family:inherit;font-size:16px;color:var(--e-encre)}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Maquette · 13 août 2026</p>
+    <h1>L'unité d'un tarif, à choisir</h1>
+    <p>Aujourd'hui, il faut la <strong>taper</strong> : « m² » demande un clavier
+      de symboles, « jour/homme » quinze frappes. Et rien ne garantit deux fois
+      la même orthographe — <strong>« m2 » et « m² » sont deux unités
+      différentes</strong> pour la machine, donc un tarif qui cesse de se
+      multiplier sans que rien ne le dise.</p>
+    <p>Deux formes. <strong>Dans les deux, la case reste libre</strong> : le
+      stère, la tonne, l'arbre — aucune liste ne devinera vos unités, et vous
+      retirer la frappe serait un recul déguisé en confort.</p>
+  </div>
+
+  <div class="rangee">
+
+    <!-- ══ AUJOURD'HUI ═══════════════════════════════════════════════ -->
+    <section class="prop">
+      <p class="sous">Aujourd'hui — il faut la taper</p>
+      <div class="tel">
+        <div class="ecran" data-s="avant">
+          <div class="tete">
+            <p class="sur caps">Réglages</p>
+            <h1>Mes tarifs</h1>
+          </div>
+          <div class="corps">
+            <div class="tarif">
+              <div class="nom">Dépose carrelage</div>
+              <div class="deux">
+                <label class="champ"><span class="et">Prix (€)</span>
+                  <div class="prix">18,00</div>
+                </label>
+                <label class="champ" data-s="ancienne"><span class="et">Unité (facultatif)</span>
+                  <div class="case"><span class="creux">m², heure…</span></div>
+                </label>
+              </div>
+            </div>
+            <div class="tarif">
+              <div class="nom">Main d'œuvre (jour/homme)</div>
+              <div class="deux">
+                <label class="champ"><span class="et">Prix (€)</span>
+                  <div class="prix">280,00</div>
+                </label>
+                <label class="champ"><span class="et">Unité (facultatif)</span>
+                  <div class="case"><span>jour/homme</span></div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="note">Une case vide et un exemple. <b>Rien ne guide, rien ne
+        garantit l'orthographe.</b></p>
+    </section>
+
+    <!-- ══ FORME 1 — LE BANDEAU DÉROULANT ════════════════════════════ -->
+    <section class="prop">
+      <p class="sous">1 — Le bandeau qui se déplie</p>
+      <div class="tel">
+        <div class="ecran" data-s="p1">
+          <input type="radio" name="u" id="u0" class="interrupteur" checked>
+          <input type="radio" name="u" id="u1" class="interrupteur">
+          <input type="radio" name="u" id="u2" class="interrupteur">
+          <input type="radio" name="u" id="u3" class="interrupteur">
+          <input type="radio" name="u" id="u4" class="interrupteur">
+          <input type="radio" name="u" id="u5" class="interrupteur">
+          <input type="radio" name="u" id="u6" class="interrupteur">
+
+          <div class="tete">
+            <p class="sur caps">Réglages</p>
+            <h1>Mes tarifs</h1>
+          </div>
+
+          <div class="corps">
+            <div class="tarif">
+              <div class="nom">Dépose carrelage</div>
+              <div class="deux">
+                <label class="champ"><span class="et">Prix (€)</span>
+                  <div class="prix">18,00</div>
+                </label>
+                <div class="champ"><span class="et">Unité (facultatif)</span>
+                  <input type="checkbox" id="ouvert" class="interrupteur">
+                  <label class="case" for="ouvert" data-s="case">
+                    <span class="valeur">
+                      <b class="v0">Choisir…</b><b class="v1">jour/homme</b><b class="v2">m²</b><b class="v3">ml</b><b class="v4">heure</b><b class="v5">forfait</b><b class="v6">tonne</b>
+                    </span>
+                    <span class="chev">▾</span>
+                  </label>
+
+                  <div class="bandeau" data-s="bandeau">
+                    <label class="opt o1" for="u1"><span>jour/homme<span class="quoi"> — main d'œuvre</span></span><span class="marque">✓</span></label>
+                    <label class="opt o2" for="u2"><span>m²<span class="quoi"> — surface</span></span><span class="marque">✓</span></label>
+                    <label class="opt o3" for="u3"><span>ml<span class="quoi"> — mètre linéaire</span></span><span class="marque">✓</span></label>
+                    <label class="opt o4" for="u4"><span>heure</span><span class="marque">✓</span></label>
+                    <label class="opt o5" for="u5"><span>forfait<span class="quoi"> — ne se multiplie pas</span></span><span class="marque">✓</span></label>
+                    <label class="opt o6" for="u6"><span>tonne</span><span class="marque">✓</span></label>
+                    <div class="libre">
+                      <span>Une autre unité ?</span>
+                      <input placeholder="stère, arbre, forfait déplacement…" autocomplete="off">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="note">Touchez la case. Le bandeau <b>se déplie sous elle</b>, sans
+        quitter l'écran, et se termine par une ligne pour écrire la vôtre.</p>
+    </section>
+
+    <!-- ══ FORME 2 — LES PASTILLES ═══════════════════════════════════ -->
+    <section class="prop">
+      <p class="sous">2 — Les unités en pastilles</p>
+      <div class="tel">
+        <div class="ecran" data-s="p2">
+          <input type="radio" name="p" id="p0" class="interrupteur" checked>
+          <input type="radio" name="p" id="p1" class="interrupteur">
+          <input type="radio" name="p" id="p2" class="interrupteur">
+          <input type="radio" name="p" id="p3" class="interrupteur">
+          <input type="radio" name="p" id="p4" class="interrupteur">
+          <input type="radio" name="p" id="p5" class="interrupteur">
+          <input type="radio" name="p" id="p6" class="interrupteur">
+
+          <div class="tete">
+            <p class="sur caps">Réglages</p>
+            <h1>Mes tarifs</h1>
+          </div>
+
+          <div class="corps">
+            <div class="tarif">
+              <div class="nom">Dépose carrelage</div>
+              <label class="champ" style="display:block;margin-top:12px">
+                <span class="et">Prix (€)</span>
+                <div class="prix" style="max-width:50%">18,00</div>
+              </label>
+
+              <div class="autre" data-s="pastilles">
+                <span>Unité (facultatif)</span>
+                <div class="pastilles">
+                  <label class="past q1" for="p1">jour/homme</label>
+                  <label class="past q2" for="p2">m²</label>
+                  <label class="past q3" for="p3">ml</label>
+                  <label class="past q4" for="p4">heure</label>
+                  <label class="past q5" for="p5">forfait</label>
+                  <label class="past q6" for="p6">tonne</label>
+                </div>
+              </div>
+
+              <label class="autre" style="display:block">
+                <span>ou la vôtre</span>
+                <input placeholder="stère, arbre…" autocomplete="off">
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="note">Tout est <b>sous les yeux</b>, un appui suffit — mais la
+        carte du tarif grandit, et il en a plusieurs à l'écran.</p>
+    </section>
+
+  </div>
+</div>

@@ -47,6 +47,9 @@ export default function FeuilleYAller({
   adresse,
   telephone,
   quand,
+  equipes = [],
+  rangEquipe = null,
+  onChangerEquipe,
 }: {
   ouverte: boolean;
   onFermer: () => void;
@@ -56,8 +59,22 @@ export default function FeuilleYAller({
   adresse: string | null;
   telephone: string | null;
   quand: string;
+  /**
+   * Les équipes déclarées, avec leur libellé déjà calculé.
+   *
+   * **Vide à une seule équipe**, et la ligne disparaît alors entièrement : il
+   * n'y a personne à distinguer, et proposer un choix à un seul terme ferait
+   * exactement ce que le patron a interdit le 10 août.
+   */
+  equipes?: { rang: number; libelle: string }[];
+  rangEquipe?: number | null;
+  /** Rend un refus lisible plutôt que de lever : voir `changerEquipeChantierAction`. */
+  onChangerEquipe?: (rang: number) => Promise<{ succes: boolean; erreur?: string }>;
 }) {
   const [motDuCopier, setMotDuCopier] = useState<string | null>(null);
+  const [choixOuvert, setChoixOuvert] = useState(false);
+  const [refusEquipe, setRefusEquipe] = useState<string | null>(null);
+  const [rang, setRang] = useState<number | null>(rangEquipe);
 
   const liens = liensItineraire(adresse);
   const appel = lienAppel(telephone);
@@ -187,6 +204,84 @@ export default function FeuilleYAller({
         >
           Saisir l’adresse
         </a>
+      )}
+
+      {/* **L'ÉQUIPE, depuis le 14 août 2026, à sa demande** : *« on devait
+          pouvoir affilier une équipe à un chantier ajouté au planning une fois
+          que le client a validé le devis »* (`ARCHITECTURE.md` §100).
+
+          **Ici et non sur un écran à part** : la feuille porte déjà les gestes
+          du chantier posé, et un écran de plus pour changer un nom ne se
+          justifierait pas.
+
+          **Elle ne touche ni au jour ni à la demi-journée**, et l'écran le dit :
+          un chantier que le client a validé est justement celui qu'on ne veut
+          plus déplacer. */}
+      {equipes.length > 1 && onChangerEquipe && (
+        <div className="mt-4 border-t pt-3" style={{ borderColor: colors.lineSoft }}>
+          <button
+            type="button"
+            onClick={() => setChoixOuvert((o) => !o)}
+            aria-expanded={choixOuvert}
+            className="flex w-full items-center gap-3 py-2 text-left"
+            style={{ minHeight: 44 }}
+          >
+            <span className="flex-1 text-[15px]">Équipe</span>
+            <span className="text-[14px]" style={{ color: colors.muted }}>
+              {equipes.find((e) => e.rang === rang)?.libelle ?? "à choisir"}
+            </span>
+            <span
+              aria-hidden="true"
+              className="-mt-[3px] h-[7px] w-[7px] flex-none rotate-45"
+              style={{ borderRight: `1.5px solid ${colors.chevron}`, borderBottom: `1.5px solid ${colors.chevron}` }}
+            />
+          </button>
+
+          {choixOuvert && (
+            <div className="mt-1.5 overflow-hidden rounded-[4px]" style={{ backgroundColor: colors.card }}>
+              {equipes.map((e) => (
+                <button
+                  key={e.rang}
+                  type="button"
+                  aria-pressed={e.rang === rang}
+                  onClick={async () => {
+                    setRefusEquipe(null);
+                    const avant = rang;
+                    setRang(e.rang); // optimiste : le doigt doit voir tout de suite
+                    const r = await onChangerEquipe(e.rang);
+                    if (r.succes) {
+                      setChoixOuvert(false);
+                    } else {
+                      // **On revient à ce que la base porte, jamais à ce qu'on a
+                      // demandé.** Un refus silencieux laisserait une équipe
+                      // cochée qui n'existe pas.
+                      setRang(avant);
+                      setRefusEquipe(r.erreur ?? "Ce changement n'a pas abouti.");
+                    }
+                  }}
+                  className="flex w-full items-center gap-3 border-b px-3.5 text-left last:border-b-0"
+                  style={{
+                    borderColor: colors.line,
+                    minHeight: 46,
+                    backgroundColor: e.rang === rang ? colors.line : "transparent",
+                  }}
+                >
+                  <span className="flex-1 text-[15px]">{e.libelle}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {refusEquipe ? (
+            <p role="alert" className="mt-2 text-[12px] leading-snug" style={{ color: colors.alert }}>
+              {refusEquipe}
+            </p>
+          ) : (
+            <p className="mt-1.5 text-[12px] leading-snug" style={{ color: colors.muted }}>
+              Le jour et la demi-journée ne changent pas.
+            </p>
+          )}
+        </div>
       )}
 
       {/* **« Créer la facture » vit ici depuis le 12 août 2026, à sa demande :**

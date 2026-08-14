@@ -177,6 +177,9 @@ export default async function ReleveTvaPage({
             saisie: a.saisie,
           }))}
           aujourdHui={jourIso(new Date())}
+          periodicite={periodicite}
+          annee={periode.annee}
+          numero={periode.numero}
         />
 
         <div className="mt-6 flex flex-col gap-4 px-6">

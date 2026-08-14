@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, smallCaps } from "@/lib/design-tokens";
 import { meriteUneRecherche, type SuggestionAdresse } from "@/lib/suggestions-adresse";
 
 /**
@@ -29,11 +29,26 @@ export default function ChampAdresse({
   placeholder,
   value,
   onChange,
+  apparence = "carte",
 }: {
   label: string;
   placeholder: string;
   value: string;
   onChange: (v: string) => void;
+  /**
+   * Deux habillages, UNE seule logique de suggestion.
+   *
+   * `"carte"` — le champ posé sur une plage crème, celui de la fiche client
+   * depuis le 7 août.
+   *
+   * `"ligne"` — l'étiquette fine, la valeur en serif et un filet dessous : la
+   * grammaire de l'écran d'identité (`IdentiteClient`). Posé le 14 août, quand
+   * le patron a demandé la même aide sur SON adresse de siège. Recopier le
+   * composant pour changer son allure aurait dupliqué la règle des suggestions
+   * — celle qui n'interroge pas à chaque lettre, se tait quand le réseau tombe
+   * et n'enferme jamais la saisie (`CLAUDE.md` §3).
+   */
+  apparence?: "carte" | "ligne";
 }) {
   // Les suggestions portent la saisie à laquelle elles répondent. Sans cela,
   // celles d'« 20 rue de la p » resteraient affichées pendant qu'on tape la
@@ -84,10 +99,18 @@ export default function ChampAdresse({
   const suggestions = resultat.pour === value ? resultat.liste : [];
   const listeVisible = ouverte && suggestions.length > 0;
 
+  const enLigne = apparence === "ligne";
+
   return (
-    <div className="relative flex flex-col gap-1.5">
-      <label className="flex flex-col gap-1.5" htmlFor={identifiant}>
-        <span className={smallCaps} style={{ color: colors.muted }}>
+    <div
+      className={enLigne ? "relative border-b py-[13px]" : "relative flex flex-col gap-1.5"}
+      style={enLigne ? { borderColor: colors.line } : undefined}
+    >
+      <label className={enLigne ? "block" : "flex flex-col gap-1.5"} htmlFor={identifiant}>
+        <span
+          className={enLigne ? `mb-[5px] block ${libelleCaps}` : smallCaps}
+          style={{ color: colors.muted }}
+        >
           {label}
         </span>
         <input
@@ -111,8 +134,18 @@ export default function ChampAdresse({
           aria-expanded={listeVisible}
           aria-autocomplete="list"
           aria-controls={`${identifiant}-liste`}
-          className="rounded-[4px] border-0 px-4 py-3.5 outline-none"
-          style={{ backgroundColor: colors.card, color: colors.ink, fontFamily: font.body, fontSize: "16px" }}
+          className={
+            enLigne
+              ? "block w-full border-0 bg-transparent p-0 outline-none"
+              : "rounded-[4px] border-0 px-4 py-3.5 outline-none"
+          }
+          // 17 px en ligne, 16 en carte — jamais moins : en dessous de 16, iOS
+          // agrandit la page à la mise au point et l'écran saute.
+          style={
+            enLigne
+              ? { color: colors.ink, fontFamily: font.display, fontSize: 17, lineHeight: 1.35 }
+              : { backgroundColor: colors.card, color: colors.ink, fontFamily: font.body, fontSize: "16px" }
+          }
         />
       </label>
 

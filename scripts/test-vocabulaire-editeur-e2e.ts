@@ -35,7 +35,11 @@ async function main() {
   await page.waitForURL(`${BASE}/`, { timeout: 20000 });
 
   // --- 1. Le lien n'est pas proposé --------------------------------------
-  await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
+  // **Il faut regarder là où le renvoi SERAIT.** Depuis le 14 août 2026 il est
+  // rangé sous « Atlas IA » et non plus à même l'écran des réglages
+  // (`ARCHITECTURE.md` §96) : viser `/reglages` rendrait ce contrôle vert par
+  // accident, en cherchant un lien à un endroit où plus personne ne le met.
+  await page.goto(`${BASE}/reglages/ia`, { waitUntil: "networkidle" });
   await page.waitForTimeout(800);
   const reglages = await page.locator("body").innerText();
   assert.doesNotMatch(

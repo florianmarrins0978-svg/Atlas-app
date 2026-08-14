@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Donner une équipe à un chantier — trois gestes à essayer</title>
+<title>Donner une équipe à un chantier — l’acquis, et deux questions</title>
 </head>
 <body>
 <style>
@@ -17,34 +17,36 @@
     .html que je puisse essayer ».
 
     ————————————————————————————————————————————————————————————————
-    CE QUE LE CODE DIT, ET QUI DONNE RAISON À LA PLAINTE.
+    CE QUI A CHANGÉ PENDANT QUE JE DESSINAIS, ET QUI CORRIGE CETTE PLANCHE.
 
-    L'équipe ne s'écrit QUE par `planifierChantier(ctx, id, date, choix)` —
-    autrement dit **en posant une date**. Il n'existe aucun autre chemin :
-    `rangEquipe` n'apparaît nulle part ailleurs dans `src/app`. Conséquences,
-    vérifiées fichier par fichier et non supposées :
+    La première version disait : « l'équipe ne s'écrit qu'en posant une date,
+    six gestes pour changer une lettre ». C'ÉTAIT VRAI AU DÉBUT DE LA SOIRÉE ;
+    ça ne l'est plus. Une autre session a livré le 14 août
+    `changerEquipeChantier()` et la ligne « Équipe » dans la feuille du chevron
+    — c'est-à-dire exactement la proposition B que je m'apprêtais à soumettre.
+    Le code fait foi (`CLAUDE.md` §1) : la planche a été refaite plutôt que
+    livrée périmée. Le geste B est donc montré comme un ACQUIS, pas comme un
+    choix ; il reste essayable pour qu'il le juge.
 
-      · pour changer l'équipe d'un chantier DÉJÀ planifié, il faut appuyer sur
-        « Déplacer » — un mot qui annonce un changement de DATE —, remonter au
-        calendrier, rouvrir le jour, retrouver la bonne demi-journée, appuyer
-        sur la ligne de l'équipe, puis « Poser ». Six gestes pour une lettre ;
-      · la fiche du chantier ne montre pas l'équipe. Nulle part ;
-      · la ligne du planning ne l'écrit que si elle existe : un chantier sans
-        équipe ne dit rien, et rien ne signale qu'il en manque une.
+    CE QUI RESTE VRAI, ET QU'IL RESTE À DÉCIDER :
 
-    DEUX DÉFAUTS TROUVÉS EN LISANT, ET QUI NE SONT PAS DANS CETTE PLANCHE :
+      · **rien, dans la liste du planning, ne signale un chantier sans équipe.**
+        Il faut ouvrir la feuille de chaque chantier pour l'apprendre. C'est ce
+        que règle la proposition A ;
+      · **au moment de POSER**, les équipes restent des lignes de liste, qui se
+        lisent mais ne s'offrent pas. C'est la proposition C ;
+      · la fiche du chantier ne montre toujours l'équipe nulle part.
 
-      1. `chantiers.ts` écrit `...(equipeId ? { equipeId } : {})` : une équipe
-         posée ne peut plus JAMAIS être retirée. « Personne pour l'instant »
-         n'est pas exprimable aujourd'hui — la proposition qui le montre demande
-         donc une ligne de serveur en plus. C'est dit dans la note de fin.
-      2. La revalidation du serveur vérifie que la DEMI-JOURNÉE tient
-         (`occupation < nombreEquipes`), mais jamais que l'ÉQUIPE demandée est
-         libre. L'écran l'empêche en éteignant les lignes prises ; le serveur,
-         lui, laisserait passer deux chantiers sur la même équipe au même
-         moment. Inatteignable par l'écran d'aujourd'hui — mais toute
-         proposition qui change l'équipe SANS passer par le panneau du jour le
-         rend atteignable. Écrit dans TODO.md.
+    DEUX DÉFAUTS DU CHEMIN DE POSE, QUI SUBSISTENT (relus après la fusion) :
+
+      1. `planifierChantier` écrit `...(equipeId ? { equipeId } : {})` : une
+         équipe posée ne peut plus JAMAIS être retirée, et `changerEquipeChantier`
+         prend un `rangEquipe: number` non nullable. « Personne pour l'instant »
+         n'est donc exprimable NULLE PART aujourd'hui.
+      2. À la POSE, la revalidation vérifie que la demi-journée tient
+         (`occupation < nombreEquipes`), jamais que l'ÉQUIPE demandée est libre.
+         Le chemin neuf, lui, le vérifie pour de bon (`EquipeIndisponible`) : les
+         deux chemins ne défendent donc pas la même règle. Écrit dans TODO.md.
 
     ————————————————————————————————————————————————————————————————
     RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
@@ -284,41 +286,150 @@
     <p class="sur">Le planning · l’équipe</p>
     <h1>Donner une équipe à un chantier</h1>
     <p>Votre remarque du 13 août : <b>« appliquer une équipe à un chantier n’est
-      pas intuitif »</b>. En lisant le code, c’est pire que peu intuitif :
-      <b>l’équipe ne s’écrit qu’en posant une date</b>. Il n’existe aucun autre
-      chemin dans toute l’application.</p>
-    <p><b>Les trois écrans ci-dessous se touchent pour de vrai</b> : la pastille
-      ouvre la feuille, le choix la referme et le nom change. Essayez-les au
-      doigt, c’est fait pour.</p>
+      pas intuitif »</b>. Vous aviez raison, et davantage que vous ne le pensiez :
+      jusqu’à hier soir, l’équipe ne s’écrivait <b>qu’en posant une date</b> —
+      six gestes pour changer une lettre, à commencer par « Déplacer ».</p>
+    <p><b>Une partie est déjà réparée</b>, arrivée pendant que je dessinais : la
+      feuille du chevron porte désormais une ligne « Équipe ». Cette page la
+      montre <b>telle qu’elle est</b>, puis les deux choses qu’elle ne règle pas
+      — et celles-là attendent votre avis.</p>
+    <p><b>Les trois écrans se touchent pour de vrai</b> : la pastille ouvre la
+      feuille, le choix la referme et le nom change. Essayez-les au doigt, c’est
+      fait pour.</p>
   </div>
 
-  <p class="chapitre">Le témoin</p>
-  <p class="titre-chapitre">Ce qu’il faut faire aujourd’hui</p>
-  <p class="dit">Pour donner l’équipe B à un chantier déjà planifié :</p>
+  <p class="chapitre">Ce qui est déjà là</p>
+  <p class="titre-chapitre">La ligne « Équipe » dans la feuille</p>
+  <p class="dit">Livré le 14 août, pendant que cette planche se dessinait — je ne
+    vous le propose donc pas, <b>je vous le montre</b>, et le premier écran
+    ci-dessous vous permet de le juger au doigt.</p>
 
   <div class="chemin">
-    <ol>
-      <li>appuyer sur <b>« Déplacer »</b> — un mot qui annonce un changement de <b>date</b> ;</li>
-      <li>remonter jusqu’au calendrier, qui s’est affiché plus haut ;</li>
-      <li>rouvrir <b>le même jour</b> que celui où le chantier est déjà posé ;</li>
-      <li>retrouver la bonne demi-journée dans le panneau qui s’ouvre ;</li>
-      <li>appuyer sur la ligne de l’équipe voulue — une ligne qui ressemble à une liste, pas à un choix ;</li>
-      <li>appuyer sur <b>« Poser »</b>, qui repose la date par-dessus elle-même.</li>
-    </ol>
-    <p class="apres"><b>Six gestes pour changer une lettre</b> — et rien, à
-      aucun moment, ne dit que c’est là que se change l’équipe. La fiche du
-      chantier, elle, ne montre l’équipe nulle part. Et un chantier <b>sans</b>
-      équipe n’écrit rien du tout : rien ne signale qu’il en manque une.</p>
+    <p class="apres" style="margin-top:0"><b>Ce que ça règle :</b> l’équipe se
+      change en trois appuis, sans toucher à la date, et le serveur <b>refuse
+      pour de bon</b> si l’équipe visée a déjà un chantier sur ce créneau.</p>
+    <p class="apres"><b>Ce que ça ne règle pas, et qui reste à décider :</b>
+      depuis la liste du planning, <b>rien ne signale un chantier sans
+      équipe</b> — il faut ouvrir la feuille de chacun pour l’apprendre. Et au
+      moment de <b>poser</b>, les équipes restent des lignes de liste, qui se
+      lisent mais ne s’offrent pas.</p>
   </div>
 
-  <p class="chapitre">Trois gestes</p>
+  <p class="chapitre">Les deux questions ouvertes</p>
   <p class="titre-chapitre">À essayer au doigt</p>
-  <p class="dit"><b>A et B répondent à la même question</b> — changer l’équipe
-    d’un chantier déjà posé — et s’excluent l’une l’autre. <b>C répond à
-    l’autre moitié</b> : choisir l’équipe au moment de poser. Vous pouvez en
-    prendre une de chaque.</p>
+  <p class="dit"><b>B est l’acquis</b> — montré tel qu’il est. <b>A rend le
+    manque visible depuis la liste</b>, et <b>C règle le moment de poser</b>.
+    Les deux sont indépendants de B et l’un de l’autre : vous pouvez en prendre
+    un, l’autre, les deux, ou aucun.</p>
 
   <div class="grille">
+
+    <!-- ═══ B ═══════════════════════════════════════════════════════════ -->
+    <div class="prop">
+      <input type="radio" name="eqB" id="B-fa" class="etat" checked>
+      <input type="radio" name="eqB" id="B-fb" class="etat">
+      <input type="radio" name="eqB" id="B-oa" class="etat">
+      <input type="radio" name="eqB" id="B-ob" class="etat">
+
+      <div class="scene">
+        <div class="tel"><div class="ecran">
+          <p class="caps rubrique">Planifiés</p>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Monsieur Martin</span>
+              <span class="quand">14 août · journée</span>
+            </span>
+            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+          </div>
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Monsieur Martins</span>
+              <span class="quand">17 août · matin</span>
+            </span>
+            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+          </div>
+
+          <span class="voile" style="opacity:1"></span>
+
+          <div class="feuille" style="transform:none">
+            <p class="poignee"></p>
+
+            <div class="pan-lecture">
+              <p class="caps sur">Y aller</p>
+              <p class="qui">12 rue des Peupliers</p>
+              <p class="quand2">Monsieur Martin · 14 août · journée</p>
+              <div class="filet"></div>
+
+              <label class="option" for="B-oa" style="border-bottom:1px solid var(--e-trait)">
+                <span class="o-nom">Équipe</span>
+                <span style="display:flex;align-items:center;gap:9px">
+                  <span class="o-etat" style="font-size:14px;color:var(--e-encre)">
+                    <span class="vb-a">Équipe A</span><span class="vb-b">Équipe C</span>
+                  </span>
+                  <span class="chev">›</span>
+                </span>
+              </label>
+
+              <div style="display:flex;gap:1px;margin-top:14px;border-radius:10px;overflow:hidden;background:var(--e-trait)">
+                <span style="flex:1;background:var(--e-carte);padding:12px 0;text-align:center;font-size:13.5px">Copier l’adresse</span>
+                <span style="flex:1;background:var(--e-carte);padding:12px 0;text-align:center;font-size:13.5px">Appeler le client</span>
+              </div>
+              <span style="display:block;margin-top:14px;border-radius:9999px;background:var(--e-pin);color:#faf9f5;padding:13px 0;text-align:center;font-size:15px">Créer la facture</span>
+            </div>
+
+            <div class="pan-choix">
+              <p class="caps sur">Qui s’en occupe</p>
+              <p class="qui">Monsieur Martin</p>
+              <p class="quand2">Vendredi 14 août, la journée</p>
+              <div class="filet"></div>
+
+              <label class="option" for="B-fa">
+                <span class="o-nom">Équipe A</span>
+                <span style="display:flex;align-items:center;gap:10px">
+                  <span class="o-etat">Libre ce jour-là</span>
+                  <span class="coche c-a">✓</span>
+                </span>
+              </label>
+              <span class="option prise">
+                <span class="o-nom">Équipe B</span>
+                <span style="display:flex;align-items:center;gap:10px">
+                  <span class="o-etat">Prise — Madame Roux</span>
+                  <span class="coche">✓</span>
+                </span>
+              </span>
+              <label class="option" for="B-fb">
+                <span class="o-nom">Équipe C</span>
+                <span style="display:flex;align-items:center;gap:10px">
+                  <span class="o-etat">Libre ce jour-là</span>
+                  <span class="coche c-b">✓</span>
+                </span>
+              </label>
+              <label class="fermer" for="B-fa">Annuler</label>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="legende">
+        <h2>B · Déjà codé</h2>
+        <p class="titre">Dans la feuille du chevron</p>
+        <p><b>Ce n’est pas une proposition : c’est ce que vous avez depuis le
+          14 août.</b> La feuille qui s’ouvre déjà sur un chantier planifié —
+          adresse, appeler, créer la facture — porte une ligne « Équipe ». Elle
+          mène au choix en place, sans empiler une feuille sur l’autre.</p>
+        <p><b>La liste du planning ne change pas d’un pixel</b> : c’est sa force.
+          Rien ne rétrécit, le nom du chantier garde toute sa largeur.</p>
+        <p><b>Essayez « Équipe B » : elle ne répond pas.</b> Elle est déjà prise
+          par Madame Roux ce jour-là, et l’écran le dit <b>avant</b> l’appui
+          plutôt que de laisser le serveur refuser après. Le serveur, lui,
+          revérifie de son côté et refuse pour de bon — les deux tiennent.</p>
+        <p class="contre"><b>Ce qu’il reste après ça :</b> depuis la liste,
+          <b>rien ne signale un chantier sans équipe</b> — il faut ouvrir la
+          feuille de chacun pour l’apprendre. C’est le défaut d’origine, en
+          moins profond, et c’est ce que la proposition A règle.</p>
+      </div>
+    </div>
 
     <!-- ═══ A ═══════════════════════════════════════════════════════════ -->
     <div class="prop">
@@ -410,7 +521,7 @@
       </div>
 
       <div class="legende">
-        <h2>Geste A</h2>
+        <h2>A · À décider</h2>
         <p class="titre">La pastille sur la ligne</p>
         <p>L’équipe devient un <b>objet qu’on touche</b>, là où on la lit. Un
           appui, un choix, c’est fini — <b>deux gestes au lieu de six</b>.</p>
@@ -425,112 +536,6 @@
           est la seule chose qui dit de quel chantier il s’agit. Déplacer une
           date se ferait alors depuis la feuille du chevron. <b>Dites-moi si ce
           troc vous va</b> : c’est le seul vrai point de ce geste.</p>
-      </div>
-    </div>
-
-    <!-- ═══ B ═══════════════════════════════════════════════════════════ -->
-    <div class="prop">
-      <input type="radio" name="eqB" id="B-fa" class="etat" checked>
-      <input type="radio" name="eqB" id="B-fb" class="etat">
-      <input type="radio" name="eqB" id="B-oa" class="etat">
-      <input type="radio" name="eqB" id="B-ob" class="etat">
-
-      <div class="scene">
-        <div class="tel"><div class="ecran">
-          <p class="caps rubrique">Planifiés</p>
-
-          <div class="ligne">
-            <span class="colonne">
-              <span class="nom">Monsieur Martin</span>
-              <span class="quand">14 août · journée</span>
-            </span>
-            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
-          </div>
-          <div class="ligne">
-            <span class="colonne">
-              <span class="nom">Monsieur Martins</span>
-              <span class="quand">17 août · matin</span>
-            </span>
-            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
-          </div>
-
-          <span class="voile" style="opacity:1"></span>
-
-          <div class="feuille" style="transform:none">
-            <p class="poignee"></p>
-
-            <div class="pan-lecture">
-              <p class="caps sur">Y aller</p>
-              <p class="qui">12 rue des Peupliers</p>
-              <p class="quand2">Monsieur Martin · 14 août · journée</p>
-              <div class="filet"></div>
-
-              <label class="option" for="B-oa" style="border-bottom:1px solid var(--e-trait)">
-                <span class="o-nom">Équipe</span>
-                <span style="display:flex;align-items:center;gap:9px">
-                  <span class="o-etat" style="font-size:14px;color:var(--e-encre)">
-                    <span class="vb-a">Équipe A</span><span class="vb-b">Équipe C</span>
-                  </span>
-                  <span class="chev">›</span>
-                </span>
-              </label>
-
-              <div style="display:flex;gap:1px;margin-top:14px;border-radius:10px;overflow:hidden;background:var(--e-trait)">
-                <span style="flex:1;background:var(--e-carte);padding:12px 0;text-align:center;font-size:13.5px">Copier l’adresse</span>
-                <span style="flex:1;background:var(--e-carte);padding:12px 0;text-align:center;font-size:13.5px">Appeler le client</span>
-              </div>
-              <span style="display:block;margin-top:14px;border-radius:9999px;background:var(--e-pin);color:#faf9f5;padding:13px 0;text-align:center;font-size:15px">Créer la facture</span>
-            </div>
-
-            <div class="pan-choix">
-              <p class="caps sur">Qui s’en occupe</p>
-              <p class="qui">Monsieur Martin</p>
-              <p class="quand2">Vendredi 14 août, la journée</p>
-              <div class="filet"></div>
-
-              <label class="option" for="B-fa">
-                <span class="o-nom">Équipe A</span>
-                <span style="display:flex;align-items:center;gap:10px">
-                  <span class="o-etat">Libre ce jour-là</span>
-                  <span class="coche c-a">✓</span>
-                </span>
-              </label>
-              <span class="option prise">
-                <span class="o-nom">Équipe B</span>
-                <span style="display:flex;align-items:center;gap:10px">
-                  <span class="o-etat">Prise — Madame Roux</span>
-                  <span class="coche">✓</span>
-                </span>
-              </span>
-              <label class="option" for="B-fb">
-                <span class="o-nom">Équipe C</span>
-                <span style="display:flex;align-items:center;gap:10px">
-                  <span class="o-etat">Libre ce jour-là</span>
-                  <span class="coche c-b">✓</span>
-                </span>
-              </label>
-              <label class="fermer" for="B-fa">Annuler</label>
-            </div>
-          </div>
-        </div></div>
-      </div>
-
-      <div class="legende">
-        <h2>Geste B</h2>
-        <p class="titre">Dans la feuille du chevron</p>
-        <p>La feuille qui s’ouvre déjà sur un chantier planifié — adresse,
-          appeler, créer la facture — gagne <b>une ligne « Équipe »</b>. Elle
-          mène au même choix, en place, sans empiler une feuille sur l’autre.</p>
-        <p><b>La liste du planning ne change pas d’un pixel</b> : c’est sa force.
-          Rien ne rétrécit, le nom du chantier garde toute sa largeur.</p>
-        <p><b>Essayez « Équipe B » : elle ne répond pas.</b> Elle est déjà prise
-          par Madame Roux ce jour-là, et l’écran le dit <b>avant</b> l’appui
-          plutôt que de laisser le serveur refuser après. C’est une vraie règle
-          de l’application, pas une décoration.</p>
-        <p class="contre"><b>Ce que ça coûte :</b> un appui de plus qu’en A, et
-          surtout <b>rien ne signale un chantier sans équipe</b> depuis la liste
-          — il faut ouvrir la feuille pour l’apprendre. C’est exactement le
-          défaut d’aujourd’hui, en moins profond.</p>
       </div>
     </div>
 
@@ -591,7 +596,7 @@
       </div>
 
       <div class="legende">
-        <h2>Geste C</h2>
+        <h2>C · À décider</h2>
         <p class="titre">Le choix au moment de poser</p>
         <p>C’est l’écran d’aujourd’hui, <b>rangé autrement</b>. Les équipes ne
           sont plus des lignes de liste — qui se lisent, mais ne s’offrent pas —
@@ -611,30 +616,33 @@
 
   <div class="note">
     <span class="t">Ce que ça demanderait, et les deux défauts trouvés en chemin</span>
-    <p><b>Rien n’est codé</b> — c’est votre règle, et ces trois écrans existent
-      pour que vous choisissiez avant qu’on écrive quoi que ce soit.</p>
-    <p><b>Un chemin manque en entier, et c’est le vrai travail.</b> Aujourd’hui
-      l’équipe ne s’enregistre qu’en posant une date. A comme B demandent une
-      façon de dire « change seulement l’équipe » — c’est une petite chose, mais
-      elle n’existe pas, et prétendre le contraire serait vous mentir.</p>
-    <p><b>Premier défaut trouvé en lisant : une équipe ne peut jamais être
-      retirée.</b> Le code n’écrit l’équipe que si elle est fournie, et ignore
-      silencieusement le cas contraire — « Personne pour l’instant », dans le
-      geste A, <b>ne marcherait pas aujourd’hui</b>. Une ligne à changer, mais
-      il fallait le savoir avant de vous montrer le bouton.</p>
-    <p><b>Second défaut, plus sérieux, et il pèse sur le choix.</b> Quand vous
-      posez un chantier, le serveur revérifie que la <b>demi-journée</b> tient —
-      mais jamais que <b>l’équipe demandée</b> est libre. Aujourd’hui l’écran
-      l’empêche, puisqu’une ligne prise est éteinte ; c’est la seule chose qui
-      tient. Un geste qui change l’équipe <b>sans passer par le panneau du
-      jour</b> — A et B, précisément — ouvre ce trou pour de bon. Il est donc à
-      refermer <b>en même temps</b>, pas après. Écrit dans <b>TODO.md</b>.</p>
+    <p><b>Rien n’est codé de ma main</b> — c’est votre règle, et A comme C
+      attendent votre avis avant qu’on écrive quoi que ce soit.</p>
+    <p><b>Cette planche a été refaite en cours de route, et il faut le
+      dire.</b> Sa première version vous décrivait « six gestes pour changer une
+      lettre » ; c’était vrai en début de soirée. Une autre session a livré
+      entre-temps la ligne « Équipe » de la feuille — <b>exactement ce que
+      j’allais vous proposer</b>. Ici, le code fait foi : la planche a été
+      corrigée plutôt que livrée périmée, et B y figure comme un acquis.</p>
+    <p><b>Premier défaut, relu après cette arrivée : une équipe ne peut jamais
+      être retirée.</b> Ni par la pose, qui n’écrit l’équipe que si elle est
+      fournie et ignore le cas contraire en silence, ni par le geste neuf, qui
+      exige un rang. « Personne pour l’instant », dans la proposition A,
+      <b>ne marcherait aujourd’hui nulle part</b>. Une ligne à changer, mais il
+      fallait le savoir avant de vous montrer le bouton.</p>
+    <p><b>Second défaut : les deux chemins ne défendent pas la même règle.</b>
+      Quand vous <b>changez</b> l’équipe, le serveur vérifie pour de bon que
+      l’équipe visée est libre. Quand vous <b>posez</b> un chantier, il vérifie
+      seulement que la demi-journée tient — un compte, pas une identité. Le
+      trou est aujourd’hui hors d’atteinte, l’écran éteignant les lignes prises,
+      mais deux chemins qui protègent différemment la même chose finissent
+      toujours par diverger. À refermer. Écrit dans <b>TODO.md</b>.</p>
     <p><b>Et le nom de l’équipe reste le vôtre.</b> « Équipe A » n’est qu’un
       repli : dès que vous les nommez dans Réglages, ce sont vos noms qui
       s’affichent partout ici. Rien de tout cela ne change à une seule équipe —
       le mot « équipe » ne s’écrit alors nulle part, et c’est délibéré.</p>
     <p><b>L’autre point du même jour</b> — le « matin » qui ne change jamais —
-      est sur <a href="46-le-moment-qui-dit-toujours-matin.html">sa propre
+      est sur <a href="47-le-moment-qui-dit-toujours-matin.html">sa propre
       planche</a>. Les deux se croisent sur une seule chose : la place
       disponible sur la ligne du planning.</p>
   </div>

@@ -6,6 +6,13 @@ import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { montantSaisi, tvaDepuisTtc } from "@/lib/achat-tva";
 import { ajouterAchatAction, rangerTicketAction } from "./actions";
+import {
+  dansLaPeriode,
+  libellePeriode,
+  periodeContenant,
+  periodeTva,
+  type PeriodiciteTva,
+} from "@/server/periode-tva";
 
 /** Ce que la lecture propose — jamais ce qui est enregistré. */
 type TicketLuAffiche = {
@@ -70,7 +77,22 @@ function jourCourt(iso: string): string {
   });
 }
 
-export default function AchatsTva({ achats, aujourdHui }: { achats: LigneAchat[]; aujourdHui: string }) {
+export default function AchatsTva({
+  achats,
+  aujourdHui,
+  periodicite,
+  annee,
+  numero,
+}: {
+  achats: LigneAchat[];
+  aujourdHui: string;
+  /** Le rythme choisi, pour savoir où tombera la date saisie. */
+  periodicite: PeriodiciteTva;
+  /** La période REGARDÉE — celle dont la liste ci-dessous est tirée. */
+  annee: number;
+  numero: number;
+}) {
+  const periodeVue = periodeTva(periodicite, annee, numero);
   const router = useRouter();
   const objectif = useRef<HTMLInputElement>(null);
 
@@ -153,8 +175,34 @@ export default function AchatsTva({ achats, aujourdHui }: { achats: LigneAchat[]
       return;
     }
     setOuverte(false);
+
+    // **Le défaut du 13 août 2026, et sa réparation.** Le patron a scanné un
+    // ticket de gazole du 24 juillet depuis l'écran d'août. L'achat est parti
+    // au bon endroit — dans juillet — et a DISPARU de sa vue : le total d'août
+    // n'a pas bougé, et il a conclu que rien n'avait été pris. Il avait raison
+    // de son point de vue : rien ne lui disait que c'était rangé ailleurs.
+    //
+    // On l'emmène donc là où l'achat atterrit. Pas un message qu'il faudrait
+    // lire puis suivre : l'écran change, et l'achat est sous ses yeux.
+    if (!dansLaPeriode(periodeVue, date)) {
+      const cible = periodeContenant(periodicite, date);
+      if (cible) {
+        // **Pas de `router.refresh()` derrière ce `push`.** Les deux se sont
+        // annulés : `refresh` redemande au serveur l'adresse COURANTE, et la
+        // navigation en cours retombait dessus — l'écran restait sur août, le
+        // ticket restait invisible, et le correctif ne corrigeait rien. Vu à la
+        // sonde, jamais autrement : la ligne était bien en base, l'écran ne
+        // bougeait pas. `push` suffit, la page étant `force-dynamic`.
+        router.push(`/termines/tva?annee=${cible.annee}&t=${cible.numero}`);
+        return;
+      }
+    }
     router.refresh();
   }
+
+  /** Où cet achat va tomber — écrit avant de confirmer, jamais après coup. */
+  const periodeDeLaSaisie = periodeContenant(periodicite, date);
+  const ailleurs = periodeDeLaSaisie !== null && !dansLaPeriode(periodeVue, date);
 
   const armé = fournisseur.trim() !== "" && montantSaisi(tva) !== null && !enCours;
 
@@ -319,6 +367,21 @@ export default function AchatsTva({ achats, aujourdHui }: { achats: LigneAchat[]
             ? `${lecture ? `${lecture} ` : "Ticket lu. Vérifiez les montants avant d’ajouter. "}Gardez le papier — la photo ne le remplace pas.`
             : "La TVA se calcule depuis le total et le taux. Si votre ticket en affiche une autre, écrivez la sienne : c’est elle qui fait foi."}
         </p>
+
+        {/* **Dit AVANT l'appui, pas après.** Une date hors de la période
+            regardée n'est pas une erreur — un ticket de juillet scanné en août
+            est le cas normal. Ce qui serait fautif, c'est de le laisser partir
+            sans que le patron sache où il va. */}
+        {ailleurs && periodeDeLaSaisie && (
+          <p
+            className="mt-2.5 rounded-xl px-3.5 py-3 text-[12.5px] leading-[1.5]"
+            style={{ backgroundColor: "rgba(185,139,71,0.10)", color: "#7d6234" }}
+          >
+            Ce ticket est daté du {new Date(`${date}T12:00:00Z`).toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "UTC" })} :
+            il ira dans <b style={{ color: colors.ink, fontWeight: 500 }}>{libellePeriode(periodeDeLaSaisie)}</b>,
+            pas dans {libellePeriode(periodeVue)}. L’écran vous y emmènera.
+          </p>
+        )}
 
         {refus && (
           <p role="alert" className="mt-2.5 text-center text-[13px]" style={{ color: colors.alert }}>

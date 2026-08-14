@@ -99,8 +99,15 @@ async function main() {
   await page.click('button[type="submit"]');
   await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
 
+  // **Les tarifs ont leur propre rubrique depuis le 14 août 2026.** L'écran des
+  // réglages est devenu un sommaire, et tout ce qui s'y empilait est parti dans
+  // la rubrique correspondante (`ARCHITECTURE.md` §96). Le chemin du patron est
+  // donc éprouvé DEPUIS LE SOMMAIRE, en touchant la ligne : viser directement
+  // l'adresse aurait laissé passer un sommaire dont le lien ne mène nulle part.
   await page.goto("http://localhost:3000/reglages", { waitUntil: "networkidle" });
   assert.ok(await page.locator("text=Réglages").first().isVisible());
+  await page.getByRole("link", { name: /Tarifs & catalogue/ }).click();
+  await page.getByRole("heading", { name: "Tarifs & catalogue" }).waitFor({ timeout: 15000 });
 
   const libelleUnique = `Tarif e2e ${Date.now()}`;
 
@@ -152,13 +159,20 @@ async function main() {
   // Le 6 août 2026, le patron avait posé ses clés et voyait une application
   // inchangée. La question « quel fournisseur tourne réellement ? » n'avait
   // aucune réponse consultable : il a fallu lire quatre fichiers du dépôt pour
-  // la reconstituer. Elle se lit maintenant sur cet écran, donc sur une
+  // la reconstituer. Elle se lit maintenant sur un écran, donc sur une
   // capture — et cette suite tient qu'elle y reste.
+  //
+  // **Elle a sa rubrique depuis le 14 août 2026** (`ARCHITECTURE.md` §96), et on
+  // y va PAR LE SOMMAIRE : viser l'adresse directement laisserait passer une
+  // ligne « Atlas IA » qui ne mène nulle part.
+  await page.goto("http://localhost:3000/reglages", { waitUntil: "networkidle" });
+  await page.getByRole("link", { name: /Atlas IA/ }).click();
+  await page.getByRole("heading", { name: "Atlas IA" }).waitFor({ timeout: 15000 });
   const ecran = await page.locator("body").innerText();
   assert.match(
     ecran,
-    /Intelligence artificielle/i,
-    "L'écran Réglages ne dit plus quels fournisseurs d'IA tournent."
+    /Atlas IA/i,
+    "L'écran ne dit plus quels fournisseurs d'IA tournent."
   );
   // La batterie retire délibérément les clés d'IA de cette étape : l'état
   // attendu ici est donc le mode déterministe, annoncé sans détour.

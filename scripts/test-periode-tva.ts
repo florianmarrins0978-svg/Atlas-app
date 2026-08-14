@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import {
+  dansLaPeriode,
+  periodeContenant,
   libelleCourt,
   libellePeriode,
   lirePeriode,
@@ -170,6 +172,46 @@ cas("une adresse lisible rend la bonne période", () => {
   assert.equal(p.numero, 4);
   assert.equal(p.debut, "2025-10-01");
   assert.equal(p.fin, "2025-12-31");
+});
+
+// ─── Où tombe un achat ──────────────────────────────────────────────────────
+//
+// **Le défaut du 13 août 2026, et il n'était pas dans la base.** Le patron
+// scanne un ticket du 24 juillet depuis l'écran d'août. L'achat est enregistré
+// au bon endroit — dans juillet — et disparaît de sa vue : le total d'août ne
+// bouge pas. Rien ne lui disait que c'était rangé ailleurs.
+
+cas("un jour de juillet tombe en juillet, pas dans le mois où on le saisit", () => {
+  const p = periodeContenant("mensuelle", "2026-07-24");
+  assert.ok(p);
+  assert.equal(p.numero, 7);
+  assert.equal(libellePeriode(p), "Juillet 2026");
+});
+
+cas("le même jour tombe au 3e trimestre quand on compte par trimestre", () => {
+  const p = periodeContenant("trimestrielle", "2026-07-24");
+  assert.ok(p);
+  assert.equal(p.numero, 3);
+});
+
+cas("les bornes du mois y sont, des deux côtés", () => {
+  assert.equal(periodeContenant("mensuelle", "2026-07-01")!.numero, 7);
+  assert.equal(periodeContenant("mensuelle", "2026-07-31")!.numero, 7);
+  assert.equal(periodeContenant("mensuelle", "2026-08-01")!.numero, 8);
+});
+
+cas("un jour illisible ne tombe nulle part — jamais dans la période courante", () => {
+  assert.equal(periodeContenant("mensuelle", "24/07/2026"), null);
+  assert.equal(periodeContenant("mensuelle", ""), null);
+  assert.equal(periodeContenant("mensuelle", "2026-13-01"), null);
+});
+
+cas("appartenir à une période, bornes incluses", () => {
+  const aout = periodeTva("mensuelle", 2026, 8);
+  assert.equal(dansLaPeriode(aout, "2026-08-01"), true);
+  assert.equal(dansLaPeriode(aout, "2026-08-31"), true);
+  assert.equal(dansLaPeriode(aout, "2026-07-31"), false, "le ticket du patron était ICI");
+  assert.equal(dansLaPeriode(aout, "2026-09-01"), false);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Périodes de TVA — ${echecs} échec(s).`);

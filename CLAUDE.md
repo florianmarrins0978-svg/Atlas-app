@@ -115,6 +115,18 @@ langage. Rien n'y entre sans son accord explicite (voir `AGENTS.md`).
   fonction sert à construire un écran et à revalider ce qu'il renvoie — deux
   implémentations finissent toujours par diverger.
 
+## 3 ter. Lui répondre court
+
+**Sa consigne du 14 août 2026, en un mot : « Moins ».** Elle est arrivée après
+une réponse de trente lignes qui expliquait un retrait de code.
+
+Il lit sur un téléphone, souvent entre deux chantiers. Ce qu'il veut savoir :
+**ce qui est fait, ce qui reste, ce qu'il doit décider.** Le raisonnement, les
+précautions et les raisons vont dans le dépôt — c'est à cela qu'il sert.
+
+Quelques lignes suffisent. Un tableau vaut mieux qu'un paragraphe. Une capture
+vaut mieux qu'une description. S'il veut le détail, il le demande.
+
 ## 3 bis. La maquette d'abord, le code ensuite
 
 **Règle posée par le patron le 11 août 2026**, après qu'une demande de geste
