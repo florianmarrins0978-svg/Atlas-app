@@ -9,6 +9,23 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### Où mettre l'assistant : cinq places, et une gêne enfin mesurée
+
+**Sa demande :** *« l'onglet de l'assistant est hyper mal placé […] crée-moi des
+maquettes que j'essaye, ne code rien. »* **Rien n'a été codé** —
+`docs/maquettes/45-ou-mettre-l-assistant.html`, sa lettre est attendue.
+
+**L'écran choisi est le planning, et ce n'est pas un hasard :** c'est là que la
+gêne se mesure au lieu de se discuter. La bulle recouvre les dimanches 23 et 30.
+Et ce n'est pas le premier écran qu'elle mord — cinq fois déjà, c'est l'écran
+qu'on a déplacé pour l'éviter (§46, §49, §63, §67, §84). Aucune proposition ne
+consiste donc à la bouger de vingt pixels.
+
+**Le contrôle compte les cases recouvertes**, version par version, l'avant
+servant de témoin. Il a servi tout de suite : ma reproduction du calendrier était
+39 px trop haute, la bulle tombait dans le vide, et la planche aurait démontré
+l'inverse de ce qu'elle montre. Une reproduction « à peu près » ne prouve rien.
+
 ### Cesser de rejouer soixante suites pour du code qui ne nous concerne pas
 
 **Sa décision, en quatre mots :** *« seulement quand le code touche »*.

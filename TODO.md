@@ -27,6 +27,46 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quatervicies octies. La place de l'assistant — MAQUETTE POSÉE, sa lettre attendue
+
+**Sa demande du 13 août 2026 :** *« L'onglet de l'assistant est hyper mal placé,
+propose des choses pour plus qu'il gêne. Crée-moi des maquettes en .html
+dynamique que j'essaye, ne code rien. »*
+
+**Rien n'est touché dans `src/`.** Planche :
+`docs/maquettes/45-ou-mettre-l-assistant.html`, engendrée par
+`scripts/engendrer-maquette-assistant.mjs`.
+
+| | Place | Recouvre |
+|---|---|---|
+| — | aujourd'hui : bulle flottante, 56 px, à 16 px du bord et 96 du bas | les dimanches **23 et 30** du planning |
+| A | une cinquième entrée dans la barre du bas | rien |
+| B | dans l'en-tête, près du titre | rien — mais elle défile avec la page |
+| C | une poignée de 16 px sur le bord droit | rien — mais 16 px, c'est étroit pour un doigt |
+| D | elle s'efface au défilement | toujours quelque chose, en plus petit |
+
+**Ce qui rend cette planche différente d'un avis : la gêne y est MESURÉE.**
+`scripts/verifier-maquette-assistant.mjs` compte les cases touchables du
+calendrier que le bouton recouvre, version par version. L'avant sert de témoin —
+s'il tombait à zéro, ce serait la mesure qui ment.
+
+**Trois leçons, chacune payée pendant l'écriture :**
+
+1. **Une reproduction « à peu près » prouve le contraire de ce qu'elle montre.**
+   Mon calendrier était 39 px trop haut : la bulle tombait dans le vide, et la
+   planche aurait démontré qu'elle ne gêne pas. C'est le témoin qui l'a dit. Les
+   mesures (cases de 48 px, première ligne à y=326, dernière à y=578) viennent
+   de l'application, relevées, pas estimées.
+2. **Un contrôle qui prend le plus favorable de deux nombres ne mesure rien.**
+   Écrit sur la plus GRANDE dimension, il déclarait atteignable une entrée de
+   69 × 17 px. C'est le plus petit côté qui décide.
+3. **J'ai d'abord annoncé « samedi 29 et dimanche 30 » d'après une capture.** La
+   mesure dit **23 et 30**. Lire une capture n'est pas mesurer.
+
+**Ce qui n'est PAS dessiné, et qu'il peut demander :** que l'assistant
+n'apparaisse que lorsqu'il a quelque chose à dire. Emprise nulle — mais un
+assistant qu'on ne voit jamais est un assistant qu'on n'utilise pas.
+
 ### 0 quatervicies septies. La page qui rassemble les maquettes a décroché
 
 `scripts/fusionner-maquettes.mjs` n'inscrit plus que la 40 et la 44. Les 41, 42
