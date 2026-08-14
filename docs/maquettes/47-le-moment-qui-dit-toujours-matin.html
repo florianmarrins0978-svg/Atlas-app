@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>« Matin » quoi qu’il arrive — trois façons de le dire</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    « MATIN » QUOI QU'IL ARRIVE
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 13 août 2026, capture à l'appui : « pourquoi sous le chantier
+    il y a marqué matin ? Cela laisse à penser que juste le matin est bloqué
+    alors que c'est la journée. Ça doit changer en fonction de si c'est la
+    matinée ou la journée ; là ça marque matin quoi qu'il arrive. »
+
+    IL A RAISON, ET LE DÉFAUT EST EXACTEMENT CELUI QU'IL DÉCRIT.
+    `PlanningClient.tsx`, `libelleQuand()` : la ligne écrit `creneauDebut`,
+    c'est-à-dire la demi-journée de DÉPART — jamais ce que le chantier occupe.
+    Or la durée par défaut d'un chantier posé est de DEUX demi-journées
+    (`DUREE_PAR_DEFAUT_DEMI_JOURNEES`), soit la journée entière. Le cas le plus
+    courant du produit est donc celui qui ment.
+
+    CE QUI N'EST PAS EN CAUSE, ET QU'IL FAUT DIRE POUR QU'IL DORME TRANQUILLE :
+    le calendrier, lui, a toujours compté juste. Les pastilles viennent de
+    `compterOccupation()`, qui parcourt `creneauxDuChantier(départ, durée)` —
+    la durée y est. Une journée entière était bien réservée, et personne n'a pu
+    poser un second chantier sur l'après-midi qu'il croyait libre.
+    **Seule la phrase se trompait, jamais la réservation.**
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ. `src/` n'est pas touché : c'est la règle du §3 bis, et
+    cette page existe pour qu'il choisisse une formulation avant qu'on l'écrive.
+
+    AUCUN SCRIPT : son lecteur n'en exécute pas. La bascule entre les quatre
+    colonnes est un groupe de boutons radio ; rien n'est calculé.
+
+    L'écran fait 390 px — la largeur réelle de son téléphone.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f5f3ee; --pin:#2f3b2f; --alerte:#9a4b2f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179; --alerte:#d08a6a;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179; --alerte:#d08a6a;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:940px;margin:0 auto}
+
+  /* Safari sur iPhone n'active pas un <label> sans « cursor:pointer » — payé le
+     10 août 2026 : « rien ne s'ouvre quand je touche ». */
+  label{cursor:pointer}
+
+  .intro{max-width:64ch;margin:0 auto;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro b{color:var(--encre);font-weight:600}
+
+  .rassure{max-width:62ch;margin:28px auto 0;padding:20px 22px;border-radius:12px;
+           background:var(--plage);font-size:13.6px;color:var(--gris);line-height:1.7}
+  .rassure b{color:var(--encre);font-weight:600}
+  .rassure .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+              letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+
+  .chapitre{max-width:64ch;margin:56px auto 0;text-align:center;
+       font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+       text-transform:uppercase;color:var(--or)}
+  .titre-chapitre{max-width:64ch;margin:12px auto 0;text-align:center;
+       font:400 24px/1.25 ui-serif,Georgia,serif}
+  .dit{max-width:60ch;margin:12px auto 0;text-align:center;font-size:14px;color:var(--gris);line-height:1.65}
+  .dit b{color:var(--encre);font-weight:600}
+
+  /* ── La bascule : quatre façons, un seul écran ────────────────────────── */
+  .choix{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+
+  .banc{max-width:640px;margin:30px auto 0}
+  .segments{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+  .segments label{display:inline-flex;align-items:center;border-radius:9999px;
+        padding:9px 18px;font:400 15.5px/1 ui-serif,Georgia,serif;
+        border:1px solid var(--trait);color:var(--gris)}
+
+  /* L'onglet allumé. Écrit quatre fois plutôt qu'en `:nth-of-type` : les radios
+     et les libellés ne sont pas dans le même parent, et un compte relatif s'y
+     décalait d'un cran à chaque ajout. */
+  #v-temoin:checked ~ .banc .segments label[for="v-temoin"],
+  #v-a:checked ~ .banc .segments label[for="v-a"],
+  #v-b:checked ~ .banc .segments label[for="v-b"],
+  #v-c:checked ~ .banc .segments label[for="v-c"]{
+    background:var(--pin);border-color:var(--pin);color:#faf9f5}
+
+  .legende-choix{margin:16px auto 0;max-width:56ch;text-align:center;
+                 font-size:13.4px;color:var(--gris);line-height:1.68;min-height:88px}
+  .legende-choix b{color:var(--encre);font-weight:600}
+  .legende-choix .t{display:block;margin:0 0 6px;font:400 19px/1.25 ui-serif,Georgia,serif;color:var(--encre)}
+  .legende-choix > div{display:none}
+  #v-temoin:checked ~ .banc .legende-choix .l-temoin,
+  #v-a:checked ~ .banc .legende-choix .l-a,
+  #v-b:checked ~ .banc .legende-choix .l-b,
+  #v-c:checked ~ .banc .legende-choix .l-c{display:block}
+
+  /* ── L'écran ──────────────────────────────────────────────────────────── */
+  .tel{width:412px;max-width:100%;margin:26px auto 0;border-radius:42px;padding:11px;
+       background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{
+    --e-fond:#f5f3ee; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
+    width:390px;max-width:100%;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);padding:26px 0 0;
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+  .rubrique{margin:0 26px 10px;color:var(--e-gris)}
+
+  .ligne{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+         margin:0 26px;padding:11px 0;border-bottom:1px solid var(--e-trait)}
+  .ligne .colonne{min-width:0;flex:1}
+  .ligne .nom{display:block;font:400 16px/1.2 ui-serif,Georgia,serif;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ligne .quand{display:block;margin-top:2px;font-size:12px;color:var(--e-gris)}
+  .ligne .gestes{display:flex;flex-shrink:0;align-items:center;gap:14px}
+  .ligne .deplacer{font-size:12px;color:var(--e-gris);white-space:nowrap}
+  .ligne .chev{color:var(--e-or);font-size:15px}
+
+  /* Les quatre écritures de la même ligne, dont une seule paraît. */
+  .quand span{display:none}
+  #v-temoin:checked ~ .banc .quand .w-temoin,
+  #v-a:checked ~ .banc .quand .w-a,
+  #v-b:checked ~ .banc .quand .w-b,
+  #v-c:checked ~ .banc .quand .w-c{display:inline}
+
+  /* Ce que le chantier occupe VRAIMENT — la vérité, sous chaque ligne, en
+     permanence. Sans elle on comparerait des phrases sans savoir laquelle est
+     juste, et c'est le seul point sur lequel il ne doit pas avoir à me croire. */
+  .verite{display:block;margin-top:3px;font-size:11px;color:var(--e-or);
+          letter-spacing:.01em}
+  .verite b{font-weight:600}
+
+  .pied{margin:14px 26px 0;padding:12px 0 22px;border-top:1px solid var(--e-trait);
+        font-size:11.5px;color:var(--e-gris);line-height:1.6}
+
+  /* ── Le tableau des cinq cas ──────────────────────────────────────────── */
+  .tableau{max-width:820px;margin:32px auto 0;overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:640px;font-size:13px}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--trait);vertical-align:top}
+  th{font:500 9.5px/1.4 ui-sans-serif,sans-serif;letter-spacing:.22em;
+     text-transform:uppercase;color:var(--gris);white-space:nowrap}
+  td.cas{color:var(--encre)}
+  td.auj{color:var(--alerte)}
+  td.prop{color:var(--gris)}
+  td b{color:var(--encre);font-weight:600}
+  .sous-tableau{max-width:62ch;margin:14px auto 0;text-align:center;
+                font-size:12.8px;color:var(--gris);line-height:1.66}
+
+  .note{max-width:74ch;margin:62px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+  .note b{color:var(--encre)}
+  .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .note p{margin:0 0 14px}
+  .note p:last-child{margin-bottom:0}
+  .note a{color:var(--or)}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Le planning · la ligne d’un chantier</p>
+    <h1>« Matin » quoi qu’il arrive</h1>
+    <p>Votre remarque du 13 août : <b>« ça laisse à penser que juste le matin est
+      bloqué, alors que c’est la journée »</b>. C’est exactement ce qui se passe —
+      la ligne écrit l’heure à laquelle le chantier <b>commence</b>, jamais ce
+      qu’il <b>occupe</b>. Et comme un chantier posé dure une journée entière par
+      défaut, le cas le plus courant est celui qui trompe.</p>
+    <p><b>Appuyez sur les quatre pastilles</b> pour voir la même liste écrite de
+      quatre façons. Sous chaque ligne, en doré, ce que le chantier occupe
+      réellement — pour que vous n’ayez pas à me croire sur parole.</p>
+  </div>
+
+  <div class="rassure">
+    <span class="t">Ce qui n’était pas cassé, et qu’il faut savoir</span>
+    <b>Votre calendrier, lui, a toujours compté juste.</b> Les pastilles du mois
+    tiennent compte de la durée : une journée entière était bien réservée, et
+    aucun second chantier n’a pu se poser sur l’après-midi que la phrase laissait
+    croire libre. <b>Seule la phrase se trompait, jamais la réservation.</b>
+    Rien n’est à rattraper dans votre planning.
+  </div>
+
+  <input type="radio" name="ecriture" id="v-temoin" class="choix" checked>
+  <input type="radio" name="ecriture" id="v-a" class="choix">
+  <input type="radio" name="ecriture" id="v-b" class="choix">
+  <input type="radio" name="ecriture" id="v-c" class="choix">
+
+  <div class="banc">
+
+    <p class="chapitre">L’écran, en vrai</p>
+    <p class="titre-chapitre">Vos chantiers planifiés, écrits de quatre façons</p>
+
+    <div class="segments">
+      <label for="v-temoin">Aujourd’hui</label>
+      <label for="v-a">A · Le mot juste</label>
+      <label for="v-b">B · Départ + durée</label>
+      <label for="v-c">C · La phrase</label>
+    </div>
+
+    <div class="legende-choix">
+      <div class="l-temoin">
+        <span class="t">Ce que vous avez sous les yeux</span>
+        La ligne écrit la demi-journée de <b>départ</b>. Les deux premiers
+        chantiers l’écrivent juste par hasard — ce sont de vraies demi-journées.
+        <b>Les trois autres mentent</b>, et le quatrième bloque cinq jours en
+        n’en annonçant aucun.
+      </div>
+      <div class="l-a">
+        <span class="t">A · Le mot juste</span>
+        La ligne dit <b>ce qui est occupé</b>, et rien d’autre : « matin » ou
+        « après-midi » seulement quand c’est vraiment une demi-journée,
+        « journée » pour une journée pleine, « du 21 au 25 août » au-delà.
+        <b>Sa faiblesse</b> : sur plusieurs jours, l’heure de départ disparaît —
+        vous ne savez plus s’il faut y être à 8 h ou à 14 h.
+      </div>
+      <div class="l-b">
+        <span class="t">B · Le départ, puis la durée</span>
+        On ne retire rien, on <b>ajoute</b> : « 14 août · matin · 1 journée ». Les
+        mots de la durée sont ceux de votre liste déroulante, à l’identique.
+        <b>Sa faiblesse</b> : la ligne s’allonge, et avec l’équipe elle porte
+        quatre morceaux sur 390 px — le nom du chantier cède en premier.
+      </div>
+      <div class="l-c">
+        <span class="t">C · La phrase entière</span>
+        Plus de points médians : une phrase qui se lit. <b>Aucun malentendu
+        possible</b>, c’est sa force. <b>Sa faiblesse</b> : c’est la plus longue,
+        et elle ne laisse plus de place à l’équipe sur la même ligne — l’équipe
+        devrait alors vivre ailleurs, ce dont parle l’autre planche.
+      </div>
+    </div>
+
+    <div class="tel"><div class="ecran">
+      <p class="caps rubrique">Planifiés</p>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Monsieur Martin</span>
+          <span class="quand">
+            <span class="w-temoin">14 août · matin · Équipe A</span>
+            <span class="w-a">14 août · journée · Équipe A</span>
+            <span class="w-b">14 août · matin · 1 journée · Éq. A</span>
+            <span class="w-c">Toute la journée du 14 août · Éq. A</span>
+          </span>
+          <span class="verite">occupe : vendredi 14, <b>matin et après-midi</b></span>
+        </span>
+        <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+      </div>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Monsieur Martins</span>
+          <span class="quand">
+            <span class="w-temoin">17 août · matin</span>
+            <span class="w-a">17 août · matin</span>
+            <span class="w-b">17 août · matin · ½ journée</span>
+            <span class="w-c">Le 17 août au matin</span>
+          </span>
+          <span class="verite">occupe : lundi 17, <b>le matin seulement</b></span>
+        </span>
+        <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+      </div>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Mr. Martins</span>
+          <span class="quand">
+            <span class="w-temoin">20 août · après-midi</span>
+            <span class="w-a">20 août · après-midi</span>
+            <span class="w-b">20 août · après-midi · ½ journée</span>
+            <span class="w-c">Le 20 août l’après-midi</span>
+          </span>
+          <span class="verite">occupe : jeudi 20, <b>l’après-midi seulement</b></span>
+        </span>
+        <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+      </div>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Mr. Martins</span>
+          <span class="quand">
+            <span class="w-temoin">21 août · matin</span>
+            <span class="w-a">du 21 au 25 août</span>
+            <span class="w-b">21 août · matin · 3 jours</span>
+            <span class="w-c">Du 21 au 25 août, à partir du matin</span>
+          </span>
+          <span class="verite">occupe : <b>vendredi 21, lundi 24, mardi 25</b> — entiers</span>
+        </span>
+        <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+      </div>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Madame Roux</span>
+          <span class="quand">
+            <span class="w-temoin">24 août · après-midi</span>
+            <span class="w-a">du 24 au 25 août</span>
+            <span class="w-b">24 août · après-midi · 1 journée ½</span>
+            <span class="w-c">Du 24 après-midi au 25 août au soir</span>
+          </span>
+          <span class="verite">occupe : lundi 24 <b>l’après-midi</b>, puis mardi 25 <b>entier</b></span>
+        </span>
+        <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+      </div>
+
+      <p class="pied">La ligne dorée sous chaque chantier n’existe pas dans
+        l’application : elle est là pour cette comparaison, et pour elle seule.</p>
+    </div></div>
+
+  </div>
+
+  <p class="chapitre">Les cinq cas, côte à côte</p>
+  <p class="titre-chapitre">Le même tableau, sans avoir à basculer</p>
+  <p class="dit">De quoi trancher d’un coup d’œil, et garder une trace de ce qui
+    a été comparé.</p>
+
+  <div class="tableau">
+    <table>
+      <thead>
+        <tr>
+          <th>Ce que le chantier prend</th>
+          <th>Aujourd’hui</th>
+          <th>A · Le mot juste</th>
+          <th>B · Départ + durée</th>
+          <th>C · La phrase</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cas"><b>Une journée</b><br>ven. 14, départ le matin</td>
+          <td class="auj">14 août · matin</td>
+          <td class="prop">14 août · journée</td>
+          <td class="prop">14 août · matin · 1 journée</td>
+          <td class="prop">Toute la journée du 14 août</td>
+        </tr>
+        <tr>
+          <td class="cas"><b>Une demi-journée</b><br>lun. 17, le matin</td>
+          <td class="auj">17 août · matin</td>
+          <td class="prop">17 août · matin</td>
+          <td class="prop">17 août · matin · ½ journée</td>
+          <td class="prop">Le 17 août au matin</td>
+        </tr>
+        <tr>
+          <td class="cas"><b>Une demi-journée</b><br>jeu. 20, l’après-midi</td>
+          <td class="auj">20 août · après-midi</td>
+          <td class="prop">20 août · après-midi</td>
+          <td class="prop">20 août · après-midi · ½ journée</td>
+          <td class="prop">Le 20 août l’après-midi</td>
+        </tr>
+        <tr>
+          <td class="cas"><b>Trois jours</b><br>ven. 21 → mar. 25 (week-end sauté)</td>
+          <td class="auj">21 août · matin</td>
+          <td class="prop">du 21 au 25 août</td>
+          <td class="prop">21 août · matin · 3 jours</td>
+          <td class="prop">Du 21 au 25 août, à partir du matin</td>
+        </tr>
+        <tr>
+          <td class="cas"><b>Une journée et demie</b><br>lun. 24 après-midi → mar. 25</td>
+          <td class="auj">24 août · après-midi</td>
+          <td class="prop">du 24 au 25 août</td>
+          <td class="prop">24 août · après-midi · 1 journée ½</td>
+          <td class="prop">Du 24 après-midi au 25 août au soir</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="sous-tableau">Le week-end est sauté partout, comme le fait déjà
+    l’application : un chantier de trois jours parti le vendredi finit le mardi,
+    jamais le dimanche.</p>
+
+  <div class="note">
+    <span class="t">Ce que ce changement coûte, et ce qu’il ne touche pas</span>
+    <p><b>Rien n’est codé</b> — c’est votre règle. Voici le prix, pour que vous
+      choisissiez en le connaissant.</p>
+    <p><b>Une seule fonction est en cause</b>, et elle est déjà écrite à un seul
+      endroit : la phrase du planning et celle de la feuille « Y aller » sortent
+      de la même. Les corriger, c’est les corriger toutes les deux d’un coup —
+      c’est précisément pour ça qu’elle avait été mise en commun.</p>
+    <p><b>Aucune donnée ne bouge.</b> La durée est enregistrée depuis le début,
+      la réservation en tient compte, le calendrier aussi. Il n’y a rien à
+      recalculer, rien à rattraper, aucune migration.</p>
+    <p><b>Le seul vrai arbitrage est la place.</b> À 390 px, la ligne porte déjà
+      le nom du chantier, « Déplacer » et le chevron. Ce qu’on ajoute au milieu,
+      c’est le nom qui le paye — et le nom est la seule chose qui dit de quel
+      chantier il s’agit. C’est ce qui plaide pour <b>A</b>, et ce qui rend
+      <b>C</b> difficile tant que l’équipe reste sur la même ligne.</p>
+    <p><b>Et l’équipe, justement, se décide à côté</b> : voir
+      <a href="48-appliquer-une-equipe.html">« Donner une équipe à un
+      chantier »</a>, sur l’autre point que vous avez soulevé le même jour.</p>
+  </div>
+
+</div>
+</body>
+</html>
