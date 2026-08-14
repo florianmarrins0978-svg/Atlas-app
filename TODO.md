@@ -134,7 +134,7 @@ ferait de la porte et de l'écran d'accueil la même image. **Rien n'est décid�
 Sa demande du 13 août : *« fais-moi une maquette avec comme nom Gunzi à la place
 d'Atlas. Ne code rien. »*, puis les deux autres noms. Trois planches identiques
 au mot près, avec un passage de l'une à l'autre en tête :
-`docs/maquettes/46-le-nom-{gunzi,goonzi,gunzy}.html`.
+`docs/maquettes/50-le-nom-{gunzi,goonzi,gunzy}.html`.
 
 **Rien n'est codé, et c'est la consigne** (`CLAUDE.md` §3 bis). Ce qu'il faudra
 toucher le jour où un nom est arrêté, pour ne pas le rechercher :

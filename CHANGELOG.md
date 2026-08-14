@@ -822,7 +822,7 @@ posés (`z-index`), et le parcours rejoué : trente-trois gestes au vert.
 
 **Sa demande :** *« fais-moi une maquette avec comme nom Gunzi à la place
 d'Atlas. Ne code rien. »*, puis les deux autres noms.
-`docs/maquettes/46-le-nom-{gunzi,goonzi,gunzy}.html`, trois planches identiques
+`docs/maquettes/50-le-nom-{gunzi,goonzi,gunzy}.html`, trois planches identiques
 au mot près, avec un passage de l'une à l'autre en tête de page.
 
 **Rien n'est codé** — `src/` n'est pas touché, c'est `CLAUDE.md` §3 bis. Ce qui
