@@ -27,6 +27,41 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 sexvicies. L'écran du catalogue : sa flèche, et sa mémoire morte
+
+*Les deux défauts sont sortis d'une capture du patron, le 14 août 2026 — pas
+d'une suite verte. Ils sont expliqués en langage courant dans
+`docs/QUESTIONS.md` §18. **En attente de son feu vert** : rien n'a été touché.*
+
+**1. Aucune flèche de retour.** `src/app/catalogue/page.tsx` appelle
+`ScreenHeader` sans lui passer `backHref`, alors que le composant sait
+l'afficher. On y arrive depuis *Tarifs & catalogue* : `backHref="/reglages/tarifs"`
+suffit. Une ligne.
+
+**2. « Aucun prix encore constaté » est un mensonge de branchement, et il ne
+s'éteindra jamais.** L'écran lit `historique_prix` — l'ancienne mémoire, celle
+que l'application **n'écrit nulle part** (`enregistrerPrixHistorique` n'est
+appelée que par `scripts/test-ia-05-catalogue.ts` et `test-ia-06-chiffrage.ts`).
+La mémoire vivante est `lecons_prix` depuis la migration 0023 : écrite par
+`retenirLecon` depuis `src/app/chantiers/[id]/devis-complet/actions.ts`, relue
+par `leconsComparables`.
+
+C'est **exactement** le piège que `docs/QUESTIONS.md` §17 dit avoir payé une
+fois — il a survécu ici, sur un écran que personne ne regardait.
+
+**Ce que ça veut dire pour le correctif :** ne pas se contenter de rebrancher le
+`SELECT`. Le rapprochement de `lecons_prix` se fait par **signature de métier**
+(`src/lib/lecons-prix.ts` : `abattage|demontage_retention|d70`), pas par
+`prestationId` du catalogue. Il faut donc décider ce que la carte « Élagage »
+montre : le dernier prix de **toutes** les leçons dont la nature correspond, ou
+rien. Un rapprochement approximatif afficherait sous « Élagage » un prix
+d'abattage — pire que la phrase actuelle, qui au moins n'invente rien.
+
+**Et tant qu'on y est :** cet écran porte encore l'ancienne échelle (`p-4`,
+`text-ink/40`, `rounded-md`) et n'a jamais été passé à la charte. Le retoucher
+sans le redessiner laisserait un écran de 2026-07 au milieu des autres —
+`CLAUDE.md` §3 bis : une maquette d'abord.
+
 ### 0 quinvicies bis. Faire ARRIVER les conditions jusqu'au PDF
 
 `ARCHITECTURE.md` §102 : la rubrique « Devis & factures » règle six conditions,

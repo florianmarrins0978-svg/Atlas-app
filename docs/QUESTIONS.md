@@ -39,6 +39,7 @@ relues à chaque session) :
 15. [Ma TVA, je la déclare tous les mois ou tous les trimestres ?](#15-ma-tva-je-la-déclare-tous-les-mois-ou-tous-les-trimestres-)
 16. [L'IA se sert-elle de mes réglages pour faire les devis ?](#16-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-)
 17. [Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien](#17-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien)
+18. [À quoi sert le catalogue, et pourquoi je ne peux rien y écrire ?](#18-à-quoi-sert-le-catalogue-et-pourquoi-je-ne-peux-rien-y-écrire-)
 
 ---
 
@@ -1077,3 +1078,66 @@ documents. Ce qui lui manque, ce ne sont pas des idées, ce sont **des moments o
 l'application demande** : à la fin d'un chantier, à la réception d'un paiement,
 au refus d'un devis. Chaque moment est un lot de quelques jours ; chacun rend
 l'agent plus juste sur le devis suivant.
+
+---
+
+## 18. À quoi sert le catalogue, et pourquoi je ne peux rien y écrire ?
+
+*Question posée le 14 août 2026, capture de l'écran « Catalogue » à l'appui.*
+
+### Ce que c'est
+
+**Le vocabulaire du métier, partagé par toutes les entreprises qui utilisent
+Atlas.** Chaque entrée porte un nom officiel et tous les mots qui veulent dire la
+même chose : « Élagage » y traîne derrière lui *abattage*, *démontage*,
+*dessouchage*, et les variantes *sapin*, *arbre*, *conifère*.
+
+### À quoi ça sert, concrètement
+
+À **comprendre ce que vous dictez**. Quand vous dites *« faut me démonter le
+sapin du fond »*, aucun mot de la phrase n'est « élagage » — c'est le catalogue
+qui fait le rapprochement. Sans lui, la dictée ne se rattache à rien et l'agent
+ne sait pas quelle prestation écrire sur le devis.
+
+**Il ne porte aucun prix**, et c'est voulu. Vos prix vivent ailleurs :
+
+| Où | Ce qu'on y trouve |
+|---|---|
+| **Mes tarifs** | Ce que vous tapez à la main : un intitulé, un montant, une unité |
+| **Mes prix** | Les cinq grilles du métier — abattage, fendage, dessouchage, haie, grumes |
+| **La mémoire des prix** | Ce que vous avez réellement facturé, rappelé sur le chantier suivant (question 17) |
+| **Le catalogue** | Des **mots**, rien d'autre |
+
+### Pourquoi vous ne pouvez rien y écrire
+
+Parce qu'il est **commun à tout le monde**. Une ligne ajoutée depuis votre
+téléphone changerait le vocabulaire de tous les autres artisans, sans qu'ils
+l'aient demandé ni qu'ils puissent la corriger. Aujourd'hui, il n'est donc rempli
+que par Atlas.
+
+Ce n'est pas un refus définitif : on peut très bien lui ajouter **vos** mots à
+vous, visibles de vous seul, par-dessus le vocabulaire commun. Ça n'existe pas
+encore, personne ne l'a demandé jusqu'ici.
+
+### Deux défauts que la capture a révélés, le même jour
+
+| Défaut | La vérité |
+|---|---|
+| **Pas de flèche de retour** | Simple oubli. L'en-tête de l'écran sait afficher la flèche — la page ne la lui a jamais demandée. On y arrive depuis *Tarifs & catalogue*, et on en repart par la barre du bas. |
+| **« Aucun prix encore constaté par votre entreprise »** | **Cette phrase ne changera jamais**, quoi que vous fassiez. |
+
+La seconde mérite d'être expliquée, parce qu'elle est exactement le piège décrit
+en question 17 — et qu'il traîne encore ici.
+
+**Il y a eu deux mémoires des prix.** La première (`historique_prix`) n'était
+jamais écrite : le fameux décor. Elle a été remplacée par une seconde
+(`lecons_prix`), celle qui marche vraiment, qui retient ce que vous facturez et
+vous le rappelle sur le chantier d'après.
+
+**L'écran du catalogue, lui, est resté branché sur l'ancienne.** Il interroge une
+mémoire vide, et annonce donc fidèlement qu'elle est vide. Vos prix sont bien
+retenus — c'est cet écran-là qui regarde au mauvais endroit.
+
+**Ce qu'il reste à faire :** remettre la flèche, et rebrancher l'écran sur la
+bonne mémoire. Les deux sont inscrits dans `TODO.md`, en attente de votre feu
+vert — rien n'a encore été touché.
