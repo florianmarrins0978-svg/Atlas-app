@@ -59,12 +59,33 @@ async function uniteLue(carte: Locator): Promise<string> {
  * là qu'on perd, pas seulement dix minutes. Trouvée le 14 août 2026, sur un
  * lot qui n'était pas le mien.
  *
- * `networkidle` attend un demi-second de silence réseau : l'action serveur y
- * est comptée, et le rechargement ne part qu'une fois la réponse revenue.
+ * **`networkidle` NE SUFFIT PAS — constaté le 14 août 2026, dans la batterie.**
+ * Il attend un demi-seconde de silence réseau, et l'écran est déjà silencieux
+ * à l'instant où on le lui demande : React n'a pas encore lancé l'action. On
+ * mesurait donc un calme d'AVANT l'appel, et le rechargement repartait dessus.
+ * La suite passait seule et tombait sous les soixante-quinze autres. Le premier
+ * correctif visait la bonne cause et s'arrêtait un cran trop tôt.
+ *
+ * **On relit donc la BASE, au lieu de deviner quand elle a reçu.** La page est
+ * rechargée, la valeur relue du serveur ; si elle n'est pas encore là, on
+ * recommence — jusqu'à quatre fois, en laissant à l'action le temps qu'il lui
+ * faut sous la charge. C'est exactement le remède déjà écrit pour
+ * `test-informations-e2e.ts` et `test-periodicite-tva-e2e.ts` : **attendre ce
+ * qu'on affirme, jamais une durée.**
+ *
+ * Une suite qui échoue une fois sur trois s'apprend à être ignorée — c'est ce
+ * garde-fou-là qu'on perd, pas seulement dix minutes.
  */
-async function rechargerUneFoisEcrit(page: Page): Promise<void> {
-  await page.waitForLoadState("networkidle");
-  await page.reload({ waitUntil: "networkidle" });
+async function uniteEnBase(page: Page, marque: string, attendue: string): Promise<string> {
+  let lue = "";
+  for (const essai of [1, 2, 3, 4]) {
+    await page.waitForLoadState("networkidle");
+    await page.reload({ waitUntil: "networkidle" });
+    lue = await uniteLue(await carteDuTarif(page, marque));
+    if (lue === attendue) return lue;
+    await page.waitForTimeout(essai * 400);
+  }
+  return lue;
 }
 
 async function main() {
@@ -169,13 +190,12 @@ async function main() {
   await bandeau().waitFor({ state: "detached" });
   assert.equal(await uniteLue(carte), "m²");
 
-  await rechargerUneFoisEcrit(page);
-  carte = await carteDuTarif(page, MARQUE);
   assert.equal(
-    await uniteLue(carte),
+    await uniteEnBase(page, MARQUE, "m²"),
     "m²",
     "l'unité choisie n'a pas survécu au rechargement : elle n'est pas partie en base"
   );
+  carte = await carteDuTarif(page, MARQUE);
   console.log("  ✓ l'unité choisie est enregistrée");
 
   // --- 6. La case reste libre : le stère s'écrit toujours ------------------
@@ -186,13 +206,12 @@ async function main() {
   await champLibre.press("Enter");
   await bandeau().waitFor({ state: "detached" });
 
-  await rechargerUneFoisEcrit(page);
-  carte = await carteDuTarif(page, MARQUE);
   assert.equal(
-    await uniteLue(carte),
+    await uniteEnBase(page, MARQUE, "stère"),
     "stère",
     "son unité à lui n'a pas tenu : la liste s'est refermée sur les six proposées"
   );
+  carte = await carteDuTarif(page, MARQUE);
   console.log("  ✓ une unité à lui — « stère » — s'écrit et tient");
 
   // --- 7. Et l'on peut revenir en arrière ----------------------------------
@@ -200,13 +219,14 @@ async function main() {
   await bandeau().getByRole("option", { name: /Aucune unité/ }).click();
   await bandeau().waitFor({ state: "detached" });
 
-  await rechargerUneFoisEcrit(page);
-  carte = await carteDuTarif(page, MARQUE);
   assert.match(
-    await uniteLue(carte),
+    // « Choisir… » est ce que la case affiche quand rien n'est posé : on attend
+    // donc CE texte-là, et non l'absence de l'ancien.
+    await uniteEnBase(page, MARQUE, "Choisir…"),
     /Choisir/,
     "une unité posée par erreur ne peut plus être retirée : le champ est pourtant facultatif"
   );
+  carte = await carteDuTarif(page, MARQUE);
   console.log("  ✓ « Aucune unité » efface un choix posé par erreur");
 
   // --- Ne rien laisser derrière, et le VÉRIFIER ---------------------------
