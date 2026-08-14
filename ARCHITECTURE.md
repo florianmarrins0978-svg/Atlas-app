@@ -8029,3 +8029,68 @@ depuis le 12 août : à 390 px, « Chez M. Bernard » devenait « Chez M. … »
 contrôle de la planche mesure donc l'écart ET vérifie qu'aucun nom n'est coupé.
 La ligne s'est allégée entre-temps — « Créer la facture » est parti dans la
 feuille — ce qui rend la place disponible.
+
+---
+
+## 101. Les conditions du devis : réglées au lieu d'être en dur, et FIGÉES
+
+*Dessiné le 13 août 2026 (`maquettes/atlas-reglages-documents.html`), codé le
+14. Rubrique « Devis & factures », migration `0040`.*
+
+**Ce que ça remplace.** `const VALIDITE = "30 jours"` — une constante de
+`devis-pdf.ts`, la même pour tous les artisans, qu'aucun écran ne montrait. Un
+couvreur qui tient ses prix quinze jours envoyait un devis qui l'engageait
+trente.
+
+### La validité est RECOPIÉE dans le devis, pas relue
+
+C'est le point qui compte, et il n'était pas évident : lire le réglage au moment
+de composer le PDF ferait **changer la durée d'engagement d'un devis déjà
+envoyé**, simplement parce que l'artisan a corrigé ses réglages entre-temps —
+pendant que le client a une autre feuille sous les yeux. `devis.validite_jours`
+se remplit à la création, comme l'identité (§94). Le rattrapage pose 30 sur les
+devis existants : c'est ce que la constante écrivait, donc ce qu'ils disaient.
+
+### « Jamais réglé » et « éteint » ne sont pas la même chose
+
+Une colonne nulle veut dire **éteint** — rien ne s'imprime. Une colonne absente
+de la lecture veut dire **jamais réglé** — le défaut d'Atlas s'applique. Les
+confondre remettrait « 30 jours » sur le devis d'un artisan qui l'a délibérément
+retiré. `lireConditions` distingue `null` de `undefined` pour cette seule
+raison.
+
+**Aucune colonne « actif » à côté de chaque nombre**, et c'est délibéré : deux
+champs pour une seule idée finissent par se contredire — un acompte à 30 % et un
+interrupteur éteint, et plus personne ne sait ce qui s'imprime.
+
+### On borne, on ne refuse pas
+
+Une saisie hors bornes vient d'un doigt qui a glissé, pas d'une intention.
+Refuser laisserait le champ vide, donc le réglage **éteint** — l'inverse de ce
+qu'il voulait. Les bornes sont posées **aussi en base** (`CHECK`) : une adresse
+d'action se tape, et un acompte de 4 000 % s'imprimerait sur un document que le
+client garde.
+
+### Ce qui ne se coupe pas, dit là où on le chercherait
+
+Sa règle du 13 août : des interrupteurs *« seulement à celles où la
+désactivation n'entraîne pas de problème juridique ou moral »*. Les mentions
+légales de la FACTURE — pénalités au taux légal, indemnité de 40 €, franchise de
+l'art. 293 B — restent écrites en dur dans `facture-pdf.ts`. L'écran porte la
+ligne, marquée « Obligatoire », **dans la même liste** : c'est là qu'il
+chercherait le bouton, et c'est donc là que la réponse doit être.
+
+### Une seule rédaction pour l'aperçu et pour le PDF
+
+`lignesConditionsDevis` sert aux deux. Deux rédactions finiraient par diverger,
+et c'est le client qui lirait la mauvaise. **L'aperçu ne porte aucun montant** :
+le total d'un devis à venir n'existe pas, et un chiffre inventé là finirait
+imprimé — le même piège que le « soit 1 044 € » retiré de la planche le 13 août.
+
+### Ce qui reste à faire, et qu'il ne faut pas croire acquis
+
+**Seule la validité atteint le PDF pour l'instant.** L'acompte, le délai, les
+moyens de paiement, le rappel des pénalités et le texte de pied sont réglés,
+enregistrés et montrés en aperçu — mais ils ne s'impriment pas encore : ils
+doivent d'abord passer par le même figement que la validité, sans quoi corriger
+un réglage réécrirait les conditions d'un devis déjà parti. C'est le lot suivant.

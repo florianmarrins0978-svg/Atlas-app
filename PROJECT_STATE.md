@@ -1,11 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-13 · branche `main`
-· dernière migration `drizzle/0038_civilite_du_client.sql`
-
----
-
-· dernière migration `drizzle/0039_identite_entreprise.sql`
+**Dernière mise à jour :** 2026-08-14 · branche `main`
+· dernière migration `drizzle/0040_conditions_documents.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log

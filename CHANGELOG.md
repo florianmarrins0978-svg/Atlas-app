@@ -22,6 +22,36 @@ zéro entre deux suites que s'il vit dans Redis.
 coupable. La batterie officielle et la CI posaient déjà la variable : c'est
 l'appel à la main qui ne l'avait pas. Raisons : `ARCHITECTURE.md` §96.
 
+### CODÉ : les conditions du devis, réglées au lieu d'être en dur
+
+Rubrique **Devis & factures**, migration `0040`. Détail : `ARCHITECTURE.md` §101.
+
+**Ce que ça remplace :** `const VALIDITE = "30 jours"` — une constante, la même
+pour tous les artisans, qu'aucun écran ne montrait. Un couvreur qui tient ses
+prix quinze jours envoyait un devis qui l'engageait trente.
+
+Se règlent désormais : la **durée de validité**, l'**acompte**, le **délai de
+paiement**, les **moyens de paiement**, le **rappel des pénalités** sur le devis
+et un **texte de bas de page**. Chacun avec son interrupteur — et les mentions
+légales de la facture restent scellées, la ligne le dit là où l'on chercherait
+le bouton.
+
+**La validité est RECOPIÉE dans le devis, pas relue.** Sans cela, corriger un
+réglage changerait la durée d'engagement d'un devis déjà envoyé, pendant que le
+client a une autre feuille sous les yeux.
+
+**« Jamais réglé » n'est pas « éteint ».** Le premier vaut 30 jours, le second
+n'imprime rien. Les confondre remettrait la durée sur le devis de quelqu'un qui
+l'a retirée.
+
+**Ce qui n'est PAS fait, et qu'il ne faut pas croire acquis :** seule la
+validité atteint le PDF. Les cinq autres sont réglés, enregistrés et montrés en
+aperçu, mais ne s'impriment pas encore — ils doivent passer par le même
+figement. C'est le lot suivant.
+
+Nouveau : `src/lib/conditions-documents.ts`, `/reglages/documents`,
+`scripts/test-conditions-documents.ts` (14 contrôles).
+
 ### CODÉ : l'équipe d'un chantier validé, et la ligne du planning
 
 Ses deux demandes du 14 août, approuvées sur planche. Détail :

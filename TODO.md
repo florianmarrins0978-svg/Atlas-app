@@ -27,6 +27,23 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quinvicies bis. Faire ARRIVER les conditions jusqu'au PDF
+
+`ARCHITECTURE.md` §101 : la rubrique « Devis & factures » règle six conditions,
+mais **seule la validité s'imprime**. L'acompte, le délai de paiement, les
+moyens de paiement, le rappel des pénalités et le texte de pied sont
+enregistrés et montrés en aperçu — ils n'atteignent pas encore le document.
+
+**Ce qu'il faut faire, et l'ordre compte :** les figer dans le devis comme la
+validité (`devis.validite_jours`), PUIS les composer dans le bloc « NOTES /
+CONDITIONS ». Les lire au moment de composer le PDF réécrirait les conditions
+d'un devis déjà parti.
+
+**Le piège à ne pas rouvrir :** `devis.conditions_paiement` porte déjà un texte
+que le patron peut écrire à la main. Le remplacer d'office effacerait sa saisie ;
+les deux doivent cohabiter.
+
+
 ### 0 quatervicies novies. NE PAS recoder le blocage de l'envoi sans SIRET
 
 Décidé par le patron le matin du 14 août 2026, codé, montré — puis **retiré le
