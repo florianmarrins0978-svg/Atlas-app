@@ -7589,3 +7589,118 @@ pas recopier) portait sur le FICHIER : elle rougissait sur le commentaire
 d'en-tête qui cite la faute pour dire qu'on l'a vue. Elle porte désormais sur le
 **texte affiché**. Une règle qui interdit un mot doit regarder là où le mot
 serait lu, pas là où on en parle.
+
+---
+
+## 96. Les réglages refondus : un sommaire, et chaque chose rangée dessous
+
+**Le 14 août 2026, le patron :** *« je veux que tu recrées entièrement la page
+de réglage. La modifier totalement. Et ce qu'on a déjà, soit tu crées les
+catégories qu'il y a besoin pour les implémenter, soit s'il va y avoir des
+doublons, tu supprimes. Exemple, les prix de main-d'œuvre et de machine, eh bien
+ça, tu l'intègres directement dans la partie tarif. »*
+
+### Ce que l'écran était devenu
+
+Une page à défilement où s'empilait tout ce qui n'avait trouvé sa place nulle
+part : un lien vers l'identité, le nombre d'équipes, la périodicité de TVA, la
+liste des tarifs, un lien vers le catalogue, un lien vers les grilles de prix,
+un lien vers l'agenda, un lien vers le vocabulaire, l'état de l'IA, le
+téléchargement des données, la version, le bouton de mise à jour. **Douze blocs,
+sans hiérarchie**, chacun ajouté au bas du précédent le jour où il est né.
+
+Le coût n'était pas esthétique. Changer un prix demandait de faire défiler
+quatre écrans ; et deux réglages fiscaux — *suis-je en franchise* et *à quel
+rythme je déclare* — vivaient à deux endroits séparés par tout le reste.
+
+### Où chaque chose est partie, et pourquoi là
+
+| Ce qui traînait sur l'écran | Sa rubrique | La raison |
+|---|---|---|
+| identité, SIRET, TVA, IBAN | **Mon entreprise** (`/reglages/identite`) | déjà un écran (§94) |
+| **périodicité de TVA** | **Mon entreprise** | c'est la moitié de la même question que le régime — les séparer obligeait à savoir lequel était où |
+| tarifs, import de tarifs | **Tarifs & catalogue** (`/reglages/tarifs`) | sa demande, mot pour mot |
+| **grilles de prix**, **catalogue** | **Tarifs & catalogue** | « combien je facture ça » posait trois adresses |
+| nombre et noms d'équipes | **Planning** (`/reglages/planning`) | « équipe » désigne ici une FILE DU PLANNING, pas un compte (§88) |
+| état de l'IA, **vocabulaire du métier** | **Atlas IA** (`/reglages/ia`) | le vocabulaire est ce que l'IA reconnaît d'une dictée |
+| agenda | **Intégrations** (`/reglages/agenda`) | inchangé, seulement renommé dans le sommaire |
+| téléchargement des données | **Sécurité & données** (`/reglages/donnees`) | — |
+| version, mise à jour | **reste sur le sommaire** | ce n'est pas un réglage : c'est la réponse à « mes correctifs sont-ils arrivés », et une capture doit y répondre sans qu'on pose la question (`CLAUDE.md` §6) |
+
+**Les trois façons de dire un prix n'ont PAS été fusionnées**, et c'est
+délibéré : un tarif est une ligne libre qu'il écrit ; une grille de prix
+s'apprend de ses devis, case par case ; le catalogue est du vocabulaire partagé
+entre tous les artisans et ne porte aucun prix (§89). Les mêler ferait croire
+qu'un prix du catalogue est le sien — c'est-à-dire inventerait une donnée.
+
+### La liste est une fonction pure, et ce n'est pas du rangement
+
+`src/lib/rubriques-reglages.ts` porte les rubriques, leur ordre, leur icône et
+**qui les voit**. La même liste dessine le sommaire et dit quelles adresses un
+rôle peut ouvrir : deux implémentations d'une même règle finissent toujours par
+diverger (`CLAUDE.md` §3), et ici la divergence serait un salarié qui voit les
+coordonnées bancaires.
+
+**Premier endroit d'Atlas où `getRole` décide de ce qu'un écran RESTITUE.**
+Jusqu'ici il n'était appelé dans aucun écran (§88) : un membre voyait tout. Le
+sommaire ne rend à un membre que l'ensemble « Moi » — pas grisé, pas masqué :
+absent. Et chaque rubrique de l'entreprise refuse un non-propriétaire **avant de
+lire la moindre valeur**, parce qu'une adresse se tape (`docs/QUESTIONS.md`
+§10).
+
+**Ce que cela ne règle pas, et qu'il ne faut pas croire acquis :** le reste de
+l'application ne cloisonne toujours rien. Un membre voit encore tous les
+montants sur les chantiers, les devis et les factures. Ce lot pose la pièce, il
+ne ferme pas le sujet.
+
+### Deux choix d'écran qui s'écartent de sa planche
+
+1. **L'entreprise passe AVANT « Moi ».** Sur sa planche, les rubriques
+   personnelles ouvraient la liste ; à l'écran, leurs quatre lignes sont encore
+   à venir, et quatre rubriques inertes en tête font paraître l'écran cassé. Le
+   patron ouvre les réglages pour ses tarifs et son identité. Pour un salarié,
+   « Moi » est le seul ensemble et ouvre donc naturellement.
+2. **Une rubrique non codée n'est pas un lien.** Elle garde son icône, en
+   retrait, et porte « Bientôt » à la place du chevron. Un chevron sur une ligne
+   qui ne mène nulle part promet une page — et le patron a déjà appuyé deux fois
+   sur des choses qui ne répondaient pas.
+
+### Ce que la refonte a révélé dans les suites
+
+**`/reglages/mes-donnees` n'a jamais existé.** Deux suites navigateur —
+« aucune barre de défilement » et « rien de recouvert » — la parcouraient dans
+leur liste d'écrans : elles éprouvaient une page d'erreur en croyant éprouver un
+écran, et elles étaient vertes. La bonne adresse est `/reglages/donnees`.
+
+**Et le contrôle du vocabulaire serait devenu vert par accident.** Il vérifie
+qu'un compte ordinaire ne se voit pas proposer le vocabulaire du métier, en
+lisant l'écran des réglages ; le renvoi ayant déménagé sous « Atlas IA », le
+contrôle aurait continué à passer en cherchant à un endroit où plus personne ne
+le met. Il regarde désormais là où le renvoi serait.
+
+### Le piège qui a coûté vingt rouges pour rien
+
+**Lancer les suites navigateur sans `REDIS_URL` sabote la batterie à la sixième
+suite, et pas un seul message ne le dit.** Le limiteur de connexion n'accepte
+que **cinq connexions par quart d'heure** pour un même couple (compte, adresse
+IP) ; toutes les suites se connectent avec `demo@atlas.local` depuis
+`127.0.0.1`. Le lanceur remet le compteur à zéro entre deux suites — mais il ne
+peut le faire que si le compteur vit dans Redis : celui de l'adaptateur mémoire
+est enfermé dans le processus serveur, hors d'atteinte. Sans la variable,
+`reinitialiserLimiteConnexion` se taisait et rendait la main.
+
+Le 14 août 2026, vingt suites sont donc tombées **en disant toutes la même
+chose** : « dépassement de délai en attendant la redirection après la
+connexion ». C'est-à-dire : *le formulaire de connexion est cassé*. Il allait
+très bien. Vingt minutes de batterie pour un verdict faux qui envoyait chercher
+au mauvais endroit — précisément ce que `AGENTS.md` interdit.
+
+`run-e2e-tests.ts` **refuse désormais de partir** sans `REDIS_URL`, et son
+message nomme le vrai coupable. La batterie officielle
+(`verifier-avant-livraison.ts`) et la CI la posaient déjà : c'est l'appel à la
+main qui ne l'avait pas.
+
+Et `monter-base-locale.sh` continue de ne PAS la poser, ce qui n'est pas une
+contradiction : avec elle, les suites BASE laissent une connexion ioredis
+ouverte et ne rendent jamais la main. C'est à l'appelant des suites navigateur
+de la fournir.

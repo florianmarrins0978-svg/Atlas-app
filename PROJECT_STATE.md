@@ -556,14 +556,21 @@ Voir `TODO.md` pour le détail et l'ordre.
 
 - **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
   (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA
-  se déclare au lieu d'être deviné d'après le taux**. **Le sommaire lui-même est
-  dessiné le 14 août** (`maquettes/atlas-reglages-sommaire.html`,
-  `ARCHITECTURE.md` §95), d'après une planche que le patron a envoyée de
-  lui-même : dix rubriques, une icône chacune, « Devis & factures » et
-  « Planning ». Il reste **un choix à obtenir avant de coder** — filets ou
-  cartes — et la planche porte les deux, côte à côte. Sa planche était sombre ;
-  interrogé, il a répondu « crème, comme le reste », et le mode sombre reste la
-  rubrique « Apparence », marquée *Bientôt*. Ce qui suit décrit l'état
+  se déclare au lieu d'être deviné d'après le taux**. **Le sommaire lui-même est CODÉ le
+  14 août** (`ARCHITECTURE.md` §96), d'après une planche que le patron a envoyée
+  de lui-même : dix rubriques, une icône chacune, « Devis & factures » et
+  « Planning », en filets et dans la charte — sa planche était sombre, il a
+  tranché « crème, comme le reste ». **Tout ce qui s'empilait sur l'écran est
+  parti dans sa rubrique** : tarifs, grilles de prix et catalogue ensemble ;
+  périodicité de TVA auprès du régime ; équipes du planning dans « Planning » ;
+  vocabulaire sous « Atlas IA » ; données sous « Sécurité & données ». La
+  version exécutée reste sur le sommaire, parce qu'une capture doit y répondre.
+  **C'est aussi le premier écran d'Atlas où `getRole` décide de ce qui est
+  RENDU** : un membre ne reçoit que l'ensemble « Moi », et chaque rubrique de
+  l'entreprise refuse un non-propriétaire avant de lire une valeur. Le reste de
+  l'application, lui, ne cloisonne toujours rien. Six rubriques sur treize
+  restent marquées *Bientôt* — mon compte, notifications, connexion, apparence,
+  équipe (les comptes), devis & factures, abonnement. Ce qui suit décrit l'état
   d'avant ce lot, et reste vrai pour les neuf autres rubriques : (`maquettes/atlas-reglages-plan.html`, `ARCHITECTURE.md` §86). Ce qui
   y est tranché : les deux niveaux « Moi » / « Mon entreprise », qui voit quoi,
   et ce qui n'aura jamais d'interrupteur. Ce qui ne l'est pas : le rôle

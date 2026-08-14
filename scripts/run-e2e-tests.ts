@@ -232,6 +232,38 @@ async function main() {
     process.exit(1);
   }
 
+  // **Et sans REDIS_URL, la batterie se saborde à la sixième suite.**
+  //
+  // Payé le 14 août 2026 : lancée sans cette variable, elle a rendu vingt
+  // rouges — et pas un seul ne désignait le coupable. Tous disaient la même
+  // chose, « dépassement de délai en attendant la redirection après la
+  // connexion », c'est-à-dire : le formulaire de connexion est cassé. Il ne
+  // l'était pas. Le limiteur de débit n'accepte que cinq connexions par quart
+  // d'heure pour un même couple (compte, adresse IP) ; toutes les suites se
+  // connectent avec le même compte depuis 127.0.0.1, et le compteur ne se remet
+  // à zéro entre deux suites QUE s'il vit dans Redis — celui de l'adaptateur
+  // mémoire est enfermé dans le processus serveur, hors d'atteinte.
+  //
+  // `reinitialiserLimiteConnexion` se taisait alors et rendait la main : le
+  // seul garde-fou de la batterie s'éteignait sans un mot. On refuse désormais
+  // de partir, plutôt que de rendre pendant vingt minutes un verdict faux.
+  //
+  // (`monter-base-locale.sh` ne pose délibérément PAS REDIS_URL : les suites
+  // BASE laisseraient une connexion ioredis ouverte et ne rendraient jamais la
+  // main. C'est bien à l'appelant des suites navigateur de la poser.)
+  if (!process.env.REDIS_URL) {
+    console.error(
+      "❌ REDIS_URL n'est pas posée, et sans elle cette batterie ne veut rien dire.\n" +
+        "   Le limiteur de connexion bloque au bout de 5 connexions par quart d'heure ;\n" +
+        "   il ne se remet à zéro entre deux suites que s'il vit dans Redis. Sans quoi,\n" +
+        "   à partir de la sixième suite, TOUT échoue sur « dépassement de délai » à la\n" +
+        "   connexion — un message qui accuse le formulaire alors qu'il va très bien.\n" +
+        "   Relancer avec :\n" +
+        "     REDIS_URL=redis://localhost:6379 npm run test:e2e"
+    );
+    process.exit(1);
+  }
+
   console.log("Seed de la base de développement...");
   const seedResult = spawnSync(NODE, [TSX, "src/server/db/seed.ts"], {
     stdio: "inherit",

@@ -48,7 +48,11 @@ export default function ReglagesClient({ initialTarifs }: { initialTarifs: Tarif
   const tarifsVisibles = tarifs.filter((t) => !retraits.estRetire(t.id));
 
   return (
-    <div className="px-6 pt-5">
+    // Aucun retrait horizontal ici : la rubrique qui l'accueille pose déjà les
+    // 26 px de la charte. Il en portait 24 (`px-6`, l'ANCIENNE échelle) du
+    // temps où il vivait à même l'écran des réglages — additionnés, ils
+    // décalaient toute la liste de 50 px, seule au milieu de l'écran.
+    <div className="pt-1">
       {/* Le prix d'un chantier peut aussi être calculé à partir des paramètres
           de chiffrage quand aucun tarif ne correspond : ne pas laisser croire
           que ces tarifs sont la seule source possible. */}
@@ -137,7 +141,12 @@ export default function ReglagesClient({ initialTarifs }: { initialTarifs: Tarif
         dernier={retraits.dernier}
         nombre={retraits.nombre}
         onAnnuler={retraits.annuler}
-        className="mt-3 !mx-0"
+        // `mx-0!`, et non `!mx-0` : en Tailwind 4 le modificateur s'écrit en
+        // SUFFIXE. Écrite à la mode de la version 3, la classe ne faisait rien
+        // — le tiroir gardait les 26 px de marge du composant et se décalait de
+        // la liste qu'il commente. Invisible tant que ce bloc vivait dans un
+        // écran à `px-6` ; visible depuis qu'il a sa propre rubrique.
+        className="mt-3 mx-0!"
       />
 
       <button

@@ -27,21 +27,20 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 quatervicies octies. CODER le sommaire des réglages — en attente d'un mot du patron
+### 0 quatervicies octies. ~~CODER le sommaire des réglages~~ — fait le 2026-08-14
 
-`maquettes/atlas-reglages-sommaire.html` est dessinée et au vert (59 contrôles,
-trois éprouvés rouges). Elle reprend SA planche du 14 août : dix rubriques,
-une icône chacune, « Devis & factures » et « Planning ».
+Le sommaire est en place (`ARCHITECTURE.md` §96), en filets et dans la charte,
+et tout ce qui s'empilait sur l'écran est parti dans sa rubrique.
 
-**Ce qui manque pour coder :** filets ou cartes. Les deux registres sont sur la
-planche, côte à côte ; il n'a pas encore choisi. Ne pas trancher à sa place —
-`CLAUDE.md` §3 bis existe précisément pour ça.
+**Ce qui reste sous « Bientôt », et qui est du vrai travail** — six rubriques :
+mon compte, notifications, connexion, apparence, l'équipe au sens des COMPTES
+(§88), et « Devis & factures » (les conditions, la numérotation et les mentions
+sont encore écrites en dur, §91). Elles se voient à l'écran, marquées, et ne
+mentent pas.
 
-**Ce que le codage suppose, et qui n'existe pas :** le cloisonnement par rôle en
-LECTURE. `getRole` n'est appelé dans aucun écran (§88), et l'écran du salarié
-n'est donc pas seulement une liste plus courte à écrire — c'est la première fois
-que le serveur devra refuser de rendre des rubriques. Compter cela dans le lot,
-pas après.
+**Et le cloisonnement n'est posé QUE là.** Les réglages refusent un membre ;
+les chantiers, les devis et les factures lui montrent encore tous les montants.
+Ne pas lire la §96 comme si le sujet était clos.
 
 ### 0 quatervicies septies. La page qui rassemble les maquettes a décroché
 

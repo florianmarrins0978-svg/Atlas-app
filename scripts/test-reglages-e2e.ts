@@ -99,8 +99,15 @@ async function main() {
   await page.click('button[type="submit"]');
   await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
 
+  // **Les tarifs ont leur propre rubrique depuis le 14 août 2026.** L'écran des
+  // réglages est devenu un sommaire, et tout ce qui s'y empilait est parti dans
+  // la rubrique correspondante (`ARCHITECTURE.md` §96). Le chemin du patron est
+  // donc éprouvé DEPUIS LE SOMMAIRE, en touchant la ligne : viser directement
+  // l'adresse aurait laissé passer un sommaire dont le lien ne mène nulle part.
   await page.goto("http://localhost:3000/reglages", { waitUntil: "networkidle" });
   assert.ok(await page.locator("text=Réglages").first().isVisible());
+  await page.getByRole("link", { name: /Tarifs & catalogue/ }).click();
+  await page.getByRole("heading", { name: "Tarifs & catalogue" }).waitFor({ timeout: 15000 });
 
   const libelleUnique = `Tarif e2e ${Date.now()}`;
 

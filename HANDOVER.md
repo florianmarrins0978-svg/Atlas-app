@@ -300,6 +300,27 @@ premier devis d'un vrai artisan partirait sans SIRET ni IBAN, sans un mot. Le
 détail des six faits est dans `ARCHITECTURE.md` §87, la liste de travail dans
 `TODO.md` §0 quatervicies.
 
+**Les réglages ont été REFONDUS le 14 août 2026** (`ARCHITECTURE.md` §96), à sa
+demande : *« je veux que tu recrées entièrement la page de réglage »*. L'écran
+est devenu un **sommaire** de treize rubriques en deux ensembles, et tout ce qui
+s'y empilait est parti dans sa rubrique. **Quatre choses à savoir avant d'y
+toucher :**
+
+1. **Les adresses ont bougé.** Les tarifs sont sur `/reglages/tarifs`, les
+   équipes du planning sur `/reglages/planning`, l'IA sur `/reglages/ia`, les
+   données sur `/reglages/donnees`, et la périodicité de TVA a rejoint le régime
+   sur `/reglages/identite`. Cinq suites navigateur ont dû être redirigées.
+2. **La liste vit dans `src/lib/rubriques-reglages.ts`**, pas dans l'écran. Y
+   ajouter une rubrique la fait apparaître ; changer son rôle change ce que le
+   serveur rend. Ne pas dupliquer cette liste ailleurs.
+3. **C'est le premier écran où `getRole` décide de ce qui est RENDU**, et cela
+   ne vaut QUE pour les réglages : chantiers, devis et factures montrent encore
+   tous les montants à un membre. Ne pas lire ce lot comme si le cloisonnement
+   était fait.
+4. **Six rubriques sont marquées « Bientôt »** et ne sont pas des liens : mon
+   compte, notifications, connexion, apparence, l'équipe au sens des comptes, et
+   « Devis & factures ». Leur donner un `href` suffit à les ouvrir.
+
 **Le sommaire lui-même, dessiné le 14 août** — et il vient d'une planche que le
 patron a envoyée sans qu'on la demande, noir et or, avec ce seul mot : « c'est
 ça que je voulais ! ». `maquettes/atlas-reglages-sommaire.html`,

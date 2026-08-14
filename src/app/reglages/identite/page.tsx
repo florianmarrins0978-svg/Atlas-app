@@ -4,6 +4,8 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { estProprietaire } from "@/server/autorisation";
 import IdentiteClient from "./IdentiteClient";
+import PeriodiciteTvaReglage from "../PeriodiciteTva";
+import { PERIODICITE_TVA_PAR_DEFAUT } from "@/server/periode-tva";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +28,7 @@ export default async function IdentitePage() {
   if (!(await estProprietaire(ctx))) {
     return (
       <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
-        <EnTeteEcran surtitre="Mon entreprise" titre="Identité" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
+        <EnTeteEcran surtitre="Réglages" titre="Mon entreprise" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
         <p className="mx-[26px] mt-8 text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
           Ces informations appartiennent au patron de l&apos;entreprise. Elles
           portent son identité et ses coordonnées bancaires.
@@ -40,8 +42,8 @@ export default async function IdentitePage() {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <EnTeteEcran
-        surtitre="Mon entreprise"
-        titre="Identité"
+        surtitre="Réglages"
+        titre="Mon entreprise"
         retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
       />
       <IdentiteClient
@@ -58,6 +60,19 @@ export default async function IdentitePage() {
           regimeTva: e?.regimeTva ?? "assujettie",
         }}
       />
+
+      {/* **La périodicité de TVA rejoint le régime de TVA, le 14 août 2026.**
+          Elle vivait sur l'écran d'ensemble des réglages, entre le nombre
+          d'équipes et les tarifs — à quatre écrans de défilement du régime, qui
+          est pourtant la moitié de la même question. Deux réglages fiscaux à
+          deux endroits, et le patron devait savoir lequel se trouvait où.
+
+          Le doublon que cela évite n'est pas un doublon de code mais de
+          PENSÉE : « suis-je en franchise » et « à quel rythme je déclare » se
+          répondent ensemble, ou pas du tout. */}
+      <div className="pb-24">
+        <PeriodiciteTvaReglage initiale={e?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT} />
+      </div>
     </div>
   );
 }

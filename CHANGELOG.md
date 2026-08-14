@@ -9,6 +9,62 @@ Format : le plus récent en tête.
 
 ## 2026-08-14
 
+### La batterie navigateur refuse de partir sans Redis, au lieu de mentir vingt minutes
+
+Lancée sans `REDIS_URL`, elle rendait **vingt rouges qui disaient tous la même
+chose** : « dépassement de délai en attendant la redirection après la
+connexion » — c'est-à-dire *le formulaire de connexion est cassé*. Il allait
+très bien. Le limiteur n'accepte que cinq connexions par quart d'heure pour un
+même couple (compte, adresse IP), et le lanceur ne peut remettre ce compteur à
+zéro entre deux suites que s'il vit dans Redis.
+
+`run-e2e-tests.ts` refuse désormais de démarrer, et son message nomme le vrai
+coupable. La batterie officielle et la CI posaient déjà la variable : c'est
+l'appel à la main qui ne l'avait pas. Raisons : `ARCHITECTURE.md` §96.
+
+### CODÉ : les réglages refondus — un sommaire, et chaque chose rangée dessous
+
+**Sa demande, le 14 août 2026 :** *« je veux que tu recrées entièrement la page
+de réglage. La modifier totalement. Et ce qu'on a déjà, soit tu crées les
+catégories qu'il y a besoin, soit s'il va y avoir des doublons, tu supprimes.
+Exemple, les prix de main-d'œuvre et de machine, eh bien ça, tu l'intègres
+directement dans la partie tarif. »*
+
+**L'écran était devenu une page à défilement de douze blocs sans hiérarchie**,
+chacun ajouté au bas du précédent le jour où il est né. Changer un prix
+demandait de faire défiler quatre écrans, et deux réglages fiscaux — le régime
+de TVA et la périodicité — vivaient à deux endroits séparés par tout le reste.
+
+**Rien n'a été jeté : tout a été rangé.** Les tarifs, les grilles de prix et le
+catalogue sous « Tarifs & catalogue » ; la périodicité de TVA auprès du régime,
+dans « Mon entreprise » ; les équipes du planning dans « Planning » — le mot y
+désigne une FILE DU PLANNING, pas un compte ; le vocabulaire du métier sous
+« Atlas IA », puisque c'est ce qu'elle sait reconnaître d'une dictée ; le
+téléchargement des données sous « Sécurité & données ». La version exécutée
+reste sur le sommaire : ce n'est pas un réglage, c'est la réponse à « mes
+correctifs sont-ils arrivés ».
+
+**Les trois façons de dire un prix n'ont PAS été fusionnées** : un tarif est une
+ligne libre, une grille s'apprend de ses devis, le catalogue est du vocabulaire
+partagé sans aucun prix. Les mêler ferait croire qu'un prix du catalogue est le
+sien — c'est-à-dire inventerait une donnée.
+
+**Premier endroit d'Atlas où le rôle décide de ce qu'un écran RESTITUE.**
+`getRole` n'était appelé dans aucun écran : un membre voyait tout. Le sommaire
+ne lui rend que l'ensemble « Moi » — pas grisé, pas masqué : absent — et chaque
+rubrique de l'entreprise refuse un non-propriétaire avant de lire la moindre
+valeur. **Cela ne ferme pas le sujet** : le reste de l'application ne cloisonne
+toujours rien.
+
+**Deux suites étaient vertes en éprouvant une page d'erreur.** `/reglages/mes-donnees`
+n'a jamais existé, et deux suites navigateur la parcouraient dans leur liste
+d'écrans. Une troisième — le vocabulaire réservé à l'éditeur — serait devenue
+verte par accident, en cherchant un lien à un endroit où plus personne ne le met.
+
+Nouveau : `src/lib/rubriques-reglages.ts` (fonction pure : les rubriques, leur
+ordre, et qui les voit), `scripts/test-rubriques-reglages.ts` (13 contrôles),
+`scripts/capture-reglages.mts`. Détail et raisons : `ARCHITECTURE.md` §96.
+
 ### DESSINÉ : le sommaire des réglages, d'après la planche du patron
 
 Il a envoyé une planche qu'il n'avait pas demandée — un sommaire noir et or,
