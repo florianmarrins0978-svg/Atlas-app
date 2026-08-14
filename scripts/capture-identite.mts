@@ -5,7 +5,7 @@
 // réels d'Atlas n'ont été trouvés que là, jamais par un test vert
 // (`CLAUDE.md` §5). L'état VIERGE compte autant que l'état rempli — c'est celui
 // qu'un artisan voit à son premier jour, et que personne n'avait jamais vu
-// (`ARCHITECTURE.md` §81).
+// (`ARCHITECTURE.md` §87).
 import { lancerNavigateur } from "./e2e-browser";
 import type { Page } from "playwright";
 import { mkdirSync } from "node:fs";

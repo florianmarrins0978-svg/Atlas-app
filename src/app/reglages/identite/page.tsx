@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
  * l'entreprise ne se saisissait QUE depuis « le devis écrit à la main » : un
  * artisan qui suivait le parcours normal — dicter, chiffrer, envoyer — n'avait
  * jamais l'occasion de saisir son SIRET, et son premier devis partait sans
- * SIRET, sans adresse et sans IBAN (`ARCHITECTURE.md` §81).
+ * SIRET, sans adresse et sans IBAN (`ARCHITECTURE.md` §87).
  *
  * **L'écran refuse un non-propriétaire plutôt que de masquer.** Une rubrique
  * cachée ne protège rien : ce qu'un rôle n'a pas le droit de voir ne doit pas

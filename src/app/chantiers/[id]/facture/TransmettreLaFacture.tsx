@@ -57,6 +57,7 @@ export default function TransmettreLaFacture({
   factureId,
   clientId,
   clientNom,
+  clientCivilite,
   entrepriseNom,
   numeroFacture,
   echeanceLisible,
@@ -68,6 +69,7 @@ export default function TransmettreLaFacture({
   factureId: string;
   clientId: string | null;
   clientNom: string;
+  clientCivilite: "mr" | "mme" | null;
   entrepriseNom: string;
   numeroFacture: string;
   echeanceLisible: string | null;
@@ -102,6 +104,7 @@ export default function TransmettreLaFacture({
       canal: canalChoisi,
       destinataire: cible,
       message: composerMessageFacture({
+        clientCivilite,
         clientNom,
         entrepriseNom,
         numeroFacture,
@@ -176,6 +179,7 @@ export default function TransmettreLaFacture({
           canal: canalChoisi,
           destinataire: valeur,
           message: composerMessageFacture({
+        clientCivilite,
             clientNom,
             entrepriseNom,
             numeroFacture,

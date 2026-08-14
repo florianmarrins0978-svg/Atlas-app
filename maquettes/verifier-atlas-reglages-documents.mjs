@@ -4,7 +4,7 @@
   Le sujet n'est pas l'allure, ce sont QUATRE RÈGLES :
 
     · UN INTERRUPTEUR ÉTEINT NE DÉPLIE RIEN, et ce qui rend la facture régulière
-      n'a pas d'interrupteur du tout — la règle du lot 1 (`ARCHITECTURE.md` §80).
+      n'a pas d'interrupteur du tout — la règle du lot 1 (`ARCHITECTURE.md` §86).
     · LES DEUX TEXTES NE VONT PAS AU MÊME ENDROIT. Les conditions particulières
       valent pour CE devis ; le bas de page revient sur toutes les pièces. Les
       confondre produirait un texte imprimé deux fois, ou nulle part.

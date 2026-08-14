@@ -107,7 +107,7 @@ export async function controlerGrammaire(page, selecteur, verifie) {
   // L'écran de la planche doit mesurer 390 px comme un iPhone. Sous les 390, la
   // barre basse de l'application ne tient pas — et c'est ce qui avait fait
   // rapetisser sa chasse, planche après planche, jusqu'à valider une barre plus
-  // petite que la vraie (`ARCHITECTURE.md` §80).
+  // petite que la vraie (`ARCHITECTURE.md` §86).
   verifie("l'écran fait la largeur d'un iPhone, pas celle qui reste après la coque",
     ecran.largeur >= 390, `${ecran.largeur.toFixed(0)} px`);
   verifie("le titre est en retrait de 26 px, comme tous les écrans refaits",

@@ -9,7 +9,7 @@ import { etatEnvoiExplication, etatEnvoiLabel, type EtatEnvoi } from "@/lib/etat
 import { reprendreDevisAction } from "./actions";
 import EnvoiAuClient from "./EnvoiAuClient";
 import { enEuros } from "@/lib/euros";
-import { avecCivilite } from "@/lib/civilite";
+import { avecCivilite, type Civilite } from "@/lib/civilite";
 
 
 export default function ExportClient({
@@ -19,6 +19,7 @@ export default function ExportClient({
   chantierNom,
   adresseChantier,
   clientNom,
+  clientCivilite,
   clientTelephone,
   clientEmail,
   entrepriseNom,
@@ -40,6 +41,8 @@ export default function ExportClient({
   chantierNom: string;
   adresseChantier: string;
   clientNom: string;
+  /** Ce qu'il a choisi au-dessus du nom, recopié sur le devis. */
+  clientCivilite: Civilite | null;
   clientTelephone: string;
   clientEmail: string;
   entrepriseNom: string;
@@ -95,7 +98,19 @@ export default function ExportClient({
   // Une correction demandée se reprend comme un refus : c'est la même mécanique
   // — une nouvelle version, corrigée, renvoyée — mais avec bien plus de chances
   // d'aboutir, puisque le client a déjà dit ce qu'il voulait.
-  const peutReprendre = etatEnvoi === "retourne" || etatEnvoi === "a_corriger" || etatEnvoi === "caduc";
+  //
+  // **`!lienClient` n'est pas une précaution, c'est la correction du 13 août.**
+  // Sa capture montrait « Ouvrir le SMS tout prêt » ET « Corriger et renvoyer »
+  // l'un sous l'autre, tous deux pleins, sur un devis qu'il venait de corriger
+  // et d'envoyer — l'écran lui proposait de corriger ce qu'il venait de
+  // corriger. La cause : `etatEnvoi` vient du serveur et n'était pas recalculé
+  // après l'envoi, l'écran restait donc sur l'état d'avant.
+  //
+  // La règle qu'il a retenue (maquette 40, proposition B) : **un seul bouton à
+  // chaque instant**, celui du moment. Avant l'envoi, reprendre EST le geste ;
+  // après, c'est transmettre. Jamais les deux.
+  const peutReprendre =
+    !lienClient && (etatEnvoi === "retourne" || etatEnvoi === "a_corriger" || etatEnvoi === "caduc");
   const lienAMontrer = lienClient ?? lienEnvoi;
 
   /**
@@ -146,15 +161,12 @@ export default function ExportClient({
       {envoye || lienClient ? (
         <EcranDevisParti
           etat={lienClient ? "Devis prêt" : etatEnvoiLabel[etatEnvoi]}
-          // La même civilité que la synthèse ci-dessous : lire « Monsieur
-          // Martins » avant l'envoi et « Martins » juste après ferait douter
-          // qu'il s'agisse du même client.
-          //
-          // **Le message qui part chez le client, lui, n'est pas touché** — il
-          // dit toujours « Bonjour <nom> » (`src/lib/message-client.ts`).
-          // Changer la façon dont ses clients sont abordés est un geste qui lui
-          // appartient, et il ne l'a pas demandé.
-          phrase={lienClient ? `Devis prêt pour ${avecCivilite(clientNom)}.` : etatEnvoiExplication[etatEnvoi]}
+          // La même civilité que la synthèse ci-dessous : lire « Mr. Martins »
+          // avant l'envoi et « Martins » juste après ferait douter qu'il
+          // s'agisse du même client. Le message qui part chez le client
+          // l'aborde de la même façon depuis le 13 août au soir
+          // (`src/lib/message-client.ts`).
+          phrase={lienClient ? `Devis prêt pour ${avecCivilite(clientNom, clientCivilite)}.` : etatEnvoiExplication[etatEnvoi]}
           messageClient={messageClient}
           numeroDevis={numeroDevis}
           totalTtc={totalTtc}
@@ -166,6 +178,7 @@ export default function ExportClient({
               <TransmettreAuClient
                 clientId={clientId}
                 clientNom={clientNom}
+                clientCivilite={clientCivilite}
                 entrepriseNom={entrepriseNom}
                 canal={canalClient}
                 telephone={clientTelephone}
@@ -222,7 +235,7 @@ export default function ExportClient({
             <Row label="Chantier" nom={chantierNom} detail={adresseChantier} repere="ligne-chantier" />
             <Row
               label="Client"
-              nom={avecCivilite(clientNom)}
+              nom={avecCivilite(clientNom, clientCivilite)}
               detail={clientTelephone}
               repere="ligne-client"
               last
@@ -336,6 +349,13 @@ export default function ExportClient({
         onEnvoye={(lien) => {
           setConfirmationVisible(false);
           setLienClient(lien);
+          // **Et l'on relit le serveur.** Sans cela, `etatEnvoi` reste celui de
+          // l'ouverture — « correction demandée » — alors qu'une version vient
+          // de partir. `!lienClient` masque déjà le bouton de reprise tout de
+          // suite ; ce rafraîchissement remet le RESTE de l'écran d'accord avec
+          // la base (l'état annoncé, le lien en cours), au lieu de laisser deux
+          // vérités cohabiter jusqu'au prochain chargement.
+          router.refresh();
         }}
       />
     </>

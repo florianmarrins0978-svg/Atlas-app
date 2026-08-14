@@ -36,8 +36,9 @@ relues à chaque session) :
 12. [L'agenda Google : mes artisans auront-ils des identifiants à saisir ?](#12-lagenda-google--mes-artisans-auront-ils-des-identifiants-à-saisir-)
 13. [Pourquoi tous les boutons ont-ils la même forme ?](#13-pourquoi-tous-les-boutons-ont-ils-la-même-forme-)
 14. [Le Calendrier d'Apple : puis-je le relier comme l'agenda Google ?](#14-le-calendrier-dapple--puis-je-le-relier-comme-lagenda-google-)
-15. [L'IA se sert-elle de mes réglages pour faire les devis ?](#15-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-)
-16. [Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien](#16-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien)
+15. [Ma TVA, je la déclare tous les mois ou tous les trimestres ?](#15-ma-tva-je-la-déclare-tous-les-mois-ou-tous-les-trimestres-)
+16. [L'IA se sert-elle de mes réglages pour faire les devis ?](#16-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-)
+17. [Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien](#17-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien)
 
 ---
 
@@ -926,10 +927,51 @@ manière d'aller chercher les rendez-vous. Deux fournisseurs, une seule règle �
 c'est ce qui évite que le planning finisse par répondre différemment selon le
 calendrier branché.
 
+## 15. Ma TVA, je la déclare tous les mois ou tous les trimestres ?
+
+*Posée le 2026-08-12.* Vous aviez raison de le demander : l'écran était découpé
+en trimestres, et personne n'avait écrit pourquoi.
+
+### La réponse courte
+
+**Tous les mois, par défaut.** La déclaration de TVA au régime réel normal —
+le formulaire CA3 — est mensuelle. Le trimestre n'est pas un choix libre : c'est
+une **option**, ouverte seulement si votre TVA due de l'année précédente est
+**inférieure à 4 000 €**. Au-dessus, on revient au mois.
+
+### Ce qui change en 2027, et qui vous concerne
+
+Il existe encore aujourd'hui un troisième cas : le **régime réel simplifié**,
+une déclaration annuelle avec deux acomptes en juillet et décembre. **Il
+disparaît au 1er janvier 2027** — voté à l'article 38 de la loi de finances pour
+2025 (loi n° 2025-127 du 14 février 2025), ses modalités ajustées par celle pour
+2026. Toutes les entreprises basculent alors au réel normal : mensuel ou
+trimestriel.
+
+Autrement dit, **la question « mois ou trimestre » sera la seule qui se pose**.
+C'est pour cela que l'application ne propose que ces deux-là.
+
+### Ce qu'Atlas ne vous dira jamais, et pourquoi
+
+**Lequel des deux vous concerne.** Le seuil des 4 000 € porte sur la TVA
+**due** : ce que vous avez collecté *moins* ce que vous déduisez sur vos achats.
+Atlas ne connaît que la première — il ne voit ni votre gazole, ni votre
+tronçonneuse, ni votre assurance.
+
+Il ne peut donc pas calculer si vous avez droit au trimestre, et il ne doit pas
+le laisser croire. C'est la même règle que pour les prix : sans source fiable,
+on n'écrit pas. **Votre comptable tranche ; l'application obéit.**
+
+### Où ça se règle
+
+**Réglages → Votre TVA**, deux boutons : « Tous les mois » ou « Tous les
+trimestres ». Le mois est coché d'avance, puisque c'est le défaut légal. L'écran
+de TVA et son calendrier suivent votre choix — douze mois d'un côté, quatre
+trimestres de l'autre.
 
 ---
 
-## 15. L'IA se sert-elle de mes réglages pour faire les devis ?
+## 16. L'IA se sert-elle de mes réglages pour faire les devis ?
 
 *Question posée le 13 août 2026, en dessinant l'écran des tarifs.*
 
@@ -980,7 +1022,7 @@ ne peut pas voir. L'écran est dessiné
 
 ---
 
-## 16. Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien
+## 17. Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien
 
 *Direction posée par le patron le 13 août 2026 :*
 

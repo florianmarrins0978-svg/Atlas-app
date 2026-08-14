@@ -51,7 +51,7 @@ async function main() {
     "Le bouton reste inactif sur un formulaire vide : quelque chose est encore exigé."
   );
 
-  await page.fill('input[placeholder="M. Bernard"]', client);
+  await page.fill('input[placeholder="Bernard"]', client);
   await page.click('button:has-text("Créer le chantier")');
 
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });

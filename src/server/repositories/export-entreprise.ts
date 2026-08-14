@@ -24,6 +24,7 @@ import {
   lignesPrix,
   materiel,
   membresEntreprise,
+  achatsTva,
   notesVocales,
   parametresChiffrage,
   photos,
@@ -101,6 +102,7 @@ export async function exporterEntreprise(
       leMateriel,
       lesNotes,
       lesPhotos,
+      lesAchatsTva,
       lesTarifs,
       lesLignesPrix,
       lesDevis,
@@ -132,6 +134,12 @@ export async function exporterEntreprise(
       tx.select().from(materiel).where(eq(materiel.entrepriseId, e)),
       tx.select().from(notesVocales).where(eq(notesVocales.entrepriseId, e)),
       tx.select().from(photos).where(eq(photos.entrepriseId, e)),
+      // Les achats et leur TVA déductible. **Ils partent avec le reste** : le
+      // patron a le droit d'emporter TOUTES ses données, et ses tickets sont
+      // parmi les plus personnelles — ils disent où il fait le plein et quand
+      // il travaille. Le contrôle d'exhaustivité les a réclamés avant qu'on y
+      // pense (`test-export-entreprise.ts`).
+      tx.select().from(achatsTva).where(eq(achatsTva.entrepriseId, e)),
       tx.select().from(tarifs).where(eq(tarifs.entrepriseId, e)),
       tx.select().from(lignesPrix).where(eq(lignesPrix.entrepriseId, e)),
       tx.select().from(devis).where(eq(devis.entrepriseId, e)),
@@ -192,6 +200,7 @@ export async function exporterEntreprise(
       materiel: leMateriel,
       notes_vocales: lesNotes,
       photos: lesPhotos,
+      achats_tva: lesAchatsTva,
       tarifs: lesTarifs,
       lignes_prix: lesLignesPrix,
       devis: lesDevis,

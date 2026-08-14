@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
 import AtlasBottomNav from "@/components/atlas/AtlasBottomNav";
-import { estCheminPublic } from "@/lib/chemins-publics";
+import { estCheminPublic, estPageDuClient } from "@/lib/chemins-publics";
 import VeilleReponseServeur from "@/components/atlas/VeilleReponseServeur";
 import AssistantSidebar from "@/components/atlas/AssistantSidebar";
 import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
@@ -127,6 +127,9 @@ export default async function RootLayout({
   // page ne peut pas le connaître autrement.
   const chemin = (await headers()).get("x-atlas-pathname");
   const sansNavigation = estEcranSansNavigation(chemin);
+  // Le veilleur parle du banc, des mises à jour et d'Atlas : c'est la langue du
+  // patron. Sur les deux pages que son client reçoit, elle n'a rien à faire.
+  const pageDuClient = estPageDuClient(chemin);
 
   return (
     <html lang="fr">
@@ -159,7 +162,7 @@ export default async function RootLayout({
             premier appel, celui qui compile tout — et le seul où le patron n'a
             aucun autre repère. La suite navigateur l'a montré avant que
             quiconque ne le lise. */}
-        <VeilleReponseServeur />
+        {!pageDuClient && <VeilleReponseServeur />}
       </body>
     </html>
   );

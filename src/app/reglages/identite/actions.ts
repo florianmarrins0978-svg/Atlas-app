@@ -12,7 +12,7 @@ import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
  * (`chantiers/[id]/devis-complet/`) — donc au milieu de la rédaction d'un devis.
  * Un artisan qui suivait le parcours normal — dicter, chiffrer, envoyer — n'avait
  * jamais l'occasion de saisir son SIRET, et **son premier devis partait sans
- * SIRET, sans adresse et sans IBAN, sans un mot** (`ARCHITECTURE.md` §81).
+ * SIRET, sans adresse et sans IBAN, sans un mot** (`ARCHITECTURE.md` §87).
  *
  * **Réservé au propriétaire.** Ces champs identifient l'entreprise et portent
  * ses coordonnées bancaires : un salarié ou un commercial n'a rien à y faire

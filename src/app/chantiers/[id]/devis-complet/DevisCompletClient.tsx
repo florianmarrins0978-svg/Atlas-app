@@ -7,8 +7,10 @@ import { adressesDuDocument } from "@/lib/adresses";
 import { enEuros } from "@/lib/euros";
 import { jourNumerique } from "@/lib/jour";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
+import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
+import { CIVILITES, type Civilite } from "@/lib/civilite";
 import {
   majEmetteurAction,
   majClientDuDevisAction,
@@ -52,7 +54,7 @@ type Props = {
   statut: "brouillon" | "envoye";
   emetteur: { nom: string; adresse: string; siret: string; telephone: string; email: string; iban: string };
   clientId: string | null;
-  client: { nom: string; adresse: string; telephone: string; email: string };
+  client: { nom: string; civilite: Civilite | null; adresse: string; telephone: string; email: string };
   adresseChantier: string;
   lignesInitiales: Ligne[];
   tauxTva: string;
@@ -216,7 +218,7 @@ export default function DevisCompletClient(props: Props) {
         </div>
 
         <div className="w-full sm:w-[280px] sm:shrink-0">
-          <Reference libelle="Devis n°" valeur={props.numeroCommercial} />
+          <Reference libelle="Devis n°" valeur={<NumeroDeDocument valeur={props.numeroCommercial} />} />
           <Reference libelle="Date" valeur={jourNumerique(props.dateEmission)} />
           <Reference libelle="Validité" valeur={props.validite} />
         </div>
@@ -244,7 +246,34 @@ export default function DevisCompletClient(props: Props) {
           <Intertitre>Client</Intertitre>
           {props.clientId ? (
             <>
-              <ChampNu valeur={client.nom} fige={fige} placeholder="Nom complet" aria="Nom du client"
+              {/* **La civilité SE LIT ici, elle ne se choisit pas.**
+
+                  Le patron, le 13 août 2026 : *« il ne faut pas qu'il y ait les
+                  pastilles cliquables sur le devis. En gros quand on rentre les
+                  informations dans la fiche client, si on clique sur monsieur,
+                  sur le devis ça sera marqué monsieur. »*
+
+                  Les pastilles y avaient été posées la veille pour offrir une
+                  seconde porte — corriger un client déjà créé. Il a tranché
+                  autrement, et son raisonnement se tient : cet écran est le
+                  DOCUMENT, pas la fiche. Un devis ne se remplit pas comme un
+                  formulaire ; il montre ce qui partira.
+
+                  Le mot est donc du texte, posé devant le nom sur la même
+                  ligne, comme il le sera sur le papier. Il vient de la même
+                  règle que le PDF et le message (`src/lib/civilite.ts`) — le
+                  recopier ici ferait dire « Mme Roux » à l'écran et
+                  « Mr. Roux » sur le document qu'elle garde.
+
+                  **Conséquence assumée, et signalée au patron :** la civilité
+                  ne se corrige plus après coup, faute d'écran de fiche client.
+                  Elle se choisit à la création, et là seulement. */}
+              <ChampNu
+                valeur={client.nom}
+                fige={fige}
+                placeholder="Nom complet"
+                aria="Nom du client"
+                prefixe={client.civilite ? CIVILITES[client.civilite] : ""}
                 onChange={(v) => setClient({ ...client, nom: v })}
                 onFini={() => majClientDuDevisAction(props.clientId!, { nom: client.nom })} />
               {/* **L'ordre est celui d'une lettre, et le patron l'a demandé
@@ -622,6 +651,7 @@ function ChampNu({
   fige,
   grand,
   long,
+  prefixe,
 }: {
   valeur: string;
   onChange: (v: string) => void;
@@ -630,6 +660,14 @@ function ChampNu({
   aria: string;
   fige: boolean;
   grand?: boolean;
+  /**
+   * Écrit devant la valeur, et **hors du champ** : c'est ce que le document
+   * porte sans qu'on l'ait tapé — la civilité, aujourd'hui. Le mettre DANS le
+   * champ le rendrait modifiable, et le patron enregistrerait « Mr. Roux »
+   * comme nom du client : la civilité s'y retrouverait deux fois au premier
+   * document suivant.
+   */
+  prefixe?: string;
   /**
    * Passe à plusieurs lignes plutôt que de couper. Réservé aux adresses : dans
    * un `<input>`, « 10 rue Denfert-Rochereau 78200 Mantes-la-Jolie » s'arrête
@@ -653,7 +691,7 @@ function ChampNu({
       />
     );
   }
-  return (
+  const champ = (
     <input
       value={valeur}
       readOnly={fige}
@@ -669,6 +707,26 @@ function ChampNu({
         fontFamily: grand ? font.display : undefined,
       }}
     />
+  );
+
+  if (!prefixe) return champ;
+
+  // `items-baseline` : le mot et le nom reposent sur la même ligne d'écriture,
+  // comme sur le papier. Alignés par le haut, « Mr. » flotterait au-dessus du
+  // nom dès que les deux n'ont pas exactement la même taille.
+  return (
+    <span className="flex items-baseline gap-1.5">
+      <span
+        style={{
+          color: colors.ink,
+          fontSize: grand ? "22px" : "16px",
+          fontFamily: grand ? font.display : undefined,
+        }}
+      >
+        {prefixe}
+      </span>
+      {champ}
+    </span>
   );
 }
 
@@ -760,7 +818,7 @@ function Cellule({ libelle, children }: { libelle: string; children: React.React
   );
 }
 
-function Reference({ libelle, valeur }: { libelle: string; valeur: string }) {
+function Reference({ libelle, valeur }: { libelle: string; valeur: React.ReactNode }) {
   return (
     <div
       className="flex items-baseline justify-between gap-4 py-1"

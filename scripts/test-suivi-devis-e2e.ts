@@ -60,7 +60,7 @@ async function devisParti(page: Page, suffixe: string) {
   // porte la marque unique, et le repère suit.
   const client = `M. Bernard ${suffixe} ${Date.now()}`;
   const nom = avecCivilite(client);
-  await page.fill('input[placeholder="M. Bernard"]', client);
+  await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
@@ -234,6 +234,30 @@ async function main() {
       chantierId,
     ]);
     assert.strictEqual(envois.rows[0].n, 2, "le second envoi n'a pas été enregistré");
+
+    // **Un seul bouton à chaque instant — sa règle du 13 août (maquette 40, B).**
+    //
+    // Sa capture montrait « Ouvrir le SMS tout prêt » ET « Reprendre le devis »
+    // l'un sous l'autre, tous deux pleins, sur un devis qu'il venait de reprendre
+    // et d'envoyer : l'écran lui proposait de reprendre ce qu'il venait de
+    // reprendre. Le contrôle regarde donc l'écran APRÈS l'envoi, moment que
+    // personne n'inspectait — c'est exactement là que le défaut vivait.
+    for (const libelle of [/Reprendre le devis/i, /Corriger et renvoyer/i]) {
+      assert.strictEqual(
+        await page.getByRole("button", { name: libelle }).count(),
+        0,
+        `Une fois le devis reparti, « ${libelle.source} » ne doit plus être à l'écran : ` +
+          "il proposerait de reprendre ce qui vient d'être repris et envoyé."
+      );
+    }
+
+    // Et le geste qui reste est bien celui du moment.
+    assert.ok(
+      (await page.getByRole("link", { name: /Ouvrir le (SMS|mail|message)/i }).count()) +
+        (await page.getByRole("button", { name: /Ouvrir le (SMS|mail|message)/i }).count()) >
+        0,
+      "après l'envoi, l'écran ne porte plus aucun geste : la transmission a disparu avec la reprise."
+    );
   });
 
   await test("relancer réutilise le MÊME lien, sans regénérer de devis", async () => {

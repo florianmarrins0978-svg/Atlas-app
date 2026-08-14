@@ -21,7 +21,7 @@ async function main() {
 
   const nomUnique = `Chantier informations e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nomUnique);
+  await page.fill('input[placeholder="Bernard"]', nomUnique);
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const infoUrl = `${page.url()}/informations`;
@@ -84,9 +84,26 @@ async function main() {
   const prestationAModifier = section(page, "Prestations").locator("input").first();
   await prestationAModifier.fill("Dépose carrelage (terminé)");
   await prestationAModifier.blur();
-  await page.waitForTimeout(500);
-  await page.reload({ waitUntil: "networkidle" });
-  assert.equal(await section(page, "Prestations").locator("input").first().inputValue(), "Dépose carrelage (terminé)");
+
+  // **On attend que ce soit ENREGISTRÉ, pas 500 millisecondes.** Le 13 août
+  // 2026, ce cas a rougi en pleine batterie — « 'Dépose carrelage' == 'Dépose
+  // carrelage (terminé)' » — et fut vert seul l'instant d'après : le délai fixe
+  // avait suffi cent fois, et pas la cent-unième, l'action serveur ayant mis
+  // plus longtemps sous la charge des cinquante suites. Un contrôle qui échoue
+  // au hasard apprend à ignorer le rouge, et l'on perd avec lui la seule suite
+  // qui garde la saisie des informations.
+  //
+  // On recharge jusqu'à trois fois, en laissant à l'enregistrement le temps
+  // qu'il lui faut. Le contrôle reste entier : si le libellé n'est jamais
+  // enregistré, il rougit toujours — simplement pour la bonne raison.
+  let relu = "";
+  for (const essai of [1, 2, 3]) {
+    await page.waitForTimeout(essai * 500);
+    await page.reload({ waitUntil: "networkidle" });
+    relu = await section(page, "Prestations").locator("input").first().inputValue();
+    if (relu === "Dépose carrelage (terminé)") break;
+  }
+  assert.equal(relu, "Dépose carrelage (terminé)");
 
   // --- Suppression avec toast Annuler ---
   // Depuis le 10 août 2026 : « Retirer » découvert par glissement, et un tiroir

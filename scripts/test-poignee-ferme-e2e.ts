@@ -65,7 +65,7 @@ async function main() {
   // posée en base — le parcours complet du devis est éprouvé ailleurs, et le
   // rejouer ici ajouterait deux minutes pour ne rien apprendre sur la poignée.
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', `M. Poignée ${Date.now()}`);
+  await page.fill('input[placeholder="Bernard"]', `M. Poignée ${Date.now()}`);
   await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 12");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });

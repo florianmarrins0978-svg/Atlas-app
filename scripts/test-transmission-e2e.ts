@@ -46,7 +46,7 @@ async function main() {
   // Un chantier complet, avec un client joignable par SMS.
   const client = `Luc ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', client);
+  await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', TELEPHONE);
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
@@ -140,6 +140,29 @@ async function main() {
   // « Si je veux l'envoyer par e-mail, je ne peux pas revenir le choisir. »
   const bascule = page.getByRole("button", { name: /Plutôt par e-mail/ });
   assert.equal(await bascule.count(), 1, "Aucun moyen de basculer vers l'e-mail depuis cet écran.");
+
+  // **Elle se VOIT, et c'est mesuré — sa demande du 13 août.** Elle était en
+  // gris 13 px sous la ligne du destinataire et se lisait comme une mention
+  // légale : « il faut le mettre en gras ou en doré, et légèrement plus gros ».
+  // Un contrôle qui se contenterait de sa présence laisserait passer un retour
+  // au gris sans rien dire — or c'est exactement la façon dont ce genre de
+  // décision se perd.
+  const allure = await bascule.evaluate((n) => {
+    const s = getComputedStyle(n);
+    return { couleur: s.color, taille: parseFloat(s.fontSize), graisse: Number(s.fontWeight) };
+  });
+  assert.equal(
+    allure.couleur,
+    "rgb(185, 139, 71)",
+    `« Plutôt par e-mail » n'est plus en or (#B98B47) — mesuré « ${allure.couleur} ».`
+  );
+  assert.ok(
+    allure.taille >= 15 && allure.taille < 16,
+    `« Plutôt par e-mail » doit être à 15 px — plus gros que la rangée (13), moins que le bouton (16). Mesuré ${allure.taille}.`
+  );
+  assert.ok(allure.graisse >= 600, `« Plutôt par e-mail » doit être en gras. Mesuré ${allure.graisse}.`);
+  console.log("  ✓ « Plutôt par e-mail » se voit : or, gras, 15 px");
+
   await bascule.click();
   await page.waitForTimeout(500);
 

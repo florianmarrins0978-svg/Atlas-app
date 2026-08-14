@@ -30,6 +30,13 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { pool } from "../src/server/db/client";
+import * as entreprisesRepo from "../src/server/repositories/entreprises";
+import * as chantiersRepo from "../src/server/repositories/chantiers";
+import * as devisRepo from "../src/server/repositories/devis";
+import { creerEnvoi } from "../src/server/repositories/envois-devis";
+import { versJourIso, ajouterJours } from "../src/server/disponibilites";
+import { ressembleAUnTelephone } from "../src/lib/numero-document";
 
 const BASE = "http://localhost:3000";
 
@@ -88,14 +95,14 @@ async function main() {
     });
   }
 
-  // **Le témoin : ces pages affichent-elles encore un numéro nu ?**
+  // **Le témoin : ces pages portent-elles encore un numéro dans leur titre ?**
   //
-  // L'en-tête ne protège que ce qui est écrit en texte brut. Le jour où ces
-  // deux pages entoureraient elles-mêmes leur numéro d'un lien — ou cesseraient
-  // de l'afficher —, le contrôle ci-dessus resterait vert en ne gardant plus
-  // rien. C'est la forme « 2026-0003 », posée nue dans un titre, que Safari
-  // confondait avec un téléphone ; ce cas vérifie qu'elle est toujours là.
-  await cas("le témoin : les deux pages du client posent encore un numéro nu", async () => {
+  // Le jour où ces deux pages entoureraient elles-mêmes leur numéro d'un lien —
+  // ou cesseraient de l'afficher —, tout ce qui précède resterait vert en ne
+  // gardant plus rien. C'est la forme « 2026-0003 », posée dans un titre, que
+  // le téléphone confondait avec un numéro d'appel ; ce cas vérifie qu'elle est
+  // toujours là, et qu'aucune page n'écrit de `tel:` de son propre chef.
+  await cas("le témoin : les deux pages du client portent encore leur numéro", async () => {
     for (const fichier of ["src/app/factures/[jeton]/page.tsx", "src/app/devis/[jeton]/page.tsx"]) {
       const source = readFileSync(fichier, "utf8");
       assert.match(
@@ -154,14 +161,94 @@ async function main() {
     }
   });
 
+  // ─── LE CONTRÔLE QUI MANQUAIT LE 12 AOÛT, ET QUI A COÛTÉ UN JOUR ────────────
+  //
+  // Tout ce qui précède ne garde qu'une DEMANDE faite au navigateur. Le 13 août
+  // 2026, le patron ouvre le lien de son devis reçu par SMS et reçoit la même
+  // « Hydration failed » que la veille, signature `x-apple-data-detectors`
+  // comprise — sur un banc qui servait bien le commit portant l'en-tête. Une
+  // vue intégrée à Messages n'est pas Safari : elle ne lit pas cette en-tête.
+  //
+  // Ce cas-ci ne demande plus rien à personne. Il lit ce qu'un détecteur lit
+  // vraiment — le TEXTE APLATI de la page, pas son DOM — et vérifie qu'il ne
+  // reste plus, dans le titre, de suite de chiffres qu'un téléphone voudrait
+  // appeler. C'est le seul contrôle du dépôt qui aurait vu ce défaut, et il
+  // tient aussi ce qui le répare : la « blockification » par `inline-flex` de
+  // `NumeroDeDocument`. Remplacer ce composant par un `<span>` ordinaire ne se
+  // verrait nulle part à l'écran — ici, la page devient rouge.
+  await cas("le titre du devis ne porte plus de suite de chiffres appelable", async () => {
+    const { entreprise, utilisateurId } = await entreprisesRepo.creerEntreprise(
+      { nom: "Atelier du Test" },
+      { email: `detection-${Date.now()}@atlas.test` }
+    );
+    const ctx = { utilisateurId, entrepriseId: entreprise.id };
+    const chantier = await chantiersRepo.creerChantier(ctx, {
+      nom: "Élagage du grand chêne",
+      adresseChantier: "5 avenue de la République",
+    });
+    const devis = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    const maintenant = new Date();
+    const envoi = await creerEnvoi(
+      ctx,
+      {
+        chantierId: chantier.id,
+        devisId: devis.id,
+        canal: "sms",
+        datesProposees: [versJourIso(ajouterJours(maintenant, 10))],
+        contenuDevis: "devis-detection",
+      },
+      maintenant
+    );
+
+    await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+    const titre = page.locator("h1").first();
+    const affiche = await titre.innerText({ timeout: 10_000 });
+
+    // **Le témoin d'abord** : sans lui, ce cas resterait vert le jour où le
+    // titre cesserait d'afficher un numéro — il ne garderait plus que le vide.
+    const chiffres = [...affiche].filter((c) => c >= "0" && c <= "9").length;
+    assert.ok(
+      chiffres >= 8,
+      `le titre « ${affiche.replace(/\n/g, "⏎")} » ne porte plus de numéro : ` +
+        "soit l'écran a changé, soit ce contrôle ne garde plus rien"
+    );
+
+    assert.equal(
+      ressembleAUnTelephone(affiche),
+      false,
+      `le titre du devis s'aplatit en « ${affiche.replace(/\n/g, "⏎")} », où un iPhone lit ` +
+        "encore un numéro de téléphone : il en refera un lien d'appel sous le doigt du client, " +
+        "et React annoncera « Hydration failed ». Vérifier que le numéro passe bien par " +
+        "`NumeroDeDocument` et que son `inline-flex` n'a pas été « simplifié »"
+    );
+  });
+
+  // Et le même garde sur l'autre écran du client. Éprouvé à la source plutôt
+  // qu'au navigateur : fabriquer une facture réelle demande un chantier mené de
+  // bout en bout (`test-facture-au-client-e2e.ts` s'en charge), et ce qui se
+  // perdrait ici est un remplacement de composant — cela se lit dans le code.
+  await cas("les deux écrans du client font passer leur numéro par le composant", async () => {
+    for (const fichier of ["src/app/factures/[jeton]/page.tsx", "src/app/devis/[jeton]/page.tsx"]) {
+      const source = readFileSync(fichier, "utf8");
+      assert.match(
+        source,
+        /<NumeroDeDocument valeur=\{[^}]*numeroCommercial\}/,
+        `${fichier} affiche son numéro sans passer par \`NumeroDeDocument\` : ` +
+          "sur un iPhone, il redeviendra un lien d'appel"
+      );
+    }
+  });
+
   await contexte.close();
   await navigateur.close();
+  await pool.end();
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Détection automatique — ${echecs} échec(s).`);
   process.exit(echecs === 0 ? 0 : 1);
 }
 
-main().catch((e) => {
+main().catch(async (e) => {
   console.error(e);
+  await pool.end().catch(() => undefined);
   process.exit(1);
 });

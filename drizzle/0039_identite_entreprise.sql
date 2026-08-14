@@ -1,5 +1,5 @@
 -- L'identité de l'entreprise : ce qu'un artisan doit pouvoir déclarer avant son
--- premier devis (ARCHITECTURE.md §81, maquettes/atlas-reglages-identite.html).
+-- premier devis (ARCHITECTURE.md §87, maquettes/atlas-reglages-identite.html).
 --
 -- POURQUOI CES QUATRE COLONNES, ET PAS D'AUTRES.
 --
@@ -53,7 +53,7 @@ COMMENT ON COLUMN entreprises.numero_tva IS
 -- ─── Le régime est FIGÉ DANS LA FACTURE, comme le reste de l'identité ──────
 --
 -- Une facture garde l'identité qu'elle portait le jour de son émission
--- (ARCHITECTURE.md §81). Le régime de TVA n'y échappe pas : une facture émise
+-- (ARCHITECTURE.md §87). Le régime de TVA n'y échappe pas : une facture émise
 -- sous franchise doit conserver sa mention « art. 293 B » même si l'artisan
 -- devient assujetti l'année suivante. La lire en direct depuis `entreprises`
 -- réécrirait le passé — sur une pièce comptable.

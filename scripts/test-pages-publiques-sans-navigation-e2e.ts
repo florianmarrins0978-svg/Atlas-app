@@ -1,6 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
-import { CHEMINS_PUBLICS } from "../src/lib/chemins-publics";
+import { CHEMINS_PUBLICS, estPageDuClient } from "../src/lib/chemins-publics";
 
 // **Ce que voit le client de l'artisan ne porte JAMAIS l'outil de l'artisan.**
 //
@@ -105,6 +105,47 @@ async function main() {
         if (await page.getByRole("link", { name: onglet, exact: true }).count()) {
           throw new Error(`un lien « ${onglet} » est offert au client sur ${chemin}`);
         }
+      }
+    });
+  }
+
+  // **Et rien qui PARLE la langue du patron non plus.**
+  //
+  // La barre absente ne suffit pas. Le 13 août 2026, en vérifiant justement ce
+  // contrôle sur la remarque du patron — *« s'il clique sur les cases en bas,
+  // il est dans l'application »* —, j'ai trouvé que le veilleur des réponses
+  // illisibles, posé la veille, était monté sur SES pages : au premier serveur
+  // lent, son client aurait lu qu'« Atlas est en train de se préparer après une
+  // mise à jour ». Une barre en moins, un bandeau en plus : la même faute d'un
+  // cran plus bas.
+  //
+  // Ce cas ne vise que les DEUX pages que le client reçoit. `/login` est public
+  // lui aussi, mais c'est l'écran du patron : ce qui lui parle d'Atlas y est
+  // chez lui — d'où `estPageDuClient` et non `estCheminPublic`.
+  for (const [quoi, chemin] of adresses.filter(([, c]) => estPageDuClient(c))) {
+    await cas(`${quoi} — rien ne lui parle de l'outil de l'artisan`, async () => {
+      await page.goto(`${BASE}${chemin}`, { waitUntil: "networkidle" });
+      // On provoque l'échec plutôt que de l'attendre : un veilleur monté ne se
+      // voit pas tant que rien ne casse, et un contrôle qui regarde une page
+      // paisible resterait vert en ne gardant rien.
+      await page.evaluate(() => {
+        const raison = new Error("An unexpected response was received from the server.");
+        window.dispatchEvent(
+          new PromiseRejectionEvent("unhandledrejection", {
+            promise: Promise.reject(raison),
+            reason: raison,
+            cancelable: true,
+          })
+        );
+      });
+      await page.waitForTimeout(600);
+
+      const bandeau = page.locator('[data-atlas="reponse-illisible"]');
+      if (await bandeau.count()) {
+        throw new Error(
+          `Le client lit, sur ${chemin} : « ${(await bandeau.innerText()).replace(/\s+/g, " ").slice(0, 90)} ». ` +
+            "Il n'a jamais entendu parler d'Atlas, et n'a rien à faire de l'état du banc de l'artisan."
+        );
       }
     });
   }

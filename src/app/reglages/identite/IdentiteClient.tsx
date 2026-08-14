@@ -14,7 +14,7 @@ import { majIdentiteAction } from "./actions";
  *     façons de se contredire, et c'est celui qui saisit qui paierait l'écart ;
  *   - **le régime de TVA se déclare** et commande ce qui s'imprime. Il était
  *     deviné d'après le taux appliqué jusqu'au 13 août 2026, et se trompait dans
- *     les deux sens (`ARCHITECTURE.md` §81) ;
+ *     les deux sens (`ARCHITECTURE.md` §87) ;
  *   - **un champ manquant reste vide et se signale sur SA LIGNE**, en disant ce
  *     que l'absence empêche. Un exemple plausible glissé à la place d'une donnée
  *     absente finirait imprimé sur une pièce comptable (`docs/AGENT.md` §3).
@@ -199,7 +199,7 @@ function Bloc({ titre, children }: { titre: string; children: React.ReactNode })
     // ET LE PREMIER BLOC NE PORTE PAS DE TRAIT : le cheveu de l'en-tête ferme
     // déjà au-dessus de lui, et les deux dessinaient deux filets séparés par
     // trente pixels de vide. Vu sur la capture de l'écran réel — c'est le même
-    // défaut que sur la première planche (`ARCHITECTURE.md` §80).
+    // défaut que sur la première planche (`ARCHITECTURE.md` §86).
     <section
       className="mx-[26px] mt-[30px] border-t pt-[18px] first-of-type:mt-[26px] first-of-type:border-t-0 first-of-type:pt-0 [&>*:last-child]:border-b-0"
       style={{ borderColor: colors.line }}

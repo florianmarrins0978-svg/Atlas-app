@@ -307,6 +307,8 @@ export type EnvoiPourClient = {
     tauxTva: string;
     entrepriseNom: string;
     clientNom: string | null;
+    /** Recopiée sur le devis à son établissement (migration 0038). */
+    clientCivilite: "mr" | "mme" | null;
     adresseChantier: string | null;
     lignes: { libelle: string; quantite: string; prixUnitaire: string; montant: string }[];
   };
@@ -494,6 +496,7 @@ export async function lireParJeton(
         tauxTva: d.tauxTva,
         entrepriseNom: d.entrepriseNom,
         clientNom: d.clientNom,
+        clientCivilite: d.clientCivilite,
         adresseChantier: d.adresseChantier,
         lignes: lignesDevisRows.map(({ libelle, quantite, prixUnitaire, montant }) => ({
           libelle,

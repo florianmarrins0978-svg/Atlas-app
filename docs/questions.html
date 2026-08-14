@@ -83,8 +83,9 @@
 <li><a href="#12-lagenda-google--mes-artisans-auront-ils-des-identifiants-à-saisir-">L'agenda Google : mes artisans auront-ils des identifiants à saisir ?</a></li>
 <li><a href="#13-pourquoi-tous-les-boutons-ont-ils-la-même-forme-">Pourquoi tous les boutons ont-ils la même forme ?</a></li>
 <li><a href="#14-le-calendrier-dapple--puis-je-le-relier-comme-lagenda-google-">Le Calendrier d'Apple : puis-je le relier comme l'agenda Google ?</a></li>
-<li><a href="#15-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-">L'IA se sert-elle de mes réglages pour faire les devis ?</a></li>
-<li><a href="#16-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien">Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien</a></li>
+<li><a href="#15-ma-tva-je-la-déclare-tous-les-mois-ou-tous-les-trimestres-">Ma TVA, je la déclare tous les mois ou tous les trimestres ?</a></li>
+<li><a href="#16-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-">L'IA se sert-elle de mes réglages pour faire les devis ?</a></li>
+<li><a href="#17-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien">Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -728,8 +729,25 @@
 <p><strong>Ce qui n'a PAS pu être vérifié, et qu'il faut lire comme tel :</strong> aucun échange réel avec iCloud n'a eu lieu ici — le réseau de l'environnement de développement le refuse. Les contrôles couvrent tout ce qui <em>décide</em> ; ce qui reste à éprouver, c'est le dialogue avec Apple lui-même, et cela demande votre compte. <strong>Attendez-vous à un premier essai qui échoue</strong> : ce sera dit à l'écran, avec la phrase d'Apple telle quelle.</p>
 <h3 id="ce-que-ça-ne-change-pas">Ce que ça ne change pas</h3>
 <p>Ce qui décide quelles demi-journées sont prises, et comment elles se fondent dans votre planning, est <strong>commun à tous les agendas</strong> et ne bouge pas d'une ligne (<code>src/lib/agenda-externe.ts</code>). Le nouveau code n'ajoute qu'une chose : la manière d'aller chercher les rendez-vous. Deux fournisseurs, une seule règle — c'est ce qui évite que le planning finisse par répondre différemment selon le calendrier branché.</p>
+<h2 id="15-ma-tva-je-la-déclare-tous-les-mois-ou-tous-les-trimestres-">15. Ma TVA, je la déclare tous les mois ou tous les trimestres ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Posée le 2026-08-12.</em> Vous aviez raison de le demander : l'écran était découpé en trimestres, et personne n'avait écrit pourquoi.</p>
+<h3 id="la-réponse-courte">La réponse courte</h3>
+<p><strong>Tous les mois, par défaut.</strong> La déclaration de TVA au régime réel normal — le formulaire CA3 — est mensuelle. Le trimestre n'est pas un choix libre : c'est une <strong>option</strong>, ouverte seulement si votre TVA due de l'année précédente est <strong>inférieure à 4 000 €</strong>. Au-dessus, on revient au mois.</p>
+<h3 id="ce-qui-change-en-2027-et-qui-vous-concerne">Ce qui change en 2027, et qui vous concerne</h3>
+<p>Il existe encore aujourd'hui un troisième cas : le <strong>régime réel simplifié</strong>, une déclaration annuelle avec deux acomptes en juillet et décembre. <strong>Il disparaît au 1er janvier 2027</strong> — voté à l'article 38 de la loi de finances pour 2025 (loi n° 2025-127 du 14 février 2025), ses modalités ajustées par celle pour</p>
+<ol>
+<li>Toutes les entreprises basculent alors au réel normal : mensuel ou</li>
+</ol>
+<p>trimestriel.</p>
+<p>Autrement dit, <strong>la question « mois ou trimestre » sera la seule qui se pose</strong>. C'est pour cela que l'application ne propose que ces deux-là.</p>
+<h3 id="ce-quatlas-ne-vous-dira-jamais-et-pourquoi">Ce qu'Atlas ne vous dira jamais, et pourquoi</h3>
+<p><strong>Lequel des deux vous concerne.</strong> Le seuil des 4 000 € porte sur la TVA <strong>due</strong> : ce que vous avez collecté <em>moins</em> ce que vous déduisez sur vos achats. Atlas ne connaît que la première — il ne voit ni votre gazole, ni votre tronçonneuse, ni votre assurance.</p>
+<p>Il ne peut donc pas calculer si vous avez droit au trimestre, et il ne doit pas le laisser croire. C'est la même règle que pour les prix : sans source fiable, on n'écrit pas. <strong>Votre comptable tranche ; l'application obéit.</strong></p>
+<h3 id="où-ça-se-règle">Où ça se règle</h3>
+<p><strong>Réglages → Votre TVA</strong>, deux boutons : « Tous les mois » ou « Tous les trimestres ». Le mois est coché d'avance, puisque c'est le défaut légal. L'écran de TVA et son calendrier suivent votre choix — douze mois d'un côté, quatre trimestres de l'autre.</p>
 <hr>
-<h2 id="15-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-">15. L'IA se sert-elle de mes réglages pour faire les devis ?</h2>
+<h2 id="16-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-">16. L'IA se sert-elle de mes réglages pour faire les devis ?</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><em>Question posée le 13 août 2026, en dessinant l'écran des tarifs.</em></p>
 <h3 id="oui--et-dans-un-ordre-précis-qui-ne-laisse-aucune-place-à-linvention">Oui — et dans un ordre précis, qui ne laisse aucune place à l'invention</h3>
@@ -789,7 +807,7 @@
 <p><strong>Aucun écran ne permet de les changer.</strong> Ils décident pourtant du prix proposé chaque fois qu'aucun tarif ne correspond. Un artisan dont l'ouvrier coûte 260 € par jour verra donc des prix trop bas — <strong>sans jamais savoir d'où ils viennent</strong>.</p>
 <p>C'est pire qu'un réglage absent : c'est un réglage qui existe, qui agit, et qu'on ne peut pas voir. L'écran est dessiné (<code>maquettes/atlas-reglages-tarifs.html</code>) ; il reste à le coder.</p>
 <hr>
-<h2 id="16-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien">16. Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien</h2>
+<h2 id="17-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien">17. Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><em>Direction posée par le patron le 13 août 2026 :</em></p>
 <blockquote><em>« L'idée, c'est de créer un deuxième cerveau au sein de l'application, pour qu'elle s'utilise comme un assistant de gestion / devis, facture, planning. Elle doit apprendre, enregistrer, s'améliorer, s'auto-alimenter. »</em></blockquote>

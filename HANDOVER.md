@@ -96,6 +96,17 @@ et ne jamais dépendre d'une seule réponse tenue ouverte. Voir `ARCHITECTURE.md
 
 ## ⚠ Plusieurs conversations travaillent sur ce dépôt EN MÊME TEMPS
 
+**Sa décision du 13 août 2026 — ne PAS rejouer la batterie à chaque fusion.**
+*« Seulement quand le code touche. »* Un lot déjà éprouvé au vert n'a pas à
+repasser soixante suites parce qu'une autre session a poussé du code sans
+rapport. Le tableau qui dit ce qui compte comme « ça touche » est dans
+`CLAUDE.md` §6 — et **une migration arrivée par la fusion s'applique d'abord**,
+sans quoi la batterie rend des dizaines de rouges qui n'accusent que la base.
+
+**Ce que ça ne relâche pas** : la batterie complète reste obligatoire avant la
+PREMIÈRE poussée d'un lot, sur son propre code.
+
+
 **Dit par le patron le 11 août 2026 :** *« sur d'autres sessions, je demande de
 faire d'autres corrections. »* Ce n'est donc pas une hypothèse : `main` bouge
 pendant qu'on travaille, et il a bougé de trois commits en une après-midi.
@@ -286,25 +297,25 @@ IBAN), donc tout ce qui est éprouvé ici et sur son banc part d'un état rempli
 Or **il n'existe aucun parcours d'inscription**, **l'identité ne se saisit que
 dans le devis écrit à la main**, et **rien ne la vérifie avant l'envoi**. Le
 premier devis d'un vrai artisan partirait sans SIRET ni IBAN, sans un mot. Le
-détail des six faits est dans `ARCHITECTURE.md` §81, la liste de travail dans
+détail des six faits est dans `ARCHITECTURE.md` §87, la liste de travail dans
 `TODO.md` §0 quatervicies.
 
 **Lot 2 fait le 13 août : l'identité de l'entreprise**
-(`maquettes/atlas-reglages-identite.html`, `ARCHITECTURE.md` §81). Il a révélé
+(`maquettes/atlas-reglages-identite.html`, `ARCHITECTURE.md` §87). Il a révélé
 **trois manques qui sont du code, pas du dessin** : le régime de TVA est deviné
 d'après le taux appliqué et se trompe dans les deux sens ; le numéro de TVA
 intracommunautaire n'existe nulle part ; le téléphone et l'e-mail sont saisis et
 ne s'impriment sur aucun document. Ils sont dans `TODO.md` §0 quatervicies.
 
 **Lot 3 fait le 13 août : l'équipe et les rôles**
-(`maquettes/atlas-reglages-equipe.html`, `ARCHITECTURE.md` §82). Deux choses à
+(`maquettes/atlas-reglages-equipe.html`, `ARCHITECTURE.md` §88). Deux choses à
 ne pas rater : **« équipe » désigne déjà une FILE DU PLANNING**, pas un compte —
 la rubrique tient donc deux listes séparées ; et **le cloisonnement en lecture
 n'existe pas** : `getRole` n'est appelé dans aucun écran, un membre voit tous
 les montants.
 
 **Lot 4 fait le 13 août : tarifs et catalogue** — les quatre priorités du
-patron sont dessinées (`ARCHITECTURE.md` §83). À retenir : **ses tarifs** lui
+patron sont dessinées (`ARCHITECTURE.md` §89). À retenir : **ses tarifs** lui
 appartiennent, **le catalogue est partagé** et ne porte aucun prix, et **les
 cinq grilles apprennent de ses devis** au lieu de se saisir.
 
@@ -316,7 +327,7 @@ enregistré nulle part**, donc Atlas ignore si ses estimations de durée sont
 justes — alors que c'est la durée qui fait le prix. **Et la leçon qui commande
 tout :** `historique_prix` était lue et jamais écrite ; devant toute idée
 d'apprentissage, demander **qui l'écrit et à quel moment**, jamais « avons-nous
-une table ? » (`ARCHITECTURE.md` §84, `docs/QUESTIONS.md` §16).
+une table ? » (`ARCHITECTURE.md` §90, `docs/QUESTIONS.md` §17).
 
 **⚠ `parametres_chiffrage` agit sans être visible.** Cinq valeurs par
 entreprise — 200 €/jour l'ouvrier, 280 € le chef, 35 € le déplacement, 20 % de
@@ -346,7 +357,7 @@ restés), titre de 36 px, **un cheveu qui ferme l'en-tête**, titres de section
 planche doit mesurer **390 px** : sous 520 px la coque du téléphone s'efface,
 sinon il n'en fait que 336 et la barre basse de l'application n'y tient pas —
 c'est ce qui avait fait rapetisser sa chasse dans les planches précédentes
-(`ARCHITECTURE.md` §80).
+(`ARCHITECTURE.md` §86).
 
 **Piège payé sur cette planche :** éprouver qu'un contrôle sait échouer écrit
 ses captures dans `maquettes/vues/` comme une exécution normale. La planche a
@@ -469,7 +480,185 @@ vingt-cinq minutes pour observer UNE suite — c'est ce coût-là qui pousse à
 supposer une cause au lieu d'aller la lire. Le script dit à voix haute qu'il
 n'est pas la batterie.
 
+## L'ATTENTE DE LA DICTÉE EST CODÉE — « le souffle » (13 août)
+
+Il a répondu **« code la C »**. Les points enflent et se rétractent l'un après
+l'autre, sans se déplacer. `ARCHITECTURE.md` §80 porte le détail.
+
+**Quatre choses à ne pas défaire**, listées dans `TODO.md` §0 quatervicies — dont
+le bouton qui **ne redevient pas** à demi effacé, et la phrase « Atlas rédige… »,
+qui est la seule des trois moitiés à parvenir à qui n'a pas les yeux sur l'écran.
+
+**L'attente qui s'éternise rend la main** (« oui fait ça ») : « Atlas rédige… »,
+puis à 12 s « C'est plus long que d'habitude. », puis à 45 s « Pas de réponse.
+Réessayez. » et le micro revient. **Renoncer n'interrompt pas l'appel** — et
+comme il peut redicter pendant que la première réponse court encore, un numéro
+de tour empêche celle-ci de remettre l'écran au repos au milieu du nouvel
+enregistrement.
+
+**⚠ Une phrase d'attente tient sur UNE LIGNE — 31 caractères, mesurés.** Au-delà
+elle prend toute la colonne de 190 px et casse « Un chantier » en deux, en plein
+milieu de l'attente. Deux contrôles la gardent, et le second existe parce que le
+premier a dormi (`TODO.md` §0 quatervicies quater). **Le message de fin de dictée
+a le même défaut, et il est antérieur** : 47 caractères, non touché, c'est son
+choix.
+
+**La photo souffle aussi**, tranché par lui le jour même : *« oui souffle aussi
+pour la photo »*. Le bouton d'ajout portait le même caractère immobile. Les
+points y sont **or** et non vert sans qu'une mesure ait été recopiée — ils
+prennent `currentColor`. C'est pour cela que la couleur n'est pas écrite dans le
+composant : ne pas l'y remettre.
+
+**⚠ Un piège d'outillage à connaître avant d'écrire une suite qui RALENTIT le
+serveur** (les deux le font, pour rendre l'attente observable) : router une
+adresse dans Playwright **désactive le cache HTTP de toute la page**. La
+visionneuse des photos repartait du réseau pour une image déjà affichée, son
+`<img>` n'avait pas fini de charger, et **l'échec accusait la visionneuse** qui
+n'y était pour rien. Relâcher la route dès la mesure faite, et seulement une fois
+l'échange retenu terminé — la couper en vol donne « Route is already handled! ».
+`TODO.md` §0 quatervicies ter.
+
+*Ce qui suit est l'historique du choix, gardé pour ne pas rouvrir ce qui est clos.*
+
+## Les cinq attentes proposées (13 août)
+
+**Sa demande :** *« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce
+qui se passe. Les trois petits points sont fixes […] on ne sait pas si ça bug ou
+non. »*
+
+Deux planches — la **42** expose les cinq gestes côte à côte, la **43** est celle
+qu'il a MANIPULÉE (il appuie sur le micro, arrête, les points bougent), et c'est
+elle qui a tranché. Cinq attentes : A la vague, B la vague ample, **C le
+souffle** (retenue), D le point qui court, E l'anneau qui tourne. Les quatre
+écartées restent dans les planches : s'il rouvre le sujet, repartir de là plutôt
+que de redessiner.
+
+**Trois choses à ne pas redécouvrir :**
+
+1. **Ce n'étaient pas des points arrêtés, c'était le caractère « … »** — un seul
+   glyphe. Il n'y avait rien à remettre en marche ; trois points séparés étaient
+   à écrire. Devant un « ça ne bouge plus », vérifier d'abord qu'une animation
+   a seulement existé.
+2. **Le vrai silence n'était pas l'animation, c'était la PHRASE ABSENTE.**
+   L'écran parle quand il écoute et quand il a fini, et se taisait pendant le
+   seul moment où l'on se demande s'il est en panne. Le bouton passait en plus à
+   `opacity: 0.5` — le vocabulaire d'un bouton éteint. Ces deux points-là
+   n'étaient pas dans sa demande ; ils lui ont été montrés dans les cinq
+   propositions, et il ne les a pas refusés.
+3. **Une image fixe ne montre pas un mouvement.** `animer-maquette-points.mjs`
+   fabrique un GIF par proposition (sans ffmpeg, absent d'ici) — et il **relit
+   sa sortie**, parce qu'au premier jet il certifiait « ✓ » une image fixe.
+
 ## Ce qui vient d'être terminé
+
+**LE NUMÉRO DU DEVIS N'EST PLUS UN NUMÉRO DE TÉLÉPHONE (13 août).** Deuxième
+passe sur le même défaut, et la première ne pouvait pas marcher.
+
+1. **Ce qui s'est passé.** Il ouvre le lien de son devis reçu **par SMS** et
+   reçoit « Hydration failed », avec la signature d'iOS
+   (`x-apple-data-detectors-type="telephone"`) — la veille, un correctif avait
+   été annoncé pour exactement cela.
+2. **Son banc n'était pas en retard.** Vérifié avant toute hypothèse, par la
+   fiche d'état (§ ci-dessus) : réécrite à 14 h 55, `main` à `5a6e999`, donc le
+   correctif de la veille bel et bien servi. **C'est ce contrôle-là qui a évité
+   de repartir sur une fausse piste.**
+3. **Pourquoi l'en-tête ne suffisait pas.** `format-detection` est une DEMANDE
+   au navigateur. Safari l'écoute ; la vue intégrée qui s'ouvre depuis Messages,
+   non — et c'est le seul chemin par lequel son client arrive sur le devis.
+4. **Ce qui répare est `inline-flex`, pas le découpage.** Un détecteur lit le
+   texte APLATI de la page, pas le DOM. Entourer chaque moitié du numéro d'un
+   `<span>` — la recette qui circule — ne change RIEN à ce texte ; mesuré avant
+   d'écrire le composant. Seuls les blocs le coupent, et les enfants d'une boîte
+   flexible sont blockifiés. **Ne pas « simplifier » `NumeroDeDocument` :** le
+   rendu serait identique au pixel près et le défaut reviendrait en silence.
+5. **Ce que ça coûte, et qu'il faut savoir avant qu'il le remarque :** un numéro
+   copié depuis l'écran emporte des retours à la ligne. Intact dans le PDF, le
+   SMS et la base.
+6. **Ce qui reste à éprouver chez lui.** La détection appartient à un logiciel
+   fermé d'Apple, absent d'ici. Les suites vérifient que le texte offert à ce
+   logiciel ne contient plus de suite de chiffres appelable ; elles ne peuvent
+   pas vérifier ce qu'il en fera. **Lui demander de rouvrir le lien depuis ses
+   SMS**, et de dire ce qu'il voit. Détail : `ARCHITECTURE.md` §81.
+**LA CIVILITÉ EST DEVENUE UNE DONNÉE (13 août, au soir).** Deux pastilles
+« Mr » / « Mme » au-dessus du nom, **à la création seulement**.
+`clients.civilite`, recopiée sur le devis et la facture (migration 0038).
+
+**Elles ont été posées sur l'écran du devis, puis retirées le jour même, à sa
+demande** — *« il ne faut pas qu'il y ait les pastilles cliquables sur le
+devis »*. Le devis est le DOCUMENT, pas la fiche : le mot y est du texte, écrit
+devant le nom. **Ne pas les y remettre sans lui.** Conséquence assumée, et qu'il
+connaît : une civilité choisie de travers ne se corrige plus après la création,
+faute d'écran de fiche client.
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **NULL est un état normal, et le plus courant.** Une société n'est ni l'un ni
+   l'autre. Ce que NULL vaut à l'écran est décidé dans `avecCivilite`, jamais en
+   base : la règle d'avant s'y applique encore, et **c'est ce qui a évité que
+   tous ses clients existants changent d'apparence du jour au lendemain**.
+2. **L'ordre des questions dans `avecCivilite` n'est pas indifférent** : une
+   civilité déjà écrite prime sur tout, puis son choix, puis la détection de
+   société. Inverser les deux premiers redonne « Mme Mme Roux ».
+3. **Le document garde une COPIE.** Corriger une fiche client ne doit pas
+   réécrire un devis déjà parti.
+4. **Le placeholder du nom vaut « Bernard », plus « M. Bernard »** — 54 fichiers
+   de contrôle le visaient. `getByPlaceholder("Bernard")` attrape aussi
+   « bernard@exemple.fr » : viser `input[placeholder="Bernard"]`.
+
+**Ce qui reste ouvert et lui appartient** (`TODO.md`) : il n'y a que deux
+pastilles, donc rien pour dire « c'est une société » autrement qu'en n'en
+touchant aucune. Suffisant aujourd'hui ; à rouvrir s'il facture des entreprises.
+
+Détail complet : `ARCHITECTURE.md` §81.
+
+---
+
+### La TVA due, les achats et la lecture des tickets (13 août 2026)
+
+`src/lib/achat-tva.ts`, `drizzle/0036_achats_tva.sql`,
+`src/server/repositories/achats-tva.ts`, l'écran `src/app/termines/tva/` et
+`src/server/ai/services/lire-ticket.ts`.
+
+**Six choses à ne pas défaire :**
+
+1. **La TVA d'un ticket se RETIRE du total, elle ne s'y ajoute pas.** 120 € à
+   20 % contiennent 20 € de TVA, pas 24. Un contrôle affirme l'inégalité
+   explicitement — le corriger « dans l'autre sens » fausserait tout le relevé
+   sans que rien ne se voie.
+2. **`tva_deductible` est le seul montant obligatoire.** Exiger le total
+   reviendrait à refuser les tickets qui n'affichent qu'une ligne de TVA, donc à
+   perdre cette TVA.
+3. **Aucune règle de déductibilité n'est encodée, et il ne faut pas en
+   ajouter.** Elles dépendent de la dépense et du véhicule ; le comptable
+   tranche.
+4. **Le reste à payer peut être négatif** — c'est un crédit de TVA, et il
+   s'affiche. Le borner à zéro cacherait le mois qui compte le plus.
+5. **Ce que la lecture rend est une PROPOSITION.** Les champs arrivent
+   pré-remplis ; c'est la valeur CONFIRMÉE qui part en base. Ne jamais
+   enregistrer directement ce que le modèle a lu.
+6. **Un achat daté hors de la période regardée doit se DIRE, puis EMMENER**
+   (ajouté le 13 août 2026, sur son signalement). La feuille annonce la
+   destination avant l'appui, et l'écran navigue vers elle après. Sans ça,
+   l'achat est enregistré au bon endroit et **disparaît** : l'écran ne montre
+   qu'une période, aucun des trois chiffres ne bouge, et le patron conclut que
+   rien n'a été pris — c'est exactement ce qui s'est produit avec son ticket du
+   24 juillet ajouté en août. `scripts/test-achat-hors-periode-e2e.ts` le garde,
+   et **piège 19** dit pourquoi le premier correctif ne corrigeait rien.
+
+**NON VÉRIFIÉ, et ça ne peut pas l'être ici :** la lecture d'un vrai ticket.
+Aucune clé dans cet environnement. Si le patron signale une lecture fautive, le
+plus utile est **la photo du ticket ET ce que l'écran a proposé** : c'est
+l'écart entre les deux qui dit quoi corriger. Tout ce qui entoure la lecture est
+éprouvé (`scripts/test-lecture-ticket.ts`, onze cas, sans réseau).
+
+**Un piège d'outillage payé deux fois le 13 août :** ne jamais jouer une suite
+base ni éditer un fichier PENDANT `verifier:avant-livraison`. `nettoyerBase()`
+vide la base sous les pieds des cinquante autres suites, et une édition en cours
+casse la compilation de celles qui n'ont pas encore démarré. Les deux batteries
+rouges de la journée étaient cela, pas des défauts du code.
+
+---
+
 
 **« MONSIEUR MARTINS », ET LE TIRET RETIRÉ (13 août).** Sa capture de l'écran
 Devis. Le nom du chantier ne dit plus « Chez … », la ligne du client porte sa
@@ -478,7 +667,11 @@ civilité, et le détail passe **sous** le nom au lieu d'être collé par un tir
 **Quatre choses à savoir avant d'y toucher :**
 
 1. **La civilité vit dans `src/lib/civilite.ts`, et nulle part ailleurs.** Trois
-   endroits l'appellent. « Monsieur » est un **défaut, pas une donnée** : il n'y
+   endroits l'appellent — dont le message qui part chez le client. Le MOT vit
+   dans `CIVILITE_PAR_DEFAUT` et a déjà changé une fois en une journée
+   (« Monsieur », puis « Mr. ») : les contrôles le demandent à la règle plutôt
+   que de le recopier, sauf un qui l'épingle en clair. La civilité est un
+   **défaut, pas une donnée** : il n'y
    a aucun champ de civilité dans la fiche client, donc une cliente sera mal
    nommée. Le vrai remède — un choix à la création — n'a pas été ajouté sans son
    accord. **À lui poser.**
@@ -685,6 +878,32 @@ client demande une modification, ouvrir le devis pour pouvoir le modifier. »*
    voulu (`notificationsPatron`). Seuls un refus, une correction, une
    contre-proposition de date ou un message du client en font une. Un contrôle
    qui l'ignore cherche une carte qui n'existera jamais — vécu le jour même.
+
+---
+
+### La TVA au mois ou au trimestre (12 août 2026)
+
+`src/server/periode-tva.ts` (règle pure), `drizzle/0035_periodicite_tva.sql`,
+Réglages → « Votre TVA », et le calendrier
+`src/app/termines/tva/CalendrierPeriodes.tsx`.
+
+**Trois choses à ne pas défaire :**
+
+1. **Le mois est le défaut LÉGAL, pas une préférence.** La déclaration CA3 est
+   mensuelle ; le trimestre est une option ouverte sous 4 000 € de TVA due.
+   Repasser le défaut au trimestre serait un retour au défaut d'avant.
+2. **Atlas ne calcule JAMAIS le droit au trimestre.** Le seuil porte sur la TVA
+   *due* — collectée moins déductible — et ce produit ne voit aucune facture
+   d'achat. Un écran qui conseillerait inventerait une donnée ; une suite
+   (`test-periodicite-tva-e2e.ts`) rougit s'il s'y met.
+3. **`lirePeriode` dépend de la périodicité** : « 12 » est un mois valide et un
+   trimestre absurde. Lire l'adresse sans le réglage laisserait passer un
+   douzième trimestre.
+
+`src/server/trimestre.ts` subsiste, employé par `test-factures.ts` seul. Il n'a
+plus d'appelant dans `src/`.
+
+---
 
 **Les pages du CLIENT ne portent plus la navigation du patron (12 août).** Sa
 facture affichait « Chantiers · Planning · Terminés · Réglages » au bas de
@@ -2025,7 +2244,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les dix-huit pièges de ce dépôt
+### Les dix-neuf pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -2210,6 +2429,23 @@ site publié à son adresse réelle.
     cible tactile se mesure (44 px), elle ne se déduit pas. Et `innerText`
     **n'inclut pas le contenu des champs** : un contrôle qui l'interroge pour
     vérifier l'ordre d'un formulaire ne voit rien du tout.
+
+19. **`router.refresh()` juste après `router.push()` ANNULE la navigation.**
+    `refresh` redemande au serveur l'adresse **courante** ; le `push` en cours
+    retombe dessus. Aucune erreur, aucune trace : l'écran ne bouge simplement
+    pas. Le 13 août 2026, ce doublet a rendu inopérant le correctif du ticket
+    daté d'un autre mois — le code était écrit, la ligne bien en base, et le
+    défaut du patron intact. Il a fallu une sonde imprimant l'adresse et le
+    titre après l'appui pour le voir. **Un `push` suffit** : une page
+    `force-dynamic` est refaite côté serveur à chaque navigation. Le `refresh`
+    ne se garde que sur la branche qui reste sur place. `ARCHITECTURE.md` §85.
+
+    *Corollaire de méthode, et c'est le vrai enseignement :* un écran qui écrit
+    dans une période et en affiche une autre ne se voit dans **aucune** suite
+    qui regarde une moitié. Le dépôt était juste, les bornes étaient justes,
+    tout était vert — le trou était dans le raccord. Là où deux couches se
+    passent une valeur, il faut une suite qui traverse **du doigt jusqu'au
+    chiffre** (`scripts/test-achat-hors-periode-e2e.ts`).
 
 ### Le vocabulaire
 

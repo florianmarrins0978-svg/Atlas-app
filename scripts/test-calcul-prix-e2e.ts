@@ -41,7 +41,7 @@ async function main() {
 
   const nomUnique = `Chantier calcul prix e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nomUnique);
+  await page.fill('input[placeholder="Bernard"]', nomUnique);
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const chantierUrl = page.url();
@@ -94,13 +94,34 @@ async function main() {
 
   // --- Application explicite ---
   await page.click("text=Ajouter au détail");
-  await page.waitForTimeout(1000);
 
-  const apres = await pool.query(
+  // **Attendre que la ligne EXISTE, pas une seconde.** Le 13 août 2026, en
+  // batterie : la suite lisait zéro ligne et annonçait « Une seule ligne doit
+  // avoir été créée » — elle passait pourtant jouée seule. Une seconde suffit
+  // à un serveur au repos, pas sous soixante-six suites, et le message accusait
+  // alors le produit d'un défaut qui n'existait pas. Même famille que les deux
+  // suites corrigées la veille (`316326210`).
+  //
+  // On interroge la base, seule à dire la vérité ici : l'écran peut avoir peint
+  // la ligne avant que l'action serveur ait rendu la main.
+  const jusqua = Date.now() + 30_000;
+  let apres = await pool.query(
     `SELECT libelle, montant FROM lignes_prix WHERE chantier_id = $1 ORDER BY ordre`,
     [chantierId]
   );
-  assert.equal(apres.rows.length, 1, "Une seule ligne doit avoir été créée");
+  while (apres.rows.length === 0 && Date.now() < jusqua) {
+    await page.waitForTimeout(250);
+    apres = await pool.query(
+      `SELECT libelle, montant FROM lignes_prix WHERE chantier_id = $1 ORDER BY ordre`,
+      [chantierId]
+    );
+  }
+
+  assert.equal(
+    apres.rows.length,
+    1,
+    "Une seule ligne doit avoir été créée (attendue jusqu'à 30 s après le geste)"
+  );
   assert.equal(apres.rows[0].montant, PRIX_ATTENDU, "Le montant écrit doit être celui recalculé côté serveur");
 
   // --- Le prix n'est pas validé pour autant ---

@@ -957,3 +957,60 @@ body {
   .atlas-sceau-en-marche { animation: none; }
   .atlas-champ-ligne { transition: none; }
 }
+
+/* ===========================================================================
+ * L'ATTENTE QUI SOUFFLE — les trois points de la dictée
+ *
+ * Le patron, le 13 août 2026 : *« une fois qu'on a appuyé sur le dictaphone, on
+ * ne sait pas ce qui se passe. Les trois petits points sont fixes […] on ne
+ * sait pas si ça bug ou non. »*
+ *
+ * Ce n'était pas une animation arrêtée : c'était le caractère « … », un seul
+ * glyphe. Il n'y avait rien qui pût bouger.
+ *
+ * **Les mesures viennent de `docs/maquettes/43-l-attente-a-lessai.html`,
+ * proposition C, qu'il a désignée** — les reprendre de là si on y retouche,
+ * jamais de mémoire. Les points enflent et se rétractent l'un après l'autre,
+ * SANS se déplacer : rien ne sort du rond de 44 px, donc rien ne peut cogner le
+ * titre d'à côté.
+ * ======================================================================== */
+.atlas-souffle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.atlas-souffle i {
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  /* `currentColor` : la couleur vient de ce qui porte les points, pour que le
+   * même geste serve un jour ailleurs sans emporter la teinte de cet écran-ci. */
+  background: currentColor;
+  transform: scale(0.72);
+  opacity: 0.34;
+  animation: atlas-souffle 1.25s ease-in-out infinite;
+}
+.atlas-souffle i:nth-child(2) { animation-delay: 0.16s; }
+.atlas-souffle i:nth-child(3) { animation-delay: 0.32s; }
+@keyframes atlas-souffle {
+  0%, 66%, 100% { transform: scale(0.72); opacity: 0.34; }
+  30% { transform: scale(1.5); opacity: 1; }
+}
+
+/* Qui demande moins de mouvement n'a pas droit à moins d'information.
+ *
+ * Tout couper rendrait le défaut qu'on répare — trois points fixes, et personne
+ * pour dire si ça travaille. Ce qui gêne dans ce réglage, c'est le DÉPLACEMENT
+ * et le changement de taille, pas la lumière : il reste donc une respiration,
+ * sans un pixel de mouvement. */
+@media (prefers-reduced-motion: reduce) {
+  .atlas-souffle i {
+    transform: none;
+    animation: atlas-respire 2s ease-in-out infinite;
+  }
+  @keyframes atlas-respire {
+    0%, 100% { opacity: 0.32; }
+    50% { opacity: 1; }
+  }
+}
