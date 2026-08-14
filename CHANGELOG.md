@@ -22,6 +22,42 @@ zéro entre deux suites que s'il vit dans Redis.
 coupable. La batterie officielle et la CI posaient déjà la variable : c'est
 l'appel à la main qui ne l'avait pas. Raisons : `ARCHITECTURE.md` §96.
 
+### Les équipes reviennent sous « Équipe », et le planning s'explique
+
+**Sa question, le 14 août :** *« les équipes n'apparaissent plus, pourquoi ?
+Faut les rajouter dans la catégorie équipe aussi. »* Deux causes, sans rapport.
+
+**Dans les réglages, c'est moi.** Le matin même, le bloc des équipes était parti
+sous « Planning » quand l'écran est devenu un sommaire. Le raisonnement tenait —
+ici « équipe » désigne une file du planning, pas un compte — mais il ne tient
+pas devant l'usage : il les a cherchées sous « Équipe ». Le **même composant**
+est désormais servi aux deux adresses, jamais une copie : deux listes qui
+divergeraient seraient deux vérités sur ce que le planning propose.
+
+**Sur le planning, c'est sa propre règle du 10 août** : à une seule équipe,
+aucun nom ne s'écrit, il n'y a personne à distinguer. Elle ressemble à une panne
+quand on l'a oubliée — l'écran « Équipe » la dit maintenant en toutes lettres.
+
+**Et le libellé de la rubrique cessait de mentir** : « Utilisateurs, rôles et
+permissions » promettait trois choses qui n'existent pas.
+
+### DESSINÉ : la ligne du planning, et l'équipe d'un chantier validé
+
+Ses deux demandes du 14 août — ramener « Déplacer » et le chevron vers la
+gauche, et pouvoir affilier une équipe à un chantier que le client a validé.
+`maquettes/atlas-planning-equipe.html`, **44 contrôles au vert**, deux éprouvés
+rouges.
+
+**Le décalage se mesure, il ne se raconte pas** : 24 px gagnés, chevron de 17 à
+21 px, cible maintenue à 44 px. Et son coût est mesuré aussi — la colonne du nom
+perd ces 24 px, un contrôle vérifie qu'aucun nom n'est coupé.
+
+**Le geste de l'équipe existe à moitié** : en posant un chantier sur un jour, on
+choisit déjà son équipe. Ce qui manque, c'est la changer ENSUITE — et un
+chantier validé est justement celui qu'on ne veut plus déplacer. La ligne se
+pose donc dans la feuille du chevron, et promet de ne toucher ni au jour ni à la
+demi-journée.
+
 ### CODÉ : les quatre saisies de « Mon entreprise »
 
 Ses demandes du 14 août, capture à l'appui, et son choix « A » sur le bouton.

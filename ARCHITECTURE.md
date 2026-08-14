@@ -7955,3 +7955,26 @@ invisible là où on le cherche.
 manquant » sur un jeu de démonstration complet, et j'ai failli chercher le
 défaut dans l'écran. Elle restaure désormais ce qu'elle a vidé : une capture qui
 laisse la base modifiée fait mentir la suivante.
+
+### Les équipes, cherchées là où elles n'étaient plus
+
+**Le 14 août au soir, le patron :** *« les équipes n'apparaissent plus,
+pourquoi ? Faut les rajouter dans la catégorie équipe aussi. »* Deux causes
+sans rapport, et la première est la mienne.
+
+**Dans les réglages.** Le matin même, le sommaire (§96) avait rangé le bloc des
+équipes sous « Planning ». Le raisonnement tenait — ici « équipe » désigne une
+FILE DU PLANNING, pas un compte (§88) — mais **il ne tient pas devant l'usage** :
+il les a cherchées sous « Équipe », et c'est là qu'elles doivent être. Le même
+composant est servi aux deux adresses ; deux listes qui divergeraient seraient
+deux vérités sur le nombre de chantiers qui partent le même jour.
+
+**Sur le planning, rien n'était cassé.** À une seule équipe, aucun nom ne
+s'écrit : c'est sa règle du 10 août, et elle est juste — il n'y a personne à
+distinguer. Mais une règle oubliée ressemble à une panne. L'écran « Équipe » la
+dit désormais : *« Les noms apparaissent à partir de deux. »*
+
+**Ce que cela apprend, et qui vaut pour les rangements à venir :** une rubrique
+peut être logiquement bien placée et introuvable quand même. Le libellé de
+« Équipe » promettait par ailleurs « Utilisateurs, rôles et permissions » —
+trois choses qui n'existent pas. Il dit maintenant ce qu'on y trouve.

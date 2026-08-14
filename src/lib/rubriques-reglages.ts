@@ -58,7 +58,16 @@ const ENTREPRISE: Rubrique[] = [
     icone: "immeuble",
     href: "/reglages/identite",
   },
-  { nom: "Équipe", dit: "Utilisateurs, rôles et permissions", icone: "personnes", href: null },
+  {
+    nom: "Équipe",
+    // **Le libellé dit ce qu'on y trouve VRAIMENT.** « Utilisateurs, rôles et
+    // permissions » promettait trois choses qui n'existent pas, et le patron
+    // ouvrait la rubrique pour n'y rien voir. Ce qui s'y règle aujourd'hui,
+    // c'est combien d'équipes partent en même temps (§99).
+    dit: "Combien partent en même temps, et leurs noms",
+    icone: "personnes",
+    href: "/reglages/equipe",
+  },
   {
     nom: "Tarifs & catalogue",
     dit: "Prestations, main-d'œuvre, matériel et marges",
