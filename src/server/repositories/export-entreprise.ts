@@ -15,6 +15,8 @@ import {
   grillePrix,
   agendasExternes,
   equipes,
+  naturesGrille,
+  tranchesGrille,
   factures,
   fragmentsDocuments,
   historiquePrix,
@@ -124,6 +126,8 @@ export async function exporterEntreprise(
       laGrillePrix,
       lesAgendas,
       lesEquipes,
+      sesTranches,
+      sesNatures,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -186,6 +190,12 @@ export async function exporterEntreprise(
       // Les noms que le patron a donnés à ses équipes. C'est SA saisie, et rien
       // ne la reconstitue : elle part avec le reste de ses données.
       tx.select().from(equipes).where(eq(equipes.entrepriseId, e)),
+      // Les tranches et les travaux qu'il a réglés lui-même (14 août 2026,
+      // `ARCHITECTURE.md` §102). Sans eux, une sauvegarde rendrait ses prix
+      // sans rendre les cases qui leur donnent un sens : « 1 400 € » pour
+      // « d90_2 » ne veut rien dire une fois la tranche perdue.
+      tx.select().from(tranchesGrille).where(eq(tranchesGrille.entrepriseId, e)),
+      tx.select().from(naturesGrille).where(eq(naturesGrille.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -232,6 +242,9 @@ export async function exporterEntreprise(
       // qu'il a prise, ou un prix qu'il a réellement pratiqué : la perdre lui
       // ferait rechiffrer à l'aveugle des chantiers déjà arbitrés.
       grille_prix: laGrillePrix,
+      // Les tranches et les travaux qui donnent leur sens aux cases ci-dessus.
+      tranches_grille: sesTranches,
+      natures_grille: sesNatures,
       // Sans les jetons — voir la requête ci-dessus.
       agendas_externes: lesAgendas,
       equipes: lesEquipes,

@@ -572,8 +572,12 @@ function AjouterTravail({
             role="radio"
             aria-checked={forme === f.valeur}
             onClick={() => setForme(f.valeur)}
-            className="flex min-h-[44px] items-start gap-2.5 rounded-[4px] px-3 py-2.5 text-left"
-            style={{ backgroundColor: colors.cream }}
+            // **Un rang de liste, et non un bouton d'action** : la charte ne
+            // donne la capsule qu'à ce qu'on APPUIE pour agir. Ces trois-là se
+            // CHOISISSENT, comme les unités d'un tarif — d'où le filet qui les
+            // sépare plutôt qu'un cadre autour de chacun.
+            className="flex min-h-[44px] items-start gap-2.5 px-1 py-2.5 text-left"
+            style={{ borderBottom: `1px solid ${colors.line}` }}
           >
             <span
               aria-hidden
