@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le mot juste, sans la date — la version retenue</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    LE MOT JUSTE, SANS LA DATE — version retenue par le patron
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 14 août 2026, après la planche 47 : « La A », puis :
+    « Il faut simplement que ça dise matin, après-midi ou les deux, mais pas la
+    date, elle est déjà présente juste au-dessus. »
+
+    A EST RETENUE. Cette planche ne rouvre pas ce choix : elle l'applique, et
+    ne montre QUE les deux cas que sa phrase ne tranche pas.
+
+    ————————————————————————————————————————————————————————————————
+    CAS 1 — LE CHANTIER DE PLUSIEURS JOURS.
+
+    « Matin, après-midi ou les deux » couvre une journée, pas trois. Un chantier
+    de trois jours n'est ni l'un ni l'autre — et c'est justement celui que la
+    ligne trompait le plus, puisqu'elle annonçait « matin » pour cinq jours de
+    calendrier. Deux écritures proposées, à basculer.
+
+    CAS 2 — LA DATE, ET IL FAUT LE DIRE PLUTÔT QUE DE DEVINER.
+
+    Sur la liste des « Planifiés », **chaque chantier porte sa propre date** —
+    14 août, 17, 20, 21 — et ce sont des jours différents. Je ne la retrouve
+    nulle part ailleurs sur cet écran : le calendrier au-dessus marque bien les
+    jours occupés d'une pastille, mais il ne dit pas QUEL chantier tombe QUEL
+    jour. La retirer de la liste rend donc l'ordre des chantiers illisible dès
+    qu'on en a plus de trois.
+
+    Là où sa remarque tombe juste, en revanche, c'est **dans le panneau qui
+    s'ouvre quand on touche un jour** : le titre y dit déjà « Lundi 17 août », et
+    répéter la date sous chaque chantier n'y sert à rien.
+
+    LES DEUX LISTES SONT DONC MONTRÉES CÔTE À CÔTE, sans commentaire de ma part
+    au-delà de ce constat : il tranchera d'un coup d'œil, et c'est plus rapide
+    qu'un aller-retour de questions.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : les bascules sont des boutons radio natifs.
+    Les écrans font 390 px — la largeur réelle de son téléphone.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f5f3ee; --pin:#2f3b2f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:940px;margin:0 auto}
+
+  /* Safari sur iPhone n'active pas un <label> sans « cursor:pointer » — payé le
+     10 août 2026 : « rien ne s'ouvre quand je touche ». */
+  label{cursor:pointer}
+
+  .intro{max-width:62ch;margin:0 auto;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro b{color:var(--encre);font-weight:600}
+
+  .chapitre{max-width:64ch;margin:56px auto 0;text-align:center;
+       font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+       text-transform:uppercase;color:var(--or)}
+  .titre-chapitre{max-width:64ch;margin:12px auto 0;text-align:center;
+       font:400 24px/1.25 ui-serif,Georgia,serif}
+  .dit{max-width:60ch;margin:12px auto 0;text-align:center;font-size:14px;color:var(--gris);line-height:1.68}
+  .dit b{color:var(--encre);font-weight:600}
+
+  .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+
+  .banc{max-width:660px;margin:0 auto}
+  .reglage{margin:24px auto 0;max-width:520px;text-align:center}
+  .reglage .quoi{margin:0 0 9px;font-size:12.4px;color:var(--gris)}
+  .segments{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+  .segments label{display:inline-flex;align-items:center;border-radius:9999px;
+        padding:8px 17px;font:400 15px/1 ui-serif,Georgia,serif;
+        border:1px solid var(--trait);color:var(--gris)}
+  /* `~ .page` et non `~ .banc` : le combinateur du frère exige un FRÈRE des
+     boutons radio, et `.banc` est leur neveu — il vit dans `.page`. Écrit
+     `.banc`, rien ne bascule, et la planche paraît morte sous le doigt. Trouvé
+     en la parcourant, comme le reste. */
+  #p-deux:checked ~ .page .segments label[for="p-deux"],
+  #p-jour:checked ~ .page .segments label[for="p-jour"],
+  #g-jours:checked ~ .page .segments label[for="g-jours"],
+  #g-du:checked ~ .page .segments label[for="g-du"]{
+    background:var(--pin);border-color:var(--pin);color:#faf9f5}
+
+  /* ── L'écran ──────────────────────────────────────────────────────────── */
+  .duo{display:flex;flex-wrap:wrap;gap:40px 34px;justify-content:center;
+       align-items:flex-start;margin-top:30px}
+  .colonne-ecran{display:flex;flex-direction:column;align-items:center;gap:14px;
+                 width:412px;max-width:100%}
+  .etiquette{text-align:center;max-width:390px}
+  .etiquette .t{display:block;margin:0 0 5px;font:400 19px/1.24 ui-serif,Georgia,serif}
+  .etiquette p{margin:0;font-size:12.8px;color:var(--gris);line-height:1.66}
+  .etiquette b{color:var(--encre);font-weight:600}
+
+  .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{
+    --e-fond:#f5f3ee; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
+    width:390px;max-width:100%;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);padding:26px 0 18px;
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+  .rubrique{margin:0 26px 10px;color:var(--e-gris)}
+
+  .ligne{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+         margin:0 26px;padding:11px 0;border-bottom:1px solid var(--e-trait)}
+  .ligne .colonne{min-width:0;flex:1}
+  .ligne .nom{display:block;font:400 16px/1.2 ui-serif,Georgia,serif;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ligne .quand{display:block;margin-top:2px;font-size:12px;color:var(--e-gris)}
+  .ligne .gestes{display:flex;flex-shrink:0;align-items:center;gap:14px}
+  .ligne .deplacer{font-size:12px;color:var(--e-gris);white-space:nowrap}
+  .ligne .chev{color:var(--e-or);font-size:15px}
+  /* Le jour, quand il reste : de la même encre que le reste de la ligne. Le
+     griser en ferait une note de bas de page, et ce n'est pas la question
+     posée — on compare sa présence, pas son poids. */
+  .jour-garde{display:none}
+
+  /* Les deux écritures de la journée pleine, et les deux du chantier long. */
+  .v-deux,.v-jour,.v-jours,.v-du{display:none}
+  #p-deux:checked ~ .page .v-deux,
+  #p-jour:checked ~ .page .v-jour,
+  #g-jours:checked ~ .page .v-jours,
+  #g-du:checked ~ .page .v-du{display:inline}
+
+  .rappel{max-width:62ch;margin:30px auto 0;padding:20px 22px;border-radius:12px;
+          background:var(--plage);font-size:13.4px;color:var(--gris);line-height:1.7}
+  .rappel b{color:var(--encre);font-weight:600}
+  .rappel .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+             letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+
+  .note{max-width:74ch;margin:60px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+  .note b{color:var(--encre)}
+  .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .note p{margin:0 0 14px}
+  .note p:last-child{margin-bottom:0}
+</style>
+
+<input type="radio" name="pleine" id="p-deux" class="etat" checked>
+<input type="radio" name="pleine" id="p-jour" class="etat">
+<input type="radio" name="longue" id="g-jours" class="etat" checked>
+<input type="radio" name="longue" id="g-du" class="etat">
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Le planning · la ligne d’un chantier</p>
+    <h1>Le mot juste, sans la date</h1>
+    <p><b>A est retenue</b>, avec votre correction : « matin, après-midi ou les
+      deux, mais pas la date ». Cette page ne rouvre pas ce choix — elle
+      l’applique, et ne montre que <b>les deux cas que votre phrase ne tranche
+      pas</b>.</p>
+  </div>
+
+  <div class="banc">
+
+    <p class="chapitre">Cas 1</p>
+    <p class="titre-chapitre">Le chantier de plusieurs jours</p>
+    <p class="dit">« Matin, après-midi ou les deux » couvre une journée, pas
+      trois. Et c’est précisément le chantier long que la ligne trompait le plus :
+      elle annonçait <b>« matin »</b> pour cinq jours de calendrier.</p>
+
+    <div class="reglage">
+      <p class="quoi">Le chantier d’une journée entière :</p>
+      <div class="segments">
+        <label for="p-deux">matin et après-midi</label>
+        <label for="p-jour">journée</label>
+      </div>
+    </div>
+
+    <div class="reglage">
+      <p class="quoi">Le chantier de plusieurs jours :</p>
+      <div class="segments">
+        <label for="g-jours">3 jours, dès le matin</label>
+        <label for="g-du">du 21 au 25 août</label>
+      </div>
+    </div>
+
+    <p class="chapitre">Cas 2</p>
+    <p class="titre-chapitre">La date — et je ne la trouve pas au-dessus</p>
+    <p class="dit">Sur la liste des planifiés, <b>chaque chantier porte son
+      propre jour</b> : le 14, le 17, le 20, le 21. Le calendrier au-dessus
+      marque bien les jours occupés d’une pastille, mais <b>il ne dit pas quel
+      chantier tombe quel jour</b>. Les deux listes, à comparer d’un coup
+      d’œil.</p>
+
+    <div class="duo">
+
+      <div class="colonne-ecran">
+        <div class="tel"><div class="ecran">
+          <p class="caps rubrique">Planifiés</p>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Monsieur Martin</span>
+              <span class="quand"><span class="v-deux">matin et après-midi</span><span class="v-jour">journée</span> · Équipe A</span>
+            </span>
+            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+          </div>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Monsieur Martins</span>
+              <span class="quand">matin</span>
+            </span>
+            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+          </div>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Mr. Martins</span>
+              <span class="quand">après-midi</span>
+            </span>
+            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+          </div>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Mr. Martins</span>
+              <span class="quand"><span class="v-jours">3 jours, dès le matin</span><span class="v-du">du 21 au 25 août</span></span>
+            </span>
+            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+          </div>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Madame Roux</span>
+              <span class="quand"><span class="v-jours">1 journée ½, dès l’après-midi</span><span class="v-du">du 24 au 25 août</span></span>
+            </span>
+            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+          </div>
+        </div></div>
+        <div class="etiquette">
+          <span class="t">Sans la date</span>
+          <p>Ce que vous demandez, à la lettre. La ligne est <b>courte et
+            nette</b> — et elle laisse enfin de la place à l’équipe. Mais rien
+            ne dit plus lequel de ces cinq chantiers est celui de demain.</p>
+        </div>
+      </div>
+
+      <div class="colonne-ecran">
+        <div class="tel"><div class="ecran">
+          <p class="caps rubrique">Planifiés</p>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Monsieur Martin</span>
+              <span class="quand">14 août · <span class="v-deux">matin et après-midi</span><span class="v-jour">journée</span> · Éq. A</span>
+            </span>
+            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+          </div>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Monsieur Martins</span>
+              <span class="quand">17 août · matin</span>
+            </span>
+            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+          </div>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Mr. Martins</span>
+              <span class="quand">20 août · après-midi</span>
+            </span>
+            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+          </div>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Mr. Martins</span>
+              <span class="quand"><span class="v-jours">21 août · 3 jours, dès le matin</span><span class="v-du">du 21 au 25 août</span></span>
+            </span>
+            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+          </div>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Madame Roux</span>
+              <span class="quand"><span class="v-jours">24 août · 1 journée ½, dès l’après-midi</span><span class="v-du">du 24 au 25 août</span></span>
+            </span>
+            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+          </div>
+        </div></div>
+        <div class="etiquette">
+          <span class="t">Avec le jour</span>
+          <p>Le mot juste que vous avez retenu, mais le jour reste devant. Plus
+            long d’une poignée de caractères — et l’on sait encore <b>quel
+            chantier est lequel</b> sans ouvrir la fiche.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="rappel">
+      <span class="t">Là où vous avez raison sans discussion</span>
+      <b>Dans le panneau qui s’ouvre quand vous touchez un jour</b>, le titre dit
+      déjà « Lundi 17 août ». Répéter la date sous chaque chantier n’y sert
+      strictement à rien, et elle en disparaîtra quoi qu’il arrive.
+      <b>La question ne porte donc que sur la liste des planifiés</b>, où les
+      chantiers de plusieurs jours différents se suivent.
+    </div>
+
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui est décidé, et ce que j’attends de vous</span>
+    <p><b>Décidé :</b> la ligne dira ce que le chantier occupe, jamais son heure
+      de départ seule. « matin », « après-midi », et les deux quand c’est la
+      journée. C’est votre A, et c’est acquis.</p>
+    <p><b>Trois mots de votre part suffisent</b> — par exemple : <b>« journée,
+      du 21 au 25, sans la date »</b>. Et je code.</p>
+    <p><b>Une chose que ça débloque au passage.</b> Sans la date, la ligne
+      raccourcit assez pour porter la pastille d’équipe de l’autre planche
+      <b>sans que le nom du chantier rétrécisse</b>. Les deux points que vous
+      avez soulevés le même jour se disputaient cette place ; ils ne se la
+      disputent plus.</p>
+    <p><b>Rien n’est codé</b> — c’est votre règle, et je ne touche à
+      l’application qu’une fois votre mot reçu.</p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -67,33 +67,47 @@ La fiche du chantier, elle, ne montre toujours l'équipe nulle part.
    `planifierChantier` prétend couvrir, et deux chemins qui protègent
    différemment la même chose finissent toujours par diverger.
 
-### 0 novemvicies bis. La ligne du planning dit « matin » quoi qu'il arrive
+### 0 novemvicies bis. La ligne du planning : « le mot juste » RETENU
 
 Sa capture du 13 août 2026 : *« pourquoi sous le chantier il y a marqué matin ?
 Cela laisse à penser que juste le matin est bloqué alors que c'est la journée. »*
 
-Il a raison. `libelleQuand()` (`PlanningClient.tsx`) écrit `creneauDebut`,
-c'est-à-dire la demi-journée de **départ**, jamais ce que le chantier occupe. Or
+Il a raison. `libelleQuand()` (`PlanningClient.tsx`) écrit `creneauDebut`, la
+demi-journée de **départ**, jamais ce que le chantier occupe. Or
 `DUREE_PAR_DEFAUT_DEMI_JOURNEES` vaut **2** : un chantier posé prend la journée
 entière. **Le cas le plus courant du produit est donc celui qui ment**, et un
 chantier de trois jours annonce « matin ».
 
-**Ce qui n'est PAS en cause, et qu'il fallait lui dire :** `compterOccupation()`
-parcourt `creneauxDuChantier(départ, durée)` — les pastilles du calendrier ont
-toujours compté juste, la réservation aussi. Seule la phrase se trompait. Rien à
+**Ce qui n'est PAS en cause :** `compterOccupation()` parcourt
+`creneauxDuChantier(départ, durée)` — les pastilles du calendrier et la
+réservation ont toujours compté juste. Seule la phrase se trompait. Rien à
 rattraper en base, aucune migration.
 
-Quatre écritures à comparer dans
-`docs/maquettes/47-le-moment-qui-dit-toujours-matin.html`, à basculer au doigt.
-**En attente de son choix — rien n'est codé.** Le correctif tiendra dans
-`libelleQuand()`, qui sert déjà **à la fois** la ligne du planning et la feuille
-« Y aller » : les deux se corrigent d'un coup, ce pour quoi elle avait été mise
-en commun.
+**TRANCHÉ LE 14 AOÛT 2026 — proposition A, « le mot juste » :** *« La A »*, puis
+*« il faut simplement que ça dise matin, après-midi ou les deux, mais pas la
+date, elle est déjà présente juste au-dessus »*. La ligne dira donc ce que le
+chantier **occupe**, jamais son heure de départ seule.
 
-**Le seul arbitrage est la place.** À 390 px la ligne porte déjà le nom, la date,
-« Déplacer » et le chevron ; ce qu'on ajoute, le nom le paye. C'est le même
-budget de largeur que se dispute la pastille d'équipe ci-dessus — **les deux
-décisions se prennent ensemble ou l'une contre l'autre.**
+**Deux points restent ouverts** — `docs/maquettes/49-le-mot-juste-sans-la-date.html`,
+à basculer au doigt, et **rien n'est codé tant qu'il n'a pas répondu** :
+
+| | La question | Les deux écritures montrées |
+|---|---|---|
+| **1** | Le chantier de **plusieurs jours** : « matin, après-midi ou les deux » ne le couvre pas | « 3 jours, dès le matin » · « du 21 au 25 août » |
+| **2** | La **date**. Sur la liste des planifiés, chaque chantier porte son propre jour et **je ne le retrouve nulle part ailleurs** : le calendrier marque les jours occupés mais ne dit pas quel chantier tombe quel jour | la liste sans la date · la liste avec le jour devant |
+| **3** | Le mot de la journée pleine | « matin et après-midi » (ses mots) · « journée » (plus court) |
+
+**Là où il a raison sans discussion, et qui se fera quoi qu'il arrive :** dans le
+**panneau du jour**, le titre dit déjà « Lundi 17 août » — la date y disparaîtra
+de sous chaque chantier.
+
+Le correctif tiendra dans `libelleQuand()`, qui sert **à la fois** la ligne du
+planning et la feuille « Y aller » : les deux se corrigent d'un coup.
+
+**Et ce choix en débloque un autre.** Sans la date, la ligne raccourcit assez
+pour porter la pastille d'équipe (fiche ci-dessus) **sans que le nom du chantier
+rétrécisse**. Les deux décisions se disputaient cette largeur ; elles ne se la
+disputent plus.
 
 ### 0 novemvicies ter. L'icône installée est un A, et personne ne l'avait vu
 
