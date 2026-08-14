@@ -52,7 +52,12 @@ async function main() {
   const marque = `Martins ${Date.now()}`;
   const client = `M. ${marque}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', client);
+  // **Repéré par son ÉTIQUETTE, pas par son exemple.** Le repère
+  // `placeholder="M. Bernard"` est passé à « Bernard » le 13 août 2026, quand la
+  // civilité s'est choisie au-dessus du nom : cette suite rougissait alors sur
+  // la reprise, alors qu'elle ne trouvait plus le champ. Une étiquette change
+  // moins souvent qu'un exemple, et elle dit ce que le champ EST.
+  await page.getByLabel(/Nom du client/i).fill(client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30000 });
