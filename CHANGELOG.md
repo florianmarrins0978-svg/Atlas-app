@@ -318,6 +318,32 @@ Détail et raisons : `ARCHITECTURE.md` §95.
 
 ## 2026-08-13
 
+### Le devis se reprend enfin AVANT de partir
+
+*« J'ai un devis sur le feu […] mais si je veux modifier mon devis avant de
+l'envoyer, je peux pas. »* Il avait raison : « Modifier mon devis » n'existait
+que sur l'écran du devis **parti**. Avant l'envoi — au moment précis où l'on
+corrige — aucun chemin ne menait au devis modifiable.
+
+Cinq propositions lui ont été dessinées avant d'en coder une ; il a retenu
+**« Modifier » en or, en face du titre**. Sa première idée — le mot « Devis »
+lui-même cliquable — a été écartée par lui après les avoir vues : un titre qui
+est secrètement un lien ne s'annonce pas.
+
+**Ce que ça évite, et qui n'est pas la place du mot :** le lien n'apparaît
+qu'avant l'envoi. Un devis parti ne se modifie plus — la base refuse la première
+frappe — il se *reprend*, ce qui ouvre une nouvelle version, et c'est un geste
+qu'il décide. Offrir « Modifier » après l'envoi l'aurait mené sur un document
+mort sans lui dire pourquoi.
+
+Le contrôle a été confronté aux **deux** états dégradés — lien absent, puis lien
+survivant à l'envoi — et rougit sur chacun. Il vérifie en plus que l'écran
+d'après l'envoi garde son propre geste : sans cela, on passerait au vert en
+retirant le lien partout.
+
+`ARCHITECTURE.md` §82.
+
+
 ### Deux maquettes perdues en silence dans la page unique
 
 **Trouvé en ajoutant la planche du devis modifiable.** `fusionner-maquettes.mjs`

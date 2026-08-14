@@ -490,7 +490,12 @@ Non fait d'office : les brancher allonge `verifier:avant-livraison` de plusieurs
 minutes pour éprouver des pages qui ne partent pas en production. Le bon endroit
 est vraisemblablement la CI, sur les seuls fichiers touchés.
 
-### 0 sexvicies. Le chemin vers le devis modifiable — **maquettes prêtes, son choix attendu**
+### ~~0 sexvicies. Le chemin vers le devis modifiable~~ — **choisi et codé le 13 août 2026**
+
+**Sa décision, après avoir vu les cinq :** *« le modifier en or à droite du mot
+devis est parfait, code celui-là »* — la proposition B. C'est fait,
+`ARCHITECTURE.md` §82. Ce qui suit est gardé parce que le raisonnement, lui,
+resservira.
 
 **Sa capture du 13 août 2026, 21 h 00 :** *« J'ai un devis sur le feu. En
 cliquant sur Mme Félicie, voilà où j'arrive, mais si je veux modifier mon devis

@@ -8190,3 +8190,62 @@ moyens de paiement, le rappel des pénalités et le texte de pied sont réglés,
 enregistrés et montrés en aperçu — mais ils ne s'impriment pas encore : ils
 doivent d'abord passer par le même figement que la validité, sans quoi corriger
 un réglage réécrirait les conditions d'un devis déjà parti. C'est le lot suivant.
+
+---
+
+## 82. « Modifier », en or, en face du titre — et seulement avant l'envoi
+
+**Le patron, le 13 août 2026, capture à l'appui :**
+
+> *« J'ai un devis sur le feu. En cliquant sur Mme Félicie, voilà où j'arrive,
+> mais si je veux modifier mon devis avant de l'envoyer, je peux pas. Fais en
+> sorte qu'en cliquant sur le mot devis en haut à gauche j'arrive sur la page de
+> mon devis pour la modifier. Crée-moi des visuels avant de coder, et il faut
+> que ce soit intuitif. »*
+
+### Le trou, et pourquoi personne ne l'avait vu
+
+`ExportClient` offrait « Modifier mon devis » — mais sur `EcranDevisParti`,
+c'est-à-dire **après** l'envoi. Avant, aucun chemin ne menait d'ici à
+`devis-complet`. Le seul moyen d'y arriver était de repasser par la création
+d'un chantier.
+
+Le défaut se cachait derrière une symétrie apparente : les deux moments du même
+écran se ressemblent assez pour qu'on croie qu'ils portent les mêmes gestes.
+
+### Cinq propositions, et pourquoi ce n'est pas la sienne qui a été codée
+
+`docs/maquettes/45-modifier-son-devis.html`, dessinées avant tout code
+(`CLAUDE.md` §3 bis). Sa première idée — le mot « Devis » lui-même cliquable —
+y figure telle qu'il l'a dite, avec la seule chose qui la rende trouvable : un
+crayon et un filet d'or. **Un titre qui est secrètement un lien ne s'annonce
+pas.**
+
+Il a tranché après avoir vu les cinq : *« le modifier en or à droite du mot
+devis est parfait, code celui-là »*. C'est la B.
+
+### Ce qui tient le dessin, et qu'un `items-start` défait sans rien casser
+
+L'action passe par `EnTeteEcran` (`action`, `actionPlacee="titre"`), qui
+existait déjà. Mais cet en-tête aligne ses enfants **par le haut**, où se trouve
+le surtitre : sans `self-end`, le mot se poserait à côté de « MME FÉLICIE » et
+non sur la ligne d'écriture du titre. Rien ne rougirait — c'est pourquoi
+`test-modifier-avant-envoi-e2e` **mesure** les deux rectangles.
+
+### Et la règle qui compte plus que la place du mot
+
+**Le lien n'existe qu'avant l'envoi** (`devisRow.statut === "envoye" ? null`).
+Un devis parti ne se modifie plus : le déclencheur
+`empecher_modification_devis_envoye` refuse la première frappe. Il se
+**reprend**, ce qui ouvre une nouvelle version, et c'est un geste que le patron
+décide (§66) — l'écran d'après l'envoi le porte déjà sous son propre libellé.
+Offrir « Modifier » là mènerait à un document mort, sans dire pourquoi.
+
+Le rafraîchissement est déjà là : `onEnvoye` appelle `router.refresh()`, donc
+l'en-tête rendu côté serveur perd son lien dès l'envoi, sans rechargement.
+
+**Le contrôle a été confronté aux deux états dégradés** — lien absent, puis lien
+survivant à l'envoi — et il rougit sur chacun, en nommant le bon coupable. Il
+vérifie aussi que l'écran d'après l'envoi garde SON geste : sans cela, on
+passerait au vert en retirant le lien partout, et le patron n'aurait plus
+d'issue du tout.

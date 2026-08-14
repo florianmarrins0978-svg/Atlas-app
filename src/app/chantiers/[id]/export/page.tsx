@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
@@ -77,6 +78,45 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
         retour={{ href: `/chantiers/${id}`, libelle: "Retour à la fiche du chantier" }}
         surtitre={chantier.nom}
         titre="Devis"
+        action={
+          /* **« Modifier », en or, en face du titre.**
+
+             Le patron, le 13 août 2026, capture à l'appui : *« j'ai un devis
+             sur le feu […] mais si je veux modifier mon devis avant de
+             l'envoyer, je peux pas »*. Il avait raison, et le trou était réel :
+             « Modifier mon devis » n'existait que sur l'écran du devis PARTI
+             (`EcranDevisParti`). Avant l'envoi — au moment précis où l'on
+             corrige — aucun chemin ne menait d'ici à `devis-complet`.
+
+             Cinq propositions lui ont été dessinées avant d'en coder une
+             (`docs/maquettes/45-modifier-son-devis.html`, `CLAUDE.md` §3 bis).
+             Il a retenu celle-ci : *« le modifier en or à droite du mot devis
+             est parfait, code celui-là »*. Sa première idée — rendre le mot
+             « Devis » lui-même cliquable — a été écartée par lui après avoir vu
+             les deux : un titre qui est secrètement un lien ne s'annonce pas.
+
+             **UNIQUEMENT AVANT L'ENVOI, et ce n'est pas un détail de
+             présentation.** Un devis parti ne se modifie plus : le déclencheur
+             `empecher_modification_devis_envoye` refuse la première frappe. Il
+             se REPREND, ce qui ouvre une nouvelle version — un geste que le
+             patron décide, et que l'écran d'après l'envoi porte déjà sous son
+             propre libellé (« Reprendre le devis », « Corriger et renvoyer »).
+             Offrir « Modifier » ici mènerait à un document mort.
+
+             `self-end` : l'en-tête aligne ses enfants par le haut, où se trouve
+             le surtitre. Sans cela, le mot se poserait à côté de « MME FÉLICIE »
+             et non sur la ligne d'écriture du titre — c'est-à-dire ailleurs que
+             sur la maquette qu'il a retenue. */
+          devisRow.statut === "envoye" ? null : (
+            <Link
+              href={`/chantiers/${id}/devis-complet`}
+              className="shrink-0 self-end pb-1 text-[15px] font-semibold"
+              style={{ color: colors.or }}
+            >
+              Modifier
+            </Link>
+          )
+        }
       />
 
         <ExportClient

@@ -674,6 +674,25 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**LE DEVIS SE REPREND AVANT DE PARTIR (13 août).** « Modifier », en or, en face
+du titre de l'écran d'envoi. Sa capture : *« si je veux modifier mon devis avant
+de l'envoyer, je peux pas »* — et c'était vrai, le lien n'existait qu'APRÈS
+l'envoi.
+
+**Deux choses à ne pas défaire :**
+
+1. **Le lien n'existe qu'avant l'envoi.** Un devis parti ne se modifie plus (la
+   base refuse) : il se *reprend*, et l'écran d'après l'envoi porte déjà ce
+   geste-là. `ARCHITECTURE.md` §82.
+2. **`self-end` sur le lien.** `EnTeteEcran` aligne ses enfants par le haut :
+   sans lui, le mot remonte à côté du surtitre au lieu de se poser sur la ligne
+   du titre — et **rien ne rougirait**, d'où la mesure des rectangles dans
+   `test-modifier-avant-envoi-e2e`.
+
+**Et la façon dont ça s'est décidé, à imiter :** cinq maquettes avant tout code
+(`docs/maquettes/45-…`). Sa première idée — le mot « Devis » cliquable — y
+figure telle qu'il l'a dite ; il l'a écartée lui-même en voyant les autres.
+
 **L'UNITÉ D'UN TARIF SE CHOISIT (14 août).** Sa demande du 13 : *« crée-moi un
 bandeau déroulant avec infos à choisir, jours/hommes, m² etc. »*, puis *« fais
 celle-là »* devant la forme 1 de `maquettes/atlas-unite-deroulante.html`.
