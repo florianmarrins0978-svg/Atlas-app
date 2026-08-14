@@ -48,6 +48,21 @@ export default async function ReglagesPage() {
 
         <Sommaire ensembles={ensembles} />
 
+        {/* **Un écran court dit pourquoi il est court.** Sans cette phrase, le
+            salarié lit une application amputée et va demander au patron de
+            « lui ouvrir les droits ». Elle était sur la planche du 14 août, et
+            l'oublier en codant l'aurait rendue introuvable. */}
+        {role !== "proprietaire" && (
+          <p
+            className="mx-[26px] mt-[30px] border-t pt-[18px] text-[12px] leading-[1.75]"
+            style={{ borderColor: colors.line, color: colors.muted }}
+          >
+            Rien de l&apos;entreprise ici, et ce n&apos;est pas un écran amputé : vous voyez le
+            planning et vos chantiers. Les tarifs, les coordonnées bancaires et les documents
+            appartiennent au patron.
+          </p>
+        )}
+
         {/* La version exécutée, en bas et discrète.
             Elle existe pour une raison précise : le patron a réessayé, un jour
             plus tard, des correctifs livrés la veille, sur un espace de travail

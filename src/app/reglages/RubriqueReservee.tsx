@@ -23,7 +23,13 @@ export default function RubriqueReservee({ titre, quoi }: { titre: string; quoi:
         retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
       />
       <p className="mx-[26px] mt-8 text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
-        {quoi} Ces réglages appartiennent au patron de l&apos;entreprise.
+        {/* `{" "}` explicite : écrite « {quoi} Ces réglages », la phrase sortait
+            collée — « …compte salarié.Ces réglages… ». JSX ne garde pas
+            l'espace entre une expression et le texte qui la suit. Vu sur une
+            capture le 14 août 2026, par aucun test (`CLAUDE.md` §5). */}
+        {quoi}
+        {" "}
+        Ces réglages appartiennent au patron de l&apos;entreprise.
       </p>
     </div>
   );
