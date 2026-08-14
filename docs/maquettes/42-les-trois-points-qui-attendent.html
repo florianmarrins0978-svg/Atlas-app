@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — les trois points qui attendent</title>
+</head>
+<body>
+<style>
+  /*
+    « UNE FOIS QU'ON A APPUYÉ SUR LE DICTAPHONE, ON NE SAIT PAS CE QUI SE PASSE.
+      LES TROIS PETITS POINTS SONT FIXES ET ON ATTEND. ON NE SAIT PAS SI ÇA BUG
+      OU NON. »
+        — le patron, le 13 août 2026
+
+    ─── Ce qui est vrai dans le code, aujourd'hui ────────────────────────────
+
+    `src/app/chantiers/nouveau/DicterCoordonnees.tsx`, ligne 114 :
+
+        {etat === "traite" ? <span className="text-[11px]">…</span> : <micro/>}
+
+    Ce n'est pas une animation qui s'est arrêtée : c'est le CARACTÈRE « … »,
+    un seul glyphe, posé tel quel. Il ne peut pas bouger — il n'y a rien à
+    faire bouger. Trois points séparés sont à écrire pour qu'une vague existe.
+
+    Et deux choses aggravent l'attente, que le patron n'a pas nommées mais qui
+    tiennent au même moment :
+
+      1. le bouton passe à `opacity: 0.5` pendant le traitement. Un bouton à
+         demi effacé, c'est le vocabulaire d'un bouton ÉTEINT, pas d'un bouton
+         qui travaille. L'écran dit donc « rien ne se passe » deux fois ;
+      2. AUCUNE PHRASE ne s'affiche à ce moment-là. L'écran parle quand il
+         écoute (« J'écoute — touchez pour arrêter. ») et quand il a fini
+         (« 1 information reprise… »), et il se tait exactement pendant le seul
+         moment où l'on se demande s'il est en panne.
+
+    ─── Ce que ce fichier demande ────────────────────────────────────────────
+
+    Cinq façons de faire bouger ces trois points. Les deux premières sont la
+    vague qu'il a décrite, à deux amplitudes ; les trois autres changent de
+    NATURE, parce que décliner un même geste n'est pas proposer autre chose
+    (leçon des maquettes 16 à 19).
+
+    Chaque téléphone SE PRESSE : appuyer sur le micro montre le passage, comme
+    sous son doigt. Sans script — une maquette s'ouvre dans un aperçu, une
+    visionneuse, une page qui bloque l'exécution (payé le 12 août sur la 31).
+
+    ⚠ CE QUI NE DÉPEND PAS DE SON CHOIX, et qu'il peut refuser :
+    la phrase « Atlas rédige… » sous le bouton, et le bouton qui reste à pleine
+    encre. Je les ai mis dans les cinq — ce sont les deux points ci-dessus. Ils
+    ne sont pas demandés ; ils se retirent d'un mot.
+  */
+
+  :root{
+    /* Les couleurs réelles de l'application — src/lib/design-tokens.ts */
+    --fond:#f5f3ee;      /* cream  */
+    --carte:#faf9f5;     /* card   */
+    --encre:#1c1c1a;     /* ink    */
+    --gris:#8a8578;      /* muted  */
+    --pin:#2f3b2f;       /* rust   */
+    --teinte:#ece9e1;    /* rustTint */
+    --alerte:#9C3B2E;    /* alert  */
+    --or:#8a7452;
+    --trait:rgba(28,28,26,.13);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --carte:#221f19; --encre:#e9e5dc; --gris:#8a867c;
+      --pin:#a9b8a4; --teinte:#272420; --or:#b39b72; --trait:rgba(233,229,220,.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --carte:#221f19; --encre:#e9e5dc; --gris:#8a867c;
+    --pin:#a9b8a4; --teinte:#272420; --or:#b39b72; --trait:rgba(233,229,220,.16);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       font-size:16px;line-height:1.65;padding:44px 16px 90px}
+  .page{max-width:1240px;margin:0 auto}
+
+  .intro{max-width:64ch;margin:0 auto}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or);text-align:center}
+  .intro h1{margin:0 0 16px;font-family:ui-serif,Georgia,"Iowan Old Style",serif;
+            font-size:32px;font-weight:400;line-height:1.2;letter-spacing:-.012em;text-align:center}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
+  .intro b{color:var(--encre);font-weight:500}
+  .appui{max-width:60ch;margin:24px auto 0;padding:15px 20px;border:1px solid var(--trait);
+         border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.66}
+  .appui b{color:var(--encre);font-weight:500}
+
+  .famille{margin:56px 0 6px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--or)}
+  .sous-titre{margin:0 auto 30px;max-width:62ch;text-align:center;color:var(--gris);font-size:14px}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;align-items:flex-start}
+  figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:14px}
+  figcaption{max-width:33ch;text-align:center;font-size:13px;color:var(--gris);line-height:1.62}
+  figcaption .tete{display:block;color:var(--encre);font-weight:500;font-size:13.5px;margin-bottom:4px}
+  figcaption b{color:var(--encre);font-weight:500}
+
+  /* ─── Le téléphone, à la dalle réelle ───────────────────────────────────── */
+  .tel{width:340px;max-width:100%;border-radius:40px;padding:10px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 26px 58px rgba(20,18,14,.20)}
+  .ecran{position:relative;overflow:hidden;border-radius:31px;height:520px;background:var(--fond);
+         display:flex;flex-direction:column;padding:18px 18px 0}
+
+  .marque{text-align:center;font-size:10px;letter-spacing:.34em;color:var(--encre);margin:0 0 14px}
+  .retour{width:34px;height:34px;border-radius:999px;background:var(--teinte);
+          display:flex;align-items:center;justify-content:center;color:var(--pin);font-size:13px}
+
+  .tete{display:flex;justify-content:space-between;align-items:flex-start;margin:14px 0 0;gap:12px}
+  .surtitre{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--gris);margin:0 0 2px}
+  .titre{margin:0;font-family:ui-serif,Georgia,serif;font-size:30px;font-weight:400;line-height:1.1}
+
+  .colonne-micro{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0}
+
+  /*
+    LE BOUTON — 44 px, la mesure réelle (`h-11 w-11`), et non un agrandissement.
+    Un geste se juge à sa taille : c'est la leçon de la maquette 34, qui a tué
+    trois motifs qui tenaient très bien en grand.
+  */
+  .micro{width:44px;height:44px;border-radius:999px;background:var(--teinte);color:var(--pin);
+         display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;
+         -webkit-tap-highlight-color:transparent}
+  .micro svg{display:block}
+
+  /* Le mot sous le bouton — réservé, pour que rien ne saute quand il paraît. */
+  .mot{margin-top:8px;max-width:150px;text-align:right;font-size:12px;line-height:1.35;
+       color:var(--gris);min-height:32px}
+
+  /* ─── L'état : une case à cocher, jamais du script ──────────────────────── */
+  .bascule{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+
+  .signe-micro,.points{display:flex;align-items:center;justify-content:center}
+  .points{display:none;gap:4px;height:44px}
+  /*
+    `~ .tete .colonne-micro`, et non `~ .colonne-micro` : la colonne est DANS
+    l'en-tête, pas à côté de la case. Écrit d'abord en frère direct, ce qui
+    laissait les six écrans muets sous le doigt — trouvé par le contrôle, et
+    invisible sur toute capture puisque l'état de départ, lui, était juste.
+  */
+  .bascule:checked ~ .tete .colonne-micro .signe-micro{display:none}
+  .bascule:checked ~ .tete .colonne-micro .points{display:flex}
+
+  .pt{width:5px;height:5px;border-radius:999px;background:var(--pin);display:block}
+
+  /* Le mot ne paraît qu'une fois pressé. */
+  .mot .attente{display:none}
+  .bascule:checked ~ .tete .colonne-micro .mot .repos{display:none}
+  .bascule:checked ~ .tete .colonne-micro .mot .attente{display:inline}
+
+  /* Les champs, en sourdine : ils situent, ils ne se regardent pas. */
+  .champs{margin-top:22px;opacity:.55}
+  .etiquette{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris);margin:0 0 5px}
+  .plage{background:var(--carte);border-radius:4px;height:44px;margin:0 0 14px}
+
+  .rappel{margin:14px 0 0;font-size:11px;color:var(--gris);text-align:center}
+
+  /* ═══ A — LA VAGUE ═══════════════════════════════════════════════════════
+     Ce qu'il a décrit, à l'amplitude qui tient dans 44 px. */
+  @keyframes vague{ 0%,58%,100%{transform:translateY(0)} 29%{transform:translateY(-4px)} }
+  [data-variante="A"] .pt{animation:vague 1.05s ease-in-out infinite}
+  [data-variante="A"] .pt:nth-child(2){animation-delay:.13s}
+  [data-variante="A"] .pt:nth-child(3){animation-delay:.26s}
+
+  /* ═══ B — LA VAGUE AMPLE ═════════════════════════════════════════════════
+     La même, plus lente et plus haute : la houle plutôt que le clapot. Elle
+     déborde du rond, et c'est exprès — reste à savoir si ça se voit ou si ça
+     s'agite. */
+  @keyframes houle{ 0%,62%,100%{transform:translateY(0);opacity:.5} 30%{transform:translateY(-7px);opacity:1} }
+  [data-variante="B"] .pt{animation:houle 1.5s ease-in-out infinite;opacity:.5}
+  [data-variante="B"] .pt:nth-child(2){animation-delay:.2s}
+  [data-variante="B"] .pt:nth-child(3){animation-delay:.4s}
+
+  /* ═══ C — LE SOUFFLE ═════════════════════════════════════════════════════
+     Ils ne se déplacent pas : ils enflent et se rétractent, l'un après l'autre.
+     Rien ne sort du rond, donc rien ne peut cogner le titre à côté. */
+  @keyframes souffle{ 0%,66%,100%{transform:scale(.72);opacity:.34} 30%{transform:scale(1.5);opacity:1} }
+  [data-variante="C"] .pt{animation:souffle 1.25s ease-in-out infinite;transform:scale(.72);opacity:.34}
+  [data-variante="C"] .pt:nth-child(2){animation-delay:.16s}
+  [data-variante="C"] .pt:nth-child(3){animation-delay:.32s}
+
+  /* ═══ D — LE POINT QUI COURT ═════════════════════════════════════════════
+     Trois points pâles restent en place, et un quatrième, plein, fait la
+     navette au-dessus d'eux. C'est le seul de la série qui montre un TRAJET,
+     donc une progression — même fausse. */
+  [data-variante="D"] .points{position:relative}
+  [data-variante="D"] .pt{opacity:.26}
+  .curseur{position:absolute;left:50%;margin-left:-2.5px;width:5px;height:5px;border-radius:999px;
+           background:var(--pin);display:block}
+  @keyframes courir{ 0%{transform:translateX(-9px)} 50%{transform:translateX(9px)} 100%{transform:translateX(-9px)} }
+  [data-variante="D"] .curseur{animation:courir 1.15s cubic-bezier(.45,.05,.55,.95) infinite}
+
+  /* ═══ E — L'ANNEAU QUI TOURNE ════════════════════════════════════════════
+     Un cheveu tourne AUTOUR du bouton, les points respirent au centre. C'est
+     la seule proposition qui ne repose pas sur un goût : c'est le vocabulaire
+     de l'anneau de la note vocale, déjà dans l'application. Deux écrans qui
+     attendent diraient enfin l'attente de la même façon. */
+  .anneau{position:absolute;inset:-3px;border-radius:999px;
+          background:conic-gradient(from 0deg,transparent 0deg 288deg,var(--or) 350deg,transparent 360deg);
+          -webkit-mask:radial-gradient(circle,transparent 0 21px,#000 21.8px);
+                  mask:radial-gradient(circle,transparent 0 21px,#000 21.8px);
+          display:none}
+  [data-variante="E"] .bascule:checked ~ .tete .colonne-micro .anneau{display:block}
+  @keyframes tour{ to{transform:rotate(360deg)} }
+  [data-variante="E"] .anneau{animation:tour 1.4s linear infinite}
+  @keyframes respire{ 0%,100%{opacity:.32} 50%{opacity:1} }
+  [data-variante="E"] .pt{animation:respire 1.4s ease-in-out infinite;opacity:.32}
+  [data-variante="E"] .pt:nth-child(2){animation-delay:.14s}
+  [data-variante="E"] .pt:nth-child(3){animation-delay:.28s}
+
+  /* ─── L'AVANT, pour comparer ────────────────────────────────────────────── */
+  [data-variante="0"] .points{gap:0}
+  [data-variante="0"] .micro{opacity:.5}   /* le demi-effacement d'aujourd'hui */
+  .glyphe{font-size:11px;font-weight:600;color:var(--pin)}
+
+  /*
+    MOUVEMENT RÉDUIT — et ce n'est PAS « on ne bouge plus ».
+
+    Tout couper rendrait exactement le défaut qu'on répare : trois points fixes,
+    et personne pour dire si ça travaille. Ce qui gêne dans « mouvement réduit »,
+    c'est le DÉPLACEMENT, pas la lumière. Les cinq versions se replient donc sur
+    une même respiration lente, sans un pixel de trajet.
+  */
+  @media (prefers-reduced-motion: reduce){
+    .pt,.curseur,.anneau{animation:respire 2s ease-in-out infinite !important;
+                         transform:none !important}
+    .curseur{display:none}
+    .anneau{display:none !important}
+  }
+
+  .bilan{max-width:74ch;margin:64px auto 0;border:1px solid var(--trait);border-radius:8px;padding:22px 26px}
+  .bilan h2{margin:0 0 12px;font-family:ui-serif,Georgia,serif;font-size:20px;font-weight:400}
+  .bilan p{margin:0 0 10px;font-size:14px;color:var(--gris)}
+  .bilan b{color:var(--encre);font-weight:500}
+  .bilan ul{margin:0;padding-left:20px;font-size:14px;color:var(--gris)}
+  .bilan li{margin:0 0 8px}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Maquette 42 · 13 août 2026</p>
+    <h1>Les trois points qui attendent</h1>
+    <p>« Une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce qui se passe. »</p>
+    <p>Aujourd'hui ce n'est pas une animation arrêtée : c'est le caractère <b>«&nbsp;…&nbsp;»</b>,
+       un seul signe posé tel quel. Il n'y a rien qui puisse bouger.</p>
+    <div class="appui">
+      <b>Appuyez sur le micro de chaque téléphone</b> — le passage se fait comme sous votre
+      doigt. Les points tournent en boucle exprès&nbsp;: en vrai l'attente dure de deux à
+      dix secondes, et une boucle laisse le temps de comparer.
+    </div>
+  </div>
+
+  <p class="famille">Ce qu'il y a aujourd'hui</p>
+  <p class="sous-titre">Pour que la comparaison ait un point de départ — y compris le bouton à demi effacé.</p>
+  <div class="rangee">
+
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="0">
+        <p class="marque">A T L A S</p>
+        <div class="retour">‹</div>
+        <input type="checkbox" id="e0" class="bascule">
+        <div class="tete">
+          <div>
+            <p class="surtitre">Nouveau</p>
+            <h2 class="titre">Un chantier</h2>
+          </div>
+          <div class="colonne-micro">
+            <label class="micro" for="e0" data-essai>
+              <span class="signe-micro">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                  <rect x="9" y="3" width="6" height="11" rx="3"/>
+                  <path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/>
+                  <path d="M12 18v3" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="points"><span class="glyphe">…</span></span>
+            </label>
+            <p class="mot"><span class="repos"></span><span class="attente"></span></p>
+          </div>
+        </div>
+        <div class="champs">
+          <p class="etiquette">Nom du client (facultatif)</p><div class="plage"></div>
+          <p class="etiquette">Téléphone (facultatif)</p><div class="plage"></div>
+          <p class="etiquette">E-mail (facultatif)</p><div class="plage"></div>
+        </div>
+        <p class="rappel">Rien ne bouge, et rien ne se dit.</p>
+      </div></div>
+      <figcaption>
+        <span class="tete">L'avant</span>
+        Trois points immobiles, un bouton à demi effacé, aucune phrase.
+        <b>C'est l'écran de l'attente d'aujourd'hui.</b>
+      </figcaption>
+    </figure>
+
+  </div>
+
+  <p class="famille">La vague qu'il a demandée</p>
+  <p class="sous-titre">Deux amplitudes. La question n'est pas laquelle est jolie, mais laquelle se voit à 44&nbsp;px sans s'agiter.</p>
+  <div class="rangee">
+
+    <!-- A -->
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="A">
+        <p class="marque">A T L A S</p>
+        <div class="retour">‹</div>
+        <input type="checkbox" id="eA" class="bascule">
+        <div class="tete">
+          <div><p class="surtitre">Nouveau</p><h2 class="titre">Un chantier</h2></div>
+          <div class="colonne-micro">
+            <label class="micro" for="eA" data-essai>
+              <span class="anneau"></span>
+              <span class="signe-micro">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                  <rect x="9" y="3" width="6" height="11" rx="3"/>
+                  <path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/>
+                  <path d="M12 18v3" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="points"><i class="pt"></i><i class="pt"></i><i class="pt"></i></span>
+            </label>
+            <p class="mot"><span class="repos"></span><span class="attente">Atlas rédige…</span></p>
+          </div>
+        </div>
+        <div class="champs">
+          <p class="etiquette">Nom du client (facultatif)</p><div class="plage"></div>
+          <p class="etiquette">Téléphone (facultatif)</p><div class="plage"></div>
+          <p class="etiquette">E-mail (facultatif)</p><div class="plage"></div>
+        </div>
+        <p class="rappel">A — la vague</p>
+      </div></div>
+      <figcaption>
+        <span class="tete">A · La vague</span>
+        Les trois points montent et redescendent l'un après l'autre, de <b>4&nbsp;px</b>.
+        Tout reste dans le rond. C'est le geste le plus courant, donc le plus vite compris.
+      </figcaption>
+    </figure>
+
+    <!-- B -->
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="B">
+        <p class="marque">A T L A S</p>
+        <div class="retour">‹</div>
+        <input type="checkbox" id="eB" class="bascule">
+        <div class="tete">
+          <div><p class="surtitre">Nouveau</p><h2 class="titre">Un chantier</h2></div>
+          <div class="colonne-micro">
+            <label class="micro" for="eB" data-essai>
+              <span class="anneau"></span>
+              <span class="signe-micro">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                  <rect x="9" y="3" width="6" height="11" rx="3"/>
+                  <path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/>
+                  <path d="M12 18v3" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="points"><i class="pt"></i><i class="pt"></i><i class="pt"></i></span>
+            </label>
+            <p class="mot"><span class="repos"></span><span class="attente">Atlas rédige…</span></p>
+          </div>
+        </div>
+        <div class="champs">
+          <p class="etiquette">Nom du client (facultatif)</p><div class="plage"></div>
+          <p class="etiquette">Téléphone (facultatif)</p><div class="plage"></div>
+          <p class="etiquette">E-mail (facultatif)</p><div class="plage"></div>
+        </div>
+        <p class="rappel">B — la vague ample</p>
+      </div></div>
+      <figcaption>
+        <span class="tete">B · La vague ample</span>
+        La même, <b>plus haute (7&nbsp;px) et plus lente</b>, avec la lumière qui monte
+        et descend avec elle. La houle plutôt que le clapot — mais elle déborde du rond.
+      </figcaption>
+    </figure>
+
+  </div>
+
+  <p class="famille">Trois autres façons de dire la même chose</p>
+  <p class="sous-titre">Décliner un geste n'est pas en proposer un autre. Celles-ci changent de nature.</p>
+  <div class="rangee">
+
+    <!-- C -->
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="C">
+        <p class="marque">A T L A S</p>
+        <div class="retour">‹</div>
+        <input type="checkbox" id="eC" class="bascule">
+        <div class="tete">
+          <div><p class="surtitre">Nouveau</p><h2 class="titre">Un chantier</h2></div>
+          <div class="colonne-micro">
+            <label class="micro" for="eC" data-essai>
+              <span class="anneau"></span>
+              <span class="signe-micro">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                  <rect x="9" y="3" width="6" height="11" rx="3"/>
+                  <path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/>
+                  <path d="M12 18v3" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="points"><i class="pt"></i><i class="pt"></i><i class="pt"></i></span>
+            </label>
+            <p class="mot"><span class="repos"></span><span class="attente">Atlas rédige…</span></p>
+          </div>
+        </div>
+        <div class="champs">
+          <p class="etiquette">Nom du client (facultatif)</p><div class="plage"></div>
+          <p class="etiquette">Téléphone (facultatif)</p><div class="plage"></div>
+          <p class="etiquette">E-mail (facultatif)</p><div class="plage"></div>
+        </div>
+        <p class="rappel">C — le souffle</p>
+      </div></div>
+      <figcaption>
+        <span class="tete">C · Le souffle</span>
+        Ils ne se déplacent pas : ils <b>enflent et se rétractent</b>, l'un après l'autre.
+        Rien ne sort du rond, donc rien ne peut cogner le titre d'à côté.
+      </figcaption>
+    </figure>
+
+    <!-- D -->
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="D">
+        <p class="marque">A T L A S</p>
+        <div class="retour">‹</div>
+        <input type="checkbox" id="eD" class="bascule">
+        <div class="tete">
+          <div><p class="surtitre">Nouveau</p><h2 class="titre">Un chantier</h2></div>
+          <div class="colonne-micro">
+            <label class="micro" for="eD" data-essai>
+              <span class="anneau"></span>
+              <span class="signe-micro">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                  <rect x="9" y="3" width="6" height="11" rx="3"/>
+                  <path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/>
+                  <path d="M12 18v3" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="points">
+                <i class="pt"></i><i class="pt"></i><i class="pt"></i>
+                <i class="curseur"></i>
+              </span>
+            </label>
+            <p class="mot"><span class="repos"></span><span class="attente">Atlas rédige…</span></p>
+          </div>
+        </div>
+        <div class="champs">
+          <p class="etiquette">Nom du client (facultatif)</p><div class="plage"></div>
+          <p class="etiquette">Téléphone (facultatif)</p><div class="plage"></div>
+          <p class="etiquette">E-mail (facultatif)</p><div class="plage"></div>
+        </div>
+        <p class="rappel">D — le point qui court</p>
+      </div></div>
+      <figcaption>
+        <span class="tete">D · Le point qui court</span>
+        Trois points pâles restent en place, un quatrième fait la <b>navette</b> au-dessus.
+        Le seul de la série qui montre un trajet, donc une progression.
+      </figcaption>
+    </figure>
+
+    <!-- E -->
+    <figure>
+      <div class="tel"><div class="ecran" data-variante="E">
+        <p class="marque">A T L A S</p>
+        <div class="retour">‹</div>
+        <input type="checkbox" id="eE" class="bascule">
+        <div class="tete">
+          <div><p class="surtitre">Nouveau</p><h2 class="titre">Un chantier</h2></div>
+          <div class="colonne-micro">
+            <label class="micro" for="eE" data-essai>
+              <span class="anneau"></span>
+              <span class="signe-micro">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                  <rect x="9" y="3" width="6" height="11" rx="3"/>
+                  <path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/>
+                  <path d="M12 18v3" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="points"><i class="pt"></i><i class="pt"></i><i class="pt"></i></span>
+            </label>
+            <p class="mot"><span class="repos"></span><span class="attente">Atlas rédige…</span></p>
+          </div>
+        </div>
+        <div class="champs">
+          <p class="etiquette">Nom du client (facultatif)</p><div class="plage"></div>
+          <p class="etiquette">Téléphone (facultatif)</p><div class="plage"></div>
+          <p class="etiquette">E-mail (facultatif)</p><div class="plage"></div>
+        </div>
+        <p class="rappel">E — l'anneau qui tourne</p>
+      </div></div>
+      <figcaption>
+        <span class="tete">E · L'anneau qui tourne</span>
+        Un cheveu d'or fait le tour du bouton, les points respirent au centre.
+        <b>La seule qui ne repose pas sur un goût</b> : c'est déjà le vocabulaire de
+        l'anneau de la note vocale. Deux écrans diraient l'attente pareil.
+      </figcaption>
+    </figure>
+
+  </div>
+
+  <div class="bilan">
+    <h2>Ce qui part avec n'importe laquelle</h2>
+    <p>Trois choses ne dépendent pas de votre numéro. Je les ai mises dans les cinq — dites
+       le mot et elles sautent.</p>
+    <ul>
+      <li><b>Le bouton reste à pleine encre.</b> Il passe aujourd'hui à moitié effacé pendant
+          le traitement, ce qui est le vocabulaire d'un bouton éteint. Il ne se presse
+          toujours pas — mais il n'a pas l'air mort.</li>
+      <li><b>Une phrase paraît sous le bouton</b> — « Atlas rédige… ». L'écran parle quand il
+          écoute et quand il a fini, et il se taisait pendant le seul moment où l'on se
+          demande s'il est en panne. Les mots disent ce qu'aucune animation ne dit.</li>
+      <li><b>Sous « mouvement réduit », ça ne s'arrête pas</b> : les points respirent lentement,
+          sans se déplacer. Tout couper rendrait le défaut d'origine à qui a activé ce
+          réglage.</li>
+    </ul>
+    <p><b>Ce qui reste ouvert et qui n'est pas dans cette planche :</b> ce que l'écran fait
+       si le traitement dure plus longtemps que prévu. Une vague qui tourne depuis trente
+       secondes redevient une vague qui ne dit rien.</p>
+  </div>
+
+</div>
+</body>
+</html>

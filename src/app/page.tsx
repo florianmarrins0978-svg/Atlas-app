@@ -2,10 +2,11 @@ import {
   chantierEnCours,
   getStatutAffiche,
   lienDeReprise,
-  statutLabel,
-  type ChantierStatut,
+  ligneEtatChantier,
 } from "@/lib/chantier-etat";
 import { ongletDuChantier } from "@/lib/onglet-chantier";
+import { jourIso } from "@/lib/jour";
+import { lieuDuChantier } from "@/lib/nom-chantier";
 import { auth } from "@/auth";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
@@ -29,8 +30,6 @@ export const dynamic = "force-dynamic";
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Les états qui ATTENDENT un geste du patron : eux seuls portent l'or. */
-const ETATS_EN_ATTENTE: ChantierStatut[] = ["devis_retourne", "devis_a_corriger", "a_relancer", "devis_caduc"];
-
 /** « 26 » et « juil. » — le quantième et le mois, comme sur le fil. */
 function jourEtMois(date: Date): { jour: string; mois: string } {
   return {
@@ -61,20 +60,31 @@ export default async function ChantiersPage() {
 
   const brins: BrinChantier[] = avecStatut.map((c) => {
     const { jour, mois } = jourEtMois(c.majAt);
-    const photos = c.photosCount > 0 ? `${c.photosCount} photo${c.photosCount > 1 ? "s" : ""}` : "sans photo";
+    // **La date d'ENVOI, pas celle de la dernière modification.** Celle de
+    // gauche est `majAt` — le chantier a pu bouger depuis pour une photo. Ce
+    // qu'il compte, lui, ce sont les jours depuis que le devis est parti.
+    const envoiLe = c.envoiEnvoyeAt ?? c.devisEnvoyeAt;
+    const ligne = ligneEtatChantier({
+      statut: c.statut,
+      photosCount: c.photosCount,
+      envoyeLe: envoiLe ? jourIso(new Date(envoiLe)) : null,
+    });
     return {
       id: c.id,
       nom: c.nom,
       jour,
       mois,
-      lieu: c.adresseChantier ?? c.clientNom ?? "Adresse non renseignée",
-      // Une seule ligne pour l'état et les photos, séparés d'un point médian :
-      // c'est la forme retenue, et elle tient là où deux lignes débordaient.
-      etat: `${statutLabel[c.statut]} · ${photos}`,
-      attend: ETATS_EN_ATTENTE.includes(c.statut),
+      lieu: lieuDuChantier(c.nom, c.adresseChantier, c.clientNom),
+      // L'état, et la ligne en clair sous lui quand il y a une date d'envoi à
+      // dire. La règle vit dans `chantier-etat.ts` : l'écran n'a rien à décider.
+      etat: ligne.etat,
+      precision: ligne.precision,
+      attend: ligne.enOr,
       // **Toucher un chantier, c'est REPRENDRE — pas recommencer.** Sa demande
-      // du 13 août 2026, après s'être retrouvé à refaire toutes les étapes
-      // alors qu'il ne lui restait qu'à envoyer son devis.
+      // du 13 août 2026, après s'être retrouvé à refaire toutes les étapes alors
+      // qu'il ne lui restait qu'à envoyer son devis. Ce que la ligne DIT et où
+      // elle MÈNE sont deux questions distinctes : la refonte du libellé et la
+      // reprise cohabitent sans se marcher dessus.
       reprise: lienDeReprise(c.id, c),
       // Le décompte doit suivre un retrait sans redemander la page : l'écran
       // ne peut le faire que s'il sait, ligne par ligne, laquelle compte.

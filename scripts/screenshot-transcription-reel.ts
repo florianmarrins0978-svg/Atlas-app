@@ -18,7 +18,7 @@ async function main() {
   await page.screenshot({ path: `${OUT}/01-avec-transcription.png`, fullPage: true });
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', `Chantier capture transcription ${Date.now()}`);
+  await page.fill('input[placeholder="Bernard"]', `Chantier capture transcription ${Date.now()}`);
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
   await page.goto(`${page.url()}/transcription`, { waitUntil: "networkidle" });

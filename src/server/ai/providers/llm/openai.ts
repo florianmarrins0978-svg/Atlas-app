@@ -4,6 +4,7 @@ import type {
   ResultatLLMAvecOutils,
   MessageConversation,
   DefinitionOutil,
+  ImagePourLecture,
 } from "./interface";
 import { erreurIA, type ErreurIA } from "../../errors";
 import { getConfigIA } from "../../config";
@@ -105,6 +106,40 @@ async function appeler(
 }
 
 export const fournisseurLLMOpenAI: FournisseurLLM = {
+  /**
+   * Lire une image — un ticket de caisse.
+   *
+   * **`temperature: 0`** : lire un chiffre n'est pas une tâche créative. Deux
+   * lectures du même ticket doivent donner le même montant, sans quoi le patron
+   * verrait le total changer en rescannant.
+   *
+   * L'image part en `data:` URL, format attendu par cette API — d'où le
+   * préfixe recollé ici, alors qu'Anthropic veut les octets nus. C'est
+   * exactement le genre d'écart que l'interface commune existe pour cacher.
+   */
+  async lireImage(systeme: string, consigne: string, image: ImagePourLecture): Promise<ResultatLLM> {
+    const resultat = await appeler({
+      max_tokens: 512,
+      temperature: 0,
+      messages: [
+        { role: "system", content: systeme },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: consigne },
+            { type: "image_url", image_url: { url: `data:${image.mimeType};base64,${image.base64}` } },
+          ],
+        },
+      ],
+    });
+    if (!resultat.ok) return { succes: false, erreur: resultat.erreur };
+    const texte = resultat.donnees.choices?.[0]?.message?.content?.trim();
+    if (!texte) {
+      return { succes: false, erreur: erreurIA("reponse_invalide", "Le fournisseur n'a rien renvoyé de lisible.") };
+    }
+    return { succes: true, texte };
+  },
+
   nom: "openai",
 
   async genererTexte(systeme: string, message: string): Promise<ResultatLLM> {

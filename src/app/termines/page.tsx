@@ -51,16 +51,23 @@ export default async function TerminesPage() {
           <FilTermines mois={mois} />
         )}
 
-        {/* Le pied : ce que le trimestre a facturé, puis le relevé.
+        {/* Le pied : ce qui a été facturé, puis le relevé.
             **Le relevé cesse d'être un pavé** — c'est une ligne, comme le
-            reste. Il se consulte une fois par trimestre : il n'a rien à faire
-            en tête d'écran. */}
+            reste. Il se consulte une fois par période : il n'a rien à faire en
+            tête d'écran.
+
+            **« Facturé ce trimestre » a été corrigé le 12 août 2026 : il
+            mentait.** `totalFacture(mois)` additionne TOUS les mois du fil,
+            depuis toujours — jamais un trimestre. Le chiffre était juste, sa
+            légende ne l'était pas, et personne ne pouvait s'en apercevoir sans
+            aller lire la fonction. Trouvé en cherchant tout autre chose : ce
+            que le patron demandait, c'était de découper la TVA au mois. */}
         <div className="mx-[26px] mt-[22px] pt-4" style={{ borderTop: `1px solid ${colors.line}` }}>
           <p
             className="flex items-baseline justify-between gap-3.5 py-1.5 text-[12.5px]"
             style={{ color: colors.muted }}
           >
-            Facturé ce trimestre
+            Facturé, tous mois confondus
             <b
               className="font-normal"
               style={{ color: colors.ink, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}

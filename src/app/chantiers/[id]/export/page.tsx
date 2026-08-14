@@ -86,6 +86,9 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
           chantierNom={chantier.nom}
           adresseChantier={chantier.adresseChantier ?? "Adresse non renseignée"}
           clientNom={devisRow.clientNom ?? "Client non renseigné"}
+          // Celle du DOCUMENT, pas celle de la fiche : cet écran montre le
+          // devis tel qu'il a été établi (migration 0038).
+          clientCivilite={devisRow.clientCivilite ?? null}
           // Les coordonnées VIVANTES, pas l'instantané figé dans le devis.
           //
           // Le devis garde volontairement celles du jour où il a été établi :

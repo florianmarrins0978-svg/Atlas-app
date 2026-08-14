@@ -255,6 +255,25 @@ compte `postgres` du système. Les migrations tournent sous le rôle
 **propriétaire** : `atlas_app` n'a aucun droit de DDL, et l'oublier produit un
 « permission denied for schema public » qui envoie chercher au mauvais endroit.
 
+**Et l'inverse est pire, parce qu'il RÉUSSIT.** Migrer avec le rôle `postgres`
+— un raccourci tentant, puisqu'il traverse la RLS et qu'on l'a déjà sous la main
+pour les suites navigateur — ne se plaint de rien : les tables se créent,
+appartenant à `postgres`, et les `GRANT` de la migration passent. Le défaut
+n'apparaît qu'**à la suite suivante, ailleurs**, sous la forme d'un « permission
+denied for table … » sur une table qu'on n'a pas touchée. Cinquante suites
+rouges d'un coup, et l'erreur désigne la table plutôt que la migration qui l'a
+mal créée. Payé le 13 août 2026.
+
+**Donc : toujours `DATABASE_URL="$DATABASE_ADMIN_URL" npm run db:migrate`**, ce
+que fait déjà `monter-base-locale.sh`. En cas de doute, la question qui tranche :
+
+```bash
+psql … -tAc "SELECT tablename FROM pg_tables
+             WHERE schemaname='public' AND tableowner <> 'atlas_owner';"
+```
+
+Une seule ligne de réponse, et la base a dérivé.
+
 Croire l'inverse a coûté cher : « c'est la CI qui vérifiera » a été dit trois
 fois alors que la CI n'avait jamais tourné.
 
@@ -317,9 +336,40 @@ Trois règles qui en découlent, et qui ne se négocient pas :
 1. **Jamais de poussée en force sur `main`.** Un refus pour « non
    *fast-forward* » n'est pas un obstacle à contourner : c'est le garde-fou qui
    vient d'empêcher d'effacer le travail d'une autre session.
-2. **Refusionner et rejouer, plutôt qu'insister.** `git fetch origin main`,
-   fusionner, **relancer la batterie** — le code arrivé entre-temps n'est pas le
-   sien, et rien ne dit qu'il s'accorde au nôtre. C'est ainsi qu'a été trouvée
-   la §59 publiée en double le 11 août.
+2. **Refusionner avant de pousser**, toujours : `git fetch origin main`, puis
+   fusionner. Le code arrivé entre-temps n'est pas le sien, et rien ne dit qu'il
+   s'accorde au nôtre. C'est ainsi qu'a été trouvée la §59 publiée en double le
+   11 août.
 3. **Fusionner juste avant de pousser, pas la veille.** Entre la vérification et
    la poussée, `main` a pu bouger encore. Vérifier une dernière fois.
+
+**Après une fusion, rejouer la batterie SEULEMENT si le code arrivé touche ce
+qu'on vient de faire.** Sa décision du 13 août 2026 : *« seulement quand le code
+touche »*.
+
+**Pourquoi elle a été prise, et ce qu'elle corrige.** Ce soir-là, un écran fini
+et vérifié a mis des heures à parvenir jusqu'à lui — non pas par difficulté,
+mais par une course : `main` a bougé **cinq fois** pendant la vérification (30,
+puis 4, 11, 20 commits), et chaque fusion relançait une batterie de dix minutes
+que la fusion suivante périmait aussitôt. Rejouer soixante suites pour du code
+qui touche une autre partie de l'application, c'est payer dix minutes pour ne
+rien apprendre — et faire attendre le patron pour rien.
+
+**Ce qui compte comme « ça touche », et la liste n'est pas au jugé :**
+
+| Le code arrivé… | Alors |
+|---|---|
+| touche un fichier que ce lot modifie aussi | **batterie complète** |
+| ajoute une **migration** (`drizzle/*.sql`) | **batterie complète**, et l'appliquer d'abord — sans quoi elle rend des dizaines de rouges qui n'accusent que la base (payé le 13 août : 160 rouges d'un coup) |
+| touche une **pièce partagée** — `design-tokens.ts`, `PrimaryButton`, `EnTeteEcran`, `globals.css`, `layout.tsx`, `middleware.ts` | **batterie complète** : ces fichiers-là touchent tous les écrans |
+| touche les suites ou l'outillage que ce lot emploie | **batterie complète** |
+| ne touche rien de tout cela | `typecheck`, `lint`, `verifier:memoire`, **plus les suites du domaine concerné** — et l'on pousse |
+
+**Ce que cela ne relâche PAS.** La batterie complète reste obligatoire **avant
+la première poussée d'un lot**, sur son propre code : c'est la règle du §5, et
+elle n'a pas bougé d'un pouce. Cette exception ne vaut que pour les fusions
+successives d'un lot **déjà éprouvé au vert**.
+
+**Et le doute tranche vers la batterie.** Une fusion qui ne se lit pas en un
+coup d'œil — un conflit résolu à la main, un fichier qu'on ne reconnaît pas —
+se rejoue en entier. Dix minutes coûtent moins cher qu'une régression chez lui.

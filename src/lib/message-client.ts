@@ -16,6 +16,8 @@
 // La réponse du client, elle, revient normalement : il répond sur la page web,
 // pas par retour de courrier.
 
+import { avecCivilite, type CiviliteChoisie } from "./civilite";
+
 export type CanalClient = "sms" | "email";
 
 export type MessageClient = {
@@ -33,12 +35,20 @@ export type MessageClient = {
  */
 export function composerMessageClient(params: {
   clientNom: string;
+  /** Ce qu'il a choisi. Absent : la règle d'avant le 13 août 2026 s'applique. */
+  clientCivilite?: CiviliteChoisie;
   entrepriseNom: string;
   lien: string;
 }): MessageClient {
-  const { clientNom, entrepriseNom, lien } = params;
+  const { clientNom, clientCivilite, entrepriseNom, lien } = params;
 
-  const bonjour = clientNom.trim() ? `Bonjour ${clientNom.trim()},` : "Bonjour,";
+  // **« Bonjour Mr. Martins », et non « Bonjour Martins ».** Le patron, le
+  // 13 août 2026, capture du SMS à l'appui : *« pareil pour le message tout
+  // prêt, c'est Bonjour Mr Martins »*. La civilité vient de
+  // `src/lib/civilite.ts` — la même qui nomme le client sur l'écran du devis.
+  // La recopier ici ferait dire « Mr. Martins » à l'écran et « Martins » dans
+  // le message que le client reçoit, c'est-à-dire au seul endroit qui compte.
+  const bonjour = clientNom.trim() ? `Bonjour ${avecCivilite(clientNom, clientCivilite)},` : "Bonjour,";
 
   return {
     objet: `Votre devis — ${entrepriseNom}`,
@@ -60,7 +70,11 @@ export function composerMessageClient(params: {
       "",
       lien,
       "",
-      "Si aucune des dates proposées ne vous convient, vous pourrez en proposer une autre.",
+            // **« vous POUVEZ », et non « vous pourrez ».** Sa correction du 13 août
+      // 2026. Le futur repoussait le geste à plus tard, comme s'il fallait
+      // d'abord faire autre chose ; le présent dit que c'est possible tout de
+      // suite, sur la page qu'il vient d'ouvrir.
+      "Si aucune des dates proposées ne vous convient, vous pouvez en proposer une autre.",
       "",
       "Bien à vous,",
       entrepriseNom,
@@ -78,13 +92,17 @@ export function composerMessageClient(params: {
  */
 export function composerMessageFacture(params: {
   clientNom: string;
+  clientCivilite?: CiviliteChoisie;
   entrepriseNom: string;
   numeroFacture: string;
   echeanceLisible?: string | null;
   lien: string;
 }): MessageClient {
-  const { clientNom, entrepriseNom, numeroFacture, echeanceLisible, lien } = params;
-  const bonjour = clientNom.trim() ? `Bonjour ${clientNom.trim()},` : "Bonjour,";
+  const { clientNom, clientCivilite, entrepriseNom, numeroFacture, echeanceLisible, lien } = params;
+  // Même civilité que le devis (`src/lib/civilite.ts`) : un client abordé
+  // « Mr. Martins » sur son devis et « Martins » sur sa facture douterait
+  // qu'elles viennent du même artisan.
+  const bonjour = clientNom.trim() ? `Bonjour ${avecCivilite(clientNom, clientCivilite)},` : "Bonjour,";
 
   return {
     objet: `Votre facture ${numeroFacture} — ${entrepriseNom}`,

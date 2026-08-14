@@ -4,6 +4,7 @@ import { useRef, useState, type ChangeEvent } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { colors, libelleCaps } from "@/lib/design-tokens";
+import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { ajouterPhotoAction, supprimerPhotoAction } from "./photos-actions";
@@ -117,11 +118,20 @@ export default function Pellicule({
           type="button"
           onClick={() => champ.current?.click()}
           disabled={enCours}
-          aria-label="Ajouter des photos"
+          // Pendant l'envoi, le libellé dit l'envoi. Il annonçait « Ajouter des
+          // photos » sur un bouton qui n'ajoutait plus rien : ce que l'écran
+          // montre et ce qu'il annonce doivent raconter le même instant.
+          aria-label={enCours ? "Envoi des photos en cours" : "Ajouter des photos"}
           className="atlas-ajouter"
           style={{ border: `1px solid ${colors.line}`, color: colors.or }}
         >
-          {enCours ? "…" : "+"}
+          {/* **Le même souffle que la dictée**, sur sa demande du 13 août 2026 :
+              *« oui souffle aussi pour la photo »*. C'était ici le même
+              caractère « … » immobile, à la lettre près — donc le même défaut,
+              et il n'y a aucune raison que deux attentes du même produit se
+              disent de deux façons. Les points prennent la couleur du bouton
+              (`currentColor`), l'or et non le vert de la dictée. */}
+          {enCours ? <PointsQuiSoufflent /> : "+"}
         </button>
         {visibles.map((p, i) => (
           <button

@@ -9,6 +9,9 @@
 // Le contrôle qui mesure l'empilement est `test-synthese-devis-e2e.ts`. Celui-ci
 // rend l'image, sur son écran à lui — un iPhone 13, 390 px.
 //
+// Le 13 août au soir il a changé le mot : « Mr. » et non « Monsieur ». La
+// capture ne le recopie donc pas, elle le demande à la règle.
+//
 // `localhost`, jamais `127.0.0.1` : Next refuse ses ressources de développement
 // à une origine étrangère, et la page n'arrive alors jamais hydratée.
 import { mkdirSync } from "node:fs";
@@ -40,7 +43,7 @@ await page.click('button[type="submit"]');
 await page.waitForURL(`${BASE}/`, { timeout: 60_000 });
 
 await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-await page.fill('input[placeholder="M. Bernard"]', CLIENT);
+await page.fill('input[placeholder="Bernard"]', CLIENT);
 await page.fill('input[placeholder="06 12 34 56 78"]', "0679984514");
 await page.getByPlaceholder("12 rue des Lilas, Nantes").fill(ADRESSE);
 await page.click('button:has-text("Créer le chantier")');

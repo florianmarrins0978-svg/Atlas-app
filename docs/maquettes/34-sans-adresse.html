@@ -60,7 +60,11 @@
   .eteint{color:var(--gris);opacity:.4}
 
   /* Le bouton proposé — plein, vert pin : c'est ce qu'on FAIT. */
-  .saisir{display:block;width:100%;margin-top:12px;padding:14px;border-radius:6px;
+  /* **La pastille, à sa demande du 13 août 2026 : « avec le bouton, tu le mets
+     arrondi ».** Il portait 6 px, seule forme carrée de la feuille. Et elle est
+     CREUSE dans le produit : le geste principal reste de PARTIR, celui-ci
+     répare ce qui manque. */
+  .saisir{display:block;width:100%;margin-top:12px;padding:14px;border-radius:999px;
           background:var(--pin);color:#f5f3ee;text-align:center;font-size:15px}
   .renoncer{display:block;width:100%;margin-top:6px;padding:13px;text-align:center;
             font-size:15px;color:var(--gris)}
@@ -155,7 +159,7 @@
   <p><b>B</b> — un appui, vous y êtes. En échange, <b>un bouton de plus</b> dans
      une feuille qui n’en avait pas — et qui ne sert que dans ce cas-là.</p>
   <h2>Ce que je ne fais pas sans vous</h2>
-  <p>Le bouton n’est pas codé. Dites-moi A ou B.</p>
+  <p><b>Retenu le 13 août 2026 : la variante B</b>, avec le bouton en pastille. Codé dans <code>FeuilleYAller.tsx</code> — il n’apparaît que sans adresse, et mène au devis complet, seul écran où elle s’édite.</p>
 </div>
 </body>
 </html>

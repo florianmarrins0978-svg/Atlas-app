@@ -39,7 +39,7 @@ async function main() {
   const ADRESSE = "10 rue denfert rochereau 78200 mantes la jolie";
   const nomClient = `Martin ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nomClient);
+  await page.fill('input[placeholder="Bernard"]', nomClient);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0660060265");
   await page.fill('input[placeholder="bernard@exemple.fr"]', "client@exemple.net");
   await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', ADRESSE);

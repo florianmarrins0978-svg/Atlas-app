@@ -106,8 +106,14 @@ export default function FeuilleYAller({
       <p className="mt-[7px] text-center text-[13.5px]" style={{ color: colors.muted }}>
         {intituleDuChantier(clientNom, nomChantier)}
       </p>
+      {/* **La date, même sans adresse.** Cette ligne disait « À saisir sur la
+          fiche du chantier » — une consigne devenue fausse le 13 août 2026 : le
+          bouton ci-dessous mène au devis complet, pas à la fiche. Et redondante,
+          puisqu'il dit déjà quoi faire. Le titre annonce ce qui manque, le
+          bouton offre de le réparer ; entre les deux, la date reste ce qu'elle
+          est sur tous les autres chantiers. */}
       <p className="mt-[5px] text-center text-[12px]" style={{ color: colors.muted }}>
-        {adresse ? quand : "À saisir sur la fiche du chantier"}
+        {quand}
       </p>
 
       <div className="my-4 h-px" style={{ backgroundColor: colors.lineSoft }} />
@@ -154,6 +160,34 @@ export default function FeuilleYAller({
           </span>
         )}
       </div>
+
+      {/* **« Saisir l'adresse » — retenu sur maquette le 13 août 2026**
+          (`docs/maquettes/34`, variante B) : *« ça, c'est au cas où la fiche
+          entière n'a pas été rentrée. Dans ce cas-là, tu peux faire ça, mais
+          avec le bouton, tu le mets arrondi. »*
+
+          **Il n'apparaît QUE sans adresse.** La feuille porte déjà « Créer la
+          facture » ; un bouton de plus, visible les onze fois sur douze où
+          l'adresse existe, la chargerait pour rien.
+
+          **Il mène au devis complet, seul endroit où l'adresse s'édite.**
+          Elle ne se saisissait qu'à la création jusqu'au 10 août, et c'est là
+          qu'elle a été rouverte — `mettreAJourAdresseChantier`. L'envoyer vers
+          la fiche l'obligerait à chercher.
+
+          La pastille creuse, et non pleine : le geste principal de cette
+          feuille reste de PARTIR. Celui-ci répare ce qui manque. */}
+      {!liens && (
+        <a
+          href={`/chantiers/${chantierId}/devis-complet`}
+          aria-label={`Saisir l'adresse — ${nomChantier}`}
+          onClick={fermer}
+          className="mt-2.5 block w-full rounded-full py-[13px] text-center text-[14.5px]"
+          style={{ border: `1px solid ${colors.rust}`, color: colors.rust }}
+        >
+          Saisir l’adresse
+        </a>
+      )}
 
       {/* **« Créer la facture » vit ici depuis le 12 août 2026, à sa demande :**
           *« il faut cliquer sur le chevron, la page s'ouvre avec le GPS et tout

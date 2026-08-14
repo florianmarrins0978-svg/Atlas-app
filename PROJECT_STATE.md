@@ -1,7 +1,10 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-13 · branche `main`
-· dernière migration `drizzle/0036_monsieur_plutot_que_chez.sql`
+· dernière migration `drizzle/0038_civilite_du_client.sql`
+
+---
+
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -104,6 +107,27 @@ seule avec quinze outils.
 | Export des données d'un client | `src/server/repositories/donnees-client.ts` |
 | Effacement d'un client, respectant la conservation légale | idem |
 
+### Le numéro du client, pris pour un téléphone (13 août 2026)
+
+Deuxième passe sur le même défaut. Le 12 août, l'en-tête `format-detection`
+avait été posée et annoncée comme réglant l'affaire ; le 13, le patron ouvre son
+devis **depuis un SMS** et reçoit la même « Hydration failed », signature d'iOS
+comprise — sur un banc à jour, vérifié par sa fiche d'état. Une vue intégrée à
+Messages ne lit pas cette en-tête, et c'est le seul chemin par lequel son client
+arrive sur la page.
+
+| Brique | Où c'est |
+|---|---|
+| La règle : découper un numéro pour qu'il ne ressemble plus à un téléphone | `src/lib/numero-document.ts` |
+| Ce qui répare vraiment — la coupure du texte aplati par `inline-flex` | `src/components/atlas/NumeroDeDocument.tsx` |
+| Contrôles purs, sans navigateur | `scripts/test-numero-document.ts` |
+| Le texte réellement aplati, lu sur un VRAI devis | `scripts/test-detection-automatique-e2e.ts` |
+| Le pourquoi, le coût assumé et ce qui reste non prouvé | `ARCHITECTURE.md` §81 |
+
+**Non éprouvé ici, et ça ne peut pas l'être** : la détection appartient à un
+logiciel fermé d'Apple, absent de cet environnement. À faire confirmer par le
+patron, depuis ses SMS (`TODO.md`).
+
 ### L'écran d'erreur qui ne menait nulle part (11 août 2026)
 
 Un serveur redémarré sous un onglet resté ouvert, et les morceaux de code
@@ -153,11 +177,16 @@ l'application. Ce qui est **fait** :
   cause, c'est **mesuré** (`scripts/mesurer-fluidite-fil.mts`) : ne pas les
   accuser sans relancer la mesure.
 - **Le devis, en tête et dans sa synthèse** (13 août) : le chantier ne s'appelle
-  plus « Chez Martins » mais « Monsieur Martins », et la carte pose le nom
+  plus « Chez Martins » mais « Mr. Martins », et la carte pose le nom
   au-dessus du détail au lieu de les coller par un tiret. La civilité vit dans
   `src/lib/civilite.ts` — **et c'est un défaut, pas une donnée** : sans champ de
-  civilité sur la fiche client, une cliente est nommée « Monsieur ». À trancher
-  avec lui. `ARCHITECTURE.md` §77.
+  civilité sur la fiche client, une cliente était nommée « Mr. ». **Tranché le
+  soir même** : deux pastilles « Mr » / « Mme » au-dessus du nom, **à la création
+  seulement** — sur le devis, le mot s'écrit, il ne se choisit pas (le devis est
+  le document, pas la fiche). Recopiées sur le devis et la facture. Un client sur
+  lequel il n'a rien touché garde l'apparence qu'il avait avant. Le message tout prêt l'aborde de la même façon (« Bonjour
+  Mr. Martins »), et l'encart du client porte une phrase qui l'invite à écrire.
+  `ARCHITECTURE.md` §77.
 - **Le devis à la main** : ses trois zones de texte mesurent leur hauteur au
   lieu de l'estimer (11 août 2026). Elles comptaient les caractères ou les
   retours à la ligne, alors qu'un texte se coupe au mot : le devis cachait 24 px
@@ -187,6 +216,27 @@ l'application. Ce qui est **fait** :
   d'y poser une feuille maison. Quatre gestes deviennent deux. Ajouter, regarder
   et retirer se font dans la pellicule ; `/chantiers/[id]/photos` répond 404, et
   une suite le vérifie. `ARCHITECTURE.md` §60.
+- **La TVA due, les achats et le scanner de tickets** (13 août) : l'écran porte
+  collectée, déductible et reste à payer — chacun copiable. Les achats entrent
+  par l'appareil photo ou au clavier (`achats_tva`, migration
+  `drizzle/0036_achats_tva.sql`). La lecture d'un ticket est branchée sur les
+  clés du patron ; **la vision a dû être ajoutée à la couche IA**, qui ne
+  manipulait que du texte. Ce qu'elle rend est une proposition : c'est ce qu'il
+  confirme qui compte. Un crédit de TVA s'affiche en négatif, signe et phrase.
+  **NON VÉRIFIÉ ICI : la lecture d'un vrai ticket** — aucune clé dans cet
+  environnement. `ARCHITECTURE.md` §84.
+- **Un ticket daté d'un autre mois ne disparaît plus** (13 août) : le patron
+  ajoute un ticket du 24 juillet depuis l'écran d'août ; il était enregistré —
+  dans juillet — et **invisible**, l'écran ne montrant qu'une période. La
+  feuille annonce désormais la destination avant qu'il appuie, et l'écran l'y
+  emmène après. `scripts/test-achat-hors-periode-e2e.ts`, `ARCHITECTURE.md` §85.
+- **La TVA au mois ou au trimestre, et son calendrier** (12 août) : Réglages
+  porte le choix, le mois coché d'avance — c'est le défaut légal (déclaration
+  CA3 mensuelle ; le trimestre est une option sous 4 000 € de TVA due). L'écran
+  de TVA et son calendrier suivent : douze pavés ou quatre. **Atlas ne dit
+  jamais lequel s'applique** — le seuil porte sur la TVA due, or il ne connaît
+  que la collectée. Migration `drizzle/0035_periodicite_tva.sql`.
+  `ARCHITECTURE.md` §83.
 - **« Y aller » : l'adresse du chantier jusqu'au GPS** (12 août) : au bout de
   chaque ligne des chantiers planifiés, un **chevron doré** ouvre une feuille —
   Plans, Google Maps, Waze, copier l'adresse, appeler le client — sans quitter
