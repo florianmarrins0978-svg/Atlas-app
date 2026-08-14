@@ -6793,7 +6793,7 @@ serait le premier appel au secours ; l'écran le dit sur place.
 
 ## 88. Premier lot CODÉ : l'identité de l'entreprise, et le régime de TVA qui cesse d'être deviné
 
-**13 août 2026, en autonomie** — migration `0037_identite_entreprise.sql`,
+**13 août 2026, en autonomie** — migration `0039_identite_entreprise.sql`,
 écran `/reglages/identite`, suite `scripts/test-identite-entreprise.ts`.
 C'est le premier lot des réglages qui passe du dessin au code, et c'est celui
 qui **bloquait la commercialisation** (§81).

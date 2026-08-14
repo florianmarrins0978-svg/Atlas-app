@@ -39,7 +39,7 @@ export type FacturePdfData = DonneesDocument & {
   numeroDevis?: string | null;
   /**
    * Le régime de TVA **au jour de l'émission**, figé dans la facture
-   * (migration 0037).
+   * (migration 0039).
    *
    * Absent pour les factures antérieures : la mention se déduit alors du taux,
    * exactement comme avant. Ne pas retirer ce repli — il porte tout
@@ -56,7 +56,7 @@ export type FacturePdfData = DonneesDocument & {
  * laisser cette décision à l'impression.
  *
  * **ELLE SE LIT DÉSORMAIS DANS LE RÉGIME DÉCLARÉ, ET NON PLUS DANS LE TAUX**
- * (migration 0037, `ARCHITECTURE.md` §81). Jusqu'au 13 août 2026, la franchise
+ * (migration 0039, `ARCHITECTURE.md` §81). Jusqu'au 13 août 2026, la franchise
  * était DEVINÉE : « le taux vaut zéro, donc c'est une franchise ». La situation
  * fiscale de l'entreprise se déduisait donc d'un chiffre saisi chantier par
  * chantier, et les deux sens étaient faux — un artisan en franchise qui laissait

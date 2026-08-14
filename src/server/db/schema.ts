@@ -80,10 +80,10 @@ export const entreprises = pgTable("entreprises", {
   telephone: text("telephone"),
   email: text("email"),
   iban: text("iban"),
-  /** « SASU », « EI », « EURL »… Figure sur les documents (migration 0037). */
+  /** « SASU », « EI », « EURL »… Figure sur les documents (migration 0039). */
   formeJuridique: text("forme_juridique"),
   /**
-   * Le régime de TVA, **déclaré et jamais déduit** (migration 0037).
+   * Le régime de TVA, **déclaré et jamais déduit** (migration 0039).
    *
    * `facture-pdf.ts` devinait jusqu'ici la franchise en regardant si le taux
    * appliqué valait zéro — donc il tirait une situation fiscale d'un chiffre
@@ -911,7 +911,7 @@ export const factures = pgTable(
     entrepriseAdresse: text("entreprise_adresse"),
     entrepriseSiret: text("entreprise_siret"),
     /**
-     * Le régime de TVA **au jour de l'émission** (migration 0037).
+     * Le régime de TVA **au jour de l'émission** (migration 0039).
      *
      * Figé ici, et non lu en direct : une facture émise sous franchise garde sa
      * mention « art. 293 B » même si l'artisan devient assujetti l'année

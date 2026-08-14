@@ -98,7 +98,7 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
 
     // Le régime de TVA se lit MAINTENANT, pour être figé dans la facture — une
     // pièce comptable garde ce qu'elle portait le jour de son émission
-    // (migration 0037).
+    // (migration 0039).
     const [entrepriseCourante] = await tx
       .select({ regimeTva: entreprises.regimeTva })
       .from(entreprises)
@@ -122,7 +122,7 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
         entrepriseAdresse: devisSource.entrepriseAdresse,
         entrepriseSiret: devisSource.entrepriseSiret,
         // Le régime au jour de l'émission, figé comme le reste de l'identité
-        // (migration 0037). Lu sur l'entreprise et non sur le devis : un devis
+        // (migration 0039). Lu sur l'entreprise et non sur le devis : un devis
         // n'imprime pas la mention de l'article 293 B, il n'avait donc aucune
         // raison de la porter.
         entrepriseRegimeTva: entrepriseCourante?.regimeTva ?? null,

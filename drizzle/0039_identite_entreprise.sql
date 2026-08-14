@@ -75,4 +75,4 @@ ALTER TABLE factures
   CHECK (entreprise_regime_tva IS NULL OR entreprise_regime_tva IN ('assujettie', 'franchise'));
 
 COMMENT ON COLUMN factures.entreprise_regime_tva IS
-  'Le régime au jour de l''émission. Nul pour les factures antérieures à la migration 0037 : le PDF se rabat alors sur le taux, comme avant.';
+  'Le régime au jour de l''émission. Nul pour les factures antérieures à la migration 0039 : le PDF se rabat alors sur le taux, comme avant.';

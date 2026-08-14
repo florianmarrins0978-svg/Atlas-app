@@ -1,5 +1,5 @@
 /*
-  L'identité de l'entreprise — migration 0037, `ARCHITECTURE.md` §81.
+  L'identité de l'entreprise — migration 0039, `ARCHITECTURE.md` §81.
 
   CE QUE CETTE SUITE TIENT, ET QU'AUCUNE AUTRE NE TENAIT :
 

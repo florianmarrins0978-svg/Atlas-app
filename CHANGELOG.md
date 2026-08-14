@@ -12,7 +12,7 @@ Format : le plus récent en tête.
 ### CODÉ : l'identité de l'entreprise, et le régime de TVA qui cesse d'être deviné
 
 **Premier lot des réglages qui passe du dessin au code** — et c'est celui qui
-bloquait la commercialisation. Migration `0037`, écran `/reglages/identite`,
+bloquait la commercialisation. Migration `0039`, écran `/reglages/identite`,
 suite `scripts/test-identite-entreprise.ts`. **128/128 suites base au vert.**
 
 **L'identité se saisit enfin dans les réglages.** Elle ne s'écrivait que depuis

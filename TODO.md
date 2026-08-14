@@ -75,7 +75,7 @@ artisan** : son premier document partirait irrégulier, sans un mot.
 **Trois manques révélés en dessinant le lot 2, et qui sont du CODE, pas du
 dessin** (`ARCHITECTURE.md` §81) :
 
-- ~~le régime de TVA est deviné~~ — **fait le 13 août 2026** (migration 0037,
+- ~~le régime de TVA est deviné~~ — **fait le 13 août 2026** (migration 0039,
   `ARCHITECTURE.md` §88) : il se déclare, il est figé dans la facture, et le
   repli sur le taux demeure pour les factures antérieures ;
 - **le numéro de TVA intracommunautaire** existe en base et se saisit depuis le
