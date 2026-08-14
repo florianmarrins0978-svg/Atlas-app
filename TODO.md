@@ -419,6 +419,27 @@ est vraisemblablement la CI, sur les seuls fichiers touchés.
      sessions avaient posé le même. C'est l'aîné qui garde le sien — la règle du
      HANDOVER, « celle qui est déjà là garde son numéro ». Aucun renvoi ne
      visait celui-ci. -->
+### 0 quattuorvicies. ~~Le corps de la fiche montre encore un chantier neuf~~ — **CLOS le 13 août : « ne touche pas au centre »**
+
+**Trouvé en corrigeant son défaut du 13 août** (`ARCHITECTURE.md` §98), et
+laissé ouvert exprès. L'état dit maintenant « Devis prêt à envoyer » et l'étape
+suivante « Envoyer le devis au client » — mais **le centre de l'écran affiche
+toujours l'anneau de dictée** et « Appuyez et décrivez le chantier », sur un
+chantier dont le devis est écrit.
+
+**Il a tranché le jour même : « non non, mais ne touche pas au centre en fait.
+Tu n'as pas compris ma requête ».** Ce qu'il voulait était ailleurs — que la
+liste le ramène à l'écran où il s'est arrêté (`ARCHITECTURE.md` §98), et c'est
+fait. La maquette `maquettes/atlas-centre-de-la-fiche.html` reste au placard :
+elle n'a rien changé dans `src/`, et elle raconte le chemin.
+
+**Ne pas rouvrir ce point sans qu'il le demande.**
+
+Ce qui est déjà su, et qui cadre le dessin : l'étape suivante ne vit que dans le
+tiroir, replié par défaut. Un chantier avancé devrait probablement porter son
+geste au centre, là où l'anneau se trouve — mais c'est lui qui tranche.
+
+### 0 septvicies. Cinq boutons carrés, hors des écrans du patron — à trancher
 
 **Trouvé le 13 août 2026**, en réparant le contrôle des boutons arrondis : son
 motif ne regardait ni les `<Link>`, ni les rayons NOMMÉS de Tailwind. Réparé, il
@@ -474,7 +495,7 @@ ici et peut-être sur son banc ; un fichier renommé serait rejoué de zéro.
 numéro, pour que la prochaine collision se voie à l'écriture et non six mois
 plus tard. Une demi-heure. Qui peut le faire : n'importe quelle conversation.
 
-### 0 tervicies. `test-planning-vers-facture-e2e` échoue par intermittence, et son message est trop affirmatif
+### 0 tervicies. ~~`test-planning-vers-facture-e2e` échoue par intermittence~~ — **CAUSE TROUVÉE ET CORRIGÉE le 13 août 2026**
 
 **Constaté le 13 août 2026, en éprouvant autre chose.** Le dernier cas de cette
 suite — *« clôturé AVANT sa date : il quitte le planning pour les terminés »* —
@@ -500,10 +521,22 @@ sans aucune autre en parallèle — la charge de la batterie ne suffit donc pas 
 l'expliquer. Un message qui donne une cause certaine là où elle ne l'est pas
 envoie chercher au mauvais endroit (`AGENTS.md`).
 
-**Ce qui reste à faire :** trouver ce que ce cas-là fait de particulier — c'est
-le seul des trois de son groupe à clôturer un chantier **avant** sa date — puis
-rendre le message honnête sur ce qu'il sait et ce qu'il suppose. Les six autres
-cas de la suite passent toujours.
+**LA CAUSE, et elle donne raison à cette fiche sur toute la ligne.** Ce n'était
+ni ce cas-là, ni la charge : `run-e2e-tests.ts` recueillait la sortie du serveur
+par un **tuyau**, drainé par son propre processus — lequel lance chaque suite
+avec `spawnSync`, **qui bloque sa boucle d'événements**. Pendant une suite,
+personne ne vidait le tuyau ; à 64 Ko, le serveur se bloquait **en écriture** et
+cessait de répondre. Le dépassement tombait alors sur l'écran suivant, au
+hasard : `/planning` une fois, `/termines` la fois d'avant.
+
+**C'est exactement pourquoi elle échouait aussi jouée seule** — l'observation de
+cette fiche, celle que le message d'origine ne pouvait pas expliquer. Et
+pourquoi elle passait toujours lancée à la main : le serveur écrit alors dans un
+terminal, que personne ne bloque.
+
+La sortie va désormais dans un fichier, par descripteur passé à l'enfant.
+Mesuré des deux côtés : rouge 3 fois sur 3 avec le tuyau, vert avec le fichier,
+à code applicatif identique.
 
 ### ~~0 duovicies. La civilité du client~~ — **tranchée et codée le 13 août 2026**
 

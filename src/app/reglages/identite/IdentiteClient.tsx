@@ -53,7 +53,7 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
    * Chaque champ s'écrit déjà seul en quittant la ligne — c'est ainsi depuis le
    * 13 août, et c'est ce qui protège une saisie interrompue. Un bouton qui
    * prétendrait « sauver » par-dessus donnerait deux vérités, et le patron
-   * croirait perdre ce qui est déjà écrit (`ARCHITECTURE.md` §98).
+   * croirait perdre ce qui est déjà écrit (`ARCHITECTURE.md` §99).
    *
    * Il a tranché ce parti le 14 août 2026, planche en main : *« A »*.
    */

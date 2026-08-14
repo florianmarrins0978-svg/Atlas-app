@@ -7749,10 +7749,135 @@ lui, en connaissance de cause — l'argument lui a été donné (un devis fige s
 émetteur, le corriger ensuite ne rattrape rien) et il a tranché. Ne pas le
 rouvrir sans qu'il le demande.
 
+**Ce qui n'a PAS été touché, et c'est délibéré** : le message qui part chez le
+client dit toujours « Bonjour <nom> » (`src/lib/message-client.ts`). Changer la
+façon dont ses clients sont abordés est un geste qui lui appartient, et il ne
+l'a pas demandé.
 
 ---
 
-## 98. La saisie de « Mon entreprise » : quatre demandes, et ce qu'elles cachaient
+---
+
+## 98. La chaîne se lit à l'envers : on repart du plus avancé
+
+**Son défaut, le 13 août 2026 :** *« il n'y a pas de mémoire dans les actions.
+J'étais en train de rédiger le devis, [...] j'ai fait retour sans faire exprès.
+Si maintenant je reclique sur mon chantier, je suis obligé de refaire toutes les
+étapes une à une, alors que j'étais déjà arrivé à la toute fin, il ne me
+manquait plus qu'à envoyer le devis. »*
+
+### Ce qui se passait, et pourquoi ce n'était pas un défaut d'enregistrement
+
+**Rien n'était perdu.** `devisGenereAt` n'est jamais remis à zéro, et son devis
+était bien en base. Ce qu'il avait perdu, c'était **sa place** — et le pire des
+deux, parce que rien ne le lui disait.
+
+`getNextAction` et `getStatutAffiche` lisaient la chaîne **depuis le début** et
+s'arrêtaient au premier maillon manquant :
+
+```
+informations ? → non → photos ? → non → « Ajouter des photos »
+```
+
+Or il avait rédigé son devis **à la main**, sans passer par l'écran
+« Informations » : `informationsVerifieesAt` était donc resté vide. La fiche
+d'un chantier dont le devis n'attendait plus que son envoi proposait donc
+« Ajouter des photos », et la liste l'annonçait **« Brouillon »**.
+
+**Reproduit et vu à l'écran avant d'être corrigé** : le devis était bien là,
+rangé dans le tiroir sous « généré, non envoyé », pendant que l'écran invitait à
+dicter un chantier déjà chiffré.
+
+### La règle qui remplace : le premier jalon FRANCHI commande
+
+Les deux fonctions parcourent désormais la chaîne **à l'envers**, du plus avancé
+au plus ancien. Ce qui manque en amont ne ramène plus personne au départ.
+
+| Jalon franchi | Ce qui reste à faire |
+|---|---|
+| planifié | rien |
+| devis envoyé | planifier le chantier |
+| **devis généré** | **envoyer le devis au client** |
+| prix validé | préparer le devis |
+| informations vérifiées | calculer le prix |
+| note vocale | vérifier les informations |
+| photos | enregistrer une note vocale |
+| rien | ajouter des photos |
+
+**Sauter des étapes n'est pas une anomalie, c'est la voie normale** depuis que la
+chaîne va de la dictée au devis d'un seul geste — et depuis qu'on peut rédiger
+son devis entièrement à la main. Une règle qui lit depuis le début punit
+exactement les chemins que le produit encourage.
+
+La règle qui existait déjà — « une fois les informations vérifiées, supprimer la
+note vocale ne doit pas ramener à la dictée » — n'est pas supprimée : elle
+devient un **cas particulier** de celle-ci, qui la généralise à tous les jalons.
+
+### Un état manquait, et son absence mentait
+
+`devis_pret` — « Devis prêt à envoyer ». Sans lui, `getStatutAffiche` sautait de
+`devisEnvoyeAt` à `informationsVerifieesAt` : un devis écrit mais pas parti
+n'avait **aucun état à lui** et retombait sur « Brouillon », c'est-à-dire « rien
+n'a été fait ». C'est ce que le patron a lu sur sa propre liste.
+
+**`devisGenereAt` est devenu OBLIGATOIRE dans `EtatPourStatutAffiche`**, à
+rebours de la convention du fichier (les ajouts y étaient facultatifs pour ne
+pas casser les anciens appels). La raison : un appelant qui l'oublierait
+rejouerait le défaut en silence. Le compilateur a d'ailleurs immédiatement
+désigné le coupable — `src/app/page.tsx`, l'écran de sa capture : **la liste des
+chantiers ne lisait même pas ce jalon**.
+
+### Ce qu'il demandait vraiment : ne plus repasser par la fiche
+
+**Le premier correctif traitait le mauvais symptôme.** Ce qui précède est un vrai
+défaut — la fiche mentait sur l'état et sur l'étape — mais ce n'était pas sa
+demande. Il l'a redite, plus précisément : *« il faut absolument que si je me
+suis arrêté à l'étape d'envoyer le devis, si je fais retour et que je retombe
+sur la catégorie chantier puis que je reclique sur mon client en attente, que ça
+me renvoie à l'étape où je me suis arrêté. [...] Si je me suis arrêté à mettre
+des photos et à rédiger la note vocale, il faut que ça me remette à cette
+page-là. Et ainsi de suite. »*
+
+Il ne veut pas que la fiche dise mieux. **Il veut ne plus y repasser.**
+
+`lienDeReprise` porte cette règle : la liste des chantiers ne mène plus à la
+fiche, mais **à l'écran où le travail s'est arrêté**.
+
+| Où il s'est arrêté | Où la ligne le ramène |
+|---|---|
+| rien, ou des photos, ou une dictée | la fiche — **la pellicule et l'anneau y sont** |
+| informations vérifiées | l'écran du prix |
+| prix posé, ou devis écrit | **l'écran d'envoi** |
+| devis parti, chantier planifié | la fiche — il n'y a rien à reprendre |
+
+**Bâtie SUR `getNextAction`, jamais à côté.** Deux règles pour une même question
+finiraient par se contredire : la fiche proposerait un geste et la liste en
+ouvrirait un autre. Un contrôle tient cette promesse
+(`test-reprendre-ou-il-en-etait.ts`).
+
+**Le planning général n'est pas un écran de reprise**, et c'est le seul endroit
+où l'on s'écarte de l'étape suivante : y envoyer quelqu'un qui touche SON
+chantier l'éloignerait au lieu de l'y ramener.
+
+**Et la fiche reste à un doigt** : la flèche de retour de chaque écran y mène.
+Reprendre au bon endroit ne ferme aucune porte — un contrôle navigateur le
+vérifie, sur sa séquence exacte, retour par mégarde compris
+(`test-reprise-chantier-e2e.ts`).
+
+### Ce qui reste ouvert, et qui ne se décide pas ici
+
+Le corps de la fiche continue d'afficher l'anneau de dictée — « Appuyez et
+décrivez le chantier » — sur un chantier dont le devis est écrit. **Il a dit de
+ne pas y toucher** (« ne touche pas au centre en fait »), et la maquette
+`maquettes/atlas-centre-de-la-fiche.html` reste au placard : elle n'a rien
+changé dans `src/`. Le sujet peut se rouvrir un jour ; il n'est pas ouvert
+aujourd'hui.
+
+---
+
+---
+
+## 99. La saisie de « Mon entreprise » : quatre demandes, et ce qu'elles cachaient
 
 **Le 14 août 2026, capture de son écran à l'appui**, le patron demande quatre
 choses sur l'écran d'identité : l'adresse qui propose comme chez le client, un

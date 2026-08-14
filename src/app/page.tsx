@@ -1,4 +1,9 @@
-import { chantierEnCours, getStatutAffiche, ligneEtatChantier } from "@/lib/chantier-etat";
+import {
+  chantierEnCours,
+  getStatutAffiche,
+  lienDeReprise,
+  ligneEtatChantier,
+} from "@/lib/chantier-etat";
 import { ongletDuChantier } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import { lieuDuChantier } from "@/lib/nom-chantier";
@@ -75,6 +80,12 @@ export default async function ChantiersPage() {
       etat: ligne.etat,
       precision: ligne.precision,
       attend: ligne.enOr,
+      // **Toucher un chantier, c'est REPRENDRE — pas recommencer.** Sa demande
+      // du 13 août 2026, après s'être retrouvé à refaire toutes les étapes alors
+      // qu'il ne lui restait qu'à envoyer son devis. Ce que la ligne DIT et où
+      // elle MÈNE sont deux questions distinctes : la refonte du libellé et la
+      // reprise cohabitent sans se marcher dessus.
+      reprise: lienDeReprise(c.id, c),
       // Le décompte doit suivre un retrait sans redemander la page : l'écran
       // ne peut le faire que s'il sait, ligne par ligne, laquelle compte.
       enCours: chantierEnCours(c.statut),

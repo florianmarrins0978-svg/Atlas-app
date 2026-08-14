@@ -301,7 +301,7 @@ détail des six faits est dans `ARCHITECTURE.md` §87, la liste de travail dans
 `TODO.md` §0 quatervicies.
 
 **La saisie de « Mon entreprise » a été refaite le 14 août 2026**
-(`ARCHITECTURE.md` §98) : adresse qui propose, téléphone à drapeau, forme
+(`ARCHITECTURE.md` §99) : adresse qui propose, téléphone à drapeau, forme
 juridique en liste, bouton d'enregistrement. **Trois choses à ne pas casser :**
 
 1. **`src/lib/telephone.ts` définit la découpe SANS le zéro de tête.** Le
@@ -537,6 +537,15 @@ qui suit une balise fermante à cet endroit — l'écran de Google portait déj�
 écran portaient le piège. **Aucun test de texte ne l'attrape** : le contrôle
 vise désormais le texte RENDU (`test-agenda-reglages-e2e.ts`).
 
+**⚠ Le faux rouge qui a coûté quatre batteries le 12 août n'était PAS le
+préchauffage.** `run-e2e-tests.ts` recueillait la sortie du serveur par un
+tuyau, et lance chaque suite avec `spawnSync` — qui bloque sa boucle
+d'événements. Personne ne vidait le tuyau pendant une suite ; à 64 Ko, **le
+serveur se bloquait en écriture** et ne répondait plus. Le rouge tombait alors
+sur l'écran suivant, au hasard. La sortie va dans un fichier depuis. Si un
+dépassement de délai inexplicable revient sur une suite lourde, vérifier
+d'abord que rien n'est repassé en `pipe`.
+
 **Pour diagnostiquer une suite navigateur sans rejouer la batterie :**
 `npm run test:e2e -- --seulement <motif>`. Écrit le 12 août après avoir rejoué
 vingt-cinq minutes pour observer UNE suite — c'est ce coût-là qui pousse à
@@ -611,6 +620,27 @@ que de redessiner.
 3. **Une image fixe ne montre pas un mouvement.** `animer-maquette-points.mjs`
    fabrique un GIF par proposition (sans ffmpeg, absent d'ici) — et il **relit
    sa sortie**, parce qu'au premier jet il certifiait « ✓ » une image fixe.
+## ⚠ Rouvrir un chantier, c'est REPRENDRE (13 août) — et la leçon qui va avec
+
+La liste des chantiers ne mène plus à la fiche mais **à l'écran où le travail
+s'est arrêté** (`lienDeReprise`, `ARCHITECTURE.md` §98). Sa demande, mot pour
+mot : *« que ça me renvoie à l'étape où je me suis arrêté ».*
+
+**La leçon, et elle vaut au-delà de ce point.** Le premier correctif a traité un
+défaut RÉEL mais pas le sien : la fiche annonçait « Brouillon » et proposait
+« Ajouter des photos » sur un devis prêt à partir. C'était juste à corriger, et
+ce n'était pas ce qu'il demandait. Il a dû le redire : *« non non, mais ne
+touche pas au centre en fait. Tu n'as pas compris ma requête. »*
+
+Ce qui l'avait fait dévier : sa plainte décrivait un SYMPTÔME (« je suis obligé
+de refaire toutes les étapes »), et le premier écran regardé portait bien un
+défaut. **Trouver un défaut sur le chemin ne prouve pas que c'est le sien.** La
+phrase qui tranchait était pourtant dans son message : *« si je reclique sur mon
+chantier »* — c'est la LIGNE DE LA LISTE qu'il désignait, pas la fiche.
+
+**Ne pas rouvrir le centre de la fiche** sans qu'il le demande. La maquette
+`maquettes/atlas-centre-de-la-fiche.html` reste au placard, et n'a rien changé
+dans `src/`.
 
 ## Ce qui vient d'être terminé
 
