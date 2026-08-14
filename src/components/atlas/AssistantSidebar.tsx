@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
+import { useAssistant } from "./assistant-contexte";
 import { rendreMarkdownSimple } from "./rendreMarkdownSimple";
 import { poserQuestionAction } from "@/app/assistant/actions";
 import { appliquerPropositionsAction } from "@/app/chantiers/[id]/informations/actions";
@@ -31,7 +32,12 @@ export default function AssistantSidebar() {
   const router = useRouter();
   const chantierId = chantierIdDepuisChemin(pathname ?? "");
 
-  const [ouvert, setOuvert] = useState(false);
+  // **L'état ne vit plus ici.** Le bouton a quitté ce composant pour l'en-tête
+  // des écrans (proposition B, 13 août 2026) ; les deux se parlent par
+  // `assistant-contexte`. Ce composant garde le panneau, qui doit rester
+  // au-dessus de tout, donc dans le gabarit racine.
+  const assistant = useAssistant();
+  const ouvert = assistant?.ouvert ?? false;
   const [messages, setMessages] = useState<Message[]>([]);
   const [saisie, setSaisie] = useState("");
   const [enCours, setEnCours] = useState(false);
@@ -114,21 +120,12 @@ export default function AssistantSidebar() {
 
   return (
     <>
-      <button
-        onClick={() => setOuvert((o) => !o)}
-        aria-label={ouvert ? "Fermer l'assistant" : "Ouvrir l'assistant"}
-        // **Elle s'écarte du bandeau**, à la demande du patron le 10 août 2026.
-        // Posée à 24, elle venait toucher la dernière ligne de l'écran — sur
-        // « Terminés » elle se posait contre les montants, c'est-à-dire contre
-        // la seule colonne que l'œil suit.
-        className="fixed right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full shadow-lg"
-        style={{ backgroundColor: colors.rust, bottom: "calc(var(--atlas-barre) + 28px)" }}
-      >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8">
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-        </svg>
-      </button>
-
+      {/*
+        **Plus de bulle flottante.** Elle recouvrait quelque chose sur cinq
+        écrans, et cinq fois c'est l'écran qu'on a déplacé pour l'éviter
+        (`ARCHITECTURE.md` §85). Son bouton est maintenant dans l'en-tête, où il
+        ne peut rien couvrir : `BoutonAssistant`, posé par `EnTeteEcran`.
+      */}
       {ouvert && (
         <div className="fixed inset-0 z-40 flex justify-end" style={{ backgroundColor: "rgba(0,0,0,0.25)" }}>
           <div
@@ -139,7 +136,7 @@ export default function AssistantSidebar() {
               <span className="text-[16px] font-semibold" style={{ fontFamily: font.display, color: colors.ink }}>
                 Assistant
               </span>
-              <button onClick={() => setOuvert(false)} aria-label="Fermer" className="text-[20px]" style={{ color: colors.muted }}>
+              <button onClick={() => assistant?.fermer()} aria-label="Fermer" className="text-[20px]" style={{ color: colors.muted }}>
                 ×
               </button>
             </div>

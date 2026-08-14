@@ -6539,3 +6539,72 @@ fait le plein et quand il travaille. `test-export-entreprise.ts` a réclamé la
 table avant que quiconque y pense : l'omission serait partie en silence.
 
 ---
+
+## 85. L'assistant cesse de flotter — et c'est l'écran qui cesse de reculer
+
+**Le patron, le 13 août 2026 :** *« l'onglet de l'assistant est hyper mal placé,
+propose des choses pour plus qu'il gêne »*. Puis, devant les cinq propositions de
+`docs/maquettes/45-ou-mettre-l-assistant.html` : *« la B mais de la même couleur
+qu'elle est déjà »*.
+
+### Le vrai défaut n'était pas sa position, c'était qu'il flottait
+
+Mesuré dans l'application, sur son écran de 390 × 664 : la bulle occupait
+56 × 56 px à (318, 512) — donc, sur le planning, **par-dessus les dimanches 23
+et 30**, deux cases qu'on touche pour ouvrir une journée.
+
+Et ce n'était pas le premier écran qu'elle mordait. **Cinq fois cet été, c'est
+l'ÉCRAN qu'on a déplacé pour l'éviter :**
+
+| Ce qui a cédé | Où |
+|---|---|
+| « ou rédiger le devis à la main », recouvert | §49 |
+| « Préparer le devis » : 64 px de talon insuffisants, il en a fallu 112 | §46 |
+| un bouton de reprise, 48 px mangés dès deux lignes de message | §63 |
+| une capsule qu'il a fallu **centrer** pour qu'elle lui échappe | §67 |
+| « Reste à payer » calé à gauche, sa fin passant dessous | §84 |
+
+Chaque correction était juste, et aucune n'a traité la cause. **Un élément qui
+flotte finit toujours par recouvrir quelque chose** — y compris sur les écrans
+qui n'existent pas encore. C'est pourquoi aucune des cinq propositions ne
+consistait à le déplacer de vingt pixels.
+
+### Le bouton part, le panneau reste
+
+Le panneau doit toujours couvrir tout l'écran : il reste dans le gabarit racine.
+Le bouton, lui, vit désormais dans l'en-tête de chaque écran. Les deux ne sont
+plus voisins dans l'arbre, d'où `assistant-contexte.tsx` — vingt lignes dont la
+seule fonction est de leur donner un état commun.
+
+`useAssistant()` rend `null` hors du fournisseur au lieu de lever : le bouton est
+posé par `EnTeteEcran`, une pièce que onze écrans emploient, et qu'une page hors
+gabarit pourrait employer demain. Faire tomber une page entière pour un bouton
+d'agrément serait un mauvais échange — et le patron n'en verrait qu'un
+identifiant opaque (`HANDOVER.md`, piège 0 ter).
+
+### Le déplacement s'est trompé une fois, et la mesure l'a dit
+
+Le bouton a d'abord été posé **sur une ligne à lui**, au-dessus du titre. C'était
+défendable : cette ligne existait déjà pour la flèche de retour, et le dépôt
+avait mesuré le 11 août qu'une pastille posée à côté du titre lui prenait la
+moitié de sa largeur.
+
+**Sauf que cette ligne ajoutait 72 px en tête de CHAQUE écran.** Sur le planning,
+la dernière semaine du mois passait de 626 px à 698 — sous la barre du bas. On
+aurait échangé « deux jours recouverts » contre « une semaine hors de l'écran »,
+et personne ne l'aurait vu sans capture.
+
+Posé à côté du titre, il ne coûte rien : mesuré sur les quatre écrans de la
+barre, **aucun titre ne se casse en deux et le calendrier finit exactement où il
+finissait** (626 px). Le risque du 11 août reste réel — il tenait à une *précision*
+de deux lignes sous un titre, pas au titre lui-même — et `test-assistant-en-tete-e2e.ts`
+compte désormais les lignes du titre sur chaque écran.
+
+### Ce que le contrôle a dû apprendre, et qui vaut au-delà d'ici
+
+**Un contrôle qui dénonce un défaut préexistant sous le nom du changement en
+cours envoie chercher au mauvais endroit.** Écrit d'abord « la dernière semaine
+tient au-dessus de la barre », il rougissait — mais elle débordait **déjà** de
+onze pixels avant qu'on ne touche à quoi que ce soit. Le repère est donc devenu
+la mesure prise AVANT le déplacement, et le débordement de onze pixels est allé
+dans `TODO.md`, sous son propre nom.

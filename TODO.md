@@ -27,6 +27,37 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quinvicies bis. ~~L'assistant flottant recouvrait les écrans~~ — **réglé le 13 août 2026 (proposition B)**
+
+*« L'onglet de l'assistant est hyper mal placé »*, puis *« la B mais de la même
+couleur qu'elle est déjà »*. Le bouton a quitté le coin flottant pour l'en-tête,
+en gardant son vert pin plein. `ARCHITECTURE.md` §85.
+
+**Quatre choses à ne pas défaire :**
+
+1. **Il ne doit plus jamais être `fixed`.** C'est la cause, pas la position :
+   cinq écrans ont été déplacés cet été pour éviter cette bulle.
+2. **Il reste À CÔTÉ DU TITRE, pas sur une ligne à lui.** Une ligne propre
+   ajoute 72 px en tête de chaque écran et repousse la dernière semaine du
+   planning sous la barre — essayé, mesuré, défait.
+3. **La couleur ne vient pas du composant qui le porte** : `colors.rust` plein,
+   icône blanche, c'est sa demande explicite.
+4. **`useAssistant()` rend `null` hors du fournisseur** au lieu de lever :
+   `EnTeteEcran` sert onze écrans, et une page hors gabarit ne doit pas tomber
+   pour un bouton d'agrément.
+
+### 0 quinvicies ter. La dernière semaine du planning déborde de onze pixels sous la barre
+
+**Trouvé le 13 août 2026 en mesurant autre chose**, et **antérieur** à ce
+travail : la dernière case du mois finit à 626 px quand la barre du bas commence
+à 615. Onze pixels de la ligne « 31 » passent dessous — elle reste lisible, et le
+planning défile, mais elle n'est pas entièrement là.
+
+**Non traité, et signalé plutôt que corrigé en passant** : ce n'est pas ce qu'il
+a demandé, la correction touche la hauteur réservée du calendrier, et un
+contrôle qui l'aurait attrapé aurait accusé le déplacement de l'assistant — ce
+qui n'est pas le coupable.
+
 ### 0 quatervicies octies. La place de l'assistant — MAQUETTE POSÉE, sa lettre attendue
 
 **Sa demande du 13 août 2026 :** *« L'onglet de l'assistant est hyper mal placé,

@@ -375,6 +375,18 @@ vingt-cinq minutes pour observer UNE suite — c'est ce coût-là qui pousse à
 supposer une cause au lieu d'aller la lire. Le script dit à voix haute qu'il
 n'est pas la batterie.
 
+## L'ASSISTANT A QUITTÉ LE COIN FLOTTANT (13 août)
+
+*« La B mais de la même couleur qu'elle est déjà »* — le bouton est dans
+l'en-tête, à côté du titre, en vert pin plein. `ARCHITECTURE.md` §85.
+
+**⚠ Ne jamais le remettre en `fixed`.** C'était la cause : cinq écrans ont été
+déplacés cet été pour éviter cette bulle. Et **ne pas lui donner une ligne à
+lui** au-dessus du titre : essayé, mesuré, défait — 72 px en tête de chaque
+écran, et la dernière semaine du planning passait sous la barre.
+
+`scripts/test-assistant-en-tete-e2e.ts` tient les deux, plus les lignes du titre.
+
 ## L'ATTENTE DE LA DICTÉE EST CODÉE — « le souffle » (13 août)
 
 Il a répondu **« code la C »**. Les points enflent et se rétractent l'un après

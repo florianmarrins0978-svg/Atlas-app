@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### L'assistant cesse de flotter, et se range dans l'en-tête
+
+**Sa demande :** *« l'onglet de l'assistant est hyper mal placé, propose des
+choses pour plus qu'il gêne »*. Puis, devant cinq propositions : *« la B mais de
+la même couleur qu'elle est déjà »*.
+
+**Le défaut n'était pas sa position, c'était qu'il flottait.** Mesuré : la bulle
+couvrait les dimanches 23 et 30 du planning — deux cases qu'on touche. Et c'était
+le sixième écran : cinq fois cet été, c'est l'ÉCRAN qu'on avait déplacé pour
+l'éviter (un talon de 112 px, une capsule recentrée, une phrase calée à gauche).
+Chaque correction était juste, aucune ne traitait la cause.
+
+Le bouton vit maintenant dans l'en-tête, en vert pin plein comme avant ; le
+panneau reste au-dessus de tout. `ARCHITECTURE.md` §85.
+
+**Une erreur de placement, corrigée par la mesure.** Posé d'abord sur une ligne à
+lui au-dessus du titre, il ajoutait 72 px en tête de chaque écran et repoussait la
+dernière semaine du planning sous la barre : on aurait échangé deux jours
+recouverts contre une semaine hors de l'écran. À côté du titre, il ne coûte rien
+— aucun titre ne se casse, et le calendrier finit exactement où il finissait.
+
+**Et le contrôle a failli accuser à tort** : écrit « la dernière semaine tient
+au-dessus de la barre », il rougissait sur un débordement de onze pixels qui
+existait **avant**. Le repère est devenu la mesure d'avant le déplacement, et le
+débordement est parti dans `TODO.md` sous son propre nom.
+
 ### Où mettre l'assistant : cinq places, et une gêne enfin mesurée
 
 **Sa demande :** *« l'onglet de l'assistant est hyper mal placé […] crée-moi des

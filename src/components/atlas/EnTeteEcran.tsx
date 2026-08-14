@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { colors, font } from "@/lib/design-tokens";
+import BoutonAssistant from "./BoutonAssistant";
 
 /**
  * L'en-tête d'un écran, dans la grammaire retenue le 10 août 2026.
@@ -26,6 +27,7 @@ export default function EnTeteEcran({
   retour,
   action,
   actionPlacee = "titre",
+  assistant = true,
 }: {
   /** Le mot d'accroche, en capitales d'or. Absent, la ligne disparaît. */
   surtitre?: string;
@@ -64,27 +66,36 @@ export default function EnTeteEcran({
    * de deux. Vu en capture le 11 août 2026.
    */
   actionPlacee?: "titre" | "retour";
+  /**
+   * L'assistant se pose-t-il sur cette en-tête ?
+   *
+   * Vrai partout, et c'est le but : un recours qui n'est pas là quand on en a
+   * besoin ne sert à rien. Le réglage existe pour les écrans qui n'ont pas de
+   * gabarit derrière eux — une page publique par jeton, par exemple, où il n'y
+   * a ni panneau à ouvrir ni raison d'en proposer un au client.
+   */
+  assistant?: boolean;
 }) {
   return (
     <header>
       {(retour || actionPlacee === "retour") && (
-        <div className="flex items-center justify-between gap-4 px-[26px] pt-7">
-          {retour ? (
-            <Link
-              href={retour.href}
-              aria-label={retour.libelle}
-              className="flex h-10 w-10 items-center justify-center rounded-full"
-              style={{ backgroundColor: colors.rustTint }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
-                <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-          ) : (
-            <span />
-          )}
-          {actionPlacee === "retour" && action}
-        </div>
+      <div className="flex items-center justify-between gap-4 px-[26px] pt-7">
+        {retour ? (
+          <Link
+            href={retour.href}
+            aria-label={retour.libelle}
+            className="flex h-10 w-10 items-center justify-center rounded-full"
+            style={{ backgroundColor: colors.rustTint }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
+              <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Link>
+        ) : (
+          <span />
+        )}
+        {actionPlacee === "retour" && action}
+      </div>
       )}
 
       <div className={`flex items-start justify-between gap-4 px-[26px] ${retour ? "pt-5" : "pt-[34px]"}`}>
@@ -120,7 +131,26 @@ export default function EnTeteEcran({
             </p>
           )}
         </div>
-        {actionPlacee === "titre" && action}
+        {/*
+          **L'assistant se pose à côté du titre**, sur la ligne du titre —
+          proposition B, choisie le 13 août 2026.
+
+          **Il a d'abord été posé sur une ligne à lui, au-dessus**, et la mesure
+          l'a renvoyé ici : cette ligne ajoutait 72 px en tête de CHAQUE écran,
+          et sur le planning la dernière semaine du mois passait sous la barre
+          du bas. On aurait échangé « deux jours recouverts » contre « une
+          semaine repoussée hors de l'écran » — un mauvais marché, et invisible
+          sans capture.
+
+          Le risque de cette place est connu, et il est surveillé : sur la fiche
+          chantier, une pastille posée ici prenait la moitié de la largeur du
+          titre (11 août 2026). C'est pourquoi `test-assistant-en-tete-e2e.ts`
+          compte les lignes du titre sur chaque écran.
+        */}
+        <div className="flex flex-shrink-0 items-center gap-3">
+          {actionPlacee === "titre" && action}
+          {assistant && <BoutonAssistant />}
+        </div>
       </div>
 
       {/* Le seul trait de l'en-tête : celui qui le ferme. La fiche chantier s'en

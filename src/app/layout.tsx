@@ -5,6 +5,7 @@ import AtlasBottomNav from "@/components/atlas/AtlasBottomNav";
 import { estCheminPublic, estPageDuClient } from "@/lib/chemins-publics";
 import VeilleReponseServeur from "@/components/atlas/VeilleReponseServeur";
 import AssistantSidebar from "@/components/atlas/AssistantSidebar";
+import { FournisseurAssistant } from "@/components/atlas/assistant-contexte";
 import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
 
 // **Plus aucune police n'est téléchargée depuis le 10 août 2026.** L'écran que
@@ -141,7 +142,13 @@ export default async function RootLayout({
         {sansNavigation ? (
           <main>{children}</main>
         ) : (
-          <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-paper">
+          // Le fournisseur entoure le contenu ET le panneau : depuis le
+          // 13 août 2026, le bouton de l'assistant vit dans l'en-tête de chaque
+          // écran, donc DANS `children`, tandis que le panneau reste ici pour
+          // couvrir tout le reste. Les deux se parlent par ce contexte — voir
+          // `assistant-contexte.tsx`.
+          <FournisseurAssistant>
+            <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-paper">
             {/* `atlas-contenu` réserve la hauteur de la barre, indicateur
                 d'accueil compris (voir globals.css) : sans navigation, cette
                 marge laisserait un vide en bas de page. */}
@@ -149,6 +156,7 @@ export default async function RootLayout({
             <AtlasBottomNav />
             <AssistantSidebar />
           </div>
+          </FournisseurAssistant>
         )}
 
         {/* **HORS du choix ci-dessus, et c'est un correctif.** Quand la réponse
