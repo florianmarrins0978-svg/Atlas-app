@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-13 · `main`
+**Point de reprise :** 2026-08-14 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -643,6 +643,30 @@ chantier »* — c'est la LIGNE DE LA LISTE qu'il désignait, pas la fiche.
 dans `src/`.
 
 ## Ce qui vient d'être terminé
+
+**L'UNITÉ D'UN TARIF SE CHOISIT (14 août).** Sa demande du 13 : *« crée-moi un
+bandeau déroulant avec infos à choisir, jours/hommes, m² etc. »*, puis *« fais
+celle-là »* devant la forme 1 de `maquettes/atlas-unite-deroulante.html`.
+
+Ce qu'il faut retenir avant d'y toucher :
+
+1. **La case DOIT rester libre.** Le bandeau se termine par une ligne
+   d'écriture. Un élagueur a le stère, l'arbre, la tonne de grumes — une liste
+   fermée lui retirerait ce qu'il a aujourd'hui. Deux suites montent la garde.
+2. **La graphie des unités proposées n'est pas décorative.** « jour/homme » est
+   exactement ce que `tarif-main-oeuvre.ts` reconnaît, à la lettre près. La
+   renommer ferait disparaître son prix de main d'œuvre de la grille sans
+   qu'aucun type ne bronche : `test-unites-tarif.ts` garde ce point précis.
+3. **Le bandeau ne peut PAS être posé en surimpression sur la carte du tarif.**
+   La carte vit dans un `LigneRetirable` qui masque ce qui dépasse : le bandeau
+   y était tranché (mesuré : coupé à 504 px quand il en demandait 863). D'où
+   deux pièces — `CaseUnite` dedans, `BandeauUnites` juste en dessous. Ne pas
+   « ranger » l'un dans l'autre en croyant simplifier.
+4. **Ce qui n'est pas fait, et c'est délibéré :** les unités déjà saisies ne
+   sont pas corrigées. « m2 » enregistré reste « m2 » — réécrire ses données à
+   son insu changerait des prix qu'il n'a pas demandé de changer.
+
+Le reste : `ARCHITECTURE.md` §100.
 
 **LE NUMÉRO DU DEVIS N'EST PLUS UN NUMÉRO DE TÉLÉPHONE (13 août).** Deuxième
 passe sur le même défaut, et la première ne pouvait pas marcher.

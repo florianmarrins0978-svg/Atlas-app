@@ -196,6 +196,8 @@ du prix proposé dès qu'aucun tarif ne correspond. Un artisan dont l'ouvrier co
 **Ce que le lot 4 ajoute à cette liste :** `tarifs` n'a **aucune colonne de
 famille** — prestations, main-d'œuvre et matériel n'existent pas —, et rien ne
 signale un tarif **sans unité**, alors qu'un prix sans unité n'est pas un prix.
+(L'unité, elle, se **choisit** depuis le 14 août au lieu de se taper —
+`ARCHITECTURE.md` §100 — mais rien ne signale encore celle qui manque.)
 Les cinq grilles n'affichent pas **combien de prix elles ont appris**, ni la
 phrase qui dit qu'une grille vide n'est pas une panne (`ARCHITECTURE.md` §89).
 
@@ -2120,6 +2122,7 @@ et c'est déjà arrivé.
 
 ## Terminé
 
+- ~~L'unité d'un tarif se choisit dans un bandeau déroulant, sans fermer la case~~ — 2026-08-14
 - ~~Reprendre l'application Arborea sans le site vitrine, et la publier~~ — 2026-07-31
 - ~~Vérifier le site publié à son adresse publique~~ — 2026-07-31
 - ~~Cadrer l'agent (`docs/AGENT.md`) et la conformité (`docs/RGPD.md`)~~ — 2026-08-01
