@@ -9,6 +9,30 @@ Format : le plus récent en tête.
 
 ## 2026-08-14
 
+### CODÉ : ajouter et retirer des cases dans « Mes prix »
+
+Sa demande du 14 août, capture à l'appui : *« je dois pouvoir ajouter ou retirer
+des cases »*, puis devant les trois formes dessinées : *« code les toutes »*.
+
+**Ce que ça change.** Les 82 cases naissaient de constantes écrites dans le
+code — huit diamètres, six hauteurs, trois façons d'abattre, cinq travaux.
+Elles venaient de ses devis du 8 août, mais étaient figées depuis. Elles se
+règlent désormais, à trois niveaux : la **tranche** (dans la grille qu'il
+remplit, ou dans le nouvel écran **Mes mesures**), la **façon d'abattre**, et le
+**travail entier**.
+
+**Le fait qui commande tout :** une case ne s'ajoute pas toute seule. Un
+diamètre de plus en pose **dix** d'un coup — l'écran l'annonce avant qu'il
+valide, et le nombre est calculé, jamais écrit à la main.
+
+**Retirer n'efface aucun prix.** Les cases sont rangées, pas supprimées, et
+reviennent si la tranche revient. Le tiroir dit combien partent avec elle, et
+offre « Annuler » comme partout ailleurs.
+
+**Ce qu'Atlas ne fera PAS**, et l'écran le dit : un travail ajouté par lui n'est
+pas reconnu dans une note vocale. Sa grille se remplit et se relit ; le
+chiffrage ne la proposera pas de lui-même. Raisons : `ARCHITECTURE.md` §102.
+
 ### L'unité d'un tarif se choisit dans un bandeau, au lieu de se taper
 
 Sa demande du 13 août, capture des tarifs à l'appui : *« crée-moi un bandeau

@@ -644,6 +644,34 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**AJOUTER ET RETIRER DES CASES DANS « MES PRIX » (14 août).** Sa demande :
+*« je dois pouvoir ajouter ou retirer des cases »*, puis, devant les trois
+formes dessinées : *« code les toutes »*.
+
+Cinq choses à savoir avant d'y toucher :
+
+1. **Une case ne s'ajoute pas toute seule.** Elle naît du croisement de deux
+   tranches : un diamètre de plus en pose DIX (1 dessouchage, 3 abattage,
+   6 fendage). L'écran l'annonce avant qu'il valide, et le nombre est calculé
+   (`casesParTranche`) — ne jamais l'écrire en dur.
+2. **`axes` est un paramètre OBLIGATOIRE** de toutes les fonctions de
+   `grille-prix.ts`. Ne pas y remettre de valeur par défaut « pour simplifier » :
+   un devis chiffré contre les tranches d'origine pendant qu'il remplit les
+   siennes est un prix faux qu'aucune erreur ne signale.
+3. **Rien n'est semé en base.** Une entreprise sans ligne reçoit les valeurs de
+   départ ; le PREMIER geste sur un axe recopie les tranches d'origine avant
+   d'appliquer le geste. Retirer cette recopie effacerait ses huit tranches d'un
+   coup, au premier ajout.
+4. **Retirer n'efface aucun prix.** `retiree_le`, jamais un `DELETE` : les cases
+   de `grille_prix` restent, sont ignorées à la lecture, et reviennent avec la
+   tranche. Et la clé n'est jamais réemployée — sinon un prix hériterait d'une
+   case qui n'était pas la sienne.
+5. **Un travail ajouté par lui n'est PAS reconnu par le chiffrage.** L'écran le
+   dit sous son titre. Ne pas retirer cette phrase en croyant faire propre : il
+   le découvrirait sur un devis.
+
+Le reste : `ARCHITECTURE.md` §102.
+
 **L'UNITÉ D'UN TARIF SE CHOISIT (14 août).** Sa demande du 13 : *« crée-moi un
 bandeau déroulant avec infos à choisir, jours/hommes, m² etc. »*, puis *« fais
 celle-là »* devant la forme 1 de `maquettes/atlas-unite-deroulante.html`.

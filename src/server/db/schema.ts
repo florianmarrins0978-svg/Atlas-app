@@ -1133,9 +1133,13 @@ export const grillePrix = pgTable(
      */
     // `dessouchage` et `grumes` ajoutés le 8 août 2026 (migration 0028), sur sa
     // réponse : « le dessouchage oui, et les grumes aussi ».
-    nature: text("nature", { enum: ["fendage", "abattage", "haie", "dessouchage", "grumes"] })
-      .notNull()
-      .default("fendage"),
+    //
+    // **Liste ouverte depuis le 14 août 2026** (migration 0040) : le patron
+    // ajoute ses propres travaux, et une liste fermée les aurait refusés au
+    // moment où il pose son premier prix — l'erreur aurait accusé le prix. Ce
+    // qui protège la table n'a pas bougé : une clé de case inconnue n'écrit
+    // nulle part (`poserPrixGrille`).
+    nature: text("nature").notNull().default("fendage"),
     /** La case, `h10|d40` ou `au_pied|d70` — fabriquée par `src/lib/grille-prix.ts`. */
     cellule: text("cellule").notNull(),
     prix: numeric("prix", { precision: 10, scale: 2 }).notNull(),
@@ -1144,6 +1148,82 @@ export const grillePrix = pgTable(
     constateLe: timestamp("constate_le", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [unique("grille_prix_cellule_uk").on(t.entrepriseId, t.nature, t.cellule)]
+);
+
+/**
+ * Les tranches d'un axe, quand l'artisan a réglé les siennes (migration 0040).
+ *
+ * **Sa demande du 14 août 2026 :** *« je dois pouvoir ajouter ou retirer des
+ * cases. »* Les huit diamètres, six hauteurs et trois façons d'abattre venaient
+ * de ses devis du 8 août — mais figées dans le code depuis.
+ *
+ * **Cette table est VIDE tant qu'il n'a rien touché**, et c'est délibéré : les
+ * valeurs de départ vivent dans `src/lib/grille-prix.ts`, où elles restent
+ * discutables sans lire une requête. Les lignes n'apparaissent qu'au premier
+ * geste sur un axe — on recopie alors les tranches de départ, puis on applique
+ * son geste (`materialiserAxe`).
+ *
+ * **`retireeLe` plutôt qu'une suppression :** un retrait doit pouvoir se
+ * défaire, les prix de `grille_prix` doivent survivre au retrait de leur
+ * tranche, et la clé ne doit jamais pouvoir être réemployée pour une autre
+ * tranche — sans quoi un prix hériterait d'une case qui n'était pas la sienne.
+ */
+export const tranchesGrille = pgTable(
+  "tranches_grille",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    axe: text("axe", { enum: ["diametre", "hauteur", "technique"] }).notNull(),
+    /** La clé écrite dans `grille_prix.cellule`. Elle ne change jamais. */
+    cle: text("cle").notNull(),
+    /** Borne basse EXCLUE. Une façon d'abattre porte 0 : c'est son libellé qui dit tout. */
+    de: numeric("de", { precision: 10, scale: 2 }).notNull().default("0"),
+    /** Borne haute INCLUSE. `null` pour la dernière tranche, ouverte. */
+    a: numeric("a", { precision: 10, scale: 2 }),
+    libelle: text("libelle").notNull(),
+    rang: integer("rang").notNull().default(0),
+    retireeLe: timestamp("retiree_le", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("tranches_grille_cle_uk").on(t.entrepriseId, t.axe, t.cle),
+    index("tranches_grille_axe_idx").on(t.entrepriseId, t.axe, t.rang),
+  ]
+);
+
+/**
+ * Les natures de travail d'une entreprise (migration 0040).
+ *
+ * Même mécanique que `tranches_grille` : vide tant qu'il n'a rien touché, les
+ * cinq d'origine recopiées au premier geste, et un retrait réversible.
+ *
+ * **Une nature ajoutée par lui n'est pas reconnue par le chiffrage**, et c'est
+ * la limite du geste : `proposition-prix.ts` sait retrouver un abattage ou une
+ * fente dans une dictée, pas « le broyage des branches ». Sa grille se remplit
+ * et se relit ; Atlas ne la proposera pas de lui-même. L'écran le dit —
+ * le lui laisser découvrir sur un devis serait pire.
+ */
+export const naturesGrille = pgTable(
+  "natures_grille",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    cle: text("cle").notNull(),
+    titre: text("titre").notNull(),
+    aide: text("aide").notNull().default(""),
+    axeLibelle: text("axe_libelle").notNull().default(""),
+    forme: text("forme", {
+      enum: ["une-case", "un-axe", "technique-diametre", "hauteur-diametre"],
+    }).notNull(),
+    libelleUnique: text("libelle_unique"),
+    rang: integer("rang").notNull().default(0),
+    retireeLe: timestamp("retiree_le", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("natures_grille_cle_uk").on(t.entrepriseId, t.cle),
+    index("natures_grille_rang_idx").on(t.entrepriseId, t.rang),
+  ]
 );
 
 /**

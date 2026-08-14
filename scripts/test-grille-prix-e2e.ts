@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
-import { cellulesDe, type NatureGrille } from "../src/lib/grille-prix";
+import { GRILLES_PAR_DEFAUT, cellulesDe, type NatureGrille } from "../src/lib/grille-prix";
 
 /** Les natures affichées, dans l'ordre de l'écran (`GrillesPrixClient`). */
 const NATURES: NatureGrille[] = ["abattage", "grumes", "fendage", "dessouchage", "haie"];
@@ -98,7 +98,7 @@ async function main() {
   // **Le total se calcule, il ne se recopie pas.** Il était écrit « 73 » en dur,
   // et ajouter deux natures le 8 août 2026 a fait échouer ce contrôle pour une
   // bonne raison qui n'était pas la sienne. Dérivé des grilles, il suit.
-  const TOTAL = NATURES.reduce((n, nature) => n + cellulesDe(nature).length, 0);
+  const TOTAL = NATURES.reduce((n, nature) => n + cellulesDe(nature, GRILLES_PAR_DEFAUT).length, 0);
   const corps = await page.locator("body").innerText();
   const decompteApres = await lireDecompte(page);
   assert.equal(

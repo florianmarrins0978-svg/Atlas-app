@@ -13,6 +13,7 @@ import { peutPreparerDevis } from "../../lib/preparation-devis";
 import { listerPrecisions, enregistrerPrecisions, type Precision } from "../repositories/precisions-chantier";
 import { listerPrestations, modifierPrestation } from "../repositories/prestations";
 import { libelleEnrichi, questionsAvantChiffrage, type QuestionChiffrage } from "../../lib/questions-chiffrage";
+import { lireGrilles } from "../repositories/grilles-reglables";
 import { lignesVendables } from "../../lib/lignes-vendables";
 import type { LectureDictee, PropositionExtraction } from "../ai/schemas/extraction";
 import { logger } from "../logger";
@@ -205,7 +206,10 @@ async function questionsRestantes(
   prestations: { libelle: string; description?: string | null; quantite?: string | null; unite?: string | null }[]
 ): Promise<QuestionChiffrage[]> {
   const deja = await listerPrecisions(ctx, chantierId);
-  return questionsAvantChiffrage(prestations, new Set(deja.map((p) => p.sujet)));
+  // Ses façons d'abattre à lui : une question qui proposerait les trois
+  // d'origine laisserait sa quatrième rangée vide pour toujours.
+  const { axes } = await lireGrilles(ctx);
+  return questionsAvantChiffrage(prestations, new Set(deja.map((p) => p.sujet)), axes.techniques);
 }
 
 /**

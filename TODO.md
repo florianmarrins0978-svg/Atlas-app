@@ -27,6 +27,13 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+- **Le champ de prix d'une grille fait 14 px, et iOS agrandit alors la page.**
+  Relevé le 14 août 2026 en regardant l'écran « Mes prix » sur un iPhone 13 : le
+  champ du montant (`Champ`, `GrillesPrixClient`) est le seul de l'application
+  sous les 16 px. Le passer à 16 élargit la colonne — donc ça touche l'allure
+  d'un écran qu'il n'a pas demandé de changer, et ça se dessine avant
+  (`CLAUDE.md` §3 bis).
+
 ### 0 quatervicies novies. NE PAS recoder le blocage de l'envoi sans SIRET
 
 Décidé par le patron le matin du 14 août 2026, codé, montré — puis **retiré le
@@ -196,6 +203,8 @@ du prix proposé dès qu'aucun tarif ne correspond. Un artisan dont l'ouvrier co
 **Ce que le lot 4 ajoute à cette liste :** `tarifs` n'a **aucune colonne de
 famille** — prestations, main-d'œuvre et matériel n'existent pas —, et rien ne
 signale un tarif **sans unité**, alors qu'un prix sans unité n'est pas un prix.
+(Les tranches des grilles, elles, se règlent depuis le 14 août —
+`ARCHITECTURE.md` §102.)
 (L'unité, elle, se **choisit** depuis le 14 août au lieu de se taper —
 `ARCHITECTURE.md` §101 — mais rien ne signale encore celle qui manque.)
 Les cinq grilles n'affichent pas **combien de prix elles ont appris**, ni la
@@ -2122,6 +2131,7 @@ et c'est déjà arrivé.
 
 ## Terminé
 
+- ~~Ajouter et retirer des cases : tranches, façons d'abattre et travaux se règlent~~ — 2026-08-14
 - ~~L'unité d'un tarif se choisit dans un bandeau déroulant, sans fermer la case~~ — 2026-08-14
 - ~~Reprendre l'application Arborea sans le site vitrine, et la publier~~ — 2026-07-31
 - ~~Vérifier le site publié à son adresse publique~~ — 2026-07-31

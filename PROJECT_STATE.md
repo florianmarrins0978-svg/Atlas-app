@@ -109,6 +109,7 @@ seule avec quinze outils.
 | **Proposer une date jusqu'à 18 mois**, sans montrer au client plus de trois semaines autour | `src/server/disponibilites.ts` (`fenetrePatron`, `bandesVisibles`) |
 | **Un calendrier des deux côtés**, où les jours déjà pris sont barrés et ne se choisissent pas | `src/lib/calendrier.ts` + `src/components/atlas/Calendrier.tsx` |
 | **Déposer sa liste de prix Excel ou CSV**, avec aperçu avant écriture | `src/app/reglages/ImportTarifs.tsx` + `src/lib/import-tarifs.ts` + `src/server/import/lire-classeur.ts` |
+| **Ses tranches et ses travaux, au lieu des nôtres** — les diamètres, les hauteurs, les façons d'abattre et les travaux s'ajoutent et se retirent (écran « Mes prix » et écran « Mes mesures »). Retirer n'efface aucun prix : les cases sont rangées et reviennent. Un travail ajouté n'est PAS reconnu par le chiffrage depuis une dictée, et l'écran le dit (`ARCHITECTURE.md` §102) | `src/lib/grille-prix.ts` + `src/server/repositories/grilles-reglables.ts` + `src/app/reglages/prix/` + `drizzle/0040_tranches_et_natures_de_grille.sql` |
 | **L'unité d'un tarif se CHOISIT** dans un bandeau déroulant (jour/homme, m², ml, heure, forfait, tonne, « aucune ») — la case reste libre pour le stère et l'arbre. Ce qu'elle évite : le rapprochement se fait à la lettre près, et « jours/homme » mal tapé faisait cesser la multiplication en silence (`ARCHITECTURE.md` §101) | `src/lib/unites-tarif.ts` + `src/components/atlas/ChoixUnite.tsx` + `src/app/reglages/ReglagesClient.tsx` |
 
 ### Conformité RGPD
@@ -602,7 +603,9 @@ Voir `TODO.md` pour le détail et l'ordre.
   à coder la colonne de famille sur `tarifs`, le signalement d'une unité
   manquante, et le nombre de prix appris par grille (`ARCHITECTURE.md` §89).
   **L'unité, elle, est codée le 14 août** : elle se choisit dans un bandeau
-  déroulant, sans se refermer sur une liste (`ARCHITECTURE.md` §101).
+  déroulant, sans se refermer sur une liste (`ARCHITECTURE.md` §101). **Et les
+  tranches des grilles se règlent depuis le 14 août** : elles ne sont plus
+  écrites dans le code (`ARCHITECTURE.md` §102).
   **Et surtout : `parametres_chiffrage` — cinq valeurs qui décident du prix
   proposé — n'a aucun écran.** Un artisan dont l'ouvrier coûte 260 €/jour verra
   des prix trop bas sans savoir d'où ils viennent.
