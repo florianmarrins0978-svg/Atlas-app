@@ -3,6 +3,11 @@ import { withEntreprise } from "../db/with-entreprise";
 import { fusionnerOccupationExterne } from "../../lib/agenda-externe";
 import { periodesOccupeesExterieures } from "./agendas-externes";
 import { chantiers, clients, devis, entreprises } from "../db/schema";
+// **La règle du blocage vit dans `src/lib/`, pas ici.** Elle sert à la fois à
+// signaler les champs vides sur l'écran de l'identité, à refuser l'envoi sur
+// cet écran-ci, et à refuser l'action serveur. Trois copies auraient divergé
+// (`CLAUDE.md` §3).
+import { manquesIdentite, type ManqueIdentite } from "@/lib/identite-entreprise";
 import type { Ctx } from "./context";
 import {
   fenetreProposition,
@@ -76,7 +81,15 @@ export type PreparationEnvoi = {
   /** La durée a-t-elle été déduite de la dictée, ou faute de mieux ? */
   dureeDeduiteDeLaDictee: boolean;
   /** Motif rendant l'envoi impossible, à afficher tel quel au patron. */
-  blocage: "canal_absent" | "coordonnee_absente" | "devis_absent" | null;
+  blocage: "canal_absent" | "coordonnee_absente" | "devis_absent" | "identite_incomplete" | null;
+  /**
+   * Ce qui manque à l'identité de l'entreprise, et ce que chaque absence
+   * empêche. Vide quand tout est là.
+   *
+   * **Renvoyé même lorsque le blocage est autre** : le patron doit pouvoir le
+   * lire une fois, pas le découvrir champ par champ à trois envois d'écart.
+   */
+  manquesIdentite: ManqueIdentite[];
 };
 
 /**
@@ -176,7 +189,13 @@ export async function preparerEnvoi(
         dureeDemiJournees: r.duree,
       }));
     const [entreprise] = await tx
-      .select({ nombreEquipes: entreprises.nombreEquipes })
+      .select({
+        nombreEquipes: entreprises.nombreEquipes,
+        nom: entreprises.nom,
+        adresse: entreprises.adresse,
+        siret: entreprises.siret,
+        iban: entreprises.iban,
+      })
       .from(entreprises)
       .where(eq(entreprises.id, ctx.entrepriseId))
       .limit(1);
@@ -208,13 +227,21 @@ export async function preparerEnvoi(
 
     // L'ordre des blocages suit celui que le patron doit corriger : à quoi bon
     // signaler une coordonnée manquante si le canal n'est pas encore choisi ?
+    //
+    // **L'identité passe AVANT le canal et la coordonnée**, et ce n'est pas
+    // arbitraire : elle se règle UNE FOIS pour toute l'entreprise, quand les
+    // deux autres se reposent à chaque client. La signaler d'abord, c'est la
+    // faire corriger au premier envoi plutôt qu'au dixième.
+    const manques = manquesIdentite(entreprise);
     const blocage: PreparationEnvoi["blocage"] = !devisRow
       ? "devis_absent"
-      : !canal
-        ? "canal_absent"
-        : !destinataire
-          ? "coordonnee_absente"
-          : null;
+      : manques.length > 0
+        ? "identite_incomplete"
+        : !canal
+          ? "canal_absent"
+          : !destinataire
+            ? "coordonnee_absente"
+            : null;
 
     return {
       canal,
@@ -246,6 +273,7 @@ export async function preparerEnvoi(
       dureeDemiJournees,
       dureeDeduiteDeLaDictee: dureeImposee === undefined && deduite !== null,
       blocage,
+      manquesIdentite: manques,
     };
   });
 }

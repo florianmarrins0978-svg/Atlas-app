@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, smallCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { jourIso, jourLisible } from "@/lib/jour";
@@ -50,6 +51,9 @@ const MESSAGES_BLOCAGE: Record<string, string> = {
   canal_absent: "Comment joindre ce client ?",
   coordonnee_absente: "Il manque la coordonnée pour ce canal.",
   devis_absent: "Aucun devis à envoyer pour ce chantier.",
+  // Le titre seulement : les champs manquants et ce que chacun empêche
+  // s'affichent en dessous, un par ligne (`ManquesIdentite`).
+  identite_incomplete: "Ce qui manque à votre entreprise",
 };
 
 /**
@@ -262,10 +266,12 @@ function Contenu({
   }
 
   const blocage = preparation?.blocage ? MESSAGES_BLOCAGE[preparation.blocage] : null;
-  // Deux des trois blocages se lèvent d'une saisie ici même. `devis_absent`,
-  // non : rien à écrire ne le résout.
+  // Deux des blocages se lèvent d'une saisie ici même. `devis_absent`, non :
+  // rien à écrire ne le résout. `identite_incomplete` non plus — il se répare
+  // dans les réglages, et l'écran y mène.
   const reparable =
     preparation?.blocage === "canal_absent" || preparation?.blocage === "coordonnee_absente";
+  const identiteIncomplete = preparation?.blocage === "identite_incomplete";
 
   return (
     <>
@@ -283,6 +289,53 @@ function Contenu({
         <p className="mb-3 mt-4 text-center text-[13px]" style={{ color: colors.ink }}>
           {blocage}
         </p>
+      )}
+
+      {/* **Ce qui manque, champ par champ, et ce que chaque absence empêche.**
+          Décision du patron le 14 août 2026 : on bloque l'ENVOI, jamais la
+          rédaction — un devis fige l'identité de l'émetteur au moment où il
+          part, et le corriger le lendemain ne change pas celui que le client a
+          sous les yeux (`ARCHITECTURE.md` §97).
+
+          Un « il manque des informations » ne dirait pas lesquelles, et
+          l'obligerait à parcourir tout l'écran des réglages pour les trouver. */}
+      {preparation && identiteIncomplete && (
+        <div className="mb-5">
+          {preparation.manquesIdentite.map((m) => (
+            <div
+              key={m.champ}
+              className="flex items-start gap-3 border-b py-3 last:border-b-0"
+              style={{ borderColor: colors.line }}
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] leading-[1.3]" style={{ fontFamily: font.display }}>
+                  {m.etiquette}
+                </span>
+                <span className="mt-[3px] block text-[11.5px] leading-[1.5]" style={{ color: colors.muted }}>
+                  {m.empeche}
+                </span>
+              </span>
+              <span className={libelleCaps} style={{ color: colors.alert, flex: "none", paddingTop: 4 }}>
+                Empêche
+              </span>
+            </div>
+          ))}
+
+          {/* On emmène là où ça se répare, plutôt que de nommer un écran qu'il
+              faudrait aller chercher. */}
+          <Link
+            href="/reglages/identite"
+            className="mt-3.5 inline-block text-[13.5px] font-medium"
+            style={{ color: colors.rust }}
+          >
+            Compléter mon entreprise →
+          </Link>
+
+          <p className="mt-4 text-[12px] leading-[1.6]" style={{ color: colors.muted }}>
+            <b style={{ color: colors.ink, fontWeight: 500 }}>Votre devis est gardé tel quel.</b>{" "}
+            Il partira dès que ces lignes seront remplies.
+          </p>
+        </div>
       )}
 
       {/* **On répare, on ne renvoie pas ailleurs.** Les deux voies sont offertes

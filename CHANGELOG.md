@@ -22,6 +22,41 @@ zéro entre deux suites que s'il vit dans Redis.
 coupable. La batterie officielle et la CI posaient déjà la variable : c'est
 l'appel à la main qui ne l'avait pas. Raisons : `ARCHITECTURE.md` §96.
 
+### CODÉ : un devis ne part plus sans identité — sa décision, planche en main
+
+**Sa réponse du 14 août 2026, question 3 : « A », bloquer l'envoi.** La question
+attendait dans `docs/A-FAIRE.md` §10 depuis le 13. Tant qu'il manque le **nom**,
+l'**adresse**, le **SIRET** ou l'**IBAN**, l'écran d'envoi liste ces lignes —
+chacune disant ce que son absence empêche —, le bouton reste éteint, et un lien
+mène droit à « Mon entreprise ». **Le devis n'est jamais bloqué à l'écriture** :
+il est gardé tel quel.
+
+**Pourquoi bloquer plutôt que prévenir, et cette raison seule tranche :** un
+devis fige l'identité de l'émetteur au moment où il part. La corriger le
+lendemain ne change pas celui que le client a sous les yeux. Un avertissement se
+lit une fois, se contourne d'un doigt, et se paie deux semaines plus tard.
+
+**Le serveur refuse aussi**, avant toute écriture : un bouton grisé ne protège
+rien si la page a été rouverte, ou laissée ouverte pendant qu'un champ se
+vidait. Et le refus est une valeur de retour, jamais une exception — dont le
+message n'arriverait pas jusqu'au patron.
+
+**Quatre champs, pas un de plus.** Téléphone, e-mail, forme juridique et numéro
+de TVA ne bloquent rien : un garde-fou qui agace finit contourné.
+
+**La règle est écrite une seule fois** (`src/lib/identite-entreprise.ts`) et
+sert aux trois endroits qui la posent — l'écran de l'identité, l'écran d'envoi,
+l'action serveur. Les quatre phrases « ce que ça empêche » y vivent aussi :
+recopiées, elles auraient fini par donner deux raisons pour un même champ.
+
+**Une suite montait une entreprise vide** et s'est mise à rougir en accusant
+l'identité — elle avait raison : une entreprise sans SIRET ne devrait jamais
+atteindre la question du canal. Son sujet étant le canal, elle pose désormais
+une identité complète.
+
+Nouveau : `src/lib/identite-entreprise.ts`, `scripts/test-identite-avant-envoi.ts`
+(12 contrôles, éprouvés rouges). Détail : `ARCHITECTURE.md` §97.
+
 ### DESSINÉ : les trois décisions qui restent, deux écrans chacune
 
 Sa demande : *« fais-moi des visuels pour que je te réponde »*.

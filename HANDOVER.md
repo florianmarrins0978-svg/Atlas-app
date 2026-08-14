@@ -300,6 +300,21 @@ premier devis d'un vrai artisan partirait sans SIRET ni IBAN, sans un mot. Le
 détail des six faits est dans `ARCHITECTURE.md` §87, la liste de travail dans
 `TODO.md` §0 quatervicies.
 
+**Un devis ne part plus sans identité, depuis le 14 août 2026**
+(`ARCHITECTURE.md` §97). Sa décision, planche en main. Trois choses à ne pas
+rater :
+
+1. **La règle vit dans `src/lib/identite-entreprise.ts`**, et elle est la seule.
+   L'écran de l'identité, l'écran d'envoi et l'action serveur l'appellent tous
+   les trois — y compris pour les phrases « ce que ça empêche ». Ne pas en
+   recopier une.
+2. **Quatre champs bloquent** : nom, adresse, SIRET, IBAN. Téléphone, e-mail,
+   forme juridique et numéro de TVA ne bloquent rien, et c'est délibéré.
+3. **Toute suite qui envoie un devis a besoin d'une entreprise complète.**
+   `test-preparation-envoi.ts` montait une entreprise vide et s'est mise à
+   rougir en accusant l'identité. Devant un rouge « identite_incomplete »
+   inattendu, regarder la FIXTURE avant le code.
+
 **Les réglages ont été REFONDUS le 14 août 2026** (`ARCHITECTURE.md` §96), à sa
 demande : *« je veux que tu recrées entièrement la page de réglage »*. L'écran
 est devenu un **sommaire** de treize rubriques en deux ensembles, et tout ce qui

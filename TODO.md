@@ -27,6 +27,19 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quatervicies novies. ~~Bloquer l'envoi d'un devis sans identité~~ — fait le 2026-08-14
+
+Sa décision (planche `atlas-trois-questions.html`, question 3, réponse « A ») est
+codée : `ARCHITECTURE.md` §97. Quatre champs bloquent, le serveur refuse aussi,
+et le devis n'est jamais bloqué à l'écriture.
+
+**Ce qui reste du même sujet, et qui n'est PAS fait** (`docs/A-FAIRE.md` §10) :
+le jeu de départ pose toujours une entreprise complète — donc le premier jour
+d'un artisan n'est joué par aucune suite —, **aucun écran ne permet de créer son
+entreprise**, et le nom manquant s'écrit encore poliment « Votre entreprise »
+au lieu d'être signalé.
+
+
 ### 0 quatervicies octies. ~~CODER le sommaire des réglages~~ — fait le 2026-08-14
 
 Le sommaire est en place (`ARCHITECTURE.md` §96), en filets et dans la charte,

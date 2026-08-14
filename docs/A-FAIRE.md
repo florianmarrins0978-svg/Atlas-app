@@ -765,15 +765,30 @@ Rien, en argent. En travail : **les écrans sont dessinés**
 coder — la création d'entreprise, les champs d'identité dans les réglages, le
 garde-fou avant l'envoi. C'est un lot de quelques jours, pas un chantier.
 
-### La question que je vous pose, et qui vous appartient
+### ~~La question que je vous pose, et qui vous appartient~~ — **tranchée le 14 août 2026**
 
-**Faut-il EMPÊCHER l'envoi d'un devis tant que l'identité est incomplète, ou
-seulement avertir ?**
+~~Faut-il EMPÊCHER l'envoi d'un devis tant que l'identité est incomplète, ou
+seulement avertir ?~~
 
-Mon avis : **empêcher l'envoi**, jamais la rédaction. Un devis irrégulier parti
-chez un client ne se rattrape pas, et l'artisan ne saura même pas qu'il l'a
-envoyé. Mais c'est vous qui décidez : c'est votre produit qui bloquera un
-utilisateur pressé.
+**Votre réponse, le 14 août 2026, planche en main : EMPÊCHER l'envoi.**
+
+C'est fait, et voici ce que ça donne concrètement. Tant qu'il manque le **nom**,
+l'**adresse**, le **SIRET** ou l'**IBAN**, l'écran d'envoi affiche ces lignes-là
+— chacune disant ce que son absence empêche —, le bouton d'envoi reste éteint,
+et un lien mène droit à « Mon entreprise ». **Le devis, lui, n'est jamais
+bloqué à l'écriture** : il est gardé tel quel et part dès que les lignes sont
+remplies.
+
+Deux précisions qui comptent. Le **serveur refuse aussi**, pas seulement
+l'écran : un bouton grisé ne protège de rien si la page a été rouverte ou
+laissée ouverte pendant qu'un champ se vidait. Et les champs qui n'empêchent
+rien — téléphone, e-mail, forme juridique, numéro de TVA — **ne bloquent pas** :
+un garde-fou qui agace finit contourné.
+
+Les points 3 et 4 du tableau ci-dessus sont donc réglés. **Restent les points 1,
+2 et 5** : votre banc démarre toujours avec une entreprise déjà remplie, aucun
+écran ne permet encore de créer son entreprise, et le nom manquant s'écrit
+toujours « Votre entreprise » au lieu d'être signalé.
 
 ### Ce qui est lié, et qui n'est pas fait non plus
 

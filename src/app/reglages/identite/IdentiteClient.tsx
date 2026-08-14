@@ -2,6 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
+// Les phrases qui disent CE QUE L'ABSENCE EMPÊCHE viennent de la règle, pas de
+// cet écran : le même texte s'affiche sur l'écran d'envoi qui refuse de partir,
+// et deux copies auraient fini par donner deux raisons pour un même champ
+// (`CLAUDE.md` §3).
+import { empechePar } from "@/lib/identite-entreprise";
 import { majIdentiteAction } from "./actions";
 
 /**
@@ -76,7 +81,7 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
           onChange={(v) => ecrire("nom", v)}
           onFini={() => enregistrer({ nom: valeurs.nom })}
           manquant={valeurs.nom.trim() === ""}
-          empeche="Sans nom, vos documents n'ont pas d'émetteur."
+          empeche={empechePar("nom")}
         />
         <Champ
           etiquette="Forme juridique"
@@ -95,7 +100,7 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
           onChange={(v) => ecrire("adresse", v)}
           onFini={() => enregistrer({ adresse: valeurs.adresse })}
           manquant={valeurs.adresse.trim() === ""}
-          empeche="Elle figure en tête de chaque devis et de chaque facture."
+          empeche={empechePar("adresse")}
         />
       </Bloc>
 
@@ -107,7 +112,7 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
           onChange={(v) => ecrire("siret", v)}
           onFini={() => enregistrer({ siret: valeurs.siret })}
           manquant={valeurs.siret.trim() === ""}
-          empeche="Vos factures ne sont pas conformes sans lui."
+          empeche={empechePar("siret")}
           /* Le SIREN se MONTRE, il ne se demande pas. */
           sous={siren ? `SIREN ${siren} — les neuf premiers chiffres. Il ne se saisit pas séparément.` : null}
         />
@@ -167,7 +172,7 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
           onChange={(v) => ecrire("iban", v)}
           onFini={() => enregistrer({ iban: valeurs.iban })}
           manquant={valeurs.iban.trim() === ""}
-          empeche="Sans lui, votre client reçoit un devis qu'il ne peut pas payer."
+          empeche={empechePar("iban")}
         />
         <Champ
           etiquette="Titulaire du compte"
