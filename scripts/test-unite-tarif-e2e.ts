@@ -44,6 +44,29 @@ async function uniteLue(carte: Locator): Promise<string> {
   return (await carte.getByLabel("Unité du tarif").innerText()).trim().replace(/\s*▾$/, "");
 }
 
+/**
+ * Recharger APRÈS que l'écriture soit partie, jamais pendant.
+ *
+ * **Ce que ça corrige, et pourquoi la suite mentait.** L'écran n'attend pas son
+ * enregistrement (`void persister(…)` dans `ReglagesClient`) : le bandeau se
+ * referme dès le doigt levé, et l'appel au serveur continue derrière. Recharger
+ * à cet instant **avorte l'appel en vol** — l'unité n'arrive jamais en base, et
+ * la suite accuse le bandeau d'avoir perdu la saisie.
+ *
+ * Elle passait seule et tombait dans la batterie complète, où le serveur est
+ * occupé par soixante-quatorze autres suites : la course s'y perd. Une suite
+ * qui échoue une fois sur trois s'apprend à être ignorée — c'est ce garde-fou
+ * là qu'on perd, pas seulement dix minutes. Trouvée le 14 août 2026, sur un
+ * lot qui n'était pas le mien.
+ *
+ * `networkidle` attend un demi-second de silence réseau : l'action serveur y
+ * est comptée, et le rechargement ne part qu'une fois la réponse revenue.
+ */
+async function rechargerUneFoisEcrit(page: Page): Promise<void> {
+  await page.waitForLoadState("networkidle");
+  await page.reload({ waitUntil: "networkidle" });
+}
+
 async function main() {
   const navigateur = await lancerNavigateur();
   // **Son écran, et pas celui d'un ordinateur.** Sur un grand écran tout tient
@@ -146,7 +169,7 @@ async function main() {
   await bandeau().waitFor({ state: "detached" });
   assert.equal(await uniteLue(carte), "m²");
 
-  await page.reload({ waitUntil: "networkidle" });
+  await rechargerUneFoisEcrit(page);
   carte = await carteDuTarif(page, MARQUE);
   assert.equal(
     await uniteLue(carte),
@@ -163,7 +186,7 @@ async function main() {
   await champLibre.press("Enter");
   await bandeau().waitFor({ state: "detached" });
 
-  await page.reload({ waitUntil: "networkidle" });
+  await rechargerUneFoisEcrit(page);
   carte = await carteDuTarif(page, MARQUE);
   assert.equal(
     await uniteLue(carte),
@@ -177,7 +200,7 @@ async function main() {
   await bandeau().getByRole("option", { name: /Aucune unité/ }).click();
   await bandeau().waitFor({ state: "detached" });
 
-  await page.reload({ waitUntil: "networkidle" });
+  await rechargerUneFoisEcrit(page);
   carte = await carteDuTarif(page, MARQUE);
   assert.match(
     await uniteLue(carte),
