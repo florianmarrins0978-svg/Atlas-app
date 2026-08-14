@@ -27,6 +27,22 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quatervicies octies. CODER le sommaire des réglages — en attente d'un mot du patron
+
+`maquettes/atlas-reglages-sommaire.html` est dessinée et au vert (59 contrôles,
+trois éprouvés rouges). Elle reprend SA planche du 14 août : dix rubriques,
+une icône chacune, « Devis & factures » et « Planning ».
+
+**Ce qui manque pour coder :** filets ou cartes. Les deux registres sont sur la
+planche, côte à côte ; il n'a pas encore choisi. Ne pas trancher à sa place —
+`CLAUDE.md` §3 bis existe précisément pour ça.
+
+**Ce que le codage suppose, et qui n'existe pas :** le cloisonnement par rôle en
+LECTURE. `getRole` n'est appelé dans aucun écran (§88), et l'écran du salarié
+n'est donc pas seulement une liste plus courte à écrire — c'est la première fois
+que le serveur devra refuser de rendre des rubriques. Compter cela dans le lot,
+pas après.
+
 ### 0 quatervicies septies. La page qui rassemble les maquettes a décroché
 
 `scripts/fusionner-maquettes.mjs` n'inscrit plus que la 40 et la 44. Les 41, 42

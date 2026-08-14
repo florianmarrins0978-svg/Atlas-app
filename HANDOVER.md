@@ -300,6 +300,22 @@ premier devis d'un vrai artisan partirait sans SIRET ni IBAN, sans un mot. Le
 détail des six faits est dans `ARCHITECTURE.md` §87, la liste de travail dans
 `TODO.md` §0 quatervicies.
 
+**Le sommaire lui-même, dessiné le 14 août** — et il vient d'une planche que le
+patron a envoyée sans qu'on la demande, noir et or, avec ce seul mot : « c'est
+ça que je voulais ! ». `maquettes/atlas-reglages-sommaire.html`,
+`ARCHITECTURE.md` §95. **Trois choses à ne pas rater si l'on reprend ce sujet
+à froid :**
+
+1. **Il reste un choix à obtenir : filets ou cartes.** Les deux registres sont
+   sur la planche, côte à côte, avec la même liste. Ne pas trancher à sa place.
+2. **Les couleurs ont été demandées, pas devinées.** Sa planche était sombre ;
+   il a répondu « crème, comme le reste ». Le mode sombre reste « Apparence »,
+   marquée *Bientôt*. Ne pas rouvrir sans lui.
+3. **Les deux ensembles « Moi » / « L'entreprise » ne sont pas décoratifs** : sa
+   liste de dix était plate, et sans eux il n'y a nulle part où couper pour le
+   salarié. Coder cet écran suppose donc le cloisonnement par rôle EN LECTURE,
+   qui n'existe pas encore (`getRole` n'est appelé dans aucun écran).
+
 **Lot 2 fait le 13 août : l'identité de l'entreprise**
 (`maquettes/atlas-reglages-identite.html`, `ARCHITECTURE.md` §87). Il a révélé
 **trois manques qui sont du code, pas du dessin** : le régime de TVA est deviné

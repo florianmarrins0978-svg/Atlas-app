@@ -1,0 +1,509 @@
+<title>Atlas — Réglages : le sommaire, en filets ou en cartes</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT pour la page.
+
+    RÉGLAGES — LE SOMMAIRE. Il vient d'une planche que le patron a envoyée le
+    14 août 2026, en noir et or, avec ce seul mot : « c'est ça que je voulais ! »
+
+    CE QU'IL A CHOISI, ET QUI EST ACQUIS :
+      · un sommaire, dix rubriques, une ICÔNE par rubrique, un titre, et une
+        ligne qui dit ce qu'on y trouve. Mes premières planches n'avaient pas
+        d'icône : une liste de treize lignes de texte se parcourt mal, et le
+        pictogramme est ce qui permet de retrouver « Tarifs » sans lire ;
+      · deux intitulés meilleurs que les miens — « Devis & factures » plutôt que
+        « Documents » (personne ne cherche « Documents » pour changer un
+        acompte), et PLANNING, que j'avais oublié alors qu'il figure dans ses
+        quatre priorités du 13 août.
+
+    CE QU'IL N'A PAS CHOISI, ET QUE CETTE PLANCHE TRANCHE : les couleurs. Sa
+    planche était sombre ; l'application est crème. Interrogé le 14 août, il a
+    répondu « crème, comme le reste » — un seul écran sombre au milieu de vingt
+    écrans clairs se serait lu comme un écran d'une autre application.
+
+    D'OÙ LES DEUX PREMIERS ÉCRANS, à choisir : la même liste, la même icône, le
+    même mot, dans deux registres.
+
+      · EN FILETS — la grammaire de tous les écrans refaits : des traits, pas de
+        cadres. C'est ce que dit la charte, où le luxe est fait de retenue
+        (`cardShadow` vaut « none », le rayon vaut 4 px).
+      · EN CARTES — la disposition de SA planche traduite en crème : chaque
+        rubrique posée sur `colors.card`, séparée par du blanc. Plus proche de
+        ce qu'il a validé, et plus étranger au reste de l'application.
+
+    Aucun des deux n'est « le bon » a priori. Ils sont côte à côte pour être
+    comparés d'un coup d'œil, ce qu'aucune description ne remplace.
+
+    LE TROISIÈME ÉCRAN N'EST PAS UNE VARIANTE D'AFFICHAGE. Sa planche listait
+    dix rubriques sans dire QUI LES VOIT. Or c'est lui qui a posé la règle, le
+    13 août : « un salarié peut changer ses notifications ou son mot de passe,
+    mais il ne doit évidemment pas pouvoir modifier les tarifs ou les
+    coordonnées bancaires ». Et `docs/QUESTIONS.md` §10 a tranché plus fort
+    encore : ce qu'un rôle n'a pas le droit de voir ne doit pas SORTIR DU
+    SERVEUR. Une rubrique absente de cette liste est une rubrique que le serveur
+    ne rendra pas — pas une ligne grisée.
+
+    D'OÙ LES DEUX ENSEMBLES, « Moi » et « L'entreprise », que sa planche
+    n'avait pas : sans eux, il n'y a nulle part où couper. Les trois lignes de
+    l'ensemble « Moi » sont exactement celles qu'un salarié garde.
+
+    UNE COQUILLE CORRIGÉE au passage, sur sa planche : « confidentbilité ».
+  */
+
+  /* ═══ LA CHARTE DE L'APPLICATION, VALEUR POUR VALEUR ═════════════════
+     Recopiée de `src/lib/design-tokens.ts` — le contrôle les compare, et les
+     changer ici sans les changer là-bas rougit. */
+  :root{
+    --fond:#f5f3ee;   /* colors.cream */
+    --plage:#faf9f5;  /* colors.card  */
+    --encre:#1c1c1a;  /* colors.ink   */
+    --gris:#8a8578;   /* colors.muted */
+    --bronze:#b98b47; /* colors.or : ce qu'on LIT */
+    --trait:rgba(28,28,26,.12); /* colors.line */
+  }
+  /* La PLANCHE suit le thème du lecteur. L'ÉCRAN, lui, reste clair : c'est la
+     décision du 14 août, et montrer un écran sombre ici reviendrait à dessiner
+     une application qui n'existe pas. */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c9a15e; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c9a15e; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1700px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 34px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+  .loupe{display:none}
+  @media (min-width:1000px){
+    .loupe{display:block;margin:18px auto 0;padding-top:14px;max-width:56ch;
+           border-top:1px solid var(--trait);font-size:13.5px;color:var(--gris)}
+  }
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:412px;max-width:100%}
+
+  /* ═══ LE GROS PLAN ═══════════════════════════════════════════════════
+     `zoom` agrandit l'écran ENTIER dans ses proportions : il continue de
+     mesurer 390 px pour lui-même, et une cible de 44 px reste une cible de
+     44 px. Éteinte sous 1000 px, donc éteinte là où les contrôles mesurent. */
+  @media (min-width:1000px){
+    .rangee{flex-direction:column;flex-wrap:nowrap;gap:80px;align-items:center}
+    .prop{display:grid;width:auto;max-width:none;column-gap:52px;
+          grid-template-columns:auto 320px;
+          grid-template-rows:auto auto 1fr;
+          grid-template-areas:"tel sous" "tel note" "tel .";
+          justify-items:start}
+    .prop .tel{grid-area:tel;zoom:1.35}
+    .prop .sous{grid-area:sous;text-align:left;align-self:start;padding-top:50px}
+    .prop .note{grid-area:note;text-align:left;max-width:none;align-self:start;
+                font-size:14px;line-height:1.7}
+  }
+  @media (min-width:1500px){
+    .prop{grid-template-columns:auto 360px}
+    .prop .tel{zoom:1.6}
+    .prop .sous{padding-top:59px}
+  }
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:720px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-bronze:#b98b47; --e-trait:rgba(28,28,26,.12); --e-plein:#2f3b2f}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  /* `EnTeteEcran`, valeur pour valeur. */
+  .tete{padding:34px 26px 0;flex:none}
+  .tete .sur{margin:0;color:var(--e-bronze)}
+  .tete h1{margin:14px 0 0;font:400 36px/1.02 ui-serif,Georgia,serif;letter-spacing:-.018em}
+  .cheveu{flex:none;height:1px;margin:26px 26px 0;background:var(--e-trait)}
+  .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
+
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:18px 14px 26px;background:var(--e-fond)}
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre);transform:translateY(-2px)}
+  .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;background:var(--e-bronze)}
+  .bas i.q4{left:calc(14px + 3*(100% - 28px)/4)}
+
+  /* ═══ Le sommaire ════════════════════════════════════════════════════ */
+  .bloc{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--e-trait)}
+  .bloc .t{margin:0 0 10px;color:var(--e-gris)}
+  /* Le cheveu de l'en-tête ferme déjà au-dessus du premier bloc : deux filets
+     séparés par 30 px de vide dessinent une bande morte. */
+  .corps > .bloc:first-of-type{border-top:0;padding-top:0}
+  .bloc .rub:last-child{border-bottom:0}
+
+  /* ═══ L'ICÔNE, la seule chose que sa planche ajoute vraiment ═════════
+     22 px, filaire, EN OR — parce qu'une icône se LIT, elle ne se touche pas :
+     c'est toute la ligne qui est la cible. Le vert pin en aurait fait dix
+     boutons alignés (`design-tokens.ts` : l'or porte ce qu'on lit, le pin ce
+     qu'on fait). Épaisseur 1,4 : au-delà, dix pictogrammes pleins font un
+     tableau de bord, et c'est l'aspect qu'il refuse. */
+  .ico{flex:none;display:block;width:22px;height:22px;color:var(--e-bronze)}
+  .ico svg{display:block;width:22px;height:22px;fill:none;stroke:currentColor;
+           stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+
+  /* ── Registre 1 : EN FILETS ─────────────────────────────────────────
+     Toute la ligne se touche — 56 px au minimum, au-delà de la cible de 44. */
+  .rub{display:flex;align-items:center;gap:15px;padding:13px 0;min-height:56px;
+       border-bottom:1px solid var(--e-trait);-webkit-tap-highlight-color:transparent;
+       transition:border-color .24s}
+  .rub:active{border-bottom-color:var(--e-bronze)}
+  .rub .txt{flex:1;min-width:0}
+  .rub .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif;color:var(--e-encre)}
+  .rub .dit{display:block;margin-top:3px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  /* Le chevron dit « ça s'ouvre ». Aucune rubrique n'en est dépourvue. */
+  .rub .chev{flex:none;width:8px;height:8px;border-right:1.5px solid var(--e-trait);
+             border-top:1.5px solid var(--e-trait);transform:rotate(45deg)}
+
+  /* ── Registre 2 : EN CARTES ─────────────────────────────────────────
+     Sa planche, en crème. Pas d'ombre et 4 px de rayon : la charte le dit, et
+     une carte ombrée aurait été un troisième registre, ni le sien ni le nôtre. */
+  .crt{display:flex;align-items:center;gap:15px;padding:14px 15px;min-height:60px;
+       margin-bottom:8px;border-radius:4px;background:var(--e-plage);
+       -webkit-tap-highlight-color:transparent;transition:background .24s}
+  .crt:active{background:var(--e-trait)}
+  .crt:last-child{margin-bottom:0}
+  .crt .txt{flex:1;min-width:0}
+  .crt .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif;color:var(--e-encre)}
+  .crt .dit{display:block;margin-top:3px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  .crt .chev{flex:none;width:8px;height:8px;border-right:1.5px solid var(--e-trait);
+             border-top:1.5px solid var(--e-trait);transform:rotate(45deg)}
+
+  /* « BIENTÔT » n'est pas un ornement : la règle du dépôt interdit de laisser
+     croire qu'une chose marche. La rubrique se voit, et elle ne ment pas. */
+  .plus_tard .nom{color:var(--e-gris)}
+  .plus_tard .ico{opacity:.45}
+  .plus_tard .chev{opacity:.4}
+  .marque{flex:none;color:var(--e-bronze);opacity:.9}
+
+  /* Le mot qui clôt un écran court : sans lui, il se lit comme un écran cassé. */
+  .fin{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--e-trait);
+       font-size:11.5px;line-height:1.75;color:var(--e-gris)}
+  .fin b{color:var(--e-encre);font-weight:400}
+
+  /* SUR TÉLÉPHONE, LE CADRE S'EFFACE — il coûtait 54 px, et l'écran ne mesurait
+     plus que 336 px au lieu de 390. Règle posée en dernier dans la feuille :
+     placée plus haut, `.tel{padding:11px}` la reprenait à égalité de
+     spécificité (`ARCHITECTURE.md` §86). */
+  @media (max-width:520px){
+    body{padding:26px 0 72px}
+    .intro,.sous,.note{padding-left:16px;padding-right:16px}
+    .tel{width:100%;padding:0;background:none;box-shadow:none;border-radius:0}
+    .ecran{border-radius:0}
+  }
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Réglages — le sommaire</p>
+    <h1>Votre planche, dans la couleur de l'application</h1>
+    <p>
+      Les <strong>dix rubriques et leurs icônes</strong> sont les vôtres, ainsi
+      que « Devis &amp; factures » et « Planning ». Deux registres à comparer :
+      <strong>en filets</strong>, la grammaire de tous les écrans refaits, et
+      <strong>en cartes</strong>, votre planche traduite en crème. Le troisième
+      écran montre ce que le sommaire devient <strong>pour un salarié</strong>.
+    </p>
+    <p class="loupe">
+      Sur grand écran, les téléphones sont <strong>agrandis à la loupe</strong> :
+      les proportions restent celles d'un iPhone, et une cible de 44 px reste une
+      cible de 44 px.
+    </p>
+  </div>
+
+  <div class="rangee">
+
+    <!-- ── 1. En filets : la grammaire de l'application ────────────────── -->
+    <div class="prop">
+      <p class="sous">En filets — la charte</p>
+      <div class="tel"><div class="ecran" data-s="filets">
+        <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Réglages</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <div class="bloc">
+            <p class="t caps">Moi</p>
+
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20.5c0-3.7 3.2-5.8 7.2-5.8s7.2 2.1 7.2 5.8"/></svg></span>
+              <span class="txt"><span class="nom">Mon compte</span><span class="dit">Nom, e-mail et téléphone</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M18 15.5V10a6 6 0 1 0-12 0v5.5L4.5 18h15z"/><path d="M10 20.4a2.2 2.2 0 0 0 4 0"/></svg></span>
+              <span class="txt"><span class="nom">Notifications</span><span class="dit">Alertes et rappels</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7"/></svg></span>
+              <span class="txt"><span class="nom">Connexion</span><span class="dit">Mot de passe et appareils</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="rub plus_tard">
+              <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 0 0 17z"/></svg></span>
+              <span class="txt"><span class="nom">Apparence</span><span class="dit">Thème clair, sombre et couleurs</span></span>
+              <span class="marque caps">Bientôt</span>
+              <span class="chev"></span>
+            </div>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">L'entreprise</p>
+
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M3.5 20.5V4.6a1 1 0 0 1 1-1H13a1 1 0 0 1 1 1v15.9"/><path d="M14 9.5h6a1 1 0 0 1 1 1v10"/><path d="M2.5 20.5h19"/><path d="M6.5 8h1M10 8h1M6.5 12h1M10 12h1M6.5 16h1M10 16h1M17 13.5h1M17 17h1"/></svg></span>
+              <span class="txt"><span class="nom">Mon entreprise</span><span class="dit">Identité, coordonnées et informations légales</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M2.8 19.8c0-3.3 2.8-5.2 6.2-5.2s6.2 1.9 6.2 5.2"/><path d="M16.2 5.7a3.2 3.2 0 0 1 0 6.2"/><path d="M17.6 14.3c2.1.6 3.6 2.2 3.6 4.6"/></svg></span>
+              <span class="txt"><span class="nom">Équipe</span><span class="dit">Utilisateurs, rôles et permissions</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M3.2 11.4V4.2a1 1 0 0 1 1-1h7.2a1 1 0 0 1 .7.3l8.4 8.4a1 1 0 0 1 0 1.4l-7.2 7.2a1 1 0 0 1-1.4 0L3.5 12.1a1 1 0 0 1-.3-.7Z"/><circle cx="7.6" cy="7.6" r="1.3"/></svg></span>
+              <span class="txt"><span class="nom">Tarifs &amp; catalogue</span><span class="dit">Prestations, main-d'œuvre, matériel et marges</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M13.2 3H6.4A1.4 1.4 0 0 0 5 4.4v15.2A1.4 1.4 0 0 0 6.4 21h11.2a1.4 1.4 0 0 0 1.4-1.4V8.8z"/><path d="M13.2 3v5.8H19"/><path d="M8.4 13h7.2M8.4 16.6h5"/></svg></span>
+              <span class="txt"><span class="nom">Devis &amp; factures</span><span class="dit">Conditions, numérotation et mentions</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="1.5"/><path d="M3.5 9.8h17"/><path d="M8 3.2v3.6M16 3.2v3.6"/><path d="M7.8 13.4h1.2M11.4 13.4h1.2M15 13.4h1.2M7.8 16.9h1.2M11.4 16.9h1.2"/></svg></span>
+              <span class="txt"><span class="nom">Planning</span><span class="dit">Horaires, équipes et disponibilités</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M9.6 3.4 11.6 9l5.6 2-5.6 2-2 5.6-2-5.6L2 11l5.6-2z"/><path d="M18 3v3.8M16.1 4.9h3.8"/></svg></span>
+              <span class="txt"><span class="nom">Atlas IA</span><span class="dit">Automatisations et suggestions</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M9.2 3.6a2.1 2.1 0 0 1 4.2 0c0 .8-.5 1.2-.5 1.7 0 .5.4.8.9.8h2.6a1 1 0 0 1 1 1v2.7c0 .5.3.9.8.9.5 0 .9-.5 1.7-.5a2.1 2.1 0 0 1 0 4.2c-.8 0-1.2-.5-1.7-.5-.5 0-.8.4-.8.9V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7.1a1 1 0 0 1 1-1h2.8c.5 0 .9-.3.9-.8 0-.5-.5-.9-.5-1.7Z"/></svg></span>
+              <span class="txt"><span class="nom">Intégrations</span><span class="dit">Calendrier, comptabilité et services connectés</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="rub plus_tard">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M3.2 7.8 6.6 15.4h10.8l3.4-7.6-4.6 3-4.2-6.6-4.2 6.6z"/><path d="M6.6 18.8h10.8"/></svg></span>
+              <span class="txt"><span class="nom">Abonnement</span><span class="dit">Offre, paiement et factures</span></span>
+              <span class="marque caps">Bientôt</span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3.2 5.2 5.9v5.3c0 4.2 2.8 7.9 6.8 9.1 4-1.2 6.8-4.9 6.8-9.1V5.9z"/><path d="M9.3 12.1l1.9 1.9 3.6-3.7"/></svg></span>
+              <span class="txt"><span class="nom">Sécurité &amp; données</span><span class="dit">Export, effacement et RGPD</span></span>
+              <span class="chev"></span>
+            </div>
+          </div>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Des filets, pas de cadres : c'est ce qu'emploient les vingt autres
+        écrans. <b>L'icône est en or</b>, parce qu'elle se lit — c'est la ligne
+        entière qui se touche, pas le pictogramme.
+      </p>
+    </div>
+
+    <!-- ── 2. En cartes : sa planche, traduite en crème ────────────────── -->
+    <div class="prop">
+      <p class="sous">En cartes — votre planche</p>
+      <div class="tel"><div class="ecran" data-s="cartes">
+        <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Réglages</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <div class="bloc">
+            <p class="t caps">Moi</p>
+
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20.5c0-3.7 3.2-5.8 7.2-5.8s7.2 2.1 7.2 5.8"/></svg></span>
+              <span class="txt"><span class="nom">Mon compte</span><span class="dit">Nom, e-mail et téléphone</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M18 15.5V10a6 6 0 1 0-12 0v5.5L4.5 18h15z"/><path d="M10 20.4a2.2 2.2 0 0 0 4 0"/></svg></span>
+              <span class="txt"><span class="nom">Notifications</span><span class="dit">Alertes et rappels</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7"/></svg></span>
+              <span class="txt"><span class="nom">Connexion</span><span class="dit">Mot de passe et appareils</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="crt plus_tard">
+              <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 0 0 17z"/></svg></span>
+              <span class="txt"><span class="nom">Apparence</span><span class="dit">Thème clair, sombre et couleurs</span></span>
+              <span class="marque caps">Bientôt</span>
+              <span class="chev"></span>
+            </div>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">L'entreprise</p>
+
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M3.5 20.5V4.6a1 1 0 0 1 1-1H13a1 1 0 0 1 1 1v15.9"/><path d="M14 9.5h6a1 1 0 0 1 1 1v10"/><path d="M2.5 20.5h19"/><path d="M6.5 8h1M10 8h1M6.5 12h1M10 12h1M6.5 16h1M10 16h1M17 13.5h1M17 17h1"/></svg></span>
+              <span class="txt"><span class="nom">Mon entreprise</span><span class="dit">Identité, coordonnées et informations légales</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M2.8 19.8c0-3.3 2.8-5.2 6.2-5.2s6.2 1.9 6.2 5.2"/><path d="M16.2 5.7a3.2 3.2 0 0 1 0 6.2"/><path d="M17.6 14.3c2.1.6 3.6 2.2 3.6 4.6"/></svg></span>
+              <span class="txt"><span class="nom">Équipe</span><span class="dit">Utilisateurs, rôles et permissions</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M3.2 11.4V4.2a1 1 0 0 1 1-1h7.2a1 1 0 0 1 .7.3l8.4 8.4a1 1 0 0 1 0 1.4l-7.2 7.2a1 1 0 0 1-1.4 0L3.5 12.1a1 1 0 0 1-.3-.7Z"/><circle cx="7.6" cy="7.6" r="1.3"/></svg></span>
+              <span class="txt"><span class="nom">Tarifs &amp; catalogue</span><span class="dit">Prestations, main-d'œuvre, matériel et marges</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M13.2 3H6.4A1.4 1.4 0 0 0 5 4.4v15.2A1.4 1.4 0 0 0 6.4 21h11.2a1.4 1.4 0 0 0 1.4-1.4V8.8z"/><path d="M13.2 3v5.8H19"/><path d="M8.4 13h7.2M8.4 16.6h5"/></svg></span>
+              <span class="txt"><span class="nom">Devis &amp; factures</span><span class="dit">Conditions, numérotation et mentions</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="1.5"/><path d="M3.5 9.8h17"/><path d="M8 3.2v3.6M16 3.2v3.6"/><path d="M7.8 13.4h1.2M11.4 13.4h1.2M15 13.4h1.2M7.8 16.9h1.2M11.4 16.9h1.2"/></svg></span>
+              <span class="txt"><span class="nom">Planning</span><span class="dit">Horaires, équipes et disponibilités</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M9.6 3.4 11.6 9l5.6 2-5.6 2-2 5.6-2-5.6L2 11l5.6-2z"/><path d="M18 3v3.8M16.1 4.9h3.8"/></svg></span>
+              <span class="txt"><span class="nom">Atlas IA</span><span class="dit">Automatisations et suggestions</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M9.2 3.6a2.1 2.1 0 0 1 4.2 0c0 .8-.5 1.2-.5 1.7 0 .5.4.8.9.8h2.6a1 1 0 0 1 1 1v2.7c0 .5.3.9.8.9.5 0 .9-.5 1.7-.5a2.1 2.1 0 0 1 0 4.2c-.8 0-1.2-.5-1.7-.5-.5 0-.8.4-.8.9V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7.1a1 1 0 0 1 1-1h2.8c.5 0 .9-.3.9-.8 0-.5-.5-.9-.5-1.7Z"/></svg></span>
+              <span class="txt"><span class="nom">Intégrations</span><span class="dit">Calendrier, comptabilité et services connectés</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="crt plus_tard">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M3.2 7.8 6.6 15.4h10.8l3.4-7.6-4.6 3-4.2-6.6-4.2 6.6z"/><path d="M6.6 18.8h10.8"/></svg></span>
+              <span class="txt"><span class="nom">Abonnement</span><span class="dit">Offre, paiement et factures</span></span>
+              <span class="marque caps">Bientôt</span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="crt">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3.2 5.2 5.9v5.3c0 4.2 2.8 7.9 6.8 9.1 4-1.2 6.8-4.9 6.8-9.1V5.9z"/><path d="M9.3 12.1l1.9 1.9 3.6-3.7"/></svg></span>
+              <span class="txt"><span class="nom">Sécurité &amp; données</span><span class="dit">Export, effacement et RGPD</span></span>
+              <span class="chev"></span>
+            </div>
+          </div>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        La même liste, posée sur des plages crème. <b>Sans ombre et sans rayon
+        prononcé</b> : la charte n'en a aucune, et une carte ombrée aurait été un
+        troisième registre — ni le vôtre, ni celui de l'application.
+      </p>
+    </div>
+
+    <!-- ── 3. Le salarié : ce que la liste devient ─────────────────────── -->
+    <div class="prop">
+      <p class="sous">Le même écran, pour un salarié</p>
+      <div class="tel"><div class="ecran" data-s="salarie">
+        <div class="tete"><p class="sur caps">Mon compte</p><h1>Réglages</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <div class="bloc">
+            <p class="t caps">Moi</p>
+
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20.5c0-3.7 3.2-5.8 7.2-5.8s7.2 2.1 7.2 5.8"/></svg></span>
+              <span class="txt"><span class="nom">Mon compte</span><span class="dit">Nom, e-mail et téléphone</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><path d="M18 15.5V10a6 6 0 1 0-12 0v5.5L4.5 18h15z"/><path d="M10 20.4a2.2 2.2 0 0 0 4 0"/></svg></span>
+              <span class="txt"><span class="nom">Notifications</span><span class="dit">Mes chantiers et mes horaires</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="rub">
+              <span class="ico"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7"/></svg></span>
+              <span class="txt"><span class="nom">Connexion</span><span class="dit">Mot de passe et appareils</span></span>
+              <span class="chev"></span>
+            </div>
+
+            <div class="rub plus_tard">
+              <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 0 0 17z"/></svg></span>
+              <span class="txt"><span class="nom">Apparence</span><span class="dit">Thème clair, sombre et couleurs</span></span>
+              <span class="marque caps">Bientôt</span>
+              <span class="chev"></span>
+            </div>
+          </div>
+
+          <p class="fin">
+            Rien de l'entreprise ici, et ce n'est pas un écran amputé : il voit le
+            planning et ses chantiers, <b>jamais un montant</b>. Le surtitre dit
+            « Mon compte », pas « Mon entreprise » — elle ne lui appartient pas.
+          </p>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Les neuf rubriques de l'entreprise <b>ne sont pas grisées, elles sont
+        absentes</b> — et le serveur ne les lui enverra pas. Une ligne grisée
+        dirait qu'il existe quelque chose à obtenir.
+      </p>
+    </div>
+
+  </div>
+</div>

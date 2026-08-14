@@ -7,6 +7,41 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-14
+
+### DESSINÉ : le sommaire des réglages, d'après la planche du patron
+
+Il a envoyé une planche qu'il n'avait pas demandée — un sommaire noir et or,
+dix rubriques, une icône chacune — avec ce seul mot : « c'est ça que je
+voulais ! ». `maquettes/atlas-reglages-sommaire.html` la reprend, dans la
+couleur de l'application. **59 contrôles au vert**, dont trois éprouvés rouges.
+
+**Trois choses de sa planche sont meilleures que les miennes** : l'icône par
+rubrique (treize lignes de texte se parcourent mal), « Devis & factures »
+plutôt que « Documents » (personne ne cherche « Documents » pour changer un
+acompte), et **Planning**, qui figurait dans ses quatre priorités et n'avait
+pas de rubrique.
+
+**Les couleurs ont été demandées, pas devinées.** Sa planche était sombre,
+l'application est crème ; un seul écran sombre au milieu de vingt se lit comme
+un écran d'une autre application. Il a répondu « crème, comme le reste ». Le
+mode sombre reste « Apparence », marquée *Bientôt*.
+
+**Deux ensembles qu'il n'avait pas dessinés, et qui ne se négocient pas** :
+« Moi » et « L'entreprise ». Sa liste de dix était plate, et il n'y avait donc
+nulle part où couper — alors que c'est lui qui a posé la règle du salarié qui
+ne voit pas les tarifs. Le troisième écran montre ce que la liste devient pour
+lui : les neuf rubriques de l'entreprise ne sont pas grisées, elles sont
+**absentes**.
+
+**Ce qu'il reste à trancher :** filets ou cartes. Les deux registres portent la
+même liste — s'ils divergeaient, il choisirait une allure en croyant en choisir
+une autre, et c'est le contrôle le plus important du vérificateur.
+
+Détail et raisons : `ARCHITECTURE.md` §95.
+
+---
+
 ## 2026-08-13
 
 ### CODÉ : l'identité de l'entreprise, et le régime de TVA qui cesse d'être deviné

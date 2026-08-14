@@ -7532,3 +7532,60 @@ tenues par `maquettes/charte.mjs` ne se transportent pas toutes seules dans
 défauts y reviennent. Le seul rempart est celui que `CLAUDE.md` §5 nomme :
 prendre une capture des écrans touchés fait partie du travail, pas de la
 finition.
+
+---
+
+## 95. Le sommaire des réglages : sa planche à lui, et le seul choix qui restait
+
+**Le 14 août 2026, le patron a envoyé une planche qu'il n'avait pas demandée** —
+un sommaire noir et or, dix rubriques, une icône chacune — avec ce seul mot :
+« c'est ça que je voulais ! ». Ses libellés ne figuraient nulle part dans le
+dépôt : elle vient d'ailleurs, et c'est une consigne, pas une livraison.
+
+**Ce qu'elle apporte, et que mes sept planches n'avaient pas :**
+
+| Sa planche | Ce qu'elle corrige |
+|---|---|
+| une **icône par rubrique** | treize lignes de texte se parcourent mal ; le pictogramme est ce qui permet de retrouver « Tarifs » sans lire |
+| « **Devis & factures** » | personne ne cherche « Documents » pour changer un acompte |
+| « **Planning** » | il figurait dans ses quatre priorités du 13 août, et j'avais oublié de lui donner une rubrique |
+
+**Ce qu'elle ne dit pas, et qui a dû être demandé : les couleurs.** Un écran
+sombre au milieu de vingt écrans crème se lit comme un écran d'une autre
+application. Interrogé, il a répondu **« crème, comme le reste »**. Le mode
+sombre reste donc la rubrique « Apparence », marquée *Bientôt* — et
+`design-tokens.ts` porte déjà la note qui dit où l'empêcher de partir jusque
+sur le devis du client.
+
+**Ce qu'elle ne dit pas non plus, et qui ne se demande pas : QUI VOIT QUOI.**
+Sa liste de dix est plate. Or c'est lui qui a posé la règle le 13 août — « un
+salarié peut changer ses notifications ou son mot de passe, mais il ne doit
+évidemment pas pouvoir modifier les tarifs ou les coordonnées bancaires » — et
+`docs/QUESTIONS.md` §10 va plus loin : ce qu'un rôle n'a pas le droit de voir ne
+doit pas **sortir du serveur**. D'où les deux ensembles, « Moi » et
+« L'entreprise », qui n'existent pas sur sa planche : sans eux, il n'y a nulle
+part où couper. Les quatre lignes de « Moi » sont exactement ce qu'un salarié
+garde ; les neuf autres ne lui sont pas grisées, elles lui sont **absentes**.
+
+**`maquettes/atlas-reglages-sommaire.html` — trois écrans, dont deux à choisir :**
+
+1. **en filets**, la grammaire de tous les écrans refaits ;
+2. **en cartes**, sa planche traduite en crème — chaque rubrique posée sur
+   `colors.card`, sans ombre et au rayon de 4 px ;
+3. **le même écran pour un salarié**, qui n'est pas une variante d'affichage.
+
+**Les deux registres portent la MÊME liste, et c'est le contrôle le plus
+important du vérificateur.** S'ils divergeaient d'une rubrique, la comparaison
+porterait sur autre chose que le registre, et il choisirait une allure en
+croyant en choisir une autre.
+
+**Le deuxième contrôle qui mérite son existence :** *aucune icône n'est le
+doublon d'une autre*. Dix pictogrammes recopiés passeraient tout le reste — la
+liste serait complète, alignée, dorée, et parfaitement illisible.
+
+**Un contrôle a d'abord accusé à tort, et la correction est instructive.** La
+recherche de la coquille de sa planche (« confidentbilité », qu'il ne fallait
+pas recopier) portait sur le FICHIER : elle rougissait sur le commentaire
+d'en-tête qui cite la faute pour dire qu'on l'a vue. Elle porte désormais sur le
+**texte affiché**. Une règle qui interdit un mot doit regarder là où le mot
+serait lu, pas là où on en parle.

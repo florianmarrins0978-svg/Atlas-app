@@ -556,7 +556,14 @@ Voir `TODO.md` pour le détail et l'ordre.
 
 - **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
   (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA
-  se déclare au lieu d'être deviné d'après le taux**. Ce qui suit décrit l'état
+  se déclare au lieu d'être deviné d'après le taux**. **Le sommaire lui-même est
+  dessiné le 14 août** (`maquettes/atlas-reglages-sommaire.html`,
+  `ARCHITECTURE.md` §95), d'après une planche que le patron a envoyée de
+  lui-même : dix rubriques, une icône chacune, « Devis & factures » et
+  « Planning ». Il reste **un choix à obtenir avant de coder** — filets ou
+  cartes — et la planche porte les deux, côte à côte. Sa planche était sombre ;
+  interrogé, il a répondu « crème, comme le reste », et le mode sombre reste la
+  rubrique « Apparence », marquée *Bientôt*. Ce qui suit décrit l'état
   d'avant ce lot, et reste vrai pour les neuf autres rubriques : (`maquettes/atlas-reglages-plan.html`, `ARCHITECTURE.md` §86). Ce qui
   y est tranché : les deux niveaux « Moi » / « Mon entreprise », qui voit quoi,
   et ce qui n'aura jamais d'interrupteur. Ce qui ne l'est pas : le rôle
