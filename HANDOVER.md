@@ -674,6 +674,32 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**« L'APPLI NE MARCHE PLUS » — ELLE MARCHAIT (14 août, tard).** Son iPhone
+proposait de télécharger un fichier au lieu d'ouvrir Atlas. **Son espace de
+travail s'était éteint** : GitHub arrête un espace inactif au bout d'une
+trentaine de minutes, l'adresse survit, plus personne ne répond, et Safari
+propose d'enregistrer ce silence.
+
+**COMMENT ÇA S'EST DIAGNOSTIQUÉ SANS LUI, ET À REFAIRE PAREIL :** la fiche
+d'état que son espace publie tout seul —
+[issue #47](https://github.com/florianmarrins0978-svg/Atlas-app/issues/47).
+Elle donnait la branche suivie, le commit récupéré (`08a5377` : le correctif
+était bien arrivé) et « serveur : répond ». **Sa date est le premier
+diagnostic** : réécrite tous les quarts d'heure, un silence de plus de vingt
+minutes signifie « espace arrêté », pas « serveur en panne ».
+
+**Ne pas conclure « c'est sa machine » sans avoir éprouvé le code**, parce que
+la batterie tourne en mode DÉVELOPPEMENT et que son banc sert du **bâti** :
+`npm run build`, puis `npx next start` avec `ATLAS_PROFIL=banc` — et vérifier
+que `/` et `/login` rendent `200 text/html`. Sans ce profil, on obtient deux
+erreurs qui n'accusent que le poste d'essai (`UntrustedHost`, puis
+`LLM_PROVIDER vaut « dev » en production`).
+
+**Ce qui a été ajouté pour lui :** `docs/ESSAYER.md` porte une section
+« L'application ne s'ouvre plus du tout », avec sa capture décrite dans ses
+mots et le remède en deux gestes. Elle reste lisible quand son espace est
+éteint — c'est tout l'intérêt.
+
 **LE DEVIS SE REPREND AVANT DE PARTIR (13 août).** « Modifier », en or, en face
 du titre de l'écran d'envoi. Sa capture : *« si je veux modifier mon devis avant
 de l'envoyer, je peux pas »* — et c'était vrai, le lien n'existait qu'APRÈS

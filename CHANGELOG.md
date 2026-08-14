@@ -356,6 +356,57 @@ Détail et raisons : `ARCHITECTURE.md` §95.
 
 ---
 
+## 2026-08-14
+
+### « L'appli ne marche plus » : elle marchait, c'est l'espace qui dormait
+
+**Sa capture, tard le 14 août :** il ouvre son favori Atlas et son iPhone lui
+propose de **télécharger un fichier** portant le nom de l'adresse, l'onglet
+restant sur `about:blank`. *« L'appli ne marche plus. Je vais me coucher,
+corrige-moi ça tout seul. »*
+
+**Ce n'était pas l'application, et c'est sa propre machine qui l'a dit.** La
+fiche d'état que son espace publie (`scripts/rapporter-espace.mjs`) portait,
+vingt-six minutes plus tôt :
+
+```
+Branche suivie   : main
+Code récupéré    : 08a5377          ← le correctif de la veille, bien arrivé
+Serveur          : répond sur le port 3000
+```
+
+Puis plus rien. Or le veilleur réécrit cette fiche **tous les quarts d'heure**
+tant que l'espace tourne : passé vingt minutes de silence, l'espace est arrêté.
+GitHub éteint un espace inactif au bout d'une trentaine de minutes ; l'adresse
+survit, plus personne ne répond derrière, et Safari — qui ne sait que faire de
+ce silence — propose d'enregistrer la réponse. D'où le téléchargement.
+
+**Le code, lui, a été mis à l'épreuve avant de conclure**, et pas seulement par
+la batterie qui tourne en mode développement :
+
+- `next build` passe ;
+- la version **bâtie**, démarrée en profil `banc`, sert bien `200 text/html`
+  sur `/` comme sur `/login`.
+
+**Deux enseignements, et le second vaut plus que le premier.**
+
+1. **La fiche d'état a fait son travail**, et pour la première fois : elle a
+   répondu « est-ce lui ou est-ce nous ? » sans lui faire recopier un terminal
+   depuis un téléphone. C'est exactement ce pour quoi elle a été écrite le
+   12 août.
+2. **Rien ne le lui disait, à lui.** La fiche est écrite pour l'agent, sur
+   GitHub. Le mode d'emploi qu'il peut ouvrir — et qui reste lisible quand son
+   espace est éteint — ne couvrait que la panne de l'ÉDITEUR, pas celle-ci.
+   `docs/ESSAYER.md` porte désormais une section à son nom, avec sa capture
+   décrite dans ses mots, le remède en deux gestes, et le lien vers la fiche
+   d'état — avec la règle des vingt minutes pour trancher en un coup d'œil.
+
+**Ce qu'on ne peut pas corriger, et il faut le dire :** l'extinction est une
+règle de GitHub, pas d'Atlas. Elle disparaîtra le jour où Atlas tournera sur un
+vrai hébergement. Un espace qui dort n'est pas une panne.
+
+---
+
 ## 2026-08-13
 
 ### Le devis se reprend enfin AVANT de partir
