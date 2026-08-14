@@ -7,6 +7,8 @@ import {
   supprimerChantier,
   SuppressionChantierRefusee,
   CreneauIndisponible,
+  changerEquipeChantier,
+  EquipeIndisponible,
 } from "@/server/repositories/chantiers";
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 
@@ -41,6 +43,39 @@ export async function planifierChantierAction(
     return { succes: true };
   } catch (e) {
     if (e instanceof CreneauIndisponible) return { succes: false, erreur: e.message };
+    throw e;
+  }
+}
+
+/**
+ * Change l'équipe d'un chantier déjà posé, sans toucher à sa date.
+ *
+ * *Son geste du 14 août 2026 : « on devait pouvoir affilier une équipe à un
+ * chantier ajouté au planning une fois que le client a validé le devis »*
+ * (`ARCHITECTURE.md` §100).
+ *
+ * **Le refus se rend en valeur de retour**, comme la pose : une exception
+ * n'arriverait pas jusqu'au patron, Next.js la remplaçant par un identifiant
+ * opaque (`AGENTS.md`). Il réessaierait la même équipe sans comprendre.
+ */
+export async function changerEquipeChantierAction(
+  chantierId: string,
+  rangEquipe: number
+): Promise<ResultatPose> {
+  const ctx = await getCurrentCtx();
+  try {
+    await changerEquipeChantier(ctx, chantierId, rangEquipe);
+    // L'agenda extérieur porte le nom de l'équipe dans l'intitulé : sans ce
+    // report, son téléphone garderait l'ancienne.
+    await porterChantierDansAgenda(ctx, chantierId);
+    return { succes: true };
+  } catch (e) {
+    if (e instanceof EquipeIndisponible) {
+      return {
+        succes: false,
+        erreur: "Cette équipe a déjà un chantier sur ce créneau.",
+      };
+    }
     throw e;
   }
 }

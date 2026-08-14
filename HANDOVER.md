@@ -666,7 +666,7 @@ Ce qu'il faut retenir avant d'y toucher :
    sont pas corrigées. « m2 » enregistré reste « m2 » — réécrire ses données à
    son insu changerait des prix qu'il n'a pas demandé de changer.
 
-Le reste : `ARCHITECTURE.md` §100.
+Le reste : `ARCHITECTURE.md` §101.
 
 **LE NUMÉRO DU DEVIS N'EST PLUS UN NUMÉRO DE TÉLÉPHONE (13 août).** Deuxième
 passe sur le même défaut, et la première ne pouvait pas marcher.

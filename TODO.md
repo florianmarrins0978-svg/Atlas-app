@@ -197,7 +197,7 @@ du prix proposé dès qu'aucun tarif ne correspond. Un artisan dont l'ouvrier co
 famille** — prestations, main-d'œuvre et matériel n'existent pas —, et rien ne
 signale un tarif **sans unité**, alors qu'un prix sans unité n'est pas un prix.
 (L'unité, elle, se **choisit** depuis le 14 août au lieu de se taper —
-`ARCHITECTURE.md` §100 — mais rien ne signale encore celle qui manque.)
+`ARCHITECTURE.md` §101 — mais rien ne signale encore celle qui manque.)
 Les cinq grilles n'affichent pas **combien de prix elles ont appris**, ni la
 phrase qui dit qu'une grille vide n'est pas une panne (`ARCHITECTURE.md` §89).
 
