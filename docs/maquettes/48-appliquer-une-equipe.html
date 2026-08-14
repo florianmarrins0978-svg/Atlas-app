@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Donner une équipe à un chantier — l’acquis, et deux questions</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    DONNER UNE ÉQUIPE À UN CHANTIER
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 13 août 2026 : « appliquer une équipe à un chantier n'est pas
+    intuitif, corrige ça mais ne code rien, propose des maquettes dynamiques en
+    .html que je puisse essayer ».
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI A CHANGÉ PENDANT QUE JE DESSINAIS, ET QUI CORRIGE CETTE PLANCHE.
+
+    La première version disait : « l'équipe ne s'écrit qu'en posant une date,
+    six gestes pour changer une lettre ». C'ÉTAIT VRAI AU DÉBUT DE LA SOIRÉE ;
+    ça ne l'est plus. Une autre session a livré le 14 août
+    `changerEquipeChantier()` et la ligne « Équipe » dans la feuille du chevron
+    — c'est-à-dire exactement la proposition B que je m'apprêtais à soumettre.
+    Le code fait foi (`CLAUDE.md` §1) : la planche a été refaite plutôt que
+    livrée périmée. Le geste B est donc montré comme un ACQUIS, pas comme un
+    choix ; il reste essayable pour qu'il le juge.
+
+    CE QUI RESTE VRAI, ET QU'IL RESTE À DÉCIDER :
+
+      · **rien, dans la liste du planning, ne signale un chantier sans équipe.**
+        Il faut ouvrir la feuille de chaque chantier pour l'apprendre. C'est ce
+        que règle la proposition A ;
+      · **au moment de POSER**, les équipes restent des lignes de liste, qui se
+        lisent mais ne s'offrent pas. C'est la proposition C ;
+      · la fiche du chantier ne montre toujours l'équipe nulle part.
+
+    DEUX DÉFAUTS DU CHEMIN DE POSE, QUI SUBSISTENT (relus après la fusion) :
+
+      1. `planifierChantier` écrit `...(equipeId ? { equipeId } : {})` : une
+         équipe posée ne peut plus JAMAIS être retirée, et `changerEquipeChantier`
+         prend un `rangEquipe: number` non nullable. « Personne pour l'instant »
+         n'est donc exprimable NULLE PART aujourd'hui.
+      2. À la POSE, la revalidation vérifie que la demi-journée tient
+         (`occupation < nombreEquipes`), jamais que l'ÉQUIPE demandée est libre.
+         Le chemin neuf, lui, le vérifie pour de bon (`EquipeIndisponible`) : les
+         deux chemins ne défendent donc pas la même règle. Écrit dans TODO.md.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
+
+    AUCUN SCRIPT — son lecteur n'en exécute pas. Les trois gestes sont de vraies
+    machines à états faites de boutons radio : la pastille ouvre la feuille, le
+    choix la referme et met le nom à jour. Rien n'est calculé, et tout se touche.
+
+    Les écrans font 390 px — la largeur réelle de son téléphone.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f5f3ee; --pin:#2f3b2f; --alerte:#9a4b2f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179; --alerte:#d08a6a;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179; --alerte:#d08a6a;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:1180px;margin:0 auto}
+
+  /* Safari sur iPhone n'active pas un <label> sans « cursor:pointer » — payé le
+     10 août 2026 : « rien ne s'ouvre quand je touche ». */
+  label{cursor:pointer}
+
+  .intro{max-width:64ch;margin:0 auto;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro b{color:var(--encre);font-weight:600}
+
+  .chapitre{max-width:64ch;margin:58px auto 0;text-align:center;
+       font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+       text-transform:uppercase;color:var(--or)}
+  .titre-chapitre{max-width:64ch;margin:12px auto 0;text-align:center;
+       font:400 24px/1.25 ui-serif,Georgia,serif}
+  .dit{max-width:62ch;margin:12px auto 0;text-align:center;font-size:14px;color:var(--gris);line-height:1.68}
+  .dit b{color:var(--encre);font-weight:600}
+
+  /* ── Le chemin d'aujourd'hui ──────────────────────────────────────────── */
+  .chemin{max-width:640px;margin:26px auto 0;padding:22px 24px;border-radius:12px;
+          background:var(--plage)}
+  .chemin ol{margin:0;padding-left:22px;color:var(--gris);font-size:13.6px;line-height:1.9}
+  .chemin li::marker{color:var(--or)}
+  .chemin b{color:var(--encre);font-weight:600}
+  .chemin .apres{margin:14px 0 0;font-size:13.2px;color:var(--gris);line-height:1.7}
+
+  /* ── Les trois propositions ───────────────────────────────────────────── */
+  .grille{display:flex;flex-wrap:wrap;gap:54px 40px;justify-content:center;
+          align-items:flex-start;margin-top:34px}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:18px;width:412px;max-width:100%}
+  .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+
+  .legende{text-align:center;max-width:390px;width:100%}
+  .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+              text-transform:uppercase;color:var(--or)}
+  .legende .titre{margin:0 0 8px;font:400 20px/1.24 ui-serif,Georgia,serif}
+  .legende p{margin:0;font-size:13.2px;color:var(--gris);line-height:1.66}
+  .legende p + p{margin-top:9px}
+  .legende b{color:var(--encre);font-weight:600}
+  .legende .contre b{color:var(--or)}
+
+  .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{
+    --e-fond:#f5f3ee; --e-carte:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
+    position:relative;width:390px;max-width:100%;height:558px;overflow:hidden;
+    border-radius:32px;background:var(--e-fond);color:var(--e-encre);padding:26px 0 0;
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+  .rubrique{margin:0 26px 10px;color:var(--e-gris)}
+
+  .ligne{display:flex;align-items:center;justify-content:space-between;gap:12px;
+         margin:0 26px;padding:11px 0;border-bottom:1px solid var(--e-trait)}
+  .ligne .colonne{min-width:0;flex:1}
+  .ligne .nom{display:block;font:400 16px/1.2 ui-serif,Georgia,serif;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ligne .quand{display:block;margin-top:2px;font-size:12px;color:var(--e-gris)}
+  .ligne .gestes{display:flex;flex-shrink:0;align-items:center;gap:12px}
+  .ligne .deplacer{font-size:12px;color:var(--e-gris);white-space:nowrap}
+  .ligne .chev{color:var(--e-or);font-size:15px}
+
+  /* La pastille de l'équipe : trois libellés empilés, un seul paraît. */
+  .pastille{display:none;align-items:center;border-radius:9999px;padding:5px 12px;
+            font-size:11.5px;white-space:nowrap;border:1px solid var(--e-trait);
+            color:var(--e-gris);-webkit-tap-highlight-color:transparent;
+            transition:background-color .2s,color .2s,border-color .2s}
+  .pastille.pleine{background:var(--e-pin);border-color:var(--e-pin);color:#faf9f5}
+  /* Le manque se voit en doré, jamais en rouge : il n'y a pas de faute à ne pas
+     avoir encore choisi. Le rouge est réservé aux refus (`colors.alert`). */
+  .pastille.vide{color:var(--e-or);border-color:var(--e-or);border-style:dashed}
+
+  /* ── La feuille du bas ────────────────────────────────────────────────── */
+  /* **LES TROIS ÉTAGES NE SONT PAS DÉCORATIFS.** Sans eux, la barre du bas —
+     posée elle aussi en absolu — passait DEVANT la feuille et recouvrait sa
+     dernière option : « Personne pour l'instant » ne répondait pas au doigt.
+     Trouvé en parcourant la planche, jamais en la relisant. */
+  .voile{position:absolute;inset:0;z-index:2;background:rgba(20,18,14,.34);opacity:0;
+         pointer-events:none;transition:opacity .3s}
+  .feuille{position:absolute;left:0;right:0;bottom:0;z-index:3;background:var(--e-carte);
+           border-radius:20px 20px 0 0;padding:10px 22px 22px;
+           transform:translateY(102%);transition:transform .34s cubic-bezier(.22,.61,.36,1);
+           box-shadow:0 -8px 30px rgba(20,18,14,.16)}
+  .poignee{width:38px;height:4px;border-radius:99px;background:var(--e-trait);margin:0 auto 14px}
+  .feuille .sur{margin:0 0 4px;text-align:center;color:var(--e-or)}
+  .feuille .qui{margin:0;text-align:center;font:400 21px/1.24 ui-serif,Georgia,serif}
+  .feuille .quand2{margin:5px 0 0;text-align:center;font-size:12px;color:var(--e-gris)}
+  .feuille .filet{height:1px;background:var(--e-trait);margin:16px 0 4px}
+
+  .option{display:flex;align-items:center;justify-content:space-between;gap:12px;
+          padding:14px 2px;border-bottom:1px solid var(--e-trait);
+          -webkit-tap-highlight-color:transparent}
+  .option:last-of-type{border-bottom:0}
+  .option .o-nom{font:400 17px/1.2 ui-serif,Georgia,serif}
+  .option .o-etat{font-size:11.5px;color:var(--e-gris);text-align:right}
+  .option .coche{width:16px;flex:none;text-align:center;color:var(--e-or);opacity:0;transition:opacity .2s}
+  /* Une équipe déjà prise ne se choisit pas : le libellé le dit, et le doigt
+     n'obtient rien. Mieux vaut un refus visible d'avance qu'un refus du
+     serveur après coup. */
+  .option.prise{opacity:.42;cursor:default}
+  .option.prise .o-etat{color:var(--e-gris)}
+
+  .fermer{display:block;width:100%;margin-top:8px;padding:12px 0;text-align:center;
+          font-size:14.5px;color:var(--e-gris)}
+
+  /* ── Le panneau du jour (proposition C) ────────────────────────────────── */
+  .jour{margin:0 26px}
+  .jour .entete{font:400 20px/1.2 ui-serif,Georgia,serif;margin:0 0 3px}
+  .jour .sous{margin:0 0 16px;font-size:12.5px;color:var(--e-gris)}
+  .creneau{margin-top:16px}
+  .creneau .t{display:flex;align-items:center;gap:12px;margin-bottom:9px;color:var(--e-gris)}
+  .creneau .t i{height:1px;flex:1;background:var(--e-trait);display:block}
+  .rang{display:flex;gap:9px}
+  .case-eq{flex:1;display:flex;flex-direction:column;gap:2px;align-items:center;
+           border:1px solid var(--e-trait);border-radius:10px;padding:11px 6px;
+           -webkit-tap-highlight-color:transparent;
+           transition:border-color .22s,background-color .22s,color .22s}
+  .case-eq .eq{font:400 15px/1.15 ui-serif,Georgia,serif}
+  .case-eq .qui{font-size:10.5px;color:var(--e-gris);text-align:center}
+  .case-eq.occupee{opacity:.45;cursor:default}
+  .case-eq.retenue{background:var(--e-pin);border-color:var(--e-pin);color:#faf9f5}
+  .case-eq.retenue .qui{color:rgba(250,249,245,.72)}
+
+  .poser{display:block;width:100%;margin-top:20px;border-radius:9999px;
+         background:var(--e-pin);color:#faf9f5;padding:14px 0;text-align:center;
+         font:400 15.5px/1 ui-serif,Georgia,serif;opacity:.32;pointer-events:none;
+         transition:opacity .22s}
+  .poser span{display:none}
+
+  .pied{position:absolute;left:0;right:0;bottom:0;z-index:1;display:flex;justify-content:space-around;
+        padding:14px 0 20px;border-top:1px solid var(--e-trait);background:var(--e-fond);
+        font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--e-gris)}
+  .pied .actif{color:var(--e-encre);border-bottom:1px solid var(--e-or);padding-bottom:5px}
+
+  /* ═══ Les états, proposition par proposition ═════════════════════════
+     Écrits en clair et non en `:nth-of-type` : les radios et l'écran ne
+     partagent pas de parent, et un compte relatif se décale d'un cran au
+     premier ajout. C'est la même leçon que la ligne allumée du planning. */
+
+  /* — A — la pastille sur la ligne — */
+  #A-fn:checked ~ .scene .p-n, #A-on:checked ~ .scene .p-n,
+  #A-fa:checked ~ .scene .p-a, #A-oa:checked ~ .scene .p-a,
+  #A-fb:checked ~ .scene .p-b, #A-ob:checked ~ .scene .p-b{display:inline-flex}
+  #A-on:checked ~ .scene .feuille,
+  #A-oa:checked ~ .scene .feuille,
+  #A-ob:checked ~ .scene .feuille{transform:none}
+  #A-on:checked ~ .scene .v-n,
+  #A-oa:checked ~ .scene .v-a,
+  #A-ob:checked ~ .scene .v-b{opacity:1;pointer-events:auto}
+  #A-fa:checked ~ .scene .c-a, #A-oa:checked ~ .scene .c-a,
+  #A-fb:checked ~ .scene .c-b, #A-ob:checked ~ .scene .c-b,
+  #A-fn:checked ~ .scene .c-n, #A-on:checked ~ .scene .c-n{opacity:1}
+
+  /* — B — la feuille du chevron —
+     Les deux noms d'équipe et le panneau de choix sont cachés PAR UNE RÈGLE et
+     non par un `style=` : un display posé en ligne bat n'importe quel sélecteur,
+     et le panneau ne se serait jamais ouvert. */
+  .pan-choix{display:none}
+  .vb-a,.vb-b{display:none}
+  #B-fa:checked ~ .scene .vb-a, #B-oa:checked ~ .scene .vb-a,
+  #B-fb:checked ~ .scene .vb-b, #B-ob:checked ~ .scene .vb-b{display:inline}
+  #B-oa:checked ~ .scene .pan-lecture,
+  #B-ob:checked ~ .scene .pan-lecture{display:none}
+  #B-oa:checked ~ .scene .pan-choix,
+  #B-ob:checked ~ .scene .pan-choix{display:block}
+  #B-fa:checked ~ .scene .c-a, #B-oa:checked ~ .scene .c-a,
+  #B-fb:checked ~ .scene .c-b, #B-ob:checked ~ .scene .c-b{opacity:1}
+
+  /* — C — les pastilles dans le panneau du jour — */
+  #C-ma:checked ~ .scene .k-ma,
+  #C-mb:checked ~ .scene .k-mb,
+  #C-ab:checked ~ .scene .k-ab{background:var(--e-pin);border-color:var(--e-pin);color:#faf9f5}
+  #C-ma:checked ~ .scene .k-ma .qui,
+  #C-mb:checked ~ .scene .k-mb .qui,
+  #C-ab:checked ~ .scene .k-ab .qui{color:rgba(250,249,245,.72)}
+  #C-ma:checked ~ .scene .poser,
+  #C-mb:checked ~ .scene .poser,
+  #C-ab:checked ~ .scene .poser{opacity:1;pointer-events:auto}
+  #C-ma:checked ~ .scene .poser .s-ma,
+  #C-mb:checked ~ .scene .poser .s-mb,
+  #C-ab:checked ~ .scene .poser .s-ab{display:inline}
+  #C-ma:checked ~ .scene .poser .s-rien,
+  #C-mb:checked ~ .scene .poser .s-rien,
+  #C-ab:checked ~ .scene .poser .s-rien{display:none}
+  .poser .s-rien{display:inline}
+
+  @media (prefers-reduced-motion: reduce){
+    .feuille,.voile,.pastille,.case-eq,.poser{transition:none}
+  }
+
+  .note{max-width:74ch;margin:64px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+  .note b{color:var(--encre)}
+  .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .note p{margin:0 0 14px}
+  .note p:last-child{margin-bottom:0}
+  .note a{color:var(--or)}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Le planning · l’équipe</p>
+    <h1>Donner une équipe à un chantier</h1>
+    <p>Votre remarque du 13 août : <b>« appliquer une équipe à un chantier n’est
+      pas intuitif »</b>. Vous aviez raison, et davantage que vous ne le pensiez :
+      jusqu’à hier soir, l’équipe ne s’écrivait <b>qu’en posant une date</b> —
+      six gestes pour changer une lettre, à commencer par « Déplacer ».</p>
+    <p><b>Une partie est déjà réparée</b>, arrivée pendant que je dessinais : la
+      feuille du chevron porte désormais une ligne « Équipe ». Cette page la
+      montre <b>telle qu’elle est</b>, puis les deux choses qu’elle ne règle pas
+      — et celles-là attendent votre avis.</p>
+    <p><b>Les trois écrans se touchent pour de vrai</b> : la pastille ouvre la
+      feuille, le choix la referme et le nom change. Essayez-les au doigt, c’est
+      fait pour.</p>
+  </div>
+
+  <p class="chapitre">Ce qui est déjà là</p>
+  <p class="titre-chapitre">La ligne « Équipe » dans la feuille</p>
+  <p class="dit">Livré le 14 août, pendant que cette planche se dessinait — je ne
+    vous le propose donc pas, <b>je vous le montre</b>, et le premier écran
+    ci-dessous vous permet de le juger au doigt.</p>
+
+  <div class="chemin">
+    <p class="apres" style="margin-top:0"><b>Ce que ça règle :</b> l’équipe se
+      change en trois appuis, sans toucher à la date, et le serveur <b>refuse
+      pour de bon</b> si l’équipe visée a déjà un chantier sur ce créneau.</p>
+    <p class="apres"><b>Ce que ça ne règle pas, et qui reste à décider :</b>
+      depuis la liste du planning, <b>rien ne signale un chantier sans
+      équipe</b> — il faut ouvrir la feuille de chacun pour l’apprendre. Et au
+      moment de <b>poser</b>, les équipes restent des lignes de liste, qui se
+      lisent mais ne s’offrent pas.</p>
+  </div>
+
+  <p class="chapitre">Les deux questions ouvertes</p>
+  <p class="titre-chapitre">À essayer au doigt</p>
+  <p class="dit"><b>B est l’acquis</b> — montré tel qu’il est. <b>A rend le
+    manque visible depuis la liste</b>, et <b>C règle le moment de poser</b>.
+    Les deux sont indépendants de B et l’un de l’autre : vous pouvez en prendre
+    un, l’autre, les deux, ou aucun.</p>
+
+  <div class="grille">
+
+    <!-- ═══ B ════════════════════════════════════════════════════════════ -->
+    <div class="prop">
+      <input type="radio" name="eqB" id="B-fa" class="etat" checked>
+      <input type="radio" name="eqB" id="B-fb" class="etat">
+      <input type="radio" name="eqB" id="B-oa" class="etat">
+      <input type="radio" name="eqB" id="B-ob" class="etat">
+
+      <div class="scene">
+        <div class="tel"><div class="ecran">
+          <p class="caps rubrique">Planifiés</p>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Monsieur Martin</span>
+              <span class="quand">14 août · journée</span>
+            </span>
+            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+          </div>
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Monsieur Martins</span>
+              <span class="quand">17 août · matin</span>
+            </span>
+            <span class="gestes"><span class="deplacer">Déplacer</span><span class="chev">›</span></span>
+          </div>
+
+          <span class="voile" style="opacity:1"></span>
+
+          <div class="feuille" style="transform:none">
+            <p class="poignee"></p>
+
+            <div class="pan-lecture">
+              <p class="caps sur">Y aller</p>
+              <p class="qui">12 rue des Peupliers</p>
+              <p class="quand2">Monsieur Martin · 14 août · journée</p>
+              <div class="filet"></div>
+
+              <label class="option" for="B-oa" style="border-bottom:1px solid var(--e-trait)">
+                <span class="o-nom">Équipe</span>
+                <span style="display:flex;align-items:center;gap:9px">
+                  <span class="o-etat" style="font-size:14px;color:var(--e-encre)">
+                    <span class="vb-a">Équipe A</span><span class="vb-b">Équipe C</span>
+                  </span>
+                  <span class="chev">›</span>
+                </span>
+              </label>
+
+              <div style="display:flex;gap:1px;margin-top:14px;border-radius:10px;overflow:hidden;background:var(--e-trait)">
+                <span style="flex:1;background:var(--e-carte);padding:12px 0;text-align:center;font-size:13.5px">Copier l’adresse</span>
+                <span style="flex:1;background:var(--e-carte);padding:12px 0;text-align:center;font-size:13.5px">Appeler le client</span>
+              </div>
+              <span style="display:block;margin-top:14px;border-radius:9999px;background:var(--e-pin);color:#faf9f5;padding:13px 0;text-align:center;font-size:15px">Créer la facture</span>
+            </div>
+
+            <div class="pan-choix">
+              <p class="caps sur">Qui s’en occupe</p>
+              <p class="qui">Monsieur Martin</p>
+              <p class="quand2">Vendredi 14 août, la journée</p>
+              <div class="filet"></div>
+
+              <label class="option" for="B-fa">
+                <span class="o-nom">Équipe A</span>
+                <span style="display:flex;align-items:center;gap:10px">
+                  <span class="o-etat">Libre ce jour-là</span>
+                  <span class="coche c-a">✓</span>
+                </span>
+              </label>
+              <span class="option prise">
+                <span class="o-nom">Équipe B</span>
+                <span style="display:flex;align-items:center;gap:10px">
+                  <span class="o-etat">Prise — Madame Roux</span>
+                  <span class="coche">✓</span>
+                </span>
+              </span>
+              <label class="option" for="B-fb">
+                <span class="o-nom">Équipe C</span>
+                <span style="display:flex;align-items:center;gap:10px">
+                  <span class="o-etat">Libre ce jour-là</span>
+                  <span class="coche c-b">✓</span>
+                </span>
+              </label>
+              <label class="fermer" for="B-fa">Annuler</label>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="legende">
+        <h2>B · Déjà codé</h2>
+        <p class="titre">Dans la feuille du chevron</p>
+        <p><b>Ce n’est pas une proposition : c’est ce que vous avez depuis le
+          14 août.</b> La feuille qui s’ouvre déjà sur un chantier planifié —
+          adresse, appeler, créer la facture — porte une ligne « Équipe ». Elle
+          mène au choix en place, sans empiler une feuille sur l’autre.</p>
+        <p><b>La liste du planning ne change pas d’un pixel</b> : c’est sa force.
+          Rien ne rétrécit, le nom du chantier garde toute sa largeur.</p>
+        <p><b>Essayez « Équipe B » : elle ne répond pas.</b> Elle est déjà prise
+          par Madame Roux ce jour-là, et l’écran le dit <b>avant</b> l’appui
+          plutôt que de laisser le serveur refuser après. Le serveur, lui,
+          revérifie de son côté et refuse pour de bon — les deux tiennent.</p>
+        <p class="contre"><b>Ce qu’il reste après ça :</b> depuis la liste,
+          <b>rien ne signale un chantier sans équipe</b> — il faut ouvrir la
+          feuille de chacun pour l’apprendre. C’est le défaut d’origine, en
+          moins profond, et c’est ce que la proposition A règle.</p>
+      </div>
+    </div>
+
+    <!-- ═══ A ════════════════════════════════════════════════════════════ -->
+    <div class="prop">
+      <input type="radio" name="eqA" id="A-fn" class="etat" checked>
+      <input type="radio" name="eqA" id="A-fa" class="etat">
+      <input type="radio" name="eqA" id="A-fb" class="etat">
+      <input type="radio" name="eqA" id="A-on" class="etat">
+      <input type="radio" name="eqA" id="A-oa" class="etat">
+      <input type="radio" name="eqA" id="A-ob" class="etat">
+
+      <div class="scene">
+        <div class="tel"><div class="ecran">
+          <p class="caps rubrique">Planifiés</p>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Monsieur Martin</span>
+              <span class="quand">14 août · journée</span>
+            </span>
+            <span class="gestes">
+              <span class="pastille pleine" style="display:inline-flex">Équipe A</span>
+              <span class="chev">›</span>
+            </span>
+          </div>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Monsieur Martins</span>
+              <span class="quand">17 août · matin</span>
+            </span>
+            <span class="gestes">
+              <label class="pastille vide p-n" for="A-on">Équipe ?</label>
+              <label class="pastille pleine p-a" for="A-oa">Équipe A</label>
+              <label class="pastille pleine p-b" for="A-ob">Équipe B</label>
+              <span class="chev">›</span>
+            </span>
+          </div>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom">Mr. Martins</span>
+              <span class="quand">20 août · après-midi</span>
+            </span>
+            <span class="gestes">
+              <span class="pastille vide" style="display:inline-flex">Équipe ?</span>
+              <span class="chev">›</span>
+            </span>
+          </div>
+
+          <label class="voile v-n" for="A-fn" aria-label="Fermer"></label>
+          <label class="voile v-a" for="A-fa" aria-label="Fermer"></label>
+          <label class="voile v-b" for="A-fb" aria-label="Fermer"></label>
+
+          <div class="feuille">
+            <p class="poignee"></p>
+            <p class="caps sur">Qui s’en occupe</p>
+            <p class="qui">Monsieur Martins</p>
+            <p class="quand2">Lundi 17 août, le matin</p>
+            <div class="filet"></div>
+
+            <label class="option" for="A-fa">
+              <span class="o-nom">Équipe A</span>
+              <span style="display:flex;align-items:center;gap:10px">
+                <span class="o-etat">Libre ce matin-là</span>
+                <span class="coche c-a">✓</span>
+              </span>
+            </label>
+            <label class="option" for="A-fb">
+              <span class="o-nom">Équipe B</span>
+              <span style="display:flex;align-items:center;gap:10px">
+                <span class="o-etat">Libre ce matin-là</span>
+                <span class="coche c-b">✓</span>
+              </span>
+            </label>
+            <label class="option" for="A-fn">
+              <span class="o-nom">Personne pour l’instant</span>
+              <span style="display:flex;align-items:center;gap:10px">
+                <span class="o-etat">Le chantier reste posé</span>
+                <span class="coche c-n">✓</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="pied">
+            <span>Chantiers</span><span class="actif">Planning</span>
+            <span>Terminés</span><span>Réglages</span>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="legende">
+        <h2>A · À décider</h2>
+        <p class="titre">La pastille sur la ligne</p>
+        <p>L’équipe devient un <b>objet qu’on touche</b>, là où on la lit. Un
+          appui, un choix, c’est fini — <b>deux gestes au lieu de six</b>.</p>
+        <p>Et le manque <b>se voit</b> : un chantier sans équipe porte
+          « Équipe&nbsp;? » en doré pointillé, au lieu de ne rien écrire du tout.
+          Sur cet écran, deux chantiers sur trois en manquent une et rien ne le
+          disait.</p>
+        <p class="contre"><b>Ce que ça coûte, et c’est déjà fait sur cet
+          écran :</b> la pastille a pris la place de « Déplacer ». À 390 px, la
+          ligne ne peut pas porter le nom, la date, l’équipe, « Déplacer » et le
+          chevron — c’est le <b>nom du chantier</b> qui aurait rétréci, et le nom
+          est la seule chose qui dit de quel chantier il s’agit. Déplacer une
+          date se ferait alors depuis la feuille du chevron. <b>Dites-moi si ce
+          troc vous va</b> : c’est le seul vrai point de ce geste.</p>
+      </div>
+    </div>
+
+    <!-- ═══ C ════════════════════════════════════════════════════════════ -->
+    <div class="prop">
+      <input type="radio" name="eqC" id="C-rien" class="etat" checked>
+      <input type="radio" name="eqC" id="C-ma" class="etat">
+      <input type="radio" name="eqC" id="C-mb" class="etat">
+      <input type="radio" name="eqC" id="C-ab" class="etat">
+
+      <div class="scene">
+        <div class="tel"><div class="ecran">
+          <div class="jour">
+            <p class="entete">Lundi 17 août</p>
+            <p class="sous">Où poser «&nbsp;Monsieur Martins&nbsp;» ?</p>
+
+            <div class="creneau">
+              <p class="caps t">Matin <i></i></p>
+              <div class="rang">
+                <label class="case-eq k-ma" for="C-ma">
+                  <span class="eq">Équipe A</span><span class="qui">Libre</span>
+                </label>
+                <label class="case-eq k-mb" for="C-mb">
+                  <span class="eq">Équipe B</span><span class="qui">Libre</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="creneau">
+              <p class="caps t">Après-midi <i></i></p>
+              <div class="rang">
+                <span class="case-eq occupee">
+                  <span class="eq">Équipe A</span><span class="qui">Monsieur Martin</span>
+                </span>
+                <label class="case-eq k-ab" for="C-ab">
+                  <span class="eq">Équipe B</span><span class="qui">Libre</span>
+                </label>
+              </div>
+            </div>
+
+            <span class="poser">
+              <span class="s-rien">Choisissez d’abord</span>
+              <span class="s-ma">Poser · matin, Équipe A</span>
+              <span class="s-mb">Poser · matin, Équipe B</span>
+              <span class="s-ab">Poser · après-midi, Équipe B</span>
+            </span>
+
+            <p style="margin:16px 0 0;font-size:11.5px;color:var(--e-gris);line-height:1.6">
+              Une case grisée est déjà prise : ce n’est pas un refus, c’est une
+              place occupée.</p>
+          </div>
+
+          <div class="pied">
+            <span>Chantiers</span><span class="actif">Planning</span>
+            <span>Terminés</span><span>Réglages</span>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="legende">
+        <h2>C · À décider</h2>
+        <p class="titre">Le choix au moment de poser</p>
+        <p>C’est l’écran d’aujourd’hui, <b>rangé autrement</b>. Les équipes ne
+          sont plus des lignes de liste — qui se lisent, mais ne s’offrent pas —
+          mais <b>quatre cases qu’on choisit</b> : deux le matin, deux
+          l’après-midi.</p>
+        <p>Et le bouton <b>dit ce qu’il va faire</b> : « Poser · matin,
+          Équipe&nbsp;B », au lieu d’un « Poser » qui ne rappelle rien de ce
+          qu’on vient de toucher.</p>
+        <p class="contre"><b>Ce que ça coûte :</b> les cases tiennent à deux ou
+          trois équipes, <b>pas à six</b> — au-delà elles passeraient à la ligne
+          et l’écran redeviendrait une liste. Et <b>ça ne règle rien pour un
+          chantier déjà posé</b> : c’est A ou B qui s’en charge.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que ça demanderait, et les deux défauts trouvés en chemin</span>
+    <p><b>Rien n’est codé de ma main</b> — c’est votre règle, et A comme C
+      attendent votre avis avant qu’on écrive quoi que ce soit.</p>
+    <p><b>Cette planche a été refaite en cours de route, et il faut le
+      dire.</b> Sa première version vous décrivait « six gestes pour changer une
+      lettre » ; c’était vrai en début de soirée. Une autre session a livré
+      entre-temps la ligne « Équipe » de la feuille — <b>exactement ce que
+      j’allais vous proposer</b>. Ici, le code fait foi : la planche a été
+      corrigée plutôt que livrée périmée, et B y figure comme un acquis.</p>
+    <p><b>Premier défaut, relu après cette arrivée : une équipe ne peut jamais
+      être retirée.</b> Ni par la pose, qui n’écrit l’équipe que si elle est
+      fournie et ignore le cas contraire en silence, ni par le geste neuf, qui
+      exige un rang. « Personne pour l’instant », dans la proposition A,
+      <b>ne marcherait aujourd’hui nulle part</b>. Une ligne à changer, mais il
+      fallait le savoir avant de vous montrer le bouton.</p>
+    <p><b>Second défaut : les deux chemins ne défendent pas la même règle.</b>
+      Quand vous <b>changez</b> l’équipe, le serveur vérifie pour de bon que
+      l’équipe visée est libre. Quand vous <b>posez</b> un chantier, il vérifie
+      seulement que la demi-journée tient — un compte, pas une identité. Le
+      trou est aujourd’hui hors d’atteinte, l’écran éteignant les lignes prises,
+      mais deux chemins qui protègent différemment la même chose finissent
+      toujours par diverger. À refermer. Écrit dans <b>TODO.md</b>.</p>
+    <p><b>Et le nom de l’équipe reste le vôtre.</b> « Équipe A » n’est qu’un
+      repli : dès que vous les nommez dans Réglages, ce sont vos noms qui
+      s’affichent partout ici. Rien de tout cela ne change à une seule équipe —
+      le mot « équipe » ne s’écrit alors nulle part, et c’est délibéré.</p>
+    <p><b>L’autre point du même jour</b> — le « matin » qui ne change jamais —
+      est sur <a href="47-le-moment-qui-dit-toujours-matin.html">sa propre
+      planche</a>. Les deux se croisent sur une seule chose : la place
+      disponible sur la ligne du planning.</p>
+  </div>
+
+</div>
+</body>
+</html>
