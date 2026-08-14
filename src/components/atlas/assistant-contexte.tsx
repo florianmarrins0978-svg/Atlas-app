@@ -7,7 +7,7 @@ import { createContext, useContext, useMemo, useState } from "react";
  *
  * **Pourquoi ce contexte existe.** Le patron, le 13 août 2026 : *« l'onglet de
  * l'assistant est hyper mal placé »*. Il a choisi la proposition B de
- * `docs/maquettes/45-ou-mettre-l-assistant.html` : le bouton quitte le coin
+ * `docs/maquettes/46-ou-mettre-l-assistant.html` : le bouton quitte le coin
  * flottant et rejoint l'en-tête de l'écran.
  *
  * Or le PANNEAU, lui, doit rester au-dessus de tout — il vit donc encore dans
@@ -19,7 +19,7 @@ import { createContext, useContext, useMemo, useState } from "react";
  * bouge d'un pixel. C'est ce qui a manqué cinq fois cet été — la bulle
  * recouvrait « ou rédiger le devis à la main », « Préparer le devis », un
  * bouton de reprise, une capsule qu'il a fallu centrer, une phrase qu'il a
- * fallu caler à gauche (`ARCHITECTURE.md` §85).
+ * fallu caler à gauche (`ARCHITECTURE.md` §103).
  */
 type Assistant = {
   ouvert: boolean;

@@ -3,6 +3,7 @@ import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { entreprises, entrepriseCompteurs, users, membresEntreprise } from "../db/schema";
 import type { Ctx } from "./context";
+import { normaliserConditions, type ConditionsLues } from "@/lib/conditions-documents";
 
 // Cas particulier : à la création, l'entreprise n'existe pas encore, donc
 // withEntreprise() (qui exige une adhésion préexistante) ne peut pas s'appliquer.
@@ -75,16 +76,46 @@ export async function mettreAJourEntreprise(
     telephone?: string | null;
     email?: string | null;
     iban?: string | null;
+    formeJuridique?: string | null;
+    regimeTva?: "assujettie" | "franchise";
+    numeroTva?: string | null;
+    titulaireCompte?: string | null;
+    /**
+     * Les conditions imprimées sur le devis (migration 0040).
+     *
+     * **Toutes passent par `normaliserConditions`**, jamais crues sur parole :
+     * une adresse d'action se tape, et un acompte de 4 000 % s'imprimerait sur
+     * un document que le client garde. La base porte les mêmes bornes, ceinture
+     * et bretelles (`src/lib/conditions-documents.ts`).
+     */
+    conditions?: ConditionsLues;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const valeurs: Record<string, unknown> & { updatedAt: Date } = { updatedAt: new Date() };
     if (data.nom !== undefined) valeurs.nom = data.nom;
-    for (const champ of ["adresse", "siret", "telephone", "email", "iban"] as const) {
+    for (const champ of [
+      "adresse", "siret", "telephone", "email", "iban",
+      "formeJuridique", "numeroTva", "titulaireCompte",
+    ] as const) {
       // Une chaîne vide vaut « effacé », pas « inchangé » : le patron doit
       // pouvoir retirer un SIRET saisi de travers.
       if (data[champ] !== undefined) valeurs[champ] = data[champ]?.trim() || null;
     }
+    if (data.conditions !== undefined) {
+      const c = normaliserConditions(data.conditions);
+      valeurs.validiteDevisJours = c.validiteJours;
+      valeurs.acomptePourcent = c.acomptePourcent;
+      valeurs.delaiPaiementJours = c.delaiPaiementJours;
+      valeurs.moyensPaiement = c.moyensPaiement;
+      valeurs.rappelerPenalitesDevis = c.rappelerPenalites;
+      valeurs.textePiedDocuments = c.textePied;
+    }
+
+    // Le régime n'est PAS traité comme les autres : il n'a pas de « vide ». Une
+    // entreprise est assujettie ou en franchise, jamais ni l'un ni l'autre — et
+    // la base le refuserait (contrainte `entreprises_regime_tva_ck`).
+    if (data.regimeTva !== undefined) valeurs.regimeTva = data.regimeTva;
     if (data.nombreEquipes !== undefined) {
       valeurs.nombreEquipes = Math.min(20, Math.max(1, Math.trunc(data.nombreEquipes)));
     }

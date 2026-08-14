@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  Écrit `docs/maquettes/45-ou-mettre-l-assistant.html` — cinq places pour la
+  Écrit `docs/maquettes/46-ou-mettre-l-assistant.html` — cinq places pour la
   bulle de l'assistant, que le patron manipule lui-même.
 
   **Sa demande du 13 août 2026 :** *« L'onglet de l'assistant est hyper mal
@@ -42,7 +42,7 @@ import { fileURLToPath } from "node:url";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SORTIE = resolve(
-  process.argv[2] ?? join(RACINE, "docs", "maquettes", "45-ou-mettre-l-assistant.html"),
+  process.argv[2] ?? join(RACINE, "docs", "maquettes", "46-ou-mettre-l-assistant.html"),
 );
 
 /** La bulle de l'application, au pixel près : 56 px, icône de 22. */
@@ -399,7 +399,7 @@ const PAGE = `<!doctype html>
 <div class="page">
 
   <div class="intro">
-    <p class="sur">Maquette 45 · 13 août 2026</p>
+    <p class="sur">Maquette 46 · 13 août 2026</p>
     <h1>Où mettre l'assistant</h1>
     <p>« L'onglet de l'assistant est hyper mal placé. »</p>
     <div class="constat">

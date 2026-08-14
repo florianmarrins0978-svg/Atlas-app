@@ -1,0 +1,633 @@
+<title>Atlas — Réglages : tarifs et catalogue</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT pour la page.
+
+    RÉGLAGES — TARIFS ET CATALOGUE. Quatrième lot, dernière des quatre
+    priorités du patron.
+
+    Ce qu'il a demandé : « Tarifs & catalogue — prestations et main-d'œuvre et
+    matériel ».
+
+    ─────────────────────────────────────────────────────────────────────────
+    TROIS CHOSES EXISTENT DÉJÀ, ET ELLES NE SONT PAS AU MÊME ENDROIT
+    ─────────────────────────────────────────────────────────────────────────
+
+    1. **SES TARIFS** (`tarifs` : intitulé, prix, unité) — une liste PLATE, sans
+       famille, éditée sur l'écran des réglages. C'est là que porte sa demande :
+       il veut les ranger en prestations, main-d'œuvre et matériel. **La colonne
+       n'existe pas en base.**
+
+    2. **CINQ GRILLES DE PRIX** (`src/lib/grille-prix.ts`, écran
+       `/reglages/prix`) : abattage (technique × diamètre), fendage (hauteur ×
+       diamètre), dessouchage, haie au mètre, grumes à la tonne. **Elles
+       naissent VIDES** et se remplissent de ses propres devis
+       (`src/lib/lecons-prix.ts`). Ce ne sont pas des tarifs de plus : c'est ce
+       qui permet à l'agent de proposer un prix sans l'inventer.
+
+    3. **LE CATALOGUE** (`catalogue_prestations`, `catalogue_materiels`) —
+       PARTAGÉ, tenu par l'éditeur, le même chez tous les artisans. Il donne les
+       mots du métier ; il ne porte aucun prix.
+
+    **La distinction 1/3 n'est écrite nulle part aujourd'hui**, et l'écran des
+    réglages les met côte à côte sans le dire. Un artisan qui modifie « ses
+    tarifs » ne sait pas s'il touche quelque chose qui lui appartient.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUE LA PLANCHE TRANCHE
+    ─────────────────────────────────────────────────────────────────────────
+
+    · **TROIS FAMILLES, ET L'UNITÉ SUIT LA FAMILLE.** Une main-d'œuvre se vend
+      au temps (heure, journée), un matériel à la quantité, une prestation au
+      forfait ou à l'unité. Proposer les mêmes unités aux trois obligerait à
+      choisir « heure » dans une liste de vingt, et à se tromper une fois sur
+      dix.
+
+    · **UN PRIX SANS UNITÉ N'EST PAS UN PRIX.** « Abattage 180 » ne veut rien
+      dire : par arbre ? par heure ? L'unité est donc signalée quand elle
+      manque, comme le SIRET l'est au lot 2.
+
+    · **LES GRILLES VIDES SE DISENT VIDES.** Elles ne se remplissent pas à la
+      main : elles apprennent de ses devis. Un écran qui montrerait une grille
+      vide sans l'expliquer se lirait comme une panne.
+
+    · **CE QUI EST À LUI, ET CE QUI VIENT AVEC L'APPLICATION**, dit sur l'écran
+      plutôt que dans une documentation que personne n'ouvre.
+  */
+
+  /* La charte de l'application, recopiée de `src/lib/design-tokens.ts` et
+     comparée à ce fichier par `maquettes/charte.mjs`. */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --bronze:#b98b47; --trait:rgba(28,28,26,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c9a15e; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c9a15e; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1700px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 34px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+  .loupe{display:none}
+  @media (min-width:1000px){
+    .loupe{display:block;margin:18px auto 0;padding-top:14px;max-width:56ch;
+           border-top:1px solid var(--trait);font-size:13.5px;color:var(--gris)}
+  }
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:412px;max-width:100%}
+
+  /* LE GROS PLAN — une loupe, jamais un téléphone élargi (`ARCHITECTURE.md` §86). */
+  @media (min-width:1000px){
+    .rangee{flex-direction:column;flex-wrap:nowrap;gap:80px;align-items:center}
+    .prop{display:grid;width:auto;max-width:none;column-gap:52px;
+          grid-template-columns:auto 320px;
+          grid-template-rows:auto auto 1fr;
+          grid-template-areas:"tel sous" "tel note" "tel .";
+          justify-items:start}
+    .prop .tel{grid-area:tel;zoom:1.35}
+    .prop .sous{grid-area:sous;text-align:left;align-self:start;padding-top:50px}
+    .prop .note{grid-area:note;text-align:left;max-width:none;align-self:start;
+                font-size:14px;line-height:1.7}
+  }
+  @media (min-width:1500px){
+    .prop{grid-template-columns:auto 360px}
+    .prop .tel{zoom:1.6}
+    .prop .sous{padding-top:59px}
+  }
+
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:720px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-bronze:#b98b47; --e-trait:rgba(28,28,26,.12); --e-plein:#2f3b2f;
+         --e-alerte:#9C3B2E; --e-plein-encre:#f5f3ee}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  /* `EnTeteEcran`, valeur pour valeur. */
+  .tete{padding:34px 26px 0;flex:none}
+  .tete .sur{margin:0;color:var(--e-bronze)}
+  .tete h1{margin:14px 0 0;font:400 36px/1.02 ui-serif,Georgia,serif;letter-spacing:-.018em}
+  .cheveu{flex:none;height:1px;margin:26px 26px 0;background:var(--e-trait)}
+  .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
+
+  /* `AtlasBottomNav`, valeur pour valeur. */
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:18px 14px 26px;background:var(--e-fond)}
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre);transform:translateY(-2px)}
+  .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;background:var(--e-bronze)}
+  .bas i.q1{left:14px}
+  .bas i.q4{left:calc(14px + 3*(100% - 28px)/4)}
+
+  .bloc{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--e-trait)}
+  .bloc .t{margin:0 0 10px;color:var(--e-gris)}
+  .corps > .bloc:first-of-type{border-top:0;padding-top:0}
+  /* UN BLOC IMBRIQUÉ NE REPREND PAS LE RETRAIT. Sans cette règle, la liste
+     posée dans un bloc héritait de ses 26 px et se retrouvait à 52 — décalée
+     à droite de tout le reste. Vu sur la capture ; `controlerRetrait` ne regarde
+     que les enfants directs du corps et ne pouvait pas l'attraper. */
+  .bloc .bloc{margin-left:0;margin-right:0}
+
+
+  /* ═══ Une ligne de tarif ══════════════════════════════════════════════ */
+  /* L'intitulé en serif à gauche, le prix à droite en chiffres alignés : c'est
+     la grammaire d'une liste de montants (`FilTermines`). Le prix ne se casse
+     jamais — « 1 240,00 € » qui passe à la ligne pousse le « € » tout seul en
+     dessous, et c'est le premier défaut qu'on voit sur une capture. */
+  .tar{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+       padding:13px 0;border-bottom:1px solid var(--e-trait)}
+  .bloc .tar:last-child{border-bottom:0}
+  .tar .quoi{min-width:0}
+  .tar .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif}
+  .tar .comment{display:block;margin-top:3px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  .tar .prix{flex:none;white-space:nowrap;font:400 17px/1.25 ui-serif,Georgia,serif;
+             font-variant-numeric:tabular-nums}
+  .tar .prix i{font-style:normal;font-size:11.5px;color:var(--e-gris)}
+  /* Un prix sans unité est signalé sur la LIGNE : « 180 » ne dit pas si c'est
+     par arbre ou par heure, et c'est sur le devis que l'écart se paiera. */
+  .tar.sans .comment{color:var(--e-alerte)}
+
+  /* ═══ Ajouter, et supprimer ═══════════════════════════════════════════ */
+  /* Demandé le 13 août 2026 : « pouvoir aussi ajouter ou supprimer du matériel,
+     ou un prix, ou un machin ».
+
+     UN GESTE PAR FAMILLE, et non un seul en haut d'écran. La famille commande
+     l'unité : partir de « Ajouter un matériel » fait arriver sur la fiche avec
+     les bonnes unités déjà proposées. Un « + » unique obligerait à choisir la
+     famille d'abord, sur un écran de plus. */
+  .ajout{display:flex;align-items:center;gap:12px;padding:15px 0;min-height:54px;color:var(--e-plein)}
+  .ajout .plus{flex:none;width:19px;text-align:center;font:400 19px/1 ui-serif,Georgia,serif}
+  .ajout .nom{font:400 17px/1.25 ui-serif,Georgia,serif}
+
+  /* La suppression vit au BAS de la fiche, jamais dans la liste : une corbeille
+     posée sur chaque ligne se touche du pouce en faisant défiler. Et elle est
+     en texte, pas en bouton plein — un aplat rouge dans un écran de réglages
+     attire l'œil avant tout le reste. */
+  .retirer{display:block;margin:30px 26px 0;padding-top:18px;
+           border-top:1px solid var(--e-trait);
+           font:400 17px/1.25 ui-serif,Georgia,serif;color:var(--e-alerte);
+           -webkit-tap-highlight-color:transparent}
+
+  /* La feuille de confirmation. Fermée, elle n'existe pas — pas de panneau
+     grisé qui traîne sous l'écran. */
+  .voile{display:none;position:absolute;inset:0;background:rgba(28,28,26,.28)}
+  .feuille{display:none;position:absolute;left:0;right:0;bottom:0;
+           background:var(--e-fond);border-radius:16px 16px 0 0;padding:26px 26px 30px}
+  #confirmer:checked ~ .voile,
+  #confirmer:checked ~ .feuille{display:block}
+  .feuille h2{margin:0 0 10px;font:400 24px/1.15 ui-serif,Georgia,serif;letter-spacing:-.01em}
+  .feuille p{margin:0 0 20px;font-size:11.5px;line-height:1.6;color:var(--e-gris)}
+  .feuille p b{color:var(--e-encre);font-weight:600}
+  .gestes{display:flex;flex-direction:column;gap:10px}
+  /* Capsules : la charte ne donne que cette forme à ce qu'on appuie
+     (`docs/QUESTIONS.md` §13). */
+  .bouton{display:block;text-align:center;padding:15px 20px;border-radius:99px;
+          font-size:15px;font-weight:500;-webkit-tap-highlight-color:transparent}
+  .bouton.detruire{background:var(--e-alerte);color:var(--e-plein-encre)}
+  .bouton.renoncer{color:var(--e-encre);box-shadow:inset 0 0 0 1px var(--e-trait)}
+
+  /* ═══ Une grille, et ce qu'elle a appris ══════════════════════════════ */
+  .gri{display:flex;align-items:center;gap:14px;padding:14px 0;min-height:54px;
+       border-bottom:1px solid var(--e-trait)}
+  .bloc .gri:last-child{border-bottom:0}
+  .gri .txt{flex:1;min-width:0}
+  .gri .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif}
+  .gri .dit{display:block;margin-top:4px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  .gri .etat{flex:none;color:var(--e-bronze)}
+  .gri.creuse .etat{color:var(--e-gris)}
+  .gri .chev{flex:none;width:8px;height:8px;border-right:1.5px solid var(--e-trait);
+             border-top:1.5px solid var(--e-trait);transform:rotate(45deg)}
+
+  /* ═══ Le choix d'une famille, et l'unité qui suit ═════════════════════ */
+  .opt{display:flex;align-items:flex-start;gap:13px;padding:14px 0;min-height:54px;
+       border-bottom:1px solid var(--e-trait);-webkit-tap-highlight-color:transparent}
+  .opt .rond{flex:none;margin-top:2px;width:19px;height:19px;border-radius:99px;
+             box-shadow:inset 0 0 0 1px var(--e-trait);transition:box-shadow .24s}
+  .opt .txt{flex:1;min-width:0}
+  .opt .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif}
+  .opt .dit{display:block;margin-top:4px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  #f-presta:checked ~ .choix .o-presta .rond,
+  #f-main:checked ~ .choix .o-main .rond,
+  #f-mat:checked ~ .choix .o-mat .rond{box-shadow:inset 0 0 0 6px var(--e-bronze)}
+  /* Le dernier choix perd son filet : suivi du trait du bloc des unités, il
+     dessinait deux traits séparés par 30 px de vide. `:last-of-type` et non
+     `:last-child` — les blocs d'unités viennent APRÈS les labels, qui ne sont
+     donc jamais le dernier enfant. Vu sur la capture. */
+  .choix .opt:last-of-type{border-bottom:0}
+  .unites{display:none}
+  #f-presta:checked ~ .choix .u-presta,
+  #f-main:checked ~ .choix .u-main,
+  #f-mat:checked ~ .choix .u-mat{display:block}
+  /* Les unités possibles, en pastilles : trois ou quatre par famille, pas
+     vingt. Une liste déroulante de vingt unités se choisit de travers. */
+  .past{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 2px}
+  .past span{padding:9px 14px;border-radius:99px;font-size:13px;color:var(--e-gris);
+             box-shadow:inset 0 0 0 1px var(--e-trait)}
+  .past span.pris{color:var(--e-plein-encre);background:var(--e-plein);box-shadow:none}
+
+  /* ═══ Une ligne de saisie ═════════════════════════════════════════════ */
+  .ch{display:block;padding:13px 0;border-bottom:1px solid var(--e-trait)}
+  .bloc .ch:last-child{border-bottom:0}
+  .ch .et{display:block;margin-bottom:5px;color:var(--e-gris)}
+  .va{display:block;width:100%;border:0;background:transparent;padding:0;margin:0;
+      -webkit-appearance:none;appearance:none;border-radius:0;
+      font:400 17px/1.35 ui-serif,Georgia,serif;color:var(--e-encre)}
+  .va::placeholder{color:var(--e-gris);opacity:.66}
+  .va:focus{outline:none}
+  .ch:has(.va:focus){border-bottom-color:var(--e-bronze)}
+
+  /* ═══ Comment Atlas trouve un prix ════════════════════════════════════ */
+  /* L'ORDRE EST CELUI DU CODE, pas une reformulation : `proposition-builder.ts`
+     cherche un tarif, refuse de choisir s'il en trouve plusieurs, calcule s'il
+     n'en trouve aucun, et se tait s'il ne peut pas calculer. Le montrer répond
+     à la seule question que le patron a posée sur ces écrans — « l'IA se
+     servira de ces infos pour constituer les devis ? ». */
+  .marche{margin:0;padding:0;list-style:none;counter-reset:pas}
+  /* SURTOUT PAS `display:flex` SUR LE `li` : chaque `<b>` devient alors un
+     élément de la boîte et le texte s'éclate en colonnes, avec des trous entre
+     les mots. Vu sur la capture, jamais par un contrôle — il en existe un
+     maintenant. Le numéro est posé en absolu, le texte coule normalement. */
+  .marche li{position:relative;padding:11px 0 11px 32px;font-size:13px;line-height:1.5;
+             border-bottom:1px solid var(--e-trait)}
+  .marche li:last-child{border-bottom:0}
+  .marche li::before{counter-increment:pas;content:counter(pas);
+                     position:absolute;left:0;top:11px;width:19px;
+                     text-align:center;color:var(--e-bronze);
+                     font:400 15px/1.35 ui-serif,Georgia,serif}
+  .marche b{font-weight:600;color:var(--e-encre)}
+
+  /* ═══ Ce qui se dit sans crier ════════════════════════════════════════ */
+  .corps > .mot{margin-left:26px;margin-right:26px}
+  .mot{margin:14px 0 0;padding:13px 15px;border-radius:4px;background:var(--e-plage);
+       border-left:3px solid var(--e-plein);font-size:11.5px;line-height:1.6;color:var(--e-gris)}
+  .mot b{color:var(--e-encre);font-weight:600}
+  .mot.grave{border-left-color:var(--e-alerte)}
+  .mot.grave b{color:var(--e-alerte)}
+
+  .fin{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--e-trait);
+       font-size:11.5px;line-height:1.75;color:var(--e-gris)}
+  .fin b{color:var(--e-encre);font-weight:400}
+
+  /* SUR TÉLÉPHONE, LE CADRE S'EFFACE (`ARCHITECTURE.md` §86). Posé APRÈS `.tel`,
+     sans quoi la règle de la coque l'emporterait à spécificité égale. */
+  @media (max-width:520px){
+    body{padding:26px 0 72px}
+    .intro,.sous,.note{padding-left:16px;padding-right:16px}
+    .tel{width:100%;padding:0;background:none;box-shadow:none;border-radius:0}
+    .ecran{border-radius:0}
+  }
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Réglages — tarifs et catalogue</p>
+    <h1>Ce qui lui appartient, et ce qui vient avec</h1>
+    <p>
+      Dernière de ses quatre priorités. Ses tarifs se rangent en
+      <strong>trois familles</strong>, et <strong>l'unité suit la famille</strong> :
+      touchez-les sur le deuxième écran. Les cinq grilles, elles, ne se
+      remplissent pas à la main — <strong>elles apprennent de ses devis</strong>.
+    </p>
+    <p class="loupe">
+      Sur grand écran, les téléphones sont <strong>agrandis à la loupe</strong> :
+      les proportions restent celles d'un iPhone.
+    </p>
+  </div>
+
+  <div class="rangee">
+
+    <!-- ── 1. Ses tarifs, rangés en trois familles ────────────────────── -->
+    <div class="prop">
+      <p class="sous">Ses tarifs</p>
+      <div class="tel"><div class="ecran" data-s="tarifs">
+        <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Tarifs</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <div class="bloc">
+            <p class="t caps">Prestations</p>
+            <div class="tar"><span class="quoi"><span class="nom">Abattage</span><span class="comment">par arbre</span></span><span class="prix">180,00 <i>€</i></span></div>
+            <div class="tar"><span class="quoi"><span class="nom">Dessouchage</span><span class="comment">par souche</span></span><span class="prix">140,00 <i>€</i></span></div>
+            <div class="tar"><span class="quoi"><span class="nom">Taille de haie</span><span class="comment">au mètre linéaire</span></span><span class="prix">12,00 <i>€</i></span></div>
+            <!-- UN PRIX SANS UNITÉ N'EST PAS UN PRIX : « 90 » ne dit pas si
+                 c'est par mètre cube ou par voyage, et c'est sur le devis que
+                 l'écart se paiera. Signalé sur la ligne, comme le SIRET au
+                 lot 2 — pas dans une phrase en bas d'écran. -->
+            <div class="tar sans" data-s="sans-unite"><span class="quoi"><span class="nom">Évacuation</span><span class="comment">unité manquante</span></span><span class="prix">90,00 <i>€</i></span></div>
+            <div class="ajout"><span class="plus">+</span><span class="nom">Ajouter une prestation</span></div>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Main-d'œuvre</p>
+            <div class="tar"><span class="quoi"><span class="nom">Élagueur</span><span class="comment">à l'heure</span></span><span class="prix">45,00 <i>€</i></span></div>
+            <div class="tar"><span class="quoi"><span class="nom">Homme de pied</span><span class="comment">à la journée</span></span><span class="prix">280,00 <i>€</i></span></div>
+            <div class="ajout"><span class="plus">+</span><span class="nom">Ajouter une main-d&apos;œuvre</span></div>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Matériel</p>
+            <div class="tar"><span class="quoi"><span class="nom">Nacelle</span><span class="comment">à la journée</span></span><span class="prix">320,00 <i>€</i></span></div>
+            <div class="tar"><span class="quoi"><span class="nom">Broyeur</span><span class="comment">à la demi-journée</span></span><span class="prix">110,00 <i>€</i></span></div>
+            <div class="ajout" data-s="ajout-materiel"><span class="plus">+</span><span class="nom">Ajouter un matériel</span></div>
+          </div>
+
+          <p class="mot" data-s="a-lui">
+            <b>Ces prix sont les vôtres.</b> Ils ne quittent jamais votre
+            entreprise et ne ressemblent à ceux de personne d'autre.
+          </p>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Les trois familles n'existent pas en base :</b> `tarifs` porte un
+        intitulé, un prix, une unité — et rien qui les range.
+      </p>
+    </div>
+
+    <!-- ── 2. La famille commande l'unité ─────────────────────────────── -->
+    <div class="prop">
+      <p class="sous">L'unité suit la famille</p>
+      <div class="tel"><div class="ecran" data-s="famille">
+        <div class="tete"><p class="sur caps">Tarifs</p><h1>Nacelle</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <input class="interrupteur" type="radio" name="famille" id="f-presta">
+          <input class="interrupteur" type="radio" name="famille" id="f-main">
+          <input class="interrupteur" type="radio" name="famille" id="f-mat" checked>
+
+          <div class="bloc choix">
+            <p class="t caps">De quoi s'agit-il</p>
+
+            <label class="opt o-presta" for="f-presta">
+              <span class="rond"></span>
+              <span class="txt"><span class="nom">Prestation</span>
+                <span class="dit">Ce que vous vendez au client : abattre, tailler,
+                  évacuer.</span></span>
+            </label>
+            <label class="opt o-main" for="f-main">
+              <span class="rond"></span>
+              <span class="txt"><span class="nom">Main-d'œuvre</span>
+                <span class="dit">Ce qui se compte en temps passé.</span></span>
+            </label>
+            <label class="opt o-mat" for="f-mat">
+              <span class="rond"></span>
+              <span class="txt"><span class="nom">Matériel</span>
+                <span class="dit">Ce que vous louez ou amortissez.</span></span>
+            </label>
+
+            <!-- L'UNITÉ SUIT LA FAMILLE. Trois ou quatre par famille, jamais
+                 vingt : une liste déroulante de vingt unités se choisit de
+                 travers, et l'erreur ne se voit que sur le devis du client. -->
+            <div class="bloc unites u-presta" data-s="u-presta">
+              <p class="t caps">Se compte en</p>
+              <div class="past"><span class="pris">à l'unité</span><span>au forfait</span><span>au mètre</span><span>au m³</span></div>
+            </div>
+            <div class="bloc unites u-main" data-s="u-main">
+              <p class="t caps">Se compte en</p>
+              <div class="past"><span class="pris">à l'heure</span><span>à la demi-journée</span><span>à la journée</span></div>
+            </div>
+            <div class="bloc unites u-mat" data-s="u-mat">
+              <p class="t caps">Se compte en</p>
+              <div class="past"><span>à l'heure</span><span>à la demi-journée</span><span class="pris">à la journée</span></div>
+            </div>
+
+            <div class="bloc">
+              <p class="t caps">Son prix</p>
+              <label class="ch">
+                <span class="et caps">Prix, hors taxes</span>
+                <input class="va" type="text" inputmode="decimal" autocomplete="off" value="320,00 €" aria-label="Prix hors taxes">
+              </label>
+            </div>
+          </div>
+
+          <!-- LA SUPPRESSION NE S'EXÉCUTE PAS AU PREMIER APPUI. Elle vit au bas
+               de la fiche — une corbeille posée sur chaque ligne de la liste se
+               touche du pouce en faisant défiler — et elle demande confirmation,
+               parce qu'un tarif effacé par mégarde ne se retrouve pas à l'écran.
+               (En base, `supprimerTarif` pose `deletedAt` : rien n'est
+               réellement effacé. Mais l'artisan, lui, ne le sait pas.) -->
+          <label class="retirer" for="confirmer" data-s="retirer">Supprimer ce matériel</label>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+
+        <input class="interrupteur" type="checkbox" id="confirmer">
+        <label class="voile" for="confirmer" aria-label="Renoncer"></label>
+        <div class="feuille" data-s="feuille">
+          <h2>Supprimer « Nacelle » ?</h2>
+          <!-- CE QUI N'EST PAS TOUCHÉ, dit avant le geste. Vérifié dans le
+               code : aucune ligne de devis ne pointe vers un tarif — elles
+               copient le libellé et le prix au moment où elles sont écrites.
+               Un devis déjà fait ne bouge donc pas. Le taire laisserait croire
+               le contraire, et personne n'ose supprimer dans le doute. -->
+          <p>
+            <b>Vos devis et vos factures n&apos;en seront pas touchés</b> : ils
+            gardent le prix qu&apos;ils portaient le jour où ils ont été écrits.
+            Ce tarif cessera seulement d&apos;être proposé.
+          </p>
+          <div class="gestes">
+            <label class="bouton detruire" for="confirmer" data-s="detruire">Supprimer</label>
+            <label class="bouton renoncer" for="confirmer">Annuler</label>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">
+        Une main-d'œuvre se vend au temps, un matériel à la journée, une
+        prestation au forfait. <b>Proposer les vingt unités aux trois</b>, c'est
+        se tromper une fois sur dix.
+      </p>
+    </div>
+
+    <!-- ── 3. Les grilles, qui apprennent de ses devis ────────────────── -->
+    <div class="prop">
+      <p class="sous">Ses cinq grilles</p>
+      <div class="tel"><div class="ecran" data-s="grilles">
+        <div class="tete"><p class="sur caps">Tarifs</p><h1>Mes prix</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <div class="bloc">
+            <p class="t caps">Ce qu'Atlas a retenu de vous</p>
+            <div class="gri"><span class="txt"><span class="nom">Abattage</span><span class="dit">Par technique et par diamètre</span></span><span class="etat caps">14 prix</span><span class="chev"></span></div>
+            <div class="gri"><span class="txt"><span class="nom">Fendage</span><span class="dit">Par hauteur et par diamètre</span></span><span class="etat caps">6 prix</span><span class="chev"></span></div>
+            <div class="gri"><span class="txt"><span class="nom">Dessouchage</span><span class="dit">Par diamètre</span></span><span class="etat caps">3 prix</span><span class="chev"></span></div>
+            <!-- UNE GRILLE VIDE SE DIT VIDE, et dit pourquoi. Sans cela elle se
+                 lit comme une panne — or c'est l'état normal du premier jour. -->
+            <div class="gri creuse" data-s="creuse"><span class="txt"><span class="nom">Haie</span><span class="dit">Au mètre linéaire</span></span><span class="etat caps">Vide</span><span class="chev"></span></div>
+            <div class="gri creuse"><span class="txt"><span class="nom">Grumes</span><span class="dit">À la tonne</span></span><span class="etat caps">Vide</span><span class="chev"></span></div>
+          </div>
+
+          <p class="mot" data-s="apprend">
+            <b>Ces grilles ne se remplissent pas à la main.</b> Elles retiennent
+            ce que vous chiffrez, chantier après chantier, et vous le rappellent
+            sur le suivant qui lui ressemble.
+          </p>
+
+          <p class="fin" data-s="vides">
+            Une grille <b>vide est normale</b> : Atlas n'a pas encore vu de haie
+            passer. Il ne proposera aucun prix tant qu'il n'en aura pas appris
+            un — <b>il préfère se taire qu'inventer</b>.
+          </p>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Les cinq grilles existent déjà (`src/lib/grille-prix.ts`). Ce qui manque
+        à l'écran, c'est <b>le nombre de prix appris</b> et la phrase qui dit
+        qu'une grille vide n'est pas une panne.
+      </p>
+    </div>
+
+    <!-- ── 4. Le premier jour : rien, et ce que ça change ─────────────── -->
+    <div class="prop">
+      <p class="sous">Le premier jour</p>
+      <div class="tel"><div class="ecran" data-s="vide">
+        <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Tarifs</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <p class="mot" data-s="rien">
+            <b>Aucun tarif enregistré.</b> Atlas ne proposera aucun prix tant
+            qu'il n'aura rien de vous — il vous laissera écrire chaque montant à
+            la main, et retiendra ce que vous écrivez.
+          </p>
+
+          <div class="bloc">
+            <p class="t caps">Deux façons de commencer</p>
+            <div class="gri"><span class="txt"><span class="nom">Déposer votre liste</span><span class="dit">Un fichier Excel ou CSV, montré avant d'être écrit</span></span><span class="chev"></span></div>
+            <div class="gri"><span class="txt"><span class="nom">Écrire un premier tarif</span><span class="dit">Un intitulé, un prix, une unité</span></span><span class="chev"></span></div>
+          </div>
+
+          <!-- CE QUI VIENT AVEC L'APPLICATION, ET QU'IL NE RÈGLE PAS. La
+               distinction n'est écrite nulle part aujourd'hui, et l'écran des
+               réglages met les deux côte à côte sans le dire : un artisan ne
+               sait pas s'il touche quelque chose qui lui appartient. -->
+          <div class="bloc">
+            <p class="t caps">Ce qui vient avec Atlas</p>
+            <div class="gri"><span class="txt"><span class="nom">Le catalogue du métier</span><span class="dit">Les mots, jamais les prix — le même chez tous</span></span><span class="chev"></span></div>
+          </div>
+
+          <p class="fin" data-s="partage">
+            Le catalogue donne <b>les mots</b> — « charpentière champignonnée »,
+            « taille de cohabitation ». Il ne porte <b>aucun prix</b> : les prix
+            sont les vôtres, et ne traversent jamais d'une entreprise à l'autre.
+          </p>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Même leçon qu'au lot 2</b> : le jeu de départ pose déjà des tarifs, et
+        cet écran-là n'a jamais été vu.
+      </p>
+    </div>
+
+    <!-- ── 5. Les cinq chiffres qui font le prix, et que personne ne voit ─ -->
+    <div class="prop">
+      <p class="sous">Ce qui fait le prix</p>
+      <div class="tel"><div class="ecran" data-s="parametres">
+        <div class="tete"><p class="sur caps">Tarifs</p><h1>Mes coûts</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <!-- CE QUI A ÉTÉ TROUVÉ EN RÉPONDANT À SA QUESTION DU 13 AOÛT 2026 :
+               « mais l'IA se servira de ces infos pour constituer les devis ? »
+
+               `parametres_chiffrage` existe en base depuis le lot IA, avec CINQ
+               valeurs par défaut — 200 €/jour l'ouvrier, 280 € le chef, 35 € le
+               déplacement, 20 % de marge, 20 % de TVA. **AUCUN écran ne permet
+               de les changer.**
+
+               Ces cinq chiffres décident du prix qu'Atlas propose chaque fois
+               qu'aucun tarif ne correspond. Un artisan dont l'ouvrier coûte
+               260 € par jour verra donc des prix trop bas, sans jamais savoir
+               d'où ils viennent. C'est pire qu'un réglage manquant : c'est un
+               réglage qui existe, qui agit, et qu'on ne peut pas voir. -->
+          <div class="bloc">
+            <p class="t caps">Comment Atlas trouve un prix</p>
+            <ol class="marche" data-s="marche">
+              <li>Il cherche dans <b>vos tarifs</b>. Un seul correspond : il le prend, tel quel.</li>
+              <li>Plusieurs correspondent : <b>il ne choisit pas</b>, il vous les montre.</li>
+              <li>Aucun ne correspond : il <b>calcule</b> avec vos coûts ci-dessous.</li>
+              <li>Il ne peut pas calculer : il écrit <b>« prix à renseigner »</b> et se tait.</li>
+            </ol>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Vos coûts</p>
+            <label class="ch">
+              <span class="et caps">Un ouvrier, à la journée</span>
+              <input class="va" type="text" inputmode="decimal" autocomplete="off" value="200,00 €" aria-label="Coût journalier d'un ouvrier">
+            </label>
+            <label class="ch">
+              <span class="et caps">Un chef d&apos;équipe, à la journée</span>
+              <input class="va" type="text" inputmode="decimal" autocomplete="off" value="280,00 €" aria-label="Coût journalier d'un chef d'équipe">
+            </label>
+            <label class="ch">
+              <span class="et caps">Déplacement, au forfait</span>
+              <input class="va" type="text" inputmode="decimal" autocomplete="off" value="35,00 €" aria-label="Forfait de déplacement">
+            </label>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Ce que vous prenez dessus</p>
+            <label class="ch">
+              <span class="et caps">Votre marge</span>
+              <input class="va" type="text" inputmode="decimal" autocomplete="off" value="20 %" aria-label="Marge cible">
+            </label>
+          </div>
+
+          <p class="mot grave" data-s="invisibles">
+            <b>Ces quatre chiffres existent déjà et agissent déjà</b>, avec ces
+            valeurs-là. Aucun écran ne permet de les changer : un artisan dont
+            l&apos;ouvrier coûte 260 € verra des prix trop bas sans savoir
+            pourquoi.
+          </p>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Trouvé en répondant à sa question</b> du 13 août : « l&apos;IA se
+        servira de ces infos pour constituer les devis ? » Oui — et de
+        quatre chiffres qu&apos;il n&apos;a jamais vus.
+      </p>
+    </div>
+
+  </div>
+</div>

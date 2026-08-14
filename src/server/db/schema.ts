@@ -80,6 +80,41 @@ export const entreprises = pgTable("entreprises", {
   telephone: text("telephone"),
   email: text("email"),
   iban: text("iban"),
+  /** « SASU », « EI », « EURL »… Figure sur les documents (migration 0039). */
+  formeJuridique: text("forme_juridique"),
+  /**
+   * Le régime de TVA, **déclaré et jamais déduit** (migration 0039).
+   *
+   * `facture-pdf.ts` devinait jusqu'ici la franchise en regardant si le taux
+   * appliqué valait zéro — donc il tirait une situation fiscale d'un chiffre
+   * saisi chantier par chantier. Les deux sens étaient faux : une franchise
+   * perdait sa mention obligatoire dès qu'un 20 % traînait, un assujetti voyait
+   * s'imprimer « TVA non applicable » sur une pièce comptable.
+   *
+   * Le défaut est « assujettie » : c'est celui qui ne change rien au
+   * comportement observé jusqu'ici, et une franchise se déclare d'un geste.
+   */
+  regimeTva: text("regime_tva", { enum: ["assujettie", "franchise"] })
+    .notNull()
+    .default("assujettie"),
+  /** Numéro de TVA intracommunautaire — attendu sur la facture d'un assujetti. */
+  numeroTva: text("numero_tva"),
+  /** Un IBAN à un nom différent de l'entreprise inquiète au lieu de rassurer. */
+  titulaireCompte: text("titulaire_compte"),
+  /**
+   * Les conditions qui s'impriment sur un devis (migration 0040).
+   *
+   * **Une valeur nulle veut dire « éteint »**, sauf la validité dont le défaut
+   * est celui d'avant — 30 jours, la constante de `devis-pdf.ts`. Deux champs
+   * pour une seule idée (un nombre et un « actif ») finiraient par se
+   * contredire (`src/lib/conditions-documents.ts`).
+   */
+  validiteDevisJours: integer("validite_devis_jours").default(30),
+  acomptePourcent: numeric("acompte_pourcent", { precision: 5, scale: 2 }),
+  delaiPaiementJours: integer("delai_paiement_jours"),
+  moyensPaiement: text("moyens_paiement"),
+  rappelerPenalitesDevis: boolean("rappeler_penalites_devis").notNull().default(false),
+  textePiedDocuments: text("texte_pied_documents"),
   // Combien de chantiers menés de front. 1 par défaut — le comportement d'avant
   // la migration 0019, où une seule équipe était supposée sans le dire.
   nombreEquipes: integer("nombre_equipes").notNull().default(1),
@@ -488,6 +523,15 @@ export const devis = pgTable(
 
     dateEmission: date("date_emission").notNull(),
     dateValidite: date("date_validite"),
+    /**
+     * La durée de validité RECOPIÉE au jour de la création (migration 0040).
+     *
+     * Lire le réglage au moment de composer le PDF ferait changer la durée
+     * d'engagement d'un devis déjà envoyé, simplement parce que l'artisan a
+     * corrigé ses réglages entre-temps — pendant que le client a une autre
+     * feuille sous les yeux (`ARCHITECTURE.md` §102).
+     */
+    validiteJours: integer("validite_jours"),
     conditionsPaiement: text("conditions_paiement"),
     devise: char("devise", { length: 3 }).notNull().default("EUR"),
 
@@ -907,6 +951,18 @@ export const factures = pgTable(
     entrepriseNom: text("entreprise_nom").notNull(),
     entrepriseAdresse: text("entreprise_adresse"),
     entrepriseSiret: text("entreprise_siret"),
+    /**
+     * Le régime de TVA **au jour de l'émission** (migration 0039).
+     *
+     * Figé ici, et non lu en direct : une facture émise sous franchise garde sa
+     * mention « art. 293 B » même si l'artisan devient assujetti l'année
+     * suivante. La lire dans `entreprises` réécrirait le passé sur une pièce
+     * comptable.
+     *
+     * Nul pour les factures antérieures à la migration : le PDF se rabat alors
+     * sur le taux appliqué, exactement comme avant.
+     */
+    entrepriseRegimeTva: text("entreprise_regime_tva", { enum: ["assujettie", "franchise"] }),
     entrepriseEmail: text("entreprise_email"),
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),

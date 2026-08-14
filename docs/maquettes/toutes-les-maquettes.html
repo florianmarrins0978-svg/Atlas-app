@@ -3835,100 +3835,272 @@
            letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
 
 
-/* 33 — La feuille d’envoi : un seul geste à la fois */
-#s33{
+/* 33 — Le message du devis figé */
+#s33{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+@media (prefers-color-scheme: dark){
+#s33:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  
+}
+#s33[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+#s33, #s33 *{box-sizing:border-box}
+#s33{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 90px}
+#s33 .page{max-width:1120px;margin:0 auto}
+#s33 .intro{max-width:62ch;margin:0 auto}
+#s33 .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
+#s33 .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
+#s33 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
+#s33 .intro b{color:var(--encre);font-weight:500}
+#s33 .appui{max-width:56ch;margin:22px auto 0;padding:15px 20px;border:1px solid var(--trait);
+         border-radius:6px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s33 .appui b{color:var(--encre);font-weight:500}
+#s33 .famille{margin:52px 0 12px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--gris)}
+#s33 .famille span{position:relative;display:inline-block;padding:0 20px;background:var(--fond)}
+#s33 .famille span::before,#s33 .famille span::after{content:"";position:absolute;top:50%;width:60px;height:1px;background:var(--trait)}
+#s33 .famille span::before{right:100%}
+#s33 .famille span::after{left:100%}
+#s33 .sous-titre{max-width:58ch;margin:0 auto 24px;text-align:center;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s33 .rangee{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;align-items:flex-start}
+#s33 .cartouche{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:412px}
+#s33 .etiquette{color:var(--bronze);font-size:10px;letter-spacing:.3em;text-transform:uppercase}
+#s33 .cartouche .dit{margin:0;font-size:12.5px;line-height:1.6;color:var(--gris);text-align:center}
+#s33 .cartouche .dit b{color:var(--encre);font-weight:500}
+#s33 .tel{width:412px;max-width:100%;border-radius:30px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 22px 50px rgba(20,18,14,.18)}
+#s33 .ecran{overflow:hidden;border-radius:22px;background:#f5f3ee;color:#1c1c1a;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         padding:16px 14px 20px;
+         --e-encre:#1c1c1a; --e-gris:#8a8578; --e-pin:#2f3b2f; --e-teinte:#ece9e1;
+         --e-trait:rgba(28,28,26,.16)}
+#s33 .retour{color:var(--e-gris);font-size:19px;line-height:1;margin:2px 0 12px 4px}
+#s33 .doc{background:#faf9f5;border-radius:10px;padding:20px 18px;
+       box-shadow:0 12px 40px rgba(28,28,26,.10)}
+#s33 .bandeau{border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.5;
+           background:var(--e-teinte);color:var(--e-pin);margin-bottom:20px}
+#s33 .bandeau a{color:var(--e-pin);font-weight:600;text-decoration:none}
+#s33 .bandeau .porte{display:block;margin-top:9px}
+#s33 .bandeau .pilule{display:inline-block;margin-top:11px;padding:9px 16px;border-radius:99px;
+                   background:var(--e-pin);color:#fff;font-size:13px;font-weight:500;text-decoration:none}
+#s33 .marque{margin:0;font:400 26px/1.15 ui-serif,Georgia,serif}
+#s33 .coord{margin:5px 0 0;font-size:14px;color:var(--e-encre)}
+#s33 .refs{margin-top:16px}
+#s33 .ref{display:flex;justify-content:space-between;align-items:baseline;
+       border-bottom:1px solid var(--e-trait);padding:9px 0;font-size:14px}
+#s33 .ref span:first-child{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--e-gris)}
+#s33 .barre{height:2px;background:var(--e-encre);margin:18px 0 0}
+#s33 .mot-devis{margin:16px 0 0;text-align:center;font:400 26px/1 ui-serif,Georgia,serif;letter-spacing:.06em}
+#s33 .note{max-width:62ch;margin:48px auto 0;padding:20px 22px;border:1px solid var(--trait);
+        border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.7}
+#s33 .note h2{margin:0 0 10px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
+#s33 .note b{color:var(--encre);font-weight:500}
+#s33 .note p{margin:0 0 12px}
+#s33 .note p:last-child{margin-bottom:0}
+
+
+/* 34 — La feuille d’envoi : un seul geste à la fois */
+#s34{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --plage:#f7f5f0;
   }
 @media (prefers-color-scheme: dark){
-#s33:not([data-theme="light"]){
+#s34:not([data-theme="light"]){
       --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
       --trait:rgba(233,229,220,.16); --plage:#201e1a;
     }
 
   
 }
-#s33[data-theme="dark"]{
+#s34[data-theme="dark"]{
     --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
     --trait:rgba(233,229,220,.16); --plage:#201e1a;
   }
-#s33, #s33 *{box-sizing:border-box}
-#s33{margin:0;background:var(--fond);color:var(--encre);
+#s34, #s34 *{box-sizing:border-box}
+#s34{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:44px 18px 80px;-webkit-text-size-adjust:100%}
-#s33 .page{max-width:1300px;margin:0 auto}
-#s33 .intro{max-width:66ch;margin:0 auto;text-align:center}
-#s33 .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
-#s33 .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
-#s33 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
-#s33 .intro b{color:var(--encre);font-weight:600}
-#s33 .famille{max-width:1300px;margin:52px auto 0;text-align:center;
+#s34 .page{max-width:1300px;margin:0 auto}
+#s34 .intro{max-width:66ch;margin:0 auto;text-align:center}
+#s34 .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+#s34 .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+#s34 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+#s34 .intro b{color:var(--encre);font-weight:600}
+#s34 .famille{max-width:1300px;margin:52px auto 0;text-align:center;
            font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.32em;
            text-transform:uppercase;color:var(--or)}
-#s33 .sous-famille{max-width:60ch;margin:10px auto 0;text-align:center;
+#s34 .sous-famille{max-width:60ch;margin:10px auto 0;text-align:center;
                 font-size:13.4px;color:var(--gris);line-height:1.6}
-#s33 .sous-famille b{color:var(--encre)}
-#s33 .grille{display:flex;flex-wrap:wrap;gap:54px 40px;justify-content:center;
+#s34 .sous-famille b{color:var(--encre)}
+#s34 .grille{display:flex;flex-wrap:wrap;gap:54px 40px;justify-content:center;
           align-items:flex-start;margin-top:26px}
-#s33 .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px;width:100%}
-#s33 .legende{text-align:center;max-width:390px;width:100%}
-#s33 .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+#s34 .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px;width:100%}
+#s34 .legende{text-align:center;max-width:390px;width:100%}
+#s34 .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
               text-transform:uppercase;color:var(--or)}
-#s33 .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
-#s33 .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
-#s33 .legende p + p{margin-top:9px}
-#s33 .legende .reserve{color:var(--encre);opacity:.82}
-#s33 .legende .reserve b{color:var(--or)}
-#s33 .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+#s34 .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+#s34 .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+#s34 .legende p + p{margin-top:9px}
+#s34 .legende .reserve{color:var(--encre);opacity:.82}
+#s34 .legende .reserve b{color:var(--or)}
+#s34 .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
        box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
-#s33 .ecran{
+#s34 .ecran{
     --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
     --e-pin:#2f3b2f; --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
     width:390px;max-width:100%;overflow:hidden;border-radius:32px;
     background:var(--e-fond);color:var(--e-encre);padding:22px 0 26px;
     font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
-#s33 .retour{margin:0 24px;width:38px;height:38px;border-radius:9999px;
+#s34 .retour{margin:0 24px;width:38px;height:38px;border-radius:9999px;
           background:var(--e-plage);display:flex;align-items:center;justify-content:center;
           color:var(--e-gris);font-size:17px}
-#s33 .eyebrow{margin:16px 24px 0;font:500 10px/1 ui-sans-serif,sans-serif;
+#s34 .eyebrow{margin:16px 24px 0;font:500 10px/1 ui-sans-serif,sans-serif;
            letter-spacing:.3em;text-transform:uppercase;color:var(--e-or)}
-#s33 .titre-ecran{margin:12px 24px 0;font:400 34px/1.1 ui-serif,Georgia,serif}
-#s33 .filet{margin:16px 24px 0;height:1px;background:var(--e-trait)}
-#s33 .etat{margin:18px 24px 0;padding-left:12px;border-left:2px solid var(--e-or)}
-#s33 .etat .quoi{font-size:15px}
-#s33 .etat .pourquoi{margin-top:2px;font-size:14px;color:var(--e-gris)}
-#s33 .citation{margin:12px 24px 0;padding-left:12px;border-left:2px solid var(--e-pin);font-size:15px}
-#s33 .total{margin:24px 24px 0;text-align:center}
-#s33 .total .no{font-size:14px;color:var(--e-gris)}
-#s33 .total .montant{margin-top:6px;font:400 38px/1 ui-serif,Georgia,serif;color:var(--e-pin)}
-#s33 .capsule-large{display:block;margin:26px 24px 0;border-radius:9999px;
+#s34 .titre-ecran{margin:12px 24px 0;font:400 34px/1.1 ui-serif,Georgia,serif}
+#s34 .filet{margin:16px 24px 0;height:1px;background:var(--e-trait)}
+#s34 .etat{margin:18px 24px 0;padding-left:12px;border-left:2px solid var(--e-or)}
+#s34 .etat .quoi{font-size:15px}
+#s34 .etat .pourquoi{margin-top:2px;font-size:14px;color:var(--e-gris)}
+#s34 .citation{margin:12px 24px 0;padding-left:12px;border-left:2px solid var(--e-pin);font-size:15px}
+#s34 .total{margin:24px 24px 0;text-align:center}
+#s34 .total .no{font-size:14px;color:var(--e-gris)}
+#s34 .total .montant{margin-top:6px;font:400 38px/1 ui-serif,Georgia,serif;color:var(--e-pin)}
+#s34 .capsule-large{display:block;margin:26px 24px 0;border-radius:9999px;
                  background:var(--e-pin);color:#faf9f5;padding:15px 0;
                  text-align:center;font-size:16px;font-weight:500}
-#s33 .destinataire{margin:10px 24px 0;text-align:center;font-size:12px;color:var(--e-gris)}
-#s33 .bascule{margin:12px 24px 0;text-align:center;font-size:13px;color:var(--e-gris)}
-#s33 .bascule.or{color:var(--e-or);font-weight:600;font-size:15px}
-#s33 .bascule.or-filet{color:var(--e-or);font-weight:600;font-size:15px}
-#s33 .bascule.or-filet span{border-bottom:1px solid rgba(185,139,71,.45);padding-bottom:3px}
-#s33 .bascule.caps{color:var(--e-or);font:600 12px/1 ui-sans-serif,sans-serif;
+#s34 .destinataire{margin:10px 24px 0;text-align:center;font-size:12px;color:var(--e-gris)}
+#s34 .bascule{margin:12px 24px 0;text-align:center;font-size:13px;color:var(--e-gris)}
+#s34 .bascule.or{color:var(--e-or);font-weight:600;font-size:15px}
+#s34 .bascule.or-filet{color:var(--e-or);font-weight:600;font-size:15px}
+#s34 .bascule.or-filet span{border-bottom:1px solid rgba(185,139,71,.45);padding-bottom:3px}
+#s34 .bascule.caps{color:var(--e-or);font:600 12px/1 ui-sans-serif,sans-serif;
                 letter-spacing:.16em;text-transform:uppercase}
-#s33 .rangee{margin:16px 24px 0;display:flex;align-items:center;justify-content:center;
+#s34 .rangee{margin:16px 24px 0;display:flex;align-items:center;justify-content:center;
           font-size:13px;color:var(--e-encre)}
-#s33 .rangee a,#s33 .rangee span.act{padding:0 8px;font-weight:500}
-#s33 .rangee .pt{color:var(--e-trait)}
-#s33 .reprise{display:block;margin:16px 24px 0;border-radius:9999px;
+#s34 .rangee a,#s34 .rangee span.act{padding:0 8px;font-weight:500}
+#s34 .rangee .pt{color:var(--e-trait)}
+#s34 .reprise{display:block;margin:16px 24px 0;border-radius:9999px;
            background:var(--e-pin);color:#faf9f5;padding:13px 0;
            text-align:center;font-size:15px;font-weight:500}
-#s33 .rature{position:relative}
-#s33 .rature::after{content:"";position:absolute;left:24px;right:24px;top:50%;
+#s34 .rature{position:relative}
+#s34 .rature::after{content:"";position:absolute;left:24px;right:24px;top:50%;
                  height:2px;background:#9C3B2E;opacity:.75}
-#s33 .marque-retire{margin:8px 24px 0;text-align:center;font-size:11.5px;color:#9C3B2E}
-#s33 .vide{margin:22px 24px 0;padding:14px 12px;border:1px dashed var(--e-trait);
+#s34 .marque-retire{margin:8px 24px 0;text-align:center;font-size:11.5px;color:#9C3B2E}
+#s34 .vide{margin:22px 24px 0;padding:14px 12px;border:1px dashed var(--e-trait);
         border-radius:4px;text-align:center;font-size:12.5px;color:var(--e-gris)}
-#s33 .note{max-width:74ch;margin:62px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+#s34 .note{max-width:74ch;margin:62px auto 0;padding-top:26px;border-top:1px solid var(--trait);
         font-size:13.6px;color:var(--gris);line-height:1.72}
-#s33 .note b{color:var(--encre)}
-#s33 .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+#s34 .note b{color:var(--encre)}
+#s34 .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
            letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+
+
+/* 35 — Le devis : le reprendre avant de l’envoyer */
+#s35{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f7f5f0; --alerte:#9C3B2E;
+  }
+@media (prefers-color-scheme: dark){
+#s35:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --alerte:#C4614F;
+    }
+
+  
+}
+#s35[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --alerte:#C4614F;
+  }
+#s35, #s35 *{box-sizing:border-box}
+#s35{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+#s35 .page{max-width:1300px;margin:0 auto}
+#s35 .intro{max-width:66ch;margin:0 auto;text-align:center}
+#s35 .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+#s35 .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+#s35 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+#s35 .intro b{color:var(--encre);font-weight:600}
+#s35 .famille{max-width:1300px;margin:56px auto 0;text-align:center;
+           font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.32em;
+           text-transform:uppercase;color:var(--or)}
+#s35 .sous-famille{max-width:62ch;margin:10px auto 0;text-align:center;
+                font-size:13.4px;color:var(--gris);line-height:1.6}
+#s35 .sous-famille b{color:var(--encre)}
+#s35 .grille{display:flex;flex-wrap:wrap;gap:54px 40px;justify-content:center;
+          align-items:flex-start;margin-top:26px}
+#s35 .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px;width:100%}
+#s35 .legende{text-align:center;max-width:390px;width:100%}
+#s35 .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+              text-transform:uppercase;color:var(--or)}
+#s35 .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+#s35 .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+#s35 .legende p + p{margin-top:9px}
+#s35 .legende .pour{color:var(--encre);opacity:.86}
+#s35 .legende .contre{color:var(--alerte);opacity:.92}
+#s35 .legende b{color:var(--encre)}
+#s35 .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+#s35 .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
+    width:390px;max-width:100%;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);padding:22px 0 24px;
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+#s35 .retour{margin:0 24px;width:38px;height:38px;border-radius:9999px;
+          background:var(--e-plage);display:flex;align-items:center;justify-content:center;
+          color:var(--e-gris);font-size:17px}
+#s35 .eyebrow{margin:16px 24px 0;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--e-or)}
+#s35 .titre-ecran{margin:12px 24px 0;font:400 34px/1.1 ui-serif,Georgia,serif}
+#s35 .filet{margin:16px 24px 0;height:1px;background:var(--e-trait)}
+#s35 .ligne-titre{margin:12px 24px 0;display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+#s35 .ligne-titre h3{margin:0;font:400 34px/1.1 ui-serif,Georgia,serif}
+#s35 .action-titre{font-size:15px;font-weight:600;color:var(--e-or);white-space:nowrap}
+#s35 .titre-porte{display:inline-flex;align-items:center;gap:10px}
+#s35 .titre-porte .crayon{font-size:17px;color:var(--e-or);
+                       transform:translateY(-6px)}
+#s35 .titre-porte.souligne h3{border-bottom:1px solid rgba(185,139,71,.5);padding-bottom:2px}
+#s35 .carte{margin:16px 24px 0;border-radius:4px;background:var(--e-plage);padding:18px 20px}
+#s35 .carte + .carte{margin-top:14px}
+#s35 .etiq{font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+        text-transform:uppercase;color:var(--e-gris)}
+#s35 .val{margin-top:7px;font-size:15px}
+#s35 .val.gris{margin-top:3px;color:var(--e-gris)}
+#s35 .sep{margin:14px 0;height:1px;background:var(--e-trait)}
+#s35 .en-tete-carte{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+#s35 .en-tete-carte .agir{font-size:13.5px;font-weight:600;color:var(--e-or);white-space:nowrap}
+#s35 .en-tete-carte .chevron{font-size:16px;color:var(--e-or)}
+#s35 .ligne-devis{margin-top:11px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:15px}
+#s35 .ligne-devis .prix{color:var(--e-gris)}
+#s35 .total-carte{margin:16px 24px 0;border-radius:4px;background:var(--e-plage);
+               padding:18px 20px;text-align:center}
+#s35 .total-carte .etiq{letter-spacing:.28em}
+#s35 .total-carte .montant{margin-top:8px;font:400 32px/1 ui-serif,Georgia,serif;color:var(--e-pin)}
+#s35 .sous-total{margin:15px 24px 0;text-align:center;font-size:14px;color:var(--e-encre)}
+#s35 .sous-total .lien{color:var(--e-encre)}
+#s35 .sous-total .or{color:var(--e-or);font-weight:600}
+#s35 .sous-total .pt{color:var(--e-gris);opacity:.6;padding:0 9px}
+#s35 .capsule{display:block;margin:16px 24px 0;border-radius:9999px;
+           background:var(--e-pin);color:#faf9f5;padding:14px 0;
+           text-align:center;font-size:16px;font-weight:500}
+#s35 .capsule.creuse{background:transparent;color:var(--e-pin);
+                  box-shadow:inset 0 0 0 1px rgba(47,59,47,.35);font-weight:500}
+#s35 .carte.touchable{position:relative;padding-right:38px;
+                   box-shadow:inset 0 0 0 1px rgba(185,139,71,.28)}
+#s35 .carte.touchable .fleche{position:absolute;right:16px;top:50%;
+                           transform:translateY(-50%);font-size:18px;color:var(--e-or)}
+#s35 .rien{margin:16px 24px 0;padding:13px 12px;border:1px dashed var(--e-trait);
+        border-radius:4px;text-align:center;font-size:12.5px;color:var(--e-gris)}
+#s35 .note{max-width:74ch;margin:64px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+#s35 .note b{color:var(--encre)}
+#s35 .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+#s35 .note ul{margin:10px 0 0;padding-left:18px}
+#s35 .note li{margin:6px 0}
 
 
 </style>
@@ -4079,10 +4251,20 @@
         <span class="no">32</span><span class="titre">Le motif dans le rond d’or</span><span class="fleche">↓</span>
         <span class="quoi">Le tour est retenu ; seule la gravure change. Huit motifs, et une bande en tête qui les montre à leur taille réelle — c’est là que se juge lequel tient encore à six millimètres.</span>
       </a>
-      <p class="famille">La feuille d’envoi</p>
+      <p class="famille">Dire moins sur l’écran du devis</p>
       <a class="item retenu" href="#m33">
-        <span class="no">33</span><span class="titre">La feuille d’envoi : un seul geste à la fois</span><span class="fleche">↓</span>
+        <span class="no">33</span><span class="titre">Le message du devis figé</span><span class="fleche">↓</span>
+        <span class="quoi">« Le message dit de consulter la case devis, mais aucune case devis n’existe. » Le témoin, puis trois façons : le message devient la porte, un vrai bouton, ou plus de message du tout.</span>
+      </a>
+      <p class="famille">La feuille d’envoi</p>
+      <a class="item" href="#m34">
+        <span class="no">34</span><span class="titre">La feuille d’envoi : un seul geste à la fois</span><span class="fleche">↓</span>
         <span class="quoi">Deux boutons pleins l’un sous l’autre sur la feuille d’un devis corrigé. Deux lectures du retrait, montrées dans les deux moments — avant et après l’envoi — et trois dosages de « Plutôt par e-mail ».</span>
+      </a>
+      <p class="famille">Le devis avant l’envoi</p>
+      <a class="item" href="#m35">
+        <span class="no">35</span><span class="titre">Le devis : le reprendre avant de l’envoyer</span><span class="fleche">↓</span>
+        <span class="quoi">Tout est là pour vérifier, rien pour corriger : « Modifier mon devis » n’existe qu’APRÈS l’envoi. Son idée — le mot « Devis » cliquable — dessinée telle quelle, et quatre autres façons d’y arriver.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -14758,10 +14940,181 @@
   <section class="etape" id="m33">
     <div class="etape-tete">
       <span class="etape-no">33</span>
-      <h2>La feuille d’envoi : un seul geste à la fois</h2>
+      <h2>Le message du devis figé</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s33">
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Maquette 40</p>
+    <h1>Le message du devis figé</h1>
+    <p><b>« Le message dit de consulter la case devis, mais aucune case devis
+    n'existe. »</b> L'écran Devis existe pourtant — c'est celui du suivi et de
+    l'envoi. Mais depuis cette page, <b>aucune porte n'y mène</b> : le message
+    décrit un chemin à retrouver seul.</p>
+    <p>Voici le témoin, puis trois façons de le poser. Seul ce bloc change ; le
+    reste du document ne bouge pas.</p>
+    <div class="appui">
+      À la largeur de votre écran — <b>390 px</b>. Le haut du document
+      seulement : c'est là que tout se joue.
+    </div>
+  </div>
+
+  <!-- ══ TÉMOIN ══════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>Ce que vous voyez aujourd'hui</span></p>
+  <p class="sous-titre">Une phrase qui décrit un itinéraire. Rien à toucher.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Témoin</span>
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <div class="doc">
+          <div class="bandeau">
+            Ce devis est parti chez votre client : il ne se modifie plus. Pour le corriger,
+            ouvrez l'écran Devis et choisissez « Corriger et renvoyer ».
+          </div>
+          <p class="marque">Atelier Démo</p>
+          <p class="coord">02 40 00 00 00</p>
+          <p class="coord">contact@atelier-demo.fr</p>
+          <div class="refs">
+            <div class="ref"><span>Devis nº</span><span>2026-0007</span></div>
+            <div class="ref"><span>Date</span><span>13/08/2026</span></div>
+            <div class="ref"><span>Validité</span><span>30 jours</span></div>
+          </div>
+          <div class="barre"></div>
+          <p class="mot-devis">DEVIS</p>
+        </div>
+      </div></div>
+      <p class="dit"><b>Quatre lignes, et aucune porte.</b> « L'écran Devis » désigne un écran
+      que vous ne voyez pas d'ici — et vous êtes en train de regarder un devis.</p>
+    </div>
+  </div>
+
+  <!-- ══ A ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>A · Le message devient la porte</span></p>
+  <p class="sous-titre">C'est ce que je vous proposais. La phrase dit ce qui se passe,
+    la ligne dessous <b>vous y emmène</b>. Plus d'itinéraire à retenir.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Proposition A</span>
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <div class="doc">
+          <div class="bandeau">
+            Ce devis est parti chez votre client : il ne se modifie plus.
+            <a class="porte" href="#">Le corriger et le renvoyer →</a>
+          </div>
+          <p class="marque">Atelier Démo</p>
+          <p class="coord">02 40 00 00 00</p>
+          <p class="coord">contact@atelier-demo.fr</p>
+          <div class="refs">
+            <div class="ref"><span>Devis nº</span><span>2026-0007</span></div>
+            <div class="ref"><span>Date</span><span>13/08/2026</span></div>
+            <div class="ref"><span>Validité</span><span>30 jours</span></div>
+          </div>
+          <div class="barre"></div>
+          <p class="mot-devis">DEVIS</p>
+        </div>
+      </div></div>
+      <p class="dit"><b>Deux lignes au lieu de quatre.</b> Le mot « écran Devis » disparaît —
+      vous n'avez plus à savoir où est quoi.
+      <br><br><b>Ce que ça coûte :</b> rien. C'est la retouche la plus courte.</p>
+    </div>
+  </div>
+
+  <!-- ══ B ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>B · Un vrai bouton</span></p>
+  <p class="sous-titre">Le même contenu, mais le geste prend la forme d'un bouton —
+    la capsule de toute l'application. Plus visible, plus lourd aussi.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Proposition B</span>
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <div class="doc">
+          <div class="bandeau">
+            Ce devis est parti chez votre client : il ne se modifie plus.
+            <a class="pilule" href="#">Corriger et renvoyer</a>
+          </div>
+          <p class="marque">Atelier Démo</p>
+          <p class="coord">02 40 00 00 00</p>
+          <p class="coord">contact@atelier-demo.fr</p>
+          <div class="refs">
+            <div class="ref"><span>Devis nº</span><span>2026-0007</span></div>
+            <div class="ref"><span>Date</span><span>13/08/2026</span></div>
+            <div class="ref"><span>Validité</span><span>30 jours</span></div>
+          </div>
+          <div class="barre"></div>
+          <p class="mot-devis">DEVIS</p>
+        </div>
+      </div></div>
+      <p class="dit"><b>Impossible à rater.</b> C'est la même capsule que partout ailleurs.
+      <br><br><b>Ce que ça coûte :</b> un bouton plein en haut d'un document que vous venez
+      surtout <b>lire</b> — il attire l'œil avant le devis lui-même.</p>
+    </div>
+  </div>
+
+  <!-- ══ C ═══════════════════════════════════════════════════════════════ -->
+  <p class="famille"><span>C · Rien du tout</span></p>
+  <p class="sous-titre">L'autre branche de votre question : on retire le message.
+    Le document s'ouvre nu, comme une pièce qu'on consulte.</p>
+
+  <div class="rangee">
+    <div class="cartouche">
+      <span class="etiquette">Proposition C</span>
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <div class="doc">
+          <p class="marque">Atelier Démo</p>
+          <p class="coord">02 40 00 00 00</p>
+          <p class="coord">contact@atelier-demo.fr</p>
+          <div class="refs">
+            <div class="ref"><span>Devis nº</span><span>2026-0007</span></div>
+            <div class="ref"><span>Date</span><span>13/08/2026</span></div>
+            <div class="ref"><span>Validité</span><span>30 jours</span></div>
+          </div>
+          <div class="barre"></div>
+          <p class="mot-devis">DEVIS</p>
+        </div>
+      </div></div>
+      <p class="dit"><b>Le plus calme, et c'est vrai.</b> Vous venez ici pour lire.
+      <br><br><b>Ce que ça coûte, et c'est mon seul désaccord :</b> cet écran est celui où
+      l'on RÉDIGE. Le jour où vous toucherez un prix, il ne se passera rien — et rien ne
+      dira pourquoi.</p>
+    </div>
+  </div>
+
+  <!-- ══ NOTE ═══════════════════════════════════════════════════════════ -->
+  <div class="note">
+    <h2>Ce que j'en pense, en deux lignes</h2>
+    <p><b>A.</b> Le message ne coûte que deux lignes, il répond à la seule question qu'on
+    se pose ici (« pourquoi je ne peux rien changer ? »), et il devient le chemin au lieu
+    de le décrire.</p>
+    <p><b>Pourquoi pas une nouvelle case :</b> l'écran Devis existe déjà, et il est dans le
+    tiroir de la fiche du chantier. Lui donner un second accès permanent, c'est deux portes
+    vers la même pièce — ce qu'on vient justement d'éviter sur l'écran du devis.</p>
+    <p><b>Une chose que je n'ai pas décidée :</b> les mots. « Le corriger et le renvoyer »,
+    « Corriger ce devis », « Reprendre le devis » — dites-moi lesquels vous parlent, ce sont
+    les vôtres.</p>
+    <p><b>Une réserve sur les polices.</b> Cette page emprunte la serif de votre appareil.
+    L'application charge Playfair Display : le rendu final sera plus dessiné.</p>
+  </div>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m34">
+    <div class="etape-tete">
+      <span class="etape-no">34</span>
+      <h2>La feuille d’envoi : un seul geste à la fois</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s34">
 <div class="page">
 
   <div class="intro">
@@ -15050,6 +15403,319 @@
     <b>Aucun fichier de <code>src/</code> n’a été touché.</b> Vous donnez une
     lettre et un numéro de ligne, et c’est ensuite seulement que l’écran change.
   </p>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m35">
+    <div class="etape-tete">
+      <span class="etape-no">35</span>
+      <h2>Le devis : le reprendre avant de l’envoyer</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s35">
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Le devis sur le feu</p>
+    <h1>Le reprendre avant de l’envoyer</h1>
+    <p><b>Vous avez raison, et le manque est réel.</b> « Modifier mon devis »
+      existe dans Atlas — mais seulement <b>après</b> l’envoi. Avant, c’est-à-dire
+      au moment précis où l’on veut encore corriger, aucun chemin ne mène au
+      devis modifiable.</p>
+    <p>Votre idée — rendre le mot « Devis » cliquable — est la <b>A</b>. Elle
+      ne coûte rien. Mais un titre qui est secrètement un lien ne s’annonce pas :
+      vous le sauriez, un remplaçant non. Les quatre autres cherchent
+      <b>où le doigt va naturellement</b>.</p>
+  </div>
+
+  <!-- ————————————————————————————————————————————————————————————
+       AUJOURD'HUI — sa capture, pour juger sur pièce
+       ———————————————————————————————————————————————————————— -->
+  <p class="famille">Aujourd’hui — votre capture de 21 h 00</p>
+  <p class="sous-famille">Tout est là pour <b>vérifier</b>, rien pour
+    <b>corriger</b>. Le seul geste offert est l’envoi.</p>
+  <div class="grille">
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Mme Félicie</p>
+        <h3 class="titre-ecran">Devis</h3>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiq">Chantier</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">Rue du Tourigou 29950 Bénodet</p>
+          <div class="sep"></div>
+          <p class="etiq">Client</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">0679984514</p>
+        </div>
+        <div class="carte">
+          <p class="etiq">Lignes du devis</p>
+          <div class="ligne-devis"><span>Haie de laurier — 20 ml</span><span class="prix">50,00 €</span></div>
+        </div>
+        <div class="total-carte">
+          <p class="etiq">Total</p>
+          <p class="montant">60,00 €</p>
+        </div>
+        <p class="sous-total"><span class="lien">Aperçu du PDF</span></p>
+        <span class="capsule">Envoyer au client</span>
+        <div class="rien">Aucun chemin vers le devis modifiable.</div>
+      </div></div>
+      <div class="legende">
+        <h2>L’existant</h2>
+        <p class="contre">C’est le défaut que vous avez trouvé.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ————————————————————————————————————————————————————————————
+       LES CINQ PROPOSITIONS
+       ———————————————————————————————————————————————————————— -->
+  <p class="famille">Cinq façons d’y arriver</p>
+  <p class="sous-famille">Toutes mènent au même écran — le devis modifiable —
+    et <b>aucune ne déplace « Envoyer au client »</b>.</p>
+
+  <div class="grille">
+
+    <!-- A — SON IDÉE : le titre devient la porte -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Mme Félicie</p>
+        <div style="margin:12px 24px 0">
+          <span class="titre-porte souligne">
+            <h3 style="margin:0;font:400 34px/1.1 ui-serif,Georgia,serif">Devis</h3>
+            <span class="crayon">✎</span>
+          </span>
+        </div>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiq">Chantier</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">Rue du Tourigou 29950 Bénodet</p>
+          <div class="sep"></div>
+          <p class="etiq">Client</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">0679984514</p>
+        </div>
+        <div class="carte">
+          <p class="etiq">Lignes du devis</p>
+          <div class="ligne-devis"><span>Haie de laurier — 20 ml</span><span class="prix">50,00 €</span></div>
+        </div>
+        <div class="total-carte">
+          <p class="etiq">Total</p>
+          <p class="montant">60,00 €</p>
+        </div>
+        <p class="sous-total"><span class="lien">Aperçu du PDF</span></p>
+        <span class="capsule">Envoyer au client</span>
+      </div></div>
+      <div class="legende">
+        <h2>A — votre idée</h2>
+        <p class="titre">Le mot « Devis » ouvre le devis</p>
+        <p class="pour">Zéro place prise. Le titre reste le titre, et le geste
+          est là où votre doigt l’a cherché.</p>
+        <p class="contre"><b>Sans le crayon et le filet doré, rien ne dirait
+          qu’on peut le toucher.</b> Ils sont donc dessinés ici — un titre nu ne
+          s’annonce pas.</p>
+      </div>
+    </div>
+
+    <!-- B — « Modifier » à droite du titre -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Mme Félicie</p>
+        <div class="ligne-titre">
+          <h3>Devis</h3>
+          <span class="action-titre">Modifier</span>
+        </div>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiq">Chantier</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">Rue du Tourigou 29950 Bénodet</p>
+          <div class="sep"></div>
+          <p class="etiq">Client</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">0679984514</p>
+        </div>
+        <div class="carte">
+          <p class="etiq">Lignes du devis</p>
+          <div class="ligne-devis"><span>Haie de laurier — 20 ml</span><span class="prix">50,00 €</span></div>
+        </div>
+        <div class="total-carte">
+          <p class="etiq">Total</p>
+          <p class="montant">60,00 €</p>
+        </div>
+        <p class="sous-total"><span class="lien">Aperçu du PDF</span></p>
+        <span class="capsule">Envoyer au client</span>
+      </div></div>
+      <div class="legende">
+        <h2>B — le mot dit le geste</h2>
+        <p class="titre">« Modifier », en face du titre</p>
+        <p class="pour">Se lit sans avoir rien à deviner, et occupe une place
+          qui était vide. Même hauteur que le titre, aligné sur sa ligne
+          d’écriture.</p>
+        <p class="contre">Un mot de plus tout en haut, là où l’écran était le
+          plus calme.</p>
+      </div>
+    </div>
+
+    <!-- C — on touche ce qu'on veut changer -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Mme Félicie</p>
+        <h3 class="titre-ecran">Devis</h3>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiq">Chantier</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">Rue du Tourigou 29950 Bénodet</p>
+          <div class="sep"></div>
+          <p class="etiq">Client</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">0679984514</p>
+        </div>
+        <div class="carte">
+          <div class="en-tete-carte">
+            <p class="etiq">Lignes du devis</p>
+            <span class="agir">Modifier</span>
+          </div>
+          <div class="ligne-devis"><span>Haie de laurier — 20 ml</span><span class="prix">50,00 €</span></div>
+        </div>
+        <div class="total-carte">
+          <p class="etiq">Total</p>
+          <p class="montant">60,00 €</p>
+        </div>
+        <p class="sous-total"><span class="lien">Aperçu du PDF</span></p>
+        <span class="capsule">Envoyer au client</span>
+      </div></div>
+      <div class="legende">
+        <h2>C — au bon endroit</h2>
+        <p class="titre">« Modifier » sur les lignes</p>
+        <p class="pour"><b>On touche ce qu’on veut changer.</b> Quand un prix
+          cloche, l’œil est déjà sur cette carte : le geste s’y trouve, sans
+          remonter en haut de l’écran.</p>
+        <p class="contre">Ne se voit pas tant qu’on n’a pas descendu l’écran —
+          mais c’est justement là qu’on regarde avant d’envoyer.</p>
+      </div>
+    </div>
+
+    <!-- D — sous le total, à côté de l'aperçu -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Mme Félicie</p>
+        <h3 class="titre-ecran">Devis</h3>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiq">Chantier</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">Rue du Tourigou 29950 Bénodet</p>
+          <div class="sep"></div>
+          <p class="etiq">Client</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">0679984514</p>
+        </div>
+        <div class="carte">
+          <p class="etiq">Lignes du devis</p>
+          <div class="ligne-devis"><span>Haie de laurier — 20 ml</span><span class="prix">50,00 €</span></div>
+        </div>
+        <div class="total-carte">
+          <p class="etiq">Total</p>
+          <p class="montant">60,00 €</p>
+        </div>
+        <p class="sous-total">
+          <span class="or">Modifier le devis</span>
+          <span class="pt">·</span>
+          <span class="lien">Aperçu du PDF</span>
+        </p>
+        <span class="capsule">Envoyer au client</span>
+      </div></div>
+      <div class="legende">
+        <h2>D — la place existe déjà</h2>
+        <p class="titre">À côté de « Aperçu du PDF »</p>
+        <p class="pour">Aucune place nouvelle : cette ligne existe. Les deux
+          gestes de vérification — <b>relire</b> et <b>corriger</b> — se
+          retrouvent côte à côte, juste avant l’envoi.</p>
+        <p class="contre">Deux liens serrés sur une ligne, et le doigt doit
+          viser.</p>
+      </div>
+    </div>
+
+    <!-- E — toute la carte est la porte -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Mme Félicie</p>
+        <h3 class="titre-ecran">Devis</h3>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiq">Chantier</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">Rue du Tourigou 29950 Bénodet</p>
+          <div class="sep"></div>
+          <p class="etiq">Client</p>
+          <p class="val">Mme Félicie</p>
+          <p class="val gris">0679984514</p>
+        </div>
+        <div class="carte touchable">
+          <p class="etiq">Lignes du devis</p>
+          <div class="ligne-devis"><span>Haie de laurier — 20 ml</span><span class="prix">50,00 €</span></div>
+          <span class="fleche">›</span>
+        </div>
+        <div class="total-carte">
+          <p class="etiq">Total</p>
+          <p class="montant">60,00 €</p>
+        </div>
+        <p class="sous-total"><span class="lien">Aperçu du PDF</span></p>
+        <span class="capsule">Envoyer au client</span>
+      </div></div>
+      <div class="legende">
+        <h2>E — la carte entière</h2>
+        <p class="titre">Toucher les lignes ouvre le devis</p>
+        <p class="pour">La cible la plus large de toutes : <b>on ne peut pas la
+          rater avec un gant</b>. Le chevron doré dit qu’il y a une suite, comme
+          ailleurs dans Atlas.</p>
+        <p class="contre">Un liseré autour de la carte, donc un peu de mobilier
+          en plus sur un écran qui n’en avait pas.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ————————————————————————————————————————————————————————————
+       CE QUI NE SE DÉCIDE PAS À L'ŒIL
+       ———————————————————————————————————————————————————————— -->
+  <div class="note">
+    <span class="t">Trois choses à savoir avant de choisir</span>
+    <ul>
+      <li><b>Toutes mènent au même endroit</b> — l’écran du devis modifiable,
+        celui où vous écrivez les lignes et les prix. Le retour vous ramène
+        ici. Rien d’autre ne change.</li>
+      <li><b>Aucune ne touche à l’envoi.</b> « Envoyer au client » reste où il
+        est, et reste le seul bouton plein de l’écran : c’est lui l’action
+        principale, et corriger n’est qu’un détour.</li>
+      <li><b>Ce chemin ne s’ouvre qu’AVANT l’envoi.</b> Une fois le devis parti,
+        il ne se modifie plus : il se <i>reprend</i>, ce qui crée une nouvelle
+        version — et c’est votre geste, pas celui de l’application. L’écran
+        d’après l’envoi garde donc son propre libellé.</li>
+    </ul>
+    <p style="margin-top:14px"><b>Ma préférence, et pourquoi.</b> <b>C</b> — le
+      mot sur la carte des lignes. C’est là que l’œil se pose quand un prix
+      cloche, et le geste s’y trouve sans remonter. Si vous voulez que ça se
+      voie dès l’arrivée sans descendre l’écran, <b>B</b> fait ça très bien, et
+      les deux peuvent d’ailleurs coexister.</p>
+    <p style="margin-top:10px">Votre <b>A</b> est dessinée telle que vous l’avez
+      dite. Si c’est elle que vous retenez, gardez au moins le crayon : sans
+      lui, personne ne devine qu’un titre s’ouvre.</p>
+    <p style="margin-top:14px"><b>Dites-moi laquelle, et je la code.</b> Rien
+      n’est encore touché dans l’application.</p>
+  </div>
 
 </div>
     </div>

@@ -8,7 +8,7 @@ const BASE = "http://localhost:3000";
 
   **Sa demande du 13 août 2026 :** *« l'onglet de l'assistant est hyper mal
   placé, propose des choses pour plus qu'il gêne »*, puis, devant les cinq
-  propositions de `docs/maquettes/45-ou-mettre-l-assistant.html` : *« la B mais
+  propositions de `docs/maquettes/46-ou-mettre-l-assistant.html` : *« la B mais
   de la même couleur qu'elle est déjà »*.
 
   **Ce que cette suite tient, et pourquoi chaque point a coûté quelque chose :**

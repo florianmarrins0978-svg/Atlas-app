@@ -110,6 +110,26 @@ const HORS_CHARTE: Array<{ motif: RegExp; pourquoi: string }> = [
     motif: /^src[/\\]components[/\\]ScreenHeader\.tsx$/,
     pourquoi: "chevron de retour, icône encadrée et non bouton d'action",
   },
+  {
+    // **Une case qu'on REMPLIT, pas un geste qu'on appuie.** La charte est
+    // citée juste au-dessus : « elle ne donne la capsule qu'à ce qu'on APPUIE,
+    // jamais à ce qu'on remplit ». La case de l'unité est un champ — elle se
+    // tient à côté du champ « Prix », dans la même grille, et porte ses 4 px
+    // comme lui. En capsule, elle serait le seul galet d'une rangée de champs
+    // droits. C'est aussi la forme que le patron a choisie le 14 août 2026
+    // (`maquettes/atlas-unite-deroulante.html`, forme 1).
+    //
+    // Elle est écrite en `<button>` et non en `<input>` parce que sa valeur se
+    // CHOISIT : c'est ce que la balise doit dire à qui n'emploie pas ses yeux.
+    // La forme et la balise ne se commandent pas l'une l'autre.
+    //
+    // **Ce que cette exception laisse passer, et qu'il faut savoir :** elle
+    // porte sur le fichier entier. Un vrai bouton d'action écrit un jour dans
+    // `ChoixUnite.tsx` ne serait plus dénoncé — le fichier ne tient aujourd'hui
+    // que cette case et les rangs de sa liste.
+    motif: /^src[/\\]components[/\\]atlas[/\\]ChoixUnite\.tsx$/,
+    pourquoi: "case d'un champ qu'on remplit, alignée sur le champ « Prix » voisin",
+  },
 ];
 
 /**

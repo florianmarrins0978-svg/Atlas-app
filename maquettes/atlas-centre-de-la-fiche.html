@@ -1,0 +1,389 @@
+<title>Atlas — Le centre de la fiche, selon l'avancement</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT pour la page — et pourtant vivante sous le doigt.
+
+    LE CENTRE DE LA FICHE, QUAND LE CHANTIER A DÉJÀ AVANCÉ.
+
+    Le patron, le 13 août 2026 : *« il n'y a pas de mémoire dans les actions.
+    [...] je suis obligé de refaire toutes les étapes une à une, alors que
+    j'étais déjà arrivé à la toute fin, il ne me manquait plus qu'à envoyer le
+    devis. »*
+
+    CE QUI EST DÉJÀ CORRIGÉ, ET QUI N'EST PAS LE SUJET ICI : l'état affiché
+    (« Devis prêt à envoyer » au lieu de « Brouillon ») et l'étape suivante
+    (« Envoyer le devis au client » au lieu de « Ajouter des photos »).
+    `ARCHITECTURE.md` §76.
+
+    CE QUI RESTE, ET QUI SE DESSINE AVANT DE SE CODER : le CENTRE de l'écran
+    montre toujours l'anneau de dictée — « Appuyez et décrivez le chantier » —
+    sur un chantier dont le devis est écrit. L'état dit vrai, l'étape suivante
+    aussi, mais le grand geste au milieu raconte encore un chantier neuf. Et
+    l'étape suivante, elle, vit dans le tiroir : repliée, en bas, en petit.
+
+    LA QUESTION POSÉE, ET ELLE N'A PAS DE RÉPONSE ÉVIDENTE :
+
+      · l'anneau est le cœur du produit, et il a été mis là exprès — sa demande
+        du 11 août : « il est en plein milieu et dès qu'on arrive sur la page,
+        il y est, qu'on ait cliqué dessus ou non ». Le retirer trop tôt, c'est
+        reprendre ce qu'il a demandé ;
+      · mais sur un chantier chiffré, ce n'est plus ce qu'il vient faire. Il
+        vient envoyer.
+
+    D'où DEUX propositions, et une troisième colonne pour voir la progression
+    entière. Aucune ne touche à `src/` tant qu'il n'a pas choisi.
+
+    CE QUI EST COMMUN AUX DEUX, ET QUI NE SE DISCUTE PAS : le geste qui reste
+    monte AU CENTRE, à la place que l'œil trouve en premier. Il ne dort plus
+    dans un tiroir replié.
+  */
+
+  :root{
+    --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c;
+    --bronze:#8f7130; --trait:rgba(22,23,15,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`.
+     Deux fois de suite : « rien ne s'ouvre quand je touche ». */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1400px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 34px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:390px;max-width:100%}
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:44ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:760px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         /* La charte Arborea, relevée dans `src/lib/design-tokens.ts`. */
+         --e-fond:#f5f3ee; --e-plage:#ece9e1; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-trait:rgba(28,28,26,.12); --e-pin:#2f3b2f; --e-pin-encre:#faf9f5;
+         --e-or:#B98B47; --e-blanc:#faf9f5}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  /* ═══ L'en-tête, identique à l'écran réel ════════════════════════════ */
+  .tete{padding:22px 26px 10px;flex:none}
+  .fleche{width:40px;height:40px;border-radius:999px;background:var(--e-plage);
+          display:flex;align-items:center;justify-content:center;color:var(--e-gris);font-size:19px}
+  .tete .etat{margin:14px 0 0;color:var(--e-or)}
+  .tete .client{margin:8px 0 0;font:400 15px/1.3 ui-serif,Georgia,serif;color:var(--e-gris)}
+  .tete h1{margin:2px 0 0;font:400 30px/1.1 ui-serif,Georgia,serif;letter-spacing:-.02em}
+
+  .corps{flex:1;min-height:0;display:flex;flex-direction:column;
+         align-items:center;justify-content:center;padding:0 26px 10px}
+
+  /* ═══ L'anneau de dictée — ce que la fiche montre AUJOURD'HUI ════════ */
+  .anneau{display:flex;align-items:center;justify-content:center;gap:14px}
+  .onde{display:flex;align-items:center;gap:5px;height:34px}
+  .onde i{width:2px;background:var(--e-or);opacity:.55;border-radius:2px}
+  .rond{width:74px;height:74px;border-radius:999px;flex:none;
+        box-shadow:inset 0 0 0 1.5px var(--e-or);
+        display:flex;align-items:center;justify-content:center}
+  .rond span{display:flex;gap:3px;align-items:center;height:20px}
+  .rond span i{width:2px;background:var(--e-or);border-radius:2px}
+  .dites{margin:14px 0 0;text-align:center;font-size:13px;color:var(--e-or)}
+
+  /* ═══ Le geste qui reste, au centre ══════════════════════════════════ */
+  .geste{width:100%;text-align:center}
+  .geste .quoi{margin:0;font-size:12.5px;color:var(--e-gris)}
+  .geste .somme{margin:6px 0 0;font:400 46px/1 ui-serif,Georgia,serif;letter-spacing:-.02em;
+                font-variant-numeric:tabular-nums}
+  .geste .pour{margin:8px 0 0;font-size:13.5px;color:var(--e-gris)}
+  /* Tous les boutons sont des capsules — règle du dépôt, `QUESTIONS.md` §13. */
+  .capsule{display:block;width:100%;margin:22px 0 0;padding:15px 20px;border:0;border-radius:999px;
+           font-family:inherit;font-weight:500;font-size:15px;line-height:1.2;text-align:center;
+           background:var(--e-pin);color:var(--e-pin-encre);-webkit-tap-highlight-color:transparent}
+  .capsule.creuse{background:var(--e-plage);color:var(--e-pin)}
+  /* 15 px de haut et de bas : à 12, le bouton mesurait 39 px — sous les 44 px
+     qu'Apple demande au doigt, et que `PrimaryButton` tient déjà dans
+     l'application. Mesuré par le contrôle, invisible à l'œil. */
+  .secondaire{display:block;width:100%;margin:12px 0 0;padding:15px 12px;border:0;border-radius:999px;
+              background:none;font-family:inherit;font-size:13.5px;color:var(--e-gris);text-align:center}
+
+  /* Proposition B : l'anneau garde sa forme et change de métier. */
+  .rond.plein{background:var(--e-pin);box-shadow:none;color:var(--e-pin-encre)}
+  .rond.grand{width:104px;height:104px}
+  .rond .plume{font-size:30px;line-height:1}
+
+  .rappel{margin:26px 0 0;width:100%;padding:12px 16px;border-radius:4px;background:var(--e-plage);
+          font-size:12.5px;line-height:1.55;color:var(--e-gris);text-align:left}
+  .rappel b{color:var(--e-encre);font-weight:600}
+
+  /* ═══ Le tiroir, replié comme dans l'application ══════════════════════ */
+  .tiroir{flex:none;border-top:1px solid var(--e-trait);background:var(--e-fond);padding:12px 26px 0}
+  .prise{width:36px;height:4px;border-radius:99px;background:var(--e-trait);margin:0 auto 10px}
+  .ligne{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:6px 0 14px}
+  .ligne .g{font-size:13px;color:var(--e-gris)}
+  .ligne .d{font-size:13.5px;color:var(--e-encre)}
+
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:14px 14px 22px;background:var(--e-fond)}
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9px;letter-spacing:.15em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre)}
+  .bas i{position:absolute;bottom:22px;width:calc((100% - 28px)/4);height:1px;background:var(--e-or);left:14px}
+
+  /* ═══ Le sélecteur d'avancement (troisième téléphone) ═════════════════ */
+  .choix{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0 0 4px;max-width:390px}
+  .choix label{padding:7px 14px;border-radius:999px;font-size:12.5px;
+               box-shadow:inset 0 0 0 1px var(--trait);color:var(--gris);
+               -webkit-tap-highlight-color:transparent}
+  #e1:checked ~ .choix label[for="e1"],
+  #e2:checked ~ .choix label[for="e2"],
+  #e3:checked ~ .choix label[for="e3"],
+  #e4:checked ~ .choix label[for="e4"]{background:var(--bronze);color:#fff;box-shadow:none}
+
+  .etage{display:none}
+  #e1:checked ~ .tel .etage.s1,
+  #e2:checked ~ .tel .etage.s2,
+  #e3:checked ~ .tel .etage.s3,
+  #e4:checked ~ .tel .etage.s4{display:block}
+  /* L'anneau reste un bloc en drapeau : il a sa propre règle d'affichage. */
+  #e1:checked ~ .tel .etage.s1.centre,
+  #e2:checked ~ .tel .etage.s2.centre{display:flex;flex-direction:column;align-items:center}
+
+  .switcheur .tete .etat b{display:none}
+  #e1:checked ~ .tel .tete .etat b.t1,
+  #e2:checked ~ .tel .tete .etat b.t2,
+  #e3:checked ~ .tel .tete .etat b.t3,
+  #e4:checked ~ .tel .tete .etat b.t4{display:inline;font-weight:500}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Maquette · 13 août 2026</p>
+    <h1>Ce que le centre de la fiche devrait porter</h1>
+    <p>L'état et l'étape suivante disent maintenant la vérité. Mais
+      <strong>le grand geste au milieu de l'écran raconte encore un chantier
+      neuf</strong> : l'anneau de dictée s'affiche sur un devis déjà écrit.</p>
+    <p>Deux façons de le corriger, et la progression entière pour juger sur
+      pièces. <strong>Rien n'est posé dans l'application</strong> tant que vous
+      n'avez pas choisi.</p>
+  </div>
+
+  <div class="rangee">
+
+    <!-- ══ AUJOURD'HUI ═══════════════════════════════════════════════ -->
+    <section class="prop">
+      <p class="sous">Aujourd'hui — ce que vous voyez</p>
+      <div class="tel">
+        <div class="ecran" data-s="avant">
+          <div class="tete">
+            <div class="fleche">‹</div>
+            <p class="etat caps">Devis prêt à envoyer</p>
+            <p class="client">M. Martins — 10 rue d'Enfer, Nantes</p>
+            <h1>Chez M. Martins</h1>
+          </div>
+
+          <div class="corps" data-s="centre-avant">
+            <div class="anneau">
+              <span class="onde"><i style="height:8px"></i><i style="height:16px"></i><i style="height:11px"></i><i style="height:22px"></i><i style="height:9px"></i></span>
+              <span class="rond"><span><i style="height:10px"></i><i style="height:18px"></i><i style="height:12px"></i></span></span>
+              <span class="onde"><i style="height:14px"></i><i style="height:8px"></i><i style="height:20px"></i><i style="height:10px"></i><i style="height:15px"></i></span>
+            </div>
+            <p class="dites">Appuyez et décrivez le chantier</p>
+          </div>
+
+          <div class="tiroir">
+            <div class="prise"></div>
+            <div class="ligne"><span class="g">Le chantier</span><span class="d">Envoyer le devis au client →</span></div>
+          </div>
+          <div class="bas">
+            <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span><i></i>
+          </div>
+        </div>
+      </div>
+      <p class="note">Le devis est écrit. L'écran propose quand même de
+        <b>dicter</b>, et le geste qui reste dort <b>dans le tiroir</b>.</p>
+    </section>
+
+    <!-- ══ PROPOSITION 1 ═════════════════════════════════════════════ -->
+    <section class="prop">
+      <p class="sous">1 — Le devis prend le centre</p>
+      <div class="tel">
+        <div class="ecran" data-s="p1">
+          <div class="tete">
+            <div class="fleche">‹</div>
+            <p class="etat caps">Devis prêt à envoyer</p>
+            <p class="client">M. Martins — 10 rue d'Enfer, Nantes</p>
+            <h1>Chez M. Martins</h1>
+          </div>
+
+          <div class="corps">
+            <div class="geste" data-s="geste1">
+              <p class="quoi caps">Votre devis</p>
+              <p class="somme">1 440 €</p>
+              <p class="pour">TTC — abattage d'un chêne, évacuation</p>
+              <button type="button" class="capsule">Envoyer le devis au client</button>
+              <button type="button" class="secondaire">Relire ou corriger le devis</button>
+            </div>
+          </div>
+
+          <div class="tiroir">
+            <div class="prise"></div>
+            <div class="ligne"><span class="g">Note vocale · Photos · Devis</span><span class="d">↑</span></div>
+          </div>
+          <div class="bas">
+            <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span><i></i>
+          </div>
+        </div>
+      </div>
+      <p class="note">Le montant d'abord, parce que c'est <b>ce qu'on vérifie</b>
+        avant d'envoyer — c'est là que vous vous étiez trompé. La dictée n'est
+        pas perdue : elle redescend dans le tiroir, avec les photos.</p>
+    </section>
+
+    <!-- ══ PROPOSITION 2 ═════════════════════════════════════════════ -->
+    <section class="prop">
+      <p class="sous">2 — L'anneau change de métier</p>
+      <div class="tel">
+        <div class="ecran" data-s="p2">
+          <div class="tete">
+            <div class="fleche">‹</div>
+            <p class="etat caps">Devis prêt à envoyer</p>
+            <p class="client">M. Martins — 10 rue d'Enfer, Nantes</p>
+            <h1>Chez M. Martins</h1>
+          </div>
+
+          <div class="corps">
+            <div class="geste" data-s="geste2">
+              <div style="display:flex;justify-content:center">
+                <span class="rond plein grand"><span class="plume">➤</span></span>
+              </div>
+              <p class="pour" style="margin-top:16px">Envoyer le devis au client</p>
+              <p class="quoi" style="margin-top:6px">1 440 € TTC — M. Martins</p>
+              <button type="button" class="capsule creuse">Relire ou corriger le devis</button>
+            </div>
+          </div>
+
+          <div class="tiroir">
+            <div class="prise"></div>
+            <div class="ligne"><span class="g">Note vocale · Photos · Devis</span><span class="d">↑</span></div>
+          </div>
+          <div class="bas">
+            <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span><i></i>
+          </div>
+        </div>
+      </div>
+      <p class="note">La <b>même forme</b> qu'au départ, au même endroit : elle
+        change de métier au lieu de disparaître.</p>
+    </section>
+
+    <!-- ══ LA PROGRESSION ENTIÈRE ════════════════════════════════════ -->
+    <section class="prop switcheur">
+      <p class="sous">3 — Toute la progression, à parcourir</p>
+
+      <input type="radio" name="etape" id="e1" class="interrupteur" checked>
+      <input type="radio" name="etape" id="e2" class="interrupteur">
+      <input type="radio" name="etape" id="e3" class="interrupteur">
+      <input type="radio" name="etape" id="e4" class="interrupteur">
+
+      <div class="choix" data-s="choix">
+        <label for="e1">Neuf</label>
+        <label for="e2">Dicté</label>
+        <label for="e3">Devis prêt</label>
+        <label for="e4">Parti</label>
+      </div>
+
+      <div class="tel">
+        <div class="ecran" data-s="p3">
+          <div class="tete">
+            <div class="fleche">‹</div>
+            <p class="etat caps">
+              <b class="t1">Brouillon</b><b class="t2">À vérifier</b><b class="t3">Devis prêt à envoyer</b><b class="t4">En attente de réponse</b>
+            </p>
+            <p class="client">M. Martins — 10 rue d'Enfer, Nantes</p>
+            <h1>Chez M. Martins</h1>
+          </div>
+
+          <div class="corps">
+            <!-- Neuf : l'anneau, et c'est juste. Rien à changer ici. -->
+            <div class="etage s1 centre">
+              <div class="anneau">
+                <span class="onde"><i style="height:8px"></i><i style="height:16px"></i><i style="height:11px"></i><i style="height:22px"></i><i style="height:9px"></i></span>
+                <span class="rond"><span><i style="height:10px"></i><i style="height:18px"></i><i style="height:12px"></i></span></span>
+                <span class="onde"><i style="height:14px"></i><i style="height:8px"></i><i style="height:20px"></i><i style="height:10px"></i><i style="height:15px"></i></span>
+              </div>
+              <p class="dites">Appuyez et décrivez le chantier</p>
+            </div>
+
+            <!-- Dicté : l'anneau redevient lecteur, et le geste suivant paraît. -->
+            <div class="etage s2 centre">
+              <div class="anneau">
+                <span class="onde"><i style="height:8px"></i><i style="height:16px"></i><i style="height:11px"></i><i style="height:22px"></i><i style="height:9px"></i></span>
+                <span class="rond"><span><i style="height:14px"></i><i style="height:14px"></i><i style="height:14px"></i></span></span>
+                <span class="onde"><i style="height:14px"></i><i style="height:8px"></i><i style="height:20px"></i><i style="height:10px"></i><i style="height:15px"></i></span>
+              </div>
+              <p class="dites">Votre note · 1 min 12</p>
+              <button type="button" class="capsule" style="max-width:320px">Écrire le devis</button>
+            </div>
+
+            <!-- Devis prêt : le centre porte enfin ce qu'il vient faire. -->
+            <div class="etage s3">
+              <div class="geste">
+                <p class="quoi caps">Votre devis</p>
+                <p class="somme">1 440 €</p>
+                <p class="pour">TTC — abattage d'un chêne, évacuation</p>
+                <button type="button" class="capsule">Envoyer le devis au client</button>
+                <button type="button" class="secondaire">Relire ou corriger le devis</button>
+              </div>
+            </div>
+
+            <!-- Parti : plus rien à faire ici, et l'écran le dit. -->
+            <div class="etage s4">
+              <div class="geste">
+                <p class="quoi caps">Envoyé le 13 août</p>
+                <p class="somme">1 440 €</p>
+                <p class="pour">Le client choisit sa date. Vous serez prévenu ici.</p>
+                <button type="button" class="capsule creuse">Revoir ce qu'il a reçu</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="tiroir">
+            <div class="prise"></div>
+            <div class="ligne"><span class="g">Note vocale · Photos · Devis</span><span class="d">↑</span></div>
+          </div>
+          <div class="bas">
+            <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span><i></i>
+          </div>
+        </div>
+      </div>
+      <p class="note">Touchez les quatre étiquettes. <b>Le centre suit
+        l'avancement</b> — c'est ce qui manquait, et ce que ces deux propositions
+        cherchent à faire.</p>
+    </section>
+
+  </div>
+</div>

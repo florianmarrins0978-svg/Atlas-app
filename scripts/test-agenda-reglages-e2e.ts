@@ -49,7 +49,10 @@ async function main() {
 
   await cas("les réglages mènent à l'écran de l'agenda", async () => {
     await page.goto(`${BASE}/reglages`, { waitUntil: "domcontentloaded" });
-    const lien = page.getByRole("link", { name: /Mon agenda/i });
+    // **La rubrique s'appelle « Intégrations » depuis le 14 août 2026.** Elle
+    // mène au même écran : l'agenda est le premier service raccordé, il ne sera
+    // pas le dernier (`ARCHITECTURE.md` §96).
+    const lien = page.getByRole("link", { name: /Intégrations/i });
     await lien.waitFor({ state: "visible", timeout: 15000 });
     await lien.click();
     // `waitForURL` ne se résout pas sur une navigation côté client : on attend

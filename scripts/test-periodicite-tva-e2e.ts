@@ -49,7 +49,9 @@ async function seConnecter(context: BrowserContext): Promise<Page> {
 }
 
 async function choisir(page: Page, libelle: "Tous les mois" | "Tous les trimestres") {
-  await page.goto(`${BASE}/reglages`, { waitUntil: "domcontentloaded" });
+  // La périodicité a rejoint le régime de TVA dans « Mon entreprise » le
+  // 14 août 2026 : deux réglages fiscaux à deux endroits (ARCHITECTURE.md §96).
+  await page.goto(`${BASE}/reglages/identite`, { waitUntil: "domcontentloaded" });
   await page.waitForSelector("text=Votre TVA", { timeout: 30_000 });
   await page.getByRole("button", { name: libelle, exact: true }).click();
 
@@ -162,7 +164,9 @@ async function main() {
   // écran qui conseillerait « passez au trimestre » inventerait une donnée
   // (`CLAUDE.md` §4).
   await test("L'écran renvoie au comptable, et ne conseille jamais de périodicité", async () => {
-    await page.goto(`${BASE}/reglages`, { waitUntil: "domcontentloaded" });
+    // La périodicité a rejoint le régime de TVA dans « Mon entreprise » le
+  // 14 août 2026 : deux réglages fiscaux à deux endroits (ARCHITECTURE.md §96).
+  await page.goto(`${BASE}/reglages/identite`, { waitUntil: "domcontentloaded" });
     await page.waitForSelector("text=Votre TVA", { timeout: 30_000 });
     const texte = (await page.locator("section:has-text('Votre TVA')").last().textContent()) ?? "";
     assert.ok(/comptable/i.test(texte), "l'écran doit renvoyer au comptable");
