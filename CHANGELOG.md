@@ -22,6 +22,38 @@ zéro entre deux suites que s'il vit dans Redis.
 coupable. La batterie officielle et la CI posaient déjà la variable : c'est
 l'appel à la main qui ne l'avait pas. Raisons : `ARCHITECTURE.md` §96.
 
+### CODÉ : les quatre saisies de « Mon entreprise »
+
+Ses demandes du 14 août, capture à l'appui, et son choix « A » sur le bouton.
+Détail : `ARCHITECTURE.md` §98.
+
+| Ce qu'il demandait | Ce que ça donne |
+|---|---|
+| l'adresse qui propose | le composant du client, posé ici — il existait depuis le 7 août sans jamais servir sur cet écran |
+| le téléphone professionnel | drapeau, indicatif à toucher, sept pays, espaces posés pendant la frappe |
+| la forme juridique en liste | dix formes, sigle **et** nom complet, « Autre » qui rouvre le champ libre |
+| un bouton d'enregistrement | « Enregistrer » / « Enregistré ✓ », au-dessus des onglets |
+
+**Trois pièges évités, et le deuxième est invisible depuis la France :**
+l'espacement suit le PAYS (« 0471 12 34 56 » en Belgique) ; le zéro de tête
+disparaît devant l'indicatif, sans quoi le numéro est injoignable de
+l'étranger ; et une forme déjà tapée à la main (« Sas ») retrouve son entrée au
+lieu de sembler effacée.
+
+**Aucune migration** : le numéro reste rangé tel qu'il s'écrit, l'indicatif se
+relit de la valeur. Les documents déjà émis ne bougent pas.
+
+**Le bouton DIT l'état, il ne double pas l'enregistrement automatique** — son
+choix. Deux mécanismes auraient donné deux vérités, et il aurait cru perdre ce
+qui est déjà écrit.
+
+**Et la capture d'écran mentait sur elle-même** : `capture-identite.mts` vidait
+l'identité sans la rendre, si bien que deux prises de suite ont affiché
+« SIRET — manquant » sur un jeu complet. Elle restaure désormais.
+
+Nouveau : `src/lib/telephone.ts`, `src/lib/formes-juridiques.ts`,
+`scripts/test-telephone-formes.ts` (20 contrôles).
+
 ### DESSINÉ : les quatre saisies de « Mon entreprise »
 
 Ses demandes, capture à l'appui : l'adresse qui propose comme chez le client, un

@@ -7749,3 +7749,84 @@ lui, en connaissance de cause — l'argument lui a été donné (un devis fige s
 émetteur, le corriger ensuite ne rattrape rien) et il a tranché. Ne pas le
 rouvrir sans qu'il le demande.
 
+
+---
+
+## 98. La saisie de « Mon entreprise » : quatre demandes, et ce qu'elles cachaient
+
+**Le 14 août 2026, capture de son écran à l'appui**, le patron demande quatre
+choses sur l'écran d'identité : l'adresse qui propose comme chez le client, un
+téléphone avec drapeau et espacement automatique, la forme juridique en liste,
+et un bouton d'enregistrement. Planche `maquettes/atlas-identite-saisie.html`.
+
+### L'adresse n'était pas un développement, c'était un oubli
+
+`ChampAdresse` existait depuis le 7 août et n'avait **jamais été posé sur cet
+écran-ci** : le patron saisissait son propre siège à la main pendant que ses
+clients avaient la liste. Le composant a reçu une **seconde apparence**
+(`apparence="ligne"`) au lieu d'être recopié — la règle des suggestions (ne pas
+interroger à chaque lettre, se taire quand le réseau tombe, ne jamais enfermer
+la saisie) reste écrite une seule fois (`CLAUDE.md` §3).
+
+### Le téléphone : deux pièges, et le second est invisible ici
+
+`src/lib/telephone.ts`, fonction pure, éprouvée sans navigateur.
+
+1. **L'espacement français n'est pas universel.** « 06 79 98 45 14 » en France,
+   « 0471 12 34 56 » en Belgique, « 912 345 678 » au Portugal. Écrire un numéro
+   belge à la française le rend méconnaissable à son propriétaire. Chaque pays
+   porte donc sa découpe.
+2. **Le zéro de tête disparaît devant l'indicatif.** « +33 06 79 … » est
+   *injoignable* depuis l'étranger, et c'est la faute la plus fréquente sur les
+   documents. La découpe est donc définie **sans le zéro**, et le national le
+   recolle au premier groupe. Une table par affichage aurait divergé.
+
+**Rien n'est stocké de neuf.** Le numéro est rangé tel qu'il s'écrit — c'est ce
+qui s'imprime, et la base contient déjà des numéros. L'indicatif **n'a pas de
+colonne** : il se relit du numéro. Un « + » en tête porte son pays, le reste est
+français, comme depuis toujours. Aucune migration, aucun document abîmé.
+
+**L'indicatif le plus long gagne** à la relecture : « +33 » et « +352 » se
+ressemblent, et comparer dans l'ordre de la liste ferait lire un Luxembourgeois
+comme un Français — donc l'espacerait selon la mauvaise règle.
+
+### La forme juridique : « Autre » est la ligne qui compte
+
+Dix formes, sigle **et** nom complet — « EURL » ne se retient pas, et sans son
+nom il faudrait chercher ailleurs pour choisir. L'ordre suit ce qu'on rencontre
+dans le bâtiment, pas l'alphabet.
+
+**« Autre » n'est pas une valeur, c'est une issue** : elle rouvre le champ
+libre. Une liste fermée finirait par exclure une société civile, une
+association, un GAEC — et l'artisan exclu ne pourrait plus rien saisir du tout.
+
+**Ce qui est déjà en base n'est jamais écrasé** : « Sas », « S.A.S », « sasu »
+retrouvent leur entrée (comparaison sans casse ni points), et ce que la liste
+ignore reste affiché sous « Autre ». Sans cela, le patron aurait vu sa saisie
+disparaître.
+
+### Le bouton d'enregistrement DIT l'état, il ne crée pas un second mécanisme
+
+**Son choix, planche en main : « A ».** Les champs s'écrivent déjà seuls en
+quittant la ligne — c'est ce qui protège une saisie interrompue par un chantier.
+Un bouton qui prétendrait « sauver » par-dessus donnerait **deux vérités**, et
+il croirait perdre ce qui est déjà écrit. Le bouton porte donc « Enregistrer »
+tant qu'une frappe attend le serveur, puis « Enregistré ✓ ».
+
+**Il ne se déclare écrit que sur accord du serveur** : vider la liste des
+changements sur un refus afficherait « Enregistré » au-dessus d'une valeur
+perdue.
+
+**Et il se pose sur `--atlas-barre`, jamais sur un nombre écrit à la main.** La
+hauteur de la barre du bas comprend `env(safe-area-inset-bottom)` : nulle sur un
+ordinateur, une vingtaine de pixels sur un iPhone à encoche. Un `bottom-[76px]`
+aurait recouvert les onglets chez lui et nulle part ici — le pire des défauts,
+invisible là où on le cherche.
+
+### Ce que la capture a révélé sur elle-même
+
+`capture-identite.mts` vidait l'identité pour montrer l'écran du premier jour
+**et ne la rendait pas**. Deux prises de suite ont donc affiché « SIRET —
+manquant » sur un jeu de démonstration complet, et j'ai failli chercher le
+défaut dans l'écran. Elle restaure désormais ce qu'elle a vidé : une capture qui
+laisse la base modifiée fait mentir la suivante.
