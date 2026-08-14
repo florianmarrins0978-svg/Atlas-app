@@ -9,6 +9,47 @@ Format : le plus récent en tête.
 
 ## 2026-08-13
 
+### L'équipe qu'on ne peut pas changer, et le « matin » qui ne change jamais
+
+**Ses deux remarques du 13 août**, sur la même capture du planning :
+*« appliquer une équipe à un chantier n'est pas intuitif »* et *« pourquoi sous
+le chantier il y a marqué matin ? Cela laisse à penser que juste le matin est
+bloqué alors que c'est la journée. »* — avec la consigne : *« corrige ça mais ne
+code rien, propose des maquettes dynamiques en .html que je puisse essayer »*.
+
+Deux planches, `docs/maquettes/46` et `47`. **Rien n'est codé** — `src/` n'est
+pas touché (§3 bis). Elles se touchent au doigt **sans JavaScript** : de vraies
+machines à états faites de boutons radio, son lecteur n'exécutant pas de script.
+
+**Ce que la lecture du code a établi, et qui manquait au dépôt :**
+
+- **L'équipe ne s'écrit qu'en posant une date.** `planifierChantier` est le seul
+  chemin ; `rangEquipe` n'existe nulle part ailleurs dans `src/app`. Changer
+  l'équipe d'un chantier déjà posé demande **six gestes**, à commencer par
+  « Déplacer » — un mot qui annonce une **date**. La fiche du chantier ne montre
+  l'équipe nulle part, et un chantier qui en manque ne le dit pas.
+- **Une équipe posée ne peut jamais être retirée** :
+  `...(equipeId ? { equipeId } : {})` ignore le cas « plus personne » en silence.
+- **La revalidation du serveur vérifie la demi-journée, jamais l'équipe** — un
+  compte (`occupation < nombreEquipes`), pas une identité. Inatteignable par
+  l'écran d'aujourd'hui, qui éteint les lignes prises ; **atteignable dès qu'un
+  geste change l'équipe hors du panneau du jour**, ce que proposent deux des
+  trois planches. À refermer en même temps, pas après.
+- **Le « matin » est un défaut d'affichage seul.** `libelleQuand()` écrit la
+  demi-journée de départ ; `compterOccupation()`, lui, parcourt la durée. Les
+  pastilles du calendrier et la réservation ont toujours été justes — **seule la
+  phrase mentait**. Rien à rattraper, aucune migration.
+
+**Et les deux décisions se disputent la même chose** : la largeur de la ligne du
+planning, qui porte déjà le nom, la date, « Déplacer » et le chevron à 390 px.
+Elles se prennent ensemble ou l'une contre l'autre ; c'est écrit dans les deux
+planches et dans `TODO.md`.
+
+**Un défaut de la planche trouvé en la parcourant, jamais en la relisant** : la
+barre d'onglets du bas passait devant la feuille et recouvrait sa dernière
+option — « Personne pour l'instant » ne répondait pas au doigt. Trois étages
+posés (`z-index`), et le parcours rejoué : trente-trois gestes au vert.
+
 ### Trois noms à essayer — Gunzi, Goonzi, Gunzy — et l'icône qui est un A
 
 **Sa demande :** *« fais-moi une maquette avec comme nom Gunzi à la place

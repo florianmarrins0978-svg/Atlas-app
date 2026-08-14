@@ -27,6 +27,69 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quinvicies. L'équipe ne s'écrit qu'en posant une date
+
+Sa remarque du 13 août 2026 : *« appliquer une équipe à un chantier n'est pas
+intuitif »*. En lisant le code, c'est plus grave que peu intuitif —
+`planifierChantier(ctx, id, date, choix)` est **le seul chemin** qui écrit
+`equipeId` ; `rangEquipe` n'apparaît nulle part ailleurs dans `src/app`.
+
+Ce qui en découle, vérifié fichier par fichier :
+
+- changer l'équipe d'un chantier déjà planifié demande **six gestes**, à
+  commencer par « Déplacer » — un mot qui annonce un changement de **date** ;
+- la fiche du chantier ne montre l'équipe **nulle part** ;
+- un chantier **sans** équipe n'écrit rien, et rien ne signale qu'il en manque.
+
+Trois gestes sont proposés dans `docs/maquettes/47-appliquer-une-equipe.html`,
+essayables au doigt : la pastille sur la ligne du planning, la ligne « Équipe »
+dans la feuille du chevron, les cases au moment de poser. **En attente de son
+choix — rien n'est codé.**
+
+**Deux défauts trouvés en lisant, et le second pèse sur ce choix :**
+
+1. **Une équipe posée ne peut jamais être retirée.** `chantiers.ts` écrit
+   `...(equipeId ? { equipeId } : {})` : le cas « plus personne » est ignoré en
+   silence. Toute proposition portant « Personne pour l'instant » demande donc
+   une ligne de serveur en plus.
+2. **La revalidation vérifie la demi-journée, jamais l'équipe.** Le contrôle est
+   `occupation.get(créneau) < nombreEquipes` — un compte, pas une identité. Deux
+   chantiers peuvent donc porter la même équipe au même moment ; l'affichage
+   (`repartirParEquipe`) en déplace alors un sur une autre ligne, si bien que le
+   rang montré n'est plus celui enregistré. **Inatteignable par l'écran
+   d'aujourd'hui**, qui éteint les lignes prises — mais un geste qui change
+   l'équipe **sans passer par le panneau du jour** (les propositions A et B) le
+   rend atteignable. À refermer **en même temps** que le geste, pas après. C'est
+   exactement le cas que le commentaire de `planifierChantier` prétend couvrir.
+
+### 0 quatervicies nonies bis. La ligne du planning dit « matin » quoi qu'il arrive
+
+Sa capture du 13 août 2026 : *« pourquoi sous le chantier il y a marqué matin ?
+Cela laisse à penser que juste le matin est bloqué alors que c'est la journée. »*
+
+Il a raison. `libelleQuand()` (`PlanningClient.tsx`) écrit `creneauDebut`,
+c'est-à-dire la demi-journée de **départ**, jamais ce que le chantier occupe. Or
+`DUREE_PAR_DEFAUT_DEMI_JOURNEES` vaut **2** : un chantier posé prend la journée
+entière. **Le cas le plus courant du produit est donc celui qui ment**, et un
+chantier de trois jours annonce « matin ».
+
+**Ce qui n'est PAS en cause, et qu'il fallait lui dire :** `compterOccupation()`
+parcourt `creneauxDuChantier(départ, durée)` — les pastilles du calendrier ont
+toujours compté juste, la réservation aussi. Seule la phrase se trompait. Rien à
+rattraper en base, aucune migration.
+
+Quatre écritures à comparer dans
+`docs/maquettes/46-le-moment-qui-dit-toujours-matin.html`, à basculer au doigt.
+**En attente de son choix — rien n'est codé.** Le correctif tiendra dans
+`libelleQuand()`, qui sert déjà **à la fois** la ligne du planning et la feuille
+« Y aller » : les deux se corrigent d'un coup, ce pour quoi elle avait été mise
+en commun.
+
+**Le seul arbitrage est la place.** À 390 px la ligne porte déjà le nom, la date,
+« Déplacer » et le chevron ; ce qu'on ajoute, le nom le paye. C'est le même
+budget de largeur que se dispute la pastille d'équipe ci-dessus — **les deux
+décisions se prennent ensemble ou l'une contre l'autre.**
+
 ### 0 quatervicies nonies. L'icône installée est un A, et personne ne l'avait vu
 
 Trouvé le 13 août 2026 en dessinant les planches du nom (ci-dessous), pas
