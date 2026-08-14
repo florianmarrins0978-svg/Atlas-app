@@ -2,6 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
+import ChampAdresse from "@/components/atlas/ChampAdresse";
+import ChampTelephone from "./ChampTelephone";
+import ChampFormeJuridique from "./ChampFormeJuridique";
 import { majIdentiteAction } from "./actions";
 
 /**
@@ -42,23 +45,48 @@ export function sirenDepuisSiret(siret: string): string | null {
 export default function IdentiteClient({ initial }: { initial: Identite }) {
   const [valeurs, setValeurs] = useState<Identite>(initial);
   const [refus, setRefus] = useState<string | null>(null);
-  const [, demarrer] = useTransition();
+  const [enCours, demarrer] = useTransition();
+  /**
+   * Ce qui a changé depuis le dernier enregistrement.
+   *
+   * **Le bouton du bas DIT cet état, il ne fabrique pas un second mécanisme.**
+   * Chaque champ s'écrit déjà seul en quittant la ligne — c'est ainsi depuis le
+   * 13 août, et c'est ce qui protège une saisie interrompue. Un bouton qui
+   * prétendrait « sauver » par-dessus donnerait deux vérités, et le patron
+   * croirait perdre ce qui est déjà écrit (`ARCHITECTURE.md` §99).
+   *
+   * Il a tranché ce parti le 14 août 2026, planche en main : *« A »*.
+   */
+  const [aEcrire, setAEcrire] = useState<Partial<Identite>>({});
 
   function ecrire<C extends keyof Identite>(champ: C, valeur: Identite[C]) {
     setValeurs((v) => ({ ...v, [champ]: valeur }));
+    setAEcrire((a) => ({ ...a, [champ]: valeur }));
   }
 
   function enregistrer(partiel: Partial<Identite>) {
     demarrer(async () => {
       const r = await majIdentiteAction(partiel);
       setRefus(r.ok ? null : r.raison);
+      // **On ne déclare écrit que ce que le serveur a accepté.** Vider la liste
+      // sur un refus afficherait « Enregistré » sur une valeur perdue.
+      if (r.ok) {
+        setAEcrire((a) => {
+          const reste = { ...a };
+          for (const cle of Object.keys(partiel)) delete reste[cle as keyof Identite];
+          return reste;
+        });
+      }
     });
   }
 
   const siren = sirenDepuisSiret(valeurs.siret);
 
   return (
-    <div className="pb-24">
+    // `pb-40` et non `pb-24` : la barre d'enregistrement s'ajoute aux onglets,
+    // et sans cette réserve le dernier paragraphe passe dessous — c'est le
+    // défaut que `.atlas-contenu` corrige ailleurs.
+    <div className="pb-40">
       {refus && (
         <p
           role="alert"
@@ -78,25 +106,38 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
           manquant={valeurs.nom.trim() === ""}
           empeche="Sans nom, vos documents n'ont pas d'émetteur."
         />
-        <Champ
-          etiquette="Forme juridique"
+        {/* Elle se CHOISIT depuis le 14 août : « Sas » tapé en minuscules
+            partait tel quel sur chaque devis. */}
+        <ChampFormeJuridique
           valeur={valeurs.formeJuridique}
-          placeholder="SASU, EI, EURL…"
           onChange={(v) => ecrire("formeJuridique", v)}
           onFini={() => enregistrer({ formeJuridique: valeurs.formeJuridique })}
         />
       </Bloc>
 
       <Bloc titre="Où vous êtes établi">
-        <Champ
-          etiquette="Adresse du siège"
-          valeur={valeurs.adresse}
-          long
-          onChange={(v) => ecrire("adresse", v)}
-          onFini={() => enregistrer({ adresse: valeurs.adresse })}
-          manquant={valeurs.adresse.trim() === ""}
-          empeche="Elle figure en tête de chaque devis et de chaque facture."
+        {/* **Le composant du client, posé ici le 14 août.** Il existait depuis
+            le 7 août et n'avait jamais servi sur cet écran : le patron saisissait
+            son propre siège à la main pendant que ses clients avaient la liste.
+            Base Adresse Nationale, jamais Google, et le champ reste LIBRE — un
+            lieu-dit ne figure dans aucune base. */}
+        <ChampAdresse
+          apparence="ligne"
+          label="Adresse du siège"
+          placeholder="10 rue…"
+          value={valeurs.adresse}
+          onChange={(v) => {
+            ecrire("adresse", v);
+            // Choisir dans la liste ne fait pas quitter le champ : sans cette
+            // écriture, l'adresse choisie d'un doigt ne serait jamais rangée.
+            enregistrer({ adresse: v });
+          }}
         />
+        {valeurs.adresse.trim() === "" && (
+          <p className={`pb-[13px] ${texteSituation}`} style={{ color: colors.alert }}>
+            Elle figure en tête de chaque devis et de chaque facture.
+          </p>
+        )}
       </Bloc>
 
       <Bloc titre="Vos identifiants">
@@ -146,8 +187,7 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
       </Bloc>
 
       <Bloc titre="Pour vous joindre">
-        <Champ
-          etiquette="Téléphone"
+        <ChampTelephone
           valeur={valeurs.telephone}
           onChange={(v) => ecrire("telephone", v)}
           onFini={() => enregistrer({ telephone: valeurs.telephone })}
@@ -185,6 +225,66 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
         qu&apos;elles disaient le jour où il a été créé</b> : les corriger
         aujourd&apos;hui ne change aucun document déjà fait.
       </p>
+
+      <BarreEnregistrer
+        aEcrire={Object.keys(aEcrire).length}
+        enCours={enCours}
+        onEnregistrer={() => enregistrer(aEcrire)}
+      />
+    </div>
+  );
+}
+
+/**
+ * La barre d'enregistrement, posée au-dessus des onglets.
+ *
+ * *Demandée par le patron le 14 août 2026 : « il manque un petit bouton save en
+ * bas pour pouvoir sauvegarder la page. »*
+ *
+ * **Elle DIT l'état, elle ne crée pas un second mécanisme** — son choix,
+ * planche en main. Les champs s'écrivent déjà seuls en quittant la ligne :
+ * c'est ce qui protège une saisie interrompue par un chantier. Le bouton
+ * confirme ce qui est écrit, et se rallume dès qu'une frappe attend encore le
+ * serveur — par exemple quand on quitte l'écran sans toucher ailleurs.
+ *
+ * **Elle est FIXE.** Sur une page de neuf champs, un bouton en pied de page ne
+ * se voit qu'une fois tout parcouru — c'est-à-dire quand on n'a plus rien à
+ * faire.
+ *
+ * **Elle se pose sur `--atlas-barre`, jamais sur un nombre écrit à la main.**
+ * La hauteur de la barre du bas comprend `env(safe-area-inset-bottom)`, qui
+ * vaut zéro sur un ordinateur et une vingtaine de pixels sur un iPhone à
+ * encoche. Un `bottom-[76px]` aurait donc recouvert les onglets chez lui, et
+ * nulle part chez moi — le pire des défauts : invisible là où on le cherche.
+ */
+function BarreEnregistrer({
+  aEcrire,
+  enCours,
+  onEnregistrer,
+}: {
+  aEcrire: number;
+  enCours: boolean;
+  onEnregistrer: () => void;
+}) {
+  const rien = aEcrire === 0 && !enCours;
+  return (
+    <div
+      className="fixed inset-x-0 z-10 mx-auto max-w-md border-t px-[26px] pb-4 pt-3.5"
+      style={{ bottom: "var(--atlas-barre)", backgroundColor: colors.cream, borderColor: colors.line }}
+    >
+      <button
+        type="button"
+        onClick={onEnregistrer}
+        disabled={rien}
+        className="block w-full rounded-full py-[15px] text-center text-[16px]"
+        style={{
+          backgroundColor: rien ? colors.card : colors.rust,
+          color: rien ? colors.muted : colors.cream,
+          boxShadow: rien ? `inset 0 0 0 1px ${colors.line}` : "none",
+        }}
+      >
+        {enCours ? "Enregistrement…" : rien ? "Enregistré ✓" : "Enregistrer"}
+      </button>
     </div>
   );
 }

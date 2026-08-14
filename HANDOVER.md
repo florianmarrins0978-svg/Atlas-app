@@ -300,6 +300,19 @@ premier devis d'un vrai artisan partirait sans SIRET ni IBAN, sans un mot. Le
 détail des six faits est dans `ARCHITECTURE.md` §87, la liste de travail dans
 `TODO.md` §0 quatervicies.
 
+**La saisie de « Mon entreprise » a été refaite le 14 août 2026**
+(`ARCHITECTURE.md` §99) : adresse qui propose, téléphone à drapeau, forme
+juridique en liste, bouton d'enregistrement. **Trois choses à ne pas casser :**
+
+1. **`src/lib/telephone.ts` définit la découpe SANS le zéro de tête.** Le
+   national le recolle au premier groupe, l'international ne le met pas — c'est
+   ce qui rend le numéro joignable depuis l'étranger. Deux tables auraient
+   divergé.
+2. **Rien n'a changé en base.** Le numéro reste rangé tel qu'il s'écrit, et
+   l'indicatif se relit de la valeur. Ne pas ajouter de colonne « pays ».
+3. **Le bouton d'enregistrement ne remplace pas l'écriture automatique**, il la
+   dit. Les champs s'écrivent toujours seuls en quittant la ligne.
+
 **Le blocage de l'envoi sans SIRET a été codé PUIS RETIRÉ le 14 août 2026**
 (`ARCHITECTURE.md` §97). Le patron l'avait choisi le matin, planche en main ; en
 voyant l'écran il a tranché l'inverse : *« rien de plus, rien de moins »* — les
