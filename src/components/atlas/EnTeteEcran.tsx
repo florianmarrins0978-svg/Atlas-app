@@ -147,7 +147,24 @@ export default function EnTeteEcran({
           titre (11 août 2026). C'est pourquoi `test-assistant-en-tete-e2e.ts`
           compte les lignes du titre sur chaque écran.
         */}
-        <div className="flex flex-shrink-0 items-center gap-3">
+        {/*
+          **`self-stretch`, et c'est une réparation, pas un ornement.**
+
+          Ce groupe est né le 13 août 2026 pour que l'assistant tienne à côté
+          d'une action existante. Or « Modifier », posé la veille par une autre
+          session, s'aligne par `self-end` — c'est-à-dire sur le BAS de son
+          conteneur, choisi pour tomber sur la ligne d'écriture du titre plutôt
+          qu'à côté du surtitre. Enfermé dans un groupe haut de 44 px, son bas
+          n'était plus celui de la ligne : le mot descendait de 21 px.
+
+          Le groupe s'étire donc à la hauteur de la ligne, et `self-end` retrouve
+          le repère qu'il visait. `items-start` garde le bouton en haut.
+
+          **Trouvé par leur suite, au pixel près** — aucune relecture ne l'aurait
+          vu, et aucune capture non plus : vingt et un pixels sur un mot d'or, ça
+          ressemble à une marge.
+        */}
+        <div className="flex flex-shrink-0 items-start gap-3 self-stretch">
           {actionPlacee === "titre" && action}
           {assistant && <BoutonAssistant />}
         </div>

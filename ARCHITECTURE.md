@@ -8318,3 +8318,29 @@ tient au-dessus de la barre », il rougissait — mais elle débordait **déjà*
 onze pixels avant qu'on ne touche à quoi que ce soit. Le repère est donc devenu
 la mesure prise AVANT le déplacement, et le débordement de onze pixels est allé
 dans `TODO.md`, sous son propre nom.
+
+### Deux sessions ont visé la même ligne le même jour
+
+Le lendemain de ce travail, la fusion avec `main` a rougi sur une suite qui
+n'était pas la mienne : *« Modifier » n'est pas sur la ligne du titre : 21 px
+d'écart*. Une autre session venait de poser ce mot d'or à droite du titre de
+l'écran d'envoi — exactement la place que l'assistant venait de prendre.
+
+**Ce n'était pas un conflit de texte** : `git` avait fusionné sans rien signaler.
+Les deux modifications étaient justes séparément, et fausses ensemble. Leur mot
+s'aligne par `self-end` — sur le BAS de son conteneur, choisi pour tomber sur la
+ligne d'écriture du titre plutôt qu'à côté du surtitre. En le mettant dans un
+groupe haut de 44 px pour qu'il tienne à côté du bouton, son « bas » avait changé
+de sens.
+
+`self-stretch` sur le groupe rend au repère sa hauteur d'origine. Mais la leçon
+n'est pas dans le correctif :
+
+- **une fusion propre ne prouve rien sur la mise en page.** Deux fichiers
+  différents, aucun conflit, et pourtant deux gestes qui se disputent le même
+  espace ;
+- **c'est leur suite qui l'a dit, pas la mienne** — et elle l'a dit au pixel.
+  Vingt et un pixels sur un mot d'or ressemblent à une marge : ni relecture ni
+  capture ne l'auraient relevé ;
+- **d'où la valeur d'un contrôle qui mesure une POSITION plutôt qu'une
+  présence.** « Le lien existe » serait resté vert.

@@ -815,6 +815,12 @@ dernière semaine du planning sous la barre : on aurait échangé deux jours
 recouverts contre une semaine hors de l'écran. À côté du titre, il ne coûte rien
 — aucun titre ne se casse, et le calendrier finit exactement où il finissait.
 
+**Deux sessions ont visé la même ligne le même jour.** « Modifier », posé par une
+autre session à droite du titre de l'écran d'envoi, descendait de 21 px une fois
+l'assistant à ses côtés : il s'aligne par `self-end`, et son conteneur avait
+changé de hauteur. `git` n'avait rien signalé — une fusion propre ne prouve rien
+sur la mise en page. C'est leur suite qui l'a dit, au pixel.
+
 **Et le contrôle a failli accuser à tort** : écrit « la dernière semaine tient
 au-dessus de la barre », il rougissait sur un débordement de onze pixels qui
 existait **avant**. Le repère est devenu la mesure d'avant le déplacement, et le

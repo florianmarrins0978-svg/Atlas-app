@@ -594,6 +594,12 @@ lui** au-dessus du titre : essayé, mesuré, défait — 72 px en tête de chaqu
 
 `scripts/test-assistant-en-tete-e2e.ts` tient les deux, plus les lignes du titre.
 
+**⚠ Le groupe qui porte l'assistant est `self-stretch`, et ça compte.** « Modifier »,
+posé par une autre session à la même place, s'aligne par `self-end` : enfermé dans
+un groupe haut de 44 px, il descendait de 21 px sous la ligne du titre. Une fusion
+propre ne prouve rien sur la mise en page — deux gestes peuvent se disputer le
+même espace sans qu'aucun conflit ne se déclare.
+
 ## L'ATTENTE DE LA DICTÉE EST CODÉE — « le souffle » (13 août)
 
 Il a répondu **« code la C »**. Les points enflent et se rétractent l'un après
