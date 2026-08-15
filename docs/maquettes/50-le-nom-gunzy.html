@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gunzy — le nom à la place d’Atlas</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    LE NOM — GUNZY à la place d'ATLAS
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 13 août 2026 : « fais-moi une maquette avec comme nom
+    Gunzy à la place d'Atlas. Ne code rien. » Trois noms demandés d'affilée —
+    Gunzi, Goonzi, Gunzy —, donc trois planches identiques au mot près, avec un
+    passage de l'une à l'autre en tête de page.
+
+    RIEN D'AUTRE NE CHANGE, et c'est délibéré : la charte, le sceau, l'animation
+    du tour, les écrans et les gestes sont ceux d'aujourd'hui. Un nom se juge
+    dans son décor habituel, pas à côté d'un décor refait.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE CETTE PLANCHE APPREND, ET QUI N'ÉTAIT PAS SU AVANT DE LA FAIRE.
+
+    Le nom ne se voit qu'à TROIS endroits dans tout le produit :
+
+      · la porte — le mot sous le sceau (MarqueAtlas.tsx, MotAtlas) ;
+      · l'icône sur l'écran d'accueil du téléphone (public/manifest.json) ;
+      · l'onglet du navigateur et la carte de partage (src/app/layout.tsx).
+
+    ET L'ICÔNE INSTALLÉE EST UN A. public/icone-source.svg le dit lui-même : « un
+    A bâti comme un chevron de charpente », provisoire et jamais remplacé. Un
+    quatrième fichier à reprendre, donc, et le seul qui demande un dessin plutôt
+    qu'un remplacement de mot. Il est resté en terre cuite #C0621F, la couleur
+    d'avant le vert pin du 3 août — la planche le montre tel quel, sans le
+    corriger en douce.
+
+    Et surtout : LE CLIENT DE L'ARTISAN NE LE VOIT NULLE PART. La page publique
+    du devis, celle de la facture et leurs PDF ne portent aucune marque —
+    vérifié fichier par fichier, pas supposé. Changer de nom ne demande donc
+    ni de prévenir les clients, ni de reprendre un document déjà envoyé.
+
+    Le seul texte du produit qui cite le nom en toutes lettres est le canevas
+    des CGU (documents-legaux/versions.ts). Une version publiée ne se modifie
+    jamais : renommer y ferait naître une version de plus, à réaccepter. Le
+    coût est nul aujourd'hui — personne n'a encore accepté la canevas-1 — et
+    il ne le restera pas.
+
+    ————————————————————————————————————————————————————————————————
+    AUCUN SCRIPT : le lecteur du patron n'en exécute pas. L'entrée est une case
+    à cocher native, le bouton un <label>. Rien n'est calculé.
+
+    Les écrans font 390 px — la largeur réelle de son téléphone.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f5f3ee; --pin:#2f3b2f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:940px;margin:0 auto}
+
+  /* Safari sur iPhone n'active pas un <label> sans « cursor:pointer » — payé le
+     10 août 2026 : « rien ne s'ouvre quand je touche ». */
+  label{cursor:pointer}
+
+  .intro{max-width:64ch;margin:0 auto;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro b{color:var(--encre);font-weight:600}
+
+  /* ── Passer d'un nom à l'autre ────────────────────────────────────────── */
+  .bascule{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:30px auto 0}
+  .bascule a,.bascule .ici{display:inline-flex;align-items:center;border-radius:9999px;
+        padding:9px 20px;font:400 17px/1 ui-serif,Georgia,serif;text-decoration:none;
+        border:1px solid var(--trait);color:var(--gris)}
+  .bascule .ici{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+  .sous-bascule{max-width:52ch;margin:11px auto 0;text-align:center;font-size:12.6px;
+       color:var(--gris);line-height:1.6}
+
+  .chapitre{max-width:64ch;margin:56px auto 0;text-align:center;
+       font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+       text-transform:uppercase;color:var(--or)}
+  .titre-chapitre{max-width:64ch;margin:12px auto 0;text-align:center;
+       font:400 24px/1.25 ui-serif,Georgia,serif}
+  .dit{max-width:60ch;margin:12px auto 0;text-align:center;font-size:14px;color:var(--gris);line-height:1.65}
+  .dit b{color:var(--encre);font-weight:600}
+
+  /* ── 1 · Le mot à sa taille réelle ────────────────────────────────────── */
+  .bande{max-width:520px;margin:28px auto 0;padding:34px 22px;border-radius:14px;
+         background:var(--plage);display:flex;flex-direction:column;gap:26px;align-items:center}
+  .ligne-mot{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%}
+  /* 21 px, serif, 0,3 cadratin : la marque au trait près (MotAtlas). */
+  .mot{display:block;font:400 21px/1 ui-serif,Georgia,"Iowan Old Style",serif;
+       letter-spacing:.3em;color:var(--encre)}
+  .mot.temoin{color:var(--gris)}
+  .etiq{font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+        text-transform:uppercase;color:var(--gris)}
+  .regle-bande{width:64px;height:1px;background:var(--trait)}
+  .legende-bande{max-width:56ch;margin:16px auto 0;text-align:center;font-size:13.2px;
+       color:var(--gris);line-height:1.68}
+  .legende-bande b{color:var(--encre);font-weight:600}
+  .legende-bande + .legende-bande{margin-top:11px}
+
+  /* ── 2 · La porte ─────────────────────────────────────────────────────── */
+  .tel{width:412px;max-width:100%;margin:30px auto 0;border-radius:42px;padding:11px;
+       background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
+    position:relative;width:390px;max-width:100%;height:544px;overflow:hidden;
+    border-radius:32px;background:var(--e-fond);color:var(--e-encre);
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+  .go{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+  .scene{display:grid;width:100%;height:100%}
+  .scene > *{grid-area:1/1}
+
+  .conn{display:flex;flex-direction:column;justify-content:center;
+        align-items:center;padding:26px 24px;text-align:center}
+  .bloc{width:100%;max-width:342px}
+
+  .sceau{position:relative;width:60px;height:60px;margin:0 auto 16px;display:block}
+  .anneau{position:absolute;inset:0;overflow:visible}
+  .anneau circle{fill:none;stroke:var(--e-or);stroke-width:1.5}
+  .feuille{position:absolute;left:50%;top:50%;width:29px;height:29px;transform:translate(-50%,-50%)}
+  .feuille path{fill:none;stroke:var(--e-pin);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+  .ecran .mot{margin-bottom:32px;color:var(--e-encre)}
+
+  .lib{display:block;text-align:left;font:500 9.5px/1 ui-sans-serif,sans-serif;
+       letter-spacing:.28em;text-transform:uppercase;color:var(--e-gris);margin-bottom:8px}
+  /* 16 px, sans quoi iOS agrandit l'écran au premier appui. */
+  .champ{width:100%;font:400 16px/1.4 inherit;color:var(--e-encre);text-align:left;
+         background:transparent;border:0;border-bottom:1px solid var(--e-trait);
+         border-radius:0;padding:0 0 10px;margin-bottom:22px;outline:none;
+         -webkit-appearance:none;appearance:none;transition:border-color .22s ease}
+  .champ:focus{border-bottom-color:var(--e-or)}
+
+  .capsule{display:inline-flex;align-items:center;justify-content:center;
+           border:0;border-radius:9999px;background:var(--e-pin);color:#faf9f5;
+           padding:13px 36px;font:400 17px/1 ui-serif,Georgia,serif;
+           -webkit-tap-highlight-color:transparent;transition:transform .15s ease}
+  .capsule:active{transform:scale(.985)}
+  .centrer{display:flex;justify-content:center}
+
+  .appli{opacity:0;pointer-events:none;padding:34px 24px;text-align:left}
+  .appli .sur{margin:0 0 12px;font:500 9.5px/1 ui-sans-serif,sans-serif;
+              letter-spacing:.28em;text-transform:uppercase;color:var(--e-or)}
+  .appli h4{margin:0 0 10px;font:400 27px/1.2 ui-serif,Georgia,serif}
+  .appli .filet{width:34px;height:1.5px;background:var(--e-or);margin:0 0 26px}
+  .appli .ligne{padding:15px 0;border-bottom:1px solid var(--e-trait)}
+  .appli .ligne .nom{font:400 18px/1.2 ui-serif,Georgia,serif}
+  .appli .ligne .ou{margin-top:5px;font-size:11.5px;color:var(--e-gris)}
+  .rejouer{display:inline-flex;margin-top:30px;border:1px solid var(--e-trait);
+           border-radius:9999px;padding:9px 20px;font-size:13px;color:var(--e-gris);
+           -webkit-tap-highlight-color:transparent}
+
+  /* Le tour — l'animation retenue le 12 août 2026, reprise telle quelle. */
+  @keyframes tour{ to{transform:rotate(360deg)} }
+  @keyframes sortir{ to{opacity:0;transform:scale(.985)} }
+  @keyframes entrer{ from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .go:checked ~ .scene .sceau{animation:tour .5s cubic-bezier(.55,0,.25,1) infinite}
+  /* « pointer-events:none » n'est pas un détail : les deux écrans occupent la même
+     case de la grille, et un écran invisible intercepte encore le doigt. */
+  .go:checked ~ .scene .conn{animation:sortir .28s ease .52s forwards;pointer-events:none}
+  .go:checked ~ .scene .appli{animation:entrer .34s ease .58s forwards;pointer-events:auto}
+
+  @media (prefers-reduced-motion: reduce){
+    .go:checked ~ .scene .conn{opacity:0;pointer-events:none}
+    .go:checked ~ .scene .appli{opacity:1;pointer-events:auto}
+    .go:checked ~ .scene .sceau{animation:none !important}
+  }
+
+  /* ── 3 · Les deux autres endroits ─────────────────────────────────────── */
+  .paire{display:flex;flex-wrap:wrap;gap:34px 40px;justify-content:center;
+         align-items:flex-start;margin-top:30px}
+  .coin{display:flex;flex-direction:column;align-items:center;gap:14px;max-width:330px}
+  .coin .quoi{text-align:center;font-size:13.2px;color:var(--gris);line-height:1.66}
+  .coin .quoi b{color:var(--encre);font-weight:600}
+  .coin .quoi .t{display:block;margin:0 0 6px;font:400 18px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
+
+  /* L'écran d'accueil du téléphone : l'icône et son nom dessous. */
+  .accueil{width:250px;padding:26px 0 22px;border-radius:22px;
+           background:linear-gradient(160deg,#5d6b58,#39412f);
+           display:flex;justify-content:center;gap:26px}
+  .case{display:flex;flex-direction:column;align-items:center;gap:9px}
+  .icone{width:62px;height:62px;border-radius:15px;background:#F6F1E6;overflow:hidden;
+         display:flex;align-items:center;justify-content:center;
+         box-shadow:0 2px 8px rgba(0,0,0,.24)}
+  .icone svg{width:100%;height:100%;display:block}
+  .icone .rond{width:38px;height:38px;border-radius:9999px;border:1.4px solid #B98B47;
+               display:flex;align-items:center;justify-content:center}
+  .icone .rond svg{width:19px;height:19px;fill:none;stroke:#2f3b2f;stroke-width:1.5;
+                   stroke-linecap:round;stroke-linejoin:round}
+  .nom-icone{font-size:12px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);letter-spacing:.01em}
+  .sous-icone{font:500 9px/1.4 ui-sans-serif,sans-serif;letter-spacing:.16em;
+              text-transform:uppercase;color:rgba(255,255,255,.62);text-align:center}
+
+  /* L'onglet du navigateur. */
+  .navigateur{width:290px;border-radius:11px 11px 8px 8px;overflow:hidden;
+              background:#d9d5cd;border:1px solid rgba(28,28,26,.14)}
+  .barre-onglets{display:flex;align-items:flex-end;gap:6px;padding:8px 8px 0}
+  .onglet{display:flex;align-items:center;gap:7px;background:#faf9f5;
+          border-radius:8px 8px 0 0;padding:8px 12px;max-width:190px}
+  .onglet .fav{width:15px;height:15px;border-radius:3px;background:#F6F1E6;
+               flex:none;display:flex;align-items:center;justify-content:center}
+  .onglet .fav svg{width:15px;height:15px;fill:none;stroke:#C0621F;stroke-width:44;
+                   stroke-linecap:round}
+  .onglet .txt{font-size:12.5px;color:#1c1c1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .onglet.pale{background:#e4e0d8}
+  .onglet.pale .txt{color:#8a8578}
+  .barre-adresse{background:#faf9f5;padding:9px 12px}
+  .barre-adresse .url{background:#efece6;border-radius:9999px;padding:6px 12px;
+                      font-size:11.5px;color:#8a8578;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* ── 4 · La lettre dans le rond ───────────────────────────────────────── */
+  .aparte{max-width:520px;margin:30px auto 0;padding:26px 22px;border-radius:14px;
+          background:var(--plage);display:flex;gap:24px;align-items:center;flex-wrap:wrap;
+          justify-content:center}
+  .aparte .duo{display:flex;gap:20px}
+  .vignette{display:flex;flex-direction:column;align-items:center;gap:9px}
+  /* Le fond crème est PORTÉ PAR LA VIGNETTE, pas hérité de la page. En sombre,
+     la gravure vert pin sur la plage sombre disparaissait purement et
+     simplement — vu sur une capture, jamais par un contrôle. Et la teinter en
+     clair aurait été pire : ces deux ronds montrent la porte, qui est crème. */
+  .petit-sceau{position:relative;width:60px;height:60px;display:block;
+               border-radius:9999px;background:#f5f3ee}
+  .petit-sceau .anneau circle{stroke:#B98B47}
+  .petit-sceau .feuille path{stroke:#2f3b2f}
+  .vignette .no{font-size:11px;color:var(--gris);letter-spacing:.08em}
+  .aparte .mots{flex:1;min-width:210px;font-size:13.2px;color:var(--gris);line-height:1.66}
+  .aparte .mots b{color:var(--encre);font-weight:600}
+
+  .note{max-width:74ch;margin:62px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+  .note b{color:var(--encre)}
+  .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .note p{margin:0 0 14px}
+  .note p:last-child{margin-bottom:0}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Le nom</p>
+    <h1>Si l’application s’appelait Gunzy</h1>
+    <p>Votre demande du 13 août : <b>le même produit, sous un autre nom</b>. Tout
+      le reste est celui d’aujourd’hui — la charte, le sceau, les écrans, les
+      gestes, l’animation d’entrée. <b>Seul le mot change</b>, sinon on ne
+      comparerait pas des noms.</p>
+    <p><b>Appuyez sur « Entrer »</b> : le sceau tourne et l’application arrive.
+      « ↺ Recommencer » remet la porte.</p>
+  </div>
+
+  <nav class="bascule">
+    <a href="50-le-nom-gunzi.html">Gunzi</a>
+    <a href="50-le-nom-goonzi.html">Goonzi</a>
+    <span class="ici">Gunzy</span>
+  </nav>
+  <p class="sous-bascule">Les trois pages sont identiques <b>au mot près</b> :
+    passez de l’une à l’autre pour comparer sans rien avoir à chercher.</p>
+
+  <p class="chapitre">1 · Le mot</p>
+  <p class="titre-chapitre">À sa taille réelle, sous le sceau</p>
+  <p class="dit">Vingt et un pixels, la serif de l’appareil, un tiers de cadratin
+    entre chaque lettre : la marque au trait près. C’est cette taille-là qui
+    décide, pas un dessin agrandi.</p>
+
+  <div class="bande">
+    <div class="ligne-mot">
+      <span class="mot temoin">ATLAS</span>
+      <span class="etiq">Aujourd’hui</span>
+    </div>
+    <div class="regle-bande"></div>
+    <div class="ligne-mot">
+      <span class="mot">GUNZY</span>
+      <span class="etiq">Proposé</span>
+    </div>
+  </div>
+  <p class="legende-bande"><b>Cinq lettres, et pourtant pas la même largeur</b> : 105 px
+      contre 97 pour ATLAS, <b>huit pour cent de plus</b>. Compter les lettres ne
+      suffisait pas — G, U, N et Y sont des lettres larges là où T, L et S sont
+      étroites. C’est la mesure qui le dit, pas l’œil.</p>
+  <p class="legende-bande"><b>Le mot finit sur un Y</b>, dont la diagonale s’ouvre vers le haut
+      et laisse un vide en bas à droite. Là où le S d’ATLAS refermait le mot, le Y
+      le laisse ouvert — et ce vide s’ajoute à l’espacement de fin dont il est
+      question tout en bas de cette page.</p>
+
+  <p class="chapitre">2 · La porte</p>
+  <p class="titre-chapitre">Le seul écran où le nom se lit en grand</p>
+  <p class="dit">L’écran d’entrée que vous avez retenu le 12 août, avec son sceau
+    et <b>le tour</b>. Rien n’y a bougé sauf le mot.</p>
+
+  <div class="tel"><div class="ecran">
+    <input type="checkbox" id="entrer" class="go">
+    <div class="scene">
+      <div class="conn"><div class="bloc">
+        <span class="sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 13.7 10.3 21.2 12 13.7 13.7 12 21.2 10.3 13.7 2.8 12 10.3 10.3Z"/></svg>
+        </span>
+        <span class="mot">GUNZY</span>
+        <label class="lib" for="adresse">Adresse</label>
+        <input class="champ" id="adresse" type="email" value="edennature.contact@gmail.com">
+        <label class="lib" for="mdp">Mot de passe</label>
+        <input class="champ" id="mdp" type="password" value="motdepasse">
+        <div class="centrer"><label class="capsule" for="entrer">Entrer</label></div>
+      </div></div>
+      <div class="appli">
+        <p class="sur">Gunzy</p>
+        <h4>Vos chantiers</h4>
+        <div class="filet"></div>
+        <div class="ligne"><div class="nom">Élagage — M. Bertin</div><div class="ou">Saint-Genis · demain matin</div></div>
+        <div class="ligne"><div class="nom">Haie — Mme Roux</div><div class="ou">Chaponost · vendredi</div></div>
+        <label class="rejouer" for="entrer">↺ Recommencer</label>
+      </div>
+    </div>
+  </div></div>
+
+  <p class="chapitre">3 · Les deux autres endroits</p>
+  <p class="titre-chapitre">L’icône du téléphone, et l’onglet</p>
+  <p class="dit">Le nom ne se voit qu’à <b>trois endroits dans tout le produit</b> :
+    la porte ci-dessus, et ces deux-ci. Nulle part ailleurs. Mais le premier des
+    deux réserve une surprise — <b>regardez l’icône de gauche</b>.</p>
+
+  <div class="paire">
+    <div class="coin">
+      <div class="accueil">
+        <div class="case">
+          <div class="icone">
+            <svg viewBox="0 0 512 512" aria-hidden="true">
+              <rect width="512" height="512" fill="#F6F1E6"/>
+              <path d="M256 108 L392 404" fill="none" stroke="#C0621F" stroke-width="44" stroke-linecap="round"/>
+              <path d="M256 108 L120 404" fill="none" stroke="#C0621F" stroke-width="44" stroke-linecap="round"/>
+              <path d="M178 300 L334 300" fill="none" stroke="#C0621F" stroke-width="40" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="nom-icone">Gunzy</span>
+          <span class="sous-icone">Celle<br>d’aujourd’hui</span>
+        </div>
+        <div class="case">
+          <div class="icone"><span class="rond">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 13.7 10.3 21.2 12 13.7 13.7 12 21.2 10.3 13.7 2.8 12 10.3 10.3Z"/></svg>
+          </span></div>
+          <span class="nom-icone">Gunzy</span>
+          <span class="sous-icone">Le sceau<br>à la place</span>
+        </div>
+      </div>
+      <p class="quoi"><span class="t">Sur l’écran d’accueil</span>
+        <b>L’icône installée aujourd’hui est un A</b> — un A bâti comme un chevron
+        de charpente. Sous le nom Gunzy, elle ne veut plus rien dire. Et elle est
+        restée <b>en terre cuite</b>, la couleur d’avant le 3 août.</p>
+      <p class="quoi">À droite, ce que donnerait <b>le sceau de la porte</b> à sa
+        place : la même rose des vents, le même rond d’or. <b>Rien n’est décidé</b>
+        — c’est une proposition, et elle réglerait au passage une icône que le
+        dépôt lui-même appelle « provisoire » depuis le début.</p>
+    </div>
+
+    <div class="coin">
+      <div class="navigateur">
+        <div class="barre-onglets">
+          <div class="onglet">
+            <span class="fav"><svg viewBox="0 0 512 512" aria-hidden="true"><path d="M256 108 L392 404"/><path d="M256 108 L120 404"/><path d="M178 300 L334 300"/></svg></span>
+            <span class="txt">Gunzy</span>
+          </div>
+          <div class="onglet pale"><span class="txt">Impôts.gouv</span></div>
+        </div>
+        <div class="barre-adresse"><div class="url">gunzy.app/chantiers</div></div>
+      </div>
+      <p class="quoi"><span class="t">Dans le navigateur</span>
+        Le titre de l’onglet et la carte qui apparaît quand on partage un lien.
+        <b>L’adresse, elle, est une décision à part</b> : elle se loue, elle se
+        vérifie, et elle n’est pas comprise dans cette maquette.</p>
+    </div>
+  </div>
+
+  <p class="chapitre">4 · À part</p>
+  <p class="titre-chapitre">La lettre dans le rond d’or</p>
+
+  <div class="aparte">
+    <div class="duo">
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 13.7 10.3 21.2 12 13.7 13.7 12 21.2 10.3 13.7 2.8 12 10.3 10.3Z"/></svg>
+        </span>
+        <span class="no">La rose — retenue</span>
+      </div>
+      <div class="vignette">
+        <span class="petit-sceau">
+          <svg class="anneau" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28.25"/></svg>
+          <svg class="feuille" viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="17.4" text-anchor="middle" font-family="ui-serif,Georgia,'Iowan Old Style',serif" font-size="16.5" fill="#2f3b2f" stroke="none">G</text></svg>
+        </span>
+        <span class="no">Le G — pour mémoire</span>
+      </div>
+    </div>
+    <p class="mots">Le 12 août, parmi les huit gravures, il y avait <b>un A</b>.
+      Vous ne l’avez pas retenu — vous avez pris la rose des vents, parce qu’elle
+      tourne sans jamais paraître de travers. <b>Le G est ici pour mémoire, pas
+      pour être choisi aujourd’hui</b> : un G a un haut et un bas, et il passe la
+      tête en bas au milieu du tour.</p>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que ce changement entraîne, et qui n’est pas fait</span>
+    <p><b>Rien n’a été codé</b> — c’est votre règle, et c’est une maquette. Voici
+      ce qu’il faudrait toucher le jour où un nom est choisi, pour que vous
+      décidiez en connaissant le prix.</p>
+    <p><b>Trois fichiers pour le mot</b> : le mot sous le sceau, le nom de
+      l’application installée, le titre de l’onglet. Une demi-heure, pas
+      davantage.</p>
+    <p><b>Et un quatrième, qu’on ne voyait pas venir : l’icône est un A.</b>
+      C’est ce que cette maquette a appris. Le fichier qui l’engendre le dit
+      lui-même — « un A bâti comme un chevron de charpente », posé comme
+      provisoire et jamais remplacé. Changer le nom sans y toucher laisse un A
+      sur l’écran d’accueil d’un outil qui ne s’appelle plus Atlas. Ce n’est pas
+      compliqué à refaire — un fichier, puis <b>npm run icones</b> —, mais c’est
+      une décision de dessin, et elle n’est pas prise.</p>
+    <p><b>Vos clients ne voient jamais le nom.</b> Vérifié fichier par fichier,
+      pas supposé : la page publique d’un devis, celle d’une facture et leurs PDF
+      ne portent aucune marque. Un devis déjà envoyé n’est donc pas à reprendre,
+      et il n’y a personne à prévenir.</p>
+    <p><b>Le point qui coûte, et qui grandit avec le temps</b> : les conditions
+      générales citent le nom en toutes lettres, et <b>une version acceptée ne se
+      modifie jamais</b>. Renommer y fait naître une version de plus, que chaque
+      utilisateur devra réaccepter à sa prochaine ouverture. Aujourd’hui personne
+      n’a rien accepté — le changement est gratuit. Dans six mois, il ne le sera
+      plus.</p>
+    <p><b>Un détail qui n’est pas dû au nom, mais qu’on voit en le changeant.</b>
+      La marque pose un tiers de cadratin après chaque lettre, <b>y compris la
+      dernière</b> : le mot est donc centré avec trois pixels de vide à sa droite,
+      et son encre paraît poussée d’autant vers la gauche sous le sceau. C’est
+      vrai d’ATLAS depuis le premier jour. Ça se corrige d’une ligne le jour où un
+      nom est arrêté ; <b>rien n’a été touché</b>.</p>
+    <p><b>Une réserve sur la police.</b> Cette page emprunte la serif de votre
+      appareil. L’application, elle, charge Playfair Display : le mot y sera plus
+      dessiné, et les pleins et déliés du G plus marqués qu’ici.</p>
+  </div>
+
+</div>
+</body>
+</html>

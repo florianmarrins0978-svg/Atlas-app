@@ -962,6 +962,253 @@ parcours entier et rougit sur quatre cas quand on retire la réparation.
 
 ---
 
+## 2026-08-14
+
+### Les équipes deviennent des cases au moment de poser — son geste C
+
+**Sa demande du 14 août, après avoir vu A tourner :** *« tu peux faire la C »*.
+
+**Ce que C règle, et ce qu'il ne règle pas.** Contrairement à A, il ne comblait
+aucun trou : le choix de l'équipe existait déjà dans le panneau du jour. Mais il
+se présentait en **lignes de liste** — elles se lisent, elles ne s'offrent pas.
+C'était le cœur de sa remarque d'origine : *« pas intuitif »*. Le geste qu'on
+fait à chaque nouveau chantier, désormais, ressemble enfin à un choix.
+
+| Avant | Maintenant |
+|---|---|
+| des lignes empilées, une par équipe | **des cases côte à côte**, deux par demi-journée |
+| le bouton n'apparaissait qu'APRÈS le choix | il reste à l'écran, **éteint**, et dit « Choisissez d'abord » |
+
+**Le bouton absent était le vrai défaut de cet écran** : rien ne demandait quoi
+que ce soit au doigt, l'écran attendait en silence. Il nommait déjà le choix une
+fois fait — « Poser · matin · Équipe B » — mais seulement une fois qu'il était
+trop tard pour aider.
+
+**Une seule source pour les deux formes** (`CaseCreneau`) : l'état d'un créneau —
+libre, visé, posable — décide à la fois de ce qu'on peut toucher et de ce que le
+serveur revalidera. Écrit deux fois, l'une des deux aurait fini par autoriser un
+appui que l'autre refuse.
+
+**À une seule équipe, la ligne reste** : il n'y a personne à désigner, et une
+case pleine largeur ne choisirait rien. Au-delà de deux ou trois équipes, les
+cases reviennent à la ligne — assumé, et plus lisible qu'une colonne de vingt.
+
+**Le contrôle des boutons arrondis a eu raison contre la maquette, au premier
+passage.** Elle dessinait des rectangles de 10 px ; le patron avait demandé le
+12 août *« la même forme partout »*, et `test-boutons-arrondis.ts` l'a attrapé.
+Les cases sont donc des **pastilles**, ce qui impose une ligne unique — deux
+lignes dans un stade se collent à la courbe. Le point médian sépare aussi bien
+que le retour à la ligne, et la case reste plus basse : « Équipe A · Libre ».
+
+**L'autre contrôle mesure, il ne lit pas une classe** : deux créneaux d'un même
+moment doivent avoir le MÊME haut. Empilés en liste ils seraient décalés d'une hauteur
+de ligne — c'est la seule façon de distinguer une case d'une ligne sans se fier à
+un nom de style qui peut changer.
+
+---
+
+### Retirer une équipe : le geste manquait par le chevron
+
+**Sa question du 14 août, le soir même :** *« si on affilie une équipe et qu'au
+final on change d'avis, on doit pouvoir la retirer. Et aujourd'hui, on peut le
+faire ou pas ça ? »*
+
+La réponse était **oui, mais par une porte seulement**. « Personne pour
+l'instant » venait d'arriver sur la pastille de la ligne ; la feuille du
+chevron, qui mène au même choix, ne listait que les équipes. **Deux chemins, deux
+réponses** — et celui qui prenait le second en concluait que c'est impossible.
+
+Un écart de ce genre ne se voit jamais en relisant : les deux écrans sont
+corrects pris séparément. Il se découvre le jour où l'on prend l'autre porte, et
+c'est exactement ce qu'il vient de faire en posant la question.
+
+Une suite navigateur parcourt maintenant **les deux chemins** : donner par la
+pastille, retirer par le chevron, et relire la base entre les deux.
+
+---
+
+### La pastille d'équipe sur la ligne du planning — son geste A
+
+**Sa remarque du 13 août :** *« appliquer une équipe à un chantier n'est pas
+intuitif »*, puis son choix du 14, capture à l'appui : **la pastille sur la
+ligne** (`docs/maquettes/52-appliquer-une-equipe.html`, geste A).
+
+**Ce qu'elle règle, et que la ligne « Équipe » de la feuille ne réglait pas** —
+livrée le même jour par une autre session : un chantier **sans** équipe le dit
+enfin. « Équipe&nbsp;? », en or pointillé. Jusque-là la ligne n'écrivait rien du
+tout, et rien ne signalait qu'il en manquait une — il fallait ouvrir la feuille
+de chacun pour l'apprendre. L'or et non le rouge : il n'y a aucune faute à ne
+pas avoir encore choisi, et le rouge est réservé aux refus.
+
+**« Déplacer » a quitté la ligne pour la feuille du chevron.** À 390 px, la
+ligne ne peut pas porter le nom, ce qu'occupe le chantier, l'équipe,
+« Déplacer » et le chevron : c'est le NOM qui aurait rétréci, et c'est la seule
+chose qui dit de quel chantier il s'agit. **Le geste n'est pas perdu** — le
+supprimer aurait refermé la seule façon de changer une date, et le planning a
+déjà été un cul-de-sac une fois (8 août 2026). Une suite le vérifie des deux
+côtés : absent de la ligne, présent dans la feuille.
+
+**`changerEquipeChantier` accepte désormais `null` : l'équipe se RETIRE.**
+C'était impossible par tout chemin jusqu'à ce jour — `planifierChantier` écrit
+`...(equipeId ? { equipeId } : {})`, ignorant le cas en silence, et le geste
+livré le matin exigeait un rang. « Personne pour l'instant » figure sur l'écran
+qu'il a retenu ; le montrer sans pouvoir l'exécuter aurait été lui livrer un
+bouton mort. **Retirer ne se refuse jamais pour occupation** : libérer une place
+n'en prend aucune, et refuser enfermerait le patron dans son erreur.
+
+**Les contrôles ont été vus rouges avant d'être livrés** : privés du retrait,
+trois cas de `test-changer-equipe.ts` tombent. Une suite navigateur
+(`test-pastille-equipe-e2e.ts`) parcourt le geste entier — poser, changer,
+retirer, vérifier en base — parce que la règle serveur serait verte même si le
+bouton n'était pas branché : c'est le raccord qui casse, jamais la formule.
+
+**Deux suites ont rougi à juste titre, et ont changé de cible plutôt que de
+disparaître** : celle qui vérifiait que le chevron ne recouvre pas son voisin
+vise maintenant la pastille (même défaut, nouveau voisin), et celle du
+déplacement suit le nouveau chemin par la feuille.
+
+**Ce qui reste ouvert :** le geste C — les cases au moment de poser — n'est pas
+codé, il n'a rien dit dessus. Et à la **pose**, le serveur revalide toujours le
+compte de la demi-journée sans vérifier l'identité de l'équipe, là où le chemin
+du changement le fait. Écrit dans `TODO.md`.
+
+---
+
+### La ligne du planning dit enfin ce que le chantier occupe
+
+**Sa remarque du 13 août, capture à l'appui :** *« pourquoi sous le chantier il
+y a marqué matin ? Cela laisse à penser que juste le matin est bloqué alors que
+c'est la journée. »* Il avait raison.
+
+`libelleQuand()` écrivait `creneauDebut` — la demi-journée de **départ** — et
+rien d'autre. Or `DUREE_PAR_DEFAUT_DEMI_JOURNEES` vaut **2** : un chantier posé
+prend la journée entière. **Le cas le plus courant du produit était donc celui
+qui mentait**, et un chantier de trois jours annonçait « matin ».
+
+**Ce qui n'était pas cassé, et qu'il fallait lui dire avant tout :**
+`compterOccupation()` parcourait déjà `creneauxDuChantier(départ, durée)`. Les
+pastilles du calendrier et la réservation ont toujours compté juste — **seule la
+phrase se trompait**. Aucune donnée touchée, aucune migration, rien à rattraper.
+
+**Ses mots, arrêtés en deux temps sur maquette** (`docs/maquettes/51`, puis `49`
+après sa correction) : « matin », « après-midi », **« journée »**, et **« du 21
+au 25 août »** au-delà d'un jour — le week-end sauté, comme la réservation.
+« matin et après-midi » et « 3 jours dès le matin » avaient été proposés et
+écartés par lui.
+
+**La règle vit dans une fonction pure**, `libelleOccupation()`
+(`src/server/disponibilites.ts`) : elle demande à `creneauxDuChantier` ce qui est
+occupé au lieu de refaire l'arithmétique à côté. Deux calculs auraient produit
+deux vérités — celle de l'écran et celle de la réservation — qui se seraient
+contredites un vendredi, jour où le saut du week-end entre en jeu.
+
+**La date tombe sur la liste, pas dans la feuille du chevron.** Sa consigne —
+*« elle est déjà présente juste au-dessus »* — vaut du panneau du jour, qui se
+titre « Lundi 17 août » ; dans la feuille, la date n'est écrite **nulle part
+ailleurs**. `Occupation.porteLaDate` empêche au passage le doublon « 21 août ·
+du 21 au 25 août ».
+
+**Le contrôle a été vu rouge avant d'être livré.** `test-libelle-occupation.ts`
+a été confronté à l'ancien comportement : deux cas tombent, dont celui qui a
+motivé le lot. Il attrape aussi un piège que personne ne voit venir — **deux
+demi-journées parties l'après-midi ne sont pas une « journée »** mais cet
+après-midi plus le matin suivant, et l'artisan croirait sa matinée libre.
+
+**Ce que ça débloque.** Sans la date, la ligne raccourcit assez pour porter la
+pastille d'équipe sans que le nom du chantier rétrécisse : les deux remarques du
+même jour se disputaient cette largeur, elles ne se la disputent plus.
+
+---
+
+## 2026-08-13
+
+### L'équipe qu'on ne peut pas changer, et le « matin » qui ne change jamais
+
+**Ses deux remarques du 13 août**, sur la même capture du planning :
+*« appliquer une équipe à un chantier n'est pas intuitif »* et *« pourquoi sous
+le chantier il y a marqué matin ? Cela laisse à penser que juste le matin est
+bloqué alors que c'est la journée. »* — avec la consigne : *« corrige ça mais ne
+code rien, propose des maquettes dynamiques en .html que je puisse essayer »*.
+
+Deux planches, `docs/maquettes/51` et `48`. **Rien n'est codé** — `src/` n'est
+pas touché (§3 bis). Elles se touchent au doigt **sans JavaScript** : de vraies
+machines à états faites de boutons radio, son lecteur n'exécutant pas de script.
+
+**LA PLANCHE DE L'ÉQUIPE A ÉTÉ REFAITE EN COURS DE ROUTE, et c'est la leçon du
+lot.** Sa première version disait « l'équipe ne s'écrit qu'en posant une date,
+six gestes pour changer une lettre » — vrai en début de soirée. Une autre session
+a livré entre-temps `changerEquipeChantier()` et la ligne « Équipe » dans la
+feuille du chevron : **exactement la proposition B que j'allais soumettre**. Le
+code fait foi (`CLAUDE.md` §1) : la planche a été corrigée avant d'être livrée
+plutôt qu'envoyée périmée, et B y figure désormais comme un acquis à juger, non
+comme un choix à faire. Trouvé en refusionnant `main` **avant** de pousser, ce
+que le §6 impose précisément pour ça.
+
+**Ce que la lecture du code a établi, et qui manquait au dépôt :**
+
+- **Ce qui reste ouvert après cette arrivée** : depuis la liste du planning,
+  rien ne signale un chantier **sans** équipe — il faut ouvrir la feuille de
+  chacun ; et au moment de **poser**, les équipes restent des lignes de liste.
+  La fiche du chantier ne montre l'équipe nulle part.
+- **Une équipe ne peut jamais être retirée**, par aucun des deux chemins :
+  `...(equipeId ? { equipeId } : {})` ignore le cas en silence, et le geste neuf
+  exige un `rangEquipe` non nullable.
+- **Les deux chemins ne défendent pas la même règle** : le geste neuf vérifie que
+  l'**équipe** visée est libre, la **pose** ne vérifie qu'un compte de
+  demi-journée. Inatteignable par l'écran, qui éteint les lignes prises — mais
+  c'est le cas que le commentaire de `planifierChantier` prétend couvrir.
+- **Le « matin » est un défaut d'affichage seul.** `libelleQuand()` écrit la
+  demi-journée de départ ; `compterOccupation()`, lui, parcourt la durée. Les
+  pastilles du calendrier et la réservation ont toujours été justes — **seule la
+  phrase mentait**. Rien à rattraper, aucune migration.
+
+**Et les deux décisions restantes se disputent la même chose** : la largeur de la
+ligne du planning, qui porte déjà le nom, la date, « Déplacer » et le chevron à
+390 px. Elles se prennent ensemble ou l'une contre l'autre ; c'est écrit dans les
+deux planches et dans `TODO.md`.
+
+**Un défaut de la planche trouvé en la parcourant, jamais en la relisant** : la
+barre d'onglets du bas passait devant la feuille et recouvrait sa dernière
+option — « Personne pour l'instant » ne répondait pas au doigt. Trois étages
+posés (`z-index`), et le parcours rejoué : trente-trois gestes au vert.
+
+### Trois noms à essayer — Gunzi, Goonzi, Gunzy — et l'icône qui est un A
+
+**Sa demande :** *« fais-moi une maquette avec comme nom Gunzi à la place
+d'Atlas. Ne code rien. »*, puis les deux autres noms.
+`docs/maquettes/50-le-nom-{gunzi,goonzi,gunzy}.html`, trois planches identiques
+au mot près, avec un passage de l'une à l'autre en tête de page.
+
+**Rien n'est codé** — `src/` n'est pas touché, c'est `CLAUDE.md` §3 bis. Ce qui
+serait à reprendre le jour d'un choix est écrit dans `TODO.md`, avec les
+fichiers, pour ne pas le rechercher.
+
+**Ce que faire ces planches a appris, et qui n'était pas su :**
+
+- **L'icône installée est un A.** `public/icone-source.svg` le dit lui-même —
+  « un A bâti comme un chevron de charpente », provisoire, jamais remplacé, et
+  resté en terre cuite `#C0621F`, la couleur d'avant la charte du 3 août. Un
+  autre nom la rendrait fausse ; elle est déjà hors charte. Fiche à part dans
+  `TODO.md`, parce qu'elle ne dépend pas du nom.
+- **Le client de l'artisan ne voit le nom nulle part** — ni la page publique
+  d'un devis, ni celle d'une facture, ni leurs PDF ne portent de marque, vérifié
+  fichier par fichier. Renommer ne demande de prévenir personne.
+- **Le seul coût qui grandit est celui des CGU** : elles citent le nom, et une
+  version acceptée ne se modifie jamais. Gratuit aujourd'hui — personne n'a
+  accepté la `canevas-1` —, payant dans six mois.
+
+**Les largeurs sont mesurées, pas estimées**, et la mesure a corrigé ce qui
+avait d'abord été écrit : ATLAS et GUNZI font 97 px, GUNZY **105** malgré ses
+cinq lettres, GOONZI 118. Compter les lettres ne dit pas la largeur.
+
+**Et un défaut vu sur une capture, jamais par un contrôle** : en thème sombre,
+les deux sceaux de la dernière planche disparaissaient — gravure vert pin sur
+fond sombre. Ils portent désormais leur propre fond crème, celui de la porte.
+Éprouvé aussi **JavaScript coupé** et à 390 px : aucun script, pas de
+débordement horizontal, l'entrée et « ↺ Recommencer » répondent.
+
+---
+
 ## 2026-08-13
 
 ### L'assistant cesse de flotter, et se range dans l'en-tête
@@ -1000,7 +1247,7 @@ débordement est parti dans `TODO.md` sous son propre nom.
 
 **Sa demande :** *« l'onglet de l'assistant est hyper mal placé […] crée-moi des
 maquettes que j'essaye, ne code rien. »* **Rien n'a été codé** —
-`docs/maquettes/47-ou-mettre-l-assistant.html`, sa lettre est attendue.
+`docs/maquettes/51-ou-mettre-l-assistant.html`, sa lettre est attendue.
 
 **L'écran choisi est le planning, et ce n'est pas un hasard :** c'est là que la
 gêne se mesure au lieu de se discuter. La bulle recouvre les dimanches 23 et 30.

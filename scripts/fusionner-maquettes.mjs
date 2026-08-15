@@ -255,6 +255,18 @@ const MAQUETTES = [
     famille: "Le devis avant l’envoi",
     quoi: "Tout est là pour vérifier, rien pour corriger : « Modifier mon devis » n’existe qu’APRÈS l’envoi. Son idée — le mot « Devis » cliquable — dessinée telle quelle, et quatre autres façons d’y arriver.",
   },
+  {
+    fichier: "46-pendant-que-ca-batit.html",
+    titre: "Pendant que ça bâtit",
+    famille: "Le banc d’essai",
+    quoi: "« Les nouvelles pages ne chargent mal ou pas du tout. » Rien n’était cassé : le banc sert en mode développement pendant qu’il bâtit, et rien ne le disait. Trois façons de montrer l’avancement, avec les mesures.",
+  },
+  {
+    fichier: "55-une-equipe-part-cinq-jours.html",
+    titre: "Une équipe part cinq jours",
+    famille: "Le planning",
+    quoi: "« Comment on fait si une équipe part en déplacement pour cinq jours ? » Si toute l’entreprise part, l’agenda Google suffit déjà. Si une équipe sur deux part, rien ne convient. Trois endroits où poser le geste.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

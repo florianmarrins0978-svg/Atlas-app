@@ -60,7 +60,9 @@ export async function planifierChantierAction(
  */
 export async function changerEquipeChantierAction(
   chantierId: string,
-  rangEquipe: number
+  // `null` retire l'équipe — « Personne pour l'instant » sur la pastille de la
+  // ligne, retenue par le patron le 14 août 2026.
+  rangEquipe: number | null
 ): Promise<ResultatPose> {
   const ctx = await getCurrentCtx();
   try {
