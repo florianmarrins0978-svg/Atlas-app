@@ -73,6 +73,34 @@ offre « Annuler » comme partout ailleurs.
 pas reconnu dans une note vocale. Sa grille se remplit et se relit ; le
 chiffrage ne la proposera pas de lui-même. Raisons : `ARCHITECTURE.md` §105.
 
+### « Mon compte » et « Connexion » : les deux dernières rubriques sont ouvertes
+
+Sur les treize du sommaire, huit étaient codées. Ces deux-là étaient les seules
+qui n'avaient même pas de planche — et les dessiner a révélé que **leur libellé
+promettait deux choses qui n'existent nulle part** : un téléphone que la table
+des comptes ne porte pas, et une liste d'appareils alors qu'Atlas ne garde
+aucune session en base. Le patron a tranché « A A » : les deux mots sont retirés
+du sommaire plutôt que d'ouvrir des champs qui ne serviraient à personne.
+
+**Ce que ça apporte, concrètement :** changer son nom, changer son mot de passe
+— et **« me déconnecter partout »**, le geste utile un soir de téléphone perdu.
+Ce dernier ne coûte qu'une colonne (`users.jetons_valides_depuis`, migration
+0042) : plutôt que de tenir une table de sessions, on refuse les jetons signés
+avant une coupure. La liste des appareils reste possible plus tard ; avant que
+quelqu'un d'autre que lui ne se connecte, elle n'aurait qu'une ligne.
+
+**Sa correction du même jour, et elle valait mieux que ma proposition :** ma
+planche remplaçait la seconde saisie du mot de passe par l'œil qui l'affiche. Il
+veut **les deux** — l'œil se touche après coup, la confirmation attrape la faute
+au moment où elle se fait. L'œil est sur les trois champs : une confirmation
+qu'on ne peut pas relire ne confirme rien.
+
+**Ce qui n'est PAS ouvert, et l'écran le dit :** l'e-mail. C'est l'identifiant
+de connexion, et rien dans Atlas ne permettrait de vérifier une nouvelle
+adresse — ni e-mail sortant, ni SMS. Une faute de frappe fermerait le compte
+sans recours. Le champ s'ouvrira quand il y aura de quoi rattraper l'erreur
+(`ARCHITECTURE.md` §107).
+
 ### L'unité d'un tarif se choisit dans un bandeau, au lieu de se taper
 
 Sa demande du 13 août, capture des tarifs à l'appui : *« crée-moi un bandeau
@@ -925,7 +953,7 @@ qui mentait**, et un chantier de trois jours annonçait « matin ».
 pastilles du calendrier et la réservation ont toujours compté juste — **seule la
 phrase se trompait**. Aucune donnée touchée, aucune migration, rien à rattraper.
 
-**Ses mots, arrêtés en deux temps sur maquette** (`docs/maquettes/47`, puis `49`
+**Ses mots, arrêtés en deux temps sur maquette** (`docs/maquettes/51`, puis `49`
 après sa correction) : « matin », « après-midi », **« journée »**, et **« du 21
 au 25 août »** au-delà d'un jour — le week-end sauté, comme la réservation.
 « matin et après-midi » et « 3 jours dès le matin » avaient été proposés et
@@ -965,7 +993,7 @@ le chantier il y a marqué matin ? Cela laisse à penser que juste le matin est
 bloqué alors que c'est la journée. »* — avec la consigne : *« corrige ça mais ne
 code rien, propose des maquettes dynamiques en .html que je puisse essayer »*.
 
-Deux planches, `docs/maquettes/47` et `48`. **Rien n'est codé** — `src/` n'est
+Deux planches, `docs/maquettes/51` et `48`. **Rien n'est codé** — `src/` n'est
 pas touché (§3 bis). Elles se touchent au doigt **sans JavaScript** : de vraies
 machines à états faites de boutons radio, son lecteur n'exécutant pas de script.
 
@@ -1082,7 +1110,7 @@ débordement est parti dans `TODO.md` sous son propre nom.
 
 **Sa demande :** *« l'onglet de l'assistant est hyper mal placé […] crée-moi des
 maquettes que j'essaye, ne code rien. »* **Rien n'a été codé** —
-`docs/maquettes/47-ou-mettre-l-assistant.html`, sa lettre est attendue.
+`docs/maquettes/51-ou-mettre-l-assistant.html`, sa lettre est attendue.
 
 **L'écran choisi est le planning, et ce n'est pas un hasard :** c'est là que la
 gêne se mesure au lieu de se discuter. La bulle recouvre les dimanches 23 et 30.

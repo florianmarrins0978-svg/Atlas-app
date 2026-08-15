@@ -8546,3 +8546,112 @@ n'est pas dans le correctif :
   capture ne l'auraient relevé ;
 - **d'où la valeur d'un contrôle qui mesure une POSITION plutôt qu'une
   présence.** « Le lien existe » serait resté vert.
+
+---
+
+---
+
+## 107. « Me déconnecter partout » sans table de sessions, et un e-mail qu'on ne peut pas encore changer
+
+*Dessiné le 14 août 2026 (`maquettes/atlas-reglages-moi.html`), codé le même
+jour sur ses deux réponses — **« A A »**. Rubriques « Mon compte » et
+« Connexion », les deux dernières du sommaire (§96).*
+
+### Ce que la planche a servi à trouver, et qui n'était pas une question de dessin
+
+Les deux écrans sont simples. Ce qui ne l'était pas, c'est que **leur libellé
+promettait deux choses qui n'existaient nulle part** :
+
+| Le sommaire annonçait | Ce que la base porte |
+|---|---|
+| « Nom, e-mail et **téléphone** » | `users` : `email`, `nom`, `image`, `password_hash`. Aucun téléphone, et rien ne l'appellerait — ni SMS ni e-mail sortant (tranché le 4 août) |
+| « Mot de passe et **appareils** » | `src/auth.ts` : `session: {strategy: "jwt"}`. **Aucune session en base**, donc rien à lister |
+
+Le patron a tranché les deux fois pour le retrait : le libellé dit désormais
+« Nom et e-mail », et « Mot de passe et sécurité ». **Ne pas les rouvrir sans
+qu'il le demande.**
+
+### La déconnexion générale : une colonne au lieu d'une table
+
+Atlas ne garde aucune session : il n'y a **rien à supprimer** pour fermer une
+session ouverte sur un téléphone perdu. Mais chaque jeton porte son instant
+d'émission (`iat`), et il suffit de **refuser ceux qui précèdent une coupure** —
+`users.jetons_valides_depuis` (migration 0042).
+
+Trois pièces, et l'ordre importe :
+
+1. `src/auth.config.ts` recopie `token.iat` dans `session.user.emisLe`. Sans
+   cette ligne l'instant existe et reste inatteignable : `auth()` ne rend que la
+   session, jamais le jeton brut ;
+2. `getCurrentCtx` compare, **et c'est le seul endroit possible**. Le
+   `middleware` tourne en Edge et ne peut pas lire la base ; cette fonction, en
+   revanche, est la porte unique de toutes les pages et de toutes les actions ;
+3. sur refus, on part vers `/api/session-perimee`, qui **efface les cookies**.
+   Lever une erreur afficherait un écran de panne en laissant le cookie mort
+   dans le navigateur — le piège du 10 août 2026, une soirée perdue.
+
+**Deux choix qui paraissent des détails et n'en sont pas :**
+
+- **Un jeton sans `iat` est laissé passer.** Ceux d'avant cette version n'en
+  portent pas : refuser par défaut aurait déconnecté tout le monde au
+  déploiement, un geste que personne n'a demandé.
+- **La coupure est arrondie à la seconde SUPÉRIEURE.** Les `iat` sont en
+  secondes entières : un jeton signé à 12:00:00,900 s'annonce à 12:00:00. Posée
+  à la milliseconde, la coupure serait antérieure à sa propre seconde et le
+  jeton du moment survivrait — le patron appuierait sur « me déconnecter
+  partout » en restant connecté sur l'appareil qui vient d'appuyer, ce que
+  l'écran promet pourtant explicitement. Éprouvé par `test-compte-db.ts`.
+
+### L'e-mail se lit, il ne se change pas — et l'écran le dit
+
+C'est l'identifiant de connexion, et **Atlas n'a aucun canal pour vérifier une
+nouvelle adresse** : ni e-mail sortant, ni SMS, ni parcours d'inscription, ni
+réinitialisation par courriel. Une lettre de travers, et le compte devient
+inaccessible sans le moindre moyen de revenir en arrière.
+
+Un champ dont la faute de frappe est **irréparable** ne s'ouvre pas tant qu'il
+n'y a pas de quoi la rattraper. L'écran l'écrit en toutes lettres plutôt que de
+laisser croire à une panne — une absence muette se lit comme un oubli.
+
+### `users` est la seule table sans RLS, et les suites en tiennent lieu
+
+`src/server/repositories/compte.ts` n'appelle **pas** `withEntreprise`, contre
+la règle générale de `CLAUDE.md` §3 — et c'est délibéré : la table
+d'authentification ne porte pas d'`entreprise_id`, aucune politique ne s'y
+applique, et la même personne appartiendra demain à deux entreprises sans
+changer de nom. Poser un contexte d'entreprise pour lire son propre nom ferait
+croire à une isolation qui n'existe pas ici (même raisonnement que
+`catalogue-prestations.ts`).
+
+**Ce qui protège à la place : chaque requête est bornée par
+`ctx.utilisateurId`.** Un `where` oublié ne rougirait nulle part ailleurs — il
+changerait le mot de passe de tout le monde d'un coup. `scripts/test-compte-db.ts`
+monte donc **deux comptes** partageant le même mot de passe de départ, et vérifie
+qu'aucun geste ne touche le voisin. Les deux contrôles ont été vus rouges avant
+d'être laissés verts.
+
+### Les règles du mot de passe : une seule fonction, deux appelants
+
+`src/lib/mot-de-passe.ts` décide **et** de l'allumage du bouton, **et** de
+l'acceptation par le serveur. Deux rédactions divergeraient, et l'écart se
+paierait dans le mauvais sens : un bouton allumé sur une saisie refusée, ou un
+artisan qui croit son mot de passe changé alors qu'il ne l'est pas.
+
+**Aucune exigence de majuscule ni de caractère spécial**, délibérément : elles
+ne valent pas une phrase longue, et sur un chantier elles produisent des mots de
+passe notés sur un carnet.
+
+**Sa demande du 14 août, et elle corrige la mienne :** *« il faut pouvoir
+confirmer son mdp 2× avant de le changer et met le petit œil à côté »*. Ma
+planche proposait l'œil **à la place** de la seconde saisie ; il veut les deux,
+et il a raison — l'œil se touche après coup, la confirmation attrape la faute au
+moment où elle se fait. L'œil est sur **les trois champs** : une confirmation
+qu'on ne peut pas relire ne confirme rien.
+
+### Ce que la suite navigateur n'éprouve PAS, et pourquoi
+
+`test-compte-connexion-e2e.ts` ne change **jamais** le mot de passe pour de bon :
+le compte de démonstration sert aux soixante-quinze suites de la batterie, et le
+changer fermerait la porte à toutes les suivantes — l'échec accuserait alors la
+page de connexion, qui n'y serait pour rien. Le chemin éprouvé au navigateur est
+celui du **refus**, qui n'écrit rien ; l'écriture est tenue par la suite base.

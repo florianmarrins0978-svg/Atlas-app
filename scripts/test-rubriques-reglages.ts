@@ -87,9 +87,44 @@ essai("un membre ne reçoit AUCUNE rubrique de l'entreprise", () => {
   }
 });
 
-essai("et aucune adresse de l'entreprise ne lui est ouverte", () => {
+// **Ce contrôle attendait une liste VIDE, et il avait raison jusqu'au 14 août
+// 2026** — tout l'ensemble « Moi » était encore marqué « Bientôt ». Depuis que
+// « Mon compte » et « Connexion » sont codés, un membre a bel et bien deux
+// adresses ouvertes, et c'est exactement ce que le patron a demandé le 13 août :
+// *« un salarié peut changer ses notifications ou son mot de passe »*.
+//
+// **Ce qu'il ne faut donc PAS faire : remplacer le vide par « n'importe quoi ».**
+// Une liste comparée à elle-même ne dirait plus rien. Ce qui compte est que les
+// adresses ouvertes à un membre soient EXACTEMENT celles de l'ensemble « Moi »,
+// et aucune de celles de l'entreprise.
+essai("un membre n'ouvre QUE ses réglages personnels", () => {
   const siennes = adressesAutorisees("membre");
-  assert.deepEqual(siennes, [], `un membre peut ouvrir : ${siennes.join(", ")}`);
+  const personnelles = rubriquesReglages("membre")
+    .flatMap((e) => e.rubriques)
+    .map((r) => r.href)
+    .filter((h): h is string => h !== null);
+  assert.deepEqual(siennes, personnelles);
+  // Sa règle du 13 août : le mot de passe fait partie de ce qu'un salarié garde.
+  assert.ok(siennes.includes("/reglages/connexion"), "un salarié ne peut plus changer son mot de passe");
+});
+
+essai("et AUCUNE adresse de l'entreprise ne lui est ouverte", () => {
+  const siennes = adressesAutorisees("membre");
+  // **L'ensemble se désigne PAR SON TITRE, jamais par soustraction.** Écrit
+  // « les adresses du patron moins celles du membre », le contrôle ne voyait
+  // plus rien dès qu'une rubrique d'entreprise était DÉPLACÉE dans « Moi » :
+  // elle sortait des deux côtés à la fois. Éprouvé en la déplaçant pour de bon,
+  // le 14 août 2026 — le contrôle est resté vert sur une vraie fuite.
+  const delEntreprise = rubriquesReglages("proprietaire")
+    .filter((e) => e.titre === "L'entreprise")
+    .flatMap((e) => e.rubriques)
+    .map((r) => r.href)
+    .filter((h): h is string => h !== null);
+  // Et l'on vérifie que cet ensemble existe : le jour où le titre changerait,
+  // le contrôle passerait au vert en n'ayant rien regardé du tout.
+  assert.ok(delEntreprise.length >= 5, `l'ensemble « L'entreprise » n'ouvre que ${delEntreprise.length} adresse(s)`);
+  const fuites = delEntreprise.filter((a) => siennes.includes(a));
+  assert.deepEqual(fuites, [], `un membre peut ouvrir : ${fuites.join(", ")}`);
 });
 
 // Un rôle inconnu — compte retiré de l'entreprise, session survivante — ne doit

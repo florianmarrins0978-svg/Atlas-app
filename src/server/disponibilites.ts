@@ -461,7 +461,7 @@ export const LIBELLE_MOMENT: Record<Moment, string> = {
  * la date est dedans — c'est cette fonction qui le sait, pas lui.
  *
  * Les mots sont ceux que le patron a arrêtés le 14 août 2026, sur la planche
- * `docs/maquettes/49-le-mot-juste-sans-la-date.html` : *« Je veux journée et
+ * `docs/maquettes/53-le-mot-juste-sans-la-date.html` : *« Je veux journée et
  * du 21 au 25 »*. Ni « matin et après-midi », ni « 3 jours dès le matin » —
  * les deux avaient été proposés et écartés.
  */

@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-14 · branche `main`
-· dernière migration `drizzle/0040_conditions_documents.sql`
+· dernière migration `drizzle/0042_deconnexion_partout.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -575,9 +575,16 @@ Voir `TODO.md` pour le détail et l'ordre.
   **C'est aussi le premier écran d'Atlas où `getRole` décide de ce qui est
   RENDU** : un membre ne reçoit que l'ensemble « Moi », et chaque rubrique de
   l'entreprise refuse un non-propriétaire avant de lire une valeur. Le reste de
-  l'application, lui, ne cloisonne toujours rien. Six rubriques sur treize
-  restent marquées *Bientôt* — mon compte, notifications, connexion, apparence,
-  équipe (les comptes), devis & factures, abonnement. Ce qui suit décrit l'état
+  l'application, lui, ne cloisonne toujours rien. **Dix rubriques sur treize
+  sont codées au 14 août** ; il en reste **trois** marquées *Bientôt* —
+  notifications, apparence, abonnement. Les deux dernières ouvertes sont
+  **« Mon compte »** et **« Connexion »** (`ARCHITECTURE.md` §107) : changer son
+  nom, changer son mot de passe, et **« me déconnecter partout »** — une colonne
+  plutôt qu'une table de sessions. Leurs libellés promettaient un *téléphone* et
+  une liste d'*appareils* qui n'existent nulle part ; le patron a tranché « A A »
+  le 14 août, les deux mots sont retirés. **L'e-mail ne se change pas encore**,
+  et l'écran le dit : rien ne permettrait de vérifier une nouvelle adresse, et
+  une faute de frappe fermerait le compte sans recours. Ce qui suit décrit l'état
   d'avant ce lot, et reste vrai pour les neuf autres rubriques : (`maquettes/atlas-reglages-plan.html`, `ARCHITECTURE.md` §86). Ce qui
   y est tranché : les deux niveaux « Moi » / « Mon entreprise », qui voit quoi,
   et ce qui n'aura jamais d'interrupteur. Ce qui ne l'est pas : le rôle

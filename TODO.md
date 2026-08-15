@@ -27,6 +27,34 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 octovicies. ~~Mon compte et Connexion~~ — **CODÉS le 14 août 2026 (« A A »)**
+
+Les deux écrans existent : `/reglages/compte` et `/reglages/connexion`
+(`ARCHITECTURE.md` §107). **Ses deux réponses ont été appliquées** — pas de
+téléphone dans le compte, pas de liste d'appareils dans la connexion, et les
+deux mots retirés des libellés du sommaire.
+
+**Trois choses à ne PAS rouvrir sans qu'il le demande :**
+
+| | |
+|---|---|
+| Le champ **téléphone** du compte | Réponse « A ». Rien ne l'appellerait : le numéro du client est celui de l'entreprise |
+| La **liste des appareils** | Réponse « A ». Il faudrait une table de sessions ; le geste utile — « me déconnecter partout » — existe et suffit |
+| L'**œil à la place** de la confirmation | Il veut **les deux**. L'œil se touche après coup ; la confirmation attrape la faute au moment où elle se fait |
+
+**Ce qui reste ouvert, et qui attend autre chose que du code :** l'e-mail ne se
+change pas. Il faudrait d'abord un moyen de vérifier la nouvelle adresse — donc
+un canal d'envoi, qui n'existe pas et dont il a dit qu'il n'y en aurait pas. À
+rouvrir le jour où un parcours d'inscription existera.
+
+**Un défaut antérieur vu sur la capture — ~~et réglé le même jour par une autre
+session~~.** La bulle de l'assistant recouvrait le bord droit du bouton
+d'enregistrement, sur cet écran comme sur « Mon entreprise ». Elle a quitté le
+coin flottant pour l'en-tête (`ARCHITECTURE.md` §106, proposition B). **Rien à
+faire ici**, et surtout rien à contourner : la cause n'était pas la place de mon
+bouton, c'était un élément `fixed` — cinq écrans avaient déjà été déplacés cet
+été pour l'éviter.
+
 ### 0 duodetricies. ~~L'assistant flottant recouvrait les écrans~~ — **réglé le 13 août 2026 (proposition B)**
 
 *« L'onglet de l'assistant est hyper mal placé »*, puis *« la B mais de la même
@@ -72,7 +100,7 @@ geste existe, et son serveur **refuse pour de bon** si l'équipe visée est déj
 prise sur les créneaux du chantier (`EquipeIndisponible`).
 
 **Ce qui reste ouvert, et attend son avis** —
-`docs/maquettes/48-appliquer-une-equipe.html`, essayable au doigt :
+`docs/maquettes/52-appliquer-une-equipe.html`, essayable au doigt :
 
 | | Ce qui manque encore | Ce que la planche propose |
 |---|---|---|
@@ -111,7 +139,7 @@ valant **2**, le cas le plus courant du produit était celui qui mentait.
 parcourait déjà la durée. Les pastilles du calendrier et la réservation ont
 toujours compté juste. **Aucune donnée touchée, aucune migration.**
 
-**Ses mots, arrêtés en deux temps sur maquette** (`docs/maquettes/47` puis `49`) :
+**Ses mots, arrêtés en deux temps sur maquette** (`docs/maquettes/51` puis `49`) :
 *« La A »*, *« matin, après-midi ou les deux, mais pas la date »*, puis *« Je
 veux journée et du 21 au 25 »*.
 
@@ -185,7 +213,8 @@ nul aujourd'hui, puisque personne n'a encore accepté la `canevas-1`.
 
 Les largeurs sont **mesurées à l'écran**, pas estimées : ATLAS et GUNZI font
 97 px, GUNZY 105, GOONZI 118. Cinq lettres ne veut pas dire la même largeur.
-### 0 octovicies. Mon compte et Connexion : dessinés, avec DEUX QUESTIONS
+### ~~0 octovicies (d'origine). Mon compte et Connexion : dessinés, avec DEUX QUESTIONS~~
+
 
 *`maquettes/atlas-reglages-moi.html`, le 14 août 2026 — quatre écrans, 53
 contrôles. **Les onze autres rubriques du sommaire ont leur planche ; c'étaient

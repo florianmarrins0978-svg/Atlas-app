@@ -203,7 +203,7 @@ export default function PlanningClient({
    * 2026 : *« ça laisse à penser que juste le matin est bloqué alors que c'est
    * la journée »*. Elle dit désormais ce que le chantier OCCUPE
    * (`libelleOccupation`), et les mots sont les siens, arrêtés le 14 août sur
-   * `docs/maquettes/49-le-mot-juste-sans-la-date.html` : « journée », et
+   * `docs/maquettes/53-le-mot-juste-sans-la-date.html` : « journée », et
    * « du 21 au 25 août » au-delà d'un jour.
    *
    * **LA DATE TOMBE SUR LA LISTE, PAS DANS LA FEUILLE**, et ce n'est pas une

@@ -37,9 +37,26 @@ export type EnsembleRubriques = { titre: string; rubriques: Rubrique[] };
 
 /** Ce qui appartient à la personne : elle l'emporte d'une entreprise à l'autre. */
 const MOI: Rubrique[] = [
-  { nom: "Mon compte", dit: "Nom, e-mail et téléphone", icone: "compte", href: null },
+  {
+    nom: "Mon compte",
+    // **« et téléphone » a été RETIRÉ le 14 août 2026, sur sa réponse « A ».**
+    // La table des comptes n'en porte pas, et rien ne l'appellerait : le numéro
+    // que ses clients voient est celui de l'entreprise. Un libellé qui promet
+    // un champ inexistant fait ouvrir la rubrique pour rien.
+    dit: "Nom et e-mail",
+    icone: "compte",
+    href: "/reglages/compte",
+  },
   { nom: "Notifications", dit: "Alertes et rappels", icone: "cloche", href: null },
-  { nom: "Connexion", dit: "Mot de passe et appareils", icone: "cadenas", href: null },
+  {
+    nom: "Connexion",
+    // **« et appareils » a été RETIRÉ le 14 août 2026, sur sa réponse « A ».**
+    // Atlas ne garde aucune session en base : il n'y avait rien à lister. Ce
+    // qui existe, et qui est le geste utile, c'est « me déconnecter partout ».
+    dit: "Mot de passe et sécurité",
+    icone: "cadenas",
+    href: "/reglages/connexion",
+  },
   { nom: "Apparence", dit: "Thème clair, sombre et couleurs", icone: "contraste", href: null },
 ];
 
