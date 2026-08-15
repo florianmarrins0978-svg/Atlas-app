@@ -1,0 +1,359 @@
+<title>Atlas — La TVA au paiement, pas à l'envoi</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT — et pourtant vivante sous le doigt.
+
+    LA TVA QUAND LE CLIENT PAIE, ET NON QUAND LA FACTURE PART.
+
+    Le patron, le 14 août 2026 : *« si demain un client décide de ne pas me
+    payer une facture… à partir du moment où j'envoie la facture, elle rentre
+    automatiquement dans mon relevé de TVA. Est-ce qu'il y a une possibilité
+    pour qu'elle rentre seulement une fois que le client m'a payé ? »*
+
+    CE QU'IL Y A AUJOURD'HUI : `releveTvaCollectee` prend toutes les factures
+    `emise`, à leur DATE D'ÉMISSION. Aucune notion de paiement n'existe dans
+    l'application — pas une colonne, pas un écran.
+
+    CE QUE DIT LA LOI, ET QUI LUI DONNE RAISON : pour une prestation de
+    services, la TVA est exigible **à l'encaissement** (CGI art. 269-2-c). Le
+    régime des DÉBITS — celui qu'Atlas applique — est une OPTION, qui se
+    demande. Il ne l'a très probablement jamais demandée.
+
+    D'OÙ CETTE PLANCHE, qui montre les deux régimes côte à côte sur les mêmes
+    deux factures, et ce que ça change au centime.
+
+    RÉSERVE, ET ELLE COMMANDE LE RESTE : sous quel régime il est, lui seul peut
+    le dire — c'est écrit dans `docs/A-FAIRE.md` §11. Rien n'est posé dans
+    `src/` (`CLAUDE.md` §3 bis).
+  */
+
+  :root{
+    --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c;
+    --bronze:#8f7130; --trait:rgba(22,23,15,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       font-size:16px;line-height:1.65;padding:44px 16px 84px}
+  .page{max-width:1400px;margin:0 auto}
+
+  .intro{max-width:64ch;margin:0 auto 26px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font-family:ui-serif,Georgia,"Iowan Old Style",serif;
+            font-weight:400;font-size:30px;line-height:1.25;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  .cle{max-width:64ch;margin:0 auto 36px;padding:16px 18px;border-radius:6px;
+       background:var(--plage);border:1px solid var(--trait)}
+  .cle p{margin:0;font-size:14px;color:var(--gris);line-height:1.6}
+  .cle p + p{margin-top:9px}
+  .cle b{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:390px;max-width:100%}
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:44ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:740px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         font-size:16px;line-height:1.5;
+         /* La charte Arborea, relevée dans `src/lib/design-tokens.ts`. */
+         --e-fond:#f5f3ee; --e-plage:#ece9e1; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-trait:rgba(28,28,26,.12); --e-pin:#2f3b2f; --e-pin-encre:#faf9f5;
+         --e-or:#B98B47; --e-blanc:#faf9f5; --e-alerte:#9C3B2E}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  .corps{flex:1;overflow:auto;padding:20px 16px 24px}
+  .titre-ecran{margin:0 0 2px;font-family:ui-serif,Georgia,serif;font-weight:400;
+               font-size:24px;line-height:1.2;color:var(--e-encre)}
+  .chapo{margin:0 0 14px;font-size:12.5px;line-height:1.5;color:var(--e-gris)}
+
+  h3.bloc{margin:16px 0 3px;font-family:ui-serif,Georgia,serif;font-weight:400;
+          font-size:17px;line-height:1.25;color:var(--e-encre)}
+  p.aide{margin:0 0 9px;font-size:12.5px;line-height:1.45;color:var(--e-gris)}
+
+  .carte{background:var(--e-blanc);border-radius:4px;margin-bottom:8px;padding:12px 14px}
+
+  /* LE RÉGLAGE : deux régimes, un seul à la fois. */
+  .regimes{display:flex;flex-direction:column;gap:8px;margin-bottom:6px}
+  .regime{display:flex;align-items:flex-start;gap:10px;min-height:44px;
+          padding:11px 12px;border-radius:4px;background:var(--e-blanc)}
+  .regime .rond{flex:0 0 18px;width:18px;height:18px;margin-top:2px;border-radius:999px;
+        border:1.5px solid var(--e-gris)}
+  .regime .quoi b{display:block;font-size:14px;font-weight:500;color:var(--e-encre)}
+  .regime .quoi span{font-size:12px;color:var(--e-gris);line-height:1.4}
+  #enc:checked ~ .corps .regime.r-enc .rond,
+  #deb:checked ~ .corps .regime.r-deb .rond{
+    background:var(--e-pin);border-color:var(--e-pin);box-shadow:inset 0 0 0 3px var(--e-blanc)}
+
+  /* Les lignes du relevé. */
+  .ligne{display:flex;align-items:baseline;gap:8px;padding:9px 0;
+         border-bottom:1px solid var(--e-trait)}
+  .ligne .qui{flex:1;min-width:0}
+  .ligne .qui b{display:block;font-size:14px;font-weight:500;color:var(--e-encre)}
+  .ligne .qui span{font-size:11.5px;color:var(--e-gris)}
+  .ligne .sous-total{font-size:14px;color:var(--e-encre);white-space:nowrap}
+
+  .total{display:flex;align-items:baseline;justify-content:space-between;
+         margin-top:12px;padding:12px 14px;border-radius:4px;
+         background:var(--e-pin);color:var(--e-pin-encre)}
+  .total .mot{font-size:12.5px}
+  .total .somme{font-family:ui-serif,Georgia,serif;font-size:24px}
+
+  /* Ce qui n'est PAS dans le relevé, dit plutôt que tu. */
+  .attente{margin:10px 0 0;padding:10px 12px;border-radius:4px;
+       background:var(--e-plage);color:var(--e-gris);font-size:12px;line-height:1.45}
+  .attente b{color:var(--e-encre);font-weight:600}
+
+  /* L'INTERRUPTEUR DU PAIEMENT — le geste que la planche fait essayer. */
+  .bascule{display:flex;align-items:center;gap:12px;margin-top:14px;
+           padding:12px 14px;border-radius:4px;background:var(--e-blanc)}
+  .bascule .txt{flex:1;font-size:13px;line-height:1.4;color:var(--e-encre)}
+  .bascule .txt span{display:block;font-size:11.5px;color:var(--e-gris)}
+  .rail{flex:0 0 52px;width:52px;height:32px;border-radius:999px;background:var(--e-plage);
+        position:relative;transition:background .18s}
+  .rail::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;
+        border-radius:999px;background:var(--e-blanc);
+        box-shadow:0 1px 3px rgba(20,18,14,.28);transition:transform .18s}
+  #paye:checked ~ .corps .rail{background:var(--e-pin)}
+  #paye:checked ~ .corps .rail::after{transform:translateX(20px)}
+
+  /* ── Ce qui se montre selon le régime et le paiement ─────────────────── */
+  .sel{display:none}
+  #enc:checked ~ .corps .v-enc{display:block}
+  #deb:checked ~ .corps .v-deb{display:block}
+  #enc:checked ~ .corps .l-enc{display:flex}
+  #deb:checked ~ .corps .l-deb{display:flex}
+  /* Payée : la ligne en attente rejoint le relevé, aux encaissements. */
+  #enc:checked ~ #paye:checked ~ .corps .v-enc-non{display:none}
+  #enc:checked ~ #paye:checked ~ .corps .l-enc-non{display:none}
+  #enc:checked ~ #paye:checked ~ .corps .v-enc-oui{display:block}
+  #enc:checked ~ #paye:checked ~ .corps .l-enc-oui{display:flex}
+  /* Aux débits, le paiement ne change rien — et c'est tout le sujet. */
+  #deb:checked ~ #paye:checked ~ .corps .v-deb-paye{display:block}
+  #deb:checked ~ #paye:checked ~ .corps .v-deb-non{display:none}
+
+  .etat{display:inline-block;padding:2px 8px;border-radius:999px;
+        font-size:10.5px;font-weight:600;letter-spacing:.04em}
+  .etat.attend{background:var(--e-plage);color:var(--e-gris)}
+  .etat.payee{background:var(--e-pin);color:var(--e-pin-encre)}
+
+  .geste{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;
+         padding:10px 0;border:0;background:transparent;
+         color:var(--e-pin);font-size:14px;font-weight:500;text-align:left}
+  .champ{border:0;border-radius:4px;background:var(--e-fond);color:var(--e-encre);
+         font-size:16px;padding:10px 12px;width:100%}
+
+  .barre{display:flex;justify-content:space-around;align-items:center;
+         padding:12px 8px 16px;border-top:1px solid var(--e-trait);background:var(--e-fond)}
+  .barre span{color:var(--e-gris)}
+  .barre .ici{color:var(--e-encre);border-bottom:1.5px solid var(--e-or);padding-bottom:4px}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Ma TVA · 14 août 2026</p>
+    <h1>La TVA quand le client paie</h1>
+    <p><strong>Sa question :</strong> « s'il décide de ne pas me payer la facture,
+       je vais avoir des problèmes. Est-ce que la facture peut rentrer au relevé
+       seulement une fois que le client m'a payé ? »</p>
+  </div>
+
+  <div class="cle">
+    <p><b>La loi lui donne raison.</b> Pour une <b>prestation de services</b>, la
+       TVA est exigible <b>à l'encaissement</b> — pas à la facturation
+       (CGI art. 269-2-c). Le régime des <b>débits</b>, celui qu'Atlas applique
+       aujourd'hui, est une <b>option</b> : elle se demande, on ne l'a pas par
+       hasard.</p>
+    <p><b>Touchez l'interrupteur du bas</b> pour faire payer M. Bernard, et
+       regardez le relevé bouger — ou ne pas bouger, selon le régime.</p>
+    <p><b>Ce qui reste à trancher, et que lui seul peut dire :</b> sous quel
+       régime il est. Son comptable le sait en une phrase
+       (<code>docs/A-FAIRE.md</code> §11).</p>
+  </div>
+
+  <div class="rangee">
+
+    <!-- ─────────── LE RELEVÉ, ET SON RÉGIME ─────────── -->
+    <div class="prop">
+      <p class="sous">Le relevé · et son régime</p>
+
+      <div class="tel"><div class="ecran">
+        <input class="interrupteur" type="radio" name="regime" id="enc" checked>
+        <input class="interrupteur" type="radio" name="regime" id="deb">
+        <input class="interrupteur" type="checkbox" id="paye">
+
+        <div class="corps">
+          <p class="caps" style="color:var(--e-or);margin:0 0 6px">Terminés</p>
+          <h2 class="titre-ecran">Ma TVA</h2>
+          <p class="chapo">Troisième trimestre 2026 · du 1<sup>er</sup> juillet au 30 septembre.</p>
+
+          <div class="regimes" data-s="regimes">
+            <label class="regime r-enc" for="enc">
+              <span class="rond" aria-hidden="true"></span>
+              <span class="quoi"><b>Quand le client me paie</b>
+                <span>Le régime par défaut d'une prestation de services.</span></span>
+            </label>
+            <label class="regime r-deb" for="deb">
+              <span class="rond" aria-hidden="true"></span>
+              <span class="quoi"><b>Quand j'émets la facture</b>
+                <span>Le régime des débits — sur option auprès des impôts.</span></span>
+            </label>
+          </div>
+
+          <h3 class="bloc">TVA collectée</h3>
+
+          <div class="carte" data-s="releve">
+            <div class="ligne">
+              <span class="qui"><b>F-2026-041 · Mme Dubois</b>
+                <span>Encaissée le 8 août · 800,00 € HT</span></span>
+              <span class="sous-total">160,00 €</span>
+            </div>
+
+            <!-- M. Bernard : présent aux débits TOUJOURS, aux encaissements
+                 seulement une fois payé. C'est le cœur de la démonstration. -->
+            <div class="ligne sel l-deb" data-s="bernard-deb">
+              <span class="qui"><b>F-2026-042 · M. Bernard</b>
+                <span>Émise le 5 août · pas encore payée · 1 200,00 € HT</span></span>
+              <span class="sous-total">240,00 €</span>
+            </div>
+            <div class="ligne sel l-enc-oui" data-s="bernard-enc">
+              <span class="qui"><b>F-2026-042 · M. Bernard</b>
+                <span>Encaissée le 20 août · 1 200,00 € HT</span></span>
+              <span class="sous-total">240,00 €</span>
+            </div>
+
+            <div class="total">
+              <span class="mot">À déclarer ce trimestre</span>
+              <span class="somme sel v-enc v-enc-non" data-s="total-enc">160,00 €</span>
+              <span class="somme sel v-enc-oui" data-s="total-enc-paye">400,00 €</span>
+              <span class="somme sel v-deb" data-s="total-deb">400,00 €</span>
+            </div>
+
+            <p class="attente sel v-enc v-enc-non" data-s="attente">
+              <b>1 facture attend son paiement</b> — 1 440,00 € TTC chez M. Bernard,
+              dont <b>240,00 € de TVA</b>. Elle entrera au relevé le jour où il vous règle,
+              pas avant.
+            </p>
+            <p class="attente sel v-deb v-deb-non" data-s="avance">
+              <b>Vous avancez 240,00 € de TVA</b> sur une facture que M. Bernard n'a pas
+              payée. S'il ne paie jamais, il faudra la récupérer en prouvant que le
+              recouvrement a échoué.
+            </p>
+            <p class="attente sel v-deb-paye">
+              M. Bernard a payé le 20 août. <b>Aux débits, ça n'a rien changé</b> :
+              sa TVA était déjà déclarée depuis le 5.
+            </p>
+          </div>
+
+          <label class="bascule" for="paye">
+            <span class="txt">M. Bernard a payé
+              <span>Faites-le basculer, et regardez le relevé.</span></span>
+            <span class="rail" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <div class="barre">
+          <span class="caps">Chantiers</span><span class="caps">Planning</span>
+          <span class="caps ici">Terminés</span><span class="caps">Réglages</span>
+        </div>
+      </div></div>
+
+      <p class="note">Le même trimestre, les mêmes deux factures. <b>240 € d'écart</b>
+         selon le régime — c'est exactement la somme qu'il avance aujourd'hui pour un
+         client qui n'a pas payé.</p>
+    </div>
+
+    <!-- ─────────── LA FACTURE, ET LE GESTE ─────────── -->
+    <div class="prop">
+      <p class="sous">La facture · noter le paiement</p>
+
+      <div class="tel"><div class="ecran">
+        <input class="interrupteur" type="checkbox" id="paye2">
+
+        <div class="corps">
+          <p class="caps" style="color:var(--e-or);margin:0 0 6px">Terminés</p>
+          <h2 class="titre-ecran">Haie du fond</h2>
+          <p class="chapo">M. Bernard · 12 rue des Tilleuls</p>
+
+          <div class="carte">
+            <div class="ligne" style="border:0">
+              <span class="qui"><b>F-2026-042</b>
+                <span>Émise le 5 août 2026</span></span>
+              <span class="etat attend">EN ATTENTE</span>
+            </div>
+            <div class="ligne" style="border:0;padding-top:0">
+              <span class="qui"><span>Total TTC</span></span>
+              <span class="sous-total">1 440,00 €</span>
+            </div>
+          </div>
+
+          <h3 class="bloc">Le paiement</h3>
+          <p class="aide">C'est lui qui décide du trimestre où la TVA se déclare.</p>
+
+          <div class="carte">
+            <label class="geste" for="paye2" data-s="geste">
+              <span style="font-size:17px;line-height:1">+</span> Noter un paiement
+            </label>
+            <div class="sel" data-s="saisie" id="saisie2">
+              <input class="champ" type="text" value="20/08/2026" aria-label="Date du paiement">
+              <div style="height:8px"></div>
+              <input class="champ" type="text" value="1 440,00" aria-label="Montant reçu, en euros">
+              <p class="attente" style="margin-top:10px">
+                Un <b>acompte</b> se note pareil : seule la part encaissée entre au
+                relevé, le reste attend le solde.
+              </p>
+            </div>
+          </div>
+
+          <p class="attente" data-s="rappel">
+            Tant qu'aucun paiement n'est noté, cette facture <b>reste hors du relevé
+            de TVA</b>. Elle n'est pas oubliée : l'écran Terminés la montre en attente.
+          </p>
+        </div>
+
+        <div class="barre">
+          <span class="caps">Chantiers</span><span class="caps">Planning</span>
+          <span class="caps ici">Terminés</span><span class="caps">Réglages</span>
+        </div>
+      </div></div>
+
+      <p class="note">Le geste tient en deux champs : <b>une date, un montant</b>.
+         La date décide du trimestre ; le montant permet les acomptes.</p>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  /* Le second écran a son propre interrupteur, indépendant du premier. */
+  #paye2:checked ~ .corps #saisie2{display:block}
+  #paye2:checked ~ .corps [data-s="geste"]{display:none}
+  #paye2:checked ~ .corps [data-s="rappel"]{display:none}
+  #paye2:checked ~ .corps .etat.attend{display:none}
+</style>

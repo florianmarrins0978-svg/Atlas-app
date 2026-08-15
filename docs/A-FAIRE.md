@@ -38,6 +38,7 @@ qui ne se résoudra pas en codant.
 8. [Faire valider l'application par Google — AVANT de commercialiser](#8-faire-valider-lapplication-par-google--avant-de-commercialiser)
 9. [Demander à votre comptable : TVA au mois ou au trimestre ?](#9-demander-à-votre-comptable--tva-au-mois-ou-au-trimestre-)
 10. [Le premier jour d'un artisan : ce qui manque pour lui confier Atlas](#10-le-premier-jour-dun-artisan--ce-qui-manque-pour-lui-confier-atlas)
+11. [Demander à votre comptable : TVA sur les encaissements ou sur les débits ?](#11-demander-à-votre-comptable--tva-sur-les-encaissements-ou-sur-les-débits-)
 
 ---
 
@@ -804,3 +805,48 @@ qu'à un artisan qui travaille seul.
 Ni votre usage à vous, ni la suite du développement. Ce point bloque **le jour
 où vous confiez Atlas à quelqu'un d'autre que vous** — et il le bloque
 entièrement.
+
+---
+
+## 11. Demander à votre comptable : TVA sur les encaissements ou sur les débits ?
+
+**Qui peut le faire : vous seul.** La réponse est chez votre comptable, ou sur
+votre dernière déclaration de TVA.
+
+### Pourquoi c'est un point bloquant, et pas un détail
+
+Atlas fait aujourd'hui entrer une facture dans votre relevé de TVA **le jour où
+vous l'émettez**. Si votre client met trois mois à payer, vous avancez sa TVA
+pendant trois mois. S'il ne paie jamais, vous l'avancez pour rien — et il faut
+ensuite la récupérer, avec des preuves.
+
+Or, pour une **prestation de services**, la TVA est due **à l'encaissement** par
+défaut (article 269-2-c du CGI). Le régime que l'application applique
+aujourd'hui — les **débits** — est une **option**, qui se demande.
+
+**Donc, de deux choses l'une :**
+
+| Si vous êtes… | Alors |
+|---|---|
+| **aux encaissements** (le cas le plus probable) | Atlas déclare **trop tôt**, et c'est un défaut à corriger |
+| **aux débits** (vous en avez fait la demande) | Atlas est juste, et le réglage servira aux autres artisans |
+
+### La question à lui poser, mot pour mot
+
+> *« Pour mon entreprise, la TVA est-elle exigible sur les encaissements ou sur
+> les débits ? Ai-je opté pour les débits à un moment ? »*
+
+Et, tant qu'il est au téléphone, la question 9 de ce document — mois ou
+trimestre — se règle dans la même phrase.
+
+### Ce que sa réponse débloque
+
+Le codage de la date de paiement sur la facture, du relevé calculé dessus, et du
+réglage entre les deux régimes. Le détail est dans
+[`QUESTIONS.md`](QUESTIONS.md) §19, et une maquette montre à quoi ça
+ressemblerait : `maquettes/atlas-tva-au-paiement.html`.
+
+### Ce que ça ne bloque pas
+
+Rien du reste. Le parcours devis → chantier → facture fonctionne ; c'est le
+relevé de TVA, et lui seul, qui déclare trop tôt.

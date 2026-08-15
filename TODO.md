@@ -27,6 +27,33 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 novovicies. La TVA au PAIEMENT, et non à l'envoi — dessinée, EN ATTENTE de son régime
+
+*`maquettes/atlas-tva-au-paiement.html`, le 14 août 2026 — deux écrans, 28
+contrôles. Sa question : `docs/QUESTIONS.md` §19.*
+
+**Ce que ça corrige, et ce n'est pas un confort.** `releveTvaCollectee` prend
+toutes les factures `emise` à leur **date d'émission**. Pour une prestation de
+services, la TVA est exigible **à l'encaissement** (CGI art. 269-2-c) ; les
+débits sont une **option** qu'il n'a probablement jamais demandée. L'application
+lui fait donc avancer la TVA d'un client qui n'a pas payé.
+
+**Ce qui se code dès qu'il a la réponse de son comptable :**
+
+| Quoi | Ce qu'il faut |
+|---|---|
+| **Paiements d'une facture** | une table `paiements_facture` — date, montant, moyen. Acomptes compris : un règlement partiel n'encaisse qu'une part de la TVA |
+| **Le relevé calculé dessus** | `releveTvaCollectee` prend la date du PAIEMENT, plus celle de l'émission |
+| **Le réglage des deux régimes** | `entreprises.tva_exigibilite` : `encaissements` (défaut) ou `debits` |
+| **Ce qui attend, annoncé** | l'écran dit combien de TVA attend son paiement — une facture absente en silence se lit comme un oubli |
+
+**Ce qui BLOQUE**, et qui n'est pas technique : sous quel régime il est. Inscrit
+dans `docs/A-FAIRE.md` §11 — son comptable le sait en une phrase.
+
+**Ce qu'on ne codera pas tant qu'il n'a pas tranché :** deviner son régime. Le
+poser au hasard ferait déclarer trop tôt ou trop tard, et c'est l'administration
+qui arbitrerait.
+
 ### 0 octovicies. Mon compte et Connexion : dessinés, avec DEUX QUESTIONS
 
 *`maquettes/atlas-reglages-moi.html`, le 14 août 2026 — quatre écrans, 53

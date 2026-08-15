@@ -40,6 +40,7 @@ relues à chaque session) :
 16. [L'IA se sert-elle de mes réglages pour faire les devis ?](#16-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-)
 17. [Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien](#17-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien)
 18. [À quoi sert le catalogue, et pourquoi je ne peux rien y écrire ?](#18-à-quoi-sert-le-catalogue-et-pourquoi-je-ne-peux-rien-y-écrire-)
+19. [Si un client ne me paie pas, la TVA part quand même ?](#19-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-)
 
 ---
 
@@ -1141,3 +1142,58 @@ retenus — c'est cet écran-là qui regarde au mauvais endroit.
 **Ce qu'il reste à faire :** remettre la flèche, et rebrancher l'écran sur la
 bonne mémoire. Les deux sont inscrits dans `TODO.md` §0 octovicies bis, en
 attente de votre feu vert — rien n'a encore été touché.
+
+---
+
+## 19. Si un client ne me paie pas, la TVA part quand même ?
+
+*Question posée le 14 août 2026 : « à partir du moment où j'envoie la facture à
+mon client, elle rentre automatiquement dans mon relevé de TVA. Sauf que s'il
+décide de ne pas me payer, je vais avoir des problèmes. »*
+
+### La réponse courte
+
+**Votre inquiétude est fondée, et la loi est de votre côté.** Pour une
+**prestation de services** — ce que vous vendez —, la TVA est exigible **quand
+vous êtes payé**, pas quand vous facturez. C'est le régime par défaut
+(article 269-2-c du code général des impôts).
+
+Encaisser la TVA sur un chantier qu'on ne vous a pas réglé, ça n'existe pas :
+tant que l'argent n'est pas rentré, l'État n'attend rien.
+
+### Alors pourquoi Atlas la compte à l'émission ?
+
+Parce qu'il a été écrit ainsi, et **c'est à corriger**. Aujourd'hui le relevé
+prend toutes les factures marquées « émise », à leur date d'émission. C'est le
+régime **des débits** — qui existe, mais qui est une **option** : on la demande
+expressément à l'administration, on ne l'a pas par hasard.
+
+| Régime | La TVA est due… | Qui l'a |
+|---|---|---|
+| **Encaissements** | le jour où le client vous paie | tous les prestataires de services, **par défaut** |
+| **Débits** | le jour où vous émettez la facture | ceux qui en ont fait la demande |
+
+### Les deux nuances qui comptent
+
+**Si vous vendez aussi du bois**, c'est une marchandise et non un service : cette
+partie-là reste due à la livraison, quel que soit votre régime. Un chantier qui
+mélange les deux se sépare en deux lignes.
+
+**Sous le régime des débits, une facture jamais payée n'est pas perdue non
+plus** : la TVA se récupère au titre des « créances irrécouvrables », mais
+seulement après avoir prouvé que le recouvrement a échoué. C'est plus long, et
+c'est de l'argent avancé entre-temps.
+
+### Ce que ça change dans Atlas
+
+Rien n'est encore codé. Ce qu'il faudra :
+
+1. une **date de paiement** sur chaque facture, acomptes compris ;
+2. le relevé calculé sur cette date-là, et non sur la date d'émission ;
+3. un réglage **encaissements / débits**, parce que les deux existent.
+
+### Ce que je ne peux pas décider à votre place
+
+**Sous quel régime vous êtes.** Votre comptable le sait en une phrase, ou c'est
+écrit sur votre dernière déclaration. Le point est inscrit dans
+[`A-FAIRE.md`](A-FAIRE.md) §11.
