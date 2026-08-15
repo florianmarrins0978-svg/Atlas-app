@@ -22,11 +22,23 @@
     protège, et c'est pour cela que les deux doivent voyager ensemble — jamais
     l'un sans l'autre.
 
+    « JOURNÉE », JAMAIS « JOUR » — et cette règle n'est pas neuve : elle est
+    écrite dans `src/lib/durees-chantier.ts` depuis le 4 août 2026, sur une
+    correction du patron, capture à l'appui. La liste des durées dit « ½ journée »,
+    « 1 journée », puis « 3 jours ». La première version de cette planche écrivait
+    « ½ jour », et il l'a reprise le 15 août : « 1/2 journée pas jour ! ».
+    **Le vocabulaire des durées ne s'invente pas : il se recopie de `DUREES`.**
+
     LA SEULE QUESTION QUI RESTE, ET ELLE EST POSÉE PLUTÔT QUE TRANCHÉE : pour un
-    chantier d'une journée pleine, faut-il écrire « journée · 1 jour » — la même
-    chose deux fois — ou « journée » tout court ? Le premier réglage de la
+    chantier d'une journée pleine, le mot « journée » suffit-il — « 14 août ·
+    journée » — ou vaut-il mieux dire le DÉPART et la durée, comme les quatre
+    autres lignes : « 14 août · matin · 1 journée » ? Le premier réglage de la
     planche fait basculer les deux. Et le second demande si TOUT est en or, ou
     seulement le nombre.
+
+    CE QUI N'EST PAS PROPOSÉ, ET DÉLIBÉRÉMENT : « journée · 1 journée ». Dire
+    deux fois la même chose sur une ligne de 204 px n'est pas un choix, c'est un
+    défaut — le lui soumettre lui ferait perdre un aller-retour.
 
     ————————————————————————————————————————————————————————————————
     RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
@@ -132,9 +144,13 @@
 
   /* ── Les deux réglages ────────────────────────────────────────────────── */
 
-  /* 1. La journée pleine : « journée · 1 jour » ou « journée » seule. */
-  .redite{display:none}
-  #j-deux:checked ~ .page .redite{display:inline}
+  /* 1. La journée pleine : le mot « journée » porte la durée à lui seul, ou
+        le moment dit le DÉPART et le nombre dit la durée — comme les quatre
+        autres lignes. On ne montre jamais « journée · 1 journée » : dire deux
+        fois la même chose sur une ligne de 204 px, ce n'est pas un choix. */
+  .depart{display:none}
+  #j-un:checked ~ .page .mot{display:none}
+  #j-un:checked ~ .page .depart{display:inline}
 
   /* 2. L'or : sur tout, ou sur le seul nombre de jours.
        C'est la ligne ENTIÈRE qui prend l'or par défaut — la classe est posée
@@ -178,8 +194,8 @@
   <div class="reglage">
     <p class="quoi">Le chantier d'une journée pleine :</p>
     <div class="segments">
-      <label for="j-deux">journée · 1 jour</label>
-      <label for="j-un">journée</label>
+      <label for="j-deux">journée</label>
+      <label for="j-un">matin · 1 journée</label>
     </div>
   </div>
 
@@ -212,7 +228,7 @@
       <div class="ligne">
         <span class="colonne">
           <span class="nom">Monsieur Martin</span>
-          <span class="quand">14 août · journée<span class="redite"> · <b class="nb">1 jour</b></span></span>
+          <span class="quand">14 août · <span class="mot">journée</span><span class="depart">matin · <b class="nb">1 journée</b></span></span>
         </span>
         <span class="gestes">
           <span class="equipe">Équipe A</span>
@@ -224,7 +240,7 @@
       <div class="ligne">
         <span class="colonne">
           <span class="nom">Madame Roux</span>
-          <span class="quand">17 août · matin · <b class="nb">½ jour</b></span>
+          <span class="quand">17 août · matin · <b class="nb">½ journée</b></span>
         </span>
         <span class="gestes">
           <span class="equipe">Équipe B</span>
@@ -236,7 +252,7 @@
       <div class="ligne">
         <span class="colonne">
           <span class="nom">Monsieur Blanc</span>
-          <span class="quand">20 août · après-midi · <b class="nb">½ jour</b></span>
+          <span class="quand">20 août · après-midi · <b class="nb">½ journée</b></span>
         </span>
         <span class="gestes">
           <span class="equipe">Équipe A</span>
@@ -262,7 +278,7 @@
       <div class="ligne">
         <span class="colonne">
           <span class="nom">Monsieur Martins</span>
-          <span class="quand">24 août · après-midi · <b class="nb">1 jour ½</b></span>
+          <span class="quand">24 août · après-midi · <b class="nb">1 journée</b></span>
         </span>
         <span class="gestes">
           <span class="equipe">Équipe B</span>
@@ -275,9 +291,10 @@
     <div class="etiquette">
       <span class="t">Les cinq cas, et pas quatre</span>
       <p>La journée pleine, la demi-journée du <b>matin</b>, celle de
-        l'<b>après-midi</b>, le chantier de <b>plusieurs jours</b>, et celui qui
-        part l'après-midi pour finir le lendemain matin. Ce dernier est la ligne
-        la plus longue des cinq : c'est lui qui décide si tout tient à 390 px.</p>
+        l'<b>après-midi</b>, le chantier de <b>plusieurs jours</b>, et le piège :
+        une journée entière partie l'<b>après-midi</b>, qui occupe cet
+        après-midi-là <b>et la matinée du lendemain</b> — jamais une seule
+        journée d'un bloc. C'est le cas qu'aucune écriture ne doit rendre faux.</p>
     </div>
   </div>
 

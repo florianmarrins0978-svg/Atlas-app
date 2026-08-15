@@ -303,8 +303,19 @@ du produit, et pose les **deux dernières questions** :
 
 | | La question | Les deux réponses |
 |---|---|---|
-| **1** | le chantier d'une journée pleine | **A** « journée · 1 jour » (tout dire) · **B** « journée » (sans répéter) |
+| **1** | le chantier d'une journée pleine | **A** « 14 août · journée » · **B** « 14 août · matin · 1 journée » (le départ, puis la durée — comme les quatre autres lignes) |
 | **2** | ce qui est en or | **A** toute la phrase · **B** le seul nombre de jours |
+
+**ET LE VOCABULAIRE NE S'INVENTE PAS : « journée », jamais « jour ».** La liste
+`DUREES` (`src/lib/durees-chantier.ts`) dit « ½ journée », « 1 journée », puis
+« 3 jours » — **et le dit depuis le 4 août 2026, sur une correction du patron,
+capture à l'appui**. La première planche a quand même écrit « ½ jour », et il a
+dû reprendre la même chose une seconde fois : *« 1/2 journée pas jour ! »*.
+
+Le contrôle **lit désormais `DUREES` dans le dépôt** et refuse tout libellé qui
+n'en vient pas — il ne recopie pas la liste, qui dériverait. Absent le fichier,
+il le dit et **échoue** plutôt que de verdir en silence. Une règle déjà écrite et
+enfreinte deux fois n'est pas une règle : c'est un contrôle qui manque.
 
 **ET UN INVARIANT À NE PAS PERDRE EN CODANT.** « matin » ne doit **jamais** être
 écrit sans son nombre de jours : seul, il redit exactement ce qu'il a signalé le

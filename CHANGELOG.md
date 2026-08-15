@@ -64,6 +64,26 @@ Le contrôle mesure les deux réglages restants dans leurs **quatre**
 combinaisons, et il a été vu rouge sur les quatre sabotages qui comptent :
 nombre retiré, nom trop long, phrase trop longue, sélecteur d'or cassé.
 
+### « ½ journée, pas jour ! » — une règle écrite depuis dix jours, enfreinte quand même
+
+La planche disait « ½ jour ». `src/lib/durees-chantier.ts` dit « ½ journée »,
+« 1 journée », « 3 jours » — **et le dit depuis le 4 août 2026, sur cette même
+correction du patron, capture à l'appui**. Il a donc dû la refaire.
+
+**Ce que ça évite désormais :** le contrôle de la planche **lit la liste dans le
+dépôt** au lieu de la recopier, et refuse tout libellé qui n'en vient pas. Il ne
+peut donc plus dériver le jour où la liste change, et si le fichier disparaît il
+**échoue en le disant** plutôt que de passer au vert sans rien mesurer.
+
+Une règle déjà écrite dans le dépôt et enfreinte deux fois n'est pas une règle :
+c'est un contrôle qui manque.
+
+**Et un défaut du contrôle lui-même, trouvé en le lançant :** il lisait la ligne
+par `textContent`, qui rend aussi le texte ÉTEINT — « 14 août · journéematin ·
+1 journée » — et accusait la planche d'un défaut qu'elle n'avait pas. Il compose
+maintenant le texte des seuls nœuds visibles. Un contrôle qui mesure autre chose
+que l'écran ne prouve rien, et coûte le temps de comprendre qu'il a tort.
+
 ## 2026-08-14
 
 ### « Surtout la page équipe » : l'écran qui n'était jamais préparé d'avance

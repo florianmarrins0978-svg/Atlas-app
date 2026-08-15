@@ -15,6 +15,15 @@
        Quatre lignes suffiraient à faire joli et cacheraient un cas ;
     2. les trois mots qu'il a demandés sont présents : **matin, après-midi,
        journée** — et un nombre de jours sur chaque ligne où il doit être ;
+
+    2 bis. **le vocabulaire des durées est celui du dépôt, mot pour mot.**
+       `src/lib/durees-chantier.ts` dit « ½ journée », « 1 journée », puis
+       « 3 jours » — et le dit depuis le 4 août 2026, sur une correction du
+       patron. La planche a écrit « ½ jour » quand même, et il a dû la reprendre
+       une seconde fois : *« 1/2 journée pas jour ! »*. Le contrôle lit donc la
+       liste réelle et refuse tout libellé qui n'en vient pas. Une règle déjà
+       écrite dans le dépôt et enfreinte deux fois n'est pas une règle : c'est
+       un contrôle qui manque ;
     3. **rien ne déborde** : ni le nom du chantier, ni la phrase. Les deux sont
        en `nowrap` avec des points de suspension, donc un dépassement se lit en
        pixels et se dit en pixels, pas en « ça a l'air juste » ;
@@ -36,7 +45,7 @@
 import { chromium } from "playwright";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CIBLE = resolve(
@@ -60,6 +69,27 @@ const dire = (bon, quoi) => {
 const OR = "rgb(185, 139, 71)"; // --e-or:#B98B47, en clair
 const GRIS = "rgb(138, 133, 120)"; // --e-gris:#8a8578
 
+/**
+ * Les libellés de durée, LUS DANS LE DÉPÔT plutôt que recopiés ici.
+ *
+ * Recopiés, ils auraient dérivé le jour où la liste change — et le contrôle
+ * aurait alors défendu un vocabulaire mort contre le vrai. On lit donc la
+ * source : « ½ journée » vient de la première entrée, « 1 journée » et
+ * « N jours » de la boucle. Si `durees-chantier.ts` est introuvable, le contrôle
+ * le DIT au lieu de passer au vert en silence — un contrôle qui s'éteint tout
+ * seul est pire que pas de contrôle.
+ */
+function libellesDeDuree() {
+  const source = join(RACINE, "src", "lib", "durees-chantier.ts");
+  if (!existsSync(source)) return null;
+  const texte = readFileSync(source, "utf8");
+  const demi = texte.match(/demiJournees:\s*1,\s*libelle:\s*"([^"]+)"/)?.[1];
+  const une = texte.match(/libelle:\s*i === 0 \? "([^"]+)"/)?.[1];
+  const plusieurs = texte.match(/: `\$\{i \+ 1\} ([^`]+)`/)?.[1];
+  if (!demi || !une || !plusieurs) return null;
+  return { demi, une, plusieurs: plusieurs.trim() };
+}
+
 const contexte = await navigateur.newContext({
   viewport: { width: 1400, height: 1400 },
   javaScriptEnabled: false,
@@ -76,12 +106,27 @@ const lire = () =>
       const nb = quand.querySelector(".nb");
       const visible = (e) => e && getComputedStyle(e).display !== "none" &&
         e.getBoundingClientRect().width > 0;
+      /**
+       * Le texte RÉELLEMENT LU par l'œil, et non `textContent`.
+       *
+       * `textContent` rend aussi ce qui est éteint : la première version de ce
+       * contrôle lisait « 14 août · journéematin · 1 journée » et accusait la
+       * planche d'un défaut qu'elle n'avait pas. Un contrôle qui mesure autre
+       * chose que l'écran ne prouve rien, et il coûte le temps de comprendre
+       * qu'il a tort.
+       */
+      const lu = (n) =>
+        [...n.childNodes]
+          .map((e) =>
+            e.nodeType === 3 ? e.data : visible(e) ? lu(e) : "",
+          )
+          .join("");
       return {
         nom: nom.textContent.trim(),
         // Un texte coupé est toujours ENTIER dans le DOM : c'est la boîte qui
         // le rogne. Seul l'écart des deux largeurs le dit.
         debordNom: nom.scrollWidth - nom.clientWidth,
-        texte: quand.textContent.trim().replace(/\s+/g, " "),
+        texte: lu(quand).trim().replace(/\s+/g, " "),
         debordQuand: quand.scrollWidth - quand.clientWidth,
         hauteur: Math.round(quand.getBoundingClientRect().height),
         teinteQuand: getComputedStyle(quand).color,
@@ -101,21 +146,36 @@ const lire = () =>
   for (const mot of ["matin", "après-midi", "journée"]) {
     dire(tout.includes(mot), `« ${mot} » est présent sur la liste`);
   }
-  const sansNombre = lignes.filter((l) => !l.nombreVisible);
-  dire(
-    sansNombre.length === 0,
-    sansNombre.length === 0
-      ? "chaque ligne porte son nombre de jours"
-      : `${sansNombre.length} ligne(s) sans nombre de jours : ` +
-          sansNombre.map((l) => `« ${l.nom} » → ${l.texte}`).join(" ; "),
-  );
+  // 2 bis. Le vocabulaire des durées, celui du dépôt et pas un autre.
+  const mots = libellesDeDuree();
+  if (!mots) {
+    dire(false, "impossible de lire les libellés de durée dans src/lib/durees-chantier.ts — " +
+      "le contrôle du vocabulaire ne peut PAS se prononcer (il ne passe pas au vert pour autant)");
+  } else {
+    // « ½ journée », « 1 journée », « 3 jours » : rien d'autre n'est admis.
+    const admis = new RegExp(
+      `^(${mots.demi.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}|${mots.une}|\\d+ ${mots.plusieurs})$`,
+    );
+    const durees = await page.evaluate(() =>
+      [...document.querySelectorAll(".ecran .nb")].map((n) => n.textContent.trim()),
+    );
+    const etrangers = durees.filter((d) => !admis.test(d));
+    dire(
+      etrangers.length === 0,
+      etrangers.length === 0
+        ? `les durées écrites viennent de DUREES (« ${mots.demi} », « ${mots.une} », « N ${mots.plusieurs} »)`
+        : `${etrangers.length} durée(s) hors du vocabulaire du dépôt : ` +
+            etrangers.map((d) => `« ${d} »`).join(", ") +
+            ` — DUREES dit « ${mots.demi} », « ${mots.une} », « N ${mots.plusieurs} »`,
+    );
+  }
 }
 
 const COMBINAISONS = [
-  { pleine: "j-deux", teinte: "o-tout", dit: "« journée · 1 jour », tout en or" },
-  { pleine: "j-deux", teinte: "o-nombre", dit: "« journée · 1 jour », le nombre seul en or" },
-  { pleine: "j-un", teinte: "o-tout", dit: "« journée » seule, tout en or" },
-  { pleine: "j-un", teinte: "o-nombre", dit: "« journée » seule, le nombre seul en or" },
+  { pleine: "j-deux", teinte: "o-tout", dit: "« journée » seule, tout en or" },
+  { pleine: "j-deux", teinte: "o-nombre", dit: "« journée » seule, le nombre seul en or" },
+  { pleine: "j-un", teinte: "o-tout", dit: "« matin · 1 journée », tout en or" },
+  { pleine: "j-un", teinte: "o-nombre", dit: "« matin · 1 journée », le nombre seul en or" },
 ];
 
 for (const { pleine, teinte, dit } of COMBINAISONS) {
@@ -157,8 +217,11 @@ for (const { pleine, teinte, dit } of COMBINAISONS) {
   //    Le contrôle qui garde sa plainte du 13 août. Une ligne qui commence par
   //    un moment DOIT porter un nombre : sans lui, « matin » redit que seule la
   //    matinée est bloquée — et personne ne s'en apercevrait avant sa capture.
+  //    On interroge la PRÉSENCE du nombre, pas le texte : « journée » contient
+  //    déjà « jour », et un contrôle qui cherche cette chaîne se déclarerait
+  //    satisfait par une ligne qui n'a aucune durée.
   const trompeuses = lignes.filter(
-    (l) => /(matin|après-midi)/.test(l.texte) && !/(jour|jours)/.test(l.texte),
+    (l) => /(matin|après-midi)/.test(l.texte) && !l.nombreVisible,
   );
   dire(
     trompeuses.length === 0,
