@@ -290,10 +290,28 @@ soit : la date est tombée (maquette 53), « Déplacer » a quitté la ligne pou
 feuille du chevron (maquette 52), la pastille d'équipe est arrivée à sa place.
 
 **Rien n'est codé, et ce n'est pas un oubli** (`CLAUDE.md` §3 bis) :
-`docs/maquettes/54-le-nombre-de-jours-en-or.html` lui montre **quatre écritures
-de la même ligne** — A telle qu'elle est, B la date qui revient, C la durée en
-or, D les deux en or. Il en désigne une, ou il dit où c'était sur l'écran et on
-le retrouve dans l'historique.
+`docs/maquettes/54-le-nombre-de-jours-en-or.html` lui a montré **quatre
+écritures de la même ligne** — A telle qu'elle est, B la date qui revient, C la
+durée en or, D les deux en or.
+
+**IL A CHOISI LA D, ET IL L'A AUGMENTÉE** — sa réponse du 15 août : *« je veux
+le 54 la D mais il doit y avoir le nombre de jour, le matin, l'après-midi et la
+journée comme infos possible »*. La ligne portera donc **trois** choses : la
+date, le moment de départ, le nombre de jours.
+`docs/maquettes/55-la-ligne-qui-dit-tout.html` les montre sur les **cinq** cas
+du produit, et pose les **deux dernières questions** :
+
+| | La question | Les deux réponses |
+|---|---|---|
+| **1** | le chantier d'une journée pleine | **A** « journée · 1 jour » (tout dire) · **B** « journée » (sans répéter) |
+| **2** | ce qui est en or | **A** toute la phrase · **B** le seul nombre de jours |
+
+**ET UN INVARIANT À NE PAS PERDRE EN CODANT.** « matin » ne doit **jamais** être
+écrit sans son nombre de jours : seul, il redit exactement ce qu'il a signalé le
+13 août — *« ça laisse à penser que juste le matin est bloqué alors que c'est la
+journée »*. C'est le nombre accolé qui le rend honnête. Le contrôle de la
+planche le garde déjà, et **la suite du code devra le garder aussi** : ce n'est
+pas une préférence d'écriture, c'est la réparation d'un défaut qu'il a trouvé.
 
 **Ne pas deviner à sa place, et ne pas coder les quatre « pour qu'il essaie ».**
 C'est exactement ce qui a été refusé le 11 août.

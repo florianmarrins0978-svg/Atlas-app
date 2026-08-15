@@ -42,6 +42,28 @@ trois. Et surtout, lui rendre une réponse inventée — le piège nommé dans
 Le contrôle de la planche a été **vu rouge trois fois** avant d'être livré
 (or retiré, bascule morte, nom coupé), et chacun nomme le bon coupable.
 
+### Sa réponse : la D, augmentée — et un invariant à ne plus perdre
+
+*« Je veux le 54 la D mais il doit y avoir le nombre de jour, le matin,
+l'après-midi et la journée comme infos possible. »*
+
+La ligne portera donc **trois** choses et non deux : la date, **le moment où le
+chantier part**, et le nombre de jours.
+`docs/maquettes/55-la-ligne-qui-dit-tout.html` les montre sur les **cinq** cas
+du produit — la journée pleine, les deux vraies demi-journées, le chantier long,
+et celui qui part l'après-midi pour finir le lendemain matin.
+
+**L'invariant qui en sort, et qui vaudra pour le code :** « matin » ne s'écrit
+**jamais sans son nombre de jours**. Seul, il redit ce qu'il avait signalé le
+13 août — *« ça laisse à penser que juste le matin est bloqué »* — et c'est
+précisément pour cela qu'il en avait été retiré la veille. Accolé au nombre, il
+ne dit plus ce qui est bloqué mais **quand ça part**, et l'information qu'il
+réclamait revient sans le défaut qu'elle portait.
+
+Le contrôle mesure les deux réglages restants dans leurs **quatre**
+combinaisons, et il a été vu rouge sur les quatre sabotages qui comptent :
+nombre retiré, nom trop long, phrase trop longue, sélecteur d'or cassé.
+
 ## 2026-08-14
 
 ### « Surtout la page équipe » : l'écran qui n'était jamais préparé d'avance
