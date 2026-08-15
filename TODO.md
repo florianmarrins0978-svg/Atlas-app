@@ -259,6 +259,49 @@ l'écran doit rester « Changer mon mot de passe ».
 il y a 2 h » — se valide en dix secondes et le défaut n'apparaît qu'au moment de
 coder. Le contrôle de la planche l'interdit explicitement, et il sait rougir.
 
+### 0 novemvicies quinquies. « Le nombre de jour en doré » — sa maquette attend sa réponse
+
+*Le patron, le 15 août 2026, capture du planning à l'appui : « Avant il y avait
+le Nombre de jour en doré et je sais plus quoi, où c'est passé ? »*
+
+**L'historique a été fouillé, toutes branches, avant de lui répondre.** Aucun
+nombre de jours n'a jamais été écrit **en or** dans `src/`. Trois choses en
+approchent, et ne pas les confondre fait gagner l'aller-retour :
+
+| Ce qui a existé | Où | Quand c'est parti |
+|---|---|---|
+| « matin, 2 jours » — **en gris** (`creneauLisible`) | la ligne du planning | `064d413`, 10 août |
+| « Créer la facture » — **en or**, mais ce n'est pas un nombre | la même ligne | `026e7ba`, 12 août, vers `FeuilleYAller` |
+| « occupe : vendredi 21, lundi 24, mardi 25 » — **un nombre de jours en or** | `docs/maquettes/51`, envoyée le 14 août | jamais codé ; le pied de la planche le disait |
+
+**La troisième est la plus probable** : il a manipulé cette planche la veille, et
+une maquette dorée se confond avec l'application.
+
+Ce qui est en or à cet endroit de l'écran, et qui l'est toujours : le chiffre du
+jour dans le calendrier — aujourd'hui, et le jour ouvert —, les pastilles sous
+les quantièmes, le chevron de la ligne, « À poser », et le pointillé
+d'« Équipe ? » quand elle manque. **La date tombée le 15 août, elle, était
+grise** (`colors.muted`). Et `#c2a05f` / `#8f7130` n'ont jamais existé dans
+`src/` : ce sont les bronzes des vieilles maquettes « Origine ».
+
+**Trois lots ont touché cette ligne en deux jours**, ce qui explique qu'il ne
+s'y retrouve plus, et il faut les lui rappeler avant de conclure quoi que ce
+soit : la date est tombée (maquette 53), « Déplacer » a quitté la ligne pour la
+feuille du chevron (maquette 52), la pastille d'équipe est arrivée à sa place.
+
+**Rien n'est codé, et ce n'est pas un oubli** (`CLAUDE.md` §3 bis) :
+`docs/maquettes/54-le-nombre-de-jours-en-or.html` lui montre **quatre écritures
+de la même ligne** — A telle qu'elle est, B la date qui revient, C la durée en
+or, D les deux en or. Il en désigne une, ou il dit où c'était sur l'écran et on
+le retrouve dans l'historique.
+
+**Ne pas deviner à sa place, et ne pas coder les quatre « pour qu'il essaie ».**
+C'est exactement ce qui a été refusé le 11 août.
+
+Le contrôle de la planche existe et **a été vu rouge trois fois** avant d'être
+livré (`scripts/verifier-maquette-nombre-de-jours.mjs`) : or retiré, bascule
+morte, nom trop long — chacun nomme le bon coupable.
+
 ### 0 octovicies bis. L'écran du catalogue : sa flèche, et sa mémoire morte
 
 *Les deux défauts sont sortis d'une capture du patron, le 14 août 2026 — pas
@@ -345,9 +388,12 @@ Ne pas lire la §96 comme si le sujet était clos.
 
 ### 0 tricies septies. La page qui rassemble les maquettes a décroché
 
-`scripts/fusionner-maquettes.mjs` n'inscrit plus que la 40 et la 44. Les 41, 42
-et 43 — la ligne sous le nom, et les deux planches de l'attente — n'y sont pas :
-plusieurs sessions ont livré leur maquette sans l'y ajouter, le même jour.
+`scripts/fusionner-maquettes.mjs` n'inscrit plus rien au-delà de la 45. Les 41,
+42, 43, puis 46 à 54 — la ligne sous le nom, les deux planches de l'attente,
+la place de l'assistant, le mot juste du planning, le nombre de jours en or —
+n'y sont pas : plusieurs sessions ont livré leur maquette sans l'y ajouter, le
+même jour. **Le retard s'aggrave d'un lot par soirée**, et chaque session qui
+n'inscrit que la sienne rendrait la liste plus incohérente encore.
 
 **Sans conséquence pour le patron** : les planches s'ouvrent une par une, et
 c'est ainsi qu'elles lui sont envoyées. Ce qui se perd, c'est la page unique où

@@ -7,6 +7,41 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-15
+
+### « Le nombre de jour en doré » : une planche plutôt qu'une devinette
+
+**Sa question**, capture du planning à l'appui : *« Avant il y avait le Nombre de
+jour en doré et je sais plus quoi, où c'est passé ? »*
+
+**L'historique a été fouillé, toutes branches, avant de répondre quoi que ce
+soit** — et il ne dit pas tout à fait ce que la question suppose. Un nombre de
+jours en or n'a **jamais** existé dans `src/`. Mais trois choses en approchent,
+et elles sont énumérées sur la planche plutôt que gardées pour moi :
+
+| Ce qui a existé | Où | Quand c'est parti |
+|---|---|---|
+| « matin, 2 jours » sur la ligne — **en gris** | le planning | `064d413`, 10 août |
+| « Créer la facture » — **en or**, mais ce n'est pas un nombre | la même ligne | `026e7ba`, 12 août, vers la feuille |
+| « occupe : vendredi 21, lundi 24, mardi 25 » — **un nombre de jours en or** | la **maquette 51**, envoyée le 14 août | jamais codé, et sa planche le disait |
+
+La troisième est la plus probable : une planche qu'il a manipulée la veille se
+confond aisément avec l'application. Et trois lots ont touché cette ligne en deux
+jours — la date tombée, « Déplacer » parti dans la feuille, la pastille d'équipe
+arrivée. Se souvenir de travers, à ce rythme, n'a rien d'étonnant.
+
+**Donc : quatre écritures de la même ligne, sur une planche qu'il manipule**
+(`docs/maquettes/54-le-nombre-de-jours-en-or.html`) — telle qu'elle est, la date
+qui revient, la durée en or, les deux en or. **`src/` n'est pas touché**
+(`CLAUDE.md` §3 bis).
+
+**Ce que ça évite :** coder les quatre « pour qu'il essaie », puis en défaire
+trois. Et surtout, lui rendre une réponse inventée — le piège nommé dans
+`AGENTS.md` : réparer une panne imaginée.
+
+Le contrôle de la planche a été **vu rouge trois fois** avant d'être livré
+(or retiré, bascule morte, nom coupé), et chacun nomme le bon coupable.
+
 ## 2026-08-14
 
 ### « Surtout la page équipe » : l'écran qui n'était jamais préparé d'avance

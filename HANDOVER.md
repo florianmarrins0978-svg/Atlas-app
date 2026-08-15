@@ -159,6 +159,7 @@ serait une défaillance du dépôt.
 | Si le patron parle de… | Lui ressortir |
 |---|---|
 | **commercialiser, vendre, premiers clients payants, lancement, mise sur le marché, plusieurs artisans** | **La validation de l'application par Google** (`docs/A-FAIRE.md` §8). Sans elle, l'agenda ne fonctionne que pour **une centaine de comptes inscrits à la main** — et le mur arrive d'un coup, sans prévenir. La vérification demande un domaine, une politique de confidentialité **publiée**, une page d'accueil, une vidéo, et **plusieurs semaines**. Le délai ne se rattrape pas : la demande se lance bien avant la date de vente. Détail complet dans `docs/QUESTIONS.md` §12 |
+| **« avant il y avait… », « où c'est passé ? », « je ne retrouve plus… »** | **NE PAS DEVINER : fouiller l'historique AVANT de répondre**, et lui rendre la liste des candidats plutôt qu'une hypothèse. Le 15 août 2026 — *« avant il y avait le Nombre de jour en doré »* —, la fouille a rendu trois choses différentes, dont **une qui n'a jamais été codée** : une ligne dorée de la maquette 51, qu'il avait manipulée la veille. Répondre de mémoire aurait fait coder ce qui existait déjà ailleurs. Et **penser d'abord aux maquettes qu'on lui a envoyées** : il les essaie en vrai, elles ressemblent à l'application, et rien ne les en distingue sur son téléphone (`TODO.md` §0 novemvicies quinquies) |
 
 Un point traité ici se **barre** avec sa date plutôt qu'il ne se supprime :
 savoir qu'il a été dit évite de le redire, et savoir quand évite de croire qu'il
