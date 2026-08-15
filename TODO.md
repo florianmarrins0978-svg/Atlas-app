@@ -86,6 +86,37 @@ a demandé, la correction touche la hauteur réservée du calendrier, et un
 contrôle qui l'aurait attrapé aurait accusé le déplacement de l'assistant — ce
 qui n'est pas le coupable.
 
+### 0 trigies. Dicter dans le devis — le micro est prêt, le geste attend son choix
+
+Sa demande du 15 août 2026, capture du devis à l'appui : *« rajoute-moi un petit
+dictaphone en haut à droite comme il y a pour les infos clients [...] pour
+pouvoir dicter à l'intérieur du devis s'il y a des choses à reprendre ou à
+modifier. Et je veux exactement les mêmes trois petits points quand ils
+chargent. »*
+
+**Ce qui n'est PAS à décider** : le micro et l'attente. Ils existent
+(`DicterCoordonnees.tsx`, `PointsQuiSoufflent`, `.atlas-souffle`) et se copient
+au trait près — rond de 44 px, rouge pendant l'écoute, points à la place du
+micro pendant le traitement, phrase « Atlas rédige… ».
+
+**Ce qui l'est, et qui attend un mot de lui** —
+`docs/maquettes/54-dicter-dans-le-devis.html`, essayable au doigt :
+
+| | Ce que la dictée fait | Ce que ça coûte |
+|---|---|---|
+| **A** | elle **propose** des changements de lignes, qu'il coche ; rien ne s'applique sans son appui | un vrai morceau de travail : lecture des lignes existantes, appariement, écran de confirmation |
+| **B** | elle écrit une **note** attachée au devis ; le devis ne bouge pas | presque rien — mais elle ne fait pas le travail |
+
+**Une règle tranche déjà, et ne se négocie pas** (`CLAUDE.md` §4) : **aucun prix
+ne s'invente**. « Ajoute l'évacuation » sans montant donne une ligne **vide et
+signalée**, jamais un chiffre deviné.
+
+**Et une question posée dans la planche, sans réponse** : en A, le micro
+doit-il aussi toucher aux **conditions de règlement** et aux mentions du bas, ou
+seulement aux lignes chiffrées ?
+
+**Rien n'est codé** — `src/` n'est pas touché (§3 bis).
+
 ### 0 novemvicies. ~~L'équipe n'était pas applicable~~ — **la pastille CODÉE le 14 août 2026 (geste A)**
 
 Sa remarque du 13 août 2026 : *« appliquer une équipe à un chantier n'est pas
