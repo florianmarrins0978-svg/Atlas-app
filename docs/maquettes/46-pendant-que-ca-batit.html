@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Dire au patron que ça bâtit</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    DIRE AU PATRON QUE ÇA BÂTIT
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 14 août 2026 :
+
+      « La connexion est au ralenti sur l'appli. Les nouvelles pages ne
+        chargent mal ou pas du tout. » — puis : « Surtout la page équipe. »
+
+    CE QUI SE PASSE, MESURÉ ET NON SUPPOSÉ. Quand le code change, son banc
+    sert d'abord en mode développement pendant qu'il bâtit à côté la version
+    rapide. En mode développement, un écran n'est compilé qu'au moment où on
+    l'ouvre. Mesuré ici sur quatre cœurs au repos : 1,4 à 2,8 secondes par
+    écran, la première fois. Sur ses DEUX cœurs, avec la construction qui les
+    prend tous les deux, c'est des dizaines de secondes — et le relais de
+    GitHub abandonne au bout d'une minute.
+
+    D'où la règle qui décide tout, et qui explique « surtout la page équipe » :
+    UN ÉCRAN DÉJÀ OUVERT RÉPOND ; UN ÉCRAN OUVERT POUR LA PREMIÈRE FOIS PEUT
+    NE JAMAIS ARRIVER. Réglages — qui porte « Vos équipes » — est justement
+    celui qu'il ouvre le plus rarement.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE CETTE PAGE CHERCHE
+
+    Rien n'est cassé, et rien ne le lui dit. Depuis son téléphone il n'a AUCUN
+    moyen de distinguer « ça bâtit, patiente » de « c'est en panne ». Le seul
+    endroit qui le sait est le terminal de l'éditeur — c'est-à-dire l'endroit
+    où il ne va pas, et le 9 août 2026 il l'a dit en toutes lettres :
+    « Va regarder toi-même, je peux pas te l'envoyer. »
+
+    Le chiffre existe déjà : le préchauffage compte les écrans qu'il a rendus
+    ouvrables. Il n'était simplement écrit nulle part. Ces trois propositions
+    en font quelque chose qu'il voit sans rien ouvrir.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE CE BANDEAU NE DOIT PAS FAIRE, ET QUI EST DÉJÀ PAYÉ
+
+    1. NE RIEN RECOUVRIR. Une pile de notifications a déjà poussé le contenu
+       hors de l'écran une fois, et « ou rédiger le devis à la main » est passé
+       sous la bulle de l'assistant le 11 août. Rien de touchable ne se cache
+       sous du mobilier fixe (`scripts/test-rien-de-recouvert-e2e.ts`).
+    2. NE JAMAIS APPARAÎTRE AILLEURS QUE SUR SON BANC. En production, aucun de
+       ces trois bandeaux n'existe — il n'y a rien à bâtir.
+    3. S'EFFACER TOUT SEUL. Un bandeau qu'il faut fermer à la main est un
+       bandeau qui reste.
+
+    ————————————————————————————————————————————————————————————————
+    Aucun script — son lecteur n'en exécute pas. Les écrans font 390 px, la
+    dalle de son téléphone. Rien n'est codé tant qu'il n'a pas choisi :
+    `CLAUDE.md` §3 bis.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f7f5f0; --papier:#ece9e1;
+    --pin:#2f3b2f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --papier:#262420;
+      --pin:#8fa88c;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --papier:#262420;
+    --pin:#8fa88c;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--fond); color:var(--encre);
+    font:400 16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:36px 18px 72px;
+  }
+  .chapo{max-width:760px;margin:0 auto 40px}
+  h1{font-size:26px;line-height:1.25;margin:0 0 14px;font-weight:500}
+  .chapo p{margin:0 0 12px;color:var(--gris);font-size:14.5px}
+  .chapo b{color:var(--encre);font-weight:500}
+
+  .grille{
+    display:flex;flex-wrap:wrap;gap:34px;justify-content:center;
+    max-width:1320px;margin:0 auto;
+  }
+  .colonne{width:390px;max-width:100%}
+  .titre-prop{
+    font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--or);margin:0 0 6px;
+  }
+  .note{font-size:13.5px;color:var(--gris);margin:0 0 16px;min-height:74px}
+  .note b{color:var(--encre);font-weight:500}
+
+  /* ── La dalle du téléphone ─────────────────────────────────────── */
+  .tel{
+    width:390px;max-width:100%;height:600px;overflow:hidden;
+    background:var(--fond);border:1px solid var(--trait);border-radius:22px;
+    display:flex;flex-direction:column;position:relative;
+  }
+
+  .barre-haut{height:26px;flex:none}
+
+  .ecran{flex:1;overflow:hidden;display:flex;flex-direction:column}
+  .retour{
+    width:40px;height:40px;border-radius:999px;background:var(--papier);
+    margin:14px 0 0 24px;flex:none;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--pin);font-size:17px;
+  }
+  .surtitre{
+    margin:22px 24px 0;font-size:10px;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--gris);
+  }
+  .h1e{margin:8px 24px 0;font-size:27px;font-weight:400}
+
+  .bloc{
+    margin:20px 24px 0;background:var(--plage);
+    border:1px solid var(--trait);border-radius:12px;padding:16px 16px 15px;
+  }
+  .bloc .lib{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
+  .ligne{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:13px 0;border-bottom:1px solid var(--trait);font-size:15px;
+  }
+  .ligne:last-child{border-bottom:0}
+  .ligne .val{color:var(--gris);font-size:14px}
+
+  .onglets{
+    height:58px;flex:none;border-top:1px solid var(--trait);
+    display:flex;align-items:center;background:var(--fond);
+  }
+  .onglets span{
+    flex:1;text-align:center;font-size:11.5px;color:var(--gris);
+  }
+  .onglets .actif{color:var(--pin);font-weight:500}
+
+  /* ── A · le bandeau en haut, dans le flux ──────────────────────── */
+  .bandeau-a{
+    flex:none;background:rgba(185,139,71,.13);
+    border-bottom:1px solid rgba(185,139,71,.30);
+    padding:9px 24px 10px;
+  }
+  .bandeau-a .txt{font-size:12.5px;line-height:1.4;color:#7d6234}
+  .bandeau-a .txt b{color:var(--encre);font-weight:500}
+  .jauge{
+    margin-top:7px;height:3px;border-radius:999px;
+    background:rgba(185,139,71,.25);overflow:hidden;
+  }
+  .jauge i{display:block;height:100%;width:63%;background:var(--or)}
+
+  /* ── B · la pastille près du titre ─────────────────────────────── */
+  .rang-titre{display:flex;align-items:baseline;gap:10px;margin:8px 24px 0}
+  .rang-titre .h1e{margin:0}
+  .pastille{
+    flex:none;font-size:11px;letter-spacing:.06em;color:#7d6234;
+    background:rgba(185,139,71,.15);border:1px solid rgba(185,139,71,.32);
+    border-radius:999px;padding:3px 10px 4px;white-space:nowrap;
+  }
+  .sous-titre-b{
+    margin:9px 24px 0;font-size:12px;color:var(--gris);line-height:1.45;
+  }
+
+  /* ── C · la carte à la place du contenu qui manque ─────────────── */
+  .carte-c{
+    margin:22px 24px 0;background:var(--plage);border:1px solid var(--trait);
+    border-radius:12px;padding:22px 20px 20px;text-align:center;
+  }
+  .carte-c .rond{
+    width:44px;height:44px;border-radius:999px;margin:0 auto 14px;
+    background:rgba(185,139,71,.15);
+    display:flex;align-items:center;justify-content:center;color:var(--or);
+    font-size:19px;
+  }
+  .carte-c h3{margin:0 0 8px;font-size:17px;font-weight:400}
+  .carte-c p{margin:0;font-size:13px;color:var(--gris);line-height:1.55}
+  .carte-c .compte{
+    margin-top:14px;font-size:12.5px;color:#7d6234;
+  }
+  .carte-c .jauge{margin:9px 26px 0}
+
+  .apres{
+    max-width:760px;margin:56px auto 0;padding-top:26px;
+    border-top:1px solid var(--trait);
+  }
+  .apres h2{font-size:17px;font-weight:500;margin:0 0 12px}
+  .apres p{margin:0 0 12px;font-size:14px;color:var(--gris)}
+  .apres b{color:var(--encre);font-weight:500}
+  .apres table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 18px}
+  .apres th,.apres td{
+    text-align:left;padding:7px 10px 7px 0;border-bottom:1px solid var(--trait);
+    color:var(--gris);
+  }
+  .apres th{color:var(--encre);font-weight:500}
+  .apres td.n{color:var(--encre);font-variant-numeric:tabular-nums}
+</style>
+
+<div class="chapo">
+  <h1>Pendant que ça bâtit</h1>
+  <p>
+    Quand le code change, le banc sert d’abord en <b>mode développement</b> et
+    construit la version rapide à côté. Dans cet intervalle, un écran ouvert
+    pour la première fois se compile au moment où on le touche — et le relais de
+    GitHub abandonne au bout d’une minute. <b>Rien n’est cassé, et rien ne le
+    dit.</b>
+  </p>
+  <p>
+    Le chiffre existe déjà : le préchauffage compte les écrans qu’il a rendus
+    ouvrables. Trois façons de le montrer, sans rien recouvrir.
+  </p>
+</div>
+
+<div class="grille">
+
+  <!-- ══ A ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition A · le bandeau</p>
+    <p class="note">
+      Une bande d’or pâle en haut, <b>dans le flux</b> — elle pousse le contenu
+      de 40 px au lieu de le couvrir. Elle porte la phrase, le compte et une
+      jauge fine, et <b>disparaît toute seule</b> quand la version rapide prend
+      la main. C’est celle qui répond sans qu’il ait rien à chercher.
+    </p>
+    <div class="tel">
+      <div class="barre-haut"></div>
+      <div class="bandeau-a">
+        <div class="txt">Version rapide en construction — <b>12 écrans sur 19</b> déjà prêts.</div>
+        <div class="jauge"><i></i></div>
+      </div>
+      <div class="ecran">
+        <div class="retour">‹</div>
+        <div class="surtitre">Atlas</div>
+        <div class="h1e">Réglages</div>
+        <div class="bloc">
+          <div class="lib">Vos équipes</div>
+          <div class="ligne"><span>Combien d’équipes</span><span class="val">2</span></div>
+          <div class="ligne"><span>Équipe 1</span><span class="val">Jean</span></div>
+          <div class="ligne"><span>Équipe 2</span><span class="val">Paul</span></div>
+        </div>
+        <div class="bloc">
+          <div class="lib">Votre TVA</div>
+          <div class="ligne"><span>Rythme</span><span class="val">Tous les mois</span></div>
+        </div>
+      </div>
+      <div class="onglets">
+        <span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ B ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition B · la pastille</p>
+    <p class="note">
+      Rien en travers de l’écran : <b>une pastille à côté du titre</b>, et une
+      ligne en dessous. Ça ne bouge aucun pixel du contenu — mais c’est petit,
+      et il faut le remarquer. Le compte y est, la raison aussi, en plus discret.
+    </p>
+    <div class="tel">
+      <div class="barre-haut"></div>
+      <div class="ecran">
+        <div class="retour">‹</div>
+        <div class="surtitre">Atlas</div>
+        <div class="rang-titre">
+          <div class="h1e">Réglages</div>
+          <span class="pastille">12/19 prêts</span>
+        </div>
+        <div class="sous-titre-b">
+          Version rapide en construction : un écran jamais ouvert peut tarder.
+        </div>
+        <div class="bloc">
+          <div class="lib">Vos équipes</div>
+          <div class="ligne"><span>Combien d’équipes</span><span class="val">2</span></div>
+          <div class="ligne"><span>Équipe 1</span><span class="val">Jean</span></div>
+          <div class="ligne"><span>Équipe 2</span><span class="val">Paul</span></div>
+        </div>
+        <div class="bloc">
+          <div class="lib">Votre TVA</div>
+          <div class="ligne"><span>Rythme</span><span class="val">Tous les mois</span></div>
+        </div>
+      </div>
+      <div class="onglets">
+        <span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ C ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition C · la carte, seulement quand ça rate</p>
+    <p class="note">
+      Rien tant que tout s’ouvre. Mais <b>quand un écran n’arrive pas</b>, à la
+      place de la page blanche : une carte qui dit pourquoi et où ça en est.
+      C’est la plus juste — elle parle au moment exact du problème — et la plus
+      coûteuse : il faut attraper l’écran qui ne vient pas, ce que le relais de
+      GitHub coupe avant nous.
+    </p>
+    <div class="tel">
+      <div class="barre-haut"></div>
+      <div class="ecran">
+        <div class="retour">‹</div>
+        <div class="surtitre">Atlas</div>
+        <div class="h1e">Réglages</div>
+        <div class="carte-c">
+          <div class="rond">⏳</div>
+          <h3>Cet écran se prépare</h3>
+          <p>
+            La version rapide est en construction. Cet écran n’a pas encore été
+            compilé — il s’ouvrira du premier coup dans un instant.
+          </p>
+          <div class="compte">12 écrans sur 19 déjà prêts</div>
+          <div class="jauge"><i></i></div>
+        </div>
+      </div>
+      <div class="onglets">
+        <span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="apres">
+  <h2>Ce que j’ai mesuré, et qui décide du reste</h2>
+  <p>
+    Sur un serveur froid, quatre cœurs, machine au repos — <b>la première
+    ouverture</b> de chaque écran, puis les suivantes :
+  </p>
+  <table>
+    <tr><th>Écran</th><th>Première fois</th><th>Ensuite</th></tr>
+    <tr><td>Connexion</td><td class="n">6,6 s</td><td class="n">—</td></tr>
+    <tr><td>Planning</td><td class="n">2,8 s</td><td class="n">0,6 s</td></tr>
+    <tr><td>Réglages — « Vos équipes »</td><td class="n">1,9 s</td><td class="n">0,2 s</td></tr>
+    <tr><td>Terminés</td><td class="n">1,8 s</td><td class="n">0,3 s</td></tr>
+    <tr><td>Mes prix</td><td class="n">1,7 s</td><td class="n">0,2 s</td></tr>
+    <tr><td>Mon agenda</td><td class="n">1,6 s</td><td class="n">0,2 s</td></tr>
+    <tr><td>TVA</td><td class="n">1,4 s</td><td class="n">0,2 s</td></tr>
+  </table>
+  <p>
+    <b>Réglages n’est pas plus lent que les autres.</b> Rien dans cet écran ne
+    traîne. Ce qui le distingue, c’est qu’il est rarement ouvert — donc rarement
+    déjà compilé quand il y va.
+  </p>
+  <h2>Et une réparation qui ne se voit pas</h2>
+  <p>
+    En parallèle de ce bandeau : faire bâtir <b>en priorité basse</b>, pour que
+    la construction cesse de disputer ses deux cœurs au serveur qui le sert.
+    Aucun changement d’apparence, et ça se mesure.
+  </p>
+</div>
+
+</body>
+</html>

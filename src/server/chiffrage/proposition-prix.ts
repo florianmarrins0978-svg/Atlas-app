@@ -19,10 +19,12 @@ import {
   celluleDessouchage,
   celluleFendage,
   prixDuFendage,
+  type Cellule,
   type NatureGrille,
 } from "../../lib/grille-prix";
 import { longueurHaieLue, mesuresArbre, tonnageLu } from "../../lib/mesures-arbre";
 import { prixConnusDe } from "../repositories/grille-prix";
+import { lireGrilles } from "../repositories/grilles-reglables";
 import { listerPrecisions } from "../repositories/precisions-chantier";
 
 // Origine du prix — même taxonomie que l'orchestrateur (SourcePrix), volontairement
@@ -578,6 +580,12 @@ async function prixDeLaLigne(
   const precisions = await listerPrecisions(ctx, chantierId);
   const reponses = precisions.map((p) => p.lisible);
 
+  // **Ses tranches à lui, jamais celles d'origine.** Depuis le 14 août 2026 il
+  // règle les siennes (`tranches_grille`) : chiffrer contre les tranches du
+  // dépôt donnerait un prix pris dans la mauvaise case, et cela ne se verrait
+  // que sur le devis du client.
+  const { axes } = await lireGrilles(ctx);
+
   if (ligne.cle === "haie") return prixDeLaHaie(ctx, reponses, textes, ligne);
 
   // **Les grumes : un prix à la tonne**, multiplié par le tonnage — sa réponse
@@ -588,14 +596,14 @@ async function prixDeLaLigne(
   // dit plus rien une fois qu'il est à terre.
   if (ligne.cle === "dessouchage") {
     const { diametreCm } = mesuresArbre(reponses, textes);
-    return prixDepuisCase(ctx, "dessouchage", celluleDessouchage(diametreCm), ligne, {
+    return prixDepuisCase(ctx, "dessouchage", celluleDessouchage(diametreCm, axes), ligne, {
       manquant: diametreCm === null ? ["le diamètre de la souche"] : [],
     });
   }
 
   if (ligne.cle === "fendage") {
     const mesures = mesuresArbre(reponses, textes);
-    return prixDepuisCase(ctx, "fendage", celluleFendage(mesures.hauteurM, mesures.diametreCm), ligne, {
+    return prixDepuisCase(ctx, "fendage", celluleFendage(mesures.hauteurM, mesures.diametreCm, axes), ligne, {
       manquant: [
         mesures.hauteurM === null ? "la hauteur de l'arbre" : null,
         mesures.diametreCm === null ? "le diamètre du tronc" : null,
@@ -610,7 +618,7 @@ async function prixDeLaLigne(
   }
   const technique = precisions.find((p) => p.sujet.startsWith("abattage.technique"))?.valeur ?? null;
   const { diametreCm } = mesuresArbre(reponses, textes);
-  return prixDepuisCase(ctx, "abattage", celluleAbattage(technique, diametreCm), ligne, {
+  return prixDepuisCase(ctx, "abattage", celluleAbattage(technique, diametreCm, axes), ligne, {
     manquant: [
       technique === null ? "la technique d'abattage" : null,
       diametreCm === null ? "le diamètre du tronc" : null,
@@ -714,7 +722,7 @@ async function prixDeLaHaie(
 async function prixDepuisCase(
   ctx: Ctx,
   nature: NatureGrille,
-  cellule: ReturnType<typeof celluleFendage>,
+  cellule: Cellule | null,
   ligne: LigneVendable,
   options: { manquant?: string[]; silencieuxSiVide?: boolean } = {}
 ): Promise<{ prix: string | null; calcul: LigneExplication[]; donneesManquantes: string[] }> {

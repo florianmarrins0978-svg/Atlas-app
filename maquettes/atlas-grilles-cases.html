@@ -1,0 +1,461 @@
+<title>Atlas — Ajouter ou retirer des cases dans « Mes prix »</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT — et pourtant vivante sous le doigt.
+
+    AJOUTER OU RETIRER DES CASES DANS « MES PRIX ».
+
+    Le patron, le 14 août 2026, capture de l'écran « Mes prix » à l'appui :
+    *« je dois pouvoir ajouter ou retirer des cases. »*
+
+    CE QU'IL Y A AUJOURD'HUI : 82 cases, écrites dans le code
+    (`src/lib/grille-prix.ts`). Huit tranches de diamètre, six de hauteur, trois
+    façons d'abattre, cinq natures de travail. Rien de tout cela n'est à lui : ce
+    sont des tranches choisies le 8 août à partir de SES devis, mais figées
+    depuis.
+
+    LE FAIT QUI COMMANDE TOUT LE RESTE, et qu'il faut voir avant de choisir :
+    une case ne s'ajoute pas toute seule. Une case NAÎT du croisement de deux
+    tranches. Ajouter une tranche de diamètre — « 100 à 120 cm », disons —
+    n'ajoute pas une case : elle en ajoute DIX d'un coup (une pour dessoucher,
+    trois pour abattre, six pour fendre). Et en retirer une en efface autant.
+
+    D'où trois niveaux possibles, et il n'y en a pas un qui soit « le bon » :
+
+      1. la TRANCHE      — une ligne de mesure (un diamètre, une hauteur)
+      2. la FAÇON DE FAIRE — une rangée d'une grille (au pied, démontage…)
+      3. le TRAVAIL      — une grille entière (broyer, élaguer…)
+
+    CE QUI NE SE DISCUTE PAS, QUELLE QUE SOIT LA FORME RETENUE : retirer une
+    tranche qui porte déjà des prix ne les efface JAMAIS en silence. Ces
+    prix-là sont ses décisions, et certaines viennent de devis réels — rien ne
+    les reconstituerait. L'écran le dit et propose de défaire, comme partout
+    ailleurs dans l'application.
+
+    RÉSERVE : ceci éprouve un DESSIN. Rien n'est posé dans `src/` tant qu'il
+    n'a pas choisi (`CLAUDE.md` §3 bis).
+  */
+
+  :root{
+    --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c;
+    --bronze:#8f7130; --trait:rgba(22,23,15,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       font-size:16px;line-height:1.65;
+       padding:44px 16px 84px}
+  .page{max-width:1400px;margin:0 auto}
+
+  .intro{max-width:64ch;margin:0 auto 30px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font-family:ui-serif,Georgia,"Iowan Old Style",serif;
+            font-weight:400;font-size:30px;line-height:1.25;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  /* L'avertissement du haut : c'est LUI qui décide de la lecture du reste. */
+  .cle{max-width:64ch;margin:0 auto 38px;padding:16px 18px;border-radius:6px;
+       background:var(--plage);border:1px solid var(--trait)}
+  .cle p{margin:0;font-size:14px;color:var(--gris);line-height:1.6}
+  .cle p + p{margin-top:9px}
+  .cle b{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:390px;max-width:100%}
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:44ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:720px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         font-size:16px;line-height:1.5;
+         /* La charte Arborea, relevée dans `src/lib/design-tokens.ts`. */
+         --e-fond:#f5f3ee; --e-plage:#ece9e1; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-trait:rgba(28,28,26,.12); --e-pin:#2f3b2f; --e-pin-encre:#faf9f5;
+         --e-or:#B98B47; --e-blanc:#faf9f5; --e-alerte:#9C3B2E}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  .corps{flex:1;overflow:auto;padding:20px 16px 24px}
+  .titre-ecran{margin:0 0 2px;font-family:ui-serif,Georgia,serif;font-weight:400;
+               font-size:24px;line-height:1.2;color:var(--e-encre)}
+  .chapo{margin:0 0 16px;font-size:12.5px;line-height:1.5;color:var(--e-gris)}
+
+  h3.bloc{margin:18px 0 3px;font-family:ui-serif,Georgia,serif;font-weight:400;
+          font-size:17px;line-height:1.25;color:var(--e-encre)}
+  p.aide{margin:0 0 9px;font-size:12.5px;line-height:1.45;color:var(--e-gris)}
+
+  .carte{background:var(--e-blanc);border-radius:4px;margin-bottom:8px}
+  .entete{display:flex;align-items:center;justify-content:space-between;
+          gap:10px;padding:12px 14px;min-height:44px}
+  .entete .nom{font-size:15px;font-weight:500;color:var(--e-encre)}
+  .compte{font-size:12px;color:var(--e-gris)}
+  .compte.pleine{color:var(--e-pin)}
+
+  .liste{padding:0 14px 14px;display:flex;flex-direction:column;gap:8px}
+  .ligne{display:flex;align-items:center;gap:10px;min-height:40px}
+  .ligne .lib{flex:1;font-size:14px;color:var(--e-encre)}
+  .ligne input[type=text]{width:92px;border:1px solid var(--e-plage);border-radius:4px;
+        background:var(--e-fond);color:var(--e-encre);
+        font-size:16px;padding:8px 10px;text-align:right}
+  .ligne .eur{font-size:13px;color:var(--e-gris)}
+
+  /* Le geste de retrait : une croix discrète, à la taille du pouce. */
+  .oter{width:36px;height:36px;flex:0 0 36px;border:0;background:transparent;
+        color:var(--e-gris);font-size:17px;line-height:1;
+        display:flex;align-items:center;justify-content:center}
+
+  .ajouter{display:flex;align-items:center;gap:8px;width:100%;
+           min-height:44px;padding:10px 14px;border:0;background:transparent;
+           color:var(--e-pin);font-size:14px;font-weight:500;text-align:left}
+  .ajouter .plus{font-size:17px;line-height:1}
+
+  /* Ce que l'ajout ouvre : une saisie, pas une boîte de dialogue. */
+  .saisie{display:none;padding:0 14px 14px;flex-direction:column;gap:8px}
+  .saisie .rang{display:flex;gap:8px;align-items:center}
+  .saisie input[type=text]{flex:1;min-width:0;border:0;border-radius:4px;
+        background:var(--e-fond);color:var(--e-encre);font-size:16px;padding:10px 12px}
+  .saisie .valider{min-height:40px;padding:9px 16px;border:0;border-radius:999px;
+        background:var(--e-pin);color:var(--e-pin-encre);font-size:14px;font-weight:500}
+  #a1:checked ~ .corps .saisie.s1,
+  #a2:checked ~ .corps .saisie.s2,
+  #a3:checked ~ .corps .saisie.s3{display:flex}
+  #a1:checked ~ .corps .ajouter.j1,
+  #a2:checked ~ .corps .ajouter.j2,
+  #a3:checked ~ .corps .ajouter.j3{display:none}
+
+  /* L'AVERTISSEMENT : une tranche ne s'ajoute jamais à une seule grille. */
+  .consequence{margin:0;padding:9px 12px;border-radius:4px;
+       background:var(--e-plage);color:var(--e-gris);font-size:12px;line-height:1.45}
+  .consequence b{color:var(--e-encre);font-weight:600}
+
+  /* Le garde-fou : ce qui portait des prix ne part pas en silence. */
+  .tiroir{display:none;align-items:center;gap:10px;margin-top:10px;
+          padding:11px 14px;border-radius:4px;background:var(--e-pin);color:var(--e-pin-encre)}
+  .tiroir .txt{flex:1;font-size:12.5px;line-height:1.4}
+  .tiroir .defaire{min-height:36px;padding:7px 14px;border:0;border-radius:999px;
+          background:var(--e-pin-encre);color:var(--e-pin);font-size:13px;font-weight:600}
+  #r1:checked ~ .corps .tiroir.t1{display:flex}
+  #r1:checked ~ .corps .partante{display:none}
+
+  /* Les axes réglés à part (forme 2). */
+  .puce{display:flex;align-items:center;gap:10px;min-height:40px}
+  .puce .lib{flex:1;font-size:14px;color:var(--e-encre)}
+  .puce .sert{font-size:11.5px;color:var(--e-gris)}
+
+  /* Les formes possibles d'un travail neuf (forme 3). */
+  .formes{display:flex;flex-direction:column;gap:8px;padding:0 14px 14px}
+  .forme{display:flex;align-items:flex-start;gap:10px;min-height:44px;
+         padding:10px 12px;border-radius:4px;background:var(--e-fond)}
+  .forme .rond{flex:0 0 18px;width:18px;height:18px;margin-top:2px;border-radius:999px;
+        border:1.5px solid var(--e-gris)}
+  .forme .quoi{flex:1}
+  .forme .quoi b{display:block;font-size:14px;font-weight:500;color:var(--e-encre)}
+  .forme .quoi span{font-size:12px;color:var(--e-gris)}
+  #f2:checked ~ .corps .forme.x2 .rond,
+  #f2:checked ~ .corps .forme.x2{border-color:var(--e-pin)}
+  #f2:checked ~ .corps .forme.x2 .rond{background:var(--e-pin);border-color:var(--e-pin);
+        box-shadow:inset 0 0 0 3px var(--e-blanc)}
+
+  .barre{display:flex;justify-content:space-around;align-items:center;
+         padding:12px 8px 16px;border-top:1px solid var(--e-trait);background:var(--e-fond)}
+  .barre span{color:var(--e-gris)}
+  .barre .ici{color:var(--e-encre);border-bottom:1.5px solid var(--e-or);padding-bottom:4px}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Mes prix · 14 août 2026</p>
+    <h1>Ajouter ou retirer des cases</h1>
+    <p><strong>Sa demande :</strong> « je dois pouvoir ajouter ou retirer des cases ».</p>
+    <p>Aujourd'hui les 82 cases sont écrites dans le code. Les tranches viennent de
+       ses devis du 8 août — mais elles sont figées depuis, et ce ne sont pas les siennes.</p>
+  </div>
+
+  <div class="cle">
+    <p><b>Une case ne s'ajoute pas toute seule</b>, et c'est ce qui décide de la
+       forme à retenir. Une case naît du <b>croisement de deux tranches</b>.
+       Ajouter « 100 à 120 cm » n'ajoute pas une case : elle en ajoute <b>dix</b>
+       — une pour dessoucher, trois pour abattre, six pour fendre. En retirer une
+       en efface autant.</p>
+    <p>D'où trois niveaux, et aucun n'est « le bon » : la <b>tranche</b> (une
+       mesure), la <b>façon de faire</b> (une rangée), le <b>travail</b> (une
+       grille entière). Les trois sont dessinés ci-dessous.</p>
+    <p><b>Commun aux trois, et non négociable :</b> retirer quelque chose qui
+       porte déjà des prix ne les efface jamais en silence. Ces prix sont ses
+       décisions, et certains viennent de devis réels — rien ne les
+       reconstituerait.</p>
+  </div>
+
+  <div class="rangee">
+
+    <!-- ─────────── FORME 1 : dans la grille elle-même ─────────── -->
+    <div class="prop">
+      <p class="sous">Forme 1 · dans la grille</p>
+
+      <div class="tel"><div class="ecran">
+        <input class="interrupteur" type="checkbox" id="a1">
+        <input class="interrupteur" type="checkbox" id="r1">
+
+        <div class="corps">
+          <p class="caps" style="color:var(--e-or);margin:0 0 6px">Mes prix</p>
+          <h2 class="titre-ecran">Abattre un arbre</h2>
+          <p class="chapo">Par technique et par diamètre — c'est la technique qui fait le
+             plus gros écart.</p>
+
+          <div class="carte">
+            <div class="entete">
+              <span class="nom">Au pied</span>
+              <span class="compte pleine">2 / 8</span>
+            </div>
+            <div class="liste">
+              <p class="caps" style="color:var(--e-gris);margin:0 0 2px">Diamètre du tronc</p>
+
+              <div class="ligne">
+                <span class="lib">jusqu'à 20 cm</span>
+                <input type="text" value="180" aria-label="jusqu'à 20 cm">
+                <span class="eur">€</span>
+                <label class="oter" for="r1" aria-label="Retirer la tranche jusqu'à 20 cm">×</label>
+              </div>
+              <div class="ligne partante">
+                <span class="lib">20 à 30 cm</span>
+                <input type="text" value="260" aria-label="20 à 30 cm">
+                <span class="eur">€</span>
+                <label class="oter" for="r1" aria-label="Retirer la tranche 20 à 30 cm">×</label>
+              </div>
+              <div class="ligne">
+                <span class="lib">30 à 40 cm</span>
+                <input type="text" value="" placeholder="—" aria-label="30 à 40 cm">
+                <span class="eur">€</span>
+                <label class="oter" for="r1" aria-label="Retirer la tranche 30 à 40 cm">×</label>
+              </div>
+              <div class="ligne">
+                <span class="lib">40 à 50 cm</span>
+                <input type="text" value="" placeholder="—" aria-label="40 à 50 cm">
+                <span class="eur">€</span>
+                <label class="oter" for="r1" aria-label="Retirer la tranche 40 à 50 cm">×</label>
+              </div>
+
+              <!-- LE GARDE-FOU, à la place de la ligne partie. -->
+              <div class="tiroir t1" data-s="tiroir">
+                <span class="txt">Tranche « 20 à 30 cm » retirée — 3 prix rangés avec elle.</span>
+                <label class="defaire" for="r1">Annuler</label>
+              </div>
+
+              <label class="ajouter j1" for="a1" data-s="ajouter">
+                <span class="plus">+</span> Ajouter une tranche de diamètre
+              </label>
+            </div>
+
+            <div class="saisie s1" data-s="saisie">
+              <div class="rang">
+                <input type="text" placeholder="de 90" aria-label="Borne basse, en cm">
+                <input type="text" placeholder="à 120" aria-label="Borne haute, en cm">
+                <label class="valider" for="a1">Ajouter</label>
+              </div>
+              <p class="consequence" data-s="consequence">
+                Cette tranche sert aussi à <b>fendre</b> et à <b>dessoucher</b> :
+                elle ajoutera <b>10 cases</b> en tout.
+              </p>
+            </div>
+          </div>
+
+          <div class="carte">
+            <div class="entete">
+              <span class="nom">Démontage</span>
+              <span class="compte">0 / 8</span>
+            </div>
+          </div>
+          <div class="carte">
+            <div class="entete">
+              <span class="nom">Démontage avec rétention</span>
+              <span class="compte">0 / 8</span>
+            </div>
+          </div>
+
+          <label class="ajouter" for="a1">
+            <span class="plus">+</span> Ajouter une façon d'abattre
+          </label>
+        </div>
+
+        <div class="barre">
+          <span class="caps">Chantiers</span><span class="caps">Planning</span>
+          <span class="caps">Terminés</span><span class="caps ici">Réglages</span>
+        </div>
+      </div></div>
+
+      <p class="note">Le geste est <b>là où il regarde</b> : la tranche s'ajoute dans la
+         grille qu'il est en train de remplir. Ce qu'il faut assumer : elle touche
+         les deux autres grilles, et l'écran doit le dire — c'est l'encart gris.</p>
+    </div>
+
+    <!-- ─────────── FORME 2 : un écran « Mes mesures » ─────────── -->
+    <div class="prop">
+      <p class="sous">Forme 2 · mes mesures, à part</p>
+
+      <div class="tel"><div class="ecran">
+        <input class="interrupteur" type="checkbox" id="a2">
+
+        <div class="corps">
+          <p class="caps" style="color:var(--e-or);margin:0 0 6px">Mes prix</p>
+          <h2 class="titre-ecran">Mes mesures</h2>
+          <p class="chapo">Les tranches se règlent ici, une fois. Toutes les grilles les
+             suivent — c'est le même diamètre qui sert à abattre, à fendre et à dessoucher.</p>
+
+          <h3 class="bloc">Diamètres</h3>
+          <p class="aide">Servent à trois grilles.</p>
+          <div class="carte">
+            <div class="liste">
+              <div class="puce"><span class="lib">jusqu'à 20 cm</span>
+                <span class="sert">3 prix</span>
+                <span class="oter" aria-hidden="true">×</span></div>
+              <div class="puce"><span class="lib">20 à 30 cm</span>
+                <span class="sert">1 prix</span>
+                <span class="oter" aria-hidden="true">×</span></div>
+              <div class="puce"><span class="lib">30 à 40 cm</span>
+                <span class="sert">vide</span>
+                <span class="oter" aria-hidden="true">×</span></div>
+              <div class="puce"><span class="lib">40 à 50 cm</span>
+                <span class="sert">vide</span>
+                <span class="oter" aria-hidden="true">×</span></div>
+              <label class="ajouter j2" for="a2"><span class="plus">+</span> Ajouter un diamètre</label>
+            </div>
+            <div class="saisie s2">
+              <div class="rang">
+                <input type="text" placeholder="de 90" aria-label="Borne basse du diamètre">
+                <input type="text" placeholder="à 120" aria-label="Borne haute du diamètre">
+                <label class="valider" for="a2">Ajouter</label>
+              </div>
+              <p class="consequence">
+                <b>10 cases</b> s'ajouteront : 1 pour dessoucher, 3 pour abattre, 6 pour fendre.
+              </p>
+            </div>
+          </div>
+
+          <h3 class="bloc">Hauteurs d'arbre</h3>
+          <p class="aide">Servent à la grille de fendage.</p>
+          <div class="carte">
+            <div class="liste">
+              <div class="puce"><span class="lib">jusqu'à 5 m</span><span class="sert">vide</span>
+                <span class="oter" aria-hidden="true">×</span></div>
+              <div class="puce"><span class="lib">5 à 10 m</span><span class="sert">vide</span>
+                <span class="oter" aria-hidden="true">×</span></div>
+              <label class="ajouter" for="a2"><span class="plus">+</span> Ajouter une hauteur</label>
+            </div>
+          </div>
+
+          <h3 class="bloc">Façons d'abattre</h3>
+          <p class="aide">Servent à la grille d'abattage.</p>
+          <div class="carte">
+            <div class="liste">
+              <div class="puce"><span class="lib">Au pied</span><span class="sert">2 prix</span>
+                <span class="oter" aria-hidden="true">×</span></div>
+              <div class="puce"><span class="lib">Démontage</span><span class="sert">vide</span>
+                <span class="oter" aria-hidden="true">×</span></div>
+              <label class="ajouter" for="a2"><span class="plus">+</span> Ajouter une façon</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="barre">
+          <span class="caps">Chantiers</span><span class="caps">Planning</span>
+          <span class="caps">Terminés</span><span class="caps ici">Réglages</span>
+        </div>
+      </div></div>
+
+      <p class="note">Une mesure se règle <b>une fois</b>, et l'on voit du même coup
+         combien de prix elle porte. Ce qu'il faut assumer : c'est un écran de plus,
+         et le geste n'est plus là où il remplit.</p>
+    </div>
+
+    <!-- ─────────── FORME 3 : un travail entier ─────────── -->
+    <div class="prop">
+      <p class="sous">Forme 3 · un travail entier</p>
+
+      <div class="tel"><div class="ecran">
+        <input class="interrupteur" type="checkbox" id="a3">
+        <input class="interrupteur" type="checkbox" id="f2">
+
+        <div class="corps">
+          <p class="caps" style="color:var(--e-or);margin:0 0 6px">Mes prix</p>
+          <h2 class="titre-ecran">Mes prix</h2>
+          <p class="chapo">Abattre, enlever les grumes, fendre, dessoucher, tailler une haie.
+             Et ce que vous faites en plus.</p>
+
+          <div class="carte"><div class="entete">
+            <span class="nom">Abattre un arbre</span><span class="compte">2 / 24</span><span class="oter" aria-hidden="true">×</span></div></div>
+          <div class="carte"><div class="entete">
+            <span class="nom">Enlever les grumes</span><span class="compte">0 / 1</span><span class="oter" aria-hidden="true">×</span></div></div>
+          <div class="carte"><div class="entete">
+            <span class="nom">Fendre le bois</span><span class="compte">0 / 48</span><span class="oter" aria-hidden="true">×</span></div></div>
+          <div class="carte"><div class="entete">
+            <span class="nom">Dessoucher</span><span class="compte">0 / 8</span><span class="oter" aria-hidden="true">×</span></div></div>
+          <div class="carte"><div class="entete">
+            <span class="nom">Tailler une haie</span><span class="compte">0 / 1</span><span class="oter" aria-hidden="true">×</span></div></div>
+
+          <label class="ajouter j3" for="a3"><span class="plus">+</span> Ajouter un travail</label>
+
+          <div class="carte saisie s3" style="padding-top:14px">
+            <div class="rang">
+              <input type="text" placeholder="Broyer les branches" aria-label="Nom du travail">
+            </div>
+            <p class="aide" style="margin:2px 0 0">Comment son prix se décide :</p>
+            <div class="formes">
+              <div class="forme x1">
+                <span class="rond" aria-hidden="true"></span>
+                <span class="quoi"><b>Un seul prix</b>
+                  <span>multiplié par une quantité — comme la haie, au mètre</span></span>
+              </div>
+              <label class="forme x2" for="f2">
+                <span class="rond" aria-hidden="true"></span>
+                <span class="quoi"><b>Par diamètre</b>
+                  <span>une case par tranche — comme le dessouchage : 8 cases</span></span>
+              </label>
+              <div class="forme x3">
+                <span class="rond" aria-hidden="true"></span>
+                <span class="quoi"><b>Par façon de faire et par diamètre</b>
+                  <span>croisé — comme l'abattage : 24 cases</span></span>
+              </div>
+            </div>
+            <div class="rang" style="padding:0 14px 14px">
+              <label class="valider" for="a3">Ajouter ce travail</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="barre">
+          <span class="caps">Chantiers</span><span class="caps">Planning</span>
+          <span class="caps">Terminés</span><span class="caps ici">Réglages</span>
+        </div>
+      </div></div>
+
+      <p class="note">Le plus gros des trois : un travail neuf, sa forme, ses cases.
+         Il ne remplace pas les deux autres — il <b>s'y ajoute</b>, et ne sert à rien
+         seul si les tranches restent figées.</p>
+    </div>
+
+  </div>
+</div>

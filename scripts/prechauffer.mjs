@@ -69,13 +69,43 @@ const NE_RIEN_DIRE = () => {};
  * Volontairement court. Les quarante-neuf routes de l'application prendraient
  * vingt minutes à compiler sur deux cœurs ; celles-ci couvrent ce qu'il
  * traverse réellement, et le reste garde son coût d'origine — une fois.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Le 14 août 2026, cette liste avait pris du retard sur l'application — et
+ * le patron l'a trouvé avant nous.** Son signalement : *« Les nouvelles pages
+ * ne chargent mal ou pas du tout »*, puis, précis : ***« Surtout la page
+ * équipe. »***
+ *
+ * Réglages avait été découpé en sept sous-écrans entre-temps. Cette liste, elle,
+ * nommait encore l'ancienne organisation : `/reglages/equipe` n'y figurait pas,
+ * ni `identite`, `tarifs`, `planning`, `ia`, `documents`, `donnees`. **Aucun des
+ * sept n'était donc compilé d'avance** : il les ouvrait à froid, pendant que la
+ * construction occupait ses deux cœurs, et le relais de GitHub abandonnait avant
+ * que la page n'arrive. Sa phrase désignait exactement le bon écran.
+ *
+ * **La leçon, et c'est elle qui compte :** une liste écrite à la main vieillit
+ * en silence. Un écran ajouté ailleurs ne s'y ajoute pas tout seul, rien ne
+ * rougit, et le seul symptôme est une page qui ne s'ouvre pas — chez lui.
+ * `scripts/test-prechauffage.ts` la confronte donc désormais aux routes
+ * réellement présentes dans `src/app`, et refuse qu'un écran de premier rang y
+ * manque.
  */
 export const ECRANS_A_PRECHAUFFER = [
   "/login",
   "/",
   "/planning",
   "/termines",
+  "/termines/tva",
   "/reglages",
+  // Les sept sous-écrans de Réglages, dans l'ordre du sommaire. Ils sont courts
+  // à compiler et c'est là qu'il va vérifier ce que sert son banc.
+  "/reglages/identite",
+  "/reglages/equipe",
+  "/reglages/tarifs",
+  "/reglages/documents",
+  "/reglages/planning",
+  "/reglages/ia",
+  "/reglages/donnees",
   "/reglages/agenda",
   "/reglages/prix",
   "/reglages/vocabulaire",

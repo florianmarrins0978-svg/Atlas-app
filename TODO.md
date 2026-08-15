@@ -30,7 +30,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 ### 0 octovicies. ~~Mon compte et Connexion~~ — **CODÉS le 14 août 2026 (« A A »)**
 
 Les deux écrans existent : `/reglages/compte` et `/reglages/connexion`
-(`ARCHITECTURE.md` §103). **Ses deux réponses ont été appliquées** — pas de
+(`ARCHITECTURE.md` §106). **Ses deux réponses ont été appliquées** — pas de
 téléphone dans le compte, pas de liste d'appareils dans la connexion, et les
 deux mots retirés des libellés du sommaire.
 
@@ -138,6 +138,13 @@ d'un devis déjà parti.
 que le patron peut écrire à la main. Le remplacer d'office effacerait sa saisie ;
 les deux doivent cohabiter.
 
+
+- **Le champ de prix d'une grille fait 14 px, et iOS agrandit alors la page.**
+  Relevé le 14 août 2026 en regardant l'écran « Mes prix » sur un iPhone 13 : le
+  champ du montant (`Champ`, `GrillesPrixClient`) est le seul de l'application
+  sous les 16 px. Le passer à 16 élargit la colonne — donc ça touche l'allure
+  d'un écran qu'il n'a pas demandé de changer, et ça se dessine avant
+  (`CLAUDE.md` §3 bis).
 
 ### 0 quatervicies novies. NE PAS recoder le blocage de l'envoi sans SIRET
 
@@ -308,6 +315,8 @@ du prix proposé dès qu'aucun tarif ne correspond. Un artisan dont l'ouvrier co
 **Ce que le lot 4 ajoute à cette liste :** `tarifs` n'a **aucune colonne de
 famille** — prestations, main-d'œuvre et matériel n'existent pas —, et rien ne
 signale un tarif **sans unité**, alors qu'un prix sans unité n'est pas un prix.
+(Les tranches des grilles, elles, se règlent depuis le 14 août —
+`ARCHITECTURE.md` §105.)
 (L'unité, elle, se **choisit** depuis le 14 août au lieu de se taper —
 `ARCHITECTURE.md` §101 — mais rien ne signale encore celle qui manque.)
 Les cinq grilles n'affichent pas **combien de prix elles ont appris**, ni la
@@ -526,7 +535,12 @@ Non fait d'office : les brancher allonge `verifier:avant-livraison` de plusieurs
 minutes pour éprouver des pages qui ne partent pas en production. Le bon endroit
 est vraisemblablement la CI, sur les seuls fichiers touchés.
 
-### 0 sexvicies. Le chemin vers le devis modifiable — **maquettes prêtes, son choix attendu**
+### ~~0 sexvicies. Le chemin vers le devis modifiable~~ — **choisi et codé le 13 août 2026**
+
+**Sa décision, après avoir vu les cinq :** *« le modifier en or à droite du mot
+devis est parfait, code celui-là »* — la proposition B. C'est fait,
+`ARCHITECTURE.md` §104. Ce qui suit est gardé parce que le raisonnement, lui,
+resservira.
 
 **Sa capture du 13 août 2026, 21 h 00 :** *« J'ai un devis sur le feu. En
 cliquant sur Mme Félicie, voilà où j'arrive, mais si je veux modifier mon devis
@@ -2265,6 +2279,7 @@ et c'est déjà arrivé.
 
 ## Terminé
 
+- ~~Ajouter et retirer des cases : tranches, façons d'abattre et travaux se règlent~~ — 2026-08-14
 - ~~L'unité d'un tarif se choisit dans un bandeau déroulant, sans fermer la case~~ — 2026-08-14
 - ~~Reprendre l'application Arborea sans le site vitrine, et la publier~~ — 2026-07-31
 - ~~Vérifier le site publié à son adresse publique~~ — 2026-07-31
