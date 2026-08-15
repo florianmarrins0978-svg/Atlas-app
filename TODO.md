@@ -30,7 +30,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 ### 0 octovicies. ~~Mon compte et Connexion~~ — **CODÉS le 14 août 2026 (« A A »)**
 
 Les deux écrans existent : `/reglages/compte` et `/reglages/connexion`
-(`ARCHITECTURE.md` §106). **Ses deux réponses ont été appliquées** — pas de
+(`ARCHITECTURE.md` §107). **Ses deux réponses ont été appliquées** — pas de
 téléphone dans le compte, pas de liste d'appareils dans la connexion, et les
 deux mots retirés des libellés du sommaire.
 
@@ -47,12 +47,47 @@ change pas. Il faudrait d'abord un moyen de vérifier la nouvelle adresse — do
 un canal d'envoi, qui n'existe pas et dont il a dit qu'il n'y en aurait pas. À
 rouvrir le jour où un parcours d'inscription existera.
 
-**Un défaut ANTÉRIEUR, vu sur la capture et pas corrigé ici :** la bulle de
-l'assistant recouvre le bord droit du bouton d'enregistrement, sur cet écran
-**comme sur « Mon entreprise »**. Ce n'est pas ce lot qui l'introduit, et une
-correction d'apparence se dessine avant de se coder (`CLAUDE.md` §3 bis).
+**Un défaut antérieur vu sur la capture — ~~et réglé le même jour par une autre
+session~~.** La bulle de l'assistant recouvrait le bord droit du bouton
+d'enregistrement, sur cet écran comme sur « Mon entreprise ». Elle a quitté le
+coin flottant pour l'en-tête (`ARCHITECTURE.md` §106, proposition B). **Rien à
+faire ici**, et surtout rien à contourner : la cause n'était pas la place de mon
+bouton, c'était un élément `fixed` — cinq écrans avaient déjà été déplacés cet
+été pour l'éviter.
+
+### 0 duodetricies. ~~L'assistant flottant recouvrait les écrans~~ — **réglé le 13 août 2026 (proposition B)**
+
+*« L'onglet de l'assistant est hyper mal placé »*, puis *« la B mais de la même
+couleur qu'elle est déjà »*. Le bouton a quitté le coin flottant pour l'en-tête,
+en gardant son vert pin plein. `ARCHITECTURE.md` §106.
+
+**Quatre choses à ne pas défaire :**
+
+1. **Il ne doit plus jamais être `fixed`.** C'est la cause, pas la position :
+   cinq écrans ont été déplacés cet été pour éviter cette bulle.
+2. **Il reste À CÔTÉ DU TITRE, pas sur une ligne à lui.** Une ligne propre
+   ajoute 72 px en tête de chaque écran et repousse la dernière semaine du
+   planning sous la barre — essayé, mesuré, défait.
+3. **La couleur ne vient pas du composant qui le porte** : `colors.rust` plein,
+   icône blanche, c'est sa demande explicite.
+4. **`useAssistant()` rend `null` hors du fournisseur** au lieu de lever :
+   `EnTeteEcran` sert onze écrans, et une page hors gabarit ne doit pas tomber
+   pour un bouton d'agrément.
+
+### 0 duodetricies bis. La dernière semaine du planning déborde de onze pixels sous la barre
+
+**Trouvé le 13 août 2026 en mesurant autre chose**, et **antérieur** à ce
+travail : la dernière case du mois finit à 626 px quand la barre du bas commence
+à 615. Onze pixels de la ligne « 31 » passent dessous — elle reste lisible, et le
+planning défile, mais elle n'est pas entièrement là.
+
+**Non traité, et signalé plutôt que corrigé en passant** : ce n'est pas ce qu'il
+a demandé, la correction touche la hauteur réservée du calendrier, et un
+contrôle qui l'aurait attrapé aurait accusé le déplacement de l'assistant — ce
+qui n'est pas le coupable.
 
 ### ~~0 octovicies (d'origine). Mon compte et Connexion : dessinés, avec DEUX QUESTIONS~~
+
 
 *`maquettes/atlas-reglages-moi.html`, le 14 août 2026 — quatre écrans, 53
 contrôles. **Les onze autres rubriques du sommaire ont leur planche ; c'étaient
@@ -171,7 +206,7 @@ mentent pas.
 les chantiers, les devis et les factures lui montrent encore tous les montants.
 Ne pas lire la §96 comme si le sujet était clos.
 
-### 0 quatervicies septies. La page qui rassemble les maquettes a décroché
+### 0 tricies septies. La page qui rassemble les maquettes a décroché
 
 `scripts/fusionner-maquettes.mjs` n'inscrit plus que la 40 et la 44. Les 41, 42
 et 43 — la ligne sous le nom, et les deux planches de l'attente — n'y sont pas :
@@ -185,7 +220,7 @@ Non fait d'office : c'est de l'outillage partagé, et l'y toucher au moment de
 pousser un lot déjà éprouvé rouvrirait la batterie complète (`CLAUDE.md` §6).
 À reprendre à froid, avec `verifier-maquettes-page-unique.mjs`.
 
-### 0 quatervicies sexies. ~~Un conflit non refermé était arrivé sur `main`~~ — **contrôlé depuis le 13 août 2026**
+### 0 tricies sexies. ~~Un conflit non refermé était arrivé sur `main`~~ — **contrôlé depuis le 13 août 2026**
 
 **Constaté en refusionnant :** `ARCHITECTURE.md` portait **trois marqueurs de
 conflit** sur `main` — une session avait poussé une fusion sans la refermer.
@@ -356,7 +391,7 @@ phrase qui dit qu'une grille vide n'est pas une panne (`ARCHITECTURE.md` §89).
 
 ### 0 unvicies. Le chevron de retour, dernier bouton hors charte
 
-### 0 quatervicies. ~~Les trois points de la dictée~~ — **CODÉ le 13 août 2026 (proposition C)**
+### 0 tricies. ~~Les trois points de la dictée~~ — **CODÉ le 13 août 2026 (proposition C)**
 
 **Sa demande du 13 août 2026**, capture de l'écran « Un chantier » à l'appui :
 *« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce qui se passe.
@@ -418,7 +453,7 @@ au défaut d'origine : les quatre points rougissent, chacun **en nommant son
 coupable** — et c'est le second jet, le premier sortait un « Timeout » sur un
 sélecteur, ce qui envoie lire le contrôle au lieu de l'écran.
 
-### 0 quatervicies ter. ~~La même attente immobile sur le bouton d'ajout de photo~~ — **fait le 13 août 2026**
+### 0 tricies ter. ~~La même attente immobile sur le bouton d'ajout de photo~~ — **fait le 13 août 2026**
 
 Signalé en passant, puis tranché par lui le jour même : *« oui souffle aussi pour
 la photo »*. `Pellicule.tsx` portait le même caractère « … » immobile que la
@@ -468,7 +503,7 @@ Trouvé en **affichant les images présentes** plutôt qu'en supposant : elles
    `locator.screenshot()`) ; et le retour du résultat est **décoché par
    défaut**, sans quoi on jugerait cinq gestes sur quatre secondes chacun.
 
-### 0 quatervicies quater. ~~L'attente qui s'éternise~~ — **faite le 13 août 2026**
+### 0 tricies quater. ~~L'attente qui s'éternise~~ — **faite le 13 août 2026**
 
 Sa réponse à la question laissée ouverte : *« oui fait ça »*. Une vague qui
 souffle depuis trente secondes redevient une vague qui ne dit rien.
@@ -511,7 +546,7 @@ Deux contrôles en sont nés, et le second existe parce que le premier a dormi :
   Posé au seul état des douze secondes, il n'a rien vu de l'abandon : un contrôle
   posé à un seul endroit d'un parcours n'éprouve que cet endroit-là.
 
-### 0 quatervicies quinquies. Le message de fin de dictée casse le titre, lui aussi
+### 0 tricies quinquies. Le message de fin de dictée casse le titre, lui aussi
 
 **Trouvé le 13 août 2026 en mesurant les phrases d'attente**, et **antérieur à ce
 travail** : « 1 information reprise — relisez avant de créer. » fait 47 caractères
@@ -524,7 +559,7 @@ de trancher. Une piste s'il le veut : « 3 informations reprises — relisez. »
 (35 caractères), ou déplacer la ligne sous l'en-tête, où elle aurait toute la
 largeur.
 
-### 0 quatervicies bis. Les contrôles de maquette ne sont joués par personne
+### 0 tricies bis. Les contrôles de maquette ne sont joués par personne
 
 `scripts/verifier-maquette-*.mjs` (pastille, logo, bascule, bouton de la facture,
 et désormais les points) ne sont appelés **ni par la batterie, ni par la CI** :

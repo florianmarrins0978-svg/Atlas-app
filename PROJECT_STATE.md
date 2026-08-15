@@ -578,7 +578,7 @@ Voir `TODO.md` pour le détail et l'ordre.
   l'application, lui, ne cloisonne toujours rien. **Dix rubriques sur treize
   sont codées au 14 août** ; il en reste **trois** marquées *Bientôt* —
   notifications, apparence, abonnement. Les deux dernières ouvertes sont
-  **« Mon compte »** et **« Connexion »** (`ARCHITECTURE.md` §106) : changer son
+  **« Mon compte »** et **« Connexion »** (`ARCHITECTURE.md` §107) : changer son
   nom, changer son mot de passe, et **« me déconnecter partout »** — une colonne
   plutôt qu'une table de sessions. Leurs libellés promettaient un *téléphone* et
   une liste d'*appareils* qui n'existent nulle part ; le patron a tranché « A A »

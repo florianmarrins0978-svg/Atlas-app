@@ -32,7 +32,7 @@ Depuis son téléphone, rien ne distinguait les deux : il fallait ouvrir
 l'éditeur. Un bandeau le dit maintenant, avec le compte — « Version rapide en
 construction, 12 écrans sur 19 déjà prêts » — et **s'efface tout seul** quand
 tout est prêt. Il n'existe que sur son banc, jamais ailleurs, et un contrôle
-l'éprouve dans les deux sens (`docs/maquettes/46`, `ARCHITECTURE.md` §103).
+l'éprouve dans les deux sens (`docs/maquettes/46`, `ARCHITECTURE.md` §106).
 
 Le chiffre existait déjà : le préchauffage le comptait, et personne ne l'écrivait
 nulle part — la page de diagnostic répondait « pas encore commencé » du début à
@@ -99,7 +99,7 @@ qu'on ne peut pas relire ne confirme rien.
 de connexion, et rien dans Atlas ne permettrait de vérifier une nouvelle
 adresse — ni e-mail sortant, ni SMS. Une faute de frappe fermerait le compte
 sans recours. Le champ s'ouvrira quand il y aura de quoi rattraper l'erreur
-(`ARCHITECTURE.md` §106).
+(`ARCHITECTURE.md` §107).
 
 ### L'unité d'un tarif se choisit dans un bandeau, au lieu de se taper
 
@@ -928,7 +928,7 @@ l'a été, et de la refaire. Un doublon de TVA déductible ne se voit pas non pl
 **Un correctif qui ne corrigeait rien, attrapé de justesse.** La première
 version faisait `router.push(...)` puis `router.refresh()` : les deux
 s'annulaient, `refresh` redemandant l'adresse courante. L'écran ne bougeait pas,
-sans la moindre erreur. Vu à la sonde uniquement (`ARCHITECTURE.md` §85).
+sans la moindre erreur. Vu à la sonde uniquement (`ARCHITECTURE.md` §106).
 
 **Nouveau contrôle :** `scripts/test-achat-hors-periode-e2e.ts` traverse le
 parcours entier et rougit sur quatre cas quand on retire la réparation.
@@ -936,6 +936,55 @@ parcours entier et rougit sur quatre cas quand on retire la réparation.
 ---
 
 ## 2026-08-13
+
+### L'assistant cesse de flotter, et se range dans l'en-tête
+
+**Sa demande :** *« l'onglet de l'assistant est hyper mal placé, propose des
+choses pour plus qu'il gêne »*. Puis, devant cinq propositions : *« la B mais de
+la même couleur qu'elle est déjà »*.
+
+**Le défaut n'était pas sa position, c'était qu'il flottait.** Mesuré : la bulle
+couvrait les dimanches 23 et 30 du planning — deux cases qu'on touche. Et c'était
+le sixième écran : cinq fois cet été, c'est l'ÉCRAN qu'on avait déplacé pour
+l'éviter (un talon de 112 px, une capsule recentrée, une phrase calée à gauche).
+Chaque correction était juste, aucune ne traitait la cause.
+
+Le bouton vit maintenant dans l'en-tête, en vert pin plein comme avant ; le
+panneau reste au-dessus de tout. `ARCHITECTURE.md` §106.
+
+**Une erreur de placement, corrigée par la mesure.** Posé d'abord sur une ligne à
+lui au-dessus du titre, il ajoutait 72 px en tête de chaque écran et repoussait la
+dernière semaine du planning sous la barre : on aurait échangé deux jours
+recouverts contre une semaine hors de l'écran. À côté du titre, il ne coûte rien
+— aucun titre ne se casse, et le calendrier finit exactement où il finissait.
+
+**Deux sessions ont visé la même ligne le même jour.** « Modifier », posé par une
+autre session à droite du titre de l'écran d'envoi, descendait de 21 px une fois
+l'assistant à ses côtés : il s'aligne par `self-end`, et son conteneur avait
+changé de hauteur. `git` n'avait rien signalé — une fusion propre ne prouve rien
+sur la mise en page. C'est leur suite qui l'a dit, au pixel.
+
+**Et le contrôle a failli accuser à tort** : écrit « la dernière semaine tient
+au-dessus de la barre », il rougissait sur un débordement de onze pixels qui
+existait **avant**. Le repère est devenu la mesure d'avant le déplacement, et le
+débordement est parti dans `TODO.md` sous son propre nom.
+
+### Où mettre l'assistant : cinq places, et une gêne enfin mesurée
+
+**Sa demande :** *« l'onglet de l'assistant est hyper mal placé […] crée-moi des
+maquettes que j'essaye, ne code rien. »* **Rien n'a été codé** —
+`docs/maquettes/47-ou-mettre-l-assistant.html`, sa lettre est attendue.
+
+**L'écran choisi est le planning, et ce n'est pas un hasard :** c'est là que la
+gêne se mesure au lieu de se discuter. La bulle recouvre les dimanches 23 et 30.
+Et ce n'est pas le premier écran qu'elle mord — cinq fois déjà, c'est l'écran
+qu'on a déplacé pour l'éviter (§46, §49, §63, §67, §84). Aucune proposition ne
+consiste donc à la bouger de vingt pixels.
+
+**Le contrôle compte les cases recouvertes**, version par version, l'avant
+servant de témoin. Il a servi tout de suite : ma reproduction du calendrier était
+39 px trop haute, la bulle tombait dans le vide, et la planche aurait démontré
+l'inverse de ce qu'elle montre. Une reproduction « à peu près » ne prouve rien.
 
 ### Cesser de rejouer soixante suites pour du code qui ne nous concerne pas
 
