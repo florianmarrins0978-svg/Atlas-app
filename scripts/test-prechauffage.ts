@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 // **Deux défauts du 9 août 2026, tenus ici — et ils n'étaient pas des lenteurs.**
@@ -159,6 +159,41 @@ async function main() {
     // C'est le premier que le patron ouvre, et le seul qu'il voie avant d'avoir
     // une session : l'oublier, c'est lui laisser la plus longue attente de toutes.
     assert.ok(ECRANS_A_PRECHAUFFER.includes("/login"));
+  });
+
+  // **Le défaut du 14 août 2026 : une liste écrite à la main qui a pris du
+  // retard sur l'application, en silence.**
+  //
+  // Réglages avait été découpé en sept sous-écrans ; la liste nommait encore
+  // l'ancienne organisation. `/reglages/equipe` n'y figurait pas — donc jamais
+  // compilé d'avance, donc ouvert à froid pendant que la construction occupait
+  // les deux cœurs du patron, donc abandonné par le relais de GitHub avant
+  // d'arriver. Son signalement était d'une précision exemplaire : *« Surtout la
+  // page équipe. »*
+  //
+  // **Rien ne pouvait rougir**, et c'est tout le problème d'une liste : un écran
+  // ajouté ailleurs ne s'y ajoute pas tout seul. On la confronte donc aux
+  // dossiers réellement présents, plutôt qu'à ce qu'on croit savoir.
+  await cas("aucun écran de Réglages n'a été oublié depuis le découpage", () => {
+    const dossier = path.join(RACINE, "src", "app", "reglages");
+    const sousEcrans = readdirSync(dossier, { withFileTypes: true })
+      .filter((e) => e.isDirectory() && existsSync(path.join(dossier, e.name, "page.tsx")))
+      .map((e) => `/reglages/${e.name}`);
+    assert.ok(sousEcrans.length >= 5, `seulement ${sousEcrans.length} sous-écrans trouvés : le chemin a bougé`);
+    const oublies = sousEcrans.filter((c) => !ECRANS_A_PRECHAUFFER.includes(c));
+    assert.deepEqual(
+      oublies,
+      [],
+      `jamais compilé(s) d'avance, donc hors d'atteinte sur son banc : ${oublies.join(", ")}`
+    );
+  });
+
+  await cas("les écrans de premier rang y sont tous", () => {
+    // Ceux que la barre du bas propose : les oublier revient à laisser une
+    // attente d'une minute derrière un onglet.
+    for (const chemin of ["/", "/planning", "/termines", "/reglages"]) {
+      assert.ok(ECRANS_A_PRECHAUFFER.includes(chemin), `${chemin} manque à la liste`);
+    }
   });
 
   console.log("\n=== Ouvrir les écrans à la file, et survivre à tout ===");

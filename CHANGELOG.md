@@ -9,6 +9,70 @@ Format : le plus récent en tête.
 
 ## 2026-08-14
 
+### « Surtout la page équipe » : l'écran qui n'était jamais préparé d'avance
+
+**Son signalement :** *« La connexion est au ralenti sur l'appli. Les nouvelles
+pages ne chargent mal ou pas du tout. »* Puis, précis : *« Surtout la page
+équipe. »*
+
+**Sa précision était le diagnostic.** Le banc compile ses écrans d'avance pour
+qu'ils s'ouvrent du premier coup — mais la liste de ces écrans était écrite à la
+main, et Réglages avait été découpé en sept sous-écrans depuis. Aucun des sept
+n'y figurait. « Équipe » s'ouvrait donc à froid, pendant que la construction
+occupait ses deux cœurs, et le relais de GitHub abandonnait avant que la page
+n'arrive.
+
+**Ce que ça évite :** une page qui ne s'ouvre pas et qu'aucun contrôle ne voit.
+La liste est désormais confrontée aux écrans réellement présents — un sous-écran
+ajouté sans y être inscrit fait rougir `test-prechauffage.ts`, qui le nomme.
+
+### Et une phrase, pour ne plus confondre « ça bâtit » avec « c'est cassé »
+
+Depuis son téléphone, rien ne distinguait les deux : il fallait ouvrir
+l'éditeur. Un bandeau le dit maintenant, avec le compte — « Version rapide en
+construction, 12 écrans sur 19 déjà prêts » — et **s'efface tout seul** quand
+tout est prêt. Il n'existe que sur son banc, jamais ailleurs, et un contrôle
+l'éprouve dans les deux sens (`docs/maquettes/46`, `ARCHITECTURE.md` §106).
+
+Le chiffre existait déjà : le préchauffage le comptait, et personne ne l'écrivait
+nulle part — la page de diagnostic répondait « pas encore commencé » du début à
+la fin.
+
+### Écarté après mesure : bâtir en priorité basse
+
+Plausible et faux. Sur deux cœurs : connexion 16,2 s à priorité normale,
+**17,4 s en priorité basse** ; construction 69 s contre 67 s. La contention est
+le disque, pas le processeur. **Non livré** — annoncer une réparation supposée
+coûte l'essai puis l'aller-retour.
+
+---
+
+## 2026-08-14
+
+### CODÉ : ajouter et retirer des cases dans « Mes prix »
+
+Sa demande du 14 août, capture à l'appui : *« je dois pouvoir ajouter ou retirer
+des cases »*, puis devant les trois formes dessinées : *« code les toutes »*.
+
+**Ce que ça change.** Les 82 cases naissaient de constantes écrites dans le
+code — huit diamètres, six hauteurs, trois façons d'abattre, cinq travaux.
+Elles venaient de ses devis du 8 août, mais étaient figées depuis. Elles se
+règlent désormais, à trois niveaux : la **tranche** (dans la grille qu'il
+remplit, ou dans le nouvel écran **Mes mesures**), la **façon d'abattre**, et le
+**travail entier**.
+
+**Le fait qui commande tout :** une case ne s'ajoute pas toute seule. Un
+diamètre de plus en pose **dix** d'un coup — l'écran l'annonce avant qu'il
+valide, et le nombre est calculé, jamais écrit à la main.
+
+**Retirer n'efface aucun prix.** Les cases sont rangées, pas supprimées, et
+reviennent si la tranche revient. Le tiroir dit combien partent avec elle, et
+offre « Annuler » comme partout ailleurs.
+
+**Ce qu'Atlas ne fera PAS**, et l'écran le dit : un travail ajouté par lui n'est
+pas reconnu dans une note vocale. Sa grille se remplit et se relit ; le
+chiffrage ne la proposera pas de lui-même. Raisons : `ARCHITECTURE.md` §105.
+
 ### L'unité d'un tarif se choisit dans un bandeau, au lieu de se taper
 
 Sa demande du 13 août, capture des tarifs à l'appui : *« crée-moi un bandeau
@@ -316,7 +380,84 @@ Détail et raisons : `ARCHITECTURE.md` §95.
 
 ---
 
+## 2026-08-14
+
+### « L'appli ne marche plus » : elle marchait, c'est l'espace qui dormait
+
+**Sa capture, tard le 14 août :** il ouvre son favori Atlas et son iPhone lui
+propose de **télécharger un fichier** portant le nom de l'adresse, l'onglet
+restant sur `about:blank`. *« L'appli ne marche plus. Je vais me coucher,
+corrige-moi ça tout seul. »*
+
+**Ce n'était pas l'application, et c'est sa propre machine qui l'a dit.** La
+fiche d'état que son espace publie (`scripts/rapporter-espace.mjs`) portait,
+vingt-six minutes plus tôt :
+
+```
+Branche suivie   : main
+Code récupéré    : 08a5377          ← le correctif de la veille, bien arrivé
+Serveur          : répond sur le port 3000
+```
+
+Puis plus rien. Or le veilleur réécrit cette fiche **tous les quarts d'heure**
+tant que l'espace tourne : passé vingt minutes de silence, l'espace est arrêté.
+GitHub éteint un espace inactif au bout d'une trentaine de minutes ; l'adresse
+survit, plus personne ne répond derrière, et Safari — qui ne sait que faire de
+ce silence — propose d'enregistrer la réponse. D'où le téléchargement.
+
+**Le code, lui, a été mis à l'épreuve avant de conclure**, et pas seulement par
+la batterie qui tourne en mode développement :
+
+- `next build` passe ;
+- la version **bâtie**, démarrée en profil `banc`, sert bien `200 text/html`
+  sur `/` comme sur `/login`.
+
+**Deux enseignements, et le second vaut plus que le premier.**
+
+1. **La fiche d'état a fait son travail**, et pour la première fois : elle a
+   répondu « est-ce lui ou est-ce nous ? » sans lui faire recopier un terminal
+   depuis un téléphone. C'est exactement ce pour quoi elle a été écrite le
+   12 août.
+2. **Rien ne le lui disait, à lui.** La fiche est écrite pour l'agent, sur
+   GitHub. Le mode d'emploi qu'il peut ouvrir — et qui reste lisible quand son
+   espace est éteint — ne couvrait que la panne de l'ÉDITEUR, pas celle-ci.
+   `docs/ESSAYER.md` porte désormais une section à son nom, avec sa capture
+   décrite dans ses mots, le remède en deux gestes, et le lien vers la fiche
+   d'état — avec la règle des vingt minutes pour trancher en un coup d'œil.
+
+**Ce qu'on ne peut pas corriger, et il faut le dire :** l'extinction est une
+règle de GitHub, pas d'Atlas. Elle disparaîtra le jour où Atlas tournera sur un
+vrai hébergement. Un espace qui dort n'est pas une panne.
+
+---
+
 ## 2026-08-13
+
+### Le devis se reprend enfin AVANT de partir
+
+*« J'ai un devis sur le feu […] mais si je veux modifier mon devis avant de
+l'envoyer, je peux pas. »* Il avait raison : « Modifier mon devis » n'existait
+que sur l'écran du devis **parti**. Avant l'envoi — au moment précis où l'on
+corrige — aucun chemin ne menait au devis modifiable.
+
+Cinq propositions lui ont été dessinées avant d'en coder une ; il a retenu
+**« Modifier » en or, en face du titre**. Sa première idée — le mot « Devis »
+lui-même cliquable — a été écartée par lui après les avoir vues : un titre qui
+est secrètement un lien ne s'annonce pas.
+
+**Ce que ça évite, et qui n'est pas la place du mot :** le lien n'apparaît
+qu'avant l'envoi. Un devis parti ne se modifie plus — la base refuse la première
+frappe — il se *reprend*, ce qui ouvre une nouvelle version, et c'est un geste
+qu'il décide. Offrir « Modifier » après l'envoi l'aurait mené sur un document
+mort sans lui dire pourquoi.
+
+Le contrôle a été confronté aux **deux** états dégradés — lien absent, puis lien
+survivant à l'envoi — et rougit sur chacun. Il vérifie en plus que l'écran
+d'après l'envoi garde son propre geste : sans cela, on passerait au vert en
+retirant le lien partout.
+
+`ARCHITECTURE.md` §104.
+
 
 ### Deux maquettes perdues en silence dans la page unique
 
@@ -759,7 +900,7 @@ l'a été, et de la refaire. Un doublon de TVA déductible ne se voit pas non pl
 **Un correctif qui ne corrigeait rien, attrapé de justesse.** La première
 version faisait `router.push(...)` puis `router.refresh()` : les deux
 s'annulaient, `refresh` redemandant l'adresse courante. L'écran ne bougeait pas,
-sans la moindre erreur. Vu à la sonde uniquement (`ARCHITECTURE.md` §85).
+sans la moindre erreur. Vu à la sonde uniquement (`ARCHITECTURE.md` §106).
 
 **Nouveau contrôle :** `scripts/test-achat-hors-periode-e2e.ts` traverse le
 parcours entier et rougit sur quatre cas quand on retire la réparation.
@@ -904,6 +1045,55 @@ débordement horizontal, l'entrée et « ↺ Recommencer » répondent.
 ---
 
 ## 2026-08-13
+
+### L'assistant cesse de flotter, et se range dans l'en-tête
+
+**Sa demande :** *« l'onglet de l'assistant est hyper mal placé, propose des
+choses pour plus qu'il gêne »*. Puis, devant cinq propositions : *« la B mais de
+la même couleur qu'elle est déjà »*.
+
+**Le défaut n'était pas sa position, c'était qu'il flottait.** Mesuré : la bulle
+couvrait les dimanches 23 et 30 du planning — deux cases qu'on touche. Et c'était
+le sixième écran : cinq fois cet été, c'est l'ÉCRAN qu'on avait déplacé pour
+l'éviter (un talon de 112 px, une capsule recentrée, une phrase calée à gauche).
+Chaque correction était juste, aucune ne traitait la cause.
+
+Le bouton vit maintenant dans l'en-tête, en vert pin plein comme avant ; le
+panneau reste au-dessus de tout. `ARCHITECTURE.md` §106.
+
+**Une erreur de placement, corrigée par la mesure.** Posé d'abord sur une ligne à
+lui au-dessus du titre, il ajoutait 72 px en tête de chaque écran et repoussait la
+dernière semaine du planning sous la barre : on aurait échangé deux jours
+recouverts contre une semaine hors de l'écran. À côté du titre, il ne coûte rien
+— aucun titre ne se casse, et le calendrier finit exactement où il finissait.
+
+**Deux sessions ont visé la même ligne le même jour.** « Modifier », posé par une
+autre session à droite du titre de l'écran d'envoi, descendait de 21 px une fois
+l'assistant à ses côtés : il s'aligne par `self-end`, et son conteneur avait
+changé de hauteur. `git` n'avait rien signalé — une fusion propre ne prouve rien
+sur la mise en page. C'est leur suite qui l'a dit, au pixel.
+
+**Et le contrôle a failli accuser à tort** : écrit « la dernière semaine tient
+au-dessus de la barre », il rougissait sur un débordement de onze pixels qui
+existait **avant**. Le repère est devenu la mesure d'avant le déplacement, et le
+débordement est parti dans `TODO.md` sous son propre nom.
+
+### Où mettre l'assistant : cinq places, et une gêne enfin mesurée
+
+**Sa demande :** *« l'onglet de l'assistant est hyper mal placé […] crée-moi des
+maquettes que j'essaye, ne code rien. »* **Rien n'a été codé** —
+`docs/maquettes/47-ou-mettre-l-assistant.html`, sa lettre est attendue.
+
+**L'écran choisi est le planning, et ce n'est pas un hasard :** c'est là que la
+gêne se mesure au lieu de se discuter. La bulle recouvre les dimanches 23 et 30.
+Et ce n'est pas le premier écran qu'elle mord — cinq fois déjà, c'est l'écran
+qu'on a déplacé pour l'éviter (§46, §49, §63, §67, §84). Aucune proposition ne
+consiste donc à la bouger de vingt pixels.
+
+**Le contrôle compte les cases recouvertes**, version par version, l'avant
+servant de témoin. Il a servi tout de suite : ma reproduction du calendrier était
+39 px trop haute, la bulle tombait dans le vide, et la planche aurait démontré
+l'inverse de ce qu'elle montre. Une reproduction « à peu près » ne prouve rien.
 
 ### Cesser de rejouer soixante suites pour du code qui ne nous concerne pas
 

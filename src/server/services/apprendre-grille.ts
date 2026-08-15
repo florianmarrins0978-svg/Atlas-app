@@ -3,6 +3,7 @@ import { listerPrecisions } from "../repositories/precisions-chantier";
 import { listerPrestations } from "../repositories/prestations";
 import { getBrouillon } from "../repositories/brouillons-informations";
 import { poserPrixGrille } from "../repositories/grille-prix";
+import { lireGrilles } from "../repositories/grilles-reglables";
 import {
   CELLULE_GRUMES,
   CELLULE_HAIE,
@@ -115,15 +116,19 @@ export async function apprendrePrixGrille(
     return;
   }
 
+  // Ses tranches à lui : ranger un prix observé dans les tranches d'origine le
+  // ferait revenir plus tard sur des arbres qui ne sont pas ceux-là.
+  const { axes } = await lireGrilles(ctx);
   const cellule =
     nature === "dessouchage"
-      ? celluleDessouchage(mesures.diametreCm)
+      ? celluleDessouchage(mesures.diametreCm, axes)
       : nature === "abattage"
         ? celluleAbattage(
             precisions.find((p) => p.sujet.startsWith("abattage.technique"))?.valeur ?? null,
-            mesures.diametreCm
+            mesures.diametreCm,
+            axes
           )
-        : celluleFendage(mesures.hauteurM, mesures.diametreCm);
+        : celluleFendage(mesures.hauteurM, mesures.diametreCm, axes);
 
   // Sans les mesures qu'il faut, on ne sait pas dans quelle case ranger ce prix.
   // On ne le range nulle part — un prix dans la mauvaise case reviendrait plus

@@ -27,6 +27,37 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 duodetricies. ~~L'assistant flottant recouvrait les écrans~~ — **réglé le 13 août 2026 (proposition B)**
+
+*« L'onglet de l'assistant est hyper mal placé »*, puis *« la B mais de la même
+couleur qu'elle est déjà »*. Le bouton a quitté le coin flottant pour l'en-tête,
+en gardant son vert pin plein. `ARCHITECTURE.md` §106.
+
+**Quatre choses à ne pas défaire :**
+
+1. **Il ne doit plus jamais être `fixed`.** C'est la cause, pas la position :
+   cinq écrans ont été déplacés cet été pour éviter cette bulle.
+2. **Il reste À CÔTÉ DU TITRE, pas sur une ligne à lui.** Une ligne propre
+   ajoute 72 px en tête de chaque écran et repousse la dernière semaine du
+   planning sous la barre — essayé, mesuré, défait.
+3. **La couleur ne vient pas du composant qui le porte** : `colors.rust` plein,
+   icône blanche, c'est sa demande explicite.
+4. **`useAssistant()` rend `null` hors du fournisseur** au lieu de lever :
+   `EnTeteEcran` sert onze écrans, et une page hors gabarit ne doit pas tomber
+   pour un bouton d'agrément.
+
+### 0 duodetricies bis. La dernière semaine du planning déborde de onze pixels sous la barre
+
+**Trouvé le 13 août 2026 en mesurant autre chose**, et **antérieur** à ce
+travail : la dernière case du mois finit à 626 px quand la barre du bas commence
+à 615. Onze pixels de la ligne « 31 » passent dessous — elle reste lisible, et le
+planning défile, mais elle n'est pas entièrement là.
+
+**Non traité, et signalé plutôt que corrigé en passant** : ce n'est pas ce qu'il
+a demandé, la correction touche la hauteur réservée du calendrier, et un
+contrôle qui l'aurait attrapé aurait accusé le déplacement de l'assistant — ce
+qui n'est pas le coupable.
+
 ### 0 novemvicies. L'équipe : ce qui vient d'arriver, et les deux trous restants
 
 Sa remarque du 13 août 2026 : *« appliquer une équipe à un chantier n'est pas
@@ -241,6 +272,13 @@ que le patron peut écrire à la main. Le remplacer d'office effacerait sa saisi
 les deux doivent cohabiter.
 
 
+- **Le champ de prix d'une grille fait 14 px, et iOS agrandit alors la page.**
+  Relevé le 14 août 2026 en regardant l'écran « Mes prix » sur un iPhone 13 : le
+  champ du montant (`Champ`, `GrillesPrixClient`) est le seul de l'application
+  sous les 16 px. Le passer à 16 élargit la colonne — donc ça touche l'allure
+  d'un écran qu'il n'a pas demandé de changer, et ça se dessine avant
+  (`CLAUDE.md` §3 bis).
+
 ### 0 quatervicies novies. NE PAS recoder le blocage de l'envoi sans SIRET
 
 Décidé par le patron le matin du 14 août 2026, codé, montré — puis **retiré le
@@ -266,7 +304,7 @@ mentent pas.
 les chantiers, les devis et les factures lui montrent encore tous les montants.
 Ne pas lire la §96 comme si le sujet était clos.
 
-### 0 quatervicies septies. La page qui rassemble les maquettes a décroché
+### 0 tricies septies. La page qui rassemble les maquettes a décroché
 
 `scripts/fusionner-maquettes.mjs` n'inscrit plus que la 40 et la 44. Les 41, 42
 et 43 — la ligne sous le nom, et les deux planches de l'attente — n'y sont pas :
@@ -280,7 +318,7 @@ Non fait d'office : c'est de l'outillage partagé, et l'y toucher au moment de
 pousser un lot déjà éprouvé rouvrirait la batterie complète (`CLAUDE.md` §6).
 À reprendre à froid, avec `verifier-maquettes-page-unique.mjs`.
 
-### 0 quatervicies sexies. ~~Un conflit non refermé était arrivé sur `main`~~ — **contrôlé depuis le 13 août 2026**
+### 0 tricies sexies. ~~Un conflit non refermé était arrivé sur `main`~~ — **contrôlé depuis le 13 août 2026**
 
 **Constaté en refusionnant :** `ARCHITECTURE.md` portait **trois marqueurs de
 conflit** sur `main` — une session avait poussé une fusion sans la refermer.
@@ -410,6 +448,8 @@ du prix proposé dès qu'aucun tarif ne correspond. Un artisan dont l'ouvrier co
 **Ce que le lot 4 ajoute à cette liste :** `tarifs` n'a **aucune colonne de
 famille** — prestations, main-d'œuvre et matériel n'existent pas —, et rien ne
 signale un tarif **sans unité**, alors qu'un prix sans unité n'est pas un prix.
+(Les tranches des grilles, elles, se règlent depuis le 14 août —
+`ARCHITECTURE.md` §105.)
 (L'unité, elle, se **choisit** depuis le 14 août au lieu de se taper —
 `ARCHITECTURE.md` §101 — mais rien ne signale encore celle qui manque.)
 Les cinq grilles n'affichent pas **combien de prix elles ont appris**, ni la
@@ -449,7 +489,7 @@ phrase qui dit qu'une grille vide n'est pas une panne (`ARCHITECTURE.md` §89).
 
 ### 0 unvicies. Le chevron de retour, dernier bouton hors charte
 
-### 0 quatervicies. ~~Les trois points de la dictée~~ — **CODÉ le 13 août 2026 (proposition C)**
+### 0 tricies. ~~Les trois points de la dictée~~ — **CODÉ le 13 août 2026 (proposition C)**
 
 **Sa demande du 13 août 2026**, capture de l'écran « Un chantier » à l'appui :
 *« une fois qu'on a appuyé sur le dictaphone, on ne sait pas ce qui se passe.
@@ -511,7 +551,7 @@ au défaut d'origine : les quatre points rougissent, chacun **en nommant son
 coupable** — et c'est le second jet, le premier sortait un « Timeout » sur un
 sélecteur, ce qui envoie lire le contrôle au lieu de l'écran.
 
-### 0 quatervicies ter. ~~La même attente immobile sur le bouton d'ajout de photo~~ — **fait le 13 août 2026**
+### 0 tricies ter. ~~La même attente immobile sur le bouton d'ajout de photo~~ — **fait le 13 août 2026**
 
 Signalé en passant, puis tranché par lui le jour même : *« oui souffle aussi pour
 la photo »*. `Pellicule.tsx` portait le même caractère « … » immobile que la
@@ -561,7 +601,7 @@ Trouvé en **affichant les images présentes** plutôt qu'en supposant : elles
    `locator.screenshot()`) ; et le retour du résultat est **décoché par
    défaut**, sans quoi on jugerait cinq gestes sur quatre secondes chacun.
 
-### 0 quatervicies quater. ~~L'attente qui s'éternise~~ — **faite le 13 août 2026**
+### 0 tricies quater. ~~L'attente qui s'éternise~~ — **faite le 13 août 2026**
 
 Sa réponse à la question laissée ouverte : *« oui fait ça »*. Une vague qui
 souffle depuis trente secondes redevient une vague qui ne dit rien.
@@ -604,7 +644,7 @@ Deux contrôles en sont nés, et le second existe parce que le premier a dormi :
   Posé au seul état des douze secondes, il n'a rien vu de l'abandon : un contrôle
   posé à un seul endroit d'un parcours n'éprouve que cet endroit-là.
 
-### 0 quatervicies quinquies. Le message de fin de dictée casse le titre, lui aussi
+### 0 tricies quinquies. Le message de fin de dictée casse le titre, lui aussi
 
 **Trouvé le 13 août 2026 en mesurant les phrases d'attente**, et **antérieur à ce
 travail** : « 1 information reprise — relisez avant de créer. » fait 47 caractères
@@ -617,7 +657,7 @@ de trancher. Une piste s'il le veut : « 3 informations reprises — relisez. »
 (35 caractères), ou déplacer la ligne sous l'en-tête, où elle aurait toute la
 largeur.
 
-### 0 quatervicies bis. Les contrôles de maquette ne sont joués par personne
+### 0 tricies bis. Les contrôles de maquette ne sont joués par personne
 
 `scripts/verifier-maquette-*.mjs` (pastille, logo, bascule, bouton de la facture,
 et désormais les points) ne sont appelés **ni par la batterie, ni par la CI** :
@@ -628,7 +668,12 @@ Non fait d'office : les brancher allonge `verifier:avant-livraison` de plusieurs
 minutes pour éprouver des pages qui ne partent pas en production. Le bon endroit
 est vraisemblablement la CI, sur les seuls fichiers touchés.
 
-### 0 sexvicies. Le chemin vers le devis modifiable — **maquettes prêtes, son choix attendu**
+### ~~0 sexvicies. Le chemin vers le devis modifiable~~ — **choisi et codé le 13 août 2026**
+
+**Sa décision, après avoir vu les cinq :** *« le modifier en or à droite du mot
+devis est parfait, code celui-là »* — la proposition B. C'est fait,
+`ARCHITECTURE.md` §104. Ce qui suit est gardé parce que le raisonnement, lui,
+resservira.
 
 **Sa capture du 13 août 2026, 21 h 00 :** *« J'ai un devis sur le feu. En
 cliquant sur Mme Félicie, voilà où j'arrive, mais si je veux modifier mon devis
@@ -2367,6 +2412,7 @@ et c'est déjà arrivé.
 
 ## Terminé
 
+- ~~Ajouter et retirer des cases : tranches, façons d'abattre et travaux se règlent~~ — 2026-08-14
 - ~~L'unité d'un tarif se choisit dans un bandeau déroulant, sans fermer la case~~ — 2026-08-14
 - ~~Reprendre l'application Arborea sans le site vitrine, et la publier~~ — 2026-07-31
 - ~~Vérifier le site publié à son adresse publique~~ — 2026-07-31

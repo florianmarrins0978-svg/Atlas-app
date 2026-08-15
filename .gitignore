@@ -76,3 +76,8 @@ maquettes/*-essai.html
 sauvegarde-atlas-*.sql
 sauvegarde-atlas-*.json
 .next-batie
+# Le serveur au profil « banc » monté par `test-bandeau-banc-e2e.ts` : Next.js
+# refuse deux serveurs de développement dans un même dossier, il lui faut donc
+# le sien. Un fichier neuf dans l'arbre git ferait refuser TOUTES les mises à
+# jour du banc du patron (`mettre-a-jour.sh`).
+.next-banc-essai
