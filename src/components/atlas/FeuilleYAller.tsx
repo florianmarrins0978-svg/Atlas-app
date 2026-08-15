@@ -48,6 +48,7 @@ export default function FeuilleYAller({
   telephone,
   quand,
   equipes = [],
+  onDeplacer,
   rangEquipe = null,
   onChangerEquipe,
 }: {
@@ -69,7 +70,14 @@ export default function FeuilleYAller({
   equipes?: { rang: number; libelle: string }[];
   rangEquipe?: number | null;
   /** Rend un refus lisible plutôt que de lever : voir `changerEquipeChantierAction`. */
-  onChangerEquipe?: (rang: number) => Promise<{ succes: boolean; erreur?: string }>;
+  onChangerEquipe?: (rang: number | null) => Promise<{ succes: boolean; erreur?: string }>;
+  /**
+   * Changer la DATE — arrivé ici le 14 août 2026, la pastille d'équipe lui
+   * ayant pris sa place sur la ligne du planning (geste A). Absent, la ligne
+   * ne s'affiche pas : les écrans qui montent cette feuille sans savoir
+   * déplacer ne doivent pas promettre un geste qui ne fera rien.
+   */
+  onDeplacer?: () => void;
 }) {
   const [motDuCopier, setMotDuCopier] = useState<string | null>(null);
   const [choixOuvert, setChoixOuvert] = useState(false);
@@ -296,6 +304,33 @@ export default function FeuilleYAller({
 
           Créer n'est toujours pas envoyer : l'arrêt 3 reste en travers du
           chemin, et rien ne part sans un geste de plus (`docs/AGENT.md` §6). */}
+      {/* **« Déplacer » est arrivé ici le 14 août 2026**, la pastille d'équipe
+          lui ayant pris sa place sur la ligne du planning (geste A, retenu sur
+          `docs/maquettes/52-appliquer-une-equipe.html`).
+
+          **Creux et non plein.** Le seul aplat de cette feuille reste « Créer la
+          facture » : deux pleins l'un sous l'autre, et l'œil ne sait plus lequel
+          est le geste principal — c'est exactement ce que le patron a fait
+          corriger le 13 août sur la feuille d'envoi.
+
+          **Et il ferme la feuille en partant** : le calendrier se trouve
+          derrière elle, et l'y envoyer sans la refermer donnerait un écran qui
+          défile sous un calque. */}
+      {onDeplacer && (
+        <button
+          type="button"
+          aria-label={`Déplacer le chantier ${nomChantier}`}
+          onClick={() => {
+            fermer();
+            onDeplacer();
+          }}
+          className="mt-2.5 block w-full rounded-full py-[13px] text-center text-[14.5px]"
+          style={{ border: `1px solid ${colors.line}`, color: colors.ink }}
+        >
+          Déplacer ce chantier
+        </button>
+      )}
+
       <div className="mt-4 h-px" style={{ backgroundColor: colors.lineSoft }} />
       <Link
         href={`/chantiers/${chantierId}/facture`}

@@ -86,45 +86,49 @@ a demandé, la correction touche la hauteur réservée du calendrier, et un
 contrôle qui l'aurait attrapé aurait accusé le déplacement de l'assistant — ce
 qui n'est pas le coupable.
 
-### 0 novemvicies. L'équipe : ce qui vient d'arriver, et les deux trous restants
+### 0 novemvicies. ~~L'équipe n'était pas applicable~~ — **la pastille CODÉE le 14 août 2026 (geste A)**
 
 Sa remarque du 13 août 2026 : *« appliquer une équipe à un chantier n'est pas
-intuitif »*. Elle était fondée : jusqu'au 14 août, `planifierChantier` était le
-**seul** chemin qui écrivait `equipeId` — changer d'équipe demandait de repasser
+intuitif »*. Elle était fondée : `planifierChantier` était alors le **seul**
+chemin qui écrivait `equipeId` — six gestes pour changer une lettre, à commencer
 par « Déplacer », un mot qui annonce une **date**.
 
-**Ce n'est plus l'état du code, et il faut le lire avant de rouvrir le sujet.**
-Une autre session a livré le 14 août `changerEquipeChantier()` et la ligne
-« Équipe » dans la feuille du chevron (`FeuilleYAller.tsx`, `actions.ts`). Le
-geste existe, et son serveur **refuse pour de bon** si l'équipe visée est déjà
-prise sur les créneaux du chantier (`EquipeIndisponible`).
+**Deux choses ont été livrées le 14 août, par deux sessions :**
 
-**Ce qui reste ouvert, et attend son avis** —
-`docs/maquettes/52-appliquer-une-equipe.html`, essayable au doigt :
+| | |
+|---|---|
+| la ligne « Équipe » dans la feuille du chevron (geste B) | par une autre session |
+| **la pastille sur la ligne du planning** (geste A) — son choix | ce lot |
 
-| | Ce qui manque encore | Ce que la planche propose |
-|---|---|---|
-| **A** | Depuis la liste du planning, **rien ne signale un chantier sans équipe** : il faut ouvrir la feuille de chacun pour l'apprendre | Une pastille sur la ligne, « Équipe&nbsp;? » en doré quand elle manque. Coûte la place de « Déplacer » à 390 px |
-| **C** | Au moment de **poser**, les équipes restent des lignes de liste : elles se lisent, elles ne s'offrent pas | Quatre cases à choisir, et un bouton qui nomme le choix — « Poser · matin, Équipe B » |
+**Ce que la pastille règle, et que la feuille ne réglait pas :** un chantier
+**sans** équipe le dit enfin — « Équipe&nbsp;? » en or pointillé. Jusque-là la
+ligne n'écrivait rien du tout, et rien ne signalait qu'il en manquait une.
 
-La fiche du chantier, elle, ne montre toujours l'équipe nulle part.
+**Trois conséquences assumées, écrites pour ne pas être défaites par surprise :**
 
-**Deux défauts relus APRÈS cette arrivée, et qui subsistent tous les deux :**
+1. **« Déplacer » a quitté la ligne pour la feuille du chevron.** À 390 px la
+   ligne ne peut porter le nom, l'occupation, l'équipe, « Déplacer » et le
+   chevron — c'est le NOM qui aurait rétréci. Le geste n'est pas perdu : le
+   supprimer aurait refermé la seule façon de changer une date, et le planning
+   a déjà été un cul-de-sac une fois (8 août).
+2. **`changerEquipeChantier` accepte `null` : l'équipe se RETIRE.** C'était
+   impossible par tout chemin jusqu'à ce jour — `planifierChantier` ignore le
+   cas en silence, et le geste neuf exigeait un rang. « Personne pour
+   l'instant » figure sur l'écran qu'il a retenu ; le montrer sans pouvoir
+   l'exécuter aurait été livrer un bouton mort.
+3. **Retirer ne se refuse jamais pour occupation** : libérer une place n'en
+   prend aucune, et refuser enfermerait le patron dans son erreur.
 
-1. **Une équipe ne peut jamais être retirée.** `planifierChantier` écrit
-   `...(equipeId ? { equipeId } : {})` — le cas « plus personne » est ignoré en
-   silence — et `changerEquipeChantier` prend un `rangEquipe: number` non
-   nullable. Le cas n'est donc exprimable **nulle part**. Toute proposition
-   portant « Personne pour l'instant » demande une ligne de serveur en plus.
-2. **Les deux chemins ne défendent pas la même règle.** Le chemin neuf vérifie
-   que l'**équipe** visée est libre ; celui de la **pose** ne vérifie que le
-   compte de la demi-journée (`occupation < nombreEquipes`), jamais l'identité de
-   l'équipe. Deux chantiers peuvent donc porter la même équipe au même moment ;
-   l'affichage (`repartirParEquipe`) en déplace alors un sur une autre ligne, et
-   le rang montré n'est plus celui enregistré. **Inatteignable par l'écran**, qui
-   éteint les lignes prises — mais c'est exactement le cas que le commentaire de
-   `planifierChantier` prétend couvrir, et deux chemins qui protègent
-   différemment la même chose finissent toujours par diverger.
+**Reste ouvert — geste C, non codé :** au moment de **poser**, les équipes sont
+toujours des lignes de liste, qui se lisent mais ne s'offrent pas. Les quatre
+cases sont dessinées dans la planche 52. Il n'a rien dit dessus.
+
+**Et le défaut de fond n'est PAS refermé :** à la **pose**, le serveur revalide
+le compte de la demi-journée (`occupation < nombreEquipes`), jamais l'identité
+de l'équipe demandée. Le chemin du changement, lui, la vérifie pour de bon
+(`EquipeIndisponible`). Deux chemins qui protègent différemment la même chose
+finissent par diverger — inatteignable par l'écran aujourd'hui, qui éteint les
+lignes prises.
 
 ### 0 novemvicies bis. ~~La ligne du planning disait « matin » quoi qu'il arrive~~ — **CODÉ le 2026-08-14**
 

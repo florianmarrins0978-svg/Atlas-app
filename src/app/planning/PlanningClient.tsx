@@ -32,6 +32,7 @@ import {
 } from "@/lib/mois";
 import { equipesAffichees, libelleEquipe } from "@/lib/equipes";
 import FeuilleYAller from "@/components/atlas/FeuilleYAller";
+import FeuilleEquipe from "@/components/atlas/FeuilleEquipe";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
@@ -190,6 +191,25 @@ export default function PlanningClient({
   /** Le chantier dont la feuille « Y aller » est ouverte, ou `null`. */
   const [yAllerId, setYAllerId] = useState<string | null>(null);
   const yAller = planifies.find((c) => c.id === yAllerId) ?? null;
+
+  /** Celui dont la pastille d'équipe est ouverte — geste A du 14 août 2026. */
+  const [equipeDeId, setEquipeDeId] = useState<string | null>(null);
+  const equipeDe = planifies.find((c) => c.id === equipeDeId) ?? null;
+
+  /**
+   * Amener le calendrier sous les yeux pour poser ou déplacer.
+   *
+   * **Écrit une fois** : le geste part maintenant de deux endroits — la liste
+   * « Sans date » et la feuille du chevron, depuis que « Déplacer » a quitté la
+   * ligne. Deux copies auraient divergé le jour où l'une des deux oublie de
+   * refermer le jour ouvert, et l'écran se serait figé sur une journée qui ne
+   * concerne plus le chantier qu'on déplace.
+   */
+  function amenerAuCalendrier(id: string) {
+    setAPoserId(id);
+    setJourOuvert(null);
+    grilleRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 
   /**
    * « journée · Équipe A » sur la liste, « 14 août · journée · Équipe A » dans
@@ -596,24 +616,56 @@ export default function PlanningClient({
                     qui sait quand un chantier est fait, pas le calendrier. Le
                     geste reste sans danger — il bâtit la facture qu'il
                     vérifiera, il n'émet rien. */}
-                <span className="flex flex-shrink-0 items-baseline gap-4">
-                  {/* Le nom du chantier dans le libellé accessible : à l'écran
-                      la colonne le porte déjà, mais une personne qui n'utilise
-                      pas ses yeux entendrait « Déplacer » cinq fois de suite
-                      sans savoir laquelle. */}
-                  <button
-                    type="button"
-                    aria-label={`Déplacer le chantier ${c.nom}`}
-                    onClick={() => {
-                      setAPoserId(c.id);
-                      setJourOuvert(null);
-                      grilleRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-                    }}
-                    className="whitespace-nowrap text-[12px]"
-                    style={{ color: colors.muted }}
-                  >
-                    Déplacer
-                  </button>
+                <span className="flex flex-shrink-0 items-center gap-3">
+                  {/* **LA PASTILLE D'ÉQUIPE — geste A, retenu le 14 août 2026**
+                      (`docs/maquettes/52-appliquer-une-equipe.html`).
+
+                      **Ce qu'elle règle.** L'équipe se lisait sur la ligne mais
+                      ne s'y touchait pas : la changer demandait six gestes, à
+                      commencer par « Déplacer » — un mot qui annonce une DATE.
+                      Et surtout, un chantier SANS équipe n'écrivait rien du
+                      tout : rien ne signalait qu'il en manquait une. Elle porte
+                      donc « Équipe ? » en or pointillé quand il n'y en a pas.
+
+                      **L'or et non le rouge** : il n'y a aucune faute à ne pas
+                      avoir encore choisi. Le rouge est réservé aux refus
+                      (`colors.alert`), et le confondre userait le seul signal
+                      qui doit alarmer.
+
+                      **« DÉPLACER » LUI A CÉDÉ LA PLACE, et ce n'est pas un
+                      oubli.** À 390 px la ligne ne peut pas porter le nom, ce
+                      qu'occupe le chantier, l'équipe, « Déplacer » et le
+                      chevron — c'est le NOM qui aurait rétréci, et c'est la
+                      seule chose qui dit de quel chantier il s'agit. Le geste
+                      n'est pas perdu : il est passé dans la feuille du chevron,
+                      comme « Créer la facture » avant lui. Le supprimer aurait
+                      refermé la seule façon de changer une date.
+
+                      Elle n'existe qu'à PLUSIEURS équipes : à une seule, il n'y
+                      a personne à désigner et le mot « équipe » ne s'écrit nulle
+                      part (`src/lib/equipes.ts`). */}
+                  {nombreEquipes > 1 && (
+                    <button
+                      type="button"
+                      aria-label={
+                        c.rangEquipe == null
+                          ? `Choisir l'équipe — ${c.nom}`
+                          : `Changer l'équipe — ${c.nom}`
+                      }
+                      onClick={() => setEquipeDeId(c.id)}
+                      className="whitespace-nowrap rounded-full px-3 py-[5px] text-[11.5px]"
+                      style={
+                        c.rangEquipe == null
+                          ? { border: `1px dashed ${colors.or}`, color: colors.or }
+                          : { backgroundColor: colors.rust, color: colors.cream, border: "1px solid transparent" }
+                      }
+                    >
+                      {libelleEquipe(
+                        lignesEquipes.find((e) => e.rang === c.rangEquipe) ?? null,
+                        nombreEquipes
+                      ) ?? "Équipe ?"}
+                    </button>
+                  )}
                   {/* **« Créer la facture » a quitté la ligne le 12 août 2026,
                       à sa demande** : *« il faut que le créer la facture, tu le
                       mettes dans le chevron. Il faut cliquer sur le chevron, la
@@ -716,6 +768,45 @@ export default function PlanningClient({
               if (r.succes) {
                 setChantiers((cur) =>
                   cur.map((c) => (c.id === yAller.id ? { ...c, rangEquipe: rang } : c))
+                );
+              }
+              return r;
+            }}
+            // **« Déplacer » vit ici depuis le 14 août 2026**, la pastille
+            // d'équipe lui ayant pris sa place sur la ligne (geste A). Le geste
+            // n'a pas disparu : le retirer aurait refermé la seule façon de
+            // changer une date, comme le planning l'avait été jusqu'au 8 août.
+            onDeplacer={() => {
+              setYAllerId(null);
+              amenerAuCalendrier(yAller.id);
+            }}
+          />
+        )}
+
+        {/* La feuille de la pastille — une par écran, hors de la boucle : une
+            par ligne monterait autant de calques que de chantiers planifiés. */}
+        {equipeDe && (
+          <FeuilleEquipe
+            // La clé remet la feuille à neuf d'un chantier à l'autre : sans
+            // elle, un refus resterait affiché sur le suivant.
+            key={equipeDe.id}
+            ouverte
+            onFermer={() => setEquipeDeId(null)}
+            nomChantier={equipeDe.nom}
+            quand={libelleQuand(equipeDe, true)}
+            equipes={equipesAffichees(lignesEquipes, nombreEquipes).map((e) => ({
+              rang: e.rang,
+              libelle: libelleEquipe(e, nombreEquipes) ?? `Équipe ${e.rang}`,
+            }))}
+            rangEquipe={equipeDe.rangEquipe ?? null}
+            onChoisir={async (rang) => {
+              const r = await changerEquipeChantierAction(equipeDe.id, rang);
+              // La ligne porte le nom de l'équipe : sans cette écriture locale
+              // elle garderait l'ancienne jusqu'au rechargement, et il croirait
+              // que son appui n'a rien pris.
+              if (r.succes) {
+                setChantiers((cur) =>
+                  cur.map((c) => (c.id === equipeDe.id ? { ...c, rangEquipe: rang } : c))
                 );
               }
               return r;

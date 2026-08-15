@@ -172,10 +172,19 @@ async function main() {
   // --- Déplacer un chantier déjà posé ---
   //
   // Le sélecteur de date a disparu avec l'ancien écran ; changer une date se
-  // fait désormais avec le MÊME geste que poser — « Déplacer », puis un jour,
-  // une demi-journée, et le bouton s'arme.
+  // fait avec le MÊME geste que poser — « Déplacer », puis un jour, une
+  // demi-journée, et le bouton s'arme.
+  //
+  // **LE GESTE A CHANGÉ DE PLACE LE 14 AOÛT 2026, PAS DE NATURE.** « Déplacer »
+  // a quitté la ligne du planning pour la feuille du chevron, la pastille
+  // d'équipe lui ayant pris sa place (geste A). Ce contrôle suit donc le NOUVEAU
+  // chemin en entier plutôt que de disparaître avec l'ancien : c'est la seule
+  // façon de changer une date, et le planning a déjà été un cul-de-sac une fois
+  // — le 8 août, quand toucher un chantier planifié n'ouvrait rien.
+  await page.getByRole("button", { name: `Y aller — ${avecCivilite(nomUnique)}` }).click();
+  await page.waitForSelector("text=Y aller", { timeout: 10000 });
   await page.getByRole("button", { name: `Déplacer le chantier ${avecCivilite(nomUnique)}` }).click();
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(600);
   for (let i = 0; i < 24; i++) {
     if ((await page.locator('[data-atlas="grille-mois"] button[data-jour="2027-01-15"]').count()) > 0) break;
     await page.click('button[aria-label="Mois suivant"]');
