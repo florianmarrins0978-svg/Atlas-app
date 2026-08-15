@@ -53,7 +53,7 @@ lui fait donc avancer la TVA d'un client qui n'a pas payé.
 | Quoi | Ce qu'il faut |
 |---|---|
 | **Virements lus** | un prestataire agréé DSP2 — contrat et coût à décider, `docs/A-FAIRE.md` §12 |
-| **Le rapprochement PROPOSÉ** | montant exact + nom approchant + fenêtre de dates. Une règle pure, éprouvable sans banque : `src/lib/rapprocher-virement.ts` |
+| **Le rapprochement PROPOSÉ** | montant exact + nom approchant + fenêtre de dates. une règle pure, éprouvable sans banque, à écrire dans `src/lib/` |
 | **Jamais automatique** | un virement collé à la mauvaise facture met la TVA dans le mauvais trimestre. Atlas propose, le patron confirme |
 | **Les 90 jours** | l'accès se coupe (règle européenne). Prévenir une semaine avant, et retomber sur la saisie à la main |
 
