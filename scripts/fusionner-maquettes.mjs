@@ -14,7 +14,7 @@
   pas diverger de ses originaux : ils restent la source, elle est le produit.
 */
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -250,12 +250,101 @@ const MAQUETTES = [
     quoi: "Deux boutons pleins l’un sous l’autre sur la feuille d’un devis corrigé. Deux lectures du retrait, montrées dans les deux moments — avant et après l’envoi — et trois dosages de « Plutôt par e-mail ».",
   },
   {
+    fichier: "47-le-devis-qui-tarde.html",
+    titre: "Le devis qui tarde : le rappel, et le délai",
+    famille: "Le devis avant l’envoi",
+    quoi: "Un rappel quand un chantier reste sans devis, et le délai qui se règle dans Réglages → Notifications. Deux tons pour la carte, trois façons de poser le nombre de jours.",
+  },
+  {
     fichier: "45-modifier-son-devis.html",
     titre: "Le devis : le reprendre avant de l’envoyer",
     famille: "Le devis avant l’envoi",
     quoi: "Tout est là pour vérifier, rien pour corriger : « Modifier mon devis » n’existe qu’APRÈS l’envoi. Son idée — le mot « Devis » cliquable — dessinée telle quelle, et quatre autres façons d’y arriver.",
   },
+  {
+    fichier: "46-pendant-que-ca-batit.html",
+    titre: "Pendant que ça bâtit : le dire, sans rien recouvrir",
+    famille: "Le banc d’essai",
+    quoi: "Trois bandeaux qui distinguent « ça bâtit, patiente » de « c’est en panne », avec le compte des écrans déjà prêts. Le chiffre existait ; il n’était écrit nulle part.",
+  },
 ];
+
+/* ————————————————————————————————————————————————————————————————
+   Une maquette qu'il ne peut pas atteindre n'existe pas
+   ————————————————————————————————————————————————————————————————
+
+   **Ce que ce contrôle a trouvé le 15 août 2026, et qui ne se voyait nulle
+   part : six maquettes dessinées, commises, et introuvables.** 38, 39, 41, 42,
+   43 et 46 n'étaient inscrites ni au sommaire (`index.html`) ni à la page
+   unique. Elles n'existaient que pour qui connaissait leur nom de fichier —
+   c'est-à-dire pour personne, le patron ne consultant que ces deux portes.
+
+   Le compte affiché ne pouvait pas l'attraper : « 36 maquettes fusionnées »
+   reste parfaitement plausible quand il en manque six.
+
+   Les deux portes n'ont pas le même rôle, et l'exigence porte donc sur leur
+   RÉUNION, pas sur chacune : la page unique est une SÉLECTION — elle recolle
+   les maquettes de charte, et laisse dehors celles qui se manipulent (les
+   « à l'essai », qui ne valent que seules) ; le sommaire est le CATALOGUE.
+   Être dans l'une des deux suffit ; n'être dans aucune est le défaut.
+
+   Second contrôle, sur les numéros. Le patron les désigne par leur chiffre —
+   « fais la 34 » — et cinq numéros étaient déjà portés en double.
+*/
+function verifierLaListe() {
+  const plaintes = [];
+
+  const surDisque = readdirSync(SOURCE)
+    .filter((f) => /^\d/.test(f) && f.endsWith(".html"))
+    .sort();
+  const inscrites = new Set(MAQUETTES.map((m) => m.fichier));
+  const sommaire = readFileSync(join(SOURCE, "index.html"), "utf8");
+
+  for (const f of surDisque) {
+    if (!inscrites.has(f) && !sommaire.includes(f)) {
+      plaintes.push(
+        `« ${f} » n'est ni au sommaire ni dans la page unique : le patron n'a aucun chemin qui y mène.`,
+      );
+    }
+  }
+  for (const m of MAQUETTES) {
+    if (!existsSync(join(SOURCE, m.fichier))) {
+      plaintes.push(`« ${m.fichier} » est inscrite mais introuvable dans ${SOURCE}.`);
+    }
+  }
+  // Un lien mort dans le sommaire est le défaut d'origine de ce dossier : le
+  // patron a cliqué, et rien ne s'est ouvert.
+  for (const lien of sommaire.matchAll(/href="(\d[^"]*\.html)"/g)) {
+    if (!existsSync(join(SOURCE, lien[1]))) {
+      plaintes.push(`le sommaire renvoie à « ${lien[1] } », qui n'existe pas.`);
+    }
+  }
+
+  const parNumero = new Map();
+  for (const f of surDisque) {
+    const numero = f.slice(0, 2);
+    if (!parNumero.has(numero)) parNumero.set(numero, []);
+    parNumero.get(numero).push(f);
+  }
+  // Les cinq doublons d'avant le 15 août sont tolérés NOMMÉMENT : les
+  // renuméroter casserait les renvois déjà écrits dans TODO.md, ARCHITECTURE.md
+  // et dans les conversations. Tout nouveau doublon, lui, fait rougir.
+  const DOUBLONS_HERITES = new Set(["33", "34", "35", "36", "37"]);
+  for (const [numero, fichiers] of parNumero) {
+    if (fichiers.length > 1 && !DOUBLONS_HERITES.has(numero)) {
+      plaintes.push(
+        `le numéro ${numero} est porté par ${fichiers.length} maquettes (${fichiers.join(", ")}) : « fais la ${Number(numero)} » ne désigne plus rien.`,
+      );
+    }
+  }
+
+  if (plaintes.length) {
+    console.error("La liste des maquettes est en défaut :\n  • " + plaintes.join("\n  • "));
+    process.exit(1);
+  }
+}
+
+verifierLaListe();
 
 /* ————————————————————————————————————————————————————————————————
    Confinement de la feuille de style

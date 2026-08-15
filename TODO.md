@@ -27,6 +27,61 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 novivicies. Le devis qui tarde : dessiné, **il reste à choisir**
+
+*`docs/maquettes/47-le-devis-qui-tarde.html`, le 15 août 2026. **Rien n'est
+codé** — `CLAUDE.md` §3 bis.*
+
+**Sa demande, le 14 août 2026 :** *« Il faudrait créer un rappel lorsque le
+chantier a été ouvert mais le devis n'a pas été envoyé. Et il faudrait également
+le rajouter à une catégorie dans les réglages, avec la possibilité dans les
+notifications de mettre le nombre de jours. Exemple : l'utilisateur pourrait
+dire "si aucun devis n'est parti sous deux, trois, quatre, cinq, six jours, me
+mettre une notification" — comme la Mme Félicie, vue il y a quatorze jours,
+aucun devis envoyé. »*
+
+**Ce que la recherche a changé, et qui vaut plus que la maquette.** Trois
+choses existaient déjà, et la troisième a failli être ignorée :
+
+1. la carte de suivi de l'accueil (`src/app/Notifications.tsx`) — le rappel
+   prend sa forme, rien de neuf à apprendre ;
+2. la rubrique « Notifications — Alertes et rappels » du plan des réglages
+   (`src/lib/rubriques-reglages.ts`, `href: null`) — **il n'y a pas de catégorie
+   à créer**, il y a une rubrique à ouvrir ;
+3. **l'écran lui-même est dessiné depuis le sixième lot** —
+   `maquettes/atlas-reglages-notifications.html` porte huit familles en trois
+   groupes, le canal lu sur la ligne, et **un délai déjà formulé** : « 7 jours
+   après l'échéance », un nombre tapé suivi de sa phrase.
+
+La première version de la maquette 47 redessinait un écran de notifications à
+côté de celui-là. Le patron se serait retrouvé devant **deux plans du même
+écran** sans savoir lequel prime. Corrigé avant envoi : sa demande est une
+**neuvième famille** à poser parmi les huit, pas un écran.
+
+**Ce qu'il doit désigner** — trois choses, et la page les pose :
+
+| | Le choix | Les propositions |
+|---|---|---|
+| 1 | Le ton de la carte | **A** discrète (pense-bête) · **B** teintée, jours dans l'étiquette |
+| 2 | La forme du délai | **F** le nombre tapé — *celle qui existe déjà* · **C** cinq pastilles 2-6 · **D** molette · **E** curseur 1-15 |
+| 3 | Le groupe d'accueil | « Vos clients » (voisin de « client à relancer ») ou « Votre argent », tout en haut |
+
+**Ma préférence, écrite sur la page : A + F.** Et une conséquence à ne pas
+oublier s'il prend **C** : l'impayé garderait son nombre tapé, donc **deux
+façons de poser un délai sur le même écran** — il faudrait porter l'impayé sur
+les pastilles aussi.
+
+**Quatre règles y sont posées, à trancher avec lui** : le rappel s'efface seul
+dès que le devis part ; « J'ai vu » repousse au lendemain et ne supprime jamais ;
+le compte part de **l'ouverture du chantier** (Atlas ne connaît pas la date de
+visite — ce serait un champ de plus) ; et il ne le verra **qu'en ouvrant
+Atlas** — d'où le canal « Accueil » sur la ligne, là où les autres disent
+« Téléphone ».
+
+**Ce que ça coûtera une fois choisi :** une journée. La carte, la rubrique
+ouverte avec ses neuf familles, le délai enregistré, et les contrôles qui
+tiennent les quatre règles.
+
 ### 0 octovicies. Mon compte et Connexion : dessinés, avec DEUX QUESTIONS
 
 *`maquettes/atlas-reglages-moi.html`, le 14 août 2026 — quatre écrans, 53
@@ -139,19 +194,39 @@ mentent pas.
 les chantiers, les devis et les factures lui montrent encore tous les montants.
 Ne pas lire la §96 comme si le sujet était clos.
 
-### 0 quatervicies septies. La page qui rassemble les maquettes a décroché
+### 0 quatervicies septies. ~~La page qui rassemble les maquettes a décroché~~ — **contrôlé depuis le 15 août 2026**
 
-`scripts/fusionner-maquettes.mjs` n'inscrit plus que la 40 et la 44. Les 41, 42
-et 43 — la ligne sous le nom, et les deux planches de l'attente — n'y sont pas :
-plusieurs sessions ont livré leur maquette sans l'y ajouter, le même jour.
+**C'était plus grave que ce qui était écrit ici.** L'entrée disait « les 41, 42
+et 43 n'y sont pas » et concluait « sans conséquence pour le patron : les
+planches s'ouvrent une par une, et c'est ainsi qu'elles lui sont envoyées ».
 
-**Sans conséquence pour le patron** : les planches s'ouvrent une par une, et
-c'est ainsi qu'elles lui sont envoyées. Ce qui se perd, c'est la page unique où
-l'on compare — celle qui sert quand on rouvre un sujet trois mois plus tard.
+En mesurant plutôt qu'en supposant, **six maquettes** — 38, 39, 41, 42, 43 et
+46 — n'étaient inscrites **ni dans la page unique, ni au sommaire**. Ce n'était
+donc pas la comparaison qui se perdait : c'était le seul chemin qui y menait.
+Elles n'existaient que pour qui connaissait leur nom de fichier.
 
-Non fait d'office : c'est de l'outillage partagé, et l'y toucher au moment de
-pousser un lot déjà éprouvé rouvrirait la batterie complète (`CLAUDE.md` §6).
-À reprendre à froid, avec `verifier-maquettes-page-unique.mjs`.
+**Ce qui l'a laissé passer :** le compte affiché. « 36 maquettes fusionnées »
+reste parfaitement plausible quand il en manque six.
+
+**Le contrôle vit maintenant dans `fusionner-maquettes.mjs`**, joué à chaque
+régénération, et il refuse trois états :
+
+- une maquette sur le disque **qu'aucune des deux portes n'atteint** — l'exigence
+  porte sur leur réunion, pas sur chacune : la page unique est une *sélection*
+  (elle laisse dehors les planches qui se manipulent), le sommaire est le
+  *catalogue* ;
+- un **lien mort** dans le sommaire — le défaut d'origine de ce dossier, trouvé
+  par le patron en cliquant ;
+- un **numéro porté deux fois**. Il les désigne par leur chiffre — « fais la
+  34 » — et cinq numéros l'étaient déjà (33, 34, 35, 36, 37). Ces cinq-là sont
+  tolérés **nommément** : les renuméroter casserait les renvois déjà écrits.
+  Tout nouveau doublon rougit.
+
+Éprouvé en le confrontant aux trois états : une maquette orpheline, un doublon
+de numéro, un `href` vers un fichier absent. Il les nomme un par un.
+
+C'est d'ailleurs ce contrôle qui a fait renommer la 46 de ce lot en **47** :
+`46-pendant-que-ca-batit.html` portait déjà le numéro.
 
 ### 0 quatervicies sexies. ~~Un conflit non refermé était arrivé sur `main`~~ — **contrôlé depuis le 13 août 2026**
 

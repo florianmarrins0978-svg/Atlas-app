@@ -3996,7 +3996,7 @@
            letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
 
 
-/* 35 — Le devis : le reprendre avant de l’envoyer */
+/* 35 — Le devis qui tarde : le rappel, et le délai */
 #s35{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --plage:#f7f5f0; --alerte:#9C3B2E;
@@ -4045,62 +4045,364 @@
        box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
 #s35 .ecran{
     --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
-    --e-pin:#2f3b2f; --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-rouille:#9C6B3F; --e-teinte:#efe7dc;
+    --e-trait:rgba(28,28,26,.12);
     width:390px;max-width:100%;overflow:hidden;border-radius:32px;
-    background:var(--e-fond);color:var(--e-encre);padding:22px 0 24px;
+    background:var(--e-fond);color:var(--e-encre);padding:20px 0 22px;
     font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+#s35 .marque{text-align:center;font:500 10px/1 ui-sans-serif,sans-serif;
+          letter-spacing:.34em;text-transform:uppercase;color:var(--e-gris)}
+#s35 .eyebrow{margin:18px 24px 0;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--e-or)}
+#s35 .titre-ecran{margin:11px 24px 0;font:400 34px/1.1 ui-serif,Georgia,serif}
+#s35 .sous-titre{margin:10px 24px 0;font:500 10px/1 ui-sans-serif,sans-serif;
+              letter-spacing:.28em;text-transform:uppercase;color:var(--e-gris)}
+#s35 .filet{margin:15px 24px 0;height:1px;background:var(--e-trait)}
 #s35 .retour{margin:0 24px;width:38px;height:38px;border-radius:9999px;
           background:var(--e-plage);display:flex;align-items:center;justify-content:center;
           color:var(--e-gris);font-size:17px}
-#s35 .eyebrow{margin:16px 24px 0;font:500 10px/1 ui-sans-serif,sans-serif;
-           letter-spacing:.3em;text-transform:uppercase;color:var(--e-or)}
-#s35 .titre-ecran{margin:12px 24px 0;font:400 34px/1.1 ui-serif,Georgia,serif}
-#s35 .filet{margin:16px 24px 0;height:1px;background:var(--e-trait)}
-#s35 .ligne-titre{margin:12px 24px 0;display:flex;align-items:baseline;justify-content:space-between;gap:14px}
-#s35 .ligne-titre h3{margin:0;font:400 34px/1.1 ui-serif,Georgia,serif}
-#s35 .action-titre{font-size:15px;font-weight:600;color:var(--e-or);white-space:nowrap}
-#s35 .titre-porte{display:inline-flex;align-items:center;gap:10px}
-#s35 .titre-porte .crayon{font-size:17px;color:var(--e-or);
-                       transform:translateY(-6px)}
-#s35 .titre-porte.souligne h3{border-bottom:1px solid rgba(185,139,71,.5);padding-bottom:2px}
-#s35 .carte{margin:16px 24px 0;border-radius:4px;background:var(--e-plage);padding:18px 20px}
-#s35 .carte + .carte{margin-top:14px}
-#s35 .etiq{font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
-        text-transform:uppercase;color:var(--e-gris)}
-#s35 .val{margin-top:7px;font-size:15px}
-#s35 .val.gris{margin-top:3px;color:var(--e-gris)}
-#s35 .sep{margin:14px 0;height:1px;background:var(--e-trait)}
-#s35 .en-tete-carte{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-#s35 .en-tete-carte .agir{font-size:13.5px;font-weight:600;color:var(--e-or);white-space:nowrap}
-#s35 .en-tete-carte .chevron{font-size:16px;color:var(--e-or)}
-#s35 .ligne-devis{margin-top:11px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:15px}
-#s35 .ligne-devis .prix{color:var(--e-gris)}
-#s35 .total-carte{margin:16px 24px 0;border-radius:4px;background:var(--e-plage);
-               padding:18px 20px;text-align:center}
-#s35 .total-carte .etiq{letter-spacing:.28em}
-#s35 .total-carte .montant{margin-top:8px;font:400 32px/1 ui-serif,Georgia,serif;color:var(--e-pin)}
-#s35 .sous-total{margin:15px 24px 0;text-align:center;font-size:14px;color:var(--e-encre)}
-#s35 .sous-total .lien{color:var(--e-encre)}
-#s35 .sous-total .or{color:var(--e-or);font-weight:600}
-#s35 .sous-total .pt{color:var(--e-gris);opacity:.6;padding:0 9px}
-#s35 .capsule{display:block;margin:16px 24px 0;border-radius:9999px;
-           background:var(--e-pin);color:#faf9f5;padding:14px 0;
-           text-align:center;font-size:16px;font-weight:500}
-#s35 .capsule.creuse{background:transparent;color:var(--e-pin);
-                  box-shadow:inset 0 0 0 1px rgba(47,59,47,.35);font-weight:500}
-#s35 .carte.touchable{position:relative;padding-right:38px;
-                   box-shadow:inset 0 0 0 1px rgba(185,139,71,.28)}
-#s35 .carte.touchable .fleche{position:absolute;right:16px;top:50%;
-                           transform:translateY(-50%);font-size:18px;color:var(--e-or)}
-#s35 .rien{margin:16px 24px 0;padding:13px 12px;border:1px dashed var(--e-trait);
-        border-radius:4px;text-align:center;font-size:12.5px;color:var(--e-gris)}
+#s35 .carte{margin:16px 24px 0;border-radius:18px;padding:16px 20px;background:var(--e-plage)}
+#s35 .carte.teinte{background:var(--e-teinte)}
+#s35 .carte .etiq{font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+               text-transform:uppercase;color:var(--e-gris);margin-bottom:7px}
+#s35 .carte.teinte .etiq{color:var(--e-rouille)}
+#s35 .carte .nom{font:400 16px/1.3 ui-serif,Georgia,serif}
+#s35 .carte .dit{margin-top:4px;font-size:13px;color:var(--e-gris);line-height:1.5}
+#s35 .carte .gestes{margin-top:13px;display:flex;align-items:center;gap:18px;font-size:14px}
+#s35 .carte .gestes .fort{font-weight:500}
+#s35 .carte .gestes .gris{color:var(--e-gris)}
+#s35 .fil{margin:18px 24px 0;position:relative}
+#s35 .fil::before{content:"";position:absolute;left:47px;top:8px;bottom:6px;width:1px;background:var(--e-trait)}
+#s35 .brin{display:grid;grid-template-columns:47px 1fr;gap:0 26px;padding:11px 0;position:relative}
+#s35 .brin .jour{text-align:right;padding-right:13px;color:var(--e-gris);font-size:10px;
+              letter-spacing:.18em;text-transform:uppercase}
+#s35 .brin .jour b{display:block;font:400 19px/1.1 ui-serif,Georgia,serif;color:var(--e-encre);letter-spacing:0}
+#s35 .brin .quoi{min-width:0}
+#s35 .brin .quoi .n{font:400 19px/1.2 ui-serif,Georgia,serif}
+#s35 .brin .quoi .a{margin-top:2px;font-size:13.5px;color:var(--e-gris)}
+#s35 .brin .quoi .e{margin-top:5px;font:500 10px/1 ui-sans-serif,sans-serif;
+                 letter-spacing:.22em;text-transform:uppercase;color:var(--e-gris)}
+#s35 .perle{position:absolute;left:47px;top:22px;width:7px;height:7px;border-radius:99px;
+         background:var(--e-or);transform:translate(-50%,-50%);box-shadow:0 0 0 4px var(--e-fond)}
+#s35 .perle.creuse{background:var(--e-fond);box-shadow:inset 0 0 0 1px var(--e-or),0 0 0 4px var(--e-fond)}
+#s35 .rubrique{margin:0 24px;display:grid;grid-template-columns:22px 1fr auto;gap:0 15px;
+            align-items:center;padding:15px 0;border-bottom:1px solid var(--e-trait)}
+#s35 .rubrique .ico{width:22px;height:22px;border-radius:6px;
+                 background:rgba(185,139,71,.16)}
+#s35 .rubrique .nom{font-size:15.5px}
+#s35 .rubrique .dit{margin-top:1px;font-size:12.5px;color:var(--e-gris)}
+#s35 .rubrique .fleche{color:var(--e-gris);font-size:16px}
+#s35 .rubrique.vise{background:linear-gradient(90deg,rgba(185,139,71,.10),transparent 70%);
+                 margin:0;padding-left:24px;padding-right:24px}
+#s35 .bloc{margin:16px 24px 0;border-radius:4px;background:var(--e-plage);padding:17px 19px}
+#s35 .bloc .quoi{font-size:15px}
+#s35 .bloc .pourquoi{margin-top:5px;font-size:13px;color:var(--e-gris);line-height:1.55}
+#s35 .interrupteur{display:flex;align-items:center;justify-content:space-between;gap:14px}
+#s35 .glissiere{width:50px;height:30px;border-radius:99px;background:var(--e-pin);position:relative;flex:none}
+#s35 .glissiere::after{content:"";position:absolute;top:3px;right:3px;width:24px;height:24px;
+                    border-radius:99px;background:#faf9f5}
+#s35 .glissiere.eteinte{background:rgba(28,28,26,.16)}
+#s35 .glissiere.eteinte::after{right:auto;left:3px}
+#s35 .pastilles{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+#s35 .pastille{border-radius:99px;padding:9px 0;width:46px;text-align:center;font-size:15px;
+            background:var(--e-fond);color:var(--e-encre)}
+#s35 .pastille.prise{background:var(--e-teinte);color:var(--e-rouille);font-weight:600;
+                  box-shadow:inset 0 0 0 1px var(--e-rouille)}
+#s35 .unite{margin-top:9px;font-size:12.5px;color:var(--e-gris);text-align:center}
+#s35 .molette{margin-top:14px;border-radius:4px;background:var(--e-fond);padding:8px 0;
+           text-align:center;position:relative;overflow:hidden}
+#s35 .molette .v{font:400 20px/1 ui-serif,Georgia,serif;color:var(--e-gris);padding:7px 0}
+#s35 .molette .v.centre{font-size:30px;color:var(--e-encre)}
+#s35 .molette .bande{position:absolute;left:14px;right:14px;top:50%;height:44px;
+                  transform:translateY(-50%);border-radius:6px;background:rgba(185,139,71,.10);
+                  box-shadow:inset 0 0 0 1px rgba(185,139,71,.32)}
+#s35 .curseur{margin-top:16px}
+#s35 .curseur .piste{height:3px;border-radius:99px;background:var(--e-trait);position:relative}
+#s35 .curseur .piste::before{content:"";position:absolute;left:0;top:0;bottom:0;width:44%;
+                          border-radius:99px;background:var(--e-or)}
+#s35 .curseur .bouton{position:absolute;left:44%;top:50%;width:24px;height:24px;border-radius:99px;
+                   background:#faf9f5;transform:translate(-50%,-50%);
+                   box-shadow:0 1px 3px rgba(20,18,14,.28),inset 0 0 0 1px rgba(185,139,71,.5)}
+#s35 .curseur .bornes{margin-top:11px;display:flex;justify-content:space-between;
+                   font-size:11.5px;color:var(--e-gris)}
+#s35 .curseur .valeur{margin-top:12px;text-align:center;font:400 26px/1 ui-serif,Georgia,serif}
+#s35 .curseur .valeur small{display:block;margin-top:6px;font:500 10px/1 ui-sans-serif,sans-serif;
+                         letter-spacing:.26em;text-transform:uppercase;color:var(--e-gris)}
+#s35 .groupe{margin:18px 24px 0}
+#s35 .groupe .t{font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+             text-transform:uppercase;color:var(--e-gris);margin-bottom:4px}
+#s35 .ligne{display:grid;grid-template-columns:1fr auto auto;gap:0 12px;align-items:center;
+         padding:13px 0;border-bottom:1px solid var(--e-trait)}
+#s35 .ligne .nom{font-size:14.5px}
+#s35 .ligne .dit{margin-top:2px;font-size:12px;color:var(--e-gris)}
+#s35 .ligne .canal{font:500 9px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+                text-transform:uppercase;color:var(--e-gris)}
+#s35 .ligne .mini{width:38px;height:22px;border-radius:99px;background:var(--e-pin);position:relative}
+#s35 .ligne .mini::after{content:"";position:absolute;top:2px;right:2px;width:18px;height:18px;
+                      border-radius:99px;background:#faf9f5}
+#s35 .ligne.neuve{background:linear-gradient(90deg,rgba(185,139,71,.13),transparent 78%);
+               margin:0 -24px;padding-left:24px;padding-right:24px}
+#s35 .ligne.neuve .nom{font-weight:600}
+#s35 .chiffrer{margin-top:14px;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+#s35 .chiffrer .valeur{width:56px;border-radius:4px;background:var(--e-fond);
+                    box-shadow:inset 0 0 0 1px var(--e-trait);text-align:center;
+                    padding:9px 0;font:400 21px/1 ui-serif,Georgia,serif}
+#s35 .chiffrer .u{font-size:15px}
+#s35 .chiffrer .apres{font-size:13px;color:var(--e-gris)}
+#s35 .exemple{margin:14px 24px 0;padding-left:12px;border-left:2px solid var(--e-or);
+           font-size:13px;color:var(--e-gris);line-height:1.55}
+#s35 .exemple b{color:var(--e-encre)}
+#s35 .barre{margin-top:18px;padding-top:13px;border-top:1px solid var(--e-trait);
+         display:flex;justify-content:space-between;padding-left:24px;padding-right:24px;
+         font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+         text-transform:uppercase;color:var(--e-gris)}
+#s35 .barre .actif{color:var(--e-encre)}
 #s35 .note{max-width:74ch;margin:64px auto 0;padding-top:26px;border-top:1px solid var(--trait);
         font-size:13.6px;color:var(--gris);line-height:1.72}
 #s35 .note b{color:var(--encre)}
 #s35 .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
            letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
 #s35 .note ul{margin:10px 0 0;padding-left:18px}
-#s35 .note li{margin:6px 0}
+#s35 .note li{margin:7px 0}
+
+
+/* 36 — Le devis : le reprendre avant de l’envoyer */
+#s36{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f7f5f0; --alerte:#9C3B2E;
+  }
+@media (prefers-color-scheme: dark){
+#s36:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --alerte:#C4614F;
+    }
+
+  
+}
+#s36[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --alerte:#C4614F;
+  }
+#s36, #s36 *{box-sizing:border-box}
+#s36{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+#s36 .page{max-width:1300px;margin:0 auto}
+#s36 .intro{max-width:66ch;margin:0 auto;text-align:center}
+#s36 .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+#s36 .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+#s36 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+#s36 .intro b{color:var(--encre);font-weight:600}
+#s36 .famille{max-width:1300px;margin:56px auto 0;text-align:center;
+           font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.32em;
+           text-transform:uppercase;color:var(--or)}
+#s36 .sous-famille{max-width:62ch;margin:10px auto 0;text-align:center;
+                font-size:13.4px;color:var(--gris);line-height:1.6}
+#s36 .sous-famille b{color:var(--encre)}
+#s36 .grille{display:flex;flex-wrap:wrap;gap:54px 40px;justify-content:center;
+          align-items:flex-start;margin-top:26px}
+#s36 .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px;width:100%}
+#s36 .legende{text-align:center;max-width:390px;width:100%}
+#s36 .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+              text-transform:uppercase;color:var(--or)}
+#s36 .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+#s36 .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+#s36 .legende p + p{margin-top:9px}
+#s36 .legende .pour{color:var(--encre);opacity:.86}
+#s36 .legende .contre{color:var(--alerte);opacity:.92}
+#s36 .legende b{color:var(--encre)}
+#s36 .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+#s36 .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
+    width:390px;max-width:100%;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);padding:22px 0 24px;
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+#s36 .retour{margin:0 24px;width:38px;height:38px;border-radius:9999px;
+          background:var(--e-plage);display:flex;align-items:center;justify-content:center;
+          color:var(--e-gris);font-size:17px}
+#s36 .eyebrow{margin:16px 24px 0;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--e-or)}
+#s36 .titre-ecran{margin:12px 24px 0;font:400 34px/1.1 ui-serif,Georgia,serif}
+#s36 .filet{margin:16px 24px 0;height:1px;background:var(--e-trait)}
+#s36 .ligne-titre{margin:12px 24px 0;display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+#s36 .ligne-titre h3{margin:0;font:400 34px/1.1 ui-serif,Georgia,serif}
+#s36 .action-titre{font-size:15px;font-weight:600;color:var(--e-or);white-space:nowrap}
+#s36 .titre-porte{display:inline-flex;align-items:center;gap:10px}
+#s36 .titre-porte .crayon{font-size:17px;color:var(--e-or);
+                       transform:translateY(-6px)}
+#s36 .titre-porte.souligne h3{border-bottom:1px solid rgba(185,139,71,.5);padding-bottom:2px}
+#s36 .carte{margin:16px 24px 0;border-radius:4px;background:var(--e-plage);padding:18px 20px}
+#s36 .carte + .carte{margin-top:14px}
+#s36 .etiq{font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+        text-transform:uppercase;color:var(--e-gris)}
+#s36 .val{margin-top:7px;font-size:15px}
+#s36 .val.gris{margin-top:3px;color:var(--e-gris)}
+#s36 .sep{margin:14px 0;height:1px;background:var(--e-trait)}
+#s36 .en-tete-carte{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+#s36 .en-tete-carte .agir{font-size:13.5px;font-weight:600;color:var(--e-or);white-space:nowrap}
+#s36 .en-tete-carte .chevron{font-size:16px;color:var(--e-or)}
+#s36 .ligne-devis{margin-top:11px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:15px}
+#s36 .ligne-devis .prix{color:var(--e-gris)}
+#s36 .total-carte{margin:16px 24px 0;border-radius:4px;background:var(--e-plage);
+               padding:18px 20px;text-align:center}
+#s36 .total-carte .etiq{letter-spacing:.28em}
+#s36 .total-carte .montant{margin-top:8px;font:400 32px/1 ui-serif,Georgia,serif;color:var(--e-pin)}
+#s36 .sous-total{margin:15px 24px 0;text-align:center;font-size:14px;color:var(--e-encre)}
+#s36 .sous-total .lien{color:var(--e-encre)}
+#s36 .sous-total .or{color:var(--e-or);font-weight:600}
+#s36 .sous-total .pt{color:var(--e-gris);opacity:.6;padding:0 9px}
+#s36 .capsule{display:block;margin:16px 24px 0;border-radius:9999px;
+           background:var(--e-pin);color:#faf9f5;padding:14px 0;
+           text-align:center;font-size:16px;font-weight:500}
+#s36 .capsule.creuse{background:transparent;color:var(--e-pin);
+                  box-shadow:inset 0 0 0 1px rgba(47,59,47,.35);font-weight:500}
+#s36 .carte.touchable{position:relative;padding-right:38px;
+                   box-shadow:inset 0 0 0 1px rgba(185,139,71,.28)}
+#s36 .carte.touchable .fleche{position:absolute;right:16px;top:50%;
+                           transform:translateY(-50%);font-size:18px;color:var(--e-or)}
+#s36 .rien{margin:16px 24px 0;padding:13px 12px;border:1px dashed var(--e-trait);
+        border-radius:4px;text-align:center;font-size:12.5px;color:var(--e-gris)}
+#s36 .note{max-width:74ch;margin:64px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+#s36 .note b{color:var(--encre)}
+#s36 .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+#s36 .note ul{margin:10px 0 0;padding-left:18px}
+#s36 .note li{margin:6px 0}
+
+
+/* 37 — Pendant que ça bâtit : le dire, sans rien recouvrir */
+#s37{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f7f5f0; --papier:#ece9e1;
+    --pin:#2f3b2f;
+  }
+@media (prefers-color-scheme: dark){
+#s37:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --papier:#262420;
+      --pin:#8fa88c;
+    }
+
+  
+}
+#s37[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --papier:#262420;
+    --pin:#8fa88c;
+  }
+#s37, #s37 *{box-sizing:border-box}
+#s37{
+    margin:0; background:var(--fond); color:var(--encre);
+    font:400 16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:36px 18px 72px;
+  }
+#s37 .chapo{max-width:760px;margin:0 auto 40px}
+#s37 h1{font-size:26px;line-height:1.25;margin:0 0 14px;font-weight:500}
+#s37 .chapo p{margin:0 0 12px;color:var(--gris);font-size:14.5px}
+#s37 .chapo b{color:var(--encre);font-weight:500}
+#s37 .grille{
+    display:flex;flex-wrap:wrap;gap:34px;justify-content:center;
+    max-width:1320px;margin:0 auto;
+  }
+#s37 .colonne{width:390px;max-width:100%}
+#s37 .titre-prop{
+    font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--or);margin:0 0 6px;
+  }
+#s37 .note{font-size:13.5px;color:var(--gris);margin:0 0 16px;min-height:74px}
+#s37 .note b{color:var(--encre);font-weight:500}
+#s37 .tel{
+    width:390px;max-width:100%;height:600px;overflow:hidden;
+    background:var(--fond);border:1px solid var(--trait);border-radius:22px;
+    display:flex;flex-direction:column;position:relative;
+  }
+#s37 .barre-haut{height:26px;flex:none}
+#s37 .ecran{flex:1;overflow:hidden;display:flex;flex-direction:column}
+#s37 .retour{
+    width:40px;height:40px;border-radius:999px;background:var(--papier);
+    margin:14px 0 0 24px;flex:none;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--pin);font-size:17px;
+  }
+#s37 .surtitre{
+    margin:22px 24px 0;font-size:10px;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--gris);
+  }
+#s37 .h1e{margin:8px 24px 0;font-size:27px;font-weight:400}
+#s37 .bloc{
+    margin:20px 24px 0;background:var(--plage);
+    border:1px solid var(--trait);border-radius:12px;padding:16px 16px 15px;
+  }
+#s37 .bloc .lib{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
+#s37 .ligne{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:13px 0;border-bottom:1px solid var(--trait);font-size:15px;
+  }
+#s37 .ligne:last-child{border-bottom:0}
+#s37 .ligne .val{color:var(--gris);font-size:14px}
+#s37 .onglets{
+    height:58px;flex:none;border-top:1px solid var(--trait);
+    display:flex;align-items:center;background:var(--fond);
+  }
+#s37 .onglets span{
+    flex:1;text-align:center;font-size:11.5px;color:var(--gris);
+  }
+#s37 .onglets .actif{color:var(--pin);font-weight:500}
+#s37 .bandeau-a{
+    flex:none;background:rgba(185,139,71,.13);
+    border-bottom:1px solid rgba(185,139,71,.30);
+    padding:9px 24px 10px;
+  }
+#s37 .bandeau-a .txt{font-size:12.5px;line-height:1.4;color:#7d6234}
+#s37 .bandeau-a .txt b{color:var(--encre);font-weight:500}
+#s37 .jauge{
+    margin-top:7px;height:3px;border-radius:999px;
+    background:rgba(185,139,71,.25);overflow:hidden;
+  }
+#s37 .jauge i{display:block;height:100%;width:63%;background:var(--or)}
+#s37 .rang-titre{display:flex;align-items:baseline;gap:10px;margin:8px 24px 0}
+#s37 .rang-titre .h1e{margin:0}
+#s37 .pastille{
+    flex:none;font-size:11px;letter-spacing:.06em;color:#7d6234;
+    background:rgba(185,139,71,.15);border:1px solid rgba(185,139,71,.32);
+    border-radius:999px;padding:3px 10px 4px;white-space:nowrap;
+  }
+#s37 .sous-titre-b{
+    margin:9px 24px 0;font-size:12px;color:var(--gris);line-height:1.45;
+  }
+#s37 .carte-c{
+    margin:22px 24px 0;background:var(--plage);border:1px solid var(--trait);
+    border-radius:12px;padding:22px 20px 20px;text-align:center;
+  }
+#s37 .carte-c .rond{
+    width:44px;height:44px;border-radius:999px;margin:0 auto 14px;
+    background:rgba(185,139,71,.15);
+    display:flex;align-items:center;justify-content:center;color:var(--or);
+    font-size:19px;
+  }
+#s37 .carte-c h3{margin:0 0 8px;font-size:17px;font-weight:400}
+#s37 .carte-c p{margin:0;font-size:13px;color:var(--gris);line-height:1.55}
+#s37 .carte-c .compte{
+    margin-top:14px;font-size:12.5px;color:#7d6234;
+  }
+#s37 .carte-c .jauge{margin:9px 26px 0}
+#s37 .apres{
+    max-width:760px;margin:56px auto 0;padding-top:26px;
+    border-top:1px solid var(--trait);
+  }
+#s37 .apres h2{font-size:17px;font-weight:500;margin:0 0 12px}
+#s37 .apres p{margin:0 0 12px;font-size:14px;color:var(--gris)}
+#s37 .apres b{color:var(--encre);font-weight:500}
+#s37 .apres table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 18px}
+#s37 .apres th,#s37 .apres td{
+    text-align:left;padding:7px 10px 7px 0;border-bottom:1px solid var(--trait);
+    color:var(--gris);
+  }
+#s37 .apres th{color:var(--encre);font-weight:500}
+#s37 .apres td.n{color:var(--encre);font-variant-numeric:tabular-nums}
 
 
 </style>
@@ -4263,8 +4565,17 @@
       </a>
       <p class="famille">Le devis avant l’envoi</p>
       <a class="item" href="#m35">
-        <span class="no">35</span><span class="titre">Le devis : le reprendre avant de l’envoyer</span><span class="fleche">↓</span>
+        <span class="no">35</span><span class="titre">Le devis qui tarde : le rappel, et le délai</span><span class="fleche">↓</span>
+        <span class="quoi">Un rappel quand un chantier reste sans devis, et le délai qui se règle dans Réglages → Notifications. Deux tons pour la carte, trois façons de poser le nombre de jours.</span>
+      </a>
+      <a class="item" href="#m36">
+        <span class="no">36</span><span class="titre">Le devis : le reprendre avant de l’envoyer</span><span class="fleche">↓</span>
         <span class="quoi">Tout est là pour vérifier, rien pour corriger : « Modifier mon devis » n’existe qu’APRÈS l’envoi. Son idée — le mot « Devis » cliquable — dessinée telle quelle, et quatre autres façons d’y arriver.</span>
+      </a>
+      <p class="famille">Le banc d’essai</p>
+      <a class="item" href="#m37">
+        <span class="no">37</span><span class="titre">Pendant que ça bâtit : le dire, sans rien recouvrir</span><span class="fleche">↓</span>
+        <span class="quoi">Trois bandeaux qui distinguent « ça bâtit, patiente » de « c’est en panne », avec le compte des écrans déjà prêts. Le chiffre existait ; il n’était écrit nulle part.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -15411,10 +15722,432 @@
   <section class="etape" id="m35">
     <div class="etape-tete">
       <span class="etape-no">35</span>
-      <h2>Le devis : le reprendre avant de l’envoyer</h2>
+      <h2>Le devis qui tarde : le rappel, et le délai</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s35">
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Le devis qui tarde</p>
+    <h1>Un rappel, et le délai qui vous appartient</h1>
+    <p><b>Trois choses existent déjà, et elles décident du dessin.</b> L’accueil
+      sait porter une carte de suivi — c’est celle que vous avez photographiée
+      hier. La rubrique <b>« Notifications — Alertes et rappels »</b> figure déjà
+      dans le plan de vos réglages. Et <b>l’écran des notifications est dessiné
+      depuis le sixième lot</b> : huit familles rangées en trois groupes.</p>
+    <p>Il n’y a donc <b>ni catégorie à créer, ni écran à inventer</b> : il y a une
+      <b>neuvième famille</b> à poser parmi les huit, une carte de plus sur
+      l’accueil, et le nombre de jours à choisir.</p>
+  </div>
+
+  <!-- ————————————————————————————————————————————————————————————
+       1. LE RAPPEL SUR L'ACCUEIL
+       ———————————————————————————————————————————————————————— -->
+  <p class="famille">1 — Le rappel, sur votre accueil</p>
+  <p class="sous-famille">Même forme que la carte « correction demandée » : vous
+    n’avez rien de nouveau à apprendre. <b>Deux tons possibles</b> — et le ton
+    n’est pas un détail, il dit si c’est urgent ou si c’est un pense-bête.</p>
+
+  <div class="grille">
+
+    <!-- A — le ton discret -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <p class="marque">Atlas</p>
+        <p class="eyebrow">Bonjour</p>
+        <h3 class="titre-ecran">Vos chantiers</h3>
+        <p class="sous-titre">Deux en cours</p>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiq">Devis en attente</p>
+          <p class="nom">Mme Félicie</p>
+          <p class="dit">Vue il y a 14 jours — aucun devis envoyé.</p>
+          <div class="gestes">
+            <span class="fort">Faire le devis</span>
+            <span class="gris">J’ai vu</span>
+          </div>
+        </div>
+        <div class="fil">
+          <div class="brin"><span class="perle creuse"></span>
+            <div class="jour"><b>13</b>Août</div>
+            <div class="quoi"><p class="n">Mr. Martins</p>
+              <p class="a">10 rue d’Enfer, Nantes</p>
+              <p class="e">Devis prêt à envoyer</p></div>
+          </div>
+        </div>
+        <div class="barre"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
+      </div></div>
+      <div class="legende">
+        <h2>A — le pense-bête</h2>
+        <p class="titre">Ton discret, comme le reste</p>
+        <p class="pour">Un rappel n’est pas une alarme : le client n’a rien
+          demandé, c’est <b>vous</b> qui vous rappelez à l’ordre. Le fond clair
+          le range parmi les choses à faire, pas parmi les urgences.</p>
+        <p class="contre">Se remarque moins si vous avez déjà trois cartes.</p>
+      </div>
+    </div>
+
+    <!-- B — le ton chaud -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <p class="marque">Atlas</p>
+        <p class="eyebrow">Bonjour</p>
+        <h3 class="titre-ecran">Vos chantiers</h3>
+        <p class="sous-titre">Deux en cours</p>
+        <div class="filet"></div>
+        <div class="carte teinte">
+          <p class="etiq">Devis en attente · 14 jours</p>
+          <p class="nom">Mme Félicie</p>
+          <p class="dit">Chantier vu le 31 juillet — aucun devis n’est parti.</p>
+          <div class="gestes">
+            <span class="fort">Faire le devis</span>
+            <span class="gris">J’ai vu</span>
+          </div>
+        </div>
+        <div class="fil">
+          <div class="brin"><span class="perle creuse"></span>
+            <div class="jour"><b>13</b>Août</div>
+            <div class="quoi"><p class="n">Mr. Martins</p>
+              <p class="a">10 rue d’Enfer, Nantes</p>
+              <p class="e">Devis prêt à envoyer</p></div>
+          </div>
+        </div>
+        <div class="barre"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
+      </div></div>
+      <div class="legende">
+        <h2>B — le rappel qui insiste</h2>
+        <p class="titre">Fond teinté, et le compte des jours dans l’étiquette</p>
+        <p class="pour">Le nombre de jours <b>se lit avant le nom</b> : au
+          quatorzième, ça ne se rate pas. C’est le même ton que les cartes qui
+          appellent un geste.</p>
+        <p class="contre">Si trois chantiers tardent, trois blocs teintés
+          d’affilée — l’accueil devient une liste de reproches.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ————————————————————————————————————————————————————————————
+       2. OÙ LE RÉGLAGE SE TROUVE
+       ———————————————————————————————————————————————————————— -->
+  <p class="famille">2 — Où le régler</p>
+  <p class="sous-famille">La rubrique existe déjà dans le plan de vos réglages,
+    rangée dans <b>ce qui vous appartient</b> — elle vous suit d’une entreprise
+    à l’autre. Et derrière elle, l’écran est <b>déjà dessiné</b> : huit familles
+    en trois groupes. Votre rappel en fait une <b>neuvième</b>.</p>
+
+  <div class="grille">
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <p class="marque">Atlas</p>
+        <p class="eyebrow">Vous</p>
+        <h3 class="titre-ecran">Réglages</h3>
+        <div class="filet"></div>
+        <p class="sous-titre" style="margin-top:17px">Vous</p>
+        <div style="margin-top:8px"></div>
+        <div class="rubrique"><span class="ico"></span>
+          <div><p class="nom">Mon compte</p><p class="dit">Nom, e-mail et téléphone</p></div>
+          <span class="fleche">›</span></div>
+        <div class="rubrique vise"><span class="ico"></span>
+          <div><p class="nom">Notifications</p><p class="dit">Alertes et rappels</p></div>
+          <span class="fleche">›</span></div>
+        <div class="rubrique"><span class="ico"></span>
+          <div><p class="nom">Connexion</p><p class="dit">Mot de passe et appareils</p></div>
+          <span class="fleche">›</span></div>
+        <div class="rubrique" style="border-bottom:none"><span class="ico"></span>
+          <div><p class="nom">Apparence</p><p class="dit">Thème clair, sombre et couleurs</p></div>
+          <span class="fleche">›</span></div>
+        <div class="barre"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span></div>
+      </div></div>
+      <div class="legende">
+        <h2>La rubrique</h2>
+        <p class="titre">Réglages → Notifications</p>
+        <p>Les pictogrammes sont laissés en aplat : ceux de l’application ne
+          se rendent pas dans une page comme celle-ci.</p>
+        <p class="pour">Déjà prévue, déjà nommée « Alertes et rappels ».
+          <b>Rien à inventer</b> — et un salarié pourra y toucher sans pouvoir
+          approcher vos tarifs.</p>
+      </div>
+    </div>
+
+    <!-- La neuvième famille, posée parmi les huit déjà dessinées. -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Vous</p>
+        <h3 class="titre-ecran">Notifications</h3>
+        <div class="filet"></div>
+
+        <div class="groupe">
+          <p class="t">Votre argent</p>
+          <div class="ligne">
+            <div><p class="nom">Facture impayée</p><p class="dit">Passé la date d’échéance</p></div>
+            <span class="canal">Téléphone</span><span class="mini"></span>
+          </div>
+          <div class="ligne">
+            <div><p class="nom">Réponse à un devis</p><p class="dit">Accepté, corrigé ou refusé</p></div>
+            <span class="canal">Téléphone</span><span class="mini"></span>
+          </div>
+        </div>
+
+        <div class="groupe">
+          <p class="t">Vos clients et votre équipe</p>
+          <!-- LÀ, et pas ailleurs : un devis qui ne part pas est un client qui
+               attend. C'est le voisin immédiat de « client à relancer ». -->
+          <div class="ligne neuve">
+            <div><p class="nom">Devis pas encore parti</p><p class="dit">Au bout de 4 jours</p></div>
+            <span class="canal">Accueil</span><span class="mini"></span>
+          </div>
+          <div class="ligne">
+            <div><p class="nom">Client à relancer</p><p class="dit">Devis sans réponse</p></div>
+            <span class="canal">E-mail</span><span class="mini"></span>
+          </div>
+          <div class="ligne" style="border-bottom:none">
+            <div><p class="nom">Affectation d’équipe</p><p class="dit">Quelqu’un posé sur un chantier</p></div>
+            <span class="canal">Téléphone</span><span class="mini"></span>
+          </div>
+        </div>
+
+        <p class="exemple" style="margin-top:16px">La ligne en or est la
+          <b>neuvième</b>. Les huit autres sont celles du sixième lot, à leur
+          place — c’est chez elles que la vôtre se range.</p>
+        <div class="barre"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span></div>
+      </div></div>
+      <div class="legende">
+        <h2>La neuvième famille</h2>
+        <p class="titre">« Devis pas encore parti », chez vos clients</p>
+        <p class="pour">Elle se pose <b>à côté de « client à relancer »</b> :
+          c’est la même inquiétude, prise un cran plus tôt — là, c’est le client
+          qui attend une réponse de vous.</p>
+        <p class="contre">On pourrait la ranger dans « votre argent » : un devis
+          qui ne part pas est un chantier qui ne se facture pas. <b>Dites-moi si
+          vous la voulez là</b>, tout en haut de l’écran.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ————————————————————————————————————————————————————————————
+       3. LE DÉLAI — TROIS FAÇONS DE LE POSER
+       ———————————————————————————————————————————————————————— -->
+  <p class="famille">3 — Le délai, quatre façons</p>
+  <p class="sous-famille">Vous avez dit <b>« deux, trois, quatre, cinq, six
+    jours »</b>. Voici les manières de vous laisser choisir — <b>en commençant
+    par celle qui existe déjà</b>, car l’écran des notifications a tranché la
+    question une fois, pour l’impayé.</p>
+  <p class="sous-famille" style="margin-top:-6px"><b>Elles ne se posent pas au
+    même endroit</b>, et ça compte plus que leur forme. <b>F</b> ouvre l’alerte
+    et règle le délai sur sa propre page — comme l’impayé aujourd’hui. <b>C</b>,
+    <b>D</b> et <b>E</b> le posent <b>à même la liste</b>, sous l’interrupteur :
+    un geste de moins, mais neuf familles qui déplient chacune leur réglage font
+    un écran long.</p>
+
+  <div class="grille">
+
+    <!-- F — celle que la planche du sixième lot a déjà retenue. Elle passe en
+         PREMIER : proposer trois formes neuves sans montrer celle qui existe,
+         c'est faire choisir dans le vide. -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Notifications</p>
+        <h3 class="titre-ecran">Devis pas encore parti</h3>
+        <div class="filet"></div>
+        <div class="bloc">
+          <p class="quoi" style="font-weight:500">Ce que vous verrez</p>
+          <p class="pourquoi" style="margin-top:8px">« Mme Félicie — chantier
+            ouvert il y a 14 jours, aucun devis envoyé. »</p>
+        </div>
+        <div class="bloc">
+          <p class="quoi" style="font-weight:500">À partir de quand</p>
+          <div class="chiffrer">
+            <span class="valeur">4</span>
+            <span class="u">jours</span>
+            <span class="apres">après l’ouverture du chantier</span>
+          </div>
+        </div>
+        <p class="exemple">Un chantier ouvert le <b>lundi</b> sans devis parti
+          vous rappellera à l’ordre le <b>vendredi</b>.</p>
+        <div class="barre"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span></div>
+      </div></div>
+      <div class="legende">
+        <h2>F — celle qui existe déjà</h2>
+        <p class="titre">Un nombre qu’on tape, et sa phrase</p>
+        <p class="pour"><b>C’est la forme retenue pour l’impayé</b> — « 7 jours
+          après l’échéance ». La reprendre, c’est un écran qui se lit pareil
+          d’une alerte à l’autre, et <b>la phrase dit ce que le nombre veut
+          dire</b>. Aucune borne : 2 comme 30.</p>
+        <p class="contre">Il faut ouvrir un clavier pour changer un chiffre —
+          le geste le plus long des quatre.</p>
+      </div>
+    </div>
+
+    <!-- C — les pastilles -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Vous</p>
+        <h3 class="titre-ecran">Notifications</h3>
+        <div class="filet"></div>
+        <div class="bloc">
+          <div class="interrupteur">
+            <div>
+              <p class="quoi">Me rappeler les devis en retard</p>
+              <p class="pourquoi">Quand un chantier reste sans devis.</p>
+            </div>
+            <span class="glissiere"></span>
+          </div>
+          <div class="pastilles">
+            <span class="pastille">2</span>
+            <span class="pastille">3</span>
+            <span class="pastille prise">4</span>
+            <span class="pastille">5</span>
+            <span class="pastille">6</span>
+          </div>
+          <p class="unite">jours après l’ouverture du chantier</p>
+        </div>
+        <p class="exemple">Un chantier ouvert le <b>lundi</b> sans devis parti
+          vous rappellera à l’ordre le <b>vendredi</b>.</p>
+        <div class="barre"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span></div>
+      </div></div>
+      <div class="legende">
+        <h2>C — les pastilles</h2>
+        <p class="titre">Vos cinq valeurs, en un appui</p>
+        <p class="pour"><b>Exactement ce que vous avez dit</b>, et le geste le
+          plus court : un doigt, une fois. Même forme que les pastilles Mr / Mme
+          que vous venez de retenir.</p>
+        <p class="contre">Enfermé entre 2 et 6. Le jour où vous voudriez 10, il
+          faut y revenir. Et <b>l’impayé garderait son nombre tapé</b> : deux
+          façons de poser un délai sur le même écran.</p>
+      </div>
+    </div>
+
+    <!-- D — la molette -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Vous</p>
+        <h3 class="titre-ecran">Notifications</h3>
+        <div class="filet"></div>
+        <div class="bloc">
+          <div class="interrupteur">
+            <div>
+              <p class="quoi">Me rappeler les devis en retard</p>
+              <p class="pourquoi">Quand un chantier reste sans devis.</p>
+            </div>
+            <span class="glissiere"></span>
+          </div>
+          <div class="molette">
+            <span class="bande"></span>
+            <p class="v">3</p>
+            <p class="v centre">4</p>
+            <p class="v">5</p>
+          </div>
+          <p class="unite">jours — faites tourner</p>
+        </div>
+        <p class="exemple">Un chantier ouvert le <b>lundi</b> sans devis parti
+          vous rappellera à l’ordre le <b>vendredi</b>.</p>
+        <div class="barre"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span></div>
+      </div></div>
+      <div class="legende">
+        <h2>D — la molette</h2>
+        <p class="titre">Comme le sélecteur d’heure d’un téléphone</p>
+        <p class="pour">Aucune borne : 1 jour comme 30. Le geste est familier —
+          c’est celui des réveils.</p>
+        <p class="contre">Il faut viser et faire tourner : <b>plus long</b> que
+          toucher une pastille, pour un réglage qu’on pose une fois.</p>
+      </div>
+    </div>
+
+    <!-- E — le curseur -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Vous</p>
+        <h3 class="titre-ecran">Notifications</h3>
+        <div class="filet"></div>
+        <div class="bloc">
+          <div class="interrupteur">
+            <div>
+              <p class="quoi">Me rappeler les devis en retard</p>
+              <p class="pourquoi">Quand un chantier reste sans devis.</p>
+            </div>
+            <span class="glissiere"></span>
+          </div>
+          <div class="curseur">
+            <div class="piste"><span class="bouton"></span></div>
+            <div class="bornes"><span>1 jour</span><span>15 jours</span></div>
+            <p class="valeur">4 jours<small>après l’ouverture</small></p>
+          </div>
+        </div>
+        <p class="exemple">Un chantier ouvert le <b>lundi</b> sans devis parti
+          vous rappellera à l’ordre le <b>vendredi</b>.</p>
+        <div class="barre"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span></div>
+      </div></div>
+      <div class="legende">
+        <h2>E — le curseur</h2>
+        <p class="titre">De 1 à 15, d’un glissement</p>
+        <p class="pour">Toute l’étendue d’un seul geste, et le nombre s’affiche
+          en gros dessous.</p>
+        <p class="contre">Le plus difficile à viser au doigt sur un chantier,
+          avec des gants — et un jour d’écart se rattrape mal.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ————————————————————————————————————————————————————————————
+       CE QUI NE SE DÉCIDE PAS À L'ŒIL
+       ———————————————————————————————————————————————————————— -->
+  <div class="note">
+    <span class="t">Quatre règles, à trancher avec vous</span>
+    <ul>
+      <li><b>Le rappel s’efface tout seul dès que le devis part.</b> Non
+        négociable : un rappel qu’il faut ranger à la main devient du bruit, et
+        au troisième on ne les lit plus.</li>
+      <li><b>« J’ai vu » repousse, il ne supprime pas.</b> Sinon un chantier
+        oublié disparaît en même temps que le rappel — c’est-à-dire exactement
+        le contraire de ce qu’on cherche. Il se tait <b>jusqu’au lendemain</b>,
+        puis revient tant que le devis n’est pas parti.</li>
+      <li><b>Le compte part de l’ouverture du chantier</b>, pas du rendez-vous :
+        Atlas ne connaît que la date où vous l’avez créé. Si vous voulez qu’il
+        parte de la visite, il faudra une date de visite — et c’est un champ de
+        plus à remplir.</li>
+      <li><b>Vous ne le verrez qu’en ouvrant Atlas.</b> Aucune alerte ne part
+        sur votre téléphone : ni SMS, ni e-mail, ni pastille sur l’icône. C’est
+        la même limite que partout ailleurs, et elle tombera le jour où Atlas
+        sera hébergé pour de vrai. C’est aussi pourquoi la neuvième ligne porte
+        <b>« Accueil »</b> comme canal, là où les autres disent « Téléphone » :
+        elle ne promet que ce qui existe.</li>
+      <li><b>Et une question qui vous revient</b> : la ranger dans « vos
+        clients » (à côté de « client à relancer »), ou dans <b>« votre
+        argent »</b>, tout en haut — un devis qui ne part pas est un chantier
+        qui ne se facture pas.</li>
+    </ul>
+    <p style="margin-top:14px"><b>Ma préférence : A + F.</b> Le ton discret pour
+      la carte — c’est un pense-bête, pas une alarme. Et pour le délai, la forme
+      qui existe déjà : votre écran de notifications a tranché la question une
+      fois pour l’impayé, et <b>deux façons de poser un délai sur le même écran
+      se remarqueraient</b>. Si vous préférez le geste le plus court, prenez
+      <b>C</b> — mais alors je porte l’impayé sur les pastilles aussi, pour que
+      l’écran reste d’un seul tenant.</p>
+    <p style="margin-top:10px">Dites-moi la carte, puis le réglage, et je code.
+      Comptez une journée : la carte, la rubrique ouverte avec ses neuf familles,
+      le délai enregistré, et les contrôles qui tiennent les règles ci-dessus.</p>
+    <p style="margin-top:10px"><b>Rien n’est touché dans l’application.</b></p>
+  </div>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m36">
+    <div class="etape-tete">
+      <span class="etape-no">36</span>
+      <h2>Le devis : le reprendre avant de l’envoyer</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s36">
 <div class="page">
 
   <div class="intro">
@@ -15717,6 +16450,169 @@
       n’est encore touché dans l’application.</p>
   </div>
 
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m37">
+    <div class="etape-tete">
+      <span class="etape-no">37</span>
+      <h2>Pendant que ça bâtit : le dire, sans rien recouvrir</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s37">
+<div class="chapo">
+  <h1>Pendant que ça bâtit</h1>
+  <p>
+    Quand le code change, le banc sert d’abord en <b>mode développement</b> et
+    construit la version rapide à côté. Dans cet intervalle, un écran ouvert
+    pour la première fois se compile au moment où on le touche — et le relais de
+    GitHub abandonne au bout d’une minute. <b>Rien n’est cassé, et rien ne le
+    dit.</b>
+  </p>
+  <p>
+    Le chiffre existe déjà : le préchauffage compte les écrans qu’il a rendus
+    ouvrables. Trois façons de le montrer, sans rien recouvrir.
+  </p>
+</div>
+
+<div class="grille">
+
+  <!-- ══ A ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition A · le bandeau</p>
+    <p class="note">
+      Une bande d’or pâle en haut, <b>dans le flux</b> — elle pousse le contenu
+      de 40 px au lieu de le couvrir. Elle porte la phrase, le compte et une
+      jauge fine, et <b>disparaît toute seule</b> quand la version rapide prend
+      la main. C’est celle qui répond sans qu’il ait rien à chercher.
+    </p>
+    <div class="tel">
+      <div class="barre-haut"></div>
+      <div class="bandeau-a">
+        <div class="txt">Version rapide en construction — <b>12 écrans sur 19</b> déjà prêts.</div>
+        <div class="jauge"><i></i></div>
+      </div>
+      <div class="ecran">
+        <div class="retour">‹</div>
+        <div class="surtitre">Atlas</div>
+        <div class="h1e">Réglages</div>
+        <div class="bloc">
+          <div class="lib">Vos équipes</div>
+          <div class="ligne"><span>Combien d’équipes</span><span class="val">2</span></div>
+          <div class="ligne"><span>Équipe 1</span><span class="val">Jean</span></div>
+          <div class="ligne"><span>Équipe 2</span><span class="val">Paul</span></div>
+        </div>
+        <div class="bloc">
+          <div class="lib">Votre TVA</div>
+          <div class="ligne"><span>Rythme</span><span class="val">Tous les mois</span></div>
+        </div>
+      </div>
+      <div class="onglets">
+        <span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ B ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition B · la pastille</p>
+    <p class="note">
+      Rien en travers de l’écran : <b>une pastille à côté du titre</b>, et une
+      ligne en dessous. Ça ne bouge aucun pixel du contenu — mais c’est petit,
+      et il faut le remarquer. Le compte y est, la raison aussi, en plus discret.
+    </p>
+    <div class="tel">
+      <div class="barre-haut"></div>
+      <div class="ecran">
+        <div class="retour">‹</div>
+        <div class="surtitre">Atlas</div>
+        <div class="rang-titre">
+          <div class="h1e">Réglages</div>
+          <span class="pastille">12/19 prêts</span>
+        </div>
+        <div class="sous-titre-b">
+          Version rapide en construction : un écran jamais ouvert peut tarder.
+        </div>
+        <div class="bloc">
+          <div class="lib">Vos équipes</div>
+          <div class="ligne"><span>Combien d’équipes</span><span class="val">2</span></div>
+          <div class="ligne"><span>Équipe 1</span><span class="val">Jean</span></div>
+          <div class="ligne"><span>Équipe 2</span><span class="val">Paul</span></div>
+        </div>
+        <div class="bloc">
+          <div class="lib">Votre TVA</div>
+          <div class="ligne"><span>Rythme</span><span class="val">Tous les mois</span></div>
+        </div>
+      </div>
+      <div class="onglets">
+        <span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ C ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition C · la carte, seulement quand ça rate</p>
+    <p class="note">
+      Rien tant que tout s’ouvre. Mais <b>quand un écran n’arrive pas</b>, à la
+      place de la page blanche : une carte qui dit pourquoi et où ça en est.
+      C’est la plus juste — elle parle au moment exact du problème — et la plus
+      coûteuse : il faut attraper l’écran qui ne vient pas, ce que le relais de
+      GitHub coupe avant nous.
+    </p>
+    <div class="tel">
+      <div class="barre-haut"></div>
+      <div class="ecran">
+        <div class="retour">‹</div>
+        <div class="surtitre">Atlas</div>
+        <div class="h1e">Réglages</div>
+        <div class="carte-c">
+          <div class="rond">⏳</div>
+          <h3>Cet écran se prépare</h3>
+          <p>
+            La version rapide est en construction. Cet écran n’a pas encore été
+            compilé — il s’ouvrira du premier coup dans un instant.
+          </p>
+          <div class="compte">12 écrans sur 19 déjà prêts</div>
+          <div class="jauge"><i></i></div>
+        </div>
+      </div>
+      <div class="onglets">
+        <span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="apres">
+  <h2>Ce que j’ai mesuré, et qui décide du reste</h2>
+  <p>
+    Sur un serveur froid, quatre cœurs, machine au repos — <b>la première
+    ouverture</b> de chaque écran, puis les suivantes :
+  </p>
+  <table>
+    <tr><th>Écran</th><th>Première fois</th><th>Ensuite</th></tr>
+    <tr><td>Connexion</td><td class="n">6,6 s</td><td class="n">—</td></tr>
+    <tr><td>Planning</td><td class="n">2,8 s</td><td class="n">0,6 s</td></tr>
+    <tr><td>Réglages — « Vos équipes »</td><td class="n">1,9 s</td><td class="n">0,2 s</td></tr>
+    <tr><td>Terminés</td><td class="n">1,8 s</td><td class="n">0,3 s</td></tr>
+    <tr><td>Mes prix</td><td class="n">1,7 s</td><td class="n">0,2 s</td></tr>
+    <tr><td>Mon agenda</td><td class="n">1,6 s</td><td class="n">0,2 s</td></tr>
+    <tr><td>TVA</td><td class="n">1,4 s</td><td class="n">0,2 s</td></tr>
+  </table>
+  <p>
+    <b>Réglages n’est pas plus lent que les autres.</b> Rien dans cet écran ne
+    traîne. Ce qui le distingue, c’est qu’il est rarement ouvert — donc rarement
+    déjà compilé quand il y va.
+  </p>
+  <h2>Et une réparation qui ne se voit pas</h2>
+  <p>
+    En parallèle de ce bandeau : faire bâtir <b>en priorité basse</b>, pour que
+    la construction cesse de disputer ses deux cœurs au serveur qui le sert.
+    Aucun changement d’apparence, et ça se mesure.
+  </p>
 </div>
     </div>
   </section>

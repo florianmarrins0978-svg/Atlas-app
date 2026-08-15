@@ -7,6 +7,46 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-15
+
+### Le devis qui tarde : dessiné — et l'écran qu'on allait dessiner deux fois
+
+**Sa demande du 14 août :** *« un rappel lorsque le chantier a été ouvert mais
+le devis n'a pas été envoyé »*, avec *« la possibilité dans les notifications de
+mettre le nombre de jours »*.
+
+`docs/maquettes/47-le-devis-qui-tarde.html`. **Rien n'est codé** — `CLAUDE.md`
+§3 bis : une demande d'apparence se dessine avant de se coder.
+
+**Ce que la recherche a évité, et qui vaut plus que la planche.** L'écran des
+notifications **existe déjà**, dessiné au sixième lot
+(`maquettes/atlas-reglages-notifications.html`) : huit familles en trois
+groupes, et un délai déjà formulé — « 7 jours après l'échéance ». La première
+version de cette maquette en redessinait un à côté. Le patron se serait retrouvé
+devant **deux plans du même écran**, sans savoir lequel prime.
+
+Sa demande n'est donc pas un écran : c'est une **neuvième famille** à poser
+parmi les huit, et un délai qui doit se justifier de ne pas prendre la forme
+déjà retenue. La planche montre les deux — et pose les quatre règles qui ne se
+décident pas à l'œil, dont ce que fait « J'ai vu ».
+
+### Six maquettes existaient sans qu'aucun chemin n'y mène
+
+**Trouvé en voulant numéroter la précédente**, et `TODO.md` disait le contraire :
+« sans conséquence pour le patron, les planches s'ouvrent une par une ». En
+mesurant, 38, 39, 41, 42, 43 et 46 n'étaient **ni dans la page unique, ni au
+sommaire** — elles n'existaient que pour qui connaissait leur nom de fichier.
+
+**Ce que ça évite :** dessiner une planche, la commettre, et qu'elle n'atteigne
+jamais celui pour qui elle est faite. Le compte affiché ne pouvait pas
+l'attraper : « 36 maquettes fusionnées » reste plausible quand il en manque six.
+
+`fusionner-maquettes.mjs` refuse désormais une maquette qu'aucune des deux
+portes n'atteint, un lien mort dans le sommaire, et un numéro porté deux fois —
+les cinq doublons hérités étant tolérés nommément. Éprouvé sur les trois états.
+
+---
+
 ## 2026-08-14
 
 ### « Surtout la page équipe » : l'écran qui n'était jamais préparé d'avance

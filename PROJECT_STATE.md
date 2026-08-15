@@ -560,6 +560,17 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 
 Voir `TODO.md` pour le détail et l'ordre.
 
+- **Le devis qui tarde : dessiné, en attente de son choix** (15 août) — sa
+  demande d'un *« rappel lorsque le chantier a été ouvert mais le devis n'a pas
+  été envoyé »*, avec le nombre de jours réglable.
+  `docs/maquettes/47-le-devis-qui-tarde.html`, **rien n'est codé**. Ce que la
+  recherche a évité : l'écran des notifications **existait déjà**, dessiné au
+  sixième lot (`maquettes/atlas-reglages-notifications.html`, huit familles en
+  trois groupes, et un délai déjà formulé — « 7 jours après l'échéance »). Sa
+  demande est donc une **neuvième famille**, pas un écran. Il désigne le ton de
+  la carte, la forme du délai et le groupe d'accueil ; une journée ensuite.
+  `TODO.md` §0 novivicies.
+
 - **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
   (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA
   se déclare au lieu d'être deviné d'après le taux**. **Le sommaire lui-même est CODÉ le

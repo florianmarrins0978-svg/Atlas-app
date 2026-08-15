@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-14 · `main`
+**Point de reprise :** 2026-08-15 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -673,6 +673,29 @@ chantier »* — c'est la LIGNE DE LA LISTE qu'il désignait, pas la fiche.
 dans `src/`.
 
 ## Ce qui vient d'être terminé
+
+**LE DEVIS QUI TARDE : DESSINÉ, IL ATTEND SON CHOIX (15 août).**
+`docs/maquettes/47-le-devis-qui-tarde.html`. **Rien n'est codé.** Il doit
+désigner trois choses : le ton de la carte (A discrète / B teintée), la forme du
+délai (F le nombre tapé — *celle qui existe déjà* / C pastilles / D molette /
+E curseur), et le groupe où ranger la ligne. Détail complet : `TODO.md`
+§0 novivicies.
+
+**LA LEÇON DE CE LOT, ET ELLE RESSERVIRA : CHERCHER CE QUI EXISTE DÉJÀ AVANT DE
+DESSINER.** L'écran des notifications était **déjà dessiné** au sixième lot
+(`maquettes/atlas-reglages-notifications.html`) — huit familles en trois groupes,
+et un délai déjà formulé, « 7 jours après l'échéance ». La première version de la
+maquette 47 en redessinait un à côté : le patron se serait retrouvé devant deux
+plans du même écran sans savoir lequel prime. **Le dossier `maquettes/` (celui de
+l'application) et `docs/maquettes/` (les planches de décision) sont deux endroits
+distincts** — regarder les deux avant de dessiner, jamais un seul.
+
+**ET SIX MAQUETTES N'ÉTAIENT ATTEIGNABLES PAR AUCUN CHEMIN** (38, 39, 41, 42, 43,
+46) : ni page unique, ni sommaire. `TODO.md` l'affirmait sans conséquence ; c'était
+faux. `fusionner-maquettes.mjs` refuse désormais une maquette orpheline, un lien
+mort dans le sommaire, et un numéro porté deux fois. **Avant d'écrire une
+nouvelle planche, jouer `node scripts/fusionner-maquettes.mjs` : il donne le
+prochain numéro libre en refusant le doublon.**
 
 **« L'APPLI NE MARCHE PLUS » — ELLE MARCHAIT (14 août, tard).** Son iPhone
 proposait de télécharger un fichier au lieu d'ouvrir Atlas. **Son espace de
