@@ -13,6 +13,7 @@ import {
   cleCreneau,
   dureeEnDemiJournees,
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
+  libelleOccupation,
   LIBELLE_MOMENT,
   MOMENTS,
   type JourIso,
@@ -191,21 +192,46 @@ export default function PlanningClient({
   const yAller = planifies.find((c) => c.id === yAllerId) ?? null;
 
   /**
-   * « 14 août · matin · Équipe A » — écrit **une seule fois**, parce que la
-   * ligne du planning et la feuille « Y aller » disent la même chose. Deux
-   * constructions de la même phrase finissent toujours par diverger, et l'écart
-   * se voit à l'endroit précis où le patron compare les deux.
+   * « journée · Équipe A » sur la liste, « 14 août · journée · Équipe A » dans
+   * la feuille — écrit **une seule fois**, parce que les deux disent la même
+   * chose. Deux constructions de la même phrase finissent toujours par
+   * diverger, et l'écart se voit à l'endroit précis où le patron compare.
+   *
+   * **CE QUE LA LIGNE DIT, ET CE QU'ELLE NE DIT PLUS.** Elle écrivait la
+   * demi-journée de DÉPART : un chantier d'une journée entière annonçait
+   * « matin », et un chantier de trois jours aussi. Le patron, le 13 août
+   * 2026 : *« ça laisse à penser que juste le matin est bloqué alors que c'est
+   * la journée »*. Elle dit désormais ce que le chantier OCCUPE
+   * (`libelleOccupation`), et les mots sont les siens, arrêtés le 14 août sur
+   * `docs/maquettes/49-le-mot-juste-sans-la-date.html` : « journée », et
+   * « du 21 au 25 août » au-delà d'un jour.
+   *
+   * **LA DATE TOMBE SUR LA LISTE, PAS DANS LA FEUILLE**, et ce n'est pas une
+   * inconséquence. Sa consigne : *« pas la date, elle est déjà présente juste
+   * au-dessus »* — vrai du panneau du jour, qui se titre « Lundi 17 août ».
+   * Dans la feuille du chevron, en revanche, elle n'est écrite **nulle part
+   * ailleurs** : l'en retirer laisserait un chantier sans jour.
+   *
+   * `porteLaDate` évite le doublon : sur plusieurs jours le libellé contient
+   * déjà « du 21 au 25 août », et la préfixer donnerait « 21 août · du 21 au
+   * 25 août ».
    */
-  function libelleQuand(c: ChantierPlanning): string {
-    const jour = new Date(`${c.datePlanifiee}T12:00:00Z`).toLocaleDateString("fr-FR", {
-      day: "numeric",
-      month: "short",
-      timeZone: "UTC",
-    });
-    const moment =
-      c.creneauDebut === "matin" || c.creneauDebut === "apres_midi" ? LIBELLE_MOMENT[c.creneauDebut] : null;
+  function libelleQuand(c: ChantierPlanning, avecLaDate = false): string {
+    const occupation = libelleOccupation(
+      c.datePlanifiee as JourIso,
+      c.creneauDebut === "matin" || c.creneauDebut === "apres_midi" ? c.creneauDebut : null,
+      c.dureeDemiJournees
+    );
+    const jour =
+      avecLaDate && !occupation.porteLaDate
+        ? new Date(`${c.datePlanifiee}T12:00:00Z`).toLocaleDateString("fr-FR", {
+            day: "numeric",
+            month: "short",
+            timeZone: "UTC",
+          })
+        : null;
     const equipe = libelleEquipe(lignesEquipes.find((e) => e.rang === c.rangEquipe) ?? null, nombreEquipes);
-    return [jour, moment, equipe].filter(Boolean).join(" · ");
+    return [jour, occupation.texte, equipe].filter(Boolean).join(" · ");
   }
 
   /**
@@ -668,7 +694,9 @@ export default function PlanningClient({
             clientNom={yAller.clientNom}
             adresse={yAller.adresseChantier ?? null}
             telephone={yAller.clientTelephone ?? null}
-            quand={libelleQuand(yAller)}
+            // La date reste ICI, et seulement ici : la feuille est le seul
+            // endroit où elle n'est écrite nulle part ailleurs.
+            quand={libelleQuand(yAller, true)}
             // **Vide à une seule équipe** : `equipesAffichees` ne rend rien à
             // distinguer, et la feuille n'affiche alors aucune ligne d'équipe.
             equipes={
