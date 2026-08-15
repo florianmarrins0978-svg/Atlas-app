@@ -188,6 +188,72 @@ async function main() {
     assert.equal(await equipeEnBase(), null, "le chevron ne sait pas retirer l'équipe");
   });
 
+  // ─── GESTE C : le choix au moment de POSER ──────────────────────────────
+  //
+  // *Retenu le 14 août 2026, après A.* Les équipes étaient des LIGNES DE LISTE
+  // dans le panneau du jour : elles se lisaient, elles ne s'offraient pas. Le
+  // choix existait — c'est sa forme qui ne disait pas qu'on pouvait le faire.
+  //
+  // **Ce que cette suite tient :** que les cases soient bien des cases à deux
+  // équipes, et que le bouton dise QUOI FAIRE avant qu'on ait choisi. Il
+  // n'apparaissait qu'APRÈS le choix : l'écran ne demandait donc rien, il
+  // attendait en silence.
+  await test("En posant, les équipes sont des CASES et le bouton dit quoi faire", async () => {
+    // Un chantier sans date, celui qu'on va poser.
+    await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+    await page.fill('input[placeholder="Bernard"]', `M. Cases ${Date.now()}`);
+    await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 13");
+    await page.click('button:has-text("Créer le chantier")');
+    await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
+    const aPoser = page.url().split("/").pop()!;
+    await pool.query(`UPDATE chantiers SET devis_envoye_at = now() WHERE id = $1`, [aPoser]);
+
+    await allerAuPlanning();
+    await page.locator('[data-atlas="sans-date"]').first().click();
+    await page.waitForTimeout(300);
+
+    // Un jour libre : le calendrier s'ouvre sur le mois courant.
+    const jour = new Date(Date.now() + 20 * 86400_000).toISOString().slice(0, 10);
+    for (let i = 0; i < 24; i++) {
+      if ((await page.locator(`[data-atlas="grille-mois"] button[data-jour="${jour}"]`).count()) > 0) break;
+      await page.click('button[aria-label="Mois suivant"]');
+      await page.waitForTimeout(150);
+    }
+    await page.click(`[data-atlas="grille-mois"] button[data-jour="${jour}"]`);
+    await page.waitForTimeout(600);
+
+    // **Le bouton est là AVANT le choix, éteint, et il le dit.**
+    const poser = page.locator('[data-atlas="poser"]');
+    assert.equal(await poser.count(), 1, "le bouton doit rester à l'écran avant le choix");
+    assert.ok(
+      (await poser.innerText()).includes("Choisissez"),
+      `le bouton doit dire quoi faire : « ${await poser.innerText()} »`
+    );
+    assert.ok(await poser.isDisabled(), "le bouton ne doit pas s'armer sans choix");
+
+    // **Des cases, pas des lignes** : deux créneaux d'un même moment se
+    // touchent côte à côte, donc leur haut est le MÊME. Empilés en liste, ils
+    // seraient décalés d'une hauteur de ligne — c'est la mesure qui distingue
+    // les deux formes, pas le nom d'une classe.
+    const duMatin = page.locator('[data-atlas="creneau"][data-moment="matin"]');
+    assert.equal(await duMatin.count(), 2, "il doit y avoir une case par équipe");
+    const a = await duMatin.nth(0).boundingBox();
+    const b = await duMatin.nth(1).boundingBox();
+    assert.ok(a && b);
+    assert.ok(
+      Math.abs(a.y - b.y) < 4,
+      `les deux équipes du matin ne sont pas côte à côte (y = ${a.y} et ${b.y}) — c'est encore une liste`
+    );
+
+    await duMatin.nth(1).click();
+    await page.waitForTimeout(300);
+    assert.ok(
+      (await poser.innerText()).includes("matin"),
+      `le bouton doit nommer le choix : « ${await poser.innerText()} »`
+    );
+    assert.equal(await poser.isDisabled(), false, "le bouton doit s'armer une fois le choix fait");
+  });
+
   // À une seule équipe, il n'y a personne à désigner — sa règle du 10 août.
   await test("À une seule équipe, la pastille n'existe pas", async () => {
     await pool.query(

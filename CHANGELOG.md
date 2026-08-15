@@ -937,6 +937,49 @@ parcours entier et rougit sur quatre cas quand on retire la réparation.
 
 ## 2026-08-14
 
+### Les équipes deviennent des cases au moment de poser — son geste C
+
+**Sa demande du 14 août, après avoir vu A tourner :** *« tu peux faire la C »*.
+
+**Ce que C règle, et ce qu'il ne règle pas.** Contrairement à A, il ne comblait
+aucun trou : le choix de l'équipe existait déjà dans le panneau du jour. Mais il
+se présentait en **lignes de liste** — elles se lisent, elles ne s'offrent pas.
+C'était le cœur de sa remarque d'origine : *« pas intuitif »*. Le geste qu'on
+fait à chaque nouveau chantier, désormais, ressemble enfin à un choix.
+
+| Avant | Maintenant |
+|---|---|
+| des lignes empilées, une par équipe | **des cases côte à côte**, deux par demi-journée |
+| le bouton n'apparaissait qu'APRÈS le choix | il reste à l'écran, **éteint**, et dit « Choisissez d'abord » |
+
+**Le bouton absent était le vrai défaut de cet écran** : rien ne demandait quoi
+que ce soit au doigt, l'écran attendait en silence. Il nommait déjà le choix une
+fois fait — « Poser · matin · Équipe B » — mais seulement une fois qu'il était
+trop tard pour aider.
+
+**Une seule source pour les deux formes** (`CaseCreneau`) : l'état d'un créneau —
+libre, visé, posable — décide à la fois de ce qu'on peut toucher et de ce que le
+serveur revalidera. Écrit deux fois, l'une des deux aurait fini par autoriser un
+appui que l'autre refuse.
+
+**À une seule équipe, la ligne reste** : il n'y a personne à désigner, et une
+case pleine largeur ne choisirait rien. Au-delà de deux ou trois équipes, les
+cases reviennent à la ligne — assumé, et plus lisible qu'une colonne de vingt.
+
+**Le contrôle des boutons arrondis a eu raison contre la maquette, au premier
+passage.** Elle dessinait des rectangles de 10 px ; le patron avait demandé le
+12 août *« la même forme partout »*, et `test-boutons-arrondis.ts` l'a attrapé.
+Les cases sont donc des **pastilles**, ce qui impose une ligne unique — deux
+lignes dans un stade se collent à la courbe. Le point médian sépare aussi bien
+que le retour à la ligne, et la case reste plus basse : « Équipe A · Libre ».
+
+**L'autre contrôle mesure, il ne lit pas une classe** : deux créneaux d'un même
+moment doivent avoir le MÊME haut. Empilés en liste ils seraient décalés d'une hauteur
+de ligne — c'est la seule façon de distinguer une case d'une ligne sans se fier à
+un nom de style qui peut changer.
+
+---
+
 ### Retirer une équipe : le geste manquait par le chevron
 
 **Sa question du 14 août, le soir même :** *« si on affilie une équipe et qu'au

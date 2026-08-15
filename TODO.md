@@ -123,9 +123,11 @@ ligne n'écrivait rien du tout, et rien ne signalait qu'il en manquait une.
    donné deux portes et deux réponses, et celui qui prend la seconde en conclut
    que c'est impossible.
 
-**Reste ouvert — geste C, non codé :** au moment de **poser**, les équipes sont
-toujours des lignes de liste, qui se lisent mais ne s'offrent pas. Les quatre
-cases sont dessinées dans la planche 52. Il n'a rien dit dessus.
+**Geste C — CODÉ le 14 août 2026**, à sa demande (« tu peux faire la C ») : au
+moment de **poser**, les équipes sont devenues des **cases côte à côte**, et le
+bouton reste à l'écran, éteint, en disant « Choisissez d'abord ». Il ne comblait
+aucun trou — le choix existait — mais il ne ressemblait pas à un choix, et c'est
+le geste qu'il fait à chaque nouveau chantier.
 
 **Et le défaut de fond n'est PAS refermé :** à la **pose**, le serveur revalide
 le compte de la demi-journée (`occupation < nombreEquipes`), jamais l'identité

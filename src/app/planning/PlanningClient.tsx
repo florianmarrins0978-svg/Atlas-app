@@ -900,6 +900,139 @@ function legendeDeMarque(marque: MarqueJour): string {
   return " — journée pleine";
 }
 
+/**
+ * Une demi-journée d'équipe : en CASE (geste C) ou en LIGNE (une seule équipe).
+ *
+ * **Une seule source pour les deux formes**, et ce n'est pas de l'élégance :
+ * l'état d'un créneau — libre, visé, posable — décide à la fois de ce qu'on
+ * peut toucher et de ce que le serveur revalidera. Écrit deux fois, l'une des
+ * deux aurait fini par autoriser un appui que l'autre refuse, et c'est
+ * exactement le genre d'écart qui ne se voit qu'en production.
+ *
+ * **Les `data-atlas` sont portés par les deux formes**, sans quoi les suites
+ * navigateur qui posent un chantier ne trouveraient plus où appuyer dès qu'un
+ * artisan a deux équipes.
+ */
+function CaseCreneau({
+  forme,
+  moment,
+  rang,
+  occupe,
+  nomEquipe,
+  vise,
+  posable,
+  onChoisir,
+}: {
+  forme: "case" | "ligne";
+  moment: Moment;
+  rang: number;
+  occupe: { id: string; nom: string } | null;
+  nomEquipe: string | null;
+  vise: boolean;
+  posable: boolean;
+  onChoisir: () => void;
+}) {
+  const libre = occupe === null;
+  const communs = {
+    type: "button" as const,
+    disabled: !libre || !posable,
+    onClick: onChoisir,
+    "aria-pressed": vise,
+    "data-atlas": "creneau",
+    "data-moment": moment,
+    "data-rang": rang,
+    "data-libre": libre ? "oui" : "non",
+  };
+
+  if (forme === "case") {
+    // **La case dit QUI et CE QU'ELLE FAIT, sur une seule ligne** : « Équipe A ·
+    // Libre », ou le nom du chantier qui l'occupe. Une case prise reste lisible
+    // plutôt que de disparaître — savoir POUR QUI la place est prise vaut mieux
+    // qu'un trou dans la grille.
+    //
+    // **`rounded-full`, et le contrôle des boutons arrondis a eu raison contre
+    // la maquette.** Elle dessinait des rectangles de 10 px ; le patron a
+    // demandé le 12 août 2026 « la même forme partout », et
+    // `test-boutons-arrondis.ts` l'a attrapé au premier passage. La pastille
+    // impose une ligne unique — deux lignes dans un stade se collent à la
+    // courbe —, ce qui n'est pas une perte : le point médian sépare aussi bien
+    // que le retour à la ligne, et la case reste plus basse.
+    return (
+      <button
+        {...communs}
+        className="flex min-w-[46%] flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-[11px] disabled:opacity-45"
+        style={{
+          border: `1px solid ${vise ? colors.rust : colors.line}`,
+          backgroundColor: vise ? colors.rust : "transparent",
+          color: vise ? colors.cream : colors.ink,
+          transition: "border-color .22s, background-color .22s, color .22s",
+          WebkitTapHighlightColor: "transparent",
+        }}
+      >
+        <span
+          className="truncate"
+          style={{ fontFamily: font.display, fontSize: 15, lineHeight: 1.15 }}
+        >
+          {nomEquipe ?? (libre ? "Libre" : (occupe?.nom ?? ""))}
+        </span>
+        {nomEquipe && (
+          <span
+            className="min-w-0 truncate text-[11px]"
+            style={{ color: vise ? "rgba(250,249,245,.72)" : libre ? colors.or : colors.muted }}
+          >
+            · {libre ? "Libre" : (occupe?.nom ?? "")}
+          </span>
+        )}
+      </button>
+    );
+  }
+
+  // La ligne d'avant, inchangée : à une seule équipe, il n'y a personne à
+  // désigner et une case pleine largeur ne choisirait rien.
+  return (
+    <button
+      {...communs}
+      className="flex w-full items-center justify-between gap-3.5 py-3.5 text-left"
+      style={{
+        borderBottom: `1px solid ${vise ? colors.or : colors.line}`,
+        transition: "border-color .26s",
+        WebkitTapHighlightColor: "transparent",
+      }}
+    >
+      <span className="flex min-w-0 items-center gap-2.5">
+        {/* La perle bronze paraît devant le nom quand la ligne est choisie.
+            Elle occupe sa place en permanence : sinon le nom saute de dix
+            pixels au moment du choix. */}
+        <span
+          aria-hidden="true"
+          className="block flex-none"
+          style={{
+            width: 5,
+            height: 5,
+            borderRadius: 99,
+            backgroundColor: colors.or,
+            opacity: vise ? 1 : 0,
+            transition: "opacity .26s",
+          }}
+        />
+        <span
+          className="truncate"
+          style={{
+            fontFamily: font.display,
+            fontSize: 17,
+            lineHeight: 1.15,
+            // Seul, une demi-journée libre n'a personne à nommer : c'est
+            // « Libre » qui tient la place du nom, en bronze.
+            color: libre && !nomEquipe ? colors.or : colors.ink,
+          }}
+        >
+          {nomEquipe ?? (libre ? "Libre" : (occupe?.nom ?? ""))}
+        </span>
+      </span>
+    </button>
+  );
+}
+
 /** Le contenu d'une journée ouvrable : matin, après-midi, et le bouton. */
 function JourneeOuvrable({
   jour,
@@ -964,79 +1097,36 @@ function JourneeOuvrable({
             {moment === "matin" ? "Matin" : "Après-midi"}
             <i className="h-px flex-1" style={{ backgroundColor: colors.line }} />
           </p>
-          {lignes.map((l) => {
-            const libre = l.occupe === null;
-            // **Le rang est écrit en clair.** Un `nth-of-type` comptait dans son
-            // propre bloc et allumait la ligne sur le matin ET l'après-midi à la
-            // fois : la clé porte donc les deux, moment compris.
-            const vise = choix?.moment === moment && choix.rang === l.rang;
-            const nomEquipe = libelleEquipe(lignesEquipes.find((e) => e.rang === l.rang) ?? null, nombreEquipes);
-            // **Deux colonnes quand il y a une équipe à nommer, UNE SEULE
-            // sinon.** À une équipe, « Libre » — ou le nom du chantier — tient
-            // la place du nom, et la colonne de droite n'existe pas : l'écrire
-            // des deux côtés mettait « Libre » deux fois sur la même ligne, et
-            // deux fois la même information sur un écran, c'est une de trop.
-            const gauche = nomEquipe ?? (libre ? "Libre" : (l.occupe?.nom ?? ""));
-            const droite = nomEquipe ? (libre ? "Libre" : (l.occupe?.nom ?? "")) : null;
-            return (
-              <button
+          {/* **LES CASES — geste C, retenu le 14 août 2026** (`docs/maquettes/52`).
+              Sa remarque d'origine : « appliquer une équipe à un chantier n'est
+              pas intuitif ». Les équipes étaient des LIGNES DE LISTE : elles se
+              lisent, elles ne s'offrent pas. Le choix existait, il n'avait pas
+              l'air d'un choix.
+
+              **À une seule équipe, la ligne reste.** Il n'y a alors personne à
+              désigner — la case ferait une boîte pleine largeur qui ne
+              choisirait rien, et le mot « équipe » ne s'écrit nulle part
+              (`src/lib/equipes.ts`).
+
+              **Elles reviennent à la ligne au-delà de deux ou trois**, et c'est
+              assumé : `MAX_EQUIPES` vaut vingt, mais un artisan qui en aurait
+              six lirait alors trois rangs de cases plutôt qu'une liste — ce qui
+              reste plus lisible qu'une colonne de vingt lignes. */}
+          <div className={nombreEquipes > 1 ? "mt-2 flex flex-wrap gap-2.5" : ""}>
+            {lignes.map((l) => (
+              <CaseCreneau
                 key={`${moment}-${l.rang}`}
-                type="button"
-                disabled={!libre || !aPoser}
-                onClick={() => onChoisir({ moment, rang: l.rang })}
-                aria-pressed={vise}
-                data-atlas="creneau"
-                data-moment={moment}
-                data-rang={l.rang}
-                data-libre={libre ? "oui" : "non"}
-                className="flex w-full items-center justify-between gap-3.5 py-3.5 text-left"
-                style={{
-                  borderBottom: `1px solid ${vise ? colors.or : colors.line}`,
-                  transition: "border-color .26s",
-                  WebkitTapHighlightColor: "transparent",
-                }}
-              >
-                <span className="flex min-w-0 items-center gap-2.5">
-                  {/* La perle bronze paraît devant le nom quand la ligne est
-                      choisie. Elle occupe sa place en permanence : sinon le nom
-                      saute de dix pixels au moment du choix. */}
-                  <span
-                    aria-hidden="true"
-                    className="block flex-none"
-                    style={{
-                      width: 5,
-                      height: 5,
-                      borderRadius: 99,
-                      backgroundColor: colors.or,
-                      opacity: vise ? 1 : 0,
-                      transition: "opacity .26s",
-                    }}
-                  />
-                  <span
-                    className="truncate"
-                    style={{
-                      fontFamily: font.display,
-                      fontSize: 17,
-                      lineHeight: 1.15,
-                      // Seul, une demi-journée libre n'a personne à nommer :
-                      // c'est « Libre » qui tient la place du nom, en bronze.
-                      color: libre && !nomEquipe ? colors.or : colors.ink,
-                    }}
-                  >
-                    {gauche}
-                  </span>
-                </span>
-                {droite && (
-                  <span
-                    className="flex-shrink-0 whitespace-nowrap text-[12.5px]"
-                    style={{ color: vise ? colors.ink : libre ? colors.or : colors.muted }}
-                  >
-                    {droite}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+                forme={nombreEquipes > 1 ? "case" : "ligne"}
+                moment={moment}
+                rang={l.rang}
+                occupe={l.occupe}
+                nomEquipe={libelleEquipe(lignesEquipes.find((e) => e.rang === l.rang) ?? null, nombreEquipes)}
+                vise={choix?.moment === moment && choix.rang === l.rang}
+                posable={Boolean(aPoser)}
+                onChoisir={() => onChoisir({ moment, rang: l.rang })}
+              />
+            ))}
+          </div>
         </div>
       ))}
 
@@ -1048,13 +1138,18 @@ function JourneeOuvrable({
 
       {/* **Un seul bouton, jamais trois lignes.** Et il ne s'arme qu'une fois
           l'équipe choisie : poser, c'est dire à la fois quand et qui. */}
-      {choix && aPoser && (
+      {/* **LE BOUTON RESTE À L'ÉCRAN, ÉTEINT, TANT QUE RIEN N'EST CHOISI** —
+          geste C. Il n'apparaissait qu'APRÈS le choix : l'écran ne disait donc
+          pas ce qu'on attendait du doigt, et rien ne signalait qu'il restait
+          quelque chose à faire. Éteint mais présent, il dit « Choisissez
+          d'abord », puis nomme ce qu'il va faire. */}
+      {aPoser && (
         <button
           type="button"
           onClick={onPoser}
-          disabled={enCours}
+          disabled={enCours || !choix}
           data-atlas="poser"
-          className="mt-[22px] flex w-full items-center justify-center gap-3 rounded-full px-[22px] py-4 disabled:opacity-50"
+          className="mt-[22px] flex w-full items-center justify-center gap-3 rounded-full px-[22px] py-4 disabled:opacity-40"
           style={{
             backgroundColor: colors.rust,
             color: colors.cream,
@@ -1066,8 +1161,10 @@ function JourneeOuvrable({
         >
           {enCours
             ? "On pose…"
-            : `Poser · ${LIBELLE_MOMENT[choix.moment]}${nomChoisie ? ` · ${nomChoisie}` : ""}`}
-          <span style={{ color: colors.or }}>→</span>
+            : choix
+              ? `Poser · ${LIBELLE_MOMENT[choix.moment]}${nomChoisie ? ` · ${nomChoisie}` : ""}`
+              : "Choisissez d’abord"}
+          {choix && <span style={{ color: colors.or }}>→</span>}
         </button>
       )}
 
