@@ -97,8 +97,15 @@ export const ECRANS_A_PRECHAUFFER = [
   "/termines",
   "/termines/tva",
   "/reglages",
-  // Les sept sous-écrans de Réglages, dans l'ordre du sommaire. Ils sont courts
-  // à compiler et c'est là qu'il va vérifier ce que sert son banc.
+  // Les sous-écrans de Réglages, dans l'ordre du sommaire. Ils sont courts à
+  // compiler et c'est là qu'il va vérifier ce que sert son banc.
+  //
+  // **Les deux derniers sont arrivés le 14 août au soir**, et la suite les a
+  // réclamés avant qu'ils ne manquent chez lui : c'est précisément ce que ce
+  // contrôle sert à empêcher — une liste écrite à la main qui vieillit en
+  // silence pendant qu'un écran naît ailleurs.
+  "/reglages/compte",
+  "/reglages/connexion",
   "/reglages/identite",
   "/reglages/equipe",
   "/reglages/tarifs",
