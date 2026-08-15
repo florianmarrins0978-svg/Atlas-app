@@ -19,6 +19,7 @@ import {
   type JourIso,
   type Moment,
 } from "@/server/disponibilites";
+import { fusionnerAbsences, type AbsenceEquipe } from "@/lib/absences-equipe";
 import {
   grilleDuMois,
   marqueDuJour,
@@ -98,12 +99,22 @@ export default function PlanningClient({
   equipesNommees = [],
   agenda = { configure: false, relie: false, actif: false, enPanne: false },
   rendezVous = [],
+  absences = [],
 }: {
   initialChantiers: ChantierPlanning[];
   nombreEquipes?: number;
   equipesNommees?: { rang: number; nom: string | null }[];
   agenda?: EtatAgendaPlanning;
   rendezVous?: RendezVousExterne[];
+  /**
+   * Les équipes qui ne sont pas là (14 août 2026, `ARCHITECTURE.md` §108).
+   *
+   * **Elles doivent entrer dans la même carte d'occupation que les chantiers**,
+   * sans quoi ce calendrier montrerait un jour libre que l'écran d'envoi
+   * refuserait — deux vérités sur la même capacité, sur deux écrans qui se
+   * suivent.
+   */
+  absences?: AbsenceEquipe[];
 }) {
   const [chantiers, setChantiers] = useState<ChantierPlanning[]>(initialChantiers);
   const aujourdHui = jourIso(new Date());
@@ -175,14 +186,18 @@ export default function PlanningClient({
 
   const occupation = useMemo(
     () =>
-      compterOccupation(
-        planifies.map((c) => ({
-          jour: c.datePlanifiee as string,
-          moment: c.creneauDebut === "matin" || c.creneauDebut === "apres_midi" ? c.creneauDebut : null,
-          dureeDemiJournees: c.dureeDemiJournees,
-        }))
+      fusionnerAbsences(
+        compterOccupation(
+          planifies.map((c) => ({
+            jour: c.datePlanifiee as string,
+            moment: c.creneauDebut === "matin" || c.creneauDebut === "apres_midi" ? c.creneauDebut : null,
+            dureeDemiJournees: c.dureeDemiJournees,
+          }))
+        ),
+        absences,
+        nombreEquipes
       ),
-    [planifies]
+    [planifies, absences, nombreEquipes]
   );
 
   const cases = useMemo(() => grilleDuMois(curseur.annee, curseur.mois), [curseur]);

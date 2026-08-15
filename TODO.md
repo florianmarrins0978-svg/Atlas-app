@@ -27,7 +27,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 undetricies. L'absence d'une équipe — DESSINÉE le 14 août 2026, en attente de son choix
+### 0 undetricies. ~~L'absence d'une équipe~~ — **CODÉE le 14 août 2026 (proposition A)**
 
 **Sa question :** *« Comment on fait si jamais il y a une équipe qui doit partir
 en déplacement pour cinq jours ? »* Réponse complète dans `docs/QUESTIONS.md`
@@ -42,16 +42,19 @@ monde — délibérément, `fusionnerOccupationExterne` pose l'occupation au niv
 du nombre d'équipes parce qu'Atlas ne peut pas deviner si une équipe sait partir
 sans le patron — et le nombre d'équipes est un nombre **sans dates**.
 
-**Trois endroits proposés**, à trancher par lui : (A) sous les noms dans
-Réglages → Équipe, (B) un appui long sur un jour du planning, (C) une ligne de
-déplacement posée comme un chantier.
+**Il a retenu la A** — sous les noms, dans Réglages → Équipe. Les deux autres
+restent dessinées : (B) un appui long sur un jour du planning, (C) une ligne de
+déplacement posée comme un chantier. Si l'usage montre que le geste tombe au
+mauvais endroit, le chemin est tracé.
 
-**Ce que ça demande, une fois choisi :** une table `absences_equipe` (équipe,
-premier jour, dernier jour, motif), une règle pure qui retire l'équipe du compte
-sur ces jours — greffée sur `compterOccupation` / `departPossible`
-(`src/server/disponibilites.ts`) — et l'écran retenu. **La même règle doit
-servir à proposer les dates ET à revérifier celle que le client choisit**, comme
-tout le reste de ce parcours : jamais deux implémentations (`CLAUDE.md` §3).
+**FAIT.** `drizzle/0043_absences_equipe.sql`, `src/lib/absences-equipe.ts`,
+`src/server/repositories/absences-equipe.ts`, `src/app/reglages/AbsencesEquipe.tsx`.
+Une absence est traitée comme une **occupation** — elle prend la place qu'un
+chantier aurait prise — ce qui la fait entrer dans les quatre calculs de
+capacité sans changer une seule signature. Éprouvée à trois niveaux :
+`test-absences-equipe.ts` (25 cas purs), `test-absences-equipe-repo.ts`
+(isolation, sous `atlas_app`), `test-absence-equipe-e2e.ts` (du doigt jusqu'au
+calendrier, vu rouge quand on retire la réparation). `ARCHITECTURE.md` §108.
 
 ### 0 undetricies ter. La page « toutes les maquettes » a pris du retard, en silence
 

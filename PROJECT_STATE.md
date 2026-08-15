@@ -245,6 +245,15 @@ l'application. Ce qui est **fait** :
   dans juillet — et **invisible**, l'écran ne montrant qu'une période. La
   feuille annonce désormais la destination avant qu'il appuie, et l'écran l'y
   emmène après. `scripts/test-achat-hors-periode-e2e.ts`, `ARCHITECTURE.md` §91.
+- **Une équipe peut partir cinq jours** (14 août) : les absences se notent dans
+  Réglages → Équipe, sous les noms (`docs/maquettes/55`, proposition A). Une
+  équipe absente **ne compte plus** dans les dates proposées — l'absence est
+  traitée comme une occupation, ce qui la fait entrer dans les **quatre**
+  calculs de capacité sans changer une signature. Migration
+  `drizzle/0043_absences_equipe.sql`. Si toute l'entreprise part, l'agenda
+  Google suffisait déjà et rien n'a été écrit pour ça. **Reste faux, et dit :**
+  l'équipe d'un chantier est une étiquette, pas une contrainte.
+  `ARCHITECTURE.md` §108.
 - **« Surtout la page équipe » : l'écran jamais préparé d'avance** (14 août) :
   le banc compile ses écrans à l'avance, mais la liste — écrite à la main —
   ignorait les **sept sous-écrans de Réglages** créés depuis. « Équipe »

@@ -4,8 +4,11 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerEquipes } from "@/server/repositories/equipes";
+import { listerAbsencesEquipe } from "@/server/repositories/absences-equipe";
+import { jourIso } from "@/lib/jour";
 import RubriqueReservee from "../RubriqueReservee";
 import VosEquipes from "../VosEquipes";
+import AbsencesEquipe from "../AbsencesEquipe";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +44,14 @@ export default async function EquipePage() {
     );
   }
 
-  const [entreprise, equipes] = await Promise.all([getEntreprise(ctx), listerEquipes(ctx)]);
+  const aujourdHui = jourIso(new Date());
+  // Seulement ce qui n'est pas fini : une liste qui accumulerait deux ans de
+  // déplacements passés ne se relirait plus.
+  const [entreprise, equipes, absences] = await Promise.all([
+    getEntreprise(ctx),
+    listerEquipes(ctx),
+    listerAbsencesEquipe(ctx, aujourdHui),
+  ]);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -55,6 +65,23 @@ export default async function EquipePage() {
         <VosEquipes
           initialNombreEquipes={entreprise?.nombreEquipes ?? 1}
           initialNoms={equipes.map((e) => ({ rang: e.rang, nom: e.nom }))}
+        />
+
+        {/* **Sous les noms, comme il l'a retenu** (`docs/maquettes/55`,
+            proposition A) : c'est là que vivent les équipes, et c'est là qu'on
+            va quand on prépare la semaine. */}
+        <AbsencesEquipe
+          nombreEquipes={entreprise?.nombreEquipes ?? 1}
+          noms={equipes.map((e) => ({ rang: e.rang, nom: e.nom }))}
+          initialAbsences={absences.map((a) => ({
+            id: a.id,
+            rang: a.rang,
+            nom: a.nom,
+            premierJour: a.premierJour,
+            dernierJour: a.dernierJour,
+            motif: a.motif,
+          }))}
+          aujourdHui={aujourdHui}
         />
 
         {/* **Dire pourquoi le planning n'écrit rien à une seule équipe.** C'est

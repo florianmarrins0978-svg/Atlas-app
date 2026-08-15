@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-08-14
 
+### Une équipe peut partir cinq jours, et Atlas cesse de proposer sa place
+
+**Sa question :** *« Comment on fait si jamais il y a une équipe qui doit partir
+en déplacement pour cinq jours ? »* Sa réponse, devant les trois planches :
+*« La A »* — sous les noms, dans Réglages → Équipe.
+
+**Ce qui existait déjà et n'a pas été refait :** si TOUTE l'entreprise part,
+l'agenda Google relié suffit. On le lui a dit plutôt que de lui vendre du
+travail inutile.
+
+**Ce qui manquait :** une équipe sur deux. L'agenda bloque tout le monde —
+délibérément — et le nombre d'équipes est un nombre sans dates.
+
+**Ce que ça évite :** proposer à un client une date que l'équipe restante ne
+peut pas tenir. Le déplacement se note en quelques secondes, et **tout revient
+normal après, sans rien défaire**. Le client ne voit jamais rien de ceci.
+
+**La décision qui a tout tenu :** une absence n'est pas une capacité qui varie,
+c'est **une occupation** — elle prend la place qu'un chantier aurait prise. Zéro
+signature changée, et les quatre calculs d'occupation en héritent : les trois
+chemins du client, l'écran d'envoi, la pose manuelle, et le calendrier.
+
+**Trois gardes pour la même règle** — l'écran, l'action serveur, la contrainte
+de base — et une seule fonction pour les trois. Une absence à l'envers
+n'occuperait aucun jour et rendrait la capacité fausse en silence.
+
+**Non fait, et dit :** l'équipe inscrite sur un chantier reste une étiquette,
+pas une contrainte. Deux chantiers le même matin sur la même équipe passent
+toujours. `ARCHITECTURE.md` §108, `docs/QUESTIONS.md` §19.
+
+---
+
+## 2026-08-14
+
 ### « Surtout la page équipe » : l'écran qui n'était jamais préparé d'avance
 
 **Son signalement :** *« La connexion est au ralenti sur l'appli. Les nouvelles

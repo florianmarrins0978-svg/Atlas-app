@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import {
+  absencesEquipe,
   audiosAPurger,
   brouillonsInformations,
   chantiers,
@@ -126,6 +127,7 @@ export async function exporterEntreprise(
       laGrillePrix,
       lesAgendas,
       lesEquipes,
+      sesAbsences,
       sesTranches,
       sesNatures,
     ] = await Promise.all([
@@ -190,6 +192,11 @@ export async function exporterEntreprise(
       // Les noms que le patron a donnés à ses équipes. C'est SA saisie, et rien
       // ne la reconstitue : elle part avec le reste de ses données.
       tx.select().from(equipes).where(eq(equipes.entrepriseId, e)),
+      // Les jours où une équipe n'est pas là (14 août 2026, `ARCHITECTURE.md`
+      // §108). C'est sa saisie, et elle commande les dates qu'Atlas propose à
+      // ses clients : une sauvegarde qui l'oublierait rendrait un planning qui
+      // ne se comporte plus comme le sien.
+      tx.select().from(absencesEquipe).where(eq(absencesEquipe.entrepriseId, e)),
       // Les tranches et les travaux qu'il a réglés lui-même (14 août 2026,
       // `ARCHITECTURE.md` §102). Sans eux, une sauvegarde rendrait ses prix
       // sans rendre les cases qui leur donnent un sens : « 1 400 € » pour
@@ -248,6 +255,7 @@ export async function exporterEntreprise(
       // Sans les jetons — voir la requête ci-dessus.
       agendas_externes: lesAgendas,
       equipes: lesEquipes,
+      absences_equipe: sesAbsences,
     };
 
     const compte: Record<string, number> = {};
