@@ -89,41 +89,48 @@ async function main() {
   // contrôle échoue sur son propre passé, en accusant le code.
   const carte = () => page.locator(`a[href="/chantiers/${chantierId}"]`);
 
-  // **CE CONTRÔLE A ROUGI À JUSTE TITRE LE 14 AOÛT 2026, et il a changé de
-  // cible plutôt que de disparaître.** Il exigeait le MOIS sur la ligne du
-  // planning ; le patron l'en a fait retirer — *« pas la date, elle est déjà
-  // présente juste au-dessus »* — et la ligne dit désormais ce que le chantier
-  // OCCUPE. Supprimer le contrôle aurait laissé la pose sans preuve ; on
-  // vérifie donc les deux choses qui restent vraies :
+  // **CE CONTRÔLE A ROUGI DEUX FOIS EN DEUX JOURS, ET CHANGÉ DE CIBLE LES DEUX
+  // FOIS — jamais disparu.** Il exigeait d'abord le mois sur la ligne ; le
+  // patron l'a fait retirer le 14 août (*« pas la date, elle est déjà présente
+  // juste au-dessus »*), puis l'a fait revenir le 15 sur la planche 55 : *« il
+  // doit y avoir le nombre de jour, le matin, l'après-midi et la journée comme
+  // infos possible »*. Sa consigne du 14 valait du panneau d'un jour ouvert,
+  // qui se titre « Jeudi 10 décembre » ; elle ne vaut pas de cette liste-ci,
+  // qui couvre tout le mois.
   //
-  //   · la ligne dit « journée » — le chantier est posé sur une journée
-  //     entière, ce qui est la durée par défaut. Elle disait « matin », et
-  //     c'est précisément le mensonge qu'on vient de réparer ;
-  //   · le JOUR, lui, se lit toujours — dans la feuille du chevron, seul
-  //     endroit où il n'est écrit nulle part ailleurs.
+  // Ce qui est vérifié sur la ligne, et pourquoi chacun compte :
+  //
+  //   · elle dit « journée » — le chantier est posé sur une journée entière,
+  //     la durée par défaut. Elle disait « matin », et c'est le mensonge du
+  //     13 août qu'on ne veut pas voir revenir ;
+  //   · elle porte le JOUR — c'est ce qu'il vient de redemander ;
+  //   · elle ne dit PAS « matin ». Non par goût : seul, ce mot laisse croire
+  //     que seule la matinée est bloquée.
   const surLaLigne = (await carte().innerText()).toLowerCase();
   assert.ok(
     surLaLigne.includes("journée"),
     `La ligne doit dire ce que le chantier occupe : « ${await carte().innerText()} »`
   );
   assert.ok(
-    !surLaLigne.includes("déc"),
-    `La date ne doit plus figurer sur la ligne du planning : « ${await carte().innerText()} »`
+    surLaLigne.includes("déc"),
+    `La date doit figurer sur la ligne du planning depuis le 15 août : « ${await carte().innerText()} »`
   );
   assert.ok(
     !/\bmatin\b/.test(surLaLigne),
     `Une journée entière ne s'annonce plus « matin » : « ${await carte().innerText()} »`
   );
 
-  // Le chevron ouvre la feuille, et c'est là que le jour survit. Le geste est
-  // celui des autres suites — `getByRole` sur le libellé accessible — et non un
-  // `data-atlas` inventé pour l'occasion : un sélecteur qui n'existe que dans
-  // le contrôle ne prouve rien de ce que le patron touche.
+  // Le chevron ouvre la feuille, et elle dit la même chose que la ligne — c'est
+  // le but de n'écrire la phrase qu'une fois. Le geste est celui des autres
+  // suites — `getByRole` sur le libellé accessible — et non un `data-atlas`
+  // inventé pour l'occasion : un sélecteur qui n'existe que dans le contrôle ne
+  // prouve rien de ce que le patron touche.
   await page.getByRole("button", { name: `Y aller — ${avecCivilite(nomUnique)}` }).click();
   await page.waitForSelector("text=Y aller", { timeout: 10000 });
+  const dansLaFeuille = (await page.locator("body").innerText()).toLowerCase();
   assert.ok(
-    (await page.locator("body").innerText()).toLowerCase().includes("déc"),
-    "Le jour doit rester lisible dans la feuille du chevron, seul endroit où il n'est écrit nulle part ailleurs"
+    dansLaFeuille.includes("déc") && dansLaFeuille.includes("journée"),
+    "La feuille du chevron doit dire le jour ET ce que le chantier occupe, comme la ligne"
   );
   await page.getByRole("button", { name: "Annuler", exact: true }).click();
   await page.waitForTimeout(300);

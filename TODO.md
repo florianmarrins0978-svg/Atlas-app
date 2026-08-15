@@ -259,7 +259,20 @@ l'écran doit rester « Changer mon mot de passe ».
 il y a 2 h » — se valide en dix secondes et le défaut n'apparaît qu'au moment de
 coder. Le contrôle de la planche l'interdit explicitement, et il sait rougir.
 
-### 0 novemvicies quinquies. « Le nombre de jour en doré » — sa maquette attend sa réponse
+### 0 novemvicies quinquies. ~~« Le nombre de jour en doré »~~ — **CODÉ le 15 août 2026**
+
+**Sa réponse finale : « je veux journée et toute la ligne. Tu peux coder. »**
+La ligne du planning porte désormais la date, le moment de départ et la durée,
+toute en or — `ARCHITECTURE.md` §108. Ce qui suit reste écrit parce que le
+chemin importe : la question qu'il a posée n'avait pas la réponse qu'elle
+supposait, et c'est la fouille de l'historique qui l'a montré.
+
+**Ce qui reste ouvert, et lui seul le tranchera à l'usage :** la ligne ne dit
+plus quand un chantier long **finit**. « du 21 au 25 août » a été remplacé par
+« matin · 3 jours », et les week-ends sautés interdisent de recalculer la fin de
+tête. Sa place, si elle lui manque, est la **feuille du chevron** — qui a la
+largeur que la ligne n'a pas. Ne pas la remettre sur la ligne sans le lui
+demander : elle en avait été retirée pour faire tenir le nombre de jours.
 
 *Le patron, le 15 août 2026, capture du planning à l'appui : « Avant il y avait
 le Nombre de jour en doré et je sais plus quoi, où c'est passé ? »*

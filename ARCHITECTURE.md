@@ -8655,3 +8655,89 @@ le compte de démonstration sert aux soixante-quinze suites de la batterie, et l
 changer fermerait la porte à toutes les suivantes — l'échec accuserait alors la
 page de connexion, qui n'y serait pour rien. Le chemin éprouvé au navigateur est
 celui du **refus**, qui n'écrit rien ; l'écriture est tenue par la suite base.
+
+---
+
+## 108. La ligne du planning porte enfin les trois choses — et « matin » cesse de mentir sans qu'on le retire
+
+*Sa demande du 15 août 2026, sur `docs/maquettes/55-la-ligne-qui-dit-tout.html` :
+**« il doit y avoir le nombre de jour, le matin, l'après-midi et la journée comme
+infos possible »**, puis **« je veux journée et toute la ligne »**.*
+
+### Ce que la ligne dit maintenant
+
+| Le chantier | La ligne |
+|---|---|
+| une journée pleine, partie le matin | **14 août · journée** |
+| une vraie demi-journée | **17 août · matin · ½ journée** |
+| trois jours | **21 août · matin · 3 jours** |
+| une journée partie l'après-midi | **24 août · après-midi · 1 journée** |
+
+Trois choses : **la date, le moment de départ, la durée** — et le tout **en or**,
+là où c'était gris.
+
+### L'invariant, et c'est le cœur de cette section
+
+**« matin » ne s'écrit JAMAIS sans sa durée.** Ce n'est pas une préférence
+d'écriture : seul, ce mot redit exactement le défaut qu'il a signalé le 13 août —
+*« ça laisse à penser que juste le matin est bloqué alors que c'est la
+journée »*. Accolé au nombre, il ne dit plus ce qui est bloqué mais **quand ça
+part** : « matin · 3 jours » ne se lit pas comme une demi-journée.
+
+Ce qui a été retiré la veille pour réparer ce défaut revient donc — mais
+**escorté**. Et l'escorte est tenue par un contrôle qui balaie les deux cents
+durées, non par trois cas choisis : un allègement futur qui oublierait la durée
+sur une seule valeur passerait entre trois cas, jamais entre deux cents.
+
+**« journée » est le seul mot qui se passe de durée**, parce qu'il la porte.
+« journée · 1 journée » a été écarté avant même de lui être soumis : dire deux
+fois la même chose sur une ligne de 204 px n'est pas un choix.
+
+### Ce qui se perd, et il faut le savoir plutôt que le découvrir
+
+**« du 21 au 25 août » disparaît**, alors qu'il l'avait choisi la veille sur la
+planche 53. La ligne ne dit donc plus **quand le chantier finit** — et il ne peut
+pas le recalculer de tête, les week-ends étant sautés. C'est le prix du nombre de
+jours, qu'aucune plage de dates ne donnait ; il a vu les deux écritures et tranché
+pour celle-ci. Si la date de fin lui manque à l'usage, sa place est **la feuille
+du chevron**, qui a la largeur que la ligne n'a pas.
+
+### Deux doublons corrigés au passage, tous deux invisibles séparément
+
+- **L'équipe s'écrivait deux fois** dès qu'il y en a plusieurs : dans la phrase
+  *et* sur la pastille posée le 14 août, côte à côte. Aucune suite ne le voyait —
+  chacune ne regardait que sa moitié. La phrase ne la porte plus **sur la ligne** ;
+  les deux feuilles la gardent, elles n'ont pas de pastille.
+- **La date était tombée de la liste le matin même**, sur sa consigne *« pas la
+  date, elle est déjà présente juste au-dessus »*. Elle vaut du panneau d'un jour
+  ouvert, qui se titre « Lundi 17 août ». Elle ne vaut pas de cette liste-ci, qui
+  couvre **tout le mois** : sans date, deux chantiers de semaines différentes se
+  lisaient pareil.
+
+### Le vocabulaire vient de `DUREES`, et c'est un contrôle, pas une convention
+
+`libelleDureeCourt()` **lit** `src/lib/durees-chantier.ts` plutôt que de recopier
+ses mots. La raison est datée : le patron a corrigé « jour » en « journée » le
+**4 août 2026** sur la liste elle-même, puis a dû le redire le **15 août** sur une
+maquette qui l'avait réenfreinte — *« 1/2 journée pas jour ! »*. Une règle écrite
+dans le dépôt et enfreinte deux fois n'est pas une règle : c'est un contrôle qui
+manque. `test-libelle-occupation.ts` compare désormais chaque entrée de la liste
+au mot que la ligne écrit.
+
+**Deux registres subsistent, et c'est voulu :** `libelleDuree` écrit de la prose
+(« une journée ne tient pas ce jour-là ») ; `libelleDureeCourt` écrit une
+étiquette (« 1 journée »). Les fondre donnerait « une journée » au milieu d'une
+colonne où l'on compte.
+
+### Ce que chaque contrôle voit, et ce qu'aucun ne verrait seul
+
+| Le contrôle | Ce qu'il tient | Ce qu'il ne peut PAS voir |
+|---|---|---|
+| `test-libelle-occupation.ts` | la phrase est juste, sur 200 durées et les deux départs | qu'elle soit grise, coupée ou repliée |
+| `test-ligne-planning-e2e.ts` | **à 390 px** : l'or, une seule ligne, rien de coupé, l'équipe écrite une fois | la justesse du mot sur les cas rares |
+| `verifier-maquette-ligne-qui-dit-tout.mjs` | la planche qu'il a manipulée dit ce qu'elle prétend | ce que le produit fait |
+
+La colonne de droite est la raison d'être des trois : le 12 août, un nom de
+chantier coupé à 390 px — « Chez M. … » — a été trouvé sur une capture et par
+rien d'autre. La suite navigateur mesure donc **le débordement en pixels**, pas
+la présence d'un mot.

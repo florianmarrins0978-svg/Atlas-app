@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-08-15
 
+### La ligne du planning porte enfin ses trois infos — CODÉ
+
+*« Je veux journée et toute la ligne. Tu peux coder. »*
+
+| Le chantier | La ligne, désormais |
+|---|---|
+| une journée pleine | **14 août · journée** |
+| une vraie demi-journée | **17 août · matin · ½ journée** |
+| trois jours | **21 août · matin · 3 jours** |
+| une journée partie l'après-midi | **24 août · après-midi · 1 journée** |
+
+La date, le moment de départ, la durée — **en or**, là où c'était gris.
+
+**Ce que ça évite, et ce n'est pas cosmétique.** Le mot « matin » revient sur la
+ligne d'où il avait été retiré la veille pour cause de mensonge — mais il ne s'y
+écrit **jamais sans sa durée**. Seul, il redit *« juste le matin est bloqué alors
+que c'est la journée »* ; accolé au nombre, il dit **quand ça part**. Un contrôle
+balaie les deux cents durées pour que personne ne les sépare un jour « pour
+alléger ».
+
+**Ce qui se perd, et il vaut mieux le lire ici que le découvrir :** « du 21 au
+25 août » disparaît. La ligne ne dit plus quand le chantier **finit**, et les
+week-ends sautés interdisent de le recalculer de tête. C'est le prix du nombre de
+jours ; sa place, si elle manque, est la feuille du chevron.
+
+**Deux doublons corrigés au passage**, tous deux invisibles séparément : l'équipe
+s'écrivait **deux fois** dès qu'il y en a plusieurs — dans la phrase et sur la
+pastille, côte à côte — et la date, tombée de la liste le matin même, y est
+revenue : la consigne qui l'en avait chassée valait du panneau d'un jour ouvert,
+pas d'une liste qui couvre tout le mois.
+
+Détail complet, et le tableau de ce que chaque contrôle voit : `ARCHITECTURE.md`
+§108.
+
 ### « Le nombre de jour en doré » : une planche plutôt qu'une devinette
 
 **Sa question**, capture du planning à l'appui : *« Avant il y avait le Nombre de

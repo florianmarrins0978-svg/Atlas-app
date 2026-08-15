@@ -713,6 +713,23 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**LA LIGNE DU PLANNING PORTE SES TROIS INFOS (15 août).** « 14 août · journée »,
+« 17 août · matin · ½ journée », « 21 août · matin · 3 jours » — la date, le
+moment de départ, la durée, **toute la ligne en or**. Sa demande sur la
+maquette 55 : *« je veux journée et toute la ligne »*.
+
+**L'INVARIANT À NE JAMAIS PERDRE, et il n'est pas d'écriture :** « matin » ne
+s'écrit **jamais sans sa durée**. Seul, il redit le défaut du 13 août — *« ça
+laisse à penser que juste le matin est bloqué »*. C'est le nombre accolé qui le
+rend honnête. Un contrôle balaie les deux cents durées pour qu'un allègement
+futur ne les sépare pas en silence (`ARCHITECTURE.md` §108).
+
+**Et ce qui a été perdu au passage, sciemment :** « du 21 au 25 août ». La ligne
+ne dit plus quand un chantier long **finit**, et les week-ends sautés interdisent
+de le recalculer de tête. **Ne pas le remettre sur la ligne sans qu'il le
+demande** — il y a été retiré pour faire tenir le nombre de jours ; sa place
+serait la feuille du chevron.
+
 **« L'APPLI NE MARCHE PLUS » — ELLE MARCHAIT (14 août, tard).** Son iPhone
 proposait de télécharger un fichier au lieu d'ouvrir Atlas. **Son espace de
 travail s'était éteint** : GitHub arrête un espace inactif au bout d'une
