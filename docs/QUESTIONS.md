@@ -1192,6 +1192,33 @@ Rien n'est encore codé. Ce qu'il faudra :
 2. le relevé calculé sur cette date-là, et non sur la date d'émission ;
 3. un réglage **encaissements / débits**, parce que les deux existent.
 
+### « Mais comment Atlas saura que j'ai été payé ? »
+
+*Votre question, dans la foulée — et c'est la bonne.* **Atlas ne le sait pas.**
+Il n'a aucun accès à votre compte en banque. Trois façons, et elles se
+combinent :
+
+| | Comment | Ce que ça coûte |
+|---|---|---|
+| **1** | **Vous le dites** — au moment où vous voyez le virement | Rien à brancher. Mais si vous oubliez, vous **sous-déclarez** — et c'est pire que déclarer trop tôt |
+| **2** | **Atlas vous le demande** — en fin de trimestre, il liste les factures en attente | Un geste par trimestre au lieu d'un par facture. C'est ce qui rend le 1 sûr |
+| **3** | **Votre banque** — Atlas lit vos virements reçus et propose le rapprochement | Un prestataire agréé, un contrat, un coût mensuel |
+
+**Vous avez choisi le 3**, le 14 août 2026. Deux choses en découlent, et elles
+ne se négocient pas :
+
+- **un relevé bancaire ne porte pas de numéro de facture** — seulement une date,
+  un montant et un libellé (« VIR M BERNARD »). Atlas ne peut donc que
+  **proposer** ; c'est votre doigt qui confirme. Quand le montant ne tombe pas
+  juste — un acompte, deux factures en un virement —, il dira qu'il ne sait pas
+  au lieu de deviner ;
+- **l'accès se renouvelle tous les 90 jours**, règle européenne. Vous serez
+  prévenu une semaine avant, et les paiements se noteront à la main pendant ce
+  temps-là.
+
+Le dessin : `maquettes/atlas-banque-rapprochement.html`. Le prestataire reste à
+choisir — [`A-FAIRE.md`](A-FAIRE.md) §12.
+
 ### Ce que je ne peux pas décider à votre place
 
 **Sous quel régime vous êtes.** Votre comptable le sait en une phrase, ou c'est

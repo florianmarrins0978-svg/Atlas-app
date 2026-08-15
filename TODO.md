@@ -47,6 +47,19 @@ lui fait donc avancer la TVA d'un client qui n'a pas payé.
 | **Le réglage des deux régimes** | `entreprises.tva_exigibilite` : `encaissements` (défaut) ou `debits` |
 | **Ce qui attend, annoncé** | l'écran dit combien de TVA attend son paiement — une facture absente en silence se lit comme un oubli |
 
+**Comment Atlas saura qu'il a été payé** — sa question du 14 août, et son choix :
+**la banque** (`maquettes/atlas-banque-rapprochement.html`, 28 contrôles).
+
+| Quoi | Ce qu'il faut |
+|---|---|
+| **Virements lus** | un prestataire agréé DSP2 — contrat et coût à décider, `docs/A-FAIRE.md` §12 |
+| **Le rapprochement PROPOSÉ** | montant exact + nom approchant + fenêtre de dates. Une règle pure, éprouvable sans banque : `src/lib/rapprocher-virement.ts` |
+| **Jamais automatique** | un virement collé à la mauvaise facture met la TVA dans le mauvais trimestre. Atlas propose, le patron confirme |
+| **Les 90 jours** | l'accès se coupe (règle européenne). Prévenir une semaine avant, et retomber sur la saisie à la main |
+
+**La saisie à la main se code sans attendre la banque** — c'est elle qui reste
+quand l'accès dort, et elle ne dépend d'aucun contrat.
+
 **Ce qui BLOQUE**, et qui n'est pas technique : sous quel régime il est. Inscrit
 dans `docs/A-FAIRE.md` §11 — son comptable le sait en une phrase.
 

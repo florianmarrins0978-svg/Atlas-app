@@ -80,6 +80,7 @@
 <li><a href="#9-demander-à-votre-comptable--tva-au-mois-ou-au-trimestre-">Demander à votre comptable : TVA au mois ou au trimestre ?</a></li>
 <li><a href="#10-le-premier-jour-dun-artisan--ce-qui-manque-pour-lui-confier-atlas">Le premier jour d'un artisan : ce qui manque pour lui confier Atlas</a></li>
 <li><a href="#11-demander-à-votre-comptable--tva-sur-les-encaissements-ou-sur-les-débits-">Demander à votre comptable : TVA sur les encaissements ou sur les débits ?</a></li>
+<li><a href="#12-choisir-le-prestataire-qui-lit-vos-virements">Choisir le prestataire qui lit vos virements</a></li>
 </ol>
 <hr>
 <h2 id="1-choisir-les-fournisseurs-dia-définitifs">1. Choisir les fournisseurs d'IA définitifs</h2>
@@ -606,6 +607,37 @@
 <p>Le codage de la date de paiement sur la facture, du relevé calculé dessus, et du réglage entre les deux régimes. Le détail est dans <a href="QUESTIONS.md" target="_blank" rel="noopener"><code>QUESTIONS.md</code></a> §19, et une maquette montre à quoi ça ressemblerait : <code>maquettes/atlas-tva-au-paiement.html</code>.</p>
 <h3 id="ce-que-ça-ne-bloque-pas">Ce que ça ne bloque pas</h3>
 <p>Rien du reste. Le parcours devis → chantier → facture fonctionne ; c'est le relevé de TVA, et lui seul, qui déclare trop tôt.</p>
+<hr>
+<h2 id="12-choisir-le-prestataire-qui-lit-vos-virements">12. Choisir le prestataire qui lit vos virements</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Qui peut le faire : vous seul.</strong> C'est un contrat et un coût mensuel, pas une ligne de code.</p>
+<p><em>Décidé le 14 août 2026 : à la question « comment Atlas saura que j'ai été payé ? », trois réponses étaient possibles — vous le dites, Atlas vous le demande chaque trimestre, ou la banque le dit. Vous avez choisi la banque. Dessin : <code>maquettes/atlas-banque-rapprochement.html</code>.</em></p>
+<h3 id="pourquoi-ça-ne-se-code-pas-tout-seul">Pourquoi ça ne se code pas tout seul</h3>
+<p><strong>Personne ne se branche directement à une banque.</strong> La loi européenne (DSP2) impose de passer par un <strong>prestataire agréé</strong> — un « agrégateur ». Il faut donc en choisir un, signer, et payer.</p>
+<p>Les noms qui reviennent en France : <strong>Bridge</strong>, <strong>Powens</strong>, <strong>Tink</strong>, <strong>GoCardless</strong> (anciennement Nordigen), <strong>Linxo</strong>. Certains annoncent une offre gratuite jusqu'à un volume donné ; <strong>à vérifier au devis, je ne l'ai pas constaté moi-même</strong>.</p>
+<h3 id="les-trois-choses-à-demander-quel-que-soit-celui-que-vous-retenez">Les trois choses à demander, quel que soit celui que vous retenez</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Quoi</th>
+<th>Pourquoi ça compte</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Le coût réel</strong> : par compte relié et par mois, ou au forfait</td>
+<td>À cinq factures par trimestre, un abonnement peut coûter plus cher que le temps qu'il fait gagner</td>
+</tr>
+<tr>
+<td><strong>Votre banque est-elle couverte ?</strong></td>
+<td>Toutes ne le sont pas également, et les banques régionales le sont parfois mal</td>
+</tr>
+<tr>
+<td><strong>Le contrat de sous-traitance RGPD</strong></td>
+<td>Vos virements portent les noms de vos clients. Ce prestataire s'ajoute au registre, comme l'hébergeur (§2 de ce document)</td>
+</tr>
+</tbody></table></div>
+<h3 id="ce-quil-faut-savoir-avant-de-signer-et-qui-ne-se-négocie-pas">Ce qu'il faut savoir avant de signer, et qui ne se négocie pas</h3>
+<p><strong>L'accès se coupe tous les 90 jours.</strong> Règle européenne : passé ce délai, vous devez vous ré-identifier chez votre banque. Un automatisme qui s'arrête tout seul sans prévenir vaudrait mieux ne pas exister — l'écran vous préviendra une semaine avant, et les paiements se noteront à la main pendant ce temps.</p>
+<p><strong>Un relevé bancaire ne porte pas de numéro de facture.</strong> Il porte une date, un montant et un libellé écrit par la banque de votre client. Atlas ne pourra donc que <strong>proposer</strong> un rapprochement ; c'est vous qui confirmez. Quand le montant ne tombe pas juste — un acompte, deux factures réglées en un virement —, il le dira au lieu de deviner.</p>
+<h3 id="ce-que-ça-ne-bloque-pas">Ce que ça ne bloque pas</h3>
+<p><strong>Rien.</strong> La saisie à la main (« Noter un paiement ») se code sans attendre, et c'est elle qui reste quand l'accès bancaire dort. La banque n'est pas une condition : c'est un confort qui supprime un oubli.</p>
 </main>
 </body>
 </html>
