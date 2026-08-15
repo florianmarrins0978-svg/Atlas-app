@@ -165,6 +165,29 @@ async function main() {
     );
   });
 
+  // **LES DEUX CHEMINS DOIVENT FAIRE LA MÊME CHOSE.** Sa question du 14 août :
+  // « si on affilie une équipe et qu'au final on change d'avis, on doit pouvoir
+  // la retirer ». Le geste existait sur la pastille, pas dans la feuille du
+  // chevron — deux portes, deux réponses, et celui qui prend la seconde conclut
+  // que c'est impossible. Un écart de ce genre ne se voit pas en relisant.
+  await test("Depuis la feuille du chevron aussi, l'équipe se retire", async () => {
+    await allerAuPlanning();
+    await page.getByRole("button", { name: `Choisir l'équipe — ${nom}` }).click();
+    await page.waitForSelector("text=Qui s’en occupe", { timeout: 10_000 });
+    await page.getByRole("button", { name: /^Équipe A$/ }).click();
+    await page.waitForTimeout(900);
+    assert.equal(await equipeEnBase(), 1, "le montage de ce cas n'a pas pris");
+
+    await allerAuPlanning();
+    await page.getByRole("button", { name: `Y aller — ${nom}` }).click();
+    await page.waitForSelector("text=Y aller", { timeout: 10_000 });
+    await page.getByRole("button", { name: /^Équipe/ }).first().click();
+    await page.waitForTimeout(400);
+    await page.getByRole("button", { name: /Personne pour l/ }).click();
+    await page.waitForTimeout(900);
+    assert.equal(await equipeEnBase(), null, "le chevron ne sait pas retirer l'équipe");
+  });
+
   // À une seule équipe, il n'y a personne à désigner — sa règle du 10 août.
   await test("À une seule équipe, la pastille n'existe pas", async () => {
     await pool.query(

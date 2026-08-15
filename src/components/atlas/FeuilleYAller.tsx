@@ -277,6 +277,42 @@ export default function FeuilleYAller({
                   <span className="flex-1 text-[15px]">{e.libelle}</span>
                 </button>
               ))}
+
+              {/* **RETIRER L'ÉQUIPE — ajouté ici le 14 août 2026, à sa
+                  question :** *« si on affilie une équipe et qu'au final on
+                  change d'avis, on doit pouvoir la retirer »*.
+
+                  Le geste existait déjà sur la pastille de la ligne. Le laisser
+                  manquer ICI aurait donné **deux chemins qui ne font pas la même
+                  chose** : celui qui passe par le chevron n'aurait offert aucune
+                  sortie, et le patron aurait conclu que c'est impossible. Un
+                  écart de ce genre ne se voit jamais en relisant — il se
+                  découvre le jour où l'on prend l'autre porte.
+
+                  Elle n'apparaît que s'il y a quelque chose à retirer. */}
+              {rang !== null && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setRefusEquipe(null);
+                    const avant = rang;
+                    setRang(null);
+                    const r = await onChangerEquipe(null);
+                    if (r.succes) {
+                      setChoixOuvert(false);
+                    } else {
+                      setRang(avant);
+                      setRefusEquipe(r.erreur ?? "Ce changement n'a pas abouti.");
+                    }
+                  }}
+                  className="flex w-full items-center gap-3 border-t px-3.5 text-left"
+                  style={{ borderColor: colors.line, minHeight: 46 }}
+                >
+                  <span className="flex-1 text-[15px]" style={{ color: colors.muted }}>
+                    Personne pour l’instant
+                  </span>
+                </button>
+              )}
             </div>
           )}
 

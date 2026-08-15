@@ -118,6 +118,10 @@ ligne n'écrivait rien du tout, et rien ne signalait qu'il en manquait une.
    l'exécuter aurait été livrer un bouton mort.
 3. **Retirer ne se refuse jamais pour occupation** : libérer une place n'en
    prend aucune, et refuser enfermerait le patron dans son erreur.
+4. **Les DEUX chemins savent retirer** — la pastille et la feuille du chevron.
+   Le second l'a gagné le soir même, sur sa question : le laisser manquer aurait
+   donné deux portes et deux réponses, et celui qui prend la seconde en conclut
+   que c'est impossible.
 
 **Reste ouvert — geste C, non codé :** au moment de **poser**, les équipes sont
 toujours des lignes de liste, qui se lisent mais ne s'offrent pas. Les quatre
