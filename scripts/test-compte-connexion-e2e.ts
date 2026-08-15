@@ -175,7 +175,10 @@ async function main() {
     //
     // Le défaut ne se voit que sur SON écran : sur un grand, tout tient sans
     // effort. C'est la mesure, pas l'œil.
-    const place = await page.evaluate(() => {
+    // Le type est ÉCRIT, et pas déduit : deux formes de retour selon qu'on
+    // trouve la barre ou non se déduisent en un objet aux champs facultatifs,
+    // et `tsc` refuse alors la comparaison. Un seul objet, trois champs.
+    const place: { ecart: number | null; avecNav: boolean; erreur: string | null } = await page.evaluate(() => {
       // La barre est désignée PAR SON BOUTON, pas par un rang dans le document :
       // « le premier `div.fixed` » a changé de sens le jour où un autre élément
       // fixe est arrivé, et l'échec accusait alors la barre du bas.
@@ -183,16 +186,16 @@ async function main() {
         .find((b) => /Changer mon mot de passe/.test(b.textContent ?? ""));
       const barre = bouton?.closest("div.fixed");
       const nav = document.querySelector('nav[aria-label="Navigation principale"]');
-      if (!barre) return { erreur: "barre introuvable" };
+      if (!barre) return { ecart: null, avecNav: Boolean(nav), erreur: "barre introuvable" };
       const b = barre.getBoundingClientRect();
       // Sans navigation sur cet écran, la référence est le bas de la fenêtre :
       // ce qu'on veut savoir, c'est qu'aucun geste n'est recouvert.
       const bas = nav ? nav.getBoundingClientRect().y : window.innerHeight;
-      return { ecart: bas - (b.y + b.height), avecNav: Boolean(nav) };
+      return { ecart: bas - (b.y + b.height), avecNav: Boolean(nav), erreur: null };
     });
     verifie("le bouton se pose au-dessus des onglets, jamais dessous",
-      "ecart" in place && place.ecart >= -1.5,
-      "ecart" in place ? `${place.ecart.toFixed(1)} px (navigation ${place.avecNav ? "présente" : "absente"})` : place.erreur);
+      place.ecart !== null && place.ecart >= -1.5,
+      place.erreur ?? `${place.ecart?.toFixed(1)} px (navigation ${place.avecNav ? "présente" : "absente"})`);
   } finally {
     await navigateur.close();
   }
