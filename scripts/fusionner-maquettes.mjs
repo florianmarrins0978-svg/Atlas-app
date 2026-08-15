@@ -242,6 +242,12 @@ const MAQUETTES = [
     famille: "La feuille d’envoi",
     quoi: "Deux boutons pleins l’un sous l’autre sur la feuille d’un devis corrigé. Deux lectures du retrait, montrées dans les deux moments — avant et après l’envoi — et trois dosages de « Plutôt par e-mail ».",
   },
+  {
+    fichier: "41-apparier-deux-demi-journees.html",
+    titre: "Apparier deux demi-journées",
+    famille: "Le planning",
+    quoi: "Quand une demi-journée est prise et l’autre libre, Atlas propose le chantier en attente le plus proche. Quatre façons de le dire, le bandeau dessiné à vol d’oiseau ET par la route, et les deux cas où il n’y a rien de bon à proposer.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

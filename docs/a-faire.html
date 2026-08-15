@@ -77,6 +77,7 @@
 <li><a href="#6-choisir-loutil-qui-émet-les-factures">Choisir l'outil qui émet les factures</a></li>
 <li><a href="#7-créer-les-identifiants-google-pour-qui-veut-relier-son-agenda">Créer les identifiants Google, pour qui veut relier son agenda</a></li>
 <li><a href="#8-faire-valider-lapplication-par-google--avant-de-commercialiser">Faire valider l'application par Google — AVANT de commercialiser</a></li>
+<li><a href="#9-décider-si-atlas-peut-calculer-des-trajets-par-la-route">Décider si Atlas peut calculer des trajets par la route</a></li>
 </ol>
 <hr>
 <h2 id="1-choisir-les-fournisseurs-dia-définitifs">1. Choisir les fournisseurs d'IA définitifs</h2>
@@ -504,6 +505,37 @@
 <p><strong>Réserve, dite plutôt que tue.</strong> À ma connaissance, l'agenda relève des permissions « sensibles » — vérification gratuite — et non des « restreintes », qui exigent en plus un audit de sécurité facturé par un tiers. <strong>Je n'ai pas pu le confirmer</strong> : le réseau de l'environnement de développement refuse les pages de Google. À vérifier vous-même dans la console avant de vous engager.</p>
 <h3 id="ce-que-ça-ne-bloque-pas">Ce que ça ne bloque pas</h3>
 <p>Ni l'essai, ni la finition, ni vos premiers artisans. Ce point bloque <strong>uniquement</strong> le passage à l'échelle — et il le bloque d'un coup, sans prévenir, le jour où vous dépasserez la centaine.</p>
+<hr>
+<h2 id="9-décider-si-atlas-peut-calculer-des-trajets-par-la-route">9. Décider si Atlas peut calculer des trajets par la route</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Qui : vous</strong>, et le juriste du point 2 si la réponse penche vers un prestataire privé.</p>
+<p><strong>D'où ça vient.</strong> Le 13 août 2026 : <em>« lorsqu'on a fini des chantiers en demi-journée, que le planning soit en mesure de proposer deux demi-journées pour faire une journée, mais de deux chantiers qui sont les plus proches »</em>. Une bonne idée, qui bute sur une question simple : <strong>proche comment ?</strong></p>
+<h3 id="les-deux-mesures-et-ce-quelles-engagent">Les deux mesures, et ce qu'elles engagent</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce que ça donne</th>
+<th>Ce que ça engage</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>À vol d'oiseau</strong></td>
+<td>La distance directe, calculée <strong>chez nous</strong> à partir des coordonnées que la Base Adresse Nationale rend déjà</td>
+<td><strong>Rien.</strong> Aucune donnée ne sort, aucun contrat nouveau</td>
+</tr>
+<tr>
+<td><strong>Par la route</strong></td>
+<td>Le vrai temps de trajet</td>
+<td><strong>L'envoi des adresses de vos clients à un service extérieur</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Pourquoi la route pose problème</strong>, et c'est le même problème que le point 1 : un service de calcul d'itinéraire devient un <strong>sous-traitant ultérieur</strong> au sens du RGPD. Il doit être autorisé par l'artisan, nommé dans le contrat, et ses transferts hors d'Europe encadrés. Tant que le contrat du point 2 n'existe pas, chaque prestataire ajouté aggrave le même manquement.</p>
+<p>C'est exactement le raisonnement qui a fait préférer la Base Adresse Nationale à Google pour l'aide à la saisie : un service public français, sans compte ni clé, à qui l'on n'envoie qu'une rue.</p>
+<h3 id="la-piste-qui-pourrait-tout-régler">La piste qui pourrait tout régler</h3>
+<p><strong>L'État publie aussi un service d'itinéraire</strong>, sur la même Géoplateforme que les adresses. S'il tient ses promesses, la route rentre dans la même case que les adresses — service public, sans compte, sans clé, <strong>sans contrat avec une entreprise privée</strong>.</p>
+<p><strong>Une vérification a été lancée le 13 août 2026</strong> pour le savoir, sur une machine qui a le réseau — l'environnement de développement, lui, refuse les services extérieurs. Elle répond à trois questions : le service accepte-t-il sans clé, que vaut l'écart entre vol d'oiseau et route dans les monts, et tient-il le rythme de plusieurs appels d'affilée (<code>.github/workflows/itineraire.yml</code>).</p>
+<h3 id="ce-qui-est-proposé-en-attendant">Ce qui est proposé en attendant</h3>
+<p><strong>Commencer à vol d'oiseau</strong>, et le dire à l'écran — « à 8 km à vol d'oiseau » plutôt que « à 14 min ». C'est utile tout de suite, ça n'engage rien, et la maquette est dessinée pour que <strong>seule la phrase change</strong> le jour où la route devient possible : pas un écran à redessiner (<code>docs/maquettes/41-apparier-deux-demi-journees.html</code>).</p>
+<h3 id="ce-que-ça-ne-bloque-pas">Ce que ça ne bloque pas</h3>
+<p>Ni l'essai, ni la finition. L'appariement fonctionnera à vol d'oiseau, et gagnera en justesse le jour où la route sera tranchée.</p>
 </main>
 </body>
 </html>
