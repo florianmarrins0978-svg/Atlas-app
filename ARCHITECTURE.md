@@ -8479,7 +8479,7 @@ qu'il le demande.**
 Atlas ne garde aucune session : il n'y a **rien à supprimer** pour fermer une
 session ouverte sur un téléphone perdu. Mais chaque jeton porte son instant
 d'émission (`iat`), et il suffit de **refuser ceux qui précèdent une coupure** —
-`users.jetons_valides_depuis` (migration 0041).
+`users.jetons_valides_depuis` (migration 0042).
 
 Trois pièces, et l'ordre importe :
 

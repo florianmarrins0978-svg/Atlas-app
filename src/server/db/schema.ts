@@ -38,7 +38,7 @@ export const users = pgTable("users", {
   // uniquement, jamais le mot de passe en clair. Nullable : un utilisateur
   // créé via un futur provider OAuth n'en a pas besoin.
   passwordHash: text("password_hash"),
-  // « Me déconnecter partout » (migration 0041) : tout jeton émis AVANT cet
+  // « Me déconnecter partout » (migration 0042) : tout jeton émis AVANT cet
   // instant est refusé par `getCurrentCtx`. Atlas ne garde aucune session en
   // base — il n'y a donc rien à supprimer pour fermer une session, mais on peut
   // refuser ce qui a été signé avant. `null` : jamais demandé.
@@ -107,7 +107,7 @@ export const entreprises = pgTable("entreprises", {
   /** Un IBAN à un nom différent de l'entreprise inquiète au lieu de rassurer. */
   titulaireCompte: text("titulaire_compte"),
   /**
-   * Les conditions qui s'impriment sur un devis (migration 0041).
+   * Les conditions qui s'impriment sur un devis (migration 0040).
    *
    * **Une valeur nulle veut dire « éteint »**, sauf la validité dont le défaut
    * est celui d'avant — 30 jours, la constante de `devis-pdf.ts`. Deux champs
@@ -529,7 +529,7 @@ export const devis = pgTable(
     dateEmission: date("date_emission").notNull(),
     dateValidite: date("date_validite"),
     /**
-     * La durée de validité RECOPIÉE au jour de la création (migration 0041).
+     * La durée de validité RECOPIÉE au jour de la création (migration 0040).
      *
      * Lire le réglage au moment de composer le PDF ferait changer la durée
      * d'engagement d'un devis déjà envoyé, simplement parce que l'artisan a

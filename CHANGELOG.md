@@ -85,7 +85,7 @@ du sommaire plutôt que d'ouvrir des champs qui ne serviraient à personne.
 **Ce que ça apporte, concrètement :** changer son nom, changer son mot de passe
 — et **« me déconnecter partout »**, le geste utile un soir de téléphone perdu.
 Ce dernier ne coûte qu'une colonne (`users.jetons_valides_depuis`, migration
-0041) : plutôt que de tenir une table de sessions, on refuse les jetons signés
+0042) : plutôt que de tenir une table de sessions, on refuse les jetons signés
 avant une coupure. La liste des appareils reste possible plus tard ; avant que
 quelqu'un d'autre que lui ne se connecte, elle n'aurait qu'une ligne.
 

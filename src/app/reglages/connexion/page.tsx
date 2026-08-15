@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
  * à afficher et rien à rebrancher — il aurait fallu l'écrire, soit une table et
  * deux à trois jours. Le geste utile un soir de téléphone perdu, c'est de
  * fermer tout d'un coup, pas de lire une liste : c'est ce que fait
- * « Me déconnecter partout » (migration 0041), pour une seule colonne.
+ * « Me déconnecter partout » (migration 0042), pour une seule colonne.
  *
  * La liste reste possible plus tard, le jour où quelqu'un d'autre que lui se
  * connectera — avant ça, elle n'aurait qu'une ligne (`TODO.md` §0 octovicies).
