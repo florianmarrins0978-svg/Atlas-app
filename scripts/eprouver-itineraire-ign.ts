@@ -28,6 +28,13 @@
  * le service répond vraiment, et n'échoue que s'il est inutilisable.
  */
 
+// **Ce fichier n'importe rien**, ce qui en fait un script GLOBAL aux yeux de
+// TypeScript : son `main` entrait alors en collision avec celui des autres
+// scripts du dossier — « Duplicate function implementation ». `export {}` en
+// fait un module, et la fonction porte son propre nom plutôt que `main` :
+// ceinture et bretelles, parce que le premier des deux seul n'a pas suffi.
+export {};
+
 const BAN = "https://api-adresse.data.gouv.fr/search/";
 const IGN = "https://data.geopf.fr/navigation/itineraire";
 
@@ -133,7 +140,7 @@ async function itineraire(a: Point, b: Point): Promise<Trajet> {
   return { statut: r.status, ms, distanceKm, minutes, entetes, corpsCourt: texte.slice(0, 300) };
 }
 
-async function main() {
+async function eprouver() {
   console.log("=== Le service d'itinéraire de l'IGN, interrogé pour de vrai ===\n");
   console.log("Aucune clé, aucun compte : c'est justement ce qu'on vérifie.\n");
 
@@ -224,7 +231,7 @@ async function main() {
   console.log("   fait perdre, et la rafale ce que le service supporte.");
 }
 
-main().catch((e) => {
+eprouver().catch((e) => {
   console.error("\n❌ La vérification s'est interrompue :", e instanceof Error ? e.message : e);
   process.exit(1);
 });
