@@ -27,10 +27,25 @@ export type DevisPdfData = DonneesDocument & {
   numeroVersion: number;
   statut: "brouillon" | "envoye";
   dateEmission: string;
+  /** Recopiée à la création. `null` : aucune durée ne s'imprime. */
+  validiteJours?: number | null;
 };
 
-/** Le modèle laisse le devis valable trente jours, mention imprimée en en-tête. */
-const VALIDITE = "30 jours";
+/**
+ * La durée de validité vient du DEVIS, plus d'une constante.
+ *
+ * Elle était écrite en dur — « 30 jours », la même pour tous les artisans, et
+ * aucun écran ne la montrait. Un couvreur qui tient ses prix quinze jours
+ * envoyait donc un devis qui l'engageait trente (`ARCHITECTURE.md` §102).
+ *
+ * **Elle est recopiée dans le devis à sa création**, comme l'identité : un
+ * document garde ce qu'il portait. Les devis d'avant la migration 0040 valent
+ * 30, ce que la constante écrivait — ils ne changent pas.
+ */
+function libelleValiditeDevis(jours: number | null | undefined): string | null {
+  if (jours === null || jours === undefined) return null;
+  return `${jours} jour${jours > 1 ? "s" : ""}`;
+}
 
 export async function composerDevisPdf(
   data: DevisPdfData
@@ -47,7 +62,11 @@ export async function composerDevisPdf(
       // Jour/mois/année : personne, en France, ne lit « 2026-08-04 » sur un
       // devis. Le format ISO reste celui de la base, jamais celui du papier.
       ["Date", jourNumerique(data.dateEmission)],
-      ["Validité", VALIDITE],
+      // Absente quand l'artisan l'a retirée : une ligne « Validité : — » ferait
+      // croire à une donnée perdue.
+      ...(libelleValiditeDevis(data.validiteJours)
+        ? ([["Validité", libelleValiditeDevis(data.validiteJours) as string]] as [string, string][])
+        : []),
     ],
     titreNotes: "NOTES / CONDITIONS",
     mentionLegale: (d) =>

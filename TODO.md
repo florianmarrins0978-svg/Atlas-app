@@ -27,6 +27,93 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 octovicies. Mon compte et Connexion : dessinés, avec DEUX QUESTIONS
+
+*`maquettes/atlas-reglages-moi.html`, le 14 août 2026 — quatre écrans, 53
+contrôles. **Les onze autres rubriques du sommaire ont leur planche ; c'étaient
+les deux dernières.***
+
+**Ce qui se code dès son accord, sans rien décider :**
+
+| Écran | Ce qu'il porte | Ce qu'il faut |
+|---|---|---|
+| **Mon compte** | Nom, e-mail, initiales | Rien à créer : `users.nom` et `users.email` existent |
+| **Connexion** | Changer son mot de passe | Rien à créer : `users.password_hash` existe, haché |
+
+**Ce qu'il a tranché le 14 août 2026, et qui n'est plus discutable :** *« il faut
+pouvoir confirmer son mdp 2× avant de le changer et met le petit œil à côté pour
+afficher ou non le mdp »*. Ma première planche proposait l'œil **à la place** de
+la seconde saisie ; il veut **les deux**, et il a raison : l'œil se touche après
+coup, la confirmation attrape la faute au moment où elle se fait.
+
+L'œil est sur **les trois champs** — une confirmation qu'on ne peut pas relire ne
+confirme rien. Il est **gris**, et bronze une fois ouvert : un pictogramme plein
+au bord d'un champ se lirait comme un bouton d'envoi, et le seul plein de
+l'écran doit rester « Changer mon mot de passe ».
+
+**Et DEUX QUESTIONS, parce que le sommaire promet ce qui n'existe pas :**
+
+| | La promesse | Le fait | Les deux réponses |
+|---|---|---|---|
+| **1** | « Nom, e-mail et **téléphone** » | `users` n'a pas de colonne téléphone, et rien n'appellerait ce numéro : ni SMS ni e-mail sortant (tranché le 4 août) | **A** retirer le mot du libellé · **B** créer la colonne |
+| **2** | « Mot de passe et **appareils** » | `src/auth.ts` pose `session: {strategy: "jwt"}` — **aucune session n'est en base**, il n'y a rien à lister | **A** juste « me déconnecter partout » (une colonne) · **B** la vraie liste (une table, 2-3 jours) |
+
+**Ne pas dessiner d'appareils en attendant.** Une liste plausible — « iPhone ·
+il y a 2 h » — se valide en dix secondes et le défaut n'apparaît qu'au moment de
+coder. Le contrôle de la planche l'interdit explicitement, et il sait rougir.
+
+### 0 octovicies bis. L'écran du catalogue : sa flèche, et sa mémoire morte
+
+*Les deux défauts sont sortis d'une capture du patron, le 14 août 2026 — pas
+d'une suite verte. Ils sont expliqués en langage courant dans
+`docs/QUESTIONS.md` §18. **En attente de son feu vert** : rien n'a été touché.*
+
+**1. Aucune flèche de retour.** `src/app/catalogue/page.tsx` appelle
+`ScreenHeader` sans lui passer `backHref`, alors que le composant sait
+l'afficher. On y arrive depuis *Tarifs & catalogue* : `backHref="/reglages/tarifs"`
+suffit. Une ligne.
+
+**2. « Aucun prix encore constaté » est un mensonge de branchement, et il ne
+s'éteindra jamais.** L'écran lit `historique_prix` — l'ancienne mémoire, celle
+que l'application **n'écrit nulle part** (`enregistrerPrixHistorique` n'est
+appelée que par `scripts/test-ia-05-catalogue.ts` et `test-ia-06-chiffrage.ts`).
+La mémoire vivante est `lecons_prix` depuis la migration 0023 : écrite par
+`retenirLecon` depuis `src/app/chantiers/[id]/devis-complet/actions.ts`, relue
+par `leconsComparables`.
+
+C'est **exactement** le piège que `docs/QUESTIONS.md` §17 dit avoir payé une
+fois — il a survécu ici, sur un écran que personne ne regardait.
+
+**Ce que ça veut dire pour le correctif :** ne pas se contenter de rebrancher le
+`SELECT`. Le rapprochement de `lecons_prix` se fait par **signature de métier**
+(`src/lib/lecons-prix.ts` : `abattage|demontage_retention|d70`), pas par
+`prestationId` du catalogue. Il faut donc décider ce que la carte « Élagage »
+montre : le dernier prix de **toutes** les leçons dont la nature correspond, ou
+rien. Un rapprochement approximatif afficherait sous « Élagage » un prix
+d'abattage — pire que la phrase actuelle, qui au moins n'invente rien.
+
+**Et tant qu'on y est :** cet écran porte encore l'ancienne échelle (`p-4`,
+`text-ink/40`, `rounded-md`) et n'a jamais été passé à la charte. Le retoucher
+sans le redessiner laisserait un écran de 2026-07 au milieu des autres —
+`CLAUDE.md` §3 bis : une maquette d'abord.
+
+### 0 quinvicies bis. Faire ARRIVER les conditions jusqu'au PDF
+
+`ARCHITECTURE.md` §102 : la rubrique « Devis & factures » règle six conditions,
+mais **seule la validité s'imprime**. L'acompte, le délai de paiement, les
+moyens de paiement, le rappel des pénalités et le texte de pied sont
+enregistrés et montrés en aperçu — ils n'atteignent pas encore le document.
+
+**Ce qu'il faut faire, et l'ordre compte :** les figer dans le devis comme la
+validité (`devis.validite_jours`), PUIS les composer dans le bloc « NOTES /
+CONDITIONS ». Les lire au moment de composer le PDF réécrirait les conditions
+d'un devis déjà parti.
+
+**Le piège à ne pas rouvrir :** `devis.conditions_paiement` porte déjà un texte
+que le patron peut écrire à la main. Le remplacer d'office effacerait sa saisie ;
+les deux doivent cohabiter.
+
+
 - **Le champ de prix d'une grille fait 14 px, et iOS agrandit alors la page.**
   Relevé le 14 août 2026 en regardant l'écran « Mes prix » sur un iPhone 13 : le
   champ du montant (`Champ`, `GrillesPrixClient`) est le seul de l'application
@@ -204,7 +291,7 @@ du prix proposé dès qu'aucun tarif ne correspond. Un artisan dont l'ouvrier co
 famille** — prestations, main-d'œuvre et matériel n'existent pas —, et rien ne
 signale un tarif **sans unité**, alors qu'un prix sans unité n'est pas un prix.
 (Les tranches des grilles, elles, se règlent depuis le 14 août —
-`ARCHITECTURE.md` §102.)
+`ARCHITECTURE.md` §105.)
 (L'unité, elle, se **choisit** depuis le 14 août au lieu de se taper —
 `ARCHITECTURE.md` §101 — mais rien ne signale encore celle qui manque.)
 Les cinq grilles n'affichent pas **combien de prix elles ont appris**, ni la
@@ -422,6 +509,42 @@ n'existe pas — il rougira le jour où plus personne ne saura pourquoi.
 Non fait d'office : les brancher allonge `verifier:avant-livraison` de plusieurs
 minutes pour éprouver des pages qui ne partent pas en production. Le bon endroit
 est vraisemblablement la CI, sur les seuls fichiers touchés.
+
+### ~~0 sexvicies. Le chemin vers le devis modifiable~~ — **choisi et codé le 13 août 2026**
+
+**Sa décision, après avoir vu les cinq :** *« le modifier en or à droite du mot
+devis est parfait, code celui-là »* — la proposition B. C'est fait,
+`ARCHITECTURE.md` §104. Ce qui suit est gardé parce que le raisonnement, lui,
+resservira.
+
+**Sa capture du 13 août 2026, 21 h 00 :** *« J'ai un devis sur le feu. En
+cliquant sur Mme Félicie, voilà où j'arrive, mais si je veux modifier mon devis
+avant de l'envoyer, je peux pas. Fais en sorte qu'en cliquant sur le mot devis
+en haut à gauche j'arrive sur la page de mon devis pour la modifier. Crée-moi
+des visuels avant de coder, et il faut que ce soit intuitif. »*
+
+**Le manque est réel, et vérifié dans le code.** `ExportClient` n'offre
+« Modifier mon devis » que sur `EcranDevisParti`, c'est-à-dire APRÈS l'envoi.
+Avant — au moment précis où l'on corrige — aucun chemin ne mène à
+`/chantiers/<id>/devis-complet` depuis cet écran.
+
+**Cinq propositions dessinées**, `docs/maquettes/45-modifier-son-devis.html` :
+
+| | Où le geste se pose | Ce qu'elle vaut |
+|---|---|---|
+| A | Le mot « Devis » devient la porte — **son idée** | Zéro place. Mais un titre qui est secrètement un lien ne s'annonce pas : dessinée avec un crayon et un filet doré, sans quoi personne ne devine |
+| B | « Modifier » en face du titre | Se lit sans deviner, place jusque-là vide |
+| C | « Modifier » sur la carte des lignes | **On touche ce qu'on veut changer** — c'est là que l'œil est quand un prix cloche |
+| D | À côté de « Aperçu du PDF » | Aucune place nouvelle : relire et corriger côte à côte |
+| E | La carte des lignes entière, chevron doré | La cible la plus large ; un peu de mobilier en plus |
+
+**Rien n'est codé.** `CLAUDE.md` §3 bis : une demande d'apparence se dessine
+avant de se coder. **Il reste à en désigner une.**
+
+**Ce qu'elle coûtera, une fois choisie** : un `<Link>` dans `ExportClient`, sur
+la branche d'AVANT l'envoi uniquement — après, le devis ne se modifie plus, il
+se *reprend*, et c'est un autre geste (`ARCHITECTURE.md` §66). Plus une suite
+qui vérifie que le chemin existe avant l'envoi et **pas** après. Une heure.
 
 ### 0 quinvicies. Le chevron de retour, dernier bouton hors charte
 

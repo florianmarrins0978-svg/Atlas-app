@@ -74,11 +74,19 @@
     ".next-batie/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     ".next-batie/dev/types/**/*.ts",
-    ".next/dev/dev/types/**/*.ts"
+    ".next/dev/dev/types/**/*.ts",
+    ".next-banc-essai/types/**/*.ts",
+    ".next-banc-essai/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
     ".next/dev",
-    ".next-batie/dev"
+    ".next-batie/dev",
+    // Le dossier du serveur au profil « banc » monté par
+    // `scripts/test-bandeau-banc-e2e.ts` : même raison que les deux au-dessus,
+    // et Next.js ajoute lui-même ses `include` en démarrant. Sans cette ligne,
+    // un reste périmé y rendrait `npx tsc --noEmit` rouge pour la session
+    // suivante, longtemps après que la suite a fini.
+    ".next-banc-essai/dev"
   ]
 }

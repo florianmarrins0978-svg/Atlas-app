@@ -101,6 +101,20 @@ export const entreprises = pgTable("entreprises", {
   numeroTva: text("numero_tva"),
   /** Un IBAN à un nom différent de l'entreprise inquiète au lieu de rassurer. */
   titulaireCompte: text("titulaire_compte"),
+  /**
+   * Les conditions qui s'impriment sur un devis (migration 0041).
+   *
+   * **Une valeur nulle veut dire « éteint »**, sauf la validité dont le défaut
+   * est celui d'avant — 30 jours, la constante de `devis-pdf.ts`. Deux champs
+   * pour une seule idée (un nombre et un « actif ») finiraient par se
+   * contredire (`src/lib/conditions-documents.ts`).
+   */
+  validiteDevisJours: integer("validite_devis_jours").default(30),
+  acomptePourcent: numeric("acompte_pourcent", { precision: 5, scale: 2 }),
+  delaiPaiementJours: integer("delai_paiement_jours"),
+  moyensPaiement: text("moyens_paiement"),
+  rappelerPenalitesDevis: boolean("rappeler_penalites_devis").notNull().default(false),
+  textePiedDocuments: text("texte_pied_documents"),
   // Combien de chantiers menés de front. 1 par défaut — le comportement d'avant
   // la migration 0019, où une seule équipe était supposée sans le dire.
   nombreEquipes: integer("nombre_equipes").notNull().default(1),
@@ -509,6 +523,15 @@ export const devis = pgTable(
 
     dateEmission: date("date_emission").notNull(),
     dateValidite: date("date_validite"),
+    /**
+     * La durée de validité RECOPIÉE au jour de la création (migration 0041).
+     *
+     * Lire le réglage au moment de composer le PDF ferait changer la durée
+     * d'engagement d'un devis déjà envoyé, simplement parce que l'artisan a
+     * corrigé ses réglages entre-temps — pendant que le client a une autre
+     * feuille sous les yeux (`ARCHITECTURE.md` §102).
+     */
+    validiteJours: integer("validite_jours"),
     conditionsPaiement: text("conditions_paiement"),
     devise: char("devise", { length: 3 }).notNull().default("EUR"),
 
@@ -1134,7 +1157,7 @@ export const grillePrix = pgTable(
     // `dessouchage` et `grumes` ajoutés le 8 août 2026 (migration 0028), sur sa
     // réponse : « le dessouchage oui, et les grumes aussi ».
     //
-    // **Liste ouverte depuis le 14 août 2026** (migration 0040) : le patron
+    // **Liste ouverte depuis le 14 août 2026** (migration 0041) : le patron
     // ajoute ses propres travaux, et une liste fermée les aurait refusés au
     // moment où il pose son premier prix — l'erreur aurait accusé le prix. Ce
     // qui protège la table n'a pas bougé : une clé de case inconnue n'écrit
@@ -1151,7 +1174,7 @@ export const grillePrix = pgTable(
 );
 
 /**
- * Les tranches d'un axe, quand l'artisan a réglé les siennes (migration 0040).
+ * Les tranches d'un axe, quand l'artisan a réglé les siennes (migration 0041).
  *
  * **Sa demande du 14 août 2026 :** *« je dois pouvoir ajouter ou retirer des
  * cases. »* Les huit diamètres, six hauteurs et trois façons d'abattre venaient
@@ -1192,7 +1215,7 @@ export const tranchesGrille = pgTable(
 );
 
 /**
- * Les natures de travail d'une entreprise (migration 0040).
+ * Les natures de travail d'une entreprise (migration 0041).
  *
  * Même mécanique que `tranches_grille` : vide tant qu'il n'a rien touché, les
  * cinq d'origine recopiées au premier geste, et un retrait réversible.

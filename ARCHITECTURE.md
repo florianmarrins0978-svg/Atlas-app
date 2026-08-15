@@ -8128,7 +8128,222 @@ demandé.
 
 ---
 
-## 102. Ses tranches et ses travaux, au lieu des nôtres
+## 102. Les conditions du devis : réglées au lieu d'être en dur, et FIGÉES
+
+*Dessiné le 13 août 2026 (`maquettes/atlas-reglages-documents.html`), codé le
+14. Rubrique « Devis & factures », migration `0040`.*
+
+**Ce que ça remplace.** `const VALIDITE = "30 jours"` — une constante de
+`devis-pdf.ts`, la même pour tous les artisans, qu'aucun écran ne montrait. Un
+couvreur qui tient ses prix quinze jours envoyait un devis qui l'engageait
+trente.
+
+### La validité est RECOPIÉE dans le devis, pas relue
+
+C'est le point qui compte, et il n'était pas évident : lire le réglage au moment
+de composer le PDF ferait **changer la durée d'engagement d'un devis déjà
+envoyé**, simplement parce que l'artisan a corrigé ses réglages entre-temps —
+pendant que le client a une autre feuille sous les yeux. `devis.validite_jours`
+se remplit à la création, comme l'identité (§94). Le rattrapage pose 30 sur les
+devis existants : c'est ce que la constante écrivait, donc ce qu'ils disaient.
+
+### « Jamais réglé » et « éteint » ne sont pas la même chose
+
+Une colonne nulle veut dire **éteint** — rien ne s'imprime. Une colonne absente
+de la lecture veut dire **jamais réglé** — le défaut d'Atlas s'applique. Les
+confondre remettrait « 30 jours » sur le devis d'un artisan qui l'a délibérément
+retiré. `lireConditions` distingue `null` de `undefined` pour cette seule
+raison.
+
+**Aucune colonne « actif » à côté de chaque nombre**, et c'est délibéré : deux
+champs pour une seule idée finissent par se contredire — un acompte à 30 % et un
+interrupteur éteint, et plus personne ne sait ce qui s'imprime.
+
+### On borne, on ne refuse pas
+
+Une saisie hors bornes vient d'un doigt qui a glissé, pas d'une intention.
+Refuser laisserait le champ vide, donc le réglage **éteint** — l'inverse de ce
+qu'il voulait. Les bornes sont posées **aussi en base** (`CHECK`) : une adresse
+d'action se tape, et un acompte de 4 000 % s'imprimerait sur un document que le
+client garde.
+
+### Ce qui ne se coupe pas, dit là où on le chercherait
+
+Sa règle du 13 août : des interrupteurs *« seulement à celles où la
+désactivation n'entraîne pas de problème juridique ou moral »*. Les mentions
+légales de la FACTURE — pénalités au taux légal, indemnité de 40 €, franchise de
+l'art. 293 B — restent écrites en dur dans `facture-pdf.ts`. L'écran porte la
+ligne, marquée « Obligatoire », **dans la même liste** : c'est là qu'il
+chercherait le bouton, et c'est donc là que la réponse doit être.
+
+### Une seule rédaction pour l'aperçu et pour le PDF
+
+`lignesConditionsDevis` sert aux deux. Deux rédactions finiraient par diverger,
+et c'est le client qui lirait la mauvaise. **L'aperçu ne porte aucun montant** :
+le total d'un devis à venir n'existe pas, et un chiffre inventé là finirait
+imprimé — le même piège que le « soit 1 044 € » retiré de la planche le 13 août.
+
+### Ce qui reste à faire, et qu'il ne faut pas croire acquis
+
+**Seule la validité atteint le PDF pour l'instant.** L'acompte, le délai, les
+moyens de paiement, le rappel des pénalités et le texte de pied sont réglés,
+enregistrés et montrés en aperçu — mais ils ne s'impriment pas encore : ils
+doivent d'abord passer par le même figement que la validité, sans quoi corriger
+un réglage réécrirait les conditions d'un devis déjà parti. C'est le lot suivant.
+
+---
+
+## 103. « Surtout la page équipe » : une liste de préchauffage qui avait vieilli
+
+**Son signalement du 14 août 2026 :** *« La connexion est au ralenti sur
+l'appli. Les nouvelles pages ne chargent mal ou pas du tout. »* Puis, à la
+question de savoir lesquelles : ***« Surtout la page équipe. »***
+
+**Sa précision était exacte, et c'est elle qui a désigné le défaut.** Rien
+n'était lent « en général ».
+
+### Ce qui se passe pendant qu'un banc bâtit
+
+Quand le code change, `scripts/banc.mjs` sert d'abord en mode développement et
+construit la version rapide à côté (§ *servir d'abord, bâtir ensuite*). En mode
+développement, un écran n'est compilé **qu'au moment où on l'ouvre**. Mesuré ici,
+sur quatre cœurs au repos, en première ouverture :
+
+| Écran | À froid | Ensuite |
+|---|---|---|
+| Connexion | 6,6 s | — |
+| Planning | 2,8 s | 0,6 s |
+| Réglages | 1,9 s | 0,2 s |
+| Terminés | 1,8 s | 0,3 s |
+| TVA | 1,4 s | 0,2 s |
+
+Sur ses **deux** cœurs, avec la construction qui les occupe, ces secondes
+deviennent des dizaines — au-delà de la minute que le relais de GitHub accepte
+d'attendre. D'où la règle qui décide tout : **un écran déjà ouvert répond ; un
+écran ouvert pour la première fois peut ne jamais arriver.**
+
+C'est précisément ce que `prechauffer.mjs` existe pour éviter : il ouvre les
+écrans depuis l'intérieur, où rien n'abandonne, pour que le patron n'ait plus à
+payer cette première fois.
+
+### Le défaut : une liste écrite à la main, et une refonte ailleurs
+
+`ECRANS_A_PRECHAUFFER` nommait `/reglages`, `/reglages/agenda`,
+`/reglages/prix`, `/reglages/vocabulaire`. Entre-temps, Réglages a été **découpé
+en sept sous-écrans** (§96) : `identite`, `equipe`, `tarifs`, `documents`,
+`planning`, `ia`, `donnees`. **Aucun des sept n'était préchauffé.**
+
+Il ouvrait donc « Équipe » à froid, pendant la construction, et la page
+n'arrivait pas. Sa phrase désignait le seul écran que la liste ne connaissait
+pas.
+
+**Et rien ne pouvait rougir.** Une liste écrite à la main ne se met pas à jour
+quand on ajoute un écran ailleurs ; le seul symptôme est une page qui ne s'ouvre
+pas, chez lui. `scripts/test-prechauffage.ts` la confronte désormais aux
+dossiers réellement présents sous `src/app/reglages` et refuse qu'un sous-écran
+y manque. Confronté au défaut — `/reglages/equipe` retiré — il nomme l'écran :
+*« jamais compilé(s) d'avance, donc hors d'atteinte sur son banc :
+/reglages/equipe »*.
+
+### Ce qui manquait aussi : une phrase
+
+Depuis son téléphone, **rien ne distingue « ça bâtit » de « c'est en panne »**.
+Le seul endroit qui le savait était le terminal de l'éditeur — celui où il ne va
+pas : *« Va regarder toi-même, je peux pas te l'envoyer »* (9 août 2026).
+
+Un bandeau le dit désormais, en haut de l'écran, avec le compte :
+« Version rapide en construction — 12 écrans sur 19 déjà prêts. » Retenu sur
+maquette (`docs/maquettes/46`, proposition A). Il est **dans le flux** — il
+pousse le contenu de quarante pixels au lieu de le couvrir, trois défauts réels
+de ce dépôt venant d'éléments flottants qui cachaient un geste — et il
+**s'efface tout seul** dès que tout est prêt.
+
+**Le chiffre existait déjà et n'était écrit nulle part.** `prechauffer.mjs`
+portait un rappel `avancer` depuis le 9 août, `/api/health/banc` savait lire le
+fichier qu'il devait produire — et **personne ne le lui passait**. La page de
+diagnostic répondait « le préchauffage n'a pas encore commencé » du début à la
+fin. Une fonction prévue, documentée, éprouvée, et jamais branchée : une ligne
+manquait.
+
+### Ce qui a été essayé, mesuré, et ÉCARTÉ
+
+Faire bâtir en priorité basse (`nice -n 19`), pour que la construction cesse de
+disputer ses deux cœurs au serveur. Éprouvé en bornant les deux processus à deux
+cœurs :
+
+| | Priorité normale | Priorité basse |
+|---|---|---|
+| Connexion | 16,2 s | **17,4 s** |
+| Planning | 3,8 s | 3,6 s |
+| Réglages | 3,3 s | 3,3 s |
+| La construction elle-même | 69 s | 67 s |
+
+**Aucun gain.** La contention n'est pas le processeur mais le disque — que
+Next.js signale lui-même comme lent sur ces machines. L'idée était plausible et
+fausse ; elle n'est pas livrée. Une réparation supposée présentée comme acquise
+coûte au patron l'essai, puis l'aller-retour (`AGENTS.md`).
+
+---
+
+## 104. « Modifier », en or, en face du titre — et seulement avant l'envoi
+
+**Le patron, le 13 août 2026, capture à l'appui :**
+
+> *« J'ai un devis sur le feu. En cliquant sur Mme Félicie, voilà où j'arrive,
+> mais si je veux modifier mon devis avant de l'envoyer, je peux pas. Fais en
+> sorte qu'en cliquant sur le mot devis en haut à gauche j'arrive sur la page de
+> mon devis pour la modifier. Crée-moi des visuels avant de coder, et il faut
+> que ce soit intuitif. »*
+
+### Le trou, et pourquoi personne ne l'avait vu
+
+`ExportClient` offrait « Modifier mon devis » — mais sur `EcranDevisParti`,
+c'est-à-dire **après** l'envoi. Avant, aucun chemin ne menait d'ici à
+`devis-complet`. Le seul moyen d'y arriver était de repasser par la création
+d'un chantier.
+
+Le défaut se cachait derrière une symétrie apparente : les deux moments du même
+écran se ressemblent assez pour qu'on croie qu'ils portent les mêmes gestes.
+
+### Cinq propositions, et pourquoi ce n'est pas la sienne qui a été codée
+
+`docs/maquettes/45-modifier-son-devis.html`, dessinées avant tout code
+(`CLAUDE.md` §3 bis). Sa première idée — le mot « Devis » lui-même cliquable —
+y figure telle qu'il l'a dite, avec la seule chose qui la rende trouvable : un
+crayon et un filet d'or. **Un titre qui est secrètement un lien ne s'annonce
+pas.**
+
+Il a tranché après avoir vu les cinq : *« le modifier en or à droite du mot
+devis est parfait, code celui-là »*. C'est la B.
+
+### Ce qui tient le dessin, et qu'un `items-start` défait sans rien casser
+
+L'action passe par `EnTeteEcran` (`action`, `actionPlacee="titre"`), qui
+existait déjà. Mais cet en-tête aligne ses enfants **par le haut**, où se trouve
+le surtitre : sans `self-end`, le mot se poserait à côté de « MME FÉLICIE » et
+non sur la ligne d'écriture du titre. Rien ne rougirait — c'est pourquoi
+`test-modifier-avant-envoi-e2e` **mesure** les deux rectangles.
+
+### Et la règle qui compte plus que la place du mot
+
+**Le lien n'existe qu'avant l'envoi** (`devisRow.statut === "envoye" ? null`).
+Un devis parti ne se modifie plus : le déclencheur
+`empecher_modification_devis_envoye` refuse la première frappe. Il se
+**reprend**, ce qui ouvre une nouvelle version, et c'est un geste que le patron
+décide (§66) — l'écran d'après l'envoi le porte déjà sous son propre libellé.
+Offrir « Modifier » là mènerait à un document mort, sans dire pourquoi.
+
+Le rafraîchissement est déjà là : `onEnvoye` appelle `router.refresh()`, donc
+l'en-tête rendu côté serveur perd son lien dès l'envoi, sans rechargement.
+
+**Le contrôle a été confronté aux deux états dégradés** — lien absent, puis lien
+survivant à l'envoi — et il rougit sur chacun, en nommant le bon coupable. Il
+vérifie aussi que l'écran d'après l'envoi garde SON geste : sans cela, on
+passerait au vert en retirant le lien partout, et le patron n'aurait plus
+d'issue du tout.
+
+
+## 105. Ses tranches et ses travaux, au lieu des nôtres
 
 **Sa demande, le 14 août 2026**, capture de l'écran « Mes prix » à l'appui :
 *« je dois pouvoir ajouter ou retirer des cases. »* Trois formes ont été
@@ -8154,7 +8369,7 @@ surprises au chantier suivant. Le nombre est calculé (`casesParTranche`), jamai
 Les huit diamètres, six hauteurs, trois façons et cinq travaux étaient des
 constantes de `src/lib/grille-prix.ts`. Ils y restent, **comme point de départ**,
 et deux tables portent ce qu'une entreprise a réglé : `tranches_grille` et
-`natures_grille` (migration 0040).
+`natures_grille` (migration 0041).
 
 **Le paramètre `axes` est OBLIGATOIRE**, et c'est délibéré : une valeur par
 défaut silencieuse aurait chiffré un devis contre les tranches d'origine pendant

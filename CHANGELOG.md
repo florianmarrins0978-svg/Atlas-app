@@ -9,6 +9,46 @@ Format : le plus récent en tête.
 
 ## 2026-08-14
 
+### « Surtout la page équipe » : l'écran qui n'était jamais préparé d'avance
+
+**Son signalement :** *« La connexion est au ralenti sur l'appli. Les nouvelles
+pages ne chargent mal ou pas du tout. »* Puis, précis : *« Surtout la page
+équipe. »*
+
+**Sa précision était le diagnostic.** Le banc compile ses écrans d'avance pour
+qu'ils s'ouvrent du premier coup — mais la liste de ces écrans était écrite à la
+main, et Réglages avait été découpé en sept sous-écrans depuis. Aucun des sept
+n'y figurait. « Équipe » s'ouvrait donc à froid, pendant que la construction
+occupait ses deux cœurs, et le relais de GitHub abandonnait avant que la page
+n'arrive.
+
+**Ce que ça évite :** une page qui ne s'ouvre pas et qu'aucun contrôle ne voit.
+La liste est désormais confrontée aux écrans réellement présents — un sous-écran
+ajouté sans y être inscrit fait rougir `test-prechauffage.ts`, qui le nomme.
+
+### Et une phrase, pour ne plus confondre « ça bâtit » avec « c'est cassé »
+
+Depuis son téléphone, rien ne distinguait les deux : il fallait ouvrir
+l'éditeur. Un bandeau le dit maintenant, avec le compte — « Version rapide en
+construction, 12 écrans sur 19 déjà prêts » — et **s'efface tout seul** quand
+tout est prêt. Il n'existe que sur son banc, jamais ailleurs, et un contrôle
+l'éprouve dans les deux sens (`docs/maquettes/46`, `ARCHITECTURE.md` §103).
+
+Le chiffre existait déjà : le préchauffage le comptait, et personne ne l'écrivait
+nulle part — la page de diagnostic répondait « pas encore commencé » du début à
+la fin.
+
+### Écarté après mesure : bâtir en priorité basse
+
+Plausible et faux. Sur deux cœurs : connexion 16,2 s à priorité normale,
+**17,4 s en priorité basse** ; construction 69 s contre 67 s. La contention est
+le disque, pas le processeur. **Non livré** — annoncer une réparation supposée
+coûte l'essai puis l'aller-retour.
+
+---
+
+## 2026-08-14
+
 ### CODÉ : ajouter et retirer des cases dans « Mes prix »
 
 Sa demande du 14 août, capture à l'appui : *« je dois pouvoir ajouter ou retirer
@@ -31,7 +71,7 @@ offre « Annuler » comme partout ailleurs.
 
 **Ce qu'Atlas ne fera PAS**, et l'écran le dit : un travail ajouté par lui n'est
 pas reconnu dans une note vocale. Sa grille se remplit et se relit ; le
-chiffrage ne la proposera pas de lui-même. Raisons : `ARCHITECTURE.md` §102.
+chiffrage ne la proposera pas de lui-même. Raisons : `ARCHITECTURE.md` §105.
 
 ### L'unité d'un tarif se choisit dans un bandeau, au lieu de se taper
 
@@ -69,6 +109,36 @@ zéro entre deux suites que s'il vit dans Redis.
 `run-e2e-tests.ts` refuse désormais de démarrer, et son message nomme le vrai
 coupable. La batterie officielle et la CI posaient déjà la variable : c'est
 l'appel à la main qui ne l'avait pas. Raisons : `ARCHITECTURE.md` §96.
+
+### CODÉ : les conditions du devis, réglées au lieu d'être en dur
+
+Rubrique **Devis & factures**, migration `0040`. Détail : `ARCHITECTURE.md` §102.
+
+**Ce que ça remplace :** `const VALIDITE = "30 jours"` — une constante, la même
+pour tous les artisans, qu'aucun écran ne montrait. Un couvreur qui tient ses
+prix quinze jours envoyait un devis qui l'engageait trente.
+
+Se règlent désormais : la **durée de validité**, l'**acompte**, le **délai de
+paiement**, les **moyens de paiement**, le **rappel des pénalités** sur le devis
+et un **texte de bas de page**. Chacun avec son interrupteur — et les mentions
+légales de la facture restent scellées, la ligne le dit là où l'on chercherait
+le bouton.
+
+**La validité est RECOPIÉE dans le devis, pas relue.** Sans cela, corriger un
+réglage changerait la durée d'engagement d'un devis déjà envoyé, pendant que le
+client a une autre feuille sous les yeux.
+
+**« Jamais réglé » n'est pas « éteint ».** Le premier vaut 30 jours, le second
+n'imprime rien. Les confondre remettrait la durée sur le devis de quelqu'un qui
+l'a retirée.
+
+**Ce qui n'est PAS fait, et qu'il ne faut pas croire acquis :** seule la
+validité atteint le PDF. Les cinq autres sont réglés, enregistrés et montrés en
+aperçu, mais ne s'impriment pas encore — ils doivent passer par le même
+figement. C'est le lot suivant.
+
+Nouveau : `src/lib/conditions-documents.ts`, `/reglages/documents`,
+`scripts/test-conditions-documents.ts` (14 contrôles).
 
 ### CODÉ : l'équipe d'un chantier validé, et la ligne du planning
 
@@ -310,7 +380,117 @@ Détail et raisons : `ARCHITECTURE.md` §95.
 
 ---
 
+## 2026-08-14
+
+### « L'appli ne marche plus » : elle marchait, c'est l'espace qui dormait
+
+**Sa capture, tard le 14 août :** il ouvre son favori Atlas et son iPhone lui
+propose de **télécharger un fichier** portant le nom de l'adresse, l'onglet
+restant sur `about:blank`. *« L'appli ne marche plus. Je vais me coucher,
+corrige-moi ça tout seul. »*
+
+**Ce n'était pas l'application, et c'est sa propre machine qui l'a dit.** La
+fiche d'état que son espace publie (`scripts/rapporter-espace.mjs`) portait,
+vingt-six minutes plus tôt :
+
+```
+Branche suivie   : main
+Code récupéré    : 08a5377          ← le correctif de la veille, bien arrivé
+Serveur          : répond sur le port 3000
+```
+
+Puis plus rien. Or le veilleur réécrit cette fiche **tous les quarts d'heure**
+tant que l'espace tourne : passé vingt minutes de silence, l'espace est arrêté.
+GitHub éteint un espace inactif au bout d'une trentaine de minutes ; l'adresse
+survit, plus personne ne répond derrière, et Safari — qui ne sait que faire de
+ce silence — propose d'enregistrer la réponse. D'où le téléchargement.
+
+**Le code, lui, a été mis à l'épreuve avant de conclure**, et pas seulement par
+la batterie qui tourne en mode développement :
+
+- `next build` passe ;
+- la version **bâtie**, démarrée en profil `banc`, sert bien `200 text/html`
+  sur `/` comme sur `/login`.
+
+**Deux enseignements, et le second vaut plus que le premier.**
+
+1. **La fiche d'état a fait son travail**, et pour la première fois : elle a
+   répondu « est-ce lui ou est-ce nous ? » sans lui faire recopier un terminal
+   depuis un téléphone. C'est exactement ce pour quoi elle a été écrite le
+   12 août.
+2. **Rien ne le lui disait, à lui.** La fiche est écrite pour l'agent, sur
+   GitHub. Le mode d'emploi qu'il peut ouvrir — et qui reste lisible quand son
+   espace est éteint — ne couvrait que la panne de l'ÉDITEUR, pas celle-ci.
+   `docs/ESSAYER.md` porte désormais une section à son nom, avec sa capture
+   décrite dans ses mots, le remède en deux gestes, et le lien vers la fiche
+   d'état — avec la règle des vingt minutes pour trancher en un coup d'œil.
+
+**Ce qu'on ne peut pas corriger, et il faut le dire :** l'extinction est une
+règle de GitHub, pas d'Atlas. Elle disparaîtra le jour où Atlas tournera sur un
+vrai hébergement. Un espace qui dort n'est pas une panne.
+
+---
+
 ## 2026-08-13
+
+### Le devis se reprend enfin AVANT de partir
+
+*« J'ai un devis sur le feu […] mais si je veux modifier mon devis avant de
+l'envoyer, je peux pas. »* Il avait raison : « Modifier mon devis » n'existait
+que sur l'écran du devis **parti**. Avant l'envoi — au moment précis où l'on
+corrige — aucun chemin ne menait au devis modifiable.
+
+Cinq propositions lui ont été dessinées avant d'en coder une ; il a retenu
+**« Modifier » en or, en face du titre**. Sa première idée — le mot « Devis »
+lui-même cliquable — a été écartée par lui après les avoir vues : un titre qui
+est secrètement un lien ne s'annonce pas.
+
+**Ce que ça évite, et qui n'est pas la place du mot :** le lien n'apparaît
+qu'avant l'envoi. Un devis parti ne se modifie plus — la base refuse la première
+frappe — il se *reprend*, ce qui ouvre une nouvelle version, et c'est un geste
+qu'il décide. Offrir « Modifier » après l'envoi l'aurait mené sur un document
+mort sans lui dire pourquoi.
+
+Le contrôle a été confronté aux **deux** états dégradés — lien absent, puis lien
+survivant à l'envoi — et rougit sur chacun. Il vérifie en plus que l'écran
+d'après l'envoi garde son propre geste : sans cela, on passerait au vert en
+retirant le lien partout.
+
+`ARCHITECTURE.md` §104.
+
+
+### Deux maquettes perdues en silence dans la page unique
+
+**Trouvé en ajoutant la planche du devis modifiable.** `fusionner-maquettes.mjs`
+tient la liste des maquettes à assembler. Deux entrées — la 40 et la 44 —
+avaient fusionné en **un seul objet** : le `},{` qui les séparait manquait.
+JavaScript ne s'en plaint pas, il garde la dernière valeur de chaque clé.
+
+Résultat : **la maquette 40 avait disparu de la page unique**, celle qu'on lui
+envoie. Le script annonçait « 33 maquettes fusionnées » et le contrôle
+« 33 titres cliqués, 33 sections peintes » — deux chiffres cohérents entre eux
+et faux tous les deux, puisqu'ils comptaient la liste, pas le dossier.
+
+Le sommaire portait le même genre de faute : l'entrée 40 n'était pas refermée,
+si bien que le titre de famille suivant devenait un morceau de lien.
+
+Réparé : **35** maquettes, la 40 revenue et la 45 ajoutée.
+
+**Ce qui resterait à faire, et qui n'est pas de ce lot :** un contrôle qui
+compare la liste au contenu de `docs/maquettes/`. Tant qu'il n'existe pas, une
+maquette oubliée dans la liste ne se voit qu'à l'œil.
+
+### Le devis modifiable avant l'envoi — cinq propositions dessinées
+
+**Sa capture de 21 h 00 :** *« si je veux modifier mon devis avant de l'envoyer,
+je peux pas »*. Il a raison : « Modifier mon devis » n'existe que sur l'écran du
+devis PARTI. Avant l'envoi, aucun chemin ne mène au devis modifiable.
+
+Sa demande — rendre le mot « Devis » cliquable — est dessinée telle quelle,
+avec la marque qui la rend trouvable, à côté de quatre autres façons
+(`docs/maquettes/45-modifier-son-devis.html`). **Rien n'est codé** : il choisit
+d'abord (`CLAUDE.md` §3 bis).
+
 
 ### CODÉ : l'identité de l'entreprise, et le régime de TVA qui cesse d'être deviné
 

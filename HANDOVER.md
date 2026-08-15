@@ -261,6 +261,28 @@ Ni un champ contrôlé, ni un effet, ni `defaultValue` ne font survivre une vale
 **et** une `key` qui remonte le champ à chaque envoi. Ne pas « simplifier » l'un
 des deux.
 
+## Les treize rubriques ont toutes leur planche (14 août)
+
+`maquettes/atlas-reglages-moi.html` a fermé la série : **Mon compte** et
+**Connexion** étaient les deux dernières jamais dessinées. Huit rubriques sont
+codées, cinq attendent.
+
+**La planche pose DEUX QUESTIONS, et il faut les lui poser avant de coder** —
+parce que le sommaire promet deux choses qui n'existent nulle part :
+
+| La promesse du sommaire | Ce que la base porte vraiment |
+|---|---|
+| « Nom, e-mail et **téléphone** » | `users` : `email`, `nom`, `image`, `password_hash`. **Pas de téléphone**, et rien ne l'appellerait — ni SMS ni e-mail sortant (tranché le 4 août) |
+| « Mot de passe et **appareils** » | `src/auth.ts` : `session: {strategy: "jwt"}`. **Aucune session en base**, donc rien à lister — il faudrait l'écrire |
+
+**Ne pas dessiner d'appareils plausibles en attendant sa réponse.** « iPhone ·
+Mantes-la-Jolie · il y a 2 h » se valide en dix secondes, et le défaut
+n'apparaît qu'au moment de coder. Le contrôle de la planche le refuse
+explicitement, et il sait rougir.
+
+Le détail, les deux réponses possibles et leur coût sont dans `TODO.md`
+§0 octovicies.
+
 ## Les réglages : le PLAN posé, les rubriques EN ATTENTE (13 août)
 
 `maquettes/atlas-reglages-plan.html` — quatre écrans : les réglages vus par le
@@ -283,11 +305,19 @@ numérotation continue, conservation légale).
 2. **Le cloisonnement par rôle n'est pas codé.** Ne pas conclure de la maquette
    qu'un salarié ne voit pas les prix : `QUESTIONS.md` §10 exige que la donnée
    ne SORTE pas du serveur, et rien de tel n'est en place aujourd'hui.
-3. **Le logo et les conditions réglables n'existent pas.**
-   `document-commun.ts` ne pose aucune image ; « 30 jours » est en dur dans
-   `devis-pdf.ts`, la mention légale dans `facture-pdf.ts`. Remplacer le devis
-   entier par un modèle importé n'est pas possible sans perdre les totaux, la
-   TVA et la numérotation — à dire avant de dessiner le lot « Documents ».
+3. **Le logo n'existe pas** — `document-commun.ts` ne pose aucune image.
+   Remplacer le devis entier par un modèle importé n'est pas possible sans
+   perdre les totaux, la TVA et la numérotation — à dire avant d'y revenir.
+
+   **Les conditions, elles, se règlent depuis le 14 août 2026**
+   (`ARCHITECTURE.md` §102) : « 30 jours » n'est plus en dur dans
+   `devis-pdf.ts`, il vient de la rubrique « Devis & factures » et se **fige**
+   dans `devis.validite_jours` à la création — corriger le réglage ne réécrit
+   pas un devis déjà parti. **Attention : seule la validité atteint le PDF.**
+   L'acompte, le délai, les moyens de paiement, le rappel des pénalités et le
+   texte de pied sont enregistrés et montrés en aperçu, mais ne s'impriment pas
+   encore (`TODO.md` §0 quinvicies bis). Les mentions légales de la FACTURE
+   restent scellées en dur dans `facture-pdf.ts`, et c'est délibéré.
 
 **⚠ LE PREMIER JOUR D'UN ARTISAN N'A JAMAIS ÉTÉ VU.** Sa remarque du 13 août :
 *« quand l'application sera commercialisée, le devis sera vierge, et c'est avec
@@ -644,6 +674,51 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**« L'APPLI NE MARCHE PLUS » — ELLE MARCHAIT (14 août, tard).** Son iPhone
+proposait de télécharger un fichier au lieu d'ouvrir Atlas. **Son espace de
+travail s'était éteint** : GitHub arrête un espace inactif au bout d'une
+trentaine de minutes, l'adresse survit, plus personne ne répond, et Safari
+propose d'enregistrer ce silence.
+
+**COMMENT ÇA S'EST DIAGNOSTIQUÉ SANS LUI, ET À REFAIRE PAREIL :** la fiche
+d'état que son espace publie tout seul —
+[issue #47](https://github.com/florianmarrins0978-svg/Atlas-app/issues/47).
+Elle donnait la branche suivie, le commit récupéré (`08a5377` : le correctif
+était bien arrivé) et « serveur : répond ». **Sa date est le premier
+diagnostic** : réécrite tous les quarts d'heure, un silence de plus de vingt
+minutes signifie « espace arrêté », pas « serveur en panne ».
+
+**Ne pas conclure « c'est sa machine » sans avoir éprouvé le code**, parce que
+la batterie tourne en mode DÉVELOPPEMENT et que son banc sert du **bâti** :
+`npm run build`, puis `npx next start` avec `ATLAS_PROFIL=banc` — et vérifier
+que `/` et `/login` rendent `200 text/html`. Sans ce profil, on obtient deux
+erreurs qui n'accusent que le poste d'essai (`UntrustedHost`, puis
+`LLM_PROVIDER vaut « dev » en production`).
+
+**Ce qui a été ajouté pour lui :** `docs/ESSAYER.md` porte une section
+« L'application ne s'ouvre plus du tout », avec sa capture décrite dans ses
+mots et le remède en deux gestes. Elle reste lisible quand son espace est
+éteint — c'est tout l'intérêt.
+
+**LE DEVIS SE REPREND AVANT DE PARTIR (13 août).** « Modifier », en or, en face
+du titre de l'écran d'envoi. Sa capture : *« si je veux modifier mon devis avant
+de l'envoyer, je peux pas »* — et c'était vrai, le lien n'existait qu'APRÈS
+l'envoi.
+
+**Deux choses à ne pas défaire :**
+
+1. **Le lien n'existe qu'avant l'envoi.** Un devis parti ne se modifie plus (la
+   base refuse) : il se *reprend*, et l'écran d'après l'envoi porte déjà ce
+   geste-là. `ARCHITECTURE.md` §104.
+2. **`self-end` sur le lien.** `EnTeteEcran` aligne ses enfants par le haut :
+   sans lui, le mot remonte à côté du surtitre au lieu de se poser sur la ligne
+   du titre — et **rien ne rougirait**, d'où la mesure des rectangles dans
+   `test-modifier-avant-envoi-e2e`.
+
+**Et la façon dont ça s'est décidé, à imiter :** cinq maquettes avant tout code
+(`docs/maquettes/45-…`). Sa première idée — le mot « Devis » cliquable — y
+figure telle qu'il l'a dite ; il l'a écartée lui-même en voyant les autres.
+
 **AJOUTER ET RETIRER DES CASES DANS « MES PRIX » (14 août).** Sa demande :
 *« je dois pouvoir ajouter ou retirer des cases »*, puis, devant les trois
 formes dessinées : *« code les toutes »*.
@@ -670,7 +745,7 @@ Cinq choses à savoir avant d'y toucher :
    dit sous son titre. Ne pas retirer cette phrase en croyant faire propre : il
    le découvrirait sur un devis.
 
-Le reste : `ARCHITECTURE.md` §102.
+Le reste : `ARCHITECTURE.md` §105.
 
 **L'UNITÉ D'UN TARIF SE CHOISIT (14 août).** Sa demande du 13 : *« crée-moi un
 bandeau déroulant avec infos à choisir, jours/hommes, m² etc. »*, puis *« fais
@@ -2389,7 +2464,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les dix-neuf pièges de ce dépôt
+### Les vingt pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -2591,6 +2666,26 @@ site publié à son adresse réelle.
     tout était vert — le trou était dans le raccord. Là où deux couches se
     passent une valeur, il faut une suite qui traverse **du doigt jusqu'au
     chiffre** (`scripts/test-achat-hors-periode-e2e.ts`).
+
+20. **Une liste d'écrans écrite à la main vieillit en silence.**
+    `ECRANS_A_PRECHAUFFER` (`scripts/prechauffer.mjs`) dit quels écrans le banc
+    compile d'avance. Réglages a été découpé en sept sous-écrans (§96) sans que
+    la liste bouge : **aucun des sept n'était préchauffé**, et le patron a trouvé
+    le défaut avant nous — *« Surtout la page équipe »*, le 14 août 2026. Sur ses
+    deux cœurs, un écran non préchauffé ouvert pendant la construction dépasse la
+    minute que le relais de GitHub accepte d'attendre : la page n'arrive jamais.
+    Rien ne rougissait, et rien ne pouvait rougir. `test-prechauffage.ts`
+    confronte désormais la liste aux dossiers réels de `src/app/reglages`.
+    **Ajouter un écran de premier rang, c'est l'ajouter à cette liste** —
+    `ARCHITECTURE.md` §103.
+
+    *Deux corollaires du même jour.* **Une fonction prévue et jamais branchée ne
+    se voit pas :** `prechauffer.mjs` portait un rappel `avancer` et
+    `/api/health/banc` savait lire le fichier qu'il devait produire — personne ne
+    le lui passait, et la page de diagnostic répondait « pas encore commencé »
+    depuis cinq jours. Et **`nice` ne règle rien ici :** faire bâtir en priorité
+    basse a été mesuré (16,2 s → 17,4 s à la connexion, construction 69 s → 67 s)
+    et **écarté** — la contention est le disque, pas le processeur.
 
 ### Le vocabulaire
 

@@ -74,7 +74,14 @@ const ENTREPRISE: Rubrique[] = [
     icone: "etiquette",
     href: "/reglages/tarifs",
   },
-  { nom: "Devis & factures", dit: "Conditions, numérotation et mentions", icone: "feuille", href: null },
+  {
+    nom: "Devis & factures",
+    // Le libellé dit ce qui s'y règle vraiment : la numérotation, elle, est
+    // continue et ne se touche pas — elle est scellée comme les mentions.
+    dit: "Validité, acompte, délai de paiement et mentions",
+    icone: "feuille",
+    href: "/reglages/documents",
+  },
   {
     nom: "Planning",
     dit: "Horaires, équipes et disponibilités",
