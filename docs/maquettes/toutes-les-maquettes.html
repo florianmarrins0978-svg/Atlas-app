@@ -4103,6 +4103,263 @@
 #s35 .note li{margin:6px 0}
 
 
+/* 36 — Pendant que ça bâtit */
+#s36{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f7f5f0; --papier:#ece9e1;
+    --pin:#2f3b2f;
+  }
+@media (prefers-color-scheme: dark){
+#s36:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --papier:#262420;
+      --pin:#8fa88c;
+    }
+
+  
+}
+#s36[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --papier:#262420;
+    --pin:#8fa88c;
+  }
+#s36, #s36 *{box-sizing:border-box}
+#s36{
+    margin:0; background:var(--fond); color:var(--encre);
+    font:400 16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:36px 18px 72px;
+  }
+#s36 .chapo{max-width:760px;margin:0 auto 40px}
+#s36 h1{font-size:26px;line-height:1.25;margin:0 0 14px;font-weight:500}
+#s36 .chapo p{margin:0 0 12px;color:var(--gris);font-size:14.5px}
+#s36 .chapo b{color:var(--encre);font-weight:500}
+#s36 .grille{
+    display:flex;flex-wrap:wrap;gap:34px;justify-content:center;
+    max-width:1320px;margin:0 auto;
+  }
+#s36 .colonne{width:390px;max-width:100%}
+#s36 .titre-prop{
+    font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--or);margin:0 0 6px;
+  }
+#s36 .note{font-size:13.5px;color:var(--gris);margin:0 0 16px;min-height:74px}
+#s36 .note b{color:var(--encre);font-weight:500}
+#s36 .tel{
+    width:390px;max-width:100%;height:600px;overflow:hidden;
+    background:var(--fond);border:1px solid var(--trait);border-radius:22px;
+    display:flex;flex-direction:column;position:relative;
+  }
+#s36 .barre-haut{height:26px;flex:none}
+#s36 .ecran{flex:1;overflow:hidden;display:flex;flex-direction:column}
+#s36 .retour{
+    width:40px;height:40px;border-radius:999px;background:var(--papier);
+    margin:14px 0 0 24px;flex:none;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--pin);font-size:17px;
+  }
+#s36 .surtitre{
+    margin:22px 24px 0;font-size:10px;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--gris);
+  }
+#s36 .h1e{margin:8px 24px 0;font-size:27px;font-weight:400}
+#s36 .bloc{
+    margin:20px 24px 0;background:var(--plage);
+    border:1px solid var(--trait);border-radius:12px;padding:16px 16px 15px;
+  }
+#s36 .bloc .lib{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
+#s36 .ligne{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:13px 0;border-bottom:1px solid var(--trait);font-size:15px;
+  }
+#s36 .ligne:last-child{border-bottom:0}
+#s36 .ligne .val{color:var(--gris);font-size:14px}
+#s36 .onglets{
+    height:58px;flex:none;border-top:1px solid var(--trait);
+    display:flex;align-items:center;background:var(--fond);
+  }
+#s36 .onglets span{
+    flex:1;text-align:center;font-size:11.5px;color:var(--gris);
+  }
+#s36 .onglets .actif{color:var(--pin);font-weight:500}
+#s36 .bandeau-a{
+    flex:none;background:rgba(185,139,71,.13);
+    border-bottom:1px solid rgba(185,139,71,.30);
+    padding:9px 24px 10px;
+  }
+#s36 .bandeau-a .txt{font-size:12.5px;line-height:1.4;color:#7d6234}
+#s36 .bandeau-a .txt b{color:var(--encre);font-weight:500}
+#s36 .jauge{
+    margin-top:7px;height:3px;border-radius:999px;
+    background:rgba(185,139,71,.25);overflow:hidden;
+  }
+#s36 .jauge i{display:block;height:100%;width:63%;background:var(--or)}
+#s36 .rang-titre{display:flex;align-items:baseline;gap:10px;margin:8px 24px 0}
+#s36 .rang-titre .h1e{margin:0}
+#s36 .pastille{
+    flex:none;font-size:11px;letter-spacing:.06em;color:#7d6234;
+    background:rgba(185,139,71,.15);border:1px solid rgba(185,139,71,.32);
+    border-radius:999px;padding:3px 10px 4px;white-space:nowrap;
+  }
+#s36 .sous-titre-b{
+    margin:9px 24px 0;font-size:12px;color:var(--gris);line-height:1.45;
+  }
+#s36 .carte-c{
+    margin:22px 24px 0;background:var(--plage);border:1px solid var(--trait);
+    border-radius:12px;padding:22px 20px 20px;text-align:center;
+  }
+#s36 .carte-c .rond{
+    width:44px;height:44px;border-radius:999px;margin:0 auto 14px;
+    background:rgba(185,139,71,.15);
+    display:flex;align-items:center;justify-content:center;color:var(--or);
+    font-size:19px;
+  }
+#s36 .carte-c h3{margin:0 0 8px;font-size:17px;font-weight:400}
+#s36 .carte-c p{margin:0;font-size:13px;color:var(--gris);line-height:1.55}
+#s36 .carte-c .compte{
+    margin-top:14px;font-size:12.5px;color:#7d6234;
+  }
+#s36 .carte-c .jauge{margin:9px 26px 0}
+#s36 .apres{
+    max-width:760px;margin:56px auto 0;padding-top:26px;
+    border-top:1px solid var(--trait);
+  }
+#s36 .apres h2{font-size:17px;font-weight:500;margin:0 0 12px}
+#s36 .apres p{margin:0 0 12px;font-size:14px;color:var(--gris)}
+#s36 .apres b{color:var(--encre);font-weight:500}
+#s36 .apres table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 18px}
+#s36 .apres th,#s36 .apres td{
+    text-align:left;padding:7px 10px 7px 0;border-bottom:1px solid var(--trait);
+    color:var(--gris);
+  }
+#s36 .apres th{color:var(--encre);font-weight:500}
+#s36 .apres td.n{color:var(--encre);font-variant-numeric:tabular-nums}
+
+
+/* 37 — Une équipe part cinq jours */
+#s37{
+    --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --or:#B98B47; --pin:#2f3b2f; --papier:#ece9e1;
+    --trait:rgba(28,28,26,.12); --traitdoux:rgba(28,28,26,.07);
+  }
+@media (prefers-color-scheme: dark){
+#s37:not([data-theme="light"]){
+      --fond:#171613; --carte:#1e1c19; --encre:#e9e5dc; --gris:#8a867c;
+      --or:#C9A15E; --pin:#8fa88c; --papier:#262420;
+      --trait:rgba(233,229,220,.16); --traitdoux:rgba(233,229,220,.09);
+    }
+
+  
+}
+#s37[data-theme="dark"]{
+    --fond:#171613; --carte:#1e1c19; --encre:#e9e5dc; --gris:#8a867c;
+    --or:#C9A15E; --pin:#8fa88c; --papier:#262420;
+    --trait:rgba(233,229,220,.16); --traitdoux:rgba(233,229,220,.09);
+  }
+#s37, #s37 *{box-sizing:border-box}
+#s37{
+    margin:0;background:var(--fond);color:var(--encre);
+    font:400 16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:36px 18px 80px;
+  }
+#s37 .chapo{max-width:780px;margin:0 auto 42px}
+#s37 h1{font-size:27px;line-height:1.22;margin:0 0 14px;font-weight:500}
+#s37 .chapo p{margin:0 0 12px;color:var(--gris);font-size:14.5px}
+#s37 .chapo b{color:var(--encre);font-weight:500}
+#s37 .grille{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;max-width:1330px;margin:0 auto}
+#s37 .colonne{width:390px;max-width:100%}
+#s37 .titre-prop{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--or);margin:0 0 6px}
+#s37 .note{font-size:13.5px;color:var(--gris);margin:0 0 16px;min-height:118px}
+#s37 .note b{color:var(--encre);font-weight:500}
+#s37 .tel{
+    width:390px;max-width:100%;height:640px;overflow:hidden;background:var(--fond);
+    border:1px solid var(--trait);border-radius:22px;display:flex;flex-direction:column;
+  }
+#s37 .haut{height:24px;flex:none}
+#s37 .ecran{flex:1;overflow:hidden;display:flex;flex-direction:column}
+#s37 .retour{
+    width:40px;height:40px;border-radius:999px;background:var(--papier);margin:12px 0 0 24px;flex:none;
+    display:flex;align-items:center;justify-content:center;color:var(--pin);font-size:17px;
+  }
+#s37 .surtitre{margin:18px 26px 0;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--gris)}
+#s37 .h1e{margin:7px 26px 0;font-size:27px;font-weight:400}
+#s37 .lib{
+    display:flex;align-items:center;gap:12px;margin:26px 26px 6px;
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris);
+  }
+#s37 .lib i{height:1px;flex:1;background:var(--trait)}
+#s37 .ligne{
+    display:flex;align-items:center;gap:12px;margin:0 26px;padding:13px 0;
+    border-bottom:1px solid var(--traitdoux);font-size:15px;
+  }
+#s37 .ligne:last-of-type{border-bottom:0}
+#s37 .rang{
+    width:26px;height:26px;border-radius:999px;flex:none;background:var(--papier);
+    display:flex;align-items:center;justify-content:center;font-size:11.5px;color:var(--pin);
+  }
+#s37 .nom{flex:1}
+#s37 .apart{font-size:12.5px;color:var(--or)}
+#s37 .chev{color:var(--gris);font-size:15px}
+#s37 .ajouter{
+    display:block;margin:14px 26px 0;padding:12px;border:1px solid var(--trait);
+    border-radius:999px;text-align:center;font-size:13.5px;color:var(--pin);background:transparent;
+  }
+#s37 .pied{margin:20px 26px 0;font-size:12px;line-height:1.7;color:var(--gris);border-top:1px solid var(--trait);padding-top:16px}
+#s37 .pied b{color:var(--encre);font-weight:500}
+#s37 .onglets{height:56px;flex:none;border-top:1px solid var(--trait);display:flex;align-items:center;background:var(--fond)}
+#s37 .onglets span{flex:1;text-align:center;font-size:11px;letter-spacing:.06em;color:var(--gris)}
+#s37 .onglets .actif{color:var(--pin);font-weight:500}
+#s37 .jour{margin:16px 26px 0}
+#s37 .jour .date{font-size:12.5px;color:var(--gris);letter-spacing:.04em}
+#s37 .carte{
+    margin-top:7px;background:var(--carte);border:1px solid var(--traitdoux);
+    border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:11px;
+  }
+#s37 .carte .t{flex:1;font-size:14.5px}
+#s37 .carte .s{font-size:11.5px;color:var(--gris);margin-top:2px}
+#s37 .pastille{
+    font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--pin);
+    background:var(--papier);border-radius:999px;padding:3px 9px;white-space:nowrap;
+  }
+#s37 .barre-absence{
+    margin-top:7px;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;
+    background:rgba(185,139,71,.12);border:1px dashed rgba(185,139,71,.45);
+  }
+#s37 .barre-absence .t{flex:1;font-size:13.5px;color:#7d6234}
+#s37 .barre-absence .t b{color:var(--encre);font-weight:500}
+#s37 .feuille{
+    margin-top:auto;background:var(--carte);border-top:1px solid var(--trait);
+    border-radius:18px 18px 0 0;padding:10px 0 18px;
+  }
+#s37 .poignee{width:38px;height:4px;border-radius:999px;background:var(--trait);margin:0 auto 14px}
+#s37 .feuille .sur{text-align:center;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
+#s37 .feuille .tt{text-align:center;font-size:19px;margin:6px 0 14px}
+#s37 .champ{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin:0 18px;padding:12px 14px;background:var(--fond);border-bottom:1px solid var(--traitdoux);
+  }
+#s37 .champ:first-of-type{border-radius:10px 10px 0 0}
+#s37 .champ:last-of-type{border-radius:0 0 10px 10px;border-bottom:0}
+#s37 .champ .k{font-size:13px;color:var(--gris)}
+#s37 .champ .v{font-size:15px}
+#s37 .valider{
+    display:block;margin:14px 18px 0;padding:14px;border-radius:999px;text-align:center;
+    background:var(--pin);color:#f5f3ee;font-size:15px;
+  }
+#s37 .depl{
+    margin-top:7px;background:var(--carte);border:1px solid var(--traitdoux);border-left:3px solid var(--or);
+    border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:11px;
+  }
+#s37 .depl .t{flex:1;font-size:14.5px}
+#s37 .depl .s{font-size:11.5px;color:var(--gris);margin-top:2px}
+#s37 .apres{max-width:780px;margin:58px auto 0;padding-top:26px;border-top:1px solid var(--trait)}
+#s37 .apres h2{font-size:17px;font-weight:500;margin:0 0 12px}
+#s37 .apres p{margin:0 0 12px;font-size:14px;color:var(--gris)}
+#s37 .apres b{color:var(--encre);font-weight:500}
+#s37 .apres table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 20px}
+#s37 .apres th,#s37 .apres td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--trait);color:var(--gris);vertical-align:top}
+#s37 .apres th{color:var(--encre);font-weight:500}
+
+
 </style>
 
 <div class="enveloppe">
@@ -4265,6 +4522,16 @@
       <a class="item" href="#m35">
         <span class="no">35</span><span class="titre">Le devis : le reprendre avant de l’envoyer</span><span class="fleche">↓</span>
         <span class="quoi">Tout est là pour vérifier, rien pour corriger : « Modifier mon devis » n’existe qu’APRÈS l’envoi. Son idée — le mot « Devis » cliquable — dessinée telle quelle, et quatre autres façons d’y arriver.</span>
+      </a>
+      <p class="famille">Le banc d’essai</p>
+      <a class="item" href="#m36">
+        <span class="no">36</span><span class="titre">Pendant que ça bâtit</span><span class="fleche">↓</span>
+        <span class="quoi">« Les nouvelles pages ne chargent mal ou pas du tout. » Rien n’était cassé : le banc sert en mode développement pendant qu’il bâtit, et rien ne le disait. Trois façons de montrer l’avancement, avec les mesures.</span>
+      </a>
+      <p class="famille">Le planning</p>
+      <a class="item" href="#m37">
+        <span class="no">37</span><span class="titre">Une équipe part cinq jours</span><span class="fleche">↓</span>
+        <span class="quoi">« Comment on fait si une équipe part en déplacement pour cinq jours ? » Si toute l’entreprise part, l’agenda Google suffit déjà. Si une équipe sur deux part, rien ne convient. Trois endroits où poser le geste.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -15717,6 +15984,394 @@
       n’est encore touché dans l’application.</p>
   </div>
 
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m36">
+    <div class="etape-tete">
+      <span class="etape-no">36</span>
+      <h2>Pendant que ça bâtit</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s36">
+<div class="chapo">
+  <h1>Pendant que ça bâtit</h1>
+  <p>
+    Quand le code change, le banc sert d’abord en <b>mode développement</b> et
+    construit la version rapide à côté. Dans cet intervalle, un écran ouvert
+    pour la première fois se compile au moment où on le touche — et le relais de
+    GitHub abandonne au bout d’une minute. <b>Rien n’est cassé, et rien ne le
+    dit.</b>
+  </p>
+  <p>
+    Le chiffre existe déjà : le préchauffage compte les écrans qu’il a rendus
+    ouvrables. Trois façons de le montrer, sans rien recouvrir.
+  </p>
+</div>
+
+<div class="grille">
+
+  <!-- ══ A ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition A · le bandeau</p>
+    <p class="note">
+      Une bande d’or pâle en haut, <b>dans le flux</b> — elle pousse le contenu
+      de 40 px au lieu de le couvrir. Elle porte la phrase, le compte et une
+      jauge fine, et <b>disparaît toute seule</b> quand la version rapide prend
+      la main. C’est celle qui répond sans qu’il ait rien à chercher.
+    </p>
+    <div class="tel">
+      <div class="barre-haut"></div>
+      <div class="bandeau-a">
+        <div class="txt">Version rapide en construction — <b>12 écrans sur 19</b> déjà prêts.</div>
+        <div class="jauge"><i></i></div>
+      </div>
+      <div class="ecran">
+        <div class="retour">‹</div>
+        <div class="surtitre">Atlas</div>
+        <div class="h1e">Réglages</div>
+        <div class="bloc">
+          <div class="lib">Vos équipes</div>
+          <div class="ligne"><span>Combien d’équipes</span><span class="val">2</span></div>
+          <div class="ligne"><span>Équipe 1</span><span class="val">Jean</span></div>
+          <div class="ligne"><span>Équipe 2</span><span class="val">Paul</span></div>
+        </div>
+        <div class="bloc">
+          <div class="lib">Votre TVA</div>
+          <div class="ligne"><span>Rythme</span><span class="val">Tous les mois</span></div>
+        </div>
+      </div>
+      <div class="onglets">
+        <span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ B ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition B · la pastille</p>
+    <p class="note">
+      Rien en travers de l’écran : <b>une pastille à côté du titre</b>, et une
+      ligne en dessous. Ça ne bouge aucun pixel du contenu — mais c’est petit,
+      et il faut le remarquer. Le compte y est, la raison aussi, en plus discret.
+    </p>
+    <div class="tel">
+      <div class="barre-haut"></div>
+      <div class="ecran">
+        <div class="retour">‹</div>
+        <div class="surtitre">Atlas</div>
+        <div class="rang-titre">
+          <div class="h1e">Réglages</div>
+          <span class="pastille">12/19 prêts</span>
+        </div>
+        <div class="sous-titre-b">
+          Version rapide en construction : un écran jamais ouvert peut tarder.
+        </div>
+        <div class="bloc">
+          <div class="lib">Vos équipes</div>
+          <div class="ligne"><span>Combien d’équipes</span><span class="val">2</span></div>
+          <div class="ligne"><span>Équipe 1</span><span class="val">Jean</span></div>
+          <div class="ligne"><span>Équipe 2</span><span class="val">Paul</span></div>
+        </div>
+        <div class="bloc">
+          <div class="lib">Votre TVA</div>
+          <div class="ligne"><span>Rythme</span><span class="val">Tous les mois</span></div>
+        </div>
+      </div>
+      <div class="onglets">
+        <span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ C ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition C · la carte, seulement quand ça rate</p>
+    <p class="note">
+      Rien tant que tout s’ouvre. Mais <b>quand un écran n’arrive pas</b>, à la
+      place de la page blanche : une carte qui dit pourquoi et où ça en est.
+      C’est la plus juste — elle parle au moment exact du problème — et la plus
+      coûteuse : il faut attraper l’écran qui ne vient pas, ce que le relais de
+      GitHub coupe avant nous.
+    </p>
+    <div class="tel">
+      <div class="barre-haut"></div>
+      <div class="ecran">
+        <div class="retour">‹</div>
+        <div class="surtitre">Atlas</div>
+        <div class="h1e">Réglages</div>
+        <div class="carte-c">
+          <div class="rond">⏳</div>
+          <h3>Cet écran se prépare</h3>
+          <p>
+            La version rapide est en construction. Cet écran n’a pas encore été
+            compilé — il s’ouvrira du premier coup dans un instant.
+          </p>
+          <div class="compte">12 écrans sur 19 déjà prêts</div>
+          <div class="jauge"><i></i></div>
+        </div>
+      </div>
+      <div class="onglets">
+        <span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="apres">
+  <h2>Ce que j’ai mesuré, et qui décide du reste</h2>
+  <p>
+    Sur un serveur froid, quatre cœurs, machine au repos — <b>la première
+    ouverture</b> de chaque écran, puis les suivantes :
+  </p>
+  <table>
+    <tr><th>Écran</th><th>Première fois</th><th>Ensuite</th></tr>
+    <tr><td>Connexion</td><td class="n">6,6 s</td><td class="n">—</td></tr>
+    <tr><td>Planning</td><td class="n">2,8 s</td><td class="n">0,6 s</td></tr>
+    <tr><td>Réglages — « Vos équipes »</td><td class="n">1,9 s</td><td class="n">0,2 s</td></tr>
+    <tr><td>Terminés</td><td class="n">1,8 s</td><td class="n">0,3 s</td></tr>
+    <tr><td>Mes prix</td><td class="n">1,7 s</td><td class="n">0,2 s</td></tr>
+    <tr><td>Mon agenda</td><td class="n">1,6 s</td><td class="n">0,2 s</td></tr>
+    <tr><td>TVA</td><td class="n">1,4 s</td><td class="n">0,2 s</td></tr>
+  </table>
+  <p>
+    <b>Réglages n’est pas plus lent que les autres.</b> Rien dans cet écran ne
+    traîne. Ce qui le distingue, c’est qu’il est rarement ouvert — donc rarement
+    déjà compilé quand il y va.
+  </p>
+  <h2>Et une réparation qui ne se voit pas</h2>
+  <p>
+    En parallèle de ce bandeau : faire bâtir <b>en priorité basse</b>, pour que
+    la construction cesse de disputer ses deux cœurs au serveur qui le sert.
+    Aucun changement d’apparence, et ça se mesure.
+  </p>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m37">
+    <div class="etape-tete">
+      <span class="etape-no">37</span>
+      <h2>Une équipe part cinq jours</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s37">
+<div class="chapo">
+  <h1>Une équipe part cinq jours</h1>
+  <p>
+    <b>Si toute l’entreprise part, c’est déjà réglé</b> — l’événement dans votre
+    agenda Google bloque les cinq jours. Ces planches traitent l’autre cas :
+    <b>une équipe sur deux</b>, où l’agenda bloquerait aussi celle qui reste.
+  </p>
+  <p>
+    Les trois font la même chose au fond : retirer une équipe du compte sur des
+    jours donnés. Elles diffèrent sur <b>où le geste se pose</b> — et c’est la
+    seule question qui compte, parce qu’il doit tomber là où vous y pensez.
+  </p>
+</div>
+
+<div class="grille">
+
+  <!-- ══ A ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition A · sous les noms</p>
+    <p class="note">
+      Dans <b>Réglages → Équipe</b>, sous les noms : chaque équipe porte ses
+      absences. C’est là qu’elles vivent, et on y va quand on <b>prépare</b> —
+      le lundi soir, en organisant la semaine. Le défaut : ce n’est pas là que
+      vous êtes quand le déplacement se décide, souvent au téléphone.
+    </p>
+    <div class="tel">
+      <div class="haut"></div>
+      <div class="ecran">
+        <div class="retour">‹</div>
+        <div class="surtitre">Réglages</div>
+        <div class="h1e">Équipe</div>
+
+        <div class="lib">Combien partent en même temps <i></i></div>
+        <div style="text-align:center;font-size:44px;line-height:1;margin:12px 0 4px">2</div>
+        <p style="margin:0 26px;text-align:center;font-size:12.5px;color:var(--gris)">
+          Deux chantiers peuvent partir le même jour.
+        </p>
+
+        <div class="lib">Leurs noms <i></i></div>
+        <div class="ligne"><span class="rang">1</span><span class="nom">Jean</span><span class="chev">›</span></div>
+        <div class="ligne"><span class="rang">2</span><span class="nom">Paul</span><span class="chev">›</span></div>
+
+        <div class="lib">Absences <i></i></div>
+        <div class="ligne">
+          <span class="rang">2</span>
+          <span class="nom">Paul<span style="display:block;font-size:11.5px;color:var(--gris);margin-top:2px">Déplacement</span></span>
+          <span class="apart">8 → 12 sept.</span>
+        </div>
+        <button class="ajouter">+ Noter une absence</button>
+
+        <p class="pied">
+          Une équipe absente <b>ne compte plus</b> ces jours-là : Atlas ne
+          proposera qu’une seule date à la fois, et tout revient normal le 13.
+        </p>
+      </div>
+      <div class="onglets">
+        <span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ B ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition B · en tenant le jour</p>
+    <p class="note">
+      Sur le <b>planning</b>, un appui long sur un jour ouvre une feuille :
+      quelle équipe, jusqu’à quand. Le geste tombe <b>là où vous voyez le
+      trou</b>, sans changer d’écran. Le défaut : un appui long ne se voit pas
+      — rien sur l’écran ne dit qu’il existe, et vous seul le sauriez.
+    </p>
+    <div class="tel">
+      <div class="haut"></div>
+      <div class="ecran">
+        <div class="retour">‹</div>
+        <div class="surtitre">Atlas</div>
+        <div class="h1e">Planning</div>
+
+        <div class="jour">
+          <div class="date">Lundi 8 septembre</div>
+          <div class="carte">
+            <span class="t">Mr. Bernard<span class="s">Rue des Lilas · matin</span></span>
+            <span class="pastille">Jean</span>
+          </div>
+          <div class="barre-absence">
+            <span class="t"><b>Paul</b> — déplacement, jusqu’au 12</span>
+          </div>
+        </div>
+
+        <div class="jour">
+          <div class="date">Mardi 9 septembre</div>
+          <div class="carte">
+            <span class="t">Mme Félicie<span class="s">Chemin du Bois · journée</span></span>
+            <span class="pastille">Jean</span>
+          </div>
+        </div>
+
+        <div class="feuille">
+          <div class="poignee"></div>
+          <div class="sur">Lundi 8 septembre</div>
+          <div class="tt">Qui n’est pas là ?</div>
+          <div class="champ"><span class="k">Équipe</span><span class="v">Paul</span></div>
+          <div class="champ"><span class="k">Jusqu’au</span><span class="v">vendredi 12</span></div>
+          <div class="champ"><span class="k">Motif</span><span class="v" style="color:var(--gris)">Déplacement</span></div>
+          <div class="valider">Noter l’absence</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ C ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition C · une ligne comme une autre</p>
+    <p class="note">
+      Le déplacement <b>est du travail</b> : il se pose sur le planning comme un
+      chantier, avec son équipe et ses cinq jours — mais sans client, sans devis
+      et sans facture. Un seul geste à apprendre, celui que vous faites déjà.
+      Le défaut : il faut distinguer les deux d’un coup d’œil, sinon on cherche
+      un devis qui n’existe pas.
+    </p>
+    <div class="tel">
+      <div class="haut"></div>
+      <div class="ecran">
+        <div class="retour">‹</div>
+        <div class="surtitre">Atlas</div>
+        <div class="h1e">Planning</div>
+
+        <div class="jour">
+          <div class="date">Lundi 8 septembre</div>
+          <div class="carte">
+            <span class="t">Mr. Bernard<span class="s">Rue des Lilas · matin</span></span>
+            <span class="pastille">Jean</span>
+          </div>
+          <div class="depl">
+            <span class="t">Déplacement<span class="s">Lyon · 5 jours, jusqu’au 12</span></span>
+            <span class="pastille">Paul</span>
+          </div>
+        </div>
+
+        <div class="jour">
+          <div class="date">Mardi 9 septembre</div>
+          <div class="carte">
+            <span class="t">Mme Félicie<span class="s">Chemin du Bois · journée</span></span>
+            <span class="pastille">Jean</span>
+          </div>
+          <div class="depl">
+            <span class="t">Déplacement<span class="s">Lyon · jour 2 sur 5</span></span>
+            <span class="pastille">Paul</span>
+          </div>
+        </div>
+
+        <div class="jour">
+          <div class="date">Mercredi 10 septembre</div>
+          <div class="depl">
+            <span class="t">Déplacement<span class="s">Lyon · jour 3 sur 5</span></span>
+            <span class="pastille">Paul</span>
+          </div>
+        </div>
+
+        <p class="pied">
+          Le trait doré à gauche distingue ce qui n’est pas un chantier :
+          <b>ni devis, ni facture</b> — seulement une équipe qui n’est pas
+          disponible.
+        </p>
+      </div>
+      <div class="onglets">
+        <span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Réglages</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="apres">
+  <h2>Ce que les trois partagent, et qui ne se dessine pas</h2>
+  <p>
+    Quelle que soit celle que vous retenez, la règle en dessous est la même et
+    c’est elle qui fait le travail : <b>une équipe absente ne compte plus dans
+    les dates proposées au client</b> sur ces jours-là. Avec deux équipes dont
+    une en déplacement, Atlas se comporte exactement comme s’il n’y en avait
+    qu’une — puis tout revient normal, sans que vous ayez rien à défaire.
+  </p>
+  <p>
+    Et <b>la même règle sert deux fois</b> : à construire la liste des dates
+    proposées, et à revérifier celle que le client choisit. Jamais deux
+    implémentations — c’est ce qui a déjà évité qu’un client retienne une date
+    qu’on ne pouvait pas tenir.
+  </p>
+
+  <h2>Ce que ça change, et ce que ça ne change pas</h2>
+  <table>
+    <tr><th>Ce qui change</th><th>Ce qui ne bouge pas</th></tr>
+    <tr>
+      <td>Les dates proposées au client tiennent compte de l’équipe absente</td>
+      <td>Le client ne voit <b>jamais</b> vos équipes ni vos absences — il voit une date, comme aujourd’hui</td>
+    </tr>
+    <tr>
+      <td>Le planning montre pourquoi un jour est plus chargé</td>
+      <td>Rien n’est envoyé, validé ni facturé sans votre geste</td>
+    </tr>
+    <tr>
+      <td>Un déplacement se note en quelques secondes</td>
+      <td>L’agenda Google continue de bloquer tout le monde, quand c’est vous qui partez</td>
+    </tr>
+  </table>
+
+  <h2>Ce que je ne fais PAS dans ce lot, et pourquoi</h2>
+  <p>
+    <b>Vérifier qu’une équipe n’est pas sur deux chantiers en même temps.</b>
+    C’est un problème réel — l’équipe inscrite sur un chantier est aujourd’hui
+    une étiquette, pas une contrainte — mais le régler oblige à choisir l’équipe
+    <b>avant</b> de proposer une date au client, donc à toucher au parcours du
+    devis. C’est un autre lot, et il n’a de sens que si le télescopage vous
+    arrive vraiment. Dites-le-moi si c’est le cas.
+  </p>
 </div>
     </div>
   </section>

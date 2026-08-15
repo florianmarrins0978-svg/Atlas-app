@@ -27,6 +27,74 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 undetricies. L'absence d'une équipe — DESSINÉE le 14 août 2026, en attente de son choix
+
+**Sa question :** *« Comment on fait si jamais il y a une équipe qui doit partir
+en déplacement pour cinq jours ? »* Réponse complète dans `docs/QUESTIONS.md`
+§19 ; trois propositions dans `docs/maquettes/55`.
+
+**Ce qui existe déjà, et qu'il ne faut pas refaire :** si TOUTE l'entreprise
+part, l'agenda Google relié suffit — une période de plusieurs jours occupe
+toutes les demi-journées qu'elle traverse. **Rien à coder pour ce cas-là.**
+
+**Ce qui manque :** une absence datée **par équipe**. L'agenda bloque tout le
+monde — délibérément, `fusionnerOccupationExterne` pose l'occupation au niveau
+du nombre d'équipes parce qu'Atlas ne peut pas deviner si une équipe sait partir
+sans le patron — et le nombre d'équipes est un nombre **sans dates**.
+
+**Trois endroits proposés**, à trancher par lui : (A) sous les noms dans
+Réglages → Équipe, (B) un appui long sur un jour du planning, (C) une ligne de
+déplacement posée comme un chantier.
+
+**Ce que ça demande, une fois choisi :** une table `absences_equipe` (équipe,
+premier jour, dernier jour, motif), une règle pure qui retire l'équipe du compte
+sur ces jours — greffée sur `compterOccupation` / `departPossible`
+(`src/server/disponibilites.ts`) — et l'écran retenu. **La même règle doit
+servir à proposer les dates ET à revérifier celle que le client choisit**, comme
+tout le reste de ce parcours : jamais deux implémentations (`CLAUDE.md` §3).
+
+### 0 undetricies ter. La page « toutes les maquettes » a pris du retard, en silence
+
+**Trouvé le 14 août 2026, et c'est la MÊME famille de défaut que la liste de
+préchauffage** (`ARCHITECTURE.md` §103) : `scripts/fusionner-maquettes.mjs`
+porte une liste **écrite à la main** — un fichier, un titre, une famille, une
+phrase. Une planche ajoutée ailleurs ne s'y ajoute pas toute seule, rien ne
+rougit, et la page unique se met à mentir par omission.
+
+**Manquantes au 14 août** : `47-ou-mettre-l-assistant`, `50-le-nom-goonzi`,
+`51-le-moment-qui-dit-toujours-matin`, `52-appliquer-une-equipe`,
+`53-le-mot-juste-sans-la-date`, `54-dicter-dans-le-devis`. (Les miennes, 46 et
+55, y ont été portées le jour même.) Trois manquent aussi à `index.html` : 47 et
+53.
+
+**Pourquoi ce n'est pas fait ici :** ces planches appartiennent à d'autres
+sessions, qui les écrivaient encore. Leur inventer un titre et une phrase serait
+parler à leur place, et les toucher pendant qu'elles travaillent produirait des
+conflits.
+
+**Ce qu'il faut, et qui vaut plus que le rattrapage :** un contrôle qui
+**refuse une planche présente sur le disque et absente de la liste**, sur le
+modèle de celui écrit pour le préchauffage (`test-prechauffage.ts`, « aucun
+écran de Réglages n'a été oublié »). Le rattrapage des six se fait alors une
+fois, et le trou ne se rouvre plus.
+
+### 0 undetricies bis. L'équipe d'un chantier est une étiquette, pas une contrainte
+
+**Trouvé le 14 août 2026 en répondant à la question ci-dessus, et pas signalé
+par lui.** `compterOccupation` compte les chantiers par demi-journée et compare
+ce total au nombre d'équipes ; il ne regarde **jamais** `equipeId`. Deux
+chantiers le même matin, tous les deux sur « Équipe 1 » : Atlas les accepte sans
+rien dire.
+
+Sans conséquence tant que le patron répartit lui-même. **Faux dès qu'une équipe
+est absente** — d'où le lien avec le point précédent.
+
+**Pourquoi ce n'est PAS dans le même lot :** le régler oblige à choisir l'équipe
+**avant** de proposer une date au client, donc à toucher au parcours du devis
+(trois arrêts, `docs/AGENT.md`). C'est un chantier à part, et il n'a de sens que
+si le télescopage se produit vraiment. **Question posée au patron le 14 août,
+sans réponse à ce jour.**
+
 ### 0 octovicies. ~~Mon compte et Connexion~~ — **CODÉS le 14 août 2026 (« A A »)**
 
 Les deux écrans existent : `/reglages/compte` et `/reglages/connexion`
