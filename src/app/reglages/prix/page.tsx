@@ -2,6 +2,7 @@ import Link from "next/link";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { lireGrillePrix } from "@/server/repositories/grille-prix";
+import { lireGrilles } from "@/server/repositories/grilles-reglables";
 import GrillesPrixClient from "./GrillesPrixClient";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +26,10 @@ export const dynamic = "force-dynamic";
  */
 export default async function GrillesPrixPage() {
   const ctx = await getCurrentCtx();
-  const cases = await lireGrillePrix(ctx);
+  // Ses grilles à lui depuis le 14 août 2026 : titres, tranches et façons
+  // viennent de la base, avec les valeurs de départ tant qu'il n'a rien touché.
+  const grilles = await lireGrilles(ctx);
+  const cases = await lireGrillePrix(ctx, grilles);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -62,6 +66,7 @@ export default async function GrillesPrixPage() {
         </div>
 
         <GrillesPrixClient
+          grilles={grilles}
           initiales={cases.map((c) => ({
             nature: c.nature,
             cle: c.cellule.cle,

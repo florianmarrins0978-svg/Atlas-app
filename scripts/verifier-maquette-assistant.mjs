@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  Éprouve la maquette 46, JAVASCRIPT COUPÉ.
+  Éprouve la maquette 47, JAVASCRIPT COUPÉ.
 
   **Ce qu'il mesure, et pourquoi ce n'est pas un avis.** La demande du patron —
   *« l'onglet de l'assistant est hyper mal placé, propose des choses pour plus
@@ -42,7 +42,7 @@ import { existsSync } from "node:fs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CIBLE = resolve(
-  process.argv[2] ?? join(RACINE, "docs", "maquettes", "46-ou-mettre-l-assistant.html"),
+  process.argv[2] ?? join(RACINE, "docs", "maquettes", "47-ou-mettre-l-assistant.html"),
 );
 
 if (!existsSync(CIBLE)) {

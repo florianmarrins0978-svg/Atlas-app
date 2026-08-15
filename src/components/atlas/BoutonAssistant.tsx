@@ -7,7 +7,7 @@ import { useAssistant } from "./assistant-contexte";
  * Le bouton qui ouvre l'assistant, dans l'en-tête de l'écran.
  *
  * **Proposition B, choisie par le patron le 13 août 2026** dans
- * `docs/maquettes/46-ou-mettre-l-assistant.html`, avec une précision de sa
+ * `docs/maquettes/47-ou-mettre-l-assistant.html`, avec une précision de sa
  * part : *« la B mais de la même couleur qu'elle est déjà »*. La maquette le
  * montrait en beige teinté, comme le micro ; il garde donc le **vert pin plein
  * et l'icône blanche** de la bulle qu'il remplace. Rien d'autre ne change de
@@ -20,7 +20,7 @@ import { useAssistant } from "./assistant-contexte";
  *
  * **Pourquoi il ne flotte plus**, et ce que ça règle : cinq fois cet été, la
  * bulle a recouvert quelque chose, et cinq fois c'est l'écran qu'on a déplacé
- * pour l'éviter (`ARCHITECTURE.md` §103). Un élément qui ne flotte pas ne peut
+ * pour l'éviter (`ARCHITECTURE.md` §106). Un élément qui ne flotte pas ne peut
  * rien recouvrir — y compris sur les écrans qui n'existent pas encore.
  */
 export default function BoutonAssistant() {

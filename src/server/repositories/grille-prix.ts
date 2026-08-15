@@ -2,10 +2,18 @@ import { and, eq, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { grillePrix } from "../db/schema";
 import type { Ctx } from "./context";
-import { celluleDeNature, type CelluleFendage, type NatureGrille } from "../../lib/grille-prix";
+import { celluleDeNature, type Cellule, type Grilles } from "../../lib/grille-prix";
+import { lireGrilles } from "./grilles-reglables";
 
-/** Ré-exporté pour les actions serveur, qui ne doivent typer qu'un seul module. */
-export type NatureGrilleServeur = NatureGrille;
+/**
+ * La nature d'un travail, telle qu'elle voyage entre l'écran et la base.
+ *
+ * **Une chaîne, et non plus une liste fermée depuis le 14 août 2026** : le
+ * patron ajoute ses propres travaux (`natures_grille`). Ce qui protège la table
+ * n'a pas bougé — une case inconnue de ses grilles n'écrit nulle part, voir
+ * `poserPrixGrille`.
+ */
+export type NatureGrilleServeur = string;
 
 /**
  * La grille de prix du fendage, en base.
@@ -21,20 +29,21 @@ export type NatureGrilleServeur = NatureGrille;
  */
 
 export type CasePleine = {
-  nature: NatureGrille;
-  cellule: CelluleFendage;
+  nature: string;
+  cellule: Cellule;
   prix: string;
   origine: "saisi" | "devis";
   constateLe: Date;
 };
 
 /** Toutes les cases remplies, toutes natures confondues. */
-export async function lireGrillePrix(ctx: Ctx): Promise<CasePleine[]> {
+export async function lireGrillePrix(ctx: Ctx, grillesConnues?: Grilles): Promise<CasePleine[]> {
+  const grilles = grillesConnues ?? (await lireGrilles(ctx));
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const lignes = await tx.select().from(grillePrix);
     return lignes
       .map((l) => {
-        const cellule = celluleDeNature(l.nature, l.cellule);
+        const cellule = celluleDeNature(l.nature, l.cellule, grilles);
         // Une clé qu'aucune tranche ne reconnaît : les bornes ont changé depuis
         // qu'elle a été écrite. On l'ignore plutôt que d'afficher un prix sans
         // savoir à quel arbre il correspond — et on ne la supprime pas, pour
@@ -54,8 +63,8 @@ export async function lireGrillePrix(ctx: Ctx): Promise<CasePleine[]> {
  * chez l'abattage comme chez le fendage : les réunir ferait chiffrer une fente
  * au prix d'un démontage.
  */
-export async function prixConnusDe(ctx: Ctx, nature: NatureGrille): Promise<Map<string, string>> {
-  const cases = await lireGrillePrix(ctx);
+export async function prixConnusDe(ctx: Ctx, nature: string, grillesConnues?: Grilles): Promise<Map<string, string>> {
+  const cases = await lireGrillePrix(ctx, grillesConnues);
   return new Map(cases.filter((c) => c.nature === nature).map((c) => [c.cellule.cle, c.prix]));
 }
 
@@ -94,7 +103,7 @@ function lireMontant(prix: string | null): number | null {
  */
 export async function poserPrixGrille(
   ctx: Ctx,
-  nature: NatureGrille,
+  nature: string,
   cle: string,
   prix: string | null,
   origine: "saisi" | "devis" = "saisi"
@@ -102,7 +111,8 @@ export async function poserPrixGrille(
   // **La case est validée ici, contre la liste des cases possibles.** C'est ce
   // qui fait qu'une clé fabriquée depuis un navigateur n'écrit rien : la garde
   // n'est pas dans l'écran, qui ne protège que ce qu'on regarde.
-  if (!celluleDeNature(nature, cle)) return;
+  const grilles = await lireGrilles(ctx);
+  if (!celluleDeNature(nature, cle, grilles)) return;
 
   const montant = lireMontant(prix);
   if (montant === null) {

@@ -585,7 +585,7 @@ n'est pas la batterie.
 ## L'ASSISTANT A QUITTÉ LE COIN FLOTTANT (13 août)
 
 *« La B mais de la même couleur qu'elle est déjà »* — le bouton est dans
-l'en-tête, à côté du titre, en vert pin plein. `ARCHITECTURE.md` §103.
+l'en-tête, à côté du titre, en vert pin plein. `ARCHITECTURE.md` §106.
 
 **⚠ Ne jamais le remettre en `fixed`.** C'était la cause : cinq écrans ont été
 déplacés cet été pour éviter cette bulle. Et **ne pas lui donner une ligne à
@@ -692,6 +692,32 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**« L'APPLI NE MARCHE PLUS » — ELLE MARCHAIT (14 août, tard).** Son iPhone
+proposait de télécharger un fichier au lieu d'ouvrir Atlas. **Son espace de
+travail s'était éteint** : GitHub arrête un espace inactif au bout d'une
+trentaine de minutes, l'adresse survit, plus personne ne répond, et Safari
+propose d'enregistrer ce silence.
+
+**COMMENT ÇA S'EST DIAGNOSTIQUÉ SANS LUI, ET À REFAIRE PAREIL :** la fiche
+d'état que son espace publie tout seul —
+[issue #47](https://github.com/florianmarrins0978-svg/Atlas-app/issues/47).
+Elle donnait la branche suivie, le commit récupéré (`08a5377` : le correctif
+était bien arrivé) et « serveur : répond ». **Sa date est le premier
+diagnostic** : réécrite tous les quarts d'heure, un silence de plus de vingt
+minutes signifie « espace arrêté », pas « serveur en panne ».
+
+**Ne pas conclure « c'est sa machine » sans avoir éprouvé le code**, parce que
+la batterie tourne en mode DÉVELOPPEMENT et que son banc sert du **bâti** :
+`npm run build`, puis `npx next start` avec `ATLAS_PROFIL=banc` — et vérifier
+que `/` et `/login` rendent `200 text/html`. Sans ce profil, on obtient deux
+erreurs qui n'accusent que le poste d'essai (`UntrustedHost`, puis
+`LLM_PROVIDER vaut « dev » en production`).
+
+**Ce qui a été ajouté pour lui :** `docs/ESSAYER.md` porte une section
+« L'application ne s'ouvre plus du tout », avec sa capture décrite dans ses
+mots et le remède en deux gestes. Elle reste lisible quand son espace est
+éteint — c'est tout l'intérêt.
+
 **LE DEVIS SE REPREND AVANT DE PARTIR (13 août).** « Modifier », en or, en face
 du titre de l'écran d'envoi. Sa capture : *« si je veux modifier mon devis avant
 de l'envoyer, je peux pas »* — et c'était vrai, le lien n'existait qu'APRÈS
@@ -701,7 +727,7 @@ l'envoi.
 
 1. **Le lien n'existe qu'avant l'envoi.** Un devis parti ne se modifie plus (la
    base refuse) : il se *reprend*, et l'écran d'après l'envoi porte déjà ce
-   geste-là. `ARCHITECTURE.md` §82.
+   geste-là. `ARCHITECTURE.md` §104.
 2. **`self-end` sur le lien.** `EnTeteEcran` aligne ses enfants par le haut :
    sans lui, le mot remonte à côté du surtitre au lieu de se poser sur la ligne
    du titre — et **rien ne rougirait**, d'où la mesure des rectangles dans
@@ -710,6 +736,34 @@ l'envoi.
 **Et la façon dont ça s'est décidé, à imiter :** cinq maquettes avant tout code
 (`docs/maquettes/45-…`). Sa première idée — le mot « Devis » cliquable — y
 figure telle qu'il l'a dite ; il l'a écartée lui-même en voyant les autres.
+
+**AJOUTER ET RETIRER DES CASES DANS « MES PRIX » (14 août).** Sa demande :
+*« je dois pouvoir ajouter ou retirer des cases »*, puis, devant les trois
+formes dessinées : *« code les toutes »*.
+
+Cinq choses à savoir avant d'y toucher :
+
+1. **Une case ne s'ajoute pas toute seule.** Elle naît du croisement de deux
+   tranches : un diamètre de plus en pose DIX (1 dessouchage, 3 abattage,
+   6 fendage). L'écran l'annonce avant qu'il valide, et le nombre est calculé
+   (`casesParTranche`) — ne jamais l'écrire en dur.
+2. **`axes` est un paramètre OBLIGATOIRE** de toutes les fonctions de
+   `grille-prix.ts`. Ne pas y remettre de valeur par défaut « pour simplifier » :
+   un devis chiffré contre les tranches d'origine pendant qu'il remplit les
+   siennes est un prix faux qu'aucune erreur ne signale.
+3. **Rien n'est semé en base.** Une entreprise sans ligne reçoit les valeurs de
+   départ ; le PREMIER geste sur un axe recopie les tranches d'origine avant
+   d'appliquer le geste. Retirer cette recopie effacerait ses huit tranches d'un
+   coup, au premier ajout.
+4. **Retirer n'efface aucun prix.** `retiree_le`, jamais un `DELETE` : les cases
+   de `grille_prix` restent, sont ignorées à la lecture, et reviennent avec la
+   tranche. Et la clé n'est jamais réemployée — sinon un prix hériterait d'une
+   case qui n'était pas la sienne.
+5. **Un travail ajouté par lui n'est PAS reconnu par le chiffrage.** L'écran le
+   dit sous son titre. Ne pas retirer cette phrase en croyant faire propre : il
+   le découvrirait sur un devis.
+
+Le reste : `ARCHITECTURE.md` §105.
 
 **L'UNITÉ D'UN TARIF SE CHOISIT (14 août).** Sa demande du 13 : *« crée-moi un
 bandeau déroulant avec infos à choisir, jours/hommes, m² etc. »*, puis *« fais
@@ -2428,7 +2482,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les dix-neuf pièges de ce dépôt
+### Les vingt pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -2622,7 +2676,7 @@ site publié à son adresse réelle.
     défaut du patron intact. Il a fallu une sonde imprimant l'adresse et le
     titre après l'appui pour le voir. **Un `push` suffit** : une page
     `force-dynamic` est refaite côté serveur à chaque navigation. Le `refresh`
-    ne se garde que sur la branche qui reste sur place. `ARCHITECTURE.md` §103.
+    ne se garde que sur la branche qui reste sur place. `ARCHITECTURE.md` §106.
 
     *Corollaire de méthode, et c'est le vrai enseignement :* un écran qui écrit
     dans une période et en affiche une autre ne se voit dans **aucune** suite
@@ -2630,6 +2684,26 @@ site publié à son adresse réelle.
     tout était vert — le trou était dans le raccord. Là où deux couches se
     passent une valeur, il faut une suite qui traverse **du doigt jusqu'au
     chiffre** (`scripts/test-achat-hors-periode-e2e.ts`).
+
+20. **Une liste d'écrans écrite à la main vieillit en silence.**
+    `ECRANS_A_PRECHAUFFER` (`scripts/prechauffer.mjs`) dit quels écrans le banc
+    compile d'avance. Réglages a été découpé en sept sous-écrans (§96) sans que
+    la liste bouge : **aucun des sept n'était préchauffé**, et le patron a trouvé
+    le défaut avant nous — *« Surtout la page équipe »*, le 14 août 2026. Sur ses
+    deux cœurs, un écran non préchauffé ouvert pendant la construction dépasse la
+    minute que le relais de GitHub accepte d'attendre : la page n'arrive jamais.
+    Rien ne rougissait, et rien ne pouvait rougir. `test-prechauffage.ts`
+    confronte désormais la liste aux dossiers réels de `src/app/reglages`.
+    **Ajouter un écran de premier rang, c'est l'ajouter à cette liste** —
+    `ARCHITECTURE.md` §106.
+
+    *Deux corollaires du même jour.* **Une fonction prévue et jamais branchée ne
+    se voit pas :** `prechauffer.mjs` portait un rappel `avancer` et
+    `/api/health/banc` savait lire le fichier qu'il devait produire — personne ne
+    le lui passait, et la page de diagnostic répondait « pas encore commencé »
+    depuis cinq jours. Et **`nice` ne règle rien ici :** faire bâtir en priorité
+    basse a été mesuré (16,2 s → 17,4 s à la connexion, construction 69 s → 67 s)
+    et **écarté** — la contention est le disque, pas le processeur.
 
 ### Le vocabulaire
 

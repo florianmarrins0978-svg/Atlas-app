@@ -123,7 +123,7 @@ export default function AssistantSidebar() {
       {/*
         **Plus de bulle flottante.** Elle recouvrait quelque chose sur cinq
         écrans, et cinq fois c'est l'écran qu'on a déplacé pour l'éviter
-        (`ARCHITECTURE.md` §103). Son bouton est maintenant dans l'en-tête, où il
+        (`ARCHITECTURE.md` §106). Son bouton est maintenant dans l'en-tête, où il
         ne peut rien couvrir : `BoutonAssistant`, posé par `EnTeteEcran`.
       */}
       {ouvert && (

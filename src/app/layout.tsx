@@ -7,6 +7,8 @@ import VeilleReponseServeur from "@/components/atlas/VeilleReponseServeur";
 import AssistantSidebar from "@/components/atlas/AssistantSidebar";
 import { FournisseurAssistant } from "@/components/atlas/assistant-contexte";
 import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
+import BandeauBanc from "@/components/atlas/BandeauBanc";
+import { laVersionRapideSeConstruit } from "@/server/etat-banc";
 
 // **Plus aucune police n'est téléchargée depuis le 10 août 2026.** L'écran que
 // le patron a retenu était une maquette autonome : elle ne pouvait charger
@@ -131,6 +133,17 @@ export default async function RootLayout({
   // Le veilleur parle du banc, des mises à jour et d'Atlas : c'est la langue du
   // patron. Sur les deux pages que son client reçoit, elle n'a rien à faire.
   const pageDuClient = estPageDuClient(chemin);
+  // **Le banc en train de bâtir sa version rapide, et lui seul.** Décidé au
+  // serveur : hors banc d'essai, le bandeau n'est même pas envoyé au navigateur,
+  // et aucun écran n'a à connaître cette notion. Jamais sur les deux pages que
+  // son client reçoit — elles parlent au client, pas au patron.
+  //
+  // **Et la hauteur du cadre en tient compte** (plus bas, `minHeight`).
+  // `min-h-dvh` seul ajouterait la hauteur du bandeau à celle de l'écran et
+  // ferait défiler chaque page de quarante pixels — une barre de défilement que
+  // lui seul verrait, `scripts/test-aucune-barre-de-defilement-e2e.ts` ne
+  // tournant pas sous ce profil.
+  const banc = !pageDuClient && laVersionRapideSeConstruit();
 
   return (
     <html lang="fr">
@@ -139,6 +152,11 @@ export default async function RootLayout({
             pas été accepté. Rendu avant le contenu : la redirection intervient
             donc avant que quoi que ce soit d'utilisable soit affiché. */}
         <GardeDocumentsLegaux />
+        {/* **DANS le flux, avant tout le reste.** Il pousse le contenu de
+            quarante pixels au lieu de le couvrir : trois défauts réels de ce
+            dépôt viennent d'éléments flottants qui cachaient un geste
+            (`scripts/test-rien-de-recouvert-e2e.ts`). */}
+        {banc && <BandeauBanc />}
         {sansNavigation ? (
           <main>{children}</main>
         ) : (
@@ -147,8 +165,15 @@ export default async function RootLayout({
           // écran, donc DANS `children`, tandis que le panneau reste ici pour
           // couvrir tout le reste. Les deux se parlent par ce contexte — voir
           // `assistant-contexte.tsx`.
+          //
+          // Il n'entoure QUE le cadre, sans en changer la hauteur : celle-ci
+          // tient compte du bandeau du banc (`minHeight` ci-dessous), et un
+          // fournisseur ne rend aucun élément.
           <FournisseurAssistant>
-            <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-paper">
+            <div
+              className="mx-auto flex max-w-md flex-col bg-paper"
+              style={{ minHeight: banc ? "calc(100dvh - 40px)" : "100dvh" }}
+            >
             {/* `atlas-contenu` réserve la hauteur de la barre, indicateur
                 d'accueil compris (voir globals.css) : sans navigation, cette
                 marge laisserait un vide en bas de page. */}

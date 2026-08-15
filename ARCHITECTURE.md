@@ -6747,7 +6747,7 @@ page passent de 26 à 24 px (`spacing.pageX`).
 l'ancien nuancier. Les reprendre d'un coup mêlerait un changement d'identité à
 un changement mécanique sur des écrans déjà validés — c'est exactement ce que
 `design-tokens.ts` a refusé de faire pour le nom `rust`. Elles passeront à la
-charte quand leur sujet sera rouvert. `TODO.md` §0 tricies le porte.
+charte quand leur sujet sera rouvert. `TODO.md` §0 quatervicies le porte.
 
 **Corrigé au passage, parce qu'on ne respecte pas une charte dont la
 documentation ment :** `docs/DESIGN_SYSTEM.md` annonçait encore Playfair Display
@@ -6969,7 +6969,7 @@ Deux écrans de plus dans `atlas-reglages-identite.html` :
 
 **Ce lot cesse d'être une rubrique de confort.** Tant que l'identité ne se
 saisit qu'au détour d'un devis manuel, Atlas ne peut pas être confié à un
-artisan : son premier document partirait irrégulier. `TODO.md` §0 tricies
+artisan : son premier document partirait irrégulier. `TODO.md` §0 quatervicies
 le porte, et c'est désormais le point le plus lourd de la série.
 
 
@@ -8193,7 +8193,99 @@ un réglage réécrirait les conditions d'un devis déjà parti. C'est le lot su
 
 ---
 
-## 82. « Modifier », en or, en face du titre — et seulement avant l'envoi
+## 103. « Surtout la page équipe » : une liste de préchauffage qui avait vieilli
+
+**Son signalement du 14 août 2026 :** *« La connexion est au ralenti sur
+l'appli. Les nouvelles pages ne chargent mal ou pas du tout. »* Puis, à la
+question de savoir lesquelles : ***« Surtout la page équipe. »***
+
+**Sa précision était exacte, et c'est elle qui a désigné le défaut.** Rien
+n'était lent « en général ».
+
+### Ce qui se passe pendant qu'un banc bâtit
+
+Quand le code change, `scripts/banc.mjs` sert d'abord en mode développement et
+construit la version rapide à côté (§ *servir d'abord, bâtir ensuite*). En mode
+développement, un écran n'est compilé **qu'au moment où on l'ouvre**. Mesuré ici,
+sur quatre cœurs au repos, en première ouverture :
+
+| Écran | À froid | Ensuite |
+|---|---|---|
+| Connexion | 6,6 s | — |
+| Planning | 2,8 s | 0,6 s |
+| Réglages | 1,9 s | 0,2 s |
+| Terminés | 1,8 s | 0,3 s |
+| TVA | 1,4 s | 0,2 s |
+
+Sur ses **deux** cœurs, avec la construction qui les occupe, ces secondes
+deviennent des dizaines — au-delà de la minute que le relais de GitHub accepte
+d'attendre. D'où la règle qui décide tout : **un écran déjà ouvert répond ; un
+écran ouvert pour la première fois peut ne jamais arriver.**
+
+C'est précisément ce que `prechauffer.mjs` existe pour éviter : il ouvre les
+écrans depuis l'intérieur, où rien n'abandonne, pour que le patron n'ait plus à
+payer cette première fois.
+
+### Le défaut : une liste écrite à la main, et une refonte ailleurs
+
+`ECRANS_A_PRECHAUFFER` nommait `/reglages`, `/reglages/agenda`,
+`/reglages/prix`, `/reglages/vocabulaire`. Entre-temps, Réglages a été **découpé
+en sept sous-écrans** (§96) : `identite`, `equipe`, `tarifs`, `documents`,
+`planning`, `ia`, `donnees`. **Aucun des sept n'était préchauffé.**
+
+Il ouvrait donc « Équipe » à froid, pendant la construction, et la page
+n'arrivait pas. Sa phrase désignait le seul écran que la liste ne connaissait
+pas.
+
+**Et rien ne pouvait rougir.** Une liste écrite à la main ne se met pas à jour
+quand on ajoute un écran ailleurs ; le seul symptôme est une page qui ne s'ouvre
+pas, chez lui. `scripts/test-prechauffage.ts` la confronte désormais aux
+dossiers réellement présents sous `src/app/reglages` et refuse qu'un sous-écran
+y manque. Confronté au défaut — `/reglages/equipe` retiré — il nomme l'écran :
+*« jamais compilé(s) d'avance, donc hors d'atteinte sur son banc :
+/reglages/equipe »*.
+
+### Ce qui manquait aussi : une phrase
+
+Depuis son téléphone, **rien ne distingue « ça bâtit » de « c'est en panne »**.
+Le seul endroit qui le savait était le terminal de l'éditeur — celui où il ne va
+pas : *« Va regarder toi-même, je peux pas te l'envoyer »* (9 août 2026).
+
+Un bandeau le dit désormais, en haut de l'écran, avec le compte :
+« Version rapide en construction — 12 écrans sur 19 déjà prêts. » Retenu sur
+maquette (`docs/maquettes/46`, proposition A). Il est **dans le flux** — il
+pousse le contenu de quarante pixels au lieu de le couvrir, trois défauts réels
+de ce dépôt venant d'éléments flottants qui cachaient un geste — et il
+**s'efface tout seul** dès que tout est prêt.
+
+**Le chiffre existait déjà et n'était écrit nulle part.** `prechauffer.mjs`
+portait un rappel `avancer` depuis le 9 août, `/api/health/banc` savait lire le
+fichier qu'il devait produire — et **personne ne le lui passait**. La page de
+diagnostic répondait « le préchauffage n'a pas encore commencé » du début à la
+fin. Une fonction prévue, documentée, éprouvée, et jamais branchée : une ligne
+manquait.
+
+### Ce qui a été essayé, mesuré, et ÉCARTÉ
+
+Faire bâtir en priorité basse (`nice -n 19`), pour que la construction cesse de
+disputer ses deux cœurs au serveur. Éprouvé en bornant les deux processus à deux
+cœurs :
+
+| | Priorité normale | Priorité basse |
+|---|---|---|
+| Connexion | 16,2 s | **17,4 s** |
+| Planning | 3,8 s | 3,6 s |
+| Réglages | 3,3 s | 3,3 s |
+| La construction elle-même | 69 s | 67 s |
+
+**Aucun gain.** La contention n'est pas le processeur mais le disque — que
+Next.js signale lui-même comme lent sur ces machines. L'idée était plausible et
+fausse ; elle n'est pas livrée. Une réparation supposée présentée comme acquise
+coûte au patron l'essai, puis l'aller-retour (`AGENTS.md`).
+
+---
+
+## 104. « Modifier », en or, en face du titre — et seulement avant l'envoi
 
 **Le patron, le 13 août 2026, capture à l'appui :**
 
@@ -8250,11 +8342,121 @@ vérifie aussi que l'écran d'après l'envoi garde SON geste : sans cela, on
 passerait au vert en retirant le lien partout, et le patron n'aurait plus
 d'issue du tout.
 
-## 103. L'assistant cesse de flotter — et c'est l'écran qui cesse de reculer
+
+## 105. Ses tranches et ses travaux, au lieu des nôtres
+
+**Sa demande, le 14 août 2026**, capture de l'écran « Mes prix » à l'appui :
+*« je dois pouvoir ajouter ou retirer des cases. »* Trois formes ont été
+dessinées (`maquettes/atlas-grilles-cases.html`) ; sa réponse : *« code les
+toutes »*. Les trois sont donc en place, et elles ne se remplacent pas.
+
+### Le fait qui commande tout le reste
+
+**Une case ne s'ajoute pas toute seule.** Elle naît du croisement de deux
+tranches. Ajouter un diamètre — « 90 à 120 cm » — n'ajoute pas une case : elle
+en ajoute **dix** (1 pour dessoucher, 3 pour abattre, 6 pour fendre). En retirer
+une en range autant.
+
+C'est pourquoi le geste n'existe pas au niveau de la case, mais à trois niveaux :
+la **tranche** (une mesure), la **façon de faire** (une rangée d'abattage), le
+**travail** (une grille entière). Et c'est pourquoi l'écran **annonce le nombre
+avant de valider** : dix cases posées sans prévenir, ce sont dix questions
+surprises au chantier suivant. Le nombre est calculé (`casesParTranche`), jamais
+écrit à la main — un nombre faux y serait pire que pas de nombre du tout.
+
+### Ce qui a changé dans le code
+
+Les huit diamètres, six hauteurs, trois façons et cinq travaux étaient des
+constantes de `src/lib/grille-prix.ts`. Ils y restent, **comme point de départ**,
+et deux tables portent ce qu'une entreprise a réglé : `tranches_grille` et
+`natures_grille` (migration 0041).
+
+**Le paramètre `axes` est OBLIGATOIRE**, et c'est délibéré : une valeur par
+défaut silencieuse aurait chiffré un devis contre les tranches d'origine pendant
+que le patron remplissait les siennes. Le compilateur oblige chaque appelant à
+dire quelles tranches il emploie — c'est ainsi que `proposition-prix.ts`,
+`apprendre-grille.ts` et `questions-chiffrage.ts` ont été repris un par un.
+
+**La question d'abattage propose SES façons**, et plus les trois d'origine. Elle
+les écrivait une seconde fois dans `questions-chiffrage.ts` : sa quatrième
+rangée serait restée vide pour toujours, la case existant sans que rien ne
+puisse la désigner. C'est la règle dupliquée que `CLAUDE.md` §3 interdit.
+
+### Rien n'est semé, et le premier geste recopie
+
+Une entreprise qui n'a jamais rien touché **n'a aucune ligne** : ce sont les
+valeurs de départ du code qui servent. Les écrire à la migration les aurait
+figées une seconde fois — corriger une borne d'origine aurait demandé une
+migration de plus pour la porter à ceux qui n'y avaient jamais touché.
+
+Les lignes n'apparaissent qu'au **premier geste sur un axe** : on recopie alors
+les tranches de départ, puis on applique le geste. **Sans cette recopie, son
+premier ajout aurait effacé les huit autres** — un axe sans ligne veut dire
+« les tranches de départ », et y insérer une seule ligne le ferait basculer sur
+« une seule tranche, la sienne ». `test-cases-reglables-db.ts` monte la garde
+sur ce point précis.
+
+### Retirer n'efface JAMAIS un prix
+
+C'est la promesse du lot, et la seule qui coûterait vraiment cher : ces prix
+sont ses décisions, et certains viennent de devis réels que rien ne
+reconstituerait.
+
+Une tranche retirée porte `retiree_le` ; sa ligne reste. Les cases de
+`grille_prix` restent en place — une clé qu'aucune tranche ne reconnaît est
+ignorée à la lecture, jamais supprimée (`lireGrillePrix`, comportement antérieur
+à ce lot). Remettre la tranche fait revenir les prix tels quels, et **c'est ce
+retour qui prouve qu'ils n'ont pas été effacés** : la suite base le vérifie
+ainsi, plutôt qu'en interrogeant la table — le rôle applicatif ne traverse pas
+la RLS, et c'est exactement ce qu'on veut de lui.
+
+**La clé ne peut pas être réemployée.** Si la ligne partait, une tranche neuve
+pourrait reprendre `d90` et hériter du prix d'une tranche qui n'était pas la
+sienne : 1 400 € posés pour « plus de 90 cm » se retrouveraient sur des troncs
+de 90 à 120 cm sans que personne ne l'ait décidé.
+
+### Deux refus, et pourquoi ils sont des réponses
+
+**Le recouvrement.** `trancheDe` retient la PREMIÈRE tranche qui contient la
+mesure : deux tranches qui se chevauchent ne produisent pas une erreur, elles
+produisent un prix pris dans la mauvaise case. Un tronc de 95 cm chiffré au
+tarif des 20 cm ne se voit sur aucun écran — il se voit sur le devis du client.
+
+**La dernière tranche est ouverte**, et c'est le cas de tous les jours : « plus
+de 90 cm » n'a pas de borne haute, donc tout ce qui dépasse 90 y tombe déjà, et
+aucune tranche plus haute ne peut s'ajouter tant qu'elle est là. Le refus le dit
+**et dit quoi faire** : retirer d'abord, reposer ensuite. On ne repousse pas sa
+borne à sa place — un prix posé pour « plus de 90 cm » deviendrait celui des
+« plus de 120 cm » sans qu'il l'ait décidé.
+
+### La limite d'un travail ajouté, dite plutôt que découverte
+
+`proposition-prix.ts` sait retrouver un abattage ou une fente dans une dictée ;
+il ne sait pas retrouver « le broyage des branches ». Une nature ajoutée par le
+patron **n'est pas reconnue par le chiffrage** : sa grille se remplit et se
+relit, mais Atlas ne la proposera pas de lui-même. L'écran l'écrit sous le titre
+du travail — le lui laisser découvrir sur un devis serait pire.
+
+### Ce qui est éprouvé, et par quoi
+
+| Ce qui est tenu | Où |
+|---|---|
+| deux tranches ne se chevauchent jamais, et le refus nomme la coupable | `test-cases-reglables.ts` |
+| une clé retirée n'est jamais rendue à une autre tranche | les deux suites |
+| le nombre de cases annoncé est le vrai, et suit ses tranches | `test-cases-reglables.ts` |
+| la question d'abattage propose SES façons | `test-cases-reglables.ts` |
+| le premier geste ne fait pas disparaître les huit autres | `test-cases-reglables-db.ts` |
+| retirer n'efface aucun prix, et « Annuler » les rend | `test-cases-reglables-db.ts` |
+| rien ne déborde d'une entreprise sur une autre | `test-cases-reglables-db.ts` |
+| la conséquence est sous ses yeux avant qu'il valide | `test-cases-reglables-e2e.ts` |
+| le refus lui parvient, et dit quoi faire | `test-cases-reglables-e2e.ts` |
+| les trois formes existent, et l'écran repart comme il a été trouvé | `test-cases-reglables-e2e.ts` |
+
+## 106. L'assistant cesse de flotter — et c'est l'écran qui cesse de reculer
 
 **Le patron, le 13 août 2026 :** *« l'onglet de l'assistant est hyper mal placé,
 propose des choses pour plus qu'il gêne »*. Puis, devant les cinq propositions de
-`docs/maquettes/46-ou-mettre-l-assistant.html` : *« la B mais de la même couleur
+`docs/maquettes/47-ou-mettre-l-assistant.html` : *« la B mais de la même couleur
 qu'elle est déjà »*.
 
 ### Le vrai défaut n'était pas sa position, c'était qu'il flottait
