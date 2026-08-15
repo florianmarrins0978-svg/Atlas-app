@@ -261,6 +261,26 @@ Ni un champ contrôlé, ni un effet, ni `defaultValue` ne font survivre une vale
 **et** une `key` qui remonte le champ à chaque envoi. Ne pas « simplifier » l'un
 des deux.
 
+## Mon compte et Connexion : CODÉS le 14 août — trois pièges
+
+Dix rubriques sur treize sont codées. Ce lot a ouvert les deux dernières
+(`ARCHITECTURE.md` §103), et il laisse trois choses à ne pas découvrir à froid :
+
+1. **`src/server/repositories/compte.ts` n'appelle PAS `withEntreprise`**, contre
+   la règle de `CLAUDE.md` §3. `users` est la seule table sans RLS : elle ne
+   porte pas d'`entreprise_id`. Ce qui protège à la place, c'est que chaque
+   requête est bornée par `ctx.utilisateurId` — **un `where` oublié changerait le
+   mot de passe de tout le monde, et rien d'autre ne le verrait**.
+   `scripts/test-compte-db.ts` monte deux comptes exprès pour ça.
+2. **« Me déconnecter partout » se fait dans `getCurrentCtx`**, pas dans le
+   middleware (Edge, pas de base). Il compare `session.user.emisLe` — recopié de
+   `token.iat` par `auth.config.ts` — à `users.jetons_valides_depuis`. Un jeton
+   **sans** `iat` passe : refuser par défaut aurait déconnecté tout le monde au
+   déploiement.
+3. **La suite navigateur ne change JAMAIS le mot de passe de démonstration.**
+   Il sert aux 75 suites de la batterie : le changer fermerait la porte à toutes
+   les suivantes, et l'échec accuserait la page de connexion.
+
 ## Les treize rubriques ont toutes leur planche (14 août)
 
 `maquettes/atlas-reglages-moi.html` a fermé la série : **Mon compte** et

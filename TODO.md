@@ -27,7 +27,32 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 octovicies. Mon compte et Connexion : dessinés, avec DEUX QUESTIONS
+### 0 octovicies. ~~Mon compte et Connexion~~ — **CODÉS le 14 août 2026 (« A A »)**
+
+Les deux écrans existent : `/reglages/compte` et `/reglages/connexion`
+(`ARCHITECTURE.md` §103). **Ses deux réponses ont été appliquées** — pas de
+téléphone dans le compte, pas de liste d'appareils dans la connexion, et les
+deux mots retirés des libellés du sommaire.
+
+**Trois choses à ne PAS rouvrir sans qu'il le demande :**
+
+| | |
+|---|---|
+| Le champ **téléphone** du compte | Réponse « A ». Rien ne l'appellerait : le numéro du client est celui de l'entreprise |
+| La **liste des appareils** | Réponse « A ». Il faudrait une table de sessions ; le geste utile — « me déconnecter partout » — existe et suffit |
+| L'**œil à la place** de la confirmation | Il veut **les deux**. L'œil se touche après coup ; la confirmation attrape la faute au moment où elle se fait |
+
+**Ce qui reste ouvert, et qui attend autre chose que du code :** l'e-mail ne se
+change pas. Il faudrait d'abord un moyen de vérifier la nouvelle adresse — donc
+un canal d'envoi, qui n'existe pas et dont il a dit qu'il n'y en aurait pas. À
+rouvrir le jour où un parcours d'inscription existera.
+
+**Un défaut ANTÉRIEUR, vu sur la capture et pas corrigé ici :** la bulle de
+l'assistant recouvre le bord droit du bouton d'enregistrement, sur cet écran
+**comme sur « Mon entreprise »**. Ce n'est pas ce lot qui l'introduit, et une
+correction d'apparence se dessine avant de se coder (`CLAUDE.md` §3 bis).
+
+### ~~0 octovicies (d'origine). Mon compte et Connexion : dessinés, avec DEUX QUESTIONS~~
 
 *`maquettes/atlas-reglages-moi.html`, le 14 août 2026 — quatre écrans, 53
 contrôles. **Les onze autres rubriques du sommaire ont leur planche ; c'étaient

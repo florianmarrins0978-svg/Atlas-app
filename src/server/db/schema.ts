@@ -38,6 +38,11 @@ export const users = pgTable("users", {
   // uniquement, jamais le mot de passe en clair. Nullable : un utilisateur
   // créé via un futur provider OAuth n'en a pas besoin.
   passwordHash: text("password_hash"),
+  // « Me déconnecter partout » (migration 0041) : tout jeton émis AVANT cet
+  // instant est refusé par `getCurrentCtx`. Atlas ne garde aucune session en
+  // base — il n'y a donc rien à supprimer pour fermer une session, mais on peut
+  // refuser ce qui a été signé avant. `null` : jamais demandé.
+  jetonsValidesDepuis: timestamp("jetons_valides_depuis", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

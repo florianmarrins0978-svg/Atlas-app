@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-14
 
+### « Mon compte » et « Connexion » : les deux dernières rubriques sont ouvertes
+
+Sur les treize du sommaire, huit étaient codées. Ces deux-là étaient les seules
+qui n'avaient même pas de planche — et les dessiner a révélé que **leur libellé
+promettait deux choses qui n'existent nulle part** : un téléphone que la table
+des comptes ne porte pas, et une liste d'appareils alors qu'Atlas ne garde
+aucune session en base. Le patron a tranché « A A » : les deux mots sont retirés
+du sommaire plutôt que d'ouvrir des champs qui ne serviraient à personne.
+
+**Ce que ça apporte, concrètement :** changer son nom, changer son mot de passe
+— et **« me déconnecter partout »**, le geste utile un soir de téléphone perdu.
+Ce dernier ne coûte qu'une colonne (`users.jetons_valides_depuis`, migration
+0041) : plutôt que de tenir une table de sessions, on refuse les jetons signés
+avant une coupure. La liste des appareils reste possible plus tard ; avant que
+quelqu'un d'autre que lui ne se connecte, elle n'aurait qu'une ligne.
+
+**Sa correction du même jour, et elle valait mieux que ma proposition :** ma
+planche remplaçait la seconde saisie du mot de passe par l'œil qui l'affiche. Il
+veut **les deux** — l'œil se touche après coup, la confirmation attrape la faute
+au moment où elle se fait. L'œil est sur les trois champs : une confirmation
+qu'on ne peut pas relire ne confirme rien.
+
+**Ce qui n'est PAS ouvert, et l'écran le dit :** l'e-mail. C'est l'identifiant
+de connexion, et rien dans Atlas ne permettrait de vérifier une nouvelle
+adresse — ni e-mail sortant, ni SMS. Une faute de frappe fermerait le compte
+sans recours. Le champ s'ouvrira quand il y aura de quoi rattraper l'erreur
+(`ARCHITECTURE.md` §103).
+
 ### L'unité d'un tarif se choisit dans un bandeau, au lieu de se taper
 
 Sa demande du 13 août, capture des tarifs à l'appui : *« crée-moi un bandeau
