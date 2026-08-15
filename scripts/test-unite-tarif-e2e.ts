@@ -45,26 +45,34 @@ async function uniteLue(carte: Locator): Promise<string> {
 }
 
 /**
- * Recharger APRÈS que l'écriture soit partie, jamais pendant.
+ * Jouer un geste, et n'en repartir qu'une fois l'écriture ACQUITTÉE.
  *
  * **Ce que ça corrige, et pourquoi la suite mentait.** L'écran n'attend pas son
  * enregistrement (`void persister(…)` dans `ReglagesClient`) : le bandeau se
- * referme dès le doigt levé, et l'appel au serveur continue derrière. Recharger
- * à cet instant **avorte l'appel en vol** — l'unité n'arrive jamais en base, et
- * la suite accuse le bandeau d'avoir perdu la saisie.
+ * referme dès le doigt levé, et l'appel au serveur continue derrière.
+ * Recharger à cet instant **avorte l'appel en vol** — l'unité n'arrive jamais
+ * en base, et la suite accuse le bandeau d'avoir perdu la saisie.
  *
  * Elle passait seule et tombait dans la batterie complète, où le serveur est
- * occupé par soixante-quatorze autres suites : la course s'y perd. Une suite
- * qui échoue une fois sur trois s'apprend à être ignorée — c'est ce garde-fou
- * là qu'on perd, pas seulement dix minutes. Trouvée le 14 août 2026, sur un
- * lot qui n'était pas le mien.
+ * occupé par soixante-quinze autres suites : la course ne s'y gagne plus.
  *
- * `networkidle` attend un demi-second de silence réseau : l'action serveur y
- * est comptée, et le rechargement ne part qu'une fois la réponse revenue.
+ * **`networkidle` ne suffisait PAS, et c'est la leçon de ce correctif.** Il
+ * attend un demi-seconde de silence réseau — mais la requête n'est pas encore
+ * PARTIE au moment où on l'interroge : elle naît dans une micro-tâche, après le
+ * rendu. Le silence est donc bien réel, et il ne veut rien dire. Premier
+ * correctif joué le 14 août 2026, vert en batterie une fois, rouge la suivante.
+ *
+ * On attend donc la RÉPONSE de l'action serveur, pas l'absence de bruit. C'est
+ * le seul signal qui dise que la base a écrit.
  */
-async function rechargerUneFoisEcrit(page: Page): Promise<void> {
-  await page.waitForLoadState("networkidle");
-  await page.reload({ waitUntil: "networkidle" });
+async function ecrire(page: Page, geste: () => Promise<void>): Promise<void> {
+  await Promise.all([
+    // Une action serveur de Next.js se POSTe sur l'adresse de l'écran courant.
+    page.waitForResponse((r) => r.request().method() === "POST" && r.url().startsWith(BASE), {
+      timeout: 30_000,
+    }),
+    geste(),
+  ]);
 }
 
 async function main() {
@@ -165,11 +173,11 @@ async function main() {
   console.log("  ✓ les six unités et « aucune unité » sont proposées");
 
   // --- 5. Choisir remonte dans la case, et arrive en base -------------------
-  await bandeau().getByRole("option", { name: /^m²/ }).click();
+  await ecrire(page, () => bandeau().getByRole("option", { name: /^m²/ }).click());
   await bandeau().waitFor({ state: "detached" });
   assert.equal(await uniteLue(carte), "m²");
 
-  await rechargerUneFoisEcrit(page);
+  await page.reload({ waitUntil: "networkidle" });
   carte = await carteDuTarif(page, MARQUE);
   assert.equal(
     await uniteLue(carte),
@@ -183,10 +191,10 @@ async function main() {
   const champLibre = carte.getByLabel("Une autre unité");
   await champLibre.waitFor({ state: "visible" });
   await champLibre.fill("stère");
-  await champLibre.press("Enter");
+  await ecrire(page, () => champLibre.press("Enter"));
   await bandeau().waitFor({ state: "detached" });
 
-  await rechargerUneFoisEcrit(page);
+  await page.reload({ waitUntil: "networkidle" });
   carte = await carteDuTarif(page, MARQUE);
   assert.equal(
     await uniteLue(carte),
@@ -197,10 +205,10 @@ async function main() {
 
   // --- 7. Et l'on peut revenir en arrière ----------------------------------
   await carte.getByLabel("Unité du tarif").click();
-  await bandeau().getByRole("option", { name: /Aucune unité/ }).click();
+  await ecrire(page, () => bandeau().getByRole("option", { name: /Aucune unité/ }).click());
   await bandeau().waitFor({ state: "detached" });
 
-  await rechargerUneFoisEcrit(page);
+  await page.reload({ waitUntil: "networkidle" });
   carte = await carteDuTarif(page, MARQUE);
   assert.match(
     await uniteLue(carte),
