@@ -8655,3 +8655,87 @@ le compte de démonstration sert aux soixante-quinze suites de la batterie, et l
 changer fermerait la porte à toutes les suivantes — l'échec accuserait alors la
 page de connexion, qui n'y serait pour rien. Le chemin éprouvé au navigateur est
 celui du **refus**, qui n'écrit rien ; l'écriture est tenue par la suite base.
+
+---
+
+## 108. Les trois dernières rubriques : deux rappels réels, et deux écrans qui disent ce qui manque
+
+*Codées le 14 août 2026 sur sa consigne — **« Fini toutes les rubriques »**.
+Les treize du sommaire (§96) sont désormais ouvertes ; plus aucune ne porte
+« Bientôt ».*
+
+### Notifications : DEUX rappels, et pas les huit de la planche
+
+`maquettes/atlas-reglages-notifications.html` listait huit familles d'alertes.
+**Une seule existait**, et la planche le disait déjà — *« rien ne part encore
+sur votre téléphone »*. Dessiner les sept autres avec un interrupteur aurait
+fait valider un écran de réglages qui ne règle rien.
+
+Deux se calculent **avec ce que la base porte déjà**, sans nouveau jalon ni
+nouveau geste (migration 0043) :
+
+| Rappel | Ce qu'il lit | Défaut |
+|---|---|---|
+| **Devis sans réponse** | `envois_devis.envoye_at`, `reponse IS NULL`, lien encore valable | 7 jours |
+| **Chantier fini, pas facturé** | `chantiers.termine_at`, `facture_envoyee_at IS NULL` | 3 jours |
+
+**Ils apparaissent sur l'ACCUEIL, à côté des réponses de clients.** Un réglage
+qui ne produirait rien à l'écran est exactement ce que le patron a interdit sur
+la planche : *« on le touche, rien ne bouge, et on croit à une panne »*.
+
+**Trois choix qui paraissent des détails :**
+
+1. **Un rappel n'a pas de « J'ai vu ».** Une réponse de client s'acquitte — elle
+   a été lue. Un rappel décrit une situation qui DURE, et il s'en va quand elle
+   cesse : le client répond, la facture part. Lui donner un bouton d'acquit
+   ferait croire qu'on peut le classer sans rien faire, et le chantier
+   retomberait dans l'oubli qu'on cherchait à éviter.
+2. **Un devis EXPIRÉ n'est pas rappelé** : il a déjà sa carte de devis caduc.
+   Deux cartes pour un même devis feraient chercher la différence.
+3. **Jamais « urgent ».** Le fond teinté est réservé à ce qui appelle une
+   décision — un refus, un lien mort. Un confort qui crierait aussi fort ferait
+   baisser le volume de tous les autres.
+
+**Ce qui n'a PAS d'interrupteur, et l'écran le dit :** la réponse d'un client et
+le lien expiré. Sa règle du 13 août 2026 — *« [des interrupteurs] seulement à
+celles où la désactivation n'entraîne pas de problème juridique ou moral ou de
+dysfonctionnement à l'appli »*. Les couper, ce serait ne plus savoir qu'on a été
+refusé.
+
+**Et ce qui manque est écrit sur l'écran** : « facture impayée » est le rappel le
+plus utile, et il est impossible — **rien n'enregistre qu'une facture a été
+payée**. Bâti sans cette donnée, il crierait sur toutes les factures, pour
+toujours. C'est le prochain lot, et c'est un geste à ajouter au produit, pas une
+requête à écrire.
+
+### Apparence et Abonnement : des écrans qui ne règlent rien, et l'assument
+
+Aucun des deux ne porte d'interrupteur, **délibérément**.
+
+- **Apparence** : ni mode sombre ni accent au choix. `colors.rust` et
+  `colors.or` sont écrits en clair dans plus de trois cents endroits, en style
+  en ligne : les rendre réglables demande de les faire passer par une variable
+  CSS — un balayage de toute l'application, à faire et à éprouver d'un coup. Ce
+  n'est pas un écran de réglages, c'est un lot. L'écran le dit et lui demande
+  lequel des deux il veut d'abord.
+- **Abonnement** : ni prix ni offre ne sont décidés — ce sont ses décisions à
+  lui, pas des lots de code. **Aucun montant n'est affiché**, et c'est la règle
+  de `docs/AGENT.md` §3 : un chiffre sans source, sur une page qui parle
+  d'argent, finirait par être cru.
+
+**Pourquoi les ouvrir quand même**, plutôt que de laisser « Bientôt » : une
+ligne inerte dans le sommaire ne dit ni ce qui viendra, ni pourquoi ce n'est pas
+là, ni ce qui débloque. Ces écrans le disent — et pour l'abonnement, ils
+préviennent d'un piège de vocabulaire qui coûterait un appel affolé : ici,
+« factures » désigne celles qu'**Atlas** enverrait, pas celles de ses clients,
+qui sont dans « Terminés ».
+
+### Le piège payé en prenant les captures
+
+`capture-trois-rubriques.mts` lisait la base sous `DATABASE_ADMIN_URL` et
+annonçait « aucun chantier » sur une base qui en portait quatre. **Les tables
+portent `FORCE ROW LEVEL SECURITY` : la RLS s'applique même au rôle
+PROPRIÉTAIRE.** La capture concluait tranquillement qu'il n'y avait rien à
+montrer — un contrôle qui n'a jamais rien vu ne prouve rien. Les captures
+emploient désormais le rôle qui traverse la RLS, comme les suites navigateur
+(`CLAUDE.md` §5).

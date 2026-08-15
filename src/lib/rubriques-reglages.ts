@@ -47,7 +47,12 @@ const MOI: Rubrique[] = [
     icone: "compte",
     href: "/reglages/compte",
   },
-  { nom: "Notifications", dit: "Alertes et rappels", icone: "cloche", href: null },
+  {
+    nom: "Notifications",
+    dit: "Alertes et rappels",
+    icone: "cloche",
+    href: "/reglages/notifications",
+  },
   {
     nom: "Connexion",
     // **« et appareils » a été RETIRÉ le 14 août 2026, sur sa réponse « A ».**
@@ -57,7 +62,15 @@ const MOI: Rubrique[] = [
     icone: "cadenas",
     href: "/reglages/connexion",
   },
-  { nom: "Apparence", dit: "Thème clair, sombre et couleurs", icone: "contraste", href: null },
+  {
+    nom: "Apparence",
+    // **Le libellé ne promet plus un thème sombre qui n'existe pas.** L'écran
+    // dit ce qui viendra et pourquoi ce n'est pas là ; le sommaire, lui, ne
+    // doit pas laisser croire qu'on va le choisir aujourd'hui.
+    dit: "Les couleurs de l'application",
+    icone: "contraste",
+    href: "/reglages/apparence",
+  },
 ];
 
 /**
@@ -112,7 +125,12 @@ const ENTREPRISE: Rubrique[] = [
     icone: "puzzle",
     href: "/reglages/agenda",
   },
-  { nom: "Abonnement", dit: "Offre, paiement et factures", icone: "couronne", href: null },
+  {
+    nom: "Abonnement",
+    dit: "Offre, paiement et factures Atlas",
+    icone: "couronne",
+    href: "/reglages/abonnement",
+  },
   {
     nom: "Sécurité & données",
     dit: "Export, effacement et RGPD",

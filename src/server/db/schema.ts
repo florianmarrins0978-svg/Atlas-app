@@ -120,6 +120,17 @@ export const entreprises = pgTable("entreprises", {
   moyensPaiement: text("moyens_paiement"),
   rappelerPenalitesDevis: boolean("rappeler_penalites_devis").notNull().default(false),
   textePiedDocuments: text("texte_pied_documents"),
+
+  /**
+   * Les deux rappels de la rubrique « Notifications » (migration 0043).
+   *
+   * `null` = éteint. Ce sont des CONFORTS, et c'est pour cela qu'ils se
+   * coupent : ne plus être rappelé qu'un devis dort ne fait rien perdre — le
+   * devis est toujours sur la fiche du chantier. La réponse d'un client et le
+   * lien expiré, eux, n'ont pas d'interrupteur (`src/lib/rappels.ts`).
+   */
+  rappelDevisSansReponseJours: integer("rappel_devis_sans_reponse_jours"),
+  rappelChantierNonFactureJours: integer("rappel_chantier_non_facture_jours"),
   // Combien de chantiers menés de front. 1 par défaut — le comportement d'avant
   // la migration 0019, où une seule équipe était supposée sans le dire.
   nombreEquipes: integer("nombre_equipes").notNull().default(1),

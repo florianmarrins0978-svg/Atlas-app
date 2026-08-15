@@ -27,6 +27,44 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 undetricies. Marquer une facture PAYÉE — le geste qui manque le plus
+
+*Constaté en codant « Notifications » le 14 août 2026 (`ARCHITECTURE.md` §108),
+et écrit sur l'écran lui-même plutôt que passé sous silence.*
+
+**Rien dans Atlas n'enregistre qu'une facture a été payée.** Ni colonne, ni
+geste, ni écran. Ce manque bloque à lui seul **trois** des huit familles
+d'alertes de la planche des notifications :
+
+| Ce qui est impossible | Pourquoi |
+|---|---|
+| « Facture impayée » | On ne sait pas laquelle est payée : l'alerte crierait sur toutes, pour toujours |
+| « Facture à échéance dans trois jours » | Même raison |
+| « Client à relancer » | Un client relancé pour une facture déjà réglée, c'est pire que pas de relance |
+
+**Ce n'est pas une requête à écrire, c'est un geste à ajouter au produit** : un
+appui sur la facture, une date de règlement, et de quoi se reprendre. Les
+`docs/QUESTIONS.md` §17 le disent d'ailleurs pour la mémoire des prix — la
+bonne question n'est jamais « avons-nous une table ? » mais **« qui l'écrit, et
+quand ? »**
+
+**À dessiner avant de coder** (`CLAUDE.md` §3 bis) : où se pose le geste — sur
+la facture, dans « Terminés », ou les deux —, et ce qu'on fait d'un paiement
+partiel.
+
+### 0 duodetricies ter. Apparence : le mode sombre OU l'accent, à trancher
+
+L'écran existe et ne règle rien, délibérément (`ARCHITECTURE.md` §108). Les
+deux chantiers possibles, et leur coût :
+
+| | Ce que ça demande |
+|---|---|
+| **Mode sombre** | Un second jeu de jetons, et **chaque écran repris un à un**. C'est ce qu'il avait envoyé le 14 août : sa planche d'origine était sombre |
+| **Accent au choix** | `colors.rust` et `colors.or` sont écrits en clair dans plus de trois cents endroits, en style en ligne. Il faut les faire passer par une variable CSS — un balayage de toute l'application, à faire et à éprouver d'un coup |
+
+**Ne pas poser d'interrupteur en attendant.** Sa phrase sur la planche : *« on le
+touche, rien ne bouge, et on croit à une panne »*.
+
 ### 0 octovicies. ~~Mon compte et Connexion~~ — **CODÉS le 14 août 2026 (« A A »)**
 
 Les deux écrans existent : `/reglages/compte` et `/reglages/connexion`
