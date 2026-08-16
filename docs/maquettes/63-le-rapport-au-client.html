@@ -1,0 +1,256 @@
+<title>Le rapport que reçoit le client</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LE RAPPORT QUE REÇOIT LE CLIENT — la sortie de la fiche d'entretien.
+
+    LA QUESTION, ET ELLE N'EST PAS DE MISE EN PAGE. Sur ce passage, QUATRE
+    prestations sur vingt ont été faites. Que voit le client ?
+
+    L'AUTRE APPLICATION LUI MONTRE LES VINGT, avec « Vrai » ou « Faux »
+    sous chacune. Le client ouvre un document où il lit SEIZE FOIS « Faux »
+    — et il paie pour ce passage. Aucun paysagiste ne rédigerait ça à la main.
+
+    Mais tout cacher a un coût inverse, et il est réel : un client qui ne voit
+    que quatre lignes peut croire que son contrat n'en couvre que quatre, et
+    s'étonner du prix. Ce que le silence économise en gêne, il le perd en
+    justification.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI N'EST PAS À CHOISIR.
+
+    · « VRAI » ET « FAUX » NE SORTENT PAS. Ce sont des mots de programmeur.
+    · LE DOCUMENT PORTE LA DATE, LE CHANTIER ET LE TEMPS PASSÉ — c'est ce qui
+      en fait une preuve de passage, et c'est ce que le client garde.
+    · LES DEUX SIGNATURES RESTENT. Elles sont ce qui distingue un rapport d'une
+      simple liste : elles disent que quelqu'un était là, et que quelqu'un a vu.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT. Engendré par `scripts/engendrer-maquette-fiche-entretien.mjs`.
+    Contrôle : `scripts/verifier-maquette-fiche-entretien.mjs`.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:940px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+  .dit b{color:var(--encre);font-weight:600}
+
+  .etat{position:absolute;opacity:0;pointer-events:none}
+  .reglage{margin:0 0 18px}
+  .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .segments{display:flex;flex-wrap:wrap;gap:8px}
+  .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+  .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:16px 15px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+  .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:12px}
+  .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+  .barre .quand{font-size:11.5px;color:var(--gris)}
+  .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+  .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+
+  .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+  .legende b{color:var(--encre);font-weight:600}
+  .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+
+  .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .note ul{margin:8px 0 0;padding-left:19px}
+  .note li{margin-bottom:6px}
+
+  .ra,.rb,.rc{display:none}
+  #r-a:checked ~ .dedans .ra,
+  #r-b:checked ~ .dedans .rb,
+  #r-c:checked ~ .dedans .rc{display:block}
+  #r-a:checked ~ .dedans label[for="r-a"],
+  #r-b:checked ~ .dedans label[for="r-b"],
+  #r-c:checked ~ .dedans label[for="r-c"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+
+  .fam{margin:15px 0 4px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or)}
+  .rl{display:flex;gap:10px;align-items:baseline;padding:7px 0;font-size:14.5px;
+      border-bottom:1px solid var(--trait);color:var(--encre)}
+  .rl .v{color:var(--pin);flex:none;width:14px}
+  .rl.non{color:var(--gris)}
+  .rl.non .v{color:var(--trait)}
+
+  .replie{margin-top:14px;border-top:1px solid var(--trait);padding-top:12px}
+  .replie .titre{font-size:12.5px;color:var(--gris)}
+  .replie .liste{margin:6px 0 0;font-size:12.5px;color:var(--gris);line-height:1.75}
+
+  .entete{border-bottom:1px solid var(--trait);padding-bottom:12px;margin-bottom:6px}
+  .entete .qui{font-family:Georgia,serif;font-size:20px;margin:0}
+  .entete .quoi2{font-size:12.5px;color:var(--gris);margin:2px 0 0}
+  .sign{display:flex;gap:10px;margin-top:16px}
+  .sign div{flex:1;border:1px dashed var(--trait);border-radius:10px;
+            padding:10px;text-align:center;font-size:11px;color:var(--gris)}
+  .pied{margin-top:14px;font-size:12.5px;color:var(--gris);
+        display:flex;justify-content:space-between}
+  .pied b{color:var(--encre)}
+</style>
+
+<input type="radio" name="r" id="r-a" class="etat">
+<input type="radio" name="r" id="r-b" class="etat" checked>
+<input type="radio" name="r" id="r-c" class="etat">
+
+<div class="dedans">
+  <h1>Le rapport que reçoit le client</h1>
+  <p class="intro">La sortie de la fiche. <b>Quatre prestations sur vingt</b>
+    ont été faites ce passage — c'est le vrai cas de votre capture.
+    <b>Touchez les trois versions.</b></p>
+
+  <p class="dit">L'autre application montre les vingt lignes avec « Vrai » ou
+    « Faux ». Votre client lirait donc <b>seize fois « Faux »</b> sur un
+    passage qu'il paie.</p>
+
+  <div class="reglage">
+    <span class="quoi">Ce que le client voit</span>
+    <div class="segments">
+      <label for="r-a">A · Tout, comme l'autre</label>
+      <label for="r-b">B · Seulement ce qui a été fait — <b>retenu</b></label>
+      <label for="r-c">C · Ce qui a été fait, le reste replié</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="entete">
+        <div class="barre"><span class="ou">Rapport d'entretien</span><span class="quand">Mer. 22 juillet</span></div>
+        <p class="qui">Monsieur Martins</p>
+        <p class="quoi2">12 rue des Lilas — passage n° 7 sur 12</p>
+      </div>
+
+      <div class="ra">
+      <p class="fam">Pelouse</p>
+      <div class="rl"><span class="v">✓</span><span>Tonte et ébarbage</span></div>
+      <div class="rl non"><span class="v">·</span><span>Traitement pelouse</span></div>
+      <div class="rl non"><span class="v">·</span><span>Scarification</span></div>
+      <div class="rl non"><span class="v">·</span><span>Engrais</span></div>
+      <p class="fam">Tailles</p>
+      <div class="rl non"><span class="v">·</span><span>Taille arbuste automne</span></div>
+      <div class="rl non"><span class="v">·</span><span>Taille arbuste printemps</span></div>
+      <div class="rl non"><span class="v">·</span><span>Taille de haie automne</span></div>
+      <div class="rl non"><span class="v">·</span><span>Taille de haie printemps</span></div>
+      <div class="rl non"><span class="v">·</span><span>Taille des rosiers</span></div>
+      <p class="fam">Massifs</p>
+      <div class="rl non"><span class="v">·</span><span>Bêchage</span></div>
+      <div class="rl non"><span class="v">·</span><span>Bordures massifs</span></div>
+      <div class="rl"><span class="v">✓</span><span>Griffage massifs</span></div>
+      <div class="rl non"><span class="v">·</span><span>Désherbage massifs</span></div>
+      <div class="rl non"><span class="v">·</span><span>Coupe des fleurs fanées</span></div>
+      <p class="fam">Propreté</p>
+      <div class="rl non"><span class="v">·</span><span>Nettoyage pied de haies</span></div>
+      <div class="rl non"><span class="v">·</span><span>Désherbant allée</span></div>
+      <div class="rl non"><span class="v">·</span><span>Lierre, liseron, liane</span></div>
+      <div class="rl non"><span class="v">·</span><span>Démoussage voirie</span></div>
+      <div class="rl"><span class="v">✓</span><span>Ramassage des feuilles</span></div>
+      <div class="rl"><span class="v">✓</span><span>Évacuation des déchets</span></div>
+      </div>
+      <div class="rb">
+      <p class="fam">Pelouse</p>
+      <div class="rl"><span class="v">✓</span><span>Tonte et ébarbage</span></div>
+      <p class="fam">Massifs</p>
+      <div class="rl"><span class="v">✓</span><span>Griffage massifs</span></div>
+      <p class="fam">Propreté</p>
+      <div class="rl"><span class="v">✓</span><span>Ramassage des feuilles</span></div>
+      <div class="rl"><span class="v">✓</span><span>Évacuation des déchets</span></div>
+      </div>
+      <div class="rc">
+      <p class="fam">Pelouse</p>
+      <div class="rl"><span class="v">✓</span><span>Tonte et ébarbage</span></div>
+      <p class="fam">Massifs</p>
+      <div class="rl"><span class="v">✓</span><span>Griffage massifs</span></div>
+      <p class="fam">Propreté</p>
+      <div class="rl"><span class="v">✓</span><span>Ramassage des feuilles</span></div>
+      <div class="rl"><span class="v">✓</span><span>Évacuation des déchets</span></div>
+        <div class="replie">
+          <span class="titre">Non prévu à ce passage — 16 prestations du contrat</span>
+          <p class="liste">Traitement pelouse · Scarification · Engrais · Taille arbuste automne · Taille arbuste printemps · Taille de haie automne · Taille de haie printemps · Taille des rosiers · Bêchage · Bordures massifs · Désherbage massifs · Coupe des fleurs fanées · Nettoyage pied de haies · Désherbant allée · Lierre, liseron, liane · Démoussage voirie</p>
+        </div>
+      </div>
+
+      <div class="pied"><span>Temps passé</span><b>1 h 40</b></div>
+      <div class="sign"><div>Signature<br>du technicien</div><div>Signature<br>du client</div></div>
+    </div>
+
+    <div class="legende">
+      <div class="ra">
+        <span class="t">A · Tout, comme l'autre application</span>
+        Les vingt lignes, faites ou non. Le contrat est visible en entier :
+        le client sait ce qu'il paie.
+        <span class="cout">Ce que ça coûte : <b>seize lignes éteintes sur
+        vingt</b>. Le document se lit comme un bulletin de notes, et ce qui a
+        vraiment été fait se perd dedans.</span>
+      </div>
+      <div class="rb">
+        <span class="t">B · Seulement ce qui a été fait</span>
+        Quatre lignes, lisibles d'un regard. C'est ce qu'un paysagiste écrirait
+        de sa main sur un bon de passage.
+        <span class="cout">Ce que ça coûte, et c'est réel : <b>le client ne voit
+        plus l'étendue de son contrat</b>. Quatre lignes pour le prix d'un
+        passage complet peuvent faire douter — et vous vaudront l'appel.</span>
+      </div>
+      <div class="rc">
+        <span class="t">C · Ce qui a été fait, le reste replié</span>
+        Les quatre en clair, et dessous une seule phrase grise qui nomme les
+        seize autres : <b>« non prévu à ce passage »</b>.
+        <span class="cout">Ce que ça coûte : une ligne de plus à lire. En
+        échange, elle répond à l'appel avant qu'il ne soit passé — le client voit
+        l'étendue du contrat sans lire seize refus.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui n'est pas à choisir</span>
+    <ul>
+      <li><b>« Vrai » et « Faux » ne sortent pas d'ici</b> : ce sont des mots de
+        programmeur, pas les vôtres.</li>
+      <li><b>La date, le chantier et le temps passé restent</b> : c'est ce qui
+        fait du document une preuve de passage.</li>
+      <li><b>Les deux signatures restent.</b> Elles disent que quelqu'un était
+        là, et que quelqu'un a vu.</li>
+    </ul>
+  </div>
+</div>

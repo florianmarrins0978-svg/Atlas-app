@@ -9172,6 +9172,36 @@ passe avant ce qu'on lui a répondu.
 
 `scripts/test-devis-qui-tarde-e2e.ts` tient l'ordre — et il vérifie l'ordre, pas
 le compte : la règle vaut quel que soit le nombre de cartes.
+
+#### Et une place garantie à chaque sorte
+
+*Sa seconde décision du même jour — **« ok alors fait le »** —, après que la
+batterie ET une photo ont montré le défaut symétrique.*
+
+**Ce que B seul produisait :** les rappels se fabriquant tout seuls, il suffisait
+de trois chantiers sans devis pour que **toutes** les réponses de clients passent
+derrière le repli. Trois suites l'ont dit en rougissant, avant même l'image —
+elles cherchaient une réponse qui n'était plus à l'écran.
+
+**Le partage retenu :** la première place reste au rappel (son choix B ne bouge
+pas) ; **la dernière place visible revient à une réponse**, et seulement s'il en
+existe une. À deux cartes visibles cela donne « un rappel, une réponse » ; à
+trois, « deux rappels, une réponse ».
+
+**Pourquoi ce n'est pas symétrique, et pourquoi c'est juste :** un rappel
+s'accumule et attendra demain sans que rien ne soit perdu ; une réponse de client
+est un événement périssable — quelqu'un attend une réaction. Une sorte qui
+grossit toute seule ne doit pas pouvoir enterrer une sorte rare et urgente.
+
+**La règle est pure** — `src/lib/ordre-notifications.ts` —, et elle est éprouvée
+là où l'écran ne sait pas aller : zéro d'une sorte, une seule place visible, et
+surtout **aucune carte perdue ni dupliquée** sur les 108 combinaisons de zéro à
+cinq de chaque. Cette dernière garde contre le pire défaut possible ici : un
+refus de client qui disparaîtrait sans que rien ne le signale.
+
+**Le tressage se fait APRÈS le retrait des cartes acquittées.** Dans l'autre
+sens, une place serait réservée à une réponse que le patron vient de marquer
+« J'ai vu » — une place vide, au profit de rien.
 ---
 
 ---

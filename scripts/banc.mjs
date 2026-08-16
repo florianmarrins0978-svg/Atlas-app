@@ -42,6 +42,41 @@ const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
 // un disque lent. Voir `next.config.ts` (`ATLAS_DIST_DIR`).
 const DIST = ".next-batie";
 const TEMOIN_BATI = `${DIST}/atlas-version-batie.txt`;
+// **Le témoin d'ÉCHEC, et il vaut le témoin de réussite.**
+//
+// Le 16 août 2026 : « l'appli est vraiment très lente, vraiment ». Sa fiche
+// disait « aucune version bâtie — le banc sert le mode développement », ce qui
+// est vrai mais ne distingue pas trois états très différents : la construction
+// tourne encore, elle a échoué, elle n'a jamais démarré. Le premier se traverse
+// en deux minutes, le deuxième condamne le banc à la lenteur pour toujours — et
+// rien ne permettait de les séparer sans lire un journal auquel l'agent n'a pas
+// accès. Le message d'échec existait pourtant : il partait dans `/tmp/essai.log`,
+// que personne ne lit.
+//
+// Hors de `DIST` délibérément : ce dossier est effacé par une construction
+// suivante, et l'échec doit survivre à la tentative qui le remplace.
+const TEMOIN_ECHEC =
+  // Détournable uniquement pour l'éprouver : une suite ne peut pas écrire
+  // dans /tmp sans marcher sur le banc réel de la machine qui la joue.
+  process.env.ATLAS_TEMOIN_ECHEC || "/tmp/atlas-construction-echouee.txt";
+
+/**
+ * Une mesure du système, sur une ligne, ou « inconnu ».
+ *
+ * Ne lève jamais : ce relevé sert à expliquer un échec, il ne doit pas en
+ * fabriquer un second. Une machine sans `df` ni `free` reste une machine.
+ */
+function mesure(commande, args) {
+  try {
+    return execFileSync(commande, args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] })
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .join(" | ");
+  } catch {
+    return "inconnu";
+  }
+}
 
 // **Prévenir le veilleur pendant la bascule, sinon il tue ce qu'on remplace.**
 //
@@ -555,6 +590,9 @@ if (raison) {
     try {
       mkdirSync(DIST, { recursive: true });
       writeFileSync(TEMOIN_BATI, version ?? "inconnue");
+      // Un échec d'hier ne doit pas accuser la construction d'aujourd'hui : le
+      // témoin d'échec ne survit pas à une réussite.
+      rmSync(TEMOIN_ECHEC, { force: true });
     } catch {
       // Sans témoin on rebâtira au prochain démarrage : coûteux, jamais faux.
     }
@@ -646,6 +684,25 @@ if (raison) {
       );
     }
   } else {
+    // L'échec se dépose là où la fiche saura le lire. Sans cela il ne vit que
+    // dans un journal local, et l'agent voit un banc « sans version bâtie »
+    // sans pouvoir dire si c'est passager ou définitif.
+    try {
+      writeFileSync(
+        TEMOIN_ECHEC,
+        [
+          `quand: ${new Date().toISOString()}`,
+          `code: ${code}`,
+          // Les deux suspects d'une construction qui tombe sur une machine
+          // modeste, relevés À L'INSTANT de l'échec : plus tard, la mémoire est
+          // rendue et le coupable a disparu.
+          `disque: ${mesure("df", ["-h", "--output=avail", "."])}`,
+          `memoire: ${mesure("free", ["-h"])}`,
+        ].join("\n")
+      );
+    } catch {
+      // Un témoin qu'on ne peut pas écrire ne doit pas empêcher le repli.
+    }
     // **Jamais en silence, et jamais rien du tout.** Voir l'en-tête : un banc
     // lent reste un banc, un banc mort coûte une soirée.
     console.error(

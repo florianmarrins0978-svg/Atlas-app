@@ -57,6 +57,24 @@ finit ignoré, et le garde-fou se perd sans bruit.
 
 ---
 
+## ⚠ « PAGE BLANCHE » : lire la ligne « Code SERVI » avant tout (16 août 2026)
+
+Sur la fiche, deux lignes ensemble tranchent la question sans hypothèse :
+
+| Ce que la fiche montre | Ce que ça veut dire |
+|---|---|
+| `Serveur : répond` **+** `Code SERVI : … construction en cours` | **rien à réparer, c'est passager** — le banc compile chaque écran à l'ouverture (30-100 s) et le mandataire de GitHub renonce à 60 s. Recharger une minute plus tard suffit |
+| `Code SERVI : … la construction a ÉCHOUÉ` | **ça ne se répare pas tout seul** — le banc restera lent tant que `next build` ne passe pas. Le bloc « Au moment de l'échec » donne le disque et la mémoire à cette seconde-là : c'est là qu'il faut regarder. `TODO.md` 0 quadragies quater |
+| `Serveur : NE RÉPOND PAS`, fiche écrite **à l'allumage** | normal à cet instant, le veilleur relève dans quinze secondes |
+| `Serveur : NE RÉPOND PAS`, fiche écrite **par le veilleur** | vraie panne |
+
+Le 16 août au soir, une page blanche a été traitée comme un défaut de produit
+pendant une soirée. La page de connexion s'affichait parfaitement sur son commit
+exact, et la construction réussissait : il était simplement dans la fenêtre de
+construction. `TODO.md` 0 quadragies ter.
+
+---
+
 ## ⚠ LE PREMIER RÉFLEXE, DEMANDÉ PAR LE PATRON LE 12 AOÛT 2026
 
 **À faire juste après avoir lu la fiche ci-dessus** : la fiche dit dans quel
@@ -724,14 +742,40 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**DEUX MAQUETTES POUR LA FICHE D'ENTRETIEN (16 août) — RIEN N'EST CODÉ.** Il a
+demandé de recréer les fiches de chantier d'une autre application (paysagistes
+en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
+
+- **TOUT EST TRANCHÉ le 16 août** : familles sur le chantier, seulement ce qui
+  a été fait chez le client, la molette du TÉLÉPHONE (« la A »), et **un seul
+  modèle** pré-rempli à chaque envoi — rien n'est rangé par client. L'ordre de
+  construction est dans `TODO.md` § « La fiche d'entretien ».
+- **Une lecture à confirmer d'un mot** : le pré-remplissage se fait d'après le
+  DERNIER PASSAGE du client, pas depuis le modèle à chaque fois — sinon il
+  réajusterait douze fois par an.
+- **L'invariant à ne pas perdre** : un rapport déjà envoyé ne change plus jamais
+  quand le modèle change. Il est signé et parti chez le client.
+- **Le temps passé se choisit à la MOLETTE, pas au clavier** (16 août) —
+  `docs/maquettes/65-choisir-l-heure.html`. La molette Atlas y est faite sans
+  JavaScript (accroche + repère collé) : le procédé, et ses trois pièges, sont
+  décrits dans `PROJECT_STATE.md`. Ne pas la refaire en suivant le défilement
+  image par image, ça se désynchronise sur un téléphone chargé.
+- **C'est un TROISIÈME parcours**, pas une case en plus : contrat → passages →
+  rapport, à côté de devis → facture.
+- **Le piège à ne pas recopier** : l'autre application liste les vingt
+  prestations avec « Vrai »/« Faux ». Quatre étant faites, le client lit seize
+  fois « Faux » sur un passage qu'il paie.
+- **Les planches sont ENGENDRÉES** (`scripts/engendrer-maquette-fiche-entretien.mjs`)
+  d'une seule liste : ne pas les retoucher à la main, elles divergeraient.
+
 **« LE NOUVEAU CHANTIER » A GROSSI (16 août) — dessiné le matin, choisi et codé
-dans la journée.** Sa réponse devant `docs/maquettes/62` : **« les capitales,
+dans la journée.** Sa réponse devant `docs/maquettes/66` : **« les capitales,
 gros et très gras »** — 13 px, graisse 800, interlettrage 0,22 em, rond de
 42 px, signe inchangé à 20. Les valeurs vivent dans `globals.css`
 (`.atlas-mot`, `.atlas-rond`).
 
 **⚠ `docs/maquettes/24-le-bouton-retenu.html` n'est PLUS la référence du
-libellé** — elle porte un bandeau qui le dit, et renvoie à la 62. Elle reste
+libellé** — elle porte un bandeau qui le dit, et renvoie à la 66. Elle reste
 celle de l'onde, des trois tours et des onze grains, qui n'ont pas bougé. Ne pas
 « ré-harmoniser » le reste sur ses chiffres.
 
@@ -874,10 +918,12 @@ planning, regarder d'abord quel jour de la semaine elle vise.** Corrigé avec
 défaut, libellé **« Chantier sans devis »**, premier des trois réglages. Détail et
 deux points laissés en suspens : `TODO.md` §0 novivicies.
 
-**⚠ SUR L'ACCUEIL, LES RAPPELS PASSENT DEVANT LES RÉPONSES DE CLIENTS** — sa
-décision du 16 août (« fait la B »), après trois photos. La règle d'avant disait
-l'inverse (*« quelqu'un a agi, cela prime sur un silence »*) : ne pas la
-restaurer en la lisant quelque part, elle est datée. `ARCHITECTURE.md` §112.
+**⚠ L'ORDRE DES CARTES DE L'ACCUEIL EST UNE RÈGLE, PAS UNE CONCATÉNATION** —
+`src/lib/ordre-notifications.ts`, deux décisions du 16 août : les rappels passent
+devant (« fait la B »), ET une place est garantie aux réponses de clients
+(« ok alors fait le »). La règle d'origine — *« les réponses d'abord, quelqu'un a
+agi, cela prime sur un silence »* — est datée : ne pas la restaurer en la lisant
+quelque part. `ARCHITECTURE.md` §112.
 
 **⚠ IL Y A MAINTENANT TROIS RAPPELS, PAS DEUX** — `src/lib/rappels.ts`. Le
 troisième se lit sur le CHANTIER (`created_at`, `devis_envoye_at`) et non sur un

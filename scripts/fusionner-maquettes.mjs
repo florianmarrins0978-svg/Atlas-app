@@ -302,7 +302,31 @@ const MAQUETTES = [
     quoi: "« Fais cinq pour cent sur le montant du devis » — où la petite ligne se pose, et sous quel mot. Le coût des trois est très inégal : une ligne voyage seule jusqu’à la facture.",
   },
   {
-    fichier: "62-le-nouveau-chantier-plus-gros.html",
+    fichier: "62-la-fiche-dentretien.html",
+    titre: "La fiche d’entretien",
+    famille: "L’entretien récurrent",
+    quoi: "Ce que le paysagiste coche sur le chantier. Vingt prestations, quatre faites : tiennent-elles au pouce ? Trois gestes — la liste d’un bloc, rangée par familles, ou trois états avec « sans objet ».",
+  },
+  {
+    fichier: "63-le-rapport-au-client.html",
+    titre: "Le rapport que reçoit le client",
+    famille: "L’entretien récurrent",
+    quoi: "La sortie de la fiche. L’autre application lui montre seize fois « Faux » sur un passage qu’il paie : tout, seulement ce qui a été fait, ou le reste replié en une phrase.",
+  },
+  {
+    fichier: "64-composer-sa-fiche.html",
+    titre: "Composer sa fiche d’entretien",
+    famille: "L’entretien récurrent",
+    quoi: "Dans les Réglages : ajouter, retirer, renommer ses prestations. La question qui reste — une seule fiche pour tous, ou un modèle puis une fiche par client.",
+  },
+  {
+    fichier: "65-choisir-l-heure.html",
+    titre: "Choisir l’heure au pouce",
+    famille: "L’entretien récurrent",
+    quoi: "« Ne pas avoir à l’écrire » : la molette du téléphone, les quarts d’heure, ou une vraie molette Atlas — faite sans une ligne de JavaScript. Faites-la tourner au doigt.",
+  },
+  {
+    fichier: "66-le-nouveau-chantier-plus-gros.html",
     titre: "Le nouveau chantier, plus gros",
     famille: "Enlever le gros bouton",
     quoi: "« Le plus gros et en gras » — trois formes, trois tailles, trois graisses, et le témoin d’aujourd’hui figé à côté. Le cran le plus gros est celui qui tient encore sans couper le mot sur un écran de 360 px.",
