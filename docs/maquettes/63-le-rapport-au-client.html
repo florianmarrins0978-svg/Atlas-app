@@ -23,8 +23,18 @@
     · « VRAI » ET « FAUX » NE SORTENT PAS. Ce sont des mots de programmeur.
     · LE DOCUMENT PORTE LA DATE, LE CHANTIER ET LE TEMPS PASSÉ — c'est ce qui
       en fait une preuve de passage, et c'est ce que le client garde.
-    · LES DEUX SIGNATURES RESTENT. Elles sont ce qui distingue un rapport d'une
-      simple liste : elles disent que quelqu'un était là, et que quelqu'un a vu.
+    · IL N'Y A PLUS DE SIGNATURE, ET C'EST DÉCIDÉ (16 août 2026). Sur SA propre
+      capture de l'autre application, les deux signatures sont « Non signé » —
+      la sienne et celle du client. Le client est absent onze fois sur douze : il
+      travaille pendant qu'on entretient son jardin, et un champ qui reste vide
+      fait passer chaque rapport pour un document inachevé.
+      Ce qui prouve le passage à leur place existe déjà : la date, l'heure, le
+      temps passé, et l'EMPREINTE du contenu exact — le mécanisme qui sert déjà
+      à l'acceptation d'un devis (empreinteDevis). Plus solide qu'un trait au
+      doigt, et sans aucun geste à faire.
+    · UN RAPPORT SANS SIGNATURE NE DOIT PAS AVOIR L'AIR INCOMPLET. Si personne
+      n'a signé, la ligne n'existe pas — jamais de « Non signé » en gris au bas
+      d'un document qui part chez un client.
 
     ————————————————————————————————————————————————————————————————
     RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
@@ -122,9 +132,11 @@
   .entete{border-bottom:1px solid var(--trait);padding-bottom:12px;margin-bottom:6px}
   .entete .qui{font-family:Georgia,serif;font-size:20px;margin:0}
   .entete .quoi2{font-size:12.5px;color:var(--gris);margin:2px 0 0}
-  .sign{display:flex;gap:10px;margin-top:16px}
-  .sign div{flex:1;border:1px dashed var(--trait);border-radius:10px;
-            padding:10px;text-align:center;font-size:11px;color:var(--gris)}
+  .preuve{margin-top:14px;padding-top:12px;border-top:1px solid var(--trait);
+          font-size:11.5px;line-height:1.7;color:var(--gris)}
+  .recu{display:block;margin-top:14px;text-align:center;padding:13px;
+        border-radius:999px;border:1px solid var(--trait);
+        font-size:14px;color:var(--encre)}
   .pied{margin-top:14px;font-size:12.5px;color:var(--gris);
         display:flex;justify-content:space-between}
   .pied b{color:var(--encre)}
@@ -148,7 +160,7 @@
     <span class="quoi">Ce que le client voit</span>
     <div class="segments">
       <label for="r-a">A · Tout, comme l'autre</label>
-      <label for="r-b">B · Seulement ce qui a été fait</label>
+      <label for="r-b">B · Seulement ce qui a été fait — <b>retenu</b></label>
       <label for="r-c">C · Ce qui a été fait, le reste replié</label>
     </div>
   </div>
@@ -211,7 +223,11 @@
       </div>
 
       <div class="pied"><span>Temps passé</span><b>1 h 40</b></div>
-      <div class="sign"><div>Signature<br>du technicien</div><div>Signature<br>du client</div></div>
+      <div class="preuve">
+        Passage du mercredi 22 juillet, 08 h 00 – 09 h 15.<br>
+        Rapport figé et horodaté par Arborea.
+      </div>
+      <span class="recu">J'ai bien reçu ce rapport</span>
     </div>
 
     <div class="legende">
@@ -249,8 +265,13 @@
         programmeur, pas les vôtres.</li>
       <li><b>La date, le chantier et le temps passé restent</b> : c'est ce qui
         fait du document une preuve de passage.</li>
-      <li><b>Les deux signatures restent.</b> Elles disent que quelqu'un était
-        là, et que quelqu'un a vu.</li>
+      <li><b>Plus de signature — décidé le 16 août.</b> Sur votre propre capture,
+        les deux étaient « Non signé ». Votre client est absent onze fois sur
+        douze, et un champ vide fait passer le rapport pour inachevé.</li>
+      <li><b>Ce qui prouve le passage à sa place</b> : la date, l'heure, le temps
+        passé, et l'empreinte du contenu exact — le mécanisme qui sert déjà à
+        l'acceptation d'un devis. Le bouton « J'ai bien reçu » est un accusé
+        horodaté, pas une signature.</li>
     </ul>
   </div>
 </div>

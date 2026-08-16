@@ -85,6 +85,72 @@ seuil.
 nulle part près des totaux d'un devis. Corriger la suite d'un autre à sa place
 ferait deux sessions écrivant le même fichier au même moment.
 
+### 0 septvicies. La fiche d'entretien — **TOUT EST TRANCHÉ**, reste à coder
+
+**Ses décisions des 16 août 2026**, toutes prises sur maquettes :
+
+| Question | Sa réponse |
+|---|---|
+| Le geste sur le chantier | **B** — rangée par familles, avec le compte « 1/4 » |
+| Ce que voit le client | **B** — seulement ce qui a été fait |
+| Le temps passé | une **molette**, pas un clavier — et **la A**, celle du téléphone |
+| Où la fiche se compose | dans les **Réglages**, « Ma fiche d'entretien » |
+| Une fiche ou plusieurs | **UN SEUL MODÈLE**, pré-rempli à chaque envoi |
+
+**Ses mots sur la dernière, qui valent mieux qu'un résumé :** *« ça sera un
+modèle à chaque fois qu'on pré-remplira et qu'on enverra aux clients. Donc au
+final, chaque client aura sa fiche parce que ça ne sera jamais la même — d'un
+client à un autre on ne fait pas la même prestation — mais il n'y aura qu'une
+seule fiche. »*
+
+**LA LECTURE RETENUE, ET ELLE EST À CONFIRMER D'UN MOT.** Rien n'est rangé par
+client : à chaque passage, la fiche part du modèle, s'ajuste, et devient celle
+de ce client. Mais le second passage chez le même client doit retrouver son
+ajustement — sinon il le referait douze fois par an. **Le pré-remplissage se
+fait donc d'après SON DERNIER PASSAGE**, le modèle ne servant que la première
+fois. C'est ainsi que ce sera codé sauf mot contraire.
+
+**PAS DE SIGNATURE — décidé le 16 août 2026, et à ne pas rouvrir par bonne
+volonté.** Sur SA capture de l'autre application, les deux signatures étaient
+« Non signé ». Le client est absent onze fois sur douze : il travaille pendant
+qu'on entretient son jardin. Un champ vide fait passer chaque rapport pour un
+document inachevé, et la capture au doigt coûtait une journée (zone de dessin,
+stockage, écran verrouillé quand il tend son téléphone, conservation RGPD,
+survie hors réseau) pour un geste fait une fois sur vingt.
+
+**Ce qui prouve le passage à leur place, et qui existe déjà** : la date, l'heure,
+le temps passé, et l'EMPREINTE du contenu exact (`empreinteDevis`, le mécanisme
+de l'acceptation d'un devis). À prévoir en plus : un bouton **« J'ai bien reçu »**
+sur la page du client — un accusé horodaté, pas une signature.
+
+**L'ENVOI : exactement celui du devis.** Sa confirmation du 16 août. Attention au
+mot « automatique » : **rien ne part tout seul**, et ce n'est pas une limite
+technique — c'est sa décision du 3 août (`docs/A-FAIRE.md` §5). Atlas prépare le
+message avec le lien, ouvre SA messagerie, et c'est lui qui appuie. Un envoi
+réellement automatique demanderait un prestataire sous contrat.
+
+**Les invariants posés, à ne pas rouvrir :**
+
+- **un rapport déjà envoyé ne change plus JAMAIS** quand le modèle change : il
+  est signé et parti chez le client. C'est l'erreur qui ne se rattrape pas ;
+- le retrait d'une ligne est **réversible** (règle du 10 août) ;
+- ce qui n'est pas coché **n'est pas une faute** — aucun rouge ;
+- « Vrai »/« Faux » ne sortent jamais vers le client ;
+- l'envoi emprunte le chemin qui porte déjà devis et factures.
+
+**L'ordre de construction, quand ça démarre** — c'est un troisième parcours, pas
+une case à ajouter :
+
+1. le **modèle** et son écran de Réglages (rien d'autre n'a de sens sans lui) ;
+2. le **passage** : la fiche pré-remplie, cochée, le temps à la molette ;
+3. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
+   porte déjà devis et factures ;
+4. ~~les signatures~~ — **RETIRÉES le 16 août 2026**, voir ci-dessous.
+
+Planches : `docs/maquettes/62-la-fiche-dentretien.html`,
+`63-le-rapport-au-client.html`, `64-composer-sa-fiche.html`,
+`65-choisir-l-heure.html`.
+
 ### 0 trigies bis. `test-devis-parti-signet` a rougi une fois sur deux batteries — instable sous charge
 
 **Vu le 16 août 2026**, sur une batterie complète : la suite attendait le total
@@ -110,39 +176,48 @@ neutralise est un contrôle perdu, et celui-ci tient la pièce maîtresse d'un
 écran que le patron a dessiné lui-même.
 
 
-### 0 quadragies. La réduction accordée au client — dessinée, attend son mot
 ### 0 septvicies. La fiche d'entretien — **DEUX MAQUETTES POSÉES, sa décision attendue**
 
-**Sa demande du 16 août 2026**, captures d'une autre application à l'appui : des
-fiches de chantier pour paysagistes en contrat d'entretien — cocher ce qui a été
-fait, puis envoyer au client.
+**Sa réponse du 16 août 2026 : « B et B »**, plus deux ajouts.
 
-**Terrain neuf** : rien dans `docs/AGENT.md` ne parle d'entretien récurrent.
-Cela suppose, si c'est retenu, un **contrat** (la liste des prestations dues), des
-**passages** récurrents, et un **rapport** par passage. C'est un troisième
-parcours à côté du devis→facture, pas une case à ajouter quelque part.
+| Tranché | Ce qu'il a choisi |
+|---|---|
+| Le geste sur le chantier | **B** — rangée par familles, avec le compte « 1/4 » |
+| Ce que voit le client | **B** — seulement ce qui a été fait |
+| Le temps passé | **une molette**, pas un clavier (`65-choisir-l-heure.html`) — trois gestes proposés, le mien recommandé est la molette Atlas |
+| Où se compose la fiche | dans les **Réglages**, « Ma fiche d'entretien » — modèle fourni, modifiable |
 
-**Ce qui est posé** (aucune ligne de `src/`) :
-`docs/maquettes/62-la-fiche-dentretien.html` et `63-le-rapport-au-client.html`,
-engendrées d'une seule liste par `scripts/engendrer-maquette-fiche-entretien.mjs`,
-gardées par `scripts/verifier-maquette-fiche-entretien.mjs`.
+**Deux choses restent à trancher, et aucune n'est du rangement :**
 
-**Les deux questions qui lui reviennent :**
+**a) La molette** — la native du téléphone (gratuite, ressemble à un
+formulaire), les quarts d'heure (un appui, mais imprécise), ou la molette Atlas
+(la seule qui ressemble à l'application ; compter une demi-journée, accessibilité
+comprise). Recommandation écrite dans la planche : la molette Atlas.
 
-1. **Le geste sur le chantier** — la liste d'un bloc (A), rangée par familles
-   avec un compte (B), ou trois états dont « sans objet » (C). C coûte trois
-   fois plus de gestes, y compris sur les seize lignes qui ne le concernent pas
-   ce jour-là.
-2. **Ce que voit le client** — tout comme l'autre application (A), seulement ce
-   qui a été fait (B), ou le reste replié en une phrase (C). B est le plus
-   lisible et le plus risqué : quatre lignes pour le prix d'un passage complet
-   peuvent faire douter, et lui valoir l'appel.
+**b) CE QUI RESTE À TRANCHER, et ce n'est pas du rangement** (planche
+`docs/maquettes/64-composer-sa-fiche.html`) :
 
-**Ce qui n'est pas à trancher, et qui est déjà écrit dans les planches** : la
-liste vient du contrat ; ce qui n'est pas coché n'est pas une faute ; l'envoi
-emprunte le chemin qui porte déjà devis et factures.
+> **Une seule fiche pour tous ses clients, ou un modèle puis une fiche par
+> client ?**
 
-### 0 quadragies. La réduction accordée au client — dessinée, attend son mot
+Une fiche unique se tient en un endroit, mais chaque client voit les vingt
+lignes — y compris celles qu'il ne paie pas, et c'est le chantier qui les fait
+défiler. Une fiche par client est ce que le contrat décrit vraiment, au prix
+d'un geste de plus à la signature.
+
+**Ce qui n'est pas à trancher, et qui est déjà écrit dans les planches :**
+
+- **un rapport déjà envoyé ne change plus jamais** — retirer une ligne du modèle
+  en octobre ne touche pas aux rapports de juillet, qui sont signés et partis.
+  C'est l'erreur qui ne se rattrape pas ;
+- le retrait d'une ligne est **réversible** (règle du 10 août) ;
+- la liste vient du contrat, ce qui n'est pas coché n'est pas une faute, et
+  l'envoi emprunte le chemin qui porte déjà devis et factures.
+
+**Ce que ce parcours suppose, s'il est retenu** : un contrat (la liste due), des
+passages récurrents, un rapport par passage. C'est un troisième parcours à côté
+du devis → facture, pas une case à ajouter.
+
 
 ### 0 quadragies bis. ~~La fiche du banc se figeait quand le veilleur travaillait~~ — **CORRIGÉ le 16 août 2026**
 
@@ -155,6 +230,72 @@ qu'elle appelle `npm run banc`. Elle vit désormais à côté
 pourquoi son serveur ne répondait pas le 16 août à 17 h 06. La fiche s'est tue
 avant de le dire. **Ne pas écrire que cette panne-là est réparée** — seul
 l'aveuglement l'est. Si elle revient, la fiche saura enfin la raconter.
+
+**Le correctif est CONFIRMÉ sur sa machine :** fiche du 16 août 18 h 32,
+« Écrite : par le veilleur, au quart d'heure » — la première publication
+périodique jamais observée chez lui.
+
+### 0 quadragies quater. POURQUOI sa construction échoue — la vraie question, ouverte
+
+**Sa plainte du 16 août 2026 au soir :** *« l'appli, elle est vraiment très
+lente, mais vraiment, vraiment très lente. Est-ce qu'il y a un moyen de la
+rendre juste utilisable ? »*
+
+**Ce qu'on sait, et c'est une déduction, pas une hypothèse.** La fiche lit le
+témoin `.next-batie/atlas-version-batie.txt`, écrit **dès que `next build` rend
+0**, avant même la bascule. Ce témoin n'existe pas chez lui. Donc sa
+construction **échoue**, à chaque démarrage — et le banc retombe pour toujours
+sur le mode développement, où chaque écran se compile à l'ouverture.
+
+La même construction **réussit ici en deux minutes**, sur son commit exact
+(`67b4d8e`). C'est donc son environnement, pas le code.
+
+**Les deux suspects, et pourquoi on ne les a pas départagés :** le disque et la
+mémoire. Un `next build` pendant qu'un serveur de développement sert déjà, avec
+PostgreSQL et Redis à côté, sur une machine à deux cœurs. Ni l'un ni l'autre
+n'était publié — c'est corrigé (voir `CHANGELOG.md` du 16 août), mais le relevé
+n'arrivera **qu'au prochain démarrage de son espace**.
+
+**La marche à suivre, dès que sa fiche republie :**
+
+1. lire « Code SERVI » — si elle dit « la construction a ÉCHOUÉ », le bloc
+   « Au moment de l'échec » donne le disque et la mémoire à cette seconde-là ;
+2. disque saturé → nettoyer avant de bâtir, en épargnant `.next` que le serveur
+   de développement utilise pour servir pendant ce temps ;
+3. mémoire épuisée → plafonner le tas de la construction, ou ne pas bâtir
+   pendant qu'un serveur sert. **Ne pas choisir la valeur au hasard** : c'est
+   ainsi qu'on livre une réparation imaginée (`AGENTS.md`).
+
+**Ne PAS écrire que la lenteur est corrigée.** Elle ne l'est pas. Seul
+l'aveuglement l'est, et c'est la troisième fois en deux jours que la distinction
+compte.
+
+### 0 quadragies ter. Une PAGE BLANCHE sur son banc n'est presque jamais une panne
+
+**Payé le 16 août 2026 au soir.** Il redémarre, l'application s'ouvre sur du
+blanc, il écrit « corrige-moi ça ». Rien n'était cassé : la page de connexion
+s'affichait parfaitement sur son commit exact, et la construction réussissait.
+
+**Ce qui se passait vraiment**, et la fiche le disait en une ligne :
+
+    Code SERVI : aucune version bâtie — le banc sert le mode développement
+
+Tant que `.next-batie` n'existe pas, chaque écran se compile **à l'ouverture**
+— 30 à 100 secondes (`scripts/banc.mjs`) — et le mandataire de GitHub renonce au
+bout d'une minute. Le blanc est cet intervalle, rien d'autre. Il se dissipe seul
+dès que la construction retombe, ou en rechargeant une minute plus tard : la
+compilation continue côté serveur même quand le navigateur a renoncé.
+
+**Donc, devant « page blanche » : lire la ligne « Code SERVI » AVANT tout.**
+« aucune version bâtie » + « serveur : répond » = il est dans la fenêtre de
+construction, il n'y a rien à réparer. Chercher un défaut de produit là-dedans,
+c'est ce qui a consommé la soirée.
+
+**Ce qui reste à faire, et qui n'est pas fait :** pendant cette fenêtre, il n'a
+aucun moyen de savoir qu'il doit attendre — il voit du blanc, comme devant une
+panne. Une page d'attente qui dirait « Atlas se prépare, deux minutes » vaudrait
+mieux que le blanc. **À dessiner avant de coder** (`CLAUDE.md` §3 bis) et à lui
+montrer : ce n'est pas à nous de décider qu'il veut un écran de plus.
 
 ### 0 quadragies. ~~La réduction accordée au client~~ — **CODÉE le 16 août 2026 (B + « Prix accordé au client »)**
 

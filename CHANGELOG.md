@@ -34,6 +34,156 @@ Le contrôle écrit contre le premier ne mesurait rien : il cherchait la valeur
 d'un `<input>` dans le texte de la page, où elle ne figure jamais.
 `ARCHITECTURE.md` §118.
 
+### Pas de signature sur les rapports d'entretien — et pourquoi c'est mieux
+
+**Sa question, puis sa décision, le 16 août.** *« S'il n'est pas là, on ne peut
+pas le faire signer. Donc est-ce qu'on a vraiment besoin de ça ? »*
+
+**Sa propre capture répondait déjà** : sur le rapport de l'autre application,
+les deux signatures sont « Non signé ». La sienne — qui ne prouve rien, c'est
+son application et son compte — et celle du client, absent onze fois sur douze.
+Un champ qui reste vide fait passer chaque rapport pour un document inachevé.
+
+**Ce qui prouve le passage à leur place existe déjà** : la date, l'heure, le
+temps passé, et l'empreinte du contenu exact — le mécanisme qui sert déjà à
+l'acceptation d'un devis. Plus solide qu'un trait au doigt, et sans un geste.
+S'ajoutera un **« J'ai bien reçu »** sur la page du client : un accusé horodaté.
+
+**La règle qui reste, quelle que soit la suite** : un rapport sans signature ne
+doit pas AVOIR L'AIR incomplet. Si personne n'a signé, la ligne n'existe pas —
+jamais de « Non signé » en gris sur un document qui part chez un client. Un
+contrôle le tient désormais, et il vise le document, pas la page qui l'explique.
+
+**Ce que ça économise** : une journée de travail (zone de dessin, stockage,
+écran verrouillé, conservation RGPD, survie hors réseau) pour un geste fait une
+fois sur vingt.
+
+**Et l'envoi est celui du devis** — sa confirmation du même jour. Le mot
+« automatique » mérite d'être précisé : rien ne part tout seul, c'est sa décision
+du 3 août. Atlas prépare le message avec le lien, ouvre sa messagerie, il appuie.
+
+---
+
+### « L'appli est vraiment très lente » : le banc le dit enfin lui-même
+
+**Sa plainte du 16 août au soir**, et elle était fondée : chaque écran mettait
+jusqu'à une minute à s'ouvrir.
+
+**La cause n'est pas dans le produit.** Le banc sert une version BÂTIE, qui rend
+un écran en 50-100 ms. Faute de version bâtie, il retombe sur le mode
+développement, qui compile chaque écran **à l'ouverture** — 30 à 100 secondes.
+Ce repli existe pour qu'un banc lent vaille mieux qu'un banc mort, et il est
+juste. Ce qui ne l'était pas : **il ne se disait pas.**
+
+Sa fiche annonçait « aucune version bâtie — le banc sert le mode
+développement ». Vrai, et pourtant inutile : cette phrase recouvrait trois états
+qui n'appellent pas la même chose du tout.
+
+| L'état réel | Ce qu'il faut faire |
+|---|---|
+| la construction tourne encore | attendre deux minutes |
+| **elle a ÉCHOUÉ** | **rien ne se réparera seul — le banc restera lent** |
+| elle n'a jamais démarré | il manque un démarrage |
+
+**Ce que ça évite :** chercher un défaut de produit devant une machine qui
+connaît la réponse. Le message d'échec existait — il partait dans
+`/tmp/essai.log`, que personne ne lit et auquel une session n'a pas accès.
+
+Désormais `banc.mjs` dépose un témoin d'échec **hors** du dossier de
+construction (il doit survivre à la tentative qui le remplace), avec l'heure, le
+code de sortie, et **le disque et la mémoire relevés à cet instant précis** —
+une heure plus tard la mémoire est rendue et le coupable a disparu. La fiche le
+publie, nomme la lenteur dans ses mots à lui, et publie de toute façon le disque
+et la mémoire à chaque passage. Une réussite efface le témoin : un échec d'hier
+ne doit pas accuser la construction d'aujourd'hui.
+
+`scripts/test-banc-lent-se-dit.ts` tient les huit points et **sait rougir** :
+contre la version d'avant, les huit tombent.
+
+**Ce qui n'est PAS corrigé, et il faut le lire ainsi :** on ne sait pas encore
+*pourquoi* sa construction échoue. Ce lot ne rend pas son banc rapide — il rend
+la cause lisible en un coup d'œil au lieu d'une soirée.
+### La fiche d'entretien : tout est tranché, la construction peut commencer
+
+**Ses deux dernières réponses du 16 août.** La molette : *« la A »* — celle du
+téléphone, qu'il connaît déjà et qui ne coûte rien à tenir. J'avais recommandé
+la molette Atlas ; sa raison est bonne, et la planche garde la trace du chemin.
+
+Et la fiche, dans ses mots : *« ça sera un modèle à chaque fois qu'on
+pré-remplira et qu'on enverra aux clients. Donc au final, chaque client aura sa
+fiche parce que ça ne sera jamais la même — mais il n'y aura qu'une seule
+fiche. »* Donc **un seul modèle**, tenu dans les Réglages ; rien n'est rangé par
+client.
+
+**Ce que cela suppose, écrit plutôt que tu** : le second passage chez le même
+client doit retrouver son ajustement, sinon il le referait douze fois par an.
+Le pré-remplissage se fera d'après **son dernier passage**, le modèle ne servant
+que la première fois. C'est la lecture retenue, corrigeable d'un mot.
+
+Les quatre planches portent désormais ce qui a été retenu, et deux contrôles le
+tiennent : une planche qui rouvrirait sur une version écartée lui montrerait,
+dans six mois, autre chose que sa décision.
+
+Toujours **aucune ligne de `src/`** — l'ordre de construction est écrit dans
+`TODO.md`.
+
+---
+
+### Le temps passé ne se tape plus : une molette, faite sans JavaScript
+
+**Sa demande du 16 août** : *« ne pas avoir à l'écrire, mais une petite molette
+ou un truc sympa […] je veux une application ultra luxe et moderne »*.
+
+Trois gestes sur `docs/maquettes/65-choisir-l-heure.html` : la molette native du
+téléphone (gratuite, c'est déjà la sienne), les quarts d'heure en pastilles (un
+seul appui, mais le quart d'heure comme seule unité), et **la molette Atlas** —
+une bande qui s'accroche aux crans, un trait doré au centre, et ce qui est loin
+qui s'efface. Elle est faite **sans une ligne de JavaScript** : son lecteur n'en
+exécute pas.
+
+**Pourquoi un clavier était le mauvais outil**, indépendamment du goût : le
+temps se saisit debout, avec des gants. Un clavier demande de viser quatre
+touches et de deviner le format attendu — « 1h40 », « 1:40 », « 100 » ? Une
+molette ne peut produire qu'une valeur juste.
+
+Ce qui n'est pas à choisir : le pas de cinq minutes, l'ouverture sur le temps
+planifié plutôt que sur zéro, et l'écart qui reste affiché.
+
+Le contrôle mesure ce qu'aucune capture ne montre — que l'accroche rattrape
+vraiment un décalage, et que le repère est au centre. **Il refuse de conclure
+sur une boîte de zéro pixel**, le piège payé le 15 août. Confronté aux trois
+états dégradés qu'il vise : trois rouges, chacun nommant le bon coupable.
+
+Toujours **aucune ligne de `src/`**.
+
+---
+
+### La fiche d'entretien : B et B, la saisie du temps, et où elle se compose
+
+**Sa réponse du 16 août : « B et B »** — rangée par familles sur le chantier,
+et seulement ce qui a été fait chez le client. Plus deux ajouts : *« une case
+pour pouvoir rentrer le temps passé »*, et *« dans les réglages […] un endroit
+où l'utilisateur pourra créer cette fiche »*.
+
+Les planches 62 et 63 s'ouvrent désormais sur **B**, et un contrôle le tient :
+une planche qui rouvrirait sur A lui montrerait, dans six mois, autre chose que
+ce qu'il a choisi. Le temps passé devient une **case de saisie**, le planifié
+rappelé à côté et l'écart calculé.
+
+Une troisième planche, `64-composer-sa-fiche.html` : la fiche se compose dans
+les Réglages — ajouter, retirer, renommer, et **se dédire** (le retrait est
+réversible, comme partout depuis le 10 août).
+
+**Une question reste, et elle n'est pas de rangement** : une seule fiche pour
+tous ses clients, ou un modèle puis une fiche par client ? Et une conséquence
+qui n'est pas à choisir : **un rapport déjà envoyé ne change plus jamais** —
+retirer une ligne du modèle en octobre ne doit rien changer aux rapports de
+juillet, qui sont signés et partis chez le client.
+
+Toujours **aucune ligne de `src/`**.
+
+---
+
 ### Deux maquettes pour la fiche d'entretien des paysagistes — RIEN N'EST CODÉ
 
 **Sa demande du 16 août**, captures d'une autre application à l'appui : *« des
