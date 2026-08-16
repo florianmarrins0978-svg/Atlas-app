@@ -57,6 +57,23 @@ finit ignoré, et le garde-fou se perd sans bruit.
 
 ---
 
+## ⚠ « PAGE BLANCHE » : lire la ligne « Code SERVI » avant tout (16 août 2026)
+
+Sur la fiche, deux lignes ensemble tranchent la question sans hypothèse :
+
+| Ce que la fiche montre | Ce que ça veut dire |
+|---|---|
+| `Serveur : répond` **+** `Code SERVI : aucune version bâtie` | **il n'y a rien à réparer** — le banc compile chaque écran à l'ouverture (30-100 s) et le mandataire de GitHub renonce à 60 s. Recharger une minute plus tard suffit |
+| `Serveur : NE RÉPOND PAS`, fiche écrite **à l'allumage** | normal à cet instant, le veilleur relève dans quinze secondes |
+| `Serveur : NE RÉPOND PAS`, fiche écrite **par le veilleur** | vraie panne |
+
+Le 16 août au soir, une page blanche a été traitée comme un défaut de produit
+pendant une soirée. La page de connexion s'affichait parfaitement sur son commit
+exact, et la construction réussissait : il était simplement dans la fenêtre de
+construction. `TODO.md` 0 quadragies ter.
+
+---
+
 ## ⚠ LE PREMIER RÉFLEXE, DEMANDÉ PAR LE PATRON LE 12 AOÛT 2026
 
 **À faire juste après avoir lu la fiche ci-dessus** : la fiche dit dans quel

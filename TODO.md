@@ -98,6 +98,37 @@ pourquoi son serveur ne répondait pas le 16 août à 17 h 06. La fiche s'est tu
 avant de le dire. **Ne pas écrire que cette panne-là est réparée** — seul
 l'aveuglement l'est. Si elle revient, la fiche saura enfin la raconter.
 
+**Le correctif est CONFIRMÉ sur sa machine :** fiche du 16 août 18 h 32,
+« Écrite : par le veilleur, au quart d'heure » — la première publication
+périodique jamais observée chez lui.
+
+### 0 quadragies ter. Une PAGE BLANCHE sur son banc n'est presque jamais une panne
+
+**Payé le 16 août 2026 au soir.** Il redémarre, l'application s'ouvre sur du
+blanc, il écrit « corrige-moi ça ». Rien n'était cassé : la page de connexion
+s'affichait parfaitement sur son commit exact, et la construction réussissait.
+
+**Ce qui se passait vraiment**, et la fiche le disait en une ligne :
+
+    Code SERVI : aucune version bâtie — le banc sert le mode développement
+
+Tant que `.next-batie` n'existe pas, chaque écran se compile **à l'ouverture**
+— 30 à 100 secondes (`scripts/banc.mjs`) — et le mandataire de GitHub renonce au
+bout d'une minute. Le blanc est cet intervalle, rien d'autre. Il se dissipe seul
+dès que la construction retombe, ou en rechargeant une minute plus tard : la
+compilation continue côté serveur même quand le navigateur a renoncé.
+
+**Donc, devant « page blanche » : lire la ligne « Code SERVI » AVANT tout.**
+« aucune version bâtie » + « serveur : répond » = il est dans la fenêtre de
+construction, il n'y a rien à réparer. Chercher un défaut de produit là-dedans,
+c'est ce qui a consommé la soirée.
+
+**Ce qui reste à faire, et qui n'est pas fait :** pendant cette fenêtre, il n'a
+aucun moyen de savoir qu'il doit attendre — il voit du blanc, comme devant une
+panne. Une page d'attente qui dirait « Atlas se prépare, deux minutes » vaudrait
+mieux que le blanc. **À dessiner avant de coder** (`CLAUDE.md` §3 bis) et à lui
+montrer : ce n'est pas à nous de décider qu'il veut un écran de plus.
+
 ### 0 quadragies. ~~La réduction accordée au client~~ — **CODÉE le 16 août 2026 (B + « Prix accordé au client »)**
 
 **Sa demande du 16 août 2026 :** *« si jamais un client me demande une
