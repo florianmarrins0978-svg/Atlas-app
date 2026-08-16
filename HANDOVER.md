@@ -713,6 +713,32 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**UN JOUR BARRÉ N'EST PAS UN JOUR PRIS (16 août).** Sa capture de l'écran
+d'envoi, et un défaut de PHRASE, pas de règle.
+
+1. **Ce qu'il voyait.** Le 18 refusé, sans savoir pourquoi — et l'écran écrivait
+   « les jours barrés sont déjà pris » alors qu'il n'y avait rien dessus.
+2. **Ce qui se passe vraiment.** Un jour barré répond à « un chantier de CETTE
+   durée peut-il y COMMENCER ? ». Deux jours partis du 18 déborderaient sur le
+   19, qui est plein. **Reproduit avant de corriger**, et la règle est juste.
+3. **Ce qui a changé.** La phrase nomme la durée — et ce faisant, elle montre le
+   levier : la durée se change juste au-dessus du calendrier.
+   `src/lib/jours-barres.ts`, `ARCHITECTURE.md` §112.
+4. **`dureeDemiJournees` n'a pas de valeur par défaut sur `Calendrier`**
+   (`number | null`), et il faut que ça le reste : le patron a droit à la durée,
+   **son client non** — consigne tenue par `test-creneaux-planning.ts`, qui a
+   refusé la première version de ce lot (*« la durée du chantier a fuité vers la
+   page du client »*). Un défaut silencieux ferait pencher un écran du mauvais
+   côté sans que personne ne le décide.
+5. **Aucune règle de réservation n'a bougé.** Si un jour paraît mal barré,
+   chercher dans `disponibilites.ts`, pas dans cette correction.
+
+**ET UN RAPPEL QUI VIENT DE RESSERVIR (16 août).** Il signale « la demi-journée
+ne s'affiche pas sur le planning » : c'était vrai la veille, corrigé la nuit même
+(§111), et **son banc avait une version de retard** — sa fiche d'état le disait
+en toutes lettres. Lire la fiche AVANT de chercher dans le produit a fait gagner
+la moitié de l'échange.
+
 **LA LIGNE DU PLANNING PORTE SES TROIS INFOS (15 août).** « 14 août · journée »,
 « 17 août · matin · ½ journée », « 21 août · matin · 3 jours » — la date, le
 moment de départ, la durée, **toute la ligne en or**. Sa demande sur la

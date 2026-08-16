@@ -9,6 +9,38 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### Un jour barré disait « déjà pris » alors qu'il était vide
+
+**Sa capture du 16 août :** *« lorsque je veux remettre une journée sur le
+dix-huit, je ne peux pas ou alors c'est parce que je n'ai pas sectionné la
+demi-journée »*. Son intuition était bonne — c'est bien une histoire de durée —
+mais pas celle qu'il croyait : **celle du chantier qu'il envoie**.
+
+Un jour barré ne répond pas à « ce jour est-il pris ? » mais à « un chantier de
+cette durée peut-il y COMMENCER ? ». Reproduit avant de corriger : avec un seul
+jour plein — le 19 —, **le 18 est vide et pourtant barré** dès que le chantier
+dure deux jours, parce qu'il déborderait sur le 19. La règle est juste ; sans
+elle le chantier mordrait sur une journée prise.
+
+**C'est la phrase qui mentait.** Elle disait *« les jours barrés sont déjà pris »*
+— faux sur un jour vide, et elle l'envoyait chercher une occupation qui
+n'existait pas. Elle dit maintenant la durée en cause :
+
+> « Les jours barrés ne peuvent pas accueillir 2 jours : soit ils sont pris, soit
+> le chantier déborderait sur un jour qui l'est. »
+
+Nommer la durée **montre le levier** : elle se change juste au-dessus du
+calendrier, et passer à « 1 journée » rouvre le 18.
+
+**Le client en profite aussi** — c'est le même calendrier, et lui non plus ne
+savait pas pourquoi un jour lui était refusé. Sa phrase à lui ne chiffre rien
+(« ne peuvent pas accueillir votre chantier ») : rien du découpage de votre
+planning ne part chez lui, c'est votre consigne, et c'est la batterie qui l'a
+rappelée quand elle avait été enfreinte.
+
+Aucune règle de réservation n'a changé, seulement ce qui est dit. Détail :
+`ARCHITECTURE.md` §112.
+
 ### CODÉ : la TVA quand le client paie, et l'endroit où les factures attendent
 
 Sa question du 14 août : *« si un client décide de ne pas me payer, la facture

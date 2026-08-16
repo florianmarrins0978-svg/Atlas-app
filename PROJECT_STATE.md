@@ -144,6 +144,19 @@ arrive sur la page.
 logiciel fermé d'Apple, absent de cet environnement. À faire confirmer par le
 patron, depuis ses SMS (`TODO.md`).
 
+### Le jour barré qui se faisait passer pour un jour pris (16 août 2026)
+
+L'écran refusait une date sans dire pourquoi, et la phrase désignait une
+occupation qui n'existait pas. La règle, elle, était juste : un jour vide se
+barre quand la durée du chantier déborderait sur un lendemain plein.
+
+| Brique | Où c'est |
+|---|---|
+| La phrase, et le cas reproduit qui la justifie | `src/lib/jours-barres.ts` |
+| Le calendrier — le même pour le patron et pour son client | `src/components/atlas/Calendrier.tsx` |
+| Contrôles purs : le fait, la phrase, et la consigne côté client | `scripts/test-jours-barres.ts` |
+| Le pourquoi, et ce qui n'a PAS changé | `ARCHITECTURE.md` §112 |
+
 ### L'écran d'erreur qui ne menait nulle part (11 août 2026)
 
 Un serveur redémarré sous un onglet resté ouvert, et les morceaux de code
