@@ -9,6 +9,52 @@ Format : le plus récent en tête.
 
 ## 2026-08-15
 
+### Le rappel du devis qui tarde : CODÉ, sur ses trois mots
+
+**Ses décisions, du 16 août :** *« la B et 4 »*, puis *« le G »*. La carte
+teintée avec le compte des jours dans l'étiquette, quatre jours par défaut, et
+le libellé **« Chantier sans devis »**.
+
+**Un TROISIÈME rappel**, et il ne se déduisait d'aucun des deux codés le 14 :
+ceux-là partent d'un envoi (`envois_devis.envoye_at`), et un devis jamais parti
+ne laisse aucune ligne d'envoi à interroger. Le sien se lit sur le chantier —
+`created_at` et `devis_envoye_at`. `drizzle/0045_rappel_chantier_sans_devis.sql`.
+
+**Ce que ça évite :** un chantier ouvert qui s'enfonce dans la liste sans que
+rien ne parte au client — le cas de sa Mme Félicie, vue il y a quatorze jours.
+
+**Deux règles y sont gratuites**, et c'est ce qui a décidé de la forme : le
+rappel s'efface seul dès que le devis part (la condition se calcule, il n'y a
+rien à ranger), et un chantier terminé sans devis ne réclame plus rien — c'est
+justement le dépannage où il a eu raison de ne pas en faire.
+
+**Une réserve lui a été posée, et il l'a tranchée.** En place, le ton teinté
+qu'il avait choisi est exactement celui de « CORRECTION DEMANDÉE » — un ton
+réservé jusque-là à ce qui appelle une décision. La capture de l'accueil le lui a
+montré ; sa réponse : *« le B »*. Il garde le sien, et la règle du §108 se
+précise plutôt qu'elle ne tombe : elle vaut pour un **confort**, et celui-ci n'en
+est pas un — c'est le seul des trois où **rien n'est encore parti au client**.
+
+### Une carte ne peut plus se reposer à moitié coupée
+
+**Sa capture du 16 août :** *« le premier message est trop haut et le début
+n'est pas visible. »*
+
+**Mesuré, et ce n'était pas ce qu'on croyait.** Au repos la carte est entière —
+elle commence 38 px sous le bord. Le défaut apparaît **au défilement** : le
+cadre porte un fondu de 18 px en haut, et la carte s'arrêtait où le doigt la
+laissait. Son étiquette et le nom du chantier passaient dessous ; il ne restait
+que la dernière ligne et le geste.
+
+**La cause tenait en une ligne absente.** Le cadre déclarait
+`scroll-snap-type: y proximity` depuis toujours — et **aucun de ses enfants
+n'avait jamais déclaré de point d'accroche**. La propriété était inerte, et rien
+ne pouvait le dire : elle est valide, elle ne fait simplement rien sans cible.
+
+**Ce que ça évite :** le compte des jours qu'il a demandé, effacé par le fondu
+au premier glissement. Mesuré après correction : quel que soit le défilement
+demandé, une carte s'arrête désormais à 24 px du bord.
+
 ### Deux lignes qui commencent par le même mot, l'une sur l'autre
 
 **Il a tranché le 16 août — « la B et 4 » — puis a vu ce qu'aucun contrôle

@@ -720,17 +720,28 @@ le bouton allait très bien. **Devant un rouge sur une suite qui touche au
 planning, regarder d'abord quel jour de la semaine elle vise.** Corrigé avec
 `estWeekEndIso`, et éprouvé dans les deux sens.
 
-**LE DEVIS QUI TARDE : B ET 4 JOURS RETENUS, RESTE LE MOT (16 août).**
-`docs/maquettes/56-le-devis-qui-tarde.html`. Sa réponse : *« la B et 4 »* — carte
-teintée, quatre jours. **Il reste un seul mot à choisir**, celui de la ligne dans
-les réglages : elle se pose juste au-dessus de « Devis sans réponse », et deux
-lignes qui commencent par « Devis » ne se distinguent pas. Quatre mots proposés
-en § 3, ma préférence « Chantier sans devis ». Détail : `TODO.md` §0 novivicies.
+**LE DEVIS QUI TARDE : CODÉ (16 août).** Ses trois mots — *« la B et 4 »* puis
+*« le G »* — sont appliqués : carte teintée avec le compte des jours, 4 jours par
+défaut, libellé **« Chantier sans devis »**, premier des trois réglages. Détail et
+deux points laissés en suspens : `TODO.md` §0 novivicies.
+
+**⚠ IL Y A MAINTENANT TROIS RAPPELS, PAS DEUX** — `src/lib/rappels.ts`. Le
+troisième se lit sur le CHANTIER (`created_at`, `devis_envoye_at`) et non sur un
+envoi : un devis jamais parti ne laisse aucune ligne dans `envois_devis`.
 
 **LA LEÇON DE CE PASSAGE, ET ELLE VAUT AU-DELÀ :** une confusion entre deux
 libellés **n'existe qu'en contexte**. Montrer une ligne seule ne prouve rien —
-c'est côte à côte avec sa voisine qu'elle se juge. C'est le patron qui l'a vu, pas
-un contrôle.
+c'est côte à côte avec sa voisine qu'elle se juge, et la règle tenue porte donc
+sur les VOISINES, pas sur toutes les paires. C'est le patron qui l'a vu, pas un
+contrôle.
+
+**ET UN PIÈGE DE PLUS, LE 22e : UNE PROPRIÉTÉ VALIDE QUI NE FAIT RIEN.**
+`.atlas-fil-defile` déclarait `scroll-snap-type: y proximity` depuis le premier
+jour, et aucun enfant n'avait jamais déclaré `scroll-snap-align`. La propriété
+était inerte, et rien ne pouvait le dire — elle est parfaitement valide. Sa
+conséquence : une carte s'arrêtait où le doigt la laissait, son étiquette effacée
+par le fondu de 18 px du cadre. *« Le premier message est trop haut et le début
+n'est pas visible. »* Corrigé, et mesuré : une carte s'arrête à 24 px du bord.
 
 **⚠ LA RUBRIQUE NOTIFICATIONS EST CODÉE DEPUIS LE 14 AOÛT** — `src/lib/rappels.ts`,
 `src/app/reglages/notifications/`, `drizzle/0043_rappels_notifications.sql`. Deux
@@ -2543,7 +2554,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les vingt-et-un pièges de ce dépôt
+### Les vingt-deux pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -2779,6 +2790,22 @@ site publié à son adresse réelle.
     (`src/lib/mois.ts`) plutôt que de réécrire la règle, sans quoi les deux
     finissent par diverger. Plus large : **un rouge qui n'apparaît que certains
     jours de la semaine n'est presque jamais le défaut qu'il annonce.**
+
+22. **Une propriété CSS valide qui ne fait rien.**
+    `.atlas-fil-defile` déclarait `scroll-snap-type: y proximity` depuis le
+    premier jour — et **aucun de ses enfants n'avait jamais déclaré
+    `scroll-snap-align`**. Sans cible, la propriété est inerte : elle est
+    parfaitement valide, aucun outil ne la signale, et le fil ne s'accrochait
+    nulle part. Conséquence vue par le patron le 16 août 2026 : *« le premier
+    message est trop haut et le début n'est pas visible »* — une carte
+    s'arrêtait où le doigt la laissait, et le fondu de 18 px du cadre effaçait
+    son étiquette.
+
+    **La règle :** une propriété qui a besoin d'une CONTREPARTIE (snap/align,
+    `grid-template` sans `grid-area`, `aria-controls` sans cible) se vérifie des
+    deux côtés. Et le point d'accroche porte un `scroll-margin-top` plus grand
+    que le fondu — sinon la carte s'accroche pile dans le fondu, c'est-à-dire à
+    moitié effacée : le même défaut, réparé à l'identique.
 
 ### Le vocabulaire
 

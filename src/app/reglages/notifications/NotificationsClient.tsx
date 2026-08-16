@@ -15,7 +15,7 @@ import { ecrireRappelsAction } from "./actions";
  * interrupteurs] seulement à celles où la désactivation n'entraîne pas de
  * problème juridique ou moral ou de dysfonctionnement à l'appli »*.
  *
- * **Puis ce qui se règle**, et c'est vraiment réglable : deux rappels de
+ * **Puis ce qui se règle**, et c'est vraiment réglable : trois rappels de
  * confort, qui apparaissent sur l'accueil et se coupent sans rien perdre.
  *
  * **Et ce qui n'existe pas est dit, pas dessiné.** Six familles de la planche
@@ -80,6 +80,30 @@ export default function NotificationsClient({ initial }: { initial: ReglagesRapp
       </Bloc>
 
       <Bloc titre="Ce que vous réglez">
+        {/* **PREMIÈRE, et son libellé n'est pas indifférent.** Le patron, le
+            16 août 2026, devant « Devis pas encore parti » : *« j'ai peur que la
+            façon dont tu l'as écrit ne soit pas compréhensible — qu'on ne
+            comprenne pas que cette ligne sert à ça, le devis non envoyé. »*
+
+            Il avait raison, et la cause est la VOISINE : posée sur « Devis sans
+            réponse », deux lignes commençaient par le même mot et il fallait
+            lire la ligne grise pour les séparer. Quatre mots lui ont été
+            montrés, chacun avec sa voisine (`docs/maquettes/56-…`, § 3) ; il a
+            retenu **« Chantier sans devis »** — le seul qui se distingue au
+            PREMIER mot, et qui fait raconter aux trois lignes le chantier dans
+            l'ordre : pas de devis, sans réponse, fini pas facturé.
+
+            Ne pas le renommer sans lui : c'est un mot qu'il a choisi contre un
+            autre, en le voyant en place. */}
+        <Rappel
+          nom="Chantier sans devis"
+          dit="Le chantier est ouvert et vous n'avez pas encore envoyé de devis"
+          unite="jours"
+          valeur={reglages.chantierSansDevisJours}
+          bornes={BORNES_RAPPELS.chantierSansDevisJours}
+          enCours={enCours}
+          onChange={(v) => ecrire({ chantierSansDevisJours: v })}
+        />
         <Rappel
           nom="Devis sans réponse"
           dit="Un devis parti, toujours valable, dont le client n'a rien dit"
@@ -99,8 +123,8 @@ export default function NotificationsClient({ initial }: { initial: ReglagesRapp
           onChange={(v) => ecrire({ chantierNonFactureJours: v })}
         />
         <p className={`pt-3 ${texteSituation}`} style={{ color: colors.muted }}>
-          Ceux-là se coupent sans rien perdre : le devis reste sur la fiche du chantier, et le chantier reste
-          dans « Terminés ».
+          Ceux-là se coupent sans rien perdre : le chantier reste dans votre liste, le devis reste sur sa fiche,
+          et le chantier fini reste dans « Terminés ».
         </p>
       </Bloc>
 
@@ -185,7 +209,14 @@ function Rappel({
     <div className="border-b py-[13px] last:border-b-0" style={{ borderColor: colors.line }}>
       <div className="flex items-start gap-3">
         <span className="min-w-0 flex-1">
-          <span className="block" style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.25 }}>
+          {/* Repéré pour `test-devis-qui-tarde-e2e`, qui refuse que deux
+              réglages commencent par le même mot — la crainte du patron du
+              16 août 2026, et la seule façon de la tenir. */}
+          <span
+            data-atlas="rappel-nom"
+            className="block"
+            style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.25 }}
+          >
             {nom}
           </span>
           <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.muted }}>
