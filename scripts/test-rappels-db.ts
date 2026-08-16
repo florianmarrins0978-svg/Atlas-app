@@ -108,10 +108,34 @@ async function devisPartiIlYA(ctx: Ctx, nom: string, jours: number, joursAvantEx
  * directement — **mais À TRAVERS `withEntreprise`**, sans quoi la RLS refuserait
  * silencieusement l'écriture et l'essai serait vert pour une mauvaise raison.
  */
-async function poserJalon(ctx: Ctx, chantierId: string, jalon: { termineAt?: Date; factureEnvoyeeAt?: Date }) {
+async function poserJalon(ctx: Ctx, chantierId: string, jalon: { termineAt?: Date; factureEnvoyeeAt?: Date; devisEnvoyeAt?: Date }) {
   await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
     tx.update(chantiers).set(jalon).where(eq(chantiers.id, chantierId))
   );
+}
+
+/**
+ * Un chantier ouvert il y a N jours, dont aucun devis n'est parti.
+ *
+ * **`createdAt` s'écrit à la main, faute de mieux.** `creerChantier` pose
+ * l'instant lui-même — c'est ce qu'on veut en production — et aucun paramètre
+ * ne l'ouvre. L'écriture passe donc par `withEntreprise`, sans quoi la RLS la
+ * refuserait EN SILENCE et l'essai serait vert pour une mauvaise raison : le
+ * chantier daterait d'aujourd'hui, donc aucun rappel, donc « rien à rappeler »
+ * — la même sortie que le cas qu'on croit éprouver.
+ */
+async function chantierOuvertIlYA(ctx: Ctx, nom: string, jours: number) {
+  const chantier = await creerChantier(ctx, { nom });
+  const r = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx.update(chantiers).set({ createdAt: ilYA(jours) }).where(eq(chantiers.id, chantier.id))
+  );
+  if (r.rowCount !== 1) {
+    throw new Error(
+      "le montage n'a pas pu vieillir le chantier : sans cela l'essai serait vert " +
+        "en n'éprouvant rien (voir CLAUDE.md §4, la RLS refuse en silence)"
+    );
+  }
+  return chantier;
 }
 
 async function main() {
@@ -195,6 +219,63 @@ async function main() {
     await poserJalon(ctxA, c.id, { termineAt: ilYA(5) });
     assert.equal((await rappelsEnCours(ctxA, MAINTENANT)).length, 1);
     await poserJalon(ctxA, c.id, { factureEnvoyeeAt: ilYA(1) });
+    assert.deepEqual(await rappelsEnCours(ctxA, MAINTENANT), []);
+  });
+
+  console.log("");
+
+  // ── Le troisième : un chantier ouvert dont AUCUN devis n'est parti ──────
+  //
+  // Sa demande du 14 août 2026, et elle n'est couverte par aucun des deux
+  // autres : « devis sans réponse » part d'un ENVOI, et un devis jamais parti
+  // n'en laisse aucun.
+  await essai("un chantier ouvert il y a 6 jours sans devis est rappelé", async () => {
+    const { ctxA } = await monter();
+    await chantierOuvertIlYA(ctxA, "Mme Félicie", 6);
+    const rappels = await rappelsEnCours(ctxA, MAINTENANT);
+    assert.equal(rappels.length, 1, `${rappels.length} rappel(s)`);
+    assert.equal(rappels[0].genre, "chantier-sans-devis");
+    assert.equal(rappels[0].chantierNom, "Mme Félicie");
+  });
+
+  // **LE CONTRÔLE INVERSE.** Sans lui, une requête qui rappellerait TOUS les
+  // chantiers passerait au vert — et l'accueil se couvrirait de cartes dès le
+  // premier chantier créé.
+  await essai("ouvert ce matin, il ne l'est pas — le seuil est à 4 jours", async () => {
+    const { ctxA } = await monter();
+    await chantierOuvertIlYA(ctxA, "Tout frais", 1);
+    assert.deepEqual(await rappelsEnCours(ctxA, MAINTENANT), []);
+  });
+
+  // **La règle qu'il a posée en premier, et qui est gratuite ici** : le rappel
+  // s'efface tout seul quand le devis part. Rien à ranger à la main.
+  await essai("dès que le devis part, le rappel disparaît de lui-même", async () => {
+    const { ctxA } = await monter();
+    const c = await chantierOuvertIlYA(ctxA, "Mme Félicie", 20);
+    assert.equal((await rappelsEnCours(ctxA, MAINTENANT)).length, 1);
+    await poserJalon(ctxA, c.id, { devisEnvoyeAt: ilYA(1) });
+    assert.deepEqual(await rappelsEnCours(ctxA, MAINTENANT), []);
+  });
+
+  // **Un chantier fini sans devis ne réclame plus rien.** Un dépannage fait et
+  // clos de la main à la main est justement le cas où il a eu raison de ne pas
+  // faire de devis : le lui rappeler pour toujours serait le punir.
+  await essai("un chantier TERMINÉ sans devis ne rappelle pas de devis", async () => {
+    const { ctxA } = await monter();
+    const c = await chantierOuvertIlYA(ctxA, "Dépannage", 20);
+    await poserJalon(ctxA, c.id, { termineAt: ilYA(2) });
+    const genres = (await rappelsEnCours(ctxA, MAINTENANT)).map((r) => r.genre);
+    assert.deepEqual(genres, [], `restait : ${genres.join(", ")}`);
+  });
+
+  await essai("éteint, le rappel du devis non parti ne rappelle plus rien", async () => {
+    const { ctxA } = await monter();
+    await chantierOuvertIlYA(ctxA, "Mme Félicie", 20);
+    await ecrireReglagesRappels(ctxA, {
+      chantierSansDevisJours: null,
+      devisSansReponseJours: null,
+      chantierNonFactureJours: null,
+    });
     assert.deepEqual(await rappelsEnCours(ctxA, MAINTENANT), []);
   });
 

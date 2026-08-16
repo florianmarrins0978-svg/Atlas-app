@@ -723,7 +723,7 @@ d'envoi, et un défaut de PHRASE, pas de règle.
    19, qui est plein. **Reproduit avant de corriger**, et la règle est juste.
 3. **Ce qui a changé.** La phrase nomme la durée — et ce faisant, elle montre le
    levier : la durée se change juste au-dessus du calendrier.
-   `src/lib/jours-barres.ts`, `ARCHITECTURE.md` §112.
+   `src/lib/jours-barres.ts`, `ARCHITECTURE.md` §114.
 4. **`dureeDemiJournees` n'a pas de valeur par défaut sur `Calendrier`**
    (`number | null`), et il faut que ça le reste : le patron a droit à la durée,
    **son client non** — consigne tenue par `test-creneaux-planning.ts`, qui a
@@ -738,6 +738,25 @@ ne s'affiche pas sur le planning » : c'était vrai la veille, corrigé la nuit 
 (§111), et **son banc avait une version de retard** — sa fiche d'état le disait
 en toutes lettres. Lire la fiche AVANT de chercher dans le produit a fait gagner
 la moitié de l'échange.
+
+**LE MICRO DU DEVIS (15 août) — et le seul piège qu'il porte.** Il peut
+désormais dicter des corrections dans le devis : « supprime la deuxième ligne »,
+« monte la taille de haie à 350 », « rajoute le broyage à 500 », « fondage du
+bois » pour « Fendage du bois ». Elle **propose**, il **coche** — sa proposition
+A (`docs/maquettes/54`). Rien ne bouge avant son appui.
+
+**⚠ LE PIÈGE, ET IL EST À DIRE PLUTÔT QU'À TAIRE :** la feuille de confirmation
+**remplie n'a jamais été parcourue de bout en bout ici**. Cet environnement n'a
+ni service de transcription ni modèle. Ce qui est éprouvé : la règle sans
+navigateur (`scripts/test-retouches-devis.ts`, 27 cas) et le micro au navigateur
+(`scripts/test-dicter-dans-le-devis-e2e.ts`, 5 cas). Le raccord voix → feuille ne
+l'est pas. **Si le patron signale que « ça ne comprend rien », commencer par
+vérifier qu'une clé est bien posée sur son banc** (`npm run verifier:ia`) avant
+de chercher dans la règle.
+
+Trois refus sont dans le code et ne se négocient pas : aucun prix ne s'invente,
+deux lignes qui se ressemblent rendent « à préciser », un nom reconnu nulle part
+ne se rabat pas sur le numéro de ligne. `ARCHITECTURE.md` §113.
 
 **LA LIGNE DU PLANNING PORTE SES TROIS INFOS (15 août).** « 14 août · journée »,
 « 17 août · matin · ½ journée », « 21 août · matin · 3 jours » — la date, le
@@ -755,6 +774,7 @@ ne dit plus quand un chantier long **finit**, et les week-ends sautés interdise
 de le recalculer de tête. **Ne pas le remettre sur la ligne sans qu'il le
 demande** — il y a été retiré pour faire tenir le nombre de jours ; sa place
 serait la feuille du chevron.
+
 
 **LA TVA AU PAIEMENT (16 août).** Sa question : *« si un client ne me paie pas,
 la facture rentre quand même dans mon relevé »*. Elle était fondée : pour une
@@ -784,6 +804,7 @@ nécessaire — l'accès bancaire se coupe tous les 90 jours.
 
 Le reste : `ARCHITECTURE.md` §110.
 
+
 **⚠ UNE DATE CALCULÉE DEPUIS « AUJOURD'HUI » EST UNE BOMBE À RETARDEMENT (16 août).**
 `test-pastille-equipe-e2e` visait `+ 20 jours` : jeudi le jour où il a été écrit,
 **samedi** deux jours plus tard — et le planning refuse le week-end par
@@ -792,17 +813,40 @@ le bouton allait très bien. **Devant un rouge sur une suite qui touche au
 planning, regarder d'abord quel jour de la semaine elle vise.** Corrigé avec
 `estWeekEndIso`, et éprouvé dans les deux sens.
 
-**LE DEVIS QUI TARDE : B ET 4 JOURS RETENUS, RESTE LE MOT (16 août).**
-`docs/maquettes/56-le-devis-qui-tarde.html`. Sa réponse : *« la B et 4 »* — carte
-teintée, quatre jours. **Il reste un seul mot à choisir**, celui de la ligne dans
-les réglages : elle se pose juste au-dessus de « Devis sans réponse », et deux
-lignes qui commencent par « Devis » ne se distinguent pas. Quatre mots proposés
-en § 3, ma préférence « Chantier sans devis ». Détail : `TODO.md` §0 novivicies.
+**LE DEVIS QUI TARDE : CODÉ (16 août).** Ses trois mots — *« la B et 4 »* puis
+*« le G »* — sont appliqués : carte teintée avec le compte des jours, 4 jours par
+défaut, libellé **« Chantier sans devis »**, premier des trois réglages. Détail et
+deux points laissés en suspens : `TODO.md` §0 novivicies.
+
+**⚠ SUR L'ACCUEIL, LES RAPPELS PASSENT DEVANT LES RÉPONSES DE CLIENTS** — sa
+décision du 16 août (« fait la B »), après trois photos. La règle d'avant disait
+l'inverse (*« quelqu'un a agi, cela prime sur un silence »*) : ne pas la
+restaurer en la lisant quelque part, elle est datée. `ARCHITECTURE.md` §112.
+
+**⚠ IL Y A MAINTENANT TROIS RAPPELS, PAS DEUX** — `src/lib/rappels.ts`. Le
+troisième se lit sur le CHANTIER (`created_at`, `devis_envoye_at`) et non sur un
+envoi : un devis jamais parti ne laisse aucune ligne dans `envois_devis`.
+
+**PHOTOGRAPHIER PLUTÔT QUE DÉCRIRE, ET LE FAIRE SUR LA BONNE SCÈNE.** Deux fois
+dans ce lot, la description était fausse et l'image l'a dit : (1) j'ai annoncé
+que sa carte passait derrière dès UNE réponse en attente — il en faut deux ;
+(2) « montrer trois cartes » semblait résoudre le rang, et l'image montre la
+troisième sous le bord de l'écran. `scripts/capture-rang-trois-cas.sh` monte la
+scène minimale et rend le code même en cas d'échec.
 
 **LA LEÇON DE CE PASSAGE, ET ELLE VAUT AU-DELÀ :** une confusion entre deux
 libellés **n'existe qu'en contexte**. Montrer une ligne seule ne prouve rien —
-c'est côte à côte avec sa voisine qu'elle se juge. C'est le patron qui l'a vu, pas
-un contrôle.
+c'est côte à côte avec sa voisine qu'elle se juge, et la règle tenue porte donc
+sur les VOISINES, pas sur toutes les paires. C'est le patron qui l'a vu, pas un
+contrôle.
+
+**ET UN PIÈGE DE PLUS, LE 22e : UNE PROPRIÉTÉ VALIDE QUI NE FAIT RIEN.**
+`.atlas-fil-defile` déclarait `scroll-snap-type: y proximity` depuis le premier
+jour, et aucun enfant n'avait jamais déclaré `scroll-snap-align`. La propriété
+était inerte, et rien ne pouvait le dire — elle est parfaitement valide. Sa
+conséquence : une carte s'arrêtait où le doigt la laissait, son étiquette effacée
+par le fondu de 18 px du cadre. *« Le premier message est trop haut et le début
+n'est pas visible. »* Corrigé, et mesuré : une carte s'arrête à 24 px du bord.
 
 **⚠ LA RUBRIQUE NOTIFICATIONS EST CODÉE DEPUIS LE 14 AOÛT** — `src/lib/rappels.ts`,
 `src/app/reglages/notifications/`, `drizzle/0043_rappels_notifications.sql`. Deux
@@ -824,6 +868,7 @@ faux. `fusionner-maquettes.mjs` refuse désormais une maquette orpheline, un lie
 mort dans le sommaire, et un numéro porté deux fois. **Avant d'écrire une
 nouvelle planche, jouer `node scripts/fusionner-maquettes.mjs` : il donne le
 prochain numéro libre en refusant le doublon.**
+
 
 **« L'APPLI NE MARCHE PLUS » — ELLE MARCHAIT (14 août, tard).** Son iPhone
 proposait de télécharger un fichier au lieu d'ouvrir Atlas. **Son espace de
@@ -2615,7 +2660,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les vingt-et-un pièges de ce dépôt
+### Les vingt-deux pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -2851,6 +2896,22 @@ site publié à son adresse réelle.
     (`src/lib/mois.ts`) plutôt que de réécrire la règle, sans quoi les deux
     finissent par diverger. Plus large : **un rouge qui n'apparaît que certains
     jours de la semaine n'est presque jamais le défaut qu'il annonce.**
+
+22. **Une propriété CSS valide qui ne fait rien.**
+    `.atlas-fil-defile` déclarait `scroll-snap-type: y proximity` depuis le
+    premier jour — et **aucun de ses enfants n'avait jamais déclaré
+    `scroll-snap-align`**. Sans cible, la propriété est inerte : elle est
+    parfaitement valide, aucun outil ne la signale, et le fil ne s'accrochait
+    nulle part. Conséquence vue par le patron le 16 août 2026 : *« le premier
+    message est trop haut et le début n'est pas visible »* — une carte
+    s'arrêtait où le doigt la laissait, et le fondu de 18 px du cadre effaçait
+    son étiquette.
+
+    **La règle :** une propriété qui a besoin d'une CONTREPARTIE (snap/align,
+    `grid-template` sans `grid-area`, `aria-controls` sans cible) se vérifie des
+    deux côtés. Et le point d'accroche porte un `scroll-margin-top` plus grand
+    que le fondu — sinon la carte s'accroche pile dans le fondu, c'est-à-dire à
+    moitié effacée : le même défaut, réparé à l'identique.
 
 ### Le vocabulaire
 

@@ -39,7 +39,7 @@ planning ne part chez lui, c'est votre consigne, et c'est la batterie qui l'a
 rappelée quand elle avait été enfreinte.
 
 Aucune règle de réservation n'a changé, seulement ce qui est dit. Détail :
-`ARCHITECTURE.md` §112.
+`ARCHITECTURE.md` §114.
 
 ### CODÉ : la TVA quand le client paie, et l'endroit où les factures attendent
 
@@ -71,7 +71,134 @@ entrera au paiement. Raisons : `ARCHITECTURE.md` §111.
 
 ---
 
+## 2026-08-16
+
+### La ligne d'état passe en or sur TOUTES les cartes de l'accueil
+
+*Sa consigne, capture de l'accueil à l'appui : « mets le "devis prêt à envoyer
+sans photo" en doré ; pour tous les messages je veux que cette partie-là
+apparaisse en doré. »*
+
+**Ce que l'or ne dit plus, et c'est le seul coût.** Il distinguait ce qui appelle
+un geste **de lui** — un devis à corriger, un devis caduc — de ce qui attend
+ailleurs. La nuance se lit désormais dans **les mots** de la ligne, plus dans la
+teinte. C'était déjà à moitié fait : le 13 août, il avait étendu l'or aux devis
+partis sans réponse, qui n'appellent aucun geste.
+
+**La liste `APPELLE_UN_GESTE` est retirée**, pas conservée « au cas où » : un
+drapeau qui vaut toujours vrai n'est plus un drapeau, et une liste qu'on garde
+sans l'employer se met à mentir en silence. Le champ `enOr`, lui, survit — l'écran
+n'a jamais décidé de sa couleur, et ce n'est pas le jour où la règle se simplifie
+qu'il faut lui rendre ce pouvoir.
+
+**Deux contrôles, parce qu'un seul ne suffit pas ici :** la suite base balaie
+**tous** les statuts — tirés du type, jamais recopiés, sans quoi le statut ajouté
+demain resterait gris sans que rien ne rougisse ; et la suite navigateur lit la
+couleur **calculée** sur l'accueil réel, parce que la règle serait verte même si
+l'écran ignorait le drapeau. Elle refuse de conclure sur zéro carte.
+
 ## 2026-08-15
+
+### Sur l'accueil, les rappels passent devant les réponses
+
+**Sa décision du 16 août, devant trois photos : « fait la B ».**
+
+**Ce que ça évite :** un rappel qu'il faut déplier. L'accueil ne pose que deux
+cartes, et tant que les réponses de clients venaient en tête, le rappel passait
+derrière « N autres devis à regarder » dès **deux réponses en attente**.
+
+**Une exagération corrigée en chemin, et elle valait d'être dite.** Je lui avais
+annoncé que sa carte passait derrière dès qu'une correction était en cours.
+Mesuré : avec UNE seule réponse, elle prend la seconde place et se voit très
+bien. Il en faut deux. La scène des photos a donc dû être fabriquée exprès —
+`scripts/capture-rang-trois-cas.sh`, qui **photographie l'application** au lieu
+de la dessiner, et qui rend le code à son état d'origine même en cas d'échec.
+
+**Et la troisième proposition a été écartée par l'image elle-même** : montrer
+trois cartes au lieu de deux met bien le rappel à l'écran… sous le bord, hors de
+vue. Une capture vaut mieux qu'un raisonnement.
+### Dicter dans le devis : « je vais pouvoir lui parler comme ça et qu'elle comprenne »
+
+**Sa demande :** un micro en haut à droite du devis, le même que sur la fiche du
+client — trois petits points qui soufflent compris — pour dire ce qu'il faut
+reprendre : *« supprime-moi la deuxième ligne, modifie-moi le prix de la taille
+de haie, remplace-moi le deux cent cinquante par trois cent cinquante, rajoute-moi
+une ligne, broyage des branches et tu mets cinq cents euros […] supprime-moi
+fondage du bois, mais en échange je veux que tu mettes débitage du bois. »*
+
+Il a choisi la proposition A de `docs/maquettes/54-dicter-dans-le-devis.html` :
+**elle propose, il coche**. Le devis ne bouge pas d'un centime avant son appui, et
+il décoche ce qui ne va pas.
+
+**Ce que ça évite**, et c'est pour cela que la feuille existe plutôt qu'une
+application directe : une lecture qui se trompe d'un chiffre sur un devis parti
+chez un client se rattrape par un avoir. Trois refus sont posés dans le code, pas
+dans une consigne :
+
+- **aucun prix ne s'invente** — « rajoute le broyage » sans montant donne une
+  ligne vide qui le dit en rouge, jamais « le prix habituel » ;
+- **deux lignes qui se ressemblent ne se départagent pas au hasard** — « Élagage
+  chêne » et « Élagage frêne » rendent « à préciser », décoché ;
+- **un nom reconnu nulle part ne se rabat pas sur le numéro de ligne.**
+
+Et « fondage du bois » trouve « Fendage du bois » : c'est son exemple, et c'est
+le cas courant d'une syllabe avalée par le micro.
+
+**Ce qui n'a PAS été éprouvé ici, et qu'il faut savoir.** Cet environnement n'a
+ni service de transcription ni modèle : la feuille de confirmation **remplie**
+n'a jamais été parcourue de bout en bout. Ses phrases sont éprouvées sans
+navigateur (`scripts/test-retouches-devis.ts`, 27 cas) et la feuille a été vue
+avec des données posées à la main. Le raccord entre la voix et la feuille ne sera
+parcouru qu'avec une clé. Faute de transcription, l'écran le dit plutôt que de
+présenter le texte de remplacement comme une dictée.
+
+Détail : `ARCHITECTURE.md` §113.
+
+### Le rappel du devis qui tarde : CODÉ, sur ses trois mots
+
+**Ses décisions, du 16 août :** *« la B et 4 »*, puis *« le G »*. La carte
+teintée avec le compte des jours dans l'étiquette, quatre jours par défaut, et
+le libellé **« Chantier sans devis »**.
+
+**Un TROISIÈME rappel**, et il ne se déduisait d'aucun des deux codés le 14 :
+ceux-là partent d'un envoi (`envois_devis.envoye_at`), et un devis jamais parti
+ne laisse aucune ligne d'envoi à interroger. Le sien se lit sur le chantier —
+`created_at` et `devis_envoye_at`. `drizzle/0046_rappel_chantier_sans_devis.sql`.
+
+**Ce que ça évite :** un chantier ouvert qui s'enfonce dans la liste sans que
+rien ne parte au client — le cas de sa Mme Félicie, vue il y a quatorze jours.
+
+**Deux règles y sont gratuites**, et c'est ce qui a décidé de la forme : le
+rappel s'efface seul dès que le devis part (la condition se calcule, il n'y a
+rien à ranger), et un chantier terminé sans devis ne réclame plus rien — c'est
+justement le dépannage où il a eu raison de ne pas en faire.
+
+**Une réserve lui a été posée, et il l'a tranchée.** En place, le ton teinté
+qu'il avait choisi est exactement celui de « CORRECTION DEMANDÉE » — un ton
+réservé jusque-là à ce qui appelle une décision. La capture de l'accueil le lui a
+montré ; sa réponse : *« le B »*. Il garde le sien, et la règle du §108 se
+précise plutôt qu'elle ne tombe : elle vaut pour un **confort**, et celui-ci n'en
+est pas un — c'est le seul des trois où **rien n'est encore parti au client**.
+
+### Une carte ne peut plus se reposer à moitié coupée
+
+**Sa capture du 16 août :** *« le premier message est trop haut et le début
+n'est pas visible. »*
+
+**Mesuré, et ce n'était pas ce qu'on croyait.** Au repos la carte est entière —
+elle commence 38 px sous le bord. Le défaut apparaît **au défilement** : le
+cadre porte un fondu de 18 px en haut, et la carte s'arrêtait où le doigt la
+laissait. Son étiquette et le nom du chantier passaient dessous ; il ne restait
+que la dernière ligne et le geste.
+
+**La cause tenait en une ligne absente.** Le cadre déclarait
+`scroll-snap-type: y proximity` depuis toujours — et **aucun de ses enfants
+n'avait jamais déclaré de point d'accroche**. La propriété était inerte, et rien
+ne pouvait le dire : elle est valide, elle ne fait simplement rien sans cible.
+
+**Ce que ça évite :** le compte des jours qu'il a demandé, effacé par le fondu
+au premier glissement. Mesuré après correction : quel que soit le défilement
+demandé, une carte s'arrête désormais à 24 px du bord.
 
 ### La ligne du planning porte enfin ses trois infos — CODÉ
 
@@ -203,6 +330,7 @@ par `textContent`, qui rend aussi le texte ÉTEINT — « 14 août · journéema
 1 journée » — et accusait la planche d'un défaut qu'elle n'avait pas. Il compose
 maintenant le texte des seuls nœuds visibles. Un contrôle qui mesure autre chose
 que l'écran ne prouve rien, et coûte le temps de comprendre qu'il a tort.
+
 
 ### Deux lignes qui commencent par le même mot, l'une sur l'autre
 

@@ -11,7 +11,10 @@ import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { CIVILITES, type Civilite } from "@/lib/civilite";
+import type { Changement } from "@/lib/retouches-devis";
+import DicterDansLeDevis from "./DicterDansLeDevis";
 import {
+  appliquerRetouchesAction,
   majEmetteurAction,
   majClientDuDevisAction,
   majAdresseChantierAction,
@@ -152,8 +155,48 @@ export default function DevisCompletClient(props: Props) {
   }
 
 
+  /**
+   * Les changements dictés, appliqués d'un seul geste.
+   *
+   * L'écran se recale sur **ce que la base rend**, pas sur ce qu'il espérait :
+   * un retrait refusé ou une ligne qu'une autre session aurait bougée entre
+   * temps se verrait sinon appliquée à l'écran et nulle part ailleurs.
+   */
+  async function appliquerRetouches(changements: Changement[]) {
+    const apres = await appliquerRetouchesAction(props.chantierId, changements);
+    setLignes(
+      apres.map((l) => ({
+        ...l,
+        quantite: sansZerosInutiles(l.quantite),
+        prixUnitaire: sansZerosInutiles(l.prixUnitaire),
+      }))
+    );
+  }
+
   return (
-    <article
+    <>
+      {/* **Le retour à gauche, le micro à droite** — la seule rangée de cet
+          écran qui n'appartienne pas au devis, et elle reste minuscule : sans
+          le retour, la page n'a pas de sortie sur un téléphone.
+
+          Le micro disparaît sur un devis parti : cet écran ne se modifie plus,
+          et un micro qui écouterait pour ne rien pouvoir changer serait une
+          promesse fausse. */}
+      <div className="mx-auto mb-3 flex w-full max-w-[820px] items-start justify-between sm:mb-4">
+        <a
+          href={`/chantiers/${props.chantierId}`}
+          aria-label="Revenir au chantier"
+          className="flex h-9 w-9 items-center justify-center rounded-full"
+          style={{ backgroundColor: colors.rustTint }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
+            <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </a>
+        {!fige && <DicterDansLeDevis chantierId={props.chantierId} onApplique={appliquerRetouches} />}
+      </div>
+
+      <article
       className="mx-auto w-full max-w-[820px] rounded-[10px] px-5 py-7 sm:px-12 sm:py-12"
       style={{ backgroundColor: colors.card, boxShadow: "0 12px 40px rgba(28,28,26,0.10)" }}
     >
@@ -530,7 +573,8 @@ export default function DevisCompletClient(props: Props) {
           Tout s&apos;enregistre au fur et à mesure. Rien ne part avant que vous ne le décidiez.
         </p>
       </div>
-    </article>
+      </article>
+    </>
   );
 }
 

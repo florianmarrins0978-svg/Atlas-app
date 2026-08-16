@@ -10,6 +10,10 @@ import { noterRetenu } from "@/server/repositories/termes-metier";
 import { apprendrePrixGrille } from "@/server/services/apprendre-grille";
 import { mettreAJourAdresseChantier } from "@/server/repositories/chantiers";
 import { mettreAJourEnTeteDevis } from "@/server/repositories/devis";
+import { verifierLimite, LIMITES } from "@/server/rate-limit";
+import { verifierTailleFichier, verifierTypeAudio } from "@/server/upload-limits";
+import { lireRetouchesDictees } from "@/server/ai/services/retouches-devis-service";
+import type { Changement } from "@/lib/retouches-devis";
 import type { Civilite } from "@/lib/civilite";
 
 // Le devis écrit à la main : chaque champ du document part vers SA source.
@@ -110,6 +114,104 @@ export async function ajouterLigneAction(chantierId: string) {
 export async function retirerLigneAction(id: string) {
   const ctx = await getCurrentCtx();
   return supprimerLignePrix(ctx, id);
+}
+
+/**
+ * Dicter des corrections dans le devis — l'écoute, et rien de plus.
+ *
+ * Le patron, le 15 août 2026 : *« supprime-moi la deuxième ligne, modifie-moi
+ * le prix de la taille de haie […] Je vais pouvoir lui parler comme ça et
+ * qu'elle comprenne. »*
+ *
+ * **Cette action ne modifie AUCUNE ligne.** Elle rend ce qu'elle a compris ;
+ * l'écran le montre, le patron décoche ce qui ne va pas, puis applique
+ * (`appliquerRetouchesAction`). Ces lignes sont le devis que son client
+ * recevra : rien n'y entre sans son geste (`CLAUDE.md` §4).
+ *
+ * **Les lignes sont relues en base, pas reçues du navigateur.** Une dictée
+ * interprétée contre une liste que l'écran a envoyée tomberait sur des rangs
+ * périmés dès qu'une autre session — ou son propre onglet resté ouvert —
+ * aurait bougé le devis entre-temps.
+ */
+export async function dicterRetouchesDevisAction(chantierId: string, formData: FormData) {
+  const fichier = formData.get("fichier");
+  if (!(fichier instanceof File)) throw new Error("Aucun enregistrement reçu.");
+
+  const taille = verifierTailleFichier(fichier);
+  if (!taille.ok) throw new Error(taille.message);
+  const type = verifierTypeAudio(fichier.type);
+  if (!type.ok) throw new Error(type.message);
+
+  const ctx = await getCurrentCtx();
+  const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
+  if (!limite.autorise) throw new Error(limite.message);
+
+  const lignes = await listerLignesPrix(ctx, chantierId);
+  const octets = Buffer.from(await fichier.arrayBuffer());
+  return lireRetouchesDictees(
+    octets,
+    fichier.type || "audio/webm",
+    lignes.map((l) => ({ id: l.id, libelle: l.libelle, quantite: l.quantite, prixUnitaire: l.prixUnitaire }))
+  );
+}
+
+/**
+ * Appliquer les changements qu'il a cochés, et eux seuls.
+ *
+ * Chaque changement repasse par l'action qui lui correspond — `majLigneAction`
+ * pour un prix, `retirerLigneAction` pour un retrait : c'est ce qui fait que
+ * **l'agent apprend d'une correction dictée comme d'une correction tapée**. Une
+ * voie parallèle qui écrirait directement en base priverait la mémoire des prix
+ * de tout ce qui passe par la voix.
+ *
+ * Rend les lignes telles qu'elles sont après coup, pour que l'écran affiche la
+ * vérité de la base plutôt que celle qu'il espérait.
+ */
+export async function appliquerRetouchesAction(chantierId: string, changements: Changement[]) {
+  for (const c of changements) {
+    switch (c.type) {
+      case "prix":
+        await majLigneAction(c.ligneId, { prixUnitaire: c.prixUnitaire });
+        break;
+      case "quantite":
+        await majLigneAction(c.ligneId, { quantite: c.quantite });
+        break;
+      case "libelle":
+        await majLigneAction(c.ligneId, { libelle: c.libelle });
+        break;
+      case "retirer":
+        await retirerLigneAction(c.ligneId);
+        break;
+      case "ajouter": {
+        const ctx = await getCurrentCtx();
+        // **Un ajout sans prix arrive à zéro, et l'écran le dit.** Poser un
+        // montant « probable » ici serait inventer un prix sur un document qui
+        // part chez un client — le refus le plus ancien du produit.
+        const prix = c.prixUnitaire ?? "0";
+        const quantite = c.quantite ?? "1";
+        await ajouterLignePrix(ctx, chantierId, c.libelle, montantDeLaLigne(quantite, prix), {
+          quantite,
+          prixUnitaire: prix,
+        });
+        break;
+      }
+    }
+  }
+
+  const ctx = await getCurrentCtx();
+  const lignes = await listerLignesPrix(ctx, chantierId);
+  return lignes.map((l) => ({
+    id: l.id,
+    libelle: l.libelle,
+    quantite: l.quantite,
+    prixUnitaire: l.prixUnitaire,
+    montant: l.montant,
+  }));
+}
+
+function montantDeLaLigne(quantite: string, prixUnitaire: string): string {
+  const total = Number(quantite) * Number(prixUnitaire);
+  return Number.isFinite(total) ? total.toFixed(2) : "0.00";
 }
 
 // Le taux de TVA et les conditions vivent sur le devis lui-même : ce ne sont

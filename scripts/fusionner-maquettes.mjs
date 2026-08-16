@@ -275,7 +275,7 @@ const MAQUETTES = [
     fichier: "56-le-devis-qui-tarde.html",
     titre: "Le devis qui tarde : le rappel, et le délai",
     famille: "Le devis avant l’envoi",
-    quoi: "Un rappel quand un chantier reste sans devis. La rubrique Notifications ayant été codée entre-temps, ce n’est plus un écran à inventer mais une troisième ligne à y poser : restent le ton de la carte et le nombre de jours.",
+    quoi: "Un rappel quand un chantier reste sans devis. CODÉ le 16 août sur ses trois réponses : carte teintée avec le compte des jours, quatre jours, et « Chantier sans devis » — le seul libellé qui ne se confond pas avec sa voisine.",
   },
   {
     fichier: "58-le-nombre-de-jours-en-or.html",
@@ -288,6 +288,18 @@ const MAQUETTES = [
     titre: "La ligne qui dit tout",
     famille: "Le planning",
     quoi: "La date, le moment de départ et la durée sur la ligne d’un chantier posé, sur les cinq cas du produit. Retenue puis CODÉE le 15 août — « je veux journée et toute la ligne ».",
+  },
+  {
+    fichier: "60-les-conditions-sur-le-devis.html",
+    titre: "Les conditions sur le devis",
+    famille: "Le devis",
+    quoi: "Six conditions se règlent, une seule arrive sur le document — son constat du 16 août. Trois façons de faire monter les cinq autres, face au champ de notes qu’il peut déjà avoir rempli.",
+  },
+  {
+    fichier: "61-la-reduction-au-client.html",
+    titre: "La réduction au client",
+    famille: "Le devis",
+    quoi: "« Fais cinq pour cent sur le montant du devis » — où la petite ligne se pose, et sous quel mot. Le coût des trois est très inégal : une ligne voyage seule jusqu’à la facture.",
   },
 ];
 

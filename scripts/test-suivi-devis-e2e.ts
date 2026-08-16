@@ -173,6 +173,16 @@ async function main() {
     await clientRefuse(browser, jeton);
 
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    // **Déplier la pile avant de chercher.** Depuis le 16 août 2026, les rappels
+    // passent devant les réponses de clients (sa décision « fait la B »), et
+    // l'accueil n'en pose que deux : une réponse peut donc être repliée derrière
+    // « N autres devis à regarder ». Elle existe et se touche en un appui — mais
+    // pas sans ce geste, et la suite accuserait la carte d'être absente.
+    const deplier = page.getByRole("button", { name: /autres? devis à regarder/ });
+    if ((await deplier.count()) > 0) {
+      await deplier.first().click();
+      await page.waitForTimeout(300);
+    }
     // Compté avant/après : les suites précédentes laissent leurs propres refus
     // non lus, et exiger zéro reviendrait à tester l'ordre d'exécution.
     const avant = await page.locator("text=Devis retourné").count();
@@ -181,7 +191,16 @@ async function main() {
     await page.locator("text=J'ai vu").first().click();
     await page.waitForTimeout(1500);
 
+    // **Et redéplier APRÈS le rechargement.** Le repli revient à zéro à chaque
+    // chargement : compter la pile dépliée avant et repliée après comparait
+    // deux choses différentes, et le contrôle accusait « J'ai vu » de ne rien
+    // faire alors qu'il faisait exactement son travail.
     await page.reload({ waitUntil: "networkidle" });
+    const encore = page.getByRole("button", { name: /autres? devis à regarder/ });
+    if ((await encore.count()) > 0) {
+      await encore.first().click();
+      await page.waitForTimeout(300);
+    }
     assert.strictEqual(
       await page.locator("text=Devis retourné").count(),
       avant - 1,

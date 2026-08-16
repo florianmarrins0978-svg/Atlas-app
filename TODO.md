@@ -27,6 +27,83 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quadragies. La réduction accordée au client — dessinée, attend son mot
+
+**Sa demande du 16 août 2026 :** *« si jamais un client me demande une
+réduction, [pouvoir] lui demander "fais cinq pour cent sur le montant du devis"
+et il ajoute une petite ligne réduction ou prix accordé au client — cinq pour
+cent, ou dix, ou quinze. C'est moi qui choisis le nombre de pourcentage. »*
+
+**Rien de tel n'existe dans le produit** : aucune remise, nulle part — vérifié.
+
+Planche : `docs/maquettes/61-la-reduction-au-client.html`, éprouvée par
+`scripts/verifier-maquette-reduction.mjs`. **Rien n'est codé** (`CLAUDE.md`
+§3 bis).
+
+| | Où elle se pose | Ce que ça coûte |
+|---|---|---|
+| **A** | une ligne du tableau, montant négatif | **presque rien** : une ligne voyage seule jusqu'à la facture, au relevé de TVA et à l'export comptable — tout ce chemin est déjà bâti pour les lignes |
+| **B** | un bloc sous le total, avec « HT après remise » | **une colonne de plus** dans le devis, la facture, et tout ce qui les recopie. Chaque endroit oublié est un montant faux |
+| **C** | le prix barré à côté du nouveau | même coût que B, et le vocabulaire de la promotion sur un document qui engage |
+
+Et un second choix, indépendant : le **mot** — « Réduction » ou « Prix accordé
+au client ». Il a proposé les deux.
+
+**CE QUI N'EST PAS À CHOISIR, et qui ne se rouvre pas :**
+
+- **la réduction s'applique sur le HT, la TVA se calcule après.** Sur le TTC,
+  elle rendrait une TVA fausse sur un document qui finit dans une déclaration ;
+- **elle suit jusqu'à la facture** (`factures.ts` recopie lignes et totaux du
+  devis). Accordée sur le devis et absente de la facture, elle ferait payer au
+  client le prix qu'on venait de lui retirer ;
+- **aucun taux « habituel » ne s'invente** : 5, 10, 15, c'est lui qui le dit.
+
+**Deux questions posées dans la planche, sans réponse et qui ne bloquent pas :**
+un **montant** au lieu d'un pourcentage (« fais-moi 50 € ») — pas dans sa
+demande, donc pas ajouté ; et un **bouton** sur l'écran du devis en plus de la
+voix.
+
+
+### 0 novivicies. ~~Le devis qui tarde~~ — **CODÉ le 16 août 2026 (B, 4 jours, « Chantier sans devis »)**
+
+*Planche : `docs/maquettes/56-le-devis-qui-tarde.html`. Code : `src/lib/rappels.ts`,
+`src/server/repositories/rappels.ts`, `src/app/reglages/notifications/`,
+`src/app/Notifications.tsx`, migration `drizzle/0046_rappel_chantier_sans_devis.sql`.
+Détail et raisons : `ARCHITECTURE.md` §112.*
+
+**Sa demande du 14 août :** *« un rappel lorsque le chantier a été ouvert mais le
+devis n'a pas été envoyé […] comme la Mme Félicie, vue il y a quatorze jours,
+aucun devis envoyé »*. **Ses quatre décisions, toutes appliquées :** *« la B et
+4 »*, *« le G »*, *« le B »* (le ton, reposé capture à l'appui), *« fait la B »*
+(le rang).
+
+**CE QUI RESTE POSÉ, SANS RÉPONSE — et c'est le seul point ouvert de ce lot.**
+Les rappels passant devant, une réponse de client peut être repoussée derrière
+« N autres devis à regarder ». Mesuré sur le jeu de démonstration : **cinq
+rappels occupaient les deux places, et plus aucune réponse n'était visible**.
+
+La sortie proposée, et elle n'attend que son mot : **garantir une place à
+chacun** sur les deux cartes visibles — un rappel, une réponse. Il verrait
+toujours au moins un de chaque, quel que soit le nombre. Un quart d'heure.
+
+**Trois leçons de ce lot, à ne pas repayer :**
+
+1. **Chercher ce qui existe AVANT de dessiner.** La planche a décrit deux fois un
+   monde disparu — un écran déjà dessiné le 13, un délai déjà codé le 14. Les
+   planches de l'application vivent dans `maquettes/`, celles des décisions dans
+   `docs/maquettes/`, et le code est un troisième endroit.
+2. **Une confusion entre deux libellés n'existe qu'en contexte.** Montrer une
+   ligne seule ne prouve rien : c'est côte à côte avec sa VOISINE qu'elle se
+   juge. D'où la règle tenue par `test-devis-qui-tarde-e2e` — deux réglages
+   voisins ne commencent pas par le même mot —, plus étroite qu'un « toutes les
+   paires » qui refuserait un choix qu'il a fait en connaissance de cause.
+3. **Photographier plutôt que décrire, et sur la BONNE scène.** Deux
+   descriptions que je lui avais données étaient fausses, et l'image l'a dit :
+   sa carte ne passe derrière qu'à partir de DEUX réponses en attente, et
+   « montrer trois cartes » met la troisième sous le bord de l'écran.
+   `scripts/capture-rang-trois-cas.sh` monte la scène minimale et rend le code
+   même en cas d'échec.
+
 ### 0 novovicies. ~~La TVA au PAIEMENT~~ — **CODÉE le 16 août 2026**
 
 *Fait : `ARCHITECTURE.md` §111. Ce qui suit reste pour mémoire du raisonnement.*
@@ -78,91 +155,6 @@ dans `docs/A-FAIRE.md` §12 — son comptable le sait en une phrase.
 poser au hasard ferait déclarer trop tôt ou trop tard, et c'est l'administration
 qui arbitrerait.
 
-### 0 novivicies. Le devis qui tarde : **B et 4 jours retenus**, reste le mot de la ligne
-
-*`docs/maquettes/56-le-devis-qui-tarde.html`, écrite le 15 août 2026, **réécrite
-deux fois** le 16. Le troisième rappel n'est pas codé — `CLAUDE.md` §3 bis.*
-
-**Sa demande, le 14 août 2026 :** *« Il faudrait créer un rappel lorsque le
-chantier a été ouvert mais le devis n'a pas été envoyé. Et il faudrait également
-le rajouter à une catégorie dans les réglages, avec la possibilité dans les
-notifications de mettre le nombre de jours. Exemple : l'utilisateur pourrait
-dire "si aucun devis n'est parti sous deux, trois, quatre, cinq, six jours, me
-mettre une notification" — comme la Mme Félicie, vue il y a quatorze jours,
-aucun devis envoyé. »*
-
-**LA LEÇON DE CE LOT, APPRISE DEUX FOIS ET DONC ÉCRITE ICI.** Cette planche a
-décrit deux fois un monde qui n'existait plus :
-
-1. première version — elle redessinait un écran de notifications, alors que
-   `maquettes/atlas-reglages-notifications.html` en portait déjà un depuis le
-   13 août ;
-2. seconde version — elle proposait quatre façons de poser un délai, alors que
-   la rubrique avait été **CODÉE le 14** par une autre session, avec son délai.
-
-**Chercher ce qui existe avant de dessiner, dans les DEUX dossiers de maquettes
-et dans le code.** `maquettes/` porte les planches de l'application,
-`docs/maquettes/` celles des décisions — regarder un seul des deux, c'est
-redessiner ce qui est déjà tranché.
-
-**Ce qui est CODÉ, et qu'il ne faut surtout pas refaire** — `src/lib/rappels.ts`,
-`src/app/reglages/notifications/`, `drizzle/0043_rappels_notifications.sql` :
-
-| | |
-|---|---|
-| Rubrique Réglages → Notifications | ouverte, `href` posé |
-| « Devis sans réponse » | un devis parti, sans réponse, **7 jours** |
-| « Chantier fini, pas facturé » | **3 jours** |
-| La forme du délai | **« Au bout de [ N ] jours »**, un nombre tapé, un interrupteur par rappel, bornes 1–90, rangé sur `entreprises` |
-| Ce qui ne se coupe pas | réponse à un devis, lien expiré |
-
-**CE QUI RESTE, ET QUI EST PLUS PETIT QU'ANNONCÉ.** Aucun des deux rappels codés
-ne couvre sa demande : ils parlent d'un devis **parti**. Lui parle d'un devis
-**jamais parti**. C'est donc un **troisième rappel**, à poser en tête des deux
-autres — un devis qui n'est pas parti précède un devis qui attend sa réponse.
-
-**IL A TRANCHÉ LE 16 AOÛT 2026 : « la B et 4 ».** La carte **teintée**, avec le
-compte des jours dans l'étiquette — celle qui se remarque —, et **4 jours** par
-défaut.
-
-**ET IL A VU CE QU'AUCUN CONTRÔLE N'AURAIT VU**, dans la foulée : *« dans la
-catégorie notification, j'ai peur que la façon dont tu l'as écrit ne soit pas
-compréhensible — qu'on ne comprenne pas que cette ligne sert à ça, le devis non
-envoyé. »*
-
-Il avait raison, et c'est mesurable à l'œil : la ligne se pose **juste au-dessus
-de « Devis sans réponse »**. Deux lignes qui commencent par le même mot, l'une
-sur l'autre — il faut lire la petite ligne grise pour les séparer, donc on ne les
-sépare pas. Quatre mots lui sont proposés, **chacun montré avec sa voisine**
-(c'est la seule façon de juger, § 3 de la planche) :
-
-| | Le mot | Ce qu'il vaut |
-|---|---|---|
-| F | « Devis pas encore parti » | Exact — et c'est celui qui l'a inquiété |
-| **G** | **« Chantier sans devis »** | **Ma préférence** : seul à se distinguer **au premier mot**, et les trois lignes racontent alors le chantier dans l'ordre (pas de devis → sans réponse → fini pas facturé) |
-| H | « Aucun devis envoyé » | Ses mots à lui, verbatim. Commence par un mot vide |
-| I | « Devis oublié » | Le plus court, mais **il accuse** : un devis peut attendre exprès |
-
-**Rien d'autre n'attend son avis.**
-
-**Quatre règles y sont posées, à trancher avec lui** : le rappel s'efface seul
-dès que le devis part ; « J'ai vu » repousse au lendemain et ne supprime jamais ;
-le compte part de **l'ouverture du chantier** ; et il ne le verra qu'en ouvrant
-Atlas — ce que l'écran codé dit déjà en toutes lettres.
-
-**Ce que la base porte déjà, vérifié dans `src/server/db/schema.ts` :**
-`chantiers.createdAt` (le compte part de là) et `chantiers.devisEnvoyeAt`
-(NULL = aucun devis parti). La condition se **calcule** — donc la première règle
-est gratuite : il n'y a rien à effacer. **Il n'existe aucune date de visite**,
-ce qui confirme que le compte ne peut pas en partir sans un champ de plus.
-
-Reste à ranger : la colonne du troisième délai, à côté des deux autres sur
-`entreprises` (`rappel_devis_non_parti_jours`), et la mémoire du « J'ai vu »
-repoussé au lendemain — que les deux rappels codés n'ont pas eue à traiter.
-
-**Ce que ça coûtera une fois choisi : une demi-journée**, et non la journée
-annoncée hier — l'écran existe.
-
 ### 0 undetricies. L'absence d'une équipe — DESSINÉE le 14 août 2026, en attente de son choix
 ### 0 tricies nonies. ~~`test-pastille-equipe-e2e` est ROUGE sur `main`~~ — **RÉGLÉ le 16 août 2026**
 
@@ -181,37 +173,19 @@ perd, pas seulement dix minutes.
 écarté, et la piste `.first()` reste juste dans son principe — elle n'était
 simplement pas la cause ici.*
 
-*Constaté le 14 août 2026 au soir, en fusionnant un autre lot. **Ce n'est pas
-une intermittence** : la suite tombe aussi bien seule qu'en batterie, toujours
-sur le même contrôle.*
+**Et une seconde fragilité, corrigée par-dessus le 16 août :** le contrôle
+cliquait `[data-atlas="sans-date"]` **avec `.first()`**, alors que le jeu de
+démonstration porte d'autres chantiers sans date et que les sections
+précédentes de la même suite en posent. Il vise désormais le chantier **par son
+nom**, horodaté donc unique. Ce n'était pas la cause du rouge — la leur l'a
+élucidée — mais c'était bien une loterie.
 
-```
-❌ En posant, les équipes sont des CASES et le bouton dit quoi faire
-   le bouton doit rester à l'écran avant le choix
-```
-
-**Ce qui est déjà écarté**, pour ne pas le refaire : le code du planning est
-identique entre `main` et la branche qui l'a constaté — ce n'est pas une
-collision de fusion.
-
-**Le diagnostic, aussi loin qu'il a été mené :** le contrôle attend
-`[data-atlas="poser"]` dans la page ; il en compte zéro. Ce bouton n'est rendu
-que si `aPoser` existe (`PlanningClient.tsx`), et
-`aPoser = visibles.find(…) ?? sansDate[0] ?? null`. **Il est donc nul parce que
-`sansDate` est vide au moment du contrôle** — la suite crée pourtant un chantier
-sans date juste avant, puis clique `[data-atlas="sans-date"]` **avec
-`.first()`** : rien ne garantit que c'est LE SIEN. Les sections précédentes de
-la même suite posent des chantiers, et le jeu de démonstration en porte
-d'autres.
-
-**Piste à éprouver en premier :** viser le chantier par son nom (il est unique,
-horodaté à la création) plutôt que par `.first()`. C'est exactement le piège
-déjà payé sur `test-unite-tarif-e2e` le 14 août — « viser la dernière ligne
-remplissait la carte d'avant ».
-
-**Ce lot appartient à la session qui a posé la pastille d'équipe.** Écrit ici
-pour qu'elle ne reparte pas de zéro, et pour que personne ne conclue à une
-intermittence.
+**Le jour visé part maintenant à six mois** plutôt qu'à vingt jours, toujours
+ramené au premier jour ouvré par `estWeekEndIso` : à trois semaines, on tombe
+dans la plage où les autres suites posent leurs chantiers, la journée s'annonce
+« pleine », et le panneau ne rend alors **aucun bouton** — le même symptôme, une
+autre cause. Le contrôle lit désormais le panneau AVANT de conclure : une
+journée pleine se dit en toutes lettres au lieu d'accuser le bouton.
 
 ### 0 tricies octies. Marquer une facture PAYÉE — le geste qui manque le plus
 
@@ -410,36 +384,41 @@ a demandé, la correction touche la hauteur réservée du calendrier, et un
 contrôle qui l'aurait attrapé aurait accusé le déplacement de l'assistant — ce
 qui n'est pas le coupable.
 
-### 0 trigies. Dicter dans le devis — le micro est prêt, le geste attend son choix
+### 0 trigies. ~~Dicter dans le devis~~ — **CODÉ le 15 août 2026 (proposition A)**
 
 Sa demande du 15 août 2026, capture du devis à l'appui : *« rajoute-moi un petit
 dictaphone en haut à droite comme il y a pour les infos clients [...] pour
 pouvoir dicter à l'intérieur du devis s'il y a des choses à reprendre ou à
-modifier. Et je veux exactement les mêmes trois petits points quand ils
-chargent. »*
+modifier. »* Puis son vocabulaire — supprimer une ligne par son rang ou par son
+nom, changer un prix, en ajouter une, corriger une faute — et sa phrase :
+*« Je vais pouvoir lui parler comme ça et qu'elle comprenne. »*
 
-**Ce qui n'est PAS à décider** : le micro et l'attente. Ils existent
-(`DicterCoordonnees.tsx`, `PointsQuiSoufflent`, `.atlas-souffle`) et se copient
-au trait près — rond de 44 px, rouge pendant l'écoute, points à la place du
-micro pendant le traitement, phrase « Atlas rédige… ».
+**Livré** : `src/lib/retouches-devis.ts` (la règle),
+`src/server/ai/services/retouches-devis-service.ts` (le modèle),
+`src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` (l'écran). Détail : `ARCHITECTURE.md`
+§113, `CHANGELOG.md` du 15 août.
 
-**Ce qui l'est, et qui attend un mot de lui** —
-`docs/maquettes/54-dicter-dans-le-devis.html`, essayable au doigt :
+**CE QUI RESTE, et qui n'est pas un détail :**
 
-| | Ce que la dictée fait | Ce que ça coûte |
-|---|---|---|
-| **A** | elle **propose** des changements de lignes, qu'il coche ; rien ne s'applique sans son appui | un vrai morceau de travail : lecture des lignes existantes, appariement, écran de confirmation |
-| **B** | elle écrit une **note** attachée au devis ; le devis ne bouge pas | presque rien — mais elle ne fait pas le travail |
+1. **La feuille remplie n'a jamais été parcourue de bout en bout.** Cet
+   environnement n'a ni transcription ni modèle : la chaîne voix → feuille n'est
+   éprouvée qu'en morceaux (27 cas sans navigateur, 5 au navigateur). Le premier
+   essai réel sera le sien, ou celui d'une machine avec une clé. **Le lui dire
+   plutôt que de le laisser croire éprouvé.**
+2. ~~Sa question de la planche 54~~ — **TRANCHÉE le 16 août 2026 : NON.**
+   Il avait d'abord répondu « oui il peut néanmoins », puis s'est repris dans le
+   message suivant : *« je veux que la note, elle ne remplace que les lignes de
+   [devis] et rien d'autre, comme c'était déjà avant — on ne touche pas aux
+   conditions. »* **C'est l'état actuel du code, et il ne bouge pas.**
 
-**Une règle tranche déjà, et ne se négocie pas** (`CLAUDE.md` §4) : **aucun prix
-ne s'invente**. « Ajoute l'évacuation » sans montant donne une ligne **vide et
-signalée**, jamais un chiffre deviné.
-
-**Et une question posée dans la planche, sans réponse** : en A, le micro
-doit-il aussi toucher aux **conditions de règlement** et aux mentions du bas, ou
-seulement aux lignes chiffrées ?
-
-**Rien n'est codé** — `src/` n'est pas touché (§3 bis).
+   **Rien n'avait été codé entre les deux réponses**, et c'est précisément ce
+   que le §3 bis protège : la première réponse aurait fait écrire un sixième
+   type de retouche qu'il aurait fallu défaire douze heures plus tard. Ne pas
+   rouvrir sans qu'il le demande.
+3. **Aucune vérification côté serveur qu'un devis figé refuse les retouches.**
+   L'écran retire le micro dès l'envoi, et c'est la seule barrière — exactement
+   comme pour les autres champs de cet écran, qui n'en ont jamais eu d'autre. À
+   corriger pour tous en même temps, pas pour celui-ci seul.
 
 ### 0 novemvicies. ~~L'équipe n'était pas applicable~~ — **la pastille CODÉE le 14 août 2026 (geste A)**
 
@@ -552,6 +531,10 @@ PNG. Ce qui manque est la décision de dessin. Les planches 45 proposent le
 ferait de la porte et de l'écran d'accueil la même image. **Rien n'est décidé.**
 
 ### 0 novemvicies quater. Trois noms proposés — Gunzi, Goonzi, Gunzy
+
+**⚠ MIS EN ATTENTE PAR LE PATRON, le 16 août 2026 :** *« Oublie le mot
+Gunzy, on s'en fout pour l'instant, on verra ça plus tard. »* **Ne plus le lui
+reposer** — c'est lui qui rouvrira. Les trois planches restent où elles sont.
 
 Sa demande du 13 août : *« fais-moi une maquette avec comme nom Gunzi à la place
 d'Atlas. Ne code rien. »*, puis les deux autres noms. Trois planches identiques
@@ -734,7 +717,42 @@ d'abattage — pire que la phrase actuelle, qui au moins n'invente rien.
 sans le redessiner laisserait un écran de 2026-07 au milieu des autres —
 `CLAUDE.md` §3 bis : une maquette d'abord.
 
-### 0 quinvicies bis. Faire ARRIVER les conditions jusqu'au PDF
+### 0 quinvicies bis. Faire ARRIVER les conditions jusqu'au devis
+
+**⚠ IL L'A VU LUI-MÊME, le 16 août 2026** — et c'est la troisième fois qu'un
+défaut de ce dépôt se trouve en regardant l'écran plutôt qu'en lisant un
+contrôle : *« dans les réglages, lorsqu'on coche le bouton on/off pour les
+formalités de devis, rien n'apparaît sur le devis, c'est normal ? »*
+
+**Non. Et l'écran lui PROMET le contraire** : le bloc « Ce que votre devis dira »
+liste les conditions choisies, ligne à ligne. C'est un aperçu de quelque chose
+qui n'arrive jamais. Un écran qui décrit un document qu'il ne produit pas est
+pire qu'un écran muet — il fait envoyer un devis en croyant qu'il porte un
+acompte.
+
+**Ce qui monte au devis, mesuré et non supposé :** la validité, et elle seule
+(`snapshotEnTete` dans `devis.ts`, puis `devis-pdf.ts`). Les cinq autres
+n'apparaissent nulle part — ni à l'écran, ni au PDF.
+
+**Il a dit « Oui répare » le 16 août.** La planche est posée :
+`docs/maquettes/60-les-conditions-sur-le-devis.html`, éprouvée par
+`scripts/verifier-maquette-conditions-devis.mjs`. **Rien n'est codé tant qu'il
+n'a pas désigné son arrangement** (`CLAUDE.md` §3 bis) — ce n'est pas une
+précaution de style : le bloc « Notes / conditions » est un champ LIBRE qu'il a
+peut-être rempli à la main, et son texte d'invite propose justement « Acompte de
+30 % à la signature ». Se tromper d'arrangement, c'est soit effacer sa saisie,
+soit écrire l'acompte deux fois sur un devis qui part chez un client.
+
+| | Ce que ça fait | Ce que ça coûte |
+|---|---|---|
+| **A** | les conditions **remplacent** le bloc de notes | son texte écrit à la main **disparaît** |
+| **B** | son texte en tête, les conditions dessous, séparées d'un filet | un acompte tapé à la main apparaîtra **deux fois** |
+| **C** | deux blocs : « Notes » et « Conditions » | un bloc de plus, le devis s'allonge ; même doublon qu'en B |
+
+**Une question posée dans la planche, sans réponse et qui ne bloque pas :** les
+conditions doivent-elles aussi descendre sur la **facture** ? Aujourd'hui elle
+ne porte que ses mentions légales obligatoires.
+
 
 `ARCHITECTURE.md` §102 : la rubrique « Devis & factures » règle six conditions,
 mais **seule la validité s'imprime**. L'acompte, le délai de paiement, les

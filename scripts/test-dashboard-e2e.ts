@@ -57,6 +57,44 @@ async function main() {
   await page.reload({ waitUntil: "networkidle" });
   assert.equal(await lireCompteur(), nbAvant + 1);
 
+  // --- La ligne d'état est en OR, sur TOUTES les cartes (16 août 2026) ---
+  //
+  // **Sa consigne, capture de cet écran à l'appui :** *« mets le "devis prêt à
+  // envoyer sans photo" en doré ; pour tous les messages je veux que cette
+  // partie-là apparaisse en doré »*.
+  //
+  // **Pourquoi ici et pas seulement dans la suite base.**
+  // `test-ligne-etat-chantier.ts` éprouve la RÈGLE : `enOr` vaut vrai pour tous
+  // les statuts. Elle serait verte même si l'écran ignorait ce drapeau — c'est
+  // le raccord qui casse, jamais la formule. Et sa demande porte sur ce qu'il
+  // VOIT, pas sur un booléen.
+  //
+  // On lit la couleur CALCULÉE, jamais un nom de classe : `colors.or` vaut
+  // #B98B47 (`src/lib/design-tokens.ts`), soit rgb(185, 139, 71).
+  const OR = "rgb(185, 139, 71)";
+  const teintes = await page.evaluate(() =>
+    [...document.querySelectorAll("a.atlas-brin")].map((a) => {
+      // La ligne d'état est la seule en petites capitales de la carte.
+      const etat = [...a.querySelectorAll("p")].find(
+        (e) => getComputedStyle(e).textTransform === "uppercase"
+      );
+      return {
+        texte: etat?.textContent?.trim() ?? null,
+        couleur: etat ? getComputedStyle(etat).color : null,
+      };
+    })
+  );
+  // **Zéro carte n'est pas un succès.** Une liste vide rendrait ce contrôle
+  // vert sans qu'il ait rien mesuré — le piège payé la veille (`CLAUDE.md` §5).
+  assert.ok(teintes.length > 0, "aucune carte sur l'accueil : la couleur n'a pas pu être mesurée");
+  const grises = teintes.filter((t) => t.couleur !== OR);
+  assert.equal(
+    grises.length,
+    0,
+    `${grises.length} ligne(s) d'état hors de l'or : ` +
+      grises.map((t) => `« ${t.texte} » en ${t.couleur}`).join(" ; ")
+  );
+
   await browser.close();
   console.log("✅ Test bout-en-bout Dashboard (accueil) réussi.");
 }

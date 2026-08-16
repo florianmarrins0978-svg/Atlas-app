@@ -8658,20 +8658,24 @@ celui du **refus**, qui n'écrit rien ; l'écriture est tenue par la suite base.
 
 ---
 
-## 108. Les trois dernières rubriques : deux rappels réels, et deux écrans qui disent ce qui manque
+## 108. Les trois dernières rubriques : les rappels réels, et deux écrans qui disent ce qui manque
 
 *Codées le 14 août 2026 sur sa consigne — **« Fini toutes les rubriques »**.
 Les treize du sommaire (§96) sont désormais ouvertes ; plus aucune ne porte
 « Bientôt ».*
 
-### Notifications : DEUX rappels, et pas les huit de la planche
+### Notifications : les rappels RÉELS, et pas les huit de la planche
+
+> **Ils sont TROIS depuis le 16 août 2026** — voir §112. Ce qui suit décrit les
+> deux premiers, et les trois choix qu'ils ont posés : le troisième s'y range,
+> à une exception près, dite là-bas.
 
 `maquettes/atlas-reglages-notifications.html` listait huit familles d'alertes.
 **Une seule existait**, et la planche le disait déjà — *« rien ne part encore
 sur votre téléphone »*. Dessiner les sept autres avec un interrupteur aurait
 fait valider un écran de réglages qui ne règle rien.
 
-Deux se calculent **avec ce que la base porte déjà**, sans nouveau jalon ni
+Deux se calculaient **avec ce que la base porte déjà**, sans nouveau jalon ni
 nouveau geste (migration 0043) :
 
 | Rappel | Ce qu'il lit | Défaut |
@@ -8694,7 +8698,8 @@ la planche : *« on le touche, rien ne bouge, et on croit à une panne »*.
    Deux cartes pour un même devis feraient chercher la différence.
 3. **Jamais « urgent ».** Le fond teinté est réservé à ce qui appelle une
    décision — un refus, un lien mort. Un confort qui crierait aussi fort ferait
-   baisser le volume de tous les autres.
+   baisser le volume de tous les autres. **Le troisième rappel y déroge, et
+   c'est SA décision** : voir §112.
 
 **Ce qui n'a PAS d'interrupteur, et l'écran le dit :** la réponse d'un client et
 le lien expiré. Sa règle du 13 août 2026 — *« [des interrupteurs] seulement à
@@ -8868,6 +8873,9 @@ choisir l'équipe **avant** de proposer une date au client, donc à toucher au
 parcours du devis — c'est un autre chantier, inscrit dans `TODO.md`, et il n'a
 de sens que si le télescopage se produit vraiment. **Question posée au patron le
 14 août, sans réponse à ce jour.**
+
+---
+
 
 ---
 
@@ -9054,7 +9062,212 @@ la présence d'un mot.
 
 ---
 
-## 112. Un jour barré n'est pas un jour pris — et la phrase disait le contraire
+## 112. Le troisième rappel : un devis qui n'est JAMAIS parti
+
+*Demandé le 14 août 2026, codé le 16 sur ses trois réponses.*
+
+**Sa demande :** *« il faudrait créer un rappel lorsque le chantier a été ouvert
+mais le devis n'a pas été envoyé […] comme la Mme Félicie, vue il y a quatorze
+jours, aucun devis envoyé »*.
+
+### Pourquoi il ne se déduit d'aucun des deux autres
+
+C'est le cœur, et ça décide de toute l'implémentation. « Devis sans réponse »
+(§108) part d'un **envoi** — `envois_devis.envoye_at`. Un devis qui n'est jamais
+parti ne laisse **aucune ligne** dans cette table : il n'y a rien à interroger.
+
+Celui-ci se lit donc sur le **chantier** lui-même : `created_at` pour le point de
+départ, `devis_envoye_at IS NULL` pour la condition. Migration
+`drizzle/0046_rappel_chantier_sans_devis.sql`, colonne
+`rappel_chantier_sans_devis_jours`, allumée d'origine à **4 jours**.
+
+### Deux règles qui sont gratuites, et c'est ce qui a décidé de la forme
+
+1. **Il s'efface seul dès que le devis part.** La condition se CALCULE ; rien
+   n'est rangé nulle part, donc il n'y a rien à effacer. C'était la première
+   règle que le patron voulait tenir, et elle ne coûte rien.
+2. **Un chantier TERMINÉ sans devis ne réclame plus rien.** Un dépannage fait et
+   clos de la main à la main est justement le cas où il a eu raison de ne pas
+   faire de devis : le lui rappeler pour toujours serait le punir.
+
+Il n'y a **pas de date de visite** dans Atlas — vérifié : le compte ne peut donc
+partir que de l'ouverture du chantier. La faire partir de la visite demanderait
+un champ de plus à remplir, et c'est un arbitrage qui lui appartient.
+
+### Ce qui déroge au §108, et pourquoi
+
+**La carte est TEINTÉE**, là où les deux autres rappels ne le sont jamais. Le
+§108 réservait le fond teinté à ce qui appelle une décision — un refus, un lien
+mort. **C'est sa décision du 16 août**, prise devant les deux tons dessinés
+(`docs/maquettes/56-…`, § 1) : *« la B et 4 »*. Sa raison, écrite sur la
+planche : au quatorzième jour, ça ne doit pas se rater.
+
+Et l'étiquette porte **le compte des jours avant le nom** — « DEVIS EN ATTENTE ·
+14 JOURS » —, l'autre moitié de sa proposition B. Le nombre et la phrase
+viennent du même calcul (`joursEcoules`) : deux calculs du même délai finiraient
+par se contredire sur une seule carte.
+
+**La réserve lui a été posée, et il a tranché — le 16 août 2026, capture de
+l'accueil à l'appui : « le B ».** La question était réelle : en place, ce ton est
+exactement celui de « CORRECTION DEMANDÉE », et il avait choisi sur une planche
+où les deux tons étaient seuls. **Il les a maintenant vus voisins, et il garde le
+sien.** Ne pas rouvrir : le point a coûté un aller-retour, et il est clos.
+
+Ce que cela dit de la règle du §108 — *« jamais urgent »* — n'est pas qu'elle est
+morte, mais qu'elle vaut pour un **confort**. Celui-ci n'en est pas un à ses
+yeux : c'est le seul des trois où **rien n'est encore parti au client**. Les deux
+autres décrivent un travail déjà fait qui attend ; celui-ci, un travail pas
+commencé.
+
+### Le libellé, et la règle qu'il a fait naître
+
+Écrit d'abord **« Devis pas encore parti »**. Sa réaction, le 16 août : *« j'ai
+peur que la façon dont tu l'as écrit ne soit pas compréhensible — qu'on ne
+comprenne pas que cette ligne sert à ça, le devis non envoyé. »*
+
+**La cause n'était pas le libellé mais sa VOISINE.** Posé au-dessus de « Devis
+sans réponse », deux réglages commençaient par le même mot : il fallait lire la
+ligne grise pour les séparer. Quatre mots lui ont été montrés **chacun avec sa
+voisine** — une confusion entre deux libellés n'existe qu'en contexte, et une
+ligne montrée seule ne prouve rien. Il a retenu **« Chantier sans devis »**.
+
+**La règle tenue par `test-devis-qui-tarde-e2e` porte donc sur les VOISINS :**
+deux réglages qui se touchent ne commencent pas par le même mot. Comparer toutes
+les paires serait plus dur et **faux** — « Chantier sans devis » et « Chantier
+fini, pas facturé » partagent leur premier mot sans jamais se toucher, une ligne
+entière les sépare, et leurs sens sont aux deux bouts du chantier.
+
+Les trois lignes racontent alors le chantier dans l'ordre : **pas de devis →
+devis sans réponse → fini, pas facturé.**
+
+### Le rang sur l'accueil : les rappels D'ABORD
+
+*Sa décision du 16 août 2026 — **« fait la B »** — après trois photos.*
+
+**La règle d'avant :** *« les réponses d'abord : quelqu'un a agi, cela prime sur
+un silence. Les rappels ferment la marche — ils décrivent une attente, pas un
+événement. »* Elle se défendait. Elle avait un défaut que **seule une photo a
+montré** : l'accueil ne pose que `VISIBLES_PAR_DEFAUT` cartes (deux), et dès
+**deux réponses en attente**, le rappel passait derrière « N autres devis à
+regarder ». Un rappel qu'il faut déplier n'est plus un rappel.
+
+**Ce qui a été mesuré avant de décider**, et qui a corrigé une exagération de ma
+part : avec **UNE seule** réponse en attente, son rappel prend la seconde place
+et se voit très bien. Il en faut **deux ou plus** pour le repousser. Le lui
+annoncer comme un défaut permanent aurait été le faire décider sur du faux — la
+scène des photos a donc dû être fabriquée exprès
+(`scripts/capture-rang-trois-cas.sh`).
+
+**Trois dispositions photographiées sur la MÊME scène**, jamais dessinées :
+
+| | Ce que l'image montre | |
+|---|---|---|
+| A | Deux corrections demandées | son rappel derrière le repli |
+| **B** | Ses rappels en tête | **retenu** |
+| C | Trois cartes au lieu de deux | **écarté par l'image elle-même** : la troisième tombe sous le bord de l'écran |
+
+**Ce que B coûte, et il l'a accepté en le voyant :** une acceptation ou un refus
+peut désormais attendre derrière un rappel. Ce qu'il gagne : ce qu'il doit FAIRE
+passe avant ce qu'on lui a répondu.
+
+`scripts/test-devis-qui-tarde-e2e.ts` tient l'ordre — et il vérifie l'ordre, pas
+le compte : la règle vaut quel que soit le nombre de cartes.
+---
+
+---
+
+## 113. Retoucher un devis à la voix : elle propose, il coche
+
+*Demandé le 15 août 2026. Dessiné (`docs/maquettes/54-dicter-dans-le-devis.html`),
+puis codé sur sa réponse — la proposition A, « elle propose, vous cochez ».*
+
+**Sa demande, en deux temps.** D'abord le geste : *« Rajoutes-moi un petit
+dictaphone en haut à droite comme il y a pour les infos clients quand tu fais un
+nouveau chantier, pour pouvoir dicter à l'intérieur du devis s'il y a des choses
+à reprendre ou à modifier. Et je veux que tu mettes exactement les mêmes trois
+petits points quand ils chargent. »* Puis le vocabulaire, qui décide de tout le
+reste : *« supprime-moi la deuxième ligne, modifie-moi le prix de la taille de
+haie, remplace-moi le deux cent cinquante par trois cent cinquante, rajoute-moi
+une ligne, broyage des branches et tu mets cinq cents euros, corrige-moi telle
+ligne, supprime-moi fondage du bois, mais en échange je veux que tu mettes
+débitage du bois, tu as fait une faute à tel endroit, corrige la faute. **Je vais
+pouvoir lui parler comme ça et qu'elle comprenne.** »*
+
+### Trois étages, et ce qui vit dans chacun
+
+| Étage | Fichier | Ce qu'il sait |
+|---|---|---|
+| La règle | `src/lib/retouches-devis.ts` | Sur quelle ligne tombe une désignation, et ce qu'un changement dira en toutes lettres. **Aucune base, aucun modèle** : éprouvé sans rien monter (`scripts/test-retouches-devis.ts`) |
+| Le modèle | `src/server/ai/services/retouches-devis-service.ts` | Transcrit, puis demande une liste de retouches en donnant le devis comme contexte. Sans clé, il rend la transcription et **aucune** proposition |
+| L'écran | `src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` | Montre, laisse décocher, applique ce qui reste |
+
+**Rien ne s'applique sans son appui**, et c'est l'arrêt qui justifie l'étage du
+milieu : ces lignes SONT le devis que son client recevra. Une lecture qui se
+trompe d'un chiffre se rattrape par un avoir.
+
+### Les quatre décisions de la règle, et ce que chacune évite
+
+1. **Le libellé bat le rang.** On se trompe plus souvent de numéro que de nom —
+   surtout après avoir soi-même ajouté une ligne. Le rang ne sert qu'à départager
+   deux noms qui se valent (« la deuxième, l'élagage »).
+2. **Un nom dit mais reconnu nulle part ne se rabat PAS sur le rang.** Il a nommé
+   quelque chose : prendre la ligne n° 1 « puisqu'il a dit première » modifierait
+   une ligne au hasard sans qu'il s'en aperçoive.
+3. **Deux lignes qui se valent rendent `ambigu`.** Son devis porte « Élagage
+   chêne » et « Élagage frêne » : choisir la première parce qu'elle arrive en tête
+   retirerait la mauvaise une fois sur deux. La feuille les montre toutes les
+   deux, décochées, et il redit.
+4. **Les rangs ne se décalent pas d'une retouche à l'autre.** « Supprime la
+   deuxième et change la troisième » se lit sur le devis QU'IL VOIT, pas sur
+   celui qu'on obtiendrait après le premier retrait.
+
+**Et « fondage du bois » trouve « Fendage du bois ».** C'est son exemple, et
+c'est le cas courant : une syllabe avalée par le micro. La ressemblance regarde
+l'inclusion d'abord (« le prix de la taille de haie » contre « Taille de haie —
+12 m »), puis les mots communs, puis la distance d'édition — dans cet ordre,
+parce qu'une distance brute déclare éloignés deux textes dont l'un est trois fois
+plus long que l'autre.
+
+### Aucun prix ne s'invente — deux gardes, pas une
+
+« Rajoute le broyage » sans montant rend une ligne dont le prix est `null`, et la
+feuille l'écrit **en rouge** : « Aucun prix dicté — la ligne arrive vide, à vous
+de la chiffrer ». Le premier garde est dans la consigne donnée au modèle ; le
+second est `montantDicte`, qui refuse tout ce qui n'est pas un nombre — « environ
+500 », « le prix habituel », « à voir ». Le jour où l'un des deux cède, l'autre
+tient (`CLAUDE.md` §4).
+
+**Une retouche bancale est jetée, jamais rattrapée.** Il verra qu'un changement
+manque et le redira ; il ne verrait pas, en revanche, qu'un chiffre a été mal
+repris. C'est ce déséquilibre-là qui décide.
+
+### Deux détails d'écran trouvés à la capture, pas à la mesure
+
+- **Le rond du micro est `card` ici, `rustTint` sur la fiche du client.** Cette
+  page-ci est teintée : un rond `rustTint` sur un fond `rustTint` disparaît
+  purement et simplement. Ce n'est pas un second micro — c'est le même, sur un
+  autre fond.
+- **Le retour et le micro partagent une rangée**, ce qui a fait descendre le
+  retour de `page.tsx` dans l'écran client : le micro touche aux lignes, donc à
+  leur état.
+
+### Ce qui n'a PAS pu être éprouvé ici, et qu'il faut savoir
+
+Cet environnement n'a **ni service de transcription ni modèle**. La feuille de
+confirmation **remplie** n'a donc jamais été parcourue de bout en bout : les
+phrases de chaque changement sont éprouvées sans navigateur
+(`scripts/test-retouches-devis.ts`), et la feuille elle-même n'a été vue qu'avec
+des données posées à la main. Le raccord entre la voix et la feuille n'aura été
+parcouru qu'avec une clé — sur son banc, ou en production.
+
+Faute de transcription, l'écran ne fait pas semblant : il dit « Aucun service de
+transcription n'est branché sur cette installation ». Montrer le texte de
+remplacement comme une dictée reviendrait à corriger un devis d'après une phrase
+que personne n'a prononcée (`src/server/ai/providers/transcription/dev.ts`).
+
+---
+
+## 114. Un jour barré n'est pas un jour pris — et la phrase disait le contraire
 
 **Le patron, le 16 août 2026**, capture de l'écran d'envoi à l'appui :
 

@@ -1,6 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-16 · branche `main`
+· dernière migration `drizzle/0046_rappel_chantier_sans_devis.sql`
 · dernière migration `drizzle/0045_paiements_et_exigibilite.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -68,6 +69,7 @@ seule avec quinze outils.
 | Cycle d'envoi, jeton, expiration, réponse | `src/server/repositories/envois-devis.ts` |
 | Suivi de ce que devient le devis (5 états) | `src/lib/etat-envoi.ts` |
 | Statut affiché d'un chantier, de brouillon à facturé | `src/lib/chantier-etat.ts` |
+| Retoucher le devis à la voix — elle propose, il coche (15 août) | `src/lib/retouches-devis.ts`, `src/server/ai/services/retouches-devis-service.ts`, `src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` |
 | Notification « devis retourné » à l'accueil | `src/app/Notifications.tsx` |
 | Reprise d'un devis retourné en nouvelle version | `src/app/chantiers/[id]/export/actions.ts` |
 | Onglet « Terminés » et fin de chantier | `src/app/termines/` |
@@ -155,7 +157,7 @@ barre quand la durée du chantier déborderait sur un lendemain plein.
 | La phrase, et le cas reproduit qui la justifie | `src/lib/jours-barres.ts` |
 | Le calendrier — le même pour le patron et pour son client | `src/components/atlas/Calendrier.tsx` |
 | Contrôles purs : le fait, la phrase, et la consigne côté client | `scripts/test-jours-barres.ts` |
-| Le pourquoi, et ce qui n'a PAS changé | `ARCHITECTURE.md` §112 |
+| Le pourquoi, et ce qui n'a PAS changé | `ARCHITECTURE.md` §114 |
 
 ### L'écran d'erreur qui ne menait nulle part (11 août 2026)
 
@@ -268,6 +270,26 @@ l'application. Ce qui est **fait** :
   Google suffisait déjà et rien n'a été écrit pour ça. **Reste faux, et dit :**
   l'équipe d'un chantier est une étiquette, pas une contrainte.
   `ARCHITECTURE.md` §109.
+- **Le rappel du devis qui tarde** (16 août) : un **troisième** rappel dans
+  Réglages → Notifications — *« Chantier sans devis »*, 4 jours, allumé
+  d'origine —, et sa carte **teintée** à l'accueil avec le compte des jours dans
+  l'étiquette (« DEVIS EN ATTENTE · 14 JOURS »). Sa demande du 14 août, ses
+  décisions du 16 : *« la B et 4 »*, puis *« le G »*. Il ne se déduit d'aucun des
+  deux rappels codés le 14 : ceux-là partent d'un ENVOI, et un devis jamais parti
+  n'en laisse aucun — celui-ci se lit sur le chantier. Deux règles y sont
+  gratuites : il s'efface seul quand le devis part, et un chantier terminé sans
+  devis ne réclame plus rien. Migration `drizzle/0046_rappel_chantier_sans_devis.sql`.
+  **Le ton lui a été reposé, capture à l'appui — il garde le sien** (« le B »,
+  16 août) : c'est le seul des trois rappels où rien n'est encore parti au
+  client. **Et le rang est tranché aussi** (« fait la B », 16 août, après trois
+  photos) : sur l'accueil, **les rappels passent devant les réponses de
+  clients** — ce qu'il doit faire avant ce qu'on lui a répondu. `TODO.md`
+  §0 novivicies.
+- **Une carte ne peut plus se reposer à moitié coupée** (16 août) : sa capture —
+  *« le premier message est trop haut et le début n'est pas visible »*. Le cadre
+  qui défile déclarait `scroll-snap-type` sans qu'aucun enfant n'ait jamais
+  déclaré de point d'accroche : la propriété était **inerte depuis le premier
+  jour**. Une carte s'arrête désormais à 24 px du bord, hors du fondu de 18 px.
 - **« Surtout la page équipe » : l'écran jamais préparé d'avance** (14 août) :
   le banc compile ses écrans à l'avance, mais la liste — écrite à la main —
   ignorait les **sept sous-écrans de Réglages** créés depuis. « Équipe »
@@ -584,17 +606,6 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 
 Voir `TODO.md` pour le détail et l'ordre.
 
-- **Le devis qui tarde : une TROISIÈME ligne, en attente de deux mots** (16 août)
-  — sa demande d'un *« rappel lorsque le chantier a été ouvert mais le devis n'a
-  pas été envoyé »*. `docs/maquettes/56-le-devis-qui-tarde.html`, réécrite deux
-  fois contre ce qui existait. **La rubrique Notifications a été CODÉE le
-  14 août** par une autre session (`src/lib/rappels.ts`, `drizzle/0043_…`) :
-  deux rappels réglables, et le délai qui se tape — « Au bout de 7 jours ». Aucun
-  des deux ne couvre sa demande : ils parlent d'un devis **parti**, lui d'un
-  devis **jamais parti**. **Il a retenu la carte teintée et 4 jours** ; reste le
-  **mot de la ligne** — elle tombe au-dessus de « Devis sans réponse », et deux
-  libellés commençant par « Devis » ne se distinguent pas. Une demi-journée une
-  fois le mot choisi. `TODO.md` §0 novivicies.
 - **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
   (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA
   se déclare au lieu d'être deviné d'après le taux**. **Le sommaire lui-même est CODÉ le
