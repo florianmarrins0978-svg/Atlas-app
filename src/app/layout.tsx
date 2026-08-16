@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
+import { charte, type Charte } from "@/lib/chartes";
+import { lireCharte } from "@/server/repositories/charte-personne";
 import "./globals.css";
 import AtlasBottomNav from "@/components/atlas/AtlasBottomNav";
 import { estCheminPublic, estPageDuClient } from "@/lib/chemins-publics";
@@ -121,6 +123,35 @@ function estEcranSansNavigation(chemin: string | null): boolean {
   return ECRANS_DU_PATRON_SANS_NAVIGATION.some((p) => chemin === p || chemin.startsWith(`${p}/`));
 }
 
+/**
+ * La charte choisie, sous forme de style en ligne.
+ *
+ * React n'accepte une variable CSS que comme propriété à part entière : une
+ * chaîne `--a:b;--c:d` posée dans `style` est ignorée sans un mot.
+ */
+function variablesEnStyle(c: Charte): Record<string, string> {
+  const sortie: Record<string, string> = {};
+  for (const [cle, valeur] of Object.entries(c.jetons)) sortie[`--atlas-${cle}`] = valeur;
+  return sortie;
+}
+
+/**
+ * Ce que la personne connectée a choisi — ou rien.
+ *
+ * **Jamais d'exception.** Une couleur est un agrément : un visiteur sans
+ * session, une base muette, un compte effacé ne doivent pas empêcher la page
+ * de s'afficher. Sans réponse, les jetons retombent sur leur repli, qui est la
+ * charte d'origine.
+ */
+async function charteDeLaPersonne(): Promise<Charte | null> {
+  try {
+    const nom = await lireCharte();
+    return nom ? charte(nom) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -145,8 +176,31 @@ export default async function RootLayout({
   // tournant pas sous ce profil.
   const banc = !pageDuClient && laVersionRapideSeConstruit();
 
+  /**
+   * La charte de couleurs de la personne connectée (`src/lib/chartes.ts`).
+   *
+   * **Décidée AU SERVEUR, et posée dans le HTML lui-même.** Une bascule faite
+   * au navigateur ferait apparaître l'écran en couleurs d'origine avant de le
+   * repeindre — un clignotement à chaque page, sur un téléphone lent, qui se
+   * lit comme un défaut.
+   *
+   * **Les deux pages que son CLIENT reçoit n'y ont pas droit** : le devis et la
+   * facture ne changent pas de couleur parce que l'artisan a choisi « Nuit ».
+   * Elles portent l'identité d'Atlas, pas son goût.
+   *
+   * **Et si rien n'est lisible — visiteur sans session, base muette — on ne
+   * pose rien.** Les jetons retombent alors sur leur repli, qui EST la charte
+   * d'origine : l'écran est exactement celui d'avant ce lot.
+   */
+  const charteChoisie = pageDuClient ? null : await charteDeLaPersonne();
+
   return (
-    <html lang="fr">
+    // **Les variables sont posées sur `<html>`, pas sur `<body>`.**
+    // `globals.css` les relit depuis `:root` — c'est-à-dire `<html>` — pour
+    // alimenter les classes Tailwind. Posées sur le corps, elles auraient été
+    // invisibles de là, et la moitié de l'écran serait restée dans l'ancienne
+    // charte : vu sur une capture, la bande sous la barre de navigation.
+    <html lang="fr" style={charteChoisie ? (variablesEnStyle(charteChoisie) as React.CSSProperties) : undefined}>
       <body className="font-body antialiased">
         {/* Redirige vers l'écran d'acceptation tant qu'un document requis n'a
             pas été accepté. Rendu avant le contenu : la redirection intervient

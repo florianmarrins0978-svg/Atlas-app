@@ -1,0 +1,361 @@
+<title>La réduction au client</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LA RÉDUCTION AU CLIENT — « fais cinq pour cent sur le montant du devis ».
+
+    LE PATRON, LE 16 AOÛT 2026 : « je veux pouvoir, si jamais un client me
+    demande une réduction, de pouvoir lui demander "fais cinq pour cent sur le
+    montant du devis" et il ajoute une petite ligne "réduction" ou "prix accordé
+    au client", cinq pour cent, ou dix, ou quinze — c'est moi qui choisis le
+    nombre de pourcentage. »
+
+    Dans le même message, il a REPRIS sa réponse de la veille sur le micro :
+    « je veux que la note, elle ne remplace que les lignes de [devis] et rien
+    d'autre, comme c'était déjà avant — on ne touche pas aux conditions ».
+    La réduction est donc une SIXIÈME retouche des LIGNES, pas une formalité.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI N'EST PAS À CHOISIR — c'est de la comptabilité, pas du dessin.
+
+    · LA RÉDUCTION S'APPLIQUE SUR LE HT, ET LA TVA SE CALCULE APRÈS.
+      L'appliquer sur le TTC donnerait une TVA fausse sur un document qui part
+      chez un client et qui finit dans une déclaration. Ce n'est pas une
+      préférence : c'est la seule façon juste.
+    · ELLE DOIT SUIVRE JUSQU'À LA FACTURE. La facture recopie les lignes ET les
+      totaux du devis (`factures.ts`). Une réduction accordée sur le devis et
+      absente de la facture ferait payer au client le prix qu'on lui avait
+      justement retiré.
+    · LE POURCENTAGE EST LE SIEN. 5, 10, 15, ou autre chose : rien n'est proposé
+      d'office, et aucun taux « habituel » ne s'invente.
+
+    ————————————————————————————————————————————————————————————————
+    LA QUESTION QUI RESTE, ET ELLE A UN COÛT TRÈS INÉGAL.
+
+    Où la réduction se pose-t-elle sur le document ? Une ligne parmi les autres,
+    ou un bloc sous le total ? Ça n'a l'air que d'un choix de mise en page. Ça ne
+    l'est pas : une LIGNE voyage toute seule jusqu'à la facture, au relevé de TVA
+    et à l'export comptable, parce que tout ce chemin est déjà bâti pour les
+    lignes. Un bloc à part demande une colonne de plus dans le devis, dans la
+    facture, dans ce qui les recopie — et chaque endroit oublié est un montant
+    faux.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : les bascules sont des boutons radio natifs.
+    Les chiffres sont vrais pour LES TROIS taux, et recalculés par le contrôle à
+    partir des lignes lues à l'écran : 870,00 € HT donne 826,50 / 783,00 / 739,50
+    à 5, 10 et 15 %. Un devis de maquette qui ne tombe pas juste apprend à douter
+    des totaux du vrai.
+    Le contrôle : `scripts/verifier-maquette-reduction.mjs`.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:940px;margin:0 auto}
+
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+
+  .dit{margin:0 0 24px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;font-style:italic;color:var(--gris)}
+  .dit b{font-style:normal;color:var(--encre);font-weight:600}
+
+  /* ═══ Les bascules — des radios, aucun script ════════════════════════ */
+  .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+  .reglage{margin:0 0 10px}
+  .reglage .quoi{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--gris);margin-bottom:7px}
+  .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+  .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+  #v-a:checked ~ .dedans .segments label[for="v-a"],
+  #v-b:checked ~ .dedans .segments label[for="v-b"],
+  #v-c:checked ~ .dedans .segments label[for="v-c"],
+  #m-1:checked ~ .dedans .segments label[for="m-1"],
+  #m-2:checked ~ .dedans .segments label[for="m-2"],
+  #t-5:checked ~ .dedans .segments label[for="t-5"],
+  #t-10:checked ~ .dedans .segments label[for="t-10"],
+  #t-15:checked ~ .dedans .segments label[for="t-15"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+
+  /* Le mot qu'il choisit — il n'y en a qu'un d'affiché à la fois. */
+  .mot-1,.mot-2{display:none}
+  #m-1:checked ~ .dedans .mot-1,
+  #m-2:checked ~ .dedans .mot-2{display:inline}
+
+  /* **LE POURCENTAGE SE CHOISIT AUSSI**, et c'est ce qui rend la planche
+     essayable plutôt que regardable. Sa demande du 16 août — « pas une photo ! ».
+     Chaque nombre qui dépend du taux existe en trois exemplaires, calculés à la
+     main et vérifiés par `verifier-maquette-reduction.mjs` : sans JavaScript, on
+     ne calcule pas, on prépare. Son lecteur n'en exécute aucun. */
+  .p5,.p10,.p15{display:none}
+  #t-5:checked ~ .dedans .p5,
+  #t-10:checked ~ .dedans .p10,
+  #t-15:checked ~ .dedans .p15{display:inline}
+
+  /* ═══ La feuille de devis ════════════════════════════════════════════ */
+  .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+  .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+  .feuille{background:var(--papier);border-radius:10px;padding:22px 20px}
+
+  .titre-devis{font-family:Georgia,serif;font-size:22px;letter-spacing:.14em;
+               text-align:center;margin:0 0 4px}
+  .sous-titre{text-align:center;font-size:11.5px;color:var(--gris);margin:0 0 18px}
+
+  .lg{display:flex;justify-content:space-between;gap:12px;font-size:14px;
+      padding:9px 0;border-bottom:1px solid var(--trait)}
+  .lg .prix{white-space:nowrap}
+  /* La ligne de réduction : même forme que les autres, en or, montant négatif. */
+  .lg.remise{color:var(--or)}
+  .totaux{margin-top:14px}
+  .tot{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0}
+  .tot.or{color:var(--or)}
+  .tot.souligne{border-top:1px solid var(--trait);margin-top:5px;padding-top:7px}
+  .tot.gros{font-family:Georgia,serif;font-size:17px;padding-top:8px;
+            margin-top:6px;border-top:2px solid var(--encre)}
+  .barre-prix{text-decoration:line-through;color:var(--gris)}
+
+  .a-ligne,.a-bloc,.a-barre{display:none}
+  #v-a:checked ~ .dedans .a-ligne,
+  #v-b:checked ~ .dedans .a-bloc,
+  #v-c:checked ~ .dedans .a-barre{display:flex}
+  #v-a:checked ~ .dedans .totaux.a-ligne,
+  #v-b:checked ~ .dedans .totaux.a-bloc,
+  #v-c:checked ~ .dedans .totaux.a-barre{display:block}
+
+  .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+  .legende b{color:var(--encre);font-weight:600}
+  .l-a,.l-b,.l-c{display:none}
+  #v-a:checked ~ .dedans .l-a,
+  #v-b:checked ~ .dedans .l-b,
+  #v-c:checked ~ .dedans .l-c{display:block}
+  .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+
+  .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .note ul{margin:8px 0 0;padding-left:19px}
+  .note li{margin-bottom:6px}
+
+  /* La feuille du micro, telle qu'elle existe déjà depuis le 15 août. */
+  .confirme{margin-top:22px;border-radius:14px;background:var(--teinte);padding:16px 17px}
+  .confirme .sur{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+                 color:var(--or);text-align:center;display:block;margin-bottom:4px}
+  .confirme .qui{font-family:Georgia,serif;font-size:19px;text-align:center;
+                 color:var(--encre);margin:0 0 6px}
+  .confirme .phrase{font-size:12.5px;font-style:italic;text-align:center;
+                    color:var(--gris);margin:0 0 12px}
+  .prop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;
+        border-top:1px solid var(--trait);padding:11px 0}
+  .prop .verbe{display:block;font-size:10px;letter-spacing:.13em;
+               text-transform:uppercase;color:var(--or)}
+  .prop .txt{display:block;font-family:Georgia,serif;font-size:16px;color:var(--encre)}
+  .prop .det{display:block;font-size:12px;color:var(--gris)}
+  .prop .coche{color:var(--or);flex:none}
+</style>
+
+<input type="radio" name="v" id="v-a" class="etat" checked>
+<input type="radio" name="v" id="v-b" class="etat">
+<input type="radio" name="v" id="v-c" class="etat">
+<input type="radio" name="m" id="m-1" class="etat" checked>
+<input type="radio" name="m" id="m-2" class="etat">
+<input type="radio" name="t" id="t-5" class="etat" checked>
+<input type="radio" name="t" id="t-10" class="etat">
+<input type="radio" name="t" id="t-15" class="etat">
+
+<div class="dedans">
+  <h1>La réduction au client</h1>
+  <p class="intro">Votre demande du 16 août. <b>Rien n’est codé</b> — c’est votre
+    règle. <b>Touchez les trois réglages</b> : où la réduction se pose, le
+    pourcentage, et le mot. Les totaux suivent.</p>
+
+  <p class="dit">« Si jamais un client me demande une réduction, pouvoir lui
+    demander <b>fais cinq pour cent sur le montant du devis</b>, et il ajoute une
+    petite ligne réduction ou prix accordé au client — cinq pour cent, ou dix, ou
+    quinze. <b>C’est moi qui choisis le nombre de pourcentage.</b> »</p>
+
+  <div class="reglage">
+    <span class="quoi">Où elle se pose</span>
+    <div class="segments">
+      <label for="v-a">A · Une ligne du devis</label>
+      <label for="v-b">B · Sous le total</label>
+      <label for="v-c">C · Le prix barré</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">Le pourcentage — c’est vous qui le choisissez</span>
+    <div class="segments">
+      <label for="t-5">5 %</label>
+      <label for="t-10">10 %</label>
+      <label for="t-15">15 %</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">Le mot</span>
+    <div class="segments">
+      <label for="m-1">Réduction</label>
+      <label for="m-2">Prix accordé au client</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel"><div class="feuille">
+      <p class="titre-devis">DEVIS</p>
+      <p class="sous-titre">n° 2026-0011 · 16/08/2026</p>
+
+      <div class="lg"><span>Élagage — 3 chênes</span><span class="prix">450,00 €</span></div>
+      <div class="lg"><span>Broyage des branches</span><span class="prix">180,00 €</span></div>
+      <div class="lg"><span>Évacuation des déchets verts</span><span class="prix">240,00 €</span></div>
+
+      <!-- ═══ A · une ligne parmi les autres ═══════════════════════════════ -->
+      <div class="lg remise a-ligne">
+        <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> <span class="p5">5</span><span class="p10">10</span><span class="p15">15</span> %</span>
+        <span class="prix">− <span class="p5">43,50</span><span class="p10">87,00</span><span class="p15">130,50</span> €</span>
+      </div>
+      <div class="totaux a-ligne">
+        <div class="tot"><span>Total HT</span><span><span class="p5">826,50</span><span class="p10">783,00</span><span class="p15">739,50</span> €</span></div>
+        <div class="tot"><span>TVA 20 %</span><span><span class="p5">165,30</span><span class="p10">156,60</span><span class="p15">147,90</span> €</span></div>
+        <div class="tot gros"><span>Total TTC</span><span><span class="p5">991,80</span><span class="p10">939,60</span><span class="p15">887,40</span> €</span></div>
+      </div>
+
+      <!-- ═══ B · un bloc sous le total ════════════════════════════════════ -->
+      <div class="totaux a-bloc">
+        <div class="tot"><span>Total HT</span><span>870,00 €</span></div>
+        <div class="tot or">
+          <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> <span class="p5">5</span><span class="p10">10</span><span class="p15">15</span> %</span>
+          <span>− <span class="p5">43,50</span><span class="p10">87,00</span><span class="p15">130,50</span> €</span>
+        </div>
+        <div class="tot souligne"><span>Total HT après remise</span><span><span class="p5">826,50</span><span class="p10">783,00</span><span class="p15">739,50</span> €</span></div>
+        <div class="tot"><span>TVA 20 %</span><span><span class="p5">165,30</span><span class="p10">156,60</span><span class="p15">147,90</span> €</span></div>
+        <div class="tot gros"><span>Total TTC</span><span><span class="p5">991,80</span><span class="p10">939,60</span><span class="p15">887,40</span> €</span></div>
+      </div>
+
+      <!-- ═══ C · le prix barré ════════════════════════════════════════════ -->
+      <div class="totaux a-barre">
+        <div class="tot"><span>Total HT</span><span><span class="p5">826,50</span><span class="p10">783,00</span><span class="p15">739,50</span> €</span></div>
+        <div class="tot"><span>TVA 20 %</span><span><span class="p5">165,30</span><span class="p10">156,60</span><span class="p15">147,90</span> €</span></div>
+        <div class="tot gros">
+          <span>Total TTC</span>
+          <span><span class="barre-prix">1 044,00 €</span>&nbsp; <span class="p5">991,80</span><span class="p10">939,60</span><span class="p15">887,40</span> €</span>
+        </div>
+        <div class="tot or" style="justify-content:flex-end;font-size:12px">
+          <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> de <span class="p5">5</span><span class="p10">10</span><span class="p15">15</span> % accordée</span>
+        </div>
+      </div>
+
+      <!-- La feuille du micro, telle qu'elle existe depuis le 15 août : elle
+           propose, il coche. La réduction y prend simplement sa ligne. -->
+      <div class="confirme">
+        <span class="sur">Ce qu’Atlas a compris</span>
+        <p class="qui">Un changement</p>
+        <p class="phrase">« Fais <span class="p5">cinq</span><span class="p10">dix</span><span class="p15">quinze</span> pour cent sur le montant du devis. »</p>
+        <div class="prop">
+          <span>
+            <span class="verbe">Accorder</span>
+            <span class="txt"><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> de <span class="p5">5</span><span class="p10">10</span><span class="p15">15</span> %</span>
+            <span class="det">870,00 € → <span class="p5">826,50</span><span class="p10">783,00</span><span class="p15">739,50</span> € HT — soit <span class="p5">43,50</span><span class="p10">87,00</span><span class="p15">130,50</span> € de moins</span>
+          </span>
+          <span class="coche">✓</span>
+        </div>
+      </div>
+    </div></div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A · Une ligne du devis</span>
+        La réduction s’écrit <b>dans le tableau</b>, comme une prestation, avec un
+        montant négatif. Le total HT descend tout seul. Votre client voit
+        exactement ce qu’il a obtenu, à l’endroit où il lit les prix.
+        <span class="cout"><b>Ce que ça coûte : presque rien, et c’est décisif.</b>
+        Une ligne voyage <b>toute seule</b> jusqu’à la facture, au relevé de TVA
+        et à l’export comptable — tout ce chemin est déjà bâti pour les lignes.
+        Le seul point d’attention : elle se retire comme une autre ligne, donc
+        d’un geste un peu rapide.</span>
+      </div>
+      <div class="l-b">
+        <span class="t">B · Sous le total</span>
+        Le total plein reste écrit, la remise se pose dessous, et le <b>total
+        après remise</b> suit. C’est la présentation d’un devis d’entreprise : on
+        voit le prix de départ, ce qui a été consenti, et ce qui reste dû.
+        <span class="cout"><b>Ce que ça coûte, et ce n’est pas un détail :</b> ce
+        n’est pas une ligne, donc il faut <b>une colonne de plus</b> dans le
+        devis, dans la facture, et dans tout ce qui les recopie — le relevé de
+        TVA, l’export comptable, le PDF. <b>Chaque endroit oublié est un montant
+        faux.</b> Plusieurs jours au lieu d’un.</span>
+      </div>
+      <div class="l-c">
+        <span class="t">C · Le prix barré</span>
+        Le prix d’avant est <b>barré</b> à côté du nouveau. C’est le geste
+        commercial le plus lisible : votre client voit d’un coup d’œil ce qu’il
+        économise, sans lire une ligne de tableau.
+        <span class="cout"><b>Ce que ça coûte :</b> le prix barré est le
+        vocabulaire de la promotion, pas du devis d’artisan — sur un document qui
+        engage, il peut faire douter du sérieux du premier chiffre. Et il partage
+        le coût technique de B : la remise n’est pas une ligne.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui sera vrai quelle que soit votre réponse</span>
+    <ul>
+      <li><b>La réduction se calcule sur le HT, la TVA vient après.</b>
+        870,00 € − 5 % = 826,50 €, puis TVA. L’appliquer sur le TTC donnerait une
+        TVA fausse sur un document qui finit dans une déclaration — ce n’est pas
+        une préférence, c’est la seule façon juste.</li>
+      <li><b>Elle suit jusqu’à la facture.</b> Une réduction accordée sur le devis
+        et absente de la facture ferait payer à votre client le prix qu’on venait
+        de lui retirer.</li>
+      <li><b>Le pourcentage est le vôtre</b> — 5, 10, 15, ou autre chose. Aucun
+        taux « habituel » ne sera proposé d’office.</li>
+      <li><b>Le micro propose, vous cochez</b>, comme depuis le 15 août. « Fais
+        cinq pour cent » n’applique rien tout seul.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <span class="t">Deux questions, et elles ne bloquent pas</span>
+    <ul>
+      <li>Voudrez-vous aussi pouvoir dire un <b>montant</b> plutôt qu’un
+        pourcentage — « fais-moi 50 € » ? Ce n’est pas dans votre demande, et je
+        ne l’ajoute pas sans que vous le disiez.</li>
+      <li>Faut-il aussi un <b>bouton</b> sur l’écran du devis, pour les fois où
+        vous n’avez pas envie de parler ?</li>
+    </ul>
+  </div>
+</div>

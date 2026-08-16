@@ -650,7 +650,7 @@ export type ChantierASituer = {
 /**
  * Les chantiers dont les coordonnées manquent — ou ne valent plus rien.
  *
- * **Deux cas, un seul traitement.** Un chantier créé avant la migration 0045
+ * **Deux cas, un seul traitement.** Un chantier créé avant la migration 0049
  * n'a jamais eu de coordonnées ; un chantier dont le patron a corrigé l'adresse
  * en a de fausses, ce qui est pire — elles ne se signalent pas. Comparer
  * `adresse_situee` à `adresse_chantier` attrape les deux d'un coup, et rend le

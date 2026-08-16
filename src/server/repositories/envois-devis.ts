@@ -328,7 +328,15 @@ export type EnvoiPourClient = {
   devisId: string;
   chantierId: string;
   datesProposees: JourIso[];
-  /** Jours indisponibles dans la fenêtre — des dates, rien d'autre. */
+  /**
+   * Jours indisponibles dans la fenêtre — **des dates, rien d'autre**.
+   *
+   * La durée de réservation a été ajoutée ici le 16 août 2026, puis retirée le
+   * jour même : la batterie l'a refusée (*« la durée du chantier a fuité vers
+   * la page du client »*), et elle avait raison — c'est une consigne du patron,
+   * pas une préférence de style. La page du client dit donc « ne peuvent pas
+   * accueillir votre chantier », sans jamais chiffrer (`src/lib/jours-barres.ts`).
+   */
   joursOccupes: JourIso[];
   fenetre: { debut: JourIso; fin: JourIso };
   reponse: "acceptee" | "refusee" | "correction" | null;

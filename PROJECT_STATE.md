@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-16 · branche `main`
-· dernière migration `drizzle/0047_coordonnees_chantier.sql`
+· dernière migration `drizzle/0049_coordonnees_chantier.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -68,6 +68,8 @@ seule avec quinze outils.
 | Cycle d'envoi, jeton, expiration, réponse | `src/server/repositories/envois-devis.ts` |
 | Suivi de ce que devient le devis (5 états) | `src/lib/etat-envoi.ts` |
 | Statut affiché d'un chantier, de brouillon à facturé | `src/lib/chantier-etat.ts` |
+| Retoucher le devis à la voix — elle propose, il coche (15 août) | `src/lib/retouches-devis.ts`, `src/server/ai/services/retouches-devis-service.ts`, `src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` |
+| Le prix accordé au client — remise en % sous le total, jusqu'à la facture (16 août) | `src/lib/reduction-devis.ts`, migration `0048` |
 | Notification « devis retourné » à l'accueil | `src/app/Notifications.tsx` |
 | Reprise d'un devis retourné en nouvelle version | `src/app/chantiers/[id]/export/actions.ts` |
 | Onglet « Terminés » et fin de chantier | `src/app/termines/` |
@@ -121,7 +123,7 @@ le réseau.
 | Les règles pures : vol d'oiseau, seuil, classement, phrase affichée | `src/lib/appariement-demi-journees.ts` |
 | Le trajet demandé à la Géoplateforme de l'IGN — sans clé, sans compte | `src/server/itineraire/geoplateforme.ts` |
 | L'assemblage : rattrapage des coordonnées, présélection, appels, classement | `src/server/planning/appariement.ts` |
-| Les coordonnées d'un chantier, et l'adresse qui les a produites | `drizzle/0047_coordonnees_chantier.sql` |
+| Les coordonnées d'un chantier, et l'adresse qui les a produites | `drizzle/0049_coordonnees_chantier.sql` |
 | Le bandeau sous la journée dépareillée, avec ses trois états muets | `src/components/atlas/BandeauAppariement.tsx` |
 | La vérification du vrai service, là où il y a du réseau | `.github/workflows/itineraire.yml` |
 
@@ -129,7 +131,7 @@ le réseau.
 chez nous, sans appel ; la route ne départage que les trois premiers. **Ce qui
 ne sort pas d'Atlas** : deux paires de nombres, jamais un nom ni une adresse en
 clair — tenu par un contrôle (`scripts/test-itineraire-ign.ts`).
-`ARCHITECTURE.md` §113.
+`ARCHITECTURE.md` §117.
 
 ### Conformité RGPD
 
@@ -165,6 +167,19 @@ arrive sur la page.
 **Non éprouvé ici, et ça ne peut pas l'être** : la détection appartient à un
 logiciel fermé d'Apple, absent de cet environnement. À faire confirmer par le
 patron, depuis ses SMS (`TODO.md`).
+
+### Le jour barré qui se faisait passer pour un jour pris (16 août 2026)
+
+L'écran refusait une date sans dire pourquoi, et la phrase désignait une
+occupation qui n'existait pas. La règle, elle, était juste : un jour vide se
+barre quand la durée du chantier déborderait sur un lendemain plein.
+
+| Brique | Où c'est |
+|---|---|
+| La phrase, et le cas reproduit qui la justifie | `src/lib/jours-barres.ts` |
+| Le calendrier — le même pour le patron et pour son client | `src/components/atlas/Calendrier.tsx` |
+| Contrôles purs : le fait, la phrase, et la consigne côté client | `scripts/test-jours-barres.ts` |
+| Le pourquoi, et ce qui n'a PAS changé | `ARCHITECTURE.md` §115 |
 
 ### L'écran d'erreur qui ne menait nulle part (11 août 2026)
 
@@ -288,8 +303,10 @@ l'application. Ce qui est **fait** :
   devis ne réclame plus rien. Migration `drizzle/0046_rappel_chantier_sans_devis.sql`.
   **Le ton lui a été reposé, capture à l'appui — il garde le sien** (« le B »,
   16 août) : c'est le seul des trois rappels où rien n'est encore parti au
-  client. Reste le **rang**, sans réponse : l'accueil ne montre que deux cartes
-  et les rappels ferment la marche. `TODO.md` §0 novivicies.
+  client. **Et le rang est tranché aussi** (« fait la B », 16 août, après trois
+  photos) : sur l'accueil, **les rappels passent devant les réponses de
+  clients** — ce qu'il doit faire avant ce qu'on lui a répondu. `TODO.md`
+  §0 novivicies.
 - **Une carte ne peut plus se reposer à moitié coupée** (16 août) : sa capture —
   *« le premier message est trop haut et le début n'est pas visible »*. Le cadre
   qui défile déclarait `scroll-snap-type` sans qu'aucun enfant n'ait jamais
@@ -628,8 +645,11 @@ Voir `TODO.md` pour le détail et l'ordre.
   l'application, lui, ne cloisonne toujours rien. **Les TREIZE rubriques sont
   ouvertes au 14 août 2026** — plus aucune ne porte « Bientôt »
   (`ARCHITECTURE.md` §108). Deux d'entre elles ne règlent rien et l'assument :
-  *Apparence* (le mode sombre et l'accent demandent de reprendre toute
-  l'application) et *Abonnement* (ni prix ni offre décidés). *Notifications*,
+  *Abonnement* (ni prix ni offre décidés). **Apparence, elle, règle désormais
+  les SEPT CHARTES DE COULEURS** — Origine, Pierre, Beurre, Moka, Prune, Sylve,
+  Nuit, dont deux sombres (`ARCHITECTURE.md` §114). Elles repeignent toute
+  l'application ; les devis et factures gardent l'identité d'Atlas. Par défaut,
+  rien ne change : « Origine » reprend les valeurs d'avant au caractère près. *Notifications*,
   elle, porte **deux rappels réels** qui apparaissent sur l'accueil — devis sans
   réponse, chantier fini non facturé — et dit pourquoi « facture impayée » est
   impossible : rien n'enregistre qu'une facture a été payée. Les deux dernières ouvertes sont

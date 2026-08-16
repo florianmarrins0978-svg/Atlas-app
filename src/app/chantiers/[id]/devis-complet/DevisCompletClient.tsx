@@ -11,7 +11,11 @@ import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { CIVILITES, type Civilite } from "@/lib/civilite";
+import type { Changement } from "@/lib/retouches-devis";
+import { LIBELLE_REDUCTION, totauxAvecReduction } from "@/lib/reduction-devis";
+import DicterDansLeDevis from "./DicterDansLeDevis";
 import {
+  appliquerRetouchesAction,
   majEmetteurAction,
   majClientDuDevisAction,
   majAdresseChantierAction,
@@ -58,6 +62,8 @@ type Props = {
   adresseChantier: string;
   lignesInitiales: Ligne[];
   tauxTva: string;
+  /** Le prix accordé au client, en pourcentage. `null` : aucun. */
+  reductionPourcent: string | null;
   conditionsPaiement: string;
   /** La dictée n'a pas été comprise, seulement recopiée — voir `lecture-litterale.ts`. */
   /**
@@ -84,6 +90,29 @@ export default function DevisCompletClient(props: Props) {
     props.lignesInitiales.map((l) => ({ ...l, quantite: sansZerosInutiles(l.quantite), prixUnitaire: sansZerosInutiles(l.prixUnitaire) }))
   );
   const [tauxTva, setTauxTva] = useState(sansZerosInutiles(props.tauxTva));
+  // Le prix accordé au client — son geste commercial, arrangement B du 16 août.
+  const [reduction, setReduction] = useState(
+    props.reductionPourcent === null ? "" : sansZerosInutiles(props.reductionPourcent)
+  );
+  /**
+   * La ligne de remise est-elle à l'écran ?
+   *
+   * **Elle ne peut pas dépendre du montant calculé, et c'est un défaut payé.**
+   * Vider la case ramenait la réduction à `null`, ce qui démontait la ligne —
+   * donc le champ — AVANT que `onBlur` ait pu enregistrer. Le retrait n'arrivait
+   * jamais au serveur, et la remise revenait au rechargement, sans un mot.
+   * Trouvé par `test-reduction-devis-e2e.ts`, invisible au typage.
+   *
+   * La ligne reste donc ouverte tant qu'il n'a pas quitté le champ, et ne se
+   * referme qu'une fois le retrait enregistré.
+   */
+  const [remiseOuverte, setRemiseOuverte] = useState(props.reductionPourcent !== null);
+
+  async function enregistrerRemise() {
+    const valeur = reduction.trim() || null;
+    await majEnTeteDevisAction(props.devisId, { reductionPourcent: valeur });
+    if (valeur === null) setRemiseOuverte(false);
+  }
   const [conditions, setConditions] = useState(props.conditionsPaiement);
 
   // Deux adresses identiques ne s'impriment pas deux fois. Comparaison
@@ -113,9 +142,20 @@ export default function DevisCompletClient(props: Props) {
   // **Ils suivent ce qui reste.** Un total qui ne bouge pas après un
   // retrait fait douter que le retrait ait eu lieu — et ici il ferait douter du
   // montant même du devis.
+  //
+  // **Le prix accordé au client passe par la MÊME règle que le serveur**
+  // (`src/lib/reduction-devis.ts`). Recalculer ici « juste pour l'affichage »
+  // ferait diverger l'écran du PDF au premier arrondi — et c'est le client qui
+  // verrait la différence (`CLAUDE.md` §3).
   const lignesVisibles = lignes.filter((l) => !retraits.estRetire(l.id));
-  const totalHt = lignesVisibles.reduce((somme, l) => somme + montantDeLaLigne(l), 0);
-  const totalTva = (totalHt * nombre(tauxTva)) / 100;
+  const totaux = totauxAvecReduction(
+    lignesVisibles.map((l) => ({ montant: montantDeLaLigne(l).toFixed(2) })),
+    String(nombre(tauxTva)),
+    reduction
+  );
+  const brutHt = Number(totaux.brutHt);
+  const totalHt = Number(totaux.totalHt);
+  const totalTva = Number(totaux.totalTva);
 
   function majLigneLocale(id: string, champ: keyof Ligne, valeur: string) {
     setLignes((cur) => cur.map((l) => (l.id === id ? { ...l, [champ]: valeur } : l)));
@@ -152,8 +192,48 @@ export default function DevisCompletClient(props: Props) {
   }
 
 
+  /**
+   * Les changements dictés, appliqués d'un seul geste.
+   *
+   * L'écran se recale sur **ce que la base rend**, pas sur ce qu'il espérait :
+   * un retrait refusé ou une ligne qu'une autre session aurait bougée entre
+   * temps se verrait sinon appliquée à l'écran et nulle part ailleurs.
+   */
+  async function appliquerRetouches(changements: Changement[]) {
+    const apres = await appliquerRetouchesAction(props.chantierId, changements);
+    setLignes(
+      apres.map((l) => ({
+        ...l,
+        quantite: sansZerosInutiles(l.quantite),
+        prixUnitaire: sansZerosInutiles(l.prixUnitaire),
+      }))
+    );
+  }
+
   return (
-    <article
+    <>
+      {/* **Le retour à gauche, le micro à droite** — la seule rangée de cet
+          écran qui n'appartienne pas au devis, et elle reste minuscule : sans
+          le retour, la page n'a pas de sortie sur un téléphone.
+
+          Le micro disparaît sur un devis parti : cet écran ne se modifie plus,
+          et un micro qui écouterait pour ne rien pouvoir changer serait une
+          promesse fausse. */}
+      <div className="mx-auto mb-3 flex w-full max-w-[820px] items-start justify-between sm:mb-4">
+        <a
+          href={`/chantiers/${props.chantierId}`}
+          aria-label="Revenir au chantier"
+          className="flex h-9 w-9 items-center justify-center rounded-full"
+          style={{ backgroundColor: colors.rustTint }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
+            <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </a>
+        {!fige && <DicterDansLeDevis chantierId={props.chantierId} onApplique={appliquerRetouches} />}
+      </div>
+
+      <article
       className="mx-auto w-full max-w-[820px] rounded-[10px] px-5 py-7 sm:px-12 sm:py-12"
       style={{ backgroundColor: colors.card, boxShadow: "0 12px 40px rgba(28,28,26,0.10)" }}
     >
@@ -434,10 +514,60 @@ export default function DevisCompletClient(props: Props) {
       {/* --- Les totaux, alignés à droite comme sur le papier ---------------- */}
       <section className="mt-8 flex justify-end">
         <div className="w-full sm:w-[320px]">
-          <div className="flex items-center justify-between py-1.5">
-            <span className="text-[15px]">Total HT</span>
-            <span className="text-[15px]">{enEuros(totalHt)}</span>
-          </div>
+          {/* **Le prix accordé au client — arrangement B, choisi le 16 août 2026.**
+              *« Sous le total et prix accordé au client. »*
+
+              Le prix plein d'abord, ce qui a été consenti dessous, puis le net :
+              c'est ce qui permet au client de refaire le calcul.
+
+              **Sans réduction, RIEN ne s'affiche ici** — et c'est une correction
+              faite en regardant l'écran, pas en lisant le code. Une première
+              version laissait une ligne « Prix accordé au client — % » sur tous
+              les devis : le PDF, lui, n'imprimait rien. L'écran et le document
+              se contredisaient, et cette feuille est censée être le papier.
+
+              Pour en poser une à la main, la ligne discrète plus bas — même
+              vocabulaire que « + Ajouter une ligne ». Il l'a demandée à la VOIX ;
+              ceci n'est que le chemin de secours quand on n'a pas envie de
+              parler, et le seul moyen de la retirer. */}
+          {remiseOuverte ? (
+            <>
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-[15px]">Total HT</span>
+                <span className="text-[15px]">{enEuros(brutHt)}</span>
+              </div>
+              <div className="flex items-center justify-between py-1.5" style={{ color: colors.or }}>
+                <span className="flex items-center gap-1 text-[15px]">
+                  {LIBELLE_REDUCTION}
+                  <input
+                    value={reduction}
+                    readOnly={fige}
+                    inputMode="decimal"
+                    aria-label="Prix accordé au client, en pourcentage"
+                    onChange={(e) => setReduction(e.target.value)}
+                    onBlur={enregistrerRemise}
+                    className="w-9 border-0 bg-transparent p-0 text-right outline-none focus:bg-[rgba(0,0,0,0.03)]"
+                    style={{ color: colors.or, fontSize: "16px" }}
+                  />
+                  %
+                </span>
+                <span className="text-[15px]">
+                  {totaux.reductionMontant === null ? "" : `− ${enEuros(Number(totaux.reductionMontant))}`}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-[15px]">
+                  {totaux.reductionPourcent === null ? "Total HT" : "Total HT après remise"}
+                </span>
+                <span className="text-[15px]">{enEuros(totalHt)}</span>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-between py-1.5">
+              <span className="text-[15px]">Total HT</span>
+              <span className="text-[15px]">{enEuros(totalHt)}</span>
+            </div>
+          )}
           <div className="flex items-center justify-between py-1.5">
             <span className="flex items-center gap-1 text-[15px]">
               TVA (
@@ -463,6 +593,23 @@ export default function DevisCompletClient(props: Props) {
               {enEuros(totalHt + totalTva)}
             </span>
           </div>
+
+          {/* Discret, et seulement quand il n'y en a pas : un devis qui porte
+              déjà sa remise n'a pas besoin qu'on lui propose d'en poser une. */}
+          {!fige && !remiseOuverte && (
+            <button
+              type="button"
+              onClick={() => {
+                setRemiseOuverte(true);
+                setReduction("5");
+                majEnTeteDevisAction(props.devisId, { reductionPourcent: "5" });
+              }}
+              className="mt-2.5 text-[13.5px]"
+              style={{ color: colors.or }}
+            >
+              + {LIBELLE_REDUCTION}
+            </button>
+          )}
         </div>
       </section>
 
@@ -530,7 +677,8 @@ export default function DevisCompletClient(props: Props) {
           Tout s&apos;enregistre au fur et à mesure. Rien ne part avant que vous ne le décidiez.
         </p>
       </div>
-    </article>
+      </article>
+    </>
   );
 }
 

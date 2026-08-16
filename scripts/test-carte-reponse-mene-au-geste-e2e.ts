@@ -93,6 +93,16 @@ async function chantierAvecDevisEnvoye(page: Page, nom: string) {
  */
 async function lienDeLaCarte(page: Page, chantierId: string) {
   await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+  // **Déplier la pile avant de chercher.** Depuis le 16 août 2026, les rappels
+  // passent devant les réponses de clients (sa décision « fait la B »), et
+  // l'accueil n'en pose que deux : une réponse peut donc être repliée derrière
+  // « N autres devis à regarder ». Elle existe et se touche en un appui — mais
+  // pas sans ce geste, et la suite accuserait la carte d'être absente.
+  const deplier = page.getByRole("button", { name: /autres? devis à regarder/ });
+  if ((await deplier.count()) > 0) {
+    await deplier.first().click();
+    await page.waitForTimeout(300);
+  }
   const carte = page.locator(`[data-atlas="carte-reponse"][data-chantier="${chantierId}"]`);
   await carte.first().waitFor({ state: "visible", timeout: 20_000 }).catch(() => undefined);
   if ((await carte.count()) === 0) {
@@ -187,6 +197,11 @@ async function main() {
   // seconde manquait — un devis parti refuse la première frappe.
   await cas("correction : le geste mène DIRECTEMENT au devis", async () => {
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    const replie = page.getByRole("button", { name: /autres? devis à regarder/ });
+    if ((await replie.count()) > 0) {
+      await replie.first().click();
+      await page.waitForTimeout(300);
+    }
     const carte = page.locator(
       `[data-atlas="carte-reponse"][data-chantier="${correction.chantierId}"]`
     );

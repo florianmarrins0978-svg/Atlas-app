@@ -8898,7 +8898,7 @@ qui se demande à l'administration. Un artisan qui ne l'a jamais demandée étai
 donc invité par l'application à **avancer la TVA d'un client qui n'avait pas
 payé**.
 
-Le défaut est donc devenu `encaissements` (migration 0047), et le réglage existe
+Le défaut est donc devenu `encaissements` (migration 0045), et le réglage existe
 parce que les deux régimes existent : `docs/QUESTIONS.md` §20, `docs/A-FAIRE.md`
 §12.
 
@@ -9140,9 +9140,383 @@ entière les sépare, et leurs sens sont aux deux bouts du chantier.
 Les trois lignes racontent alors le chantier dans l'ordre : **pas de devis →
 devis sans réponse → fini, pas facturé.**
 
+### Le rang sur l'accueil : les rappels D'ABORD
+
+*Sa décision du 16 août 2026 — **« fait la B »** — après trois photos.*
+
+**La règle d'avant :** *« les réponses d'abord : quelqu'un a agi, cela prime sur
+un silence. Les rappels ferment la marche — ils décrivent une attente, pas un
+événement. »* Elle se défendait. Elle avait un défaut que **seule une photo a
+montré** : l'accueil ne pose que `VISIBLES_PAR_DEFAUT` cartes (deux), et dès
+**deux réponses en attente**, le rappel passait derrière « N autres devis à
+regarder ». Un rappel qu'il faut déplier n'est plus un rappel.
+
+**Ce qui a été mesuré avant de décider**, et qui a corrigé une exagération de ma
+part : avec **UNE seule** réponse en attente, son rappel prend la seconde place
+et se voit très bien. Il en faut **deux ou plus** pour le repousser. Le lui
+annoncer comme un défaut permanent aurait été le faire décider sur du faux — la
+scène des photos a donc dû être fabriquée exprès
+(`scripts/capture-rang-trois-cas.sh`).
+
+**Trois dispositions photographiées sur la MÊME scène**, jamais dessinées :
+
+| | Ce que l'image montre | |
+|---|---|---|
+| A | Deux corrections demandées | son rappel derrière le repli |
+| **B** | Ses rappels en tête | **retenu** |
+| C | Trois cartes au lieu de deux | **écarté par l'image elle-même** : la troisième tombe sous le bord de l'écran |
+
+**Ce que B coûte, et il l'a accepté en le voyant :** une acceptation ou un refus
+peut désormais attendre derrière un rappel. Ce qu'il gagne : ce qu'il doit FAIRE
+passe avant ce qu'on lui a répondu.
+
+`scripts/test-devis-qui-tarde-e2e.ts` tient l'ordre — et il vérifie l'ordre, pas
+le compte : la règle vaut quel que soit le nombre de cartes.
 ---
 
-## 113. Deux demi-journées qui font une journée — et la route, pas le vol d'oiseau
+---
+
+## 113. Retoucher un devis à la voix : elle propose, il coche
+
+*Demandé le 15 août 2026. Dessiné (`docs/maquettes/54-dicter-dans-le-devis.html`),
+puis codé sur sa réponse — la proposition A, « elle propose, vous cochez ».*
+
+**Sa demande, en deux temps.** D'abord le geste : *« Rajoutes-moi un petit
+dictaphone en haut à droite comme il y a pour les infos clients quand tu fais un
+nouveau chantier, pour pouvoir dicter à l'intérieur du devis s'il y a des choses
+à reprendre ou à modifier. Et je veux que tu mettes exactement les mêmes trois
+petits points quand ils chargent. »* Puis le vocabulaire, qui décide de tout le
+reste : *« supprime-moi la deuxième ligne, modifie-moi le prix de la taille de
+haie, remplace-moi le deux cent cinquante par trois cent cinquante, rajoute-moi
+une ligne, broyage des branches et tu mets cinq cents euros, corrige-moi telle
+ligne, supprime-moi fondage du bois, mais en échange je veux que tu mettes
+débitage du bois, tu as fait une faute à tel endroit, corrige la faute. **Je vais
+pouvoir lui parler comme ça et qu'elle comprenne.** »*
+
+### Trois étages, et ce qui vit dans chacun
+
+| Étage | Fichier | Ce qu'il sait |
+|---|---|---|
+| La règle | `src/lib/retouches-devis.ts` | Sur quelle ligne tombe une désignation, et ce qu'un changement dira en toutes lettres. **Aucune base, aucun modèle** : éprouvé sans rien monter (`scripts/test-retouches-devis.ts`) |
+| Le modèle | `src/server/ai/services/retouches-devis-service.ts` | Transcrit, puis demande une liste de retouches en donnant le devis comme contexte. Sans clé, il rend la transcription et **aucune** proposition |
+| L'écran | `src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` | Montre, laisse décocher, applique ce qui reste |
+
+**Rien ne s'applique sans son appui**, et c'est l'arrêt qui justifie l'étage du
+milieu : ces lignes SONT le devis que son client recevra. Une lecture qui se
+trompe d'un chiffre se rattrape par un avoir.
+
+### Les quatre décisions de la règle, et ce que chacune évite
+
+1. **Le libellé bat le rang.** On se trompe plus souvent de numéro que de nom —
+   surtout après avoir soi-même ajouté une ligne. Le rang ne sert qu'à départager
+   deux noms qui se valent (« la deuxième, l'élagage »).
+2. **Un nom dit mais reconnu nulle part ne se rabat PAS sur le rang.** Il a nommé
+   quelque chose : prendre la ligne n° 1 « puisqu'il a dit première » modifierait
+   une ligne au hasard sans qu'il s'en aperçoive.
+3. **Deux lignes qui se valent rendent `ambigu`.** Son devis porte « Élagage
+   chêne » et « Élagage frêne » : choisir la première parce qu'elle arrive en tête
+   retirerait la mauvaise une fois sur deux. La feuille les montre toutes les
+   deux, décochées, et il redit.
+4. **Les rangs ne se décalent pas d'une retouche à l'autre.** « Supprime la
+   deuxième et change la troisième » se lit sur le devis QU'IL VOIT, pas sur
+   celui qu'on obtiendrait après le premier retrait.
+
+**Et « fondage du bois » trouve « Fendage du bois ».** C'est son exemple, et
+c'est le cas courant : une syllabe avalée par le micro. La ressemblance regarde
+l'inclusion d'abord (« le prix de la taille de haie » contre « Taille de haie —
+12 m »), puis les mots communs, puis la distance d'édition — dans cet ordre,
+parce qu'une distance brute déclare éloignés deux textes dont l'un est trois fois
+plus long que l'autre.
+
+### Aucun prix ne s'invente — deux gardes, pas une
+
+« Rajoute le broyage » sans montant rend une ligne dont le prix est `null`, et la
+feuille l'écrit **en rouge** : « Aucun prix dicté — la ligne arrive vide, à vous
+de la chiffrer ». Le premier garde est dans la consigne donnée au modèle ; le
+second est `montantDicte`, qui refuse tout ce qui n'est pas un nombre — « environ
+500 », « le prix habituel », « à voir ». Le jour où l'un des deux cède, l'autre
+tient (`CLAUDE.md` §4).
+
+**Une retouche bancale est jetée, jamais rattrapée.** Il verra qu'un changement
+manque et le redira ; il ne verrait pas, en revanche, qu'un chiffre a été mal
+repris. C'est ce déséquilibre-là qui décide.
+
+### Deux détails d'écran trouvés à la capture, pas à la mesure
+
+- **Le rond du micro est `card` ici, `rustTint` sur la fiche du client.** Cette
+  page-ci est teintée : un rond `rustTint` sur un fond `rustTint` disparaît
+  purement et simplement. Ce n'est pas un second micro — c'est le même, sur un
+  autre fond.
+- **Le retour et le micro partagent une rangée**, ce qui a fait descendre le
+  retour de `page.tsx` dans l'écran client : le micro touche aux lignes, donc à
+  leur état.
+
+### Ce qui n'a PAS pu être éprouvé ici, et qu'il faut savoir
+
+Cet environnement n'a **ni service de transcription ni modèle**. La feuille de
+confirmation **remplie** n'a donc jamais été parcourue de bout en bout : les
+phrases de chaque changement sont éprouvées sans navigateur
+(`scripts/test-retouches-devis.ts`), et la feuille elle-même n'a été vue qu'avec
+des données posées à la main. Le raccord entre la voix et la feuille n'aura été
+parcouru qu'avec une clé — sur son banc, ou en production.
+
+Faute de transcription, l'écran ne fait pas semblant : il dit « Aucun service de
+transcription n'est branché sur cette installation ». Montrer le texte de
+remplacement comme une dictée reviendrait à corriger un devis d'après une phrase
+que personne n'a prononcée (`src/server/ai/providers/transcription/dev.ts`).
+
+---
+
+---
+
+## 114. Sept chartes de couleurs, dont deux sombres — et pourquoi ce n'est qu'UN réglage
+
+*Choisies par le patron le 14 août 2026, sur une planche de seize qui dormait
+depuis le début du projet (`docs/maquettes/11-ecran-retenu-seize-couleurs.html`,
+engendrée par `scripts/engendrer-maquette-couleurs.mjs`) :* ***« garde seulement
+pour l'instant nuit, beurre, moka, pierre, sylve »***, *plus la rose-violet —
+Prune —, puis* ***« oui garde Origine en défaut, fais les sept »***.
+
+### Le mode sombre n'est pas un second interrupteur
+
+Il demandait « le mode sombre » **et** les couleurs de la planche. Ce sont la
+même chose : **Nuit** et **Sylve** SONT sombres. Deux réglages séparés — un
+pour la couleur, un pour le sombre — se seraient contredits à la première
+combinaison venue : « Nuit » avec le sombre éteint ne veut rien dire, et il
+aurait fallu inventer une règle pour trancher. Une liste, sept lignes, deux
+marquées « Sombre ».
+
+### Ce qui rend ce changement sans effet par défaut
+
+`colors.*` ne porte plus de valeur en clair : chaque jeton vaut
+`var(--atlas-<nom>, <valeur d'origine>)`. **Le repli EST la charte d'origine, au
+caractère près** — relevée jadis au navigateur sur le site d'Arborea (§17). Une
+page qui ne poserait aucune variable retombe donc exactement sur ce que
+l'application portait la veille.
+
+`scripts/test-chartes.ts` le tient de deux façons : la charte `origine` est
+comparée aux treize valeurs d'avant le lot, **et** le repli écrit dans
+`design-tokens.ts` est relu et comparé aux mêmes. Une seule valeur recopiée de
+travers repeindrait toute l'application, et rien d'autre ne le verrait.
+
+### LE PIÈGE : l'écran se coupait en deux
+
+Premier essai, capture à l'appui : tout l'accueil était passé au noir **et la
+bande sous la barre de navigation restait blanche**.
+
+Atlas a **deux** vocabulaires de couleur, et il fallait les brancher tous les
+deux :
+
+| Ce qui l'emploie | D'où ça vient |
+|---|---|
+| les styles en ligne (`style={{ backgroundColor: colors.cream }}`) | `src/lib/design-tokens.ts` |
+| les classes Tailwind (`bg-paper`, `text-ink`, `border-line`) | les variables de `src/app/globals.css` |
+
+D'où la seconde moitié du lot : `globals.css` relit `--atlas-*` avec les mêmes
+replis. **Et les variables sont posées sur `<html>`, pas sur `<body>`** — une
+variable définie sur le corps n'est pas visible d'une déclaration faite à
+`:root`, et les sept lignes de `globals.css` seraient silencieusement retombées
+sur leur repli. Le contrôle qui garde ce point vise nommément `div.bg-paper`.
+
+### Sur la PERSONNE, pas sur l'entreprise
+
+`users.charte` (migration 0047), pas `entreprises`. « Apparence » appartient à
+l'ensemble « Moi » du sommaire : c'est un goût, et un salarié qui préfère le
+sombre n'a pas à l'imposer à son patron. `null` = origine, ce qui distingue
+« jamais choisi » de « a choisi origine ».
+
+**Aucune contrainte en base sur la valeur**, délibérément : la liste vivra et
+un nom retiré ferait alors échouer l'écriture. `charte()` retombe sur l'origine
+devant un nom inconnu — c'est le bon comportement, et il est éprouvé.
+
+### Trois choses qui NE suivent pas la charte, et c'est voulu
+
+1. **Les documents.** `couleursDocument` reste en clair : un devis ne part pas
+   en noir chez le client parce que l'artisan a choisi « Nuit ». Le commentaire
+   de `design-tokens.ts` l'avait prévu de longue date.
+2. **Les deux pages du client** — devis et facture. Le gabarit ne pose aucune
+   variable dessus : elles portent l'identité d'Atlas, pas le goût de l'artisan.
+3. **`alert`, `sage`, `sageLight`.** Une alerte ne change pas de sens avec la
+   couleur du fond.
+
+### Ce qui reste à faire
+
+**La couleur de l'interface du navigateur** (`themeColor` dans les métadonnées)
+vaut toujours le crème : sur « Nuit », la barre d'adresse de l'iPhone reste
+claire au-dessus d'un écran noir. Ce n'est pas dans le rendu de la page mais
+dans les métadonnées, qui ne connaissent pas la personne connectée — à traiter à
+part (`TODO.md`).
+
+---
+
+---
+
+## 115. Un jour barré n'est pas un jour pris — et la phrase disait le contraire
+
+**Le patron, le 16 août 2026**, capture de l'écran d'envoi à l'appui :
+
+> *« J'ai l'impression que lorsque je veux remettre une journée sur le dix-huit,
+> je ne peux pas ou alors c'est parce que je n'ai pas sectionné la
+> demi-journée. »*
+
+Il cherchait la cause du mauvais côté. **L'écran l'y envoyait.**
+
+### Ce qu'un jour barré signifie vraiment
+
+`joursSansPlace` ne répond pas à « ce jour est-il pris ? » mais à **« un chantier
+de CETTE durée peut-il y COMMENCER ? »**. Les deux ne coïncident pas, et l'écart
+n'a rien d'exotique. Reproduit avant d'écrire une ligne, avec un seul jour
+réellement plein — le 19 — et deux équipes :
+
+| Jour | Durée demandée | Verdict | Pastille du planning |
+|---|---|---|---|
+| 18 août | ½ journée | proposable | **libre** |
+| 18 août | 1 journée | proposable | **libre** |
+| 18 août | 2 jours | **BARRÉ** | **libre** |
+
+Le 18 est **vide** et pourtant barré : deux jours partis du 18 déborderaient sur
+le 19, qui est plein. **La règle est juste** — sans elle, le chantier mordrait
+sur une journée déjà prise. C'est la phrase qui mentait.
+
+### La phrase, et pourquoi c'est un vrai défaut
+
+Elle écrivait : *« Les jours barrés sont déjà pris et ne peuvent pas être
+choisis. »* Sur le 18, c'est faux — il n'y a rien dessus. Elle désignait donc une
+occupation inexistante et envoyait chercher au mauvais endroit : exactement ce
+que `AGENTS.md` proscrit — *une erreur qui accuse à tort coûte plus cher que pas
+d'erreur du tout*.
+
+`src/lib/jours-barres.ts` la rend honnête, **et la durée y est la clé** :
+
+> « Les jours barrés ne peuvent pas accueillir **2 jours** : soit ils sont pris,
+> soit le chantier déborderait sur un jour qui l'est. »
+
+Nommer la durée ne fait pas que dire vrai : **cela montre le levier**. Sur
+l'écran d'envoi, la durée se change juste au-dessus du calendrier — passer à
+« 1 journée » rouvre le 18. Le refus cesse d'être une impasse.
+
+**La demi-journée a sa propre phrase**, et ce n'est pas une coquetterie : elle
+tient dans un seul créneau, donc elle ne peut déborder sur rien. Lui servir
+« soit le chantier déborderait » rouvrirait le défaut en sens inverse.
+
+### Ce que ça touche, et ce que ça ne touche pas
+
+- **Les deux écrans**, parce que c'est **le même composant** : celui du patron et
+  celui du client. Le client aussi voyait des jours barrés sans savoir pourquoi.
+- **Mais pas la même phrase — et c'est la batterie qui l'a imposé.** La première
+  version envoyait la durée jusqu'à la page du client, en toute bonne foi :
+  c'est son chantier, après tout. `test-creneaux-planning.ts` l'a refusée —
+  *« la durée du chantier a fuité vers la page du client »*. La consigne est
+  ancienne et appartient au patron : **rien du découpage de son planning ne part
+  chez le client**, ni créneau, ni durée ; il ne reçoit que des dates. Ce n'était
+  pas à une session de rouvrir cet arbitrage, et rien dans le raisonnement qui a
+  conduit à l'enfreindre ne l'aurait signalé — seul le contrôle l'a fait.
+  Le client lit donc : *« Les jours barrés ne peuvent pas accueillir votre
+  chantier. »* Vrai, et muet sur le reste.
+- **`dureeDemiJournees` n'a AUCUNE valeur par défaut sur `Calendrier`** (elle vaut
+  `number | null`). Chaque écran doit trancher : un défaut silencieux ferait
+  pencher l'un des deux du mauvais côté sans que personne ne le décide.
+- **Le lecteur d'écran dit la même chose que la phrase**, de chaque côté. Deux
+  publics, une seule vérité, sinon l'un des deux garde la version fausse et
+  personne ne le voit.
+- **Aucune règle de réservation n'a changé.** `jourRetenable`, `joursSansPlace`,
+  l'occupation : rien n'est touché. Seule la phrase l'est.
+
+### Ce qui le garde
+
+`scripts/test-jours-barres.ts` tient les trois choses : **le fait** — un jour
+vide se barre bel et bien quand la durée déborde —, **la phrase**, qui ne doit
+plus jamais prétendre « déjà pris » pour aucune durée, et **la consigne** : celle
+du client ne chiffre rien. Confrontée à l'ancienne formulation, la suite passe
+quatre cas au rouge en nommant le bon coupable.
+
+---
+
+## 116. « Fais cinq pour cent » : le prix accordé au client
+
+*Demandé le 16 août 2026, dessiné (`docs/maquettes/61-la-reduction-au-client.html`),
+puis codé sur sa réponse — **« sous le total et prix accordé au client »**,
+l'arrangement B et son libellé.*
+
+**Sa demande :** *« si jamais un client me demande une réduction, [pouvoir] lui
+demander "fais cinq pour cent sur le montant du devis" et il ajoute une petite
+ligne réduction ou prix accordé au client — cinq pour cent, ou dix, ou quinze.
+C'est moi qui choisis le nombre de pourcentage. »*
+
+### Ce que B coûte, et pourquoi il l'a choisi quand même
+
+Trois arrangements lui ont été montrés, **avec leur prix écrit en face** :
+
+| | Où | Coût annoncé |
+|---|---|---|
+| A | une ligne du tableau | presque rien — une ligne voyage seule jusqu'à la facture |
+| **B** ✔ | sous le total | **une colonne de plus partout**, et chaque endroit oublié est un montant faux |
+| C | le prix barré | même coût que B, et le vocabulaire de la promotion |
+
+Il a choisi B en connaissance de cause. **Ne pas rouvrir ce choix** ; ce qui suit
+n'existe que pour rendre ce coût tenable.
+
+### La parade : un seul calcul, appelé partout
+
+`src/lib/reduction-devis.ts` porte `totauxAvecReduction` — et **personne ne
+recalcule un total ailleurs**. Cinq endroits l'appellent : le devis
+(`src/server/repositories/devis.ts`), la facture
+(`src/server/repositories/factures.ts`, à la création ET à l'émission), le PDF
+commun (`src/server/pdf/document-commun.ts`), et l'écran
+(`DevisCompletClient.tsx`). Le jour où l'un d'eux additionne des lignes à la
+main, il oubliera la remise.
+
+### Trois décisions qui ne sont pas des préférences
+
+1. **La réduction s'applique sur le HT, la TVA se calcule après.** Sur le TTC,
+   elle rendrait une déclaration fausse. Annoncé comme non soumis à son choix.
+2. **`total_ht` porte le montant NET.** Tout ce qui existe déjà — relevé de TVA,
+   export comptable, exigibilité, paiements — y cherche ce qui est *dû*. Y
+   laisser le prix plein aurait demandé de corriger chacun de ces endroits sans
+   en oublier un seul. Le prix plein vaut `total_ht + reduction_montant`.
+3. **Deux colonnes, pas une.** Le pourcentage suffirait à recalculer le montant…
+   tant que les lignes ne bougent pas. Elles bougent. Le montant est donc figé
+   avec le document, comme les totaux qui l'entourent.
+
+**Et deux gardes plutôt qu'un** : `pourcentValide` borne à l'entrée, et la
+migration 0048 pose des contraintes SQL — bornes, et les deux colonnes
+ensemble ou pas du tout. L'écran n'est pas le seul chemin : une action serveur
+ou une reprise de données passeraient à côté de la première.
+
+### Ce que les contrôles ont trouvé, et qu'aucune relecture n'aurait vu
+
+- **`pdf-lib` refusait le « moins » typographique.** `−` (U+2212) n'existe pas en
+  WinAnsi : `WinAnsi cannot encode "−"`, et **plus aucun devis ne se générait**.
+  L'écran, lui, l'affichait très bien. Un trait d'union règle tout
+  (`test-reduction-pdf.ts`).
+- **Le champ disparaissait sous le doigt.** Vider la case ramenait la réduction
+  à `null`, ce qui démontait la ligne — donc le champ — AVANT que `onBlur` ait pu
+  enregistrer. Le retrait n'arrivait jamais au serveur et la remise revenait au
+  rechargement, sans un mot. D'où `remiseOuverte`, un état qui ne dépend pas du
+  montant calculé (`test-reduction-devis-e2e.ts`).
+- **`chargerDevisPourEcran` rend `null` sur un brouillon**, par construction : il
+  sert à relire un devis ENVOYÉ. La retouche dictée l'appelait, et n'aurait donc
+  jamais rien appliqué — le seul cas qui compte étant justement le brouillon
+  (`test-reduction-parcours-db.ts`).
+- **Une ligne vide traînait sur les devis sans remise**, pendant que le PDF
+  n'imprimait rien : l'écran et le document se contredisaient. Vu à la capture,
+  pas au test.
+
+### La voix, et le chemin de secours
+
+« Fais cinq pour cent sur le montant du devis » est la **sixième** retouche
+dictée (`retouches-devis.ts`), et la seule qui ne vise aucune ligne. « Enlève la
+remise » la retire. Elle propose, il coche — comme les cinq autres.
+
+**Et une ligne discrète « + Prix accordé au client » sous les totaux**, qui n'a
+pas été demandée : sans elle, une remise dictée par erreur ne pourrait pas être
+retirée sans redicter, et l'installation sans clé d'IA ne saurait pas en poser.
+Elle ouvre à 5 %, qu'il corrige.
+
+
+---
+
+## 117. Deux demi-journées qui font une journée — et la route, pas le vol d'oiseau
 
 **Sa demande du 13 août 2026 :** *« lorsqu'on a fini des chantiers en
 demi-journée, que le planning soit en mesure de proposer deux demi-journées pour
@@ -9206,7 +9580,7 @@ numéro de rue. Mais la Base Adresse Nationale rend les coordonnées à chaque
 frappe, dans la réponse que `lireSuggestions` lisait — et qui n'en gardait que
 le libellé. Le reste partait à la poubelle.
 
-- **migration 0047** : `latitude`, `longitude` (`numeric(9,6)`) et
+- **migration 0049** : `latitude`, `longitude` (`numeric(9,6)`) et
   **`adresse_situee`** sur `chantiers` ;
 - **`adresse_situee` est la colonne qui compte.** Elle porte l'adresse EXACTE
   qui a produit les coordonnées. Le jour où le patron corrige l'adresse, des

@@ -167,6 +167,39 @@ async function main() {
     }
   });
 
+  await cas("les rappels passent DEVANT les réponses de clients", async () => {
+    // **Sa décision du 16 août 2026, après trois photos : « fait la B ».**
+    //
+    // L'accueil ne pose que deux cartes. Tant que les réponses de clients
+    // venaient en tête, un rappel passait derrière « N autres devis à
+    // regarder » dès qu'il y avait DEUX réponses en attente — et un rappel
+    // qu'il faut déplier n'est plus un rappel.
+    //
+    // Ce contrôle ne compte pas les cartes : il vérifie l'ORDRE. Les mesurer
+    // sur un écran chargé exigerait de fabriquer deux réponses, ce que
+    // `scripts/capture-rang-trois-cas.sh` fait pour la photo ; ici la règle
+    // suffit, et elle vaut quel que soit le nombre.
+    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(600);
+    const deplier = page.getByRole("button", { name: /autres? devis à regarder/ });
+    if ((await deplier.count()) > 0) {
+      await deplier.first().click();
+      await page.waitForTimeout(300);
+    }
+    const genres = await page.$$eval('[data-atlas="carte-reponse"]', (cartes) =>
+      cartes.map((c) => (/DEVIS EN ATTENTE/i.test(c.textContent ?? "") ? "rappel" : "reponse"))
+    );
+    if (genres.length < 2) throw new Error(`${genres.length} carte(s) : rien à ordonner`);
+    const dernierRappel = genres.lastIndexOf("rappel");
+    const premiereReponse = genres.indexOf("reponse");
+    if (premiereReponse !== -1 && dernierRappel !== -1 && premiereReponse < dernierRappel) {
+      throw new Error(
+        `une réponse de client passe avant un rappel (${genres.join(", ")}) : ` +
+          "c'est l'ordre d'AVANT sa décision du 16 août"
+      );
+    }
+  });
+
   // ── La ligne dans les réglages ──────────────────────────────────────────
   await page.goto(`${BASE}/reglages/notifications`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Ce que vous réglez", { timeout: 30_000 });

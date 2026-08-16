@@ -713,6 +713,72 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**LE PRIX ACCORDÉ AU CLIENT (16 août).** « Fais cinq pour cent sur le montant du
+devis » : une remise en pourcentage, sous le total, qui suit jusqu'à la facture
+et au relevé de TVA. Son choix : l'arrangement **B** de `docs/maquettes/61`, le
+plus cher des trois — **ne pas le rouvrir**, le coût lui a été annoncé avant.
+
+**⚠ TROIS PIÈGES DE CE LOT, tous payés une fois :**
+
+1. **Ne JAMAIS recalculer un total ailleurs qu'en appelant
+   `totauxAvecReduction`** (`src/lib/reduction-devis.ts`). B n'est pas une ligne
+   du tableau : tout endroit qui additionne des lignes à la main oublie la
+   remise, et c'est un montant faux sur un document parti chez un client.
+2. **`total_ht` est le montant NET**, réduction déduite. Le relevé de TVA,
+   l'export comptable et les paiements y cherchent ce qui est dû.
+3. **Pas de « moins » typographique dans un PDF.** `−` (U+2212) fait lever
+   `pdf-lib` et plus aucun devis ne se génère. L'écran, lui, l'affiche très
+   bien — le défaut est invisible partout ailleurs.
+
+**Ce qui n'a pas été parcouru ici** : le geste à la VOIX, faute de transcription
+et de modèle sur cette machine. `ARCHITECTURE.md` §116.
+
+**UN JOUR BARRÉ N'EST PAS UN JOUR PRIS (16 août).** Sa capture de l'écran
+d'envoi, et un défaut de PHRASE, pas de règle.
+
+1. **Ce qu'il voyait.** Le 18 refusé, sans savoir pourquoi — et l'écran écrivait
+   « les jours barrés sont déjà pris » alors qu'il n'y avait rien dessus.
+2. **Ce qui se passe vraiment.** Un jour barré répond à « un chantier de CETTE
+   durée peut-il y COMMENCER ? ». Deux jours partis du 18 déborderaient sur le
+   19, qui est plein. **Reproduit avant de corriger**, et la règle est juste.
+3. **Ce qui a changé.** La phrase nomme la durée — et ce faisant, elle montre le
+   levier : la durée se change juste au-dessus du calendrier.
+   `src/lib/jours-barres.ts`, `ARCHITECTURE.md` §115.
+4. **`dureeDemiJournees` n'a pas de valeur par défaut sur `Calendrier`**
+   (`number | null`), et il faut que ça le reste : le patron a droit à la durée,
+   **son client non** — consigne tenue par `test-creneaux-planning.ts`, qui a
+   refusé la première version de ce lot (*« la durée du chantier a fuité vers la
+   page du client »*). Un défaut silencieux ferait pencher un écran du mauvais
+   côté sans que personne ne le décide.
+5. **Aucune règle de réservation n'a bougé.** Si un jour paraît mal barré,
+   chercher dans `disponibilites.ts`, pas dans cette correction.
+
+**ET UN RAPPEL QUI VIENT DE RESSERVIR (16 août).** Il signale « la demi-journée
+ne s'affiche pas sur le planning » : c'était vrai la veille, corrigé la nuit même
+(§111), et **son banc avait une version de retard** — sa fiche d'état le disait
+en toutes lettres. Lire la fiche AVANT de chercher dans le produit a fait gagner
+la moitié de l'échange.
+
+
+**LE MICRO DU DEVIS (15 août) — et le seul piège qu'il porte.** Il peut
+désormais dicter des corrections dans le devis : « supprime la deuxième ligne »,
+« monte la taille de haie à 350 », « rajoute le broyage à 500 », « fondage du
+bois » pour « Fendage du bois ». Elle **propose**, il **coche** — sa proposition
+A (`docs/maquettes/54`). Rien ne bouge avant son appui.
+
+**⚠ LE PIÈGE, ET IL EST À DIRE PLUTÔT QU'À TAIRE :** la feuille de confirmation
+**remplie n'a jamais été parcourue de bout en bout ici**. Cet environnement n'a
+ni service de transcription ni modèle. Ce qui est éprouvé : la règle sans
+navigateur (`scripts/test-retouches-devis.ts`, 27 cas) et le micro au navigateur
+(`scripts/test-dicter-dans-le-devis-e2e.ts`, 5 cas). Le raccord voix → feuille ne
+l'est pas. **Si le patron signale que « ça ne comprend rien », commencer par
+vérifier qu'une clé est bien posée sur son banc** (`npm run verifier:ia`) avant
+de chercher dans la règle.
+
+Trois refus sont dans le code et ne se négocient pas : aucun prix ne s'invente,
+deux lignes qui se ressemblent rendent « à préciser », un nom reconnu nulle part
+ne se rabat pas sur le numéro de ligne. `ARCHITECTURE.md` §113.
+
 **LA LIGNE DU PLANNING PORTE SES TROIS INFOS (15 août).** « 14 août · journée »,
 « 17 août · matin · ½ journée », « 21 août · matin · 3 jours » — la date, le
 moment de départ, la durée, **toute la ligne en or**. Sa demande sur la
@@ -729,6 +795,7 @@ ne dit plus quand un chantier long **finit**, et les week-ends sautés interdise
 de le recalculer de tête. **Ne pas le remettre sur la ligne sans qu'il le
 demande** — il y a été retiré pour faire tenir le nombre de jours ; sa place
 serait la feuille du chevron.
+
 
 **LA TVA AU PAIEMENT (16 août).** Sa question : *« si un client ne me paie pas,
 la facture rentre quand même dans mon relevé »*. Elle était fondée : pour une
@@ -758,6 +825,7 @@ nécessaire — l'accès bancaire se coupe tous les 90 jours.
 
 Le reste : `ARCHITECTURE.md` §110.
 
+
 **⚠ UNE DATE CALCULÉE DEPUIS « AUJOURD'HUI » EST UNE BOMBE À RETARDEMENT (16 août).**
 `test-pastille-equipe-e2e` visait `+ 20 jours` : jeudi le jour où il a été écrit,
 **samedi** deux jours plus tard — et le planning refuse le week-end par
@@ -771,9 +839,21 @@ planning, regarder d'abord quel jour de la semaine elle vise.** Corrigé avec
 défaut, libellé **« Chantier sans devis »**, premier des trois réglages. Détail et
 deux points laissés en suspens : `TODO.md` §0 novivicies.
 
+**⚠ SUR L'ACCUEIL, LES RAPPELS PASSENT DEVANT LES RÉPONSES DE CLIENTS** — sa
+décision du 16 août (« fait la B »), après trois photos. La règle d'avant disait
+l'inverse (*« quelqu'un a agi, cela prime sur un silence »*) : ne pas la
+restaurer en la lisant quelque part, elle est datée. `ARCHITECTURE.md` §112.
+
 **⚠ IL Y A MAINTENANT TROIS RAPPELS, PAS DEUX** — `src/lib/rappels.ts`. Le
 troisième se lit sur le CHANTIER (`created_at`, `devis_envoye_at`) et non sur un
 envoi : un devis jamais parti ne laisse aucune ligne dans `envois_devis`.
+
+**PHOTOGRAPHIER PLUTÔT QUE DÉCRIRE, ET LE FAIRE SUR LA BONNE SCÈNE.** Deux fois
+dans ce lot, la description était fausse et l'image l'a dit : (1) j'ai annoncé
+que sa carte passait derrière dès UNE réponse en attente — il en faut deux ;
+(2) « montrer trois cartes » semblait résoudre le rang, et l'image montre la
+troisième sous le bord de l'écran. `scripts/capture-rang-trois-cas.sh` monte la
+scène minimale et rend le code même en cas d'échec.
 
 **LA LEÇON DE CE PASSAGE, ET ELLE VAUT AU-DELÀ :** une confusion entre deux
 libellés **n'existe qu'en contexte**. Montrer une ligne seule ne prouve rien —
@@ -809,6 +889,7 @@ faux. `fusionner-maquettes.mjs` refuse désormais une maquette orpheline, un lie
 mort dans le sommaire, et un numéro porté deux fois. **Avant d'écrire une
 nouvelle planche, jouer `node scripts/fusionner-maquettes.mjs` : il donne le
 prochain numéro libre en refusant le doublon.**
+
 
 **« L'APPLI NE MARCHE PLUS » — ELLE MARCHAIT (14 août, tard).** Son iPhone
 proposait de télécharger un fichier au lieu d'ouvrir Atlas. **Son espace de

@@ -9,6 +9,78 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### « Fais cinq pour cent sur le montant du devis »
+
+**Sa demande :** pouvoir dire à l'application *« fais cinq pour cent sur le
+montant du devis »* et voir s'ajouter une petite ligne — *« réduction ou prix
+accordé au client, cinq pour cent, ou dix, ou quinze. C'est moi qui choisis le
+nombre de pourcentage »*. Rien de tel n'existait : aucune remise, nulle part.
+
+Trois arrangements lui ont été montrés **avec leur prix écrit en face**. Il a
+choisi le plus cher, **B — sous le total, « Prix accordé au client »** : le prix
+plein, ce qui a été consenti, puis le net. C'est celui qui permet à son client de
+refaire le calcul.
+
+**Ce que ça évite.** La réduction se calcule sur le HT et la TVA vient après —
+sur le TTC, elle aurait rendu une déclaration fausse. Et elle **suit jusqu'à la
+facture** : accordée sur le devis puis absente de la facture, elle aurait fait
+payer au client le prix qu'on venait de lui retirer.
+
+**Quatre défauts trouvés par les contrôles, et pas un par la relecture :**
+
+- le PDF ne se générait plus du tout dès qu'une remise existait — le « moins »
+  typographique n'existe pas dans la police du document ;
+- vider la case ne retirait rien : le champ disparaissait avant d'avoir
+  enregistré, et la remise revenait au rechargement, sans un mot ;
+- la retouche dictée cherchait le devis par le chemin réservé aux devis
+  **envoyés**, et n'aurait donc jamais rien appliqué à un brouillon ;
+- une ligne vide traînait sur les devis sans remise, que le PDF n'imprimait pas.
+
+Il peut aussi la dicter — « fais cinq pour cent », « enlève la remise » — et une
+ligne discrète sous les totaux permet de la poser sans parler.
+
+Détail : `ARCHITECTURE.md` §116.
+
+### Le micro du devis ne touche QUE les lignes
+
+Il s'était repris : *« je veux que la note, elle ne remplace que les lignes de
+[devis] et rien d'autre, comme c'était déjà avant — on ne touche pas aux
+conditions. »* Il avait répondu l'inverse la veille. **Rien n'avait été codé
+entre les deux** — c'est ce que la règle de la maquette d'abord protège.
+
+### Un jour barré disait « déjà pris » alors qu'il était vide
+
+**Sa capture du 16 août :** *« lorsque je veux remettre une journée sur le
+dix-huit, je ne peux pas ou alors c'est parce que je n'ai pas sectionné la
+demi-journée »*. Son intuition était bonne — c'est bien une histoire de durée —
+mais pas celle qu'il croyait : **celle du chantier qu'il envoie**.
+
+Un jour barré ne répond pas à « ce jour est-il pris ? » mais à « un chantier de
+cette durée peut-il y COMMENCER ? ». Reproduit avant de corriger : avec un seul
+jour plein — le 19 —, **le 18 est vide et pourtant barré** dès que le chantier
+dure deux jours, parce qu'il déborderait sur le 19. La règle est juste ; sans
+elle le chantier mordrait sur une journée prise.
+
+**C'est la phrase qui mentait.** Elle disait *« les jours barrés sont déjà pris »*
+— faux sur un jour vide, et elle l'envoyait chercher une occupation qui
+n'existait pas. Elle dit maintenant la durée en cause :
+
+> « Les jours barrés ne peuvent pas accueillir 2 jours : soit ils sont pris, soit
+> le chantier déborderait sur un jour qui l'est. »
+
+Nommer la durée **montre le levier** : elle se change juste au-dessus du
+calendrier, et passer à « 1 journée » rouvre le 18.
+
+**Le client en profite aussi** — c'est le même calendrier, et lui non plus ne
+savait pas pourquoi un jour lui était refusé. Sa phrase à lui ne chiffre rien
+(« ne peuvent pas accueillir votre chantier ») : rien du découpage de votre
+planning ne part chez lui, c'est votre consigne, et c'est la batterie qui l'a
+rappelée quand elle avait été enfreinte.
+
+Aucune règle de réservation n'a changé, seulement ce qui est dit. Détail :
+`ARCHITECTURE.md` §115.
+
+
 ### CODÉ : la TVA quand le client paie, et l'endroit où les factures attendent
 
 Sa question du 14 août : *« si un client décide de ne pas me payer, la facture
@@ -66,7 +138,7 @@ adresse en clair — tenu par un contrôle, pas par une phrase.
 
 Migration `0047` (coordonnées + `adresse_situee`), rattrapage automatique au fil
 des ouvertures du planning, et les trois écrans muets dessinés autant que le
-premier. `ARCHITECTURE.md` §113.
+premier. `ARCHITECTURE.md` §117.
 
 ### « ½ journée » réservait la journée entière
 
@@ -79,10 +151,88 @@ donc celui qu'il redit et qu'il **dicte**.
 un planning qui refuse un après-midi libre sans dire pourquoi. Sans conséquence
 par la molette, qui enregistre « une demi-journée ». Réel à la dictée.
 
+### La ligne d'état passe en or sur TOUTES les cartes de l'accueil
+
+*Sa consigne, capture de l'accueil à l'appui : « mets le "devis prêt à envoyer
+sans photo" en doré ; pour tous les messages je veux que cette partie-là
+apparaisse en doré. »*
+
+**Ce que l'or ne dit plus, et c'est le seul coût.** Il distinguait ce qui appelle
+un geste **de lui** — un devis à corriger, un devis caduc — de ce qui attend
+ailleurs. La nuance se lit désormais dans **les mots** de la ligne, plus dans la
+teinte. C'était déjà à moitié fait : le 13 août, il avait étendu l'or aux devis
+partis sans réponse, qui n'appellent aucun geste.
+
+**La liste `APPELLE_UN_GESTE` est retirée**, pas conservée « au cas où » : un
+drapeau qui vaut toujours vrai n'est plus un drapeau, et une liste qu'on garde
+sans l'employer se met à mentir en silence. Le champ `enOr`, lui, survit — l'écran
+n'a jamais décidé de sa couleur, et ce n'est pas le jour où la règle se simplifie
+qu'il faut lui rendre ce pouvoir.
+
+**Deux contrôles, parce qu'un seul ne suffit pas ici :** la suite base balaie
+**tous** les statuts — tirés du type, jamais recopiés, sans quoi le statut ajouté
+demain resterait gris sans que rien ne rougisse ; et la suite navigateur lit la
+couleur **calculée** sur l'accueil réel, parce que la règle serait verte même si
+l'écran ignorait le drapeau. Elle refuse de conclure sur zéro carte.
 
 ---
 
 ## 2026-08-15
+
+### Sur l'accueil, les rappels passent devant les réponses
+
+**Sa décision du 16 août, devant trois photos : « fait la B ».**
+
+**Ce que ça évite :** un rappel qu'il faut déplier. L'accueil ne pose que deux
+cartes, et tant que les réponses de clients venaient en tête, le rappel passait
+derrière « N autres devis à regarder » dès **deux réponses en attente**.
+
+**Une exagération corrigée en chemin, et elle valait d'être dite.** Je lui avais
+annoncé que sa carte passait derrière dès qu'une correction était en cours.
+Mesuré : avec UNE seule réponse, elle prend la seconde place et se voit très
+bien. Il en faut deux. La scène des photos a donc dû être fabriquée exprès —
+`scripts/capture-rang-trois-cas.sh`, qui **photographie l'application** au lieu
+de la dessiner, et qui rend le code à son état d'origine même en cas d'échec.
+
+**Et la troisième proposition a été écartée par l'image elle-même** : montrer
+trois cartes au lieu de deux met bien le rappel à l'écran… sous le bord, hors de
+vue. Une capture vaut mieux qu'un raisonnement.
+### Dicter dans le devis : « je vais pouvoir lui parler comme ça et qu'elle comprenne »
+
+**Sa demande :** un micro en haut à droite du devis, le même que sur la fiche du
+client — trois petits points qui soufflent compris — pour dire ce qu'il faut
+reprendre : *« supprime-moi la deuxième ligne, modifie-moi le prix de la taille
+de haie, remplace-moi le deux cent cinquante par trois cent cinquante, rajoute-moi
+une ligne, broyage des branches et tu mets cinq cents euros […] supprime-moi
+fondage du bois, mais en échange je veux que tu mettes débitage du bois. »*
+
+Il a choisi la proposition A de `docs/maquettes/54-dicter-dans-le-devis.html` :
+**elle propose, il coche**. Le devis ne bouge pas d'un centime avant son appui, et
+il décoche ce qui ne va pas.
+
+**Ce que ça évite**, et c'est pour cela que la feuille existe plutôt qu'une
+application directe : une lecture qui se trompe d'un chiffre sur un devis parti
+chez un client se rattrape par un avoir. Trois refus sont posés dans le code, pas
+dans une consigne :
+
+- **aucun prix ne s'invente** — « rajoute le broyage » sans montant donne une
+  ligne vide qui le dit en rouge, jamais « le prix habituel » ;
+- **deux lignes qui se ressemblent ne se départagent pas au hasard** — « Élagage
+  chêne » et « Élagage frêne » rendent « à préciser », décoché ;
+- **un nom reconnu nulle part ne se rabat pas sur le numéro de ligne.**
+
+Et « fondage du bois » trouve « Fendage du bois » : c'est son exemple, et c'est
+le cas courant d'une syllabe avalée par le micro.
+
+**Ce qui n'a PAS été éprouvé ici, et qu'il faut savoir.** Cet environnement n'a
+ni service de transcription ni modèle : la feuille de confirmation **remplie**
+n'a jamais été parcourue de bout en bout. Ses phrases sont éprouvées sans
+navigateur (`scripts/test-retouches-devis.ts`, 27 cas) et la feuille a été vue
+avec des données posées à la main. Le raccord entre la voix et la feuille ne sera
+parcouru qu'avec une clé. Faute de transcription, l'écran le dit plutôt que de
+présenter le texte de remplacement comme une dictée.
+
+Détail : `ARCHITECTURE.md` §113.
 
 ### Le rappel du devis qui tarde : CODÉ, sur ses trois mots
 
@@ -129,6 +279,7 @@ ne pouvait le dire : elle est valide, elle ne fait simplement rien sans cible.
 **Ce que ça évite :** le compte des jours qu'il a demandé, effacé par le fondu
 au premier glissement. Mesuré après correction : quel que soit le défilement
 demandé, une carte s'arrête désormais à 24 px du bord.
+
 ### La ligne du planning porte enfin ses trois infos — CODÉ
 
 *« Je veux journée et toute la ligne. Tu peux coder. »*
@@ -260,6 +411,7 @@ par `textContent`, qui rend aussi le texte ÉTEINT — « 14 août · journéema
 maintenant le texte des seuls nœuds visibles. Un contrôle qui mesure autre chose
 que l'écran ne prouve rien, et coûte le temps de comprendre qu'il a tort.
 
+
 ### Deux lignes qui commencent par le même mot, l'une sur l'autre
 
 **Il a tranché le 16 août — « la B et 4 » — puis a vu ce qu'aucun contrôle
@@ -350,6 +502,31 @@ apporté deux planches de plus tombées dans le même trou, qu'il a nommées.
 
 
 ## 2026-08-14
+
+### Sept chartes de couleurs, dont deux sombres — au choix de chacun
+
+Il a retrouvé une planche du début du projet — son écran Chantiers dans seize
+couleurs — et en a gardé six, plus la sienne : **Origine, Pierre, Beurre, Moka,
+Prune, Sylve, Nuit**. Elles se choisissent dans « Apparence », et repeignent
+toute l'application, tout de suite.
+
+**Le mode sombre qu'il demandait est dedans, et ce n'est pas un réglage à
+part** : Nuit et Sylve sont sombres. Deux interrupteurs — un pour la couleur, un
+pour le sombre — se seraient contredits dès la première combinaison.
+
+**Par défaut, rien ne change.** Tant que personne n'a choisi, l'application
+affiche exactement les couleurs de la veille : la charte « Origine » reprend les
+treize valeurs d'avant, au caractère près, et c'est éprouvé dans les deux sens.
+
+**Ce qui ne suit pas la couleur, et c'est voulu :** les devis et les factures.
+Un document ne part pas en noir chez le client parce que l'artisan a choisi
+« Nuit » — les deux pages que le client reçoit gardent l'identité d'Atlas.
+
+**Le défaut trouvé sur une capture, jamais par un test :** au premier essai,
+l'accueil était passé au noir et la bande sous la barre de navigation restait
+blanche. Atlas a deux vocabulaires de couleur — les styles en ligne et les
+classes Tailwind — et seul le premier avait été branché (`ARCHITECTURE.md`
+§114).
 
 ### Les treize rubriques des réglages sont ouvertes — dont deux vrais rappels
 

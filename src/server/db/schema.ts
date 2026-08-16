@@ -43,6 +43,12 @@ export const users = pgTable("users", {
   // base — il n'y a donc rien à supprimer pour fermer une session, mais on peut
   // refuser ce qui a été signé avant. `null` : jamais demandé.
   jetonsValidesDepuis: timestamp("jetons_valides_depuis", { withTimezone: true }),
+  // La charte de couleurs choisie dans « Apparence » (migration 0047).
+  //
+  // **Sur la PERSONNE, pas sur l'entreprise** : c'est son goût, et la rubrique
+  // vit dans l'ensemble « Moi » du sommaire. `null` = origine, celle du départ —
+  // ce qui distingue « jamais choisi » de « a choisi origine ».
+  charte: text("charte"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -614,9 +620,26 @@ export const devis = pgTable(
 
     // TVA — correction v2.1 §4
     tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }).notNull().default("20.00"),
+    /**
+     * **`totalHt` est le montant APRÈS réduction** (migration 0048).
+     *
+     * Tout ce qui le lit — relevé de TVA, export comptable, exigibilité, suivi
+     * des paiements — y cherche ce qui est DÛ. Y laisser le prix plein aurait
+     * fait déclarer de la TVA sur de l'argent que le client ne paie pas.
+     * Le prix plein vaut `totalHt + reductionMontant`.
+     */
     totalHt: numeric("total_ht", { precision: 10, scale: 2 }).notNull(),
     totalTva: numeric("total_tva", { precision: 10, scale: 2 }).notNull(),
     totalTtc: numeric("total_ttc", { precision: 10, scale: 2 }).notNull(),
+
+    /**
+     * Le prix accordé au client — son geste commercial (`reduction-devis.ts`).
+     *
+     * `null` : aucune réduction, et le document n'écrit rien. Les deux colonnes
+     * vont ensemble ou pas du tout, la base y veille.
+     */
+    reductionPourcent: numeric("reduction_pourcent", { precision: 5, scale: 2 }),
+    reductionMontant: numeric("reduction_montant", { precision: 10, scale: 2 }),
 
     pdfStorageKey: text("pdf_storage_key"),
     pdfChecksum: text("pdf_checksum"),
@@ -1061,9 +1084,19 @@ export const factures = pgTable(
     devise: char("devise", { length: 3 }).notNull().default("EUR"),
 
     tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }).notNull().default("20.00"),
+    /** APRÈS réduction, comme sur le devis — voir `devis.totalHt`. */
     totalHt: numeric("total_ht", { precision: 10, scale: 2 }).notNull(),
     totalTva: numeric("total_tva", { precision: 10, scale: 2 }).notNull(),
     totalTtc: numeric("total_ttc", { precision: 10, scale: 2 }).notNull(),
+
+    /**
+     * Recopié du devis à la création de la facture (migration 0048).
+     *
+     * Une remise accordée sur le devis puis absente de la facture ferait payer
+     * au client le prix qu'on venait de lui retirer.
+     */
+    reductionPourcent: numeric("reduction_pourcent", { precision: 5, scale: 2 }),
+    reductionMontant: numeric("reduction_montant", { precision: 10, scale: 2 }),
 
     pdfStorageKey: text("pdf_storage_key"),
     pdfChecksum: text("pdf_checksum"),
