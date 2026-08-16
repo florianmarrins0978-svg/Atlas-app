@@ -9267,7 +9267,91 @@ que personne n'a prononcée (`src/server/ai/providers/transcription/dev.ts`).
 
 ---
 
-## 114. Un jour barré n'est pas un jour pris — et la phrase disait le contraire
+---
+
+## 114. Sept chartes de couleurs, dont deux sombres — et pourquoi ce n'est qu'UN réglage
+
+*Choisies par le patron le 14 août 2026, sur une planche de seize qui dormait
+depuis le début du projet (`docs/maquettes/11-ecran-retenu-seize-couleurs.html`,
+engendrée par `scripts/engendrer-maquette-couleurs.mjs`) :* ***« garde seulement
+pour l'instant nuit, beurre, moka, pierre, sylve »***, *plus la rose-violet —
+Prune —, puis* ***« oui garde Origine en défaut, fais les sept »***.
+
+### Le mode sombre n'est pas un second interrupteur
+
+Il demandait « le mode sombre » **et** les couleurs de la planche. Ce sont la
+même chose : **Nuit** et **Sylve** SONT sombres. Deux réglages séparés — un
+pour la couleur, un pour le sombre — se seraient contredits à la première
+combinaison venue : « Nuit » avec le sombre éteint ne veut rien dire, et il
+aurait fallu inventer une règle pour trancher. Une liste, sept lignes, deux
+marquées « Sombre ».
+
+### Ce qui rend ce changement sans effet par défaut
+
+`colors.*` ne porte plus de valeur en clair : chaque jeton vaut
+`var(--atlas-<nom>, <valeur d'origine>)`. **Le repli EST la charte d'origine, au
+caractère près** — relevée jadis au navigateur sur le site d'Arborea (§17). Une
+page qui ne poserait aucune variable retombe donc exactement sur ce que
+l'application portait la veille.
+
+`scripts/test-chartes.ts` le tient de deux façons : la charte `origine` est
+comparée aux treize valeurs d'avant le lot, **et** le repli écrit dans
+`design-tokens.ts` est relu et comparé aux mêmes. Une seule valeur recopiée de
+travers repeindrait toute l'application, et rien d'autre ne le verrait.
+
+### LE PIÈGE : l'écran se coupait en deux
+
+Premier essai, capture à l'appui : tout l'accueil était passé au noir **et la
+bande sous la barre de navigation restait blanche**.
+
+Atlas a **deux** vocabulaires de couleur, et il fallait les brancher tous les
+deux :
+
+| Ce qui l'emploie | D'où ça vient |
+|---|---|
+| les styles en ligne (`style={{ backgroundColor: colors.cream }}`) | `src/lib/design-tokens.ts` |
+| les classes Tailwind (`bg-paper`, `text-ink`, `border-line`) | les variables de `src/app/globals.css` |
+
+D'où la seconde moitié du lot : `globals.css` relit `--atlas-*` avec les mêmes
+replis. **Et les variables sont posées sur `<html>`, pas sur `<body>`** — une
+variable définie sur le corps n'est pas visible d'une déclaration faite à
+`:root`, et les sept lignes de `globals.css` seraient silencieusement retombées
+sur leur repli. Le contrôle qui garde ce point vise nommément `div.bg-paper`.
+
+### Sur la PERSONNE, pas sur l'entreprise
+
+`users.charte` (migration 0047), pas `entreprises`. « Apparence » appartient à
+l'ensemble « Moi » du sommaire : c'est un goût, et un salarié qui préfère le
+sombre n'a pas à l'imposer à son patron. `null` = origine, ce qui distingue
+« jamais choisi » de « a choisi origine ».
+
+**Aucune contrainte en base sur la valeur**, délibérément : la liste vivra et
+un nom retiré ferait alors échouer l'écriture. `charte()` retombe sur l'origine
+devant un nom inconnu — c'est le bon comportement, et il est éprouvé.
+
+### Trois choses qui NE suivent pas la charte, et c'est voulu
+
+1. **Les documents.** `couleursDocument` reste en clair : un devis ne part pas
+   en noir chez le client parce que l'artisan a choisi « Nuit ». Le commentaire
+   de `design-tokens.ts` l'avait prévu de longue date.
+2. **Les deux pages du client** — devis et facture. Le gabarit ne pose aucune
+   variable dessus : elles portent l'identité d'Atlas, pas le goût de l'artisan.
+3. **`alert`, `sage`, `sageLight`.** Une alerte ne change pas de sens avec la
+   couleur du fond.
+
+### Ce qui reste à faire
+
+**La couleur de l'interface du navigateur** (`themeColor` dans les métadonnées)
+vaut toujours le crème : sur « Nuit », la barre d'adresse de l'iPhone reste
+claire au-dessus d'un écran noir. Ce n'est pas dans le rendu de la page mais
+dans les métadonnées, qui ne connaissent pas la personne connectée — à traiter à
+part (`TODO.md`).
+
+---
+
+---
+
+## 115. Un jour barré n'est pas un jour pris — et la phrase disait le contraire
 
 **Le patron, le 16 août 2026**, capture de l'écran d'envoi à l'appui :
 

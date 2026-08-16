@@ -187,6 +187,24 @@ dans la plage où les autres suites posent leurs chantiers, la journée s'annonc
 autre cause. Le contrôle lit désormais le panneau AVANT de conclure : une
 journée pleine se dit en toutes lettres au lieu d'accuser le bouton.
 
+### 0 tricies nonies bis. Deviner une cause coûte plus cher que la regarder
+
+*Écrit le 16 août 2026, en marge du correctif de `test-pastille-equipe-e2e`.*
+
+Devant cette suite rouge, j'ai inscrit ici un diagnostic tiré d'une
+**ressemblance** avec un défaut voisin — « la suite désigne le premier chantier
+sans date plutôt que le sien ». C'était faux, et cela a failli envoyer la
+session suivante corriger ce qui n'était pas cassé.
+
+**Un seul relevé de l'état réel de la page a suffi à trancher** : « Samedi
+5 septembre — Jamais proposé » était écrit dans le corps de la page. La cause
+était le calendrier, pas le sélecteur.
+
+**La règle qui en sort, et elle vaut au-delà de ce cas :** devant un contrôle
+rouge, relever ce que la page DIT avant d'écrire une cause. Une hypothèse
+consignée dans les tâches se lit ensuite comme un fait.
+
+
 ### 0 tricies octies. Marquer une facture PAYÉE — le geste qui manque le plus
 
 *Constaté en codant « Notifications » le 14 août 2026 (`ARCHITECTURE.md` §108),
@@ -212,7 +230,24 @@ quand ? »**
 la facture, dans « Terminés », ou les deux —, et ce qu'on fait d'un paiement
 partiel.
 
-### 0 duodetricies ter. Apparence : le mode sombre OU l'accent, à trancher
+### 0 duodetricies quater. La couleur de la barre du navigateur ne suit pas la charte
+
+`themeColor` vaut toujours le crème dans les métadonnées : sur « Nuit », la
+barre d'adresse de l'iPhone reste claire au-dessus d'un écran noir. Ce n'est pas
+dans le rendu de la page — c'est une métadonnée, et elle ne connaît pas la
+personne connectée. Il faut la produire depuis `generateViewport`, ce qui ajoute
+une lecture de base à chaque page : à peser avant de le faire.
+
+### ~~0 duodetricies ter. Apparence : le mode sombre OU l'accent~~ — **FAIT le 14 août 2026**
+
+Ni l'un ni l'autre séparément : **les sept chartes**, dont deux sombres
+(`ARCHITECTURE.md` §114). Le mode sombre qu'il demandait EST Nuit et Sylve.
+
+**Ce qu'il ne faut pas rouvrir :** un interrupteur « sombre » à côté du choix de
+charte. Les deux se contrediraient à la première combinaison — « Nuit » avec le
+sombre éteint ne veut rien dire.
+
+### ~~0 duodetricies ter (d'origine). Apparence : le mode sombre OU l'accent, à trancher~~
 
 L'écran existe et ne règle rien, délibérément (`ARCHITECTURE.md` §108). Les
 deux chantiers possibles, et leur coût :

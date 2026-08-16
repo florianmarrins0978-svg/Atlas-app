@@ -1,8 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-16 · branche `main`
-· dernière migration `drizzle/0046_rappel_chantier_sans_devis.sql`
-· dernière migration `drizzle/0045_paiements_et_exigibilite.sql`
+· dernière migration `drizzle/0047_charte_de_couleurs.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -157,7 +156,7 @@ barre quand la durée du chantier déborderait sur un lendemain plein.
 | La phrase, et le cas reproduit qui la justifie | `src/lib/jours-barres.ts` |
 | Le calendrier — le même pour le patron et pour son client | `src/components/atlas/Calendrier.tsx` |
 | Contrôles purs : le fait, la phrase, et la consigne côté client | `scripts/test-jours-barres.ts` |
-| Le pourquoi, et ce qui n'a PAS changé | `ARCHITECTURE.md` §114 |
+| Le pourquoi, et ce qui n'a PAS changé | `ARCHITECTURE.md` §115 |
 
 ### L'écran d'erreur qui ne menait nulle part (11 août 2026)
 
@@ -623,8 +622,11 @@ Voir `TODO.md` pour le détail et l'ordre.
   l'application, lui, ne cloisonne toujours rien. **Les TREIZE rubriques sont
   ouvertes au 14 août 2026** — plus aucune ne porte « Bientôt »
   (`ARCHITECTURE.md` §108). Deux d'entre elles ne règlent rien et l'assument :
-  *Apparence* (le mode sombre et l'accent demandent de reprendre toute
-  l'application) et *Abonnement* (ni prix ni offre décidés). *Notifications*,
+  *Abonnement* (ni prix ni offre décidés). **Apparence, elle, règle désormais
+  les SEPT CHARTES DE COULEURS** — Origine, Pierre, Beurre, Moka, Prune, Sylve,
+  Nuit, dont deux sombres (`ARCHITECTURE.md` §114). Elles repeignent toute
+  l'application ; les devis et factures gardent l'identité d'Atlas. Par défaut,
+  rien ne change : « Origine » reprend les valeurs d'avant au caractère près. *Notifications*,
   elle, porte **deux rappels réels** qui apparaissent sur l'accueil — devis sans
   réponse, chantier fini non facturé — et dit pourquoi « facture impayée » est
   impossible : rien n'enregistre qu'une facture a été payée. Les deux dernières ouvertes sont

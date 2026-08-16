@@ -39,7 +39,7 @@ planning ne part chez lui, c'est votre consigne, et c'est la batterie qui l'a
 rappelée quand elle avait été enfreinte.
 
 Aucune règle de réservation n'a changé, seulement ce qui est dit. Détail :
-`ARCHITECTURE.md` §114.
+`ARCHITECTURE.md` §115.
 
 ### CODÉ : la TVA quand le client paie, et l'endroit où les factures attendent
 
@@ -422,6 +422,31 @@ apporté deux planches de plus tombées dans le même trou, qu'il a nommées.
 
 
 ## 2026-08-14
+
+### Sept chartes de couleurs, dont deux sombres — au choix de chacun
+
+Il a retrouvé une planche du début du projet — son écran Chantiers dans seize
+couleurs — et en a gardé six, plus la sienne : **Origine, Pierre, Beurre, Moka,
+Prune, Sylve, Nuit**. Elles se choisissent dans « Apparence », et repeignent
+toute l'application, tout de suite.
+
+**Le mode sombre qu'il demandait est dedans, et ce n'est pas un réglage à
+part** : Nuit et Sylve sont sombres. Deux interrupteurs — un pour la couleur, un
+pour le sombre — se seraient contredits dès la première combinaison.
+
+**Par défaut, rien ne change.** Tant que personne n'a choisi, l'application
+affiche exactement les couleurs de la veille : la charte « Origine » reprend les
+treize valeurs d'avant, au caractère près, et c'est éprouvé dans les deux sens.
+
+**Ce qui ne suit pas la couleur, et c'est voulu :** les devis et les factures.
+Un document ne part pas en noir chez le client parce que l'artisan a choisi
+« Nuit » — les deux pages que le client reçoit gardent l'identité d'Atlas.
+
+**Le défaut trouvé sur une capture, jamais par un test :** au premier essai,
+l'accueil était passé au noir et la bande sous la barre de navigation restait
+blanche. Atlas a deux vocabulaires de couleur — les styles en ligne et les
+classes Tailwind — et seul le premier avait été branché (`ARCHITECTURE.md`
+§114).
 
 ### Les treize rubriques des réglages sont ouvertes — dont deux vrais rappels
 

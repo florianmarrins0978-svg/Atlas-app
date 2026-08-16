@@ -723,7 +723,7 @@ d'envoi, et un défaut de PHRASE, pas de règle.
    19, qui est plein. **Reproduit avant de corriger**, et la règle est juste.
 3. **Ce qui a changé.** La phrase nomme la durée — et ce faisant, elle montre le
    levier : la durée se change juste au-dessus du calendrier.
-   `src/lib/jours-barres.ts`, `ARCHITECTURE.md` §114.
+   `src/lib/jours-barres.ts`, `ARCHITECTURE.md` §115.
 4. **`dureeDemiJournees` n'a pas de valeur par défaut sur `Calendrier`**
    (`number | null`), et il faut que ça le reste : le patron a droit à la durée,
    **son client non** — consigne tenue par `test-creneaux-planning.ts`, qui a
