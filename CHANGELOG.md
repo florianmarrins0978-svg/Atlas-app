@@ -9,6 +9,35 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### Le temps passé ne se tape plus : une molette, faite sans JavaScript
+
+**Sa demande du 16 août** : *« ne pas avoir à l'écrire, mais une petite molette
+ou un truc sympa […] je veux une application ultra luxe et moderne »*.
+
+Trois gestes sur `docs/maquettes/65-choisir-l-heure.html` : la molette native du
+téléphone (gratuite, c'est déjà la sienne), les quarts d'heure en pastilles (un
+seul appui, mais le quart d'heure comme seule unité), et **la molette Atlas** —
+une bande qui s'accroche aux crans, un trait doré au centre, et ce qui est loin
+qui s'efface. Elle est faite **sans une ligne de JavaScript** : son lecteur n'en
+exécute pas.
+
+**Pourquoi un clavier était le mauvais outil**, indépendamment du goût : le
+temps se saisit debout, avec des gants. Un clavier demande de viser quatre
+touches et de deviner le format attendu — « 1h40 », « 1:40 », « 100 » ? Une
+molette ne peut produire qu'une valeur juste.
+
+Ce qui n'est pas à choisir : le pas de cinq minutes, l'ouverture sur le temps
+planifié plutôt que sur zéro, et l'écart qui reste affiché.
+
+Le contrôle mesure ce qu'aucune capture ne montre — que l'accroche rattrape
+vraiment un décalage, et que le repère est au centre. **Il refuse de conclure
+sur une boîte de zéro pixel**, le piège payé le 15 août. Confronté aux trois
+états dégradés qu'il vise : trois rouges, chacun nommant le bon coupable.
+
+Toujours **aucune ligne de `src/`**.
+
+---
+
 ### La fiche d'entretien : B et B, la saisie du temps, et où elle se compose
 
 **Sa réponse du 16 août : « B et B »** — rangée par familles sur le chantier,

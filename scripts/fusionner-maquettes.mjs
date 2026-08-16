@@ -319,6 +319,12 @@ const MAQUETTES = [
     famille: "L’entretien récurrent",
     quoi: "Dans les Réglages : ajouter, retirer, renommer ses prestations. La question qui reste — une seule fiche pour tous, ou un modèle puis une fiche par client.",
   },
+  {
+    fichier: "65-choisir-l-heure.html",
+    titre: "Choisir l’heure au pouce",
+    famille: "L’entretien récurrent",
+    quoi: "« Ne pas avoir à l’écrire » : la molette du téléphone, les quarts d’heure, ou une vraie molette Atlas — faite sans une ligne de JavaScript. Faites-la tourner au doigt.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

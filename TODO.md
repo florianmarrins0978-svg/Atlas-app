@@ -63,10 +63,17 @@ neutralise est un contrôle perdu, et celui-ci tient la pièce maîtresse d'un
 |---|---|
 | Le geste sur le chantier | **B** — rangée par familles, avec le compte « 1/4 » |
 | Ce que voit le client | **B** — seulement ce qui a été fait |
-| Le temps passé | une **case de saisie** sur la fiche, le planifié rappelé à côté |
+| Le temps passé | **une molette**, pas un clavier (`65-choisir-l-heure.html`) — trois gestes proposés, le mien recommandé est la molette Atlas |
 | Où se compose la fiche | dans les **Réglages**, « Ma fiche d'entretien » — modèle fourni, modifiable |
 
-**CE QUI RESTE À TRANCHER, et ce n'est pas du rangement** (planche
+**Deux choses restent à trancher, et aucune n'est du rangement :**
+
+**a) La molette** — la native du téléphone (gratuite, ressemble à un
+formulaire), les quarts d'heure (un appui, mais imprécise), ou la molette Atlas
+(la seule qui ressemble à l'application ; compter une demi-journée, accessibilité
+comprise). Recommandation écrite dans la planche : la molette Atlas.
+
+**b) CE QUI RESTE À TRANCHER, et ce n'est pas du rangement** (planche
 `docs/maquettes/64-composer-sa-fiche.html`) :
 
 > **Une seule fiche pour tous ses clients, ou un modèle puis une fiche par

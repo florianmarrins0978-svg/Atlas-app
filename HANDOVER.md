@@ -751,6 +751,11 @@ en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
   ou une par client (`TODO.md` § « La fiche d'entretien »). Ne pas coder avant.
 - **L'invariant à ne pas perdre** : un rapport déjà envoyé ne change plus jamais
   quand le modèle change. Il est signé et parti chez le client.
+- **Le temps passé se choisit à la MOLETTE, pas au clavier** (16 août) —
+  `docs/maquettes/65-choisir-l-heure.html`. La molette Atlas y est faite sans
+  JavaScript (accroche + repère collé) : le procédé, et ses trois pièges, sont
+  décrits dans `PROJECT_STATE.md`. Ne pas la refaire en suivant le défilement
+  image par image, ça se désynchronise sur un téléphone chargé.
 - **C'est un TROISIÈME parcours**, pas une case en plus : contrat → passages →
   rapport, à côté de devis → facture.
 - **Le piège à ne pas recopier** : l'autre application liste les vingt
