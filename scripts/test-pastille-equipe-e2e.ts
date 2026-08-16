@@ -28,13 +28,13 @@ import { pool } from "../src/server/db/client";
 
 const BASE = "http://localhost:3000";
 
-let passed = 0;
+let reussis = 0;
 let failed = 0;
 async function test(nom: string, fn: () => Promise<void>) {
   try {
     await fn();
     console.log(`✅ ${nom}`);
-    passed++;
+    reussis++;
   } catch (err) {
     console.error(`❌ ${nom}`);
     console.error(`   ${err instanceof Error ? err.message : err}`);
@@ -265,7 +265,7 @@ async function main() {
     assert.equal(await page.getByRole("button", { name: /l'équipe — / }).count(), 0);
   });
 
-  console.log(`\n${failed === 0 ? "✅" : "❌"} La pastille d'équipe — ${failed} échec(s).`);
+  console.log(`\n${failed === 0 ? "✅" : "❌"} La pastille d'équipe — ${reussis} réussi(s), ${failed} échec(s).`);
   await browser.close();
   await pool.end();
   process.exit(failed === 0 ? 0 : 1);

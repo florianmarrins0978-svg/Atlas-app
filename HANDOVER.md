@@ -712,6 +712,25 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**LE MICRO DU DEVIS (15 août) — et le seul piège qu'il porte.** Il peut
+désormais dicter des corrections dans le devis : « supprime la deuxième ligne »,
+« monte la taille de haie à 350 », « rajoute le broyage à 500 », « fondage du
+bois » pour « Fendage du bois ». Elle **propose**, il **coche** — sa proposition
+A (`docs/maquettes/54`). Rien ne bouge avant son appui.
+
+**⚠ LE PIÈGE, ET IL EST À DIRE PLUTÔT QU'À TAIRE :** la feuille de confirmation
+**remplie n'a jamais été parcourue de bout en bout ici**. Cet environnement n'a
+ni service de transcription ni modèle. Ce qui est éprouvé : la règle sans
+navigateur (`scripts/test-retouches-devis.ts`, 27 cas) et le micro au navigateur
+(`scripts/test-dicter-dans-le-devis-e2e.ts`, 5 cas). Le raccord voix → feuille ne
+l'est pas. **Si le patron signale que « ça ne comprend rien », commencer par
+vérifier qu'une clé est bien posée sur son banc** (`npm run verifier:ia`) avant
+de chercher dans la règle.
+
+Trois refus sont dans le code et ne se négocient pas : aucun prix ne s'invente,
+deux lignes qui se ressemblent rendent « à préciser », un nom reconnu nulle part
+ne se rabat pas sur le numéro de ligne. `ARCHITECTURE.md` §108.
+
 **« L'APPLI NE MARCHE PLUS » — ELLE MARCHAIT (14 août, tard).** Son iPhone
 proposait de télécharger un fichier au lieu d'ouvrir Atlas. **Son espace de
 travail s'était éteint** : GitHub arrête un espace inactif au bout d'une

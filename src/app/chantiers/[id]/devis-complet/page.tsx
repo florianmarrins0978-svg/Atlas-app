@@ -75,19 +75,10 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
       style={{ backgroundColor: colors.rustTint, color: colors.ink, fontFamily: font.body, minHeight: "100dvh" }}
       className="px-3 py-4 sm:px-6 sm:py-8"
     >
-      {/* Le seul élément qui n'appartient pas au devis, et il est minuscule :
-          sans lui, la page n'a pas de sortie sur un téléphone. */}
-      <a
-        href={`/chantiers/${id}`}
-        aria-label="Revenir au chantier"
-        className="mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-full sm:mb-4"
-        style={{ backgroundColor: colors.rustTint, marginLeft: 0 }}
-      >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
-          <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </a>
-
+      {/* Le retour et le micro vivent DANS l'écran client depuis le 15 août
+          2026 : le micro doit toucher aux lignes du devis, donc à son état, et
+          il se tient sur la même ligne que le retour — le retour à gauche, le
+          micro à droite, comme sur la fiche du client. */}
       <DevisCompletClient
         chantierId={id}
         devisId={devisRow.id}

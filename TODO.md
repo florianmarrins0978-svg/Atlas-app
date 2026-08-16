@@ -86,36 +86,34 @@ a demandé, la correction touche la hauteur réservée du calendrier, et un
 contrôle qui l'aurait attrapé aurait accusé le déplacement de l'assistant — ce
 qui n'est pas le coupable.
 
-### 0 trigies. Dicter dans le devis — le micro est prêt, le geste attend son choix
+### 0 trigies. ~~Dicter dans le devis~~ — **CODÉ le 15 août 2026 (proposition A)**
 
 Sa demande du 15 août 2026, capture du devis à l'appui : *« rajoute-moi un petit
 dictaphone en haut à droite comme il y a pour les infos clients [...] pour
 pouvoir dicter à l'intérieur du devis s'il y a des choses à reprendre ou à
-modifier. Et je veux exactement les mêmes trois petits points quand ils
-chargent. »*
+modifier. »* Puis son vocabulaire — supprimer une ligne par son rang ou par son
+nom, changer un prix, en ajouter une, corriger une faute — et sa phrase :
+*« Je vais pouvoir lui parler comme ça et qu'elle comprenne. »*
 
-**Ce qui n'est PAS à décider** : le micro et l'attente. Ils existent
-(`DicterCoordonnees.tsx`, `PointsQuiSoufflent`, `.atlas-souffle`) et se copient
-au trait près — rond de 44 px, rouge pendant l'écoute, points à la place du
-micro pendant le traitement, phrase « Atlas rédige… ».
+**Livré** : `src/lib/retouches-devis.ts` (la règle),
+`src/server/ai/services/retouches-devis-service.ts` (le modèle),
+`src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` (l'écran). Détail : `ARCHITECTURE.md`
+§108, `CHANGELOG.md` du 15 août.
 
-**Ce qui l'est, et qui attend un mot de lui** —
-`docs/maquettes/54-dicter-dans-le-devis.html`, essayable au doigt :
+**CE QUI RESTE, et qui n'est pas un détail :**
 
-| | Ce que la dictée fait | Ce que ça coûte |
-|---|---|---|
-| **A** | elle **propose** des changements de lignes, qu'il coche ; rien ne s'applique sans son appui | un vrai morceau de travail : lecture des lignes existantes, appariement, écran de confirmation |
-| **B** | elle écrit une **note** attachée au devis ; le devis ne bouge pas | presque rien — mais elle ne fait pas le travail |
-
-**Une règle tranche déjà, et ne se négocie pas** (`CLAUDE.md` §4) : **aucun prix
-ne s'invente**. « Ajoute l'évacuation » sans montant donne une ligne **vide et
-signalée**, jamais un chiffre deviné.
-
-**Et une question posée dans la planche, sans réponse** : en A, le micro
-doit-il aussi toucher aux **conditions de règlement** et aux mentions du bas, ou
-seulement aux lignes chiffrées ?
-
-**Rien n'est codé** — `src/` n'est pas touché (§3 bis).
+1. **La feuille remplie n'a jamais été parcourue de bout en bout.** Cet
+   environnement n'a ni transcription ni modèle : la chaîne voix → feuille n'est
+   éprouvée qu'en morceaux (27 cas sans navigateur, 5 au navigateur). Le premier
+   essai réel sera le sien, ou celui d'une machine avec une clé. **Le lui dire
+   plutôt que de le laisser croire éprouvé.**
+2. **Sa question de la planche 54 est toujours sans réponse** : le micro
+   doit-il aussi toucher aux **conditions de règlement** et aux mentions du bas,
+   ou seulement aux lignes chiffrées ? Aujourd'hui : seulement les lignes.
+3. **Aucune vérification côté serveur qu'un devis figé refuse les retouches.**
+   L'écran retire le micro dès l'envoi, et c'est la seule barrière — exactement
+   comme pour les autres champs de cet écran, qui n'en ont jamais eu d'autre. À
+   corriger pour tous en même temps, pas pour celui-ci seul.
 
 ### 0 novemvicies. ~~L'équipe n'était pas applicable~~ — **la pastille CODÉE le 14 août 2026 (geste A)**
 

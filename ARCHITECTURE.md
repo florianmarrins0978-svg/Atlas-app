@@ -8655,3 +8655,94 @@ le compte de démonstration sert aux soixante-quinze suites de la batterie, et l
 changer fermerait la porte à toutes les suivantes — l'échec accuserait alors la
 page de connexion, qui n'y serait pour rien. Le chemin éprouvé au navigateur est
 celui du **refus**, qui n'écrit rien ; l'écriture est tenue par la suite base.
+
+---
+
+## 108. Retoucher un devis à la voix : elle propose, il coche
+
+*Demandé le 15 août 2026. Dessiné (`docs/maquettes/54-dicter-dans-le-devis.html`),
+puis codé sur sa réponse — la proposition A, « elle propose, vous cochez ».*
+
+**Sa demande, en deux temps.** D'abord le geste : *« Rajoutes-moi un petit
+dictaphone en haut à droite comme il y a pour les infos clients quand tu fais un
+nouveau chantier, pour pouvoir dicter à l'intérieur du devis s'il y a des choses
+à reprendre ou à modifier. Et je veux que tu mettes exactement les mêmes trois
+petits points quand ils chargent. »* Puis le vocabulaire, qui décide de tout le
+reste : *« supprime-moi la deuxième ligne, modifie-moi le prix de la taille de
+haie, remplace-moi le deux cent cinquante par trois cent cinquante, rajoute-moi
+une ligne, broyage des branches et tu mets cinq cents euros, corrige-moi telle
+ligne, supprime-moi fondage du bois, mais en échange je veux que tu mettes
+débitage du bois, tu as fait une faute à tel endroit, corrige la faute. **Je vais
+pouvoir lui parler comme ça et qu'elle comprenne.** »*
+
+### Trois étages, et ce qui vit dans chacun
+
+| Étage | Fichier | Ce qu'il sait |
+|---|---|---|
+| La règle | `src/lib/retouches-devis.ts` | Sur quelle ligne tombe une désignation, et ce qu'un changement dira en toutes lettres. **Aucune base, aucun modèle** : éprouvé sans rien monter (`scripts/test-retouches-devis.ts`) |
+| Le modèle | `src/server/ai/services/retouches-devis-service.ts` | Transcrit, puis demande une liste de retouches en donnant le devis comme contexte. Sans clé, il rend la transcription et **aucune** proposition |
+| L'écran | `src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` | Montre, laisse décocher, applique ce qui reste |
+
+**Rien ne s'applique sans son appui**, et c'est l'arrêt qui justifie l'étage du
+milieu : ces lignes SONT le devis que son client recevra. Une lecture qui se
+trompe d'un chiffre se rattrape par un avoir.
+
+### Les quatre décisions de la règle, et ce que chacune évite
+
+1. **Le libellé bat le rang.** On se trompe plus souvent de numéro que de nom —
+   surtout après avoir soi-même ajouté une ligne. Le rang ne sert qu'à départager
+   deux noms qui se valent (« la deuxième, l'élagage »).
+2. **Un nom dit mais reconnu nulle part ne se rabat PAS sur le rang.** Il a nommé
+   quelque chose : prendre la ligne n° 1 « puisqu'il a dit première » modifierait
+   une ligne au hasard sans qu'il s'en aperçoive.
+3. **Deux lignes qui se valent rendent `ambigu`.** Son devis porte « Élagage
+   chêne » et « Élagage frêne » : choisir la première parce qu'elle arrive en tête
+   retirerait la mauvaise une fois sur deux. La feuille les montre toutes les
+   deux, décochées, et il redit.
+4. **Les rangs ne se décalent pas d'une retouche à l'autre.** « Supprime la
+   deuxième et change la troisième » se lit sur le devis QU'IL VOIT, pas sur
+   celui qu'on obtiendrait après le premier retrait.
+
+**Et « fondage du bois » trouve « Fendage du bois ».** C'est son exemple, et
+c'est le cas courant : une syllabe avalée par le micro. La ressemblance regarde
+l'inclusion d'abord (« le prix de la taille de haie » contre « Taille de haie —
+12 m »), puis les mots communs, puis la distance d'édition — dans cet ordre,
+parce qu'une distance brute déclare éloignés deux textes dont l'un est trois fois
+plus long que l'autre.
+
+### Aucun prix ne s'invente — deux gardes, pas une
+
+« Rajoute le broyage » sans montant rend une ligne dont le prix est `null`, et la
+feuille l'écrit **en rouge** : « Aucun prix dicté — la ligne arrive vide, à vous
+de la chiffrer ». Le premier garde est dans la consigne donnée au modèle ; le
+second est `montantDicte`, qui refuse tout ce qui n'est pas un nombre — « environ
+500 », « le prix habituel », « à voir ». Le jour où l'un des deux cède, l'autre
+tient (`CLAUDE.md` §4).
+
+**Une retouche bancale est jetée, jamais rattrapée.** Il verra qu'un changement
+manque et le redira ; il ne verrait pas, en revanche, qu'un chiffre a été mal
+repris. C'est ce déséquilibre-là qui décide.
+
+### Deux détails d'écran trouvés à la capture, pas à la mesure
+
+- **Le rond du micro est `card` ici, `rustTint` sur la fiche du client.** Cette
+  page-ci est teintée : un rond `rustTint` sur un fond `rustTint` disparaît
+  purement et simplement. Ce n'est pas un second micro — c'est le même, sur un
+  autre fond.
+- **Le retour et le micro partagent une rangée**, ce qui a fait descendre le
+  retour de `page.tsx` dans l'écran client : le micro touche aux lignes, donc à
+  leur état.
+
+### Ce qui n'a PAS pu être éprouvé ici, et qu'il faut savoir
+
+Cet environnement n'a **ni service de transcription ni modèle**. La feuille de
+confirmation **remplie** n'a donc jamais été parcourue de bout en bout : les
+phrases de chaque changement sont éprouvées sans navigateur
+(`scripts/test-retouches-devis.ts`), et la feuille elle-même n'a été vue qu'avec
+des données posées à la main. Le raccord entre la voix et la feuille n'aura été
+parcouru qu'avec une clé — sur son banc, ou en production.
+
+Faute de transcription, l'écran ne fait pas semblant : il dit « Aucun service de
+transcription n'est branché sur cette installation ». Montrer le texte de
+remplacement comme une dictée reviendrait à corriger un devis d'après une phrase
+que personne n'a prononcée (`src/server/ai/providers/transcription/dev.ts`).
