@@ -28,6 +28,8 @@
 // `ambigu` : mieux vaut demander que retirer la mauvaise ligne d'un devis.
 // ─────────────────────────────────────────────────────────────────────────
 
+import { LIBELLE_REDUCTION, libelleReduction, pourcentValide } from "./reduction-devis";
+
 /** Une ligne du devis, telle que l'écran la tient. */
 export type LigneDevis = {
   id: string;
@@ -57,7 +59,15 @@ export type Retouche =
   /** Renommer, corriger une faute, remplacer un mot par un autre. */
   | { type: "libelle"; cible: Cible; libelle: string }
   | { type: "retirer"; cible: Cible }
-  | { type: "ajouter"; libelle: string; quantite: string | null; prixUnitaire: string | null };
+  | { type: "ajouter"; libelle: string; quantite: string | null; prixUnitaire: string | null }
+  /**
+   * Le prix accordé au client — « fais cinq pour cent sur le montant du devis ».
+   *
+   * *Sa demande du 16 août 2026.* **Elle ne vise aucune ligne** : c'est le
+   * document entier qu'elle touche, d'où l'absence de `cible`. `pourcent` à
+   * `null` retire la réduction — « finalement, enlève la remise ».
+   */
+  | { type: "reduction"; pourcent: string | null };
 
 /** Ce que l'écran affichera : la retouche, et la ligne sur laquelle elle tombe. */
 export type RetoucheResolue =
@@ -283,6 +293,21 @@ export function lireRetouchesDuModele(brut: unknown): Retouche[] {
       case "retirer":
         if (cible.libelle || cible.rang != null) retouches.push({ type: "retirer", cible });
         break;
+      case "reduction": {
+        // **Le pourcentage passe par la règle du devis, pas par la mienne** :
+        // les bornes et l'arrondi vivent dans `reduction-devis.ts`, et deux
+        // écritures de la même borne finiraient par diverger.
+        const dit = e.pourcent;
+        // « enlève la remise » : le modèle rend explicitement null, et c'est un
+        // ordre valable — à ne pas confondre avec un pourcentage illisible.
+        if (dit === null) {
+          retouches.push({ type: "reduction", pourcent: null });
+          break;
+        }
+        const p = pourcentValide(dit);
+        if (p !== null) retouches.push({ type: "reduction", pourcent: p });
+        break;
+      }
       case "ajouter": {
         const libelle = texte("libelle");
         if (libelle) {
@@ -313,7 +338,9 @@ export function resoudreRetouches(
   retouches: readonly Retouche[]
 ): RetoucheResolue[] {
   return retouches.map((retouche) => {
-    if (retouche.type === "ajouter") return { etat: "ok", retouche, ligne: null };
+    if (retouche.type === "ajouter" || retouche.type === "reduction") {
+      return { etat: "ok", retouche, ligne: null };
+    }
 
     const r = resoudreCible(lignes, retouche.cible);
     const dit = (retouche.cible.libelle ?? "").trim() || `ligne n° ${retouche.cible.rang ?? "?"}`;
@@ -332,6 +359,7 @@ export function resoudreRetouches(
  * par construction, arriver jusqu'à l'enregistrement.
  */
 export type Changement =
+  | { type: "reduction"; pourcent: string | null }
   | { type: "prix"; ligneId: string; prixUnitaire: string }
   | { type: "quantite"; ligneId: string; quantite: string }
   | { type: "libelle"; ligneId: string; libelle: string }
@@ -348,6 +376,8 @@ export type Changement =
  * ce qui n'est pas applicable ne s'affiche pas comme cochable.
  */
 export function changementApplicable(r: RetoucheResolue): Changement | null {
+  // La réduction ne tombe sur aucune ligne : elle vise le devis entier.
+  if (r.retouche.type === "reduction") return { type: "reduction", pourcent: r.retouche.pourcent };
   if (r.retouche.type === "ajouter") {
     const { libelle, quantite, prixUnitaire } = r.retouche;
     return { type: "ajouter", libelle, quantite, prixUnitaire };
@@ -377,6 +407,19 @@ export function changementApplicable(r: RetoucheResolue): Changement | null {
  */
 export function direRetouche(r: RetoucheResolue): { verbe: string; quoi: string; detail: string } {
   const t = r.retouche;
+  if (t.type === "reduction") {
+    return t.pourcent === null
+      ? {
+          verbe: "Retirer",
+          quoi: LIBELLE_REDUCTION,
+          detail: "Le devis repart à son prix plein",
+        }
+      : {
+          verbe: "Accorder",
+          quoi: libelleReduction(t.pourcent) ?? LIBELLE_REDUCTION,
+          detail: "Appliqué au total HT — la TVA suit",
+        };
+  }
   if (t.type === "ajouter") {
     return {
       verbe: "Ajouter",

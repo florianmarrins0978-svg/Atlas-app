@@ -17,6 +17,20 @@ export type SuggestionAdresse = {
   libelle: string;
   /** Département et région, pour départager deux rues de même nom. */
   contexte: string | null;
+  /**
+   * Où c'est, quand la base le dit.
+   *
+   * **Elles arrivaient déjà et l'on s'en débarrassait.** La réponse est du
+   * GeoJSON : chaque adresse y porte sa géométrie, et seul le libellé était
+   * retenu. Les garder ne coûte pas un appel de plus — c'est ce qui permet à
+   * Atlas de dire « ce chantier est à huit kilomètres de l'autre » (demande du
+   * patron du 13 août 2026).
+   *
+   * `null` quand la base ne les rend pas : une aide qui devine ferait pire que
+   * de se taire.
+   */
+  latitude: number | null;
+  longitude: number | null;
 };
 
 /** Au-delà, la liste dépasse l'écran d'un téléphone et ne se lit plus. */
@@ -68,7 +82,16 @@ export function lireSuggestions(reponse: unknown): SuggestionAdresse[] {
     vues.add(cle);
 
     const contexte = typeof props.context === "string" && props.context.trim() ? props.context.trim() : null;
-    suggestions.push({ libelle, contexte });
+
+    // La géométrie GeoJSON est `[longitude, latitude]` — dans CET ordre, et
+    // c'est le piège classique : inversées, deux chantiers du Rhône se
+    // retrouvent au large de la Somalie sans qu'aucun contrôle ne s'en émeuve,
+    // puisque les nombres restent des nombres.
+    const coords = (feature as { geometry?: { coordinates?: unknown } } | null)?.geometry?.coordinates;
+    const paire = Array.isArray(coords) && coords.length >= 2 ? coords : null;
+    const lon = paire && typeof paire[0] === "number" && Number.isFinite(paire[0]) ? paire[0] : null;
+    const lat = paire && typeof paire[1] === "number" && Number.isFinite(paire[1]) ? paire[1] : null;
+    suggestions.push({ libelle, contexte, latitude: lat, longitude: lon });
 
     if (suggestions.length >= MAX_SUGGESTIONS) break;
   }

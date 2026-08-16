@@ -301,6 +301,18 @@ const MAQUETTES = [
     famille: "Le devis",
     quoi: "« Fais cinq pour cent sur le montant du devis » — où la petite ligne se pose, et sous quel mot. Le coût des trois est très inégal : une ligne voyage seule jusqu’à la facture.",
   },
+  {
+    fichier: "62-la-fiche-dentretien.html",
+    titre: "La fiche d’entretien",
+    famille: "L’entretien récurrent",
+    quoi: "Ce que le paysagiste coche sur le chantier. Vingt prestations, quatre faites : tiennent-elles au pouce ? Trois gestes — la liste d’un bloc, rangée par familles, ou trois états avec « sans objet ».",
+  },
+  {
+    fichier: "63-le-rapport-au-client.html",
+    titre: "Le rapport que reçoit le client",
+    famille: "L’entretien récurrent",
+    quoi: "La sortie de la fiche. L’autre application lui montre seize fois « Faux » sur un passage qu’il paie : tout, seulement ce qui a été fait, ou le reste replié en une phrase.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

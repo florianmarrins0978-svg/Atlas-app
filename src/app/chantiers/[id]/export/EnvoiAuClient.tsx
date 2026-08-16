@@ -459,7 +459,7 @@ function Contenu({
                 occupes={preparation.joursOccupes}
                 retenus={selection}
                 aujourdHui={jourIso(new Date())}
-                libelleOccupe="votre planning est complet ce jour-là"
+                dureeDemiJournees={preparation.dureeDemiJournees}
                 onBasculer={toucherAuCalendrier}
               />
             </div>

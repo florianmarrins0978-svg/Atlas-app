@@ -167,35 +167,41 @@ async function main() {
     }
   });
 
-  await cas("les rappels passent DEVANT les réponses de clients", async () => {
-    // **Sa décision du 16 août 2026, après trois photos : « fait la B ».**
+  await cas("le rappel est PREMIER, et une réponse garde la seconde place", async () => {
+    // **Ses deux décisions du 16 août 2026 :** *« fait la B »* — le rappel
+    // devant —, puis *« fait le »* — la place garantie, après qu'une photo lui
+    // a montré trois chantiers sans devis masquant toutes les réponses.
     //
-    // L'accueil ne pose que deux cartes. Tant que les réponses de clients
-    // venaient en tête, un rappel passait derrière « N autres devis à
-    // regarder » dès qu'il y avait DEUX réponses en attente — et un rappel
-    // qu'il faut déplier n'est plus un rappel.
-    //
-    // Ce contrôle ne compte pas les cartes : il vérifie l'ORDRE. Les mesurer
-    // sur un écran chargé exigerait de fabriquer deux réponses, ce que
-    // `scripts/capture-rang-trois-cas.sh` fait pour la photo ; ici la règle
-    // suffit, et elle vaut quel que soit le nombre.
+    // La règle vit dans `src/lib/ordre-notifications.ts` et y est éprouvée sur
+    // les cas limites. Ce contrôle-ci tient le RACCORD : que l'écran l'emploie
+    // vraiment. Elle serait verte même si personne ne l'appelait.
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     await page.waitForTimeout(600);
+    const vus = await page.$$eval('[data-atlas="carte-reponse"]', (cartes) =>
+      cartes.map((c) => (/DEVIS EN ATTENTE|Devis sans réponse|À facturer/i.test(c.textContent ?? "")
+        ? "rappel"
+        : "reponse"))
+    );
+    if (vus.length === 0) throw new Error("aucune carte à l'écran");
+    if (vus[0] !== "rappel") {
+      throw new Error(`la première carte est une ${vus[0]} : son choix B n'est pas appliqué`);
+    }
+    // La garantie ne vaut que si les deux sortes existent : on regarde d'abord
+    // ce que l'écran porte en tout, replié compris.
     const deplier = page.getByRole("button", { name: /autres? devis à regarder/ });
     if ((await deplier.count()) > 0) {
       await deplier.first().click();
       await page.waitForTimeout(300);
     }
-    const genres = await page.$$eval('[data-atlas="carte-reponse"]', (cartes) =>
-      cartes.map((c) => (/DEVIS EN ATTENTE/i.test(c.textContent ?? "") ? "rappel" : "reponse"))
+    const toutes = await page.$$eval('[data-atlas="carte-reponse"]', (cartes) =>
+      cartes.map((c) => (/DEVIS EN ATTENTE|Devis sans réponse|À facturer/i.test(c.textContent ?? "")
+        ? "rappel"
+        : "reponse"))
     );
-    if (genres.length < 2) throw new Error(`${genres.length} carte(s) : rien à ordonner`);
-    const dernierRappel = genres.lastIndexOf("rappel");
-    const premiereReponse = genres.indexOf("reponse");
-    if (premiereReponse !== -1 && dernierRappel !== -1 && premiereReponse < dernierRappel) {
+    if (toutes.includes("reponse") && vus.length > 1 && !vus.includes("reponse")) {
       throw new Error(
-        `une réponse de client passe avant un rappel (${genres.join(", ")}) : ` +
-          "c'est l'ordre d'AVANT sa décision du 16 août"
+        "une réponse de client attend derrière le repli alors qu'une place lui est garantie : " +
+          `visible = ${vus.join(", ")} — en tout = ${toutes.join(", ")}`
       );
     }
   });

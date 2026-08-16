@@ -1,7 +1,7 @@
 import { desc, eq, sql } from "drizzle-orm";
-import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
+import { totauxAvecReduction, pourcentValide } from "@/lib/reduction-devis";
 import type { DbOrTx } from "../db/client";
 import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises } from "../db/schema";
 import type { Ctx } from "./context";
@@ -24,14 +24,28 @@ export async function attribuerNumeroDevis(tx: DbOrTx, entrepriseId: string): Pr
   return `2026-${String(numero).padStart(4, "0")}`;
 }
 
-function calculerTotaux(lignes: { montant: string }[], tauxTva: string) {
-  const totalHt = lignes.reduce((acc, l) => acc.plus(new Decimal(l.montant)), new Decimal(0));
-  const totalTva = totalHt.times(new Decimal(tauxTva)).dividedBy(100);
-  const totalTtc = totalHt.plus(totalTva);
+/**
+ * Les totaux du devis, réduction comprise.
+ *
+ * **Le calcul lui-même vit dans `src/lib/reduction-devis.ts`**, et pas ici :
+ * l'écran, le PDF, la facture et son PDF en ont besoin du mot pour mot. Le
+ * patron a choisi l'arrangement B le 16 août 2026 — la réduction n'est PAS une
+ * ligne du tableau, donc elle ne voyage pas toute seule, et chaque endroit qui
+ * recalculerait à la main serait un montant faux sur un document parti chez un
+ * client. Une seule règle, appelée partout.
+ */
+function calculerTotaux(
+  lignes: { montant: string }[],
+  tauxTva: string,
+  reductionPourcent?: string | null
+) {
+  const t = totauxAvecReduction(lignes, tauxTva, reductionPourcent);
   return {
-    totalHt: totalHt.toFixed(2),
-    totalTva: totalTva.toFixed(2),
-    totalTtc: totalTtc.toFixed(2),
+    totalHt: t.totalHt,
+    totalTva: t.totalTva,
+    totalTtc: t.totalTtc,
+    reductionPourcent: t.reductionPourcent,
+    reductionMontant: t.reductionMontant,
   };
 }
 
@@ -120,7 +134,12 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
     // sur son devis (10 % en rénovation, 20 % en neuf). Recalculer au taux par
     // défaut effacerait sa correction à la première ligne ajoutée.
     const taux = dernier && dernier.statut === "brouillon" ? dernier.tauxTva : TAUX_TVA_DEFAUT;
-    const totaux = calculerTotaux(lignesPrixActuelles, taux);
+    // **La réduction survit à la régénération**, exactement comme le taux de
+    // TVA juste au-dessus. Elle a été accordée au client ; ajouter une ligne au
+    // devis ne la révoque pas, et la perdre en silence lui ferait renvoyer un
+    // document plus cher que celui qu'il avait promis.
+    const reduction = dernier && dernier.statut === "brouillon" ? dernier.reductionPourcent : null;
+    const totaux = calculerTotaux(lignesPrixActuelles, taux, reduction);
 
     if (dernier && dernier.statut === "brouillon") {
       // Régénération : remplace les lignes et recalcule les totaux, ne change
@@ -222,6 +241,8 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
       totalHt: d.totalHt,
       totalTva: d.totalTva,
       totalTtc: d.totalTtc,
+      reductionPourcent: d.reductionPourcent,
+      reductionMontant: d.reductionMontant,
       lignes: lignes.map((l) => ({
         libelle: l.libelle,
         quantite: l.quantite,
@@ -265,6 +286,8 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
       totalHt: avant.totalHt,
       totalTva: avant.totalTva,
       totalTtc: avant.totalTtc,
+      reductionPourcent: avant.reductionPourcent,
+      reductionMontant: avant.reductionMontant,
       lignes: lignes.map((l) => ({
         libelle: l.libelle,
         quantite: l.quantite,
@@ -314,13 +337,18 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
 export async function mettreAJourEnTeteDevis(
   ctx: Ctx,
   devisId: string,
-  data: { tauxTva?: string; conditionsPaiement?: string }
+  data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [avant] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!avant || avant.statut === "envoye") return null;
 
-    const valeurs: { tauxTva?: string; conditionsPaiement?: string; updatedAt: Date } = { updatedAt: new Date() };
+    const valeurs: {
+      tauxTva?: string;
+      conditionsPaiement?: string;
+      reductionPourcent?: string | null;
+      updatedAt: Date;
+    } = { updatedAt: new Date() };
     if (data.tauxTva !== undefined) {
       // Borné : un taux négatif ou à trois chiffres produirait un total que le
       // patron ne comprendrait pas, et qu'aucun client n'accepterait.
@@ -328,9 +356,21 @@ export async function mettreAJourEnTeteDevis(
       if (Number.isFinite(taux)) valeurs.tauxTva = taux.toFixed(2);
     }
     if (data.conditionsPaiement !== undefined) valeurs.conditionsPaiement = data.conditionsPaiement;
+    // **Le prix accordé au client passe par la MÊME borne que l'écran**
+    // (`pourcentValide`) : une seule règle sert à construire l'écran et à
+    // revalider ce qu'il renvoie, sans quoi les deux finissent par diverger
+    // (`CLAUDE.md` §3). Rendre `null` retire la réduction — c'est ainsi qu'on
+    // revient en arrière quand le client n'obtient finalement rien.
+    if (data.reductionPourcent !== undefined) {
+      valeurs.reductionPourcent = pourcentValide(data.reductionPourcent);
+    }
 
     const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId));
-    const totaux = calculerTotaux(lignes, valeurs.tauxTva ?? avant.tauxTva);
+    const totaux = calculerTotaux(
+      lignes,
+      valeurs.tauxTva ?? avant.tauxTva,
+      data.reductionPourcent !== undefined ? valeurs.reductionPourcent : avant.reductionPourcent
+    );
 
     const [row] = await tx
       .update(devis)

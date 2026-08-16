@@ -11,6 +11,7 @@ import {
   EquipeIndisponible,
 } from "@/server/repositories/chantiers";
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
+import { propositionsPourDemiJournee, type Appariement } from "@/server/planning/appariement";
 
 /**
  * Poser un chantier : la date, la demi-journée, et l'équipe.
@@ -121,4 +122,29 @@ export async function supprimerChantierAction(chantierId: string): Promise<Resul
     }
     return { succes: false, erreur: "Le chantier n'a pas pu être supprimé." };
   }
+}
+
+/**
+ * Qui pourrait remplir la demi-journée restée libre à côté de ce chantier.
+ *
+ * **Sa demande du 13 août 2026 :** *« lorsqu'on a fini des chantiers en
+ * demi-journée, que le planning soit en mesure de proposer deux demi-journées
+ * pour faire une journée, mais de deux chantiers qui sont les plus proches »*.
+ *
+ * **Une action serveur et non un chargement de page** : les distances coûtent
+ * des appels à deux services extérieurs, et la plupart des journées n'ont pas
+ * de demi-journée libre. Les calculer à chaque ouverture du planning ferait
+ * payer à toutes les journées ce qui n'en concerne qu'une.
+ *
+ * Rend toujours un résultat — jamais d'exception. Une panne de la Base Adresse
+ * Nationale ou de l'IGN coûte une proposition en moins, pas un planning qui
+ * refuse de s'afficher (`AGENTS.md` : le message d'une exception levée par une
+ * action serveur n'arrive jamais jusqu'au patron).
+ */
+export async function propositionsDemiJourneeAction(
+  chantierEnPlaceId: string,
+  sansSeuil = false
+): Promise<Appariement> {
+  const ctx = await getCurrentCtx();
+  return propositionsPourDemiJournee(ctx, chantierEnPlaceId, sansSeuil);
 }

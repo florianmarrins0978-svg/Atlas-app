@@ -9172,6 +9172,36 @@ passe avant ce qu'on lui a répondu.
 
 `scripts/test-devis-qui-tarde-e2e.ts` tient l'ordre — et il vérifie l'ordre, pas
 le compte : la règle vaut quel que soit le nombre de cartes.
+
+#### Et une place garantie à chaque sorte
+
+*Sa seconde décision du même jour — **« ok alors fait le »** —, après que la
+batterie ET une photo ont montré le défaut symétrique.*
+
+**Ce que B seul produisait :** les rappels se fabriquant tout seuls, il suffisait
+de trois chantiers sans devis pour que **toutes** les réponses de clients passent
+derrière le repli. Trois suites l'ont dit en rougissant, avant même l'image —
+elles cherchaient une réponse qui n'était plus à l'écran.
+
+**Le partage retenu :** la première place reste au rappel (son choix B ne bouge
+pas) ; **la dernière place visible revient à une réponse**, et seulement s'il en
+existe une. À deux cartes visibles cela donne « un rappel, une réponse » ; à
+trois, « deux rappels, une réponse ».
+
+**Pourquoi ce n'est pas symétrique, et pourquoi c'est juste :** un rappel
+s'accumule et attendra demain sans que rien ne soit perdu ; une réponse de client
+est un événement périssable — quelqu'un attend une réaction. Une sorte qui
+grossit toute seule ne doit pas pouvoir enterrer une sorte rare et urgente.
+
+**La règle est pure** — `src/lib/ordre-notifications.ts` —, et elle est éprouvée
+là où l'écran ne sait pas aller : zéro d'une sorte, une seule place visible, et
+surtout **aucune carte perdue ni dupliquée** sur les 108 combinaisons de zéro à
+cinq de chaque. Cette dernière garde contre le pire défaut possible ici : un
+refus de client qui disparaîtrait sans que rien ne le signale.
+
+**Le tressage se fait APRÈS le retrait des cartes acquittées.** Dans l'autre
+sens, une place serait réservée à une réponse que le patron vient de marquer
+« J'ai vu » — une place vide, au profit de rien.
 ---
 
 ---
@@ -9265,7 +9295,6 @@ transcription n'est branché sur cette installation ». Montrer le texte de
 remplacement comme une dictée reviendrait à corriger un devis d'après une phrase
 que personne n'a prononcée (`src/server/ai/providers/transcription/dev.ts`).
 
-
 ---
 
 ---
@@ -9350,7 +9379,307 @@ part (`TODO.md`).
 
 ---
 
-## 115. Le quatrième rappel : une facture impayée, et le premier qui porte un RYTHME
+---
+
+## 115. Un jour barré n'est pas un jour pris — et la phrase disait le contraire
+
+**Le patron, le 16 août 2026**, capture de l'écran d'envoi à l'appui :
+
+> *« J'ai l'impression que lorsque je veux remettre une journée sur le dix-huit,
+> je ne peux pas ou alors c'est parce que je n'ai pas sectionné la
+> demi-journée. »*
+
+Il cherchait la cause du mauvais côté. **L'écran l'y envoyait.**
+
+### Ce qu'un jour barré signifie vraiment
+
+`joursSansPlace` ne répond pas à « ce jour est-il pris ? » mais à **« un chantier
+de CETTE durée peut-il y COMMENCER ? »**. Les deux ne coïncident pas, et l'écart
+n'a rien d'exotique. Reproduit avant d'écrire une ligne, avec un seul jour
+réellement plein — le 19 — et deux équipes :
+
+| Jour | Durée demandée | Verdict | Pastille du planning |
+|---|---|---|---|
+| 18 août | ½ journée | proposable | **libre** |
+| 18 août | 1 journée | proposable | **libre** |
+| 18 août | 2 jours | **BARRÉ** | **libre** |
+
+Le 18 est **vide** et pourtant barré : deux jours partis du 18 déborderaient sur
+le 19, qui est plein. **La règle est juste** — sans elle, le chantier mordrait
+sur une journée déjà prise. C'est la phrase qui mentait.
+
+### La phrase, et pourquoi c'est un vrai défaut
+
+Elle écrivait : *« Les jours barrés sont déjà pris et ne peuvent pas être
+choisis. »* Sur le 18, c'est faux — il n'y a rien dessus. Elle désignait donc une
+occupation inexistante et envoyait chercher au mauvais endroit : exactement ce
+que `AGENTS.md` proscrit — *une erreur qui accuse à tort coûte plus cher que pas
+d'erreur du tout*.
+
+`src/lib/jours-barres.ts` la rend honnête, **et la durée y est la clé** :
+
+> « Les jours barrés ne peuvent pas accueillir **2 jours** : soit ils sont pris,
+> soit le chantier déborderait sur un jour qui l'est. »
+
+Nommer la durée ne fait pas que dire vrai : **cela montre le levier**. Sur
+l'écran d'envoi, la durée se change juste au-dessus du calendrier — passer à
+« 1 journée » rouvre le 18. Le refus cesse d'être une impasse.
+
+**La demi-journée a sa propre phrase**, et ce n'est pas une coquetterie : elle
+tient dans un seul créneau, donc elle ne peut déborder sur rien. Lui servir
+« soit le chantier déborderait » rouvrirait le défaut en sens inverse.
+
+### Ce que ça touche, et ce que ça ne touche pas
+
+- **Les deux écrans**, parce que c'est **le même composant** : celui du patron et
+  celui du client. Le client aussi voyait des jours barrés sans savoir pourquoi.
+- **Mais pas la même phrase — et c'est la batterie qui l'a imposé.** La première
+  version envoyait la durée jusqu'à la page du client, en toute bonne foi :
+  c'est son chantier, après tout. `test-creneaux-planning.ts` l'a refusée —
+  *« la durée du chantier a fuité vers la page du client »*. La consigne est
+  ancienne et appartient au patron : **rien du découpage de son planning ne part
+  chez le client**, ni créneau, ni durée ; il ne reçoit que des dates. Ce n'était
+  pas à une session de rouvrir cet arbitrage, et rien dans le raisonnement qui a
+  conduit à l'enfreindre ne l'aurait signalé — seul le contrôle l'a fait.
+  Le client lit donc : *« Les jours barrés ne peuvent pas accueillir votre
+  chantier. »* Vrai, et muet sur le reste.
+- **`dureeDemiJournees` n'a AUCUNE valeur par défaut sur `Calendrier`** (elle vaut
+  `number | null`). Chaque écran doit trancher : un défaut silencieux ferait
+  pencher l'un des deux du mauvais côté sans que personne ne le décide.
+- **Le lecteur d'écran dit la même chose que la phrase**, de chaque côté. Deux
+  publics, une seule vérité, sinon l'un des deux garde la version fausse et
+  personne ne le voit.
+- **Aucune règle de réservation n'a changé.** `jourRetenable`, `joursSansPlace`,
+  l'occupation : rien n'est touché. Seule la phrase l'est.
+
+### Ce qui le garde
+
+`scripts/test-jours-barres.ts` tient les trois choses : **le fait** — un jour
+vide se barre bel et bien quand la durée déborde —, **la phrase**, qui ne doit
+plus jamais prétendre « déjà pris » pour aucune durée, et **la consigne** : celle
+du client ne chiffre rien. Confrontée à l'ancienne formulation, la suite passe
+quatre cas au rouge en nommant le bon coupable.
+
+---
+
+## 116. « Fais cinq pour cent » : le prix accordé au client
+
+*Demandé le 16 août 2026, dessiné (`docs/maquettes/61-la-reduction-au-client.html`),
+puis codé sur sa réponse — **« sous le total et prix accordé au client »**,
+l'arrangement B et son libellé.*
+
+**Sa demande :** *« si jamais un client me demande une réduction, [pouvoir] lui
+demander "fais cinq pour cent sur le montant du devis" et il ajoute une petite
+ligne réduction ou prix accordé au client — cinq pour cent, ou dix, ou quinze.
+C'est moi qui choisis le nombre de pourcentage. »*
+
+### Ce que B coûte, et pourquoi il l'a choisi quand même
+
+Trois arrangements lui ont été montrés, **avec leur prix écrit en face** :
+
+| | Où | Coût annoncé |
+|---|---|---|
+| A | une ligne du tableau | presque rien — une ligne voyage seule jusqu'à la facture |
+| **B** ✔ | sous le total | **une colonne de plus partout**, et chaque endroit oublié est un montant faux |
+| C | le prix barré | même coût que B, et le vocabulaire de la promotion |
+
+Il a choisi B en connaissance de cause. **Ne pas rouvrir ce choix** ; ce qui suit
+n'existe que pour rendre ce coût tenable.
+
+### La parade : un seul calcul, appelé partout
+
+`src/lib/reduction-devis.ts` porte `totauxAvecReduction` — et **personne ne
+recalcule un total ailleurs**. Cinq endroits l'appellent : le devis
+(`src/server/repositories/devis.ts`), la facture
+(`src/server/repositories/factures.ts`, à la création ET à l'émission), le PDF
+commun (`src/server/pdf/document-commun.ts`), et l'écran
+(`DevisCompletClient.tsx`). Le jour où l'un d'eux additionne des lignes à la
+main, il oubliera la remise.
+
+### Trois décisions qui ne sont pas des préférences
+
+1. **La réduction s'applique sur le HT, la TVA se calcule après.** Sur le TTC,
+   elle rendrait une déclaration fausse. Annoncé comme non soumis à son choix.
+2. **`total_ht` porte le montant NET.** Tout ce qui existe déjà — relevé de TVA,
+   export comptable, exigibilité, paiements — y cherche ce qui est *dû*. Y
+   laisser le prix plein aurait demandé de corriger chacun de ces endroits sans
+   en oublier un seul. Le prix plein vaut `total_ht + reduction_montant`.
+3. **Deux colonnes, pas une.** Le pourcentage suffirait à recalculer le montant…
+   tant que les lignes ne bougent pas. Elles bougent. Le montant est donc figé
+   avec le document, comme les totaux qui l'entourent.
+
+**Et deux gardes plutôt qu'un** : `pourcentValide` borne à l'entrée, et la
+migration 0048 pose des contraintes SQL — bornes, et les deux colonnes
+ensemble ou pas du tout. L'écran n'est pas le seul chemin : une action serveur
+ou une reprise de données passeraient à côté de la première.
+
+### Ce que les contrôles ont trouvé, et qu'aucune relecture n'aurait vu
+
+- **`pdf-lib` refusait le « moins » typographique.** `−` (U+2212) n'existe pas en
+  WinAnsi : `WinAnsi cannot encode "−"`, et **plus aucun devis ne se générait**.
+  L'écran, lui, l'affichait très bien. Un trait d'union règle tout
+  (`test-reduction-pdf.ts`).
+- **Le champ disparaissait sous le doigt.** Vider la case ramenait la réduction
+  à `null`, ce qui démontait la ligne — donc le champ — AVANT que `onBlur` ait pu
+  enregistrer. Le retrait n'arrivait jamais au serveur et la remise revenait au
+  rechargement, sans un mot. D'où `remiseOuverte`, un état qui ne dépend pas du
+  montant calculé (`test-reduction-devis-e2e.ts`).
+- **`chargerDevisPourEcran` rend `null` sur un brouillon**, par construction : il
+  sert à relire un devis ENVOYÉ. La retouche dictée l'appelait, et n'aurait donc
+  jamais rien appliqué — le seul cas qui compte étant justement le brouillon
+  (`test-reduction-parcours-db.ts`).
+- **Une ligne vide traînait sur les devis sans remise**, pendant que le PDF
+  n'imprimait rien : l'écran et le document se contredisaient. Vu à la capture,
+  pas au test.
+
+### La voix, et le chemin de secours
+
+« Fais cinq pour cent sur le montant du devis » est la **sixième** retouche
+dictée (`retouches-devis.ts`), et la seule qui ne vise aucune ligne. « Enlève la
+remise » la retire. Elle propose, il coche — comme les cinq autres.
+
+**Et une ligne discrète « + Prix accordé au client » sous les totaux**, qui n'a
+pas été demandée : sans elle, une remise dictée par erreur ne pourrait pas être
+retirée sans redicter, et l'installation sans clé d'IA ne saurait pas en poser.
+Elle ouvre à 5 %, qu'il corrige.
+
+
+---
+
+## 117. Deux demi-journées qui font une journée — et la route, pas le vol d'oiseau
+
+**Sa demande du 13 août 2026 :** *« lorsqu'on a fini des chantiers en
+demi-journée, que le planning soit en mesure de proposer deux demi-journées pour
+faire une journée, mais de deux chantiers qui sont les plus proches. […] Je vais
+lui demander s'il veut que je mette ce chantier-là plutôt qu'un autre
+l'après-midi ou le matin. »*
+
+Puis sa question, qui a commandé tout le reste : *« Quel est le problème si on
+fait par la route ? Je n'ai pas compris. »* — et sa décision du 16, une fois la
+réponse revenue : *« Si c'est possible de faire par la route, code par la
+route. »*
+
+### Le problème n'était pas technique, il était juridique
+
+Un service d'itinéraire reçoit les adresses des clients : il devient un
+**sous-traitant ultérieur** au sens du RGPD, à nommer dans un contrat qui
+n'existe pas encore (`docs/A-FAIRE.md` points 1 et 2). C'est le raisonnement qui
+avait déjà fait préférer la Base Adresse Nationale à Google (§ sur l'aide à la
+saisie d'adresse).
+
+**Sauf que l'État publie aussi un service d'itinéraire.** `.github/workflows/itineraire.yml`
+est allé le lui demander depuis une machine qui a le réseau — l'environnement de
+développement, lui, refuse les services extérieurs. Ce qu'il a rapporté le
+16 août 2026 :
+
+| Mesuré | Résultat |
+|---|---|
+| Clé, compte | **Aucun.** Le service répond 200 sans rien |
+| Écart vol d'oiseau → route | **×1,33 à ×1,56** (monts du Lyonnais) |
+| Rafale de dix appels | 1858 ms, **tous en 200**, 186 ms de moyenne |
+| En-têtes de limite d'usage | **Aucun** — donc on ne sait pas, donc on se retient |
+
+Ce que ces chiffres tranchent : le vol d'oiseau se trompe d'un tiers à la
+moitié, et l'erreur n'est **pas la même d'un trajet à l'autre** — elle peut donc
+inverser le classement. Un chantier « à 8 km » derrière une colline se paie plus
+cher qu'un chantier « à 11 km » par la vallée.
+
+### L'ordre imposé, et pourquoi il ne se négocie pas
+
+`src/lib/appariement-demi-journees.ts` :
+
+1. **le vol d'oiseau classe et écarte** — instantané, chez nous, aucun appel ;
+2. **la route ne départage que les trois premiers.**
+
+Trois appels par proposition, pas quinze. Aucun en-tête n'annonce de limite :
+dix appels ne prouvent pas qu'il en supporte mille, et un écran qui arroserait
+un service public à chaque ouverture finirait par s'en voir fermer la porte —
+c'est l'artisan qui perdrait la fonction.
+
+**Ce qui part chez l'IGN : deux paires de nombres, rien d'autre.** Pas de nom,
+pas d'adresse en clair, pas d'identifiant. Des coordonnées ne se remontent pas à
+une personne sans le fichier qui va avec, et ce fichier ne quitte jamais Atlas.
+Un contrôle le tient plutôt qu'une phrase rassurante
+(`scripts/test-itineraire-ign.ts`).
+
+### Ce qu'il a fallu construire avant, et qui ne se voit pas
+
+**Atlas ne connaissait aucune distance.** L'adresse d'un chantier est du texte
+libre, et le restera : on ne va pas empêcher de créer un chantier faute d'un
+numéro de rue. Mais la Base Adresse Nationale rend les coordonnées à chaque
+frappe, dans la réponse que `lireSuggestions` lisait — et qui n'en gardait que
+le libellé. Le reste partait à la poubelle.
+
+- **migration 0049** : `latitude`, `longitude` (`numeric(9,6)`) et
+  **`adresse_situee`** sur `chantiers` ;
+- **`adresse_situee` est la colonne qui compte.** Elle porte l'adresse EXACTE
+  qui a produit les coordonnées. Le jour où le patron corrige l'adresse, des
+  coordonnées posées sur l'ancienne seraient **pires que pas de coordonnées** —
+  elles ne se signalent pas. Comparer les deux attrape d'un coup les chantiers
+  jamais situés et ceux dont l'adresse a changé ;
+- **le rattrapage se fait au fil de l'eau**, huit par ouverture de planning
+  (`situerQuelquesChantiers`). Trois cents chantiers d'un coup feraient trois
+  cents appels et une page d'une minute ;
+- **une panne du service ne s'écrit PAS en base.** Marquer `adresse_situee`
+  pendant une coupure condamnerait l'adresse à ne plus jamais être retentée : le
+  chantier resterait « non situé » pour toujours, sans que rien ne l'explique.
+  Une adresse *refusée* (« derrière l'église »), elle, laisse sa trace — sinon
+  elle repartirait à chaque ouverture, indéfiniment.
+
+### L'écran : sa composition 2, avec les propositions de la 3
+
+*« je veux la 2 par la route mais avec plusieurs proposition comme la 3 »*
+(`docs/maquettes/57-apparier-deux-demi-journees.html`).
+
+Le bandeau vit **sous la journée**, et n'apparaît que là où la question se pose :
+une demi-journée prise, l'autre libre, pour la même équipe. Sur une journée vide
+il n'y a rien à compléter ; sur une journée pleine, rien à ajouter.
+
+**Ses trois états muets comptent autant que le premier** — un écran qui ne dit
+rien passe pour une panne, ce dépôt l'a déjà payé trois fois :
+
+| Situation | Ce que l'écran écrit |
+|---|---|
+| Rien d'assez proche | Combien, et à quelle distance est le plus proche — puis « Voir quand même » |
+| Départ non situable | L'adresse en cause, nommée, et le chemin pour la corriger |
+| Candidat sans adresse | Nommé sous les propositions, jamais tu |
+| Aucun candidat du tout | **Rien** : le bandeau ne s'affiche pas. Le cas ordinaire ne mérite pas du bruit |
+
+**Et la phrase ne ment jamais sur ce qu'elle mesure** : « à 12 km, 20 min de
+route » quand on a la route, « à 8 km à vol d'oiseau » sinon. Écrire « à 8 km »
+tout court laisserait croire à une distance routière, et le patron partirait
+pour un quart d'heure de trajet qui en fait vingt-cinq.
+
+**Atlas propose, le patron décide.** Aucune demi-journée ne se cale toute seule.
+
+### Un défaut trouvé en chemin : « ½ journée » valait une journée entière
+
+`dureeEnDemiJournees("½ journée")` rendait **2**. Le motif reconnaissait
+« demi-journée » et « 1/2 journée », pas le caractère `½` — qui est pourtant
+**le libellé que la molette affiche au patron** (`src/lib/durees-chantier.ts`),
+donc celui qu'il redit et qu'il dicte. La phrase tombait alors sur la règle
+suivante — « journée » sans chiffre reconnu — et réservait la journée entière.
+
+Sans conséquence par l'écran Informations, qui enregistre `libelleDuree(1)` =
+« une demi-journée ». Réel dès qu'il **dicte** sa durée. Corrigé, avec son cas
+dans `scripts/test-creneaux.ts`.
+
+### Ce qui reste, et qui n'est PAS dans ce lot
+
+**Le bandeau ne propose qu'un trou à la fois.** À plusieurs équipes, plusieurs
+demi-journées dépareillées peuvent coexister ; en afficher autant de bandeaux
+ferait trois pavés sous une journée déjà chargée. On complète le premier, le
+suivant apparaît.
+
+**Et la proposition 4 de la maquette — proposer au moment où l'on pose la date —
+n'est pas codée.** Elle se combine avec celle-ci sans la contredire ; elle
+attend son geste.
+
+---
+
+---
+
+## 118. Le quatrième rappel : une facture impayée, et le premier qui porte un RYTHME
 
 **Sa demande du 16 août 2026, en deux temps.** D'abord la question du point de
 départ, à laquelle il répond lui-même devant la maquette
@@ -9408,7 +9737,7 @@ distingue d'un acquittement — et pourquoi la carte ne porte pas « J'ai vu ».
 
 ### La date de report vit sur le CHANTIER, et ce n'est pas un rangement
 
-`chantiers.rappel_facture_repousse_le`, migration 0048 — et non
+`chantiers.rappel_facture_repousse_le`, migration 0050 — et non
 `factures.rappel_repousse_le`, qui était le choix naturel.
 
 **`trg_facture_immuable` (migration 0018) refuse TOUTE écriture sur une facture

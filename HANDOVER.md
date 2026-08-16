@@ -37,6 +37,17 @@ ce soit au patron.** C'est exactement ce qui a coûté quatre allers-retours dan
 la nuit du 11 au 12 août : des hypothèses formulées à distance, toutes fausses,
 pendant que sa machine savait tout.
 
+**Et une fiche FIGÉE ne veut pas dire « espace arrêté » sur les anciens
+espaces.** Défaut trouvé le 16 août 2026 : la publication vivait au bas de la
+boucle de `veiller.sh`, qui cesse d'avancer dès qu'elle appelle `npm run banc`
+— un appel qui ne rend la main qu'à la mort du serveur suivant. La fiche se
+figeait donc **au moment exact où le veilleur se mettait au travail**, et sa
+propre règle de lecture (« passé vingt minutes, l'espace est arrêté ») envoyait
+rallumer une machine qui tournait. Corrigé : la publication vit dans un
+processus séparé. **Mais un espace allumé avant cette correction porte encore
+l'ancien veilleur** — devant une fiche figée, regarder le commit qu'elle annonce
+avant d'en conclure quoi que ce soit.
+
 Cette phrase-là n'est plus à retenir : `.claude/settings.json` branche
 `scripts/rappel-panne.mjs` sur chaque message reçu, et le rappel réapparaît de
 lui-même dès qu'il signale une panne — dans cette session comme dans les trois
@@ -743,6 +754,67 @@ carte, et un montage a écrit `WHERE id = NULL` sans se plaindre — d'où une i
 annonçant « 60 jours » au lieu de 30, faute qui était celle du montage et non de
 l'application.
 
+**DEUX MAQUETTES POUR LA FICHE D'ENTRETIEN (16 août) — RIEN N'EST CODÉ.** Il a
+demandé de recréer les fiches de chantier d'une autre application (paysagistes
+en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
+
+- **Ne pas commencer à coder** : sa règle du 11 août, et les deux questions de
+  fond ne sont pas tranchées (`TODO.md` § « La fiche d'entretien »).
+- **C'est un TROISIÈME parcours**, pas une case en plus : contrat → passages →
+  rapport, à côté de devis → facture.
+- **Le piège à ne pas recopier** : l'autre application liste les vingt
+  prestations avec « Vrai »/« Faux ». Quatre étant faites, le client lit seize
+  fois « Faux » sur un passage qu'il paie.
+- **Les planches sont ENGENDRÉES** (`scripts/engendrer-maquette-fiche-entretien.mjs`)
+  d'une seule liste : ne pas les retoucher à la main, elles divergeraient.
+
+**LE PRIX ACCORDÉ AU CLIENT (16 août).** « Fais cinq pour cent sur le montant du
+devis » : une remise en pourcentage, sous le total, qui suit jusqu'à la facture
+et au relevé de TVA. Son choix : l'arrangement **B** de `docs/maquettes/61`, le
+plus cher des trois — **ne pas le rouvrir**, le coût lui a été annoncé avant.
+
+**⚠ TROIS PIÈGES DE CE LOT, tous payés une fois :**
+
+1. **Ne JAMAIS recalculer un total ailleurs qu'en appelant
+   `totauxAvecReduction`** (`src/lib/reduction-devis.ts`). B n'est pas une ligne
+   du tableau : tout endroit qui additionne des lignes à la main oublie la
+   remise, et c'est un montant faux sur un document parti chez un client.
+2. **`total_ht` est le montant NET**, réduction déduite. Le relevé de TVA,
+   l'export comptable et les paiements y cherchent ce qui est dû.
+3. **Pas de « moins » typographique dans un PDF.** `−` (U+2212) fait lever
+   `pdf-lib` et plus aucun devis ne se génère. L'écran, lui, l'affiche très
+   bien — le défaut est invisible partout ailleurs.
+
+**Ce qui n'a pas été parcouru ici** : le geste à la VOIX, faute de transcription
+et de modèle sur cette machine. `ARCHITECTURE.md` §116.
+
+**UN JOUR BARRÉ N'EST PAS UN JOUR PRIS (16 août).** Sa capture de l'écran
+d'envoi, et un défaut de PHRASE, pas de règle.
+
+1. **Ce qu'il voyait.** Le 18 refusé, sans savoir pourquoi — et l'écran écrivait
+   « les jours barrés sont déjà pris » alors qu'il n'y avait rien dessus.
+2. **Ce qui se passe vraiment.** Un jour barré répond à « un chantier de CETTE
+   durée peut-il y COMMENCER ? ». Deux jours partis du 18 déborderaient sur le
+   19, qui est plein. **Reproduit avant de corriger**, et la règle est juste.
+3. **Ce qui a changé.** La phrase nomme la durée — et ce faisant, elle montre le
+   levier : la durée se change juste au-dessus du calendrier.
+   `src/lib/jours-barres.ts`, `ARCHITECTURE.md` §115.
+4. **`dureeDemiJournees` n'a pas de valeur par défaut sur `Calendrier`**
+   (`number | null`), et il faut que ça le reste : le patron a droit à la durée,
+   **son client non** — consigne tenue par `test-creneaux-planning.ts`, qui a
+   refusé la première version de ce lot (*« la durée du chantier a fuité vers la
+   page du client »*). Un défaut silencieux ferait pencher un écran du mauvais
+   côté sans que personne ne le décide.
+5. **Aucune règle de réservation n'a bougé.** Si un jour paraît mal barré,
+   chercher dans `disponibilites.ts`, pas dans cette correction.
+
+**ET UN RAPPEL QUI VIENT DE RESSERVIR (16 août).** Il signale « la demi-journée
+ne s'affiche pas sur le planning » : c'était vrai la veille, corrigé la nuit même
+(§111), et **son banc avait une version de retard** — sa fiche d'état le disait
+en toutes lettres. Lire la fiche AVANT de chercher dans le produit a fait gagner
+la moitié de l'échange.
+
+
 **LE MICRO DU DEVIS (15 août) — et le seul piège qu'il porte.** Il peut
 désormais dicter des corrections dans le devis : « supprime la deuxième ligne »,
 « monte la taille de haie à 350 », « rajoute le broyage à 500 », « fondage du
@@ -822,10 +894,12 @@ planning, regarder d'abord quel jour de la semaine elle vise.** Corrigé avec
 défaut, libellé **« Chantier sans devis »**, premier des trois réglages. Détail et
 deux points laissés en suspens : `TODO.md` §0 novivicies.
 
-**⚠ SUR L'ACCUEIL, LES RAPPELS PASSENT DEVANT LES RÉPONSES DE CLIENTS** — sa
-décision du 16 août (« fait la B »), après trois photos. La règle d'avant disait
-l'inverse (*« quelqu'un a agi, cela prime sur un silence »*) : ne pas la
-restaurer en la lisant quelque part, elle est datée. `ARCHITECTURE.md` §112.
+**⚠ L'ORDRE DES CARTES DE L'ACCUEIL EST UNE RÈGLE, PAS UNE CONCATÉNATION** —
+`src/lib/ordre-notifications.ts`, deux décisions du 16 août : les rappels passent
+devant (« fait la B »), ET une place est garantie aux réponses de clients
+(« ok alors fait le »). La règle d'origine — *« les réponses d'abord, quelqu'un a
+agi, cela prime sur un silence »* — est datée : ne pas la restaurer en la lisant
+quelque part. `ARCHITECTURE.md` §112.
 
 **⚠ IL Y A MAINTENANT TROIS RAPPELS, PAS DEUX** — `src/lib/rappels.ts`. Le
 troisième se lit sur le CHANTIER (`created_at`, `devis_envoye_at`) et non sur un

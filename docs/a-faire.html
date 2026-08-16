@@ -79,7 +79,7 @@
 <li><a href="#8-faire-valider-lapplication-par-google--avant-de-commercialiser">Faire valider l'application par Google — AVANT de commercialiser</a></li>
 <li><a href="#9-demander-à-votre-comptable--tva-au-mois-ou-au-trimestre-">Demander à votre comptable : TVA au mois ou au trimestre ?</a></li>
 <li><a href="#10-le-premier-jour-dun-artisan--ce-qui-manque-pour-lui-confier-atlas">Le premier jour d'un artisan : ce qui manque pour lui confier Atlas</a></li>
-<li><a href="#11-décider-si-atlas-peut-calculer-des-trajets-par-la-route">Décider si Atlas peut calculer des trajets par la route</a></li>
+<li><a href="#11-décider-si-atlas-peut-calculer-des-trajets-par-la-route--tranché-le-16-août-2026">~~Décider si Atlas peut calculer des trajets par la route~~ — tranché le 16 août 2026</a></li>
 <li><a href="#12-demander-à-votre-comptable--tva-sur-les-encaissements-ou-sur-les-débits-">Demander à votre comptable : TVA sur les encaissements ou sur les débits ?</a></li>
 <li><a href="#13-choisir-le-prestataire-qui-lit-vos-virements">Choisir le prestataire qui lit vos virements</a></li>
 </ol>
@@ -581,7 +581,7 @@
 <h3 id="ce-que-ça-ne-bloque-pas">Ce que ça ne bloque pas</h3>
 <p>Ni votre usage à vous, ni la suite du développement. Ce point bloque <strong>le jour où vous confiez Atlas à quelqu'un d'autre que vous</strong> — et il le bloque entièrement.</p>
 <hr>
-<h2 id="11-décider-si-atlas-peut-calculer-des-trajets-par-la-route">11. Décider si Atlas peut calculer des trajets par la route</h2>
+<h2 id="11-décider-si-atlas-peut-calculer-des-trajets-par-la-route--tranché-le-16-août-2026">11. ~~Décider si Atlas peut calculer des trajets par la route~~ — tranché le 16 août 2026</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><strong>Qui : vous</strong>, et le juriste du point 2 si la réponse penche vers un prestataire privé.</p>
 <p><strong>D'où ça vient.</strong> Le 13 août 2026 : <em>« lorsqu'on a fini des chantiers en demi-journée, que le planning soit en mesure de proposer deux demi-journées pour faire une journée, mais de deux chantiers qui sont les plus proches »</em>. Une bonne idée, qui bute sur une question simple : <strong>proche comment ?</strong></p>
@@ -606,11 +606,35 @@
 <p>C'est exactement le raisonnement qui a fait préférer la Base Adresse Nationale à Google pour l'aide à la saisie : un service public français, sans compte ni clé, à qui l'on n'envoie qu'une rue.</p>
 <h3 id="la-piste-qui-pourrait-tout-régler">La piste qui pourrait tout régler</h3>
 <p><strong>L'État publie aussi un service d'itinéraire</strong>, sur la même Géoplateforme que les adresses. S'il tient ses promesses, la route rentre dans la même case que les adresses — service public, sans compte, sans clé, <strong>sans contrat avec une entreprise privée</strong>.</p>
-<p><strong>Une vérification a été lancée le 13 août 2026</strong> pour le savoir, sur une machine qui a le réseau — l'environnement de développement, lui, refuse les services extérieurs. Elle répond à trois questions : le service accepte-t-il sans clé, que vaut l'écart entre vol d'oiseau et route dans les monts, et tient-il le rythme de plusieurs appels d'affilée (<code>.github/workflows/itineraire.yml</code>).</p>
-<h3 id="ce-qui-est-proposé-en-attendant">Ce qui est proposé en attendant</h3>
-<p><strong>Commencer à vol d'oiseau</strong>, et le dire à l'écran — « à 8 km à vol d'oiseau » plutôt que « à 14 min ». C'est utile tout de suite, ça n'engage rien, et la maquette est dessinée pour que <strong>seule la phrase change</strong> le jour où la route devient possible : pas un écran à redessiner (<code>docs/maquettes/57-apparier-deux-demi-journees.html</code>).</p>
-<h3 id="ce-que-ça-ne-bloque-pas">Ce que ça ne bloque pas</h3>
-<p>Ni l'essai, ni la finition. L'appariement fonctionnera à vol d'oiseau, et gagnera en justesse le jour où la route sera tranchée.</p>
+<h3 id="-la-vérification-a-répondu--16-août-2026">✅ La vérification a répondu — 16 août 2026</h3>
+<p>Elle a tourné sur une machine qui a le réseau (<code>.github/workflows/itineraire.yml</code>), puisque l'environnement de développement refuse les services extérieurs. Ce qu'elle rapporte, mesuré et non supposé :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Question</th>
+<th>Réponse</th>
+</tr></thead><tbody>
+<tr>
+<td>Faut-il une clé, un compte ?</td>
+<td><strong>Non.</strong> Le service répond normalement sans rien</td>
+</tr>
+<tr>
+<td>Que vaut le vol d'oiseau ?</td>
+<td><strong>Il se trompe d'un tiers à la moitié</strong> — de ×1,33 à ×1,56 dans les monts du Lyonnais</td>
+</tr>
+<tr>
+<td>Tient-il le rythme ?</td>
+<td>Dix appels d'affilée, <strong>tous acceptés, 186 ms chacun</strong></td>
+</tr>
+<tr>
+<td>Annonce-t-il une limite d'usage ?</td>
+<td><strong>Non</strong> — donc on n'en sait rien, et on se retient</td>
+</tr>
+</tbody></table></div>
+<p><strong>Concrètement</strong> : 9,0 km à vol d'oiseau font 12,0 km et 20 minutes de route ; 23,8 km font 35,6 km et 54 minutes. Un chantier qui paraissait proche pouvait être le plus lointain des trois.</p>
+<h3 id="ce-qui-a-donc-été-codé-le-16-août-2026">Ce qui a donc été codé, le 16 août 2026</h3>
+<p><strong>Par la route</strong>, puisque c'est possible sans contrat nouveau : la Géoplateforme de l'IGN est un service public français, comme la Base Adresse Nationale. <strong>Il ne part chez elle que deux paires de nombres</strong> — jamais un nom de client, jamais une adresse en clair. Des coordonnées ne se remontent à personne sans le fichier qui va avec, et ce fichier ne quitte jamais Atlas.</p>
+<p><strong>Et le vol d'oiseau n'a pas disparu</strong> : il classe et écarte d'abord, chez nous, sans le moindre appel ; la route ne départage que les trois premiers. Trois appels par proposition, pas quinze — un écran qui arroserait un service public à chaque ouverture finirait par s'en voir fermer la porte, et c'est vous qui perdriez la fonction. Quand le service ne répond pas, l'écran écrit « à 8 km à vol d'oiseau » et le dit comme tel, plutôt que d'afficher un chiffre qui laisse croire à un trajet.</p>
+<h3 id="ce-qui-reste-à-décider-et-qui-vous-revient">Ce qui reste à décider, et qui vous revient</h3>
+<p><strong>Rien ne bloque l'essai.</strong> Mais si un jour la route par l'IGN ne suffit pas — service arrêté, précision insuffisante — le recours serait un prestataire privé, et là le point 2 redevient bloquant. À rouvrir seulement ce jour-là.</p>
 <hr>
 <h2 id="12-demander-à-votre-comptable--tva-sur-les-encaissements-ou-sur-les-débits-">12. Demander à votre comptable : TVA sur les encaissements ou sur les débits ?</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>

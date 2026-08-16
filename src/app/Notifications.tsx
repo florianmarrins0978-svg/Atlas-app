@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { ordonnerLesCartes } from "@/lib/ordre-notifications";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
@@ -246,28 +247,31 @@ export default function Notifications({
    */
   const [refus, setRefus] = useState<{ chantierId: string; message: string } | null>(null);
 
-  // **LES RAPPELS D'ABORD — sa décision du 16 août 2026, « fait la B ».**
+  // **LES RAPPELS D'ABORD, MAIS PAS TOUTE LA PLACE — ses deux décisions du
+  // 16 août 2026 : « fait la B », puis « fait le » pour la place garantie.**
   //
-  // La règle d'avant disait l'inverse : *« les réponses d'abord, quelqu'un a agi,
-  // cela prime sur un silence »*. Elle se défendait, et elle avait un défaut que
-  // seule une photo a montré : l'accueil ne pose que VISIBLES_PAR_DEFAUT cartes,
-  // et **dès deux réponses en attente**, un rappel passait derrière « N autres
-  // devis à regarder ». Un rappel qu'il faut déplier n'est plus un rappel.
+  // La règle d'origine disait l'inverse : *« les réponses d'abord, quelqu'un a
+  // agi, cela prime sur un silence »*. Elle se défendait, et elle avait un
+  // défaut que seule une photo a montré : dès DEUX réponses en attente, son
+  // rappel passait derrière « N autres devis à regarder ». Un rappel qu'il faut
+  // déplier n'est plus un rappel.
   //
-  // Trois dispositions lui ont été PHOTOGRAPHIÉES sur la même scène — deux
-  // réponses de clients plus son rappel (`scripts/capture-rang-trois-cas.sh`).
-  // Il a retenu B. La troisième — montrer trois cartes au lieu de deux — a été
-  // écartée par l'image elle-même : la troisième tombe sous le bord de l'écran.
+  // Puis la batterie a montré le défaut symétrique, et trois suites l'ont dit
+  // en rougissant : avec les rappels devant, trois chantiers sans devis
+  // suffisaient à masquer TOUTES les réponses de clients. Photographié
+  // (`scripts/capture-place-garantie.sh`), puis tranché.
   //
-  // **Ce que ce choix coûte, et il l'a accepté en connaissance de cause :** une
-  // acceptation ou un refus peut désormais attendre derrière un rappel. Ce qu'il
-  // gagne : ce qu'il doit FAIRE passe avant ce qu'on lui a répondu.
-  const cartes = [
-    ...rappels.map(rappelVersCarte),
-    ...initiales.map(versCarte),
-    ...caducs.map(caducVersCarte),
-  ];
-  const restantes = cartes.filter((n) => !masquees.includes(n.envoiId));
+  // **Le partage vit dans `src/lib/ordre-notifications.ts`**, pure et éprouvée
+  // sur les cas limites : ici on ne fait que lui donner les deux sortes.
+  //
+  // **On tresse APRÈS avoir retiré les cartes acquittées**, et l'ordre compte :
+  // tresser d'abord réserverait une place à une réponse que le patron vient de
+  // marquer « J'ai vu » — une place vide, au profit de rien.
+  const lesRappels = rappels.map(rappelVersCarte).filter((n) => !masquees.includes(n.envoiId));
+  const lesReponses = [...initiales.map(versCarte), ...caducs.map(caducVersCarte)].filter(
+    (n) => !masquees.includes(n.envoiId)
+  );
+  const restantes = ordonnerLesCartes(lesRappels, lesReponses, VISIBLES_PAR_DEFAUT);
   if (restantes.length === 0) return null;
 
   const visibles = toutVoir ? restantes : restantes.slice(0, VISIBLES_PAR_DEFAUT);

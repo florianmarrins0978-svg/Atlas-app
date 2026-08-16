@@ -44,9 +44,10 @@
     ————————————————————————————————————————————————————————————————
     RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
     AUCUN SCRIPT : les bascules sont des boutons radio natifs.
-    Les chiffres sont vrais : 870,00 € HT − 5 % = 826,50 €, TVA 20 % = 165,30 €,
-    soit 991,80 € TTC. Un devis de maquette qui ne tombe pas juste apprend à
-    douter des totaux du vrai.
+    Les chiffres sont vrais pour LES TROIS taux, et recalculés par le contrôle à
+    partir des lignes lues à l'écran : 870,00 € HT donne 826,50 / 783,00 / 739,50
+    à 5, 10 et 15 %. Un devis de maquette qui ne tombe pas juste apprend à douter
+    des totaux du vrai.
     Le contrôle : `scripts/verifier-maquette-reduction.mjs`.
   */
 
@@ -98,13 +99,26 @@
   #v-b:checked ~ .dedans .segments label[for="v-b"],
   #v-c:checked ~ .dedans .segments label[for="v-c"],
   #m-1:checked ~ .dedans .segments label[for="m-1"],
-  #m-2:checked ~ .dedans .segments label[for="m-2"]{
+  #m-2:checked ~ .dedans .segments label[for="m-2"],
+  #t-5:checked ~ .dedans .segments label[for="t-5"],
+  #t-10:checked ~ .dedans .segments label[for="t-10"],
+  #t-15:checked ~ .dedans .segments label[for="t-15"]{
     background:var(--pin);border-color:var(--pin);color:#fff}
 
   /* Le mot qu'il choisit — il n'y en a qu'un d'affiché à la fois. */
   .mot-1,.mot-2{display:none}
   #m-1:checked ~ .dedans .mot-1,
   #m-2:checked ~ .dedans .mot-2{display:inline}
+
+  /* **LE POURCENTAGE SE CHOISIT AUSSI**, et c'est ce qui rend la planche
+     essayable plutôt que regardable. Sa demande du 16 août — « pas une photo ! ».
+     Chaque nombre qui dépend du taux existe en trois exemplaires, calculés à la
+     main et vérifiés par `verifier-maquette-reduction.mjs` : sans JavaScript, on
+     ne calcule pas, on prépare. Son lecteur n'en exécute aucun. */
+  .p5,.p10,.p15{display:none}
+  #t-5:checked ~ .dedans .p5,
+  #t-10:checked ~ .dedans .p10,
+  #t-15:checked ~ .dedans .p15{display:inline}
 
   /* ═══ La feuille de devis ════════════════════════════════════════════ */
   .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
@@ -178,12 +192,15 @@
 <input type="radio" name="v" id="v-c" class="etat">
 <input type="radio" name="m" id="m-1" class="etat" checked>
 <input type="radio" name="m" id="m-2" class="etat">
+<input type="radio" name="t" id="t-5" class="etat" checked>
+<input type="radio" name="t" id="t-10" class="etat">
+<input type="radio" name="t" id="t-15" class="etat">
 
 <div class="dedans">
   <h1>La réduction au client</h1>
   <p class="intro">Votre demande du 16 août. <b>Rien n’est codé</b> — c’est votre
-    règle. Le premier réglage choisit <b>où</b> la réduction se pose, le second
-    choisit <b>le mot</b>.</p>
+    règle. <b>Touchez les trois réglages</b> : où la réduction se pose, le
+    pourcentage, et le mot. Les totaux suivent.</p>
 
   <p class="dit">« Si jamais un client me demande une réduction, pouvoir lui
     demander <b>fais cinq pour cent sur le montant du devis</b>, et il ajoute une
@@ -196,6 +213,15 @@
       <label for="v-a">A · Une ligne du devis</label>
       <label for="v-b">B · Sous le total</label>
       <label for="v-c">C · Le prix barré</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">Le pourcentage — c’est vous qui le choisissez</span>
+    <div class="segments">
+      <label for="t-5">5 %</label>
+      <label for="t-10">10 %</label>
+      <label for="t-15">15 %</label>
     </div>
   </div>
 
@@ -218,37 +244,37 @@
 
       <!-- ═══ A · une ligne parmi les autres ═══════════════════════════════ -->
       <div class="lg remise a-ligne">
-        <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> 5 %</span>
-        <span class="prix">− 43,50 €</span>
+        <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> <span class="p5">5</span><span class="p10">10</span><span class="p15">15</span> %</span>
+        <span class="prix">− <span class="p5">43,50</span><span class="p10">87,00</span><span class="p15">130,50</span> €</span>
       </div>
       <div class="totaux a-ligne">
-        <div class="tot"><span>Total HT</span><span>826,50 €</span></div>
-        <div class="tot"><span>TVA 20 %</span><span>165,30 €</span></div>
-        <div class="tot gros"><span>Total TTC</span><span>991,80 €</span></div>
+        <div class="tot"><span>Total HT</span><span><span class="p5">826,50</span><span class="p10">783,00</span><span class="p15">739,50</span> €</span></div>
+        <div class="tot"><span>TVA 20 %</span><span><span class="p5">165,30</span><span class="p10">156,60</span><span class="p15">147,90</span> €</span></div>
+        <div class="tot gros"><span>Total TTC</span><span><span class="p5">991,80</span><span class="p10">939,60</span><span class="p15">887,40</span> €</span></div>
       </div>
 
       <!-- ═══ B · un bloc sous le total ════════════════════════════════════ -->
       <div class="totaux a-bloc">
         <div class="tot"><span>Total HT</span><span>870,00 €</span></div>
         <div class="tot or">
-          <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> 5 %</span>
-          <span>− 43,50 €</span>
+          <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> <span class="p5">5</span><span class="p10">10</span><span class="p15">15</span> %</span>
+          <span>− <span class="p5">43,50</span><span class="p10">87,00</span><span class="p15">130,50</span> €</span>
         </div>
-        <div class="tot souligne"><span>Total HT après remise</span><span>826,50 €</span></div>
-        <div class="tot"><span>TVA 20 %</span><span>165,30 €</span></div>
-        <div class="tot gros"><span>Total TTC</span><span>991,80 €</span></div>
+        <div class="tot souligne"><span>Total HT après remise</span><span><span class="p5">826,50</span><span class="p10">783,00</span><span class="p15">739,50</span> €</span></div>
+        <div class="tot"><span>TVA 20 %</span><span><span class="p5">165,30</span><span class="p10">156,60</span><span class="p15">147,90</span> €</span></div>
+        <div class="tot gros"><span>Total TTC</span><span><span class="p5">991,80</span><span class="p10">939,60</span><span class="p15">887,40</span> €</span></div>
       </div>
 
       <!-- ═══ C · le prix barré ════════════════════════════════════════════ -->
       <div class="totaux a-barre">
-        <div class="tot"><span>Total HT</span><span>826,50 €</span></div>
-        <div class="tot"><span>TVA 20 %</span><span>165,30 €</span></div>
+        <div class="tot"><span>Total HT</span><span><span class="p5">826,50</span><span class="p10">783,00</span><span class="p15">739,50</span> €</span></div>
+        <div class="tot"><span>TVA 20 %</span><span><span class="p5">165,30</span><span class="p10">156,60</span><span class="p15">147,90</span> €</span></div>
         <div class="tot gros">
           <span>Total TTC</span>
-          <span><span class="barre-prix">1 044,00 €</span>&nbsp; 991,80 €</span>
+          <span><span class="barre-prix">1 044,00 €</span>&nbsp; <span class="p5">991,80</span><span class="p10">939,60</span><span class="p15">887,40</span> €</span>
         </div>
         <div class="tot or" style="justify-content:flex-end;font-size:12px">
-          <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> de 5 % accordée</span>
+          <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> de <span class="p5">5</span><span class="p10">10</span><span class="p15">15</span> % accordée</span>
         </div>
       </div>
 
@@ -257,12 +283,12 @@
       <div class="confirme">
         <span class="sur">Ce qu’Atlas a compris</span>
         <p class="qui">Un changement</p>
-        <p class="phrase">« Fais cinq pour cent sur le montant du devis. »</p>
+        <p class="phrase">« Fais <span class="p5">cinq</span><span class="p10">dix</span><span class="p15">quinze</span> pour cent sur le montant du devis. »</p>
         <div class="prop">
           <span>
             <span class="verbe">Accorder</span>
-            <span class="txt"><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> de 5 %</span>
-            <span class="det">870,00 € → 826,50 € HT — soit 43,50 € de moins</span>
+            <span class="txt"><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> de <span class="p5">5</span><span class="p10">10</span><span class="p15">15</span> %</span>
+            <span class="det">870,00 € → <span class="p5">826,50</span><span class="p10">783,00</span><span class="p15">739,50</span> € HT — soit <span class="p5">43,50</span><span class="p10">87,00</span><span class="p15">130,50</span> € de moins</span>
           </span>
           <span class="coche">✓</span>
         </div>

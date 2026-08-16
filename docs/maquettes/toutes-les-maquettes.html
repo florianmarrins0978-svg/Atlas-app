@@ -4848,10 +4848,12 @@
                   border:1px solid var(--trait);font-size:13.5px;
                   background:var(--papier);color:var(--gris);
                   -webkit-tap-highlight-color:transparent}
-#s42 #v-a:checked ~ .dedans .segments label[for="v-a"],#s42 #v-b:checked ~ .dedans .segments label[for="v-b"],#s42 #v-c:checked ~ .dedans .segments label[for="v-c"],#s42 #m-1:checked ~ .dedans .segments label[for="m-1"],#s42 #m-2:checked ~ .dedans .segments label[for="m-2"]{
+#s42 #v-a:checked ~ .dedans .segments label[for="v-a"],#s42 #v-b:checked ~ .dedans .segments label[for="v-b"],#s42 #v-c:checked ~ .dedans .segments label[for="v-c"],#s42 #m-1:checked ~ .dedans .segments label[for="m-1"],#s42 #m-2:checked ~ .dedans .segments label[for="m-2"],#s42 #t-5:checked ~ .dedans .segments label[for="t-5"],#s42 #t-10:checked ~ .dedans .segments label[for="t-10"],#s42 #t-15:checked ~ .dedans .segments label[for="t-15"]{
     background:var(--pin);border-color:var(--pin);color:#fff}
 #s42 .mot-1,#s42 .mot-2{display:none}
 #s42 #m-1:checked ~ .dedans .mot-1,#s42 #m-2:checked ~ .dedans .mot-2{display:inline}
+#s42 .p5,#s42 .p10,#s42 .p15{display:none}
+#s42 #t-5:checked ~ .dedans .p5,#s42 #t-10:checked ~ .dedans .p10,#s42 #t-15:checked ~ .dedans .p15{display:inline}
 #s42 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
 #s42 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
        background:var(--teinte);
@@ -4902,6 +4904,192 @@
 #s42 .prop .txt{display:block;font-family:Georgia,serif;font-size:16px;color:var(--encre)}
 #s42 .prop .det{display:block;font-size:12px;color:var(--gris)}
 #s42 .prop .coche{color:var(--or);flex:none}
+
+
+/* 43 — La fiche d’entretien */
+#s43{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s43:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s43[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s43, #s43 *{box-sizing:border-box}
+#s43{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s43 .dedans{max-width:940px;margin:0 auto}
+#s43 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s43 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s43 .intro b{color:var(--encre);font-weight:600}
+#s43 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+#s43 .dit b{color:var(--encre);font-weight:600}
+#s43 .etat{position:absolute;opacity:0;pointer-events:none}
+#s43 .reglage{margin:0 0 18px}
+#s43 .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s43 .segments{display:flex;flex-wrap:wrap;gap:8px}
+#s43 .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+#s43 .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+#s43 .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:16px 15px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+#s43 .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:12px}
+#s43 .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+#s43 .barre .quand{font-size:11.5px;color:var(--gris)}
+#s43 .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+#s43 .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+#s43 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s43 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s43 .legende b{color:var(--encre);font-weight:600}
+#s43 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s43 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s43 .note b{color:var(--encre);font-weight:600}
+#s43 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s43 .note ul{margin:8px 0 0;padding-left:19px}
+#s43 .note li{margin-bottom:6px}
+#s43 .fa,#s43 .fb,#s43 .fc{display:none}
+#s43 #g-a:checked ~ .dedans .fa,#s43 #g-b:checked ~ .dedans .fb,#s43 #g-c:checked ~ .dedans .fc{display:block}
+#s43 #g-a:checked ~ .dedans label[for="g-a"],#s43 #g-b:checked ~ .dedans label[for="g-b"],#s43 #g-c:checked ~ .dedans label[for="g-c"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+#s43 .pres{display:flex;align-items:center;gap:12px;min-height:52px;
+        padding:6px 4px;border-bottom:1px solid var(--trait);cursor:pointer}
+#s43 .pres .case{width:24px;height:24px;flex:none;border-radius:7px;
+              border:1.5px solid var(--trait);background:transparent}
+#s43 .pres .mot{font-size:15px;color:var(--gris)}
+#s43 .etat:checked + .pres .case{background:var(--pin);border-color:var(--pin);
+                              box-shadow:inset 0 0 0 3px var(--papier),
+                                         inset 0 0 0 4px var(--pin)}
+#s43 .etat:checked + .pres .mot{color:var(--encre);font-weight:600}
+#s43 .fam{margin:16px 0 2px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or);display:flex;
+       justify-content:space-between;align-items:baseline}
+#s43 .fam .compte{font-size:11px;color:var(--gris);letter-spacing:0}
+#s43 .tri{display:flex;align-items:center;justify-content:space-between;gap:10px;
+       min-height:52px;border-bottom:1px solid var(--trait);padding:6px 2px}
+#s43 .tri .mot{font-size:14.5px;color:var(--gris);flex:1;min-width:0}
+#s43 .choix{display:flex;gap:4px;flex:none}
+#s43 .tri-c{padding:7px 9px;border-radius:8px;border:1px solid var(--trait);
+         font-size:11.5px;color:var(--gris);cursor:pointer;background:transparent}
+#s43 .etat:checked + .tri-f{background:var(--pin);border-color:var(--pin);color:var(--papier)}
+#s43 .etat:checked + .tri-n{background:var(--teinte);color:var(--encre)}
+#s43 .etat:checked + .tri-s{background:var(--teinte);color:var(--encre)}
+#s43 .fin{margin-top:18px;border-top:1px solid var(--trait);padding-top:14px}
+#s43 .fin .l{display:flex;justify-content:space-between;font-size:13.5px;
+          color:var(--gris);padding:7px 0}
+#s43 .fin .l b{color:var(--encre);font-weight:600}
+#s43 .bouton{display:block;margin-top:16px;text-align:center;padding:15px;
+          border-radius:999px;background:var(--pin);color:var(--papier);
+          font-size:15px}
+
+
+/* 44 — Le rapport que reçoit le client */
+#s44{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s44:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s44[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s44, #s44 *{box-sizing:border-box}
+#s44{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s44 .dedans{max-width:940px;margin:0 auto}
+#s44 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s44 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s44 .intro b{color:var(--encre);font-weight:600}
+#s44 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+#s44 .dit b{color:var(--encre);font-weight:600}
+#s44 .etat{position:absolute;opacity:0;pointer-events:none}
+#s44 .reglage{margin:0 0 18px}
+#s44 .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s44 .segments{display:flex;flex-wrap:wrap;gap:8px}
+#s44 .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+#s44 .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+#s44 .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:16px 15px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+#s44 .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:12px}
+#s44 .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+#s44 .barre .quand{font-size:11.5px;color:var(--gris)}
+#s44 .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+#s44 .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+#s44 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s44 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s44 .legende b{color:var(--encre);font-weight:600}
+#s44 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s44 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s44 .note b{color:var(--encre);font-weight:600}
+#s44 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s44 .note ul{margin:8px 0 0;padding-left:19px}
+#s44 .note li{margin-bottom:6px}
+#s44 .ra,#s44 .rb,#s44 .rc{display:none}
+#s44 #r-a:checked ~ .dedans .ra,#s44 #r-b:checked ~ .dedans .rb,#s44 #r-c:checked ~ .dedans .rc{display:block}
+#s44 #r-a:checked ~ .dedans label[for="r-a"],#s44 #r-b:checked ~ .dedans label[for="r-b"],#s44 #r-c:checked ~ .dedans label[for="r-c"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+#s44 .fam{margin:15px 0 4px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or)}
+#s44 .rl{display:flex;gap:10px;align-items:baseline;padding:7px 0;font-size:14.5px;
+      border-bottom:1px solid var(--trait);color:var(--encre)}
+#s44 .rl .v{color:var(--pin);flex:none;width:14px}
+#s44 .rl.non{color:var(--gris)}
+#s44 .rl.non .v{color:var(--trait)}
+#s44 .replie{margin-top:14px;border-top:1px solid var(--trait);padding-top:12px}
+#s44 .replie .titre{font-size:12.5px;color:var(--gris)}
+#s44 .replie .liste{margin:6px 0 0;font-size:12.5px;color:var(--gris);line-height:1.75}
+#s44 .entete{border-bottom:1px solid var(--trait);padding-bottom:12px;margin-bottom:6px}
+#s44 .entete .qui{font-family:Georgia,serif;font-size:20px;margin:0}
+#s44 .entete .quoi2{font-size:12.5px;color:var(--gris);margin:2px 0 0}
+#s44 .sign{display:flex;gap:10px;margin-top:16px}
+#s44 .sign div{flex:1;border:1px dashed var(--trait);border-radius:10px;
+            padding:10px;text-align:center;font-size:11px;color:var(--gris)}
+#s44 .pied{margin-top:14px;font-size:12.5px;color:var(--gris);
+        display:flex;justify-content:space-between}
+#s44 .pied b{color:var(--encre)}
 
 
 </style>
@@ -5099,6 +5287,15 @@
       <a class="item" href="#m42">
         <span class="no">42</span><span class="titre">La réduction au client</span><span class="fleche">↓</span>
         <span class="quoi">« Fais cinq pour cent sur le montant du devis » — où la petite ligne se pose, et sous quel mot. Le coût des trois est très inégal : une ligne voyage seule jusqu’à la facture.</span>
+      </a>
+      <p class="famille">L’entretien récurrent</p>
+      <a class="item" href="#m43">
+        <span class="no">43</span><span class="titre">La fiche d’entretien</span><span class="fleche">↓</span>
+        <span class="quoi">Ce que le paysagiste coche sur le chantier. Vingt prestations, quatre faites : tiennent-elles au pouce ? Trois gestes — la liste d’un bloc, rangée par familles, ou trois états avec « sans objet ».</span>
+      </a>
+      <a class="item" href="#m44">
+        <span class="no">44</span><span class="titre">Le rapport que reçoit le client</span><span class="fleche">↓</span>
+        <span class="quoi">La sortie de la fiche. L’autre application lui montre seize fois « Faux » sur un passage qu’il paie : tout, seulement ce qui a été fait, ou le reste replié en une phrase.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -17972,12 +18169,15 @@
 <input type="radio" name="v" id="v-c" class="etat">
 <input type="radio" name="m" id="m-1" class="etat" checked>
 <input type="radio" name="m" id="m-2" class="etat">
+<input type="radio" name="t" id="t-5" class="etat" checked>
+<input type="radio" name="t" id="t-10" class="etat">
+<input type="radio" name="t" id="t-15" class="etat">
 
 <div class="dedans">
   <h1>La réduction au client</h1>
   <p class="intro">Votre demande du 16 août. <b>Rien n’est codé</b> — c’est votre
-    règle. Le premier réglage choisit <b>où</b> la réduction se pose, le second
-    choisit <b>le mot</b>.</p>
+    règle. <b>Touchez les trois réglages</b> : où la réduction se pose, le
+    pourcentage, et le mot. Les totaux suivent.</p>
 
   <p class="dit">« Si jamais un client me demande une réduction, pouvoir lui
     demander <b>fais cinq pour cent sur le montant du devis</b>, et il ajoute une
@@ -17990,6 +18190,15 @@
       <label for="v-a">A · Une ligne du devis</label>
       <label for="v-b">B · Sous le total</label>
       <label for="v-c">C · Le prix barré</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">Le pourcentage — c’est vous qui le choisissez</span>
+    <div class="segments">
+      <label for="t-5">5 %</label>
+      <label for="t-10">10 %</label>
+      <label for="t-15">15 %</label>
     </div>
   </div>
 
@@ -18012,37 +18221,37 @@
 
       <!-- ═══ A · une ligne parmi les autres ═══════════════════════════════ -->
       <div class="lg remise a-ligne">
-        <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> 5 %</span>
-        <span class="prix">− 43,50 €</span>
+        <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> <span class="p5">5</span><span class="p10">10</span><span class="p15">15</span> %</span>
+        <span class="prix">− <span class="p5">43,50</span><span class="p10">87,00</span><span class="p15">130,50</span> €</span>
       </div>
       <div class="totaux a-ligne">
-        <div class="tot"><span>Total HT</span><span>826,50 €</span></div>
-        <div class="tot"><span>TVA 20 %</span><span>165,30 €</span></div>
-        <div class="tot gros"><span>Total TTC</span><span>991,80 €</span></div>
+        <div class="tot"><span>Total HT</span><span><span class="p5">826,50</span><span class="p10">783,00</span><span class="p15">739,50</span> €</span></div>
+        <div class="tot"><span>TVA 20 %</span><span><span class="p5">165,30</span><span class="p10">156,60</span><span class="p15">147,90</span> €</span></div>
+        <div class="tot gros"><span>Total TTC</span><span><span class="p5">991,80</span><span class="p10">939,60</span><span class="p15">887,40</span> €</span></div>
       </div>
 
       <!-- ═══ B · un bloc sous le total ════════════════════════════════════ -->
       <div class="totaux a-bloc">
         <div class="tot"><span>Total HT</span><span>870,00 €</span></div>
         <div class="tot or">
-          <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> 5 %</span>
-          <span>− 43,50 €</span>
+          <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> <span class="p5">5</span><span class="p10">10</span><span class="p15">15</span> %</span>
+          <span>− <span class="p5">43,50</span><span class="p10">87,00</span><span class="p15">130,50</span> €</span>
         </div>
-        <div class="tot souligne"><span>Total HT après remise</span><span>826,50 €</span></div>
-        <div class="tot"><span>TVA 20 %</span><span>165,30 €</span></div>
-        <div class="tot gros"><span>Total TTC</span><span>991,80 €</span></div>
+        <div class="tot souligne"><span>Total HT après remise</span><span><span class="p5">826,50</span><span class="p10">783,00</span><span class="p15">739,50</span> €</span></div>
+        <div class="tot"><span>TVA 20 %</span><span><span class="p5">165,30</span><span class="p10">156,60</span><span class="p15">147,90</span> €</span></div>
+        <div class="tot gros"><span>Total TTC</span><span><span class="p5">991,80</span><span class="p10">939,60</span><span class="p15">887,40</span> €</span></div>
       </div>
 
       <!-- ═══ C · le prix barré ════════════════════════════════════════════ -->
       <div class="totaux a-barre">
-        <div class="tot"><span>Total HT</span><span>826,50 €</span></div>
-        <div class="tot"><span>TVA 20 %</span><span>165,30 €</span></div>
+        <div class="tot"><span>Total HT</span><span><span class="p5">826,50</span><span class="p10">783,00</span><span class="p15">739,50</span> €</span></div>
+        <div class="tot"><span>TVA 20 %</span><span><span class="p5">165,30</span><span class="p10">156,60</span><span class="p15">147,90</span> €</span></div>
         <div class="tot gros">
           <span>Total TTC</span>
-          <span><span class="barre-prix">1 044,00 €</span>&nbsp; 991,80 €</span>
+          <span><span class="barre-prix">1 044,00 €</span>&nbsp; <span class="p5">991,80</span><span class="p10">939,60</span><span class="p15">887,40</span> €</span>
         </div>
         <div class="tot or" style="justify-content:flex-end;font-size:12px">
-          <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> de 5 % accordée</span>
+          <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> de <span class="p5">5</span><span class="p10">10</span><span class="p15">15</span> % accordée</span>
         </div>
       </div>
 
@@ -18051,12 +18260,12 @@
       <div class="confirme">
         <span class="sur">Ce qu’Atlas a compris</span>
         <p class="qui">Un changement</p>
-        <p class="phrase">« Fais cinq pour cent sur le montant du devis. »</p>
+        <p class="phrase">« Fais <span class="p5">cinq</span><span class="p10">dix</span><span class="p15">quinze</span> pour cent sur le montant du devis. »</p>
         <div class="prop">
           <span>
             <span class="verbe">Accorder</span>
-            <span class="txt"><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> de 5 %</span>
-            <span class="det">870,00 € → 826,50 € HT — soit 43,50 € de moins</span>
+            <span class="txt"><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> de <span class="p5">5</span><span class="p10">10</span><span class="p15">15</span> %</span>
+            <span class="det">870,00 € → <span class="p5">826,50</span><span class="p10">783,00</span><span class="p15">739,50</span> € HT — soit <span class="p5">43,50</span><span class="p10">87,00</span><span class="p15">130,50</span> € de moins</span>
           </span>
           <span class="coche">✓</span>
         </div>
@@ -18124,6 +18333,406 @@
         ne l’ajoute pas sans que vous le disiez.</li>
       <li>Faut-il aussi un <b>bouton</b> sur l’écran du devis, pour les fois où
         vous n’avez pas envie de parler ?</li>
+    </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m43">
+    <div class="etape-tete">
+      <span class="etape-no">43</span>
+      <h2>La fiche d’entretien</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s43">
+<input type="radio" name="g" id="g-a" class="etat" checked>
+<input type="radio" name="g" id="g-b" class="etat">
+<input type="radio" name="g" id="g-c" class="etat">
+
+<div class="dedans">
+  <h1>La fiche d'entretien</h1>
+  <p class="intro">Votre demande du 16 août, d'après vos captures. <b>Rien n'est
+    codé</b> — c'est votre règle. <b>Touchez les trois gestes</b>, et cochez
+    les lignes : tout réagit.</p>
+
+  <p class="dit">« Des fiches de chantier pour les paysagistes qui font de
+    l'entretien […] <b>une fiche où ils cochent ce qu'ils ont fait ou non</b> sur
+    le chantier, et ensuite qu'ils peuvent <b>enregistrer et envoyer directement
+    au client</b>. »</p>
+
+  <div class="reglage">
+    <span class="quoi">Le geste sur le chantier</span>
+    <div class="segments">
+      <label for="g-a">A · La liste, d'un bloc</label>
+      <label for="g-b">B · Rangée par familles</label>
+      <label for="g-c">C · Fait / non / sans objet</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Entretien</span><span class="quand">Mer. 22 juillet</span></div>
+      <p class="titre-fiche">Monsieur Martins</p>
+      <p class="sous">12 rue des Lilas — passage n° 7 sur 12</p>
+
+      <div class="fa">
+      <input type="checkbox" id="a0" class="etat" checked>
+      <label class="pres" for="a0"><span class="case"></span><span class="mot">Tonte et ébarbage</span></label>
+      <input type="checkbox" id="a1" class="etat">
+      <label class="pres" for="a1"><span class="case"></span><span class="mot">Traitement pelouse</span></label>
+      <input type="checkbox" id="a2" class="etat">
+      <label class="pres" for="a2"><span class="case"></span><span class="mot">Scarification</span></label>
+      <input type="checkbox" id="a3" class="etat">
+      <label class="pres" for="a3"><span class="case"></span><span class="mot">Engrais</span></label>
+      <input type="checkbox" id="a4" class="etat">
+      <label class="pres" for="a4"><span class="case"></span><span class="mot">Taille arbuste automne</span></label>
+      <input type="checkbox" id="a5" class="etat">
+      <label class="pres" for="a5"><span class="case"></span><span class="mot">Taille arbuste printemps</span></label>
+      <input type="checkbox" id="a6" class="etat">
+      <label class="pres" for="a6"><span class="case"></span><span class="mot">Taille de haie automne</span></label>
+      <input type="checkbox" id="a7" class="etat">
+      <label class="pres" for="a7"><span class="case"></span><span class="mot">Taille de haie printemps</span></label>
+      <input type="checkbox" id="a8" class="etat">
+      <label class="pres" for="a8"><span class="case"></span><span class="mot">Taille des rosiers</span></label>
+      <input type="checkbox" id="a9" class="etat">
+      <label class="pres" for="a9"><span class="case"></span><span class="mot">Bêchage</span></label>
+      <input type="checkbox" id="a10" class="etat">
+      <label class="pres" for="a10"><span class="case"></span><span class="mot">Bordures massifs</span></label>
+      <input type="checkbox" id="a11" class="etat" checked>
+      <label class="pres" for="a11"><span class="case"></span><span class="mot">Griffage massifs</span></label>
+      <input type="checkbox" id="a12" class="etat">
+      <label class="pres" for="a12"><span class="case"></span><span class="mot">Désherbage massifs</span></label>
+      <input type="checkbox" id="a13" class="etat">
+      <label class="pres" for="a13"><span class="case"></span><span class="mot">Coupe des fleurs fanées</span></label>
+      <input type="checkbox" id="a14" class="etat">
+      <label class="pres" for="a14"><span class="case"></span><span class="mot">Nettoyage pied de haies</span></label>
+      <input type="checkbox" id="a15" class="etat">
+      <label class="pres" for="a15"><span class="case"></span><span class="mot">Désherbant allée</span></label>
+      <input type="checkbox" id="a16" class="etat">
+      <label class="pres" for="a16"><span class="case"></span><span class="mot">Lierre, liseron, liane</span></label>
+      <input type="checkbox" id="a17" class="etat">
+      <label class="pres" for="a17"><span class="case"></span><span class="mot">Démoussage voirie</span></label>
+      <input type="checkbox" id="a18" class="etat" checked>
+      <label class="pres" for="a18"><span class="case"></span><span class="mot">Ramassage des feuilles</span></label>
+      <input type="checkbox" id="a19" class="etat" checked>
+      <label class="pres" for="a19"><span class="case"></span><span class="mot">Évacuation des déchets</span></label>
+      </div>
+      <div class="fb">
+      <p class="fam">Pelouse<span class="compte">1/4</span></p>
+      <input type="checkbox" id="b0" class="etat" checked>
+      <label class="pres" for="b0"><span class="case"></span><span class="mot">Tonte et ébarbage</span></label>
+      <input type="checkbox" id="b1" class="etat">
+      <label class="pres" for="b1"><span class="case"></span><span class="mot">Traitement pelouse</span></label>
+      <input type="checkbox" id="b2" class="etat">
+      <label class="pres" for="b2"><span class="case"></span><span class="mot">Scarification</span></label>
+      <input type="checkbox" id="b3" class="etat">
+      <label class="pres" for="b3"><span class="case"></span><span class="mot">Engrais</span></label>
+      <p class="fam">Tailles<span class="compte">0/5</span></p>
+      <input type="checkbox" id="b4" class="etat">
+      <label class="pres" for="b4"><span class="case"></span><span class="mot">Taille arbuste automne</span></label>
+      <input type="checkbox" id="b5" class="etat">
+      <label class="pres" for="b5"><span class="case"></span><span class="mot">Taille arbuste printemps</span></label>
+      <input type="checkbox" id="b6" class="etat">
+      <label class="pres" for="b6"><span class="case"></span><span class="mot">Taille de haie automne</span></label>
+      <input type="checkbox" id="b7" class="etat">
+      <label class="pres" for="b7"><span class="case"></span><span class="mot">Taille de haie printemps</span></label>
+      <input type="checkbox" id="b8" class="etat">
+      <label class="pres" for="b8"><span class="case"></span><span class="mot">Taille des rosiers</span></label>
+      <p class="fam">Massifs<span class="compte">1/5</span></p>
+      <input type="checkbox" id="b9" class="etat">
+      <label class="pres" for="b9"><span class="case"></span><span class="mot">Bêchage</span></label>
+      <input type="checkbox" id="b10" class="etat">
+      <label class="pres" for="b10"><span class="case"></span><span class="mot">Bordures massifs</span></label>
+      <input type="checkbox" id="b11" class="etat" checked>
+      <label class="pres" for="b11"><span class="case"></span><span class="mot">Griffage massifs</span></label>
+      <input type="checkbox" id="b12" class="etat">
+      <label class="pres" for="b12"><span class="case"></span><span class="mot">Désherbage massifs</span></label>
+      <input type="checkbox" id="b13" class="etat">
+      <label class="pres" for="b13"><span class="case"></span><span class="mot">Coupe des fleurs fanées</span></label>
+      <p class="fam">Propreté<span class="compte">2/6</span></p>
+      <input type="checkbox" id="b14" class="etat">
+      <label class="pres" for="b14"><span class="case"></span><span class="mot">Nettoyage pied de haies</span></label>
+      <input type="checkbox" id="b15" class="etat">
+      <label class="pres" for="b15"><span class="case"></span><span class="mot">Désherbant allée</span></label>
+      <input type="checkbox" id="b16" class="etat">
+      <label class="pres" for="b16"><span class="case"></span><span class="mot">Lierre, liseron, liane</span></label>
+      <input type="checkbox" id="b17" class="etat">
+      <label class="pres" for="b17"><span class="case"></span><span class="mot">Démoussage voirie</span></label>
+      <input type="checkbox" id="b18" class="etat" checked>
+      <label class="pres" for="b18"><span class="case"></span><span class="mot">Ramassage des feuilles</span></label>
+      <input type="checkbox" id="b19" class="etat" checked>
+      <label class="pres" for="b19"><span class="case"></span><span class="mot">Évacuation des déchets</span></label>
+      </div>
+      <div class="fc">
+      <p class="fam">Pelouse</p>
+      <div class="tri">
+        <span class="mot">Tonte et ébarbage</span>
+        <span class="choix"><input type="radio" name="t0" id="t0-f" class="etat" checked><label class="tri-c tri-f" for="t0-f">Fait</label><input type="radio" name="t0" id="t0-n" class="etat"><label class="tri-c tri-n" for="t0-n">Non</label><input type="radio" name="t0" id="t0-s" class="etat"><label class="tri-c tri-s" for="t0-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Traitement pelouse</span>
+        <span class="choix"><input type="radio" name="t1" id="t1-f" class="etat"><label class="tri-c tri-f" for="t1-f">Fait</label><input type="radio" name="t1" id="t1-n" class="etat" checked><label class="tri-c tri-n" for="t1-n">Non</label><input type="radio" name="t1" id="t1-s" class="etat"><label class="tri-c tri-s" for="t1-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Scarification</span>
+        <span class="choix"><input type="radio" name="t2" id="t2-f" class="etat"><label class="tri-c tri-f" for="t2-f">Fait</label><input type="radio" name="t2" id="t2-n" class="etat" checked><label class="tri-c tri-n" for="t2-n">Non</label><input type="radio" name="t2" id="t2-s" class="etat"><label class="tri-c tri-s" for="t2-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Engrais</span>
+        <span class="choix"><input type="radio" name="t3" id="t3-f" class="etat"><label class="tri-c tri-f" for="t3-f">Fait</label><input type="radio" name="t3" id="t3-n" class="etat" checked><label class="tri-c tri-n" for="t3-n">Non</label><input type="radio" name="t3" id="t3-s" class="etat"><label class="tri-c tri-s" for="t3-s">S.O.</label></span>
+      </div>
+      <p class="fam">Tailles</p>
+      <div class="tri">
+        <span class="mot">Taille arbuste automne</span>
+        <span class="choix"><input type="radio" name="t4" id="t4-f" class="etat"><label class="tri-c tri-f" for="t4-f">Fait</label><input type="radio" name="t4" id="t4-n" class="etat" checked><label class="tri-c tri-n" for="t4-n">Non</label><input type="radio" name="t4" id="t4-s" class="etat"><label class="tri-c tri-s" for="t4-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Taille arbuste printemps</span>
+        <span class="choix"><input type="radio" name="t5" id="t5-f" class="etat"><label class="tri-c tri-f" for="t5-f">Fait</label><input type="radio" name="t5" id="t5-n" class="etat" checked><label class="tri-c tri-n" for="t5-n">Non</label><input type="radio" name="t5" id="t5-s" class="etat"><label class="tri-c tri-s" for="t5-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Taille de haie automne</span>
+        <span class="choix"><input type="radio" name="t6" id="t6-f" class="etat"><label class="tri-c tri-f" for="t6-f">Fait</label><input type="radio" name="t6" id="t6-n" class="etat" checked><label class="tri-c tri-n" for="t6-n">Non</label><input type="radio" name="t6" id="t6-s" class="etat"><label class="tri-c tri-s" for="t6-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Taille de haie printemps</span>
+        <span class="choix"><input type="radio" name="t7" id="t7-f" class="etat"><label class="tri-c tri-f" for="t7-f">Fait</label><input type="radio" name="t7" id="t7-n" class="etat" checked><label class="tri-c tri-n" for="t7-n">Non</label><input type="radio" name="t7" id="t7-s" class="etat"><label class="tri-c tri-s" for="t7-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Taille des rosiers</span>
+        <span class="choix"><input type="radio" name="t8" id="t8-f" class="etat"><label class="tri-c tri-f" for="t8-f">Fait</label><input type="radio" name="t8" id="t8-n" class="etat" checked><label class="tri-c tri-n" for="t8-n">Non</label><input type="radio" name="t8" id="t8-s" class="etat"><label class="tri-c tri-s" for="t8-s">S.O.</label></span>
+      </div>
+      <p class="fam">Massifs</p>
+      <div class="tri">
+        <span class="mot">Bêchage</span>
+        <span class="choix"><input type="radio" name="t9" id="t9-f" class="etat"><label class="tri-c tri-f" for="t9-f">Fait</label><input type="radio" name="t9" id="t9-n" class="etat" checked><label class="tri-c tri-n" for="t9-n">Non</label><input type="radio" name="t9" id="t9-s" class="etat"><label class="tri-c tri-s" for="t9-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Bordures massifs</span>
+        <span class="choix"><input type="radio" name="t10" id="t10-f" class="etat"><label class="tri-c tri-f" for="t10-f">Fait</label><input type="radio" name="t10" id="t10-n" class="etat" checked><label class="tri-c tri-n" for="t10-n">Non</label><input type="radio" name="t10" id="t10-s" class="etat"><label class="tri-c tri-s" for="t10-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Griffage massifs</span>
+        <span class="choix"><input type="radio" name="t11" id="t11-f" class="etat" checked><label class="tri-c tri-f" for="t11-f">Fait</label><input type="radio" name="t11" id="t11-n" class="etat"><label class="tri-c tri-n" for="t11-n">Non</label><input type="radio" name="t11" id="t11-s" class="etat"><label class="tri-c tri-s" for="t11-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Désherbage massifs</span>
+        <span class="choix"><input type="radio" name="t12" id="t12-f" class="etat"><label class="tri-c tri-f" for="t12-f">Fait</label><input type="radio" name="t12" id="t12-n" class="etat" checked><label class="tri-c tri-n" for="t12-n">Non</label><input type="radio" name="t12" id="t12-s" class="etat"><label class="tri-c tri-s" for="t12-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Coupe des fleurs fanées</span>
+        <span class="choix"><input type="radio" name="t13" id="t13-f" class="etat"><label class="tri-c tri-f" for="t13-f">Fait</label><input type="radio" name="t13" id="t13-n" class="etat" checked><label class="tri-c tri-n" for="t13-n">Non</label><input type="radio" name="t13" id="t13-s" class="etat"><label class="tri-c tri-s" for="t13-s">S.O.</label></span>
+      </div>
+      <p class="fam">Propreté</p>
+      <div class="tri">
+        <span class="mot">Nettoyage pied de haies</span>
+        <span class="choix"><input type="radio" name="t14" id="t14-f" class="etat"><label class="tri-c tri-f" for="t14-f">Fait</label><input type="radio" name="t14" id="t14-n" class="etat" checked><label class="tri-c tri-n" for="t14-n">Non</label><input type="radio" name="t14" id="t14-s" class="etat"><label class="tri-c tri-s" for="t14-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Désherbant allée</span>
+        <span class="choix"><input type="radio" name="t15" id="t15-f" class="etat"><label class="tri-c tri-f" for="t15-f">Fait</label><input type="radio" name="t15" id="t15-n" class="etat" checked><label class="tri-c tri-n" for="t15-n">Non</label><input type="radio" name="t15" id="t15-s" class="etat"><label class="tri-c tri-s" for="t15-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Lierre, liseron, liane</span>
+        <span class="choix"><input type="radio" name="t16" id="t16-f" class="etat"><label class="tri-c tri-f" for="t16-f">Fait</label><input type="radio" name="t16" id="t16-n" class="etat" checked><label class="tri-c tri-n" for="t16-n">Non</label><input type="radio" name="t16" id="t16-s" class="etat"><label class="tri-c tri-s" for="t16-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Démoussage voirie</span>
+        <span class="choix"><input type="radio" name="t17" id="t17-f" class="etat"><label class="tri-c tri-f" for="t17-f">Fait</label><input type="radio" name="t17" id="t17-n" class="etat" checked><label class="tri-c tri-n" for="t17-n">Non</label><input type="radio" name="t17" id="t17-s" class="etat"><label class="tri-c tri-s" for="t17-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Ramassage des feuilles</span>
+        <span class="choix"><input type="radio" name="t18" id="t18-f" class="etat" checked><label class="tri-c tri-f" for="t18-f">Fait</label><input type="radio" name="t18" id="t18-n" class="etat"><label class="tri-c tri-n" for="t18-n">Non</label><input type="radio" name="t18" id="t18-s" class="etat"><label class="tri-c tri-s" for="t18-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Évacuation des déchets</span>
+        <span class="choix"><input type="radio" name="t19" id="t19-f" class="etat" checked><label class="tri-c tri-f" for="t19-f">Fait</label><input type="radio" name="t19" id="t19-n" class="etat"><label class="tri-c tri-n" for="t19-n">Non</label><input type="radio" name="t19" id="t19-s" class="etat"><label class="tri-c tri-s" for="t19-s">S.O.</label></span>
+      </div>
+      </div>
+
+      <div class="fin">
+        <div class="l"><span>Temps passé</span><b>1 h 40</b></div>
+        <div class="l"><span>Observations</span><span>—</span></div>
+        <span class="bouton">Enregistrer et envoyer</span>
+      </div>
+    </div>
+
+    <div class="legende">
+      <div class="fa">
+        <span class="t">A · La liste, d'un bloc</span>
+        Les vingt lignes à la suite, dans l'ordre du contrat. Une ligne
+        entière se touche — <b>52 px de haut</b>, la mesure d'un doigt ganté.
+        <span class="cout">Ce que ça coûte : <b>trois écrans à faire défiler</b>
+        pour cocher quatre lignes. C'est exactement ce que fait l'autre
+        application, et c'est ce qui la rend pénible sur un chantier.</span>
+      </div>
+      <div class="fb">
+        <span class="t">B · Rangée par familles</span>
+        Pelouse, Tailles, Massifs, Propreté. Chaque famille porte son compte
+        — <b>« 1/4 »</b> — et se lit d'un coup d'œil sans rien ouvrir.
+        <span class="cout">Ce que ça coûte : un niveau de plus à comprendre.
+        En échange, il retrouve ses gestes dans l'ordre où il les fait, et le
+        compte lui dit s'il a oublié une famille entière.</span>
+      </div>
+      <div class="fc">
+        <span class="t">C · Fait / non / sans objet</span>
+        Trois réponses au lieu de deux. <b>« Sans objet »</b> dit quelque chose
+        qu'une case vide ne dit pas : la haie n'était pas à tailler ce mois-ci,
+        ce n'est pas un oubli.
+        <span class="cout">Ce que ça coûte : <b>trois fois plus de gestes</b>,
+        et une décision à prendre sur chaque ligne — y compris les quatorze qui
+        ne le concernent pas ce jour-là. À ne retenir que si la distinction
+        compte pour le client.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui n'est pas à choisir</span>
+    <ul>
+      <li><b>La liste vient du contrat</b>, jamais d'une saisie libre : un client
+        qui paie la tonte et le ramassage n'a pas à voir douze lignes qui ne le
+        concernent pas.</li>
+      <li><b>Ce qui n'est pas coché n'est pas une faute.</b> Une haie ne se
+        taille pas en juillet — aucun rouge sur ces lignes.</li>
+      <li><b>L'envoi emprunte le chemin qui existe déjà</b> : le SMS ou l'e-mail,
+        la page publique et le PDF qui portent déjà vos devis et vos factures.
+        Rien à réinventer.</li>
+    </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m44">
+    <div class="etape-tete">
+      <span class="etape-no">44</span>
+      <h2>Le rapport que reçoit le client</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s44">
+<input type="radio" name="r" id="r-a" class="etat">
+<input type="radio" name="r" id="r-b" class="etat" checked>
+<input type="radio" name="r" id="r-c" class="etat">
+
+<div class="dedans">
+  <h1>Le rapport que reçoit le client</h1>
+  <p class="intro">La sortie de la fiche. <b>Quatre prestations sur vingt</b>
+    ont été faites ce passage — c'est le vrai cas de votre capture.
+    <b>Touchez les trois versions.</b></p>
+
+  <p class="dit">L'autre application montre les vingt lignes avec « Vrai » ou
+    « Faux ». Votre client lirait donc <b>seize fois « Faux »</b> sur un
+    passage qu'il paie.</p>
+
+  <div class="reglage">
+    <span class="quoi">Ce que le client voit</span>
+    <div class="segments">
+      <label for="r-a">A · Tout, comme l'autre</label>
+      <label for="r-b">B · Seulement ce qui a été fait</label>
+      <label for="r-c">C · Ce qui a été fait, le reste replié</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="entete">
+        <div class="barre"><span class="ou">Rapport d'entretien</span><span class="quand">Mer. 22 juillet</span></div>
+        <p class="qui">Monsieur Martins</p>
+        <p class="quoi2">12 rue des Lilas — passage n° 7 sur 12</p>
+      </div>
+
+      <div class="ra">
+      <p class="fam">Pelouse</p>
+      <div class="rl"><span class="v">✓</span><span>Tonte et ébarbage</span></div>
+      <div class="rl non"><span class="v">·</span><span>Traitement pelouse</span></div>
+      <div class="rl non"><span class="v">·</span><span>Scarification</span></div>
+      <div class="rl non"><span class="v">·</span><span>Engrais</span></div>
+      <p class="fam">Tailles</p>
+      <div class="rl non"><span class="v">·</span><span>Taille arbuste automne</span></div>
+      <div class="rl non"><span class="v">·</span><span>Taille arbuste printemps</span></div>
+      <div class="rl non"><span class="v">·</span><span>Taille de haie automne</span></div>
+      <div class="rl non"><span class="v">·</span><span>Taille de haie printemps</span></div>
+      <div class="rl non"><span class="v">·</span><span>Taille des rosiers</span></div>
+      <p class="fam">Massifs</p>
+      <div class="rl non"><span class="v">·</span><span>Bêchage</span></div>
+      <div class="rl non"><span class="v">·</span><span>Bordures massifs</span></div>
+      <div class="rl"><span class="v">✓</span><span>Griffage massifs</span></div>
+      <div class="rl non"><span class="v">·</span><span>Désherbage massifs</span></div>
+      <div class="rl non"><span class="v">·</span><span>Coupe des fleurs fanées</span></div>
+      <p class="fam">Propreté</p>
+      <div class="rl non"><span class="v">·</span><span>Nettoyage pied de haies</span></div>
+      <div class="rl non"><span class="v">·</span><span>Désherbant allée</span></div>
+      <div class="rl non"><span class="v">·</span><span>Lierre, liseron, liane</span></div>
+      <div class="rl non"><span class="v">·</span><span>Démoussage voirie</span></div>
+      <div class="rl"><span class="v">✓</span><span>Ramassage des feuilles</span></div>
+      <div class="rl"><span class="v">✓</span><span>Évacuation des déchets</span></div>
+      </div>
+      <div class="rb">
+      <p class="fam">Pelouse</p>
+      <div class="rl"><span class="v">✓</span><span>Tonte et ébarbage</span></div>
+      <p class="fam">Massifs</p>
+      <div class="rl"><span class="v">✓</span><span>Griffage massifs</span></div>
+      <p class="fam">Propreté</p>
+      <div class="rl"><span class="v">✓</span><span>Ramassage des feuilles</span></div>
+      <div class="rl"><span class="v">✓</span><span>Évacuation des déchets</span></div>
+      </div>
+      <div class="rc">
+      <p class="fam">Pelouse</p>
+      <div class="rl"><span class="v">✓</span><span>Tonte et ébarbage</span></div>
+      <p class="fam">Massifs</p>
+      <div class="rl"><span class="v">✓</span><span>Griffage massifs</span></div>
+      <p class="fam">Propreté</p>
+      <div class="rl"><span class="v">✓</span><span>Ramassage des feuilles</span></div>
+      <div class="rl"><span class="v">✓</span><span>Évacuation des déchets</span></div>
+        <div class="replie">
+          <span class="titre">Non prévu à ce passage — 16 prestations du contrat</span>
+          <p class="liste">Traitement pelouse · Scarification · Engrais · Taille arbuste automne · Taille arbuste printemps · Taille de haie automne · Taille de haie printemps · Taille des rosiers · Bêchage · Bordures massifs · Désherbage massifs · Coupe des fleurs fanées · Nettoyage pied de haies · Désherbant allée · Lierre, liseron, liane · Démoussage voirie</p>
+        </div>
+      </div>
+
+      <div class="pied"><span>Temps passé</span><b>1 h 40</b></div>
+      <div class="sign"><div>Signature<br>du technicien</div><div>Signature<br>du client</div></div>
+    </div>
+
+    <div class="legende">
+      <div class="ra">
+        <span class="t">A · Tout, comme l'autre application</span>
+        Les vingt lignes, faites ou non. Le contrat est visible en entier :
+        le client sait ce qu'il paie.
+        <span class="cout">Ce que ça coûte : <b>seize lignes éteintes sur
+        vingt</b>. Le document se lit comme un bulletin de notes, et ce qui a
+        vraiment été fait se perd dedans.</span>
+      </div>
+      <div class="rb">
+        <span class="t">B · Seulement ce qui a été fait</span>
+        Quatre lignes, lisibles d'un regard. C'est ce qu'un paysagiste écrirait
+        de sa main sur un bon de passage.
+        <span class="cout">Ce que ça coûte, et c'est réel : <b>le client ne voit
+        plus l'étendue de son contrat</b>. Quatre lignes pour le prix d'un
+        passage complet peuvent faire douter — et vous vaudront l'appel.</span>
+      </div>
+      <div class="rc">
+        <span class="t">C · Ce qui a été fait, le reste replié</span>
+        Les quatre en clair, et dessous une seule phrase grise qui nomme les
+        seize autres : <b>« non prévu à ce passage »</b>.
+        <span class="cout">Ce que ça coûte : une ligne de plus à lire. En
+        échange, elle répond à l'appel avant qu'il ne soit passé — le client voit
+        l'étendue du contrat sans lire seize refus.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui n'est pas à choisir</span>
+    <ul>
+      <li><b>« Vrai » et « Faux » ne sortent pas d'ici</b> : ce sont des mots de
+        programmeur, pas les vôtres.</li>
+      <li><b>La date, le chantier et le temps passé restent</b> : c'est ce qui
+        fait du document une preuve de passage.</li>
+      <li><b>Les deux signatures restent.</b> Elles disent que quelqu'un était
+        là, et que quelqu'un a vu.</li>
     </ul>
   </div>
 </div>

@@ -10,11 +10,15 @@
   **LE CONTRÔLE QUI COMPTE VRAIMENT EST L'ARITHMÉTIQUE.** Une maquette de devis
   dont les totaux ne tombent pas juste apprend à douter des totaux du vrai — et
   pire, elle ferait choisir un arrangement sur des chiffres faux. Les trois
-  arrangements montrent le MÊME devis : 870,00 € HT, 5 % de réduction, donc
-  43,50 € retirés, 826,50 € HT, 165,30 € de TVA à 20 %, 991,80 € TTC. Chacun de
-  ces nombres est recalculé ici, à partir des lignes lues à l'écran — jamais
-  recopié depuis la planche, sans quoi le contrôle et la planche se
-  tromperaient ensemble.
+  arrangements montrent le MÊME devis, à 870,00 € HT, et le taux se choisit :
+  826,50 / 783,00 / 739,50 € HT à 5, 10 et 15 %. Chacun de ces nombres est
+  recalculé ici, à partir des lignes lues à l'écran — jamais recopié depuis la
+  planche, sans quoi le contrôle et la planche se tromperaient ensemble.
+
+  **LES TROIS TAUX SONT ÉPROUVÉS, pas seulement celui d'ouverture.** Sa demande
+  du 16 août : *« une maquette dynamique que je puisse essayer, pas une
+  photo ! »*. Il les touchera tous les trois — un contrôle qui ne regarderait
+  que 5 % laisserait passer deux colonnes de chiffres faux.
 
   Les autres contrôles :
 
@@ -79,9 +83,13 @@ const ARRANGEMENTS = [
   { radio: "v-c", nom: "C · Le prix barré", panneau: ".a-barre" },
 ];
 
-// Les trois prestations du devis de démonstration, et le taux affiché.
+// Le taux de TVA du devis de démonstration, et les trois réductions essayables.
 const TAUX = 20;
-const REDUCTION = 5;
+const REDUCTIONS = [
+  { radio: "t-5", pourcent: 5 },
+  { radio: "t-10", pourcent: 10 },
+  { radio: "t-15", pourcent: 15 },
+];
 
 const contexte = await navigateur.newContext({
   viewport: { width: 430, height: 1100 },
@@ -100,15 +108,22 @@ if (prixLignes.length === 0 || prixLignes.some((n) => !Number.isFinite(n))) {
   dire(true, `${prixLignes.length} prestations lues à l'écran`);
 }
 const plein = prixLignes.reduce((s, n) => s + n, 0);
-const remise = (plein * REDUCTION) / 100;
-const net = plein - remise;
-const tva = (net * TAUX) / 100;
-const ttc = net + tva;
 const tvaSurPrixPlein = (plein * TAUX) / 100;
-console.log(
-  `    (recalculé : ${plein.toFixed(2)} − ${REDUCTION} % = ${net.toFixed(2)} HT, ` +
-    `TVA ${tva.toFixed(2)}, TTC ${ttc.toFixed(2)})`,
-);
+
+/** Ce que CHAQUE taux doit donner — recalculé, jamais recopié de la planche. */
+const attendu = (pourcent) => {
+  const remise = (plein * pourcent) / 100;
+  const net = plein - remise;
+  const tva = (net * TAUX) / 100;
+  return { remise, net, tva, ttc: net + tva };
+};
+for (const r of REDUCTIONS) {
+  const a = attendu(r.pourcent);
+  console.log(
+    `    (recalculé à ${r.pourcent} % : − ${a.remise.toFixed(2)} → ${a.net.toFixed(2)} HT, ` +
+      `TVA ${a.tva.toFixed(2)}, TTC ${a.ttc.toFixed(2)})`,
+  );
+}
 
 // ── 1. Un arrangement à la fois ─────────────────────────────────────────────
 for (const a of ARRANGEMENTS) {
@@ -120,33 +135,52 @@ for (const a of ARRANGEMENTS) {
   dire(vus.length === 1 && vus[0] === a.radio, `${a.nom} s'affiche seul (vus : ${vus.join(", ") || "aucun"})`);
 }
 
-// ── 2, 3 : les totaux tombent juste, et la TVA n'est jamais celle du prix plein
+// ── 2, 3 : les totaux tombent juste À CHAQUE TAUX, et la TVA n'est jamais
+// celle du prix plein.
+//
+// **Les trois taux sont éprouvés, pas seulement celui d'ouverture.** Il les
+// essaiera tous les trois — c'est le sens de sa demande du 16 août, « une
+// maquette dynamique que je puisse essayer, pas une photo ». Un contrôle qui ne
+// regarderait que 5 % laisserait passer deux colonnes de chiffres faux.
 for (const a of ARRANGEMENTS) {
-  await page.click(`label[for="${a.radio}"]`);
-  const lignes = await page.locator(`.totaux${a.panneau} .tot`).allInnerTexts();
-  if (lignes.length === 0) {
-    dire(false, `${a.radio} n'a aucun total à lire`);
-    continue;
-  }
-  const nombres = lignes.flatMap((l) => l.match(/[−-]?\s?[\d\s]+[,.]\d{2}/g) ?? []).map(enNombre);
+  for (const r of REDUCTIONS) {
+    await page.click(`label[for="${a.radio}"]`);
+    await page.click(`label[for="${r.radio}"]`);
+    const { remise, net, tva, ttc } = attendu(r.pourcent);
+    const lignes = await page.locator(`.totaux${a.panneau} .tot`).allInnerTexts();
+    if (lignes.length === 0) {
+      dire(false, `${a.radio} à ${r.pourcent} % n'a aucun total à lire`);
+      continue;
+    }
+    const nombres = lignes.flatMap((l) => l.match(/[−-]?\s?[\d\s]+[,.]\d{2}/g) ?? []).map(enNombre);
 
-  dire(
-    nombres.some((n) => proche(n, net)),
-    `${a.radio} porte le HT après réduction (${net.toFixed(2)} attendu, vus : ${nombres.join(" / ")})`,
-  );
-  dire(
-    nombres.some((n) => proche(n, tva)),
-    `${a.radio} porte la TVA calculée APRÈS réduction (${tva.toFixed(2)} attendu)`,
-  );
-  dire(
-    nombres.some((n) => proche(n, ttc)),
-    `${a.radio} porte le TTC (${ttc.toFixed(2)} attendu)`,
-  );
-  // Le seul défaut de cette planche qui coûterait de l'argent.
-  dire(
-    !nombres.some((n) => proche(n, tvaSurPrixPlein)),
-    `${a.radio} ne montre nulle part la TVA du prix plein (${tvaSurPrixPlein.toFixed(2)} — ce serait une déclaration fausse)`,
-  );
+    dire(
+      nombres.some((n) => proche(n, net)),
+      `${a.radio} à ${r.pourcent} % porte le HT après réduction (${net.toFixed(2)} attendu, vus : ${nombres.join(" / ")})`,
+    );
+    dire(
+      nombres.some((n) => proche(n, tva)),
+      `${a.radio} à ${r.pourcent} % porte la TVA calculée APRÈS réduction (${tva.toFixed(2)} attendu)`,
+    );
+    dire(
+      nombres.some((n) => proche(n, ttc)),
+      `${a.radio} à ${r.pourcent} % porte le TTC (${ttc.toFixed(2)} attendu)`,
+    );
+    // Le seul défaut de cette planche qui coûterait de l'argent.
+    dire(
+      !nombres.some((n) => proche(n, tvaSurPrixPlein)),
+      `${a.radio} à ${r.pourcent} % ne montre pas la TVA du prix plein (${tvaSurPrixPlein.toFixed(2)} — ce serait une déclaration fausse)`,
+    );
+
+    // Un seul jeu de chiffres à l'écran : deux taux affichés ensemble ne se
+    // comparent plus, ils s'additionnent — et le devis devient illisible.
+    const feuille = await page.locator(".feuille").innerText();
+    const intrus = REDUCTIONS.filter((autre) => autre !== r).filter((autre) => {
+      const b = attendu(autre.pourcent);
+      return feuille.includes(b.net.toFixed(2).replace(".", ",")) && !proche(b.net, net);
+    });
+    dire(intrus.length === 0, `${a.radio} à ${r.pourcent} % n'affiche que SON taux (intrus : ${intrus.map((i) => i.pourcent).join(", ") || "aucun"})`);
+  }
 }
 
 // ── 4. A est bien une LIGNE du tableau ──────────────────────────────────────
@@ -154,11 +188,16 @@ await page.click('label[for="v-a"]');
 const ligneRemise = await page.locator(".lg.remise:visible").count();
 dire(ligneRemise === 1, `A pose la réduction dans le tableau, comme une ligne (${ligneRemise})`);
 if (ligneRemise === 1) {
-  const montant = enNombre(await page.locator(".lg.remise:visible .prix").innerText());
-  dire(
-    proche(montant, -remise),
-    `la ligne porte le montant retiré, en négatif (${(-remise).toFixed(2)} attendu, vu ${montant})`,
-  );
+  for (const r of REDUCTIONS) {
+    await page.click(`label[for="${r.radio}"]`);
+    const montant = enNombre(await page.locator(".lg.remise:visible .prix").innerText());
+    const { remise } = attendu(r.pourcent);
+    dire(
+      proche(montant, -remise),
+      `à ${r.pourcent} %, la ligne porte le montant retiré en négatif (${(-remise).toFixed(2)} attendu, vu ${montant})`,
+    );
+  }
+  await page.click('label[for="t-5"]');
 }
 for (const r of ["v-b", "v-c"]) {
   await page.click(`label[for="${r}"]`);
@@ -190,9 +229,19 @@ dire(
   "la feuille du micro porte sa coche : elle propose, elle n'applique pas",
 );
 dire(
-  confirme.includes("870,00 €") && confirme.includes("826,50 €"),
+  confirme.includes("870,00 €") && confirme.includes(attendu(5).net.toFixed(2).replace(".", ",")),
   "la feuille du micro dit le avant et le après, en euros",
 );
+
+// ── 7. Le pourcentage est essayable — c'est le cœur de sa demande ───────────
+for (const r of REDUCTIONS) {
+  await page.click(`label[for="${r.radio}"]`);
+  const feuille = await page.locator(".feuille").innerText();
+  dire(
+    new RegExp(`\\b${r.pourcent} %`).test(feuille),
+    `le taux ${r.pourcent} % s'écrit sur la feuille quand on le choisit`,
+  );
+}
 
 await navigateur.close();
 

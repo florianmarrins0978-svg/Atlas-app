@@ -139,7 +139,7 @@ export const entreprises = pgTable("entreprises", {
   rappelDevisSansReponseJours: integer("rappel_devis_sans_reponse_jours"),
   rappelChantierNonFactureJours: integer("rappel_chantier_non_facture_jours"),
   /**
-   * Le quatrième rappel et son rythme (migration 0048).
+   * Le quatrième rappel et son rythme (migration 0050).
    *
    * `rappelFactureImpayeeJours` se compte à partir de l'ÉCHÉANCE quand elle
    * existe — le délai de paiement réglé — et de l'envoi sinon : c'est le
@@ -321,6 +321,20 @@ export const chantiers = pgTable(
     nom: text("nom").notNull(),
     adresseChantier: text("adresse_chantier"),
 
+    // **Où se trouve ce chantier, quand on a su le situer.**
+    //
+    // NULL est un état NORMAL et le restera : l'adresse est un champ libre — un
+    // lieu-dit, « derrière l'église », un chantier créé avant la migration 0047.
+    // Ce qui s'appuie dessus doit savoir le DIRE plutôt que se taire.
+    //
+    // `adresseSituee` garde l'adresse exacte qui a produit ces coordonnées : si
+    // elle diffère de `adresseChantier`, le patron a corrigé l'adresse depuis, et
+    // des coordonnées posées sur l'ancienne seraient pires que pas de
+    // coordonnées du tout.
+    latitude: numeric("latitude", { precision: 9, scale: 6 }),
+    longitude: numeric("longitude", { precision: 9, scale: 6 }),
+    adresseSituee: text("adresse_situee"),
+
     // Jalons métier datés — correction v2 §3. NULL = étape non atteinte.
     informationsVerifieesAt: timestamp("informations_verifiees_at", { withTimezone: true }),
     prixValideAt: timestamp("prix_valide_at", { withTimezone: true }),
@@ -341,7 +355,7 @@ export const chantiers = pgTable(
     termineAt: timestamp("termine_at", { withTimezone: true }),
     factureEnvoyeeAt: timestamp("facture_envoyee_at", { withTimezone: true }),
     /**
-     * Le jour du dernier « Plus tard » sur le rappel d'impayé (migration 0048).
+     * Le jour du dernier « Plus tard » sur le rappel d'impayé (migration 0050).
      *
      * **Ici et pas sur `factures`, et ce n'est pas un rangement** :
      * `trg_facture_immuable` refuse toute écriture sur une facture émise, date
@@ -625,9 +639,26 @@ export const devis = pgTable(
 
     // TVA — correction v2.1 §4
     tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }).notNull().default("20.00"),
+    /**
+     * **`totalHt` est le montant APRÈS réduction** (migration 0048).
+     *
+     * Tout ce qui le lit — relevé de TVA, export comptable, exigibilité, suivi
+     * des paiements — y cherche ce qui est DÛ. Y laisser le prix plein aurait
+     * fait déclarer de la TVA sur de l'argent que le client ne paie pas.
+     * Le prix plein vaut `totalHt + reductionMontant`.
+     */
     totalHt: numeric("total_ht", { precision: 10, scale: 2 }).notNull(),
     totalTva: numeric("total_tva", { precision: 10, scale: 2 }).notNull(),
     totalTtc: numeric("total_ttc", { precision: 10, scale: 2 }).notNull(),
+
+    /**
+     * Le prix accordé au client — son geste commercial (`reduction-devis.ts`).
+     *
+     * `null` : aucune réduction, et le document n'écrit rien. Les deux colonnes
+     * vont ensemble ou pas du tout, la base y veille.
+     */
+    reductionPourcent: numeric("reduction_pourcent", { precision: 5, scale: 2 }),
+    reductionMontant: numeric("reduction_montant", { precision: 10, scale: 2 }),
 
     pdfStorageKey: text("pdf_storage_key"),
     pdfChecksum: text("pdf_checksum"),
@@ -1073,9 +1104,19 @@ export const factures = pgTable(
     devise: char("devise", { length: 3 }).notNull().default("EUR"),
 
     tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }).notNull().default("20.00"),
+    /** APRÈS réduction, comme sur le devis — voir `devis.totalHt`. */
     totalHt: numeric("total_ht", { precision: 10, scale: 2 }).notNull(),
     totalTva: numeric("total_tva", { precision: 10, scale: 2 }).notNull(),
     totalTtc: numeric("total_ttc", { precision: 10, scale: 2 }).notNull(),
+
+    /**
+     * Recopié du devis à la création de la facture (migration 0048).
+     *
+     * Une remise accordée sur le devis puis absente de la facture ferait payer
+     * au client le prix qu'on venait de lui retirer.
+     */
+    reductionPourcent: numeric("reduction_pourcent", { precision: 5, scale: 2 }),
+    reductionMontant: numeric("reduction_montant", { precision: 10, scale: 2 }),
 
     pdfStorageKey: text("pdf_storage_key"),
     pdfChecksum: text("pdf_checksum"),
