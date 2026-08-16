@@ -105,7 +105,9 @@ export const ECRANS_A_PRECHAUFFER = [
   // contrôle sert à empêcher — une liste écrite à la main qui vieillit en
   // silence pendant qu'un écran naît ailleurs.
   "/reglages/compte",
+  "/reglages/notifications",
   "/reglages/connexion",
+  "/reglages/apparence",
   "/reglages/identite",
   "/reglages/equipe",
   "/reglages/tarifs",
@@ -114,6 +116,7 @@ export const ECRANS_A_PRECHAUFFER = [
   "/reglages/ia",
   "/reglages/donnees",
   "/reglages/agenda",
+  "/reglages/abonnement",
   "/reglages/prix",
   "/reglages/vocabulaire",
   "/catalogue",
