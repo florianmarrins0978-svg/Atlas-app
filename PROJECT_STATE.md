@@ -246,6 +246,15 @@ l'application. Ce qui est **fait** :
   dans juillet — et **invisible**, l'écran ne montrant qu'une période. La
   feuille annonce désormais la destination avant qu'il appuie, et l'écran l'y
   emmène après. `scripts/test-achat-hors-periode-e2e.ts`, `ARCHITECTURE.md` §91.
+- **Une équipe peut partir cinq jours** (14 août) : les absences se notent dans
+  Réglages → Équipe, sous les noms (`docs/maquettes/55`, proposition A). Une
+  équipe absente **ne compte plus** dans les dates proposées — l'absence est
+  traitée comme une occupation, ce qui la fait entrer dans les **quatre**
+  calculs de capacité sans changer une signature. Migration
+  `drizzle/0044_absences_equipe.sql`. Si toute l'entreprise part, l'agenda
+  Google suffisait déjà et rien n'a été écrit pour ça. **Reste faux, et dit :**
+  l'équipe d'un chantier est une étiquette, pas une contrainte.
+  `ARCHITECTURE.md` §109.
 - **« Surtout la page équipe » : l'écran jamais préparé d'avance** (14 août) :
   le banc compile ses écrans à l'avance, mais la liste — écrite à la main —
   ignorait les **sept sous-écrans de Réglages** créés depuis. « Équipe »
@@ -562,6 +571,17 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 
 Voir `TODO.md` pour le détail et l'ordre.
 
+- **Le devis qui tarde : une TROISIÈME ligne, en attente de deux mots** (16 août)
+  — sa demande d'un *« rappel lorsque le chantier a été ouvert mais le devis n'a
+  pas été envoyé »*. `docs/maquettes/56-le-devis-qui-tarde.html`, réécrite deux
+  fois contre ce qui existait. **La rubrique Notifications a été CODÉE le
+  14 août** par une autre session (`src/lib/rappels.ts`, `drizzle/0043_…`) :
+  deux rappels réglables, et le délai qui se tape — « Au bout de 7 jours ». Aucun
+  des deux ne couvre sa demande : ils parlent d'un devis **parti**, lui d'un
+  devis **jamais parti**. **Il a retenu la carte teintée et 4 jours** ; reste le
+  **mot de la ligne** — elle tombe au-dessus de « Devis sans réponse », et deux
+  libellés commençant par « Devis » ne se distinguent pas. Une demi-journée une
+  fois le mot choisi. `TODO.md` §0 novivicies.
 - **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
   (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA
   se déclare au lieu d'être deviné d'après le taux**. **Le sommaire lui-même est CODÉ le

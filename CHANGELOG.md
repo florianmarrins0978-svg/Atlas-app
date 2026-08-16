@@ -44,7 +44,96 @@ avec des données posées à la main. Le raccord entre la voix et la feuille ne 
 parcouru qu'avec une clé. Faute de transcription, l'écran le dit plutôt que de
 présenter le texte de remplacement comme une dictée.
 
-Détail : `ARCHITECTURE.md` §109.
+Détail : `ARCHITECTURE.md` §110.
+
+### Deux lignes qui commencent par le même mot, l'une sur l'autre
+
+**Il a tranché le 16 août — « la B et 4 » — puis a vu ce qu'aucun contrôle
+n'aurait vu :** *« dans la catégorie notification, j'ai peur que la façon dont tu
+l'as écrit ne soit pas compréhensible — qu'on ne comprenne pas que cette ligne
+sert à ça, le devis non envoyé. »*
+
+**Il avait raison, et ça se mesure à l'œil.** La ligne proposée — « Devis pas
+encore parti » — tombe **juste au-dessus de « Devis sans réponse »**, déjà codée.
+Deux lignes qui commencent par le même mot, l'une sur l'autre : il faut lire la
+petite ligne grise pour les séparer, donc on ne les sépare pas.
+
+**Ce que ça évite :** un écran de réglages où l'on coupe le mauvais rappel. Quatre
+mots lui sont proposés, **chacun montré avec sa voisine** — seule façon de juger
+une confusion qui n'existe qu'en contexte. Ma préférence : « Chantier sans devis »,
+le seul qui se distingue **au premier mot**, et qui fait raconter aux trois lignes
+le chantier dans l'ordre.
+
+**Rien n'est codé.** `docs/maquettes/56-le-devis-qui-tarde.html`, § 3.
+
+### Le devis qui tarde : dessiné — et deux fois réécrit contre ce qui existait
+
+**Sa demande du 14 août :** *« un rappel lorsque le chantier a été ouvert mais
+le devis n'a pas été envoyé »*, avec *« la possibilité dans les notifications de
+mettre le nombre de jours »*.
+
+`docs/maquettes/56-le-devis-qui-tarde.html`. Le troisième rappel n'est pas codé
+— `CLAUDE.md` §3 bis.
+
+**La leçon de ce lot, et elle a coûté deux réécritures.** La planche a décrit
+deux fois un monde qui n'existait plus : d'abord elle redessinait l'écran des
+notifications, dessiné depuis le 13 août ; puis elle proposait quatre façons de
+poser un délai, alors que la rubrique avait été **codée le 14** par une autre
+session — avec son délai, « Au bout de [ N ] jours ».
+
+**Chercher ce qui existe AVANT de dessiner, dans les deux dossiers de maquettes
+et dans le code.** `maquettes/` porte les planches de l'application,
+`docs/maquettes/` celles des décisions ; n'en regarder qu'un, c'est redessiner
+ce qui est déjà tranché — et mettre le patron devant deux plans du même écran.
+
+**Ce que ça évite, une fois la planche corrigée :** lui faire arbitrer une
+question réglée. Sa demande n'est couverte par aucun des deux rappels codés —
+ils parlent d'un devis **parti**, lui d'un devis **jamais parti**. C'est une
+**troisième ligne** dans un écran qui tourne, et il ne reste que deux mots à
+dire : le ton de la carte, et le nombre de jours.
+
+### Un contrôle qui rougissait le samedi, et redevenait vert le lundi
+
+**`main` était rouge en arrivant**, sur `test-pastille-equipe-e2e` — et pas pour
+la raison qu'il annonçait. Le message accusait le bouton « Poser » d'être absent
+avant le choix ; le bouton allait très bien.
+
+**Le vrai coupable, mesuré et non supposé.** Le contrôle visait un jour à
+`+ 20 jours` de la date du jour. Écrit le 14 août, cela tombait un **jeudi** et
+tout était vert. Joué le 16, le même calcul tombait un **samedi** — que le
+planning refuse par construction : il écrit « Jamais proposé » et ne rend même
+pas la journée, donc ni les cases d'équipe ni le bouton. Le contrôle serait
+redevenu vert tout seul le lundi, sans que personne ne sache pourquoi.
+
+**Ce que ça évite :** un rouge qui envoie chercher au mauvais endroit. Le jour
+visé est maintenant **le premier jour ouvrable** à partir de vingt, via
+`estWeekEndIso` — la règle du produit, pas une seconde écriture d'elle.
+
+**Éprouvé dans les deux sens**, comme il se doit : vert un samedi (là où il
+échouait la veille), et **remis au rouge** en réintroduisant le défaut qu'il
+existe pour attraper — le bouton qui n'apparaît qu'après le choix.
+
+### Six maquettes existaient sans qu'aucun chemin n'y mène
+
+**Trouvé en voulant numéroter la précédente**, et `TODO.md` disait le contraire :
+« sans conséquence pour le patron, les planches s'ouvrent une par une ». En
+mesurant, 38, 39, 41, 42, 43 et 46 n'étaient **ni dans la page unique, ni au
+sommaire** — elles n'existaient que pour qui connaissait leur nom de fichier.
+Une autre session avait diagnostiqué le même trou la veille et demandé
+exactement ce contrôle ; il est écrit, et le rattrapage fait.
+
+**Ce que ça évite :** dessiner une planche, la commettre, et qu'elle n'atteigne
+jamais celui pour qui elle est faite. Le compte affiché ne pouvait pas
+l'attraper : « 36 maquettes fusionnées » reste plausible quand il en manque six.
+
+`fusionner-maquettes.mjs` refuse désormais une maquette qu'aucune des deux
+portes n'atteint, un lien mort dans le sommaire, et un numéro porté deux fois —
+les doublons hérités étant tolérés nommément, dont le 50 qui est volontaire.
+Éprouvé sur les trois états. **Il a servi dans l'heure** : la fusion de `main` a
+apporté deux planches de plus tombées dans le même trou, qu'il a nommées.
+
+---
+
 
 ## 2026-08-14
 
@@ -74,6 +163,41 @@ le prix ni l'offre de l'abonnement ne sont décidés. Les écrans disent ce qui
 viendra et ce qui bloque, au lieu d'un « Bientôt » muet — et pour l'abonnement,
 ils préviennent que « factures » y désigne celles qu'Atlas enverrait, pas celles
 des clients (`ARCHITECTURE.md` §108).
+
+### Une équipe peut partir cinq jours, et Atlas cesse de proposer sa place
+
+**Sa question :** *« Comment on fait si jamais il y a une équipe qui doit partir
+en déplacement pour cinq jours ? »* Sa réponse, devant les trois planches :
+*« La A »* — sous les noms, dans Réglages → Équipe.
+
+**Ce qui existait déjà et n'a pas été refait :** si TOUTE l'entreprise part,
+l'agenda Google relié suffit. On le lui a dit plutôt que de lui vendre du
+travail inutile.
+
+**Ce qui manquait :** une équipe sur deux. L'agenda bloque tout le monde —
+délibérément — et le nombre d'équipes est un nombre sans dates.
+
+**Ce que ça évite :** proposer à un client une date que l'équipe restante ne
+peut pas tenir. Le déplacement se note en quelques secondes, et **tout revient
+normal après, sans rien défaire**. Le client ne voit jamais rien de ceci.
+
+**La décision qui a tout tenu :** une absence n'est pas une capacité qui varie,
+c'est **une occupation** — elle prend la place qu'un chantier aurait prise. Zéro
+signature changée, et les quatre calculs d'occupation en héritent : les trois
+chemins du client, l'écran d'envoi, la pose manuelle, et le calendrier.
+
+**Trois gardes pour la même règle** — l'écran, l'action serveur, la contrainte
+de base — et une seule fonction pour les trois. Une absence à l'envers
+n'occuperait aucun jour et rendrait la capacité fausse en silence.
+
+**Non fait, et dit :** l'équipe inscrite sur un chantier reste une étiquette,
+pas une contrainte. Deux chantiers le même matin sur la même équipe passent
+toujours. `ARCHITECTURE.md` §109, `docs/QUESTIONS.md` §19.
+
+---
+
+## 2026-08-14
+
 
 ### « Surtout la page équipe » : l'écran qui n'était jamais préparé d'avance
 

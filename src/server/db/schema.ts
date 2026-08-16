@@ -177,6 +177,38 @@ export const equipes = pgTable(
   (t) => [unique("equipes_entreprise_rang_uk").on(t.entrepriseId, t.rang)]
 );
 
+/**
+ * Les jours où une équipe n'est pas là.
+ *
+ * *Le patron, le 14 août 2026 : « une équipe qui doit partir en déplacement
+ * pour cinq jours ».* Retenu sur maquette (`docs/maquettes/55`, proposition A).
+ *
+ * **Bornes incluses des deux côtés** — « du 8 au 12 » comprend le 8 et le 12.
+ * Une absence d'un seul jour porte deux fois la même date : cas ordinaire.
+ *
+ * **Ce n'est pas un registre de congés** : ni solde, ni validation, ni
+ * salarié. Une équipe est une file du planning, pas une personne
+ * (`ARCHITECTURE.md` §88). Le motif ne sert qu'à ce que le patron se
+ * souvienne ; aucun calcul ne le lit.
+ */
+export const absencesEquipe = pgTable("absences_equipe", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  equipeId: uuid("equipe_id")
+    .notNull()
+    .references(() => equipes.id, { onDelete: "cascade" }),
+  /** Premier jour d'absence, inclus. Format « AAAA-MM-JJ ». */
+  premierJour: date("premier_jour").notNull(),
+  /** Dernier jour d'absence, inclus. */
+  dernierJour: date("dernier_jour").notNull(),
+  motif: text("motif"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+});
+
 // Correction v2.1 §3 : "prochain_numero_devis" représente le PROCHAIN numéro
 // disponible (pas le dernier attribué). Initialisé à 1 à la création de
 // l'entreprise, consommé par UPDATE ... RETURNING (voir withEntreprise / repository devis).

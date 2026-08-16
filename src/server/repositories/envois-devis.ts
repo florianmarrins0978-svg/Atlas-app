@@ -3,12 +3,13 @@ import { and, asc, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { db, type DbOrTx } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { fusionnerOccupationExterne, type PeriodeOccupee } from "../../lib/agenda-externe";
+import { fusionnerAbsences } from "../../lib/absences-equipe";
 import {
   periodesOccupeesExterieures,
   periodesOccupeesPourEntreprise,
 } from "./agendas-externes";
 import { configurationGoogle } from "../agenda/google";
-import { chantiers, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
+import { absencesEquipe, chantiers, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
 import type { Ctx } from "./context";
 import { lireObjet } from "../storage";
 import {
@@ -139,13 +140,48 @@ async function contrainteDuPlanning(
 
   const nombreEquipes = entreprise?.nombreEquipes ?? 1;
 
+  // **Les équipes qui ne sont pas là, retirées de la capacité.**
+  //
+  // *Le patron, le 14 août 2026 : « une équipe qui doit partir en déplacement
+  // pour cinq jours ».* Une absence s'exprime comme une occupation — elle prend
+  // la place qu'un chantier aurait prise — ce qui la fait entrer ici, dans la
+  // carte que les trois chemins partagent déjà, **sans changer une seule
+  // signature** (`src/lib/absences-equipe.ts`).
+  //
+  // Lues dans la même transaction que les chantiers : deux lectures séparées
+  // pourraient tomber de part et d'autre d'une écriture, et la date proposée au
+  // client ne serait alors plus celle que la revérification accepterait.
+  const absences = await tx
+    .select({
+      equipeId: absencesEquipe.equipeId,
+      premierJour: absencesEquipe.premierJour,
+      dernierJour: absencesEquipe.dernierJour,
+    })
+    .from(absencesEquipe)
+    .where(
+      and(
+        eq(absencesEquipe.entrepriseId, entrepriseId),
+        isNull(absencesEquipe.deletedAt),
+        // Ce qui croise la fenêtre, et rien d'autre : une absence de l'an
+        // dernier n'a rien à faire dans ce calcul.
+        lte(absencesEquipe.premierJour, fenetre.fin),
+        gte(absencesEquipe.dernierJour, fenetre.debut)
+      )
+    );
+
   // **Une seule carte d'occupation, jamais deux.** Les trois chemins qui
   // passent ici — l'écran d'envoi, la création de l'envoi, la revérification
   // de la réponse du client — voient donc exactement la même chose, agenda
-  // extérieur compris. Sans agenda relié, la liste est vide et rien ne change.
+  // extérieur et absences compris. Sans agenda relié ni absence notée, les deux
+  // listes sont vides et la carte est exactement celle d'avant.
+  //
+  // **L'ordre compte.** Les absences d'abord — elles AJOUTENT une unité par
+  // équipe partie —, l'agenda ensuite, qui pose `Math.max(…, nombreEquipes)`
+  // parce qu'il ne sait pas qui part et bloque donc tout le monde. Dans l'autre
+  // sens, l'addition dépasserait un plafond que l'agenda venait de poser.
   return {
     occupation: fusionnerOccupationExterne(
-      compterOccupation(planifies),
+      fusionnerAbsences(compterOccupation(planifies), absences, nombreEquipes),
       periodesExterieures,
       nombreEquipes
     ),

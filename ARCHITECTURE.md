@@ -8740,9 +8740,142 @@ montrer — un contrôle qui n'a jamais rien vu ne prouve rien. Les captures
 emploient désormais le rôle qui traverse la RLS, comme les suites navigateur
 (`CLAUDE.md` §5).
 
+## 109. Une équipe part cinq jours : l'absence, et pourquoi elle n'est qu'une occupation
+
+**Le patron, le 14 août 2026 :** *« Comment on fait si jamais il y a une équipe
+qui doit partir en déplacement pour cinq jours ? Est-ce qu'il y a un moyen de
+l'ajouter au planning ? »*
+
+Retenu sur maquette (`docs/maquettes/55`, **proposition A**) : les absences se
+posent sous les noms, dans Réglages → Équipe. Sa réponse, en un mot : *« La
+A »*.
+
+### Ce qui existait déjà, et qu'on n'a pas refait
+
+**Si TOUTE l'entreprise part, l'agenda extérieur suffit** : une période de
+plusieurs jours occupe toutes les demi-journées qu'elle traverse, week-ends
+compris (`src/lib/agenda-externe.ts`). Rien n'a été écrit pour ce cas — le dire
+valait mieux que de lui vendre du travail inutile.
+
+**Ce qui manquait, c'est l'autre cas : une équipe sur deux.** L'agenda bloque
+tout le monde — délibérément, `fusionnerOccupationExterne` pose
+`Math.max(…, nombreEquipes)` parce qu'Atlas ne peut pas deviner si une équipe
+sait partir sans le patron — et le nombre d'équipes est **un nombre sans
+dates**.
+
+### La décision qui a tout tenu : une absence EST une occupation
+
+Le réflexe était de faire varier le nombre d'équipes jour par jour, donc de
+passer une fonction là où passe aujourd'hui un nombre. Il aurait fallu toucher
+`departPossible`, `jourRetenable` et leurs appelants — **c'est-à-dire les trois
+chemins qui décident d'une date**, dont la revérification de la réponse du
+client. Beaucoup de surface pour un défaut qui ne se verrait qu'en production,
+chez un client ayant retenu un jour impossible.
+
+Une équipe qui n'est pas là **occupe exactement la place qu'un chantier lui
+aurait prise**. La capacité restante se calcule alors toute seule, avec la
+comparaison qui existait déjà — `occupation < nombreEquipes` — et **aucune
+signature ne change**.
+
+Deux différences avec l'agenda extérieur, et elles comptent :
+
+| | Agenda extérieur | Absence d'équipe |
+|---|---|---|
+| Qui part | inconnu | **connu** |
+| Effet | `Math.max(…, nombreEquipes)` — bloque tout le monde | **`+1`** — une unité, une seule |
+| Ordre d'application | après | avant |
+
+L'ordre n'est pas indifférent : les absences **additionnent**, l'agenda **pose
+un plafond**. Dans l'autre sens, l'addition dépasserait le plafond que l'agenda
+venait d'établir.
+
+### Les quatre endroits où la règle entre, et pourquoi les quatre
+
+`fusionnerAbsences` est appelée dans **quatre** calculs d'occupation, et en
+oublier un aurait produit deux vérités sur la même capacité :
+
+1. `envois-devis.ts` — les trois chemins du client (écran d'envoi, création,
+   **revérification de sa réponse**) ;
+2. `preparation-envoi.ts` — l'écran qui propose les dates au patron ;
+3. `chantiers.ts` — le chemin par lequel il pose une date **lui-même** ;
+4. `PlanningClient.tsx` — le calendrier, qui doit marquer le même jour occupé.
+
+Sans le 4, le planning aurait montré un jour libre que l'écran d'envoi refusait,
+**sur deux écrans qui se suivent**.
+
+### Ce que la table n'est pas
+
+Ni solde de congés, ni validation, ni salarié. **Une équipe est une file du
+planning, pas une personne** (§88), et Atlas prépare des devis — il ne tient pas
+la paie. Le motif est un texte libre, pour que le patron se souvienne ; **aucun
+calcul ne le lit**.
+
+**Des jours entiers, pas des demi-journées.** Personne ne part « du mardi
+après-midi au jeudi matin ». Offrir la demi-journée ici, c'est offrir un réglage
+à remplir sans en avoir besoin, et deux champs de plus sur six pouces. Les deux
+colonnes étant des DATES, la précision s'ajoutera sans se contredire le jour où
+elle sera demandée.
+
+**Le bloc n'existe pas à une seule équipe**, et ce n'est pas un oubli : seul,
+noter son absence reviendrait à fermer l'entreprise. L'écran renvoie alors à
+l'agenda, qui est le bon geste dans ce cas.
+
+### Trois gardes, à trois niveaux, pour la même règle
+
+Une absence **à l'envers** n'occuperait aucun jour et rendrait la capacité fausse
+**en silence** — le pire des défauts, celui qui ne se voit qu'au moment où un
+client retient une date impossible. Elle est donc refusée :
+
+1. à l'écran, qui éteint son bouton et **dit lequel des deux champs le gêne** ;
+2. dans l'action serveur, qui rejoue la même fonction pure — un écran n'est pas
+   une garde ;
+3. dans la base (`absences_equipe_ordre_ck`), pour le jour où le code changerait.
+
+Les trois appellent **la même** fonction, `refusDeLAbsence` : deux règles
+finiraient par diverger (`CLAUDE.md` §3).
+
+### Ce que les contrôles ont appris
+
+**Le message d'un contrôle doit désigner le bon coupable.** Le premier jet de la
+suite base posait ses `INSERT` bruts sur le pool : **la RLS les refusait avant
+que la contrainte n'ait son mot à dire**, la suite passait au vert, et son
+message accusait `absences_equipe_ordre_ck` — qui n'avait jamais parlé. Elle
+pose désormais le contexte d'isolation avant d'écrire, et vérifie **aussi** que
+la même absence, dans le bon sens, est acceptée : sans ce second cas, une
+politique refusant TOUT passerait pour une contrainte qui marche.
+
+**Une colonne `date` remonte en objet `Date`.** `String(...)` en tire
+« Sat Sep 12 2026 » : le contrôle comparait deux écritures du même jour et
+accusait la saisie. Le formatage est fait par la base (`to_char`).
+
+**Et l'ordre des deux champs n'est pas indifférent** : avancer le premier jour
+pousse le dernier avec lui — c'est voulu, sinon le patron reste devant un bouton
+éteint sans savoir lequel le gêne. L'état inversé ne s'atteint donc qu'en
+reculant le DERNIER jour, en second. La suite de bout en bout s'y est cassé les
+dents avant de le comprendre.
+
+**Confrontée au défaut** — la fusion retirée du calendrier — la suite rougit en
+nommant le jour : *« le 2026-09-08 est annoncé libre alors qu'une équipe sur
+deux est partie »*.
+
+### Ce qui reste, et qui n'est PAS dans ce lot
+
+**L'équipe inscrite sur un chantier reste une étiquette, pas une contrainte.**
+`compterOccupation` compare un total au nombre d'équipes et ne regarde jamais
+`equipeId` : deux chantiers le même matin, tous deux sur « Équipe 1 », passent.
+Sans conséquence tant que le patron répartit lui-même. Le régler obligerait à
+choisir l'équipe **avant** de proposer une date au client, donc à toucher au
+parcours du devis — c'est un autre chantier, inscrit dans `TODO.md`, et il n'a
+de sens que si le télescopage se produit vraiment. **Question posée au patron le
+14 août, sans réponse à ce jour.**
+
 ---
 
-## 109. Retoucher un devis à la voix : elle propose, il coche
+---
+
+---
+
+## 110. Retoucher un devis à la voix : elle propose, il coche
 
 *Demandé le 15 août 2026. Dessiné (`docs/maquettes/54-dicter-dans-le-devis.html`),
 puis codé sur sa réponse — la proposition A, « elle propose, vous cochez ».*

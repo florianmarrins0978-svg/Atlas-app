@@ -14,7 +14,7 @@
   pas diverger de ses originaux : ils restent la source, elle est le produit.
 */
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -266,8 +266,99 @@ const MAQUETTES = [
     titre: "Une équipe part cinq jours",
     famille: "Le planning",
     quoi: "« Comment on fait si une équipe part en déplacement pour cinq jours ? » Si toute l’entreprise part, l’agenda Google suffit déjà. Si une équipe sur deux part, rien ne convient. Trois endroits où poser le geste.",
+    fichier: "57-apparier-deux-demi-journees.html",
+    titre: "Apparier deux demi-journées",
+    famille: "Le planning",
+    quoi: "Quand une demi-journée est prise et l’autre libre, Atlas propose le chantier en attente le plus proche. Quatre façons de le dire, le bandeau dessiné à vol d’oiseau ET par la route, et les deux cas où il n’y a rien de bon à proposer.",
+  },
+  {
+    fichier: "56-le-devis-qui-tarde.html",
+    titre: "Le devis qui tarde : le rappel, et le délai",
+    famille: "Le devis avant l’envoi",
+    quoi: "Un rappel quand un chantier reste sans devis. La rubrique Notifications ayant été codée entre-temps, ce n’est plus un écran à inventer mais une troisième ligne à y poser : restent le ton de la carte et le nombre de jours.",
   },
 ];
+
+/* ————————————————————————————————————————————————————————————————
+   Une maquette qu'il ne peut pas atteindre n'existe pas
+   ————————————————————————————————————————————————————————————————
+
+   **Ce que ce contrôle a trouvé le 15 août 2026, et qui ne se voyait nulle
+   part : six maquettes dessinées, commises, et introuvables.** 38, 39, 41, 42,
+   43 et 46 n'étaient inscrites ni au sommaire (`index.html`) ni à la page
+   unique. Elles n'existaient que pour qui connaissait leur nom de fichier —
+   c'est-à-dire pour personne, le patron ne consultant que ces deux portes.
+
+   Le compte affiché ne pouvait pas l'attraper : « 36 maquettes fusionnées »
+   reste parfaitement plausible quand il en manque six.
+
+   Les deux portes n'ont pas le même rôle, et l'exigence porte donc sur leur
+   RÉUNION, pas sur chacune : la page unique est une SÉLECTION — elle recolle
+   les maquettes de charte, et laisse dehors celles qui se manipulent (les
+   « à l'essai », qui ne valent que seules) ; le sommaire est le CATALOGUE.
+   Être dans l'une des deux suffit ; n'être dans aucune est le défaut.
+
+   Second contrôle, sur les numéros. Le patron les désigne par leur chiffre —
+   « fais la 34 » — et cinq numéros étaient déjà portés en double.
+*/
+function verifierLaListe() {
+  const plaintes = [];
+
+  const surDisque = readdirSync(SOURCE)
+    .filter((f) => /^\d/.test(f) && f.endsWith(".html"))
+    .sort();
+  const inscrites = new Set(MAQUETTES.map((m) => m.fichier));
+  const sommaire = readFileSync(join(SOURCE, "index.html"), "utf8");
+
+  for (const f of surDisque) {
+    if (!inscrites.has(f) && !sommaire.includes(f)) {
+      plaintes.push(
+        `« ${f} » n'est ni au sommaire ni dans la page unique : le patron n'a aucun chemin qui y mène.`,
+      );
+    }
+  }
+  for (const m of MAQUETTES) {
+    if (!existsSync(join(SOURCE, m.fichier))) {
+      plaintes.push(`« ${m.fichier} » est inscrite mais introuvable dans ${SOURCE}.`);
+    }
+  }
+  // Un lien mort dans le sommaire est le défaut d'origine de ce dossier : le
+  // patron a cliqué, et rien ne s'est ouvert.
+  for (const lien of sommaire.matchAll(/href="(\d[^"]*\.html)"/g)) {
+    if (!existsSync(join(SOURCE, lien[1]))) {
+      plaintes.push(`le sommaire renvoie à « ${lien[1] } », qui n'existe pas.`);
+    }
+  }
+
+  const parNumero = new Map();
+  for (const f of surDisque) {
+    const numero = f.slice(0, 2);
+    if (!parNumero.has(numero)) parNumero.set(numero, []);
+    parNumero.get(numero).push(f);
+  }
+  // Les doublons d'avant le 15 août sont tolérés NOMMÉMENT : les renuméroter
+  // casserait les renvois déjà écrits dans TODO.md, ARCHITECTURE.md et dans les
+  // conversations. Tout nouveau doublon, lui, fait rougir.
+  //
+  // Le 50 est un cas à part, et volontaire : Gunzi, Goonzi et Gunzy sont LA MÊME
+  // planche sous trois noms, montrées côte à côte. Les séparer les rendrait
+  // incomparables.
+  const DOUBLONS_HERITES = new Set(["33", "34", "35", "36", "37", "50"]);
+  for (const [numero, fichiers] of parNumero) {
+    if (fichiers.length > 1 && !DOUBLONS_HERITES.has(numero)) {
+      plaintes.push(
+        `le numéro ${numero} est porté par ${fichiers.length} maquettes (${fichiers.join(", ")}) : « fais la ${Number(numero)} » ne désigne plus rien.`,
+      );
+    }
+  }
+
+  if (plaintes.length) {
+    console.error("La liste des maquettes est en défaut :\n  • " + plaintes.join("\n  • "));
+    process.exit(1);
+  }
+}
+
+verifierLaListe();
 
 /* ————————————————————————————————————————————————————————————————
    Confinement de la feuille de style

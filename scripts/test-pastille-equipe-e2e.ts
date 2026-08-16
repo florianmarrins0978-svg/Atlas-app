@@ -2,6 +2,8 @@ import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { estWeekEndIso } from "../src/lib/mois";
+import type { JourIso } from "../src/server/disponibilites";
 
 /**
  * La pastille d'équipe sur la ligne du planning — geste A.
@@ -30,19 +32,6 @@ const BASE = "http://localhost:3000";
 
 let reussis = 0;
 let failed = 0;
-/**
- * Le jour ouvrable le plus proche, à partir de celui-ci.
- *
- * Le planning ne propose pas les week-ends : tomber un samedi rendrait un
- * calendrier sans case à cliquer, et l'échec accuserait le produit d'un défaut
- * qui n'est qu'une date mal choisie.
- */
-function jourOuvrable(depuis: Date): string {
-  const d = new Date(depuis);
-  while (d.getUTCDay() === 0 || d.getUTCDay() === 6) d.setUTCDate(d.getUTCDate() + 1);
-  return d.toISOString().slice(0, 10);
-}
-
 async function test(nom: string, fn: () => Promise<void>) {
   try {
     await fn();
@@ -232,12 +221,30 @@ async function main() {
     await page.locator('[data-atlas="sans-date"]', { hasText: nomAPoser }).click();
     await page.waitForTimeout(300);
 
-    // **Un jour que personne d'autre n'a pu remplir.** Vingt jours tombaient
-    // dans la plage où les autres suites — et le jeu de démonstration — posent
-    // leurs chantiers : la journée s'annonçait alors « pleine », le panneau
-    // n'affichait plus aucune case, et le contrôle accusait le bouton d'avoir
-    // disparu. Six mois plus loin, la place est à nous.
-    const jour = jourOuvrable(new Date(Date.now() + 180 * 86400_000));
+    // **Un jour libre ET OUVRÉ — il faut les deux, et chacun a fait rougir.**
+    //
+    // *Ouvré :* « aujourd'hui + 20 jours » tombe un samedi une semaine sur trois
+    // et demie. Le panneau affiche alors « Jamais proposé », aucun bouton
+    // « Poser » n'existe — c'est le comportement voulu — et la suite rougissait
+    // sans qu'aucun code n'ait bougé. Vu le 16 août 2026, sur un 5 septembre qui
+    // était un samedi. Un contrôle qui échoue selon le jour de la semaine
+    // s'apprend à être ignoré, et c'est ce garde-fou-là qu'on perd.
+    //
+    // *Libre :* à vingt jours, on tombe dans la plage où les autres suites — et
+    // le jeu de démonstration — posent leurs chantiers. La journée s'annonce
+    // « pleine », le panneau ne rend plus aucune case, et l'échec accuse le
+    // bouton d'avoir disparu. Six mois plus loin, la place est à nous.
+    //
+    // **`estWeekEndIso` plutôt qu'un `getUTCDay()` réécrit ici** : le week-end
+    // est une règle du produit (`src/lib/mois.ts`, et `disponibilites.ts` en
+    // décide). Deux écritures de la même règle finissent toujours par diverger —
+    // le jour où le samedi travaillé deviendrait un réglage, celle-ci mentirait
+    // sans rougir.
+    const cible = new Date(Date.now() + 180 * 86400_000);
+    while (estWeekEndIso(cible.toISOString().slice(0, 10) as JourIso)) {
+      cible.setUTCDate(cible.getUTCDate() + 1);
+    }
+    const jour = cible.toISOString().slice(0, 10);
     for (let i = 0; i < 24; i++) {
       if ((await page.locator(`[data-atlas="grille-mois"] button[data-jour="${jour}"]`).count()) > 0) break;
       await page.click('button[aria-label="Mois suivant"]');

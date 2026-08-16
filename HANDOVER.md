@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-14 · `main`
+**Point de reprise :** 2026-08-15 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -729,7 +729,49 @@ de chercher dans la règle.
 
 Trois refus sont dans le code et ne se négocient pas : aucun prix ne s'invente,
 deux lignes qui se ressemblent rendent « à préciser », un nom reconnu nulle part
-ne se rabat pas sur le numéro de ligne. `ARCHITECTURE.md` §109.
+ne se rabat pas sur le numéro de ligne. `ARCHITECTURE.md` §110.
+
+**⚠ UNE DATE CALCULÉE DEPUIS « AUJOURD'HUI » EST UNE BOMBE À RETARDEMENT (16 août).**
+`test-pastille-equipe-e2e` visait `+ 20 jours` : jeudi le jour où il a été écrit,
+**samedi** deux jours plus tard — et le planning refuse le week-end par
+construction, donc ni journée rendue, ni bouton. Le message accusait le bouton ;
+le bouton allait très bien. **Devant un rouge sur une suite qui touche au
+planning, regarder d'abord quel jour de la semaine elle vise.** Corrigé avec
+`estWeekEndIso`, et éprouvé dans les deux sens.
+
+**LE DEVIS QUI TARDE : B ET 4 JOURS RETENUS, RESTE LE MOT (16 août).**
+`docs/maquettes/56-le-devis-qui-tarde.html`. Sa réponse : *« la B et 4 »* — carte
+teintée, quatre jours. **Il reste un seul mot à choisir**, celui de la ligne dans
+les réglages : elle se pose juste au-dessus de « Devis sans réponse », et deux
+lignes qui commencent par « Devis » ne se distinguent pas. Quatre mots proposés
+en § 3, ma préférence « Chantier sans devis ». Détail : `TODO.md` §0 novivicies.
+
+**LA LEÇON DE CE PASSAGE, ET ELLE VAUT AU-DELÀ :** une confusion entre deux
+libellés **n'existe qu'en contexte**. Montrer une ligne seule ne prouve rien —
+c'est côte à côte avec sa voisine qu'elle se juge. C'est le patron qui l'a vu, pas
+un contrôle.
+
+**⚠ LA RUBRIQUE NOTIFICATIONS EST CODÉE DEPUIS LE 14 AOÛT** — `src/lib/rappels.ts`,
+`src/app/reglages/notifications/`, `drizzle/0043_rappels_notifications.sql`. Deux
+rappels réglables (« devis sans réponse », 7 j ; « chantier fini pas facturé »,
+3 j), un interrupteur chacun, et le délai qui se tape : « Au bout de [ N ] jours »,
+bornes 1–90, rangé sur `entreprises`. **Ne pas le redessiner.** Sa demande n'y est
+pas : ces deux-là parlent d'un devis PARTI, lui d'un devis JAMAIS parti.
+
+**LA LEÇON DE CE LOT, ET ELLE A COÛTÉ DEUX RÉÉCRITURES : CHERCHER CE QUI EXISTE
+AVANT DE DESSINER.** La planche a décrit deux fois un monde disparu — d'abord un
+écran de notifications déjà dessiné le 13, puis un délai déjà codé le 14. **Le
+dossier `maquettes/` (l'application) et `docs/maquettes/` (les décisions) sont
+deux endroits distincts, et le code en est un troisième** — regarder les trois
+avant de dessiner, jamais un seul.
+
+**ET HUIT MAQUETTES N'ÉTAIENT ATTEIGNABLES PAR AUCUN CHEMIN** (38, 39, 41, 42,
+43, 46, puis 47 et 53 apportées par la fusion) : ni page unique, ni sommaire. `TODO.md` l'affirmait sans conséquence ; c'était
+faux. `fusionner-maquettes.mjs` refuse désormais une maquette orpheline, un lien
+mort dans le sommaire, et un numéro porté deux fois. **Avant d'écrire une
+nouvelle planche, jouer `node scripts/fusionner-maquettes.mjs` : il donne le
+prochain numéro libre en refusant le doublon.**
+
 
 **« L'APPLI NE MARCHE PLUS » — ELLE MARCHAIT (14 août, tard).** Son iPhone
 proposait de télécharger un fichier au lieu d'ouvrir Atlas. **Son espace de
@@ -2521,7 +2563,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les vingt pièges de ce dépôt
+### Les vingt-et-un pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -2743,6 +2785,20 @@ site publié à son adresse réelle.
     depuis cinq jours. Et **`nice` ne règle rien ici :** faire bâtir en priorité
     basse a été mesuré (16,2 s → 17,4 s à la connexion, construction 69 s → 67 s)
     et **écarté** — la contention est le disque, pas le processeur.
+
+21. **Une date calculée depuis « aujourd'hui » finit par tomber un samedi.**
+    `test-pastille-equipe-e2e` visait `Date.now() + 20 jours` pour trouver un
+    jour libre. Écrit le 14 août 2026 : un jeudi, tout vert. Joué le 16 : un
+    **samedi** — et le planning refuse le week-end par construction, écrit
+    « Jamais proposé » et ne rend même pas la journée, donc ni cases d'équipe ni
+    bouton. Le message accusait alors le bouton d'un défaut qui n'était pas le
+    sien, et le contrôle serait redevenu vert tout seul le lundi.
+
+    **La règle :** un contrôle qui touche au planning vise le **premier jour
+    ouvrable**, jamais un décalage fixe — et il emprunte `estWeekEndIso`
+    (`src/lib/mois.ts`) plutôt que de réécrire la règle, sans quoi les deux
+    finissent par diverger. Plus large : **un rouge qui n'apparaît que certains
+    jours de la semaine n'est presque jamais le défaut qu'il annonce.**
 
 ### Le vocabulaire
 
