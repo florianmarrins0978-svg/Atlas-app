@@ -87,7 +87,8 @@
 <li><a href="#16-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-">L'IA se sert-elle de mes réglages pour faire les devis ?</a></li>
 <li><a href="#17-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien">Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien</a></li>
 <li><a href="#18-à-quoi-sert-le-catalogue-et-pourquoi-je-ne-peux-rien-y-écrire-">À quoi sert le catalogue, et pourquoi je ne peux rien y écrire ?</a></li>
-<li><a href="#19-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-">Si un client ne me paie pas, la TVA part quand même ?</a></li>
+<li><a href="#19-une-équipe-part-cinq-jours-en-déplacement--comment-on-gère-ça-">Une équipe part cinq jours en déplacement : comment on gère ça ?</a></li>
+<li><a href="#20-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-">Si un client ne me paie pas, la TVA part quand même ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -901,7 +902,38 @@
 <p><strong>L'écran du catalogue, lui, est resté branché sur l'ancienne.</strong> Il interroge une mémoire vide, et annonce donc fidèlement qu'elle est vide. Vos prix sont bien retenus — c'est cet écran-là qui regarde au mauvais endroit.</p>
 <p><strong>Ce qu'il reste à faire :</strong> remettre la flèche, et rebrancher l'écran sur la bonne mémoire. Les deux sont inscrits dans <code>TODO.md</code> §0 octovicies bis, en attente de votre feu vert — rien n'a encore été touché.</p>
 <hr>
-<h2 id="19-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-">19. Si un client ne me paie pas, la TVA part quand même ?</h2>
+<h2 id="19-une-équipe-part-cinq-jours-en-déplacement--comment-on-gère-ça-">19. Une équipe part cinq jours en déplacement : comment on gère ça ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Votre question, le 14 août 2026 :</strong> <em>« Comment on fait si jamais il y a une équipe qui doit partir en déplacement pour cinq jours ? Est-ce qu'il y a un moyen de l'ajouter au planning ? »</em></p>
+<h3 id="la-réponse-courte">La réponse courte</h3>
+<p><strong>Si toute l'entreprise part : c'est déjà possible aujourd'hui.</strong> Vous créez l'événement dans votre agenda Google relié, et les cinq jours se bloquent — Atlas ne proposera plus aucune date à un client sur cette période. Une période de plusieurs jours occupe toutes les demi-journées qu'elle traverse, week-ends compris.</p>
+<p><strong>Si une seule équipe part : rien ne convient.</strong> Et il vaut mieux le savoir avant de compter dessus.</p>
+<h3 id="pourquoi-lagenda-ne-suffit-pas-dans-ce-cas">Pourquoi l'agenda ne suffit pas dans ce cas</h3>
+<p>Une période occupée dans votre agenda bloque <strong>tout le monde</strong>, pas une équipe. C'est un choix délibéré, pas un oubli : Atlas ne peut pas deviner si une équipe sait partir sans vous. Avec deux équipes dont une seule en déplacement, vous perdriez cinq jours de celle qui reste.</p>
+<p>L'autre levier — le nombre d'équipes, dans Réglages → Équipe — est <strong>un nombre sans dates</strong>. Le passer de 2 à 1 marche, jusqu'au jour où l'on oublie de le remonter.</p>
+<h3 id="un-point-qui-surprend-et-quil-vaut-mieux-connaître">Un point qui surprend, et qu'il vaut mieux connaître</h3>
+<p><strong>L'équipe inscrite sur un chantier est une étiquette, pas une contrainte.</strong> Atlas compte les chantiers par demi-journée et compare ce compte au nombre d'équipes ; il ne vérifie pas <em>laquelle</em> est libre. Deux chantiers le même matin, tous les deux sur « Équipe 1 » : Atlas les accepte.</p>
+<p>Cela ne gêne pas tant que vous répartissez vous-même. Cela devient faux le jour où une équipe est absente — d'où la question.</p>
+<h3 id="les-deux-façons-de-le-régler-et-ce-quelles-coûtent">Les deux façons de le régler, et ce qu'elles coûtent</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce que ça fait</th>
+<th>Ce que ça coûte</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>A — L'absence datée</strong></td>
+<td>« Équipe 1 absente du 8 au 12 septembre ». Atlas la retire du compte ces jours-là, et tout revient normal le 13 sans rien défaire</td>
+<td>Petit : une table, une règle, un écran dans Réglages → Équipe</td>
+</tr>
+<tr>
+<td><strong>B — L'occupation par équipe</strong></td>
+<td>Atlas sait qui est où, et refuse deux chantiers sur la même équipe au même moment</td>
+<td>Gros : il faudrait choisir l'équipe <strong>avant</strong> de proposer une date au client, donc toucher au parcours du devis</td>
+</tr>
+</tbody></table></div>
+<p><strong>Recommandation : A d'abord.</strong> B seulement si le télescopage de deux chantiers sur une même équipe se produit vraiment — sinon, c'est du travail dont on ne verra jamais l'effet.</p>
+<hr>
+<h2 id="20-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-">20. Si un client ne me paie pas, la TVA part quand même ?</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><em>Question posée le 14 août 2026 : « à partir du moment où j'envoie la facture à mon client, elle rentre automatiquement dans mon relevé de TVA. Sauf que s'il décide de ne pas me payer, je vais avoir des problèmes. »</em></p>
 <h3 id="la-réponse-courte">La réponse courte</h3>
@@ -963,9 +995,9 @@
 <li><strong>un relevé bancaire ne porte pas de numéro de facture</strong> — seulement une date, un montant et un libellé (« VIR M BERNARD »). Atlas ne peut donc que <strong>proposer</strong> ; c'est votre doigt qui confirme. Quand le montant ne tombe pas juste — un acompte, deux factures en un virement —, il dira qu'il ne sait pas au lieu de deviner ;</li>
 <li><strong>l'accès se renouvelle tous les 90 jours</strong>, règle européenne. Vous serez prévenu une semaine avant, et les paiements se noteront à la main pendant ce temps-là.</li>
 </ul>
-<p>Le dessin : <code>maquettes/atlas-banque-rapprochement.html</code>. Le prestataire reste à choisir — <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a> §12.</p>
+<p>Le dessin : <code>maquettes/atlas-banque-rapprochement.html</code>. Le prestataire reste à choisir — <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a> §13.</p>
 <h3 id="ce-que-je-ne-peux-pas-décider-à-votre-place">Ce que je ne peux pas décider à votre place</h3>
-<p><strong>Sous quel régime vous êtes.</strong> Votre comptable le sait en une phrase, ou c'est écrit sur votre dernière déclaration. Le point est inscrit dans <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a> §11.</p>
+<p><strong>Sous quel régime vous êtes.</strong> Votre comptable le sait en une phrase, ou c'est écrit sur votre dernière déclaration. Le point est inscrit dans <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a> §12.</p>
 </main>
 </body>
 </html>

@@ -9,6 +9,16 @@ import { suiteDeLaReponse, type SuiteDeLaReponse } from "@/lib/suite-de-la-repon
 import { marquerReponseVueAction, corrigerDevisAction } from "./actions";
 import type { NotificationPatron, EnvoiCaduc } from "@/server/repositories/envois-devis";
 
+/** Un rappel, déjà mis en mots par le serveur — voir `src/lib/rappels.ts`. */
+export type RappelAffiche = {
+  genre: "devis-sans-reponse" | "chantier-non-facture";
+  chantierId: string;
+  chantierNom: string;
+  /** « depuis 8 jours » — formulé au serveur, pour que l'écran n'ait pas à
+   *  recalculer un délai et à en donner une seconde version. */
+  depuisTexte: string;
+};
+
 // Ce qu'est devenu un devis parti, porté au patron (docs/AGENT.md §2.2).
 //
 // Sans cet écran, un refus vivait uniquement en base : le devis « envoyé »
@@ -19,6 +29,16 @@ import type { NotificationPatron, EnvoiCaduc } from "@/server/repositories/envoi
 /** Ce qui s'affiche, quelle qu'en soit l'origine. */
 type Carte = {
   envoiId: string;
+  /**
+   * Un RAPPEL, pas une nouvelle — et cela change deux choses.
+   *
+   * Une réponse de client s'acquitte : le patron l'a lue, elle disparaît. Un
+   * rappel, lui, n'a rien à acquitter — il décrit une situation qui dure, et il
+   * s'en va quand elle cesse : le client répond, la facture part. Lui donner
+   * « J'ai vu » ferait croire qu'on peut le classer sans rien faire, et le
+   * chantier retomberait dans l'oubli qu'on cherchait justement à éviter.
+   */
+  rappel?: boolean;
   chantierId: string;
   chantierNom: string;
   /** Réclame l'attention (fond teinté) plutôt que d'informer. */
@@ -99,12 +119,49 @@ function caducVersCarte(e: EnvoiCaduc): Carte {
   };
 }
 
+/**
+ * Un rappel réglé dans « Notifications » — un devis qui dort, une facture qui
+ * n'est pas partie.
+ *
+ * **Il ne mène pas au même endroit selon son genre**, et c'est la même règle
+ * que pour les réponses : une carte qui mène ailleurs que là où est le geste
+ * fait chercher (`suite-de-la-reponse.ts`, relevé par le patron le 12 août).
+ */
+function rappelVersCarte(r: RappelAffiche): Carte {
+  const devis = r.genre === "devis-sans-reponse";
+  return {
+    // Aucun envoi derrière un rappel : la clé se fabrique, et elle porte le
+    // genre — un même chantier peut dormir sur son devis un mois, puis sur sa
+    // facture le mois suivant.
+    envoiId: `rappel-${r.genre}-${r.chantierId}`,
+    chantierId: r.chantierId,
+    chantierNom: r.chantierNom,
+    // **Jamais urgent.** Le fond teinté est réservé à ce qui appelle une
+    // décision : un refus, un lien mort. Un rappel de confort qui crierait
+    // aussi fort ferait baisser le volume de tous les autres.
+    urgent: false,
+    rappel: true,
+    titre: devis ? "Devis sans réponse" : "À facturer",
+    texte: devis
+      ? `Parti ${r.depuisTexte}, sans un mot du client. Vous pouvez le relancer vous-même.`
+      : `Chantier terminé ${r.depuisTexte}, et aucune facture n'est partie.`,
+    suite: {
+      href: devis ? `/chantiers/${r.chantierId}` : `/chantiers/${r.chantierId}/facture`,
+      libelle: devis ? "Ouvrir le chantier" : "Créer la facture",
+      reprendreAvant: false,
+    },
+  };
+}
+
 export default function Notifications({
   initiales,
   caducs,
+  rappels = [],
 }: {
   initiales: NotificationPatron[];
   caducs: EnvoiCaduc[];
+  /** Réglés dans « Notifications » — vide quand les deux sont éteints. */
+  rappels?: RappelAffiche[];
 }) {
   // Retirée à l'écran dès l'appui, sans attendre le serveur : le patron a fait
   // son geste, lui laisser la carte sous les yeux le ferait douter.
@@ -124,8 +181,13 @@ export default function Notifications({
    */
   const [refus, setRefus] = useState<{ chantierId: string; message: string } | null>(null);
 
-  // Les réponses d'abord : quelqu'un a agi, cela prime sur un silence.
-  const cartes = [...initiales.map(versCarte), ...caducs.map(caducVersCarte)];
+  // Les réponses d'abord : quelqu'un a agi, cela prime sur un silence. Les
+  // rappels ferment la marche — ils décrivent une attente, pas un événement.
+  const cartes = [
+    ...initiales.map(versCarte),
+    ...caducs.map(caducVersCarte),
+    ...rappels.map(rappelVersCarte),
+  ];
   const restantes = cartes.filter((n) => !masquees.includes(n.envoiId));
   if (restantes.length === 0) return null;
 
@@ -229,14 +291,18 @@ export default function Notifications({
                   {n.suite.libelle}
                 </Link>
               )}
-              <button
-                type="button"
-                onClick={() => marquerVue(n.envoiId)}
-                className="text-[14px] font-medium"
-                style={{ color: colors.muted }}
-              >
-                J&apos;ai vu
-              </button>
+              {/* Rien à acquitter sur un rappel : il s'en va quand la
+                  situation cesse, pas quand on la regarde. */}
+              {!n.rappel && (
+                <button
+                  type="button"
+                  onClick={() => marquerVue(n.envoiId)}
+                  className="text-[14px] font-medium"
+                  style={{ color: colors.muted }}
+                >
+                  J&apos;ai vu
+                </button>
+              )}
             </div>
 
             {/* Le refus se lit ici, sous le geste qui l'a provoqué — et il dit

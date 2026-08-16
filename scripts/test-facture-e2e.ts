@@ -153,9 +153,9 @@ async function main() {
 
   await test("la confirmation fige la facture, et le règlement la porte au relevé", async () => {
     // **Ce contrôle a changé de milieu le 16 août 2026, pas d'objet.** Depuis
-    // la migration 0042, une facture arrêtée n'entre au relevé qu'une fois
+    // la migration 0045, une facture arrêtée n'entre au relevé qu'une fois
     // ENCAISSÉE — c'est le défaut légal d'une prestation de services
-    // (`ARCHITECTURE.md` §106). Le parcours compte donc un geste de plus, et
+    // (`ARCHITECTURE.md` §110). Le parcours compte donc un geste de plus, et
     // c'est celui que le patron a demandé : « Payée ».
     const { chantierId } = await chantierRealise(page, "emettre");
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });

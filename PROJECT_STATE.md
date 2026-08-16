@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-16 · branche `main`
-· dernière migration `drizzle/0040_conditions_documents.sql`
+· dernière migration `drizzle/0045_paiements_et_exigibilite.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -105,7 +105,7 @@ seule avec quinze outils.
 | **Proposer une date jusqu'à 18 mois**, sans montrer au client plus de trois semaines autour | `src/server/disponibilites.ts` (`fenetrePatron`, `bandesVisibles`) |
 | **Un calendrier des deux côtés**, où les jours déjà pris sont barrés et ne se choisissent pas | `src/lib/calendrier.ts` + `src/components/atlas/Calendrier.tsx` |
 | **Déposer sa liste de prix Excel ou CSV**, avec aperçu avant écriture | `src/app/reglages/ImportTarifs.tsx` + `src/lib/import-tarifs.ts` + `src/server/import/lire-classeur.ts` |
-| **La TVA quand le client PAIE, et non quand la facture part** — le relevé se calcule sur la date du règlement (défaut légal d'une prestation de services, CGI art. 269-2-c) ; les factures parties attendent dans « Ma TVA » et y entrent d'un appui. Les acomptes n'apportent que leur part. Réglage encaissements / débits. Le passé ne bouge pas : la migration a supposé réglées les factures déjà émises, et le dit (`ARCHITECTURE.md` §106) | `src/lib/exigibilite-tva.ts` + `src/server/repositories/paiements-facture.ts` + `src/app/termines/tva/` + `drizzle/0042_paiements_et_exigibilite.sql` |
+| **La TVA quand le client PAIE, et non quand la facture part** — le relevé se calcule sur la date du règlement (défaut légal d'une prestation de services, CGI art. 269-2-c) ; les factures parties attendent dans « Ma TVA » et y entrent d'un appui. Les acomptes n'apportent que leur part. Réglage encaissements / débits. Le passé ne bouge pas : la migration a supposé réglées les factures déjà émises, et le dit (`ARCHITECTURE.md` §110) | `src/lib/exigibilite-tva.ts` + `src/server/repositories/paiements-facture.ts` + `src/app/termines/tva/` + `drizzle/0045_paiements_et_exigibilite.sql` |
 | **Ses tranches et ses travaux, au lieu des nôtres** — les diamètres, les hauteurs, les façons d'abattre et les travaux s'ajoutent et se retirent (écran « Mes prix » et écran « Mes mesures »). Retirer n'efface aucun prix : les cases sont rangées et reviennent. Un travail ajouté n'est PAS reconnu par le chiffrage depuis une dictée, et l'écran le dit (`ARCHITECTURE.md` §105) | `src/lib/grille-prix.ts` + `src/server/repositories/grilles-reglables.ts` + `src/app/reglages/prix/` + `drizzle/0041_tranches_et_natures_de_grille.sql` |
 | **L'unité d'un tarif se CHOISIT** dans un bandeau déroulant (jour/homme, m², ml, heure, forfait, tonne, « aucune ») — la case reste libre pour le stère et l'arbre. Ce qu'elle évite : le rapprochement se fait à la lettre près, et « jours/homme » mal tapé faisait cesser la multiplication en silence (`ARCHITECTURE.md` §101) | `src/lib/unites-tarif.ts` + `src/components/atlas/ChoixUnite.tsx` + `src/app/reglages/ReglagesClient.tsx` |
 
@@ -246,6 +246,15 @@ l'application. Ce qui est **fait** :
   dans juillet — et **invisible**, l'écran ne montrant qu'une période. La
   feuille annonce désormais la destination avant qu'il appuie, et l'écran l'y
   emmène après. `scripts/test-achat-hors-periode-e2e.ts`, `ARCHITECTURE.md` §91.
+- **Une équipe peut partir cinq jours** (14 août) : les absences se notent dans
+  Réglages → Équipe, sous les noms (`docs/maquettes/55`, proposition A). Une
+  équipe absente **ne compte plus** dans les dates proposées — l'absence est
+  traitée comme une occupation, ce qui la fait entrer dans les **quatre**
+  calculs de capacité sans changer une signature. Migration
+  `drizzle/0044_absences_equipe.sql`. Si toute l'entreprise part, l'agenda
+  Google suffisait déjà et rien n'a été écrit pour ça. **Reste faux, et dit :**
+  l'équipe d'un chantier est une étiquette, pas une contrainte.
+  `ARCHITECTURE.md` §109.
 - **« Surtout la page équipe » : l'écran jamais préparé d'avance** (14 août) :
   le banc compile ses écrans à l'avance, mais la liste — écrite à la main —
   ignorait les **sept sous-écrans de Réglages** créés depuis. « Équipe »
@@ -562,6 +571,15 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 
 Voir `TODO.md` pour le détail et l'ordre.
 
+- **Le devis qui tarde : une TROISIÈME ligne, en attente de deux mots** (16 août)
+  — sa demande d'un *« rappel lorsque le chantier a été ouvert mais le devis n'a
+  pas été envoyé »*. `docs/maquettes/56-le-devis-qui-tarde.html`, réécrite deux
+  fois contre ce qui existait. **La rubrique Notifications a été CODÉE le
+  14 août** par une autre session (`src/lib/rappels.ts`, `drizzle/0043_…`) :
+  deux rappels réglables, et le délai qui se tape — « Au bout de 7 jours ». Aucun
+  des deux ne couvre sa demande : ils parlent d'un devis **parti**, lui d'un
+  devis **jamais parti**. Il désigne le ton de la carte et le nombre de jours ;
+  une demi-journée ensuite. `TODO.md` §0 novivicies.
 - **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
   (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA
   se déclare au lieu d'être deviné d'après le taux**. **Le sommaire lui-même est CODÉ le
@@ -576,9 +594,21 @@ Voir `TODO.md` pour le détail et l'ordre.
   **C'est aussi le premier écran d'Atlas où `getRole` décide de ce qui est
   RENDU** : un membre ne reçoit que l'ensemble « Moi », et chaque rubrique de
   l'entreprise refuse un non-propriétaire avant de lire une valeur. Le reste de
-  l'application, lui, ne cloisonne toujours rien. Six rubriques sur treize
-  restent marquées *Bientôt* — mon compte, notifications, connexion, apparence,
-  équipe (les comptes), devis & factures, abonnement. Ce qui suit décrit l'état
+  l'application, lui, ne cloisonne toujours rien. **Les TREIZE rubriques sont
+  ouvertes au 14 août 2026** — plus aucune ne porte « Bientôt »
+  (`ARCHITECTURE.md` §108). Deux d'entre elles ne règlent rien et l'assument :
+  *Apparence* (le mode sombre et l'accent demandent de reprendre toute
+  l'application) et *Abonnement* (ni prix ni offre décidés). *Notifications*,
+  elle, porte **deux rappels réels** qui apparaissent sur l'accueil — devis sans
+  réponse, chantier fini non facturé — et dit pourquoi « facture impayée » est
+  impossible : rien n'enregistre qu'une facture a été payée. Les deux dernières ouvertes sont
+  **« Mon compte »** et **« Connexion »** (`ARCHITECTURE.md` §107) : changer son
+  nom, changer son mot de passe, et **« me déconnecter partout »** — une colonne
+  plutôt qu'une table de sessions. Leurs libellés promettaient un *téléphone* et
+  une liste d'*appareils* qui n'existent nulle part ; le patron a tranché « A A »
+  le 14 août, les deux mots sont retirés. **L'e-mail ne se change pas encore**,
+  et l'écran le dit : rien ne permettrait de vérifier une nouvelle adresse, et
+  une faute de frappe fermerait le compte sans recours. Ce qui suit décrit l'état
   d'avant ce lot, et reste vrai pour les neuf autres rubriques : (`maquettes/atlas-reglages-plan.html`, `ARCHITECTURE.md` §86). Ce qui
   y est tranché : les deux niveaux « Moi » / « Mon entreprise », qui voit quoi,
   et ce qui n'aura jamais d'interrupteur. Ce qui ne l'est pas : le rôle

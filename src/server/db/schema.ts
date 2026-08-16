@@ -38,6 +38,11 @@ export const users = pgTable("users", {
   // uniquement, jamais le mot de passe en clair. Nullable : un utilisateur
   // créé via un futur provider OAuth n'en a pas besoin.
   passwordHash: text("password_hash"),
+  // « Me déconnecter partout » (migration 0042) : tout jeton émis AVANT cet
+  // instant est refusé par `getCurrentCtx`. Atlas ne garde aucune session en
+  // base — il n'y a donc rien à supprimer pour fermer une session, mais on peut
+  // refuser ce qui a été signé avant. `null` : jamais demandé.
+  jetonsValidesDepuis: timestamp("jetons_valides_depuis", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -102,7 +107,7 @@ export const entreprises = pgTable("entreprises", {
   /** Un IBAN à un nom différent de l'entreprise inquiète au lieu de rassurer. */
   titulaireCompte: text("titulaire_compte"),
   /**
-   * Les conditions qui s'impriment sur un devis (migration 0041).
+   * Les conditions qui s'impriment sur un devis (migration 0040).
    *
    * **Une valeur nulle veut dire « éteint »**, sauf la validité dont le défaut
    * est celui d'avant — 30 jours, la constante de `devis-pdf.ts`. Deux champs
@@ -115,6 +120,17 @@ export const entreprises = pgTable("entreprises", {
   moyensPaiement: text("moyens_paiement"),
   rappelerPenalitesDevis: boolean("rappeler_penalites_devis").notNull().default(false),
   textePiedDocuments: text("texte_pied_documents"),
+
+  /**
+   * Les deux rappels de la rubrique « Notifications » (migration 0043).
+   *
+   * `null` = éteint. Ce sont des CONFORTS, et c'est pour cela qu'ils se
+   * coupent : ne plus être rappelé qu'un devis dort ne fait rien perdre — le
+   * devis est toujours sur la fiche du chantier. La réponse d'un client et le
+   * lien expiré, eux, n'ont pas d'interrupteur (`src/lib/rappels.ts`).
+   */
+  rappelDevisSansReponseJours: integer("rappel_devis_sans_reponse_jours"),
+  rappelChantierNonFactureJours: integer("rappel_chantier_non_facture_jours"),
   // Combien de chantiers menés de front. 1 par défaut — le comportement d'avant
   // la migration 0019, où une seule équipe était supposée sans le dire.
   nombreEquipes: integer("nombre_equipes").notNull().default(1),
@@ -128,7 +144,7 @@ export const entreprises = pgTable("entreprises", {
     .notNull()
     .default("mensuelle"),
   /**
-   * **Quand la TVA devient exigible** (migration 0042).
+   * **Quand la TVA devient exigible** (migration 0045).
    *
    * Sa demande du 14 août 2026 : *« est-ce qu'il y a une possibilité pour que la
    * facture rentre au relevé seulement une fois que le client m'a payé ? »*
@@ -136,7 +152,7 @@ export const entreprises = pgTable("entreprises", {
    * `encaissements` est le DÉFAUT LÉGAL d'une prestation de services (CGI
    * art. 269-2-c) ; les `debits` sont une **option** qui se demande à
    * l'administration. Atlas appliquait les débits sans le dire — donc invitait
-   * à déclarer trop tôt. Voir `docs/QUESTIONS.md` §19.
+   * à déclarer trop tôt. Voir `docs/QUESTIONS.md` §20.
    */
   tvaExigibilite: text("tva_exigibilite", { enum: ["encaissements", "debits"] })
     .notNull()
@@ -174,6 +190,38 @@ export const equipes = pgTable(
   },
   (t) => [unique("equipes_entreprise_rang_uk").on(t.entrepriseId, t.rang)]
 );
+
+/**
+ * Les jours où une équipe n'est pas là.
+ *
+ * *Le patron, le 14 août 2026 : « une équipe qui doit partir en déplacement
+ * pour cinq jours ».* Retenu sur maquette (`docs/maquettes/55`, proposition A).
+ *
+ * **Bornes incluses des deux côtés** — « du 8 au 12 » comprend le 8 et le 12.
+ * Une absence d'un seul jour porte deux fois la même date : cas ordinaire.
+ *
+ * **Ce n'est pas un registre de congés** : ni solde, ni validation, ni
+ * salarié. Une équipe est une file du planning, pas une personne
+ * (`ARCHITECTURE.md` §88). Le motif ne sert qu'à ce que le patron se
+ * souvienne ; aucun calcul ne le lit.
+ */
+export const absencesEquipe = pgTable("absences_equipe", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  equipeId: uuid("equipe_id")
+    .notNull()
+    .references(() => equipes.id, { onDelete: "cascade" }),
+  /** Premier jour d'absence, inclus. Format « AAAA-MM-JJ ». */
+  premierJour: date("premier_jour").notNull(),
+  /** Dernier jour d'absence, inclus. */
+  dernierJour: date("dernier_jour").notNull(),
+  motif: text("motif"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+});
 
 // Correction v2.1 §3 : "prochain_numero_devis" représente le PROCHAIN numéro
 // disponible (pas le dernier attribué). Initialisé à 1 à la création de
@@ -538,7 +586,7 @@ export const devis = pgTable(
     dateEmission: date("date_emission").notNull(),
     dateValidite: date("date_validite"),
     /**
-     * La durée de validité RECOPIÉE au jour de la création (migration 0041).
+     * La durée de validité RECOPIÉE au jour de la création (migration 0040).
      *
      * Lire le réglage au moment de composer le PDF ferait changer la durée
      * d'engagement d'un devis déjà envoyé, simplement parce que l'artisan a
@@ -1027,7 +1075,7 @@ export const factures = pgTable(
 );
 
 /**
- * Les règlements reçus sur une facture (migration 0042).
+ * Les règlements reçus sur une facture (migration 0045).
  *
  * **Sa demande du 14 août 2026 :** *« lorsque la facture part, au lieu qu'elle
  * rentre directement dans le relevé, elle arrive dans un endroit en attente ;
@@ -1042,7 +1090,7 @@ export const factures = pgTable(
  * **`origine` distingue trois choses qui n'ont pas la même valeur** : ce qu'il a
  * saisi (`saisi`), ce que la migration a supposé pour ne pas déplacer un relevé
  * déjà déclaré (`reprise`, et l'écran le dit), et ce qu'une banque proposera un
- * jour (`banque`, `docs/A-FAIRE.md` §12).
+ * jour (`banque`, `docs/A-FAIRE.md` §13).
  */
 export const paiementsFacture = pgTable(
   "paiements_facture",

@@ -15,7 +15,7 @@ import Decimal from "decimal.js";
  * services, la TVA est exigible **à l'encaissement** (CGI art. 269-2-c). Le
  * régime des **débits** — celui qu'Atlas appliquait jusqu'ici — est une OPTION
  * qui se demande à l'administration. Les deux existent, d'où le réglage : voir
- * `docs/QUESTIONS.md` §19 et `docs/A-FAIRE.md` §11.
+ * `docs/QUESTIONS.md` §20 et `docs/A-FAIRE.md` §12.
  *
  * **Ce fichier ne touche pas à la base et ne connaît aucune entreprise.** Ce
  * sont des règles pures, éprouvables sans serveur — et c'est voulu : elles

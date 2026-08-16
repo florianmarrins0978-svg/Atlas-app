@@ -79,8 +79,9 @@
 <li><a href="#8-faire-valider-lapplication-par-google--avant-de-commercialiser">Faire valider l'application par Google — AVANT de commercialiser</a></li>
 <li><a href="#9-demander-à-votre-comptable--tva-au-mois-ou-au-trimestre-">Demander à votre comptable : TVA au mois ou au trimestre ?</a></li>
 <li><a href="#10-le-premier-jour-dun-artisan--ce-qui-manque-pour-lui-confier-atlas">Le premier jour d'un artisan : ce qui manque pour lui confier Atlas</a></li>
-<li><a href="#11-demander-à-votre-comptable--tva-sur-les-encaissements-ou-sur-les-débits-">Demander à votre comptable : TVA sur les encaissements ou sur les débits ?</a></li>
-<li><a href="#12-choisir-le-prestataire-qui-lit-vos-virements">Choisir le prestataire qui lit vos virements</a></li>
+<li><a href="#11-décider-si-atlas-peut-calculer-des-trajets-par-la-route">Décider si Atlas peut calculer des trajets par la route</a></li>
+<li><a href="#12-demander-à-votre-comptable--tva-sur-les-encaissements-ou-sur-les-débits-">Demander à votre comptable : TVA sur les encaissements ou sur les débits ?</a></li>
+<li><a href="#13-choisir-le-prestataire-qui-lit-vos-virements">Choisir le prestataire qui lit vos virements</a></li>
 </ol>
 <hr>
 <h2 id="1-choisir-les-fournisseurs-dia-définitifs">1. Choisir les fournisseurs d'IA définitifs</h2>
@@ -580,7 +581,38 @@
 <h3 id="ce-que-ça-ne-bloque-pas">Ce que ça ne bloque pas</h3>
 <p>Ni votre usage à vous, ni la suite du développement. Ce point bloque <strong>le jour où vous confiez Atlas à quelqu'un d'autre que vous</strong> — et il le bloque entièrement.</p>
 <hr>
-<h2 id="11-demander-à-votre-comptable--tva-sur-les-encaissements-ou-sur-les-débits-">11. Demander à votre comptable : TVA sur les encaissements ou sur les débits ?</h2>
+<h2 id="11-décider-si-atlas-peut-calculer-des-trajets-par-la-route">11. Décider si Atlas peut calculer des trajets par la route</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Qui : vous</strong>, et le juriste du point 2 si la réponse penche vers un prestataire privé.</p>
+<p><strong>D'où ça vient.</strong> Le 13 août 2026 : <em>« lorsqu'on a fini des chantiers en demi-journée, que le planning soit en mesure de proposer deux demi-journées pour faire une journée, mais de deux chantiers qui sont les plus proches »</em>. Une bonne idée, qui bute sur une question simple : <strong>proche comment ?</strong></p>
+<h3 id="les-deux-mesures-et-ce-quelles-engagent">Les deux mesures, et ce qu'elles engagent</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce que ça donne</th>
+<th>Ce que ça engage</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>À vol d'oiseau</strong></td>
+<td>La distance directe, calculée <strong>chez nous</strong> à partir des coordonnées que la Base Adresse Nationale rend déjà</td>
+<td><strong>Rien.</strong> Aucune donnée ne sort, aucun contrat nouveau</td>
+</tr>
+<tr>
+<td><strong>Par la route</strong></td>
+<td>Le vrai temps de trajet</td>
+<td><strong>L'envoi des adresses de vos clients à un service extérieur</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Pourquoi la route pose problème</strong>, et c'est le même problème que le point 1 : un service de calcul d'itinéraire devient un <strong>sous-traitant ultérieur</strong> au sens du RGPD. Il doit être autorisé par l'artisan, nommé dans le contrat, et ses transferts hors d'Europe encadrés. Tant que le contrat du point 2 n'existe pas, chaque prestataire ajouté aggrave le même manquement.</p>
+<p>C'est exactement le raisonnement qui a fait préférer la Base Adresse Nationale à Google pour l'aide à la saisie : un service public français, sans compte ni clé, à qui l'on n'envoie qu'une rue.</p>
+<h3 id="la-piste-qui-pourrait-tout-régler">La piste qui pourrait tout régler</h3>
+<p><strong>L'État publie aussi un service d'itinéraire</strong>, sur la même Géoplateforme que les adresses. S'il tient ses promesses, la route rentre dans la même case que les adresses — service public, sans compte, sans clé, <strong>sans contrat avec une entreprise privée</strong>.</p>
+<p><strong>Une vérification a été lancée le 13 août 2026</strong> pour le savoir, sur une machine qui a le réseau — l'environnement de développement, lui, refuse les services extérieurs. Elle répond à trois questions : le service accepte-t-il sans clé, que vaut l'écart entre vol d'oiseau et route dans les monts, et tient-il le rythme de plusieurs appels d'affilée (<code>.github/workflows/itineraire.yml</code>).</p>
+<h3 id="ce-qui-est-proposé-en-attendant">Ce qui est proposé en attendant</h3>
+<p><strong>Commencer à vol d'oiseau</strong>, et le dire à l'écran — « à 8 km à vol d'oiseau » plutôt que « à 14 min ». C'est utile tout de suite, ça n'engage rien, et la maquette est dessinée pour que <strong>seule la phrase change</strong> le jour où la route devient possible : pas un écran à redessiner (<code>docs/maquettes/57-apparier-deux-demi-journees.html</code>).</p>
+<h3 id="ce-que-ça-ne-bloque-pas">Ce que ça ne bloque pas</h3>
+<p>Ni l'essai, ni la finition. L'appariement fonctionnera à vol d'oiseau, et gagnera en justesse le jour où la route sera tranchée.</p>
+<hr>
+<h2 id="12-demander-à-votre-comptable--tva-sur-les-encaissements-ou-sur-les-débits-">12. Demander à votre comptable : TVA sur les encaissements ou sur les débits ?</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><strong>Qui peut le faire : vous seul.</strong> La réponse est chez votre comptable, ou sur votre dernière déclaration de TVA.</p>
 <h3 id="pourquoi-cest-un-point-bloquant-et-pas-un-détail">Pourquoi c'est un point bloquant, et pas un détail</h3>
@@ -608,7 +640,7 @@
 <h3 id="ce-que-ça-ne-bloque-pas">Ce que ça ne bloque pas</h3>
 <p>Rien du reste. Le parcours devis → chantier → facture fonctionne ; c'est le relevé de TVA, et lui seul, qui déclare trop tôt.</p>
 <hr>
-<h2 id="12-choisir-le-prestataire-qui-lit-vos-virements">12. Choisir le prestataire qui lit vos virements</h2>
+<h2 id="13-choisir-le-prestataire-qui-lit-vos-virements">13. Choisir le prestataire qui lit vos virements</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><strong>Qui peut le faire : vous seul.</strong> C'est un contrat et un coût mensuel, pas une ligne de code.</p>
 <p><em>Décidé le 14 août 2026 : à la question « comment Atlas saura que j'ai été payé ? », trois réponses étaient possibles — vous le dites, Atlas vous le demande chaque trimestre, ou la banque le dit. Vous avez choisi la banque. Dessin : <code>maquettes/atlas-banque-rapprochement.html</code>.</em></p>

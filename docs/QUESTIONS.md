@@ -40,7 +40,8 @@ relues à chaque session) :
 16. [L'IA se sert-elle de mes réglages pour faire les devis ?](#16-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-)
 17. [Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien](#17-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien)
 18. [À quoi sert le catalogue, et pourquoi je ne peux rien y écrire ?](#18-à-quoi-sert-le-catalogue-et-pourquoi-je-ne-peux-rien-y-écrire-)
-19. [Si un client ne me paie pas, la TVA part quand même ?](#19-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-)
+19. [Une équipe part cinq jours en déplacement : comment on gère ça ?](#19-une-équipe-part-cinq-jours-en-déplacement--comment-on-gère-ça-)
+20. [Si un client ne me paie pas, la TVA part quand même ?](#20-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-)
 
 ---
 
@@ -1145,7 +1146,58 @@ attente de votre feu vert — rien n'a encore été touché.
 
 ---
 
-## 19. Si un client ne me paie pas, la TVA part quand même ?
+## 19. Une équipe part cinq jours en déplacement : comment on gère ça ?
+
+**Votre question, le 14 août 2026 :** *« Comment on fait si jamais il y a une
+équipe qui doit partir en déplacement pour cinq jours ? Est-ce qu'il y a un
+moyen de l'ajouter au planning ? »*
+
+### La réponse courte
+
+**Si toute l'entreprise part : c'est déjà possible aujourd'hui.** Vous créez
+l'événement dans votre agenda Google relié, et les cinq jours se bloquent —
+Atlas ne proposera plus aucune date à un client sur cette période. Une période
+de plusieurs jours occupe toutes les demi-journées qu'elle traverse, week-ends
+compris.
+
+**Si une seule équipe part : rien ne convient.** Et il vaut mieux le savoir
+avant de compter dessus.
+
+### Pourquoi l'agenda ne suffit pas dans ce cas
+
+Une période occupée dans votre agenda bloque **tout le monde**, pas une équipe.
+C'est un choix délibéré, pas un oubli : Atlas ne peut pas deviner si une équipe
+sait partir sans vous. Avec deux équipes dont une seule en déplacement, vous
+perdriez cinq jours de celle qui reste.
+
+L'autre levier — le nombre d'équipes, dans Réglages → Équipe — est **un nombre
+sans dates**. Le passer de 2 à 1 marche, jusqu'au jour où l'on oublie de le
+remonter.
+
+### Un point qui surprend, et qu'il vaut mieux connaître
+
+**L'équipe inscrite sur un chantier est une étiquette, pas une contrainte.**
+Atlas compte les chantiers par demi-journée et compare ce compte au nombre
+d'équipes ; il ne vérifie pas *laquelle* est libre. Deux chantiers le même
+matin, tous les deux sur « Équipe 1 » : Atlas les accepte.
+
+Cela ne gêne pas tant que vous répartissez vous-même. Cela devient faux le jour
+où une équipe est absente — d'où la question.
+
+### Les deux façons de le régler, et ce qu'elles coûtent
+
+| | Ce que ça fait | Ce que ça coûte |
+|---|---|---|
+| **A — L'absence datée** | « Équipe 1 absente du 8 au 12 septembre ». Atlas la retire du compte ces jours-là, et tout revient normal le 13 sans rien défaire | Petit : une table, une règle, un écran dans Réglages → Équipe |
+| **B — L'occupation par équipe** | Atlas sait qui est où, et refuse deux chantiers sur la même équipe au même moment | Gros : il faudrait choisir l'équipe **avant** de proposer une date au client, donc toucher au parcours du devis |
+
+**Recommandation : A d'abord.** B seulement si le télescopage de deux chantiers
+sur une même équipe se produit vraiment — sinon, c'est du travail dont on ne
+verra jamais l'effet.
+
+---
+
+## 20. Si un client ne me paie pas, la TVA part quand même ?
 
 *Question posée le 14 août 2026 : « à partir du moment où j'envoie la facture à
 mon client, elle rentre automatiquement dans mon relevé de TVA. Sauf que s'il
@@ -1217,10 +1269,10 @@ ne se négocient pas :
   temps-là.
 
 Le dessin : `maquettes/atlas-banque-rapprochement.html`. Le prestataire reste à
-choisir — [`A-FAIRE.md`](A-FAIRE.md) §12.
+choisir — [`A-FAIRE.md`](A-FAIRE.md) §13.
 
 ### Ce que je ne peux pas décider à votre place
 
 **Sous quel régime vous êtes.** Votre comptable le sait en une phrase, ou c'est
 écrit sur votre dernière déclaration. Le point est inscrit dans
-[`A-FAIRE.md`](A-FAIRE.md) §11.
+[`A-FAIRE.md`](A-FAIRE.md) §12.

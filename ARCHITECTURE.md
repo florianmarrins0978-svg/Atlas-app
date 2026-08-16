@@ -8452,9 +8452,426 @@ du travail — le lui laisser découvrir sur un devis serait pire.
 | le refus lui parvient, et dit quoi faire | `test-cases-reglables-e2e.ts` |
 | les trois formes existent, et l'écran repart comme il a été trouvé | `test-cases-reglables-e2e.ts` |
 
+## 106. L'assistant cesse de flotter — et c'est l'écran qui cesse de reculer
+
+**Le patron, le 13 août 2026 :** *« l'onglet de l'assistant est hyper mal placé,
+propose des choses pour plus qu'il gêne »*. Puis, devant les cinq propositions de
+`docs/maquettes/47-ou-mettre-l-assistant.html` : *« la B mais de la même couleur
+qu'elle est déjà »*.
+
+### Le vrai défaut n'était pas sa position, c'était qu'il flottait
+
+Mesuré dans l'application, sur son écran de 390 × 664 : la bulle occupait
+56 × 56 px à (318, 512) — donc, sur le planning, **par-dessus les dimanches 23
+et 30**, deux cases qu'on touche pour ouvrir une journée.
+
+Et ce n'était pas le premier écran qu'elle mordait. **Cinq fois cet été, c'est
+l'ÉCRAN qu'on a déplacé pour l'éviter :**
+
+| Ce qui a cédé | Où |
+|---|---|
+| « ou rédiger le devis à la main », recouvert | §49 |
+| « Préparer le devis » : 64 px de talon insuffisants, il en a fallu 112 | §46 |
+| un bouton de reprise, 48 px mangés dès deux lignes de message | §63 |
+| une capsule qu'il a fallu **centrer** pour qu'elle lui échappe | §67 |
+| « Reste à payer » calé à gauche, sa fin passant dessous | §84 |
+
+Chaque correction était juste, et aucune n'a traité la cause. **Un élément qui
+flotte finit toujours par recouvrir quelque chose** — y compris sur les écrans
+qui n'existent pas encore. C'est pourquoi aucune des cinq propositions ne
+consistait à le déplacer de vingt pixels.
+
+### Le bouton part, le panneau reste
+
+Le panneau doit toujours couvrir tout l'écran : il reste dans le gabarit racine.
+Le bouton, lui, vit désormais dans l'en-tête de chaque écran. Les deux ne sont
+plus voisins dans l'arbre, d'où `assistant-contexte.tsx` — vingt lignes dont la
+seule fonction est de leur donner un état commun.
+
+`useAssistant()` rend `null` hors du fournisseur au lieu de lever : le bouton est
+posé par `EnTeteEcran`, une pièce que onze écrans emploient, et qu'une page hors
+gabarit pourrait employer demain. Faire tomber une page entière pour un bouton
+d'agrément serait un mauvais échange — et le patron n'en verrait qu'un
+identifiant opaque (`HANDOVER.md`, piège 0 ter).
+
+### Le déplacement s'est trompé une fois, et la mesure l'a dit
+
+Le bouton a d'abord été posé **sur une ligne à lui**, au-dessus du titre. C'était
+défendable : cette ligne existait déjà pour la flèche de retour, et le dépôt
+avait mesuré le 11 août qu'une pastille posée à côté du titre lui prenait la
+moitié de sa largeur.
+
+**Sauf que cette ligne ajoutait 72 px en tête de CHAQUE écran.** Sur le planning,
+la dernière semaine du mois passait de 626 px à 698 — sous la barre du bas. On
+aurait échangé « deux jours recouverts » contre « une semaine hors de l'écran »,
+et personne ne l'aurait vu sans capture.
+
+Posé à côté du titre, il ne coûte rien : mesuré sur les quatre écrans de la
+barre, **aucun titre ne se casse en deux et le calendrier finit exactement où il
+finissait** (626 px). Le risque du 11 août reste réel — il tenait à une *précision*
+de deux lignes sous un titre, pas au titre lui-même — et `test-assistant-en-tete-e2e.ts`
+compte désormais les lignes du titre sur chaque écran.
+
+### Ce que le contrôle a dû apprendre, et qui vaut au-delà d'ici
+
+**Un contrôle qui dénonce un défaut préexistant sous le nom du changement en
+cours envoie chercher au mauvais endroit.** Écrit d'abord « la dernière semaine
+tient au-dessus de la barre », il rougissait — mais elle débordait **déjà** de
+onze pixels avant qu'on ne touche à quoi que ce soit. Le repère est donc devenu
+la mesure prise AVANT le déplacement, et le débordement de onze pixels est allé
+dans `TODO.md`, sous son propre nom.
+
+### Deux sessions ont visé la même ligne le même jour
+
+Le lendemain de ce travail, la fusion avec `main` a rougi sur une suite qui
+n'était pas la mienne : *« Modifier » n'est pas sur la ligne du titre : 21 px
+d'écart*. Une autre session venait de poser ce mot d'or à droite du titre de
+l'écran d'envoi — exactement la place que l'assistant venait de prendre.
+
+**Ce n'était pas un conflit de texte** : `git` avait fusionné sans rien signaler.
+Les deux modifications étaient justes séparément, et fausses ensemble. Leur mot
+s'aligne par `self-end` — sur le BAS de son conteneur, choisi pour tomber sur la
+ligne d'écriture du titre plutôt qu'à côté du surtitre. En le mettant dans un
+groupe haut de 44 px pour qu'il tienne à côté du bouton, son « bas » avait changé
+de sens.
+
+`self-stretch` sur le groupe rend au repère sa hauteur d'origine. Mais la leçon
+n'est pas dans le correctif :
+
+- **une fusion propre ne prouve rien sur la mise en page.** Deux fichiers
+  différents, aucun conflit, et pourtant deux gestes qui se disputent le même
+  espace ;
+- **c'est leur suite qui l'a dit, pas la mienne** — et elle l'a dit au pixel.
+  Vingt et un pixels sur un mot d'or ressemblent à une marge : ni relecture ni
+  capture ne l'auraient relevé ;
+- **d'où la valeur d'un contrôle qui mesure une POSITION plutôt qu'une
+  présence.** « Le lien existe » serait resté vert.
+
 ---
 
-## 106. La TVA quand le client paie — et l'endroit où les factures attendent
+---
+
+## 107. « Me déconnecter partout » sans table de sessions, et un e-mail qu'on ne peut pas encore changer
+
+*Dessiné le 14 août 2026 (`maquettes/atlas-reglages-moi.html`), codé le même
+jour sur ses deux réponses — **« A A »**. Rubriques « Mon compte » et
+« Connexion », les deux dernières du sommaire (§96).*
+
+### Ce que la planche a servi à trouver, et qui n'était pas une question de dessin
+
+Les deux écrans sont simples. Ce qui ne l'était pas, c'est que **leur libellé
+promettait deux choses qui n'existaient nulle part** :
+
+| Le sommaire annonçait | Ce que la base porte |
+|---|---|
+| « Nom, e-mail et **téléphone** » | `users` : `email`, `nom`, `image`, `password_hash`. Aucun téléphone, et rien ne l'appellerait — ni SMS ni e-mail sortant (tranché le 4 août) |
+| « Mot de passe et **appareils** » | `src/auth.ts` : `session: {strategy: "jwt"}`. **Aucune session en base**, donc rien à lister |
+
+Le patron a tranché les deux fois pour le retrait : le libellé dit désormais
+« Nom et e-mail », et « Mot de passe et sécurité ». **Ne pas les rouvrir sans
+qu'il le demande.**
+
+### La déconnexion générale : une colonne au lieu d'une table
+
+Atlas ne garde aucune session : il n'y a **rien à supprimer** pour fermer une
+session ouverte sur un téléphone perdu. Mais chaque jeton porte son instant
+d'émission (`iat`), et il suffit de **refuser ceux qui précèdent une coupure** —
+`users.jetons_valides_depuis` (migration 0042).
+
+Trois pièces, et l'ordre importe :
+
+1. `src/auth.config.ts` recopie `token.iat` dans `session.user.emisLe`. Sans
+   cette ligne l'instant existe et reste inatteignable : `auth()` ne rend que la
+   session, jamais le jeton brut ;
+2. `getCurrentCtx` compare, **et c'est le seul endroit possible**. Le
+   `middleware` tourne en Edge et ne peut pas lire la base ; cette fonction, en
+   revanche, est la porte unique de toutes les pages et de toutes les actions ;
+3. sur refus, on part vers `/api/session-perimee`, qui **efface les cookies**.
+   Lever une erreur afficherait un écran de panne en laissant le cookie mort
+   dans le navigateur — le piège du 10 août 2026, une soirée perdue.
+
+**Deux choix qui paraissent des détails et n'en sont pas :**
+
+- **Un jeton sans `iat` est laissé passer.** Ceux d'avant cette version n'en
+  portent pas : refuser par défaut aurait déconnecté tout le monde au
+  déploiement, un geste que personne n'a demandé.
+- **La coupure est arrondie à la seconde SUPÉRIEURE.** Les `iat` sont en
+  secondes entières : un jeton signé à 12:00:00,900 s'annonce à 12:00:00. Posée
+  à la milliseconde, la coupure serait antérieure à sa propre seconde et le
+  jeton du moment survivrait — le patron appuierait sur « me déconnecter
+  partout » en restant connecté sur l'appareil qui vient d'appuyer, ce que
+  l'écran promet pourtant explicitement. Éprouvé par `test-compte-db.ts`.
+
+### L'e-mail se lit, il ne se change pas — et l'écran le dit
+
+C'est l'identifiant de connexion, et **Atlas n'a aucun canal pour vérifier une
+nouvelle adresse** : ni e-mail sortant, ni SMS, ni parcours d'inscription, ni
+réinitialisation par courriel. Une lettre de travers, et le compte devient
+inaccessible sans le moindre moyen de revenir en arrière.
+
+Un champ dont la faute de frappe est **irréparable** ne s'ouvre pas tant qu'il
+n'y a pas de quoi la rattraper. L'écran l'écrit en toutes lettres plutôt que de
+laisser croire à une panne — une absence muette se lit comme un oubli.
+
+### `users` est la seule table sans RLS, et les suites en tiennent lieu
+
+`src/server/repositories/compte.ts` n'appelle **pas** `withEntreprise`, contre
+la règle générale de `CLAUDE.md` §3 — et c'est délibéré : la table
+d'authentification ne porte pas d'`entreprise_id`, aucune politique ne s'y
+applique, et la même personne appartiendra demain à deux entreprises sans
+changer de nom. Poser un contexte d'entreprise pour lire son propre nom ferait
+croire à une isolation qui n'existe pas ici (même raisonnement que
+`catalogue-prestations.ts`).
+
+**Ce qui protège à la place : chaque requête est bornée par
+`ctx.utilisateurId`.** Un `where` oublié ne rougirait nulle part ailleurs — il
+changerait le mot de passe de tout le monde d'un coup. `scripts/test-compte-db.ts`
+monte donc **deux comptes** partageant le même mot de passe de départ, et vérifie
+qu'aucun geste ne touche le voisin. Les deux contrôles ont été vus rouges avant
+d'être laissés verts.
+
+### Les règles du mot de passe : une seule fonction, deux appelants
+
+`src/lib/mot-de-passe.ts` décide **et** de l'allumage du bouton, **et** de
+l'acceptation par le serveur. Deux rédactions divergeraient, et l'écart se
+paierait dans le mauvais sens : un bouton allumé sur une saisie refusée, ou un
+artisan qui croit son mot de passe changé alors qu'il ne l'est pas.
+
+**Aucune exigence de majuscule ni de caractère spécial**, délibérément : elles
+ne valent pas une phrase longue, et sur un chantier elles produisent des mots de
+passe notés sur un carnet.
+
+**Sa demande du 14 août, et elle corrige la mienne :** *« il faut pouvoir
+confirmer son mdp 2× avant de le changer et met le petit œil à côté »*. Ma
+planche proposait l'œil **à la place** de la seconde saisie ; il veut les deux,
+et il a raison — l'œil se touche après coup, la confirmation attrape la faute au
+moment où elle se fait. L'œil est sur **les trois champs** : une confirmation
+qu'on ne peut pas relire ne confirme rien.
+
+### Ce que la suite navigateur n'éprouve PAS, et pourquoi
+
+`test-compte-connexion-e2e.ts` ne change **jamais** le mot de passe pour de bon :
+le compte de démonstration sert aux soixante-quinze suites de la batterie, et le
+changer fermerait la porte à toutes les suivantes — l'échec accuserait alors la
+page de connexion, qui n'y serait pour rien. Le chemin éprouvé au navigateur est
+celui du **refus**, qui n'écrit rien ; l'écriture est tenue par la suite base.
+
+---
+
+## 108. Les trois dernières rubriques : deux rappels réels, et deux écrans qui disent ce qui manque
+
+*Codées le 14 août 2026 sur sa consigne — **« Fini toutes les rubriques »**.
+Les treize du sommaire (§96) sont désormais ouvertes ; plus aucune ne porte
+« Bientôt ».*
+
+### Notifications : DEUX rappels, et pas les huit de la planche
+
+`maquettes/atlas-reglages-notifications.html` listait huit familles d'alertes.
+**Une seule existait**, et la planche le disait déjà — *« rien ne part encore
+sur votre téléphone »*. Dessiner les sept autres avec un interrupteur aurait
+fait valider un écran de réglages qui ne règle rien.
+
+Deux se calculent **avec ce que la base porte déjà**, sans nouveau jalon ni
+nouveau geste (migration 0043) :
+
+| Rappel | Ce qu'il lit | Défaut |
+|---|---|---|
+| **Devis sans réponse** | `envois_devis.envoye_at`, `reponse IS NULL`, lien encore valable | 7 jours |
+| **Chantier fini, pas facturé** | `chantiers.termine_at`, `facture_envoyee_at IS NULL` | 3 jours |
+
+**Ils apparaissent sur l'ACCUEIL, à côté des réponses de clients.** Un réglage
+qui ne produirait rien à l'écran est exactement ce que le patron a interdit sur
+la planche : *« on le touche, rien ne bouge, et on croit à une panne »*.
+
+**Trois choix qui paraissent des détails :**
+
+1. **Un rappel n'a pas de « J'ai vu ».** Une réponse de client s'acquitte — elle
+   a été lue. Un rappel décrit une situation qui DURE, et il s'en va quand elle
+   cesse : le client répond, la facture part. Lui donner un bouton d'acquit
+   ferait croire qu'on peut le classer sans rien faire, et le chantier
+   retomberait dans l'oubli qu'on cherchait à éviter.
+2. **Un devis EXPIRÉ n'est pas rappelé** : il a déjà sa carte de devis caduc.
+   Deux cartes pour un même devis feraient chercher la différence.
+3. **Jamais « urgent ».** Le fond teinté est réservé à ce qui appelle une
+   décision — un refus, un lien mort. Un confort qui crierait aussi fort ferait
+   baisser le volume de tous les autres.
+
+**Ce qui n'a PAS d'interrupteur, et l'écran le dit :** la réponse d'un client et
+le lien expiré. Sa règle du 13 août 2026 — *« [des interrupteurs] seulement à
+celles où la désactivation n'entraîne pas de problème juridique ou moral ou de
+dysfonctionnement à l'appli »*. Les couper, ce serait ne plus savoir qu'on a été
+refusé.
+
+**Et ce qui manque est écrit sur l'écran** : « facture impayée » est le rappel le
+plus utile, et il est impossible — **rien n'enregistre qu'une facture a été
+payée**. Bâti sans cette donnée, il crierait sur toutes les factures, pour
+toujours. C'est le prochain lot, et c'est un geste à ajouter au produit, pas une
+requête à écrire.
+
+### Apparence et Abonnement : des écrans qui ne règlent rien, et l'assument
+
+Aucun des deux ne porte d'interrupteur, **délibérément**.
+
+- **Apparence** : ni mode sombre ni accent au choix. `colors.rust` et
+  `colors.or` sont écrits en clair dans plus de trois cents endroits, en style
+  en ligne : les rendre réglables demande de les faire passer par une variable
+  CSS — un balayage de toute l'application, à faire et à éprouver d'un coup. Ce
+  n'est pas un écran de réglages, c'est un lot. L'écran le dit et lui demande
+  lequel des deux il veut d'abord.
+- **Abonnement** : ni prix ni offre ne sont décidés — ce sont ses décisions à
+  lui, pas des lots de code. **Aucun montant n'est affiché**, et c'est la règle
+  de `docs/AGENT.md` §3 : un chiffre sans source, sur une page qui parle
+  d'argent, finirait par être cru.
+
+**Pourquoi les ouvrir quand même**, plutôt que de laisser « Bientôt » : une
+ligne inerte dans le sommaire ne dit ni ce qui viendra, ni pourquoi ce n'est pas
+là, ni ce qui débloque. Ces écrans le disent — et pour l'abonnement, ils
+préviennent d'un piège de vocabulaire qui coûterait un appel affolé : ici,
+« factures » désigne celles qu'**Atlas** enverrait, pas celles de ses clients,
+qui sont dans « Terminés ».
+
+### Le piège payé en prenant les captures
+
+`capture-trois-rubriques.mts` lisait la base sous `DATABASE_ADMIN_URL` et
+annonçait « aucun chantier » sur une base qui en portait quatre. **Les tables
+portent `FORCE ROW LEVEL SECURITY` : la RLS s'applique même au rôle
+PROPRIÉTAIRE.** La capture concluait tranquillement qu'il n'y avait rien à
+montrer — un contrôle qui n'a jamais rien vu ne prouve rien. Les captures
+emploient désormais le rôle qui traverse la RLS, comme les suites navigateur
+(`CLAUDE.md` §5).
+
+## 109. Une équipe part cinq jours : l'absence, et pourquoi elle n'est qu'une occupation
+
+**Le patron, le 14 août 2026 :** *« Comment on fait si jamais il y a une équipe
+qui doit partir en déplacement pour cinq jours ? Est-ce qu'il y a un moyen de
+l'ajouter au planning ? »*
+
+Retenu sur maquette (`docs/maquettes/55`, **proposition A**) : les absences se
+posent sous les noms, dans Réglages → Équipe. Sa réponse, en un mot : *« La
+A »*.
+
+### Ce qui existait déjà, et qu'on n'a pas refait
+
+**Si TOUTE l'entreprise part, l'agenda extérieur suffit** : une période de
+plusieurs jours occupe toutes les demi-journées qu'elle traverse, week-ends
+compris (`src/lib/agenda-externe.ts`). Rien n'a été écrit pour ce cas — le dire
+valait mieux que de lui vendre du travail inutile.
+
+**Ce qui manquait, c'est l'autre cas : une équipe sur deux.** L'agenda bloque
+tout le monde — délibérément, `fusionnerOccupationExterne` pose
+`Math.max(…, nombreEquipes)` parce qu'Atlas ne peut pas deviner si une équipe
+sait partir sans le patron — et le nombre d'équipes est **un nombre sans
+dates**.
+
+### La décision qui a tout tenu : une absence EST une occupation
+
+Le réflexe était de faire varier le nombre d'équipes jour par jour, donc de
+passer une fonction là où passe aujourd'hui un nombre. Il aurait fallu toucher
+`departPossible`, `jourRetenable` et leurs appelants — **c'est-à-dire les trois
+chemins qui décident d'une date**, dont la revérification de la réponse du
+client. Beaucoup de surface pour un défaut qui ne se verrait qu'en production,
+chez un client ayant retenu un jour impossible.
+
+Une équipe qui n'est pas là **occupe exactement la place qu'un chantier lui
+aurait prise**. La capacité restante se calcule alors toute seule, avec la
+comparaison qui existait déjà — `occupation < nombreEquipes` — et **aucune
+signature ne change**.
+
+Deux différences avec l'agenda extérieur, et elles comptent :
+
+| | Agenda extérieur | Absence d'équipe |
+|---|---|---|
+| Qui part | inconnu | **connu** |
+| Effet | `Math.max(…, nombreEquipes)` — bloque tout le monde | **`+1`** — une unité, une seule |
+| Ordre d'application | après | avant |
+
+L'ordre n'est pas indifférent : les absences **additionnent**, l'agenda **pose
+un plafond**. Dans l'autre sens, l'addition dépasserait le plafond que l'agenda
+venait d'établir.
+
+### Les quatre endroits où la règle entre, et pourquoi les quatre
+
+`fusionnerAbsences` est appelée dans **quatre** calculs d'occupation, et en
+oublier un aurait produit deux vérités sur la même capacité :
+
+1. `envois-devis.ts` — les trois chemins du client (écran d'envoi, création,
+   **revérification de sa réponse**) ;
+2. `preparation-envoi.ts` — l'écran qui propose les dates au patron ;
+3. `chantiers.ts` — le chemin par lequel il pose une date **lui-même** ;
+4. `PlanningClient.tsx` — le calendrier, qui doit marquer le même jour occupé.
+
+Sans le 4, le planning aurait montré un jour libre que l'écran d'envoi refusait,
+**sur deux écrans qui se suivent**.
+
+### Ce que la table n'est pas
+
+Ni solde de congés, ni validation, ni salarié. **Une équipe est une file du
+planning, pas une personne** (§88), et Atlas prépare des devis — il ne tient pas
+la paie. Le motif est un texte libre, pour que le patron se souvienne ; **aucun
+calcul ne le lit**.
+
+**Des jours entiers, pas des demi-journées.** Personne ne part « du mardi
+après-midi au jeudi matin ». Offrir la demi-journée ici, c'est offrir un réglage
+à remplir sans en avoir besoin, et deux champs de plus sur six pouces. Les deux
+colonnes étant des DATES, la précision s'ajoutera sans se contredire le jour où
+elle sera demandée.
+
+**Le bloc n'existe pas à une seule équipe**, et ce n'est pas un oubli : seul,
+noter son absence reviendrait à fermer l'entreprise. L'écran renvoie alors à
+l'agenda, qui est le bon geste dans ce cas.
+
+### Trois gardes, à trois niveaux, pour la même règle
+
+Une absence **à l'envers** n'occuperait aucun jour et rendrait la capacité fausse
+**en silence** — le pire des défauts, celui qui ne se voit qu'au moment où un
+client retient une date impossible. Elle est donc refusée :
+
+1. à l'écran, qui éteint son bouton et **dit lequel des deux champs le gêne** ;
+2. dans l'action serveur, qui rejoue la même fonction pure — un écran n'est pas
+   une garde ;
+3. dans la base (`absences_equipe_ordre_ck`), pour le jour où le code changerait.
+
+Les trois appellent **la même** fonction, `refusDeLAbsence` : deux règles
+finiraient par diverger (`CLAUDE.md` §3).
+
+### Ce que les contrôles ont appris
+
+**Le message d'un contrôle doit désigner le bon coupable.** Le premier jet de la
+suite base posait ses `INSERT` bruts sur le pool : **la RLS les refusait avant
+que la contrainte n'ait son mot à dire**, la suite passait au vert, et son
+message accusait `absences_equipe_ordre_ck` — qui n'avait jamais parlé. Elle
+pose désormais le contexte d'isolation avant d'écrire, et vérifie **aussi** que
+la même absence, dans le bon sens, est acceptée : sans ce second cas, une
+politique refusant TOUT passerait pour une contrainte qui marche.
+
+**Une colonne `date` remonte en objet `Date`.** `String(...)` en tire
+« Sat Sep 12 2026 » : le contrôle comparait deux écritures du même jour et
+accusait la saisie. Le formatage est fait par la base (`to_char`).
+
+**Et l'ordre des deux champs n'est pas indifférent** : avancer le premier jour
+pousse le dernier avec lui — c'est voulu, sinon le patron reste devant un bouton
+éteint sans savoir lequel le gêne. L'état inversé ne s'atteint donc qu'en
+reculant le DERNIER jour, en second. La suite de bout en bout s'y est cassé les
+dents avant de le comprendre.
+
+**Confrontée au défaut** — la fusion retirée du calendrier — la suite rougit en
+nommant le jour : *« le 2026-09-08 est annoncé libre alors qu'une équipe sur
+deux est partie »*.
+
+### Ce qui reste, et qui n'est PAS dans ce lot
+
+**L'équipe inscrite sur un chantier reste une étiquette, pas une contrainte.**
+`compterOccupation` compare un total au nombre d'équipes et ne regarde jamais
+`equipeId` : deux chantiers le même matin, tous deux sur « Équipe 1 », passent.
+Sans conséquence tant que le patron répartit lui-même. Le régler obligerait à
+choisir l'équipe **avant** de proposer une date au client, donc à toucher au
+parcours du devis — c'est un autre chantier, inscrit dans `TODO.md`, et il n'a
+de sens que si le télescopage se produit vraiment. **Question posée au patron le
+14 août, sans réponse à ce jour.**
+
+---
+
+## 110. La TVA quand le client paie — et l'endroit où les factures attendent
 
 **Sa question, le 14 août 2026 :** *« si demain un client décide de ne pas me
 payer une facture… à partir du moment où j'envoie la facture, elle rentre
@@ -8473,9 +8890,9 @@ qui se demande à l'administration. Un artisan qui ne l'a jamais demandée étai
 donc invité par l'application à **avancer la TVA d'un client qui n'avait pas
 payé**.
 
-Le défaut est donc devenu `encaissements` (migration 0042), et le réglage existe
-parce que les deux régimes existent : `docs/QUESTIONS.md` §19, `docs/A-FAIRE.md`
-§11.
+Le défaut est donc devenu `encaissements` (migration 0045), et le réglage existe
+parce que les deux régimes existent : `docs/QUESTIONS.md` §20, `docs/A-FAIRE.md`
+§12.
 
 ### Ce qui aurait pu tout casser, et ne l'a pas fait
 
@@ -8530,7 +8947,7 @@ l'application au lieu de noter son paiement. L'écran dit maintenant qu'elle
 ### Comment Atlas saura qu'il a été payé
 
 **Il ne le sait pas** : aucun accès bancaire. Trois réponses possibles, et son
-choix du 14 août est **la banque** — `docs/A-FAIRE.md` §12 et
+choix du 14 août est **la banque** — `docs/A-FAIRE.md` §13 et
 `maquettes/atlas-banque-rapprochement.html`. Ce lot code la première : **la
 saisie à la main**, qui ne dépend d'aucun contrat et qui restera de toute façon
 le jour où l'accès bancaire dort (il se coupe tous les 90 jours).

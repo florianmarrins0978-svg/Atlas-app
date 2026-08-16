@@ -10,7 +10,8 @@ import {
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   type Moment,
 } from "../disponibilites";
-import { equipes } from "../db/schema";
+import { absencesEquipe, equipes } from "../db/schema";
+import { fusionnerAbsences } from "../../lib/absences-equipe";
 import type { Ctx } from "./context";
 
 /**
@@ -275,9 +276,42 @@ export class EquipeIndisponible extends Error {
  * été réservée au moment de la pose ; l'affilier ailleurs la déplace d'une file
  * à l'autre, et deux chantiers sur la même équipe au même moment ne sont pas
  * un planning, c'est une journée impossible.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * **`rangEquipe: null` RETIRE l'équipe, et c'était impossible jusqu'au
+ * 14 août 2026.** `planifierChantier` écrit `...(equipeId ? { equipeId } : {})`
+ * — le cas « plus personne » y est ignoré en silence — et cette fonction-ci
+ * exigeait un rang. Une équipe posée par erreur ne pouvait donc **plus jamais**
+ * être défaite, par aucun chemin.
+ *
+ * Le patron a retenu le 14 août la pastille sur la ligne
+ * (`docs/maquettes/52-appliquer-une-equipe.html`, geste A), et son écran porte
+ * « Personne pour l'instant ». Le montrer sans pouvoir l'exécuter aurait été
+ * lui livrer un bouton qui ne fait rien.
+ *
+ * **Retirer ne se refuse jamais pour cause d'occupation** : libérer une place
+ * n'en prend aucune. Les contrôles de disponibilité ne s'appliquent qu'à une
+ * affiliation.
+ * ─────────────────────────────────────────────────────────────────────────
  */
-export async function changerEquipeChantier(ctx: Ctx, chantierId: string, rangEquipe: number) {
+export async function changerEquipeChantier(
+  ctx: Ctx,
+  chantierId: string,
+  rangEquipe: number | null
+) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **Retirer : on sort avant tout contrôle.** Rien à vérifier — aucune place
+    // n'est demandée. Le faire passer par la suite obligerait à inventer un
+    // « rang zéro » que le reste du produit ne connaît pas.
+    if (rangEquipe === null) {
+      const [vide] = await tx
+        .update(chantiers)
+        .set({ equipeId: null, updatedBy: ctx.utilisateurId, updatedAt: new Date() })
+        .where(and(eq(chantiers.id, chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId)))
+        .returning();
+      return vide;
+    }
+
     const [entreprise] = await tx
       .select({ nombreEquipes: entreprises.nombreEquipes })
       .from(entreprises)
@@ -390,16 +424,43 @@ export async function planifierChantier(
       dureeEnDemiJournees(courant?.dureePrevue ?? null) ??
       DUREE_PAR_DEFAUT_DEMI_JOURNEES;
 
-    const occupation = compterOccupation(
-      autres
-        .filter((a) => a.id !== chantierId && a.jour !== null)
-        .map((a) => ({
-          jour: a.jour as string,
-          moment: a.moment === "matin" || a.moment === "apres_midi" ? a.moment : null,
-          dureeDemiJournees: a.duree,
-        }))
-    );
     const nombreEquipes = entreprise?.nombreEquipes ?? 1;
+
+    // **Les équipes absentes comptent ici aussi.** C'est le chemin par lequel
+    // le patron POSE une date lui-même, sans passer par le client. L'oublier
+    // aurait laissé poser un chantier le jour où l'équipe est en déplacement,
+    // pendant que l'écran d'envoi refusait ce même jour : deux vérités sur la
+    // place disponible (`CLAUDE.md` §3).
+    //
+    // Non borné à une fenêtre : cette requête-ci ne l'est pas non plus pour les
+    // chantiers, et une absence lointaine ne coûte qu'une ligne.
+    const absences = await tx
+      .select({
+        equipeId: absencesEquipe.equipeId,
+        premierJour: absencesEquipe.premierJour,
+        dernierJour: absencesEquipe.dernierJour,
+      })
+      .from(absencesEquipe)
+      .where(
+        and(
+          eq(absencesEquipe.entrepriseId, ctx.entrepriseId),
+          isNull(absencesEquipe.deletedAt)
+        )
+      );
+
+    const occupation = fusionnerAbsences(
+      compterOccupation(
+        autres
+          .filter((a) => a.id !== chantierId && a.jour !== null)
+          .map((a) => ({
+            jour: a.jour as string,
+            moment: a.moment === "matin" || a.moment === "apres_midi" ? a.moment : null,
+            dureeDemiJournees: a.duree,
+          }))
+      ),
+      absences,
+      nombreEquipes
+    );
     const automatique = departPossible(datePlanifiee, duree, occupation, nombreEquipes) ?? "matin";
 
     // **Le choix du patron est REVALIDÉ, jamais cru sur parole.** L'écran ne

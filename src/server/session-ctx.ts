@@ -4,6 +4,7 @@ import { auth } from "../auth";
 import { db } from "./db/client";
 import { membresEntreprise, users } from "./db/schema";
 import type { Ctx } from "./repositories/context";
+import { coupureDesJetons } from "./repositories/compte";
 import { enrichirContexteRequete } from "./request-context";
 
 export class NonAuthentifieError extends Error {
@@ -50,6 +51,30 @@ export async function getCurrentCtx(): Promise<Ctx> {
   const utilisateurId = session?.user?.id;
   if (!utilisateurId) {
     throw new NonAuthentifieError();
+  }
+
+  /**
+   * **« Me déconnecter partout » se fait ICI, et nulle part ailleurs.**
+   *
+   * Atlas ne garde aucune session en base (`src/auth.ts` :
+   * `session: {strategy: "jwt"}`) : il n'y a rien à supprimer pour fermer une
+   * session ouverte sur un téléphone perdu. Ce qu'on peut faire, c'est refuser
+   * les jetons signés AVANT une coupure — et il n'existe qu'un seul endroit par
+   * où passent toutes les pages et toutes les actions serveur : cette fonction.
+   * Le poser dans le `middleware` était impossible, il tourne en Edge et ne
+   * peut pas lire la base.
+   *
+   * **Un jeton sans instant d'émission est laissé passer**, délibérément : ceux
+   * d'avant cette version n'en portent pas, et refuser par défaut aurait
+   * déconnecté tout le monde au déploiement — un geste que personne n'a demandé.
+   */
+  const coupure = await coupureDesJetons(utilisateurId);
+  if (coupure && typeof session.user.emisLe === "number" && session.user.emisLe * 1000 < coupure.getTime()) {
+    // La même sortie que pour un compte disparu : la route efface les cookies
+    // puis renvoie à la connexion. Lever ici afficherait un écran d'erreur, en
+    // laissant le cookie mort dans le navigateur — c'est le piège du 10 août
+    // 2026, une soirée perdue à cause d'un cookie que rien n'effaçait.
+    redirect("/api/session-perimee");
   }
 
   return { entrepriseId: await resoudreEntrepriseId(utilisateurId), utilisateurId };

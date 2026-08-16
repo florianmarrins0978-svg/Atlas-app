@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le devis qui tarde</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    LE DEVIS QUI TARDE — le rappel, et le délai qui se règle
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 14 août 2026 :
+
+      « Il faudrait créer un rappel lorsque le chantier a été ouvert mais le
+        devis n'a pas été envoyé. Et il faudrait également le rajouter à une
+        catégorie dans les réglages, avec la possibilité dans les notifications
+        de mettre le nombre de jours. Exemple : l'utilisateur pourrait dire
+        "si aucun devis n'est parti sous deux, trois, quatre, cinq, six jours,
+        me mettre une notification" — comme tu viens de dire, la Mme Félicie,
+        vue il y a quatorze jours, aucun devis envoyé. »
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI EXISTE DÉJÀ — ET LA LEÇON QUI A ÉTÉ APPRISE DEUX FOIS ICI.
+
+    Cette page a été réécrite DEUX FOIS parce qu'elle décrivait un monde qui
+    n'existait plus. C'est la leçon à retenir avant toute autre : **chercher ce
+    qui est déjà fait AVANT de dessiner**, dans les deux dossiers de maquettes
+    (`maquettes/` pour l'application, `docs/maquettes/` pour les décisions) ET
+    dans le code.
+
+    1. LA CARTE. L'accueil sait déjà porter une carte de suivi : c'est celle
+       qu'il a photographiée le 13 août — « CORRECTION DEMANDÉE / Mr. Martins /
+       Le client veut ce devis corrigé... ». Le rappel prend cette forme-là :
+       rien de neuf à apprendre. **C'est la seule chose encore à choisir.**
+
+    2. L'ÉCRAN DES NOTIFICATIONS ÉTAIT DESSINÉ (13 août,
+       `maquettes/atlas-reglages-notifications.html`) — première réécriture.
+
+    3. ET IL A ÉTÉ **CODÉ** LE 14 AOÛT, pendant que cette page s'écrivait —
+       seconde réécriture, le 16. `src/app/reglages/notifications/`,
+       `src/lib/rappels.ts`, `drizzle/0043_rappels_notifications.sql`. La
+       rubrique s'ouvre pour de bon et porte DEUX rappels réglables :
+
+         · « Devis sans réponse » — un devis parti, sans réponse, 7 jours ;
+         · « Chantier fini, pas facturé » — 3 jours.
+
+       Et le délai y a déjà sa forme : **« Au bout de [ N ] jours »**, un nombre
+       qu'on tape, un interrupteur par rappel, bornes 1 à 90, rangé sur
+       `entreprises`. Les quatre façons de poser un délai que cette page
+       proposait ont donc été RETIRÉES : les rouvrir ferait deux manières de
+       faire la même chose sur un seul écran.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI RESTE VRAIMENT À FAIRE, ET QUI EST PLUS PETIT QU'ANNONCÉ.
+
+    Sa demande n'est couverte par aucun des deux rappels codés : ceux-ci parlent
+    d'un devis PARTI. Lui parle d'un devis qui n'est **jamais parti**. C'est donc
+    un TROISIÈME rappel, à poser en tête des deux autres — un devis qui n'est pas
+    parti précède un devis qui attend sa réponse.
+
+    Ce qui se choisit encore, et rien de plus :
+      · le ton de la carte sur l'accueil (A discrète, ou B teintée) ;
+      · le nombre de jours par défaut — 4, au milieu de ses « deux à six » ;
+      · ce que fait « J'ai vu », et d'où part le compte (voir la note finale).
+
+    ————————————————————————————————————————————————————————————————
+    Aucun script — son lecteur n'en exécute pas. Les écrans font 390 px.
+    Le troisième rappel, lui, n'est pas codé : `CLAUDE.md` §3 bis.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f7f5f0; --alerte:#9C3B2E;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --alerte:#C4614F;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --alerte:#C4614F;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:1300px;margin:0 auto}
+
+  .intro{max-width:66ch;margin:0 auto;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro b{color:var(--encre);font-weight:600}
+
+  .famille{max-width:1300px;margin:56px auto 0;text-align:center;
+           font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.32em;
+           text-transform:uppercase;color:var(--or)}
+  .sous-famille{max-width:62ch;margin:10px auto 0;text-align:center;
+                font-size:13.4px;color:var(--gris);line-height:1.6}
+  .sous-famille b{color:var(--encre)}
+  .grille{display:flex;flex-wrap:wrap;gap:54px 40px;justify-content:center;
+          align-items:flex-start;margin-top:26px}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px;width:100%}
+  .legende{text-align:center;max-width:390px;width:100%}
+  .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+              text-transform:uppercase;color:var(--or)}
+  .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+  .legende p + p{margin-top:9px}
+  .legende .pour{color:var(--encre);opacity:.86}
+  .legende .contre{color:var(--alerte);opacity:.92}
+  .legende b{color:var(--encre)}
+
+  .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+
+  /* ————————————————————————————————————————————————————————————————
+     L'ÉCRAN — la grammaire de l'accueil et des réglages
+     ———————————————————————————————————————————————————————————————— */
+  .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-rouille:#9C6B3F; --e-teinte:#efe7dc;
+    --e-trait:rgba(28,28,26,.12);
+    width:390px;max-width:100%;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);padding:20px 0 22px;
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+  .marque{text-align:center;font:500 10px/1 ui-sans-serif,sans-serif;
+          letter-spacing:.34em;text-transform:uppercase;color:var(--e-gris)}
+  .eyebrow{margin:18px 24px 0;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--e-or)}
+  .titre-ecran{margin:11px 24px 0;font:400 34px/1.1 ui-serif,Georgia,serif}
+  .sous-titre{margin:10px 24px 0;font:500 10px/1 ui-sans-serif,sans-serif;
+              letter-spacing:.28em;text-transform:uppercase;color:var(--e-gris)}
+  .filet{margin:15px 24px 0;height:1px;background:var(--e-trait)}
+  .retour{margin:0 24px;width:38px;height:38px;border-radius:9999px;
+          background:var(--e-plage);display:flex;align-items:center;justify-content:center;
+          color:var(--e-gris);font-size:17px}
+
+  /* La carte de suivi — celle de sa capture du 13 août, reprise au pixel. */
+  .carte{margin:16px 24px 0;border-radius:18px;padding:16px 20px;background:var(--e-plage)}
+  .carte.teinte{background:var(--e-teinte)}
+  .carte .etiq{font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+               text-transform:uppercase;color:var(--e-gris);margin-bottom:7px}
+  .carte.teinte .etiq{color:var(--e-rouille)}
+  .carte .nom{font:400 16px/1.3 ui-serif,Georgia,serif}
+  .carte .dit{margin-top:4px;font-size:13px;color:var(--e-gris);line-height:1.5}
+  .carte .gestes{margin-top:13px;display:flex;align-items:center;gap:18px;font-size:14px}
+  .carte .gestes .fort{font-weight:500}
+  .carte .gestes .gris{color:var(--e-gris)}
+
+  /* Le fil des chantiers, sous les cartes. */
+  .fil{margin:18px 24px 0;position:relative}
+  .fil::before{content:"";position:absolute;left:47px;top:8px;bottom:6px;width:1px;background:var(--e-trait)}
+  .brin{display:grid;grid-template-columns:47px 1fr;gap:0 26px;padding:11px 0;position:relative}
+  .brin .jour{text-align:right;padding-right:13px;color:var(--e-gris);font-size:10px;
+              letter-spacing:.18em;text-transform:uppercase}
+  .brin .jour b{display:block;font:400 19px/1.1 ui-serif,Georgia,serif;color:var(--e-encre);letter-spacing:0}
+  .brin .quoi{min-width:0}
+  .brin .quoi .n{font:400 19px/1.2 ui-serif,Georgia,serif}
+  .brin .quoi .a{margin-top:2px;font-size:13.5px;color:var(--e-gris)}
+  .brin .quoi .e{margin-top:5px;font:500 10px/1 ui-sans-serif,sans-serif;
+                 letter-spacing:.22em;text-transform:uppercase;color:var(--e-gris)}
+  .perle{position:absolute;left:47px;top:22px;width:7px;height:7px;border-radius:99px;
+         background:var(--e-or);transform:translate(-50%,-50%);box-shadow:0 0 0 4px var(--e-fond)}
+  .perle.creuse{background:var(--e-fond);box-shadow:inset 0 0 0 1px var(--e-or),0 0 0 4px var(--e-fond)}
+
+  /* Les réglages : une rubrique, une ligne. */
+  .rubrique{margin:0 24px;display:grid;grid-template-columns:22px 1fr auto;gap:0 15px;
+            align-items:center;padding:15px 0;border-bottom:1px solid var(--e-trait)}
+  .rubrique .ico{width:22px;height:22px;border-radius:6px;
+                 background:rgba(185,139,71,.16)}
+  .rubrique .nom{font-size:15.5px}
+  .rubrique .dit{margin-top:1px;font-size:12.5px;color:var(--e-gris)}
+  .rubrique .fleche{color:var(--e-gris);font-size:16px}
+  .rubrique.vise{background:linear-gradient(90deg,rgba(185,139,71,.10),transparent 70%);
+                 margin:0;padding-left:24px;padding-right:24px}
+
+  /* Le réglage du délai — trois façons. */
+  .bloc{margin:16px 24px 0;border-radius:4px;background:var(--e-plage);padding:17px 19px}
+  .bloc .quoi{font-size:15px}
+  .bloc .pourquoi{margin-top:5px;font-size:13px;color:var(--e-gris);line-height:1.55}
+
+  .interrupteur{display:flex;align-items:center;justify-content:space-between;gap:14px}
+  .glissiere{width:50px;height:30px;border-radius:99px;background:var(--e-pin);position:relative;flex:none}
+  .glissiere::after{content:"";position:absolute;top:3px;right:3px;width:24px;height:24px;
+                    border-radius:99px;background:#faf9f5}
+  .glissiere.eteinte{background:rgba(28,28,26,.16)}
+  .glissiere.eteinte::after{right:auto;left:3px}
+
+  .pastilles{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+  .pastille{border-radius:99px;padding:9px 0;width:46px;text-align:center;font-size:15px;
+            background:var(--e-fond);color:var(--e-encre)}
+  .pastille.prise{background:var(--e-teinte);color:var(--e-rouille);font-weight:600;
+                  box-shadow:inset 0 0 0 1px var(--e-rouille)}
+  .unite{margin-top:9px;font-size:12.5px;color:var(--e-gris);text-align:center}
+
+  .molette{margin-top:14px;border-radius:4px;background:var(--e-fond);padding:8px 0;
+           text-align:center;position:relative;overflow:hidden}
+  .molette .v{font:400 20px/1 ui-serif,Georgia,serif;color:var(--e-gris);padding:7px 0}
+  .molette .v.centre{font-size:30px;color:var(--e-encre)}
+  .molette .bande{position:absolute;left:14px;right:14px;top:50%;height:44px;
+                  transform:translateY(-50%);border-radius:6px;background:rgba(185,139,71,.10);
+                  box-shadow:inset 0 0 0 1px rgba(185,139,71,.32)}
+
+  .curseur{margin-top:16px}
+  .curseur .piste{height:3px;border-radius:99px;background:var(--e-trait);position:relative}
+  .curseur .piste::before{content:"";position:absolute;left:0;top:0;bottom:0;width:44%;
+                          border-radius:99px;background:var(--e-or)}
+  .curseur .bouton{position:absolute;left:44%;top:50%;width:24px;height:24px;border-radius:99px;
+                   background:#faf9f5;transform:translate(-50%,-50%);
+                   box-shadow:0 1px 3px rgba(20,18,14,.28),inset 0 0 0 1px rgba(185,139,71,.5)}
+  .curseur .bornes{margin-top:11px;display:flex;justify-content:space-between;
+                   font-size:11.5px;color:var(--e-gris)}
+  .curseur .valeur{margin-top:12px;text-align:center;font:400 26px/1 ui-serif,Georgia,serif}
+  .curseur .valeur small{display:block;margin-top:6px;font:500 10px/1 ui-sans-serif,sans-serif;
+                         letter-spacing:.26em;text-transform:uppercase;color:var(--e-gris)}
+
+  /* La planche des huit familles, recopiée de `maquettes/atlas-reglages-notifications.html`
+     — c'est chez elle que la neuvième doit se poser, pas dans un écran inventé. */
+  .groupe{margin:18px 24px 0}
+  .groupe .t{font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+             text-transform:uppercase;color:var(--e-gris);margin-bottom:4px}
+  .ligne{display:grid;grid-template-columns:1fr auto auto;gap:0 12px;align-items:center;
+         padding:13px 0;border-bottom:1px solid var(--e-trait)}
+  .ligne .nom{font-size:14.5px}
+  .ligne .dit{margin-top:2px;font-size:12px;color:var(--e-gris)}
+  .ligne .canal{font:500 9px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+                text-transform:uppercase;color:var(--e-gris)}
+  .ligne .mini{width:38px;height:22px;border-radius:99px;background:var(--e-pin);position:relative}
+  .ligne .mini::after{content:"";position:absolute;top:2px;right:2px;width:18px;height:18px;
+                      border-radius:99px;background:#faf9f5}
+  .ligne.neuve{background:linear-gradient(90deg,rgba(185,139,71,.13),transparent 78%);
+               margin:0 -24px;padding-left:24px;padding-right:24px}
+  .ligne.neuve .nom{font-weight:600}
+
+  /* Le compte-en-toutes-lettres — la forme que la planche des notifications a
+     déjà retenue pour l'impayé : « 7 jours après l'échéance ». */
+  .chiffrer{margin-top:14px;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  .chiffrer .valeur{width:56px;border-radius:4px;background:var(--e-fond);
+                    box-shadow:inset 0 0 0 1px var(--e-trait);text-align:center;
+                    padding:9px 0;font:400 21px/1 ui-serif,Georgia,serif}
+  .chiffrer .u{font-size:15px}
+  .chiffrer .apres{font-size:13px;color:var(--e-gris)}
+
+  .exemple{margin:14px 24px 0;padding-left:12px;border-left:2px solid var(--e-or);
+           font-size:13px;color:var(--e-gris);line-height:1.55}
+  .exemple b{color:var(--e-encre)}
+
+  .barre{margin-top:18px;padding-top:13px;border-top:1px solid var(--e-trait);
+         display:flex;justify-content:space-between;padding-left:24px;padding-right:24px;
+         font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+         text-transform:uppercase;color:var(--e-gris)}
+  .barre .actif{color:var(--e-encre)}
+
+  .note{max-width:74ch;margin:64px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+  .note b{color:var(--encre)}
+  .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .note ul{margin:10px 0 0;padding-left:18px}
+  .note li{margin:7px 0}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Le devis qui tarde</p>
+    <h1>Un rappel, et le délai qui vous appartient</h1>
+    <p><b>Bonne nouvelle : le plus gros est déjà fait.</b> Pendant que cette
+      page se dessinait, la rubrique <b>Réglages → Notifications a été codée</b>.
+      Elle s’ouvre pour de bon, et elle porte déjà deux rappels réglables — un
+      devis parti sans réponse, un chantier fini pas facturé — avec le nombre de
+      jours qui se tape : <b>« Au bout de 7 jours »</b>.</p>
+    <p>Ce que vous demandez n’y est pas : ces deux-là parlent d’un devis
+      <b>parti</b>. Vous parlez d’un devis qui n’est <b>jamais parti</b>. C’est
+      donc une <b>troisième ligne</b> dans un écran qui tourne — et il ne vous
+      reste qu’à choisir <b>le ton de la carte</b> et <b>le nombre de jours</b>.</p>
+  </div>
+
+  <!-- ————————————————————————————————————————————————————————————
+       1. LE RAPPEL SUR L'ACCUEIL
+       ———————————————————————————————————————————————————————— -->
+  <p class="famille">1 — Le rappel, sur votre accueil</p>
+  <p class="sous-famille">Même forme que la carte « correction demandée » : vous
+    n’avez rien de nouveau à apprendre. <b>Deux tons possibles</b> — et le ton
+    n’est pas un détail, il dit si c’est urgent ou si c’est un pense-bête.</p>
+
+  <div class="grille">
+
+    <!-- A — le ton discret -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <p class="marque">Atlas</p>
+        <p class="eyebrow">Bonjour</p>
+        <h3 class="titre-ecran">Vos chantiers</h3>
+        <p class="sous-titre">Deux en cours</p>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiq">Devis en attente</p>
+          <p class="nom">Mme Félicie</p>
+          <p class="dit">Vue il y a 14 jours — aucun devis envoyé.</p>
+          <div class="gestes">
+            <span class="fort">Faire le devis</span>
+            <span class="gris">J’ai vu</span>
+          </div>
+        </div>
+        <div class="fil">
+          <div class="brin"><span class="perle creuse"></span>
+            <div class="jour"><b>13</b>Août</div>
+            <div class="quoi"><p class="n">Mr. Martins</p>
+              <p class="a">10 rue d’Enfer, Nantes</p>
+              <p class="e">Devis prêt à envoyer</p></div>
+          </div>
+        </div>
+        <div class="barre"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
+      </div></div>
+      <div class="legende">
+        <h2>A — le pense-bête</h2>
+        <p class="titre">Ton discret, comme le reste</p>
+        <p class="pour">Un rappel n’est pas une alarme : le client n’a rien
+          demandé, c’est <b>vous</b> qui vous rappelez à l’ordre. Le fond clair
+          le range parmi les choses à faire, pas parmi les urgences.</p>
+        <p class="contre">Se remarque moins si vous avez déjà trois cartes.</p>
+      </div>
+    </div>
+
+    <!-- B — le ton chaud -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <p class="marque">Atlas</p>
+        <p class="eyebrow">Bonjour</p>
+        <h3 class="titre-ecran">Vos chantiers</h3>
+        <p class="sous-titre">Deux en cours</p>
+        <div class="filet"></div>
+        <div class="carte teinte">
+          <p class="etiq">Devis en attente · 14 jours</p>
+          <p class="nom">Mme Félicie</p>
+          <p class="dit">Chantier vu le 31 juillet — aucun devis n’est parti.</p>
+          <div class="gestes">
+            <span class="fort">Faire le devis</span>
+            <span class="gris">J’ai vu</span>
+          </div>
+        </div>
+        <div class="fil">
+          <div class="brin"><span class="perle creuse"></span>
+            <div class="jour"><b>13</b>Août</div>
+            <div class="quoi"><p class="n">Mr. Martins</p>
+              <p class="a">10 rue d’Enfer, Nantes</p>
+              <p class="e">Devis prêt à envoyer</p></div>
+          </div>
+        </div>
+        <div class="barre"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
+      </div></div>
+      <div class="legende">
+        <h2>B — le rappel qui insiste</h2>
+        <p class="titre">Fond teinté, et le compte des jours dans l’étiquette</p>
+        <p class="pour">Le nombre de jours <b>se lit avant le nom</b> : au
+          quatorzième, ça ne se rate pas. C’est le même ton que les cartes qui
+          appellent un geste.</p>
+        <p class="contre">Si trois chantiers tardent, trois blocs teintés
+          d’affilée — l’accueil devient une liste de reproches.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ————————————————————————————————————————————————————————————
+       2. L'ÉCRAN EXISTE — VOTRE RAPPEL Y AJOUTE UNE LIGNE
+       ———————————————————————————————————————————————————————— -->
+  <p class="famille">2 — Où il se règle : l’écran est déjà là</p>
+  <p class="sous-famille"><b>Écrit le 16 août, et ça change tout ce qui suivait.</b>
+    Pendant que cette page se dessinait, la rubrique <b>Réglages → Notifications
+    a été codée</b> : elle existe, elle s’ouvre, et elle porte déjà deux rappels
+    réglables. Votre demande n’est donc plus un écran à inventer — c’est une
+    <b>troisième ligne</b> dans un écran qui tourne.</p>
+  <p class="sous-famille" style="margin-top:-6px"><b>Et le nombre de jours est
+    déjà tranché.</b> Il se pose « Au bout de [ 7 ] jours » — un nombre qu’on
+    tape, avec un interrupteur pour éteindre le rappel. Les quatre façons que
+    cette page proposait n’ont donc plus lieu d’être : en rouvrir la question
+    ferait deux manières de poser un délai sur le même écran.</p>
+
+  <div class="grille">
+
+    <!-- L'écran tel qu'il EST, avec la ligne à ajouter. -->
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <div class="retour">‹</div>
+        <p class="eyebrow">Vous</p>
+        <h3 class="titre-ecran">Notifications</h3>
+        <div class="filet"></div>
+
+        <p class="exemple" style="margin-top:15px;border-left-color:var(--e-trait)">
+          Tout se passe <b>dans l’application</b>, sur l’écran d’accueil. Rien ne
+          part sur votre téléphone ni par e-mail.</p>
+
+        <div class="groupe">
+          <p class="t">Ce qui vous est toujours signalé</p>
+          <div class="ligne">
+            <div><p class="nom">Réponse à un devis</p><p class="dit">Accepté, corrigé ou refusé</p></div>
+            <span class="canal">Toujours</span>
+          </div>
+          <div class="ligne" style="border-bottom:none">
+            <div><p class="nom">Lien de devis expiré</p><p class="dit">Le client n’a pas pu l’ouvrir à temps</p></div>
+            <span class="canal">Toujours</span>
+          </div>
+        </div>
+
+        <div class="groupe">
+          <p class="t">Ce que vous réglez</p>
+          <!-- LA TROISIÈME, et elle se pose AVANT les deux autres : un devis qui
+               n'est pas parti précède un devis sans réponse. -->
+          <div class="ligne neuve">
+            <div><p class="nom">Devis pas encore parti</p><p class="dit">Le chantier est ouvert, aucun devis n’est parti</p></div>
+            <span class="mini"></span>
+          </div>
+          <div class="chiffrer" style="margin:0 0 13px">
+            <span class="canal" style="align-self:center">Au bout de</span>
+            <span class="valeur">4</span>
+            <span class="u">jours</span>
+          </div>
+          <div class="ligne">
+            <div><p class="nom">Devis sans réponse</p><p class="dit">Un devis parti, dont le client n’a rien dit</p></div>
+            <span class="canal">7 jours</span><span class="mini"></span>
+          </div>
+          <div class="ligne" style="border-bottom:none">
+            <div><p class="nom">Chantier fini, pas facturé</p><p class="dit">Terminé, aucune facture partie</p></div>
+            <span class="canal">3 jours</span><span class="mini"></span>
+          </div>
+        </div>
+
+        <div class="barre"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span></div>
+      </div></div>
+      <div class="legende">
+        <h2>La troisième ligne</h2>
+        <p class="titre">« Devis pas encore parti », au-dessus des deux autres</p>
+        <p class="pour">L’écran est <b>celui qui tourne aujourd’hui</b>, pas un
+          dessin : deux rappels réglables, un interrupteur chacun, et le délai
+          qui se tape. La vôtre s’y glisse <b>en tête</b> — un devis qui n’est
+          pas parti vient avant un devis qui attend sa réponse.</p>
+        <p class="contre">Il reste <b>un nombre à choisir</b> : je propose
+          <b>4 jours</b>, au milieu des « deux, trois, quatre, cinq, six » que
+          vous avez dits. Vous pourrez le changer sur cet écran, de 1 à 90.</p>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ————————————————————————————————————————————————————————————
+       CE QUI NE SE DÉCIDE PAS À L'ŒIL
+       ———————————————————————————————————————————————————————— -->
+  <div class="note">
+    <span class="t">Quatre règles, à trancher avec vous</span>
+    <ul>
+      <li><b>Le rappel s’efface tout seul dès que le devis part.</b> Non
+        négociable : un rappel qu’il faut ranger à la main devient du bruit, et
+        au troisième on ne les lit plus.</li>
+      <li><b>« J’ai vu » repousse, il ne supprime pas.</b> Sinon un chantier
+        oublié disparaît en même temps que le rappel — c’est-à-dire exactement
+        le contraire de ce qu’on cherche. Il se tait <b>jusqu’au lendemain</b>,
+        puis revient tant que le devis n’est pas parti.</li>
+      <li><b>Le compte part de l’ouverture du chantier</b>, pas du rendez-vous :
+        Atlas ne connaît que la date où vous l’avez créé. Si vous voulez qu’il
+        parte de la visite, il faudra une date de visite — et c’est un champ de
+        plus à remplir.</li>
+      <li><b>Vous ne le verrez qu’en ouvrant Atlas.</b> Aucune alerte ne part
+        sur votre téléphone : ni SMS, ni e-mail, ni pastille sur l’icône. C’est
+        déjà ce que dit l’écran codé, en toutes lettres — <i>« tout se passe dans
+        l’application »</i> — et cette limite tombera le jour où Atlas sera
+        hébergé pour de vrai.</li>
+    </ul>
+    <p style="margin-top:14px"><b>Ma préférence : A, et 4 jours.</b> Le ton
+      discret pour la carte — c’est un pense-bête, pas une alarme. Et quatre
+      jours au milieu de vos « deux à six » : vous pourrez le changer sur
+      l’écran, de 1 à 90. <b>B</b> se défend très bien si vous voulez que ça
+      pique un peu.</p>
+    <p style="margin-top:10px"><b>Ce que ça coûte est plus petit qu’annoncé
+      hier</b>, puisque l’écran existe : une demi-journée. La troisième ligne
+      dans les réglages, la carte sur l’accueil, et les contrôles qui tiennent
+      les règles ci-dessus.</p>
+    <p style="margin-top:10px"><b>Cette page ne touche à rien.</b> L’écran des
+      réglages, lui, existe déjà et fonctionne — c’est la troisième ligne qui
+      attend votre mot.</p>
+  </div>
+
+</div>
+</body>
+</html>

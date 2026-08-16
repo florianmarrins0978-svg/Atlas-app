@@ -280,7 +280,7 @@ async function main() {
     //
     // **Elle y arrive une fois ENCAISSÉE**, depuis le 16 août 2026 : la TVA
     // d'une prestation de services est exigible au paiement, et l'endroit
-    // d'attente porte le geste (`ARCHITECTURE.md` §106).
+    // d'attente porte le geste (`ARCHITECTURE.md` §110).
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const ligne = page.locator("li").filter({ hasText: rows[0].numero_commercial as string });
     await ligne.getByRole("button", { name: "Payée" }).click();

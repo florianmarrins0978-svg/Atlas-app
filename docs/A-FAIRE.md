@@ -38,8 +38,9 @@ qui ne se résoudra pas en codant.
 8. [Faire valider l'application par Google — AVANT de commercialiser](#8-faire-valider-lapplication-par-google--avant-de-commercialiser)
 9. [Demander à votre comptable : TVA au mois ou au trimestre ?](#9-demander-à-votre-comptable--tva-au-mois-ou-au-trimestre-)
 10. [Le premier jour d'un artisan : ce qui manque pour lui confier Atlas](#10-le-premier-jour-dun-artisan--ce-qui-manque-pour-lui-confier-atlas)
-11. [Demander à votre comptable : TVA sur les encaissements ou sur les débits ?](#11-demander-à-votre-comptable--tva-sur-les-encaissements-ou-sur-les-débits-)
-12. [Choisir le prestataire qui lit vos virements](#12-choisir-le-prestataire-qui-lit-vos-virements)
+11. [Décider si Atlas peut calculer des trajets par la route](#11-décider-si-atlas-peut-calculer-des-trajets-par-la-route)
+12. [Demander à votre comptable : TVA sur les encaissements ou sur les débits ?](#12-demander-à-votre-comptable--tva-sur-les-encaissements-ou-sur-les-débits-)
+13. [Choisir le prestataire qui lit vos virements](#13-choisir-le-prestataire-qui-lit-vos-virements)
 
 ---
 
@@ -809,7 +810,63 @@ entièrement.
 
 ---
 
-## 11. Demander à votre comptable : TVA sur les encaissements ou sur les débits ?
+## 11. Décider si Atlas peut calculer des trajets par la route
+
+**Qui : vous**, et le juriste du point 2 si la réponse penche vers un
+prestataire privé.
+
+**D'où ça vient.** Le 13 août 2026 : *« lorsqu'on a fini des chantiers en
+demi-journée, que le planning soit en mesure de proposer deux demi-journées pour
+faire une journée, mais de deux chantiers qui sont les plus proches »*. Une
+bonne idée, qui bute sur une question simple : **proche comment ?**
+
+### Les deux mesures, et ce qu'elles engagent
+
+| | Ce que ça donne | Ce que ça engage |
+|---|---|---|
+| **À vol d'oiseau** | La distance directe, calculée **chez nous** à partir des coordonnées que la Base Adresse Nationale rend déjà | **Rien.** Aucune donnée ne sort, aucun contrat nouveau |
+| **Par la route** | Le vrai temps de trajet | **L'envoi des adresses de vos clients à un service extérieur** |
+
+**Pourquoi la route pose problème**, et c'est le même problème que le point 1 :
+un service de calcul d'itinéraire devient un **sous-traitant ultérieur** au sens
+du RGPD. Il doit être autorisé par l'artisan, nommé dans le contrat, et ses
+transferts hors d'Europe encadrés. Tant que le contrat du point 2 n'existe pas,
+chaque prestataire ajouté aggrave le même manquement.
+
+C'est exactement le raisonnement qui a fait préférer la Base Adresse Nationale à
+Google pour l'aide à la saisie : un service public français, sans compte ni clé,
+à qui l'on n'envoie qu'une rue.
+
+### La piste qui pourrait tout régler
+
+**L'État publie aussi un service d'itinéraire**, sur la même Géoplateforme que
+les adresses. S'il tient ses promesses, la route rentre dans la même case que
+les adresses — service public, sans compte, sans clé, **sans contrat avec une
+entreprise privée**.
+
+**Une vérification a été lancée le 13 août 2026** pour le savoir, sur une
+machine qui a le réseau — l'environnement de développement, lui, refuse les
+services extérieurs. Elle répond à trois questions : le service accepte-t-il
+sans clé, que vaut l'écart entre vol d'oiseau et route dans les monts, et
+tient-il le rythme de plusieurs appels d'affilée
+(`.github/workflows/itineraire.yml`).
+
+### Ce qui est proposé en attendant
+
+**Commencer à vol d'oiseau**, et le dire à l'écran — « à 8 km à vol d'oiseau »
+plutôt que « à 14 min ». C'est utile tout de suite, ça n'engage rien, et la
+maquette est dessinée pour que **seule la phrase change** le jour où la route
+devient possible : pas un écran à redessiner
+(`docs/maquettes/57-apparier-deux-demi-journees.html`).
+
+### Ce que ça ne bloque pas
+
+Ni l'essai, ni la finition. L'appariement fonctionnera à vol d'oiseau, et
+gagnera en justesse le jour où la route sera tranchée.
+
+---
+
+## 12. Demander à votre comptable : TVA sur les encaissements ou sur les débits ?
 
 **Qui peut le faire : vous seul.** La réponse est chez votre comptable, ou sur
 votre dernière déclaration de TVA.
@@ -854,7 +911,7 @@ relevé de TVA, et lui seul, qui déclare trop tôt.
 
 ---
 
-## 12. Choisir le prestataire qui lit vos virements
+## 13. Choisir le prestataire qui lit vos virements
 
 **Qui peut le faire : vous seul.** C'est un contrat et un coût mensuel, pas une
 ligne de code.
