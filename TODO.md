@@ -27,6 +27,31 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 trigies bis. `test-devis-parti-signet` a rougi une fois sur deux batteries — instable sous charge
+
+**Vu le 16 août 2026**, sur une batterie complète : la suite attendait le total
+« 840,00 € » et a **dépassé son délai**. Ce n'est donc pas une valeur fausse —
+les contrôles qui la précèdent dans la même suite étaient verts, et le numéro du
+devis était bien affiché.
+
+**Ce qui a été éliminé, mesuré et non supposé :**
+
+- elle **passe seule** ;
+- elle **passe enchaînée derrière `test-devis-complet`**, qui écrit un taux de
+  TVA à 10 % — le premier soupçon, puisque 700 € HT font 840 € à 20 % et 770 € à
+  10 % ;
+- la batterie complète rejouée juste après : **86/86**, le rouge ne revient pas.
+
+**Ce que ça laisse :** un écran lent à rendre pendant qu'une batterie occupe la
+machine. Le `waitForSelector` de cette assertion n'a pas de délai propre, là où
+ses voisines en portent un de 20 s.
+
+**À faire, et ce n'est pas urgent :** lui donner un délai explicite, comme ses
+voisines. Ne PAS la déclarer instable en la retirant — un contrôle qu'on
+neutralise est un contrôle perdu, et celui-ci tient la pièce maîtresse d'un
+écran que le patron a dessiné lui-même.
+
+
 ### 0 quadragies. La réduction accordée au client — dessinée, attend son mot
 
 **Sa demande du 16 août 2026 :** *« si jamais un client me demande une
@@ -77,14 +102,15 @@ aucun devis envoyé »*. **Ses quatre décisions, toutes appliquées :** *« la 
 4 »*, *« le G »*, *« le B »* (le ton, reposé capture à l'appui), *« fait la B »*
 (le rang).
 
-**CE QUI RESTE POSÉ, SANS RÉPONSE — et c'est le seul point ouvert de ce lot.**
-Les rappels passant devant, une réponse de client peut être repoussée derrière
-« N autres devis à regarder ». Mesuré sur le jeu de démonstration : **cinq
-rappels occupaient les deux places, et plus aucune réponse n'était visible**.
+**LA PLACE GARANTIE : TRANCHÉE ET CODÉE** (16 août, *« ok alors fait le »*,
+après deux photos). Les rappels passant devant, cinq d'entre eux masquaient
+toutes les réponses de clients — la batterie l'avait dit en rougissant avant que
+l'image ne le montre. Son choix B tient : la **première** place reste au rappel,
+c'est la **dernière place visible** qui revient à une réponse, et seulement s'il
+en existe. Règle pure dans `src/lib/ordre-notifications.ts`, éprouvée sur les cas
+limites et sur les 108 combinaisons — aucune carte perdue ni dupliquée.
 
-La sortie proposée, et elle n'attend que son mot : **garantir une place à
-chacun** sur les deux cartes visibles — un rappel, une réponse. Il verrait
-toujours au moins un de chaque, quel que soit le nombre. Un quart d'heure.
+**Plus aucun point n'attend son avis sur ce lot.**
 
 **Trois leçons de ce lot, à ne pas repayer :**
 

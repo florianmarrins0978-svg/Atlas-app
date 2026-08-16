@@ -2,7 +2,6 @@
 
 **Dernière mise à jour :** 2026-08-16 · branche `main`
 · dernière migration `drizzle/0046_rappel_chantier_sans_devis.sql`
-· dernière migration `drizzle/0045_paiements_et_exigibilite.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -270,8 +269,9 @@ l'application. Ce qui est **fait** :
   16 août) : c'est le seul des trois rappels où rien n'est encore parti au
   client. **Et le rang est tranché aussi** (« fait la B », 16 août, après trois
   photos) : sur l'accueil, **les rappels passent devant les réponses de
-  clients** — ce qu'il doit faire avant ce qu'on lui a répondu. `TODO.md`
-  §0 novivicies.
+  clients** — ce qu'il doit faire avant ce qu'on lui a répondu —, **avec une
+  place garantie à chaque sorte** pour qu'une pile de rappels ne puisse pas
+  enterrer un refus (`src/lib/ordre-notifications.ts`). `TODO.md` §0 novivicies.
 - **Une carte ne peut plus se reposer à moitié coupée** (16 août) : sa capture —
   *« le premier message est trop haut et le début n'est pas visible »*. Le cadre
   qui défile déclarait `scroll-snap-type` sans qu'aucun enfant n'ait jamais

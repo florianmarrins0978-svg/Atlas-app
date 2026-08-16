@@ -792,10 +792,12 @@ planning, regarder d'abord quel jour de la semaine elle vise.** Corrigé avec
 défaut, libellé **« Chantier sans devis »**, premier des trois réglages. Détail et
 deux points laissés en suspens : `TODO.md` §0 novivicies.
 
-**⚠ SUR L'ACCUEIL, LES RAPPELS PASSENT DEVANT LES RÉPONSES DE CLIENTS** — sa
-décision du 16 août (« fait la B »), après trois photos. La règle d'avant disait
-l'inverse (*« quelqu'un a agi, cela prime sur un silence »*) : ne pas la
-restaurer en la lisant quelque part, elle est datée. `ARCHITECTURE.md` §112.
+**⚠ L'ORDRE DES CARTES DE L'ACCUEIL EST UNE RÈGLE, PAS UNE CONCATÉNATION** —
+`src/lib/ordre-notifications.ts`, deux décisions du 16 août : les rappels passent
+devant (« fait la B »), ET une place est garantie aux réponses de clients
+(« ok alors fait le »). La règle d'origine — *« les réponses d'abord, quelqu'un a
+agi, cela prime sur un silence »* — est datée : ne pas la restaurer en la lisant
+quelque part. `ARCHITECTURE.md` §112.
 
 **⚠ IL Y A MAINTENANT TROIS RAPPELS, PAS DEUX** — `src/lib/rappels.ts`. Le
 troisième se lit sur le CHANTIER (`created_at`, `devis_envoye_at`) et non sur un
