@@ -39,7 +39,7 @@ cent, ou dix, ou quinze. C'est moi qui choisis le nombre de pourcentage. »*
 **Son choix : « sous le total et prix accordé au client »** — l'arrangement B,
 le plus cher des trois, choisi en connaissance de cause. Livré :
 `src/lib/reduction-devis.ts`, migration 0048, les deux PDF, l'écran du devis, et
-une sixième retouche dictée. Détail : `ARCHITECTURE.md` §115.
+une sixième retouche dictée. Détail : `ARCHITECTURE.md` §116.
 
 **CE QUI RESTE, et qui n'est pas rien :**
 

@@ -9265,7 +9265,6 @@ transcription n'est branché sur cette installation ». Montrer le texte de
 remplacement comme une dictée reviendrait à corriger un devis d'après une phrase
 que personne n'a prononcée (`src/server/ai/providers/transcription/dev.ts`).
 
-
 ---
 
 ---
@@ -9350,7 +9349,90 @@ part (`TODO.md`).
 
 ---
 
-## 115. « Fais cinq pour cent » : le prix accordé au client
+---
+
+## 115. Un jour barré n'est pas un jour pris — et la phrase disait le contraire
+
+**Le patron, le 16 août 2026**, capture de l'écran d'envoi à l'appui :
+
+> *« J'ai l'impression que lorsque je veux remettre une journée sur le dix-huit,
+> je ne peux pas ou alors c'est parce que je n'ai pas sectionné la
+> demi-journée. »*
+
+Il cherchait la cause du mauvais côté. **L'écran l'y envoyait.**
+
+### Ce qu'un jour barré signifie vraiment
+
+`joursSansPlace` ne répond pas à « ce jour est-il pris ? » mais à **« un chantier
+de CETTE durée peut-il y COMMENCER ? »**. Les deux ne coïncident pas, et l'écart
+n'a rien d'exotique. Reproduit avant d'écrire une ligne, avec un seul jour
+réellement plein — le 19 — et deux équipes :
+
+| Jour | Durée demandée | Verdict | Pastille du planning |
+|---|---|---|---|
+| 18 août | ½ journée | proposable | **libre** |
+| 18 août | 1 journée | proposable | **libre** |
+| 18 août | 2 jours | **BARRÉ** | **libre** |
+
+Le 18 est **vide** et pourtant barré : deux jours partis du 18 déborderaient sur
+le 19, qui est plein. **La règle est juste** — sans elle, le chantier mordrait
+sur une journée déjà prise. C'est la phrase qui mentait.
+
+### La phrase, et pourquoi c'est un vrai défaut
+
+Elle écrivait : *« Les jours barrés sont déjà pris et ne peuvent pas être
+choisis. »* Sur le 18, c'est faux — il n'y a rien dessus. Elle désignait donc une
+occupation inexistante et envoyait chercher au mauvais endroit : exactement ce
+que `AGENTS.md` proscrit — *une erreur qui accuse à tort coûte plus cher que pas
+d'erreur du tout*.
+
+`src/lib/jours-barres.ts` la rend honnête, **et la durée y est la clé** :
+
+> « Les jours barrés ne peuvent pas accueillir **2 jours** : soit ils sont pris,
+> soit le chantier déborderait sur un jour qui l'est. »
+
+Nommer la durée ne fait pas que dire vrai : **cela montre le levier**. Sur
+l'écran d'envoi, la durée se change juste au-dessus du calendrier — passer à
+« 1 journée » rouvre le 18. Le refus cesse d'être une impasse.
+
+**La demi-journée a sa propre phrase**, et ce n'est pas une coquetterie : elle
+tient dans un seul créneau, donc elle ne peut déborder sur rien. Lui servir
+« soit le chantier déborderait » rouvrirait le défaut en sens inverse.
+
+### Ce que ça touche, et ce que ça ne touche pas
+
+- **Les deux écrans**, parce que c'est **le même composant** : celui du patron et
+  celui du client. Le client aussi voyait des jours barrés sans savoir pourquoi.
+- **Mais pas la même phrase — et c'est la batterie qui l'a imposé.** La première
+  version envoyait la durée jusqu'à la page du client, en toute bonne foi :
+  c'est son chantier, après tout. `test-creneaux-planning.ts` l'a refusée —
+  *« la durée du chantier a fuité vers la page du client »*. La consigne est
+  ancienne et appartient au patron : **rien du découpage de son planning ne part
+  chez le client**, ni créneau, ni durée ; il ne reçoit que des dates. Ce n'était
+  pas à une session de rouvrir cet arbitrage, et rien dans le raisonnement qui a
+  conduit à l'enfreindre ne l'aurait signalé — seul le contrôle l'a fait.
+  Le client lit donc : *« Les jours barrés ne peuvent pas accueillir votre
+  chantier. »* Vrai, et muet sur le reste.
+- **`dureeDemiJournees` n'a AUCUNE valeur par défaut sur `Calendrier`** (elle vaut
+  `number | null`). Chaque écran doit trancher : un défaut silencieux ferait
+  pencher l'un des deux du mauvais côté sans que personne ne le décide.
+- **Le lecteur d'écran dit la même chose que la phrase**, de chaque côté. Deux
+  publics, une seule vérité, sinon l'un des deux garde la version fausse et
+  personne ne le voit.
+- **Aucune règle de réservation n'a changé.** `jourRetenable`, `joursSansPlace`,
+  l'occupation : rien n'est touché. Seule la phrase l'est.
+
+### Ce qui le garde
+
+`scripts/test-jours-barres.ts` tient les trois choses : **le fait** — un jour
+vide se barre bel et bien quand la durée déborde —, **la phrase**, qui ne doit
+plus jamais prétendre « déjà pris » pour aucune durée, et **la consigne** : celle
+du client ne chiffre rien. Confrontée à l'ancienne formulation, la suite passe
+quatre cas au rouge en nommant le bon coupable.
+
+---
+
+## 116. « Fais cinq pour cent » : le prix accordé au client
 
 *Demandé le 16 août 2026, dessiné (`docs/maquettes/61-la-reduction-au-client.html`),
 puis codé sur sa réponse — **« sous le total et prix accordé au client »**,
@@ -9430,3 +9512,4 @@ remise » la retire. Elle propose, il coche — comme les cinq autres.
 pas été demandée : sans elle, une remise dictée par erreur ne pourrait pas être
 retirée sans redicter, et l'installation sans clé d'IA ne saurait pas en poser.
 Elle ouvre à 5 %, qu'il corrige.
+
