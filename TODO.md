@@ -78,7 +78,7 @@ dans `docs/A-FAIRE.md` §12 — son comptable le sait en une phrase.
 poser au hasard ferait déclarer trop tôt ou trop tard, et c'est l'administration
 qui arbitrerait.
 
-### 0 novivicies. Le devis qui tarde : **une troisième ligne**, et deux mots à dire
+### 0 novivicies. Le devis qui tarde : **B et 4 jours retenus**, reste le mot de la ligne
 
 *`docs/maquettes/56-le-devis-qui-tarde.html`, écrite le 15 août 2026, **réécrite
 deux fois** le 16. Le troisième rappel n'est pas codé — `CLAUDE.md` §3 bis.*
@@ -121,14 +121,29 @@ ne couvre sa demande : ils parlent d'un devis **parti**. Lui parle d'un devis
 **jamais parti**. C'est donc un **troisième rappel**, à poser en tête des deux
 autres — un devis qui n'est pas parti précède un devis qui attend sa réponse.
 
-Il désigne **deux choses**, et rien de plus :
+**IL A TRANCHÉ LE 16 AOÛT 2026 : « la B et 4 ».** La carte **teintée**, avec le
+compte des jours dans l'étiquette — celle qui se remarque —, et **4 jours** par
+défaut.
 
-| | Le choix | Les propositions |
+**ET IL A VU CE QU'AUCUN CONTRÔLE N'AURAIT VU**, dans la foulée : *« dans la
+catégorie notification, j'ai peur que la façon dont tu l'as écrit ne soit pas
+compréhensible — qu'on ne comprenne pas que cette ligne sert à ça, le devis non
+envoyé. »*
+
+Il avait raison, et c'est mesurable à l'œil : la ligne se pose **juste au-dessus
+de « Devis sans réponse »**. Deux lignes qui commencent par le même mot, l'une
+sur l'autre — il faut lire la petite ligne grise pour les séparer, donc on ne les
+sépare pas. Quatre mots lui sont proposés, **chacun montré avec sa voisine**
+(c'est la seule façon de juger, § 3 de la planche) :
+
+| | Le mot | Ce qu'il vaut |
 |---|---|---|
-| 1 | Le ton de la carte sur l'accueil | **A** discrète (pense-bête) · **B** teintée, jours dans l'étiquette |
-| 2 | Le nombre de jours par défaut | **4**, au milieu de ses « deux à six » — changeable de 1 à 90 sur l'écran |
+| F | « Devis pas encore parti » | Exact — et c'est celui qui l'a inquiété |
+| **G** | **« Chantier sans devis »** | **Ma préférence** : seul à se distinguer **au premier mot**, et les trois lignes racontent alors le chantier dans l'ordre (pas de devis → sans réponse → fini pas facturé) |
+| H | « Aucun devis envoyé » | Ses mots à lui, verbatim. Commence par un mot vide |
+| I | « Devis oublié » | Le plus court, mais **il accuse** : un devis peut attendre exprès |
 
-**Ma préférence, écrite sur la page : A, et 4 jours.**
+**Rien d'autre n'attend son avis.**
 
 **Quatre règles y sont posées, à trancher avec lui** : le rappel s'efface seul
 dès que le devis part ; « J'ai vu » repousse au lendemain et ne supprime jamais ;

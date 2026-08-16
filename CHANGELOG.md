@@ -41,6 +41,26 @@ entrera au paiement. Raisons : `ARCHITECTURE.md` §110.
 
 ## 2026-08-15
 
+### Deux lignes qui commencent par le même mot, l'une sur l'autre
+
+**Il a tranché le 16 août — « la B et 4 » — puis a vu ce qu'aucun contrôle
+n'aurait vu :** *« dans la catégorie notification, j'ai peur que la façon dont tu
+l'as écrit ne soit pas compréhensible — qu'on ne comprenne pas que cette ligne
+sert à ça, le devis non envoyé. »*
+
+**Il avait raison, et ça se mesure à l'œil.** La ligne proposée — « Devis pas
+encore parti » — tombe **juste au-dessus de « Devis sans réponse »**, déjà codée.
+Deux lignes qui commencent par le même mot, l'une sur l'autre : il faut lire la
+petite ligne grise pour les séparer, donc on ne les sépare pas.
+
+**Ce que ça évite :** un écran de réglages où l'on coupe le mauvais rappel. Quatre
+mots lui sont proposés, **chacun montré avec sa voisine** — seule façon de juger
+une confusion qui n'existe qu'en contexte. Ma préférence : « Chantier sans devis »,
+le seul qui se distingue **au premier mot**, et qui fait raconter aux trois lignes
+le chantier dans l'ordre.
+
+**Rien n'est codé.** `docs/maquettes/56-le-devis-qui-tarde.html`, § 3.
+
 ### Le devis qui tarde : dessiné — et deux fois réécrit contre ce qui existait
 
 **Sa demande du 14 août :** *« un rappel lorsque le chantier a été ouvert mais
