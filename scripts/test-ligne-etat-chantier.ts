@@ -1,5 +1,16 @@
 import assert from "node:assert/strict";
-import { ligneEtatChantier } from "../src/lib/chantier-etat";
+import { ligneEtatChantier, statutLabel } from "../src/lib/chantier-etat";
+import type { ChantierStatut } from "../src/lib/chantier-etat";
+
+/**
+ * Tous les statuts, TIRÉS DU TYPE et non recopiés.
+ *
+ * `statutLabel` est un `Record<ChantierStatut, string>` : le compilateur
+ * refuse qu'il en manque un. Une liste écrite à la main dans ce contrôle
+ * oublierait le statut ajouté demain — et la ligne resterait grise chez lui
+ * sans que rien ne rougisse.
+ */
+const TOUS_LES_STATUTS = Object.keys(statutLabel) as ChantierStatut[];
 
 // **Ce qui s'écrit sous le nom d'un chantier, dans la liste.**
 //
@@ -103,18 +114,23 @@ cas("les états qui n'ont rien à voir avec un envoi ne bougent pas d'un mot", (
   }
 });
 
-cas("l'or désigne ce qui appelle un geste, et pas le reste", () => {
+cas("l'or est sur TOUTES les lignes, sans exception", () => {
   const or = (s: Parameters<typeof ligneEtatChantier>[0]["statut"]) =>
     ligneEtatChantier({ statut: s, photosCount: 0 }).enOr;
-  // Sa décision du 13 août : un devis parti sans réponse passe en or, alors
-  // qu'il n'appelle aucun geste de lui. C'était écrit sur la planche, il a
-  // retenu la variante dorée. Si la liste devient trop dorée à l'usage, c'est
-  // `APPELLE_UN_GESTE` qui se défait, et ce contrôle avec.
-  for (const s of ["devis_envoye", "en_attente_client", "a_relancer", "devis_retourne", "devis_a_corriger", "devis_caduc"] as const) {
-    assert.equal(or(s), true, `${s} devrait être en or`);
-  }
-  for (const s of ["brouillon", "a_verifier", "verifie", "planifie", "termine", "facture"] as const) {
-    assert.equal(or(s), false, `${s} ne devrait pas être en or`);
+  // **Sa consigne du 16 août 2026**, capture de l'accueil à l'appui : « mets le
+  // "devis prêt à envoyer sans photo" en doré ; pour tous les messages je veux
+  // que cette partie-là apparaisse en doré ».
+  //
+  // Ce contrôle a rougi à juste titre en changeant de cible : il exigeait que
+  // six états seulement soient en or, et que six autres ne le soient PAS. Cette
+  // seconde moitié est devenue fausse d'un coup — c'est exactement ce qu'on lui
+  // demandait de dire.
+  //
+  // **Il balaie TOUS les statuts, et non une liste écrite à la main.** Écrite à
+  // la main, elle oublierait le statut ajouté demain, et la ligne resterait
+  // grise chez lui sans que rien ne le dise.
+  for (const s of TOUS_LES_STATUTS) {
+    assert.equal(or(s), true, `${s} devrait être en or : il les a tous demandés`);
   }
 });
 

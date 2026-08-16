@@ -170,6 +170,16 @@ if (cas.startsWith("A") && rappelVisible) {
 if (!cas.startsWith("A") && !rappelVisible) {
   echecs.push(`${cas} prétend montrer son rappel, et il est absent de l'écran`);
 }
+// **La comparaison « place garantie » ne vaut que si les deux sortes existent.**
+// Sans réponse de client à l'écran, les deux images seraient identiques et ne
+// montreraient rien — pire, elles feraient croire que le changement ne sert à
+// rien.
+if (cas.startsWith("G") && !avant.visibles.some((t) => !/DEVIS EN ATTENTE/i.test(t))) {
+  echecs.push("G ne montre aucune réponse de client : c'est justement ce qu'elle prétend garantir");
+}
+if (cas.startsWith("B") && avant.visibles.some((t) => !/DEVIS EN ATTENTE/i.test(t))) {
+  echecs.push("B montre déjà une réponse : la scène n'est pas assez chargée pour comparer");
+}
 
 // **B et C ne se photographient PAS depuis le navigateur.** Les cartes repliées
 // ne sont pas rendues du tout — l'écran n'en pose que deux dans le document —,
