@@ -27,6 +27,43 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 unquadragies. Montrer ce que l'application sait déjà d'un client
+
+**Sa question du 16 août 2026**, photo d'un « graphe de connaissances » à
+l'appui : *« tu peux m'expliquer et me dire si ça peut me servir pour mon
+appli ? »*
+
+**La réponse a été NON, deux fois, et il faut la garder** pour ne pas la
+reprendre : comme mémoire de travail, le dépôt la tient déjà (`CLAUDE.md`,
+`HANDOVER.md`…), et un graphe à côté serait une seconde vérité ; comme fonction,
+ses données sont déjà reliées dans une base SQL, qui répond mieux qu'un graphe.
+
+**Ce qu'il restait à en prendre, et qu'il a demandé de dessiner :** l'application
+SAIT qu'un client est venu quatre fois, qu'il a payé 2 460 € et en doit 740,
+qu'on lui fait toujours de l'élagage — **et elle ne le montre nulle part.**
+
+Planche : `docs/maquettes/62-ce-que-je-sais-du-client.html`, éprouvée par
+`scripts/verifier-maquette-fiche-client.mjs`. **Rien n'est codé** (`CLAUDE.md`
+§3 bis).
+
+| | Ce que ça montre | Ce que ça coûte |
+|---|---|---|
+| **A** | un encart sous le nom du client, dans la fiche du chantier | le moins de tout : aucun écran neuf. Mais on ne peut pas chercher un client |
+| **B** | une vraie fiche client, atteinte en touchant son nom | un écran de plus, sans toucher à la barre du bas |
+| **C** | un onglet « Clients » : la liste + la fiche | **un cinquième onglet**, et deux écrans au lieu d'un. Le seul qui réponde à « qui me doit de l'argent ? » |
+
+**IL N'EXISTE AUCUN ÉCRAN CLIENT AUJOURD'HUI** — vérifié : quatre onglets, et le
+nom d'un client ne mène nulle part. `listerClients` existe dans le dépôt et
+n'est appelé par aucun écran.
+
+**Tout est calculable, rien n'est à inventer** : `chantiers.client_id`,
+`factures` + `paiements_facture`, `lignes_prix` pour les prestations qui
+reviennent, `lecons_prix` pour les prix pratiqués.
+
+**Une question posée dans la planche :** « 3 200 € », est-ce le **facturé** ou
+l'**encaissé** ? Les deux se calculent ; la planche montre les deux.
+
+
 ### 0 quadragies. ~~La réduction accordée au client~~ — **CODÉE le 16 août 2026 (B + « Prix accordé au client »)**
 
 **Sa demande du 16 août 2026 :** *« si jamais un client me demande une

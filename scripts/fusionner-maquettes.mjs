@@ -301,6 +301,12 @@ const MAQUETTES = [
     famille: "Le devis",
     quoi: "« Fais cinq pour cent sur le montant du devis » — où la petite ligne se pose, et sous quel mot. Le coût des trois est très inégal : une ligne voyage seule jusqu’à la facture.",
   },
+  {
+    fichier: "62-ce-que-je-sais-du-client.html",
+    titre: "Ce que je sais du client",
+    famille: "Les chantiers",
+    quoi: "L’application sait qu’un client est venu quatre fois et qu’il doit encore 740 € — elle ne le montre nulle part. Un encart, une fiche, ou un cinquième onglet.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
