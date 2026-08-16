@@ -771,9 +771,21 @@ planning, regarder d'abord quel jour de la semaine elle vise.** Corrigé avec
 défaut, libellé **« Chantier sans devis »**, premier des trois réglages. Détail et
 deux points laissés en suspens : `TODO.md` §0 novivicies.
 
+**⚠ SUR L'ACCUEIL, LES RAPPELS PASSENT DEVANT LES RÉPONSES DE CLIENTS** — sa
+décision du 16 août (« fait la B »), après trois photos. La règle d'avant disait
+l'inverse (*« quelqu'un a agi, cela prime sur un silence »*) : ne pas la
+restaurer en la lisant quelque part, elle est datée. `ARCHITECTURE.md` §112.
+
 **⚠ IL Y A MAINTENANT TROIS RAPPELS, PAS DEUX** — `src/lib/rappels.ts`. Le
 troisième se lit sur le CHANTIER (`created_at`, `devis_envoye_at`) et non sur un
 envoi : un devis jamais parti ne laisse aucune ligne dans `envois_devis`.
+
+**PHOTOGRAPHIER PLUTÔT QUE DÉCRIRE, ET LE FAIRE SUR LA BONNE SCÈNE.** Deux fois
+dans ce lot, la description était fausse et l'image l'a dit : (1) j'ai annoncé
+que sa carte passait derrière dès UNE réponse en attente — il en faut deux ;
+(2) « montrer trois cartes » semblait résoudre le rang, et l'image montre la
+troisième sous le bord de l'écran. `scripts/capture-rang-trois-cas.sh` monte la
+scène minimale et rend le code même en cas d'échec.
 
 **LA LEÇON DE CE PASSAGE, ET ELLE VAUT AU-DELÀ :** une confusion entre deux
 libellés **n'existe qu'en contexte**. Montrer une ligne seule ne prouve rien —

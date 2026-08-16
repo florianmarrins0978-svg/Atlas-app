@@ -41,6 +41,25 @@ entrera au paiement. Raisons : `ARCHITECTURE.md` §111.
 
 ## 2026-08-15
 
+### Sur l'accueil, les rappels passent devant les réponses
+
+**Sa décision du 16 août, devant trois photos : « fait la B ».**
+
+**Ce que ça évite :** un rappel qu'il faut déplier. L'accueil ne pose que deux
+cartes, et tant que les réponses de clients venaient en tête, le rappel passait
+derrière « N autres devis à regarder » dès **deux réponses en attente**.
+
+**Une exagération corrigée en chemin, et elle valait d'être dite.** Je lui avais
+annoncé que sa carte passait derrière dès qu'une correction était en cours.
+Mesuré : avec UNE seule réponse, elle prend la seconde place et se voit très
+bien. Il en faut deux. La scène des photos a donc dû être fabriquée exprès —
+`scripts/capture-rang-trois-cas.sh`, qui **photographie l'application** au lieu
+de la dessiner, et qui rend le code à son état d'origine même en cas d'échec.
+
+**Et la troisième proposition a été écartée par l'image elle-même** : montrer
+trois cartes au lieu de deux met bien le rappel à l'écran… sous le bord, hors de
+vue. Une capture vaut mieux qu'un raisonnement.
+
 ### Le rappel du devis qui tarde : CODÉ, sur ses trois mots
 
 **Ses décisions, du 16 août :** *« la B et 4 »*, puis *« le G »*. La carte
