@@ -728,8 +728,12 @@ dans `src/`.
 demandé de recréer les fiches de chantier d'une autre application (paysagistes
 en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
 
-- **Ne pas commencer à coder** : sa règle du 11 août, et les deux questions de
-  fond ne sont pas tranchées (`TODO.md` § « La fiche d'entretien »).
+- **B et B sont tranchés le 16 août** (familles sur le chantier, seulement ce
+  qui a été fait chez le client), avec la saisie du temps et un écran de
+  Réglages pour composer la fiche. **Une question reste** : une fiche pour tous,
+  ou une par client (`TODO.md` § « La fiche d'entretien »). Ne pas coder avant.
+- **L'invariant à ne pas perdre** : un rapport déjà envoyé ne change plus jamais
+  quand le modèle change. Il est signé et parti chez le client.
 - **C'est un TROISIÈME parcours**, pas une case en plus : contrat → passages →
   rapport, à côté de devis → facture.
 - **Le piège à ne pas recopier** : l'autre application liste les vingt

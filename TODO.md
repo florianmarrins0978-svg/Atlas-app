@@ -27,36 +27,40 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 septvicies. La fiche d'entretien — **DEUX MAQUETTES POSÉES, sa décision attendue**
+### 0 septvicies. La fiche d'entretien — **B et B tranchés**, une question reste
 
-**Sa demande du 16 août 2026**, captures d'une autre application à l'appui : des
-fiches de chantier pour paysagistes en contrat d'entretien — cocher ce qui a été
-fait, puis envoyer au client.
+**Sa réponse du 16 août 2026 : « B et B »**, plus deux ajouts.
 
-**Terrain neuf** : rien dans `docs/AGENT.md` ne parle d'entretien récurrent.
-Cela suppose, si c'est retenu, un **contrat** (la liste des prestations dues), des
-**passages** récurrents, et un **rapport** par passage. C'est un troisième
-parcours à côté du devis→facture, pas une case à ajouter quelque part.
+| Tranché | Ce qu'il a choisi |
+|---|---|
+| Le geste sur le chantier | **B** — rangée par familles, avec le compte « 1/4 » |
+| Ce que voit le client | **B** — seulement ce qui a été fait |
+| Le temps passé | une **case de saisie** sur la fiche, le planifié rappelé à côté |
+| Où se compose la fiche | dans les **Réglages**, « Ma fiche d'entretien » — modèle fourni, modifiable |
 
-**Ce qui est posé** (aucune ligne de `src/`) :
-`docs/maquettes/62-la-fiche-dentretien.html` et `63-le-rapport-au-client.html`,
-engendrées d'une seule liste par `scripts/engendrer-maquette-fiche-entretien.mjs`,
-gardées par `scripts/verifier-maquette-fiche-entretien.mjs`.
+**CE QUI RESTE À TRANCHER, et ce n'est pas du rangement** (planche
+`docs/maquettes/64-composer-sa-fiche.html`) :
 
-**Les deux questions qui lui reviennent :**
+> **Une seule fiche pour tous ses clients, ou un modèle puis une fiche par
+> client ?**
 
-1. **Le geste sur le chantier** — la liste d'un bloc (A), rangée par familles
-   avec un compte (B), ou trois états dont « sans objet » (C). C coûte trois
-   fois plus de gestes, y compris sur les seize lignes qui ne le concernent pas
-   ce jour-là.
-2. **Ce que voit le client** — tout comme l'autre application (A), seulement ce
-   qui a été fait (B), ou le reste replié en une phrase (C). B est le plus
-   lisible et le plus risqué : quatre lignes pour le prix d'un passage complet
-   peuvent faire douter, et lui valoir l'appel.
+Une fiche unique se tient en un endroit, mais chaque client voit les vingt
+lignes — y compris celles qu'il ne paie pas, et c'est le chantier qui les fait
+défiler. Une fiche par client est ce que le contrat décrit vraiment, au prix
+d'un geste de plus à la signature.
 
-**Ce qui n'est pas à trancher, et qui est déjà écrit dans les planches** : la
-liste vient du contrat ; ce qui n'est pas coché n'est pas une faute ; l'envoi
-emprunte le chemin qui porte déjà devis et factures.
+**Ce qui n'est pas à trancher, et qui est déjà écrit dans les planches :**
+
+- **un rapport déjà envoyé ne change plus jamais** — retirer une ligne du modèle
+  en octobre ne touche pas aux rapports de juillet, qui sont signés et partis.
+  C'est l'erreur qui ne se rattrape pas ;
+- le retrait d'une ligne est **réversible** (règle du 10 août) ;
+- la liste vient du contrat, ce qui n'est pas coché n'est pas une faute, et
+  l'envoi emprunte le chemin qui porte déjà devis et factures.
+
+**Ce que ce parcours suppose, s'il est retenu** : un contrat (la liste due), des
+passages récurrents, un rapport par passage. C'est un troisième parcours à côté
+du devis → facture, pas une case à ajouter.
 
 ### 0 quadragies. La réduction accordée au client — dessinée, attend son mot
 

@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### La fiche d'entretien : B et B, la saisie du temps, et où elle se compose
+
+**Sa réponse du 16 août : « B et B »** — rangée par familles sur le chantier,
+et seulement ce qui a été fait chez le client. Plus deux ajouts : *« une case
+pour pouvoir rentrer le temps passé »*, et *« dans les réglages […] un endroit
+où l'utilisateur pourra créer cette fiche »*.
+
+Les planches 62 et 63 s'ouvrent désormais sur **B**, et un contrôle le tient :
+une planche qui rouvrirait sur A lui montrerait, dans six mois, autre chose que
+ce qu'il a choisi. Le temps passé devient une **case de saisie**, le planifié
+rappelé à côté et l'écart calculé.
+
+Une troisième planche, `64-composer-sa-fiche.html` : la fiche se compose dans
+les Réglages — ajouter, retirer, renommer, et **se dédire** (le retrait est
+réversible, comme partout depuis le 10 août).
+
+**Une question reste, et elle n'est pas de rangement** : une seule fiche pour
+tous ses clients, ou un modèle puis une fiche par client ? Et une conséquence
+qui n'est pas à choisir : **un rapport déjà envoyé ne change plus jamais** —
+retirer une ligne du modèle en octobre ne doit rien changer aux rapports de
+juillet, qui sont signés et partis chez le client.
+
+Toujours **aucune ligne de `src/`**.
+
+---
+
 ### Deux maquettes pour la fiche d'entretien des paysagistes — RIEN N'EST CODÉ
 
 **Sa demande du 16 août**, captures d'une autre application à l'appui : *« des

@@ -278,16 +278,24 @@ ${CHARTE}
   .etat:checked + .tri-s{background:var(--teinte);color:var(--encre)}
 
   .fin{margin-top:18px;border-top:1px solid var(--trait);padding-top:14px}
-  .fin .l{display:flex;justify-content:space-between;font-size:13.5px;
-          color:var(--gris);padding:7px 0}
-  .fin .l b{color:var(--encre);font-weight:600}
+  .champ-nom{margin:12px 0 5px;font-size:11px;letter-spacing:.13em;
+             text-transform:uppercase;color:var(--or);display:flex;
+             justify-content:space-between;align-items:baseline}
+  .champ-nom .prevu{font-size:11px;letter-spacing:0;color:var(--gris);
+                    text-transform:none}
+  .saisie{display:flex;align-items:center;gap:9px}
+  .saisie input{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--encre);
+                background:transparent;border:1px solid var(--trait);
+                border-radius:10px;padding:11px 12px}
+  .saisie .ecart{flex:none;font-size:12px;color:var(--pin);
+                 background:var(--teinte);border-radius:999px;padding:5px 10px}
   .bouton{display:block;margin-top:16px;text-align:center;padding:15px;
           border-radius:999px;background:var(--pin);color:var(--papier);
           font-size:15px}
 </style>
 
-<input type="radio" name="g" id="g-a" class="etat" checked>
-<input type="radio" name="g" id="g-b" class="etat">
+<input type="radio" name="g" id="g-a" class="etat">
+<input type="radio" name="g" id="g-b" class="etat" checked>
 <input type="radio" name="g" id="g-c" class="etat">
 
 <div class="dedans">
@@ -305,7 +313,7 @@ ${CHARTE}
     <span class="quoi">Le geste sur le chantier</span>
     <div class="segments">
       <label for="g-a">A · La liste, d'un bloc</label>
-      <label for="g-b">B · Rangée par familles</label>
+      <label for="g-b">B · Rangée par familles — <b>retenu</b></label>
       <label for="g-c">C · Fait / non / sans objet</label>
     </div>
   </div>
@@ -327,8 +335,15 @@ ${lignesTroisEtats()}
       </div>
 
       <div class="fin">
-        <div class="l"><span>Temps passé</span><b>1 h 40</b></div>
-        <div class="l"><span>Observations</span><span>—</span></div>
+        <p class="champ-nom">Temps passé <span class="prevu">planifié 2 h 30</span></p>
+        <div class="saisie">
+          <input type="text" value="1 h 40" aria-label="Temps passé sur le chantier">
+          <span class="ecart">− 50 min</span>
+        </div>
+
+        <p class="champ-nom">Observations</p>
+        <div class="saisie"><input type="text" value="" placeholder="Rien à signaler" aria-label="Observations"></div>
+
         <span class="bouton">Enregistrer et envoyer</span>
       </div>
     </div>
@@ -361,6 +376,19 @@ ${lignesTroisEtats()}
         compte pour le client.</span>
       </div>
     </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Retenu le 16 août 2026</span>
+    <ul>
+      <li><b>B — rangée par familles.</b> Sa réponse, en un mot : « B et B ».</li>
+      <li><b>Le temps passé se saisit à la main</b>, sur la fiche, à la fin du
+        passage. Le temps PLANIFIÉ est rappelé à côté, en petit, et l'écart se
+        calcule tout seul — c'est ce que fait déjà l'autre application, et c'est
+        ce qui vous dit si le contrat est bien taillé.</li>
+      <li><b>Les observations restent un champ libre</b> : c'est là que se note
+        « portail à réparer », et c'est ce que le client lira.</li>
+    </ul>
   </div>
 
   <div class="note">
@@ -482,7 +510,7 @@ ${CHARTE}
     <span class="quoi">Ce que le client voit</span>
     <div class="segments">
       <label for="r-a">A · Tout, comme l'autre</label>
-      <label for="r-b">B · Seulement ce qui a été fait</label>
+      <label for="r-b">B · Seulement ce qui a été fait — <b>retenu</b></label>
       <label for="r-c">C · Ce qui a été fait, le reste replié</label>
     </div>
   </div>
@@ -555,8 +583,202 @@ ${lignesRapport((l) => l.fait)}
 </div>
 `;
 
+
+/* ── Planche 64 : où il compose sa fiche, dans les Réglages ──────────────── */
+
+const lignesModele = FAMILLES.map(
+  (f, i) => `      <div class="fam-bloc">
+        <p class="fam">${f.nom}<span class="retirer-fam">Renommer</span></p>
+${f.lignes
+  .map(
+    (l, j) => `        <div class="mod${i === 3 && j === 3 ? " retiree" : ""}">
+          <span class="poignee">⠿</span>
+          <span class="nom">${l.nom}</span>
+          <span class="croix">${i === 3 && j === 3 ? "Rétablir" : "×"}</span>
+        </div>`
+  )
+  .join("\n")}
+        <p class="ajouter">+ Ajouter une prestation</p>
+      </div>`
+).join("\n");
+
+const PLANCHE_MODELE = `<title>Composer sa fiche d'entretien</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    COMPOSER SA FICHE — l'endroit, dans les Réglages, où la liste se fabrique.
+
+    LE PATRON, LE 16 AOÛT 2026, après avoir choisi B et B : « dans les réglages,
+    il faut créer une nouvelle case ou le ranger quelque part, un endroit où
+    l'utilisateur pourra créer cette fiche. Donc on peut mettre déjà cette fiche
+    en modèle, mais également il pourra la modifier, donc retirer ou ajouter des
+    cases s'il le souhaite. »
+
+    ————————————————————————————————————————————————————————————————
+    LA QUESTION QUI RESTE, ET ELLE N'EST PAS DE MISE EN PAGE.
+
+    Une seule fiche pour tous ses clients, ou une par client ?
+
+    Elle a l'air d'un détail de rangement. Elle ne l'est pas : les planches 62
+    et 63 posent que « la liste vient du contrat », et un client qui paie la
+    tonte et le ramassage n'a pas à voir seize lignes qui ne le concernent pas.
+    Une fiche unique est plus simple à tenir ; une fiche par client est ce que
+    le contrat décrit vraiment.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI N'EST PAS À CHOISIR — ce sont des conséquences.
+
+    · UN RAPPORT DÉJÀ ENVOYÉ NE CHANGE PLUS. Retirer « Scarification » du modèle
+      en octobre ne doit rien changer aux rapports de juillet : ils sont signés,
+      ils sont partis chez le client, ce sont des preuves de passage. Le modèle
+      décrit les passages À VENIR, jamais ceux qui ont eu lieu. C'est l'erreur
+      qui ne se rattrape pas — un document déjà remis qui se réécrit tout seul.
+    · LE RETRAIT EST RÉVERSIBLE, comme partout dans Atlas depuis le 10 août :
+      la ligne se barre et se rétablit d'un geste, elle ne disparaît pas sous le
+      doigt. « Démoussage voirie » est montrée retirée pour qu'on le voie.
+    · LES FAMILLES SONT DE LUI. Pelouse, Tailles, Massifs, Propreté sont un
+      point de départ, pas une nomenclature imposée : elles se renomment.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : le dossier src/ n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT. Engendré par scripts/engendrer-maquette-fiche-entretien.mjs
+    Contrôle : scripts/verifier-maquette-fiche-entretien.mjs
+  */
+${CHARTE}
+  .ma,.mb{display:none}
+  #m-a:checked ~ .dedans .ma,
+  #m-b:checked ~ .dedans .mb{display:block}
+  #m-a:checked ~ .dedans label[for="m-a"],
+  #m-b:checked ~ .dedans label[for="m-b"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+
+  .reglages{margin-bottom:8px}
+  .reglages .r{display:flex;justify-content:space-between;align-items:center;
+               padding:13px 2px;border-bottom:1px solid var(--trait);
+               font-size:15px;color:var(--gris)}
+  .reglages .r.neuf{color:var(--encre);font-weight:600}
+  .reglages .r .fleche{color:var(--trait)}
+  .reglages .r.neuf .fleche{color:var(--or)}
+
+  .fam-bloc{margin-bottom:6px}
+  .fam{margin:16px 0 2px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or);display:flex;
+       justify-content:space-between;align-items:baseline}
+  .fam .retirer-fam{font-size:11px;letter-spacing:0;text-transform:none;
+                    color:var(--gris)}
+  .mod{display:flex;align-items:center;gap:10px;min-height:46px;
+       border-bottom:1px solid var(--trait);font-size:14.5px;color:var(--encre)}
+  .mod .poignee{color:var(--trait);flex:none}
+  .mod .nom{flex:1;min-width:0}
+  .mod .croix{flex:none;color:var(--gris);font-size:13px}
+  .mod.retiree .nom{text-decoration:line-through;color:var(--gris)}
+  .mod.retiree .croix{color:var(--or)}
+  .ajouter{margin:9px 0 0;font-size:13.5px;color:var(--or)}
+
+  .bouton{display:block;margin-top:18px;text-align:center;padding:15px;
+          border-radius:999px;background:var(--pin);color:var(--papier);
+          font-size:15px}
+  .parclient{margin-top:14px;padding:12px 13px;border-radius:12px;
+             background:var(--teinte);font-size:12.5px;color:var(--gris)}
+  .parclient b{color:var(--encre)}
+</style>
+
+<input type="radio" name="m" id="m-a" class="etat" checked>
+<input type="radio" name="m" id="m-b" class="etat">
+
+<div class="dedans">
+  <h1>Composer sa fiche d'entretien</h1>
+  <p class="intro">Là où la liste se fabrique, dans les Réglages. <b>Rien n'est
+    codé.</b> Une question reste, et elle n'est pas de rangement : <b>une seule
+    fiche, ou une par client ?</b></p>
+
+  <p class="dit">« Dans les réglages, un endroit où l'utilisateur pourra créer
+    cette fiche. On peut mettre <b>déjà cette fiche en modèle</b>, mais également
+    il pourra la modifier — <b>retirer ou ajouter des cases</b> s'il le
+    souhaite. »</p>
+
+  <div class="reglage">
+    <span class="quoi">Une fiche, ou plusieurs ?</span>
+    <div class="segments">
+      <label for="m-a">A · Une seule fiche, la même partout</label>
+      <label for="m-b">B · Un modèle, puis une fiche par client</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Réglages</span><span class="quand">Arborea</span></div>
+      <div class="reglages">
+        <div class="r"><span>Mon identité</span><span class="fleche">›</span></div>
+        <div class="r"><span>Mes équipes</span><span class="fleche">›</span></div>
+        <div class="r"><span>Mes tarifs</span><span class="fleche">›</span></div>
+        <div class="r neuf"><span>Ma fiche d'entretien</span><span class="fleche">›</span></div>
+        <div class="r"><span>Mes documents</span><span class="fleche">›</span></div>
+      </div>
+
+      <p class="titre-fiche" style="margin-top:18px">Ma fiche d'entretien</p>
+      <p class="sous ma">Elle sert à tous vos contrats d'entretien.</p>
+      <p class="sous mb">Le modèle. Chaque client part de là, puis s'ajuste.</p>
+
+${lignesModele}
+
+      <p class="ajouter">+ Ajouter une famille</p>
+
+      <div class="mb parclient">
+        <b>Monsieur Martins</b> — 14 prestations sur 20.<br>
+        Retirées pour lui : Traitement pelouse, Scarification, Engrais,
+        Désherbant allée, Démoussage voirie, Bêchage.
+      </div>
+
+      <span class="bouton">Enregistrer</span>
+    </div>
+
+    <div class="legende">
+      <div class="ma">
+        <span class="t">A · Une seule fiche, la même partout</span>
+        Une liste, tenue une fois. Tous les contrats la partagent, et la modifier
+        les met tous à jour d'un coup.
+        <span class="cout">Ce que ça coûte : <b>chaque client voit les vingt
+        lignes</b>, y compris celles qu'il ne paie pas. Sur le chantier, vous
+        faites défiler des prestations qui ne concernent pas ce jardin — et le
+        rapport, lui, ne montre que ce qui a été fait, donc le client ne verra
+        pas la différence. C'est le chantier qui paie, pas le client.</span>
+      </div>
+      <div class="mb">
+        <span class="t">B · Un modèle, puis une fiche par client</span>
+        Le modèle sert de point de départ ; à la signature d'un contrat, on
+        décoche ce que ce client ne prend pas. Sa fiche ne porte alors que ses
+        prestations — quatorze au lieu de vingt.
+        <span class="cout">Ce que ça coûte : <b>un geste de plus par client</b>,
+        une fois, à la signature. Et une question à trancher : quand vous
+        modifiez le modèle, les fiches déjà ajustées bougent-elles ? (Ma
+        proposition : <b>non</b> — sinon un ajustement fait pour un client se
+        déferait tout seul.)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui n'est pas à choisir</span>
+    <ul>
+      <li><b>Un rapport déjà envoyé ne change plus jamais.</b> Retirer une ligne
+        du modèle en octobre ne touche pas aux rapports de juillet : ils sont
+        signés et partis chez le client. Le modèle décrit les passages À VENIR.
+        C'est l'erreur qui ne se rattrape pas.</li>
+      <li><b>Le retrait est réversible</b>, comme partout dans Atlas depuis le
+        10 août : la ligne se barre et se rétablit. « Démoussage voirie »
+        est montrée retirée pour que vous le voyiez.</li>
+      <li><b>Les familles sont les vôtres</b> : Pelouse, Tailles, Massifs,
+        Propreté sont un point de départ, pas une nomenclature imposée.</li>
+    </ul>
+  </div>
+</div>
+`;
+
 writeFileSync(join(DOSSIER, "62-la-fiche-dentretien.html"), PLANCHE_FICHE);
 writeFileSync(join(DOSSIER, "63-le-rapport-au-client.html"), PLANCHE_RAPPORT);
+writeFileSync(join(DOSSIER, "64-composer-sa-fiche.html"), PLANCHE_MODELE);
 console.log(
-  `✅ Deux planches engendrées — ${TOUTES.length} prestations, dont ${FAITES.length} faites.`
+  `✅ Trois planches engendrées — ${TOUTES.length} prestations, dont ${FAITES.length} faites.`
 );

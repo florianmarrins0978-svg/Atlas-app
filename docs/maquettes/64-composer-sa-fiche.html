@@ -1,0 +1,353 @@
+<title>Composer sa fiche d'entretien</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    COMPOSER SA FICHE — l'endroit, dans les Réglages, où la liste se fabrique.
+
+    LE PATRON, LE 16 AOÛT 2026, après avoir choisi B et B : « dans les réglages,
+    il faut créer une nouvelle case ou le ranger quelque part, un endroit où
+    l'utilisateur pourra créer cette fiche. Donc on peut mettre déjà cette fiche
+    en modèle, mais également il pourra la modifier, donc retirer ou ajouter des
+    cases s'il le souhaite. »
+
+    ————————————————————————————————————————————————————————————————
+    LA QUESTION QUI RESTE, ET ELLE N'EST PAS DE MISE EN PAGE.
+
+    Une seule fiche pour tous ses clients, ou une par client ?
+
+    Elle a l'air d'un détail de rangement. Elle ne l'est pas : les planches 62
+    et 63 posent que « la liste vient du contrat », et un client qui paie la
+    tonte et le ramassage n'a pas à voir seize lignes qui ne le concernent pas.
+    Une fiche unique est plus simple à tenir ; une fiche par client est ce que
+    le contrat décrit vraiment.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI N'EST PAS À CHOISIR — ce sont des conséquences.
+
+    · UN RAPPORT DÉJÀ ENVOYÉ NE CHANGE PLUS. Retirer « Scarification » du modèle
+      en octobre ne doit rien changer aux rapports de juillet : ils sont signés,
+      ils sont partis chez le client, ce sont des preuves de passage. Le modèle
+      décrit les passages À VENIR, jamais ceux qui ont eu lieu. C'est l'erreur
+      qui ne se rattrape pas — un document déjà remis qui se réécrit tout seul.
+    · LE RETRAIT EST RÉVERSIBLE, comme partout dans Atlas depuis le 10 août :
+      la ligne se barre et se rétablit d'un geste, elle ne disparaît pas sous le
+      doigt. « Démoussage voirie » est montrée retirée pour qu'on le voie.
+    · LES FAMILLES SONT DE LUI. Pelouse, Tailles, Massifs, Propreté sont un
+      point de départ, pas une nomenclature imposée : elles se renomment.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : le dossier src/ n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT. Engendré par scripts/engendrer-maquette-fiche-entretien.mjs
+    Contrôle : scripts/verifier-maquette-fiche-entretien.mjs
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:940px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+  .dit b{color:var(--encre);font-weight:600}
+
+  .etat{position:absolute;opacity:0;pointer-events:none}
+  .reglage{margin:0 0 18px}
+  .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .segments{display:flex;flex-wrap:wrap;gap:8px}
+  .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+  .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:16px 15px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+  .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:12px}
+  .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+  .barre .quand{font-size:11.5px;color:var(--gris)}
+  .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+  .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+
+  .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+  .legende b{color:var(--encre);font-weight:600}
+  .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+
+  .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .note ul{margin:8px 0 0;padding-left:19px}
+  .note li{margin-bottom:6px}
+
+  .ma,.mb{display:none}
+  #m-a:checked ~ .dedans .ma,
+  #m-b:checked ~ .dedans .mb{display:block}
+  #m-a:checked ~ .dedans label[for="m-a"],
+  #m-b:checked ~ .dedans label[for="m-b"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+
+  .reglages{margin-bottom:8px}
+  .reglages .r{display:flex;justify-content:space-between;align-items:center;
+               padding:13px 2px;border-bottom:1px solid var(--trait);
+               font-size:15px;color:var(--gris)}
+  .reglages .r.neuf{color:var(--encre);font-weight:600}
+  .reglages .r .fleche{color:var(--trait)}
+  .reglages .r.neuf .fleche{color:var(--or)}
+
+  .fam-bloc{margin-bottom:6px}
+  .fam{margin:16px 0 2px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or);display:flex;
+       justify-content:space-between;align-items:baseline}
+  .fam .retirer-fam{font-size:11px;letter-spacing:0;text-transform:none;
+                    color:var(--gris)}
+  .mod{display:flex;align-items:center;gap:10px;min-height:46px;
+       border-bottom:1px solid var(--trait);font-size:14.5px;color:var(--encre)}
+  .mod .poignee{color:var(--trait);flex:none}
+  .mod .nom{flex:1;min-width:0}
+  .mod .croix{flex:none;color:var(--gris);font-size:13px}
+  .mod.retiree .nom{text-decoration:line-through;color:var(--gris)}
+  .mod.retiree .croix{color:var(--or)}
+  .ajouter{margin:9px 0 0;font-size:13.5px;color:var(--or)}
+
+  .bouton{display:block;margin-top:18px;text-align:center;padding:15px;
+          border-radius:999px;background:var(--pin);color:var(--papier);
+          font-size:15px}
+  .parclient{margin-top:14px;padding:12px 13px;border-radius:12px;
+             background:var(--teinte);font-size:12.5px;color:var(--gris)}
+  .parclient b{color:var(--encre)}
+</style>
+
+<input type="radio" name="m" id="m-a" class="etat" checked>
+<input type="radio" name="m" id="m-b" class="etat">
+
+<div class="dedans">
+  <h1>Composer sa fiche d'entretien</h1>
+  <p class="intro">Là où la liste se fabrique, dans les Réglages. <b>Rien n'est
+    codé.</b> Une question reste, et elle n'est pas de rangement : <b>une seule
+    fiche, ou une par client ?</b></p>
+
+  <p class="dit">« Dans les réglages, un endroit où l'utilisateur pourra créer
+    cette fiche. On peut mettre <b>déjà cette fiche en modèle</b>, mais également
+    il pourra la modifier — <b>retirer ou ajouter des cases</b> s'il le
+    souhaite. »</p>
+
+  <div class="reglage">
+    <span class="quoi">Une fiche, ou plusieurs ?</span>
+    <div class="segments">
+      <label for="m-a">A · Une seule fiche, la même partout</label>
+      <label for="m-b">B · Un modèle, puis une fiche par client</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Réglages</span><span class="quand">Arborea</span></div>
+      <div class="reglages">
+        <div class="r"><span>Mon identité</span><span class="fleche">›</span></div>
+        <div class="r"><span>Mes équipes</span><span class="fleche">›</span></div>
+        <div class="r"><span>Mes tarifs</span><span class="fleche">›</span></div>
+        <div class="r neuf"><span>Ma fiche d'entretien</span><span class="fleche">›</span></div>
+        <div class="r"><span>Mes documents</span><span class="fleche">›</span></div>
+      </div>
+
+      <p class="titre-fiche" style="margin-top:18px">Ma fiche d'entretien</p>
+      <p class="sous ma">Elle sert à tous vos contrats d'entretien.</p>
+      <p class="sous mb">Le modèle. Chaque client part de là, puis s'ajuste.</p>
+
+      <div class="fam-bloc">
+        <p class="fam">Pelouse<span class="retirer-fam">Renommer</span></p>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Tonte et ébarbage</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Traitement pelouse</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Scarification</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Engrais</span>
+          <span class="croix">×</span>
+        </div>
+        <p class="ajouter">+ Ajouter une prestation</p>
+      </div>
+      <div class="fam-bloc">
+        <p class="fam">Tailles<span class="retirer-fam">Renommer</span></p>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Taille arbuste automne</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Taille arbuste printemps</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Taille de haie automne</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Taille de haie printemps</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Taille des rosiers</span>
+          <span class="croix">×</span>
+        </div>
+        <p class="ajouter">+ Ajouter une prestation</p>
+      </div>
+      <div class="fam-bloc">
+        <p class="fam">Massifs<span class="retirer-fam">Renommer</span></p>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Bêchage</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Bordures massifs</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Griffage massifs</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Désherbage massifs</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Coupe des fleurs fanées</span>
+          <span class="croix">×</span>
+        </div>
+        <p class="ajouter">+ Ajouter une prestation</p>
+      </div>
+      <div class="fam-bloc">
+        <p class="fam">Propreté<span class="retirer-fam">Renommer</span></p>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Nettoyage pied de haies</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Désherbant allée</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Lierre, liseron, liane</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod retiree">
+          <span class="poignee">⠿</span>
+          <span class="nom">Démoussage voirie</span>
+          <span class="croix">Rétablir</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Ramassage des feuilles</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Évacuation des déchets</span>
+          <span class="croix">×</span>
+        </div>
+        <p class="ajouter">+ Ajouter une prestation</p>
+      </div>
+
+      <p class="ajouter">+ Ajouter une famille</p>
+
+      <div class="mb parclient">
+        <b>Monsieur Martins</b> — 14 prestations sur 20.<br>
+        Retirées pour lui : Traitement pelouse, Scarification, Engrais,
+        Désherbant allée, Démoussage voirie, Bêchage.
+      </div>
+
+      <span class="bouton">Enregistrer</span>
+    </div>
+
+    <div class="legende">
+      <div class="ma">
+        <span class="t">A · Une seule fiche, la même partout</span>
+        Une liste, tenue une fois. Tous les contrats la partagent, et la modifier
+        les met tous à jour d'un coup.
+        <span class="cout">Ce que ça coûte : <b>chaque client voit les vingt
+        lignes</b>, y compris celles qu'il ne paie pas. Sur le chantier, vous
+        faites défiler des prestations qui ne concernent pas ce jardin — et le
+        rapport, lui, ne montre que ce qui a été fait, donc le client ne verra
+        pas la différence. C'est le chantier qui paie, pas le client.</span>
+      </div>
+      <div class="mb">
+        <span class="t">B · Un modèle, puis une fiche par client</span>
+        Le modèle sert de point de départ ; à la signature d'un contrat, on
+        décoche ce que ce client ne prend pas. Sa fiche ne porte alors que ses
+        prestations — quatorze au lieu de vingt.
+        <span class="cout">Ce que ça coûte : <b>un geste de plus par client</b>,
+        une fois, à la signature. Et une question à trancher : quand vous
+        modifiez le modèle, les fiches déjà ajustées bougent-elles ? (Ma
+        proposition : <b>non</b> — sinon un ajustement fait pour un client se
+        déferait tout seul.)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui n'est pas à choisir</span>
+    <ul>
+      <li><b>Un rapport déjà envoyé ne change plus jamais.</b> Retirer une ligne
+        du modèle en octobre ne touche pas aux rapports de juillet : ils sont
+        signés et partis chez le client. Le modèle décrit les passages À VENIR.
+        C'est l'erreur qui ne se rattrape pas.</li>
+      <li><b>Le retrait est réversible</b>, comme partout dans Atlas depuis le
+        10 août : la ligne se barre et se rétablit. « Démoussage voirie »
+        est montrée retirée pour que vous le voyiez.</li>
+      <li><b>Les familles sont les vôtres</b> : Pelouse, Tailles, Massifs,
+        Propreté sont un point de départ, pas une nomenclature imposée.</li>
+    </ul>
+  </div>
+</div>

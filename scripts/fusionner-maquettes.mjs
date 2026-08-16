@@ -313,6 +313,12 @@ const MAQUETTES = [
     famille: "L’entretien récurrent",
     quoi: "La sortie de la fiche. L’autre application lui montre seize fois « Faux » sur un passage qu’il paie : tout, seulement ce qui a été fait, ou le reste replié en une phrase.",
   },
+  {
+    fichier: "64-composer-sa-fiche.html",
+    titre: "Composer sa fiche d’entretien",
+    famille: "L’entretien récurrent",
+    quoi: "Dans les Réglages : ajouter, retirer, renommer ses prestations. La question qui reste — une seule fiche pour tous, ou un modèle puis une fiche par client.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
