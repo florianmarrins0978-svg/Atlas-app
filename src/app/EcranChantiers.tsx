@@ -227,6 +227,12 @@ export default function EcranChantiers({
             (l'onde d'attente, la taille du rond, le nombre de grains). Ne pas
             les réinventer ici — les deux finiraient par diverger.
 
+            **Le MOT, lui, a grossi le 16 août 2026** — « les capitales, gros et
+            très gras », d'après `docs/maquettes/67-le-nouveau-chantier-plus-gros.html` :
+            13 px, graisse 800, interlettrage 0,22 em, rond de 42 px. Les
+            valeurs vivent dans `globals.css` ; ce fichier-ci ne porte que la
+            structure.
+
             L'action reste un LIEN : sans JavaScript, ou en ouvrant dans un
             nouvel onglet, elle mène à l'écran entier. Le clic ordinaire est
             détourné pour jouer le geste puis faire monter la feuille — la route

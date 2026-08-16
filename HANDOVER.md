@@ -64,7 +64,17 @@ Sur la fiche, deux lignes ensemble tranchent la question sans hypothèse :
 | Ce que la fiche montre | Ce que ça veut dire |
 |---|---|
 | `Serveur : répond` **+** `Code SERVI : … construction en cours` | **rien à réparer, c'est passager** — le banc compile chaque écran à l'ouverture (30-100 s) et le mandataire de GitHub renonce à 60 s. Recharger une minute plus tard suffit |
-| `Code SERVI : … la construction a ÉCHOUÉ` | **ça ne se répare pas tout seul** — le banc restera lent tant que `next build` ne passe pas. Le bloc « Au moment de l'échec » donne le disque et la mémoire à cette seconde-là : c'est là qu'il faut regarder. `TODO.md` 0 quadragies quater |
+| `Code SERVI : … la construction a ÉCHOUÉ` | **ça ne se répare pas tout seul** — le banc restera lent tant que `next build` ne passe pas. Le bloc « Au moment de l'échec » porte l'heure, le disque, la mémoire **et ce que la construction a dit** : lire cette dernière ligne EN PREMIER, c'est elle qui tranche |
+
+**« Another next build process is already running » : ne pas effacer le
+verrou.** Le message parle d'une construction « qui n'est pas sortie
+proprement », ce qui fait croire à un fichier périmé. **Éprouvé le 16 août
+2026 : faux.** Un `lock` posé à la main n'empêche aucune construction — le
+verrou est pris auprès du système et relâché par le noyau à la mort du
+processus. Quand ce message apparaît, **une construction tourne pour de bon**,
+et l'effacer en lancerait une seconde à côté. La vraie cause était ailleurs :
+`demarrer.sh` n'incluait pas `build` dans son `pkill`, et orphelinait une
+construction à chaque démarrage (`CHANGELOG.md` du 16 août).
 | `Serveur : NE RÉPOND PAS`, fiche écrite **à l'allumage** | normal à cet instant, le veilleur relève dans quinze secondes |
 | `Serveur : NE RÉPOND PAS`, fiche écrite **par le veilleur** | vraie panne |
 
@@ -810,6 +820,30 @@ en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
   fois « Faux » sur un passage qu'il paie.
 - **Les planches sont ENGENDRÉES** (`scripts/engendrer-maquette-fiche-entretien.mjs`)
   d'une seule liste : ne pas les retoucher à la main, elles divergeraient.
+
+**« LE NOUVEAU CHANTIER » A GROSSI (16 août) — dessiné le matin, choisi et codé
+dans la journée.** Sa réponse devant `docs/maquettes/67` : **« les capitales,
+gros et très gras »** — 13 px, graisse 800, interlettrage 0,22 em, rond de
+42 px, signe inchangé à 20. Les valeurs vivent dans `globals.css`
+(`.atlas-mot`, `.atlas-rond`).
+
+**⚠ `docs/maquettes/24-le-bouton-retenu.html` n'est PLUS la référence du
+libellé** — elle porte un bandeau qui le dit, et renvoie à la 67. Elle reste
+celle de l'onde, des trois tours et des onze grains, qui n'ont pas bougé. Ne pas
+« ré-harmoniser » le reste sur ses chiffres.
+
+**Et ne pas rétrécir le mot pour faire tenir autre chose à côté :** à 360 px, le
+mot, l'écart et le rond font 237 px pour 308 disponibles.
+`test-bouton-nouveau-chantier-e2e.ts` mesure les deux dérives — le retour au
+libellé minuscule et la coupure en « … ».
+
+**Et un piège de la page unique, corrigé au passage.**
+`scripts/fusionner-maquettes.mjs` préfixe les identifiants pour qu'ils ne se
+marchent pas dessus d'une maquette à l'autre. Il ne le faisait **que dans le
+corps** : `#t-3:checked ~ …` et `label[for="t-3"]` restaient nus dans la feuille
+de style et ne désignaient plus rien. La planche s'affichait parfaitement et ne
+répondait à rien — aucune capture ne le montre. Les deux sont réécrits ensemble
+depuis, et la fusion refuse toute référence orpheline.
 
 **LE PRIX ACCORDÉ AU CLIENT (16 août).** « Fais cinq pour cent sur le montant du
 devis » : une remise en pourcentage, sous le total, qui suit jusqu'à la facture

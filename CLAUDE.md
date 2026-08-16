@@ -141,6 +141,26 @@ précautions et les raisons vont dans le dépôt — c'est à cela qu'il sert.
 Quelques lignes suffisent. Un tableau vaut mieux qu'un paragraphe. Une capture
 vaut mieux qu'une description. S'il veut le détail, il le demande.
 
+**Durci le 16 août 2026, et il faut l'entendre littéralement :** *« fais ce
+qu'il faut pour que ça fonctionne sans m'expliquer parce que je comprends
+rien »*. C'était après une soirée de panne où chaque message lui détaillait le
+mécanisme — verrous, motifs de `pkill`, processus orphelins.
+
+**Ce que cela veut dire, concrètement :**
+
+- devant une panne, **réparer et dire ce qu'il doit faire**, rien d'autre. Une
+  ligne : « c'est poussé, redémarre ton espace » ;
+- **aucun mécanisme** dans la réponse. Ni cause, ni tableau de diagnostic, ni
+  ce qu'on a écarté. Tout cela va dans `CHANGELOG.md` et `ARCHITECTURE.md`, qui
+  existent précisément pour ça ;
+- **ne pas lui faire porter le diagnostic.** Lui demander de coller une commande
+  est un aveu d'échec, pas une étape — la fiche existe pour éviter ça ;
+- il redemandera s'il veut savoir. Il l'a déjà fait, et il le refera.
+
+Ce n'est pas de l'incompétence de sa part : c'est un artisan qui veut une
+application qui marche. Lui expliquer un verrou de compilation, c'est lui faire
+payer une seconde fois une panne qu'il subit déjà.
+
 ## 3 bis. La maquette d'abord, le code ensuite
 
 **Règle posée par le patron le 11 août 2026**, après qu'une demande de geste

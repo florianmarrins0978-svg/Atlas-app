@@ -31,7 +31,28 @@ JOURNAL=/tmp/essai.log
 # port 3000** : le suivant ne pouvait plus s'y attacher, et l'orphelin servait un
 # cache périmé — toutes les pages en 404. Reproduit sur cette machine, en
 # regardant la liste des processus, pas en relisant le script.
-pkill -f "[n]ext(-server| dev| start)" 2>/dev/null || true
+# **`build` EST DANS LE MOTIF, et c'est le correctif du 16 août 2026.**
+#
+# Le patron : « l'appli est vraiment très lente, mais vraiment ». Sa
+# construction échouait à CHAQUE démarrage sur :
+#
+#     ✕ Another next build process is already running.
+#
+# Le motif d'avant — `next(-server| dev| start)` — n'attrapait pas
+# `next build`. Or ce script pose un veilleur AVANT la mise à jour (voir plus
+# bas, c'est délibéré) : ce premier veilleur lance un banc, qui lance une
+# construction. La mise à jour aboutit ensuite, on tue veilleur et serveur pour
+# les remplacer par leurs versions neuves — mais la CONSTRUCTION, elle,
+# survivait. Orpheline, elle gardait le verrou du système ; le banc suivant
+# tombait dessus, rendait 1, et le repli laissait le patron en mode
+# développement, où chaque écran se compile à l'ouverture.
+#
+# Cela se reproduisait à chaque allumage qui récupère du code, ce qui explique
+# que trois redémarrages n'y aient rien changé.
+#
+# Tuer une construction en cours ne coûte rien ici : elle bâtissait le code
+# d'AVANT la mise à jour, celui qu'on vient précisément de remplacer.
+pkill -f "[n]ext(-server| dev| start| build)" 2>/dev/null || true
 # Laisser le port se libérer : tuer n'est pas instantané, et se précipiter
 # reproduirait la panne qu'on vient d'éviter.
 sleep 1
@@ -203,7 +224,8 @@ if [ "$MISE_A_JOUR" = "faite" ]; then
   echo "$(date '+%d/%m %H:%M:%S') — code neuf : on remplace veilleur et serveur" >> "$JOURNAL"
   pkill -f "[v]eiller.sh" 2>/dev/null || true
   rm -f /tmp/atlas-veilleur.pid
-  pkill -f "[n]ext(-server| dev| start)" 2>/dev/null || true
+  # Voir le pavé plus haut : `build` est dans le motif à dessein.
+  pkill -f "[n]ext(-server| dev| start| build)" 2>/dev/null || true
   sleep 1
   lancer_veilleur
 fi

@@ -42,6 +42,47 @@ l'endroit exact où il compare ce qu'on lui a montré et ce qu'il obtient.
 
 ---
 
+### « Vraiment très lente » : une construction orpheline, à chaque démarrage
+
+**Sa plainte du soir**, après une page blanche, une lenteur extrême, puis un
+écran qui refusait de changer de page. Une seule cause aux trois.
+
+**Le mécanisme, et il se rejouait à CHAQUE allumage qui récupère du code :**
+
+| | |
+|---|---|
+| 1 | `demarrer.sh` pose le veilleur **avant** la mise à jour — délibéré, pour qu'une application réponde quoi qu'il arrive ensuite |
+| 2 | ce veilleur lance un banc, qui lance une **construction** |
+| 3 | la mise à jour aboutit : on tue veilleur et serveur pour les remplacer |
+| 4 | le motif tuait `next-server`, `next dev`, `next start` — **pas `next build`** |
+| 5 | la construction survit, orpheline, en gardant le verrou du système |
+| 6 | le banc suivant bâtit → « Another next build process is already running », code 1 |
+| 7 | repli en mode développement : chaque écran se compile à l'ouverture |
+
+**Ce que ça évite :** un banc condamné à la lenteur que trois redémarrages ne
+réparent pas — puisque chaque redémarrage reproduisait la panne.
+
+**Le contre-sens qu'il ne faut PAS refaire**, et il est écrit dans `banc.mjs` :
+le message de Next parle d'une construction « qui n'est pas sortie proprement »,
+ce qui fait croire à un verrou périmé qu'il suffirait d'effacer. **Éprouvé :
+faux.** Un fichier `lock` posé à la main n'empêche aucune construction — le
+verrou est pris auprès du système et relâché par le noyau. Quand le message
+apparaît, une construction tourne pour de bon, et l'effacer en lancerait une
+seconde à côté.
+
+**Deux aveuglements corrigés, et ils comptent autant que la panne :**
+
+- le témoin d'échec portait l'heure, le code, le disque et la mémoire — **jamais
+  ce que la construction avait DIT**. On a donc cherché une saturation pendant
+  des heures alors que le message tenait en une phrase ;
+- **la batterie ne bâtissait pas.** Types, lint, mémoire, suites base, suites
+  navigateur, connexion réelle — et aucune construction. Une panne qui n'existe
+  qu'à la construction traversait les cinquante-huit contrôles au vert, et c'est
+  le patron qui la découvrait, un soir, en cliquant. `next build` y entre.
+
+`scripts/test-verrou-construction.ts` tient les sept points, dont celui qui joue
+le vrai motif de `pkill` sur les vraies lignes de commande — relire un motif ne
+prouve rien, c'est ainsi qu'il est passé inaperçu.
 ### CODÉ : le rappel « facture impayée », et le premier rappel qui a un rythme
 
 Sa demande, en une phrase : *« faut faire a plus b, mais il faut également qu'on
@@ -249,6 +290,45 @@ planches dégradées : quatre rouges, chacun nommant le bon coupable.
 client. Rien ne sera codé avant.
 
 ---
+
+### « Le nouveau chantier » grossit : 13 px, très gras, rond de 42
+
+**Son choix du 16 août, la planche 67 en main : « les capitales, gros et très
+gras ».** Le libellé passe de 9 à 13 px, de la graisse 500 à 800, son
+interlettrage se resserre de 0,28 à 0,22 em — seize capitales à 0,28 em ne font
+plus un mot mais une frise —, et le rond suit, de 38 à 42 px. Le signe reste à
+20 : l'agrandir aurait rempli l'anneau.
+
+**Ce que ça évite, et c'est le risque de ce genre de demande :** grossir
+jusqu'à la coupure. `test-bouton-nouveau-chantier-e2e.ts` mesure désormais le
+mot **à 360 px**, le plus étroit de ses écrans, et refuse les deux dérives
+opposées — le retour au libellé minuscule (≥ 12 px, ≥ 700) et le « … ».
+
+**Et `docs/maquettes/24-le-bouton-retenu.html` a été corrigé dans le même
+commit.** C'est lui qui avait resserré cet endroit le 11 août, et cette planche
+chiffre les mesures que le code est censé suivre : la laisser dire 9 px pendant
+que le code en fait 13, c'est garantir qu'une prochaine session croira la
+mauvaise. Elle porte maintenant un bandeau, et renvoie à la 67.
+
+### La planche de ce choix — trois formes, trois tailles, trois graisses
+
+**Sa demande du 16 août**, capture à l'appui. `src/` n'est pas touché : la
+planche `docs/maquettes/67-le-nouveau-chantier-plus-gros.html` propose trois
+formes, trois tailles et trois graisses, avec **le témoin d'aujourd'hui figé à
+côté** — sans repère immobile, « plus gros » ne se compare à rien.
+
+**Ce que ça évite :** grossir jusqu'à la coupure. Le cran le plus gros est le
+plus gros qui tienne encore sur un écran de 360 px (284 px pour 308 disponibles),
+et `scripts/verifier-maquette-nouveau-chantier.mjs` refuse tout ce qui déborde,
+en donnant les pixels manquants plutôt que le nom d'un sélecteur.
+
+**Et un défaut de la page unique corrigé au passage, qui ne se voyait pas.**
+`fusionner-maquettes.mjs` préfixait les identifiants du corps sans les suivre
+dans la feuille de style : `#t-3:checked ~ …` et `label[for="t-3"]` désignaient
+alors le vide. La planche s'affichait parfaitement **et ne répondait à rien** —
+la panne que ce script existe justement pour empêcher. Les deux sont désormais
+réécrits ensemble, et un contrôle refuse la fusion si une référence reste
+orpheline (vu rouge sur les maquettes 58, 59 et 60 en le désactivant).
 
 ### La fiche du banc se taisait EXACTEMENT quand elle devenait utile
 
