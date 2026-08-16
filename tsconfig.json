@@ -76,7 +76,8 @@
     ".next-batie/dev/types/**/*.ts",
     ".next/dev/dev/types/**/*.ts",
     ".next-banc-essai/types/**/*.ts",
-    ".next-banc-essai/dev/types/**/*.ts"
+    ".next-banc-essai/dev/types/**/*.ts",
+    ".next-banc-essai/dev/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

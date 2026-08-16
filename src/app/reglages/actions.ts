@@ -8,6 +8,8 @@ import { montantLu, rapprocher, type LigneImportee, type TarifExistant } from "@
 import { exigerProprietaire } from "@/server/autorisation";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { nommerEquipe } from "@/server/repositories/equipes";
+import { noterAbsenceEquipe, retirerAbsenceEquipe } from "@/server/repositories/absences-equipe";
+import { phraseDuRefus, refusDeLAbsence } from "@/lib/absences-equipe";
 import { versionExecutee } from "@/server/version-executee";
 import { issueApresMiseAJour } from "@/lib/issue-mise-a-jour";
 
@@ -192,6 +194,59 @@ export async function mettreAJourNombreEquipesAction(nombreEquipes: number) {
   await exigerProprietaire(ctx, "modifier le nombre d'équipes");
   const e = await mettreAJourEntreprise(ctx, { nombreEquipes });
   return { nombreEquipes: e?.nombreEquipes ?? 1 };
+}
+
+/**
+ * Noter qu'une équipe n'est pas là, et la retirer de la capacité ces jours-là.
+ *
+ * *Le patron, le 14 août 2026 : « une équipe qui doit partir en déplacement
+ * pour cinq jours ».* Retenu sur maquette (`docs/maquettes/55`, proposition A).
+ *
+ * **Les refus se RENDENT, ils ne se lèvent pas.** Le message d'une exception
+ * levée par une action serveur n'atteint jamais l'écran du patron : Next.js le
+ * remplace en production par un identifiant opaque, et son banc sert une
+ * version bâtie (`AGENTS.md`). Chaque refus revient donc en valeur, avec sa
+ * phrase — et c'est la MÊME règle que l'écran, jamais une seconde
+ * (`src/lib/absences-equipe.ts`).
+ */
+export type ResultatAbsence =
+  | { ok: true; id: string }
+  | { ok: false; raison: string };
+
+export async function noterAbsenceAction(formData: FormData): Promise<ResultatAbsence> {
+  const rang = Number(formData.get("rang"));
+  const premierJour = String(formData.get("premierJour") ?? "").trim();
+  const dernierJour = String(formData.get("dernierJour") ?? "").trim();
+  const motif = String(formData.get("motif") ?? "").trim() || null;
+
+  // **Rejouée au serveur, même si l'écran l'a déjà vue.** Un écran n'est pas
+  // une garde : il suffit d'une requête écrite à la main pour poser une absence
+  // à l'envers, qui n'occuperait alors aucun jour et rendrait la capacité
+  // fausse en silence.
+  const refus = refusDeLAbsence(premierJour, dernierJour);
+  if (refus) return { ok: false, raison: phraseDuRefus(refus) };
+
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "noter l'absence d'une équipe");
+
+  const ligne = await noterAbsenceEquipe(ctx, { rang, premierJour, dernierJour, motif });
+  if (!ligne) return { ok: false, raison: "Cette équipe n\u2019existe pas." };
+  return { ok: true, id: ligne.id };
+}
+
+/**
+ * Retirer une absence notée par erreur.
+ *
+ * `false` veut dire « la ligne n'a pas bougé » — filtrée par la RLS, ou déjà
+ * retirée. L'écran doit alors la remettre plutôt que de la faire disparaître à
+ * tort : une absence effacée sans l'être rendrait des dates que le patron croit
+ * bloquées (`ARCHITECTURE.md` §48).
+ */
+export async function retirerAbsenceAction(id: string): Promise<{ ok: boolean }> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "retirer l'absence d'une équipe");
+  const ligne = await retirerAbsenceEquipe(ctx, id);
+  return { ok: Boolean(ligne) };
 }
 
 /**

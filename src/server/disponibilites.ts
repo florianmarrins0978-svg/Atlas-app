@@ -6,6 +6,11 @@
 // adresse, aucune durée. Le client apprend que le patron n'est pas libre le 24,
 // exactement ce qu'il aurait appris en téléphonant.
 
+// La liste des durées qu'il déroule pour choisir. Elle est importée plutôt que
+// recopiée : l'écran du choix et la ligne du planning doivent dire le même mot,
+// et deux copies finissent toujours par diverger — voir `libelleDureeCourt`.
+import { DUREES } from "@/lib/durees-chantier";
+
 /** Fenêtre par défaut sur laquelle un client peut proposer une date. */
 export const FENETRE_PROPOSITION_JOURS = 90;
 
@@ -423,6 +428,37 @@ export function libelleDuree(demiJournees: number): string {
   return `${Math.floor(demiJournees / 2)} jours et demi`;
 }
 
+/**
+ * La durée **en abrégé**, dans les mots de la liste où il la choisit.
+ *
+ * **Deux registres, et c'est délibéré.** `libelleDuree` écrit de la prose —
+ * « une journée ne tient pas ce jour-là » — et se lit dans une phrase.
+ * Celle-ci écrit une ÉTIQUETTE, sur une ligne de 204 px : « ½ journée »,
+ * « 1 journée », « 3 jours ». Fondre les deux donnerait « une journée » sur une
+ * ligne où l'on compte, ou « 1 journée » au milieu d'une phrase.
+ *
+ * **Les mots viennent de `DUREES`, jamais d'ici.** C'est la liste qu'il déroule
+ * pour choisir la durée d'un chantier : l'écran de la ligne et l'écran du choix
+ * doivent dire le même mot, sans quoi il choisit « 1 journée » et lit autre
+ * chose le lendemain. Le 4 août 2026, il avait déjà corrigé « 1 jour » en
+ * « 1 journée » ; le 15 août, une maquette écrivait de nouveau « ½ jour » et il
+ * a dû le redire. Recopier ces mots à la main, c'est reprogrammer cet
+ * aller-retour.
+ *
+ * **Le repli n'est pas décoratif.** `DUREES` ne propose que la demi-journée
+ * puis des jours entiers, mais `dureeEnDemiJournees` peut rendre un nombre
+ * IMPAIR à partir d'une durée dictée (« une journée et demie » → 3). Une durée
+ * impossible à choisir reste possible à recevoir, et une ligne muette vaudrait
+ * pire qu'un mot approximatif.
+ */
+export function libelleDureeCourt(demiJournees: number): string {
+  const n = Math.max(1, Math.trunc(demiJournees));
+  const dansLaListe = DUREES.find((d) => d.demiJournees === n);
+  if (dansLaListe) return dansLaListe.libelle;
+  const jours = Math.floor(n / 2);
+  return `${jours} ${jours > 1 ? "jours" : "journée"} ½`;
+}
+
 /** Libellé du moment, pour l'écran du patron — jamais pour le client. */
 export const LIBELLE_MOMENT: Record<Moment, string> = {
   matin: "matin",
@@ -455,21 +491,40 @@ export const LIBELLE_MOMENT: Record<Moment, string> = {
  * l'arithmétique ici produirait deux vérités : celle de l'écran et celle de la
  * réservation, qui finiraient par diverger un vendredi.
  *
- * **`porteLaDate` n'est pas un détail de présentation.** Sur plusieurs jours,
- * le libellé contient déjà « du 21 au 25 août » ; préfixer la date par-dessus
- * donnerait « 21 août · du 21 au 25 août ». L'appelant a besoin de savoir si
- * la date est dedans — c'est cette fonction qui le sait, pas lui.
+ * ─────────────────────────────────────────────────────────────────────────
+ * **CE QUE LE PATRON A ARRÊTÉ LE 15 AOÛT 2026, ET QUI REMPLACE LA VEILLE.**
  *
- * Les mots sont ceux que le patron a arrêtés le 14 août 2026, sur la planche
- * `docs/maquettes/53-le-mot-juste-sans-la-date.html` : *« Je veux journée et
- * du 21 au 25 »*. Ni « matin et après-midi », ni « 3 jours dès le matin » —
- * les deux avaient été proposés et écartés.
+ * Sur `docs/maquettes/59-la-ligne-qui-dit-tout.html` : *« je veux journée et
+ * toute la ligne »*, après avoir demandé *« il doit y avoir le nombre de jour,
+ * le matin, l'après-midi et la journée comme infos possible »*.
+ *
+ * La ligne porte donc **le moment de départ ET la durée** :
+ *
+ *   · une journée pleine partie le matin → « journée », seule. Le mot porte la
+ *     durée à lui seul ; « journée · 1 journée » aurait dit deux fois la même
+ *     chose sur une ligne de 204 px ;
+ *   · une vraie demi-journée → « matin · ½ journée » ;
+ *   · tout le reste → « matin · 3 jours », « après-midi · 1 journée ».
+ *
+ * **« du 21 au 25 août » est retiré**, alors qu'il l'avait choisi la veille sur
+ * la planche 53. Ce qui se perd est réel et doit être su : la ligne ne dit plus
+ * QUAND le chantier finit, et « 3 jours » partis un vendredi finissent le mardi
+ * — les week-ends étant sautés, il ne peut pas le recalculer de tête. Ce qui se
+ * gagne est ce qu'il a demandé : le nombre de jours, qu'aucune plage de dates
+ * ne donnait.
+ *
+ * **L'INVARIANT À NE JAMAIS PERDRE, et il n'est pas d'écriture.** « matin » ne
+ * s'écrit JAMAIS sans sa durée. Seul, il redit exactement le défaut qu'il a
+ * signalé le 13 août — *« ça laisse à penser que juste le matin est bloqué »*.
+ * C'est le nombre accolé qui le rend honnête : « matin · 3 jours » ne se lit
+ * pas comme une demi-journée. Alléger la ligne un jour en retirant la durée
+ * rouvrirait ce défaut sans que rien ne le dise — `test-libelle-occupation.ts`
+ * le garde.
+ * ─────────────────────────────────────────────────────────────────────────
  */
 export type Occupation = {
-  /** « matin », « après-midi », « journée », « du 21 au 25 août ». */
+  /** « journée », « matin · ½ journée », « après-midi · 1 journée ». */
   texte: string;
-  /** Vrai quand `texte` contient déjà les dates — l'appelant n'en préfixe pas. */
-  porteLaDate: boolean;
 };
 
 export function libelleOccupation(
@@ -487,31 +542,12 @@ export function libelleOccupation(
 
   const jours = [...new Set(creneaux.map((c) => c.jour))];
 
-  if (jours.length === 1) {
-    // Une seule journée : elle est pleine, ou c'est une vraie demi-journée.
-    const pleine = creneaux.length === 2;
-    return {
-      texte: pleine ? "journée" : LIBELLE_MOMENT[depart.moment],
-      porteLaDate: false,
-    };
-  }
+  // **La journée pleine, et elle seule, se passe de durée** : le mot la porte.
+  // Le test est bien « un seul jour ET deux créneaux » — deux demi-journées
+  // parties l'APRÈS-MIDI n'en sont pas une : elles occupent cet après-midi et
+  // la matinée du lendemain, et écrire « journée » ferait croire à l'artisan
+  // que sa matinée du lendemain est libre.
+  if (jours.length === 1 && creneaux.length === 2) return { texte: "journée" };
 
-  return { texte: `du ${intervalleDeJours(jours[0], jours[jours.length - 1])}`, porteLaDate: true };
-}
-
-/**
- * « 21 au 25 août », et « 30 août au 2 septembre » quand le mois change.
- *
- * Le mois n'est écrit qu'une fois tant qu'il ne bouge pas — c'est ainsi qu'on
- * lit une plage de dates à voix haute, et la ligne du planning n'a pas la place
- * de l'écrire deux fois à 390 px.
- */
-function intervalleDeJours(premier: JourIso, dernier: JourIso): string {
-  const d1 = new Date(`${premier}T12:00:00Z`);
-  const d2 = new Date(`${dernier}T12:00:00Z`);
-  const mois = (d: Date) => d.toLocaleDateString("fr-FR", { month: "long", timeZone: "UTC" });
-  const memeMois = d1.getUTCMonth() === d2.getUTCMonth() && d1.getUTCFullYear() === d2.getUTCFullYear();
-  return memeMois
-    ? `${d1.getUTCDate()} au ${d2.getUTCDate()} ${mois(d2)}`
-    : `${d1.getUTCDate()} ${mois(d1)} au ${d2.getUTCDate()} ${mois(d2)}`;
+  return { texte: `${LIBELLE_MOMENT[depart.moment]} · ${libelleDureeCourt(duree)}` };
 }

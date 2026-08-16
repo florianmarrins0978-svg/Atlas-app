@@ -43,7 +43,7 @@ export const users = pgTable("users", {
   // base — il n'y a donc rien à supprimer pour fermer une session, mais on peut
   // refuser ce qui a été signé avant. `null` : jamais demandé.
   jetonsValidesDepuis: timestamp("jetons_valides_depuis", { withTimezone: true }),
-  // La charte de couleurs choisie dans « Apparence » (migration 0044).
+  // La charte de couleurs choisie dans « Apparence » (migration 0047).
   //
   // **Sur la PERSONNE, pas sur l'entreprise** : c'est son goût, et la rubrique
   // vit dans l'ensemble « Moi » du sommaire. `null` = origine, celle du départ —
@@ -135,6 +135,7 @@ export const entreprises = pgTable("entreprises", {
    * devis est toujours sur la fiche du chantier. La réponse d'un client et le
    * lien expiré, eux, n'ont pas d'interrupteur (`src/lib/rappels.ts`).
    */
+  rappelChantierSansDevisJours: integer("rappel_chantier_sans_devis_jours"),
   rappelDevisSansReponseJours: integer("rappel_devis_sans_reponse_jours"),
   rappelChantierNonFactureJours: integer("rappel_chantier_non_facture_jours"),
   // Combien de chantiers menés de front. 1 par défaut — le comportement d'avant
@@ -149,6 +150,20 @@ export const entreprises = pgTable("entreprises", {
   periodiciteTva: text("periodicite_tva", { enum: ["mensuelle", "trimestrielle"] })
     .notNull()
     .default("mensuelle"),
+  /**
+   * **Quand la TVA devient exigible** (migration 0045).
+   *
+   * Sa demande du 14 août 2026 : *« est-ce qu'il y a une possibilité pour que la
+   * facture rentre au relevé seulement une fois que le client m'a payé ? »*
+   *
+   * `encaissements` est le DÉFAUT LÉGAL d'une prestation de services (CGI
+   * art. 269-2-c) ; les `debits` sont une **option** qui se demande à
+   * l'administration. Atlas appliquait les débits sans le dire — donc invitait
+   * à déclarer trop tôt. Voir `docs/QUESTIONS.md` §20.
+   */
+  tvaExigibilite: text("tva_exigibilite", { enum: ["encaissements", "debits"] })
+    .notNull()
+    .default("encaissements"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -182,6 +197,38 @@ export const equipes = pgTable(
   },
   (t) => [unique("equipes_entreprise_rang_uk").on(t.entrepriseId, t.rang)]
 );
+
+/**
+ * Les jours où une équipe n'est pas là.
+ *
+ * *Le patron, le 14 août 2026 : « une équipe qui doit partir en déplacement
+ * pour cinq jours ».* Retenu sur maquette (`docs/maquettes/55`, proposition A).
+ *
+ * **Bornes incluses des deux côtés** — « du 8 au 12 » comprend le 8 et le 12.
+ * Une absence d'un seul jour porte deux fois la même date : cas ordinaire.
+ *
+ * **Ce n'est pas un registre de congés** : ni solde, ni validation, ni
+ * salarié. Une équipe est une file du planning, pas une personne
+ * (`ARCHITECTURE.md` §88). Le motif ne sert qu'à ce que le patron se
+ * souvienne ; aucun calcul ne le lit.
+ */
+export const absencesEquipe = pgTable("absences_equipe", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  equipeId: uuid("equipe_id")
+    .notNull()
+    .references(() => equipes.id, { onDelete: "cascade" }),
+  /** Premier jour d'absence, inclus. Format « AAAA-MM-JJ ». */
+  premierJour: date("premier_jour").notNull(),
+  /** Dernier jour d'absence, inclus. */
+  dernierJour: date("dernier_jour").notNull(),
+  motif: text("motif"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+});
 
 // Correction v2.1 §3 : "prochain_numero_devis" représente le PROCHAIN numéro
 // disponible (pas le dernier attribué). Initialisé à 1 à la création de
@@ -1031,6 +1078,44 @@ export const factures = pgTable(
       foreignColumns: [devis.id, devis.entrepriseId],
       name: "factures_devis_entreprise_fk",
     }).onDelete("restrict"),
+  ]
+);
+
+/**
+ * Les règlements reçus sur une facture (migration 0045).
+ *
+ * **Sa demande du 14 août 2026 :** *« lorsque la facture part, au lieu qu'elle
+ * rentre directement dans le relevé, elle arrive dans un endroit en attente ;
+ * lorsque j'ai reçu le paiement, je clique sur valider et boum, elle va dans le
+ * relevé. »*
+ *
+ * **Plusieurs lignes par facture, et c'est le point :** un acompte se note comme
+ * un solde, et seule la part encaissée entre au relevé — au prorata du TTC
+ * (`src/lib/exigibilite-tva.ts`). La part de TVA n'est PAS stockée ici : la
+ * figer la ferait diverger de la facture le jour où un avoir la corrige.
+ *
+ * **`origine` distingue trois choses qui n'ont pas la même valeur** : ce qu'il a
+ * saisi (`saisi`), ce que la migration a supposé pour ne pas déplacer un relevé
+ * déjà déclaré (`reprise`, et l'écran le dit), et ce qu'une banque proposera un
+ * jour (`banque`, `docs/A-FAIRE.md` §13).
+ */
+export const paiementsFacture = pgTable(
+  "paiements_facture",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    factureId: uuid("facture_id").notNull(),
+    /** Date civile : c'est elle qui décide du mois ou du trimestre déclaré. */
+    datePaiement: date("date_paiement").notNull(),
+    montant: numeric("montant", { precision: 12, scale: 2 }).notNull(),
+    moyen: text("moyen", { enum: ["virement", "cheque", "especes", "carte", "autre"] }),
+    note: text("note"),
+    origine: text("origine", { enum: ["saisi", "reprise", "banque"] }).notNull().default("saisi"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("paiements_facture_facture_idx").on(t.entrepriseId, t.factureId),
+    index("paiements_facture_date_idx").on(t.entrepriseId, t.datePaiement),
   ]
 );
 

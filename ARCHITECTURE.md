@@ -8658,20 +8658,24 @@ celui du **refus**, qui n'écrit rien ; l'écriture est tenue par la suite base.
 
 ---
 
-## 108. Les trois dernières rubriques : deux rappels réels, et deux écrans qui disent ce qui manque
+## 108. Les trois dernières rubriques : les rappels réels, et deux écrans qui disent ce qui manque
 
 *Codées le 14 août 2026 sur sa consigne — **« Fini toutes les rubriques »**.
 Les treize du sommaire (§96) sont désormais ouvertes ; plus aucune ne porte
 « Bientôt ».*
 
-### Notifications : DEUX rappels, et pas les huit de la planche
+### Notifications : les rappels RÉELS, et pas les huit de la planche
+
+> **Ils sont TROIS depuis le 16 août 2026** — voir §112. Ce qui suit décrit les
+> deux premiers, et les trois choix qu'ils ont posés : le troisième s'y range,
+> à une exception près, dite là-bas.
 
 `maquettes/atlas-reglages-notifications.html` listait huit familles d'alertes.
 **Une seule existait**, et la planche le disait déjà — *« rien ne part encore
 sur votre téléphone »*. Dessiner les sept autres avec un interrupteur aurait
 fait valider un écran de réglages qui ne règle rien.
 
-Deux se calculent **avec ce que la base porte déjà**, sans nouveau jalon ni
+Deux se calculaient **avec ce que la base porte déjà**, sans nouveau jalon ni
 nouveau geste (migration 0043) :
 
 | Rappel | Ce qu'il lit | Défaut |
@@ -8694,7 +8698,8 @@ la planche : *« on le touche, rien ne bouge, et on croit à une panne »*.
    Deux cartes pour un même devis feraient chercher la différence.
 3. **Jamais « urgent ».** Le fond teinté est réservé à ce qui appelle une
    décision — un refus, un lien mort. Un confort qui crierait aussi fort ferait
-   baisser le volume de tous les autres.
+   baisser le volume de tous les autres. **Le troisième rappel y déroge, et
+   c'est SA décision** : voir §112.
 
 **Ce qui n'a PAS d'interrupteur, et l'écran le dit :** la réponse d'un client et
 le lien expiré. Sa règle du 13 août 2026 — *« [des interrupteurs] seulement à
@@ -8740,9 +8745,500 @@ montrer — un contrôle qui n'a jamais rien vu ne prouve rien. Les captures
 emploient désormais le rôle qui traverse la RLS, comme les suites navigateur
 (`CLAUDE.md` §5).
 
+## 109. Une équipe part cinq jours : l'absence, et pourquoi elle n'est qu'une occupation
+
+**Le patron, le 14 août 2026 :** *« Comment on fait si jamais il y a une équipe
+qui doit partir en déplacement pour cinq jours ? Est-ce qu'il y a un moyen de
+l'ajouter au planning ? »*
+
+Retenu sur maquette (`docs/maquettes/55`, **proposition A**) : les absences se
+posent sous les noms, dans Réglages → Équipe. Sa réponse, en un mot : *« La
+A »*.
+
+### Ce qui existait déjà, et qu'on n'a pas refait
+
+**Si TOUTE l'entreprise part, l'agenda extérieur suffit** : une période de
+plusieurs jours occupe toutes les demi-journées qu'elle traverse, week-ends
+compris (`src/lib/agenda-externe.ts`). Rien n'a été écrit pour ce cas — le dire
+valait mieux que de lui vendre du travail inutile.
+
+**Ce qui manquait, c'est l'autre cas : une équipe sur deux.** L'agenda bloque
+tout le monde — délibérément, `fusionnerOccupationExterne` pose
+`Math.max(…, nombreEquipes)` parce qu'Atlas ne peut pas deviner si une équipe
+sait partir sans le patron — et le nombre d'équipes est **un nombre sans
+dates**.
+
+### La décision qui a tout tenu : une absence EST une occupation
+
+Le réflexe était de faire varier le nombre d'équipes jour par jour, donc de
+passer une fonction là où passe aujourd'hui un nombre. Il aurait fallu toucher
+`departPossible`, `jourRetenable` et leurs appelants — **c'est-à-dire les trois
+chemins qui décident d'une date**, dont la revérification de la réponse du
+client. Beaucoup de surface pour un défaut qui ne se verrait qu'en production,
+chez un client ayant retenu un jour impossible.
+
+Une équipe qui n'est pas là **occupe exactement la place qu'un chantier lui
+aurait prise**. La capacité restante se calcule alors toute seule, avec la
+comparaison qui existait déjà — `occupation < nombreEquipes` — et **aucune
+signature ne change**.
+
+Deux différences avec l'agenda extérieur, et elles comptent :
+
+| | Agenda extérieur | Absence d'équipe |
+|---|---|---|
+| Qui part | inconnu | **connu** |
+| Effet | `Math.max(…, nombreEquipes)` — bloque tout le monde | **`+1`** — une unité, une seule |
+| Ordre d'application | après | avant |
+
+L'ordre n'est pas indifférent : les absences **additionnent**, l'agenda **pose
+un plafond**. Dans l'autre sens, l'addition dépasserait le plafond que l'agenda
+venait d'établir.
+
+### Les quatre endroits où la règle entre, et pourquoi les quatre
+
+`fusionnerAbsences` est appelée dans **quatre** calculs d'occupation, et en
+oublier un aurait produit deux vérités sur la même capacité :
+
+1. `envois-devis.ts` — les trois chemins du client (écran d'envoi, création,
+   **revérification de sa réponse**) ;
+2. `preparation-envoi.ts` — l'écran qui propose les dates au patron ;
+3. `chantiers.ts` — le chemin par lequel il pose une date **lui-même** ;
+4. `PlanningClient.tsx` — le calendrier, qui doit marquer le même jour occupé.
+
+Sans le 4, le planning aurait montré un jour libre que l'écran d'envoi refusait,
+**sur deux écrans qui se suivent**.
+
+### Ce que la table n'est pas
+
+Ni solde de congés, ni validation, ni salarié. **Une équipe est une file du
+planning, pas une personne** (§88), et Atlas prépare des devis — il ne tient pas
+la paie. Le motif est un texte libre, pour que le patron se souvienne ; **aucun
+calcul ne le lit**.
+
+**Des jours entiers, pas des demi-journées.** Personne ne part « du mardi
+après-midi au jeudi matin ». Offrir la demi-journée ici, c'est offrir un réglage
+à remplir sans en avoir besoin, et deux champs de plus sur six pouces. Les deux
+colonnes étant des DATES, la précision s'ajoutera sans se contredire le jour où
+elle sera demandée.
+
+**Le bloc n'existe pas à une seule équipe**, et ce n'est pas un oubli : seul,
+noter son absence reviendrait à fermer l'entreprise. L'écran renvoie alors à
+l'agenda, qui est le bon geste dans ce cas.
+
+### Trois gardes, à trois niveaux, pour la même règle
+
+Une absence **à l'envers** n'occuperait aucun jour et rendrait la capacité fausse
+**en silence** — le pire des défauts, celui qui ne se voit qu'au moment où un
+client retient une date impossible. Elle est donc refusée :
+
+1. à l'écran, qui éteint son bouton et **dit lequel des deux champs le gêne** ;
+2. dans l'action serveur, qui rejoue la même fonction pure — un écran n'est pas
+   une garde ;
+3. dans la base (`absences_equipe_ordre_ck`), pour le jour où le code changerait.
+
+Les trois appellent **la même** fonction, `refusDeLAbsence` : deux règles
+finiraient par diverger (`CLAUDE.md` §3).
+
+### Ce que les contrôles ont appris
+
+**Le message d'un contrôle doit désigner le bon coupable.** Le premier jet de la
+suite base posait ses `INSERT` bruts sur le pool : **la RLS les refusait avant
+que la contrainte n'ait son mot à dire**, la suite passait au vert, et son
+message accusait `absences_equipe_ordre_ck` — qui n'avait jamais parlé. Elle
+pose désormais le contexte d'isolation avant d'écrire, et vérifie **aussi** que
+la même absence, dans le bon sens, est acceptée : sans ce second cas, une
+politique refusant TOUT passerait pour une contrainte qui marche.
+
+**Une colonne `date` remonte en objet `Date`.** `String(...)` en tire
+« Sat Sep 12 2026 » : le contrôle comparait deux écritures du même jour et
+accusait la saisie. Le formatage est fait par la base (`to_char`).
+
+**Et l'ordre des deux champs n'est pas indifférent** : avancer le premier jour
+pousse le dernier avec lui — c'est voulu, sinon le patron reste devant un bouton
+éteint sans savoir lequel le gêne. L'état inversé ne s'atteint donc qu'en
+reculant le DERNIER jour, en second. La suite de bout en bout s'y est cassé les
+dents avant de le comprendre.
+
+**Confrontée au défaut** — la fusion retirée du calendrier — la suite rougit en
+nommant le jour : *« le 2026-09-08 est annoncé libre alors qu'une équipe sur
+deux est partie »*.
+
+### Ce qui reste, et qui n'est PAS dans ce lot
+
+**L'équipe inscrite sur un chantier reste une étiquette, pas une contrainte.**
+`compterOccupation` compare un total au nombre d'équipes et ne regarde jamais
+`equipeId` : deux chantiers le même matin, tous deux sur « Équipe 1 », passent.
+Sans conséquence tant que le patron répartit lui-même. Le régler obligerait à
+choisir l'équipe **avant** de proposer une date au client, donc à toucher au
+parcours du devis — c'est un autre chantier, inscrit dans `TODO.md`, et il n'a
+de sens que si le télescopage se produit vraiment. **Question posée au patron le
+14 août, sans réponse à ce jour.**
+
 ---
 
-## 109. Sept chartes de couleurs, dont deux sombres — et pourquoi ce n'est qu'UN réglage
+
+---
+
+## 110. La TVA quand le client paie — et l'endroit où les factures attendent
+
+**Sa question, le 14 août 2026 :** *« si demain un client décide de ne pas me
+payer une facture… à partir du moment où j'envoie la facture, elle rentre
+automatiquement dans mon relevé de TVA. Est-ce qu'il y a une possibilité pour
+qu'elle rentre seulement une fois que le client m'a payé ? »* Puis, sur la
+forme : *« elle arrive dans un endroit en attente ; lorsque j'ai reçu le
+paiement, je retourne dessus, je clique sur valider, et boum, elle va dans le
+relevé. »*
+
+### Il avait raison, et Atlas avait tort
+
+Pour une **prestation de services**, la TVA est exigible **à l'encaissement**
+(CGI art. 269-2-c). Le régime des **débits** — celui que `releveTvaCollectee`
+appliquait depuis toujours, en prenant la `date_emission` — est une **OPTION**
+qui se demande à l'administration. Un artisan qui ne l'a jamais demandée était
+donc invité par l'application à **avancer la TVA d'un client qui n'avait pas
+payé**.
+
+Le défaut est donc devenu `encaissements` (migration 0045), et le réglage existe
+parce que les deux régimes existent : `docs/QUESTIONS.md` §20, `docs/A-FAIRE.md`
+§12.
+
+### Ce qui aurait pu tout casser, et ne l'a pas fait
+
+**Changer le régime sans rien d'autre aurait vidé les relevés déjà déclarés.**
+Un trimestre affiché à 400 € serait retombé à 0 €, et l'écran aurait contredit
+un formulaire déjà envoyé aux impôts.
+
+Chaque facture déjà émise reçoit donc, à la migration, **un règlement daté du
+jour de son émission, pour son total TTC**. Elle apporte exactement ce qu'elle
+apportait hier, dans la même période — quel que soit le régime. Ces règlements
+portent `origine = 'reprise'` et **l'écran le dit** (« supposé réglé à
+l'émission ») : une supposition annoncée reste une supposition, et il peut la
+retirer d'un doigt si la facture n'a jamais été payée.
+
+### Deux portes, parce qu'il les a demandées toutes les deux
+
+| Geste | Où | Pour quoi |
+|---|---|---|
+| **« Payée »** | l'endroit en attente | Solde en un appui, à la date du jour. Le cas de cinquante factures par an |
+| **« Noter un règlement »** | la même ligne, dépliée | Une date, un montant — l'acompte, ou un règlement d'il y a trois semaines |
+
+Une saisie en deux champs pour un geste qu'on fait cinquante fois serait un
+impôt sur le temps ; une seule touche pour un acompte serait faux. Les deux.
+
+### Un acompte n'apporte que SA part de TVA
+
+500 € sur une facture de 1 440 € TTC dont 240 € de TVA apportent **83,33 €** —
+ni 240, ni zéro : au prorata du TTC. C'est la règle comptable, et c'est la seule
+qui ne fasse pas dépendre la déclaration de l'ordre dans lequel le client paie.
+
+**Le règlement qui SOLDE reçoit le reliquat.** Trois acomptes arrondis chacun de
+leur côté perdent un ou deux centimes ; la somme des lignes du relevé ne
+tomberait plus sur le total de la facture, et personne ne saurait expliquer
+l'écart. `test-exigibilite-tva.ts` monte la garde dessus.
+
+### Trois refus, et ce qu'ils empêchent
+
+| Refusé | Ce que ça évite |
+|---|---|
+| Un montant plus grand que le reste dû | Le relevé porterait **plus de TVA que la facture n'en contient** |
+| Un règlement daté d'avant la facture | Un acompte sur DEVIS porte sa propre TVA ; le ranger là le daterait du mauvais trimestre |
+| Un montant illisible | — et surtout, **il ne lève pas** : `new Decimal("zéro")` jette, et une exception en action serveur devient un identifiant opaque chez lui (`AGENTS.md`). Le refus est une valeur de retour, toujours |
+
+### Ce que l'écran ne dit plus
+
+**« Elle figure au relevé de TVA collectée »**, sous une facture qu'on vient
+d'arrêter. C'était vrai aux débits, c'est faux aux encaissements — et il aurait
+cherché dans son relevé un montant qui n'y est pas, pour finir par douter de
+l'application au lieu de noter son paiement. L'écran dit maintenant qu'elle
+**entrera** au relevé le jour du règlement.
+
+### Comment Atlas saura qu'il a été payé
+
+**Il ne le sait pas** : aucun accès bancaire. Trois réponses possibles, et son
+choix du 14 août est **la banque** — `docs/A-FAIRE.md` §13 et
+`maquettes/atlas-banque-rapprochement.html`. Ce lot code la première : **la
+saisie à la main**, qui ne dépend d'aucun contrat et qui restera de toute façon
+le jour où l'accès bancaire dort (il se coupe tous les 90 jours).
+
+### Ce qui est éprouvé, et par quoi
+
+| Ce qui est tenu | Où |
+|---|---|
+| une facture impayée n'entre pas au relevé | les trois suites |
+| elle y entre à la date du RÈGLEMENT, pas de l'émission | `test-exigibilite-tva.ts`, `test-paiements-facture-db.ts` |
+| un acompte n'apporte que sa part, au centime | `test-exigibilite-tva.ts` |
+| un montant trop grand est refusé, avec sa phrase | les trois suites |
+| le passé ne bouge pas (reprise de la migration) | `test-paiements-facture-db.ts` |
+| rien ne déborde d'une entreprise sur une autre | `test-paiements-facture-db.ts` |
+| l'écran ne promet plus le relevé, et porte le geste | `test-tva-au-paiement-e2e.ts` |
+
+---
+
+---
+
+## 111. La ligne du planning porte enfin les trois choses — et « matin » cesse de mentir sans qu'on le retire
+
+*Sa demande du 15 août 2026, sur `docs/maquettes/59-la-ligne-qui-dit-tout.html` :
+**« il doit y avoir le nombre de jour, le matin, l'après-midi et la journée comme
+infos possible »**, puis **« je veux journée et toute la ligne »**.*
+
+### Ce que la ligne dit maintenant
+
+| Le chantier | La ligne |
+|---|---|
+| une journée pleine, partie le matin | **14 août · journée** |
+| une vraie demi-journée | **17 août · matin · ½ journée** |
+| trois jours | **21 août · matin · 3 jours** |
+| une journée partie l'après-midi | **24 août · après-midi · 1 journée** |
+
+Trois choses : **la date, le moment de départ, la durée** — et le tout **en or**,
+là où c'était gris.
+
+### L'invariant, et c'est le cœur de cette section
+
+**« matin » ne s'écrit JAMAIS sans sa durée.** Ce n'est pas une préférence
+d'écriture : seul, ce mot redit exactement le défaut qu'il a signalé le 13 août —
+*« ça laisse à penser que juste le matin est bloqué alors que c'est la
+journée »*. Accolé au nombre, il ne dit plus ce qui est bloqué mais **quand ça
+part** : « matin · 3 jours » ne se lit pas comme une demi-journée.
+
+Ce qui a été retiré la veille pour réparer ce défaut revient donc — mais
+**escorté**. Et l'escorte est tenue par un contrôle qui balaie les deux cents
+durées, non par trois cas choisis : un allègement futur qui oublierait la durée
+sur une seule valeur passerait entre trois cas, jamais entre deux cents.
+
+**« journée » est le seul mot qui se passe de durée**, parce qu'il la porte.
+« journée · 1 journée » a été écarté avant même de lui être soumis : dire deux
+fois la même chose sur une ligne de 204 px n'est pas un choix.
+
+### Ce qui se perd, et il faut le savoir plutôt que le découvrir
+
+**« du 21 au 25 août » disparaît**, alors qu'il l'avait choisi la veille sur la
+planche 53. La ligne ne dit donc plus **quand le chantier finit** — et il ne peut
+pas le recalculer de tête, les week-ends étant sautés. C'est le prix du nombre de
+jours, qu'aucune plage de dates ne donnait ; il a vu les deux écritures et tranché
+pour celle-ci. Si la date de fin lui manque à l'usage, sa place est **la feuille
+du chevron**, qui a la largeur que la ligne n'a pas.
+
+### Deux doublons corrigés au passage, tous deux invisibles séparément
+
+- **L'équipe s'écrivait deux fois** dès qu'il y en a plusieurs : dans la phrase
+  *et* sur la pastille posée le 14 août, côte à côte. Aucune suite ne le voyait —
+  chacune ne regardait que sa moitié. La phrase ne la porte plus **sur la ligne** ;
+  les deux feuilles la gardent, elles n'ont pas de pastille.
+- **La date était tombée de la liste le matin même**, sur sa consigne *« pas la
+  date, elle est déjà présente juste au-dessus »*. Elle vaut du panneau d'un jour
+  ouvert, qui se titre « Lundi 17 août ». Elle ne vaut pas de cette liste-ci, qui
+  couvre **tout le mois** : sans date, deux chantiers de semaines différentes se
+  lisaient pareil.
+
+### Le vocabulaire vient de `DUREES`, et c'est un contrôle, pas une convention
+
+`libelleDureeCourt()` **lit** `src/lib/durees-chantier.ts` plutôt que de recopier
+ses mots. La raison est datée : le patron a corrigé « jour » en « journée » le
+**4 août 2026** sur la liste elle-même, puis a dû le redire le **15 août** sur une
+maquette qui l'avait réenfreinte — *« 1/2 journée pas jour ! »*. Une règle écrite
+dans le dépôt et enfreinte deux fois n'est pas une règle : c'est un contrôle qui
+manque. `test-libelle-occupation.ts` compare désormais chaque entrée de la liste
+au mot que la ligne écrit.
+
+**Deux registres subsistent, et c'est voulu :** `libelleDuree` écrit de la prose
+(« une journée ne tient pas ce jour-là ») ; `libelleDureeCourt` écrit une
+étiquette (« 1 journée »). Les fondre donnerait « une journée » au milieu d'une
+colonne où l'on compte.
+
+### Ce que chaque contrôle voit, et ce qu'aucun ne verrait seul
+
+| Le contrôle | Ce qu'il tient | Ce qu'il ne peut PAS voir |
+|---|---|---|
+| `test-libelle-occupation.ts` | la phrase est juste, sur 200 durées et les deux départs | qu'elle soit grise, coupée ou repliée |
+| `test-ligne-planning-e2e.ts` | **à 390 px** : l'or, une seule ligne, rien de coupé, l'équipe écrite une fois | la justesse du mot sur les cas rares |
+| `verifier-maquette-ligne-qui-dit-tout.mjs` | la planche qu'il a manipulée dit ce qu'elle prétend | ce que le produit fait |
+
+La colonne de droite est la raison d'être des trois : le 12 août, un nom de
+chantier coupé à 390 px — « Chez M. … » — a été trouvé sur une capture et par
+rien d'autre. La suite navigateur mesure donc **le débordement en pixels**, pas
+la présence d'un mot.
+
+---
+
+## 112. Le troisième rappel : un devis qui n'est JAMAIS parti
+
+*Demandé le 14 août 2026, codé le 16 sur ses trois réponses.*
+
+**Sa demande :** *« il faudrait créer un rappel lorsque le chantier a été ouvert
+mais le devis n'a pas été envoyé […] comme la Mme Félicie, vue il y a quatorze
+jours, aucun devis envoyé »*.
+
+### Pourquoi il ne se déduit d'aucun des deux autres
+
+C'est le cœur, et ça décide de toute l'implémentation. « Devis sans réponse »
+(§108) part d'un **envoi** — `envois_devis.envoye_at`. Un devis qui n'est jamais
+parti ne laisse **aucune ligne** dans cette table : il n'y a rien à interroger.
+
+Celui-ci se lit donc sur le **chantier** lui-même : `created_at` pour le point de
+départ, `devis_envoye_at IS NULL` pour la condition. Migration
+`drizzle/0046_rappel_chantier_sans_devis.sql`, colonne
+`rappel_chantier_sans_devis_jours`, allumée d'origine à **4 jours**.
+
+### Deux règles qui sont gratuites, et c'est ce qui a décidé de la forme
+
+1. **Il s'efface seul dès que le devis part.** La condition se CALCULE ; rien
+   n'est rangé nulle part, donc il n'y a rien à effacer. C'était la première
+   règle que le patron voulait tenir, et elle ne coûte rien.
+2. **Un chantier TERMINÉ sans devis ne réclame plus rien.** Un dépannage fait et
+   clos de la main à la main est justement le cas où il a eu raison de ne pas
+   faire de devis : le lui rappeler pour toujours serait le punir.
+
+Il n'y a **pas de date de visite** dans Atlas — vérifié : le compte ne peut donc
+partir que de l'ouverture du chantier. La faire partir de la visite demanderait
+un champ de plus à remplir, et c'est un arbitrage qui lui appartient.
+
+### Ce qui déroge au §108, et pourquoi
+
+**La carte est TEINTÉE**, là où les deux autres rappels ne le sont jamais. Le
+§108 réservait le fond teinté à ce qui appelle une décision — un refus, un lien
+mort. **C'est sa décision du 16 août**, prise devant les deux tons dessinés
+(`docs/maquettes/56-…`, § 1) : *« la B et 4 »*. Sa raison, écrite sur la
+planche : au quatorzième jour, ça ne doit pas se rater.
+
+Et l'étiquette porte **le compte des jours avant le nom** — « DEVIS EN ATTENTE ·
+14 JOURS » —, l'autre moitié de sa proposition B. Le nombre et la phrase
+viennent du même calcul (`joursEcoules`) : deux calculs du même délai finiraient
+par se contredire sur une seule carte.
+
+**La réserve lui a été posée, et il a tranché — le 16 août 2026, capture de
+l'accueil à l'appui : « le B ».** La question était réelle : en place, ce ton est
+exactement celui de « CORRECTION DEMANDÉE », et il avait choisi sur une planche
+où les deux tons étaient seuls. **Il les a maintenant vus voisins, et il garde le
+sien.** Ne pas rouvrir : le point a coûté un aller-retour, et il est clos.
+
+Ce que cela dit de la règle du §108 — *« jamais urgent »* — n'est pas qu'elle est
+morte, mais qu'elle vaut pour un **confort**. Celui-ci n'en est pas un à ses
+yeux : c'est le seul des trois où **rien n'est encore parti au client**. Les deux
+autres décrivent un travail déjà fait qui attend ; celui-ci, un travail pas
+commencé.
+
+### Le libellé, et la règle qu'il a fait naître
+
+Écrit d'abord **« Devis pas encore parti »**. Sa réaction, le 16 août : *« j'ai
+peur que la façon dont tu l'as écrit ne soit pas compréhensible — qu'on ne
+comprenne pas que cette ligne sert à ça, le devis non envoyé. »*
+
+**La cause n'était pas le libellé mais sa VOISINE.** Posé au-dessus de « Devis
+sans réponse », deux réglages commençaient par le même mot : il fallait lire la
+ligne grise pour les séparer. Quatre mots lui ont été montrés **chacun avec sa
+voisine** — une confusion entre deux libellés n'existe qu'en contexte, et une
+ligne montrée seule ne prouve rien. Il a retenu **« Chantier sans devis »**.
+
+**La règle tenue par `test-devis-qui-tarde-e2e` porte donc sur les VOISINS :**
+deux réglages qui se touchent ne commencent pas par le même mot. Comparer toutes
+les paires serait plus dur et **faux** — « Chantier sans devis » et « Chantier
+fini, pas facturé » partagent leur premier mot sans jamais se toucher, une ligne
+entière les sépare, et leurs sens sont aux deux bouts du chantier.
+
+Les trois lignes racontent alors le chantier dans l'ordre : **pas de devis →
+devis sans réponse → fini, pas facturé.**
+
+---
+
+---
+
+## 113. Retoucher un devis à la voix : elle propose, il coche
+
+*Demandé le 15 août 2026. Dessiné (`docs/maquettes/54-dicter-dans-le-devis.html`),
+puis codé sur sa réponse — la proposition A, « elle propose, vous cochez ».*
+
+**Sa demande, en deux temps.** D'abord le geste : *« Rajoutes-moi un petit
+dictaphone en haut à droite comme il y a pour les infos clients quand tu fais un
+nouveau chantier, pour pouvoir dicter à l'intérieur du devis s'il y a des choses
+à reprendre ou à modifier. Et je veux que tu mettes exactement les mêmes trois
+petits points quand ils chargent. »* Puis le vocabulaire, qui décide de tout le
+reste : *« supprime-moi la deuxième ligne, modifie-moi le prix de la taille de
+haie, remplace-moi le deux cent cinquante par trois cent cinquante, rajoute-moi
+une ligne, broyage des branches et tu mets cinq cents euros, corrige-moi telle
+ligne, supprime-moi fondage du bois, mais en échange je veux que tu mettes
+débitage du bois, tu as fait une faute à tel endroit, corrige la faute. **Je vais
+pouvoir lui parler comme ça et qu'elle comprenne.** »*
+
+### Trois étages, et ce qui vit dans chacun
+
+| Étage | Fichier | Ce qu'il sait |
+|---|---|---|
+| La règle | `src/lib/retouches-devis.ts` | Sur quelle ligne tombe une désignation, et ce qu'un changement dira en toutes lettres. **Aucune base, aucun modèle** : éprouvé sans rien monter (`scripts/test-retouches-devis.ts`) |
+| Le modèle | `src/server/ai/services/retouches-devis-service.ts` | Transcrit, puis demande une liste de retouches en donnant le devis comme contexte. Sans clé, il rend la transcription et **aucune** proposition |
+| L'écran | `src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` | Montre, laisse décocher, applique ce qui reste |
+
+**Rien ne s'applique sans son appui**, et c'est l'arrêt qui justifie l'étage du
+milieu : ces lignes SONT le devis que son client recevra. Une lecture qui se
+trompe d'un chiffre se rattrape par un avoir.
+
+### Les quatre décisions de la règle, et ce que chacune évite
+
+1. **Le libellé bat le rang.** On se trompe plus souvent de numéro que de nom —
+   surtout après avoir soi-même ajouté une ligne. Le rang ne sert qu'à départager
+   deux noms qui se valent (« la deuxième, l'élagage »).
+2. **Un nom dit mais reconnu nulle part ne se rabat PAS sur le rang.** Il a nommé
+   quelque chose : prendre la ligne n° 1 « puisqu'il a dit première » modifierait
+   une ligne au hasard sans qu'il s'en aperçoive.
+3. **Deux lignes qui se valent rendent `ambigu`.** Son devis porte « Élagage
+   chêne » et « Élagage frêne » : choisir la première parce qu'elle arrive en tête
+   retirerait la mauvaise une fois sur deux. La feuille les montre toutes les
+   deux, décochées, et il redit.
+4. **Les rangs ne se décalent pas d'une retouche à l'autre.** « Supprime la
+   deuxième et change la troisième » se lit sur le devis QU'IL VOIT, pas sur
+   celui qu'on obtiendrait après le premier retrait.
+
+**Et « fondage du bois » trouve « Fendage du bois ».** C'est son exemple, et
+c'est le cas courant : une syllabe avalée par le micro. La ressemblance regarde
+l'inclusion d'abord (« le prix de la taille de haie » contre « Taille de haie —
+12 m »), puis les mots communs, puis la distance d'édition — dans cet ordre,
+parce qu'une distance brute déclare éloignés deux textes dont l'un est trois fois
+plus long que l'autre.
+
+### Aucun prix ne s'invente — deux gardes, pas une
+
+« Rajoute le broyage » sans montant rend une ligne dont le prix est `null`, et la
+feuille l'écrit **en rouge** : « Aucun prix dicté — la ligne arrive vide, à vous
+de la chiffrer ». Le premier garde est dans la consigne donnée au modèle ; le
+second est `montantDicte`, qui refuse tout ce qui n'est pas un nombre — « environ
+500 », « le prix habituel », « à voir ». Le jour où l'un des deux cède, l'autre
+tient (`CLAUDE.md` §4).
+
+**Une retouche bancale est jetée, jamais rattrapée.** Il verra qu'un changement
+manque et le redira ; il ne verrait pas, en revanche, qu'un chiffre a été mal
+repris. C'est ce déséquilibre-là qui décide.
+
+### Deux détails d'écran trouvés à la capture, pas à la mesure
+
+- **Le rond du micro est `card` ici, `rustTint` sur la fiche du client.** Cette
+  page-ci est teintée : un rond `rustTint` sur un fond `rustTint` disparaît
+  purement et simplement. Ce n'est pas un second micro — c'est le même, sur un
+  autre fond.
+- **Le retour et le micro partagent une rangée**, ce qui a fait descendre le
+  retour de `page.tsx` dans l'écran client : le micro touche aux lignes, donc à
+  leur état.
+
+### Ce qui n'a PAS pu être éprouvé ici, et qu'il faut savoir
+
+Cet environnement n'a **ni service de transcription ni modèle**. La feuille de
+confirmation **remplie** n'a donc jamais été parcourue de bout en bout : les
+phrases de chaque changement sont éprouvées sans navigateur
+(`scripts/test-retouches-devis.ts`), et la feuille elle-même n'a été vue qu'avec
+des données posées à la main. Le raccord entre la voix et la feuille n'aura été
+parcouru qu'avec une clé — sur son banc, ou en production.
+
+Faute de transcription, l'écran ne fait pas semblant : il dit « Aucun service de
+transcription n'est branché sur cette installation ». Montrer le texte de
+remplacement comme une dictée reviendrait à corriger un devis d'après une phrase
+que personne n'a prononcée (`src/server/ai/providers/transcription/dev.ts`).
+
+
+---
+
+---
+
+## 114. Sept chartes de couleurs, dont deux sombres — et pourquoi ce n'est qu'UN réglage
 
 *Choisies par le patron le 14 août 2026, sur une planche de seize qui dormait
 depuis le début du projet (`docs/maquettes/11-ecran-retenu-seize-couleurs.html`,
@@ -8793,7 +9289,7 @@ sur leur repli. Le contrôle qui garde ce point vise nommément `div.bg-paper`.
 
 ### Sur la PERSONNE, pas sur l'entreprise
 
-`users.charte` (migration 0044), pas `entreprises`. « Apparence » appartient à
+`users.charte` (migration 0047), pas `entreprises`. « Apparence » appartient à
 l'ensemble « Moi » du sommaire : c'est un goût, et un salarié qui préfère le
 sombre n'a pas à l'imposer à son patron. `null` = origine, ce qui distingue
 « jamais choisi » de « a choisi origine ».

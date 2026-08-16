@@ -1,8 +1,9 @@
 import { and, eq, gte, isNull, lte } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { fusionnerOccupationExterne } from "../../lib/agenda-externe";
+import { fusionnerAbsences } from "../../lib/absences-equipe";
 import { periodesOccupeesExterieures } from "./agendas-externes";
-import { chantiers, clients, devis, entreprises } from "../db/schema";
+import { absencesEquipe, chantiers, clients, devis, entreprises } from "../db/schema";
 import type { Ctx } from "./context";
 import {
   fenetreProposition,
@@ -191,8 +192,30 @@ export async function preparerEnvoi(
     // dédoublement qui avait rangé un chantier dans deux onglets à la fois
     // (`ARCHITECTURE.md` §33). Sans agenda relié, la liste est vide et la carte
     // est exactement celle d'avant.
+    //
+    // **Les équipes absentes entrent ici aussi, et il le fallait.** Cet écran
+    // construit sa propre carte : ne poser les absences que dans
+    // `envois-devis.ts` aurait fait proposer au patron une date que la
+    // revérification aurait ensuite refusée au client. Deux implémentations
+    // d'une même règle finissent toujours par diverger (`CLAUDE.md` §3).
+    const absences = await tx
+      .select({
+        equipeId: absencesEquipe.equipeId,
+        premierJour: absencesEquipe.premierJour,
+        dernierJour: absencesEquipe.dernierJour,
+      })
+      .from(absencesEquipe)
+      .where(
+        and(
+          eq(absencesEquipe.entrepriseId, ctx.entrepriseId),
+          isNull(absencesEquipe.deletedAt),
+          lte(absencesEquipe.premierJour, fenetreOccupationPatron.fin),
+          gte(absencesEquipe.dernierJour, fenetre.debut)
+        )
+      );
+
     const occupation = fusionnerOccupationExterne(
-      compterOccupation(planifies),
+      fusionnerAbsences(compterOccupation(planifies), absences, nombreEquipes),
       periodesExterieures,
       nombreEquipes
     );

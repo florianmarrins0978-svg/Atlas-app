@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
  *
  * **Le mode sombre qu'il demandait EST dans cette liste** : Nuit et Sylve. Un
  * interrupteur « sombre » séparé se serait contredit avec le choix de charte
- * dès qu'on aurait pris Nuit avec le sombre éteint (`ARCHITECTURE.md` §109).
+ * dès qu'on aurait pris Nuit avec le sombre éteint (`ARCHITECTURE.md` §114).
  *
  * **Aucune garde de rôle** : c'est le goût de la personne, pas une décision
  * d'entreprise — la rubrique vit dans l'ensemble « Moi » du sommaire.
