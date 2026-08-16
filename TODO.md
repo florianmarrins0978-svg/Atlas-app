@@ -27,6 +27,43 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quadragies. La réduction accordée au client — dessinée, attend son mot
+
+**Sa demande du 16 août 2026 :** *« si jamais un client me demande une
+réduction, [pouvoir] lui demander "fais cinq pour cent sur le montant du devis"
+et il ajoute une petite ligne réduction ou prix accordé au client — cinq pour
+cent, ou dix, ou quinze. C'est moi qui choisis le nombre de pourcentage. »*
+
+**Rien de tel n'existe dans le produit** : aucune remise, nulle part — vérifié.
+
+Planche : `docs/maquettes/61-la-reduction-au-client.html`, éprouvée par
+`scripts/verifier-maquette-reduction.mjs`. **Rien n'est codé** (`CLAUDE.md`
+§3 bis).
+
+| | Où elle se pose | Ce que ça coûte |
+|---|---|---|
+| **A** | une ligne du tableau, montant négatif | **presque rien** : une ligne voyage seule jusqu'à la facture, au relevé de TVA et à l'export comptable — tout ce chemin est déjà bâti pour les lignes |
+| **B** | un bloc sous le total, avec « HT après remise » | **une colonne de plus** dans le devis, la facture, et tout ce qui les recopie. Chaque endroit oublié est un montant faux |
+| **C** | le prix barré à côté du nouveau | même coût que B, et le vocabulaire de la promotion sur un document qui engage |
+
+Et un second choix, indépendant : le **mot** — « Réduction » ou « Prix accordé
+au client ». Il a proposé les deux.
+
+**CE QUI N'EST PAS À CHOISIR, et qui ne se rouvre pas :**
+
+- **la réduction s'applique sur le HT, la TVA se calcule après.** Sur le TTC,
+  elle rendrait une TVA fausse sur un document qui finit dans une déclaration ;
+- **elle suit jusqu'à la facture** (`factures.ts` recopie lignes et totaux du
+  devis). Accordée sur le devis et absente de la facture, elle ferait payer au
+  client le prix qu'on venait de lui retirer ;
+- **aucun taux « habituel » ne s'invente** : 5, 10, 15, c'est lui qui le dit.
+
+**Deux questions posées dans la planche, sans réponse et qui ne bloquent pas :**
+un **montant** au lieu d'un pourcentage (« fais-moi 50 € ») — pas dans sa
+demande, donc pas ajouté ; et un **bouton** sur l'écran du devis en plus de la
+voix.
+
+
 ### 0 novivicies. ~~Le devis qui tarde~~ — **CODÉ le 16 août 2026 (B, 4 jours, « Chantier sans devis »)**
 
 *Planche : `docs/maquettes/56-le-devis-qui-tarde.html`. Code : `src/lib/rappels.ts`,
@@ -368,13 +405,16 @@ nom, changer un prix, en ajouter une, corriger une faute — et sa phrase :
    éprouvée qu'en morceaux (27 cas sans navigateur, 5 au navigateur). Le premier
    essai réel sera le sien, ou celui d'une machine avec une clé. **Le lui dire
    plutôt que de le laisser croire éprouvé.**
-2. ~~Sa question de la planche 54~~ — **TRANCHÉE le 16 août 2026 : OUI.**
-   *« Oui, il peut néanmoins »* — le micro doit aussi pouvoir toucher aux
-   **conditions de règlement** et aux mentions du bas, pas seulement aux lignes
-   chiffrées. **Pas encore codé.** Ce qui reste à faire : un sixième type de
-   retouche (`conditions`) dans `src/lib/retouches-devis.ts`, la consigne
-   correspondante dans le service, et sa ligne dans la feuille de confirmation.
-   Rien de structurant — l'arrêt reste le même : elle propose, il coche.
+2. ~~Sa question de la planche 54~~ — **TRANCHÉE le 16 août 2026 : NON.**
+   Il avait d'abord répondu « oui il peut néanmoins », puis s'est repris dans le
+   message suivant : *« je veux que la note, elle ne remplace que les lignes de
+   [devis] et rien d'autre, comme c'était déjà avant — on ne touche pas aux
+   conditions. »* **C'est l'état actuel du code, et il ne bouge pas.**
+
+   **Rien n'avait été codé entre les deux réponses**, et c'est précisément ce
+   que le §3 bis protège : la première réponse aurait fait écrire un sixième
+   type de retouche qu'il aurait fallu défaire douze heures plus tard. Ne pas
+   rouvrir sans qu'il le demande.
 3. **Aucune vérification côté serveur qu'un devis figé refuse les retouches.**
    L'écran retire le micro dès l'envoi, et c'est la seule barrière — exactement
    comme pour les autres champs de cet écran, qui n'en ont jamais eu d'autre. À
@@ -693,6 +733,25 @@ acompte.
 **Ce qui monte au devis, mesuré et non supposé :** la validité, et elle seule
 (`snapshotEnTete` dans `devis.ts`, puis `devis-pdf.ts`). Les cinq autres
 n'apparaissent nulle part — ni à l'écran, ni au PDF.
+
+**Il a dit « Oui répare » le 16 août.** La planche est posée :
+`docs/maquettes/60-les-conditions-sur-le-devis.html`, éprouvée par
+`scripts/verifier-maquette-conditions-devis.mjs`. **Rien n'est codé tant qu'il
+n'a pas désigné son arrangement** (`CLAUDE.md` §3 bis) — ce n'est pas une
+précaution de style : le bloc « Notes / conditions » est un champ LIBRE qu'il a
+peut-être rempli à la main, et son texte d'invite propose justement « Acompte de
+30 % à la signature ». Se tromper d'arrangement, c'est soit effacer sa saisie,
+soit écrire l'acompte deux fois sur un devis qui part chez un client.
+
+| | Ce que ça fait | Ce que ça coûte |
+|---|---|---|
+| **A** | les conditions **remplacent** le bloc de notes | son texte écrit à la main **disparaît** |
+| **B** | son texte en tête, les conditions dessous, séparées d'un filet | un acompte tapé à la main apparaîtra **deux fois** |
+| **C** | deux blocs : « Notes » et « Conditions » | un bloc de plus, le devis s'allonge ; même doublon qu'en B |
+
+**Une question posée dans la planche, sans réponse et qui ne bloque pas :** les
+conditions doivent-elles aussi descendre sur la **facture** ? Aujourd'hui elle
+ne porte que ses mentions légales obligatoires.
 
 
 `ARCHITECTURE.md` §102 : la rubrique « Devis & factures » règle six conditions,
