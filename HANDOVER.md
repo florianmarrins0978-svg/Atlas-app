@@ -817,6 +817,30 @@ en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
 - **Les planches sont ENGENDRÉES** (`scripts/engendrer-maquette-fiche-entretien.mjs`)
   d'une seule liste : ne pas les retoucher à la main, elles divergeraient.
 
+**« LE NOUVEAU CHANTIER » A GROSSI (16 août) — dessiné le matin, choisi et codé
+dans la journée.** Sa réponse devant `docs/maquettes/67` : **« les capitales,
+gros et très gras »** — 13 px, graisse 800, interlettrage 0,22 em, rond de
+42 px, signe inchangé à 20. Les valeurs vivent dans `globals.css`
+(`.atlas-mot`, `.atlas-rond`).
+
+**⚠ `docs/maquettes/24-le-bouton-retenu.html` n'est PLUS la référence du
+libellé** — elle porte un bandeau qui le dit, et renvoie à la 67. Elle reste
+celle de l'onde, des trois tours et des onze grains, qui n'ont pas bougé. Ne pas
+« ré-harmoniser » le reste sur ses chiffres.
+
+**Et ne pas rétrécir le mot pour faire tenir autre chose à côté :** à 360 px, le
+mot, l'écart et le rond font 237 px pour 308 disponibles.
+`test-bouton-nouveau-chantier-e2e.ts` mesure les deux dérives — le retour au
+libellé minuscule et la coupure en « … ».
+
+**Et un piège de la page unique, corrigé au passage.**
+`scripts/fusionner-maquettes.mjs` préfixe les identifiants pour qu'ils ne se
+marchent pas dessus d'une maquette à l'autre. Il ne le faisait **que dans le
+corps** : `#t-3:checked ~ …` et `label[for="t-3"]` restaient nus dans la feuille
+de style et ne désignaient plus rien. La planche s'affichait parfaitement et ne
+répondait à rien — aucune capture ne le montre. Les deux sont réécrits ensemble
+depuis, et la fusion refuse toute référence orpheline.
+
 **LE PRIX ACCORDÉ AU CLIENT (16 août).** « Fais cinq pour cent sur le montant du
 devis » : une remise en pourcentage, sous le total, qui suit jusqu'à la facture
 et au relevé de TVA. Son choix : l'arrangement **B** de `docs/maquettes/61`, le

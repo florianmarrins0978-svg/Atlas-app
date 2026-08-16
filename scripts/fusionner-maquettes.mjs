@@ -331,6 +331,12 @@ const MAQUETTES = [
     famille: "Les chantiers",
     quoi: "L’application sait qu’un client est venu quatre fois et qu’il doit encore 740 € — elle ne le montre nulle part. Un encart, une fiche, ou un cinquième onglet.",
   },
+  {
+    fichier: "67-le-nouveau-chantier-plus-gros.html",
+    titre: "Le nouveau chantier, plus gros",
+    famille: "Enlever le gros bouton",
+    quoi: "« Le plus gros et en gras » — trois formes, trois tailles, trois graisses, et le témoin d’aujourd’hui figé à côté. Le cran le plus gros est celui qui tient encore sans couper le mot sur un écran de 360 px.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
@@ -577,7 +583,16 @@ const IDS_A_PREFIXER = ["modele", "duo", "trio", "g1", "g2", "g3", "chartes", "e
 // `entrer-1` donnent une page unique où le libellé de la seconde coche la case
 // de la PREMIÈRE. Elle s'affiche parfaitement et ne répond à rien. Trouvé le
 // 12 août 2026 en ajoutant la maquette 34 à côté de la 33.
-const FAMILLES_A_PREFIXER = [/^entrer-\d+$/, /^adresse-\d+$/, /^mdp-\d+$/];
+const FAMILLES_A_PREFIXER = [
+  /^entrer-\d+$/,
+  /^adresse-\d+$/,
+  /^mdp-\d+$/,
+  // Les réglages en lettre-tiret-lettre des planches récentes (`f-a`, `t-3`,
+  // `g-2`, `v-b`, `m-1`…). Ils sont si courts que deux maquettes finiront par
+  // se les partager, et la panne est muette : la seconde cocherait la case de
+  // la première. Préfixés d'avance plutôt qu'après coup.
+  /^[a-z]-[a-z0-9]{1,3}$/,
+];
 
 /** Les identifiants du corps qui appartiennent à une famille numérotée. */
 function idsDeFamille(corps) {
@@ -610,7 +625,9 @@ function lire(maquette, indice) {
     return "";
   });
 
+  const prefixes = [];
   for (const id of [...IDS_A_PREFIXER, ...idsDeFamille(corps)]) {
+    if (!corps.includes(`id="${id}"`)) continue;
     corps = corps.replaceAll(`id="${id}"`, `id="s${numero}-${id}"`);
     // **Et le `for` du libellé avec, sinon la case ne se coche plus.** Une
     // maquette sans script peut dépendre d'un identifiant tout autant qu'une
@@ -620,6 +637,22 @@ function lire(maquette, indice) {
     // la pire des pannes, parce qu'aucune capture ne la montre. Trouvé le
     // 12 août 2026 sur la maquette du logo, par le contrôle et non à l'œil.
     corps = corps.replaceAll(`for="${id}"`, `for="s${numero}-${id}"`);
+    prefixes.push(id);
+  }
+
+  // **Et la FEUILLE DE STYLE avec, sinon la planche s'affiche et ne répond à
+  // rien.** Une maquette sans script pilote ses états par `#t-3:checked ~ …` et
+  // colore la pastille choisie par `label[for="t-3"]`. Préfixer l'identifiant
+  // dans le corps sans le suivre dans le style, c'est casser exactement ce
+  // qu'on venait de protéger : les trois formes disparaissent d'un coup, ou
+  // pire, une seule reste figée. Trouvé le 16 août 2026 en ajoutant la 62 —
+  // par le contrôle plus bas, jamais à l'œil.
+  //
+  // Du plus long au plus court : `#t-1` ne doit pas mordre dans `#t-15`.
+  let feuille = sansCommentaires(style[1]);
+  for (const id of [...prefixes].sort((a, b) => b.length - a.length)) {
+    feuille = feuille.replaceAll(`for="${id}"`, `for="s${numero}-${id}"`);
+    feuille = feuille.replace(new RegExp(`#${id}\\b`, "g"), `#s${numero}-${id}`);
   }
 
   return {
@@ -627,7 +660,8 @@ function lire(maquette, indice) {
     numero,
     ancre: `m${numero}`,
     hote: `s${numero}`,
-    css: confinerAnimations(confinerCss(sansCommentaires(style[1]), hote), `s${numero}`),
+    prefixes,
+    css: confinerAnimations(confinerCss(feuille, hote), `s${numero}`),
     corps: corps.trim(),
     scripts,
   };
@@ -653,6 +687,19 @@ for (const p of pages) {
       plaintes.push(`${p.fichier} : sélecteur non confiné « ${sel.slice(0, 70)} »`);
     }
   }
+  // **Aucune référence orpheline dans le style.** Un `#t-3` ou un
+  // `label[for="t-3"]` resté nu dans la feuille alors que le corps porte
+  // `s43-t-3` ne désigne plus rien : la page s'affiche parfaitement et ne
+  // répond à rien — la panne que ce script existe pour empêcher.
+  for (const id of p.prefixes) {
+    if (new RegExp(`#${id}\\b`).test(p.css) || p.css.includes(`for="${id}"`)) {
+      plaintes.push(
+        `${p.fichier} : la feuille désigne encore #${id} alors que le corps porte ` +
+          `#${p.hote}-${id} — les réglages ne répondraient plus`,
+      );
+    }
+  }
+
   // Chaque identifiant que le script va chercher doit exister, PRÉFIXÉ, dans
   // le corps — sinon le clonage tombe sur null au chargement de la page.
   // Le contrôle lit les appels réels plutôt que de supposer un nom : il
