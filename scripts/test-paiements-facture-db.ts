@@ -29,7 +29,7 @@ import { nettoyerBase } from "./_test-db";
 //
 //   1. **UNE FACTURE IMPAYÉE NE FIGURE PAS AU RELEVÉ**, et y entre à la date du
 //      règlement. C'est sa demande entière, et c'est ce qui part aux impôts ;
-//   2. **le passé ne bouge pas.** La migration 0042 a supposé chaque facture
+//   2. **le passé ne bouge pas.** La migration 0045 a supposé chaque facture
 //      déjà émise réglée le jour de son émission : un trimestre déjà déclaré
 //      doit rendre exactement le même montant qu'avant ;
 //   3. **le régime se change sans rien perdre**, et le relevé suit ;
@@ -233,7 +233,7 @@ async function main() {
 
   // --- Ce qui ne doit PAS bouger : le passé --------------------------------
 
-  await test("LE PASSÉ NE BOUGE PAS : la reprise de la migration 0042", async () => {
+  await test("LE PASSÉ NE BOUGE PAS : la reprise de la migration 0045", async () => {
     // Une facture émise AVANT ce lot n'a pas de règlement. La migration lui en
     // a posé un, daté de son émission, pour que le relevé déjà déclaré rende
     // exactement le même montant. On rejoue cette situation à la main : une

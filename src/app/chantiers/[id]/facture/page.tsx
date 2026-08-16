@@ -20,7 +20,7 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
   if (!chantier) notFound();
 
   // Ce que la facture arrêtée devient dépend du régime : au relevé tout de
-  // suite, ou en attente de règlement (migration 0042).
+  // suite, ou en attente de règlement (migration 0045).
   const regimeTva = await exigibiliteDe(ctx);
 
   // La facture n'est PAS bâtie à l'ouverture de l'écran : consulter n'est pas

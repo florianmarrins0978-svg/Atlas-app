@@ -285,7 +285,7 @@ async function main() {
     // **Sous le régime des DÉBITS**, et c'est délibéré : ce contrôle porte sur
     // QUELLES factures comptent — les émises, pas les brouillons —, jamais sur
     // le MOMENT où elles comptent. Depuis le 14 août 2026, le défaut est
-    // l'encaissement (migration 0042) et une facture non réglée n'entre plus au
+    // l'encaissement (migration 0045) et une facture non réglée n'entre plus au
     // relevé : sans cette ligne, le contrôle rougirait pour une raison qui n'est
     // pas la sienne. Le moment a sa propre suite, `test-paiements-facture-db`.
     await reglerExigibilite(ctx, "debits");

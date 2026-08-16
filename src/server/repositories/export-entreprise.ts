@@ -205,7 +205,7 @@ export async function exporterEntreprise(
       // « d90_2 » ne veut rien dire une fois la tranche perdue.
       tx.select().from(tranchesGrille).where(eq(tranchesGrille.entrepriseId, e)),
       tx.select().from(naturesGrille).where(eq(naturesGrille.entrepriseId, e)),
-      // Les règlements reçus (migration 0042). Sans eux, une sauvegarde rendrait
+      // Les règlements reçus (migration 0045). Sans eux, une sauvegarde rendrait
       // les factures sans dire lesquelles ont été payées — donc sans permettre
       // de reconstituer un seul relevé de TVA.
       tx.select().from(paiementsFacture).where(eq(paiementsFacture.entrepriseId, e)),

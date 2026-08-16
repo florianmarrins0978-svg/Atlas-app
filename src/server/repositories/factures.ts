@@ -453,7 +453,7 @@ export type LigneReleveTva = {
    * **La date qui compte pour la période**, et non plus forcément l'émission.
    *
    * Aux encaissements, c'est celle du règlement : c'est lui qui rend la TVA
-   * exigible (migration 0042). Le nom reste `dateEmission` parce qu'une
+   * exigible (migration 0045). Le nom reste `dateEmission` parce qu'une
    * douzaine d'écrans et de suites le lisent ; `motif` dit laquelle des deux
    * c'est, pour que l'écran ne mente pas au patron.
    */
@@ -490,7 +490,7 @@ export type ReleveTva = {
  * copie.
  */
 export async function releveTvaCollectee(ctx: Ctx, debut: string, fin: string): Promise<ReleveTva> {
-  // **Le régime décide de la DATE qui compte** (migration 0042). Aux
+  // **Le régime décide de la DATE qui compte** (migration 0045). Aux
   // encaissements — le défaut légal d'une prestation de services —, une facture
   // n'entre au relevé qu'à hauteur de ce qui a été reçu, à la date où il l'a
   // été. Aux débits, elle y entre entière le jour de son émission.

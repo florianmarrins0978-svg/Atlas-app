@@ -59,7 +59,7 @@ export default function FactureClient({
   clientEmail: string | null;
   canalClient: CanalClient | null;
   /**
-   * Quand la TVA devient exigible chez cette entreprise (migration 0042).
+   * Quand la TVA devient exigible chez cette entreprise (migration 0045).
    *
    * **La phrase qui suit l'émission en dépend, et ce n'est pas cosmétique.**
    * Aux encaissements, une facture arrêtée ne figure PAS au relevé : elle
