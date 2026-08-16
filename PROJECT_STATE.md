@@ -69,6 +69,7 @@ seule avec quinze outils.
 | Cycle d'envoi, jeton, expiration, réponse | `src/server/repositories/envois-devis.ts` |
 | Suivi de ce que devient le devis (5 états) | `src/lib/etat-envoi.ts` |
 | Statut affiché d'un chantier, de brouillon à facturé | `src/lib/chantier-etat.ts` |
+| Retoucher le devis à la voix — elle propose, il coche (15 août) | `src/lib/retouches-devis.ts`, `src/server/ai/services/retouches-devis-service.ts`, `src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` |
 | Notification « devis retourné » à l'accueil | `src/app/Notifications.tsx` |
 | Reprise d'un devis retourné en nouvelle version | `src/app/chantiers/[id]/export/actions.ts` |
 | Onglet « Terminés » et fin de chantier | `src/app/termines/` |

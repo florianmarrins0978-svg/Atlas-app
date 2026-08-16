@@ -30,13 +30,13 @@ import type { JourIso } from "../src/server/disponibilites";
 
 const BASE = "http://localhost:3000";
 
-let passed = 0;
+let reussis = 0;
 let failed = 0;
 async function test(nom: string, fn: () => Promise<void>) {
   try {
     await fn();
     console.log(`✅ ${nom}`);
-    passed++;
+    reussis++;
   } catch (err) {
     console.error(`❌ ${nom}`);
     console.error(`   ${err instanceof Error ? err.message : err}`);
@@ -202,8 +202,15 @@ async function main() {
   // attendait en silence.
   await test("En posant, les équipes sont des CASES et le bouton dit quoi faire", async () => {
     // Un chantier sans date, celui qu'on va poser.
+    // **Le chantier se désigne par SON nom, jamais par `.first()`.** Consigné
+    // sur `main` le 15 août 2026 par la session voisine, qui a vu cette suite
+    // rouge chez elle pendant qu'elle passait ici : le jeu de démonstration
+    // porte d'autres chantiers sans date, et les sections précédentes de cette
+    // suite en posent. Viser « le premier » revenait à jouer le contrôle sur le
+    // chantier d'à côté — le piège déjà payé sur `test-unite-tarif-e2e`.
+    const nomAPoser = `M. Cases ${Date.now()}`;
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-    await page.fill('input[placeholder="Bernard"]', `M. Cases ${Date.now()}`);
+    await page.fill('input[placeholder="Bernard"]', nomAPoser);
     await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 13");
     await page.click('button:has-text("Créer le chantier")');
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
@@ -211,25 +218,29 @@ async function main() {
     await pool.query(`UPDATE chantiers SET devis_envoye_at = now() WHERE id = $1`, [aPoser]);
 
     await allerAuPlanning();
-    await page.locator('[data-atlas="sans-date"]').first().click();
+    await page.locator('[data-atlas="sans-date"]', { hasText: nomAPoser }).click();
     await page.waitForTimeout(300);
 
-    // **Un jour libre ET OUVRÉ.** « Aujourd'hui + 20 jours » tombe un samedi une
-    // semaine sur trois et demie : le panneau affiche alors « Jamais proposé »,
-    // aucun bouton « Poser » n'existe — c'est le comportement voulu — et cette
-    // suite rougissait sans qu'aucun code n'ait bougé. Vu le 16 août 2026, sur
-    // un 5 septembre qui était un samedi. Écrite le 14, elle visait un jeudi ;
-    // elle serait redevenue verte toute seule le lundi.
+    // **Un jour libre ET OUVRÉ — il faut les deux, et chacun a fait rougir.**
     //
-    // Un contrôle qui échoue selon le jour de la semaine s'apprend à être
-    // ignoré, et c'est ce garde-fou-là qu'on perd — pas seulement dix minutes.
+    // *Ouvré :* « aujourd'hui + 20 jours » tombe un samedi une semaine sur trois
+    // et demie. Le panneau affiche alors « Jamais proposé », aucun bouton
+    // « Poser » n'existe — c'est le comportement voulu — et la suite rougissait
+    // sans qu'aucun code n'ait bougé. Vu le 16 août 2026, sur un 5 septembre qui
+    // était un samedi. Un contrôle qui échoue selon le jour de la semaine
+    // s'apprend à être ignoré, et c'est ce garde-fou-là qu'on perd.
     //
-    // **`estWeekEndIso` plutôt que `getUTCDay() === 0 || === 6`** : le week-end
+    // *Libre :* à vingt jours, on tombe dans la plage où les autres suites — et
+    // le jeu de démonstration — posent leurs chantiers. La journée s'annonce
+    // « pleine », le panneau ne rend plus aucune case, et l'échec accuse le
+    // bouton d'avoir disparu. Six mois plus loin, la place est à nous.
+    //
+    // **`estWeekEndIso` plutôt qu'un `getUTCDay()` réécrit ici** : le week-end
     // est une règle du produit (`src/lib/mois.ts`, et `disponibilites.ts` en
-    // décide), pas une idée à réécrire ici. Deux écritures de la même règle
-    // finissent toujours par diverger — le jour où le samedi travaillé
-    // deviendrait un réglage, celle-ci mentirait sans rougir.
-    const cible = new Date(Date.now() + 20 * 86400_000);
+    // décide). Deux écritures de la même règle finissent toujours par diverger —
+    // le jour où le samedi travaillé deviendrait un réglage, celle-ci mentirait
+    // sans rougir.
+    const cible = new Date(Date.now() + 180 * 86400_000);
     while (estWeekEndIso(cible.toISOString().slice(0, 10) as JourIso)) {
       cible.setUTCDate(cible.getUTCDate() + 1);
     }
@@ -243,6 +254,15 @@ async function main() {
     await page.waitForTimeout(600);
 
     // **Le bouton est là AVANT le choix, éteint, et il le dit.**
+    //
+    // Le panneau se lit d'abord, pour que le message accuse le bon coupable :
+    // une journée déjà pleine ne rend AUCUNE case ni bouton, et l'échec
+    // ressemblait alors à un bouton disparu du produit.
+    const panneau = await page.locator("body").innerText();
+    assert.ok(
+      !panneau.includes("Journée pleine"),
+      `le ${jour} était déjà occupé par un autre chantier : ce n'est pas le produit qui manque, c'est la place`
+    );
     const poser = page.locator('[data-atlas="poser"]');
     assert.equal(await poser.count(), 1, "le bouton doit rester à l'écran avant le choix");
     assert.ok(
@@ -285,7 +305,7 @@ async function main() {
     assert.equal(await page.getByRole("button", { name: /l'équipe — / }).count(), 0);
   });
 
-  console.log(`\n${failed === 0 ? "✅" : "❌"} La pastille d'équipe — ${failed} échec(s).`);
+  console.log(`\n${failed === 0 ? "✅" : "❌"} La pastille d'équipe — ${reussis} réussi(s), ${failed} échec(s).`);
   await browser.close();
   await pool.end();
   process.exit(failed === 0 ? 0 : 1);

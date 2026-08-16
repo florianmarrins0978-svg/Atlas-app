@@ -713,6 +713,25 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**LE MICRO DU DEVIS (15 août) — et le seul piège qu'il porte.** Il peut
+désormais dicter des corrections dans le devis : « supprime la deuxième ligne »,
+« monte la taille de haie à 350 », « rajoute le broyage à 500 », « fondage du
+bois » pour « Fendage du bois ». Elle **propose**, il **coche** — sa proposition
+A (`docs/maquettes/54`). Rien ne bouge avant son appui.
+
+**⚠ LE PIÈGE, ET IL EST À DIRE PLUTÔT QU'À TAIRE :** la feuille de confirmation
+**remplie n'a jamais été parcourue de bout en bout ici**. Cet environnement n'a
+ni service de transcription ni modèle. Ce qui est éprouvé : la règle sans
+navigateur (`scripts/test-retouches-devis.ts`, 27 cas) et le micro au navigateur
+(`scripts/test-dicter-dans-le-devis-e2e.ts`, 5 cas). Le raccord voix → feuille ne
+l'est pas. **Si le patron signale que « ça ne comprend rien », commencer par
+vérifier qu'une clé est bien posée sur son banc** (`npm run verifier:ia`) avant
+de chercher dans la règle.
+
+Trois refus sont dans le code et ne se négocient pas : aucun prix ne s'invente,
+deux lignes qui se ressemblent rendent « à préciser », un nom reconnu nulle part
+ne se rabat pas sur le numéro de ligne. `ARCHITECTURE.md` §113.
+
 **LA LIGNE DU PLANNING PORTE SES TROIS INFOS (15 août).** « 14 août · journée »,
 « 17 août · matin · ½ journée », « 21 août · matin · 3 jours » — la date, le
 moment de départ, la durée, **toute la ligne en or**. Sa demande sur la
@@ -729,6 +748,7 @@ ne dit plus quand un chantier long **finit**, et les week-ends sautés interdise
 de le recalculer de tête. **Ne pas le remettre sur la ligne sans qu'il le
 demande** — il y a été retiré pour faire tenir le nombre de jours ; sa place
 serait la feuille du chevron.
+
 
 **LA TVA AU PAIEMENT (16 août).** Sa question : *« si un client ne me paie pas,
 la facture rentre quand même dans mon relevé »*. Elle était fondée : pour une
@@ -757,6 +777,7 @@ un prestataire agréé, donc un contrat. La saisie à la main reste de toute fa�
 nécessaire — l'accès bancaire se coupe tous les 90 jours.
 
 Le reste : `ARCHITECTURE.md` §110.
+
 
 **⚠ UNE DATE CALCULÉE DEPUIS « AUJOURD'HUI » EST UNE BOMBE À RETARDEMENT (16 août).**
 `test-pastille-equipe-e2e` visait `+ 20 jours` : jeudi le jour où il a été écrit,
@@ -809,6 +830,7 @@ faux. `fusionner-maquettes.mjs` refuse désormais une maquette orpheline, un lie
 mort dans le sommaire, et un numéro porté deux fois. **Avant d'écrire une
 nouvelle planche, jouer `node scripts/fusionner-maquettes.mjs` : il donne le
 prochain numéro libre en refusant le doublon.**
+
 
 **« L'APPLI NE MARCHE PLUS » — ELLE MARCHAIT (14 août, tard).** Son iPhone
 proposait de télécharger un fichier au lieu d'ouvrir Atlas. **Son espace de

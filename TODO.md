@@ -97,37 +97,19 @@ perd, pas seulement dix minutes.
 écarté, et la piste `.first()` reste juste dans son principe — elle n'était
 simplement pas la cause ici.*
 
-*Constaté le 14 août 2026 au soir, en fusionnant un autre lot. **Ce n'est pas
-une intermittence** : la suite tombe aussi bien seule qu'en batterie, toujours
-sur le même contrôle.*
+**Et une seconde fragilité, corrigée par-dessus le 16 août :** le contrôle
+cliquait `[data-atlas="sans-date"]` **avec `.first()`**, alors que le jeu de
+démonstration porte d'autres chantiers sans date et que les sections
+précédentes de la même suite en posent. Il vise désormais le chantier **par son
+nom**, horodaté donc unique. Ce n'était pas la cause du rouge — la leur l'a
+élucidée — mais c'était bien une loterie.
 
-```
-❌ En posant, les équipes sont des CASES et le bouton dit quoi faire
-   le bouton doit rester à l'écran avant le choix
-```
-
-**Ce qui est déjà écarté**, pour ne pas le refaire : le code du planning est
-identique entre `main` et la branche qui l'a constaté — ce n'est pas une
-collision de fusion.
-
-**Le diagnostic, aussi loin qu'il a été mené :** le contrôle attend
-`[data-atlas="poser"]` dans la page ; il en compte zéro. Ce bouton n'est rendu
-que si `aPoser` existe (`PlanningClient.tsx`), et
-`aPoser = visibles.find(…) ?? sansDate[0] ?? null`. **Il est donc nul parce que
-`sansDate` est vide au moment du contrôle** — la suite crée pourtant un chantier
-sans date juste avant, puis clique `[data-atlas="sans-date"]` **avec
-`.first()`** : rien ne garantit que c'est LE SIEN. Les sections précédentes de
-la même suite posent des chantiers, et le jeu de démonstration en porte
-d'autres.
-
-**Piste à éprouver en premier :** viser le chantier par son nom (il est unique,
-horodaté à la création) plutôt que par `.first()`. C'est exactement le piège
-déjà payé sur `test-unite-tarif-e2e` le 14 août — « viser la dernière ligne
-remplissait la carte d'avant ».
-
-**Ce lot appartient à la session qui a posé la pastille d'équipe.** Écrit ici
-pour qu'elle ne reparte pas de zéro, et pour que personne ne conclue à une
-intermittence.
+**Le jour visé part maintenant à six mois** plutôt qu'à vingt jours, toujours
+ramené au premier jour ouvré par `estWeekEndIso` : à trois semaines, on tombe
+dans la plage où les autres suites posent leurs chantiers, la journée s'annonce
+« pleine », et le panneau ne rend alors **aucun bouton** — le même symptôme, une
+autre cause. Le contrôle lit désormais le panneau AVANT de conclure : une
+journée pleine se dit en toutes lettres au lieu d'accuser le bouton.
 
 ### 0 tricies octies. Marquer une facture PAYÉE — le geste qui manque le plus
 
@@ -326,36 +308,34 @@ a demandé, la correction touche la hauteur réservée du calendrier, et un
 contrôle qui l'aurait attrapé aurait accusé le déplacement de l'assistant — ce
 qui n'est pas le coupable.
 
-### 0 trigies. Dicter dans le devis — le micro est prêt, le geste attend son choix
+### 0 trigies. ~~Dicter dans le devis~~ — **CODÉ le 15 août 2026 (proposition A)**
 
 Sa demande du 15 août 2026, capture du devis à l'appui : *« rajoute-moi un petit
 dictaphone en haut à droite comme il y a pour les infos clients [...] pour
 pouvoir dicter à l'intérieur du devis s'il y a des choses à reprendre ou à
-modifier. Et je veux exactement les mêmes trois petits points quand ils
-chargent. »*
+modifier. »* Puis son vocabulaire — supprimer une ligne par son rang ou par son
+nom, changer un prix, en ajouter une, corriger une faute — et sa phrase :
+*« Je vais pouvoir lui parler comme ça et qu'elle comprenne. »*
 
-**Ce qui n'est PAS à décider** : le micro et l'attente. Ils existent
-(`DicterCoordonnees.tsx`, `PointsQuiSoufflent`, `.atlas-souffle`) et se copient
-au trait près — rond de 44 px, rouge pendant l'écoute, points à la place du
-micro pendant le traitement, phrase « Atlas rédige… ».
+**Livré** : `src/lib/retouches-devis.ts` (la règle),
+`src/server/ai/services/retouches-devis-service.ts` (le modèle),
+`src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` (l'écran). Détail : `ARCHITECTURE.md`
+§113, `CHANGELOG.md` du 15 août.
 
-**Ce qui l'est, et qui attend un mot de lui** —
-`docs/maquettes/54-dicter-dans-le-devis.html`, essayable au doigt :
+**CE QUI RESTE, et qui n'est pas un détail :**
 
-| | Ce que la dictée fait | Ce que ça coûte |
-|---|---|---|
-| **A** | elle **propose** des changements de lignes, qu'il coche ; rien ne s'applique sans son appui | un vrai morceau de travail : lecture des lignes existantes, appariement, écran de confirmation |
-| **B** | elle écrit une **note** attachée au devis ; le devis ne bouge pas | presque rien — mais elle ne fait pas le travail |
-
-**Une règle tranche déjà, et ne se négocie pas** (`CLAUDE.md` §4) : **aucun prix
-ne s'invente**. « Ajoute l'évacuation » sans montant donne une ligne **vide et
-signalée**, jamais un chiffre deviné.
-
-**Et une question posée dans la planche, sans réponse** : en A, le micro
-doit-il aussi toucher aux **conditions de règlement** et aux mentions du bas, ou
-seulement aux lignes chiffrées ?
-
-**Rien n'est codé** — `src/` n'est pas touché (§3 bis).
+1. **La feuille remplie n'a jamais été parcourue de bout en bout.** Cet
+   environnement n'a ni transcription ni modèle : la chaîne voix → feuille n'est
+   éprouvée qu'en morceaux (27 cas sans navigateur, 5 au navigateur). Le premier
+   essai réel sera le sien, ou celui d'une machine avec une clé. **Le lui dire
+   plutôt que de le laisser croire éprouvé.**
+2. **Sa question de la planche 54 est toujours sans réponse** : le micro
+   doit-il aussi toucher aux **conditions de règlement** et aux mentions du bas,
+   ou seulement aux lignes chiffrées ? Aujourd'hui : seulement les lignes.
+3. **Aucune vérification côté serveur qu'un devis figé refuse les retouches.**
+   L'écran retire le micro dès l'envoi, et c'est la seule barrière — exactement
+   comme pour les autres champs de cet écran, qui n'en ont jamais eu d'autre. À
+   corriger pour tous en même temps, pas pour celui-ci seul.
 
 ### 0 novemvicies. ~~L'équipe n'était pas applicable~~ — **la pastille CODÉE le 14 août 2026 (geste A)**
 

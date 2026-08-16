@@ -67,6 +67,43 @@ l'écran ignorait le drapeau. Elle refuse de conclure sur zéro carte.
 
 ## 2026-08-15
 
+### Dicter dans le devis : « je vais pouvoir lui parler comme ça et qu'elle comprenne »
+
+**Sa demande :** un micro en haut à droite du devis, le même que sur la fiche du
+client — trois petits points qui soufflent compris — pour dire ce qu'il faut
+reprendre : *« supprime-moi la deuxième ligne, modifie-moi le prix de la taille
+de haie, remplace-moi le deux cent cinquante par trois cent cinquante, rajoute-moi
+une ligne, broyage des branches et tu mets cinq cents euros […] supprime-moi
+fondage du bois, mais en échange je veux que tu mettes débitage du bois. »*
+
+Il a choisi la proposition A de `docs/maquettes/54-dicter-dans-le-devis.html` :
+**elle propose, il coche**. Le devis ne bouge pas d'un centime avant son appui, et
+il décoche ce qui ne va pas.
+
+**Ce que ça évite**, et c'est pour cela que la feuille existe plutôt qu'une
+application directe : une lecture qui se trompe d'un chiffre sur un devis parti
+chez un client se rattrape par un avoir. Trois refus sont posés dans le code, pas
+dans une consigne :
+
+- **aucun prix ne s'invente** — « rajoute le broyage » sans montant donne une
+  ligne vide qui le dit en rouge, jamais « le prix habituel » ;
+- **deux lignes qui se ressemblent ne se départagent pas au hasard** — « Élagage
+  chêne » et « Élagage frêne » rendent « à préciser », décoché ;
+- **un nom reconnu nulle part ne se rabat pas sur le numéro de ligne.**
+
+Et « fondage du bois » trouve « Fendage du bois » : c'est son exemple, et c'est
+le cas courant d'une syllabe avalée par le micro.
+
+**Ce qui n'a PAS été éprouvé ici, et qu'il faut savoir.** Cet environnement n'a
+ni service de transcription ni modèle : la feuille de confirmation **remplie**
+n'a jamais été parcourue de bout en bout. Ses phrases sont éprouvées sans
+navigateur (`scripts/test-retouches-devis.ts`, 27 cas) et la feuille a été vue
+avec des données posées à la main. Le raccord entre la voix et la feuille ne sera
+parcouru qu'avec une clé. Faute de transcription, l'écran le dit plutôt que de
+présenter le texte de remplacement comme une dictée.
+
+Détail : `ARCHITECTURE.md` §113.
+
 ### Le rappel du devis qui tarde : CODÉ, sur ses trois mots
 
 **Ses décisions, du 16 août :** *« la B et 4 »*, puis *« le G »*. La carte
@@ -112,6 +149,7 @@ ne pouvait le dire : elle est valide, elle ne fait simplement rien sans cible.
 **Ce que ça évite :** le compte des jours qu'il a demandé, effacé par le fondu
 au premier glissement. Mesuré après correction : quel que soit le défilement
 demandé, une carte s'arrête désormais à 24 px du bord.
+
 ### La ligne du planning porte enfin ses trois infos — CODÉ
 
 *« Je veux journée et toute la ligne. Tu peux coder. »*
@@ -242,6 +280,7 @@ par `textContent`, qui rend aussi le texte ÉTEINT — « 14 août · journéema
 1 journée » — et accusait la planche d'un défaut qu'elle n'avait pas. Il compose
 maintenant le texte des seuls nœuds visibles. Un contrôle qui mesure autre chose
 que l'écran ne prouve rien, et coûte le temps de comprendre qu'il a tort.
+
 
 ### Deux lignes qui commencent par le même mot, l'une sur l'autre
 
