@@ -37,6 +37,17 @@ ce soit au patron.** C'est exactement ce qui a coûté quatre allers-retours dan
 la nuit du 11 au 12 août : des hypothèses formulées à distance, toutes fausses,
 pendant que sa machine savait tout.
 
+**Et une fiche FIGÉE ne veut pas dire « espace arrêté » sur les anciens
+espaces.** Défaut trouvé le 16 août 2026 : la publication vivait au bas de la
+boucle de `veiller.sh`, qui cesse d'avancer dès qu'elle appelle `npm run banc`
+— un appel qui ne rend la main qu'à la mort du serveur suivant. La fiche se
+figeait donc **au moment exact où le veilleur se mettait au travail**, et sa
+propre règle de lecture (« passé vingt minutes, l'espace est arrêté ») envoyait
+rallumer une machine qui tournait. Corrigé : la publication vit dans un
+processus séparé. **Mais un espace allumé avant cette correction porte encore
+l'ancien veilleur** — devant une fiche figée, regarder le commit qu'elle annonce
+avant d'en conclure quoi que ce soit.
+
 Cette phrase-là n'est plus à retenir : `.claude/settings.json` branche
 `scripts/rappel-panne.mjs` sur chaque message reçu, et le rappel réapparaît de
 lui-même dès qu'il signale une panne — dans cette session comme dans les trois

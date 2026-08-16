@@ -27,6 +27,18 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quadragies bis. ~~La fiche du banc se figeait quand le veilleur travaillait~~ — **CORRIGÉ le 16 août 2026**
+
+Trouvé en cherchant pourquoi il n'arrivait plus à ouvrir l'application. La
+publication vivait dans la boucle de surveillance, qui s'arrête d'avancer dès
+qu'elle appelle `npm run banc`. Elle vit désormais à côté
+(`scripts/test-fiche-pendant-relance.ts`, qui sait rougir).
+
+**Ce qui RESTE à faire, et qui n'est pas corrigé :** on ne sait toujours pas
+pourquoi son serveur ne répondait pas le 16 août à 17 h 06. La fiche s'est tue
+avant de le dire. **Ne pas écrire que cette panne-là est réparée** — seul
+l'aveuglement l'est. Si elle revient, la fiche saura enfin la raconter.
+
 ### 0 quadragies. ~~La réduction accordée au client~~ — **CODÉE le 16 août 2026 (B + « Prix accordé au client »)**
 
 **Sa demande du 16 août 2026 :** *« si jamais un client me demande une

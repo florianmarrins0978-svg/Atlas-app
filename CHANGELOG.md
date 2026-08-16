@@ -9,6 +9,26 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### La fiche du banc se taisait EXACTEMENT quand elle devenait utile
+
+**Trouvé en cherchant pourquoi il ne pouvait plus ouvrir l'application.** Sa
+fiche datait de vingt-sept minutes et annonçait un serveur muet. Sa propre règle
+de lecture — « passé vingt minutes sans réécriture, l'espace est arrêté » —
+envoyait donc rallumer une machine dont rien ne prouvait qu'elle dormait.
+
+**La cause.** La publication vivait au bas de la boucle de `veiller.sh`. Cette
+boucle s'arrête d'avancer dès qu'elle appelle `npm run banc`, qui ne rend la
+main qu'à la mort du serveur suivant — des heures. Le veilleur **cessait donc de
+publier au moment même où il se mettait au travail**.
+
+**Ce que ça évite :** chercher la panne au mauvais endroit, ou rallumer un espace
+qui tourne. La publication vit désormais dans un processus séparé, que rien de
+la surveillance ne peut endormir, et qui s'arrête avec le veilleur.
+
+`scripts/test-fiche-pendant-relance.ts` le tient — et il **sait rougir** :
+confronté à l'ancienne version, il annonce « aucune publication ». Une suite qui
+n'a jamais échoué ne prouve rien.
+
 ### « Fais cinq pour cent sur le montant du devis »
 
 **Sa demande :** pouvoir dire à l'application *« fais cinq pour cent sur le
