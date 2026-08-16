@@ -376,8 +376,15 @@ export function dureeEnDemiJournees(texte: string | null | undefined): number | 
   if (!texte) return null;
   const t = texte.toLowerCase().replace(/ /g, " ");
 
-  // « demi-journée », « une demi journée », « 1/2 journée »
-  if (/(?:demi[\s-]*journ[ée]e|1\s*\/\s*2\s*journ[ée]e)/.test(t)) return 1;
+  // « demi-journée », « une demi journée », « 1/2 journée », « ½ journée »
+  //
+  // **« ½ » a été ajouté le 16 août 2026, et ce n'était pas cosmétique.** C'est
+  // le libellé que la molette affiche au patron (`src/lib/durees-chantier.ts`),
+  // donc celui qu'il redit et qu'il dicte. Sans ce caractère, la phrase tombait
+  // sur la règle suivante — « journée » sans chiffre reconnu — et rendait DEUX
+  // demi-journées : une demi-journée dictée réservait la journée entière, sans
+  // qu'aucun écran ne le signale.
+  if (/(?:demi[\s-]*journ[ée]e|(?:1\s*\/\s*2|½)\s*journ[ée]e)/.test(t)) return 1;
 
   const MOTS: Record<string, number> = {
     un: 1, une: 1, deux: 2, trois: 3, quatre: 4, cinq: 5,

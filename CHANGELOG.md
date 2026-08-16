@@ -7,6 +7,52 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-16
+
+### Le planning propose de compléter une demi-journée — par la route
+
+**Sa demande du 13 août :** *« lorsqu'on a fini des chantiers en demi-journée,
+que le planning soit en mesure de proposer deux demi-journées pour faire une
+journée, mais de deux chantiers qui sont les plus proches »*. Sa décision du
+16 : *« si c'est possible de faire par la route, code par la route »*, avec
+*« la 2 […] mais avec plusieurs proposition comme la 3 »*.
+
+**La vérification a répondu** (`.github/workflows/itineraire.yml`, sur une
+machine qui a le réseau) : le service d'itinéraire de l'IGN accepte **sans clé
+ni compte**, répond en 186 ms, et le vol d'oiseau se trompe de ×1,33 à ×1,56.
+Assez pour **inverser un classement** : un chantier derrière une colline paraît
+proche et se paie en camion.
+
+**Ce que ça évite :** traverser le département deux fois dans la même journée.
+Le bandeau s'ouvre sous la journée dépareillée, propose jusqu'à trois chantiers
+d'une demi-journée classés par temps de route, et **cale sur un appui** — Atlas
+propose, le patron décide.
+
+**Ce qui protège le service public** : le vol d'oiseau classe et écarte d'abord,
+chez nous, sans le moindre appel ; la route ne départage que les trois premiers.
+Trois appels par proposition, pas quinze — aucun en-tête n'annonce de limite
+d'usage, et dix appels ne prouvent pas qu'il en supporte mille.
+
+**Ce qui ne sort pas d'Atlas** : deux paires de nombres, jamais un nom ni une
+adresse en clair — tenu par un contrôle, pas par une phrase.
+
+Migration `0045` (coordonnées + `adresse_situee`), rattrapage automatique au fil
+des ouvertures du planning, et les trois écrans muets dessinés autant que le
+premier. `ARCHITECTURE.md` §110.
+
+### « ½ journée » réservait la journée entière
+
+**Trouvé en écrivant les contrôles ci-dessus.** `dureeEnDemiJournees("½ journée")`
+rendait **2** : le motif connaissait « demi-journée » et « 1/2 journée », pas le
+caractère `½` — qui est pourtant le libellé que la molette affiche au patron,
+donc celui qu'il redit et qu'il **dicte**.
+
+**Ce que ça évite :** une demi-journée dictée qui bloque la journée complète, et
+un planning qui refuse un après-midi libre sans dire pourquoi. Sans conséquence
+par la molette, qui enregistre « une demi-journée ». Réel à la dictée.
+
+---
+
 ## 2026-08-15
 
 ### Deux lignes qui commencent par le même mot, l'une sur l'autre

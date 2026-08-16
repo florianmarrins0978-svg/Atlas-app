@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-15 · `main`
+**Point de reprise :** 2026-08-16 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---

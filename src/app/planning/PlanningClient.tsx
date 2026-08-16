@@ -37,7 +37,8 @@ import FeuilleEquipe from "@/components/atlas/FeuilleEquipe";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
-import { planifierChantierAction, supprimerChantierAction, changerEquipeChantierAction } from "./actions";
+import { planifierChantierAction, supprimerChantierAction, changerEquipeChantierAction, propositionsDemiJourneeAction } from "./actions";
+import BandeauAppariement, { type CibleAppariement } from "@/components/atlas/BandeauAppariement";
 
 /**
  * Le planning — le mois, et la journée qui s'ouvre dessous.
@@ -348,6 +349,39 @@ export default function PlanningClient({
     }
   }
 
+  /**
+   * Caler un chantier proposé sur la demi-journée restée libre.
+   *
+   * **Distinct de `poser`, et ce n'est pas un doublon.** `poser` place le
+   * chantier que le patron a désigné, sur le créneau qu'il a touché. Ici, c'est
+   * Atlas qui a désigné le chantier et le créneau ; le patron ne fait que dire
+   * oui. Les mélanger obligerait à changer `aPoser` et le choix en cours sous
+   * ses doigts, et l'écran perdrait ce qu'il était en train de faire.
+   *
+   * Toujours une demi-journée : c'est le seul cas que l'appariement propose.
+   */
+  async function caler(chantierId: string, cible: CibleAppariement) {
+    const r = await planifierChantierAction(chantierId, cible.jour, {
+      moment: cible.moment,
+      rangEquipe: nombreEquipes > 1 ? cible.rang : null,
+    });
+    if (!r.succes) return { succes: false as const, erreur: r.erreur };
+    setChantiers((cur) =>
+      cur.map((c) =>
+        c.id === chantierId
+          ? {
+              ...c,
+              datePlanifiee: cible.jour,
+              creneauDebut: cible.moment,
+              dureeDemiJournees: 1,
+              rangEquipe: nombreEquipes > 1 ? cible.rang : null,
+            }
+          : c
+      )
+    );
+    return { succes: true as const };
+  }
+
   const marqueDe = (jour: JourIso): MarqueJour => marqueDuJour(jour, occupation, nombreEquipes);
 
   return (
@@ -505,6 +539,7 @@ export default function PlanningClient({
                 onPoser={poser}
                 enCours={enCours}
                 refus={refus}
+                onCaler={caler}
               />
             )}
           </div>
@@ -1060,6 +1095,7 @@ function JourneeOuvrable({
   onPoser,
   enCours,
   refus,
+  onCaler,
 }: {
   jour: JourIso;
   aPoser: { id: string; nom: string } | null;
@@ -1071,6 +1107,7 @@ function JourneeOuvrable({
   onPoser: () => void;
   enCours: boolean;
   refus: string | null;
+  onCaler: (chantierId: string, cible: CibleAppariement) => Promise<{ succes: boolean; erreur?: string }>;
 }) {
   const parMoment = MOMENTS.map((m) => ({ moment: m, lignes: lignesDuMoment(jour, m) }));
   const toutPris = parMoment.every((p) => p.lignes.every((l) => l.occupe !== null));
@@ -1093,6 +1130,29 @@ function JourneeOuvrable({
   const nomChoisie = choix
     ? libelleEquipe(lignesEquipes.find((e) => e.rang === choix.rang) ?? null, nombreEquipes)
     : null;
+
+  /**
+   * La demi-journée dépareillée : une prise, l'autre libre, même équipe.
+   *
+   * **La première trouvée suffit.** À plusieurs équipes, plusieurs trous
+   * peuvent coexister ; en proposer autant de bandeaux ferait trois pavés sous
+   * une journée déjà chargée. On complète celui-là, puis le suivant apparaît.
+   */
+  const trouAApparier = (() => {
+    const matin = parMoment.find((p) => p.moment === "matin")?.lignes ?? [];
+    const aprem = parMoment.find((p) => p.moment === "apres_midi")?.lignes ?? [];
+    for (const l of matin) {
+      const autre = aprem.find((x) => x.rang === l.rang);
+      if (!autre) continue;
+      if (l.occupe && !autre.occupe) {
+        return { enPlace: l.occupe, moment: "apres_midi" as Moment, rang: l.rang };
+      }
+      if (!l.occupe && autre.occupe) {
+        return { enPlace: autre.occupe, moment: "matin" as Moment, rang: l.rang };
+      }
+    }
+    return null;
+  })();
 
   return (
     <>
@@ -1144,6 +1204,22 @@ function JourneeOuvrable({
           </div>
         </div>
       ))}
+
+      {/* **LE BANDEAU D'APPARIEMENT** — sa demande du 13 août 2026, et sa
+          composition retenue le 16 : la 2 (le bandeau sous la journée), avec
+          plusieurs propositions comme la 3, et les distances par la route.
+
+          **Il n'apparaît que là où la question se pose** : une demi-journée
+          prise, l'autre libre, pour la même équipe. Sur une journée vide il n'y
+          a rien à compléter ; sur une journée pleine, rien à ajouter. */}
+      {trouAApparier && (
+        <BandeauAppariement
+          chantierEnPlaceId={trouAApparier.enPlace.id}
+          cible={{ jour, moment: trouAApparier.moment, rang: trouAApparier.rang }}
+          onCaler={onCaler}
+          charger={propositionsDemiJourneeAction}
+        />
+      )}
 
       {refus && (
         <p role="alert" className="mt-4 text-[13px]" style={{ color: colors.alert }}>

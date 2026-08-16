@@ -8871,3 +8871,133 @@ de sens que si le télescopage se produit vraiment. **Question posée au patron 
 
 ---
 
+## 110. Deux demi-journées qui font une journée — et la route, pas le vol d'oiseau
+
+**Sa demande du 13 août 2026 :** *« lorsqu'on a fini des chantiers en
+demi-journée, que le planning soit en mesure de proposer deux demi-journées pour
+faire une journée, mais de deux chantiers qui sont les plus proches. […] Je vais
+lui demander s'il veut que je mette ce chantier-là plutôt qu'un autre
+l'après-midi ou le matin. »*
+
+Puis sa question, qui a commandé tout le reste : *« Quel est le problème si on
+fait par la route ? Je n'ai pas compris. »* — et sa décision du 16, une fois la
+réponse revenue : *« Si c'est possible de faire par la route, code par la
+route. »*
+
+### Le problème n'était pas technique, il était juridique
+
+Un service d'itinéraire reçoit les adresses des clients : il devient un
+**sous-traitant ultérieur** au sens du RGPD, à nommer dans un contrat qui
+n'existe pas encore (`docs/A-FAIRE.md` points 1 et 2). C'est le raisonnement qui
+avait déjà fait préférer la Base Adresse Nationale à Google (§ sur l'aide à la
+saisie d'adresse).
+
+**Sauf que l'État publie aussi un service d'itinéraire.** `.github/workflows/itineraire.yml`
+est allé le lui demander depuis une machine qui a le réseau — l'environnement de
+développement, lui, refuse les services extérieurs. Ce qu'il a rapporté le
+16 août 2026 :
+
+| Mesuré | Résultat |
+|---|---|
+| Clé, compte | **Aucun.** Le service répond 200 sans rien |
+| Écart vol d'oiseau → route | **×1,33 à ×1,56** (monts du Lyonnais) |
+| Rafale de dix appels | 1858 ms, **tous en 200**, 186 ms de moyenne |
+| En-têtes de limite d'usage | **Aucun** — donc on ne sait pas, donc on se retient |
+
+Ce que ces chiffres tranchent : le vol d'oiseau se trompe d'un tiers à la
+moitié, et l'erreur n'est **pas la même d'un trajet à l'autre** — elle peut donc
+inverser le classement. Un chantier « à 8 km » derrière une colline se paie plus
+cher qu'un chantier « à 11 km » par la vallée.
+
+### L'ordre imposé, et pourquoi il ne se négocie pas
+
+`src/lib/appariement-demi-journees.ts` :
+
+1. **le vol d'oiseau classe et écarte** — instantané, chez nous, aucun appel ;
+2. **la route ne départage que les trois premiers.**
+
+Trois appels par proposition, pas quinze. Aucun en-tête n'annonce de limite :
+dix appels ne prouvent pas qu'il en supporte mille, et un écran qui arroserait
+un service public à chaque ouverture finirait par s'en voir fermer la porte —
+c'est l'artisan qui perdrait la fonction.
+
+**Ce qui part chez l'IGN : deux paires de nombres, rien d'autre.** Pas de nom,
+pas d'adresse en clair, pas d'identifiant. Des coordonnées ne se remontent pas à
+une personne sans le fichier qui va avec, et ce fichier ne quitte jamais Atlas.
+Un contrôle le tient plutôt qu'une phrase rassurante
+(`scripts/test-itineraire-ign.ts`).
+
+### Ce qu'il a fallu construire avant, et qui ne se voit pas
+
+**Atlas ne connaissait aucune distance.** L'adresse d'un chantier est du texte
+libre, et le restera : on ne va pas empêcher de créer un chantier faute d'un
+numéro de rue. Mais la Base Adresse Nationale rend les coordonnées à chaque
+frappe, dans la réponse que `lireSuggestions` lisait — et qui n'en gardait que
+le libellé. Le reste partait à la poubelle.
+
+- **migration 0045** : `latitude`, `longitude` (`numeric(9,6)`) et
+  **`adresse_situee`** sur `chantiers` ;
+- **`adresse_situee` est la colonne qui compte.** Elle porte l'adresse EXACTE
+  qui a produit les coordonnées. Le jour où le patron corrige l'adresse, des
+  coordonnées posées sur l'ancienne seraient **pires que pas de coordonnées** —
+  elles ne se signalent pas. Comparer les deux attrape d'un coup les chantiers
+  jamais situés et ceux dont l'adresse a changé ;
+- **le rattrapage se fait au fil de l'eau**, huit par ouverture de planning
+  (`situerQuelquesChantiers`). Trois cents chantiers d'un coup feraient trois
+  cents appels et une page d'une minute ;
+- **une panne du service ne s'écrit PAS en base.** Marquer `adresse_situee`
+  pendant une coupure condamnerait l'adresse à ne plus jamais être retentée : le
+  chantier resterait « non situé » pour toujours, sans que rien ne l'explique.
+  Une adresse *refusée* (« derrière l'église »), elle, laisse sa trace — sinon
+  elle repartirait à chaque ouverture, indéfiniment.
+
+### L'écran : sa composition 2, avec les propositions de la 3
+
+*« je veux la 2 par la route mais avec plusieurs proposition comme la 3 »*
+(`docs/maquettes/57-apparier-deux-demi-journees.html`).
+
+Le bandeau vit **sous la journée**, et n'apparaît que là où la question se pose :
+une demi-journée prise, l'autre libre, pour la même équipe. Sur une journée vide
+il n'y a rien à compléter ; sur une journée pleine, rien à ajouter.
+
+**Ses trois états muets comptent autant que le premier** — un écran qui ne dit
+rien passe pour une panne, ce dépôt l'a déjà payé trois fois :
+
+| Situation | Ce que l'écran écrit |
+|---|---|
+| Rien d'assez proche | Combien, et à quelle distance est le plus proche — puis « Voir quand même » |
+| Départ non situable | L'adresse en cause, nommée, et le chemin pour la corriger |
+| Candidat sans adresse | Nommé sous les propositions, jamais tu |
+| Aucun candidat du tout | **Rien** : le bandeau ne s'affiche pas. Le cas ordinaire ne mérite pas du bruit |
+
+**Et la phrase ne ment jamais sur ce qu'elle mesure** : « à 12 km, 20 min de
+route » quand on a la route, « à 8 km à vol d'oiseau » sinon. Écrire « à 8 km »
+tout court laisserait croire à une distance routière, et le patron partirait
+pour un quart d'heure de trajet qui en fait vingt-cinq.
+
+**Atlas propose, le patron décide.** Aucune demi-journée ne se cale toute seule.
+
+### Un défaut trouvé en chemin : « ½ journée » valait une journée entière
+
+`dureeEnDemiJournees("½ journée")` rendait **2**. Le motif reconnaissait
+« demi-journée » et « 1/2 journée », pas le caractère `½` — qui est pourtant
+**le libellé que la molette affiche au patron** (`src/lib/durees-chantier.ts`),
+donc celui qu'il redit et qu'il dicte. La phrase tombait alors sur la règle
+suivante — « journée » sans chiffre reconnu — et réservait la journée entière.
+
+Sans conséquence par l'écran Informations, qui enregistre `libelleDuree(1)` =
+« une demi-journée ». Réel dès qu'il **dicte** sa durée. Corrigé, avec son cas
+dans `scripts/test-creneaux.ts`.
+
+### Ce qui reste, et qui n'est PAS dans ce lot
+
+**Le bandeau ne propose qu'un trou à la fois.** À plusieurs équipes, plusieurs
+demi-journées dépareillées peuvent coexister ; en afficher autant de bandeaux
+ferait trois pavés sous une journée déjà chargée. On complète le premier, le
+suivant apparaît.
+
+**Et la proposition 4 de la maquette — proposer au moment où l'on pose la date —
+n'est pas codée.** Elle se combine avec celle-ci sans la contredire ; elle
+attend son geste.
+
+---

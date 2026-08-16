@@ -153,6 +153,9 @@ const ATTENDUS: [string, number | null][] = [
   ["une demi-journée", 1],
   ["demi journée", 1],
   ["1/2 journée", 1],
+  // Le libellé que la molette affiche — donc celui qu'il redit et qu'il dicte.
+  // Il rendait 2 jusqu'au 16 août 2026 : une demi-journée réservait la journée.
+  ["½ journée", 1],
   ["2 à 3 jours", 6],
   ["2-3 jours", 6],
   ["3 jours", 6],

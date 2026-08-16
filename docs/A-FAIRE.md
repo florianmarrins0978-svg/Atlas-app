@@ -38,7 +38,7 @@ qui ne se résoudra pas en codant.
 8. [Faire valider l'application par Google — AVANT de commercialiser](#8-faire-valider-lapplication-par-google--avant-de-commercialiser)
 9. [Demander à votre comptable : TVA au mois ou au trimestre ?](#9-demander-à-votre-comptable--tva-au-mois-ou-au-trimestre-)
 10. [Le premier jour d'un artisan : ce qui manque pour lui confier Atlas](#10-le-premier-jour-dun-artisan--ce-qui-manque-pour-lui-confier-atlas)
-11. [Décider si Atlas peut calculer des trajets par la route](#11-décider-si-atlas-peut-calculer-des-trajets-par-la-route)
+11. [~~Décider si Atlas peut calculer des trajets par la route~~ — tranché le 16 août 2026](#11-décider-si-atlas-peut-calculer-des-trajets-par-la-route--tranché-le-16-août-2026)
 
 ---
 
@@ -808,7 +808,7 @@ entièrement.
 
 ---
 
-## 11. Décider si Atlas peut calculer des trajets par la route
+## 11. ~~Décider si Atlas peut calculer des trajets par la route~~ — tranché le 16 août 2026
 
 **Qui : vous**, et le juriste du point 2 si la réponse penche vers un
 prestataire privé.
@@ -842,22 +842,41 @@ les adresses. S'il tient ses promesses, la route rentre dans la même case que
 les adresses — service public, sans compte, sans clé, **sans contrat avec une
 entreprise privée**.
 
-**Une vérification a été lancée le 13 août 2026** pour le savoir, sur une
-machine qui a le réseau — l'environnement de développement, lui, refuse les
-services extérieurs. Elle répond à trois questions : le service accepte-t-il
-sans clé, que vaut l'écart entre vol d'oiseau et route dans les monts, et
-tient-il le rythme de plusieurs appels d'affilée
-(`.github/workflows/itineraire.yml`).
+### ✅ La vérification a répondu — 16 août 2026
 
-### Ce qui est proposé en attendant
+Elle a tourné sur une machine qui a le réseau (`.github/workflows/itineraire.yml`),
+puisque l'environnement de développement refuse les services extérieurs. Ce
+qu'elle rapporte, mesuré et non supposé :
 
-**Commencer à vol d'oiseau**, et le dire à l'écran — « à 8 km à vol d'oiseau »
-plutôt que « à 14 min ». C'est utile tout de suite, ça n'engage rien, et la
-maquette est dessinée pour que **seule la phrase change** le jour où la route
-devient possible : pas un écran à redessiner
-(`docs/maquettes/57-apparier-deux-demi-journees.html`).
+| Question | Réponse |
+|---|---|
+| Faut-il une clé, un compte ? | **Non.** Le service répond normalement sans rien |
+| Que vaut le vol d'oiseau ? | **Il se trompe d'un tiers à la moitié** — de ×1,33 à ×1,56 dans les monts du Lyonnais |
+| Tient-il le rythme ? | Dix appels d'affilée, **tous acceptés, 186 ms chacun** |
+| Annonce-t-il une limite d'usage ? | **Non** — donc on n'en sait rien, et on se retient |
 
-### Ce que ça ne bloque pas
+**Concrètement** : 9,0 km à vol d'oiseau font 12,0 km et 20 minutes de route ;
+23,8 km font 35,6 km et 54 minutes. Un chantier qui paraissait proche pouvait
+être le plus lointain des trois.
 
-Ni l'essai, ni la finition. L'appariement fonctionnera à vol d'oiseau, et
-gagnera en justesse le jour où la route sera tranchée.
+### Ce qui a donc été codé, le 16 août 2026
+
+**Par la route**, puisque c'est possible sans contrat nouveau : la Géoplateforme
+de l'IGN est un service public français, comme la Base Adresse Nationale. **Il
+ne part chez elle que deux paires de nombres** — jamais un nom de client, jamais
+une adresse en clair. Des coordonnées ne se remontent à personne sans le fichier
+qui va avec, et ce fichier ne quitte jamais Atlas.
+
+**Et le vol d'oiseau n'a pas disparu** : il classe et écarte d'abord, chez nous,
+sans le moindre appel ; la route ne départage que les trois premiers. Trois
+appels par proposition, pas quinze — un écran qui arroserait un service public à
+chaque ouverture finirait par s'en voir fermer la porte, et c'est vous qui
+perdriez la fonction. Quand le service ne répond pas, l'écran écrit « à 8 km à
+vol d'oiseau » et le dit comme tel, plutôt que d'afficher un chiffre qui laisse
+croire à un trajet.
+
+### Ce qui reste à décider, et qui vous revient
+
+**Rien ne bloque l'essai.** Mais si un jour la route par l'IGN ne suffit pas —
+service arrêté, précision insuffisante — le recours serait un prestataire privé,
+et là le point 2 redevient bloquant. À rouvrir seulement ce jour-là.

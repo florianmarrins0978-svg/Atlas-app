@@ -290,6 +290,20 @@ export const chantiers = pgTable(
     nom: text("nom").notNull(),
     adresseChantier: text("adresse_chantier"),
 
+    // **Où se trouve ce chantier, quand on a su le situer.**
+    //
+    // NULL est un état NORMAL et le restera : l'adresse est un champ libre — un
+    // lieu-dit, « derrière l'église », un chantier créé avant la migration 0045.
+    // Ce qui s'appuie dessus doit savoir le DIRE plutôt que se taire.
+    //
+    // `adresseSituee` garde l'adresse exacte qui a produit ces coordonnées : si
+    // elle diffère de `adresseChantier`, le patron a corrigé l'adresse depuis, et
+    // des coordonnées posées sur l'ancienne seraient pires que pas de
+    // coordonnées du tout.
+    latitude: numeric("latitude", { precision: 9, scale: 6 }),
+    longitude: numeric("longitude", { precision: 9, scale: 6 }),
+    adresseSituee: text("adresse_situee"),
+
     // Jalons métier datés — correction v2 §3. NULL = étape non atteinte.
     informationsVerifieesAt: timestamp("informations_verifiees_at", { withTimezone: true }),
     prixValideAt: timestamp("prix_valide_at", { withTimezone: true }),

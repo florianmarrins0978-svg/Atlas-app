@@ -200,37 +200,62 @@ deux chantiers possibles, et leur coût :
 **Ne pas poser d'interrupteur en attendant.** Sa phrase sur la planche : *« on le
 touche, rien ne bouge, et on croit à une panne »*.
 
-### 0 tervicies. Apparier deux demi-journées par la proximité
+### 0 tervicies. ~~Apparier deux demi-journées par la proximité~~ — **CODÉ le 16 août 2026, par la route**
 
 **Sa demande du 13 août 2026** : quand une demi-journée est prise et l'autre
-libre, que le planning propose le chantier en attente **le plus proche**, pour
-ne pas traverser le département deux fois dans la journée.
+libre, que le planning propose le chantier en attente **le plus proche**. Son
+choix du 16 : la composition **2** de la maquette (le bandeau sous la journée),
+**avec plusieurs propositions comme la 3**, et **par la route**.
 
-**Ce qui existe déjà :** les demi-journées sont en base (`creneauDebut`,
-`dureeDemiJournees`), deux chantiers différents sur le matin et l'après-midi du
-même jour se représentent sans rien ajouter, et le planning affiche « Libre ».
+**La question juridique est tranchée** (`docs/A-FAIRE.md` point 11, barré) : le
+service d'itinéraire de l'IGN accepte sans clé ni compte, répond en 186 ms, et
+le vol d'oiseau se trompe de ×1,33 à ×1,56 — assez pour inverser un classement.
+Mesuré, pas supposé : `.github/workflows/itineraire.yml`.
 
-**Ce qui manque, et qui commande tout : aucune distance n'est connue.**
-L'adresse d'un chantier est du texte. La Base Adresse Nationale rend pourtant
-les coordonnées à chaque frappe (`lireSuggestions` ne garde que le libellé et le
-contexte, et **jette la géométrie**). Trois étapes, dans l'ordre :
+**Livré :** migration `0045` (coordonnées + `adresse_situee`), rattrapage
+automatique au fil des ouvertures du planning, règles pures dans
+`src/lib/appariement-demi-journees.ts`, appel IGN dans
+`src/server/itineraire/geoplateforme.ts`, bandeau dans
+`src/components/atlas/BandeauAppariement.tsx`. Détail et pourquoi :
+`ARCHITECTURE.md` §110.
 
-1. **Garder les coordonnées** au choix d'une suggestion — migration + champs sur
-   `chantiers` ;
-2. **rattraper** celles des chantiers déjà saisis et des adresses tapées hors
-   liste, côté serveur, sans rien demander au patron ;
-3. **apparier** — fonction pure dans `src/lib/`, testable sans base.
+**Ce qui RESTE, et n'est pas dans ce lot :**
 
-**Maquette `docs/maquettes/57-apparier-deux-demi-journees.html`** — quatre
-façons de le proposer (sur la ligne, en bandeau, en feuille de trois candidats,
-au moment de poser la date), le bandeau dessiné **deux fois** (vol d'oiseau et
-route : seule la phrase change), et les deux cas ingrats — rien d'assez proche,
-adresse non situable. **En attente de son choix.**
+- **la proposition 4 de la maquette** — proposer au moment où l'on pose la date,
+  et non seulement sur le planning. Les deux ne se disputent pas ; elle attend
+  son geste ;
+- **un seul trou proposé à la fois.** À plusieurs équipes, plusieurs
+  demi-journées dépareillées peuvent coexister. Trois bandeaux sous une même
+  journée seraient illisibles ; on complète le premier, le suivant apparaît. À
+  rouvrir seulement s'il le demande ;
+- **la commune affichée est déduite de l'adresse** (`communeApprochee`), pas
+  lue de la Base Adresse Nationale. Se tromper coûte une ligne un peu longue,
+  jamais une mauvaise décision. Une colonne de plus serait à tenir à jour à
+  chaque correction d'adresse.
 
-**La question qui le dépasse** est au point 9 de `docs/A-FAIRE.md` : la route
-suppose un sous-traitant ultérieur. `.github/workflows/itineraire.yml` interroge
-le service de l'État depuis une machine qui a le réseau pour savoir s'il
-dispense d'un prestataire privé.
+
+### 0 quatervicies. `test-bandeau-banc-e2e` tombe en batterie, passe seul
+
+**Constaté le 16 août 2026.** En batterie : *« le serveur de banc n'a jamais
+répondu »* après trois minutes d'attente. Rejoué seul dans la foulée, sans rien
+changer : **six contrôles au vert**.
+
+**Ce que ça n'est pas.** Un défaut du produit : cette suite éprouve un écran qui
+ne s'affiche que sur le banc d'essai, et l'écran répond très bien.
+
+**Ce que c'est probablement.** Elle démarre un **second** `next dev` — le sien,
+avec son propre dossier de construction — pendant que celui de la batterie
+tourne déjà, et pendant qu'un navigateur est ouvert. Deux compilations Next.js
+concurrentes sur cette machine dépassent les trois minutes qu'elle s'accorde.
+
+**Ce qu'il ne faut PAS faire :** allonger le délai jusqu'à ce que ça passe. Un
+contrôle qui attend dix minutes ne dit plus rien de ce qu'il mesure. La piste
+juste est de **réutiliser le serveur de la batterie** avec le profil banc plutôt
+que d'en lancer un second, ou de la jouer avant que le navigateur ne démarre.
+
+**Tant que ce n'est pas fait, l'attitude est simple :** un rouge de cette suite
+en batterie se rejoue seul avant d'être cru — et cette phrase-là est ce qui
+manquait le 16 août, où il a fallu la découvrir.
 
 
 ### 0 duovicies. `/chantiers/<id>/facture` ne répond plus en fin de batterie

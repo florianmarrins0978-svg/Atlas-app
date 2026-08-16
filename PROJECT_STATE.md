@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-14 · branche `main`
-· dernière migration `drizzle/0043_rappels_notifications.sql`
+**Dernière mise à jour :** 2026-08-16 · branche `main`
+· dernière migration `drizzle/0045_coordonnees_chantier.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -107,6 +107,28 @@ seule avec quinze outils.
 | **Déposer sa liste de prix Excel ou CSV**, avec aperçu avant écriture | `src/app/reglages/ImportTarifs.tsx` + `src/lib/import-tarifs.ts` + `src/server/import/lire-classeur.ts` |
 | **Ses tranches et ses travaux, au lieu des nôtres** — les diamètres, les hauteurs, les façons d'abattre et les travaux s'ajoutent et se retirent (écran « Mes prix » et écran « Mes mesures »). Retirer n'efface aucun prix : les cases sont rangées et reviennent. Un travail ajouté n'est PAS reconnu par le chiffrage depuis une dictée, et l'écran le dit (`ARCHITECTURE.md` §105) | `src/lib/grille-prix.ts` + `src/server/repositories/grilles-reglables.ts` + `src/app/reglages/prix/` + `drizzle/0041_tranches_et_natures_de_grille.sql` |
 | **L'unité d'un tarif se CHOISIT** dans un bandeau déroulant (jour/homme, m², ml, heure, forfait, tonne, « aucune ») — la case reste libre pour le stère et l'arbre. Ce qu'elle évite : le rapprochement se fait à la lettre près, et « jours/homme » mal tapé faisait cesser la multiplication en silence (`ARCHITECTURE.md` §101) | `src/lib/unites-tarif.ts` + `src/components/atlas/ChoixUnite.tsx` + `src/app/reglages/ReglagesClient.tsx` |
+
+### Apparier deux demi-journées, par la route (16 août 2026)
+
+Sa demande du 13 août — *« proposer deux demi-journées pour faire une journée,
+mais de deux chantiers qui sont les plus proches »* — et sa décision du 16 :
+**par la route**, après vérification du service de l'IGN sur une machine qui a
+le réseau.
+
+| Brique | Où c'est |
+|---|---|
+| Les règles pures : vol d'oiseau, seuil, classement, phrase affichée | `src/lib/appariement-demi-journees.ts` |
+| Le trajet demandé à la Géoplateforme de l'IGN — sans clé, sans compte | `src/server/itineraire/geoplateforme.ts` |
+| L'assemblage : rattrapage des coordonnées, présélection, appels, classement | `src/server/planning/appariement.ts` |
+| Les coordonnées d'un chantier, et l'adresse qui les a produites | `drizzle/0045_coordonnees_chantier.sql` |
+| Le bandeau sous la journée dépareillée, avec ses trois états muets | `src/components/atlas/BandeauAppariement.tsx` |
+| La vérification du vrai service, là où il y a du réseau | `.github/workflows/itineraire.yml` |
+
+**Ce qui protège le service public** : le vol d'oiseau classe et écarte d'abord,
+chez nous, sans appel ; la route ne départage que les trois premiers. **Ce qui
+ne sort pas d'Atlas** : deux paires de nombres, jamais un nom ni une adresse en
+clair — tenu par un contrôle (`scripts/test-itineraire-ign.ts`).
+`ARCHITECTURE.md` §110.
 
 ### Conformité RGPD
 

@@ -634,3 +634,170 @@ export async function supprimerChantier(ctx: Ctx, chantierId: string): Promise<v
       .where(eq(chantiers.id, chantierId));
   });
 }
+
+/**
+ * Ce qu'il faut savoir d'un chantier pour le situer sur la carte.
+ *
+ * `adresseSituee` porte l'adresse qui a produit les coordonnées : c'est elle,
+ * et non leur seule présence, qui dit si elles sont encore valables.
+ */
+export type ChantierASituer = {
+  id: string;
+  adresseChantier: string;
+  adresseSituee: string | null;
+};
+
+/**
+ * Les chantiers dont les coordonnées manquent — ou ne valent plus rien.
+ *
+ * **Deux cas, un seul traitement.** Un chantier créé avant la migration 0045
+ * n'a jamais eu de coordonnées ; un chantier dont le patron a corrigé l'adresse
+ * en a de fausses, ce qui est pire — elles ne se signalent pas. Comparer
+ * `adresse_situee` à `adresse_chantier` attrape les deux d'un coup, et rend le
+ * rattrapage automatique plutôt que déclenché à la main.
+ *
+ * **Borné, toujours.** Chaque ligne rendue coûtera un appel à la Base Adresse
+ * Nationale. Une liste sans limite, sur une entreprise qui a trois cents
+ * chantiers, ferait trois cents appels à l'ouverture d'un écran.
+ */
+export async function chantiersASituer(ctx: Ctx, limite: number): Promise<ChantierASituer[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const rows = await tx
+      .select({
+        id: chantiers.id,
+        adresseChantier: chantiers.adresseChantier,
+        adresseSituee: chantiers.adresseSituee,
+      })
+      .from(chantiers)
+      .where(
+        and(
+          isNull(chantiers.deletedAt),
+          isNotNull(chantiers.adresseChantier),
+          sql`btrim(${chantiers.adresseChantier}) <> ''`,
+          sql`${chantiers.adresseSituee} IS DISTINCT FROM ${chantiers.adresseChantier}`
+        )
+      )
+      .limit(limite);
+    return rows.filter((r): r is ChantierASituer => r.adresseChantier !== null);
+  });
+}
+
+/**
+ * Range les coordonnées trouvées, avec l'adresse qui les a produites.
+ *
+ * **`adresseSituee` s'écrit MÊME quand on n'a rien trouvé** (coordonnées à
+ * `null`) : sans cela, une adresse introuvable serait resoumise à chaque
+ * ouverture du planning, indéfiniment, pour le même échec. C'est la trace de
+ * l'essai, pas seulement celle du succès.
+ */
+export async function enregistrerCoordonneesChantier(
+  ctx: Ctx,
+  chantierId: string,
+  coord: { latitude: number; longitude: number } | null,
+  adresseSituee: string
+): Promise<void> {
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    await tx
+      .update(chantiers)
+      .set({
+        latitude: coord ? String(coord.latitude) : null,
+        longitude: coord ? String(coord.longitude) : null,
+        adresseSituee,
+        updatedAt: new Date(),
+      })
+      .where(eq(chantiers.id, chantierId));
+  });
+}
+
+export type ChantierSitue = {
+  id: string;
+  nom: string;
+  clientNom: string | null;
+  adresseChantier: string | null;
+  latitude: number | null;
+  longitude: number | null;
+};
+
+/** Un chantier posé sur une demi-journée, avec ce qu'il faut pour mesurer. */
+export async function lireChantierSitue(ctx: Ctx, chantierId: string): Promise<ChantierSitue | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const rows = await tx
+      .select({
+        id: chantiers.id,
+        nom: chantiers.nom,
+        clientNom: clients.nom,
+        adresseChantier: chantiers.adresseChantier,
+        latitude: chantiers.latitude,
+        longitude: chantiers.longitude,
+      })
+      .from(chantiers)
+      .leftJoin(clients, eq(chantiers.clientId, clients.id))
+      .where(and(eq(chantiers.id, chantierId), isNull(chantiers.deletedAt)))
+      .limit(1);
+    const r = rows[0];
+    return r ? { ...r, latitude: enNombre(r.latitude), longitude: enNombre(r.longitude) } : null;
+  });
+}
+
+/**
+ * Les chantiers d'une demi-journée qui attendent une date.
+ *
+ * **Ce que « d'une demi-journée » veut dire ici.** Pas `dureeDemiJournees` —
+ * cette colonne ne se remplit qu'à la pose, et ces chantiers-là ne sont
+ * justement pas posés. C'est la durée dictée (`dureePrevue`) qui le dit, lue par
+ * `dureeEnDemiJournees` : la même fonction que partout ailleurs, jamais une
+ * seconde règle qui finirait par diverger (`CLAUDE.md` §3).
+ *
+ * Le filtre se fait en TypeScript et non en SQL parce que cette lecture est du
+ * langage — « une demi-journée », « ½ journée », « 0,5 jour ». La réécrire en
+ * SQL serait la dupliquer.
+ */
+export async function chantiersDemiJourneeAPlanifier(ctx: Ctx): Promise<ChantierSitue[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const rows = await tx
+      .select({
+        id: chantiers.id,
+        nom: chantiers.nom,
+        clientNom: clients.nom,
+        adresseChantier: chantiers.adresseChantier,
+        latitude: chantiers.latitude,
+        longitude: chantiers.longitude,
+        dureePrevue: chantiers.dureePrevue,
+      })
+      .from(chantiers)
+      .leftJoin(clients, eq(chantiers.clientId, clients.id))
+      .where(
+        and(
+          isNull(chantiers.deletedAt),
+          // Un devis parti : avant cela, le chantier n'a rien à faire dans un
+          // planning — c'est la règle que suit déjà `listerChantiersPourPlanning`.
+          isNotNull(chantiers.devisEnvoyeAt),
+          isNull(chantiers.datePlanifiee),
+          isNull(chantiers.termineAt)
+        )
+      );
+
+    return rows
+      .filter((r) => dureeEnDemiJournees(r.dureePrevue) === 1)
+      .map((r) => ({
+        id: r.id,
+        nom: r.nom,
+        clientNom: r.clientNom,
+        adresseChantier: r.adresseChantier,
+        latitude: enNombre(r.latitude),
+        longitude: enNombre(r.longitude),
+      }));
+  });
+}
+
+/**
+ * `numeric` revient en texte du pilote PostgreSQL — et c'est voulu de sa part :
+ * un `numeric` peut dépasser ce qu'un nombre JavaScript sait porter. Pour des
+ * degrés à six décimales, la conversion est sûre ; ailleurs elle ne le serait
+ * pas, d'où cette fonction plutôt qu'un `Number()` semé dans les requêtes.
+ */
+function enNombre(v: string | null): number | null {
+  if (v === null) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
