@@ -39,6 +39,45 @@ du 3 août. Atlas prépare le message avec le lien, ouvre sa messagerie, il appu
 
 ---
 
+### « L'appli est vraiment très lente » : le banc le dit enfin lui-même
+
+**Sa plainte du 16 août au soir**, et elle était fondée : chaque écran mettait
+jusqu'à une minute à s'ouvrir.
+
+**La cause n'est pas dans le produit.** Le banc sert une version BÂTIE, qui rend
+un écran en 50-100 ms. Faute de version bâtie, il retombe sur le mode
+développement, qui compile chaque écran **à l'ouverture** — 30 à 100 secondes.
+Ce repli existe pour qu'un banc lent vaille mieux qu'un banc mort, et il est
+juste. Ce qui ne l'était pas : **il ne se disait pas.**
+
+Sa fiche annonçait « aucune version bâtie — le banc sert le mode
+développement ». Vrai, et pourtant inutile : cette phrase recouvrait trois états
+qui n'appellent pas la même chose du tout.
+
+| L'état réel | Ce qu'il faut faire |
+|---|---|
+| la construction tourne encore | attendre deux minutes |
+| **elle a ÉCHOUÉ** | **rien ne se réparera seul — le banc restera lent** |
+| elle n'a jamais démarré | il manque un démarrage |
+
+**Ce que ça évite :** chercher un défaut de produit devant une machine qui
+connaît la réponse. Le message d'échec existait — il partait dans
+`/tmp/essai.log`, que personne ne lit et auquel une session n'a pas accès.
+
+Désormais `banc.mjs` dépose un témoin d'échec **hors** du dossier de
+construction (il doit survivre à la tentative qui le remplace), avec l'heure, le
+code de sortie, et **le disque et la mémoire relevés à cet instant précis** —
+une heure plus tard la mémoire est rendue et le coupable a disparu. La fiche le
+publie, nomme la lenteur dans ses mots à lui, et publie de toute façon le disque
+et la mémoire à chaque passage. Une réussite efface le témoin : un échec d'hier
+ne doit pas accuser la construction d'aujourd'hui.
+
+`scripts/test-banc-lent-se-dit.ts` tient les huit points et **sait rougir** :
+contre la version d'avant, les huit tombent.
+
+**Ce qui n'est PAS corrigé, et il faut le lire ainsi :** on ne sait pas encore
+*pourquoi* sa construction échoue. Ce lot ne rend pas son banc rapide — il rend
+la cause lisible en un coup d'œil au lieu d'une soirée.
 ### La fiche d'entretien : tout est tranché, la construction peut commencer
 
 **Ses deux dernières réponses du 16 août.** La molette : *« la A »* — celle du
