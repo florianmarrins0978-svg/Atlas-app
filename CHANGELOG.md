@@ -64,7 +64,7 @@ d'usage, et dix appels ne prouvent pas qu'il en supporte mille.
 **Ce qui ne sort pas d'Atlas** : deux paires de nombres, jamais un nom ni une
 adresse en clair — tenu par un contrôle, pas par une phrase.
 
-Migration `0045` (coordonnées + `adresse_situee`), rattrapage automatique au fil
+Migration `0047` (coordonnées + `adresse_situee`), rattrapage automatique au fil
 des ouvertures du planning, et les trois écrans muets dessinés autant que le
 premier. `ARCHITECTURE.md` §113.
 

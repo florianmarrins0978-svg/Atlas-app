@@ -201,7 +201,7 @@ automatique au fil des ouvertures du planning, règles pures dans
   chaque correction d'adresse.
 
 
-### 0 quatervicies. `test-bandeau-banc-e2e` tombe en batterie, passe seul
+### 0 quatervicies. Des suites navigateur tombent en batterie et passent seules
 
 **Constaté le 16 août 2026.** En batterie : *« le serveur de banc n'a jamais
 répondu »* après trois minutes d'attente. Rejoué seul dans la foulée, sans rien
@@ -223,6 +223,23 @@ que d'en lancer un second, ou de la jouer avant que le navigateur ne démarre.
 **Tant que ce n'est pas fait, l'attitude est simple :** un rouge de cette suite
 en batterie se rejoue seul avant d'être cru — et cette phrase-là est ce qui
 manquait le 16 août, où il a fallu la découvrir.
+
+**Elle n'est pas seule, et c'est ce qui compte.** Le même jour,
+`test-pastille-equipe-e2e` est tombée en batterie sur *« Depuis la feuille du
+chevron aussi, l'équipe se retire — le montage de ce cas n'a pas pris »*, puis a
+donné **neuf contrôles au vert** rejouée seule, sans une ligne modifiée. Deux
+suites différentes, un seul symptôme : la machine est saturée en fin de
+batterie, et un montage qui attend un écran finit par renoncer.
+
+**Donc la règle est générale, pas propre au banc :** un rouge isolé en fin de
+batterie navigateur se rejoue seul **avant** d'ouvrir une enquête. Ce qui reste
+rouge seul est un défaut ; ce qui passe seul est une saturation, et c'est la
+batterie qu'il faut réparer, pas le produit. Ne pas confondre les deux a coûté
+une soirée le 16 août.
+
+**Et ne pas s'en satisfaire.** « Ça passe seul » n'est pas un état acceptable à
+demeure : une batterie qui ment une fois sur dix finit par être crue quand elle
+dit vrai. La piste ci-dessus — un seul serveur Next partagé — vaut pour les deux.
 
 
 ### 0 duovicies. `/chantiers/<id>/facture` ne répond plus en fin de batterie
