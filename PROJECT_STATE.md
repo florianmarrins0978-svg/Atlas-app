@@ -267,8 +267,10 @@ l'application. Ce qui est **fait** :
   devis ne réclame plus rien. Migration `drizzle/0046_rappel_chantier_sans_devis.sql`.
   **Le ton lui a été reposé, capture à l'appui — il garde le sien** (« le B »,
   16 août) : c'est le seul des trois rappels où rien n'est encore parti au
-  client. Reste le **rang**, sans réponse : l'accueil ne montre que deux cartes
-  et les rappels ferment la marche. `TODO.md` §0 novivicies.
+  client. **Et le rang est tranché aussi** (« fait la B », 16 août, après trois
+  photos) : sur l'accueil, **les rappels passent devant les réponses de
+  clients** — ce qu'il doit faire avant ce qu'on lui a répondu. `TODO.md`
+  §0 novivicies.
 - **Une carte ne peut plus se reposer à moitié coupée** (16 août) : sa capture —
   *« le premier message est trop haut et le début n'est pas visible »*. Le cadre
   qui défile déclarait `scroll-snap-type` sans qu'aucun enfant n'ait jamais

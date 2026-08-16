@@ -9140,6 +9140,38 @@ entière les sépare, et leurs sens sont aux deux bouts du chantier.
 Les trois lignes racontent alors le chantier dans l'ordre : **pas de devis →
 devis sans réponse → fini, pas facturé.**
 
+### Le rang sur l'accueil : les rappels D'ABORD
+
+*Sa décision du 16 août 2026 — **« fait la B »** — après trois photos.*
+
+**La règle d'avant :** *« les réponses d'abord : quelqu'un a agi, cela prime sur
+un silence. Les rappels ferment la marche — ils décrivent une attente, pas un
+événement. »* Elle se défendait. Elle avait un défaut que **seule une photo a
+montré** : l'accueil ne pose que `VISIBLES_PAR_DEFAUT` cartes (deux), et dès
+**deux réponses en attente**, le rappel passait derrière « N autres devis à
+regarder ». Un rappel qu'il faut déplier n'est plus un rappel.
+
+**Ce qui a été mesuré avant de décider**, et qui a corrigé une exagération de ma
+part : avec **UNE seule** réponse en attente, son rappel prend la seconde place
+et se voit très bien. Il en faut **deux ou plus** pour le repousser. Le lui
+annoncer comme un défaut permanent aurait été le faire décider sur du faux — la
+scène des photos a donc dû être fabriquée exprès
+(`scripts/capture-rang-trois-cas.sh`).
+
+**Trois dispositions photographiées sur la MÊME scène**, jamais dessinées :
+
+| | Ce que l'image montre | |
+|---|---|---|
+| A | Deux corrections demandées | son rappel derrière le repli |
+| **B** | Ses rappels en tête | **retenu** |
+| C | Trois cartes au lieu de deux | **écarté par l'image elle-même** : la troisième tombe sous le bord de l'écran |
+
+**Ce que B coûte, et il l'a accepté en le voyant :** une acceptation ou un refus
+peut désormais attendre derrière un rappel. Ce qu'il gagne : ce qu'il doit FAIRE
+passe avant ce qu'on lui a répondu.
+
+`scripts/test-devis-qui-tarde-e2e.ts` tient l'ordre — et il vérifie l'ordre, pas
+le compte : la règle vaut quel que soit le nombre de cartes.
 ---
 
 ---

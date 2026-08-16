@@ -204,12 +204,26 @@ export default function Notifications({
    */
   const [refus, setRefus] = useState<{ chantierId: string; message: string } | null>(null);
 
-  // Les réponses d'abord : quelqu'un a agi, cela prime sur un silence. Les
-  // rappels ferment la marche — ils décrivent une attente, pas un événement.
+  // **LES RAPPELS D'ABORD — sa décision du 16 août 2026, « fait la B ».**
+  //
+  // La règle d'avant disait l'inverse : *« les réponses d'abord, quelqu'un a agi,
+  // cela prime sur un silence »*. Elle se défendait, et elle avait un défaut que
+  // seule une photo a montré : l'accueil ne pose que VISIBLES_PAR_DEFAUT cartes,
+  // et **dès deux réponses en attente**, un rappel passait derrière « N autres
+  // devis à regarder ». Un rappel qu'il faut déplier n'est plus un rappel.
+  //
+  // Trois dispositions lui ont été PHOTOGRAPHIÉES sur la même scène — deux
+  // réponses de clients plus son rappel (`scripts/capture-rang-trois-cas.sh`).
+  // Il a retenu B. La troisième — montrer trois cartes au lieu de deux — a été
+  // écartée par l'image elle-même : la troisième tombe sous le bord de l'écran.
+  //
+  // **Ce que ce choix coûte, et il l'a accepté en connaissance de cause :** une
+  // acceptation ou un refus peut désormais attendre derrière un rappel. Ce qu'il
+  // gagne : ce qu'il doit FAIRE passe avant ce qu'on lui a répondu.
   const cartes = [
+    ...rappels.map(rappelVersCarte),
     ...initiales.map(versCarte),
     ...caducs.map(caducVersCarte),
-    ...rappels.map(rappelVersCarte),
   ];
   const restantes = cartes.filter((n) => !masquees.includes(n.envoiId));
   if (restantes.length === 0) return null;

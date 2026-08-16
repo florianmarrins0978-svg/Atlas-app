@@ -65,6 +65,45 @@ voix.
 
 
 ### 0 novivicies. ~~Le devis qui tarde~~ — **CODÉ le 16 août 2026 (B, 4 jours, « Chantier sans devis »)**
+
+*Planche : `docs/maquettes/56-le-devis-qui-tarde.html`. Code : `src/lib/rappels.ts`,
+`src/server/repositories/rappels.ts`, `src/app/reglages/notifications/`,
+`src/app/Notifications.tsx`, migration `drizzle/0046_rappel_chantier_sans_devis.sql`.
+Détail et raisons : `ARCHITECTURE.md` §112.*
+
+**Sa demande du 14 août :** *« un rappel lorsque le chantier a été ouvert mais le
+devis n'a pas été envoyé […] comme la Mme Félicie, vue il y a quatorze jours,
+aucun devis envoyé »*. **Ses quatre décisions, toutes appliquées :** *« la B et
+4 »*, *« le G »*, *« le B »* (le ton, reposé capture à l'appui), *« fait la B »*
+(le rang).
+
+**CE QUI RESTE POSÉ, SANS RÉPONSE — et c'est le seul point ouvert de ce lot.**
+Les rappels passant devant, une réponse de client peut être repoussée derrière
+« N autres devis à regarder ». Mesuré sur le jeu de démonstration : **cinq
+rappels occupaient les deux places, et plus aucune réponse n'était visible**.
+
+La sortie proposée, et elle n'attend que son mot : **garantir une place à
+chacun** sur les deux cartes visibles — un rappel, une réponse. Il verrait
+toujours au moins un de chaque, quel que soit le nombre. Un quart d'heure.
+
+**Trois leçons de ce lot, à ne pas repayer :**
+
+1. **Chercher ce qui existe AVANT de dessiner.** La planche a décrit deux fois un
+   monde disparu — un écran déjà dessiné le 13, un délai déjà codé le 14. Les
+   planches de l'application vivent dans `maquettes/`, celles des décisions dans
+   `docs/maquettes/`, et le code est un troisième endroit.
+2. **Une confusion entre deux libellés n'existe qu'en contexte.** Montrer une
+   ligne seule ne prouve rien : c'est côte à côte avec sa VOISINE qu'elle se
+   juge. D'où la règle tenue par `test-devis-qui-tarde-e2e` — deux réglages
+   voisins ne commencent pas par le même mot —, plus étroite qu'un « toutes les
+   paires » qui refuserait un choix qu'il a fait en connaissance de cause.
+3. **Photographier plutôt que décrire, et sur la BONNE scène.** Deux
+   descriptions que je lui avais données étaient fausses, et l'image l'a dit :
+   sa carte ne passe derrière qu'à partir de DEUX réponses en attente, et
+   « montrer trois cartes » met la troisième sous le bord de l'écran.
+   `scripts/capture-rang-trois-cas.sh` monte la scène minimale et rend le code
+   même en cas d'échec.
+
 ### 0 novovicies. ~~La TVA au PAIEMENT~~ — **CODÉE le 16 août 2026**
 
 *Fait : `ARCHITECTURE.md` §111. Ce qui suit reste pour mémoire du raisonnement.*
