@@ -27,6 +27,34 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quadragies ter. « Le nouveau chantier fait le plus gros et en gras » — DESSINÉ le 16 août 2026, en attente de son choix
+
+**Sa demande du 16 août 2026**, capture de l'écran Chantiers à l'appui : *« Le
+nouveau chantier fait le plus gros et en gras. »*
+
+**Rien n'est codé** — sa règle du 11 août (`CLAUDE.md` §3 bis). La planche est
+`docs/maquettes/62-le-nouveau-chantier-plus-gros.html` : trois formes (les
+capitales grossies, la serif du titre, toute la largeur), trois tailles, trois
+graisses, et **le témoin d'aujourd'hui figé à côté** — 9 px / 500 / rond de
+38 px, les valeurs de `globals.css`.
+
+**Ce qu'il reste à faire quand il aura choisi**, et les deux ne se séparent
+pas :
+
+1. porter les trois valeurs dans `.atlas-mot` et `.atlas-rond`
+   (`src/app/globals.css`, vers la ligne 813) ;
+2. **corriger `docs/maquettes/24-le-bouton-retenu.html` dans le même commit.**
+   C'est lui qui avait resserré cet endroit le 11 août — libellé de 9,5 à 9 px,
+   rond de 46 à 38, signe de 24 à 20 — et cette maquette chiffre les mesures que
+   le code est censé suivre. Grossir sans la reprendre laisserait deux sources
+   qui se contredisent, et la suivante croira la mauvaise.
+
+**Ce qui est déjà su, et qu'il ne faut pas redécouvrir :** le cran « le plus
+gros » (17 px en capitales, 26 px en serif) est **le plus gros qui tienne sans
+couper le mot** sur un écran de 360 px — 284 px pour 308 disponibles. Au-delà,
+« Nouveau chantier » finit en « … ».
+`scripts/verifier-maquette-nouveau-chantier.mjs` le tient, et sait rougir.
+
 ### 0 quadragies bis. ~~La fiche du banc se figeait quand le veilleur travaillait~~ — **CORRIGÉ le 16 août 2026**
 
 Trouvé en cherchant pourquoi il n'arrivait plus à ouvrir l'application. La

@@ -9,6 +9,26 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### « Le nouveau chantier fait le plus gros et en gras » — dessiné, pas codé
+
+**Sa demande du 16 août**, capture à l'appui. `src/` n'est pas touché : la
+planche `docs/maquettes/62-le-nouveau-chantier-plus-gros.html` propose trois
+formes, trois tailles et trois graisses, avec **le témoin d'aujourd'hui figé à
+côté** — sans repère immobile, « plus gros » ne se compare à rien.
+
+**Ce que ça évite :** grossir jusqu'à la coupure. Le cran le plus gros est le
+plus gros qui tienne encore sur un écran de 360 px (284 px pour 308 disponibles),
+et `scripts/verifier-maquette-nouveau-chantier.mjs` refuse tout ce qui déborde,
+en donnant les pixels manquants plutôt que le nom d'un sélecteur.
+
+**Et un défaut de la page unique corrigé au passage, qui ne se voyait pas.**
+`fusionner-maquettes.mjs` préfixait les identifiants du corps sans les suivre
+dans la feuille de style : `#t-3:checked ~ …` et `label[for="t-3"]` désignaient
+alors le vide. La planche s'affichait parfaitement **et ne répondait à rien** —
+la panne que ce script existe justement pour empêcher. Les deux sont désormais
+réécrits ensemble, et un contrôle refuse la fusion si une référence reste
+orpheline (vu rouge sur les maquettes 58, 59 et 60 en le désactivant).
+
 ### La fiche du banc se taisait EXACTEMENT quand elle devenait utile
 
 **Trouvé en cherchant pourquoi il ne pouvait plus ouvrir l'application.** Sa

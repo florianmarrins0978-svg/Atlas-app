@@ -724,6 +724,23 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**« LE NOUVEAU CHANTIER FAIT LE PLUS GROS ET EN GRAS » (16 août) — DESSINÉ,
+PAS CODÉ, et il n'a pas encore répondu.** `docs/maquettes/62`. **Ne pas porter
+un choix dans `src/` avant qu'il ait désigné une forme** : c'est sa règle du
+11 août. Quand il aura choisi, deux fichiers changent ensemble — `globals.css`
+(`.atlas-mot`, `.atlas-rond`, vers la ligne 813) **et**
+`docs/maquettes/24-le-bouton-retenu.html`, qui chiffre les mesures actuelles
+parce que c'est *lui* qui les avait resserrées le 11 août. Corriger l'un sans
+l'autre laisse deux sources qui se contredisent.
+
+**Et un piège de la page unique, corrigé au passage.**
+`scripts/fusionner-maquettes.mjs` préfixe les identifiants pour qu'ils ne se
+marchent pas dessus d'une maquette à l'autre. Il ne le faisait **que dans le
+corps** : `#t-3:checked ~ …` et `label[for="t-3"]` restaient nus dans la feuille
+de style et ne désignaient plus rien. La planche s'affichait parfaitement et ne
+répondait à rien — aucune capture ne le montre. Les deux sont réécrits ensemble
+depuis, et la fusion refuse toute référence orpheline.
+
 **LE PRIX ACCORDÉ AU CLIENT (16 août).** « Fais cinq pour cent sur le montant du
 devis » : une remise en pourcentage, sous le total, qui suit jusqu'à la facture
 et au relevé de TVA. Son choix : l'arrangement **B** de `docs/maquettes/61`, le

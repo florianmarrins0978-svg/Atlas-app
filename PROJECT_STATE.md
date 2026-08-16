@@ -628,6 +628,15 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 
 Voir `TODO.md` pour le détail et l'ordre.
 
+- **« Nouveau chantier », plus gros et en gras** — sa demande du 16 août,
+  **dessinée le jour même et pas codée** (`docs/maquettes/62`) : trois formes,
+  trois tailles, trois graisses, et le témoin d'aujourd'hui figé à côté. Deux
+  choses à savoir avant de porter son choix : le cran le plus gros est **le plus
+  gros qui tienne sans couper le mot** sur un écran de 360 px, et
+  `docs/maquettes/24-le-bouton-retenu.html` — où *il* avait resserré cet endroit
+  le 11 août — devra être corrigé dans le même commit, sinon deux sources se
+  contrediront.
+
 - **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
   (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA
   se déclare au lieu d'être deviné d'après le taux**. **Le sommaire lui-même est CODÉ le
