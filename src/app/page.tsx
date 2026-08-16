@@ -13,6 +13,7 @@ import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
 import { notificationsPatron, envoisCaducs } from "@/server/repositories/envois-devis";
 import { rappelsEnCours } from "@/server/repositories/rappels";
 import { depuisCombien, joursEcoules } from "@/lib/rappels";
+import { enEuros } from "@/lib/euros";
 import Notifications from "./Notifications";
 import AnnonceTransmission from "@/components/atlas/AnnonceTransmission";
 import EcranChantiers from "./EcranChantiers";
@@ -129,6 +130,22 @@ export default async function ChantiersPage() {
               chantierNom: r.chantierNom,
               depuisTexte: depuisCombien(maintenant, r.depuis),
               depuisJours: joursEcoules(maintenant, r.depuis),
+              // **Les montants sont mis en forme ICI, au serveur.** Deux mises
+              // en forme du même nombre — une au serveur, une à l'écran —
+              // finiraient par afficher deux sommes différentes sur la même
+              // carte, et il chercherait laquelle est juste.
+              facture: r.facture
+                ? {
+                    id: r.facture.id,
+                    numero: r.facture.numero,
+                    resteDu: enEuros(r.facture.resteDuCts / 100),
+                    total: enEuros(r.facture.totalCts / 100),
+                    // Partielle : un règlement est déjà arrivé, donc le reste
+                    // diffère du total. C'est ce qui décide d'écrire « restant
+                    // sur … » plutôt qu'un montant seul.
+                    partielle: r.facture.resteDuCts !== r.facture.totalCts,
+                  }
+                : undefined,
             }))}
           />
         </>

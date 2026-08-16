@@ -196,7 +196,7 @@ export async function renommerPrestation(
  *
  * La famille étant une colonne de texte, la renommer c'est réécrire ses lignes.
  * C'est le prix — assumé — de ne pas avoir fait une table pour un mot que le
- * patron change trois fois par an (voir la migration `0050`).
+ * patron change trois fois par an (voir la migration `0051`).
  */
 export async function renommerFamille(
   ctx: Ctx,

@@ -292,6 +292,23 @@ l'application. Ce qui est **fait** :
   Google suffisait déjà et rien n'a été écrit pour ça. **Reste faux, et dit :**
   l'équipe d'un chantier est une étiquette, pas une contrainte.
   `ARCHITECTURE.md` §109.
+- **Le rappel « facture impayée »** (16 août) : le **quatrième** rappel, et le
+  seul qui porte un **rythme**. Sa demande : *« faut faire a plus b, mais il faut
+  également qu'on puisse régler […] toutes les semaines ou tous les quinze jours,
+  mais pas qu'il y ait la notification tous les jours. »* Il paraît à l'échéance
+  — envoi **+ le délai de paiement** réglé, ou le jour de l'envoi sinon —, montre
+  le **reste dû** (avec le total quand un acompte est arrivé), et s'éteint tout
+  seul dès que le règlement est enregistré. « Plus tard » ne classe rien : il
+  espace le rappel du rythme choisi, et c'est le **seul moteur** de ce rythme —
+  sans geste, la carte reste, parce qu'une carte qui s'endort seule peut passer
+  un jour où il n'ouvre pas l'application. La date de report vit sur le
+  **chantier**, pas sur la facture : `trg_facture_immuable` refuse toute écriture
+  sur une facture émise, et l'affaiblir aurait été un contournement. Migration
+  `drizzle/0050_rappel_facture_impayee.sql`, `ARCHITECTURE.md` §118.
+  **Deux défauts trouvés sur la capture et par aucun test** — « 1 jours après
+  l'échéance », et deux espaces mangées par JSX autour d'un `<b>`. Le contrôle
+  écrit contre le premier ne mesurait rien : la valeur d'un `<input>` ne figure
+  pas dans `innerText`.
 - **Le rappel du devis qui tarde** (16 août) : un **troisième** rappel dans
   Réglages → Notifications — *« Chantier sans devis »*, 4 jours, allumé
   d'origine —, et sa carte **teintée** à l'accueil avec le compte des jours dans
@@ -651,9 +668,11 @@ Voir `TODO.md` pour le détail et l'ordre.
   Nuit, dont deux sombres (`ARCHITECTURE.md` §114). Elles repeignent toute
   l'application ; les devis et factures gardent l'identité d'Atlas. Par défaut,
   rien ne change : « Origine » reprend les valeurs d'avant au caractère près. *Notifications*,
-  elle, porte **deux rappels réels** qui apparaissent sur l'accueil — devis sans
-  réponse, chantier fini non facturé — et dit pourquoi « facture impayée » est
-  impossible : rien n'enregistre qu'une facture a été payée. Les deux dernières ouvertes sont
+  elle, porte **quatre rappels réels** qui apparaissent sur l'accueil — chantier
+  sans devis, devis sans réponse, chantier fini non facturé, **facture impayée**.
+  Ce dernier est arrivé le 16 août avec la donnée qui lui manquait — le paiement,
+  noté depuis « Terminés › TVA » —, et c'est le seul qui porte un **rythme**
+  (`ARCHITECTURE.md` §118). Les deux dernières ouvertes sont
   **« Mon compte »** et **« Connexion »** (`ARCHITECTURE.md` §107) : changer son
   nom, changer son mot de passe, et **« me déconnecter partout »** — une colonne
   plutôt qu'une table de sessions. Leurs libellés promettaient un *téléphone* et

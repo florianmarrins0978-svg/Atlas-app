@@ -742,11 +742,41 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**LE RAPPEL « FACTURE IMPAYÉE » (16 août) — le quatrième, et le premier qui a un
+RYTHME.** Il paraît à l'échéance (envoi **+ le délai de paiement** réglé dans
+« Devis & factures », ou le jour de l'envoi si aucun délai ne l'est — son
+« A plus B »), montre le **reste dû**, et s'éteint tout seul dès que le règlement
+est noté dans « Terminés › TVA ». `ARCHITECTURE.md` §115.
+
+**Trois choses à savoir avant d'y toucher :**
+
+1. **La date de report vit sur le CHANTIER**
+   (`chantiers.rappel_facture_repousse_le`), pas sur la facture.
+   `trg_facture_immuable` refuse TOUTE écriture sur une facture émise, y compris
+   une date d'affichage — l'affaiblir serait le contournement que `CLAUDE.md` §4
+   interdit. La relation est de un à un, rien ne se perd.
+2. **« Plus tard » est le SEUL moteur du rythme.** Sans geste, la carte reste,
+   tous les jours. C'est voulu : une carte qui s'endormirait seule pourrait
+   passer un jour où il n'ouvre pas l'application. Et « Plus tard » ne classe
+   rien — la facture reste en attente de paiement, ce n'est pas « J'ai vu ».
+3. **Les trois rythmes sont une CONTRAINTE, pas un menu.** Une case de saisie
+   rouvrirait le « tous les jours » qu'il a explicitement exclu.
+
+**Et le piège de méthode que ce lot a payé, qui vaut pour n'importe quel écran :
+la valeur d'un `<input>` ne figure pas dans `innerText`.** Un contrôle qui
+cherchait « 1 jours » dans le texte de la page ne pouvait jamais le trouver — il
+était vert sur l'écran fautif. C'est la cinquième fois que ce dépôt paie un
+contrôle qui mesure zéro. **La capture aussi peut mentir** : `fullPage` a
+photographié le milieu du cadre qui défile (`.atlas-fil-defile`), sans une seule
+carte, et un montage a écrit `WHERE id = NULL` sans se plaindre — d'où une image
+annonçant « 60 jours » au lieu de 30, faute qui était celle du montage et non de
+l'application.
+
 **DEUX MAQUETTES POUR LA FICHE D'ENTRETIEN (16 août) — RIEN N'EST CODÉ.** Il a
 demandé de recréer les fiches de chantier d'une autre application (paysagistes
 en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
 
-- **LE MODÈLE EST EN BASE depuis le 16 août** (migration `0050`). Un seul par
+- **LE MODÈLE EST EN BASE depuis le 16 août** (migration `0051`). Un seul par
   entreprise, aucune fiche rangée par client. Il ne se sème PAS tout seul à
   l'ouverture d'un écran : la pose est un geste (`poserModeleFourni`). L'écran
   des Réglages reste à écrire.

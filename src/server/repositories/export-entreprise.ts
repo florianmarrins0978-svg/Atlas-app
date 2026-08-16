@@ -211,7 +211,7 @@ export async function exporterEntreprise(
       // les factures sans dire lesquelles ont été payées — donc sans permettre
       // de reconstituer un seul relevé de TVA.
       tx.select().from(paiementsFacture).where(eq(paiementsFacture.entrepriseId, e)),
-      // Le modèle de fiche d'entretien (migration 0050). C'est SA saisie —
+      // Le modèle de fiche d'entretien (migration 0051). C'est SA saisie —
       // les prestations, leurs familles, leur ordre —, et rien ne la
       // reconstitue : le modèle fourni au départ n'est qu'un point de départ,
       // que dix retraits et cinq ajouts ont pu éloigner de tout ce qu'Atlas
