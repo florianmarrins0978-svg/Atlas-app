@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-16 · branche `main`
-· dernière migration `drizzle/0046_rappel_chantier_sans_devis.sql`
+· dernière migration `drizzle/0049_coordonnees_chantier.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -69,6 +69,7 @@ seule avec quinze outils.
 | Suivi de ce que devient le devis (5 états) | `src/lib/etat-envoi.ts` |
 | Statut affiché d'un chantier, de brouillon à facturé | `src/lib/chantier-etat.ts` |
 | Retoucher le devis à la voix — elle propose, il coche (15 août) | `src/lib/retouches-devis.ts`, `src/server/ai/services/retouches-devis-service.ts`, `src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` |
+| Le prix accordé au client — remise en % sous le total, jusqu'à la facture (16 août) | `src/lib/reduction-devis.ts`, migration `0048` |
 | Notification « devis retourné » à l'accueil | `src/app/Notifications.tsx` |
 | Reprise d'un devis retourné en nouvelle version | `src/app/chantiers/[id]/export/actions.ts` |
 | Onglet « Terminés » et fin de chantier | `src/app/termines/` |
@@ -110,6 +111,28 @@ seule avec quinze outils.
 | **Ses tranches et ses travaux, au lieu des nôtres** — les diamètres, les hauteurs, les façons d'abattre et les travaux s'ajoutent et se retirent (écran « Mes prix » et écran « Mes mesures »). Retirer n'efface aucun prix : les cases sont rangées et reviennent. Un travail ajouté n'est PAS reconnu par le chiffrage depuis une dictée, et l'écran le dit (`ARCHITECTURE.md` §105) | `src/lib/grille-prix.ts` + `src/server/repositories/grilles-reglables.ts` + `src/app/reglages/prix/` + `drizzle/0041_tranches_et_natures_de_grille.sql` |
 | **L'unité d'un tarif se CHOISIT** dans un bandeau déroulant (jour/homme, m², ml, heure, forfait, tonne, « aucune ») — la case reste libre pour le stère et l'arbre. Ce qu'elle évite : le rapprochement se fait à la lettre près, et « jours/homme » mal tapé faisait cesser la multiplication en silence (`ARCHITECTURE.md` §101) | `src/lib/unites-tarif.ts` + `src/components/atlas/ChoixUnite.tsx` + `src/app/reglages/ReglagesClient.tsx` |
 
+### Apparier deux demi-journées, par la route (16 août 2026)
+
+Sa demande du 13 août — *« proposer deux demi-journées pour faire une journée,
+mais de deux chantiers qui sont les plus proches »* — et sa décision du 16 :
+**par la route**, après vérification du service de l'IGN sur une machine qui a
+le réseau.
+
+| Brique | Où c'est |
+|---|---|
+| Les règles pures : vol d'oiseau, seuil, classement, phrase affichée | `src/lib/appariement-demi-journees.ts` |
+| Le trajet demandé à la Géoplateforme de l'IGN — sans clé, sans compte | `src/server/itineraire/geoplateforme.ts` |
+| L'assemblage : rattrapage des coordonnées, présélection, appels, classement | `src/server/planning/appariement.ts` |
+| Les coordonnées d'un chantier, et l'adresse qui les a produites | `drizzle/0049_coordonnees_chantier.sql` |
+| Le bandeau sous la journée dépareillée, avec ses trois états muets | `src/components/atlas/BandeauAppariement.tsx` |
+| La vérification du vrai service, là où il y a du réseau | `.github/workflows/itineraire.yml` |
+
+**Ce qui protège le service public** : le vol d'oiseau classe et écarte d'abord,
+chez nous, sans appel ; la route ne départage que les trois premiers. **Ce qui
+ne sort pas d'Atlas** : deux paires de nombres, jamais un nom ni une adresse en
+clair — tenu par un contrôle (`scripts/test-itineraire-ign.ts`).
+`ARCHITECTURE.md` §117.
+
 ### Conformité RGPD
 
 | Brique | Où c'est |
@@ -144,6 +167,19 @@ arrive sur la page.
 **Non éprouvé ici, et ça ne peut pas l'être** : la détection appartient à un
 logiciel fermé d'Apple, absent de cet environnement. À faire confirmer par le
 patron, depuis ses SMS (`TODO.md`).
+
+### Le jour barré qui se faisait passer pour un jour pris (16 août 2026)
+
+L'écran refusait une date sans dire pourquoi, et la phrase désignait une
+occupation qui n'existait pas. La règle, elle, était juste : un jour vide se
+barre quand la durée du chantier déborderait sur un lendemain plein.
+
+| Brique | Où c'est |
+|---|---|
+| La phrase, et le cas reproduit qui la justifie | `src/lib/jours-barres.ts` |
+| Le calendrier — le même pour le patron et pour son client | `src/components/atlas/Calendrier.tsx` |
+| Contrôles purs : le fait, la phrase, et la consigne côté client | `scripts/test-jours-barres.ts` |
+| Le pourquoi, et ce qui n'a PAS changé | `ARCHITECTURE.md` §115 |
 
 ### L'écran d'erreur qui ne menait nulle part (11 août 2026)
 
@@ -610,8 +646,11 @@ Voir `TODO.md` pour le détail et l'ordre.
   l'application, lui, ne cloisonne toujours rien. **Les TREIZE rubriques sont
   ouvertes au 14 août 2026** — plus aucune ne porte « Bientôt »
   (`ARCHITECTURE.md` §108). Deux d'entre elles ne règlent rien et l'assument :
-  *Apparence* (le mode sombre et l'accent demandent de reprendre toute
-  l'application) et *Abonnement* (ni prix ni offre décidés). *Notifications*,
+  *Abonnement* (ni prix ni offre décidés). **Apparence, elle, règle désormais
+  les SEPT CHARTES DE COULEURS** — Origine, Pierre, Beurre, Moka, Prune, Sylve,
+  Nuit, dont deux sombres (`ARCHITECTURE.md` §114). Elles repeignent toute
+  l'application ; les devis et factures gardent l'identité d'Atlas. Par défaut,
+  rien ne change : « Origine » reprend les valeurs d'avant au caractère près. *Notifications*,
   elle, porte **deux rappels réels** qui apparaissent sur l'accueil — devis sans
   réponse, chantier fini non facturé — et dit pourquoi « facture impayée » est
   impossible : rien n'enregistre qu'une facture a été payée. Les deux dernières ouvertes sont

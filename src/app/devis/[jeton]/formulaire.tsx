@@ -81,12 +81,17 @@ export default function FormulaireReponse({
                   serveur revérifie de toute façon — l'affichage n'est qu'un
                   instantané, deux clients peuvent viser le même jour. */}
               <input type="hidden" name="dateAutre" value={dateAutre} />
+              {/* `dureeDemiJournees={null}` : le client n'apprend rien du
+                  découpage du planning de son artisan — ni créneau, ni durée.
+                  Consigne du patron, tenue par `test-creneaux-planning.ts`. Sa
+                  phrase sous le calendrier reste vraie sans rien chiffrer. */}
               <Calendrier
                 debut={envoi.fenetre.debut}
                 fin={envoi.fenetre.fin}
                 occupes={envoi.joursOccupes}
                 retenus={dateAutre ? [dateAutre] : []}
                 aujourdHui={aujourdHui}
+                dureeDemiJournees={null}
                 onBasculer={(jour) => setDateAutre((actuel) => (actuel === jour ? "" : jour))}
               />
               {dateAutre && (

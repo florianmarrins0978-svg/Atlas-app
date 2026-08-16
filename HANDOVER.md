@@ -713,6 +713,53 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**LE PRIX ACCORDÉ AU CLIENT (16 août).** « Fais cinq pour cent sur le montant du
+devis » : une remise en pourcentage, sous le total, qui suit jusqu'à la facture
+et au relevé de TVA. Son choix : l'arrangement **B** de `docs/maquettes/61`, le
+plus cher des trois — **ne pas le rouvrir**, le coût lui a été annoncé avant.
+
+**⚠ TROIS PIÈGES DE CE LOT, tous payés une fois :**
+
+1. **Ne JAMAIS recalculer un total ailleurs qu'en appelant
+   `totauxAvecReduction`** (`src/lib/reduction-devis.ts`). B n'est pas une ligne
+   du tableau : tout endroit qui additionne des lignes à la main oublie la
+   remise, et c'est un montant faux sur un document parti chez un client.
+2. **`total_ht` est le montant NET**, réduction déduite. Le relevé de TVA,
+   l'export comptable et les paiements y cherchent ce qui est dû.
+3. **Pas de « moins » typographique dans un PDF.** `−` (U+2212) fait lever
+   `pdf-lib` et plus aucun devis ne se génère. L'écran, lui, l'affiche très
+   bien — le défaut est invisible partout ailleurs.
+
+**Ce qui n'a pas été parcouru ici** : le geste à la VOIX, faute de transcription
+et de modèle sur cette machine. `ARCHITECTURE.md` §116.
+
+**UN JOUR BARRÉ N'EST PAS UN JOUR PRIS (16 août).** Sa capture de l'écran
+d'envoi, et un défaut de PHRASE, pas de règle.
+
+1. **Ce qu'il voyait.** Le 18 refusé, sans savoir pourquoi — et l'écran écrivait
+   « les jours barrés sont déjà pris » alors qu'il n'y avait rien dessus.
+2. **Ce qui se passe vraiment.** Un jour barré répond à « un chantier de CETTE
+   durée peut-il y COMMENCER ? ». Deux jours partis du 18 déborderaient sur le
+   19, qui est plein. **Reproduit avant de corriger**, et la règle est juste.
+3. **Ce qui a changé.** La phrase nomme la durée — et ce faisant, elle montre le
+   levier : la durée se change juste au-dessus du calendrier.
+   `src/lib/jours-barres.ts`, `ARCHITECTURE.md` §115.
+4. **`dureeDemiJournees` n'a pas de valeur par défaut sur `Calendrier`**
+   (`number | null`), et il faut que ça le reste : le patron a droit à la durée,
+   **son client non** — consigne tenue par `test-creneaux-planning.ts`, qui a
+   refusé la première version de ce lot (*« la durée du chantier a fuité vers la
+   page du client »*). Un défaut silencieux ferait pencher un écran du mauvais
+   côté sans que personne ne le décide.
+5. **Aucune règle de réservation n'a bougé.** Si un jour paraît mal barré,
+   chercher dans `disponibilites.ts`, pas dans cette correction.
+
+**ET UN RAPPEL QUI VIENT DE RESSERVIR (16 août).** Il signale « la demi-journée
+ne s'affiche pas sur le planning » : c'était vrai la veille, corrigé la nuit même
+(§111), et **son banc avait une version de retard** — sa fiche d'état le disait
+en toutes lettres. Lire la fiche AVANT de chercher dans le produit a fait gagner
+la moitié de l'échange.
+
+
 **LE MICRO DU DEVIS (15 août) — et le seul piège qu'il porte.** Il peut
 désormais dicter des corrections dans le devis : « supprime la deuxième ligne »,
 « monte la taille de haie à 350 », « rajoute le broyage à 500 », « fondage du

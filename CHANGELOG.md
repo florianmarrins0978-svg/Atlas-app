@@ -9,6 +9,100 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### Cinq chantiers de test pour éprouver la proposition « par le trajet »
+
+**Sa demande :** *« crée-moi quatre, cinq chantiers de test […] avec des
+demandes de demi-journée, avec des adresses plus ou moins espacées […] pas
+encore ajoutées au planning »* — pour essayer si l'appariement des deux
+demi-journées propose bien le chantier le plus proche.
+
+**Un script à part, `npm run essai:chantiers-trajets`, et NON le seed.** Le seed
+vide puis reconstruit tout, une dizaine de suites comptent ses quatre chantiers,
+et il ne repasse qu'à la création du conteneur : y verser cinq chantiers de plus
+aurait cassé la batterie sans jamais parvenir à un banc déjà allumé. Le script
+ajoute cinq chantiers à l'entreprise de démonstration **sans rien tronquer**, et
+se relance sans doublon (préfixe « Chantier test — »).
+
+**Ce que ça évite.** Chaque chantier a un devis parti, une durée d'une
+demi-journée, aucune date, et des coordonnées posées d'avance (mairies autour de
+Nantes) : sans elles, l'appariement dépendrait d'un appel à la Base Adresse
+Nationale que le mandataire réseau du banc peut refuser. Les distances vont de
+5 à 42 km — le dernier (Pornic) au-delà du seuil de 40 km, pour éprouver aussi
+l'écart et le « Voir quand même ». Vérifié en base : cinq candidats reconnus,
+trois proposés, un écarté, zéro sans position.
+
+### « Fais cinq pour cent sur le montant du devis »
+
+**Sa demande :** pouvoir dire à l'application *« fais cinq pour cent sur le
+montant du devis »* et voir s'ajouter une petite ligne — *« réduction ou prix
+accordé au client, cinq pour cent, ou dix, ou quinze. C'est moi qui choisis le
+nombre de pourcentage »*. Rien de tel n'existait : aucune remise, nulle part.
+
+Trois arrangements lui ont été montrés **avec leur prix écrit en face**. Il a
+choisi le plus cher, **B — sous le total, « Prix accordé au client »** : le prix
+plein, ce qui a été consenti, puis le net. C'est celui qui permet à son client de
+refaire le calcul.
+
+**Ce que ça évite.** La réduction se calcule sur le HT et la TVA vient après —
+sur le TTC, elle aurait rendu une déclaration fausse. Et elle **suit jusqu'à la
+facture** : accordée sur le devis puis absente de la facture, elle aurait fait
+payer au client le prix qu'on venait de lui retirer.
+
+**Quatre défauts trouvés par les contrôles, et pas un par la relecture :**
+
+- le PDF ne se générait plus du tout dès qu'une remise existait — le « moins »
+  typographique n'existe pas dans la police du document ;
+- vider la case ne retirait rien : le champ disparaissait avant d'avoir
+  enregistré, et la remise revenait au rechargement, sans un mot ;
+- la retouche dictée cherchait le devis par le chemin réservé aux devis
+  **envoyés**, et n'aurait donc jamais rien appliqué à un brouillon ;
+- une ligne vide traînait sur les devis sans remise, que le PDF n'imprimait pas.
+
+Il peut aussi la dicter — « fais cinq pour cent », « enlève la remise » — et une
+ligne discrète sous les totaux permet de la poser sans parler.
+
+Détail : `ARCHITECTURE.md` §116.
+
+### Le micro du devis ne touche QUE les lignes
+
+Il s'était repris : *« je veux que la note, elle ne remplace que les lignes de
+[devis] et rien d'autre, comme c'était déjà avant — on ne touche pas aux
+conditions. »* Il avait répondu l'inverse la veille. **Rien n'avait été codé
+entre les deux** — c'est ce que la règle de la maquette d'abord protège.
+
+### Un jour barré disait « déjà pris » alors qu'il était vide
+
+**Sa capture du 16 août :** *« lorsque je veux remettre une journée sur le
+dix-huit, je ne peux pas ou alors c'est parce que je n'ai pas sectionné la
+demi-journée »*. Son intuition était bonne — c'est bien une histoire de durée —
+mais pas celle qu'il croyait : **celle du chantier qu'il envoie**.
+
+Un jour barré ne répond pas à « ce jour est-il pris ? » mais à « un chantier de
+cette durée peut-il y COMMENCER ? ». Reproduit avant de corriger : avec un seul
+jour plein — le 19 —, **le 18 est vide et pourtant barré** dès que le chantier
+dure deux jours, parce qu'il déborderait sur le 19. La règle est juste ; sans
+elle le chantier mordrait sur une journée prise.
+
+**C'est la phrase qui mentait.** Elle disait *« les jours barrés sont déjà pris »*
+— faux sur un jour vide, et elle l'envoyait chercher une occupation qui
+n'existait pas. Elle dit maintenant la durée en cause :
+
+> « Les jours barrés ne peuvent pas accueillir 2 jours : soit ils sont pris, soit
+> le chantier déborderait sur un jour qui l'est. »
+
+Nommer la durée **montre le levier** : elle se change juste au-dessus du
+calendrier, et passer à « 1 journée » rouvre le 18.
+
+**Le client en profite aussi** — c'est le même calendrier, et lui non plus ne
+savait pas pourquoi un jour lui était refusé. Sa phrase à lui ne chiffre rien
+(« ne peuvent pas accueillir votre chantier ») : rien du découpage de votre
+planning ne part chez lui, c'est votre consigne, et c'est la batterie qui l'a
+rappelée quand elle avait été enfreinte.
+
+Aucune règle de réservation n'a changé, seulement ce qui est dit. Détail :
+`ARCHITECTURE.md` §115.
+
+
 ### CODÉ : la TVA quand le client paie, et l'endroit où les factures attendent
 
 Sa question du 14 août : *« si un client décide de ne pas me payer, la facture
@@ -37,9 +131,47 @@ qu'avant. Ces règlements sont annoncés comme supposés, et se retirent.
 de TVA collectée ». C'était faux dès ce lot. Elle dit maintenant qu'elle y
 entrera au paiement. Raisons : `ARCHITECTURE.md` §111.
 
----
+### Le planning propose de compléter une demi-journée — par la route
 
-## 2026-08-16
+**Sa demande du 13 août :** *« lorsqu'on a fini des chantiers en demi-journée,
+que le planning soit en mesure de proposer deux demi-journées pour faire une
+journée, mais de deux chantiers qui sont les plus proches »*. Sa décision du
+16 : *« si c'est possible de faire par la route, code par la route »*, avec
+*« la 2 […] mais avec plusieurs proposition comme la 3 »*.
+
+**La vérification a répondu** (`.github/workflows/itineraire.yml`, sur une
+machine qui a le réseau) : le service d'itinéraire de l'IGN accepte **sans clé
+ni compte**, répond en 186 ms, et le vol d'oiseau se trompe de ×1,33 à ×1,56.
+Assez pour **inverser un classement** : un chantier derrière une colline paraît
+proche et se paie en camion.
+
+**Ce que ça évite :** traverser le département deux fois dans la même journée.
+Le bandeau s'ouvre sous la journée dépareillée, propose jusqu'à trois chantiers
+d'une demi-journée classés par temps de route, et **cale sur un appui** — Atlas
+propose, le patron décide.
+
+**Ce qui protège le service public** : le vol d'oiseau classe et écarte d'abord,
+chez nous, sans le moindre appel ; la route ne départage que les trois premiers.
+Trois appels par proposition, pas quinze — aucun en-tête n'annonce de limite
+d'usage, et dix appels ne prouvent pas qu'il en supporte mille.
+
+**Ce qui ne sort pas d'Atlas** : deux paires de nombres, jamais un nom ni une
+adresse en clair — tenu par un contrôle, pas par une phrase.
+
+Migration `0047` (coordonnées + `adresse_situee`), rattrapage automatique au fil
+des ouvertures du planning, et les trois écrans muets dessinés autant que le
+premier. `ARCHITECTURE.md` §117.
+
+### « ½ journée » réservait la journée entière
+
+**Trouvé en écrivant les contrôles ci-dessus.** `dureeEnDemiJournees("½ journée")`
+rendait **2** : le motif connaissait « demi-journée » et « 1/2 journée », pas le
+caractère `½` — qui est pourtant le libellé que la molette affiche au patron,
+donc celui qu'il redit et qu'il **dicte**.
+
+**Ce que ça évite :** une demi-journée dictée qui bloque la journée complète, et
+un planning qui refuse un après-midi libre sans dire pourquoi. Sans conséquence
+par la molette, qui enregistre « une demi-journée ». Réel à la dictée.
 
 ### La ligne d'état passe en or sur TOUTES les cartes de l'accueil
 
@@ -64,6 +196,8 @@ qu'il faut lui rendre ce pouvoir.
 demain resterait gris sans que rien ne rougisse ; et la suite navigateur lit la
 couleur **calculée** sur l'accueil réel, parce que la règle serait verte même si
 l'écran ignorait le drapeau. Elle refuse de conclure sur zéro carte.
+
+---
 
 ## 2026-08-15
 
@@ -415,6 +549,31 @@ apporté deux planches de plus tombées dans le même trou, qu'il a nommées.
 
 
 ## 2026-08-14
+
+### Sept chartes de couleurs, dont deux sombres — au choix de chacun
+
+Il a retrouvé une planche du début du projet — son écran Chantiers dans seize
+couleurs — et en a gardé six, plus la sienne : **Origine, Pierre, Beurre, Moka,
+Prune, Sylve, Nuit**. Elles se choisissent dans « Apparence », et repeignent
+toute l'application, tout de suite.
+
+**Le mode sombre qu'il demandait est dedans, et ce n'est pas un réglage à
+part** : Nuit et Sylve sont sombres. Deux interrupteurs — un pour la couleur, un
+pour le sombre — se seraient contredits dès la première combinaison.
+
+**Par défaut, rien ne change.** Tant que personne n'a choisi, l'application
+affiche exactement les couleurs de la veille : la charte « Origine » reprend les
+treize valeurs d'avant, au caractère près, et c'est éprouvé dans les deux sens.
+
+**Ce qui ne suit pas la couleur, et c'est voulu :** les devis et les factures.
+Un document ne part pas en noir chez le client parce que l'artisan a choisi
+« Nuit » — les deux pages que le client reçoit gardent l'identité d'Atlas.
+
+**Le défaut trouvé sur une capture, jamais par un test :** au premier essai,
+l'accueil était passé au noir et la bande sous la barre de navigation restait
+blanche. Atlas a deux vocabulaires de couleur — les styles en ligne et les
+classes Tailwind — et seul le premier avait été branché (`ARCHITECTURE.md`
+§114).
 
 ### Les treize rubriques des réglages sont ouvertes — dont deux vrais rappels
 
