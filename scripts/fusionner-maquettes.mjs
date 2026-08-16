@@ -289,6 +289,18 @@ const MAQUETTES = [
     famille: "Le planning",
     quoi: "La date, le moment de départ et la durée sur la ligne d’un chantier posé, sur les cinq cas du produit. Retenue puis CODÉE le 15 août — « je veux journée et toute la ligne ».",
   },
+  {
+    fichier: "60-les-conditions-sur-le-devis.html",
+    titre: "Les conditions sur le devis",
+    famille: "Le devis",
+    quoi: "Six conditions se règlent, une seule arrive sur le document — son constat du 16 août. Trois façons de faire monter les cinq autres, face au champ de notes qu’il peut déjà avoir rempli.",
+  },
+  {
+    fichier: "61-la-reduction-au-client.html",
+    titre: "La réduction au client",
+    famille: "Le devis",
+    quoi: "« Fais cinq pour cent sur le montant du devis » — où la petite ligne se pose, et sous quel mot. Le coût des trois est très inégal : une ligne voyage seule jusqu’à la facture.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

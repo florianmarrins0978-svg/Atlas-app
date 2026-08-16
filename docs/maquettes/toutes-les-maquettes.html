@@ -4701,6 +4701,209 @@
 #s40 .note p:last-child{margin-bottom:0}
 
 
+/* 41 — Les conditions sur le devis */
+#s41{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s41:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s41[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s41, #s41 *{box-sizing:border-box}
+#s41{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s41 .dedans{max-width:940px;margin:0 auto}
+#s41 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s41 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 6px}
+#s41 .intro b{color:var(--encre);font-weight:600}
+#s41 .constat{margin:18px 0 26px;padding:15px 17px;border-radius:12px;
+           background:var(--papier);border-left:3px solid var(--alerte);
+           font-size:13.5px;line-height:1.65}
+#s41 .constat .t{display:block;font-size:11px;letter-spacing:.13em;
+              text-transform:uppercase;color:var(--alerte);margin-bottom:7px}
+#s41 .constat table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+#s41 .constat td{padding:4px 0;border-bottom:1px solid var(--trait)}
+#s41 .constat td:last-child{text-align:right;white-space:nowrap;padding-left:10px}
+#s41 .non{color:var(--alerte)}
+#s41 .oui{color:var(--pin)}
+#s41 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s41 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+#s41 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s41 #v-a:checked ~ .dedans .segments label[for="v-a"],#s41 #v-b:checked ~ .dedans .segments label[for="v-b"],#s41 #v-c:checked ~ .dedans .segments label[for="v-c"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s41 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#s41 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s41 .feuille{background:var(--papier);border-radius:10px;padding:22px 20px}
+#s41 .ent{font-family:Georgia,serif;font-size:19px;line-height:1.2}
+#s41 .coord{font-size:12.5px;color:var(--gris);margin-top:2px}
+#s41 .refs{margin-top:14px}
+#s41 .ref{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;
+       padding:3px 0;border-bottom:1px solid var(--trait)}
+#s41 .ref .lib{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+            color:var(--gris)}
+#s41 .barre{height:2px;background:var(--encre);margin:16px 0}
+#s41 .titre-devis{font-family:Georgia,serif;font-size:22px;letter-spacing:.14em;
+               text-align:center;margin:0 0 16px}
+#s41 .lg{display:flex;justify-content:space-between;gap:12px;font-size:14px;
+      padding:8px 0;border-bottom:1px solid var(--trait)}
+#s41 .lg .prix{white-space:nowrap}
+#s41 .totaux{margin-top:12px}
+#s41 .tot{display:flex;justify-content:space-between;font-size:13.5px;padding:2px 0}
+#s41 .tot.gros{font-family:Georgia,serif;font-size:17px;padding-top:7px;
+            margin-top:5px;border-top:1px solid var(--trait)}
+#s41 .bloc{margin-top:24px}
+#s41 .etiq{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+        color:var(--gris);display:block;margin-bottom:7px}
+#s41 .libre{font-size:14px;line-height:1.5}
+#s41 .libre.vide{color:var(--gris);font-style:italic}
+#s41 .cond{font-size:13.5px;line-height:1.55;margin:0;padding:0;list-style:none}
+#s41 .cond li{margin-bottom:5px}
+#s41 .cond li::before{content:"";display:inline-block;width:3px;height:3px;
+                   border-radius:9999px;background:var(--or);
+                   vertical-align:2px;margin-right:8px}
+#s41 .separation{height:1px;background:var(--trait);margin:12px 0}
+#s41 .sous-etiq{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or);display:block;margin-bottom:6px}
+#s41 .signature{margin-top:24px;border:1px solid var(--trait);border-radius:6px;
+             padding:12px;font-size:11.5px;color:var(--gris)}
+#s41 .a-seul,#s41 .a-dessus,#s41 .a-fusion{display:none}
+#s41 #v-a:checked ~ .dedans .a-seul,#s41 #v-b:checked ~ .dedans .a-dessus,#s41 #v-c:checked ~ .dedans .a-fusion{display:block}
+#s41 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;
+           color:var(--gris)}
+#s41 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s41 .legende b{color:var(--encre);font-weight:600}
+#s41 .l-a,#s41 .l-b,#s41 .l-c{display:none}
+#s41 #v-a:checked ~ .dedans .l-a,#s41 #v-b:checked ~ .dedans .l-b,#s41 #v-c:checked ~ .dedans .l-c{display:block}
+#s41 .cout{display:block;margin-top:12px;padding-top:12px;
+        border-top:1px solid var(--trait)}
+#s41 .note{margin-top:32px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;
+        color:var(--gris)}
+#s41 .note b{color:var(--encre);font-weight:600}
+#s41 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s41 .note ul{margin:8px 0 0;padding-left:19px}
+#s41 .note li{margin-bottom:6px}
+
+
+/* 42 — La réduction au client */
+#s42{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s42:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s42[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s42, #s42 *{box-sizing:border-box}
+#s42{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s42 .dedans{max-width:940px;margin:0 auto}
+#s42 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s42 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s42 .intro b{color:var(--encre);font-weight:600}
+#s42 .dit{margin:0 0 24px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;font-style:italic;color:var(--gris)}
+#s42 .dit b{font-style:normal;color:var(--encre);font-weight:600}
+#s42 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s42 .reglage{margin:0 0 10px}
+#s42 .reglage .quoi{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--gris);margin-bottom:7px}
+#s42 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+#s42 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s42 #v-a:checked ~ .dedans .segments label[for="v-a"],#s42 #v-b:checked ~ .dedans .segments label[for="v-b"],#s42 #v-c:checked ~ .dedans .segments label[for="v-c"],#s42 #m-1:checked ~ .dedans .segments label[for="m-1"],#s42 #m-2:checked ~ .dedans .segments label[for="m-2"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s42 .mot-1,#s42 .mot-2{display:none}
+#s42 #m-1:checked ~ .dedans .mot-1,#s42 #m-2:checked ~ .dedans .mot-2{display:inline}
+#s42 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#s42 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s42 .feuille{background:var(--papier);border-radius:10px;padding:22px 20px}
+#s42 .titre-devis{font-family:Georgia,serif;font-size:22px;letter-spacing:.14em;
+               text-align:center;margin:0 0 4px}
+#s42 .sous-titre{text-align:center;font-size:11.5px;color:var(--gris);margin:0 0 18px}
+#s42 .lg{display:flex;justify-content:space-between;gap:12px;font-size:14px;
+      padding:9px 0;border-bottom:1px solid var(--trait)}
+#s42 .lg .prix{white-space:nowrap}
+#s42 .lg.remise{color:var(--or)}
+#s42 .totaux{margin-top:14px}
+#s42 .tot{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0}
+#s42 .tot.or{color:var(--or)}
+#s42 .tot.souligne{border-top:1px solid var(--trait);margin-top:5px;padding-top:7px}
+#s42 .tot.gros{font-family:Georgia,serif;font-size:17px;padding-top:8px;
+            margin-top:6px;border-top:2px solid var(--encre)}
+#s42 .barre-prix{text-decoration:line-through;color:var(--gris)}
+#s42 .a-ligne,#s42 .a-bloc,#s42 .a-barre{display:none}
+#s42 #v-a:checked ~ .dedans .a-ligne,#s42 #v-b:checked ~ .dedans .a-bloc,#s42 #v-c:checked ~ .dedans .a-barre{display:flex}
+#s42 #v-a:checked ~ .dedans .totaux.a-ligne,#s42 #v-b:checked ~ .dedans .totaux.a-bloc,#s42 #v-c:checked ~ .dedans .totaux.a-barre{display:block}
+#s42 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s42 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s42 .legende b{color:var(--encre);font-weight:600}
+#s42 .l-a,#s42 .l-b,#s42 .l-c{display:none}
+#s42 #v-a:checked ~ .dedans .l-a,#s42 #v-b:checked ~ .dedans .l-b,#s42 #v-c:checked ~ .dedans .l-c{display:block}
+#s42 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s42 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s42 .note b{color:var(--encre);font-weight:600}
+#s42 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s42 .note ul{margin:8px 0 0;padding-left:19px}
+#s42 .note li{margin-bottom:6px}
+#s42 .confirme{margin-top:22px;border-radius:14px;background:var(--teinte);padding:16px 17px}
+#s42 .confirme .sur{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+                 color:var(--or);text-align:center;display:block;margin-bottom:4px}
+#s42 .confirme .qui{font-family:Georgia,serif;font-size:19px;text-align:center;
+                 color:var(--encre);margin:0 0 6px}
+#s42 .confirme .phrase{font-size:12.5px;font-style:italic;text-align:center;
+                    color:var(--gris);margin:0 0 12px}
+#s42 .prop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;
+        border-top:1px solid var(--trait);padding:11px 0}
+#s42 .prop .verbe{display:block;font-size:10px;letter-spacing:.13em;
+               text-transform:uppercase;color:var(--or)}
+#s42 .prop .txt{display:block;font-family:Georgia,serif;font-size:16px;color:var(--encre)}
+#s42 .prop .det{display:block;font-size:12px;color:var(--gris)}
+#s42 .prop .coche{color:var(--or);flex:none}
+
+
 </style>
 
 <div class="enveloppe">
@@ -4887,6 +5090,15 @@
       <a class="item" href="#m40">
         <span class="no">40</span><span class="titre">La ligne qui dit tout</span><span class="fleche">↓</span>
         <span class="quoi">La date, le moment de départ et la durée sur la ligne d’un chantier posé, sur les cinq cas du produit. Retenue puis CODÉE le 15 août — « je veux journée et toute la ligne ».</span>
+      </a>
+      <p class="famille">Le devis</p>
+      <a class="item" href="#m41">
+        <span class="no">41</span><span class="titre">Les conditions sur le devis</span><span class="fleche">↓</span>
+        <span class="quoi">Six conditions se règlent, une seule arrive sur le document — son constat du 16 août. Trois façons de faire monter les cinq autres, face au champ de notes qu’il peut déjà avoir rempli.</span>
+      </a>
+      <a class="item" href="#m42">
+        <span class="no">42</span><span class="titre">La réduction au client</span><span class="fleche">↓</span>
+        <span class="quoi">« Fais cinq pour cent sur le montant du devis » — où la petite ligne se pose, et sous quel mot. Le coût des trois est très inégal : une ligne voyage seule jusqu’à la facture.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -17561,6 +17773,359 @@
       ligne ne dira jamais autre chose que lui.</p>
   </div>
 
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m41">
+    <div class="etape-tete">
+      <span class="etape-no">41</span>
+      <h2>Les conditions sur le devis</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s41">
+<input type="radio" name="v" id="v-a" class="etat" checked>
+<input type="radio" name="v" id="v-b" class="etat">
+<input type="radio" name="v" id="v-c" class="etat">
+
+<div class="dedans">
+  <h1>Les conditions sur le devis</h1>
+  <p class="intro">Votre constat du 16 août. <b>Rien n’est codé</b> — c’est votre
+    règle. Trois façons de faire arriver les réglages sur le document ; celle
+    que vous désignez sera la seule écrite.</p>
+
+  <div class="constat">
+    <span class="t">Ce que j’ai trouvé dans le code</span>
+    Six conditions se règlent dans <b>Réglages → Devis &amp; factures</b>.
+    <b>Une seule</b> atteint le document.
+    <table>
+      <tr><td>Durée de validité</td><td class="oui">arrive ✓</td></tr>
+      <tr><td>Acompte</td><td class="non">n’arrive pas</td></tr>
+      <tr><td>Délai de paiement</td><td class="non">n’arrive pas</td></tr>
+      <tr><td>Moyens de paiement</td><td class="non">n’arrive pas</td></tr>
+      <tr><td>Rappel des pénalités</td><td class="non">n’arrive pas</td></tr>
+      <tr><td>Texte de bas de page</td><td class="non">n’arrive pas</td></tr>
+    </table>
+  </div>
+
+  <div class="segments">
+    <label for="v-a">A · Elles s’écrivent seules</label>
+    <label for="v-b">B · Les vôtres d’abord</label>
+    <label for="v-c">C · Deux blocs séparés</label>
+  </div>
+
+  <div class="rangee">
+    <div class="tel"><div class="feuille">
+      <p class="ent">Atelier Démo</p>
+      <p class="coord">02 40 00 00 00</p>
+      <div class="refs">
+        <div class="ref"><span class="lib">Devis n°</span><span>2026-0011</span></div>
+        <div class="ref"><span class="lib">Date</span><span>16/08/2026</span></div>
+        <div class="ref"><span class="lib">Validité</span><span>30 jours</span></div>
+      </div>
+      <div class="barre"></div>
+      <p class="titre-devis">DEVIS</p>
+
+      <div class="lg"><span>Élagage — 3 chênes</span><span class="prix">450,00 €</span></div>
+      <div class="lg"><span>Broyage des branches</span><span class="prix">180,00 €</span></div>
+      <div class="lg"><span>Évacuation des déchets verts</span><span class="prix">240,00 €</span></div>
+
+      <div class="totaux">
+        <div class="tot"><span>Total HT</span><span>870,00 €</span></div>
+        <div class="tot"><span>TVA 20 %</span><span>174,00 €</span></div>
+        <div class="tot gros"><span>Total TTC</span><span>1 044,00 €</span></div>
+      </div>
+
+      <!-- ═══ A · Elles s'écrivent seules ═══════════════════════════════ -->
+      <div class="bloc a-seul">
+        <span class="etiq">Notes / conditions</span>
+        <ul class="cond">
+          <li>Acompte de 30 % à la commande — soit 313,20 €.</li>
+          <li>Paiement à 30 jours à compter de la facture.</li>
+          <li>Moyens de paiement acceptés : virement, chèque.</li>
+          <li>En cas de retard de paiement : pénalités au taux de trois fois le
+            taux d’intérêt légal, et indemnité forfaitaire de 40 € pour frais de
+            recouvrement.</li>
+          <li>Sous réserve d’accès au chantier.</li>
+        </ul>
+      </div>
+
+      <!-- ═══ B · Les siennes d'abord ═══════════════════════════════════ -->
+      <div class="bloc a-dessus">
+        <span class="etiq">Notes / conditions</span>
+        <p class="libre">Arbres situés en fond de parcelle, accès par le portail
+          de gauche. Merci de dégager la cour la veille.</p>
+        <div class="separation"></div>
+        <ul class="cond">
+          <li>Acompte de 30 % à la commande — soit 313,20 €.</li>
+          <li>Paiement à 30 jours à compter de la facture.</li>
+          <li>Moyens de paiement acceptés : virement, chèque.</li>
+          <li>En cas de retard de paiement : pénalités au taux de trois fois le
+            taux d’intérêt légal, et indemnité forfaitaire de 40 € pour frais de
+            recouvrement.</li>
+          <li>Sous réserve d’accès au chantier.</li>
+        </ul>
+      </div>
+
+      <!-- ═══ C · Deux blocs séparés ════════════════════════════════════ -->
+      <div class="bloc a-fusion">
+        <span class="etiq">Notes</span>
+        <p class="libre">Arbres situés en fond de parcelle, accès par le portail
+          de gauche. Merci de dégager la cour la veille.</p>
+      </div>
+      <div class="bloc a-fusion">
+        <span class="etiq">Conditions</span>
+        <ul class="cond">
+          <li>Acompte de 30 % à la commande — soit 313,20 €.</li>
+          <li>Paiement à 30 jours à compter de la facture.</li>
+          <li>Moyens de paiement acceptés : virement, chèque.</li>
+          <li>En cas de retard de paiement : pénalités au taux de trois fois le
+            taux d’intérêt légal, et indemnité forfaitaire de 40 € pour frais de
+            recouvrement.</li>
+          <li>Sous réserve d’accès au chantier.</li>
+        </ul>
+      </div>
+
+      <div class="bloc">
+        <span class="etiq">Modalités de paiement</span>
+        <p class="libre">Paiement par virement bancaire<br>IBAN : FR76 3000 4000 …</p>
+      </div>
+
+      <div class="signature">Bon pour accord précédé de la mention manuscrite,
+        daté et signé par le client.</div>
+    </div></div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A · Elles s’écrivent seules</span>
+        Les conditions <b>remplacent</b> le bloc de notes. Ce que vous cochez
+        dans les réglages s’écrit, et rien d’autre — le devis dit la même chose
+        d’un chantier à l’autre, sans que vous ayez à y penser.
+        <span class="cout"><b>Ce que ça coûte, et c’est le point noir :</b> si
+        vous aviez déjà tapé quelque chose à la main dans « Notes / conditions »,
+        <b>votre texte disparaît</b>. Sur les devis existants comme sur les
+        nouveaux. Le texte d’invite du champ propose justement « acompte de 30 %,
+        solde à réception » — donc il y a de bonnes chances qu’il y ait déjà
+        quelque chose.</span>
+      </div>
+      <div class="l-b">
+        <span class="t">B · Les vôtres d’abord</span>
+        Votre texte reste <b>en tête</b>, les conditions des réglages se posent
+        dessous, séparées d’un filet. Rien n’est perdu, rien n’est à retaper, et
+        le particulier d’un chantier — l’accès, le portail, la cour — se lit
+        avant les formalités.
+        <span class="cout"><b>Ce que ça coûte :</b> si vous aviez déjà écrit
+        « acompte de 30 % » à la main, il apparaîtra <b>deux fois</b> — une fois
+        dans vos mots, une fois dans les nôtres. Personne ne peut deviner que
+        c’est la même phrase. À vous d’effacer la vôtre, une seule fois.</span>
+      </div>
+      <div class="l-c">
+        <span class="t">C · Deux blocs séparés</span>
+        Deux intertitres au lieu d’un : <b>Notes</b> pour ce que vous écrivez,
+        <b>Conditions</b> pour ce que les réglages posent. Le client voit
+        immédiatement ce qui tient au chantier et ce qui tient au contrat.
+        <span class="cout"><b>Ce que ça coûte :</b> un bloc de plus sur un
+        document déjà dense, et <b>le devis s’allonge</b> — sur un chantier à
+        deux lignes, la signature peut passer en page 2. Le même risque de doublon
+        qu’en B, en plus visible puisque les deux blocs se font face.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui sera vrai quelle que soit votre réponse</span>
+    <ul>
+      <li><b>Les conditions se figent sur le devis</b>, comme la validité. Changer
+        un réglage aujourd’hui ne touchera <b>aucun devis déjà fait</b> — c’est
+        déjà ce que l’écran des réglages vous promet, en bas.</li>
+      <li><b>L’acompte s’écrit en euros</b> dès que le total est connu : « 30 % —
+        soit 313,20 € ». Il ne l’est pas dans l’aperçu des réglages, et aucun
+        chiffre n’y sera inventé.</li>
+      <li><b>Le texte de chaque ligne existe déjà</b> et ne sera pas réécrit :
+        c’est celui de l’aperçu que vous voyez dans les réglages.</li>
+      <li><b>Le rappel des pénalités reprend le texte de la facture, mot pour
+        mot.</b> Deux formulations de la même pénalité se liraient comme deux
+        pénalités.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <span class="t">Une question, et une seule</span>
+    Les conditions doivent-elles aussi descendre sur la <b>facture</b>, ou
+    seulement sur le devis ? Aujourd’hui la facture porte ses mentions légales
+    obligatoires, et rien d’autre. Répondez-y quand vous voudrez — ça ne bloque
+    pas la réparation.
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m42">
+    <div class="etape-tete">
+      <span class="etape-no">42</span>
+      <h2>La réduction au client</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s42">
+<input type="radio" name="v" id="v-a" class="etat" checked>
+<input type="radio" name="v" id="v-b" class="etat">
+<input type="radio" name="v" id="v-c" class="etat">
+<input type="radio" name="m" id="m-1" class="etat" checked>
+<input type="radio" name="m" id="m-2" class="etat">
+
+<div class="dedans">
+  <h1>La réduction au client</h1>
+  <p class="intro">Votre demande du 16 août. <b>Rien n’est codé</b> — c’est votre
+    règle. Le premier réglage choisit <b>où</b> la réduction se pose, le second
+    choisit <b>le mot</b>.</p>
+
+  <p class="dit">« Si jamais un client me demande une réduction, pouvoir lui
+    demander <b>fais cinq pour cent sur le montant du devis</b>, et il ajoute une
+    petite ligne réduction ou prix accordé au client — cinq pour cent, ou dix, ou
+    quinze. <b>C’est moi qui choisis le nombre de pourcentage.</b> »</p>
+
+  <div class="reglage">
+    <span class="quoi">Où elle se pose</span>
+    <div class="segments">
+      <label for="v-a">A · Une ligne du devis</label>
+      <label for="v-b">B · Sous le total</label>
+      <label for="v-c">C · Le prix barré</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">Le mot</span>
+    <div class="segments">
+      <label for="m-1">Réduction</label>
+      <label for="m-2">Prix accordé au client</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel"><div class="feuille">
+      <p class="titre-devis">DEVIS</p>
+      <p class="sous-titre">n° 2026-0011 · 16/08/2026</p>
+
+      <div class="lg"><span>Élagage — 3 chênes</span><span class="prix">450,00 €</span></div>
+      <div class="lg"><span>Broyage des branches</span><span class="prix">180,00 €</span></div>
+      <div class="lg"><span>Évacuation des déchets verts</span><span class="prix">240,00 €</span></div>
+
+      <!-- ═══ A · une ligne parmi les autres ═══════════════════════════════ -->
+      <div class="lg remise a-ligne">
+        <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> 5 %</span>
+        <span class="prix">− 43,50 €</span>
+      </div>
+      <div class="totaux a-ligne">
+        <div class="tot"><span>Total HT</span><span>826,50 €</span></div>
+        <div class="tot"><span>TVA 20 %</span><span>165,30 €</span></div>
+        <div class="tot gros"><span>Total TTC</span><span>991,80 €</span></div>
+      </div>
+
+      <!-- ═══ B · un bloc sous le total ════════════════════════════════════ -->
+      <div class="totaux a-bloc">
+        <div class="tot"><span>Total HT</span><span>870,00 €</span></div>
+        <div class="tot or">
+          <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> 5 %</span>
+          <span>− 43,50 €</span>
+        </div>
+        <div class="tot souligne"><span>Total HT après remise</span><span>826,50 €</span></div>
+        <div class="tot"><span>TVA 20 %</span><span>165,30 €</span></div>
+        <div class="tot gros"><span>Total TTC</span><span>991,80 €</span></div>
+      </div>
+
+      <!-- ═══ C · le prix barré ════════════════════════════════════════════ -->
+      <div class="totaux a-barre">
+        <div class="tot"><span>Total HT</span><span>826,50 €</span></div>
+        <div class="tot"><span>TVA 20 %</span><span>165,30 €</span></div>
+        <div class="tot gros">
+          <span>Total TTC</span>
+          <span><span class="barre-prix">1 044,00 €</span>&nbsp; 991,80 €</span>
+        </div>
+        <div class="tot or" style="justify-content:flex-end;font-size:12px">
+          <span><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> de 5 % accordée</span>
+        </div>
+      </div>
+
+      <!-- La feuille du micro, telle qu'elle existe depuis le 15 août : elle
+           propose, il coche. La réduction y prend simplement sa ligne. -->
+      <div class="confirme">
+        <span class="sur">Ce qu’Atlas a compris</span>
+        <p class="qui">Un changement</p>
+        <p class="phrase">« Fais cinq pour cent sur le montant du devis. »</p>
+        <div class="prop">
+          <span>
+            <span class="verbe">Accorder</span>
+            <span class="txt"><span class="mot-1">Réduction</span><span class="mot-2">Prix accordé au client</span> de 5 %</span>
+            <span class="det">870,00 € → 826,50 € HT — soit 43,50 € de moins</span>
+          </span>
+          <span class="coche">✓</span>
+        </div>
+      </div>
+    </div></div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A · Une ligne du devis</span>
+        La réduction s’écrit <b>dans le tableau</b>, comme une prestation, avec un
+        montant négatif. Le total HT descend tout seul. Votre client voit
+        exactement ce qu’il a obtenu, à l’endroit où il lit les prix.
+        <span class="cout"><b>Ce que ça coûte : presque rien, et c’est décisif.</b>
+        Une ligne voyage <b>toute seule</b> jusqu’à la facture, au relevé de TVA
+        et à l’export comptable — tout ce chemin est déjà bâti pour les lignes.
+        Le seul point d’attention : elle se retire comme une autre ligne, donc
+        d’un geste un peu rapide.</span>
+      </div>
+      <div class="l-b">
+        <span class="t">B · Sous le total</span>
+        Le total plein reste écrit, la remise se pose dessous, et le <b>total
+        après remise</b> suit. C’est la présentation d’un devis d’entreprise : on
+        voit le prix de départ, ce qui a été consenti, et ce qui reste dû.
+        <span class="cout"><b>Ce que ça coûte, et ce n’est pas un détail :</b> ce
+        n’est pas une ligne, donc il faut <b>une colonne de plus</b> dans le
+        devis, dans la facture, et dans tout ce qui les recopie — le relevé de
+        TVA, l’export comptable, le PDF. <b>Chaque endroit oublié est un montant
+        faux.</b> Plusieurs jours au lieu d’un.</span>
+      </div>
+      <div class="l-c">
+        <span class="t">C · Le prix barré</span>
+        Le prix d’avant est <b>barré</b> à côté du nouveau. C’est le geste
+        commercial le plus lisible : votre client voit d’un coup d’œil ce qu’il
+        économise, sans lire une ligne de tableau.
+        <span class="cout"><b>Ce que ça coûte :</b> le prix barré est le
+        vocabulaire de la promotion, pas du devis d’artisan — sur un document qui
+        engage, il peut faire douter du sérieux du premier chiffre. Et il partage
+        le coût technique de B : la remise n’est pas une ligne.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui sera vrai quelle que soit votre réponse</span>
+    <ul>
+      <li><b>La réduction se calcule sur le HT, la TVA vient après.</b>
+        870,00 € − 5 % = 826,50 €, puis TVA. L’appliquer sur le TTC donnerait une
+        TVA fausse sur un document qui finit dans une déclaration — ce n’est pas
+        une préférence, c’est la seule façon juste.</li>
+      <li><b>Elle suit jusqu’à la facture.</b> Une réduction accordée sur le devis
+        et absente de la facture ferait payer à votre client le prix qu’on venait
+        de lui retirer.</li>
+      <li><b>Le pourcentage est le vôtre</b> — 5, 10, 15, ou autre chose. Aucun
+        taux « habituel » ne sera proposé d’office.</li>
+      <li><b>Le micro propose, vous cochez</b>, comme depuis le 15 août. « Fais
+        cinq pour cent » n’applique rien tout seul.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <span class="t">Deux questions, et elles ne bloquent pas</span>
+    <ul>
+      <li>Voudrez-vous aussi pouvoir dire un <b>montant</b> plutôt qu’un
+        pourcentage — « fais-moi 50 € » ? Ce n’est pas dans votre demande, et je
+        ne l’ajoute pas sans que vous le disiez.</li>
+      <li>Faut-il aussi un <b>bouton</b> sur l’écran du devis, pour les fois où
+        vous n’avez pas envie de parler ?</li>
+    </ul>
+  </div>
 </div>
     </div>
   </section>
