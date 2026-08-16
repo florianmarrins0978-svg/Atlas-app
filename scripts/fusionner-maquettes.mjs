@@ -313,6 +313,18 @@ const MAQUETTES = [
     famille: "L’entretien récurrent",
     quoi: "La sortie de la fiche. L’autre application lui montre seize fois « Faux » sur un passage qu’il paie : tout, seulement ce qui a été fait, ou le reste replié en une phrase.",
   },
+  {
+    fichier: "64-composer-sa-fiche.html",
+    titre: "Composer sa fiche d’entretien",
+    famille: "L’entretien récurrent",
+    quoi: "Dans les Réglages : ajouter, retirer, renommer ses prestations. La question qui reste — une seule fiche pour tous, ou un modèle puis une fiche par client.",
+  },
+  {
+    fichier: "65-choisir-l-heure.html",
+    titre: "Choisir l’heure au pouce",
+    famille: "L’entretien récurrent",
+    quoi: "« Ne pas avoir à l’écrire » : la molette du téléphone, les quarts d’heure, ou une vraie molette Atlas — faite sans une ligne de JavaScript. Faites-la tourner au doigt.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

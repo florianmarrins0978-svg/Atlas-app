@@ -746,8 +746,20 @@ dans `src/`.
 demandé de recréer les fiches de chantier d'une autre application (paysagistes
 en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
 
-- **Ne pas commencer à coder** : sa règle du 11 août, et les deux questions de
-  fond ne sont pas tranchées (`TODO.md` § « La fiche d'entretien »).
+- **TOUT EST TRANCHÉ le 16 août** : familles sur le chantier, seulement ce qui
+  a été fait chez le client, la molette du TÉLÉPHONE (« la A »), et **un seul
+  modèle** pré-rempli à chaque envoi — rien n'est rangé par client. L'ordre de
+  construction est dans `TODO.md` § « La fiche d'entretien ».
+- **Une lecture à confirmer d'un mot** : le pré-remplissage se fait d'après le
+  DERNIER PASSAGE du client, pas depuis le modèle à chaque fois — sinon il
+  réajusterait douze fois par an.
+- **L'invariant à ne pas perdre** : un rapport déjà envoyé ne change plus jamais
+  quand le modèle change. Il est signé et parti chez le client.
+- **Le temps passé se choisit à la MOLETTE, pas au clavier** (16 août) —
+  `docs/maquettes/65-choisir-l-heure.html`. La molette Atlas y est faite sans
+  JavaScript (accroche + repère collé) : le procédé, et ses trois pièges, sont
+  décrits dans `PROJECT_STATE.md`. Ne pas la refaire en suivant le défilement
+  image par image, ça se désynchronise sur un téléphone chargé.
 - **C'est un TROISIÈME parcours**, pas une case en plus : contrat → passages →
   rapport, à côté de devis → facture.
 - **Le piège à ne pas recopier** : l'autre application liste les vingt

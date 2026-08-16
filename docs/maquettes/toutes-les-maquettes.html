@@ -4996,9 +4996,17 @@
 #s43 .etat:checked + .tri-n{background:var(--teinte);color:var(--encre)}
 #s43 .etat:checked + .tri-s{background:var(--teinte);color:var(--encre)}
 #s43 .fin{margin-top:18px;border-top:1px solid var(--trait);padding-top:14px}
-#s43 .fin .l{display:flex;justify-content:space-between;font-size:13.5px;
-          color:var(--gris);padding:7px 0}
-#s43 .fin .l b{color:var(--encre);font-weight:600}
+#s43 .champ-nom{margin:12px 0 5px;font-size:11px;letter-spacing:.13em;
+             text-transform:uppercase;color:var(--or);display:flex;
+             justify-content:space-between;align-items:baseline}
+#s43 .champ-nom .prevu{font-size:11px;letter-spacing:0;color:var(--gris);
+                    text-transform:none}
+#s43 .saisie{display:flex;align-items:center;gap:9px}
+#s43 .saisie input{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--encre);
+                background:transparent;border:1px solid var(--trait);
+                border-radius:10px;padding:11px 12px}
+#s43 .saisie .ecart{flex:none;font-size:12px;color:var(--pin);
+                 background:var(--teinte);border-radius:999px;padding:5px 10px}
 #s43 .bouton{display:block;margin-top:16px;text-align:center;padding:15px;
           border-radius:999px;background:var(--pin);color:var(--papier);
           font-size:15px}
@@ -5090,6 +5098,211 @@
 #s44 .pied{margin-top:14px;font-size:12.5px;color:var(--gris);
         display:flex;justify-content:space-between}
 #s44 .pied b{color:var(--encre)}
+
+
+/* 45 — Composer sa fiche d’entretien */
+#s45{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s45:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s45[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s45, #s45 *{box-sizing:border-box}
+#s45{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s45 .dedans{max-width:940px;margin:0 auto}
+#s45 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s45 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s45 .intro b{color:var(--encre);font-weight:600}
+#s45 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+#s45 .dit b{color:var(--encre);font-weight:600}
+#s45 .etat{position:absolute;opacity:0;pointer-events:none}
+#s45 .reglage{margin:0 0 18px}
+#s45 .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s45 .segments{display:flex;flex-wrap:wrap;gap:8px}
+#s45 .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+#s45 .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+#s45 .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:16px 15px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+#s45 .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:12px}
+#s45 .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+#s45 .barre .quand{font-size:11.5px;color:var(--gris)}
+#s45 .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+#s45 .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+#s45 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s45 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s45 .legende b{color:var(--encre);font-weight:600}
+#s45 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s45 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s45 .note b{color:var(--encre);font-weight:600}
+#s45 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s45 .note ul{margin:8px 0 0;padding-left:19px}
+#s45 .note li{margin-bottom:6px}
+#s45 .ma,#s45 .mb{display:none}
+#s45 #m-a:checked ~ .dedans .ma,#s45 #m-b:checked ~ .dedans .mb{display:block}
+#s45 #m-a:checked ~ .dedans label[for="m-a"],#s45 #m-b:checked ~ .dedans label[for="m-b"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+#s45 .reglages{margin-bottom:8px}
+#s45 .reglages .r{display:flex;justify-content:space-between;align-items:center;
+               padding:13px 2px;border-bottom:1px solid var(--trait);
+               font-size:15px;color:var(--gris)}
+#s45 .reglages .r.neuf{color:var(--encre);font-weight:600}
+#s45 .reglages .r .fleche{color:var(--trait)}
+#s45 .reglages .r.neuf .fleche{color:var(--or)}
+#s45 .fam-bloc{margin-bottom:6px}
+#s45 .fam{margin:16px 0 2px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or);display:flex;
+       justify-content:space-between;align-items:baseline}
+#s45 .fam .retirer-fam{font-size:11px;letter-spacing:0;text-transform:none;
+                    color:var(--gris)}
+#s45 .mod{display:flex;align-items:center;gap:10px;min-height:46px;
+       border-bottom:1px solid var(--trait);font-size:14.5px;color:var(--encre)}
+#s45 .mod .poignee{color:var(--trait);flex:none}
+#s45 .mod .nom{flex:1;min-width:0}
+#s45 .mod .croix{flex:none;color:var(--gris);font-size:13px}
+#s45 .mod.retiree .nom{text-decoration:line-through;color:var(--gris)}
+#s45 .mod.retiree .croix{color:var(--or)}
+#s45 .ajouter{margin:9px 0 0;font-size:13.5px;color:var(--or)}
+#s45 .bouton{display:block;margin-top:18px;text-align:center;padding:15px;
+          border-radius:999px;background:var(--pin);color:var(--papier);
+          font-size:15px}
+#s45 .parclient{margin-top:14px;padding:12px 13px;border-radius:12px;
+             background:var(--teinte);font-size:12.5px;color:var(--gris)}
+#s45 .parclient b{color:var(--encre)}
+
+
+/* 46 — Choisir l’heure au pouce */
+#s46{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s46:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --teinte:#252320;
+    }
+
+  
+}
+#s46[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --teinte:#252320;
+  }
+#s46, #s46 *{box-sizing:border-box}
+#s46{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s46 .dedans{max-width:940px;margin:0 auto}
+#s46 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s46 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s46 .intro b{color:var(--encre);font-weight:600}
+#s46 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+#s46 .dit b{color:var(--encre);font-weight:600}
+#s46 .etat{position:absolute;opacity:0;pointer-events:none}
+#s46 .reglage{margin:0 0 18px}
+#s46 .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s46 .segments{display:flex;flex-wrap:wrap;gap:8px}
+#s46 .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+#s46 #h-a:checked ~ .dedans label[for="h-a"],#s46 #h-b:checked ~ .dedans label[for="h-b"],#s46 #h-c:checked ~ .dedans label[for="h-c"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+#s46 .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+#s46 .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:18px 16px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+#s46 .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:14px}
+#s46 .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+#s46 .barre .quand{font-size:11.5px;color:var(--gris)}
+#s46 .champ-nom{margin:0 0 10px;font-size:11px;letter-spacing:.13em;
+             text-transform:uppercase;color:var(--or);display:flex;
+             justify-content:space-between;align-items:baseline}
+#s46 .champ-nom .prevu{font-size:11px;letter-spacing:0;color:var(--gris);
+                    text-transform:none}
+#s46 .ha,#s46 .hb,#s46 .hc{display:none}
+#s46 #h-a:checked ~ .dedans .ha,#s46 #h-b:checked ~ .dedans .hb,#s46 #h-c:checked ~ .dedans .hc{display:block}
+#s46 .duo{display:flex;gap:10px}
+#s46 .duo select{flex:1;font:inherit;font-size:19px;font-family:Georgia,serif;
+              color:var(--encre);background:var(--papier);
+              border:1px solid var(--trait);border-radius:14px;
+              padding:14px 12px;appearance:none;text-align:center}
+#s46 .pas{display:flex;flex-wrap:wrap;gap:8px}
+#s46 .pas label{flex:1 1 calc(33.333% - 8px);text-align:center;padding:14px 6px;
+             border-radius:14px;border:1px solid var(--trait);
+             font-family:Georgia,serif;font-size:17px;color:var(--gris);
+             cursor:pointer;background:transparent}
+#s46 .etat:checked + label.q{background:var(--pin);border-color:var(--pin);
+                          color:var(--papier)}
+#s46 .autre{display:block;margin-top:10px;text-align:center;font-size:13px;
+         color:var(--or)}
+#s46 .molette{position:relative;border-radius:18px;background:var(--teinte);
+           padding:0 6px;overflow:hidden}
+#s46 .bande{height:196px;overflow-y:auto;scroll-snap-type:y proximity;
+         scrollbar-width:none;
+         
+         -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 30%,#000 70%,transparent 100%);
+         mask-image:linear-gradient(180deg,transparent 0,#000 30%,#000 70%,transparent 100%)}
+#s46 .bande::-webkit-scrollbar{display:none}
+#s46 .dedans-bande{padding:74px 0}
+#s46 .repere{position:sticky;top:74px;height:0;z-index:2}
+#s46 .repere::before{content:"";display:block;height:48px;border-radius:12px;
+                  border-top:1px solid var(--or);border-bottom:1px solid var(--or);
+                  background:rgba(185,139,71,.07)}
+#s46 .v{height:48px;display:flex;align-items:center;justify-content:center;
+     scroll-snap-align:center;font-family:Georgia,serif;font-size:22px;
+     color:var(--encre)}
+#s46 .ecart{margin-top:12px;display:flex;justify-content:space-between;
+         align-items:center;font-size:12.5px;color:var(--gris)}
+#s46 .ecart .pastille{background:var(--teinte);color:var(--pin);border-radius:999px;
+                   padding:5px 11px}
+#s46 .bouton{display:block;margin-top:16px;text-align:center;padding:15px;
+          border-radius:999px;background:var(--pin);color:var(--papier);
+          font-size:15px}
+#s46 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s46 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s46 .legende b{color:var(--encre);font-weight:600}
+#s46 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s46 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s46 .note b{color:var(--encre);font-weight:600}
+#s46 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s46 .note ul{margin:8px 0 0;padding-left:19px}
+#s46 .note li{margin-bottom:6px}
 
 
 </style>
@@ -5296,6 +5509,14 @@
       <a class="item" href="#m44">
         <span class="no">44</span><span class="titre">Le rapport que reçoit le client</span><span class="fleche">↓</span>
         <span class="quoi">La sortie de la fiche. L’autre application lui montre seize fois « Faux » sur un passage qu’il paie : tout, seulement ce qui a été fait, ou le reste replié en une phrase.</span>
+      </a>
+      <a class="item" href="#m45">
+        <span class="no">45</span><span class="titre">Composer sa fiche d’entretien</span><span class="fleche">↓</span>
+        <span class="quoi">Dans les Réglages : ajouter, retirer, renommer ses prestations. La question qui reste — une seule fiche pour tous, ou un modèle puis une fiche par client.</span>
+      </a>
+      <a class="item" href="#m46">
+        <span class="no">46</span><span class="titre">Choisir l’heure au pouce</span><span class="fleche">↓</span>
+        <span class="quoi">« Ne pas avoir à l’écrire » : la molette du téléphone, les quarts d’heure, ou une vraie molette Atlas — faite sans une ligne de JavaScript. Faites-la tourner au doigt.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -18346,8 +18567,8 @@
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s43">
-<input type="radio" name="g" id="g-a" class="etat" checked>
-<input type="radio" name="g" id="g-b" class="etat">
+<input type="radio" name="g" id="g-a" class="etat">
+<input type="radio" name="g" id="g-b" class="etat" checked>
 <input type="radio" name="g" id="g-c" class="etat">
 
 <div class="dedans">
@@ -18365,7 +18586,7 @@
     <span class="quoi">Le geste sur le chantier</span>
     <div class="segments">
       <label for="g-a">A · La liste, d'un bloc</label>
-      <label for="g-b">B · Rangée par familles</label>
+      <label for="g-b">B · Rangée par familles — <b>retenu</b></label>
       <label for="g-c">C · Fait / non / sans objet</label>
     </div>
   </div>
@@ -18552,8 +18773,15 @@
       </div>
 
       <div class="fin">
-        <div class="l"><span>Temps passé</span><b>1 h 40</b></div>
-        <div class="l"><span>Observations</span><span>—</span></div>
+        <p class="champ-nom">Temps passé <span class="prevu">planifié 2 h 30</span></p>
+        <div class="saisie">
+          <input type="text" value="1 h 40" aria-label="Temps passé sur le chantier">
+          <span class="ecart">− 50 min</span>
+        </div>
+
+        <p class="champ-nom">Observations</p>
+        <div class="saisie"><input type="text" value="" placeholder="Rien à signaler" aria-label="Observations"></div>
+
         <span class="bouton">Enregistrer et envoyer</span>
       </div>
     </div>
@@ -18586,6 +18814,19 @@
         compte pour le client.</span>
       </div>
     </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Retenu le 16 août 2026</span>
+    <ul>
+      <li><b>B — rangée par familles.</b> Sa réponse, en un mot : « B et B ».</li>
+      <li><b>Le temps passé se saisit à la main</b>, sur la fiche, à la fin du
+        passage. Le temps PLANIFIÉ est rappelé à côté, en petit, et l'écart se
+        calcule tout seul — c'est ce que fait déjà l'autre application, et c'est
+        ce qui vous dit si le contrat est bien taillé.</li>
+      <li><b>Les observations restent un champ libre</b> : c'est là que se note
+        « portail à réparer », et c'est ce que le client lira.</li>
+    </ul>
   </div>
 
   <div class="note">
@@ -18630,7 +18871,7 @@
     <span class="quoi">Ce que le client voit</span>
     <div class="segments">
       <label for="r-a">A · Tout, comme l'autre</label>
-      <label for="r-b">B · Seulement ce qui a été fait</label>
+      <label for="r-b">B · Seulement ce qui a été fait — <b>retenu</b></label>
       <label for="r-c">C · Ce qui a été fait, le reste replié</label>
     </div>
   </div>
@@ -18733,6 +18974,395 @@
         fait du document une preuve de passage.</li>
       <li><b>Les deux signatures restent.</b> Elles disent que quelqu'un était
         là, et que quelqu'un a vu.</li>
+    </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m45">
+    <div class="etape-tete">
+      <span class="etape-no">45</span>
+      <h2>Composer sa fiche d’entretien</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s45">
+<input type="radio" name="m" id="m-a" class="etat" checked>
+<input type="radio" name="m" id="m-b" class="etat">
+
+<div class="dedans">
+  <h1>Composer sa fiche d'entretien</h1>
+  <p class="intro">Là où la liste se fabrique, dans les Réglages. <b>Rien n'est
+    codé.</b> Une question reste, et elle n'est pas de rangement : <b>une seule
+    fiche, ou une par client ?</b></p>
+
+  <p class="dit">« Dans les réglages, un endroit où l'utilisateur pourra créer
+    cette fiche. On peut mettre <b>déjà cette fiche en modèle</b>, mais également
+    il pourra la modifier — <b>retirer ou ajouter des cases</b> s'il le
+    souhaite. »</p>
+
+  <div class="reglage">
+    <span class="quoi">Une fiche, ou plusieurs ?</span>
+    <div class="segments">
+      <label for="m-a">A · Un seul modèle, pré-rempli à chaque envoi — <b>retenu</b></label>
+      <label for="m-b">B · Un modèle, puis une fiche rangée par client</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Réglages</span><span class="quand">Arborea</span></div>
+      <div class="reglages">
+        <div class="r"><span>Mon identité</span><span class="fleche">›</span></div>
+        <div class="r"><span>Mes équipes</span><span class="fleche">›</span></div>
+        <div class="r"><span>Mes tarifs</span><span class="fleche">›</span></div>
+        <div class="r neuf"><span>Ma fiche d'entretien</span><span class="fleche">›</span></div>
+        <div class="r"><span>Mes documents</span><span class="fleche">›</span></div>
+      </div>
+
+      <p class="titre-fiche" style="margin-top:18px">Ma fiche d'entretien</p>
+      <p class="sous ma">Le modèle. Chaque envoi part de là, puis s'ajuste au client.</p>
+      <p class="sous mb">Le modèle. Chaque client part de là, puis s'ajuste.</p>
+
+      <div class="fam-bloc">
+        <p class="fam">Pelouse<span class="retirer-fam">Renommer</span></p>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Tonte et ébarbage</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Traitement pelouse</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Scarification</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Engrais</span>
+          <span class="croix">×</span>
+        </div>
+        <p class="ajouter">+ Ajouter une prestation</p>
+      </div>
+      <div class="fam-bloc">
+        <p class="fam">Tailles<span class="retirer-fam">Renommer</span></p>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Taille arbuste automne</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Taille arbuste printemps</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Taille de haie automne</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Taille de haie printemps</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Taille des rosiers</span>
+          <span class="croix">×</span>
+        </div>
+        <p class="ajouter">+ Ajouter une prestation</p>
+      </div>
+      <div class="fam-bloc">
+        <p class="fam">Massifs<span class="retirer-fam">Renommer</span></p>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Bêchage</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Bordures massifs</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Griffage massifs</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Désherbage massifs</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Coupe des fleurs fanées</span>
+          <span class="croix">×</span>
+        </div>
+        <p class="ajouter">+ Ajouter une prestation</p>
+      </div>
+      <div class="fam-bloc">
+        <p class="fam">Propreté<span class="retirer-fam">Renommer</span></p>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Nettoyage pied de haies</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Désherbant allée</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Lierre, liseron, liane</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod retiree">
+          <span class="poignee">⠿</span>
+          <span class="nom">Démoussage voirie</span>
+          <span class="croix">Rétablir</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Ramassage des feuilles</span>
+          <span class="croix">×</span>
+        </div>
+        <div class="mod">
+          <span class="poignee">⠿</span>
+          <span class="nom">Évacuation des déchets</span>
+          <span class="croix">×</span>
+        </div>
+        <p class="ajouter">+ Ajouter une prestation</p>
+      </div>
+
+      <p class="ajouter">+ Ajouter une famille</p>
+
+      <div class="mb parclient">
+        <b>Monsieur Martins</b> — 14 prestations sur 20.<br>
+        Retirées pour lui : Traitement pelouse, Scarification, Engrais,
+        Désherbant allée, Démoussage voirie, Bêchage.
+      </div>
+
+      <span class="bouton">Enregistrer</span>
+    </div>
+
+    <div class="legende">
+      <div class="ma">
+        <span class="t">A · Un seul modèle, pré-rempli à chaque envoi</span>
+        <b>Sa décision du 16 août 2026</b>, dans ses mots : « ça sera un modèle à
+        chaque fois qu'on pré-remplira et qu'on enverra aux clients. Donc au
+        final, chaque client aura sa fiche, parce que ça ne sera jamais la même
+        — mais il n'y aura qu'une seule fiche. »
+        <span class="cout"><b>Une seule liste à tenir</b>, ici, dans les
+        Réglages. Rien n'est rangé par client : à chaque passage, la fiche part
+        du modèle, s'ajuste sur place, et devient celle de ce client-là.
+        <b>Ce que ça suppose</b>, et qui n'est pas un détail : le second passage
+        chez le même client doit retrouver son ajustement, sinon il le referait
+        douze fois par an. Le pré-remplissage se fait donc d'après SON dernier
+        passage, et le modèle ne sert que la première fois.</span>
+      </div>
+      <div class="mb">
+        <span class="t">B · Un modèle, puis une fiche rangée par client</span>
+        <b>Écarté le 16 août.</b> 
+        Le modèle sert de point de départ ; à la signature d'un contrat, on
+        décoche ce que ce client ne prend pas. Sa fiche ne porte alors que ses
+        prestations — quatorze au lieu de vingt.
+        <span class="cout">Ce que ça coûte : <b>un geste de plus par client</b>,
+        une fois, à la signature. Et une question à trancher : quand vous
+        modifiez le modèle, les fiches déjà ajustées bougent-elles ? (Ma
+        proposition : <b>non</b> — sinon un ajustement fait pour un client se
+        déferait tout seul.)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui n'est pas à choisir</span>
+    <ul>
+      <li><b>Un rapport déjà envoyé ne change plus jamais.</b> Retirer une ligne
+        du modèle en octobre ne touche pas aux rapports de juillet : ils sont
+        signés et partis chez le client. Le modèle décrit les passages À VENIR.
+        C'est l'erreur qui ne se rattrape pas.</li>
+      <li><b>Le retrait est réversible</b>, comme partout dans Atlas depuis le
+        10 août : la ligne se barre et se rétablit. « Démoussage voirie »
+        est montrée retirée pour que vous le voyiez.</li>
+      <li><b>Les familles sont les vôtres</b> : Pelouse, Tailles, Massifs,
+        Propreté sont un point de départ, pas une nomenclature imposée.</li>
+    </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m46">
+    <div class="etape-tete">
+      <span class="etape-no">46</span>
+      <h2>Choisir l’heure au pouce</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s46">
+<input type="radio" name="h" id="h-a" class="etat" checked>
+<input type="radio" name="h" id="h-b" class="etat">
+<input type="radio" name="h" id="h-c" class="etat">
+
+<input type="radio" name="q" id="q1" class="etat">
+<input type="radio" name="q" id="q2" class="etat">
+<input type="radio" name="q" id="q3" class="etat" checked>
+<input type="radio" name="q" id="q4" class="etat">
+<input type="radio" name="q" id="q5" class="etat">
+<input type="radio" name="q" id="q6" class="etat">
+
+<div class="dedans">
+  <h1>Choisir l'heure au pouce</h1>
+  <p class="intro">Le temps passé ne se tape plus. <b>Rien n'est codé.</b>
+    <b>Faites tourner la molette C avec le doigt</b> — elle s'accroche aux crans,
+    sans une ligne de JavaScript.</p>
+
+  <p class="dit">« Ça serait bien de <b>ne pas avoir à l'écrire</b>, mais d'avoir
+    une petite molette ou un truc sympa pour choisir l'heure. Tout en gardant à
+    l'esprit que je veux une application <b>ultra luxe et moderne</b>. »</p>
+
+  <div class="reglage">
+    <span class="quoi">Comment il pose son temps</span>
+    <div class="segments">
+      <label for="h-a">A · La molette du téléphone — <b>retenu</b></label>
+      <label for="h-b">B · Les quarts d'heure</label>
+      <label for="h-c">C · La molette Atlas</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Fin de passage</span><span class="quand">Monsieur Martins</span></div>
+      <p class="champ-nom">Temps passé <span class="prevu">planifié 2 h 30</span></p>
+
+      <!-- ═══ A · deux listes natives ═══════════════════════════════════════ -->
+      <div class="ha">
+        <div class="duo">
+          <select aria-label="Heures">
+            <option>0 h</option><option selected>1 h</option><option>2 h</option>
+            <option>3 h</option><option>4 h</option><option>5 h</option>
+          </select>
+          <select aria-label="Minutes">
+            <option>00</option><option>05</option><option>10</option>
+            <option>15</option><option>20</option><option>25</option>
+            <option>30</option><option>35</option><option selected>40</option>
+            <option>45</option><option>50</option><option>55</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ═══ B · les quarts d'heure ════════════════════════════════════════ -->
+      <div class="hb">
+        <div class="pas">
+          <label class="q" for="q1">1 h 00</label>
+          <label class="q" for="q2">1 h 15</label>
+          <label class="q" for="q3">1 h 30</label>
+          <label class="q" for="q4">1 h 45</label>
+          <label class="q" for="q5">2 h 00</label>
+          <label class="q" for="q6">2 h 15</label>
+        </div>
+        <span class="autre">Une autre durée…</span>
+      </div>
+
+      <!-- ═══ C · la molette Atlas ══════════════════════════════════════════ -->
+      <div class="hc">
+        <div class="molette">
+          <div class="bande">
+            <div class="dedans-bande">
+              <div class="repere"></div>
+              <div class="v">0 h 00</div><div class="v">0 h 05</div><div class="v">0 h 10</div>
+              <div class="v">0 h 15</div><div class="v">0 h 20</div><div class="v">0 h 25</div>
+              <div class="v">0 h 30</div><div class="v">0 h 35</div><div class="v">0 h 40</div>
+              <div class="v">0 h 45</div><div class="v">0 h 50</div><div class="v">0 h 55</div>
+              <div class="v">1 h 00</div><div class="v">1 h 05</div><div class="v">1 h 10</div>
+              <div class="v">1 h 15</div><div class="v">1 h 20</div><div class="v">1 h 25</div>
+              <div class="v">1 h 30</div><div class="v">1 h 35</div><div class="v">1 h 40</div>
+              <div class="v">1 h 45</div><div class="v">1 h 50</div><div class="v">1 h 55</div>
+              <div class="v">2 h 00</div><div class="v">2 h 05</div><div class="v">2 h 10</div>
+              <div class="v">2 h 15</div><div class="v">2 h 20</div><div class="v">2 h 25</div>
+              <div class="v">2 h 30</div><div class="v">2 h 35</div><div class="v">2 h 40</div>
+              <div class="v">2 h 45</div><div class="v">2 h 50</div><div class="v">2 h 55</div>
+              <div class="v">3 h 00</div><div class="v">3 h 15</div><div class="v">3 h 30</div>
+              <div class="v">3 h 45</div><div class="v">4 h 00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ecart">
+        <span>Sur les 2 h 30 prévues</span>
+        <span class="pastille">− 50 min</span>
+      </div>
+      <span class="bouton">Enregistrer et envoyer</span>
+    </div>
+
+    <div class="legende">
+      <div class="ha">
+        <span class="t">A · La molette du téléphone</span>
+        <b>Sa décision du 16 août 2026 : « la A ».</b>
+        Deux listes natives. Sur son iPhone, <b>c'est déjà la molette</b> : elle
+        monte du bas de l'écran, se fait défiler au pouce, et il la connaît par
+        cœur. Ce dépôt a d'ailleurs tranché ainsi pour la durée d'un chantier.
+        <span class="cout">Ce que ça coûte : <b>rien</b> — ni code, ni entretien,
+        et elle parle aux lecteurs d'écran sans qu'on s'en occupe. Ce qu'on n'a
+        pas : elle ressemble à un formulaire, pas à Atlas. Le luxe s'arrête à la
+        bordure.</span>
+      </div>
+      <div class="hb">
+        <span class="t">B · Les quarts d'heure</span>
+        Six pastilles autour du temps prévu. <b>Un seul appui</b>, sans rien
+        faire défiler — et c'est le cas de neuf passages sur dix.
+        <span class="cout">Ce que ça coûte : <b>le quart d'heure comme seule
+        unité</b>. « 1 h 40 » demande alors le lien « une autre durée », donc un
+        second écran pour un cas rare. Le plus rapide au doigt, le moins précis.</span>
+      </div>
+      <div class="hc">
+        <span class="t">C · La molette Atlas</span>
+        Une vraie molette, faite <b>sans une ligne de JavaScript</b> : la bande
+        s'accroche aux crans, un trait doré marque le choix, et ce qui est loin
+        s'efface. C'est la seule des trois qui ressemble à l'application.
+        <span class="cout">Ce que ça coûte : <b>elle doit être écrite et tenue</b>
+        — le repère, l'accroche, la lecture de la valeur, et un cas que le
+        clavier ne pose pas : accessible au lecteur d'écran, il faut lui adjoindre
+        une liste invisible. Comptez une demi-journée, pas dix minutes.
+        Je l'avais recommandée ; <b>il a choisi la A</b>, et il a une bonne
+        raison de son côté : la molette du téléphone est celle qu'il connaît
+        déjà, elle ne coûte rien à tenir, et elle ne peut pas se désynchroniser.
+        Cette planche reste comme trace du chemin.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui n'est pas à choisir</span>
+    <ul>
+      <li><b>Le pas est de cinq minutes.</b> À la minute près, la molette ferait
+        deux cent quarante crans pour quatre heures — inutilisable au pouce, et
+        personne ne facture un entretien à la minute.</li>
+      <li><b>Elle s'ouvre sur le temps planifié</b>, jamais sur zéro : la bonne
+        valeur est alors à un cran, pas à vingt. (La maquette part de zéro — sans
+        JavaScript, une page ne peut pas se placer elle-même.)</li>
+      <li><b>L'écart reste affiché</b> : c'est lui qui vous dit si le contrat est
+        bien taillé, et c'est la seule raison de rappeler le temps prévu.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que « ultra luxe » veut dire ici</span>
+    <ul>
+      <li><b>Le chiffre est grand et en serif</b>, posé comme sur un cadran de
+        montre — pas comme une valeur de formulaire.</li>
+      <li><b>Ce qui est loin s'efface.</b> L'œil ne voit que ce qui compte, et la
+        bande paraît tourner sur elle-même au lieu de glisser dans une boîte.</li>
+      <li><b>Rien ne clignote, rien ne rebondit.</b> Sur un outil de travail, le
+        luxe est l'absence de bruit : un seul trait doré, qui ne bouge jamais.</li>
     </ul>
   </div>
 </div>
