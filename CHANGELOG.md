@@ -9,6 +9,33 @@ Format : le plus récent en tête.
 
 ## 2026-08-14
 
+### Les treize rubriques des réglages sont ouvertes — dont deux vrais rappels
+
+Sa consigne : *« Fini toutes les rubriques »*. Plus aucune ne porte
+« Bientôt ».
+
+**Ce qui apporte quelque chose de neuf : deux rappels sur l'accueil.** Un devis
+parti sans réponse depuis sept jours, un chantier terminé sans facture depuis
+trois. Les deux délais se règlent, les deux rappels se coupent — ce sont des
+conforts, et rien ne se perd à les éteindre : le devis reste sur la fiche du
+chantier, le chantier reste dans « Terminés ».
+
+**Ce qui ne se coupe pas, et l'écran le dit :** la réponse d'un client et le
+lien de devis expiré. Les éteindre, ce serait accepter de ne plus savoir qu'on
+a été refusé.
+
+**Et ce qui manque est écrit noir sur blanc :** « facture impayée » serait le
+rappel le plus utile, et il est impossible — **rien dans Atlas n'enregistre
+qu'une facture a été payée**. Tant que ce geste n'existe pas, l'alerte crierait
+sur toutes les factures.
+
+**Apparence et Abonnement s'ouvrent sans rien régler**, délibérément : le mode
+sombre et la couleur d'accent demandent de reprendre toute l'application, et ni
+le prix ni l'offre de l'abonnement ne sont décidés. Les écrans disent ce qui
+viendra et ce qui bloque, au lieu d'un « Bientôt » muet — et pour l'abonnement,
+ils préviennent que « factures » y désigne celles qu'Atlas enverrait, pas celles
+des clients (`ARCHITECTURE.md` §108).
+
 ### Une équipe peut partir cinq jours, et Atlas cesse de proposer sa place
 
 **Sa question :** *« Comment on fait si jamais il y a une équipe qui doit partir
@@ -37,11 +64,12 @@ n'occuperait aucun jour et rendrait la capacité fausse en silence.
 
 **Non fait, et dit :** l'équipe inscrite sur un chantier reste une étiquette,
 pas une contrainte. Deux chantiers le même matin sur la même équipe passent
-toujours. `ARCHITECTURE.md` §108, `docs/QUESTIONS.md` §19.
+toujours. `ARCHITECTURE.md` §109, `docs/QUESTIONS.md` §19.
 
 ---
 
 ## 2026-08-14
+
 
 ### « Surtout la page équipe » : l'écran qui n'était jamais préparé d'avance
 

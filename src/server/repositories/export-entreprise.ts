@@ -193,7 +193,7 @@ export async function exporterEntreprise(
       // ne la reconstitue : elle part avec le reste de ses données.
       tx.select().from(equipes).where(eq(equipes.entrepriseId, e)),
       // Les jours où une équipe n'est pas là (14 août 2026, `ARCHITECTURE.md`
-      // §108). C'est sa saisie, et elle commande les dates qu'Atlas propose à
+      // §109). C'est sa saisie, et elle commande les dates qu'Atlas propose à
       // ses clients : une sauvegarde qui l'oublierait rendrait un planning qui
       // ne se comporte plus comme le sien.
       tx.select().from(absencesEquipe).where(eq(absencesEquipe.entrepriseId, e)),

@@ -212,8 +212,19 @@ async function main() {
     await page.locator('[data-atlas="sans-date"]').first().click();
     await page.waitForTimeout(300);
 
-    // Un jour libre : le calendrier s'ouvre sur le mois courant.
-    const jour = new Date(Date.now() + 20 * 86400_000).toISOString().slice(0, 10);
+    // **Un jour libre ET OUVRÉ.** « Aujourd'hui + 20 jours » tombe un samedi une
+    // semaine sur trois et demie : le panneau affiche alors « Jamais proposé »,
+    // aucun bouton « Poser » n'existe — c'est le comportement voulu — et cette
+    // suite rougissait sans qu'aucun code n'ait bougé. Vu le 16 août 2026, sur
+    // un 5 septembre qui était un samedi.
+    //
+    // Un contrôle qui échoue selon le jour de la semaine s'apprend à être
+    // ignoré, et c'est ce garde-fou-là qu'on perd — pas seulement dix minutes.
+    const cible = new Date(Date.now() + 20 * 86400_000);
+    while (cible.getUTCDay() === 0 || cible.getUTCDay() === 6) {
+      cible.setUTCDate(cible.getUTCDate() + 1);
+    }
+    const jour = cible.toISOString().slice(0, 10);
     for (let i = 0; i < 24; i++) {
       if ((await page.locator(`[data-atlas="grille-mois"] button[data-jour="${jour}"]`).count()) > 0) break;
       await page.click('button[aria-label="Mois suivant"]');

@@ -107,7 +107,7 @@ export default function PlanningClient({
   agenda?: EtatAgendaPlanning;
   rendezVous?: RendezVousExterne[];
   /**
-   * Les équipes qui ne sont pas là (14 août 2026, `ARCHITECTURE.md` §108).
+   * Les équipes qui ne sont pas là (14 août 2026, `ARCHITECTURE.md` §109).
    *
    * **Elles doivent entrer dans la même carte d'occupation que les chantiers**,
    * sans quoi ce calendrier montrerait un jour libre que l'écran d'envoi

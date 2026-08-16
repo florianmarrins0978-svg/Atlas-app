@@ -75,14 +75,29 @@ function joursDEssai(): { premier: string; dernier: string } {
   return { premier, dernier: d.toISOString().slice(0, 10) };
 }
 
+/** Ce que le réglage valait avant nous — remis à la fin, quoi qu'il arrive. */
+let equipesAvant: number | null = null;
+
+/**
+ * Ne rien laisser derrière soi.
+ *
+ * **Le nombre d'équipes est REMIS**, et ce n'est pas de la coquetterie : les
+ * suites partagent une base et un serveur, et celles qui suivent liraient un
+ * réglage qu'elles n'ont pas posé. Une suite qui modifie l'état commun sans le
+ * rendre fait rougir la suivante, qui accuse alors son propre écran.
+ */
 async function nettoyer() {
   await pool.query(`DELETE FROM absences_equipe WHERE motif = $1`, [MOTIF]);
+  if (equipesAvant !== null) {
+    await pool.query(`UPDATE entreprises SET nombre_equipes = $1`, [equipesAvant]);
+  }
 }
 
 async function main() {
   const { premier, dernier } = joursDEssai();
 
   await nettoyer();
+  equipesAvant = (await pool.query(`SELECT nombre_equipes FROM entreprises LIMIT 1`)).rows[0]?.nombre_equipes ?? 1;
   // **Deux équipes, sinon le bloc n'existe pas** — et c'est délibéré : seul,
   // noter son absence reviendrait à fermer l'entreprise. Le réglage est posé
   // ici plutôt que supposé, une autre suite le déplaçant.
