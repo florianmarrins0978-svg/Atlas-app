@@ -43,6 +43,12 @@ export const users = pgTable("users", {
   // base — il n'y a donc rien à supprimer pour fermer une session, mais on peut
   // refuser ce qui a été signé avant. `null` : jamais demandé.
   jetonsValidesDepuis: timestamp("jetons_valides_depuis", { withTimezone: true }),
+  // La charte de couleurs choisie dans « Apparence » (migration 0047).
+  //
+  // **Sur la PERSONNE, pas sur l'entreprise** : c'est son goût, et la rubrique
+  // vit dans l'ensemble « Moi » du sommaire. `null` = origine, celle du départ —
+  // ce qui distingue « jamais choisi » de « a choisi origine ».
+  charte: text("charte"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

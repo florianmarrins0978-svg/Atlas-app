@@ -65,6 +65,45 @@ voix.
 
 
 ### 0 novivicies. ~~Le devis qui tarde~~ — **CODÉ le 16 août 2026 (B, 4 jours, « Chantier sans devis »)**
+
+*Planche : `docs/maquettes/56-le-devis-qui-tarde.html`. Code : `src/lib/rappels.ts`,
+`src/server/repositories/rappels.ts`, `src/app/reglages/notifications/`,
+`src/app/Notifications.tsx`, migration `drizzle/0046_rappel_chantier_sans_devis.sql`.
+Détail et raisons : `ARCHITECTURE.md` §112.*
+
+**Sa demande du 14 août :** *« un rappel lorsque le chantier a été ouvert mais le
+devis n'a pas été envoyé […] comme la Mme Félicie, vue il y a quatorze jours,
+aucun devis envoyé »*. **Ses quatre décisions, toutes appliquées :** *« la B et
+4 »*, *« le G »*, *« le B »* (le ton, reposé capture à l'appui), *« fait la B »*
+(le rang).
+
+**CE QUI RESTE POSÉ, SANS RÉPONSE — et c'est le seul point ouvert de ce lot.**
+Les rappels passant devant, une réponse de client peut être repoussée derrière
+« N autres devis à regarder ». Mesuré sur le jeu de démonstration : **cinq
+rappels occupaient les deux places, et plus aucune réponse n'était visible**.
+
+La sortie proposée, et elle n'attend que son mot : **garantir une place à
+chacun** sur les deux cartes visibles — un rappel, une réponse. Il verrait
+toujours au moins un de chaque, quel que soit le nombre. Un quart d'heure.
+
+**Trois leçons de ce lot, à ne pas repayer :**
+
+1. **Chercher ce qui existe AVANT de dessiner.** La planche a décrit deux fois un
+   monde disparu — un écran déjà dessiné le 13, un délai déjà codé le 14. Les
+   planches de l'application vivent dans `maquettes/`, celles des décisions dans
+   `docs/maquettes/`, et le code est un troisième endroit.
+2. **Une confusion entre deux libellés n'existe qu'en contexte.** Montrer une
+   ligne seule ne prouve rien : c'est côte à côte avec sa VOISINE qu'elle se
+   juge. D'où la règle tenue par `test-devis-qui-tarde-e2e` — deux réglages
+   voisins ne commencent pas par le même mot —, plus étroite qu'un « toutes les
+   paires » qui refuserait un choix qu'il a fait en connaissance de cause.
+3. **Photographier plutôt que décrire, et sur la BONNE scène.** Deux
+   descriptions que je lui avais données étaient fausses, et l'image l'a dit :
+   sa carte ne passe derrière qu'à partir de DEUX réponses en attente, et
+   « montrer trois cartes » met la troisième sous le bord de l'écran.
+   `scripts/capture-rang-trois-cas.sh` monte la scène minimale et rend le code
+   même en cas d'échec.
+
 ### 0 novovicies. ~~La TVA au PAIEMENT~~ — **CODÉE le 16 août 2026**
 
 *Fait : `ARCHITECTURE.md` §111. Ce qui suit reste pour mémoire du raisonnement.*
@@ -148,6 +187,24 @@ dans la plage où les autres suites posent leurs chantiers, la journée s'annonc
 autre cause. Le contrôle lit désormais le panneau AVANT de conclure : une
 journée pleine se dit en toutes lettres au lieu d'accuser le bouton.
 
+### 0 tricies nonies bis. Deviner une cause coûte plus cher que la regarder
+
+*Écrit le 16 août 2026, en marge du correctif de `test-pastille-equipe-e2e`.*
+
+Devant cette suite rouge, j'ai inscrit ici un diagnostic tiré d'une
+**ressemblance** avec un défaut voisin — « la suite désigne le premier chantier
+sans date plutôt que le sien ». C'était faux, et cela a failli envoyer la
+session suivante corriger ce qui n'était pas cassé.
+
+**Un seul relevé de l'état réel de la page a suffi à trancher** : « Samedi
+5 septembre — Jamais proposé » était écrit dans le corps de la page. La cause
+était le calendrier, pas le sélecteur.
+
+**La règle qui en sort, et elle vaut au-delà de ce cas :** devant un contrôle
+rouge, relever ce que la page DIT avant d'écrire une cause. Une hypothèse
+consignée dans les tâches se lit ensuite comme un fait.
+
+
 ### 0 tricies octies. Marquer une facture PAYÉE — le geste qui manque le plus
 
 *Constaté en codant « Notifications » le 14 août 2026 (`ARCHITECTURE.md` §108),
@@ -173,7 +230,24 @@ quand ? »**
 la facture, dans « Terminés », ou les deux —, et ce qu'on fait d'un paiement
 partiel.
 
-### 0 duodetricies ter. Apparence : le mode sombre OU l'accent, à trancher
+### 0 duodetricies quater. La couleur de la barre du navigateur ne suit pas la charte
+
+`themeColor` vaut toujours le crème dans les métadonnées : sur « Nuit », la
+barre d'adresse de l'iPhone reste claire au-dessus d'un écran noir. Ce n'est pas
+dans le rendu de la page — c'est une métadonnée, et elle ne connaît pas la
+personne connectée. Il faut la produire depuis `generateViewport`, ce qui ajoute
+une lecture de base à chaque page : à peser avant de le faire.
+
+### ~~0 duodetricies ter. Apparence : le mode sombre OU l'accent~~ — **FAIT le 14 août 2026**
+
+Ni l'un ni l'autre séparément : **les sept chartes**, dont deux sombres
+(`ARCHITECTURE.md` §114). Le mode sombre qu'il demandait EST Nuit et Sylve.
+
+**Ce qu'il ne faut pas rouvrir :** un interrupteur « sombre » à côté du choix de
+charte. Les deux se contrediraient à la première combinaison — « Nuit » avec le
+sombre éteint ne veut rien dire.
+
+### ~~0 duodetricies ter (d'origine). Apparence : le mode sombre OU l'accent, à trancher~~
 
 L'écran existe et ne règle rien, délibérément (`ARCHITECTURE.md` §108). Les
 deux chantiers possibles, et leur coût :

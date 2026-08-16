@@ -59,7 +59,24 @@ function meme(a, b) {
  */
 export function controlerCharte(source, verifie) {
   const jetons = fs.readFileSync("src/lib/design-tokens.ts", "utf8");
-  const lire = (nom) => (jetons.match(new RegExp(`\\b${nom}:\\s*"([^"]+)"`)) || [])[1];
+  /**
+   * **Le jeton peut désormais être une VARIABLE CSS, et sa valeur est le repli.**
+   *
+   * Depuis le 14 août 2026, `colors.cream` vaut `var(--atlas-cream, #f5f3ee)` :
+   * les sept chartes du patron (`src/lib/chartes.ts`) changent la variable, et
+   * le repli reste la charte d'origine, au caractère près. Comparé tel quel, ce
+   * jeton n'aurait plus jamais correspondu à une planche — et les vingt-trois
+   * planches auraient rougi d'un coup, en accusant leurs couleurs alors que
+   * c'est la lecture qui était devenue fausse.
+   *
+   * On lit donc le repli, qui EST la valeur d'origine.
+   */
+  const lire = (nom) => {
+    const brut = (jetons.match(new RegExp(`\\b${nom}:\\s*"([^"]+)"`)) || [])[1];
+    if (!brut) return brut;
+    const repli = brut.match(/^var\(\s*--[\w-]+\s*,\s*(.+)\)$/);
+    return repli ? repli[1].trim() : brut;
+  };
 
   const bloc = (source.match(/\.ecran\{[\s\S]*?\}/) || [""])[0];
   const dansEcran = (nom) => (bloc.match(new RegExp(`--e-${nom}:\\s*([^;}]+)`)) || [])[1];

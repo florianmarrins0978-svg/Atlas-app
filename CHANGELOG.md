@@ -67,6 +67,24 @@ l'écran ignorait le drapeau. Elle refuse de conclure sur zéro carte.
 
 ## 2026-08-15
 
+### Sur l'accueil, les rappels passent devant les réponses
+
+**Sa décision du 16 août, devant trois photos : « fait la B ».**
+
+**Ce que ça évite :** un rappel qu'il faut déplier. L'accueil ne pose que deux
+cartes, et tant que les réponses de clients venaient en tête, le rappel passait
+derrière « N autres devis à regarder » dès **deux réponses en attente**.
+
+**Une exagération corrigée en chemin, et elle valait d'être dite.** Je lui avais
+annoncé que sa carte passait derrière dès qu'une correction était en cours.
+Mesuré : avec UNE seule réponse, elle prend la seconde place et se voit très
+bien. Il en faut deux. La scène des photos a donc dû être fabriquée exprès —
+`scripts/capture-rang-trois-cas.sh`, qui **photographie l'application** au lieu
+de la dessiner, et qui rend le code à son état d'origine même en cas d'échec.
+
+**Et la troisième proposition a été écartée par l'image elle-même** : montrer
+trois cartes au lieu de deux met bien le rappel à l'écran… sous le bord, hors de
+vue. Une capture vaut mieux qu'un raisonnement.
 ### Dicter dans le devis : « je vais pouvoir lui parler comme ça et qu'elle comprenne »
 
 **Sa demande :** un micro en haut à droite du devis, le même que sur la fiche du
@@ -372,6 +390,31 @@ apporté deux planches de plus tombées dans le même trou, qu'il a nommées.
 
 
 ## 2026-08-14
+
+### Sept chartes de couleurs, dont deux sombres — au choix de chacun
+
+Il a retrouvé une planche du début du projet — son écran Chantiers dans seize
+couleurs — et en a gardé six, plus la sienne : **Origine, Pierre, Beurre, Moka,
+Prune, Sylve, Nuit**. Elles se choisissent dans « Apparence », et repeignent
+toute l'application, tout de suite.
+
+**Le mode sombre qu'il demandait est dedans, et ce n'est pas un réglage à
+part** : Nuit et Sylve sont sombres. Deux interrupteurs — un pour la couleur, un
+pour le sombre — se seraient contredits dès la première combinaison.
+
+**Par défaut, rien ne change.** Tant que personne n'a choisi, l'application
+affiche exactement les couleurs de la veille : la charte « Origine » reprend les
+treize valeurs d'avant, au caractère près, et c'est éprouvé dans les deux sens.
+
+**Ce qui ne suit pas la couleur, et c'est voulu :** les devis et les factures.
+Un document ne part pas en noir chez le client parce que l'artisan a choisi
+« Nuit » — les deux pages que le client reçoit gardent l'identité d'Atlas.
+
+**Le défaut trouvé sur une capture, jamais par un test :** au premier essai,
+l'accueil était passé au noir et la bande sous la barre de navigation restait
+blanche. Atlas a deux vocabulaires de couleur — les styles en ligne et les
+classes Tailwind — et seul le premier avait été branché (`ARCHITECTURE.md`
+§114).
 
 ### Les treize rubriques des réglages sont ouvertes — dont deux vrais rappels
 

@@ -1,8 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-16 · branche `main`
-· dernière migration `drizzle/0046_rappel_chantier_sans_devis.sql`
-· dernière migration `drizzle/0045_paiements_et_exigibilite.sql`
+· dernière migration `drizzle/0047_charte_de_couleurs.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -268,8 +267,10 @@ l'application. Ce qui est **fait** :
   devis ne réclame plus rien. Migration `drizzle/0046_rappel_chantier_sans_devis.sql`.
   **Le ton lui a été reposé, capture à l'appui — il garde le sien** (« le B »,
   16 août) : c'est le seul des trois rappels où rien n'est encore parti au
-  client. Reste le **rang**, sans réponse : l'accueil ne montre que deux cartes
-  et les rappels ferment la marche. `TODO.md` §0 novivicies.
+  client. **Et le rang est tranché aussi** (« fait la B », 16 août, après trois
+  photos) : sur l'accueil, **les rappels passent devant les réponses de
+  clients** — ce qu'il doit faire avant ce qu'on lui a répondu. `TODO.md`
+  §0 novivicies.
 - **Une carte ne peut plus se reposer à moitié coupée** (16 août) : sa capture —
   *« le premier message est trop haut et le début n'est pas visible »*. Le cadre
   qui défile déclarait `scroll-snap-type` sans qu'aucun enfant n'ait jamais
@@ -608,8 +609,11 @@ Voir `TODO.md` pour le détail et l'ordre.
   l'application, lui, ne cloisonne toujours rien. **Les TREIZE rubriques sont
   ouvertes au 14 août 2026** — plus aucune ne porte « Bientôt »
   (`ARCHITECTURE.md` §108). Deux d'entre elles ne règlent rien et l'assument :
-  *Apparence* (le mode sombre et l'accent demandent de reprendre toute
-  l'application) et *Abonnement* (ni prix ni offre décidés). *Notifications*,
+  *Abonnement* (ni prix ni offre décidés). **Apparence, elle, règle désormais
+  les SEPT CHARTES DE COULEURS** — Origine, Pierre, Beurre, Moka, Prune, Sylve,
+  Nuit, dont deux sombres (`ARCHITECTURE.md` §114). Elles repeignent toute
+  l'application ; les devis et factures gardent l'identité d'Atlas. Par défaut,
+  rien ne change : « Origine » reprend les valeurs d'avant au caractère près. *Notifications*,
   elle, porte **deux rappels réels** qui apparaissent sur l'accueil — devis sans
   réponse, chantier fini non facturé — et dit pourquoi « facture impayée » est
   impossible : rien n'enregistre qu'une facture a été payée. Les deux dernières ouvertes sont
